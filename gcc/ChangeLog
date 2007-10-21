@@ -1,5 +1,266 @@
 2007-10-21  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips-protos.h (mips_regno_mode_ok_for_base_p): Give
+	the STRICT_P argument type "bool" rather than "int".
+	(mips_legitimate_address_p): Likewise.
+	(fp_register_operand, lo_operand): Delete.
+	(mips_subword): Give the HIGH_P argument type "bool" rather than "int".
+	(mips_emit_scc): Rename to...
+	(mips_expand_scc): ...this.
+	(gen_conditional_branch): Rename to...
+	(mips_expand_conditional_branch): ...this.
+	(gen_conditional_move): Rename to...
+	(mips_expand_conditional_move): ...this.
+	(mips_gen_conditional_trap): Rename to...
+	(mips_expand_conditional_trap): ...this and take an rtx code instead
+	of an operands array.
+	(mips_expand_call): Give the SIBCALL_P argument type "bool"
+	rather than "int".
+	(mips_emit_fcc_reload): Rename to...
+	(mips_expand_fcc_reload): ...this.
+	(init_cumulative_args): Rename to...
+	(mips_init_cumulative_args): ...this and remove the libname argument.
+	(function_arg_advance): Rename to...
+	(mips_function_arg_advance): ...this.
+	(function_arg): Rename to...
+	(mips_function_arg): ...this and use "rtx" instead of
+	"struct rtx_def *".
+	(function_arg_boundary): Rename to...
+	(mips_function_arg_boundary): ...this.
+	(mips_expand_unaligned_load): Rename to...
+	(mips_expand_ext_as_unaligned_load): ...this and give the WIDTH
+	and BITPOS arguments type "HOST_WIDE_INT".
+	(mips_expand_unaligned_store): Rename to...
+	(mips_expand_ins_as_unaligned_store): ...this and give the WIDTH
+	and BITPOS arguments type "HOST_WIDE_INT".
+	(override_options): Rename to...
+	(mips_override_options): ...this.
+	(print_operand): Rename to...
+	(mips_print_operand): ...this.
+	(print_operand_address): Rename to...
+	(mips_print_operand_address): ...this.
+	(mips_output_ascii): Remove the PREFIX argument.
+	(mips_expand_epilogue): Give the SIBCALL_P argument type "bool"
+	rather than "int".
+	(mips_can_use_return_insn): Return a "bool" rather than an "int".
+	(mips_function_value): Remove the FUNC argument.  Use "rtx" instead
+	of "struct rtx_def *".
+	(mips_secondary_reload_class): Give the IN_P argument type "bool"
+	rather than "int".
+	(build_mips16_call_stub): Delete.
+	(mips_store_data_bypass_p): Return a "bool" rather than an "int".
+	(mips_use_ins_ext_p): Give the second and third arguments type
+	"HOST_WIDE_INT" rather than "rtx".
+	* config/mips/mips.h: Update after the above changes.  Tweak comments
+	and formatting.
+	(SECONDARY_INPUT_RELOAD_CLASS): Pass a boolean IN_P argument.
+	(SECONDARY_OUTPUT_RELOAD_CLASS): Likewise.
+	(mips_print_operand_punct, mips_hard_regno_mode_ok): Change the
+	element type from "char" to "bool".
+	(mips_section_threshold, sym_lineno, set_noat, mips_branch_likely)
+	(mips_cpu_info_table): Delete.
+	* config/mips/mips.md: Update after the above changes.  Tweak some
+	formatting.
+	* config/mips/mips-ps-3d.md: Likewise.
+	* config/mips/mips.c: Tweak comments and formatting.
+	Use NULL-like macros rather than 0 in various places.
+	(mips_section_threshold): Rename to...
+	(mips_small_data_threshold): ...this and give it an unsigned type.
+	(num_source_filenames): Remove explicit initialization.
+	(sdb_label_count): Likewise.
+	(sym_lineno): Delete.
+	(set_noat): Make static.
+	(mips_branch_likely): Likewise, and give it type "bool".
+	(mips_isa_info): Rename to...
+	(mips_isa_option_info): ...this.
+	(mips_flag_delayed_branch): Rename to...
+	(mips_base_delayed_branch): ...this.
+	(mips_split_addresses): Delete.
+	(mips_print_operand_punct, mips_hard_regno_mode_ok): Change the
+	element type from "char" to "bool".
+	(mips_regno_to_class): Add an explicit array size.
+	(mips16_flipper): Change from type "int" to type "bool".
+	(mips_comp_type_attributes): Remove redundant FUNCTION_TYPE check.
+	(mips_tls_operand_p): Rename to...
+	(mips_tls_symbol_p): ...this.
+	(mips_global_symbol_p): Remove redundant "const".
+	(mips_offset_within_alignment_p): Simplify.
+	(mips_regno_mode_ok_for_base_p): Change the name of the last argument
+	to STRICT_P and give it type bool.
+	(mips_valid_base_register_p): Likewise.
+	(mips_classify_address): Likewise.
+	(mips_legitimate_address_p): Likewise.
+	(mips16_unextended_reference_p): Take the offset as an
+	"unsigned HOST_WIDE_INT" rather than an "rtx".  Simplify.
+	(mips_const_insns): Use IN_RANGE.
+	(mips_force_temporary): Remove an unnecessary copy_rtx.
+	(mips16_gp_pseudo_reg): Simplify.
+	(mips_split_symbol): Remove an unnecessary copy_rtx.
+	(mips_legitimize_tls_address): Only create registers if we need them.
+	(mips_legitimize_address): Use mips_split_plus.
+	(mips_move_integer): Swap DEST and TEMP arguments.  Rename local
+	variable COST to NUM_OPS.
+	(mips_legitimize_move): Use gen_lowpart.
+	(mips_rewrite_small_data): Rename the OP parameter to PATTERN.
+	(m16_check_op): Use IN_RANGE.
+	(mips_subword): Give the HIGH_P argument type "bool" rather than "int".
+	(mips_split_doubleword_move): Pass booleans to mips_subword.
+	(mips_output_move): Store the mode in a local variable.
+	Explicitly assert that this function does not deal with
+	MFLO and MFHI.  Use SMALL_OPERAND_UNSIGNED.  Make order of
+	cases more consistent.
+	(mips_relational_operand_ok_p): Rename to...
+	(mips_int_order_operand_ok_p): ...this.
+	(mips_canonicalize_comparison): Rename to...
+	(mips_canonicalize_int_order_test): ...this.
+	(mips_emit_int_relational): Rename to...
+	(mips_emit_int_order_test): ...this.  Store the mode in a local
+	variable.
+	(mips_reverse_fp_cond_p): Rename to...
+	(mips_reversed_fp_cond): ...this.
+	(mips_emit_compare): Make the order of the statements more consistent.
+	(mips_emit_scc): Rename to...
+	(mips_expand_scc): ...this.
+	(gen_conditional_branch): Rename to...
+	(mips_expand_conditional_branch): ...this.
+	(gen_conditional_move): Rename to...
+	(mips_expand_conditional_move): ...this.  Build the condition
+	separately from the main pattern.
+	(mips_gen_conditional_trap): Rename to...
+	(mips_expand_conditional_trap): ...this and take an rtx code instead
+	of an operands array.  Simplify.
+	(init_cumulative_args): Rename to...
+	(mips_init_cumulative_args): ...this.  Use memset rather than a
+	copy from a zeroed static.  Use prototype_p and stdarg_p.
+	(mips_arg_info): Rename to...
+	(mips_get_arg_info): ...this and put the INFO argument first.
+	(function_arg): Rename to...
+	(mips_function_arg): ...this and use "rtx" instead of
+	"struct rtx_def *".  Only split structures into chunks if 
+	TARGET_HARD_FLOAT, rather than checking !TARGET_SOFT_FLOAT on
+	a chunk-by-chunk basis.  Use SCALAR_FLOAT_TYPE_P instead of a
+	comparison with REAL_TYPE.  Rename local variable REG to REGNO
+	and make it unsigned.
+	(function_arg_advance): Rename to...
+	(mips_function_arg_advance): ...this.
+	(function_arg_boundary): Rename to...
+	(mips_function_arg_boundary): ...this.
+	(mips_pad_arg_upward): Use SCALAR_INT_MODE_P instead of a comparison
+	with MODE_INT.
+	(mips_fpr_return_fields): Use SCALAR_FLOAT_TYPE_P instead of a
+	comparison with REAL_TYPE.
+	(mips_function_value): Remove the FUNC argument.  Rename local
+	variable UNSIGNEDP to UNSIGNED_P.
+	(mips_return_in_memory): Use IN_RANGE.
+	(mips_setup_incoming_varargs): Pass a boolean rather than an int
+	to FUNCTION_ARG_ADVANCE.
+	(mips_gimplify_va_arg_expr): Rename local variable INDIRECT
+	to INDIRECT_P.  Remove a redundant mips_abi check.  Only calculate
+	SIZE and RSIZE if needed.
+	(mips16_stub): Rename FPRET to FP_RET_P and give it type "bool"
+	rather than "int".
+	(build_mips16_function_stub): Rename to...
+	(mips16_build_function_stub): ...this.
+	(build_mips16_call_stub): Rename to...
+	(mips16_build_call_stub): ...this.  Make static, and return a
+	"bool" rather than an "int".  Rename the ARG_SIZE argument to
+	ARGS_SIZE.  Rename the local variable FPRET to FP_RET_P and give
+	it type "bool".  Use "jr" rather than "j".  Use XNEW.  Simplify.
+	(mips_load_call_address): Give the SIBCALL_P argument type "bool"
+	rather than "int".
+	(mips_expand_call): Likewise.  Assert that MIPS16 calls via stubs
+	are not sibling ones.
+	(mips_emit_fcc_reload): Rename to...
+	(mips_expand_fcc_reload): ...this.
+	(mips_get_unaligned_mem): Give the WIDTH and BITPOS arguments type
+	"HOST_WIDE_INT".
+	(mips_expand_unaligned_load): Rename to...
+	(mips_expand_ext_as_unaligned_load): ...this and give the WIDTH
+	and BITPOS arguments type "HOST_WIDE_INT".  Remove redundant
+	SUBREG_BYTE check.
+	(mips_expand_unaligned_store): Rename to...
+	(mips_expand_ins_as_unaligned_store): ...this and give the WIDTH
+	and BITPOS arguments type "HOST_WIDE_INT".
+	(mips_use_ins_ext_p): Rename second and third arguments to WIDTH
+	and BITPOS and give them type "HOST_WIDE_INT" rather than "rtx".
+	Use IN_RANGE.
+	(mips_init_split_addresses): Replace with...
+	(mips_split_addresses_p): ...this new function.
+	(mips_init_relocs): Check mips_split_addresses_p () rather than
+	mips_split_addresses.  Always initialize mips_split_p with booleans.
+	(print_operand_reloc): Rename to...
+	(mips_print_operand_reloc): ...this.  Use a gcc_assert rather than
+	a fatal_error.
+	(print_operand): Rename to...
+	(mips_print_operand): ...this.
+	(print_operand_address): Rename to...
+	(mips_print_operand_address): ...this.  Use GP_REG_FIRST.
+	(mips_in_small_data_p): Simplify.
+	(mips_output_ascii): Remove the PREFIX argument and "register"
+	keywords.  Use the STRING parameter directly and cast to
+	"unsigned char".
+	(mips16e_collect_argument_save_p): Use IN_RANGE.
+	(mips_function_has_gp_insn): Simplify.
+	(mips_set_return_address): Use BITSET_P.
+	(mips_restore_gp): Use a separate statement to pick the base
+	register.
+	(mips_output_function_prologue): Use a local FRAME variable.
+	(mips_save_reg): Pass booleans to mips_subword.
+	(mips_expand_prologue): Use a local FRAME variable.  Use
+	cprestore_size to detect when .cprestore is needed.
+	(mips_restore_reg): Use GP_REG_FIRST.
+	(mips_expand_epilogue): Give the SIBCALL_P argument type "bool"
+	rather than "int".  Use local FRAME and REGNO variables.
+	(mips_can_use_return_insn): Return a "bool" rather than an "int".
+	(mips_secondary_reload_class): Give the IN_P argument type "bool"
+	rather than "int".
+	(mips_linked_madd_p): Rename arguments to OUT_INSN and IN_INSN.
+	(mips_store_data_bypass_p): Return a "bool" rather than an "int".
+	(vr4130_swap_insns_p): Rename local variables to DEP1_P and DEP2_P.
+	(mips_74k_agen_init): Assume INSN satisfies USEFUL_INSN_P.
+	(mips_variable_issue): Do nothing unless INSN satisfies USEFUL_INSN_P.
+	(builtin_description): Rename to...
+	(mips_builtin_description): ...this.
+	(mips_bdesc): Rename to...
+	(mips_ps_bdesc): ...this.
+	(sb1_bdesc): Rename to...
+	(mips_sb1_bdesc): ...this.
+	(dsp_bdesc): Rename to...
+	(mips_dsp_bdesc): ...this.
+	(dsp_32only_bdesc): Rename to...
+	(mips_dsp_32only_bdesc): ...this.
+	(bdesc_map): Rename to...
+	(mips_bdesc_map): ...this.
+	(bdesc_arrays): Rename to...
+	(mips_bdesc_arrays): ...this.
+	(mips_prepare_builtin_arg): Rename OP to OPNO and ARGNUM to ARGNO.
+	Tweak error message.
+	(mips_expand_builtin_direct): Rename HAS_TARGET to HAS_TARGET_P.
+	Rename local variables I and J to OPNO and ARGNO respectively.
+	Assert that the number of arguments is no more than the number of
+	input operands.
+	(mips_expand_builtin_compare): Use an array of arguments rather
+	than an array of operands.  Assert that the number of operands is
+	as expected.
+	(add_constant): Rename to...
+	(mips16_add_constant): ...this.  Use XNEW.
+	(dump_constants_1): Rename to...
+	(mips16_emit_constants_1): ...this.  Use ALL_SCALAR_FIXED_POINT_MODE_P.
+	(dump_constants): Rename to...
+	(mips16_emit_constants): ...this.
+	(mips_sim_wait_reg, mips_sim_record_set): Use END_REGNO.
+	(mips_set_mips16_mode): Don't call mips_init_split_addresses.
+	Assign mips16_p to was_mips16_p.
+	(mips_parse_cpu): Tweak warning message.
+	(override_options): Rename to...
+	(mips_override_options): ...this.  Move the mips_cost initialization
+	out of the "shared with GAS" block.  Quote option names in error
+	messages.
+	(mips_conditional_register_usage): Make local variable REGNO unsigned.
+	(mips_order_regs_for_local_alloc): Remove register keyword.
+
+2007-10-21  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* system.h (IN_RANGE): Cast each argument individually.
 
 2007-10-21  Richard Sandiford  <rsandifo@nildram.co.uk>

@@ -922,7 +922,7 @@ enum mips_code_readable_setting {
 #define SWITCH_TAKES_ARG(CHAR)						\
   (DEFAULT_SWITCH_TAKES_ARG (CHAR) || (CHAR) == 'G')
 
-#define OVERRIDE_OPTIONS override_options ()
+#define OVERRIDE_OPTIONS mips_override_options ()
 
 #define CONDITIONAL_REGISTER_USAGE mips_conditional_register_usage ()
 
@@ -1385,7 +1385,7 @@ enum mips_code_readable_setting {
 
    Regarding coprocessor registers: without evidence to the contrary,
    it's best to assume that each coprocessor register has a unique
-   use.  This can be overridden, in, e.g., override_options() or
+   use.  This can be overridden, in, e.g., mips_override_options or
    CONDITIONAL_REGISTER_USAGE should the assumption be inappropriate
    for a particular target.  */
 
@@ -1864,9 +1864,9 @@ enum reg_class
    general registers, and from the floating point registers.  */
 
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, X)			\
-  mips_secondary_reload_class (CLASS, MODE, X, 1)
+  mips_secondary_reload_class (CLASS, MODE, X, true)
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X)			\
-  mips_secondary_reload_class (CLASS, MODE, X, 0)
+  mips_secondary_reload_class (CLASS, MODE, X, false)
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
@@ -1959,10 +1959,10 @@ enum reg_class
 #define FP_ARG_LAST  (FP_ARG_FIRST + MAX_ARGS_IN_REGISTERS - 1)
 
 #define LIBCALL_VALUE(MODE) \
-  mips_function_value (NULL_TREE, NULL, (MODE))
+  mips_function_value (NULL_TREE, MODE)
 
 #define FUNCTION_VALUE(VALTYPE, FUNC) \
-  mips_function_value ((VALTYPE), (FUNC), VOIDmode)
+  mips_function_value (VALTYPE, VOIDmode)
 
 /* 1 if N is a possible register number for a function value.
    On the MIPS, R2 R3 and F0 F2 are the only register thus used.
@@ -2002,9 +2002,9 @@ enum reg_class
    allocate floating-point registers.
 
    So for the standard ABIs, the first N words are allocated to integer
-   registers, and function_arg decides on an argument-by-argument basis
-   whether that argument should really go in an integer register, or in
-   a floating-point one.  */
+   registers, and mips_function_arg decides on an argument-by-argument
+   basis whether that argument should really go in an integer register,
+   or in a floating-point one.  */
 
 typedef struct mips_args {
   /* Always true for varargs functions.  Otherwise true if at least
@@ -2047,14 +2047,14 @@ typedef struct mips_args {
    For a library call, FNTYPE is 0.  */
 
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
-  init_cumulative_args (&CUM, FNTYPE, LIBNAME)				\
+  mips_init_cumulative_args (&CUM, FNTYPE)
 
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
    (TYPE is null for libcalls where that information may not be available.)  */
 
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
-  function_arg_advance (&CUM, MODE, TYPE, NAMED)
+#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED) \
+  mips_function_arg_advance (&CUM, MODE, TYPE, NAMED)
 
 /* Determine where to put an argument to a function.
    Value is zero to push the argument on the stack,
@@ -2070,14 +2070,14 @@ typedef struct mips_args {
     (otherwise it is an extra parameter matching an ellipsis).  */
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-  function_arg( &CUM, MODE, TYPE, NAMED)
+  mips_function_arg (&CUM, MODE, TYPE, NAMED)
 
-#define FUNCTION_ARG_BOUNDARY function_arg_boundary
+#define FUNCTION_ARG_BOUNDARY mips_function_arg_boundary
 
-#define FUNCTION_ARG_PADDING(MODE, TYPE)		\
+#define FUNCTION_ARG_PADDING(MODE, TYPE) \
   (mips_pad_arg_upward (MODE, TYPE) ? upward : downward)
 
-#define BLOCK_REG_PADDING(MODE, TYPE, FIRST)		\
+#define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
   (mips_pad_reg_upward (MODE, TYPE) ? upward : downward)
 
 /* True if using EABI and varargs can be passed in floating-point
@@ -2099,8 +2099,7 @@ typedef struct mips_args {
 
 
 /* Implement `va_start' for varargs and stdarg.  */
-#define EXPAND_BUILTIN_VA_START(valist, nextarg) \
-  mips_va_start (valist, nextarg)
+#define EXPAND_BUILTIN_VA_START mips_va_start
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
@@ -2539,44 +2538,9 @@ typedef struct mips_args {
 
 #define ALL_COP_ADDITIONAL_REGISTER_NAMES
 
-/* A C compound statement to output to stdio stream STREAM the
-   assembler syntax for an instruction operand X.  X is an RTL
-   expression.
-
-   CODE is a value that can be used to specify one of several ways
-   of printing the operand.  It is used when identical operands
-   must be printed differently depending on the context.  CODE
-   comes from the `%' specification that was used to request
-   printing of the operand.  If the specification was just `%DIGIT'
-   then CODE is 0; if the specification was `%LTR DIGIT' then CODE
-   is the ASCII code for LTR.
-
-   If X is a register, this macro should print the register's name.
-   The names can be found in an array `reg_names' whose type is
-   `char *[]'.  `reg_names' is initialized from `REGISTER_NAMES'.
-
-   When the machine description has a specification `%PUNCT' (a `%'
-   followed by a punctuation character), this macro is called with
-   a null pointer for X and the punctuation character for CODE.
-
-   See mips.c for the MIPS specific codes.  */
-
-#define PRINT_OPERAND(FILE, X, CODE) print_operand (FILE, X, CODE)
-
-/* A C expression which evaluates to true if CODE is a valid
-   punctuation character for use in the `PRINT_OPERAND' macro.  If
-   `PRINT_OPERAND_PUNCT_VALID_P' is not defined, it means that no
-   punctuation characters (except for the standard one, `%') are
-   used in this way.  */
-
+#define PRINT_OPERAND mips_print_operand
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE) mips_print_operand_punct[CODE]
-
-/* A C compound statement to output to stdio stream STREAM the
-   assembler syntax for an instruction operand that is a memory
-   reference whose address is ADDR.  ADDR is an RTL expression.  */
-
-#define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
-
+#define PRINT_OPERAND_ADDRESS mips_print_operand_address
 
 /* A C statement, to be executed after all slot-filler instructions
    have been output.  If necessary, call `dbr_sequence_length' to
@@ -2608,10 +2572,8 @@ do									\
   }									\
 while (0)
 
-
 /* How to tell the debugger about changes of source files.  */
-#define ASM_OUTPUT_SOURCE_FILENAME(STREAM, NAME)			\
-  mips_output_filename (STREAM, NAME)
+#define ASM_OUTPUT_SOURCE_FILENAME mips_output_filename
 
 /* mips-tfile does not understand .stabd directives.  */
 #define DBX_OUTPUT_SOURCE_LINE(STREAM, LINE, COUNTER) do {	\
@@ -2736,8 +2698,7 @@ do {									\
 
 /* This is how to output a string.  */
 #undef ASM_OUTPUT_ASCII
-#define ASM_OUTPUT_ASCII(STREAM, STRING, LEN)				\
-  mips_output_ascii (STREAM, STRING, LEN, "\t.ascii\t")
+#define ASM_OUTPUT_ASCII mips_output_ascii
 
 /* Output #ident as a in the read-only data section.  */
 #undef  ASM_OUTPUT_IDENT
@@ -3038,16 +2999,12 @@ while (0)
 
 #ifndef USED_FOR_TARGET
 extern const enum reg_class mips_regno_to_class[];
-extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
-extern char mips_print_operand_punct[256]; /* print_operand punctuation chars */
+extern bool mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
+extern bool mips_print_operand_punct[256];
 extern const char *current_function_file; /* filename current function is in */
 extern int num_source_filenames;	/* current .file # */
-extern int mips_section_threshold;	/* # bytes of data/sdata cutoff */
-extern int sym_lineno;			/* sgi next label # for each stmt */
 extern int set_noreorder;		/* # of nested .set noreorder's  */
 extern int set_nomacro;			/* # of nested .set nomacro's  */
-extern int set_noat;			/* # of nested .set noat's  */
-extern int mips_branch_likely;		/* emit 'l' after br (branch likely) */
 extern int mips_dbx_regno[];
 extern int mips_dwarf_regno[];
 extern bool mips_split_p[];
@@ -3056,7 +3013,6 @@ extern enum processor_type mips_arch;   /* which cpu to codegen for */
 extern enum processor_type mips_tune;   /* which cpu to schedule for */
 extern int mips_isa;			/* architectural level */
 extern int mips_abi;			/* which ABI to use */
-extern const struct mips_cpu_info mips_cpu_info_table[];
 extern const struct mips_cpu_info *mips_arch_info;
 extern const struct mips_cpu_info *mips_tune_info;
 extern const struct mips_rtx_cost_data *mips_cost;

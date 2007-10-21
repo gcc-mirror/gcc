@@ -749,11 +749,10 @@
   if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) == MODE_INT
       && operands[1] == const0_rtx)
     {
-      mips_gen_conditional_trap (operands);
+      mips_expand_conditional_trap (GET_CODE (operands[0]));
       DONE;
     }
-  else
-    FAIL;
+  FAIL;
 })
 
 (define_insn "*conditional_trap<mode>"
@@ -3027,9 +3026,9 @@
 		      (match_operand 3 "immediate_operand")))]
   "!TARGET_MIPS16"
 {
-  if (mips_expand_unaligned_load (operands[0], operands[1],
-				  INTVAL (operands[2]),
-				  INTVAL (operands[3])))
+  if (mips_expand_ext_as_unaligned_load (operands[0], operands[1],
+					 INTVAL (operands[2]),
+					 INTVAL (operands[3])))
     DONE;
   else
     FAIL;
@@ -3042,11 +3041,12 @@
 		      (match_operand 3 "immediate_operand")))]
   "!TARGET_MIPS16"
 {
-  if (mips_expand_unaligned_load (operands[0], operands[1],
-				  INTVAL (operands[2]),
-				  INTVAL (operands[3])))
+  if (mips_expand_ext_as_unaligned_load (operands[0], operands[1],
+					 INTVAL (operands[2]),
+					 INTVAL (operands[3])))
     DONE;
-  else if (mips_use_ins_ext_p (operands[1], operands[2], operands[3]))
+  else if (mips_use_ins_ext_p (operands[1], INTVAL (operands[2]),
+			       INTVAL (operands[3])))
     {
       if (GET_MODE (operands[0]) == DImode)
         emit_insn (gen_extzvdi (operands[0], operands[1], operands[2],
@@ -3065,7 +3065,8 @@
 	(zero_extract:GPR (match_operand:GPR 1 "register_operand" "d")
 			  (match_operand:SI 2 "immediate_operand" "I")
 			  (match_operand:SI 3 "immediate_operand" "I")))]
-  "mips_use_ins_ext_p (operands[1], operands[2], operands[3])"
+  "mips_use_ins_ext_p (operands[1], INTVAL (operands[2]),
+		       INTVAL (operands[3]))"
   "<d>ext\t%0,%1,%3,%2"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"<MODE>")])
@@ -3078,11 +3079,12 @@
 	(match_operand 3 "reg_or_0_operand"))]
   "!TARGET_MIPS16"
 {
-  if (mips_expand_unaligned_store (operands[0], operands[3],
-				   INTVAL (operands[1]),
-				   INTVAL (operands[2])))
+  if (mips_expand_ins_as_unaligned_store (operands[0], operands[3],
+					  INTVAL (operands[1]),
+					  INTVAL (operands[2])))
     DONE;
-  else if (mips_use_ins_ext_p (operands[0], operands[1], operands[2]))
+  else if (mips_use_ins_ext_p (operands[0], INTVAL (operands[1]),
+			       INTVAL (operands[2])))
     {
       if (GET_MODE (operands[0]) == DImode)
         emit_insn (gen_insvdi (operands[0], operands[1], operands[2],
@@ -3101,7 +3103,8 @@
 			  (match_operand:SI 1 "immediate_operand" "I")
 			  (match_operand:SI 2 "immediate_operand" "I"))
 	(match_operand:GPR 3 "reg_or_0_operand" "dJ"))]
-  "mips_use_ins_ext_p (operands[0], operands[1], operands[2])"
+  "mips_use_ins_ext_p (operands[0], INTVAL (operands[1]),
+		       INTVAL (operands[2]))"
   "<d>ins\t%0,%z3,%2,%1"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"<MODE>")])
@@ -3343,7 +3346,7 @@
    (set_attr "length" "4")])
 
 ;; Instructions for adding the low 16 bits of an address to a register.
-;; Operand 2 is the address: print_operand works out which relocation
+;; Operand 2 is the address: mips_print_operand works out which relocation
 ;; should be applied.
 
 (define_insn "*low<mode>"
@@ -3374,7 +3377,7 @@
   ""
   [(const_int 0)]
 {
-  mips_move_integer (operands[0], operands[2], INTVAL (operands[1]));
+  mips_move_integer (operands[2], operands[0], INTVAL (operands[1]));
   DONE;
 })
 
@@ -3680,7 +3683,7 @@
    (clobber (match_operand:TF 2 "register_operand" "=&f"))]
   "ISA_HAS_8CC && TARGET_HARD_FLOAT"
 {
-  mips_emit_fcc_reload (operands[0], operands[1], operands[2]);
+  mips_expand_fcc_reload (operands[0], operands[1], operands[2]);
   DONE;
 })
 
@@ -3690,7 +3693,7 @@
    (clobber (match_operand:TF 2 "register_operand" "=&f"))]
   "ISA_HAS_8CC && TARGET_HARD_FLOAT"
 {
-  mips_emit_fcc_reload (operands[0], operands[1], operands[2]);
+  mips_expand_fcc_reload (operands[0], operands[1], operands[2]);
   DONE;
 })
 
@@ -4658,7 +4661,7 @@
      so, for a shift between 8 and 16, it is just as fast to do two
      shifts of 8 or less.  If there is a lot of shifting going on, we
      may win in CSE.  Otherwise combine will put the shifts back
-     together again.  This can be called by function_arg, so we must
+     together again.  This can be called by mips_function_arg, so we must
      be careful not to allocate a new register if we've reached the
      reload pass.  */
   if (TARGET_MIPS16
@@ -5030,7 +5033,7 @@
 		      (pc)))]
   ""
 {
-  gen_conditional_branch (operands, <CODE>);
+  mips_expand_conditional_branch (operands, <CODE>);
   DONE;
 })
 
@@ -5053,7 +5056,7 @@
 	(eq:SI (match_dup 1)
 	       (match_dup 2)))]
   ""
-  { if (mips_emit_scc (EQ, operands[0])) DONE; else FAIL; })
+  { if (mips_expand_scc (EQ, operands[0])) DONE; else FAIL; })
 
 (define_insn "*seq_<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=d")
@@ -5081,7 +5084,7 @@
 	(ne:SI (match_dup 1)
 	       (match_dup 2)))]
   "!TARGET_MIPS16"
-  { if (mips_emit_scc (NE, operands[0])) DONE; else FAIL; })
+  { if (mips_expand_scc (NE, operands[0])) DONE; else FAIL; })
 
 (define_insn "*sne_<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=d")
@@ -5097,7 +5100,7 @@
 	(gt:SI (match_dup 1)
 	       (match_dup 2)))]
   ""
-  { if (mips_emit_scc (GT, operands[0])) DONE; else FAIL; })
+  { if (mips_expand_scc (GT, operands[0])) DONE; else FAIL; })
 
 (define_insn "*sgt_<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=d")
@@ -5122,7 +5125,7 @@
 	(ge:SI (match_dup 1)
 	       (match_dup 2)))]
   ""
-  { if (mips_emit_scc (GE, operands[0])) DONE; else FAIL; })
+  { if (mips_expand_scc (GE, operands[0])) DONE; else FAIL; })
 
 (define_insn "*sge_<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=d")
@@ -5138,7 +5141,7 @@
 	(lt:SI (match_dup 1)
 	       (match_dup 2)))]
   ""
-  { if (mips_emit_scc (LT, operands[0])) DONE; else FAIL; })
+  { if (mips_expand_scc (LT, operands[0])) DONE; else FAIL; })
 
 (define_insn "*slt_<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=d")
@@ -5168,7 +5171,7 @@
 	(le:SI (match_dup 1)
 	       (match_dup 2)))]
   ""
-  { if (mips_emit_scc (LE, operands[0])) DONE; else FAIL; })
+  { if (mips_expand_scc (LE, operands[0])) DONE; else FAIL; })
 
 (define_insn "*sle_<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=d")
@@ -5202,7 +5205,7 @@
 	(gtu:SI (match_dup 1)
 		(match_dup 2)))]
   ""
-  { if (mips_emit_scc (GTU, operands[0])) DONE; else FAIL; })
+  { if (mips_expand_scc (GTU, operands[0])) DONE; else FAIL; })
 
 (define_insn "*sgtu_<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=d")
@@ -5227,7 +5230,7 @@
         (geu:SI (match_dup 1)
                 (match_dup 2)))]
   ""
-  { if (mips_emit_scc (GEU, operands[0])) DONE; else FAIL; })
+  { if (mips_expand_scc (GEU, operands[0])) DONE; else FAIL; })
 
 (define_insn "*sge_<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=d")
@@ -5243,7 +5246,7 @@
 	(ltu:SI (match_dup 1)
 		(match_dup 2)))]
   ""
-  { if (mips_emit_scc (LTU, operands[0])) DONE; else FAIL; })
+  { if (mips_expand_scc (LTU, operands[0])) DONE; else FAIL; })
 
 (define_insn "*sltu_<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=d")
@@ -5273,7 +5276,7 @@
 	(leu:SI (match_dup 1)
 		(match_dup 2)))]
   ""
-  { if (mips_emit_scc (LEU, operands[0])) DONE; else FAIL; })
+  { if (mips_expand_scc (LEU, operands[0])) DONE; else FAIL; })
 
 (define_insn "*sleu_<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=d")
@@ -5562,7 +5565,6 @@
     emit_insn (gen_eh_set_lr_di (operands[0]));
   else
     emit_insn (gen_eh_set_lr_si (operands[0]));
-
   DONE;
 })
 
@@ -5992,7 +5994,7 @@
 			  (match_operand:GPR 3 "reg_or_0_operand")))]
   "ISA_HAS_CONDMOVE"
 {
-  gen_conditional_move (operands);
+  mips_expand_conditional_move (operands);
   DONE;
 })
 
@@ -6004,7 +6006,7 @@
 			      (match_operand:SCALARF 3 "register_operand")))]
   "ISA_HAS_CONDMOVE"
 {
-  gen_conditional_move (operands);
+  mips_expand_conditional_move (operands);
   DONE;
 })
 
