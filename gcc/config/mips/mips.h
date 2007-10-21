@@ -750,6 +750,9 @@ enum mips_code_readable_setting {
 				  || ISA_MIPS64)			\
 				 && !TARGET_MIPS16)
 
+/* ISA has paired-single instructions.  */
+#define ISA_HAS_PAIRED_SINGLE	(ISA_MIPS32R2 || ISA_MIPS64)
+
 /* ISA has conditional trap instructions.  */
 #define ISA_HAS_COND_TRAP	(!ISA_MIPS1				\
 				 && !TARGET_MIPS16)
@@ -763,8 +766,10 @@ enum mips_code_readable_setting {
 /* Integer multiply-accumulate instructions should be generated.  */
 #define GENERATE_MADD_MSUB      (ISA_HAS_MADD_MSUB && !TUNE_74K)
 
-/* ISA has floating-point nmadd and nmsub instructions.  */
-#define ISA_HAS_NMADD_NMSUB	((ISA_MIPS4				\
+/* ISA has floating-point nmadd and nmsub instructions for mode MODE.  */
+#define ISA_HAS_NMADD_NMSUB(MODE) \
+				((ISA_MIPS4				\
+				  || (ISA_MIPS32R2 && (MODE) == V2SFmode) \
 				  || ISA_MIPS64)			\
 				 && (!TARGET_MIPS5400 || TARGET_MAD)	\
 				 && !TARGET_MIPS16)
@@ -1562,15 +1567,7 @@ enum mips_code_readable_setting {
 #define HARD_REGNO_MODE_OK(REGNO, MODE)					\
   mips_hard_regno_mode_ok[ (int)(MODE) ][ (REGNO) ]
 
-/* Value is 1 if it is a good idea to tie two pseudo registers
-   when one has mode MODE1 and one has mode MODE2.
-   If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be 0 for correct output.  */
-#define MODES_TIEABLE_P(MODE1, MODE2)					\
-  ((GET_MODE_CLASS (MODE1) == MODE_FLOAT ||				\
-    GET_MODE_CLASS (MODE1) == MODE_COMPLEX_FLOAT)			\
-   == (GET_MODE_CLASS (MODE2) == MODE_FLOAT ||				\
-       GET_MODE_CLASS (MODE2) == MODE_COMPLEX_FLOAT))
+#define MODES_TIEABLE_P mips_modes_tieable_p
 
 /* Register to use for pushing function arguments.  */
 #define STACK_POINTER_REGNUM (GP_REG_FIRST + 29)

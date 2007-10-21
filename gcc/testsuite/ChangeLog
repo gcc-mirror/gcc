@@ -1,3 +1,31 @@
+2007-10-21  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* gcc.dg/vect/vect.exp: Extend -mpaired-single handling to all
+	MIPS targets.
+	* g++.dg/vect/vect.exp: Likewise.
+	* lib/fortran-torture.exp: Likewise.
+	* gcc.target/mips/mips-ps-1.c: Use mpaired_single rather than
+	mipsisa64*-*-* as the target selector.  Remove -mips64,
+	-mhard-float and -mgp64 from the options list.
+	* gcc.target/mips/mips-ps-2.c: Likewise.
+	* gcc.target/mips/mips-ps-3.c: Likewise.
+	* gcc.target/mips/mips-ps-4.c: Likewise.
+	* gcc.target/mips/mips-ps-6.c: Likewise.
+	* gcc.target/mips/mips-ps-5.c: Remove -mhard-float from the
+	options list.
+	* gcc.target/mips/sb1-1.c: Likewise.
+	* gcc.target/mips/mips-ps-type.c: Likewise.
+	* gcc.target/mips/mips-ps-7.c: New test.
+	* gcc.target/mips/mips-ps-type-2.c: Likewise.
+	* gcc.target/mips/fpr-moves-6.c: Remove XFAIL.
+	* gcc.target/mips/mips.exp (setup_mips_tests): Set mips_fp and
+	mips_gp instead of mips_fp64 and mips_gp64.  Treat -mgp32 -mfp64
+	as forcing an ABI and an architecture.
+	(is_gp32_flag, is_gp64_flag): Fold into...
+	(dg-mips-options): ...here.  Make -mpaired-single imply -mfp64,
+	then -mfp64 imply -mhard-float.  Apply register rules after the
+	loop.  Handle -march=mipsN like -mipsN.
+
 2007-10-20  David Edelsohn  <edelsohn@gnu.org>
 
 	* gcc.dg/vect/vect.exp: Use -mcpu=970 instead of 7400.

@@ -41,7 +41,7 @@ if ![info exists TORTURE_OPTIONS] {
     } elseif { [istarget "i?86-*-*"] || [istarget "x86_64-*-*"] } {
 	lappend vectorizer_options "-msse2"
 	set test_tree_vectorize 1
-    } elseif { [istarget "mipsisa64*-*-*"]
+    } elseif { [istarget "mips*-*-*"]
 	       && [check_effective_target_mpaired_single]
 	       && [check_effective_target_nomips16] } {
 	lappend vectorizer_options "-mpaired-single"

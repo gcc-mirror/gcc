@@ -3212,7 +3212,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
 
     case MINUS:
       if (float_mode_p
-	  && ISA_HAS_NMADD_NMSUB
+	  && ISA_HAS_NMADD_NMSUB (mode)
 	  && TARGET_FUSED_MADD
 	  && !HONOR_NANS (mode)
 	  && !HONOR_SIGNED_ZEROS (mode))
@@ -3261,7 +3261,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
 
     case NEG:
       if (float_mode_p
-	  && ISA_HAS_NMADD_NMSUB
+	  && ISA_HAS_NMADD_NMSUB (mode)
 	  && TARGET_FUSED_MADD
 	  && !HONOR_NANS (mode)
 	  && HONOR_SIGNED_ZEROS (mode))
@@ -3459,6 +3459,8 @@ mips_split_doubleword_move (rtx dest, rtx src)
 	emit_insn (gen_move_doubleword_fprdi (dest, src));
       else if (!TARGET_64BIT && GET_MODE (dest) == DFmode)
 	emit_insn (gen_move_doubleword_fprdf (dest, src));
+      else if (!TARGET_64BIT && GET_MODE (dest) == V2SFmode)
+	emit_insn (gen_move_doubleword_fprv2sf (dest, src));
       else if (TARGET_64BIT && GET_MODE (dest) == TFmode)
 	emit_insn (gen_move_doubleword_fprtf (dest, src));
       else
@@ -8897,6 +8899,18 @@ mips_mode_ok_for_mov_fmt_p (enum machine_mode mode)
     }
 }
 
+/* Implement MODES_TIEABLE_P.  */
+
+bool
+mips_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
+{
+  /* FPRs allow no mode punning, so it's not worth tying modes if we'd
+     prefer to put one of them in FPRs.  */
+  return (mode1 == mode2
+	  || (!mips_mode_ok_for_mov_fmt_p (mode1)
+	      && !mips_mode_ok_for_mov_fmt_p (mode2)));
+}
+
 /* Implement PREFERRED_RELOAD_CLASS.  */
 
 enum reg_class
@@ -12106,8 +12120,9 @@ override_options (void)
 
   /* Make sure that the ISA supports TARGET_PAIRED_SINGLE_FLOAT when it is
      enabled.  */
-  if (TARGET_PAIRED_SINGLE_FLOAT && !ISA_MIPS64)
-    error ("-mips3d/-mpaired-single must be used with -mips64");
+  if (TARGET_PAIRED_SINGLE_FLOAT && !ISA_HAS_PAIRED_SINGLE)
+    warning (0, "the %qs architecture does not support paired-single"
+	     " instructions", mips_arch_info->name);
 
   /* If TARGET_DSPR2, enable MASK_DSP.  */
   if (TARGET_DSPR2)
