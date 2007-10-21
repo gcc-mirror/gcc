@@ -6,10 +6,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.2.1\n"
+"Project-Id-Version: gcc 4.2.2\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2007-10-07 14:11-0700\n"
-"PO-Revision-Date: 2007-10-09 14:30+0200\n"
+"PO-Revision-Date: 2007-10-12 14:45+0200\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -28930,9 +28930,9 @@ msgid "type of asm operand %qE could not be determined"
 msgstr "Typ des asm-Operanden %qE konnte nicht ermittelt werden"
 
 #: cp/semantics.c:1324
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "__label__ declarations are only allowed in function scopes"
-msgstr "Objective-C-Deklarationen dürfen nur im globalen Gültigkeitsbereich erscheinen"
+msgstr "__label__-Deklarationen sind nur im Funktionsgültigkeitsbereich erlaubt"
 
 #: cp/semantics.c:1396
 #, gcc-internal-format
