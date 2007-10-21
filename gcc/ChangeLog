@@ -1,5 +1,10 @@
 2007-10-21  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.c (mips_rtx_costs): Only recognize reciprocals
+	if ISA_HAS_FP4.
+
+2007-10-21  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.h (ISA_HAS_LDC1_SDC1): New macro.
 	* config/mips/mips.c (mips_split_64bit_move_p): Use ISA_HAS_LDC1_SDC1
 	instead of checking mips_isa.
