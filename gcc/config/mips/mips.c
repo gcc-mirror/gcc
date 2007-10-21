@@ -3305,22 +3305,18 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
 
     case DIV:
       /* Check for a reciprocal.  */
-      if (float_mode_p && XEXP (x, 0) == CONST1_RTX (mode))
+      if (float_mode_p
+	  && ISA_HAS_FP4
+	  && flag_unsafe_math_optimizations
+	  && XEXP (x, 0) == CONST1_RTX (mode))
 	{
-	  if (ISA_HAS_FP4
-	      && flag_unsafe_math_optimizations
-	      && (outer_code == SQRT || GET_CODE (XEXP (x, 1)) == SQRT))
-	    {
-	      /* An rsqrt<mode>a or rsqrt<mode>b pattern.  Count the
-		 division as being free.  */
-	      *total = rtx_cost (XEXP (x, 1), 0);
-	      return true;
-	    }
-	  if (!ISA_MIPS1)
-	    {
-	      *total = mips_fp_div_cost (mode) + rtx_cost (XEXP (x, 1), 0);
-	      return true;
-	    }
+	  if (outer_code == SQRT || GET_CODE (XEXP (x, 1)) == SQRT)
+	    /* An rsqrt<mode>a or rsqrt<mode>b pattern.  Count the
+	       division as being free.  */
+	    *total = rtx_cost (XEXP (x, 1), 0);
+	  else
+	    *total = mips_fp_div_cost (mode) + rtx_cost (XEXP (x, 1), 0);
+	  return true;
 	}
       /* Fall through.  */
 
