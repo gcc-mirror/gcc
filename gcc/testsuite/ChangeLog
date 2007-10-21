@@ -1,3 +1,8 @@
+2007-10-21  David Edelsohn  <edelsohn@gnu.org>
+
+	* gcc.dg/unwind-1.c: Disable on AIX.
+	* gcc.dg/cpp/_Pragma6.c: Disable on AIX.
+
 2007-10-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/33749
