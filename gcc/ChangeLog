@@ -1,5 +1,10 @@
 2007-10-21  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.c (mips_va_start): Fix types in calls
+	to build_int_cst.
+
+2007-10-21  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.c (mips_rtx_costs): Only recognize reciprocals
 	if ISA_HAS_FP4.
 
