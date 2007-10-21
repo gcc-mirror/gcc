@@ -6949,27 +6949,6 @@ mips_output_ascii (FILE *stream, const char *string_param, size_t len,
     }
   fprintf (stream, "\"\n");
 }
-
-#ifdef BSS_SECTION_ASM_OP
-/* Implement ASM_OUTPUT_ALIGNED_BSS.  This differs from the default only
-   in the use of sbss.  */
-
-void
-mips_output_aligned_bss (FILE *stream, tree decl, const char *name,
-			 unsigned HOST_WIDE_INT size, int align)
-{
-  extern tree last_assemble_variable_decl;
-
-  if (mips_in_small_data_p (decl))
-    switch_to_section (get_named_section (NULL, ".sbss", 0));
-  else
-    switch_to_section (bss_section);
-  ASM_OUTPUT_ALIGN (stream, floor_log2 (align / BITS_PER_UNIT));
-  last_assemble_variable_decl = decl;
-  ASM_DECLARE_OBJECT_NAME (stream, name, decl);
-  ASM_OUTPUT_SKIP (stream, size != 0 ? size : 1);
-}
-#endif
 
 /* Emit either a label, .comm, or .lcomm directive.  When using assembler
    macros, mark the symbol as written so that mips_file_end won't emit an

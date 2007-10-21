@@ -240,8 +240,6 @@ extern void print_operand_address (FILE *, rtx);
 extern void mips_output_external (FILE *, tree, const char *);
 extern void mips_output_filename (FILE *, const char *);
 extern void mips_output_ascii (FILE *, const char *, size_t, const char *);
-extern void mips_output_aligned_bss (FILE *, tree, const char *,
-				     unsigned HOST_WIDE_INT, int);
 extern void mips_output_aligned_decl_common (FILE *, tree, const char *,
 					     unsigned HOST_WIDE_INT,
 					     unsigned int);
