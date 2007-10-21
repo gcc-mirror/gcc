@@ -8843,14 +8843,8 @@ mips_cannot_change_mode_class (enum machine_mode from ATTRIBUTE_UNUSED,
      - If the FPU has already interpreted a value in one format, we must
        not ask it to treat the value as having a different format.
 
-     We therefore only allow changes between 4-byte and smaller integer
-     values, all of which have the "W" format as far as the FPU is
-     concerned.  */
-  return (reg_classes_intersect_p (FP_REGS, class)
-	  && (GET_MODE_CLASS (from) != MODE_INT
-	      || GET_MODE_CLASS (to) != MODE_INT
-	      || GET_MODE_SIZE (from) > 4
-	      || GET_MODE_SIZE (to) > 4));
+     We therefore disallow all mode changes involving FPRs.  */
+  return reg_classes_intersect_p (FP_REGS, class);
 }
 
 /* Return true if moves in mode MODE can use the FPU's mov.fmt instruction.  */
