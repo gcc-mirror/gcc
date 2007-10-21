@@ -1,13 +1,13 @@
-# Mensajes en español para cpplib-4.2.1.
+# Mensajes en español para cpplib-4.2.2.
 # Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 # Cristian Othón Martínez Vera <cfuga@itam.mx>, 2001, 2002, 2003, 2004, 2005, 2006, 2007.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib-4.2.1\n"
+"Project-Id-Version: cpplib-4.2.2\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2007-10-07 14:12-0700\n"
-"PO-Revision-Date: 2007-09-07 18:33-0500\n"
+"PO-Revision-Date: 2007-10-15 14:20-0500\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@itam.mx>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"

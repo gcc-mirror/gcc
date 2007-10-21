@@ -3,10 +3,10 @@
 # Clytie Siddall <clytie@riverland.net.au>, 2005-2007.
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.2.1\n"
+"Project-Id-Version: cpplib 4.2.2\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2007-10-07 14:12-0700\n"
-"PO-Revision-Date: 2007-08-15 14:11+0930\n"
+"PO-Revision-Date: 2007-10-15 18:37+0930\n"
 "Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
 "Language-Team: Vietnamese <vi-VN@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
