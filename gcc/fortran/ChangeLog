@@ -1,3 +1,12 @@
+2007-10-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/33749
+	* resolve.c (resolve_ordinary_assign): New function that takes
+	the code to resolve an assignment from resolve_code. In
+	addition, it makes a temporary of any vector index, on the
+	lhs, using gfc_get_parentheses.
+	(resolve_code): On EXEC_ASSIGN call the new function.
+
 2007-10-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33818
