@@ -1,3 +1,9 @@
+2007-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/linux-unwind.h (ppc_fallback_frame_state): Point
+	saved CR2 offset to low 32 bits of regs->ccr rather than the whole
+	64-bit register in 64-bit libgcc.
+
 2007-10-20  Eric B. Weddington  <eweddington@cso.atmel.com>
 
 	* config/avr/avr.c (avr_mcu_types): Add at90pwm2b, at90pwm3b.
