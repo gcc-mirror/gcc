@@ -1287,6 +1287,9 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
     {
       condstoretemp = create_tmp_var (TREE_TYPE (lhs), "cstore");
       get_var_ann (condstoretemp);
+      if (TREE_CODE (TREE_TYPE (lhs)) == COMPLEX_TYPE
+          || TREE_CODE (TREE_TYPE (lhs)) == VECTOR_TYPE)
+	DECL_GIMPLE_REG_P (condstoretemp) = 1;
     }
   add_referenced_var (condstoretemp);
 
