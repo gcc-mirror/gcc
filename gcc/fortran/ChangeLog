@@ -1,3 +1,16 @@
+2007-10-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/31244
+	* gfortran.h (gfc_data_value): Change repeat from unsigned int
+	to mpz_t.
+	* decl.c(top_val_list): Remove msg variable.  Use mpz_t for
+	repeat count.
+	* resolve.c (values):  Change left from unsigned int to mpz_t.
+	(next_data_value): Change for mpz_t.
+	(check_data_variable): Change ??? to FIXME in a comment.  Use
+	"mpz_t left".
+	(resolve_data ): Use "mpz_t left".
+
 2007-10-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/33749
