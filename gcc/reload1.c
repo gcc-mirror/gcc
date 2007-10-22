@@ -1277,7 +1277,6 @@ reload (rtx first, int global)
 		|| REG_NOTE_KIND (*pnote) == REG_UNUSED
 		|| REG_NOTE_KIND (*pnote) == REG_INC
 		|| REG_NOTE_KIND (*pnote) == REG_RETVAL
-		|| REG_NOTE_KIND (*pnote) == REG_LIBCALL_ID
 		|| REG_NOTE_KIND (*pnote) == REG_LIBCALL)
 	      *pnote = XEXP (*pnote, 1);
 	    else

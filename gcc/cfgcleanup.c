@@ -54,7 +54,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "expr.h"
 #include "df.h"
-#include "dce.h"
 
 #define FORWARDER_BLOCK_P(BB) ((BB)->flags & BB_FORWARDER_BLOCK)
 

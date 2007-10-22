@@ -3649,9 +3649,9 @@ see_update_defs_relevancy (rtx insn, struct df_ref *ref,
 
    The information of the u'th use is stored in use_entry[u] and the
    information of the d'th definition is stored in def_entry[d].
-   
+
    Currently all the uses are relevant for the optimization except for
-   uses that are in LIBCALL instructions.  */
+   uses that are in LIBCALL or RETVAL instructions.  */
 
 static void
 see_update_relevancy (void)
@@ -3676,13 +3676,12 @@ see_update_relevancy (void)
 	  unsigned int uid = INSN_UID (insn);
 	  if (INSN_P (insn))
 	    {
-	      
-	      /* If this is an insn in a libcall, do not touch the uses.  */
-	      if (find_reg_note (insn, REG_LIBCALL_ID, NULL_RTX))
+	      if (find_reg_note (insn, REG_LIBCALL, NULL_RTX)
+		  || find_reg_note (insn, REG_RETVAL, NULL_RTX))
 		et = NOT_RELEVANT;
 	      else
 		et = RELEVANT_USE;
-	      
+
 	      for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)
 		{
 		  struct df_ref *use = *use_rec;

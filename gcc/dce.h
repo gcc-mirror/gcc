@@ -20,9 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DCE_H
 #define GCC_DCE_H
 
-struct df;
-
-extern bool run_fast_dce (void);
+extern void run_fast_dce (void);
 extern void run_fast_df_dce (void);
 
 #endif /* GCC_DCE_H */
