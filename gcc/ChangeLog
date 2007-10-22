@@ -1,3 +1,11 @@
+2007-10-22  Eric B. Weddington  <eweddington@cso.atmel.com>
+
+	* config/avr/avr.c (avr_mcu_types): Remove ATmega603 which was never
+	produced.
+	* config/avr/avr.h (LINK_SPEC): Likewise.
+	(CRT_BINUTILS_SPECS): Likewsie.
+	* config/avr/t-avr (MULTILIB_MATCHES): Likewise.
+
 2007-10-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/33644

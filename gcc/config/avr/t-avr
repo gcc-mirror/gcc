@@ -57,7 +57,6 @@ MULTILIB_MATCHES = \
 	mmcu?avr25=mmcu?attiny48 \
 	mmcu?avr25=mmcu?at86rf401 \
 	mmcu?avr3=mmcu?atmega103 \
-	mmcu?avr3=mmcu?atmega603 \
 	mmcu?avr3=mmcu?at43usb320 \
 	mmcu?avr3=mmcu?at43usb355 \
 	mmcu?avr3=mmcu?at76c711 \
