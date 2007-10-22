@@ -1,3 +1,9 @@
+2007-10-22  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/33854
+	* tree-vect-analyze.c (vect_determine_vectorization_factor): Add
+	FLOAT_EXPR to the list of promotion operations.	
+
 2007-10-22  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	PR target/29473

@@ -1,3 +1,9 @@
+2007-10-22  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/33854
+	* gcc.dg/vect/O1-pr33854.c: New testcase.
+	* gcc.dg/vect/vect.exp: Run tests starting with "O1-" with -O1.
+
 2007-10-21  David Edelsohn  <edelsohn@gnu.org>
 
 	* gcc.dg/unwind-1.c: Disable on AIX.
