@@ -315,8 +315,8 @@ Objective-C and Objective-C++ Dialects}.
 
 @item Optimization Options
 @xref{Optimize Options,,Options that Control Optimization}.
-@gccoptlist{-falign-functions=@var{n}  -falign-jumps=@var{n} @gol
--falign-labels=@var{n}  -falign-loops=@var{n}  @gol
+@gccoptlist{-falign-functions[=@var{n}]  -falign-jumps[=@var{n}] @gol
+-falign-labels[=@var{n}]  -falign-loops[=@var{n}]  @gol
 -fbounds-check -fmudflap -fmudflapth -fmudflapir @gol
 -fbranch-probabilities -fprofile-values -fvpt -fbranch-target-load-optimize @gol
 -fbranch-target-load-optimize2 -fbtr-bb-exclusive @gol
@@ -347,7 +347,7 @@ Objective-C and Objective-C++ Dialects}.
 -fschedule-insns  -fschedule-insns2 @gol
 -fno-sched-interblock  -fno-sched-spec  -fsched-spec-load @gol
 -fsched-spec-load-dangerous  @gol
--fsched-stalled-insns=@var{n} -fsched-stalled-insns-dep=@var{n} @gol
+-fsched-stalled-insns[=@var{n}] -fsched-stalled-insns-dep[=@var{n}] @gol
 -fsched2-use-superblocks @gol
 -fsched2-use-traces -fsee -freschedule-modulo-scheduled-loops @gol
 -fsection-anchors  -fsignaling-nans  -fsingle-precision-constant @gol
@@ -358,7 +358,7 @@ Objective-C and Objective-C++ Dialects}.
 -fvariable-expansion-in-unroller -ftree-reassoc @gol
 -ftree-pre  -ftree-ccp  -ftree-dce -ftree-loop-optimize @gol
 -ftree-loop-linear -ftree-loop-im -ftree-loop-ivcanon -fivopts @gol
--fcheck-data-deps -ftree-parallelize-loops @gol
+-fcheck-data-deps -ftree-parallelize-loops=@var{n} @gol
 -ftree-dominator-opts -ftree-dse -ftree-copyrename -ftree-sink @gol
 -ftree-ch -ftree-sra -ftree-ter -ftree-fre -ftree-vectorize @gol
 -ftree-vect-loop-version -fvect-cost-model -ftree-salias -fipa-pta -fweb @gol
@@ -5277,6 +5277,7 @@ check if the variable was referenced, regardless of whether or not
 optimization is turned on, use the @option{-fno-keep-static-consts} option.
 
 @item -fmerge-constants
+@opindex fmerge-constants
 Attempt to merge identical constants (string constants and floating point
 constants) across compilation units.
 
@@ -5287,6 +5288,7 @@ behavior.
 Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fmerge-all-constants
+@opindex fmerge-all-constants
 Attempt to merge identical constants and identical variables.
 
 This option implies @option{-fmerge-constants}.  In addition to
@@ -5479,14 +5481,14 @@ Using @option{-Wunsafe-loop-optimizations}, the compiler will warn you
 if it finds this kind of loop.
 
 @item -fcrossjumping
-@opindex crossjumping
+@opindex fcrossjumping
 Perform cross-jumping transformation.  This transformation unifies equivalent code and save code size.  The
 resulting code may or may not perform better than without cross-jumping.
 
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fif-conversion
-@opindex if-conversion
+@opindex fif-conversion
 Attempt to transform conditional jumps into branch-less equivalents.  This
 include use of conditional moves, min, max, set flags and abs instructions, and
 some tricks doable by standard arithmetics.  The use of conditional execution
@@ -5495,7 +5497,7 @@ on chips where it is available is controlled by @code{if-conversion2}.
 Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fif-conversion2
-@opindex if-conversion2
+@opindex fif-conversion2
 Use conditional execution (where available) to transform conditional jumps into
 branch-less equivalents.
 
@@ -5586,17 +5588,27 @@ Allow speculative motion of more load instructions.  This only makes
 sense when scheduling before register allocation, i.e.@: with
 @option{-fschedule-insns} or at @option{-O2} or higher.
 
-@item -fsched-stalled-insns=@var{n}
+@item -fsched-stalled-insns
+@itemx -fsched-stalled-insns=@var{n}
 @opindex fsched-stalled-insns
 Define how many insns (if any) can be moved prematurely from the queue
 of stalled insns into the ready list, during the second scheduling pass.
+@option{-fno-fsched-stalled-insns} and @option{-fsched-stalled-insns=0}
+are equivalent and mean that no insns will be moved prematurely.
+If @var{n} is unspecified then there is no limit on how many queued
+insns can be moved prematurely.
 
-@item -fsched-stalled-insns-dep=@var{n}
+@item -fsched-stalled-insns-dep
+@itemx -fsched-stalled-insns-dep=@var{n}
 @opindex fsched-stalled-insns-dep
 Define how many insn groups (cycles) will be examined for a dependency
 on a stalled insn that is candidate for premature removal from the queue
-of stalled insns.  Has an effect only during the second scheduling pass,
+of stalled insns.  This has an effect only during the second scheduling pass,
 and only if @option{-fsched-stalled-insns} is used and its value is not zero.
+@option{-fno-sched-stalled-insns-dep} is equivalent to
+@option{-fsched-stalled-insns-dep=0}.
+@option{-fsched-stalled-insns-dep} without a value is equivalent to
+@option{-fsched-stalled-insns-dep=1}.
 
 @item -fsched2-use-superblocks
 @opindex fsched2-use-superblocks
@@ -5628,7 +5640,7 @@ Eliminates redundant extension instructions and move the non redundant
 ones to optimal placement using LCM.
 
 @item -freschedule-modulo-scheduled-loops
-@opindex fscheduling-in-modulo-scheduled-loops
+@opindex freschedule-modulo-scheduled-loops
 The modulo scheduling comes before the traditional scheduling, if a loop
 was modulo scheduled we may want to prevent the later scheduling passes
 from changing its schedule, we use this option to control that.
@@ -5646,14 +5658,17 @@ those which have no call-preserved registers to use instead.
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -ftree-reassoc
+@opindex ftree-reassoc
 Perform Reassociation on trees  This flag is enabled by default
 at @option{-O} and higher.
 
 @item -ftree-pre
+@opindex ftree-pre
 Perform Partial Redundancy Elimination (PRE) on trees.  This flag is
 enabled by default at @option{-O2} and @option{-O3}.
 
 @item -ftree-fre
+@opindex ftree-fre
 Perform Full Redundancy Elimination (FRE) on trees.  The difference
 between FRE and PRE is that FRE only considers expressions
 that are computed on all paths leading to the redundant computation.
@@ -5661,43 +5676,52 @@ This analysis is faster than PRE, though it exposes fewer redundancies.
 This flag is enabled by default at @option{-O} and higher.
 
 @item -ftree-copy-prop
+@opindex ftree-copy-prop
 Perform copy propagation on trees.  This pass eliminates unnecessary
 copy operations.  This flag is enabled by default at @option{-O} and
 higher.
 
 @item -ftree-store-copy-prop
+@opindex ftree-store-copy-prop
 Perform copy propagation of memory loads and stores.  This pass
 eliminates unnecessary copy operations in memory references
 (structures, global variables, arrays, etc).  This flag is enabled by
 default at @option{-O2} and higher.
 
 @item -ftree-salias
+@opindex ftree-salias
 Perform structural alias analysis on trees.  This flag
 is enabled by default at @option{-O} and higher.
 
 @item -fipa-pta
+@opindex fipa-pta
 Perform interprocedural pointer analysis.
 
 @item -ftree-sink
+@opindex ftree-sink
 Perform forward store motion  on trees.  This flag is
 enabled by default at @option{-O} and higher.
 
 @item -ftree-ccp
+@opindex ftree-ccp
 Perform sparse conditional constant propagation (CCP) on trees.  This
 pass only operates on local scalar variables and is enabled by default
 at @option{-O} and higher.
 
 @item -ftree-store-ccp
+@opindex ftree-store-ccp
 Perform sparse conditional constant propagation (CCP) on trees.  This
 pass operates on both local scalar variables and memory stores and
 loads (global variables, structures, arrays, etc).  This flag is
 enabled by default at @option{-O2} and higher.
 
 @item -ftree-dce
+@opindex ftree-dce
 Perform dead code elimination (DCE) on trees.  This flag is enabled by
 default at @option{-O} and higher.
 
 @item -ftree-dominator-opts
+@opindex ftree-dominator-opts
 Perform a variety of simple scalar cleanups (constant/copy
 propagation, redundancy elimination, range propagation and expression
 simplification) based on a dominator tree traversal.  This also
@@ -5712,24 +5736,29 @@ any intervening loads.  In this case the earlier store can be deleted.  This
 flag is enabled by default at @option{-O} and higher.
 
 @item -ftree-ch
+@opindex ftree-ch
 Perform loop header copying on trees.  This is beneficial since it increases
 effectiveness of code motion optimizations.  It also saves one jump.  This flag
 is enabled by default at @option{-O} and higher.  It is not enabled
 for @option{-Os}, since it usually increases code size.
 
 @item -ftree-loop-optimize
+@opindex ftree-loop-optimize
 Perform loop optimizations on trees.  This flag is enabled by default
 at @option{-O} and higher.
 
 @item -ftree-loop-linear
+@opindex ftree-loop-linear
 Perform linear loop transformations on tree.  This flag can improve cache
 performance and allow further loop optimizations to take place.
 
 @item -fcheck-data-deps
+@opindex fcheck-data-deps
 Compare the results of several data dependence analyzers.  This option
 is used for debugging the data dependence analyzers.
 
 @item -ftree-loop-im
+@opindex ftree-loop-im
 Perform loop invariant motion on trees.  This pass moves only invariants that
 would be hard to handle at RTL level (function calls, operations that expand to
 nontrivial sequences of insns).  With @option{-funswitch-loops} it also moves
@@ -5738,12 +5767,14 @@ just trivial invariantness analysis in loop unswitching.  The pass also includes
 store motion.
 
 @item -ftree-loop-ivcanon
+@opindex ftree-loop-ivcanon
 Create a canonical counter for number of iterations in the loop for that
 determining number of iterations requires complicated analysis.  Later
 optimizations then may determine the number easily.  Useful especially
 in connection with unrolling.
 
 @item -fivopts
+@opindex fivopts
 Perform induction variable optimizations (strength reduction, induction
 variable merging and induction variable elimination) on trees.
 
@@ -5756,17 +5787,20 @@ profitable on multiprocessor machines, for loops that are CPU-intensive,
 rather than constrained e.g. by memory bandwidth.
 
 @item -ftree-sra
+@opindex ftree-sra
 Perform scalar replacement of aggregates.  This pass replaces structure
 references with scalars to prevent committing structures to memory too
 early.  This flag is enabled by default at @option{-O} and higher.
 
 @item -ftree-copyrename
+@opindex ftree-copyrename
 Perform copy renaming on trees.  This pass attempts to rename compiler
 temporaries to other variables at copy locations, usually resulting in
 variable names which more closely resemble the original variables.  This flag
 is enabled by default at @option{-O} and higher.
 
 @item -ftree-ter
+@opindex ftree-ter
 Perform temporary expression replacement during the SSA->normal phase.  Single
 use/single def temporaries are replaced at their use location with their
 defining expression.  This results in non-GIMPLE code, but gives the expanders
@@ -5774,6 +5808,7 @@ much more complex trees to work on resulting in better RTL generation.  This is
 enabled by default at @option{-O} and higher.
 
 @item -ftree-vectorize
+@opindex ftree-vectorize
 Perform loop vectorization on trees.
 
 @item -ftree-vect-loop-version
@@ -5786,9 +5821,11 @@ to control which version is executed.  This option is enabled by default
 except at level @option{-Os} where it is disabled.
 
 @item -fvect-cost-model
+@opindex fvect-cost-model
 Enable cost model for vectorization.
 
 @item -ftree-vrp
+@opindex ftree-vrp
 Perform Value Range Propagation on trees.  This is similar to the
 constant propagation pass, but instead of values, ranges of values are
 propagated.  This allows the optimizers to remove unnecessary range
@@ -6224,7 +6261,7 @@ Enables @option{-freciprocal-math} and @option{-fassociative-math}.
 The default is @option{-fno-unsafe-math-optimizations}.
 
 @item -fassociative-math
-@opindex -fassociative-math
+@opindex fassociative-math
 
 Allow re-association of operands in series of floating-point operations.
 This violates the ISO C and C++ language standard by possibly changing
@@ -6239,7 +6276,7 @@ or @option{-fno-trapping-math} or with @option{-frounding-math}.
 The default is @option{-fno-associative-math}.
 
 @item -freciprocal-math
-@opindex -freciprocal-math
+@opindex freciprocal-math
 
 Allow the reciprocal of a value to be used instead of dividing by
 the value if this enables optimizations.  For example @code{x / y}
