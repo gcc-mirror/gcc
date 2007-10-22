@@ -8185,7 +8185,8 @@ output_pic_addr_const (FILE *file, rtx x, int code)
 	  fputs ("@PLTOFF", file);
 	  break;
 	case UNSPEC_GOTPCREL:
-	  fputs ("@GOTPCREL(%rip)", file);
+	  fputs (ASSEMBLER_DIALECT == ASM_ATT ?
+		 "@GOTPCREL(%rip)" : "@GOTPCREL[rip]", file);
 	  break;
 	case UNSPEC_GOTTPOFF:
 	  /* FIXME: This might be @TPOFF in Sun ld too.  */
@@ -8205,7 +8206,8 @@ output_pic_addr_const (FILE *file, rtx x, int code)
 	  break;
 	case UNSPEC_GOTNTPOFF:
 	  if (TARGET_64BIT)
-	    fputs ("@GOTTPOFF(%rip)", file);
+	    fputs (ASSEMBLER_DIALECT == ASM_ATT ?
+		   "@GOTTPOFF(%rip)": "@GOTTPOFF[rip]", file);
 	  else
 	    fputs ("@GOTNTPOFF", file);
 	  break;
@@ -8531,14 +8533,22 @@ put_condition_code (enum rtx_code code, enum machine_mode mode, int reverse,
 void
 print_reg (rtx x, int code, FILE *file)
 {
-  gcc_assert (REGNO (x) != ARG_POINTER_REGNUM
-	      && REGNO (x) != FRAME_POINTER_REGNUM
-	      && REGNO (x) != FLAGS_REG
-	      && REGNO (x) != FPSR_REG
-	      && REGNO (x) != FPCR_REG);
+  gcc_assert (x == pc_rtx
+	      || (REGNO (x) != ARG_POINTER_REGNUM
+		  && REGNO (x) != FRAME_POINTER_REGNUM
+		  && REGNO (x) != FLAGS_REG
+		  && REGNO (x) != FPSR_REG
+		  && REGNO (x) != FPCR_REG));
 
-  if (ASSEMBLER_DIALECT == ASM_ATT || USER_LABEL_PREFIX[0] == 0)
+  if (ASSEMBLER_DIALECT == ASM_ATT)
     putc ('%', file);
+
+  if (x == pc_rtx)
+    {
+      gcc_assert (TARGET_64BIT);
+      fputs ("rip", file);
+      return;
+    }
 
   if (code == 'w' || MMX_REG_P (x))
     code = 2;
@@ -9036,8 +9046,9 @@ print_operand (FILE *file, rtx x, int code)
 
   else if (MEM_P (x))
     {
-      /* No `byte ptr' prefix for call instructions.  */
-      if (ASSEMBLER_DIALECT == ASM_INTEL && code != 'X' && code != 'P')
+      /* No `byte ptr' prefix for call instructions or BLKmode operands.  */
+      if (ASSEMBLER_DIALECT == ASM_INTEL && code != 'X' && code != 'P'
+	  && GET_MODE (x) != BLKmode)
 	{
 	  const char * size;
 	  switch (GET_MODE_SIZE (GET_MODE (x)))
@@ -9047,7 +9058,12 @@ print_operand (FILE *file, rtx x, int code)
 	    case 4: size = "DWORD"; break;
 	    case 8: size = "QWORD"; break;
 	    case 12: size = "XWORD"; break;
-	    case 16: size = "XMMWORD"; break;
+	    case 16:
+	      if (GET_MODE (x) == XFmode)
+		size = "XWORD";
+              else
+		size = "XMMWORD";
+              break;
 	    default:
 	      gcc_unreachable ();
 	    }
@@ -9165,7 +9181,7 @@ print_operand_address (FILE *file, rtx addr)
       break;
     case SEG_FS:
     case SEG_GS:
-      if (USER_LABEL_PREFIX[0] == 0)
+      if (ASSEMBLER_DIALECT == ASM_ATT)
 	putc ('%', file);
       fputs ((parts.seg == SEG_FS ? "fs:" : "gs:"), file);
       break;
@@ -9173,6 +9189,21 @@ print_operand_address (FILE *file, rtx addr)
       gcc_unreachable ();
     }
 
+  /* Use one byte shorter RIP relative addressing for 64bit mode.  */
+  if (TARGET_64BIT && !base && !index)
+    {
+      rtx symbol = disp;
+
+      if (GET_CODE (disp) == CONST
+	  && GET_CODE (XEXP (disp, 0)) == PLUS
+	  && CONST_INT_P (XEXP (XEXP (disp, 0), 1)))
+	symbol = XEXP (XEXP (disp, 0), 0);
+
+      if (GET_CODE (symbol) == LABEL_REF
+	  || (GET_CODE (symbol) == SYMBOL_REF
+	      && SYMBOL_REF_TLS_MODEL (symbol) == 0))
+	base = pc_rtx;
+    }
   if (!base && !index)
     {
       /* Displacement only requires special attention.  */
@@ -9180,30 +9211,13 @@ print_operand_address (FILE *file, rtx addr)
       if (CONST_INT_P (disp))
 	{
 	  if (ASSEMBLER_DIALECT == ASM_INTEL && parts.seg == SEG_DEFAULT)
-	    {
-	      if (USER_LABEL_PREFIX[0] == 0)
-		putc ('%', file);
-	      fputs ("ds:", file);
-	    }
+	    fputs ("ds:", file);
 	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (disp));
 	}
       else if (flag_pic)
 	output_pic_addr_const (file, disp, 0);
       else
 	output_addr_const (file, disp);
-
-      /* Use one byte shorter RIP relative addressing for 64bit mode.  */
-      if (TARGET_64BIT)
-	{
-	  if (GET_CODE (disp) == CONST
-	      && GET_CODE (XEXP (disp, 0)) == PLUS
-	      && CONST_INT_P (XEXP (XEXP (disp, 0), 1)))
-	    disp = XEXP (XEXP (disp, 0), 0);
-	  if (GET_CODE (disp) == LABEL_REF
-	      || (GET_CODE (disp) == SYMBOL_REF
-		  && SYMBOL_REF_TLS_MODEL (disp) == 0))
-	    fputs ("(%rip)", file);
-	}
     }
   else
     {
@@ -9319,7 +9333,8 @@ output_addr_const_extra (FILE *file, rtx x)
     case UNSPEC_GOTNTPOFF:
       output_addr_const (file, op);
       if (TARGET_64BIT)
-	fputs ("@GOTTPOFF(%rip)", file);
+	fputs (ASSEMBLER_DIALECT == ASM_ATT ?
+	       "@GOTTPOFF(%rip)" : "@GOTTPOFF[rip]", file);
       else
 	fputs ("@GOTNTPOFF", file);
       break;
@@ -22736,7 +22751,7 @@ x86_file_start (void)
   if (X86_FILE_START_FLTUSED)
     fputs ("\t.global\t__fltused\n", asm_out_file);
   if (ix86_asm_dialect == ASM_INTEL)
-    fputs ("\t.intel_syntax\n", asm_out_file);
+    fputs ("\t.intel_syntax noprefix\n", asm_out_file);
 }
 
 int

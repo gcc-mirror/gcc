@@ -69,8 +69,8 @@
   "TARGET_64BIT && TARGET_MMX
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
-    movq\t{%1, %0|%0, %1}
-    movq\t{%1, %0|%0, %1}
+    mov{q}\t{%1, %0|%0, %1}
+    mov{q}\t{%1, %0|%0, %1}
     pxor\t%0, %0
     movq\t{%1, %0|%0, %1}
     movq\t{%1, %0|%0, %1}
@@ -128,8 +128,8 @@
   "TARGET_64BIT && TARGET_MMX
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
-    movq\t{%1, %0|%0, %1}
-    movq\t{%1, %0|%0, %1}
+    mov{q}\t{%1, %0|%0, %1}
+    mov{q}\t{%1, %0|%0, %1}
     pxor\t%0, %0
     movq\t{%1, %0|%0, %1}
     movq\t{%1, %0|%0, %1}
