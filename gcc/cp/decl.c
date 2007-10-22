@@ -12134,10 +12134,7 @@ cxx_maybe_build_cleanup (tree decl)
       if (TREE_CODE (type) == ARRAY_TYPE)
 	addr = decl;
       else
-	{
-	  cxx_mark_addressable (decl);
-	  addr = build_unary_op (ADDR_EXPR, decl, 0);
-	}
+	addr = build_address (decl);
 
       /* Optimize for space over speed here.  */
       if (!has_vbases || flag_expensive_optimizations)

@@ -6488,23 +6488,47 @@ static void
 apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
 				tree args, tsubst_flags_t complain, tree in_decl)
 {
-  tree late_attrs = NULL_TREE;
+  tree last_dep = NULL_TREE;
   tree t;
-
-  if (DECL_P (*decl_p))
-    DECL_ATTRIBUTES (*decl_p) = attributes;
-  else
-    TYPE_ATTRIBUTES (*decl_p) = attributes;
+  tree *p;
 
   for (t = attributes; t; t = TREE_CHAIN (t))
     if (ATTR_IS_DEPENDENT (t))
-      late_attrs = tree_cons
-	(TREE_PURPOSE (t),
-	 tsubst_expr (TREE_VALUE (t), args, complain, in_decl,
-		      /*integral_constant_expression_p=*/false),
-	 late_attrs);
+      {
+	last_dep = t;
+	attributes = copy_list (attributes);
+	break;
+      }
 
-  cplus_decl_attributes (decl_p, late_attrs, attr_flags);
+  if (DECL_P (*decl_p))
+    p = &DECL_ATTRIBUTES (*decl_p);
+  else
+    p = &TYPE_ATTRIBUTES (*decl_p);
+
+  if (last_dep)
+    {
+      tree late_attrs = NULL_TREE;
+      tree *q = &late_attrs;
+
+      for (*p = attributes; *p; )
+	{
+	  t = *p;
+	  if (ATTR_IS_DEPENDENT (t))
+	    {
+	      *p = TREE_CHAIN (t);
+	      TREE_CHAIN (t) = NULL_TREE;
+	      TREE_VALUE (t)
+		= tsubst_expr (TREE_VALUE (t), args, complain, in_decl,
+			       /*integral_constant_expression_p=*/false);
+	      *q = t;
+	      q = &TREE_CHAIN (t);
+	    }
+	  else
+	    p = &TREE_CHAIN (t);
+	}
+
+      cplus_decl_attributes (decl_p, late_attrs, attr_flags);
+    }
 }
 
 tree
