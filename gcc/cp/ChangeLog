@@ -1,3 +1,12 @@
+2007-10-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/33620
+	* class.c (finish_struct_bits): Copy TYPE_ATTRIBUTES.
+	* pt.c (apply_late_template_attributes): Splice out dependent
+	attributes from DECL_ATTRIBUTES.
+
+	* decl.c (cxx_maybe_build_cleanup): Use build_address.
+
 2007-10-17  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* typeck.c (build_binary_op) : Use appropriate warning option
