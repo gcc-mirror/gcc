@@ -1,5 +1,15 @@
 2007-10-22  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	PR target/33169
+	Backport from mainline:
+
+	2006-10-29  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/mips.c (mips_classify_symbol): Test DECL_WEAK as well
+	as TREE_PUBLIC when deciding whether to return SYMBOL_GOT_GLOBAL.
+
+2007-10-22  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	Backport from mainline:
 
 	2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
