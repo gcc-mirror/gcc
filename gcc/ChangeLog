@@ -1,3 +1,9 @@
+2007-10-22  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/33855
+	* tree-ssa-phiopt.c (cond_store_replacement): Handle COMPLEX_TYPE
+	and VECTOR_TYPE.
+
 2007-10-22  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/33854
