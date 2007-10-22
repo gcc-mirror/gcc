@@ -62,9 +62,9 @@
 #if defined(__i386__) && defined(__PIC__)
 /* %ebx may be the PIC register.  */
 #define __cpuid(level, a, b, c, d)			\
-  __asm__ ("xchgl\t%%ebx, %1\n\t"			\
+  __asm__ ("xchg{l}\t{%%}ebx, %1\n\t"			\
 	   "cpuid\n\t"					\
-	   "xchgl\t%%ebx, %1\n\t"			\
+	   "xchg{l}\t{%%}ebx, %1\n\t"			\
 	   : "=a" (a), "=r" (b), "=c" (c), "=d" (d)	\
 	   : "0" (level))
 #else
@@ -88,16 +88,16 @@ __get_cpuid_max (unsigned int __ext, unsigned int *__sig)
 
 #ifndef __x86_64__
   /* See if we can use cpuid.  On AMD64 we always can.  */
-  __asm__ ("pushfl\n\t"
-	   "pushfl\n\t"
-	   "popl\t%0\n\t"
-	   "movl\t%0, %1\n\t"
-	   "xorl\t%2, %0\n\t"
-	   "pushl\t%0\n\t"
-	   "popfl\n\t"
-	   "pushfl\n\t"
-	   "popl\t%0\n\t"
-	   "popfl\n\t"
+  __asm__ ("pushf{l|d}\n\t"
+	   "pushf{l|d}\n\t"
+	   "pop{l}\t%0\n\t"
+	   "mov{l}\t{%0, %1|%1, %0}\n\t"
+	   "xor{l}\t{%2, %0|%0, %2}\n\t"
+	   "push{l}\t%0\n\t"
+	   "popf{l|d}\n\t"
+	   "pushf{l|d}\n\t"
+	   "pop{l}\t%0\n\t"
+	   "popf{l|d}\n\t"
 	   : "=&r" (__eax), "=&r" (__ebx)
 	   : "i" (0x00200000));
 

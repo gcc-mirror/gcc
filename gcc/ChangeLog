@@ -1,3 +1,40 @@
+2007-10-22  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	PR target/29473
+	PR target/29493
+	* config/i386/i386.c (output_pic_addr_const): Support Intel asm syntax.
+	(print_reg): Print register prefix only with AT&T asm syntax. 
+	Support pc_rtx for RIP register.
+	(print_operand_address): Use print_reg()'s pc_rtx support for RIP
+	relative addressing.  Always print segment register prefix with AT&T
+	asm syntax and never with Intel asm syntax.
+	(print_operand): Suppress 'XXX PTR' prefix for BLKmode operands. 
+	Fix prefix for 16-byte XFmode operands.
+	(output_addr_const_extra): Support Intel asm syntax.
+	(x86_file_start): Don't use register prefix with Intel asm syntax.
+	* config/i386/i386.md ("*zero_extendqihi2_movzbl"): Fix typo.
+	("return_internal_long"): Fix Intel asm syntax output.
+	("set_got_rex64"): Support Intel asm syntax.
+	("set_rip_rex64"): Likewise.
+	("set_got_offset_rex64"): Likewise.
+	("*sibcall_1_rex64_v"): Print register prefix only with AT&T asm
+	syntax.
+	("*tls_global_dynamic_64"): Likewise.
+	("*tls_local_dynamic_base_64"): Likewise.
+	("*load_tp_si")("*load_tp_di"): Likewise.
+	("*add_tp_si")("*add_tp_di"): Likewise.
+	("*tls_dynamic_lea_64"): Likewise.
+	("*sibcall_value_1_rex64_v"): Likewise.
+	("stack_tls_protect_set_si"): Likewise.
+	("stack_tls_protect_set_di"): Likewise.
+	("stack_tls_protect_test_si"): Likewise.
+	("stack_tls_protect_test_di"): Likewise.
+	* config/i386/mmx.md ("*mov<mode>_internal_rex64"): Fix Intel asm
+	syntax output.
+	("*movv2sf_internal_rex64"): Likewise.
+	* config/i386/cpuid.h (__cpuid): Support Intel asm syntax.
+	(__get_cpuid_max): Likewise.
+
 2007-10-21  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* config/mips/mips-protos.h (mips_regno_mode_ok_for_base_p): Give
