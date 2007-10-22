@@ -412,6 +412,10 @@ void _Jv_SetInitialHeapSize (const char *arg);
    _Jv_GCSetMaximumHeapSize.  */
 void _Jv_SetMaximumHeapSize (const char *arg);
 
+/* External interface for setting the GC_free_space_divisor.  Calls
+   GC_set_free_space_divisor and returns the old value.  */
+int _Jv_SetGCFreeSpaceDivisor (int div);
+
 /* Free the method cache, if one was allocated.  This is only called
    during thread deregistration.  */
 void _Jv_FreeMethodCache ();
