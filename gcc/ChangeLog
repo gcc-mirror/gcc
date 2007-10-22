@@ -1,3 +1,16 @@
+2007-10-22  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/invoke.texi (Optimization Options): In the summary, show
+	that the value for options -falign-jumps, -falign-labels,
+	-falign-loops, -falign-functions, -fsched-stalled-insns, and
+	-fsched-stalled-insns-dep is optional.  In the summary, show that
+	-fsched-stalled-insns takes an optional argument and that
+	-fparallelize-loops takes an argument.  Add opindex for several
+	optimization options, and fix typos in the opindex commands for
+	several others.  In the descriptions for -fsched-stalled-insns
+	and -fsched-stalled-insns-dep, show the options with and without
+	values.
+
 2007-10-22  Eric B. Weddington  <eweddington@cso.atmel.com>
 
 	* config/avr/avr.c (avr_mcu_types): Remove ATmega603 which was never
