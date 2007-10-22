@@ -1056,9 +1056,9 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype)
 		  }
 
 	      if (p == NULL || e->symtree == NULL)
-		gfc_error ("GENERIC non-INTRINSIC procedure '%s' is not "
-				"allowed as an actual argument at %L", sym->name,
-				&e->where);
+		gfc_error ("GENERIC procedure '%s' is not "
+			   "allowed as an actual argument at %L", sym->name,
+			   &e->where);
 	    }
 
 	  /* If the symbol is the function that names the current (or
