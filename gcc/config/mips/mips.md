@@ -370,6 +370,17 @@
 	 (const_string "hilo")]
 	(const_string "none")))
 
+;; Indicates which SET in an instruction pattern induces a hazard.
+;; Only meaningful when "hazard" is not "none".  SINGLE means that
+;; the pattern has only one set while the other values are indexes
+;; into a PARALLEL vector.
+;;
+;; Hazardous instructions with multiple sets should generally put the
+;; hazardous set first.  The only purpose of this attribute is to force
+;; each multi-set pattern to explicitly assert that this condition holds.
+(define_attr "hazard_set" "single,0"
+  (const_string "single"))
+
 ;; Is it a single instruction?
 (define_attr "single_insn" "no,yes"
   (symbol_ref "get_attr_length (insn) == (TARGET_MIPS16 ? 2 : 4)"))
@@ -5045,19 +5056,21 @@
 ;; we must not call it again.
 ;;
 ;; We represent this restriction using an imaginary fixed register that
-;; acts like a GOT version number.  By making the register call-clobbered,
-;; we tell the target-independent code that the address could be changed
-;; by any call insn.
+;; is set by the GOT load and used by the call.  By making this register
+;; call-clobbered, and by making the GOT load the only way of setting
+;; the register, we ensure that the load cannot be moved past a call.
 (define_insn "load_call<mode>"
   [(set (match_operand:P 0 "register_operand" "=c")
 	(unspec:P [(match_operand:P 1 "register_operand" "r")
-		   (match_operand:P 2 "immediate_operand" "")
-		   (reg:P FAKE_CALL_REGNO)]
-		  UNSPEC_LOAD_CALL))]
+		   (match_operand:P 2 "immediate_operand" "")]
+		  UNSPEC_LOAD_CALL))
+   (set (reg:P FAKE_CALL_REGNO)
+	(unspec:P [(match_dup 2)] UNSPEC_LOAD_CALL))]
   "TARGET_ABICALLS"
   "<load>\t%0,%R2(%1)"
   [(set_attr "type" "load")
    (set_attr "mode" "<MODE>")
+   (set_attr "hazard_set" "0")
    (set_attr "length" "4")])
 
 ;; Sibling calls.  All these patterns use jump instructions.
