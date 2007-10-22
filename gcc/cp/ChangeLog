@@ -1,3 +1,9 @@
+2007-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33372
+	* semantics.c (finish_omp_clauses): Check !type_dependent_expression_p
+	before checking if its type is integral.
+
 2007-10-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/33620

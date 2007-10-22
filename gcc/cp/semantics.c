@@ -3413,8 +3413,8 @@ finish_omp_clauses (tree clauses)
 	  t = OMP_CLAUSE_NUM_THREADS_EXPR (c);
 	  if (t == error_mark_node)
 	    remove = true;
-	  else if (!INTEGRAL_TYPE_P (TREE_TYPE (t))
-		   && !type_dependent_expression_p (t))
+	  else if (!type_dependent_expression_p (t)
+		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
 	    {
 	      error ("num_threads expression must be integral");
 	      remove = true;
@@ -3427,8 +3427,8 @@ finish_omp_clauses (tree clauses)
 	    ;
 	  else if (t == error_mark_node)
 	    remove = true;
-	  else if (!INTEGRAL_TYPE_P (TREE_TYPE (t))
-		   && !type_dependent_expression_p (t))
+	  else if (!type_dependent_expression_p (t)
+		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
 	    {
 	      error ("schedule chunk size expression must be integral");
 	      remove = true;
