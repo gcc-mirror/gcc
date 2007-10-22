@@ -1,3 +1,7 @@
+2007-10-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* MAINTAINERS (Fortran maintainer): Remove myself.
+
 2007-10-15  Patrick Mansfield <patmans@us.ibm.com>
 
 	* Makefile.def: To avoid problems running with parallel makes,
