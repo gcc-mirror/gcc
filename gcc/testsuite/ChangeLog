@@ -1,5 +1,9 @@
 2007-10-22  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/pr33644.c: New test.
+
+2007-10-22  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c++/33372
 	* g++.dg/gomp/pr33372-1.C: New test.
 	* g++.dg/gomp/pr33372-2.C: New test.

@@ -187,6 +187,7 @@ delete_insn (rtx insn)
 }
 
 /* Like delete_insn but also purge dead edges from BB.  */
+
 rtx
 delete_insn_and_edges (rtx insn)
 {
@@ -230,6 +231,22 @@ delete_insn_chain (rtx start, rtx finish, bool clear_bb)
 	break;
       start = next;
     }
+}
+
+/* Like delete_insn_chain but also purge dead edges from BB.  */
+
+void
+delete_insn_chain_and_edges (rtx first, rtx last)
+{
+  bool purge = false;
+
+  if (INSN_P (last)
+      && BLOCK_FOR_INSN (last)
+      && BB_END (BLOCK_FOR_INSN (last)) == last)
+    purge = true;
+  delete_insn_chain (first, last, false);
+  if (purge)
+    purge_dead_edges (BLOCK_FOR_INSN (last));
 }
 
 /* Create a new basic block consisting of the instructions between HEAD and END

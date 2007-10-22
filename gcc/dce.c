@@ -46,9 +46,6 @@ DEF_VEC_ALLOC_I(int,heap);
    we don't want to reenter it.  */
 static bool df_in_progress = false;
 
-/* True if we deleted at least one instruction.  */
-static bool something_changed;
-
 /* Instructions that have been marked but whose dependencies have not
    yet been processed.  */
 static VEC(rtx,heap) *worklist;
@@ -203,6 +200,62 @@ mark_nonreg_stores (rtx body, rtx insn, bool fast)
 }
 
 
+/* Return true if the entire libcall sequence starting at INSN is dead.
+   NOTE is the REG_LIBCALL note attached to INSN.
+
+   A libcall sequence is a block of insns with no side-effects, i.e.
+   that is only used for its return value.  The terminology derives
+   from that of a call, but a libcall sequence need not contain one.
+   It is only defined by a pair of REG_LIBCALL/REG_RETVAL notes.
+
+   From a dataflow viewpoint, a libcall sequence has the property that
+   no UD chain can enter it from the outside.  As a consequence, if a
+   libcall sequence has a dead return value, it is effectively dead.
+   This is both enforced by CSE (cse_extended_basic_block) and relied
+   upon by delete_trivially_dead_insns.
+
+   However, in practice, the return value business is a tricky one and
+   only checking the liveness of the last insn is not sufficient to
+   decide whether the whole sequence is dead (e.g. PR middle-end/19551)
+   so we check the liveness of every insn starting from the call.  */
+
+static bool
+libcall_dead_p (rtx insn, rtx note)
+{
+  rtx last = XEXP (note, 0);
+
+  /* Find the call insn.  */
+  while (insn != last && !CALL_P (insn))
+    insn = NEXT_INSN (insn);
+
+  /* If there is none, do nothing special, since ordinary death handling
+     can understand these insns.  */
+  if (!CALL_P (insn))
+    return false;
+
+  /* If this is a call that returns a value via an invisible pointer, the
+     dataflow engine cannot see it so it has been marked unconditionally.
+     Skip it unless it has been made the last insn in the libcall, for
+     example by the combiner, in which case we're left with no easy way
+     of asserting its liveness.  */
+  if (!single_set (insn))
+    {
+      if (insn == last)
+	return false;
+      insn = NEXT_INSN (insn);
+    }
+
+  while (insn != NEXT_INSN (last))
+    {
+      if (INSN_P (insn) && marked_insn_p (insn))
+	return false;
+      insn = NEXT_INSN (insn);
+    }
+
+  return true;
+}
+
+
 /* Delete all REG_EQUAL notes of the registers INSN writes, to prevent
    bad dangling REG_EQUAL notes. */
 
@@ -236,8 +289,7 @@ delete_corresponding_reg_eq_notes (rtx insn)
 }
 
 
-/* Delete every instruction that hasn't been marked.  Clear the insn
-   from DCE_DF if DF_DELETE is true.  */
+/* Delete every instruction that hasn't been marked.  */
 
 static void
 delete_unmarked_insns (void)
@@ -245,107 +297,115 @@ delete_unmarked_insns (void)
   basic_block bb;
   rtx insn, next;
 
-  something_changed = false;
-
   FOR_EACH_BB (bb)
     FOR_BB_INSNS_SAFE (bb, insn, next)
       if (INSN_P (insn))
 	{
+	  rtx note = find_reg_note (insn, REG_LIBCALL, NULL_RTX);
+
+	  /* Always delete no-op moves.  */
 	  if (noop_move_p (insn))
+	    ;
+
+	  /* Try to delete libcall sequences as a whole.  */
+	  else if (note && libcall_dead_p (insn, note))
 	    {
-	      /* Note that this code does not handle the case where
-		 the last insn of libcall is deleted.  As it turns out
-		 this case is excluded in the call to noop_move_p.  */
-	      rtx note = find_reg_note (insn, REG_LIBCALL, NULL_RTX);
-	      if (note && (XEXP (note, 0) != insn))
-		{
-		  rtx new_libcall_insn = next_real_insn (insn);
-		  rtx retval_note = find_reg_note (XEXP (note, 0),
-						   REG_RETVAL, NULL_RTX);
-		  REG_NOTES (new_libcall_insn)
-		    = gen_rtx_INSN_LIST (REG_LIBCALL, XEXP (note, 0),
-					 REG_NOTES (new_libcall_insn));
-		  XEXP (retval_note, 0) = new_libcall_insn;
-		}
+	      rtx last = XEXP (note, 0);
+
+	      if (!dbg_cnt (dce))
+		continue;
+
+	      if (dump_file)
+	        fprintf (dump_file, "DCE: Deleting libcall %d-%d\n",
+			 INSN_UID (insn), INSN_UID (last));
+
+	      next = NEXT_INSN (last);
+	      delete_insn_chain_and_edges (insn, last);
+	      continue;
 	    }
+
+	  /* Otherwise rely only on the DCE algorithm.  */
 	  else if (marked_insn_p (insn))
 	    continue;
 
-	  /* WARNING, this debugging can itself cause problems if the
-	     edge of the counter causes part of a libcall to be
-	     deleted but not all of it.  */
 	  if (!dbg_cnt (dce))
 	    continue;
 
 	  if (dump_file)
 	    fprintf (dump_file, "DCE: Deleting insn %d\n", INSN_UID (insn));
 
-          /* Before we delete the insn, we have to delete
-             REG_EQUAL of the destination regs of the deleted insn
-             to prevent dangling REG_EQUAL. */
-          delete_corresponding_reg_eq_notes (insn);
+	  /* Before we delete the insn we have to delete REG_EQUAL notes
+	     for the destination regs in order to avoid dangling notes.  */
+	  delete_corresponding_reg_eq_notes (insn);
 
+	  /* If we're about to delete the first insn of a libcall, then
+	     move the REG_LIBCALL note to the next real insn and update
+	     the REG_RETVAL note.  */
+	  if (note && (XEXP (note, 0) != insn))
+	    {
+	      rtx new_libcall_insn = next_real_insn (insn);
+	      rtx retval_note = find_reg_note (XEXP (note, 0),
+					       REG_RETVAL, NULL_RTX);
+	      REG_NOTES (new_libcall_insn)
+		= gen_rtx_INSN_LIST (REG_LIBCALL, XEXP (note, 0),
+				     REG_NOTES (new_libcall_insn));
+	      XEXP (retval_note, 0) = new_libcall_insn;
+	    }
+
+	  /* If the insn contains a REG_RETVAL note and is dead, but the
+	     libcall as a whole is not dead, then we want to remove the
+	     insn, but not the whole libcall sequence.  However, we also
+	     need to remove the dangling REG_LIBCALL note in order to
+	     avoid mismatched notes.  We could find a new location for
+	     the REG_RETVAL note, but it hardly seems worth the effort.  */
+	  note = find_reg_note (insn, REG_RETVAL, NULL_RTX);
+	  if (note && (XEXP (note, 0) != insn))
+	    {
+	      rtx libcall_note
+		= find_reg_note (XEXP (note, 0), REG_LIBCALL, NULL_RTX);
+	      remove_note (XEXP (note, 0), libcall_note);
+	    }
+
+	  /* Now delete the insn.  */
 	  delete_insn_and_edges (insn);
-	  something_changed = true;
 	}
 }
 
 
-/* Mark all insns using DELETE_PARM in the libcall that contains
-   START_INSN.  */
+/* Helper function for prescan_insns_for_dce: prescan the entire libcall
+   sequence starting at INSN and return the insn following the libcall.
+   NOTE is the REG_LIBCALL note attached to INSN.  */
 
-static void 
-mark_libcall (rtx start_insn, bool delete_parm)
+static rtx
+prescan_libcall_for_dce (rtx insn, rtx note, bool fast)
 {
-  rtx note = find_reg_note (start_insn, REG_LIBCALL_ID, NULL_RTX);
-  int id = INTVAL (XEXP (note, 0));
-  rtx insn;
+  rtx last = XEXP (note, 0);
 
-  mark_insn (start_insn, delete_parm);
-  insn = NEXT_INSN (start_insn);
-
-  /* There are tales, long ago and far away, of the mystical nested
-     libcall.  No one alive has actually seen one, but other parts of
-     the compiler support them so we will here.  */
-  for (insn = NEXT_INSN (start_insn); insn; insn = NEXT_INSN (insn))
+  /* A libcall is never necessary on its own but we need to mark the stores
+     to a non-register destination.  */
+  while (insn != last && !CALL_P (insn))
     {
       if (INSN_P (insn))
-	{
-	  /* Stay in the loop as long as we are in any libcall.  */
-	  if ((note = find_reg_note (insn, REG_LIBCALL_ID, NULL_RTX)))
-	    {
-	      if (id == INTVAL (XEXP (note, 0)))
-		{
-		  mark_insn (insn, delete_parm);
-		  if (dump_file)
-		    fprintf (dump_file, "matching forward libcall %d[%d]\n",
-			     INSN_UID (insn), id);
-		}
-	    }
-	  else 
-	    break;
-	}
+	mark_nonreg_stores (PATTERN (insn), insn, fast);
+      insn = NEXT_INSN (insn);
     }
-  
-  for (insn = PREV_INSN (start_insn); insn; insn = PREV_INSN (insn))
+
+  /* If this is a call that returns a value via an invisible pointer, the
+     dataflow engine cannot see it so it has to be marked unconditionally.  */
+  if (CALL_P (insn) && !single_set (insn))
+    {
+      mark_insn (insn, fast);
+      insn = NEXT_INSN (insn);
+    }
+
+  while (insn != NEXT_INSN (last))
     {
       if (INSN_P (insn))
-	{
-	  /* Stay in the loop as long as we are in any libcall.  */
-	  if ((note = find_reg_note (insn, REG_LIBCALL_ID, NULL_RTX)))
-	    {
-	      if (id == INTVAL (XEXP (note, 0)))
-		{
-		  mark_insn (insn, delete_parm);
-		  if (dump_file)
-		    fprintf (dump_file, "matching backward libcall %d[%d]\n",
-			     INSN_UID (insn), id);
-		}
-	    }
-	  else 
-	    break;
-	}
+	mark_nonreg_stores (PATTERN (insn), insn, fast);
+      insn = NEXT_INSN (insn);
     }
+
+  return insn;
 }
 
 
@@ -357,23 +417,23 @@ static void
 prescan_insns_for_dce (bool fast)
 {
   basic_block bb;
-  rtx insn;
+  rtx insn, next;
   
   if (dump_file)
     fprintf (dump_file, "Finding needed instructions:\n");
   
   FOR_EACH_BB (bb)
-    FOR_BB_INSNS (bb, insn)
-    if (INSN_P (insn))
-      {
-        rtx note = find_reg_note (insn, REG_LIBCALL_ID, NULL_RTX);
-        if (note)
-          mark_libcall (insn, fast);
-        else if (deletable_insn_p (insn, fast))
-          mark_nonreg_stores (PATTERN (insn), insn, fast);
-        else
-          mark_insn (insn, fast);
-      }
+    FOR_BB_INSNS_SAFE (bb, insn, next)
+      if (INSN_P (insn))
+	{
+	  rtx note = find_reg_note (insn, REG_LIBCALL, NULL_RTX);
+	  if (note)
+	    next = prescan_libcall_for_dce (insn, note, fast);
+	  else if (deletable_insn_p (insn, fast))
+	    mark_nonreg_stores (PATTERN (insn), insn, fast);
+	  else
+	    mark_insn (insn, fast);
+	}
 
   if (dump_file)
     fprintf (dump_file, "Finished finding needed instructions:\n");
@@ -409,10 +469,6 @@ mark_reg_dependencies (rtx insn)
 {
   struct df_link *defs;
   struct df_ref **use_rec;
-
-  /* If this is part of a libcall, mark the entire libcall.  */
-  if (find_reg_note (insn, REG_LIBCALL_ID, NULL_RTX))
-    mark_libcall (insn, false);
 
   for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
     {
@@ -588,42 +644,19 @@ dce_process_block (basic_block bb, bool redo_out)
   FOR_BB_INSNS_REVERSE (bb, insn)
     if (INSN_P (insn))
       {
-	/* If this is a recursive call, the libcall will have already
-	   been marked.  */
-	if (!marked_insn_p (insn))
-	  {	
-	    bool needed = false;
+	bool needed = false;
 
-	    /* The insn is needed if there is someone who uses the output.  */
-	    for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
-	      if (bitmap_bit_p (local_live, DF_REF_REGNO (*def_rec))
-		  || bitmap_bit_p (au, DF_REF_REGNO (*def_rec)))
-		{
-		  needed = true;
-		  break;
-		}
+	/* The insn is needed if there is someone who uses the output.  */
+	for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
+	  if (bitmap_bit_p (local_live, DF_REF_REGNO (*def_rec))
+	      || bitmap_bit_p (au, DF_REF_REGNO (*def_rec)))
+	    {
+	      needed = true;
+	      break;
+	    }
 	    
-	    if (needed)
-	      {
-		rtx note = find_reg_note (insn, REG_LIBCALL_ID, NULL_RTX);
-
-		/* If we need to mark an insn in the middle of a
-		   libcall, we need to back up to mark the entire
-		   libcall.  Given that libcalls are rare, rescanning
-		   the block should be a reasonable solution to trying
-		   to figure out how to back up.  */
-		if (note)
-		  {
-		    if (dump_file)
-		      fprintf (dump_file, "needed libcall %d\n", INSN_UID (insn));
-		    mark_libcall (insn, true);
-		    BITMAP_FREE (local_live);
-		    return dce_process_block (bb, false);
-		  }
-		else
-		  mark_insn (insn, true);
-	      }
-	  }
+	if (needed)
+	  mark_insn (insn, true);
 	
 	/* No matter if the instruction is needed or not, we remove
 	   any regno in the defs from the live set.  */
@@ -642,6 +675,7 @@ dce_process_block (basic_block bb, bool redo_out)
 	  && (!(DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL))))
 	bitmap_clear_bit (local_live, DF_REF_REGNO (def));
     }
+
 #ifdef EH_USES
   /* Process the uses that are live into an exception handler.  */
   for (use_rec = df_get_artificial_uses (bb_index); *use_rec; use_rec++)
@@ -676,7 +710,7 @@ fast_dce (void)
   bitmap redo_out = BITMAP_ALLOC (&dce_blocks_bitmap_obstack);
   bitmap all_blocks = BITMAP_ALLOC (&dce_blocks_bitmap_obstack);
   bool global_changed = true;
-  int i, loop_count = 0;
+  int i;
 
   prescan_insns_for_dce (true);
 
@@ -686,6 +720,7 @@ fast_dce (void)
   while (global_changed)
     {
       global_changed = false;
+
       for (i = 0; i < n_blocks; i++)
 	{
 	  int index = postorder[i];
@@ -739,9 +774,9 @@ fast_dce (void)
 
 	  if (old_flag & DF_LR_RUN_DCE)
 	    df_set_flags (DF_LR_RUN_DCE);
+
 	  prescan_insns_for_dce (true);
 	}
-      loop_count++;
     }
 
   delete_unmarked_insns ();
@@ -793,21 +828,21 @@ run_fast_df_dce (void)
 }
 
 
+/* Run a fast DCE pass.  */
+
+void
+run_fast_dce (void)
+{
+  if (flag_dce)
+    rest_of_handle_fast_dce ();
+}
+
+
 static bool
 gate_fast_dce (void)
 {
   return optimize > 0 && flag_dce;
 }
-
-
-/* Run a fast DCE pass and return true if any instructions were deleted.  */
-
-bool
-run_fast_dce (void)
-{
-  return gate_fast_dce () && (rest_of_handle_fast_dce (), something_changed);
-}
-
 
 struct tree_opt_pass pass_fast_rtl_dce =
 {

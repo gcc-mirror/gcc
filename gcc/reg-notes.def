@@ -163,7 +163,3 @@ REG_NOTE (CROSSING_JUMP)
 /* This kind of note is generated at each to `setjmp', and similar
    functions that can return twice.  */
 REG_NOTE (SETJMP)
-
-/* This kind of note identifies what libcall id an instruction is part of.  */
-REG_NOTE (LIBCALL_ID)
-

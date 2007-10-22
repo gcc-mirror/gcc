@@ -1,3 +1,32 @@
+2007-10-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR rtl-optimization/33644
+	* cfgcleanup.c: Do not include dce.h.
+	* cfgrtl.c (delete_insn_chain_and_edges): Resurrect.
+	* combine.c (distribute_notes): Delete REG_LIBCALL_ID case.
+	* dce.c (something_changed): Delete.
+	(libcall_dead_p): New predicate.
+	(delete_unmarked_insns): Use it to delete dead libcalls.
+	Deal with REG_LIBCALL and REG_RETVAL notes.
+	(prescan_libcall_for_dce): New function.
+	(prescan_insns_for_dce): Use it to deal with libcalls.
+	(mark_reg_dependencies): Do nothing special for libcalls.
+	(dce_process_block): Likewise.
+	(fast_dce): Delete unused local variable.
+	(run_fast_dce): Do not return a value.
+	* dce.h (struct df): Delete.
+	(run_fast_dce): Adjust prototype.
+	* optabs.c (libcall_id): Delete.
+	(maybe_encapsulate_block): Do not emit REG_LIBCALL_ID notes.
+	(emit_no_conflict_block): Do not look for REG_LIBCALL_ID notes.
+	* reload1.c (reload): Delete REG_LIBCALL_ID case.
+	* rtl.h (delete_insn_chain_and_edges): Resurrect prototype.
+	* see.c (see_update_relevancy): Look for REG_LIBCALL and REG_RETVAL
+	notes instead of REG_LIBCALL_ID notes.
+	* reg-notes.def (LIBCALL_ID): Delete.
+	* Makefile.in (see.o): Add dce.h dependency.
+	(cfgcleanup.o): Remove dce.h dependency.
+
 2007-10-22  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/33855

@@ -99,10 +99,6 @@ static void prepare_float_lib_cmp (rtx *, rtx *, enum rtx_code *,
 				   enum machine_mode *, int *);
 static rtx expand_unop_direct (enum machine_mode, optab, rtx, rtx, int);
 
-/* Current libcall id.  It doesn't matter what these are, as long
-   as they are unique to each libcall that is emitted.  */
-static HOST_WIDE_INT libcall_id = 0;
-
 /* Debug facility for use in GDB.  */
 void debug_optab_libfuncs (void);
 
@@ -3824,12 +3820,6 @@ maybe_encapsulate_block (rtx first, rtx last, rtx equiv)
 						 REG_NOTES (first));
 	  REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first,
 						REG_NOTES (last));
-	  next = NEXT_INSN (last);
-	  for (insn = first; insn != next; insn = NEXT_INSN (insn))
-	    REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LIBCALL_ID,
-	    				          GEN_INT (libcall_id),
-						  REG_NOTES (insn));
-	  libcall_id++;
 	}
     }
 }
@@ -3889,8 +3879,6 @@ emit_no_conflict_block (rtx insns, rtx target, rtx op0, rtx op1, rtx equiv)
       if ((note = find_reg_note (insn, REG_LIBCALL, NULL)) != NULL)
 	remove_note (insn, note);
       if ((note = find_reg_note (insn, REG_RETVAL, NULL)) != NULL)
-	remove_note (insn, note);
-      if ((note = find_reg_note (insn, REG_LIBCALL_ID, NULL)) != NULL)
 	remove_note (insn, note);
 
       data.target = target;
@@ -4043,8 +4031,6 @@ emit_libcall_block (rtx insns, rtx target, rtx result, rtx equiv)
       if ((note = find_reg_note (insn, REG_LIBCALL, NULL)) != NULL)
 	remove_note (insn, note);
       if ((note = find_reg_note (insn, REG_RETVAL, NULL)) != NULL)
-	remove_note (insn, note);
-      if ((note = find_reg_note (insn, REG_LIBCALL_ID, NULL)) != NULL)
 	remove_note (insn, note);
 
       next = NEXT_INSN (insn);
