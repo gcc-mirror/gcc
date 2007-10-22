@@ -1776,7 +1776,7 @@ gfc_data_variable;
 
 typedef struct gfc_data_value
 {
-  unsigned int repeat;
+  mpz_t repeat;
   gfc_expr *expr;
   struct gfc_data_value *next;
 }

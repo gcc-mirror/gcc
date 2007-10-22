@@ -383,7 +383,6 @@ top_val_list (gfc_data *data)
 {
   gfc_data_value *new, *tail;
   gfc_expr *expr;
-  const char *msg;
   match m;
 
   tail = NULL;
@@ -397,6 +396,7 @@ top_val_list (gfc_data *data)
 	return MATCH_ERROR;
 
       new = gfc_get_data_value ();
+      mpz_init (new->repeat);
 
       if (tail == NULL)
 	data->value = new;
@@ -408,19 +408,13 @@ top_val_list (gfc_data *data)
       if (expr->ts.type != BT_INTEGER || gfc_match_char ('*') != MATCH_YES)
 	{
 	  tail->expr = expr;
-	  tail->repeat = 1;
+	  mpz_set_ui (tail->repeat, 1);
 	}
       else
 	{
-	  signed int tmp;
-	  msg = gfc_extract_int (expr, &tmp);
+	  if (expr->ts.type == BT_INTEGER)
+	    mpz_set (tail->repeat, expr->value.integer);
 	  gfc_free_expr (expr);
-	  if (msg != NULL)
-	    {
-	      gfc_error (msg);
-	      return MATCH_ERROR;
-	    }
-	  tail->repeat = tmp;
 
 	  m = match_data_constant (&tail->expr);
 	  if (m == MATCH_NO)
