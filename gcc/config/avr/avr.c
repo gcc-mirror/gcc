@@ -194,7 +194,6 @@ static const struct mcu_type_s avr_mcu_types[] = {
     /* Classic, > 8K.  */
   { "avr3",         ARCH_AVR3, NULL },
   { "atmega103",    ARCH_AVR3, "__AVR_ATmega103__" },
-  { "atmega603",    ARCH_AVR3, "__AVR_ATmega603__" },
   { "at43usb320",   ARCH_AVR3, "__AVR_AT43USB320__" },
   { "at43usb355",   ARCH_AVR3, "__AVR_AT43USB355__" },
   { "at76c711",     ARCH_AVR3, "__AVR_AT76C711__" },
