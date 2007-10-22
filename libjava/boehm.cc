@@ -465,6 +465,12 @@ _Jv_GCSetMaximumHeapSize (size_t size)
   GC_set_max_heap_size ((GC_word) size);
 }
 
+int
+_Jv_SetGCFreeSpaceDivisor (int div)
+{
+  return (int)GC_set_free_space_divisor ((GC_word)div);
+}
+
 void
 _Jv_DisableGC (void)
 {

@@ -1,3 +1,8 @@
+2007-10-22  David Daney  <ddaney@avtrex.com>
+
+	* include/jvm.h (_Jv_SetGCFreeSpaceDivisor): Declare new function.
+	* boehm.cc (_Jv_SetGCFreeSpaceDivisor): Define it.
+
 2007-10-18  David Daney  <ddaney@avtrex.com>
 
 	* classpath/lib/gnu/java/locale/LocaleData.class: Regenerate
