@@ -1,3 +1,12 @@
+2007-10-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* misc.c (gnat_handle_option): Replace call to abort with
+	call to gcc_unreachable.
+	(gnat_init): Likewise.
+	(gnat_expand_expr): Likewise.
+	(fp_prec_to_size): Likewise.
+	(fp_size_to_prec): Likewise.
+
 2007-10-23  Richard Guenther  <rguenther@suse.de>
 
 	PR bootstrap/33608
