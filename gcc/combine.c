@@ -9343,6 +9343,9 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 	  break;
 
 	case NOT:
+	  if (VECTOR_MODE_P (mode))
+	    break;
+
 	  /* Make this fit the case below.  */
 	  varop = gen_rtx_XOR (mode, XEXP (varop, 0),
 			       GEN_INT (GET_MODE_MASK (mode)));
