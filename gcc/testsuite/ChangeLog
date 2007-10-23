@@ -1,3 +1,12 @@
+2007-10-22  Martin Michlmayr <tbm@cyrius.com>	
+	    Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/33834
+	PR tree-optimization/33835
+	* g++.dg/vect/pr33834_1.cc: New test.
+	* g++.dg/vect/pr33834_2.cc: New test.
+	* g++.dg/vect/pr33835.cc: New test.
+
 2007-10-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/pr33644.c: New test.

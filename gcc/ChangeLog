@@ -1,3 +1,17 @@
+2007-10-22  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/33834
+	PR tree-optimization/33835
+	* tree-vect-analyze.c (vect_analyze_operations): RELEVANT and LIVE stmts
+	need to be checked for success seperately.
+	* tree-vect-transform.c (vectorizable_call, vectorizable_conversion):
+	Remove the check that stmt is not LIVE.
+	(vectorizable_assignment, vectorizable_induction): Likewise.
+	(vectorizable_operation, vectorizable_type_demotion): Likewise.
+	(vectorizable_type_promotion, vectorizable_load, vectorizable_store):
+	Likewise.
+	(vectorizable_live_operation): Check that op is not NULL. 
+
 2007-10-22  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/invoke.texi (Optimization Options): In the summary, show
