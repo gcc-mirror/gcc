@@ -1,3 +1,8 @@
+2007-10-23  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/33608
+	* tracebak.c: #undef abort after including system.h.
+
 2007-10-20  Danny Smith <dannysmith@users.sourceforge.net>
 
 	* Makefile.in (LIBGNAT_TARGET_PAIRS) Add s-tasinf-mingw.adb,
