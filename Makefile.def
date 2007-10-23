@@ -316,10 +316,9 @@ dependencies = { module=all-gnattools; on=all-target-libada; };
 dependencies = { module=configure-mpfr; on=all-gmp; };
 
 // Host modules specific to gdb.
-dependencies = { module=configure-gdb; on=configure-intl; };
+dependencies = { module=configure-gdb; on=all-intl; };
 dependencies = { module=configure-gdb; on=configure-sim; };
 dependencies = { module=configure-gdb; on=all-bfd; };
-dependencies = { module=all-gdb; on=all-intl; };
 dependencies = { module=all-gdb; on=all-libiberty; };
 dependencies = { module=all-gdb; on=all-opcodes; };
 dependencies = { module=all-gdb; on=all-readline; };

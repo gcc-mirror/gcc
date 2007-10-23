@@ -51499,10 +51499,9 @@ configure-stageb3g2-mpfr: maybe-all-stageb3g2-gmp
 configure-stage4-mpfr: maybe-all-stage4-gmp
 configure-stageprofile-mpfr: maybe-all-stageprofile-gmp
 configure-stagefeedback-mpfr: maybe-all-stagefeedback-gmp
-configure-gdb: maybe-configure-intl
+configure-gdb: maybe-all-intl
 configure-gdb: maybe-configure-sim
 configure-gdb: maybe-all-bfd
-all-gdb: maybe-all-intl
 all-gdb: maybe-all-libiberty
 all-gdb: maybe-all-opcodes
 all-gdb: maybe-all-readline
