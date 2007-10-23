@@ -264,9 +264,6 @@ gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
 
   switch (code)
     {
-    default:
-      abort ();
-
     case OPT_I:
       q = xmalloc (sizeof("-I") + strlen (arg));
       strcpy (q, "-I");
@@ -329,6 +326,9 @@ gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
       gnat_argv[gnat_argc] = xstrdup (arg);
       gnat_argc++;
       break;
+
+    default:
+      gcc_unreachable ();
     }
 
   return 1;
@@ -464,7 +464,7 @@ gnat_init (void)
 static void
 gnat_finish_incomplete_decl (tree dont_care ATTRIBUTE_UNUSED)
 {
-  abort ();
+  gcc_unreachable ();
 }
 
 /* Compute the alignment of the largest mode that can be used for copying
@@ -669,7 +669,7 @@ gnat_expand_expr (tree exp, rtx target, enum machine_mode tmode,
       /* ... fall through ... */
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   return expand_expr_real (new, target, tmode, modifier, alt_rtl);
@@ -916,7 +916,7 @@ fp_prec_to_size (int prec)
     if (GET_MODE_PRECISION (mode) == prec)
       return GET_MODE_BITSIZE (mode);
 
-  abort ();
+  gcc_unreachable ();
 }
 
 int
@@ -929,5 +929,5 @@ fp_size_to_prec (int size)
     if (GET_MODE_BITSIZE (mode) == size)
       return GET_MODE_PRECISION (mode);
 
-  abort ();
+  gcc_unreachable ();
 }
