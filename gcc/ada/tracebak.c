@@ -57,6 +57,8 @@
 #else
 #include "config.h"
 #include "system.h"
+/* We don't want fancy_abort here.  */
+#undef abort
 #endif
 
 extern int __gnat_backtrace (void **, int, void *, void *, int);
