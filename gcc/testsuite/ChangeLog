@@ -1,3 +1,7 @@
+2007-10-22  David S. Miller  <davem@davemloft.net>
+
+	* gcc.dg/globalreg-1.c: New test.
+
 2007-10-22  Martin Michlmayr <tbm@cyrius.com>	
 	    Dorit Nuzman  <dorit@il.ibm.com>
 

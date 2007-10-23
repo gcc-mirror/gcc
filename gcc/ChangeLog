@@ -1,3 +1,9 @@
+2007-10-22  Seongbae Park <seongbae.park@gmail.com>
+	David S. Miller  <davem@davemloft.net>
+
+	* df-scan.c (df_get_call_refs): Mark global registers as both a
+	DF_REF_REG_USE and a non-clobber DF_REF_REG_DEF.
+
 2007-10-22  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/33834

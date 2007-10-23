@@ -3109,18 +3109,22 @@ df_get_call_refs (struct df_collection_rec * collection_rec,
      so they are recorded as used.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (global_regs[i])
-      df_ref_record (collection_rec, regno_reg_rtx[i],
-		     NULL, bb, insn, DF_REF_REG_USE, flags);
+      {
+	df_ref_record (collection_rec, regno_reg_rtx[i],
+		       NULL, bb, insn, DF_REF_REG_USE, flags);
+	df_ref_record (collection_rec, regno_reg_rtx[i],
+		       NULL, bb, insn, DF_REF_REG_DEF, flags);
+      }
 
   is_sibling_call = SIBLING_CALL_P (insn);
   EXECUTE_IF_SET_IN_BITMAP (df_invalidated_by_call, 0, ui, bi)
     {
-      if ((!bitmap_bit_p (defs_generated, ui))
+      if (!global_regs[ui]
+	  && (!bitmap_bit_p (defs_generated, ui))
 	  && (!is_sibling_call
 	      || !bitmap_bit_p (df->exit_block_uses, ui)
 	      || refers_to_regno_p (ui, ui+1, 
 				    current_function_return_rtx, NULL)))
-
         df_ref_record (collection_rec, regno_reg_rtx[ui], 
 		       NULL, bb, insn, DF_REF_REG_DEF, DF_REF_MAY_CLOBBER | flags);
     }
