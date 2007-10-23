@@ -430,26 +430,8 @@ case ${target} in
   gas=yes
   gnu_ld=yes
   extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
-  case ${target} in
-    *-*-freebsd3 | *-*-freebsd[3].*)
-      tm_defines="${tm_defines} FBSD_MAJOR=3" ;;
-    *-*-freebsd4 | *-*-freebsd[4].*)
-      tm_defines="${tm_defines} FBSD_MAJOR=4" ;;
-    *-*-freebsd5 | *-*-freebsd[5].*)
-      tm_defines="${tm_defines} FBSD_MAJOR=5" ;;
-    *-*-freebsd6 | *-*-freebsd[6].*)
-      tm_defines="${tm_defines} FBSD_MAJOR=6" ;;
-    *-*-freebsd7 | *-*-freebsd[7].*)
-      tm_defines="${tm_defines} FBSD_MAJOR=7" ;;
-    *-*-freebsd8 | *-*-freebsd[8].*)
-      tm_defines="${tm_defines} FBSD_MAJOR=8" ;;
-    *-*-freebsd9 | *-*-freebsd[9].*)
-      tm_defines="${tm_defines} FBSD_MAJOR=9" ;;
-    *)
-      echo 'Please update *-*-freebsd* in gcc/config.gcc'
-      exit 1
-      ;;
-  esac
+  fbsd_major=`echo ${target} | sed -e 's/.*freebsd//g' | sed -e 's/\..*//g'`
+  tm_defines="${tm_defines} FBSD_MAJOR=${fbsd_major}"
   tmake_file="t-slibgcc-elf-ver t-freebsd"
   case ${enable_threads} in
     no)
