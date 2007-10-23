@@ -1,3 +1,8 @@
+2007-10-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/33846
+	* combine.c (simplify_shift_const_1) [NOT]: Skip vector modes.
+
 2007-10-23  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/33860
@@ -32,8 +37,8 @@
 
 	PR tree-optimization/33834
 	PR tree-optimization/33835
-	* tree-vect-analyze.c (vect_analyze_operations): RELEVANT and LIVE stmts
-	need to be checked for success seperately.
+	* tree-vect-analyze.c (vect_analyze_operations): RELEVANT and LIVE
+	stmts need to be checked for success seperately.
 	* tree-vect-transform.c (vectorizable_call, vectorizable_conversion):
 	Remove the check that stmt is not LIVE.
 	(vectorizable_assignment, vectorizable_induction): Likewise.
@@ -899,7 +904,7 @@
 	IX86_BUILTIN_PSRADI128, IX86_BUILTIN_PSRLWI128,
 	IX86_BUILTIN_PSRLDI128, IX86_BUILTIN_PSRLQI128]: Do not require
 	immediate shift value.
-	config/i386/emmintrin.h (_mm_slli_epi16, _mm_slli_epi32,
+	* config/i386/emmintrin.h (_mm_slli_epi16, _mm_slli_epi32,
 	_mm_slli_epi64, _mm_srai_epi16, _mm_srai_epi32, _mm_srli_epi16,
 	_mm_srli_epi32, _mm_srli_epi64): Remove 'const' from count argument.
 	Remove macros for !__OPTIMIZE__ case.
