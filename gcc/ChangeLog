@@ -1,3 +1,8 @@
+2007-10-23  Richard Guenther  <rguenther@suse.de>
+
+	* alias.c (get_alias_set): For INDIRECT_REFs, deal with
+	SSA_NAME pointers.
+
 2007-10-22  Seongbae Park <seongbae.park@gmail.com>
 	David S. Miller  <davem@davemloft.net>
 

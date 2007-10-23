@@ -525,7 +525,12 @@ get_alias_set (tree t)
       /* Check for accesses through restrict-qualified pointers.  */
       if (INDIRECT_REF_P (inner))
 	{
-	  tree decl = find_base_decl (TREE_OPERAND (inner, 0));
+	  tree decl;
+
+	  if (TREE_CODE (TREE_OPERAND (inner, 0)) == SSA_NAME)
+	    decl = SSA_NAME_VAR (TREE_OPERAND (inner, 0));
+ 	  else
+	    decl = find_base_decl (TREE_OPERAND (inner, 0));
 
 	  if (decl && DECL_POINTER_ALIAS_SET_KNOWN_P (decl))
 	    {
