@@ -1,3 +1,10 @@
+2007-10-23  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/33860
+	* tree-vect-transform.c (vect_analyze_data_ref_access): Don't allow
+	interleaved accesses in case the dr is inside the inner-loop during
+	outer-loop vectorization.
+
 2007-10-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/rtl.texi (Flags): Fix MEM_SCALAR_P entry.

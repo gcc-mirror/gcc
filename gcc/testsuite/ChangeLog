@@ -1,3 +1,10 @@
+2007-10-23  Martin Michlmayr <tbm@cyrius.com>	
+	    Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/33860
+	* g++.dg/vect/pr33860.cc: New test.
+	* g++.dg/vect/pr33860a.cc: New test.
+
 2007-10-23  Tehila Meyzels  <tehila@il.ibm.com>
 	    Revital Eres  <eres@il.ibm.com>	 
 

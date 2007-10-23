@@ -2322,6 +2322,10 @@ vect_analyze_data_ref_access (struct data_reference *dr)
 
   if (nested_in_vect_loop_p (loop, stmt))
     {
+      /* Interleaved accesses are not yet supported within outer-loop
+        vectorization for references in the inner-loop.  */
+      DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt)) = NULL_TREE;
+
       /* For the rest of the analysis we use the outer-loop step.  */
       step = STMT_VINFO_DR_STEP (stmt_info);
       dr_step = TREE_INT_CST_LOW (step);
