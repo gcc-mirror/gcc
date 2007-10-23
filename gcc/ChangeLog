@@ -1,3 +1,9 @@
+2007-10-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* doc/rtl.texi (Flags): Fix MEM_SCALAR_P entry.
+	Document MEM_POINTER.  Replace mentions of "integrated"
+	field with "return_val".  Delete outdated stuff.
+
 2007-10-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/linux-unwind.h (ppc_fallback_frame_state): Point

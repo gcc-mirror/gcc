@@ -616,8 +616,8 @@ are already in a non-addressable component of an aggregate.
 Stored in the @code{jump} field and printed as @samp{/j}.
 
 @findex MEM_SCALAR_P
-@cindex @code{mem} and @samp{/f}
-@cindex @code{frame_related}, in @code{mem}
+@cindex @code{mem} and @samp{/i}
+@cindex @code{return_val}, in @code{mem}
 @item MEM_SCALAR_P (@var{x})
 In @code{mem} expressions, nonzero for reference to a scalar known not
 to be a member of a structure, union, or array.  Zero for such
@@ -625,7 +625,7 @@ references and for indirections through pointers, even pointers pointing
 to scalar types.  If both this flag and @code{MEM_IN_STRUCT_P} are clear,
 then we don't know whether this @code{mem} is in a structure or not.
 Both flags should never be simultaneously set.
-Stored in the @code{frame_related} field and printed as @samp{/f}.
+Stored in the @code{return_val} field and printed as @samp{/i}.
 
 @findex MEM_VOLATILE_P
 @cindex @code{mem} and @samp{/v}
@@ -644,13 +644,20 @@ Stored in the @code{volatil} field and printed as @samp{/v}.
 In @code{mem}, nonzero for memory references that will not trap.
 Stored in the @code{call} field and printed as @samp{/c}.
 
+@findex MEM_POINTER
+@cindex @code{mem} and @samp{/f}
+@cindex @code{frame_related}, in @code{mem}
+@item MEM_POINTER (@var{x})
+Nonzero in a @code{mem} if the memory reference holds a pointer.
+Stored in the @code{frame_related} field and printed as @samp{/f}.
+
 @findex REG_FUNCTION_VALUE_P
 @cindex @code{reg} and @samp{/i}
-@cindex @code{integrated}, in @code{reg}
+@cindex @code{return_val}, in @code{reg}
 @item REG_FUNCTION_VALUE_P (@var{x})
 Nonzero in a @code{reg} if it is the place in which this function's
 value is going to be returned.  (This happens only in a hard
-register.)  Stored in the @code{integrated} field and printed as
+register.)  Stored in the @code{return_val} field and printed as
 @samp{/i}.
 
 @findex REG_POINTER
@@ -706,19 +713,6 @@ computation performed by this instruction, i.e., one that
 
 This flag is required for exception handling support on targets with RTL
 prologues.
-
-@cindex @code{insn} and @samp{/i}
-@cindex @code{call_insn} and @samp{/i}
-@cindex @code{jump_insn} and @samp{/i}
-@cindex @code{barrier} and @samp{/i}
-@cindex @code{code_label} and @samp{/i}
-@cindex @code{insn_list} and @samp{/i}
-@cindex @code{const} and @samp{/i}
-@cindex @code{note} and @samp{/i}
-@cindex @code{integrated}, in @code{insn}, @code{call_insn}, @code{jump_insn}, @code{barrier}, @code{code_label}, @code{insn_list}, @code{const}, and @code{note}
-@code{code_label}, @code{insn_list}, @code{const}, or @code{note} if it
-resulted from an in-line function call.
-Stored in the @code{integrated} field and printed as @samp{/i}.
 
 @findex MEM_READONLY_P
 @cindex @code{mem} and @samp{/u}
@@ -818,10 +812,10 @@ once.  Stored in the @code{used} field.
 
 @findex SYMBOL_REF_WEAK
 @cindex @code{symbol_ref} and @samp{/i}
-@cindex @code{integrated}, in @code{symbol_ref}
+@cindex @code{return_val}, in @code{symbol_ref}
 @item SYMBOL_REF_WEAK (@var{x})
 In a @code{symbol_ref}, indicates that @var{x} has been declared weak.
-Stored in the @code{integrated} field and printed as @samp{/i}.
+Stored in the @code{return_val} field and printed as @samp{/i}.
 
 @findex SYMBOL_REF_FLAG
 @cindex @code{symbol_ref} and @samp{/v}
@@ -855,10 +849,10 @@ frame pointer.
 
 In @code{reg} expressions, 1 means that the register holds a pointer.
 
+In @code{mem} expressions, 1 means that the memory reference holds a pointer.
+
 In @code{symbol_ref} expressions, 1 means that the reference addresses
 this function's string constant pool.
-
-In @code{mem} expressions, 1 means that the reference is to a scalar.
 
 In an RTL dump, this flag is represented as @samp{/f}.
 
@@ -898,17 +892,17 @@ must be scheduled as part of a group together with the previous insn.
 
 In an RTL dump, this flag is represented as @samp{/s}.
 
-@findex integrated
+@findex return_val
 @cindex @samp{/i} in RTL dump
-@item integrated
-In an @code{insn}, @code{insn_list}, or @code{const}, 1 means the RTL was
-produced by procedure integration.
-
+@item return_val
 In @code{reg} expressions, 1 means the register contains
 the value to be returned by the current function.  On
 machines that pass parameters in registers, the same register number
 may be used for parameters as well, but this flag is not set on such
 uses.
+
+In @code{mem} expressions, 1 means the memory reference is to a scalar
+known not to be a member of a structure, union, or array.
 
 In @code{symbol_ref} expressions, 1 means the referenced symbol is weak.
 
