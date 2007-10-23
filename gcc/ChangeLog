@@ -1,3 +1,9 @@
+2007-10-23  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_override_options): Set
+	rs6000_altivec_abi on AIX.
+	(conditional_register_usage): Set VR20:31 fixed on AIX.
+
 2007-10-23  Richard Guenther  <rguenther@suse.de>
 
 	* alias.c (get_alias_set): For INDIRECT_REFs, deal with
