@@ -1570,7 +1570,11 @@ rs6000_override_options (const char *default_cpu)
     rs6000_ieeequad = 1;
 #endif
 
-  /* Set Altivec ABI as default for powerpc64 linux.  */
+  /* Enable Altivec ABI for AIX -maltivec.  */
+  if (TARGET_XCOFF && TARGET_ALTIVEC)
+    rs6000_altivec_abi = 1;
+
+  /* Set Altivec ABI as default for PowerPC64 Linux.  */
   if (TARGET_ELF && TARGET_64BIT)
     {
       rs6000_altivec_abi = 1;
@@ -4220,9 +4224,6 @@ rs6000_conditional_register_usage (void)
     fixed_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]
       = call_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM] = 1;
 
-  if (TARGET_ALTIVEC)
-    global_regs[VSCR_REGNO] = 1;
-
   if (TARGET_SPE)
     {
       global_regs[SPEFSCR_REGNO] = 1;
@@ -4237,16 +4238,26 @@ rs6000_conditional_register_usage (void)
 	= call_really_used_regs[14] = 1;
     }
 
-  if (! TARGET_ALTIVEC)
+  if (!TARGET_ALTIVEC)
     {
       for (i = FIRST_ALTIVEC_REGNO; i <= LAST_ALTIVEC_REGNO; ++i)
 	fixed_regs[i] = call_used_regs[i] = call_really_used_regs[i] = 1;
       call_really_used_regs[VRSAVE_REGNO] = 1;
     }
 
+  if (TARGET_ALTIVEC)
+    global_regs[VSCR_REGNO] = 1;
+
   if (TARGET_ALTIVEC_ABI)
-    for (i = FIRST_ALTIVEC_REGNO; i < FIRST_ALTIVEC_REGNO + 20; ++i)
-      call_used_regs[i] = call_really_used_regs[i] = 1;
+    {
+      for (i = FIRST_ALTIVEC_REGNO; i < FIRST_ALTIVEC_REGNO + 20; ++i)
+	call_used_regs[i] = call_really_used_regs[i] = 1;
+
+      /* AIX reserves VR20:31 in non-extended ABI mode.  */
+      if (TARGET_XCOFF)
+	for (i = FIRST_ALTIVEC_REGNO + 20; i < FIRST_ALTIVEC_REGNO + 32; ++i)
+	  fixed_regs[i] = call_used_regs[i] = call_really_used_regs[i] = 1;
+    }
 }
 
 /* Try to output insns to set TARGET equal to the constant C if it can
