@@ -2961,14 +2961,6 @@ vectorizable_call (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   if (STMT_SLP_TYPE (stmt_info))
     return false;
 
-  /* FORNOW: not yet supported.  */
-  if (STMT_VINFO_LIVE_P (stmt_info))
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "value used after loop.");
-      return false;
-    }
-
   /* Is STMT a vectorizable call?   */
   if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return false;
@@ -3307,14 +3299,6 @@ vectorizable_conversion (tree stmt, block_stmt_iterator *bsi,
   if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_loop_def)
     return false;
 
-  if (STMT_VINFO_LIVE_P (stmt_info))
-    {
-      /* FORNOW: not yet supported.  */
-      if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "value used after loop.");
-      return false;
-    }
-
   if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return false;
 
@@ -3585,14 +3569,6 @@ vectorizable_assignment (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt,
   if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_loop_def)
     return false;
 
-  /* FORNOW: not yet supported.  */
-  if (STMT_VINFO_LIVE_P (stmt_info))
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "value used after loop.");
-      return false;
-    }
-
   /* Is vectorizable assignment?  */
   if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return false;
@@ -3702,14 +3678,6 @@ vectorizable_induction (tree phi, block_stmt_iterator *bsi ATTRIBUTE_UNUSED,
 
   gcc_assert (STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def);
 
-  if (STMT_VINFO_LIVE_P (stmt_info))
-    {
-      /* FORNOW: not yet supported.  */
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "value used after loop.");
-      return false;
-    }
-
   if (TREE_CODE (phi) != PHI_NODE)
     return false;
 
@@ -3790,14 +3758,6 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt,
 
   if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_loop_def)
     return false;
-
-  /* FORNOW: not yet supported.  */
-  if (STMT_VINFO_LIVE_P (stmt_info))
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "value used after loop.");
-      return false;
-    }
 
   /* Is STMT a vectorizable binary/unary operation?   */
   if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
@@ -4088,14 +4048,6 @@ vectorizable_type_demotion (tree stmt, block_stmt_iterator *bsi,
   if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_loop_def)
     return false;
 
-  /* FORNOW: not yet supported.  */
-  if (STMT_VINFO_LIVE_P (stmt_info))
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "value used after loop.");
-      return false;
-    }
-
   /* Is STMT a vectorizable type-demotion operation?  */
   if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return false;
@@ -4248,14 +4200,6 @@ vectorizable_type_promotion (tree stmt, block_stmt_iterator *bsi,
 
   if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_loop_def)
     return false;
-
-  /* FORNOW: not yet supported.  */
-  if (STMT_VINFO_LIVE_P (stmt_info))
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "value used after loop.");
-      return false;
-    }
 
   /* Is STMT a vectorizable type-promotion operation?  */
   if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
@@ -4628,13 +4572,6 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt,
 
   if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_loop_def)
     return false;
-
-  if (STMT_VINFO_LIVE_P (stmt_info))
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "value used after loop.");
-      return false;
-    }
 
   /* Is vectorizable store? */
 
@@ -5458,14 +5395,6 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt,
   if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_loop_def)
     return false;
 
-  /* FORNOW: not yet supported.  */
-  if (STMT_VINFO_LIVE_P (stmt_info))
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "value used after loop.");
-      return false;
-    }
-
   /* Is vectorizable load? */
   if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return false;
@@ -5893,7 +5822,7 @@ vectorizable_live_operation (tree stmt,
   for (i = 0; i < op_type; i++)
     {
       op = TREE_OPERAND (operation, i);
-      if (!vect_is_simple_use (op, loop_vinfo, &def_stmt, &def, &dt))
+      if (op && !vect_is_simple_use (op, loop_vinfo, &def_stmt, &def, &dt))
         {
           if (vect_print_dump_info (REPORT_DETAILS))
             fprintf (vect_dump, "use not simple.");

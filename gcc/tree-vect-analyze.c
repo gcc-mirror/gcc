@@ -482,7 +482,10 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 	      need_to_vectorize = true;
 	    }
 
-	  ok = (vectorizable_type_promotion (stmt, NULL, NULL)
+	  ok = true;
+	  if (STMT_VINFO_RELEVANT_P (stmt_info)
+	      || STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def)
+	    ok = (vectorizable_type_promotion (stmt, NULL, NULL)
 		|| vectorizable_type_demotion (stmt, NULL, NULL)
 		|| vectorizable_conversion (stmt, NULL, NULL, NULL)
 		|| vectorizable_operation (stmt, NULL, NULL, NULL)
@@ -493,17 +496,29 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 		|| vectorizable_condition (stmt, NULL, NULL)
 		|| vectorizable_reduction (stmt, NULL, NULL));
 
+	  if (!ok)
+	    {
+	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+		{
+		  fprintf (vect_dump, "not vectorized: relevant stmt not ");
+		  fprintf (vect_dump, "supported: ");
+		  print_generic_expr (vect_dump, stmt, TDF_SLIM);
+		}
+	      return false;
+	    }
+
 	  /* Stmts that are (also) "live" (i.e. - that are used out of the loop)
 	     need extra handling, except for vectorizable reductions.  */
 	  if (STMT_VINFO_LIVE_P (stmt_info)
 	      && STMT_VINFO_TYPE (stmt_info) != reduc_vec_info_type) 
-	    ok |= vectorizable_live_operation (stmt, NULL, NULL);
+	    ok = vectorizable_live_operation (stmt, NULL, NULL);
 
 	  if (!ok)
 	    {
 	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
 		{
-		  fprintf (vect_dump, "not vectorized: stmt not supported: ");
+		  fprintf (vect_dump, "not vectorized: live stmt not ");
+		  fprintf (vect_dump, "supported: ");
 		  print_generic_expr (vect_dump, stmt, TDF_SLIM);
 		}
 	      return false;
@@ -3250,7 +3265,8 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
 	     inner-loop: *(BASE+INIT). (The first location is actually
 	     BASE+INIT+OFFSET, but we add OFFSET separately later.  */
 	  tree inner_base = build_fold_indirect_ref 
-				(fold_build2 (PLUS_EXPR, TREE_TYPE (base), base, init));
+				(fold_build2 (PLUS_EXPR, 
+					      TREE_TYPE (base), base, init));
 
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    {
