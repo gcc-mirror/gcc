@@ -957,18 +957,19 @@ replace_field_acc (struct field_access_site *acc, tree new_type)
   tree new_acc;
   tree field_id = DECL_NAME (acc->field_decl);
   VEC (type_wrapper_t, heap) *wrapper = VEC_alloc (type_wrapper_t, heap, 10);
-  type_wrapper_t wr;
   type_wrapper_t *wr_p = NULL;
   
   while (TREE_CODE (ref_var) == INDIRECT_REF
 	 || TREE_CODE (ref_var) == ARRAY_REF)
     {
+      type_wrapper_t wr;
+
       if ( TREE_CODE (ref_var) == INDIRECT_REF)
 	{
 	  wr.wrap = 0;
 	  wr.domain = 0;
 	}
-      else if (TREE_CODE (ref_var) == ARRAY_REF)
+      else
 	{
 	  wr.wrap = 1;
 	  wr.domain = TREE_OPERAND (ref_var, 1);
@@ -3550,7 +3551,7 @@ sum_counts (d_str str, gcov_type *hotest)
 	{
 	  fprintf (dump_file, "\nCounter of field \"");
 	  print_generic_expr (dump_file, str->fields[i].decl, 0);
-	  fprintf (dump_file, "\" is " HOST_WIDE_INT_PRINT_DEC, 
+	  fprintf (dump_file, "\" is " HOST_WIDEST_INT_PRINT_DEC, 
 		   str->fields[i].count);
 	}
       str->count += str->fields[i].count;
@@ -3560,7 +3561,7 @@ sum_counts (d_str str, gcov_type *hotest)
     {
       fprintf (dump_file, "\nCounter of struct \"");
       print_generic_expr (dump_file, str->decl, 0);
-      fprintf (dump_file, "\" is " HOST_WIDE_INT_PRINT_DEC, str->count);
+      fprintf (dump_file, "\" is " HOST_WIDEST_INT_PRINT_DEC, str->count);
     }
 
   if (str->count > *hotest)

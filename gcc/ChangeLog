@@ -1,3 +1,15 @@
+2007-10-24  Samuel Tardieu  <sam@rfc1149.net>
+            Olga Golovanevsky <olga@il.ibm.com>
+	
+	* ipa-struct-reorg.c (replace_field_acc): Make it clear to
+	the compiler that wr.wrap and wr.domain are initialized in
+	any case.
+
+2007-10-24  Samuel Tardieu  <sam@rfc1149.net>
+
+	* ipa-struct-reorg.c (sum_counts): Use HOST_WIDEST_PRINT_DEC
+	to print gcov_type values.
+
 2007-10-24  Eric B. Weddington  <eweddington@cso.atmel.com>
 
 	* config/avr/avr.h: Do not include progmem_section definition when
