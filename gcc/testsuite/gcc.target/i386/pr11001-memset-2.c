@@ -1,10 +1,10 @@
 /* Ensure that we don't use 'rep stoX' in the presence of register globals.  */
 /* { dg-do compile } */
-/* { dg-options "-Os -m32" } */
+/* { dg-options "-Os -w" } */
 
 extern void *memset (void *, int, __SIZE_TYPE__);
 
-register int regvar asm("%ecx"); /* { dg-warning "call-clobbered register" } */
+register int regvar asm("%ecx");
 
 int foo[10];
 int bar[10];
