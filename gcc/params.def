@@ -83,6 +83,16 @@ DEFPARAM (PARAM_SRA_FIELD_STRUCTURE_RATIO,
 	  "The threshold ratio between instantiated fields and the total structure size",
 	  75, 0, 100)
 
+/* The threshold ratio between current and hotest structure counts.
+   We say that if the ratio of the current structure count, 
+   calculated by profiling, to the hotest structure count 
+   in the program is less than this parameter, then structure
+   reorganization is not applied. The default is 10%.  */
+DEFPARAM (PARAM_STRUCT_REORG_COLD_STRUCT_RATIO,
+	  "struct-reorg-cold-struct-ratio",
+	  "The threshold ratio between current and hotest structure counts",
+	  10, 0, 100)
+
 /* The single function inlining limit. This is the maximum size
    of a function counted in internal gcc instructions (not in
    real machine instructions) that is eligible for inlining

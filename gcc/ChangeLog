@@ -1,3 +1,22 @@
+2007-10-24  Olga Golovanevsky  <olga@il.ibm.com>
+
+      * ipa-type-escape.h: Expose function
+      is_array_access_through_pointer_and_index.
+      * ipa-type-escape.c
+      (is_array_access_through_pointer_and_index):
+      Add three new parameters. Add support of
+      POINTER_PLUS_EXPR tree code.
+
+2007-10-24  Olga Golovanevsky  <olga@il.ibm.com>
+
+      * ipa-struct-reorg.c, ipa-struct-reorg.h: New files.
+      * tree-pass.h: Add pass_ipa_struct_reorg.
+      * common.opt: Add ipa-struct-reorg flag.
+      * Makefile.in: Add ipa-strcut-reorg.o compilation.
+      * passes.c: Add pass pass_ipa_struct_reorg.
+      * params.h:  Add STRUCT_REORG_COLD_STRUCT_RATIO.
+      * params.def: Add PARAM_STRUCT_REORG_COLD_STRUCT_RATIO.
+
 2007-10-24  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/33804
