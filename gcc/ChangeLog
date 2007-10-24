@@ -1,3 +1,20 @@
+2007-10-24  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR target/33755
+	* config/mips/mips.c (override_options): Always move
+	flag_delayed_branch to mips_flag_delayed_branch.
+	(mips_lo_sum_offset): New structure.
+	(mips_hash_base, mips_lo_sum_offset_hash, mips_lo_sum_offset_eq)
+	(mips_lo_sum_offset_lookup, mips_record_lo_sum)
+	(mips_orphaned_high_part_p: New functions.
+	(mips_avoid_hazard): Don't check INSN_P here.
+	(mips_avoid_hazards): Rename to...
+	(mips_reorg_process_insns): ...this.  Cope with
+	!TARGET_EXPLICIT_RELOCS.  Delete orphaned high-part relocations,
+	or turn them into nops.
+	(mips_reorg): Remove TARGET_EXPLICIT_RELOCS check from calls to
+	dbr_schedule and mips_avoid_hazards/mips_reorg_process_insns.
+
 2007-10-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/rtl.texi (Flags): Fix MEM_SCALAR_P entry.

@@ -1,3 +1,8 @@
+2007-10-24  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR target/33755
+	* gcc.target/mips/pr33755.c: New test.
+
 2007-10-22  David S. Miller  <davem@davemloft.net>
 
 	* gcc.dg/globalreg-1.c: New test.

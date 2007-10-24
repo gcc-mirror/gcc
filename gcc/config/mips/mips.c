@@ -361,7 +361,6 @@ static void mips_sim_finish_insn (struct mips_sim *, rtx);
 static void vr4130_avoid_branch_rt_conflict (rtx);
 static void vr4130_align_insns (void);
 static void mips_avoid_hazard (rtx, rtx, int *, rtx *, rtx);
-static void mips_avoid_hazards (void);
 static void mips_reorg (void);
 static bool mips_strict_matching_cpu_name_p (const char *, const char *);
 static bool mips_matching_cpu_name_p (const char *, const char *);
@@ -4949,13 +4948,9 @@ override_options (void)
       target_flags &= ~MASK_EXPLICIT_RELOCS;
     }
 
-  /* When using explicit relocs, we call dbr_schedule from within
-     mips_reorg.  */
-  if (TARGET_EXPLICIT_RELOCS)
-    {
-      mips_flag_delayed_branch = flag_delayed_branch;
-      flag_delayed_branch = 0;
-    }
+  /* We call dbr_schedule from within mips_reorg.  */
+  mips_flag_delayed_branch = flag_delayed_branch;
+  flag_delayed_branch = 0;
 
 #ifdef MIPS_TFMODE_FORMAT
   REAL_MODE_FORMAT (TFmode) = &MIPS_TFMODE_FORMAT;
@@ -8973,8 +8968,122 @@ vr4130_align_insns (void)
   dfa_finish ();
 }
 
-/* Subroutine of mips_reorg.  If there is a hazard between INSN
-   and a previous instruction, avoid it by inserting nops after
+/* This structure records that the current function has a LO_SUM
+   involving SYMBOL_REF or LABEL_REF BASE and that MAX_OFFSET is
+   the largest offset applied to BASE by all such LO_SUMs.  */
+struct mips_lo_sum_offset {
+  rtx base;
+  HOST_WIDE_INT offset;
+};
+
+/* Return a hash value for SYMBOL_REF or LABEL_REF BASE.  */
+
+static hashval_t
+mips_hash_base (rtx base)
+{
+  int do_not_record_p;
+
+  return hash_rtx (base, GET_MODE (base), &do_not_record_p, NULL, false);
+}
+
+/* Hash-table callbacks for mips_lo_sum_offsets.  */
+
+static hashval_t
+mips_lo_sum_offset_hash (const void *entry)
+{
+  return mips_hash_base (((const struct mips_lo_sum_offset *) entry)->base);
+}
+
+static int
+mips_lo_sum_offset_eq (const void *entry, const void *value)
+{
+  return rtx_equal_p (((const struct mips_lo_sum_offset *) entry)->base,
+		      (rtx) value);
+}
+
+/* Look up symbolic constant X in HTAB, which is a hash table of
+   mips_lo_sum_offsets.  If OPTION is NO_INSERT, return true if X can be
+   paired with a recorded LO_SUM, otherwise record X in the table.  */
+
+static bool
+mips_lo_sum_offset_lookup (htab_t htab, rtx x, enum insert_option option)
+{
+  rtx base;
+  HOST_WIDE_INT offset;
+  void **slot;
+  struct mips_lo_sum_offset *entry;
+
+  /* Split X into a base and offset.  */
+  mips_split_const (x, &base, &offset);
+  if (UNSPEC_ADDRESS_P (base))
+    base = UNSPEC_ADDRESS (base);
+
+  /* Look up the base in the hash table.  */
+  slot = htab_find_slot_with_hash (htab, base, mips_hash_base (base), option);
+  if (slot == NULL)
+    return false;
+
+  entry = (struct mips_lo_sum_offset *) *slot;
+  if (option == INSERT)
+    {
+      if (entry == NULL)
+	{
+	  entry = XNEW (struct mips_lo_sum_offset);
+	  entry->base = base;
+	  entry->offset = offset;
+	  *slot = entry;
+	}
+      else
+	{
+	  if (offset > entry->offset)
+	    entry->offset = offset;
+	}
+    }
+  return offset <= entry->offset;
+}
+
+/* A for_each_rtx callback for which DATA is a mips_lo_sum_offset hash table.
+   Record every LO_SUM in *LOC.  */
+
+static int
+mips_record_lo_sum (rtx *loc, void *data)
+{
+  if (GET_CODE (*loc) == LO_SUM)
+    mips_lo_sum_offset_lookup ((htab_t) data, XEXP (*loc, 1), INSERT);
+  return 0;
+}
+
+/* Return true if INSN is a SET of an orphaned high-part relocation.
+   HTAB is a hash table of mips_lo_sum_offsets that describes all the
+   LO_SUMs in the current function.  */
+
+static bool
+mips_orphaned_high_part_p (htab_t htab, rtx insn)
+{
+  enum mips_symbol_type type;
+  rtx x, set;
+
+  set = single_set (insn);
+  if (set)
+    {
+      /* Check for %his.  */
+      x = SET_SRC (set);
+      if (GET_CODE (x) == HIGH
+	  && general_symbolic_operand (XEXP (x, 0), VOIDmode))
+	return !mips_lo_sum_offset_lookup (htab, XEXP (x, 0), NO_INSERT);
+
+      /* Check for local %gots (and %got_pages, which is redundant but OK).  */
+      if (GET_CODE (x) == UNSPEC
+	  && XINT (x, 1) == UNSPEC_LOAD_GOT
+	  && mips_symbolic_constant_p (XVECEXP (x, 0, 1), &type)
+	  && type == SYMBOL_GOTOFF_PAGE)
+	return !mips_lo_sum_offset_lookup (htab, XVECEXP (x, 0, 1), NO_INSERT);
+    }
+  return false;
+}
+
+/* Subroutine of mips_reorg_process_insns.  If there is a hazard between
+   INSN and a previous instruction, avoid it by inserting nops after
    instruction AFTER.
 
    *DELAYED_REG and *HILO_DELAY describe the hazards that apply at
@@ -8994,9 +9103,6 @@ mips_avoid_hazard (rtx after, rtx insn, int *hilo_delay,
 {
   rtx pattern, set;
   int nops, ninsns, hazard_set;
-
-  if (!INSN_P (insn))
-    return;
 
   pattern = PATTERN (insn);
 
@@ -9058,14 +9164,16 @@ mips_avoid_hazard (rtx after, rtx insn, int *hilo_delay,
 
 
 /* Go through the instruction stream and insert nops where necessary.
-   See if the whole function can then be put into .set noreorder &
-   .set nomacro.  */
+   Also delete any high-part relocations whose partnering low parts
+   are now all dead.  See if the whole function can then be put into
+   .set noreorder and .set nomacro.  */
 
 static void
-mips_avoid_hazards (void)
+mips_reorg_process_insns (void)
 {
-  rtx insn, last_insn, lo_reg, delayed_reg;
-  int hilo_delay, i;
+  rtx insn, last_insn, subinsn, next_insn, lo_reg, delayed_reg;
+  int hilo_delay;
+  htab_t htab;
 
   /* Force all instructions to be split into their final form.  */
   split_all_insns_noflow ();
@@ -9075,6 +9183,10 @@ mips_avoid_hazards (void)
   shorten_branches (get_insns ());
 
   cfun->machine->all_noreorder_p = true;
+
+  /* Code that doesn't use explicit relocs can't be ".set nomacro".  */
+  if (!TARGET_EXPLICIT_RELOCS)
+    cfun->machine->all_noreorder_p = false;
 
   /* Profiled functions can't be all noreorder because the profiler
      support uses assembler macros.  */
@@ -9093,24 +9205,63 @@ mips_avoid_hazards (void)
   if (TARGET_FIX_VR4130 && !ISA_HAS_MACCHI)
     cfun->machine->all_noreorder_p = false;
 
+  htab = htab_create (37, mips_lo_sum_offset_hash,
+		      mips_lo_sum_offset_eq, free);
+
+  /* Make a first pass over the instructions, recording all the LO_SUMs.  */
+  for (insn = get_insns (); insn != 0; insn = NEXT_INSN (insn))
+    FOR_EACH_SUBINSN (subinsn, insn)
+      if (INSN_P (subinsn))
+	for_each_rtx (&PATTERN (subinsn), mips_record_lo_sum, htab);
+
   last_insn = 0;
   hilo_delay = 2;
   delayed_reg = 0;
   lo_reg = gen_rtx_REG (SImode, LO_REGNUM);
 
-  for (insn = get_insns (); insn != 0; insn = NEXT_INSN (insn))
-    if (INSN_P (insn))
-      {
-	if (GET_CODE (PATTERN (insn)) == SEQUENCE)
-	  for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
-	    mips_avoid_hazard (last_insn, XVECEXP (PATTERN (insn), 0, i),
-			       &hilo_delay, &delayed_reg, lo_reg);
-	else
-	  mips_avoid_hazard (last_insn, insn, &hilo_delay,
-			     &delayed_reg, lo_reg);
+  /* Make a second pass over the instructions.  Delete orphaned
+     high-part relocations or turn them into NOPs.  Avoid hazards
+     by inserting NOPs.  */
+  for (insn = get_insns (); insn != 0; insn = next_insn)
+    {
+      next_insn = NEXT_INSN (insn);
+      if (INSN_P (insn))
+	{
+	  if (GET_CODE (PATTERN (insn)) == SEQUENCE)
+	    {
+	      /* If we find an orphaned high-part relocation in a delay
+		 slot, it's easier to turn that instruction into a nop than
+		 to delete it.  The delay slot will be a nop either way.  */
+	      FOR_EACH_SUBINSN (subinsn, insn)
+		if (INSN_P (subinsn))
+		  {
+		    if (mips_orphaned_high_part_p (htab, subinsn))
+		      {
+			PATTERN (subinsn) = gen_nop ();
+			INSN_CODE (subinsn) = CODE_FOR_nop;
+		      }
+		    mips_avoid_hazard (last_insn, subinsn, &hilo_delay,
+				       &delayed_reg, lo_reg);
+		  }
+	      last_insn = insn;
+	    }
+	  else
+	    {
+	      /* INSN is a single instruction.  Delete it if it's an
+		 orphaned high-part relocation.  */
+	      if (mips_orphaned_high_part_p (htab, insn))
+		delete_insn (insn);
+	      else
+		{
+		  mips_avoid_hazard (last_insn, insn, &hilo_delay,
+				     &delayed_reg, lo_reg);
+		  last_insn = insn;
+		}
+	    }
+	}
+    }
 
-	last_insn = insn;
-      }
+  htab_delete (htab);
 }
 
 
@@ -9121,14 +9272,11 @@ mips_reorg (void)
 {
   if (TARGET_MIPS16)
     mips16_lay_out_constants ();
-  else if (TARGET_EXPLICIT_RELOCS)
-    {
-      if (mips_flag_delayed_branch)
-	dbr_schedule (get_insns ());
-      mips_avoid_hazards ();
-      if (TUNE_MIPS4130 && TARGET_VR4130_ALIGN)
-	vr4130_align_insns ();
-    }
+  if (mips_flag_delayed_branch)
+    dbr_schedule (get_insns ());
+  mips_reorg_process_insns ();
+  if (TARGET_EXPLICIT_RELOCS && TUNE_MIPS4130 && TARGET_VR4130_ALIGN)
+    vr4130_align_insns ();
 }
 
 /* This function does three things:
