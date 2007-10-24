@@ -1,3 +1,8 @@
+2007-10-24  Eric B. Weddington  <eweddington@cso.atmel.com>
+
+	* config/avr/avr.h: Do not include progmem_section definition when
+	building with IN_TARGET_LIBS.
+
 2007-10-24  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR target/33755
