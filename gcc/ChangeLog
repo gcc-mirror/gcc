@@ -1,5 +1,12 @@
 2007-10-24  Ira Rosen  <irar@il.ibm.com>
 
+	PR tree-optimization/33804
+	* tree-vect-transform.c (vectorizable_operation): Remove the
+	checks that the vectorization is worthwhile from the transformation
+	phase.
+
+2007-10-24  Ira Rosen  <irar@il.ibm.com>
+
 	* tree-vect-analyze.c (vect_build_slp_tree): Return false if
 	vectype cannot be determined for the scalar type.
 	(vect_analyze_slp_instance): Likewise.

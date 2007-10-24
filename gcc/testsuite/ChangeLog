@@ -1,3 +1,8 @@
+2007-10-24  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/33804
+	* gcc.dg/vect/pr33804.c: New testcase.
+
 2007-10-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR forrtran/33849
