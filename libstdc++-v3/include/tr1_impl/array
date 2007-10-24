@@ -52,7 +52,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       typedef std::reverse_iterator<const_iterator>   const_reverse_iterator;
 
       // Support for zero-sized arrays mandatory.
-      value_type _M_instance[_Nm ? _Nm : 1] __attribute__((__aligned__));
+      value_type _M_instance[_Nm ? _Nm : 1];
 
       // No explicit construct/copy/destroy for aggregate type.
 
