@@ -1,3 +1,21 @@
+2007-10-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/25950 (DR 391)
+	* call.c (struct conversion): Remove check_copy_constructor_p.
+	(reference_binding): Always bind a reference directly to a 
+	compatible class rvalue.  Pass down LOOKUP_NO_TEMP_BIND during 
+	temporary creation.
+	(check_constructor_callable): Remove.
+	(convert_like_real): Don't call it.
+	(initialize_reference): Don't call check_constructor_callable.
+	(standard_conversion): Check LOOKUP_NO_CONVERSION instead of
+	LOOKUP_CONSTRUCTOR_CALLABLE.  Don't require a temporary for base
+	conversions if LOOKUP_NO_TEMP_BIND.
+	(implicit_conversion): Pass through LOOKUP_NO_TEMP_BIND.
+	(build_user_type_conversion_1): Pass through LOOKUP_NO_TEMP_BIND for
+	second conversion.
+	* cp-tree.h (LOOKUP_CONSTRUCTOR_CALLABLE): Remove.
+
 2007-10-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/33372
