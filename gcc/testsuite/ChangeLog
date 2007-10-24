@@ -1,3 +1,9 @@
+2007-10-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/sms-2.c: Cleanup sms dump file.
+	* gcc.dg/tree-prof/tracer-1.c: Cleanup tracer dump file after the
+	profile-use step.
+
 2007-10-24  David Daney  <ddaney@avtrex.com>
 
 	* gcc.dg/tree-ssa/update-threading.c: Remove xfail.
