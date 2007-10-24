@@ -1,6 +1,6 @@
 /* Ensure that we don't use 'rep movX' in the presence of register globals.  */
 /* { dg-do compile } */
-/* { dg-options "-Os -m32" } */
+/* { dg-options "-Os -w" } */
 
 extern void *memcpy (void *, const void *, __SIZE_TYPE__);
 
