@@ -3858,18 +3858,21 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt,
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "op not supported by target.");
+      /* Check only during analysis.  */
       if (GET_MODE_SIZE (vec_mode) != UNITS_PER_WORD
-          || LOOP_VINFO_VECT_FACTOR (loop_vinfo)
-	     < vect_min_worthwhile_factor (code))
+          || (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
+	      < vect_min_worthwhile_factor (code)
+              && !vec_stmt))
         return false;
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "proceeding using word mode.");
     }
 
-  /* Worthwhile without SIMD support?  */
+  /* Worthwhile without SIMD support? Check only during analysis.  */
   if (!VECTOR_MODE_P (TYPE_MODE (vectype))
       && LOOP_VINFO_VECT_FACTOR (loop_vinfo)
-	 < vect_min_worthwhile_factor (code))
+	 < vect_min_worthwhile_factor (code)
+      && !vec_stmt)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "not worthwhile without SIMD support.");
