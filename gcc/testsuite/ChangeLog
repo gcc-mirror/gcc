@@ -1,3 +1,7 @@
+2007-10-24  David Daney  <ddaney@avtrex.com>
+
+	* gcc.dg/tree-ssa/update-threading.c: Remove xfail.
+
 2007-10-24  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR target/33755
