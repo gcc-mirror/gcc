@@ -18,7 +18,7 @@ END SUBROUTINE
 END MODULE TEST
     
 USE TEST
-CALL F(CALCULATION) ! { dg-error "GENERIC non-INTRINSIC procedure" } 
+CALL F(CALCULATION) ! { dg-error "GENERIC procedure" } 
 END
 
 SUBROUTINE F()
