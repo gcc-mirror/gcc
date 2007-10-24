@@ -53,7 +53,7 @@ extern int avr_mega_p;
 extern int avr_have_mul_p;
 extern int avr_asm_only_p;
 extern int avr_have_movw_lpmx_p;
-#ifndef IN_LIBGCC2
+#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS)
 extern GTY(()) section *progmem_section;
 #endif
 
