@@ -13588,7 +13588,7 @@ cp_parser_parameter_declaration (cp_parser *parser,
 	      token = cp_lexer_consume_token (parser->lexer);
 	    }
 
-	  /* Create a DEFAULT_ARG to represented the unparsed default
+	  /* Create a DEFAULT_ARG to represent the unparsed default
 	     argument.  */
 	  default_argument = make_node (DEFAULT_ARG);
 	  DEFARG_TOKENS (default_argument)
