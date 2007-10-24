@@ -1,3 +1,8 @@
+2007-10-24  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR target/33755
+	* gcc.target/mips/pr33755.c: New test.
+
 2007-10-24  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/33804
