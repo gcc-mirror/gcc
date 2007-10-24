@@ -1221,9 +1221,11 @@ variable_union (void **slot, void *data)
 			 && REG_P (node->loc)
 			 && REGNO (node2->loc) == REGNO (node->loc))
 			|| rtx_equal_p (node2->loc, node->loc)))
-		    if (node2->init < node->init)
-		      node2->init = node->init;
-		    break;
+		    {
+		      if (node2->init < node->init)
+		        node2->init = node->init;
+		      break;
+		    }
 		}
 	      if (node || node2)
 		dst = unshare_variable (set, dst, VAR_INIT_STATUS_UNKNOWN);
@@ -2209,8 +2211,13 @@ dump_variable (void **slot, void *data ATTRIBUTE_UNUSED)
   int i;
   location_chain node;
 
-  fprintf (dump_file, "  name: %s\n",
+  fprintf (dump_file, "  name: %s",
 	   IDENTIFIER_POINTER (DECL_NAME (var->decl)));
+  if (dump_flags & TDF_UID)
+    fprintf (dump_file, " D.%u\n", DECL_UID (var->decl));
+  else
+    fprintf (dump_file, "\n");
+
   for (i = 0; i < var->n_var_parts; i++)
     {
       fprintf (dump_file, "    offset %ld\n",
