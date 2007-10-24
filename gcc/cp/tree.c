@@ -2248,7 +2248,7 @@ make_ptrmem_cst (tree type, tree member)
 }
 
 /* Build a variant of TYPE that has the indicated ATTRIBUTES.  May
-   return an existing type of an appropriate type already exists.  */
+   return an existing type if an appropriate type already exists.  */
 
 tree
 cp_build_type_attribute_variant (tree type, tree attributes)
