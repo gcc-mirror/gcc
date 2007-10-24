@@ -1,3 +1,17 @@
+2007-10-24  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* config/mips/mips.h (MOVE_MAX): Use UNITS_PER_WORD and describe
+	MIPS-specific implementation details.
+	(MIPS_MAX_MOVE_BYTES_PER_LOOP_ITER): New macro.
+	(MIPS_MAX_MOVE_BYTES_STRAIGHT): Likewise.
+	(MOVE_RATIO): Define to MIPS_MAX_MOVE_BYTES_STRAIGHT / UNITS_PER_WORD
+	for targets with movmemsi.
+	(MOVE_BY_PIECES_P): Define.
+	* config/mips/mips.c (MAX_MOVE_REGS, MAX_MOVE_BYTES): Delete.
+	(mips_block_move_loop): Add a bytes_per_iter argument.
+	(mips_expand_block_move): Use MIPS_MAX_MOVE_BYTES_STRAIGHT.
+	Update call to mips_block_move_loop.
+
 2007-10-24  Michael Matz  <matz@suse.de>
 
 	PR debug/33868

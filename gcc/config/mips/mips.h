@@ -2338,9 +2338,10 @@ typedef struct mips_args {
 #define DEFAULT_SIGNED_CHAR 1
 #endif
 
-/* Max number of bytes we can move from memory to memory
-   in one reasonably fast instruction.  */
-#define MOVE_MAX (TARGET_64BIT ? 8 : 4)
+/* Although LDC1 and SDC1 provide 64-bit moves on 32-bit targets,
+   we generally don't want to use them for copying arbitrary data.
+   A single N-word move is usually the same cost as N single-word moves.  */
+#define MOVE_MAX UNITS_PER_WORD
 #define MAX_MOVE_MAX 8
 
 /* Define this macro as a C expression which is nonzero if
@@ -2769,6 +2770,18 @@ while (0)
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE (POINTER_SIZE == 64 ? "long int" : "int")
 
+/* The maximum number of bytes that can be copied by one iteration of
+   a movmemsi loop; see mips_block_move_loop.  */
+#define MIPS_MAX_MOVE_BYTES_PER_LOOP_ITER \
+  (UNITS_PER_WORD * 4)
+
+/* The maximum number of bytes that can be copied by a straight-line
+   implementation of movmemsi; see mips_block_move_straight.  We want
+   to make sure that any loop-based implementation will iterate at
+   least twice.  */
+#define MIPS_MAX_MOVE_BYTES_STRAIGHT \
+  (MIPS_MAX_MOVE_BYTES_PER_LOOP_ITER * 2)
+
 /* The base cost of a memcpy call, for MOVE_RATIO and friends.  These
    values were determined experimentally by benchmarking with CSiBE.
    In theory, the call overhead is higher for TARGET_ABICALLS (especially
@@ -2778,23 +2791,39 @@ while (0)
 
 #define MIPS_CALL_RATIO 8
 
-/* Define MOVE_RATIO to encourage use of movmemsi when enabled,
-   since it should always generate code at least as good as
-   move_by_pieces().  But when inline movmemsi pattern is disabled
-   (i.e., with -mips16 or -mmemcpy), instead use a value approximating
-   the length of a memcpy call sequence, so that move_by_pieces will
-   generate inline code if it is shorter than a function call.
-   Since move_by_pieces_ninsns() counts memory-to-memory moves, but
-   we'll have to generate a load/store pair for each, halve the value of 
-   MIPS_CALL_RATIO to take that into account.
-   The default value for MOVE_RATIO when HAVE_movmemsi is true is 2.
-   There is no point to setting it to less than this to try to disable
-   move_by_pieces entirely, because that also disables some desirable 
-   tree-level optimizations, specifically related to optimizing a
-   one-byte string copy into a simple move byte operation.  */
+/* Any loop-based implementation of movmemsi will have at least
+   MIPS_MAX_MOVE_BYTES_STRAIGHT / UNITS_PER_WORD memory-to-memory
+   moves, so allow individual copies of fewer elements.
 
-#define MOVE_RATIO \
-  ((TARGET_MIPS16 || TARGET_MEMCPY) ? MIPS_CALL_RATIO / 2 : 2)
+   When movmemsi is not available, use a value approximating
+   the length of a memcpy call sequence, so that move_by_pieces
+   will generate inline code if it is shorter than a function call.
+   Since move_by_pieces_ninsns counts memory-to-memory moves, but
+   we'll have to generate a load/store pair for each, halve the
+   value of MIPS_CALL_RATIO to take that into account.  */
+
+#define MOVE_RATIO					\
+  (HAVE_movmemsi					\
+   ? MIPS_MAX_MOVE_BYTES_STRAIGHT / MOVE_MAX		\
+   : MIPS_CALL_RATIO / 2)
+
+/* movmemsi is meant to generate code that is at least as good as
+   move_by_pieces.  However, movmemsi effectively uses a by-pieces
+   implementation both for moves smaller than a word and for word-aligned
+   moves of no more than MIPS_MAX_MOVE_BYTES_STRAIGHT bytes.  We should
+   allow the tree-level optimisers to do such moves by pieces, as it
+   often exposes other optimization opportunities.  We might as well
+   continue to use movmemsi at the rtl level though, as it produces
+   better code when scheduling is disabled (such as at -O).  */
+
+#define MOVE_BY_PIECES_P(SIZE, ALIGN)				\
+  (HAVE_movmemsi						\
+   ? (!currently_expanding_to_rtl				\
+      && ((ALIGN) < BITS_PER_WORD				\
+	  ? (SIZE) < UNITS_PER_WORD				\
+	  : (SIZE) <= MIPS_MAX_MOVE_BYTES_STRAIGHT))		\
+   : (move_by_pieces_ninsns (SIZE, ALIGN, MOVE_MAX_PIECES + 1)	\
+      < (unsigned int) MOVE_RATIO))
 
 /* For CLEAR_RATIO, when optimizing for size, give a better estimate
    of the length of a memset call, but use the default otherwise.  */

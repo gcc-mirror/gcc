@@ -5622,9 +5622,6 @@ mips_expand_fcc_reload (rtx dest, rtx src, rtx scratch)
   emit_insn (gen_slt_sf (dest, fp2, fp1));
 }
 
-#define MAX_MOVE_REGS 4
-#define MAX_MOVE_BYTES (MAX_MOVE_REGS * UNITS_PER_WORD)
-
 /* Emit straight-line code to move LENGTH bytes from SRC to DEST.
    Assume that the areas do not overlap.  */
 
@@ -5710,22 +5707,23 @@ mips_adjust_block_mem (rtx mem, HOST_WIDE_INT length,
   set_mem_align (*loop_mem, MIN (MEM_ALIGN (mem), length * BITS_PER_UNIT));
 }
 
-/* Move LENGTH bytes from SRC to DEST using a loop that moves MAX_MOVE_BYTES
-   per iteration.  LENGTH must be at least MAX_MOVE_BYTES.  Assume that the
-   memory regions do not overlap.  */
+/* Move LENGTH bytes from SRC to DEST using a loop that moves BYTES_PER_ITER
+   bytes at a time.  LENGTH must be at least BYTES_PER_ITER.  Assume that
+   the memory regions do not overlap.  */
 
 static void
-mips_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length)
+mips_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length,
+		      HOST_WIDE_INT bytes_per_iter)
 {
   rtx label, src_reg, dest_reg, final_src;
   HOST_WIDE_INT leftover;
 
-  leftover = length % MAX_MOVE_BYTES;
+  leftover = length % bytes_per_iter;
   length -= leftover;
 
   /* Create registers and memory references for use within the loop.  */
-  mips_adjust_block_mem (src, MAX_MOVE_BYTES, &src_reg, &src);
-  mips_adjust_block_mem (dest, MAX_MOVE_BYTES, &dest_reg, &dest);
+  mips_adjust_block_mem (src, bytes_per_iter, &src_reg, &src);
+  mips_adjust_block_mem (dest, bytes_per_iter, &dest_reg, &dest);
 
   /* Calculate the value that SRC_REG should have after the last iteration
      of the loop.  */
@@ -5737,11 +5735,11 @@ mips_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length)
   emit_label (label);
 
   /* Emit the loop body.  */
-  mips_block_move_straight (dest, src, MAX_MOVE_BYTES);
+  mips_block_move_straight (dest, src, bytes_per_iter);
 
   /* Move on to the next block.  */
-  mips_emit_move (src_reg, plus_constant (src_reg, MAX_MOVE_BYTES));
-  mips_emit_move (dest_reg, plus_constant (dest_reg, MAX_MOVE_BYTES));
+  mips_emit_move (src_reg, plus_constant (src_reg, bytes_per_iter));
+  mips_emit_move (dest_reg, plus_constant (dest_reg, bytes_per_iter));
 
   /* Emit the loop condition.  */
   if (Pmode == DImode)
@@ -5763,14 +5761,15 @@ mips_expand_block_move (rtx dest, rtx src, rtx length)
 {
   if (GET_CODE (length) == CONST_INT)
     {
-      if (INTVAL (length) <= 2 * MAX_MOVE_BYTES)
+      if (INTVAL (length) <= MIPS_MAX_MOVE_BYTES_STRAIGHT)
 	{
 	  mips_block_move_straight (dest, src, INTVAL (length));
 	  return true;
 	}
       else if (optimize)
 	{
-	  mips_block_move_loop (dest, src, INTVAL (length));
+	  mips_block_move_loop (dest, src, INTVAL (length),
+				MIPS_MAX_MOVE_BYTES_PER_LOOP_ITER);
 	  return true;
 	}
     }
