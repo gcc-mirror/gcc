@@ -1,3 +1,17 @@
+2007-10-24  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vect-analyze.c (vect_build_slp_tree): Return false if
+	vectype cannot be determined for the scalar type.
+	(vect_analyze_slp_instance): Likewise.
+	* tree-vect-transform.c (vect_model_reduction_cost): Change the
+	return type to bool. Return false if vectype cannot be determined 
+	for the scalar type.
+	(vect_get_constant_vectors): Return false if vectype cannot be
+	determined for the scalar type.
+	(get_initial_def_for_induction, vect_get_vec_def_for_operand,
+	get_initial_def_for_reduction, vect_create_epilog_for_reduction,
+	vectorizable_reduction): Likewise.	
+
 2007-10-23  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	* config.gcc: For a FreeBSD target, parse the value of ${target}

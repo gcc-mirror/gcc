@@ -2682,6 +2682,16 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, slp_tree *node,
 
       scalar_type = TREE_TYPE (GIMPLE_STMT_OPERAND (stmt, 0));
       vectype = get_vectype_for_scalar_type (scalar_type);
+      if (!vectype)
+        {
+          if (vect_print_dump_info (REPORT_SLP))
+            {
+              fprintf (vect_dump, "Build SLP failed: unsupported data-type ");
+              print_generic_expr (vect_dump, scalar_type, TDF_SLIM);
+            }
+          return false;
+        }
+
       gcc_assert (LOOP_VINFO_VECT_FACTOR (loop_vinfo));
       vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
       ncopies = vectorization_factor / TYPE_VECTOR_SUBPARTS (vectype);
@@ -2987,6 +2997,16 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, tree stmt)
   /* FORNOW: multiple types are not supported.  */
   scalar_type = TREE_TYPE (DR_REF (STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt))));
   vectype = get_vectype_for_scalar_type (scalar_type);
+  if (!vectype)
+    {
+      if (vect_print_dump_info (REPORT_SLP))
+        {
+          fprintf (vect_dump, "Build SLP failed: unsupported data-type ");
+          print_generic_expr (vect_dump, scalar_type, TDF_SLIM);
+        }
+      return false;
+    }
+
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
   vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   ncopies = vectorization_factor / nunits;
