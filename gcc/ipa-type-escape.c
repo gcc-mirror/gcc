@@ -926,56 +926,89 @@ is_cast_from_non_pointer (tree var, tree def_stmt, void *data)
 
 */
 
-static bool
-is_array_access_through_pointer_and_index (tree op0, tree op1)
+bool
+is_array_access_through_pointer_and_index (enum tree_code code, tree op0, 
+					   tree op1, tree *base, tree *offset,
+					   tree *offset_cast_stmt)
 {
-  tree base, offset, offset_cast_stmt;
   tree before_cast, before_cast_def_stmt;
   cast_t op0_cast, op1_cast;
 
+  *base = NULL;
+  *offset = NULL;
+  *offset_cast_stmt = NULL;
+
   /* Check 1.  */
-
-  /* Init data for walk_use_def_chains function.  */
-  op0_cast.type = op1_cast.type = 0;
-  op0_cast.stmt = op1_cast.stmt = NULL;
-
-  visited_stmts = pointer_set_create ();
-  walk_use_def_chains (op0, is_cast_from_non_pointer,(void *)(&op0_cast), false);
-  pointer_set_destroy (visited_stmts);
-
-  visited_stmts = pointer_set_create ();  
-  walk_use_def_chains (op1, is_cast_from_non_pointer,(void *)(&op1_cast), false);
-  pointer_set_destroy (visited_stmts);
-
-  if (op0_cast.type == 1 && op1_cast.type == 0)
+  if (code == POINTER_PLUS_EXPR)
     {
-      base = op1;
-      offset = op0;
-      offset_cast_stmt = op0_cast.stmt;
-    }
-  else if (op0_cast.type == 0 && op1_cast.type == 1)
-    {
-      base = op0;
-      offset = op1;      
-      offset_cast_stmt = op1_cast.stmt;
+      tree op0type = TYPE_MAIN_VARIANT (TREE_TYPE (op0));
+      tree op1type = TYPE_MAIN_VARIANT (TREE_TYPE (op1));
+
+      /* One of op0 and op1 is of pointer type and the other is numerical.  */
+      if (POINTER_TYPE_P (op0type) && NUMERICAL_TYPE_CHECK (op1type))
+	{
+	  *base = op0;
+	  *offset = op1;
+	}
+      else if (POINTER_TYPE_P (op1type) && NUMERICAL_TYPE_CHECK (op0type))
+	{
+	  *base = op1;
+	  *offset = op0;
+	}
+      else
+	return false;
     }
   else
-    return false;
+    {
+      /* Init data for walk_use_def_chains function.  */
+      op0_cast.type = op1_cast.type = 0;
+      op0_cast.stmt = op1_cast.stmt = NULL;
 
+      visited_stmts = pointer_set_create ();
+      walk_use_def_chains (op0, is_cast_from_non_pointer,(void *)(&op0_cast),
+			   false);
+      pointer_set_destroy (visited_stmts);
+
+      visited_stmts = pointer_set_create ();  
+      walk_use_def_chains (op1, is_cast_from_non_pointer,(void *)(&op1_cast),
+			   false);
+      pointer_set_destroy (visited_stmts);
+
+      if (op0_cast.type == 1 && op1_cast.type == 0)
+	{
+	  *base = op1;
+	  *offset = op0;
+	  *offset_cast_stmt = op0_cast.stmt;
+	}
+      else if (op0_cast.type == 0 && op1_cast.type == 1)
+	{
+	  *base = op0;
+	  *offset = op1;      
+	  *offset_cast_stmt = op1_cast.stmt;
+	}
+      else
+	return false;
+    }
+  
   /* Check 2.  
      offset_cast_stmt is of the form: 
      D.1606_7 = (struct str_t *) D.1605_6;  */
 
-  before_cast = SINGLE_SSA_TREE_OPERAND (offset_cast_stmt, SSA_OP_USE);
-  if (!before_cast)
-    return false;
+  if (*offset_cast_stmt)
+    {
+      before_cast = SINGLE_SSA_TREE_OPERAND (*offset_cast_stmt, SSA_OP_USE);
+      if (!before_cast)
+	return false;
   
-  if (SSA_NAME_IS_DEFAULT_DEF(before_cast))
-    return false;
+      if (SSA_NAME_IS_DEFAULT_DEF (before_cast))
+	return false;
   
-  before_cast_def_stmt = SSA_NAME_DEF_STMT (before_cast);
-  if (!before_cast_def_stmt)
-    return false;
+      before_cast_def_stmt = SSA_NAME_DEF_STMT (before_cast);
+      if (!before_cast_def_stmt)
+	return false;
+    }
+  else
+    before_cast_def_stmt = SSA_NAME_DEF_STMT (*offset);
 
   /* before_cast_def_stmt should be of the form:
      D.1605_6 = i.1_5 * 16; */
@@ -1449,7 +1482,6 @@ static bool
 okay_pointer_operation (enum tree_code code, tree op0, tree op1)
 {
   tree op0type = TYPE_MAIN_VARIANT (TREE_TYPE (op0));
-  tree op1type = TYPE_MAIN_VARIANT (TREE_TYPE (op1));
 
   switch (code)
     {
@@ -1459,11 +1491,17 @@ okay_pointer_operation (enum tree_code code, tree op0, tree op1)
       break;
     case MINUS_EXPR:
     case PLUS_EXPR:
+    case POINTER_PLUS_EXPR:
       {
-	if (POINTER_TYPE_P (op1type)
+	tree base, offset, offset_cast_stmt;
+
+	if (POINTER_TYPE_P (op0type)
 	    && TREE_CODE (op0) == SSA_NAME 
 	    && TREE_CODE (op1) == SSA_NAME 
-	    && is_array_access_through_pointer_and_index (op0, op1))
+	    && is_array_access_through_pointer_and_index (code, op0, op1, 
+							  &base, 
+							  &offset, 
+							  &offset_cast_stmt))
 	  return true;
 	else
 	  {

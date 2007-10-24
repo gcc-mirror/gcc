@@ -26,6 +26,8 @@ bool   ipa_type_escape_type_contained_p (tree type);
 bool   ipa_type_escape_field_does_not_clobber_p (tree record_type, tree field_type);
 int    ipa_type_escape_star_count_of_interesting_type (tree type); 
 int    ipa_type_escape_star_count_of_interesting_or_array_type (tree type);
+bool   is_array_access_through_pointer_and_index (enum tree_code, tree, tree,
+						  tree *, tree *, tree *);
 
 
 #endif  /* GCC_IPA_TYPE_ESCAPE_H  */

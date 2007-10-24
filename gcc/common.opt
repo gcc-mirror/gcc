@@ -618,6 +618,11 @@ Common Report Var(flag_ipa_matrix_reorg) Optimization
 Perform matrix layout flattening and transposing based
 on profiling information.
 
+fipa-struct-reorg
+Common Report Var(flag_ipa_struct_reorg)
+Perform structure layout optimizations based
+on profiling information.
+
 fivopts
 Common Report Var(flag_ivopts) Init(1) Optimization
 Optimize induction variables on trees
