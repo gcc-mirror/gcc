@@ -1,5 +1,11 @@
 2007-10-24  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.target/i386/pr11001-*.c: Remove -m32 from compile flags.
+	Add -w to compile flags to suppress "call-clobbered register" warnings
+	and remove dg-warning directives.
+
+2007-10-24  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcc.dg/sms-2.c: Cleanup sms dump file.
 	* gcc.dg/tree-prof/tracer-1.c: Cleanup tracer dump file after the
 	profile-use step.
