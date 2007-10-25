@@ -1138,6 +1138,9 @@ zero, and @code{.TRUE.} is interpreted as one.  When converting from
        IF (i) PRINT *, 'True'
 @end smallexample
 
+However, there is no implicit conversion of @code{LOGICAL} and
+@code{INTEGER} values performed during I/O operations.
+
 @node Hollerith constants support
 @section Hollerith constants support
 @cindex Hollerith constants
