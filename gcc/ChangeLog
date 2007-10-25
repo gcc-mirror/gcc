@@ -1,3 +1,9 @@
+2007-10-25  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/33833
+	* tree-vect-analyze.c (vect_analyze_data_refs): Use POINTER_PLUS_EXPR
+	and convert init to sizetype in inner_base construction.
+
 2007-10-25  Richard Guenther  <rguenther@suse.de>
 
 	* tree-flow.h (mem_sym_stats): Remove.
