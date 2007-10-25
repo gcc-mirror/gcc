@@ -739,7 +739,6 @@ parallel_headers = \
         ${parallel_srcdir}/settings.h \
         ${parallel_srcdir}/sort.h \
         ${parallel_srcdir}/tags.h \
-        ${parallel_srcdir}/timing.h \
         ${parallel_srcdir}/tree.h \
         ${parallel_srcdir}/types.h \
         ${parallel_srcdir}/unique_copy.h \

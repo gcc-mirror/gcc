@@ -1,3 +1,8 @@
+2007-10-25  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* include/Makefile.am (parallel_headers): Remove timing.h.
+	* include/Makefile.in: Regenerate.
+
 2007-10-25  Johannes Singler  <singler@ira.uka.de>
 
       * include/parallel/multiway_merge.h: Removed Timing<inactive_tag>
