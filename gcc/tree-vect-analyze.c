@@ -3287,10 +3287,11 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
 
 	  /* Build a reference to the first location accessed by the 
 	     inner-loop: *(BASE+INIT). (The first location is actually
-	     BASE+INIT+OFFSET, but we add OFFSET separately later.  */
-	  tree inner_base = build_fold_indirect_ref 
-				(fold_build2 (PLUS_EXPR, 
-					      TREE_TYPE (base), base, init));
+	     BASE+INIT+OFFSET, but we add OFFSET separately later).  */
+          tree inner_base = build_fold_indirect_ref
+                                (fold_build2 (POINTER_PLUS_EXPR,
+                                              TREE_TYPE (base), base, 
+                                              fold_convert (sizetype, init)));
 
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    {
