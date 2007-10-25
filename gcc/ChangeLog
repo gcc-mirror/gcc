@@ -1,3 +1,17 @@
+2007-10-25  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (mem_sym_stats): Remove.
+	(dump_mem_sym_stats_for_var): Declare.
+	* tree-dfa.c (dump_variable): Call dump_mem_sym_stats_for_var.
+	(mem_sym_stats): Move ...
+	* tree-ssa-alias.c (mem_sym_stats): ... here and make it static.
+	(mem_sym_score): Rename from ...
+	(pscore): ... this.  Remove.
+	(dump_mem_sym_stats_for_var): New function.  Dump the score, but
+	not the frequencies.
+	(compare_mp_info_entries): Make sort stable by disambiguating
+	on DECL_UID.
+
 2007-10-25  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/33866

@@ -345,16 +345,7 @@ dump_variable (FILE *file, tree var)
   if (TREE_THIS_VOLATILE (var))
     fprintf (file, ", is volatile");
 
-  if (mem_sym_stats (cfun, var))
-    {
-      mem_sym_stats_t stats = mem_sym_stats (cfun, var);
-      fprintf (file, ", direct reads: %ld", stats->num_direct_reads);
-      fprintf (file, ", direct writes: %ld", stats->num_direct_writes);
-      fprintf (file, ", indirect reads: %ld", stats->num_indirect_reads);
-      fprintf (file, ", indirect writes: %ld", stats->num_indirect_writes);
-      fprintf (file, ", read frequency: %ld", stats->frequency_reads);
-      fprintf (file, ", write frequency: %ld", stats->frequency_writes);
-    }
+  dump_mem_sym_stats_for_var (file, var);
 
   if (is_call_clobbered (var))
     {
@@ -1010,25 +1001,3 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
   return exp;
 }
 
-
-/* Return memory reference statistics for variable VAR in function FN.
-   This is computed by alias analysis, but it is not kept
-   incrementally up-to-date.  So, these stats are only accurate if
-   pass_may_alias has been run recently.  If no alias information
-   exists, this function returns NULL.  */
-
-mem_sym_stats_t
-mem_sym_stats (struct function *fn, tree var)
-{
-  void **slot;
-  struct pointer_map_t *stats_map = gimple_mem_ref_stats (fn)->mem_sym_stats;
-
-  if (stats_map == NULL)
-    return NULL;
-
-  slot = pointer_map_contains (stats_map, var);
-  if (slot == NULL)
-    return NULL;
-
-  return (mem_sym_stats_t) *slot;
-}
