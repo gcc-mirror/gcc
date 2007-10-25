@@ -128,7 +128,6 @@ c++			Nathan Sidwell		nathan@codesourcery.com
 java			Per Bothner		per@bothner.com
 java			Andrew Haley		aph@redhat.com
 java			Tom Tromey		tromey@redhat.com
-mercury			Fergus Henderson	fjh@cs.mu.oz.au
 objective-c/c++		Mike Stump		mrs@apple.com
 treelang                Tim Josling             tej@melbpc.org.au
 treelang                James A. Morrison	phython@gcc.gnu.org
@@ -319,6 +318,7 @@ Mostafa Hagog					hagog@gcc.gnu.org
 Olivier Hainque					hainque@act-europe.fr
 Stuart Hastings					stuart@apple.com
 Pat Haugen					pthaugen@us.ibm.com
+Fergus Henderson				fjh@cs.mu.oz.au
 Matthew Hiller					hiller@redhat.com
 Dan Hipschman					dsh@google.com
 Manfred Hollstein				mh@suse.com
