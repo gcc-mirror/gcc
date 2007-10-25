@@ -57,13 +57,6 @@
 
 #include <parallel/list_partition.h>
 
-//#define _GLIBCXX_TIMING
-#ifdef _GLIBCXX_TIMING
-#define _timing_tag parallel_tag
-#else
-#define _timing_tag sequential_tag
-#endif
-
 namespace std
 {
   // XXX Declaration should go to stl_tree.h.
@@ -1217,18 +1210,12 @@ namespace __gnu_parallel
     void
     _M_bulk_insertion_construction(const _InputIterator __first, const _InputIterator __last, const bool is_construction, StrictlyLessOrLessEqual strictly_less_or_less_equal)
     {
-      Timing<_timing_tag> t;
-
-      t.tic();
-
       thread_index_t num_threads = get_max_threads();
       size_type n;
       size_type beg_partition[num_threads+1];
       _InputIterator access[num_threads+1];
       beg_partition[0] = 0;
       bool is_sorted= is_sorted_distance_accessors(__first, __last, access, beg_partition,n, num_threads, std::__iterator_category(__first));
-
-      t.tic("is_sorted");
 
       if (not is_sorted)
 	{
@@ -1260,10 +1247,6 @@ namespace __gnu_parallel
 	    _M_sorted_bulk_insertion(access, beg_partition, n, num_threads, 
 				     strictly_less_or_less_equal);
 	}
-
-      t.tic("main work");
-
-      t.print();
     }
 
     /** @brief Bulk construction and insertion helper method on an
@@ -1349,20 +1332,12 @@ namespace __gnu_parallel
     _M_not_sorted_bulk_insertion_construction(size_type* beg_partition, ElementsToSort* v, Comparator comp, const size_type n, thread_index_t num_threads, const bool is_construction, StrictlyLessOrLessEqual strictly_less_or_less_equal)
     {
       // The accessors have been calculated for the non sorted.
-      Timing<_timing_tag> t;
-
-      t.tic();
-
       num_threads = static_cast<thread_index_t>(std::min<size_type>(num_threads, n));
 
       std::stable_sort(v, v+n, comp);
 
-      t.tic("sort");
-
       IteratorSortedElements sorted_access[num_threads+1];
       range_accessors(IteratorSortedElements(v), IteratorSortedElements(v+n), sorted_access, beg_partition, n, num_threads, std::__iterator_category(v));
-
-      t.tic("range_accessors");
 
       // Partial template specialization not available.
       if (is_construction)
@@ -1370,10 +1345,6 @@ namespace __gnu_parallel
       else
 	_M_sorted_bulk_insertion(sorted_access, beg_partition, n, num_threads, strictly_less_or_less_equal);
       delete v;
-
-      t.tic("actual construction or insertion");
-
-      t.print();
     }
 
     /** @brief Construct a tree sequentially using the parallel routine
@@ -1753,16 +1724,10 @@ namespace __gnu_parallel
     void
     _M_sorted_bulk_construction(_Iterator* access, size_type* beg_partition, const size_type n, thread_index_t num_threads, StrictlyLessOrLessEqual strictly_less_or_less_equal)
     {
-      Timing<_timing_tag> t;
-
       // Dealing with repetitions (EFFICIENCY ISSUE).
       size_type rank_shift[num_threads+1];
 
-      t.tic();
-
       _Rb_tree_node_ptr* r = _M_sorted_bulk_allocation_and_initialization(access, beg_partition, rank_shift, n, num_threads, strictly_less_or_less_equal);
-
-      t.tic("bulk allocation and initialization");
 
       // Link the tree appropriately.
       // Dealing with repetitions (EFFICIENCY ISSUE).
@@ -1818,11 +1783,7 @@ namespace __gnu_parallel
       base_type::_M_impl._M_header._M_parent = nodes_init.get_root();
       nodes_init.get_root()->_M_parent= &base_type::_M_impl._M_header;
 
-      t.tic("linking nodes");
       ::operator delete(r);
-
-      t.tic("delete array of pointers");
-      t.print();
     }
 
 
@@ -1850,10 +1811,6 @@ namespace __gnu_parallel
     _M_sorted_bulk_insertion(_Iterator* access, size_type* beg_partition, size_type k, thread_index_t num_threads, StrictlyLessOrLessEqual strictly_less_or_less_equal)
     {
       _GLIBCXX_PARALLEL_ASSERT((size_type)num_threads <= k);
-      Timing<_timing_tag> t;
-
-      t.tic();
-
       // num_thr-1 problems in the upper part of the tree
       // num_thr problems to further parallelize
       std::vector<size_type> existing(num_threads,0);
@@ -1873,7 +1830,6 @@ namespace __gnu_parallel
 	  // 1. Construct the nodes with their corresponding data
 #if _GLIBCXX_TREE_INITIAL_SPLITTING
 	  r = _M_sorted_bulk_allocation_and_initialization(access, beg_partition, rank_shift, k, num_threads, strictly_less_or_less_equal);
-	  t.tic("bulk allocation and initialization");
 #else
 	  r = _M_sorted_no_gapped_bulk_allocation_and_initialization(access, beg_partition, k, num_threads, strictly_less_or_less_equal);
 #endif
@@ -1895,8 +1851,6 @@ namespace __gnu_parallel
   /***** Dealing with
       repetitions (EFFICIENCY ISSUE) *****/
       size_type last = beg_partition[num_threads] - (rank_shift[num_threads] - rank_shift[num_threads - 1]);
-
-      t.tic("last element to be inserted");
 
       //2. Split the tree according to access in num_threads parts
       //Initialize upper concat_problems
@@ -1960,8 +1914,6 @@ namespace __gnu_parallel
       size_type last = k;
 #endif
 
-      t.tic("sorted_no_gapped...");
-
       // 3. Split the range according to tree and create
       // 3. insertion/concatenation problems to be solved in parallel
 #if _GLIBCXX_TREE_DYNAMIC_BALANCING
@@ -2018,8 +1970,6 @@ namespace __gnu_parallel
 	  } while (change);
       }
 
-      t.tic("merging");
-
       // Update root and sizes.
       base_type::_M_root() = root_problem->t;
       root_problem->t->_M_parent = &(base_type::_M_impl._M_header);
@@ -2069,9 +2019,6 @@ namespace __gnu_parallel
 
       // Delete array of pointers
       ::operator delete(r);
-
-      t.tic();
-      t.print();
     }
 
 
