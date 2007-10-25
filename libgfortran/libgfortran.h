@@ -249,33 +249,6 @@ internal_proto(l8_to_l4_offset);
   (GFC_INTEGER_16)((((GFC_UINTEGER_16)1) << 127) - 1)
 #endif
 
-#define GFC_REAL_4_HUGE FLT_MAX
-#define GFC_REAL_8_HUGE DBL_MAX
-#ifdef HAVE_GFC_REAL_10
-#define GFC_REAL_10_HUGE LDBL_MAX
-#endif
-#ifdef HAVE_GFC_REAL_16
-#define GFC_REAL_16_HUGE LDBL_MAX
-#endif
-
-#define GFC_REAL_4_DIGITS FLT_MANT_DIG
-#define GFC_REAL_8_DIGITS DBL_MANT_DIG
-#ifdef HAVE_GFC_REAL_10
-#define GFC_REAL_10_DIGITS LDBL_MANT_DIG
-#endif
-#ifdef HAVE_GFC_REAL_16
-#define GFC_REAL_16_DIGITS LDBL_MANT_DIG
-#endif
-
-#define GFC_REAL_4_RADIX FLT_RADIX
-#define GFC_REAL_8_RADIX FLT_RADIX
-#ifdef HAVE_GFC_REAL_10
-#define GFC_REAL_10_RADIX FLT_RADIX
-#endif
-#ifdef HAVE_GFC_REAL_16
-#define GFC_REAL_16_RADIX FLT_RADIX
-#endif
-
 
 typedef struct descriptor_dimension
 {
