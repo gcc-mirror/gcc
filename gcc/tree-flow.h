@@ -810,7 +810,6 @@ extern void find_new_referenced_vars (tree *);
 extern tree make_rename_temp (tree, const char *);
 extern void set_default_def (tree, tree);
 extern tree gimple_default_def (struct function *, tree);
-extern struct mem_sym_stats_d *mem_sym_stats (struct function *, tree);
 
 /* In tree-phinodes.c  */
 extern void reserve_phi_args_for_new_edge (basic_block);
@@ -856,6 +855,7 @@ extern void dump_mem_ref_stats (FILE *);
 extern void debug_mem_ref_stats (void);
 extern void debug_memory_partitions (void);
 extern void debug_mem_sym_stats (tree var);
+extern void dump_mem_sym_stats_for_var (FILE *, tree);
 extern void debug_all_mem_sym_stats (void);
 
 /* Call-back function for walk_use_def_chains().  At each reaching

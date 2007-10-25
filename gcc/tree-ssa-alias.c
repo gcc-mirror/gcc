@@ -242,6 +242,29 @@ get_mem_sym_stats_for (tree var)
 }
 
 
+/* Return memory reference statistics for variable VAR in function FN.
+   This is computed by alias analysis, but it is not kept
+   incrementally up-to-date.  So, these stats are only accurate if
+   pass_may_alias has been run recently.  If no alias information
+   exists, this function returns NULL.  */
+
+static mem_sym_stats_t
+mem_sym_stats (struct function *fn, tree var)
+{
+  void **slot;
+  struct pointer_map_t *stats_map = gimple_mem_ref_stats (fn)->mem_sym_stats;
+
+  if (stats_map == NULL)
+    return NULL;
+
+  slot = pointer_map_contains (stats_map, var);
+  if (slot == NULL)
+    return NULL;
+
+  return (mem_sym_stats_t) *slot;
+}
+
+
 /* Set MPT to be the memory partition associated with symbol SYM.  */
 
 static inline void
@@ -774,6 +797,40 @@ count_mem_refs (long *num_vuses_p, long *num_vdefs_p,
 }
 
 
+/* The list is sorted by increasing partitioning score (PSCORE).
+   This score is computed such that symbols with high scores are
+   those that are least likely to be partitioned.  Given a symbol
+   MP->VAR, PSCORE(S) is the result of the following weighted sum
+
+   PSCORE(S) =   FW * 64 + FR * 32
+   	       + DW * 16 + DR *  8 
+   	       + IW *  4 + IR *  2
+               + NO_ALIAS
+
+   where
+
+   FW		Execution frequency of writes to S
+   FR		Execution frequency of reads from S
+   DW		Number of direct writes to S
+   DR		Number of direct reads from S
+   IW		Number of indirect writes to S
+   IR		Number of indirect reads from S
+   NO_ALIAS	State of the NO_ALIAS* flags
+
+   The basic idea here is that symbols that are frequently
+   written-to in hot paths of the code are the last to be considered
+   for partitioning.  */
+
+static inline long
+mem_sym_score (mem_sym_stats_t mp)
+{
+  return mp->frequency_writes * 64 + mp->frequency_reads * 32
+         + mp->num_direct_writes * 16 + mp->num_direct_reads * 8
+	 + mp->num_indirect_writes * 4 + mp->num_indirect_reads * 2
+	 + var_ann (mp->var)->noalias_state;
+}
+
+
 /* Dump memory reference stats for function CFUN to FILE.  */
 
 void
@@ -874,6 +931,23 @@ debug_mem_sym_stats (tree var)
   dump_mem_sym_stats (stderr, var);
 }
 
+/* Dump memory reference stats for variable VAR to FILE.  For use
+   of tree-dfa.c:dump_variable.  */
+
+void
+dump_mem_sym_stats_for_var (FILE *file, tree var)
+{
+  mem_sym_stats_t stats = mem_sym_stats (cfun, var);
+
+  if (stats == NULL)
+    return;
+
+  fprintf (file, ", score: %ld", mem_sym_score (stats));
+  fprintf (file, ", direct reads: %ld", stats->num_direct_reads);
+  fprintf (file, ", direct writes: %ld", stats->num_direct_writes);
+  fprintf (file, ", indirect reads: %ld", stats->num_indirect_reads);
+  fprintf (file, ", indirect writes: %ld", stats->num_indirect_writes);
+}
 
 /* Dump memory reference stats for all memory symbols to FILE.  */
 
@@ -950,40 +1024,6 @@ update_mem_sym_stats_from_stmt (tree var, tree stmt, long num_direct_reads,
 }
 
 
-/* The list is sorted by increasing partitioning score (PSCORE).
-   This score is computed such that symbols with high scores are
-   those that are least likely to be partitioned.  Given a symbol
-   MP->VAR, PSCORE(S) is the result of the following weighted sum
-
-   PSCORE(S) =   FW * 64 + FR * 32
-   	       + DW * 16 + DR *  8 
-   	       + IW *  4 + IR *  2
-               + NO_ALIAS
-
-   where
-
-   FW		Execution frequency of writes to S
-   FR		Execution frequency of reads from S
-   DW		Number of direct writes to S
-   DR		Number of direct reads from S
-   IW		Number of indirect writes to S
-   IR		Number of indirect reads from S
-   NO_ALIAS	State of the NO_ALIAS* flags
-
-   The basic idea here is that symbols that are frequently
-   written-to in hot paths of the code are the last to be considered
-   for partitioning.  */
-
-static inline long
-pscore (mem_sym_stats_t mp)
-{
-  return mp->frequency_writes * 64 + mp->frequency_reads * 32
-         + mp->num_direct_writes * 16 + mp->num_direct_reads * 8
-	 + mp->num_indirect_writes * 4 + mp->num_indirect_reads * 2
-	 + var_ann (mp->var)->noalias_state;
-}
-
-
 /* Given two MP_INFO entries MP1 and MP2, return -1 if MP1->VAR should
    be partitioned before MP2->VAR, 0 if they are the same or 1 if
    MP1->VAR should be partitioned after MP2->VAR.  */
@@ -991,15 +1031,15 @@ pscore (mem_sym_stats_t mp)
 static inline int
 compare_mp_info_entries (mem_sym_stats_t mp1, mem_sym_stats_t mp2)
 {
-  long pscore1 = pscore (mp1);
-  long pscore2 = pscore (mp2);
+  long pscore1 = mem_sym_score (mp1);
+  long pscore2 = mem_sym_score (mp2);
 
   if (pscore1 < pscore2)
     return -1;
   else if (pscore1 > pscore2)
     return 1;
   else
-    return 0;
+    return DECL_UID (mp1->var) - DECL_UID (mp2->var);
 }
 
 
