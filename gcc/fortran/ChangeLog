@@ -1,3 +1,9 @@
+2007-10-26  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/29784
+	* gfortran.texi: Document that there is no logical/integer
+	conversion performed during I/O operations.
+
 2007-10-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/33849
