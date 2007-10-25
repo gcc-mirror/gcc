@@ -2085,7 +2085,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @if maint
-   *  This is a helper function for the sort routines.
+   *  This is a helper function for the sort routines.  Precondition: __n > 0.
    *  @endif
   */
   template<typename _Size>
@@ -2093,10 +2093,22 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     __lg(_Size __n)
     {
       _Size __k;
-      for (__k = 0; __n != 1; __n >>= 1)
+      for (__k = 0; __n != 0; __n >>= 1)
 	++__k;
-      return __k;
+      return __k - 1;
     }
+
+  inline int
+  __lg(int __n)
+  { return sizeof(int) * __CHAR_BIT__  - 1 - __builtin_clz(__n); }
+
+  inline long
+  __lg(long __n)
+  { return sizeof(long) * __CHAR_BIT__ - 1 - __builtin_clzl(__n); }
+
+  inline long long
+  __lg(long long __n)
+  { return sizeof(long long) * __CHAR_BIT__ - 1 - __builtin_clzll(__n); }
 
   // sort
 
