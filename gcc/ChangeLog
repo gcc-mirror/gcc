@@ -1,3 +1,15 @@
+2007-10-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/constraints.md (Y0): Rename register constraint to Yz.
+	(Yt): Rename register constraint to Y2.
+	* config/i386/sse.md: Use renamed register constraints.
+	* config/i386/mmx.md: Ditto.
+	* config/i386/i386.md: Ditto.
+
+2007-10-25  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	* config/i386/i386.md (*dummy_extendsfdf2): Fix operand 1 constraint.
+
 2007-10-24  Chao-ying Fu  <fu@mips.com>
 
 	* dwarf2out.c (base_type_die): Use DW_ATE_unsigned_fixed or
