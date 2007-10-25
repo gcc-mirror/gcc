@@ -42,7 +42,6 @@
 #include <bits/stl_numeric.h>
 #include <parallel/parallel.h>
 #include <parallel/random_number.h>
-#include <parallel/timing.h>
 
 namespace __gnu_parallel
 {
@@ -136,9 +135,6 @@ namespace __gnu_parallel
     typedef typename traits_type::value_type value_type;
     typedef typename traits_type::difference_type difference_type;
 
-    Timing<sequential_tag> t;
-    t.tic();
-
     DRSSorterPU<RandomAccessIterator, RandomNumberGenerator>* d = &pus[omp_get_thread_num()];
     DRandomShufflingGlobalData<RandomAccessIterator>* sd = d->sd;
     thread_index_t iam = d->iam;
@@ -170,11 +166,7 @@ namespace __gnu_parallel
     for (bin_index b = 0; b < sd->num_bins + 1; b++)
       sd->dist[b][iam + 1] = dist[b];
 
-    t.tic();
-
 #pragma omp barrier
-
-    t.tic();
 
 #pragma omp single
     {
@@ -187,8 +179,6 @@ namespace __gnu_parallel
     }
 
 #pragma omp barrier
-
-    t.tic();
 
     sequence_index_t offset = 0, global_offset = 0;
     for (bin_index s = 0; s < d->bins_begin; s++)
@@ -205,11 +195,7 @@ namespace __gnu_parallel
 
     sd->temporaries[iam] = static_cast<value_type*>(::operator new(sizeof(value_type) * offset));
 
-    t.tic();
-
 #pragma omp barrier
-
-    t.tic();
 
     // Draw local copies to avoid false sharing.
     for (bin_index b = 0; b < sd->num_bins + 1; b++)
@@ -237,11 +223,7 @@ namespace __gnu_parallel
     delete[] bin_proc;
     delete[] temporaries;
 
-    t.tic();
-
 #pragma omp barrier
-
-    t.tic();
 
     // Shuffle bins internally.
     for (bin_index b = d->bins_begin; b < d->bins_end; b++)
@@ -253,10 +235,6 @@ namespace __gnu_parallel
       }
 
     delete[] sd->temporaries[iam];
-
-    t.tic();
-
-    t.print();
   }
 
   /** @brief Round up to the next greater power of 2.
@@ -453,9 +431,6 @@ namespace __gnu_parallel
 	for (int b = 0; b < num_bins + 1; b++)
 	  dist0[b] = 0;
 
-	Timing<sequential_tag> t;
-	t.tic();
-
 	random_number bitrng(rng(0xFFFFFFFF));
 
 	for (difference_type i = 0; i < n; i++)
@@ -467,15 +442,11 @@ namespace __gnu_parallel
 	    dist0[oracle + 1]++;
 	  }
 
-	t.tic();
-
 	// Sum up bins.
 	__gnu_sequential::partial_sum(dist0, dist0 + num_bins + 1, dist0);
 
 	for (int b = 0; b < num_bins + 1; b++)
 	  dist1[b] = dist0[b];
-
-	t.tic();
 
 	// Distribute according to oracles.
 	for (difference_type i = 0; i < n; i++)
@@ -485,9 +456,7 @@ namespace __gnu_parallel
 	  {
 	    sequential_random_shuffle(target + dist1[b], target + dist1[b + 1],
 				      rng);
-	    t.tic();
 	  }
-	t.print();
 
 	delete[] dist0;
 	delete[] dist1;

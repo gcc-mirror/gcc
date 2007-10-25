@@ -52,7 +52,6 @@
 #include <parallel/parallel.h>
 #include <parallel/merge.h>
 #include <parallel/losertree.h>
-#include <parallel/timing.h>
 #if _GLIBCXX_ASSERTIONS
 #include <parallel/checkers.h>
 #endif
@@ -1354,11 +1353,6 @@ namespace __gnu_parallel
 
     thread_index_t num_threads = static_cast<thread_index_t>(std::min(static_cast<difference_type>(get_max_threads()), total_length));
 
-    Timing<sequential_tag>* t = new Timing<sequential_tag>[num_threads];
-
-    for (int pr = 0; pr < num_threads; pr++)
-      t[pr].tic();
-
     bool tight = (total_length == length);
 
     // Thread t will have to merge pieces[iam][0..k - 1]
@@ -1456,14 +1450,9 @@ namespace __gnu_parallel
 	delete[] offsets;
       }
 
-    for (int pr = 0; pr < num_threads; pr++)
-      t[pr].tic();
-
 #	pragma omp parallel num_threads(num_threads)
     {
       thread_index_t iam = omp_get_thread_num();
-
-      t[iam].tic();
 
       difference_type target_position = 0;
 
@@ -1498,13 +1487,7 @@ namespace __gnu_parallel
 			(pieces[iam][0].second - pieces[iam][0].first) + (pieces[iam][1].second - pieces[iam][1].first),
 			comp);
 	}
-
-      t[iam].tic();
-
     }
-
-    for (int pr = 0; pr < num_threads; pr++)
-      t[pr].tic();
 
 #if _GLIBCXX_ASSERTIONS
     _GLIBCXX_PARALLEL_ASSERT(is_sorted(target, target + length, comp));
@@ -1515,12 +1498,6 @@ namespace __gnu_parallel
       seqs_begin[s].first += pieces[num_threads - 1][s].second;
 
     delete[] pieces;
-
-    for (int pr = 0; pr < num_threads; pr++)
-      t[pr].tic();
-    for (int pr = 0; pr < num_threads; pr++)
-      t[pr].print();
-    delete[] t;
 
     return target + length;
   }

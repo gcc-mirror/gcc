@@ -381,10 +381,6 @@ namespace __gnu_parallel
 
 #pragma omp parallel num_threads(num_threads)
     {
-      Timing<sequential_tag> t;
-
-      t.tic();
-
       // Result from multiseq_partition.
       InputIterator offset[2];
       const int iam = omp_get_thread_num();
@@ -407,12 +403,8 @@ namespace __gnu_parallel
 
       iterator_pair block_end = block_begins[ iam + 1 ] = iterator_pair(offset[ 0 ], offset[ 1 ]);
 
-      t.tic();
-
       // Make sure all threads have their block_begin result written out.
 #pragma omp barrier
-
-      t.tic();
 
       iterator_pair block_begin = block_begins[ iam ];
 
@@ -429,12 +421,9 @@ namespace __gnu_parallel
 				   block_begin.second, block_end.second);
 	}
 
-      t.tic();
-
       // Make sure everyone wrote their lengths.
 #pragma omp barrier
 
-      t.tic();
       OutputIterator r = result;
 
       if (iam == 0)
@@ -458,9 +447,6 @@ namespace __gnu_parallel
 	  op.invoke(block_begin.first, block_end.first,
 		    block_begin.second, block_end.second, r);
 	}
-
-      t.tic();
-      t.print();
     }
     return return_value;
   }

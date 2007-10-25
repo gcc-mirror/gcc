@@ -1,3 +1,12 @@
+2007-10-25  Johannes Singler  <singler@ira.uka.de>
+
+      * include/parallel/multiway_merge.h: Removed Timing<inactive_tag>
+      * include/parallel/random_shuffle.h: Same
+      * include/parallel/set_operations.h: Same
+      * include/parallel/tree.h: Same
+      * include/parallel/multiway_mergesort.h: Same
+      * include/parallel/timing.h: Removed completely
+
 2007-10-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_algo.h (__lg<>(_Size)): Slightly tweak.

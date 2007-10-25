@@ -44,7 +44,6 @@
 #include <bits/stl_algo.h>
 #include <parallel/parallel.h>
 #include <parallel/multiway_merge.h>
-#include <parallel/timing.h>
 
 namespace __gnu_parallel
 {
@@ -160,9 +159,6 @@ namespace __gnu_parallel
     typedef typename traits_type::value_type value_type;
     typedef typename traits_type::difference_type difference_type;
 
-    Timing<sequential_tag> t;
-    t.tic();
-
     PMWMSSortingData<RandomAccessIterator>* sd = d->sd;
     thread_index_t iam = d->iam;
 
@@ -196,7 +192,6 @@ namespace __gnu_parallel
 
     // Invariant: locally sorted subsequence in sd->sorting_places[iam],
     // sd->sorting_places[iam] + length_local.
-    t.tic("local sort");
 
     if (Settings::sort_splitting == Settings::SAMPLING)
       {
@@ -204,8 +199,6 @@ namespace __gnu_parallel
 	determine_samples(d, num_samples);
 
 #pragma omp barrier
-
-	t.tic("sample/wait");
 
 #pragma omp single
 	__gnu_sequential::sort(sd->samples, 
@@ -241,8 +234,6 @@ namespace __gnu_parallel
       {
 #pragma omp barrier
 
-	t.tic("wait");
-
 	std::vector<std::pair<SortingPlacesIterator, SortingPlacesIterator> > seqs(d->num_threads);
 	for (int s = 0; s < d->num_threads; s++)
 	  seqs[s] = std::make_pair(sd->sorting_places[s], sd->sorting_places[s] + sd->starts[s + 1] - sd->starts[s]);
@@ -276,8 +267,6 @@ namespace __gnu_parallel
 	  }
       }
 
-    t.tic("split");
-
     // Offset from target begin, length after merging.
     difference_type offset = 0, length_am = 0;
     for (int s = 0; s < d->num_threads; s++)
@@ -308,8 +297,6 @@ namespace __gnu_parallel
 
     multiway_merge(seqs.begin(), seqs.end(), sd->merging_places[iam], comp, length_am, d->stable, false, sequential_tag());
 
-    t.tic("merge");
-
 #if _GLIBCXX_ASSERTIONS
     _GLIBCXX_PARALLEL_ASSERT(is_sorted(sd->merging_places[iam], sd->merging_places[iam] + length_am, comp));
 #endif
@@ -323,10 +310,6 @@ namespace __gnu_parallel
 #endif
 
     delete[] sd->temporaries[iam];
-
-    t.tic("copy back");
-
-    t.print();
   }
 
   /** @brief PMWMS main call.
