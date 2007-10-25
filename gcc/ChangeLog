@@ -1,3 +1,10 @@
+2007-10-25  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/33866
+	* tree-vect-transform.c (vectorizable_store): Check operands of all the
+	stmts in the group of strided accesses. Get def stmt type for each store
+	in the group and pass it to vect_get_vec_def_for_stmt_copy ().
+
 2007-10-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/constraints.md (Y0): Rename register constraint to Yz.
