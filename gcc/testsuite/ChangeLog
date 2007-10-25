@@ -1,3 +1,9 @@
+2007-10-25  Martin Michlmayr <tbm@cyrius.com>
+            Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/33866
+	* gcc.dg/vect/pr33866.c: New testcase.
+
 2007-10-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pr11001-*.c: Remove -m32 from compile flags.

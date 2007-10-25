@@ -4578,7 +4578,7 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt,
   int nunits = TYPE_VECTOR_SUBPARTS (vectype);
   int ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits;
   int j;
-  tree next_stmt, first_stmt;
+  tree next_stmt, first_stmt = NULL_TREE;
   bool strided_store = false;
   unsigned int group_size, i;
   VEC(tree,heap) *dr_chain = NULL, *oprnds = NULL, *result_chain = NULL;
@@ -4640,9 +4640,28 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt,
   if (STMT_VINFO_STRIDED_ACCESS (stmt_info))
     {
       strided_store = true;
+      first_stmt = DR_GROUP_FIRST_DR (stmt_info);
       if (!vect_strided_store_supported (vectype)
 	  && !PURE_SLP_STMT (stmt_info) && !slp)
-	return false;      
+	return false;
+     
+      if (first_stmt == stmt)
+	{
+          /* STMT is the leader of the group. Check the operands of all the
+             stmts of the group.  */
+          next_stmt = DR_GROUP_NEXT_DR (stmt_info);
+          while (next_stmt)
+            {
+              op = GIMPLE_STMT_OPERAND (next_stmt, 1);
+              if (!vect_is_simple_use (op, loop_vinfo, &def_stmt, &def, &dt))
+                {
+                  if (vect_print_dump_info (REPORT_DETAILS))
+                    fprintf (vect_dump, "use not simple.");
+                  return false;
+                }
+              next_stmt = DR_GROUP_NEXT_DR (vinfo_for_stmt (next_stmt));
+            }
+        }
     }
 
   if (!vec_stmt) /* transformation not required.  */
@@ -4657,7 +4676,6 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt,
 
   if (strided_store)
     {
-      first_stmt = DR_GROUP_FIRST_DR (stmt_info);
       first_dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
       group_size = DR_GROUP_SIZE (vinfo_for_stmt (first_stmt));
 
@@ -4803,8 +4821,9 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt,
 	     OPRNDS are of size 1.  */
 	  for (i = 0; i < group_size; i++)
 	    {
-	      vec_oprnd = vect_get_vec_def_for_stmt_copy (dt, 
-						   VEC_index (tree, oprnds, i));
+	      op = VEC_index (tree, oprnds, i);
+	      vect_is_simple_use (op, loop_vinfo, &def_stmt, &def, &dt);
+	      vec_oprnd = vect_get_vec_def_for_stmt_copy (dt, op); 
 	      VEC_replace(tree, dr_chain, i, vec_oprnd);
 	      VEC_replace(tree, oprnds, i, vec_oprnd);
 	    }
