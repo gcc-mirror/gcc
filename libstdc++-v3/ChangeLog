@@ -1,3 +1,9 @@
+2007-10-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algo.h (__lg<>(_Size)): Slightly tweak.
+	(__lg(int), __lg(long), __lg(long long)): Add, overloads
+	exploiting __builtin_clz*.
+
 2007-10-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1_impl/array (_M_instance): Align naturally.
