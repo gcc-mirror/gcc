@@ -195,6 +195,11 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
       pp_cxx_unqualified_id (pp, TYPE_NAME (t));
       break;
 
+    case BIT_NOT_EXPR:
+      pp_cxx_complement (pp);
+      pp_cxx_unqualified_id (pp, TREE_OPERAND (t, 0));
+      break;
+
     case TEMPLATE_TYPE_PARM:
     case TEMPLATE_TEMPLATE_PARM:
       if (TYPE_IDENTIFIER (t))

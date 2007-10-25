@@ -1,3 +1,8 @@
+2007-10-25  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/33843
+	* g++.dg/template/error32.C: New.
+
 2007-10-25  Martin Michlmayr <tbm@cyrius.com>
             Ira Rosen  <irar@il.ibm.com>
 
