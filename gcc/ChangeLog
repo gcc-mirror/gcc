@@ -1,3 +1,8 @@
+2007-10-24  Chao-ying Fu  <fu@mips.com>
+
+	* dwarf2out.c (base_type_die): Use DW_ATE_unsigned_fixed or
+	DW_ATE_signed_fixed to describe FIXED_POINT_TYPE.
+
 2007-10-24  Samuel Tardieu  <sam@rfc1149.net>
             Olga Golovanevsky <olga@il.ibm.com>
 	

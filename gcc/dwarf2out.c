@@ -8434,9 +8434,9 @@ base_type_die (tree type)
 
     case FIXED_POINT_TYPE:
       if (TYPE_UNSIGNED (type))
-	encoding = DW_ATE_signed_fixed;
-      else
 	encoding = DW_ATE_unsigned_fixed;
+      else
+	encoding = DW_ATE_signed_fixed;
       break;
 
       /* Dwarf2 doesn't know anything about complex ints, so use
