@@ -1,3 +1,11 @@
+2007-10-26  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* libgfortran.h (GFC_REAL_*_HUGE, GFC_REAL_*_DIGITS,
+	GFC_REAL_*_RADIX): Remove.
+	* mk-kinds-h.sh: Define GFC_REAL_*_HUGE, GFC_REAL_*_DIGITS and
+	GFC_REAL_*_RADIX. Don't define GFC_REAL_LARGEST_FORMAT and
+	GFC_REAL_LARGEST.
+
 2007-10-19  Ben Elliston  <bje@au.ibm.com>
 
 	* intrinsics/signal.c (alarm_sub_i4): Mark conditionally unused
