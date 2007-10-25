@@ -1,3 +1,7 @@
+2007-10-25  David Daney  <ddaney@avtrex.com>
+
+	* gcc.dg/tree-ssa/20040204-1.c: Un-xfail for mips*-*-*.
+
 2007-10-25  Martin Michlmayr <tbm@cyrius.com>
             Ira Rosen  <irar@il.ibm.com>
 
