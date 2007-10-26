@@ -1,3 +1,7 @@
+2007-10-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* invoke.texi: Fix typo in -fmax-errors=.
+
 2007-10-26  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/29784

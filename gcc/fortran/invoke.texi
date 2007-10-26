@@ -359,8 +359,8 @@ These options control the amount and kinds of errors and warnings produced
 by GNU Fortran:
 
 @table @gcctabopt
-@item -fmax-errors-@var{n}
-@opindex @code{fmax-errors-}@var{n}
+@item -fmax-errors=@var{n}
+@opindex @code{fmax-errors=}@var{n}
 @cindex errors, limiting
 Limits the maximum number of error messages to @var{n}, at which point
 GNU Fortran bails out rather than attempting to continue processing the
