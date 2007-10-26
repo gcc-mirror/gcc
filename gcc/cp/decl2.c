@@ -1251,15 +1251,33 @@ coerce_new_type (tree type)
       error ("%<operator new%> must return type %qT", ptr_type_node);
     }
 
-  if (!args || args == void_list_node
-      || !same_type_p (TREE_VALUE (args), size_type_node))
+  if (args && args != void_list_node)
     {
-      e = 2;
-      if (args && args != void_list_node)
-	args = TREE_CHAIN (args);
-      pedwarn ("%<operator new%> takes type %<size_t%> (%qT) "
-	       "as first parameter", size_type_node);
+      if (TREE_PURPOSE (args))
+	{
+	  /* [basic.stc.dynamic.allocation]
+	     
+	     The first parameter shall not have an associated default
+	     argument.  */
+	  error ("the first parameter of %<operator new%> cannot "
+		 "have a default argument");
+	  /* Throw away the default argument.  */
+	  TREE_PURPOSE (args) = NULL_TREE;
+	}
+
+      if (!same_type_p (TREE_VALUE (args), size_type_node))
+	{
+	  e = 2;
+	  args = TREE_CHAIN (args);
+	}
     }
+  else
+    e = 2;
+
+  if (e == 2)
+    pedwarn ("%<operator new%> takes type %<size_t%> (%qT) "
+	     "as first parameter", size_type_node);
+
   switch (e)
   {
     case 2:
