@@ -25,5 +25,5 @@ int foo(Object&o)
   return o[0];
 }
 
-/* { dg-final { scan-tree-dump-not ".* = \[^>;\]*;" "dce2" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-not ".* = \[^>;\]*;" "dce2" } } */
 /* { dg-final { cleanup-tree-dump "dce2" } } */

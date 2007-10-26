@@ -1,3 +1,7 @@
+2007-10-25  David Daney  <ddaney@avtrex.com>
+
+	* g++.dg/tree-ssa/copyprop-1.C: Remove xfail.
+
 2007-10-25  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33843
