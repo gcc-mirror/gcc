@@ -1,3 +1,9 @@
+2007-10-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/tree-ssa/ivopts-1.C: Remove xfail on the search for
+	"&x\\\[5\\\]" pattern.  Search for "offset: 0x0f+fc" instead of
+	"offset: -4B".
+
 2007-10-25  David Daney  <ddaney@avtrex.com>
 
 	* g++.dg/tree-ssa/copyprop-1.C: Remove xfail.
