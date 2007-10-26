@@ -1,3 +1,9 @@
+2007-10-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33744
+	* parser.c (cp_parser_parenthesized_expression_list): Set
+	greater_than_is_operator_p to true in between the parens.
+
 2007-10-26  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/31747
