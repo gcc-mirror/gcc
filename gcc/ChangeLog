@@ -1,3 +1,8 @@
+2007-10-26  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* reorg.c (emit_delay_sequence): Move insn locator from the
+	first insn to the sequence.
+
 2007-10-26  Samuel Tardieu  <sam@rfc1149.net>
 
 	* ipa-pure-const.c (check_decl): Return immediately when
