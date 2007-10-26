@@ -1,3 +1,9 @@
+2007-10-26  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/31988
+	* decl2.c (coerce_new_type): Do not allow a default argument for
+	the first parameter.
+
 2007-10-26  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR c++/33839
