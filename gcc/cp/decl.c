@@ -7552,6 +7552,12 @@ grokdeclarator (const cp_declarator *declarator,
       return error_mark_node;
     }
 
+  if (declspecs->conflicting_specifiers_p)
+    {
+      error ("conflicting specifiers in declaration of %qs", name);
+      return error_mark_node;
+    }
+
   /* Extract the basic type from the decl-specifier-seq.  */
   type = declspecs->type;
   if (type == error_mark_node)
@@ -7846,15 +7852,10 @@ grokdeclarator (const cp_declarator *declarator,
       error ("multiple storage classes in declaration of %qs", name);
       thread_p = false;
     }
-  if (declspecs->conflicting_specifiers_p)
-    {
-      error ("conflicting specifiers in declaration of %qs", name);
-      storage_class = sc_none;
-    }
-  else if (decl_context != NORMAL
-	   && ((storage_class != sc_none
-		&& storage_class != sc_mutable)
-	       || thread_p))
+  if (decl_context != NORMAL
+      && ((storage_class != sc_none
+	   && storage_class != sc_mutable)
+	  || thread_p))
     {
       if ((decl_context == PARM || decl_context == CATCHPARM)
 	  && (storage_class == sc_register

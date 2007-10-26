@@ -1,3 +1,9 @@
+2007-10-26  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/31747
+	* decl.c (grokdeclarator): In case of conflicting specifiers
+	just return error_mark_node.
+
 2007-10-26  Ollie Wild  <aaw@google.com>
 
 	* expr.c (cxx_expand_expr): Removed.

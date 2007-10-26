@@ -1,3 +1,8 @@
+2007-10-26  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/31747
+	* g++.dg/parse/crash39.C: New.
+
 2007-10-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/tree-ssa/ivopts-1.C: Remove xfail on the search for
