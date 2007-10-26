@@ -8,6 +8,6 @@ class A
 };
 
 
-template <class j> class A::A_impl // { dg-error "does not declare a template" }
+template <class j> class A::A_impl // { dg-error "non-template" }
 {
 };

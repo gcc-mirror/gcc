@@ -263,6 +263,25 @@ finish_member_template_decl (tree decl)
   return error_mark_node;
 }
 
+/* Return the template info node corresponding to T, whatever T is.  */
+
+tree
+get_template_info (tree t)
+{
+  tree tinfo = NULL_TREE;
+
+  if (DECL_P (t) && DECL_LANG_SPECIFIC (t))
+    tinfo = DECL_TEMPLATE_INFO (t);
+
+  if (!tinfo && TREE_CODE (t) == TYPE_DECL)
+    t = TREE_TYPE (t);
+
+  if (TAGGED_TYPE_P (t))
+    tinfo = TYPE_TEMPLATE_INFO (t);
+
+  return tinfo;
+}
+
 /* Returns the template nesting level of the indicated class TYPE.
 
    For example, in:
@@ -291,20 +310,11 @@ template_class_depth (tree type)
        type = (TREE_CODE (type) == FUNCTION_DECL)
 	 ? CP_DECL_CONTEXT (type) : TYPE_CONTEXT (type))
     {
-      if (TREE_CODE (type) != FUNCTION_DECL)
-	{
-	  if (CLASSTYPE_TEMPLATE_INFO (type)
-	      && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (type))
-	      && uses_template_parms (CLASSTYPE_TI_ARGS (type)))
-	    ++depth;
-	}
-      else
-	{
-	  if (DECL_TEMPLATE_INFO (type)
-	      && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (type))
-	      && uses_template_parms (DECL_TI_ARGS (type)))
-	    ++depth;
-	}
+      tree tinfo = get_template_info (type);
+
+      if (tinfo && PRIMARY_TEMPLATE_P (TI_TEMPLATE (tinfo))
+	  && uses_template_parms (INNERMOST_TEMPLATE_ARGS (TI_ARGS (tinfo))))
+	++depth;
     }
 
   return depth;
@@ -3866,27 +3876,15 @@ push_template_decl_real (tree decl, bool is_friend)
     {
       tree a, t, current, parms;
       int i;
+      tree tinfo = get_template_info (decl);
 
-      if (TREE_CODE (decl) == TYPE_DECL)
-	{
-	  if ((IS_AGGR_TYPE_CODE (TREE_CODE (TREE_TYPE (decl)))
-	       || TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE)
-	      && TYPE_TEMPLATE_INFO (TREE_TYPE (decl))
-	      && TYPE_TI_TEMPLATE (TREE_TYPE (decl)))
-	    tmpl = TYPE_TI_TEMPLATE (TREE_TYPE (decl));
-	  else
-	    {
-	      error ("%qD does not declare a template type", decl);
-	      return decl;
-	    }
-	}
-      else if (!DECL_LANG_SPECIFIC (decl) || !DECL_TEMPLATE_INFO (decl))
+      if (!tinfo)
 	{
 	  error ("template definition of non-template %q#D", decl);
 	  return decl;
 	}
-      else
-	tmpl = DECL_TI_TEMPLATE (decl);
+
+      tmpl = TI_TEMPLATE (tinfo);
 
       if (DECL_FUNCTION_TEMPLATE_P (tmpl)
 	  && DECL_TEMPLATE_INFO (decl) && DECL_TI_ARGS (decl)
@@ -3946,9 +3944,6 @@ push_template_decl_real (tree decl, bool is_friend)
 		return error_mark_node;
 	      }
 
-	    /* Perhaps we should also check that the parms are used in the
-	       appropriate qualifying scopes in the declarator?  */
-
 	    if (current == decl)
 	      current = ctx;
 	    else
@@ -3956,6 +3951,22 @@ push_template_decl_real (tree decl, bool is_friend)
 			 ? TYPE_CONTEXT (current)
 			 : DECL_CONTEXT (current));
 	  }
+
+      /* Check that the parms are used in the appropriate qualifying scopes
+	 in the declarator.  */
+      if (!comp_template_args
+	  (TI_ARGS (tinfo),
+	   TI_ARGS (get_template_info (DECL_TEMPLATE_RESULT (tmpl)))))
+	{
+	  error ("\
+template arguments to %qD do not match original template %qD",
+		 decl, DECL_TEMPLATE_RESULT (tmpl));
+	  if (!uses_template_parms (TI_ARGS (tinfo)))
+	    inform ("use template<> for an explicit specialization");
+	  /* Avoid crash in import_export_decl.  */
+	  DECL_INTERFACE_KNOWN (decl) = 1;
+	  return error_mark_node;
+	}
     }
 
   DECL_TEMPLATE_RESULT (tmpl) = decl;

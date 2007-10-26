@@ -1,3 +1,11 @@
+2007-10-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/24791
+	* pt.c (get_template_info): New fn.
+	(template_class_depth): Use it.
+	(push_template_decl_real): Check that the template args of the 
+	definition match the args of the previous declaration.
+
 2007-10-26  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/31988
