@@ -1,4 +1,6 @@
 #!/bin/sh
+LANG=C
+export LANG
 
 compile="$1"
 
