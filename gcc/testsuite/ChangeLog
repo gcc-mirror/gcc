@@ -1,3 +1,8 @@
+2007-10-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33744
+	* g++.dg/template/arg6.C: New test.
+
 2007-10-24  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR target/33755
