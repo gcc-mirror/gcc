@@ -51,6 +51,7 @@
 static int avr_naked_function_p (tree);
 static int interrupt_function_p (tree);
 static int signal_function_p (tree);
+static int avr_OS_task_function_p (tree);
 static int avr_regs_to_save (HARD_REG_SET *);
 static int sequent_regs_live (void);
 static const char *ptrreg_to_str (int);
@@ -434,6 +435,19 @@ signal_function_p (tree func)
   return a != NULL_TREE;
 }
 
+/* Return nonzero if FUNC is a OS_task function.  */
+
+static int
+avr_OS_task_function_p (tree func)
+{
+  tree a;
+
+  gcc_assert (TREE_CODE (func) == FUNCTION_DECL);
+  
+  a = lookup_attribute ("OS_task", TYPE_ATTRIBUTES (TREE_TYPE (func)));
+  return a != NULL_TREE;
+}
+
 /* Return the number of hard registers to push/pop in the prologue/epilogue
    of the current function, and optionally store these registers in SET.  */
 
@@ -449,8 +463,10 @@ avr_regs_to_save (HARD_REG_SET *set)
     CLEAR_HARD_REG_SET (*set);
   count = 0;
 
-  /* No need to save any registers if the function never returns.  */
-  if (TREE_THIS_VOLATILE (current_function_decl))
+  /* No need to save any registers if the function never returns or 
+     is have "OS_task" attribute.  */
+  if (TREE_THIS_VOLATILE (current_function_decl)
+      || cfun->machine->is_OS_task)
     return 0;
 
   for (reg = 0; reg < 32; reg++)
@@ -501,7 +517,6 @@ avr_simple_epilogue (void)
 	  && ! interrupt_function_p (current_function_decl)
 	  && ! signal_function_p (current_function_decl)
 	  && ! avr_naked_function_p (current_function_decl)
-	  && ! MAIN_NAME_P (DECL_NAME (current_function_decl))
 	  && ! TREE_THIS_VOLATILE (current_function_decl));
 }
 
@@ -572,10 +587,10 @@ expand_prologue (void)
   last_insn_address = 0;
   
   /* Init cfun->machine.  */
-  cfun->machine->is_main = MAIN_NAME_P (DECL_NAME (current_function_decl));
   cfun->machine->is_naked = avr_naked_function_p (current_function_decl);
   cfun->machine->is_interrupt = interrupt_function_p (current_function_decl);
   cfun->machine->is_signal = signal_function_p (current_function_decl);
+  cfun->machine->is_OS_task = avr_OS_task_function_p (current_function_decl);
   
   /* Prologue: naked.  */
   if (cfun->machine->is_naked)
@@ -619,18 +634,7 @@ expand_prologue (void)
       /* Prevent any attempt to delete the setting of ZERO_REG!  */
       emit_insn (gen_rtx_USE (VOIDmode, zero_reg_rtx));
     }
-  if (cfun->machine->is_main)
-    {
-      char buffer[40];
-      sprintf (buffer, "%s - %d", avr_init_stack, (int) size);
-      rtx sym = gen_rtx_SYMBOL_REF (HImode, ggc_strdup (buffer));
-      /* Initialize stack pointer using frame pointer.  */
-      insn = emit_move_insn (frame_pointer_rtx, sym);
-      RTX_FRAME_RELATED_P (insn) = 1;
-      insn = emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
-      RTX_FRAME_RELATED_P (insn) = 1;
-    }
-  else if (minimize && (frame_pointer_needed || live_seq > 6)) 
+  if (minimize && (frame_pointer_needed || live_seq > 6)) 
     {
       insn = emit_move_insn (gen_rtx_REG (HImode, REG_X), 
                              gen_int_mode (size, HImode));
@@ -763,10 +767,6 @@ avr_asm_function_end_prologue (FILE *file)
         {
           fputs ("/* prologue: Signal */\n", file);
         }
-      else if (cfun->machine->is_main)
-        {
-          fputs ("/* prologue: main */\n", file);
-        }
       else
         fputs ("/* prologue: function */\n", file);
     }
@@ -809,13 +809,7 @@ expand_epilogue (void)
 	      && !(cfun->machine->is_interrupt || cfun->machine->is_signal)
 	      && live_seq);
   
-  if (cfun->machine->is_main)
-    {
-      /* Return value from main() is already in the correct registers
-         (r25:r24) as the exit() argument.  */
-      emit_jump_insn (gen_return ());
-    }
-  else if (minimize && (frame_pointer_needed || live_seq > 4))
+  if (minimize && (frame_pointer_needed || live_seq > 4))
     {
       if (frame_pointer_needed)
 	{
@@ -1636,9 +1630,6 @@ output_movhi (rtx insn, rtx operands[], int *l)
               /*  Use simple load of stack pointer if no interrupts are used
               or inside main or signal function prologue where they disabled.  */
 	      else if (TARGET_NO_INTERRUPTS 
-                        || (reload_completed 
-                            && cfun->machine->is_main 
-                            && prologue_epilogue_contains (insn))
                         || (reload_completed 
                             && cfun->machine->is_signal 
                             && prologue_epilogue_contains (insn)))
@@ -4566,6 +4557,7 @@ const struct attribute_spec avr_attribute_table[] =
   { "signal",    0, 0, true,  false, false,  avr_handle_fndecl_attribute },
   { "interrupt", 0, 0, true,  false, false,  avr_handle_fndecl_attribute },
   { "naked",     0, 0, false, true,  true,   avr_handle_fntype_attribute },
+  { "OS_task",   0, 0, false, true,  true,   avr_handle_fntype_attribute },
   { NULL,        0, 0, false, false, false, NULL }
 };
 
