@@ -1,3 +1,20 @@
+2007-10-26  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/invoke.texi (Option Summary, optimizations): Remove
+	-fbounds-check.  Add -fassociative-math, -freciprocal-math,
+	-ftree-vrp and -funit-at-a-time.  Change -fno-split-wide-types to
+	-fsplit-wide-types to match later entry.  Break up a long line.
+	(Option Summary, code gen options)  Add -fno-stack-limit.  Add
+	missing @gol to the end of a line.
+	(Optimization Options): Remove -fbounds-check, which is also
+	documented under Code Generation Options.  Remove =n from
+	index entry for -ftree-parallelize-loops.  Change -fno-cprop-registers
+	to -fcprop-registers to match other options, and say when it is
+	enabled rather than disabled.  Remove extra index entry for
+	-fno-cx-limited-range.  Add index entries for -fstack-protector
+	and -fstack-protector-all.
+	(Code Gen Options): Add index entry for -ftls-model.
+
 2007-10-26  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.c (avr_OS_task_function_p): Add new function.
