@@ -1,3 +1,8 @@
+2007-10-26  Samuel Tardieu  <sam@rfc1149.net>
+
+	* ipa-pure-const.c (check_decl): Return immediately when
+	pure_const_state has been set to IPA_NEITHER.
+
 2007-10-25  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/33833
@@ -21,9 +26,9 @@
 2007-10-25  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/33866
-	* tree-vect-transform.c (vectorizable_store): Check operands of all the
-	stmts in the group of strided accesses. Get def stmt type for each store
-	in the group and pass it to vect_get_vec_def_for_stmt_copy ().
+	* tree-vect-transform.c (vectorizable_store): Check operands of all
+	the stmts in the group of strided accesses. Get def stmt type for each
+	store in the group and pass it to vect_get_vec_def_for_stmt_copy ().
 
 2007-10-25  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -93,8 +98,8 @@
 2007-10-24  Michael Matz  <matz@suse.de>
 
 	PR debug/33868
-	* var-tracking.c (variable_union): Don't break after one loop iteration
-	but only when a difference is found.
+	* var-tracking.c (variable_union): Don't break after one loop
+	iteration but only when a difference is found.
 	(dump_variable): Also print DECL_UID.
 
 2007-10-24  Olga Golovanevsky  <olga@il.ibm.com>
@@ -1618,7 +1623,8 @@
 	* ra-conflict.c: Include "sparseset.h".
 	(conflicts): Change to HOST_WIDEST_FAST_INT.
 	(allocnos_live): Redefine variable as a sparseset.
-	(SET_ALLOCNO_LIVE, CLEAR_ALLOCNO_LIVE, GET_ALLOCNO_LIVE): Delete macros.
+	(SET_ALLOCNO_LIVE, CLEAR_ALLOCNO_LIVE, GET_ALLOCNO_LIVE):
+	Delete macros.
 	(allocno_row_words): Removed global variable.
 	(partial_bitnum, max_bitnum, adjacency_pool, adjacency): New variables.
 	(CONFLICT_BITNUM, CONFLICT_BITNUM_FAST): New defines.
@@ -1651,7 +1657,8 @@
 	Use the FOR_EACH_CONFLICT macro.
 	* ra.h: Comments updated.
 	(conflicts): Update prototype to HOST_WIDEST_FAST_INT.
-	(partial_bitnum, max_bitnum, adjacency, adjacency_pool): Add prototypes.
+	(partial_bitnum, max_bitnum, adjacency, adjacency_pool):
+	Add prototypes.
 	(ADJACENCY_VEC_LENGTH, FOR_EACH_CONFLICT): New defines.
 	(adjacency_list_d, adjacency_iterator_d): New types.
 	(add_neighbor, adjacency_iter_init, adjacency_iter_done,
@@ -2294,8 +2301,8 @@
 2007-09-25  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (expand_prologue_reg_save,
-	expand_epilogue_reg_restore): Code to save and restore I/M/B/L regs and
-	ASTAT moved here...
+	expand_epilogue_reg_restore): Code to save and restore I/M/B/L regs
+	and ASTAT moved here...
 	(expand_interrupt_handler_prologue, expand_interrupt_handler_epilogue):
 	... from here.  New argument ALL; callers changed.
 	(n_regs_saved_by_prologue): Count ASTAT for plain saveall functions.
