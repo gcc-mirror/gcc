@@ -317,8 +317,10 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Optimize Options,,Options that Control Optimization}.
 @gccoptlist{-falign-functions[=@var{n}]  -falign-jumps[=@var{n}] @gol
 -falign-labels[=@var{n}]  -falign-loops[=@var{n}]  @gol
--fbounds-check -fmudflap -fmudflapth -fmudflapir @gol
--fbranch-probabilities -fprofile-values -fvpt -fbranch-target-load-optimize @gol
+-fassociative-math  -freciprocal-math @gol
+-fmudflap -fmudflapth -fmudflapir @gol
+-fbranch-probabilities -fprofile-values -fvpt  @gol
+-fbranch-target-load-optimize @gol
 -fbranch-target-load-optimize2 -fbtr-bb-exclusive @gol
 -fcaller-saves  -fcprop-registers  -fcse-follow-jumps @gol
 -fcse-skip-blocks  -fcx-limited-range  -fdata-sections @gol
@@ -351,7 +353,7 @@ Objective-C and Objective-C++ Dialects}.
 -fsched2-use-superblocks @gol
 -fsched2-use-traces -fsee -freschedule-modulo-scheduled-loops @gol
 -fsection-anchors  -fsignaling-nans  -fsingle-precision-constant @gol
--fno-split-wide-types -fstack-protector  -fstack-protector-all @gol
+-fsplit-wide-types -fstack-protector  -fstack-protector-all @gol
 -fstrict-aliasing  -fstrict-overflow  -ftracer  -fthread-jumps @gol
 -funroll-all-loops  -funroll-loops  -fpeel-loops @gol
 -fsplit-ivs-in-unroller -funswitch-loops @gol
@@ -362,7 +364,8 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-dominator-opts -ftree-dse -ftree-copyrename -ftree-sink @gol
 -ftree-ch -ftree-sra -ftree-ter -ftree-fre -ftree-vectorize @gol
 -ftree-vect-loop-version -fvect-cost-model -ftree-salias -fipa-pta -fweb @gol
--ftree-copy-prop -ftree-store-ccp -ftree-store-copy-prop -fwhole-program @gol
+-ftree-copy-prop -ftree-store-ccp -ftree-store-copy-prop -ftree-vrp @gol
+-funit-at-a-time -fwhole-program @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os}
 
@@ -830,8 +833,8 @@ See S/390 and zSeries Options.
 -fshort-double  -fshort-wchar @gol
 -fverbose-asm  -fpack-struct[=@var{n}]  -fstack-check @gol
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym} @gol
--fargument-alias  -fargument-noalias @gol
--fargument-noalias-global  -fargument-noalias-anything
+-fno-stack-limit  -fargument-alias  -fargument-noalias @gol
+-fargument-noalias-global  -fargument-noalias-anything @gol
 -fleading-underscore  -ftls-model=@var{model} @gol
 -ftrapv  -fwrapv  -fbounds-check @gol
 -fvisibility}
@@ -5346,13 +5349,6 @@ assumptions based on that.
 
 The default is @option{-fzero-initialized-in-bss}.
 
-@item -fbounds-check
-@opindex fbounds-check
-For front-ends that support it, generate additional code to check that
-indices used to access arrays are within the declared range.  This is
-currently only supported by the Java and Fortran front-ends, where
-this option defaults to true and false respectively.
-
 @item -fmudflap -fmudflapth -fmudflapir
 @opindex fmudflap
 @opindex fmudflapth
@@ -5779,7 +5775,7 @@ Perform induction variable optimizations (strength reduction, induction
 variable merging and induction variable elimination) on trees.
 
 @item -ftree-parallelize-loops=n
-@opindex ftree-parallelize-loops=n
+@opindex ftree-parallelize-loops
 Parallelize loops, i.e., split their iteration space to run in n threads.
 This is only possible for loops whose iterations are independent
 and can be arbitrarily reordered.  The optimization is only
@@ -6156,13 +6152,13 @@ compilation unit, not for the single source file itself.
 
 This option is not supported for Fortran programs.
 
-@item -fno-cprop-registers
-@opindex fno-cprop-registers
+@item -fcprop-registers
+@opindex fcprop-registers
 After register allocation and post-register allocation instruction splitting,
 we perform a copy-propagation pass to try to reduce scheduling dependencies
 and occasionally eliminate the copy.
 
-Disabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
+Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fprofile-generate
 @opindex fprofile-generate
@@ -6373,9 +6369,7 @@ Treat floating point constant as single precision constant instead of
 implicitly converting it to double precision constant.
 
 @item -fcx-limited-range
-@itemx -fno-cx-limited-range
 @opindex fcx-limited-range
-@opindex fno-cx-limited-range
 When enabled, this option states that a range reduction step is not
 needed when performing complex division.  The default is
 @option{-fno-cx-limited-range}, but is enabled by @option{-ffast-math}.
@@ -6528,6 +6522,7 @@ When performing branch target register load optimization, don't reuse
 branch target registers in within any basic block.
 
 @item -fstack-protector
+@opindex fstack-protector
 Emit extra code to check for buffer overflows, such as stack smashing
 attacks.  This is done by adding a guard variable to functions with
 vulnerable objects.  This includes functions that call alloca, and
@@ -6536,6 +6531,7 @@ when a function is entered and then checked when the function exits.
 If a guard check fails, an error message is printed and the program exits.
 
 @item -fstack-protector-all
+@opindex fstack-protector-all
 Like @option{-fstack-protector} except that all functions are protected.
 
 @item -fsection-anchors
@@ -15082,6 +15078,7 @@ switch.  Use it to conform to a non-default application binary interface.
 Not all targets provide complete support for this switch.
 
 @item -ftls-model=@var{model}
+@opindex ftls-model
 Alter the thread-local storage model to be used (@pxref{Thread-Local}).
 The @var{model} argument should be one of @code{global-dynamic},
 @code{local-dynamic}, @code{initial-exec} or @code{local-exec}.
