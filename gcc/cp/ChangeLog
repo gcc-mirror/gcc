@@ -1,3 +1,10 @@
+2007-10-26  Ollie Wild  <aaw@google.com>
+
+	* expr.c (cxx_expand_expr): Removed.
+	* cp-tree.h (exx_expand_expr): Removed.
+	* cp-objcp-common.h (LANK_HOOKS_EXPAND_EXPR): Replace cxx_expand_expr
+	with c_expand_expr.
+
 2007-10-25  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33843

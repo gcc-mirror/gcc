@@ -4332,9 +4332,6 @@ extern void choose_personality_routine		(enum languages);
 extern tree eh_type_info			(tree);
 
 /* in expr.c */
-extern rtx cxx_expand_expr			(tree, rtx,
-						 enum machine_mode,
-						 int, rtx *);
 extern tree cplus_expand_constant		(tree);
 
 /* friend.c */
