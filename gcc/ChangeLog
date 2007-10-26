@@ -1,3 +1,9 @@
+2007-10-26  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/33601
+	* tree.c (build_offset_type): Build canonical type based on the
+	TYPE_MAIN_VARIANT of the base type.
+
 2007-10-26  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* reorg.c (emit_delay_sequence): Move insn locator from the
