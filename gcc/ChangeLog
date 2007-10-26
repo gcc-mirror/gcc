@@ -1,3 +1,7 @@
+2007-10-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-nested.c (get_trampoline_type): Fix thinko.
+
 2007-10-26  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR c++/33601
