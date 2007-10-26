@@ -8464,7 +8464,8 @@ cp_parser_decltype (cp_parser *parser)
   ++skip_evaluation;
 
   /* Parse the opening `('.  */
-  cp_parser_require (parser, CPP_OPEN_PAREN, "`('");
+  if (!cp_parser_require (parser, CPP_OPEN_PAREN, "`('"))
+    return error_mark_node;
   
   /* First, try parsing an id-expression.  */
   cp_parser_parse_tentatively (parser);
@@ -8482,14 +8483,15 @@ cp_parser_decltype (cp_parser *parser)
       cp_id_kind idk;
       const char *error_msg;
 
-      /* Lookup the name we got back from the id-expression.  */
-      expr = cp_parser_lookup_name (parser, expr,
-                                    none_type,
-                                    /*is_template=*/false,
-                                    /*is_namespace=*/false,
-                                    /*check_dependency=*/true,
-                                    /*ambiguous_decls=*/NULL);
-      
+      if (TREE_CODE (expr) == IDENTIFIER_NODE)
+	/* Lookup the name we got back from the id-expression.  */
+	expr = cp_parser_lookup_name (parser, expr,
+				      none_type,
+				      /*is_template=*/false,
+				      /*is_namespace=*/false,
+				      /*check_dependency=*/true,
+				      /*ambiguous_decls=*/NULL);
+
       if (expr 
           && expr != error_mark_node
           && TREE_CODE (expr) != TEMPLATE_ID_EXPR

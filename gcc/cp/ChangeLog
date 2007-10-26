@@ -1,3 +1,10 @@
+2007-10-26  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/33839
+	* parser.c (cp_parser_decltype): Return ERROR_MARK_NODE if we
+	don't see the leading '('. Only lookup names if we get an
+	IDENTIFIER_NODE.
+
 2007-10-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/33744
