@@ -114,7 +114,10 @@ check_decl (funct_state local,
      are CHECKING_WRITE, this cannot be a pure or constant
      function.  */
   if (checking_write) 
-    local->pure_const_state = IPA_NEITHER;
+    {
+      local->pure_const_state = IPA_NEITHER;
+      return;
+    }
 
   if (DECL_EXTERNAL (t) || TREE_PUBLIC (t))
     {
