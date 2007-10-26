@@ -1,3 +1,17 @@
+2007-10-26  Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/avr.c (avr_OS_task_function_p): Add new function.
+	(avr_regs_to_save): Handle functions with 'OS_task' attribute.
+	(avr_simple_epilogue, expand_prologue, avr_asm_function_end_prologue,
+	expand_epilogue, output_movhi): Don't handle 'main' function.
+	(avr_attribute_table): Add 'OS_task' function attribute.
+	* config/avr/avr.h (machine_function): Remove 'is_main' field, add
+	'is_OS_task' field.
+	* config/avr/avr.md (return_from_main_epilogue): Remove insn.
+	(return_from_epilogue, return_from_interrupt_epilogue): Don't handle
+	'main' function.
+	* config/avr/avr.opt (minit-stack): Remove.
+
 2007-10-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-nested.c (get_trampoline_type): Fix thinko.

@@ -956,9 +956,6 @@ mmcu=*:-mmcu=%*}"
    This is added to the cfun structure.  */
 struct machine_function GTY(())
 {
-  /* 'true' - if current function is a 'main' function.  */
-  int is_main;
-
   /* 'true' - if current function is a naked function.  */
   int is_naked;
 
@@ -969,4 +966,8 @@ struct machine_function GTY(())
   /* 'true' - if current function is a signal function 
      as specified by the "signal" attribute.  */
   int is_signal;
+  
+  /* 'true' - if current function is a signal function 
+     as specified by the "OS_task" attribute.  */
+  int is_OS_task;
 };

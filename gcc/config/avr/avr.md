@@ -2809,32 +2809,16 @@
   [(return)]
   "(reload_completed 
     && cfun->machine 
-    && !cfun->machine->is_main
     && !(cfun->machine->is_interrupt || cfun->machine->is_signal)
     && !cfun->machine->is_naked)"
   "ret"
   [(set_attr "cc" "none")
    (set_attr "length" "1")])
 
-(define_insn "return_from_main_epilogue"
-  [(return)]
-  "(reload_completed 
-    && cfun->machine 
-    && cfun->machine->is_main
-    && !cfun->machine->is_naked)"
-  "%~jmp exit"
-  [(set_attr_alternative "length"
-			 [(if_then_else (eq_attr "mcu_mega" "yes")
-					(const_int 2)
-					(const_int 1))])
-  (set_attr "cc" "none")
-  ])
-  
 (define_insn "return_from_interrupt_epilogue"
   [(return)]
   "(reload_completed 
     && cfun->machine 
-    && !cfun->machine->is_main
     && (cfun->machine->is_interrupt || cfun->machine->is_signal)
     && !cfun->machine->is_naked)"
   "reti"
