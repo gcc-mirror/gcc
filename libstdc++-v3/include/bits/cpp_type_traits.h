@@ -381,6 +381,28 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef __true_type __type;
     };
 
+  //
+  // Move iterator type
+  //
+  template<typename _Tp>
+    struct __is_move_iterator
+    {
+      enum { __value = 0 };
+      typedef __false_type __type;
+    };
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Iterator>
+    class move_iterator;
+
+  template<typename _Iterator>
+    struct __is_move_iterator< move_iterator<_Iterator> >
+    {
+      enum { __value = 1 };
+      typedef __true_type __type;
+    };
+#endif
+
 _GLIBCXX_END_NAMESPACE
 
 #endif //_CPP_TYPE_TRAITS_H

@@ -266,7 +266,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // If _Iterator is a __normal_iterator return its base (a plain pointer,
   // normally) otherwise return it untouched.  See copy, fill, ... 
   template<typename _Iterator,
-	   bool _BoolType = __is_normal_iterator<_Iterator>::__value>
+	   bool _IsNormal = __is_normal_iterator<_Iterator>::__value>
     struct __niter_base
     {
       static _Iterator
@@ -277,13 +277,31 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _Iterator>
     struct __niter_base<_Iterator, true>
     {
-      static typename _Iterator::_Iterator_type
+      static typename _Iterator::iterator_type
+      __b(_Iterator __it)
+      { return __it.base(); }
+    };
+
+  // Likewise, for move_iterator.
+  template<typename _Iterator,
+	   bool _IsMove = __is_move_iterator<_Iterator>::__value>
+    struct __miter_base
+    {
+      static _Iterator
+      __b(_Iterator __it)
+      { return __it; }
+    };
+
+  template<typename _Iterator>
+    struct __miter_base<_Iterator, true>
+    {
+      static typename _Iterator::iterator_type
       __b(_Iterator __it)
       { return __it.base(); }
     };
 
   // Used in __copy_move and __copy_move_backward below.
-  template<bool _IsCopy>
+  template<bool _IsMove>
     struct __cm_assign
     {
       template<typename _IteratorL, typename _IteratorR>
@@ -294,7 +312,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
   template<>
-    struct __cm_assign<false>
+    struct __cm_assign<true>
     {
       template<typename _IteratorL, typename _IteratorR>
         static void
@@ -309,7 +327,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // (2) If we're using random access iterators, then write the loop as
   // a for loop with an explicit count.
 
-  template<bool _IsCopy, bool, typename>
+  template<bool _IsMove, bool, typename>
     struct __copy_move
     {
       template<typename _II, typename _OI>
@@ -317,13 +335,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         __copy_m(_II __first, _II __last, _OI __result)
         {
 	  for (; __first != __last; ++__result, ++__first)
-	    std::__cm_assign<_IsCopy>::__a(__result, __first);
+	    std::__cm_assign<_IsMove>::__a(__result, __first);
 	  return __result;
 	}
     };
 
-  template<bool _IsCopy, bool _IsSimple>
-    struct __copy_move<_IsCopy, _IsSimple, random_access_iterator_tag>
+  template<bool _IsMove, bool _IsSimple>
+    struct __copy_move<_IsMove, _IsSimple, random_access_iterator_tag>
     {
       template<typename _II, typename _OI>
         static _OI
@@ -332,7 +350,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  typedef typename iterator_traits<_II>::difference_type _Distance;
 	  for(_Distance __n = __last - __first; __n > 0; --__n)
 	    {
-	      std::__cm_assign<_IsCopy>::__a(__result, __first);
+	      std::__cm_assign<_IsMove>::__a(__result, __first);
 	      ++__first;
 	      ++__result;
 	    }
@@ -340,8 +358,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
     };
 
-  template<bool _IsCopy>
-    struct __copy_move<_IsCopy, true, random_access_iterator_tag>
+  template<bool _IsMove>
+    struct __copy_move<_IsMove, true, random_access_iterator_tag>
     {
       template<typename _Tp>
         static _Tp*
@@ -353,7 +371,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
     };
 
-  template<bool _IsCopy, typename _II, typename _OI>
+  template<bool _IsMove, typename _II, typename _OI>
     inline _OI
     __copy_move_a(_II __first, _II __last, _OI __result)
     {
@@ -365,7 +383,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	                     && __is_pointer<_OI>::__value
 			     && __are_same<_ValueTypeI, _ValueTypeO>::__value);
 
-      return std::__copy_move<_IsCopy, __simple,
+      return std::__copy_move<_IsMove, __simple,
 	                      _Category>::__copy_m(__first, __last, __result);
     }
 
@@ -380,23 +398,33 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _CharT, typename _Traits>
     class ostreambuf_iterator;
 
-  template<bool _IsCopy, typename _CharT>
+  template<bool _IsMove, typename _CharT>
     typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value, 
 	     ostreambuf_iterator<_CharT, char_traits<_CharT> > >::__type
-    __copy_move_a(_CharT*, _CharT*,
-		  ostreambuf_iterator<_CharT, char_traits<_CharT> >);
+    __copy_move_a2(_CharT*, _CharT*,
+		   ostreambuf_iterator<_CharT, char_traits<_CharT> >);
 
-  template<bool _IsCopy, typename _CharT>
+  template<bool _IsMove, typename _CharT>
     typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value, 
 	     ostreambuf_iterator<_CharT, char_traits<_CharT> > >::__type
-    __copy_move_a(const _CharT*, const _CharT*,
-		  ostreambuf_iterator<_CharT, char_traits<_CharT> >);
+    __copy_move_a2(const _CharT*, const _CharT*,
+		   ostreambuf_iterator<_CharT, char_traits<_CharT> >);
 
-  template<bool _IsCopy, typename _CharT>
+  template<bool _IsMove, typename _CharT>
     typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value,
 				    _CharT*>::__type
-    __copy_move_a(istreambuf_iterator<_CharT, char_traits<_CharT> >,
-		  istreambuf_iterator<_CharT, char_traits<_CharT> >, _CharT*);
+    __copy_move_a2(istreambuf_iterator<_CharT, char_traits<_CharT> >,
+		   istreambuf_iterator<_CharT, char_traits<_CharT> >, _CharT*);
+
+  template<bool _IsMove, typename _II, typename _OI>
+    inline _OI
+    __copy_move_a2(_II __first, _II __last, _OI __result)
+    {
+      return _OI(std::__copy_move_a<_IsMove>
+		 (std::__niter_base<_II>::__b(__first),
+		  std::__niter_base<_II>::__b(__last),
+		  std::__niter_base<_OI>::__b(__result)));
+    }
 
   /**
    *  @brief Copies the range [first,last) into result.
@@ -424,10 +452,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    typename iterator_traits<_II>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      return _OI(std::__copy_move_a<true>
-		 (std::__niter_base<_II>::__b(__first),
-		  std::__niter_base<_II>::__b(__last),
-		  std::__niter_base<_OI>::__b(__result)));
+      return (std::__copy_move_a2<__is_move_iterator<_II>::__value>
+	      (std::__miter_base<_II>::__b(__first),
+	       std::__miter_base<_II>::__b(__last), __result));
     }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -457,14 +484,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    typename iterator_traits<_II>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      return _OI(std::__copy_move_a<false>
-		 (std::__niter_base<_II>::__b(__first),
-		  std::__niter_base<_II>::__b(__last),
-		  std::__niter_base<_OI>::__b(__result)));
+      return (std::__copy_move_a2<true>
+	      (std::__miter_base<_II>::__b(__first),
+	       std::__miter_base<_II>::__b(__last), __result));
     }
 #endif
 
-  template<bool _IsCopy, bool, typename>
+  template<bool _IsMove, bool, typename>
     struct __copy_move_backward
     {
       template<typename _BI1, typename _BI2>
@@ -472,13 +498,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         __copy_move_b(_BI1 __first, _BI1 __last, _BI2 __result)
         {
 	  while (__first != __last)
-	    std::__cm_assign<_IsCopy>::__a(--__result, --__last);
+	    std::__cm_assign<_IsMove>::__a(--__result, --__last);
 	  return __result;
 	}
     };
 
-  template<bool _IsCopy, bool _IsSimple>
-    struct __copy_move_backward<_IsCopy, _IsSimple, random_access_iterator_tag>
+  template<bool _IsMove, bool _IsSimple>
+    struct __copy_move_backward<_IsMove, _IsSimple, random_access_iterator_tag>
     {
       template<typename _BI1, typename _BI2>
         static _BI2
@@ -486,13 +512,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         {
 	  typename iterator_traits<_BI1>::difference_type __n;
 	  for (__n = __last - __first; __n > 0; --__n)
-	    std::__cm_assign<_IsCopy>::__a(--__result, --__last);
+	    std::__cm_assign<_IsMove>::__a(--__result, --__last);
 	  return __result;
 	}
     };
 
-  template<bool _IsCopy>
-    struct __copy_move_backward<_IsCopy, true, random_access_iterator_tag>
+  template<bool _IsMove>
+    struct __copy_move_backward<_IsMove, true, random_access_iterator_tag>
     {
       template<typename _Tp>
         static _Tp*
@@ -504,7 +530,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
     };
 
-  template<bool _IsCopy, typename _BI1, typename _BI2>
+  template<bool _IsMove, typename _BI1, typename _BI2>
     inline _BI2
     __copy_move_backward_a(_BI1 __first, _BI1 __last, _BI2 __result)
     {
@@ -516,10 +542,20 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	                     && __is_pointer<_BI2>::__value
 			     && __are_same<_ValueType1, _ValueType2>::__value);
 
-      return std::__copy_move_backward<_IsCopy, __simple,
+      return std::__copy_move_backward<_IsMove, __simple,
 	                               _Category>::__copy_move_b(__first,
 								 __last,
 								 __result);
+    }
+
+  template<bool _IsMove, typename _BI1, typename _BI2>
+    inline _BI2
+    __copy_move_backward_a2(_BI1 __first, _BI1 __last, _BI2 __result)
+    {
+      return _BI2(std::__copy_move_backward_a<_IsMove>
+		  (std::__niter_base<_BI1>::__b(__first),
+		   std::__niter_base<_BI1>::__b(__last),
+		   std::__niter_base<_BI2>::__b(__result)));
     }
 
   /**
@@ -539,7 +575,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  Result may not be in the range [first,last).  Use copy instead.  Note
    *  that the start of the output range may overlap [first,last).
   */
-  template <typename _BI1, typename _BI2>
+  template<typename _BI1, typename _BI2>
     inline _BI2
     copy_backward(_BI1 __first, _BI1 __last, _BI2 __result)
     {
@@ -551,10 +587,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    typename iterator_traits<_BI2>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      return _BI2(std::__copy_move_backward_a<true>
-		  (std::__niter_base<_BI1>::__b(__first),
-		   std::__niter_base<_BI1>::__b(__last),
-		   std::__niter_base<_BI2>::__b(__result)));
+      return (std::__copy_move_backward_a2<__is_move_iterator<_BI1>::__value>
+	      (std::__miter_base<_BI1>::__b(__first),
+	       std::__miter_base<_BI1>::__b(__last), __result));
     }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -587,10 +622,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    typename iterator_traits<_BI2>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      return _BI2(std::__copy_move_backward_a<false>
-		  (std::__niter_base<_BI1>::__b(__first),
-		   std::__niter_base<_BI1>::__b(__last),
-		   std::__niter_base<_BI2>::__b(__result)));
+      return (std::__copy_move_backward_a2<true>
+	      (std::__miter_base<_BI1>::__b(__first),
+	       std::__miter_base<_BI1>::__b(__last), __result));
     }
 #endif
 

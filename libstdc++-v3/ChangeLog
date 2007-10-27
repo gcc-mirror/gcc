@@ -1,3 +1,18 @@
+2007-10-27  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algobase.h (struct __miter_base): Add.
+	(__copy_move_a2, __copy_move_backward_a2): Add.
+	(copy, copy_backward, move, move_backward): Adjust, call *a2 helpers.
+	* include/bits/cpp_type_traits.h (struct __is_move_iterator): Add.
+	* include/bits/streambuf_iterator.h (__copy_move_a<>): Rename
+	to __copy_move_a2.
+	* include/std/streambuf (friend __copy_move_a<>): Likewise.
+	* testsuite/25_algorithms/copy/move_iterators/1.cc: New.
+	* testsuite/25_algorithms/copy_backward/move_iterators/1.cc: Likewise.
+
+	* include/bits/stl_iterator.h (__normal_iterator<>::_Iterator_type):
+	Rename to iterator_type.
+
 2007-10-26  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/throw_allocator.h (throw_allocator<>::
