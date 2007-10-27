@@ -566,13 +566,39 @@ match_intent_spec (void)
 static match
 char_len_param_value (gfc_expr **expr)
 {
+  match m;
+
   if (gfc_match_char ('*') == MATCH_YES)
     {
       *expr = NULL;
       return MATCH_YES;
     }
 
-  return gfc_match_expr (expr);
+  m = gfc_match_expr (expr);
+  if (m == MATCH_YES && (*expr)->expr_type == EXPR_FUNCTION)
+    {
+      if ((*expr)->value.function.actual
+	  && (*expr)->value.function.actual->expr->symtree)
+	{
+	  gfc_expr *e;
+	  e = (*expr)->value.function.actual->expr;
+	  if (e->symtree->n.sym->attr.flavor == FL_PROCEDURE
+	      && e->expr_type == EXPR_VARIABLE)
+	    {
+	      if (e->symtree->n.sym->ts.type == BT_UNKNOWN)
+		goto syntax;
+	      if (e->symtree->n.sym->ts.type == BT_CHARACTER
+		  && e->symtree->n.sym->ts.cl
+		  && e->symtree->n.sym->ts.cl->length->ts.type == BT_UNKNOWN)
+	        goto syntax;
+	    }
+	}
+    }
+  return m;
+
+syntax:
+  gfc_error ("Conflict in attributes of function argument at %C");
+  return MATCH_ERROR;
 }
 
 
