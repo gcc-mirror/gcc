@@ -4672,9 +4672,14 @@ cxx_type_promotes_to (tree type)
    the indicated TYPE, which is a parameter to FN.  Do any required
    conversions.  Return the converted value.  */
 
+static GTY(()) VEC(tree,gc) *default_arg_context;
+
 tree
 convert_default_arg (tree type, tree arg, tree fn, int parmnum)
 {
+  int i;
+  tree t;
+
   /* If the ARG is an unparsed default argument expression, the
      conversion cannot be performed.  */
   if (TREE_CODE (arg) == DEFAULT_ARG)
@@ -4684,6 +4689,15 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum)
 	     parmnum, fn);
       return error_mark_node;
     }
+
+  /* Detect recursion.  */
+  for (i = 0; VEC_iterate (tree, default_arg_context, i, t); ++i)
+    if (t == fn)
+      {
+	error ("recursive evaluation of default argument for %q#D", fn);
+	return error_mark_node;
+      }
+  VEC_safe_push (tree, gc, default_arg_context, fn);
 
   if (fn && DECL_TEMPLATE_INFO (fn))
     arg = tsubst_default_argument (fn, type, arg);
@@ -4710,6 +4724,8 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum)
 					"default argument", fn, parmnum);
       arg = convert_for_arg_passing (type, arg);
     }
+
+  VEC_pop (tree, default_arg_context);
 
   return arg;
 }
