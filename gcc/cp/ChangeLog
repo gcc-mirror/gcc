@@ -1,3 +1,13 @@
+2007-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33842
+	* cxx-pretty-print.h (pp_cxx_offsetof_expression): New prototype.
+	* cxx-pretty-print.c (pp_cxx_primary_expression): Handle
+	OFFSETOF_EXPR.
+	(pp_cxx_offsetof_expression_1, pp_cxx_offsetof_expression): New
+	functions.
+	* error.c (dump_expr): Handle OFFSETOF_EXPR.
+
 2007-10-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/24791

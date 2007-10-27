@@ -1,3 +1,8 @@
+2007-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33842
+	* g++.dg/template/error34.C: New test.
+
 2007-10-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/tree-ssa/ivopts-1.C: Also search for "offset: 4294967292".

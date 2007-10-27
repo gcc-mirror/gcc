@@ -2048,6 +2048,10 @@ dump_expr (tree t, int flags)
       pp_cxx_va_arg_expression (cxx_pp, t);
       break;
 
+    case OFFSETOF_EXPR:
+      pp_cxx_offsetof_expression (cxx_pp, t);
+      break;
+
     case DELETE_EXPR:
     case VEC_DELETE_EXPR:
       pp_cxx_delete_expression (cxx_pp, t);
