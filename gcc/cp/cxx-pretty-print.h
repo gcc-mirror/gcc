@@ -72,6 +72,7 @@ void pp_cxx_canonical_template_parameter (cxx_pretty_printer *, tree);
 void pp_cxx_trait_expression (cxx_pretty_printer *, tree);
 void pp_cxx_typeid_expression (cxx_pretty_printer *, tree);
 void pp_cxx_va_arg_expression (cxx_pretty_printer *, tree);
+void pp_cxx_offsetof_expression (cxx_pretty_printer *, tree);
 void pp_cxx_delete_expression (cxx_pretty_printer *, tree);
 
 #endif /* GCC_CXX_PRETTY_PRINT_H */
