@@ -1,3 +1,7 @@
+2007-10-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/tree-ssa/ivopts-1.C: Also search for "offset: 4294967292".
+
 2007-10-27  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/33870
