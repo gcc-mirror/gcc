@@ -1,3 +1,10 @@
+2007-10-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/other/i386-2.C: Include bmmintrin.h. Add -msse5 to dg-options.
+	* gcc.target/i386/sse-13.c: Also include mm3dnow.h.  Add
+	"-march=k8 -m3dnow" to check 3dnow and 3dnowA intrinsics.
+	* gcc.target/i386/sse-14.c: Ditto.
+
 2007-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/33844
