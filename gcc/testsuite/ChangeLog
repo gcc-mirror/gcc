@@ -1,3 +1,9 @@
+2007-10-27 Jerry DeLisle <jvdelisle@gcc.gnu.org>
+
+	PR fortran/31306
+	* gfortran.dg/argument_check_7.f90: New test.
+	* gfortran.dg/argument_check_8.f90: New test.
+	
 2007-10-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/other/i386-2.C: Include bmmintrin.h. Add -msse5 to dg-options.
