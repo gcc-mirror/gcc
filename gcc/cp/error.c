@@ -2052,6 +2052,11 @@ dump_expr (tree t, int flags)
       pp_cxx_offsetof_expression (cxx_pp, t);
       break;
 
+    case MEMBER_REF:
+    case DOTSTAR_EXPR:
+      pp_multiplicative_expression (cxx_pp, t);
+      break;
+
     case DELETE_EXPR:
     case VEC_DELETE_EXPR:
       pp_cxx_delete_expression (cxx_pp, t);

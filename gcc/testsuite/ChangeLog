@@ -1,5 +1,8 @@
 2007-10-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/33844
+	* g++.dg/other/ptrmem8.C: New test.
+
 	PR c++/33842
 	* g++.dg/template/error34.C: New test.
 
