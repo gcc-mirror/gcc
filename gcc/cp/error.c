@@ -2107,7 +2107,7 @@ reinit_cxx_pp (void)
   pp_base (cxx_pp)->padding = pp_none;
   pp_indentation (cxx_pp) = 0;
   pp_needs_newline (cxx_pp) = false;
-  cxx_pp->enclosing_scope = 0;
+  cxx_pp->enclosing_scope = current_function_decl;
 }
 
 
