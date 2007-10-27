@@ -1,5 +1,8 @@
 2007-10-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* error.c (reinit_cxx_pp): Initialize cxx_pp->enclosing_scope
+	to current_function_decl rather than 0.
+
 	PR c++/33844
 	* cxx-pretty-print.c (pp_cxx_pm_expression) <case MEMBER_REF>: Print
 	->* rather than .*.
