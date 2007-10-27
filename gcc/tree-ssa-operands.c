@@ -1419,53 +1419,55 @@ add_vars_for_offset (tree full_ref, tree var, HOST_WIDE_INT offset,
     }
   else if (TREE_CODE (var) == STRUCT_FIELD_TAG)
     {      
-      if (size == -1)
+      bool added = false;
+      subvar_t sv = get_subvars_for_var (SFT_PARENT_VAR (var));
+      for (; sv; sv = sv->next)
 	{
-	  bool added = false;
-	  subvar_t sv = get_subvars_for_var (SFT_PARENT_VAR (var));
-	  for (; sv; sv = sv->next)
+	  /* Once we hit the end of the parts that could touch,
+	     stop looking.  */
+	  if (size != -1
+	      && SFT_OFFSET (var) + offset + size <= SFT_OFFSET (sv->var))
+	    break;
+	  if (overlap_subvar (SFT_OFFSET (var) + offset, size, sv->var, NULL))
 	    {
-	      if (overlap_subvar (SFT_OFFSET (var) + offset, size,
-				  sv->var, NULL)
-		  && access_can_touch_variable (full_ref, sv->var,
-						offset, size))
-		{
-		  added = true;
-		  if (is_def)
-		    append_vdef (sv->var);
-		  else
-		    append_vuse (sv->var);
-		}
+	      added = true;
+	      if (is_def)
+		append_vdef (sv->var);
+	      else
+		append_vuse (sv->var);
 	    }
-	  return added;
 	}
-      else
-	{
-	  bool added = false;
-	  subvar_t sv = get_subvars_for_var (SFT_PARENT_VAR (var));
-	  for (; sv; sv = sv->next)
-	    {
-	      /* Once we hit the end of the parts that could touch,
-		 stop looking.  */
-	      if (SFT_OFFSET (var) + offset + size <= SFT_OFFSET (sv->var))
-		break;
-	      if (overlap_subvar (SFT_OFFSET (var) + offset, size,
-				  sv->var, NULL)
-		  && access_can_touch_variable (full_ref, sv->var, offset, 
-						size))
-		{
-		  added = true;
-		  if (is_def)
-		    append_vdef (sv->var);
-		  else
-		    append_vuse (sv->var);
-		}
-	    }
-	  return added;
-	}
+      return added;
     }
   
   return false;
+}
+
+/* Add all aliases from ALIASES as virtual operands for the access
+   FULL_REF at OFFSET and size SIZE.  IS_CALL_SITE is true if the
+   stmt of the reference is a call.  IS_DEF is true if we should add
+   VDEF virtual operands, otherwise we'll add VUSEs.  *NONE_ADDED
+   is set to false once the first virtual operand was added.  */
+
+static void
+add_vars_for_bitmap (bitmap aliases, tree full_ref,
+		     HOST_WIDE_INT offset, HOST_WIDE_INT size,
+		     bool is_call_site, bool is_def, bool *none_added)
+{
+  bitmap_iterator bi;
+  unsigned int i;
+
+  EXECUTE_IF_SET_IN_BITMAP (aliases, 0, i, bi)
+    {
+      tree al = referenced_var (i);
+
+      if (TREE_CODE (al) == MEMORY_PARTITION_TAG)
+	add_vars_for_bitmap (MPT_SYMBOLS (al), full_ref,
+			     offset, size, is_call_site, is_def, none_added);
+      else
+	*none_added &= !add_vars_for_offset (full_ref, al, offset, size,
+					     is_call_site, is_def);
+    }
 }
 
 /* Add VAR to the virtual operands array.  FLAGS is as in
@@ -1530,24 +1532,17 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
     }
   else
     {
-      bitmap_iterator bi;
-      unsigned int i;
-      tree al;
+      bool none_added = true;
       
       /* The variable is aliased.  Add its aliases to the virtual
 	 operands.  */
       gcc_assert (!bitmap_empty_p (aliases));
-      
+
+      add_vars_for_bitmap (aliases, full_ref, offset, size,
+			   is_call_site, flags & opf_def, &none_added);
+
       if (flags & opf_def)
 	{
-	  bool none_added = true;
-	  EXECUTE_IF_SET_IN_BITMAP (aliases, 0, i, bi)
-	    {
-	      al = referenced_var (i);
-	      none_added &= !add_vars_for_offset (full_ref, al, offset, size,
-						  is_call_site, true);
-	    }
-
 	  /* If the variable is also an alias tag, add a virtual
 	     operand for it, otherwise we will miss representing
 	     references to the members of the variable's alias set.	     
@@ -1566,15 +1561,6 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 	}
       else
 	{
-	  bool none_added = true;
-	  EXECUTE_IF_SET_IN_BITMAP (aliases, 0, i, bi)
-	    {
-	      al = referenced_var (i);
-	      none_added &= !add_vars_for_offset (full_ref, al, offset, size,
-						  is_call_site, false);
-	      
-	    }
-	  
 	  /* Even if no aliases have been added, we still need to
 	     establish def-use and use-def chains, lest
 	     transformations think that this is not a memory

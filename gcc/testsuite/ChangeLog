@@ -1,3 +1,9 @@
+2007-10-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/33870
+	* gcc.dg/tree-ssa/alias-15.c: New testcase.
+	* gcc.c-torture/execute/pr33870.c: Likewise.
+
 2007-10-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/33162
