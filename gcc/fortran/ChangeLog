@@ -1,5 +1,18 @@
 2007-10-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR fortran/33162
+	* intrinsic.h: Add prototypes for four new functions, gfc_check_datan2,
+	gfc_check_dprod, gfc_check_fn_d, and gfc_check_x_yd.
+	* intrinsic.c (add_functions): Add double precision checks for dabs,
+	dacos, dacosh, dasin, dasinh, datan, datanh, datan2, dbesj0, dbesj1,
+	dbesy0, dbesy1, dcos, dcosh, ddim, derf, derfc, dexp, dgamma,
+	dlgama, dlog, dlog10, dmod, dsign, dsin, dsinh, dsqrt, dtan, and dtanh.
+	Add real check dprod.
+	* check.c (gfc_check_datan2): New function to check for double precision
+	argumants. (gfc_check_dprod, gfc_check_fn_d, and gfc_check_x_yd): Ditto.
+
+2007-10-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	* invoke.texi: Fix typo in -fmax-errors=.
 
 2007-10-26  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>

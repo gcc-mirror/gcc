@@ -575,6 +575,16 @@ gfc_check_a_p (gfc_expr *a, gfc_expr *p)
 
 
 try
+gfc_check_x_yd (gfc_expr *x, gfc_expr *y)
+{
+  if (double_check (x, 0) == FAILURE || double_check (y, 1) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+try
 gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
 {
   symbol_attribute attr;
@@ -881,6 +891,14 @@ gfc_check_ctime (gfc_expr *time)
 }
 
 
+try gfc_check_datan2 (gfc_expr *y, gfc_expr *x)
+{
+  if (double_check (y, 0) == FAILURE || double_check (x, 1) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
 try
 gfc_check_dcmplx (gfc_expr *x, gfc_expr *y)
 {
@@ -968,6 +986,33 @@ gfc_check_dot_product (gfc_expr *vector_a, gfc_expr *vector_b)
 
 
 try
+gfc_check_dprod (gfc_expr *x, gfc_expr *y)
+{
+  if (type_check (x, 0, BT_REAL) == FAILURE
+      || type_check (y, 1, BT_REAL) == FAILURE)
+    return FAILURE;
+
+  if (x->ts.kind != gfc_default_real_kind)
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L must be default "
+		 "real", gfc_current_intrinsic_arg[0],
+		 gfc_current_intrinsic, &x->where);
+      return FAILURE;
+    }
+
+  if (y->ts.kind != gfc_default_real_kind)
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L must be default "
+		 "real", gfc_current_intrinsic_arg[1],
+		 gfc_current_intrinsic, &y->where);
+      return FAILURE;
+    }
+
+  return SUCCESS;
+}
+
+
+try
 gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
 		   gfc_expr *dim)
 {
@@ -1026,6 +1071,16 @@ gfc_check_fn_r (gfc_expr *a)
   return SUCCESS;
 }
 
+/* A single double argument.  */
+
+try
+gfc_check_fn_d (gfc_expr *a)
+{
+  if (double_check (a, 0) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
 
 /* A single real or complex argument.  */
 
