@@ -3433,7 +3433,7 @@ fi;
 
   echo "$as_me:$LINENO: checking whether the target asssembler upports thread-local storage" >&5
 echo $ECHO_N "checking whether the target asssembler upports thread-local storage... $ECHO_C" >&6
-if test "${have_cc_tls+set}" = set; then
+if test "${gcc_cv_have_cc_tls+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
@@ -3462,20 +3462,20 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  have_cc_tls=yes
+  gcc_cv_have_cc_tls=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-have_cc_tls=no
+gcc_cv_have_cc_tls=no
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 
 fi
-echo "$as_me:$LINENO: result: $have_cc_tls" >&5
-echo "${ECHO_T}$have_cc_tls" >&6
+echo "$as_me:$LINENO: result: $gcc_cv_have_cc_tls" >&5
+echo "${ECHO_T}$gcc_cv_have_cc_tls" >&6
 set_have_cc_tls=
-if test "$enable_tls $have_cc_tls" = "yes yes"; then
+if test "$enable_tls $gcc_cv_have_cc_tls" = "yes yes"; then
   set_have_cc_tls="-DHAVE_CC_TLS"
 fi
 
