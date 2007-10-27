@@ -68,11 +68,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	copy(istreambuf_iterator<_CharT2>, istreambuf_iterator<_CharT2>,
 	     ostreambuf_iterator<_CharT2>);
 
-      template<bool _IsCopy, typename _CharT2>
+      template<bool _IsMove, typename _CharT2>
 	friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value, 
 					       _CharT2*>::__type
-	__copy_move_a(istreambuf_iterator<_CharT2>,
-		      istreambuf_iterator<_CharT2>, _CharT2*);
+	__copy_move_a2(istreambuf_iterator<_CharT2>,
+		       istreambuf_iterator<_CharT2>, _CharT2*);
 
       template<typename _CharT2>
 	friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value,
@@ -292,11 +292,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return __result;
     }
 
-  template<bool _IsCopy, typename _CharT>
+  template<bool _IsMove, typename _CharT>
     typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value, 
     				    ostreambuf_iterator<_CharT> >::__type
-    __copy_move_a(_CharT* __first, _CharT* __last,
-		  ostreambuf_iterator<_CharT> __result)
+    __copy_move_a2(_CharT* __first, _CharT* __last,
+		   ostreambuf_iterator<_CharT> __result)
     {
       const streamsize __num = __last - __first;
       if (__num > 0)
@@ -304,11 +304,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return __result;
     }
 
-  template<bool _IsCopy, typename _CharT>
+  template<bool _IsMove, typename _CharT>
     typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value,
 				    ostreambuf_iterator<_CharT> >::__type
-    __copy_move_a(const _CharT* __first, const _CharT* __last,
-		  ostreambuf_iterator<_CharT> __result)
+    __copy_move_a2(const _CharT* __first, const _CharT* __last,
+		   ostreambuf_iterator<_CharT> __result)
     {
       const streamsize __num = __last - __first;
       if (__num > 0)
@@ -316,11 +316,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return __result;
     }
 
-  template<bool _IsCopy, typename _CharT>
+  template<bool _IsMove, typename _CharT>
     typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value, 
     				    _CharT*>::__type
-    __copy_move_a(istreambuf_iterator<_CharT> __first,
-		  istreambuf_iterator<_CharT> __last, _CharT* __result)
+    __copy_move_a2(istreambuf_iterator<_CharT> __first,
+		   istreambuf_iterator<_CharT> __last, _CharT* __result)
     {
       typedef istreambuf_iterator<_CharT>                  __is_iterator_type;
       typedef typename __is_iterator_type::traits_type     traits_type;

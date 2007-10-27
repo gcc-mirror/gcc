@@ -668,6 +668,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       _Iterator _M_current;
 
     public:
+      typedef _Iterator					     iterator_type;
       typedef typename iterator_traits<_Iterator>::iterator_category
                                                              iterator_category;
       typedef typename iterator_traits<_Iterator>::value_type  value_type;
@@ -675,8 +676,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
                                                              difference_type;
       typedef typename iterator_traits<_Iterator>::reference reference;
       typedef typename iterator_traits<_Iterator>::pointer   pointer;
-
-      typedef _Iterator _Iterator_type;
 
       __normal_iterator() : _M_current(_Iterator()) { }
 
