@@ -39,6 +39,7 @@
 #include <cstddef>
 #include <tr1/unordered_map>
 #include <cassert>
+#include <bits/stl_move.h>
 
 namespace 
 {
@@ -153,9 +154,19 @@ namespace __gnu_test
     void
     construct(pointer p, const T& value)
     {
-      new (p) T(value);
+      ::new ((void *)p) T(value);
       counter_type::construct();
     }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename... Args>
+        void
+        construct(pointer p, Args&&... args) 
+	{
+	  ::new((void *)p) T(std::forward<Args>(args)...);
+	  counter_type::construct();
+	}
+#endif
 
     void
     destroy(pointer p)
@@ -338,8 +349,15 @@ namespace __gnu_test
       
       void 
       construct(pointer p, const Tp& val) 
-      { ::new(p) Tp(val); }
-    
+      { ::new((void *)p) Tp(val); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename... Args>
+        void
+        construct(pointer p, Args&&... args) 
+	{ ::new((void *)p) Tp(std::forward<Args>(args)...); }
+#endif
+
       void 
       destroy(pointer p) { p->~Tp(); }
 
