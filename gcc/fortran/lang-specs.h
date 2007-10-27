@@ -21,6 +21,8 @@
    for the f95 language.  */
 
 {".F",   "@f77-cpp-input", 0, 0, 0},
+{".FOR", "@f77-cpp-input", 0, 0, 0},
+{".FTN", "@f77-cpp-input", 0, 0, 0},
 {".fpp", "@f77-cpp-input", 0, 0, 0},
 {".FPP", "@f77-cpp-input", 0, 0, 0},
 {"@f77-cpp-input",
@@ -45,6 +47,6 @@
          %{!nostdinc:-fintrinsic-modules-path finclude%s} %{!fsyntax-only:%(invoke_as)}}", 0, 0, 0},
 {".f",   "@f77", 0, 0, 0},
 {".for", "@f77", 0, 0, 0},
-{".FOR", "@f77", 0, 0, 0},
+{".ftn", "@f77", 0, 0, 0},
 {"@f77", "%{!E:f951 %i %{!ffree-form:-ffixed-form} %(cc1_options) %{J*} %{I*}\
          %{!nostdinc:-fintrinsic-modules-path finclude%s} %{!fsyntax-only:%(invoke_as)}}", 0, 0, 0},
