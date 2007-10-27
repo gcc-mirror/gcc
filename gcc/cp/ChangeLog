@@ -1,3 +1,8 @@
+2007-10-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/5247
+	* call.c (convert_default_arg): Detect recursion.
+
 2007-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/33842
