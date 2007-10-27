@@ -368,11 +368,11 @@ the relevant compiler front-end program (e.g., @command{f951} for
 Fortran) for each file in the source code, and then calls the assembler
 and linker as appropriate to produce the compiled output. In a copy of
 GCC which has been compiled with Fortran language support enabled,
-@command{gcc} will recognize files with @file{.f}, @file{.f90}, @file{.f95},
-and @file{.f03} extensions as Fortran source code, and compile it
-accordingly.  A @command{gfortran} driver program is also provided,
-which is identical to @command{gcc} except that it automatically links
-the Fortran runtime libraries into the compiled program.
+@command{gcc} will recognize files with @file{.f}, @file{.for}, @file{.ftn},
+@file{.f90}, @file{.f95}, and @file{.f03} extensions as Fortran source code,
+and compile it accordingly. A @command{gfortran} driver program is also
+provided, which is identical to @command{gcc} except that it automatically
+links the Fortran runtime libraries into the compiled program.
 
 This manual specifically documents the Fortran front end, which handles
 the programming language's syntax and semantics.  The aspects of GCC
@@ -399,10 +399,11 @@ through a C preprocessor (CPP; sometimes also called Fortran preprocessor,
 FPP) to allow for conditional compilation. In case of GNU Fortran
 this is the GNU C Preprocessor in the traditional mode. On systems with
 case-preserving file names, the preprocessor is automatically invoked if the
-file extension is @code{.F}, @code{.F90}, @code{.F95} or @code{.F03};
-otherwise use for fixed-format code the option @code{-x f77-cpp-input}
-and for free-format code @code{-x f95-cpp-input}. Invocation of the
-preprocessor can be suppressed using @code{-x f77} or @code{-x f95}.
+file extension is @code{.F}, @code{.FOR}, @code{.FTN}, @code{.F90},
+@code{.F95} or @code{.F03}; otherwise use for fixed-format code the option
+@code{-x f77-cpp-input} and for free-format code @code{-x f95-cpp-input}.
+Invocation of the preprocessor can be suppressed using @code{-x f77} or
+@code{-x f95}.
 
 If the GNU Fortran invoked the preprocessor, @code{__GFORTRAN__}
 is defined and @code{__GNUC__}, @code{__GNUC_MINOR__} and

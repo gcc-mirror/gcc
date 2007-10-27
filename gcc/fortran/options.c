@@ -161,6 +161,9 @@ form_from_filename (const char *filename)
     ".for", FORM_FIXED}
     ,
     {
+    ".ftn", FORM_FIXED}
+    ,
+    {
     "", FORM_UNKNOWN}
   };		/* sentinel value */
 
