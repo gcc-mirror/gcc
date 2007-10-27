@@ -60,6 +60,7 @@
 #include <utility>
 #include <tr1/random>
 #include <bits/functexcept.h>
+#include <bits/stl_move.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
@@ -231,6 +232,16 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       void
       construct(pointer __p, const T& val)
       { return std::allocator<value_type>().construct(__p, val); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename... _Args>
+        void
+        construct(pointer __p, _Args&&... __args)
+	{ 
+	  return std::allocator<value_type>().
+	    construct(__p, std::forward<_Args>(__args)...);
+	}
+#endif
 
       void
       destroy(pointer __p)

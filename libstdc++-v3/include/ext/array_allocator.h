@@ -1,6 +1,6 @@
 // array allocator -*- C++ -*-
 
-// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,6 +38,7 @@
 #include <new>
 #include <bits/functexcept.h>
 #include <tr1/array>
+#include <bits/stl_move.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
@@ -77,7 +78,14 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       // 402. wrong new expression in [some_] allocator::construct
       void 
       construct(pointer __p, const _Tp& __val) 
-      { ::new(__p) value_type(__val); }
+      { ::new((void *)__p) value_type(__val); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename... _Args>
+        void
+        construct(pointer __p, _Args&&... __args)
+	{ ::new((void *)__p) _Tp(std::forward<_Args>(__args)...); }
+#endif
 
       void 
       destroy(pointer __p) { __p->~_Tp(); }

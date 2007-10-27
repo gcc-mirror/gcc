@@ -1,3 +1,38 @@
+2007-10-26  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/throw_allocator.h (throw_allocator<>::
+	construct<>(pointer, _Args&&...)): Add.
+	* include/ext/pool_allocator.h (__pool_alloc<>::
+	construct<>(pointer, _Args&&...)): Likewise.
+	(construct(pointer, const _Tp&)): Cast pointer to void*. 
+	* include/ext/bitmap_allocator.h (bitmap_allocator<>::
+	construct<>(pointer, _Args&&...)): Add.
+	(construct(pointer, const _Tp&)): Cast pointer to void*.
+	* include/ext/new_allocator.h (new_allocator<>::
+	construct<>(pointer, _Args&&...)): Add.
+	(construct(pointer, const _Tp&)): Cast pointer to void*.
+	* include/ext/malloc_allocator.h (malloc_allocator<>::
+	construct<>(pointer, _Args&&...)): Add.
+	(construct(pointer, const _Tp&)): Cast pointer to void*.
+	* include/ext/array_allocator.h (array_allocator<>::
+	construct<>(pointer, _Args&&...)): Add.
+	(construct(pointer, const _Tp&)): Cast pointer to void*.
+	* include/ext/mt_allocator.h (__mt_alloc<>::
+	construct<>(pointer, _Args&&...)): Add.
+	(construct(pointer, const _Tp&)): Cast pointer to void*.
+	* testsuite/util/testsuite_allocator.h (tracker_allocator<>::
+	construct<>(pointer, _Args&&...)): Add.
+	(construct(pointer, const _Tp&)): Cast pointer to void*.
+ 	(uneq_allocator<>::construct<>(pointer, _Args&&...)): Add.
+	(construct(pointer, const _Tp&)): Cast pointer to void*.
+	* testsuite/ext/mt_allocator/variadic_construct.cc: New.
+	* testsuite/ext/new_allocator/variadic_construct.cc: Likewise.
+	* testsuite/ext/throw_allocator/variadic_construct.cc: Likewise.
+	* testsuite/ext/malloc_allocator/variadic_construct.cc: Likewise.
+	* testsuite/ext/pool_allocator/variadic_construct.cc: Likewise.
+	* testsuite/ext/bitmap_allocator/variadic_construct.cc: Likewise.
+	* testsuite/ext/array_allocator/variadic_construct.cc: Likewise.
+
 2007-10-26  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/unordered_map: Fix for parallel mode.
