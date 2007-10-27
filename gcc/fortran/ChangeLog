@@ -1,3 +1,9 @@
+2007-10-27 Jerry DeLisle <jvdelisle@gcc.gnu.org>
+
+	PR fortran/31306
+	* decl.c (char_len_param_value): Add check for conflicting attributes of
+	function argument.
+
 2007-10-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33862
