@@ -1,3 +1,10 @@
+2007-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33844
+	* cxx-pretty-print.c (pp_cxx_pm_expression) <case MEMBER_REF>: Print
+	->* rather than .*.
+	* error.c (dump_expr): Handle MEMBER_REF and DOTSTAR_EXPR.
+
 2007-10-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/5247

@@ -814,7 +814,10 @@ pp_cxx_pm_expression (cxx_pretty_printer *pp, tree t)
     case MEMBER_REF:
     case DOTSTAR_EXPR:
       pp_cxx_pm_expression (pp, TREE_OPERAND (t, 0));
-      pp_cxx_dot (pp);
+      if (TREE_CODE (t) == MEMBER_REF)
+	pp_cxx_arrow (pp);
+      else
+	pp_cxx_dot (pp);
       pp_star(pp);
       pp_cxx_cast_expression (pp, TREE_OPERAND (t, 1));
       break;
