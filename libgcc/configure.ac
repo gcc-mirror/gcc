@@ -182,7 +182,7 @@ AC_SUBST(vis_hide)
 # is yet to be built here.
 GCC_CHECK_CC_TLS
 set_have_cc_tls=
-if test "$enable_tls $have_cc_tls" = "yes yes"; then
+if test "$enable_tls $gcc_cv_have_cc_tls" = "yes yes"; then
   set_have_cc_tls="-DHAVE_CC_TLS"
 fi
 AC_SUBST(set_have_cc_tls)

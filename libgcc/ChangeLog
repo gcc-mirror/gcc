@@ -1,3 +1,9 @@
+2007-10-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR regression/33926
+	* configure.ac: Replace have_cc_tls with gcc_cv_have_cc_tls.
+	* configure: Regenerated.
+
 2007-09-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Makefile.in (dfp-filenames): Replace decimal_globals,
