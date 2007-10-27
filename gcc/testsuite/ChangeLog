@@ -1,3 +1,8 @@
+2007-10-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/33162
+	* gfortran.dg/argument_checking_9.f90: New test.
+
 2007-10-26  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* g++.dg/other/pr33601.C: New.
