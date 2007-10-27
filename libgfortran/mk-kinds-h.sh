@@ -1,6 +1,6 @@
 #!/bin/sh
-LANG=C
-export LANG
+LC_ALL=C
+export LC_ALL
 
 compile="$1"
 

@@ -1,3 +1,7 @@
+2007-10-27  Tobias Burnus  <burnus@net-b.de>
+
+	* mk-kinds-h.sh: Change LANG=C to LC_ALL=C.
+
 2007-10-26  Tobias Burnus  <burnus@net-b.de>
 
 	* mk-kinds-h.sh: Add "LANG=C".
