@@ -1386,11 +1386,12 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
    This is necessary because foop only actually points to foo's first
    member, so that is all the points-to set contains.  However, an access
    to foop->a may be touching some single SFT if we have created some
-   SFT's for a structure.  */
+   SFT's for a structure.  If AS_PTO is false, just add VAR to the vops.  */
 
 static bool
 add_vars_for_offset (tree full_ref, tree var, HOST_WIDE_INT offset,
-		     HOST_WIDE_INT size, bool is_call_site, bool is_def)
+		     HOST_WIDE_INT size, bool is_call_site, bool is_def,
+		     bool as_pto)
 {
   bool added = false;
   subvar_t sv;
@@ -1405,7 +1406,8 @@ add_vars_for_offset (tree full_ref, tree var, HOST_WIDE_INT offset,
     return false;
 
   /* For SFTs we have to consider all subvariables of the parent var.  */
-  if (TREE_CODE (var) != STRUCT_FIELD_TAG)
+  if (TREE_CODE (var) != STRUCT_FIELD_TAG
+      || !as_pto)
     {
       /* If we do not know the full reference tree or if the access is
 	 unspecified [0, -1], we cannot prune it.  Otherwise try doing
@@ -1465,7 +1467,7 @@ add_vars_for_bitmap (bitmap aliases, tree full_ref,
 
       if (TREE_CODE (al) == STRUCT_FIELD_TAG)
 	*none_added &= !add_vars_for_offset (full_ref, al, offset, size,
-					     is_call_site, is_def);
+					     is_call_site, is_def, true);
     }
 }
 
@@ -1546,12 +1548,15 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 	  /* We have to consider SFTs inside MPTs as possible pointed-to
 	     location as well because even if aliases does not contain
 	     a single SFT, the SFTs inside the MPT may be incomplete in
-	     that not all aliased subvars have to be in this MPT, too.  */
-	  if (TREE_CODE (al) == MEMORY_PARTITION_TAG)
+	     that not all aliased subvars have to be in this MPT, too.
+	     But only if we start with NMT aliases.  */
+	  if (TREE_CODE (al) == MEMORY_PARTITION_TAG
+	      && TREE_CODE (var) == NAME_MEMORY_TAG)
 	    add_vars_for_bitmap (MPT_SYMBOLS (al), full_ref, offset, size,
 				 is_call_site, flags & opf_def, &none_added);
 	  none_added &= !add_vars_for_offset (full_ref, al, offset, size,
-					      is_call_site, flags & opf_def);
+					      is_call_site, flags & opf_def,
+					      TREE_CODE (var) == NAME_MEMORY_TAG);
 	}
 
       if (flags & opf_def)

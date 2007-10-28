@@ -1,5 +1,13 @@
 2007-10-28  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-operands.c (add_vars_for_offset): Add parameter
+	telling if the var is to be treated as points-to location.
+	(add_vars_for_bitmap): Pass true to add_vars_for_offset.
+	(add_virtual_operand): Only recurse into MPTs if aliases
+	is from a NMT.
+
+2007-10-28  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-operands.c (add_vars_for_offset): Clean and speed up.
 	(add_vars_for_bitmap): Do not recurse further.  Only add vars
 	for pointed-to SFTs.
