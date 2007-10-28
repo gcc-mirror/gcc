@@ -1,3 +1,23 @@
+2007-10-28  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (subvar_t): Make it a VEC.
+	(struct subvar): Remove.
+	(struct var_ann_d): Use VEC(tree,gc) to store subvars.
+	* tree-flow-inline.h (get_subvar_at): Adjust iterators over
+	variable subvars.
+	* tree-into-ssa.c (mark_sym_for_renaming): Likewise.
+	* tree-nrv.c (dest_safe_for_nrv_p): Likewise.
+	* tree-ssa-alias.c (mark_aliases_call_clobbered): Likewise.
+	(set_initial_properties): Likewise.
+	(setup_pointers_and_addressables): Likewise.
+	(new_type_alias): Likewise.
+	(create_overlap_variables_for): Likewise.
+	* tree-dfa.c (dump_subvars_for): Likewise.
+	* tree-ssa-operands.c (add_vars_for_offset): Likewise.
+	(get_expr_operands): Likewise.
+	(add_to_addressable_set): Likewise.
+	* tree-ssa-structalias.c (set_uids_in_ptset): Likewise.
+
 2007-10-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/33920

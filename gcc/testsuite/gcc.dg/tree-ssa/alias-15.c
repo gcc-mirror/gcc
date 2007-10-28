@@ -15,6 +15,6 @@ int test2(void)
   return p->b[3] - m.b.b[3];
 }
 
-/* { dg-final { scan-tree-dump "SFT.1 created for var m offset 128" "salias" } } */
-/* { dg-final { scan-tree-dump-times "VUSE <SFT.1_" 2 "salias" } } */
+/* { dg-final { scan-tree-dump "SFT.5 created for var m offset 128" "salias" } } */
+/* { dg-final { scan-tree-dump-times "VUSE <SFT.5_" 2 "salias" } } */
 /* { dg-final { cleanup-tree-dump "salias" } } */

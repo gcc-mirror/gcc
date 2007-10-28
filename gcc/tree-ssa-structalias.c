@@ -4702,7 +4702,6 @@ set_uids_in_ptset (tree ptr, bitmap into, bitmap from, bool is_derefed,
 {
   unsigned int i;
   bitmap_iterator bi;
-  subvar_t sv;
   alias_set_type ptr_alias_set = get_alias_set (TREE_TYPE (ptr));
 
   EXECUTE_IF_SET_IN_BITMAP (from, 0, i, bi)
@@ -4717,10 +4716,14 @@ set_uids_in_ptset (tree ptr, bitmap into, bitmap from, bool is_derefed,
 
       if (vi->has_union && get_subvars_for_var (vi->decl) != NULL)
 	{
+	  unsigned int i;
+	  tree subvar;
+	  subvar_t sv = get_subvars_for_var (vi->decl);
+
 	  /* Variables containing unions may need to be converted to
 	     their SFT's, because SFT's can have unions and we cannot.  */
-	  for (sv = get_subvars_for_var (vi->decl); sv; sv = sv->next)
-	    bitmap_set_bit (into, DECL_UID (sv->var));
+	  for (i = 0; VEC_iterate (tree, sv, i, subvar); ++i)
+	    bitmap_set_bit (into, DECL_UID (subvar));
 	}
       else if (TREE_CODE (vi->decl) == VAR_DECL
 	       || TREE_CODE (vi->decl) == PARM_DECL

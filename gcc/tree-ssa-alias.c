@@ -422,11 +422,13 @@ mark_aliases_call_clobbered (tree tag, VEC (tree, heap) **worklist,
     {
       EXECUTE_IF_SET_IN_BITMAP (queued, 0, i, bi)
 	{
-	  subvar_t svars;
-	  svars = get_subvars_for_var (referenced_var (i));
-	  for (; svars; svars = svars->next)
-	    if (!unmodifiable_var_p (svars->var))
-	       mark_call_clobbered (svars->var, ta->escape_mask);
+	  subvar_t svars = get_subvars_for_var (referenced_var (i));
+	  unsigned int i;
+	  tree subvar;
+
+	  for (i = 0; VEC_iterate (tree, svars, i, subvar); ++i)
+	    if (!unmodifiable_var_p (subvar))
+	       mark_call_clobbered (subvar, ta->escape_mask);
 	}
       bitmap_clear (queued);
     }
@@ -600,11 +602,13 @@ set_initial_properties (struct alias_info *ai)
 		{
 		  EXECUTE_IF_SET_IN_BITMAP (queued, 0, j, bi)
 		    {
-		      subvar_t svars;
-		      svars = get_subvars_for_var (referenced_var (j));
-		      for (; svars; svars = svars->next)
-			if (!unmodifiable_var_p (svars->var))
-			  mark_call_clobbered (svars->var, pi->escape_mask);
+		      subvar_t svars = get_subvars_for_var (referenced_var (j));
+		      unsigned int i;
+		      tree subvar;
+
+		      for (i = 0; VEC_iterate (tree, svars, i, subvar); ++i)
+			if (!unmodifiable_var_p (subvar))
+			  mark_call_clobbered (subvar, pi->escape_mask);
 		    }
 		  bitmap_clear (queued);
 		}
@@ -2644,14 +2648,15 @@ setup_pointers_and_addressables (struct alias_info *ai)
 	      if (var_can_have_subvars (var)
 		  && (svars = get_subvars_for_var (var)))
 		{
-		  subvar_t sv;
+		  unsigned int i;
+		  tree subvar;
 
-		  for (sv = svars; sv; sv = sv->next)
+		  for (i = 0; VEC_iterate (tree, svars, i, subvar); ++i)
 		    {	      
 		      if (bitmap_bit_p (gimple_addressable_vars (cfun),
-					DECL_UID (sv->var)))
+					DECL_UID (subvar)))
 			okay_to_mark = false;
-		      mark_sym_for_renaming (sv->var);
+		      mark_sym_for_renaming (subvar);
 		    }
 		}
 
@@ -3574,8 +3579,9 @@ new_type_alias (tree ptr, tree var, tree expr)
   HOST_WIDE_INT offset, size, maxsize;
   tree ref;
   VEC (tree, heap) *overlaps = NULL;
-  subvar_t sv;
-  unsigned int len;
+  unsigned int len, i;
+  tree subvar;
+
 
   gcc_assert (symbol_mem_tag (ptr) == NULL_TREE);
   gcc_assert (!MTAG_P (var));
@@ -3591,12 +3597,12 @@ new_type_alias (tree ptr, tree var, tree expr)
   if (var_can_have_subvars (ref)
       && (svars = get_subvars_for_var (ref)))
     {
-      for (sv = svars; sv; sv = sv->next)
+      for (i = 0; VEC_iterate (tree, svars, i, subvar); ++i)
 	{
           bool exact;
 
-          if (overlap_subvar (offset, maxsize, sv->var, &exact))
-            VEC_safe_push (tree, heap, overlaps, sv->var);
+          if (overlap_subvar (offset, maxsize, subvar, &exact))
+            VEC_safe_push (tree, heap, overlaps, subvar);
         }
       gcc_assert (overlaps != NULL);
     }
@@ -3610,8 +3616,8 @@ new_type_alias (tree ptr, tree var, tree expr)
 	 On mem-ssa branch, the scanning for virtual operands have been
 	 split from the rest of tree-ssa-operands, so it should be much
 	 easier to fix this problem correctly once mem-ssa is merged.  */
-      for (sv = svars; sv; sv = sv->next)
-	VEC_safe_push (tree, heap, overlaps, sv->var);
+      for (i = 0; VEC_iterate (tree, svars, i, subvar); ++i)
+	VEC_safe_push (tree, heap, overlaps, subvar);
 
       gcc_assert (overlaps != NULL);
     }
@@ -3873,15 +3879,14 @@ create_overlap_variables_for (tree var)
       
       /* Otherwise, create the variables.  */
       subvars = lookup_subvars_for_var (var);
-      
+      *subvars = VEC_alloc (tree, gc, VEC_length (fieldoff_s, fieldstack));
+ 
       sort_fieldstack (fieldstack);
 
-      for (i = VEC_length (fieldoff_s, fieldstack);
-	   VEC_iterate (fieldoff_s, fieldstack, --i, fo);)
+      for (i = 0; VEC_iterate (fieldoff_s, fieldstack, i, fo); ++i)
 	{
-	  subvar_t sv;
 	  HOST_WIDE_INT fosize;
-	  tree currfotype;
+	  tree currfotype, subvar;
 
 	  fosize = TREE_INT_CST_LOW (fo->size);
 	  currfotype = fo->type;
@@ -3900,26 +3905,24 @@ create_overlap_variables_for (tree var)
 		  && fosize == lastfosize
 		  && currfotype == lastfotype))
 	    continue;
-	  sv = GGC_NEW (struct subvar);
-	  sv->next = *subvars;
-	  sv->var =
-	    create_sft (var, fo->type, fo->offset, fosize, fo->alias_set);
+	  subvar = create_sft (var, fo->type, fo->offset,
+			       fosize, fo->alias_set);
+	  VEC_quick_push (tree, *subvars, subvar);
 
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "structure field tag %s created for var %s",
-		       get_name (sv->var), get_name (var));
+		       get_name (subvar), get_name (var));
 	      fprintf (dump_file, " offset " HOST_WIDE_INT_PRINT_DEC,
-		       SFT_OFFSET (sv->var));
+		       SFT_OFFSET (subvar));
 	      fprintf (dump_file, " size " HOST_WIDE_INT_PRINT_DEC,
-		       SFT_SIZE (sv->var));
+		       SFT_SIZE (subvar));
 	      fprintf (dump_file, "\n");
 	    }
 	  
 	  lastfotype = currfotype;
 	  lastfooffset = fo->offset;
 	  lastfosize = fosize;
-	  *subvars = sv;
 	}
 
       /* Once we have created subvars, the original is no longer call

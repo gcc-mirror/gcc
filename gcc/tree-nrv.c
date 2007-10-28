@@ -249,7 +249,9 @@ struct tree_opt_pass pass_nrv =
 static bool
 dest_safe_for_nrv_p (tree dest)
 {
-  subvar_t subvar;
+  subvar_t sv;
+  unsigned int i;
+  tree subvar;
 
   while (handled_component_p (dest))
     dest = TREE_OPERAND (dest, 0);
@@ -262,9 +264,12 @@ dest_safe_for_nrv_p (tree dest)
 
   if (is_call_clobbered (dest))
     return false;
-  for (subvar = get_subvars_for_var (dest); subvar; subvar = subvar->next)
-    if (is_call_clobbered (subvar->var))
+
+  sv = get_subvars_for_var (dest);
+  for (i = 0; VEC_iterate (tree, sv, i, subvar); ++i)
+    if (is_call_clobbered (subvar))
       return false;
+
   return true;
 }
 
