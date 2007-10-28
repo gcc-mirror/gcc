@@ -1,3 +1,8 @@
+2007-10-28  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* dce.c (delete_unmarked_insns): Just delete the RETVAL and
+	LIBCALL notes if they are about to be moved to the same insn.
+
 2007-10-27  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/33870

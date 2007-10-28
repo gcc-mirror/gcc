@@ -346,10 +346,17 @@ delete_unmarked_insns (void)
 	      rtx new_libcall_insn = next_real_insn (insn);
 	      rtx retval_note = find_reg_note (XEXP (note, 0),
 					       REG_RETVAL, NULL_RTX);
-	      REG_NOTES (new_libcall_insn)
-		= gen_rtx_INSN_LIST (REG_LIBCALL, XEXP (note, 0),
-				     REG_NOTES (new_libcall_insn));
-	      XEXP (retval_note, 0) = new_libcall_insn;
+	      /* If the RETVAL and LIBCALL notes would land on the same
+		 insn just remove them.  */
+	      if (XEXP (note, 0) == new_libcall_insn)
+		remove_note (new_libcall_insn, retval_note);
+	      else
+		{
+		  REG_NOTES (new_libcall_insn)
+		    = gen_rtx_INSN_LIST (REG_LIBCALL, XEXP (note, 0),
+					 REG_NOTES (new_libcall_insn));
+		  XEXP (retval_note, 0) = new_libcall_insn;
+		}
 	    }
 
 	  /* If the insn contains a REG_RETVAL note and is dead, but the
