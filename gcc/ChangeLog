@@ -1,5 +1,11 @@
 2007-10-28  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.md: Add combiner patterns for DImode extensions
+	of HImode and QImode truncations.  Reformat HImode <- QImode pattern
+	for consistency.
+
+2007-10-28  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	PR target/33895
 	* config/mips/mips.c (mips_output_dwarf_dtprel): Add ATTRIBUTE_UNUSED.
 
