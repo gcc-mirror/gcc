@@ -2366,68 +2366,73 @@
    (set_attr "mode" "SI")])
 
 
-;; Combiner patterns for truncate/sign_extend combinations.  They use
-;; the shift/truncate patterns above.
+;; Combiner patterns for truncate/sign_extend combinations.  The SI versions
+;; use the shift/truncate patterns above.
 
-(define_insn_and_split ""
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(sign_extend:SI
-	    (truncate:HI (match_operand:DI 1 "register_operand" "d"))))]
+(define_insn_and_split "*extenddi_truncate<mode>"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+	(sign_extend:DI
+	    (truncate:SHORT (match_operand:DI 1 "register_operand" "d"))))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "#"
   "&& reload_completed"
   [(set (match_dup 2)
 	(ashift:DI (match_dup 1)
-		   (const_int 48)))
+		   (match_dup 3)))
    (set (match_dup 0)
-	(truncate:SI (ashiftrt:DI (match_dup 2)
-				  (const_int 48))))]
-  { operands[2] = gen_lowpart (DImode, operands[0]); })
+	(ashiftrt:DI (match_dup 2)
+		     (match_dup 3)))]
+{
+  operands[2] = gen_lowpart (DImode, operands[0]);
+  operands[3] = GEN_INT (BITS_PER_WORD - GET_MODE_BITSIZE (<MODE>mode));
+})
 
-(define_insn_and_split ""
+(define_insn_and_split "*extendsi_truncate<mode>"
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(sign_extend:SI
-	    (truncate:QI (match_operand:DI 1 "register_operand" "d"))))]
+	    (truncate:SHORT (match_operand:DI 1 "register_operand" "d"))))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "#"
   "&& reload_completed"
   [(set (match_dup 2)
 	(ashift:DI (match_dup 1)
-		   (const_int 56)))
+		   (match_dup 3)))
    (set (match_dup 0)
 	(truncate:SI (ashiftrt:DI (match_dup 2)
-				  (const_int 56))))]
-  { operands[2] = gen_lowpart (DImode, operands[0]); })
-
+				  (match_dup 3))))]
+{
+  operands[2] = gen_lowpart (DImode, operands[0]);
+  operands[3] = GEN_INT (BITS_PER_WORD - GET_MODE_BITSIZE (<MODE>mode));
+})
 
 ;; Combiner patterns to optimize truncate/zero_extend combinations.
 
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=d")
-        (zero_extend:SI (truncate:HI
-                         (match_operand:DI 1 "register_operand" "d"))))]
+(define_insn "*zero_extend<mode>_trunchi"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+        (zero_extend:GPR
+	    (truncate:HI (match_operand:DI 1 "register_operand" "d"))))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "andi\t%0,%1,0xffff"
-  [(set_attr "type"     "logical")
-   (set_attr "mode"     "SI")])
+  [(set_attr "type" "logical")
+   (set_attr "mode" "<MODE>")])
 
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=d")
-        (zero_extend:SI (truncate:QI
-                         (match_operand:DI 1 "register_operand" "d"))))]
+(define_insn "*zero_extend<mode>_truncqi"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+        (zero_extend:GPR
+	    (truncate:QI (match_operand:DI 1 "register_operand" "d"))))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "andi\t%0,%1,0xff"
-  [(set_attr "type"     "logical")
-   (set_attr "mode"     "SI")])
+  [(set_attr "type" "logical")
+   (set_attr "mode" "<MODE>")])
 
 (define_insn ""
   [(set (match_operand:HI 0 "register_operand" "=d")
-        (zero_extend:HI (truncate:QI
-                         (match_operand:DI 1 "register_operand" "d"))))]
+        (zero_extend:HI
+	    (truncate:QI (match_operand:DI 1 "register_operand" "d"))))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "andi\t%0,%1,0xff"
-  [(set_attr "type"     "logical")
-   (set_attr "mode"     "HI")])
+  [(set_attr "type" "logical")
+   (set_attr "mode" "HI")])
 
 ;;
 ;;  ....................
