@@ -2927,13 +2927,12 @@ clear_sym_mark (gfc_symtree *st)
 void
 gfc_traverse_symtree (gfc_symtree *st, void (*func) (gfc_symtree *))
 {
-  if (st != NULL)
-    {
-      (*func) (st);
+  if (!st)
+    return;
 
-      gfc_traverse_symtree (st->left, func);
-      gfc_traverse_symtree (st->right, func);
-    }
+  gfc_traverse_symtree (st->left, func);
+  (*func) (st);
+  gfc_traverse_symtree (st->right, func);
 }
 
 
@@ -2946,11 +2945,12 @@ traverse_ns (gfc_symtree *st, void (*func) (gfc_symbol *))
   if (st == NULL)
     return;
 
+  traverse_ns (st->left, func);
+
   if (st->n.sym->mark == 0)
     (*func) (st->n.sym);
   st->n.sym->mark = 1;
 
-  traverse_ns (st->left, func);
   traverse_ns (st->right, func);
 }
 

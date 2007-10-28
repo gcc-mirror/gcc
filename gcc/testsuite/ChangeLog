@@ -1,3 +1,8 @@
+2007-10-28  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	PR fortran/32147
+	* gfortran.dg/module_md5_1.f90: Update hash-value.
+
 2007-10-28  Andrew Pinski  <pinskia@gmail.com>
 
 	PR tree-opt/33589
