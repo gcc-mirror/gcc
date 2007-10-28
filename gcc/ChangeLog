@@ -1,3 +1,8 @@
+2007-10-28  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR target/33895
+	* config/mips/mips.c (mips_output_dwarf_dtprel): Add ATTRIBUTE_UNUSED.
+
 2007-10-28  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* dce.c (delete_unmarked_insns): Just delete the RETVAL and
