@@ -1,3 +1,9 @@
+2007-10-28  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-opt/33589
+	* tree-outof-ssa.c (rewrite_trees): If the statement changed, cleanup
+	the eh information on the statement.
+
 2007-10-28  Richard Guenther  <rguenther@suse.de>
 
 	* tree-flow.h (subvar_t): Make it a VEC.

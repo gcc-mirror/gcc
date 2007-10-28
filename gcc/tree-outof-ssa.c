@@ -758,7 +758,12 @@ rewrite_trees (var_map map, tree *values)
 	  if (remove)
 	    bsi_remove (&si, true);
 	  else
-	    bsi_next (&si);
+	    {
+	      if (changed)
+		if (maybe_clean_or_replace_eh_stmt (stmt, stmt))
+		  tree_purge_dead_eh_edges (bb);
+	      bsi_next (&si);
+	    }
 	}
 
       phi = phi_nodes (bb);
