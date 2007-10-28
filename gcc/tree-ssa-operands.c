@@ -1392,23 +1392,27 @@ static bool
 add_vars_for_offset (tree full_ref, tree var, HOST_WIDE_INT offset,
 		     HOST_WIDE_INT size, bool is_call_site, bool is_def)
 {
+  bool added = false;
+  subvar_t sv;
+  unsigned int i;
+  tree subvar;
+
+
   /* Call-clobbered tags may have non-call-clobbered
      symbols in their alias sets.  Ignore them if we are
      adding VOPs for a call site.  */
   if (is_call_site && !is_call_clobbered (var))
     return false;
 
-  /* For offset 0, we already have the right variable.  If there is no
-     full_ref, this is not a place we care about (All component
-     related accesses that go through pointers will have full_ref not
-     NULL).
-     Any var for which we didn't create SFT's can't be
-     distinguished.  */
-  if (!full_ref || (offset == 0 && size != -1)
-      || (TREE_CODE (var) != STRUCT_FIELD_TAG
-	  && (!var_can_have_subvars (var) || !get_subvars_for_var (var))))
+  /* For SFTs we have to consider all subvariables of the parent var.  */
+  if (TREE_CODE (var) != STRUCT_FIELD_TAG)
     {
-      if (!access_can_touch_variable (full_ref, var, offset, size))
+      /* If we do not know the full reference tree or if the access is
+	 unspecified [0, -1], we cannot prune it.  Otherwise try doing
+	 so using access_can_touch_variable.  */
+      if (full_ref
+	  && !(offset == 0 && size == -1)
+	  && !access_can_touch_variable (full_ref, var, offset, size))
 	return false;
 
       if (is_def)
@@ -1417,40 +1421,33 @@ add_vars_for_offset (tree full_ref, tree var, HOST_WIDE_INT offset,
 	append_vuse (var);
       return true;
     }
-  else if (TREE_CODE (var) == STRUCT_FIELD_TAG)
-    {      
-      bool added = false;
-      subvar_t sv = get_subvars_for_var (SFT_PARENT_VAR (var));
-      unsigned int i;
-      tree subvar;
 
-      for (i = 0; VEC_iterate (tree, sv, i, subvar); ++i)
+  sv = get_subvars_for_var (SFT_PARENT_VAR (var));
+  for (i = 0; VEC_iterate (tree, sv, i, subvar); ++i)
+    {
+      /* Once we hit the end of the parts that could touch,
+	 stop looking.  */
+      if (size != -1
+	  && SFT_OFFSET (var) + offset + size <= SFT_OFFSET (subvar))
+	break;
+      if (overlap_subvar (SFT_OFFSET (var) + offset, size, subvar, NULL))
 	{
-	  /* Once we hit the end of the parts that could touch,
-	     stop looking.  */
-	  if (size != -1
-	      && SFT_OFFSET (var) + offset + size <= SFT_OFFSET (subvar))
-	    break;
-	  if (overlap_subvar (SFT_OFFSET (var) + offset, size, subvar, NULL))
-	    {
-	      added = true;
-	      if (is_def)
-		append_vdef (subvar);
-	      else
-		append_vuse (subvar);
-	    }
+	  added = true;
+	  if (is_def)
+	    append_vdef (subvar);
+	  else
+	    append_vuse (subvar);
 	}
-      return added;
     }
-  
-  return false;
+  return added;
 }
 
-/* Add all aliases from ALIASES as virtual operands for the access
-   FULL_REF at OFFSET and size SIZE.  IS_CALL_SITE is true if the
-   stmt of the reference is a call.  IS_DEF is true if we should add
-   VDEF virtual operands, otherwise we'll add VUSEs.  *NONE_ADDED
-   is set to false once the first virtual operand was added.  */
+/* Consider all SFTs in ALIASES as points-to location and add virtual
+   operands for the SFT parent var for the access FULL_REF at OFFSET
+   and size SIZE.  IS_CALL_SITE is true if the stmt of the reference is
+   a call.  IS_DEF is true if we should add VDEF virtual operands,
+   otherwise we'll add VUSEs.  *NONE_ADDED is set to false once the first
+   virtual operand was added.  */
 
 static void
 add_vars_for_bitmap (bitmap aliases, tree full_ref,
@@ -1464,10 +1461,9 @@ add_vars_for_bitmap (bitmap aliases, tree full_ref,
     {
       tree al = referenced_var (i);
 
-      if (TREE_CODE (al) == MEMORY_PARTITION_TAG)
-	add_vars_for_bitmap (MPT_SYMBOLS (al), full_ref,
-			     offset, size, is_call_site, is_def, none_added);
-      else
+      gcc_assert (TREE_CODE (al) != MEMORY_PARTITION_TAG);
+
+      if (TREE_CODE (al) == STRUCT_FIELD_TAG)
 	*none_added &= !add_vars_for_offset (full_ref, al, offset, size,
 					     is_call_site, is_def);
     }
@@ -1535,14 +1531,28 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
     }
   else
     {
+      bitmap_iterator bi;
+      unsigned int i;
       bool none_added = true;
       
       /* The variable is aliased.  Add its aliases to the virtual
 	 operands.  */
       gcc_assert (!bitmap_empty_p (aliases));
 
-      add_vars_for_bitmap (aliases, full_ref, offset, size,
-			   is_call_site, flags & opf_def, &none_added);
+      EXECUTE_IF_SET_IN_BITMAP (aliases, 0, i, bi)
+	{
+	  tree al = referenced_var (i);
+
+	  /* We have to consider SFTs inside MPTs as possible pointed-to
+	     location as well because even if aliases does not contain
+	     a single SFT, the SFTs inside the MPT may be incomplete in
+	     that not all aliased subvars have to be in this MPT, too.  */
+	  if (TREE_CODE (al) == MEMORY_PARTITION_TAG)
+	    add_vars_for_bitmap (MPT_SYMBOLS (al), full_ref, offset, size,
+				 is_call_site, flags & opf_def, &none_added);
+	  none_added &= !add_vars_for_offset (full_ref, al, offset, size,
+					      is_call_site, flags & opf_def);
+	}
 
       if (flags & opf_def)
 	{
@@ -1680,9 +1690,12 @@ get_indirect_ref_operands (tree stmt, tree expr, int flags,
 	    ptr = SSA_NAME_VAR (ptr);
 	  v_ann = var_ann (ptr);
 
+	  /* If we don't know what this pointer points to then we have
+	     to make sure to not prune virtual operands based on offset
+	     and size.  */
 	  if (v_ann->symbol_mem_tag)
 	    add_virtual_operand (v_ann->symbol_mem_tag, s_ann, flags,
-				 full_ref, offset, size, false);
+				 full_ref, 0, -1, false);
 
 	  /* Aliasing information is missing; mark statement as
 	     volatile so we won't optimize it out too actively.  */

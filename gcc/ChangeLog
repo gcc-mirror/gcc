@@ -1,3 +1,13 @@
+2007-10-28  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-operands.c (add_vars_for_offset): Clean and speed up.
+	(add_vars_for_bitmap): Do not recurse further.  Only add vars
+	for pointed-to SFTs.
+	(add_virtual_operand): Re-instantiate loop to add operands for
+	aliases.  Recurse into MPTs.
+	(get_indirect_ref_operands): If we fall back to use a pointers
+	SMT, make sure to not prune based on the access offset and size.
+
 2007-10-28  Andrew Pinski  <pinskia@gmail.com>
 
 	PR tree-opt/33589
