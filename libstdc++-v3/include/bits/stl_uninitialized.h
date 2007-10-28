@@ -76,7 +76,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  try
 	    {
 	      for (; __first != __last; ++__first, ++__cur)
-		std::_Construct(&*__cur, *__first);
+		::new(static_cast<void*>(&*__cur)) typename
+		    iterator_traits<_ForwardIterator>::value_type(*__first);
 	      return __cur;
 	    }
 	  catch(...)

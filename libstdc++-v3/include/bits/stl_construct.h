@@ -83,21 +83,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    * @if maint
-   * Constructs an object in existing memory by invoking an allocated
-   * object's default constructor (no initializers).
-   * @endif
-   */
-  template<typename _T1>
-    inline void
-    _Construct(_T1* __p)
-    {
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 402. wrong new expression in [some_]allocator::construct
-      ::new(static_cast<void*>(__p)) _T1();
-    }
-
-  /**
-   * @if maint
    * Destroy the object pointed to by a pointer type.
    * @endif
    */
