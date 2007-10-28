@@ -1,3 +1,10 @@
+2007-10-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/33920
+	* tree-if-conv.c (tree_if_conversion): Force predicate of single
+	successor bb to true when predecessor bb has NULL predicate.
+	(find_phi_replacement_condition): Assert that tmp_cond is non-null.
+
 2007-10-28  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* config/mips/mips.md: Add combiner patterns for DImode extensions
