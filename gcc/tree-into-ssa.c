@@ -2793,9 +2793,11 @@ mark_sym_for_renaming (tree sym)
     subvar_t svars;
     if (var_can_have_subvars (sym) && (svars = get_subvars_for_var (sym)))
       {
-	subvar_t sv;
-	for (sv = svars; sv; sv = sv->next)
-	  mark_sym_for_renaming (sv->var);
+        unsigned int i;
+	tree subvar;
+
+	for (i = 0; VEC_iterate (tree, svars, i, subvar); ++i)
+	  mark_sym_for_renaming (subvar);
       }
   }
 

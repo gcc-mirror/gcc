@@ -308,18 +308,7 @@ enum noalias_state {
 };
 
 
-struct subvar;
-typedef struct subvar *subvar_t;
-
-/* This structure represents a fake sub-variable for a structure field.  */
-struct subvar GTY(())
-{
-  /* Fake variable.  */
-  tree var;
-
-  /* Next subvar for this structure.  */
-  subvar_t next;
-};
+typedef VEC(tree,gc) *subvar_t;
 
 struct var_ann_d GTY(())
 {
@@ -384,9 +373,9 @@ struct var_ann_d GTY(())
      current version of this variable (an SSA_NAME).  */
   tree current_def;
 
-  /* If this variable is a structure, this fields holds a list of
-     symbols representing each of the fields of the structure.  */
-  subvar_t subvars;
+  /* If this variable is a structure, this fields holds an array
+     of symbols representing each of the fields of the structure.  */
+  VEC(tree,gc) *subvars;
 
   /* Mask of values saying the reasons why this variable has escaped
      the function.  */

@@ -1421,20 +1421,23 @@ add_vars_for_offset (tree full_ref, tree var, HOST_WIDE_INT offset,
     {      
       bool added = false;
       subvar_t sv = get_subvars_for_var (SFT_PARENT_VAR (var));
-      for (; sv; sv = sv->next)
+      unsigned int i;
+      tree subvar;
+
+      for (i = 0; VEC_iterate (tree, sv, i, subvar); ++i)
 	{
 	  /* Once we hit the end of the parts that could touch,
 	     stop looking.  */
 	  if (size != -1
-	      && SFT_OFFSET (var) + offset + size <= SFT_OFFSET (sv->var))
+	      && SFT_OFFSET (var) + offset + size <= SFT_OFFSET (subvar))
 	    break;
-	  if (overlap_subvar (SFT_OFFSET (var) + offset, size, sv->var, NULL))
+	  if (overlap_subvar (SFT_OFFSET (var) + offset, size, subvar, NULL))
 	    {
 	      added = true;
 	      if (is_def)
-		append_vdef (sv->var);
+		append_vdef (subvar);
 	      else
-		append_vuse (sv->var);
+		append_vuse (subvar);
 	    }
 	}
       return added;
@@ -2092,9 +2095,10 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 	if (var_can_have_subvars (expr)
 	    && (svars = get_subvars_for_var (expr)))
 	  {
-	    subvar_t sv;
-	    for (sv = svars; sv; sv = sv->next)
-	      add_stmt_operand (&sv->var, s_ann, flags);
+	    unsigned int i;
+	    tree subvar;
+	    for (i = 0; VEC_iterate (tree, svars, i, subvar); ++i)
+	      add_stmt_operand (&subvar, s_ann, flags);
 	  }
 	else
 	  add_stmt_operand (expr_p, s_ann, flags);
@@ -2137,18 +2141,19 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 	ref = get_ref_base_and_extent (expr, &offset, &size, &maxsize);
 	if (SSA_VAR_P (ref) && get_subvars_for_var (ref))
 	  {
-	    subvar_t sv;
 	    subvar_t svars = get_subvars_for_var (ref);
+	    unsigned int i;
+	    tree subvar;
 
-	    for (sv = svars; sv; sv = sv->next)
+	    for (i = 0; VEC_iterate (tree, svars, i, subvar); ++i)
 	      {
 		bool exact;		
 
-		if (overlap_subvar (offset, maxsize, sv->var, &exact))
+		if (overlap_subvar (offset, maxsize, subvar, &exact))
 		  {
 	            int subvar_flags = flags;
 		    none = false;
-		    add_stmt_operand (&sv->var, s_ann, subvar_flags);
+		    add_stmt_operand (&subvar, s_ann, subvar_flags);
 		  }
 	      }
 
@@ -2710,11 +2715,12 @@ add_to_addressable_set (tree ref, bitmap *addresses_taken)
       if (var_can_have_subvars (var)
 	  && (svars = get_subvars_for_var (var)))
 	{
-	  subvar_t sv;
-	  for (sv = svars; sv; sv = sv->next)
+	  unsigned int i;
+	  tree subvar;
+	  for (i = 0; VEC_iterate (tree, svars, i, subvar); ++i)
 	    {
-	      bitmap_set_bit (*addresses_taken, DECL_UID (sv->var));
-	      TREE_ADDRESSABLE (sv->var) = 1;
+	      bitmap_set_bit (*addresses_taken, DECL_UID (subvar));
+	      TREE_ADDRESSABLE (subvar) = 1;
 	    }
 	}
       else

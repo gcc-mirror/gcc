@@ -1609,11 +1609,14 @@ get_subvars_for_var (tree var)
 static inline tree
 get_subvar_at (tree var, unsigned HOST_WIDE_INT offset)
 {
-  subvar_t sv;
+  subvar_t sv = get_subvars_for_var (var);
+  unsigned int i;
+  tree subvar;
 
-  for (sv = get_subvars_for_var (var); sv; sv = sv->next)
-    if (SFT_OFFSET (sv->var) == offset)
-      return sv->var;
+  /* ???  Binary search would be possible here.  */
+  for (i = 0; VEC_iterate (tree, sv, i, subvar); ++i)
+    if (SFT_OFFSET (subvar) == offset)
+      return subvar;
 
   return NULL_TREE;
 }
