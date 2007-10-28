@@ -6783,7 +6783,7 @@ mips_output_filename (FILE *stream, const char *name)
 
 /* Implement TARGET_ASM_OUTPUT_DWARF_DTPREL.  */
 
-static void
+static void ATTRIBUTE_UNUSED
 mips_output_dwarf_dtprel (FILE *file, int size, rtx x)
 {
   switch (size)
