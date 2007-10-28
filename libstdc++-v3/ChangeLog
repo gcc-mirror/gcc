@@ -1,3 +1,19 @@
+2007-10-28  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_uninitialized.h (uninitialized_copy): Use
+	::new and value_type per the letter of the standard.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/
+	move_iterators/1.cc: New.
+
+	* testsuite/20_util/specialized_algorithms/16505.cc: Move to...
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill_n/
+	16505.cc: ... here.
+	* testsuite/20_util/specialized_algorithms/32158.cc: Move to...
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill/
+	32158.cc: ... here.
+
+	* include/bits/stl_construct.h (_Construct(_T1*)): Remove, unused.
+
 2007-10-27  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_algobase.h (struct __miter_base): Add.
