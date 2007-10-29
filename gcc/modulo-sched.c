@@ -902,7 +902,7 @@ sms_schedule (void)
   df_set_flags (DF_LR_RUN_DCE);
   df_rd_add_problem ();
   df_note_add_problem ();
-  df_chain_add_problem (DF_DU_CHAIN);
+  df_chain_add_problem (DF_DU_CHAIN + DF_UD_CHAIN);
   df_analyze ();
   regstat_compute_calls_crossed ();
   sched_init ();
