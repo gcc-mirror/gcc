@@ -1941,6 +1941,23 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
       break;
 
+    case OMP_ATOMIC_LOAD:
+      pp_string (buffer, "#pragma omp atomic_load");
+      newline_and_indent (buffer, spc + 2);
+      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_space (buffer);
+      pp_character (buffer, '=');
+      pp_space (buffer);
+      pp_character (buffer, '*');
+      dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
+      break;
+
+    case OMP_ATOMIC_STORE:
+      pp_string (buffer, "#pragma omp atomic_store (");
+      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_character (buffer, ')');
+      break;
+
     case OMP_SINGLE:
       pp_string (buffer, "#pragma omp single");
       dump_omp_clauses (buffer, OMP_SINGLE_CLAUSES (node), spc, flags);

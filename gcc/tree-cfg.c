@@ -524,6 +524,13 @@ make_edges (void)
 	      fallthru = false;
 	      break;
 
+
+            case OMP_ATOMIC_LOAD:
+            case OMP_ATOMIC_STORE:
+               fallthru = true;
+               break;
+
+
 	    case OMP_RETURN:
 	      /* In the case of an OMP_SECTION, the edge will go somewhere
 		 other than the next block.  This will be created later.  */

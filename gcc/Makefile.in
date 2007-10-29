@@ -2234,7 +2234,7 @@ gimple-low.o : gimple-low.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) \
 omp-low.o : omp-low.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(RTL_H) $(TREE_GIMPLE_H) $(TREE_INLINE_H) langhooks.h $(DIAGNOSTIC_H) \
    $(TREE_FLOW_H) $(TIMEVAR_H) $(FLAGS_H) $(EXPR_H) toplev.h tree-pass.h \
-   $(GGC_H) $(SPLAY_TREE_H)
+   $(GGC_H) $(SPLAY_TREE_H) $(OPTABS_H) $(CFGLOOP_H)
 tree-browser.o : tree-browser.c tree-browser.def $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(TREE_INLINE_H) $(DIAGNOSTIC_H) $(HASHTAB_H) \
    $(TM_H) coretypes.h
@@ -2278,7 +2278,8 @@ tree-loop-linear.o: tree-loop-linear.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TARGET_H) tree-chrec.h $(OBSTACK_H)
 tree-parloops.o: tree-parloops.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_FLOW_H) $(TREE_H) $(RTL_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) $(GGC_H) \
-   $(DIAGNOSTIC_H) tree-pass.h $(SCEV_H) langhooks.h gt-tree-parloops.h
+   $(DIAGNOSTIC_H) tree-pass.h $(SCEV_H) langhooks.h gt-tree-parloops.h \
+   tree-vectorizer.h
 tree-stdarg.o: tree-stdarg.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(FUNCTION_H) $(DIAGNOSTIC_H) $(TREE_FLOW_H) tree-pass.h \
    tree-stdarg.h $(TARGET_H) langhooks.h
@@ -2390,7 +2391,7 @@ expr.o : expr.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    typeclass.h hard-reg-set.h toplev.h hard-reg-set.h except.h reload.h \
    $(GGC_H) langhooks.h intl.h $(TM_P_H) $(REAL_H) $(TARGET_H) \
    tree-iterator.h gt-expr.h $(MACHMODE_H) $(TIMEVAR_H) $(TREE_FLOW_H) \
-   tree-pass.h $(DF_H)
+   tree-pass.h $(DF_H) $(DIAGNOSTIC_H)
 dojump.o : dojump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
    $(FLAGS_H) $(FUNCTION_H) $(EXPR_H) $(OPTABS_H) $(INSN_ATTR_H) insn-config.h \
    langhooks.h $(GGC_H) gt-dojump.h

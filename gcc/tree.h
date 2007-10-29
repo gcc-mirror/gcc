@@ -195,6 +195,8 @@ extern const enum tree_code_class tree_code_type[];
      || TREE_CODE (NODE) == OMP_ORDERED			\
      || TREE_CODE (NODE) == OMP_CRITICAL		\
      || TREE_CODE (NODE) == OMP_RETURN			\
+     || TREE_CODE (NODE) == OMP_ATOMIC_LOAD                            \
+     || TREE_CODE (NODE) == OMP_ATOMIC_STORE                           \
      || TREE_CODE (NODE) == OMP_CONTINUE)
 
 /* Number of argument-words in each kind of tree-node.  */

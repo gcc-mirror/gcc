@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "timevar.h"
 #include "df.h"
+#include "diagnostic.h"
 
 /* Decide whether a function's arguments should be processed
    from first to last or from last to first.
@@ -9359,6 +9360,13 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
 	goto binop;
       }
+
+    case OMP_ATOMIC_LOAD:
+    case OMP_ATOMIC_STORE:
+      /* OMP expansion is not run when there were errors, so these codes
+		  can get here.  */
+      gcc_assert (errorcount != 0);
+      return NULL_RTX;
 
     default:
       return lang_hooks.expand_expr (exp, original_target, tmode,

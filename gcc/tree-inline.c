@@ -2154,6 +2154,7 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case OMP_RETURN:
     case OMP_CONTINUE:
     case OMP_SECTIONS_SWITCH:
+    case OMP_ATOMIC_STORE:
       break;
 
     /* We don't account constants for now.  Assume that the cost is amortized
@@ -2384,6 +2385,7 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case OMP_ORDERED:
     case OMP_CRITICAL:
     case OMP_ATOMIC:
+    case OMP_ATOMIC_LOAD:
       /* OpenMP directives are generally very expensive.  */
       d->count += d->weights->omp_cost;
       break;

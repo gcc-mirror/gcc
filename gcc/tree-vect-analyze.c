@@ -42,7 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 
 /* Main analysis functions.  */
-static loop_vec_info vect_analyze_loop_form (struct loop *);
 static bool vect_analyze_data_refs (loop_vec_info);
 static bool vect_mark_stmts_to_be_vectorized (loop_vec_info);
 static void vect_analyze_scalar_cycles (loop_vec_info);
@@ -3998,7 +3997,7 @@ vect_analyze_loop_1 (struct loop *loop)
    - the loop exit condition is simple enough, and the number of iterations
      can be analyzed (a countable loop).  */
 
-static loop_vec_info
+loop_vec_info
 vect_analyze_loop_form (struct loop *loop)
 {
   loop_vec_info loop_vinfo;
