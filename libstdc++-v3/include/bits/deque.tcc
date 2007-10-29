@@ -117,13 +117,13 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       if (static_cast<size_type>(__index) < (size() >> 1))
 	{
 	  if (__position != begin())
-	    std::copy_backward(begin(), __position, __next);
+	    _GLIBCXX_MOVE_BACKWARD3(begin(), __position, __next);
 	  pop_front();
 	}
       else
 	{
 	  if (__next != end())
-	    std::copy(__next, end(), __position);
+	    _GLIBCXX_MOVE3(__next, end(), __position);
 	  pop_back();
 	}
       return begin() + __index;
@@ -146,13 +146,13 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	  if (static_cast<size_type>(__elems_before) <= (size() - __n) / 2)
 	    {
 	      if (__first != begin())
-		std::copy_backward(begin(), __first, __last);
+		_GLIBCXX_MOVE_BACKWARD3(begin(), __first, __last);
 	      _M_erase_at_begin(begin() + __n);
 	    }
 	  else
 	    {
 	      if (__last != end())
-		std::copy(__last, end(), __first);
+		_GLIBCXX_MOVE3(__last, end(), __first);
 	      _M_erase_at_end(end() - __n);
 	    }
 	  return begin() + __elems_before;

@@ -74,8 +74,9 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       if (this->capacity() < __n)
 	{
 	  const size_type __old_size = size();
-	  pointer __tmp = _M_allocate_and_copy(__n, this->_M_impl._M_start,
-					       this->_M_impl._M_finish);
+	  pointer __tmp = _M_allocate_and_copy(__n,
+		 _GLIBCXX_MAKE_MOVE_ITERATOR(this->_M_impl._M_start),
+		 _GLIBCXX_MAKE_MOVE_ITERATOR(this->_M_impl._M_finish));
 	  std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
 			_M_get_Tp_allocator());
 	  _M_deallocate(this->_M_impl._M_start,
@@ -110,7 +111,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
     erase(iterator __position)
     {
       if (__position + 1 != end())
-        std::copy(__position + 1, end(), __position);
+	_GLIBCXX_MOVE3(__position + 1, end(), __position);
       --this->_M_impl._M_finish;
       this->_M_impl.destroy(this->_M_impl._M_finish);
       return __position;
@@ -122,7 +123,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
     erase(iterator __first, iterator __last)
     {
       if (__last != end())
-	std::copy(__last, end(), __first);
+	_GLIBCXX_MOVE3(__last, end(), __first);
       _M_erase_at_end(__first.base() + (end() - __last));
       return __first;
     }

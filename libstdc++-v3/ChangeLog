@@ -1,5 +1,18 @@
 2007-10-28  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/stl_algobase.h (_GLIBCXX_MOVE3,
+	_GLIBCXX_MOVE_BACKWARD3): Add.
+	* include/bits/stl_iterator.h (_GLIBCXX_MAKE_MOVE_ITERATOR): Add.
+	* include/bits/vector.tcc (vector<>::reserve): Use the latter.
+	(vector<>::erase): Use _GLIBCXX_MOVE3.
+	* include/bits/deque.tcc (deque<>::erase): Use _GLIBCXX_MOVE3
+	and _GLIBCXX_MOVE_BACKWARD3.
+	* testsuite/23_containers/vector/modifiers/erase/moveable.cc: New.
+	* testsuite/23_containers/vector/capacity/reserve/moveable.cc: New.
+	* testsuite/23_containers/deque/modifiers/erase/moveable.cc: New.
+
+2007-10-28  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/stl_uninitialized.h (uninitialized_copy): Use
 	::new and value_type per the letter of the standard.
 	* testsuite/20_util/specialized_algorithms/uninitialized_copy/
