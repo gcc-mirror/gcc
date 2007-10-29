@@ -1,3 +1,8 @@
+2007-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33841
+	* g++.dg/other/bitfield3.C: New test.
+
 2007-10-29  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ssa-copyprop-1.c: Scan optimized dump.

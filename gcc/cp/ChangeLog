@@ -1,3 +1,12 @@
+2007-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33841
+	* class.c (check_bitfield_decl): Don't set field's type to error_mark_node
+	for non-integral type bitfields.  Return true if bitfield is correct, false
+	error has been diagnosed.
+	(check_field_decls): If check_bitfield_decl returned false, call also
+	check_field_decl.
+
 2007-10-28  Paolo Carlini  <pcarlini@suse.de>
 	    Mark Mitchell  <mark@codesourcery.com>
 
