@@ -1,5 +1,12 @@
 2007-10-29  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/33870
+	* tree-ssa-operands.c (add_vars_for_offset): Remove mpt_vars parameter.
+	(add_virtual_operand): Do not recurse into MPTs looking for pointed-to
+	SFTs.
+
+2007-10-29  Richard Guenther  <rguenther@suse.de>
+
 	* passes.c (init_optimization_passes): Exchange store_copy_prop
 	with copy_prop.
 	* tree-pass.h (pass_store_copy_prop): Remove.

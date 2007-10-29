@@ -1391,7 +1391,7 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
 static bool
 add_vars_for_offset (tree var,
 		     unsigned HOST_WIDE_INT offset, unsigned HOST_WIDE_INT size,
-		     bool is_def, bitmap mpt_vars)
+		     bool is_def)
 {
   bool added = false;
   tree subvar;
@@ -1412,16 +1412,10 @@ add_vars_for_offset (tree var,
       if (size <= SFT_OFFSET (subvar) - offset)
 	break;
 
-      /* Avoid adding a SFT that is contained in the same MPT as the
-	 pointed-to location as this MPT will be added as alias anyway.  */
-      if (!mpt_vars
-	  || !bitmap_bit_p (mpt_vars, DECL_UID (subvar)))
-	{
-	  if (is_def)
-	    append_vdef (subvar);
-	  else
-	    append_vuse (subvar);
-	}
+      if (is_def)
+	append_vdef (subvar);
+      else
+	append_vuse (subvar);
       added = true;
     }
 
@@ -1502,34 +1496,12 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 	{
 	  tree al = referenced_var (i);
 
-	  /* We have to consider SFTs inside MPTs as possible pointed-to
-	     location as well because even if aliases does not contain
-	     a single SFT, the SFTs inside the MPT may be incomplete in
-	     that not all aliased subvars have to be in this MPT, too.
-	     But only if we start with NMT aliases.  */
-	  if (TREE_CODE (al) == MEMORY_PARTITION_TAG
-	      && TREE_CODE (var) == NAME_MEMORY_TAG)
-	    {
-	      bitmap_iterator bi;
-	      unsigned int i;
-
-	      EXECUTE_IF_SET_IN_BITMAP (MPT_SYMBOLS (al), 0, i, bi)
-		{
-		  tree ptsft = referenced_var (i);
-
-		  if (TREE_CODE (ptsft) == STRUCT_FIELD_TAG)
-		    none_added &= !add_vars_for_offset (ptsft, offset, size,
-							flags & opf_def,
-							MPT_SYMBOLS (al));
-		}
-	    }
-
 	  /* For SFTs we have to consider all subvariables of the parent var
 	     if it is a potential points-to location.  */
 	  if (TREE_CODE (al) == STRUCT_FIELD_TAG
 	      && TREE_CODE (var) == NAME_MEMORY_TAG)
 	    none_added &= !add_vars_for_offset (al, offset, size,
-					        flags & opf_def, NULL);
+					        flags & opf_def);
 	  else
 	    {
 	      /* Call-clobbered tags may have non-call-clobbered
