@@ -1,5 +1,9 @@
 2007-10-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/33757
+	* gcc.dg/tree-ssa/ssa-fre-4.c: Run on selected TARGET_PROMOTE_PROTOTYPES
+	true architectures instead of having a big dg-skip-if.
+
 	PR c++/33841
 	* g++.dg/other/bitfield3.C: New test.
 
