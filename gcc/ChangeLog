@@ -1,3 +1,7 @@
+2007-10-29  Revital Eres  <eres@il.ibm.com> 
+
+	* modulo-sched.c (sms_schedule): Add DF_UD_CHAIN problem.
+
 2007-10-29  Razya Ladelsky
 
         Automatic parallelization reduction tests.
