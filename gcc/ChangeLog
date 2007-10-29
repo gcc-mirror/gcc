@@ -2,102 +2,69 @@
 
 	* modulo-sched.c (sms_schedule): Add DF_UD_CHAIN problem.
 
-2007-10-29  Razya Ladelsky
+2007-10-29  Razya Ladelsky  <razya@il.ibm.com>
+            Zdenek Dvorak  <ook@ucw.cz>
 
-        Automatic parallelization reduction tests.
+	OMP_ATOMIC Changes,
+	reduction support for automatic parallelization.
 
-	* testsuite/gcc.dg/tree-ssa/reduc-1.c: New test.
-	* testsuite/gcc.dg/tree-ssa/reduc-1char.c: New test.
-	* testsuite/gcc.dg/tree-ssa/reduc-1short.c: New test.
-	* testsuite/gcc.dg/tree-ssa/reduc-2.c: New test.
-	* testsuite/gcc.dg/tree-ssa/reduc-2char.c: New test.
-	* testsuite/gcc.dg/tree-ssa/reduc-2short.c: New test.
-	* testsuite/gcc.dg/tree-ssa/reduc-3.c: New test.
-	* testsuite/gcc.dg/tree-ssa/reduc-6.c: New test.
-	* testsuite/gcc.dg/tree-ssa/reduc-7.c: New test.
-	* testsuite/gcc.dg/tree-ssa/reduc-8.c: New test.
-	* testsuite/gcc.dg/tree-ssa/reduc-9.c: New test.
-
-2007-10-29  Razya Ladelsky
-            Zdenek Dvorak
-
-        OMP_ATOMIC Changes, testsuite changes.
-
-	* testsuite/gcc.dg/gomp/atomic-3.c: Search for string on
-	ompexp dump instead of gimple dump.
-	* testsuite/gcc.dg/gomp/atomic-9.c: Same.
-	* testsuite/gcc.dg/gomp/atomic-10.c: Same.
-	* testsuite/g++.dg/gomp/atomic-3.C: Same.
-	* testsuite/g++.dg/gomp/atomic-9.C: Same.
-	* testsuite/g++.dg/gomp/atomic-10.C: Same.
-
-2007-10-29  Razya Ladelsky
-            Zdenek Dvorak
-
-        OMP_ATOMIC Changes,
-        Reduction support for automatic parallelization.
-
-        * expr.c (expand_expr_real_1): Add cases for OMP_ATOMIC_LOAD,
-        OMP_ATOMIC_STORE.
-        * Makefile.in: Add dependencies to expr.o, tree-parloops.o, omp-low.o
-        * tree-pretty-print.c (dump_generic_node): Add OMP_ATOMIC_LOAD
-        and OMP_ATOMIC_STORE.
-        * tree.h (OMP_DIRECTIVE_P): Add OMP_ATOMIC_LOAD,
-        OMP_ATOMIC_STORE.
-        * gimple-low.c (lower_stmt): Same.
-        * gimplify.c (gimplify_expr): Same.
-        (gimplify_omp_atomic_fetch_op, gimplify_omp_atomic_pipeline,
-        gimplify_omp_atomic_mutex): Remove.
-        (gimplify_omp_atomic): Change it to simply gimplify the
-        statement instead of expanding it.
-        * omp-low.c: Add includes to optabs.h, cfgloop.h.
-        (expand_omp_atomic, expand_omp_atomic_pipeline,
-        goa_stabilize_expr, expand_omp_atomic_mutex,
-        expand_omp_atomic_fetch_op): New functions to implement
-        expansion of OMP_ATOMIC.
-        (expand_omp, build_omp_regions_1): Add support for
-        OMP_ATOMIC_LOAD/OMP_ATOMIC_STORE.
-        * tree-cfg.c (make_edges): add case for OMP_ATOMIC_LOAD,
-        OMP_ATOMIC_STORE.
-        * tree-gimple.c (is_gimple_stmt): Add OMP_ATOMIC_LOAD,
-        OMP_ATOMIC_STORE.
-        * tree-parloops.c: add include to tree-vectorizer.h.
-        (reduction_info): New structure for reduction.
-        (reduction_list): New list to represent list of reductions
-        per loop.
-        (struct data_arg): New helper structure for reduction.
-        (reduction_info_hash, reduction_info_eq, reduction_phi,
-        initialize_reductions,
-        create_call_for_reduction, create_phi_for_local_result,
-        create_call_for_reduction_1, create_loads_for_reductions,
-        create_final_loads_for_reduction): New functions.
-        (loop_parallel_p): Identify reductions, add reduction_list parameter.
-        (separate_decls_in_loop_name): Support reduction variables.
-        (separate_decls_in_loop): Add reduction_list and ld_st_data arguments,
-        call create_loads_for_reduction for each reduction.
-        (canonicalize_loop_ivs): Identify reductions, add reduction_list
-        parameter.
-        (transform_to_exit_first_loop): Add reduction support, add
-        reduction_list parameter.
-        (gen_parallel_loop): Add reduction_list parameter. Add call
-        separate_decls_in_loop with
-        the new argument. Traverse reductions and call
-        initialize_reductions, create_call_for_reduction.
-        (parallelize_loops): Create and delete the reduction list.
-        (add_field_for_name): Change use of data parameter. Add fields for
-        reductions.
-        * tree-vectorizer.h (vect_analyze_loop_form): Add declaration.
-        * tree-vect-analyze.c (vect_analyze_loop_form): export it.
-        * tree.def: Add definitions for OMP_ATOMIC_LOAD,
-        OMP_ATOMIC_STORE.
-        * tree-inline.c (estimate_num_insns_1): add cases for
-        OMP_ATOMIC_LOAD, OMP_ATOMIC_STORE.
-        * tree-cfg.c (make_edges): Add OMP_ATOMIC_LOAD,
-        OMP_ATOMIC_STORE.
-        * tree-ssa-operands.c (get_addr_dereference_operands):
-        New function. Subroutine of get_indirect_ref_operands.
-        (get_indirect_ref_operands): Call get_addr_dereference_operands.
-        (get_expr_operands): Support OMP_ATOMIC_LOAD, OMP_ATOMIC_STORE.
+	* expr.c (expand_expr_real_1): Add cases for OMP_ATOMIC_LOAD,
+	OMP_ATOMIC_STORE.
+	* Makefile.in: Add dependencies to expr.o, tree-parloops.o, omp-low.o
+	* tree-pretty-print.c (dump_generic_node): Add OMP_ATOMIC_LOAD
+	and OMP_ATOMIC_STORE.
+	* tree.h (OMP_DIRECTIVE_P): Add OMP_ATOMIC_LOAD, OMP_ATOMIC_STORE.
+	* gimple-low.c (lower_stmt): Same.
+	* gimplify.c (gimplify_expr): Same.
+	(gimplify_omp_atomic_fetch_op, gimplify_omp_atomic_pipeline,
+	gimplify_omp_atomic_mutex): Remove.
+	(gimplify_omp_atomic): Change it to simply gimplify the
+	statement instead of expanding it.
+	* omp-low.c: Add includes to optabs.h, cfgloop.h.
+	(expand_omp_atomic, expand_omp_atomic_pipeline,
+	goa_stabilize_expr, expand_omp_atomic_mutex,
+	expand_omp_atomic_fetch_op): New functions to implement
+	expansion of OMP_ATOMIC.
+	(expand_omp, build_omp_regions_1): Add support for
+	OMP_ATOMIC_LOAD/OMP_ATOMIC_STORE.
+	* tree-cfg.c (make_edges): add case for OMP_ATOMIC_LOAD,
+	OMP_ATOMIC_STORE.
+	* tree-gimple.c (is_gimple_stmt): Add OMP_ATOMIC_LOAD,
+	OMP_ATOMIC_STORE.
+	* tree-parloops.c: add include to tree-vectorizer.h.
+	(reduction_info): New structure for reduction.
+	(reduction_list): New list to represent list of reductions per loop.
+	(struct data_arg): New helper structure for reduction.
+	(reduction_info_hash, reduction_info_eq, reduction_phi,
+	initialize_reductions, create_call_for_reduction,
+	create_phi_for_local_result, create_call_for_reduction_1,
+	create_loads_for_reductions, create_final_loads_for_reduction):
+	New functions.
+	(loop_parallel_p): Identify reductions, add reduction_list parameter.
+	(separate_decls_in_loop_name): Support reduction variables.
+	(separate_decls_in_loop): Add reduction_list and ld_st_data arguments,
+	call create_loads_for_reduction for each reduction.
+	(canonicalize_loop_ivs): Identify reductions, add reduction_list
+	parameter.
+	(transform_to_exit_first_loop): Add reduction support, add
+	reduction_list parameter.
+	(gen_parallel_loop): Add reduction_list parameter.  Add call
+	separate_decls_in_loop with
+	the new argument.  Traverse reductions and call
+	initialize_reductions, create_call_for_reduction.
+	(parallelize_loops): Create and delete the reduction list.
+	(add_field_for_name): Change use of data parameter.  Add fields for
+	reductions.
+	* tree-vectorizer.h (vect_analyze_loop_form): Add declaration.
+	* tree-vect-analyze.c (vect_analyze_loop_form): export it.
+	* tree.def: Add definitions for OMP_ATOMIC_LOAD, OMP_ATOMIC_STORE.
+	* tree-inline.c (estimate_num_insns_1): add cases for
+	OMP_ATOMIC_LOAD, OMP_ATOMIC_STORE.
+	* tree-cfg.c (make_edges): Add OMP_ATOMIC_LOAD, OMP_ATOMIC_STORE.
+	* tree-ssa-operands.c (get_addr_dereference_operands):
+	New function.  Subroutine of get_indirect_ref_operands.
+	(get_indirect_ref_operands): Call get_addr_dereference_operands.
+	(get_expr_operands): Support OMP_ATOMIC_LOAD, OMP_ATOMIC_STORE.
 
 
 2007-10-29  Hans-Peter Nilsson  <hp@axis.com>
@@ -283,7 +250,7 @@
 	DW_ATE_signed_fixed to describe FIXED_POINT_TYPE.
 
 2007-10-24  Samuel Tardieu  <sam@rfc1149.net>
-            Olga Golovanevsky <olga@il.ibm.com>
+	    Olga Golovanevsky <olga@il.ibm.com>
 	
 	* ipa-struct-reorg.c (replace_field_acc): Make it clear to
 	the compiler that wr.wrap and wr.domain are initialized in
@@ -1208,25 +1175,25 @@
 
 2007-10-18  Chen Liqin  <liqin@sunnorth.com.cn>
 
-        * config.gcc : update score-*-elf(extra_objs).
-        * config/score/mac.md : Remove.
-        * config/score/misc.md : Remove.
-        * config/score/score7.md : Remove.
-        * config/score/score-mdaux.h : Remove.
-        * config/score/score-mdaux.c : Remove.
-        * config/score/score-version.h : Remove.
-        * config/score/score-generic.md : New.
-        * config/score/score3.h : New.
-        * config/score/score3.c : New.
-        * config/score/score7.h : New.
-        * config/score/score7.c : New.
-        * config/score/mul-div.S : add flush_cache score3 support.
-        * config/score/elf.h : Fix some typos.
-        * config/score/score.md : merge score3 and score7 pattern.
-        * config/score/score.c : use to seperate which target it used.
-        * config/score/score.h : use to seperate the target macro.
-        * config/score/score.opt : remove -mmac option , add -mscore3,
-        -mscore3d and -march OPTION support.
+	* config.gcc : update score-*-elf(extra_objs).
+	* config/score/mac.md : Remove.
+	* config/score/misc.md : Remove.
+	* config/score/score7.md : Remove.
+	* config/score/score-mdaux.h : Remove.
+	* config/score/score-mdaux.c : Remove.
+	* config/score/score-version.h : Remove.
+	* config/score/score-generic.md : New.
+	* config/score/score3.h : New.
+	* config/score/score3.c : New.
+	* config/score/score7.h : New.
+	* config/score/score7.c : New.
+	* config/score/mul-div.S : add flush_cache score3 support.
+	* config/score/elf.h : Fix some typos.
+	* config/score/score.md : merge score3 and score7 pattern.
+	* config/score/score.c : use to seperate which target it used.
+	* config/score/score.h : use to seperate the target macro.
+	* config/score/score.opt : remove -mmac option , add -mscore3,
+	-mscore3d and -march OPTION support.
  
 2007-10-17  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
@@ -1396,8 +1363,8 @@
 
 2007-10-15  Razya Ladelsky  <razya@il.ibm.com>
 
-        * matrix-reorg.c (gate_matrix_reorg): Don't comment out whole
-        program flag.
+	* matrix-reorg.c (gate_matrix_reorg): Don't comment out whole
+	program flag.
 
 2007-10-15  Jakub Jelinek  <jakub@redhat.com>
 
@@ -1601,7 +1568,7 @@
 2007-10-10  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
 	* opth-gen.awk: Fixed generation of comment stating the origin
-          of options.h
+	  of options.h
 
 2007-10-10  Kazu Hirata  <kazu@codesourcery.com>
 
@@ -1811,7 +1778,7 @@
 	* config/m68k/m68k.h (ASSEMBLER_DIALECT): New.
 
 2007-10-06  Eric Botcazou  <ebotcazou@adacore.com>
-            Nathan Froyd  <froydnj@codesourcery.com>
+	    Nathan Froyd  <froydnj@codesourcery.com>
 
 	* dwarf2out.c (dwarf2out_frame_init): Check for DWARF2_FRAME_INFO
 	when determining whether to record INCOMING_RETURN_ADDR_RTX.
