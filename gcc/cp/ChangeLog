@@ -1,3 +1,10 @@
+2007-10-28  Paolo Carlini  <pcarlini@suse.de>
+	    Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/30659
+	* pt.c (do_decl_instantiation): If the VAR_DECL is not a
+	class member error out and return.
+
 2007-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* error.c (reinit_cxx_pp): Initialize cxx_pp->enclosing_scope

@@ -13882,6 +13882,11 @@ do_decl_instantiation (tree decl, tree storage)
 	 VAR_DECLs so we do the lookup here.  Probably, grokdeclarator
 	 should handle VAR_DECLs as it currently handles
 	 FUNCTION_DECLs.  */
+      if (!DECL_CLASS_SCOPE_P (decl))
+	{
+	  error ("%qD is not a static data member of a class template", decl);
+	  return;
+	}
       result = lookup_field (DECL_CONTEXT (decl), DECL_NAME (decl), 0, false);
       if (!result || TREE_CODE (result) != VAR_DECL)
 	{
