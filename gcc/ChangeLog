@@ -1,6 +1,19 @@
 2007-09-23  Razya Ladelsky
             Zdenek Dvorak
 
+        OMP_ATOMIC Changes, testsuite changes.
+
+	* testsuite/gcc.dg/gomp/atomic-3.c: Search for string on
+	ompexp dump instead of gimple dump.
+	* testsuite/gcc.dg/gomp/atomic-9.c: Same.
+	* testsuite/gcc.dg/gomp/atomic-10.c: Same.
+	* testsuite/g++.dg/gomp/atomic-3.C: Same.
+	* testsuite/g++.dg/gomp/atomic-9.C: Same.
+	* testsuite/g++.dg/gomp/atomic-10.C: Same.
+
+2007-09-23  Razya Ladelsky
+            Zdenek Dvorak
+
         OMP_ATOMIC Changes,
         Reduction support for automatic parallelization.
 
