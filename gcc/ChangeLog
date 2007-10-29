@@ -1,3 +1,15 @@
+2007-10-29  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow-inline.h (get_subvar_at): Use binary search.
+	(get_first_overlapping_subvar): New function to binary search
+	for the first overlapping subvar.
+	* tree-ssa-operands.c (add_vars_for_offset): Strip down to
+	just handle adding subvars for a pointed-to subvar.  Optimize
+	and use get_first_overlapping_subvar.
+	(add_vars_for_bitmap): Fold into single caller.
+	(add_virtual_operand): Streamline, inherit add_vars_for_bitmap
+	and non pointed-to bits of add_vars_for_offset.
+
 2007-10-29  Revital Eres  <eres@il.ibm.com> 
 
 	* modulo-sched.c (sms_schedule): Add DF_UD_CHAIN problem.
