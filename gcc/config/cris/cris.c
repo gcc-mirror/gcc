@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-def.h"
 #include "ggc.h"
 #include "optabs.h"
+#include "df.h"
 
 /* Usable when we have an amount to add or subtract, and want the
    optimal size of the insn.  */
@@ -1716,7 +1717,12 @@ cris_address_cost (rtx x)
   /* The metric to use for the cost-macros is unclear.
      The metric used here is (the number of cycles needed) / 2,
      where we consider equal a cycle for a word of code and a cycle to
-     read memory.  */
+     read memory.  FIXME: Adding "+ 1" to all values would avoid
+     returning 0, as tree-ssa-loop-ivopts.c as of r128272 "normalizes"
+     0 to 1, thereby giving equal costs to [rN + rM] and [rN].
+     Unfortunately(?) such a hack would expose other pessimizations,
+     at least with g++.dg/tree-ssa/ivopts-1.C, adding insns to the
+     loop there, without apparent reason.  */
 
   /* The cheapest addressing modes get 0, since nothing extra is needed.  */
   if (BASE_OR_AUTOINCR_P (x))
@@ -1738,34 +1744,34 @@ cris_address_cost (rtx x)
       rtx tem1 = XEXP (x, 0);
       rtx tem2 = XEXP (x, 1);
 
-    /* A BIAP is 2 extra bytes for the prefix insn, nothing more.  We
-       recognize the typical MULT which is always in tem1 because of
-       insn canonicalization.  */
-    if ((GET_CODE (tem1) == MULT && BIAP_INDEX_P (tem1))
-	|| REG_P (tem1))
-      return 2 / 2;
+      /* We'll "assume" canonical RTX.  */
+      gcc_assert (REG_P (tem1) || GET_CODE (tem1) == MULT);
 
-    /* A BDAP (quick) is 2 extra bytes.  Any constant operand to the
-       PLUS is always found in tem2.  */
-    if (CONST_INT_P (tem2) && INTVAL (tem2) < 128 && INTVAL (tem2) >= -128)
-      return 2 / 2;
+      /* A BIAP is 2 extra bytes for the prefix insn, nothing more.  We
+	 recognize the typical MULT which is always in tem1 because of
+	 insn canonicalization.  */
+      if ((GET_CODE (tem1) == MULT && BIAP_INDEX_P (tem1))
+	  || REG_P (tem2))
+	return 2 / 2;
 
-    /* A BDAP -32768 .. 32767 is like BDAP quick, but with 2 extra
-       bytes.  */
-    if (CONST_INT_P (tem2) && CONST_OK_FOR_LETTER_P (INTVAL (tem2), 'L'))
-      return (2 + 2) / 2;
+      /* A BDAP (quick) is 2 extra bytes.  Any constant operand to the
+	 PLUS is always found in tem2.  */
+      if (CONST_INT_P (tem2) && INTVAL (tem2) < 128 && INTVAL (tem2) >= -128)
+	return 2 / 2;
 
-    /* A BDAP with some other constant is 2 bytes extra.  */
-    if (CONSTANT_P (tem2))
+      /* A BDAP -32768 .. 32767 is like BDAP quick, but with 2 extra
+	 bytes.  */
+      if (CONST_INT_P (tem2) && CONST_OK_FOR_LETTER_P (INTVAL (tem2), 'L'))
+	return (2 + 2) / 2;
+
+      /* A BDAP with some other constant is 2 bytes extra.  */
+      if (CONSTANT_P (tem2))
+	return (2 + 2 + 2) / 2;
+
+      /* BDAP with something indirect should have a higher cost than
+	 BIAP with register.   FIXME: Should it cost like a MEM or more?  */
       return (2 + 2 + 2) / 2;
-
-    /* BDAP with something indirect should have a higher cost than
-       BIAP with register.   FIXME: Should it cost like a MEM or more?  */
-    /* Don't need to check it, it's the only one left.
-       FIXME:  There was a REG test missing, perhaps there are others.
-       Think more.  */
-    return (2 + 2 + 2) / 2;
-  }
+    }
 
   /* What else?  Return a high cost.  It matters only for valid
      addressing modes.  */
