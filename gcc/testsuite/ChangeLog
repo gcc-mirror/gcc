@@ -1,3 +1,8 @@
+2007-10-29  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/33870
+	* gcc.c-torture/execute/pr33870.x: XFAIL testcase for -O2 and -Os.
+
 2007-10-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/33757
