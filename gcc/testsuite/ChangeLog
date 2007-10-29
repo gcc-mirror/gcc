@@ -1,3 +1,9 @@
+2007-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/33723
+	* gcc.c-torture/execute/20071029-1.c: New test.
+	* gcc.dg/tree-ssa/pr33723.c: New test.
+
 2007-10-29  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR tree-optimization/33614
