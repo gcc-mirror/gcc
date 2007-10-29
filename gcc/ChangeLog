@@ -1,3 +1,22 @@
+2007-10-29  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/invoke.texi (Option Summary, optimizations): Remove
+	-fbounds-check.  Show that the value for options -falign-jumps,
+	-falign-labels, -falign-loops, -falign-functions,
+	-fsched-stalled-insns, and -fsched-stalled-insns-dep is optional.
+	Break up a long line.  Add -ftree-vrp and -funit-at-a-time.
+	(Option Summary, code gen options)  Add -fno-stack-limit.
+	* doc/invoke.texi (Option Summary, optimizations):
+	(Optimization Options): Remove -fbounds-check, which is also
+	documented under Code Generation Options.  In the descriptions for
+	-fsched-stalled-insns and -fsched-stalled-insns-dep, show the
+	options with and without values.  Change -fno-cprop-registers
+	to -fcprop-registers to match other options, and say when it is
+	enabled rather than disabled.  Remove extra index entry for
+	-fno-cx-limited-range.  Add opindex for several optimization
+	options, and fix typos in the opindex commands for several others.
+	(Code Gen Options): Add index entry for -ftls-model.
+
 2007-10-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/rtl.texi (Flags): Fix MEM_SCALAR_P entry.
