@@ -1,3 +1,8 @@
+2007-10-29  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR tree-optimization/33614
+	* gcc.c-torture/compile/pr33614.c: New test.
+
 2007-10-29  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/33870
