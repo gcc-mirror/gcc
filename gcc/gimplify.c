@@ -3290,8 +3290,9 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 	    tree value;
 
 	    /* Even when ctor is constant, it might contain non-*_CST
-	      elements (e.g. { 1.0/0.0 - 1.0/0.0, 0.0 }) and those don't
-	      belong into VECTOR_CST nodes.  */
+	       elements, such as addresses or trapping values like
+	       1.0/0.0 - 1.0/0.0.  Such expressions don't belong
+	       in VECTOR_CST nodes.  */
 	    FOR_EACH_CONSTRUCTOR_VALUE (elts, ix, value)
 	      if (!CONSTANT_CLASS_P (value))
 		{
@@ -3305,10 +3306,14 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 		break;
 	      }
 
-	    /* Don't reduce a TREE_CONSTANT vector ctor even if we can't
+	    /* Don't reduce an initializer constant even if we can't
 	       make a VECTOR_CST.  It won't do anything for us, and it'll
 	       prevent us from representing it as a single constant.  */
-	    break;
+	    if (initializer_constant_valid_p (ctor, type))
+	      break;
+
+	    TREE_CONSTANT (ctor) = 0;
+	    TREE_INVARIANT (ctor) = 0;
 	  }
 
 	/* Vector types use CONSTRUCTOR all the way through gimple
