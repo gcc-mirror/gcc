@@ -1006,14 +1006,16 @@ Expect the test to fail if the conditions (which are the same as for
 @item @{ dg-require-@var{support} args @}
 Skip the test if the target does not provide the required support;
 see @file{gcc-dg.exp} in the GCC testsuite for the actual directives.
-These directives must appear after any @code{dg-do} directive in the test.
+These directives must appear after any @code{dg-do} directive in the test
+and before any @code{dg-additional-sources} directive.
 They require at least one argument, which can be an empty string if the
 specific procedure does not examine the argument.
 
 @item @{ dg-require-effective-target @var{keyword} @}
 Skip the test if the test target, including current multilib flags,
 is not covered by the effective-target keyword.
-This directive must appear after any @code{dg-do} directive in the test.
+This directive must appear after any @code{dg-do} directive in the test
+and before any @code{dg-additional-sources} directive.
 
 @item  @{ dg-shouldfail @var{comment} @{ @var{selector} @} @{ @var{include-opts} @} @{ @var{exclude-opts} @} @}
 Expect the test executable to return a nonzero exit status if the
