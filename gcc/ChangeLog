@@ -1,3 +1,26 @@
+2007-10-29  Richard Guenther  <rguenther@suse.de>
+
+	* passes.c (init_optimization_passes): Exchange store_copy_prop
+	with copy_prop.
+	* tree-pass.h (pass_store_copy_prop): Remove.
+	* tree-ssa-copy.c (do_store_copy_prop): Remove.
+	(stmt_may_generate-copy): Do not handle store_copy_prop.
+	(get_copy_of_val): Likewise.
+	(set_copy_of_val): Likewise.
+	(copy_prop_visit_assignment): Likewise.
+	(copy_prop_visit_stmt): Likewise.
+	(copy_prop_visit_phi_node): Likewise.
+	(init_copy_prop): Likewise.
+	(execute_copy_prop): Likewise.
+	(do_copy_prop): Remove.
+	(gate_store_copy_prop): Likewise.
+	(store_copy_prop): Likewise.
+	(pass_store_copy_prop): Likewise.
+	(pass_copy_prop): Call execute_copy_prop.
+	* opts.c (decode_options): Do not set flag_tree_store_copy_prop.
+	* common.opt (ftree-store-copy-prop): Mark obsolete.
+	* doc/invoke.texi (ftree-store-copy-prop): Remove documentation.
+
 2007-10-29  Ian Lance Taylor  <iant@google.com>
 
 	* ifcvt.c (noce_can_store_speculate_p): New static function.

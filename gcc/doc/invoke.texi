@@ -364,7 +364,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-dominator-opts -ftree-dse -ftree-copyrename -ftree-sink @gol
 -ftree-ch -ftree-sra -ftree-ter -ftree-fre -ftree-vectorize @gol
 -ftree-vect-loop-version -fvect-cost-model -ftree-salias -fipa-pta -fweb @gol
--ftree-copy-prop -ftree-store-ccp -ftree-store-copy-prop -ftree-vrp @gol
+-ftree-copy-prop -ftree-store-ccp -ftree-vrp @gol
 -funit-at-a-time -fwhole-program @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os}
@@ -5676,13 +5676,6 @@ This flag is enabled by default at @option{-O} and higher.
 Perform copy propagation on trees.  This pass eliminates unnecessary
 copy operations.  This flag is enabled by default at @option{-O} and
 higher.
-
-@item -ftree-store-copy-prop
-@opindex ftree-store-copy-prop
-Perform copy propagation of memory loads and stores.  This pass
-eliminates unnecessary copy operations in memory references
-(structures, global variables, arrays, etc).  This flag is enabled by
-default at @option{-O2} and higher.
 
 @item -ftree-salias
 @opindex ftree-salias

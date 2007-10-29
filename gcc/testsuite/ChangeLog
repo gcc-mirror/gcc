@@ -1,3 +1,7 @@
+2007-10-29  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-copyprop-1.c: Scan optimized dump.
+
 2007-10-29  Razya Ladelsky  <razya@il.ibm.com>
 
 	Automatic parallelization reduction tests.

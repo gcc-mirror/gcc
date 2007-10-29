@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-dominator-opts -fdump-tree-store_copyprop-details" } */
+/* { dg-options "-O2 -fno-tree-dominator-opts -fdump-tree-optimized" } */
 
 typedef struct { int i; int j; } A;
 int foo(A *a, int i)
@@ -8,5 +8,5 @@ int foo(A *a, int i)
   return a->i;
 }
 
-/* { dg-final { scan-tree-dump "return i" "store_copyprop" } } */
-/* { dg-final { cleanup-tree-dump "store_copyprop" } } */
+/* { dg-final { scan-tree-dump "return i" "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

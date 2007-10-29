@@ -602,7 +602,7 @@ init_optimization_passes (void)
       NEXT_PASS (pass_phiopt);
       NEXT_PASS (pass_object_sizes);
       NEXT_PASS (pass_store_ccp);
-      NEXT_PASS (pass_store_copy_prop);
+      NEXT_PASS (pass_copy_prop);
       NEXT_PASS (pass_fold_builtins);
       NEXT_PASS (pass_cse_sincos);
       NEXT_PASS (pass_split_crit_edges);
