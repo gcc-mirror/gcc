@@ -501,8 +501,12 @@ ext_headers = \
 	${ext_srcdir}/vstring.h \
 	${ext_srcdir}/vstring.tcc \
 	${ext_srcdir}/vstring_fwd.h \
-	${ext_srcdir}/vstring_util.h	
+	${ext_srcdir}/vstring_util.h \
+	${ext_compat_headers}
 
+ext_compat_headers = \
+	${backward_srcdir}/hash_set \
+	${backward_srcdir}/hash_map
 
 tr1_srcdir = ${glibcxx_srcdir}/include/tr1
 tr1_builddir = ./tr1
