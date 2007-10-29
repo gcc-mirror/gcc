@@ -1,3 +1,9 @@
+2007-10-29  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/24841
+	* doc/sourcebuild.texi (Test Directives): Document that dg-require
+	directives must come before dg-additional-sources.
+
 2007-10-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/33723
