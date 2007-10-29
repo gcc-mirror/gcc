@@ -1,3 +1,12 @@
+2007-10-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31217
+	PR fortran/33811
+	* gfortran.dg/forall_12.f90: New test.
+
+	PR fortran/33686
+	* gfortran.dg/forall_13.f90: New test.
+
 2007-10-28  Paolo Carlini  <pcarlini@suse.de>
 	    Mark Mitchell  <mark@codesourcery.com>
 
