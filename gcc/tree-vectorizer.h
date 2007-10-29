@@ -666,7 +666,7 @@ extern stmt_vec_info new_stmt_vec_info (tree stmt, loop_vec_info);
 /* Driver for analysis stage.  */
 extern loop_vec_info vect_analyze_loop (struct loop *);
 extern void vect_free_slp_tree (slp_tree);
-
+extern loop_vec_info vect_analyze_loop_form (struct loop *);
 
 /** In tree-vect-patterns.c  **/
 /* Pattern recognition functions.

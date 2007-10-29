@@ -41,7 +41,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "except.h"
 #include "splay-tree.h"
-
+#include "optabs.h"
+#include "cfgloop.h"
 
 /* Lowering of OpenMP parallel and workshare constructs proceeds in two 
    phases.  The first phase scans the function looking for OMP statements
@@ -2597,7 +2598,7 @@ expand_omp_parallel (struct omp_region *region)
       rebuild_cgraph_edges ();
       pop_cfun ();
     }
-
+  
   /* Emit a library call to launch the children threads.  */
   expand_parallel_call (region, new_bb, entry_stmt, ws_args);
   update_ssa (TODO_update_ssa_only_virtuals);
@@ -3540,6 +3541,355 @@ expand_omp_synch (struct omp_region *region)
     }
 }
 
+/* A subroutine of expand_omp_atomic.  Attempt to implement the atomic
+   operation as a __sync_fetch_and_op builtin.  INDEX is log2 of the
+   size of the data type, and thus usable to find the index of the builtin
+   decl.  Returns false if the expression is not of the proper form.  */
+
+static bool
+expand_omp_atomic_fetch_op (basic_block load_bb,
+			    tree addr, tree loaded_val,
+			    tree stored_val, int index)
+{
+  enum built_in_function base;
+  tree decl, itype, call;
+  enum insn_code *optab;
+  tree rhs;
+  basic_block store_bb = single_succ (load_bb);
+  block_stmt_iterator bsi;
+  tree stmt;
+
+  /* We expect to find the following sequences:
+   
+   load_bb:
+       OMP_ATOMIC_LOAD (tmp, mem)
+
+   store_bb:
+       val = tmp OP something; (or: something OP tmp)
+       OMP_STORE (val) 
+
+  ???FIXME: Allow a more flexible sequence.  
+  Perhaps use data flow to pick the statements.
+  
+  */
+
+  bsi = bsi_after_labels (store_bb);
+  stmt = bsi_stmt (bsi);
+  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
+    return false;
+  bsi_next (&bsi);
+  if (TREE_CODE (bsi_stmt (bsi)) != OMP_ATOMIC_STORE)
+    return false;
+
+  if (!operand_equal_p (GIMPLE_STMT_OPERAND (stmt, 0), stored_val, 0))
+    return false;
+
+  rhs = GIMPLE_STMT_OPERAND (stmt, 1);
+
+  /* Check for one of the supported fetch-op operations.  */
+  switch (TREE_CODE (rhs))
+    {
+    case PLUS_EXPR:
+    case POINTER_PLUS_EXPR:
+      base = BUILT_IN_FETCH_AND_ADD_N;
+      optab = sync_add_optab;
+      break;
+    case MINUS_EXPR:
+      base = BUILT_IN_FETCH_AND_SUB_N;
+      optab = sync_add_optab;
+      break;
+    case BIT_AND_EXPR:
+      base = BUILT_IN_FETCH_AND_AND_N;
+      optab = sync_and_optab;
+      break;
+    case BIT_IOR_EXPR:
+      base = BUILT_IN_FETCH_AND_OR_N;
+      optab = sync_ior_optab;
+      break;
+    case BIT_XOR_EXPR:
+      base = BUILT_IN_FETCH_AND_XOR_N;
+      optab = sync_xor_optab;
+      break;
+    default:
+      return false;
+    }
+  /* Make sure the expression is of the proper form.  */
+  if (operand_equal_p (TREE_OPERAND (rhs, 0), loaded_val, 0))
+    rhs = TREE_OPERAND (rhs, 1);
+  else if (commutative_tree_code (TREE_CODE (rhs))
+	   && operand_equal_p (TREE_OPERAND (rhs, 1), loaded_val, 0))
+    rhs = TREE_OPERAND (rhs, 0);
+  else
+    return false;
+
+  decl = built_in_decls[base + index + 1];
+  itype = TREE_TYPE (TREE_TYPE (decl));
+
+  if (optab[TYPE_MODE (itype)] == CODE_FOR_nothing)
+    return false;
+
+  bsi = bsi_last (load_bb);
+  gcc_assert (TREE_CODE (bsi_stmt (bsi)) == OMP_ATOMIC_LOAD);
+  call = build_call_expr (decl, 2, addr, fold_convert (itype, rhs));
+  force_gimple_operand_bsi (&bsi, call, true, NULL_TREE, true, BSI_SAME_STMT);
+  bsi_remove (&bsi, true);
+
+  bsi = bsi_last (store_bb);
+  gcc_assert (TREE_CODE (bsi_stmt (bsi)) == OMP_ATOMIC_STORE);
+  bsi_remove (&bsi, true);
+  bsi = bsi_last (store_bb);
+  bsi_remove (&bsi, true);
+
+  if (gimple_in_ssa_p (cfun))
+    update_ssa (TODO_update_ssa_no_phi);
+
+  return true;
+}
+
+/* A subroutine of expand_omp_atomic.  Implement the atomic operation as:
+
+      oldval = *addr;
+      repeat:
+        newval = rhs;	 // with oldval replacing *addr in rhs
+	oldval = __sync_val_compare_and_swap (addr, oldval, newval);
+	if (oldval != newval)
+	  goto repeat;
+
+   INDEX is log2 of the size of the data type, and thus usable to find the
+   index of the builtin decl.  */
+
+static bool
+expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
+			    tree addr, tree loaded_val, tree stored_val,
+			    int index)
+{
+  tree loadedi, storedi, initial, new_stored, new_storedi, old_vali;
+  tree type, itype, cmpxchg, iaddr;
+  block_stmt_iterator bsi;
+  basic_block loop_header = single_succ (load_bb);
+  tree phi, x;
+  edge e;
+
+  cmpxchg = built_in_decls[BUILT_IN_VAL_COMPARE_AND_SWAP_N + index + 1];
+  type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (addr)));
+  itype = TREE_TYPE (TREE_TYPE (cmpxchg));
+
+  if (sync_compare_and_swap[TYPE_MODE (itype)] == CODE_FOR_nothing)
+    return false;
+
+  /* Load the initial value, replacing the OMP_ATOMIC_LOAD.  */
+  bsi = bsi_last (load_bb);
+  gcc_assert (TREE_CODE (bsi_stmt (bsi)) == OMP_ATOMIC_LOAD);
+  initial = force_gimple_operand_bsi (&bsi, build_fold_indirect_ref (addr),
+				      true, NULL_TREE, true, BSI_SAME_STMT);
+  /* Move the value to the LOADED_VAL temporary.  */
+  if (gimple_in_ssa_p (cfun))
+    {
+      gcc_assert (phi_nodes (loop_header) == NULL_TREE);
+      phi = create_phi_node (loaded_val, loop_header);
+      SSA_NAME_DEF_STMT (loaded_val) = phi;
+      SET_USE (PHI_ARG_DEF_PTR_FROM_EDGE (phi, single_succ_edge (load_bb)),
+	       initial);
+    }
+  else
+    bsi_insert_before (&bsi,
+		       build_gimple_modify_stmt (loaded_val, initial),
+		       BSI_SAME_STMT);
+  bsi_remove (&bsi, true);
+
+  bsi = bsi_last (store_bb);
+  gcc_assert (TREE_CODE (bsi_stmt (bsi)) == OMP_ATOMIC_STORE);
+
+  /* For floating-point values, we'll need to view-convert them to integers
+     so that we can perform the atomic compare and swap.  Simplify the 
+     following code by always setting up the "i"ntegral variables.  */
+  if (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type))
+    {
+      loadedi = loaded_val;
+      storedi = stored_val;
+      iaddr = addr;
+    }
+  else
+    {
+      loadedi = force_gimple_operand_bsi (&bsi,
+					  build1 (VIEW_CONVERT_EXPR, itype,
+						  loaded_val), true,
+					  NULL_TREE, true, BSI_SAME_STMT);
+      storedi =
+	force_gimple_operand_bsi (&bsi,
+				  build1 (VIEW_CONVERT_EXPR, itype,
+					  stored_val), true, NULL_TREE, true,
+				  BSI_SAME_STMT);
+      iaddr = fold_convert (build_pointer_type (itype), addr);
+    }
+
+  /* Build the compare&swap statement.  */
+  new_storedi = build_call_expr (cmpxchg, 3, iaddr, loadedi, storedi);
+  new_storedi = force_gimple_operand_bsi (&bsi,
+					  fold_convert (itype, new_storedi),
+					  true, NULL_TREE,
+					  true, BSI_SAME_STMT);
+  if (storedi == stored_val)
+    new_stored = new_storedi;
+  else
+    new_stored = force_gimple_operand_bsi (&bsi,
+					   build1 (VIEW_CONVERT_EXPR, type,
+						   new_storedi), true,
+					   NULL_TREE, true, BSI_SAME_STMT);
+
+  if (gimple_in_ssa_p (cfun))
+    old_vali = loadedi;
+  else
+    {
+      old_vali = create_tmp_var (itype, NULL);
+      x = build_gimple_modify_stmt (old_vali, loadedi);
+      bsi_insert_before (&bsi, x, BSI_SAME_STMT);
+
+      x = build_gimple_modify_stmt (loaded_val, new_stored);
+      bsi_insert_before (&bsi, x, BSI_SAME_STMT);
+    }
+
+  /* Note that we always perform the comparison as an integer, even for
+     floating point.  This allows the atomic operation to properly 
+     succeed even with NaNs and -0.0.  */
+  x = build3 (COND_EXPR, void_type_node,
+	      build2 (NE_EXPR, boolean_type_node,
+		      new_storedi, old_vali), NULL_TREE, NULL_TREE);
+  bsi_insert_before (&bsi, x, BSI_SAME_STMT);
+
+  /* Update cfg.  */
+  e = single_succ_edge (store_bb);
+  e->flags &= ~EDGE_FALLTHRU;
+  e->flags |= EDGE_FALSE_VALUE;
+
+  e = make_edge (store_bb, loop_header, EDGE_TRUE_VALUE);
+
+  /* Copy the new value to loaded_val (we already did that before the condition
+     if we are not in SSA).  */
+  if (gimple_in_ssa_p (cfun))
+    {
+      phi = phi_nodes (loop_header);
+      SET_USE (PHI_ARG_DEF_PTR_FROM_EDGE (phi, e), new_stored);
+    }
+
+  /* Remove OMP_ATOMIC_STORE.  */
+  bsi_remove (&bsi, true);
+
+  if (gimple_in_ssa_p (cfun))
+    update_ssa (TODO_update_ssa_no_phi);
+
+  return true;
+}
+
+/* A subroutine of expand_omp_atomic.  Implement the atomic operation as:
+
+		 		  GOMP_atomic_start ();
+		 		  *addr = rhs;
+		 		  GOMP_atomic_end ();
+
+   The result is not globally atomic, but works so long as all parallel
+   references are within #pragma omp atomic directives.  According to
+   responses received from omp@openmp.org, appears to be within spec.
+   Which makes sense, since that's how several other compilers handle
+   this situation as well.  
+   LOADED_VAL and ADDR are the operands of OMP_ATOMIC_LOAD we're expanding. 
+   STORED_VAL is the operand of the matching OMP_ATOMIC_STORE.
+
+   We replace 
+   OMP_ATOMIC_LOAD (loaded_val, addr) with  
+   loaded_val = *addr;
+
+   and replace
+   OMP_ATOMIC_ATORE (stored_val)  with
+   *addr = stored_val;  
+*/
+
+static bool
+expand_omp_atomic_mutex (basic_block load_bb, basic_block store_bb,
+			 tree addr, tree loaded_val, tree stored_val)
+{
+  block_stmt_iterator bsi;
+  tree t;
+
+  bsi = bsi_last (load_bb);
+  gcc_assert (TREE_CODE (bsi_stmt (bsi)) == OMP_ATOMIC_LOAD);
+
+  t = built_in_decls[BUILT_IN_GOMP_ATOMIC_START];
+  t = build_function_call_expr (t, 0);
+  force_gimple_operand_bsi (&bsi, t, true, NULL_TREE, true, BSI_SAME_STMT);
+
+  t = build_gimple_modify_stmt (loaded_val, build_fold_indirect_ref (addr));
+  if (gimple_in_ssa_p (cfun))
+    SSA_NAME_DEF_STMT (loaded_val) = t;
+  bsi_insert_before (&bsi, t, BSI_SAME_STMT);
+  bsi_remove (&bsi, true);
+
+  bsi = bsi_last (store_bb);
+  gcc_assert (TREE_CODE (bsi_stmt (bsi)) == OMP_ATOMIC_STORE);
+
+  t = build_gimple_modify_stmt (build_fold_indirect_ref (unshare_expr (addr)),
+				stored_val);
+  bsi_insert_before (&bsi, t, BSI_SAME_STMT);
+
+  t = built_in_decls[BUILT_IN_GOMP_ATOMIC_END];
+  t = build_function_call_expr (t, 0);
+  force_gimple_operand_bsi (&bsi, t, true, NULL_TREE, true, BSI_SAME_STMT);
+  bsi_remove (&bsi, true);
+
+  if (gimple_in_ssa_p (cfun))
+    update_ssa (TODO_update_ssa_no_phi);
+  return true;
+}
+
+/* Expand an OMP_ATOMIC statement.  We try to expand 
+   using expand_omp_atomic_fetch_op. If it failed, we try to 
+   call expand_omp_atomic_pipeline, and if it fails too, the
+   ultimate fallback is wrapping the operation in a mutex
+   (expand_omp_atomic_mutex).  REGION is the atomic region built 
+   by build_omp_regions_1().  */ 
+
+static void
+expand_omp_atomic (struct omp_region *region)
+{
+  basic_block load_bb = region->entry, store_bb = region->exit;
+  tree load = last_stmt (load_bb), store = last_stmt (store_bb);
+  tree loaded_val = TREE_OPERAND (load, 0);
+  tree addr = TREE_OPERAND (load, 1);
+  tree stored_val = TREE_OPERAND (store, 0);
+  tree type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (addr)));
+  HOST_WIDE_INT index;
+
+  /* Make sure the type is one of the supported sizes.  */
+  index = tree_low_cst (TYPE_SIZE_UNIT (type), 1);
+  index = exact_log2 (index);
+  if (index >= 0 && index <= 4)
+    {
+      unsigned int align = TYPE_ALIGN_UNIT (type);
+
+      /* __sync builtins require strict data alignment.  */
+      if (exact_log2 (align) >= index)
+	{
+	  /* When possible, use specialized atomic update functions.  */
+	  if ((INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type))
+	      && store_bb == single_succ (load_bb))
+	    {
+	      if (expand_omp_atomic_fetch_op (load_bb, addr,
+					      loaded_val, stored_val, index))
+		return;
+	    }
+
+	  /* If we don't have specialized __sync builtins, try and implement
+	     as a compare and swap loop.  */
+	  if (expand_omp_atomic_pipeline (load_bb, store_bb, addr,
+					  loaded_val, stored_val, index))
+	    return;
+	}
+    }
+
+  /* The ultimate fallback is wrapping the operation in a mutex.  */
+  expand_omp_atomic_mutex (load_bb, store_bb, addr, loaded_val, stored_val);
+}
+
 
 /* Expand the parallel region tree rooted at REGION.  Expansion
    proceeds in depth-first order.  Innermost regions are expanded
@@ -3584,6 +3934,11 @@ expand_omp (struct omp_region *region)
 	  expand_omp_synch (region);
 	  break;
 
+	case OMP_ATOMIC_LOAD:
+	  expand_omp_atomic (region);
+	  break;
+
+
 	default:
 	  gcc_unreachable ();
 	}
@@ -3614,7 +3969,6 @@ build_omp_regions_1 (basic_block bb, struct omp_region *parent,
 
       stmt = bsi_stmt (si);
       code = TREE_CODE (stmt);
-
       if (code == OMP_RETURN)
 	{
 	  /* STMT is the return point out of region PARENT.  Mark it
@@ -3630,6 +3984,17 @@ build_omp_regions_1 (basic_block bb, struct omp_region *parent,
 	  if (region->type == OMP_PARALLEL)
 	    determine_parallel_type (region);
 	}
+      else if (code == OMP_ATOMIC_STORE)
+	{
+	  /* OMP_ATOMIC_STORE is analoguous to OMP_RETURN, but matches with
+	     OMP_ATOMIC_LOAD.  */
+	  gcc_assert (parent);
+	  gcc_assert (parent->type == OMP_ATOMIC_LOAD);
+	  region = parent;
+	  region->exit = bb;
+	  parent = parent->outer;
+	}
+
       else if (code == OMP_CONTINUE)
 	{
 	  gcc_assert (parent);
@@ -3638,7 +4003,7 @@ build_omp_regions_1 (basic_block bb, struct omp_region *parent,
       else if (code == OMP_SECTIONS_SWITCH)
 	{
 	  /* OMP_SECTIONS_SWITCH is part of OMP_SECTIONS, and we do nothing for
-	     it.  */
+	     it.  */ ;
 	}
       else
 	{

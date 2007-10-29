@@ -1624,38 +1624,20 @@ add_stmt_operand (tree *var_p, stmt_ann_t s_ann, int flags)
     add_virtual_operand (var, s_ann, flags, NULL_TREE, 0, -1, false);
 }
 
-
-/* A subroutine of get_expr_operands to handle INDIRECT_REF,
-   ALIGN_INDIRECT_REF and MISALIGNED_INDIRECT_REF.  
-
-   STMT is the statement being processed, EXPR is the INDIRECT_REF
-      that got us here.
-   
-   FLAGS is as in get_expr_operands.
-
-   FULL_REF contains the full pointer dereference expression, if we
-      have it, or NULL otherwise.
-
-   OFFSET and SIZE are the location of the access inside the
-      dereferenced pointer, if known.
-
-   RECURSE_ON_BASE should be set to true if we want to continue
-      calling get_expr_operands on the base pointer, and false if
-      something else will do it for us.  */
+/* Subroutine of get_indirect_ref_operands.  ADDR is the address
+   that is dereferenced, the meaning of the rest of the arguments
+   is the same as in get_indirect_ref_operands.  */
 
 static void
-get_indirect_ref_operands (tree stmt, tree expr, int flags,
-			   tree full_ref,
-			   HOST_WIDE_INT offset, HOST_WIDE_INT size,
-			   bool recurse_on_base)
-{
-  tree *pptr = &TREE_OPERAND (expr, 0);
-  tree ptr = *pptr;
+get_addr_dereference_operands (tree stmt, tree *addr, int flags,
+                                                      tree full_ref,
+                                                       HOST_WIDE_INT offset, HOST_WIDE_INT size,
+                                                       bool recurse_on_base)
+  {
+ tree ptr = *addr;
   stmt_ann_t s_ann = stmt_ann (stmt);
 
   s_ann->references_memory = true;
-  if (TREE_THIS_VOLATILE (expr))
-    s_ann->has_volatile_ops = true; 
 
   if (SSA_VAR_P (ptr))
     {
@@ -1725,9 +1707,42 @@ get_indirect_ref_operands (tree stmt, tree expr, int flags,
 
   /* If requested, add a USE operand for the base pointer.  */
   if (recurse_on_base)
-    get_expr_operands (stmt, pptr, opf_use);
+    get_expr_operands (stmt, addr, opf_use);
 }
 
+/* A subroutine of get_expr_operands to handle INDIRECT_REF,
+   ALIGN_INDIRECT_REF and MISALIGNED_INDIRECT_REF.  
+
+   STMT is the statement being processed, EXPR is the INDIRECT_REF
+      that got us here.
+   
+   FLAGS is as in get_expr_operands.
+
+   FULL_REF contains the full pointer dereference expression, if we
+      have it, or NULL otherwise.
+
+   OFFSET and SIZE are the location of the access inside the
+      dereferenced pointer, if known.
+
+   RECURSE_ON_BASE should be set to true if we want to continue
+      calling get_expr_operands on the base pointer, and false if
+      something else will do it for us.  */
+
+static void
+get_indirect_ref_operands (tree stmt, tree expr, int flags,
+		 		 		    tree full_ref,
+		 		 		    HOST_WIDE_INT offset, HOST_WIDE_INT size,
+		 		 		    bool recurse_on_base)
+{
+  tree *pptr = &TREE_OPERAND (expr, 0);
+  stmt_ann_t s_ann = stmt_ann (stmt);
+
+  if (TREE_THIS_VOLATILE (expr))
+    s_ann->has_volatile_ops = true; 
+
+  get_addr_dereference_operands (stmt, pptr, flags, full_ref,
+		 		 		 		  offset, size, recurse_on_base);
+}
 
 /* A subroutine of get_expr_operands to handle TARGET_MEM_REF.  */
 
@@ -2332,6 +2347,25 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
       {
 	get_expr_operands (stmt, &OMP_SECTIONS_CONTROL (expr), opf_def);
 	return;
+      }
+
+    case OMP_ATOMIC_LOAD:
+      {
+		 tree *addr = &TREE_OPERAND (expr, 1);
+		 get_expr_operands (stmt, &TREE_OPERAND (expr, 0), opf_def);
+
+		 if (TREE_CODE (*addr) == ADDR_EXPR)
+		   get_expr_operands (stmt, &TREE_OPERAND (*addr, 0), opf_def);
+		 else
+		   get_addr_dereference_operands (stmt, addr, opf_def,
+		 		 		 		 		  NULL_TREE, 0, -1, true);
+		 return;
+      }
+
+    case OMP_ATOMIC_STORE:
+      {
+		 get_expr_operands (stmt, &TREE_OPERAND (expr, 0), opf_use);
+		 return;
       }
 
     case BLOCK:

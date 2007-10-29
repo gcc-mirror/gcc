@@ -1,3 +1,72 @@
+2007-09-23  Razya Ladelsky
+            Zdenek Dvorak
+
+        OMP_ATOMIC Changes,
+        Reduction support for automatic parallelization.
+
+        * expr.c (expand_expr_real_1): Add cases for OMP_ATOMIC_LOAD,
+        OMP_ATOMIC_STORE.
+        * Makefile.in: Add dependencies to expr.o, tree-parloops.o, omp-low.o
+        * tree-pretty-print.c (dump_generic_node): Add OMP_ATOMIC_LOAD
+        and OMP_ATOMIC_STORE.
+        * tree.h (OMP_DIRECTIVE_P): Add OMP_ATOMIC_LOAD,
+        OMP_ATOMIC_STORE.
+        * gimple-low.c (lower_stmt): Same.
+        * gimplify.c (gimplify_expr): Same.
+        (gimplify_omp_atomic_fetch_op, gimplify_omp_atomic_pipeline,
+        gimplify_omp_atomic_mutex): Remove.
+        (gimplify_omp_atomic): Change it to simply gimplify the
+        statement instead of expanding it.
+        * omp-low.c: Add includes to optabs.h, cfgloop.h.
+        (expand_omp_atomic, expand_omp_atomic_pipeline,
+        goa_stabilize_expr, expand_omp_atomic_mutex,
+        expand_omp_atomic_fetch_op): New functions to implement
+        expansion of OMP_ATOMIC.
+        (expand_omp, build_omp_regions_1): Add support for
+        OMP_ATOMIC_LOAD/OMP_ATOMIC_STORE.
+        * tree-cfg.c (make_edges): add case for OMP_ATOMIC_LOAD,
+        OMP_ATOMIC_STORE.
+        * tree-gimple.c (is_gimple_stmt): Add OMP_ATOMIC_LOAD,
+        OMP_ATOMIC_STORE.
+        * tree-parloops.c: add include to tree-vectorizer.h.
+        (reduction_info): New structure for reduction.
+        (reduction_list): New list to represent list of reductions
+        per loop.
+        (struct data_arg): New helper structure for reduction.
+        (reduction_info_hash, reduction_info_eq, reduction_phi,
+        initialize_reductions,
+        create_call_for_reduction, create_phi_for_local_result,
+        create_call_for_reduction_1, create_loads_for_reductions,
+        create_final_loads_for_reduction): New functions.
+        (loop_parallel_p): Identify reductions, add reduction_list parameter.
+        (separate_decls_in_loop_name): Support reduction variables.
+        (separate_decls_in_loop): Add reduction_list and ld_st_data arguments,
+        call create_loads_for_reduction for each reduction.
+        (canonicalize_loop_ivs): Identify reductions, add reduction_list
+        parameter.
+        (transform_to_exit_first_loop): Add reduction support, add
+        reduction_list parameter.
+        (gen_parallel_loop): Add reduction_list parameter. Add call
+        separate_decls_in_loop with
+        the new argument. Traverse reductions and call
+        initialize_reductions, create_call_for_reduction.
+        (parallelize_loops): Create and delete the reduction list.
+        (add_field_for_name): Change use of data parameter. Add fields for
+        reductions.
+        * tree-vectorizer.h (vect_analyze_loop_form): Add declaration.
+        * tree-vect-analyze.c (vect_analyze_loop_form): export it.
+        * tree.def: Add definitions for OMP_ATOMIC_LOAD,
+        OMP_ATOMIC_STORE.
+        * tree-inline.c (estimate_num_insns_1): add cases for
+        OMP_ATOMIC_LOAD, OMP_ATOMIC_STORE.
+        * tree-cfg.c (make_edges): Add OMP_ATOMIC_LOAD,
+        OMP_ATOMIC_STORE.
+        * tree-ssa-operands.c (get_addr_dereference_operands):
+        New function. Subroutine of get_indirect_ref_operands.
+        (get_indirect_ref_operands): Call get_addr_dereference_operands.
+        (get_expr_operands): Support OMP_ATOMIC_LOAD, OMP_ATOMIC_STORE.
+
+
 2007-10-29  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.c: Include df.h.
