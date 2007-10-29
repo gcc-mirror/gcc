@@ -1,3 +1,44 @@
+2007-10-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31217
+	PR fortran/33811
+	PR fortran/33686
+
+	* trans-array.c (gfc_conv_loop_setup): Send a complete type to
+	gfc_trans_create_temp_array if the temporary is character.
+	* trans-stmt.c (gfc_trans_assign_need_temp): Do likewise for
+	allocate_temp_for_forall_nest.
+	(forall_replace): New function.
+	(forall_replace_symtree): New function.
+	(forall_restore): New function.
+	(forall_restore_symtree): New function.
+	(forall_make_variable_temp): New function.
+	(check_forall_dependencies): New function.
+	(cleanup_forall_symtrees): New function.
+	gfc_trans_forall_1): Add and initialize pre and post blocks.
+	Call check_forall_dependencies to check for all dependencies
+	and either trigger second forall block to copy temporary or
+	copy lval, outside the forall construct and replace all
+	dependent references. After assignment clean-up and coalesce
+	the blocks at the end of the function.
+	* gfortran.h : Add prototypes for gfc_traverse_expr and
+	find_forall_index.
+	expr.c (gfc_traverse_expr): New function to traverse expression
+	and visit all subexpressions, under control of a logical flag,
+	a symbol and an integer pointer. The slave function is caller
+	defined and is only called on EXPR_VARIABLE.
+	(expr_set_symbols_referenced): Called by above to set symbols
+	referenced.
+	(gfc_expr_set_symbols_referenced): Rework of this function to
+	use two new functions above.
+	* resolve.c (find_forall_index): Rework with gfc_traverse_expr,
+	using forall_index.
+	(forall_index): New function used by previous.
+	* dependency.c (gfc_check_dependency): Use gfc_dep_resolver for
+	all references, not just REF_ARRAY.
+	(gfc_dep_resolver): Correct the logic for substrings so that
+	overlapping arrays are handled correctly.
+
 2007-10-28  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/32147

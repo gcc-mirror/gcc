@@ -657,8 +657,7 @@ gfc_check_dependency (gfc_expr *expr1, gfc_expr *expr2, bool identical)
 
       /* Identical and disjoint ranges return 0,
 	 overlapping ranges return 1.  */
-      /* Return zero if we refer to the same full arrays.  */
-      if (expr1->ref->type == REF_ARRAY && expr2->ref->type == REF_ARRAY)
+      if (expr1->ref && expr2->ref)
 	return gfc_dep_resolver (expr1->ref, expr2->ref);
 
       return 1;
@@ -1197,8 +1196,9 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref)
 	  break;
 	  
 	case REF_SUBSTRING:
-	  /* Substring overlaps are handled by the string assignment code.  */
-	  return 0;
+	  /* Substring overlaps are handled by the string assignment code
+	     if there is not an underlying dependency.  */
+	  return (fin_dep == GFC_DEP_OVERLAP) ? 1 : 0;
 	
 	case REF_ARRAY:
 	  if (lref->u.ar.dimen != rref->u.ar.dimen)

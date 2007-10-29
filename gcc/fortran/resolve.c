@@ -4322,131 +4322,39 @@ gfc_resolve_iterator (gfc_iterator *iter, bool real_ok)
 }
 
 
+/* Traversal function for find_forall_index.  f == 2 signals that
+   that variable itself is not to be checked - only the references.  */
+
+static bool
+forall_index (gfc_expr *expr, gfc_symbol *sym, int *f)
+{
+  gcc_assert (expr->expr_type == EXPR_VARIABLE);
+
+  /* A scalar assignment  */
+  if (!expr->ref || *f == 1)
+    {
+      if (expr->symtree->n.sym == sym)
+	return true;
+      else
+	return false;
+    }
+
+  if (*f == 2)
+    *f = 1;
+  return false;
+}
+
+
 /* Check whether the FORALL index appears in the expression or not.
    Returns SUCCESS if SYM is found in EXPR.  */
 
-static try
-find_forall_index (gfc_expr *expr, gfc_symbol *symbol)
+try
+find_forall_index (gfc_expr *expr, gfc_symbol *sym, int f)
 {
-  gfc_array_ref ar;
-  gfc_ref *tmp;
-  gfc_actual_arglist *args;
-  int i;
-
-  if (!expr)
+  if (gfc_traverse_expr (expr, sym, forall_index, f))
+    return SUCCESS;
+  else
     return FAILURE;
-
-  switch (expr->expr_type)
-    {
-    case EXPR_VARIABLE:
-      gcc_assert (expr->symtree->n.sym);
-
-      /* A scalar assignment  */
-      if (!expr->ref)
-	{
-	  if (expr->symtree->n.sym == symbol)
-	    return SUCCESS;
-	  else
-	    return FAILURE;
-	}
-
-      /* the expr is array ref, substring or struct component.  */
-      tmp = expr->ref;
-      while (tmp != NULL)
-	{
-	  switch (tmp->type)
-	    {
-	    case  REF_ARRAY:
-	      /* Check if the symbol appears in the array subscript.  */
-	      ar = tmp->u.ar;
-	      for (i = 0; i < GFC_MAX_DIMENSIONS; i++)
-		{
-		  if (ar.start[i])
-		    if (find_forall_index (ar.start[i], symbol) == SUCCESS)
-		      return SUCCESS;
-
-		  if (ar.end[i])
-		    if (find_forall_index (ar.end[i], symbol) == SUCCESS)
-		      return SUCCESS;
-
-		  if (ar.stride[i])
-		    if (find_forall_index (ar.stride[i], symbol) == SUCCESS)
-		      return SUCCESS;
-		}  /* end for  */
-	      break;
-
-	    case REF_SUBSTRING:
-	      if (expr->symtree->n.sym == symbol)
-		return SUCCESS;
-	      tmp = expr->ref;
-	      /* Check if the symbol appears in the substring section.  */
-	      if (find_forall_index (tmp->u.ss.start, symbol) == SUCCESS)
-		return SUCCESS;
-	      if (find_forall_index (tmp->u.ss.end, symbol) == SUCCESS)
-		return SUCCESS;
-	      break;
-
-	    case REF_COMPONENT:
-	      break;
-
-	    default:
-	      gfc_error("expression reference type error at %L", &expr->where);
-	    }
-	  tmp = tmp->next;
-	}
-      break;
-
-    /* If the expression is a function call, then check if the symbol
-       appears in the actual arglist of the function.  */
-    case EXPR_FUNCTION:
-      for (args = expr->value.function.actual; args; args = args->next)
-	{
-	  if (find_forall_index(args->expr,symbol) == SUCCESS)
-	    return SUCCESS;
-	}
-      break;
-
-    /* It seems not to happen.  */
-    case EXPR_SUBSTRING:
-      if (expr->ref)
-	{
-	  tmp = expr->ref;
-	  gcc_assert (expr->ref->type == REF_SUBSTRING);
-	  if (find_forall_index (tmp->u.ss.start, symbol) == SUCCESS)
-	    return SUCCESS;
-	  if (find_forall_index (tmp->u.ss.end, symbol) == SUCCESS)
-	    return SUCCESS;
-	}
-      break;
-
-    /* It seems not to happen.  */
-    case EXPR_STRUCTURE:
-    case EXPR_ARRAY:
-      gfc_error ("Unsupported statement while finding forall index in "
-		 "expression");
-      break;
-
-    case EXPR_OP:
-      /* Find the FORALL index in the first operand.  */
-      if (expr->value.op.op1)
-	{
-	  if (find_forall_index (expr->value.op.op1, symbol) == SUCCESS)
-	    return SUCCESS;
-	}
-
-      /* Find the FORALL index in the second operand.  */
-      if (expr->value.op.op2)
-	{
-	  if (find_forall_index (expr->value.op.op2, symbol) == SUCCESS)
-	    return SUCCESS;
-	}
-      break;
-
-    default:
-      break;
-    }
-
-  return FAILURE;
 }
 
 
@@ -4502,11 +4410,11 @@ resolve_forall_iterators (gfc_forall_iterator *it)
     for (iter2 = iter; iter2; iter2 = iter2->next)
       {
 	if (find_forall_index (iter2->start,
-			       iter->var->symtree->n.sym) == SUCCESS
+			       iter->var->symtree->n.sym, 0) == SUCCESS
 	    || find_forall_index (iter2->end,
-				  iter->var->symtree->n.sym) == SUCCESS
+				  iter->var->symtree->n.sym, 0) == SUCCESS
 	    || find_forall_index (iter2->stride,
-				  iter->var->symtree->n.sym) == SUCCESS)
+				  iter->var->symtree->n.sym, 0) == SUCCESS)
 	  gfc_error ("FORALL index '%s' may not appear in triplet "
 		     "specification at %L", iter->var->symtree->name,
 		     &iter2->start->where);
@@ -5726,7 +5634,7 @@ gfc_resolve_assign_in_forall (gfc_code *code, int nvar, gfc_expr **var_expr)
 	  /* If one of the FORALL index variables doesn't appear in the
 	     assignment target, then there will be a many-to-one
 	     assignment.  */
-	  if (find_forall_index (code->expr, forall_index) == FAILURE)
+	  if (find_forall_index (code->expr, forall_index, 0) == FAILURE)
 	    gfc_error ("The FORALL with index '%s' cause more than one "
 		       "assignment to this object at %L",
 		       var_expr[n]->symtree->name, &code->expr->where);

@@ -2998,32 +2998,36 @@ gfc_get_variable_expr (gfc_symtree *var)
 }
 
 
-/* Traverse expr, marking all EXPR_VARIABLE symbols referenced.  */
+/* General expression traversal function.  */
 
-void
-gfc_expr_set_symbols_referenced (gfc_expr *expr)
+bool
+gfc_traverse_expr (gfc_expr *expr, gfc_symbol *sym,
+		   bool (*func)(gfc_expr *, gfc_symbol *, int*),
+		   int f)
 {
-  gfc_actual_arglist *arg;
-  gfc_constructor *c;
+  gfc_array_ref ar;
   gfc_ref *ref;
+  gfc_actual_arglist *args;
+  gfc_constructor *c;
   int i;
 
-  if (!expr) return;
+  if (!expr)
+    return false;
 
   switch (expr->expr_type)
     {
-    case EXPR_OP:
-      gfc_expr_set_symbols_referenced (expr->value.op.op1);
-      gfc_expr_set_symbols_referenced (expr->value.op.op2);
-      break;
+    case EXPR_VARIABLE:
+      gcc_assert (expr->symtree->n.sym);
+
+      if ((*func) (expr, sym, &f))
+	return true;
 
     case EXPR_FUNCTION:
-      for (arg = expr->value.function.actual; arg; arg = arg->next)
-	gfc_expr_set_symbols_referenced (arg->expr);
-      break;
-
-    case EXPR_VARIABLE:
-      gfc_set_sym_referenced (expr->symtree->n.sym);
+      for (args = expr->value.function.actual; args; args = args->next)
+	{
+	  if (gfc_traverse_expr (args->expr, sym, func, f))
+	    return true;
+	}
       break;
 
     case EXPR_CONSTANT:
@@ -3037,33 +3041,67 @@ gfc_expr_set_symbols_referenced (gfc_expr *expr)
 	gfc_expr_set_symbols_referenced (c->expr);
       break;
 
+    case EXPR_OP:
+      if (gfc_traverse_expr (expr->value.op.op1, sym, func, f))
+	return true;
+      if (gfc_traverse_expr (expr->value.op.op2, sym, func, f))
+	return true;
+      break;
+
     default:
       gcc_unreachable ();
       break;
     }
 
-    for (ref = expr->ref; ref; ref = ref->next)
+  ref = expr->ref;
+  while (ref != NULL)
+    {
       switch (ref->type)
 	{
-	case REF_ARRAY:
-	  for (i = 0; i < ref->u.ar.dimen; i++)
+	case  REF_ARRAY:
+	  ar = ref->u.ar;
+	  for (i = 0; i < GFC_MAX_DIMENSIONS; i++)
 	    {
-	      gfc_expr_set_symbols_referenced (ref->u.ar.start[i]);
-	      gfc_expr_set_symbols_referenced (ref->u.ar.end[i]);
-	      gfc_expr_set_symbols_referenced (ref->u.ar.stride[i]);
+	      if (gfc_traverse_expr (ar.start[i], sym, func, f))
+		return true;
+	      if (gfc_traverse_expr (ar.end[i], sym, func, f))
+		return true;
+	      if (gfc_traverse_expr (ar.stride[i], sym, func, f))
+		return true;
 	    }
 	  break;
-	   
-	case REF_COMPONENT:
-	  break;
-	   
+
 	case REF_SUBSTRING:
-	  gfc_expr_set_symbols_referenced (ref->u.ss.start);
-	  gfc_expr_set_symbols_referenced (ref->u.ss.end);
+	  if (gfc_traverse_expr (ref->u.ss.start, sym, func, f))
+	    return true;
+	  if (gfc_traverse_expr (ref->u.ss.end, sym, func, f))
+	    return true;
 	  break;
-	   
+
+	  case REF_COMPONENT:
+	    break;
+
 	default:
 	  gcc_unreachable ();
-	  break;
 	}
+      ref = ref->next;
+    }
+  return false;
+}
+
+/* Traverse expr, marking all EXPR_VARIABLE symbols referenced.  */
+
+static bool
+expr_set_symbols_referenced (gfc_expr *expr,
+			     gfc_symbol *sym ATTRIBUTE_UNUSED,
+			     int *f ATTRIBUTE_UNUSED)
+{
+  gfc_set_sym_referenced (expr->symtree->n.sym);
+  return false;
+}
+
+void
+gfc_expr_set_symbols_referenced (gfc_expr *expr)
+{
+  gfc_traverse_expr (expr, NULL, expr_set_symbols_referenced, 0);
 }
