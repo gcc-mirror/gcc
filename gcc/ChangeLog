@@ -1,3 +1,10 @@
+2007-10-29  Ian Lance Taylor  <iant@google.com>
+
+	* ifcvt.c (noce_can_store_speculate_p): New static function.
+	(noce_process_if_block): Call it.
+	(if_convert): Remove recompute_dominance parameter.  Change all
+	callers.
+
 2007-10-29  Richard Guenther  <rguenther@suse.de>
 
 	* tree-flow-inline.h (get_subvar_at): Use binary search.
