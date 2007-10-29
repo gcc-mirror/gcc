@@ -1,3 +1,9 @@
+2007-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/33723
+	* c-gimplify.c (c_gimplify_expr): Optimize INIT_EXPR or
+	MODIFY_EXPR with non-addressable COMPOUND_LITERAL_EXPR as source.
+
 2007-10-29  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR tree-optimization/33614
