@@ -1610,16 +1610,87 @@ static inline tree
 get_subvar_at (tree var, unsigned HOST_WIDE_INT offset)
 {
   subvar_t sv = get_subvars_for_var (var);
-  unsigned int i;
-  tree subvar;
+  int low, high;
 
-  /* ???  Binary search would be possible here.  */
-  for (i = 0; VEC_iterate (tree, sv, i, subvar); ++i)
-    if (SFT_OFFSET (subvar) == offset)
-      return subvar;
+  low = 0;
+  high = VEC_length (tree, sv) - 1;
+  while (low <= high)
+    {
+      int mid = (low + high) / 2;
+      tree subvar = VEC_index (tree, sv, mid);
+      if (SFT_OFFSET (subvar) == offset)
+	return subvar;
+      else if (SFT_OFFSET (subvar) < offset)
+	low = mid + 1;
+      else
+	high = mid - 1;
+    }
 
   return NULL_TREE;
 }
+
+
+/* Return the first subvariable in SV that overlaps [offset, offset + size[.
+   NULL_TREE is returned, if there is no overlapping subvariable, else *I
+   is set to the index in the SV vector of the first overlap.  */
+
+static inline tree
+get_first_overlapping_subvar (subvar_t sv, unsigned HOST_WIDE_INT offset,
+			      unsigned HOST_WIDE_INT size, unsigned int *i)
+{
+  int low = 0;
+  int high = VEC_length (tree, sv) - 1;
+  int mid;
+  tree subvar;
+
+  if (low > high)
+    return NULL_TREE;
+
+  /* Binary search for offset.  */
+  do
+    {
+      mid = (low + high) / 2;
+      subvar = VEC_index (tree, sv, mid);
+      if (SFT_OFFSET (subvar) == offset)
+	{
+	  *i = mid;
+	  return subvar;
+	}
+      else if (SFT_OFFSET (subvar) < offset)
+	low = mid + 1;
+      else
+	high = mid - 1;
+    }
+  while (low <= high);
+
+  /* As we didn't find a subvar with offset, adjust to return the
+     first overlapping one.  */
+  if (SFT_OFFSET (subvar) < offset
+      && SFT_OFFSET (subvar) + SFT_SIZE (subvar) <= offset)
+    {
+      mid += 1;
+      if ((unsigned)mid >= VEC_length (tree, sv))
+	return NULL_TREE;
+      subvar = VEC_index (tree, sv, mid);
+    }
+  else if (SFT_OFFSET (subvar) > offset
+	   && size <= SFT_OFFSET (subvar) - offset)
+    {
+      mid -= 1;
+      if (mid < 0)
+	return NULL_TREE;
+      subvar = VEC_index (tree, sv, mid);
+    }
+
+  if (overlap_subvar (offset, size, subvar, NULL))
+    {
+      *i = mid;
+      return subvar;
+    }
+
+  return NULL_TREE;
+}
+
 
 /* Return true if V is a tree that we can have subvars for.
    Normally, this is any aggregate type.  Also complex
