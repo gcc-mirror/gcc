@@ -488,6 +488,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      (std::__miter_base<_II>::__b(__first),
 	       std::__miter_base<_II>::__b(__last), __result));
     }
+
+#define _GLIBCXX_MOVE3(_Tp, _Up, _Vp) std::move(_Tp, _Up, _Vp)
+#else
+#define _GLIBCXX_MOVE3(_Tp, _Up, _Vp) std::copy(_Tp, _Up, _Vp)
 #endif
 
   template<bool _IsMove, bool, typename>
@@ -626,6 +630,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	      (std::__miter_base<_BI1>::__b(__first),
 	       std::__miter_base<_BI1>::__b(__last), __result));
     }
+
+#define _GLIBCXX_MOVE_BACKWARD3(_Tp, _Up, _Vp) std::move_backward(_Tp, _Up, _Vp)
+#else
+#define _GLIBCXX_MOVE_BACKWARD3(_Tp, _Up, _Vp) std::copy_backward(_Tp, _Up, _Vp)
 #endif
 
   template<typename _ForwardIterator, typename _Tp>

@@ -1021,6 +1021,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 _GLIBCXX_END_NAMESPACE
 
+#define _GLIBCXX_MAKE_MOVE_ITERATOR(_Iter) std::make_move_iterator(_Iter)
+#else
+#define _GLIBCXX_MAKE_MOVE_ITERATOR(_Iter) (_Iter)
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
 #endif
