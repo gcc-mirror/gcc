@@ -1,3 +1,11 @@
+2007-10-29  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	* longlong.h (add_ssaaaa): Support Intel asm syntax in i386 and
+	x86_64 versions.
+	(sub_ddmmss): Likewise.
+	(umul_ppmm): Likewise.
+	(udiv_qrnnd): Likewise.
+
 2007-10-29  Janis Johnson  <janis187@us.ibm.com>
 
 	PR testsuite/24841
