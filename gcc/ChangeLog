@@ -1,4 +1,20 @@
-2007-09-23  Razya Ladelsky
+2007-10-29  Razya Ladelsky
+
+        Automatic parallelization reduction tests.
+
+	* testsuite/gcc.dg/tree-ssa/reduc-1.c: New test.
+	* testsuite/gcc.dg/tree-ssa/reduc-1char.c: New test.
+	* testsuite/gcc.dg/tree-ssa/reduc-1short.c: New test.
+	* testsuite/gcc.dg/tree-ssa/reduc-2.c: New test.
+	* testsuite/gcc.dg/tree-ssa/reduc-2char.c: New test.
+	* testsuite/gcc.dg/tree-ssa/reduc-2short.c: New test.
+	* testsuite/gcc.dg/tree-ssa/reduc-3.c: New test.
+	* testsuite/gcc.dg/tree-ssa/reduc-6.c: New test.
+	* testsuite/gcc.dg/tree-ssa/reduc-7.c: New test.
+	* testsuite/gcc.dg/tree-ssa/reduc-8.c: New test.
+	* testsuite/gcc.dg/tree-ssa/reduc-9.c: New test.
+
+2007-10-29  Razya Ladelsky
             Zdenek Dvorak
 
         OMP_ATOMIC Changes, testsuite changes.
@@ -11,7 +27,7 @@
 	* testsuite/g++.dg/gomp/atomic-9.C: Same.
 	* testsuite/g++.dg/gomp/atomic-10.C: Same.
 
-2007-09-23  Razya Ladelsky
+2007-10-29  Razya Ladelsky
             Zdenek Dvorak
 
         OMP_ATOMIC Changes,
