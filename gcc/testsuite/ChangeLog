@@ -1,3 +1,9 @@
+2007-10-28  Paolo Carlini  <pcarlini@suse.de>
+	    Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/30659
+	* g++.dg/template/crash71.C: New.
+
 2007-10-28  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/32147
