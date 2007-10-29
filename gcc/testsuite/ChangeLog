@@ -1,3 +1,32 @@
+2007-10-29  Razya Ladelsky  <razya@il.ibm.com>
+
+	Automatic parallelization reduction tests.
+
+	* testsuite/gcc.dg/tree-ssa/reduc-1.c: New test.
+	* testsuite/gcc.dg/tree-ssa/reduc-1char.c: New test.
+	* testsuite/gcc.dg/tree-ssa/reduc-1short.c: New test.
+	* testsuite/gcc.dg/tree-ssa/reduc-2.c: New test.
+	* testsuite/gcc.dg/tree-ssa/reduc-2char.c: New test.
+	* testsuite/gcc.dg/tree-ssa/reduc-2short.c: New test.
+	* testsuite/gcc.dg/tree-ssa/reduc-3.c: New test.
+	* testsuite/gcc.dg/tree-ssa/reduc-6.c: New test.
+	* testsuite/gcc.dg/tree-ssa/reduc-7.c: New test.
+	* testsuite/gcc.dg/tree-ssa/reduc-8.c: New test.
+	* testsuite/gcc.dg/tree-ssa/reduc-9.c: New test.
+
+2007-10-29  Razya Ladelsky  <razya@il.ibm.com>
+	    Zdenek Dvorak  <ook@ucw.cz>
+
+	OMP_ATOMIC Changes, testsuite changes.
+
+	* testsuite/gcc.dg/gomp/atomic-3.c: Search for string on ompexp dump
+	instead of gimple dump.
+	* testsuite/gcc.dg/gomp/atomic-9.c: Same.
+	* testsuite/gcc.dg/gomp/atomic-10.c: Same.
+	* testsuite/g++.dg/gomp/atomic-3.C: Same.
+	* testsuite/g++.dg/gomp/atomic-9.C: Same.
+	* testsuite/g++.dg/gomp/atomic-10.C: Same.
+
 2007-10-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31217
@@ -109,7 +138,7 @@
 	* g++.dg/template/error32.C: New.
 
 2007-10-25  Martin Michlmayr <tbm@cyrius.com>
-            Ira Rosen  <irar@il.ibm.com>
+	    Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/33833
 	* gcc.dg/vect/pr33833.c: New testcase.
@@ -119,7 +148,7 @@
 	* gcc.dg/tree-ssa/20040204-1.c: Un-xfail for mips*-*-*.
 
 2007-10-25  Martin Michlmayr <tbm@cyrius.com>
-            Ira Rosen  <irar@il.ibm.com>
+	    Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/33866
 	* gcc.dg/vect/pr33866.c: New testcase.
@@ -225,7 +254,7 @@
 	and o64 if generating MIPS16 hard-float code.
 
 2007-10-21  Ira Rosen  <irar@il.ibm.com>
-            Revital Eres  <eres@il.ibm.com>
+	    Revital Eres  <eres@il.ibm.com>
 
 	* gcc.dg/vect/vect-ifcvt-5.c: Require vect_int.
 	* gcc.dg/vect/vect-16.c: Fix comment.
