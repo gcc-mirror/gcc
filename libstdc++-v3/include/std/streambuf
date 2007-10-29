@@ -1,7 +1,7 @@
 // Stream buffer classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
-// Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+// 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -763,7 +763,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       overflow(int_type /* __c */ = traits_type::eof())
       { return traits_type::eof(); }
 
-#ifdef _GLIBCXX_DEPRECATED
+#if _GLIBCXX_USE_DEPRECATED
     // Annex D.6
     public:
       /**

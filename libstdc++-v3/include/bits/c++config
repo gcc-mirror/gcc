@@ -45,7 +45,9 @@
 // The current version of the C++ library in compressed ISO date format.
 #define __GLIBCXX__ 
 
-// Macros for visibility support.
+// Macros for visibility.
+// _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY
+// _GLIBCXX_VISIBILITY
 #define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY
 
 #if _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY
@@ -53,6 +55,24 @@
 #else
 # define _GLIBCXX_VISIBILITY(V) 
 #endif
+
+// Macros for deprecated.
+// _GLIBCXX_USE_DEPRECATED
+// _GLIBCXX_DEPRECATED
+#ifndef _GLIBCXX_USE_DEPRECATED
+# define _GLIBCXX_USE_DEPRECATED 1
+#endif
+
+#if defined(__DEPRECATED) && defined(__GXX_EXPERIMENTAL_CXX0X__)
+# define _GLIBCXX_DEPRECATED __attribute__ ((__deprecated__))
+#else
+# define _GLIBCXX_DEPRECATED
+#endif
+
+// Macros for activating various namespace association modes.
+// _GLIBCXX_NAMESPACE_ASSOCIATION_DEBUG
+// _GLIBCXX_NAMESPACE_ASSOCIATION_PARALLEL
+// _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION
 
 // Guide to libstdc++ namespaces.
 /*
@@ -66,11 +86,6 @@
     namespace tr1 { }
   }
 */
-
-// Macros for activating various namespace association modes.
-// _GLIBCXX_NAMESPACE_ASSOCIATION_DEBUG
-// _GLIBCXX_NAMESPACE_ASSOCIATION_PARALLEL
-// _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION
 
 #ifdef _GLIBCXX_DEBUG
 # define _GLIBCXX_NAMESPACE_ASSOCIATION_DEBUG 1
@@ -89,8 +104,8 @@
 # define _GLIBCXX_USE_NAMESPACE_ASSOCIATION 1
 #endif
 
-// Macros for namespace scope. Either namespace std:: or __gnu_cxx::,
-// or the name of some nested namespace within it.
+// Macros for namespace scope. Either namespace std:: or the name
+// of some nested namespace within it.
 // _GLIBCXX_STD
 // _GLIBCXX_STD_D
 // _GLIBCXX_STD_P

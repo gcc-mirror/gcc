@@ -27,7 +27,7 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file stl_auto_ptr.h
+/** @file backward/auto_ptr.h
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  */
@@ -54,7 +54,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       
       explicit
       auto_ptr_ref(_Tp1* __p): _M_ptr(__p) { }
-    };
+    } _GLIBCXX_DEPRECATED;
 
 
   /**
@@ -285,7 +285,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       template<typename _Tp1>
         operator auto_ptr<_Tp1>() throw()
         { return auto_ptr<_Tp1>(this->release()); }
-    };
+    } _GLIBCXX_DEPRECATED;
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 541. shared_ptr template assignment and void
@@ -294,7 +294,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
     public:
       typedef void element_type;
-    };
+    } _GLIBCXX_DEPRECATED;
 
 _GLIBCXX_END_NAMESPACE
 

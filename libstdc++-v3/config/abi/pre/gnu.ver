@@ -48,7 +48,7 @@ GLIBCXX_3.4 {
       std::basic_ostr[a-d]*;
       std::basic_ostr[f-z]*;
       std::basic_[p-r]*;
-      std::basic_streambuf*;
+#     std::basic_streambuf
 #     std::basic_string
 #     std::basic_stringbuf
       std::basic_stringstream*;
@@ -232,6 +232,13 @@ GLIBCXX_3.4 {
     _ZNKSbIwSt11char_traitsIwESaIwEE8_M_limit*;
     _ZNKSbIwSt11char_traitsIwESaIwEE9_M_ibeginEv;
     _ZStplIwSt11char_traitsIwESaIwEESbIT_T0_T1_E*;
+
+    # std::basic_streambuf
+    _ZNSt15basic_streambufI[cw]St11char_traitsI[cw]EE[CD]*;
+    _ZNKSt15basic_streambufI[cw]St11char_traitsI[cw]EE[0-9]*;
+    _ZNSt15basic_streambufI[cw]St11char_traitsI[cw]EE[0-9][a-z][^t]*;
+    _ZNSt15basic_streambufI[cw]St11char_traitsI[cw]EE[0-9][0-9][a-z][^t]*;
+    _ZNSt15basic_streambufI[cw]St11char_traitsI[cw]EEaSERKS2_;
 
     # std::basic_stringbuf
     _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE[CD]*;
@@ -776,6 +783,8 @@ GLIBCXX_3.4.10 {
     _ZNSt9__cxx199815_List_node_base6unhookEv;
     _ZNSt9__cxx199815_List_node_base7reverseEv;
     _ZNSt9__cxx199815_List_node_base8transfer*;
+
+    _ZNSt15basic_streambufI[cw]St11char_traitsI[cw]EE6stosscEv;
 
 } GLIBCXX_3.4.9;
 
