@@ -1,4 +1,27 @@
 2007-10-29  Benjamin Kosnik  <bkoz@redhat.com>
+ 
+	* include/bits/c++config (_GLIBCXX_DEPRECATED,
+	_GLIBCXX_USE_DEPRECATED): New. Adjust comments.
+	* include/bits/stl_auto_ptr.h: Move...
+	* includse/backward/auto_ptr.h: ...here.
+	* include/bits/stl_function.h (binder1st, binder2nd, bind1st,
+	bind2nd): Move...
+	* include/backward/binders.h: ...here. Deprecate in C++0x.
+
+	* include/tr1_impl/boost_shared_ptr.h: Guard auto_ptr usage.
+	* include/std/memory: Same.
+	* include/std/streambuf: Consistent use of _GLIBCXX_USE_DEPRECATED.
+
+	* include/backward/strstream: Fix guard macros.
+	* include/backward/backward_warning.h: Adjust for all new items.
+
+	* config/abi/pre/gnu.ver: Export basic_streambuf::stossc.
+	
+	* include/Makefile.am (backward_headers): Adjust.
+	* include/Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2007-10-29  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/Makefile.am (ext_compat_headers): New.
 	* include/Makefile.in: Regenerate.

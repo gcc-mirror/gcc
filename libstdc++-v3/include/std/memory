@@ -56,7 +56,6 @@
 #include <bits/stl_construct.h>
 #include <bits/stl_uninitialized.h>
 #include <bits/stl_tempbuf.h>
-#include <bits/stl_auto_ptr.h>
 #include <bits/stl_raw_storage_iter.h>
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -73,6 +72,9 @@
 #  include <bits/stl_function.h>  // std::less
 #  include <debug/debug.h>
 #  include <type_traits>
+#  if _GLIBCXX_USE_DEPRECATED
+#    include <backward/auto_ptr.h>
+#  endif
 #  if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
 #    include <tr1_impl/boost_shared_ptr.h>
 #  else
@@ -86,6 +88,8 @@
 #    undef _GLIBCXX_BEGIN_NAMESPACE_TR1
 #    undef _GLIBCXX_INCLUDE_AS_CXX0X
 #  endif
+#else
+#  include <backward/auto_ptr.h>
 #endif
 
 #endif /* _GLIBCXX_MEMORY */

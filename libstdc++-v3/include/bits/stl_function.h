@@ -386,108 +386,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     { return binary_negate<_Predicate>(__pred); }
   /** @}  */
 
-  // 20.3.6 binders
-  /** @defgroup s20_3_6_binder Binder Classes
-   *  Binders turn functions/functors with two arguments into functors with
-   *  a single argument, storing an argument to be applied later.  For
-   *  example, a variable @c B of type @c binder1st is constructed from a
-   *  functor @c f and an argument @c x.  Later, B's @c operator() is called
-   *  with a single argument @c y.  The return value is the value of @c f(x,y).
-   *  @c B can be "called" with various arguments (y1, y2, ...) and will in
-   *  turn call @c f(x,y1), @c f(x,y2), ...
-   *
-   *  The function @c bind1st is provided to save some typing.  It takes the
-   *  function and an argument as parameters, and returns an instance of
-   *  @c binder1st.
-   *
-   *  The type @c binder2nd and its creator function @c bind2nd do the same
-   *  thing, but the stored argument is passed as the second parameter instead
-   *  of the first, e.g., @c bind2nd(std::minus<float>,1.3) will create a
-   *  functor whose @c operator() accepts a floating-point number, subtracts
-   *  1.3 from it, and returns the result.  (If @c bind1st had been used,
-   *  the functor would perform "1.3 - x" instead.
-   *
-   *  Creator-wrapper functions like @c bind1st are intended to be used in
-   *  calling algorithms.  Their return values will be temporary objects.
-   *  (The goal is to not require you to type names like
-   *  @c std::binder1st<std::plus<int>> for declaring a variable to hold the
-   *  return value from @c bind1st(std::plus<int>,5).
-   *
-   *  These become more useful when combined with the composition functions.
-   *
-   *  @{
-   */
-  /// One of the @link s20_3_6_binder binder functors@endlink.
-  template<typename _Operation>
-    class binder1st
-    : public unary_function<typename _Operation::second_argument_type,
-			    typename _Operation::result_type>
-    {
-    protected:
-      _Operation op;
-      typename _Operation::first_argument_type value;
-
-    public:
-      binder1st(const _Operation& __x,
-		const typename _Operation::first_argument_type& __y)
-      : op(__x), value(__y) { }
-
-      typename _Operation::result_type
-      operator()(const typename _Operation::second_argument_type& __x) const
-      { return op(value, __x); }
-
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 109.  Missing binders for non-const sequence elements
-      typename _Operation::result_type
-      operator()(typename _Operation::second_argument_type& __x) const
-      { return op(value, __x); }
-    };
-
-  /// One of the @link s20_3_6_binder binder functors@endlink.
-  template<typename _Operation, typename _Tp>
-    inline binder1st<_Operation>
-    bind1st(const _Operation& __fn, const _Tp& __x)
-    {
-      typedef typename _Operation::first_argument_type _Arg1_type;
-      return binder1st<_Operation>(__fn, _Arg1_type(__x));
-    }
-
-  /// One of the @link s20_3_6_binder binder functors@endlink.
-  template<typename _Operation>
-    class binder2nd
-    : public unary_function<typename _Operation::first_argument_type,
-			    typename _Operation::result_type>
-    {
-    protected:
-      _Operation op;
-      typename _Operation::second_argument_type value;
-
-    public:
-      binder2nd(const _Operation& __x,
-		const typename _Operation::second_argument_type& __y)
-      : op(__x), value(__y) { }
-
-      typename _Operation::result_type
-      operator()(const typename _Operation::first_argument_type& __x) const
-      { return op(__x, value); }
-
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 109.  Missing binders for non-const sequence elements
-      typename _Operation::result_type
-      operator()(typename _Operation::first_argument_type& __x) const
-      { return op(__x, value); }
-    };
-
-  /// One of the @link s20_3_6_binder binder functors@endlink.
-  template<typename _Operation, typename _Tp>
-    inline binder2nd<_Operation>
-    bind2nd(const _Operation& __fn, const _Tp& __x)
-    {
-      typedef typename _Operation::second_argument_type _Arg2_type;
-      return binder2nd<_Operation>(__fn, _Arg2_type(__x));
-    }
-  /** @}  */
-
   // 20.3.7 adaptors pointers functions
   /** @defgroup s20_3_7_adaptors Adaptors for pointers to functions
    *  The advantage of function objects over pointers to functions is that
@@ -801,5 +699,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /** @}  */
 
 _GLIBCXX_END_NAMESPACE
+
+#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_USE_DEPRECATED
+# include <backward/binders.h>
+#endif
 
 #endif /* _STL_FUNCTION_H */

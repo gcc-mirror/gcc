@@ -277,6 +277,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	    }
 	}
 
+#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_USE_DEPRECATED
       // Special case for auto_ptr<_Tp> to provide the strong guarantee.
       template<typename _Tp>
         explicit
@@ -284,7 +285,8 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	: _M_pi(new _Sp_counted_base_impl<_Tp*,
 		_Sp_deleter<_Tp>, _Lp >(__r.get(), _Sp_deleter<_Tp>()))
         { __r.release(); }
-  
+#endif
+
       // Throw bad_weak_ptr when __r._M_get_use_count() == 0.
       explicit
       __shared_count(const __weak_count<_Lp>& __r);
@@ -578,6 +580,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       /**
        * @post use_count() == 1 and __r.get() == 0
        */
+#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_USE_DEPRECATED
       template<typename _Tp1>
         explicit
         __shared_ptr(std::auto_ptr<_Tp1>& __r)
@@ -589,6 +592,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	  _M_refcount = __shared_count<_Lp>(__r);
 	  __enable_shared_from_this_helper(_M_refcount, __tmp, __tmp);
 	}
+#endif
 
       template<typename _Tp1>
         __shared_ptr(const __shared_ptr<_Tp1, _Lp>& __r, __static_cast_tag)
@@ -620,6 +624,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	  return *this;
 	}
 
+#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_USE_DEPRECATED
       template<typename _Tp1>
         __shared_ptr&
         operator=(std::auto_ptr<_Tp1>& __r)
@@ -627,6 +632,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	  __shared_ptr(__r).swap(*this);
 	  return *this;
 	}
+#endif
 
       void
       reset() // never throws
@@ -993,10 +999,12 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
         shared_ptr(const weak_ptr<_Tp1>& __r)
 	: __shared_ptr<_Tp>(__r) { }
 
+#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_USE_DEPRECATED
       template<typename _Tp1>
         explicit
         shared_ptr(std::auto_ptr<_Tp1>& __r)
 	: __shared_ptr<_Tp>(__r) { }
+#endif
 
       template<typename _Tp1>
         shared_ptr(const shared_ptr<_Tp1>& __r, __static_cast_tag)
@@ -1018,6 +1026,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	  return *this;
 	}
 
+#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_USE_DEPRECATED
       template<typename _Tp1>
         shared_ptr&
         operator=(std::auto_ptr<_Tp1>& __r)
@@ -1025,6 +1034,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	  this->__shared_ptr<_Tp>::operator=(__r);
 	  return *this;
 	}
+#endif
     };
 
   template<typename _Tp, typename _Tp1>
