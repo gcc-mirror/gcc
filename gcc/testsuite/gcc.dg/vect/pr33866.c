@@ -1,5 +1,6 @@
 /* Testcase by Martin Michlmayr <tbm@cyrius.com> */
 /* { dg-do compile } */
+/* { dg-require-effective-target vect_long } */
 
 typedef struct
 {
