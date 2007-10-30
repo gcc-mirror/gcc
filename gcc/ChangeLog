@@ -1,5 +1,9 @@
 2007-10-30  Janis Johnson  <janis187@us.ibm.com>
 
+	* tree-ssa.c (execute_update_addresses_taken): Initialize update_vops.
+
+2007-10-30  Janis Johnson  <janis187@us.ibm.com>
+
 	* doc/invoke.texi (Option Summary): Add -fdce and -fdse to list of
 	optimization options.
 	(Optimize Options): Add -fdce and -fdse to the list of optimizations
