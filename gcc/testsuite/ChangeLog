@@ -1,5 +1,9 @@
 2007-10-30  Revital Eres  <eres@il.ibm.com>
 
+	* testsuite/gcc.dg/vect/pr33866.c: Require vect_long.
+
+2007-10-30  Revital Eres  <eres@il.ibm.com>
+
 	* testsuite/gcc.dg/vect/vect-shift-1.c: Require vect_int.
 	* testsuite/gcc.dg/vect/vect-ifcvt-4.c: Likewise.
 
