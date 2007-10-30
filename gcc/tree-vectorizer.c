@@ -1606,12 +1606,9 @@ vect_can_force_dr_alignment_p (const_tree decl, unsigned int alignment)
   if (TREE_STATIC (decl))
     return (alignment <= MAX_OFILE_ALIGNMENT);
   else
-    /* This is not 100% correct.  The absolute correct stack alignment
-       is STACK_BOUNDARY.  We're supposed to hope, but not assume, that
-       PREFERRED_STACK_BOUNDARY is honored by all translation units.
-       However, until someone implements forced stack alignment, SSE
-       isn't really usable without this.  */  
-    return (alignment <= PREFERRED_STACK_BOUNDARY); 
+    /* This used to be PREFERRED_STACK_BOUNDARY, however, that is not 100%
+       correct until someone implements forced stack alignment.  */
+    return (alignment <= STACK_BOUNDARY); 
 }
 
 

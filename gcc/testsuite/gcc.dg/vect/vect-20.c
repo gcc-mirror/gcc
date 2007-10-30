@@ -5,10 +5,6 @@
 
 #define N 64
 
-__attribute__ ((noinline)) int
-main1 ()
-{
-  int i;
   int ia[N];
   int ib[N]= 
     {1,1,0,0,1,0,1,0,
@@ -42,6 +38,10 @@ main1 ()
      1,1,0,0,1,0,1,0,
      1,1,0,0,1,0,1,0};
 
+__attribute__ ((noinline)) int
+main1 ()
+{
+  int i;
 
   /* Check ints.  */
 

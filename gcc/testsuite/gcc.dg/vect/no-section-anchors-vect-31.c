@@ -18,11 +18,11 @@ struct s{
   struct t e;   /* unaligned (offset 2N+4N+4 B) */
 };
  
+struct s tmp;
 __attribute__ ((noinline))
 int main1 ()
 {  
   int i;
-  struct s tmp;
 
   /* unaligned */
   for (i = 0; i < N/2; i++)
@@ -87,4 +87,6 @@ int main (void)
 } 
 
 /* { dg-final { scan-tree-dump-times "vectorized 4 loops" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

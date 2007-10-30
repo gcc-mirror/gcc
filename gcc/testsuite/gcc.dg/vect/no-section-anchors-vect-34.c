@@ -3,40 +3,30 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 128
-
-short sa[N];
-short sb[N];
+#define N 16
+ 
+struct {
+  char ca[N];
+} s;
+char cb[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
 
 __attribute__ ((noinline))
 int main1 ()
-{
+{  
   int i;
-  
+
   for (i = 0; i < N; i++)
     {
-      sb[i] = 5;
+      s.ca[i] = cb[i];
     }
 
   /* check results:  */
   for (i = 0; i < N; i++)
     {
-      if (sb[i] != 5)
+      if (s.ca[i] != cb[i])
         abort ();
-    }
-  
-  for (i = 0; i < N; i++)
-    {
-      sa[i] = sb[i] + 100;
     }
 
-  /* check results:  */
-  for (i = 0; i < N; i++)
-    {
-      if (sa[i] != 105)
-        abort ();
-    }
-  
   return 0;
 }
 
@@ -45,9 +35,8 @@ int main (void)
   check_vect ();
   
   return main1 ();
-}
+} 
 
-/* Fails for 32-bit targets that don't vectorize PLUS.  */
-/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

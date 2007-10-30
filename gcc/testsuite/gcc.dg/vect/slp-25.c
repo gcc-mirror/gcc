@@ -7,11 +7,12 @@
 
 /* Unaligned stores.  */
 
+int ia[N+1];
+short sa[N+1];
+
 int main1 (int n)
 {
   int i;
-  int ia[N+1];
-  short sa[N+1];
 
   for (i = 1; i <= N/2; i++)
     {

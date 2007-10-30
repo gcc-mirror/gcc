@@ -17,11 +17,12 @@ struct test1{
   struct s e; /* array e.n is aligned */
 };
 
+struct test1 tmp1;
+
 __attribute__ ((noinline))
 int main1 ()
 {  
   int i,j;
-  struct test1 tmp1;
 
   /* 1. unaligned */
   for (i = 0; i < N; i++)
@@ -86,4 +87,6 @@ int main (void)
 } 
 
 /* { dg-final { scan-tree-dump-times "vectorized 4 loops" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

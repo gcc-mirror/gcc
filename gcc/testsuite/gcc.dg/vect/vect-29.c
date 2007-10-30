@@ -8,12 +8,13 @@
 
 /* unaligned load.  */
 
+int ia[N];
+int ib[N+OFF];
+
 __attribute__ ((noinline))
 int main1 (int off)
 {
   int i;
-  int ia[N];
-  int ib[N+OFF];
 
   for (i = 0; i < N+OFF; i++)
     {

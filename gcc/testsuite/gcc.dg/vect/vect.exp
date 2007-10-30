@@ -109,7 +109,7 @@ lappend DEFAULT_VECTCFLAGS "-O2"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/nodump-*.\[cS\]]]  \
 	"" $DEFAULT_VECTCFLAGS
 
-lappend DEFAULT_VECTCFLAGS "-fdump-tree-vect-details"
+lappend DEFAULT_VECTCFLAGS "-fdump-tree-vect-details" 
 
 # Main loop.
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/pr*.\[cS\]]]  \

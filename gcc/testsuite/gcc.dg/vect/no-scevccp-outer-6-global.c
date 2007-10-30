@@ -5,11 +5,12 @@
 
 #define N 40
 
+int a[N];
+
 __attribute__ ((noinline)) int
 foo (int * __restrict__ b, int k){
   int i,j;
   int sum,x;
-  int a[N];
 
   for (i = 0; i < N; i++) {
     sum = b[i];
@@ -51,6 +52,7 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED." 1 "vect" { xfail { unaligned_stack || vect_no_align } } } } */
+/* "Too many BBs in loop"  */
+/* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED." 1 "vect" { xfail *-*-* } } } */
 /* { dg-final { scan-tree-dump-times "vect_recog_widen_mult_pattern: detected" 1 "vect" { xfail *-*-* } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
