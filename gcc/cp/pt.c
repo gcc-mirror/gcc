@@ -2426,9 +2426,9 @@ struct find_parameter_pack_data
   struct pointer_set_t *visited;
 };
 
-/* Identifiers all of the argument packs that occur in a template
+/* Identifies all of the argument packs that occur in a template
    argument and appends them to the TREE_LIST inside DATA, which is a
-   find_parameter_pack_Data structure. This is a subroutine of
+   find_parameter_pack_data structure. This is a subroutine of
    make_pack_expansion and uses_parameter_packs.  */
 static tree
 find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
@@ -4668,9 +4668,9 @@ convert_template_argument (tree parm,
 			   int i,
 			   tree in_decl)
 {
+  tree orig_arg;
   tree val;
   int is_type, requires_type, is_tmpl_type, requires_tmpl_type;
-  tree check_arg = arg;
 
   if (TREE_CODE (arg) == TREE_LIST
       && TREE_CODE (TREE_VALUE (arg)) == OFFSET_REF)
@@ -4680,9 +4680,11 @@ convert_template_argument (tree parm,
 	 invalid, but static members are OK.  In any
 	 case, grab the underlying fields/functions
 	 and issue an error later if required.  */
-      arg = TREE_VALUE (arg);
+      orig_arg = TREE_VALUE (arg);
       TREE_TYPE (arg) = unknown_type_node;
     }
+
+  orig_arg = arg;
 
   requires_tmpl_type = TREE_CODE (parm) == TEMPLATE_DECL;
   requires_type = (TREE_CODE (parm) == TYPE_DECL
@@ -4690,14 +4692,14 @@ convert_template_argument (tree parm,
 
   /* When determining whether an argument pack expansion is a template,
      look at the pattern.  */
-  if (TREE_CODE (check_arg) == TYPE_PACK_EXPANSION)
-    check_arg = PACK_EXPANSION_PATTERN (check_arg);
+  if (TREE_CODE (arg) == TYPE_PACK_EXPANSION)
+    arg = PACK_EXPANSION_PATTERN (arg);
 
   is_tmpl_type = 
-    ((TREE_CODE (check_arg) == TEMPLATE_DECL
-      && TREE_CODE (DECL_TEMPLATE_RESULT (check_arg)) == TYPE_DECL)
-     || TREE_CODE (check_arg) == TEMPLATE_TEMPLATE_PARM
-     || TREE_CODE (check_arg) == UNBOUND_CLASS_TEMPLATE);
+    ((TREE_CODE (arg) == TEMPLATE_DECL
+      && TREE_CODE (DECL_TEMPLATE_RESULT (arg)) == TYPE_DECL)
+     || TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM
+     || TREE_CODE (arg) == UNBOUND_CLASS_TEMPLATE);
 
   if (is_tmpl_type
       && (TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM
@@ -4710,12 +4712,13 @@ convert_template_argument (tree parm,
       && TREE_CODE (TREE_OPERAND (arg, 0)) == TEMPLATE_TYPE_PARM)
     {
       pedwarn ("to refer to a type member of a template parameter, "
-	       "use %<typename %E%>", arg);
+	       "use %<typename %E%>", orig_arg);
 
-      arg = make_typename_type (TREE_OPERAND (arg, 0),
-				TREE_OPERAND (arg, 1),
-				typename_type,
-				complain & tf_error);
+      orig_arg = make_typename_type (TREE_OPERAND (arg, 0),
+				     TREE_OPERAND (arg, 1),
+				     typename_type,
+				     complain & tf_error);
+      arg = orig_arg;
       is_type = 1;
     }
   if (is_type != requires_type)
@@ -4730,11 +4733,11 @@ convert_template_argument (tree parm,
 	      if (is_type)
 		error ("  expected a constant of type %qT, got %qT",
 		       TREE_TYPE (parm),
-		       (is_tmpl_type ? DECL_NAME (arg) : arg));
+		       (is_tmpl_type ? DECL_NAME (arg) : orig_arg));
 	      else if (requires_tmpl_type)
-		error ("  expected a class template, got %qE", arg);
+		error ("  expected a class template, got %qE", orig_arg);
 	      else
-		error ("  expected a type, got %qE", arg);
+		error ("  expected a type, got %qE", orig_arg);
 	    }
 	}
       return error_mark_node;
@@ -4749,7 +4752,7 @@ convert_template_argument (tree parm,
 	  if (is_tmpl_type)
 	    error ("  expected a type, got %qT", DECL_NAME (arg));
 	  else
-	    error ("  expected a class template, got %qT", arg);
+	    error ("  expected a class template, got %qT", orig_arg);
 	}
       return error_mark_node;
     }
@@ -4767,19 +4770,13 @@ convert_template_argument (tree parm,
 	      tree parmparm = DECL_INNERMOST_TEMPLATE_PARMS (parm);
 	      tree argparm;
 
-              check_arg = arg;
-              /* When determining whether a pack expansion is a template,
-                 look at the pattern.  */
-              if (TREE_CODE (check_arg) == TYPE_PACK_EXPANSION)
-                check_arg = PACK_EXPANSION_PATTERN (check_arg);
-
-              argparm = DECL_INNERMOST_TEMPLATE_PARMS (check_arg);
+              argparm = DECL_INNERMOST_TEMPLATE_PARMS (arg);
 
 	      if (coerce_template_template_parms (parmparm, argparm,
 						  complain, in_decl,
 						  args))
 		{
-		  val = arg;
+		  val = orig_arg;
 
 		  /* TEMPLATE_TEMPLATE_PARM node is preferred over
 		     TEMPLATE_DECL.  */
@@ -4788,9 +4785,9 @@ convert_template_argument (tree parm,
                       if (DECL_TEMPLATE_TEMPLATE_PARM_P (val))
                         val = TREE_TYPE (val);
                       else if (TREE_CODE (val) == TYPE_PACK_EXPANSION
-                               && DECL_TEMPLATE_TEMPLATE_PARM_P (check_arg))
+                               && DECL_TEMPLATE_TEMPLATE_PARM_P (arg))
                         {
-                          val = TREE_TYPE (check_arg);
+                          val = TREE_TYPE (arg);
                           val = make_pack_expansion (val);
                         }
                     }
@@ -4803,7 +4800,7 @@ convert_template_argument (tree parm,
 			     "template parameter list for %qD",
 			     i + 1, in_decl);
 		      error ("  expected a template of type %qD, got %qD",
-			     parm, arg);
+			     parm, orig_arg);
 		    }
 
 		  val = error_mark_node;
@@ -4811,7 +4808,7 @@ convert_template_argument (tree parm,
 	    }
 	}
       else
-	val = arg;
+	val = orig_arg;
       /* We only form one instance of each template specialization.
 	 Therefore, if we use a non-canonical variant (i.e., a
 	 typedef), any future messages referring to the type will use
@@ -4827,7 +4824,7 @@ convert_template_argument (tree parm,
       if (invalid_nontype_parm_type_p (t, complain))
 	return error_mark_node;
 
-      if (!uses_template_parms (arg) && !uses_template_parms (t))
+      if (!uses_template_parms (orig_arg) && !uses_template_parms (t))
 	/* We used to call digest_init here.  However, digest_init
 	   will report errors, which we don't want when complain
 	   is zero.  More importantly, digest_init will try too
@@ -4838,14 +4835,14 @@ convert_template_argument (tree parm,
 	   conversions can occur is part of determining which
 	   function template to call, or whether a given explicit
 	   argument specification is valid.  */
-	val = convert_nontype_argument (t, arg);
+	val = convert_nontype_argument (t, orig_arg);
       else
-	val = arg;
+	val = orig_arg;
 
       if (val == NULL_TREE)
 	val = error_mark_node;
       else if (val == error_mark_node && (complain & tf_error))
-	error ("could not convert template argument %qE to %qT",  arg, t);
+	error ("could not convert template argument %qE to %qT",  orig_arg, t);
     }
 
   return val;
@@ -4959,7 +4956,8 @@ coerce_template_parameter_pack (tree parms,
   else
     {
       argument_pack = make_node (NONTYPE_ARGUMENT_PACK);
-      TREE_TYPE (argument_pack) = TREE_TYPE (TREE_VALUE (parm));
+      TREE_TYPE (argument_pack) 
+        = tsubst (TREE_TYPE (TREE_VALUE (parm)), args, complain, in_decl);
       TREE_CONSTANT (argument_pack) = 1;
     }
 
@@ -7108,6 +7106,22 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	  return result;
 	}
 
+      if (arg_pack
+          && TREE_VEC_LENGTH (ARGUMENT_PACK_ARGS (arg_pack)) == 1
+          && PACK_EXPANSION_P (TREE_VEC_ELT (ARGUMENT_PACK_ARGS (arg_pack), 0)))
+        {
+          tree expansion = TREE_VEC_ELT (ARGUMENT_PACK_ARGS (arg_pack), 0);
+          tree pattern = PACK_EXPANSION_PATTERN (expansion);
+          if ((TYPE_P (pattern) && same_type_p (pattern, parm_pack))
+              || (!TYPE_P (pattern) && cp_tree_equal (parm_pack, pattern)))
+            /* The argument pack that the parameter maps to is just an
+               expansion of the parameter itself, such as one would
+               find in the implicit typedef of a class inside the
+               class itself.  Consider this parameter "unsubstituted",
+               so that we will maintain the outer pack expansion.  */
+            arg_pack = NULL_TREE;
+        }
+          
       if (arg_pack)
         {
           int my_len = 
