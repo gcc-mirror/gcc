@@ -16,7 +16,7 @@ main(int argc, char *argv[])
 
 	for (i = 1; i <= 12; i++) {
 		if (i <= 4)
-			foo(numbers[i]);
+			foo(numbers[i-1]);
 		else if (i >= 7 && i <= 9)
 			bar();
 	}
