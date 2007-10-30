@@ -1,3 +1,10 @@
+2007-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33709
+	* fold-const.c (fold_binary): If one argument is COMPOUND_EXPR,
+	convert second operand of COMPOUND_EXPR to the original type of
+	that argument.
+
 2007-10-30  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-operands.c (add_vars_for_offset): Fix exit test
