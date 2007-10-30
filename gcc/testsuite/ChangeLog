@@ -1,3 +1,10 @@
+2007-10-30  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/31993
+	PR c++/32252
+	* g++.dg/cpp0x/pr31993.C: New
+	* g++.dg/cpp0x/pr32252.C: New
+
 2007-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/33723
@@ -8,6 +15,7 @@
 	* gcc.c-torture/execute/20071030-1.c: New testcase copied from
 	gcc.target/i386/loop-3.c.
 
+>>>>>>> .r129772
 2007-10-30  Revital Eres  <eres@il.ibm.com>
 
 	* testsuite/gcc.dg/vect/pr33866.c: Require vect_long.

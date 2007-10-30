@@ -1,3 +1,16 @@
+2007-10-30  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/31993
+	PR c++/32252
+	* pt.c (find_parameter_packs_r): Fix typo in comment.
+	(convert_template_argument): Look at the pattern of a pack
+	expansion to determine what kind of entity we're converting.
+	(coerce_template_parameter_pack): When we have coerced a non-type
+	template parameter pack, substitute into the type of that pack.
+	(tsubst_pack_expansion): When our substitution of a parameter pack
+	is a "trivial" substitution of itself, just substitute into the
+	pack expansion rather than actually expanding.
+
 2007-10-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/33841

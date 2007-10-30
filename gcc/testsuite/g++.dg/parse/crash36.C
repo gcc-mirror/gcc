@@ -5,7 +5,7 @@
 template <typename... T> struct A	// { dg-error "does not include variadic templates" }
 {
   static T &t;				// { dg-error "not expanded with|T" }
-  static const int i = sizeof (++t);	// { dg-error "invalid use of template type parameter" }
+  static const int i = sizeof (++t);
 };
 
 int x[A <int>::i];	// { dg-error "is not an integral constant-expression" }
