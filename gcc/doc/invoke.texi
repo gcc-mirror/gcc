@@ -323,8 +323,8 @@ Objective-C and Objective-C++ Dialects}.
 -fbranch-target-load-optimize @gol
 -fbranch-target-load-optimize2 -fbtr-bb-exclusive @gol
 -fcaller-saves  -fcprop-registers  -fcse-follow-jumps @gol
--fcse-skip-blocks  -fcx-limited-range  -fdata-sections @gol
--fdelayed-branch  -fdelete-null-pointer-checks -fearly-inlining @gol
+-fcse-skip-blocks  -fcx-limited-range  -fdata-sections  -fdce @gol
+-fdelayed-branch  -fdelete-null-pointer-checks  -fdse  -fearly-inlining @gol
 -fexpensive-optimizations  -ffast-math  -ffloat-store @gol
 -fforce-addr  -fforward-propagate  -ffunction-sections @gol
 -fgcse  -fgcse-lm  -fgcse-sm  -fgcse-las  -fgcse-after-reload @gol
@@ -5031,6 +5031,8 @@ compilation time.
 -fdelayed-branch @gol
 -fguess-branch-probability @gol
 -fcprop-registers @gol
+-fdce @gol
+-fdse @gol
 -fif-conversion @gol
 -fif-conversion2 @gol
 -fsplit-wide-types @gol
@@ -5482,6 +5484,16 @@ Perform cross-jumping transformation.  This transformation unifies equivalent co
 resulting code may or may not perform better than without cross-jumping.
 
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+
+@item -fdce
+@opindex fdce
+Perform dead code elimination (DCE) on RTL.
+Enabled by default at @option{-O} and higher.
+
+@item -fdse
+@opindex fdse
+Perform dead store elimination (DSE) on RTL.
+Enabled by default at @option{-O} and higher.
 
 @item -fif-conversion
 @opindex fif-conversion
