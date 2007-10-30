@@ -1409,7 +1409,8 @@ add_vars_for_offset (tree var,
 
   for (; VEC_iterate (tree, sv, i, subvar); ++i)
     {
-      if (size <= SFT_OFFSET (subvar) - offset)
+      if (SFT_OFFSET (subvar) > offset
+	  && size <= SFT_OFFSET (subvar) - offset)
 	break;
 
       if (is_def)
