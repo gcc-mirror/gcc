@@ -1,3 +1,10 @@
+2007-10-30  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/invoke.texi (Option Summary): Add -fdce and -fdse to list of
+	optimization options.
+	(Optimize Options): Add -fdce and -fdse to the list of optimizations
+	enabled by -O.  Document -fdce and -fdse.
+
 2007-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/33709
