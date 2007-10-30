@@ -18,10 +18,11 @@ struct s{
   struct t e;   /* unaligned (offset 2N+4N+4 B) */
 };
  
+struct s tmp;
+
 int main1 ()
 {  
   int i;
-  struct s tmp;
 
   /* unaligned */
   for (i = 0; i < N/2; i++)

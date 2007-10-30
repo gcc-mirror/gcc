@@ -8,11 +8,11 @@
 __attribute__ ((noinline))
 int main1 ()
 {  
+  int i;
   struct {
     char ca[N];
   } s;
   char cb[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
-  int i;
 
   for (i = 0; i < N; i++)
     {
@@ -37,5 +37,4 @@ int main (void)
 } 
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

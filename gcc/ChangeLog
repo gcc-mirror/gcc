@@ -1,3 +1,9 @@
+2007-10-29  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/32893
+	* tree-vectorize.c (vect_can_force_dr_alignment_p): Check
+	STACK_BOUNDARY instead of PREFERRED_STACK_BOUNDARY.
+
 2007-10-29  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	* longlong.h (add_ssaaaa): Support Intel asm syntax in i386 and
