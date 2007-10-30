@@ -2757,6 +2757,7 @@ gfc_conv_intrinsic_isnan (gfc_se * se, gfc_expr * expr)
 
   gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
   se->expr = build_call_expr (built_in_decls[BUILT_IN_ISNAN], 1, arg);
+  STRIP_TYPE_NOPS (se->expr);
   se->expr = fold_convert (gfc_typenode_for_spec (&expr->ts), se->expr);
 }
 

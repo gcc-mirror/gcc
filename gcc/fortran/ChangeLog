@@ -1,3 +1,9 @@
+2007-10-30  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/33596
+	* trans-intrinsic.c (gfc_conv_intrinsic_isnan): Strip NOP_EXPR
+	from the result of build_call_expr.
+
 2007-10-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31217
