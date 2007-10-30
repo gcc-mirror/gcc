@@ -1,3 +1,8 @@
+2007-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/33723
+	* gcc.dg/tree-ssa/pr33723.c (T): Decrease size of field s.
+
 2007-10-30  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.c-torture/execute/20071030-1.c: New testcase copied from

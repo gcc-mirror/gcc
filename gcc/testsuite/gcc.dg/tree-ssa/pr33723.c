@@ -10,7 +10,7 @@ typedef union
     long int f9, f10;
     int f11;
   } f;
-  char s[56];
+  char s[4];
   long int a;
 } T;
 
