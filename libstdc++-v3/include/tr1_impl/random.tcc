@@ -750,6 +750,40 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     }
 
 
+  template<typename _IntType>
+    template<typename _UniformRandomNumberGenerator>
+      typename uniform_int<_IntType>::result_type
+      uniform_int<_IntType>::
+      _M_call(_UniformRandomNumberGenerator& __urng,
+	      result_type __min, result_type __max, true_type)
+      {
+	// XXX Must be fixed to work well for *arbitrary* __urng.max(),
+	// __urng.min(), __max, __min.  Currently works fine only in the
+	// most common case __urng.max() - __urng.min() >= __max - __min,
+	// with __urng.max() > __urng.min() >= 0.
+	typedef typename __gnu_cxx::__add_unsigned<typename
+	  _UniformRandomNumberGenerator::result_type>::__type __urntype;
+	typedef typename __gnu_cxx::__add_unsigned<result_type>::__type
+	                                                      __utype;
+	typedef typename __gnu_cxx::__conditional_type<(sizeof(__urntype)
+							> sizeof(__utype)),
+	  __urntype, __utype>::__type                         __uctype;
+
+	result_type __ret;
+
+	const __urntype __urnmin = __urng.min();
+	const __urntype __urnmax = __urng.max();
+	const __urntype __urnrange = __urnmax - __urnmin;
+	const __uctype __urange = __max - __min;
+	const __uctype __udenom = (__urnrange <= __urange
+				   ? 1 : __urnrange / (__urange + 1));
+	do
+	  __ret = (__urntype(__urng()) -  __urnmin) / __udenom;
+	while (__ret > __max - __min);
+
+	return __ret + __min;
+      }
+
   template<typename _IntType, typename _CharT, typename _Traits>
     std::basic_ostream<_CharT, _Traits>&
     operator<<(std::basic_ostream<_CharT, _Traits>& __os,
