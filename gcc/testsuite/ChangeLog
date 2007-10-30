@@ -1,3 +1,8 @@
+2007-10-30  Ed Schouten  <ed@fxq.nl>
+
+	PR tree-optimization/32500
+	* gcc.c-torture/execute/pr32500.c: Fix buffer overflow in testcase.
+
 2007-10-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/33744
