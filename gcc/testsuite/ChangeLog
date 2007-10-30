@@ -1,3 +1,8 @@
+2007-10-30  Revital Eres  <eres@il.ibm.com>
+
+	* testsuite/gcc.dg/vect/vect-shift-1.c: Require vect_int.
+	* testsuite/gcc.dg/vect/vect-ifcvt-4.c: Likewise.
+
 2007-10-29  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/32893
