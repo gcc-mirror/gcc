@@ -15,7 +15,6 @@
 	* gcc.c-torture/execute/20071030-1.c: New testcase copied from
 	gcc.target/i386/loop-3.c.
 
->>>>>>> .r129772
 2007-10-30  Revital Eres  <eres@il.ibm.com>
 
 	* testsuite/gcc.dg/vect/pr33866.c: Require vect_long.
