@@ -1,5 +1,10 @@
 2007-10-30  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-operands.c (add_vars_for_offset): Fix exit test
+	of loop adding SFTs as virtual operands.
+
+2007-10-30  Richard Guenther  <rguenther@suse.de>
+
 	* Makefile.in (dse.o): Add $(OPTABS_H) and $(RECOG_H) dependencies.
 
 2007-10-29  Dorit Nuzman  <dorit@il.ibm.com>
