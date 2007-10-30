@@ -2116,6 +2116,46 @@ noce_mem_write_may_trap_or_fault_p (rtx mem)
   return false;
 }
 
+/* Return whether we can use store speculation for MEM.  TOP_BB is the
+   basic block above the conditional block where we are considering
+   doing the speculative store.  We look for whether MEM is set
+   unconditionally later in the function.  */
+
+static bool
+noce_can_store_speculate_p (basic_block top_bb, rtx mem)
+{
+  basic_block dominator;
+
+  for (dominator = get_immediate_dominator (CDI_POST_DOMINATORS, top_bb);
+       dominator != NULL && dominator != EXIT_BLOCK_PTR;
+       dominator = get_immediate_dominator (CDI_POST_DOMINATORS, dominator))
+    {
+      rtx insn;
+
+      FOR_BB_INSNS (dominator, insn)
+	{
+	  /* If we see something that might be a memory barrier, we
+	     have to stop looking.  Even if the MEM is set later in
+	     the function, we still don't want to set it
+	     unconditionally before the barrier.  */
+	  if (INSN_P (insn)
+	      && (volatile_insn_p (PATTERN (insn))
+		  || (CALL_P (insn)
+		      && (!CONST_OR_PURE_CALL_P (insn)
+			  || pure_call_p (insn)))))
+	    return false;
+
+	  if (memory_modified_in_insn_p (mem, insn))
+	    return true;
+	  if (modified_in_p (XEXP (mem, 0), insn))
+	    return false;
+
+	}
+    }
+
+  return false;
+}
+
 /* Given a simple IF-THEN or IF-THEN-ELSE block, attempt to convert it
    without using conditional execution.  Return TRUE if we were
    successful at converting the block.  */
@@ -2299,17 +2339,31 @@ noce_process_if_block (struct ce_if_block * ce_info)
       goto success;
     }
 
-  /* Disallow the "if (...) x = a;" form (with an implicit "else x = x;")
-     for optimizations if writing to x may trap or fault, i.e. it's a memory
-     other than a static var or a stack slot, is misaligned on strict
-     aligned machines or is read-only.
-     If x is a read-only memory, then the program is valid only if we
-     avoid the store into it.  If there are stores on both the THEN and
-     ELSE arms, then we can go ahead with the conversion; either the
-     program is broken, or the condition is always false such that the
-     other memory is selected.  */
-  if (!set_b && MEM_P (orig_x) && noce_mem_write_may_trap_or_fault_p (orig_x))
-    return FALSE;
+  if (!set_b && MEM_P (orig_x))
+    {
+      /* Disallow the "if (...) x = a;" form (implicit "else x = x;")
+	 for optimizations if writing to x may trap or fault,
+	 i.e. it's a memory other than a static var or a stack slot,
+	 is misaligned on strict aligned machines or is read-only.  If
+	 x is a read-only memory, then the program is valid only if we
+	 avoid the store into it.  If there are stores on both the
+	 THEN and ELSE arms, then we can go ahead with the conversion;
+	 either the program is broken, or the condition is always
+	 false such that the other memory is selected.  */
+      if (noce_mem_write_may_trap_or_fault_p (orig_x))
+	return FALSE;
+
+      /* Avoid store speculation: given "if (...) x = a" where x is a
+	 MEM, we only want to do the store if x is always set
+	 somewhere in the function.  This avoids cases like
+	   if (pthread_mutex_trylock(mutex))
+	     ++global_variable;
+	 where we only want global_variable to be changed if the mutex
+	 is held.  FIXME: This should ideally be expressed directly in
+	 RTL somehow.  */
+      if (!noce_can_store_speculate_p (test_bb, orig_x))
+	return FALSE;
+    }
 
   if (noce_try_move (&if_info))
     goto success;
@@ -2584,7 +2638,8 @@ find_if_header (basic_block test_bb, int pass)
       && find_cond_trap (test_bb, then_edge, else_edge))
     goto success;
 
-  if (dom_computed[CDI_POST_DOMINATORS] >= DOM_NO_FAST_QUERY
+  if (life_data_ok
+      && dom_computed[CDI_POST_DOMINATORS] >= DOM_NO_FAST_QUERY
       && (! HAVE_conditional_execution || reload_completed))
     {
       if (find_if_case_1 (test_bb, then_edge, else_edge))
@@ -3592,9 +3647,8 @@ if_convert (int x_life_data_ok)
       free_dominance_info (CDI_DOMINATORS);
     }
 
-  /* Compute postdominators if we think we'll use them.  */
-  if (HAVE_conditional_execution || life_data_ok)
-    calculate_dominance_info (CDI_POST_DOMINATORS);
+  /* Compute postdominators.  */
+  calculate_dominance_info (CDI_POST_DOMINATORS);
 
   if (life_data_ok)
     clear_bb_flags ();

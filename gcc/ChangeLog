@@ -1,3 +1,11 @@
+2007-10-30  Ian Lance Taylor  <iant@google.com>
+
+	* ifcvt.c (noce_can_store_speculate_p): New static function.
+	(noce_process_if_block): Call it.
+	(find_if_header): Only call find_if_case_1 and find_if_case_2 if
+	life_data_ok is set.
+	(if_convert): Always compute postdominators.
+
 2007-10-29  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/invoke.texi (Option Summary, optimizations): Remove
