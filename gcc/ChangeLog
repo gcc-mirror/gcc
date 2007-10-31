@@ -1,3 +1,9 @@
+2007-10-31  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR target/33948
+	* config/mips/mips.c (mips_fpr_return_fields): Fix SCALAR_TYPE_P
+	check.
+
 2007-10-31  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/rs6000/rs6000.opt: Rename -mdfp option to -mhard-dfp.
