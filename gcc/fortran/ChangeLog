@@ -1,3 +1,11 @@
+2007-10-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/33897
+	* decl.c (gfc_match_entry): Do not make ENTRY name
+	global for contained procedures.
+	* parse.c (gfc_fixup_sibling_symbols): Fix code for
+	determining whether a procedure is external.
+
 2007-10-30  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/33596
