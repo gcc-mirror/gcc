@@ -1,3 +1,8 @@
+2007-10-31  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/32377
+	* gfortran.dg/vect/pr32377.f90: New.
+	
 2007-10-31  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/33779
