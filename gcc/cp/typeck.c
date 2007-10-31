@@ -6744,7 +6744,9 @@ check_return_expr (tree retval, bool *no_warning)
         function.  */
      && same_type_p ((TYPE_MAIN_VARIANT (TREE_TYPE (retval))),
                      (TYPE_MAIN_VARIANT
-                      (TREE_TYPE (TREE_TYPE (current_function_decl))))));
+                      (TREE_TYPE (TREE_TYPE (current_function_decl)))))
+     /* And the returned value must be non-volatile.  */
+     && ! TYPE_VOLATILE (TREE_TYPE (retval)));
      
   if (fn_returns_value_p && flag_elide_constructors)
     {
