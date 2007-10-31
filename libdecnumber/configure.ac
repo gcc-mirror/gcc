@@ -113,8 +113,16 @@ if test x$enable_decimal_float = xyes -o x$enable_decimal_float = xno; then
   esac
 fi
 
+# If BID is being used, additional objects should be linked in.
+if test x$enable_decimal_float = xbid; then
+  ADDITIONAL_OBJS="$ADDITIONAL_OBJS \$(bid_OBJS)"
+else
+  ADDITIONAL_OBJS=
+fi
+
 AC_MSG_RESULT($enable_decimal_float)
 AC_SUBST(enable_decimal_float)
+AC_SUBST(ADDITIONAL_OBJS)
 
 AC_C_BIGENDIAN
 
