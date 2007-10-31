@@ -2773,6 +2773,103 @@ paired_expand_vector_init (rtx target, rtx vals)
   emit_move_insn (target, new);
 }
 
+void
+paired_expand_vector_move (rtx operands[])
+{
+  rtx op0 = operands[0], op1 = operands[1];
+
+  emit_move_insn (op0, op1);
+}
+
+/* Emit vector compare for code RCODE.  DEST is destination, OP1 and
+   OP2 are two VEC_COND_EXPR operands, CC_OP0 and CC_OP1 are the two
+   operands for the relation operation COND.  This is a recursive
+   function.  */
+
+static void
+paired_emit_vector_compare (enum rtx_code rcode,
+                            rtx dest, rtx op0, rtx op1,
+                            rtx cc_op0, rtx cc_op1)
+{
+  rtx tmp = gen_reg_rtx (V2SFmode);
+  rtx tmp1, max, min, equal_zero;
+
+  gcc_assert (TARGET_PAIRED_FLOAT);
+  gcc_assert (GET_MODE (op0) == GET_MODE (op1));
+
+  switch (rcode)
+    {
+    case LT:
+    case LTU:
+      paired_emit_vector_compare (GE, dest, op1, op0, cc_op0, cc_op1);
+      return;
+    case GE:
+    case GEU:
+      emit_insn (gen_subv2sf3 (tmp, cc_op0, cc_op1));
+      emit_insn (gen_selv2sf4 (dest, tmp, op0, op1, CONST0_RTX (SFmode)));
+      return;
+    case LE:
+    case LEU:
+      paired_emit_vector_compare (GE, dest, op0, op1, cc_op1, cc_op0);
+      return;
+    case GT:
+      paired_emit_vector_compare (LE, dest, op1, op0, cc_op0, cc_op1);
+      return;
+    case EQ:
+      tmp1 = gen_reg_rtx (V2SFmode);
+      max = gen_reg_rtx (V2SFmode);
+      min = gen_reg_rtx (V2SFmode);
+      equal_zero = gen_reg_rtx (V2SFmode);
+
+      emit_insn (gen_subv2sf3 (tmp, cc_op0, cc_op1));
+      emit_insn (gen_selv2sf4
+                 (max, tmp, cc_op0, cc_op1, CONST0_RTX (SFmode)));
+      emit_insn (gen_subv2sf3 (tmp, cc_op1, cc_op0));
+      emit_insn (gen_selv2sf4
+                 (min, tmp, cc_op0, cc_op1, CONST0_RTX (SFmode)));
+      emit_insn (gen_subv2sf3 (tmp1, min, max));
+      emit_insn (gen_selv2sf4 (dest, tmp1, op0, op1, CONST0_RTX (SFmode)));
+      return;
+    case NE:
+      paired_emit_vector_compare (EQ, dest, op1, op0, cc_op0, cc_op1);
+      return;
+    case UNLE:
+      paired_emit_vector_compare (LE, dest, op1, op0, cc_op0, cc_op1);
+      return;
+    case UNLT:
+      paired_emit_vector_compare (LT, dest, op1, op0, cc_op0, cc_op1);
+      return;
+    case UNGE:
+      paired_emit_vector_compare (GE, dest, op1, op0, cc_op0, cc_op1);
+      return;
+    case UNGT:
+      paired_emit_vector_compare (GT, dest, op1, op0, cc_op0, cc_op1);
+      return;
+    default:
+      gcc_unreachable ();
+    }
+
+  return;
+}
+
+/* Emit vector conditional expression.
+   DEST is destination. OP1 and OP2 are two VEC_COND_EXPR operands.
+   CC_OP0 and CC_OP1 are the two operands for the relation operation COND.  */
+
+int
+paired_emit_vector_cond_expr (rtx dest, rtx op1, rtx op2,
+			      rtx cond, rtx cc_op0, rtx cc_op1)
+{
+  enum rtx_code rcode = GET_CODE (cond);
+
+  if (!TARGET_PAIRED_FLOAT)
+    return 0;
+
+  paired_emit_vector_compare (rcode, dest, op1, op2, cc_op0, cc_op1);
+
+  return 1;
+}
+
 /* Initialize vector TARGET to VALS.  */
 
 void

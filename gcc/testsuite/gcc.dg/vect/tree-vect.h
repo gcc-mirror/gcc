@@ -13,7 +13,10 @@ sig_ill_handler (int sig)
 void check_vect (void)
 {
   signal(SIGILL, sig_ill_handler);
-#if defined(__ppc__) || defined(__ppc64__) || defined(__powerpc__) || defined(powerpc)
+#if defined(__PAIRED__)
+  /* 750CL paired-single instruction, 'ps_mul %v0,%v0,%v0'.  */
+ asm volatile (".long 0x10000032");
+#elif defined(__ppc__) || defined(__ppc64__) || defined(__powerpc__) || defined(powerpc)
   /* Altivec instruction, 'vor %v0,%v0,%v0'.  */
   asm volatile (".long 0x10000484");
 #elif defined(__i386__) || defined(__x86_64__)

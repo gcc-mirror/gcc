@@ -21,3 +21,6 @@
 #undef TARGET_PAIRED_FLOAT
 #define TARGET_PAIRED_FLOAT rs6000_paired_float
 
+#undef ASM_CPU_SPEC 
+#define ASM_CPU_SPEC "-m750cl"
+
