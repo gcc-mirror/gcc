@@ -1,3 +1,9 @@
+2007-10-31  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/33779
+	* gcc.c-torture/execute/pr33779-1.c: New testcase.
+	* gcc.c-torture/execute/pr33779-2.c: Likewise.
+
 2007-10-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/33897
