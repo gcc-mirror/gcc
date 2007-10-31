@@ -1,3 +1,11 @@
+2007-10-31  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/32377
+	* tree-data-ref.c (compute_overlap_steps_for_affine_univar): Make it
+	work also for unknown number of iterations.
+	(analyze_subscript_affine_affine): Clean up.  Don't fail when the 
+	number of iterations is not known.
+
 2007-10-31  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/33779
