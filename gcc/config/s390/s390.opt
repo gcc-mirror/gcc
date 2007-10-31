@@ -47,8 +47,8 @@ Target Report Mask(FUSED_MADD)
 Enable fused multiply/add instructions
 
 mhard-dfp
-Target Report RejectNegative InverseMask(SOFT_DFP, HARD_DFP)
-Enable hardware decimal floating point
+Target Report Mask(HARD_DFP)
+Enable decimal floating point hardware support
 
 mhard-float
 Target Report RejectNegative InverseMask(SOFT_FLOAT, HARD_FLOAT)
@@ -69,10 +69,6 @@ Use packed stack layout
 msmall-exec
 Target Report Mask(SMALL_EXEC)
 Use bras for executable < 64k
-
-msoft-dfp
-Target Report RejectNegative Mask(SOFT_DFP)
-Disable hardware decimal floating point
 
 msoft-float
 Target Report RejectNegative Mask(SOFT_FLOAT)

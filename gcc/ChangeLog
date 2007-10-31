@@ -1,3 +1,13 @@
+2007-10-31  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/rs6000/rs6000.opt: Rename -mdfp option to -mhard-dfp.
+
+	* config/s390/s390.c: (override_options): Replace -mhard-dfp/-msoft-dfp
+	with -mhard-dfp/-mno-hard-dfp.
+	* config/s390/s390.opt: Likewise.
+	* config/s390/s390.h: Add MASK_HARD_DFP to the TARGET_DEFAULT
+	definition.
+
 2007-10-30  Janis Johnson  <janis187@us.ibm.com>
 
 	* tree-ssa.c (execute_update_addresses_taken): Initialize update_vops.

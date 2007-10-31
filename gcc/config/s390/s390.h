@@ -103,7 +103,7 @@ extern enum processor_flags s390_arch_flags;
   while (0)
 
 #ifdef DEFAULT_TARGET_64BIT
-#define TARGET_DEFAULT             (MASK_64BIT | MASK_ZARCH)
+#define TARGET_DEFAULT             (MASK_64BIT | MASK_ZARCH | MASK_HARD_DFP)
 #else
 #define TARGET_DEFAULT             0
 #endif
