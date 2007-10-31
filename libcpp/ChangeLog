@@ -1,3 +1,11 @@
+2007-10-31  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/30786:
+	* macro.c (builtin_macro): Return result of _cpp_do__Pragma.
+	* directives.c (_cpp_do__Pragma): Return error status.
+	* internal.h (_cpp_do__Pragma): Update.
+	* directives.c (get__Pragma_string): Back up if EOF seen.
+
 2007-09-06  Tom Tromey  <tromey@redhat.com>
 
 	* internal.h (struct cpp_reader) <invocation_location>: New
