@@ -1,3 +1,11 @@
+2007-10-31  Thiago Jung Bauermann  <bauerman@br.ibm.com>
+
+	* configure.ac: Add ADDITIONAL_OBJS variable.
+	* Makefile.in (bid_OBS): New.
+	(libdecnumber_a_OBJS): Add ADDITIONAL_OBJS, remove condition
+	on enable_decimal_float.
+	* configure: Regenerate.
+
 2007-09-10  Janis Johnson  <janis187@us.ibm.com>
 	    Ben Elliston  <bje@au.ibm.com>
 

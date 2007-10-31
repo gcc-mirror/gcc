@@ -50,19 +50,18 @@ libdir = @libdir@
 localedir = $(datadir)/locale
 prefix = @prefix@
 
+ADDITIONAL_OBJS = @ADDITIONAL_OBJS@
+
 enable_decimal_float= @enable_decimal_float@
 
 INCLUDES = -I$(srcdir) -I.
 
 ALL_CFLAGS = $(CFLAGS) $(WARN_CFLAGS) $(INCLUDES) $(CPPFLAGS)
 
-libdecnumber_a_OBJS = decNumber.o decContext.o \
-	decimal32.o decimal64.o decimal128.o
+bid_OBJS = bid2dpd_dpd2bid.o host-ieee32.o host-ieee64.o host-ieee128.o
 
-ifeq ($(enable_decimal_float),bid)
-libdecnumber_a_OBJS+=bid2dpd_dpd2bid.o host-ieee32.o host-ieee64.o \
-	host-ieee128.o
-endif
+libdecnumber_a_OBJS = decNumber.o decContext.o \
+	decimal32.o decimal64.o decimal128.o $(ADDITIONAL_OBJS)
 
 libdecnumber_a_SOURCES = decContext.c decContext.h decDPD.h \
 	decNumber.c decNumber.h decNumberLocal.h \
