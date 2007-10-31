@@ -75,7 +75,7 @@ maltivec
 Target Report Mask(ALTIVEC)
 Use AltiVec instructions
 
-mdfp
+mhard-dfp
 Target Report Mask(DFP)
 Use decimal floating point instructions
 
