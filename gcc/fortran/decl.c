@@ -4396,7 +4396,7 @@ gfc_match_entry (void)
   if (state == COMP_SUBROUTINE)
     {
       /* An entry in a subroutine.  */
-      if (!add_global_entry (name, 1))
+      if (!gfc_current_ns->parent && !add_global_entry (name, 1))
 	return MATCH_ERROR;
 
       m = gfc_match_formal_arglist (entry, 0, 1);
@@ -4418,7 +4418,7 @@ gfc_match_entry (void)
 	    ENTRY f() RESULT (r)
 	 can't be written as
 	    ENTRY f RESULT (r).  */
-      if (!add_global_entry (name, 0))
+      if (!gfc_current_ns->parent && !add_global_entry (name, 0))
 	return MATCH_ERROR;
 
       old_loc = gfc_current_locus;
