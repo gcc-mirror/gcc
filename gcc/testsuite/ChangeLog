@@ -1,3 +1,8 @@
+2007-10-31  Christian Bruel  <christian.bruel@st.com>
+
+	PR c++/19531
+	* g++.dg/opt/nrv8.C: New.
+	
 2007-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/33709

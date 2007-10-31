@@ -1,3 +1,10 @@
+2007-10-31 Christian Bruel  <christian.bruel@st.com>
+           Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19531
+	* cp/typeck.c (check_return_expr): Don't set named_return_value_okay_p
+	if retval is volatile. 
+	
 2007-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/33616
