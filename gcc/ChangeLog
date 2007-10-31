@@ -1,3 +1,9 @@
+2007-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/31507
+	* config/i386/i386.md (pushsf_rex64): Use X instead of < constraints
+	for the first push_operand.
+
 2007-10-31  Revital Eres  <eres@il.ibm.com>
 
 	* config/rs6000/paired.md (sminv2sf3, smaxv2sf3, reduc_smax_v2sf,
