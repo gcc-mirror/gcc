@@ -1,3 +1,9 @@
+2007-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/31507
+	* gcc.dg/pr31507-1.c: New test.
+	* gcc.dg/pr31507-2.c: New test.
+
 2007-10-31  Revital Eres  <eres@il.ibm.com>
 
 	* gcc.dg/vect/vect.exp: Add support for powerpc-*paired
