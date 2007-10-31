@@ -1,3 +1,14 @@
+2007-10-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/33162
+	* interface.c (compare_intr_interfaces): New function to check intrinsic
+	function arguments against formal arguments. (compare_interfaces): Fix
+	logic in comparison of function and subroutine attributes.
+	(compare_parameter): Use new function for intrinsic as argument.
+	* resolve.c (resolve_actual_arglist): Allow an intrinsic without
+	function attribute to be checked further.  Set function attribute if
+	intrinsic symbol is found, return FAILURE if not.
+
 2007-10-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/33897
