@@ -1,3 +1,19 @@
+2007-10-31  Revital Eres  <eres@il.ibm.com>
+
+	* config/rs6000/paired.md (sminv2sf3, smaxv2sf3, reduc_smax_v2sf,
+	reduc_smin_v2sf vec_interleave_highv2sf, vec_interleave_lowv2sf,
+	vec_extract_evenv2sf, vec_extract_oddv2sf, reduc_splus_v2sf,
+	movmisalignv2sf, vcondv2sf): New.
+	(UNSPEC_INTERHI_V2SF, UNSPEC_INTERLO_V2SF, UNSPEC_EXTEVEN_V2SF,
+	UNSPEC_EXTODD_V2SF): Define new constants.
+	* config/rs6000/rs6000-protos.h (paired_expand_vector_move,
+	paired_emit_vector_cond_expr): New.
+	* config/rs6000/rs6000-c.c (__PAIRED__): Add new builtin_define.
+	* config/rs6000/rs6000.c (paired_expand_vector_move,
+	paired_emit_vector_cond_expr, paired_emit_vector_compare):
+	New functions.
+	* config/rs6000/750cl.h (ASM_CPU_SPEC): Pass down -m750cl option.
+
 2007-10-31  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/32377

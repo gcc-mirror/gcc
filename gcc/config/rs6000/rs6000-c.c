@@ -123,6 +123,8 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
     }
   if (TARGET_SPE)
     builtin_define ("__SPE__");
+  if (TARGET_PAIRED_FLOAT)
+    builtin_define ("__PAIRED__");
   if (TARGET_SOFT_FLOAT)
     builtin_define ("_SOFT_FLOAT");
   if (!(TARGET_HARD_FLOAT && (TARGET_FPRS || TARGET_E500_DOUBLE)))

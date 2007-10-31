@@ -1,3 +1,30 @@
+2007-10-31  Revital Eres  <eres@il.ibm.com>
+
+	* gcc.dg/vect/vect.exp: Add support for powerpc-*paired
+	target.
+	* gcc.dg/vect/tree-vect.h (check_vect): Add
+	powerpc-*paired test.
+	* lib/target-supports.exp (check_750cl_hw_available):
+	New.
+	(check_effective_target_vect_int,
+	check_effective_target_vect_intfloat_cvt,
+	check_effective_target_powerpc_altivec_ok,
+	check_effective_target_vect_long,
+	check_effective_target_vect_sdot_hi,
+	check_effective_target_vect_udot_hi,
+	check_effective_target_vect_pack_trunc,
+	check_effective_target_vect_unpack,
+	check_effective_target_vect_shift,
+	check_effective_target_vect_int_mult): Disable for powerpc-*paired
+	target.
+	* gcc.dg/vect/vect-ifcvt-11.c: New.
+	* gcc.dg/vect/vect-ifcvt-12.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-13.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-14.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-15.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-16.c: Likewise.
+	* gcc.dg/vect/vect-ifcvt-17.c: Likewise.
+
 2007-10-31  Dominique d'Humieres  <dominiq@lps.ens.fr>
 	    Tobias Burnus  <burnus@net-b.de>
 

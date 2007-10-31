@@ -906,6 +906,63 @@ proc check_effective_target_static_libgfortran { } {
     return $et_static_libgfortran_saved
 }
 
+# Return 1 if the target supports executing 750CL paired-single instructions, 0
+# otherwise.  Cache the result.
+
+proc check_750cl_hw_available { } {
+    global 750cl_hw_available_saved
+    global tool
+
+    if [info exists 750cl_hw_available_saved] {
+        verbose "check_hw_available  returning saved $750cl_hw_available_saved" 2
+    } else {
+        set 750cl_hw_available_saved 0
+
+        # If this is not the right target then we can quit.
+        if { ![istarget powerpc-*paired*] } {
+            verbose "check_hw_available  returning 0" 2
+            return $750cl_hw_available_saved
+        }
+
+        # Set up, compile, and execute a test program containing paired-single
+        # instructions.  Include the current process ID in the file
+        # names to prevent conflicts with invocations for multiple
+        # testsuites.
+        set src 750cl[pid].c
+        set exe 750cl[pid].x
+
+        set f [open $src "w"]
+        puts $f "int main() {"
+        puts $f "#ifdef __MACH__"
+        puts $f "  asm volatile (\"ps_mul v0,v0,v0\");"
+        puts $f "#else"
+        puts $f "  asm volatile (\"ps_mul 0,0,0\");"
+        puts $f "#endif"
+        puts $f "  return 0; }"
+        close $f
+
+        verbose "check_750cl_hw_available  compiling testfile $src" 2
+        set lines [${tool}_target_compile $src $exe executable "-mpaired"]
+        file delete $src
+
+        if [string match "" $lines] then {
+            # No error message, compilation succeeded.
+            set result [${tool}_load "./$exe" "" ""]
+            set status [lindex $result 0]
+            remote_file build delete $exe
+            verbose "check_750cl_hw_available testfile status is <$status>" 2
+
+            if { $status == "pass" } then {
+                set 750_hw_available_saved 1
+            }
+        } else {
+            verbose "check_750_hw_availalble testfile compilation failed" 2
+        }
+    }
+    return $750cl_hw_available_saved
+}
+
+
 # Return 1 if the target supports executing AltiVec instructions, 0
 # otherwise.  Cache the result.
 
@@ -1451,7 +1508,8 @@ proc check_effective_target_vect_int { } {
     } else {
 	set et_vect_int_saved 0
 	if { [istarget i?86-*-*]
-	      || [istarget powerpc*-*-*]
+             || ([istarget powerpc*-*-*]
+                  && ![istarget powerpc-*-linux*paired*])
 	      || [istarget spu-*-*]
 	      || [istarget x86_64-*-*]
 	      || [istarget sparc*-*-*]
@@ -1476,7 +1534,8 @@ proc check_effective_target_vect_intfloat_cvt { } {
     } else {
         set et_vect_intfloat_cvt_saved 0
         if { [istarget i?86-*-*]
-              || [istarget powerpc*-*-*]
+              || ([istarget powerpc*-*-*]
+                   && ![istarget powerpc-*-linux*paired*])
               || [istarget x86_64-*-*] } {
            set et_vect_intfloat_cvt_saved 1
         }
@@ -1618,7 +1677,8 @@ proc check_effective_target_powerpc_fprs { } {
 # Return 1 if this is a PowerPC target supporting -maltivec.
 
 proc check_effective_target_powerpc_altivec_ok { } {
-    if { [istarget powerpc*-*-*]
+    if { ([istarget powerpc*-*-*]
+         && ![istarget powerpc-*-linux*paired*])
 	 || [istarget rs6000-*-*] } {
 	# AltiVec is not supported on AIX before 5.3.
 	if { [istarget powerpc*-*-aix4*]
@@ -1720,7 +1780,8 @@ proc check_effective_target_vect_shift { } {
 	verbose "check_effective_target_vect_shift: using cached result" 2
     } else {
 	set et_vect_shift_saved 0
-	if { [istarget powerpc*-*-*]
+	if { ([istarget powerpc*-*-*]
+             && ![istarget powerpc-*-linux*paired*])
 	     || [istarget ia64-*-*]
 	     || [istarget i?86-*-*]
 	     || [istarget x86_64-*-*] } {
@@ -1738,7 +1799,9 @@ proc check_effective_target_vect_shift { } {
 
 proc check_effective_target_vect_long { } {
     if { [istarget i?86-*-*]
-	 || ([istarget powerpc*-*-*] && [check_effective_target_ilp32])
+	 || (([istarget powerpc*-*-*] 
+              && ![istarget powerpc-*-linux*paired*]) 
+              && [check_effective_target_ilp32])
 	 || [istarget x86_64-*-*]
 	 || ([istarget sparc*-*-*] && [check_effective_target_ilp32]) } {
 	set answer 1
@@ -2033,7 +2096,7 @@ proc check_effective_target_vect_sdot_hi { } {
         verbose "check_effective_target_vect_sdot_hi: using cached result" 2
     } else {
         set et_vect_sdot_hi_saved 0
-        if { [istarget powerpc*-*-*] 
+        if { ([istarget powerpc*-*-*] && ![istarget powerpc-*-linux*paired*])
 	     || [istarget i?86-*-*]
              || [istarget x86_64-*-*] } {
             set et_vect_sdot_hi_saved 1
@@ -2055,7 +2118,7 @@ proc check_effective_target_vect_udot_hi { } {
         verbose "check_effective_target_vect_udot_hi: using cached result" 2
     } else {
         set et_vect_udot_hi_saved 0
-        if { [istarget powerpc*-*-*] } {
+        if { ([istarget powerpc*-*-*] && ![istarget powerpc-*-linux*paired*]) } {
             set et_vect_udot_hi_saved 1
         }
     }
@@ -2077,7 +2140,7 @@ proc check_effective_target_vect_pack_trunc { } {
         verbose "check_effective_target_vect_pack_trunc: using cached result" 2
     } else {
         set et_vect_pack_trunc_saved 0
-        if { [istarget powerpc*-*-*]
+        if { ([istarget powerpc*-*-*] && ![istarget powerpc-*-linux*paired*])
              || [istarget i?86-*-*]
              || [istarget x86_64-*-*] } {
             set et_vect_pack_trunc_saved 1
@@ -2099,7 +2162,7 @@ proc check_effective_target_vect_unpack { } {
         verbose "check_effective_target_vect_unpack: using cached result" 2
     } else {
         set et_vect_unpack_saved 0
-        if { [istarget powerpc*-*-*]
+        if { ([istarget powerpc*-*-*] && ![istarget powerpc-*paired*])
              || [istarget i?86-*-*]
              || [istarget x86_64-*-*] } {
             set et_vect_unpack_saved 1
@@ -2329,7 +2392,7 @@ proc check_effective_target_vect_int_mult { } {
 	verbose "check_effective_target_vect_int_mult: using cached result" 2
     } else {
 	set et_vect_int_mult_saved 0
-	if { [istarget powerpc*-*-*]
+	if { ([istarget powerpc*-*-*] && ![istarget powerpc-*-linux*paired*])
 	     || [istarget spu-*-*]
 	     || [istarget i?86-*-*]
 	     || [istarget x86_64-*-*] } {
