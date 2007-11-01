@@ -34,15 +34,15 @@
  %{!S:%{!c:%e-c or -S required for Ada}}\
  gnat1 %{I*} %{k8:-gnatk8} %{w:-gnatws} %{!Q:-quiet} %{nostdinc*}\
     %{nostdlib*}\
-    -dumpbase %{.adb:%b.adb}%{.ads:%b.ads}%{!.adb:%{!.ads:%b.ada}} "
+    -dumpbase %{.adb:%b.adb}%{.ads:%b.ads}%{!.adb:%{!.ads:%b.ada}}\
+    %{O*} %{W*} %{w} %{p} %{pg:-p} %{a} %{f*} %{d*} %{g*&m*} "
 #if defined(TARGET_VXWORKS_RTP)
    "%{fRTS=rtp:-mrtp} "
 #endif
 #if CONFIG_DUAL_EXCEPTIONS
    "%{fRTS=sjlj:-fsjlj} "
 #endif
-   "%{O*} %{W*} %{w} %{p} %{pg:-p} %{a} %{f*} %{d*} %{g*&m*} %1\
-    %{!S:%{o*:%w%*-gnatO}} \
+   "%1 %{!S:%{o*:%w%*-gnatO}} \
     %i %{S:%W{o*}%{!o*:-o %b.s}} \
     %{gnatc*|gnats*: -o %j} %{-param*} \
     %{!gnatc*:%{!gnats*:%(invoke_as)}}", 0, 0, 0},
