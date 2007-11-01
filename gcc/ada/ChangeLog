@@ -1,3 +1,7 @@
+2007-11-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lang-specs.h: Move translation of -fRTS= after -gnatez switch.
+
 2007-10-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* misc.c (gnat_handle_option): Replace call to abort with
