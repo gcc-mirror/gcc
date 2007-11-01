@@ -1,5 +1,12 @@
 2007-11-01  Janis Johnson  <janis187@us.ibm.com>
 
+	* doc/invoke.texi (Optimize Options): Under -fcse-follow-jumps,
+	show that CSE means common subexpression elimination.  Change wording
+	for -fsee and define LCM.  Remove capitalization of optimizations
+	for -ftree-reassoc, -ftree-pre, and -ftree-fre.
+
+2007-11-01  Janis Johnson  <janis187@us.ibm.com>
+
 	PR testsuite/25352
 	* doc/sourcebuild.texi (Test Directives): Document that xfail
 	has no effect for dg-do except when dg-do-what is "run".
