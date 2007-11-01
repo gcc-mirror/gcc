@@ -6,8 +6,8 @@
 /* { dg-options "" } */
 
 float
-dremf(x, y)
-     float x, y; /* { dg-warning "conflicting types for built-in function 'dremf'" } */
+dremf(x, y) /* { dg-warning "conflicting types for built-in function 'dremf'" } */
+     float x, y;
 {
   return x + y;
 }

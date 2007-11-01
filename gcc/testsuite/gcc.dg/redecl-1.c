@@ -76,8 +76,8 @@ void test5(void)
 /* Extern then static, both at file scope.  */
 
 extern int test6(int);		/* { dg-error "previous" "" } */
-static int test6(int x)			
-{ return x; }			/* { dg-error "follows non-static" } */
+static int test6(int x)		/* { dg-error "follows non-static" } */
+{ return x; }
 
 
 /* Extern then static, extern at previous function scope.  */
@@ -87,8 +87,8 @@ void prime7(void)
   extern int test7(int);	/* { dg-error "previous" "" } */
 }
 
-static int test7(int x)
-{ return x; }			/* { dg-error "follows non-static" } */
+static int test7(int x)		/* { dg-error "follows non-static" } */
+{ return x; }
 
 /* Implicit decl then static.  */
 
@@ -98,5 +98,5 @@ void prime8(void)
                                 /* { dg-warning "implicit" "implicit" { target *-*-* } 97 } */
 }
 
-static int test8(int x)
-{ return x; }			/* { dg-error "follows non-static" } */
+static int test8(int x)		/* { dg-error "follows non-static" } */
+{ return x; }

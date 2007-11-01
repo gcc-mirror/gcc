@@ -1,5 +1,11 @@
 2007-11-01  Tom Tromey  <tromey@redhat.com>
 
+	* c-decl.c (grokdeclarator): Set decl source locations.
+	* c-parser.c (c_parser_enum_specifier): Set location.
+	(c_parser_struct_or_union_specifier): Likewise.
+
+2007-11-01  Tom Tromey  <tromey@redhat.com>
+
 	* print-tree.c (print_node): Print column number.
 
 2007-11-01  Jakub Jelinek  <jakub@redhat.com>

@@ -4645,6 +4645,7 @@ grokdeclarator (const struct c_declarator *declarator,
       if (type_quals)
 	type = c_build_qualified_type (type, type_quals);
       decl = build_decl (TYPE_DECL, declarator->u.id, type);
+      DECL_SOURCE_LOCATION (decl) = declarator->id_loc;
       if (declspecs->explicit_signed_p)
 	C_TYPEDEF_EXPLICITLY_SIGNED (decl) = 1;
       if (declspecs->inline_p)
@@ -4740,6 +4741,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	type_as_written = type;
 
 	decl = build_decl (PARM_DECL, declarator->u.id, type);
+	DECL_SOURCE_LOCATION (decl) = declarator->id_loc;
 	if (size_varies)
 	  C_DECL_VARIABLE_SIZE (decl) = 1;
 
@@ -4779,6 +4781,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	  }
 	type = c_build_qualified_type (type, type_quals);
 	decl = build_decl (FIELD_DECL, declarator->u.id, type);
+	DECL_SOURCE_LOCATION (decl) = declarator->id_loc;
 	DECL_NONADDRESSABLE_P (decl) = bitfield;
 	if (bitfield && !declarator->u.id)
 	  TREE_NO_WARNING (decl) = 1;
@@ -4815,6 +4818,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	  }
 
 	decl = build_decl (FUNCTION_DECL, declarator->u.id, type);
+	DECL_SOURCE_LOCATION (decl) = declarator->id_loc;
 	decl = build_decl_attribute_variant (decl, decl_attr);
 
 	if (pedantic && type_quals && !DECL_IN_SYSTEM_HEADER (decl))

@@ -1707,6 +1707,8 @@ c_parser_enum_specifier (c_parser *parser)
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_ENUM));
   c_parser_consume_token (parser);
   attrs = c_parser_attributes (parser);
+  /* Set the location in case we create a decl now.  */
+  c_parser_set_source_position_from_token (c_parser_peek_token (parser));
   if (c_parser_next_token_is (parser, CPP_NAME))
     {
       ident = c_parser_peek_token (parser)->value;
@@ -1728,6 +1730,7 @@ c_parser_enum_specifier (c_parser *parser)
 	  tree enum_value;
 	  tree enum_decl;
 	  bool seen_comma;
+	  c_token *token;
 	  if (c_parser_next_token_is_not (parser, CPP_NAME))
 	    {
 	      c_parser_error (parser, "expected identifier");
@@ -1735,7 +1738,10 @@ c_parser_enum_specifier (c_parser *parser)
 	      values = error_mark_node;
 	      break;
 	    }
-	  enum_id = c_parser_peek_token (parser)->value;
+	  token = c_parser_peek_token (parser);
+	  enum_id = token->value;
+	  /* Set the location in case we create a decl now.  */
+	  c_parser_set_source_position_from_token (token);
 	  c_parser_consume_token (parser);
 	  if (c_parser_next_token_is (parser, CPP_EQ))
 	    {
@@ -1848,6 +1854,8 @@ c_parser_struct_or_union_specifier (c_parser *parser)
     }
   c_parser_consume_token (parser);
   attrs = c_parser_attributes (parser);
+  /* Set the location in case we create a decl now.  */
+  c_parser_set_source_position_from_token (c_parser_peek_token (parser));
   if (c_parser_next_token_is (parser, CPP_NAME))
     {
       ident = c_parser_peek_token (parser)->value;

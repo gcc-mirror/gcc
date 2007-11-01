@@ -1,3 +1,12 @@
+2007-11-01  Tom Tromey  <tromey@redhat.com>
+
+	* gcc.dg/redecl-1.c: Update.
+	* gcc.dg/pr20368-3.c: Update.
+	* gcc.dg/inline-14.c: Update.
+	* gcc.dg/builtins-30.c: Update.
+	* gcc.dg/dremf-type-compat-4.c: Update.
+	* gcc.dg/pr20368-2.c: Update.
+
 2007-11-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/33673
