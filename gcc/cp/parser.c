@@ -4850,8 +4850,10 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
   pseudo_destructor_p = false;
 
   /* If the SCOPE is a scalar type, then, if this is a valid program,
-     we must be looking at a pseudo-destructor-name.  */
-  if (scope && SCALAR_TYPE_P (scope))
+     we must be looking at a pseudo-destructor-name.  If POSTFIX_EXPRESSION
+     is type dependent, it can be pseudo-destructor-name or something else.
+     Try to parse it as pseudo-destructor-name first.  */
+  if ((scope && SCALAR_TYPE_P (scope)) || dependent_p)
     {
       tree s;
       tree type;
@@ -4860,7 +4862,12 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
       /* Parse the pseudo-destructor-name.  */
       s = NULL_TREE;
       cp_parser_pseudo_destructor_name (parser, &s, &type);
-      if (cp_parser_parse_definitely (parser))
+      if (dependent_p
+	  && (cp_parser_error_occurred (parser)
+	      || TREE_CODE (type) != TYPE_DECL
+	      || !SCALAR_TYPE_P (TREE_TYPE (type))))
+	cp_parser_abort_tentative_parse (parser);
+      else if (cp_parser_parse_definitely (parser))
 	{
 	  pseudo_destructor_p = true;
 	  postfix_expression

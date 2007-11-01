@@ -1,5 +1,11 @@
 2007-11-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/32384
+	* parser.c (cp_parser_postfix_dot_deref_expression): If
+	POSTFIX_EXPRESSION is type dependent, try to parse it as pseudo dtor
+	first and if that succeeds and type is SCALAR_TYPE_P, create
+	PSEUDO_DTOR_EXPR.
+
 	PR c++/32260
 	* rtti.c (enum_tinfo_kind): Fix TK_TYPE_INFO_TYPE comment.
 	(typeid_ok_p): Use the same alias set for abi::__type_info_pseudo
