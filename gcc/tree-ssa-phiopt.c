@@ -1078,9 +1078,17 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
    simply is a walk over all instructions in dominator order.  When
    we see an INDIRECT_REF we determine if we've already seen a same
    ref anywhere up to the root of the dominator tree.  If we do the
-   current access can't trap.  If we don't see any dominator access
+   current access can't trap.  If we don't see any dominating access
    the current access might trap, but might also make later accesses
-   non-trapping, so we remember it.  */
+   non-trapping, so we remember it.  We need to be careful with loads
+   or stores, for instance a load might not trap, while a store would,
+   so if we see a dominating read access this doesn't mean that a later
+   write access would not trap.  Hence we also need to differentiate the
+   type of access(es) seen.
+
+   ??? We currently are very conservative and assume that a load might
+   trap even if a store doesn't (write-only memory).  This probably is
+   overly conservative.  */
 
 /* A hash-table of SSA_NAMEs, and in which basic block an INDIRECT_REF
    through it was seen, which would constitute a no-trap region for
@@ -1089,6 +1097,7 @@ struct name_to_bb
 {
   tree ssa_name;
   basic_block bb;
+  unsigned store : 1;
 };
 
 /* The hash table for remembering what we've seen.  */
@@ -1102,7 +1111,7 @@ static hashval_t
 name_to_bb_hash (const void *p)
 {
   tree n = ((struct name_to_bb *)p)->ssa_name;
-  return htab_hash_pointer (n);
+  return htab_hash_pointer (n) ^ ((struct name_to_bb *)p)->store;
 }
 
 /* The equality function of *P1 and *P2.  SSA_NAMEs are shared, so
@@ -1110,17 +1119,20 @@ name_to_bb_hash (const void *p)
 static int
 name_to_bb_eq (const void *p1, const void *p2)
 {
-  tree n1 = ((struct name_to_bb *)p1)->ssa_name;
-  tree n2 = ((struct name_to_bb *)p2)->ssa_name;
+  const struct name_to_bb *n1 = (const struct name_to_bb *)p1;
+  const struct name_to_bb *n2 = (const struct name_to_bb *)p2;
 
-  return n1 == n2;
+  return n1->ssa_name == n2->ssa_name && n1->store == n2->store;
 }
 
 /* We see a the expression EXP in basic block BB.  If it's an interesting
    expression (an INDIRECT_REF through an SSA_NAME) possibly insert the
-   expression into the set NONTRAP or the hash table of seen expressions.  */
+   expression into the set NONTRAP or the hash table of seen expressions.
+   STORE is true if this expression is on the LHS, otherwise it's on
+   the RHS.  */
 static void
-add_or_mark_expr (basic_block bb, tree exp, struct pointer_set_t *nontrap)
+add_or_mark_expr (basic_block bb, tree exp,
+		  struct pointer_set_t *nontrap, bool store)
 {
   if (INDIRECT_REF_P (exp)
       && TREE_CODE (TREE_OPERAND (exp, 0)) == SSA_NAME)
@@ -1128,15 +1140,18 @@ add_or_mark_expr (basic_block bb, tree exp, struct pointer_set_t *nontrap)
       tree name = TREE_OPERAND (exp, 0);
       struct name_to_bb map;
       void **slot;
+      struct name_to_bb *n2bb;
       basic_block found_bb = 0;
 
       /* Try to find the last seen INDIRECT_REF through the same
          SSA_NAME, which can trap.  */
       map.ssa_name = name;
       map.bb = 0;
+      map.store = store;
       slot = htab_find_slot (seen_ssa_names, &map, INSERT);
-      if (*slot)
-        found_bb = ((struct name_to_bb *)*slot)->bb;
+      n2bb = (struct name_to_bb *) *slot;
+      if (n2bb)
+        found_bb = n2bb->bb;
 
       /* If we've found a trapping INDIRECT_REF, _and_ it dominates EXP
          (it's in a basic block on the path from us to the dominator root)
@@ -1148,16 +1163,17 @@ add_or_mark_expr (basic_block bb, tree exp, struct pointer_set_t *nontrap)
       else
         {
 	  /* EXP might trap, so insert it into the hash table.  */
-	  if (*slot)
+	  if (n2bb)
 	    {
-              ((struct name_to_bb *)*slot)->bb = bb;
+	      n2bb->bb = bb;
 	    }
 	  else
 	    {
-	      struct name_to_bb *nmap = XNEW (struct name_to_bb);
-	      nmap->ssa_name = name;
-	      nmap->bb = bb;
-	      *slot = nmap;
+	      n2bb = XNEW (struct name_to_bb);
+	      n2bb->ssa_name = name;
+	      n2bb->bb = bb;
+	      n2bb->store = store;
+	      *slot = n2bb;
 	    }
 	}
     }
@@ -1180,8 +1196,8 @@ nt_init_block (struct dom_walk_data *data ATTRIBUTE_UNUSED, basic_block bb)
 	{
 	  tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
 	  tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
-	  add_or_mark_expr (bb, rhs, nontrap_set);
-	  add_or_mark_expr (bb, lhs, nontrap_set);
+	  add_or_mark_expr (bb, rhs, nontrap_set, false);
+	  add_or_mark_expr (bb, lhs, nontrap_set, true);
 	}
     }
 }
