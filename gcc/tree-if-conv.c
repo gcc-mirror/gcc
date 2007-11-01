@@ -873,7 +873,7 @@ process_phi_nodes (struct loop *loop)
   /* Replace phi nodes with cond. modify expr.  */
   for (i = 1; i < orig_loop_num_nodes; i++)
     {
-      tree phi, cond;
+      tree phi, cond = NULL_TREE;
       block_stmt_iterator bsi;
       basic_block true_bb = NULL;
       bb = ifc_bbs[i];

@@ -4275,16 +4275,15 @@ prepare_cmp_insn (rtx *px, rtx *py, enum rtx_code *pcomparison, rtx size,
   if (libfunc && !SCALAR_FLOAT_MODE_P (mode))
     {
       rtx result;
-      rtx ulibfunc;
 
       /* If we want unsigned, and this mode has a distinct unsigned
 	 comparison routine, use that.  */
       if (unsignedp)
 	{
-	  ulibfunc = optab_libfunc (ucmp_optab, mode);
+	  rtx ulibfunc = optab_libfunc (ucmp_optab, mode);
+	  if (ulibfunc)
+	    libfunc = ulibfunc;
 	}
-      if (unsignedp && ulibfunc)
-	libfunc = ulibfunc;
 
       result = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST_MAKE_BLOCK,
 					targetm.libgcc_cmp_return_mode (),
