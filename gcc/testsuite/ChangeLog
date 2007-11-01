@@ -1,3 +1,8 @@
+2007-11-01  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/30805:
+	* gcc.dg/cpp/pr30805.c: New file.
+
 2007-11-01  Janis Johnson  <janis187@us.ibm.com>
 
 	PR testsuite/25352
