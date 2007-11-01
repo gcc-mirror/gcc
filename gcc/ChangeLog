@@ -1,3 +1,8 @@
+2007-11-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcc.c (getenv_spec_function): Escape the environment variable's
+	value.
+
 2007-11-01  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/invoke.texi (Optimize Options): Under -fcse-follow-jumps,
