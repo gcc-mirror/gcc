@@ -4772,10 +4772,14 @@ compute_code_hoist_vbeinout (void)
 	 the convergence.  */
       FOR_EACH_BB_REVERSE (bb)
 	{
-	  changed |= sbitmap_a_or_b_and_c_cg (hoist_vbein[bb->index], antloc[bb->index],
-					      hoist_vbeout[bb->index], transp[bb->index]);
 	  if (bb->next_bb != EXIT_BLOCK_PTR)
-	    sbitmap_intersection_of_succs (hoist_vbeout[bb->index], hoist_vbein, bb->index);
+	    sbitmap_intersection_of_succs (hoist_vbeout[bb->index],
+					   hoist_vbein, bb->index);
+
+	  changed |= sbitmap_a_or_b_and_c_cg (hoist_vbein[bb->index],
+					      antloc[bb->index],
+					      hoist_vbeout[bb->index],
+					      transp[bb->index]);
 	}
 
       passes++;
