@@ -1,3 +1,10 @@
+2007-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/33673
+	* gcse.c (cprop_jump): If a conditional jump has been optimized
+	into unconditional jump, make the remaining normal edge fallthru
+	and delete the jump insn.
+
 2007-11-01  Ben Elliston  <bje@au.ibm.com>
 
 	* emit-rtl.c (set_reg_attrs_from_mem): Clarify function comment.
