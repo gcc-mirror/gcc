@@ -11832,8 +11832,11 @@ gen_formal_parameter_die (tree node, dw_die_ref context_die)
 	add_abstract_origin_attribute (parm_die, origin);
       else
 	{
+	  tree type = TREE_TYPE (node);
 	  add_name_and_src_coords_attributes (parm_die, node);
-	  add_type_attribute (parm_die, TREE_TYPE (node),
+	  if (DECL_BY_REFERENCE (node))
+	    type = TREE_TYPE (type);
+	  add_type_attribute (parm_die, type,
 			      TREE_READONLY (node),
 			      TREE_THIS_VOLATILE (node),
 			      context_die);
@@ -12437,8 +12440,14 @@ gen_variable_die (tree decl, dw_die_ref context_die)
     }
   else
     {
+      tree type = TREE_TYPE (decl);
+      if ((TREE_CODE (decl) == PARM_DECL
+	   || TREE_CODE (decl) == RESULT_DECL)
+	  && DECL_BY_REFERENCE (decl))
+	type = TREE_TYPE (type);
+
       add_name_and_src_coords_attributes (var_die, decl);
-      add_type_attribute (var_die, TREE_TYPE (decl), TREE_READONLY (decl),
+      add_type_attribute (var_die, type, TREE_READONLY (decl),
 			  TREE_THIS_VOLATILE (decl), context_die);
 
       if (TREE_PUBLIC (decl))
@@ -13694,7 +13703,10 @@ gen_decl_die (tree decl, dw_die_ref context_die)
 
       /* Output any DIEs that are needed to specify the type of this data
 	 object.  */
-      gen_type_die (TREE_TYPE (decl), context_die);
+      if (TREE_CODE (decl) == RESULT_DECL && DECL_BY_REFERENCE (decl))
+	gen_type_die (TREE_TYPE (TREE_TYPE (decl)), context_die);
+      else
+	gen_type_die (TREE_TYPE (decl), context_die);
 
       /* And its containing type.  */
       origin = decl_class_context (decl);
@@ -13728,7 +13740,10 @@ gen_decl_die (tree decl, dw_die_ref context_die)
       break;
 
     case PARM_DECL:
-      gen_type_die (TREE_TYPE (decl), context_die);
+      if (DECL_BY_REFERENCE (decl))
+	gen_type_die (TREE_TYPE (TREE_TYPE (decl)), context_die);
+      else
+	gen_type_die (TREE_TYPE (decl), context_die);
       gen_formal_parameter_die (decl, context_die);
       break;
 

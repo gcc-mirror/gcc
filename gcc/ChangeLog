@@ -1,5 +1,10 @@
 2007-11-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/33537
+	* dwarf2out.c (gen_formal_parameter_die, gen_variable_die,
+	gen_decl_die): Use TREE_TYPE (TREE_TYPE (decl)) as type
+	rather than TREE_TYPE (decl) if DECL_BY_REFERENCE (decl).
+
 	PR rtl-optimization/33673
 	* gcse.c (cprop_jump): If a conditional jump has been optimized
 	into unconditional jump, make the remaining normal edge fallthru
