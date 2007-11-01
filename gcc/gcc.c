@@ -7734,6 +7734,9 @@ static const char *
 getenv_spec_function (int argc, const char **argv)
 {
   char *value;
+  char *result;
+  char *ptr;
+  size_t len;
 
   if (argc != 2)
     return NULL;
@@ -7742,7 +7745,21 @@ getenv_spec_function (int argc, const char **argv)
   if (!value)
     fatal ("environment variable \"%s\" not defined", argv[0]);
 
-  return concat (value, argv[1], NULL);
+  /* We have to escape every character of the environment variable so
+     they are not interpretted as active spec characters.  A
+     particulaly painful case is when we are reading a variable
+     holding a windows path complete with \ separators.  */
+  len = strlen (value) * 2 + strlen (argv[1]) + 1;
+  result = xmalloc (len);
+  for (ptr = result; *value; ptr += 2)
+    {
+      ptr[0] = '\\';
+      ptr[1] = *value++;
+    }
+  
+  strcpy (ptr, argv[1]);
+  
+  return result;
 }
 
 /* if-exists built-in spec function.
