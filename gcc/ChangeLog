@@ -1,3 +1,9 @@
+2007-11-01  Steven Bosscher  <stevenb.gcc@gmail.com>
+
+	PR rtl-optimization/33828
+	* gcse.c (compute_code_hoist_vbeinout): Fix order of computation
+	of VBEIN and VBEOUT.
+
 2007-11-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* optabs.c (prepare_cmp_insn): Merge a couple of conditional blocks.
