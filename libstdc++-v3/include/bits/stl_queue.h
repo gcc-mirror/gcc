@@ -220,14 +220,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  to it.  The time complexity of the operation depends on the
        *  underlying sequence.
        */
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
       void
       push(const value_type& __x)
       { c.push_back(__x); }
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-      void
-      push(value_type&& __x)
-      { c.push_back(std::move(__x)); }
+#else
+      // NB: DR 756.
+      template<typename... _Args>
+        void
+        push(_Args&&... __args)
+	{ c.push_back(std::forward<_Args>(__args)...); }
 #endif
 
       /**
@@ -507,20 +509,22 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  The time complexity of the operation depends on the underlying
        *  sequence.
        */
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
       void
       push(const value_type& __x)
       {
 	c.push_back(__x);
 	std::push_heap(c.begin(), c.end(), comp);
       }
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-      void
-      push(value_type&& __x)
-      {
-	c.push_back(std::move(__x));
-	std::push_heap(c.begin(), c.end(), comp);
-      }
+#else
+      // NB: DR 756.
+      template<typename... _Args>
+        void
+        push(_Args&&... __args)
+	{ 
+	  c.push_back(std::forward<_Args>(__args)...);
+	  std::push_heap(c.begin(), c.end(), comp);
+	}
 #endif
 
       /**

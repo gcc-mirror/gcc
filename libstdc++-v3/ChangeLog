@@ -1,3 +1,10 @@
+2007-10-31  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_queue.h (queue<>::push(value_type&&)): Replace
+	with "emplace" version per DR 756.
+	(priority_queue<>::push(value_type&&)): Likewise.
+	* include/bits/stl_stack.h (stack<>::push(value_type&&)): Likewise.
+
 2007-10-30  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1_impl/random (uniform_int<>::
