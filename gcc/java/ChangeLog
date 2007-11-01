@@ -1,3 +1,9 @@
+2007-11-01  Tom Tromey  <tromey@redhat.com>
+
+	* Make-lang.in (java/jcf-dump.o): Depend on zipfile.h.
+	(java/jcf-parse.o): Depend on jcf-reader.c, zipfile.h, and jcf.h.
+	(java/jcf-io.o): Depend on zipfile.h.
+
 2007-10-17  Richard Guenther  <rguenther@suse.de>
 
 	* Make-lang.in (java/builtins.o): Add $(OPTABS_H) and $(EXPR_H)

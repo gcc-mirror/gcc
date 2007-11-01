@@ -244,7 +244,7 @@ JAVA_TREE_H = $(TREE_H) $(HASHTAB_H) java/java-tree.h java/java-tree.def
 
 java/jcf-dump.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(JAVA_TREE_H) \
   java/jcf-dump.c java/jcf-reader.c java/jcf.h java/javaop.h java/javaop.def \
-  version.h $(GGC_H) intl.h
+  version.h $(GGC_H) intl.h java/zipfile.h
 java/boehm.o: java/boehm.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(TREE_H) $(JAVA_TREE_H) java/parse.h toplev.h
 java/builtins.o: java/builtins.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
@@ -270,7 +270,8 @@ java/jcf-depend.o: java/jcf-depend.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) java/jcf.h
 java/jcf-parse.o: java/jcf-parse.c $(CONFIG_H) $(JAVA_TREE_H) $(FLAGS_H) \
   input.h java/java-except.h $(SYSTEM_H) coretypes.h $(TM_H) toplev.h \
-  java/parse.h $(GGC_H) debug.h $(REAL_H) gt-java-jcf-parse.h $(TM_P_H)
+  java/parse.h $(GGC_H) debug.h $(REAL_H) gt-java-jcf-parse.h $(TM_P_H) \
+  java/jcf-reader.c java/zipfile.h java/jcf.h
 java/jvgenmain.o: java/jvgenmain.c $(CONFIG_H) $(JAVA_TREE_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) intl.h
 java/lang.o: java/lang.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h input.h \
@@ -297,7 +298,7 @@ java/java-gimplify.o: java/java-gimplify.c $(CONFIG_H) $(SYSTEM_H) \
 
 # jcf-io.o needs $(ZLIBINC) added to cflags.
 java/jcf-io.o: java/jcf-io.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  $(JAVA_TREE_H)
+  $(JAVA_TREE_H) java/zipfile.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(ZLIBINC) \
 		$(srcdir)/java/jcf-io.c $(OUTPUT_OPTION)
 
