@@ -79,7 +79,7 @@ DEF_VEC_ALLOC_O(tinfo_s,gc);
 
 typedef enum tinfo_kind
 {
-  TK_TYPE_INFO_TYPE,    /* std::type_info */
+  TK_TYPE_INFO_TYPE,    /* abi::__type_info_pseudo */
   TK_BASE_TYPE,		/* abi::__base_class_type_info */
   TK_BUILTIN_TYPE,	/* abi::__fundamental_type_info */
   TK_ARRAY_TYPE,	/* abi::__array_type_info */
@@ -264,6 +264,8 @@ get_tinfo_decl_dynamic (tree exp)
 static bool
 typeid_ok_p (void)
 {
+  tree pseudo_type_info, type_info_type;
+
   if (! flag_rtti)
     {
       error ("cannot use typeid with -fno-rtti");
@@ -275,6 +277,18 @@ typeid_ok_p (void)
       error ("must #include <typeinfo> before using typeid");
       return false;
     }
+
+  pseudo_type_info
+    = VEC_index (tinfo_s, tinfo_descs, TK_TYPE_INFO_TYPE)->type;
+  type_info_type = TYPE_MAIN_VARIANT (const_type_info_type_node);
+
+  /* Make sure abi::__type_info_pseudo has the same alias set
+     as std::type_info.  */
+  if (! TYPE_ALIAS_SET_KNOWN_P (pseudo_type_info))
+    TYPE_ALIAS_SET (pseudo_type_info) = get_alias_set (type_info_type);
+  else
+    gcc_assert (TYPE_ALIAS_SET (pseudo_type_info)
+		== get_alias_set (type_info_type));
 
   return true;
 }

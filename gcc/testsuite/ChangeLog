@@ -1,3 +1,8 @@
+2007-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/32260
+	* g++.dg/rtti/typeid7.C: New test.
+
 2007-11-01  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/30805:
