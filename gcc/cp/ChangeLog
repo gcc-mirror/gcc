@@ -1,3 +1,10 @@
+2007-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/32260
+	* rtti.c (enum_tinfo_kind): Fix TK_TYPE_INFO_TYPE comment.
+	(typeid_ok_p): Use the same alias set for abi::__type_info_pseudo
+	as for std::type_info.
+
 2007-10-31  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33494
