@@ -1,5 +1,9 @@
 2007-11-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/32384
+	* g++.dg/template/pseudodtor1.C: New test.
+	* g++.dg/template/pseudodtor2.C: New test.
+
 	PR c++/32260
 	* g++.dg/rtti/typeid7.C: New test.
 
