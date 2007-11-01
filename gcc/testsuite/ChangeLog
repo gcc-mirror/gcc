@@ -1,3 +1,8 @@
+2007-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/33648
+	* gcc.dg/pr33648.c: New test.
+
 2007-11-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/32384

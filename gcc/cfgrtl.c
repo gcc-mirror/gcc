@@ -2696,6 +2696,10 @@ cfg_layout_split_edge (edge e)
 			? NEXT_INSN (BB_END (e->src)) : get_insns (),
 			NULL_RTX, e->src);
 
+  if (e->dest == EXIT_BLOCK_PTR)
+    BB_COPY_PARTITION (new_bb, e->src);
+  else
+    BB_COPY_PARTITION (new_bb, e->dest);
   make_edge (new_bb, e->dest, EDGE_FALLTHRU);
   redirect_edge_and_branch_force (e, new_bb);
 
