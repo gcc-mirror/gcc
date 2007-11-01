@@ -1,3 +1,9 @@
+2007-11-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* optabs.c (prepare_cmp_insn): Merge a couple of conditional blocks.
+	* sched-rgn.c (compute_trg_info): Zero 'el' local variable.
+	* tree-if-conv.c (process_phi_nodes): Zero 'cond' local variable.
+
 2007-11-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc.c (getenv_spec_function): Escape the environment variable's

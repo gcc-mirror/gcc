@@ -1341,7 +1341,7 @@ static void
 compute_trg_info (int trg)
 {
   candidate *sp;
-  edgelst el;
+  edgelst el = { NULL, 0 };
   int i, j, k, update_idx;
   basic_block block;
   sbitmap visited;
