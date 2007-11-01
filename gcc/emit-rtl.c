@@ -1009,7 +1009,7 @@ gen_reg_rtx_offset (rtx reg, enum machine_mode mode, int offset)
   return new;
 }
 
-/* Set the decl for MEM to DECL.  */
+/* Set REG to the decl that MEM refers to.  */
 
 void
 set_reg_attrs_from_mem (rtx reg, rtx mem)
@@ -1796,7 +1796,7 @@ set_mem_attributes (rtx ref, tree t, int objectp)
   set_mem_attributes_minus_bitpos (ref, t, objectp, 0);
 }
 
-/* Set the decl for MEM to DECL.  */
+/* Set MEM to the decl that REG refers to.  */
 
 void
 set_mem_attrs_from_reg (rtx mem, rtx reg)

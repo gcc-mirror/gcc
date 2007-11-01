@@ -1,4 +1,9 @@
-2007-11-01  Michael Matz  <matz@suse.de
+2007-11-01  Ben Elliston  <bje@au.ibm.com>
+
+	* emit-rtl.c (set_reg_attrs_from_mem): Clarify function comment.
+	(set_mem_attrs_from_reg): Likewise.
+
+2007-11-01  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/33961
 	* tree-ssa-phiopt.c (struct name_to_bb.store): New member.
