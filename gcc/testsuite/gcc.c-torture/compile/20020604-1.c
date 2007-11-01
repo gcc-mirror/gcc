@@ -1,6 +1,6 @@
-/* The array is too big. */
+/* { dg-do assemble } */
+/* { dg-xfail-if "The array is too big" { "m6811-*-* m6812-*-*" } { "*" } { "" } } */
 /* { dg-xfail-if "The array too big" { "h8300-*-*" } { "-mno-h" "-mn" } { "" } } */
-/* { dg-do assemble { xfail m6811-*-* m6812-*-* } } */
 /* { dg-skip-if "" { m32c-*-* } { } { } } */
 
 /* PR c/6957

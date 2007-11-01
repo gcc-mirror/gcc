@@ -1,4 +1,5 @@
-// { dg-do assemble { xfail xstormy16-*-* } }
+// { dg-do assemble }
+// { dg-xfail-if "" { xstormy16-*-* } { "*" } { "" } }
 
 #include <stdio.h>
 #include <stdlib.h>

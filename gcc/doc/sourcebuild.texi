@@ -963,10 +963,11 @@ If the directive includes the optional @samp{@{ target @var{selector} @}}
 then the test is skipped unless the target system is included in the
 list of target triplets or matches the effective-target keyword.
 
-If the directive includes the optional @samp{@{ xfail @var{selector} @}}
-and the selector is met then the test is expected to fail.  For
-@code{dg-do run}, execution is expected to fail but compilation
-is expected to pass.
+If @samp{do-what-keyword} is @code{run} and the directive includes
+the optional @samp{@{ xfail @var{selector} @}} and the selector is met
+then the test is expected to fail.  The @code{xfail} clause is ignored
+for other values of @samp{do-what-keyword}; those tests can use
+directive @code{dg-xfail-if}.
 
 @item @{ dg-options @var{options} [@{ target @var{selector} @}] @}
 This DejaGnu directive provides a list of compiler options, to be used

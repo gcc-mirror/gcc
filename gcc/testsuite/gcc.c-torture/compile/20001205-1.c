@@ -1,6 +1,7 @@
 /* This does not work on m68hc11 due to the asm statement which forces
    two 'long' (32-bits) variables to go in registers.  */
-/* { dg-do assemble { xfail m6811-*-* m6812-*-* } } */
+/* { dg-do assemble } */
+/* { dg-xfail-if "" { m6811-*-* m6812-*-* } { "*" } { "" } } */
 
 static inline unsigned long rdfpcr(void)
 {

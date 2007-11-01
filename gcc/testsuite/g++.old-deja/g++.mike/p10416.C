@@ -1,4 +1,5 @@
-// { dg-do assemble { xfail sparc64-*-elf arm-*-pe } }
+// { dg-do assemble }
+// { dg-xfail-if "" { sparc64-*-elf arm-*-pe } { "*" } { "" } }
 // { dg-options "-fexceptions" }
 // prms-id: 10416
 
