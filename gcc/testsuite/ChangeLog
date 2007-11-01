@@ -1,3 +1,8 @@
+2007-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/33673
+	* gcc.dg/pr33673.c: New test.
+
 2007-11-01  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/33961
