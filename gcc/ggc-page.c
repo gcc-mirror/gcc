@@ -195,6 +195,7 @@ static const size_t extra_order_size_table[] = {
   sizeof (struct function),
   sizeof (struct basic_block_def),
   sizeof (bitmap_element),
+  sizeof (bitmap_head),
   /* PHI nodes with one to three arguments are already covered by the
      above sizes.  */
   sizeof (struct tree_phi_node) + sizeof (struct phi_arg_d) * 3,

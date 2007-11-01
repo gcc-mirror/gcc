@@ -1,3 +1,7 @@
+2007-11-01  Richard Guenther  <rguenther@suse.de>
+
+	* ggc-page.c (extra_order_size_tab): Add bitmap_head size.
+
 2007-11-01  Steven Bosscher  <stevenb.gcc@gmail.com>
 
 	PR rtl-optimization/33828
