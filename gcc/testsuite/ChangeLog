@@ -1,3 +1,28 @@
+2007-11-01  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/25352
+	* gcc.c-torture/compile/20000804-1.c: Remove xfail from dg-do and
+	add dg-skip-if.
+	* gcc.c-torture/compile/20001205-1.c: Ditto.
+	* gcc.c-torture/compile/20001226-1.c: Ditto.
+	* gcc.c-torture/compile/20020312-1.c: Ditto.
+	* gcc.c-torture/compile/20020604-1.c: Ditto.
+	* gcc.c-torture/compile/920501-12.c: Ditto.
+	* gcc.c-torture/compile/920501-4.c: Ditto.
+	* gcc.c-torture/compile/920520-1.c: Ditto.
+	* gcc.c-torture/compile/980506-1.c: Ditto.
+	* gcc.c-torture/compile/990617-1.c: Ditto.
+	* gcc.dg/compare6.c: Ditto.
+	* g++.old-deja/g++.brendan/crash43.C: Ditto.
+	* g++.old-deja/g++.brendan/synth1.C: Ditto.
+	* g++.old-deja/g++.oliva/dwarf2.C: Ditto.
+	* g++.old-deja/g++.oliva/dwarf3.C: Ditto.
+	* g++.old-deja/g++.pt/static6.C: Ditto.
+	* g++.old-deja/g++.pt/crash16.C: Ditto.
+	* g++.old-deja/g++.mike/p10416.C: Ditto.
+	* g++.old-deja/g++.mike/ns15.C: Ditto.
+	* g++.old-deja/g++.mike/eh46.C: Ditto.
+
 2007-11-01  Tom Tromey  <tromey@redhat.com>
 
 	* gcc.dg/redecl-1.c: Update.

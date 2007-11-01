@@ -1,3 +1,9 @@
+2007-11-01  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/25352
+	* testsuite/26_numerics/headers/cmath/c99_classification_macros_c.cc:
+	Remove xfail from dg-do and add dg-skip-if.
+
 2007-10-31  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_queue.h (queue<>::push(value_type&&)): Replace

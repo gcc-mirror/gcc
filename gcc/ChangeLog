@@ -1,3 +1,9 @@
+2007-11-01  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/25352
+	* doc/sourcebuild.texi (Test Directives): Document that xfail
+	has no effect for dg-do except when dg-do-what is "run".
+
 2007-11-01  Tom Tromey  <tromey@redhat.com>
 
 	* c-decl.c (grokdeclarator): Set decl source locations.

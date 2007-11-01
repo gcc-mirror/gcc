@@ -1,6 +1,7 @@
 /* 0x70000000 is too large a constant to become a pointer on
    xstormy16. */
-/* { dg-do assemble { xfail xstormy16-*-* } } */
+/* { dg-do assemble } */
+/* { dg-xfail-if "" { xstormy16-*-* } { "*" } { "" } } */
 
 int main()
 {
