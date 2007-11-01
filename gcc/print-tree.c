@@ -443,6 +443,9 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 
       xloc = expand_location (DECL_SOURCE_LOCATION (node));
       fprintf (file, " file %s line %d", xloc.file, xloc.line);
+#ifdef USE_MAPPED_LOCATION
+      fprintf (file, " col %d", xloc.column);
+#endif
 
       if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
 	{	  
@@ -932,6 +935,9 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
       expanded_location xloc = expand_location (EXPR_LOCATION (node));
       indent_to (file, indent+4);
       fprintf (file, "%s:%d", xloc.file, xloc.line);
+#ifdef USE_MAPPED_LOCATION
+      fprintf (file, ":%d", xloc.column);
+#endif
     }
 
   fprintf (file, ">");

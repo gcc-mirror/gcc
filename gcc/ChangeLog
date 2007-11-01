@@ -1,3 +1,7 @@
+2007-11-01  Tom Tromey  <tromey@redhat.com>
+
+	* print-tree.c (print_node): Print column number.
+
 2007-11-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/33537
