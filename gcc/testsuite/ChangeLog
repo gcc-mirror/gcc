@@ -1,3 +1,8 @@
+2007-11-01  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/33961
+	* gcc.dg/pr33961.c: New test.
+
 2007-10-31  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33494

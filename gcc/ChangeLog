@@ -1,3 +1,12 @@
+2007-11-01  Michael Matz  <matz@suse.de
+
+	PR tree-optimization/33961
+	* tree-ssa-phiopt.c (struct name_to_bb.store): New member.
+	(name_to_bb_hash, name_to_bb_eq): Consider and check it.
+	(add_or_mark_expr): New argument 'store', using it to search
+	the hash table.
+	(nt_init_block): Adjust calls to add_or_mark_expr.
+
 2007-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/31507
