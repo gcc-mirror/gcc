@@ -7,8 +7,8 @@ extern inline int func1 (void)
   return 1;
 }
 
-inline int func1 (void)
-{ /* { dg-error "redefinition" } */
+inline int func1 (void) /* { dg-error "redefinition" } */
+{
   return 1;
 }
 
@@ -17,7 +17,7 @@ inline int func2 (void)
   return 2;
 }
 
-inline int func2 (void)
-{ /* { dg-error "redefinition" } */
+inline int func2 (void) /* { dg-error "redefinition" } */
+{
   return 2;
 }

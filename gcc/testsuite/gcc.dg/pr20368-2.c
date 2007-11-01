@@ -6,7 +6,7 @@
 extern __typeof (f) g; /* { dg-error "'f' undeclared here \\(not in a function\\)" } */
 
 int
-f (x)
-     float x; /* { dg-warning "no previous prototype for 'f'" } */
+f (x) /* { dg-warning "no previous prototype for 'f'" } */
+     float x;
 {
 }
