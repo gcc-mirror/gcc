@@ -5399,7 +5399,7 @@ Enabled at levels @option{-O}, @option{-O2}, @option{-O3},
 
 @item -fcse-follow-jumps
 @opindex fcse-follow-jumps
-In common subexpression elimination, scan through jump instructions
+In common subexpression elimination (CSE), scan through jump instructions
 when the target of the jump is not reached by any other path.  For
 example, when CSE encounters an @code{if} statement with an
 @code{else} clause, CSE will follow the jump when the condition
@@ -5644,8 +5644,8 @@ sense when scheduling after register allocation, i.e.@: with
 
 @item -fsee
 @opindex fsee
-Eliminates redundant extension instructions and move the non redundant
-ones to optimal placement using LCM.
+Eliminate redundant sign extension instructions and move the non-redundant
+ones to optimal placement using lazy code motion (LCM).
 
 @item -freschedule-modulo-scheduled-loops
 @opindex freschedule-modulo-scheduled-loops
@@ -5667,17 +5667,17 @@ Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -ftree-reassoc
 @opindex ftree-reassoc
-Perform Reassociation on trees  This flag is enabled by default
+Perform reassociation on trees.  This flag is enabled by default
 at @option{-O} and higher.
 
 @item -ftree-pre
 @opindex ftree-pre
-Perform Partial Redundancy Elimination (PRE) on trees.  This flag is
+Perform partial redundancy elimination (PRE) on trees.  This flag is
 enabled by default at @option{-O2} and @option{-O3}.
 
 @item -ftree-fre
 @opindex ftree-fre
-Perform Full Redundancy Elimination (FRE) on trees.  The difference
+Perform full redundancy elimination (FRE) on trees.  The difference
 between FRE and PRE is that FRE only considers expressions
 that are computed on all paths leading to the redundant computation.
 This analysis is faster than PRE, though it exposes fewer redundancies.
