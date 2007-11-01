@@ -451,7 +451,9 @@ paste_tokens (cpp_reader *pfile, const cpp_token **plhs, const cpp_token *rhs)
      false doesn't work, since we want to clear the PASTE_LEFT flag.  */
   if ((*plhs)->type == CPP_DIV && rhs->type != CPP_EQ)
     *end++ = ' ';
-  end = cpp_spell_token (pfile, rhs, end, false);
+  /* In one obscure case we might see padding here.  */
+  if (rhs->type != CPP_PADDING)
+    end = cpp_spell_token (pfile, rhs, end, false);
   *end = '\n';
 
   cpp_push_buffer (pfile, buf, end - buf, /* from_stage3 */ true);
@@ -514,8 +516,10 @@ paste_all_tokens (cpp_reader *pfile, const cpp_token *lhs)
 	rhs = *FIRST (context).ptoken++;
 
       if (rhs->type == CPP_PADDING)
-	abort ();
-
+	{
+	  if (rhs->flags & PASTE_LEFT)
+	    abort ();
+	}
       if (!paste_tokens (pfile, &lhs, rhs))
 	break;
     }

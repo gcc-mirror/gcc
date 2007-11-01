@@ -1,3 +1,9 @@
+2007-11-01  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/30805:
+	* macro.c (paste_tokens): Handle padding token.
+	(paste_tokens): Don't abort unless padding has PASTE_LEFT flag.
+
 2007-10-31  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/30786:
