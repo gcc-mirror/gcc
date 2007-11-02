@@ -58,7 +58,7 @@ struct varpool_node *varpool_nodes;
    pointer. 
 
    LAST_NEEDED_NODE points to the end of queue, so it can be
-   maintained in forward order.  QTY is needed to make it friendly to
+   maintained in forward order.  GTY is needed to make it friendly to
    PCH.
  
    During unit-at-a-time compilation we construct the queue of needed variables
@@ -159,7 +159,7 @@ dump_varpool (FILE *f)
   struct varpool_node *node;
 
   fprintf (f, "variable pool:\n\n");
-  for (node = varpool_nodes; node; node = node->next_needed)
+  for (node = varpool_nodes; node; node = node->next)
     dump_varpool_node (f, node);
 }
 
