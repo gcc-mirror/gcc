@@ -2504,7 +2504,14 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
       
       *walk_subtrees = 0;
       return NULL_TREE;
-       
+ 
+    case TYPENAME_TYPE:
+      cp_walk_tree (&TYPENAME_TYPE_FULLNAME (t), &find_parameter_packs_r,
+                   ppd, ppd->visited);
+      *walk_subtrees = 0;
+      return NULL_TREE;
+
+      
     case TYPE_PACK_EXPANSION:
     case EXPR_PACK_EXPANSION:
       *walk_subtrees = 0;
