@@ -19,6 +19,13 @@
 #
 # This is largely borrowed from scanasm.exp.
 
+# Extract the constant part of the dump file suffix from the regexp.
+# Argument 0 is the regular expression.
+proc dump-suffix { arg } {
+    set idx [expr [string last "." $arg] + 1]
+    return [string range $arg $idx end]
+}
+
 # Utility for scanning compiler result, invoked via dg-final.
 # Call pass if pattern is present, otherwise fail.
 #
@@ -49,10 +56,11 @@ proc scan-dump { args } {
     set text [read $fd]
     close $fd
 
+    set suf [dump-suffix [lindex $args 2]]
     if [regexp -- [lindex $args 1] $text] {
-	pass "$testcase scan-[lindex $args 0]-dump [lindex $args 1]"
+	pass "$testcase scan-[lindex $args 0]-dump $suf \"[lindex $args 1]\""
     } else {
-	fail "$testcase scan-[lindex $args 0]-dump [lindex $args 1]"
+	fail "$testcase scan-[lindex $args 0]-dump $suf \"[lindex $args 1]\""
     }
 }
 
@@ -85,10 +93,11 @@ proc scan-dump-times { args } {
     set text [read $fd]
     close $fd
 
+    set suf [dump-suffix [lindex $args 3]]
     if { [llength [regexp -inline -all -- [lindex $args 1] $text]] == [lindex $args 2]} {
-        pass "$testcase scan-[lindex $args 0]-dump-times [lindex $args 1] [lindex $args 2]"
+        pass "$testcase scan-[lindex $args 0]-dump-times $suf \"[lindex $args 1]\" [lindex $args 2]"
     } else {
-        fail "$testcase scan-[lindex $args 0]-dump-times [lindex $args 1] [lindex $args 2]"
+        fail "$testcase scan-[lindex $args 0]-dump-times $suf \"[lindex $args 1]\" [lindex $args 2]"
     }
 }
 
@@ -120,10 +129,11 @@ proc scan-dump-not { args } {
     set text [read $fd]
     close $fd
 
+    set suf [dump-suffix [lindex $args 2]]
     if ![regexp -- [lindex $args 1] $text] {
-	pass "$testcase scan-[lindex $args 0]-dump-not [lindex $args 1]"
+	pass "$testcase scan-[lindex $args 0]-dump-not $suf \"[lindex $args 1]\""
     } else {
-	fail "$testcase scan-[lindex $args 0]-dump-not [lindex $args 1]"
+	fail "$testcase scan-[lindex $args 0]-dump-not $suf \"[lindex $args 1]\""
     }
 }
 
@@ -165,10 +175,11 @@ proc scan-dump-dem { args } {
     set text [read $fd]
     close $fd
 
+    set suf [dump-suffix [lindex $args 2]]
     if [regexp -- [lindex $args 1] $text] {
-	pass "$testcase scan-[lindex $args 0]-dump-dem [lindex $args 1]"
+	pass "$testcase scan-[lindex $args 0]-dump-dem $suf \"[lindex $args 1]\""
     } else {
-	fail "$testcase scan-[lindex $args 0]-dump-dem [lindex $args 1]"
+	fail "$testcase scan-[lindex $args 0]-dump-dem $suf \"[lindex $args 1]\""
     }
 }
 
@@ -209,9 +220,10 @@ proc scan-dump-dem-not { args } {
     set text [read $fd]
     close $fd
 
+    set suf [dump-suffix [lindex $args 2]]
     if ![regexp -- [lindex $args 1] $text] {
-	pass "$testcase scan-[lindex $args 0]-dump-dem-not [lindex $args 1]"
+	pass "$testcase scan-[lindex $args 0]-dump-dem-not $suf \"[lindex $args 1]\""
     } else {
-	fail "$testcase scan-[lindex $args 0]-dump-dem-not [lindex $args 1]"
+	fail "$testcase scan-[lindex $args 0]-dump-dem-not $suf \"[lindex $args 1]\""
     }
 }
