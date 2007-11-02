@@ -1,3 +1,20 @@
+2007-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/ia64/ia64.c (struct reg_write_state): Change into
+	unsigned short bitfields rather than unsigned int, decrease
+	first_pred to just 10 bits.
+	(rws_insn): Change into a bitmap or if not ENABLE_CHECKING
+	into two char array.
+	(rws_insn_set, rws_insn_test): New functions.
+	(in_safe_group_barrier): New variable.
+	(rws_update): Remove first argument, always set rws_sum array.
+	(rws_access_regno): Use rws_insn_set macro.  Only call rws_update
+	or update rws_sum if !in_safe_group_barrier, adjust rws_update
+	args.
+	(rtx_needs_barrier): Use rws_insn_test macro.
+	(safe_group_barrier_needed): Don't save/restore rws_sum array,
+	instead set/clear in_safe_group_barrier flag.
+
 2007-11-02  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (xtensa_expand_prologue): Put a
