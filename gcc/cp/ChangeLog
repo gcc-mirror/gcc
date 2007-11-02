@@ -1,3 +1,15 @@
+2007-11-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/30897
+	* pt.c (push_template_decl_real): Set DECL_CONTEXT on template
+	template parms.
+	(lookup_template_class): Use it to get the outer template args
+	for instantiating one.
+
+	PR c++/29236
+	* pt.c (reduce_template_parm_level): tsubst the parameters
+	of a template template parm.
+
 2007-11-01  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR c++/33955
@@ -33,7 +45,7 @@
            Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/19531
-	* cp/typeck.c (check_return_expr): Don't set named_return_value_okay_p
+	* typeck.c (check_return_expr): Don't set named_return_value_okay_p
 	if retval is volatile. 
 	
 2007-10-30  Jakub Jelinek  <jakub@redhat.com>
