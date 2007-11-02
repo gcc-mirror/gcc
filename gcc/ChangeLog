@@ -1,3 +1,14 @@
+2007-11-02  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (xtensa_expand_prologue): Put a
+	REG_FRAME_RELATED_EXPR note on the last insn that sets up the stack
+	pointer or frame pointer.
+	* config/xtensa/xtensa.h (DWARF_UNWIND_INFO): Delete.
+	(MUST_USE_SJLJ_EXCEPTIONS): Define.
+	(DWARF2_UNWIND_INFO): Define.
+	(INCOMING_RETURN_ADDR_RTX): Define.
+	(DWARF_FRAME_RETURN_COLUMN): Define.
+
 2007-11-02  Tom Tromey  <tromey@redhat.com>
 
 	* varpool.c (dump_varpool): Use 'next', not 'next_needed' when
