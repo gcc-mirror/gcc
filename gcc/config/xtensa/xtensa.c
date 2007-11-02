@@ -2305,12 +2305,13 @@ xtensa_expand_prologue (void)
 {
   HOST_WIDE_INT total_size;
   rtx size_rtx;
+  rtx insn, note_rtx;
 
   total_size = compute_frame_size (get_frame_size ());
   size_rtx = GEN_INT (total_size);
 
   if (total_size < (1 << (12+3)))
-    emit_insn (gen_entry (size_rtx, size_rtx));
+    insn = emit_insn (gen_entry (size_rtx, size_rtx));
   else
     {
       /* Use a8 as a temporary since a0-a7 may be live.  */
@@ -2318,14 +2319,14 @@ xtensa_expand_prologue (void)
       emit_insn (gen_entry (size_rtx, GEN_INT (MIN_FRAME_SIZE)));
       emit_move_insn (tmp_reg, GEN_INT (total_size - MIN_FRAME_SIZE));
       emit_insn (gen_subsi3 (tmp_reg, stack_pointer_rtx, tmp_reg));
-      emit_move_insn (stack_pointer_rtx, tmp_reg);
+      insn = emit_insn (gen_movsi (stack_pointer_rtx, tmp_reg));
     }
 
   if (frame_pointer_needed)
     {
       if (cfun->machine->set_frame_ptr_insn)
 	{
-	  rtx first, insn;
+	  rtx first;
 
 	  push_topmost_sequence ();
 	  first = get_insns ();
@@ -2347,8 +2348,20 @@ xtensa_expand_prologue (void)
 	    }
 	}
       else
-	emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
+	insn = emit_insn (gen_movsi (hard_frame_pointer_rtx,
+				     stack_pointer_rtx));
     }
+
+  /* Create a note to describe the CFA.  Because this is only used to set
+     DW_AT_frame_base for debug info, don't bother tracking changes through
+     each instruction in the prologue.  It just takes up space.  */
+  note_rtx = gen_rtx_SET (VOIDmode, (frame_pointer_needed
+				     ? hard_frame_pointer_rtx
+				     : stack_pointer_rtx),
+			  plus_constant (stack_pointer_rtx, -total_size));
+  RTX_FRAME_RELATED_P (insn) = 1;
+  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+					note_rtx, REG_NOTES (insn));
 }
 
 
