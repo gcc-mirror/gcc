@@ -1,3 +1,10 @@
+2007-11-02  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/32076
+	* lib/scandump.exp (dump-suffix): New.
+	(scan-dump, scan-dump-times, scan-dump-dem, scan-dump-dem-not):
+	Include dump suffix in pass/fail messages, put regexp in quotes.
+
 2007-11-02  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33495
