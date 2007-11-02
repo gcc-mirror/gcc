@@ -123,6 +123,9 @@ namespace __gnu_parallel
     thread_index_t num_threads = get_max_threads();
     difference_type num_threads_min = num_threads < end - begin ? num_threads : end - begin;
 
+    omp_lock_t output_lock;
+    omp_init_lock(&output_lock);
+
     // No more threads than jobs, at least one thread.
     difference_type num_threads_max = num_threads_min > 1 ? num_threads_min : 1;
     num_threads = static_cast<thread_index_t>(num_threads_max);
@@ -276,9 +279,10 @@ namespace __gnu_parallel
 	    }
 #pragma omp flush(busy)
 	} // end while busy > 0
-#pragma omp critical(writeOutput)
       // Add accumulated result to output.
+      omp_set_lock(&output_lock);
       output = r(output, result);
+      omp_unset_lock(&output_lock);
 
       //omp_destroy_lock(&(my_job.lock));
     }
@@ -288,6 +292,8 @@ namespace __gnu_parallel
     // Points to last element processed (needed as return value for
     // some algorithms like transform)
     f.finish_iterator = begin + length;
+
+    omp_destroy_lock(&output_lock);
 
     return op;
   }
