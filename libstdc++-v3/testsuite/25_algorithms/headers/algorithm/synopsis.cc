@@ -468,6 +468,24 @@ namespace std
     _FIter 
     max_element(_FIter, _FIter, _Compare);
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Tp>
+    pair<const _Tp&, const _Tp&>
+    minmax(const _Tp&, const _Tp&);
+
+  template<typename _Tp, typename _Compare>
+    pair<const _Tp&, const _Tp&>
+    minmax(const _Tp&, const _Tp&, _Compare);
+
+  template<typename _FIter>
+    pair<_FIter, _FIter>
+    minmax_element(_FIter, _FIter);
+
+  template<typename _FIter, typename _Compare>
+    pair<_FIter, _FIter> 
+    minmax_element(_FIter, _FIter, _Compare);
+#endif
+
   template<typename _IIter1, typename _IIter2>
     bool 
     lexicographical_compare(_IIter1, _IIter1, _IIter2, _IIter2);
