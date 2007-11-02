@@ -1,3 +1,9 @@
+2007-11-02  Tom Tromey  <tromey@redhat.com>
+
+	PR java/33765:
+	* jcf-parse.c (java_parse_file): Ignore ZIPEMPTYMAGIC files.
+	* zipfile.h (ZIPEMPTYMAGIC): New define.
+
 2007-11-01  Tom Tromey  <tromey@redhat.com>
 
 	* Make-lang.in (java/jcf-dump.o): Depend on zipfile.h.
