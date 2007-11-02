@@ -1590,6 +1590,12 @@ ok_for_early_queue_removal (rtx insn)
 	    {
 	      int cost;
 
+	      if (prev_insn == current_sched_info->prev_head)
+		{
+		  prev_insn = NULL;
+		  break;
+		}
+
 	      if (!NOTE_P (prev_insn))
 		{
 		  dep_t dep;
