@@ -1,3 +1,10 @@
+2007-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33516
+	* parser.c (cp_parser_nested_name_specifier_opt): Use
+	TYPE_MAIN_VARIANT (new_scope) as scope if new_scope is an incomplete
+	typedef of currently open class.
+
 2007-11-02  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33495

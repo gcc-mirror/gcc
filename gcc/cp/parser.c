@@ -4085,7 +4085,15 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	  && !COMPLETE_TYPE_P (new_scope)
 	  /* Do not try to complete dependent types.  */
 	  && !dependent_type_p (new_scope))
-	new_scope = complete_type (new_scope);
+	{
+	  new_scope = complete_type (new_scope);
+	  /* If it is a typedef to current class, use the current
+	     class instead, as the typedef won't have any names inside
+	     it yet.  */
+	  if (!COMPLETE_TYPE_P (new_scope)
+	      && currently_open_class (new_scope))
+	    new_scope = TYPE_MAIN_VARIANT (new_scope);
+	}
       /* Make sure we look in the right scope the next time through
 	 the loop.  */
       parser->scope = new_scope;
