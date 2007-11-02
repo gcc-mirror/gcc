@@ -132,7 +132,7 @@ static bool inline_needs_template_parms (tree);
 static void push_inline_template_parms_recursive (tree, int);
 static tree retrieve_local_specialization (tree);
 static void register_local_specialization (tree, tree);
-static tree reduce_template_parm_level (tree, tree, int);
+static tree reduce_template_parm_level (tree, tree, int, tree, tsubst_flags_t);
 static int mark_template_parm (tree, void *);
 static int template_parm_this_level_p (tree, void *);
 static tree tsubst_friend_function (tree, tree);
@@ -2878,7 +2878,8 @@ canonical_type_parameter (tree type)
    new one is created.  */
 
 static tree
-reduce_template_parm_level (tree index, tree type, int levels)
+reduce_template_parm_level (tree index, tree type, int levels, tree args,
+			    tsubst_flags_t complain)
 {
   if (TEMPLATE_PARM_DESCENDANTS (index) == NULL_TREE
       || (TEMPLATE_PARM_LEVEL (TEMPLATE_PARM_DESCENDANTS (index))
@@ -2903,9 +2904,10 @@ reduce_template_parm_level (tree index, tree type, int levels)
 	= TEMPLATE_PARM_PARAMETER_PACK (index);
 
 	/* Template template parameters need this.  */
-      if (TREE_CODE (decl) != CONST_DECL)
-	DECL_TEMPLATE_PARMS (decl)
-	  = DECL_TEMPLATE_PARMS (TEMPLATE_PARM_DECL (index));
+      if (TREE_CODE (decl) == TEMPLATE_DECL)
+	DECL_TEMPLATE_PARMS (decl) = tsubst_template_parms
+	  (DECL_TEMPLATE_PARMS (TEMPLATE_PARM_DECL (index)),
+	   args, complain);
     }
 
   return TEMPLATE_PARM_DESCENDANTS (index);
@@ -4000,10 +4002,13 @@ template arguments to %qD do not match original template %qD",
 
   if (primary)
     {
+      tree parms = DECL_TEMPLATE_PARMS (tmpl);
+      int i;
+
       DECL_PRIMARY_TEMPLATE (tmpl) = tmpl;
       if (DECL_CONV_FN_P (tmpl))
 	{
-	  int depth = TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (tmpl));
+	  int depth = TMPL_PARMS_DEPTH (parms);
 
 	  /* It is a conversion operator. See if the type converted to
 	     depends on innermost template operands.  */
@@ -4011,6 +4016,16 @@ template arguments to %qD do not match original template %qD",
 	  if (uses_template_parms_level (TREE_TYPE (TREE_TYPE (tmpl)),
 					 depth))
 	    DECL_TEMPLATE_CONV_FN_P (tmpl) = 1;
+	}
+
+      /* Give template template parms a DECL_CONTEXT of the template
+	 for which they are a parameter.  */
+      parms = INNERMOST_TEMPLATE_PARMS (parms);
+      for (i = TREE_VEC_LENGTH (parms) - 1; i >= 0; --i)
+	{
+	  tree parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
+	  if (TREE_CODE (parm) == TEMPLATE_DECL)
+	    DECL_CONTEXT (parm) = tmpl;
 	}
     }
 
@@ -5392,6 +5407,7 @@ lookup_template_class (tree d1,
 
       tree parm;
       tree arglist2;
+      tree outer;
 
       parmlist = DECL_INNERMOST_TEMPLATE_PARMS (template);
 
@@ -5404,15 +5420,23 @@ lookup_template_class (tree d1,
 	 instantiation `TT<int>' is seen, we need to build the full
 	 arguments containing {int} as the innermost level.  Outer levels,
 	 available when not appearing as default template argument, can be
-	 obtained from `current_template_args ()'.
+	 obtained from the arguments of the enclosing template.
 
 	 Suppose that TT is later substituted with std::vector.  The above
 	 instantiation is `TT<int, std::allocator<T> >' with TT at
 	 level 1, and T at level 2, while the template arguments at level 1
 	 becomes {std::vector} and the inner level 2 is {int}.  */
 
-      if (current_template_parms)
-	arglist = add_to_template_args (current_template_args (), arglist);
+      outer = DECL_CONTEXT (template);
+      if (outer)
+	outer = TI_ARGS (get_template_info (DECL_TEMPLATE_RESULT (outer)));
+      else if (current_template_parms)
+	/* This is an argument of the current template, so we haven't set
+	   DECL_CONTEXT yet.  */
+	outer = current_template_args ();
+
+      if (outer)
+	arglist = add_to_template_args (outer, arglist);
 
       arglist2 = coerce_template_parms (parmlist, arglist, template,
 					complain,
@@ -8829,7 +8853,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		r = copy_type (t);
 		TEMPLATE_TYPE_PARM_INDEX (r)
 		  = reduce_template_parm_level (TEMPLATE_TYPE_PARM_INDEX (t),
-						r, levels);
+						r, levels, args, complain);
 		TYPE_STUB_DECL (r) = TYPE_NAME (r) = TEMPLATE_TYPE_DECL (r);
 		TYPE_MAIN_VARIANT (r) = r;
 		TYPE_POINTER_TO (r) = NULL_TREE;
@@ -8863,7 +8887,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    break;
 
 	  case TEMPLATE_PARM_INDEX:
-	    r = reduce_template_parm_level (t, type, levels);
+	    r = reduce_template_parm_level (t, type, levels, args, complain);
 	    break;
 
 	  default:
