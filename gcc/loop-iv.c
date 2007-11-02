@@ -1497,7 +1497,7 @@ implies_p (rtx a, rtx b)
 	    mode = VOIDmode;
 	}
 
-      if (mode != VOIDmode
+      if (SCALAR_INT_MODE_P (mode)
 	  && rtx_equal_p (op1, opb1)
 	  && simplify_gen_binary (MINUS, mode, opb0, op0) == const1_rtx)
 	return true;
