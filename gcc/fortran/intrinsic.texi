@@ -959,7 +959,7 @@ Inquiry function
 @item @emph{Return value}:
 The return value is a scalar @code{LOGICAL} with the default logical
 kind type parameter.  If @var{X} is allocated, @code{ALLOCATED(X)}
-is @code{.TRUE.}; otherwise, it returns the @code{.TRUE.} 
+is @code{.TRUE.}; otherwise, it returns @code{.FALSE.} 
 
 @item @emph{Example}:
 @smallexample
