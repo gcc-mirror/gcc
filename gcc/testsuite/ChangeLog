@@ -1,3 +1,8 @@
+2007-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33516
+	* g++.dg/lookup/typedef1.C: New test.
+
 2007-11-02  Janis Johnson  <janis187@us.ibm.com>
 
 	PR testsuite/32076
