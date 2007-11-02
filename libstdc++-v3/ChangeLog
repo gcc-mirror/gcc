@@ -1,3 +1,11 @@
+2007-11-02  Johannes Singler  <singler@ira.uka.de>
+
+        * include/parallel/workstealing.h: Replaced pragma by function
+          call lock.
+        * include/parallel/search.h: Same
+        * include/parallel/partition.h: Same
+        * include/parallel/find.h: Same
+
 2007-11-01  Janis Johnson  <janis187@us.ibm.com>
 
 	PR testsuite/25352

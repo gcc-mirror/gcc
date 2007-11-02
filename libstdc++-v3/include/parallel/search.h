@@ -102,13 +102,16 @@ namespace __gnu_parallel
     difference_type input_length = (end1 - begin1) - pattern_length;
 
     // Where is first occurrence of pattern? defaults to end.
-    difference_type res = (end1 - begin1);
+    difference_type result = (end1 - begin1);
 
     // Pattern too long.
     if (input_length < 0)
       return end1;
 
     thread_index_t num_threads = std::max<difference_type>(1, std::min<difference_type>(input_length, __gnu_parallel::get_max_threads()));
+
+    omp_lock_t result_lock;
+    omp_init_lock(&result_lock);
 
     difference_type borders[num_threads + 1];
     __gnu_parallel::equally_split(input_length, num_threads, borders);
@@ -127,19 +130,21 @@ namespace __gnu_parallel
 
       while (start <= stop && !found_pattern)
 	{
-	  // Get new value of res.
-#pragma omp flush(res)
+	  // Get new value of result.
+#pragma omp flush(result)
 	  // No chance for this thread to find first occurrence.
-	  if (res < start)
+	  if (result < start)
 	    break;
 	  while (pred(begin1[start + pos_in_pattern], begin2[pos_in_pattern]))
 	    {
 	      ++pos_in_pattern;
 	      if (pos_in_pattern == pattern_length)
 		{
-		  // Found new candidate for res.
-#pragma omp critical (res)
-		  res = std::min(res, start);
+		  // Found new candidate for result.
+                  omp_set_lock(&result_lock);
+		  result = std::min(result, start);
+                  omp_unset_lock(&result_lock);
+
 		  found_pattern = true;
 		  break;
 		}
@@ -150,8 +155,10 @@ namespace __gnu_parallel
 	}
     }
 
+    omp_destroy_lock(&result_lock);
+
     // Return iterator on found element.
-    return (begin1 + res);
+    return (begin1 + result);
   }
 } // end namespace
 
