@@ -58,6 +58,7 @@ extern struct ZipFile *SeenZipFiles;
 #define ZIPDIR_NEXT(ZIPD) \
    ((ZipDirectory*)((char*)(ZIPD)+(ZIPD)->direntry_size))
 #define ZIPMAGIC 0x504b0304	
+#define ZIPEMPTYMAGIC 0x504b0506
 
 extern ZipFile * opendir_in_zip (const char *, int);
 extern int read_zip_archive (ZipFile *);

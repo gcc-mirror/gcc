@@ -1946,6 +1946,10 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 #endif
 	  parse_zip_file_entries ();
 	}
+      else if (magic == (JCF_u4) ZIPEMPTYMAGIC)
+	{
+	  /* Ignore an empty input jar.  */
+	}
       else
 	{
 	  gcc_unreachable ();
