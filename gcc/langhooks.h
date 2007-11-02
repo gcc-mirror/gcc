@@ -43,9 +43,9 @@ struct lang_hooks_for_callgraph
 {
   /* The node passed is a language-specific tree node.  If its contents
      are relevant to use of other declarations, mark them.  */
-  tree (*analyze_expr) (tree *, int *, tree);
+  tree (*analyze_expr) (tree *, int *);
 
-  /* Emmit thunks associated to function.  */
+  /* Emit thunks associated to function.  */
   void (*emit_associated_thunks) (tree);
 };
 

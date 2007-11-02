@@ -69,7 +69,7 @@ extern tree lhd_builtin_function (tree decl);
 
 /* Declarations of default tree inlining hooks.  */
 extern void lhd_initialize_diagnostics (struct diagnostic_context *);
-extern tree lhd_callgraph_analyze_expr (tree *, int *, tree);
+extern tree lhd_callgraph_analyze_expr (tree *, int *);
 
 
 /* Declarations for tree gimplification hooks.  */
