@@ -1,3 +1,8 @@
+2007-11-01  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/33955
+	* pt.c (find_parameter_packs_r): Handle TYPENAME_TYPE.
+
 2007-11-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/32384
