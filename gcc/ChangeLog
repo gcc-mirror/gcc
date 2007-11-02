@@ -1,3 +1,11 @@
+2007-11-02  Diego Novillo  <dnovillo@google.com>
+
+	* langhooks.h (struct lang_hooks_for_callgraph): Remove third
+	argument from function pointer ANALYZE_EXPR.  Update all
+	users.
+	* cgraph.c (debug_cgraph_node): New.
+	(debug_cgraph): New.
+
 2007-11-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/33648

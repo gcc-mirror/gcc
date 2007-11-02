@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
    Called via walk_tree: TP is pointer to tree to be examined.  */
 
 static tree
-record_reference (tree *tp, int *walk_subtrees, void *data)
+record_reference (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 {
   tree t = *tp;
 
@@ -46,8 +46,7 @@ record_reference (tree *tp, int *walk_subtrees, void *data)
 	{
 	  varpool_mark_needed_node (varpool_node (t));
 	  if (lang_hooks.callgraph.analyze_expr)
-	    return lang_hooks.callgraph.analyze_expr (tp, walk_subtrees,
-						      data);
+	    return lang_hooks.callgraph.analyze_expr (tp, walk_subtrees);
 	}
       break;
 
@@ -73,7 +72,7 @@ record_reference (tree *tp, int *walk_subtrees, void *data)
 	}
 
       if ((unsigned int) TREE_CODE (t) >= LAST_AND_UNUSED_TREE_CODE)
-	return lang_hooks.callgraph.analyze_expr (tp, walk_subtrees, data);
+	return lang_hooks.callgraph.analyze_expr (tp, walk_subtrees);
       break;
     }
 

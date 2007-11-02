@@ -657,7 +657,9 @@ cgraph_node_name (struct cgraph_node *node)
 const char * const cgraph_availability_names[] =
   {"unset", "not_available", "overwrittable", "available", "local"};
 
-/* Dump given cgraph node.  */
+
+/* Dump call graph node NODE to file F.  */
+
 void
 dump_cgraph_node (FILE *f, struct cgraph_node *node)
 {
@@ -742,7 +744,17 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
   fprintf (f, "\n");
 }
 
-/* Dump the callgraph.  */
+
+/* Dump call graph node NODE to stderr.  */
+
+void
+debug_cgraph_node (struct cgraph_node *node)
+{
+  dump_cgraph_node (stderr, node);
+}
+
+
+/* Dump the callgraph to file F.  */
 
 void
 dump_cgraph (FILE *f)
@@ -754,7 +766,18 @@ dump_cgraph (FILE *f)
     dump_cgraph_node (f, node);
 }
 
+
+/* Dump the call graph to stderr.  */
+
+void
+debug_cgraph (void)
+{
+  dump_cgraph (stderr);
+}
+
+
 /* Set the DECL_ASSEMBLER_NAME and update cgraph hashtables.  */
+
 void
 change_decl_assembler_name (tree decl, tree name)
 {
