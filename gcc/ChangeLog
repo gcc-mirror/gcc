@@ -1,3 +1,9 @@
+2007-11-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/33670
+	* haifa-sched.c (ok_for_early_queue_removal): Don't walk out of the
+	current sched region.
+
 2007-11-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/ia64/ia64.c (struct reg_write_state): Change into
