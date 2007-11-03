@@ -2640,9 +2640,11 @@ finalize_transfer (st_parameter_dt *dtp)
   if (is_stream_io (dtp))
     {
       if (dtp->u.p.current_unit->flags.form == FORM_FORMATTED)
-	next_record (dtp, 1);
-      flush (dtp->u.p.current_unit->s);
-      sfree (dtp->u.p.current_unit->s);
+	{
+	  next_record (dtp, 1);
+	  flush (dtp->u.p.current_unit->s);
+	  sfree (dtp->u.p.current_unit->s);
+	}
       return;
     }
 
