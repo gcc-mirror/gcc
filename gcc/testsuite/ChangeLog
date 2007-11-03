@@ -1,3 +1,8 @@
+2007-11-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR rtl-optimization/28940
+	* gcc.target/i386/addr-sel-1.c: New test.
+
 2007-11-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/33670
