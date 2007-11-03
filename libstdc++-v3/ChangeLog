@@ -1,3 +1,10 @@
+2007-11-03  Paolo Carlini  <pcarlini@suse.de>
+	    Kai-Uwe Bux  <bux@kubux.net>
+
+	* include/tr1_impl/random (variate_generator<>::min, max,
+	operator()()): Return non-trivial values when _Engine_result_type
+	is a floating point type and result_type is an integer type.
+
 2007-11-02  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_algo.h (minmax, minmax_element): Add.
