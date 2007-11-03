@@ -4972,8 +4972,8 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
   if (expr->expr_type == EXPR_ARRAY && expr->ts.type == BT_CHARACTER)
     {
       get_array_ctor_strlen (&se->pre, expr->value.constructor, &tmp);
-      expr->ts.cl->backend_decl = gfc_evaluate_now (tmp, &se->pre);
-      se->string_length = expr->ts.cl->backend_decl;
+      expr->ts.cl->backend_decl = tmp;
+      se->string_length = gfc_evaluate_now (tmp, &se->pre);
     }
 
   /* Is this the result of the enclosing procedure?  */
