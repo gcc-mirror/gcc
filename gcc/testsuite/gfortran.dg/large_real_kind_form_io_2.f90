@@ -1,4 +1,6 @@
-! { dg-do run }
+! { dg-do run { xfail powerpc*-*-linux* } }
+! Test XFAILed on these platforms because the system's printf() lacks
+! proper support for denormalized long doubles. See PR24685
 ! { dg-require-effective-target fortran_large_real }
 ! PR libfortran/24685
 program large_real_kind_form_io_2

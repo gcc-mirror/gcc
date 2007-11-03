@@ -1,7 +1,7 @@
 ! { dg-require-effective-target fortran_large_real }
-! { dg-do run { xfail powerpc*-apple-darwin* *-*-freebsd* } }
+! { dg-do run { xfail powerpc*-apple-darwin* *-*-freebsd* powerpc*-*-linux* } }
 ! Test XFAILed on these platforms because the system's printf() lacks
-! proper support for denormalized long doubles.
+! proper support for denormalized long doubles. See PR24685
 !
 ! This tests that the default formats for formatted I/O of reals are
 ! wide enough and have enough precision, by checking that values can
