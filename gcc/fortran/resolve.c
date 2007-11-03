@@ -7581,6 +7581,9 @@ resolve_symbol (gfc_symbol *sym)
   if (sym->attr.procedure && sym->interface
       && sym->attr.if_source != IFSRC_DECL)
     {
+      while (sym->interface->interface)
+	sym->interface = sym->interface->interface;
+
       /* Get the attributes from the interface (now resolved).  */
       if (sym->interface->attr.if_source || sym->interface->attr.intrinsic)
 	{

@@ -324,8 +324,12 @@ gfc_sym_mangled_function_id (gfc_symbol * sym)
       || (sym->module != NULL && (sym->attr.external
 	    || sym->attr.if_source == IFSRC_IFBODY)))
     {
-      if (strcmp (sym->name, "MAIN__") == 0
-	  || sym->attr.proc == PROC_INTRINSIC)
+      /* Main program is mangled into MAIN__.  */
+      if (sym->attr.is_main_program)
+	return get_identifier ("MAIN__");
+
+      /* Intrinsic procedures are never mangled.  */
+      if (sym->attr.proc == PROC_INTRINSIC)
 	return get_identifier (sym->name);
 
       if (gfc_option.flag_underscoring)
@@ -1321,7 +1325,7 @@ build_function_decl (gfc_symbol * sym)
       TREE_SIDE_EFFECTS (fndecl) = 0;
     }
 
-  /* For -fwhole-program to work well, MAIN__ needs to have the
+  /* For -fwhole-program to work well, the main program needs to have the
      "externally_visible" attribute.  */
   if (attr.is_main_program)
     DECL_ATTRIBUTES (fndecl)

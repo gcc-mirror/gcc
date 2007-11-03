@@ -665,9 +665,7 @@ typedef struct
   /* Set if the symbol has ambiguous interfaces.  */
   unsigned ambiguous_interfaces:1;
 
-  /* Set if the is the symbol for the main program.  This is the least
-     cumbersome way to communicate this function property without
-     strcmp'ing with __MAIN everywhere.  */
+  /* Set if this is the symbol for the main program.  */
   unsigned is_main_program:1;
 
   /* Mutually exclusive multibit attributes.  */

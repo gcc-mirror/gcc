@@ -1924,8 +1924,10 @@ gfc_get_function_type (gfc_symbol * sym)
   int nstr;
   int alternate_return;
 
-  /* Make sure this symbol is a function or a subroutine.  */
-  gcc_assert (sym->attr.flavor == FL_PROCEDURE);
+  /* Make sure this symbol is a function, a subroutine or the main
+     program.  */
+  gcc_assert (sym->attr.flavor == FL_PROCEDURE
+	      || sym->attr.flavor == FL_PROGRAM);
 
   if (sym->backend_decl)
     return TREE_TYPE (sym->backend_decl);
