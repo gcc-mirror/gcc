@@ -1,3 +1,15 @@
+2007-11-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.h: Shorten comment.
+	* trans-types.c (gfc_get_function_type): Allow argument to have
+	flavor FL_PROGRAM.
+	* trans-decl.c (gfc_sym_mangled_function_id): Mangle main program
+	name into MAIN__.
+	(build_function_decl): Fix comment.
+	* parse.c (main_program_symbol): Give the main program its proper
+	name, if any. Set its flavor to FL_PROGRAM.
+	(gfc_parse_file): Likewise.
+
 2007-11-02  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* intrinsic.texi (ALLOCATED): Fix typo.
