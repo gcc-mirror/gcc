@@ -513,7 +513,6 @@ emit_delay_sequence (rtx insn, rtx list, int length)
   PREV_INSN (delay_insn) = PREV_INSN (seq_insn);
 
   INSN_LOCATOR (seq_insn) = INSN_LOCATOR (delay_insn);
-  INSN_LOCATOR (delay_insn) = 0;
 
   for (li = list; li; li = XEXP (li, 1), i++)
     {

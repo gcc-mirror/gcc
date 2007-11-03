@@ -1,3 +1,9 @@
+2007-11-03  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	PR debug/33921
+	* reorg.c (emit_delay_sequence): Do not clear the locator on
+	the jump instruction.
+
 2007-11-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/33670
