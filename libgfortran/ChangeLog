@@ -1,3 +1,9 @@
+2007-11-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/33985
+	* io/transfer.c (finalize_transfer): Do not flush for
+	unformatted STREAM I/O.
+
 2007-10-27  Tobias Burnus  <burnus@net-b.de>
 
 	* mk-kinds-h.sh: Change LANG=C to LC_ALL=C.
