@@ -3811,6 +3811,14 @@ c_parser_statement_after_labels (c_parser *parser)
       break;
     default:
     expr_stmt:
+      if (c_parser_next_token_starts_declspecs (parser)) 
+	{
+	  error ("a label can only be part of a statement and a declaration is not a statement");
+	  c_parser_declaration_or_fndef (parser, /*fndef_ok*/ false, 
+					 /*nested*/ true, /*empty_ok*/ false,
+					 /*start_attr_ok*/ true);
+	  return;
+	}
       stmt = c_finish_expr_stmt (c_parser_expression_conv (parser).value);
     expect_semicolon:
       c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");

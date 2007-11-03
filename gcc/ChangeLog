@@ -1,3 +1,9 @@
+2007-11-03  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c/29062
+	* c-parser.c (c_parser_statement_after_labels): Error if a
+	declaration is parsed after a label.
+	
 2007-11-03  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	PR debug/33921

@@ -7,5 +7,6 @@
 
 void f ()
 {
- l: int; /* { dg-error "" } */
+ l: int; /* { dg-error "a label can only be part of a statement and a declaration is not a statement" } */
+ /* { dg-warning "useless type name in empty declaration" "" { target *-*-* } 10 } */
 }
