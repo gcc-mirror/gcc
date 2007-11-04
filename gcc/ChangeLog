@@ -1,3 +1,13 @@
+2007-11-04  Hirohisa Yamaguchi  <umq@ueo.co.jp>
+
+	* config/freebsd-spec.h (FBSD_TARGET_OS_CPP_BUILTINS): Fix
+	broken else-if chain.
+
+2007-11-04  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config.gcc: Proactively add FreeBSD 10 and FreeBSD 11.
+	* config/freebsd-spec.h (FBSD_TARGET_OS_CPP_BUILTINS): Ditto.
+
 2007-11-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	Backport from mainline:
