@@ -1,3 +1,7 @@
+2007-11-04  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/contrib.texi (Contributors): Add Manuel Lopez-Ibanez.
+
 2007-11-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/10220
