@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-require-effective-target vect_float }
 
 subroutine s243(ntimes,ld,n,ctime,dtime,a,b,c,d,e,aa,bb,cc)
       
@@ -10,11 +11,6 @@ real t1,t2,chksum,ctime,dtime,cs1d
   return
 end
 
-! Currently only the first loop gets vectorized. 
-! For the second loop vectorization fails because of 
-! "affine-affine test failed: missing iteration counts."
-! See PR 32377 for more details.    
-
-! { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { xfail *-*-* }  } }
+! { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect"   } }
 ! { dg-final { cleanup-tree-dump "vect" } }
 

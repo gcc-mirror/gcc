@@ -1,3 +1,7 @@
+2007-11-03  Dorit Nuzman  <doirit@il.ibm.com>
+
+	* gfortran.dg/vect/no-vfa-pr32377.f90: Remove xfail.		
+
 2007-11-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/33881
