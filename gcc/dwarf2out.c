@@ -11356,7 +11356,8 @@ add_name_and_src_coords_attributes (dw_die_ref die, tree decl)
 	  && TREE_PUBLIC (decl)
 	  && DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl)
 	  && !DECL_ABSTRACT (decl)
-	  && !(TREE_CODE (decl) == VAR_DECL && DECL_REGISTER (decl)))
+	  && !(TREE_CODE (decl) == VAR_DECL && DECL_REGISTER (decl))
+	  && !is_fortran ())
 	add_AT_string (die, DW_AT_MIPS_linkage_name,
 		       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
     }
@@ -11513,11 +11514,20 @@ add_type_attribute (dw_die_ref object_die, tree type, int decl_const,
 /* Given an object die, add the calling convention attribute for the
    function call type.  */
 static void
-add_calling_convention_attribute (dw_die_ref subr_die, tree type)
+add_calling_convention_attribute (dw_die_ref subr_die, tree decl)
 {
   enum dwarf_calling_convention value = DW_CC_normal;
 
-  value = targetm.dwarf_calling_convention (type);
+  value = targetm.dwarf_calling_convention (TREE_TYPE (decl));
+
+  /* DWARF doesn't provide a way to identify a program's source-level
+     entry point.  DW_AT_calling_convention attributes are only meant
+     to describe functions' calling conventions.  However, lacking a
+     better way to signal the Fortran main program, we use this for the
+     time being, following existing custom.  */
+  if (is_fortran ()
+      && !strcmp (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)), "MAIN__"))
+    value = DW_CC_program;
 
   /* Only add the attribute if the backend requests it, and
      is not DW_CC_normal.  */
@@ -12370,7 +12380,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 #endif
     }
   /* Add the calling convention attribute if requested.  */
-  add_calling_convention_attribute (subr_die, TREE_TYPE (decl));
+  add_calling_convention_attribute (subr_die, decl);
 
 }
 
