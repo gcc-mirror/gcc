@@ -1,3 +1,8 @@
+2007-11-04  Andrew Pinski  <pinskia@gmail.com>
+
+	PR middle-end/32931
+	* gfortran.fortran-torture/compile/forall-1.f90: New testcase.
+
 2007-11-04  David Edelsohn  <edelsohn@gnu.org>
 
 	* g++.dg/cpp/_Pragma1.C: Disable on AIX.
