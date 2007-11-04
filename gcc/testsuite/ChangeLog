@@ -1,3 +1,10 @@
+2007-11-04  David Edelsohn  <edelsohn@gnu.org>
+
+	* g++.dg/cpp/_Pragma1.C: Disable on AIX.
+	* g++.dg/ext/visibility/namespace2.C: Add argument to
+	dg-require-visibility.
+	* g++.dg/ext/java-1.C: Disable on AIX.
+
 2007-11-03  Dorit Nuzman  <doirit@il.ibm.com>
 
 	* gfortran.dg/vect/no-vfa-pr32377.f90: Remove xfail.		
