@@ -524,6 +524,10 @@ maintaining the S+core port.
 Weiwen Liu for testing and various bug fixes.
 
 @item
+Manuel L@'opez-Ib@'a@~nez for improving @option{-Wconversion} and
+many other diagnostics fixes and improvements.
+
+@item
 Dave Love for his ongoing work with the Fortran front end and
 runtime libraries.
 
