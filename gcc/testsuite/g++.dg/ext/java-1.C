@@ -1,4 +1,4 @@
-// { dg-do compile }
+// { dg-do compile { target { ! { powerpc-ibm-aix* } } } }
 // { dg-options "" }
 // Test extern "java" and some throwing of the objects.
 
