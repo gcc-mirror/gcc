@@ -2107,7 +2107,7 @@ get_initial_def_for_reduction (tree stmt, tree init_val, tree *adjustment_def)
   tree vector_type;
   bool nested_in_vect_loop = false; 
 
-  gcc_assert (INTEGRAL_TYPE_P (type) || SCALAR_FLOAT_TYPE_P (type));
+  gcc_assert (POINTER_TYPE_P (type) || INTEGRAL_TYPE_P (type) || SCALAR_FLOAT_TYPE_P (type));
   if (nested_in_vect_loop_p (loop, stmt))
     nested_in_vect_loop = true;
   else
@@ -2120,17 +2120,17 @@ get_initial_def_for_reduction (tree stmt, tree init_val, tree *adjustment_def)
   case WIDEN_SUM_EXPR:
   case DOT_PROD_EXPR:
   case PLUS_EXPR:
-      if (nested_in_vect_loop)
-	*adjustment_def = vecdef;
-      else
-	*adjustment_def = init_val;
-    /* Create a vector of zeros for init_def.  */
-    if (INTEGRAL_TYPE_P (type))
-      def_for_init = build_int_cst (type, 0);
+    if (nested_in_vect_loop)
+      *adjustment_def = vecdef;
     else
+      *adjustment_def = init_val;
+    /* Create a vector of zeros for init_def.  */
+    if (SCALAR_FLOAT_TYPE_P (type))
       def_for_init = build_real (type, dconst0);
-      for (i = nunits - 1; i >= 0; --i)
-    t = tree_cons (NULL_TREE, def_for_init, t);
+    else
+      def_for_init = build_int_cst (type, 0);
+    for (i = nunits - 1; i >= 0; --i)
+      t = tree_cons (NULL_TREE, def_for_init, t);
     vector_type = get_vectype_for_scalar_type (TREE_TYPE (def_for_init));
     gcc_assert (vector_type);
     init_def = build_vector (vector_type, t);
@@ -2716,6 +2716,9 @@ vectorizable_reduction (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
     return false;
   scalar_dest = GIMPLE_STMT_OPERAND (stmt, 0);
   scalar_type = TREE_TYPE (scalar_dest);
+  if (!POINTER_TYPE_P (scalar_type) && !INTEGRAL_TYPE_P (scalar_type) 
+      && !SCALAR_FLOAT_TYPE_P (scalar_type))
+    return false;
 
   /* All uses but the last are expected to be defined in the loop.
      The last use is the reduction variable.  */

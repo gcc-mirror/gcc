@@ -1,3 +1,10 @@
+2007-11-03  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/33987
+	* tree-vect-transform.c (get_initial_def_for_reduction): Fix assert.
+	Fix indentation.
+	(vectorizable_reduction): Add type check.
+
 2007-11-03  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c/29062
