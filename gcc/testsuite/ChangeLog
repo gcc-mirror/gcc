@@ -1,7 +1,7 @@
 2007-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/33648
-	* gcc.dg/pr33648.c: New test.
+	* gcc.dg/pr33648.c: Require effective targer freorder.
 
 2007-11-05  Revital Eres  <eres@il.ibm.com>
 
