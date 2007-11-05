@@ -1,3 +1,8 @@
+2007-11-05  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/33939
+	* g++.dg/cpp0x/variadic-rref.C: New.
+	
 2007-11-05  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* g++dg/warn/pointer-integer-comparison.C: New.
