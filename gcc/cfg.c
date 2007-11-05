@@ -881,7 +881,9 @@ dump_cfg_bb_info (FILE *file, basic_block bb)
   bool first = true;
   static const char * const bb_bitnames[] =
     {
-      "dirty", "new", "reachable", "visited", "irreducible_loop", "superblock"
+      "new", "reachable", "irreducible_loop", "superblock",
+      "nosched", "hot", "cold", "dup", "xlabel", "rtl",
+      "fwdr", "nothrd"
     };
   const unsigned n_bitnames = sizeof (bb_bitnames) / sizeof (char *);
   edge e;
