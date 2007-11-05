@@ -7112,6 +7112,16 @@ mechanism for comparing types in C++ and Objective-C++.  However, if
 bugs in the canonical type system are causing compilation failures,
 set this value to 0 to disable canonical types.
 
+@item max-partial-antic-length
+Maximum length of the partial antic set computed during the tree
+partial redundancy elimination optimization (@option{-ftree-pre}) when
+optimizing at @option{-O3} and above.  For some sorts of source code
+the enhanced partial redundancy elimination optimization can run away,
+consuming all of the memory available on the host machine.  This
+parameter sets a limit on the length of the sets that are computed,
+which prevents the runaway behaviour.  Setting a value of 0 for
+this paramter will allow an unlimited set length.
+
 @end table
 @end table
 

@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "cfgloop.h"
 #include "tree-ssa-sccvn.h"
+#include "params.h"
 
 /* TODO:
 
@@ -1839,12 +1840,21 @@ compute_partial_antic_aux (basic_block block,
   bitmap_set_t PA_OUT;
   edge e;
   edge_iterator ei;
+  unsigned long max_pa = PARAM_VALUE (PARAM_MAX_PARTIAL_ANTIC_LENGTH);
 
   old_PA_IN = PA_OUT = NULL;
 
   /* If any edges from predecessors are abnormal, antic_in is empty,
      so do nothing.  */
   if (block_has_abnormal_pred_edge)
+    goto maybe_dump_sets;
+
+  /* If there are too many partially anticipatable values in the
+     block, phi_translate_set can take an exponential time: stop
+     before the translation starts.  */
+  if (max_pa
+      && single_succ_p (block)
+      && bitmap_count_bits (PA_IN (single_succ (block))->values) > max_pa)
     goto maybe_dump_sets;
 
   old_PA_IN = PA_IN (block);
