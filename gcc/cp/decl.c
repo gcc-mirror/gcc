@@ -8153,7 +8153,8 @@ grokdeclarator (const cp_declarator *declarator,
 	  type_quals = TYPE_UNQUALIFIED;
 
 	  if (declarator->kind == cdk_ptrmem
-	      && (TREE_CODE (type) == FUNCTION_TYPE || memfn_quals))
+	      && (TREE_CODE (type) == FUNCTION_TYPE
+		  || (memfn_quals && TREE_CODE (type) == METHOD_TYPE)))
 	    {
 	      memfn_quals |= cp_type_quals (type);
 	      type = build_memfn_type (type,
