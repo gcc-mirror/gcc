@@ -59,6 +59,8 @@ typedef struct minipool_fixup   Mfix;
 
 const struct attribute_spec arm_attribute_table[];
 
+void (*arm_lang_output_object_attributes_hook)(void);
+
 /* Forward function declarations.  */
 static arm_stack_offsets *arm_get_frame_offsets (void);
 static void arm_add_gc_roots (void);
@@ -17508,10 +17510,6 @@ arm_file_start (void)
          are used.  However we don't have any easy way of figuring this out.
 	 Conservatively record the setting that would have been used.  */
 
-      /* Tag_ABI_PCS_wchar_t.  */
-      asm_fprintf (asm_out_file, "\t.eabi_attribute 18, %d\n",
-		   (int)WCHAR_TYPE_SIZE / BITS_PER_UNIT);
-
       /* Tag_ABI_FP_rounding.  */
       if (flag_rounding_math)
 	asm_fprintf (asm_out_file, "\t.eabi_attribute 19, 1\n");
@@ -17547,6 +17545,9 @@ arm_file_start (void)
       else
 	val = 6;
       asm_fprintf (asm_out_file, "\t.eabi_attribute 30, %d\n", val);
+
+      if (arm_lang_output_object_attributes_hook)
+	arm_lang_output_object_attributes_hook();
     }
   default_file_start();
 }

@@ -1,3 +1,20 @@
+2007-11-05  Paul Brook  <paul@codesourcery.com>
+
+	* Makefile.target: Add ssd0303.o, pl022.o and ssd0323.o.
+	* vl.c (register_machines): Add lm3s6965evb_machine.
+	* vl.h (armv7m_init): Add.
+	(lm3s6965evb_machine): Declare.
+	(pl022_init): New prototype.
+	(ssd0323_xfer_ssi, ssd0323_init): New prototype.
+	* hw/ssd0323.c: New file.
+	* hw/armv7m.c (armv7m_init): Remove board init code.
+	(lm3s811evb_machine): Remove.
+	* hw/osram_oled.c: Rename...
+	* hw/ssd0303.c: ... to this.
+	* hw/pl022.c: New file.
+	* hw/stellaris.c: Define and use stellaris_boards.
+	(lm3s811evb_machine, lm3s6965evb_machine): New.
+
 2007-11-05  Nick Clifton  <nickc@redhat.com>
 	    Sebastian Pop  <sebastian.pop@amd.com>
 

@@ -259,6 +259,8 @@ strongarm*-*-*)
 arm*-*-*)
 	cpu_type=arm
 	extra_headers="mmintrin.h arm_neon.h"
+	c_target_objs="arm-c.o"
+	cxx_target_objs="arm-c.o"
 	;;
 bfin*-*)
 	cpu_type=bfin
