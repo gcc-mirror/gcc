@@ -1,3 +1,8 @@
+2007-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/33648
+	* gcc.dg/pr33648.c: New test.
+
 2007-11-05  Revital Eres  <eres@il.ibm.com>
 
 	* lib/target-supports.exp (check_750cl_hw_available): Fix typo.
