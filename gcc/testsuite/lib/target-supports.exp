@@ -953,10 +953,10 @@ proc check_750cl_hw_available { } {
             verbose "check_750cl_hw_available testfile status is <$status>" 2
 
             if { $status == "pass" } then {
-                set 750_hw_available_saved 1
+                set 750cl_hw_available_saved 1
             }
         } else {
-            verbose "check_750_hw_availalble testfile compilation failed" 2
+            verbose "check_750cl_hw_availalble testfile compilation failed" 2
         }
     }
     return $750cl_hw_available_saved
