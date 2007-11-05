@@ -3041,6 +3041,7 @@
 
 2007-09-02  Joseph Myers  <joseph@codesourcery.com>
 
+	PR C/29237
 	PR middle-end/33272
 	* gcc.dg/c99-arraydecl-3.c: New test.
 
