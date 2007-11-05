@@ -3357,12 +3357,12 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
       else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
 	{
 	  result_type = type0;
-	  error ("ISO C++ forbids comparison between pointer and integer");
+	  pedwarn ("ISO C++ forbids comparison between pointer and integer");
 	}
       else if (code0 == INTEGER_TYPE && code1 == POINTER_TYPE)
 	{
 	  result_type = type1;
-	  error ("ISO C++ forbids comparison between pointer and integer");
+	  pedwarn ("ISO C++ forbids comparison between pointer and integer");
 	}
       else if (TYPE_PTRMEMFUNC_P (type0) && null_ptr_cst_p (op1))
 	{
