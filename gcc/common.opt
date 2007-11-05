@@ -1300,4 +1300,12 @@ w
 Common Var(inhibit_warnings)
 Suppress warnings
 
+shared
+Common RejectNegative Negative(pie)
+Create a shared library
+
+pie
+Common RejectNegative Negative(shared)
+Create a position independent executable
+
 ; This comment is to ensure we retain the blank line above.
