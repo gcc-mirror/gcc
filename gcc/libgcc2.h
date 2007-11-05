@@ -375,7 +375,7 @@ extern DWtype __fixsfdi (SFtype);
 extern SFtype __floatdisf (DWtype);
 extern SFtype __floatundisf (UDWtype);
 extern UWtype __fixunssfSI (SFtype);
-extern DWtype __fixunssfDI (SFtype);
+extern UDWtype __fixunssfDI (SFtype);
 extern SFtype __powisf2 (SFtype, int);
 extern SCtype __divsc3 (SFtype, SFtype, SFtype, SFtype);
 extern SCtype __mulsc3 (SFtype, SFtype, SFtype, SFtype);
@@ -385,7 +385,7 @@ extern DWtype __fixdfdi (DFtype);
 extern DFtype __floatdidf (DWtype);
 extern DFtype __floatundidf (UDWtype);
 extern UWtype __fixunsdfSI (DFtype);
-extern DWtype __fixunsdfDI (DFtype);
+extern UDWtype __fixunsdfDI (DFtype);
 extern DFtype __powidf2 (DFtype, int);
 extern DCtype __divdc3 (DFtype, DFtype, DFtype, DFtype);
 extern DCtype __muldc3 (DFtype, DFtype, DFtype, DFtype);
@@ -393,7 +393,7 @@ extern DCtype __muldc3 (DFtype, DFtype, DFtype, DFtype);
 
 #if LIBGCC2_HAS_XF_MODE
 extern DWtype __fixxfdi (XFtype);
-extern DWtype __fixunsxfDI (XFtype);
+extern UDWtype __fixunsxfDI (XFtype);
 extern XFtype __floatdixf (DWtype);
 extern XFtype __floatundixf (UDWtype);
 extern UWtype __fixunsxfSI (XFtype);
@@ -403,7 +403,7 @@ extern XCtype __mulxc3 (XFtype, XFtype, XFtype, XFtype);
 #endif
 
 #if LIBGCC2_HAS_TF_MODE
-extern DWtype __fixunstfDI (TFtype);
+extern UDWtype __fixunstfDI (TFtype);
 extern DWtype __fixtfdi (TFtype);
 extern TFtype __floatditf (DWtype);
 extern TFtype __floatunditf (UDWtype);
