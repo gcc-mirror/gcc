@@ -1,3 +1,31 @@
+2007-11-05  Chris Jefferson  <chris@bubblescope.net>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_vector.h (vector<>::push_back<>(_Args...),
+	emplace<>(iterator, _Args...), insert(iterator, _Tp&&),
+	_M_insert_aux<>(iterator, _Args&&...)): Add.
+	* include/bits/vector.tcc (insert(iterator, value_type&&),
+	emplace<>(iterator, _Args...), _M_insert_aux<>(iterator, _Args&&...)):
+	Define.
+	(_M_fill_insert(iterator, size_type, const value_type&),
+	_M_range_insert(iterator, _ForwardIterator, _ForwardIterator,
+	std::forward_iterator_tag)): Use __uninitialized_move_a,
+	_GLIBCXX_MOVE_BACKWARD3 when possible.
+	* include/bits/stl_uninitialized.h (__uninitialized_move_a): Add.
+	* include/debug/vector (vector<>::push_back<>(_Args...),
+	emplace<>(iterator, _Args...), insert(iterator, _Tp&&)): Add.
+	* testsuite/23_containers/vector/modifiers/moveable.cc: Enable.
+	* testsuite/23_containers/vector/resize/moveable.cc: Likewise.
+	* testsuite/23_containers/vector/cons/moveable.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
 2007-11-03  Paolo Carlini  <pcarlini@suse.de>
 	    Kai-Uwe Bux  <bux@kubux.net>
 
