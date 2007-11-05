@@ -23,3 +23,8 @@ $(srcdir)/config/arm/arm-tune.md: $(srcdir)/config/arm/gentune.sh \
 	$(SHELL) $(srcdir)/config/arm/gentune.sh \
 		$(srcdir)/config/arm/arm-cores.def > \
 		$(srcdir)/config/arm/arm-tune.md
+
+arm-c.o: $(srcdir)/config/arm/arm-c.c $(CONFIG_H) $(SYSTEM_H) \
+    coretypes.h $(TM_H) $(TREE_H) output.h $(C_COMMON_H)
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/arm/arm-c.c
+

@@ -132,6 +132,8 @@ extern rtx pool_vector_label;
 /* Set to 1 when a return insn is output, this means that the epilogue
    is not needed.  */
 extern int return_used_this_function;
+/* Callback to output language specific object attributes.  */
+extern void (*arm_lang_output_object_attributes_hook)(void);
 
 /* Just in case configure has failed to define anything.  */
 #ifndef TARGET_CPU_DEFAULT
@@ -2287,10 +2289,12 @@ extern unsigned arm_pic_register;
 extern int making_const_table;
 
 /* Handle pragmas for compatibility with Intel's compilers.  */
+/* Also abuse this to register additional C specific EABI attributes.  */
 #define REGISTER_TARGET_PRAGMAS() do {					\
   c_register_pragma (0, "long_calls", arm_pr_long_calls);		\
   c_register_pragma (0, "no_long_calls", arm_pr_no_long_calls);		\
   c_register_pragma (0, "long_calls_off", arm_pr_long_calls_off);	\
+  arm_lang_object_attributes_init(); \
 } while (0)
 
 /* Condition code information.  */
