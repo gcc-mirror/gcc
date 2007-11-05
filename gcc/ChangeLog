@@ -1,7 +1,12 @@
+2007-11-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR driver/32632
+	* common.opt: Add shared and pie.
+
 2007-11-05  Bob Wilson  <bob.wilson@acm.org>
 
-	* config/xtensa/xtensa.c (xtensa_expand_nonlocal_goto): Do not replace
-	references to virtual_stack_vars_rtx in goto_handler.
+	* config/xtensa/xtensa.c (xtensa_expand_nonlocal_goto): Do not
+	replace references to virtual_stack_vars_rtx in goto_handler.
 	
 2007-11-05  Paul Brook  <paul@codesourcery.com>
 
