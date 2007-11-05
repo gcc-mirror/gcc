@@ -12280,6 +12280,7 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
       /* Unify the pattern with the current argument.  */
       {
         tree arg = TREE_VEC_ELT (packed_args, i);
+	tree arg_expr = NULL_TREE;
         int arg_strict = strict;
         bool skip_arg_p = false;
 
@@ -12330,7 +12331,8 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
 
                 if (!skip_arg_p)
                   {
-                    arg = TREE_TYPE (arg);
+		    arg_expr = arg;
+                    arg = unlowered_expr_type (arg);
                     if (arg == error_mark_node)
                       return 1;
                   }
@@ -12340,7 +12342,8 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
 
             if (!subr)
               arg_strict |= 
-                maybe_adjust_types_for_deduction (strict, &parm, &arg, NULL);
+                maybe_adjust_types_for_deduction (strict, &parm, &arg, 
+						  arg_expr);
           }
 
         if (!skip_arg_p)
