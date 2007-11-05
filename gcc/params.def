@@ -707,6 +707,12 @@ DEFPARAM (PARAM_USE_CANONICAL_TYPES,
 	  "use-canonical-types",
 	  "Whether to use canonical types",
 	  1, 0, 1)
+
+DEFPARAM (PARAM_MAX_PARTIAL_ANTIC_LENGTH,
+	  "max-partial-antic-length",
+	  "Maximum length of partial antic set when performing tree pre optimization",
+	  100, 0, 0)
+
 /*
 Local variables:
 mode:c

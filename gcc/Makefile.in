@@ -2068,7 +2068,7 @@ tree-ssa-pre.o : tree-ssa-pre.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(GGC_H) $(DIAGNOSTIC_H) $(TIMEVAR_H) \
    $(TM_H) coretypes.h $(TREE_DUMP_H) tree-pass.h $(FLAGS_H) $(CFGLOOP_H) \
    alloc-pool.h $(BASIC_BLOCK_H) bitmap.h $(HASHTAB_H) $(TREE_GIMPLE_H) \
-   $(TREE_INLINE_H) tree-iterator.h tree-ssa-sccvn.h
+   $(TREE_INLINE_H) tree-iterator.h tree-ssa-sccvn.h $(PARAMS_H)
 tree-ssa-sccvn.o : tree-ssa-sccvn.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(GGC_H) $(DIAGNOSTIC_H) $(TIMEVAR_H) \
    $(TM_H) coretypes.h $(TREE_DUMP_H) tree-pass.h $(FLAGS_H) $(CFGLOOP_H) \

@@ -1,3 +1,15 @@
+2007-11-05  Nick Clifton  <nickc@redhat.com>
+	    Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/32540
+	PR tree-optimization/33922
+	* doc/invoke.texi: Document PARAM_MAX_PARTIAL_ANTIC_LENGTH.
+	* tree-ssa-pre.c: Include params.h.
+	(compute_partial_antic_aux): Use PARAM_MAX_PARTIAL_ANTIC_LENGTH
+	to limit the maximum length of the PA set for a given block.
+	* Makefile.in: Add a dependency upon params.h for tree-ssa-pre.c
+	* params.def (PARAM_MAX_PARTIAL_ANTIC_LENGTH): New parameter.
+
 2007-11-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* libgcc2.c (__fixunstfDI, __fixunsxfDI, __fixunsdfDI,

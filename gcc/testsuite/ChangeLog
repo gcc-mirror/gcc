@@ -1,3 +1,12 @@
+2007-11-05  Nick Clifton  <nickc@redhat.com>
+	    Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/32540
+	PR tree-optimization/33922
+	* gcc.dg/tree-ssa/pr32540-1.c: New.
+	* gcc.dg/tree-ssa/pr32540-2.c: New.
+	* gcc.dg/tree-ssa/pr33922.c: New.
+
 2007-11-05  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR c++/33939
