@@ -1,5 +1,8 @@
 2007-11-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/33856
+	* gcc.c-torture/compile/20071027-1.c: New test.
+
 	PR c++/33836
 	* g++.dg/ext/label10.C: New test.
 
