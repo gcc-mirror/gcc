@@ -1,5 +1,8 @@
 2007-11-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/33836
+	* g++.dg/ext/label10.C: New test.
+
 	PR c++/33969
 	* g++.dg/other/ptrmem9.C: New test.
 
