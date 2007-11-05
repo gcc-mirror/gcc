@@ -683,6 +683,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  done in constant time if the %vector has preallocated space
        *  available.
        */
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
       void
       push_back(const value_type& __x)
       {
@@ -694,6 +695,21 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	else
 	  _M_insert_aux(end(), __x);
       }
+#else
+      template<typename... _Args>
+        void
+        push_back(_Args&&... __args)
+	{
+	  if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage)
+	    {
+	      this->_M_impl.construct(this->_M_impl._M_finish,
+				      std::forward<_Args>(__args)...);
+	      ++this->_M_impl._M_finish;
+	    }
+	  else
+	    _M_insert_aux(end(), std::forward<_Args>(__args)...);
+	}
+#endif
 
       /**
        *  @brief  Removes last element.
@@ -711,6 +727,24 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	this->_M_impl.destroy(this->_M_impl._M_finish);
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Inserts an object in %vector before specified iterator.
+       *  @param  position  An iterator into the %vector.
+       *  @param  args  Arguments.
+       *  @return  An iterator that points to the inserted data.
+       *
+       *  This function will insert an object of type T constructed
+       *  with T(std::forward<Args>(args)...) before the specified location.
+       *  Note that this kind of operation could be expensive for a %vector
+       *  and if it is frequently used the user should consider using
+       *  std::list.
+       */
+      template<typename... _Args>
+        iterator
+        emplace(iterator __position, _Args&&... __args);
+#endif
+
       /**
        *  @brief  Inserts given value into %vector before specified iterator.
        *  @param  position  An iterator into the %vector.
@@ -724,6 +758,22 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        */
       iterator
       insert(iterator __position, const value_type& __x);
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Inserts given rvalue into %vector before specified iterator.
+       *  @param  position  An iterator into the %vector.
+       *  @param  x  Data to be inserted.
+       *  @return  An iterator that points to the inserted data.
+       *
+       *  This function will insert a copy of the given rvalue before
+       *  the specified location.  Note that this kind of operation
+       *  could be expensive for a %vector and if it is frequently
+       *  used the user should consider using std::list.
+       */
+      iterator
+      insert(iterator __position, value_type&& __x);
+#endif
 
       /**
        *  @brief  Inserts a number of copies of given data into the %vector.
@@ -1014,8 +1064,14 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       _M_fill_insert(iterator __pos, size_type __n, const value_type& __x);
 
       // Called by insert(p,x)
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
       void
       _M_insert_aux(iterator __position, const value_type& __x);
+#else
+      template<typename... _Args>
+        void
+        _M_insert_aux(iterator __position, _Args&&... __args);
+#endif
 
       // Called by the latter.
       size_type

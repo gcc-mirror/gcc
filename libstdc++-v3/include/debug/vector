@@ -278,6 +278,7 @@ namespace __debug
       using _Base::data;
 
       // 23.2.4.3 modifiers:
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
       void
       push_back(const _Tp& __x)
       {
@@ -287,6 +288,18 @@ namespace __debug
 	  this->_M_invalidate_all();
 	_M_update_guaranteed_capacity();
       }
+#else
+      template<typename... _Args>
+        void
+        push_back(_Args... __args)
+	{
+	  bool __realloc = _M_requires_reallocation(this->size() + 1);
+	  _Base::push_back(std::forward<_Args>(__args)...);
+	  if (__realloc)
+	    this->_M_invalidate_all();
+	  _M_update_guaranteed_capacity();
+	}
+#endif
 
       void
       pop_back()
@@ -296,6 +309,25 @@ namespace __debug
 	__victim._M_invalidate();
 	_Base::pop_back();
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename... _Args>
+        iterator
+        emplace(iterator __position, _Args... __args)
+	{
+	  __glibcxx_check_insert(__position);
+	  bool __realloc = _M_requires_reallocation(this->size() + 1);
+	  difference_type __offset = __position - begin();
+	  typename _Base::iterator __res = _Base::emplace(__position.base(),
+					    std::forward<_Args>(__args)...);
+	  if (__realloc)
+	    this->_M_invalidate_all();
+	  else
+	    this->_M_invalidate_if(_After_nth(__offset, _M_base().begin()));
+	  _M_update_guaranteed_capacity();
+	  return iterator(__res, this);
+	}
+#endif
 
       iterator
       insert(iterator __position, const _Tp& __x)
@@ -311,6 +343,24 @@ namespace __debug
 	_M_update_guaranteed_capacity();
 	return iterator(__res, this);
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      iterator
+      insert(iterator __position, _Tp&& __x)
+      {
+	__glibcxx_check_insert(__position);
+	bool __realloc = _M_requires_reallocation(this->size() + 1);
+	difference_type __offset = __position - begin();
+	typename _Base::iterator __res = _Base::insert(__position.base(),
+						       std::forward<_Tp>(__x));
+	if (__realloc)
+	  this->_M_invalidate_all();
+	else
+	  this->_M_invalidate_if(_After_nth(__offset, _M_base().begin()));
+	_M_update_guaranteed_capacity();
+	return iterator(__res, this);
+      }
+#endif
 
       void
       insert(iterator __position, size_type __n, const _Tp& __x)
