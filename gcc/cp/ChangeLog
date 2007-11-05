@@ -1,3 +1,9 @@
+2007-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33969
+	* decl.c (grokdeclarator): Don't call build_memfn_type if type
+	is neither FUNCTION_TYPE nor METHOD_TYPE.
+
 2007-11-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/33516
