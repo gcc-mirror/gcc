@@ -1,3 +1,8 @@
+2007-11-05  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* typeck.c (build_binary_op): Use pedwarn instead of error for
+	consistency.
+
 2007-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/33836
