@@ -1184,7 +1184,7 @@ __ucmpdi2 (DWtype a, DWtype b)
 #endif
 
 #if defined(L_fixunstfdi) && LIBGCC2_HAS_TF_MODE
-DWtype
+UDWtype
 __fixunstfDI (TFtype a)
 {
   if (a < 0)
@@ -1220,7 +1220,7 @@ __fixtfdi (TFtype a)
 #endif
 
 #if defined(L_fixunsxfdi) && LIBGCC2_HAS_XF_MODE
-DWtype
+UDWtype
 __fixunsxfDI (XFtype a)
 {
   if (a < 0)
@@ -1256,7 +1256,7 @@ __fixxfdi (XFtype a)
 #endif
 
 #if defined(L_fixunsdfdi) && LIBGCC2_HAS_DF_MODE
-DWtype
+UDWtype
 __fixunsdfDI (DFtype a)
 {
   /* Get high part of result.  The division here will just moves the radix
@@ -1285,7 +1285,7 @@ __fixdfdi (DFtype a)
 #endif
 
 #if defined(L_fixunssfdi) && LIBGCC2_HAS_SF_MODE
-DWtype
+UDWtype
 __fixunssfDI (SFtype a)
 {
 #if LIBGCC2_HAS_DF_MODE
