@@ -1,5 +1,10 @@
 2007-11-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/33836
+	* parser.c (cp_parser_unary_expression): For &&label call
+	cp_parser_non_integral_constant_expression and return error_mark_node
+	if it returned true.
+
 	PR c++/33969
 	* decl.c (grokdeclarator): Don't call build_memfn_type if type
 	is neither FUNCTION_TYPE nor METHOD_TYPE.
