@@ -1,3 +1,12 @@
+2007-11-05  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/33996
+	PR c++/33235
+	PR c++/33930
+	* g++.dg/cpp0x/pr33996.C: New
+	* g++.dg/cpp0x/rv-trivial-bug.C: New
+	* g++.dg/cpp0x/pr33930.C: New
+
 2007-11-05  Nick Clifton  <nickc@redhat.com>
 	    Sebastian Pop  <sebastian.pop@amd.com>
 

@@ -620,7 +620,7 @@ merge_types (tree t1, tree t2)
 	if (code1 == POINTER_TYPE)
 	  t1 = build_pointer_type (target);
 	else
-	  t1 = build_reference_type (target);
+	  t1 = cp_build_reference_type (target, TYPE_REF_IS_RVALUE (t1));
 	t1 = build_type_attribute_variant (t1, attributes);
 	t1 = cp_build_qualified_type (t1, quals);
 
