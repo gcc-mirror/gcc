@@ -1622,33 +1622,11 @@ include/Makefile
 testsuite/Makefile
 ])
 
+if test ${multilib} = yes; then
+  multilib_arg="--enable-multilib"
+else
+  multilib_arg=
+fi
+
 AC_CONFIG_FILES([scripts/jar], [chmod +x scripts/jar])
-
-AC_CONFIG_COMMANDS([default],
-[# Only add multilib support code if we just rebuilt top-level Makefile.
-case " $CONFIG_FILES " in
- *" Makefile "*)
-   LD="${ORIGINAL_LD_FOR_MULTILIBS}"
-   ac_file=Makefile . ${multi_basedir}/./libjava/../config-ml.in
-   ;;
-esac
-for ac_multi_file in $CONFIG_FILES; do
-  case $ac_multi_file in
-  */Makefile)
-    grep "^MULTI[[^ ]]* =" Makefile >> "$ac_multi_file" ;;
-  esac
-done
-],
-srcdir=${srcdir}
-host=${host}
-target=${target}
-with_multisubdir=${with_multisubdir}
-ac_configure_args="${multilib_arg} ${ac_configure_args}"
-CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
-multi_basedir=${multi_basedir}
-CC="${CC}"
-CXX="${CXX}"
-ORIGINAL_LD_FOR_MULTILIBS="${ORIGINAL_LD_FOR_MULTILIBS}"
-)
-
 AC_OUTPUT
