@@ -1,5 +1,17 @@
 2007-11-05  Douglas Gregor  <doug.gregor@gmail.com>
 
+	PR c++/33996
+	PR c++/33235
+	PR c++/33930
+	* typeck.c (merge_types): Don't lose rvalue references when
+	merging types.
+	* call.c (build_over_call): Don't elide move constructors just
+	because the copy constructor is trivial (!).
+	(compare_ics): If comparing cv-qualifiers fails, we can still order
+	based on binding lvalues vs. rvalues.
+
+2007-11-05  Douglas Gregor  <doug.gregor@gmail.com>
+
 	PR c++/33939
 	* pt.c (unify_pack_expansion): bring handling of function call
 	arguments into line with type_unification_real. 

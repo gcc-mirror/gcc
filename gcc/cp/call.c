@@ -5076,7 +5076,8 @@ build_over_call (struct z_candidate *cand, int flags)
 	    return build_target_expr_with_type (arg, DECL_CONTEXT (fn));
 	}
       else if (TREE_CODE (arg) == TARGET_EXPR
-	       || TYPE_HAS_TRIVIAL_INIT_REF (DECL_CONTEXT (fn)))
+	       || (TYPE_HAS_TRIVIAL_INIT_REF (DECL_CONTEXT (fn))
+		   && !move_fn_p (fn)))
 	{
 	  tree to = stabilize_reference
 	    (build_indirect_ref (TREE_VALUE (args), 0));
@@ -6118,7 +6119,11 @@ compare_ics (conversion *ics1, conversion *ics2)
   if (ics1->kind == ck_qual
       && ics2->kind == ck_qual
       && same_type_p (from_type1, from_type2))
-    return comp_cv_qual_signature (to_type1, to_type2);
+    {
+      int result = comp_cv_qual_signature (to_type1, to_type2);
+      if (result != 0)
+	return result;
+    }
 
   /* [over.ics.rank]
 
