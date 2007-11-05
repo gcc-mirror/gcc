@@ -1,3 +1,8 @@
+2007-11-05  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (xtensa_expand_nonlocal_goto): Do not replace
+	references to virtual_stack_vars_rtx in goto_handler.
+	
 2007-11-05  Paul Brook  <paul@codesourcery.com>
 
 	* Makefile.target: Add ssd0303.o, pl022.o and ssd0323.o.

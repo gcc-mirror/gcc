@@ -1184,9 +1184,6 @@ xtensa_expand_nonlocal_goto (rtx *operands)
   if (GET_CODE (containing_fp) != REG)
     containing_fp = force_reg (Pmode, containing_fp);
 
-  goto_handler = copy_rtx (goto_handler);
-  validate_replace_rtx (virtual_stack_vars_rtx, containing_fp, goto_handler);
-
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__xtensa_nonlocal_goto"),
 		     0, VOIDmode, 2,
 		     containing_fp, Pmode,
