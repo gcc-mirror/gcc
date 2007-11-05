@@ -1,3 +1,10 @@
+2007-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/33856
+	* tree-data-ref.c (get_references_in_stmt): Don't add
+	REFERENCE_CLASS_P trees to references vector if get_base_address
+	returns NULL on them.
+
 2007-11-05  Alexandre Oliva  <aoliva@redhat.com>
 
 	* cfg.c (dump_cfg_bb_info): Update bb_bitnames to match enum.

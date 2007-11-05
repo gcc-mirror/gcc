@@ -3913,7 +3913,7 @@ get_references_in_stmt (tree stmt, VEC (data_ref_loc, heap) **references)
       op1 = &GIMPLE_STMT_OPERAND (stmt, 1);
 		
       if (DECL_P (*op1)
-	  || REFERENCE_CLASS_P (*op1))
+	  || (REFERENCE_CLASS_P (*op1) && get_base_address (*op1)))
 	{
 	  ref = VEC_safe_push (data_ref_loc, heap, *references, NULL);
 	  ref->pos = op1;
@@ -3921,7 +3921,7 @@ get_references_in_stmt (tree stmt, VEC (data_ref_loc, heap) **references)
 	}
 
       if (DECL_P (*op0)
-	  || REFERENCE_CLASS_P (*op0))
+	  || (REFERENCE_CLASS_P (*op0) && get_base_address (*op0)))
 	{
 	  ref = VEC_safe_push (data_ref_loc, heap, *references, NULL);
 	  ref->pos = op0;
@@ -3938,7 +3938,7 @@ get_references_in_stmt (tree stmt, VEC (data_ref_loc, heap) **references)
 	  op0 = &CALL_EXPR_ARG (call, i);
 
 	  if (DECL_P (*op0)
-	      || REFERENCE_CLASS_P (*op0))
+	      || (REFERENCE_CLASS_P (*op0) && get_base_address (*op0)))
 	    {
 	      ref = VEC_safe_push (data_ref_loc, heap, *references, NULL);
 	      ref->pos = op0;
