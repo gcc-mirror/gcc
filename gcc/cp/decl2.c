@@ -1704,6 +1704,7 @@ constrain_visibility (tree decl, int visibility)
       if (!DECL_EXTERN_C_P (decl))
 	{
 	  TREE_PUBLIC (decl) = 0;
+	  DECL_ONE_ONLY (decl) = 0;
 	  DECL_INTERFACE_KNOWN (decl) = 1;
 	  if (DECL_LANG_SPECIFIC (decl))
 	    DECL_NOT_REALLY_EXTERN (decl) = 1;
