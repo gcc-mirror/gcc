@@ -15248,7 +15248,7 @@ cp_parser_base_clause (cp_parser* parser)
             /* Make this a pack expansion type. */
             TREE_VALUE (base) = make_pack_expansion (TREE_VALUE (base));
           else
-            check_for_bare_parameter_packs (TREE_VALUE (base));
+            check_for_bare_parameter_packs (&TREE_VALUE (base));
 
 	  TREE_CHAIN (base) = bases;
 	  bases = base;

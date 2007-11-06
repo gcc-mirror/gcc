@@ -2419,11 +2419,19 @@ make_ith_pack_parameter_name (tree name, int i)
   return get_identifier (newname);
 }
 
-/* Structure used to track the progress of find_parameter_pack_r.  */
+/* Structure used to track the progress of find_parameter_packs_r.  */
 struct find_parameter_pack_data 
 {
+  /* TREE_LIST that will contain all of the parameter packs found by
+     the traversal.  */
   tree* parameter_packs;
+
+  /* Set of AST nodes that have been visited by the traversal.  */
   struct pointer_set_t *visited;
+
+  /* Whether we should replace parameter packs with
+     ERROR_MARK_NODE. Used by check_for_bare_parameter_packs.  */
+  bool set_packs_to_error;
 };
 
 /* Identifies all of the argument packs that occur in a template
@@ -2436,49 +2444,89 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
   tree t = *tp;
   struct find_parameter_pack_data* ppd = 
     (struct find_parameter_pack_data*)data;
+  bool parameter_pack_p = false;
+
+  /* Don't visit nodes twice, except when we're clearing out parameter
+     packs.  */
+  if (pointer_set_contains (ppd->visited, *tp))
+    {
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
+
+  /* Identify whether this is a parameter pack or not.  */
+  switch (TREE_CODE (t))
+    {
+    case TEMPLATE_PARM_INDEX:
+      if (TEMPLATE_PARM_PARAMETER_PACK (t))
+        parameter_pack_p = true;
+      break;
+
+    case TEMPLATE_TYPE_PARM:
+    case TEMPLATE_TEMPLATE_PARM:
+      if (TEMPLATE_TYPE_PARAMETER_PACK (t))
+        parameter_pack_p = true;
+      break;
+
+    case PARM_DECL:
+      if (FUNCTION_PARAMETER_PACK_P (t))
+        {
+          /* We don't want to walk into the type of a PARM_DECL,
+             because we don't want to see the type parameter pack.  */
+          *walk_subtrees = 0;
+	  parameter_pack_p = true;
+        }
+      break;
+
+    default:
+      /* Not a parameter pack.  */
+      break;
+    }
+
+  if (parameter_pack_p)
+    {
+      /* Add this parameter pack to the list.  */
+      *ppd->parameter_packs = tree_cons (NULL_TREE, t, *ppd->parameter_packs);
+
+      if (ppd->set_packs_to_error)
+	/* The caller requested that we set the parameter packs to
+	   ERROR_MARK_NODE so that they will not trip up the compiler
+	   later.  The caller is responsible for emitting an error.  */
+	*tp = error_mark_node;
+      else
+	/* Make sure we do not visit this node again.  */
+	pointer_set_insert (ppd->visited, *tp);
+    }
+  else
+    /* Make sure we do not visit this node again.  */
+    pointer_set_insert (ppd->visited, *tp);
 
   if (TYPE_P (t))
-    {
-      tree context = TYPE_CONTEXT (t);
-      cp_walk_tree (&context, &find_parameter_packs_r, ppd, ppd->visited);
-    }
+    cp_walk_tree (&TYPE_CONTEXT (t), 
+		  &find_parameter_packs_r, ppd, NULL);
 
   /* This switch statement will return immediately if we don't find a
      parameter pack.  */
   switch (TREE_CODE (t)) 
     {
     case TEMPLATE_PARM_INDEX:
-      if (TEMPLATE_PARM_PARAMETER_PACK (t))
-        break;
       return NULL_TREE;
 
     case BOUND_TEMPLATE_TEMPLATE_PARM:
+      /* Check the template itself.  */
+      cp_walk_tree (&TREE_TYPE (TYPE_TI_TEMPLATE (t)), 
+		    &find_parameter_packs_r, ppd, NULL);
       /* Check the template arguments.  */
       cp_walk_tree (&TYPE_TI_ARGS (t), &find_parameter_packs_r, ppd, 
-		    ppd->visited);
-
-      /* Dig out the underlying TEMPLATE_TEMPLATE_PARM.  */
-      t = TYPE_TI_TEMPLATE (t);
-      if (DECL_P (t) && TREE_TYPE (t))
-        t = TREE_TYPE (t);
+		    NULL);
       *walk_subtrees = 0;
-      
-      /* Fall through.  */
+      return NULL_TREE;
 
     case TEMPLATE_TYPE_PARM:
     case TEMPLATE_TEMPLATE_PARM:
-      if (TEMPLATE_TYPE_PARAMETER_PACK (t))
-        break;
       return NULL_TREE;
 
     case PARM_DECL:
-      if (FUNCTION_PARAMETER_PACK_P (t))
-        {
-          /* We don't want to walk into the type of a PARM_DECL,
-             because we don't want to see the type parameter pack.*/
-          *walk_subtrees = 0;
-          break;
-        }
       return NULL_TREE;
 
     case RECORD_TYPE:
@@ -2489,25 +2537,20 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
     case UNION_TYPE:
     case ENUMERAL_TYPE:
       if (TYPE_TEMPLATE_INFO (t))
-        {
-          tree args = TREE_VALUE (TYPE_TEMPLATE_INFO (t));
-          cp_walk_tree (&args, &find_parameter_packs_r, ppd, ppd->visited);
-        }
+	cp_walk_tree (&TREE_VALUE (TYPE_TEMPLATE_INFO (t)), 
+		      &find_parameter_packs_r, ppd, NULL);
 
       *walk_subtrees = 0;
       return NULL_TREE;
 
     case TEMPLATE_DECL:
-      if (DECL_TEMPLATE_TEMPLATE_PARM_P (t)
-	  && TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (t)))
-	break;
-      
-      *walk_subtrees = 0;
+      cp_walk_tree (&TREE_TYPE (t),
+		    &find_parameter_packs_r, ppd, NULL);
       return NULL_TREE;
  
     case TYPENAME_TYPE:
       cp_walk_tree (&TYPENAME_TYPE_FULLNAME (t), &find_parameter_packs_r,
-                   ppd, ppd->visited);
+                   ppd, NULL);
       *walk_subtrees = 0;
       return NULL_TREE;
 
@@ -2519,16 +2562,13 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
 
     case INTEGER_TYPE:
       cp_walk_tree (&TYPE_MAX_VALUE (t), &find_parameter_packs_r, 
-		    ppd, ppd->visited);
+		    ppd, NULL);
       *walk_subtrees = 0;
       return NULL_TREE;
 
     default:
       return NULL_TREE;
     }
-  
-  /* Add this parameter pack to the list.  */
-  *ppd->parameter_packs = tree_cons (NULL_TREE, t, *ppd->parameter_packs);
 
   return NULL_TREE;
 }
@@ -2541,7 +2581,8 @@ uses_parameter_packs (tree t)
   struct find_parameter_pack_data ppd;
   ppd.parameter_packs = &parameter_packs;
   ppd.visited = pointer_set_create ();
-  cp_walk_tree (&t, &find_parameter_packs_r, &ppd, ppd.visited);
+  ppd.set_packs_to_error = false;
+  cp_walk_tree (&t, &find_parameter_packs_r, &ppd, NULL);
   pointer_set_destroy (ppd.visited);
   return parameter_packs != NULL_TREE;
 }
@@ -2558,6 +2599,8 @@ make_pack_expansion (tree arg)
   tree parameter_packs = NULL_TREE;
   bool for_types = false;
   struct find_parameter_pack_data ppd;
+
+  ppd.set_packs_to_error = false;
 
   if (!arg || arg == error_mark_node)
     return arg;
@@ -2592,7 +2635,7 @@ make_pack_expansion (tree arg)
       ppd.visited = pointer_set_create ();
       ppd.parameter_packs = &parameter_packs;
       cp_walk_tree (&TREE_PURPOSE (arg), &find_parameter_packs_r, 
-                    &ppd, ppd.visited);
+                    &ppd, NULL);
 
       if (parameter_packs == NULL_TREE)
         {
@@ -2610,7 +2653,7 @@ make_pack_expansion (tree arg)
               /* Determine which parameter packs will be expanded in this
                  argument.  */
               cp_walk_tree (&TREE_VALUE (value), &find_parameter_packs_r, 
-                            &ppd, ppd.visited);
+                            &ppd, NULL);
             }
         }
 
@@ -2648,7 +2691,7 @@ make_pack_expansion (tree arg)
   /* Determine which parameter packs will be expanded.  */
   ppd.parameter_packs = &parameter_packs;
   ppd.visited = pointer_set_create ();
-  cp_walk_tree (&arg, &find_parameter_packs_r, &ppd, ppd.visited);
+  cp_walk_tree (&arg, &find_parameter_packs_r, &ppd, NULL);
   pointer_set_destroy (ppd.visited);
 
   /* Make sure we found some parameter packs.  */
@@ -2680,20 +2723,21 @@ make_pack_expansion (tree arg)
    Returns TRUE if there were no bare parameter packs, returns FALSE
    (and emits an error) if there were bare parameter packs.*/
 bool 
-check_for_bare_parameter_packs (tree t)
+check_for_bare_parameter_packs (tree* t)
 {
   tree parameter_packs = NULL_TREE;
   struct find_parameter_pack_data ppd;
 
-  if (!processing_template_decl || !t || t == error_mark_node)
+  if (!processing_template_decl || !t || !*t || *t == error_mark_node)
     return true;
 
-  if (TREE_CODE (t) == TYPE_DECL)
-    t = TREE_TYPE (t);
+  if (TREE_CODE (*t) == TYPE_DECL)
+    t = &TREE_TYPE (*t);
 
   ppd.parameter_packs = &parameter_packs;
   ppd.visited = pointer_set_create ();
-  cp_walk_tree (&t, &find_parameter_packs_r, &ppd, ppd.visited);
+  ppd.set_packs_to_error = false;
+  cp_walk_tree (t, &find_parameter_packs_r, &ppd, NULL);
   pointer_set_destroy (ppd.visited);
 
   if (parameter_packs) 
@@ -2711,10 +2755,22 @@ check_for_bare_parameter_packs (tree t)
             name = DECL_NAME (TEMPLATE_PARM_DECL (pack));
           else
             name = DECL_NAME (pack);
-          inform ("        %qD", name);
+
+	  if (name)
+	    inform ("        %qD", name);
+	  else
+	    inform ("        <anonymous>");
 
           parameter_packs = TREE_CHAIN (parameter_packs);
         }
+
+      /* Clean up any references to these parameter packs within the
+	 tree.  */
+      ppd.parameter_packs = &parameter_packs;
+      ppd.visited = pointer_set_create ();
+      ppd.set_packs_to_error = true;
+      cp_walk_tree (t, &find_parameter_packs_r, &ppd, NULL);
+      pointer_set_destroy (ppd.visited);
 
       return false;
     }
@@ -2978,7 +3034,7 @@ process_template_parm (tree list, tree parm, bool is_non_type,
 	  {
 	    /* This template parameter is not a parameter pack, but it
 	       should be. Complain about "bare" parameter packs.  */
-	    check_for_bare_parameter_packs (TREE_TYPE (parm));
+	    check_for_bare_parameter_packs (&TREE_TYPE (parm));
 	    
 	    /* Recover by calling this a parameter pack.  */
 	    is_parameter_pack = true;
@@ -3382,7 +3438,10 @@ process_partial_specialization (tree decl)
                   if (TREE_CODE (arg) == EXPR_PACK_EXPANSION)
                     error ("parameter pack argument %qE must be at the end of the template argument list", arg);
                   else
-                    error ("parameter pack argument %qT must be at the end of the template argument list", arg);                   
+                    error ("parameter pack argument %qT must be at the end of the template argument list", arg);
+
+		  if (packed_args)
+		    TREE_VEC_ELT (packed_args, j) = error_mark_node;
                 }
             }
 
@@ -3789,7 +3848,7 @@ push_template_decl_real (tree decl, bool is_friend)
       while (arg && argtype)
         {
           if (!FUNCTION_PARAMETER_PACK_P (arg)
-              && !check_for_bare_parameter_packs (TREE_TYPE (arg)))
+              && !check_for_bare_parameter_packs (&TREE_TYPE (arg)))
             {
             /* This is a PARM_DECL that contains unexpanded parameter
                packs. We have already complained about this in the
@@ -3805,11 +3864,11 @@ push_template_decl_real (tree decl, bool is_friend)
 
       /* Check for bare parameter packs in the return type and the
          exception specifiers.  */
-      check_for_bare_parameter_packs (TREE_TYPE (type));
-      check_for_bare_parameter_packs (TYPE_RAISES_EXCEPTIONS (type));
+      check_for_bare_parameter_packs (&TREE_TYPE (type));
+      check_for_bare_parameter_packs (&TYPE_RAISES_EXCEPTIONS (type));
     }
   else
-    check_for_bare_parameter_packs (TREE_TYPE (decl));
+    check_for_bare_parameter_packs (&TREE_TYPE (decl));
 
   if (is_partial)
     return process_partial_specialization (decl);
@@ -3833,6 +3892,8 @@ push_template_decl_real (tree decl, bool is_friend)
 	      else
 		error ("parameter pack %qT must be at the end of the"
 		       " template parameter list", TREE_TYPE (parm));
+
+	      TREE_VALUE (TREE_VEC_ELT (inner_parms, i)) = error_mark_node;
 	    }
         }
     }
@@ -4755,7 +4816,7 @@ convert_template_argument (tree parm,
 	      if (is_type)
 		error ("  expected a constant of type %qT, got %qT",
 		       TREE_TYPE (parm),
-		       (is_tmpl_type ? DECL_NAME (arg) : orig_arg));
+		       (DECL_P (arg) ? DECL_NAME (arg) : orig_arg));
 	      else if (requires_tmpl_type)
 		error ("  expected a class template, got %qE", orig_arg);
 	      else
@@ -13100,6 +13161,10 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
       /* Cannot deduce anything from TYPEOF_TYPE or DECLTYPE_TYPE
          nodes.  */
       return 0;
+
+    case ERROR_MARK:
+      /* Unification fails if we hit an error node.  */
+      return 1;
 
     default:
       gcc_assert (EXPR_P (parm));

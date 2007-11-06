@@ -6613,7 +6613,7 @@ check_return_expr (tree retval, bool *no_warning)
   if (processing_template_decl)
     {
       current_function_returns_value = 1;
-      check_for_bare_parameter_packs (retval);
+      check_for_bare_parameter_packs (&retval);
       return retval;
     }
 
