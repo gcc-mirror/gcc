@@ -67,36 +67,35 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
   currently we use vect_is_simple_reduction() to detect reduction patterns.
   The code transformation will be introduced by an example.
   
-  source code:
-
+    
 parloop
 {
   int sum=1;
 
-  for (i = 0; i < N/1000; i++)
+  for (i = 0; i < N; i++)
    {
     x[i] = i + 3;
     sum+=x[i];
    }
 }
 
-gimple code:
-
+gimple-like code:
 header_bb:
 
-  # sum_24 = PHI <sum_14(3), 1(2)>;
-  # i_21 = PHI <i_15(3), 0(2)>;
-<L0>:;
-  D.2191_10 = i_21 + 3;
-  x[i_21] = D.2191_10;
-  sum_14 = D.2191_10 + sum_24;
-  i_15 = i_21 + 1;
-  if (N_8 > i_15) goto <L0>; else goto <L2>;
+  # sum_29 = PHI <sum_11(5), 1(3)>
+  # i_28 = PHI <i_12(5), 0(3)>
+  D.1795_8 = i_28 + 3;
+  x[i_28] = D.1795_8;
+  sum_11 = D.1795_8 + sum_29;
+  i_12 = i_28 + 1;
+  if (N_6(D) > i_12)
+    goto header_bb;
+
 
 exit_bb:
 
-  # sum_25 = PHI <sum_14(3)>;
-<L2>:;
+  # sum_21 = PHI <sum_11(4)>
+  printf (&"%d"[0], sum_21);
 
 
 after reduction transformation (only relevant parts):
@@ -106,141 +105,58 @@ parloop
 
 ....
 
-<L16>:;
-  D.2241_2 = (unsigned int) N_8;
-  D.2242_26 = D.2241_2 - 1;
-  if (D.2242_26 > 399) goto <L26>; else goto <L27>;
 
-#two new variables are created for each reduction: 
-"reduction" is the variable holding the neutral element 
-for the particular operation, e.g. 0 for PLUS_EXPR,
-1 for MULT_EXPR, etc.
-"reduction_initial" is the initial value given by the user.
-It is kept and will be used after the parallel computing 
-is done.#
+  # A new variable is created for each reduction:
+  "reduction_initial" is the initial value given by the user.
+  It is kept and will be used after the parallel computing is done.  #
 
-<L26>:;
-  reduction.38_42 = 0;     
-  reduction_initial.39_43 = 1;        
-  x.40_44 = &x;
-  .paral_data_store.47.D.2261 = D.2242_26;
-  .paral_data_store.47.reduction.38 = reduction.38_42;
-  .paral_data_store.47.x.40 = x.40_44;
-  __builtin_GOMP_parallel_start (parloop._loopfn.0, &.paral_data_store.47, 4);
-  parloop._loopfn.0 (&.paral_data_store.47);
-  __builtin_GOMP_parallel_end ();
-
-# collecting the result after the join of the threads is done at
-  create_loads_for_reductions().  
-  a new variable "reduction_final" is created.  It calculates the
-  final value from the initial value and the value computed by 
-  the threads.  #
+  reduction_initial.24_46 = 1;
   
-  .paral_data_load.48_49 = &.paral_data_store.47;        
-  reduction_final.49_50 = .paral_data_load.48_49->reduction.38;
-  reduction_final.49_51 = reduction_initial.39_43 + reduction_final.49_50;
-  ivtmp.37_36 = D.2242_26;
-  i_37 = (int) ivtmp.37_36;
-  D.2191_38 = i_37 + 3;
-  x[i_37] = D.2191_38;
-  sum_40 = D.2191_38 + reduction_final.49_51;
-  i_41 = i_37 + 1;
-  goto <bb 8> (<L2>);
+  # Storing the neutral value of the
+  particular reduction's operation, e.g. 0 for PLUS_EXPR, 
+  1 for MULT_EXPR, etc. into the reduction field.
+  This is done in create_stores_for_reduction.  #
+ 
+  .paral_data_store.32.sum.27 = 0;
+  
+  #pragma omp parallel num_threads(4) 
 
-  # sum_25 = PHI <sum_40(4), sum_9(6)>;
-<L2>:;
-  printf (&"sum is %d\n"[0], sum_25);
+  #pragma omp for schedule(static)
+  # sum.27_29 = PHI <sum.27_11, 0> # The neutral element replaces
+ 			           the user's inital value.  #
+  sum.27_11 = D.1827_8 + sum.27_29;
+  OMP_CONTINUE
+
+  # Adding this reduction phi is done at create_phi_for_local_result() #
+  # sum.27_56 = PHI <sum.27_11, 0>
+  OMP_RETURN
+  
+  # Creating the atomic operation is done at 
+  create_call_for_reduction_1()  #
+
+  #pragma omp atomic_load
+  D.1839_59 = *&.paral_data_load.33_51->reduction.23;
+  D.1840_60 = sum.27_56 + D.1839_59;
+  #pragma omp atomic_store (D.1840_60);
+  
+  OMP_RETURN
+  
+ # collecting the result after the join of the threads is done at
+  create_loads_for_reductions().
+  a new variable "reduction_final" is created.  It calculates the final
+  value from the initial value and the value computed by the threads #
+ 
+  .paral_data_load.33_52 = &.paral_data_store.32;
+  reduction_final.34_53 = .paral_data_load.33_52->sum.27;
+  sum_37 = reduction_initial.24_46 + reduction_final.34_53;
+  sum_43 = D.1795_41 + sum_37;
+
+  exit bb:
+  # sum_21 = PHI <sum_43, sum_26>
+  printf (&"%d"[0], sum_21);
 
 ...
 
-}
-
-parloop._loopfn.0 (.paral_data_param)
-{
- ...
-
-<L28>:;
-  .paral_data_param_52 = .paral_data_param_75;
-  .paral_data_load.48_48 = (struct .paral_data.46 *) .paral_data_param_52;
-  D.2289_46 = .paral_data_load.48_48->D.2261;
-  reduction.43_45 = .paral_data_load.48_48->reduction.38;
-   x.45_47 = .paral_data_load.48_48->x.40;
-  # SUCC: 23 [100.0%]  (fallthru)
-
-  # BLOCK 23
-  # PRED: 21 [100.0%]  (fallthru)
-<L30>:;
-  D.2292_60 = __builtin_omp_get_num_threads ();
-  D.2293_61 = (unsigned int) D.2292_60;
-  D.2294_62 = __builtin_omp_get_thread_num ();
-  D.2295_63 = (unsigned int) D.2294_62;
-  D.2296_64 = D.2289_46 / D.2293_61;
-  D.2297_65 = D.2293_61 * D.2296_64;
-  D.2298_66 = D.2297_65 != D.2289_46;
-  D.2299_67 = D.2296_64 + D.2298_66;
-  D.2300_68 = D.2299_67 * D.2295_63;
-  D.2301_69 = D.2299_67 + D.2300_68;
-  D.2302_70 = MIN_EXPR <D.2301_69, D.2289_46>;
-  ivtmp.41_54 = D.2300_68;
-  if (D.2300_68 >= D.2302_70) goto <L31>; else goto <L32>;
-  # SUCC: 26 [100.0%]  (false) 24 (true)
-
-  # BLOCK 26
-  # PRED: 23 [100.0%]  (false)
-<L32>:;
-  # SUCC: 4 [100.0%]  (fallthru)
-
-  # BLOCK 4
-  # PRED: 5 [100.0%]  (true) 26 [100.0%]  (fallthru)
-  # ivtmp.41_31 = PHI <ivtmp.41_30(5), ivtmp.41_54(26)>;
-  # sum.42_32 = PHI <sum.42_14(5), reduction.43_45(26)>;
-<L0>:;
-  # SUCC: 19 [100.0%]  (fallthru)
-
-  # BLOCK 19
-  # PRED: 4 [100.0%]  (fallthru)
-  # sum.42_24 = PHI <sum.42_32(4)>;
-  # ivtmp.41_17 = PHI <ivtmp.41_31(4)>;
-  i.44_21 = (int) ivtmp.41_17;
-  D.2310_10 = i.44_21 + 3;
-  (*x.45_47)[i.44_21] = D.2310_10;
-  sum.42_14 = D.2310_10 + sum.42_24;
-  i.44_15 = i.44_21 + 1;
-  # SUCC: 5 [100.0%]  (fallthru)
-
-  # BLOCK 5
-  # PRED: 19 [100.0%]  (fallthru)
-<L17>:;
-  ivtmp.41_30 = ivtmp.41_31 + 1;
-  if (ivtmp.41_30 < D.2302_70) goto <L0>; else goto <L31>;
-  # SUCC: 4 [100.0%]  (true) 24 (false)
-
-  # Adding this reduction phi is done at
-  create_phi_for_local_result() #
-
-  # BLOCK 24
-  # PRED: 5 (false) 23 (true)
-  # reduction.38_56 = PHI <sum.42_14(5), 0(23)>;
-    <L31>:;
-  __builtin_GOMP_barrier ();
-  # SUCC: 25 [100.0%]  (fallthru)
-
-  # Creating the atomic operation is
-  done at create_call_for_reduction_1()  #
-
-  # BLOCK 25
-  # PRED: 24 [100.0%]  (fallthru)
-  D.2306_57 = &.paral_data_load.48_48->reduction.38;
-  D.2307_58 = (unsigned int) reduction.38_56;
-  D.2308_59 = __sync_fetch_and_add_4 (D.2306_57, D.2307_58);
-  # SUCC: 22 [100.0%]  (fallthru)
-
-  # BLOCK 22
-  # PRED: 25 [100.0%]  (fallthru)
-  <L29>:;
-  return;
-  # SUCC: EXIT
-  
 }
 
 */
@@ -261,8 +177,6 @@ struct reduction_info
   tree initial_value;		/* An ssa name representing a new variable holding
 				   the initial value of the reduction var before entering the loop.   */
   tree field;			/*  the name of the field in the parloop data structure intended for reduction.  */
-  tree reduction_init;		/* An ssa name representing a new variable which will be 
-				   assigned the proper reduction initialization value (init).  */
   tree init;			/* reduction initialization value.  */
   tree new_phi;			/* (helper field) Newly created phi node whose result 
 				   will be passed to the atomic operation.  Represents
@@ -576,9 +490,9 @@ take_address_of (tree var, tree type, struct loop *loop, htab_t decl_address)
 static int
 initialize_reductions (void **slot, void *data)
 {
-  tree t, stmt;
+  tree stmt;
   tree init, c;
-  tree name, name1;
+  tree name1;
   tree bvar, type, arg;
   edge e;
 
@@ -604,16 +518,13 @@ initialize_reductions (void **slot, void *data)
   init = omp_reduction_init (c, TREE_TYPE (bvar));
   reduc->init = init;
 
-  t = build_gimple_modify_stmt (bvar, init);
-  name = make_ssa_name (bvar, t);
-
-  GIMPLE_STMT_OPERAND (t, 0) = name;
-  SSA_NAME_DEF_STMT (name) = t;
-
-  /* Replace the argument 
-     representing the initialization value.  Keeping the old value 
-     in a new variable "reduction_initial", that will be taken in 
-     consideration after the parallel computing is done.  */
+  /* Replace the argument representing the initialization value 
+     with the initialization value for the reduction (neutral 
+     element for the particular operation, e.g. 0 for PLUS_EXPR, 
+     1 for MULT_EXPR, etc).  
+     Keep the old value in a new variable "reduction_initial", 
+     that will be taken in consideration after the parallel 
+     computing is done.  */
 
   e = loop_preheader_edge (loop);
   arg = PHI_ARG_DEF_FROM_EDGE (reduc->reduc_phi, e);
@@ -628,11 +539,9 @@ initialize_reductions (void **slot, void *data)
   SSA_NAME_DEF_STMT (name1) = stmt;
 
   bsi_insert_on_edge_immediate (e, stmt);
-  bsi_insert_on_edge_immediate (e, t);
   SET_USE (PHI_ARG_DEF_PTR_FROM_EDGE
-	   (reduc->reduc_phi, loop_preheader_edge (loop)), name);
+	   (reduc->reduc_phi, loop_preheader_edge (loop)), init);
   reduc->initial_value = name1;
-  reduc->reduction_init = name;
   return 1;
 }
 
@@ -857,48 +766,39 @@ separate_decls_in_loop_stmt (struct loop *loop, tree stmt,
   }
 }
 
-/* A helper structure for passing the TYPE and REDUCTION_LIST
-   to the DATA parameter of add_field_for_name.  */
-struct data_arg 
+/* Callback for htab_traverse.  Adds a field corresponding to the reduction
+   specified in SLOT. The type is passed in DATA.  */
+
+static int
+add_field_for_reduction (void **slot, void *data)
 {
-  tree type;
-  htab_t reduction_list;
-};
+  
+  struct reduction_info *red = *slot;
+  tree type = data;
+  tree var = SSA_NAME_VAR (GIMPLE_STMT_OPERAND (red->reduc_stmt, 0));
+  tree field = build_decl (FIELD_DECL, DECL_NAME (var), TREE_TYPE (var));
+
+  insert_field_into_struct (type, field);
+
+  red->field = field;
+
+  return 1;
+}
 
 /* Callback for htab_traverse.  Adds a field corresponding to a ssa name
-   described in SLOT. The type is passed in DATA.  The Reduction list
-   is also passes in DATA.  */
+   described in SLOT. The type is passed in DATA.  */ 
 
 static int
 add_field_for_name (void **slot, void *data)
 {
-  tree stmt;
-  use_operand_p use_p = NULL;
-
   struct name_to_copy_elt *elt = *slot;
-  struct data_arg *data_arg = (struct data_arg *) data;
-  tree type = data_arg->type;
+  tree type = data;
   tree name = ssa_name (elt->version);
   tree var = SSA_NAME_VAR (name);
   tree field = build_decl (FIELD_DECL, DECL_NAME (var), TREE_TYPE (var));
 
   insert_field_into_struct (type, field);
   elt->field = field;
-
-  /* Find uses of name to determine if this name is related to 
-     a reduction phi, and if so, record the field in the reduction struct.  */
-
-  if ((htab_elements (data_arg->reduction_list) > 0) 
-      && single_imm_use (elt->new_name, &use_p, &stmt)
-      && TREE_CODE (stmt) == PHI_NODE)
-    {
-      /* check if STMT is a REDUC_PHI of some reduction.  */
-      struct reduction_info *red;
-
-      red = reduction_phi (data_arg->reduction_list ,stmt);
-      if (red)
-	red->field = field;
-    }
 
   return 1;
 }
@@ -934,7 +834,7 @@ create_phi_for_local_result (void **slot, void *data)
     e = EDGE_PRED (store_bb, 1);
   else
     e = EDGE_PRED (store_bb, 0);
-  local_res = make_ssa_name (SSA_NAME_VAR (reduc->reduction_init), NULL_TREE);
+  local_res = make_ssa_name (SSA_NAME_VAR (GIMPLE_STMT_OPERAND (reduc->reduc_stmt, 0)), NULL_TREE);
   new_phi = create_phi_node (local_res, store_bb);
   SSA_NAME_DEF_STMT (local_res) = new_phi;
   add_phi_arg (new_phi, reduc->init, e);
@@ -1040,7 +940,7 @@ create_loads_for_reductions (void **slot, void *data)
   struct clsn_data *clsn_data = data;
   tree stmt;
   block_stmt_iterator bsi;
-  tree type = TREE_TYPE (red->reduction_init);
+  tree type = TREE_TYPE (GIMPLE_STMT_OPERAND (red->reduc_stmt, 0));
   tree struct_type = TREE_TYPE (TREE_TYPE (clsn_data->load));
   tree load_struct;
   tree bvar, name;
@@ -1061,9 +961,7 @@ create_loads_for_reductions (void **slot, void *data)
   name = make_ssa_name (bvar, stmt);
   GIMPLE_STMT_OPERAND (stmt, 0) = name;
   SSA_NAME_DEF_STMT (name) = stmt;
-
   bsi_insert_after (&bsi, stmt, BSI_NEW_STMT);
-
   x =
     fold_build2 (red->reduction_code, TREE_TYPE (load_struct),
 		 name, red->initial_value);
@@ -1101,6 +999,33 @@ create_final_loads_for_reduction (htab_t reduction_list,
 
   htab_traverse (reduction_list, create_loads_for_reductions, ld_st_data);
 
+}
+
+/* Callback for htab_traverse.  Store the neutral value for the
+  particular reduction's operation, e.g. 0 for PLUS_EXPR,
+  1 for MULT_EXPR, etc. into the reduction field.
+  The reduction is specified in SLOT. The store information is 
+  passed in DATA.  */  
+
+static int
+create_stores_for_reduction (void **slot, void *data)
+{
+  struct reduction_info *red = *slot;
+  struct clsn_data *clsn_data = data;
+  tree stmt;
+  block_stmt_iterator bsi;
+  tree type = TREE_TYPE (GIMPLE_STMT_OPERAND (red->reduc_stmt, 0));
+  
+  bsi = bsi_last (clsn_data->store_bb);
+  stmt =
+    build_gimple_modify_stmt (build3
+                              (COMPONENT_REF, type, clsn_data->store,
+                               red->field, NULL_TREE),
+                               red->init );
+  mark_virtual_ops_for_renaming (stmt);
+  bsi_insert_after (&bsi, stmt, BSI_NEW_STMT);
+
+  return 1;
 }
 
 /* Callback for htab_traverse.  Creates loads to a field of LOAD in LOAD_BB and
@@ -1213,19 +1138,21 @@ separate_decls_in_loop (struct loop *loop, htab_t reduction_list,
     }
   else
     {
-      struct data_arg data_arg;
-
       /* Create the type for the structure to store the ssa names to.  */
       type = lang_hooks.types.make_type (RECORD_TYPE);
       type_name = build_decl (TYPE_DECL, create_tmp_var_name (".paral_data"),
 			      type);
       TYPE_NAME (type) = type_name;
 
-      data_arg.type = type;
-      data_arg.reduction_list = reduction_list;
-      htab_traverse (name_copies, add_field_for_name, &data_arg);
+      htab_traverse (name_copies, add_field_for_name, type);
+      if (htab_elements (reduction_list) > 0)
+	{
+	  /* Create the fields for reductions.  */
+	  htab_traverse (reduction_list, add_field_for_reduction,
+                         type);
+	}
       layout_type (type);
-
+ 
       /* Create the loads and stores.  */
       *arg_struct = create_tmp_var (type, ".paral_data_store");
       add_referenced_var (*arg_struct);
@@ -1237,6 +1164,7 @@ separate_decls_in_loop (struct loop *loop, htab_t reduction_list,
       ld_st_data->load = *new_arg_struct;
       ld_st_data->store_bb = bb0;
       ld_st_data->load_bb = bb1;
+
       htab_traverse (name_copies, create_loads_and_stores_for_name,
 		     ld_st_data);
 
@@ -1244,6 +1172,8 @@ separate_decls_in_loop (struct loop *loop, htab_t reduction_list,
          reduction variable (after the join of the threads).  */
       if (htab_elements (reduction_list) > 0)
 	{
+	  htab_traverse (reduction_list, create_stores_for_reduction,
+                        ld_st_data); 
 	  clsn_data.load = make_ssa_name (nvar, NULL_TREE);
 	  clsn_data.load_bb = single_dom_exit (loop)->dest;
 	  clsn_data.store = ld_st_data->store;
