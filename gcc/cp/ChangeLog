@@ -1,5 +1,12 @@
 2007-11-06  Douglas Gregor  <doug.gregor@gmail.com>
 
+	PR c++/33977
+	PR c++/33886
+	* tree.c (c_build_qualified_type): Define bridge to
+	cp_build_qualified_type.
+
+2007-11-06  Douglas Gregor  <doug.gregor@gmail.com>
+
 	PR c++/31439
 	PR c++/32114
 	PR c++/32115

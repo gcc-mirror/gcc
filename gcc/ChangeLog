@@ -1,3 +1,13 @@
+2007-11-06  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/33977
+	PR c++/33886
+	* c-common.c (c_build_qualified_type): Moved to c-typeck.c.
+	(complete_array_type): Set canonical type appropriately.
+	* c-typeck.c (c_build_qualified_type): Moved from c-common.c. The
+	C and C++ front ends now have different versions of this function,
+	because the C++ version needs to maintain canonical types here.
+
 2007-11-04  Razya Ladelsky  <razya@il.ibm.com>
 	
 	* tree-parloops.c (reduction_info): Remove reduction_init field.
