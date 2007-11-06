@@ -112,23 +112,19 @@
 
 	* config/xtensa/xtensa.c (xtensa_expand_nonlocal_goto): Do not
 	replace references to virtual_stack_vars_rtx in goto_handler.
-	
+
 2007-11-05  Paul Brook  <paul@codesourcery.com>
 
-	* Makefile.target: Add ssd0303.o, pl022.o and ssd0323.o.
-	* vl.c (register_machines): Add lm3s6965evb_machine.
-	* vl.h (armv7m_init): Add.
-	(lm3s6965evb_machine): Declare.
-	(pl022_init): New prototype.
-	(ssd0323_xfer_ssi, ssd0323_init): New prototype.
-	* hw/ssd0323.c: New file.
-	* hw/armv7m.c (armv7m_init): Remove board init code.
-	(lm3s811evb_machine): Remove.
-	* hw/osram_oled.c: Rename...
-	* hw/ssd0303.c: ... to this.
-	* hw/pl022.c: New file.
-	* hw/stellaris.c: Define and use stellaris_boards.
-	(lm3s811evb_machine, lm3s6965evb_machine): New.
+	* config.gcc (arm*-*-*): Set c_target_objs and cxx_target_objs.
+	* config/arm/arm.c (arm_lang_output_object_attributes_hook): New.
+	(arm_file_start): Don't set Tag_ABI_PCS_wchar_t.  Call
+	arm_lang_output_object_attributes_hook.
+	* config/arm/arm.h (arm_lang_output_object_attributes_hook): Declare.
+	(REGISTER_TARGET_PRAGMAS): Call arm_lang_object_attributes_init.
+	* config/arm/arm-protos.h (arm_lang_object_attributes_init): Add
+	prototype.
+	* config/arm/t-arm.c (arm.o): New rule.
+	* config/arm/arm-c.c: New file.
 
 2007-11-05  Nick Clifton  <nickc@redhat.com>
 	    Sebastian Pop  <sebastian.pop@amd.com>
