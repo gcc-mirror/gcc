@@ -1,5 +1,8 @@
 2007-11-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/33168
+	* g++.dg/other/datasec1.C: New test.
+
 	PR tree-optimization/33458
 	* g++.dg/opt/inline12.C: New test.
 

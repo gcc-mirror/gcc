@@ -5455,8 +5455,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	 require a guard variable, and since the mangled name of the
 	 guard variable will depend on the mangled name of this
 	 variable.  */
-      if (!processing_template_decl
-	  && DECL_FUNCTION_SCOPE_P (decl)
+      if (DECL_FUNCTION_SCOPE_P (decl)
 	  && TREE_STATIC (decl)
 	  && !DECL_ARTIFICIAL (decl))
 	push_local_name (decl);
@@ -5561,6 +5560,21 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       /* This needs to happen after the linkage is set. */
       determine_visibility (decl);
 
+      if (var_definition_p && TREE_STATIC (decl))
+	{
+	  /* If a TREE_READONLY variable needs initialization
+	     at runtime, it is no longer readonly and we need to
+	     avoid MEM_READONLY_P being set on RTL created for it.  */
+	  if (init)
+	    {
+	      if (TREE_READONLY (decl))
+		TREE_READONLY (decl) = 0;
+	      was_readonly = 0;
+	    }
+	  else if (was_readonly)
+	    TREE_READONLY (decl) = 1;
+	}
+
       make_rtl_for_nonlocal_decl (decl, init, asmspec);
 
       /* Check for abstractness of the type. Notice that there is no
@@ -5583,40 +5597,21 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  if (init)
 	    DECL_INITIAL (decl) = init;
 	}
-      else
-	{
-	  /* A variable definition.  */
-	  if (DECL_FUNCTION_SCOPE_P (decl))
-	    {
-	      /* Initialize the local variable.  */
-	      if (processing_template_decl)
-		DECL_INITIAL (decl) = init;
-	      else if (!TREE_STATIC (decl))
-		initialize_local_var (decl, init);
-	    }
+      /* A variable definition.  */
+      else if (DECL_FUNCTION_SCOPE_P (decl) && !TREE_STATIC (decl))
+	/* Initialize the local variable.  */
+	initialize_local_var (decl, init);
 
-	  /* If a variable is defined, and then a subsequent
-	     definition with external linkage is encountered, we will
-	     get here twice for the same variable.  We want to avoid
-	     calling expand_static_init more than once.  For variables
-	     that are not static data members, we can call
-	     expand_static_init only when we actually process the
-	     initializer.  It is not legal to redeclare a static data
-	     member, so this issue does not arise in that case.  */
-	  if (var_definition_p && TREE_STATIC (decl))
-	    {
-	      /* If a TREE_READONLY variable needs initialization
-		 at runtime, it is no longer readonly and we need to
-		 avoid MEM_READONLY_P being set on RTL created for it.  */
-	      if (init)
-		{
-		  if (TREE_READONLY (decl))
-		    TREE_READONLY (decl) = 0;
-		  was_readonly = 0;
-		}
-	      expand_static_init (decl, init);
-	    }
-	}
+      /* If a variable is defined, and then a subsequent
+	 definition with external linkage is encountered, we will
+	 get here twice for the same variable.  We want to avoid
+	 calling expand_static_init more than once.  For variables
+	 that are not static data members, we can call
+	 expand_static_init only when we actually process the
+	 initializer.  It is not legal to redeclare a static data
+	 member, so this issue does not arise in that case.  */
+      else if (var_definition_p && TREE_STATIC (decl))
+	expand_static_init (decl, init);
     }
 
   /* If a CLEANUP_STMT was created to destroy a temporary bound to a
