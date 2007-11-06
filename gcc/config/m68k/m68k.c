@@ -43,6 +43,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "flags.h"
 #include "df.h"
+/* ??? Need to add a dependency between m68k.o and sched-int.h.  */
+#include "sched-int.h"
+#include "insn-codes.h"
 
 enum reg_class regno_reg_class[] =
 {
@@ -118,6 +121,14 @@ struct m68k_address {
   int scale;
 };
 
+static int m68k_sched_adjust_cost (rtx, rtx, rtx, int);
+static int m68k_sched_variable_issue (FILE *, int, rtx, int);
+static void m68k_sched_md_init_global (FILE *, int, int);
+static void m68k_sched_md_finish_global (FILE *, int);
+static void m68k_sched_md_init (FILE *, int, int);
+static void m68k_sched_dfa_pre_advance_cycle (void);
+static void m68k_sched_dfa_post_advance_cycle (void);
+
 static bool m68k_handle_option (size_t, const char *, int);
 static rtx find_addr_reg (rtx);
 static const char *singlemove_string (rtx *);
@@ -184,6 +195,27 @@ int m68k_last_compare_had_fp_operands;
 
 #undef TARGET_ASM_FILE_START_APP_OFF
 #define TARGET_ASM_FILE_START_APP_OFF true
+
+#undef TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST m68k_sched_adjust_cost
+
+#undef TARGET_SCHED_VARIABLE_ISSUE
+#define TARGET_SCHED_VARIABLE_ISSUE m68k_sched_variable_issue
+
+#undef TARGET_SCHED_INIT_GLOBAL
+#define TARGET_SCHED_INIT_GLOBAL m68k_sched_md_init_global
+
+#undef TARGET_SCHED_FINISH_GLOBAL
+#define TARGET_SCHED_FINISH_GLOBAL m68k_sched_md_finish_global
+
+#undef TARGET_SCHED_INIT
+#define TARGET_SCHED_INIT m68k_sched_md_init
+
+#undef TARGET_SCHED_DFA_PRE_ADVANCE_CYCLE
+#define TARGET_SCHED_DFA_PRE_ADVANCE_CYCLE m68k_sched_dfa_pre_advance_cycle
+
+#undef TARGET_SCHED_DFA_POST_ADVANCE_CYCLE
+#define TARGET_SCHED_DFA_POST_ADVANCE_CYCLE m68k_sched_dfa_post_advance_cycle
 
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION m68k_handle_option
@@ -4970,4 +5002,452 @@ m68k_sched_branch_type (rtx insn)
   gcc_assert (type != 0);
 
   return type;
+}
+
+/* Implement type2 attribute.  */
+enum attr_type2
+m68k_sched_attr_type2 (rtx insn)
+{
+  switch (get_attr_type1 (insn))
+    {
+    case TYPE1_ALU_REG1:
+    case TYPE1_ALU_REGX:
+      return TYPE2_ALU;
+
+    case TYPE1_ALU_L:
+    case TYPE1_ALUQ_L:
+    case TYPE1_CMP_L:
+      return TYPE2_ALU_L;
+
+    case TYPE1_BCC:
+      return TYPE2_BCC;
+
+    case TYPE1_BRA:
+      return TYPE2_BRA;
+
+    case TYPE1_BSR:
+    case TYPE1_JSR:
+      return TYPE2_CALL;
+
+    case TYPE1_JMP:
+      return TYPE2_JMP;
+
+    case TYPE1_LEA:
+      return TYPE2_LEA;
+
+    case TYPE1_CLR:
+    case TYPE1_MOV3Q_L:
+    case TYPE1_MOVE:
+    case TYPE1_MOVEQ_L:
+    case TYPE1_TST:
+      return TYPE2_MOVE;
+
+    case TYPE1_MOVE_L:
+    case TYPE1_TST_L:
+      return TYPE2_MOVE_L;
+
+    case TYPE1_MUL_W:
+    case TYPE1_MUL_L:
+      return TYPE2_MUL;
+
+    case TYPE1_PEA:
+      return TYPE2_PEA;
+
+    case TYPE1_RTS:
+      return TYPE2_RTS;
+
+    case TYPE1_UNLK:
+      return TYPE2_UNLK;
+
+    default:
+      gcc_assert (get_attr_guess (insn) == GUESS_YES);
+      return TYPE2_UNKNOWN;
+    }
+}
+
+/* An empty state that is used in m68k_sched_adjust_cost.  */
+static state_t sched_adjust_cost_state;
+
+/* Implement adjust_cost scheduler hook.
+   Return adjusted COST of dependency LINK between DEF_INSN and INSN.  */
+static int
+m68k_sched_adjust_cost (rtx insn, rtx link ATTRIBUTE_UNUSED, rtx def_insn,
+			int cost)
+{
+  int delay;
+
+  if (recog_memoized (def_insn) < 0
+      || recog_memoized (insn) < 0)
+    return cost;
+
+  /* Don't try to issue INSN earlier than DFA permits.
+     This is especially useful for instructions that write to memory,
+     as their true dependence (default) latency is better to be set to 0
+     to workaround alias analysis limitations.
+     This is, in fact, a machine independent tweak, so, probably,
+     it should be moved to haifa-sched.c: insn_cost ().  */
+
+  delay = min_insn_conflict_delay (sched_adjust_cost_state, def_insn, insn);
+  if (delay > cost)
+    cost = delay;
+
+  return cost;
+}
+
+/* Size of the instruction buffer in words.  */
+static int sched_ib_size;
+
+/* Number of filled words in the instruction buffer.  */
+static int sched_ib_filled;
+
+/* An insn that reserves (marks empty) one word in the instruction buffer.  */
+static rtx sched_ib_insn;
+
+/* ID of memory unit.  */
+static int sched_mem_unit_code;
+
+/* Implementation of the targetm.sched.variable_issue () hook.
+   It is called after INSN was issued.  It returns the number of insns
+   that can possibly get scheduled on the current cycle.
+   It is used here to determine the effect of INSN on the instruction
+   buffer.  */
+static int
+m68k_sched_variable_issue (FILE *sched_dump ATTRIBUTE_UNUSED,
+			   int sched_verbose ATTRIBUTE_UNUSED,
+			   rtx insn, int can_issue_more)
+{
+  int insn_size;
+
+  if (recog_memoized (insn) >= 0)
+    {
+      insn_size = get_attr_size (insn);
+
+      gcc_assert (insn_size <= sched_ib_filled);
+
+      --can_issue_more;
+    }
+  else if (GET_CODE (PATTERN (insn)) == ASM_INPUT
+	   || asm_noperands (PATTERN (insn)) >= 0)
+    insn_size = sched_ib_filled;
+  else
+    insn_size = 0;
+
+  sched_ib_filled -= insn_size;
+
+  return can_issue_more;
+}
+
+/* Statistics gatherer.  */
+
+typedef enum
+  {
+    /* Something needs to be done for this insn.  */
+    SCHED_DUMP_TODO,
+
+    /* Support for this insn is complete.  */
+    SCHED_DUMP_DONE,
+
+    /* This insn didn't require much effort to support it.  */
+    SCHED_DUMP_NOTHING
+  } sched_dump_class_def;
+
+/* Pointer to functions that classifies insns into 3 above classes.  */
+typedef sched_dump_class_def (*sched_dump_class_func_t) (rtx);
+
+/* Return statistical type of INSN regarding splits.  */
+static sched_dump_class_def
+sched_dump_split_class (rtx insn)
+{
+  int i;
+
+  i = recog_memoized (insn);
+  gcc_assert (i >= 0);
+
+  switch (get_attr_split (insn))
+    {
+    case SPLIT_TODO:
+      return SCHED_DUMP_TODO;
+
+    case SPLIT_DONE:
+      return SCHED_DUMP_DONE;
+
+    case SPLIT_NOTHING:
+      return SCHED_DUMP_NOTHING;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* ID of the guess unit.  */
+static int sched_dump_dfa_guess_unit_code;
+
+/* DFA state for use in sched_dump_dfa_class ().  */
+static state_t sched_dump_dfa_state;
+
+/* Return statistical type of INSN regarding DFA reservations.  */
+static sched_dump_class_def
+sched_dump_dfa_class (rtx insn)
+{
+  int i;
+
+  i = recog_memoized (insn);
+  gcc_assert (i >= 0 && insn_has_dfa_reservation_p (insn));
+
+  if (sched_dump_split_class (insn) == SCHED_DUMP_TODO)
+    /* Insn is not yet ready for reservations.  */
+    return SCHED_DUMP_NOTHING;
+
+  state_reset (sched_dump_dfa_state);
+
+  if (state_transition (sched_dump_dfa_state, insn) >= 0)
+    gcc_unreachable ();
+
+  if (cpu_unit_reservation_p (sched_dump_dfa_state,
+			      sched_dump_dfa_guess_unit_code))
+    return SCHED_DUMP_TODO;
+
+  return SCHED_DUMP_DONE;
+}
+
+/* Dump statistics on current function into file DUMP_FILENAME and prefix
+   each entry with PREFIX.
+   Instructions are classified with DUMP_CLASS.  */
+static void
+m68k_sched_dump (sched_dump_class_func_t dump_class,
+		 const char *prefix, FILE *dump)
+{
+  sbitmap present;
+  int *todos;
+  int *dones;
+  int *nothings;
+  rtx insn;
+
+  gcc_assert (dump != NULL);
+
+  present = sbitmap_alloc (CODE_FOR_nothing);
+  sbitmap_zero (present);
+
+  todos = xcalloc (CODE_FOR_nothing, sizeof (*todos));
+  dones = xcalloc (CODE_FOR_nothing, sizeof (*dones));
+  nothings = xcalloc (CODE_FOR_nothing, sizeof (*nothings));
+
+  /* Gather statistics.  */
+  for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn))
+    {
+      if (INSN_P (insn) && recog_memoized (insn) >= 0)
+	{
+	  enum insn_code code;
+
+	  code = INSN_CODE (insn);
+	  gcc_assert (code < CODE_FOR_nothing);
+
+	  SET_BIT (present, code);
+
+	  switch (dump_class (insn))
+	    {
+	    case SCHED_DUMP_TODO:
+	      ++todos[code];
+	      break;
+
+	    case SCHED_DUMP_DONE:
+	      ++dones[code];
+	      break;
+
+	    case SCHED_DUMP_NOTHING:
+	      ++nothings[code];
+	      break;
+	    }
+	}
+    }
+
+  /* Print statisctics.  */
+  {
+    unsigned int i;
+    sbitmap_iterator si;
+    int total_todo;
+    int total_done;
+    int total_nothing;
+
+    total_todo = 0;
+    total_done = 0;
+    total_nothing = 0;
+
+    EXECUTE_IF_SET_IN_SBITMAP (present, 0, i, si)
+      {
+	int todo;
+	int done;
+	int nothing;
+	enum insn_code code;
+
+	code = (enum insn_code) i;
+
+	todo = todos[code];
+	done = dones[code];
+	nothing = nothings[code];
+
+	total_todo += todo;
+	total_done += done;
+	total_nothing += nothing;
+
+	if (todo != 0)
+	  {
+	    fprintf (dump,
+		     "%s: %3d: %d / %d / %d ;",
+		     prefix, code, todo, done, nothing);
+
+	    {
+	      const char *name;
+
+	      name = get_insn_name (code);
+
+	      if (name != NULL)
+		fprintf (dump, " {%s}\n", name);
+	      else
+		fprintf (dump, " {unknown}\n");
+	    }
+	  }
+      }
+
+    gcc_assert (CODE_FOR_nothing < 999);
+
+    fprintf (dump,
+	     "%s: 999: %d / %d / %d ; {total}\n",
+	     prefix, total_todo, total_done, total_nothing);
+  }
+
+  free (nothings);
+  nothings = NULL;
+  free (dones);
+  dones = NULL;
+  free (todos);
+  todos = NULL;
+
+  sbitmap_free (present);
+  present = NULL;
+}
+
+/* Implementation of targetm.sched.md_init_global () hook.
+   It is invoked once per scheduling pass and is used here
+   to initialize scheduler constants.  */
+static void
+m68k_sched_md_init_global (FILE *sched_dump ATTRIBUTE_UNUSED,
+			   int sched_verbose ATTRIBUTE_UNUSED,
+			   int n_insns ATTRIBUTE_UNUSED)
+{
+  /* Init branch types.  */
+  {
+    rtx insn;
+
+    sched_branch_type = xcalloc (get_max_uid () + 1,
+				 sizeof (*sched_branch_type));
+
+    for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn))
+      {
+	if (JUMP_P (insn))
+	  /* !!! FIXME: Implement real scan here.  */
+	  sched_branch_type[INSN_UID (insn)] = TYPE_BCC;
+      }
+  }
+
+  if (reload_completed && sched_verbose >= 8)
+    /* Dump statistics.  */
+    {
+      m68k_sched_dump (sched_dump_split_class, "m68k_sched_split",
+		       sched_dump);
+
+      sched_dump_dfa_guess_unit_code = get_cpu_unit_code ("cf_v2_guess");
+      sched_dump_dfa_state = alloca (state_size ());
+
+      m68k_sched_dump (sched_dump_dfa_class, "m68k_sched_dfa",
+		       sched_dump);
+
+      sched_dump_dfa_state = NULL;
+      sched_dump_dfa_guess_unit_code = 0;
+    }
+
+  /* Setup target cpu.  */
+  switch (m68k_sched_cpu)
+    {
+    case CPU_CF_V2:
+      sched_ib_size = 6;
+      sched_mem_unit_code = get_cpu_unit_code ("cf_v2_mem");
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  sched_adjust_cost_state = xmalloc (state_size ());
+  state_reset (sched_adjust_cost_state);
+
+  start_sequence ();
+  emit_insn (gen_ib ());
+  sched_ib_insn = get_insns ();
+  end_sequence ();
+}
+
+/* Scheduling pass is now finished.  Free/reset static variables.  */
+static void
+m68k_sched_md_finish_global (FILE *dump ATTRIBUTE_UNUSED,
+			     int verbose ATTRIBUTE_UNUSED)
+{
+  sched_ib_insn = NULL;
+
+  free (sched_adjust_cost_state);
+  sched_adjust_cost_state = NULL;
+
+  sched_mem_unit_code = 0;
+  sched_ib_size = 0;
+
+  free (sched_branch_type);
+  sched_branch_type = NULL;
+}
+
+/* Implementation of targetm.sched.md_init () hook.
+   It is invoked each time scheduler starts on the new block (basic block or
+   extended basic block).  */
+static void
+m68k_sched_md_init (FILE *sched_dump ATTRIBUTE_UNUSED,
+		    int sched_verbose ATTRIBUTE_UNUSED,
+		    int n_insns ATTRIBUTE_UNUSED)
+{
+  /* haifa-sched.c: schedule_block () calls advance_cycle () just before
+     the first cycle.  Workaround that.  */
+  sched_ib_filled = -2;
+}
+
+/* Implementation of targetm.sched.dfa_pre_advance_cycle () hook.
+   It is invoked just before current cycle finishes and is used here
+   to track if instruction buffer got its two words this cycle.  */
+static void
+m68k_sched_dfa_pre_advance_cycle (void)
+{
+  if (!cpu_unit_reservation_p (curr_state, sched_mem_unit_code))
+    {
+      sched_ib_filled += 2;
+
+      if (sched_ib_filled > sched_ib_size)
+	sched_ib_filled = sched_ib_size;
+    }
+}
+
+/* Implementation of targetm.sched.dfa_post_advance_cycle () hook.
+   It is invoked just after new cycle begins and is used here
+   to setup number of filled words in the instruction buffer so that
+   instructions which won't have all their words prefetched would be
+   stalled for a cycle.  */
+static void
+m68k_sched_dfa_post_advance_cycle (void)
+{
+  int i;
+  int n;
+
+  /* Setup number of prefetched instruction words in the instruction
+     buffer.  */
+  for (i = sched_ib_filled, n = sched_ib_size; i < n; ++i)
+    {
+      if (state_transition (curr_state, sched_ib_insn) >= 0)
+	gcc_unreachable ();
+    }
 }
