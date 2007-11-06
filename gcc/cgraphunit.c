@@ -158,8 +158,10 @@ static void cgraph_output_pending_asms (void);
 
 static FILE *cgraph_dump_file;
 
-static GTY (()) tree static_ctors;
-static GTY (()) tree static_dtors;
+/* A vector of FUNCTION_DECLs declared as static constructors.  */
+static GTY (()) VEC(tree, gc) *static_ctors;
+/* A vector of FUNCTION_DECLs declared as static destructors.  */
+static GTY (()) VEC(tree, gc) *static_dtors;
 
 /* When target does not have ctors and dtors, we call all constructor
    and destructor by special initialization/destruction function
@@ -179,12 +181,12 @@ record_cdtor_fn (tree fndecl)
 
   if (DECL_STATIC_CONSTRUCTOR (fndecl))
     {
-      static_ctors = tree_cons (NULL_TREE, fndecl, static_ctors);
+      VEC_safe_push (tree, gc, static_ctors, fndecl);
       DECL_STATIC_CONSTRUCTOR (fndecl) = 0;
     }
   if (DECL_STATIC_DESTRUCTOR (fndecl))
     {
-      static_dtors = tree_cons (NULL_TREE, fndecl, static_dtors);
+      VEC_safe_push (tree, gc, static_dtors, fndecl);
       DECL_STATIC_DESTRUCTOR (fndecl) = 0;
     }
   DECL_INLINE (fndecl) = 1;
@@ -193,22 +195,98 @@ record_cdtor_fn (tree fndecl)
   cgraph_mark_reachable_node (node);
 }
 
-/* Synthesize a function which calls all the global ctors or global
-   dtors in this file.  This is only used for targets which do not
-   support .ctors/.dtors sections.  */
+/* Define global constructors/destructor functions for the CDTORS, of
+   which they are LEN.  The CDTORS are sorted by initialization
+   priority.  If CTOR_P is true, these are constructors; otherwise,
+   they are destructors.  */
+
 static void
-build_cdtor (int method_type, tree cdtors)
+build_cdtor (bool ctor_p, tree *cdtors, size_t len)
 {
-  tree body = 0;
+  size_t i;
 
-  if (!cdtors)
-    return;
+  i = 0;
+  while (i < len)
+    {
+      tree body;
+      tree fn;
+      priority_type priority;
 
-  for (; cdtors; cdtors = TREE_CHAIN (cdtors))
-    append_to_statement_list (build_function_call_expr (TREE_VALUE (cdtors), 0),
-			      &body);
+      priority = 0;
+      body = NULL_TREE;
+      /* Find the next batch of constructors/destructors with the same
+	 initialization priority.  */
+      do
+	{
+	  priority_type p;
+	  fn = cdtors[i];
+	  p = ctor_p ? DECL_INIT_PRIORITY (fn) : DECL_FINI_PRIORITY (fn);
+	  if (!body)
+	    priority = p;
+	  else if (p != priority)
+	    break;
+	  append_to_statement_list (build_function_call_expr (fn, 0),
+				    &body);
+	  ++i;
+	}
+      while (i < len);
+      gcc_assert (body != NULL_TREE);
+      /* Generate a function to call all the function of like
+	 priority.  */
+      cgraph_build_static_cdtor (ctor_p ? 'I' : 'D', body, priority);
+    }
+}
 
-  cgraph_build_static_cdtor (method_type, body, DEFAULT_INIT_PRIORITY);
+/* Comparison function for qsort.  P1 and P2 are actually of type
+   "tree *" and point to static constructors.  DECL_INIT_PRIORITY is
+   used to determine the sort order.  */
+
+static int
+compare_ctor (const void *p1, const void *p2)
+{
+  tree f1;
+  tree f2;
+  int priority1;
+  int priority2;
+
+  f1 = *(const tree *)p1;
+  f2 = *(const tree *)p2;
+  priority1 = DECL_INIT_PRIORITY (f1);
+  priority2 = DECL_INIT_PRIORITY (f2);
+  
+  if (priority1 < priority2)
+    return -1;
+  else if (priority1 > priority2)
+    return 1;
+  else
+    /* Ensure a stable sort.  */
+    return (const tree *)p1 - (const tree *)p2;
+}
+
+/* Comparison function for qsort.  P1 and P2 are actually of type
+   "tree *" and point to static destructors.  DECL_FINI_PRIORITY is
+   used to determine the sort order.  */
+
+static int
+compare_dtor (const void *p1, const void *p2)
+{
+  tree f1;
+  tree f2;
+  int priority1;
+  int priority2;
+
+  f1 = *(const tree *)p1;
+  f2 = *(const tree *)p2;
+  priority1 = DECL_FINI_PRIORITY (f1);
+  priority2 = DECL_FINI_PRIORITY (f2);
+  
+  if (priority1 < priority2)
+    return -1;
+  else if (priority1 > priority2)
+    return 1;
+  else
+    /* Ensure a stable sort.  */
+    return (const tree *)p1 - (const tree *)p2;
 }
 
 /* Generate functions to call static constructors and destructors
@@ -218,17 +296,30 @@ build_cdtor (int method_type, tree cdtors)
 static void
 cgraph_build_cdtor_fns (void)
 {
-  if (!targetm.have_ctors_dtors)
+  if (!VEC_empty (tree, static_ctors))
     {
-      build_cdtor ('I', static_ctors); 
-      static_ctors = NULL_TREE;
-      build_cdtor ('D', static_dtors); 
-      static_dtors = NULL_TREE;
+      gcc_assert (!targetm.have_ctors_dtors);
+      qsort (VEC_address (tree, static_ctors),
+	     VEC_length (tree, static_ctors), 
+	     sizeof (tree),
+	     compare_ctor);
+      build_cdtor (/*ctor_p=*/true,
+		   VEC_address (tree, static_ctors),
+		   VEC_length (tree, static_ctors)); 
+      VEC_truncate (tree, static_ctors, 0);
     }
-  else
+
+  if (!VEC_empty (tree, static_dtors))
     {
-      gcc_assert (!static_ctors);
-      gcc_assert (!static_dtors);
+      gcc_assert (!targetm.have_ctors_dtors);
+      qsort (VEC_address (tree, static_dtors),
+	     VEC_length (tree, static_dtors), 
+	     sizeof (tree),
+	     compare_dtor);
+      build_cdtor (/*ctor_p=*/false,
+		   VEC_address (tree, static_dtors),
+		   VEC_length (tree, static_dtors)); 
+      VEC_truncate (tree, static_dtors, 0);
     }
 }
 
@@ -1364,9 +1455,10 @@ cgraph_optimize (void)
     }
 #endif
 }
-/* Generate and emit a static constructor or destructor.  WHICH must be
-   one of 'I' or 'D'.  BODY should be a STATEMENT_LIST containing
-   GENERIC statements.  */
+/* Generate and emit a static constructor or destructor.  WHICH must
+   be one of 'I' (for a constructor) or 'D' (for a destructor).  BODY
+   is a STATEMENT_LIST containing GENERIC statements.  PRIORITY is the
+   initialization priority fot this constructor or destructor.  */
 
 void
 cgraph_build_static_cdtor (char which, tree body, int priority)
@@ -1375,7 +1467,10 @@ cgraph_build_static_cdtor (char which, tree body, int priority)
   char which_buf[16];
   tree decl, name, resdecl;
 
-  sprintf (which_buf, "%c_%d", which, counter++);
+  /* The priority is encoded in the constructor or destructor name.
+     collect2 will sort the names and arrange that they are called at
+     program startup.  */
+  sprintf (which_buf, "%c_%.5d_%d", which, priority, counter++);
   name = get_file_function_name (which_buf);
 
   decl = build_decl (FUNCTION_DECL, name,

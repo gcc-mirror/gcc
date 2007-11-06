@@ -1,3 +1,23 @@
+2007-11-05  Mark Mitchell  <mark@codesourcery.com>
+
+	PR target/33579
+	* tree.h (DECL_INIT_PRIORITY): Do not require
+	DECL_HAS_INIT_PRIORITY_P.
+	(DECL_FINI_PRIORITY): Likewise.
+	* tree.c (decl_init_priority_lookup): Remove assert.
+	(decl_fini_priority_insert): Likewise.
+	* cgraphunit.c (static_ctors): Make it a VEC.
+	(static_dtors): Likewise.
+	(record_cdtor_fn): Adjust accordingly.
+	(build_cdtor): Generate multiple functions for each initialization
+	priority.
+	(compare_ctor): New function.
+	(compare_dtor): Likewise.
+	(cgraph_build_cdtor_fns): Sort the functions by priority before
+	calling build_cdtor.
+	(cgraph_build_static_cdtor): Put the priority in the function's
+	name.
+
 2007-11-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR driver/32632

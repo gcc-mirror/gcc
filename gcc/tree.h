@@ -3144,16 +3144,15 @@ extern void decl_fini_priority_insert (tree, priority_type);
 #define DECL_HAS_INIT_PRIORITY_P(NODE) \
   (VAR_DECL_CHECK (NODE)->decl_with_vis.init_priority_p)
 
-/* For a VAR_DECL or FUNCTION_DECL with DECL_HAS_INIT_PRIORITY_P set,
-   the initialization priority of NODE.  */
+/* For a VAR_DECL or FUNCTION_DECL the initialization priority of
+   NODE.  */ 
 #define DECL_INIT_PRIORITY(NODE) \
   (decl_init_priority_lookup (NODE))
 /* Set the initialization priority for NODE to VAL.  */
 #define SET_DECL_INIT_PRIORITY(NODE, VAL) \
   (decl_init_priority_insert (NODE, VAL))
 
-/* For a FUNCTION_DECL with DECL_HAS_INIT_PRIORITY_P set, the
-   finalization priority of NODE.  */
+/* For a FUNCTION_DECL the finalization priority of NODE.  */
 #define DECL_FINI_PRIORITY(NODE) \
   (decl_fini_priority_lookup (NODE))
 /* Set the finalization priority for NODE to VAL.  */
