@@ -1,3 +1,8 @@
+2007-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33894
+	* testsuite/libgomp.c++/atomic-1.C: New test.
+
 2007-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/33275

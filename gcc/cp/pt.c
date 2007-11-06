@@ -10358,13 +10358,13 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       break;
 
     case OMP_ATOMIC:
-      if (OMP_ATOMIC_DEPENDENT_P (t))
-        {
-	  tree op1 = TREE_OPERAND (t, 1);
-	  tree lhs = RECUR (TREE_OPERAND (op1, 0));
-	  tree rhs = RECUR (TREE_OPERAND (op1, 1));
-	  finish_omp_atomic (TREE_CODE (op1), lhs, rhs);
-        }
+      gcc_assert (OMP_ATOMIC_DEPENDENT_P (t));
+      {
+	tree op1 = TREE_OPERAND (t, 1);
+	tree lhs = RECUR (TREE_OPERAND (op1, 0));
+	tree rhs = RECUR (TREE_OPERAND (op1, 1));
+	finish_omp_atomic (TREE_CODE (op1), lhs, rhs);
+      }
       break;
 
     case EXPR_PACK_EXPANSION:
