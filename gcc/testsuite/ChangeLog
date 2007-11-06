@@ -1,5 +1,11 @@
 2007-11-06  Douglas Gregor  <doug.gregor@gmail.com>
 
+	PR c++/33977
+	PR c++/33886
+	* g++.dg/other/canon-array.C: New.
+	
+2007-11-06  Douglas Gregor  <doug.gregor@gmail.com>
+
 	* testsuite/g++.dg/parser/crash36.C: Tweak expected errors.
 	* testsuite/g++.dg/cpp0x/pr31439.C: New.
 	* testsuite/g++.dg/cpp0x/pr32114.C: New.
