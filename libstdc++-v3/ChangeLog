@@ -1,3 +1,8 @@
+2007-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/tr1_impl/boost_shared_ptr.h: Avoid unnecessary memory
+	barriers in _S_atomic case.
+
 2007-11-05  Chris Jefferson  <chris@bubblescope.net>
 	    Paolo Carlini  <pcarlini@suse.de>
 
