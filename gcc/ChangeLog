@@ -1,5 +1,9 @@
 2007-11-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/33458
+	* tree-inline.c (copy_phis_for_bb): If PHI arg substitution creates
+	!is_gimple_val PHI argument, gimplify it and insert it on edge.
+
 	PR tree-optimization/33993
 	* tree-vect-transform.c (vect_get_constant_vectors): Use build_vector
 	rather than build_constructor_from_list if all list values are
