@@ -3613,21 +3613,24 @@ build_base_field (record_layout_info rli, tree binfo,
       DECL_ARTIFICIAL (decl) = 1;
       DECL_IGNORED_P (decl) = 1;
       DECL_FIELD_CONTEXT (decl) = t;
-      DECL_SIZE (decl) = CLASSTYPE_SIZE (basetype);
-      DECL_SIZE_UNIT (decl) = CLASSTYPE_SIZE_UNIT (basetype);
-      DECL_ALIGN (decl) = CLASSTYPE_ALIGN (basetype);
-      DECL_USER_ALIGN (decl) = CLASSTYPE_USER_ALIGN (basetype);
-      DECL_MODE (decl) = TYPE_MODE (basetype);
-      DECL_FIELD_IS_BASE (decl) = 1;
+      if (CLASSTYPE_AS_BASE (basetype))
+	{
+	  DECL_SIZE (decl) = CLASSTYPE_SIZE (basetype);
+	  DECL_SIZE_UNIT (decl) = CLASSTYPE_SIZE_UNIT (basetype);
+	  DECL_ALIGN (decl) = CLASSTYPE_ALIGN (basetype);
+	  DECL_USER_ALIGN (decl) = CLASSTYPE_USER_ALIGN (basetype);
+	  DECL_MODE (decl) = TYPE_MODE (basetype);
+	  DECL_FIELD_IS_BASE (decl) = 1;
 
-      /* Try to place the field.  It may take more than one try if we
-	 have a hard time placing the field without putting two
-	 objects of the same type at the same address.  */
-      layout_nonempty_base_or_field (rli, decl, binfo, offsets);
-      /* Add the new FIELD_DECL to the list of fields for T.  */
-      TREE_CHAIN (decl) = *next_field;
-      *next_field = decl;
-      next_field = &TREE_CHAIN (decl);
+	  /* Try to place the field.  It may take more than one try if we
+	     have a hard time placing the field without putting two
+	     objects of the same type at the same address.  */
+	  layout_nonempty_base_or_field (rli, decl, binfo, offsets);
+	  /* Add the new FIELD_DECL to the list of fields for T.  */
+	  TREE_CHAIN (decl) = *next_field;
+	  *next_field = decl;
+	  next_field = &TREE_CHAIN (decl);
+	}
     }
   else
     {
@@ -4423,7 +4426,9 @@ end_of_base (tree binfo)
 {
   tree size;
 
-  if (is_empty_class (BINFO_TYPE (binfo)))
+  if (!CLASSTYPE_AS_BASE (BINFO_TYPE (binfo)))
+    size = TYPE_SIZE_UNIT (char_type_node);
+  else if (is_empty_class (BINFO_TYPE (binfo)))
     /* An empty class has zero CLASSTYPE_SIZE_UNIT, but we need to
        allocate some space for it. It cannot have virtual bases, so
        TYPE_SIZE_UNIT is fine.  */

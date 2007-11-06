@@ -1,3 +1,57 @@
+2007-11-06  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/31439
+	PR c++/32114
+	PR c++/32115
+	PR c++/32125
+	PR c++/32126
+	PR c++/32127
+	PR c++/32128
+	PR c++/32253
+	PR c++/32566
+	* typeck.c (check_return_expr): Pass address of retval to
+	check_for_bare_parameter_packs.
+	* class.c (build_base_field): Tolerate bases that have no layout
+	due to errors.
+	(end_of_base): Ditto.
+	* tree.c (canonical_type_variant): Be careful with
+	ERROR_MARK_NODE.
+	* cp-tree.h (check_for_bare_parameter_packs): Now accepts a
+	tree*.
+	* pt.c (find_parameter_pack_data): Add set_packs_to_error field,
+	which states whether parameter packs should be replaced with
+	ERROR_MARK_NODE.
+	(find_parameter_packs_r): Pass addresses to cp_walk_tree wherever
+	possible. If set_packs_to_error is set true, replace the parameter
+	pack with ERROR_MARK_NODE. Manage our own pointer sets.
+	(uses_parameter_packs): Don't set parameter packs to
+	ERROR_MARK_NODE.
+	(check_for_bare_parameter_packs): Now takes a pointer to a tree,
+	which may be modified (if it is a parameter pack). Instructs
+	find_parameter_packs_r to replace parameter packs with
+	ERROR_MARK_NODE (so that they won't cause errors later on).
+	(process_template_parm): Pass pointer to
+	check_for_bare_parameter_packs.
+	(process_partial_specialization): Replace pack expansions before
+	the end of the template argument list with ERROR_MARK_NODE.
+	(push_template_decl_real): Pass pointer to
+	check_for_bare_parameter_packs. Replace parameter packs not at the
+	end of the template parameter list with ERROR_MARK_NODE.
+	(convert_template_argument): Be more careful about using DECL_NAME
+	on only declarations.
+	(unify): Can't unify against ERROR_MARK_NODE.
+	* semantics.c (finish_cond): Pass pointer to
+	check_for_bare_parameter_packs.
+	(finish_expr_stmt): Ditto.
+	(finish_for_expr): Ditto.
+	(finish_switch_cond): Pass pointer to
+	check_for_bare_parameter_packs, and call it before we put the
+	condition into the statement.
+	(finish_mem_initializers): Pass pointer to
+	check_for_bare_parameter_packs.
+	(finish_member_declaration): Ditto.
+	* parser.c (cp_parser_base_clause): Ditto.
+	
 2007-11-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/33168

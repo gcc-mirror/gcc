@@ -3,9 +3,9 @@
 
 template<typename> struct A;
 
-template<typename... T> struct A<T*>  // { dg-error "not expanded|note" }
-{                                     // { dg-error "not expanded|note" }
+template<typename... T> struct A<T*>  // { dg-error "not expanded|T|not used|T" }
+{                                     
   struct B;
 };
 
-A<void*> a;
+A<void*> a; // { dg-error "incomplete" }

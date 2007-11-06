@@ -1,3 +1,21 @@
+2007-11-06  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* testsuite/g++.dg/parser/crash36.C: Tweak expected errors.
+	* testsuite/g++.dg/cpp0x/pr31439.C: New.
+	* testsuite/g++.dg/cpp0x/pr32114.C: New.
+	* testsuite/g++.dg/cpp0x/pr32115.C: New.
+	* testsuite/g++.dg/cpp0x/pr32125.C: New.
+	* testsuite/g++.dg/cpp0x/pr32126.C: New.
+	* testsuite/g++.dg/cpp0x/pr32127.C: New.
+	* testsuite/g++.dg/cpp0x/pr32128.C: New.
+	* testsuite/g++.dg/cpp0x/pr32253.C: New.
+	* testsuite/g++.dg/cpp0x/pr32566.C: New.
+	* testsuite/g++.dg/cpp0x/pr31445.C: Tweak expected errors.
+	* testsuite/g++.dg/cpp0x/pr31438.C: Ditto.
+	* testsuite/g++.dg/cpp0x/variadic81.C: Ditto.
+	* testsuite/g++.dg/cpp0x/pr31432.C: Ditto.
+	* testsuite/g++.dg/cpp0x/pr31442.C: Ditto.
+
 2007-11-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/33168
