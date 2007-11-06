@@ -1,5 +1,8 @@
 2007-11-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/33458
+	* g++.dg/opt/inline12.C: New test.
+
 	PR tree-optimization/33993
 	* gcc.c-torture/compile/20071105-1.c: New test.
 
