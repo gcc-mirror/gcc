@@ -1,3 +1,10 @@
+2007-11-07  Maxim Kuvyrkov  <maxim@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/33670
+	* haifa-sched.c (check_sched_flags): Remove.
+	(sched_init): Don't call it.
+
 2007-11-06  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	PR target/32787
