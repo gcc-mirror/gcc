@@ -1,3 +1,34 @@
+2007-11-06  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/m68k/m68k.c (sched-int.h, insn-codes.h): New includes.
+	(TARGET_SCHED_ADJUST_COST, TARGET_SCHED_VARIABLE_ISSUE,
+	TARGET_SCHED_INIT_GLOBAL, TARGET_SCHED_FINISH_GLOBAL,
+	TARGET_SCHED_INIT, TARGET_SCHED_DFA_PRE_ADVANCE_CYCLE,
+	TARGET_SCHED_DFA_POST_ADVANCE_CYCLE): Redefine.
+	(m68k_sched_attr_type2): New function.
+	(sched_adjust_cost_state): New static variable.
+	(m68k_sched_adjust_cost): New static function implementing
+	scheduler hook.
+	(sched_ib_size, sched_ib_filled, sched_ib_insn, sched_mem_unit_code):
+	New static variables.
+	(m68k_sched_variable_issue): New static function implementing
+	scheduler hook.
+	(sched_dump_class_def, sched_dump_class_func_t): New typedefs.
+	(sched_dump_split_class): New static function.
+	(sched_dump_dfa_guess_unit_code, sched_dump_dfa_state): New static
+	variables.
+	(sched_dump_dfa_class, m68k_sched_dump): New static function.
+	(m68k_sched_md_init_global, m68k_sched_md_finish_global,
+	m68k_sched_md_init, m68k_sched_dfa_pre_advance_cycle,
+	m68k_sched_dfa_post_advance_cycle): New static functions implementing
+	scheduler hooks.
+
+	* config/m68k/m68k.h (m68k_sched_attr_type2): Declare.
+	(CPU_UNITS_QUERY): Define.
+
+	* config/m68k/cf.md: New file.
+	* config/m68k/m68.md (cf.md): New include.
+
 2007-11-06  Tom Tromey  <tromey@redhat.com>
 
 	PR c++/32256, PR c++/32368:

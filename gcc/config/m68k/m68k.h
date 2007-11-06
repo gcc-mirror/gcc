@@ -1148,3 +1148,4 @@ extern M68K_CONST_METHOD m68k_const_method (HOST_WIDE_INT);
 
 extern void m68k_emit_move_double (rtx [2]);
 
+#define CPU_UNITS_QUERY 1
