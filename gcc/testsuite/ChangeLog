@@ -1,3 +1,13 @@
+2007-11-06  Tom Tromey  <tromey@redhat.com>
+
+	PR c++/32368:
+	* g++.dg/warn/pragma-system_header3.h: New.
+	* g++.dg/warn/pragma-system_header3.C: New.
+
+	PR c++/32256:
+	* g++.dg/warn/pragma-system_header4.C: New.
+	* g++.dg/warn/pragma-system_header4.h: New.
+
 2007-11-06  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR c++/33977

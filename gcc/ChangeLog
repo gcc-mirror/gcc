@@ -1,3 +1,11 @@
+2007-11-06  Tom Tromey  <tromey@redhat.com>
+
+	PR c++/32256, PR c++/32368:
+	* function.c (saved_in_system_header): New global.
+	(push_cfun): Save in_system_header.
+	(pop_cfun): Restore in_system_header.
+	(push_struct_function): Save in_system_header.
+
 2007-11-06  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR c++/33977

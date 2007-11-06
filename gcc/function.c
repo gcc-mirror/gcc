@@ -3834,12 +3834,22 @@ DEF_VEC_ALLOC_P(function_p,heap);
 
 static VEC(function_p,heap) *cfun_stack;
 
+/* We save the value of in_system_header here when pushing the first
+   function on the cfun stack, and we restore it from here when
+   popping the last function.  */
+
+static bool saved_in_system_header;
+
 /* Push the current cfun onto the stack, and set cfun to new_cfun.  */
 
 void
 push_cfun (struct function *new_cfun)
 {
+  if (cfun == NULL)
+    saved_in_system_header = in_system_header;
   VEC_safe_push (function_p, heap, cfun_stack, cfun);
+  if (new_cfun)
+    in_system_header = DECL_IN_SYSTEM_HEADER (new_cfun->decl);
   set_cfun (new_cfun);
 }
 
@@ -3848,7 +3858,10 @@ push_cfun (struct function *new_cfun)
 void
 pop_cfun (void)
 {
-  set_cfun (VEC_pop (function_p, cfun_stack));
+  struct function *new_cfun = VEC_pop (function_p, cfun_stack);
+  in_system_header = ((new_cfun == NULL) ? saved_in_system_header
+		      : DECL_IN_SYSTEM_HEADER (new_cfun->decl));
+  set_cfun (new_cfun);
 }
 
 /* Return value of funcdef and increase it.  */
@@ -3922,7 +3935,11 @@ allocate_struct_function (tree fndecl)
 void
 push_struct_function (tree fndecl)
 {
+  if (cfun == NULL)
+    saved_in_system_header = in_system_header;
   VEC_safe_push (function_p, heap, cfun_stack, cfun);
+  if (fndecl)
+    in_system_header = DECL_IN_SYSTEM_HEADER (fndecl);
   allocate_struct_function (fndecl);
 }
 
