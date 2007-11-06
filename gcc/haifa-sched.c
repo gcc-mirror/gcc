@@ -582,7 +582,6 @@ static void add_jump_dependencies (rtx, rtx);
 #ifdef ENABLE_CHECKING
 static int has_edge_p (VEC(edge,gc) *, int);
 static void check_cfg (rtx, rtx);
-static void check_sched_flags (void);
 #endif
 
 #endif /* INSN_SCHEDULING */
@@ -2692,9 +2691,6 @@ sched_init (void)
       else
 	/* So we won't read anything accidentally.  */
 	spec_info = 0;
-#ifdef ENABLE_CHECKING
-      check_sched_flags ();
-#endif
     }
   else
     /* So we won't read anything accidentally.  */
@@ -4516,20 +4512,6 @@ check_cfg (rtx head, rtx tail)
   while (head != next_tail);
 
   gcc_assert (bb == 0);
-}
-
-/* Perform a few consistency checks of flags in different data structures.  */
-static void
-check_sched_flags (void)
-{
-  unsigned int f = current_sched_info->flags;
-
-  if (flag_sched_stalled_insns)
-    gcc_assert (!(f & DO_SPECULATION));
-  if (f & DO_SPECULATION)
-    gcc_assert (!flag_sched_stalled_insns
-		&& spec_info
-		&& spec_info->mask);
 }
 #endif /* ENABLE_CHECKING */
 
