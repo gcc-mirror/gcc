@@ -1,5 +1,10 @@
 2007-11-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/33168
+	* decl.c (cp_finish_decl): Call make_rtl_for_nonlocal_decl already
+	with the final TREE_READONLY flag in place.  processing_template_decl
+	is known to be 0 in this part of function.
+
 	PR c++/33894
 	* cp-tree.h: Update comment - TYPE_LANG_FLAG_0 is not
 	OMP_ATOMIC_DEPENDENT_P in OMP_ATOMIC.
