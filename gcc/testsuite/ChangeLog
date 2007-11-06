@@ -1,3 +1,8 @@
+2007-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/33993
+	* gcc.c-torture/compile/20071105-1.c: New test.
+
 2007-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/33648
