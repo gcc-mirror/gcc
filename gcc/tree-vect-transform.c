@@ -1318,6 +1318,7 @@ vect_get_constant_vectors (slp_tree slp_node, VEC(tree,heap) **vec_oprnds,
   bool is_store = false;
   unsigned int number_of_vectors = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
   VEC (tree, heap) *voprnds = VEC_alloc (tree, heap, number_of_vectors);
+  bool constant_p;
 
   if (STMT_VINFO_DATA_REF (stmt_vinfo))
     is_store = true;
@@ -1341,6 +1342,7 @@ vect_get_constant_vectors (slp_tree slp_node, VEC(tree,heap) **vec_oprnds,
   number_of_copies = least_common_multiple (nunits, group_size) / group_size;
 
   number_of_places_left_in_vector = nunits;
+  constant_p = true;
   for (j = 0; j < number_of_copies; j++)
     {
       for (i = group_size - 1; VEC_iterate (tree, stmts, i, stmt); i--)
@@ -1350,6 +1352,8 @@ vect_get_constant_vectors (slp_tree slp_node, VEC(tree,heap) **vec_oprnds,
 	    op = operation;
 	  else
 	    op = TREE_OPERAND (operation, op_num);
+	  if (!CONSTANT_CLASS_P (op))
+	    constant_p = false;
 
           /* Create 'vect_ = {op0,op1,...,opn}'.  */
           t = tree_cons (NULL_TREE, op, t);
@@ -1362,7 +1366,11 @@ vect_get_constant_vectors (slp_tree slp_node, VEC(tree,heap) **vec_oprnds,
 
 	      vector_type = get_vectype_for_scalar_type (TREE_TYPE (op));
               gcc_assert (vector_type);
-              vec_cst = build_constructor_from_list (vector_type, t);
+	      if (constant_p)
+		vec_cst = build_vector (vector_type, t);
+	      else
+		vec_cst = build_constructor_from_list (vector_type, t);
+	      constant_p = true;
               VEC_quick_push (tree, voprnds,
                               vect_init_vector (stmt, vec_cst, vector_type,
 						NULL));
@@ -1617,7 +1625,8 @@ get_initial_def_for_induction (tree iv_phi)
   t = NULL_TREE;
   for (i = 0; i < nunits; i++)
     t = tree_cons (NULL_TREE, unshare_expr (new_name), t);
-  vec = build_constructor_from_list (vectype, t);
+  gcc_assert (CONSTANT_CLASS_P (new_name));
+  vec = build_vector (vectype, t);
   vec_step = vect_init_vector (iv_phi, vec, vectype, NULL);
 
 
@@ -1673,7 +1682,8 @@ get_initial_def_for_induction (tree iv_phi)
       t = NULL_TREE;
       for (i = 0; i < nunits; i++)
 	t = tree_cons (NULL_TREE, unshare_expr (new_name), t);
-      vec = build_constructor_from_list (vectype, t);
+      gcc_assert (CONSTANT_CLASS_P (new_name));
+      vec = build_vector (vectype, t);
       vec_step = vect_init_vector (iv_phi, vec, vectype, NULL);
 
       vec_def = induc_def;
