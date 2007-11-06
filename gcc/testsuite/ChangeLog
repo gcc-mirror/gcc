@@ -1,3 +1,8 @@
+2007-11-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/30961
+	* gcc.target/i386/pr30961-1.c: New.
+
 2007-11-06  Tom Tromey  <tromey@redhat.com>
 
 	PR c++/32368:
