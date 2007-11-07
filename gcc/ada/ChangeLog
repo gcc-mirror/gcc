@@ -22,6 +22,9 @@
 	which is always false; LOWEST_ADDRESS is 0 and is never greater
 	than an unsigned integer.
 
+	* sem_attr.adb (Analyze_Attribute): Remove duplicate identical
+	embedded check for "Ada_Version >= Ada_05".
+
 2007-11-07  Olivier Hainque  <hainque@adacore.com>
 
 	* decl.c (make_aligning_type): Set the mode of the RECORD_TYPE we
