@@ -1,3 +1,17 @@
+2007-11-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR rtl-optimization/33822
+	* rtl.h (REG_OFFSET): Fix comment.
+	* var-tracking.c (INT_MEM_OFFSET): New macro.
+	(var_mem_set): Use it.
+	(var_mem_delete_and_set): Likewise.
+	(var_mem_delete): Likewise.
+	(vt_get_decl_and_offset): Likewise.
+	(offset_valid_for_tracked_p): New predicate.
+	(count_uses): Do not track locations with invalid offsets.
+	(add_uses): Likewise.
+	(add_stores): Likewise.
+
 2007-11-04  Hirohisa Yamaguchi  <umq@ueo.co.jp>
 
 	* config/freebsd-spec.h (FBSD_TARGET_OS_CPP_BUILTINS): Fix
