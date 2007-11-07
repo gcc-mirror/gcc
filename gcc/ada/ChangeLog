@@ -1,3 +1,8 @@
+2007-11-07  Samuel Tardieu  <sam@rfc1149.net>
+
+	* a-tasatt.adb: Type Wrapper should be declared in comment instead
+	of already declared type Node_Access.
+
 2007-11-07  Olivier Hainque  <hainque@adacore.com>
 
 	* decl.c (make_aligning_type): Set the mode of the RECORD_TYPE we
