@@ -415,7 +415,7 @@ package body Ada.Task_Attributes is
             POP.Lock_RTS;
 
             while P /= null loop
-               if P.Instance = Access_Instance'(Local'Unchecked_Access) then
+               if P.Instance = Access_Instance'(Local'Access) then
                   POP.Unlock_RTS;
                   Undefer_Abort (Self_Id);
                   return To_Access_Wrapper (P.Wrapper).Value'Access;
@@ -429,11 +429,10 @@ package body Ada.Task_Attributes is
             --  holding any other lock.
 
             POP.Unlock_RTS;
-            W := new Wrapper'
-                  ((null, Local'Unchecked_Access, null), Initial_Value);
+            W := new Wrapper'((null, Local'Access, null), Initial_Value);
             POP.Lock_RTS;
 
-            P := W.Dummy_Node'Unchecked_Access;
+            P := W.Dummy_Node'Access;
             P.Wrapper := To_Access_Dummy_Wrapper (W);
             P.Next := To_Access_Node (TT.Indirect_Attributes);
             TT.Indirect_Attributes := To_Access_Address (P);
@@ -494,7 +493,7 @@ package body Ada.Task_Attributes is
             Q := To_Access_Node (TT.Indirect_Attributes);
 
             while Q /= null loop
-               if Q.Instance = Access_Instance'(Local'Unchecked_Access) then
+               if Q.Instance = Access_Instance'(Local'Access) then
                   if P = null then
                      TT.Indirect_Attributes := To_Access_Address (Q.Next);
                   else
@@ -581,7 +580,7 @@ package body Ada.Task_Attributes is
 
          while P /= null loop
 
-            if P.Instance = Access_Instance'(Local'Unchecked_Access) then
+            if P.Instance = Access_Instance'(Local'Access) then
                To_Access_Wrapper (P.Wrapper).Value := Val;
                POP.Unlock_RTS;
                Undefer_Abort (Self_Id);
@@ -595,9 +594,9 @@ package body Ada.Task_Attributes is
          --  from using new (i.e the Global_Lock) while holding any other lock.
 
          POP.Unlock_RTS;
-         W := new Wrapper'((null, Local'Unchecked_Access, null), Val);
+         W := new Wrapper'((null, Local'Access, null), Val);
          POP.Lock_RTS;
-         P := W.Dummy_Node'Unchecked_Access;
+         P := W.Dummy_Node'Access;
          P.Wrapper := To_Access_Dummy_Wrapper (W);
          P.Next := To_Access_Node (TT.Indirect_Attributes);
          TT.Indirect_Attributes := To_Access_Address (P);
@@ -669,7 +668,7 @@ package body Ada.Task_Attributes is
          P := To_Access_Node (TT.Indirect_Attributes);
 
          while P /= null loop
-            if P.Instance = Access_Instance'(Local'Unchecked_Access) then
+            if P.Instance = Access_Instance'(Local'Access) then
                Result := To_Access_Wrapper (P.Wrapper).Value;
                POP.Unlock_RTS;
                Undefer_Abort (Self_Id);
@@ -724,8 +723,7 @@ begin
       --  Add this instantiation to the list of all instantiations
 
       Local.Next := System.Tasking.Task_Attributes.All_Attributes;
-      System.Tasking.Task_Attributes.All_Attributes :=
-        Local'Unchecked_Access;
+      System.Tasking.Task_Attributes.All_Attributes := Local'Access;
 
       --  Try to find space for the attribute in the TCB
 

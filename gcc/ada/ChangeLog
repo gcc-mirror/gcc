@@ -2,6 +2,21 @@
 
 	* a-tasatt.adb: Type Wrapper should be declared in comment instead
 	of already declared type Node_Access.
+	Use 'Access instead of 'Unchecked_Access when applicable. Local
+	lifetime is the one of the package.
+	(Set_Value): W is allocated on the heap.
+
+	* g-socket.adb: Use 'Access instead of 'Unchecked_Access when
+	applicable.
+	(Get_Socket_Option): Optlen formal of C_Getsockopt is of an anonymous
+	access type.
+	(Receive_Socket): Fromlen formal of C_Recvfrom is of an anonymous
+	access type.
+
+	* s-taasde.adb: Use 'Access instead of 'Unchecked_Access when
+	applicable.
+	(elaboration code): Timer_Queue lifetime is the one of the
+	package.
 
 2007-11-07  Olivier Hainque  <hainque@adacore.com>
 
