@@ -194,15 +194,14 @@ static int compute_split_row (sbitmap, int, int, int, ddg_node_ptr);
 
 static int issue_rate;
 
-static int sms_order_nodes (ddg_ptr, int, int * result);
+static int sms_order_nodes (ddg_ptr, int, int *, int *);
 static void set_node_sched_params (ddg_ptr);
 static partial_schedule_ptr sms_schedule_by_order (ddg_ptr, int, int, int *);
-static void permute_partial_schedule (partial_schedule_ptr ps, rtx last);
-static void generate_prolog_epilog (partial_schedule_ptr, struct loop *loop,
+static void permute_partial_schedule (partial_schedule_ptr, rtx);
+static void generate_prolog_epilog (partial_schedule_ptr, struct loop *,
                                     rtx, rtx);
-static void duplicate_insns_of_cycles (partial_schedule_ptr ps,
-				       int from_stage, int to_stage,
-				       int is_prolog, rtx count_reg);
+static void duplicate_insns_of_cycles (partial_schedule_ptr,
+				       int, int, int, rtx);
 
 #define SCHED_ASAP(x) (((node_sched_params_ptr)(x)->aux.info)->asap)
 #define SCHED_TIME(x) (((node_sched_params_ptr)(x)->aux.info)->time)
@@ -866,7 +865,7 @@ sms_schedule (void)
   rtx insn;
   ddg_ptr *g_arr, g;
   int * node_order;
-  int maxii;
+  int maxii, max_asap;
   loop_iterator li;
   partial_schedule_ptr ps;
   basic_block bb = NULL;
@@ -1093,9 +1092,9 @@ sms_schedule (void)
       node_order = XNEWVEC (int, g->num_nodes);
 
       mii = 1; /* Need to pass some estimate of mii.  */
-      rec_mii = sms_order_nodes (g, mii, node_order);
+      rec_mii = sms_order_nodes (g, mii, node_order, &max_asap);
       mii = MAX (res_MII (g), rec_mii);
-      maxii = MAXII_FACTOR * mii;
+      maxii = MAX (max_asap, MAXII_FACTOR * mii);
 
       if (dump_file)
 	fprintf (dump_file, "SMS iis %d %d %d (rec_mii, mii, maxii)\n",
@@ -1851,7 +1850,7 @@ typedef struct node_order_params * nopa;
 
 static void order_nodes_of_sccs (ddg_all_sccs_ptr, int * result);
 static int order_nodes_in_scc (ddg_ptr, sbitmap, sbitmap, int*, int);
-static nopa  calculate_order_params (ddg_ptr, int mii);
+static nopa  calculate_order_params (ddg_ptr, int, int *);
 static int find_max_asap (ddg_ptr, sbitmap);
 static int find_max_hv_min_mob (ddg_ptr, sbitmap);
 static int find_max_dv_min_mob (ddg_ptr, sbitmap);
@@ -1896,15 +1895,15 @@ check_nodes_order (int *node_order, int num_nodes)
 
 /* Order the nodes of G for scheduling and pass the result in
    NODE_ORDER.  Also set aux.count of each node to ASAP.
-   Return the recMII for the given DDG.  */
+   Put maximal ASAP to PMAX_ASAP.  Return the recMII for the given DDG.  */
 static int
-sms_order_nodes (ddg_ptr g, int mii, int * node_order)
+sms_order_nodes (ddg_ptr g, int mii, int * node_order, int *pmax_asap)
 {
   int i;
   int rec_mii = 0;
   ddg_all_sccs_ptr sccs = create_ddg_all_sccs (g);
 
-  nopa nops = calculate_order_params (g, mii);
+  nopa nops = calculate_order_params (g, mii, pmax_asap);
 
   if (dump_file)
     print_sccs (dump_file, sccs, g);
@@ -1979,7 +1978,7 @@ order_nodes_of_sccs (ddg_all_sccs_ptr all_sccs, int * node_order)
 
 /* MII is needed if we consider backarcs (that do not close recursive cycles).  */
 static struct node_order_params *
-calculate_order_params (ddg_ptr g, int mii ATTRIBUTE_UNUSED)
+calculate_order_params (ddg_ptr g, int mii ATTRIBUTE_UNUSED, int *pmax_asap)
 {
   int u;
   int max_asap;
@@ -2042,6 +2041,7 @@ calculate_order_params (ddg_ptr g, int mii ATTRIBUTE_UNUSED)
       }
   }
 
+  *pmax_asap = max_asap;
   return node_order_params_arr;
 }
 
