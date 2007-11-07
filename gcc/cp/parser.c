@@ -17858,7 +17858,7 @@ cp_parser_check_class_key (enum tag_types class_key, tree type)
 static void
 cp_parser_check_access_in_redeclaration (tree decl)
 {
-  if (!CLASS_TYPE_P (TREE_TYPE (decl)))
+  if (!decl || !CLASS_TYPE_P (TREE_TYPE (decl)))
     return;
 
   if ((TREE_PRIVATE (decl)
