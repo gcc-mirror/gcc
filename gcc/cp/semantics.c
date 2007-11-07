@@ -4049,6 +4049,9 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
   tree orig_expr = expr;
   tree type;
 
+  if (!expr || error_operand_p (expr))
+    return error_mark_node;
+
   if (type_dependent_expression_p (expr))
     {
       type = make_aggr_type (DECLTYPE_TYPE);
@@ -4147,6 +4150,15 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
     {
       tree fndecl;
 
+      /* Expressions of reference type are sometimes wrapped in
+         INDIRECT_REFs.  INDIRECT_REFs are just internal compiler
+         representation, not part of the language, so we have to look
+         through them.  */
+      if (TREE_CODE (expr) == INDIRECT_REF
+          && TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0)))
+  	  == REFERENCE_TYPE)
+        expr = TREE_OPERAND (expr, 0);
+
       if (TREE_CODE (expr) == CALL_EXPR
           && (fndecl = get_callee_fndecl (expr))
           && (fndecl != error_mark_node))
@@ -4176,7 +4188,9 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
                  decltype(e) is defined as T&, otherwise decltype(e) is
                  defined as T.  */
               type = TREE_TYPE (expr);
-              if (expr == current_class_ptr)
+              if (type == error_mark_node)
+                return error_mark_node;
+              else if (expr == current_class_ptr)
                 /* If the expression is just "this", we want the
                    cv-unqualified pointer for the "this" type.  */
                 type = TYPE_MAIN_VARIANT (type);

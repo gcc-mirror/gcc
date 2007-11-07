@@ -1,3 +1,13 @@
+2007-11-07  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/33045
+	PR c++/33837
+	PR c++/33838
+	* semantics.c (finish_decltype_type): See through INDIRECT_REFs.
+	Be careful with ERROR_MARK_NODEs.
+	* parser.c (cp_parser_check_access_in_redeclaration): Handle NULL
+	argument.
+
 2007-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/33501

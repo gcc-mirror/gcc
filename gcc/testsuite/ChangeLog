@@ -1,3 +1,12 @@
+2007-11-07  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/33045
+	PR c++/33837
+	PR c++/33838
+	* g++.dg/cpp0x/decltype-33837.C: New.
+	* g++.dg/cpp0x/decltype-refbug.C: New.
+	* g++.dg/cpp0x/decltype-33838.C: New.
+
 2007-11-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/20071107-1.c: New test.
