@@ -1143,17 +1143,26 @@ rtx addr_for_mem_ref (struct mem_address *, bool);
 void get_address_description (tree, struct mem_address *);
 tree maybe_fold_tmr (tree);
 
-/* This structure is simply used during pushing fields onto the fieldstack
-   to track the offset of the field, since bitpos_of_field gives it relative
-   to its immediate containing type, and we want it relative to the ultimate
-   containing object.  */
+/* This structure is used during pushing fields onto the fieldstack
+   to track the offset of the field, since bitpos_of_field gives it
+   relative to its immediate containing type, and we want it relative
+   to the ultimate containing object.  */
 
 struct fieldoff
 {
+  /* Type of the field.  */
   tree type;
+
+  /* Size, in bits, of the field.  */
   tree size;
+
+  /* Field.  */
   tree decl;
+
+  /* Offset from the base of the base containing object to this field.  */
   HOST_WIDE_INT offset;  
+
+  /* Alias set for the field.  */
   alias_set_type alias_set;
 };
 typedef struct fieldoff fieldoff_s;

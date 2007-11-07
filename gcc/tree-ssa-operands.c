@@ -70,9 +70,9 @@ along with GCC; see the file COPYING3.  If not see
    variable, and that same variable occurs in the same operands cache, then 
    the new cache vector will also get the same SSA_NAME.
 
-  i.e., if a stmt had a VUSE of 'a_5', and 'a' occurs in the new operand 
-  vector for VUSE, then the new vector will also be modified such that 
-  it contains 'a_5' rather than 'a'.  */
+   i.e., if a stmt had a VUSE of 'a_5', and 'a' occurs in the new
+   operand vector for VUSE, then the new vector will also be modified
+   such that it contains 'a_5' rather than 'a'.  */
 
 
 /* Structure storing statistics on how many call clobbers we have, and
@@ -615,9 +615,9 @@ add_use_op (tree stmt, tree *op, use_optype_p last)
 }
 
 
-/* Return a virtual op pointer with NUM elements which are all initialized to OP
-   and are linked into the immediate uses for STMT.  The new vop is appended
-   after PREV.  */
+/* Return a virtual op pointer with NUM elements which are all
+   initialized to OP and are linked into the immediate uses for STMT.
+   The new vop is appended after PREV.  */
 
 static inline voptype_p
 add_vop (tree stmt, tree op, int num, voptype_p prev)
@@ -1389,9 +1389,8 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
    SFT's for a structure.  */
 
 static bool
-add_vars_for_offset (tree var,
-		     unsigned HOST_WIDE_INT offset, unsigned HOST_WIDE_INT size,
-		     bool is_def)
+add_vars_for_offset (tree var, unsigned HOST_WIDE_INT offset,
+		     unsigned HOST_WIDE_INT size, bool is_def)
 {
   bool added = false;
   tree subvar;
@@ -1422,6 +1421,7 @@ add_vars_for_offset (tree var,
 
   return added;
 }
+
 
 /* Add VAR to the virtual operands array.  FLAGS is as in
    get_expr_operands.  FULL_REF is a tree that contains the entire
@@ -1597,12 +1597,11 @@ add_stmt_operand (tree *var_p, stmt_ann_t s_ann, int flags)
    is the same as in get_indirect_ref_operands.  */
 
 static void
-get_addr_dereference_operands (tree stmt, tree *addr, int flags,
-                                                      tree full_ref,
-                                                       HOST_WIDE_INT offset, HOST_WIDE_INT size,
-                                                       bool recurse_on_base)
-  {
- tree ptr = *addr;
+get_addr_dereference_operands (tree stmt, tree *addr, int flags, tree full_ref,
+			       HOST_WIDE_INT offset, HOST_WIDE_INT size,
+			       bool recurse_on_base)
+{
+  tree ptr = *addr;
   stmt_ann_t s_ann = stmt_ann (stmt);
 
   s_ann->references_memory = true;
@@ -1678,6 +1677,7 @@ get_addr_dereference_operands (tree stmt, tree *addr, int flags,
     get_expr_operands (stmt, addr, opf_use);
 }
 
+
 /* A subroutine of get_expr_operands to handle INDIRECT_REF,
    ALIGN_INDIRECT_REF and MISALIGNED_INDIRECT_REF.  
 
@@ -1697,10 +1697,9 @@ get_addr_dereference_operands (tree stmt, tree *addr, int flags,
       something else will do it for us.  */
 
 static void
-get_indirect_ref_operands (tree stmt, tree expr, int flags,
-		 		 		    tree full_ref,
-		 		 		    HOST_WIDE_INT offset, HOST_WIDE_INT size,
-		 		 		    bool recurse_on_base)
+get_indirect_ref_operands (tree stmt, tree expr, int flags, tree full_ref,
+			   HOST_WIDE_INT offset, HOST_WIDE_INT size,
+			   bool recurse_on_base)
 {
   tree *pptr = &TREE_OPERAND (expr, 0);
   stmt_ann_t s_ann = stmt_ann (stmt);
@@ -1708,9 +1707,10 @@ get_indirect_ref_operands (tree stmt, tree expr, int flags,
   if (TREE_THIS_VOLATILE (expr))
     s_ann->has_volatile_ops = true; 
 
-  get_addr_dereference_operands (stmt, pptr, flags, full_ref,
-		 		 		 		  offset, size, recurse_on_base);
+  get_addr_dereference_operands (stmt, pptr, flags, full_ref, offset, size,
+				 recurse_on_base);
 }
+
 
 /* A subroutine of get_expr_operands to handle TARGET_MEM_REF.  */
 
@@ -2274,7 +2274,8 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 	get_expr_operands (stmt, &GIMPLE_STMT_OPERAND (init, 0), opf_def);
 	get_expr_operands (stmt, &GIMPLE_STMT_OPERAND (init, 1), opf_use);
 	get_expr_operands (stmt, &TREE_OPERAND (cond, 1), opf_use);
-	get_expr_operands (stmt, &TREE_OPERAND (GIMPLE_STMT_OPERAND (incr, 1), 1),
+	get_expr_operands (stmt,
+	                   &TREE_OPERAND (GIMPLE_STMT_OPERAND (incr, 1), 1),
 			   opf_use);
 
 	c = find_omp_clause (clauses, OMP_CLAUSE_SCHEDULE);
@@ -2319,21 +2320,21 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 
     case OMP_ATOMIC_LOAD:
       {
-		 tree *addr = &TREE_OPERAND (expr, 1);
-		 get_expr_operands (stmt, &TREE_OPERAND (expr, 0), opf_def);
+	tree *addr = &TREE_OPERAND (expr, 1);
+	get_expr_operands (stmt, &TREE_OPERAND (expr, 0), opf_def);
 
-		 if (TREE_CODE (*addr) == ADDR_EXPR)
-		   get_expr_operands (stmt, &TREE_OPERAND (*addr, 0), opf_def);
-		 else
-		   get_addr_dereference_operands (stmt, addr, opf_def,
-		 		 		 		 		  NULL_TREE, 0, -1, true);
-		 return;
+	if (TREE_CODE (*addr) == ADDR_EXPR)
+	  get_expr_operands (stmt, &TREE_OPERAND (*addr, 0), opf_def);
+	else
+	  get_addr_dereference_operands (stmt, addr, opf_def,
+					 NULL_TREE, 0, -1, true);
+	return;
       }
 
     case OMP_ATOMIC_STORE:
       {
-		 get_expr_operands (stmt, &TREE_OPERAND (expr, 0), opf_use);
-		 return;
+	get_expr_operands (stmt, &TREE_OPERAND (expr, 0), opf_use);
+	return;
       }
 
     case BLOCK:
@@ -2455,11 +2456,13 @@ build_ssa_operands (tree stmt)
 
   if (ann->addresses_taken && bitmap_empty_p (ann->addresses_taken))
     ann->addresses_taken = NULL;
+
   /* For added safety, assume that statements with volatile operands
      also reference memory.  */
   if (ann->has_volatile_ops)
     ann->references_memory = true;
 }
+
 
 /* Releases the operands of STMT back to their freelists, and clears
    the stmt operand lists.  */
@@ -2511,6 +2514,7 @@ free_stmt_operands (tree stmt)
       VDEF_OPS (stmt) = NULL;
     }
 }
+
 
 /* Free any operands vectors in OPS.  */
 
