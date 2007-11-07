@@ -5,6 +5,18 @@
 	* haifa-sched.c (check_sched_flags): Remove.
 	(sched_init): Don't call it.
 
+2007-11-06  Diego Novillo  <dnovillo@google.com>
+
+	* tree-flow.h (struct fieldoff): Reformat comment.
+	Document fields.
+	* tree-ssa-operands.c: Tidy top-level comments.
+	(add_vop): Likewise.
+	(add_vars_for_offset): Tidy parameter formatting..
+	(get_addr_dereference_operands): Likewise.
+	(get_indirect_ref_operands): Likewise.
+	(get_expr_operands) <OMP_ATOMIC_LOAD>: Reformat.
+	<OMP_ATOMIC_STORE>: Likewise.
+
 2007-11-06  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	PR target/32787
