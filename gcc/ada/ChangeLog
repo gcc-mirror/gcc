@@ -1,3 +1,8 @@
+2007-11-07  Olivier Hainque  <hainque@adacore.com>
+
+	* decl.c (make_aligning_type): Set the mode of the RECORD_TYPE we
+	craft and expand comment.
+
 2007-11-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* lang-specs.h: Move translation of -fRTS= after -gnatez switch.
