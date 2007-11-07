@@ -226,7 +226,7 @@ searches the class path looking for matching @file{.class} or
 points at the installed @file{libgcj.jar}, a file which contains all the
 standard classes.
 
-In the below, a directory or path component can refer either to an
+In the text below, a directory or path component can refer either to an
 actual directory on the filesystem, or to a @file{.zip} or @file{.jar}
 file, which @command{gcj} will search as if it is a directory.
 
