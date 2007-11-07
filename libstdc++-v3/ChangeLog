@@ -1,3 +1,8 @@
+2007-11-07  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_iterator.h (move_iterator<>::pointer): Adjust
+	typedef per DR 680 [Ready].
+
 2007-11-06  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/vector.tcc (vector<>::_M_insert_aux<>(iterator,
