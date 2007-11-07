@@ -18,6 +18,10 @@
 	(elaboration code): Timer_Queue lifetime is the one of the
 	package.
 
+	* tracebak.c (i386 alternative): Remove useless comparaison
+	which is always false; LOWEST_ADDRESS is 0 and is never greater
+	than an unsigned integer.
+
 2007-11-07  Olivier Hainque  <hainque@adacore.com>
 
 	* decl.c (make_aligning_type): Set the mode of the RECORD_TYPE we
