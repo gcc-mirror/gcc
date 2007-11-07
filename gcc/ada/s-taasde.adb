@@ -437,8 +437,8 @@ package body System.Tasking.Async_Delays is
    ------------------------------
 
 begin
-   Timer_Queue.Succ := Timer_Queue'Unchecked_Access;
-   Timer_Queue.Pred := Timer_Queue'Unchecked_Access;
+   Timer_Queue.Succ := Timer_Queue'Access;
+   Timer_Queue.Pred := Timer_Queue'Access;
    Timer_Queue.Resume_Time := Duration'Last;
    Timer_Server_ID := To_System (Timer_Server'Identity);
 end System.Tasking.Async_Delays;

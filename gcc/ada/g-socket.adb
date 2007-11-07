@@ -978,7 +978,7 @@ package body GNAT.Sockets is
           (C.int (Socket),
            Levels (Level),
            Options (Name),
-           Add, Len'Unchecked_Access);
+           Add, Len'Access);
 
       if Res = Failure then
          Raise_Socket_Error (Socket_Errno);
@@ -1440,7 +1440,7 @@ package body GNAT.Sockets is
            Item'Length,
            To_Int (Flags),
            Sin'Unchecked_Access,
-           Len'Unchecked_Access);
+           Len'Access);
 
       if Res = Failure then
          Raise_Socket_Error (Socket_Errno);
