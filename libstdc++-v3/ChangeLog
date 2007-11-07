@@ -1,3 +1,13 @@
+2007-11-06  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/vector.tcc (vector<>::_M_insert_aux<>(iterator,
+	_Args&&...)): In C++0x mode do not use temporary copies.
+	(insert(iterator, const value_type&)): Copy to a temporary
+	when not reallocating.
+
+	* include/bits/vector.tcc (insert(iterator, value_type&&)):
+	Minor tweaks in C++0x mode.
+
 2007-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/tr1_impl/boost_shared_ptr.h: Avoid unnecessary memory
