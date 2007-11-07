@@ -308,7 +308,6 @@ struct layout
   void *return_address;
 };
 
-#define LOWEST_ADDR 0
 #define FRAME_LEVEL 1
 /* builtin_frame_address (1) is expected to work on this target, and (0) might
    return the soft stack pointer, which does not designate a location where a
@@ -318,7 +317,6 @@ struct layout
 #define PC_ADJUST -2
 #define STOP_FRAME(CURRENT, TOP_STACK) \
   (IS_BAD_PTR((long)(CURRENT)->return_address) \
-   || (unsigned int)(CURRENT)->return_address < LOWEST_ADDR \
    || (CURRENT)->return_address == 0|| (CURRENT)->next == 0  \
    || (void *) (CURRENT) < (TOP_STACK))
 
