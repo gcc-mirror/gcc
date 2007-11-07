@@ -1,3 +1,8 @@
+2007-11-07  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* doc/invoke.texi: Replace rs6000 dfp switches -mdfp/-mno-dfp
+	with -mhard-dfp/-mno-hard-dfp.
+
 2007-11-07  Maxim Kuvyrkov  <maxim@codesourcery.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
