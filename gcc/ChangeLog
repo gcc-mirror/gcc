@@ -1,3 +1,8 @@
+2007-11-07  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in (tree-ssa-structalias.o): Depend on $(FUNCTION_H)
+	(BASIC_BLOCK_H): Add vec.h, $(FUNCTION_H).
+
 2007-11-07  Dmitry Zhurikhin  <zhur@ispras.ru>
 	    Andrey Belevantsev  <abel@ispras.ru>
 
