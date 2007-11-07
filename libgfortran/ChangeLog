@@ -1,3 +1,8 @@
+2007-11-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/33985
+	* io/transfer.c (finalize_transfer): Revert previous patch.
+	
 2007-11-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/33985
