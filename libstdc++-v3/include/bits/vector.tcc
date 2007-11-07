@@ -101,7 +101,17 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	  ++this->_M_impl._M_finish;
 	}
       else
-        _M_insert_aux(__position, __x);
+	{
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+	  if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage)
+	    {
+	      _Tp __x_copy = __x;
+	      _M_insert_aux(__position, std::move(__x_copy));
+	    }
+	  else
+#endif
+	    _M_insert_aux(__position, __x);
+	}
       return iterator(this->_M_impl._M_start + __n);
     }
 
@@ -115,12 +125,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage
 	  && __position == end())
 	{
-	  this->_M_impl.construct(this->_M_impl._M_finish,
-				  std::forward<value_type>(__x));
+	  this->_M_impl.construct(this->_M_impl._M_finish, std::move(__x));
 	  ++this->_M_impl._M_finish;
 	}
       else
-        _M_insert_aux(__position, std::forward<value_type>(__x));
+        _M_insert_aux(__position, std::move(__x));
       return iterator(this->_M_impl._M_start + __n);
     }
 #endif
@@ -286,15 +295,13 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       void
       vector<_Tp, _Alloc>::
       _M_insert_aux(iterator __position, _Args&&... __args)
-      {
-	_Tp __x_copy(std::forward<_Args>(__args)...);
 #else
   template<typename _Tp, typename _Alloc>
     void
     vector<_Tp, _Alloc>::
     _M_insert_aux(iterator __position, const _Tp& __x)
-    {
 #endif
+    {
       if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage)
 	{
 	  this->_M_impl.construct(this->_M_impl._M_finish,
@@ -307,7 +314,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	  _GLIBCXX_MOVE_BACKWARD3(__position.base(),
 				  this->_M_impl._M_finish - 2,
 				  this->_M_impl._M_finish - 1);
-	  *__position = _GLIBCXX_MOVE(__x_copy);
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+	  *__position = __x_copy;
+#else
+	  *__position = _Tp(std::forward<_Args>(__args)...);
+#endif
 	}
       else
 	{
@@ -317,13 +328,15 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	  pointer __new_finish(__new_start);
 	  try
 	    {
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+	      this->_M_impl.construct(__new_start + (__position - begin()),
+				      std::forward<_Args>(__args)...);
+#endif
 	      __new_finish =
 		std::__uninitialized_move_a(this->_M_impl._M_start,
 					    __position.base(), __new_start,
 					    _M_get_Tp_allocator());
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-	      this->_M_impl.construct(__new_finish, std::move(__x_copy));
-#else
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 	      this->_M_impl.construct(__new_finish, __x);
 #endif
 	      ++__new_finish;
