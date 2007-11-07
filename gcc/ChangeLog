@@ -1,5 +1,14 @@
 2007-11-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	PR rtl-optimization/33737
+	* cfgcleanup.c (try_crossjump_to_edge): Add count and frequency of
+	target block after computing the probabilities of outgoing edges.
+	Cap the frequency to BB_FREQ_MAX.
+	* tree-ssa-threadupdate.c (redirect_edges): Also adjust count and
+	frequency of the basic block if it has been reused.
+
+2007-11-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	PR rtl-optimization/33822
 	* rtl.h (REG_OFFSET): Fix comment.
 	* var-tracking.c (INT_MEM_OFFSET): New macro.
