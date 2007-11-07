@@ -1,3 +1,9 @@
+2007-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33501
+	* call.c (build_over_call): Don't check TREE_ADDRESSABLE
+	on incomplete type.
+
 2007-11-06  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR c++/33977

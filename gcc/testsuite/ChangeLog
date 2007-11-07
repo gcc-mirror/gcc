@@ -1,3 +1,10 @@
+2007-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33501
+	* g++.dg/warn/incomplete2.C: New test.
+	* g++.dg/template/incomplete4.C: New test.
+	* g++.dg/template/incomplete5.C: New test.
+
 2007-11-07  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/max_align.adb: New test.
