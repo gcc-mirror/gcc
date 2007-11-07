@@ -779,7 +779,8 @@ TREE_H = tree.h tree.def $(MACHMODE_H) tree-check.h $(BUILTINS_DEF) \
           input.h statistics.h vec.h treestruct.def $(HASHTAB_H) \
           double-int.h alias.h
 BASIC_BLOCK_H = basic-block.h bitmap.h sbitmap.h varray.h $(PARTITION_H) \
-          hard-reg-set.h cfghooks.h $(OBSTACK_H)
+          hard-reg-set.h $(PREDICT_H) vec.h $(FUNCTION_H) \
+          cfghooks.h $(OBSTACK_H)
 GCOV_IO_H = gcov-io.h gcov-iov.h auto-host.h
 COVERAGE_H = coverage.h $(GCOV_IO_H)
 DEMANGLE_H = $(srcdir)/../include/demangle.h
@@ -1981,7 +1982,7 @@ stor-layout.o : stor-layout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 tree-ssa-structalias.o: tree-ssa-structalias.c tree-ssa-structalias.h \
    $(SYSTEM_H) $(CONFIG_H) $(GGC_H) $(TREE_H) $(TREE_FLOW_H) \
    $(TM_H) coretypes.h $(CGRAPH_H) tree-pass.h $(TIMEVAR_H) \
-   gt-tree-ssa-structalias.h $(PARAMS_H) $(ALIAS_H) pointer-set.h
+   gt-tree-ssa-structalias.h $(PARAMS_H) $(ALIAS_H) pointer-set.h $(FUNCTION_H)
 tree-ssa.o : tree-ssa.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(RTL_H) $(TREE_H) $(TM_P_H) $(EXPR_H) output.h $(DIAGNOSTIC_H) \
    toplev.h $(FUNCTION_H) $(TIMEVAR_H) $(TM_H) coretypes.h \
