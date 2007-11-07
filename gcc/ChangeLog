@@ -1,3 +1,12 @@
+2007-11-07  Dmitry Zhurikhin  <zhur@ispras.ru>
+	    Andrey Belevantsev  <abel@ispras.ru>
+
+	* modulo-sched.c (sms_order_nodes, permute_partial_schedule,
+	generate_prolog_epilog, duplicate_insns_of_cycles): Fix prototypes.
+	(calculate_order_params, sms_order_nodes): New parameter pmax_asap.
+	Save calculated max_asap in it. 	
+	(sms_schedule): Calculate maxii using max_asap.
+
 2007-11-07  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* doc/invoke.texi: Replace rs6000 dfp switches -mdfp/-mno-dfp
