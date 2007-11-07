@@ -879,7 +879,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef _Iterator                                        iterator_type;
       typedef typename iterator_traits<_Iterator>::difference_type
                                                                difference_type;
-      typedef typename iterator_traits<_Iterator>::pointer     pointer;
+      // NB: DR 680.
+      typedef _Iterator                                        pointer;
       typedef typename iterator_traits<_Iterator>::value_type  value_type;
       typedef typename iterator_traits<_Iterator>::iterator_category
                                                                iterator_category;
