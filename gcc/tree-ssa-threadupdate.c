@@ -442,10 +442,14 @@ redirect_edges (void **slot, void *data)
 	  remove_ctrl_stmt_and_useless_edges (local_info->bb,
 					      rd->outgoing_edge->dest);
 
-	  /* And fixup the flags on the single remaining edge.  */
+	  /* Fixup the flags on the single remaining edge.  */
 	  single_succ_edge (local_info->bb)->flags
 	    &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE | EDGE_ABNORMAL);
 	  single_succ_edge (local_info->bb)->flags |= EDGE_FALLTHRU;
+
+	  /* And adjust count and frequency on BB.  */
+	  local_info->bb->count = e->count;
+	  local_info->bb->frequency = EDGE_FREQUENCY (e);
 	}
     }
 

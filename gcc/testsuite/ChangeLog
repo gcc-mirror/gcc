@@ -1,5 +1,9 @@
 2007-11-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* gcc.c-torture/compile/20071107-1.c: New test.
+
+2007-11-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* gcc.dg/out-of-bounds-1.c: New test.
 
 2007-11-07  Jakub Jelinek  <jakub@redhat.com>
