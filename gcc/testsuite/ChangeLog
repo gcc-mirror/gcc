@@ -1,3 +1,7 @@
+2007-11-07  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/max_align.adb: New test.
+
 2007-11-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/30961

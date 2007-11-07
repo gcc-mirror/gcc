@@ -5144,10 +5144,13 @@ make_aligning_type (tree type, unsigned int align, tree size,
 			     size_binop (PLUS_EXPR, room_st, voffset_st)),
                     bitsize_unit_node);
 
-  /* Craft the GCC record representation.  The sizes are set manually to
-     account for the maximum possible value of voffset, which avoids complex
-     self-references in the size expression and corresponds to what should be
-     "alloc"ated for this type anyway.
+  /* Craft the GCC record representation.  We exceptionally do everything
+     manually here because 1) our generic circuitry is not quite ready to
+     handle the complex position/size expressions we are setting up, 2) we
+     have a strong simplifying factor at hand: we know the maximum possible
+     value of voffset, and 3) we have to set/reset at least the sizes in
+     accordance with this maximum value anyway, as we need them to convey
+     what should be "alloc"ated for this type.
 
      Use -1 as the 'addressable' indication for the field to prevent the
      creation of a bitfield.  We don't need one, it would have damaging
@@ -5170,6 +5173,8 @@ make_aligning_type (tree type, unsigned int align, tree size,
   TYPE_SIZE_UNIT (record_type)
     = size_binop (PLUS_EXPR, size,
 		  size_int (room + align / BITS_PER_UNIT));
+
+  TYPE_MODE (record_type) = BLKmode;
 
   copy_alias_set (record_type, type);
   return record_type;
