@@ -1,3 +1,8 @@
+2007-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/34028
+	* trans-intrinsic.c (gfc_conv_intrinsic_ishft): Use correct type.
+
 2007-11-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33917

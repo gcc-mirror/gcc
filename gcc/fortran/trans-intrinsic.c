@@ -2533,7 +2533,7 @@ gfc_conv_intrinsic_ishft (gfc_se * se, gfc_expr * expr)
   /* The Fortran standard allows shift widths <= BIT_SIZE(I), whereas
      gcc requires a shift width < BIT_SIZE(I), so we have to catch this
      special case.  */
-  num_bits = build_int_cst (TREE_TYPE (args[0]), TYPE_PRECISION (type));
+  num_bits = build_int_cst (TREE_TYPE (args[1]), TYPE_PRECISION (type));
   cond = fold_build2 (GE_EXPR, boolean_type_node, width, num_bits);
 
   se->expr = fold_build3 (COND_EXPR, type, cond,
