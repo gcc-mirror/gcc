@@ -30,12 +30,24 @@
 #undef  TARGET_DEFAULT_FLOAT_ABI
 #define TARGET_DEFAULT_FLOAT_ABI ARM_FLOAT_ABI_HARD
 
+/* TARGET_BIG_ENDIAN_DEFAULT is set in
+   config.gcc for big endian configurations.  */
+#if TARGET_BIG_ENDIAN_DEFAULT
+#define TARGET_ENDIAN_DEFAULT    MASK_BIG_END
+#define TARGET_ENDIAN_OPTION     "mbig-endian"
+#define TARGET_LINKER_EMULATION  "armelfb_linux"
+#else
+#define TARGET_ENDIAN_DEFAULT    0
+#define TARGET_ENDIAN_OPTION     "mlittle-endian"
+#define TARGET_LINKER_EMULATION  "armelf_linux"
+#endif
+
 #undef  TARGET_DEFAULT
-#define TARGET_DEFAULT (0)
+#define TARGET_DEFAULT (TARGET_ENDIAN_DEFAULT)
 
 #define SUBTARGET_CPU_DEFAULT TARGET_CPU_arm6
 
-#define SUBTARGET_EXTRA_LINK_SPEC " -m armelf_linux -p"
+#define SUBTARGET_EXTRA_LINK_SPEC " -m " TARGET_LINKER_EMULATION " -p"
 
 #undef  MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS \
@@ -60,7 +72,7 @@
    %{rdynamic:-export-dynamic} \
    %{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER "} \
    -X \
-   %{mbig-endian:-EB}" \
+   %{mbig-endian:-EB} %{mlittle-endian:-EL}" \
    SUBTARGET_EXTRA_LINK_SPEC
 
 #undef  LINK_SPEC

@@ -21,7 +21,7 @@
 
 /* On EABI GNU/Linux, we want both the BPABI builtins and the
    GNU/Linux builtins.  */
-#undef TARGET_OS_CPP_BUILTINS
+#undef  TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS() 		\
   do 						\
     {						\
@@ -32,31 +32,40 @@
 
 /* We default to a soft-float ABI so that binaries can run on all
    target hardware.  */
-#undef TARGET_DEFAULT_FLOAT_ABI
+#undef  TARGET_DEFAULT_FLOAT_ABI
 #define TARGET_DEFAULT_FLOAT_ABI ARM_FLOAT_ABI_SOFT
 
 /* We default to the "aapcs-linux" ABI so that enums are int-sized by
    default.  */
-#undef ARM_DEFAULT_ABI
+#undef  ARM_DEFAULT_ABI
 #define ARM_DEFAULT_ABI ARM_ABI_AAPCS_LINUX
 
 /* Default to armv5t so that thumb shared libraries work.
    The ARM10TDMI core is the default for armv5t, so set
    SUBTARGET_CPU_DEFAULT to achieve this.  */
-#undef SUBTARGET_CPU_DEFAULT
+#undef  SUBTARGET_CPU_DEFAULT
 #define SUBTARGET_CPU_DEFAULT TARGET_CPU_arm10tdmi
 
-#undef SUBTARGET_EXTRA_LINK_SPEC
-#define SUBTARGET_EXTRA_LINK_SPEC " -m armelf_linux_eabi"
+/* TARGET_BIG_ENDIAN_DEFAULT is set in
+   config.gcc for big endian configurations.  */
+#undef  TARGET_LINKER_EMULATION
+#if TARGET_BIG_ENDIAN_DEFAULT
+#define TARGET_LINKER_EMULATION "armelfb_linux_eabi"
+#else
+#define TARGET_LINKER_EMULATION "armelf_linux_eabi"
+#endif
+
+#undef  SUBTARGET_EXTRA_LINK_SPEC
+#define SUBTARGET_EXTRA_LINK_SPEC " -m " TARGET_LINKER_EMULATION
 
 /* Use ld-linux.so.3 so that it will be possible to run "classic"
    GNU/Linux binaries on an EABI system.  */
-#undef GLIBC_DYNAMIC_LINKER
+#undef  GLIBC_DYNAMIC_LINKER
 #define GLIBC_DYNAMIC_LINKER "/lib/ld-linux.so.3"
 
 /* At this point, bpabi.h will have clobbered LINK_SPEC.  We want to
    use the GNU/Linux version, not the generic BPABI version.  */
-#undef LINK_SPEC
+#undef  LINK_SPEC
 #define LINK_SPEC LINUX_TARGET_LINK_SPEC
 
 /* Use the default LIBGCC_SPEC, not the version in linux-elf.h, as we
@@ -65,7 +74,7 @@
 
 /* Clear the instruction cache from `beg' to `end'.  This makes an
    inline system call to SYS_cacheflush.  */
-#undef CLEAR_INSN_CACHE
+#undef  CLEAR_INSN_CACHE
 #define CLEAR_INSN_CACHE(BEG, END)					\
 {									\
   register unsigned long _beg __asm ("a1") = (unsigned long) (BEG);	\

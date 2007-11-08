@@ -29,12 +29,20 @@
 #define TARGET_UNWIND_INFO 1
 
 /* Section 4.1 of the AAPCS requires the use of VFP format.  */
-#undef FPUTYPE_DEFAULT
+#undef  FPUTYPE_DEFAULT
 #define FPUTYPE_DEFAULT FPUTYPE_VFP
 
+/* TARGET_BIG_ENDIAN_DEFAULT is set in
+   config.gcc for big endian configurations.  */
+#if TARGET_BIG_ENDIAN_DEFAULT
+#define TARGET_ENDIAN_DEFAULT MASK_BIG_END
+#else
+#define TARGET_ENDIAN_DEFAULT 0
+#endif
+
 /* EABI targets should enable interworking by default.  */
-#undef TARGET_DEFAULT
-#define TARGET_DEFAULT MASK_INTERWORK
+#undef  TARGET_DEFAULT
+#define TARGET_DEFAULT (MASK_INTERWORK | TARGET_ENDIAN_DEFAULT)
 
 /* The ARM BPABI functions return a boolean; they use no special
    calling convention.  */
@@ -44,11 +52,11 @@
 #define TARGET_LIB_INT_CMP_BIASED !TARGET_BPABI
 
 /* Tell the assembler to build BPABI binaries.  */
-#undef SUBTARGET_EXTRA_ASM_SPEC
+#undef  SUBTARGET_EXTRA_ASM_SPEC
 #define SUBTARGET_EXTRA_ASM_SPEC "%{mabi=apcs-gnu|mabi=atpcs:-meabi=gnu;:-meabi=4}"
 
 /* The generic link spec in elf.h does not support shared libraries.  */
-#undef LINK_SPEC
+#undef  LINK_SPEC
 #define LINK_SPEC "%{mbig-endian:-EB} %{mlittle-endian:-EL} "		\
   "%{static:-Bstatic} %{shared:-shared} %{symbolic:-Bsymbolic} "	\
   "-X"
