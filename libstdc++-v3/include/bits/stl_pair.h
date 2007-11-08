@@ -211,14 +211,44 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     make_pair(_T1 __x, _T2 __y)
     { return pair<_T1, _T2>(__x, __y); }
 #else
+  template<typename _Tp>
+    class reference_wrapper;
+
+  // Helper which adds a reference to a type when given a reference_wrapper
+  template<typename _Tp>
+    struct __strip_reference_wrapper
+    {
+      typedef _Tp __type;
+    };
+
+  template<typename _Tp>
+    struct __strip_reference_wrapper<reference_wrapper<_Tp> >
+    {
+      typedef _Tp& __type;
+    };
+
+  template<typename _Tp>
+    struct __strip_reference_wrapper<const reference_wrapper<_Tp> >
+    {
+      typedef _Tp& __type;
+    };
+
+  template<typename _Tp>
+    struct __decay_and_strip
+    {
+      typedef typename __strip_reference_wrapper<
+	typename decay<_Tp>::type>::__type __type;
+    };
+
+  // NB: DR 706.
   template<class _T1, class _T2>
-    inline pair<typename std::decay<_T1>::type,
-		typename std::decay<_T2>::type>
+    inline pair<typename __decay_and_strip<_T1>::__type,
+		typename __decay_and_strip<_T2>::__type>
     make_pair(_T1&& __x, _T2&& __y)
     {
-      return pair<typename std::decay<_T1>::type,
-	          typename std::decay<_T2>::type>(std::forward<_T1>(__x),
-						  std::forward<_T2>(__y));
+      return pair<typename __decay_and_strip<_T1>::__type,
+	          typename __decay_and_strip<_T2>::__type>
+	(std::forward<_T1>(__x), std::forward<_T2>(__y));
     }
 #endif
 
