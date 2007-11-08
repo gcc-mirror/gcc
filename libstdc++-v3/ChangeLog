@@ -1,3 +1,10 @@
+2007-11-08  Paolo Carlini  <pcarlini@suse.de>
+
+	* docs/html/ext/lwg-active.html: Update to Revision R52.
+	* docs/html/ext/lwg-closed.html: Likewise.
+	* docs/html/ext/lwg-defects.html: Likewise.
+	* docs/html/ext/howto.html: Adjust.
+
 2007-11-07  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1_impl/complex (fabs): In C++0x mode adjust
