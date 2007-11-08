@@ -79,7 +79,7 @@
 ;; Attributes.
 
 (define_attr "type"
-  "unknown,jump,call,load,store,move,arith,multi,nop,farith,fmadd,fdiv,fsqrt,fconv,fload,fstore,mul16,mul32,div32,mac16,rsr,wsr"
+  "unknown,jump,call,load,store,move,arith,multi,nop,farith,fmadd,fdiv,fsqrt,fconv,fload,fstore,mul16,mul32,div32,mac16,rsr,wsr,entry"
   (const_string "unknown"))
 
 (define_attr "mode"
@@ -1541,12 +1541,11 @@
 
 (define_insn "entry"
   [(set (reg:SI A1_REG)
-	(unspec_volatile:SI [(match_operand:SI 0 "const_int_operand" "i")
-			     (match_operand:SI 1 "const_int_operand" "i")]
+	(unspec_volatile:SI [(match_operand:SI 0 "const_int_operand" "i")]
 			    UNSPECV_ENTRY))]
   ""
-  "entry\tsp, %1"
-  [(set_attr "type"	"move")
+  "entry\tsp, %0"
+  [(set_attr "type"	"entry")
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
 
