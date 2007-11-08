@@ -1,3 +1,17 @@
+2007-11-07  <aldot@gcc.gnu.org>  Bernhard Fischer
+
+	PR target/16350
+	* config.gcc: For arm*b-* define TARGET_BIG_ENDIAN_DEFAULT.
+	* config/arm/linux-elf.h (TARGET_ENDIAN_DEFAULT): Define based on
+	TARGET_BIG_ENDIAN_DEFAULT.  Use for MULTILIB_DEFAULTS.
+	(TARGET_DEFAULT): Set according to TARGET_ENDIAN_DEFAULT.
+	(LINUX_TARGET_LINK_SPEC): Pass -mlittle-endian on to the assembler.
+	* config/arm/linux-eabi.h (TARGET_LINKER_EMULATION): Set according
+	to TARGET_BIG_ENDIAN_DEFAULT.
+	(SUBTARGET_EXTRA_LINK_SPEC): Likewise.
+	* gcc/config/arm/bpabi.h (TARGET_DEFAULT_MASK): Set according
+	to TARGET_BIG_ENDIAN_DEFAULT.
+
 2007-11-07  Diego Novillo  <dnovillo@google.com>
 
 	* tree.h (struct tree_struct_field_tag): Move field
