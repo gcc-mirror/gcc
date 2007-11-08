@@ -2554,7 +2554,11 @@ struct tree_memory_tag GTY(())
 
   bitmap GTY ((skip)) aliases;
 
+  /* True if this tag has global scope.  */
   unsigned int is_global:1;
+
+  /* True if this SFT is for a field in a nested structure.  */
+  unsigned int in_nested_struct : 1;
 };
 
 #define MTAG_GLOBAL(NODE) (TREE_MEMORY_TAG_CHECK (NODE)->mtag.is_global)
@@ -2573,9 +2577,6 @@ struct tree_struct_field_tag GTY(())
   /* Size of the field.  */
   unsigned HOST_WIDE_INT size;
 
-  /* True if this SFT is for a field in a nested structure.  */
-  unsigned int in_nested_struct : 1;
-
   /* Alias set for a DECL_NONADDRESSABLE_P field.  Otherwise -1.  */
   alias_set_type alias_set;
 };
@@ -2587,7 +2588,7 @@ struct tree_struct_field_tag GTY(())
   (STRUCT_FIELD_TAG_CHECK (NODE)->sft.alias_set != -1)
 #define SFT_ALIAS_SET(NODE) (STRUCT_FIELD_TAG_CHECK (NODE)->sft.alias_set)
 #define SFT_IN_NESTED_STRUCT(NODE) \
-  (STRUCT_FIELD_TAG_CHECK (NODE)->sft.in_nested_struct)
+  (STRUCT_FIELD_TAG_CHECK (NODE)->sft.common.in_nested_struct)
 
 /* Memory Partition Tags (MPTs) group memory symbols under one
    common name for the purposes of placing memory PHI nodes.  */
