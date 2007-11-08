@@ -1,5 +1,10 @@
 2007-11-07  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1_impl/complex (fabs): In C++0x mode adjust
+	return type per DR 595 [Ready].
+
+2007-11-07  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/stl_iterator.h (move_iterator<>::pointer): Adjust
 	typedef per DR 680 [Ready].
 
