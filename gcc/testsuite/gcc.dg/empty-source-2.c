@@ -3,4 +3,4 @@
 /* { dg-do compile } */
 /* { dg-options "-pedantic" } */
 
-/* { dg-warning "ISO C forbids an empty source file" "empty" { target *-*-* } 1 } */
+/* { dg-warning "ISO C forbids an empty source file" "empty" { target *-*-* } 6 } */

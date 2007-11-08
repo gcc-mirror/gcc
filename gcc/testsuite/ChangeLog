@@ -1,5 +1,13 @@
 2007-11-08  Tom Tromey  <tromey@redhat.com>
 
+	* gcc.dg/empty-source-3.c: Update warning location.
+	* gcc.dg/gomp/barrier-2.c: Likewise.
+	* gcc.dg/label-decl-3.c: Likewise.
+	* gcc.dg/label-decl-2.c: Likewise.
+	* gcc.dg/empty-source-2.c: Likewise.
+
+2007-11-08  Tom Tromey  <tromey@redhat.com>
+
 	PR c++/30297:
 	* g++.dg/inherit/pr30297.C: New file.
 
