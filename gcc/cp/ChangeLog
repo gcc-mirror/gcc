@@ -1,3 +1,8 @@
+2007-11-08  Andrew Pinski  <pinskia@gmail.com>
+
+	PR c++/30297:
+	* tree.c (decl_linkage): Fields have no linkage.
+
 2007-11-08  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* class.c (build_ctor_vtbl_group): Lay out the new type and decl.

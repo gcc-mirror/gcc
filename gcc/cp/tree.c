@@ -2493,6 +2493,10 @@ decl_linkage (tree decl)
   if (!DECL_NAME (decl))
     return lk_none;
 
+  /* Fields have no linkage.  */
+  if (TREE_CODE (decl) == FIELD_DECL)
+    return lk_none;
+
   /* Things that are TREE_PUBLIC have external linkage.  */
   if (TREE_PUBLIC (decl))
     return lk_external;
