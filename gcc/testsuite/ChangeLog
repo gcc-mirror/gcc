@@ -1,3 +1,8 @@
+2007-11-08  Tom Tromey  <tromey@redhat.com>
+
+	PR c++/30297:
+	* g++.dg/inherit/pr30297.C: New file.
+
 2007-11-08  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* gcc.dg/compat/struct-layout-1_generate.c (dg-options) Add
