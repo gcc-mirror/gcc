@@ -85,6 +85,13 @@ struct floatformat
 
   /* Validator method.  */
   int (*is_valid) (const struct floatformat *fmt, const void *from);
+
+  /* Is the format actually the sum of two smaller floating point
+     formats (IBM long double, as described in
+     gcc/config/rs6000/darwin-ldouble-format)?  If so, this is the
+     smaller format in question, and the fields sign_start through
+     intbit describe the first half.  If not, this is NULL.  */
+  const struct floatformat *split_half;
 };
 
 /* floatformats for IEEE single and double, big and little endian.  */
@@ -118,6 +125,8 @@ extern const struct floatformat floatformat_ia64_spill_big;
 extern const struct floatformat floatformat_ia64_spill_little;
 extern const struct floatformat floatformat_ia64_quad_big;
 extern const struct floatformat floatformat_ia64_quad_little;
+/* IBM long double (double+double).  */
+extern const struct floatformat floatformat_ibm_long_double;
 
 /* Convert from FMT to a double.
    FROM is the address of the extended float.

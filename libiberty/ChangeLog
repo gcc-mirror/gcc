@@ -1,3 +1,24 @@
+2007-11-07  Joseph Myers  <joseph@codesourcery.com>
+	    Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* floatformat.c (mant_bits_set): New.
+	(floatformat_to_double): Use it.  Note no special handling of
+	split formats.
+	(floatformat_from_double): Note no special handing of split
+	formats.
+	(floatformat_ibm_long_double_is_valid,
+	floatformat_ibm_long_double): New.
+	(floatformat_ieee_single_big, floatformat_ieee_single_little,
+	floatformat_ieee_double_big, floatformat_ieee_double_little,
+	floatformat_ieee_double_littlebyte_bigword, floatformat_vax_f,
+	floatformat_vax_d, floatformat_vax_g, floatformat_i387_ext,
+	floatformat_m68881_ext, floatformat_i960_ext,
+	floatformat_m88110_ext, floatformat_m88110_harris_ext,
+	floatformat_arm_ext_big, floatformat_arm_ext_littlebyte_bigword,
+	floatformat_ia64_spill_big, floatformat_ia64_spill_little,
+	floatformat_ia64_quad_big, floatformat_ia64_quad_little): Update
+	for addition of split_half field.
+
 2007-09-06  Tom Tromey  <tromey@redhat.com>
 
 	* pexecute.txh (pex_free): Document process killing.

@@ -56,6 +56,7 @@ Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA 02110-1301, USA. 
 #endif
 #endif
 
+static int mant_bits_set (const struct floatformat *, const unsigned char *);
 static unsigned long get_field (const unsigned char *,
                                 enum floatformat_byteorders,
                                 unsigned int,
@@ -82,28 +83,32 @@ const struct floatformat floatformat_ieee_single_big =
   floatformat_big, 32, 0, 1, 8, 127, 255, 9, 23,
   floatformat_intbit_no,
   "floatformat_ieee_single_big",
-  floatformat_always_valid
+  floatformat_always_valid,
+  NULL
 };
 const struct floatformat floatformat_ieee_single_little =
 {
   floatformat_little, 32, 0, 1, 8, 127, 255, 9, 23,
   floatformat_intbit_no,
   "floatformat_ieee_single_little",
-  floatformat_always_valid
+  floatformat_always_valid,
+  NULL
 };
 const struct floatformat floatformat_ieee_double_big =
 {
   floatformat_big, 64, 0, 1, 11, 1023, 2047, 12, 52,
   floatformat_intbit_no,
   "floatformat_ieee_double_big",
-  floatformat_always_valid
+  floatformat_always_valid,
+  NULL
 };
 const struct floatformat floatformat_ieee_double_little =
 {
   floatformat_little, 64, 0, 1, 11, 1023, 2047, 12, 52,
   floatformat_intbit_no,
   "floatformat_ieee_double_little",
-  floatformat_always_valid
+  floatformat_always_valid,
+  NULL
 };
 
 /* floatformat for IEEE double, little endian byte order, with big endian word
@@ -114,7 +119,8 @@ const struct floatformat floatformat_ieee_double_littlebyte_bigword =
   floatformat_littlebyte_bigword, 64, 0, 1, 11, 1023, 2047, 12, 52,
   floatformat_intbit_no,
   "floatformat_ieee_double_littlebyte_bigword",
-  floatformat_always_valid
+  floatformat_always_valid,
+  NULL
 };
 
 /* floatformat for VAX.  Not quite IEEE, but close enough.  */
@@ -124,21 +130,24 @@ const struct floatformat floatformat_vax_f =
   floatformat_vax, 32, 0, 1, 8, 129, 0, 9, 23,
   floatformat_intbit_no,
   "floatformat_vax_f",
-  floatformat_always_valid
+  floatformat_always_valid,
+  NULL
 };
 const struct floatformat floatformat_vax_d =
 {
   floatformat_vax, 64, 0, 1, 8, 129, 0, 9, 55,
   floatformat_intbit_no,
   "floatformat_vax_d",
-  floatformat_always_valid
+  floatformat_always_valid,
+  NULL
 };
 const struct floatformat floatformat_vax_g =
 {
   floatformat_vax, 64, 0, 1, 11, 1025, 0, 12, 52,
   floatformat_intbit_no,
   "floatformat_vax_g",
-  floatformat_always_valid
+  floatformat_always_valid,
+  NULL
 };
 
 static int floatformat_i387_ext_is_valid (const struct floatformat *fmt,
@@ -170,7 +179,8 @@ const struct floatformat floatformat_i387_ext =
   floatformat_little, 80, 0, 1, 15, 0x3fff, 0x7fff, 16, 64,
   floatformat_intbit_yes,
   "floatformat_i387_ext",
-  floatformat_i387_ext_is_valid
+  floatformat_i387_ext_is_valid,
+  NULL
 };
 const struct floatformat floatformat_m68881_ext =
 {
@@ -178,7 +188,8 @@ const struct floatformat floatformat_m68881_ext =
   floatformat_big, 96, 0, 1, 15, 0x3fff, 0x7fff, 32, 64,
   floatformat_intbit_yes,
   "floatformat_m68881_ext",
-  floatformat_always_valid
+  floatformat_always_valid,
+  NULL
 };
 const struct floatformat floatformat_i960_ext =
 {
@@ -186,14 +197,16 @@ const struct floatformat floatformat_i960_ext =
   floatformat_little, 96, 16, 17, 15, 0x3fff, 0x7fff, 32, 64,
   floatformat_intbit_yes,
   "floatformat_i960_ext",
-  floatformat_always_valid
+  floatformat_always_valid,
+  NULL
 };
 const struct floatformat floatformat_m88110_ext =
 {
   floatformat_big, 80, 0, 1, 15, 0x3fff, 0x7fff, 16, 64,
   floatformat_intbit_yes,
   "floatformat_m88110_ext",
-  floatformat_always_valid
+  floatformat_always_valid,
+  NULL
 };
 const struct floatformat floatformat_m88110_harris_ext =
 {
@@ -202,7 +215,8 @@ const struct floatformat floatformat_m88110_harris_ext =
   floatformat_big,128, 0, 1, 11,  0x3ff,  0x7ff, 12, 52,
   floatformat_intbit_no,
   "floatformat_m88110_ext_harris",
-  floatformat_always_valid
+  floatformat_always_valid,
+  NULL
 };
 const struct floatformat floatformat_arm_ext_big =
 {
@@ -210,7 +224,8 @@ const struct floatformat floatformat_arm_ext_big =
   floatformat_big, 96, 0, 17, 15, 0x3fff, 0x7fff, 32, 64,
   floatformat_intbit_yes,
   "floatformat_arm_ext_big",
-  floatformat_always_valid
+  floatformat_always_valid,
+  NULL
 };
 const struct floatformat floatformat_arm_ext_littlebyte_bigword =
 {
@@ -218,41 +233,168 @@ const struct floatformat floatformat_arm_ext_littlebyte_bigword =
   floatformat_littlebyte_bigword, 96, 0, 17, 15, 0x3fff, 0x7fff, 32, 64,
   floatformat_intbit_yes,
   "floatformat_arm_ext_littlebyte_bigword",
-  floatformat_always_valid
+  floatformat_always_valid,
+  NULL
 };
 const struct floatformat floatformat_ia64_spill_big =
 {
   floatformat_big, 128, 0, 1, 17, 65535, 0x1ffff, 18, 64,
   floatformat_intbit_yes,
   "floatformat_ia64_spill_big",
-  floatformat_always_valid
+  floatformat_always_valid,
+  NULL
 };
 const struct floatformat floatformat_ia64_spill_little =
 {
   floatformat_little, 128, 0, 1, 17, 65535, 0x1ffff, 18, 64,
   floatformat_intbit_yes,
   "floatformat_ia64_spill_little",
-  floatformat_always_valid
+  floatformat_always_valid,
+  NULL
 };
 const struct floatformat floatformat_ia64_quad_big =
 {
   floatformat_big, 128, 0, 1, 15, 16383, 0x7fff, 16, 112,
   floatformat_intbit_no,
   "floatformat_ia64_quad_big",
-  floatformat_always_valid
+  floatformat_always_valid,
+  NULL
 };
 const struct floatformat floatformat_ia64_quad_little =
 {
   floatformat_little, 128, 0, 1, 15, 16383, 0x7fff, 16, 112,
   floatformat_intbit_no,
   "floatformat_ia64_quad_little",
-  floatformat_always_valid
+  floatformat_always_valid,
+  NULL
+};
+
+static int
+floatformat_ibm_long_double_is_valid (const struct floatformat *fmt,
+				      const void *from)
+{
+  const unsigned char *ufrom = (const unsigned char *) from;
+  const struct floatformat *hfmt = fmt->split_half;
+  long top_exp, bot_exp;
+  int top_nan = 0;
+
+  top_exp = get_field (ufrom, hfmt->byteorder, hfmt->totalsize,
+		       hfmt->exp_start, hfmt->exp_len);
+  bot_exp = get_field (ufrom + 8, hfmt->byteorder, hfmt->totalsize,
+		       hfmt->exp_start, hfmt->exp_len);
+
+  if (top_exp == hfmt->exp_nan)
+    top_nan = mant_bits_set (hfmt, ufrom);
+
+  /* A NaN is valid with any low part.  */
+  if (top_nan)
+    return 1;
+
+  /* An infinity, zero or denormal requires low part 0 (positive or
+     negative).  */
+  if (top_exp == hfmt->exp_nan || top_exp == 0)
+    {
+      unsigned int mant_bits, mant_off;
+      int mant_bits_left;
+
+      if (bot_exp != 0)
+	return 0;
+
+      return !mant_bits_set (hfmt, ufrom + 8);
+    }
+
+  /* The top part is now a finite normal value.  The long double value
+     is the sum of the two parts, and the top part must equal the
+     result of rounding the long double value to nearest double.  Thus
+     the bottom part must be <= 0.5ulp of the top part in absolute
+     value, and if it is < 0.5ulp then the long double is definitely
+     valid.  */
+  if (bot_exp < top_exp - 53)
+    return 1;
+  if (bot_exp > top_exp - 53 && bot_exp != 0)
+    return 0;
+  if (bot_exp == 0)
+    {
+      /* The bottom part is 0 or denormal.  Determine which, and if
+	 denormal the first two set bits.  */
+      int first_bit = -1, second_bit = -1, cur_bit;
+      for (cur_bit = 0; cur_bit < hfmt->man_len; cur_bit++)
+	if (get_field (ufrom + 8, hfmt->byteorder, hfmt->totalsize,
+		       hfmt->man_start + cur_bit, 1))
+	  {
+	    if (first_bit == -1)
+	      first_bit = cur_bit;
+	    else
+	      {
+		second_bit = cur_bit;
+		break;
+	      }
+	  }
+      /* Bottom part 0 is OK.  */
+      if (first_bit == -1)
+	return 1;
+      /* The real exponent of the bottom part is -first_bit.  */
+      if (-first_bit < top_exp - 53)
+	return 1;
+      if (-first_bit > top_exp - 53)
+	return 0;
+      /* The bottom part is at least 0.5ulp of the top part.  For this
+	 to be OK, the bottom part must be exactly 0.5ulp (i.e. no
+	 more bits set) and the top part must have last bit 0.  */
+      if (second_bit != -1)
+	return 0;
+      return !get_field (ufrom, hfmt->byteorder, hfmt->totalsize,
+			 hfmt->man_start + hfmt->man_len - 1, 1);
+    }
+  else
+    {
+      /* The bottom part is at least 0.5ulp of the top part.  For this
+	 to be OK, it must be exactly 0.5ulp (i.e. no explicit bits
+	 set) and the top part must have last bit 0.  */
+      if (get_field (ufrom, hfmt->byteorder, hfmt->totalsize,
+		     hfmt->man_start + hfmt->man_len - 1, 1))
+	return 0;
+      return !mant_bits_set (hfmt, ufrom + 8);
+    }
+}
+
+const struct floatformat floatformat_ibm_long_double =
+{
+  floatformat_big, 128, 0, 1, 11, 1023, 2047, 12, 52,
+  floatformat_intbit_no,
+  "floatformat_ibm_long_double",
+  floatformat_always_valid,
+  &floatformat_ieee_double_big
 };
 
 
 #ifndef min
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #endif
+
+/* Return 1 if any bits are explicitly set in the mantissa of UFROM,
+   format FMT, 0 otherwise.  */
+static int
+mant_bits_set (const struct floatformat *fmt, const unsigned char *ufrom)
+{
+  unsigned int mant_bits, mant_off;
+  int mant_bits_left;
+
+  mant_off = fmt->man_start;
+  mant_bits_left = fmt->man_len;
+  while (mant_bits_left > 0)
+    {
+      mant_bits = min (mant_bits_left, 32);
+
+      if (get_field (ufrom, fmt->byteorder, fmt->totalsize,
+		     mant_off, mant_bits) != 0)
+	return 1;
+
+      mant_off += mant_bits;
+      mant_bits_left -= mant_bits;
+    }
+  return 0;
+}
 
 /* Extract a field which starts at START and is LEN bits long.  DATA and
    TOTAL_LEN are the thing we are extracting it from, in byteorder ORDER.  */
@@ -310,6 +452,10 @@ floatformat_to_double (const struct floatformat *fmt,
   int mant_bits_left;
   int special_exponent;		/* It's a NaN, denorm or zero */
 
+  /* Split values are not handled specially, since the top half has
+     the correctly rounded double value (in the only supported case of
+     split values).  */
+
   exponent = get_field (ufrom, fmt->byteorder, fmt->totalsize,
 			fmt->exp_start, fmt->exp_len);
 
@@ -318,26 +464,7 @@ floatformat_to_double (const struct floatformat *fmt,
      don't try to preserve the type of NaN.  FIXME.  */
   if ((unsigned long) exponent == fmt->exp_nan)
     {
-      int nan;
-
-      mant_off = fmt->man_start;
-      mant_bits_left = fmt->man_len;
-      nan = 0;
-      while (mant_bits_left > 0)
-	{
-	  mant_bits = min (mant_bits_left, 32);
-
-	  if (get_field (ufrom, fmt->byteorder, fmt->totalsize,
-			 mant_off, mant_bits) != 0)
-	    {
-	      /* This is a NaN.  */
-	      nan = 1;
-	      break;
-	    }
-
-	  mant_off += mant_bits;
-	  mant_bits_left -= mant_bits;
-	}
+      int nan = mant_bits_set (fmt, ufrom);
 
       /* On certain systems (such as GNU/Linux), the use of the
 	 INFINITY macro below may generate a warning that can not be
@@ -473,6 +600,10 @@ floatformat_from_double (const struct floatformat *fmt,
 
   dfrom = *from;
   memset (uto, 0, fmt->totalsize / FLOATFORMAT_CHAR_BIT);
+
+  /* Split values are not handled specially, since a bottom half of
+     zero is correct for any value representable as double (in the
+     only supported case of split values).  */
 
   /* If negative, set the sign bit.  */
   if (dfrom < 0)
