@@ -1,5 +1,9 @@
 2007-11-08  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/debug/vector (push_back, emplace): Fix signature typo.
+
+2007-11-08  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/locale_facets.h (ctype<char>::taple, classic_table):
 	Implement trivial resolution of DR 695 [Ready].
 	* testsuite/22_locale/ctype/dr695.cc: New.
