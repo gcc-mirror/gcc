@@ -1,3 +1,8 @@
+2007-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/32575
+	* gcc.c-torture/execute/20071108-1.c: New test.
+
 2007-11-08  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* g++.dg/opt/anchor1.C: New.
