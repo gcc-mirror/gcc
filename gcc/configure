@@ -6900,7 +6900,7 @@ if test "${enable_mapped_location+set}" = set; then
   enableval="$enable_mapped_location"
 
 else
-  enable_mapped_location=no
+  enable_mapped_location=yes
 fi;
 
 if test "$enable_mapped_location" = yes ; then
