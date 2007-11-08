@@ -1137,7 +1137,9 @@ check_sym_interfaces (gfc_symbol *sym)
 
       for (p = sym->generic; p; p = p->next)
 	{
-	  if (p->sym->attr.mod_proc && p->sym->attr.if_source != IFSRC_DECL)
+	  if (p->sym->attr.mod_proc
+	      && (p->sym->attr.if_source != IFSRC_DECL
+		  || p->sym->attr.procedure))
 	    {
 	      gfc_error ("'%s' at %L is not a module procedure",
 			 p->sym->name, &p->where);
