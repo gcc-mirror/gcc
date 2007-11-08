@@ -525,7 +525,7 @@ AC_SUBST(valgrind_command)
 
 AC_ARG_ENABLE(mapped-location,
 [  --enable-mapped-location   location_t is fileline integer cookie],,
-enable_mapped_location=no)
+enable_mapped_location=yes)
 
 if test "$enable_mapped_location" = yes ; then
   AC_DEFINE(USE_MAPPED_LOCATION, 1,
