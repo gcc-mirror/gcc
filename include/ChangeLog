@@ -1,3 +1,9 @@
+2007-11-07  Joseph Myers  <joseph@codesourcery.com>
+	    Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* floatformat.h (struct floatformat): Add split_half field.
+	(floatformat_ibm_long_double): New.
+
 2007-09-06  Tom Tromey  <tromey@redhat.com>
 
 	* libiberty.h (pex_free): Document process killing.
