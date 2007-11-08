@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 
 const char *host_detect_local_cpu (int argc, const char **argv);
 
-#ifdef GCC_VERSION
+#ifdef __GNUC__
 #define cpuid(num,a,b,c,d) \
   asm volatile ("xchgl %%ebx, %1; cpuid; xchgl %%ebx, %1" \
 		: "=a" (a), "=r" (b), "=c" (c), "=d" (d)  \
@@ -296,4 +296,4 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 
   return concat ("-m", argv[0], "=", cpu, NULL);
 }
-#endif /* GCC_VERSION */
+#endif /* __GNUC__ */

@@ -1,3 +1,13 @@
+2007-11-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/32787
+	Backport from mainline:
+
+	2007-11-06  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	* config/i386/driver-i386.c: Test for __GNUC__ instead of
+	GCC_VERSION which is always defined.
+
 2007-11-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/33822
