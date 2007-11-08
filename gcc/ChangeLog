@@ -1,5 +1,11 @@
 2007-11-07  Diego Novillo  <dnovillo@google.com>
 
+	* tree.h (struct tree_struct_field_tag): Move field
+	in_nested_struct ...
+	(struct tree_memory_tag): ... here.
+
+2007-11-07  Diego Novillo  <dnovillo@google.com>
+
 	PR 33870
 	* tree.h (struct tree_struct_field_tag): Add field in_nested_struct.
 	(SFT_IN_NESTED_STRUCT): Define.
