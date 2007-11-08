@@ -1,22 +1,22 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html><head><title>C++ Standard Library Defect Report List</title>
 
+
+
 <style type="text/css">
 p {text-align:justify}
 li {text-align:justify}
-ins {background-color:#FFFFA0}
-del {background-color:#FFFFA0}
-</style></head>
-
-<body>
+ins {background-color:#A0FFA0}
+del {background-color:#FFA0A0}
+</style></head><body>
 <table>
 <tbody><tr>
 <td align="left">Doc. no.</td>
-<td align="left">N2318=07-0178</td>
+<td align="left">N2457=07-0327</td>
 </tr>
 <tr>
 <td align="left">Date:</td>
-<td align="left">2007-06-24</td>
+<td align="left">2007-10-20</td>
 </tr>
 <tr>
 <td align="left">Project:</td>
@@ -27,7 +27,7 @@ del {background-color:#FFFFA0}
 <td align="left">Howard Hinnant &lt;<a href="mailto:howard.hinnant@gmail.com">howard.hinnant@gmail.com</a>&gt;</td>
 </tr>
 </tbody></table>
-<h1>C++ Standard Library Defect Report List (Revision R49)</h1>
+<h1>C++ Standard Library Defect Report List (Revision R52)</h1>
 
   <p>Reference ISO/IEC IS 14882:1998(E)</p>
   <p>Also see:</p>
@@ -49,6 +49,71 @@ del {background-color:#FFFFA0}
 
 <h2>Revision History</h2>
 <ul>
+<li>R52: 
+2007-10-19 post-Kona mailing.
+<ul>
+<li><b>Summary:</b><ul>
+<li>172 open issues, up by 4.</li>
+<li>582 closed issues, up by 27.</li>
+<li>754 issues total, up by 31.</li>
+</ul></li>
+<li><b>Details:</b><ul>
+<li>Added the following New issues: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#724">724</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#725">725</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#726">726</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#727">727</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#728">728</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#729">729</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#730">730</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#731">731</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#732">732</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#733">733</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#734">734</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#735">735</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#736">736</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#737">737</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#738">738</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#739">739</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#740">740</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#741">741</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#742">742</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#743">743</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#744">744</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#745">745</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#746">746</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#747">747</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#748">748</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#749">749</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#750">750</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#751">751</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#752">752</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#753">753</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#754">754</a>.</li>
+<li>Changed the following issues from NAD Future to Dup: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#77">77</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#350">350</a>.</li>
+<li>Changed the following issues from New to NAD: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#639">639</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#657">657</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#663">663</a>.</li>
+<li>Changed the following issues from Open to NAD: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#548">548</a>.</li>
+<li>Changed the following issues from New to Open: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#546">546</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#550">550</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#564">564</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#565">565</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#573">573</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#585">585</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#588">588</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#627">627</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#629">629</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#630">630</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#632">632</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#635">635</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#653">653</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#659">659</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#667">667</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#668">668</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#669">669</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#670">670</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#671">671</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#673">673</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#686">686</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#704">704</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#707">707</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#708">708</a>.</li>
+<li>Changed the following issues from New to Pending NAD Editorial: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#393">393</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#592">592</a>.</li>
+<li>Changed the following issues from New to Pending WP: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#607">607</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#608">608</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#654">654</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#655">655</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#677">677</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#682">682</a>.</li>
+<li>Changed the following issues from New to Ready: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#561">561</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#562">562</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#563">563</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#567">567</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#581">581</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#595">595</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#620">620</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#621">621</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#622">622</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#623">623</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#624">624</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#661">661</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#664">664</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#665">665</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#666">666</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#674">674</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#675">675</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#676">676</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#679">679</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#687">687</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#688">688</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#689">689</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#693">693</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#694">694</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#695">695</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#700">700</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#703">703</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#705">705</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#706">706</a>.</li>
+<li>Changed the following issues from Open to Ready: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#680">680</a>.</li>
+<li>Changed the following issues from New to Review: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#574">574</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#596">596</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#618">618</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#638">638</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#645">645</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#672">672</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#684">684</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#685">685</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#691">691</a>.</li>
+<li>Changed the following issues from New to WP: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#552">552</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#634">634</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#650">650</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#651">651</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#652">652</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#678">678</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#681">681</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#699">699</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#712">712</a>.</li>
+<li>Changed the following issues from Open to WP: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#258">258</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#401">401</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#524">524</a>.</li>
+<li>Changed the following issues from Ready to WP: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#488">488</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#577">577</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#660">660</a>.</li>
+</ul></li>
+</ul>
+</li>
+<li>R51: 
+2007-09-09 pre-Kona mailing.
+<ul>
+<li><b>Summary:</b><ul>
+<li>168 open issues, up by 15.</li>
+<li>555 closed issues, up by 0.</li>
+<li>723 issues total, up by 15.</li>
+</ul></li>
+<li><b>Details:</b><ul>
+<li>Added the following New issues: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#709">709</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#710">710</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#711">711</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#712">712</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#713">713</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#714">714</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#715">715</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#716">716</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#717">717</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#718">718</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#719">719</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#720">720</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#721">721</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#722">722</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#723">723</a>.</li>
+</ul></li>
+</ul>
+</li>
+<li>R50: 
+2007-08-05 post-Toronto mailing.
+<ul>
+<li><b>Summary:</b><ul>
+<li>153 open issues, down by 5.</li>
+<li>555 closed issues, up by 17.</li>
+<li>708 issues total, up by 12.</li>
+</ul></li>
+<li><b>Details:</b><ul>
+<li>Added the following New issues: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#697">697</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#698">698</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#699">699</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#700">700</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#701">701</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#702">702</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#703">703</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#704">704</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#705">705</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#706">706</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#707">707</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#708">708</a>.</li>
+<li>Changed the following issues from New to NAD: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#583">583</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#584">584</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#662">662</a>.</li>
+<li>Changed the following issues from Open to NAD: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#528">528</a>.</li>
+<li>Changed the following issues from New to NAD Editorial: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#637">637</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#647">647</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#658">658</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#690">690</a>.</li>
+<li>Changed the following issues from Open to NAD Editorial: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#525">525</a>.</li>
+<li>Changed the following issues from Pending NAD Editorial to NAD Editorial: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#553">553</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#571">571</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#591">591</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#633">633</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#636">636</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#641">641</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#642">642</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#648">648</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#649">649</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#656">656</a>.</li>
+<li>Changed the following issues from New to Open: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#579">579</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#631">631</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#680">680</a>.</li>
+<li>Changed the following issues from Pending WP to Open: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#258">258</a>.</li>
+<li>Changed the following issues from Ready to Pending WP: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#644">644</a>.</li>
+<li>Changed the following issues from New to Ready: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#577">577</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#660">660</a>.</li>
+<li>Changed the following issues from Open to Ready: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#488">488</a>.</li>
+<li>Changed the following issues from Open to Review: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#518">518</a>.</li>
+<li>Changed the following issues from Ready to TRDec: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#604">604</a>.</li>
+<li>Changed the following issues from DR to WP: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#453">453</a>.</li>
+<li>Changed the following issues from Ready to WP: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#531">531</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#551">551</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#566">566</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#628">628</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#640">640</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#643">643</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#646">646</a>.</li>
+</ul></li>
+</ul>
+</li>
 <li>R49: 
 2007-06-23 pre-Toronto mailing.
 <ul>
@@ -58,7 +123,7 @@ del {background-color:#FFFFA0}
 <li>696 issues total, up by 20.</li>
 </ul></li>
 <li><b>Details:</b><ul>
-<li>Added the following New issues: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#677">677</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#678">678</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#679">679</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#680">680</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#681">681</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#682">682</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#684">684</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#685">685</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#686">686</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#687">687</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#688">688</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#689">689</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#690">690</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#691">691</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#692">692</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#693">693</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#694">694</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#695">695</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#696">696</a>.</li>
+<li>Added the following New issues: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#677">677</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#678">678</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#679">679</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#680">680</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#681">681</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#682">682</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#684">684</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#685">685</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#686">686</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#687">687</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#688">688</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#689">689</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#690">690</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#691">691</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#692">692</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#693">693</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#694">694</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#695">695</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#696">696</a>.</li>
 <li>Added the following Pending NAD Editorial issues: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#683">683</a>.</li>
 <li>Changed the following issues from New to NAD Editorial: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#587">587</a>.</li>
 <li>Changed the following issues from Open to NAD Editorial: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#590">590</a>.</li>
@@ -75,7 +140,7 @@ del {background-color:#FFFFA0}
 <li>676 issues total, up by 20.</li>
 </ul></li>
 <li><b>Details:</b><ul>
-<li>Added the following New issues: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#657">657</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#658">658</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#659">659</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#660">660</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#661">661</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#662">662</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#663">663</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#664">664</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#665">665</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#666">666</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#667">667</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#668">668</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#669">669</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#670">670</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#671">671</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#672">672</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#673">673</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#674">674</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#675">675</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#676">676</a>.</li>
+<li>Added the following New issues: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#657">657</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#658">658</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#659">659</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#660">660</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#661">661</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#662">662</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#663">663</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#664">664</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#665">665</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#666">666</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#667">667</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#668">668</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#669">669</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#670">670</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#671">671</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#672">672</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#673">673</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#674">674</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#675">675</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#676">676</a>.</li>
 <li>Changed the following issues from Tentatively Ready to Dup: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#479">479</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#536">536</a>.</li>
 <li>Changed the following issues from Tentatively Ready to NAD: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#385">385</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#463">463</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#466">466</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#470">470</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#515">515</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#526">526</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#547">547</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#560">560</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#572">572</a>.</li>
 <li>Changed the following issues from NAD to NAD Editorial: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#351">351</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#357">357</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#368">368</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#499">499</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#504">504</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#512">512</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#513">513</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#514">514</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#516">516</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#544">544</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#549">549</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#555">555</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#558">558</a>.</li>
@@ -85,8 +150,8 @@ del {background-color:#FFFFA0}
 <li>Changed the following issues from New to Pending NAD Editorial: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#633">633</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#641">641</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#656">656</a>.</li>
 <li>Changed the following issues from Tentatively Ready to Pending NAD Editorial: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#532">532</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#553">553</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#571">571</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#591">591</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#594">594</a>.</li>
 <li>Changed the following issues from Tentatively Ready to Pending WP: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#258">258</a>.</li>
-<li>Changed the following issues from New to Ready: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#566">566</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#628">628</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#640">640</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#643">643</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#644">644</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#646">646</a>.</li>
-<li>Changed the following issues from Review to Ready: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#531">531</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#551">551</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#604">604</a>.</li>
+<li>Changed the following issues from New to Ready: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#566">566</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#628">628</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#640">640</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#643">643</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#644">644</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#646">646</a>.</li>
+<li>Changed the following issues from Review to Ready: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#531">531</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#551">551</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#604">604</a>.</li>
 <li>Changed the following issues from Ready to TRDec: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#598">598</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#599">599</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#600">600</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#601">601</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#602">602</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#603">603</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#605">605</a>.</li>
 <li>Changed the following issues from Ready to WP: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#543">543</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#545">545</a>.</li>
 <li>Changed the following issues from Tentatively Ready to WP: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#201">201</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#206">206</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#233">233</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#254">254</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#416">416</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#422">422</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#456">456</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#534">534</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#542">542</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#559">559</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#575">575</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#576">576</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#578">578</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#586">586</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#589">589</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#593">593</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#609">609</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#610">610</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#611">611</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#613">613</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#616">616</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#619">619</a>.</li>
@@ -102,7 +167,7 @@ del {background-color:#FFFFA0}
 <li>656 issues total, up by 37.</li>
 </ul></li>
 <li><b>Details:</b><ul>
-<li>Added the following New issues: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#620">620</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#621">621</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#622">622</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#623">623</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#624">624</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#627">627</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#628">628</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#629">629</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#630">630</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#631">631</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#632">632</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#633">633</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#634">634</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#635">635</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#636">636</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#637">637</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#638">638</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#639">639</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#640">640</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#641">641</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#642">642</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#643">643</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#644">644</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#645">645</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#646">646</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#647">647</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#648">648</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#649">649</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#650">650</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#651">651</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#652">652</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#653">653</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#654">654</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#655">655</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#656">656</a>.</li>
+<li>Added the following New issues: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#620">620</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#621">621</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#622">622</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#623">623</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#624">624</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#627">627</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#628">628</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#629">629</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#630">630</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#631">631</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#632">632</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#633">633</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#634">634</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#635">635</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#636">636</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#637">637</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#638">638</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#639">639</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#640">640</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#641">641</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#642">642</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#643">643</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#644">644</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#645">645</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#646">646</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#647">647</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#648">648</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#649">649</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#650">650</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#651">651</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#652">652</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#653">653</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#654">654</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#655">655</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#656">656</a>.</li>
 <li>Added the following Open issues: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#625">625</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#626">626</a>.</li>
 <li>Changed the following issues from New to Open: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#570">570</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#580">580</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#582">582</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#590">590</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#612">612</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#614">614</a>.</li>
 <li>Changed the following issues from New to Tentatively Ready: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#547">547</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#553">553</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#560">560</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#571">571</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#572">572</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#575">575</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#576">576</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#578">578</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#586">586</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#589">589</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#591">591</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#593">593</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#594">594</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#609">609</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#610">610</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#611">611</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#613">613</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#615">615</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#616">616</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#619">619</a>.</li>
@@ -136,9 +201,9 @@ del {background-color:#FFFFA0}
 <li>Moved issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#520">520</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#521">521</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#530">530</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#535">535</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#537">537</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#538">538</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#540">540</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#541">541</a> to WP.</li>
 <li>Moved issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#504">504</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#512">512</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#516">516</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#544">544</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#549">549</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#554">554</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#555">555</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#558">558</a> to NAD.</li>
 <li>Moved issue <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#569">569</a> to Dup.</li>
-<li>Moved issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#518">518</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#523">523</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#524">524</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#542">542</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#556">556</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#557">557</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#559">559</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#597">597</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#606">606</a> to Open.</li>
+<li>Moved issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#518">518</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#523">523</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#524">524</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#542">542</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#556">556</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#557">557</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#559">559</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#597">597</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#606">606</a> to Open.</li>
 <li>Moved issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#543">543</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#545">545</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#549">549</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#549">549</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#598">598</a> - <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#603">603</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#605">605</a> to Ready.</li>
-<li>Moved issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#531">531</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#551">551</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#604">604</a> to Review.</li>
+<li>Moved issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#531">531</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#551">551</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#604">604</a> to Review.</li>
 <li>Added new issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#593">593</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#609">609</a>.</li>
 </ul></li>
 </ul>
@@ -152,7 +217,7 @@ del {background-color:#FFFFA0}
 <li>592 issues total, up by 5.</li>
 </ul></li>
 <li><b>Details:</b><ul>
-<li>Added new issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#583">583</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#592">592</a>.</li>
+<li>Added new issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#583">583</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#592">592</a>.</li>
 </ul></li>
 </ul>
 </li>
@@ -182,8 +247,8 @@ del {background-color:#FFFFA0}
 <li><b>Details:</b><ul>
 <li>Added new issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#567">567</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#572">572</a>.</li>
 <li>Moved issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#499">499</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#501">501</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#506">506</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#509">509</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#511">511</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#513">513</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#514">514</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#517">517</a> to NAD.</li>
-<li>Moved issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#502">502</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#503">503</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#515">515</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#516">516</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#522">522</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#525">525</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#529">529</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#532">532</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#536">536</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#539">539</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#548">548</a> to Open.</li>
-<li>Moved issue <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#504">504</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#512">512</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#521">521</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#530">530</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#531">531</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#535">535</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#537">537</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#538">538</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#540">540</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#549">549</a> to Ready.</li>
+<li>Moved issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#502">502</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#503">503</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#515">515</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#516">516</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#522">522</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#525">525</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#529">529</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#532">532</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#536">536</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#539">539</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#548">548</a> to Open.</li>
+<li>Moved issue <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#504">504</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#512">512</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#521">521</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#530">530</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#531">531</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#535">535</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#537">537</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#538">538</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#540">540</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#549">549</a> to Ready.</li>
 <li>Moved issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#247">247</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#294">294</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#362">362</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#369">369</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#371">371</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#376">376</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#384">384</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#475">475</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#478">478</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#495">495</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#497">497</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#505">505</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#507">507</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#508">508</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#519">519</a> to WP.</li>
 <li>Moved issue <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#534">534</a> to Review.</li>
 </ul></li>
@@ -198,7 +263,7 @@ del {background-color:#FFFFA0}
 <li>566 issues total, up by 31.</li>
 </ul></li>
 <li><b>Details:</b><ul>
-<li>Added new issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#536">536</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#566">566</a>.</li>
+<li>Added new issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#536">536</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#566">566</a>.</li>
 <li>Moved <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#342">342</a> from Ready to Open.</li>
 <li>Reopened <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#309">309</a>.</li>
 </ul></li>
@@ -219,7 +284,7 @@ del {background-color:#FFFFA0}
 </li>
 <li>R39: 
 2005-10-14 post-Mont Tremblant mailing.
-Added new issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#526">526</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#528">528</a>.
+Added new issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#526">526</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#528">528</a>.
 Moved issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#280">280</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#461">461</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#464">464</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#465">465</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#467">467</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#468">468</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#474">474</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#496">496</a> from Ready to WP as per the vote from Mont Tremblant.
 Moved issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#247">247</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#294">294</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#342">342</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#362">362</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#369">369</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#371">371</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#376">376</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#384">384</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#475">475</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#478">478</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#495">495</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#497">497</a> from Review to Ready.
 Moved issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#498">498</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#504">504</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#506">506</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#509">509</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#510">510</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#511">511</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#512">512</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#513">513</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#514">514</a> from New to Open.
@@ -245,7 +310,7 @@ previously in "DR" status were moved to "WP".
 2005-03 pre-Lillehammer mailing.
 </li>
 <li>R34: 
-2005-01 mid-term mailing.  Added new issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#488">488</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#494">494</a>.
+2005-01 mid-term mailing.  Added new issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#488">488</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#494">494</a>.
 </li>
 <li>R33: 
 2004-11 post-Redmond mailing. Reflects actions taken in Redmond.
@@ -1867,6 +1932,7 @@ setstate(badbit).]</i></p>
 <h3><a name="42"></a>42. String ctors specify wrong default allocator</h3>
 <p><b>Section:</b> 21.3 [basic.string] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>
  <b>Submitter:</b> Nathan Myers <b>Date:</b> 1998-08-06</p>
+<p><b>View other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index-open.html#basic.string">active issues</a> in [basic.string].</p>
 <p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#basic.string">issues</a> in [basic.string].</p>
 <p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#TC">TC</a> status.</p>
 <p><b>Discussion:</b></p>
@@ -3038,7 +3104,6 @@ VI of that paper.</p>
 <h3><a name="61"></a>61. Ambiguity in iostreams exception policy</h3>
 <p><b>Section:</b> 27.6.1.3 [istream.unformatted] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>
  <b>Submitter:</b> Matt Austern <b>Date:</b> 1998-08-06</p>
-<p><b>View other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index-open.html#istream.unformatted">active issues</a> in [istream.unformatted].</p>
 <p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#istream.unformatted">issues</a> in [istream.unformatted].</p>
 <p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#TC">TC</a> status.</p>
 <p><b>Discussion:</b></p>
@@ -3088,7 +3153,6 @@ resolution as better standardese.</p>
 <h3><a name="62"></a>62. <tt>Sync</tt>'s return value</h3>
 <p><b>Section:</b> 27.6.1.3 [istream.unformatted] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>
  <b>Submitter:</b> Matt Austern <b>Date:</b> 1998-08-06</p>
-<p><b>View other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index-open.html#istream.unformatted">active issues</a> in [istream.unformatted].</p>
 <p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#istream.unformatted">issues</a> in [istream.unformatted].</p>
 <p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#TC">TC</a> status.</p>
 <p><b>Discussion:</b></p>
@@ -3608,6 +3672,7 @@ class complex. This redundancy should be removed.</p>
 <h3><a name="83"></a>83. String::npos vs. string::max_size()</h3>
 <p><b>Section:</b> 21.3 [basic.string] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>
  <b>Submitter:</b> Nico Josuttis <b>Date:</b> 1998-09-29</p>
+<p><b>View other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index-open.html#basic.string">active issues</a> in [basic.string].</p>
 <p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#basic.string">issues</a> in [basic.string].</p>
 <p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#TC">TC</a> status.</p>
 <p><b>Duplicate of:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#89">89</a></p>
@@ -4768,17 +4833,17 @@ typedefs and that is sufficient. </p>
 
 <hr>
 <h3><a name="123"></a>123. Should valarray helper arrays fill functions be const?</h3>
-<p><b>Section:</b> 26.5.5.4 [slice.arr.fill], 26.5.7.4 [gslice.array.fill], 26.5.8.4 [mask.array.fill], 26.5.9.4 [indirect.array.fill] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+<p><b>Section:</b> 26.5.5.3 [slice.arr.fill], 26.5.7.3 [gslice.array.fill], 26.5.8.3 [mask.array.fill], 26.5.9.3 [indirect.array.fill] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
  <b>Submitter:</b> Judy Ward <b>Date:</b> 1998-12-15</p>
 <p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
 <p><b>Discussion:</b></p>
 <p>One of the operator= in the valarray helper arrays is const and one
 is not. For example, look at slice_array. This operator= in Section
-26.5.5.2 [slice.arr.assign] is const: </p>
+26.5.5.1 [slice.arr.assign] is const: </p>
 
 <p>&nbsp;&nbsp;&nbsp; <tt>void operator=(const valarray&lt;T&gt;&amp;) const;</tt> </p>
 
-<p>but this one in Section 26.5.5.4 [slice.arr.fill] is not: </p>
+<p>but this one in Section 26.5.5.3 [slice.arr.fill] is not: </p>
 
 <p>&nbsp;&nbsp;&nbsp; <tt>void operator=(const T&amp;); </tt></p>
 
@@ -4799,7 +4864,7 @@ is not. For example, look at slice_array. This operator= in Section
     </pre>
 </blockquote>
 
-<p>26.5.5.4 [slice.arr.fill] slice_array fill function</p>
+<p>26.5.5.3 [slice.arr.fill] slice_array fill function</p>
 <blockquote>
 
    <p>Change the function declaration</p>
@@ -4822,7 +4887,7 @@ is not. For example, look at slice_array. This operator= in Section
     </pre>
 </blockquote>
 
-<p>26.5.7.4 [gslice.array.fill] gslice_array fill function</p>
+<p>26.5.7.3 [gslice.array.fill] gslice_array fill function</p>
 <blockquote>
 
    <p>Change the function declaration</p>
@@ -4845,7 +4910,7 @@ is not. For example, look at slice_array. This operator= in Section
     </pre>
 </blockquote>
 
-<p>26.5.8.4 [mask.array.fill] mask_array fill function</p>
+<p>26.5.8.3 [mask.array.fill] mask_array fill function</p>
 <blockquote>
 
    <p>Change the function declaration</p>
@@ -4868,7 +4933,7 @@ is not. For example, look at slice_array. This operator= in Section
     </pre>
 </blockquote>
 
-<p>26.5.9.4 [indirect.array.fill] indirect_array fill function</p>
+<p>26.5.9.3 [indirect.array.fill] indirect_array fill function</p>
 <blockquote>
 
    <p>Change the function declaration</p>
@@ -5047,7 +5112,6 @@ a public assignment operator to the <tt>auto_ptr</tt> definition: </p>
 <h3><a name="129"></a>129. Need error indication from seekp() and seekg()</h3>
 <p><b>Section:</b> 27.6.1.3 [istream.unformatted], 27.6.2.5 [ostream.seeks] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>
  <b>Submitter:</b> Angelika Langer <b>Date:</b> 1999-02-22</p>
-<p><b>View other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index-open.html#istream.unformatted">active issues</a> in [istream.unformatted].</p>
 <p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#istream.unformatted">issues</a> in [istream.unformatted].</p>
 <p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#TC">TC</a> status.</p>
 <p><b>Discussion:</b></p>
@@ -5146,7 +5210,12 @@ Matt provided wording.]</i></p>
  of erase as well as the single-iterator form. Also, the wording is
  slightly different from the wording we have for sequences; there's no
  good reason for having a difference.  Matt provided new wording,
- which we will review at the next meeting.
+(reflected above) which we will review at the next meeting.
+]</i></p>
+
+
+<p><i>[
+Redmond:  formally voted into WP.
 ]</i></p>
 
 
@@ -5253,7 +5322,6 @@ is greater than or equal to 2.
 <h3><a name="136"></a>136. seekp, seekg setting wrong streams?</h3>
 <p><b>Section:</b> 27.6.1.3 [istream.unformatted] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
  <b>Submitter:</b> Howard Hinnant <b>Date:</b> 1999-03-06</p>
-<p><b>View other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index-open.html#istream.unformatted">active issues</a> in [istream.unformatted].</p>
 <p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#istream.unformatted">issues</a> in [istream.unformatted].</p>
 <p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
 <p><b>Discussion:</b></p>
@@ -6366,7 +6434,6 @@ paragraph 14 from:</p>
 <h3><a name="172"></a>172. Inconsistent types for <tt>basic_istream::ignore()</tt></h3>
 <p><b>Section:</b> 27.6.1.3 [istream.unformatted] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>
  <b>Submitter:</b> Greg Comeau, Dietmar Kühl <b>Date:</b> 1999-07-23</p>
-<p><b>View other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index-open.html#istream.unformatted">active issues</a> in [istream.unformatted].</p>
 <p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#istream.unformatted">issues</a> in [istream.unformatted].</p>
 <p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#TC">TC</a> status.</p>
 <p><b>Discussion:</b></p>
@@ -7119,7 +7186,6 @@ Josuttis provided the above wording.]</i></p>
 <h3><a name="185"></a>185. Questionable use of term "inline"</h3>
 <p><b>Section:</b> 20.5 [function.objects] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
  <b>Submitter:</b> UK Panel <b>Date:</b> 1999-07-26</p>
-<p><b>View other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index-open.html#function.objects">active issues</a> in [function.objects].</p>
 <p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#function.objects">issues</a> in [function.objects].</p>
 <p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
 <p><b>Discussion:</b></p>
@@ -8204,6 +8270,7 @@ iterators.  Null pointers are singular.
 <h3><a name="209"></a>209. basic_string declarations inconsistent</h3>
 <p><b>Section:</b> 21.3 [basic.string] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>
  <b>Submitter:</b> Igor Stauder <b>Date:</b> 2000-02-11</p>
+<p><b>View other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index-open.html#basic.string">active issues</a> in [basic.string].</p>
 <p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#basic.string">issues</a> in [basic.string].</p>
 <p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#TC">TC</a> status.</p>
 <p><b>Discussion:</b></p>
@@ -8537,7 +8604,6 @@ deliberately, with full knowledge of that limitation.</p>
 <h3><a name="222"></a>222. Are throw clauses necessary if a throw is already implied by the effects clause?</h3>
 <p><b>Section:</b> 17.3.1.3 [structure.specifications] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>
  <b>Submitter:</b> Judy Ward <b>Date:</b> 2000-03-17</p>
-<p><b>View other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index-open.html#structure.specifications">active issues</a> in [structure.specifications].</p>
 <p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#structure.specifications">issues</a> in [structure.specifications].</p>
 <p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#TC">TC</a> status.</p>
 <p><b>Discussion:</b></p>
@@ -10060,7 +10126,6 @@ intentional.]</i></p>
 <h3><a name="243"></a>243. <tt>get</tt> and <tt>getline</tt> when sentry reports failure</h3>
 <p><b>Section:</b> 27.6.1.3 [istream.unformatted] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
  <b>Submitter:</b> Martin Sebor <b>Date:</b> 2000-05-15</p>
-<p><b>View other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index-open.html#istream.unformatted">active issues</a> in [istream.unformatted].</p>
 <p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#istream.unformatted">issues</a> in [istream.unformatted].</p>
 <p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
 <p><b>Discussion:</b></p>
@@ -10456,12 +10521,12 @@ classes are almost entirely useless.</p>
 <li> Make the copy constructor and copy-assignment operator declarations
      public in the slice_array class template definition in 26.5.5 [template.slice.array] </li>
 <li> remove paragraph 3 of 26.5.5 [template.slice.array]</li>
-<li> remove the copy constructor declaration from 26.5.5.1 [cons.slice.arr]</li>
-<li> change paragraph 1 of 26.5.5.1 [cons.slice.arr] to read "This constructor is declared
+<li> remove the copy constructor declaration from  [cons.slice.arr]</li>
+<li> change paragraph 1 of  [cons.slice.arr] to read "This constructor is declared
     to be private.  This constructor need not be defined."</li>
-<li> remove the first sentence of paragraph 1 of 26.5.5.2 [slice.arr.assign]</li>
+<li> remove the first sentence of paragraph 1 of 26.5.5.1 [slice.arr.assign]</li>
 <li> Change the first three words of the second sentence of paragraph 1 of
-    26.5.5.2 [slice.arr.assign] to "These assignment operators have"</li>
+    26.5.5.1 [slice.arr.assign] to "These assignment operators have"</li>
 </ul>
 
 <p>gslice_array:</p>
@@ -10469,12 +10534,12 @@ classes are almost entirely useless.</p>
 <li> Make the copy constructor and copy-assignment operator declarations
     public in the gslice_array class template definition in 26.5.7 [template.gslice.array] </li>
 <li> remove the note in paragraph 3 of 26.5.7 [template.gslice.array]</li>
-<li> remove the copy constructor declaration from 26.5.7.1 [gslice.array.cons]</li>
-<li> change paragraph 1 of 26.5.7.1 [gslice.array.cons] to read "This constructor is declared
+<li> remove the copy constructor declaration from  [gslice.array.cons]</li>
+<li> change paragraph 1 of  [gslice.array.cons] to read "This constructor is declared
     to be private.  This constructor need not be defined."</li>
-<li> remove the first sentence of paragraph 1 of 26.5.7.2 [gslice.array.assign]</li>
+<li> remove the first sentence of paragraph 1 of 26.5.7.1 [gslice.array.assign]</li>
 <li> Change the first three words of the second sentence of paragraph 1 of
-    26.5.7.2 [gslice.array.assign] to "These assignment operators have"</li>
+    26.5.7.1 [gslice.array.assign] to "These assignment operators have"</li>
 </ul>
 
 <p>mask_array:</p>
@@ -10482,12 +10547,12 @@ classes are almost entirely useless.</p>
 <li> Make the copy constructor and copy-assignment operator declarations
     public in the mask_array class template definition in 26.5.8 [template.mask.array] </li>
 <li> remove the note in paragraph 2 of 26.5.8 [template.mask.array]</li>
-<li> remove the copy constructor declaration from 26.5.8.1 [mask.array.cons]</li>
-<li> change paragraph 1 of 26.5.8.1 [mask.array.cons] to read "This constructor is declared
+<li> remove the copy constructor declaration from  [mask.array.cons]</li>
+<li> change paragraph 1 of  [mask.array.cons] to read "This constructor is declared
     to be private.  This constructor need not be defined."</li>
-<li> remove the first sentence of paragraph 1 of 26.5.8.2 [mask.array.assign]</li>
+<li> remove the first sentence of paragraph 1 of 26.5.8.1 [mask.array.assign]</li>
 <li> Change the first three words of the second sentence of paragraph 1 of
-    26.5.8.2 [mask.array.assign] to "These assignment operators have"</li>
+    26.5.8.1 [mask.array.assign] to "These assignment operators have"</li>
 </ul>
 
 <p>indirect_array:</p>
@@ -10495,12 +10560,12 @@ classes are almost entirely useless.</p>
 <li>Make the copy constructor and copy-assignment operator declarations
     public in the indirect_array class definition in 26.5.9 [template.indirect.array]</li>
 <li> remove the note in paragraph 2 of 26.5.9 [template.indirect.array]</li>
-<li> remove the copy constructor declaration from 26.5.9.1 [indirect.array.cons]</li>
-<li> change the descriptive text in 26.5.9.1 [indirect.array.cons] to read "This constructor is
+<li> remove the copy constructor declaration from  [indirect.array.cons]</li>
+<li> change the descriptive text in  [indirect.array.cons] to read "This constructor is
     declared to be private.  This constructor need not be defined."</li>
-<li> remove the first sentence of paragraph 1 of 26.5.9.2 [indirect.array.assign]</li>
+<li> remove the first sentence of paragraph 1 of 26.5.9.1 [indirect.array.assign]</li>
 <li> Change the first three words of the second sentence of paragraph 1 of
-    26.5.9.2 [indirect.array.assign] to "These assignment operators have"</li>
+    26.5.9.1 [indirect.array.assign] to "These assignment operators have"</li>
 </ul>
 <p><i>[Proposed resolution was modified in Santa Cruz: explicitly make
 copy constructor and copy assignment operators public, instead of
@@ -11006,10 +11071,11 @@ copyfmt_event.
 
 <hr>
 <h3><a name="258"></a>258. Missing allocator requirement</h3>
-<p><b>Section:</b> 20.1.2 [allocator.requirements] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">Pending WP</a>
+<p><b>Section:</b> 20.1.2 [allocator.requirements] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
  <b>Submitter:</b> Matt Austern <b>Date:</b> 2000-08-22</p>
 <p><b>View other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index-open.html#allocator.requirements">active issues</a> in [allocator.requirements].</p>
 <p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#allocator.requirements">issues</a> in [allocator.requirements].</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
 <p><b>Discussion:</b></p>
 <p>
 From lib-7752:
@@ -11081,15 +11147,9 @@ other issues related to allocator instances.]</i></p>
 
 <p><b>Proposed resolution:</b></p>
 <p>
-Add row to Table 35: Allocator requirements, right after the row defining <tt>operator!=</tt>:
+Accept proposed wording from
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2436.pdf">N2436</a> part 3.
 </p>
-
-<blockquote>
-<p>
-If <tt>a1 == a2</tt> then <tt>Y(a1) == Y(a2)</tt>
-</p>
-</blockquote>
-
 
 
 <p><i>[Lillehammer: Same conclusion as before: this should be
@@ -11098,6 +11158,21 @@ If <tt>a1 == a2</tt> then <tt>Y(a1) == Y(a2)</tt>
 
 <p><i>[
 Batavia:  An allocator redesign is not forthcoming and thus we fixed this one issue.
+]</i></p>
+
+
+<p><i>[
+Toronto:  Reopened at the request of the project editor (Pete) because the proposed
+wording did not fit within the indicated table.  The intent of the resolution remains
+unchanged.  Pablo to work with Pete on improved wording.
+]</i></p>
+
+
+<p><i>[
+Kona (2007): The LWG adopted the proposed resolution of N2387 for this issue which
+was subsequently split out into a separate paper N2436 for the purposes of voting.
+The resolution in N2436 addresses this issue.  The LWG voted to accelerate this
+issue to Ready status to be voted into the WP at Kona.
 ]</i></p>
 
 
@@ -11236,6 +11311,7 @@ to:
 <h3><a name="263"></a>263. Severe restriction on <tt>basic_string</tt> reference counting</h3>
 <p><b>Section:</b> 21.3 [basic.string] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
  <b>Submitter:</b> Kevlin Henney <b>Date:</b> 2000-09-04</p>
+<p><b>View other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index-open.html#basic.string">active issues</a> in [basic.string].</p>
 <p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#basic.string">issues</a> in [basic.string].</p>
 <p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
 <p><b>Discussion:</b></p>
@@ -14728,6 +14804,7 @@ does.</p>
 <h3><a name="334"></a>334. map::operator[] specification forces inefficient implementation</h3>
 <p><b>Section:</b> 23.3.1.2 [map.access] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
  <b>Submitter:</b> Andrea Griffini <b>Date:</b> 2001-09-02</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#map.access">issues</a> in [map.access].</p>
 <p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
 <p><b>Discussion:</b></p>
 <p>
@@ -15266,20 +15343,20 @@ the two vectors, including their reallocation guarantees.
 
 <hr>
 <h3><a name="345"></a>345. type tm in &lt;cwchar&gt;</h3>
-<p><b>Section:</b> 21.4 [c.strings] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+<p><b>Section:</b> 21.5 [c.strings] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
  <b>Submitter:</b> Clark Nelson <b>Date:</b> 2001-10-19</p>
 <p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#c.strings">issues</a> in [c.strings].</p>
 <p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
 <p><b>Discussion:</b></p>
 <p>C99, and presumably amendment 1 to C90, specify that &lt;wchar.h&gt;
-declares struct tm as an incomplete type. However, table 48 in 21.4
+declares struct tm as an incomplete type. However, table 48 in 21.5
 [c.strings] does not mention the type tm as being declared in
 &lt;cwchar&gt;. Is this omission intentional or accidental?
 </p>
 
 
 <p><b>Proposed resolution:</b></p>
-<p>In section 21.4 [c.strings], add "tm" to table 48.</p>
+<p>In section 21.5 [c.strings], add "tm" to table 48.</p>
 
 
 
@@ -16187,7 +16264,6 @@ do to ensure that stream objects are constructed during startup.</p>
 <h3><a name="370"></a>370. Minor error in basic_istream::get</h3>
 <p><b>Section:</b> 27.6.1.3 [istream.unformatted] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
  <b>Submitter:</b> Ray Lischner <b>Date:</b> 2002-07-15</p>
-<p><b>View other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index-open.html#istream.unformatted">active issues</a> in [istream.unformatted].</p>
 <p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#istream.unformatted">issues</a> in [istream.unformatted].</p>
 <p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
 <p><b>Discussion:</b></p>
@@ -16977,6 +17053,90 @@ Replace "((T*) p)" with "p".
 
 
 <p><b>Rationale:</b></p><p>Just a typo, this is really editorial.</p>
+
+
+
+
+<hr>
+<h3><a name="401"></a>401.  incorrect type casts in table 32 in lib.allocator.requirements</h3>
+<p><b>Section:</b> 20.1.2 [allocator.requirements] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Markus Mauhart <b>Date:</b> 2003-02-27</p>
+<p><b>View other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index-open.html#allocator.requirements">active issues</a> in [allocator.requirements].</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#allocator.requirements">issues</a> in [allocator.requirements].</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+I think that in par2 of  [default.con.req] the last two
+lines of table 32 contain two incorrect type casts. The lines are ...
+</p>
+
+<pre>  a.construct(p,t)   Effect: new((void*)p) T(t)
+  a.destroy(p)       Effect: ((T*)p)?-&gt;~T()
+</pre>
+
+<p>
+.... with the prerequisits coming from the preceding two paragraphs, especially
+from table 31:
+</p>
+
+<pre>  alloc&lt;T&gt;             a     ;// an allocator for T
+  alloc&lt;T&gt;::pointer    p     ;// random access iterator
+                              // (may be different from T*)
+  alloc&lt;T&gt;::reference  r = *p;// T&amp;
+  T const&amp;             t     ;
+</pre>
+
+<p>
+For that two type casts ("(void*)p" and "(T*)p") to be well-formed
+this would require then conversions to T* and void* for all
+alloc&lt;T&gt;::pointer, so it would implicitely introduce extra
+requirements for alloc&lt;T&gt;::pointer, additionally to the only
+current requirement (being a random access iterator).
+</p>
+
+
+<p><b>Proposed resolution:</b></p>
+
+<p>
+Accept proposed wording from
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2436.pdf">N2436</a> part 1.
+</p>
+
+<p>
+Note: Actually I would prefer to replace "((T*)p)?-&gt;dtor_name" with
+"p?-&gt;dtor_name", but AFAICS this is not possible cause of an omission
+in 13.5.6 [over.ref] (for which I have filed another DR on 29.11.2002).
+</p>
+
+<p><i>[Kona: The LWG thinks this is somewhere on the border between
+  Open and NAD.  The intend is clear: <tt>construct</tt> constructs an
+  object at the location <i>p</i>.  It's reading too much into the
+  description to think that literally calling <tt>new</tt> is
+  required.  Tweaking this description is low priority until we can do
+  a thorough review of allocators, and, in particular, allocators with
+  non-default pointer types.]</i></p>
+
+
+<p><i>[
+Batavia:  Proposed resolution changed to less code and more description.
+]</i></p>
+
+
+<p><i>[
+post Oxford:  This would be rendered NAD Editorial by acceptance of
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2257.html">N2257</a>.
+]</i></p>
+
+
+<p><i>[
+Kona (2007): The LWG adopted the proposed resolution of N2387 for this issue which
+was subsequently split out into a separate paper N2436 for the purposes of voting.
+The resolution in N2436 addresses this issue.  The LWG voted to accelerate this
+issue to Ready status to be voted into the WP at Kona.
+]</i></p>
+
+
+
 
 
 
@@ -17882,6 +18042,7 @@ no storage can be obtained or if <i>n</i> &lt;= 0."</p>
 <h3><a name="426"></a>426. search_n(), fill_n(), and generate_n() with negative n</h3>
 <p><b>Section:</b> 25.1.9 [alg.search], 25.2.6 [alg.fill], 25.2.7 [alg.generate] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
  <b>Submitter:</b> Martin Sebor <b>Date:</b> 2003-09-18</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#alg.search">issues</a> in [alg.search].</p>
 <p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
 <p><b>Discussion:</b></p>
 <p>
@@ -19140,11 +19301,11 @@ undefined."
 
 <hr>
 <h3><a name="453"></a>453. basic_stringbuf::seekoff need not always fail for an empty stream</h3>
-<p><b>Section:</b> 27.7.1.4 [stringbuf.virtuals] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#DR">DR</a>
+<p><b>Section:</b> 27.7.1.4 [stringbuf.virtuals] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
  <b>Submitter:</b> Bill Plauger <b>Date:</b> 2004-01-30</p>
 <p><b>View other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index-open.html#stringbuf.virtuals">active issues</a> in [stringbuf.virtuals].</p>
 <p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#stringbuf.virtuals">issues</a> in [stringbuf.virtuals].</p>
-<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#DR">DR</a> status.</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
 <p><b>Discussion:</b></p>
 <pre>  pos_type basic_stringbuf::seekoff(off_type, ios_base::seekdir,
                                     ios_base::openmode);
@@ -19997,6 +20158,92 @@ This is a defect because it constrains an lvalue to returning a modifiable lvalu
 
 
 <hr>
+<h3><a name="488"></a>488. rotate throws away useful information</h3>
+<p><b>Section:</b> 25.2.11 [alg.rotate] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Howard Hinnant <b>Date:</b> 2004-11-22</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+rotate takes 3 iterators:  first, middle and last which point into a
+sequence, and rearranges the sequence such that the subrange [middle,
+last) is now at the beginning of the sequence and the subrange [first,
+middle) follows.  The return type is void. 
+</p>
+
+<p>
+In many use cases of rotate, the client needs to know where the
+subrange [first, middle) starts after the rotate is performed.  This
+might look like: 
+</p>
+<pre>  rotate(first, middle, last);
+  Iterator i = advance(first, distance(middle, last));
+</pre>
+
+<p>
+Unless the iterators are random access, the computation to find the
+start of the subrange [first, middle) has linear complexity.  However,
+it is not difficult for rotate to return this information with
+negligible additional computation expense.  So the client could code: 
+</p>
+<pre>  Iterator i = rotate(first, middle, last);
+</pre>
+
+<p>
+and the resulting program becomes significantly more efficient.
+</p>
+
+<p>
+While the backwards compatibility hit with this change is not zero, it
+is very small (similar to that of lwg <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#130">130</a>), and there is
+a significant benefit to the change. 
+</p>
+
+
+
+<p><b>Proposed resolution:</b></p>
+<p>In 25 [algorithms] p2, change:</p>
+
+<blockquote><pre>  template&lt;class ForwardIterator&gt;
+    <del>void</del> <ins>ForwardIterator</ins> rotate(ForwardIterator first, ForwardIterator middle,
+                ForwardIterator last);
+</pre></blockquote>
+
+<p>In 25.2.11 [alg.rotate], change:</p>
+
+<blockquote><pre>  template&lt;class ForwardIterator&gt;
+    <del>void</del> <ins>ForwardIterator</ins> rotate(ForwardIterator first, ForwardIterator middle,
+                ForwardIterator last);
+</pre></blockquote>
+
+<p>In 25.2.11 [alg.rotate] insert a new paragraph after p1:</p>
+
+<blockquote>
+<p><b>Returns</b>: <tt>first + (last - middle)</tt>.</p>
+</blockquote>
+
+<p><i>[
+The LWG agrees with this idea, but has one quibble: we want to make
+sure not to give the impression that the function "advance" is
+actually called, just that the nth iterator is returned.  (Calling
+advance is observable behavior, since users can specialize it for
+their own iterators.)  Howard will provide wording.
+]</i></p>
+
+
+<p><i>[Howard provided wording for mid-meeting-mailing Jun. 2005.]</i></p>
+
+
+<p><i>[
+Toronto: moved to Ready.
+]</i></p>
+
+
+
+
+
+
+
+<hr>
 <h3><a name="495"></a>495. Clause 22 template parameter requirements</h3>
 <p><b>Section:</b> 22 [localization] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
  <b>Submitter:</b> Beman Dawes <b>Date:</b> 2005-01-10</p>
@@ -20362,7 +20609,7 @@ of <tt>data()</tt> is unspecified.
 
 <hr>
 <h3><a name="520"></a>520. Result_of and pointers to data members</h3>
-<p><b>Section:</b> 20.5.10.1 [func.bind], TR1 3.6 [tr.func.bind] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+<p><b>Section:</b> 20.5.11.1 [func.bind], TR1 3.6 [tr.func.bind] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
  <b>Submitter:</b> Pete Becker <b>Date:</b> 2005-07-03</p>
 <p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
 <p><b>Discussion:</b></p>
@@ -20475,9 +20722,88 @@ function's cv-qualifiers); the type <tt>T1</tt> is <tt><i>cv</i> T0*</tt></ins>
 
 
 <hr>
+<h3><a name="524"></a>524. regex named character classes and case-insensitivity don't mix</h3>
+<p><b>Section:</b> 28 [re] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Eric Niebler <b>Date:</b> 2005-07-01</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#re">issues</a> in [re].</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+This defect is also being discussed on the Boost developers list. The 
+full discussion can be found here:
+http://lists.boost.org/boost/2005/07/29546.php
+</p>
+<p>
+-- Begin original message --
+</p>
+<p>
+Also, I may have found another issue, closely related to the one under
+discussion. It regards case-insensitive matching of named character
+classes. The regex_traits&lt;&gt; provides two functions for working with
+named char classes: lookup_classname and isctype. To match a char class
+such as [[:alpha:]], you pass "alpha" to lookup_classname and get a
+bitmask. Later, you pass a char and the bitmask to isctype and get a
+bool yes/no answer.
+</p>
+<p>
+But how does case-insensitivity work in this scenario? Suppose we're
+doing a case-insensitive match on [[:lower:]]. It should behave as if it
+were [[:lower:][:upper:]], right? But there doesn't seem to be enough
+smarts in the regex_traits interface to do this.
+</p>
+<p>
+Imagine I write a traits class which recognizes [[:fubar:]], and the
+"fubar" char class happens to be case-sensitive. How is the regex engine
+to know that? And how should it do a case-insensitive match of a
+character against the [[:fubar:]] char class? John, can you confirm this
+is a legitimate problem?
+</p>
+<p>
+I see two options:
+</p>
+<p>
+1) Add a bool icase parameter to lookup_classname. Then,
+lookup_classname( "upper", true ) will know to return lower|upper
+instead of just upper.
+</p>
+<p>
+2) Add a isctype_nocase function
+</p>
+<p>
+I prefer (1) because the extra computation happens at the time the
+pattern is compiled rather than when it is executed.
+</p>
+<p>
+-- End original message --
+</p>
+
+<p>
+For what it's worth, John has also expressed his preference for option 
+(1) above.
+</p>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Adopt the proposed resolution in
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2409.pdf">N2409</a>.
+</p>
+
+
+<p><i>[
+Kona (2007): The LWG adopted the proposed resolution of N2409 for this issue.
+The LWG voted to accelerate this issue to Ready status to be voted into the WP at Kona.
+]</i></p>
+
+
+
+
+
+<hr>
 <h3><a name="530"></a>530. Must elements of a string be contiguous?</h3>
 <p><b>Section:</b> 21.3 [basic.string] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
  <b>Submitter:</b> Matt Austern <b>Date:</b> 2005-11-15</p>
+<p><b>View other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index-open.html#basic.string">active issues</a> in [basic.string].</p>
 <p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#basic.string">issues</a> in [basic.string].</p>
 <p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
 <p><b>Discussion:</b></p>
@@ -20528,8 +20854,84 @@ more design choices.
 
 
 <hr>
+<h3><a name="531"></a>531. array forms of unformatted input functions</h3>
+<p><b>Section:</b> 27.6.1.3 [istream.unformatted] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Martin Sebor <b>Date:</b> 2005-11-23</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#istream.unformatted">issues</a> in [istream.unformatted].</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+The array forms of unformatted input functions don't seem to have well-defined
+semantics for zero-element arrays in a couple of cases. The affected ones
+(<tt>istream::get()</tt> and <tt>istream::getline()</tt>) are supposed to
+terminate when <tt>(n - 1)</tt> characters are stored, which obviously can
+never be true when <tt>(n == 0)</tt> holds to start with. See
+c++std-lib-16071.
+</p>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+I suggest changing 27.6.1.3, p7 (<tt>istream::get()</tt>), bullet 1 to read:
+</p>
+            <ul>
+                <li>
+                    <tt>(n &lt; 1)</tt> is true or <tt>(n - 1)</tt> characters
+                    are stored;
+                </li>
+            </ul>
+<p>
+Change 27.6.1.3, p9:
+</p>
+
+<blockquote><p>
+If the function stores no characters, it calls <tt>setstate(failbit)</tt> (which
+may throw <tt>ios_base::failure</tt> (27.4.4.3)).  In any case, <ins>if <tt>(n
+&gt; 0)</tt> is true</ins> it then stores a null character into the next
+successive location of the array.
+</p></blockquote>
+
+        <p>
+
+and similarly p17 (<tt>istream::getline()</tt>), bullet 3 to:
+
+        </p>
+            <ul>
+                <li>
+                    <tt>(n &lt; 1)</tt> is true or <tt>(n - 1)</tt> characters
+                    are stored (in which case the function calls
+                    <tt>setstate(failbit)</tt>).
+                </li>
+            </ul>
+
+        <p>
+
+In addition, to clarify that <tt>istream::getline()</tt> must not store the
+terminating NUL character unless the the array has non-zero size, Robert
+Klarer suggests in c++std-lib-16082 to change 27.6.1.3, p20 to read:
+
+        </p>
+            <blockquote><p>
+
+In any case, provided <tt>(n &gt; 0)</tt> is true, it then stores a null character
+(using charT()) into the next successive location of the array.
+
+            </p></blockquote>
+
+<p><i>[
+post-Redmond:  Pete noticed that the current resolution for <tt>get</tt> requires
+writing to out of bounds memory when <tt>n == 0</tt>.  Martin provided fix.
+]</i></p>
+
+
+
+
+
+
+
+<hr>
 <h3><a name="533"></a>533. typo in 2.2.3.10/1</h3>
-<p><b>Section:</b> 20.6.6.2.10 [util.smartptr.getdeleter], TR1 2.2.3.10 [tr.util.smartptr.getdeleter] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#DR">DR</a>
+<p><b>Section:</b> 20.6.6.2.11 [util.smartptr.getdeleter], TR1 2.2.3.10 [tr.util.smartptr.getdeleter] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#DR">DR</a>
  <b>Submitter:</b> Paolo Carlini <b>Date:</b> 2005-11-09</p>
 <p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#util.smartptr.getdeleter">issues</a> in [util.smartptr.getdeleter].</p>
 <p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#DR">DR</a> status.</p>
@@ -20562,6 +20964,7 @@ If <tt><del>*this</del> <ins>p</ins></tt> <i>owns</i> a deleter <tt>d</tt>...
 <h3><a name="534"></a>534. Missing basic_string members</h3>
 <p><b>Section:</b> 21.3 [basic.string] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
  <b>Submitter:</b> Alisdair Meredith <b>Date:</b> 2005-11-16</p>
+<p><b>View other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index-open.html#basic.string">active issues</a> in [basic.string].</p>
 <p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#basic.string">issues</a> in [basic.string].</p>
 <p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
 <p><b>Discussion:</b></p>
@@ -20743,7 +21146,6 @@ characters that <del>were</del> <ins>was</ins> in <tt><i>s</i></tt>,
 <h3><a name="537"></a>537. Typos in the signatures in 27.6.1.3/42-43 and 27.6.2.4</h3>
 <p><b>Section:</b> 27.6.1.3 [istream.unformatted] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
  <b>Submitter:</b> Paolo Carlini <b>Date:</b> 2006-02-12</p>
-<p><b>View other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index-open.html#istream.unformatted">active issues</a> in [istream.unformatted].</p>
 <p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#istream.unformatted">issues</a> in [istream.unformatted].</p>
 <p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
 <p><b>Discussion:</b></p>
@@ -20914,6 +21316,7 @@ definition) of the function shall be well-formed.</ins>
 <h3><a name="541"></a>541. shared_ptr template assignment and void</h3>
 <p><b>Section:</b> 20.6.6.2 [util.smartptr.shared], TR1 2.2.3 [tr.util.smartptr.shared] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
  <b>Submitter:</b> Martin Sebor <b>Date:</b> 2005-10-16</p>
+<p><b>View other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index-open.html#util.smartptr.shared">active issues</a> in [util.smartptr.shared].</p>
 <p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#util.smartptr.shared">issues</a> in [util.smartptr.shared].</p>
 <p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
 <p><b>Discussion:</b></p>
@@ -21129,7 +21532,7 @@ lengths, and strides, as explained in the previous section.
 
 <hr>
 <h3><a name="545"></a>545. When is a deleter deleted?</h3>
-<p><b>Section:</b> 20.6.6.2.10 [util.smartptr.getdeleter], TR1 2.2.3.2 [tr.util.smartptr.shared.dest] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+<p><b>Section:</b> 20.6.6.2.11 [util.smartptr.getdeleter], TR1 2.2.3.2 [tr.util.smartptr.shared.dest] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
  <b>Submitter:</b> Matt Austern <b>Date:</b> 2006-01-10</p>
 <p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#util.smartptr.getdeleter">issues</a> in [util.smartptr.getdeleter].</p>
 <p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
@@ -21147,7 +21550,7 @@ instances). We should say which it is.
 
 <p><b>Proposed resolution:</b></p>
 <p>
-Add after the first sentence of 20.6.6.2.10 [util.smartptr.getdeleter]/1:
+Add after the first sentence of 20.6.6.2.11 [util.smartptr.getdeleter]/1:
 </p>
 <blockquote>
 <p>
@@ -21160,6 +21563,108 @@ This can happen if the implementation doesn't destroy the deleter until all
 <tt>weak_ptr</tt> instances in the ownership group are destroyed. <i>-- end note</i>]
 </p>
 </blockquote>
+
+
+
+
+
+<hr>
+<h3><a name="551"></a>551. &lt;ccomplex&gt;</h3>
+<p><b>Section:</b> 26.3.11 [cmplxh], TR1 8.3 [tr.c99.cmplxh] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Howard Hinnant <b>Date:</b> 2006-01-23</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+Previously xxx.h was parsable by C++.  But in the case of C99's &lt;complex.h&gt;
+it isn't.  Otherwise we could model it just like &lt;string.h&gt;, &lt;cstring&gt;, &lt;string&gt;:
+</p>
+
+<ul>
+<li>&lt;string&gt;   : C++ API in namespace std</li>
+<li>&lt;cstring&gt;  : C API in namespace std</li>
+<li>&lt;string.h&gt; : C API in global namespace</li>
+</ul>
+
+<p>
+In the case of C's complex, the C API won't compile in C++.  So we have:
+</p>
+
+<ul>
+<li>&lt;complex&gt;   : C++ API in namespace std</li>
+<li>&lt;ccomplex&gt;  : ?</li>
+<li>&lt;complex.h&gt; : ?</li>
+</ul>
+
+<p>
+The ? can't refer to the C API.  TR1 currently says:
+</p>
+
+<ul>
+<li>&lt;complex&gt;   : C++ API in namespace std</li>
+<li>&lt;ccomplex&gt;  : C++ API in namespace std</li>
+<li>&lt;complex.h&gt; : C++ API in global namespace</li>
+</ul>
+
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Change 26.3.11 [cmplxh]:
+</p>
+
+<blockquote>
+<p>
+The header behaves as if it includes the header
+<tt>&lt;ccomplex&gt;</tt><ins>.</ins><del>, and provides sufficient using
+declarations to declare in the global namespace all function and type names
+declared or defined in the neader <tt>&lt;complex&gt;</tt>.</del>
+<ins>[<i>Note:</i> <tt>&lt;complex.h&gt;</tt> does not promote any interface
+into the global namespace as there is no C interface to promote. <i>--end
+note</i>]</ins>
+</p>
+</blockquote>
+
+
+
+
+
+
+<hr>
+<h3><a name="552"></a>552. random_shuffle and its generator</h3>
+<p><b>Section:</b> 25.2.12 [alg.random.shuffle] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Martin Sebor <b>Date:</b> 2006-01-25</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+...is specified to shuffle its range by calling swap but not how
+(or even that) it's supposed to use the RandomNumberGenerator
+argument passed to it.
+</p>
+<p>
+Shouldn't we require that the generator object actually be used
+by the algorithm to obtain a series of random numbers and specify
+how many times its operator() should be invoked by the algorithm?
+</p>
+
+<p>
+See <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2391.pdf">N2391</a> and
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2423.pdf">N2423</a>
+for some further discussion.
+</p>
+
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Adopt the proposed resolution in
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2423.pdf">N2423</a>.
+</p>
+
+
+<p><i>[
+Kona (2007): The LWG adopted the proposed resolution of N2423 for this issue.
+The LWG voted to accelerate this issue to Ready status to be voted into the WP at Kona.
+]</i></p>
 
 
 
@@ -21235,6 +21740,78 @@ automatically.
 ]</i></p>
 
 
+
+
+
+
+
+<hr>
+<h3><a name="566"></a>566. array forms of unformatted input function undefined for zero-element arrays</h3>
+<p><b>Section:</b> 27.6.1.3 [istream.unformatted] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Martin Sebor <b>Date:</b> 2006-02-23</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#istream.unformatted">issues</a> in [istream.unformatted].</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+        <p>
+
+The array forms of unformatted input functions don't have well-defined
+semantics for zero-element  arrays in a couple of  cases. The affected
+ones (<tt>istream::get()</tt> and  <tt>getline()</tt>) are supposed to
+terminate when <tt>(n - 1)</tt> characters are stored, which obviously
+can never be true when <tt>(n == 0)</tt> to start with.
+
+        </p>
+
+
+<p><b>Proposed resolution:</b></p>
+        <p>
+
+I  propose  the following  changes  (references  are  relative to  the
+Working Draft (document N1804).
+
+        </p>
+        <p>
+
+Change 27.6.1.3, p8 (<tt>istream::get()</tt>), bullet 1 as follows:
+
+        </p>
+        <blockquote>
+            <p>
+
+<ins>if  <tt>(n  &lt; 1)</tt>  is  true  or  </ins> <tt>(n  -  1)</tt>
+characters are stored;
+
+            </p>
+        </blockquote>
+        <p>
+
+Similarly, change  27.6.1.3, p18 (<tt>istream::getline()</tt>), bullet
+3 as follows:
+
+        </p>
+        <blockquote>
+            <p>
+
+<ins><tt>(n &lt; 1)</tt> is  true or </ins><tt>(n - 1)</tt> characters
+are     stored     (in    which     case     the    function     calls
+<tt>setstate(failbit)</tt>).
+
+            </p>
+        </blockquote>
+        <p>
+
+Finally, change p21 as follows:
+
+        </p>
+        <blockquote>
+            <p>
+
+In any  case, <ins>provided  <tt>(n &gt; 0)</tt>  is true,  </ins>it then
+stores  a null  character  (using charT())  into  the next  successive
+location of the array.
+
+            </p>
+        </blockquote>
 
 
 
@@ -21365,6 +21942,56 @@ template&lt;class <del>ForwardIterator1</del><ins>InputIterator1</ins>, class Fo
                          ForwardIterator2 first2, ForwardIterator2 last2,
                         BinaryPredicate pred);
 </pre></blockquote>
+
+
+
+
+
+
+<hr>
+<h3><a name="577"></a>577. upper_bound(first, last, ...) cannot return last</h3>
+<p><b>Section:</b> 25.3.3.2 [upper.bound] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Seungbeom Kim <b>Date:</b> 2006-05-03</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+ISO/IEC 14882:2003 says:
+</p>
+
+<blockquote>
+<p>
+25.3.3.2 upper_bound
+</p>
+<p>
+<i>Returns:</i> The furthermost iterator <tt>i</tt> in the range
+<tt>[<i>first</i>, <i>last</i>)</tt> such that
+for any iterator <tt>j</tt> in the range <tt>[<i>first</i>, i)</tt> the following corresponding
+conditions hold: <tt>!(value &lt; *j)</tt> or <tt><i>comp</i>(<i>value</i>, *j) == false</tt>.
+</p>
+</blockquote>
+
+<p>
+From the description above, upper_bound cannot return last, since it's
+not in the interval [first, last). This seems to be a typo, because if
+value is greater than or equal to any other values in the range, or if
+the range is empty, returning last seems to be the intended behaviour.
+The corresponding interval for lower_bound is also [first, last].
+</p>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Change [lib.upper.bound]:
+</p>
+
+<blockquote>
+<p>
+<i>Returns:</i> The furthermost iterator <tt>i</tt> in the range
+<tt>[<i>first</i>, <i>last</i><del>)</del><ins>]</ins></tt> such that
+for any iterator <tt>j</tt> in the range <tt>[<i>first</i>, i)</tt> the following corresponding
+conditions hold: <tt>!(value &lt; *j)</tt> or <tt><i>comp</i>(<i>value</i>, *j) == false</tt>.
+</p>
+</blockquote>
 
 
 
@@ -21682,4 +22309,1976 @@ Change the <b>Returns:</b> clause in 3.2.2.4 to:
 Change the <b>Returns:</b> clause in 3.2.3.4 to:
 </p>
 <blockquote><p>
-<b>Returns:</b> Returns the result of the conversion of <code>*this</code> to the type <code>long long</code>, as if performed by the expression <code>llroundd64(*this)</code> <ins>while the decimal rounding direction mode [3.5.2] <code>FE_DEC_TOWARD_ZERO</code></ins></p></blockquote></body></html>
+<b>Returns:</b> Returns the result of the conversion of <code>*this</code> to the type <code>long long</code>, as if performed by the expression <code>llroundd64(*this)</code> <ins>while the decimal rounding direction mode [3.5.2] <code>FE_DEC_TOWARD_ZERO</code> is in effect</ins>.
+</p></blockquote>
+<p>
+Change the <b>Returns:</b> clause in 3.2.4.4 to:
+</p>
+<blockquote><p>
+<b>Returns:</b> Returns the result of the conversion of <code>*this</code> to the type <code>long long</code>, as if performed by the expression <del><code>llroundd64(*this)</code></del> <ins><code>llroundd128(*this)</code> while the decimal rounding direction mode [3.5.2] <code>FE_DEC_TOWARD_ZERO</code> is in effect</ins>.
+</p></blockquote>
+
+
+
+
+
+
+<hr>
+<h3><a name="599"></a>599. Decimal: Say "octets" instead of "bytes."</h3>
+<p><b>Section:</b> TRDecimal 3.1 [trdec.types.encodings] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TRDec">TRDec</a>
+ <b>Submitter:</b> Daniel Krugler <b>Date:</b> 2006-05-28</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#TRDec">TRDec</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+Daniel writes in a private email:
+</p>
+
+<blockquote>
+<p>
+- 3.1 'Decimal type encodings' says in its note:
+</p>
+<pre>"this implies that 
+sizeof(std::decimal::decimal32) == 4, 
+sizeof(std::decimal::decimal64) == 8, and 
+sizeof(std::decimal::decimal128) == 16."
+</pre>
+<p>
+This is a wrong assertion, because the definition 
+of 'byte' in 1.7 'The C+ + memory model' of ISO 
+14882 (2nd edition) does not specify that a byte 
+must be necessarily 8 bits large, which would be 
+necessary to compare with the specified bit sizes 
+of the types decimal32, decimal64, and decimal128.
+</p>
+</blockquote>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Change 3.1 as follows:
+</p>
+<blockquote>
+<p>
+The three decimal encoding formats defined in IEEE-754R correspond to the three decimal floating types as follows:
+</p>
+<ul>
+<li>
+decimal32 is a <em>decimal32</em> number, which is encoded in four consecutive <del>bytes</del> <ins>octets</ins> (32 bits)
+</li>
+<li>
+decimal64 is a <em>decimal64</em> number, which is encoded in eight consecutive <del>bytes</del> <ins>octets</ins> (64 bits)
+
+</li>
+<li>
+decimal128 is a <em>decimal128</em> number, which is encoded in 16 consecutive <del>bytes</del> <ins>octets</ins> (128 bits)
+</li>
+</ul>
+<p>
+<del>[<i>Note:</i> this implies that <code>sizeof(std::decimal::decimal32) == 4</code>, <code>sizeof(std::decimal::decimal64) == 8</code>, and <code>sizeof(std::decimal::decimal128) == 16</code>.  <i>--end note</i>]</del>
+</p>
+</blockquote>
+
+
+
+
+<hr>
+<h3><a name="600"></a>600. Decimal: Wrong parameters for wcstod* functions</h3>
+<p><b>Section:</b> TRDecimal 3.9 [trdec.types.cwchar] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TRDec">TRDec</a>
+ <b>Submitter:</b> Daniel Krugler <b>Date:</b> 2006-05-28</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#TRDec">TRDec</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+Daniel writes:
+</p>
+<blockquote><p>
+- 3.9.1 'Additions to &lt;cwchar&gt;' provides wrong 
+signatures to the wcstod32, wcstod64, and 
+wcstod128 functions ([the parameters have type pointer-to-] char instead of wchar_t).
+</p></blockquote>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Change "3.9.1 Additions to <code>&lt;cwchar&gt;</code> synopsis" to:
+</p>
+<pre>       namespace std {
+       namespace decimal {
+         // 3.9.2 wcstod functions:
+         decimal32  wcstod32  (const <del>char</del> <ins>wchar_t</ins> * nptr, <del>char</del> <ins>wchar_t</ins> ** endptr);
+         decimal64  wcstod64  (const <del>char</del> <ins>wchar_t</ins> * nptr, <del>char</del> <ins>wchar_t</ins> ** endptr);
+         decimal128 wcstod128 (const <del>char</del> <ins>wchar_t</ins> * nptr, <del>char</del> <ins>wchar_t</ins> ** endptr);
+       }
+       }
+</pre>
+
+
+
+
+<hr>
+<h3><a name="601"></a>601. Decimal: numeric_limits typos</h3>
+<p><b>Section:</b> TRDecimal 3.3 [trdec.types.limits] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TRDec">TRDec</a>
+ <b>Submitter:</b> Daniel Krugler <b>Date:</b> 2006-05-28</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#TRDec">TRDec</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+Daniel writes in a private email:
+</p>
+
+<blockquote>
+<p>
+- 3.3 'Additions to header &lt;limits&gt;' contains two 
+errors in the specialisation of numeric_limits&lt;decimal::decimal128&gt;:
+</p>
+<ol>
+<li>The static member max() returns DEC128_MIN, this should be DEC128_MAX.</li>
+<li>The static member digits is assigned to 384,
+this should be 34 (Probably mixed up with the
+max. exponent for decimal::decimal64).</li>
+</ol>
+</blockquote>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+In "3.3 Additions to header <code>&lt;limits&gt;</code>" change numeric_limits&lt;decimal::decimal128&gt; as follows:
+</p>
+<pre>        template&lt;&gt; class numeric_limits&lt;decimal::decimal128&gt; {
+          public:
+            static const bool is_specialized = true;
+
+            static decimal::decimal128 min() throw() { return DEC128_MIN; }
+            static decimal::decimal128 max() throw() { return <del>DEC128_MIN;</del> <ins>DEC128_MAX;</ins> }
+
+            static const int digits       = <del>384</del> <ins>34</ins>;
+            /* ... */
+</pre>
+
+
+
+
+<hr>
+<h3><a name="602"></a>602. Decimal: "generic floating type" not defined.</h3>
+<p><b>Section:</b> TRDecimal 3 [trdec.types] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TRDec">TRDec</a>
+ <b>Submitter:</b> Daniel Krugler <b>Date:</b> 2006-05-28</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#trdec.types">issues</a> in [trdec.types].</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#TRDec">TRDec</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+The document uses the term "generic floating types," but defines it nowhere.
+</p>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Change the first paragraph of "3 Decimal floating-point types" as follows:
+</p>
+<blockquote><p>
+This Technical Report introduces three decimal floating-point types, named
+decimal32, decimal64, and decimal128. The set of values of type decimal32 is a
+subset of the set of values of type decimal64; the set of values of the type
+decimal64 is a subset of the set of values of the type decimal128. Support for
+decimal128 is optional.  <ins>These types supplement the Standard C++ types
+<code>float</code>, <code>double</code>, and <code>long double</code>, which are
+collectively described as the <i>basic floating types</i></ins>.
+</p></blockquote>
+
+
+
+
+<hr>
+<h3><a name="603"></a>603. Decimal: Trivially simplifying decimal classes.</h3>
+<p><b>Section:</b> TRDecimal 3 [trdec.types] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TRDec">TRDec</a>
+ <b>Submitter:</b> Martin Sebor <b>Date:</b> 2006-05-28</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#trdec.types">issues</a> in [trdec.types].</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#TRDec">TRDec</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>In c++std-lib-17198, Martin writes:</p>
+
+<blockquote><p>
+Each of the three classes proposed in the paper (decimal32, decimal64,
+and decimal128) explicitly declares and specifies the semantics of its
+copy constructor, copy assignment operator, and destructor. Since the
+semantics of all three functions are identical to the trivial versions
+implicitly generated by the compiler in the absence of any declarations
+it is safe to drop them from the spec. This change would make the
+proposed classes consistent with other similar classes already in the
+standard (e.g., std::complex).
+</p></blockquote>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Change "3.2.2 Class <code>decimal32</code>" as follows:
+</p>
+<pre>      namespace std {
+      namespace decimal {
+        class decimal32 {
+          public:
+            // 3.2.2.1 construct/copy/destroy:
+            decimal32();
+            <del>decimal32(const decimal32 &amp; d32);</del>
+            <del>decimal32 &amp; operator=(const decimal32 &amp; d32);</del>
+            <del>~decimal32();</del>
+            /* ... */
+</pre>
+<p>
+Change "3.2.2.1 construct/copy/destroy" as follows:
+</p>
+<pre>        decimal32();
+
+    Effects: Constructs an object of type decimal32 with the value 0;
+
+        <del>decimal32(const decimal32 &amp; d32);</del>
+        <del>decimal32 &amp; operator=(const decimal32 &amp; d32);</del>
+
+    <del>Effects: Copies an object of type decimal32.</del>
+
+        <del>~decimal32();</del>
+
+    <del>Effects: Destroys an object of type decimal32.</del>
+
+</pre>
+<p>
+Change "3.2.3 Class <code>decimal64</code>" as follows:
+</p>
+<pre>      namespace std {
+      namespace decimal {
+        class decimal64 {
+          public:
+            // 3.2.3.1 construct/copy/destroy:
+            decimal64();
+            <del>decimal64(const decimal64 &amp; d64);</del>
+            <del>decimal64 &amp; operator=(const decimal64 &amp; d64);</del>
+            <del>~decimal64();</del>
+            /* ... */
+</pre>
+<p>
+Change "3.2.3.1 construct/copy/destroy" as follows:
+</p>
+<pre>        decimal64();
+
+    Effects: Constructs an object of type decimal64 with the value 0;
+
+        <del>decimal64(const decimal64 &amp; d64);</del>
+        <del>decimal64 &amp; operator=(const decimal64 &amp; d64);</del>
+
+    <del>Effects: Copies an object of type decimal64.</del>
+
+        <del>~decimal64();</del>
+
+    <del>Effects: Destroys an object of type decimal64.</del>
+
+</pre>
+<p>
+Change "3.2.4 Class <code>decimal128</code>" as follows:
+</p>
+<pre>      namespace std {
+      namespace decimal {
+        class decimal128 {
+          public:
+            // 3.2.4.1 construct/copy/destroy:
+            decimal128();
+            <del>decimal128(const decimal128 &amp; d128);</del>
+            <del>decimal128 &amp; operator=(const decimal128 &amp; d128);</del>
+            <del>~decimal128();</del>
+            /* ... */
+</pre>
+<p>
+Change "3.2.4.1 construct/copy/destroy" as follows:
+</p>
+<pre>        decimal128();
+
+    Effects: Constructs an object of type decimal128 with the value 0;
+
+        <del>decimal128(const decimal128 &amp; d128);</del>
+        <del>decimal128 &amp; operator=(const decimal128 &amp; d128);</del>
+
+    <del>Effects: Copies an object of type decimal128.</del>
+
+        <del>~decimal128();</del>
+
+    <del>Effects: Destroys an object of type decimal128.</del>
+
+</pre>
+
+
+
+
+<hr>
+<h3><a name="604"></a>604. Decimal: Storing a reference to a facet unsafe.</h3>
+<p><b>Section:</b> TRDecimal 3 [trdec.types] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TRDec">TRDec</a>
+ <b>Submitter:</b> Martin Sebor <b>Date:</b> 2006-05-28</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#trdec.types">issues</a> in [trdec.types].</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#TRDec">TRDec</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+In c++std-lib-17197, Martin writes:
+</p>
+<blockquote><p>
+The extended_num_get and extended_num_put facets are designed
+to store a reference to a num_get or num_put facet which the
+extended facets delegate the parsing and formatting of types
+other than decimal. One form of the extended facet's ctor (the
+default ctor and the size_t overload) obtains the reference
+from the global C++ locale while the other form takes this
+reference as an argument.
+</p></blockquote>
+<blockquote><p>
+The problem with storing a reference to a facet in another
+object (as opposed to storing the locale object in which the
+facet is installed) is that doing so bypasses the reference
+counting mechanism designed to prevent a facet that is still
+being referenced (i.e., one that is still installed in some
+locale) from being destroyed when another locale that contains
+it is destroyed. Separating a facet reference from the locale
+it comes from van make it cumbersome (and in some cases might
+even make it impossible) for programs to prevent invalidating
+the reference. (The danger of this design is highlighted in
+the paper.)
+</p></blockquote>
+<blockquote><p>
+This problem could be easily avoided by having the extended
+facets store a copy of the locale from which they would extract
+the base facet either at construction time or when needed. To
+make it possible, the forms of ctors of the extended facets that
+take a reference to the base facet would need to be changed to
+take a locale argument instead.
+</p></blockquote>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+1. Change the <code>extended_num_get</code> synopsis in 3.10.2 as follows:
+</p>
+<pre>            extended_num_get(const <del>std::num_get&lt;charT, InputIterator&gt;</del> <ins>std::locale</ins> &amp; <i>b</i>, size_t <i>refs</i> = 0);
+
+            /* ... */
+
+            <del>// <i>const std::num_get&lt;charT, InputIterator&gt; &amp; <b>base</b></i>;        <i><b>exposition only</b></i></del>
+            <ins>// <i>std::locale <b>baseloc</b></i>;                                    <i><b>exposition only</b></i></ins>
+</pre>
+<p>
+2. Change the description of the above constructor in 3.10.2.1:
+</p>
+<pre>            extended_num_get(const <del>std::num_get&lt;charT, InputIterator&gt;</del> <ins>std::locale</ins> &amp; <i>b</i>, size_t <i>refs</i> = 0);
+
+</pre>
+<blockquote>
+<p>
+<b>Effects:</b> Constructs an <code>extended_num_get</code> facet as if by:
+</p>
+<pre>       extended_num_get(const <del>std::num_get&lt;charT, InputIterator&gt;</del> <ins>std::locale</ins> &amp; <i>b</i>, size_t <i>refs</i> = 0)
+                : facet(<i>refs</i>), <i>base<ins>loc</ins></i>(<i>b</i>)
+                { /* ... */ }
+
+</pre>
+<p>
+<del><b>Notes:</b> Care must be taken by the implementation to ensure that the lifetime of the facet referenced by <i>base</i> exceeds that of the resulting <code>extended_num_get</code> facet.</del>
+</p>
+</blockquote>
+<p>
+3. Change the <b>Returns:</b> clause for <code>do_get(iter_type, iter_type, ios_base &amp;, ios_base::iostate &amp;, bool &amp;) const</code>, <i>et al</i> to
+</p>
+<blockquote><p>
+<b>Returns:</b> <code><del><i>base</i></del> <ins>std::use_facet&lt;std::num_get&lt;charT, InputIterator&gt; &gt;(<i>baseloc</i>)</ins>.get(<i>in</i>, <i>end</i>, <i>str</i>, <i>err</i>, <i>val</i>)</code>. 
+</p></blockquote>
+<p>
+4. Change the <code>extended_num_put</code> synopsis in 3.10.3 as follows:
+</p>
+<pre>            extended_num_put(const <del>std::num_put&lt;charT, OutputIterator&gt;</del> <ins>std::locale</ins> &amp; <i>b</i>, size_t <i>refs</i> = 0);
+
+            /* ... */
+
+            <del>// <i>const std::num_put&lt;charT, OutputIterator&gt; &amp; <b>base</b></i>;       <i><b>exposition only</b></i></del>
+            <ins>// <i>std::locale <b>baseloc</b></i>;                                    <i><b>exposition only</b></i></ins>
+</pre>
+<p>
+5. Change the description of the above constructor in 3.10.3.1:
+</p>
+<pre>            extended_num_put(const <del>std::num_put&lt;charT, OutputIterator&gt;</del> <ins>std::locale</ins> &amp; <i>b</i>, size_t <i>refs</i> = 0);
+</pre>
+<blockquote>
+<p>
+<b>Effects:</b> Constructs an <code>extended_num_put</code> facet as if by:
+</p>
+<pre>       extended_num_put(const <del>std::num_put&lt;charT, OutputIterator&gt;</del> <ins>std::locale</ins> &amp; <i>b</i>, size_t <i>refs</i> = 0)
+                : facet(<i>refs</i>), <i>base<ins>loc</ins></i>(<i>b</i>)
+                { /* ... */ }
+
+</pre>
+<p>
+<del><b>Notes:</b> Care must be taken by the implementation to ensure that the lifetime of the facet referenced by <i>base</i> exceeds that of the resulting <code>extended_num_put</code> facet.</del>
+</p>
+</blockquote>
+<p>
+6. Change the <b>Returns:</b> clause for <code>do_put(iter_type, ios_base &amp;, char_type, bool &amp;) const</code>, <i>et al</i> to
+</p>
+<blockquote><p>
+<b>Returns:</b> <code><del><i>base</i></del> <ins>std::use_facet&lt;std::num_put&lt;charT, OutputIterator&gt; &gt;(<i>baseloc</i>)</ins>.put(<i>s</i>, <i>f</i>, <i>fill</i>, <i>val</i>)</code>. 
+</p></blockquote>
+
+<p><i>[
+Redmond:  We would prefer to rename "extended" to "decimal".
+]</i></p>
+
+
+
+
+
+
+<hr>
+<h3><a name="605"></a>605. Decimal: &lt;decfloat.h&gt; doesn't live here anymore.</h3>
+<p><b>Section:</b> TRDecimal 3.4 [trdec.types.cdecfloat] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TRDec">TRDec</a>
+ <b>Submitter:</b> Robert Klarer <b>Date:</b> 2006-10-17</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#TRDec">TRDec</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+In Berlin, WG14 decided to drop the &lt;decfloat.h&gt; header. The
+contents of that header have been moved into &lt;float.h&gt;. For the
+sake of C compatibility, we should make corresponding changes.
+</p>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+1. Change the heading of subclause 3.4, "Headers <code>&lt;cdecfloat&gt;</code> and <code>&lt;decfloat.h&gt;</code>" to "Additions to headers <code>&lt;cfloat&gt;</code> and <code>&lt;float.h&gt;</code>."
+</p>
+<p>
+2. Change the text of subclause 3.4 as follows:
+</p>
+<blockquote>
+<p>
+<del>The standard C++ headers <code>&lt;cfloat&gt;</code> and <code>&lt;float.h&gt;</code> define characteristics of the floating-point types <code>float</code>, <code>double</code>, and <code>long double</code>.  Their contents remain unchanged by this Technical Report.</del>
+</p>
+<p>
+<del>Headers <code>&lt;cdecfloat&gt;</code> and <code>&lt;decfloat.h&gt;</code> define characteristics of the decimal floating-point types <code>decimal32</code>, <code>decimal64</code>, and <code>decimal128</code>.  As well, <code>&lt;decfloat.h&gt;</code> defines the convenience typedefs <code>_Decimal32</code>, <code>_Decimal64</code>, and <code>_Decimal128</code>, for compatibilty with the C programming language.</del>
+</p>
+<p>
+<ins>The header <code>&lt;cfloat&gt;</code> is described in [tr.c99.cfloat].  The header <code>&lt;float.h&gt;</code>
+is described in [tr.c99.floath]. These headers are extended by this
+Technical Report to define characteristics of the decimal
+floating-point types <code>decimal32</code>, <code>decimal64</code>, and <code>decimal128</code>.  As well, <code>&lt;float.h&gt;</code> is extended to define the convenience typedefs <code>_Decimal32</code>, <code>_Decimal64</code>, and <code>_Decimal128</code> for compatibility with the C programming language.</ins>
+</p>
+</blockquote>
+<p>
+3. Change the heading of subclause 3.4.1, "Header <code>&lt;cdecfloat&gt;</code> synopsis"  to "Additions to header <code>&lt;cfloat&gt;</code> synopsis."
+</p>
+<p>
+4. Change the heading of subclause 3.4.2, "Header <code>&lt;decfloat.h&gt;</code> synopsis" to "Additions to header <code>&lt;float.h&gt;</code> synopsis."
+</p>
+<p>
+5. Change the contents of 3.4.2 as follows:
+</p>
+<pre>      <del>#include &lt;cdecfloat&gt;</del>
+
+      // <i>C-compatibility convenience typedefs:</i>
+
+      typedef std::decimal::decimal32  _Decimal32;
+      typedef std::decimal::decimal64  _Decimal64;
+      typedef std::decimal::decimal128 _Decimal128;
+</pre>
+
+
+
+
+
+<hr>
+<h3><a name="607"></a>607. Concern about short seed vectors</h3>
+<p><b>Section:</b> 26.4.7.1 [rand.util.seedseq] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">Pending WP</a>
+ <b>Submitter:</b> Charles Karney <b>Date:</b> 2006-10-26</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#rand.util.seedseq">issues</a> in [rand.util.seedseq].</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#Pending%20WP">Pending WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+Short seed vectors of 32-bit quantities all result in different states. However
+this is not true of seed vectors of 16-bit (or smaller) quantities.  For example
+these two seeds
+</p>
+
+<blockquote><pre>unsigned short seed = {1, 2, 3};
+unsigned short seed = {1, 2, 3, 0};
+</pre></blockquote>
+
+<p>
+both pack to
+</p>
+
+<blockquote><pre>unsigned seed = {0x20001, 0x3};
+</pre></blockquote>
+
+<p>
+yielding the same state.
+</p>
+
+<p>
+See <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2391.pdf">N2391</a> and
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2423.pdf">N2423</a>
+for some further discussion.
+</p>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Adopt the proposed resolution in
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2423.pdf">N2423</a>.
+</p>
+
+
+<p><i>[
+Kona (2007): The LWG adopted the proposed resolution of N2423 for this issue.
+The LWG voted to accelerate this issue to Ready status to be voted into the WP at Kona.
+]</i></p>
+
+
+
+
+
+<hr>
+<h3><a name="608"></a>608. Unclear seed_seq construction details</h3>
+<p><b>Section:</b> 26.4.7.1 [rand.util.seedseq] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">Pending WP</a>
+ <b>Submitter:</b> Charles Karney <b>Date:</b> 2006-10-26</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#rand.util.seedseq">issues</a> in [rand.util.seedseq].</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#Pending%20WP">Pending WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+In 26.4.7.1 [rand.util.seedseq] /6, the order of packing the inputs into b and the
+treatment of signed quantities is unclear. Better to spell it out.
+</p>
+
+<p>
+See <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2391.pdf">N2391</a> and
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2423.pdf">N2423</a>
+for some further discussion.
+</p>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Adopt the proposed resolution in
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2423.pdf">N2423</a>.
+</p>
+
+
+<p><i>[
+Kona (2007): The LWG adopted the proposed resolution of N2423 for this issue.
+The LWG voted to accelerate this issue to Ready status to be voted into the WP at Kona.
+]</i></p>
+
+
+
+
+
+<hr>
+<h3><a name="609"></a>609. missing static const</h3>
+<p><b>Section:</b> 26.4.4.2 [rand.adapt.ibits], TR1 5.1 [tr.rand] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Walter E. Brown <b>Date:</b> 2006-11-02</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+In preparing N2111, an error on my part resulted in the omission of the
+following line from the template synopsis in the cited section:
+</p>
+
+<blockquote><pre>static const size_t word_size = w;
+</pre></blockquote>
+
+<p>
+(This same constant is found, for example, in 26.4.3.3 [rand.eng.sub].)
+</p>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Add the above declaration as the first line after the comment in [rand.adapt.ibits] p4:
+</p>
+
+<blockquote><pre>// engine characteristics
+<ins>static const size_t word_size = w;</ins>
+</pre></blockquote>
+
+<p>
+and accept my apologies for the oversight.
+</p>
+
+
+
+
+
+<hr>
+<h3><a name="610"></a>610. Suggested non-normative note for C++0x</h3>
+<p><b>Section:</b> 20.5.15.2.1 [func.wrap.func.con], TR1 3.7.2.1 [tr.func.wrap.func.con] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Scott Meyers <b>Date:</b> 2006-11-02</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+My suggestion is that implementers of both tr1::function and its 
+official C++0x successor be explicitly encouraged (but not required) to 
+optimize for the cases mentioned above, i.e., function pointers and 
+small function objects.  They could do this by using a small internal 
+buffer akin to the buffer used by implementations of the small string 
+optimization.  (That would make this the small functor optimization -- 
+SFO :-})  The form of this encouragement could be a note in the standard 
+akin to footnote 214 of the current standard.
+</p>
+
+<p>
+Dave Abrahams notes:
+</p>
+
+<p>
+"shall not throw exceptions" should really be "nothing," both to be more
+grammatical and to be consistent with existing wording in the standard.
+</p>
+
+<p>
+Doug Gregor comments: I think this is a good idea. Currently, implementations of
+tr1::function are required to have non-throwing constructors and assignment
+operators when the target function object is a function pointer or a
+reference_wrapper. The common case, however, is for a tr1::function to store
+either an empty function object or a member pointer + an object pointer.
+</p>
+<p>
+The function implementation in the upcoming Boost 1.34.0 uses the
+"SFO", so that the function objects for typical bind expressions like
+</p>
+<blockquote><pre>bind(&amp;X::f, this, _1, _2, _3)
+</pre></blockquote>
+
+<p>
+do not require heap allocation when stored in a boost::function. I
+believe Dinkumware's implementation also performs this optimization.
+</p>
+
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Revise 20.5.14.2.1 p6 [func.wrap.func.con] to add a note as follows:
+</p>
+
+<blockquote>
+<p>
+<i>Throws:</i> shall not throw exceptions if <tt>f</tt>'s target is a function
+pointer or a function object passed via <tt>reference_wrapper</tt>. Otherwise,
+may throw <tt>bad_alloc</tt> or any exception thrown by the copy constructor of
+the stored function object.
+</p>
+<p>
+<ins><i>Note:</i> Implementations are encouraged to avoid the use of dynamically
+allocated memory for "small" function objects, e.g., where <tt>f</tt>'s target
+is an object holding only a pointer or reference to an object and a member
+function pointer (a "bound member function").</ins>
+</p>
+</blockquote>
+
+
+
+
+
+<hr>
+<h3><a name="611"></a>611. Standard library templates and incomplete types</h3>
+<p><b>Section:</b> 17.4.3.6 [res.on.functions] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Nicola Musatti <b>Date:</b> 2006-11-13</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+In the latest available draft standard 
+(<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2134.pdf">N2134</a>)
+§ 17.4.3.6 [res.on.functions] states:
+</p>
+
+<blockquote>
+<p>
+-1- In certain cases (replacement functions, handler functions, operations on
+types used to instantiate standard library template components), the C++
+Standard Library depends on components supplied by a C++ program. If these
+components do not meet their requirements, the Standard places no requirements
+on the implementation.
+</p>
+
+<p>
+-2- In particular, the effects are undefined in the following cases:
+</p>
+<p>
+[...]
+</p>
+<ul>
+<li>if an incomplete type (3.9) is used as a template argument when
+instantiating a template component. </li>
+</ul>
+</blockquote>
+
+<p>
+This is contradicted by § 20.6.6.2/2 [util.smartptr.shared] which
+states:
+</p>
+
+<blockquote>
+<p>
+[...]
+</p>
+
+<p>
+The template parameter <tt>T</tt> of <tt>shared_ptr</tt> may be an incomplete type.
+</p>
+</blockquote>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Modify the last bullet of § 17.4.3.6/2 [res.on.functions] to allow for
+exceptions:
+</p>
+
+<blockquote>
+<ul>
+<li>if an incomplete type (3.9) is used as a template argument when
+instantiating a template component<ins>, unless specifically allowed for the
+component</ins>. </li>
+</ul>
+</blockquote>
+
+
+
+
+
+
+<hr>
+<h3><a name="613"></a>613. max_digits10 missing from numeric_limits</h3>
+<p><b>Section:</b> 18.2.1.5 [numeric.special] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Bo Persson <b>Date:</b> 2006-11-20</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#numeric.special">issues</a> in [numeric.special].</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+Section 18.2.1.5 [numeric.special] starts out by saying that "All members shall be provided 
+for all specializations."
+</p>
+<p>
+Then it goes on to show specializations for float and bool, where one member 
+is missing (max_digits10).
+</p>
+
+<p>
+Maarten Kronenburg adds:
+</p>
+
+<p>
+I agree, just adding the comment that the exact number of decimal digits
+is digits * ln(radix) / ln(10), where probably this real number is
+rounded downward for digits10, and rounded upward for max_digits10
+(when radix=10, then digits10=max_digits10).
+Why not add this exact definition also to the standard, so the user
+knows what these numbers exactly mean.
+</p>
+
+<p>
+Howard adds:
+</p>
+
+<p>
+For reference, here are the correct formulas from
+<a href="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2005/n1822.pdf">N1822</a>:
+</p>
+
+<blockquote><pre>digits10 = floor((digits-1) * log10(2))
+max_digits10 = ceil((1 + digits) * log10(2))
+</pre></blockquote>
+
+<p>
+We are also missing a statement regarding for what specializations this member has meaning.
+</p>
+
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Change and add after 18.2.1.2 [numeric.limits.members], p11:
+</p>
+
+<blockquote>
+<pre>static const int max_digits10;</pre>
+<blockquote>
+<p>
+-11- Number of base 10 digits required to ensure that values which
+differ <del>by only one epsilon</del> are always differentiated.
+</p>
+<p><ins>
+-12- Meaningful for all floating point types.
+</ins></p>
+</blockquote>
+</blockquote>
+
+<p>
+Change 18.2.1.5 [numeric.special], p2:
+</p>
+
+<blockquote><pre>template&lt;&gt; class numeric_limits&lt;float&gt; { 
+public: 
+  static const bool is_specialized = true; 
+  ...
+  static const int digits10 = 6;
+  <ins>static const int max_digits10 = 9</ins>;
+  ...
+</pre></blockquote>
+
+<p>
+Change 18.2.1.5 [numeric.special], p3:
+</p>
+
+<blockquote><pre>template&lt;&gt; class numeric_limits&lt;bool&gt; { 
+public: 
+  static const bool is_specialized = true; 
+  ...
+  static const int digits10 = 0;
+  <ins>static const int max_digits10 = 0</ins>;
+  ...
+</pre></blockquote>
+
+
+
+
+
+
+
+<hr>
+<h3><a name="616"></a>616. missing 'typename' in ctype_byname</h3>
+<p><b>Section:</b> 22.2.1.2 [locale.ctype.byname] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Bo Persson <b>Date:</b> 2006-12-16</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#locale.ctype.byname">issues</a> in [locale.ctype.byname].</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+Section 22.2.1.2 defines the ctype_byname class template. It contains the 
+line
+</p>
+
+<blockquote><pre>typedef ctype&lt;charT&gt;::mask   mask;
+</pre></blockquote>
+
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+as this is a dependent type, it should obviously be
+</p>
+
+<blockquote><pre>typedef <ins>typename</ins> ctype&lt;charT&gt;::mask   mask;
+</pre></blockquote>
+
+
+
+
+
+<hr>
+<h3><a name="619"></a>619. Longjmp wording problem</h3>
+<p><b>Section:</b> 18.8 [support.runtime] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Lawrence Crowl <b>Date:</b> 2007-01-12</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+The wording for <tt>longjmp</tt> is confusing.
+</p>
+<p>
+18.8 [support.runtime] -4- Other runtime support
+</p>
+<blockquote><p>
+The function signature <tt>longjmp(jmp_buf jbuf, int val)</tt> has more restricted
+behavior in this International Standard.  If any automatic objects would
+be destroyed by a thrown exception transferring control to another
+(destination) point in the program, then a call to <tt>longjmp(jbuf, val)</tt> that
+the throw point that transfers control to the same (destination) point has
+undefined behavior.
+</p></blockquote>
+<p>
+Someone at Google thinks that should say "then a call to <tt>longjmp(jbuf, val)</tt>
+*at* the throw point that transfers control".
+</p>
+<p>
+Bill Gibbons thinks it should say something like "If any automatic objects
+would be destroyed by an exception thrown at the point of the longjmp and
+caught only at the point of the setjmp, the behavior is undefined."
+</p>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+In general, accept Bill Gibbons' recommendation,
+but add "call" to indicate that the undefined behavior
+comes from the dynamic call, not from its presence in the code.
+In 18.8 [support.runtime] paragraph 4, change
+</p>
+
+<blockquote><p>
+The function signature <tt>longjmp(jmp_buf jbuf, int val)</tt> has more
+restricted behavior in this International Standard.  <del>If any automatic
+objects would be destroyed by a thrown exception transferring control to another
+(destination) point in the program, then a call to <tt>longjmp(jbuf, val)</tt>
+that the throw point that transfers control to the same (destination) point has
+undefined behavior.</del> <ins>A <tt>setjmp</tt>/<tt>longjmp</tt> call pair has
+undefined behavior if replacing the <tt>setjmp</tt> and <tt>longjmp</tt> by
+<tt>catch</tt> and <tt>throw</tt> would destroy any automatic objects.</ins>
+</p></blockquote>
+
+
+
+
+
+<hr>
+<h3><a name="628"></a>628. Inconsistent definition of basic_regex constructor</h3>
+<p><b>Section:</b> 28.8 [re.regex] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Bo Persson <b>Date:</b> 2007-01-23</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#re.regex">issues</a> in [re.regex].</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+Section 28.8 [re.regex] lists a constructor
+</p>
+
+<blockquote><pre>template&lt;class InputIterator&gt;
+basic_regex(InputIterator first, InputIterator last,
+                       flag_type f = regex_constants::ECMAScript);
+</pre></blockquote>
+
+<p>
+However, in section 28.8.2 [re.regex.construct], this constructor takes a 
+pair of <tt>ForwardIterator</tt>.
+</p>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Change 28.8.2 [re.regex.construct]:
+</p>
+
+<blockquote><pre>template &lt;class <del>ForwardIterator</del> <ins>InputIterator</ins>&gt;
+  basic_regex(<del>ForwardIterator</del> <ins>InputIterator</ins> first, <del>ForwardIterator</del> <ins>InputIterator</ins> last, 
+              flag_type f = regex_constants::ECMAScript);
+</pre></blockquote>
+
+
+
+
+
+
+<hr>
+<h3><a name="634"></a>634. <tt>allocator.address()</tt> doesn't work for types overloading <tt>operator&amp;</tt></h3>
+<p><b>Section:</b> 20.6.1.1 [allocator.members] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Howard Hinnant <b>Date:</b> 2007-02-07</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#allocator.members">issues</a> in [allocator.members].</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Duplicate of:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#350">350</a></p>
+<p><b>Discussion:</b></p>
+
+<p>
+20.6.1.1 [allocator.members] says:
+</p>
+<blockquote>
+<pre>pointer address(reference <i>x</i>) const;</pre>
+<blockquote>
+<p>
+-1- <i>Returns:</i> <tt>&amp;<i>x</i></tt>.
+</p>
+</blockquote>
+</blockquote>
+
+<p>
+20.6.1.1 [allocator.members] defines <tt>CopyConstructible</tt> which currently not
+only defines the semantics of copy construction, but also restricts what an overloaded
+<tt>operator&amp;</tt> may do.  I believe proposals are in the works (such as concepts
+and rvalue reference) to decouple these two requirements.  Indeed it is not evident
+that we should disallow overloading <tt>operator&amp;</tt> to return something other
+than the address of <tt>*this</tt>.
+</p>
+
+<p>
+An example of when you want to overload <tt>operator&amp;</tt> to return something
+other than the object's address is proxy references such as <tt>vector&lt;bool&gt;</tt>
+(or its replacement, currently code-named <tt>bit_vector</tt>).  Taking the address of
+such a proxy reference should logically yield a proxy pointer, which when dereferenced,
+yields a copy of the original proxy reference again.
+</p>
+
+<p>
+On the other hand, some code truly needs the address of an object, and not a proxy
+(typically for determining the identity of an object compared to a reference object).
+<a href="http://www.boost.org/">boost</a> has long recognized this dilemma and solved it with 
+<a href="http://www.boost.org/libs/utility/utility.htm#addressof"><tt>boost::addressof</tt></a>.
+It appears to me that this would be useful functionality for the default allocator.  Adopting
+this definition for <tt>allocator::address</tt> would free the standard of requiring
+anything special from types which overload <tt>operator&amp;</tt>.  Issue <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#580">580</a>
+is expected to make use of <tt>allocator::address</tt> mandatory for containers.
+</p>
+
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Change 20.6.1.1 [allocator.members]:
+</p>
+
+<blockquote>
+<pre>pointer address(reference <i>x</i>) const;</pre>
+<blockquote>
+<p>
+-1- <i>Returns:</i> <del><tt>&amp;<i>x</i></tt>.</del> <ins>The actual address of object referenced by <i>x</i>,
+even in the presence of an overloaded <tt>operator&amp;</tt>.</ins>
+</p>
+</blockquote>
+
+<pre>const_pointer address(address(const_reference <i>x</i>) const;</pre>
+<blockquote>
+<p>
+-2- <i>Returns:</i> <del><tt>&amp;<i>x</i></tt>.</del> <ins>The actual address of object referenced by <i>x</i>,
+even in the presence of an overloaded <tt>operator&amp;</tt>.</ins>
+</p>
+</blockquote>
+</blockquote>
+
+<p><i>[
+post Oxford:  This would be rendered NAD Editorial by acceptance of
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2257.html">N2257</a>.
+]</i></p>
+
+
+<p><i>[
+Kona (2007): The LWG adopted the proposed resolution of N2387 for this issue which
+was subsequently split out into a separate paper N2436 for the purposes of voting.
+The resolution in N2436 addresses this issue.  The LWG voted to accelerate this
+issue to Ready status to be voted into the WP at Kona.
+]</i></p>
+
+
+
+
+
+
+
+<hr>
+<h3><a name="640"></a>640. 27.6.2.5.2 does not handle (unsigned) long long</h3>
+<p><b>Section:</b> 27.6.2.6.2 [ostream.inserters.arithmetic] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Daniel Krügler <b>Date:</b> 2007-02-17</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#ostream.inserters.arithmetic">issues</a> in [ostream.inserters.arithmetic].</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+The arithmetic inserters are described in 27.6.2.6.2 [ostream.inserters.arithmetic].
+Although the section starts with a listing of the inserters including
+the new ones:
+</p>
+
+<blockquote><pre>operator&lt;&lt;(long long val );
+operator&lt;&lt;(unsigned long long val );
+</pre></blockquote>
+
+<p>
+the text in paragraph 1, which describes the corresponding effects
+of the inserters, depending on the actual type of val, does not
+handle the types <tt>long long</tt> and <tt>unsigned long long</tt>.
+</p>
+
+<p><i>[
+Alisdair: In addition to the (unsigned) long long problem, that whole paragraph
+misses any reference to extended integral types supplied by the
+implementation - one of the additions by core a couple of working papers
+back.
+]</i></p>
+
+
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+In 27.6.2.6.2 [ostream.inserters.arithmetic]/1 change the third sentence
+</p>
+
+<blockquote>
+When val is of type <tt>bool</tt>, <tt>long</tt>, <tt>unsigned
+long</tt>, <ins>long long, unsigned long long,</ins> <tt>double</tt>,
+<tt>long double</tt>, or <tt>const void*</tt>, the formatting conversion
+occurs as if it performed the following code fragment:
+</blockquote>
+
+
+
+
+
+<hr>
+<h3><a name="643"></a>643. Impossible "as if" clauses</h3>
+<p><b>Section:</b> 27.8.1.1 [filebuf], 22.2.2.2.2 [facet.num.put.virtuals] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Daniel Krügler <b>Date:</b> 2007-02-20</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+The current standard 14882:2003(E) as well as N2134 have the
+following
+defects:
+</p>
+
+<p>
+27.8.1.1 [filebuf]/5 says:
+</p>
+
+<blockquote>
+<p>
+In order to support file I/O and multibyte/wide character conversion, conversions are performed using members of a 
+facet, referred to as <tt><i>a_codecvt</i></tt> in following sections, obtained "as if" by
+</p>
+<blockquote><pre>codecvt&lt;charT,char,typename traits::state_type&gt; <i>a_codecvt</i> =
+  use_facet&lt;codecvt&lt;charT,char,typename traits::state_type&gt; &gt;(getloc());
+</pre></blockquote>
+</blockquote>
+
+<p>
+<tt>use_facet</tt> returns a <tt>const facet</tt> reference and no facet is
+copyconstructible, so the codecvt construction should fail to compile.
+</p>
+
+<p>
+A similar issue arises in 22.2.2.2.2 [facet.num.put.virtuals]/15 for <tt>num_punct</tt>.
+</p>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+In 27.8.1.1 [filebuf]/5 change the "as if" code
+</p>
+
+<blockquote><pre><ins>const </ins>codecvt&lt;charT,char,typename traits::state_type&gt;<ins>&amp;</ins> <i>a_codecvt</i> =
+  use_facet&lt;codecvt&lt;charT,char,typename traits::state_type&gt; &gt;(getloc());
+</pre></blockquote>
+
+<p>
+In 22.2.2.2.2 [facet.num.put.virtuals]/15 (This is para 5 in N2134) change
+</p>
+
+<blockquote>
+<p>
+A local variable <tt><i>punct</i></tt> is initialized via
+</p>
+<blockquote><pre><ins>const </ins>numpunct&lt;charT&gt;<ins>&amp;</ins> <i>punct</i> = use_facet&lt; numpunct&lt;charT&gt; &gt;(<i>str</i>.getloc() )<ins>;</ins>
+</pre></blockquote>
+</blockquote>
+
+<p>
+(Please note also the additional provided trailing semicolon)
+</p>
+
+
+
+
+
+
+<hr>
+<h3><a name="644"></a>644. Possible typos in 'function' description</h3>
+<p><b>Section:</b> X [func.wrap.func.undef] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">Pending WP</a>
+ <b>Submitter:</b> Bo Persson <b>Date:</b> 2007-02-25</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#Pending%20WP">Pending WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+X [func.wrap.func.undef]
+</p>
+<p>
+The note in paragraph 2 refers to 'undefined void operators', while the 
+section declares a pair of operators returning bool.
+</p>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Change 20.5.15.2 [func.wrap.func]
+</p>
+
+<blockquote><pre>...
+private:
+   // X [func.wrap.func.undef], undefined operators:
+   template&lt;class Function2&gt; <del>bool</del> <ins>void</ins> operator==(const function&lt;Function2&gt;&amp;);
+   template&lt;class Function2&gt; <del>bool</del> <ins>void</ins> operator!=(const function&lt;Function2&gt;&amp;);
+};
+</pre></blockquote>
+
+<p>
+Change X [func.wrap.func.undef]
+</p>
+
+<blockquote><pre>template&lt;class Function2&gt; <del>bool</del> <ins>void</ins> operator==(const function&lt;Function2&gt;&amp;);
+template&lt;class Function2&gt; <del>bool</del> <ins>void</ins> operator!=(const function&lt;Function2&gt;&amp;);
+</pre></blockquote>
+
+
+
+
+
+<hr>
+<h3><a name="646"></a>646. const incorrect match_result members</h3>
+<p><b>Section:</b> 28.10.4 [re.results.form] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Daniel Krügler <b>Date:</b> 2007-02-26</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+28.10.4 [re.results.form] (root and para 3) in N2134 defines the two function template
+members format as non-const functions, although they are declared
+as const in 28.10 [re.results]/3.
+</p>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Add the missing <tt>const</tt> specifier to both <tt>format</tt> overloads described
+in section 28.10.4 [re.results.form].
+</p>
+
+
+
+
+
+<hr>
+<h3><a name="650"></a>650. regex_token_iterator and const correctness</h3>
+<p><b>Section:</b> 28.12.2 [re.tokiter] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Daniel Krügler <b>Date:</b> 2007-03-05</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#re.tokiter">issues</a> in [re.tokiter].</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+Both the class definition of regex_token_iterator (28.12.2
+[re.tokiter]/6) and the latter member specifications (28.12.2.2
+[re.tokiter.comp]/1+2) declare both comparison operators as
+non-const functions. Furtheron, both dereference operators are
+unexpectedly also declared as non-const in 28.12.2 [re.tokiter]/6
+as well as in (28.12.2.3 [re.tokiter.deref]/1+2).
+</p>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+1) In (28.12.2 [re.tokiter]/6) change the current declarations
+</p>
+
+<blockquote><pre>bool operator==(const regex_token_iterator&amp;) <ins>const</ins>;
+bool operator!=(const regex_token_iterator&amp;) <ins>const</ins>;
+const value_type&amp; operator*() <ins>const</ins>;
+const value_type* operator-&gt;() <ins>const</ins>;
+</pre></blockquote>
+
+<p>
+2) In 28.12.2.2 [re.tokiter.comp] change the following declarations
+</p>
+
+<blockquote><pre>bool operator==(const regex_token_iterator&amp; right) <ins>const</ins>;
+bool operator!=(const regex_token_iterator&amp; right) <ins>const</ins>;
+</pre></blockquote>
+
+<p>
+3) In 28.12.2.3 [re.tokiter.deref] change the following declarations
+</p>
+
+<blockquote><pre>const value_type&amp; operator*() <ins>const</ins>;
+const value_type* operator-&gt;() <ins>const</ins>;
+</pre></blockquote>
+
+
+<p><i>[
+Kona (2007): The LWG adopted the proposed resolution of N2409 for this issue (which
+is to adopt the proposed wording in this issue).
+The LWG voted to accelerate this issue to Ready status to be voted into the WP at Kona.
+]</i></p>
+
+
+
+
+
+<hr>
+<h3><a name="651"></a>651. Missing preconditions for regex_token_iterator c'tors</h3>
+<p><b>Section:</b> 28.12.2.1 [re.tokiter.cnstr] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Daniel Krügler <b>Date:</b> 2007-03-05</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#re.tokiter.cnstr">issues</a> in [re.tokiter.cnstr].</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+The text provided in 28.12.2.1 [re.tokiter.cnstr]/2+3 describes
+the effects of the three non-default constructors of class
+template regex_token_iterator but is does not clarify which values
+are legal values for submatch/submatches. This becomes
+an issue, if one takes 28.12.2 [re.tokiter]/9 into account, which explains
+the notion of a "current match" by saying:
+</p>
+
+<blockquote><p>
+The <i>current match</i> is <tt>(*position).prefix()</tt> if <tt>subs[N]
+== -1</tt>, or <tt>(*position)[subs[N]]</tt> for any other value of
+<tt>subs[N]</tt>.
+</p></blockquote>
+
+<p>
+It's not clear to me, whether other negative values except -1
+are legal arguments or not - it seems they are not.
+</p>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Add the following precondition paragraph just before the current
+28.12.2.1 [re.tokiter.cnstr]/2:
+</p>
+
+<blockquote><p>
+<i>Requires:</i> Each of the initialization values of <tt>subs</tt> must be <tt>&gt;= -1</tt>.
+</p></blockquote>
+
+
+<p><i>[
+Kona (2007): The LWG adopted the proposed resolution of N2409 for this issue (which
+is to adopt the proposed wording in this issue).
+The LWG voted to accelerate this issue to Ready status to be voted into the WP at Kona.
+]</i></p>
+
+
+
+
+
+<hr>
+<h3><a name="652"></a>652. regex_iterator and const correctness</h3>
+<p><b>Section:</b> 28.12.1 [re.regiter] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Daniel Krügler <b>Date:</b> 2007-03-05</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>Both the class definition of regex_iterator (28.12.1 [re.regiter]/1)
+and the latter member specification (28.12.1.2 [re.regiter.comp]/1+2)
+declare both comparison operators as
+non-const functions. Furtheron, both dereference operators are
+unexpectedly also declared as non-const in 28.12.1 [re.regiter]/1
+as well as in (28.12.1.3 [re.regiter.deref]/1+2).
+</p>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+1) In (28.12.1 [re.regiter]/1) change the current declarations
+</p>
+
+<blockquote><pre>bool operator==(const regex_iterator&amp;) <ins>const</ins>;
+bool operator!=(const regex_iterator&amp;) <ins>const</ins>;
+const value_type&amp; operator*() <ins>const</ins>;
+const value_type* operator-&gt;() <ins>const</ins>;
+</pre></blockquote>
+
+<p>
+2) In 28.12.1.3 [re.regiter.deref] change the following declarations
+</p>
+
+<blockquote><pre>const value_type&amp; operator*() <ins>const</ins>;
+const value_type* operator-&gt;() <ins>const</ins>;
+</pre></blockquote>
+
+<p>
+3) In 28.12.1.2 [re.regiter.comp] change the following declarations
+</p>
+
+<blockquote><pre>bool operator==(const regex_iterator&amp; right) <ins>const</ins>;
+bool operator!=(const regex_iterator&amp; right) <ins>const</ins>;
+</pre></blockquote>
+
+
+<p><i>[
+Kona (2007): The LWG adopted the proposed resolution of N2409 for this issue (which
+is to adopt the proposed wording in this issue).
+The LWG voted to accelerate this issue to Ready status to be voted into the WP at Kona.
+]</i></p>
+
+
+
+
+
+<hr>
+<h3><a name="654"></a>654. Missing IO roundtrip for random number engines</h3>
+<p><b>Section:</b> 26.4.1.3 [rand.req.eng] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">Pending WP</a>
+ <b>Submitter:</b> Daniel Krügler <b>Date:</b> 2007-03-08</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#rand.req.eng">issues</a> in [rand.req.eng].</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#Pending%20WP">Pending WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+Table 98 and para 5 in 26.4.1.3 [rand.req.eng] specify
+the IO insertion and extraction semantic of random
+number engines. It can be shown, v.i., that the specification
+of the extractor cannot guarantee to fulfill the requirement
+from para 5:
+</p>
+
+<blockquote><p>
+If a textual representation written via os &lt;&lt; x was
+subsequently read via is &gt;&gt; v, then x == v provided that
+there have been no intervening invocations of x or of v.
+</p></blockquote>
+
+<p>
+The problem is, that the extraction process described in
+table 98 misses to specify that it will initially set the
+if.fmtflags to ios_base::dec, see table 104:
+</p>
+
+<blockquote><p>
+dec: converts integer input or generates integer output
+in decimal base
+</p></blockquote>
+
+<p>
+Proof: The following small program demonstrates the violation
+of requirements (exception safety not fulfilled):
+</p>
+
+<blockquote><pre>#include &lt;cassert&gt;
+#include &lt;ostream&gt;
+#include &lt;iostream&gt;
+#include &lt;iomanip&gt;
+#include &lt;sstream&gt;
+
+class RanNumEngine {
+  int state;
+public:
+  RanNumEngine() : state(42) {}
+
+  bool operator==(RanNumEngine other) const {
+	  return state == other.state;
+  }
+
+  template &lt;typename Ch, typename Tr&gt;
+  friend std::basic_ostream&lt;Ch, Tr&gt;&amp; operator&lt;&lt;(std::basic_ostream&lt;Ch, Tr&gt;&amp; os, RanNumEngine engine) {
+	Ch old = os.fill(os.widen(' ')); // Sets space character
+	std::ios_base::fmtflags f = os.flags();
+	os &lt;&lt; std::dec &lt;&lt; std::left &lt;&lt; engine.state; // Adds ios_base::dec|ios_base::left
+	os.fill(old); // Undo
+	os.flags(f);
+	return os;
+  }
+
+  template &lt;typename Ch, typename Tr&gt;
+  friend std::basic_istream&lt;Ch, Tr&gt;&amp; operator&gt;&gt;(std::basic_istream&lt;Ch, Tr&gt;&amp; is, RanNumEngine&amp; engine) {
+       // Uncomment only for the fix.
+
+	//std::ios_base::fmtflags f = is.flags();
+	//is &gt;&gt; std::dec;
+	is &gt;&gt; engine.state;
+	//is.flags(f);
+	return is;
+  }
+};
+
+int main() {
+	std::stringstream s;
+	s &lt;&lt; std::setfill('#'); // No problem
+        s &lt;&lt; std::oct; // Yikes!
+        // Here starts para 5 requirements:
+	RanNumEngine x;
+	s &lt;&lt; x;
+	RanNumEngine v;
+	s &gt;&gt; v;
+	assert(x == v); // Fails: 42 == 34
+}
+</pre></blockquote>
+
+<p>
+A second, minor issue seems to be, that the insertion
+description from table 98 unnecessarily requires the
+addition of ios_base::fixed (which only influences floating-point
+numbers). Its not entirely clear to me whether the proposed
+standard does require that the state of random number engines
+is stored in integral types or not, but I have the impression
+that this is the indent, see e.g. p. 3
+</p>
+
+<blockquote><p>
+The specification of each random number engine defines the
+size of its state in multiples of the size of its result_type.
+</p></blockquote>
+
+<p>
+If other types than integrals are supported, then I wonder why
+no requirements are specified for the precision of the stream.
+</p>
+
+<p>
+See <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2391.pdf">N2391</a> and
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2423.pdf">N2423</a>
+for some further discussion.
+</p>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Adopt the proposed resolution in
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2423.pdf">N2423</a>.
+</p>
+
+
+<p><i>[
+Kona (2007): The LWG adopted the proposed resolution of N2423 for this issue.
+The LWG voted to accelerate this issue to Ready status to be voted into the WP at Kona.
+]</i></p>
+
+
+
+
+
+<hr>
+<h3><a name="655"></a>655. Signature of generate_canonical not useful</h3>
+<p><b>Section:</b> 26.4.7.2 [rand.util.canonical] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">Pending WP</a>
+ <b>Submitter:</b> Daniel Krügler <b>Date:</b> 2007-03-08</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#rand.util.canonical">issues</a> in [rand.util.canonical].</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#Pending%20WP">Pending WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+In 26.4.2 [rand.synopsis] we have the declaration
+</p>
+
+<blockquote><pre>template&lt;class RealType, class UniformRandomNumberGenerator,
+  size_t bits&gt;
+result_type generate_canonical(UniformRandomNumberGenerator&amp; g);
+</pre></blockquote>
+
+<p>
+Besides the "result_type" issue (already recognized by Bo Persson
+at Sun, 11 Feb 2007 05:26:47 GMT in this group) it's clear, that
+the template parameter order is not reasonably choosen: Obviously
+one always needs to specify all three parameters, although usually
+only two are required, namely the result type RealType and the
+wanted bits, because UniformRandomNumberGenerator can usually
+be deduced.
+</p>
+
+<p>
+See <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2391.pdf">N2391</a> and
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2423.pdf">N2423</a>
+for some further discussion.
+</p>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Adopt the proposed resolution in
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2423.pdf">N2423</a>.
+</p>
+
+
+<p><i>[
+Kona (2007): The LWG adopted the proposed resolution of N2423 for this issue.
+The LWG voted to accelerate this issue to Ready status to be voted into the WP at Kona.
+]</i></p>
+
+
+
+
+
+<hr>
+<h3><a name="660"></a>660. Missing Bitwise Operations</h3>
+<p><b>Section:</b> 20.5 [function.objects] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Beman Dawes <b>Date:</b> 2007-04-02</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#function.objects">issues</a> in [function.objects].</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>Section 20.5 [function.objects] provides <span id="st" name="st" class="st">function</span>
+<span id="st" name="st" class="st">objects</span> for some unary and binary 
+operations, but others are missing. In a LWG reflector discussion, beginning 
+with c++std-lib-18078, pros and cons of adding some of the missing operations 
+were discussed. Bjarne Stroustrup commented "Why standardize what isn't used? 
+Yes, I see the chicken and egg problems here, but it would be nice to see a 
+couple of genuine uses before making additions."</p>
+<p>A number of libraries, including Rogue Wave, GNU, Adobe ASL, and Boost, have 
+already added these functions, either publicly or for internal use. For example, 
+Doug Gregor commented: "Boost will also add ... (|, &amp;, ^) in 1.35.0, because we 
+need those <span id="st" name="st" class="st">function</span>
+<span id="st" name="st" class="st">objects</span> to represent various parallel 
+collective operations (reductions, prefix reductions, etc.) in the new Message 
+Passing Interface (MPI) library."</p>
+<p>Because the bitwise operators have the strongest use cases, the proposed 
+resolution is limited to them.</p>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>To 20.5 [function.objects], Function objects, paragraph 2, add to the header 
+&lt;functional&gt; synopsis:</p>
+<blockquote>
+  <pre>template &lt;class T&gt; struct bit_and;
+template &lt;class T&gt; struct bit_or;
+template &lt;class T&gt; struct bit_xor;</pre>
+</blockquote>
+<p>At a location in clause 20 to be determined by the Project Editor, add:</p>
+<blockquote>
+  <p>The library provides basic function object classes for all of the bitwise 
+  operators in the language ([expr.bit.and], [expr.or], [exp.xor]).</p>
+  <pre>template &lt;class T&gt; struct bit_and : binary_function&lt;T,T,T&gt; {
+  T operator()(const T&amp; x , const T&amp; y ) const;
+};</pre>
+  <blockquote>
+    <p><code>operator()</code> returns<code> x &amp; y</code> .</p>
+  </blockquote>
+  <pre>template &lt;class T&gt; struct bit_or : binary_function&lt;T,T,T&gt; {
+  T operator()(const T&amp; x , const T&amp; y ) const;
+};</pre>
+  <blockquote>
+    <p><code>operator()</code> returns <code>x | y</code> .</p>
+  </blockquote>
+  <pre>template &lt;class T&gt; struct bit_xor : binary_function&lt;T,T,T&gt; {
+  T operator()(const T&amp; x , const T&amp; y ) const;
+};</pre>
+  <blockquote>
+    <p><code>operator()</code> returns <code>x ^ y</code> .</p>
+  </blockquote>
+</blockquote>
+
+
+
+
+
+<hr>
+<h3><a name="677"></a>677. Weaknesses in seed_seq::randomize [rand.util.seedseq]</h3>
+<p><b>Section:</b> 26.4.7.1 [rand.util.seedseq] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">Pending WP</a>
+ <b>Submitter:</b> Charles Karney <b>Date:</b> 2007-05-15</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#rand.util.seedseq">issues</a> in [rand.util.seedseq].</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#Pending%20WP">Pending WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+<tt>seed_seq::randomize</tt> provides a mechanism for initializing random number
+engines which ideally would yield "distant" states when given "close"
+seeds.  The algorithm for <tt>seed_seq::randomize</tt> given in the current
+Working Draft for C++,
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2284.pdf">N2284</a>
+(2007-05-08), has 3 weaknesses
+</p>
+
+<ol>
+<li>
+<p> Collisions in state.  Because of the way the state is initialized,
+    seeds of different lengths may result in the same state.  The
+    current version of seed_seq has the following properties:</p>
+<ul>
+<li>  For a given <tt>s &lt;= n</tt>, each of the 2^(32s) seed vectors results in a
+      distinct state.</li>
+</ul>
+<p>
+    The proposed algorithm (below) has the considerably stronger
+    properties:</p>
+<ul>
+<li>   All of the <tt>(2^(32n)-1)/(2^32-1)</tt> seed vectors of lengths <tt>s &lt; n</tt>
+      result in distinct states.
+</li>
+<li>  All of the <tt>2^(32n)</tt> seed vectors of length <tt>s == n</tt> result in
+      distinct states.
+</li>
+</ul>
+</li>
+<li>
+<p> Poor mixing of <tt>v'</tt>s entropy into the state.  Consider <tt>v.size() == n</tt>
+    and hold <tt>v[n/2]</tt> thru <tt>v[n-1]</tt> fixed while varying <tt>v[0]</tt> thru <tt>v[n/2-1]</tt>,
+    a total of <tt>2^(16n)</tt> possibilities.  Because of the simple recursion
+    used in <tt>seed_seq</tt>, <tt>begin[n/2]</tt> thru <tt>begin[n-1]</tt> can take on only 2^64
+    possible states.</p>
+
+<p> The proposed algorithm uses a more complex recursion which results
+    in much better mixing.</p>
+</li>
+<li> <tt>seed_seq::randomize</tt> is undefined for <tt>v.size() == 0</tt>.  The proposed
+    algorithm remedies this.
+</li>
+</ol>
+<p>
+The current algorithm for <tt>seed_seq::randomize</tt> is adapted by me from the
+initialization procedure for the Mersenne Twister by Makoto Matsumoto
+and Takuji Nishimura.  The weakness (2) given above was communicated to
+me by Matsumoto last year.
+</p>
+<p>
+The proposed replacement for <tt>seed_seq::randomize</tt> is due to Mutsuo Saito,
+a student of Matsumoto, and is given in the implementation of the
+SIMD-oriented Fast Mersenne Twister random number generator SFMT.
+<a href="http://www.math.sci.hiroshima-u.ac.jp/%7Em-mat/MT/SFMT/index.html">http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/index.html</a>
+<a href="http://www.math.sci.hiroshima-u.ac.jp/%7Em-mat/MT/SFMT/SFMT-src-1.2.tar.gz">http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/SFMT-src-1.2.tar.gz</a>
+</p>
+<p>
+See
+Mutsuo Saito,
+An Application of Finite Field: Design and Implementation of 128-bit
+Instruction-Based Fast Pseudorandom Number Generator,
+Master's Thesis, Dept. of Math., Hiroshima University (Feb. 2007)
+<a href="http://www.math.sci.hiroshima-u.ac.jp/%7Em-mat/MT/SFMT/M062821.pdf">http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/M062821.pdf</a>
+</p>
+<p>
+One change has been made here, namely to treat the case of small <tt>n</tt>
+(setting <tt>t = (n-1)/2</tt> for <tt>n &lt; 7</tt>).
+</p>
+<p>
+Since <tt>seed_seq</tt> was introduced relatively recently there is little cost
+in making this incompatible improvement to it.
+</p>
+
+<p>
+See <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2391.pdf">N2391</a> and
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2423.pdf">N2423</a>
+for some further discussion.
+</p>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Adopt the proposed resolution in
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2423.pdf">N2423</a>.
+</p>
+
+
+<p><i>[
+Kona (2007): The LWG adopted the proposed resolution of N2423 for this issue.
+The LWG voted to accelerate this issue to Ready status to be voted into the WP at Kona.
+]</i></p>
+
+
+
+
+
+<hr>
+<h3><a name="678"></a>678. Changes for [rand.req.eng]</h3>
+<p><b>Section:</b> 26.4.1.3 [rand.req.eng] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Charles Karney <b>Date:</b> 2007-05-15</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#rand.req.eng">issues</a> in [rand.req.eng].</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+Section 26.4.1.3 [rand.req.eng] Random number engine requirements:
+</p>
+
+<p>
+This change follows naturally from the proposed change to
+<tt>seed_seq::randomize</tt> in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#677">677</a>.
+</p>
+
+<p>
+In table 104 the description of <tt>X(q)</tt> contains a special treatment of
+the case <tt>q.size() == 0</tt>.  This is undesirable for 4 reasons:
+</p>
+
+<ol>
+<li>It replicates the functionality provided by <tt>X()</tt>.</li>
+<li>It leads to the possibility of a collision in the state provided
+    by some other <tt>X(q)</tt> with <tt>q.size() &gt; 0</tt>.</li>
+<li>It is inconsistent with the description of the <tt>X(q)</tt> in
+paragraphs 26.4.3.1 [rand.eng.lcong] p5, 26.4.3.2 [rand.eng.mers] p8, and 26.4.3.3 [rand.eng.sub] p10 where
+there is no special treatment of <tt>q.size() == 0</tt>.</li>
+<li>The proposed replacement for <tt>seed_seq::randomize</tt> given above
+    allows for the case <tt>q.size() == 0</tt>.</li>
+</ol>
+
+<p>
+See <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2391.pdf">N2391</a> and
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2423.pdf">N2423</a>
+for some further discussion.
+</p>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Adopt the proposed resolution in
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2423.pdf">N2423</a>.
+</p>
+
+
+<p><i>[
+Kona (2007): The LWG adopted the proposed resolution of N2423 for this issue.
+The LWG voted to accelerate this issue to Ready status to be voted into the WP at Kona.
+]</i></p>
+
+
+
+
+
+<hr>
+<h3><a name="681"></a>681. Operator functions impossible to compare are defined in [re.submatch.op]</h3>
+<p><b>Section:</b> 28.9.2 [re.submatch.op] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Nozomu Katoo <b>Date:</b> 2007-05-27</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+In 28.9.2 [re.submatch.op] of N2284, 
+operator functions numbered 31-42 seem impossible to compare. &nbsp;E.g.: 
+</p>
+
+<blockquote>
+<pre>
+template &lt;class BiIter&gt;
+&nbsp; &nbsp; bool operator==(typename iterator_traits&lt;BiIter&gt;::value_type const&amp; lhs,
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const sub_match&lt;BiIter&gt;&amp; rhs);
+</pre>
+<blockquote>
+<p>
+-31- <i>Returns:</i> <tt>lhs == rhs.str()</tt>.
+</p>
+</blockquote>
+</blockquote>
+
+<p>
+When <tt>char*</tt> is used as <tt>BiIter</tt>, <tt>iterator_traits&lt;BiIter&gt;::value_type</tt> would be 
+<tt>char</tt>, so that <tt>lhs == rhs.str()</tt> ends up comparing a <tt>char</tt> value and an object 
+of <tt>std::basic_string&lt;char&gt;</tt>. &nbsp;However, the behaviour of comparison between 
+these two types is not defined in 21.3.8 [string.nonmembers] of N2284.
+&nbsp;This applies when <tt>wchar_t*</tt> is used as <tt>BiIter</tt>. 
+</p>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Adopt the proposed resolution in
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2409.pdf">N2409</a>.
+</p>
+
+
+<p><i>[
+Kona (2007): The LWG adopted the proposed resolution of N2409 for this issue.
+The LWG voted to accelerate this issue to Ready status to be voted into the WP at Kona.
+]</i></p>
+
+
+
+
+
+<hr>
+<h3><a name="682"></a>682. basic_regex ctor takes InputIterator or ForwardIterator?</h3>
+<p><b>Section:</b> 28.8.2 [re.regex.construct] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">Pending WP</a>
+ <b>Submitter:</b> Eric Niebler <b>Date:</b> 2007-06-03</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#Pending%20WP">Pending WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+Looking at N2284, 28.8 [re.regex], p3 <tt>basic_regex</tt> class template synopsis shows this 
+constructor: 
+</p>
+<blockquote><pre>template &lt;class InputIterator&gt;
+&nbsp; &nbsp; &nbsp;basic_regex(InputIterator first, InputIterator last, 
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;flag_type f = regex_constants::ECMAScript);
+</pre></blockquote>
+
+<p>
+In 28.8.2 [re.regex.construct], p15, the constructor appears with this signature: 
+</p>
+
+<blockquote><pre>template &lt;class ForwardIterator&gt;
+&nbsp; &nbsp; &nbsp;basic_regex(ForwardIterator first, ForwardIterator last, 
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;flag_type f = regex_constants::ECMAScript);
+</pre></blockquote>
+
+<p>
+<tt>ForwardIterator</tt> is probably correct, so the synopsis is wrong.
+</p>
+
+<p><i>[
+John adds:
+]</i></p>
+
+
+<blockquote>
+<p>
+I think either could be implemented? &nbsp;Although an input iterator would 
+probably require an internal copy of the string being made.
+</p>
+<p>
+I have no strong feelings either way, although I think my original intent 
+was <tt>InputIterator</tt>. 
+</p>
+</blockquote>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Adopt the proposed resolution in
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2409.pdf">N2409</a>.
+</p>
+
+
+<p><i>[
+Kona (2007): The LWG adopted the proposed resolution of N2409 for this issue.
+The LWG voted to accelerate this issue to Ready status to be voted into the WP at Kona.
+]</i></p>
+
+
+
+
+
+<hr>
+<h3><a name="699"></a>699. N2111 changes min/max</h3>
+<p><b>Section:</b> 26.4 [rand] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> P.J. Plauger <b>Date:</b> 2007-07-01</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#rand">issues</a> in [rand].</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2111.pdf">N2111</a>
+changes <tt>min/max</tt> in several places in random from member
+functions to static data members. I believe this introduces
+a needless backward compatibility problem between C++0X and
+TR1. I'd like us to find new names for the static data members,
+or perhaps change <tt>min/max</tt> to <tt>constexpr</tt>s in C++0X.
+</p>
+
+<p>
+See <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2391.pdf">N2391</a> and
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2423.pdf">N2423</a>
+for some further discussion.
+</p>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Adopt the proposed resolution in
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2423.pdf">N2423</a>.
+</p>
+
+
+<p><i>[
+Kona (2007): The LWG adopted the proposed resolution of N2423 for this issue.
+The LWG voted to accelerate this issue to Ready status to be voted into the WP at Kona.
+]</i></p>
+
+
+
+
+
+<hr>
+<h3><a name="712"></a>712. <tt>seed_seq::size</tt> no longer useful</h3>
+<p><b>Section:</b> 26.4.7.1 [rand.util.seedseq] <b>Status:</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>
+ <b>Submitter:</b> Marc Paterno <b>Date:</b> 2007-08-25</p>
+<p><b>View all other</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-index.html#rand.util.seedseq">issues</a> in [rand.util.seedseq].</p>
+<p><b>View all issues with</b> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-status.html#WP">WP</a> status.</p>
+<p><b>Discussion:</b></p>
+<p>
+One of the motivations for incorporating <tt>seed_seq::size()</tt>
+was to simplify the wording
+in other parts of 26.4 [rand].
+As a side effect of resolving related issues,
+all such references
+to <tt>seed_seq::size()</tt> will have been excised.
+More importantly,
+the present specification is contradictory,
+as "The number of 32-bit units the object can deliver"
+is not the same as "the result of <tt>v.size()</tt>."
+</p>
+
+<p>
+See <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2391.pdf">N2391</a> and
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2423.pdf">N2423</a>
+for some further discussion.
+</p>
+
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Adopt the proposed resolution in
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2423.pdf">N2423</a>.
+</p>
+
+
+<p><i>[
+Kona (2007): The LWG adopted the proposed resolution of N2423 for this issue.
+The LWG voted to accelerate this issue to Ready status to be voted into the WP at Kona.
+]</i></p>
+
+
+
+
+
+
+</body></html>
