@@ -1,6 +1,6 @@
 // Wrapper of C-language FILE struct -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2006
+// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -86,27 +86,31 @@ namespace
 	app    = std::ios_base::app,
 	binary = std::ios_base::binary
       };
-    
+
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 596. 27.8.1.3 Table 112 omits "a+" and "a+b" modes.
     switch (mode & (in|out|trunc|app|binary))
       {
-      case (   out                 ): return "w";  
-      case (   out      |app       ): return "a";  
-      case (   out|trunc           ): return "w";  
-      case (in                     ): return "r";  
-      case (in|out                 ): return "r+"; 
-      case (in|out|trunc           ): return "w+"; 
-      // Extension to Table 92.
-      case (in|out      |app       ): return "a+"; 
-	
-      case (   out          |binary): return "wb"; 
-      case (   out      |app|binary): return "ab"; 
-      case (   out|trunc    |binary): return "wb"; 
-      case (in              |binary): return "rb"; 
+      case (   out                 ): return "w";
+      case (   out      |app       ): return "a";
+      case (             app       ): return "a";
+      case (   out|trunc           ): return "w";
+      case (in                     ): return "r";
+      case (in|out                 ): return "r+";
+      case (in|out|trunc           ): return "w+";
+      case (in|out      |app       ): return "a+";
+      case (in          |app       ): return "a+";
+
+      case (   out          |binary): return "wb";
+      case (   out      |app|binary): return "ab";
+      case (             app|binary): return "ab";
+      case (   out|trunc    |binary): return "wb";
+      case (in              |binary): return "rb";
       case (in|out          |binary): return "r+b";
       case (in|out|trunc    |binary): return "w+b";
-      // Extension to Table 92.
       case (in|out      |app|binary): return "a+b";
-	
+      case (in          |app|binary): return "a+b";
+
       default: return 0; // invalid
       }
   }
