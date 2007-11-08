@@ -7006,7 +7006,10 @@ build_ctor_vtbl_group (tree binfo, tree t)
   /* Figure out the type of the construction vtable.  */
   type = build_index_type (size_int (list_length (inits) - 1));
   type = build_cplus_array_type (vtable_entry_type, type);
+  layout_type (type);
   TREE_TYPE (vtbl) = type;
+  DECL_SIZE (vtbl) = DECL_SIZE_UNIT (vtbl) = NULL_TREE;
+  layout_decl (vtbl, 0);
 
   /* Initialize the construction vtable.  */
   CLASSTYPE_VTABLES (t) = chainon (CLASSTYPE_VTABLES (t), vtbl);
