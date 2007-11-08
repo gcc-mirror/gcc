@@ -59,7 +59,7 @@ for k in $possible_real_kinds; do
     # Check for the value of HUGE
     echo "print *, huge(0._$k) ; end" > tmq$$.f90
     huge=`$compile -c -fdump-parse-tree tmq$$.f90 | grep TRANSFER \
-		| sed 's/ *TRANSFER *// ; s/_.*//'`
+		| sed 's/ *TRANSFER *//' | sed 's/_.*//'`
     rm -f tmq$$.*
 
     # Check for the value of DIGITS
