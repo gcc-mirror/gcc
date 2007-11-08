@@ -1,3 +1,8 @@
+2007-11-08  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* gcc.dg/compat/struct-layout-1_generate.c (dg-options) Add
+	-fno-common for cygwin and mingw32.
+
 2007-11-08  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	PR middle-end/33826
