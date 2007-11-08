@@ -332,9 +332,13 @@ do {							\
 #undef MAX_OFILE_ALIGNMENT
 #define MAX_OFILE_ALIGNMENT (8192 * 8)
 
-/* Native complier aligns internal doubles in structures on dword boundaries.  */
+/* BIGGEST_FIELD_ALIGNMENT macro is used directly by libobjc, There, we
+   align internal doubles in structures on dword boundaries. Otherwise,
+   support vector modes using ADJUST_FIELD_ALIGN, defined in i386.h.  */
+#ifdef IN_TARGET_LIBS
 #undef	BIGGEST_FIELD_ALIGNMENT
 #define BIGGEST_FIELD_ALIGNMENT 64
+#endif
 
 /* A bit-field declared as `int' forces `int' alignment for the struct.  */
 #undef PCC_BITFIELD_TYPE_MATTERS

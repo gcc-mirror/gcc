@@ -1,3 +1,9 @@
+2007-11-08  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR target/33774
+	* config/i386/cygming.h (BIGGEST_FIELD_ALIGNMENT): Define only if
+	IN_TARGET_LIBS.
+
 2007-11-07  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	PR middle-end/33826
