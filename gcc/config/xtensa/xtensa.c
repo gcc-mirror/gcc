@@ -2308,12 +2308,12 @@ xtensa_expand_prologue (void)
   size_rtx = GEN_INT (total_size);
 
   if (total_size < (1 << (12+3)))
-    insn = emit_insn (gen_entry (size_rtx, size_rtx));
+    insn = emit_insn (gen_entry (size_rtx));
   else
     {
       /* Use a8 as a temporary since a0-a7 may be live.  */
       rtx tmp_reg = gen_rtx_REG (Pmode, A8_REG);
-      emit_insn (gen_entry (size_rtx, GEN_INT (MIN_FRAME_SIZE)));
+      emit_insn (gen_entry (GEN_INT (MIN_FRAME_SIZE)));
       emit_move_insn (tmp_reg, GEN_INT (total_size - MIN_FRAME_SIZE));
       emit_insn (gen_subsi3 (tmp_reg, stack_pointer_rtx, tmp_reg));
       insn = emit_insn (gen_movsi (stack_pointer_rtx, tmp_reg));

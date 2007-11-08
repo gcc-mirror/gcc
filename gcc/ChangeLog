@@ -1,3 +1,10 @@
+2007-11-08  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (xtensa_expand_prologue): Remove first
+	argument for gen_entry calls.
+	* config/xtensa/xtensa.md: Add new "entry" value to "type" attribute.
+	(entry): Use the new attribute value.  Remove unused first operand.
+
 2007-11-08  Tom Tromey  <tromey@redhat.com>
 
 	* c-parser.c (c_parser_translation_unit): Use location in error.
