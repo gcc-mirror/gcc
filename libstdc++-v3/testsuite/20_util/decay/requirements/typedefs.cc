@@ -34,8 +34,9 @@ void test01()
   typedef decay<bool>::type     	test1_type;
   VERIFY( (is_same<test1_type, bool>::value) );
 
+  // NB: DR 705.
   typedef decay<const int>::type  	test2_type;
-  VERIFY( (is_same<test2_type, const int>::value) );
+  VERIFY( (is_same<test2_type, int>::value) );
 
   typedef decay<int[4]>::type     	test3_type;
   VERIFY( (is_same<test3_type, std::remove_extent<int[4]>::type*>::value) );

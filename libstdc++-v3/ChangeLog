@@ -1,5 +1,13 @@
 2007-11-08  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/std/type_traits (__decay_selector<_Up, false, false>):
+	Change according to DR 705.
+	* include/bits/stl_pair.h (make_pair(_T1&&, _T2&&)): Change
+	according to DR 706.
+	* include/tr1_impl/tuple: Tweak.
+
+2007-11-08  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/debug/vector (push_back, emplace): Fix signature typo.
 
 2007-11-08  Paolo Carlini  <pcarlini@suse.de>

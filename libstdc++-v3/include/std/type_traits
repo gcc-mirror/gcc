@@ -308,21 +308,21 @@ namespace std
 	   bool _IsFunction = is_function<_Up>::value> 
     struct __decay_selector;
 
+  // NB: DR 705.
   template<typename _Up> 
     struct __decay_selector<_Up, false, false>
-    { typedef _Up __type; };
+    { typedef typename remove_cv<_Up>::type __type; };
 
   template<typename _Up> 
     struct __decay_selector<_Up, true, false>
     { typedef typename remove_extent<_Up>::type* __type; };
-
 
   template<typename _Up> 
     struct __decay_selector<_Up, false, true>
     { typedef typename add_pointer<_Up>::type __type; };
 
   template<typename _Tp> 
-  struct decay 
+    struct decay 
     { 
     private:
       typedef typename remove_reference<_Tp>::type __remove_type;
