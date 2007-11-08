@@ -18,7 +18,7 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
-; See the GCC internals manual for a description of this file's format.
+; See the GCC internals manual (options.texi) for a description of this file's format.
 
 ; Please try to keep this file in ASCII collating order.
 
