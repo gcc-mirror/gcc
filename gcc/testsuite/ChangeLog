@@ -1,3 +1,7 @@
+2007-11-08  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* g++.dg/opt/anchor1.C: New.
+
 2007-11-07  Diego Novillo  <dnovillo@google.com>
 
 	PR 33870

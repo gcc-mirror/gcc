@@ -1,3 +1,7 @@
+2007-11-08  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* class.c (build_ctor_vtbl_group): Lay out the new type and decl.
+
 2007-11-07  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR c++/33045
