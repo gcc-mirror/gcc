@@ -1,3 +1,10 @@
+2007-11-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/33917
+	* interface.c (check_sym_interfaces): Disallow PROCEDURE-declared
+	procedures for MODULE PROCEDURE.
+	* decl.c (match_procedure_in_interface): Do not mark as procedure.
+
 2007-11-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/33881

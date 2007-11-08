@@ -4091,8 +4091,6 @@ match_procedure_in_interface (void)
       if (gfc_add_interface (sym) == FAILURE)
 	return MATCH_ERROR;
 
-      sym->attr.procedure = 1;
-
       if (gfc_match_eos () == MATCH_YES)
 	break;
       if (gfc_match_char (',') != MATCH_YES)
