@@ -4,4 +4,4 @@
 /* { dg-do compile } */
 /* { dg-options "-pedantic-errors" } */
 
-/* { dg-error "ISO C forbids an empty source file" "empty" { target *-*-* } 1 } */
+/* { dg-error "ISO C forbids an empty source file" "empty" { target *-*-* } 7 } */

@@ -15,9 +15,9 @@ void f1(void)
 
 void f2(void)
 {
-  label:
+  label:       /* { dg-error "label at end of compound statement" } */
     #pragma omp barrier
-}		/* { dg-error "label at end of compound statement" } */
+}
 
 void f3(_Bool p)
 {
