@@ -1,3 +1,9 @@
+2007-11-08  Richard Guenther  <rguenther@suse.de>
+
+	* tree-dfa.c (remove_referenced_var): If removing a
+	variable which has subvars, also remove those from
+	the referenced vars.  Do not create a variable annotation.
+
 2007-11-08  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (xtensa_expand_prologue): Remove first

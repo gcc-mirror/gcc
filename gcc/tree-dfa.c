@@ -751,10 +751,22 @@ remove_referenced_var (tree var)
   struct tree_decl_minimal in;
   void **loc;
   unsigned int uid = DECL_UID (var);
+  subvar_t sv;
+
+  /* If we remove a var, we should also remove its subvars, as we kill
+     their parent var and its annotation.  */
+  if (var_can_have_subvars (var)
+      && (sv = get_subvars_for_var (var)))
+    {
+      unsigned int i;
+      tree subvar;
+      for (i = 0; VEC_iterate (tree, sv, i, subvar); ++i)
+        remove_referenced_var (subvar);
+    }
 
   clear_call_clobbered (var);
-  v_ann = get_var_ann (var);
-  ggc_free (v_ann);
+  if ((v_ann = var_ann (var)))
+    ggc_free (v_ann);
   var->base.ann = NULL;
   gcc_assert (DECL_P (var));
   in.uid = uid;
