@@ -1,5 +1,12 @@
 2007-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/33739
+	* scanner.c (start_source_file, end_source_file,
+	exit_remaining_files): New functions.
+	(gfc_advance_line): Use the new functions.
+
+2007-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/34028
 	* trans-intrinsic.c (gfc_conv_intrinsic_ishft): Use correct type.
 
