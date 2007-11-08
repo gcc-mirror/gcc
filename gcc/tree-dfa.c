@@ -287,7 +287,7 @@ dump_subvars_for (FILE *file, tree var)
   for (i = 0; VEC_iterate (tree, sv, i, subvar); ++i)
     {
       print_generic_expr (file, subvar, dump_flags);
-      fprintf (file, " ");
+      fprintf (file, "@" HOST_WIDE_INT_PRINT_UNSIGNED " ", SFT_OFFSET (subvar));
     }
 
   fprintf (file, "}");

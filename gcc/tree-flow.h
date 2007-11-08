@@ -1159,6 +1159,10 @@ struct fieldoff
   /* Field.  */
   tree decl;
 
+  /* True if this field is inside a structure nested inside the base
+     containing object.  */
+  unsigned int in_nested_struct : 1;
+
   /* Offset from the base of the base containing object to this field.  */
   HOST_WIDE_INT offset;  
 

@@ -1,3 +1,22 @@
+2007-11-07  Diego Novillo  <dnovillo@google.com>
+
+	PR 33870
+	* tree.h (struct tree_struct_field_tag): Add field in_nested_struct.
+	(SFT_IN_NESTED_STRUCT): Define.
+	* tree-dfa.c (dump_subvars_for): Show offset of each
+	sub-var.
+	* tree-flow.h (struct fieldoff): Add field in_nested_struct.
+	* tree-ssa-structalias.c (struct variable_info): Likewise.
+	(push_fields_onto_fieldstack): If OFFSET is positive,
+	set in_nested_struct.
+	(create_variable_info_for): Copy setting of
+	in_nested_struct from the field offset object.
+	(set_uids_in_ptset): Set SFT_IN_NESTED_STRUCT from the
+	variable info object.
+	* tree-ssa-operands.c (add_vars_for_offset): If VAR
+	belongs to a nested structure, adjust OFFSET by
+	SFT_OFFSET(VAR).
+
 2007-11-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/33737

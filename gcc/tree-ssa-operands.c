@@ -1397,8 +1397,48 @@ add_vars_for_offset (tree var, unsigned HOST_WIDE_INT offset,
   subvar_t sv;
   unsigned int i;
 
-  /* Adjust offset by the pointed-to location.  */
-  offset += SFT_OFFSET (var);
+  if (SFT_IN_NESTED_STRUCT (var))
+    {
+      /* Since VAR is an SFT inside a nested structure, the OFFSET
+	 computed by get_ref_base_and_extent is the offset from the
+	 start of the immediately containing structure.  However, to
+	 find out what other SFTs are affected by this reference, we
+	 need to know the offsets starting at the root structure in
+	 the nesting hierarchy.
+
+	 For instance, given the following structure:
+
+	 	struct X {
+		  int a;
+		  struct Y {
+		    int b;
+		    struct Z {
+		      int c[3];
+		    } d;
+		  } e;
+		} m;
+
+	 and the following address expression:
+
+		p_1 = &m.e.d;
+
+	 This structure will receive 5 SFTs, namely 2 for fields 'a'
+	 and 'b' and 3 for the array 'c' in struct Z.  So, the
+	 reference p_1->c[2] and m.e.d.c[2] access the exact same
+	 memory location (ie, SFT.5).
+
+	 Now, alias analysis computed the points-to set for pointer
+	 p_1 as  { SFT.3 } because that is the first field that p_1
+	 actually points to.  When the expression p_1->c[2] is
+	 analyzed, get_ref_base_and_extent will return an offset of 96
+	 because we are accessing the third element of the array.  But
+	 the SFT we are looking for is actually at offset 160,
+	 counting from the top of struct X.
+
+	 Therefore, we adjust OFFSET by the offset of VAR so that we
+	 can get at all the fields starting at VAR.  */
+      offset += SFT_OFFSET (var);
+    }
 
   /* Add all subvars of var that overlap with the access.
      Binary search for the first relevant SFT.  */
