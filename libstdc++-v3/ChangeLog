@@ -1,5 +1,12 @@
 2007-11-08  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/locale_facets.h (ctype<char>::taple, classic_table):
+	Implement trivial resolution of DR 695 [Ready].
+	* testsuite/22_locale/ctype/dr695.cc: New.
+	* docs/html/ext/howto.html: Update.
+
+2007-11-08  Paolo Carlini  <pcarlini@suse.de>
+
 	* docs/html/ext/lwg-active.html: Update to Revision R52.
 	* docs/html/ext/lwg-closed.html: Likewise.
 	* docs/html/ext/lwg-defects.html: Likewise.

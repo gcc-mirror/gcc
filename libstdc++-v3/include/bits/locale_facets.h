@@ -972,7 +972,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	return this->do_narrow(__lo, __hi, __dfault, __to);
       }
 
-    protected:
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 695. ctype<char>::classic_table() not accessible.
       /// Returns a pointer to the mask table provided to the constructor, or
       /// the default from classic_table() if none was provided.
       const mask*
@@ -982,6 +983,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       /// Returns a pointer to the C locale mask table.
       static const mask*
       classic_table() throw();
+    protected:
 
       /**
        *  @brief  Destructor.
