@@ -1,5 +1,13 @@
 2007-11-08  Paolo Carlini  <pcarlini@suse.de>
 
+	* config/io/basic_file_stdio.cc (fopen_mode): Add modes missing
+	per DR 596.
+	* testsuite/27_io/basic_filebuf/open/char/4.cc: Extend.
+	* include/std/fstream: Update comment preceding open.
+	* docs/html/ext/howto.html: Update.
+
+2007-11-08  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/std/type_traits (__decay_selector<_Up, false, false>):
 	Change according to DR 705.
 	* include/bits/stl_pair.h (make_pair(_T1&&, _T2&&)): Change
