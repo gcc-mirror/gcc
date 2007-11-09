@@ -1,3 +1,10 @@
+2007-11-09  Alexander Monakov  <amonakov@ispras.ru>
+
+	* gcc/haifa-sched.c (haifa_classify_insn): Rename to ...
+	(haifa_classify_rtx): ...  this.  Improve handling of COND_EXECs,
+	handle PARALLELs by recursing.  Use it ...  
+	(haifa_classify_insn): ...  here.  Reimplement.
+
 2007-11-09  Richard Guenther  <rguenther@suse.de>
 
 	* bitmap.h (bitmap_single_bit_set_p): Declare.

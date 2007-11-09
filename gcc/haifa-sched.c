@@ -405,8 +405,9 @@ may_trap_exp (const_rtx x, int is_store)
     }
 }
 
-/* Classifies insn for the purpose of verifying that it can be
-   moved speculatively, by examining it's patterns, returning:
+/* Classifies rtx X of an insn for the purpose of verifying that X can be
+   executed speculatively (and consequently the insn can be moved
+   speculatively), by examining X, returning:
    TRAP_RISKY: store, or risky non-load insn (e.g. division by variable).
    TRAP_FREE: non-load insn.
    IFREE: load from a globally safe location.
@@ -414,45 +415,20 @@ may_trap_exp (const_rtx x, int is_store)
    PFREE_CANDIDATE, PRISKY_CANDIDATE: load that need to be checked for
    being either PFREE or PRISKY.  */
 
-int
-haifa_classify_insn (const_rtx insn)
+static int
+haifa_classify_rtx (const_rtx x)
 {
-  rtx pat = PATTERN (insn);
   int tmp_class = TRAP_FREE;
   int insn_class = TRAP_FREE;
   enum rtx_code code;
 
-  if (GET_CODE (pat) == PARALLEL)
+  if (GET_CODE (x) == PARALLEL)
     {
-      int i, len = XVECLEN (pat, 0);
+      int i, len = XVECLEN (x, 0);
 
       for (i = len - 1; i >= 0; i--)
 	{
-	  code = GET_CODE (XVECEXP (pat, 0, i));
-	  switch (code)
-	    {
-	    case CLOBBER:
-	      /* Test if it is a 'store'.  */
-	      tmp_class = may_trap_exp (XEXP (XVECEXP (pat, 0, i), 0), 1);
-	      break;
-	    case SET:
-	      /* Test if it is a store.  */
-	      tmp_class = may_trap_exp (SET_DEST (XVECEXP (pat, 0, i)), 1);
-	      if (tmp_class == TRAP_RISKY)
-		break;
-	      /* Test if it is a load.  */
-	      tmp_class
-		= WORST_CLASS (tmp_class,
-			       may_trap_exp (SET_SRC (XVECEXP (pat, 0, i)),
-					     0));
-	      break;
-	    case COND_EXEC:
-	    case TRAP_IF:
-	      tmp_class = TRAP_RISKY;
-	      break;
-	    default:
-	      ;
-	    }
+	  tmp_class = haifa_classify_rtx (XVECEXP (x, 0, i));
 	  insn_class = WORST_CLASS (insn_class, tmp_class);
 	  if (insn_class == TRAP_RISKY || insn_class == IRISKY)
 	    break;
@@ -460,24 +436,30 @@ haifa_classify_insn (const_rtx insn)
     }
   else
     {
-      code = GET_CODE (pat);
+      code = GET_CODE (x);
       switch (code)
 	{
 	case CLOBBER:
 	  /* Test if it is a 'store'.  */
-	  tmp_class = may_trap_exp (XEXP (pat, 0), 1);
+	  tmp_class = may_trap_exp (XEXP (x, 0), 1);
 	  break;
 	case SET:
 	  /* Test if it is a store.  */
-	  tmp_class = may_trap_exp (SET_DEST (pat), 1);
+	  tmp_class = may_trap_exp (SET_DEST (x), 1);
 	  if (tmp_class == TRAP_RISKY)
 	    break;
 	  /* Test if it is a load.  */
 	  tmp_class =
 	    WORST_CLASS (tmp_class,
-			 may_trap_exp (SET_SRC (pat), 0));
+			 may_trap_exp (SET_SRC (x), 0));
 	  break;
 	case COND_EXEC:
+	  tmp_class = haifa_classify_rtx (COND_EXEC_CODE (x));
+	  if (tmp_class == TRAP_RISKY)
+	    break;
+	  tmp_class = WORST_CLASS (tmp_class,
+				   may_trap_exp (COND_EXEC_TEST (x), 0));
+	  break;
 	case TRAP_IF:
 	  tmp_class = TRAP_RISKY;
 	  break;
@@ -488,6 +470,13 @@ haifa_classify_insn (const_rtx insn)
 
   return insn_class;
 }
+
+int
+haifa_classify_insn (const_rtx insn)
+{
+  return haifa_classify_rtx (PATTERN (insn));
+}
+
 
 /* A typedef for rtx vector.  */
 typedef VEC(rtx, heap) *rtx_vec_t;
