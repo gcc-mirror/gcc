@@ -40,6 +40,25 @@ typedef struct basic_block_def *basic_block;
 #endif
 struct static_var_ann_d;
 
+/* The reasons a variable may escape a function.  */
+enum escape_type 
+{
+  NO_ESCAPE = 0,			/* Doesn't escape.  */
+  ESCAPE_STORED_IN_GLOBAL = 1 << 0,
+  ESCAPE_TO_ASM = 1 << 1,		/* Passed by address to an assembly
+					   statement.  */
+  ESCAPE_TO_CALL = 1 << 2,		/* Escapes to a function call.  */
+  ESCAPE_BAD_CAST = 1 << 3,		/* Cast from pointer to integer */
+  ESCAPE_TO_RETURN = 1 << 4,		/* Returned from function.  */
+  ESCAPE_TO_PURE_CONST = 1 << 5,	/* Escapes to a pure or constant
+					   function call.  */
+  ESCAPE_IS_GLOBAL = 1 << 6,		/* Is a global variable.  */
+  ESCAPE_IS_PARM = 1 << 7,		/* Is an incoming function argument.  */
+  ESCAPE_UNKNOWN = 1 << 8		/* We believe it escapes for
+					   some reason not enumerated
+					   above.  */
+};
+
 /* Memory reference statistics for individual memory symbols,
    collected during alias analysis.  */
 struct mem_sym_stats_d GTY(())
@@ -228,6 +247,9 @@ struct ptr_info_def GTY(())
   /* Nonzero if this pointer points to NULL.  */
   unsigned int pt_null : 1;
 
+  /* Mask of reasons this pointer's value escapes the function  */
+  ENUM_BITFIELD (escape_type) escape_mask : 9;
+
   /* Set of variables that this pointer may point to.  */
   bitmap pt_vars;
 
@@ -236,9 +258,6 @@ struct ptr_info_def GTY(())
      pointer will be represented by this memory tag, instead of the type
      tag computed by TBAA.  */
   tree name_mem_tag;
-
-  /* Mask of reasons this pointer's value escapes the function  */
-  unsigned int escape_mask;
 };
 
 
@@ -343,12 +362,16 @@ struct var_ann_d GTY(())
   unsigned is_heapvar : 1;
 
   /* True if the variable is call clobbered.  */
-  unsigned int call_clobbered : 1;
+  unsigned call_clobbered : 1;
 
   /* This field describes several "no alias" attributes that some
      symbols are known to have.  See the enum's definition for more
      information on each attribute.  */
   ENUM_BITFIELD (noalias_state) noalias_state : 2;
+
+  /* Mask of values saying the reasons why this variable has escaped
+     the function.  */
+  ENUM_BITFIELD (escape_type) escape_mask : 9;
 
   /* Memory partition tag assigned to this symbol.  */
   tree mpt;
@@ -376,10 +399,6 @@ struct var_ann_d GTY(())
   /* If this variable is a structure, this fields holds an array
      of symbols representing each of the fields of the structure.  */
   VEC(tree,gc) *subvars;
-
-  /* Mask of values saying the reasons why this variable has escaped
-     the function.  */
-  unsigned int escape_mask;
 };
 
 /* Container for variable annotation used by hashtable for annotations for
@@ -1032,25 +1051,6 @@ enum move_pos
   };
 extern enum move_pos movement_possibility (tree);
 char *get_lsm_tmp_name (tree, unsigned);
-
-/* The reasons a variable may escape a function.  */
-enum escape_type 
-{
-  NO_ESCAPE = 0,			/* Doesn't escape.  */
-  ESCAPE_STORED_IN_GLOBAL = 1 << 1,
-  ESCAPE_TO_ASM = 1 << 2,		/* Passed by address to an assembly
-					   statement.  */
-  ESCAPE_TO_CALL = 1 << 3,		/* Escapes to a function call.  */
-  ESCAPE_BAD_CAST = 1 << 4,		/* Cast from pointer to integer */
-  ESCAPE_TO_RETURN = 1 << 5,		/* Returned from function.  */
-  ESCAPE_TO_PURE_CONST = 1 << 6,	/* Escapes to a pure or constant
-					   function call.  */
-  ESCAPE_IS_GLOBAL = 1 << 7,		/* Is a global variable.  */
-  ESCAPE_IS_PARM = 1 << 8,		/* Is an incoming function argument.  */
-  ESCAPE_UNKNOWN = 1 << 9		/* We believe it escapes for
-					   some reason not enumerated
-					   above.  */
-};
 
 /* In tree-flow-inline.h  */
 static inline bool is_call_clobbered (const_tree);

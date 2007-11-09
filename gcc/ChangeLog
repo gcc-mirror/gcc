@@ -1,5 +1,12 @@
 2007-11-09  Richard Guenther  <rguenther@suse.de>
 
+	* tree-flow.h (struct ptr_info_def): Make escape_mask a
+	ENUM_BITFIELD.
+	(struct ptr_info_def): Likewise.
+	(enum escape_type): Also use bit zero.
+
+2007-11-09  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/33604
 	* tree-ssa-forwprop.c (tree_ssa_forward_propagate_single_use_vars):
 	Disregard changes in CV qualifiers of pointed to types for
