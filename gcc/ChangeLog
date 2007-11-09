@@ -1,3 +1,10 @@
+2007-11-09  Paolo Bonzini  <bonzini@gnu.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/34012
+	* fwprop.c (try_fwprop_subst): Do not replace if the new
+	SET_SRC has a higher cost than the old one.
+
 2007-11-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/33732
