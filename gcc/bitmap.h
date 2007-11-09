@@ -107,6 +107,9 @@ extern bool bitmap_intersect_compl_p (const_bitmap, const_bitmap);
 /* True if MAP is an empty bitmap.  */
 #define bitmap_empty_p(MAP) (!(MAP)->first)
 
+/* True if the bitmap has only a single bit set.  */
+extern bool bitmap_single_bit_set_p (const_bitmap);
+
 /* Count the number of bits set in the bitmap.  */
 extern unsigned long bitmap_count_bits (const_bitmap);
 

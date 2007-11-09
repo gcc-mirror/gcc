@@ -1,3 +1,10 @@
+2007-11-09  Richard Guenther  <rguenther@suse.de>
+
+	* bitmap.h (bitmap_single_bit_set_p): Declare.
+	* bitmap.c (bitmap_single_bit_set_p): New function.
+	* tree-ssa-alias.c (add_may_alias_for_new_tag): Use it.
+	(maybe_create_global_var): Use bitmap_empty_p.
+
 2007-11-09  Paolo Bonzini  <bonzini@gnu.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 

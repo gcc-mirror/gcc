@@ -2780,7 +2780,7 @@ maybe_create_global_var (void)
 	 So, if we have some pure/const and some regular calls in the
 	 program we create .GLOBAL_VAR to avoid missing these
 	 relations.  */
-      if (bitmap_count_bits (gimple_call_clobbered_vars (cfun)) == 0
+      if (bitmap_empty_p (gimple_call_clobbered_vars (cfun))
 	  && stats->num_call_sites > 0
 	  && stats->num_pure_const_call_sites > 0
 	  && stats->num_call_sites > stats->num_pure_const_call_sites)
@@ -3544,7 +3544,8 @@ add_may_alias_for_new_tag (tree tag, tree var)
     aliases = may_aliases (var);
 
   /* Case 1: |aliases| == 1  */
-  if (aliases && bitmap_count_bits (aliases) == 1)
+  if (aliases
+      && bitmap_single_bit_set_p (aliases))
     {
       tree ali = referenced_var (bitmap_first_set_bit (aliases));
       if (TREE_CODE (ali) == SYMBOL_MEMORY_TAG)
