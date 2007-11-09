@@ -1,4 +1,11 @@
 2007-11-09  Alexander Monakov  <amonakov@ispras.ru>
+	    Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* gcc/sched-deps.c (sched_analyze_insn): Use MOVE_BARRIER
+	instead of TRUE_BARRIER for jumps.  Add register dependencies
+	even when reg_pending_barrier is set.
+
+2007-11-09  Alexander Monakov  <amonakov@ispras.ru>
 
 	* gcc/haifa-sched.c (haifa_classify_insn): Rename to ...
 	(haifa_classify_rtx): ...  this.  Improve handling of COND_EXECs,

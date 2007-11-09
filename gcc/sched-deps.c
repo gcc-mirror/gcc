@@ -1920,7 +1920,7 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn)
       rtx next;
       next = next_nonnote_insn (insn);
       if (next && BARRIER_P (next))
-	reg_pending_barrier = TRUE_BARRIER;
+	reg_pending_barrier = MOVE_BARRIER;
       else
 	{
 	  rtx pending, pending_mem;
@@ -1984,6 +1984,94 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn)
       || (NONJUMP_INSN_P (insn) && control_flow_insn_p (insn)))
     reg_pending_barrier = MOVE_BARRIER;
 
+  /* Add register dependencies for insn.
+     If the current insn is conditional, we can't free any of the lists.  */
+  if (sched_get_condition (insn))
+    {
+      EXECUTE_IF_SET_IN_REG_SET (reg_pending_uses, 0, i, rsi)
+	{
+	  struct deps_reg *reg_last = &deps->reg_last[i];
+	  add_dependence_list (insn, reg_last->sets, 0, REG_DEP_TRUE);
+	  add_dependence_list (insn, reg_last->clobbers, 0, REG_DEP_TRUE);
+	  reg_last->uses = alloc_INSN_LIST (insn, reg_last->uses);
+	  reg_last->uses_length++;
+	}
+      EXECUTE_IF_SET_IN_REG_SET (reg_pending_clobbers, 0, i, rsi)
+	{
+	  struct deps_reg *reg_last = &deps->reg_last[i];
+	  add_dependence_list (insn, reg_last->sets, 0, REG_DEP_OUTPUT);
+	  add_dependence_list (insn, reg_last->uses, 0, REG_DEP_ANTI);
+	  reg_last->clobbers = alloc_INSN_LIST (insn, reg_last->clobbers);
+	  reg_last->clobbers_length++;
+	}
+      EXECUTE_IF_SET_IN_REG_SET (reg_pending_sets, 0, i, rsi)
+	{
+	  struct deps_reg *reg_last = &deps->reg_last[i];
+	  add_dependence_list (insn, reg_last->sets, 0, REG_DEP_OUTPUT);
+	  add_dependence_list (insn, reg_last->clobbers, 0, REG_DEP_OUTPUT);
+	  add_dependence_list (insn, reg_last->uses, 0, REG_DEP_ANTI);
+	  reg_last->sets = alloc_INSN_LIST (insn, reg_last->sets);
+	  SET_REGNO_REG_SET (&deps->reg_conditional_sets, i);
+	}
+    }
+  else
+    {
+      EXECUTE_IF_SET_IN_REG_SET (reg_pending_uses, 0, i, rsi)
+	{
+	  struct deps_reg *reg_last = &deps->reg_last[i];
+	  add_dependence_list (insn, reg_last->sets, 0, REG_DEP_TRUE);
+	  add_dependence_list (insn, reg_last->clobbers, 0, REG_DEP_TRUE);
+	  reg_last->uses_length++;
+	  reg_last->uses = alloc_INSN_LIST (insn, reg_last->uses);
+	}
+      EXECUTE_IF_SET_IN_REG_SET (reg_pending_clobbers, 0, i, rsi)
+	{
+	  struct deps_reg *reg_last = &deps->reg_last[i];
+	  if (reg_last->uses_length > MAX_PENDING_LIST_LENGTH
+	      || reg_last->clobbers_length > MAX_PENDING_LIST_LENGTH)
+	    {
+	      add_dependence_list_and_free (insn, &reg_last->sets, 0,
+					    REG_DEP_OUTPUT);
+	      add_dependence_list_and_free (insn, &reg_last->uses, 0,
+					    REG_DEP_ANTI);
+	      add_dependence_list_and_free (insn, &reg_last->clobbers, 0,
+					    REG_DEP_OUTPUT);
+	      reg_last->sets = alloc_INSN_LIST (insn, reg_last->sets);
+	      reg_last->clobbers_length = 0;
+	      reg_last->uses_length = 0;
+	    }
+	  else
+	    {
+	      add_dependence_list (insn, reg_last->sets, 0, REG_DEP_OUTPUT);
+	      add_dependence_list (insn, reg_last->uses, 0, REG_DEP_ANTI);
+	    }
+	  reg_last->clobbers_length++;
+	  reg_last->clobbers = alloc_INSN_LIST (insn, reg_last->clobbers);
+	}
+      EXECUTE_IF_SET_IN_REG_SET (reg_pending_sets, 0, i, rsi)
+	{
+	  struct deps_reg *reg_last = &deps->reg_last[i];
+	  add_dependence_list_and_free (insn, &reg_last->sets, 0,
+					REG_DEP_OUTPUT);
+	  add_dependence_list_and_free (insn, &reg_last->clobbers, 0,
+					REG_DEP_OUTPUT);
+	  add_dependence_list_and_free (insn, &reg_last->uses, 0,
+					REG_DEP_ANTI);
+	  reg_last->sets = alloc_INSN_LIST (insn, reg_last->sets);
+	  reg_last->uses_length = 0;
+	  reg_last->clobbers_length = 0;
+	  CLEAR_REGNO_REG_SET (&deps->reg_conditional_sets, i);
+	}
+    }
+
+  IOR_REG_SET (&deps->reg_last_in_use, reg_pending_uses);
+  IOR_REG_SET (&deps->reg_last_in_use, reg_pending_clobbers);
+  IOR_REG_SET (&deps->reg_last_in_use, reg_pending_sets);
+
+  CLEAR_REG_SET (reg_pending_uses);
+  CLEAR_REG_SET (reg_pending_clobbers);
+  CLEAR_REG_SET (reg_pending_sets);
+
   /* Add dependencies if a scheduling barrier was found.  */
   if (reg_pending_barrier)
     {
@@ -2032,95 +2120,6 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn)
       CLEAR_REG_SET (&deps->reg_conditional_sets);
       reg_pending_barrier = NOT_A_BARRIER;
     }
-  else
-    {
-      /* If the current insn is conditional, we can't free any
-	 of the lists.  */
-      if (sched_get_condition (insn))
-	{
-	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_uses, 0, i, rsi)
-	    {
-	      struct deps_reg *reg_last = &deps->reg_last[i];
-	      add_dependence_list (insn, reg_last->sets, 0, REG_DEP_TRUE);
-	      add_dependence_list (insn, reg_last->clobbers, 0, REG_DEP_TRUE);
-	      reg_last->uses = alloc_INSN_LIST (insn, reg_last->uses);
-	      reg_last->uses_length++;
-	    }
-	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_clobbers, 0, i, rsi)
-	    {
-	      struct deps_reg *reg_last = &deps->reg_last[i];
-	      add_dependence_list (insn, reg_last->sets, 0, REG_DEP_OUTPUT);
-	      add_dependence_list (insn, reg_last->uses, 0, REG_DEP_ANTI);
-	      reg_last->clobbers = alloc_INSN_LIST (insn, reg_last->clobbers);
-	      reg_last->clobbers_length++;
-	    }
-	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_sets, 0, i, rsi)
-	    {
-	      struct deps_reg *reg_last = &deps->reg_last[i];
-	      add_dependence_list (insn, reg_last->sets, 0, REG_DEP_OUTPUT);
-	      add_dependence_list (insn, reg_last->clobbers, 0, REG_DEP_OUTPUT);
-	      add_dependence_list (insn, reg_last->uses, 0, REG_DEP_ANTI);
-	      reg_last->sets = alloc_INSN_LIST (insn, reg_last->sets);
-	      SET_REGNO_REG_SET (&deps->reg_conditional_sets, i);
-	    }
-	}
-      else
-	{
-	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_uses, 0, i, rsi)
-	    {
-	      struct deps_reg *reg_last = &deps->reg_last[i];
-	      add_dependence_list (insn, reg_last->sets, 0, REG_DEP_TRUE);
-	      add_dependence_list (insn, reg_last->clobbers, 0, REG_DEP_TRUE);
-	      reg_last->uses_length++;
-	      reg_last->uses = alloc_INSN_LIST (insn, reg_last->uses);
-	    }
-	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_clobbers, 0, i, rsi)
-	    {
-	      struct deps_reg *reg_last = &deps->reg_last[i];
-	      if (reg_last->uses_length > MAX_PENDING_LIST_LENGTH
-		  || reg_last->clobbers_length > MAX_PENDING_LIST_LENGTH)
-		{
-		  add_dependence_list_and_free (insn, &reg_last->sets, 0,
-					        REG_DEP_OUTPUT);
-		  add_dependence_list_and_free (insn, &reg_last->uses, 0,
-						REG_DEP_ANTI);
-		  add_dependence_list_and_free (insn, &reg_last->clobbers, 0,
-						REG_DEP_OUTPUT);
-		  reg_last->sets = alloc_INSN_LIST (insn, reg_last->sets);
-		  reg_last->clobbers_length = 0;
-		  reg_last->uses_length = 0;
-		}
-	      else
-		{
-		  add_dependence_list (insn, reg_last->sets, 0, REG_DEP_OUTPUT);
-		  add_dependence_list (insn, reg_last->uses, 0, REG_DEP_ANTI);
-		}
-	      reg_last->clobbers_length++;
-	      reg_last->clobbers = alloc_INSN_LIST (insn, reg_last->clobbers);
-	    }
-	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_sets, 0, i, rsi)
-	    {
-	      struct deps_reg *reg_last = &deps->reg_last[i];
-	      add_dependence_list_and_free (insn, &reg_last->sets, 0,
-					    REG_DEP_OUTPUT);
-	      add_dependence_list_and_free (insn, &reg_last->clobbers, 0,
-					    REG_DEP_OUTPUT);
-	      add_dependence_list_and_free (insn, &reg_last->uses, 0,
-					    REG_DEP_ANTI);
-	      reg_last->sets = alloc_INSN_LIST (insn, reg_last->sets);
-	      reg_last->uses_length = 0;
-	      reg_last->clobbers_length = 0;
-	      CLEAR_REGNO_REG_SET (&deps->reg_conditional_sets, i);
-	    }
-	}
-
-      IOR_REG_SET (&deps->reg_last_in_use, reg_pending_uses);
-      IOR_REG_SET (&deps->reg_last_in_use, reg_pending_clobbers);
-      IOR_REG_SET (&deps->reg_last_in_use, reg_pending_sets);
-    }
-  CLEAR_REG_SET (reg_pending_uses);
-  CLEAR_REG_SET (reg_pending_clobbers);
-  CLEAR_REG_SET (reg_pending_sets);
 
   /* If we are currently in a libcall scheduling group, then mark the
      current insn as being in a scheduling group and that it can not
