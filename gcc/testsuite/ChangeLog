@@ -1,3 +1,9 @@
+2007-11-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/33604
+	* g++.dg/tree-ssa/pr33604.C: New testcase.
+	* gcc.dg/pr32721.c: Adjust pattern.
+
 2007-11-09  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* gcc.target/mips/dse-1.c: Disable.
