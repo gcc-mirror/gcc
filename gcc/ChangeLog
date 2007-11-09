@@ -1,3 +1,12 @@
+2007-11-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR rtl-optimization/33732
+	* reload.c (push_reload): Check that the REG_DEAD note was referring
+	to a hardreg or to a pseudo that has been assigned exactly one hardreg
+	before considering it in order to select the reload register.
+	(combine_reloads): Likewise.
+	(find_dummy_reload): Likewise.
+
 2007-11-09  Richard Guenther  <rguenther@suse.de>
 
 	* tree-flow.h (struct ptr_info_def): Make escape_mask a
