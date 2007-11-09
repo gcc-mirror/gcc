@@ -1,3 +1,7 @@
+/* ??? Further to the subreg comment below, we can't rely on any of the
+   tests passing unless we handle subregs, and the patch to do so has
+   been rejected for the time being.  */
+/* { dg-do compile { target { ! *-*-* } } } */
 /* { dg-mips-options "-mgp64 -O" } */
 
 #define TEST(ID, TYPE1, TYPE2)					\

@@ -1,3 +1,10 @@
+2007-11-09  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* dse.c (find_shift_sequence): Always choose an integer mode for
+	new_mode.
+	(replace_read): Require both the read and store mode to be
+	integer ones.  Remove a then-redundant FLOAT_P check.
+
 2007-11-08  Richard Guenther  <rguenther@suse.de>
 
 	* tree-dfa.c (remove_referenced_var): If removing a

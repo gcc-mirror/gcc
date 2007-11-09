@@ -1447,7 +1447,7 @@ find_shift_sequence (rtx read_reg,
 	continue;
 
       new_mode = smallest_mode_for_size (access_size * BITS_PER_UNIT,
-					 GET_MODE_CLASS (read_mode));
+					 MODE_INT);
       new_reg = gen_reg_rtx (new_mode);
 
       start_sequence ();
@@ -1473,9 +1473,8 @@ find_shift_sequence (rtx read_reg,
 	 of the arguments and could be precomputed.  It may
 	 not be worth doing so.  We could precompute if
 	 worthwhile or at least cache the results.  The result
-	 technically depends on SHIFT, ACCESS_SIZE, and
-	 GET_MODE_CLASS (READ_MODE).  But in practice the
-	 answer will depend only on ACCESS_SIZE.  */
+	 technically depends on both SHIFT and ACCESS_SIZE,
+	 but in practice the answer will depend only on ACCESS_SIZE.  */
 
       if (cost > COSTS_N_INSNS (1))
 	continue;
@@ -1557,7 +1556,8 @@ replace_read (store_info_t store_info, insn_info_t store_insn,
   if (!dbg_cnt (dse))
     return false;
 
-  if (GET_MODE_CLASS (read_mode) != GET_MODE_CLASS (store_mode))
+  if (GET_MODE_CLASS (read_mode) != MODE_INT
+      || GET_MODE_CLASS (store_mode) != MODE_INT)
     return false;
 
   /* To get here the read is within the boundaries of the write so
@@ -1580,7 +1580,7 @@ replace_read (store_info_t store_info, insn_info_t store_insn,
      call to get rid of the read.  */
   if (shift)
     {
-      if (access_size > UNITS_PER_WORD || FLOAT_MODE_P (store_mode))
+      if (access_size > UNITS_PER_WORD)
 	return false;
 
       shift_seq = find_shift_sequence (read_reg, access_size, store_info,
