@@ -139,6 +139,8 @@ namespace __debug
       list&
       operator=(list&& __x)
       {
+        // NB: DR 675.
+	clear();
 	swap(__x);
 	return *this;
       }

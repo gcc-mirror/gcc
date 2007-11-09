@@ -1,5 +1,58 @@
 2007-11-09  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/stl_deque.h (deque<>::operator=(deque&&)): Implement
+	resolution of DR 675, call clear first.
+	* include/bits/stl_list.h (list<>::operator=(list&&)): Likewise.
+	* include/bits/stl_bvector.h (vector<bool>::operator=(vector&&)):
+	Likewise.
+	* include/bits/stl_vector.h (vector<>::operator=(vector&&)): Likewise.
+	* include/bits/stl_map.h (map<>::operator=(map&&)): Likewise.
+	* include/bits/stl_multimap.h (multimap<>::operator=(multimap&&)):
+	Likewise.
+	* include/bits/stl_multiset.h (multiset<>::operator=(multiset&&)):
+	Likewise.
+	* include/bits/stl_set.h (set<>::operator=(set&&)): Likewise.
+	* include/debug/map.h (map<>::operator=(map&&)): Likewise.
+	* include/debug/set.h (set<>::operator=(set&&)): Likewise.
+	* include/debug/multimap.h (multimap<>::operator=(multimap&&)):
+	Likewise.
+	* include/debug/multiset.h (multiset<>::operator=(multiset&&)):
+	Likewise.
+	* include/debug/deque (deque<>::operator=(deque&&)): Likewise.
+	* include/debug/list (list<>::operator=(list&&)): Likewise. 
+	* include/debug/vector (vector<>::operator=(vector&&)): Likewise.
+	* testsuite/23_containers/multimap/moveable.cc: Adjust.
+	* testsuite/23_containers/multiset/moveable.cc: Likewise.
+	* testsuite/23_containers/set/moveable.cc: Likewise.
+	* testsuite/23_containers/map/moveable.cc: Likewise.
+	* testsuite/20_util/pair/moveable.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
+2007-11-09  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/34032
 	* acinclude.m4 ([GLIBCXX_ENABLE_C99], [GLIBCXX_CHECK_C99_TR1]):
 	Use -std=c++98 instead of the default -std=gnu++98.

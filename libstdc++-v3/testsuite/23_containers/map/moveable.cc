@@ -43,7 +43,7 @@ int main()
   a[2]=0;
   b[1]=0;
   b = std::move(a);
-  VERIFY(b.find(2) != b.end() && a.find(1) != a.end());
+  VERIFY(b.find(2) != b.end() && a.find(1) == a.end());
 
   std::map<int, int> c(std::move(b));
   VERIFY( c.find(2) != c.end());
