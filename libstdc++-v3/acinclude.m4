@@ -763,9 +763,13 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
 
-  # Use -fno-exceptions so that the C driver can link these tests without
-  # hitting undefined references to personality routines.
+  # Use -std=c++98 because the default (-std=gnu++98) leaves __STRICT_ANSI__
+  # undefined and fake C99 facilities - like pre-standard snprintf - may be
+  # spuriously enabled.
+  # Long term, -std=c++0x could be even better, could manage to explicitely
+  # request C99 facilities to the underlying C headers.
   ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -std=c++98"
   ac_save_LIBS="$LIBS"
   ac_save_gcc_no_link="$gcc_no_link"
 
@@ -995,6 +999,11 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
+
+  # Use -std=c++98 because the default (-std=gnu++98) leaves __STRICT_ANSI__
+  # undefined and fake C99 facilities may be spuriously enabled.
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -std=c++98"
 
   # Check for the existence of <complex.h> complex math functions used
   # by tr1/complex.
@@ -1266,6 +1275,7 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
   # Check for the existence of the <stdbool.h> header.	
   AC_CHECK_HEADERS(stdbool.h)
 
+  CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
 ])
 
