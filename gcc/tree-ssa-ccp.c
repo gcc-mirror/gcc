@@ -2034,6 +2034,7 @@ fold_stmt_r (tree *expr_p, int *walk_subtrees, void *data)
   bool *inside_addr_expr_p = fold_stmt_r_data->inside_addr_expr_p;
   bool *changed_p = fold_stmt_r_data->changed_p;
   tree expr = *expr_p, t;
+  bool volatile_p = TREE_THIS_VOLATILE (expr);
 
   /* ??? It'd be nice if walk_tree had a pre-order option.  */
   switch (TREE_CODE (expr))
@@ -2159,6 +2160,8 @@ fold_stmt_r (tree *expr_p, int *walk_subtrees, void *data)
 
   if (t)
     {
+      /* Preserve volatileness of the original expression.  */
+      TREE_THIS_VOLATILE (t) = volatile_p;
       *expr_p = t;
       *changed_p = true;
     }

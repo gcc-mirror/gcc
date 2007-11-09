@@ -952,7 +952,15 @@ tree_ssa_forward_propagate_single_use_vars (void)
 		  continue;
 		}
 
-	      if (TREE_CODE (rhs) == ADDR_EXPR)
+	      if (TREE_CODE (rhs) == ADDR_EXPR
+		  /* We can also disregard changes in CV qualifiers for
+		     the dereferenced value.  */
+		  || ((TREE_CODE (rhs) == NOP_EXPR
+		       || TREE_CODE (rhs) == CONVERT_EXPR)
+		      && TREE_CODE (TREE_OPERAND (rhs, 0)) == ADDR_EXPR
+		      && POINTER_TYPE_P (TREE_TYPE (rhs))
+		      && useless_type_conversion_p (TREE_TYPE (TREE_TYPE (rhs)),
+						    TREE_TYPE (TREE_TYPE (TREE_OPERAND (rhs, 0))))))
 		{
 		  if (forward_propagate_addr_expr (lhs, rhs))
 		    {

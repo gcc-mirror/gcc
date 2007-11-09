@@ -1,3 +1,12 @@
+2007-11-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/33604
+	* tree-ssa-forwprop.c (tree_ssa_forward_propagate_single_use_vars):
+	Disregard changes in CV qualifiers of pointed to types for
+	forward propagating ADDR_EXPRs.
+	* tree-ssa-ccp.c (fold_stmt_r): Preserve volatileness of the original
+	expression.
+
 2007-11-09  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* dse.c (find_shift_sequence): Always choose an integer mode for
