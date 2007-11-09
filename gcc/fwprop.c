@@ -675,6 +675,9 @@ try_fwprop_subst (struct df_ref *use, rtx *loc, rtx new, rtx def_insn, bool set_
   rtx insn = DF_REF_INSN (use);
   enum df_ref_type type = DF_REF_TYPE (use);
   int flags = DF_REF_FLAGS (use);
+  rtx set = single_set (insn);
+  int old_cost = rtx_cost (SET_SRC (set), SET);
+  bool ok;
 
   if (dump_file)
     {
@@ -685,11 +688,34 @@ try_fwprop_subst (struct df_ref *use, rtx *loc, rtx new, rtx def_insn, bool set_
       fprintf (dump_file, "\n");
     }
 
-  if (validate_unshare_change (insn, loc, new, false))
+  validate_unshare_change (insn, loc, new, true);
+  if (!verify_changes (0))
     {
-      num_changes++;
+      if (dump_file)
+	fprintf (dump_file, "Changes to insn %d not recognized\n",
+		 INSN_UID (insn));
+      ok = false;
+    }
+
+  else if (rtx_cost (SET_SRC (set), SET) > old_cost)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Changes to insn %d not profitable\n",
+		 INSN_UID (insn));
+      ok = false;
+    }
+
+  else
+    {
       if (dump_file)
 	fprintf (dump_file, "Changed insn %d\n", INSN_UID (insn));
+      ok = true;
+    }
+
+  if (ok)
+    {
+      confirm_change_group ();
+      num_changes++;
 
       df_ref_remove (use);
       if (!CONSTANT_P (new))
@@ -697,13 +723,10 @@ try_fwprop_subst (struct df_ref *use, rtx *loc, rtx new, rtx def_insn, bool set_
 	  update_df (insn, loc, DF_INSN_USES (def_insn), type, flags);
 	  update_df (insn, loc, DF_INSN_EQ_USES (def_insn), type, flags);
 	}
-      return true;
     }
   else
     {
-      if (dump_file)
-	fprintf (dump_file, "Changes to insn %d not recognized\n",
-		 INSN_UID (insn));
+      cancel_changes (0);
 
       /* Can also record a simplified value in a REG_EQUAL note, making a
 	 new one if one does not already exist.  */
@@ -724,9 +747,9 @@ try_fwprop_subst (struct df_ref *use, rtx *loc, rtx new, rtx def_insn, bool set_
 			 type, DF_REF_IN_NOTE);
 	    }
 	}
-
-      return false;
     }
+
+  return ok;
 }
 
 

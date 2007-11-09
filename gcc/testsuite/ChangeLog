@@ -1,3 +1,9 @@
+2007-11-09  Paolo Bonzini  <bonzini@gnu.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/34012
+	* gcc.target/i386/pr34012.c: New test.
+
 2007-11-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/33604
