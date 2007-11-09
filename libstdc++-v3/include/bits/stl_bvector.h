@@ -560,7 +560,9 @@ template<typename _Alloc>
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
     vector&
     operator=(vector&& __x)
-    { 
+    {
+      // NB: DR 675.
+      this->clear();
       this->swap(__x); 
       return *this;
     }

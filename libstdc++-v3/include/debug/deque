@@ -110,6 +110,8 @@ namespace __debug
       deque&
       operator=(deque&& __x)
       {
+        // NB: DR 675.
+	clear();
 	swap(__x);	  
 	return *this;
       }

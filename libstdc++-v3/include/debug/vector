@@ -123,6 +123,8 @@ namespace __debug
       vector&
       operator=(vector&& __x)
       {
+        // NB: DR 675.
+	clear();
 	swap(__x);
 	return *this;
       }

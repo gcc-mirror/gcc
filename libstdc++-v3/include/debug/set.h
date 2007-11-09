@@ -112,6 +112,8 @@ namespace __debug
       set&
       operator=(set&& __x)
       {
+        // NB: DR 675.
+	clear();
 	swap(__x);
 	return *this;
       }

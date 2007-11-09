@@ -225,6 +225,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       multiset&
       operator=(multiset&& __x)
       {
+	// NB: DR 675.
+	this->clear();
 	this->swap(__x); 
 	return *this;
       }

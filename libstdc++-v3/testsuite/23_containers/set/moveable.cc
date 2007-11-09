@@ -43,7 +43,7 @@ int main()
   a.insert(2);
   b.insert(1);
   b = std::move(a);
-  VERIFY(b.find(2) != b.end() && a.find(1) != a.end());
+  VERIFY(b.find(2) != b.end() && a.find(1) == a.end());
 
   std::set<int> c(std::move(b));
   VERIFY( c.find(2) != c.end());

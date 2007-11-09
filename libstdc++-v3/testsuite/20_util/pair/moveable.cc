@@ -58,7 +58,7 @@ test2()
   std::pair<int, std::vector<int> > q = make_pair(2,w);
   p = std::move(q);
   VERIFY(p.first == 2 && q.first == 2 &&
-	 p.second.size() == 2 && q.second.size() == 1);
+	 p.second.size() == 2 && q.second.size() == 0);
   std::pair<int, std::vector<int> > r(std::move(p));
   VERIFY(r.first == 2 && p.first == 2 &&
          r.second.size() == 2 && p.second.size() == 0);
