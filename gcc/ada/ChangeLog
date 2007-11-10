@@ -1,3 +1,9 @@
+2007-11-10  Samuel Tardieu  <sam@rfc1149.net>
+
+	* a-tasatt.adb: Revert previous change for this file as it will
+	generate an error when this package is instantiated from a
+	local context.
+
 2007-11-07  Samuel Tardieu  <sam@rfc1149.net>
 
 	* a-tasatt.adb: Type Wrapper should be declared in comment instead
