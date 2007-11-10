@@ -1,3 +1,11 @@
+2007-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/32241
+	* pt.c (tsubst_copy_and_build) <case COMPONENT_REF>: If object_type
+	is not scalar type, let finish_class_member_access_expr handle
+	diagnostics.  Pass BIT_NOT_EXPR argument to
+	finish_pseudo_destructor_expr.  Handle SCOPE_REF properly.
+
 2007-11-09  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR c++/33510
