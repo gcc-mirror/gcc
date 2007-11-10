@@ -1,3 +1,9 @@
+2007-11-09  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/33510
+	* decl.c (cp_complete_array_type): If any of the initializer
+	elements are pack expansions, don't compute the array size yet.
+
 2007-11-08  Andrew Pinski  <pinskia@gmail.com>
 
 	PR c++/30297:
