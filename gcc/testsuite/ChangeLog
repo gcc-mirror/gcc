@@ -1,5 +1,8 @@
 2007-11-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/33680
+	* gcc.c-torture/compile/20071108-1.c: New test.
+
 	PR c++/32241
 	* g++.dg/template/pseudodtor3.C: New test.
 

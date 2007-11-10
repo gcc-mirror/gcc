@@ -560,7 +560,27 @@ split_constant_offset (tree exp, tree *var, tree *off)
 				fold_convert (TREE_TYPE (base), poffset));
 	  }
 
-	*var = fold_convert (type, base);
+	var0 = fold_convert (type, base);
+
+	/* If variable length types are involved, punt, otherwise casts
+	   might be converted into ARRAY_REFs in gimplify_conversion.
+	   To compute that ARRAY_REF's element size TYPE_SIZE_UNIT, which
+	   possibly no longer appears in current GIMPLE, might resurface.
+	   This perhaps could run
+	   if (TREE_CODE (var0) == NOP_EXPR
+	       || TREE_CODE (var0) == CONVERT_EXPR)
+	     {
+	       gimplify_conversion (&var0);
+	       // Attempt to fill in any within var0 found ARRAY_REF's
+	       // element size from corresponding op embedded ARRAY_REF,
+	       // if unsuccessful, just punt.
+	     }  */
+	while (POINTER_TYPE_P (type))
+	  type = TREE_TYPE (type);
+	if (int_size_in_bytes (type) < 0)
+	  break;
+
+	*var = var0;
 	*off = off0;
 	return;
       }
