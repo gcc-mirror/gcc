@@ -1,3 +1,8 @@
+2007-11-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/33592
+	* trans.c (gfc_call_realloc): Fix the logic and rename variables.
+
 2007-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/33739

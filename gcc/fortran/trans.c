@@ -829,19 +829,19 @@ internal_realloc (void *mem, size_t size)
 {
   if (size < 0)
     runtime_error ("Attempt to allocate a negative amount of memory.");
-  mem = realloc (mem, size);
-  if (!mem && size != 0)
+  res = realloc (mem, size);
+  if (!res && size != 0)
     _gfortran_os_error ("Out of memory");
 
   if (size == 0)
     return NULL;
 
-  return mem;
+  return res;
 }  */
 tree
 gfc_call_realloc (stmtblock_t * block, tree mem, tree size)
 {
-  tree msg, res, negative, zero, null_result, tmp;
+  tree msg, res, negative, nonzero, zero, null_result, tmp;
   tree type = TREE_TYPE (mem);
 
   size = gfc_evaluate_now (size, block);
@@ -868,10 +868,10 @@ gfc_call_realloc (stmtblock_t * block, tree mem, tree size)
   gfc_add_modify_expr (block, res, fold_convert (type, tmp));
   null_result = fold_build2 (EQ_EXPR, boolean_type_node, res,
 			     build_int_cst (pvoid_type_node, 0));
-  zero = fold_build2 (EQ_EXPR, boolean_type_node, size,
-		      build_int_cst (size_type_node, 0));
+  nonzero = fold_build2 (NE_EXPR, boolean_type_node, size,
+			 build_int_cst (size_type_node, 0));
   null_result = fold_build2 (TRUTH_AND_EXPR, boolean_type_node, null_result,
-			     zero);
+			     nonzero);
   msg = gfc_build_addr_expr (pchar_type_node,
 			     gfc_build_cstring_const ("Out of memory"));
   tmp = fold_build3 (COND_EXPR, void_type_node, null_result,
@@ -881,6 +881,7 @@ gfc_call_realloc (stmtblock_t * block, tree mem, tree size)
 
   /* if (size == 0) then the result is NULL.  */
   tmp = fold_build2 (MODIFY_EXPR, type, res, build_int_cst (type, 0));
+  zero = fold_build1 (TRUTH_NOT_EXPR, boolean_type_node, nonzero);
   tmp = fold_build3 (COND_EXPR, void_type_node, zero, tmp,
 		     build_empty_stmt ());
   gfc_add_expr_to_block (block, tmp);
