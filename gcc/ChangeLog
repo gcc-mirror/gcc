@@ -1,13 +1,19 @@
+2007-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/33680
+	* tree-data-ref.c (split_constant_offset) <case ADDR_EXPR>: Punt
+	if the added cast involves variable length types.
+
 2007-11-09  Alexander Monakov  <amonakov@ispras.ru>
 	    Maxim Kuvyrkov  <maxim@codesourcery.com>
 
-	* gcc/sched-deps.c (sched_analyze_insn): Use MOVE_BARRIER
+	* sched-deps.c (sched_analyze_insn): Use MOVE_BARRIER
 	instead of TRUE_BARRIER for jumps.  Add register dependencies
 	even when reg_pending_barrier is set.
 
 2007-11-09  Alexander Monakov  <amonakov@ispras.ru>
 
-	* gcc/haifa-sched.c (haifa_classify_insn): Rename to ...
+	* haifa-sched.c (haifa_classify_insn): Rename to ...
 	(haifa_classify_rtx): ...  this.  Improve handling of COND_EXECs,
 	handle PARALLELs by recursing.  Use it ...  
 	(haifa_classify_insn): ...  here.  Reimplement.
@@ -129,7 +135,7 @@
 	 -fipa-reference): Add or correct doc.  Sorted options list for -Os
 	 -O, -O2.
 	
-2007-11-07  <aldot@gcc.gnu.org>  Bernhard Fischer
+2007-11-07  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	PR target/16350
 	* config.gcc: For arm*b-* define TARGET_BIG_ENDIAN_DEFAULT.
@@ -140,7 +146,7 @@
 	* config/arm/linux-eabi.h (TARGET_LINKER_EMULATION): Set according
 	to TARGET_BIG_ENDIAN_DEFAULT.
 	(SUBTARGET_EXTRA_LINK_SPEC): Likewise.
-	* gcc/config/arm/bpabi.h (TARGET_DEFAULT_MASK): Set according
+	* config/arm/bpabi.h (TARGET_DEFAULT_MASK): Set according
 	to TARGET_BIG_ENDIAN_DEFAULT.
 
 2007-11-07  Diego Novillo  <dnovillo@google.com>
@@ -3281,12 +3287,12 @@
 	* config/m68k/m68k.md (cmp<mode>, cmp<mode>_68881, cmp<mode>_cf):
 	Cleanup predicates to relieve reload.
 	(conditional_trap): Reject conditional trap with fp condition.
-	* gcc/config/m68k/predicates.md (fp_src_operand): New, reject
+	* config/m68k/predicates.md (fp_src_operand): New, reject
 	certain constants early.
 
 2007-09-24  Roman Zippel <zippel@linux-m68k.org>
 
-	* gcc/final.c (final_scan_insn): Remove accidentally duplicated code.
+	* final.c (final_scan_insn): Remove accidentally duplicated code.
 
 2007-09-24  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
@@ -3507,16 +3513,16 @@
 
 2007-09-19  Michael Meissner  <michael.meissner@amd.com>
 
-	* gcc/config/i386/i386.c: Delete trailing whitespace.
-	* gcc/config/i386/i386.h: Ditto.
-	* gcc/config/i386/bmmintrin.h: Ditto.
-	* gcc/config/i386/sync.md: Ditto.
-	* gcc/config/i386/ppro.md: Ditto.
-	* gcc/config/i386/mmx.md: Ditto.
-	* gcc/config/i386/constraints.md: Ditto.
-	* gcc/config/i386/sse.md: Ditto.
-	* gcc/config/i386/athlon.md: Ditto.
-	* gcc/config/i386/i386.md: Ditto.
+	* config/i386/i386.c: Delete trailing whitespace.
+	* config/i386/i386.h: Ditto.
+	* config/i386/bmmintrin.h: Ditto.
+	* config/i386/sync.md: Ditto.
+	* config/i386/ppro.md: Ditto.
+	* config/i386/mmx.md: Ditto.
+	* config/i386/constraints.md: Ditto.
+	* config/i386/sse.md: Ditto.
+	* config/i386/athlon.md: Ditto.
+	* config/i386/i386.md: Ditto.
 
 2007-09-21  Richard Guenther  <rguenther@suse.de>
 
@@ -5135,13 +5141,13 @@
 2007-09-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/33369
-	* gcc/config/i386/sse.md (ashr<mode>3): Change op2 mode to SImode.
+	* config/i386/sse.md (ashr<mode>3): Change op2 mode to SImode.
 	Use 'N' operand constraint for op2.
 	(lshr<mode>3): Ditto.
 	(ashl<mode>3): Ditto.
 	(vec_shl_<mode>): Use const_0_to_255_mul_8_operand predicate for op2.
 	(vec_shr_<mode>): Ditto.
-	* gcc/config/i386/i386.c (ix86_expand_builtin) [IX86_BUILTIN_PSLL?128,
+	* config/i386/i386.c (ix86_expand_builtin) [IX86_BUILTIN_PSLL?128,
 	IX86_BUILTIN_PSRA*?128, IX86_BUILTIN_PSRL?128]: Convert op1 to SImode.
 
 2007-09-10  Andreas Krebbel  <krebbel1@de.ibm.com>
@@ -6214,8 +6220,8 @@
 
 2007-09-05  Uros Bizjak  <ubizjak@gmail.com>
 
-	* gcc/config/i386/cpuid.h: New file.
-	* gcc/config/i386/driver-i386.c: Include cpuid.h.
+	* config/i386/cpuid.h: New file.
+	* config/i386/driver-i386.c: Include cpuid.h.
 	(describe_cache): Shrink size and line strings to 100 bytes.
 	(detect_caches_amd): Return "" for unsupported max_ext_level.
 	Use __cpuid function.
@@ -6235,12 +6241,12 @@
 	[PROCESSOR_K8]: Add k8-sse3 architecture.
 	[PROCESSOR_NOCONA]: Remove.
 	[PROCESSOR_GENERIC64]: Ditto.
-	* gcc/config/i386/x-i386 (driver-i386.o): Depend on cpuid.h.
-	* gcc/config/i386/crtfastmath.c: Include cpuid.h.  Use __get_cpuid
+	* config/i386/x-i386 (driver-i386.o): Depend on cpuid.h.
+	* config/i386/crtfastmath.c: Include cpuid.h.  Use __get_cpuid
 	to check for SSE and FXSAVE support.
-	* gcc/config/i386/t-crtfm (crtfastmath.o): Depend on cpuid.h.
+	* config/i386/t-crtfm (crtfastmath.o): Depend on cpuid.h.
 	Add -minline-all-stringops.
-	* gcc/config.gcc (i[34567]86-*-*): Add cpuid.h to extra_headers.
+	* config.gcc (i[34567]86-*-*): Add cpuid.h to extra_headers.
 	(x86_64-*-*): Ditto.
 
 2007-09-05  Jie Zhang  <jie.zhang@analog.com>
@@ -7185,8 +7191,8 @@
 
 2007-08-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
-	* gcc/builtin-types.def (BT_FN_PTR_PTR_SIZE): New type.
-	* gcc/builtins.def (BUILT_IN_REALLOC): New builtin.
+	* builtin-types.def (BT_FN_PTR_PTR_SIZE): New type.
+	* builtins.def (BUILT_IN_REALLOC): New builtin.
 
 2007-08-29  Douglas Gregor  <doug.gregor@gmail.com>
 
@@ -7255,11 +7261,11 @@
 2007-08-28  Nathan Sidwell  <nathan@codesourcery.com>
 	    Kazu Hirata  <kazu@codesourcery.com>
 
-	* gcc/config/m68k/linux.h
+	* config/m68k/linux.h
 	(M68K_HONOR_TARGET_STRICT_ALIGNMENT): Redefine as 0.
 	* config/m68k/m68k.c (TARGET_RETURN_IN_MEMORY): New.
 	(m68k_return_in_memory): New.
-	* gcc/config/m68k/m68k.h (M68K_HONOR_TARGET_STRICT_ALIGNMENT):
+	* config/m68k/m68k.h (M68K_HONOR_TARGET_STRICT_ALIGNMENT):
 	New.
 
 2007-08-28  Uros Bizjak  <ubizjak@gmail.com>
@@ -9031,7 +9037,7 @@
 	* params.def (PARAM_VECT_MAX_VERSION_FOR_ALIGNMENT_CHECKS):
 	Rename.
 	(PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS): Define.
-	* gcc/doc/invoke.texi
+	* doc/invoke.texi
 	(vect-max-version-for-alignment-checks): Document.
 	(vect-max-version-for-alias-checks): Document.
 	(vect-max-version-checks): Remove.
