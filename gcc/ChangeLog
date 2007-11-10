@@ -1,5 +1,13 @@
 2007-11-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/34018
+	* tree-inline.h (copy_body_data): Add regimplify field.
+	* tree-inline.c (copy_body_r): Set id->regimplify to true
+	if an TREE_INVARIANT ADDR_EXPR is no longer invariant after
+	substitutions.
+	(copy_bb): Clear id->regimplify before walk_tree, if it is
+	set afterwards, regimplify the whole statement.
+
 	PR tree-optimization/33680
 	* tree-data-ref.c (split_constant_offset) <case ADDR_EXPR>: Punt
 	if the added cast involves variable length types.
