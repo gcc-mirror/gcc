@@ -92,6 +92,9 @@ typedef struct copy_body_data
      duplicating BLOCK nodes.  */
   bool transform_lang_insert_block;
 
+  /* True if this statement will need to be regimplified.  */
+  bool regimplify;
+
   /* Statements that might be possibly folded.  */
   struct pointer_set_t *statements_to_fold;
 } copy_body_data;
