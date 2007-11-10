@@ -11004,15 +11004,23 @@ tsubst_copy_and_build (tree t,
 
 	if (object_type && !CLASS_TYPE_P (object_type))
 	  {
-	    if (TREE_CODE (member) == BIT_NOT_EXPR)
-	      return finish_pseudo_destructor_expr (object,
-						    NULL_TREE,
-						    object_type);
-	    else if (TREE_CODE (member) == SCOPE_REF
-		     && (TREE_CODE (TREE_OPERAND (member, 1)) == BIT_NOT_EXPR))
-	      return finish_pseudo_destructor_expr (object,
-						    object,
-						    object_type);
+	    if (SCALAR_TYPE_P (object_type))
+	      {
+		tree s = NULL_TREE;
+		tree dtor = member;
+
+		if (TREE_CODE (dtor) == SCOPE_REF)
+		  {
+		    s = TREE_OPERAND (dtor, 0);
+		    dtor = TREE_OPERAND (dtor, 1);
+		  }
+		if (TREE_CODE (dtor) == BIT_NOT_EXPR)
+		  {
+		    dtor = TREE_OPERAND (dtor, 0);
+		    if (TYPE_P (dtor))
+		      return finish_pseudo_destructor_expr (object, s, dtor);
+		  }
+	      }
 	  }
 	else if (TREE_CODE (member) == SCOPE_REF
 		 && TREE_CODE (TREE_OPERAND (member, 1)) == TEMPLATE_ID_EXPR)
