@@ -108,12 +108,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-memory.h"
 
 
-/* TODO: This is defined in match.h, and probably shouldn't be here also,
-   but we need it for now at least and don't want to include the whole
-   match.h.  */
-gfc_common_head *gfc_get_common (const char *, int);
-
-
 /* Holds a single variable in an equivalence set.  */
 typedef struct segment_info
 {
