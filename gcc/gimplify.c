@@ -5291,8 +5291,22 @@ goa_lhs_expr_p (tree expr, tree addr)
              == TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (expr, 0)))))
     expr = TREE_OPERAND (expr, 0);
 
-  if (TREE_CODE (expr) == INDIRECT_REF && TREE_OPERAND (expr, 0) == addr)
-    return true;
+  if (TREE_CODE (expr) == INDIRECT_REF)
+    {
+      expr = TREE_OPERAND (expr, 0);
+      while (expr != addr
+	     && (TREE_CODE (expr) == NOP_EXPR
+		 || TREE_CODE (expr) == CONVERT_EXPR
+		 || TREE_CODE (expr) == NON_LVALUE_EXPR)
+	     && TREE_CODE (expr) == TREE_CODE (addr)
+	     && TYPE_MAIN_VARIANT (TREE_TYPE (expr))
+		== TYPE_MAIN_VARIANT (TREE_TYPE (addr)))
+	{
+	  expr = TREE_OPERAND (expr, 0);
+	  addr = TREE_OPERAND (addr, 0);
+	}
+      return expr == addr;
+    }
   if (TREE_CODE (addr) == ADDR_EXPR && expr == TREE_OPERAND (addr, 0))
     return true;
   return false;

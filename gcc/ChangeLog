@@ -1,5 +1,9 @@
 2007-11-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/34020
+	* gimplify.c (goa_lhs_expr_p): Inside INDIRECT_REF handle unshared
+	nops.
+
 	PR middle-end/34018
 	* tree-inline.h (copy_body_data): Add regimplify field.
 	* tree-inline.c (copy_body_r): Set id->regimplify to true
