@@ -380,12 +380,6 @@ static int max_uid;
 /* Number of cuids.  */
 static int max_cuid;
 
-/* Mapping of cuids to insns.  */
-static rtx *cuid_insn;
-
-/* Get insn from cuid.  */
-#define CUID_INSN(CUID) (cuid_insn[CUID])
-
 /* Maximum register number in function prior to doing gcse + 1.
    Registers created during this pass have regno >= max_gcse_regno.
    This is named with "gcse" to not collide with global of same name.  */
@@ -942,15 +936,7 @@ alloc_gcse_mem (void)
 	  uid_cuid[INSN_UID (insn)] = i;
       }
 
-  /* Create a table mapping cuids to insns.  */
-
   max_cuid = i;
-  cuid_insn = gcalloc (max_cuid + 1, sizeof (rtx));
-  i = 0;
-  FOR_EACH_BB (bb)
-    FOR_BB_INSNS (bb, insn)
-      if (INSN_P (insn))
-	CUID_INSN (i++) = insn;
 
   /* Allocate vars to track sets of regs.  */
   reg_set_bitmap = BITMAP_ALLOC (NULL);
@@ -971,7 +957,6 @@ static void
 free_gcse_mem (void)
 {
   free (uid_cuid);
-  free (cuid_insn);
 
   BITMAP_FREE (reg_set_bitmap);
 

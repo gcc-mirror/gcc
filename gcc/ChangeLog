@@ -1,3 +1,10 @@
+2007-11-10  Steven Bosscher  <stevenb.gcc@gmail.com>
+
+	* gcse.c (CUID_INSN): Remove.
+	(cuid_insn): Ditto.
+	(alloc_gcse_mem): Don't allocate cuid_insn.
+	(free_gcse_mem): Don't free cuid_insn.
+
 2007-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/34020
