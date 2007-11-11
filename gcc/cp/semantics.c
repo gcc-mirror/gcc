@@ -1998,7 +1998,7 @@ finish_this_expr (void)
 tree
 finish_pseudo_destructor_expr (tree object, tree scope, tree destructor)
 {
-  if (destructor == error_mark_node)
+  if (object == error_mark_node || destructor == error_mark_node)
     return error_mark_node;
 
   gcc_assert (TYPE_P (destructor));

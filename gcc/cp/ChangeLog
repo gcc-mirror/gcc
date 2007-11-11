@@ -1,3 +1,9 @@
+2007-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34068
+	* semantics.c (finish_pseudo_destructor_expr): Handle
+	object == error_mark_node.
+
 2007-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/32241

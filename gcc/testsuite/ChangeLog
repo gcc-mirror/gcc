@@ -1,3 +1,8 @@
+2007-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34068
+	* g++.dg/template/pseudodtor4.C: New test.
+
 2007-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/34018
