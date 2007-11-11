@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.2.0\n"
+"Project-Id-Version: cpplib 4.3-b20071109\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2007-11-08 21:08+0000\n"
-"PO-Revision-Date: 2007-06-03 23:21+0800\n"
+"PO-Revision-Date: 2007-11-11 17:29+0800\n"
 "Last-Translator: Meng Jie <zuxy.meng@gmail.com>\n"
 "Language-Team: Chinese (simplified) <translation-team-zh-cn@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -404,14 +404,13 @@ msgid "too many decimal points in number"
 msgstr "数字中有太多小数点"
 
 #: expr.c:290 expr.c:365
-#, fuzzy
 msgid "fixed-point constants are a GCC extension"
-msgstr "虚数常量是一个 GCC 扩展"
+msgstr "定点常量是一个 GCC 扩展"
 
 #: expr.c:303
-#, fuzzy, c-format
+#, c-format
 msgid "invalid digit \"%c\" in binary constant"
-msgstr "8 进制常量中有非法字符“%c”"
+msgstr "二进制常量中有无效数字“%c”"
 
 #: expr.c:305
 #, c-format
@@ -419,9 +418,8 @@ msgid "invalid digit \"%c\" in octal constant"
 msgstr "8 进制常量中有非法字符“%c”"
 
 #: expr.c:313
-#, fuzzy
 msgid "invalid prefix \"0b\" for floating constant"
-msgstr "浮点常量的“%.*s”后缀无效"
+msgstr "浮点常量的“0b”前缀无效"
 
 #: expr.c:319
 msgid "use of C99 hexadecimal floating constant"
@@ -451,9 +449,8 @@ msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr "十六进制浮点常量的“%.*s”后缀无效"
 
 #: expr.c:369
-#, fuzzy
 msgid "decimal float constants are a GCC extension"
-msgstr "虚数常量是一个 GCC 扩展"
+msgstr "十进制浮点常量是一个 GCC 扩展"
 
 #: expr.c:379
 #, c-format
@@ -469,9 +466,8 @@ msgid "imaginary constants are a GCC extension"
 msgstr "虚数常量是一个 GCC 扩展"
 
 #: expr.c:412
-#, fuzzy
 msgid "binary constants are a GCC extension"
-msgstr "虚数常量是一个 GCC 扩展"
+msgstr "二进制常量是一个 GCC 扩展"
 
 #: expr.c:505
 msgid "integer constant is too large for its type"
@@ -770,7 +766,7 @@ msgstr "无法决定日期与时间"
 
 #: macro.c:270
 msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
-msgstr ""
+msgstr "带 -fdirectives-only 时 __COUNTER__ 在指示中扩展"
 
 #: macro.c:423
 msgid "invalid string literal, ignoring final '\\'"
@@ -890,9 +886,9 @@ msgid "%s: not used because `%s' is defined"
 msgstr "%s：未使用因为‘%s’已定义"
 
 #: pch.c:558
-#, fuzzy, c-format
+#, c-format
 msgid "%s: not used because `__COUNTER__' is invalid"
-msgstr "%s：未使用因为‘%s’已定义"
+msgstr "%s：未使用因为‘__COUNTER__’无效"
 
 #: pch.c:567 pch.c:737
 msgid "while reading precompiled header"
