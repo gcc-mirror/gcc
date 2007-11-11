@@ -1,15 +1,15 @@
 # German translation of gcc messages.
 # Copyright © 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 # Karl Eichwalder <ke@suse.de>, 2002, 2003.
-# Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005, 2006.
+# Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005, 2006, 2007.
 # This file is distributed under the same license as the gcc package.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.2.0\n"
+"Project-Id-Version: cpplib 4.3-b20071109\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2007-11-08 21:08+0000\n"
-"PO-Revision-Date: 2007-05-28 13:30+0100\n"
+"PO-Revision-Date: 2007-11-11 11:11+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -405,14 +405,13 @@ msgid "too many decimal points in number"
 msgstr "zu viele Dezimalpunkte in Zahl"
 
 #: expr.c:290 expr.c:365
-#, fuzzy
 msgid "fixed-point constants are a GCC extension"
-msgstr "imaginäre Konstanten sind eine GCC-Erweiterung"
+msgstr "Festkommakonstanten sind eine GCC-Erweiterung"
 
 #: expr.c:303
-#, fuzzy, c-format
+#, c-format
 msgid "invalid digit \"%c\" in binary constant"
-msgstr "ungültige Ziffer »%c« in Oktal-Konstante"
+msgstr "ungültige Ziffer »%c« in binärer Konstante"
 
 #: expr.c:305
 #, c-format
@@ -420,9 +419,8 @@ msgid "invalid digit \"%c\" in octal constant"
 msgstr "ungültige Ziffer »%c« in Oktal-Konstante"
 
 #: expr.c:313
-#, fuzzy
 msgid "invalid prefix \"0b\" for floating constant"
-msgstr "ungültiger Suffix »%.*s« an Gleitkommakonstante"
+msgstr "ungültiger Prefix »0b« für Gleitkommakonstante"
 
 #: expr.c:319
 msgid "use of C99 hexadecimal floating constant"
@@ -452,9 +450,8 @@ msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr "ungültiger Suffix »%.*s« mit hexadezimaler Gleitkommakonstante"
 
 #: expr.c:369
-#, fuzzy
 msgid "decimal float constants are a GCC extension"
-msgstr "imaginäre Konstanten sind eine GCC-Erweiterung"
+msgstr "dezimale Gleitkommakonstanten sind eine GCC-Erweiterung"
 
 #: expr.c:379
 #, c-format
@@ -470,9 +467,8 @@ msgid "imaginary constants are a GCC extension"
 msgstr "imaginäre Konstanten sind eine GCC-Erweiterung"
 
 #: expr.c:412
-#, fuzzy
 msgid "binary constants are a GCC extension"
-msgstr "imaginäre Konstanten sind eine GCC-Erweiterung"
+msgstr "binäre Konstanten sind eine GCC-Erweiterung"
 
 #: expr.c:505
 msgid "integer constant is too large for its type"
@@ -771,7 +767,7 @@ msgstr "Datum und Zeit konnten nicht bestimmt werden"
 
 #: macro.c:270
 msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
-msgstr ""
+msgstr "__COUNTER__ innerhalb von Anweisung mit -fdirectives-only expandiert"
 
 #: macro.c:423
 msgid "invalid string literal, ignoring final '\\'"
@@ -891,9 +887,9 @@ msgid "%s: not used because `%s' is defined"
 msgstr "%s: nicht verwendet, da »%s« definiert ist"
 
 #: pch.c:558
-#, fuzzy, c-format
+#, c-format
 msgid "%s: not used because `__COUNTER__' is invalid"
-msgstr "%s: nicht verwendet, da »%s« definiert ist"
+msgstr "%s: nicht verwendet, da »__COUNTER__« ungültig ist"
 
 #: pch.c:567 pch.c:737
 msgid "while reading precompiled header"
