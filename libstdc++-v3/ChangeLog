@@ -16,6 +16,14 @@
 	splice(iterator, list&&, iterator, iterator), merge(list&&),
 	merge(list&&, _StrictWeakOrdering)): Add C++0x signatures, use
 	_GLIBCXX_MOVE.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
 
 2007-11-09  Paolo Carlini  <pcarlini@suse.de>
 
