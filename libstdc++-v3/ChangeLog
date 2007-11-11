@@ -1,3 +1,8 @@
+2007-11-11  Howard Hinnant  <hhinnant@apple.com>
+
+	* include/bits/stl_pair.h (pair<>::pair<>(_U1&&, _Arg0&&,
+	_Args&&...)): Add.
+
 2007-11-11  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_list.h (list<>::_M_create_node<>(_Args&&...),

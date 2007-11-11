@@ -111,6 +111,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	: first(std::move(__p.first)),
 	  second(std::move(__p.second)) { }
 
+      // http://gcc.gnu.org/ml/libstdc++/2007-08/msg00052.html
+      template<class _U1, class _Arg0, class... _Args>
+        pair(_U1&& __x, _Arg0&& __arg0, _Args&&... __args)
+	: first(std::forward<_U1>(__x)),
+	  second(std::forward<_Arg0>(__arg0),
+		 std::forward<_Args>(__args)...) { }
+
       pair&
       operator=(pair&& __p)
       { 
