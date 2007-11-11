@@ -301,12 +301,33 @@ namespace __debug
 	_Base::pop_back();
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename... _Args>
+        iterator
+        emplace(iterator __position, _Args&&... __args)
+	{
+	  __glibcxx_check_insert(__position);
+	  return iterator(_Base::emplace(__position.base(),
+					std::forward<_Args>(__args)...), this);
+	}
+#endif
+
       iterator
       insert(iterator __position, const _Tp& __x)
       {
 	__glibcxx_check_insert(__position);
 	return iterator(_Base::insert(__position.base(), __x), this);
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      iterator
+      insert(iterator __position, _Tp&& __x)
+      {
+	__glibcxx_check_insert(__position);
+	return iterator(_Base::insert(__position.base(),
+				      std::move(__x)), this);
+      }
+#endif
 
       void
       insert(iterator __position, size_type __n, const _Tp& __x)
@@ -367,16 +388,24 @@ namespace __debug
 
       // 23.2.2.4 list operations:
       void
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      splice(iterator __position, list&& __x)
+#else
       splice(iterator __position, list& __x)
+#endif
       {
 	_GLIBCXX_DEBUG_VERIFY(&__x != this,
 			      _M_message(__gnu_debug::__msg_self_splice)
 			      ._M_sequence(*this, "this"));
-	this->splice(__position, __x, __x.begin(), __x.end());
+	this->splice(__position, _GLIBCXX_MOVE(__x), __x.begin(), __x.end());
       }
 
       void
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      splice(iterator __position, list&& __x, iterator __i)
+#else
       splice(iterator __position, list& __x, iterator __i)
+#endif
       {
 	__glibcxx_check_insert(__position);
 
@@ -393,11 +422,18 @@ namespace __debug
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 250. splicing invalidates iterators
 	this->_M_transfer_iter(__i);
-	_Base::splice(__position.base(), __x._M_base(), __i.base());
+	_Base::splice(__position.base(), _GLIBCXX_MOVE(__x._M_base()),
+		      __i.base());
       }
 
       void
-      splice(iterator __position, list& __x, iterator __first, iterator __last)
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      splice(iterator __position, list&& __x, iterator __first,
+	     iterator __last)
+#else
+      splice(iterator __position, list& __x, iterator __first,
+	     iterator __last)
+#endif
       {
 	__glibcxx_check_insert(__position);
 	__glibcxx_check_valid_range(__first, __last);
@@ -422,8 +458,8 @@ namespace __debug
 	    this->_M_transfer_iter(__victim);
 	  }
 
-	_Base::splice(__position.base(), __x._M_base(), __first.base(),
-		      __last.base());
+	_Base::splice(__position.base(), _GLIBCXX_MOVE(__x._M_base()),
+		      __first.base(), __last.base());
       }
 
       void
@@ -489,7 +525,11 @@ namespace __debug
 	}
 
       void
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      merge(list&& __x)
+#else
       merge(list& __x)
+#endif
       {
 	__glibcxx_check_sorted(_Base::begin(), _Base::end());
 	__glibcxx_check_sorted(__x.begin().base(), __x.end().base());
@@ -498,12 +538,16 @@ namespace __debug
 	    iterator __victim = __tmp++;
 	    __victim._M_attach(&__x);
 	  }
-	_Base::merge(__x._M_base());
+	_Base::merge(_GLIBCXX_MOVE(__x._M_base()));
       }
 
       template<class _Compare>
         void
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+        merge(list&& __x, _Compare __comp)
+#else
         merge(list& __x, _Compare __comp)
+#endif
         {
 	  __glibcxx_check_sorted_pred(_Base::begin(), _Base::end(), __comp);
 	  __glibcxx_check_sorted_pred(__x.begin().base(), __x.end().base(),
@@ -513,7 +557,7 @@ namespace __debug
 	      iterator __victim = __tmp++;
 	      __victim._M_attach(&__x);
 	    }
-	  _Base::merge(__x._M_base(), __comp);
+	  _Base::merge(_GLIBCXX_MOVE(__x._M_base()), __comp);
 	}
 
       void

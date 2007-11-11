@@ -1,3 +1,22 @@
+2007-11-11  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_list.h (list<>::_M_create_node<>(_Args&&...),
+	_M_insert<>(iterator, _Args&&...), push_front<>(_Args&&...),
+	push_back<>(_Args&&...)): Add.
+	(list<>::emplace<>(iterator, _Args&&...), insert(iterator,
+	value_type&&)): Declare.
+	(splice(iterator, list&&), splice(iterator, list&&, iterator),
+	splice(iterator, list&&, iterator, iterator), merge(list&&),
+	merge(list&&, _StrictWeakOrdering)): Add C++0x signatures.
+	* include/bits/list.tcc (list<>::emplace<>(iterator, _Args&&...),
+	insert(iterator, value_type&&)): Define.
+	* include/debug/list (list<>::emplace<>(iterator, _Args&&...),
+	insert(iterator, value_type&&)): Add.
+	(splice(iterator, list&&), splice(iterator, list&&, iterator),
+	splice(iterator, list&&, iterator, iterator), merge(list&&),
+	merge(list&&, _StrictWeakOrdering)): Add C++0x signatures, use
+	_GLIBCXX_MOVE.
+
 2007-11-09  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_deque.h (deque<>::operator=(deque&&)): Implement
