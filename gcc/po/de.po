@@ -6,10 +6,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.2.2\n"
+"Project-Id-Version: gcc 4.3-b20071109\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2007-11-08 21:09+0000\n"
-"PO-Revision-Date: 2007-10-12 14:45+0200\n"
+"PO-Revision-Date: 2007-11-12 14:45+0200\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -128,14 +128,12 @@ msgid "the 'a' scanf flag"
 msgstr "das »a«-scanf-Kennzeichen"
 
 #: c-format.c:440
-#, fuzzy
 msgid "'m' flag"
-msgstr "» «-Kennzeichen"
+msgstr "»m«-Kennzeichen"
 
 #: c-format.c:440
-#, fuzzy
 msgid "the 'm' scanf flag"
-msgstr "das »a«-scanf-Kennzeichen"
+msgstr "das »m«-scanf-Kennzeichen"
 
 #: c-format.c:441
 msgid "field width in scanf format"
@@ -492,9 +490,8 @@ msgid "function not inlinable"
 msgstr "Funktion kann nicht »inline« sein"
 
 #: cgraphbuild.c:101
-#, fuzzy
 msgid "mismatched arguments"
-msgstr "unpassende geschweifte Klammern in Spezifikation"
+msgstr "unpassende Argumente"
 
 #: collect2.c:378 gcc.c:6897
 #, c-format
@@ -542,19 +539,19 @@ msgid "can't get program status"
 msgstr "Programm-Status kann nicht ermittelt werden"
 
 #: collect2.c:1573
-#, fuzzy, c-format
+#, c-format
 msgid "could not open response file %s"
-msgstr "Konnte Quelldatei %s nicht öffnen.\n"
+msgstr "Antwortdatei %s konnte nicht geöffnet werden"
 
 #: collect2.c:1578
-#, fuzzy, c-format
+#, c-format
 msgid "could not write to response file %s"
-msgstr "Spezifikationsdatei %s konnte nicht gefunden werden\n"
+msgstr "in Antwortdatei %s konnte nicht geschrieben werden"
 
 #: collect2.c:1583
-#, fuzzy, c-format
+#, c-format
 msgid "could not close response file %s"
-msgstr "Konnte Quelldatei %s nicht öffnen.\n"
+msgstr "Antwortdatei %s konnte nicht geschlossen werden"
 
 #: collect2.c:1601
 #, c-format
@@ -899,9 +896,8 @@ msgid "  --help={target|optimizers|warnings|undocumented|params}[,{[^]joined|[^]
 msgstr ""
 
 #: gcc.c:3218
-#, fuzzy
 msgid "                           Display specific types of command line options\n"
-msgstr "  --target-help            Zielspezifische Kommandozeilenoptionen anzeigen\n"
+msgstr "                           Spezifische Typen der Kommandozeilenoptionen anzeigen\n"
 
 #: gcc.c:3220
 msgid "  (Use '-v --help' to display command line options of sub-processes)\n"
@@ -1096,9 +1092,9 @@ msgstr "»%s« konnte nicht ausgeführt werden: %s"
 
 #. translate_options () has turned --version into -fversion.
 #: gcc.c:3612
-#, fuzzy, c-format
+#, c-format
 msgid "%s %s%s\n"
-msgstr "%s: »%s«\n"
+msgstr "%s %s%s\n"
 
 #: gcc.c:3615 gcov.c:426 fortran/gfortranspec.c:380 java/jcf-dump.c:1168
 msgid "(C)"
@@ -1181,19 +1177,19 @@ msgid "spec '%s' has invalid '%%0%c'"
 msgstr "Spezifikation »%s« hat ungültiges »%%0%c«"
 
 #: gcc.c:5053
-#, fuzzy, c-format
+#, c-format
 msgid "could not open temporary response file %s"
-msgstr "Konnte Quelldatei %s nicht öffnen.\n"
+msgstr "temporäre Antwortdatei %s konnte nicht geöffnet werden"
 
 #: gcc.c:5059
-#, fuzzy, c-format
+#, c-format
 msgid "could not write to temporary response file %s"
-msgstr "temporäre Datei konnte nicht angelegt werden"
+msgstr "in temporäre Antwortdatei %s konnte nicht geschrieben werden"
 
 #: gcc.c:5065
-#, fuzzy, c-format
+#, c-format
 msgid "could not close temporary response file %s"
-msgstr "Konnte Programmflussgraphdatei %s nicht öffnen.\n"
+msgstr "temporäre Antwortdatei %s konnte nicht geschlossen werden"
 
 #: gcc.c:5099
 #, c-format
@@ -1295,14 +1291,14 @@ msgid "Thread model: %s\n"
 msgstr "Thread-Modell: %s\n"
 
 #: gcc.c:6531
-#, fuzzy, c-format
+#, c-format
 msgid "gcc version %s %s\n"
-msgstr "gcc-Version %s\n"
+msgstr "gcc-Version %s %s\n"
 
 #: gcc.c:6533
-#, fuzzy, c-format
+#, c-format
 msgid "gcc driver version %s %sexecuting gcc version %s\n"
-msgstr "gcc-Treiberversion %s führt GCC-Version %s aus\n"
+msgstr "gcc-Treiberversion %s %s führt GCC-Version %s aus\n"
 
 #: gcc.c:6541
 #, c-format
@@ -1356,9 +1352,9 @@ msgid "multilib exclusion '%s' is invalid"
 msgstr "Multilib-Ausschluss »%s« ist ungültig"
 
 #: gcc.c:7746
-#, fuzzy, c-format
+#, c-format
 msgid "environment variable \"%s\" not defined"
-msgstr "Umgebungsvariable DJGPP nicht definiert"
+msgstr "Umgebungsvariable »%s« nicht definiert"
 
 #: gcc.c:7837 gcc.c:7842
 #, c-format
@@ -1396,12 +1392,12 @@ msgid ""
 msgstr ""
 
 #: gcov.c:399
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Usage: gcov [OPTION]... SOURCEFILE...\n"
 "\n"
 msgstr ""
-"Aufruf: gcov [OPTION]... QUELLDATEI\n"
+"Aufruf: gcov [OPTION]... QUELLDATEI...\n"
 "\n"
 
 #: gcov.c:400
@@ -1489,9 +1485,9 @@ msgstr ""
 "Fehler in der deutschen Übersetzung sind an translation-team-de@lists.sourceforge.net zu melden.\n"
 
 #: gcov.c:424
-#, fuzzy, c-format
+#, c-format
 msgid "gcov %s%s\n"
-msgstr "gcov (GCC) %s\n"
+msgstr "gcov %s%s\n"
 
 #: gcov.c:428
 #, c-format
@@ -1723,14 +1719,12 @@ msgid "--param large-function-growth limit reached"
 msgstr "--param large-function-growth: Limit erreicht"
 
 #: ipa-inline.c:392
-#, fuzzy
 msgid "--param large-stack-frame-growth limit reached"
-msgstr "--param large-function-growth: Limit erreicht"
+msgstr "--param large-stack-frame-growth: Limit erreicht"
 
 #: ipa-inline.c:410
-#, fuzzy
 msgid "function not inline candidate"
-msgstr "Funktion kann nicht »inline« sein"
+msgstr "Funktion kein Kandidat für »inline«"
 
 #: ipa-inline.c:426
 msgid "--param max-inline-insns-single limit reached"
@@ -1765,29 +1759,29 @@ msgid "At top level:"
 msgstr "Auf höchster Ebene:"
 
 #: langhooks.c:407
-#, fuzzy, c-format
+#, c-format
 msgid "In member function %qs"
-msgstr "In Elementfunktion %qs:"
+msgstr "In Elementfunktion %qs"
 
 #: langhooks.c:411
-#, fuzzy, c-format
+#, c-format
 msgid "In function %qs"
-msgstr "In Funktion %qs:"
+msgstr "In Funktion %qs"
 
 #: langhooks.c:461
-#, fuzzy, c-format
+#, c-format
 msgid "    inlined from %qs at %s:%d:%d"
-msgstr "    Eingefügt bei %s:%d:"
+msgstr "    eingefügt von %qs bei %s:%d:%d"
 
 #: langhooks.c:467
-#, fuzzy, c-format
+#, c-format
 msgid "    inlined from %qs at %s:%d"
-msgstr "    Eingefügt bei %s:%d:"
+msgstr "    eingefügt von %qs bei %s:%d"
 
 #: langhooks.c:473
-#, fuzzy, c-format
+#, c-format
 msgid "    inlined from %qs"
-msgstr "In Datei, eingefügt von %s:%u"
+msgstr "    eingefügt von %qs"
 
 #: loop-iv.c:2805 tree-ssa-loop-niter.c:1818
 msgid "assuming that the loop is not infinite"
@@ -1812,72 +1806,62 @@ msgstr "Dieser Schalter ist undokumentiert"
 
 #: opts.c:1159
 msgid "[enabled]"
-msgstr ""
+msgstr "[eingeschaltet]"
 
 #: opts.c:1159
-#, fuzzy
 msgid "[disabled]"
-msgstr "GCSE ausgeschaltet"
+msgstr "[ausgeschaltet]"
 
 #: opts.c:1170
 #, c-format
 msgid " No options with the desired characteristics were found\n"
-msgstr ""
+msgstr " Keine Optionen mit den gewünschten Eigenschaften gefunden\n"
 
 #: opts.c:1172
 #, c-format
 msgid " All options with the desired characteristics have already been displayed\n"
-msgstr ""
+msgstr " Alle Optionen mit den gewünschten Eigenschaften wurden bereits angezeigt\n"
 
 #: opts.c:1226
-#, fuzzy
 msgid "The following options are target specific"
-msgstr "Die folgenden Optionen sind sprach-unabhängig:\n"
+msgstr "Die folgenden Optionen sind zielspezifisch"
 
 #: opts.c:1229
-#, fuzzy
 msgid "The following options control compiler warning messages"
-msgstr "Die folgenden Optionen sind sprach-unabhängig:\n"
+msgstr "Die folgenden Optionen steuern Warnmeldungen des Compilers"
 
 #: opts.c:1232
-#, fuzzy
 msgid "The following options control optimizations"
-msgstr "Schleifenoptimierung durchführen"
+msgstr "Die folgenden Optionen steuern Optimierungen"
 
 #: opts.c:1235 opts.c:1273
-#, fuzzy
 msgid "The following options are language-independent"
-msgstr "Die folgenden Optionen sind sprach-unabhängig:\n"
+msgstr "Die folgenden Optionen sind sprach-unabhängig"
 
 #: opts.c:1238
-#, fuzzy
 msgid "The --param option recognizes the following as parameters"
-msgstr "Die Option »--param« erkennt die folgenden Parameter:\n"
+msgstr "Die Option »--param« erkennt die folgenden Parameter"
 
 #: opts.c:1245
-#, fuzzy
 msgid "The following options are specific to the language "
-msgstr "Die folgenden Optionen sind sprach-unabhängig:\n"
+msgstr "Die folgenden Optionen sind sprachspezifisch "
 
 #: opts.c:1249
-#, fuzzy
 msgid "The following options are supported by the language "
-msgstr "Die folgenden Optionen sind sprach-unabhängig:\n"
+msgstr "Die folgenden Optionen werden von der Sprache unterstützt "
 
 #: opts.c:1260
-#, fuzzy
 msgid "The following options are not documented"
-msgstr "Die folgenden Optionen sind sprach-unabhängig:\n"
+msgstr "Die folgenden Optionen sind nicht dokumentiert"
 
 #: opts.c:1271
-#, fuzzy
 msgid "The following options are language-related"
-msgstr "Die folgenden Optionen sind sprach-unabhängig:\n"
+msgstr "Die folgenden Optionen sind sprachbezogen"
 
 #: opts.c:1403
 #, c-format
 msgid "warning: unrecognized argument to --help= switch: %.*s\n"
-msgstr ""
+msgstr "Warnung: Argument für Schalter --help=: »%.*s« nicht erkannt\n"
 
 #: protoize.c:582
 #, c-format
@@ -2274,28 +2258,28 @@ msgid "unrecoverable error"
 msgstr "nicht behebbarer Fehler"
 
 #: toplev.c:1180
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s%s%s %sversion %s (%s)\n"
 "%s\tcompiled by GNU C version %s, "
 msgstr ""
-"%s%s%s Version %s (%s)\n"
-"%s\tkompiliert von GNU-C-Version %s.\n"
+"%s%s%s %sVersion %s (%s)\n"
+"%s\tkompiliert von GNU-C-Version %s, "
 
 #: toplev.c:1182
-#, fuzzy, c-format
+#, c-format
 msgid "%s%s%s %sversion %s (%s) compiled by CC, "
-msgstr "%s%s%s Version %s (%s) kompiliert von CC.\n"
+msgstr "%s%s%s %sVersion %s (%s) kompiliert von CC, "
 
 #: toplev.c:1186
-#, fuzzy, c-format
+#, c-format
 msgid "GMP version %s, MPFR version %s.\n"
-msgstr "%s: Version »%.4s«, aber Version »%.4s« wird bevorzugt\n"
+msgstr "GMP-Version %s, MPFR-Version %s.\n"
 
 #: toplev.c:1188
 #, c-format
 msgid "warning: %s header version %s differs from library version %s.\n"
-msgstr ""
+msgstr "Warnung: %s-Header-Version %s unterscheidet sich von Bibliotheksversion %s.\n"
 
 #: toplev.c:1190
 #, c-format
