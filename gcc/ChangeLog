@@ -1,3 +1,8 @@
+2007-11-12  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* doc/extend.texi (dllimport): Document that pointers to dllimport'd
+	functions can be used as constant.
+
 2007-11-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/34035
