@@ -2126,9 +2126,12 @@ versions of the GNU linker, but can now be avoided by passing the
 functions, using the attribute for a variable eliminates a thunk in
 the DLL@.
 
-One drawback to using this attribute is that a pointer to a function
-or variable marked as @code{dllimport} cannot be used as a constant
-address.  On Microsoft Windows targets, the attribute can be disabled
+One drawback to using this attribute is that a pointer to a
+@emph{variable} marked as @code{dllimport} cannot be used as a constant
+address. However, a pointer to a @emph{function} with the
+@code{dllimport} attribute can be used as a constant initializer; in
+this case, the address of a stub function in the import lib is
+referenced.  On Microsoft Windows targets, the attribute can be disabled
 for functions by setting the @option{-mnop-fun-dllimport} flag.
 
 @item eightbit_data
