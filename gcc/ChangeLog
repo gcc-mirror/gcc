@@ -1,3 +1,17 @@
+2007-11-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR rtl-optimization/34035
+	* cse.c (cse_cfg_altered): New global variable.
+	(cse_jumps_altered): Make boolean.
+	(recorded_label_ref): Likewise.
+	(cse_insn): Adjust for above changes.
+	(cse_extended_basic_block): Likewise.  Set cse_cfg_altered
+	if dead edges have been purged.
+	(cse_main): Change return value specification and adjust code.
+	(rest_of_handle_cse): Adjust for above change.
+	(rest_of_handle_cse2): Likewise.
+	* gcse.c (rest_of_handle_gcse): Likewise.
+
 2007-11-12  Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
 	    Michael Meissner  <michael.meissner@amd.com>
 
