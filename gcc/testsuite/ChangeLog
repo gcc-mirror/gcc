@@ -1,3 +1,10 @@
+2007-11-12  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/8570
+	* g++.old-deja/g++.ns/template13.C: Update expected output.
+	* g++.old-deja/g++.pt/friend23.C: Likewise.
+	* g++.dg/warn/pr8570.C: New.
+
 2007-11-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34068

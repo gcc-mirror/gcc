@@ -1,3 +1,11 @@
+2007-11-12  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/8570
+	* pt.c (redeclare_class_template): Update error message. Use a
+	note to show the previous declaration.
+	(tsubst_friend_class): Use the location of the friend template as
+	the input location before calling redeclare_class_template.
+
 2007-11-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34068
