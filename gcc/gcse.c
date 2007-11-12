@@ -6737,13 +6737,15 @@ rest_of_handle_gcse (void)
 
   /* If gcse or cse altered any jumps, rerun jump optimizations to clean
      things up.  */
-  if (tem || tem2)
+  if (tem || tem2 == 2)
     {
       timevar_push (TV_JUMP);
       rebuild_jump_labels (get_insns ());
       cleanup_cfg (0);
       timevar_pop (TV_JUMP);
     }
+  else if (tem2 == 1)
+    cleanup_cfg (0);
 
   flag_cse_skip_blocks = save_csb;
   flag_cse_follow_jumps = save_cfj;

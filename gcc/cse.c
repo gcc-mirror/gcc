@@ -348,15 +348,17 @@ static unsigned int cse_reg_info_timestamp;
 
 static HARD_REG_SET hard_regs_in_table;
 
-/* Nonzero if cse has altered conditional jump insns
-   in such a way that jump optimization should be redone.  */
+/* True if CSE has altered the CFG.  */
+static bool cse_cfg_altered;
 
-static int cse_jumps_altered;
+/* True if CSE has altered conditional jump insns in such a way
+   that jump optimization should be redone.  */
+static bool cse_jumps_altered;
 
-/* Nonzero if we put a LABEL_REF into the hash table for an INSN
-   without a REG_LABEL_OPERAND, we have to rerun jump after CSE to put
-   in the note.  */
-static int recorded_label_ref;
+/* True if we put a LABEL_REF into the hash table for an INSN
+   without a REG_LABEL_OPERAND, we have to rerun jump after CSE
+   to put in the note.  */
+static bool recorded_label_ref;
 
 /* canon_hash stores 1 in do_not_record
    if it notices a reference to CC0, PC, or some other volatile
@@ -4761,7 +4763,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 		continue;
 
 	      SET_SRC (sets[i].rtl) = trial;
-	      cse_jumps_altered = 1;
+	      cse_jumps_altered = true;
 	      break;
 	    }
 
@@ -4987,7 +4989,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 	{
 	  /* One less use of the label this insn used to jump to.  */
 	  delete_insn_and_edges (insn);
-	  cse_jumps_altered = 1;
+	  cse_jumps_altered = true;
 	  /* No more processing for this set.  */
 	  sets[i].rtl = 0;
 	}
@@ -5026,10 +5028,8 @@ cse_insn (rtx insn, rtx libcall_insn)
 	  else
 	    INSN_CODE (insn) = -1;
 
-	  /* Do not bother deleting any unreachable code,
-	     let jump/flow do that.  */
-
-	  cse_jumps_altered = 1;
+	  /* Do not bother deleting any unreachable code, let jump do it.  */
+	  cse_jumps_altered = true;
 	  sets[i].rtl = 0;
 	}
 
@@ -6033,10 +6033,10 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 	    
 	      /* If we haven't already found an insn where we added a LABEL_REF,
 		 check this one.  */
-	      if (INSN_P (insn) && ! recorded_label_ref
+	      if (INSN_P (insn) && !recorded_label_ref
 		  && for_each_rtx (&PATTERN (insn), check_for_label_ref,
 				   (void *) insn))
-		recorded_label_ref = 1;
+		recorded_label_ref = true;
 
 #ifdef HAVE_cc0
 	      /* If the previous insn set CC0 and this insn no longer
@@ -6074,7 +6074,7 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 	 the CFG properly inside cse_insn.  So clean up possibly
 	 redundant EH edges here.  */
       if (flag_non_call_exceptions && have_eh_succ_edges (bb))
-	purge_dead_edges (bb);
+	cse_cfg_altered |= purge_dead_edges (bb);
 
       /* If we changed a conditional jump, we may have terminated
 	 the path we are following.  Check that by verifying that
@@ -6132,8 +6132,10 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
    F is the first instruction.
    NREGS is one plus the highest pseudo-reg number used in the instruction.
 
-   Returns 1 if jump_optimize should be redone due to simplifications
-   in conditional jump instructions.  */
+   Return 2 if jump optimizations should be redone due to simplifications
+   in conditional jump instructions.
+   Return 1 if the CFG should be cleaned up because it has been modified.
+   Return 0 otherwise.  */
 
 int
 cse_main (rtx f ATTRIBUTE_UNUSED, int nregs)
@@ -6153,8 +6155,9 @@ cse_main (rtx f ATTRIBUTE_UNUSED, int nregs)
   ebb_data.path = XNEWVEC (struct branch_path,
 			   PARAM_VALUE (PARAM_MAX_CSE_PATH_LENGTH));
 
-  cse_jumps_altered = 0;
-  recorded_label_ref = 0;
+  cse_cfg_altered = false;
+  cse_jumps_altered = false;
+  recorded_label_ref = false;
   constant_pool_entries_cost = 0;
   constant_pool_entries_regcost = 0;
   ebb_data.path_size = 0;
@@ -6216,7 +6219,12 @@ cse_main (rtx f ATTRIBUTE_UNUSED, int nregs)
   free (rc_order);
   rtl_hooks = general_rtl_hooks;
 
-  return cse_jumps_altered || recorded_label_ref;
+  if (cse_jumps_altered || recorded_label_ref)
+    return 2;
+  else if (cse_cfg_altered)
+    return 1;
+  else
+    return 0;
 }
 
 /* Called via for_each_rtx to see if an insn is using a LABEL_REF for
@@ -6948,10 +6956,14 @@ rest_of_handle_cse (void)
      expecting CSE to be run.  But always rerun it in a cheap mode.  */
   cse_not_expected = !flag_rerun_cse_after_loop && !flag_gcse;
 
-  if (tem)
-    rebuild_jump_labels (get_insns ());
-
-  if (tem || optimize > 1)
+  if (tem == 2)
+    {
+      timevar_push (TV_JUMP);
+      rebuild_jump_labels (get_insns ());
+      cleanup_cfg (0);
+      timevar_pop (TV_JUMP);
+    }
+  else if (tem == 1 || optimize > 1)
     cleanup_cfg (0);
 
   return 0;
@@ -7003,13 +7015,16 @@ rest_of_handle_cse2 (void)
 
   delete_trivially_dead_insns (get_insns (), max_reg_num ());
 
-  if (tem)
+  if (tem == 2)
     {
       timevar_push (TV_JUMP);
       rebuild_jump_labels (get_insns ());
       cleanup_cfg (0);
       timevar_pop (TV_JUMP);
     }
+  else if (tem == 1)
+    cleanup_cfg (0);
+
   cse_not_expected = 1;
   return 0;
 }
