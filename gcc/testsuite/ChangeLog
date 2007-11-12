@@ -1,5 +1,11 @@
 2007-11-12  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/34070
+	* gcc.c-torture/execute/pr34070-1.c: New testcase.
+	* gcc.c-torture/execute/pr34070-2.c: Likewise.
+
+2007-11-12  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/34027
 	* gcc.dg/pr34027-1.c: New testcase.
 	* gcc.dg/pr34027-2.c: Likewise.

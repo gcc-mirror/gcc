@@ -1,5 +1,12 @@
 2007-11-12  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/34070
+	* fold-const.c (fold_binary): If testing for non-negative
+	operands with tree_expr_nonnegative_warnv_p make sure to
+	use op0 which has all (sign) conversions retained.
+
+2007-11-12  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/34027
 	* fold-const.c (fold_binary): Fold n - (n / m) * m to n % m.
 	(fold_binary): Fold unsinged FLOOR_DIV_EXPR to TRUNC_DIV_EXPR.
