@@ -572,14 +572,14 @@ handle_pragma_implementation (cpp_reader* dfile ATTRIBUTE_UNUSED )
   else
     {
       filename = ggc_strdup (TREE_STRING_POINTER (fname));
-#if 0
+#ifdef USE_MAPPED_LOCATION
       /* We currently cannot give this diagnostic, as we reach this point
 	 only after cpplib has scanned the entire translation unit, so
 	 cpp_included always returns true.  A plausible fix is to compare
 	 the current source-location cookie with the first source-location
 	 cookie (if any) of the filename, but this requires completing the
 	 --enable-mapped-location project first.  See PR 17577.  */
-      if (cpp_included (parse_in, filename))
+      if (cpp_included_before (parse_in, filename, input_location))
 	warning (0, "#pragma implementation for %qs appears after "
 		 "file is included", filename);
 #endif
