@@ -1,10 +1,10 @@
 // { dg-do assemble  }
 
-template <class T = int> // { dg-error "" } original definition
+template <class T = int> // { dg-error "note: original definition" }
 struct S
-{ // { dg-error "" } redefinition of default arg
+{ 
   template <class U = int>
-  friend class S;
+  friend class S; // { dg-error "redefinition of default argument" }
 };
 
 template struct S<int>;
