@@ -1129,6 +1129,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  data to it.  Due to the nature of a %deque this operation
        *  can be done in constant time.
        */
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
       void
       push_front(const value_type& __x)
       {
@@ -1140,6 +1141,21 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	else
 	  _M_push_front_aux(__x);
       }
+#else
+      template<typename... _Args>
+        void
+        push_front(_Args&&... __args)
+	{
+	  if (this->_M_impl._M_start._M_cur != this->_M_impl._M_start._M_first)
+	    {
+	      this->_M_impl.construct(this->_M_impl._M_start._M_cur - 1,
+				      std::forward<_Args>(__args)...);
+	      --this->_M_impl._M_start._M_cur;
+	    }
+	  else
+	    _M_push_front_aux(std::forward<_Args>(__args)...);
+	}
+#endif
 
       /**
        *  @brief  Add data to the end of the %deque.
@@ -1150,6 +1166,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  to it.  Due to the nature of a %deque this operation can be
        *  done in constant time.
        */
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
       void
       push_back(const value_type& __x)
       {
@@ -1162,6 +1179,22 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	else
 	  _M_push_back_aux(__x);
       }
+#else
+      template<typename... _Args>
+        void
+        push_back(_Args&&... __args)
+	{
+	  if (this->_M_impl._M_finish._M_cur
+	      != this->_M_impl._M_finish._M_last - 1)
+	    {
+	      this->_M_impl.construct(this->_M_impl._M_finish._M_cur,
+				      std::forward<_Args>(__args)...);
+	      ++this->_M_impl._M_finish._M_cur;
+	    }
+	  else
+	    _M_push_back_aux(std::forward<_Args>(__args)...);
+	}
+#endif
 
       /**
        *  @brief  Removes first element.
@@ -1205,6 +1238,21 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	  _M_pop_back_aux();
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Inserts an object in %deque before specified iterator.
+       *  @param  position  An iterator into the %deque.
+       *  @param  args  Arguments.
+       *  @return  An iterator that points to the inserted data.
+       *
+       *  This function will insert an object of type T constructed
+       *  with T(std::forward<Args>(args)...) before the specified location.
+       */
+      template<typename... _Args>
+        iterator
+        emplace(iterator __position, _Args&&... __args);
+#endif
+
       /**
        *  @brief  Inserts given value into %deque before specified iterator.
        *  @param  position  An iterator into the %deque.
@@ -1216,6 +1264,20 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        */
       iterator
       insert(iterator __position, const value_type& __x);
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Inserts given rvalue into %deque before specified iterator.
+       *  @param  position  An iterator into the %deque.
+       *  @param  x  Data to be inserted.
+       *  @return  An iterator that points to the inserted data.
+       *
+       *  This function will insert a copy of the given rvalue before the
+       *  specified location.
+       */
+      iterator
+      insert(iterator __position, value_type&& __x);
+#endif
 
       /**
        *  @brief  Inserts a number of copies of given data into the %deque.
@@ -1459,9 +1521,17 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  @brief Helper functions for push_* and pop_*.
        *  @endif
        */
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
       void _M_push_back_aux(const value_type&);
 
       void _M_push_front_aux(const value_type&);
+#else
+      template<typename... _Args>
+        void _M_push_back_aux(_Args&&... __args);
+
+      template<typename... _Args>
+        void _M_push_front_aux(_Args&&... __args);
+#endif
 
       void _M_pop_back_aux();
 
@@ -1512,8 +1582,14 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       _M_fill_insert(iterator __pos, size_type __n, const value_type& __x);
 
       // called by insert(p,x)
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
       iterator
       _M_insert_aux(iterator __pos, const value_type& __x);
+#else
+      template<typename... _Args>
+        iterator
+        _M_insert_aux(iterator __pos, _Args&&... __args);
+#endif
 
       // called by insert(p,n,x) via fill_insert
       void

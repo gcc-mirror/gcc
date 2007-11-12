@@ -354,7 +354,7 @@ namespace __debug
 	bool __realloc = _M_requires_reallocation(this->size() + 1);
 	difference_type __offset = __position - begin();
 	typename _Base::iterator __res = _Base::insert(__position.base(),
-						       std::forward<_Tp>(__x));
+						       std::move(__x));
 	if (__realloc)
 	  this->_M_invalidate_all();
 	else

@@ -1,3 +1,42 @@
+2007-11-12  Chris Jefferson  <chris@bubblescope.net>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_deque.h (deque<>::push_back<>(_Args...),
+	deque<>::push_front<>(_Args...), emplace<>(iterator, _Args...),
+	insert(iterator, _Tp&&), _M_push_back_aux<>(_Args&&...),
+	_M_push_front_aux<>(_Args&&...), _M_insert_aux<>(iterator,
+	_Args&&...)): Add.
+	* include/deque/deque.tcc (insert(iterator, value_type&&),
+	emplace<>(iterator, _Args...), _M_push_back_aux<>(_Args&&...),
+	_M_push_front_aux<>(_Args&&...), _M_insert_aux<>(iterator,
+	_Args&&...)): Define.
+	(_M_insert_aux(iterator, size_type, const value_type&),
+	_M_insert_aux<>(iterator, _ForwardIterator, _ForwardIterator,
+	size_type)): Use _GLIBCXX_MOVE3, _GLIBCXX_MOVE_BACKWARD3,
+	__uninitialized_move*, __uninitialized_fill_move,
+	__uninitialized_copy_move, when possible.
+	* include/bits/stl_uninitialized.h (__uninitialized_copy_copy,
+	__uninitialized_fill_copy, __uninitialized_copy_fill): Remove.
+	(__uninitialized_copy_move, __uninitialized_move_copy,
+	__uninitialized_move_fill, __uninitialized_fill_move): Add.
+	* include/debug/deque (deque<>::push_back<>(_Args...),
+	deque<>::push_front<>(_Args...), emplace<>(iterator, _Args...),
+	insert(iterator, _Tp&&)): Add.
+	* testsuite/23_containers/deque/modifiers/moveable.cc: Enable.
+	* testsuite/23_containers/deque/capacity/moveable.cc: Likewise.
+	* testsuite/23_containers/deque/cons/moveable.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
+	* include/debug/vector (vector<>::insert(iterator, _Tp&&)): Minor
+	tweak, prefer std::move.
+
 2007-11-11  Howard Hinnant  <hhinnant@apple.com>
 
 	* include/bits/stl_pair.h (pair<>::pair<>(_U1&&, _Arg0&&,
