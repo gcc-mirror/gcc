@@ -3918,7 +3918,10 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
 	  if (overloaded_p)
 	    *overloaded_p = true;
 
-	  result = build_over_call (cand, LOOKUP_NORMAL);
+	  if (resolve_args (arglist) == error_mark_node)
+	    result = error_mark_node;
+	  else
+	    result = build_over_call (cand, LOOKUP_NORMAL);
 	}
       else
 	{
