@@ -45,16 +45,13 @@
 	* fold-const.c (fold_binary): Fold n - (n / m) * m to n % m.
 	(fold_binary): Fold unsinged FLOOR_DIV_EXPR to TRUNC_DIV_EXPR.
 
-	* gcc.dg/pr34027-1.c: New testcase.
-	* gcc.dg/pr34027-2.c: Likewise.
-
 2007-11-12  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/33953
-	* tree-vect-transform.c (vectorizable_operation): In case of SLP, 
-	allocate vec_oprnds1 according to the number of created vector 
-	statements. In case of shift with scalar argument, store scalar operand  
-	for every vector statement to be created for the SLP node. Fix a 
+	* tree-vect-transform.c (vectorizable_operation): In case of SLP,
+	allocate vec_oprnds1 according to the number of created vector
+	statements. In case of shift with scalar argument, store scalar operand
+	for every vector statement to be created for the SLP node. Fix a
 	comment.
 
 2007-11-10  Steven Bosscher  <stevenb.gcc@gmail.com>
@@ -196,9 +193,9 @@
 2007-11-07  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	PR middle-end/33826
-	* ipa-pure-const (static_execute): Added code to keep recursive
+	* ipa-pure-const.c (static_execute): Added code to keep recursive
 	functions from being marked as pure or const.
-	* ipa-utils (searchc): Fixed comment.
+	* ipa-utils.c (searchc): Fixed comment.
 		
 2007-11-08  Tom Tromey  <tromey@redhat.com>
 
@@ -208,11 +205,11 @@
 
 2007-11-07  Kenneth Zadeck <zadeck@naturalbridge.com>
 
-	 * common.opt: Add pointer to doc/options.texi.
-	 * doc/invoke.texi (-fdse, -fdce, -fauto-inc-dec, -fipa-pure-const,
-	 -fipa-reference): Add or correct doc.  Sorted options list for -Os
-	 -O, -O2.
-	
+	* common.opt: Add pointer to doc/options.texi.
+	* doc/invoke.texi (-fdse, -fdce, -fauto-inc-dec, -fipa-pure-const,
+	-fipa-reference): Add or correct doc.  Sorted options list for -Os
+	-O, -O2.
+
 2007-11-07  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	PR target/16350
@@ -383,7 +380,7 @@
 	(struct data_arg): Remove.
 	(add_field_for_reduction, create_stores_for_reduction): New functions.
 	(add_field_for_name): Remove reduction handling.
-	(separate_decls_in_loop): Call add_field_for_reduction, 
+	(separate_decls_in_loop): Call add_field_for_reduction,
 	create_stores_for_reduction.
 
 2007-11-06  Jakub Jelinek  <jakub@redhat.com>
@@ -800,7 +797,7 @@
 	* modulo-sched.c (sms_schedule): Add DF_UD_CHAIN problem.
 
 2007-10-29  Razya Ladelsky  <razya@il.ibm.com>
-            Zdenek Dvorak  <ook@ucw.cz>
+	    Zdenek Dvorak  <ook@ucw.cz>
 
 	OMP_ATOMIC Changes,
 	reduction support for automatic parallelization.
@@ -9119,7 +9116,7 @@
 	(vect-max-version-for-alignment-checks): Document.
 	(vect-max-version-for-alias-checks): Document.
 	(vect-max-version-checks): Remove.
-     
+
 2007-08-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*rep_movdi_rex64): Emit "rep" prefix on
@@ -11477,7 +11474,7 @@
 
 2007-07-27  Douglas Gregor  <doug.gregor@gmail.com>
 	
-       * c-common.h (enum rid): Add RID_DECLTYPE, update RID_LAST_CXX0X.
+	* c-common.h (enum rid): Add RID_DECLTYPE, update RID_LAST_CXX0X.
 
 2007-07-26  Kenneth Zadeck <zadeck@naturalbridge.com>
 
@@ -15879,8 +15876,7 @@
 
 2007-06-13  Dave Korn  <dave.korn@artimi.com>
 
-	* config/i386/i386.c (ix86_eax_live_at_start_p): Use
-	df_get_live_out.
+	* config/i386/i386.c (ix86_eax_live_at_start_p): Use df_get_live_out.
 
 2007-06-13  Kazu Hirata  <kazu@codesourcery.com>
 
@@ -15893,11 +15889,11 @@
 
 2007-06-12  Seongbae Park  <seongbae.park@gmail.com>
 
-       * df-scan.c (df_get_exit-block_use_set): Always add the stack pointer
-       to the exit block use set.
-       (df_insn_delete, df_insn_rescan): Fixed spelling of "deferring". 
-       * gcse.c (cpro_jump): Don't emit barrier in cfglayout mode.
-       * config/sparc/sparc.c (sparc_check_64): Check df != NULL.
+	* df-scan.c (df_get_exit-block_use_set): Always add the stack pointer
+	to the exit block use set.
+	(df_insn_delete, df_insn_rescan): Fixed spelling of "deferring". 
+	* gcse.c (cpro_jump): Don't emit barrier in cfglayout mode.
+	* config/sparc/sparc.c (sparc_check_64): Check df != NULL.
 
 2007-06-12  Seongbae Park  <seongbae.park@gmail.com>
 
