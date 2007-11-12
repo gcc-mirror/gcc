@@ -4451,6 +4451,31 @@ mips_return_mode_in_fpr_p (enum machine_mode mode)
 	  && GET_MODE_UNIT_SIZE (mode) <= UNITS_PER_HWFPVALUE);
 }
 
+/* Return the representation of an FPR return register when the
+   value being returned in FP_RETURN has mode VALUE_MODE and the
+   return type itself has mode TYPE_MODE.  On NewABI targets,
+   the two modes may be different for structures like:
+
+       struct __attribute__((packed)) foo { float f; }
+
+   where we return the SFmode value of "f" in FP_RETURN, but where
+   the structure itself has mode BLKmode.  */
+
+static rtx
+mips_return_fpr_single (enum machine_mode type_mode,
+			enum machine_mode value_mode)
+{
+  rtx x;
+
+  x = gen_rtx_REG (value_mode, FP_RETURN);
+  if (type_mode != value_mode)
+    {
+      x = gen_rtx_EXPR_LIST (VOIDmode, x, const0_rtx);
+      x = gen_rtx_PARALLEL (type_mode, gen_rtvec (1, x));
+    }
+  return x;
+}
+
 /* Return a composite value in a pair of floating-point registers.
    MODE1 and OFFSET1 are the mode and byte offset for the first value,
    likewise MODE2 and OFFSET2 for the second.  MODE is the mode of the
@@ -4502,7 +4527,8 @@ mips_function_value (const_tree valtype, enum machine_mode mode)
       switch (mips_fpr_return_fields (valtype, fields))
 	{
 	case 1:
-	  return gen_rtx_REG (mode, FP_RETURN);
+	  return mips_return_fpr_single (mode,
+					 TYPE_MODE (TREE_TYPE (fields[0])));
 
 	case 2:
 	  return mips_return_fpr_pair (mode,
@@ -5536,6 +5562,7 @@ mips_expand_call (rtx result, rtx addr, rtx args_size, rtx aux, bool sibcall_p)
 	       : gen_call_internal (addr, args_size));
   else if (GET_CODE (result) == PARALLEL && XVECLEN (result, 0) == 2)
     {
+      /* Handle return values created by mips_return_fpr_pair.  */
       rtx reg1, reg2;
 
       reg1 = XEXP (XVECEXP (result, 0, 0), 0);
@@ -5546,9 +5573,14 @@ mips_expand_call (rtx result, rtx addr, rtx args_size, rtx aux, bool sibcall_p)
 	 : gen_call_value_multiple_internal (reg1, addr, args_size, reg2));
     }
   else
-    pattern = (sibcall_p
-	       ? gen_sibcall_value_internal (result, addr, args_size)
-	       : gen_call_value_internal (result, addr, args_size));
+    {
+      /* Handle return values created by mips_return_fpr_single.  */
+      if (GET_CODE (result) == PARALLEL && XVECLEN (result, 0) == 1)
+	result = XEXP (XVECEXP (result, 0, 0), 0);
+      pattern = (sibcall_p
+		 ? gen_sibcall_value_internal (result, addr, args_size)
+		 : gen_call_value_internal (result, addr, args_size));
+    }
 
   insn = emit_call_insn (pattern);
 
