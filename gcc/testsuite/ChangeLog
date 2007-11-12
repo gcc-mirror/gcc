@@ -1,3 +1,8 @@
+2007-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/29225
+	* g++.dg/template/crash72.C: New test.
+
 2007-11-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* g++.dg/opt/cfg5.C: New test.
