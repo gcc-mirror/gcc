@@ -1,3 +1,17 @@
+2007-11-11  Tom Tromey  <tromey@redhat.com>
+
+	PR c++/17557:
+	* include/cpplib.h (cpp_included_before): Declare.
+	* files.c (struct file_hash_entry) <location>: New field.
+	(_cpp_find_file): Initialize new field.
+	(make_cpp_dir): Likewise.
+	(cpp_included_before): New function.
+
+2007-11-05  Tom Tromey  <tromey@redhat.com>
+
+	* include/line-map.h (LINEMAP_POSITION_FOR_COLUMN): Wrap in
+	do-while.
+
 2007-11-01  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/30805:

@@ -1,3 +1,9 @@
+2007-11-11  Tom Tromey  <tromey@redhat.com>
+
+	PR c++/17577:
+	* g++.dg/ext/pr17577.h: New file.
+	* g++.dg/ext/pr17577.C: New file.
+
 2007-11-12  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c++/8570

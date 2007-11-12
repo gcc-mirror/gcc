@@ -142,6 +142,7 @@ struct file_hash_entry
 {
   struct file_hash_entry *next;
   cpp_dir *start_dir;
+  source_location location;
   union
   {
     _cpp_file *file;
@@ -521,6 +522,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool f
   entry = new_file_hash_entry (pfile);
   entry->next = *hash_slot;
   entry->start_dir = start_dir;
+  entry->location = pfile->line_table->highest_location;
   entry->u.file = file;
   *hash_slot = entry;
 
@@ -533,6 +535,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool f
       entry = new_file_hash_entry (pfile);
       entry->next = *hash_slot;
       entry->start_dir = pfile->bracket_include;
+      entry->location = pfile->line_table->highest_location;
       entry->u.file = file;
       *hash_slot = entry;
     }
@@ -543,6 +546,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool f
       entry = new_file_hash_entry (pfile);
       entry->next = *hash_slot;
       entry->start_dir = pfile->quote_include;
+      entry->location = pfile->line_table->highest_location;
       entry->u.file = file;
       *hash_slot = entry;
     }
@@ -993,6 +997,7 @@ make_cpp_dir (cpp_reader *pfile, const char *dir_name, int sysp)
   entry = new_file_hash_entry (pfile);
   entry->next = *hash_slot;
   entry->start_dir = NULL;
+  entry->location = pfile->line_table->highest_location;
   entry->u.dir = dir;
   *hash_slot = entry;
 
@@ -1031,6 +1036,25 @@ cpp_included (cpp_reader *pfile, const char *fname)
      htab_find_with_hash (pfile->file_hash, fname, htab_hash_string (fname));
 
   while (entry && (entry->start_dir == NULL || entry->u.file->err_no))
+    entry = entry->next;
+
+  return entry != NULL;
+}
+
+/* Returns TRUE if a file FNAME has ever been successfully opened
+   before LOCATION.  This routine is not intended to correctly handle
+   filenames aliased by links or redundant . or .. traversals etc.  */
+bool
+cpp_included_before (cpp_reader *pfile, const char *fname,
+		     source_location location)
+{
+  struct file_hash_entry *entry;
+
+  entry = (struct file_hash_entry *)
+     htab_find_with_hash (pfile->file_hash, fname, htab_hash_string (fname));
+
+  while (entry && (entry->start_dir == NULL || entry->u.file->err_no
+		   || entry->location > location))
     entry = entry->next;
 
   return entry != NULL;
