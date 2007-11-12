@@ -3785,6 +3785,8 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt,
   int j, i;
   VEC(tree,heap) *vec_oprnds0 = NULL, *vec_oprnds1 = NULL;
   tree vop0, vop1;
+  unsigned int k;
+  bool scalar_shift_arg = false;
 
   /* FORNOW: SLP with multiple types is not supported. The SLP analysis verifies
      this, so we can safely override NCOPIES with 1 here.  */
@@ -3901,14 +3903,18 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt,
       /* Invariant argument is needed for a vector shift
 	 by a scalar shift operand.  */
       optab_op2_mode = insn_data[icode].operand[2].mode;
-      if (! (VECTOR_MODE_P (optab_op2_mode)
-	     || dt[1] == vect_constant_def
-	     || dt[1] == vect_invariant_def))
+      if (!VECTOR_MODE_P (optab_op2_mode))
 	{
-	  if (vect_print_dump_info (REPORT_DETAILS))
-	    fprintf (vect_dump, "operand mode requires invariant argument.");
-	  return false;
-	}
+	  if (dt[1] != vect_constant_def && dt[1] != vect_invariant_def)
+	    {
+	      if (vect_print_dump_info (REPORT_DETAILS))
+	        fprintf (vect_dump, "operand mode requires invariant"
+                                    " argument.");
+	      return false;
+	    }
+
+          scalar_shift_arg = true;
+        }
     }
 
   if (!vec_stmt) /* transformation not required.  */
@@ -3928,10 +3934,21 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt,
   /* Handle def.  */
   vec_dest = vect_create_destination_var (scalar_dest, vectype);
 
+  /* Allocate VECs for vector operands. In case of SLP, vector operands are 
+     created in the previous stages of the recursion, so no allocation is
+     needed, except for the case of shift with scalar shift argument. In that
+     case we store the scalar operand in VEC_OPRNDS1 for every vector stmt to
+     be created to vectorize the SLP group, i.e., SLP_NODE->VEC_STMTS_SIZE.
+     In case of loop-based vectorization we allocate VECs of size 1. We 
+     allocate VEC_OPRNDS1 only in case of binary operation.  */ 
   if (!slp_node)
-    vec_oprnds0 = VEC_alloc (tree, heap, 1);
-  if (op_type == binary_op)
-    vec_oprnds1 = VEC_alloc (tree, heap, 1);
+    {
+      vec_oprnds0 = VEC_alloc (tree, heap, 1);
+      if (op_type == binary_op)
+        vec_oprnds1 = VEC_alloc (tree, heap, 1);
+    }
+  else if (scalar_shift_arg)
+    vec_oprnds1 = VEC_alloc (tree, heap, slp_node->vec_stmts_size);  
 
   /* In case the vectorization factor (VF) is bigger than the number
      of elements that we can fit in a vectype (nunits), we have to generate
@@ -4006,10 +4023,20 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt,
 		    fprintf (vect_dump, "operand 1 using scalar mode.");
 		  vec_oprnd1 = op1;
 		  VEC_quick_push (tree, vec_oprnds1, vec_oprnd1);
+	          if (slp_node)
+	            {
+	              /* Store vec_oprnd1 for every vector stmt to be created
+	                 for SLP_NODE. We check during the analysis that all the
+                         shift arguments are the same.  
+	                 TODO: Allow different constants for different vector 
+	                 stmts generated for an SLP instance.  */          
+	              for (k = 0; k < slp_node->vec_stmts_size - 1; k++)
+	                VEC_quick_push (tree, vec_oprnds1, vec_oprnd1);
+	            }
 		}
 	    }
 	 
-          /* vec_oprnd is available if operand 1 should be of a scalar-type 
+          /* vec_oprnd1 is available if operand 1 should be of a scalar-type 
              (a special case for certain kind of vector shifts); otherwise, 
              operand 1 should be of a vector type (the usual case).  */
 	  if (op_type == binary_op && !vec_oprnd1)

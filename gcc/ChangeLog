@@ -1,3 +1,12 @@
+2007-11-12  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/33953
+	* tree-vect-transform.c (vectorizable_operation): In case of SLP, 
+	allocate vec_oprnds1 according to the number of created vector 
+	statements. In case of shift with scalar argument, store scalar operand  
+	for every vector statement to be created for the SLP node. Fix a 
+	comment.
+
 2007-11-10  Steven Bosscher  <stevenb.gcc@gmail.com>
 
 	* gcse.c (CUID_INSN): Remove.
