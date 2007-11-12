@@ -1,3 +1,14 @@
+2007-11-12  Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
+	    Michael Meissner  <michael.meissner@amd.com>
+
+	* config/i386/i386.md (sse5_setcc<mode>): Use <ssemodefsuffix> to
+	get the appropriate suffix for the coms* instruction.
+	(sse5_pcmov_<mode>): Restrict operands of pcmov
+	for scalar case to be only xmm registers and not memory.
+
+	* config/i386/sse.md (sse5_pcmov_<mode>): Correct the operand
+	constraints to follow the mnemonics for the pcmov instruction	
+
 2007-11-12  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR target/34042

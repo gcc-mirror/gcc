@@ -7894,15 +7894,15 @@
 (define_insn "sse5_pcmov_<mode>"
   [(set (match_operand:SSEMODE 0 "register_operand" "=x,x,x,x,x,x")
 	(if_then_else:SSEMODE
-	  (match_operand:SSEMODE 3 "nonimmediate_operand" "0,0,xm,xm,0,0")
-	  (match_operand:SSEMODE 1 "vector_move_operand" "x,xm,0,x,C,x")
-	  (match_operand:SSEMODE 2 "vector_move_operand" "xm,x,x,0,x,C")))]
+	  (match_operand:SSEMODE 3 "nonimmediate_operand" "0,0,xm,x,0,0")
+	  (match_operand:SSEMODE 1 "vector_move_operand" "x,xm,0,0,C,x")
+	  (match_operand:SSEMODE 2 "vector_move_operand" "xm,x,x,xm,x,C")))]
   "TARGET_SSE5 && ix86_sse5_valid_op_p (operands, insn, 4, true, 1)"
   "@
-   pcmov\t{%3, %2, %1, %0|%3, %1, %2, %0}
-   pcmov\t{%3, %2, %1, %0|%3, %1, %2, %0}
-   pcmov\t{%3, %2, %1, %0|%3, %1, %2, %0}
-   pcmov\t{%3, %2, %1, %0|%3, %1, %2, %0}
+   pcmov\t{%3, %2, %1, %0|%0, %1, %2, %3}
+   pcmov\t{%3, %2, %1, %0|%0, %1, %2, %3}
+   pcmov\t{%3, %2, %1, %0|%0, %1, %2, %3}
+   pcmov\t{%3, %2, %1, %0|%0, %1, %2, %3}
    andps\t{%2, %0|%0, %2}
    andnps\t{%1, %0|%0, %1}"
   [(set_attr "type" "sse4arg")])
