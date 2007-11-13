@@ -1,3 +1,10 @@
+2007-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* floatformat.c (floatformat_ibm_long_double_is_valid): Fix
+	compiler warnings.
+	(floatformat_ibm_long_double): Use
+	floatformat_ibm_long_double_is_valid.
+
 2007-11-07  Joseph Myers  <joseph@codesourcery.com>
 	    Daniel Jacobowitz  <dan@codesourcery.com>
 
