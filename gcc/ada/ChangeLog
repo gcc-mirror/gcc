@@ -1,3 +1,9 @@
+2007-11-13  Samuel Tardieu  <sam@rfc1149.net>
+
+	* a-tasatt.adb: Add a comment at the beginning of the package
+	explaining why in general 'Unchecked_Access must be used instead
+	of 'Access.
+
 2007-11-10  Samuel Tardieu  <sam@rfc1149.net>
 
 	* a-tasatt.adb: Revert previous change for this file as it will

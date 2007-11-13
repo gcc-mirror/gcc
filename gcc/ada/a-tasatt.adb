@@ -217,6 +217,10 @@
 --  "passed" in via access discriminants. GNAT was having trouble with access
 --  discriminants, so all this work was moved to the package body.
 
+--  Note that references to objects declared in this package body must in
+--  general use 'Unchecked_Access instead of 'Access as the package can be
+--  instantiated from within a local context.
+
 with System.Error_Reporting;
 --  Used for Shutdown;
 
