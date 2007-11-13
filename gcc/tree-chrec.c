@@ -522,13 +522,13 @@ chrec_evaluate (unsigned var, tree chrec, tree n, unsigned int k)
   if (TREE_CODE (chrec) == POLYNOMIAL_CHREC
       && CHREC_VARIABLE (chrec) == var)
     {
-      arg0 = chrec_evaluate (var, CHREC_RIGHT (chrec), n, k + 1);
-      if (arg0 == chrec_dont_know)
+      arg1 = chrec_evaluate (var, CHREC_RIGHT (chrec), n, k + 1);
+      if (arg1 == chrec_dont_know)
 	return chrec_dont_know;
       binomial_n_k = tree_fold_binomial (type, n, k);
       if (!binomial_n_k)
 	return chrec_dont_know;
-      arg1 = fold_build2 (MULT_EXPR, type,
+      arg0 = fold_build2 (MULT_EXPR, type,
 			  CHREC_LEFT (chrec), binomial_n_k);
       return chrec_fold_plus (type, arg0, arg1);
     }
