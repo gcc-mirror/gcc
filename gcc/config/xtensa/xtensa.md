@@ -35,6 +35,7 @@
   (UNSPECV_MEMW		3)
   (UNSPECV_S32RI	4)
   (UNSPECV_S32C1I	5)
+  (UNSPECV_EH_RETURN	6)
 ])
 
 ;; This code iterator allows signed and unsigned widening multiplications
@@ -1599,6 +1600,26 @@
   xtensa_expand_nonlocal_goto (operands);
   DONE;
 })
+
+;; Stuff an address into the return address register along with the window
+;; size in the high bits.  Because we don't have the window size of the
+;; previous frame, assume the function called out with a CALL8 since that
+;; is what compilers always use.  Note: __builtin_frob_return_addr has
+;; already been applied to the handler, but the generic version doesn't
+;; allow us to frob it quite enough, so we just frob here.
+
+(define_insn_and_split "eh_return"
+  [(set (reg:SI A0_REG)
+	(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")]
+			    UNSPECV_EH_RETURN))
+   (clobber (match_scratch:SI 1 "=r"))]
+  ""
+  "#"
+  "reload_completed"
+  [(set (match_dup 1) (ashift:SI (match_dup 0) (const_int 2)))
+   (set (match_dup 1) (plus:SI (match_dup 1) (const_int 2)))
+   (set (reg:SI A0_REG) (rotatert:SI (match_dup 1) (const_int 2)))]
+  "")
 
 ;; Setting up a frame pointer is tricky for Xtensa because GCC doesn't
 ;; know if a frame pointer is required until the reload pass, and
