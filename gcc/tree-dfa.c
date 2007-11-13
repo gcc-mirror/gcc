@@ -287,7 +287,9 @@ dump_subvars_for (FILE *file, tree var)
   for (i = 0; VEC_iterate (tree, sv, i, subvar); ++i)
     {
       print_generic_expr (file, subvar, dump_flags);
-      fprintf (file, "@" HOST_WIDE_INT_PRINT_UNSIGNED " ", SFT_OFFSET (subvar));
+      fprintf (file, "@" HOST_WIDE_INT_PRINT_UNSIGNED, SFT_OFFSET (subvar));
+      fprintf (file, "[%u]", SFT_NESTING_LEVEL (subvar));
+      fprintf (file, " ");
     }
 
   fprintf (file, "}");
@@ -416,6 +418,15 @@ dump_variable (FILE *file, tree var)
 	{
 	  fprintf (file, ", partition symbols: ");
 	  dump_decl_set (file, MPT_SYMBOLS (var));
+	}
+
+      if (TREE_CODE (var) == STRUCT_FIELD_TAG)
+	{
+	  fprintf (file, ", offset: " HOST_WIDE_INT_PRINT_UNSIGNED,
+		   SFT_OFFSET (var));
+	  fprintf (file, ", nesting: %u", SFT_NESTING_LEVEL (var));
+	  fprintf (file, ", partitionable: %s",
+		   SFT_UNPARTITIONABLE_P (var) ? "NO" : "YES");
 	}
     }
 

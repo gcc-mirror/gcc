@@ -1,3 +1,42 @@
+2007-11-13  diego novillo  <dnovillo@google.com>
+
+	pr 33870
+	* tree.h (strcut tree_memory_tag): add field unpartitionable.
+	remove field in_nested_struct.
+	(struct tree_struct_field_tag): add field nesting_level.
+	(sft_in_nested_struct): remove.
+	(sft_nesting_level): define.
+	(sft_unpartitionable_p): define.
+	* tree-ssa-alias.c (mem_sym_score): if mp->var is not
+	partitionable, return long_max.
+	(compute_memory_partitions): do not partition sfts marked
+	unpartitionable.
+	(create_sft): add argument nesting_level.  set
+	sft_nesting_level with it.  update all users.
+	(create_overlap_variables_for): show nesting level.
+	* tree-dfa.c (dump_subvars_for): likewise.
+	(dump_variable): likewise.
+	show whether the sft is partitionable or not.
+	* tree-flow.h (struct fieldoff): remove field
+	in_nested_struct.
+	add field nesting_level.
+	* tree-ssa-structalias.c (struct variable_info): remove
+	field in_nested_struct.
+	(push_fields_onto_fieldstack): add argument
+	nesting_level.  update all users.
+	update documentation.
+	update pair->nesting_level with nesting_level.
+	make recursive calls with nesting_level + 1.
+	(set_uids_in_ptset): if an sft is added to the points-to
+	set, mark it as unpartitionable.
+	* tree-ssa-operands.c (ref_nesting_level): new.
+	(add_vars_for_offset): call it.
+	add argument full_ref.  update
+	callers.
+	if var is inside a nested structure and the nesting level
+	of full_ref is lower than the nesting level of var,
+	adjust offset by the offset of var.
+
 2007-11-13  Victor Kaplansky  <victork@il.ibm.com>
 
 	PR tree-optimization/32582

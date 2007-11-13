@@ -253,15 +253,6 @@ struct variable_info
      variable.  This is used for C++ placement new.  */
   unsigned int no_tbaa_pruning : 1;
 
-  /* True if this variable is inside a structure nested in the
-     structure for the base variable.  For instance, in 
-     struct X { int a; struct Y { int b; int c; } }, the variables for
-     fields 'b' and 'c' are inside a nested structure.  We are not
-     interested in tracking how many levels of nesting, just whether
-     there is nesting at all.  This is later used to adjust offsets
-     for pointers pointing into sub-structures.  */
-  unsigned int in_nested_struct : 1;
-
   /* Points-to set for this variable.  */
   bitmap solution;
 
@@ -4050,19 +4041,28 @@ sort_fieldstack (VEC(fieldoff_s,heap) *fieldstack)
 	 fieldoff_compare);
 }
 
-/* Given a TYPE, and a vector of field offsets FIELDSTACK, push all the fields
-   of TYPE onto fieldstack, recording their offsets along the way.
-   OFFSET is used to keep track of the offset in this entire structure, rather
-   than just the immediately containing structure.  Returns the number
-   of fields pushed.
+/* Given a TYPE, and a vector of field offsets FIELDSTACK, push all
+   the fields of TYPE onto fieldstack, recording their offsets along
+   the way.
+
+   OFFSET is used to keep track of the offset in this entire
+   structure, rather than just the immediately containing structure.
+   Returns the number of fields pushed.
+
    HAS_UNION is set to true if we find a union type as a field of
-   TYPE.  ADDRESSABLE_TYPE is the type of the outermost object that could have
-   its address taken.  */
+   TYPE.
+
+   ADDRESSABLE_TYPE is the type of the outermost object that could
+   have its address taken.
+
+   NESTING_LEVEL indicates whether TYPE is a structure nested inside
+   another, it starts at 0 and it is incremented by one on every
+   structure recursed into.  */
 
 int
 push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 			     HOST_WIDE_INT offset, bool *has_union,
-			     tree addressable_type)
+			     tree addressable_type, unsigned nesting_level)
 {
   tree field;
   int count = 0;
@@ -4119,11 +4119,14 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 	  if (!AGGREGATE_TYPE_P (TREE_TYPE (type))) /* var_can_have_subvars */
 	    push = true;
 	  else if (!(pushed = push_fields_onto_fieldstack
-		     (TREE_TYPE (type), fieldstack,
-		      offset + i * TREE_INT_CST_LOW (elsz), has_union,
+		     (TREE_TYPE (type),
+		      fieldstack,
+		      offset + i * TREE_INT_CST_LOW (elsz),
+		      has_union,
 		      (TYPE_NONALIASED_COMPONENT (type)
 		       ? addressable_type
-		       : TREE_TYPE (type)))))
+		       : TREE_TYPE (type)),
+		      nesting_level + 1)))
 	    /* Empty structures may have actual size, like in C++. So
 	       see if we didn't push any subfields and the size is
 	       nonzero, push the field onto the stack */
@@ -4142,12 +4145,7 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 		pair->alias_set = get_alias_set (addressable_type);
 	      else
 		pair->alias_set = -1;
-
-	      /* If the base offset is positive, this field belongs to
-		 a structure nested inside the base structure.  */
-	      if (offset > 0)
-		pair->in_nested_struct = true;
-
+	      pair->nesting_level = nesting_level;
 	      count++;
 	    }
 	  else
@@ -4171,11 +4169,14 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 	if (!var_can_have_subvars (field))
 	  push = true;
 	else if (!(pushed = push_fields_onto_fieldstack
-		   (TREE_TYPE (field), fieldstack,
-		    offset + bitpos_of_field (field), has_union,
+		   (TREE_TYPE (field),
+		    fieldstack,
+		    offset + bitpos_of_field (field),
+		    has_union,
 		    (DECL_NONADDRESSABLE_P (field)
 		     ? addressable_type
-		     : TREE_TYPE (field))))
+		     : TREE_TYPE (field)),
+		    nesting_level + 1))
 		 && DECL_SIZE (field)
 		 && !integer_zerop (DECL_SIZE (field)))
 	  /* Empty structures may have actual size, like in C++. So
@@ -4196,12 +4197,7 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 	      pair->alias_set = get_alias_set (addressable_type);
 	    else
 	      pair->alias_set = -1;
-
-	    /* If the base offset is positive, this field belongs to
-	       a structure nested inside the base structure.  */
-	    if (offset > 0)
-	      pair->in_nested_struct = true;
-
+	    pair->nesting_level = nesting_level;
 	    count++;
 	  }
 	else
@@ -4401,7 +4397,7 @@ create_variable_info_for (tree decl, const char *name)
   if (var_can_have_subvars (decl) && use_field_sensitive && !hasunion)
     {
       push_fields_onto_fieldstack (decltype, &fieldstack, 0, &hasunion,
-				   decltype);
+				   decltype, 0);
       if (hasunion)
 	{
 	  VEC_free (fieldoff_s, heap, fieldstack);
@@ -4512,7 +4508,6 @@ create_variable_info_for (tree decl, const char *name)
 	  newvi->offset = fo->offset;
 	  newvi->size = TREE_INT_CST_LOW (fo->size);
 	  newvi->fullsize = vi->fullsize;
-	  newvi->in_nested_struct = fo->in_nested_struct;
 	  insert_into_field_list (vi, newvi);
 	  VEC_safe_push (varinfo_t, heap, varmap, newvi);
 	  if (is_global && (!flag_whole_program || !in_ipa_mode))
@@ -4764,8 +4759,20 @@ set_uids_in_ptset (tree ptr, bitmap into, bitmap from, bool is_derefed,
 		  if (no_tbaa_pruning
 		      || (!is_derefed && !vi->directly_dereferenced)
 		      || alias_sets_conflict_p (ptr_alias_set, var_alias_set))
-		    bitmap_set_bit (into, DECL_UID (sft));
-		  SFT_IN_NESTED_STRUCT (sft) = vi->in_nested_struct;
+		    {
+		      bitmap_set_bit (into, DECL_UID (sft));
+		      
+		      /* If SFT is inside a nested structure, it will
+			 be needed by the operand scanner to adjust
+			 offsets when adding operands to memory
+			 expressions that dereference PTR.  This means
+			 that memory partitioning may not partition
+			 this SFT because the operand scanner will not
+			 be able to find the other SFTs next to this
+			 one.  */
+		      if (SFT_NESTING_LEVEL (sft) > 0)
+			SFT_UNPARTITIONABLE_P (sft) = true;
+		    }
 		}
 	    }
 	  else

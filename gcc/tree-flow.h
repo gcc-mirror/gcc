@@ -1159,9 +1159,9 @@ struct fieldoff
   /* Field.  */
   tree decl;
 
-  /* True if this field is inside a structure nested inside the base
-     containing object.  */
-  unsigned int in_nested_struct : 1;
+  /* Nesting level.  This number represents how many structures are
+     wrapping this field.  */
+  unsigned nesting_level;
 
   /* Offset from the base of the base containing object to this field.  */
   HOST_WIDE_INT offset;  
@@ -1173,8 +1173,8 @@ typedef struct fieldoff fieldoff_s;
 
 DEF_VEC_O(fieldoff_s);
 DEF_VEC_ALLOC_O(fieldoff_s,heap);
-int push_fields_onto_fieldstack (tree, VEC(fieldoff_s,heap) **,
-				 HOST_WIDE_INT, bool *, tree);
+int push_fields_onto_fieldstack (tree, VEC(fieldoff_s,heap) **, HOST_WIDE_INT,
+				 bool *, tree, unsigned);
 void sort_fieldstack (VEC(fieldoff_s,heap) *);
 
 void init_alias_heapvars (void);
