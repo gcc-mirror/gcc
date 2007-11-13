@@ -1,5 +1,18 @@
 2007-11-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/34054
+	PR c++/34056
+	PR c++/34057
+	PR c++/34058
+	PR c++/34060
+	* pt.c (find_parameter_packs_r): If ppd->set_packs_to_error,
+	set to error_mark_node the outermost POINTER_TYPE to the pack if
+	it is seen in a POINTER_TYPE.
+	(push_template_decl_real): If check_for_bare_parameter_packs
+	fails for function return type, set the return type to
+	integer_type_node.  If check_for_bare_parameter_packs failed
+	for non-function, return error_mark_node.
+
 	PR c++/29225
 	* call.c (build_new_op): Call resolve_args before calling
 	build_over_call.
