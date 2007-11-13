@@ -5606,10 +5606,11 @@ sense when scheduling before register allocation, i.e.@: with
 @opindex fsched-stalled-insns
 Define how many insns (if any) can be moved prematurely from the queue
 of stalled insns into the ready list, during the second scheduling pass.
-@option{-fno-fsched-stalled-insns} and @option{-fsched-stalled-insns=0}
-are equivalent and mean that no insns will be moved prematurely.
-If @var{n} is unspecified then there is no limit on how many queued
-insns can be moved prematurely.
+@option{-fno-sched-stalled-insns} means that no insns will be moved
+prematurely, @option{-fsched-stalled-insns=0} means there is no limit
+on how many queued insns can be moved prematurely.
+@option{-fsched-stalled-insns} without a value is equivalent to
+@option{-fsched-stalled-insns=1}.
 
 @item -fsched-stalled-insns-dep
 @itemx -fsched-stalled-insns-dep=@var{n}
@@ -5617,7 +5618,7 @@ insns can be moved prematurely.
 Define how many insn groups (cycles) will be examined for a dependency
 on a stalled insn that is candidate for premature removal from the queue
 of stalled insns.  This has an effect only during the second scheduling pass,
-and only if @option{-fsched-stalled-insns} is used and its value is not zero.
+and only if @option{-fsched-stalled-insns} is used.
 @option{-fno-sched-stalled-insns-dep} is equivalent to
 @option{-fsched-stalled-insns-dep=0}.
 @option{-fsched-stalled-insns-dep} without a value is equivalent to
