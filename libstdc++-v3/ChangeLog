@@ -1,3 +1,8 @@
+2007-11-13  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/deque.tcc (deque<>::_M_push_back_aux,
+	_M_push_front_aux): Do not copy unnecessarily to __t_copy.
+
 2007-11-12  Chris Jefferson  <chris@bubblescope.net>
 	    Paolo Carlini  <pcarlini@suse.de>
 
