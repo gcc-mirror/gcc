@@ -1,8 +1,8 @@
 <html lang="en">
 <head>
-<title>Porting libstdc++-v3</title>
+<title>Porting libstdc++</title>
 <meta http-equiv="Content-Type" content="text/html">
-<meta name="description" content="Porting libstdc++-v3">
+<meta name="description" content="Porting libstdc++">
 <meta name="generator" content="makeinfo 4.6">
 <!--
 Copyright &copy; 2000, 2001, 2002, 2003, 2005 Free Software Foundation, Inc.
@@ -35,7 +35,7 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 --></style>
 </head>
 <body>
-<h1 class="settitle">Porting libstdc++-v3</h1>
+<h1 class="settitle">Porting libstdc++</h1>
 <div class="node">
 <p><hr>
 Node:&nbsp;<a name="Top">Top</a>,
@@ -44,14 +44,14 @@ Up:&nbsp;<a rel="up" accesskey="u" href="#dir">(dir)</a>
 <br>
 </div>
 
-<h2 class="unnumbered">Porting libstdc++-v3</h2>
+<h2 class="unnumbered">Porting libstdc++</h2>
 
-<p>This document explains how to port libstdc++-v3 (the GNU C++ library) to
+<p>This document explains how to port libstdc++ (the GNU C++ library) to
 a new target.
 
-   <p>In order to make the GNU C++ library (libstdc++-v3) work with a new
+   <p>In order to make the GNU C++ library (libstdc++) work with a new
 target, you must edit some configuration files and provide some new
-header files.  Unless this is done, libstdc++-v3 will use generic
+header files.  Unless this is done, libstdc++ will use generic
 settings which may not be correct for your target; even if they are
 correct, they will likely be inefficient.
 
@@ -115,7 +115,7 @@ OS portion of the triplet (the default), then nothing needs to be changed.
 <code>os_defines.h</code>.  This file contains basic macro definitions
 that are required to allow the C++ library to work with your C library. 
 
-   <p>Several libstdc++-v3 source files unconditionally define the macro
+   <p>Several libstdc++ source files unconditionally define the macro
 <code>_POSIX_SOURCE</code>.  On many systems, defining this macro causes
 large portions of the C library header files to be eliminated
 at preprocessing time.  Therefore, you may have to <code>#undef</code> this
@@ -130,7 +130,7 @@ need to define.  You will need to add them to the
 target.  It will not work to simply define these macros in
 <code>os_defines.h</code>.
 
-   <p>At this time, there are a few libstdc++-v3-specific macros which may be
+   <p>At this time, there are a few libstdc++-specific macros which may be
 defined:
 
    <p><code>_GLIBCXX_USE_C99_CHECK</code> may be defined to 1 to check C99
@@ -233,7 +233,7 @@ character classification, analogous to that provided by the C libraries
 certainly need some modification.
 
    <p>The first file to write is <code>ctype_base.h</code>.  This file provides
-some very basic information about character classification.  The libstdc++-v3
+some very basic information about character classification.  The libstdc++
 library assumes that your C library implements <code>&lt;ctype.h&gt;</code> by using
 a table (indexed by character code) containing integers, where each of
 these integers is a bit-mask indicating whether the character is
@@ -530,7 +530,7 @@ Explaining the full workings of libtool is beyond the scope of this
 document, but there are a few, particular bits that are necessary for
 porting.
 
-   <p>Some parts of the libstdc++-v3 library are compiled with the libtool
+   <p>Some parts of the libstdc++ library are compiled with the libtool
 <code>--tags CXX</code> option (the C++ definitions for libtool).  Therefore,
 <code>ltcf-cxx.sh</code> in the top-level directory needs to have the correct
 logic to compile and archive objects equivalent to the C version of libtool,
@@ -542,7 +542,7 @@ run as the library is loaded.  Often, that requires linking in special
 object files when the C++ library is built as a shared library, or
 taking other system-specific actions.
 
-   <p>The libstdc++-v3 library is linked with the C version of libtool, even
+   <p>The libstdc++ library is linked with the C version of libtool, even
 though it is a C++ library.  Therefore, the C version of libtool needs to
 ensure that the run-time library initializers are run.  The usual way to
 do this is to build the library using <code>gcc -shared</code>.
@@ -974,7 +974,7 @@ to permit their use in free software.
 <div class="contents">
 <h2>Table of Contents</h2>
 <ul>
-<li><a name="toc_Top" href="#Top">Porting libstdc++-v3</a>
+<li><a name="toc_Top" href="#Top">Porting libstdc++</a>
 <li><a name="toc_Operating%20system" href="#Operating%20system">Operating system</a>
 <li><a name="toc_CPU" href="#CPU">CPU</a>
 <li><a name="toc_Character%20types" href="#Character%20types">Character types</a>

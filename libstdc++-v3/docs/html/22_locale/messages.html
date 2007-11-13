@@ -267,10 +267,10 @@ documentation. Here's an idea of what is required:
 
    <li> Copy the binary files into the correct directory structure.
    <p>
-   <code>cp fr_FR.mo (dir)/fr_FR/LC_MESSAGES/libstdc++-v3.mo</code>
+   <code>cp fr_FR.mo (dir)/fr_FR/LC_MESSAGES/libstdc++.mo</code>
    </p>
    <p>
-   <code>cp de_DE.mo (dir)/de_DE/LC_MESSAGES/libstdc++-v3.mo</code>
+   <code>cp de_DE.mo (dir)/de_DE/LC_MESSAGES/libstdc++.mo</code>
    </p>
    </li>
 
@@ -302,7 +302,7 @@ void test01()
 {
   typedef messages&lt;char&gt;::catalog catalog;
   const char* dir =
-  "/mnt/egcs/build/i686-pc-linux-gnu/libstdc++-v3/po/share/locale";  
+  "/mnt/egcs/build/i686-pc-linux-gnu/libstdc++/po/share/locale";  
   const locale loc_de("de_DE");
   const messages&lt;char&gt;&amp; mssg_de = use_facet&lt;messages&lt;char&gt; &gt;(loc_de); 
 

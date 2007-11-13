@@ -75,7 +75,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 _GLIBCXX_END_NAMESPACE
 
-namespace __gnu_internal _GLIBCXX_VISIBILITY(hidden)
+namespace __gnu_internal _GLIBCXX_VISIBILITY_ATTR(hidden)
 {
   using namespace std;
   using namespace __gnu_cxx;

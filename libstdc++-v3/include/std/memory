@@ -71,7 +71,7 @@
 #  include <bits/stl_function.h>  // std::less
 #  include <debug/debug.h>
 #  include <type_traits>
-#  if _GLIBCXX_USE_DEPRECATED
+#  if _GLIBCXX_DEPRECATED
 #    include <backward/auto_ptr.h>
 #  endif
 #  if defined(_GLIBCXX_INCLUDE_AS_CXX0X)

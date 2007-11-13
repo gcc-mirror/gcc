@@ -26,7 +26,7 @@
 </em></p>
 
 <p><em>
-   To the <a href="http://gcc.gnu.org/libstdc++/">libstdc++-v3 homepage</a>.
+   To the <a href="http://gcc.gnu.org/libstdc++/">libstdc++ homepage</a>.
 </em></p>
 
 <!-- ####################################################### -->
@@ -240,7 +240,7 @@ on ELF systems).</p>
 
     <li>Symbol versioning on the libstdc++.so binary.
 
-    <p>mapfile: libstdc++-v3/config/linker-map.gnu</p>
+    <p>mapfile: libstdc++/config/linker-map.gnu</p>
     <p>It is versioned with the following labels and version
    definitions, where the version definition is the maximum for a
    particular release. Note, only symbol which are newly introduced
@@ -340,7 +340,7 @@ on ELF systems).</p>
 
     <p>
     This macro is defined in the file "c++config" in the
-    "libstdc++-v3/include/bits" directory. (Up to gcc-4.1.0, it was
+    "libstdc++/include/bits" directory. (Up to gcc-4.1.0, it was
     changed every night by an automated script. Since gcc-4.1.0, it is
     the same value as gcc/DATESTAMP.)
     </p>
@@ -393,7 +393,7 @@ on ELF systems).</p>
 
     <p>
     This macro is defined in the file "c++config" in the
-    "libstdc++-v3/include/bits" directory and is generated
+    "libstdc++/include/bits" directory and is generated
     automatically by autoconf as part of the configure-time generation
     of config.h.
     </p>
@@ -435,7 +435,7 @@ on ELF systems).</p>
     All C++ includes are installed in include/c++, then nest in a
     directory hierarchy corresponding to the C++ compiler's released
     version. This version corresponds to the variable "gcc_version" in
-    "libstdc++-v3/acinclude.m4," and more details can be found in that
+    "libstdc++/acinclude.m4," and more details can be found in that
     file's macro GLIBCXX_CONFIGURE (GLIBCPP_CONFIGURE before gcc-3.4.0).
     </p>
     <p>
@@ -493,7 +493,7 @@ on ELF systems).</p>
   Minimum environment that supports a versioned ABI: A supported
   dynamic linker, a GNU linker of sufficient vintage to understand
   demangled C++ name globbing (ld), a shared executable compiled with
-  g++, and shared libraries (libgcc_s, libstdc++-v3) compiled by a
+  g++, and shared libraries (libgcc_s, libstdc++) compiled by a
   compiler (g++) with a compatible ABI. Phew.
 </p>
 
@@ -529,7 +529,7 @@ on ELF systems).</p>
 </p>
 
 <p>
-  In particular, libstdc++-v3/acinclude.m4 has a macro called
+  In particular, libstdc++/acinclude.m4 has a macro called
   GLIBCXX_ENABLE_SYMVERS that defaults to yes (or the argument passed
   in via --enable-symvers=foo). At that point, the macro attempts to
   make sure that all the requirement for symbol versioning are in
@@ -542,7 +542,7 @@ on ELF systems).</p>
 </h5>
 <p>
   When the GNU C++ library is being built with symbol versioning on,
-  you should see the following at configure time for libstdc++-v3:
+  you should see the following at configure time for libstdc++:
 </p>
 
 
@@ -776,7 +776,7 @@ http://gcc.gnu.org/ml/gcc/2002-08/msg00142.html
 
 <p>
 Two.  
-Use the 'make check-abi' rule in the libstdc++-v3 Makefile. 
+Use the 'make check-abi' rule in the libstdc++ Makefile. 
 </p>
 
 <p>
