@@ -1,5 +1,8 @@
 2007-11-13  Jakub Jelinek  <jakub@redhat.com>
 
+	* doc/invoke.texi: Fix description of -fsched-stalled-insns=0,
+	-fsched-stalled-insns.
+
 	PR tree-optimization/34063
 	* tree-chrec.c (chrec_evaluate): Put CHREC_LEFT based argument
 	as first chrec_fold_plus operand rather than second.
