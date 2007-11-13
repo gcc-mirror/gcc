@@ -350,21 +350,22 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       void
       deque<_Tp, _Alloc>::
       _M_push_back_aux(_Args&&... __args)
-      {
-	value_type __t_copy(std::forward<_Args>(__args)...);
 #else
       void
       deque<_Tp, _Alloc>::
       _M_push_back_aux(const value_type& __t)
-      {
-	value_type __t_copy = __t;
 #endif
+      {
 	_M_reserve_map_at_back();
 	*(this->_M_impl._M_finish._M_node + 1) = this->_M_allocate_node();
 	try
 	  {
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
 	    this->_M_impl.construct(this->_M_impl._M_finish._M_cur,
-				    _GLIBCXX_MOVE(__t_copy));
+				    std::forward<_Args>(__args)...);
+#else
+	    this->_M_impl.construct(this->_M_impl._M_finish._M_cur, __t);
+#endif
 	    this->_M_impl._M_finish._M_set_node(this->_M_impl._M_finish._M_node
 						+ 1);
 	    this->_M_impl._M_finish._M_cur = this->_M_impl._M_finish._M_first;
@@ -383,15 +384,12 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       void
       deque<_Tp, _Alloc>::
       _M_push_front_aux(_Args&&... __args)
-      {
-	value_type __t_copy(std::forward<_Args>(__args)...);
 #else
       void
       deque<_Tp, _Alloc>::
       _M_push_front_aux(const value_type& __t)
-      {
-	value_type __t_copy = __t;
 #endif
+      {
 	_M_reserve_map_at_front();
 	*(this->_M_impl._M_start._M_node - 1) = this->_M_allocate_node();
 	try
@@ -399,8 +397,12 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	    this->_M_impl._M_start._M_set_node(this->_M_impl._M_start._M_node
 					       - 1);
 	    this->_M_impl._M_start._M_cur = this->_M_impl._M_start._M_last - 1;
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
 	    this->_M_impl.construct(this->_M_impl._M_start._M_cur,
-				    _GLIBCXX_MOVE(__t_copy));
+				    std::forward<_Args>(__args)...);
+#else
+	    this->_M_impl.construct(this->_M_impl._M_start._M_cur, __t);
+#endif
 	  }
 	catch(...)
 	  {
