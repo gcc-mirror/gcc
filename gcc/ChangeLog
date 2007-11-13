@@ -1,3 +1,16 @@
+2007-11-13  Sterling Augustine  <sterling@tensilica.com>
+	    Bob Wilson  <bob.wilson@acm.org>
+	
+	* config/xtensa/unwind-dw2-xtensa.c: New.
+	* config/xtensa/unwind-dw2-xtensa.h: New.
+	* config/xtensa/xtensa.h (MUST_USE_SJLJ_EXCEPTIONS): Remove.
+	(DWARF2_UNWIND_INFO): Remove.
+	(DWARF_FRAME_REGISTERS): Define.
+	(EH_RETURN_DATA_REGNO): Define.
+	* config/xtensa/xtensa.md (UNSPECV_EH_RETURN): Define.
+	(eh_return): New.
+	* config/xtensa/t-xtensa (LIB2ADDEH): Define.
+	
 2007-11-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/invoke.texi: Fix description of -fsched-stalled-insns=0,

@@ -1062,12 +1062,15 @@ typedef struct xtensa_args
 /* How to start an assembler comment.  */
 #define ASM_COMMENT_START "#"
 
-/* Generate DWARF2 unwind info to get the DW_AT_frame_base set correctly,
-   even though we don't yet use it for unwinding.  */
-#define MUST_USE_SJLJ_EXCEPTIONS 1
-#define DWARF2_UNWIND_INFO 1
+/* Exception handling.  Xtensa uses much of the standard DWARF2 unwinding
+   machinery, but the variable size register window save areas are too
+   complicated to efficiently describe with CFI entries.  The CFA must
+   still be specified in DWARF so that DW_AT_frame_base is set correctly
+   for debugging.  */
 #define INCOMING_RETURN_ADDR_RTX gen_rtx_REG (Pmode, 0)
 #define DWARF_FRAME_RETURN_COLUMN DWARF_FRAME_REGNUM (0)
+#define DWARF_FRAME_REGISTERS 16
+#define EH_RETURN_DATA_REGNO(N) ((N) < 2 ? (N) + 2 : INVALID_REGNUM)
 
 /* Xtensa constant pool breaks the devices in crtstuff.c to control
    section in where code resides.  We have to write it as asm code.  Use
