@@ -1,3 +1,10 @@
+2007-11-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34080
+	* iresolve.c (gfc_resolve_transfer): Do not try to convert
+	to a constant MOLD expression, if it is an assumed size
+	dummy.
+
 2007-11-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* trans-common.c: Remove prototype for gfc_get_common.
