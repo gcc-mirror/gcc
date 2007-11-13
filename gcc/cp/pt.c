@@ -2454,6 +2454,7 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
       return NULL_TREE;
     }
 
+recheck:
   /* Identify whether this is a parameter pack or not.  */
   switch (TREE_CODE (t))
     {
@@ -2476,6 +2477,16 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
           *walk_subtrees = 0;
 	  parameter_pack_p = true;
         }
+      break;
+
+    case POINTER_TYPE:
+      if (ppd->set_packs_to_error)
+	/* Pointer types are shared, set in that case the outermost
+	   POINTER_TYPE to error_mark_node rather than the parameter pack.  */
+	{
+	  t = TREE_TYPE (t);
+	  goto recheck;
+	}
       break;
 
     default:
@@ -2553,7 +2564,6 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
                    ppd, NULL);
       *walk_subtrees = 0;
       return NULL_TREE;
-
       
     case TYPE_PACK_EXPANSION:
     case EXPR_PACK_EXPANSION:
@@ -3864,11 +3874,15 @@ push_template_decl_real (tree decl, bool is_friend)
 
       /* Check for bare parameter packs in the return type and the
          exception specifiers.  */
-      check_for_bare_parameter_packs (&TREE_TYPE (type));
+      if (!check_for_bare_parameter_packs (&TREE_TYPE (type)))
+	/* Errors were already issued, set return type to int
+	   as the frontend doesn't expect error_mark_node as
+	   the return type.  */
+	TREE_TYPE (type) = integer_type_node;
       check_for_bare_parameter_packs (&TYPE_RAISES_EXCEPTIONS (type));
     }
-  else
-    check_for_bare_parameter_packs (&TREE_TYPE (decl));
+  else if (!check_for_bare_parameter_packs (&TREE_TYPE (decl)))
+    return error_mark_node;
 
   if (is_partial)
     return process_partial_specialization (decl);

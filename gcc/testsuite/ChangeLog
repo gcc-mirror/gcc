@@ -1,5 +1,17 @@
 2007-11-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/34054
+	PR c++/34056
+	PR c++/34057
+	PR c++/34058
+	PR c++/34060
+	* g++.dg/parse/crash36.C: Add another dg-error.
+	* g++.dg/cpp0x/pr34054.C: New test.
+	* g++.dg/cpp0x/pr34056.C: New test.
+	* g++.dg/cpp0x/pr34057.C: New test.
+	* g++.dg/cpp0x/pr34058.C: New test.
+	* g++.dg/cpp0x/pr34060.C: New test.
+
 	PR tree-optimization/34063
 	* g++.dg/tree-ssa/pr34063.C: New test.
 
