@@ -283,7 +283,7 @@ floatformat_ibm_long_double_is_valid (const struct floatformat *fmt,
   bot_exp = get_field (ufrom + 8, hfmt->byteorder, hfmt->totalsize,
 		       hfmt->exp_start, hfmt->exp_len);
 
-  if (top_exp == hfmt->exp_nan)
+  if ((unsigned long) top_exp == hfmt->exp_nan)
     top_nan = mant_bits_set (hfmt, ufrom);
 
   /* A NaN is valid with any low part.  */
@@ -292,11 +292,8 @@ floatformat_ibm_long_double_is_valid (const struct floatformat *fmt,
 
   /* An infinity, zero or denormal requires low part 0 (positive or
      negative).  */
-  if (top_exp == hfmt->exp_nan || top_exp == 0)
+  if ((unsigned long) top_exp == hfmt->exp_nan || top_exp == 0)
     {
-      unsigned int mant_bits, mant_off;
-      int mant_bits_left;
-
       if (bot_exp != 0)
 	return 0;
 
@@ -318,7 +315,7 @@ floatformat_ibm_long_double_is_valid (const struct floatformat *fmt,
       /* The bottom part is 0 or denormal.  Determine which, and if
 	 denormal the first two set bits.  */
       int first_bit = -1, second_bit = -1, cur_bit;
-      for (cur_bit = 0; cur_bit < hfmt->man_len; cur_bit++)
+      for (cur_bit = 0; (unsigned int) cur_bit < hfmt->man_len; cur_bit++)
 	if (get_field (ufrom + 8, hfmt->byteorder, hfmt->totalsize,
 		       hfmt->man_start + cur_bit, 1))
 	  {
@@ -363,7 +360,7 @@ const struct floatformat floatformat_ibm_long_double =
   floatformat_big, 128, 0, 1, 11, 1023, 2047, 12, 52,
   floatformat_intbit_no,
   "floatformat_ibm_long_double",
-  floatformat_always_valid,
+  floatformat_ibm_long_double_is_valid,
   &floatformat_ieee_double_big
 };
 
