@@ -4,6 +4,11 @@
 	explaining why in general 'Unchecked_Access must be used instead
 	of 'Access.
 
+	* sem_prag.adb (Process_Convention): Move the test for the
+	entity on which the Convention pragma applies down to also
+	forbid pragma Convention on enumeration literals reached
+	through renamings.
+
 2007-11-10  Samuel Tardieu  <sam@rfc1149.net>
 
 	* a-tasatt.adb: Revert previous change for this file as it will
