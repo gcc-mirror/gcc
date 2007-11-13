@@ -1,3 +1,8 @@
+2007-11-13  Victor Kaplansky  <victork@il.ibm.com>
+
+	PR tree-optimization/32582
+	* Makefile.in (CRTSTUFF_CFLAGS): Add -fno-tree-vectorize
+
 2007-11-12  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* doc/extend.texi (dllimport): Document that pointers to dllimport'd
