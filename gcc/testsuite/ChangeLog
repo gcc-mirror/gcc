@@ -1,3 +1,9 @@
+2007-11-13  Diego Novillo  <dnovillo@google.com>
+
+	PR 33870
+	* gcc.c-torture/execute/pr33870-1.c: New test.
+	* gcc.dg/tree-ssa/alias-16.c: New test.
+
 2007-11-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/29225

@@ -1367,8 +1367,33 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
   return true;
 }
 
+
+/* Given an aggregate expression FULL_REF, return the number of
+   aggregates that are containing FULL_REF.  So, given a structure
+   reference a.b.c.d, the nesting level for this expression is 2 (the
+   number of '.' in the expression minus 1).  */
+
+static unsigned
+ref_nesting_level (tree full_ref)
+{
+  unsigned nesting_level = 0;
+
+  if (!handled_component_p (full_ref))
+    return 0;
+
+  full_ref = TREE_OPERAND (full_ref, 0);
+  while (handled_component_p (full_ref))
+    {
+      nesting_level++;
+      full_ref = TREE_OPERAND (full_ref, 0);
+    }
+
+  return nesting_level;
+}
+
+
 /* Add the actual variables FULL_REF can access, given a member of
-   full_ref's points-to set VAR, where FULL_REF is an access of SIZE at
+   FULL_REF's points-to set VAR, where FULL_REF is an access of SIZE at
    OFFSET from var. IS_CALL_SITE is true if this is a call, and IS_DEF
    is true if this is supposed to be a vdef, and false if this should
    be a VUSE.
@@ -1386,10 +1411,12 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
    This is necessary because foop only actually points to foo's first
    member, so that is all the points-to set contains.  However, an access
    to foop->a may be touching some single SFT if we have created some
-   SFT's for a structure.  */
+   SFT's for a structure.
+
+   FULL_REF is the original memory expression being analyzed.  */
 
 static bool
-add_vars_for_offset (tree var, unsigned HOST_WIDE_INT offset,
+add_vars_for_offset (tree full_ref, tree var, unsigned HOST_WIDE_INT offset,
 		     unsigned HOST_WIDE_INT size, bool is_def)
 {
   bool added = false;
@@ -1397,14 +1424,21 @@ add_vars_for_offset (tree var, unsigned HOST_WIDE_INT offset,
   subvar_t sv;
   unsigned int i;
 
-  if (SFT_IN_NESTED_STRUCT (var))
+  if (full_ref
+      && SFT_NESTING_LEVEL (var) > 0
+      && ref_nesting_level (full_ref) < SFT_NESTING_LEVEL (var))
     {
       /* Since VAR is an SFT inside a nested structure, the OFFSET
 	 computed by get_ref_base_and_extent is the offset from the
-	 start of the immediately containing structure.  However, to
-	 find out what other SFTs are affected by this reference, we
-	 need to know the offsets starting at the root structure in
-	 the nesting hierarchy.
+	 start of the immediately containing structure.  If VAR is an
+	 SFT inside a nested structure, then FULL_REF may be a
+	 reference to the structure immediately enclosing SFT, and so
+	 OFFSET will be the offset from the start of the immediately
+	 enclosing structure.
+
+	 However, to find out what other SFTs are affected by this
+	 reference, we need to know the offsets starting at the root
+	 structure in the nesting hierarchy.
 
 	 For instance, given the following structure:
 
@@ -1541,7 +1575,7 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 	     if it is a potential points-to location.  */
 	  if (TREE_CODE (al) == STRUCT_FIELD_TAG
 	      && TREE_CODE (var) == NAME_MEMORY_TAG)
-	    none_added &= !add_vars_for_offset (al, offset, size,
+	    none_added &= !add_vars_for_offset (full_ref, al, offset, size,
 					        flags & opf_def);
 	  else
 	    {
