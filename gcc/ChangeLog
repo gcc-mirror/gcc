@@ -1,6 +1,12 @@
-2007-11-13  diego novillo  <dnovillo@google.com>
+2007-11-13  Jakub Jelinek  <jakub@redhat.com>
 
-	pr 33870
+	PR tree-optimization/34063
+	* tree-chrec.c (chrec_evaluate): Put CHREC_LEFT based argument
+	as first chrec_fold_plus operand rather than second.
+
+2007-11-13  Diego Novillo  <dnovillo@google.com>
+
+	PR tree-optimization/33870
 	* tree.h (strcut tree_memory_tag): add field unpartitionable.
 	remove field in_nested_struct.
 	(struct tree_struct_field_tag): add field nesting_level.
