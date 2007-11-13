@@ -47,26 +47,26 @@
 
 // Macros for visibility.
 // _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY
-// _GLIBCXX_VISIBILITY
+// _GLIBCXX_VISIBILITY_ATTR
 #define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY
 
 #if _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY
-# define _GLIBCXX_VISIBILITY(V) __attribute__ ((__visibility__ (#V)))
+# define _GLIBCXX_VISIBILITY_ATTR(V) __attribute__ ((__visibility__ (#V)))
 #else
-# define _GLIBCXX_VISIBILITY(V) 
+# define _GLIBCXX_VISIBILITY_ATTR(V) 
 #endif
 
 // Macros for deprecated.
-// _GLIBCXX_USE_DEPRECATED
 // _GLIBCXX_DEPRECATED
-#ifndef _GLIBCXX_USE_DEPRECATED
-# define _GLIBCXX_USE_DEPRECATED 1
+// _GLIBCXX_DEPRECATED_ATTR
+#ifndef _GLIBCXX_DEPRECATED
+# define _GLIBCXX_DEPRECATED 1
 #endif
 
 #if defined(__DEPRECATED) && defined(__GXX_EXPERIMENTAL_CXX0X__)
-# define _GLIBCXX_DEPRECATED __attribute__ ((__deprecated__))
+# define _GLIBCXX_DEPRECATED_ATTR __attribute__ ((__deprecated__))
 #else
-# define _GLIBCXX_DEPRECATED
+# define _GLIBCXX_DEPRECATED_ATTR
 #endif
 
 // Macros for activating various namespace association modes.
@@ -124,7 +124,7 @@
 # define _GLIBCXX_STD std
 # define _GLIBCXX_BEGIN_NESTED_NAMESPACE(X, Y) _GLIBCXX_BEGIN_NAMESPACE(X)
 # define _GLIBCXX_END_NESTED_NAMESPACE _GLIBCXX_END_NAMESPACE
-# define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X _GLIBCXX_VISIBILITY(default) {
+# define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X _GLIBCXX_VISIBILITY_ATTR(default) {
 # define _GLIBCXX_END_NAMESPACE }
 #else
 
@@ -141,7 +141,7 @@
 #  define _GLIBCXX_STD_D __norm
 #  define _GLIBCXX_STD_P _GLIBCXX_STD
 #  define _GLIBCXX_STD __cxx1998
-#  define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X _GLIBCXX_VISIBILITY(default) { 
+#  define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X _GLIBCXX_VISIBILITY_ATTR(default) { 
 #  define _GLIBCXX_END_NAMESPACE }
 #  define _GLIBCXX_EXTERN_TEMPLATE 0
 # endif
@@ -151,7 +151,7 @@
 #  define _GLIBCXX_STD_D _GLIBCXX_STD
 #  define _GLIBCXX_STD_P __norm
 #  define _GLIBCXX_STD __cxx1998
-#  define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X _GLIBCXX_VISIBILITY(default) { 
+#  define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X _GLIBCXX_VISIBILITY_ATTR(default) { 
 #  define _GLIBCXX_END_NAMESPACE }
 #  define _GLIBCXX_EXTERN_TEMPLATE 0
 # endif
@@ -161,7 +161,7 @@
 #  define _GLIBCXX_STD_D __norm
 #  define _GLIBCXX_STD_P __norm
 #  define _GLIBCXX_STD __cxx1998
-#  define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X _GLIBCXX_VISIBILITY(default) { 
+#  define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X _GLIBCXX_VISIBILITY_ATTR(default) { 
 #  define _GLIBCXX_END_NAMESPACE }
 #  define _GLIBCXX_EXTERN_TEMPLATE 0
 # endif
@@ -171,7 +171,7 @@
    without inlining due to lack of weak symbols
 # endif
 
-# define _GLIBCXX_BEGIN_NESTED_NAMESPACE(X, Y)  namespace X { namespace Y _GLIBCXX_VISIBILITY(default) {
+# define _GLIBCXX_BEGIN_NESTED_NAMESPACE(X, Y)  namespace X { namespace Y _GLIBCXX_VISIBILITY_ATTR(default) {
 # define _GLIBCXX_END_NESTED_NAMESPACE } }
 #endif
 

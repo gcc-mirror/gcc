@@ -10,7 +10,7 @@
    <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL" />
    <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 23." />
    <meta name="GENERATOR" content="vi and eight fingers" />
-   <title>libstdc++-v3 HOWTO:  Chapter 23: Containers</title>
+   <title>libstdc++ HOWTO:  Chapter 23: Containers</title>
 <link rel="StyleSheet" href="../lib3styles.css" type="text/css" />
 <link rel="Start" href="../documentation.html" type="text/html"
   title="GNU C++ Standard Library" />
@@ -200,7 +200,7 @@
       along the lines of the third category, the author would love to hear
       from you...
    </p>
-   <p>Also note that the implementation of bitset used in libstdc++-v3 has
+   <p>Also note that the implementation of bitset used in libstdc++ has
       <a href="../ext/sgiexts.html#ch23">some extensions</a>.
    </p>
    <p>Return <a href="#top">to top of page</a> or
@@ -230,7 +230,7 @@
    <p><em>However, please ignore all discussions about the user-level
       configuration of the lock implementation inside the STL
       container-memory allocator on those pages.  For the sake of this
-      discussion, libstdc++-v3 configures the SGI STL implementation,
+      discussion, libstdc++ configures the SGI STL implementation,
       not you.  This is quite different from how gcc pre-3.0 worked.
       In particular, past advice was for people using g++ to
       explicitly define _PTHREADS or other macros or port-specific
@@ -239,7 +239,7 @@
       longer be done unless you really know what you are doing and
       assume all responsibility.</em>
    </p>
-   <p>Since the container implementation of libstdc++-v3 uses the SGI
+   <p>Since the container implementation of libstdc++ uses the SGI
       code, we use the same definition of thread safety as SGI when
       discussing design.  A key point that beginners may miss is the
       fourth major paragraph of the first page mentioned above
@@ -248,7 +248,7 @@
       client code (that'd be you, not us).  There is a notable
       exceptions to this rule.  Allocators called while a container or
       element is constructed uses an internal lock obtained and
-      released solely within libstdc++-v3 code (in fact, this is the
+      released solely within libstdc++ code (in fact, this is the
       reason STL requires any knowledge of the thread configuration).
    </p>
    <p>For implementing a container which does its own locking, it is
@@ -290,7 +290,7 @@
       addresses this topic, but I will ignore it here because it is not yet
       finalized.)
    </p>
-   <p>Here we'll describe how the hinting works in the libstdc++-v3
+   <p>Here we'll describe how the hinting works in the libstdc++
       implementation, and what you need to do in order to take advantage of
       it.  (Insertions can change from logarithmic complexity to amortized
       constant time, if the hint is properly used.)  Also, since the current

@@ -299,7 +299,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	    }
 	}
 
-#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_USE_DEPRECATED
+#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_DEPRECATED
       // Special case for auto_ptr<_Tp> to provide the strong guarantee.
       template<typename _Tp>
         explicit
@@ -601,7 +601,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       /**
        * @post use_count() == 1 and __r.get() == 0
        */
-#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_USE_DEPRECATED
+#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_DEPRECATED
       template<typename _Tp1>
         explicit
         __shared_ptr(std::auto_ptr<_Tp1>& __r)
@@ -645,7 +645,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	  return *this;
 	}
 
-#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_USE_DEPRECATED
+#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_DEPRECATED
       template<typename _Tp1>
         __shared_ptr&
         operator=(std::auto_ptr<_Tp1>& __r)
@@ -1020,7 +1020,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
         shared_ptr(const weak_ptr<_Tp1>& __r)
 	: __shared_ptr<_Tp>(__r) { }
 
-#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_USE_DEPRECATED
+#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_DEPRECATED
       template<typename _Tp1>
         explicit
         shared_ptr(std::auto_ptr<_Tp1>& __r)
@@ -1047,7 +1047,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	  return *this;
 	}
 
-#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_USE_DEPRECATED
+#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_DEPRECATED
       template<typename _Tp1>
         shared_ptr&
         operator=(std::auto_ptr<_Tp1>& __r)

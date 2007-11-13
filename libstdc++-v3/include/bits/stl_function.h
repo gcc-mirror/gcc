@@ -700,7 +700,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 _GLIBCXX_END_NAMESPACE
 
-#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_USE_DEPRECATED
+#if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_DEPRECATED
 # include <backward/binders.h>
 #endif
 

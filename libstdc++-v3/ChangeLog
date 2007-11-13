@@ -1,3 +1,73 @@
+2007-11-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/html/documentation.html: First pass at unified table of contents.
+	* docs/html/abi.html: Move...
+	* docs/html/17_intro/abi.html: ...here.
+	* docs/html/17_intro/porting-howto.html: Update, edit, put
+	resulting pieces into...
+	* docs/html/17_intro/api.html: New.
+	* docs/html/17_intro/c++0x_status.html: New.
+	* docs/html/17_intro/CHECKLIST: Move to...
+	* docs/html/17_intro/c++1998_status.html: ...here.
+	* docs/html/ext/tr1.html: Move ...
+	* docs/html/17_intro/tr1_status.html: ...here.
+	* docs/html/debug_mode.html: Move...
+	* docs/html/ext/debug_mode.html: ...here.
+	* docs/html/parallel_mode.html: Move...
+	* docs/html/ext/parallel_mode.html: ...here
+	* docs/html/17_intro/BUGS: Remove.
+	* docs/html/17_intro/concept_check.diff: Remove.
+	* docs/html/17_intro/HEADER_POLICY: Remove.
+	* docs/html/17_intro/headers_cc.txt: Remove.
+	* docs/html/17_intro/PROBLEMS: Remove.
+	* docs/html/17_intro/RELEASE-NOTES: Remove.
+	* docs/html/explanations.html: Remove.
+	* docs/html/makedoc.awk: Remove.
+	* docs/html/faq/index.txt: Remove. HTML only.
+	* /docs/html/Makefile: Remove.
+	
+	* docs/html/17_intro/configury.html: Editing, updating,
+	consistency check with doxygen conventions. Change libstdc++-v3 to
+	libstdc++.	
+	* docs/html/17_intro/howto.html: Same.
+	* docs/html/17_intro/license.html: Same.
+	* docs/html/17_intro/porting.html: Same.
+	* docs/html/18_support/howto.html: Same.
+	* docs/html/19_diagnostics/howto.html: Same.
+	* docs/html/20_util/allocator.html: Same.
+	* docs/html/20_util/howto.html: Same.
+	* docs/html/21_strings/howto.html: Same.
+	* docs/html/22_locale/codecvt.html: Same.
+	* docs/html/22_locale/ctype.html: Same.
+	* docs/html/22_locale/howto.html: Same.
+	* docs/html/22_locale/messages.html: Same.
+	* docs/html/23_containers/howto.html: Same.
+	* docs/html/24_iterators/howto.html: Same.
+	* docs/html/25_algorithms/howto.html: Same.
+	* docs/html/26_numerics/howto.html: Same.
+	* docs/html/27_io/howto.html: Same.
+	* docs/html/configopts.html: Same.
+	* docs/html/debug.html: Same.
+	* docs/html/ext/ballocator_doc.html: Same.
+	* docs/html/ext/howto.html: Same.
+	* docs/html/ext/mt_allocator.html: Same.
+	* docs/html/ext/sgiexts.html: Same.
+	* docs/html/faq/index.html: Same.
+	* docs/html/install.html: Same.
+	* docs/html/test.html: Same.
+	
+	* include/bits/c++config: Change _GLIBCXX_DEPRECATED to
+	_GLIBCXX_DEPRECATED_ATTR, _GLIBCXX_VISIBILITY to
+	_GLIBCXX_VISIBILITY_ATTR.	
+	* include/backward/auto_ptr.h: Same.
+	* include/backward/binders.h: Same.
+	* include/bits/stl_function.h: Same.
+	* include/std/memory: Same.
+	* include/std/streambuf: Same.
+	* include/tr1_impl/boost_shared_ptr.h: Same.
+	* src/globals_io.cc: Same.
+	* src/ios_init.cc: Same.
+
 2007-11-13  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/deque.tcc (deque<>::_M_push_back_aux,

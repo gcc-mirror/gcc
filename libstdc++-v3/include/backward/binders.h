@@ -119,7 +119,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typename _Operation::result_type
       operator()(typename _Operation::second_argument_type& __x) const
       { return op(value, __x); }
-    } _GLIBCXX_DEPRECATED;
+    } _GLIBCXX_DEPRECATED_ATTR;
 
   /// One of the @link s20_3_6_binder binder functors@endlink.
   template<typename _Operation, typename _Tp>
@@ -154,7 +154,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typename _Operation::result_type
       operator()(typename _Operation::first_argument_type& __x) const
       { return op(__x, value); }
-    } _GLIBCXX_DEPRECATED;
+    } _GLIBCXX_DEPRECATED_ATTR;
 
   /// One of the @link s20_3_6_binder binder functors@endlink.
   template<typename _Operation, typename _Tp>

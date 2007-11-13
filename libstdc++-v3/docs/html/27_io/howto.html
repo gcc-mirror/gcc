@@ -10,7 +10,7 @@
    <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL" />
    <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 27." />
    <meta name="GENERATOR" content="vi and eight fingers" />
-   <title>libstdc++-v3 HOWTO:  Chapter 27: Input/Output</title>
+   <title>libstdc++ HOWTO:  Chapter 27: Input/Output</title>
 <link rel="StyleSheet" href="../lib3styles.css" type="text/css" />
 <link rel="Start" href="../documentation.html" type="text/html"
   title="GNU C++ Standard Library" />
@@ -458,7 +458,7 @@
    <p>The special steps taken by libstdc++, at least for version 3.0,
       involve doing very little buffering for the standard streams, leaving
       most of the buffering to the underlying C library.  (This kind of
-      thing is <a href="../explanations.html#cstdio">tricky to get right</a>.)
+      thing is tricky to get right.)
       The upside is that correctness is ensured.  The downside is that
       writing through <code>cout</code> can quite easily lead to awful
       performance when the C++ I/O library is layered on top of the C I/O
@@ -501,7 +501,7 @@
    <p>This gets a bit tricky.  Please read carefully, and bear with me.
    </p>
    <h3>Structure</h3>
-   <p>As described <a href="../explanations.html#cstdio">here</a>, a wrapper
+   <p>A wrapper
       type called <code>__basic_file</code> provides our abstraction layer
       for the <code>std::filebuf</code> classes.  Nearly all decisions dealing
       with actual input and output must be made in <code>__basic_file</code>.
@@ -539,8 +539,8 @@
       like any other critical shared resource.
    </p>
    <h3>The future</h3>
-   <p>As already mentioned <a href="../explanations.html#cstdio">here</a>, a
-      second choice is available for I/O implementations:  libio.  This is
+   <p> A
+      second choice may be available for I/O implementations:  libio.  This is
       disabled by default, and in fact will not currently work due to other
       issues.  It will be revisited, however.
    </p>
@@ -713,7 +713,7 @@
    <p>The v2 library included non-standard extensions to construct
       <code>std::filebuf</code>s from C stdio types such as
       <code>FILE*</code>s and POSIX file descriptors.
-      Today the recommended way to use stdio types with libstdc++-v3
+      Today the recommended way to use stdio types with libstdc++
       IOStreams is via the <code>stdio_filebuf</code> class (see below),
       but earlier releases provided slightly different mechanisms.
    </p>

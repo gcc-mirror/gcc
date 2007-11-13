@@ -37,7 +37,7 @@ attempts to detail conversions between the implementation-defined wide
 characters (hereafter referred to as wchar_t) and the standard type
 char that is so beloved in classic &quot;C&quot; (which can now be referred to
 as narrow characters.)  This document attempts to describe how the GNU
-libstdc++-v3 implementation deals with the conversion between wide and
+libstdc++ implementation deals with the conversion between wide and
 narrow characters, and also presents a framework for dealing with the
 huge number of other encodings that iconv can convert, including
 Unicode and UTF8. Design issues and requirements are addressed, and
@@ -274,7 +274,7 @@ multiple locales is fundamental. In practice, most users may not run
 into this limitation. However, as a quality of implementation issue,
 the GNU C++ library would like to offer a solution that allows
 multiple locales and or simultaneous usage with computationally
-correct results. In short, libstdc++-v3 is trying to offer, as an
+correct results. In short, libstdc++ is trying to offer, as an
 option, a high-quality implementation, damn the additional complexity!
 </p>
 
@@ -314,7 +314,7 @@ to wchar_t and wcsrtombs for conversions between wchar_t and char.
 
 <p>
 Neither of these two required specializations deals with Unicode
-characters. As such, libstdc++-v3 implements a partial specialization
+characters. As such, libstdc++ implements a partial specialization
 of the codecvt class with and iconv wrapper class, encoding_state as the
 third template parameter.
 </p>

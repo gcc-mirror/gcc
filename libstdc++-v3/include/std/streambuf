@@ -763,7 +763,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       overflow(int_type /* __c */ = traits_type::eof())
       { return traits_type::eof(); }
 
-#if _GLIBCXX_USE_DEPRECATED
+#if _GLIBCXX_DEPRECATED
     // Annex D.6
     public:
       /**
@@ -773,11 +773,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  been read.
        *
        *  See http://gcc.gnu.org/ml/libstdc++/2002-05/msg00168.html
-       *
-       *  @note  This function has been deprecated by the standard.  You
-       *         must define @c _GLIBCXX_DEPRECATED to make this visible; see
-       *         c++config.h.
-      */
+       */
       void 
       stossc() 
       {

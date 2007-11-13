@@ -6,11 +6,11 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)" />
+   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards), Benjamin Kosnik, Felix Natter" />
    <meta name="KEYWORDS" content="HOWTO, libstdc++, gcc, g++, libg++, STL" />
    <meta name="DESCRIPTION" content="HOWTO for libstdc++ chapter 17." />
    <meta name="GENERATOR" content="vi and eight fingers" />
-   <title>libstdc++-v3 HOWTO:  Chapter 17: Library Introduction</title>
+   <title>libstdc++ HOWTO:  Chapter 17: Library Introduction</title>
 <link rel="StyleSheet" href="../lib3styles.css" type="text/css" />
 <link rel="Start" href="../documentation.html" type="text/html"
  title="GNU C++ Standard Library" />
@@ -34,32 +34,174 @@
 <hr />
 <h1>Contents</h1>
 <ul>
-   <li><a href="#2">The Standard C++ header files</a></li>
-   <li><a href="#3">The Standard C++ library and multithreading</a></li>
-   <li><a href="#4"><code>&lt;foo&gt;</code> vs <code>&lt;foo.h&gt;</code></a></li>
-   <li><a href="porting-howto.html">Porting HOWTO</a></li>
-   <li><a href="#5">Behavior specific to libstdc++-v3</a></li>
-   <li><a href="#6">Preprocessor macros controlling the library</a></li>
+   <li><a href="#2.1">Header Files</a></li>
+   <li><a href="#5">Implementation specific behavior</a></li>
+   <li><a href="#6">Macros</a></li>
+   <li><a href="#3">Multithreading</a></li>
 </ul>
 
 <hr />
 
 <!-- ####################################################### -->
 
-<h2><a name="2">The Standard C++ header files</a></h2>
-   <p>The Standard C++ Library specifies 50 header files that must be
+<h2><a name="2.1">Header Files</a></h2>
+   <p>The C++ standard specifies 50 header files that must be
       available to all hosted implementations.  Actually, the word
       &quot;files&quot; is a misnomer, since the contents of the headers
       don't necessarily have to be in any kind of external file.  The
-      only rule is that when you <code>#include</code> a certain header, the
+      only rule is that when one <code>#include</code>'s a certain header, the
       contents of that header, as defined by the Standard, become
-      available to you, no matter how.
+      available, no matter how.
    </p>
-   <p>The names of the headers can be easily seen in
-      <a href="headers_cc.txt"><code>testsuite/17_intro/headers.cc</code></a>,
-      which is a small testbed we use to make certain that the headers
-      all compile and run.
-   </p>
+
+<p>C++98/03 include files:
+</p>
+<pre>
+C++ Library Headers
+algorithm	ios      	new     	stack
+bitset		iosfwd   	numeric 	stdexcept
+complex     	iostream 	ostream 	streambuf
+    		istream  	queue      	string
+deque      	iterator 			
+exception  	limits   			typeinfo
+fstream    	list     	set
+functional 	locale   	map
+iomanip    	memory   	sstream 	
+
+C++ Headers for C Library Facilities
+cassert   	cfloat        	cmath         	cstddef     
+ccomplex  		     	csetjmp       	cstdio      	ctime
+cctype    	ciso646       	csignal			    	
+cerrno    	climits       	cstdarg       	cstdlib     	cwchar
+	    	clocale       		      	cstring     	cwctype
+</pre>
+
+<p>C++0x include files:
+</p>
+<pre>
+C++ Library Headers
+algorithm	ios      	new     	stack
+array      	iosfwd   	numeric 	stdexcept
+bitset     	iostream 	ostream 	streambuf
+complex    	istream  	queue      	string
+deque      	iterator 	random		system_error
+exception  	limits   	regex      	tuple
+fstream    	list     	set        	type_traits
+functional 	locale   	map        	typeinfo
+iomanip    	memory   	sstream 	
+
+C++ Headers for C Library Facilities
+cassert   	cfloat        	cmath         	cstddef     	ctgmath
+ccomplex  	cinttypes     	csetjmp       	cstdio      	ctime
+cctype    	ciso646       	csignal       	cstdint     	cuchar
+cerrno    	climits       	cstdarg       	cstdlib     	cwchar
+cfenv     	clocale       	cstdbool      	cstring     	cwctype
+</pre>
+
+<p>In addition, TR1 includes as:
+</p>
+<pre>
+C++ Library Headers
+tr1/array, tr1/complex, tr1/functional, tr1/memory, tr1/random,
+tr1/regex, tr1/tuple, tr1/type_traits, tr1/unordered_map,
+tr1/unordered_set, tr1/utility
+
+C++ Headers for C Library Facilities
+tr1/cmath, tr1/ccomplex, tr1/cfenv, tr1/cfloat, tr1/cinttypes,
+tr1/climits, tr1/cstdarg, tr1/cstdbool, tr1/cstdint, tr1/cstdio,
+tr1/cstdlib, tr1/ctgmath, tr1/ctime, tr1/cwchar, tr1/cwctype
+
+C++ Compatibility Headers for C Library Facilities
+tr1/complex.h, tr1/ctype.h, tr1/float.h, tr1/limits.h, tr1/math.h,
+tr1/stdarg.h, tr1/stdbool.h, tr1/stdint.h, tr1/stdio.h, tr1/stdlib.h,
+tr1/tgmath.h, tr1/wchar.h, tr1/wctype.h
+</pre>
+
+<hr />
+<h2><a name="2.2">Headers and <code>namespace std::</code></a></h2>
+<p>
+	You should not use the C-headers (except for system-level
+	headers) from C++ programs. Instead, you should use a set of
+	headers that are named by prepending 'c' and, as usual,
+	omitting the extension (.h). For example, instead of using
+	<tt>&lt;math.h&gt;</tt>, you
+	should use <tt>&lt;cmath&gt;</tt>. In some cases this has
+	the advantage that the C++-header is more standardized than
+	the C-header (i.e. <tt>&lt;ctime&gt;</tt> (almost)
+	corresponds to either <tt>&lt;time.h&gt;</tt> or <tt>&lt;sys/time.h&gt;</tt>).
+
+	The standard specifies that if you include the C-style header
+	(<tt>&lt;math.h&gt;</tt> in
+	this case), the symbols will be available both in the global
+	namespace and in namespace <code>std::</code> (but
+	libstdc++ does not yet have fully compliant headers) On the
+	other hand, if you include only the new header (i.e. <tt>&lt;cmath&gt;</tt>), the symbols
+	will only be defined in namespace <code>std::</code>
+	(and macros will be converted to inline-functions).
+      </p>
+
+<p>FIXME: this is no longer accurate.</p>
+
+<p>
+	For more information on this, and for information on how the
+	GNU C++ implementation might reuse (&quot;shadow&quot;) the C
+	library-functions, have a look at <a href="http://www.cantrip.org/cheaders.html" target="_top">
+	  www.cantrip.org</a>.
+      </p>
+
+<hr />
+<h2><a name="2.5">Namespace <code>std::</code></a></h2>
+
+<p>
+      One standard requirement is that the library components are defined
+      in <code>namespace std::</code>. Thus, in order to use these types or
+      functions, one must do one of two things:
+</p>
+
+      <div class="itemizedlist"><ul type="disc"> <li><p>put a kind of
+<span class="emphasis"><i>using-declaration</i></span> in your source
+(either <code>using namespace std;</code> or i.e. <code>using
+std::string;</code>) This approach works well for individual source files, but
+should not be used in a global context, like header files.
+	  </p></li> <li><p>use a <span class="emphasis"><i>fully
+qualified name</i></span> for each library symbol
+(i.e. <code>std::string</code>, <code>std::cout</code>) Always can be
+used, and usually enhanced, by strategic use of typedefs. (In the
+cases where the qualified verbage becomes unweidly.)
+	  </p></li>
+</ul>
+
+<hr />
+<h2><a name="2.6">Using namespace composition</code></a></h2>
+
+<p>
+	<a href="http://gtkmm.sourceforge.net" target="_top">Gtk--</a> defines
+	most of its classes in namespace Gtk::. Thus, it was possible to
+	adapt Gtk-- to namespace std:: by using a C++-feature called
+	<span class="emphasis"><i>namespace composition</i></span>. This is what happens if
+	you put a <span class="emphasis"><i>using</i></span>-declaration into a
+	namespace-definition: the imported symbol(s) gets imported into the
+	currently active namespace(s). For example:
+	<pre class="programlisting">
+	  namespace Gtk {
+	  using std::string;
+	  class Window { ... }
+	  }
+	</pre>
+	In this example, <code>std::string</code> gets imported into
+	namespace Gtk::.  The result is that you don't have to use
+	<code>std::string</code> in this header, but still
+	<code>std::string</code> does not get imported into
+	the global namespace (::) unless the user does
+	<code>using namespace Gtk;</code> (which is not recommended
+	practice for Gtk--, so it is not a problem).  Additionally, the
+	<code>using</code>-declarations are wrapped in macros that
+	are set based on autoconf-tests to either &quot;&quot; or i.e. <code>using
+	  std::string;</code> (depending on whether the system has
+	libstdc++ in <code>std::</code> or not).  (ideas from
+	<tt>&lt;<a href="mailto:llewelly@dbritsch.dsl.xmission.com">llewelly@dbritsch.dsl.xmission.com</a>&gt;</tt>, Karl Nelson
+	<tt>&lt;<a href="mailto:kenelson@ece.ucdavis.edu">kenelson@ece.ucdavis.edu</a>&gt;</tt>)
+</p>
 
 <hr />
 <h2><a name="3">The Standard C++ library and multithreading</a></h2>
@@ -119,7 +261,7 @@
       href="../23_containers/howto.html#3">23</a> (containers), and <a
       href="../27_io/howto.html#9">27</a> (I/O) for more information.
    </p>
-   <p>The libstdc++-v3 library (unlike libstdc++-v2, all of it, not
+   <p>The libstdc++ library (unlike libstdc++-v2, all of it, not
       just the STL) has been designed so that multithreaded
       applications using it may be written.  The first problem is
       finding a <em>fast</em> method of implementation portable to all
@@ -162,21 +304,7 @@
    </p>
 
 <hr />
-<h2><a name="4"><code>&lt;foo&gt;</code> vs <code>&lt;foo.h&gt;</code></a></h2>
-   <p>The new-style headers are fully supported in libstdc++-v3.  The compiler
-      itself fully supports namespaces, including <code>std::</code>.
-   </p>
-   <p>For those of you new to ISO C++98, no, that isn't a typo, the headers
-      really have new names.  Marshall Cline's C++ FAQ Lite has a good
-      explanation in
-<a href="http://www.parashift.com/c++-faq-lite/coding-standards.html#faq-27.4">item [27.4]</a>.
-   </p>
-   <p>Return <a href="#top">to top of page</a> or
-      <a href="../faq/index.html">to the FAQ</a>.
-   </p>
-
-<hr />
-<h2><a name="5">Behavior specific to libstdc++-v3</a></h2>
+<h2><a name="5">Behavior specific to libstdc++</a></h2>
    <p>The ISO standard defines the following phrase:
    </p>
      <blockquote><dl>
@@ -209,7 +337,7 @@
       <a href="../18_support/howto.html#1">here</a>.
    </p>
    <p><strong>[18.3]/8</strong> Even though it's listed in the library
-      sections, libstdc++-v3 has zero control over what the cleanup code hands
+      sections, libstdc++ has zero control over what the cleanup code hands
       back to the runtime loader.  Talk to the compiler people.  :-)
    </p>
    <p><strong>[18.4.2.1]/5</strong> (bad_alloc),<br />
@@ -289,74 +417,100 @@
    </p>
 
 <hr />
-<h2><a name="6">Preprocessor macros controlling the library</a></h2>
-   <p>Some of the semantics of the libstdc++-v3 implementation are
-      controlled by preprocessor macros, both during build/installation and
-      during compilation of user code.  Many of these choices are made when
-      the library is built and installed (actually, during
-      <a href="../configopts.html">the configuration step</a>, with the
-      various --enable/--disable choices being translated to #define/#undef).
+<h2><a name="6">Macros for libstdc++</a></h2>
+
+   <p>All pre-processor switches and configurations are all gathered
+      in the file <code>c++config.h</code>, which is generated during
+      the libstdc++ configuration and build process, and included by
+      files part of the public libstdc++ API. Most of these macros
+      should not be used by consumers of libstdc++, and are reserved
+      for internal implementation use. <strong>These macros cannot be
+      redefined</strong>. However, a select handful of these macro
+      control libstdc++ extensions and extra features, or provide
+      versioning information for the API, and are able to be used.
    </p>
-   <p>All library macros begin with <code>_GLIBCPP_</code> in earlier
-      versions, and <code>_GLIBCXX_</code> in later versions.  The fact that
-      these symbols start with a leading underscore should give you a clue
-      that (by default) they aren't meant to be changed by the user.  :-)
+
+   <p>All library macros begin with <code>_GLIBCXX_</code> (except for
+   versions 3.1.x to 3.3.x, which use <code>_GLIBCPP_</code>).
    </p>
-   <p>These macros are all gathered in the file <code>c++config.h</code>,
-      which is generated during installation.  <strong>You must assume that
-      these macros cannot be redefined by your own code</strong>, unless we
-      document otherwise here.  Some of the choices control code which has
-      already been compiled (i.e., libstdc++.a/.so).  If you explicitly
-      #define or #undef these macros, the <em>headers</em> may see different
-      code paths, but the <em>libraries</em> which you link against will not.
-      If you want to experiment with different values, you must change the
-      config headers before building/installing the library.
-   </p>
-   <p>Below are macros which, for 3.1 and later, you may change yourself,
-      in your own code with #define/#undef or with -D/-U compiler flags.
-      The default state of the symbol is listed.  &quot;Configurable&quot;
-      (or &quot;Not configurable&quot;) means that the symbol is initially
-      chosen (or not) based on --enable/--disable options at configure time.
-      For 3.1 through 3.3, the prefixes are <code>_GLIBCPP_</code>.
-   </p>
+
+   <p>Below is the macro which users may check for library version
+      information. </p>
+
+    <dl>
+    <dt><code>__GLIBCXX__</code></dt> <dd>The current version of
+    libstdc++ in compressed ISO date format, form of an unsigned
+    long. For details on the value of this particular macro for a
+    particular release, please consult this <a href="abi.html">
+    document</a>.</dd> </dl>
+
+   <p>Below are the macros which users may change with #define/#undef or
+      with -D/-U compiler flags.  The default state of the symbol is
+      listed.</p>
+
+   <p>&quot;Configurable&quot; (or &quot;Not configurable&quot;) means
+      that the symbol is initially chosen (or not) based on
+      --enable/--disable options at library build and configure time
+      (documented <a href="../configopts.html">here</a>), with the
+      various --enable/--disable choices being translated to
+      #define/#undef).
+   </p> 
+
+   <p> &quot;ABI&quot; means that changing from the default value may
+  mean changing the ABI of compiled code. In other words, these
+  choices control code which has already been compiled (i.e., in a
+  binary such as libstdc++.a/.so).  If you explicitly #define or
+  #undef these macros, the <em>headers</em> may see different code
+  paths, but the <em>libraries</em> which you link against will not.
+  Experimenting with different values with the expectation of
+  consistent linkage requires changing the config headers before
+  building/installing the library.
+   </p>   
+
     <dl>
     <dt><code>_GLIBCXX_DEPRECATED</code></dt>
-    <dd>Undefined by default.  Not configurable.  Turning this on enables
-        older ARM-style iostreams code, and other anachronisms.  This may be
-        useful in updating old C++ programs which no longer meet the
-        requirements of the language.
+    <dd>Defined by default. Not configurable. ABI-changing. Turning this off
+        removes older ARM-style iostreams code, and other anachronisms
+        from the API.  This macro is dependent on the version of the
+        standard being tracked, and as a result may give different results for
+        <code>-std=c++98</code> and <code>-std=c++0x</code>. This may
+        be useful in updating old C++ code which no longer meet the
+        requirements of the language, or for checking current code
+        against new language standards.  </dd>
+
+    <dt><code>_GLIBCXX_FORCE_NEW</code></dt> <dd>Undefined by
+    default. When defined, memory allocation and allocators controlled
+    by libstdc++ call operator new/delete without caching and
+    pooling. Configurable via
+    <code>--enable-libstdcxx-allocator</code>. ABI-changing.</a>
     </dd>
-    <!--
-     Can this actually be turned off and still produce a working lib?  Must
-     check.  -pme
-     No, it can't.  Hmmm.  -pme
-    <dt><code>_GLIBCPP_RESOLVE_LIB_DEFECTS</code></dt>
-    <dd>Defined by default.  Not configurable.  The library follows
-        corrections and updates from the ISO committee, see
-        <a href="../faq/index.html#5_2">here</a> and
-        <a href="../ext/howto.html#5">here</a> for more on this feature.
-        If you have code which depends on the first version of the standard,
-        you might try undefining this macro.
-    </dd>
-    -->
-    <dt><code>_GLIBCXX_CONCEPT_CHECKS</code></dt>
-    <dd>Undefined by default.  Configurable.  When defined, performs
-        compile-time checking on certain template instantiations to detect
-        violations of the requirements of the standard.  This is described
-        in more detail <a href="../19_diagnostics/howto.html#3">here</a>.
-    </dd>
+
+
+    <dt><code>_GLIBCXX_CONCEPT_CHECKS</code></dt> <dd>Undefined by
+    default.  Configurable via <code>--enable-concept-checks</code>.
+    When defined, performs compile-time checking on certain template
+    instantiations to detect violations of the requirements of the
+    standard.  This is described in more detail <a
+    href="../19_diagnostics/howto.html#3">here</a>.</dd>
+
     <dt><code>_GLIBCXX_DEBUG</code></dt>
-    <dd>Undefined by default. Configurable. When defined, compiles
-    user code using the <a href="../debug.html#safe">libstdc++ debug
+    <dd>Undefined by default. When defined, compiles
+    user code using the <a href="../ext/debug.html#safe">libstdc++ debug
     mode</a>.
     </dd>
     <dt><code>_GLIBCXX_DEBUG_PEDANTIC</code></dt>
-    <dd>Undefined by default. Configurable. When defined while
-    compiling with the <a href="../debug.html#safe">libstdc++ debug
+    <dd>Undefined by default. When defined while
+    compiling with the <a href="../ext/debug.html#safe">libstdc++ debug
     mode</a>, makes the debug mode extremely picky by making the use
     of libstdc++ extensions and libstdc++-specific behavior into
     errors.
     </dd>
+    <dt><code>_GLIBCXX_PARALLEL</code></dt>
+    <dd>Undefined by default. When defined, compiles
+    user code using the <a href="../ext/parallel_mode.html">libstdc++ parallel
+    mode</a>.
+    </dd>
+
     <!--
     <dt><code></code></dt>
     <dd>

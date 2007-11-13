@@ -9,7 +9,7 @@
    <meta name="KEYWORDS" content="c++, libstdc++, test, regression, g++" />
    <meta name="DESCRIPTION" content="README for the GNU libstdc++ effort." />
    <meta name="GENERATOR" content="vi and eight fingers" />
-   <title>libstdc++-v3 Testing Instructions</title>
+   <title>libstdc++ Testing Instructions</title>
 <link rel="StyleSheet" href="lib3styles.css" />
 </head>
 <body>
@@ -23,7 +23,7 @@
 </em></p>
 
 <p><em>
-   To the <a href="http://gcc.gnu.org/libstdc++/">libstdc++-v3 homepage</a>.
+   To the <a href="http://gcc.gnu.org/libstdc++/">libstdc++ homepage</a>.
 </em></p>
 
 <!-- ####################################################### -->
@@ -434,7 +434,7 @@ up in the normal.exp file.
 </pre>
 
    <p>
-    More examples can be found in the libstdc++-v3/testsuite/*/*.cc files.
+    More examples can be found in the libstdc++/testsuite/*/*.cc files.
    </p>
 
 <hr />
@@ -452,7 +452,7 @@ up in the normal.exp file.
    <pre> make check</pre>
    <p>in the <em>libbuilddir</em> directory.</p>
    <p>or</p>
-   <pre> make check-target-libstdc++-v3</pre>
+   <pre> make check-target-libstdc++</pre>
    <p>in the <em>gccbuilddir</em> directory.</p>
 
    <p>
@@ -472,11 +472,11 @@ specific argument to the variable RUNTESTFLAGS, as below.
 </p>
 
 <pre>
-make check-target-libstdc++-v3 RUNTESTFLAGS="-v"
+make check-target-libstdc++ RUNTESTFLAGS="-v"
 </pre>
 or
 <pre>
-make check-target-libstdc++-v3 RUNTESTFLAGS="-v -v"
+make check-target-libstdc++ RUNTESTFLAGS="-v -v"
 </pre>
 
 <p> To run a subset of the library tests, try using a command like the
@@ -494,20 +494,20 @@ specially crafted site.exp, or pass down --target_board flags.
 Example flags to pass down for various embedded builds are as follows:
 <pre>
 --target=powerpc-eabism (libgloss/sim)
-make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=powerpc-sim"
+make check-target-libstdc++ RUNTESTFLAGS="--target_board=powerpc-sim"
 
 --target=calmrisc32 (libgloss/sid)
-make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=calmrisc32-sid"
+make check-target-libstdc++ RUNTESTFLAGS="--target_board=calmrisc32-sid"
 
 --target=xscale-elf (newlib/sim)
-make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=arm-sim"
+make check-target-libstdc++ RUNTESTFLAGS="--target_board=arm-sim"
 </pre>
 
 <p> Also, here is an example of how to run the libstdc++ testsuite for a
 multilibed build directory with different ABI settings:
 </p>
 <pre>
-make check-target-libstdc++-v3 RUNTESTFLAGS='--target_board \"unix{-mabi=32,,-mabi=64}\"'
+make check-target-libstdc++ RUNTESTFLAGS='--target_board \"unix{-mabi=32,,-mabi=64}\"'
 </pre>
  
 <p>
@@ -519,7 +519,7 @@ of libstdc++ is in your <code>LD_LIBRARY_PATH</code>, or equivalent.
 If your GCC source tree is at <code>/path/to/gcc</code>, then you can
 run the tests as follows:
 <pre>
-runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
+runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++/testsuite
 </pre>
 The testsuite will create a number of files in the directory in which you
 run this command,.  Some of those files might use the same name as

@@ -54,7 +54,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       
       explicit
       auto_ptr_ref(_Tp1* __p): _M_ptr(__p) { }
-    } _GLIBCXX_DEPRECATED;
+    } _GLIBCXX_DEPRECATED_ATTR;
 
 
   /**
@@ -285,7 +285,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       template<typename _Tp1>
         operator auto_ptr<_Tp1>() throw()
         { return auto_ptr<_Tp1>(this->release()); }
-    } _GLIBCXX_DEPRECATED;
+    } _GLIBCXX_DEPRECATED_ATTR;
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 541. shared_ptr template assignment and void
@@ -294,7 +294,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
     public:
       typedef void element_type;
-    } _GLIBCXX_DEPRECATED;
+    } _GLIBCXX_DEPRECATED_ATTR;
 
 _GLIBCXX_END_NAMESPACE
 
