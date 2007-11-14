@@ -3968,19 +3968,9 @@ match_procedure_decl (void)
 		    "in PROCEDURE statement at %C", proc_if->name);
 	  return MATCH_ERROR;
 	}
-      /* TODO: Allow intrinsics with gfc_intrinsic_actual_ok
-	 (proc_if->name, 0) after PR33162 is fixed.  */
-      if (proc_if->attr.intrinsic)
-	{
-	  gfc_error ("Fortran 2003: Support for intrinsic procedure '%s' "
-		     "in PROCEDURE statement at %C not yet implemented "
-		     "in gfortran", proc_if->name);
-	  return MATCH_ERROR;
-	}
     }
 
 got_ts:
-
   if (gfc_match (" )") != MATCH_YES)
     {
       gfc_current_locus = entry_loc;
@@ -3995,7 +3985,6 @@ got_ts:
   /* Get procedure symbols.  */
   for(num=1;;num++)
     {
-
       m = gfc_match_symbol (&sym, 0);
       if (m == MATCH_NO)
 	goto syntax;
@@ -4040,7 +4029,10 @@ got_ts:
 
       /* Set interface.  */
       if (proc_if != NULL)
-	sym->interface = proc_if;
+	{
+	  sym->interface = proc_if;
+	  sym->attr.untyped = 1;
+	}
       else if (current_ts.type != BT_UNKNOWN)
 	{
 	  sym->interface = gfc_new_symbol ("", gfc_current_ns);

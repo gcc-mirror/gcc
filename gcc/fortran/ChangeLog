@@ -1,3 +1,17 @@
+2007-11-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/33162
+	* decl.c (match_procedure_decl): Remove TODO and allow intrinsics in
+	PROCEDURE declarations.  Set attr.untyped to allow the interface to be
+	resolved later where the symbol type will be set.
+	* interface.c (compare_intr_interfaces): Remove static from pointer
+	declarations.  Add type and kind checks for dummy function arguments.
+	(compare_actual_formal_intr): New function to compare an actual
+	argument with an intrinsic function. (gfc_procedures_use): Add check for
+	interface that points to an intrinsic function, use the new function.
+	* resolve.c (resolve_specific_f0): Resolve the intrinsic interface.
+	(resolve_specific_s0): Ditto.
+
 2007-11-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34080
