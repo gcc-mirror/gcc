@@ -108,15 +108,6 @@ char __gnat_shared_libgnat_default = STATIC;
 unsigned char __gnat_using_gnu_linker = 1;
 const char *__gnat_object_library_extension = ".a";
 
-#elif defined (__INTERIX)
-const char *__gnat_object_file_option = "";
-const char *__gnat_run_path_option = "";
-int __gnat_link_max = 5000;
-unsigned char __gnat_objlist_file_supported = 1;
-char __gnat_shared_libgnat_default = STATIC;
-unsigned char __gnat_using_gnu_linker = 1;
-const char *__gnat_object_library_extension = ".a";
-
 #elif defined (__hpux__)
 const char *__gnat_object_file_option = "-Wl,-c,";
 const char *__gnat_run_path_option = "-Wl,+b,";
