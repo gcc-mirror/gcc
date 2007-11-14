@@ -1771,7 +1771,7 @@ rest_of_handle_global_alloc (void)
   reload_completed = !failure;
 
   /* The world has changed so much that at this point we might as well
-     just rescan everything.  Not that df_rescan_all_insns is not
+     just rescan everything.  Note that df_rescan_all_insns is not
      going to help here because it does not touch the artificial uses
      and defs.  */
   df_finish_pass (true);
