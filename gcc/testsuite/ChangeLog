@@ -1,5 +1,10 @@
 2007-11-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR fortran/33985
+	*gfortran.dg/streamio_12.f90: New test to avoid future regression.
+
+2007-11-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	*gfortran.dg/list_read_7.f90: Fix test so that test file is deleted when
 	done.
 
