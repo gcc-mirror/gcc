@@ -91,8 +91,7 @@ __gnat_initialize (void *eh)
 /* __gnat_initialize (init_float version) */
 /******************************************/
 
-#elif defined (__INTERIX) || defined (__Lynx__) || \
-      defined (__FreeBSD__) || defined(__NetBSD__)
+#elif defined (__Lynx__) || defined (__FreeBSD__) || defined(__NetBSD__)
 
 extern void __gnat_init_float (void);
 

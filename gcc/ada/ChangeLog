@@ -1,3 +1,10 @@
+2007-11-14  Samuel Tardieu  <sam@rfc1149.net>
+
+	* adaint.c init.c initialize.c link.c: Remove system-specific
+	sections of non-supported Interix target.
+
+	* s-osinte-interix.ads: Removed.
+
 2007-11-13  Samuel Tardieu  <sam@rfc1149.net>
 
 	* a-tasatt.adb: Add a comment at the beginning of the package

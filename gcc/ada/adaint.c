@@ -404,8 +404,7 @@ __gnat_readlink (char *path ATTRIBUTE_UNUSED,
 		 size_t bufsiz ATTRIBUTE_UNUSED)
 {
 #if defined (MSDOS) || defined (_WIN32) || defined (__EMX__) \
-  || defined (__INTERIX) || defined (VMS) \
-  || defined(__vxworks) || defined (__nucleus__)
+  || defined (VMS) || defined(__vxworks) || defined (__nucleus__)
   return -1;
 #else
   return readlink (path, buf, bufsiz);
@@ -421,8 +420,7 @@ __gnat_symlink (char *oldpath ATTRIBUTE_UNUSED,
 		char *newpath ATTRIBUTE_UNUSED)
 {
 #if defined (MSDOS) || defined (_WIN32) || defined (__EMX__) \
-  || defined (__INTERIX) || defined (VMS) \
-  || defined(__vxworks) || defined (__nucleus__)
+  || defined (VMS) || defined(__vxworks) || defined (__nucleus__)
   return -1;
 #else
   return symlink (oldpath, newpath);
