@@ -24856,7 +24856,8 @@ ix86_expand_round (rtx operand0, rtx operand1)
    NUM is the number of operands.
    USES_OC0 is true if the instruction uses OC0 and provides 4 variants.
    NUM_MEMORY is the maximum number of memory operands to accept.  */
-bool ix86_sse5_valid_op_p (rtx operands[], rtx insn, int num, bool uses_oc0, int num_memory)
+bool
+ix86_sse5_valid_op_p (rtx operands[], rtx insn, int num, bool uses_oc0, int num_memory)
 {
   int mem_mask;
   int mem_count;

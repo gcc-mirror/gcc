@@ -1,3 +1,8 @@
+2007-11-13  Michael Meissner  <michael.meissner@amd.com>
+
+	* config/i386/i386.c (ix86_sse5_valid_op_p): Put type on separate
+	line.
+
 2007-11-13  Sterling Augustine  <sterling@tensilica.com>
 	    Bob Wilson  <bob.wilson@acm.org>
 	
