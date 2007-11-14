@@ -132,6 +132,11 @@ build_polynomial_chrec (unsigned loop_num,
   if (no_evolution_in_loop_p (left, loop_num, &val) && !val)
     return chrec_dont_know;
 
+  /* Pointer types should occur only on the left hand side, i.e. in
+     the base of the chrec, and not in the step.  */
+  gcc_assert (!POINTER_TYPE_P (TREE_TYPE (right)));
+
+  /* Types of left and right sides of a chrec should be compatible.  */
   if (POINTER_TYPE_P (TREE_TYPE (left)))
     gcc_assert (sizetype == TREE_TYPE (right));
   else
