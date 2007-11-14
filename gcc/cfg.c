@@ -990,9 +990,15 @@ update_bb_profile_for_threading (basic_block bb, int edge_frequency,
 
       FOR_EACH_EDGE (c, ei, bb->succs)
 	{
-	  c->probability = RDIV (c->probability * scale, 65536);
-	  if (c->probability > REG_BR_PROB_BASE)
+	  /* Protect from overflow due to additional scaling.  */
+	  if (c->probability > prob)
 	    c->probability = REG_BR_PROB_BASE;
+	  else
+	    {
+	      c->probability = RDIV (c->probability * scale, 65536);
+	      if (c->probability > REG_BR_PROB_BASE)
+		c->probability = REG_BR_PROB_BASE;
+	    }
 	}
     }
 

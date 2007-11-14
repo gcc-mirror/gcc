@@ -1,3 +1,9 @@
+2007-11-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR tree-optimization/34046
+	* cfg.c (update_bb_profile_for_threading): Avoid the division for the
+	scaling if the old probability is greater than the new base.
+
 2007-11-14  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely): Remove
