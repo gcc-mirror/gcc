@@ -688,34 +688,34 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
     }								\
   while (0)
 
-#define TARGET_CPU_DEFAULT_i386 0
-#define TARGET_CPU_DEFAULT_i486 1
-#define TARGET_CPU_DEFAULT_pentium 2
-#define TARGET_CPU_DEFAULT_pentium_mmx 3
-#define TARGET_CPU_DEFAULT_pentiumpro 4
-#define TARGET_CPU_DEFAULT_pentium2 5
-#define TARGET_CPU_DEFAULT_pentium3 6
-#define TARGET_CPU_DEFAULT_pentium4 7
-#define TARGET_CPU_DEFAULT_geode 8
-#define TARGET_CPU_DEFAULT_k6 9
-#define TARGET_CPU_DEFAULT_k6_2 10
-#define TARGET_CPU_DEFAULT_k6_3 11
-#define TARGET_CPU_DEFAULT_athlon 12
-#define TARGET_CPU_DEFAULT_athlon_sse 13
-#define TARGET_CPU_DEFAULT_k8 14
-#define TARGET_CPU_DEFAULT_pentium_m 15
-#define TARGET_CPU_DEFAULT_prescott 16
-#define TARGET_CPU_DEFAULT_nocona 17
-#define TARGET_CPU_DEFAULT_core2 18
-#define TARGET_CPU_DEFAULT_generic 19
-#define TARGET_CPU_DEFAULT_amdfam10 20
+enum target_cpu_default
+{
+  TARGET_CPU_DEFAULT_generic = 0,
 
-#define TARGET_CPU_DEFAULT_NAMES {"i386", "i486", "pentium", "pentium-mmx",\
-				  "pentiumpro", "pentium2", "pentium3", \
-                                  "pentium4", "geode", "k6", "k6-2", "k6-3", \
-				  "athlon", "athlon-4", "k8", \
-				  "pentium-m", "prescott", "nocona", \
-				  "core2", "generic", "amdfam10"}
+  TARGET_CPU_DEFAULT_i386,
+  TARGET_CPU_DEFAULT_i486,
+  TARGET_CPU_DEFAULT_pentium,
+  TARGET_CPU_DEFAULT_pentium_mmx,
+  TARGET_CPU_DEFAULT_pentiumpro,
+  TARGET_CPU_DEFAULT_pentium2,
+  TARGET_CPU_DEFAULT_pentium3,
+  TARGET_CPU_DEFAULT_pentium4,
+  TARGET_CPU_DEFAULT_pentium_m,
+  TARGET_CPU_DEFAULT_prescott,
+  TARGET_CPU_DEFAULT_nocona,
+  TARGET_CPU_DEFAULT_core2,
+
+  TARGET_CPU_DEFAULT_geode,
+  TARGET_CPU_DEFAULT_k6,
+  TARGET_CPU_DEFAULT_k6_2,
+  TARGET_CPU_DEFAULT_k6_3,
+  TARGET_CPU_DEFAULT_athlon,
+  TARGET_CPU_DEFAULT_athlon_sse,
+  TARGET_CPU_DEFAULT_k8,
+  TARGET_CPU_DEFAULT_amdfam10,
+
+  TARGET_CPU_DEFAULT_max
+};
 
 #ifndef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu) "

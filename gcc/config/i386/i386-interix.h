@@ -43,7 +43,7 @@ along with GCC; see the file COPYING3.  If not see
     MASK_ALIGN_DOUBLE | MASK_MS_BITFIELD_LAYOUT)
 
 #undef TARGET_CPU_DEFAULT
-#define TARGET_CPU_DEFAULT 2 /* 486 */
+#define TARGET_CPU_DEFAULT TARGET_CPU_DEFAULT_i486
 
 #define WCHAR_TYPE_SIZE 16
 #define WCHAR_TYPE "short unsigned int"

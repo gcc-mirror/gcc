@@ -1,3 +1,12 @@
+2007-11-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (TARGET_CPU_DEFAULT_*): Substitute with ...
+	(enum target_cpu_default): ... this enum.
+	(TARGET_CPU_DEFAULT_NAMES): Remove macro.  Move initializer to ...
+	* config/i386/i386.c (override_options): ... here.
+	* config/i386/i386-interix.h (TARGET_CPU_DEFAULT): Use
+	TARGET_CPU_DEFAULT_i486.
+
 2007-11-14  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	* global.c (rest_of_handle_global_alloc): Fix comment typos.
