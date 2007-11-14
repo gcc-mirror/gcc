@@ -1,3 +1,9 @@
+2007-11-14  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	* global.c (rest_of_handle_global_alloc): Fix comment typos.
+	* config/sh/sh.c (sh_rtx_costs): Likewise.
+	* ChangeLog: Likewise.
+
 2007-11-13  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* tree-chrec.h (build_polynomial_chrec): RHS of a chrec
@@ -14667,18 +14673,18 @@
 	and adjust recursive call accordingly.
 	(prescan_insns_for_dce): Update call to delete_insn_p.
 
-2007-06-30  Rask Ingemann Lambertsen <rask@sygehus.dk>
+2007-06-30  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	* combine.c (combine_validate_cost): New parameter NEWOTHERPAT.
 	(try_combine): Move potential calls to undo_all() so they happen
 	before we commit to using the combined insns.
 
-2006-06-30  Jan Hubicka  <jh@suse.cz>
+2007-06-30  Jan Hubicka  <jh@suse.cz>
 
 	* loop-unroll.c (unroll_loop_runtime_iterations): Unshare newly emit
 	code.
 
-2006-06-30  Thomas Neumann  <tneumann@users.sourceforge.net>
+2007-06-30  Thomas Neumann  <tneumann@users.sourceforge.net>
 
 	* ipa.c (cgraph_postorder): Cast according to the coding conventions.
 	(cgraph_remove_unreachable_nodes): Likewise.
