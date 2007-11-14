@@ -1,5 +1,11 @@
 2007-11-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR fortran/31608
+	*gfortran.dg/char_cast_1.f90: Modify regex in scan-tree-dump-times
+	to match known variations in symbol format. Document in comments.
+
+2007-11-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR fortran/33985
 	*gfortran.dg/streamio_12.f90: New test to avoid future regression.
 
