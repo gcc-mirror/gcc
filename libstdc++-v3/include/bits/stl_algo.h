@@ -2028,7 +2028,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	{
 	  if (__depth_limit == 0)
 	    {
-	      _GLIBCXX_STD_P:partial_sort(__first, __last, __last);
+	      _GLIBCXX_STD_P::partial_sort(__first, __last, __last);
 	      return;
 	    }
 	  --__depth_limit;
