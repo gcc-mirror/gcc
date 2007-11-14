@@ -37,7 +37,7 @@ program prog
   procedure(), allocatable:: b  ! { dg-error "PROCEDURE attribute conflicts with ALLOCATABLE attribute" }
   procedure(), save:: c  ! { dg-error "PROCEDURE attribute conflicts with SAVE attribute" }
 
-  procedure(dcos) :: my1  ! { dg-error "PROCEDURE statement at .1. not yet implemented" }
+  procedure(dcos) :: my1
   procedure(amax0) :: my2  ! { dg-error "not allowed in PROCEDURE statement" }
 
   procedure(),pointer:: ptr  ! { dg-error "not yet implemented" }
