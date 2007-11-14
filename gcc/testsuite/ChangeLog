@@ -1,5 +1,10 @@
 2007-11-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	*gfortran.dg/list_read_7.f90: Fix test so that test file is deleted when
+	done.
+
+2007-11-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR fortran/33162
 	*gfortran.dg/proc_decl_1.f90: Update.
 	*gfortran.dg/proc_decl_7.f90: New test.
