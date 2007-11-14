@@ -1,3 +1,9 @@
+2007-11-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* trans.c (call_to_gnu): Always set the source location on the call
+	expression.  If the function returns-by-target, also set it on the
+	address expression.
+
 2007-11-14  Samuel Tardieu  <sam@rfc1149.net>
 
 	* adaint.c init.c initialize.c link.c: Remove system-specific
