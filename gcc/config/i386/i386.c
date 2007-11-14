@@ -1963,7 +1963,31 @@ override_options (void)
       {&amdfam10_cost, 32, 24, 32, 7, 32}
     };
 
-  static const char * const cpu_names[] = TARGET_CPU_DEFAULT_NAMES;
+  static const char *const cpu_names[TARGET_CPU_DEFAULT_max] =
+    {
+      "generic",
+      "i386",
+      "i486",
+      "pentium",
+      "pentium-mmx",
+      "pentiumpro",
+      "pentium2",
+      "pentium3",
+      "pentium4",
+      "pentium-m",
+      "prescott",
+      "nocona",
+      "core2",
+      "geode",
+      "k6",
+      "k6-2",
+      "k6-3",
+      "athlon",
+      "athlon-4",
+      "k8",
+      "amdfam10"
+    };
+
   enum pta_flags
     {
       PTA_SSE = 1 << 0,
@@ -2138,7 +2162,7 @@ override_options (void)
 	ix86_tune_string = ix86_arch_string;
       if (!ix86_tune_string)
 	{
-	  ix86_tune_string = cpu_names [TARGET_CPU_DEFAULT];
+	  ix86_tune_string = cpu_names[TARGET_CPU_DEFAULT];
 	  ix86_tune_defaulted = 1;
 	}
 
