@@ -1,3 +1,9 @@
+2007-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/34088
+	* tree-ssa.c (delete_tree_ssa): Don't call fini_ssa_operands if
+	init_ssa_operands has not been called for cfun.
+
 2007-11-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR tree-optimization/34046
