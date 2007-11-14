@@ -97,6 +97,7 @@ package Interfaces.C.Strings is
 
 private
    type chars_ptr is access all Character;
+   pragma Convention (C, chars_ptr);
 
    pragma No_Strict_Aliasing (chars_ptr);
    --  Since this type is used for external interfacing, with the pointer

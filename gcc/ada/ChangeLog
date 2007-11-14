@@ -5,6 +5,8 @@
 
 	* s-osinte-interix.ads: Removed.
 
+	* i-cstrin.ads (chars_ptr): Make it a C convention type.
+
 2007-11-13  Samuel Tardieu  <sam@rfc1149.net>
 
 	* a-tasatt.adb: Add a comment at the beginning of the package
