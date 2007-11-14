@@ -1,3 +1,11 @@
+2007-11-14  Johannes Singler  <singler@ira.uka.de>
+
+      * include/parallel/multiway_merge.h: More robust finding of an
+        arbitrary existing element inside the input sequences.
+      * include/bits/stl_algo.h: Fix typo to actually call appropriate
+        sequential version.
+
+
 2007-11-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/html/documentation.html: First pass at unified table of contents.

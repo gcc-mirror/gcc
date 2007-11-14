@@ -900,25 +900,34 @@ namespace __gnu_parallel
     difference_type total_length = 0;
 
     // Default value for potentially non-default-constructible types.
-    value_type* defaultcons = NULL; 
+    value_type* arbitrary_element = NULL;
+
     for (int t = 0; t < k; t++)
       {
-	if (stable)
-	  {
-	    if (seqs_begin[t].first == seqs_begin[t].second)
-	      lt.insert_start_stable(*defaultcons, t, true);
-	    else
-	      lt.insert_start_stable(*seqs_begin[t].first, t, false);
-	  }
-	else
-	  {
-	    if (seqs_begin[t].first == seqs_begin[t].second)
-	      lt.insert_start(*defaultcons, t, true);
-	    else
-	      lt.insert_start(*seqs_begin[t].first, t, false);
-	  }
+        if(arbitrary_element == NULL && LENGTH(seqs_begin[t]) > 0)
+          arbitrary_element = &(*seqs_begin[t].first);
+        total_length += LENGTH(seqs_begin[t]);
+      }
 
-	total_length += LENGTH(seqs_begin[t]);
+    if(total_length == 0)
+      return target;
+
+    for (int t = 0; t < k; t++)
+      {
+        if (stable)
+          {
+            if (seqs_begin[t].first == seqs_begin[t].second)
+              lt.insert_start_stable(*arbitrary_element, t, true);
+            else
+              lt.insert_start_stable(*seqs_begin[t].first, t, false);
+          }
+        else
+          {
+            if (seqs_begin[t].first == seqs_begin[t].second)
+              lt.insert_start(*arbitrary_element, t, true);
+            else
+              lt.insert_start(*seqs_begin[t].first, t, false);
+          }
       }
 
     if (stable)
@@ -941,7 +950,7 @@ namespace __gnu_parallel
 
 	    // Feed.
 	    if (seqs_begin[source].first == seqs_begin[source].second)
-	      lt.delete_min_insert_stable(*defaultcons, true);
+	      lt.delete_min_insert_stable(*arbitrary_element, true);
 	    else
 	      // Replace from same source.
 	      lt.delete_min_insert_stable(*seqs_begin[source].first, false);
@@ -959,7 +968,7 @@ namespace __gnu_parallel
 
 	    // Feed.
 	    if (seqs_begin[source].first == seqs_begin[source].second)
-	      lt.delete_min_insert(*defaultcons, true);
+	      lt.delete_min_insert(*arbitrary_element, true);
 	    else
 	      // Replace from same source.
 	      lt.delete_min_insert(*seqs_begin[source].first, false);
