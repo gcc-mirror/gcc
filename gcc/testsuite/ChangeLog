@@ -1,3 +1,8 @@
+2007-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/34088
+	* gcc.dg/pr34088.c: New test.
+
 2007-11-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/20071114-1.c: New test.

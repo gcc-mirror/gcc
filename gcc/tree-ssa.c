@@ -899,7 +899,8 @@ delete_tree_ssa (void)
   fini_ssanames ();
   fini_phinodes ();
   /* we no longer maintain the SSA operand cache at this point.  */
-  fini_ssa_operands ();
+  if (ssa_operands_active ())
+    fini_ssa_operands ();
 
   cfun->gimple_df->global_var = NULL_TREE;
   
