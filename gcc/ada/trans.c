@@ -2311,6 +2311,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
   gnu_subprog_call = build_call_list (TREE_TYPE (gnu_subprog_type),
 				      gnu_subprog_addr,
 				      nreverse (gnu_actual_list));
+  set_expr_location_from_node (gnu_subprog_call, gnat_node);
 
   /* If we return by passing a target, the result is the target after the
      call.  We must not emit the call directly here because this might be
@@ -2336,6 +2337,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 
       tree gnu_target_address
 	= build_unary_op (ADDR_EXPR, NULL_TREE, gnu_target);
+      set_expr_location_from_node (gnu_target_address, gnat_node);
 
       gnu_result
 	= build2 (COMPOUND_EXPR, TREE_TYPE (gnu_target_address),
@@ -2491,10 +2493,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	  }
 	}
   else
-    {
-      set_expr_location_from_node (gnu_subprog_call, gnat_node);
-      append_to_statement_list (gnu_subprog_call, &gnu_before_list);
-    }
+    append_to_statement_list (gnu_subprog_call, &gnu_before_list);
 
   append_to_statement_list (gnu_after_list, &gnu_before_list);
   return gnu_before_list;
