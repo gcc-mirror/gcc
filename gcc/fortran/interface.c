@@ -977,13 +977,25 @@ compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, int generic_flag)
 static int
 compare_intr_interfaces (gfc_symbol *s1, gfc_symbol *s2)
 {
-  static gfc_formal_arglist *f, *f1;
-  static gfc_intrinsic_arg *fi, *f2;
+  gfc_formal_arglist *f, *f1;
+  gfc_intrinsic_arg *fi, *f2;
   gfc_intrinsic_sym *isym;
 
   if (s1->attr.function != s2->attr.function
       || s1->attr.subroutine != s2->attr.subroutine)
     return 0;		/* Disagreement between function/subroutine.  */
+  
+  /* If the arguments are functions, check type and kind.  */
+  
+  if (s1->attr.dummy && s1->attr.function && s2->attr.function)
+    {
+      if (s1->ts.type != s2->ts.type)
+	return 0;
+      if (s1->ts.kind != s2->ts.kind)
+	return 0;
+      if (s1->attr.if_source == IFSRC_DECL)
+	return 1;
+    }
 
   isym = gfc_find_function (s2->name);
   
@@ -1018,6 +1030,55 @@ compare_intr_interfaces (gfc_symbol *s1, gfc_symbol *s2)
       if ((fi->ts.type != f->sym->ts.type) || (fi->ts.kind != f->sym->ts.kind))
 	return 0;
       f = f->next;
+    }
+
+  return 1;
+}
+
+
+/* Compare an actual argument list with an intrinsic argument list.  */
+
+static int
+compare_actual_formal_intr (gfc_actual_arglist **ap, gfc_symbol *s2)
+{
+  gfc_actual_arglist *a;
+  gfc_intrinsic_arg *fi, *f2;
+  gfc_intrinsic_sym *isym;
+
+  isym = gfc_find_function (s2->name);
+  
+  /* This should already have been checked in
+     resolve.c (resolve_actual_arglist).  */
+  gcc_assert (isym);
+
+  f2 = isym->formal;
+
+  /* Special case.  */
+  if (*ap == NULL && f2 == NULL)
+    return 1;
+  
+  /* First scan through the actual argument list and check the intrinsic.  */
+  fi = f2;
+  for (a = *ap; a; a = a->next)
+    {
+      if (fi == NULL)
+	return 0;
+      if ((fi->ts.type != a->expr->ts.type)
+	  || (fi->ts.kind != a->expr->ts.kind))
+	return 0;
+      fi = fi->next;
+    }
+
+  /* Now scan through the intrinsic argument list and check the formal.  */
+  a = *ap;
+  for (fi = f2; fi; fi = fi->next)
+    {
+      if (a == NULL)
+	return 0;
+      if ((fi->ts.type != a->expr->ts.type)
+	  || (fi->ts.kind != a->expr->ts.kind))
+	return 0;
+      a = a->next;
     }
 
   return 1;
@@ -2224,6 +2285,20 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
       && sym->attr.if_source == IFSRC_UNKNOWN)
     gfc_warning ("Procedure '%s' called with an implicit interface at %L",
 		 sym->name, where);
+
+  if (sym->interface && sym->interface->attr.intrinsic)
+    {
+      gfc_intrinsic_sym *isym;
+      isym = gfc_find_function (sym->interface->name);
+      if (isym != NULL)
+	{
+	  if (compare_actual_formal_intr (ap, sym->interface))
+	    return;
+	  gfc_error ("Type/rank mismatch in argument '%s' at %L",
+		     sym->name, where);
+	  return;
+	}
+    }
 
   if (sym->attr.if_source == IFSRC_UNKNOWN
       || !compare_actual_formal (ap, sym->formal, 0,
