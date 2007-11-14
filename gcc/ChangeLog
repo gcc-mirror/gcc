@@ -1,3 +1,8 @@
+2007-11-14  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely): Remove
+	unused edges after loop duplication.
+
 2007-11-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (TARGET_CPU_DEFAULT_*): Substitute with ...
