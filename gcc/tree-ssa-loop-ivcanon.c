@@ -163,7 +163,7 @@ try_unroll_loop_completely (struct loop *loop,
 			    enum unroll_level ul)
 {
   unsigned HOST_WIDE_INT n_unroll, ninsns, max_unroll, unr_insns;
-  tree old_cond, cond, dont_exit, do_exit;
+  tree cond;
 
   if (loop->inner)
     return false;
@@ -207,50 +207,44 @@ try_unroll_loop_completely (struct loop *loop,
 	}
     }
 
-  if (exit->flags & EDGE_TRUE_VALUE)
-    {
-      dont_exit = boolean_false_node;
-      do_exit = boolean_true_node;
-    }
-  else
-    {
-      dont_exit = boolean_true_node;
-      do_exit = boolean_false_node;
-    }
-  cond = last_stmt (exit->src);
-    
   if (n_unroll)
     {
       sbitmap wont_exit;
+      edge e;
+      unsigned i;
+      VEC (edge, heap) *to_remove = NULL;
 
-      old_cond = COND_EXPR_COND (cond);
-      COND_EXPR_COND (cond) = dont_exit;
-      update_stmt (cond);
       initialize_original_copy_tables ();
-
       wont_exit = sbitmap_alloc (n_unroll + 1);
       sbitmap_ones (wont_exit);
       RESET_BIT (wont_exit, 0);
 
       if (!tree_duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 					       n_unroll, wont_exit,
-					       exit, NULL,
+					       exit, &to_remove,
 					       DLTHE_FLAG_UPDATE_FREQ
 					       | DLTHE_FLAG_COMPLETTE_PEEL))
 	{
-	  COND_EXPR_COND (cond) = old_cond;
-	  update_stmt (cond);
           free_original_copy_tables ();
 	  free (wont_exit);
 	  return false;
 	}
+
+      for (i = 0; VEC_iterate (edge, to_remove, i, e); i++)
+	{
+	  bool ok = remove_path (e);
+	  gcc_assert (ok);
+	}
+
+      VEC_free (edge, heap, to_remove);
       free (wont_exit);
       free_original_copy_tables ();
     }
-  
-  COND_EXPR_COND (cond) = do_exit;
-  update_stmt (cond);
 
+  cond = last_stmt (exit->src);
+  COND_EXPR_COND (cond) = (exit->flags & EDGE_TRUE_VALUE) ? boolean_true_node
+    : boolean_false_node;
+  update_stmt (cond);
   update_ssa (TODO_update_ssa);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
