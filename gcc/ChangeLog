@@ -1,3 +1,8 @@
+2007-11-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* tree-chrec.h (build_polynomial_chrec): RHS of a chrec
+	should not be of pointer type.
+
 2007-11-13  Michael Meissner  <michael.meissner@amd.com>
 
 	* config/i386/i386.c (ix86_sse5_valid_op_p): Put type on separate
