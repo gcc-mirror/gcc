@@ -1,4 +1,4 @@
-2007-11-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2007-11-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/33162
 	* decl.c (match_procedure_decl): Remove TODO and allow intrinsics in
