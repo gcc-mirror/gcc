@@ -1,3 +1,9 @@
+2007-11-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/33923
+	* config/ia64/ia64.h (CANNOT_CHANGE_MODE_CLASS): Forbid mode changes
+	for registers in BR_REGS class.
+
 2007-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/34088
