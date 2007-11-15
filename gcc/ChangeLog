@@ -1,3 +1,10 @@
+2007-11-15  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (set_uids_in_ptset): Use the pointed-to
+	type for TBAA pruning.
+	(find_what_p_points_to): Call set_uids_in_ptset with the original
+	pointer, not the decl of the solution we collapsed to.
+
 2007-11-14  David Daney  <ddaney@avtrex.com>
 
 	* config/mips/linux-unwind.h (mips_fallback_frame_state): Use CFA
