@@ -876,14 +876,14 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	    // Decimal.
 	    if (__v > 0)
 	      {
-		if (__flags & ios_base::showpos
+		if (bool(__flags & ios_base::showpos)
 		    && __gnu_cxx::__numeric_traits<_ValueT>::__is_signed)
 		  *--__cs = __lit[__num_base::_S_oplus], ++__len;
 	      }
 	    else if (__v)
 	      *--__cs = __lit[__num_base::_S_ominus], ++__len;
 	  }
-	else if (__flags & ios_base::showbase && __v)
+	else if (bool(__flags & ios_base::showbase) && __v)
 	  {
 	    if (__basefield == ios_base::oct)
 	      *--__cs = __lit[__num_base::_S_odigits], ++__len;
