@@ -1,10 +1,28 @@
+2007-11-15  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/34105
+	* include/bits/stl_algobase.h: Do not include <bits/algorithmfwd.h>.
+	(lexicographical_compare(const unsigned char*, const unsigned char*,
+	const unsigned char*, const unsigned char*),
+	lexicographical_compare(const char*, const char*, const char*,
+	const char*)): Move to namespace (std, _GLIBCXX_STD_P).
+	* include/parallel/algobase.h: Do not include <bits/algorithmfwd.h>.
+	(equal): Move after mismatch.
+	* include/bits/stl_heap.h (is_heap, is_heap_until): Reorder.
+	* include/bits/char_traits.h: Include <bits/stl_algobase.h> instead
+	of <bits/algorithmfwd.h>.
+	* include/bits/stl_algo.h: Include first <bits/algorithmfwd.h>.
+	* include/bits/algorithmfwd.h (lexicographical_compare): Do not
+	declare overloads.
+	* include/parallel/partition.h: Include <parallel/random_number.h>.
+	* testsuite/util/testsuite_abi.cc: Include <algorithm>.
+
 2007-11-14  Johannes Singler  <singler@ira.uka.de>
 
       * include/parallel/multiway_merge.h: More robust finding of an
         arbitrary existing element inside the input sequences.
       * include/bits/stl_algo.h: Fix typo to actually call appropriate
         sequential version.
-
 
 2007-11-13  Benjamin Kosnik  <bkoz@redhat.com>
 

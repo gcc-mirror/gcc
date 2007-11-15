@@ -41,6 +41,7 @@
 
 #include <parallel/basic_iterator.h>
 #include <parallel/sort.h>
+#include <parallel/random_number.h>
 #include <bits/stl_algo.h>
 #include <parallel/parallel.h>
 

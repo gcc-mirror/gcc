@@ -488,32 +488,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
   /**
-   *  @brief  Determines whether a range is a heap.
-   *  @param  first  Start of range.
-   *  @param  last   End of range.
-   *  @return  True if range is a heap, false otherwise.
-   *  @ingroup heap
-  */
-  template<typename _RandomAccessIterator>
-    inline bool
-    is_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
-    { return std::is_heap_until(__first, __last) == __last; }
-
-  /**
-   *  @brief  Determines whether a range is a heap using comparison functor.
-   *  @param  first  Start of range.
-   *  @param  last   End of range.
-   *  @param  comp   Comparison functor to use.
-   *  @return  True if range is a heap, false otherwise.
-   *  @ingroup heap
-  */
-  template<typename _RandomAccessIterator, typename _Compare>
-    inline bool
-    is_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
-	    _Compare __comp)
-    { return std::is_heap_until(__first, __last, __comp) == __last; }
-
-  /**
    *  @brief  Search the end of a heap.
    *  @param  first  Start of range.
    *  @param  last   End of range.
@@ -563,6 +537,32 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 								   __last),
 					    __comp);
     }
+
+  /**
+   *  @brief  Determines whether a range is a heap.
+   *  @param  first  Start of range.
+   *  @param  last   End of range.
+   *  @return  True if range is a heap, false otherwise.
+   *  @ingroup heap
+  */
+  template<typename _RandomAccessIterator>
+    inline bool
+    is_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
+    { return std::is_heap_until(__first, __last) == __last; }
+
+  /**
+   *  @brief  Determines whether a range is a heap using comparison functor.
+   *  @param  first  Start of range.
+   *  @param  last   End of range.
+   *  @param  comp   Comparison functor to use.
+   *  @return  True if range is a heap, false otherwise.
+   *  @ingroup heap
+  */
+  template<typename _RandomAccessIterator, typename _Compare>
+    inline bool
+    is_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
+	    _Compare __comp)
+    { return std::is_heap_until(__first, __last, __comp) == __last; }
 #endif
 
 _GLIBCXX_END_NAMESPACE

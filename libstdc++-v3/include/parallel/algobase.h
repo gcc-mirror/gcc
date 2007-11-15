@@ -42,48 +42,18 @@
 #ifndef _GLIBCXX_PARALLEL_ALGOBASE_H
 #define _GLIBCXX_PARALLEL_ALGOBASE_H 1
 
-#include <parallel/algorithmfwd.h>
 #include <bits/stl_algobase.h>
 #include <parallel/base.h>
 #include <parallel/tags.h>
 #include <parallel/settings.h>
 #include <parallel/find.h>
 #include <parallel/find_selectors.h>
-#include <parallel/for_each.h>
-#include <parallel/for_each_selectors.h>
 
 namespace std
 {
 namespace __parallel
 {
-  // Sequential fallback
-  template<typename InputIterator1, typename InputIterator2>
-  inline bool
-  equal(InputIterator1 begin1, InputIterator1 end1, InputIterator2 begin2, 
-	__gnu_parallel::sequential_tag)
-  { return _GLIBCXX_STD_P::equal(begin1, end1, begin2); }
-
-  // Sequential fallback
-  template<typename InputIterator1, typename InputIterator2, typename Predicate>
-  inline bool
-  equal(InputIterator1 begin1, InputIterator1 end1, InputIterator2 begin2, 
-	Predicate pred, __gnu_parallel::sequential_tag)
-  { return _GLIBCXX_STD_P::equal(begin1, end1, begin2, pred); }
-
-  // Public interface
-  template<typename InputIterator1, typename InputIterator2>
-  inline bool
-  equal(InputIterator1 begin1, InputIterator1 end1, InputIterator2 begin2)
-  { return mismatch(begin1, end1, begin2).first == end1; }
-
-  // Public interface
-  template<typename InputIterator1, typename InputIterator2, typename Predicate>
-  inline bool
-  equal(InputIterator1 begin1, InputIterator1 end1, InputIterator2 begin2, 
-	Predicate pred)
-  { return mismatch(begin1, end1, begin2, pred).first == end1; }
-
-  // NB: lexicographical_compare equires mismatch.
+  // NB: equal and lexicographical_compare require mismatch.
 
   // Sequential fallback
   template<typename InputIterator1, typename InputIterator2>
@@ -155,6 +125,33 @@ namespace __parallel
     return mismatch_switch(begin1, end1, begin2, pred, iterator1_category(), 
 			   iterator2_category());
   }
+
+  // Sequential fallback
+  template<typename InputIterator1, typename InputIterator2>
+  inline bool
+  equal(InputIterator1 begin1, InputIterator1 end1, InputIterator2 begin2, 
+	__gnu_parallel::sequential_tag)
+  { return _GLIBCXX_STD_P::equal(begin1, end1, begin2); }
+
+  // Sequential fallback
+  template<typename InputIterator1, typename InputIterator2, typename Predicate>
+  inline bool
+  equal(InputIterator1 begin1, InputIterator1 end1, InputIterator2 begin2, 
+	Predicate pred, __gnu_parallel::sequential_tag)
+  { return _GLIBCXX_STD_P::equal(begin1, end1, begin2, pred); }
+
+  // Public interface
+  template<typename InputIterator1, typename InputIterator2>
+  inline bool
+  equal(InputIterator1 begin1, InputIterator1 end1, InputIterator2 begin2)
+  { return mismatch(begin1, end1, begin2).first == end1; }
+
+  // Public interface
+  template<typename InputIterator1, typename InputIterator2, typename Predicate>
+  inline bool
+  equal(InputIterator1 begin1, InputIterator1 end1, InputIterator2 begin2, 
+	Predicate pred)
+  { return mismatch(begin1, end1, begin2, pred).first == end1; }
 
   // Sequential fallback
   template<typename InputIterator1, typename InputIterator2>
