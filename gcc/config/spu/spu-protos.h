@@ -52,7 +52,6 @@ extern int logical_immediate_p (rtx op, enum machine_mode mode);
 extern int iohl_immediate_p (rtx op, enum machine_mode mode);
 extern int arith_immediate_p (rtx op, enum machine_mode mode,
 			      HOST_WIDE_INT low, HOST_WIDE_INT high);
-extern int legitimate_const (rtx x, int aligned);
 extern int spu_constant_address_p (rtx x);
 extern int spu_legitimate_constant_p (rtx x);
 extern int spu_legitimate_address (enum machine_mode mode, rtx x,
