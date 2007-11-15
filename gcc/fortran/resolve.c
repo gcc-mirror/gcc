@@ -7615,8 +7615,10 @@ resolve_symbol (gfc_symbol *sym)
   if (sym->attr.procedure && sym->interface
       && sym->attr.if_source != IFSRC_DECL)
     {
-      while (sym->interface->interface)
-	sym->interface = sym->interface->interface;
+      if (sym->interface->attr.procedure)
+	gfc_error ("Interface '%s', used by procedure '%s' at %L, is declared "
+		   "in a later PROCEDURE statement", sym->interface->name,
+		   sym->name,&sym->declared_at);
 
       /* Get the attributes from the interface (now resolved).  */
       if (sym->interface->attr.if_source || sym->interface->attr.intrinsic)

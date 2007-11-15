@@ -1,3 +1,10 @@
+2007-11-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/33917
+	* decl.c (match_procedure_decl): Pre-resolve interface.
+	* resolve.c (resolve_symbol): Reject interfaces later
+	declared in procedure statements.
+
 2007-11-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/33162

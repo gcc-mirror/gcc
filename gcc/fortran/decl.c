@@ -3946,6 +3946,12 @@ match_procedure_decl (void)
   /* Various interface checks.  */
   if (proc_if)
     {
+      /* Resolve interface if possible. That way, attr.procedure is only set
+	 if it is declared by a later procedure-declaration-stmt, which is
+	 invalid per C1212.  */
+      while (proc_if->interface)
+	proc_if = proc_if->interface;
+
       if (proc_if->generic)
 	{
 	  gfc_error ("Interface '%s' at %C may not be generic", proc_if->name);
