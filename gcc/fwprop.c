@@ -697,7 +697,8 @@ try_fwprop_subst (struct df_ref *use, rtx *loc, rtx new, rtx def_insn, bool set_
       ok = false;
     }
 
-  else if (rtx_cost (SET_SRC (set), SET) > old_cost)
+  else if (DF_REF_TYPE (use) == DF_REF_REG_USE
+	   && rtx_cost (SET_SRC (set), SET) > old_cost)
     {
       if (dump_file)
 	fprintf (dump_file, "Changes to insn %d not profitable\n",
