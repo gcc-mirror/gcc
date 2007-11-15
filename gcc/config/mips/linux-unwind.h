@@ -66,9 +66,10 @@ mips_fallback_frame_state (struct _Unwind_Context *context,
   if (pc[0] == (0x24020000 | __NR_sigreturn))
     {
       struct sigframe {
+	u_int32_t ass[4];  /* Argument save space for o32.  */
 	u_int32_t trampoline[2];
 	struct sigcontext sigctx;
-      } *rt_ = context->ra;
+      } *rt_ = context->cfa;
       sc = &rt_->sigctx;
     }
   else
@@ -76,10 +77,11 @@ mips_fallback_frame_state (struct _Unwind_Context *context,
   if (pc[0] == (0x24020000 | __NR_rt_sigreturn))
     {
       struct rt_sigframe {
+	u_int32_t ass[4];  /* Argument save space for o32.  */
 	u_int32_t trampoline[2];
 	struct siginfo info;
 	_sig_ucontext_t uc;
-      } *rt_ = context->ra;
+      } *rt_ = context->cfa;
       sc = &rt_->uc.uc_mcontext;
     }
   else
