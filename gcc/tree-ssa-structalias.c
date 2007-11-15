@@ -4749,15 +4749,24 @@ set_uids_in_ptset (tree ptr, bitmap into, bitmap from, bool is_derefed,
 	       || TREE_CODE (vi->decl) == PARM_DECL
 	       || TREE_CODE (vi->decl) == RESULT_DECL)
 	{
+	  subvar_t sv;
 	  if (var_can_have_subvars (vi->decl)
-	      && get_subvars_for_var (vi->decl))
+	      && (sv = get_subvars_for_var (vi->decl)))
 	    {
 	      /* If VI->DECL is an aggregate for which we created
-		 SFTs, add the SFT corresponding to VI->OFFSET.  */
-	      tree sft = get_subvar_at (vi->decl, vi->offset);
+		 SFTs, add the SFT corresponding to VI->OFFSET.
+		 If we didn't do field-sensitive PTA we need to to
+		 add all overlapping SFTs.  */
+	      unsigned int j;
+	      tree sft = get_first_overlapping_subvar (sv, vi->offset,
+						       vi->size, &j);
 	      gcc_assert (sft);
-	      if (sft)
+	      for (; VEC_iterate (tree, sv, j, sft); ++j)
 		{
+		  if (SFT_OFFSET (sft) > vi->offset
+		      && vi->size <= SFT_OFFSET (sft) - vi->offset)
+		    break;
+
 		  var_alias_set = get_alias_set (sft);
 		  if (no_tbaa_pruning
 		      || (!is_derefed && !vi->directly_dereferenced)
