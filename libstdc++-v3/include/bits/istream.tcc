@@ -56,7 +56,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	{
 	  if (__in.tie())
 	    __in.tie()->flush();
-	  if (!__noskip && (__in.flags() & ios_base::skipws))
+	  if (!__noskip && bool(__in.flags() & ios_base::skipws))
 	    {
 	      const __int_type __eof = traits_type::eof();
 	      __streambuf_type* __sb = __in.rdbuf();

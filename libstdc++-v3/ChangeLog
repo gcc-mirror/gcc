@@ -1,5 +1,13 @@
 2007-11-15  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/istream.tcc (basic_istream<>::sentry::
+	sentry(basic_istream<>&, bool)): Explicitely convert to bool.
+	* include/bits/locale_facets.tcc (num_put<>::_M_insert_int(_OutIter,
+	ios_base&, _CharT, _ValueT)): Likewise.
+	* include/std/ostream (basic_ostream<>::sentry::~sentry): Likewise.
+
+2007-11-15  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/34105
 	* include/bits/stl_algobase.h: Do not include <bits/algorithmfwd.h>.
 	(lexicographical_compare(const unsigned char*, const unsigned char*,
