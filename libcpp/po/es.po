@@ -1,13 +1,13 @@
-# Mensajes en español para cpplib-4.2.2.
+# Mensajes en español para cpplib-4.3-b20071109
 # Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 # Cristian Othón Martínez Vera <cfuga@itam.mx>, 2001, 2002, 2003, 2004, 2005, 2006, 2007.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib-4.2.2\n"
+"Project-Id-Version: cpplib-4.3-b20071109\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2007-11-08 21:08+0000\n"
-"PO-Revision-Date: 2007-10-15 14:20-0500\n"
+"PO-Revision-Date: 2007-11-13 19:48-0600\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@itam.mx>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -403,14 +403,13 @@ msgid "too many decimal points in number"
 msgstr "demasiados puntos decimales en el número"
 
 #: expr.c:290 expr.c:365
-#, fuzzy
 msgid "fixed-point constants are a GCC extension"
-msgstr "las constantes imaginarias son una extensión GCC"
+msgstr "las constantes de coma fija son una extensión GCC"
 
 #: expr.c:303
-#, fuzzy, c-format
+#, c-format
 msgid "invalid digit \"%c\" in binary constant"
-msgstr "dígito \"%c\" inválido en la constante octal"
+msgstr "dígito \"%c\" inválido en la constante binaria"
 
 #: expr.c:305
 #, c-format
@@ -418,9 +417,8 @@ msgid "invalid digit \"%c\" in octal constant"
 msgstr "dígito \"%c\" inválido en la constante octal"
 
 #: expr.c:313
-#, fuzzy
 msgid "invalid prefix \"0b\" for floating constant"
-msgstr "sufijo \"%.*s\" inválido en la constante de coma flotante"
+msgstr "prefijo \"0b\" inválido en la constante de coma flotante"
 
 #: expr.c:319
 msgid "use of C99 hexadecimal floating constant"
@@ -450,9 +448,8 @@ msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr "sufijo \"%.*s\" inválido en la constante de coma flotante hexadecimal"
 
 #: expr.c:369
-#, fuzzy
 msgid "decimal float constants are a GCC extension"
-msgstr "las constantes imaginarias son una extensión GCC"
+msgstr "las constantes de coma flotante decimal son una extensión GCC"
 
 #: expr.c:379
 #, c-format
@@ -468,9 +465,8 @@ msgid "imaginary constants are a GCC extension"
 msgstr "las constantes imaginarias son una extensión GCC"
 
 #: expr.c:412
-#, fuzzy
 msgid "binary constants are a GCC extension"
-msgstr "las constantes imaginarias son una extensión GCC"
+msgstr "las constantes binarias son una extensión GCC"
 
 #: expr.c:505
 msgid "integer constant is too large for its type"
@@ -769,7 +765,7 @@ msgstr "no se puede determinar la fecha y la hora"
 
 #: macro.c:270
 msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
-msgstr ""
+msgstr "se expande __COUNTER__ dentro de una directiva con -fdirectives-only"
 
 #: macro.c:423
 msgid "invalid string literal, ignoring final '\\'"
@@ -889,9 +885,9 @@ msgid "%s: not used because `%s' is defined"
 msgstr "%s: no se usa porque `%s' está definido"
 
 #: pch.c:558
-#, fuzzy, c-format
+#, c-format
 msgid "%s: not used because `__COUNTER__' is invalid"
-msgstr "%s: no se usa porque `%s' está definido"
+msgstr "%s: no se usa porque `__COUNTER__' es inválido"
 
 #: pch.c:567 pch.c:737
 msgid "while reading precompiled header"
