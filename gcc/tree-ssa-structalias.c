@@ -4719,7 +4719,10 @@ set_uids_in_ptset (tree ptr, bitmap into, bitmap from, bool is_derefed,
 {
   unsigned int i;
   bitmap_iterator bi;
-  alias_set_type ptr_alias_set = get_alias_set (TREE_TYPE (ptr));
+  alias_set_type ptr_alias_set;
+
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (ptr)));
+  ptr_alias_set = get_alias_set (TREE_TYPE (TREE_TYPE (ptr)));
 
   EXECUTE_IF_SET_IN_BITMAP (from, 0, i, bi)
     {
@@ -4996,7 +4999,7 @@ find_what_p_points_to (tree p)
 	      pi->pt_global_mem = 1;
 	    }
 
-	  set_uids_in_ptset (vi->decl, finished_solution, vi->solution,
+	  set_uids_in_ptset (p, finished_solution, vi->solution,
 			     vi->directly_dereferenced,
 			     vi->no_tbaa_pruning);
 	  result = shared_bitmap_lookup (finished_solution);
