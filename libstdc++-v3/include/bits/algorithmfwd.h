@@ -223,14 +223,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     void 
     iter_swap(_FIter1, _FIter2);
 
-  // Specializations for char and unsigned char.
-  inline bool
-  lexicographical_compare(const unsigned char*, const unsigned char*, 
-			  const unsigned char*, const unsigned char*);
-
-  inline bool
-  lexicographical_compare(const char*, const char*, const char*, const char*);
-
   template<typename _FIter, typename _Tp>
     _FIter 
     lower_bound(_FIter, _FIter, const _Tp&);

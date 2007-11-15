@@ -43,7 +43,7 @@
 
 #pragma GCC system_header
 
-#include <bits/algorithmfwd.h>   // std::copy, std::fill_n
+#include <bits/stl_algobase.h>  // std::copy, std::fill_n
 #include <bits/postypes.h>      // For streampos
 #include <cstdio>               // For EOF
 #include <cwchar>               // For WEOF, wmemmove, wmemset, etc.
