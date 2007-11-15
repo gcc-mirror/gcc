@@ -1,3 +1,10 @@
+2007-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/23848
+	* tree-ssa-ccp.c (optimize_stack_restore): New function.
+	(execute_fold_all_builtins): Call optimize_stack_restore for
+	BUILT_IN_STACK_RESTORE.
+
 2007-11-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* fwprop.c (try_fwprop_subst): Skip profitability check for forward

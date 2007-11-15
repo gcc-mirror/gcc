@@ -2601,6 +2601,76 @@ fold_stmt_inplace (tree stmt)
   return changed;
 }
 
+/* Try to optimize out __builtin_stack_restore.  Optimize it out
+   if there is another __builtin_stack_restore in the same basic
+   block and no calls or ASM_EXPRs are in between, or if this block's
+   only outgoing edge is to EXIT_BLOCK and there are no calls or
+   ASM_EXPRs after this __builtin_stack_restore.  */
+
+static tree
+optimize_stack_restore (basic_block bb, tree call, block_stmt_iterator i)
+{
+  tree stack_save, stmt, callee;
+
+  if (TREE_CODE (call) != CALL_EXPR
+      || call_expr_nargs (call) != 1
+      || TREE_CODE (CALL_EXPR_ARG (call, 0)) != SSA_NAME
+      || !POINTER_TYPE_P (TREE_TYPE (CALL_EXPR_ARG (call, 0))))
+    return NULL_TREE;
+
+  for (bsi_next (&i); !bsi_end_p (i); bsi_next (&i))
+    {
+      tree call;
+
+      stmt = bsi_stmt (i);
+      if (TREE_CODE (stmt) == ASM_EXPR)
+	return NULL_TREE;
+      call = get_call_expr_in (stmt);
+      if (call == NULL)
+	continue;
+
+      callee = get_callee_fndecl (call);
+      if (!callee || DECL_BUILT_IN_CLASS (callee) != BUILT_IN_NORMAL)
+	return NULL_TREE;
+
+      if (DECL_FUNCTION_CODE (callee) == BUILT_IN_STACK_RESTORE)
+	break;
+    }
+
+  if (bsi_end_p (i)
+      && (! single_succ_p (bb)
+	  || single_succ_edge (bb)->dest != EXIT_BLOCK_PTR))
+    return NULL_TREE;
+
+  stack_save = SSA_NAME_DEF_STMT (CALL_EXPR_ARG (call, 0));
+  if (TREE_CODE (stack_save) != GIMPLE_MODIFY_STMT
+      || GIMPLE_STMT_OPERAND (stack_save, 0) != CALL_EXPR_ARG (call, 0)
+      || TREE_CODE (GIMPLE_STMT_OPERAND (stack_save, 1)) != CALL_EXPR
+      || tree_could_throw_p (stack_save)
+      || !has_single_use (CALL_EXPR_ARG (call, 0)))
+    return NULL_TREE;
+
+  callee = get_callee_fndecl (GIMPLE_STMT_OPERAND (stack_save, 1));
+  if (!callee
+      || DECL_BUILT_IN_CLASS (callee) != BUILT_IN_NORMAL
+      || DECL_FUNCTION_CODE (callee) != BUILT_IN_STACK_SAVE
+      || call_expr_nargs (GIMPLE_STMT_OPERAND (stack_save, 1)) != 0)
+    return NULL_TREE;
+
+  stmt = stack_save;
+  push_stmt_changes (&stmt);
+  if (!set_rhs (&stmt,
+		build_int_cst (TREE_TYPE (CALL_EXPR_ARG (call, 0)), 0)))
+    {
+      discard_stmt_changes (&stmt);
+      return NULL_TREE;
+    }
+  gcc_assert (stmt == stack_save);
+  pop_stmt_changes (&stmt);
+
+  return integer_zero_node;
+}
+
 /* Convert EXPR into a GIMPLE value suitable for substitution on the
    RHS of an assignment.  Insert the necessary statements before
    iterator *SI_P. 
@@ -2684,6 +2754,12 @@ execute_fold_all_builtins (void)
 		   certain that the value simply isn't constant.  */
 		result = integer_zero_node;
 		break;
+
+	      case BUILT_IN_STACK_RESTORE:
+		result = optimize_stack_restore (bb, *stmtp, i);
+		if (result)
+		  break;
+		/* FALLTHRU */
 
 	      default:
 		bsi_next (&i);
