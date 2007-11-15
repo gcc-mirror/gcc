@@ -1,3 +1,13 @@
+2007-11-15  Sa Liu  <saliu@de.ibm.com>
+
+	* config/spu/spu.c (spu_emit_branch_or_set): Remove PROCESSOR_CELL
+	condition from HONOR_NANS test.
+	* config/spu/spu.md (ceq_df): Always generate comparison code
+	inline, including checks for NaNs and infinities.
+	(cgt_df): Likewise.
+	(cgt_v2df): Likewise.
+	(cmpdf): Make this expander unconditional.
+
 2007-11-15  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-alias.c (create_overlap_variables_for): Make sure
