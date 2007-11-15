@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.3-b20071109\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2007-11-08 21:09+0000\n"
-"PO-Revision-Date: 2007-11-12 14:45+0200\n"
+"PO-Revision-Date: 2007-11-14 19:24+0200\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -2369,9 +2369,8 @@ msgid "The threshold ratio between instantiated fields and the total structure s
 msgstr "Der Anteil-Schwellwert zwischen instanzierten Feldern und der Gesamt-Strukturgröße"
 
 #: params.def:93
-#, fuzzy
 msgid "The threshold ratio between current and hotest structure counts"
-msgstr "Der Anteil-Schwellwert zwischen instanzierten Feldern und der Gesamt-Strukturgröße"
+msgstr "Der Anteil-Schwellwert zwischen aktuellen und heißesten Strukturzahlen"
 
 #: params.def:110
 msgid "The maximum number of instructions in a single function eligible for inlining"
@@ -2442,14 +2441,12 @@ msgid "expense of call operation relative to ordinary arithmetic operations"
 msgstr "Kosten einer Aufrufoperation relativ zu gewöhnlichen arithmetischen Operationen"
 
 #: params.def:217
-#, fuzzy
 msgid "The size of stack frame to be considered large"
-msgstr "Die Größe eines als groß angesehenen Funktionskörpers"
+msgstr "Die Größe eines als groß angesehenen Stack-Rahmens"
 
 #: params.def:221
-#, fuzzy
 msgid "Maximal stack frame growth due to inlining (in percent)"
-msgstr "Maximales Wachstum durch »inline« einer großen Funktion (in Prozent)"
+msgstr "Maximales Stack-Rahmen-Wachstum durch »inline« (in Prozent)"
 
 #: params.def:228
 msgid "The maximum amount of memory to be allocated by GCSE"
@@ -2533,16 +2530,15 @@ msgstr "Auswahl des Anteils an der Anzahl der Wiederholungen des Basisblocks im 
 
 #: params.def:344
 msgid "Select fraction of the maximal frequency of executions of basic block in function given basic block needs to have to be considered hot"
-msgstr "Auswahl des Anteils an der Höchstfrequenz der Ausführungen des Basisblocks im Programm, vorausgesetzt, der Basisblock muss als »heiß« angesehen werden"
+msgstr "Auswahl des Anteils an der Höchstfrequenz der Ausführungen des Basisblocks in Funktion, vorausgesetzt, der Basisblock muss als »heiß« angesehen werden"
 
 #: params.def:349
-#, fuzzy
 msgid "Select fraction of the maximal frequency of executions of basic block in function given basic block get alignment"
-msgstr "Auswahl des Anteils an der Höchstfrequenz der Ausführungen des Basisblocks im Programm, vorausgesetzt, der Basisblock muss als »heiß« angesehen werden"
+msgstr "Auswahl des Anteils an der Höchstfrequenz der Ausführungen des Basisblocks in Funktion, vorausgesetzt, der Basisblock wird ausgerichtet"
 
 #: params.def:354
 msgid "Loops iterating at least selected number of iterations will get loop alignement."
-msgstr ""
+msgstr "Schleifen mit mindestens der angegebenen Durchlaufzahl erhalten Schleifenausrichtung."
 
 #: params.def:370
 msgid "The maximum number of loop iterations we predict statically"
@@ -2618,41 +2614,39 @@ msgstr "Schranke für Größe von Ausdrücken im skalaren Evolutions-Analysierer
 
 #: params.def:470
 msgid "Bound on the number of variables in Omega constraint systems"
-msgstr ""
+msgstr "Schranke für Anzahl der Variablen in Systemen mit Omega-Bedingungen"
 
 #: params.def:475
 msgid "Bound on the number of inequalities in Omega constraint systems"
-msgstr ""
+msgstr "Schranke für Anzahl der Ungleichungen in Systemen mit Omega-Bedingungen"
 
 #: params.def:480
 msgid "Bound on the number of equalities in Omega constraint systems"
-msgstr ""
+msgstr "Schranke für Anzahl der Gleichungen in Systemen mit Omega-Bedingungen"
 
 #: params.def:485
 msgid "Bound on the number of wild cards in Omega constraint systems"
-msgstr ""
+msgstr "Schranke für Anzahl der Wildcards in Systemen mit Omega-Bedingungen"
 
 #: params.def:490
 msgid "Bound on the size of the hash table in Omega constraint systems"
-msgstr ""
+msgstr "Schranke für Größe der Hashtabelle in Systemen mit Omega-Bedingungen"
 
 #: params.def:495
 msgid "Bound on the number of keys in Omega constraint systems"
-msgstr ""
+msgstr "Schranke für Anzahl der Schlüssel in Systemen mit Omega-Bedingungen"
 
 #: params.def:500
 msgid "When set to 1, use expensive methods to eliminate all redundant constraints"
-msgstr ""
+msgstr "Wenn auf 1 gesetzt, werden teure Methoden zum Beseitigen aller überflüssigen Nebenbedingungen verwendet"
 
 #: params.def:505
-#, fuzzy
 msgid "Bound on number of runtime checks inserted by the vectorizer's loop versioning for alignment check"
-msgstr "Schranke für Anzahl der Laufzeitprüfungen, die von Schleifenversionierung des Vektorisierers eingefügt werden"
+msgstr "Schranke für Anzahl der Laufzeitprüfungen, die von Schleifenversionierung des Vektorisierers für Ausrichtungsprüfung eingefügt werden"
 
 #: params.def:510
-#, fuzzy
 msgid "Bound on number of runtime checks inserted by the vectorizer's loop versioning for alias check"
-msgstr "Schranke für Anzahl der Laufzeitprüfungen, die von Schleifenversionierung des Vektorisierers eingefügt werden"
+msgstr "Schranke für Anzahl der Laufzeitprüfungen, die von Schleifenversionierung des Vektorisierers für Aliasprüfung eingefügt werden"
 
 #: params.def:515
 msgid "The maximum memory locations recorded by cselib"
@@ -2675,14 +2669,12 @@ msgid "The maximum number of instructions to search backward when looking for eq
 msgstr "Höchstzahl der rückwärts zu suchenden Anweisungen, wenn nach äquivalentem Neuladen gesucht wird"
 
 #: params.def:550
-#, fuzzy
 msgid "The maximum number of virtual operators that a function is allowed to have before triggering memory partitioning heuristics"
-msgstr "Höchstzahl der erlaubten virtuellen Operanden, um Aliase vor Auslösen des Alias-Grouping zu repräsentieren"
+msgstr "Höchstzahl der für eine Funktion erlaubten virtuellen Operatoren, bevor Speicherpartitionierungsheuristik ausgelöst wird"
 
 #: params.def:555
-#, fuzzy
 msgid "The average number of virtual operators that memory statements are allowed to have before triggering memory partitioning heuristics"
-msgstr "Höchstzahl der erlaubten virtuellen Operanden, um Aliase vor Auslösen des Alias-Grouping zu repräsentieren"
+msgstr "Höchstzahl der für Speicheranweisungen erlaubten virtuellen Operatoren, bevor Speicherpartitionierungsheuristik ausgelöst wird"
 
 #: params.def:560
 msgid "The maximum number of blocks in a region to be considered for interblock scheduling"
@@ -2908,7 +2900,7 @@ msgid "invalid operand for code '%c'"
 msgstr "ungültiger Operand für Code »%c«"
 
 #: config/arm/arm.c:12825
-#, fuzzy, c-format
+#, c-format
 msgid "instruction never executed"
 msgstr "Anweisung wird niemals ausgeführt"
 
@@ -3450,15 +3442,15 @@ msgid "invalid Z register replacement for insn"
 msgstr "ungültiger Z-Register-Ersatz für Befehl"
 
 #: config/mips/mips.c:6313 config/mips/mips.c:6334 config/mips/mips.c:6438
-#, fuzzy, c-format
+#, c-format
 msgid "'%%%c' is not a valid operand prefix"
-msgstr "»%s« ist kein gültiger Klassenname"
+msgstr "»%%%c« ist kein gültiger Operandenpräfix"
 
 #: config/mips/mips.c:6382 config/mips/mips.c:6389 config/mips/mips.c:6396
 #: config/mips/mips.c:6456
-#, fuzzy, c-format
+#, c-format
 msgid "invalid use of '%%%c'"
-msgstr "ungültige Verwendung von %qD"
+msgstr "ungültige Verwendung von »%%%c«"
 
 #: config/mips/mips.c:6701
 msgid "mips_debugger_offset called with non stack/frame/arg pointer"
@@ -3801,7 +3793,6 @@ msgid "Integer outside symmetric range implied by Standard Fortran at %L"
 msgstr "Ganzzahl außerhalb symmetrischem Bereich wegen Standard-Fortran bei %L"
 
 #: fortran/arith.c:1425
-#, fuzzy
 msgid "elemental binary operation"
 msgstr "Elementare Binäroperation"
 
@@ -3813,7 +3804,7 @@ msgstr "Arithmetik OK beim Konvertieren von %s in %s bei %L"
 #: fortran/arith.c:2001
 #, no-c-format
 msgid "Arithmetic overflow converting %s to %s at %L. This check can be disabled with the option -fno-range-check"
-msgstr ""
+msgstr "Arithmetischer Überlauf bei Umwandlung von %s in %s bei %L. Diese Überprüfung kann mit der Option -fno-range-check ausgeschaltet werden"
 
 #: fortran/arith.c:2006
 #, no-c-format
@@ -3926,9 +3917,9 @@ msgid "Syntax error in array constructor at %C"
 msgstr "Syntaxfehler in Feldkonstruktor bei %C"
 
 #: fortran/array.c:884
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: [...] style array constructors at %C"
-msgstr "Neu in Fortran 2003: Feldkonstruktoren im [...]-Stil bei %C"
+msgstr "Fortran 2003: Feldkonstruktoren im [...]-Stil bei %C"
 
 #: fortran/array.c:898
 #, no-c-format
@@ -4036,9 +4027,9 @@ msgid "'dim' argument of '%s' intrinsic at %L is not a valid dimension index"
 msgstr "Argument »dim« des intrinsischen »%s« bei %L ist kein gültiger Dimensionsindex"
 
 #: fortran/check.c:433
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Unequal character lengths (%ld and %ld) in %s intrinsic at %L"
-msgstr "Ungleiche Ränge %d und %d in Zeigerzuweisung bei %L"
+msgstr "Ungleiche Zeichenlängen (%ld und %ld) in intrinsischem %s bei %L"
 
 #: fortran/check.c:535 fortran/check.c:1938 fortran/check.c:1953
 #, no-c-format
@@ -4089,9 +4080,9 @@ msgstr "Argument »%s« des intrinsischen »%s« bei %L darf nicht vorhanden sei
 #: fortran/check.c:848 fortran/check.c:1205 fortran/check.c:1308
 #: fortran/check.c:1467 fortran/check.c:1484 fortran/check.c:2318
 #: fortran/check.c:2444 fortran/check.c:2779 fortran/check.c:2821
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: '%s' intrinsic with KIND argument at %L"
-msgstr "Fortran 2003: FLUSH-Anweisung bei %C"
+msgstr "Fortran 2003: intrinsisches »%s« mit KIND-Argument bei %L"
 
 #: fortran/check.c:964 fortran/check.c:1712 fortran/check.c:1720
 #, no-c-format
@@ -4099,14 +4090,14 @@ msgid "'%s' argument of '%s' intrinsic at %L must be numeric or LOGICAL"
 msgstr "Argument »%s« des intrinsischen »%s« bei %L muss numerisch oder LOGICAL sein"
 
 #: fortran/check.c:978
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Different shape for arguments '%s' and '%s' at %L for intrinsic 'dot_product'"
-msgstr "andere Form für Argumente »%s« und »%s« bei %L für intrinsisches »dot_product«"
+msgstr "Unterschiedliche Form für Argumente »%s« und »%s« bei %L für intrinsisches »dot_product«"
 
 #: fortran/check.c:997 fortran/check.c:1005
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' argument of '%s' intrinsic at %L must be default real"
-msgstr "Argument »%s« des intrinsischen »%s« bei %L muss eine Variable sein"
+msgstr "Argument »%s« des intrinsischen »%s« bei %L muss ein Standard-Real sein"
 
 #: fortran/check.c:1256
 #, no-c-format
@@ -4136,20 +4127,20 @@ msgstr "Argument »a%d« des intrinsischen »%s« bei %L muss %s(%d) sein"
 #: fortran/check.c:1655
 #, no-c-format
 msgid "Fortran 2003: '%s' intrinsic with CHARACTER argument at %L"
-msgstr ""
+msgstr "Fortran 2003: intrinsisches »%s« mit CHARACTER-Argument bei %L"
 
 #: fortran/check.c:1662
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'a1' argument of '%s' intrinsic at %L must be INTEGER, REAL or CHARACTER"
-msgstr "Argument »a1« des intrinsischen »%s« bei %L muss INTEGER oder REAL sein"
+msgstr "Argument »a1« des intrinsischen »%s« bei %L muss INTEGER, REAL oder CHARACTER sein"
 
 #: fortran/check.c:1734
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Different shape on dimension 1 for arguments '%s' and '%s' at %L for intrinsic matmul"
 msgstr "andere Form bei Dimension 1 für Argumente »%s« und »%s« bei %L für intrinsisches matmul"
 
 #: fortran/check.c:1753
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Different shape on dimension 2 for argument '%s' and dimension 1 for argument '%s' at %L for intrinsic matmul"
 msgstr "andere Form bei Dimension 2 für Argument »%s« und Dimension 1 für Argument »%s« bei %L für intrinsisches matmul"
 
@@ -4184,7 +4175,7 @@ msgid "'%s' argument of '%s' intrinsic at %L must be of an OPTIONAL dummy variab
 msgstr "Argument »%s« des intrinsischen »%s« bei %L muss eine OPTIONALe Scheinvariable sein"
 
 #: fortran/check.c:2114
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' argument of '%s' intrinsic at %L must not be a subobject of '%s'"
 msgstr "Argument »%s« des intrinsischen »%s« bei %L darf kein Unterobjekt von »%s« sein"
 
@@ -4219,9 +4210,9 @@ msgid "'%s' argument of '%s' intrinsic at %L must be less than rank %d"
 msgstr "Argument »%s« für intrinsisches »%s« bei %L muss geringer als Rang %d sein"
 
 #: fortran/check.c:2731
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'MOLD' argument of 'TRANSFER' intrinsic at %L must not be %s"
-msgstr "Argument »%s« des intrinsischen »%s« bei %L muss %s sein"
+msgstr "Argument »MOLD« des intrinsischen »TRANSFER« bei %L darf nicht %s sein"
 
 #: fortran/check.c:3050
 #, no-c-format
@@ -4234,9 +4225,9 @@ msgid "'%s' argument of '%s' intrinsic at %L must be INTEGER or PROCEDURE"
 msgstr "Argument »%s« für intrinsisches »%s« bei %L muss INTEGER oder PROCEDURE sein"
 
 #: fortran/check.c:3338
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' argument of '%s' intrinsic at %L must be of a kind not wider than the default kind (%d)"
-msgstr "Argument »%s« des intrinsischen »%s« bei %L muss vom Rang %d sein"
+msgstr "Argument »%s« des intrinsischen »%s« bei %L darf von der Art nicht breiter als der Stardard (%d) sein"
 
 #: fortran/check.c:3687 fortran/check.c:3695
 #, no-c-format
@@ -4244,12 +4235,12 @@ msgid "'%s' argument of '%s' intrinsic at %L must be INTEGER or LOGICAL"
 msgstr "Argument »%s« für intrinsisches »%s« bei %L muss INTEGER oder LOGICAL sein"
 
 #: fortran/data.c:64
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "non-constant array in DATA statement %L"
-msgstr "nichtkonstantes Feld in DATA-Anweisung %L."
+msgstr "nichtkonstantes Feld in DATA-Anweisung %L"
 
 #: fortran/data.c:193
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "failure to simplify substring reference in DATA statement at %L"
 msgstr "Fehlschlag bei Vereinfachung der Teil-Zeichenketten-Referenz in DATA-Anweisung bei %L"
 
@@ -4259,9 +4250,9 @@ msgid "initialization string truncated to match variable at %L"
 msgstr "Initialisierungszeichenkette abgeschnitten um an Variable bei %L anzupassen"
 
 #: fortran/data.c:293
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' at %L already is initialized at %L"
-msgstr "Prozedur »%s« bei %C wurde bereits bei %L definiert"
+msgstr "»%s« bei %L wurde bereits bei %L initialisiert"
 
 #: fortran/data.c:412
 #, no-c-format
@@ -4269,9 +4260,9 @@ msgid "Extension: re-initialization of '%s' at %L"
 msgstr "Erweiterung: Reinitialisierung von »%s« bei %L"
 
 #: fortran/decl.c:254
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Host associated variable '%s' may not be in the DATA statement at %C"
-msgstr "Mit Host verbundene Variable »%s« darf nicht in DATA-Anweisung bei %C stehen."
+msgstr "Mit Host verbundene Variable »%s« darf nicht in DATA-Anweisung bei %C stehen"
 
 #: fortran/decl.c:261
 #, no-c-format
@@ -4301,7 +4292,7 @@ msgstr "Falsche INTENT-Spezifikation bei %C"
 #: fortran/decl.c:600
 #, no-c-format
 msgid "Conflict in attributes of function argument at %C"
-msgstr ""
+msgstr "Konflikt in Attributen des Funktionsarguments bei %C"
 
 #: fortran/decl.c:647
 #, no-c-format
@@ -4314,9 +4305,9 @@ msgid "Procedure '%s' at %C is already defined at %L"
 msgstr "Prozedur »%s« bei %C wurde bereits bei %L definiert"
 
 #: fortran/decl.c:765
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Name '%s' at %C is already defined as a generic interface at %L"
-msgstr "Globaler Name »%s« bei %L wird bereits als ein %s bei %L verwendet"
+msgstr "Name »%s« bei %C ist bereits als eine allgemeine Schnittstelle bei %L definiert"
 
 #: fortran/decl.c:778
 #, no-c-format
@@ -4324,54 +4315,54 @@ msgid "Procedure '%s' at %C has an explicit interface and must not have attribut
 msgstr "Prozedur »%s« bei %C hat eine explizite Schnittstelle und darf bei %L keine Attribute deklariert haben"
 
 #: fortran/decl.c:850
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Procedure '%s' at %L must have the BIND(C) attribute to be C interoperable"
-msgstr "Variable »%s« abgeleiteten Typs bei %L muss SEQUENCE-Attribut haben, um EQUIVALENCE-Objekt zu sein"
+msgstr "Prozedur »%s« bei %L muss das BIND(C)-Attribut haben, um mit C interoperabel zu sein"
 
 #: fortran/decl.c:880
 #, no-c-format
 msgid "Type '%s' at %L is a parameter to the BIND(C)  procedure '%s' but is not C interoperable because derived type '%s' is not C interoperable"
-msgstr ""
+msgstr "Typ »%s« bei %L ist ein Parameter für die BIND(C)-Prozedur »%s«, jedoch nicht interoperabel mit C, da der abgeleitete Typ »%s« nicht mit C interoperabel ist"
 
 #: fortran/decl.c:887
 #, no-c-format
 msgid "Variable '%s' at %L is a parameter to the BIND(C) procedure '%s' but may not be C interoperable"
-msgstr ""
+msgstr "Variable »%s« bei %L ist ein Parameter für die BIND(C)-Prozedur »%s«, könnte jedoch inkompatibel mit C sein"
 
 #: fortran/decl.c:902
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Character argument '%s' at %L must be length 1 because procedure '%s' is BIND(C)"
-msgstr "Schlüsselwort-Argument »%s« bei %L ist nicht in der Prozedur"
+msgstr "Zeichenargument »%s« bei %L muss Länge 1 haben, da Prozedur »%s« BIND(C) ist"
 
 #: fortran/decl.c:916
 #, no-c-format
 msgid "Variable '%s' at %L cannot have the ALLOCATABLE attribute because procedure '%s' is BIND(C)"
-msgstr ""
+msgstr "Variable »%s« bei %L kann nicht Attribut ALLOCATABLE haben, da Prozedur »%s« BIND(C) ist"
 
 #: fortran/decl.c:925
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Variable '%s' at %L cannot have the POINTER attribute because procedure '%s' is BIND(C)"
-msgstr "Schleifenvariable bei %C kann kein POINTER-Attribut haben"
+msgstr "Variable »%s« bei %L kann kein POINTER-Attribut haben, da Prozedur »%s« BIND(C) ist"
 
 #: fortran/decl.c:934
 #, no-c-format
 msgid "Variable '%s' at %L cannot have the OPTIONAL attribute because procedure '%s' is BIND(C)"
-msgstr ""
+msgstr "Variable »%s« bei %L kann kein OPTIONAL-Attribut haben, da Prozedur »%s« BIND(C) ist"
 
 #: fortran/decl.c:947
 #, no-c-format
 msgid "Assumed-shape array '%s' at %L cannot be an argument to the procedure '%s' at %L because the procedure is BIND(C)"
-msgstr ""
+msgstr "Feld »%s« mit vermuteter Form bei %L kann kein Argument für Prozedur »%s« bei %L sein, da die Prozedur BIND(C) ist"
 
 #: fortran/decl.c:957
 #, no-c-format
 msgid "Deferred-shape array '%s' at %L cannot be an argument to the procedure '%s' at %L because the procedure is BIND(C)"
-msgstr ""
+msgstr "Feld »%s« mit zurückgestellter Form bei %L kann kein Argument für Prozedur »%s« bei %L sein, da die Prozedur BIND(C) ist"
 
 #: fortran/decl.c:1033
 #, no-c-format
 msgid "Variable '%s' in common block '%s' at %C must be declared with a C interoperable kind since common block '%s' is BIND(C)"
-msgstr ""
+msgstr "Variable »%s« in gemeinsamem Block »%s« bei %C muss mit einer mit C interoperablen Art deklariert sein, da der gemeinsame Block »%s« BIND(C) ist"
 
 #: fortran/decl.c:1069
 #, no-c-format
@@ -4439,9 +4430,9 @@ msgid "NULL() initialization at %C is ambiguous"
 msgstr "NULL()-Initialisierung bei %C ist mehrdeutig"
 
 #: fortran/decl.c:1556 fortran/decl.c:5197
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Duplicate array spec for Cray pointee at %C"
-msgstr "Doppelte Feldspezifikation für Cray-Zeigerende bei %C."
+msgstr "Doppelte Feldspezifikation für Cray-Zeigerende bei %C"
 
 #: fortran/decl.c:1616
 #, no-c-format
@@ -4504,7 +4495,7 @@ msgid "Nonstandard type declaration %s*%d at %C"
 msgstr "Nicht-Standard Typ-Deklaration %s*%d bei %C"
 
 #: fortran/decl.c:1838 fortran/decl.c:1897
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing right parenthesis at %C"
 msgstr "Fehlende rechte Klammer bei %C"
 
@@ -4524,9 +4515,9 @@ msgid "Kind %d not supported for type %s at %C"
 msgstr "Die Art %d wird für Typ %s bei %C nicht unterstützt"
 
 #: fortran/decl.c:1957
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Kind %d is not supported for CHARACTER at %C"
-msgstr "Die Art %d wird für Typ %s bei %C nicht unterstützt"
+msgstr "Die Art %d wird für CHARACTER bei %C nicht unterstützt"
 
 #: fortran/decl.c:2086
 #, no-c-format
@@ -4570,34 +4561,34 @@ msgid "Empty IMPLICIT statement at %C"
 msgstr "Leere IMPLICIT-Anweisung bei %C"
 
 #: fortran/decl.c:2524
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "IMPORT statement at %C only permitted in an INTERFACE body"
-msgstr "ENTRY-Anweisung bei %C kann nicht innerhalb von INTERFACE auftreten"
+msgstr "IMPORT-Anweisung bei %C ist nur in einem INTERFACE-Körper erlaubt"
 
 #: fortran/decl.c:2529
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: IMPORT statement at %C"
-msgstr "Fortran 2003: FLUSH-Anweisung bei %C"
+msgstr "Fortran 2003: IMPORT-Anweisung bei %C"
 
 #: fortran/decl.c:2544
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expecting list of named entities at %C"
-msgstr "%s-Anweisung bei %C erwartet"
+msgstr "Liste benannter Einträge bei %C erwartet"
 
 #: fortran/decl.c:2572
 #, no-c-format
 msgid "Cannot IMPORT '%s' from host scoping unit at %C - does not exist."
-msgstr ""
+msgstr "IMPORT »%s« aus Host-Sichtbarkeitseinheit bei %C nicht möglich - existiert nicht."
 
 #: fortran/decl.c:2579
 #, no-c-format
 msgid "'%s' is already IMPORTed from host scoping unit at %C."
-msgstr ""
+msgstr "»%s« bereits aus Host-Sichtbarkeitseinheit bei %C IMPORTiert."
 
 #: fortran/decl.c:2608
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Syntax error in IMPORT statement at %C"
-msgstr "Syntaxfehler in Anweisung %s bei %C"
+msgstr "Syntaxfehler in IMPORT-Anweisung bei %C"
 
 #: fortran/decl.c:2850
 #, no-c-format
@@ -4610,9 +4601,9 @@ msgid "Duplicate %s attribute at %L"
 msgstr "Doppeltes Attribut %s bei %L"
 
 #: fortran/decl.c:2943
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: ALLOCATABLE attribute at %C in a TYPE definition"
-msgstr "Nach dem gewählten Standard ist das Attribut ALLOCATABLE bei %C nicht in TYPE-Definition erlaubt"
+msgstr "Fortran 2003: Attribut ALLOCATABLE bei %C in einer TYPE-Definition"
 
 #: fortran/decl.c:2953
 #, no-c-format
@@ -4620,114 +4611,114 @@ msgid "Attribute at %L is not allowed in a TYPE definition"
 msgstr "Attribut bei %L ist in TYPE-Definition nicht erlaubt"
 
 #: fortran/decl.c:2971
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: Attribute %s at %L in a TYPE definition"
-msgstr "Attribut bei %L ist in TYPE-Definition nicht erlaubt"
+msgstr "Fortran 2003: Attribut %s bei %L in einer TYPE-Definition"
 
 #: fortran/decl.c:2982
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "%s attribute at %L is not allowed outside of the specification part of a module"
-msgstr "Attribut %s bei %L ist außerhalb eines MODULEs nicht erlaubt"
+msgstr "Attribut %s bei %L ist außerhalb des Spezifikationsabschnitts eines Moduls nicht erlaubt"
 
 #: fortran/decl.c:3034 fortran/decl.c:5437
 #, no-c-format
 msgid "PROTECTED at %C only allowed in specification part of a module"
-msgstr ""
+msgstr "PROTECTED bei %C nur in Spezifikationsabschnitts eines Moduls erlaubt"
 
 #: fortran/decl.c:3040
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: PROTECTED attribute at %C"
-msgstr "Fortran 2003: FLUSH-Anweisung bei %C"
+msgstr "Fortran 2003: PROTECTED-Attribut bei %C"
 
 #: fortran/decl.c:3071
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: VALUE attribute at %C"
-msgstr "Fortran 2003: FLUSH-Anweisung bei %C"
+msgstr "Fortran 2003: VALUE-Attribut bei %C"
 
 #: fortran/decl.c:3081
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: VOLATILE attribute at %C"
-msgstr "Fortran 2003: FLUSH-Anweisung bei %C"
+msgstr "Fortran 2003: VOLATILE-Attribut bei %C"
 
 #: fortran/decl.c:3121
 #, no-c-format
 msgid "Multiple identifiers provided with single NAME= specifier at %C"
-msgstr ""
+msgstr "Mehrere Bezeichner mit einzelner Spezifikation NAME= bei %C angegeben"
 
 #. Print an error, but continue parsing line.
 #: fortran/decl.c:3171
 #, no-c-format
 msgid "C kind parameter is for type %s but symbol '%s' at %L is of type %s"
-msgstr ""
+msgstr "Parameter nach C-Art ist für Typ %s, aber Symbol »%s« bei %L ist vom Typ %s"
 
 #: fortran/decl.c:3235
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Implicitly declared BIND(C) function '%s' at %L may not be C interoperable"
 msgstr "Spezifikationsfunktion »%s« bei %L kann keine interne Funktion sein"
 
 #: fortran/decl.c:3257
 #, no-c-format
 msgid "Variable '%s' in common block '%s' at %L may not be a C interoperable kind though common block '%s' is BIND(C)"
-msgstr ""
+msgstr "Variable »%s« in gemeinsamem Block »%s« bei %L könnte inkompatibel mit C sein, obwohl gemeinsamer Block »%s« BIND(C) ist"
 
 #: fortran/decl.c:3266
 #, no-c-format
 msgid "Type declaration '%s' at %L is not C interoperable but it is BIND(C)"
-msgstr ""
+msgstr "Typdeklaration »%s« bei %L ist nicht C-kompatibel, aber sie ist BIND(C)"
 
 #: fortran/decl.c:3270
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Variable '%s' at %L may not be a C interoperable kind but it is bind(c)"
-msgstr "Variable »%s« bei %L wurde keine Formatmarke zugewiesen"
+msgstr "Variable »%s« bei %L könnte mit C inkompatibel sein, aber sie ist BIND(C)"
 
 #: fortran/decl.c:3282
 #, no-c-format
 msgid "Variable '%s' in common block '%s' at %L cannot be declared with BIND(C) since it is not a global"
-msgstr ""
+msgstr "Variable »%s« in gemeinsamem Block »%s« bei %L kann nicht mit BIND(C) deklariert werden da sie nicht global ist"
 
 #: fortran/decl.c:3296
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Variable '%s' at %L cannot have both the POINTER and BIND(C) attributes"
-msgstr "Schleifenvariable bei %C kann kein POINTER-Attribut haben"
+msgstr "Variable »%s« bei %L kann nicht gleichzeitig die Attribute POINTER und BIND(C) haben"
 
 #: fortran/decl.c:3304
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Variable '%s' at %L cannot have both the ALLOCATABLE and BIND(C) attributes"
-msgstr "Schleifenvariable bei %C kann kein POINTER-Attribut haben"
+msgstr "Variable »%s« bei %L kann nicht gleichzeitig die Attribute ALLOCATABLE und BIND(C) haben"
 
 #: fortran/decl.c:3314
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Return type of BIND(C) function '%s' at %L cannot be an array"
-msgstr "CHARACTER(*)-Funktion »%s« bei %L kann nicht Feld-wertig sein"
+msgstr "Rückgabetyp der BIND(C)-Funktion »%s« bei %L kann kein Feld sein"
 
 #: fortran/decl.c:3322
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Return type of BIND(C) function '%s' at %L cannot be a character string"
-msgstr "Spezifikationsfunktion »%s« bei %L kann keine Anweisungsfunktion sein"
+msgstr "Rückgabetyp der BIND(C)-Funktion »%s« bei %L kann keine Zeichenkette sein"
 
 #. Use gfc_warning_now because we won't say that the symbol fails
 #. just because of this.
 #: fortran/decl.c:3334
 #, no-c-format
 msgid "Symbol '%s' at %L is marked PRIVATE but has been given the binding label '%s'"
-msgstr ""
+msgstr "Symbol »%s« bei %L ist als PRIVATE markiert, aber wurde mit Bindung »%s« markiert"
 
 #: fortran/decl.c:3409
 #, no-c-format
 msgid "Need either entity or common block name for attribute specification statement at %C"
-msgstr ""
+msgstr "Entweder Eintrag oder gemeinsamer Blockname für Attribut-Spezifikationsanweisung bei %C erforderlich"
 
 #: fortran/decl.c:3456
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing entity or common block name for attribute specification statement at %C"
-msgstr "Fehlende allgemeine Spezifikation in USE-Anweisung bei %C"
+msgstr "Eintrag oder gemeinsamer Blockname für Attribut-Spezifikationsanweisung bei %C fehlt"
 
 #. Now we have an error, which we signal, and then fix up
 #. because the knock-on is plain and simple confusing.
 #: fortran/decl.c:3563
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Derived type at %C has not been previously defined and so cannot appear in a derived type definition"
-msgstr "Abgeleiteter Typ bei %C wurde vorher nicht definiert und kann daher nicht in einer abgeleiteten Typdefinition auftreten."
+msgstr "Abgeleiteter Typ bei %C wurde vorher nicht definiert und kann daher nicht in einer abgeleiteten Typdefinition auftreten"
 
 #: fortran/decl.c:3595
 #, no-c-format
@@ -4760,59 +4751,59 @@ msgid "Unexpected junk after function declaration at %C"
 msgstr "Unerwartete Angaben hinter Funktionsdeklaration bei %C"
 
 #: fortran/decl.c:3951
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Interface '%s' at %C may not be generic"
-msgstr "Iteratorschritt bei %L kann nicht Null sein"
+msgstr "Schnittstelle »%s« bei %C kann nicht allgemein sein"
 
 #: fortran/decl.c:3956
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Interface '%s' at %C may not be a statement function"
-msgstr "Spezifikationsfunktion »%s« bei %L kann keine Anweisungsfunktion sein"
+msgstr "Schnittstelle »%s« bei %C kann keine Anweisungsfunktion sein"
 
 #: fortran/decl.c:3967
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Intrinsic procedure '%s' not allowed in PROCEDURE statement at %C"
-msgstr "Interne Prozedur »%s« ist nicht als effektives Argument bei %L erlaubt"
+msgstr "Intrinsische Prozedur »%s« ist in PROCEDURE-Anweisung bei %C nicht erlaubt"
 
 #: fortran/decl.c:3975
 #, no-c-format
 msgid "Fortran 2003: Support for intrinsic procedure '%s' in PROCEDURE statement at %C not yet implemented in gfortran"
-msgstr ""
+msgstr "Fortran 2003: Unterstützung für intrinsische Prozedur »%s« in PROCEDURE-Anweisung bei %C in gfortran noch nicht implementiert"
 
 #: fortran/decl.c:4014
 #, no-c-format
 msgid "BIND(C) attribute at %C requires an interface with BIND(C)"
-msgstr ""
+msgstr "BIND(C)-Attribut bei %C erfordert eine Schnittstelle mit BIND(C)"
 
 #: fortran/decl.c:4021
 #, no-c-format
 msgid "BIND(C) procedure with NAME may not have POINTER attribute at %C"
-msgstr ""
+msgstr "BIND(C)-Prozedur mit NAME darf kein POINTER-Attribut bei %C haben"
 
 #: fortran/decl.c:4027
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Dummy procedure at %C may not have BIND(C) attribute with NAME"
-msgstr "Scheinprozedur »%s« bei %C kann keine allgemeine Schnittstelle haben"
+msgstr "Scheinprozedur bei %C kann kein BIND(C)-Attribut mit NAME haben"
 
 #: fortran/decl.c:4060 fortran/decl.c:4103
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Syntax error in PROCEDURE statement at %C"
-msgstr "Syntaxfehler in SAVE-Anweisung bei %C"
+msgstr "Syntaxfehler in PROCEDURE-Anweisung bei %C"
 
 #: fortran/decl.c:4077
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "PROCEDURE at %C must be in a generic interface"
-msgstr "MODULE PROCEDURE bei %C muss in einer generischen Modulschnittstelle sein"
+msgstr "PROCEDURE bei %C muss in einer allgemeinen Schnittstelle sein"
 
 #: fortran/decl.c:4128
 #, no-c-format
 msgid "Fortran 2003: Procedure components at %C are not yet implemented in gfortran"
-msgstr ""
+msgstr "Fortran 2003: Prozedurkomponenten bei %C sind in gfortran noch nicht implementiert"
 
 #: fortran/decl.c:4138
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: PROCEDURE statement at %C"
-msgstr "Fortran 2003: FLUSH-Anweisung bei %C"
+msgstr "Fortran 2003: PROCEDURE-Anweisung bei %C"
 
 #: fortran/decl.c:4186
 #, no-c-format
@@ -4823,7 +4814,7 @@ msgstr "Formale Argumentliste in Funktionsdefinition bei %C erwartet"
 #: fortran/decl.c:4540 fortran/symbol.c:1402
 #, no-c-format
 msgid "BIND(C) attribute at %L can only be used for variables or common blocks"
-msgstr ""
+msgstr "BIND(C)-Attribut bei %L kann nur für Variablen oder gemeinsame Blöcke verwendet werden"
 
 #: fortran/decl.c:4246
 #, no-c-format
@@ -4896,29 +4887,29 @@ msgid "Missing required parentheses before BIND(C) at %C"
 msgstr ""
 
 #: fortran/decl.c:4618 fortran/decl.c:4634
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Syntax error in NAME= specifier for binding label at %C"
-msgstr "Syntaxfehler in CASE-Spezifikation bei %C"
+msgstr "Syntaxfehler in NAME=-Spezifikation für Bindungsmarke bei %C"
 
 #: fortran/decl.c:4649
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing closing quote '\"' for binding label at %C"
-msgstr "Fehlende Format-Marke bei %C"
+msgstr "Schließendes Anführungszeichen »\"« für Bindungsmarke bei %C fehlt"
 
 #: fortran/decl.c:4658
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing closing quote ''' for binding label at %C"
-msgstr "Fehlende Format-Marke bei %C"
+msgstr "Schließendes Anführungszeichen »'« für Bindungsmarke bei %C fehlt"
 
 #: fortran/decl.c:4668
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing closing paren for binding label at %C"
-msgstr "Fehlende Format-Marke bei %C"
+msgstr "Schließende Klammer für Bindungsmarke bei %C fehlt"
 
 #: fortran/decl.c:4703
 #, no-c-format
 msgid "NAME not allowed on BIND(C) for ABSTRACT INTERFACE at %C"
-msgstr ""
+msgstr "NAME nicht erlaubt bei BIND(C) für ABSTRACT INTERFACE bei %C"
 
 #: fortran/decl.c:4876
 #, no-c-format
@@ -4977,14 +4968,14 @@ msgid "Expected variable name at %C"
 msgstr "Variablennamen bei %C erwartet"
 
 #: fortran/decl.c:5144
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Cray pointer at %C must be an integer"
-msgstr "Cray-Zeiger bei %C muss eine Ganzzahl sein."
+msgstr "Cray-Zeiger bei %C muss eine Ganzzahl sein"
 
 #: fortran/decl.c:5148
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Cray pointer at %C has %d bytes of precision; memory addresses require %d bytes"
-msgstr "Cray-Zeiger bei %C hat %d Bytes Genauigkeit; Speicheradressen benötigen %d Bytes."
+msgstr "Cray-Zeiger bei %C hat %d Bytes Genauigkeit; Speicheradressen benötigen %d Bytes"
 
 #: fortran/decl.c:5154
 #, no-c-format
@@ -5002,9 +4993,9 @@ msgid "Expected \",\" or end of statement at %C"
 msgstr "»,« oder Ende der Anweisung bei %C erwartet"
 
 #: fortran/decl.c:5293
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Cray pointer declaration at %C requires -fcray-pointer flag"
-msgstr "Cray-Zeiger-Deklaration bei %C benötigt den Schalter -fcray-pointer."
+msgstr "Cray-Zeiger-Deklaration bei %C benötigt den Schalter -fcray-pointer"
 
 #: fortran/decl.c:5388
 #, no-c-format
@@ -5017,24 +5008,24 @@ msgid "Access specification of the .%s. operator at %C has already been specifie
 msgstr "Zugriffsspezifikation des Operators .%s. bei %C wurde bereits spezifiziert"
 
 #: fortran/decl.c:5443
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: PROTECTED statement at %C"
-msgstr "Fortran 2003: FLUSH-Anweisung bei %C"
+msgstr "Fortran 2003: PROTECTED-Anweisung bei %C"
 
 #: fortran/decl.c:5483
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Syntax error in PROTECTED statement at %C"
-msgstr "Syntaxfehler in SAVE-Anweisung bei %C"
+msgstr "Syntaxfehler in PROTECTED-Anweisung bei %C"
 
 #: fortran/decl.c:5504
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "PRIVATE statement at %C is only allowed in the specification part of a module"
-msgstr "DATA-Anweisung bei %C ist in PURE-Prozedur nicht erlaubt"
+msgstr "PRIVATE-Anweisung bei %C ist nur in Spezifikationsteil eines Moduls erlaubt"
 
 #: fortran/decl.c:5541
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "PUBLIC statement at %C is only allowed in the specification part of a module"
-msgstr "DATA-Anweisung bei %C ist in PURE-Prozedur nicht erlaubt"
+msgstr "PUBLIC-Anweisung bei %C ist nur in Spezifikationsteil eines Moduls erlaubt"
 
 #: fortran/decl.c:5568
 #, no-c-format
@@ -5072,24 +5063,24 @@ msgid "Syntax error in SAVE statement at %C"
 msgstr "Syntaxfehler in SAVE-Anweisung bei %C"
 
 #: fortran/decl.c:5733
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: VALUE statement at %C"
-msgstr "Fortran 2003: FLUSH-Anweisung bei %C"
+msgstr "Fortran 2003: VALUE-Anweisung bei %C"
 
 #: fortran/decl.c:5773
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Syntax error in VALUE statement at %C"
-msgstr "Syntaxfehler in SAVE-Anweisung bei %C"
+msgstr "Syntaxfehler in VALUE-Anweisung bei %C"
 
 #: fortran/decl.c:5784
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: VOLATILE statement at %C"
-msgstr "Fortran 2003: FLUSH-Anweisung bei %C"
+msgstr "Fortran 2003: VOLATILE-Anweisung bei %C"
 
 #: fortran/decl.c:5826
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Syntax error in VOLATILE statement at %C"
-msgstr "Syntaxfehler in SAVE-Anweisung bei %C"
+msgstr "Syntaxfehler in VOLATILE-Anweisung bei %C"
 
 #: fortran/decl.c:5848
 #, no-c-format
@@ -5097,14 +5088,14 @@ msgid "MODULE PROCEDURE at %C must be in a generic module interface"
 msgstr "MODULE PROCEDURE bei %C muss in einer generischen Modulschnittstelle sein"
 
 #: fortran/decl.c:5910
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Derived type at %C can only be PRIVATE in the specification part of a module"
-msgstr "Abgeleiteter Typ bei %C kann nur PRIVATE innerhalb eines MODULEs sein"
+msgstr "Abgeleiteter Typ bei %C kann nur PRIVATE im Spezifikationsteil eines Moduls sein"
 
 #: fortran/decl.c:5922
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Derived type at %C can only be PUBLIC in the specification part of a module"
-msgstr "Abgeleiteter Typ bei %C kann nur PUBLIC innerhalb eines MODULEs sein"
+msgstr "Abgeleiteter Typ bei %C kann nur PUBLIC im Spezifikationsteil eines Moduls sein"
 
 #: fortran/decl.c:5979
 #, no-c-format
@@ -5132,9 +5123,9 @@ msgid "Cray Pointee at %C cannot be assumed shape array"
 msgstr "Cray-Zeigerende bei %C kann nicht Feld mit impliziter Form sein"
 
 #: fortran/decl.c:6074
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: ENUM and ENUMERATOR at %C"
-msgstr "Neu in Fortran 2003: ENUM AND ENUMERATOR bei %C"
+msgstr "Fortran 2003: ENUM AND ENUMERATOR bei %C"
 
 #: fortran/decl.c:6146
 #, no-c-format
@@ -5384,9 +5375,9 @@ msgid "= "
 msgstr "= "
 
 #: fortran/dump-parse-tree.c:480
-#, fuzzy, c-format
+#, c-format
 msgid "/= "
-msgstr "/ "
+msgstr "/= "
 
 #: fortran/dump-parse-tree.c:484
 #, c-format
@@ -5429,9 +5420,9 @@ msgid "%s[["
 msgstr "%s[["
 
 #: fortran/dump-parse-tree.c:551
-#, fuzzy, c-format
+#, c-format
 msgid "(%s %s %s %s %s"
-msgstr "(%s %s %s %s"
+msgstr "(%s %s %s %s %s"
 
 #: fortran/dump-parse-tree.c:558
 #, c-format
@@ -5464,19 +5455,19 @@ msgid " POINTER"
 msgstr " ZEIGER"
 
 #: fortran/dump-parse-tree.c:570
-#, fuzzy, c-format
+#, c-format
 msgid " PROTECTED"
-msgstr " FORMATIERT"
+msgstr " GESCHÜTZT"
 
 #: fortran/dump-parse-tree.c:572
 #, c-format
 msgid " VALUE"
-msgstr ""
+msgstr " WERT"
 
 #: fortran/dump-parse-tree.c:574
 #, c-format
 msgid " VOLATILE"
-msgstr ""
+msgstr " FLÜCHTIG"
 
 #: fortran/dump-parse-tree.c:576
 #, c-format
@@ -5526,7 +5517,7 @@ msgstr " IN-COMMON"
 #: fortran/dump-parse-tree.c:596
 #, c-format
 msgid " ABSTRACT INTERFACE"
-msgstr ""
+msgstr " ABSTRAKTE SCHNITTSTELLE"
 
 #: fortran/dump-parse-tree.c:598
 #, c-format
@@ -6237,9 +6228,9 @@ msgid "Numeric or CHARACTER operands are required in expression at %L"
 msgstr "Numerische oder CHARACTER-Operanden benötigt in Ausdruck bei %L"
 
 #: fortran/expr.c:1853
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: Noninteger exponent in an initialization expression at %L"
-msgstr "Initialisierungsausdruck bei %C erwartet"
+msgstr "Fortran 2003: Nichtganzzahliger Exponent in einem Initialisierungsausdruck bei %L"
 
 #: fortran/expr.c:1868
 #, no-c-format
@@ -6272,14 +6263,14 @@ msgid "Numeric operands are required in expression at %L"
 msgstr "In Ausdruck bei %L werden numerische Operanden benötigt"
 
 #: fortran/expr.c:1985
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Inquiry function '%s' at %L is not permitted in an initialization expression"
-msgstr "Variable »%s« bei %L kann nicht in einem Initialisierungs-Ausdruck auftreten"
+msgstr "Abfragefunktion »%s« bei %L ist nicht in einem Initialisierungs-Ausdruck erlaubt"
 
 #: fortran/expr.c:2015
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Assumed character length variable '%s' in constant expression at %L"
-msgstr "Variable »%s« mit vermuteter Zeichenlänge im konstanten Ausdruck bei %L."
+msgstr "Variable »%s« mit vermuteter Zeichenlänge in konstantem Ausdruck bei %L"
 
 #: fortran/expr.c:2061 fortran/expr.c:2067
 #, no-c-format
@@ -6292,29 +6283,29 @@ msgid "Extension: Evaluation of nonstandard initialization expression at %L"
 msgstr "Erweiterung: Auswertung des nicht standardisierten Initialisierungsausdrucks bei %L"
 
 #: fortran/expr.c:2151
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Function '%s' in initialization expression at %L must be an intrinsic or a specification function"
-msgstr "Funktion »%s« in Initialisierungs-Ausdruck bei %L muss eine intrinsische Funktion sein"
+msgstr "Funktion »%s« in Initialisierungs-Ausdruck bei %L muss eine intrinsische oder Spezifikations-Funktion sein"
 
 #: fortran/expr.c:2163
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Intrinsic function '%s' at %L is not permitted in an initialization expression"
-msgstr "Variable »%s« bei %L kann nicht in einem Initialisierungs-Ausdruck auftreten"
+msgstr "Intrinsische Funktion »%s« bei %L ist nicht in einem Initialisierungs-Ausdruck erlaubt"
 
 #: fortran/expr.c:2207
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Assumed size array '%s' at %L is not permitted in an initialization expression"
-msgstr "Variable »%s« bei %L kann nicht in einem Initialisierungs-Ausdruck auftreten"
+msgstr "Feld »%s« mit vermuteter Größe bei %L ist nicht in einem Initialisierungs-Ausdruck erlaubt"
 
 #: fortran/expr.c:2213
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Assumed shape array '%s' at %L is not permitted in an initialization expression"
-msgstr "Variable »%s« bei %L kann nicht in einem Initialisierungs-Ausdruck auftreten"
+msgstr "Feld »%s« mit vermuteter Form bei %L ist nicht in einem Initialisierungs-Ausdruck erlaubt"
 
 #: fortran/expr.c:2219
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Deferred array '%s' at %L is not permitted in an initialization expression"
-msgstr "Variable »%s« bei %L kann nicht in einem Initialisierungs-Ausdruck auftreten"
+msgstr "Aufgeschobenes Feld »%s bei %L ist nicht in einem Initialisierungs-Ausdruck erlaubt«"
 
 #: fortran/expr.c:2229
 #, no-c-format
@@ -6347,9 +6338,9 @@ msgid "Specification function '%s' at %L cannot be RECURSIVE"
 msgstr "Spezifikationsfunktion »%s« bei %L kann nicht RECURSIVE sein"
 
 #: fortran/expr.c:2443
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Dummy argument '%s' not allowed in expression at %L"
-msgstr "Variable »%s« kann nicht im Ausdruck bei %L auftreten"
+msgstr "Scheinargument »%s« ist im Ausdruck bei %L nicht erlaubt"
 
 #: fortran/expr.c:2450
 #, no-c-format
@@ -6372,9 +6363,9 @@ msgid "Expression at %L must be of INTEGER type"
 msgstr "Ausdruck bei %L muss INTEGER-Typ haben"
 
 #: fortran/expr.c:2537
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Function '%s' at %L must be PURE"
-msgstr "Spezifikationsfunktion »%s« bei %L muss PURE sein"
+msgstr "Funktion »%s« bei %L muss PURE sein"
 
 #: fortran/expr.c:2546
 #, no-c-format
@@ -6382,17 +6373,17 @@ msgid "Expression at %L must be scalar"
 msgstr "Ausdruck bei %L muss skalar sein"
 
 #: fortran/expr.c:2573
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Incompatible ranks in %s (%d and %d) at %L"
-msgstr "Unverträgliche Ränge in %s bei %L"
+msgstr "Unverträgliche Ränge in %s (%d und %d) bei %L"
 
 #: fortran/expr.c:2587
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Different shape for %s at %L on dimension %d (%d and %d)"
-msgstr "andere Form für %s bei %L für Dimension %d (%d/%d)"
+msgstr "andere Form für %s bei %L für Dimension %d (%d und %d)"
 
 #: fortran/expr.c:2633 fortran/expr.c:2800
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Cannot assign to INTENT(IN) variable '%s' at %L"
 msgstr "Zu INTENT(IN)-Variable »%s« bei %L kann nicht zugewiesen werden"
 
@@ -6417,9 +6408,9 @@ msgid "NULL appears on right-hand side in assignment at %L"
 msgstr "Auf rechter Seite in Zuweisung bei %L tritt NULL auf"
 
 #: fortran/expr.c:2713
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Vector assignment to assumed-size Cray Pointee at %L is illegal"
-msgstr "Vektorzuweisung an Cray-Zeigerende mit angenommener Größe bei %L ist illegal."
+msgstr "Vektorzuweisung an Cray-Zeigerende mit angenommener Größe bei %L ist illegal"
 
 #: fortran/expr.c:2722
 #, no-c-format
@@ -6427,7 +6418,6 @@ msgid "POINTER valued function appears on right-hand side of assignment at %L"
 msgstr "POINTER-wertige Funktion tritt auf rechter Seite der Zuweisung bei %L auf"
 
 #: fortran/expr.c:2727
-#, fuzzy
 msgid "array assignment"
 msgstr "Feld-Zuweisung"
 
@@ -6492,9 +6482,9 @@ msgid "Pointer assignment with vector subscript on rhs at %L"
 msgstr "Zeigerzuweisung mit Vektorindex für rhs bei %L"
 
 #: fortran/expr.c:2888
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Pointer assigment target has PROTECTED attribute at %L"
-msgstr "Zeiger-Zuweisungziel ist kein POINTER bei %L"
+msgstr "Zeiger-Zuweisungziel hat PROTECTED-Attribut bei %L"
 
 #: fortran/gfortranspec.c:248
 #, c-format
@@ -6546,14 +6536,14 @@ msgid "Dummy procedure '%s' at %C cannot have a generic interface"
 msgstr "Scheinprozedur »%s« bei %C kann keine allgemeine Schnittstelle haben"
 
 #: fortran/interface.c:252
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: ABSTRACT INTERFACE at %C"
-msgstr "Fortran 2003: IOMSG-Markierung bei %L"
+msgstr "Fortran 2003: ABSTRACT INTERFACE bei %C"
 
 #: fortran/interface.c:260
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Syntax error in ABSTRACT INTERFACE statement at %C"
-msgstr "Syntaxfehler in SAVE-Anweisung bei %C"
+msgstr "Syntaxfehler in ABSTRACT INTERFACE-Anweisung bei %C"
 
 #: fortran/interface.c:291
 #, no-c-format
@@ -6641,9 +6631,9 @@ msgid "Operator interface at %L conflicts with intrinsic interface"
 msgstr "Operatorschnittstelle bei %L steht mit intrinsischer Schnittstelle in Konflikt"
 
 #: fortran/interface.c:1044
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Procedure '%s' in %s at %L has no explicit interface"
-msgstr "Symbol »%s« bei %L hat bereits eine explizite Schnittstelle"
+msgstr "Prozedur »%s« in %s bei %L hat keine explizite Schnittstelle"
 
 #: fortran/interface.c:1047
 #, no-c-format
@@ -6656,9 +6646,9 @@ msgid "Ambiguous interfaces '%s' and '%s' in %s at %L"
 msgstr "Mehrdeutige Schnittstellen »%s« und »%s« in %s bei %L"
 
 #: fortran/interface.c:1144
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' at %L is not a module procedure"
-msgstr "Name »%s« bei %C ist der Name der Prozedur"
+msgstr "»%s« bei %L ist keine Modulprozedur"
 
 #: fortran/interface.c:1676
 #, no-c-format
@@ -6686,9 +6676,9 @@ msgid "Unexpected alternate return spec in subroutine call at %L"
 msgstr "Unerwartete alternative Rückgabespezifikation in Unterprogrammaufruf bei %L"
 
 #: fortran/interface.c:1729
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: Scalar CHARACTER actual argument with array dummy argument '%s' at %L"
-msgstr "Fehlendes effektives Argument für Argument »%s« bei %L"
+msgstr "Fortran 2003: Skalares effektives CHARACTER-Argument mit Feld-Scheinargument »%s« bei %L"
 
 #: fortran/interface.c:1742
 #, no-c-format
@@ -6698,17 +6688,17 @@ msgstr "Unpassender Typ/Rang in Argument »%s« bei %L"
 #: fortran/interface.c:1758
 #, no-c-format
 msgid "Character length mismatch between actual argument and pointer or allocatable dummy argument '%s' at %L"
-msgstr ""
+msgstr "Zeichenlänge passt nicht zwischen effektivem Argument und Zeiger oder reservierbarem Scheinargument »%s« bei %L"
 
 #: fortran/interface.c:1771
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Character length of actual argument shorter than of dummy argument '%s' (%lu/%lu) at %L"
-msgstr "Fehlendes effektives Argument für Argument »%s« bei %L"
+msgstr "Zeichenlänge des effektiven Arguments kürzer als das des Scheinarguments »%s« (%lu/%lu) bei %L"
 
 #: fortran/interface.c:1776
 #, no-c-format
 msgid "Actual argument contains too few elements for dummy argument '%s' (%lu/%lu) at %L"
-msgstr ""
+msgstr "Effektives Argument enthält zu viele Elemente für Scheinargument »%s« (%lu/%lu) bei %L"
 
 #: fortran/interface.c:1790
 #, no-c-format
@@ -6741,9 +6731,9 @@ msgid "Actual argument at %L must be definable to match dummy INTENT = OUT/INOUT
 msgstr "Das effektive Argument bei %L muss definierbar sein, zu (Schein) INTENT = OUT/INOUT zu passen"
 
 #: fortran/interface.c:1851
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Actual argument at %L is use-associated with PROTECTED attribute and dummy argument '%s' is INTENT = OUT/INOUT"
-msgstr "Das effektive Argument bei %L muss definierbar sein, zu (Schein) INTENT = OUT/INOUT zu passen"
+msgstr "Das effektive Argument bei %L ist benutzungs-verbunden mit PROTECTED-Attribut und Scheinargument »%s« ist INTENT = OUT/INOUT"
 
 #: fortran/interface.c:1864
 #, no-c-format
