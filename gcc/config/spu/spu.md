@@ -2534,34 +2534,72 @@
   ""
   "fcmeq\t%0,%1,%2")
 
-;; These implementations of ceq_df and cgt_df do not correctly handle
-;; NAN or INF.  We will also get incorrect results when the result
-;; of the double subtract is too small.
+;; These implementations will ignore checking of NaN or INF if
+;; compiled with option -ffinite-math-only.
 (define_expand "ceq_df"
   [(set (match_operand:SI 0 "spu_reg_operand" "=r")
         (eq:SI (match_operand:DF 1 "spu_reg_operand" "r")
                (match_operand:DF 2 "const_zero_operand" "i")))]
   ""
 {
-  if (flag_unsafe_math_optimizations && spu_arch == PROCESSOR_CELL)
-    {
-      rtx s0_ti = gen_reg_rtx(TImode);
-      rtx s1_v4 = gen_reg_rtx(V4SImode);
-      rtx s0_v4 = spu_gen_subreg(V4SImode, s0_ti);
-      rtx to_ti = gen_reg_rtx(TImode);
-      rtx to_v4 = gen_reg_rtx(V4SImode);
-      rtx l_v4 = gen_reg_rtx(V4SImode);
-      emit_insn (gen_spu_convert (l_v4, operands[1]));
-      emit_insn (gen_movv4si(s1_v4, spu_const(V4SImode, -0x80000000ll)));
-      emit_insn (gen_ceq_v4si(s0_v4, l_v4, CONST0_RTX(V4SImode)));
-      emit_insn (gen_ceq_v4si(s1_v4, l_v4, s1_v4));
-      emit_insn (gen_rotqby_ti(to_ti, s0_ti, GEN_INT(4)));
-      emit_insn (gen_spu_convert (to_v4, to_ti));
-      emit_insn (gen_iorv4si3(s1_v4, s0_v4, s1_v4));
-      emit_insn (gen_andv4si3(to_v4, to_v4, s1_v4));
-      emit_insn (gen_spu_convert (operands[0], to_v4));
-      DONE;
-    }
+  if (spu_arch == PROCESSOR_CELL)
+      {
+        rtx ra = gen_reg_rtx (V4SImode);
+        rtx rb = gen_reg_rtx (V4SImode);
+        rtx temp = gen_reg_rtx (TImode);
+        rtx temp_v4si = spu_gen_subreg (V4SImode, temp);
+        rtx temp2 = gen_reg_rtx (V4SImode);
+        rtx biteq = gen_reg_rtx (V4SImode);
+        rtx ahi_inf = gen_reg_rtx (V4SImode);
+        rtx a_nan = gen_reg_rtx (V4SImode);
+        rtx a_abs = gen_reg_rtx (V4SImode);
+        rtx b_abs = gen_reg_rtx (V4SImode);
+        rtx iszero = gen_reg_rtx (V4SImode);
+        rtx sign_mask = gen_reg_rtx (V4SImode);
+        rtx nan_mask = gen_reg_rtx (V4SImode);
+        rtx hihi_promote = gen_reg_rtx (TImode);
+        rtx pat = spu_const_from_ints (V4SImode, 0x7FFFFFFF, 0xFFFFFFFF,
+                                                 0x7FFFFFFF, 0xFFFFFFFF);
+
+        emit_move_insn (sign_mask, pat);
+        pat = spu_const_from_ints (V4SImode, 0x7FF00000, 0x0,
+                                             0x7FF00000, 0x0);
+        emit_move_insn (nan_mask, pat);
+        pat = spu_const_from_ints (TImode, 0x00010203, 0x10111213,
+                                           0x08090A0B, 0x18191A1B);
+        emit_move_insn (hihi_promote, pat);
+
+        emit_insn (gen_spu_convert (ra, operands[1]));
+        emit_insn (gen_spu_convert (rb, operands[2]));
+        emit_insn (gen_ceq_v4si (biteq, ra, rb));
+        emit_insn (gen_rotlti3 (temp, spu_gen_subreg (TImode, biteq),
+				GEN_INT (4 * 8)));
+        emit_insn (gen_andv4si3 (biteq, biteq, temp_v4si));
+
+        emit_insn (gen_andv4si3 (a_abs, ra, sign_mask));
+        emit_insn (gen_andv4si3 (b_abs, rb, sign_mask));
+	if (!flag_finite_math_only)
+          {
+            emit_insn (gen_clgt_v4si (a_nan, a_abs, nan_mask));
+            emit_insn (gen_ceq_v4si (ahi_inf, a_abs, nan_mask));
+            emit_insn (gen_rotlti3 (temp, spu_gen_subreg (TImode, a_nan),
+                                   GEN_INT (4 * 8)));
+            emit_insn (gen_andv4si3 (temp2, temp_v4si, ahi_inf));
+            emit_insn (gen_iorv4si3 (a_nan, a_nan, temp2));
+	  }
+        emit_insn (gen_iorv4si3 (temp2, a_abs, b_abs));
+        emit_insn (gen_ceq_v4si (iszero, temp2, CONST0_RTX (V4SImode)));
+        emit_insn (gen_rotlti3 (temp, spu_gen_subreg (TImode, iszero),
+				GEN_INT (4 * 8)));
+        emit_insn (gen_andv4si3 (iszero, iszero, temp_v4si));
+        emit_insn (gen_iorv4si3 (temp2, biteq, iszero));
+	if (!flag_finite_math_only)
+          {
+            emit_insn (gen_andc_v4si (temp2, temp2, a_nan));
+	  }
+        emit_insn (gen_shufb (operands[0], temp2, temp2, hihi_promote));
+        DONE;
+      }
 })
 
 (define_insn "ceq_<mode>_celledp"
@@ -2777,24 +2815,102 @@ selb\t%0,%5,%0,%3"
                (match_operand:DF 2 "const_zero_operand" "i")))]
   ""
 {
-  if (flag_unsafe_math_optimizations && spu_arch == PROCESSOR_CELL)
+  if (spu_arch == PROCESSOR_CELL)
     {
-      rtx s0_ti = gen_reg_rtx(TImode);
-      rtx s1_v4 = gen_reg_rtx(V4SImode);
-      rtx s0_v4 = spu_gen_subreg(V4SImode, s0_ti);
-      rtx to_ti = gen_reg_rtx(TImode);
-      rtx to_v4 = gen_reg_rtx(V4SImode);
-      rtx l_v4 = gen_reg_rtx(V4SImode);
-      emit_insn (gen_spu_convert(l_v4, operands[1]));
-      emit_insn (gen_ceq_v4si(s0_v4, l_v4, const0_rtx));
-      emit_insn (gen_cgt_v4si(s1_v4, l_v4, const0_rtx));
-      emit_insn (gen_rotqby_ti(to_ti, s0_ti, GEN_INT(4)));
-      emit_insn (gen_spu_convert(to_v4, to_ti));
-      emit_insn (gen_andc_v4si(to_v4, s0_v4, to_v4));
-      emit_insn (gen_iorv4si3(to_v4, to_v4, s1_v4));
-      emit_insn (gen_spu_convert(operands[0], to_v4));
+      rtx ra = gen_reg_rtx (V4SImode);
+      rtx rb = gen_reg_rtx (V4SImode);
+      rtx zero = gen_reg_rtx (V4SImode);
+      rtx temp = gen_reg_rtx (TImode);
+      rtx temp_v4si = spu_gen_subreg (V4SImode, temp);
+      rtx temp2 = gen_reg_rtx (V4SImode);
+      rtx hi_inf = gen_reg_rtx (V4SImode);
+      rtx a_nan = gen_reg_rtx (V4SImode);
+      rtx b_nan = gen_reg_rtx (V4SImode);
+      rtx a_abs = gen_reg_rtx (V4SImode);
+      rtx b_abs = gen_reg_rtx (V4SImode);
+      rtx asel = gen_reg_rtx (V4SImode);
+      rtx bsel = gen_reg_rtx (V4SImode);
+      rtx abor = gen_reg_rtx (V4SImode);
+      rtx bbor = gen_reg_rtx (V4SImode);
+      rtx gt_hi = gen_reg_rtx (V4SImode);
+      rtx gt_lo = gen_reg_rtx (V4SImode);
+      rtx sign_mask = gen_reg_rtx (V4SImode);
+      rtx nan_mask = gen_reg_rtx (V4SImode);
+      rtx hi_promote = gen_reg_rtx (TImode);
+      rtx borrow_shuffle = gen_reg_rtx (TImode);
+
+      rtx pat = spu_const_from_ints (V4SImode, 0x7FFFFFFF, 0xFFFFFFFF,
+                                               0x7FFFFFFF, 0xFFFFFFFF);
+      emit_move_insn (sign_mask, pat);
+      pat = spu_const_from_ints (V4SImode, 0x7FF00000, 0x0,
+                                             0x7FF00000, 0x0);
+      emit_move_insn (nan_mask, pat);
+      pat = spu_const_from_ints (TImode, 0x00010203, 0x00010203,
+                                         0x08090A0B, 0x08090A0B);
+      emit_move_insn (hi_promote, pat);
+      pat = spu_const_from_ints (TImode, 0x04050607, 0xC0C0C0C0,
+                                         0x0C0D0E0F, 0xC0C0C0C0);
+      emit_move_insn (borrow_shuffle, pat);
+
+      emit_insn (gen_spu_convert (ra, operands[1]));
+      emit_insn (gen_spu_convert (rb, operands[2]));
+      emit_insn (gen_andv4si3 (a_abs, ra, sign_mask));
+      emit_insn (gen_andv4si3 (b_abs, rb, sign_mask));
+
+      if (!flag_finite_math_only)
+	{
+	  /* check if ra is NaN  */
+          emit_insn (gen_ceq_v4si (hi_inf, a_abs, nan_mask));
+          emit_insn (gen_clgt_v4si (a_nan, a_abs, nan_mask));
+          emit_insn (gen_rotlti3 (temp, spu_gen_subreg (TImode, a_nan),
+                                  GEN_INT (4 * 8)));
+          emit_insn (gen_andv4si3 (temp2, temp_v4si, hi_inf));
+          emit_insn (gen_iorv4si3 (a_nan, a_nan, temp2));
+          emit_insn (gen_shufb (a_nan, a_nan, a_nan, hi_promote));
+
+	  /* check if rb is NaN  */
+          emit_insn (gen_ceq_v4si (hi_inf, b_abs, nan_mask));
+          emit_insn (gen_clgt_v4si (b_nan, b_abs, nan_mask));
+          emit_insn (gen_rotlti3 (temp, spu_gen_subreg (TImode, b_nan),
+                                  GEN_INT (4 * 8)));
+          emit_insn (gen_andv4si3 (temp2, temp_v4si, hi_inf));
+          emit_insn (gen_iorv4si3 (b_nan, b_nan, temp2));
+          emit_insn (gen_shufb (b_nan, b_nan, b_nan, hi_promote));
+
+	  /* check if ra or rb is NaN  */
+          emit_insn (gen_iorv4si3 (a_nan, a_nan, b_nan));
+	}
+      emit_move_insn (zero, CONST0_RTX (V4SImode));
+      emit_insn (gen_ashrv4si3 (asel, ra, spu_const (V4SImode, 31)));
+      emit_insn (gen_shufb (asel, asel, asel, hi_promote));
+      emit_insn (gen_bg_v4si (abor, zero, a_abs));
+      emit_insn (gen_shufb (abor, abor, abor, borrow_shuffle));
+      emit_insn (gen_sfx_v4si (abor, zero, a_abs, abor));
+      emit_insn (gen_selb (abor, a_abs, abor, asel));
+
+      emit_insn (gen_ashrv4si3 (bsel, rb, spu_const (V4SImode, 31)));
+      emit_insn (gen_shufb (bsel, bsel, bsel, hi_promote));
+      emit_insn (gen_bg_v4si (bbor, zero, b_abs));
+      emit_insn (gen_shufb (bbor, bbor, bbor, borrow_shuffle));
+      emit_insn (gen_sfx_v4si (bbor, zero, b_abs, bbor));
+      emit_insn (gen_selb (bbor, b_abs, bbor, bsel));
+
+      emit_insn (gen_cgt_v4si (gt_hi, abor, bbor));
+      emit_insn (gen_clgt_v4si (gt_lo, abor, bbor));
+      emit_insn (gen_ceq_v4si (temp2, abor, bbor));
+      emit_insn (gen_rotlti3 (temp, spu_gen_subreg (TImode, gt_lo),
+                                GEN_INT (4 * 8)));
+      emit_insn (gen_andv4si3 (temp2, temp2, temp_v4si));
+      emit_insn (gen_iorv4si3 (temp2, gt_hi, temp2));
+      emit_insn (gen_shufb (temp2, temp2, temp2, hi_promote));
+      if (!flag_finite_math_only)
+        {
+	  /* correct for NaNs  */
+          emit_insn (gen_andc_v4si (temp2, temp2, a_nan));
+	}
+      emit_insn (gen_spu_convert (operands[0], temp2));
       DONE;
-    } 
+    }
 })
 
 (define_insn "cgt_<mode>_celledp"
@@ -2855,17 +2971,17 @@ selb\t%0,%5,%0,%3"
                                          0x0C0D0E0F, 0xC0C0C0C0);
       emit_move_insn (borrow_shuffle, pat);
 
-      emit_insn (gen_andv4si3 (a_nan, ra, sign_mask));
-      emit_insn (gen_ceq_v4si (hi_inf, a_nan, nan_mask));
-      emit_insn (gen_clgt_v4si (a_nan, a_nan, nan_mask));
+      emit_insn (gen_andv4si3 (a_abs, ra, sign_mask));
+      emit_insn (gen_ceq_v4si (hi_inf, a_abs, nan_mask));
+      emit_insn (gen_clgt_v4si (a_nan, a_abs, nan_mask));
       emit_insn (gen_rotlti3 (temp, spu_gen_subreg (TImode, a_nan), 
                                                     GEN_INT (4 * 8)));
       emit_insn (gen_andv4si3 (temp2, temp_v4si, hi_inf));
       emit_insn (gen_iorv4si3 (a_nan, a_nan, temp2));
       emit_insn (gen_shufb (a_nan, a_nan, a_nan, hi_promote));
-      emit_insn (gen_andv4si3 (b_nan, rb, sign_mask));
-      emit_insn (gen_ceq_v4si (hi_inf, b_nan, nan_mask));
-      emit_insn (gen_clgt_v4si (b_nan, b_nan, nan_mask));
+      emit_insn (gen_andv4si3 (b_abs, rb, sign_mask));
+      emit_insn (gen_ceq_v4si (hi_inf, b_abs, nan_mask));
+      emit_insn (gen_clgt_v4si (b_nan, b_abs, nan_mask));
       emit_insn (gen_rotlti3 (temp, spu_gen_subreg (TImode, b_nan), 
                                                     GEN_INT (4 * 8)));
       emit_insn (gen_andv4si3 (temp2, temp_v4si, hi_inf));
@@ -2875,14 +2991,12 @@ selb\t%0,%5,%0,%3"
       emit_move_insn (zero, CONST0_RTX (V4SImode));
       emit_insn (gen_ashrv4si3 (asel, ra, spu_const (V4SImode, 31)));
       emit_insn (gen_shufb (asel, asel, asel, hi_promote));
-      emit_insn (gen_andv4si3 (a_abs, ra, sign_mask));
       emit_insn (gen_bg_v4si (abor, zero, a_abs));
       emit_insn (gen_shufb (abor, abor, abor, borrow_shuffle));
       emit_insn (gen_sfx_v4si (abor, zero, a_abs, abor));
       emit_insn (gen_selb (abor, a_abs, abor, asel));
       emit_insn (gen_ashrv4si3 (bsel, rb, spu_const (V4SImode, 31)));
       emit_insn (gen_shufb (bsel, bsel, bsel, hi_promote));
-      emit_insn (gen_andv4si3 (b_abs, rb, sign_mask));
       emit_insn (gen_bg_v4si (bbor, zero, b_abs));
       emit_insn (gen_shufb (bbor, bbor, bbor, borrow_shuffle));
       emit_insn (gen_sfx_v4si (bbor, zero, b_abs, bbor));
@@ -3267,8 +3381,7 @@ selb\t%0,%4,%0,%3"
   [(set (cc0)
         (compare (match_operand:DF 0 "register_operand" "")
                  (match_operand:DF 1 "register_operand" "")))]
-  "(flag_unsafe_math_optimizations && spu_arch == PROCESSOR_CELL) 
-    || spu_arch == PROCESSOR_CELLEDP "
+  ""
   "{
   spu_compare_op0 = operands[0];
   spu_compare_op1 = operands[1];

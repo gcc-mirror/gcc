@@ -765,7 +765,7 @@ spu_emit_branch_or_set (int is_set, enum rtx_code code, rtx operands[])
     {
     case GE:
       scode = SPU_GT;
-      if (HONOR_NANS (op_mode) && spu_arch == PROCESSOR_CELLEDP)
+      if (HONOR_NANS (op_mode))
 	{
 	  reverse_compare = 0;
 	  reverse_test = 0;
@@ -780,7 +780,7 @@ spu_emit_branch_or_set (int is_set, enum rtx_code code, rtx operands[])
       break;
     case LE:
       scode = SPU_GT;
-      if (HONOR_NANS (op_mode) && spu_arch == PROCESSOR_CELLEDP)
+      if (HONOR_NANS (op_mode))
 	{
 	  reverse_compare = 1;
 	  reverse_test = 0;
@@ -883,23 +883,9 @@ spu_emit_branch_or_set (int is_set, enum rtx_code code, rtx operands[])
       abort ();
     }
 
-  if (GET_MODE (spu_compare_op1) == DFmode)
-    {
-      rtx reg = gen_reg_rtx (DFmode);
-      if ((!flag_unsafe_math_optimizations && spu_arch == PROCESSOR_CELL)
-	  || (scode != SPU_GT && scode != SPU_EQ))
-	abort ();
-      if (spu_arch == PROCESSOR_CELL)
-      {
-        if (reverse_compare)
-	  emit_insn (gen_subdf3 (reg, spu_compare_op1, spu_compare_op0));
-        else
-	  emit_insn (gen_subdf3 (reg, spu_compare_op0, spu_compare_op1));
-        reverse_compare = 0;
-        spu_compare_op0 = reg;
-        spu_compare_op1 = CONST0_RTX (DFmode);
-      }
-    }
+  if (GET_MODE (spu_compare_op1) == DFmode
+      && (scode != SPU_GT && scode != SPU_EQ))
+    abort ();
 
   if (is_set == 0 && spu_compare_op1 == const0_rtx
       && (GET_MODE (spu_compare_op0) == SImode

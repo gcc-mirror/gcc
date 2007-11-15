@@ -1,3 +1,7 @@
+2007-11-15  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.target/spu/compare-dp.c: New test.
+
 2007-11-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/pr33923.c: New test.
