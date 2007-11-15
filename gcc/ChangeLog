@@ -1,3 +1,11 @@
+2007-11-15  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu-protos.h (legitimate_const): Remove prototype.
+	* config/spu/spu.c (legitimate_const): Remove.
+	(classify_immediate): Inline call to legitimate_const.
+	(spu_legitimate_address): Likewise.  Allow SMBOL_REF + CONST_INT
+	for any constant, not just -512 .. 511.
+
 2007-11-15  Sa Liu  <saliu@de.ibm.com>
 
 	* config/spu/spu.c (spu_emit_branch_or_set): Remove PROCESSOR_CELL

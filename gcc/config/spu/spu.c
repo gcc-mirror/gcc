@@ -2475,29 +2475,6 @@ spu_float_const (const char *string, enum machine_mode mode)
   return CONST_DOUBLE_FROM_REAL_VALUE (value, mode);
 }
 
-/* Given a (CONST (PLUS (SYMBOL_REF) (CONST_INT))) return TRUE when the
-   CONST_INT fits constraint 'K', i.e., is small. */
-int
-legitimate_const (rtx x, int aligned)
-{
-  /* We can never know if the resulting address fits in 18 bits and can be
-     loaded with ila.  Instead we should use the HI and LO relocations to
-     load a 32-bit address.  */
-  rtx sym, cst;
-
-  gcc_assert (GET_CODE (x) == CONST);
-
-  if (GET_CODE (XEXP (x, 0)) != PLUS)
-    return 0;
-  sym = XEXP (XEXP (x, 0), 0);
-  cst = XEXP (XEXP (x, 0), 1);
-  if (GET_CODE (sym) != SYMBOL_REF || GET_CODE (cst) != CONST_INT)
-    return 0;
-  if (aligned && ((INTVAL (cst) & 15) != 0 || !ALIGNED_SYMBOL_REF_P (sym)))
-    return 0;
-  return satisfies_constraint_K (cst);
-}
-
 int
 spu_constant_address_p (rtx x)
 {
@@ -2618,8 +2595,20 @@ classify_immediate (rtx op, enum machine_mode mode)
       return TARGET_LARGE_MEM ? IC_IL2s : IC_IL1s;
 
     case CONST:
-      return TARGET_LARGE_MEM
-	|| !legitimate_const (op, 0) ? IC_IL2s : IC_IL1s;
+      /* We can never know if the resulting address fits in 18 bits and can be
+	 loaded with ila.  For now, assume the address will not overflow if
+	 the displacement is "small" (fits 'K' constraint).  */
+      if (!TARGET_LARGE_MEM && GET_CODE (XEXP (op, 0)) == PLUS)
+	{
+	  rtx sym = XEXP (XEXP (op, 0), 0);
+	  rtx cst = XEXP (XEXP (op, 0), 1);
+
+	  if (GET_CODE (sym) == SYMBOL_REF
+	      && GET_CODE (cst) == CONST_INT
+	      && satisfies_constraint_K (cst))
+	    return IC_IL1s;
+	}
+      return IC_IL2s;
 
     case HIGH:
       return IC_IL1s;
@@ -2870,7 +2859,17 @@ spu_legitimate_address (enum machine_mode mode ATTRIBUTE_UNUSED,
       return !TARGET_LARGE_MEM;
 
     case CONST:
-      return !TARGET_LARGE_MEM && legitimate_const (x, 0);
+      if (!TARGET_LARGE_MEM && GET_CODE (XEXP (x, 0)) == PLUS)
+	{
+	  rtx sym = XEXP (XEXP (x, 0), 0);
+	  rtx cst = XEXP (XEXP (x, 0), 1);
+
+	  /* Accept any symbol_ref + constant, assuming it does not
+	     wrap around the local store addressability limit.  */
+	  if (GET_CODE (sym) == SYMBOL_REF && GET_CODE (cst) == CONST_INT)
+	    return 1;
+	}
+      return 0;
 
     case CONST_INT:
       return INTVAL (x) >= 0 && INTVAL (x) <= 0x3ffff;
