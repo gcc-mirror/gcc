@@ -6622,7 +6622,11 @@ apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
       }
 
   if (DECL_P (*decl_p))
-    p = &DECL_ATTRIBUTES (*decl_p);
+    {
+      if (TREE_TYPE (*decl_p) == error_mark_node)
+	return;
+      p = &DECL_ATTRIBUTES (*decl_p);
+    }
   else
     p = &TYPE_ATTRIBUTES (*decl_p);
 

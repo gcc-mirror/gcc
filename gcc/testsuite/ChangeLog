@@ -1,3 +1,8 @@
+2007-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34100
+	* g++.dg/template/crash73.C: New test.
+
 2007-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/23848

@@ -1,3 +1,9 @@
+2007-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34100
+	* pt.c (apply_late_template_attributes): Do nothing if decl's type is
+	error_mark_node.
+
 2007-11-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34054
