@@ -1,3 +1,9 @@
+2007-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/30460
+	* gcc.c (init_spec): Don't initialize asm_debug here...
+	(main): ... but here.
+
 2007-11-07  Tom Tromey  <tromey@redhat.com>
 
 	* tree-ssa-structalias.c (ipa_pta_execute): Rename 'cfun' to

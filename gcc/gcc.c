@@ -1719,10 +1719,6 @@ init_spec (void)
     }
 #endif
 
-  /* Initialize here, not in definition.  The IRIX 6 O32 cc sometimes chokes
-     on ?: in file-scope variable initializations.  */
-  asm_debug = ASM_DEBUG_SPEC;
-
   for (i = ARRAY_SIZE (static_specs) - 1; i >= 0; i--)
     {
       sl = &static_specs[i];
@@ -6133,6 +6129,10 @@ main (int argc, char **argv)
   const char *p;
   struct user_specs *uptr;
   char **old_argv = argv;
+
+  /* Initialize here, not in definition.  The IRIX 6 O32 cc sometimes chokes
+     on ?: in file-scope variable initializations.  */
+  asm_debug = ASM_DEBUG_SPEC;
 
   p = argv[0] + strlen (argv[0]);
   while (p != argv[0] && !IS_DIR_SEPARATOR (p[-1]))
