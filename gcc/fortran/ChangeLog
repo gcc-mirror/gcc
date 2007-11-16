@@ -1,8 +1,23 @@
 2007-11-16  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/34008
+	* trans-stmt.c (gfc_conv_elemental_dependencies): Add check for
+	INTENT_INOUT as well as INTENT_OUT.
+	(gfc_trans_call): Remove redundant gcc_asserts in dependency
+	check.
+
+2007-11-16  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/33986
 	* trans-array.c (gfc_conv_array_parameter ): Allow allocatable
 	function results.
+
+2007-11-15  Tobias Burnus  <burnus@net-b.de>
+ 
+	PR fortran/33917
+	* decl.c (match_procedure_decl): Pre-resolve interface.
+	* resolve.c (resolve_symbol): Reject interfaces later
+	declared in procedure statements.
 
 2007-11-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
