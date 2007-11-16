@@ -1,5 +1,11 @@
 2007-11-16  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/34113
+	* tree-ssa-forwprop.c (tree_ssa_forward_propagate_single_use_vars):
+	Use correct conversion direction for checking type compatibility.
+
+2007-11-16  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/34099
 	* tree-ssa-ccp.c (likely_value): Use a whitelist for operators
 	that produce UNDEFINED result if at least one of its operands
