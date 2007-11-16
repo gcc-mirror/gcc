@@ -1,3 +1,9 @@
+2007-11-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34099
+	* g++.dg/torture/pr3499.C: New testcase.
+	* gcc.c-torture/execute/pr34099.c: Likewise.
+
 2007-11-16  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/release_unc_maxalign.adb: New test.

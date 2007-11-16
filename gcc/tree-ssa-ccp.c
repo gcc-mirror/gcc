@@ -507,7 +507,8 @@ set_lattice_value (tree var, prop_value_t new_val)
 
    If STMT has no operands, then return CONSTANT.
 
-   Else if any operands of STMT are undefined, then return UNDEFINED.
+   Else if undefinedness of operands of STMT cause its value to be
+   undefined, then return UNDEFINED.
 
    Else if any operands of STMT are constants, then return CONSTANT.
 
@@ -516,7 +517,7 @@ set_lattice_value (tree var, prop_value_t new_val)
 static ccp_lattice_t
 likely_value (tree stmt)
 {
-  bool has_constant_operand;
+  bool has_constant_operand, has_undefined_operand, all_undefined_operands;
   stmt_ann_t ann;
   tree use;
   ssa_op_iter iter;
@@ -552,16 +553,71 @@ likely_value (tree stmt)
     return CONSTANT;
 
   has_constant_operand = false;
+  has_undefined_operand = false;
+  all_undefined_operands = true;
   FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE | SSA_OP_VUSE)
     {
       prop_value_t *val = get_value (use);
 
       if (val->lattice_val == UNDEFINED)
-	return UNDEFINED;
+	has_undefined_operand = true;
+      else
+	all_undefined_operands = false;
 
       if (val->lattice_val == CONSTANT)
 	has_constant_operand = true;
     }
+
+  /* If the operation combines operands like COMPLEX_EXPR make sure to
+     not mark the result UNDEFINED if only one part of the result is
+     undefined.  */
+  if (has_undefined_operand
+      && all_undefined_operands)
+    return UNDEFINED;
+  else if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+	   && has_undefined_operand)
+    {
+      switch (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)))
+	{
+	/* Unary operators are handled with all_undefined_operands.  */
+	case PLUS_EXPR:
+	case MINUS_EXPR:
+	case MULT_EXPR:
+	case POINTER_PLUS_EXPR:
+	case TRUNC_DIV_EXPR:
+	case CEIL_DIV_EXPR:
+	case FLOOR_DIV_EXPR:
+	case ROUND_DIV_EXPR:
+	case TRUNC_MOD_EXPR:
+	case CEIL_MOD_EXPR:
+	case FLOOR_MOD_EXPR:
+	case ROUND_MOD_EXPR:
+	case RDIV_EXPR:
+	case EXACT_DIV_EXPR:
+	case LSHIFT_EXPR:
+	case RSHIFT_EXPR:
+	case LROTATE_EXPR:
+	case RROTATE_EXPR:
+	case EQ_EXPR:
+	case NE_EXPR:
+	case LT_EXPR:
+	case GT_EXPR:
+	  /* Not MIN_EXPR, MAX_EXPR.  One VARYING operand may be selected.
+	     Not bitwise operators, one VARYING operand may specify the
+	     result completely.  Not logical operators for the same reason.
+	     Not LE/GE comparisons or unordered comparisons.  Not
+	     COMPLEX_EXPR as one VARYING operand makes the result partly
+	     not UNDEFINED.  */
+	  return UNDEFINED;
+
+	default:
+	  ;
+	}
+    }
+  /* If there was an UNDEFINED operand but the result may be not UNDEFINED
+     fall back to VARYING even if there were CONSTANT operands.  */
+  if (has_undefined_operand)
+    return VARYING;
 
   if (has_constant_operand
       /* We do not consider virtual operands here -- load from read-only
