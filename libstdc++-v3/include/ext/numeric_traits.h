@@ -107,12 +107,16 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       static const int __max_digits10 = __glibcxx_max_digits10(_Value);
 
       // See above comment...
+      static const bool __is_signed = true;
       static const int __digits10 = __glibcxx_digits10(_Value);
       static const int __max_exponent10 = __glibcxx_max_exponent10(_Value);
     };
 
   template<typename _Value>
     const int __numeric_traits_floating<_Value>::__max_digits10;
+
+  template<typename _Value>
+    const bool __numeric_traits_floating<_Value>::__is_signed;
 
   template<typename _Value>
     const int __numeric_traits_floating<_Value>::__digits10;
