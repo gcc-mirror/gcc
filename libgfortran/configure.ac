@@ -379,6 +379,12 @@ AC_CHECK_LIB([m],[y1l],[AC_DEFINE([HAVE_Y1L],[1],[libm includes y1l])])
 AC_CHECK_LIB([m],[ynf],[AC_DEFINE([HAVE_YNF],[1],[libm includes ynf])])
 AC_CHECK_LIB([m],[yn],[AC_DEFINE([HAVE_YN],[1],[libm includes yn])])
 AC_CHECK_LIB([m],[ynl],[AC_DEFINE([HAVE_YNL],[1],[libm includes ynl])])
+AC_CHECK_LIB([m],[tgamma],[AC_DEFINE([HAVE_TGAMMA],[1],[libm includes tgamma])])
+AC_CHECK_LIB([m],[tgammaf],[AC_DEFINE([HAVE_TGAMMAF],[1],[libm includes tgammaf])])
+AC_CHECK_LIB([m],[tgammal],[AC_DEFINE([HAVE_TGAMMAL],[1],[libm includes tgammal])])
+AC_CHECK_LIB([m],[lgamma],[AC_DEFINE([HAVE_LGAMMA],[1],[libm includes lgamma])])
+AC_CHECK_LIB([m],[lgammaf],[AC_DEFINE([HAVE_LGAMMAF],[1],[libm includes lgammaf])])
+AC_CHECK_LIB([m],[lgammal],[AC_DEFINE([HAVE_LGAMMAL],[1],[libm includes lgammal])])
 
 # On AIX, clog is present in libm as __clog
 AC_CHECK_LIB([m],[__clog],[AC_DEFINE([HAVE_CLOG],[1],[libm includes clog])])

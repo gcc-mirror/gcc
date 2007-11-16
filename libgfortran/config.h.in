@@ -483,6 +483,15 @@
 /* libm includes ldexpl */
 #undef HAVE_LDEXPL
 
+/* libm includes lgamma */
+#undef HAVE_LGAMMA
+
+/* libm includes lgammaf */
+#undef HAVE_LGAMMAF
+
+/* libm includes lgammal */
+#undef HAVE_LGAMMAL
+
 /* Define to 1 if you have the `link' function. */
 #undef HAVE_LINK
 
@@ -704,6 +713,15 @@
 
 /* libm includes tanl */
 #undef HAVE_TANL
+
+/* libm includes tgamma */
+#undef HAVE_TGAMMA
+
+/* libm includes tgammaf */
+#undef HAVE_TGAMMAF
+
+/* libm includes tgammal */
+#undef HAVE_TGAMMAL
 
 /* Define to 1 if you have the `time' function. */
 #undef HAVE_TIME

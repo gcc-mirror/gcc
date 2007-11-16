@@ -1,3 +1,15 @@
+2007-11-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/33583
+	PR libfortran/33698
+	* intrinsics/c99_functions.c (tgamma, tgammaf, lgamma, lgammaf):
+	New fallback functions.
+	* c99_protos.h (tgamma, tgammaf, lgamma, lgammaf): New prototypes.
+	* configure.ac: Add checks for tgamma, tgammaf, tgammal, lgamma,
+	lgammaf and lgammal.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
 2007-11-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* mk-kinds-h.sh: Change sed syntax.
