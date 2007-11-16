@@ -1,3 +1,8 @@
+2007-11-16  Ian Lance Taylor  <iant@google.com>
+
+	* collect2.c (dump_file): If a demangled symbol is followed by a
+	space, make sure we output at least one space.
+
 2007-11-16  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/34030
