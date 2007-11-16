@@ -246,8 +246,9 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
       fsym = formal ? formal->sym : NULL;
       if (e->expr_type == EXPR_VARIABLE
 	    && e->rank && fsym
-	    && fsym->attr.intent == INTENT_OUT
-	    && gfc_check_fncall_dependency (e, INTENT_OUT, sym, arg0))
+	    && fsym->attr.intent != INTENT_IN
+	    && gfc_check_fncall_dependency (e, fsym->attr.intent,
+					    sym, arg0))
 	{
 	  /* Make a local loopinfo for the temporary creation, so that
 	     none of the other ss->info's have to be renormalized.  */
@@ -380,14 +381,11 @@ gfc_trans_call (gfc_code * code, bool dependency_check)
       gfc_copy_loopinfo_to_se (&loopse, &loop);
       loopse.ss = ss;
 
-      /* For operator assignment, we need to do dependency checking.  
-	 We also check the intent of the parameters.  */
+      /* For operator assignment, do dependency checking.  */
       if (dependency_check)
 	{
 	  gfc_symbol *sym;
 	  sym = code->resolved_sym;
-	  gcc_assert (sym->formal->sym->attr.intent == INTENT_OUT);
-	  gcc_assert (sym->formal->next->sym->attr.intent == INTENT_IN);
 	  gfc_conv_elemental_dependencies (&se, &loopse, sym,
 					   code->ext.actual);
 	}
