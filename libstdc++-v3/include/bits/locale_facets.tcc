@@ -121,7 +121,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // 1,222,444 == __grouping_tmp of "\1\3\3"
   // __grouping is parsed R to L
   // 1,222,444 == __grouping of "\3" == "\3\3\3"
-  static bool
+  bool
   __verify_grouping(const char* __grouping, size_t __grouping_size,
 		    const string& __grouping_tmp);
 
@@ -1236,30 +1236,6 @@ _GLIBCXX_END_LDBL_NAMESPACE
       _Traits::assign(__news, __plen, __fill);
       _Traits::copy(__news + __plen, __olds + __mod, __oldlen - __mod);
     }
-
-  bool
-  __verify_grouping(const char* __grouping, size_t __grouping_size,
-		    const string& __grouping_tmp)
-  {
-    const size_t __n = __grouping_tmp.size() - 1;
-    const size_t __min = std::min(__n, size_t(__grouping_size - 1));
-    size_t __i = __n;
-    bool __test = true;
-    
-    // Parsed number groupings have to match the
-    // numpunct::grouping string exactly, starting at the
-    // right-most point of the parsed sequence of elements ...
-    for (size_t __j = 0; __j < __min && __test; --__i, ++__j)
-      __test = __grouping_tmp[__i] == __grouping[__j];
-    for (; __i && __test; --__i)
-      __test = __grouping_tmp[__i] == __grouping[__min];
-    // ... but the first parsed grouping can be <= numpunct
-    // grouping (only do the check if the numpunct char is > 0
-    // because <= 0 means any size is ok).
-    if (static_cast<signed char>(__grouping[__min]) > 0)
-      __test &= __grouping_tmp[0] <= __grouping[__min];
-    return __test;
-  }
 
   template<typename _CharT>
     _CharT*
