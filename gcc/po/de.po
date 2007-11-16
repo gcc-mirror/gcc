@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.3-b20071109\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2007-11-08 21:09+0000\n"
-"PO-Revision-Date: 2007-11-14 19:24+0200\n"
+"PO-Revision-Date: 2007-11-15 17:00+0200\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -5236,12 +5236,12 @@ msgstr "''"
 #: fortran/dump-parse-tree.c:307
 #, c-format
 msgid "' // ACHAR("
-msgstr ""
+msgstr "' // ACHAR("
 
 #: fortran/dump-parse-tree.c:309
-#, fuzzy, c-format
+#, c-format
 msgid ") // '"
-msgstr "// "
+msgstr ") // '"
 
 #: fortran/dump-parse-tree.c:337
 #, c-format
@@ -5295,9 +5295,9 @@ msgid "???"
 msgstr "???"
 
 #: fortran/dump-parse-tree.c:414
-#, fuzzy, c-format
+#, c-format
 msgid " {"
-msgstr " "
+msgstr " {"
 
 #: fortran/dump-parse-tree.c:418
 #, c-format
@@ -6801,9 +6801,9 @@ msgid "Too many arguments in call to '%s' at %L"
 msgstr "Zu viele Argumente in Aufruf von »%s« bei %L"
 
 #: fortran/intrinsic.c:2933
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "The argument list functions %%VAL, %%LOC or %%REF are not allowed in this context at %L"
-msgstr "Argumentlistenfunktion bei %L ist in diesem Kontext nicht erlaubt"
+msgstr "Die Argumentlistenfunktionen %%VAL, %%LOC oder %%REF bei %L sind in diesem Kontext nicht erlaubt"
 
 #: fortran/intrinsic.c:2936
 #, no-c-format
@@ -6866,9 +6866,9 @@ msgid "Extension: backslash character at %C"
 msgstr "Erweiterung: Zeichen Backslash bei %C"
 
 #: fortran/io.c:187 fortran/io.c:190
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Extension: Tab character in format at %C"
-msgstr "Erweiterung: Zeichen Backslash bei %C"
+msgstr "Erweiterung: Tab-Zeichen im Format bei %C"
 
 #: fortran/io.c:450
 msgid "Positive width required"
@@ -6949,9 +6949,9 @@ msgid "%s in format string at %C"
 msgstr "%s in Formatzeichenkette bei %C"
 
 #: fortran/io.c:946
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Format statement in module main block at %C"
-msgstr "Formatanweisung im Hauptblock des Modules bei %C."
+msgstr "Formatanweisung im Hauptblock des Modules bei %C"
 
 #: fortran/io.c:952
 #, no-c-format
@@ -6984,14 +6984,14 @@ msgid "Constant expression in FORMAT tag at %L must be of type default CHARACTER
 msgstr "Konstanter Ausdruck in FORMAT-Markierung bei %L muss vom Standard-CHARACTER-Typ sein"
 
 #: fortran/io.c:1119
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "FORMAT tag at %L must be of type CHARACTER or INTEGER"
-msgstr "%s-Markierung bei %L muss vom Typ %s oder %s sein"
+msgstr "FORMAT-Markierung bei %L muss vom Typ CHARACTER oder INTEGER sein"
 
 #: fortran/io.c:1125
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Deleted feature: ASSIGNED variable in FORMAT tag at %L"
-msgstr "Veraltet: ASSIGNED-Variable in FORMAT-Markierung bei %L"
+msgstr "Gelöschte Funktion: ASSIGNED-Variable in FORMAT-Markierung bei %L"
 
 #: fortran/io.c:1131
 #, no-c-format
@@ -6999,9 +6999,9 @@ msgid "Variable '%s' at %L has not been assigned a format label"
 msgstr "Variable »%s« bei %L wurde keine Formatmarke zugewiesen"
 
 #: fortran/io.c:1138
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Scalar '%s' in FORMAT tag at %L is not an ASSIGNED variable"
-msgstr "FORMAT-Marke des skalaren »%s« bei %L ist keine ASSIGNED-Variable"
+msgstr "Skalares »%s« in FORMAT-Marke bei %L ist keine ASSIGNED-Variable"
 
 #: fortran/io.c:1151
 #, no-c-format
@@ -7029,9 +7029,9 @@ msgid "Fortran 2003: IOMSG tag at %L"
 msgstr "Fortran 2003: IOMSG-Markierung bei %L"
 
 #: fortran/io.c:1203
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 95 requires default INTEGER in %s tag at %L"
-msgstr "Fortran 95 erfordert Standard INTEGER in SIZE-Marke bei %L"
+msgstr "Fortran 95 erfordert Standard INTEGER in %s-Marke bei %L"
 
 #: fortran/io.c:1211
 #, no-c-format
@@ -7175,9 +7175,9 @@ msgid "Syntax error in %s statement at %C"
 msgstr "Syntaxfehler in Anweisung %s bei %C"
 
 #: fortran/io.c:2670
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: Internal file at %L with namelist"
-msgstr "Interne Datei bei %L ist mit Namensliste unverträglich"
+msgstr "Fortran 2003: Interne Datei bei %L mit Namensliste"
 
 #: fortran/io.c:2833
 #, no-c-format
@@ -7185,9 +7185,9 @@ msgid "PRINT namelist at %C is an extension"
 msgstr "PRINT-Namensliste bei %C ist eine Erweiterung"
 
 #: fortran/io.c:2965
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Extension: Comma before i/o item list at %C"
-msgstr "Erweiterung: Komma vor Ausgabeelementliste bei %C ist eine Erweiterung"
+msgstr "Erweiterung: Komma vor Ein-/Ausgabeelementliste bei %C"
 
 #: fortran/io.c:2974
 #, no-c-format
@@ -7245,9 +7245,9 @@ msgid "Duplicate construct label '%s' at %C"
 msgstr "Doppelte Aufbau-Marke »%s« bei %C"
 
 #: fortran/match.c:438
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Invalid character in name at %C"
-msgstr "Ungültiges Zeichen »%c« in OPERATOR-Name bei %C"
+msgstr "Ungültiges Zeichen in Name bei %C"
 
 #: fortran/match.c:451 fortran/match.c:523
 #, no-c-format
@@ -7255,14 +7255,14 @@ msgid "Name at %C is too long"
 msgstr "Name bei %C ist zu lang"
 
 #: fortran/match.c:506 fortran/match.c:552
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Invalid C name in NAME= specifier at %C"
-msgstr "Formatspezifikation bei %C erfordert Punkt"
+msgstr "Ungültiger C-Name in NAME=-Spezifizierung bei %C"
 
 #: fortran/match.c:543
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Embedded space in NAME= specifier at %C"
-msgstr "Formatspezifikation bei %C erfordert Punkt"
+msgstr "Eingeschlossenes Leerzeichen in NAME=-Spezifizierung bei %C"
 
 #: fortran/match.c:868
 #, no-c-format
@@ -7380,19 +7380,19 @@ msgid "Too many digits in STOP code at %C"
 msgstr "Zu viele Ziffern in STOP-Code bei %C"
 
 #: fortran/match.c:1872
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Deleted feature: PAUSE statement at %C"
-msgstr "Veraltet: PAUSE-Anweisung bei %C"
+msgstr "Gelöschte Funktion: PAUSE-Anweisung bei %C"
 
 #: fortran/match.c:1920
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Deleted feature: ASSIGN statement at %C"
-msgstr "Veraltet: ASSIGN-Anweisung bei %C"
+msgstr "Gelöschte Funktion: ASSIGN-Anweisung bei %C"
 
 #: fortran/match.c:1966
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Deleted feature: Assigned GOTO statement at %C"
-msgstr "Veraltet: Zugewiesene GOTO-Anweisung bei %C"
+msgstr "Gelöschte Funktion: Zugewiesene GOTO-Anweisung bei %C"
 
 #: fortran/match.c:2013 fortran/match.c:2065
 #, no-c-format
@@ -7518,14 +7518,14 @@ msgid "Namelist group name '%s' at %C already is USE associated and cannot be re
 msgstr "Gruppenname »%s« der Namensliste bei %C ist bereits USE-verbunden und kann nicht respezifiziert werden."
 
 #: fortran/match.c:3006
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Assumed size array '%s' in namelist '%s' at %C is not allowed"
-msgstr "Feld »%s« mit vermuteter Größe in Namensliste »%s« bei %C ist nicht erlaubt."
+msgstr "Feld »%s« mit vermuteter Größe in Namensliste »%s« bei %C ist nicht erlaubt"
 
 #: fortran/match.c:3013
 #, no-c-format
 msgid "Assumed character length '%s' in namelist '%s' at %C is not allowed"
-msgstr "Vermutete Zeichenlänge »%s« in Namensliste »%s« bei %C ist nicht erlaubt."
+msgstr "Vermutete Zeichenlänge »%s« in Namensliste »%s« bei %C ist nicht erlaubt"
 
 #: fortran/match.c:3140
 #, no-c-format
@@ -7558,7 +7558,7 @@ msgid "Expected initialization expression in CASE at %C"
 msgstr "Erwarteter Initialisierungsausdruck in CASE bei %C"
 
 #: fortran/match.c:3462
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected the name of the SELECT CASE construct at %C"
 msgstr "Name des select-case-Konstrukts bei %C erwartet"
 
@@ -7628,24 +7628,24 @@ msgid "Out of memory-- malloc() failed"
 msgstr "Speicher voll -- malloc() gescheitert"
 
 #: fortran/module.c:516
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: module nature in USE statement at %C"
-msgstr "Fortran 2003: FLUSH-Anweisung bei %C"
+msgstr "Fortran 2003: Modul-Eigenschaft in USE-Anweisung bei %C"
 
 #: fortran/module.c:528
 #, no-c-format
 msgid "Module nature in USE statement at %C shall be either INTRINSIC or NON_INTRINSIC"
-msgstr ""
+msgstr "Modul-Eigenschaft in USE-Anweisung bei %C sollte entweder INTRINSIC oder NON_INTRINSIC sein"
 
 #: fortran/module.c:541
 #, no-c-format
 msgid "\"::\" was expected after module nature at %C but was not found"
-msgstr ""
+msgstr "\"::\" nach Modul-Eigenschaft bei %C erwartet, aber nicht gefunden"
 
 #: fortran/module.c:550
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: \"USE :: module\" at %C"
-msgstr "Fortran 2003: FLUSH-Anweisung bei %C"
+msgstr "Fortran 2003: \"USE :: module\" bei %C"
 
 #: fortran/module.c:602
 #, no-c-format
@@ -7653,14 +7653,14 @@ msgid "Missing generic specification in USE statement at %C"
 msgstr "Fehlende allgemeine Spezifikation in USE-Anweisung bei %C"
 
 #: fortran/module.c:610
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: Renaming operators in USE statements at %C"
-msgstr "Fortran 2003: FLUSH-Anweisung bei %C"
+msgstr "Fortran 2003: Umbenennungsoperatoren in USE-Anweisungen bei %C"
 
 #: fortran/module.c:652
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "The name '%s' at %C has already been used as an external module name."
-msgstr "Globaler Name »%s« bei %L wird bereits als ein %s bei %L verwendet"
+msgstr "Der Name »%s« bei %C wurde bereits als ein externer Modulname verwendet."
 
 #: fortran/module.c:930
 #, no-c-format
@@ -7755,9 +7755,9 @@ msgid "Bad type in constant expression"
 msgstr "Falscher Typ in Konstanten-Ausdruck"
 
 #: fortran/module.c:2898
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Namelist %s cannot be renamed by USE association to %s"
-msgstr "Namensliste %s kann nicht mit USE-Verbindung in %s umbenannt werden."
+msgstr "Namensliste %s kann nicht mit USE-Verbindung in %s umbenannt werden"
 
 #: fortran/module.c:3723
 #, no-c-format
@@ -7785,59 +7785,59 @@ msgid "Error writing module file '%s' for writing: %s"
 msgstr "Fehler beim Schreiben der Moduldatei »%s«: %s"
 
 #: fortran/module.c:4281 fortran/module.c:4363
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Symbol '%s' referenced at %L does not exist in intrinsic module ISO_C_BINDING."
-msgstr "Bei %2$L referenziertes Symbol »%1$s« nicht im Modul »%3$s« gefunden"
+msgstr "Bei %2$L referenziertes Symbol »%1$s« existiert nicht im intrinsischen Modul ISO_C_BINDING."
 
 #: fortran/module.c:4394
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Symbol '%s' referenced at %L not found in intrinsic module ISO_C_BINDING"
-msgstr "Bei %2$L referenziertes Symbol »%1$s« nicht im Modul »%3$s« gefunden"
+msgstr "Bei %2$L referenziertes Symbol »%1$s« nicht im Modul ISO_C_BINDING gefunden"
 
 #: fortran/module.c:4416
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Symbol '%s' already declared"
-msgstr "Komponente »%s« bei %C bereits bei %L deklariert"
+msgstr "Symbol »%s« bereits deklariert"
 
 #: fortran/module.c:4471
 #, no-c-format
 msgid "Use of intrinsic module '%s' at %C conflicts with non-intrinsic module name used previously"
-msgstr ""
+msgstr "Verwendung des intrinsischen Moduls »%s« bei »%C« steht mit nicht-intrinsischem vorher verwendeten Modulnamen in Konflikt"
 
 #: fortran/module.c:4484
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Symbol '%s' referenced at %L does not exist in intrinsic module ISO_FORTRAN_ENV"
-msgstr "Bei %2$L referenziertes Symbol »%1$s« nicht im Modul »%3$s« gefunden"
+msgstr "Bei %2$L referenziertes Symbol »%1$s« existiert nicht im intrinsischen Modul ISO_FORTRAN_ENV"
 
 #: fortran/module.c:4492
 #, no-c-format
 msgid "Use of the NUMERIC_STORAGE_SIZE named constant from intrinsic module ISO_FORTRAN_ENV at %L is incompatible with option %s"
-msgstr ""
+msgstr "Verwendung der Konstante NUMERIC_STORAGE_SIZE aus intrinsischem Modul ISO_FORTRAN_ENV bei %L ist mit Option %s unverträglich"
 
 #: fortran/module.c:4520
 #, no-c-format
 msgid "Use of the NUMERIC_STORAGE_SIZE named constant from intrinsic module ISO_FORTRAN_ENV at %C is incompatible with option %s"
-msgstr ""
+msgstr "Verwendung der Konstante NUMERIC_STORAGE_SIZE aus intrinsischem Modul ISO_FORTRAN_ENV bei %C ist mit Option %s unverträglich"
 
 #: fortran/module.c:4536
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Symbol '%s' referenced at %L not found in intrinsic module ISO_FORTRAN_ENV"
-msgstr "Bei %2$L referenziertes Symbol »%1$s« nicht im Modul »%3$s« gefunden"
+msgstr "Bei %2$L referenziertes Symbol »%1$s« nicht im intrinsischen Modul ISO_FORTRAN_ENV gefunden"
 
 #: fortran/module.c:4569
 #, no-c-format
 msgid "Fortran 2003: ISO_FORTRAN_ENV intrinsic module at %C"
-msgstr ""
+msgstr "Fortran 2003: Intrinsisches Modul ISO_FORTRAN_ENV bei %C"
 
 #: fortran/module.c:4577
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: ISO_C_BINDING module at %C"
-msgstr "Fortran 2003: IOMSG-Markierung bei %L"
+msgstr "Fortran 2003: Modul ISO_C_BINDING bei %C"
 
 #: fortran/module.c:4587
 #, no-c-format
 msgid "Can't find an intrinsic module named '%s' at %C"
-msgstr ""
+msgstr "Intrinsisches Modul »%s« bei %C nicht gefunden"
 
 #: fortran/module.c:4592
 #, no-c-format
@@ -7920,9 +7920,9 @@ msgid "COPYIN clause object '%s' is ALLOCATABLE at %L"
 msgstr "Klausel COPYIN - Objekt »%s« ist bei %L ALLOCATABLE"
 
 #: fortran/openmp.c:782
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "COPYIN clause object '%s' at %L has ALLOCATABLE components"
-msgstr "Klausel COPYIN - Objekt »%s« ist bei %L ALLOCATABLE"
+msgstr "Klausel COPYIN - Objekt »%s« hat bei %L ALLOCATABLE-Komponenten"
 
 #: fortran/openmp.c:790
 #, no-c-format
@@ -7935,9 +7935,9 @@ msgid "COPYPRIVATE clause object '%s' is ALLOCATABLE at %L"
 msgstr "Klausel COPYPRIVATE - Objekt »%s« ist bei %L ALLOCATABLE"
 
 #: fortran/openmp.c:796
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "COPYPRIVATE clause object '%s' at %L has ALLOCATABLE components"
-msgstr "Klausel COPYPRIVATE - Objekt »%s« ist bei %L ALLOCATABLE"
+msgstr "Klausel COPYPRIVATE - Objekt »%s« hat bei %L ALLOCATABLE-Komponenten"
 
 #: fortran/openmp.c:804
 #, no-c-format
@@ -7970,9 +7970,9 @@ msgid "%s clause object '%s' is ALLOCATABLE at %L"
 msgstr "Klausel %s - Objekt »%s« ist bei %L ALLOCATABLE"
 
 #: fortran/openmp.c:831
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "%s clause object '%s' has ALLOCATABLE components at %L"
-msgstr "Klausel %s - Objekt »%s« ist bei %L ALLOCATABLE"
+msgstr "Klausel %s - Objekt »%s« hat bei %L ALLOCATABLE-Komponenten"
 
 #: fortran/openmp.c:834
 #, no-c-format
@@ -7990,9 +7990,9 @@ msgid "Variable '%s' in %s clause is used in NAMELIST statement at %L"
 msgstr "Variable »%s« in Klausel %s wird in NAMELIST-Anweisung bei %L verwendet"
 
 #: fortran/openmp.c:852
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "%c REDUCTION variable '%s' at %L must be of numeric type, got %s"
-msgstr "%s REDUCTION-Variable »%s« muss bei %L INTEGER oder REAL sein"
+msgstr "%c REDUCTION-Variable »%s« muss bei %L numerischen Typ haben, %s erhalten"
 
 #: fortran/openmp.c:863
 #, no-c-format
@@ -8035,7 +8035,7 @@ msgid "expr in !$OMP ATOMIC assignment var = var op expr must be scalar and cann
 msgstr "Ausdruck in Zuweisung !$OMP ATOMIC »var = var op expr« muss skalar sein und kann keine Variable bei %L referenzieren"
 
 #: fortran/openmp.c:1153
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "!$OMP ATOMIC assignment intrinsic IAND, IOR or IEOR must have two arguments at %L"
 msgstr "Eingebaute Zuweisung !$OMP ATOMIC IAND, IOR oder IEOR muss bei %L zwei Argumente haben"
 
@@ -8090,44 +8090,44 @@ msgid "Option -fwhole-program is not supported for Fortran"
 msgstr ""
 
 #: fortran/options.c:273
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Reading file '%s' as free form"
-msgstr "Datei »%s« wird in Freiform gelesen."
+msgstr "Datei »%s« wird in Freiform gelesen"
 
 #: fortran/options.c:283
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'-fd-lines-as-comments' has no effect in free form"
-msgstr "»-fd-lines-as-comments« hat keine Auswirkung in Freiform."
+msgstr "»-fd-lines-as-comments« hat keine Auswirkung in Freiform"
 
 #: fortran/options.c:286
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'-fd-lines-as-code' has no effect in free form"
-msgstr "»-fd-lines-as-code« hat keine Auswirkung in Freiform."
+msgstr "»-fd-lines-as-code« hat keine Auswirkung in Freiform"
 
 #: fortran/options.c:312
 #, no-c-format
 msgid "Flag -fno-automatic overwrites -fmax-stack-var-size=%d"
-msgstr ""
+msgstr "Schalter -fno-automatic überschreibt -fmax-stack-var-size=%d"
 
 #: fortran/options.c:315
 #, no-c-format
 msgid "Flag -fno-automatic overwrites -frecursive"
-msgstr ""
+msgstr "Schalter -fno-automatic überschreibt -frecursive"
 
 #: fortran/options.c:317
 #, no-c-format
 msgid "Flag -fno-automatic overwrites -frecursive implied by -fopenmp"
-msgstr ""
+msgstr "Schalter -fno-automatic überschreibt -frecursive (ausgelöst durch -fopenmp)"
 
 #: fortran/options.c:321
 #, no-c-format
 msgid "Flag -frecursive overwrites -fmax-stack-var-size=%d"
-msgstr ""
+msgstr "Schalter -frecursive überschreibt -fmax-stack-var-size=%d"
 
 #: fortran/options.c:325
 #, no-c-format
 msgid "Flag -fmax-stack-var-size=%d overwrites -frecursive implied by -fopenmp"
-msgstr ""
+msgstr "Schalter -fmax-stack-var-size=%d überschreibt -frecursive (ausgelöst durch -fopenmp)"
 
 #: fortran/options.c:392
 #, c-format
@@ -8150,14 +8150,14 @@ msgid "Fixed line length must be at least seven."
 msgstr "Feste Zeilenlänge muss mindestens sieben sein."
 
 #: fortran/options.c:591
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Free line length must be at least three."
-msgstr "Feste Zeilenlänge muss mindestens sieben sein."
+msgstr "Freie Zeilenlänge muss mindestens drei sein."
 
 #: fortran/options.c:605
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "-static-libgfortran is not supported in this configuration"
-msgstr "-m%s wird in dieser Konfiguration nicht unterstützt"
+msgstr "-static-libgfortran wird in dieser Konfiguration nicht unterstützt"
 
 #: fortran/options.c:649
 #, no-c-format
@@ -8165,19 +8165,19 @@ msgid "Maximum supported identifier length is %d"
 msgstr "Höchste unterstützte Bezeichnerlänge ist %d"
 
 #: fortran/options.c:681
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Unrecognized option to -finit-logical: %s"
-msgstr "nicht erkannte Option »-%s«"
+msgstr "Nicht erkannte Option für -finit-logical: %s"
 
 #: fortran/options.c:695
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Unrecognized option to -finit-real: %s"
-msgstr "nicht erkannte Option »-%s«"
+msgstr "Nicht erkannte Option für -finit-real: %s"
 
 #: fortran/options.c:711
 #, no-c-format
 msgid "The value of n in -finit-character=n must be between 0 and 127"
-msgstr ""
+msgstr "Der Wert von n in -finit-character=n muss zwischen 0 und 127 liegen"
 
 #: fortran/options.c:794
 #, no-c-format
@@ -8286,9 +8286,9 @@ msgid "Unexpected end of file in '%s'"
 msgstr "Unerwartetes Dateiende in »%s«"
 
 #: fortran/parse.c:1558
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: Derived type definition at %C without components"
-msgstr "Definition des abgeleiteten Typs bei %C hat keine Komponenten"
+msgstr "Fortran 2003: Definition des abgeleiteten Typs bei %C ohne Komponenten"
 
 #: fortran/parse.c:1569
 #, no-c-format
@@ -8341,9 +8341,9 @@ msgid "FUNCTION at %C does not belong in a generic subroutine interface"
 msgstr "FUNCTION bei %C gehört nicht in eine allgemeine Unterprogrammschnittstelle"
 
 #: fortran/parse.c:1818
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Name '%s' of ABSTRACT INTERFACE at %C cannot be the same as an intrinsic type"
-msgstr "Typname »%s« bei %C kann nicht der gleiche wie ein intrinsischer Typ sein"
+msgstr "Name »%s« des ABSTRACT INTERFACE bei %C kann nicht der gleiche wie ein intrinsischer Typ sein"
 
 #: fortran/parse.c:1849
 #, no-c-format
@@ -8366,14 +8366,14 @@ msgid "%s statement at %C follows another accessibility specification"
 msgstr "Anweisung %s bei %C folgt einer anderen Zugriffsspezifikation"
 
 #: fortran/parse.c:2015
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Bad kind expression for function '%s' at %L"
-msgstr "Spezifische Funktion »%s« bei %L kann nicht aufgelöst werden"
+msgstr "Falscher Art-Ausdruck für Funktion »%s« bei %L"
 
 #: fortran/parse.c:2018
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "The type for function '%s' at %L is not accessible"
-msgstr "Alternativer Rückgabespezifizierer in Funktion »%s« bei %L ist nicht erlaubt"
+msgstr "Der Typ für Funktion »%s« bei %L ist nicht erreichbar"
 
 #: fortran/parse.c:2070
 #, no-c-format
@@ -8655,9 +8655,9 @@ msgid "Too many components in structure constructor at %C"
 msgstr "Zu viele Komponenten in Strukturkonstruktor bei %C"
 
 #: fortran/primary.c:1974
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Structure constructor for '%s' at %C has PRIVATE components"
-msgstr "Komponente »%s« bei %C ist eine PRIVATE-Komponente von »%s«"
+msgstr "Struktur-Konstruktor für »%s« bei %C hat PRIVATE-Komponenten"
 
 #: fortran/primary.c:1984
 #, no-c-format
@@ -8690,9 +8690,9 @@ msgid "Function '%s' requires an argument list at %C"
 msgstr "Funktion »%s« erfordert eine Argumentliste bei %C"
 
 #: fortran/primary.c:2267
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing argument to '%s' at %C"
-msgstr "fehlendes Argument für »%s«-Option"
+msgstr "Fehlendes Argument für »%s« bei %C"
 
 #: fortran/primary.c:2408
 #, no-c-format
@@ -8705,9 +8705,9 @@ msgid "Symbol at %C is not appropriate for an expression"
 msgstr "Symbol bei %C passt nicht zu einem Ausdruck"
 
 #: fortran/primary.c:2504
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Assigning to PROTECTED variable at %C"
-msgstr "Zuweisung an FORALL-Indexvariable bei %L"
+msgstr "Zuweisung an PROTECTED-Variable bei %C"
 
 #: fortran/primary.c:2520
 #, no-c-format
@@ -8780,9 +8780,9 @@ msgid "Contained function '%s' at %L has no IMPLICIT type"
 msgstr "Enthaltene Funktion »%s bei %L hat keinen IMPLICIT-Typ«"
 
 #: fortran/resolve.c:302
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Result '%s' of contained function '%s' at %L has no IMPLICIT type"
-msgstr "Enthaltene Funktion »%s bei %L hat keinen IMPLICIT-Typ«"
+msgstr "Ergebnis »%s« der enthaltenen Funktion »%s« bei %L hat keinen IMPLICIT-Typ«"
 
 #: fortran/resolve.c:319
 #, no-c-format
@@ -8825,44 +8825,44 @@ msgid "ENTRY result %s can't be of type %s in FUNCTION %s at %L"
 msgstr "ENTRY-Ergebnis %s kann nicht vom Typ %s in FUNCTION %s bei %L sein"
 
 #: fortran/resolve.c:643
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Derived type variable '%s' in COMMON at %L has neither the SEQUENCE nor the BIND(C) attribute"
-msgstr "Variable abgeleiteten Typs in COMMON bei %C hat kein SEQUENCE-Attribut"
+msgstr "Variable »%s« abgeleiteten Typs in COMMON bei %L hat weder das SEQUENCE- noch das BIND(C)-Attribut"
 
 #: fortran/resolve.c:647
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Derived type variable '%s' in COMMON at %L has an ultimate component that is allocatable"
-msgstr "Variable abgeleiteten Typs in COMMON bei %C hat kein SEQUENCE-Attribut"
+msgstr "Variable »%s« abgeleiteten Typs in COMMON bei %L hat eine endgültige Komponente, die allozierbar ist"
 
 #: fortran/resolve.c:651
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Derived type variable '%s' in COMMON at %L may not have default initializer"
-msgstr "Variable abgeleiteten Typs in COMMON bei %C hat kein SEQUENCE-Attribut"
+msgstr "Variable »%s« abgeleiteten Typs in COMMON bei %L darf nicht Standardinitialisierung haben"
 
 #: fortran/resolve.c:661
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "COMMON block '%s' at %L is used as PARAMETER at %L"
-msgstr "Benannter COMMON-Block »%s« bei %L sollte die gleiche Größe haben"
+msgstr "COMMON-Block »%s« bei %L wird bei %L als PARAMETER verwendet"
 
 #: fortran/resolve.c:665
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "COMMON block '%s' at %L is also an intrinsic procedure"
-msgstr "Generisches Unterprogramm »%s« bei %L ist kein intrinsisches Unterprogramm"
+msgstr "COMMON-Block »%s« bei %L ist auch eine intrinsische Prozedur"
 
 #: fortran/resolve.c:669
 #, no-c-format
 msgid "Fortran 2003: COMMON block '%s' at %L that is also a function result"
-msgstr ""
+msgstr "Fortran 2003: COMMON-Block »%s« bei %L der auch ein Funktionsergebnis ist"
 
 #: fortran/resolve.c:674
 #, no-c-format
 msgid "Fortran 2003: COMMON block '%s' at %L that is also a global procedure"
-msgstr ""
+msgstr "Fortran 2003: COMMON-Block »%s« bei %L der auch eine globale Prozedur ist"
 
 #: fortran/resolve.c:736
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Components of structure constructor '%s' at %L are PRIVATE"
-msgstr "Zu wenige Komponenten in Strukturkonstruktor bei %C"
+msgstr "Komponenten des Strukturkonstruktors »%s« bei %L sind PRIVATE"
 
 #: fortran/resolve.c:756
 #, no-c-format
@@ -8880,9 +8880,9 @@ msgid "The element in the derived type constructor at %L, for pointer component 
 msgstr "Das Element im Konstruktor abgeleiteten Typs bei %L für Zeigerkomponente »%s« sollte ein POINTER oder ein TARGET sein"
 
 #: fortran/resolve.c:913
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "The upper bound in the last dimension must appear in the reference to the assumed size array '%s' at %L"
-msgstr "Die obere Schranke in der letzten Dimension muss in der Referenz auf das Feld »%s« vermuteter Größe bei %L auftreten."
+msgstr "Die obere Schranke in der letzten Dimension muss in der Referenz auf das Feld »%s« vermuteter Größe bei %L auftreten"
 
 #: fortran/resolve.c:976 fortran/resolve.c:5434 fortran/resolve.c:6098
 #, no-c-format
@@ -8890,9 +8890,9 @@ msgid "Label %d referenced at %L is never defined"
 msgstr "Marke %d wird bei %L referenziert aber nirgendwo definiert"
 
 #: fortran/resolve.c:986
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' at %L is ambiguous"
-msgstr "Symbol »%s« bei %L ist mehrdeutig"
+msgstr "»%s« bei %L ist mehrdeutig"
 
 #: fortran/resolve.c:1018
 #, no-c-format
@@ -8915,9 +8915,9 @@ msgid "ELEMENTAL non-INTRINSIC procedure '%s' is not allowed as an actual argume
 msgstr "Elementare nicht-intrinsische Prozedur »%s« ist nicht als effektives Argument bei %L erlaubt"
 
 #: fortran/resolve.c:1059
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "GENERIC procedure '%s' is not allowed as an actual argument at %L"
-msgstr "Allgemeine nicht-intrinsische Prozedur »%s« ist bei %L nicht als effektives Argument erlaubt"
+msgstr "GENERIC-Prozedur »%s« ist bei %L nicht als effektives Argument erlaubt"
 
 #: fortran/resolve.c:1098
 #, no-c-format
@@ -8945,19 +8945,18 @@ msgid "Passing internal procedure at %L by location not allowed"
 msgstr "Übergabe der eingebauten Prozedur über die Speicherstelle ist bei %L nicht erlaubt"
 
 #: fortran/resolve.c:1293
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' at %L is an array and OPTIONAL; IF IT IS MISSING, it cannot be the actual argument of an ELEMENTAL procedure unless there is a non-optional argument with the same rank (12.4.1.5)"
-msgstr "»%s« bei %L ist ein Feld und optional; wenn es fehlt, kann es nicht das das effektive Argument einer elementaren Prozedur sein, es sei denn, es gibt ein nicht-optionales Argument mit dem selben Rang (12.4.1.5)"
+msgstr "»%s« bei %L ist ein Feld und optional; wenn es fehlt, kann es nicht das effektive Argument einer elementaren Prozedur sein, es sei denn, es gibt ein nicht-optionales Argument mit dem selben Rang (12.4.1.5)"
 
 #: fortran/resolve.c:1315
-#, fuzzy
 msgid "elemental procedure"
 msgstr "Elementares Unterprogramm"
 
 #: fortran/resolve.c:1332
 #, no-c-format
 msgid "Actual argument at %L for INTENT(%s) dummy '%s' of ELEMENTAL subroutine '%s' is a scalar, but another actual argument is an array"
-msgstr ""
+msgstr "Effektives Argument bei %L für INTENT(%s)-Dummy »%s« von ELEMENTAL-Unterprogramm »%s« ist skalar, aber ein anderes effektives Argument ist ein Feld"
 
 #: fortran/resolve.c:1466
 #, no-c-format
@@ -8985,19 +8984,19 @@ msgid "Function '%s' at %L has no IMPLICIT type"
 msgstr "Funktion »%s« bei %L hat IMPLICIT-Typ"
 
 #: fortran/resolve.c:1799
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Argument to '%s' at %L is not a variable"
-msgstr "Argument von %s bei %L hat keinen gültigen Typ"
+msgstr "Argument von »%s« bei %L ist keine Variable"
 
 #: fortran/resolve.c:1871
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "More actual than formal arguments in '%s' call at %L"
-msgstr "Mehr effektive als formale Argumente in Prozeduraufruf bei %L"
+msgstr "Mehr effektive als formale Argumente in Aufruf von »%s« bei %L"
 
 #: fortran/resolve.c:1883
 #, no-c-format
 msgid "Parameter '%s' to '%s' at %L must be either a TARGET or an associated pointer"
-msgstr ""
+msgstr "Parameter »%s« für »%s« bei %L muss entweder ein TARGET oder ein zugeordneter Zeiger sein"
 
 #: fortran/resolve.c:1909
 #, no-c-format
@@ -9015,33 +9014,33 @@ msgid "Deferred-shape array '%s' at %L cannot be an argument to the procedure '%
 msgstr ""
 
 #: fortran/resolve.c:1959 fortran/resolve.c:1998
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "CHARACTER argument '%s' to '%s' at %L must have a length of 1"
-msgstr "Argument von %s bei %L muss von der Länge eins sein"
+msgstr "CHARACTER-Argument »%s« von »%s« bei %L muss Länge 1 haben"
 
 #. Case 1c, section 15.1.2.5, J3/04-007: an associated
 #. scalar pointer.
 #: fortran/resolve.c:1974
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Argument '%s' to '%s' at %L must be an associated scalar POINTER"
-msgstr "Argument »%s« des intrinsischen »%s« bei %L muss ein POINTER sein"
+msgstr "Argument »%s« für »%s« bei %L muss ein zugeordneter skalarer POINTER sein"
 
 #: fortran/resolve.c:1990
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Parameter '%s' to '%s' at %L must be a scalar"
-msgstr "Argument »%s« des intrinsischen »%s« bei %L muss ein Skalar sein"
+msgstr "Parameter »%s« für »%s« bei %L muss ein Skalar sein"
 
 #. TODO: Update this error message to allow for procedure
 #. pointers once they are implemented.
 #: fortran/resolve.c:2012
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Parameter '%s' to '%s' at %L must be a procedure"
-msgstr "Name »%s« bei %C ist der Name der Prozedur"
+msgstr "Parameter »%s« für »%s« bei %L muss eine Prozedur sein"
 
 #: fortran/resolve.c:2020
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Parameter '%s' to '%s' at %L must be BIND(C)"
-msgstr "Argument »%s« der reinen Funktion »%s« bei %L muss INTENT(IN) sein"
+msgstr "Parameter »%s« für »%s« bei %L muss BIND(C) sein"
 
 #: fortran/resolve.c:2062
 #, no-c-format
@@ -9051,7 +9050,7 @@ msgstr "»%s« bei %L ist keine Funktion"
 #: fortran/resolve.c:2068
 #, no-c-format
 msgid "ABSTRACT INTERFACE '%s' must not be referenced at %L"
-msgstr ""
+msgstr "ABSTRACT INTERFACE »%s« darf bei %L nicht referenziert werden"
 
 #. Internal procedures are taken care of in resolve_contained_fntype.
 #: fortran/resolve.c:2111
@@ -9105,14 +9104,14 @@ msgid "Generic subroutine '%s' at %L is not consistent with an intrinsic subrout
 msgstr "Generisches Unterprogramm »%s« bei %L ist nicht mit intrinsischer Unterprogrammschnittstelle vereinbar"
 
 #: fortran/resolve.c:2468
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing SHAPE parameter for call to %s at %L"
-msgstr "Fehlendes effektives Argument »%s« in Aufruf von »%s« bei %L"
+msgstr "Fehlender SHAPE-Parameter für Aufruf von »%s« bei %L"
 
 #: fortran/resolve.c:2476
 #, no-c-format
 msgid "SHAPE parameter for call to %s at %L must be a rank 1 INTEGER array"
-msgstr ""
+msgstr "SHAPE-Parameter für Aufruf von %s bei %L muss ein INTEGER-Feld mit Rang 1 sein"
 
 #: fortran/resolve.c:2543
 #, no-c-format
@@ -9145,9 +9144,9 @@ msgid "Shapes for operands at %L and %L are not conformable"
 msgstr "Formen der Operanden bei %L und %L stimmen nicht überein"
 
 #: fortran/resolve.c:2792
-#, fuzzy, c-format
+#, c-format
 msgid "Invalid context for NULL() pointer at %%L"
-msgstr "Ungültige Art für %s bei %L"
+msgstr "Ungültiger Kontext für NULL()-Zeiger bei %%L"
 
 #: fortran/resolve.c:2808
 #, c-format
@@ -9170,9 +9169,9 @@ msgid "Operands of logical operator '%s' at %%L are %s/%s"
 msgstr "Operanden des logischen Operators »%s« bei %%L sind %s/%s"
 
 #: fortran/resolve.c:2871
-#, fuzzy, c-format
+#, c-format
 msgid "Operand of .not. operator at %%L is %s"
-msgstr "Operand des Operators .NOT. bei %%L ist %s"
+msgstr "Operand des Operators .not. bei %%L ist %s"
 
 #: fortran/resolve.c:2885
 msgid "COMPLEX quantities cannot be compared at %L"
@@ -9189,9 +9188,9 @@ msgid "Operands of comparison operator '%s' at %%L are %s/%s"
 msgstr "Operanden des Vergleichsoperators »%s« bei %%L sind %s/%s"
 
 #: fortran/resolve.c:2927
-#, fuzzy, c-format
+#, c-format
 msgid "Unknown operator '%s' at %%L"
-msgstr "unbekannter Operator »%s« in %%:version-compare"
+msgstr "Unbekannter Operator »%s« bei %%L"
 
 #: fortran/resolve.c:2929
 #, c-format
