@@ -300,59 +300,13 @@ gfc_at_eol (void)
 }
 
 
-struct file_entered_chainon
-{
-  gfc_file *file;
-  struct file_entered_chainon *prev;
-};
-
-static struct file_entered_chainon *last_file_entered = NULL;
-
-static void
-start_source_file (int line, gfc_file *file)
-{
-  struct file_entered_chainon *f = gfc_getmem (sizeof
-                                       (struct file_entered_chainon));
-
-  f->file = file;
-  f->prev = last_file_entered;
-  last_file_entered = f;
-
-  (*debug_hooks->start_source_file) (line, file->filename);
-}
-
-static void
-end_source_file (int line)
-{
-  gcc_assert (last_file_entered);
-  last_file_entered = last_file_entered->prev;
-  (*debug_hooks->end_source_file) (line);
-}
-
-static void
-exit_remaining_files (void)
-{
-  struct file_entered_chainon *f = last_file_entered;
-  while (f)
-    {
-      /* The line number doesn't matter much, because we're at the end of
-         the toplevel file anyway.  */
-      (*debug_hooks->end_source_file) (0);
-
-      f = f->prev;
-    }
-}
-
 /* Advance the current line pointer to the next line.  */
 
 void
 gfc_advance_line (void)
 {
   if (gfc_at_end ())
-    {
-      exit_remaining_files ();
-      return;
-    }
+    return;
 
   if (gfc_current_locus.lb == NULL) 
     {
@@ -368,15 +322,17 @@ gfc_advance_line (void)
 	  && gfc_current_locus.lb->file->up == gfc_current_locus.lb->next->file)
 	{
 	  /* We exit from an included file. */
-	  end_source_file (gfc_linebuf_linenum (gfc_current_locus.lb->next));
+	  (*debug_hooks->end_source_file)
+		(gfc_linebuf_linenum (gfc_current_locus.lb->next));
 	  gfc_current_locus.lb->next->dbg_emitted = true;
 	}
       else if (gfc_current_locus.lb->next->file != gfc_current_locus.lb->file
 	       && !gfc_current_locus.lb->next->dbg_emitted)
 	{
 	  /* We enter into a new file.  */
-	  start_source_file (gfc_linebuf_linenum (gfc_current_locus.lb),
-			     gfc_current_locus.lb->next->file);
+	  (*debug_hooks->start_source_file)
+		(gfc_linebuf_linenum (gfc_current_locus.lb),
+		 gfc_current_locus.lb->next->file->filename);
 	  gfc_current_locus.lb->next->dbg_emitted = true;
 	}
     }

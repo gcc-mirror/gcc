@@ -1,3 +1,10 @@
+2007-11-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/33739
+	PR fortran/34084
+	* scanner.c (start_source_file, end_source_file,
+	exit_remaining_files, gfc_advance_line): Revert rev. 130016.
+
 2007-11-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34008
