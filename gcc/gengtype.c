@@ -1543,6 +1543,10 @@ open_base_files (void)
     gtype_desc_c = create_file ("GCC", "gtype-desc.c");
     for (ifp = ifiles; *ifp; ifp++)
       oprintf (gtype_desc_c, "#include \"%s\"\n", *ifp);
+
+    /* Make sure we handle "cfun" specially.  */
+    oprintf (gtype_desc_c, "\n/* See definition in function.h.  */\n");
+    oprintf (gtype_desc_c, "#undef cfun\n");
   }
 }
 

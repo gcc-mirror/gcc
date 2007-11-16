@@ -66,6 +66,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "vecprim.h"
 
+/* So we can assign to cfun in this file.  */
+#undef cfun
+
 #ifndef LOCAL_ALIGNMENT
 #define LOCAL_ALIGNMENT(TYPE, ALIGNMENT) ALIGNMENT
 #endif
