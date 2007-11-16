@@ -1,3 +1,8 @@
+2007-11-16  Sa Liu  <saliu@de.ibm.com>
+
+	* config/spu/spu.md (floatunssidf2, floatunsdidf2): Inlined 
+	floatunssidf2 and floatunsdidf2.
+
 2007-11-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/34113
