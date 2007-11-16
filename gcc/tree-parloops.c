@@ -1,5 +1,5 @@
 /* Loop autoparallelization.
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr> and
    Zdenek Dvorak <dvorakz@suse.cz>.
 
@@ -1252,7 +1252,7 @@ create_loop_fn (void)
 
   /* The call to allocate_struct_function clobbers CFUN, so we need to restore
      it.  */
-  cfun = act_cfun;
+  set_cfun (act_cfun);
 
   return decl;
 }

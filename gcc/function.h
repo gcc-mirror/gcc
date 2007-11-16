@@ -466,6 +466,11 @@ struct function GTY(())
 /* The function currently being compiled.  */
 extern GTY(()) struct function *cfun;
 
+/* In order to ensure that cfun is not set directly, we redefine it so
+   that it is not an lvalue.  Rather than assign to cfun, use
+   push_cfun or set_cfun.  */
+#define cfun (cfun + 0)
+
 /* Pointer to chain of `struct function' for containing functions.  */
 extern GTY(()) struct function *outer_function_chain;
 

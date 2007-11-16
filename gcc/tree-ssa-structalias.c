@@ -5561,17 +5561,17 @@ ipa_pta_execute (void)
     {
       if (node->analyzed && cgraph_is_master_clone (node))
 	{
-	  struct function *cfun = DECL_STRUCT_FUNCTION (node->decl);
+	  struct function *func = DECL_STRUCT_FUNCTION (node->decl);
 	  basic_block bb;
 	  tree old_func_decl = current_function_decl;
 	  if (dump_file)
 	    fprintf (dump_file,
 		     "Generating constraints for %s\n",
 		     cgraph_node_name (node));
-	  push_cfun (cfun);
+	  push_cfun (func);
 	  current_function_decl = node->decl;
 
-	  FOR_EACH_BB_FN (bb, cfun)
+	  FOR_EACH_BB_FN (bb, func)
 	    {
 	      block_stmt_iterator bsi;
 	      tree phi;

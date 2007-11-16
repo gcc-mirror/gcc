@@ -1,3 +1,13 @@
+2007-11-07  Tom Tromey  <tromey@redhat.com>
+
+	* tree-ssa-structalias.c (ipa_pta_execute): Rename 'cfun' to
+	'func'. 
+	* tree-parloops.c (create_loop_fn): Use set_cfun.
+	* gengtype.c (open_base_files): Emit #undef cfun.
+	* ipa-struct-reorg.c (do_reorg_1): Use set_cfun.
+	* function.h (cfun): New define.
+	* function.c: Undefine cfun.
+
 2007-11-07  Eric B. Weddington  <eweddington@cso.atmel.com>
 
 	* config/avr/avr.c (avr_mcu_types): Add attiny88.

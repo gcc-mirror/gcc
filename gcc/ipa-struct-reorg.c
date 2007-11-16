@@ -3628,7 +3628,7 @@ do_reorg_1 (void)
 	pop_cfun ();
       }
 
-  cfun = NULL;
+  set_cfun (NULL);
 }
 
 /* This function creates new global struct variables.
