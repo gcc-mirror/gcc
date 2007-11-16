@@ -837,7 +837,8 @@ search_path_head (cpp_reader *pfile, const char *fname, int angle_brackets,
   /* For #include_next, skip in the search path past the dir in which
      the current file was found, but if it was found via an absolute
      path use the normal search logic.  */
-  if (type == IT_INCLUDE_NEXT && file->dir)
+  if (type == IT_INCLUDE_NEXT && file->dir
+      && file->dir != &pfile->no_search_path)
     dir = file->dir->next;
   else if (angle_brackets)
     dir = pfile->bracket_include;
