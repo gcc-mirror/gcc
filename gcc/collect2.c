@@ -487,8 +487,18 @@ dump_file (const char *name, FILE *to)
 	      diff = strlen (word) - strlen (result);
 	      while (diff > 0 && c == ' ')
 		--diff, putc (' ', to);
-	      while (diff < 0 && c == ' ')
-		++diff, c = getc (stream);
+	      if (diff < 0 && c == ' ')
+		{
+		  while (diff < 0 && c == ' ')
+		    ++diff, c = getc (stream);
+		  if (!ISSPACE (c))
+		    {
+		      /* Make sure we output at least one space, or
+			 the demangled symbol name will run into
+			 whatever text follows.  */
+		      putc (' ', to);
+		    }
+		}
 
 	      free (result);
 	    }
