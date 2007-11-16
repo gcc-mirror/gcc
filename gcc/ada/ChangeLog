@@ -1,3 +1,11 @@
+2007-11-16  Olivier Hainque  <hainque@adacore.com>
+
+	* utils2.c (build_call_alloc_dealloc) <if gnu_obj>: Move the code
+	retrieving an allocator return value from a super-aligned address from
+	here to ...
+	* trans.c (gnat_to_gnu) <case N_Free_Statement>: ... here, and don't
+	expect a super-aligned address for a fat or thin pointer.
+	
 2007-11-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* trans.c (call_to_gnu): Always set the source location on the call

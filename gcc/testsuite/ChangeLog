@@ -1,3 +1,7 @@
+2007-11-16  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/release_unc_maxalign.adb: New test.
+
 2007-11-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34100
