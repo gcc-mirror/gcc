@@ -1,5 +1,11 @@
 2007-11-16  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/34030
+	* fold-const.c (fold_binary): Use correct types for folding
+	1 << X & Y to Y >> X & 1.
+
+2007-11-16  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/33870
 	* tree.h (struct tree_memory_tag): Add base_for_components flag.
 	(struct tree_struct_field_tag): Remove nesting_level field.
