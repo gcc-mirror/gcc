@@ -1,3 +1,11 @@
+2007-11-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34099
+	* tree-ssa-ccp.c (likely_value): Use a whitelist for operators
+	that produce UNDEFINED result if at least one of its operands
+	is UNDEFINED.  By default the result is only UNDEFINED if all
+	operands are UNDEFINED.
+
 2007-11-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR driver/30460
