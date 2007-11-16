@@ -1873,39 +1873,7 @@ build_call_alloc_dealloc (tree gnu_obj, tree gnu_size, unsigned align,
     }
 
   else if (gnu_obj)
-    {
-      /* If the required alignement was greater than what the default
-	 allocator guarantees, what we have in gnu_obj here is an address
-	 dynamically adjusted to match the requirement (see build_allocator).
-	 What we need to pass to free is the initial underlying allocator's
-	 return value, which has been stored just in front of the block we
-	 have.  */
-
-      unsigned int default_allocator_alignment
-	= get_target_default_allocator_alignment () * BITS_PER_UNIT;
-
-      if (align > default_allocator_alignment)
-	{
-	  /* We set GNU_OBJ
-	     as * (void **)((void *)GNU_OBJ - (void *)sizeof(void *))
-	     in two steps: */
-
-	  /* GNU_OBJ (void *) = (void *)GNU_OBJ - (void *)sizeof (void *))  */
-	  gnu_obj
-	    = build_binary_op (MINUS_EXPR, ptr_void_type_node,
-			       convert (ptr_void_type_node, gnu_obj),
-			       convert (ptr_void_type_node,
-					TYPE_SIZE_UNIT (ptr_void_type_node)));
-
-	  /* GNU_OBJ (void *) = *(void **)GNU_OBJ  */
-	  gnu_obj
-	    = build_unary_op (INDIRECT_REF, NULL_TREE,
-			      convert (build_pointer_type (ptr_void_type_node),
-				       gnu_obj));
-	}
-
-      return build_call_1_expr (free_decl, gnu_obj);
-    }
+    return build_call_1_expr (free_decl, gnu_obj);
 
   /* ??? For now, disable variable-sized allocators in the stack since
      we can't yet gimplify an ALLOCATE_EXPR.  */
