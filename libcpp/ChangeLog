@@ -1,3 +1,7 @@
+2007-11-16  Michael Matz  <matz@suse.de>
+
+	* files.c (search_path_head): Fix check for absolute paths.
+
 2007-11-05  Tom Tromey  <tromey@redhat.com>
 
 	* include/line-map.h (LINEMAP_POSITION_FOR_COLUMN): Wrap in
