@@ -1,5 +1,9 @@
 2007-11-16  Paolo Carlini  <pcarlini@suse.de>
 
+	* src/locale_facets.cc: Fix typo in Copyright.
+
+2007-11-16  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/locale_facets.tcc (__verify_grouping): Move...
 	* src/locale_facets.cc: ... here.
 	* config/abi/pre/gnu.ver: Update exports.
