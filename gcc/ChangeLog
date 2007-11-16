@@ -1,3 +1,29 @@
+2007-11-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/33870
+	* tree.h (struct tree_memory_tag): Add base_for_components flag.
+	(struct tree_struct_field_tag): Remove nesting_level field.
+	(SFT_NESTING_LEVEL): Remove.
+	(SFT_BASE_FOR_COMPONENTS_P): Add.
+	* tree-flow.h (struct fieldoff): Remove nesting_level field.  Add
+	base_for_components flag.
+	(push_fields_onto_fieldstack): Remove nesting_level parameter.
+	* tree-ssa-alias.c (create_sft): Likewise.  Add base_for_components
+	parameter.
+	(create_overlap_variables_for): Deal with it.
+	* tree-dfa.c (dump_subvars_for): Likewise.
+	(dump_variable): Likewise.
+	* tree-ssa-structalias.c (push_fields_onto_fieldstack): Likewise.
+	Set base_for_components for first elements of sub-structures.
+	(create_variable_info_for): Handle base_for_components.
+	(set_uids_in_ptset): Always set SFT_UNPARTITIONABLE_P for
+	pointed-to SFTs if SFT_BASE_FOR_COMPONENTS_P is set.
+	* tree-ssa-operands.c (ref_nesting_level): Remove.
+	(add_vars_for_offset): Remove full_ref parameter, always add
+	the offset of the pointed-to SFT.
+	(add_virtual_operand): Adjust for changed signature of
+	add_vars_for_offset.
+
 2007-11-16  Sa Liu  <saliu@de.ibm.com>
 
 	* config/spu/spu.md (floatunssidf2, floatunsdidf2): Inlined 

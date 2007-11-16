@@ -288,7 +288,8 @@ dump_subvars_for (FILE *file, tree var)
     {
       print_generic_expr (file, subvar, dump_flags);
       fprintf (file, "@" HOST_WIDE_INT_PRINT_UNSIGNED, SFT_OFFSET (subvar));
-      fprintf (file, "[%u]", SFT_NESTING_LEVEL (subvar));
+      if (SFT_BASE_FOR_COMPONENTS_P (subvar))
+        fprintf (file, "[B]");
       fprintf (file, " ");
     }
 
@@ -424,7 +425,8 @@ dump_variable (FILE *file, tree var)
 	{
 	  fprintf (file, ", offset: " HOST_WIDE_INT_PRINT_UNSIGNED,
 		   SFT_OFFSET (var));
-	  fprintf (file, ", nesting: %u", SFT_NESTING_LEVEL (var));
+	  fprintf (file, ", base for components: %s",
+		   SFT_BASE_FOR_COMPONENTS_P (var) ? "NO" : "YES");
 	  fprintf (file, ", partitionable: %s",
 		   SFT_UNPARTITIONABLE_P (var) ? "NO" : "YES");
 	}
