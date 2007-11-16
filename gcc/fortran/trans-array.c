@@ -5003,7 +5003,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
         }
       if (sym->attr.allocatable)
         {
-	  if (sym->attr.dummy)
+	  if (sym->attr.dummy || sym->attr.result)
 	    {
 	      gfc_conv_expr_descriptor (se, expr, ss);
 	      se->expr = gfc_conv_array_data (se->expr);
