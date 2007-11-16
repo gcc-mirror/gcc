@@ -502,5 +502,27 @@ extern long double complex ctanl (long double complex);
 #endif
 
 
+/* Gamma-related prototypes.  */
+#if !defined(HAVE_TGAMMA)
+#define HAVE_TGAMMA 1
+extern double tgamma (double);
+#endif
+
+#if !defined(HAVE_LGAMMA)
+#define HAVE_LGAMMA 1
+extern double lgamma (double);
+#endif
+
+#if defined(HAVE_TGAMMA) && !defined(HAVE_TGAMMAF)
+#define HAVE_TGAMMAF 1
+extern float tgammaf (float);
+#endif
+
+#if defined(HAVE_LGAMMA) && !defined(HAVE_LGAMMAF)
+#define HAVE_LGAMMAF 1
+extern float lgammaf (float);
+#endif
+
+
 #endif  /* C99_PROTOS_H  */
 
