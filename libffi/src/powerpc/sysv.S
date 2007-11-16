@@ -121,6 +121,7 @@ L(done_return_value):
 L(fp_return_value):
 	bf	28,L(float_return_value)
 	stfd	%f1,0(%r30)
+	mtcrf   0x02,%r31 /* cr6  */
 	bf	27,L(done_return_value)
 	stfd	%f2,8(%r30)
 	b	L(done_return_value)

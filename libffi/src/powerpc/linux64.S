@@ -125,6 +125,7 @@ ffi_call_LINUX64:
 .Lfp_return_value:
 	bf	28, .Lfloat_return_value
 	stfd	%f1, 0(%r30)
+	mtcrf	0x02, %r31 /* cr6  */
 	bf	27, .Ldone_return_value
 	stfd	%f2, 8(%r30)
 	b	.Ldone_return_value
