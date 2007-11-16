@@ -3791,7 +3791,7 @@ get_or_create_used_part_for (size_t uid)
 static tree
 create_sft (tree var, tree field, unsigned HOST_WIDE_INT offset,
 	    unsigned HOST_WIDE_INT size, alias_set_type alias_set,
-	    unsigned nesting_level)
+	    bool base_for_components)
 {
   tree subvar = create_tag_raw (STRUCT_FIELD_TAG, field, "SFT");
 
@@ -3811,7 +3811,8 @@ create_sft (tree var, tree field, unsigned HOST_WIDE_INT offset,
   SFT_OFFSET (subvar) = offset;
   SFT_SIZE (subvar) = size;
   SFT_ALIAS_SET (subvar) = alias_set;
-  SFT_NESTING_LEVEL (subvar) = nesting_level;
+  SFT_BASE_FOR_COMPONENTS_P (subvar) = base_for_components;
+  SFT_UNPARTITIONABLE_P (subvar) = false;
 
   return subvar;
 }
@@ -3833,7 +3834,7 @@ create_overlap_variables_for (tree var)
     return;
 
   push_fields_onto_fieldstack (TREE_TYPE (var), &fieldstack, 0, NULL,
-			       TREE_TYPE (var), 0);
+			       TREE_TYPE (var));
   /* Make sure to not create SFTs for structs we won't generate variable
      infos for.  See tree-ssa-structalias.c:create_variable_info_for ().  */
   if (VEC_length (fieldoff_s, fieldstack) != 0
@@ -3919,6 +3920,7 @@ create_overlap_variables_for (tree var)
 	     field, skip it.  Note that we always need the field at
 	     offset 0 so we can properly handle pointers to the
 	     structure.  */
+
 	  if ((fo->offset != 0
 	       && ((fo->offset <= up->minused
 		    && fo->offset + fosize <= up->minused)
@@ -3927,9 +3929,8 @@ create_overlap_variables_for (tree var)
 		  && fosize == lastfosize
 		  && currfotype == lastfotype))
 	    continue;
-
-	  subvar = create_sft (var, fo->type, fo->offset, fosize,
-			       fo->alias_set, fo->nesting_level);
+	  subvar = create_sft (var, fo->type, fo->offset,
+			       fosize, fo->alias_set, fo->base_for_components);
 	  VEC_quick_push (tree, *subvars, subvar);
 
 	  if (dump_file)
@@ -3940,8 +3941,7 @@ create_overlap_variables_for (tree var)
 		       SFT_OFFSET (subvar));
 	      fprintf (dump_file, " size " HOST_WIDE_INT_PRINT_DEC,
 		       SFT_SIZE (subvar));
-	      fprintf (dump_file, " nesting level %d\n",
-		       SFT_NESTING_LEVEL (subvar));
+	      fprintf (dump_file, "\n");
 	    }
 	  
 	  lastfotype = currfotype;

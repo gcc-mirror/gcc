@@ -1159,22 +1159,21 @@ struct fieldoff
   /* Field.  */
   tree decl;
 
-  /* Nesting level.  This number represents how many structures are
-     wrapping this field.  */
-  unsigned nesting_level;
-
   /* Offset from the base of the base containing object to this field.  */
   HOST_WIDE_INT offset;  
 
   /* Alias set for the field.  */
   alias_set_type alias_set;
+
+  /* True, if this offset can be a base for further component accesses.  */
+  unsigned base_for_components : 1;
 };
 typedef struct fieldoff fieldoff_s;
 
 DEF_VEC_O(fieldoff_s);
 DEF_VEC_ALLOC_O(fieldoff_s,heap);
-int push_fields_onto_fieldstack (tree, VEC(fieldoff_s,heap) **, HOST_WIDE_INT,
-				 bool *, tree, unsigned);
+int push_fields_onto_fieldstack (tree, VEC(fieldoff_s,heap) **,
+				 HOST_WIDE_INT, bool *, tree);
 void sort_fieldstack (VEC(fieldoff_s,heap) *);
 
 void init_alias_heapvars (void);

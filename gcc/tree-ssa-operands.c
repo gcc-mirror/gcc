@@ -1367,36 +1367,10 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
   return true;
 }
 
-
-/* Given an aggregate expression FULL_REF, return the number of
-   aggregates that are containing FULL_REF.  So, given a structure
-   reference a.b.c.d, the nesting level for this expression is 2 (the
-   number of '.' in the expression minus 1).  */
-
-static unsigned
-ref_nesting_level (tree full_ref)
-{
-  unsigned nesting_level = 0;
-
-  if (!handled_component_p (full_ref))
-    return 0;
-
-  full_ref = TREE_OPERAND (full_ref, 0);
-  while (handled_component_p (full_ref))
-    {
-      nesting_level++;
-      full_ref = TREE_OPERAND (full_ref, 0);
-    }
-
-  return nesting_level;
-}
-
-
-/* Add the actual variables FULL_REF can access, given a member of
-   FULL_REF's points-to set VAR, where FULL_REF is an access of SIZE at
-   OFFSET from var. IS_CALL_SITE is true if this is a call, and IS_DEF
-   is true if this is supposed to be a vdef, and false if this should
-   be a VUSE.
+/* Add the actual variables accessed, given a member of a points-to set
+   that is the SFT VAR, where the access is of SIZE at OFFSET from VAR.
+   IS_CALL_SITE is true if this is a call, and IS_DEF is true if this is
+   supposed to be a vdef, and false if this should be a VUSE.
 
    The real purpose of this function is to take a points-to set for a
    pointer to a structure, say
@@ -1411,12 +1385,10 @@ ref_nesting_level (tree full_ref)
    This is necessary because foop only actually points to foo's first
    member, so that is all the points-to set contains.  However, an access
    to foop->a may be touching some single SFT if we have created some
-   SFT's for a structure.
-
-   FULL_REF is the original memory expression being analyzed.  */
+   SFT's for a structure.  */
 
 static bool
-add_vars_for_offset (tree full_ref, tree var, unsigned HOST_WIDE_INT offset,
+add_vars_for_offset (tree var, unsigned HOST_WIDE_INT offset,
 		     unsigned HOST_WIDE_INT size, bool is_def)
 {
   bool added = false;
@@ -1424,55 +1396,8 @@ add_vars_for_offset (tree full_ref, tree var, unsigned HOST_WIDE_INT offset,
   subvar_t sv;
   unsigned int i;
 
-  if (full_ref
-      && SFT_NESTING_LEVEL (var) > 0
-      && ref_nesting_level (full_ref) < SFT_NESTING_LEVEL (var))
-    {
-      /* Since VAR is an SFT inside a nested structure, the OFFSET
-	 computed by get_ref_base_and_extent is the offset from the
-	 start of the immediately containing structure.  If VAR is an
-	 SFT inside a nested structure, then FULL_REF may be a
-	 reference to the structure immediately enclosing SFT, and so
-	 OFFSET will be the offset from the start of the immediately
-	 enclosing structure.
-
-	 However, to find out what other SFTs are affected by this
-	 reference, we need to know the offsets starting at the root
-	 structure in the nesting hierarchy.
-
-	 For instance, given the following structure:
-
-	 	struct X {
-		  int a;
-		  struct Y {
-		    int b;
-		    struct Z {
-		      int c[3];
-		    } d;
-		  } e;
-		} m;
-
-	 and the following address expression:
-
-		p_1 = &m.e.d;
-
-	 This structure will receive 5 SFTs, namely 2 for fields 'a'
-	 and 'b' and 3 for the array 'c' in struct Z.  So, the
-	 reference p_1->c[2] and m.e.d.c[2] access the exact same
-	 memory location (ie, SFT.5).
-
-	 Now, alias analysis computed the points-to set for pointer
-	 p_1 as  { SFT.3 } because that is the first field that p_1
-	 actually points to.  When the expression p_1->c[2] is
-	 analyzed, get_ref_base_and_extent will return an offset of 96
-	 because we are accessing the third element of the array.  But
-	 the SFT we are looking for is actually at offset 160,
-	 counting from the top of struct X.
-
-	 Therefore, we adjust OFFSET by the offset of VAR so that we
-	 can get at all the fields starting at VAR.  */
-      offset += SFT_OFFSET (var);
-    }
+  /* Adjust offset by the pointed-to location.  */
+  offset += SFT_OFFSET (var);
 
   /* Add all subvars of var that overlap with the access.
      Binary search for the first relevant SFT.  */
@@ -1575,8 +1500,25 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 	     if it is a potential points-to location.  */
 	  if (TREE_CODE (al) == STRUCT_FIELD_TAG
 	      && TREE_CODE (var) == NAME_MEMORY_TAG)
-	    none_added &= !add_vars_for_offset (full_ref, al, offset, size,
-					        flags & opf_def);
+	    {
+	      if (SFT_BASE_FOR_COMPONENTS_P (al))
+		{
+		  /* If AL is the first SFT of a component, it can be used
+		     to find other SFTs at [offset, size] adjacent to it.  */
+		  none_added &= !add_vars_for_offset (al, offset, size,
+						      flags & opf_def);
+		}
+	      else if ((unsigned HOST_WIDE_INT)offset < SFT_SIZE (al))
+		{
+		  /* Otherwise, we only need to consider it if
+		     [offset, size] overlaps with AL.  */
+		  if (flags & opf_def)
+		    append_vdef (al);
+		  else
+		    append_vuse (al);
+		  none_added = false;
+		}
+	    }
 	  else
 	    {
 	      /* Call-clobbered tags may have non-call-clobbered
