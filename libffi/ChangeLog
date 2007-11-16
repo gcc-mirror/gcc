@@ -1,3 +1,10 @@
+2007-11-17  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* src/powerpc/sysv.S: Load correct cr to compare if we have long double.
+	* src/powerpc/linux64.S: Likewise.
+	* src/powerpc/ffi.c: Add a comment to show which part goes into cr6.
+	* testsuite/libffi.call/return_ldl.c: New test.
+
 2007-09-04    <aph@redhat.com>
 
 	* src/arm/sysv.S (UNWIND): New.
