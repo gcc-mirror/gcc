@@ -1981,11 +1981,7 @@ check_inquiry (gfc_expr *e, int not_restricted)
       break;
 
   if (functions[i] == NULL)
-    {
-      gfc_error ("Inquiry function '%s' at %L is not permitted "
-		 "in an initialization expression", name, &e->where);
-      return MATCH_ERROR;
-    }
+    return MATCH_ERROR;
 
   /* At this point we have an inquiry function with a variable argument.  The
      type of the variable might be undefined, but we need it now, because the
