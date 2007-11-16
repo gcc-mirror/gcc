@@ -1,5 +1,16 @@
 2007-11-16  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/stl_algobase.h (struct __lexicographical_compare): Add.
+	(lexicographical_compare<>(_II1, _II1, _II2, _II2)): Use it.
+	(lexicographical_compare(const unsigned char*, const unsigned char*,
+	const unsigned char*, const unsigned char*),
+	lexicographical_compare(const char*, const char*, const char*,
+	const char*)): Remove.
+	* include/ext/numeric_traits.h (__numeric_traits_floating<>::
+	__is_signed): Add.
+
+2007-11-16  Paolo Carlini  <pcarlini@suse.de>
+
 	* src/locale_facets.cc: Fix typo in Copyright.
 
 2007-11-16  Paolo Carlini  <pcarlini@suse.de>
