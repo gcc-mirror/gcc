@@ -1,5 +1,9 @@
 2007-11-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* trans-types.c (gfc_init_types): Use wider buffer.
+
+2007-11-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* trans-types.c (gfc_init_types): Use Fortran-90-style type
 	names, with kinds.
 
