@@ -169,10 +169,10 @@ qualified name</i></span> for each library symbol
 used, and usually enhanced, by strategic use of typedefs. (In the
 cases where the qualified verbage becomes unweidly.)
 	  </p></li>
-</ul>
+</ul></div>
 
 <hr />
-<h2><a name="2.6">Using namespace composition</code></a></h2>
+<h2><a name="2.6">Using namespace composition</a></h2>
 
 <p>
 	<a href="http://gtkmm.sourceforge.net" target="_top">Gtk--</a> defines
@@ -182,12 +182,14 @@ cases where the qualified verbage becomes unweidly.)
 	you put a <span class="emphasis"><i>using</i></span>-declaration into a
 	namespace-definition: the imported symbol(s) gets imported into the
 	currently active namespace(s). For example:
+</p>
 	<pre class="programlisting">
 	  namespace Gtk {
 	  using std::string;
 	  class Window { ... }
 	  }
 	</pre>
+<p>
 	In this example, <code>std::string</code> gets imported into
 	namespace Gtk::.  The result is that you don't have to use
 	<code>std::string</code> in this header, but still
@@ -210,7 +212,7 @@ cases where the qualified verbage becomes unweidly.)
       library.  This information is GCC-specific since the C++
       standard does not address matters of multithreaded applications.
       Unless explicitly prefaced, all information in this section is
-      current as of the GCC 3.0 release and all later point releases.
+      relevant to the GCC 3.0 release and all later releases.
    </p>
    <p>Earlier GCC releases had a somewhat different approach to
       threading configuration and proper compilation.  Before GCC 3.0,
@@ -257,13 +259,13 @@ cases where the qualified verbage becomes unweidly.)
       AFAIK, none of this is properly documented anywhere other than
       in ``gcc -dumpspecs'' (look at lib and cpp entries).
    </p>
-   <p>See <a href="../faq/index.html#3">FAQ</a> (general overview), <a
+   <p>See <a href="../faq/index.html#5_6">FAQ</a> (general overview), <a
       href="../23_containers/howto.html#3">23</a> (containers), and <a
       href="../27_io/howto.html#9">27</a> (I/O) for more information.
    </p>
-   <p>The libstdc++ library (unlike libstdc++-v2, all of it, not
-      just the STL) has been designed so that multithreaded
-      applications using it may be written.  The first problem is
+   <p>The libstdc++ library has been designed so that it can be used in
+      multithreaded applications (with libstdc++-v2 this was
+      only true of the STL parts.)  The first problem is
       finding a <em>fast</em> method of implementation portable to all
       platforms.  Due to historical reasons, some of the library is
       written against per-CPU-architecture spinlocks and other parts
@@ -274,7 +276,8 @@ cases where the qualified verbage becomes unweidly.)
       href="http://www.sgi.com/tech/stl/thread_safety.html">same
       definition that SGI</a> uses for their STL subset.  However, the
       exception for read-only containers only applies to the STL
-      components.
+      components. This definition is widely-used and something similar
+      will be used in the next version of the C++ standard library.
    </p>
    <p>Here is a small link farm to threads (no pun) in the mail archives
       that discuss the threading problem.  Each link is to the first
@@ -482,7 +485,7 @@ cases where the qualified verbage becomes unweidly.)
     default. When defined, memory allocation and allocators controlled
     by libstdc++ call operator new/delete without caching and
     pooling. Configurable via
-    <code>--enable-libstdcxx-allocator</code>. ABI-changing.</a>
+    <code>--enable-libstdcxx-allocator</code>. ABI-changing.
     </dd>
 
 

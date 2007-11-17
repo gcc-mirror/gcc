@@ -306,7 +306,7 @@ containers have additional debug capability.
 <p>The following library components provide extra debugging
   capabilities in debug mode:</p>
 <ul>
-  <li><code>std::basic_string</code> (no safe iterators)</li>
+  <li><code>std::basic_string</code> (no safe iterators and see note below)</li>
   <li><code>std::bitset</code></li>
   <li><code>std::deque</code></li>
   <li><code>std::list</code></li>
@@ -321,6 +321,23 @@ containers have additional debug capability.
   <li><code>std::unordered_multiset</code></li>
 </ul>
 
+<p>N.B. although there are precondition checks for some string operations,
+e.g.  <code>operator[]</code>,
+they will not always be run when using the <code>char</code> and
+<code>wchar_t</code> specialisations (<code>std::string</code> and
+<code>std::wstring</code>).  This is because libstdc++ uses GCC's
+<code>extern template</code> extension to provide explicit instantiations
+of <code>std::string</code> and <code>std::wstring</code>, and those
+explicit instantiations don't include the debug-mode checks.  If the
+containing functions are inlined then the checks will run, so compiling
+with <code>-O1</code> might be enough to enable them.  Alternatively
+<code>-D_GLIBCXX_EXTERN_TEMPLATE=0</code> will suppress the declarations
+of the explicit instantiations and cause the functions to be instantiated
+with the debug-mode checks included, but this is unsupported and not
+guaranteed to work.  For full debug-mode support you can use the
+<code>__gnu_debug::basic_string</code> debugging container directly,
+which always works correctly.
+</p>
 
 <h3 class="left"><a name="mem">Tips for memory leak hunting</a></h3>
 
@@ -339,9 +356,9 @@ containers have additional debug capability.
    thing of great importance to keep in mind when debugging C++ code
    that uses <code>new</code> and <code>delete</code>:
    there are different kinds of allocation schemes that can be used by
-   <code> std::allocator </code>. For implementation details, see this
-   <a href="ext/howto.html#3"> document</a> and look specifically for
-   <code>GLIBCXX_FORCE_NEW</code>. 
+   <code> std::allocator </code>. For implementation details, see the
+   <a href="ext/mt_allocator.html">mt allocator</a> documentation and
+   look specifically for <code>GLIBCXX_FORCE_NEW</code>. 
 </p>
 
 <p>In a nutshell, the default allocator used by <code>

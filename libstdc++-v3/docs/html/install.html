@@ -56,17 +56,16 @@
       also lists the tools you will need if you wish to modify the source.
    </p>
 
-   <p>As of June 19, 2000, libstdc++ attempts to use tricky and
-      space-saving features of the GNU toolchain, enabled with
-      <code>-ffunction-sections -fdata-sections -Wl,--gc-sections</code>.
-      To obtain maximum benefit from this, binutils after this date should
-      also be used (bugs were fixed with C++ exception handling related
-      to this change in libstdc++).  The version of these tools should
-      be <code>2.10.90</code>, or later, and you can get snapshots (as
-      well as releases) of binutils
-      <a href="ftp://sources.redhat.com/pub/binutils">here</a>. The
-      configure process will automatically detect and use these features
-      if the underlying support is present.
+   <p>As of GCC 4.0.1 the minimum version of binutils required to build
+      libstdc++ is <code>2.15.90.0.1.1</code>. You can get snapshots
+      (as well as releases) of binutils from
+      <a href="ftp://sources.redhat.com/pub/binutils">
+      ftp://sources.redhat.com/pub/binutils</a>.
+      Older releases of libstdc++ do not require such a recent version,
+      but to take full advantage of useful space-saving features and
+      bug-fixes you should use a recent binutils if possible.
+      The configure process will automatically detect and use these
+      features if the underlying support is present.
    </p>
 
    <p>Finally, a few system-specific requirements: </p>

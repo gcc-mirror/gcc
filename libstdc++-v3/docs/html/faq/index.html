@@ -100,6 +100,7 @@
            <li><a href="#4_4_dlsym">program crashes when using library code
                                in a dynamically-loaded library</a> </li>
            <li><a href="#4_4_leak">"memory leaks" in containers</a> </li>
+           <li><a href="#4_4_list_size">list::size() is O(n)!</a> </li>
          </ul>
          </li>
          <li><a href="#4_5">Aw, that's easy to fix!</a> </li>
@@ -278,22 +279,25 @@ which is no longer available, thanks deja...-->
          an installation document), but the tools required are few:
       </p>
          <ul>
-            <li> A 3.x release of GCC.  Note that building GCC is much
-                 easier and more automated than building the GCC 2.[78]
-                 series was.  If you are using GCC 2.95, you can still
-                 build earlier snapshots of libstdc++.
+            <li> A 3.x or later release of GCC.  Either install a suitable
+                 package for your system, or compile GCC from the sources.
+                 Note that building GCC
+                 is much easier and more automated than building the GCC
+                 2.[78] series was.  If you are using GCC 2.95, you can
+                 still build earlier snapshots of libstdc++ but you
+                 should consult the documentation that comes with the
+                 sources, the instructions are no longer included here.
             </li>
-            <li> GNU Make is required for GCC 3.4 and later.
+            <li> GNU Make is required to build GCC 3.4 and later.
             </li>
             <li> The GNU Autotools are needed if you are messing with
                  the configury or makefiles.
             </li>
          </ul>
-      <p>The file <a href="../documentation.html">documentation.html</a>
-         provides a good overview of the steps necessary to build, install,
+      <p>The file <a href="../documentation.html#2">documentation.html</a>
+         links to documentation of the steps necessary to build, install,
          and use the library.  Instructions for configuring the library
-         with new flags such as --enable-threads are there also, as well as
-         patches and instructions for working with GCC 2.95.
+         with flags such as --enable-threads are there also.
       </p>
       <p>The top-level install.html file contains
          the exact build and installation instructions.  You may wish to
@@ -794,6 +798,10 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          first.
       </p>
 
+      <p><a name="4_4_list_size"><strong>list::size() is O(n)!</strong></a>
+         See the <a href='../23_containers/howto.html#6'>Containers</a>
+         chapter.
+      </p>
 <hr />
    <h2><a name="4_5">4.5 Aw, that's easy to fix!</a></h2>
       <p>If you have found a bug in the library and you think you have
@@ -851,10 +859,12 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          resolution specifies.  Those additions are listed in
          <a href="../ext/howto.html#5">the extensions page</a>.
       </p></li>
-      <li><p>Performance tuning.  Lots of performance tuning.  This too is
-         already underway for post-3.0 releases, starting with memory
-         expansion in container classes and buffer usage in synchronized
-         stream objects.
+      <li><p>Performance tuning.  Lots of performance tuning was done for the
+         3.x releases, including memory expansion in container classes and
+         buffer usage in synchronized stream objects.
+         Later performance-related work includes "move semantics"
+         for containers and (optional) non-reference-counted strings (which
+         can give performance benefits for multithreaded programs.)
       </p></li>
       <li><p>An ABI for libstdc++ is being developed, so that
          multiple binary-incompatible copies of the library can be replaced
@@ -933,7 +943,7 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
         namespace extension { using ::hash_map; }; // inherit globals
       #else
         #include &lt;backward/hash_map&gt;
-        #if __GNUC_MINOR__ == 0
+        #if __GNUC__ == 3 &amp;&amp; __GNUC_MINOR__ == 0
           namespace extension = std;               // GCC 3.0
         #else
           namespace extension = ::__gnu_cxx;       // GCC 3.1 and later
@@ -1109,6 +1119,9 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
       </p>
       <p>Who is your country's member body?  Visit the
          <a href="http://www.iso.ch/">ISO homepage</a> and find out!
+      </p>
+      <p>The 2003 version of the standard (the 1998 version plus TC1) is
+         available in print, ISBN 0-470-84674-7.
       </p>
 
 <hr />
