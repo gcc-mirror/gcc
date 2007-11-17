@@ -114,8 +114,7 @@
    <p>(Side note:  for those of you wondering, <strong>&quot;Why wasn't a hash
       table included in the Standard in the first #!$@ place?&quot;</strong>
       I'll give a quick answer:  it was proposed, but too late and in too
-      unorganized a fashion.  Some sort of hashing will undoubtedly be
-      included in a future Standard.)
+      unorganized a fashion.)
    </p>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
@@ -137,6 +136,8 @@
      <li>Extensions allowing <code>filebuf</code>s to be constructed from
          stdio types are described in the
          <a href="../27_io/howto.html#11">chapter 27 notes</a>.</li>
+     <li>The C++ Standard Library Technical Report adds many new features
+         to the library, see <a href="../faq/index.html#5_5">FAQ 5.5</a>.</li>
    </ul>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
@@ -423,8 +424,8 @@
     <dt><a href="lwg-defects.html#241">241</a>:
         <em>Does unique_copy() require CopyConstructible and Assignable?</em>
     </dt>
-    <dd>Add an helper for forward_iterator/output_iterator, fix the existing
-        one for input_iterator/output_iterator not to rely on Assignability.
+    <dd>Add a helper for forward_iterator/output_iterator, fix the existing
+        one for input_iterator/output_iterator to not rely on Assignability.
     </dd>
 
     <dt><a href="lwg-defects.html#243">243</a>:
@@ -639,7 +640,7 @@
     </dd>
 
     <dt><a href="lwg-active.html#695">695</a>:
-        <em>ctype<char>::classic_table() not accessible</em>
+        <em>ctype&lt;char&gt;::classic_table() not accessible</em>
     </dt>
     <dd>Make the member functions table and classic_table public.
     </dd>

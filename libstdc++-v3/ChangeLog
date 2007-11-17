@@ -1,3 +1,11 @@
+2007-11-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* docs/html/17_intro/howto.html, docs/html/21_strings/howto.html,
+	docs/html/22_locale/codecvt.html, docs/html/23_containers/howto.html,
+	docs/html/27_io/howto.html, docs/html/ext/howto.html,
+	docs/html/debug.html,  docs/html/install.html,
+	docs/html/faq/index.html: Fix typos and anachronisms.
+
 2007-11-16  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_algobase.h (struct __lexicographical_compare):
