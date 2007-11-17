@@ -1,3 +1,9 @@
+2007-11-17  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34130
+	* fold-const.c (extract_muldiv_1): Do not move negative
+	constants inside ABS_EXPR.
+
 2007-11-16  Ian Lance Taylor  <iant@google.com>
 
 	* collect2.c (dump_file): If a demangled symbol is followed by a
