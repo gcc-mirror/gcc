@@ -687,7 +687,7 @@ gfc_init_types (void)
     {
       type = gfc_build_int_type (&gfc_integer_kinds[index]);
       gfc_integer_types[index] = type;
-      snprintf (name_buf, sizeof(name_buf), "int%d",
+      snprintf (name_buf, sizeof(name_buf), "integer(kind=%d)",
 		gfc_integer_kinds[index].kind);
       PUSH_TYPE (name_buf, type);
     }
@@ -696,7 +696,7 @@ gfc_init_types (void)
     {
       type = gfc_build_logical_type (&gfc_logical_kinds[index]);
       gfc_logical_types[index] = type;
-      snprintf (name_buf, sizeof(name_buf), "logical%d",
+      snprintf (name_buf, sizeof(name_buf), "logical(kind=%d)",
 		gfc_logical_kinds[index].kind);
       PUSH_TYPE (name_buf, type);
     }
@@ -705,20 +705,20 @@ gfc_init_types (void)
     {
       type = gfc_build_real_type (&gfc_real_kinds[index]);
       gfc_real_types[index] = type;
-      snprintf (name_buf, sizeof(name_buf), "real%d",
+      snprintf (name_buf, sizeof(name_buf), "real(kind=%d)",
 		gfc_real_kinds[index].kind);
       PUSH_TYPE (name_buf, type);
 
       type = gfc_build_complex_type (type);
       gfc_complex_types[index] = type;
-      snprintf (name_buf, sizeof(name_buf), "complex%d",
+      snprintf (name_buf, sizeof(name_buf), "complex(kind=%d)",
 		gfc_real_kinds[index].kind);
       PUSH_TYPE (name_buf, type);
     }
 
   gfc_character1_type_node = build_type_variant (unsigned_char_type_node, 
 						 0, 0);
-  PUSH_TYPE ("char", gfc_character1_type_node);
+  PUSH_TYPE ("character(kind=1)", gfc_character1_type_node);
 
   PUSH_TYPE ("byte", unsigned_char_type_node);
   PUSH_TYPE ("void", void_type_node);
