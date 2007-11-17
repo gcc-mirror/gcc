@@ -3895,9 +3895,18 @@ gfc_match_suffix (gfc_symbol *sym, gfc_symbol **result)
     }
 
   if (is_bind_c == MATCH_YES)
-    if (gfc_add_is_bind_c (&(sym->attr), sym->name, &gfc_current_locus, 1)
-        == FAILURE)
-      return MATCH_ERROR;
+    {
+      if (gfc_current_state () == COMP_CONTAINS
+	  && sym->ns->proc_name->attr.flavor != FL_MODULE)
+	{
+          gfc_error ("BIND(C) attribute at %L may not be specified for an "
+		     "internal procedure", &gfc_current_locus);
+	  return MATCH_ERROR;
+	}
+      if (gfc_add_is_bind_c (&(sym->attr), sym->name, &gfc_current_locus, 1)
+	  == FAILURE)
+     	return MATCH_ERROR;
+    }
   
   return found_match;
 }
@@ -4553,6 +4562,13 @@ gfc_match_subroutine (void)
 
   if (is_bind_c == MATCH_YES)
     {
+      if (gfc_current_state () == COMP_CONTAINS
+	  && sym->ns->proc_name->attr.flavor != FL_MODULE)
+	{
+          gfc_error ("BIND(C) attribute at %L may not be specified for an "
+		     "internal procedure", &gfc_current_locus);
+	  return MATCH_ERROR;
+	}
       if (peek_char != '(')
         {
           gfc_error ("Missing required parentheses before BIND(C) at %C");

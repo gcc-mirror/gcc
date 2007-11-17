@@ -1,8 +1,9 @@
 ! { dg-do compile }
 !
+module mod_interf_abstract
 implicit none
 abstract interface :: one ! { dg-error "Syntax error in ABSTRACT INTERFACE statement" }
-end interface ! { dg-error "Expecting END PROGRAM statement" }
+end interface ! { dg-error "Expecting END MODULE statement" }
 
 abstract interface
   subroutine two() bind(C)
@@ -18,4 +19,4 @@ contains
   subroutine sub() bind(C,name="subC")
   end subroutine
 
-end
+end module mod_interf_abstract
