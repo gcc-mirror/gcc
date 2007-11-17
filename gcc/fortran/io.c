@@ -919,7 +919,7 @@ finished:
 static try
 check_format_string (gfc_expr *e, bool is_input)
 {
-  if (!e || e->expr_type != EXPR_CONSTANT)
+  if (!e || e->ts.type != BT_CHARACTER || e->expr_type != EXPR_CONSTANT)
     return SUCCESS;
 
   mode = MODE_STRING;
@@ -2082,6 +2082,7 @@ match_dt_format (gfc_dt *dt)
   locus where;
   gfc_expr *e;
   gfc_st_label *label;
+  match m;
 
   where = gfc_current_locus;
 
@@ -2094,7 +2095,7 @@ match_dt_format (gfc_dt *dt)
       return MATCH_YES;
     }
 
-  if (gfc_match_st_label (&label) == MATCH_YES)
+  if ((m = gfc_match_st_label (&label)) == MATCH_YES)
     {
       if (dt->format_expr != NULL || dt->format_label != NULL)
 	{
@@ -2108,6 +2109,9 @@ match_dt_format (gfc_dt *dt)
       dt->format_label = label;
       return MATCH_YES;
     }
+  else if (m == MATCH_ERROR)
+    /* The label was zero or too large.  Emit the correct diagnosis.  */
+    return MATCH_ERROR;
 
   if (gfc_match_expr (&e) == MATCH_YES)
     {
