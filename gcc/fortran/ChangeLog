@@ -1,3 +1,10 @@
+2007-11-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/34108
+	* io.c (check_format_string): Only check character expressions.
+	(match_dt_format): Return MATCH_ERROR if that is what
+	gfc_match_st_label said.
+
 2007-11-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/33957
