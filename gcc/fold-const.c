@@ -6095,6 +6095,9 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
             }
           break;
         }
+      /* If the constant is negative, we cannot simplify this.  */
+      if (tree_int_cst_sgn (c) == -1)
+        break;
       /* FALLTHROUGH */
     case NEGATE_EXPR:
       if ((t1 = extract_muldiv (op0, c, code, wide_type, strict_overflow_p))
