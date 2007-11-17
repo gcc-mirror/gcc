@@ -1,5 +1,12 @@
 2007-11-16  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/stl_algobase.h (struct __lexicographical_compare):
+	Move to namespace std.
+	(__lexicographical_compare_aux<>(_II1, _II1, _II2, _II2)): Add.
+	(lexicographical_compare<>(_II1, _II1, _II2, _II2)): Call the latter.
+
+2007-11-16  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/stl_algobase.h (struct __lexicographical_compare): Add.
 	(lexicographical_compare<>(_II1, _II1, _II2, _II2)): Use it.
 	(lexicographical_compare(const unsigned char*, const unsigned char*,

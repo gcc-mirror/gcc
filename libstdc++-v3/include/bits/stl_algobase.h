@@ -815,6 +815,65 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         { return true; }
     };
 
+  template<bool _BoolType>
+    struct __lexicographical_compare
+    {
+      template<typename _II1, typename _II2>
+        static bool
+        __lc(_II1 __first1, _II1 __last1, _II2 __first2, _II2 __last2)
+        {
+	  typedef typename iterator_traits<_II1>::iterator_category _Category1;
+	  typedef typename iterator_traits<_II2>::iterator_category _Category2;
+	  typedef std::__lc_rai<_Category1, _Category2> 	__rai_type;
+
+	  __last1 = __rai_type::__newlast1(__first1, __last1,
+					   __first2, __last2);
+	  for (; __first1 != __last1 && __rai_type::__cnd2(__first2, __last2);
+	       ++__first1, ++__first2)
+	    {
+	      if (*__first1 < *__first2)
+		return true;
+	      if (*__first2 < *__first1)
+		return false;
+	    }
+	  return __first1 == __last1 && __first2 != __last2;
+	}
+    };
+
+  template<>
+    struct __lexicographical_compare<true>
+    {
+      template<typename _Tp, typename _Up>
+        static bool
+        __lc(const _Tp* __first1, const _Tp* __last1,
+	     const _Up* __first2, const _Up* __last2)
+	{
+	  const size_t __len1 = __last1 - __first1;
+	  const size_t __len2 = __last2 - __first2;
+	  const int __result = __builtin_memcmp(__first1, __first2,
+						std::min(__len1, __len2));
+	  return __result != 0 ? __result < 0 : __len1 < __len2;
+	}
+    };
+
+  template<typename _II1, typename _II2>
+    inline bool
+    __lexicographical_compare_aux(_II1 __first1, _II1 __last1,
+				  _II2 __first2, _II2 __last2)
+    {
+      typedef typename iterator_traits<_II1>::value_type _ValueType1;
+      typedef typename iterator_traits<_II2>::value_type _ValueType2;
+      const bool __simple =
+	(__is_byte<_ValueType1>::__value && __is_byte<_ValueType2>::__value
+	 && !__gnu_cxx::__numeric_traits<_ValueType1>::__is_signed
+	 && !__gnu_cxx::__numeric_traits<_ValueType2>::__is_signed
+	 && __is_pointer<_II1>::__value
+	 && __is_pointer<_II2>::__value);
+
+      return std::__lexicographical_compare<__simple>::__lc(__first1, __last1,
+							    __first2, __last2);
+    }
+
 _GLIBCXX_END_NAMESPACE
 
 _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
@@ -877,48 +936,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
       return true;
     }
 
-
-  template<bool _BoolType>
-    struct __lexicographical_compare
-    {
-      template<typename _II1, typename _II2>
-        static bool
-        __lc(_II1 __first1, _II1 __last1, _II2 __first2, _II2 __last2)
-        {
-	  typedef typename iterator_traits<_II1>::iterator_category _Category1;
-	  typedef typename iterator_traits<_II2>::iterator_category _Category2;
-	  typedef std::__lc_rai<_Category1, _Category2> 	__rai_type;
-
-	  __last1 = __rai_type::__newlast1(__first1, __last1,
-					   __first2, __last2);
-	  for (; __first1 != __last1 && __rai_type::__cnd2(__first2, __last2);
-	       ++__first1, ++__first2)
-	    {
-	      if (*__first1 < *__first2)
-		return true;
-	      if (*__first2 < *__first1)
-		return false;
-	    }
-	  return __first1 == __last1 && __first2 != __last2;
-	}
-    };
-
-  template<>
-    struct __lexicographical_compare<true>
-    {
-      template<typename _Tp, typename _Up>
-        static bool
-        __lc(const _Tp* __first1, const _Tp* __last1,
-	     const _Up* __first2, const _Up* __last2)
-	{
-	  const size_t __len1 = __last1 - __first1;
-	  const size_t __len2 = __last2 - __first2;
-	  const int __result = __builtin_memcmp(__first1, __first2,
-						std::min(__len1, __len2));
-	  return __result != 0 ? __result < 0 : __len1 < __len2;
-	}
-    };
-
   /**
    *  @brief Performs "dictionary" comparison on ranges.
    *  @param  first1  An input iterator.
@@ -948,15 +965,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
       __glibcxx_requires_valid_range(__first1, __last1);
       __glibcxx_requires_valid_range(__first2, __last2);
 
-      const bool __simple =
-	(__is_byte<_ValueType1>::__value && __is_byte<_ValueType2>::__value
-	 && !__gnu_cxx::__numeric_traits<_ValueType1>::__is_signed
-	 && !__gnu_cxx::__numeric_traits<_ValueType2>::__is_signed
-	 && __is_pointer<_II1>::__value
-	 && __is_pointer<_II2>::__value);
-
-      return _GLIBCXX_STD_P::__lexicographical_compare<__simple>::
-	__lc(__first1, __last1, __first2, __last2);
+      return std::__lexicographical_compare_aux
+	(std::__niter_base<_II1>::__b(__first1),
+	 std::__niter_base<_II1>::__b(__last1),
+	 std::__niter_base<_II2>::__b(__first2),
+	 std::__niter_base<_II2>::__b(__last2));
     }
 
   /**
@@ -997,7 +1010,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
 	}
       return __first1 == __last1 && __first2 != __last2;
     }
-
 
   /**
    *  @brief Finds the places in ranges which don't match.
