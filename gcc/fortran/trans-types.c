@@ -672,7 +672,7 @@ c_size_t_size (void)
 void
 gfc_init_types (void)
 {
-  char name_buf[16];
+  char name_buf[18];
   int index;
   tree type;
   unsigned n;
