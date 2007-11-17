@@ -2308,6 +2308,8 @@ try gfc_extend_expr (gfc_expr *);
 void gfc_free_formal_arglist (gfc_formal_arglist *);
 try gfc_extend_assign (gfc_code *, gfc_namespace *);
 try gfc_add_interface (gfc_symbol *);
+gfc_interface *gfc_current_interface_head (void);
+void gfc_set_current_interface_head (gfc_interface *);
 
 /* io.c */
 extern gfc_st_label format_asterisk;

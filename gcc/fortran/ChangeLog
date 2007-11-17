@@ -1,5 +1,15 @@
 2007-11-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/25252
+	* interface.c (gfc_current_interface_head,
+	gfc_set_current_interface_head): New functions.
+	* decl.c (gfc_match_modproc): Move check for syntax error earlier.
+	On syntax error, restore previous state of the interface.
+	* gfortran.h (gfc_current_interface_head,
+	gfc_set_current_interface_head): New prototypes.
+
+2007-11-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/30285
 	* module.c (struct written_common, written_commons): New structure.
 	(compare_written_commons, free_written_common, write_common_0):

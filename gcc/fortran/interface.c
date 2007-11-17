@@ -2707,6 +2707,52 @@ gfc_add_interface (gfc_symbol *new)
 }
 
 
+gfc_interface *
+gfc_current_interface_head (void)
+{
+  switch (current_interface.type)
+    {
+      case INTERFACE_INTRINSIC_OP:
+	return current_interface.ns->operator[current_interface.op];
+	break;
+
+      case INTERFACE_GENERIC:
+	return current_interface.sym->generic;
+	break;
+
+      case INTERFACE_USER_OP:
+	return current_interface.uop->operator;
+	break;
+
+      default:
+	gcc_unreachable ();
+    }
+}
+
+
+void
+gfc_set_current_interface_head (gfc_interface *i)
+{
+  switch (current_interface.type)
+    {
+      case INTERFACE_INTRINSIC_OP:
+	current_interface.ns->operator[current_interface.op] = i;
+	break;
+
+      case INTERFACE_GENERIC:
+	current_interface.sym->generic = i;
+	break;
+
+      case INTERFACE_USER_OP:
+	current_interface.uop->operator = i;
+	break;
+
+      default:
+	gcc_unreachable ();
+    }
+}
+
+
 /* Gets rid of a formal argument list.  We do not free symbols.
    Symbols are freed when a namespace is freed.  */
 
