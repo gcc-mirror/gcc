@@ -3767,51 +3767,119 @@ gfc_check_access (gfc_access specific_access, gfc_access default_access)
 }
 
 
-/* Write a common block to the module.  */
+/* A structure to remember which commons we've already written.  */
+
+struct written_common
+{
+  BBT_HEADER(written_common);
+  const char *name, *label;
+};
+
+static struct written_common *written_commons = NULL;
+
+/* Comparison function used for balancing the binary tree.  */
+
+static int
+compare_written_commons (void *a1, void *b1)
+{
+  const char *aname = ((struct written_common *) a1)->name;
+  const char *alabel = ((struct written_common *) a1)->label;
+  const char *bname = ((struct written_common *) b1)->name;
+  const char *blabel = ((struct written_common *) b1)->label;
+  int c = strcmp (aname, bname);
+
+  return (c != 0 ? c : strcmp (alabel, blabel));
+}
+
+/* Free a list of written commons.  */
 
 static void
-write_common (gfc_symtree *st)
+free_written_common (struct written_common *w)
+{
+  if (!w)
+    return;
+
+  if (w->left)
+    free_written_common (w->left);
+  if (w->right)
+    free_written_common (w->right);
+
+  gfc_free (w);
+}
+
+/* Write a common block to the module -- recursive helper function.  */
+
+static void
+write_common_0 (gfc_symtree *st)
 {
   gfc_common_head *p;
   const char * name;
   int flags;
   const char *label;
+  struct written_common *w;
+  bool write_me = true;
 	      
   if (st == NULL)
     return;
 
-  write_common (st->left);
-  write_common (st->right);
+  write_common_0 (st->left);
 
-  mio_lparen ();
-
-  /* Write the unmangled name.  */
+  /* We will write out the binding label, or the name if no label given.  */
   name = st->n.common->name;
-
-  mio_pool_string (&name);
-
   p = st->n.common;
-  mio_symbol_ref (&p->head);
-  flags = p->saved ? 1 : 0;
-  if (p->threadprivate) flags |= 2;
-  mio_integer (&flags);
+  label = p->is_bind_c ? p->binding_label : p->name;
 
-  /* Write out whether the common block is bind(c) or not.  */
-  mio_integer (&(p->is_bind_c));
+  /* Check if we've already output this common.  */
+  w = written_commons;
+  while (w)
+    {
+      int c = strcmp (name, w->name);
+      c = (c != 0 ? c : strcmp (label, w->label));
+      if (c == 0)
+	write_me = false;
 
-  /* Write out the binding label, or the com name if no label given.  */
-  if (p->is_bind_c)
-    {
-      label = p->binding_label;
-      mio_pool_string (&label);
-    }
-  else
-    {
-      label = p->name;
-      mio_pool_string (&label);
+      w = (c < 0) ? w->left : w->right;
     }
 
-  mio_rparen ();
+  if (write_me)
+    {
+      /* Write the common to the module.  */
+      mio_lparen ();
+      mio_pool_string (&name);
+
+      mio_symbol_ref (&p->head);
+      flags = p->saved ? 1 : 0;
+      if (p->threadprivate)
+	flags |= 2;
+      mio_integer (&flags);
+
+      /* Write out whether the common block is bind(c) or not.  */
+      mio_integer (&(p->is_bind_c));
+
+      mio_pool_string (&label);
+      mio_rparen ();
+
+      /* Record that we have written this common.  */
+      w = gfc_getmem (sizeof (struct written_common));
+      w->name = p->name;
+      w->label = label;
+      gfc_insert_bbt (&written_commons, w, compare_written_commons);
+    }
+
+  write_common_0 (st->right);
+}
+
+
+/* Write a common, by initializing the list of written commons, calling
+   the recursive function write_common_0() and cleaning up afterwards.  */
+
+static void
+write_common (gfc_symtree *st)
+{
+  written_commons = NULL;
+  write_common_0 (st);
+  free_written_common (written_commons);
+  written_commons = NULL;
 }
 
 

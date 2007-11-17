@@ -1,5 +1,13 @@
 2007-11-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/30285
+	* module.c (struct written_common, written_commons): New structure.
+	(compare_written_commons, free_written_common, write_common_0):
+	New functions.
+	(write_common): Call recursive function write_common_0.
+
+2007-11-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/34108
 	* io.c (check_format_string): Only check character expressions.
 	(match_dt_format): Return MATCH_ERROR if that is what
