@@ -8,9 +8,8 @@
 
 #include <altivec.h>
 
-typedef int bt;
-typedef vector bt vt;
-typedef struct { vt x; bt y[sizeof(vt) / sizeof (bt)]; } st;
+typedef vector int vt;
+typedef struct { vt x; int y[sizeof(vt) / sizeof (int)]; } st;
 #define INIT { 1, 2, 3, 4 }
 
 void f ()

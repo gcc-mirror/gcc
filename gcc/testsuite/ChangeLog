@@ -1,3 +1,9 @@
+2007-11-18  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.target/powerpc/altivec-23.c: Do not use a typedef name as a
+	type specifier, as they are not permitted according to the AltiVec
+	Programming Interface Manual.
+
 2007-11-17  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34133
