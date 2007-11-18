@@ -1,3 +1,8 @@
+2007-11-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31608
+	* gfortran.dg/char_cast_2.f90: New test based on achar_4.f90.
+
 2007-11-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34137
