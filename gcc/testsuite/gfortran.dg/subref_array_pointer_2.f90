@@ -81,7 +81,7 @@
   tar3%t => tar1
   ptr3 => tar3%t%r
   ptr3 = cos (ptr3)
-  if (any (ptr3 .ne. (/cos(1.0_4), cos(3.0_4)/))) call abort ()
+  if (any (abs(ptr3 - (/cos(1.0_4), cos(3.0_4)/)) >= epsilon(1.0_4))) call abort ()
 
   ptr2 => tar3%t(:)%chr(2:3)
   ptr2 = " x"
