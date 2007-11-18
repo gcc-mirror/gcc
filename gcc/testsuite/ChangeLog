@@ -1,3 +1,11 @@
+2007-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/30988
+	* g++.dg/warn/noreturn-4.C: New test.
+	* g++.dg/warn/noreturn-5.C: New test.
+	* g++.dg/warn/noreturn-6.C: New test.
+	* g++.dg/warn/noreturn-7.C: New test.
+
 2007-11-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/32770
