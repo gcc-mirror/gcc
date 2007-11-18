@@ -959,8 +959,8 @@ tree_ssa_forward_propagate_single_use_vars (void)
 		       || TREE_CODE (rhs) == CONVERT_EXPR)
 		      && TREE_CODE (TREE_OPERAND (rhs, 0)) == ADDR_EXPR
 		      && POINTER_TYPE_P (TREE_TYPE (rhs))
-		      && useless_type_conversion_p (TREE_TYPE (TREE_TYPE (TREE_OPERAND (rhs, 0))),
-						    TREE_TYPE (TREE_TYPE (rhs)))))
+		      && types_compatible_p (TREE_TYPE (TREE_TYPE (TREE_OPERAND (rhs, 0))),
+					     TREE_TYPE (TREE_TYPE (rhs)))))
 		{
 		  if (forward_propagate_addr_expr (lhs, rhs))
 		    {

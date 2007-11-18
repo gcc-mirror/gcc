@@ -1,3 +1,8 @@
+2007-11-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34127
+	* gcc.c-torture/compile/pr34127.c: New testcase.
+
 2007-11-18  Ben Elliston  <bje@au.ibm.com>
 
 	* gcc.target/powerpc/altivec-23.c: Do not use a typedef name as a

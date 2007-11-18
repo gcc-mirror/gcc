@@ -1,3 +1,10 @@
+2007-11-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34127
+	* tree-ssa-forwprop.c (tree_ssa_forward_propagate_single_use_vars):
+	Make code match up the comments, require compatibility of the
+	pointed-to types.
+
 2007-11-17  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/34130
