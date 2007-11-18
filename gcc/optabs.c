@@ -54,12 +54,27 @@ along with GCC; see the file COPYING3.  If not see
 
    See expr.h for documentation of these optabs.  */
 
-optab optab_table[OTI_MAX];
+#if GCC_VERSION >= 4000
+__extension__ struct optab optab_table[OTI_MAX]
+  = { [0 ... OTI_MAX - 1].handlers[0 ... NUM_MACHINE_MODES - 1].insn_code
+      = CODE_FOR_nothing };
+#else
+/* new_optab will do runtime initialization otherwise.  */
+struct optab optab_table[OTI_MAX];
+#endif
 
 rtx libfunc_table[LTI_MAX];
 
 /* Tables of patterns for converting one mode to another.  */
-convert_optab convert_optab_table[COI_MAX];
+#if GCC_VERSION >= 4000
+__extension__ struct convert_optab convert_optab_table[COI_MAX]
+  = { [0 ... COI_MAX - 1].handlers[0 ... NUM_MACHINE_MODES - 1]
+	[0 ... NUM_MACHINE_MODES - 1].insn_code
+      = CODE_FOR_nothing };
+#else
+/* init_convert_optab will do runtime initialization otherwise.  */
+struct convert_optab convert_optab_table[COI_MAX];
+#endif
 
 /* Contains the optab used for each rtx code.  */
 optab code_to_optab[NUM_RTX_CODE + 1];
@@ -161,7 +176,7 @@ convert_optab_libfunc (convert_optab optab, enum machine_mode mode1,
   struct libfunc_entry e;
   struct libfunc_entry **slot;
 
-  e.optab = (size_t) (convert_optab_table[0] - optab);
+  e.optab = (size_t) (optab - &convert_optab_table[0]);
   e.mode1 = mode1;
   e.mode2 = mode2;
   slot = (struct libfunc_entry **) htab_find_slot (libfunc_hash, &e, NO_INSERT);
@@ -190,7 +205,7 @@ optab_libfunc (optab optab, enum machine_mode mode)
   struct libfunc_entry e;
   struct libfunc_entry **slot;
 
-  e.optab = (size_t) (optab_table[0] - optab);
+  e.optab = (size_t) (optab - &optab_table[0]);
   e.mode1 = mode;
   e.mode2 = VOIDmode;
   slot = (struct libfunc_entry **) htab_find_slot (libfunc_hash, &e, NO_INSERT);
@@ -5550,59 +5565,55 @@ have_insn_for (enum rtx_code code, enum machine_mode mode)
 }
 
 /* Create a blank optab.  */
-static optab
-new_optab (void)
+#if GCC_VERSION >= 4000
+static inline void
+new_optab (optab op ATTRIBUTE_UNUSED)
+{
+  /* All insn_code fields are already initialized using
+     designated initializers.  */
+}
+#else
+static void
+new_optab (optab op)
 {
   int i;
-  optab op = xcalloc (sizeof (struct optab), 1);
 
   for (i = 0; i < NUM_MACHINE_MODES; i++)
     optab_handler (op, i)->insn_code = CODE_FOR_nothing;
-
-  return op;
 }
-
-static convert_optab
-new_convert_optab (void)
-{
-  int i, j;
-  convert_optab op = xcalloc (sizeof (struct convert_optab), 1);
-
-  for (i = 0; i < NUM_MACHINE_MODES; i++)
-    for (j = 0; j < NUM_MACHINE_MODES; j++)
-      convert_optab_handler (op, i, j)->insn_code = CODE_FOR_nothing;
-
-  return op;
-}
+#endif
 
 /* Same, but fill in its code as CODE, and write it into the
    code_to_optab table.  */
-static inline optab
-init_optab (enum rtx_code code)
+static inline void
+init_optab (optab op, enum rtx_code code)
 {
-  optab op = new_optab ();
+  new_optab (op);
   op->code = code;
   code_to_optab[(int) code] = op;
-  return op;
 }
 
 /* Same, but fill in its code as CODE, and do _not_ write it into
    the code_to_optab table.  */
-static inline optab
-init_optabv (enum rtx_code code)
+static inline void
+init_optabv (optab op, enum rtx_code code)
 {
-  optab op = new_optab ();
+  new_optab (op);
   op->code = code;
-  return op;
 }
 
 /* Conversion optabs never go in the code_to_optab table.  */
-static inline convert_optab
-init_convert_optab (enum rtx_code code)
+static void
+init_convert_optab (convert_optab op, enum rtx_code code)
 {
-  convert_optab op = new_convert_optab ();
+#if !(GCC_VERSION >= 4000)
+  int i, j;
+
+  for (i = 0; i < NUM_MACHINE_MODES; i++)
+    for (j = 0; j < NUM_MACHINE_MODES; j++)
+      convert_optab_handler (op, i, j)->insn_code = CODE_FOR_nothing;
+#endif
   op->code = code;
-  return op;
 }
 
 /* Initialize the libfunc fields of an entire group of entries in some
@@ -6178,7 +6189,7 @@ set_optab_libfunc (optab optable, enum machine_mode mode, const char *name)
   rtx val;
   struct libfunc_entry e;
   struct libfunc_entry **slot;
-  e.optab = (size_t) (optab_table[0] - optable);
+  e.optab = (size_t) (optable - &optab_table[0]);
   e.mode1 = mode;
   e.mode2 = VOIDmode;
 
@@ -6189,7 +6200,7 @@ set_optab_libfunc (optab optable, enum machine_mode mode, const char *name)
   slot = (struct libfunc_entry **) htab_find_slot (libfunc_hash, &e, INSERT);
   if (*slot == NULL)
     *slot = ggc_alloc (sizeof (struct libfunc_entry));
-  (*slot)->optab = (size_t) (optab_table[0] - optable);
+  (*slot)->optab = (size_t) (optable - &optab_table[0]);
   (*slot)->mode1 = mode;
   (*slot)->mode2 = VOIDmode;
   (*slot)->libfunc = val;
@@ -6205,7 +6216,7 @@ set_conv_libfunc (convert_optab optable, enum machine_mode tmode,
   rtx val;
   struct libfunc_entry e;
   struct libfunc_entry **slot;
-  e.optab = (size_t) (convert_optab_table[0] - optable);
+  e.optab = (size_t) (optable - &convert_optab_table[0]);
   e.mode1 = tmode;
   e.mode2 = fmode;
 
@@ -6216,7 +6227,7 @@ set_conv_libfunc (convert_optab optable, enum machine_mode tmode,
   slot = (struct libfunc_entry **) htab_find_slot (libfunc_hash, &e, INSERT);
   if (*slot == NULL)
     *slot = ggc_alloc (sizeof (struct libfunc_entry));
-  (*slot)->optab = (size_t) (convert_optab_table[0] - optable);
+  (*slot)->optab = (size_t) (optable - &convert_optab_table[0]);
   (*slot)->mode1 = tmode;
   (*slot)->mode2 = fmode;
   (*slot)->libfunc = val;
@@ -6248,192 +6259,192 @@ init_optabs (void)
       vcondu_gen_code[i] = CODE_FOR_nothing;
     }
 
-  add_optab = init_optab (PLUS);
-  addv_optab = init_optabv (PLUS);
-  sub_optab = init_optab (MINUS);
-  subv_optab = init_optabv (MINUS);
-  ssadd_optab = init_optab (SS_PLUS);
-  usadd_optab = init_optab (US_PLUS);
-  sssub_optab = init_optab (SS_MINUS);
-  ussub_optab = init_optab (US_MINUS);
-  smul_optab = init_optab (MULT);
-  ssmul_optab = init_optab (SS_MULT);
-  usmul_optab = init_optab (US_MULT);
-  smulv_optab = init_optabv (MULT);
-  smul_highpart_optab = init_optab (UNKNOWN);
-  umul_highpart_optab = init_optab (UNKNOWN);
-  smul_widen_optab = init_optab (UNKNOWN);
-  umul_widen_optab = init_optab (UNKNOWN);
-  usmul_widen_optab = init_optab (UNKNOWN);
-  smadd_widen_optab = init_optab (UNKNOWN);
-  umadd_widen_optab = init_optab (UNKNOWN);
-  ssmadd_widen_optab = init_optab (UNKNOWN);
-  usmadd_widen_optab = init_optab (UNKNOWN);
-  smsub_widen_optab = init_optab (UNKNOWN);
-  umsub_widen_optab = init_optab (UNKNOWN);
-  ssmsub_widen_optab = init_optab (UNKNOWN);
-  usmsub_widen_optab = init_optab (UNKNOWN);
-  sdiv_optab = init_optab (DIV);
-  ssdiv_optab = init_optab (SS_DIV);
-  usdiv_optab = init_optab (US_DIV);
-  sdivv_optab = init_optabv (DIV);
-  sdivmod_optab = init_optab (UNKNOWN);
-  udiv_optab = init_optab (UDIV);
-  udivmod_optab = init_optab (UNKNOWN);
-  smod_optab = init_optab (MOD);
-  umod_optab = init_optab (UMOD);
-  fmod_optab = init_optab (UNKNOWN);
-  remainder_optab = init_optab (UNKNOWN);
-  ftrunc_optab = init_optab (UNKNOWN);
-  and_optab = init_optab (AND);
-  ior_optab = init_optab (IOR);
-  xor_optab = init_optab (XOR);
-  ashl_optab = init_optab (ASHIFT);
-  ssashl_optab = init_optab (SS_ASHIFT);
-  usashl_optab = init_optab (US_ASHIFT);
-  ashr_optab = init_optab (ASHIFTRT);
-  lshr_optab = init_optab (LSHIFTRT);
-  rotl_optab = init_optab (ROTATE);
-  rotr_optab = init_optab (ROTATERT);
-  smin_optab = init_optab (SMIN);
-  smax_optab = init_optab (SMAX);
-  umin_optab = init_optab (UMIN);
-  umax_optab = init_optab (UMAX);
-  pow_optab = init_optab (UNKNOWN);
-  atan2_optab = init_optab (UNKNOWN);
+  init_optab (add_optab, PLUS);
+  init_optabv (addv_optab, PLUS);
+  init_optab (sub_optab, MINUS);
+  init_optabv (subv_optab, MINUS);
+  init_optab (ssadd_optab, SS_PLUS);
+  init_optab (usadd_optab, US_PLUS);
+  init_optab (sssub_optab, SS_MINUS);
+  init_optab (ussub_optab, US_MINUS);
+  init_optab (smul_optab, MULT);
+  init_optab (ssmul_optab, SS_MULT);
+  init_optab (usmul_optab, US_MULT);
+  init_optabv (smulv_optab, MULT);
+  init_optab (smul_highpart_optab, UNKNOWN);
+  init_optab (umul_highpart_optab, UNKNOWN);
+  init_optab (smul_widen_optab, UNKNOWN);
+  init_optab (umul_widen_optab, UNKNOWN);
+  init_optab (usmul_widen_optab, UNKNOWN);
+  init_optab (smadd_widen_optab, UNKNOWN);
+  init_optab (umadd_widen_optab, UNKNOWN);
+  init_optab (ssmadd_widen_optab, UNKNOWN);
+  init_optab (usmadd_widen_optab, UNKNOWN);
+  init_optab (smsub_widen_optab, UNKNOWN);
+  init_optab (umsub_widen_optab, UNKNOWN);
+  init_optab (ssmsub_widen_optab, UNKNOWN);
+  init_optab (usmsub_widen_optab, UNKNOWN);
+  init_optab (sdiv_optab, DIV);
+  init_optab (ssdiv_optab, SS_DIV);
+  init_optab (usdiv_optab, US_DIV);
+  init_optabv (sdivv_optab, DIV);
+  init_optab (sdivmod_optab, UNKNOWN);
+  init_optab (udiv_optab, UDIV);
+  init_optab (udivmod_optab, UNKNOWN);
+  init_optab (smod_optab, MOD);
+  init_optab (umod_optab, UMOD);
+  init_optab (fmod_optab, UNKNOWN);
+  init_optab (remainder_optab, UNKNOWN);
+  init_optab (ftrunc_optab, UNKNOWN);
+  init_optab (and_optab, AND);
+  init_optab (ior_optab, IOR);
+  init_optab (xor_optab, XOR);
+  init_optab (ashl_optab, ASHIFT);
+  init_optab (ssashl_optab, SS_ASHIFT);
+  init_optab (usashl_optab, US_ASHIFT);
+  init_optab (ashr_optab, ASHIFTRT);
+  init_optab (lshr_optab, LSHIFTRT);
+  init_optab (rotl_optab, ROTATE);
+  init_optab (rotr_optab, ROTATERT);
+  init_optab (smin_optab, SMIN);
+  init_optab (smax_optab, SMAX);
+  init_optab (umin_optab, UMIN);
+  init_optab (umax_optab, UMAX);
+  init_optab (pow_optab, UNKNOWN);
+  init_optab (atan2_optab, UNKNOWN);
 
   /* These three have codes assigned exclusively for the sake of
      have_insn_for.  */
-  mov_optab = init_optab (SET);
-  movstrict_optab = init_optab (STRICT_LOW_PART);
-  cmp_optab = init_optab (COMPARE);
+  init_optab (mov_optab, SET);
+  init_optab (movstrict_optab, STRICT_LOW_PART);
+  init_optab (cmp_optab, COMPARE);
 
-  storent_optab = init_optab (UNKNOWN);
+  init_optab (storent_optab, UNKNOWN);
 
-  ucmp_optab = init_optab (UNKNOWN);
-  tst_optab = init_optab (UNKNOWN);
+  init_optab (ucmp_optab, UNKNOWN);
+  init_optab (tst_optab, UNKNOWN);
 
-  eq_optab = init_optab (EQ);
-  ne_optab = init_optab (NE);
-  gt_optab = init_optab (GT);
-  ge_optab = init_optab (GE);
-  lt_optab = init_optab (LT);
-  le_optab = init_optab (LE);
-  unord_optab = init_optab (UNORDERED);
+  init_optab (eq_optab, EQ);
+  init_optab (ne_optab, NE);
+  init_optab (gt_optab, GT);
+  init_optab (ge_optab, GE);
+  init_optab (lt_optab, LT);
+  init_optab (le_optab, LE);
+  init_optab (unord_optab, UNORDERED);
 
-  neg_optab = init_optab (NEG);
-  ssneg_optab = init_optab (SS_NEG);
-  usneg_optab = init_optab (US_NEG);
-  negv_optab = init_optabv (NEG);
-  abs_optab = init_optab (ABS);
-  absv_optab = init_optabv (ABS);
-  addcc_optab = init_optab (UNKNOWN);
-  one_cmpl_optab = init_optab (NOT);
-  bswap_optab = init_optab (BSWAP);
-  ffs_optab = init_optab (FFS);
-  clz_optab = init_optab (CLZ);
-  ctz_optab = init_optab (CTZ);
-  popcount_optab = init_optab (POPCOUNT);
-  parity_optab = init_optab (PARITY);
-  sqrt_optab = init_optab (SQRT);
-  floor_optab = init_optab (UNKNOWN);
-  ceil_optab = init_optab (UNKNOWN);
-  round_optab = init_optab (UNKNOWN);
-  btrunc_optab = init_optab (UNKNOWN);
-  nearbyint_optab = init_optab (UNKNOWN);
-  rint_optab = init_optab (UNKNOWN);
-  sincos_optab = init_optab (UNKNOWN);
-  sin_optab = init_optab (UNKNOWN);
-  asin_optab = init_optab (UNKNOWN);
-  cos_optab = init_optab (UNKNOWN);
-  acos_optab = init_optab (UNKNOWN);
-  exp_optab = init_optab (UNKNOWN);
-  exp10_optab = init_optab (UNKNOWN);
-  exp2_optab = init_optab (UNKNOWN);
-  expm1_optab = init_optab (UNKNOWN);
-  ldexp_optab = init_optab (UNKNOWN);
-  scalb_optab = init_optab (UNKNOWN);
-  logb_optab = init_optab (UNKNOWN);
-  ilogb_optab = init_optab (UNKNOWN);
-  log_optab = init_optab (UNKNOWN);
-  log10_optab = init_optab (UNKNOWN);
-  log2_optab = init_optab (UNKNOWN);
-  log1p_optab = init_optab (UNKNOWN);
-  tan_optab = init_optab (UNKNOWN);
-  atan_optab = init_optab (UNKNOWN);
-  copysign_optab = init_optab (UNKNOWN);
-  signbit_optab = init_optab (UNKNOWN);
+  init_optab (neg_optab, NEG);
+  init_optab (ssneg_optab, SS_NEG);
+  init_optab (usneg_optab, US_NEG);
+  init_optabv (negv_optab, NEG);
+  init_optab (abs_optab, ABS);
+  init_optabv (absv_optab, ABS);
+  init_optab (addcc_optab, UNKNOWN);
+  init_optab (one_cmpl_optab, NOT);
+  init_optab (bswap_optab, BSWAP);
+  init_optab (ffs_optab, FFS);
+  init_optab (clz_optab, CLZ);
+  init_optab (ctz_optab, CTZ);
+  init_optab (popcount_optab, POPCOUNT);
+  init_optab (parity_optab, PARITY);
+  init_optab (sqrt_optab, SQRT);
+  init_optab (floor_optab, UNKNOWN);
+  init_optab (ceil_optab, UNKNOWN);
+  init_optab (round_optab, UNKNOWN);
+  init_optab (btrunc_optab, UNKNOWN);
+  init_optab (nearbyint_optab, UNKNOWN);
+  init_optab (rint_optab, UNKNOWN);
+  init_optab (sincos_optab, UNKNOWN);
+  init_optab (sin_optab, UNKNOWN);
+  init_optab (asin_optab, UNKNOWN);
+  init_optab (cos_optab, UNKNOWN);
+  init_optab (acos_optab, UNKNOWN);
+  init_optab (exp_optab, UNKNOWN);
+  init_optab (exp10_optab, UNKNOWN);
+  init_optab (exp2_optab, UNKNOWN);
+  init_optab (expm1_optab, UNKNOWN);
+  init_optab (ldexp_optab, UNKNOWN);
+  init_optab (scalb_optab, UNKNOWN);
+  init_optab (logb_optab, UNKNOWN);
+  init_optab (ilogb_optab, UNKNOWN);
+  init_optab (log_optab, UNKNOWN);
+  init_optab (log10_optab, UNKNOWN);
+  init_optab (log2_optab, UNKNOWN);
+  init_optab (log1p_optab, UNKNOWN);
+  init_optab (tan_optab, UNKNOWN);
+  init_optab (atan_optab, UNKNOWN);
+  init_optab (copysign_optab, UNKNOWN);
+  init_optab (signbit_optab, UNKNOWN);
 
-  isinf_optab = init_optab (UNKNOWN);
+  init_optab (isinf_optab, UNKNOWN);
 
-  strlen_optab = init_optab (UNKNOWN);
-  cbranch_optab = init_optab (UNKNOWN);
-  cmov_optab = init_optab (UNKNOWN);
-  cstore_optab = init_optab (UNKNOWN);
-  push_optab = init_optab (UNKNOWN);
+  init_optab (strlen_optab, UNKNOWN);
+  init_optab (cbranch_optab, UNKNOWN);
+  init_optab (cmov_optab, UNKNOWN);
+  init_optab (cstore_optab, UNKNOWN);
+  init_optab (push_optab, UNKNOWN);
 
-  reduc_smax_optab = init_optab (UNKNOWN);
-  reduc_umax_optab = init_optab (UNKNOWN);
-  reduc_smin_optab = init_optab (UNKNOWN);
-  reduc_umin_optab = init_optab (UNKNOWN);
-  reduc_splus_optab = init_optab (UNKNOWN);
-  reduc_uplus_optab = init_optab (UNKNOWN);
+  init_optab (reduc_smax_optab, UNKNOWN);
+  init_optab (reduc_umax_optab, UNKNOWN);
+  init_optab (reduc_smin_optab, UNKNOWN);
+  init_optab (reduc_umin_optab, UNKNOWN);
+  init_optab (reduc_splus_optab, UNKNOWN);
+  init_optab (reduc_uplus_optab, UNKNOWN);
 
-  ssum_widen_optab = init_optab (UNKNOWN);
-  usum_widen_optab = init_optab (UNKNOWN);
-  sdot_prod_optab = init_optab (UNKNOWN); 
-  udot_prod_optab = init_optab (UNKNOWN);
+  init_optab (ssum_widen_optab, UNKNOWN);
+  init_optab (usum_widen_optab, UNKNOWN);
+  init_optab (sdot_prod_optab, UNKNOWN); 
+  init_optab (udot_prod_optab, UNKNOWN);
 
-  vec_extract_optab = init_optab (UNKNOWN);
-  vec_extract_even_optab = init_optab (UNKNOWN);
-  vec_extract_odd_optab = init_optab (UNKNOWN);
-  vec_interleave_high_optab = init_optab (UNKNOWN);
-  vec_interleave_low_optab = init_optab (UNKNOWN);
-  vec_set_optab = init_optab (UNKNOWN);
-  vec_init_optab = init_optab (UNKNOWN);
-  vec_shl_optab = init_optab (UNKNOWN);
-  vec_shr_optab = init_optab (UNKNOWN);
-  vec_realign_load_optab = init_optab (UNKNOWN);
-  movmisalign_optab = init_optab (UNKNOWN);
-  vec_widen_umult_hi_optab = init_optab (UNKNOWN);
-  vec_widen_umult_lo_optab = init_optab (UNKNOWN);
-  vec_widen_smult_hi_optab = init_optab (UNKNOWN);
-  vec_widen_smult_lo_optab = init_optab (UNKNOWN);
-  vec_unpacks_hi_optab = init_optab (UNKNOWN);
-  vec_unpacks_lo_optab = init_optab (UNKNOWN);
-  vec_unpacku_hi_optab = init_optab (UNKNOWN);
-  vec_unpacku_lo_optab = init_optab (UNKNOWN);
-  vec_unpacks_float_hi_optab = init_optab (UNKNOWN);
-  vec_unpacks_float_lo_optab = init_optab (UNKNOWN);
-  vec_unpacku_float_hi_optab = init_optab (UNKNOWN);
-  vec_unpacku_float_lo_optab = init_optab (UNKNOWN);
-  vec_pack_trunc_optab = init_optab (UNKNOWN);
-  vec_pack_usat_optab = init_optab (UNKNOWN);
-  vec_pack_ssat_optab = init_optab (UNKNOWN);
-  vec_pack_ufix_trunc_optab = init_optab (UNKNOWN);
-  vec_pack_sfix_trunc_optab = init_optab (UNKNOWN);
+  init_optab (vec_extract_optab, UNKNOWN);
+  init_optab (vec_extract_even_optab, UNKNOWN);
+  init_optab (vec_extract_odd_optab, UNKNOWN);
+  init_optab (vec_interleave_high_optab, UNKNOWN);
+  init_optab (vec_interleave_low_optab, UNKNOWN);
+  init_optab (vec_set_optab, UNKNOWN);
+  init_optab (vec_init_optab, UNKNOWN);
+  init_optab (vec_shl_optab, UNKNOWN);
+  init_optab (vec_shr_optab, UNKNOWN);
+  init_optab (vec_realign_load_optab, UNKNOWN);
+  init_optab (movmisalign_optab, UNKNOWN);
+  init_optab (vec_widen_umult_hi_optab, UNKNOWN);
+  init_optab (vec_widen_umult_lo_optab, UNKNOWN);
+  init_optab (vec_widen_smult_hi_optab, UNKNOWN);
+  init_optab (vec_widen_smult_lo_optab, UNKNOWN);
+  init_optab (vec_unpacks_hi_optab, UNKNOWN);
+  init_optab (vec_unpacks_lo_optab, UNKNOWN);
+  init_optab (vec_unpacku_hi_optab, UNKNOWN);
+  init_optab (vec_unpacku_lo_optab, UNKNOWN);
+  init_optab (vec_unpacks_float_hi_optab, UNKNOWN);
+  init_optab (vec_unpacks_float_lo_optab, UNKNOWN);
+  init_optab (vec_unpacku_float_hi_optab, UNKNOWN);
+  init_optab (vec_unpacku_float_lo_optab, UNKNOWN);
+  init_optab (vec_pack_trunc_optab, UNKNOWN);
+  init_optab (vec_pack_usat_optab, UNKNOWN);
+  init_optab (vec_pack_ssat_optab, UNKNOWN);
+  init_optab (vec_pack_ufix_trunc_optab, UNKNOWN);
+  init_optab (vec_pack_sfix_trunc_optab, UNKNOWN);
 
-  powi_optab = init_optab (UNKNOWN);
+  init_optab (powi_optab, UNKNOWN);
 
   /* Conversions.  */
-  sext_optab = init_convert_optab (SIGN_EXTEND);
-  zext_optab = init_convert_optab (ZERO_EXTEND);
-  trunc_optab = init_convert_optab (TRUNCATE);
-  sfix_optab = init_convert_optab (FIX);
-  ufix_optab = init_convert_optab (UNSIGNED_FIX);
-  sfixtrunc_optab = init_convert_optab (UNKNOWN);
-  ufixtrunc_optab = init_convert_optab (UNKNOWN);
-  sfloat_optab = init_convert_optab (FLOAT);
-  ufloat_optab = init_convert_optab (UNSIGNED_FLOAT);
-  lrint_optab = init_convert_optab (UNKNOWN);
-  lround_optab = init_convert_optab (UNKNOWN);
-  lfloor_optab = init_convert_optab (UNKNOWN);
-  lceil_optab = init_convert_optab (UNKNOWN);
+  init_convert_optab (sext_optab, SIGN_EXTEND);
+  init_convert_optab (zext_optab, ZERO_EXTEND);
+  init_convert_optab (trunc_optab, TRUNCATE);
+  init_convert_optab (sfix_optab, FIX);
+  init_convert_optab (ufix_optab, UNSIGNED_FIX);
+  init_convert_optab (sfixtrunc_optab, UNKNOWN);
+  init_convert_optab (ufixtrunc_optab, UNKNOWN);
+  init_convert_optab (sfloat_optab, FLOAT);
+  init_convert_optab (ufloat_optab, UNSIGNED_FLOAT);
+  init_convert_optab (lrint_optab, UNKNOWN);
+  init_convert_optab (lround_optab, UNKNOWN);
+  init_convert_optab (lfloor_optab, UNKNOWN);
+  init_convert_optab (lceil_optab, UNKNOWN);
 
-  fract_optab = init_convert_optab (FRACT_CONVERT);
-  fractuns_optab = init_convert_optab (UNSIGNED_FRACT_CONVERT);
-  satfract_optab = init_convert_optab (SAT_FRACT);
-  satfractuns_optab = init_convert_optab (UNSIGNED_SAT_FRACT);
+  init_convert_optab (fract_optab, FRACT_CONVERT);
+  init_convert_optab (fractuns_optab, UNSIGNED_FRACT_CONVERT);
+  init_convert_optab (satfract_optab, SAT_FRACT);
+  init_convert_optab (satfractuns_optab, UNSIGNED_SAT_FRACT);
 
   for (i = 0; i < NUM_MACHINE_MODES; i++)
     {
@@ -6744,8 +6755,8 @@ debug_optab_libfuncs (void)
 	optab o;
 	rtx l;
 
-	o = optab_table[i];
-	l = optab_libfunc (optab_table[i], j);
+	o = &optab_table[i];
+	l = optab_libfunc (o, j);
 	if (l)
 	  {
 	    gcc_assert (GET_CODE (l) == SYMBOL_REF);
@@ -6764,7 +6775,7 @@ debug_optab_libfuncs (void)
 	  convert_optab o;
 	  rtx l;
 
-	  o = convert_optab_table[i];
+	  o = &convert_optab_table[i];
 	  l = convert_optab_libfunc (o, j, k);
 	  if (l)
 	    {
