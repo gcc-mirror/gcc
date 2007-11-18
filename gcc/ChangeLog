@@ -1,3 +1,32 @@
+2007-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/33335
+	* optabs.h (optab_table): Change type to struct optab from optab.
+	(convert_optab_table): Similarly.
+	Adjust all _optab macros to expand to addresses of optab_table
+	resp. convert_optab_table elements rather than the values of the
+	elements.
+	* optabs.c (optab_table): Change typype to struct optab from optab.
+	If compiled by recent GCC, initialize all the insn_code fields in
+	the array using designated range initializers.
+	(convert_optab_table): Similarly.
+	(convert_optab_libfunc, optab_libfunc, set_optab_libfunc,
+	set_conv_libfunc): Into libfunc_entry's optab field store index within
+	optab_table resp. convert_optab_table array instead of difference
+	between two separately malloced addresses.
+	(new_optab): Add op argument, don't return anything.  Initialize
+	just the insn_code field in handlers array and only when needed.
+	(init_optab, init_optabv): Add op argument, don't return anything.
+	Adjust new_optab caller.
+	(new_convert_optab): Removed.
+	(init_convert_optab): Add op argument, don't return anything, don't
+	call new_convert_optab.  If needed, initialize insn_code field in
+	handlers array.
+	(init_optabs): Adjust init_optab, init_optabv and init_convert_optab
+	callers.
+	(debug_optab_libfuncs): Adjust uses of optab_table and
+	convert_optab_table arrays.
+
 2007-11-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/34127
