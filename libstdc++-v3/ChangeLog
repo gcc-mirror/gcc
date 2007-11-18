@@ -1,5 +1,11 @@
 2007-11-18  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/type_traits (_DEFINE_SPEC_BODY): Remove.
+	(_DEFINE_SPEC_0_HELPER): Rename to _DEFINE_SPEC_HELPER.
+	(_DEFINE_SPEC): Simplify; adjust uses.
+
+2007-11-18  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1_impl/type_traits (is_reference, is_function,
 	remove_cv, is_member_pointer, remove_reference): Declare.
 	* include/tr1_impl/type_traitsfwd.h: Remove.
