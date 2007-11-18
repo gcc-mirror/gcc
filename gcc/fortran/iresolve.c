@@ -583,13 +583,10 @@ gfc_resolve_cshift (gfc_expr *f, gfc_expr *array, gfc_expr *shift,
       gfc_convert_type_warn (shift, &ts, 2, 0);
     }
 
-  if (dim != NULL)
-    {
-      gfc_resolve_dim_arg (dim);
-      /* Convert dim to shift's kind, so we don't need so many variations.  */
-      if (dim->ts.kind != shift->ts.kind)
-	gfc_convert_type_warn (dim, &shift->ts, 2, 0);
-    }
+  /* Mark this for later setting the type in gfc_conv_missing_dummy.  */
+  if (dim != NULL && dim->symtree != NULL)
+    dim->symtree->n.sym->attr.untyped = 1;
+
   f->value.function.name
     = gfc_get_string (PREFIX ("cshift%d_%d%s"), n, shift->ts.kind,
 		      array->ts.type == BT_CHARACTER ? "_char" : "");
@@ -707,13 +704,9 @@ gfc_resolve_eoshift (gfc_expr *f, gfc_expr *array, gfc_expr *shift,
       gfc_convert_type_warn (shift, &ts, 2, 0);
     }
 
-  if (dim != NULL)
-    {
-      gfc_resolve_dim_arg (dim);
-      /* Convert dim to shift's kind, so we don't need so many variations.  */
-      if (dim->ts.kind != shift->ts.kind)
-	gfc_convert_type_warn (dim, &shift->ts, 2, 0);
-    }
+  /* Mark this for later setting the type in gfc_conv_missing_dummy.  */
+  if (dim != NULL && dim->symtree != NULL)
+    dim->symtree->n.sym->attr.untyped = 1;
 
   f->value.function.name
     = gfc_get_string (PREFIX ("eoshift%d_%d%s"), n, shift->ts.kind,

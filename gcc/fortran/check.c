@@ -315,13 +315,6 @@ dim_check (gfc_expr *dim, int n, bool optional)
   if (dim == NULL)
     return SUCCESS;
 
-  if (dim == NULL)
-    {
-      gfc_error ("Missing DIM parameter in intrinsic '%s' at %L",
-		 gfc_current_intrinsic, gfc_current_intrinsic_where);
-      return FAILURE;
-    }
-
   if (type_check (dim, n, BT_INTEGER) == FAILURE)
     return FAILURE;
 
@@ -870,8 +863,7 @@ gfc_check_cshift (gfc_expr *array, gfc_expr *shift, gfc_expr *dim)
       /* TODO: more requirements on shift parameter.  */
     }
 
-  /* FIXME (PR33317): Allow optional DIM=.  */
-  if (dim_check (dim, 2, false) == FAILURE)
+  if (dim_check (dim, 2, true) == FAILURE)
     return FAILURE;
 
   return SUCCESS;
@@ -1040,8 +1032,7 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
       /* TODO: more restrictions on boundary.  */
     }
 
-  /* FIXME (PR33317): Allow optional DIM=.  */
-  if (dim_check (dim, 4, false) == FAILURE)
+  if (dim_check (dim, 4, true) == FAILURE)
     return FAILURE;
 
   return SUCCESS;

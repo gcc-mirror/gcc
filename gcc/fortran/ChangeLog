@@ -1,3 +1,16 @@
+2007-11-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* trans-expr.c (gfc_conv_missing_dummy): Set the type of the dummy
+	argument to default integer if flagged to do so. Fix typo in comment.
+	* resolve.c (gfc_resolve_dim_arg): Whitespace cleanup.
+	* iresolve.c (gfc_resolve_cshift): Do not convert type, mark attribute
+	for converting the DIM type appropriately in trans-expr.c.
+	(gfc_resolve_eoshift): Likewise.
+	* check.c (dim_check): Remove pre-existing dead code.
+	(gfc_check_cshift): Enable dim_check to allow DIM as an optional.
+	(gfc_check_eoshift): Likewise.
+	* trans_intrinsic.c (gfc_conv_intrinsic_function_args): Fix whitespace.
+
 2007-11-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31608
