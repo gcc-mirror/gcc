@@ -1,3 +1,12 @@
+2007-11-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31608
+	* trans-array.c (gfc_conv_expr_descriptor): Remove exception
+	for indirect references in the call to gfc_trans_scalar_assign.
+	* trans-expr.c (gfc_conv_string_parameter): Instead of asserting
+	that the expression is not an indirect reference, cast it to a
+	pointer type of the length given by se->string_length.
+
 2007-11-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34137

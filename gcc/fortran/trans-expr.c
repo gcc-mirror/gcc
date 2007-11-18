@@ -3597,8 +3597,15 @@ gfc_conv_string_parameter (gfc_se * se)
   type = TREE_TYPE (se->expr);
   if (TYPE_STRING_FLAG (type))
     {
-      gcc_assert (TREE_CODE (se->expr) != INDIRECT_REF);
-      se->expr = gfc_build_addr_expr (pchar_type_node, se->expr);
+      if (TREE_CODE (se->expr) != INDIRECT_REF)
+        se->expr = gfc_build_addr_expr (pchar_type_node, se->expr);
+      else
+	{
+	  type = gfc_get_character_type_len (gfc_default_character_kind,
+					     se->string_length);
+	  type = build_pointer_type (type);
+	  se->expr = gfc_build_addr_expr (type, se->expr);
+	}
     }
 
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (se->expr)));
