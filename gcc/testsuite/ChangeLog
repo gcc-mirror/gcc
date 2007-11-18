@@ -1,3 +1,8 @@
+2007-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/34132
+	* gcc.c-torture/compile/20071118-1.c: New test.
+
 2007-11-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31608

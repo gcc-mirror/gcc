@@ -2665,7 +2665,8 @@ try_replace_reg (rtx from, rtx to, rtx insn)
      with our replacement.  */
   if (note != 0 && REG_NOTE_KIND (note) == REG_EQUAL)
     set_unique_reg_note (insn, REG_EQUAL,
-			 simplify_replace_rtx (XEXP (note, 0), from, to));
+			 simplify_replace_rtx (XEXP (note, 0), from,
+			 copy_rtx (to)));
   if (!success && set && reg_mentioned_p (from, SET_SRC (set)))
     {
       /* If above failed and this is a single set, try to simplify the source of
