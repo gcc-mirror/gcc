@@ -1846,6 +1846,20 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual, bool koenig_p)
 	{
 	  result = build_nt_call_list (fn, args);
 	  KOENIG_LOOKUP_P (result) = koenig_p;
+	  if (cfun)
+	    {
+	      do
+		{
+		  tree fndecl = OVL_CURRENT (fn);
+		  if (TREE_CODE (fndecl) != FUNCTION_DECL
+		      || !TREE_THIS_VOLATILE (fndecl))
+		    break;
+		  fn = OVL_NEXT (fn);
+		}
+	      while (fn);
+	      if (!fn)
+		current_function_returns_abnormally = 1;
+	    }
 	  return result;
 	}
       if (!BASELINK_P (fn)
