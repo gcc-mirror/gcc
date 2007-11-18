@@ -1,3 +1,10 @@
+2007-11-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34137
+	* primary.c (match_variable): Reject non-result entry symbols.
+	* resolve.c (resolve_contained_fntype): Do not check entry master
+	functions.
+
 2007-11-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* trans-types.c (gfc_init_types): Use wider buffer.

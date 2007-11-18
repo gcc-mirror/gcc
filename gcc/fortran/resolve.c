@@ -284,8 +284,10 @@ resolve_contained_fntype (gfc_symbol *sym, gfc_namespace *ns)
 {
   try t;
 
-  /* If this namespace is not a function, ignore it.  */
-  if (! sym || !(sym->attr.function || sym->attr.flavor == FL_VARIABLE))
+  /* If this namespace is not a function or an entry master function,
+     ignore it.  */
+  if (! sym || !(sym->attr.function || sym->attr.flavor == FL_VARIABLE)
+      || sym->attr.entry_master)
     return;
 
   /* Try to find out of what the return type is.  */
