@@ -3445,11 +3445,13 @@ gfc_resolve_dim_arg (gfc_expr *dim)
       return FAILURE;
 
     }
+
   if (dim->ts.type != BT_INTEGER)
     {
       gfc_error ("Argument dim at %L must be of INTEGER type", &dim->where);
       return FAILURE;
     }
+
   if (dim->ts.kind != gfc_index_integer_kind)
     {
       gfc_typespec ts;

@@ -210,7 +210,7 @@ gfc_conv_intrinsic_function_args (gfc_se *se, gfc_expr *expr,
 
       /* If an optional argument is itself an optional dummy argument,
 	 check its presence and substitute a null if absent.  */
-      if (e->expr_type ==EXPR_VARIABLE
+      if (e->expr_type == EXPR_VARIABLE
 	    && e->symtree->n.sym->attr.optional
 	    && formal
 	    && formal->optional)
