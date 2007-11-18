@@ -12,7 +12,7 @@ program test
      integer :: x
   end type xyz_type
   type (xyz_type), dimension(3) :: xyz
-  character(len=20) :: s
+  character(len=80) :: s
 
   xyz(1)%x = 11111
   xyz(2)%x = 0

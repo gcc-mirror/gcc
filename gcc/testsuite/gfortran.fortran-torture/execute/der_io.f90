@@ -1,6 +1,6 @@
 ! Program to test IO of derived types
 program derived_io
-  character(100) :: buf1, buf2, buf3
+  character(400) :: buf1, buf2, buf3
 
   type xyz_type
      integer :: x
