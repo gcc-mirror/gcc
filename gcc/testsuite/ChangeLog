@@ -1,3 +1,19 @@
+2007-11-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/32770
+	* gfortran.fortran-torture/execute/equiv_5.f:  Set kind on
+	integers so tests works with -fdefault-integer-8.
+	* gfortran.fortran-torture/execute/elemental.f90:  Use default
+	integers so test passes with -fdefault-integer-8.
+	* gfortran.fortran-torture/execute/der_io.f90:  Increase
+	buffer length so test passes with -fdefault-integer-8.
+	* gfortran.dg/bounds_check_8.f90:  Likewise.
+	* gfortran.dg/arrayio_derived_1.f90:  LIkewise.
+	* gfortran.dg/equiv_7.f90:  Set kind so test passes
+	with -fdefault-integer-8.
+	* gfortran.dg/g77/20030326-1.f:  Set kind explicitly to
+	provoke overflow.
+
 2007-11-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/33317

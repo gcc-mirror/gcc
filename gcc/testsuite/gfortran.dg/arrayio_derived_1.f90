@@ -7,7 +7,7 @@ program arrayio_derived_1
      character(len=1) :: c
   end type tp
   type(tp) :: x(5)
-  character(len=100) :: a
+  character(len=500) :: a
   integer :: i, b(5)
 
   x%i = 256

@@ -72,7 +72,8 @@ contains
   function d1mach_little(i) result(d1mach)
     implicit none
     double precision d1mach,dmach(5)
-    integer i,large(4),small(4)
+    integer i
+    integer*4 large(4),small(4)
     equivalence ( dmach(1), small(1) )
     equivalence ( dmach(2), large(1) )
     data small(1),small(2) / 0,   1048576/
@@ -82,7 +83,8 @@ contains
   function d1mach_big(i) result(d1mach)
     implicit none
     double precision d1mach,dmach(5)
-    integer i,large(4),small(4)
+    integer i
+    integer*4 large(4),small(4)
     equivalence ( dmach(1), small(1) )
     equivalence ( dmach(2), large(1) )
     data small(1),small(2) /1048576,    0/

@@ -1,8 +1,8 @@
 ! Program to test elemental functions.
 program test_elemental
    implicit none
-   integer(kind = 4), dimension (2, 4) :: a
-   integer(kind = 4), dimension (2, 4) :: b
+   integer, dimension (2, 4) :: a
+   integer, dimension (2, 4) :: b
    integer(kind = 8), dimension(2) :: c
 
    a = reshape ((/2, 3, 4, 5, 6, 7, 8, 9/), (/2, 4/))
@@ -25,7 +25,7 @@ program test_elemental
    if (any (a .ne. 0)) call abort
 contains
 
-elemental integer function e_fn (p, q)
+elemental integer(kind=4) function e_fn (p, q)
    integer, intent(in) :: p, q
    e_fn = p - q
 end function
