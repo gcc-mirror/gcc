@@ -518,13 +518,13 @@ build_constants_constructor (void)
 	{
 	  unsigned HOST_WIDE_INT temp = outgoing_cpool->data[i].w;
 
-	  /* Make sure that on a 64-bit big-endian machine this
-	     32-bit jint appears in the first word.  
+	  /* Make sure that on a big-endian machine with 64-bit
+	     pointers this 32-bit jint appears in the first word.
 	     FIXME: This is a kludge.  The field we're initializing is
 	     not a scalar but a union, and that's how we should
 	     represent it in the compiler.  We should fix this.  */
-	  if (BYTES_BIG_ENDIAN && BITS_PER_WORD > 32)
-	    temp <<= BITS_PER_WORD - 32;
+	  if (BYTES_BIG_ENDIAN && POINTER_SIZE > 32)
+	    temp <<= POINTER_SIZE - 32;
 
 	  tags_list
 	    = tree_cons (NULL_TREE, get_tag_node (outgoing_cpool->tags[i]),
