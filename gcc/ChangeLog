@@ -1,5 +1,9 @@
 2007-11-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/34132
+	* gcse.c (try_replace_reg): Avoid rtx sharing between REG_EQUAL note
+	and insn.
+
 	PR middle-end/33335
 	* optabs.h (optab_table): Change type to struct optab from optab.
 	(convert_optab_table): Similarly.
