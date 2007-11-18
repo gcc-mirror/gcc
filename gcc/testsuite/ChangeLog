@@ -1,3 +1,9 @@
+2007-11-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34137
+	* gfortran.dg/entry_14.f90: New.
+	* gfortran.dg/entry_15.f90: New.
+
 2007-11-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/34127
