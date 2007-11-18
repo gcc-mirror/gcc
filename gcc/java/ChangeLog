@@ -1,3 +1,9 @@
+2007-11-17  David Daney  <ddaney@avtrex.com>
+	    Andrew Haley  <aph@redhat.com>
+
+	* constants.c (build_constants_constructor):  Use POINTER_SIZE
+	insead of BITS_PER_WORD in big-endian work around.
+
 2007-11-07  Tom Tromey  <tromey@redhat.com>
 
 	PR java/34019:
@@ -51,7 +57,7 @@
 
 2007-09-07  Roman Zippel  <zippel@linux-m68k.org>
 
-	boehm.c (mark_reference_fields): Move misaligned pointer check
+	* boehm.c (mark_reference_fields): Move misaligned pointer check
 	after JREFERENCE_TYPE_P test
 
 2007-09-06  Roman Zippel  <zippel@linux-m68k.org>
