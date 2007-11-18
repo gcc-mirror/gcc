@@ -32,8 +32,6 @@
 *  You should not attempt to use it directly.
 */
 
-#include <tr1_impl/type_traitsfwd.h>
-
 namespace std
 {
 _GLIBCXX_BEGIN_NAMESPACE_TR1
@@ -131,7 +129,13 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     struct is_pointer
     : public false_type { };
   _DEFINE_SPEC(1, is_pointer, _Tp*, true)
- 
+
+  template<typename _Tp>
+    struct is_reference;
+
+  template<typename _Tp>
+    struct is_function;
+
   template<typename>
     struct is_member_object_pointer
     : public false_type { };
@@ -172,6 +176,9 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     : public true_type { };
 
   template<typename _Tp>
+    struct remove_cv;
+
+  template<typename _Tp>
     struct is_function
     : public integral_constant<bool, (__is_function_helper<typename
 				      remove_cv<_Tp>::type>::value)>
@@ -196,6 +203,9 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 				       || is_reference<_Tp>::value
 				       || is_void<_Tp>::value)>
     { };
+
+  template<typename _Tp>
+    struct is_member_pointer;
 
   template<typename _Tp>
     struct is_scalar
@@ -268,8 +278,8 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   template<typename _Tp>
     struct rank<_Tp[]>
     : public integral_constant<std::size_t, 1 + rank<_Tp>::value> { };
-   
-  template<typename, unsigned>
+
+  template<typename, unsigned _Uint = 0>
     struct extent
     : public integral_constant<std::size_t, 0> { };
   
@@ -286,7 +296,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 			       _Uint == 0 ? 0 : extent<_Tp,
 						       _Uint - 1>::value>
     { };
-  
+
   /// @brief  relationships between types [4.6].
   template<typename, typename>
     struct is_same
@@ -369,7 +379,10 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     struct remove_pointer
     { typedef _Tp     type; };
   _DEFINE_SPEC(1, remove_pointer, _Tp*, false)
-  
+
+  template<typename _Tp>
+    struct remove_reference;
+
   template<typename _Tp>
     struct add_pointer
     { typedef typename remove_reference<_Tp>::type*     type; };

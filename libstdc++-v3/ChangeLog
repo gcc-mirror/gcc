@@ -1,3 +1,11 @@
+2007-11-18  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1_impl/type_traits (is_reference, is_function,
+	remove_cv, is_member_pointer, remove_reference): Declare.
+	* include/tr1_impl/type_traitsfwd.h: Remove.
+	* include/Makefile.am: Adjust.
+	* include/Makefile.in: Regenerate.
+
 2007-11-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* docs/html/17_intro/howto.html, docs/html/21_strings/howto.html,
