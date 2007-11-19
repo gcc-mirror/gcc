@@ -1,3 +1,8 @@
+2007-11-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34
+	* gcc.c-torture/execute/pr34099-2.c: New testcase.
+
 2007-11-19  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34079
