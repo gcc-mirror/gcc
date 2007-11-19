@@ -582,32 +582,13 @@ likely_value (tree stmt)
 	/* Unary operators are handled with all_undefined_operands.  */
 	case PLUS_EXPR:
 	case MINUS_EXPR:
-	case MULT_EXPR:
 	case POINTER_PLUS_EXPR:
-	case TRUNC_DIV_EXPR:
-	case CEIL_DIV_EXPR:
-	case FLOOR_DIV_EXPR:
-	case ROUND_DIV_EXPR:
-	case TRUNC_MOD_EXPR:
-	case CEIL_MOD_EXPR:
-	case FLOOR_MOD_EXPR:
-	case ROUND_MOD_EXPR:
-	case RDIV_EXPR:
-	case EXACT_DIV_EXPR:
-	case LSHIFT_EXPR:
-	case RSHIFT_EXPR:
-	case LROTATE_EXPR:
-	case RROTATE_EXPR:
-	case EQ_EXPR:
-	case NE_EXPR:
-	case LT_EXPR:
-	case GT_EXPR:
 	  /* Not MIN_EXPR, MAX_EXPR.  One VARYING operand may be selected.
 	     Not bitwise operators, one VARYING operand may specify the
 	     result completely.  Not logical operators for the same reason.
-	     Not LE/GE comparisons or unordered comparisons.  Not
-	     COMPLEX_EXPR as one VARYING operand makes the result partly
-	     not UNDEFINED.  */
+	     Not COMPLEX_EXPR as one VARYING operand makes the result partly
+	     not UNDEFINED.  Not *DIV_EXPR, comparisons and shifts because
+	     the undefined operand may be promoted.  */
 	  return UNDEFINED;
 
 	default:
