@@ -1,3 +1,8 @@
+2007-11-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR tree-optimization/34036
+	* gcc.dg/tree-ssa/pr23109.c: Pass -ftrapping-math and expect warning.
+
 2007-11-19  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/34
