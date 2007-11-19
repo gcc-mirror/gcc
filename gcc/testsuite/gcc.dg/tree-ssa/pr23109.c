@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -funsafe-math-optimizations -fdump-tree-recip -fdump-tree-lim" } */
+/* { dg-options "-O2 -funsafe-math-optimizations -ftrapping-math -fdump-tree-recip -fdump-tree-lim" } */
+/* { dg-warning "-fassociative-math disabled" "" { target *-*-* } 1 } */
 
 double F[2] = { 0., 0. }, e = 0.;
 
