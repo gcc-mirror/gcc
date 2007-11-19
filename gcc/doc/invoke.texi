@@ -6228,10 +6228,9 @@ them to store all pertinent intermediate computations into variables.
 
 @item -ffast-math
 @opindex ffast-math
-Sets @option{-fno-math-errno}, @option{-funsafe-math-optimizations}, @*
-@option{-fno-trapping-math}, @option{-ffinite-math-only},
-@option{-fno-rounding-math}, @option{-fno-signaling-nans},
-@option{-fno-signed-zeros} and @option{fcx-limited-range}.
+Sets @option{-fno-math-errno}, @option{-funsafe-math-optimizations},
+@option{-ffinite-math-only}, @option{-fno-rounding-math},
+@option{-fno-signaling-nans} and @option{-fcx-limited-range}.
 
 This option causes the preprocessor macro @code{__FAST_MATH__} to be defined.
 
