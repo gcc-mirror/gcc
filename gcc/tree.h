@@ -4274,7 +4274,6 @@ typedef struct record_layout_info_s
   int packed_maybe_necessary;
 } *record_layout_info;
 
-extern void set_lang_adjust_rli (void (*) (record_layout_info));
 extern record_layout_info start_record_layout (tree);
 extern tree bit_from_pos (tree, tree);
 extern tree byte_from_pos (tree, tree);

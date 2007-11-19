@@ -271,10 +271,6 @@ extern void post_error_ne_tree_2 (const char *msg, Node_Id node, Entity_Id ent,
 /* Protect EXP from multiple evaluation.  This may make a SAVE_EXPR.  */
 extern tree protect_multiple_eval (tree exp);
 
-/* Initialize the table that maps GNAT codes to GCC codes for simple
-   binary and unary operations.  */
-extern void init_code_table (void);
-
 /* Return a label to branch to for the exception type in KIND or NULL_TREE
    if none.  */
 extern tree get_exception_label (char);
@@ -455,7 +451,6 @@ extern void insert_block (tree block);
    and uses GNAT_NODE for location information.  */
 extern void gnat_pushdecl (tree decl, Node_Id gnat_node);
 
-extern void gnat_init_stmt_group (void);
 extern void gnat_init_decl_processing (void);
 extern void init_gigi_decls (tree long_long_float_type, tree exception_type);
 extern void gnat_init_gcc_eh (void);

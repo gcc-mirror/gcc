@@ -495,16 +495,6 @@ gnat_init_decl_processing (void)
   set_sizetype (size_type_node);
   build_common_tree_nodes_2 (0);
 
-  /* Give names and make TYPE_DECLs for common types.  */
-  create_type_decl (get_identifier (SIZE_TYPE), sizetype,
-		    NULL, false, true, Empty);
-  create_type_decl (get_identifier ("integer"), integer_type_node,
-		    NULL, false, true, Empty);
-  create_type_decl (get_identifier ("unsigned char"), char_type_node,
-		    NULL, false, true, Empty);
-  create_type_decl (get_identifier ("long integer"), long_integer_type_node,
-		    NULL, false, true, Empty);
-
   ptr_void_type_node = build_pointer_type (void_type_node);
 
   gnat_install_builtins ();

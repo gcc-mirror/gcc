@@ -1,3 +1,17 @@
+2007-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/34098
+	* misc.c (gnat_adjust_rli): Delete.
+	(gnat_init): Do not initialize the translation code here.
+	Do not call set_lang_adjust_rli.
+	* trans.c (init_code_table): Make static.
+	(gnat_init_stmt_group): Delete.
+	(gigi): Initialize the translation code entirely here.
+	Emit debug info for the common types here instead of...
+	* utils.c (gnat_init_decl_processing): ...here.
+	* gigi.h (init_code_table): Delete.
+	(gnat_init_stmt_group): Likewise.
+
 2007-11-16  Olivier Hainque  <hainque@adacore.com>
 
 	* utils2.c (build_call_alloc_dealloc) <if gnu_obj>: Move the code
