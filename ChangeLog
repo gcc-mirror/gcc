@@ -1,3 +1,7 @@
+2007-11-19  Thiemo Seufer  <ths@mips.com>
+
+	* config-ml.in: Don't hardcode the Makefile name.
+
 2007-11-08  Alexander Monakov  <amonakov@ispras.ru>
 
 	* MAINTAINERS (Write After Approval): Add myself.

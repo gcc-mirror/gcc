@@ -586,8 +586,8 @@ multi-clean:
 	  true; \
 	else \
 	  lib=`${PWD_COMMAND} | sed -e 's,^.*/\([^/][^/]*\)$$,\1,'`; \
-	  for dir in Makefile $(MULTIDIRS); do \
-	    if [ -f ../$${dir}/$${lib}/Makefile ]; then \
+	  for dir in ${Makefile} $(MULTIDIRS); do \
+	    if [ -f ../$${dir}/$${lib}/${Makefile} ]; then \
 	      if (cd ../$${dir}/$${lib}; $(MAKE) $(FLAGS_TO_PASS) $(DO)); \
 	      then true; \
 	      else exit 1; \
@@ -605,7 +605,7 @@ mv Makefile.tem ${Makefile}
 fi # ${ml_toplevel_p} = yes
 
 if [ "${ml_verbose}" = --verbose ]; then
-  echo "Adding multilib support to Makefile in ${ml_realsrcdir}"
+  echo "Adding multilib support to ${Makefile} in ${ml_realsrcdir}"
   if [ "${ml_toplevel_p}" = yes ]; then
     echo "multidirs=${multidirs}"
   fi
@@ -740,7 +740,7 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
       fi
       (cd ${ml_dir}/${ml_libdir};
        ../${dotdot}${ml_unsubdir}symlink-tree ../${dotdot}${ml_unsubdir}${ml_libdir} "")
-      if [ -f ${ml_dir}/${ml_libdir}/Makefile ]; then
+      if [ -f ${ml_dir}/${ml_libdir}/${Makefile} ]; then
 	if [ x"${MAKE}" = x ]; then
 	  (cd ${ml_dir}/${ml_libdir}; make distclean)
 	else
