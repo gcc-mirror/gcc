@@ -496,17 +496,6 @@ relayout_decl (tree decl)
   layout_decl (decl, 0);
 }
 
-/* Hook for a front-end function that can modify the record layout as needed
-   immediately before it is finalized.  */
-
-static void (*lang_adjust_rli) (record_layout_info) = 0;
-
-void
-set_lang_adjust_rli (void (*f) (record_layout_info))
-{
-  lang_adjust_rli = f;
-}
-
 /* Begin laying out type T, which may be a RECORD_TYPE, UNION_TYPE, or
    QUAL_UNION_TYPE.  Return a pointer to a struct record_layout_info which
    is to be passed to all other layout functions for this record.  It is the
@@ -1865,9 +1854,6 @@ layout_type (tree type)
 
 	if (TREE_CODE (type) == QUAL_UNION_TYPE)
 	  TYPE_FIELDS (type) = nreverse (TYPE_FIELDS (type));
-
-	if (lang_adjust_rli)
-	  (*lang_adjust_rli) (rli);
 
 	/* Finish laying out the record.  */
 	finish_record_layout (rli, /*free_p=*/true);

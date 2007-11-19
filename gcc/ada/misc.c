@@ -101,7 +101,6 @@ static void gnat_parse_file		(int);
 static rtx gnat_expand_expr		(tree, rtx, enum machine_mode, int,
 					 rtx *);
 static void internal_error_function	(const char *, va_list *);
-static void gnat_adjust_rli		(record_layout_info);
 static tree gnat_type_max_size		(const_tree);
 
 /* Definitions for our language-specific hooks.  */
@@ -433,9 +432,6 @@ internal_error_function (const char *msgid, va_list *ap)
 static bool
 gnat_init (void)
 {
-  /* Initialize translations and the outer statement group.  */
-  gnat_init_stmt_group ();
-
   /* Performs whatever initialization steps needed by the language-dependent
      lexical analyzer.  */
   gnat_init_decl_processing ();
@@ -449,8 +445,6 @@ gnat_init (void)
 
   /* Show that REFERENCE_TYPEs are internal and should be Pmode.  */
   internal_reference_types ();
-
-  set_lang_adjust_rli (gnat_adjust_rli);
 
   return true;
 }
@@ -673,35 +667,6 @@ gnat_expand_expr (tree exp, rtx target, enum machine_mode tmode,
     }
 
   return expand_expr_real (new, target, tmode, modifier, alt_rtl);
-}
-
-/* Adjusts the RLI used to layout a record after all the fields have been
-   added.  We only handle the packed case and cause it to use the alignment
-   that will pad the record at the end.  */
-
-static void
-gnat_adjust_rli (record_layout_info rli ATTRIBUTE_UNUSED)
-{
-#if 0
-  /* ??? This code seems to have no actual effect; record_align should already
-     reflect the largest alignment desired by a field.  jason 2003-04-01  */
-  unsigned int record_align = rli->unpadded_align;
-  tree field;
-
-  /* If an alignment has been specified, don't use anything larger unless we
-     have to.  */
-  if (TYPE_ALIGN (rli->t) != 0 && TYPE_ALIGN (rli->t) < record_align)
-    record_align = MAX (rli->record_align, TYPE_ALIGN (rli->t));
-
-  /* If any fields have variable size, we need to force the record to be at
-     least as aligned as the alignment of that type.  */
-  for (field = TYPE_FIELDS (rli->t); field; field = TREE_CHAIN (field))
-    if (TREE_CODE (DECL_SIZE_UNIT (field)) != INTEGER_CST)
-      record_align = MAX (record_align, DECL_ALIGN (field));
-
-  if (TYPE_PACKED (rli->t))
-    rli->record_align = record_align;
-#endif
 }
 
 /* Do nothing (return the tree node passed).  */
