@@ -1,3 +1,17 @@
+2007-11-19  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (invalid_e500_subreg,
+	rs6000_legitimate_offset_address_p, legitimate_lo_sum_address_p,
+	rs6000_legitimize_address, rs6000_legitimize_reload_address,
+	rs6000_legitimate_address, function_arg_advance,
+	spe_build_register_parallel, rs6000_spe_function_arg,
+	rs6000_split_multireg_move, spe_func_has_64bit_regs_p,
+	emit_frame_save, gen_frame_mem_offset, rs6000_function_value,
+	rs6000_libcall_value, rs6000_dwarf_register_span): Handle DDmode and
+	TDmode similarly to DFmode and TFmode.
+	* config/rs6000/rs6000.h (LOCAL_ALIGNMENT, MEMBER_TYPE_FORCES_BLK,
+	DATA_ALIGNMENT, CLASS_MAX_NREGS, CANNOT_CHANGE_MODE_CLASS): Likewise.
+
 2007-11-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* stor-layout.c (lang_adjust_rli): Delete.
