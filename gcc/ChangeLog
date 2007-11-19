@@ -11,7 +11,8 @@
 	* doc/invoke.texi (Optimize Options): Document the new behavior
 	of -funsafe-math-optimizations, that -fassociative-math requires
 	both -fno-signed-zeros and -fno-trapping-math and make it clear
-	that -fno-trapping-math requires -fno-signaling-nans.
+	that -fno-trapping-math requires -fno-signaling-nans.  Refactor
+	documentation of -ffast-math.
 
 2007-11-18  Jakub Jelinek  <jakub@redhat.com>
 
