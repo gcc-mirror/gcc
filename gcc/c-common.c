@@ -5007,21 +5007,13 @@ handle_transparent_union_attribute (tree *node, tree name,
 				    tree ARG_UNUSED (args), int flags,
 				    bool *no_add_attrs)
 {
-  tree type = NULL;
+  tree type;
 
   *no_add_attrs = true;
 
-  if (DECL_P (*node))
-    {
-      if (TREE_CODE (*node) != TYPE_DECL)
-	goto ignored;
-      node = &TREE_TYPE (*node);
-      type = *node;
-    }
-  else if (TYPE_P (*node))
-    type = *node;
-  else
-    goto ignored;
+  if (TREE_CODE (*node) == TYPE_DECL)
+    node = &TREE_TYPE (*node);
+  type = *node;
 
   if (TREE_CODE (type) == UNION_TYPE)
     {

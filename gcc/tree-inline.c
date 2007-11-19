@@ -273,23 +273,7 @@ remap_decl (tree decl, copy_body_data *id)
 static tree
 remap_type_1 (tree type, copy_body_data *id)
 {
-  tree *node;
   tree new, t;
-
-  if (type == NULL)
-    return type;
-
-  /* See if we have remapped this type.  */
-  node = (tree *) pointer_map_contains (id->decl_map, type);
-  if (node)
-    return *node;
-
-  /* The type only needs remapping if it's variably modified.  */
-  if (! variably_modified_type_p (type, id->src_fn))
-    {
-      insert_decl_map (id, type, type);
-      return type;
-    }
 
   /* We do need a copy.  build and register it now.  If this is a pointer or
      reference type, remap the designated type and make a new pointer or
@@ -3593,6 +3577,7 @@ build_duplicate_type (tree type)
   id.dst_fn = current_function_decl;
   id.src_cfun = cfun;
   id.decl_map = pointer_map_create ();
+  id.copy_decl = copy_decl_no_change;
 
   type = remap_type_1 (type, &id);
 
