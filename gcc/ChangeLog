@@ -1,3 +1,10 @@
+2007-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* stor-layout.c (lang_adjust_rli): Delete.
+	(set_lang_adjust_rli): Likewise.
+	(layout_type): Do not call lang_adjust_rli hook.
+	* tree.h (set_lang_adjust_rli): Delete.
+
 2007-11-19  Bernd Schmidt  <bernd.schmidt@analog.com>
 	
 	* config/bfin/bfin.c (must_save_p): New function, mostly broken out of
