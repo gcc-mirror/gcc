@@ -3115,13 +3115,16 @@ invalid_e500_subreg (rtx op, enum machine_mode mode)
 	  && (mode == SImode || mode == DImode || mode == TImode)
 	  && REG_P (SUBREG_REG (op))
 	  && (GET_MODE (SUBREG_REG (op)) == DFmode
-	      || GET_MODE (SUBREG_REG (op)) == TFmode))
+	      || GET_MODE (SUBREG_REG (op)) == TFmode
+	      || GET_MODE (SUBREG_REG (op)) == DDmode
+	      || GET_MODE (SUBREG_REG (op)) == TDmode))
 	return true;
 
       /* Reject (subreg:DF (reg:DI)); likewise with subreg:TF and
 	 reg:TI.  */
       if (GET_CODE (op) == SUBREG
-	  && (mode == DFmode || mode == TFmode)
+	  && (mode == DFmode || mode == TFmode
+	      || mode == DDmode || mode == TDmode)
 	  && REG_P (SUBREG_REG (op))
 	  && (GET_MODE (SUBREG_REG (op)) == DImode
 	      || GET_MODE (SUBREG_REG (op)) == TImode))
@@ -3390,12 +3393,12 @@ rs6000_legitimate_offset_address_p (enum machine_mode mode, rtx x, int strict)
       break;
 
     case TFmode:
+    case TDmode:
       if (TARGET_E500_DOUBLE)
 	return (SPE_CONST_OFFSET_OK (offset)
 		&& SPE_CONST_OFFSET_OK (offset + 8));
 
     case TImode:
-    case TDmode:
       if (mode == TFmode || mode == TDmode || !TARGET_POWERPC64)
 	extra = 12;
       else if (offset & 3)
@@ -3474,6 +3477,7 @@ legitimate_lo_sum_address_p (enum machine_mode mode, rtx x, int strict)
     return false;
   /* Restrict addressing for DI because of our SUBREG hackery.  */
   if (TARGET_E500_DOUBLE && (mode == DFmode || mode == TFmode
+			     || mode == DDmode || mode == TDmode
 			     || mode == DImode))
     return false;
   x = XEXP (x, 1);
@@ -3488,7 +3492,8 @@ legitimate_lo_sum_address_p (enum machine_mode mode, rtx x, int strict)
 	return false;
       if (GET_MODE_BITSIZE (mode) > 64
 	  || (GET_MODE_BITSIZE (mode) > 32 && !TARGET_POWERPC64
-	      && !(TARGET_HARD_FLOAT && TARGET_FPRS && mode == DFmode)))
+	      && !(TARGET_HARD_FLOAT && TARGET_FPRS
+		   && (mode == DFmode || mode == DDmode))))
 	return false;
 
       return CONSTANT_P (x);
@@ -3610,7 +3615,8 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	   && CONSTANT_P (x)
 	   && GET_MODE_NUNITS (mode) == 1
 	   && (GET_MODE_BITSIZE (mode) <= 32
-	       || ((TARGET_HARD_FLOAT && TARGET_FPRS) && mode == DFmode)))
+	       || ((TARGET_HARD_FLOAT && TARGET_FPRS)
+		   && (mode == DFmode || mode == DDmode))))
     {
       rtx reg = gen_reg_rtx (Pmode);
       emit_insn (gen_elf_high (reg, x));
@@ -3624,7 +3630,8 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	   && GET_CODE (x) != CONST_INT
 	   && GET_CODE (x) != CONST_DOUBLE
 	   && CONSTANT_P (x)
-	   && ((TARGET_HARD_FLOAT && TARGET_FPRS) || mode != DFmode)
+	   && ((TARGET_HARD_FLOAT && TARGET_FPRS)
+	       || (mode != DFmode && mode != DDmode))
 	   && mode != DImode
 	   && mode != TImode)
     {
@@ -3980,6 +3987,7 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
       && GET_CODE (XEXP (x, 1)) == CONST_INT
       && !SPE_VECTOR_MODE (mode)
       && !(TARGET_E500_DOUBLE && (mode == DFmode || mode == TFmode
+				  || mode == DDmode || mode == TDmode
 				  || mode == DImode))
       && !ALTIVEC_VECTOR_MODE (mode))
     {
@@ -4021,12 +4029,12 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
       && !flag_pic
 #endif
       /* Don't do this for TFmode or TDmode, since the result isn't offsettable.
-	 The same goes for DImode without 64-bit gprs and DFmode
+	 The same goes for DImode without 64-bit gprs and DFmode and DDmode
 	 without fprs.  */
       && mode != TFmode
       && mode != TDmode
       && (mode != DImode || TARGET_POWERPC64)
-      && (mode != DFmode || TARGET_POWERPC64
+      && ((mode != DFmode && mode != DDmode) || TARGET_POWERPC64
 	  || (TARGET_FPRS && TARGET_HARD_FLOAT)))
     {
 #if TARGET_MACHO
@@ -4089,11 +4097,11 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
    refers to a constant pool entry of an address (or the sum of it
    plus a constant), a short (16-bit signed) constant plus a register,
    the sum of two registers, or a register indirect, possibly with an
-   auto-increment.  For DFmode and DImode with a constant plus register,
-   we must ensure that both words are addressable or PowerPC64 with offset
-   word aligned.
+   auto-increment.  For DFmode, DDmode and DImode with a constant plus
+   register, we must ensure that both words are addressable or PowerPC64
+   with offset word aligned.
 
-   For modes spanning multiple registers (DFmode in 32-bit GPRs,
+   For modes spanning multiple registers (DFmode and DDmode in 32-bit GPRs,
    32-bit DImode, TImode, TFmode, TDmode), indexed addressing cannot be used
    because adjacent memory cells are accessed by adding word-sized offsets
    during assembly output.  */
@@ -4118,8 +4126,8 @@ rs6000_legitimate_address (enum machine_mode mode, rtx x, int reg_ok_strict)
       && mode != TFmode
       && mode != TDmode
       /* Restrict addressing for DI because of our SUBREG hackery.  */
-      && !(TARGET_E500_DOUBLE && (mode == DFmode || mode == TFmode
-				  || mode == DImode))
+      && !(TARGET_E500_DOUBLE
+	   && (mode == DFmode || mode == DDmode || mode == DImode))
       && TARGET_UPDATE
       && legitimate_indirect_address_p (XEXP (x, 0), reg_ok_strict))
     return 1;
@@ -4142,7 +4150,7 @@ rs6000_legitimate_address (enum machine_mode mode, rtx x, int reg_ok_strict)
       && mode != TDmode
       && ((TARGET_HARD_FLOAT && TARGET_FPRS)
 	  || TARGET_POWERPC64
-	  || ((mode != DFmode || TARGET_E500_DOUBLE) && mode != TFmode))
+	  || ((mode != DFmode && mode != DDmode) || TARGET_E500_DOUBLE))
       && (TARGET_POWERPC64 || mode != DImode)
       && legitimate_indexed_address_p (x, reg_ok_strict))
     return 1;
@@ -4152,12 +4160,13 @@ rs6000_legitimate_address (enum machine_mode mode, rtx x, int reg_ok_strict)
       && mode != TDmode
       && ((TARGET_HARD_FLOAT && TARGET_FPRS)
 	  || TARGET_POWERPC64
-	  || ((mode != DFmode || TARGET_E500_DOUBLE) && mode != TFmode))
+	  || ((mode != DFmode && mode != DDmode) || TARGET_E500_DOUBLE))
       && (TARGET_POWERPC64 || mode != DImode)
       && !ALTIVEC_VECTOR_MODE (mode)
       && !SPE_VECTOR_MODE (mode)
       /* Restrict addressing for DI because of our SUBREG hackery.  */
-      && !(TARGET_E500_DOUBLE && (mode == DFmode || mode == DImode))
+      && !(TARGET_E500_DOUBLE
+	   && (mode == DFmode || mode == DDmode || mode == DImode))
       && TARGET_UPDATE
       && legitimate_indirect_address_p (XEXP (x, 0), reg_ok_strict)
       && (rs6000_legitimate_offset_address_p (mode, XEXP (x, 1), reg_ok_strict)
@@ -5407,7 +5416,8 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	  else
 	    {
 	      cum->fregno = FP_ARG_V4_MAX_REG + 1;
-	      if (mode == DFmode || mode == TFmode || mode == DDmode || mode == TDmode)
+	      if (mode == DFmode || mode == TFmode
+		  || mode == DDmode || mode == TDmode)
 		cum->words += cum->words & 1;
 	      cum->words += rs6000_arg_size (mode, type);
 	    }
@@ -5490,12 +5500,14 @@ spe_build_register_parallel (enum machine_mode mode, int gregno)
   switch (mode)
     {
     case DFmode:
+    case DDmode:
       r1 = gen_rtx_REG (DImode, gregno);
       r1 = gen_rtx_EXPR_LIST (VOIDmode, r1, const0_rtx);
       return gen_rtx_PARALLEL (mode, gen_rtvec (1, r1));
 
     case DCmode:
     case TFmode:
+    case TDmode:
       r1 = gen_rtx_REG (DImode, gregno);
       r1 = gen_rtx_EXPR_LIST (VOIDmode, r1, const0_rtx);
       r3 = gen_rtx_REG (DImode, gregno + 2);
@@ -5527,13 +5539,14 @@ rs6000_spe_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
   /* On E500 v2, double arithmetic is done on the full 64-bit GPR, but
      are passed and returned in a pair of GPRs for ABI compatibility.  */
-  if (TARGET_E500_DOUBLE && (mode == DFmode || mode == DCmode
-			     || mode == TFmode || mode == TCmode))
+  if (TARGET_E500_DOUBLE && (mode == DFmode || mode == TFmode
+			     || mode == DDmode || mode == TDmode
+			     || mode == DCmode || mode == TCmode))
     {
       int n_words = rs6000_arg_size (mode, type);
 
       /* Doubles go in an odd/even register pair (r5/r6, etc).  */
-      if (mode == DFmode)
+      if (mode == DFmode || mode == DDmode)
 	gregno += (1 - gregno) & 1;
 
       /* Multi-reg args are not split between registers and stack.  */
@@ -13718,8 +13731,8 @@ rs6000_split_multireg_move (rtx dst, rtx src)
     reg_mode = DECIMAL_FLOAT_MODE_P (mode) ? DDmode : DFmode;
   else if (ALTIVEC_REGNO_P (reg))
     reg_mode = V16QImode;
-  else if (TARGET_E500_DOUBLE && mode == TFmode)
-    reg_mode = DFmode;
+  else if (TARGET_E500_DOUBLE && (mode == TFmode || mode == TDmode))
+    reg_mode = DECIMAL_FLOAT_MODE_P (mode) ? DDmode : DFmode;
   else
     reg_mode = word_mode;
   reg_mode_size = GET_MODE_SIZE (reg_mode);
@@ -14458,7 +14471,8 @@ spe_func_has_64bit_regs_p (void)
 
 	      if (SPE_VECTOR_MODE (mode))
 		return true;
-	      if (TARGET_E500_DOUBLE && (mode == DFmode || mode == TFmode))
+	      if (TARGET_E500_DOUBLE && (mode == DFmode || mode == TFmode
+					 || mode == DDmode || mode == TDmode))
 		return true;
 	    }
 	}
@@ -15274,7 +15288,7 @@ emit_frame_save (rtx frame_reg, rtx frame_ptr, enum machine_mode mode,
 
   /* Some cases that need register indexed addressing.  */
   if ((TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (mode))
-      || (TARGET_E500_DOUBLE && mode == DFmode)
+      || (TARGET_E500_DOUBLE && (mode == DFmode || mode == DDmode))
       || (TARGET_SPE_ABI
 	  && SPE_VECTOR_MODE (mode)
 	  && !SPE_CONST_OFFSET_OK (offset)))
@@ -15314,7 +15328,7 @@ gen_frame_mem_offset (enum machine_mode mode, rtx reg, int offset)
   int_rtx = GEN_INT (offset);
 
   if ((TARGET_SPE_ABI && SPE_VECTOR_MODE (mode))
-      || (TARGET_E500_DOUBLE && mode == DFmode))
+      || (TARGET_E500_DOUBLE && (mode == DFmode || mode == DDmode)))
     {
       offset_rtx = gen_rtx_REG (Pmode, FIXED_SCRATCH);
       emit_move_insn (offset_rtx, int_rtx);
@@ -21521,8 +21535,8 @@ rs6000_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED)
 	   && ALTIVEC_VECTOR_MODE (mode))
     regno = ALTIVEC_ARG_RETURN;
   else if (TARGET_E500_DOUBLE && TARGET_HARD_FLOAT
-	   && (mode == DFmode || mode == DCmode
-	       || mode == TFmode || mode == TCmode))
+	   && (mode == DFmode || mode == DDmode || mode == DCmode
+	       || mode == TFmode || mode == TDmode || mode == TCmode))
     return spe_build_register_parallel (mode, GP_ARG_RETURN);
   else
     regno = GP_ARG_RETURN;
@@ -21583,8 +21597,8 @@ rs6000_libcall_value (enum machine_mode mode)
   else if (COMPLEX_MODE_P (mode) && targetm.calls.split_complex_arg)
     return rs6000_complex_function_value (mode);
   else if (TARGET_E500_DOUBLE && TARGET_HARD_FLOAT
-	   && (mode == DFmode || mode == DCmode
-	       || mode == TFmode || mode == TCmode))
+	   && (mode == DFmode || mode == DDmode || mode == DCmode
+	       || mode == TFmode || mode == TDmode || mode == TCmode))
     return spe_build_register_parallel (mode, GP_ARG_RETURN);
   else
     regno = GP_ARG_RETURN;
@@ -21642,7 +21656,8 @@ rs6000_dwarf_register_span (rtx reg)
 
   if (TARGET_SPE
       && (SPE_VECTOR_MODE (GET_MODE (reg))
-	  || (TARGET_E500_DOUBLE && GET_MODE (reg) == DFmode)))
+	  || (TARGET_E500_DOUBLE
+	      && (GET_MODE (reg) == DFmode || GET_MODE (reg) == DDmode))))
     ;
   else
     return NULL_RTX;

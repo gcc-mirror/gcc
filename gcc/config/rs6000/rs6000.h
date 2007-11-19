@@ -559,7 +559,8 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
    that the object would ordinarily have.  */
 #define LOCAL_ALIGNMENT(TYPE, ALIGN)				\
   ((TARGET_ALTIVEC && TREE_CODE (TYPE) == VECTOR_TYPE) ? 128 :	\
-    (TARGET_E500_DOUBLE && TYPE_MODE (TYPE) == DFmode) ? 64 : \
+    (TARGET_E500_DOUBLE						\
+     && (TYPE_MODE (TYPE) == DFmode || TYPE_MODE (TYPE) == DDmode)) ? 64 : \
     ((TARGET_SPE && TREE_CODE (TYPE) == VECTOR_TYPE \
      && SPE_VECTOR_MODE (TYPE_MODE (TYPE))) || (TARGET_PAIRED_FLOAT \
         && TREE_CODE (TYPE) == VECTOR_TYPE \
@@ -585,7 +586,7 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
    fit into 1, whereas DI still needs two.  */
 #define MEMBER_TYPE_FORCES_BLK(FIELD, MODE) \
   ((TARGET_SPE && TREE_CODE (TREE_TYPE (FIELD)) == VECTOR_TYPE) \
-   || (TARGET_E500_DOUBLE && (MODE) == DFmode))
+   || (TARGET_E500_DOUBLE && ((MODE) == DFmode || (MODE) == DDmode)))
 
 /* A bit-field declared as `int' forces `int' alignment for the struct.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
@@ -604,7 +605,8 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
   (TREE_CODE (TYPE) == VECTOR_TYPE ? ((TARGET_SPE_ABI \
    || TARGET_PAIRED_FLOAT) ? 64 : 128)	\
-   : (TARGET_E500_DOUBLE && TYPE_MODE (TYPE) == DFmode) ? 64 \
+   : (TARGET_E500_DOUBLE			\
+      && (TYPE_MODE (TYPE) == DFmode || TYPE_MODE (TYPE) == DDmode)) ? 64 \
    : TREE_CODE (TYPE) == ARRAY_TYPE		\
    && TYPE_MODE (TREE_TYPE (TYPE)) == QImode	\
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
@@ -1178,7 +1180,8 @@ enum reg_class
 #define CLASS_MAX_NREGS(CLASS, MODE)					\
  (((CLASS) == FLOAT_REGS) 						\
   ? ((GET_MODE_SIZE (MODE) + UNITS_PER_FP_WORD - 1) / UNITS_PER_FP_WORD) \
-  : (TARGET_E500_DOUBLE && (CLASS) == GENERAL_REGS && (MODE) == DFmode) \
+  : (TARGET_E500_DOUBLE && (CLASS) == GENERAL_REGS			\
+     && ((MODE) == DFmode || (MODE) == DDmode))				\
   ? 1                                                                   \
   : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
@@ -1192,6 +1195,8 @@ enum reg_class
    : (((TARGET_E500_DOUBLE						\
 	&& ((((TO) == DFmode) + ((FROM) == DFmode)) == 1		\
 	    || (((TO) == TFmode) + ((FROM) == TFmode)) == 1		\
+	    || (((TO) == DDmode) + ((FROM) == DDmode)) == 1		\
+	    || (((TO) == TDmode) + ((FROM) == TDmode)) == 1		\
 	    || (((TO) == DImode) + ((FROM) == DImode)) == 1))		\
        || (TARGET_SPE							\
 	   && (SPE_VECTOR_MODE (FROM) + SPE_VECTOR_MODE (TO)) == 1))	\
@@ -1717,11 +1722,11 @@ typedef struct rs6000_args
    refers to a constant pool entry of an address (or the sum of it
    plus a constant), a short (16-bit signed) constant plus a register,
    the sum of two registers, or a register indirect, possibly with an
-   auto-increment.  For DFmode and DImode with a constant plus register,
-   we must ensure that both words are addressable or PowerPC64 with offset
-   word aligned.
+   auto-increment.  For DFmode, DDmode and DImode with a constant plus
+   register, we must ensure that both words are addressable or PowerPC64
+   with offset word aligned.
 
-   For modes spanning multiple registers (DFmode in 32-bit GPRs,
+   For modes spanning multiple registers (DFmode and DDmode in 32-bit GPRs,
    32-bit DImode, TImode), indexed addressing cannot be used because
    adjacent memory cells are accessed by adding word-sized offsets
    during assembly output.  */
