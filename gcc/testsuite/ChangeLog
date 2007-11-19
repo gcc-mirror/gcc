@@ -1,3 +1,9 @@
+2007-11-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34079
+	* gfortran.dg/bind_c_usage_10_c.c: New.
+	* gfortran.dg/bind_c_usage_10.f03: New.
+
 2007-11-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/pr33007.c: Expect new warning.

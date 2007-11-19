@@ -4315,6 +4315,8 @@ gfc_match_entry (void)
   gfc_entry_list *el;
   locus old_loc;
   bool module_procedure;
+  char peek_char;
+  match is_bind_c;
 
   m = gfc_match_name (name);
   if (m != MATCH_YES)
@@ -4398,6 +4400,26 @@ gfc_match_entry (void)
 
   proc = gfc_current_block ();
 
+  /* Make sure that it isn't already declared as BIND(C).  If it is, it
+     must have been marked BIND(C) with a BIND(C) attribute and that is
+     not allowed for procedures.  */
+  if (entry->attr.is_bind_c == 1)
+    {
+      entry->attr.is_bind_c = 0;
+      if (entry->old_symbol != NULL)
+        gfc_error_now ("BIND(C) attribute at %L can only be used for "
+                       "variables or common blocks",
+                       &(entry->old_symbol->declared_at));
+      else
+        gfc_error_now ("BIND(C) attribute at %L can only be used for "
+                       "variables or common blocks", &gfc_current_locus);
+    }
+  
+  /* Check what next non-whitespace character is so we can tell if there
+     is the required parens if we have a BIND(C).  */
+  gfc_gobble_whitespace ();
+  peek_char = gfc_peek_char ();
+
   if (state == COMP_SUBROUTINE)
     {
       /* An entry in a subroutine.  */
@@ -4407,6 +4429,21 @@ gfc_match_entry (void)
       m = gfc_match_formal_arglist (entry, 0, 1);
       if (m != MATCH_YES)
 	return MATCH_ERROR;
+
+      is_bind_c = gfc_match_bind_c (entry);
+      if (is_bind_c == MATCH_ERROR)
+	return MATCH_ERROR;
+      if (is_bind_c == MATCH_YES)
+	{
+	  if (peek_char != '(')
+	    {
+	      gfc_error ("Missing required parentheses before BIND(C) at %C");
+	      return MATCH_ERROR;
+	    }
+	    if (gfc_add_is_bind_c (&(entry->attr), entry->name, &(entry->declared_at), 1)
+		== FAILURE)
+	      return MATCH_ERROR;
+	}
 
       if (gfc_add_entry (&entry->attr, entry->name, NULL) == FAILURE
 	  || gfc_add_subroutine (&entry->attr, entry->name, NULL) == FAILURE)
@@ -4452,19 +4489,28 @@ gfc_match_entry (void)
 	}
       else
 	{
-	  m = match_result (proc, &result);
+	  m = gfc_match_suffix (entry, &result);
 	  if (m == MATCH_NO)
 	    gfc_syntax_error (ST_ENTRY);
 	  if (m != MATCH_YES)
 	    return MATCH_ERROR;
 
-	  if (gfc_add_result (&result->attr, result->name, NULL) == FAILURE
-	      || gfc_add_entry (&entry->attr, result->name, NULL) == FAILURE
-	      || gfc_add_function (&entry->attr, result->name, NULL)
-		 == FAILURE)
-	    return MATCH_ERROR;
-
-	  entry->result = result;
+          if (result)
+	    {
+	      if (gfc_add_result (&result->attr, result->name, NULL) == FAILURE
+		  || gfc_add_entry (&entry->attr, result->name, NULL) == FAILURE
+		  || gfc_add_function (&entry->attr, result->name, NULL)
+		  == FAILURE)
+	        return MATCH_ERROR;
+	      entry->result = result;
+	    }
+	  else
+	    {
+	      if (gfc_add_entry (&entry->attr, entry->name, NULL) == FAILURE
+		  || gfc_add_function (&entry->attr, entry->name, NULL) == FAILURE)
+		return MATCH_ERROR;
+	      entry->result = entry;
+	    }
 	}
     }
 
@@ -4523,7 +4569,7 @@ gfc_match_subroutine (void)
   gfc_new_block = sym;
 
   /* Check what next non-whitespace character is so we can tell if there
-     where the required parens if we have a BIND(C).  */
+     is the required parens if we have a BIND(C).  */
   gfc_gobble_whitespace ();
   peek_char = gfc_peek_char ();
   
