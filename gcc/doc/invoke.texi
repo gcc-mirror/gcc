@@ -6274,7 +6274,8 @@ it can result in incorrect output for programs which depend on
 an exact implementation of IEEE or ISO rules/specifications for
 math functions. It may, however, yield faster code for programs
 that do not require the guarantees of these specifications.
-Enables @option{-freciprocal-math} and @option{-fassociative-math}.
+Enables @option{-fno-signed-zeros}, @option{-fno-trapping-math},
+@option{-fassociative-math} and @option{-freciprocal-math}.
 
 The default is @option{-fno-unsafe-math-optimizations}.
 
@@ -6288,8 +6289,9 @@ well as ignore NaNs and inhibit or create underflow or overflow (and
 thus cannot be used on a code which relies on rounding behavior like
 @code{(x + 2**52) - 2**52)}.  May also reorder floating-point comparisons
 and thus may not be used when ordered comparisons are required.
-This flag doesn't make much sense without @option{-fno-signed-zeros}
-or @option{-fno-trapping-math} or with @option{-frounding-math}.
+This option requires that both @option{-fno-signed-zeros} and
+@option{-fno-trapping-math} be in effect.  Moreover, it doesn't make
+much sense with @option{-frounding-math}.
 
 The default is @option{-fno-associative-math}.
 
@@ -6331,9 +6333,9 @@ The default is @option{-fsigned-zeros}.
 @opindex fno-trapping-math
 Compile code assuming that floating-point operations cannot generate
 user-visible traps.  These traps include division by zero, overflow,
-underflow, inexact result and invalid operation.  This option implies
-@option{-fno-signaling-nans}.  Setting this option may allow faster
-code if one relies on ``non-stop'' IEEE arithmetic, for example.
+underflow, inexact result and invalid operation.  This option requires
+that @option{-fno-signaling-nans} be in effect.  Setting this option may
+allow faster code if one relies on ``non-stop'' IEEE arithmetic, for example.
 
 This option should never be turned on by any @option{-O} option since
 it can result in incorrect output for programs which depend on
