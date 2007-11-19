@@ -1988,6 +1988,13 @@ process_options (void)
   if (flag_signaling_nans)
     flag_trapping_math = 1;
 
+  /* We cannot reassociate if we want traps or signed zeros.  */
+  if (flag_associative_math && (flag_trapping_math || flag_signed_zeros))
+    {
+      warning (0, "-fassociative-math disabled; other options take precedence");
+      flag_associative_math = 0;
+    }
+
   /* With -fcx-limited-range, we do cheap and quick complex arithmetic.  */
   if (flag_cx_limited_range)
     flag_complex_method = 0;

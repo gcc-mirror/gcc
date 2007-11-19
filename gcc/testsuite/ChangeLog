@@ -1,3 +1,9 @@
+2007-11-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/pr33007.c: Expect new warning.
+	* gcc.dg/tree-ssa/recip-5.c: Likewise.
+	* g++.dg/opt/pr34036.C: New test.
+
 2007-11-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/30988

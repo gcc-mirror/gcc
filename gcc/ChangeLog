@@ -1,3 +1,18 @@
+2007-11-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR tree-optimization/34036
+	* opts.c (set_fast_math_flags): Do not set flags in common
+	with set_unsafe_math_optimizations_flags, invoke it directly.
+	(set_unsafe_math_optimizations_flags): Unset flag_trapping_math
+	and flag_signed_zeros.
+	* toplev.c (process_options): Force flag_associative_math to 0 and
+	warn, if it is set and either flag_trapping_math or flag_signed_zeros
+	is set too.
+	* doc/invoke.texi (Optimize Options): Document the new behavior
+	of -funsafe-math-optimizations, that -fassociative-math requires
+	both -fno-signed-zeros and -fno-trapping-math and make it clear
+	that -fno-trapping-math requires -fno-signaling-nans.
+
 2007-11-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/34132
