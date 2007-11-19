@@ -1,5 +1,4 @@
-struct S { short x; };
-typedef struct S __attribute__((__may_alias__)) test;
+typedef struct __attribute__((__may_alias__)) { short x; } test;
 
 test *p;
 

@@ -1,3 +1,17 @@
+2007-11-19  Jason Merrill  <jason@redhat.com>
+
+	PR debug/29436, c/32326
+	* tree.c (build_type_attribute_qual_variant): Refuse to make
+	a distinct copy of a struct/enum type.  Use build_distinct_type_copy.
+	* doc/extend.texi (Type Attributes): Don't encourage people to add
+	attributes to struct/enum types in a typedef.  Fix
+	transparent_union example.
+
+	* tree-inline.c (remap_type_1): Remove code that's redundant with
+	remap_type.
+	(build_duplicate_type): Set id.copy_decl.
+	* c-common.c (handle_transparent_union_attribute): Simplify logic.
+
 2007-11-19  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (invalid_e500_subreg,

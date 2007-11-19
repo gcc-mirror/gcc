@@ -3938,8 +3938,9 @@ attributes in header files without being concerned about a possible
 macro of the same name.  For example, you may use @code{__aligned__}
 instead of @code{aligned}.
 
-You may specify type attributes either in a @code{typedef} declaration
-or in an enum, struct or union type declaration or definition.
+You may specify type attributes in an enum, struct or union type
+declaration or definition, or for other types in a @code{typedef}
+declaration.
 
 For an enum, struct or union type, you may specify attributes either
 between the enum, struct or union tag and the name of the type, or
@@ -4098,11 +4099,11 @@ less useful.  Instead, @code{<sys/wait.h>} might define the interface
 as follows:
 
 @smallexample
-typedef union
+typedef union __attribute__ ((__transparent_union__))
   @{
     int *__ip;
     union wait *__up;
-  @} wait_status_ptr_t __attribute__ ((__transparent_union__));
+  @} wait_status_ptr_t;
 
 pid_t wait (wait_status_ptr_t);
 @end smallexample
