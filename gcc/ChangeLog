@@ -1,6 +1,6 @@
 2007-11-19  Jason Merrill  <jason@redhat.com>
 
-	PR debug/29436, c/32326
+	PR debug/28834, debug/29436, c/32326
 	* tree.c (build_type_attribute_qual_variant): Refuse to make
 	a distinct copy of a struct/enum type.  Use build_distinct_type_copy.
 	* doc/extend.texi (Type Attributes): Don't encourage people to add
