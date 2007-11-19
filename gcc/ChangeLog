@@ -1,3 +1,13 @@
+2007-11-19  Bernd Schmidt  <bernd.schmidt@analog.com>
+	
+	* config/bfin/bfin.c (must_save_p): New function, mostly broken out of
+	n_dregs_to_save and n_pregs_to_save.
+	(n_pregs_to_save, n_dregs_to_save): Use it.  New argument CONSECUTIVE;
+	all callers changed.
+	(expand_prologue_reg_save, expand_epilogue_reg_restore): Enhance to be
+	able to save single D/P registers that aren't saved by the push/pop
+	multiple insns.
+
 2007-11-19  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/34099
