@@ -1,3 +1,22 @@
+2007-11-20  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+	    Ben Elliston  <bje@au.ibm.com>
+
+	* config/spu/mfc_tag_release.c: New file.
+	* config/spu/mfc_multi_tag_release.c: Likewise.
+	* config/spu/mfc_multi_tag_reserve.c: Likewise.
+	* config/spu/mfc_tag_release.c: Likewise.
+	* config/spu/mfc_tag_reserve.c: Likewise.
+	* config/spu/mfc_tag_table.c: Likewise.
+	* config/spu/t-spu-elf (LIB2FUNCS_STATIC_EXTRA): Compile them.
+	(TARGET_LIBGCC2_CFLAGS): Define __IN_LIBGCC2.
+	* config/spu/spu_mfcio.h: Avoid <stdint.h>.
+	(uint64_t): Typedef if __IN_LIBGCC2 is defined.
+	(MFC_TAG_INVALID, MFC_TAG_VALID): New macros.
+	(mfc_tag_reserve, mfc_tag_release, mfc_multi_tag_reserve,
+	mfc_multi_tag_release): Likewise.
+	(__mfc_tag_reserve, __mfc_tag_release, __mfc_multi_tag_reserve,
+	__mfc_multi_tag_release): Declare.
+
 2007-11-19  Jason Merrill  <jason@redhat.com>
 
 	PR debug/28834, debug/29436, c/32326
