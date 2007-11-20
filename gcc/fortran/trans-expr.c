@@ -153,16 +153,8 @@ gfc_conv_missing_dummy (gfc_se * se, gfc_expr * arg, gfc_typespec ts)
 
   present = gfc_conv_expr_present (arg->symtree->n.sym);
 
-  /* Make sure the type is at least default integer kind to match certain
-     runtime library functions. (ie cshift and eoshift).  */
-  if (ts.type == BT_INTEGER && arg->symtree->n.sym->attr.untyped)
-    {
-      tmp = gfc_get_int_type (gfc_default_integer_kind);
-      tmp = fold_convert (tmp, se->expr);
-    }
-  else
-    tmp = build3 (COND_EXPR, TREE_TYPE (se->expr), present, se->expr,
-		  fold_convert (TREE_TYPE (se->expr), integer_zero_node));
+  tmp = build3 (COND_EXPR, TREE_TYPE (se->expr), present, se->expr,
+		fold_convert (TREE_TYPE (se->expr), integer_zero_node));
 
   tmp = gfc_evaluate_now (tmp, &se->pre);
   se->expr = tmp;
