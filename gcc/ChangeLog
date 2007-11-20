@@ -1,3 +1,8 @@
+2007-11-20  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	* read-rtl.c (fatal_expected_char): Print EOF as text rather that
+	its binary representation.
+
 2007-11-20  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-operands.c (add_virtual_operand): Consistently prune
