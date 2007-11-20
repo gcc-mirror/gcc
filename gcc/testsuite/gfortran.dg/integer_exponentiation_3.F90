@@ -82,9 +82,9 @@ program test
   TEST(1_8,0_8,i8)
   TEST(-1,0,i4)
   TEST(-1_8,0_8,i8)
-  TEST(huge(0),0,i4)
+  TEST(huge(0_4),0,i4)
   TEST(huge(0_8),0_8,i8)
-  TEST(-huge(0)-1,0,i4)
+  TEST(-huge(0_4)-1,0,i4)
   TEST(-huge(0_8)-1_8,0_8,i8)
 
   TEST(1,1,i4)
@@ -164,7 +164,7 @@ program test
   TEST(2.0,-3_8,r4)
 
   TEST(nearest(1.0,-1.0),0,r4)
-  TEST(nearest(1.0,-1.0),huge(0),r4) ! { dg-warning "Arithmetic underflow" }
+  TEST(nearest(1.0,-1.0),huge(0_4),r4) ! { dg-warning "Arithmetic underflow" }
   TEST(nearest(1.0,-1.0),0_8,r4)
   TEST(nearest(1.0_8,-1.0),huge(0_8),r8) ! { dg-warning "Arithmetic underflow" }
 
