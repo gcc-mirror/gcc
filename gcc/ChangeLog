@@ -1,3 +1,7 @@
+2007-11-20  Ben Elliston  <bje@au.ibm.com>
+
+	* unwind.inc: Comment that unwind-sjlj.c includes this file.
+
 2007-11-20  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 	    Ben Elliston  <bje@au.ibm.com>
 

@@ -29,7 +29,8 @@
 
 /* This is derived from the C++ ABI for IA-64.  Where we diverge
    for cross-architecture compatibility are noted with "@@@".  
-   This file is included from unwind-dw2.c or unwind-ia64.c.  */
+   This file is included from unwind-dw2.c, unwind-sjlj.c or
+   unwind-ia64.c.  */
 
 /* Subroutine of _Unwind_RaiseException also invoked from _Unwind_Resume. 
 
