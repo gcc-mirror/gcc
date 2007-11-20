@@ -1,3 +1,11 @@
+2007-11-20  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34154
+	* gimplify.c (gimplify_switch_expr): Use tree_int_cst_lt instead
+	of the signed INT_CST_LT.
+	* stmt.c (expand_case): Likewise.
+	(estimate_case_costs): Likewise.
+
 2007-11-20  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	* read-rtl.c (fatal_expected_char): Print EOF as text rather that
