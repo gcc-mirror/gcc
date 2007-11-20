@@ -1,3 +1,9 @@
+2007-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/34146
+	* c-gimplify.c (optimize_compound_literals_in_ctor): New function.
+	(c_gimplify_expr): Use it.
+
 2007-11-20  Ben Elliston  <bje@au.ibm.com>
 
 	* config/spu/spu_mfcio.h: Fix typo.

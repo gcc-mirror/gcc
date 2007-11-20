@@ -68,7 +68,5 @@ baz3 (void)
   test (&t);
 }
 
-/* { dg-final { scan-tree-dump-times "t = {}" 3 "gimple"} } */
-/* { dg-final { scan-tree-dump-times "t.f.f1 = 1" 4 "gimple"} } */
-/* { dg-final { scan-tree-dump-times "t.f.f8 = 8" 4 "gimple"} } */
+/* { dg-final { scan-tree-dump-not "t = D" "gimple"} } */
 /* { dg-final { cleanup-tree-dump "gimple" } } */
