@@ -384,6 +384,8 @@ i[34567]86-*-interix3*)
 i[34567]86-*-kaos*)
 	;;
 ia64*-*-elf*)
+	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
+	tmake_file="ia64/t-ia64"
 	;;
 ia64*-*-freebsd*)
 	;;
