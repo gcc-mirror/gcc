@@ -1,3 +1,14 @@
+2007-11-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/32770
+	* gfortran.dg/record_marker_1.f90:  Explicitly set kinds
+	so test passes with -frecord-marker=8.
+	* gfortran.dg/integer_exponentiation_1.f90:  Likewise.
+	* gfortran.dg/integer_exponentiation_2.f90:  Likewise.
+	* gfortran.dg/integer_exponentiation_3.F90:  Likewise.
+	* gfortran.dg/integer_exponentiation_5.F90:  Likewise.
+	* gfortrand.dg/modulo_1.f90:  Likewise.
+
 2007-11-20  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* lib/target-supports.exp (check_effective_target_mips_soft_float):

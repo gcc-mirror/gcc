@@ -22,10 +22,11 @@ subroutine run_me(a, i, z)
   call check_equal_i (i**2, i*i)
   call check_equal_i (i**3, i*(i**2))
 
-  call check_equal_i (int(i**0_8,kind=4), 1)
-  call check_equal_i (int(i**1_8,kind=4), i)
-  call check_equal_i (int(i**2_8,kind=4), i*i)
-  call check_equal_i (int(i**3_8,kind=4), i*i*i)
+  ! i has default integer kind.
+  call check_equal_i (int(i**0_8,kind=kind(i)), 1)
+  call check_equal_i (int(i**1_8,kind=kind(i)), i)
+  call check_equal_i (int(i**2_8,kind=kind(i)), i*i)
+  call check_equal_i (int(i**3_8,kind=kind(i)), i*i*i)
 
   call check_equal_r (a**0.0, 1.0)
   call check_equal_r (a**1.0, a)
