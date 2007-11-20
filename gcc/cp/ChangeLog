@@ -1,5 +1,8 @@
 2007-11-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/34089
+	* parser.c (cp_parser_class_head): Reject function template ids.
+
 	PR c++/28879
 	* tree.c (build_cplus_array_type_1): Don't pass any VLA types
 	when processing_template_decl to build_array_type.

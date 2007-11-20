@@ -14536,8 +14536,18 @@ cp_parser_class_head (cp_parser* parser,
   /* Look up the type.  */
   if (template_id_p)
     {
-      type = TREE_TYPE (id);
-      type = maybe_process_partial_specialization (type);
+      if (TREE_CODE (id) == TEMPLATE_ID_EXPR
+	  && (DECL_FUNCTION_TEMPLATE_P (TREE_OPERAND (id, 0))
+	      || TREE_CODE (TREE_OPERAND (id, 0)) == OVERLOAD))
+	{
+	  error ("function template %qD redeclared as a class template", id);
+	  type = error_mark_node;
+	}
+      else
+	{
+	  type = TREE_TYPE (id);
+	  type = maybe_process_partial_specialization (type);
+	}
       if (nested_name_specifier)
 	pushed_scope = push_scope (nested_name_specifier);
     }
