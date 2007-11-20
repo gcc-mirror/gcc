@@ -37,3 +37,4 @@ find_base_value (src)
 /* There should be no casts to short unsigned int.  */
 /* { dg-final { scan-tree-dump-times "\\(short unsigned int\\)" 0 "dom3"} } */
 
+/* { dg-final { cleanup-tree-dump "dom3" } } */
