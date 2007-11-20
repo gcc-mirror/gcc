@@ -1,3 +1,8 @@
+2007-11-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/33317
+	* gfortran.dg/optional_dim_2.f90: Remove test.
+
 2007-11-19  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.dg/dfp/ddmode-ice.c: New test.
