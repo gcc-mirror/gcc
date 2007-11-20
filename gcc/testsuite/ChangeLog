@@ -1,3 +1,7 @@
+2007-11-20  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.c-torture/execute/20071120-1.c: New testcase.
+
 2007-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/34146
