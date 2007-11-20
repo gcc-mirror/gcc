@@ -1531,7 +1531,6 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 		 unspecified [0, -1], we cannot prune it.  Otherwise try doing
 		 so using access_can_touch_variable.  */
 	      if (full_ref
-		  && !(offset == 0 && size == -1)
 		  && !access_can_touch_variable (full_ref, al, offset, size))
 		continue;
 
