@@ -1,3 +1,8 @@
+2007-11-20  Thiemo Seufer  <ths@mips.com>
+
+	* config/mips/mips.c (mips_file_start): Add support for
+	flagging 32-bit code with -mfp64 floating-point.
+
 2007-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/34146
