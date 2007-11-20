@@ -1,3 +1,8 @@
+2007-11-20  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34154
+	* testsuite/gcc.c-torture/execute/pr34154.c: New testcase.
+
 2007-11-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/tree-ssa/20030714-1.c: Cleanup dom3 dump file.

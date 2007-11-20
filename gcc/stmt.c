@@ -2360,7 +2360,7 @@ expand_case (tree exp)
 	  high = CASE_HIGH (elt);
 
 	  /* Discard empty ranges.  */
-	  if (high && INT_CST_LT (high, low))
+	  if (high && tree_int_cst_lt (high, low))
 	    continue;
 
 	  case_list = add_case_node (case_list, index_type, low, high,
@@ -2387,9 +2387,9 @@ expand_case (tree exp)
 	    }
 	  else
 	    {
-	      if (INT_CST_LT (n->low, minval))
+	      if (tree_int_cst_lt (n->low, minval))
 		minval = n->low;
-	      if (INT_CST_LT (maxval, n->high))
+	      if (tree_int_cst_lt (maxval, n->high))
 		maxval = n->high;
 	    }
 	  /* A range counts double, since it requires two compares.  */
@@ -2664,7 +2664,8 @@ estimate_case_costs (case_node_ptr node)
 
   for (n = node; n; n = n->right)
     {
-      if ((INT_CST_LT (n->low, min_ascii)) || INT_CST_LT (max_ascii, n->high))
+      if (tree_int_cst_lt (n->low, min_ascii)
+	  || tree_int_cst_lt (max_ascii, n->high))
 	return 0;
 
       for (i = (HOST_WIDE_INT) TREE_INT_CST_LOW (n->low);
