@@ -218,8 +218,12 @@ fatal_with_file_and_line (FILE *infile, const char *msg, ...)
 static void
 fatal_expected_char (FILE *infile, int expected_c, int actual_c)
 {
-  fatal_with_file_and_line (infile, "expected character `%c', found `%c'",
-			    expected_c, actual_c);
+  if (actual_c == EOF)
+    fatal_with_file_and_line (infile, "expected character `%c', found EOF",
+			      expected_c);
+  else
+    fatal_with_file_and_line (infile, "expected character `%c', found `%c'",
+			      expected_c, actual_c);
 }
 
 /* Implementations of the iterator_group callbacks for modes.  */
