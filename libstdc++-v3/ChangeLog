@@ -1,5 +1,12 @@
 2007-11-20  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/functional_hash.h: Do not include ext/numeric_traits.h.
+	* include/tr1/functional_hash.h: Likewise.
+	* include/std/functional: Include ext/type_traits.h.
+	* include/tr1/functional: Likewise.
+
+2007-11-20  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1_impl/functional_hash.h
 	(hash<long double>::operator()(long double)): Only declare.
 	* src/hash.cc: Define here.
