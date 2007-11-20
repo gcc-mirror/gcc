@@ -26,7 +26,7 @@
 
 #include <spu_intrinsics.h>
 #ifdef __IN_LIBGCC2
-unsigned long long uint64_t;
+typedef unsigned long long uint64_t;
 #else
 #include <stdint.h>
 #endif
