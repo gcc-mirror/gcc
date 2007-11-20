@@ -1,5 +1,9 @@
 2007-11-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/28879
+	* tree.c (build_cplus_array_type_1): Don't pass any VLA types
+	when processing_template_decl to build_array_type.
+
 	PR c++/33962
 	* pt.c (more_specialized_fn): Don't segfault if one or
 	both argument list end with ellipsis.

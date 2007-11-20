@@ -1,5 +1,8 @@
 2007-11-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/28879
+	* g++.dg/template/vla2.C: New test.
+
 	PR c++/33962
 	* g++.dg/overload/template3.C: New test.
 

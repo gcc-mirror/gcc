@@ -529,9 +529,9 @@ build_cplus_array_type_1 (tree elt_type, tree index_type)
   if (elt_type == error_mark_node || index_type == error_mark_node)
     return error_mark_node;
 
-  if (dependent_type_p (elt_type)
-      || (index_type
-	  && value_dependent_expression_p (TYPE_MAX_VALUE (index_type))))
+  if (processing_template_decl
+      && (dependent_type_p (elt_type)
+	  || (index_type && !TREE_CONSTANT (TYPE_MAX_VALUE (index_type)))))
     {
       void **e;
       cplus_array_info cai;
@@ -570,7 +570,7 @@ build_cplus_array_type_1 (tree elt_type, tree index_type)
 	    TYPE_CANONICAL (t)
 		= build_cplus_array_type 
 		   (TYPE_CANONICAL (elt_type),
-		    index_type? TYPE_CANONICAL (index_type) : index_type);
+		    index_type ? TYPE_CANONICAL (index_type) : index_type);
 	  else
 	    TYPE_CANONICAL (t) = t;
 	}
