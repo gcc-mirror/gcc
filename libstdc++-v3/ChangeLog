@@ -1,3 +1,14 @@
+2007-11-20  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1_impl/functional_hash.h
+	(hash<long double>::operator()(long double)): Only declare.
+	* src/hash.cc: Define here.
+	* config/abi/pre/gnu.ver: Adjust exports.
+	* include/tr1/functional: Do not include <cmath>.
+	* include/std/functional: Likewise.
+
+	* include/std/functional: Include <new>.
+
 2007-11-18  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits (_DEFINE_SPEC_BODY): Remove.

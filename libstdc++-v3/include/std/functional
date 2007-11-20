@@ -58,8 +58,8 @@
 #  if defined(_GLIBCXX_INCLUDE_AS_TR1)
 #    error C++0x header cannot be included from TR1 header
 #  endif
-#  include <cmath>
 #  include <typeinfo>
+#  include <new>
 #  include <tuple>
 #  include <type_traits>
 #  include <bits/stringfwd.h>
