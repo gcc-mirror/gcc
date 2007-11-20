@@ -7086,7 +7086,9 @@ mips_file_start (void)
 
 #ifdef HAVE_AS_GNU_ATTRIBUTE
       fprintf (asm_out_file, "\t.gnu_attribute 4, %d\n",
-	       TARGET_HARD_FLOAT_ABI ? (TARGET_DOUBLE_FLOAT ? 1 : 2) : 3);
+	       (TARGET_HARD_FLOAT_ABI
+		? (TARGET_DOUBLE_FLOAT
+		   ? ((!TARGET_64BIT && TARGET_FLOAT64) ? 4 : 1) : 2) : 3));
 #endif
     }
 
