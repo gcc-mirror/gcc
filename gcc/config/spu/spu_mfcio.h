@@ -25,7 +25,11 @@
 #define __SPU_MFCIO_H__ 1
 
 #include <spu_intrinsics.h>
+#ifdef __IN_LIBGCC2
+unsigned long long uint64_t;
+#else
 #include <stdint.h>
+#endif
 
 
 /****************************************************************/
@@ -266,5 +270,25 @@ typedef struct mfc_list_element {
 #define spu_read_machine_status()     spu_readch(SPU_MachStat)
 #define spu_write_srr0(srr0)          spu_writech(SPU_WrSRR0,srr0)
 #define spu_read_srr0()               spu_readch(SPU_RdSRR0)
+
+
+/* MFC Tag Manager */
+
+#define MFC_TAG_INVALID 0xFFFFFFFF
+#define MFC_TAG_VALID   0x00000000
+
+#define mfc_tag_reserve() \
+	__mfc_tag_reserve()
+#define mfc_tag_release(tag) \
+	__mfc_tag_release((tag))
+#define mfc_multi_tag_reserve(nr_tags) \
+	__mfc_multi_tag_reserve((nr_tags))
+#define mfc_multi_tag_release(tag, nr_tags) \
+	__mfc_multi_tag_release((tag),(nr_tags))
+
+extern unsigned int __mfc_tag_reserve (void);
+extern unsigned int __mfc_tag_release (unsigned int);
+extern unsigned int __mfc_multi_tag_reserve (unsigned int);
+extern unsigned int __mfc_multi_tag_release (unsigned int, unsigned int);
 
 #endif /* __SPU_MFCIO_H__ */
