@@ -1,3 +1,8 @@
+2007-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33962
+	* g++.dg/overload/template3.C: New test.
+
 2007-11-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/33317

@@ -1,3 +1,9 @@
+2007-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33962
+	* pt.c (more_specialized_fn): Don't segfault if one or
+	both argument list end with ellipsis.
+
 2007-11-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/30988
