@@ -1,3 +1,7 @@
+2007-11-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/tree-ssa/20030714-1.c: Cleanup dom3 dump file.
+
 2007-11-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/32770
@@ -234,27 +238,27 @@
 2007-11-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/31608
-	*gfortran.dg/char_cast_1.f90: Modify regex in scan-tree-dump-times
+	* gfortran.dg/char_cast_1.f90: Modify regex in scan-tree-dump-times
 	to match known variations in symbol format. Document in comments.
 
 2007-11-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/33985
-	*gfortran.dg/streamio_12.f90: New test to avoid future regression.
+	* gfortran.dg/streamio_12.f90: New test to avoid future regression.
 
 2007-11-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	*gfortran.dg/list_read_7.f90: Fix test so that test file is deleted when
-	done.
+	* gfortran.dg/list_read_7.f90: Fix test so that test file is deleted
+	when done.
 
 2007-11-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/33162
-	*gfortran.dg/proc_decl_1.f90: Update.
-	*gfortran.dg/proc_decl_7.f90: New test.
-	*gfortran.dg/proc_decl_8.f90: New test.
-	*gfortran.dg/proc_decl_9.f90: New test.
-	*gfortran.dg/proc_decl_10.f90: New test.
+	* gfortran.dg/proc_decl_1.f90: Update.
+	* gfortran.dg/proc_decl_7.f90: New test.
+	* gfortran.dg/proc_decl_8.f90: New test.
+	* gfortran.dg/proc_decl_9.f90: New test.
+	* gfortran.dg/proc_decl_10.f90: New test.
 
 2007-11-13  Paul Thomas  <pault@gcc.gnu.org>
 
@@ -822,7 +826,7 @@
 	* gcc.dg/vect/costmodel/i386/costmodel-vect-31.c: Likewise.
 	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-31.c: Likewise.
 
-	* gcc.dg/vect/vect-31.c: Removed alignment checks.        
+	* gcc.dg/vect/vect-31.c: Removed alignment checks.
 	* gcc.dg/vect/vect-34.c: Likewise.
 	* gcc.dg/vect/vect-36.c: Likewise.
 	* gcc.dg/vect/vect-64.c: Likewise.
@@ -833,8 +837,8 @@
 	* gcc.dg/vect/vect-77.c: Likewise.
 	* gcc.dg/vect/vect-78.c: Likewise.
 
-	* gcc.dg/vect/no-section-anchors-vect-31.c: New test, Like the
-	original testcase (without no-section-anchors prefix) but with global arrays.       
+	* gcc.dg/vect/no-section-anchors-vect-31.c: New test, like the original
+	testcase (without no-section-anchors prefix) but with global arrays.   
 	* gcc.dg/vect/no-section-anchors-vect-34.c: Likewise.
 	* gcc.dg/vect/no-section-anchors-vect-36.c: Likewsie.
 	* gcc.dg/vect/no-section-anchors-vect-64.c: Likewise.
@@ -844,8 +848,8 @@
 	* gcc.dg/vect/vect-77-global.c: Likewise.
 	* gcc.dg/vect/vect-78-global.c: Likewise.
 
-	* gcc.dg/vect/vect-77-alignchecks.c: New test. Like the
-	original testcase (without no-section-anchors prefix) but fix alignment checks 
+	* gcc.dg/vect/vect-77-alignchecks.c: New test. Like the original
+	testcase (without no-section-anchors prefix) but fix alignment checks
 	to also consider unaligned_stack targets.
 	* gcc.dg/vect/vect-78-alignchecks.c: Likewise.
 
