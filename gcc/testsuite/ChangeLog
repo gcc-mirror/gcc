@@ -1,5 +1,12 @@
 2007-11-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/34146
+	* gcc.dg/tree-ssa/pr34146.c: New test.
+
+	PR testsuite/33978
+	* gcc.dg/tree-ssa/pr33723.c: Adjust scan pattern to make it less
+	dependent on target settings like move_by_pieces etc.
+
 	PR c++/28879
 	* g++.dg/template/vla2.C: New test.
 
