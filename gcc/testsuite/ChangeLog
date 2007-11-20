@@ -1,3 +1,10 @@
+2007-11-20  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* lib/target-supports.exp (check_effective_target_mips_soft_float):
+	New procedure.
+	* gcc.dg/var-expand1.c: Skip for mips_soft_float.
+	* gcc.dg/pr30957-1.c: Likewise.
+
 2007-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34089
