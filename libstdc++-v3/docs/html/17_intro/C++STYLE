@@ -1,12 +1,21 @@
 
-C++ Standard Library Style Guidelines  DRAFT 2001-01-15
+C++ Standard Library Coding Style Guidelines  
 -------------------------------------
 
 This library is written to appropriate C++ coding standards.  As such,
 it is intended to precede the recommendations of the GNU Coding
-Standard, which can be referenced here:
+Standard, which can be referenced in full here:
 
-http://www.gnu.org/prep/standards_toc.html
+http://www.gnu.org/prep/standards/standards.html#Formatting
+
+The rest of this is also interesting reading, but skip the "Design
+Advice" part.
+
+The GCC coding conventions are here, are are also useful:
+http://gcc.gnu.org/codingconventions.html
+
+In addition, because it doesn't seem to be stated explicitly anywhere
+else, there is an 80 column source limit.
 
 ChangeLog entries for member functions should use the
 classname::member function name syntax as follows:
@@ -220,6 +229,9 @@ Notable areas of divergence from what may be previous local practice
     give useful error messages, and programmers can intelligently
     speculate what went wrong without even using a debugger.
 
+17. The doxygen style guide to comments is a separate document,
+    see index.
+
 The library currently has a mixture of GNU-C and modern C++ coding
 styles.  The GNU C usages will be combed out gradually.
 
@@ -264,7 +276,6 @@ namespace std
   class gribble
   {
   public:
-    // ctor, op=, dtor
     gribble() throw();
 
     gribble(const gribble&);
@@ -278,11 +289,11 @@ namespace std
     virtual 
     ~gribble() throw ();
 
-    // argument
+    // Start with a capitol letter, end with a period.
     inline void  
     public_member(const char* __arg) const;
 
-    // in-class function definitions should be restricted to one-liners.
+    // In-class function definitions should be restricted to one-liners.
     int 
     one_line() { return 0 }
 
@@ -293,7 +304,7 @@ namespace std
     inline int 
     three_lines();  // inline, but defined below.
 
-    // note indentation
+    // Note indentation.
     template<typename _Formal_argument>
       void 
       public_template() const throw();
@@ -320,7 +331,7 @@ namespace std
     _S_initialize_library();
   };
 
-// More-or-less-standard language features described by lack, not presence:
+// More-or-less-standard language features described by lack, not presence.
 # ifndef _G_NO_LONGLONG
   extern long long _G_global_with_a_good_long_name;  // avoid globals!
 # endif
@@ -383,4 +394,6 @@ namespace std
     // doesn't fit in one line.
   }
 } // namespace std
+
+
 

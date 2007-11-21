@@ -57,51 +57,53 @@ href="http://gcc.gnu.org/svn.html">web</a>.
    		</ul>
    	</li>
          <li><a href="17_intro/license.html">License</a></li>
-         <li><a href="http://gcc.gnu.org/bugzilla/buglist.cgi?cmdtype=runnamed&namedcmd=libstdc%2B%2B">Known Bugs</a></li>
+         <li><a href="http://gcc.gnu.org/bugzilla/buglist.cgi?cmdtype=runnamed&amp;namedcmd=libstdc%2B%2B">Known Bugs</a></li>
 
 </ul>
     </li>
 
 
 
-    <li> Configuring, Building, Testing, Installing
+    <li> Configuring, Building, Testing, Installing 
 <ul>
    <li><a href="install.html">Getting started: configure, build, install</a>
    </li>
    <li><a href="configopts.html">Configure options</a></li>
    <li><a href="test.html">Testing details</a></li>
-   </li>
 </ul>
-    </li>
+  </li>
 
-    <li> Using the Library
+    <li> Using the Library 
       <ul>
-         <li>Header Files</li>
+         <li>Header Files
          <ul>
          <li><a href="17_intro/howto.html#2.1">Available headers</a></li>
          <li><a href="17_intro/howto.html#2.2">Headers and <code>namespace std</code></a></li>
          <li>Pre-compiled headers</li>
          </ul>
+	 </li>
 
-         <li>Namespaces</li>
+         <li>Namespaces
          <ul>
          <li><a href="17_intro/howto.html#2.5">Namespace <code>std::</code></a></li>
          <li><a href="17_intro/howto.html#2.6">Using namespace composition</a></li>
          </ul>
+	 </li>
          <li><a href="17_intro/howto.html#6">Macros</a></li>
 
- 	<li>Concurrency</li>
+ 	<li>Concurrency
          <ul>
          <li>Atomic Operations</li>
          <li><a href="17_intro/howto.html#3">Thread safety overview</a></li>
 
-	  <li><a href="faq/index.html#5_6">Is it thread safe?</li>
+	  <li><a href="faq/index.html#5_6">Is it thread safe?</a></li>
 	  <li><a href="23_containers/howto.html#3">Containers</a></li>
 	  <li><a href="27_io/howto.html#9">IO</a></li>
          </ul>
+	 </li>
          <li>Exception safety</li>
 
-         <li><a href="debug.html">Debugging support</a>
+         <li><a href="debug.html">Debugging support</a></li>
       </ul>
     </li>
 
@@ -130,15 +132,18 @@ href="http://gcc.gnu.org/svn.html">web</a>.
    <ul>
      <li><a href="20_util/howto.html#3">Functors</a></li>
      <li><a href="20_util/howto.html#4">Pairs</a></li>
-     <li>Memory</li>
-    <ul>
-    <li><a href="20_util/allocator.html">allocator</a></li>
-    <li>auto_ptr</li>
-    <ul>
+
+     <li>Memory
+     <ul>
+     <li><a href="20_util/allocator.html">allocator</a></li>
+     <li>auto_ptr
+     <ul>
      <li><a href="20_util/howto.html#1"><code>auto_ptr</code> is not omnipotent</a></li>
      <li><a href="20_util/howto.html#2"><code>auto_ptr</code> inside container classes</a></li>
     </ul>
+    </li>
    </ul>
+   </li>
    </ul>
    </li>
 
@@ -215,62 +220,70 @@ href="http://gcc.gnu.org/svn.html">web</a>.
    <li>Extensions
    <ul>
      <li><a href="ext/howto.html#4">Compile-time checks</a></li>
-     <li><a href="debug_mode.html">Debug mode</a></li>
-     <li><a href="parallel_mode.html">Parallel mode</a></li>
-     <li> Allocators</li>
+     <li><a href="ext/debug_mode.html">Debug mode</a></li>
+     <li><a href="ext/parallel_mode.html">Parallel mode</a></li>
+     <li> Allocators
      <ul>
      <li><a href="ext/mt_allocator.html"><code>__mt_alloc</code> </a></li>
      <li><a href="ext/ballocator_doc.html">Bitmap Allocator</a></li>
      </ul>
+     </li>
 
-     <li> Containers </li>
+     <li> Containers
        <ul> 
        <li><a href="ext/pb_ds/index.html">Policy Based Data Structures</a></li>
        <li><a href="ext/howto.html#1">Ropes and trees and hashes, oh my!</a></li>
        </ul>
+     </li>
 
-     <li> Algorithms</li>
+     <li> Algorithms
 <ul>
      <li><a href="ext/sgiexts.html">HP/SGI STL Extensions</a></li>
 </ul>
+</li>
 
-     <li> Input/Output</li>
+     <li> Input/Output
 <ul>
      <li><a href="27_io/howto.html#11">Derived filebuf classes</a></li>
 </ul>
+</li>
      <li><a href="ext/../18_support/howto.html#6">Demangling</a></li>
    </ul>
    </li>
 
    <li>Appendix
    <ul>
-     <li>A. <a name="5">Contributing and Maintenance</a></li>
+
+     <li>A. <a name="5">Contributing and Maintenance</a>
 <ul>
    <li><a href="17_intro/contribute.html">Contributor checklist</a></li>
    <li><a href="http://gcc.gnu.org/svnwrite.html">Getting write access
        (look for &quot;Write after approval&quot;)</a></li>
-   <li><a href="17_intro/BADNAMES">BADNAMES</a>
+   <li><a href="17_intro/BADNAMES">Identifier blacklist</a>
        - names to avoid because of potential collisions</li>
    <li><a href="17_intro/C++STYLE">Coding style, by example</a></li>
-   <li> Doxygen markup style guide. In the source docs/doxygen directory, see guide.html. Here's the a link to the current <a href="http://gcc.gnu.org/viewcvs/*checkout*/trunk/libstdc%2B%2B-v3/docs/doxygen/guide.html?content-type=text%2Fplain">page</a>.
-</li>
-   <li><a href="17_intro/DESIGN">DESIGN</a>
-       - overview of the implementation plan</li>
+
+   <li> Comment coding style, a doxygen markup style guide. In the source docs/doxygen directory, see <a href="http://gcc.gnu.org/viewcvs/*checkout*/trunk/libstdc%2B%2B-v3/docs/doxygen/guide.html">guide.html</a>.</li>
+   <li><a href="17_intro/DESIGN">Design Notes</a>
+       - notes on the implementation plan</li>
+   <li><a href="17_intro/configury.html">Editing configure and make files</a></li>
   <li>Header policy, namespace map, API conventions</li>
 </ul>
+</li>
 
-     <li>B. Porting</li>
+     <li>B. Porting
 
 <ul>
      <li><a href="17_intro/porting.html">Porting to new hardware or operating systems.</a></li>
      <li><a href="17_intro/abi.html">ABI Policy and Guidelines</a></li>
      <li><a href="17_intro/api.html">API Evolution and Deprecation History</a></li>
 </ul>
+</li>
 
-     <li>C. <a href="http://www.gnu.org/software/libc/manual/html_node/Free-Manuals.html#Free-Manuals">Free Software Needs Free Documentation </a>
+     <li>C. <a href="http://www.gnu.org/software/libc/manual/html_node/Free-Manuals.html#Free-Manuals">Free Software Needs Free Documentation </a></li>
+
    </ul>
    </li>
-
   </ul>
 <!-- endlist -->
 
@@ -314,7 +327,7 @@ href="http://gcc.gnu.org/svn.html">web</a>.
 
 <hr />
 <br />
-<h2><a name="7"><a href="faq/index.html">Frequently Asked Questions</a></a></h2
+<h2><a name="7" href="faq/index.html">Frequently Asked Questions</a></h2
 
 <hr />
 <br />

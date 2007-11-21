@@ -1,4 +1,4 @@
-// Bits and pieces used in algorithms -*- C++ -*-
+// Core algorithmic facilities -*- C++ -*-
 
 // Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
@@ -1084,7 +1084,6 @@ _GLIBCXX_END_NESTED_NAMESPACE
 // of getting the base algorithms. So, make sure that parallel bits
 // come in too if requested. 
 #ifdef _GLIBCXX_PARALLEL
-//# include <parallel/algorithm>
 # include <parallel/algobase.h>
 #endif
 

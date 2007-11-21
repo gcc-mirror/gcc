@@ -34,30 +34,46 @@ No problem is insoluble in all conceivable circumstances.<br />
 Last Question</a>, by Isaac Asimov
 </blockquote>
 <ul>
- <li><a href="#deps">what comes from where</a></li>
- <li><a href="#breakout">storing information in non-AC files, like
+ <li><a href="#prereq">Prerequisites for configure and make hacking</a></li>
+ <li><a href="#deps">Overview: what comes from where</a></li>
+ <li><a href="#breakout">Storing information in non-AC files, like
                          configure.host</a></li>
- <li><a href="#general">general config notes</a></li>
- <li><a href="#aclayout">acinclude.m4 layout</a></li>
- <li><a href="#enable"><code>--enable</code> howto</a></li>
+ <li><a href="#general">Coding and commenting conventions</a></li>
+ <li><a href="#aclayout">The acinclude.m4 layout</a></li>
+ <li><a href="#enable"><code>GLIBCXX_ENABLE, the --enable</code> howto</a></li>
 </ul>
 
 <hr />
-<h3><a name="deps">what comes from where</a></h3>
+<h3><a name="prereq">Prerequisites for configure and make hacking</a></h3>
+
+<p> As
+noted <a href="http://gcc.gnu.org/install/prerequisites.html">previously</a>,
+certain other tools are necessary for hacking on files that control
+configure (<code>configure.ac</code>, <code>acinclude.m4</code>) and
+make (<code>Makefile.am</code>). These additional tools
+(<code>automake</code>, and <code>autoconf</code>) are further
+described in detail in their respective manuals. All the libraries in GCC try to stay in sync with each other in terms of versions of the auto-tools used, so please try to play nicely with the neighbors.
+</p>
+
+
+<hr />
+<h3><a name="deps">Overview: what comes from where</a></h3>
 <p class="centered"><img src="confdeps.png"
   alt="Dependency graph in PNG graphics format.  (Get a better browser!)" /></p>
 
-<p>Regenerate using a command sequence like
-   <code>"aclocal-1.7 &amp;&amp; autoconf-2.59 &amp;&amp; autoheader-2.59
-   &amp;&amp; automake-1.7"</code> as needed.  And/or configure with
-   --enable-maintainer-mode.  The version numbers will vary depending on
+<p>Regenerate all generated files by using the command sequence
+ <code>"autoreconf"</code> at the top level of the libstdc++ source
+ directory. The following will also work, but is much more complex:
+   <code>"aclocal-1.7 &amp;&amp; autoconf-2.59 &amp;&amp;
+   autoheader-2.59 &amp;&amp; automake-1.7"</code> The version numbers
+   may be absent entirely or otherwise vary depending on
    <a href="http://gcc.gnu.org/install/prerequisites.html">the current
    requirements</a> and your vendor's choice of installation names.
 </p>
 
 
 <hr />
-<h3><a name="breakout">storing information in non-AC files, like
+<h3><a name="breakout">Storing information in non-AC files, like
                        configure.host</a></h3>
 <p>Until that glorious day when we can use AC_TRY_LINK with a cross-compiler,
    we have to hardcode the results of what the tests would have shown if
@@ -82,7 +98,7 @@ Last Question</a>, by Isaac Asimov
 
 
 <hr />
-<h3><a name="general">general config notes</a></h3>
+<h3><a name="general">Coding and commenting conventions</a></h3>
 <p>Lots of stuff got thrown out because the new autotools kindly generate
    the same (or better) shell code for us.
 </p>
@@ -108,7 +124,7 @@ Last Question</a>, by Isaac Asimov
 </p>
 
 <hr />
-<h3><a name="aclayout">acinclude.m4 layout</a></h3>
+<h3><a name="aclayout">The acinclude.m4 layout</a></h3>
 <p>The nice thing about acinclude.m4/aclocal.m4 is that macros aren't actually
    performed/called/expanded/whatever here, just loaded.  So we can arrange
    the contents however we like.  As of this writing, acinclude.m4 is arranged
@@ -186,7 +202,7 @@ Last Question</a>, by Isaac Asimov
 
 
 <hr />
-<h3><a name="enable"><code>--enable</code> howto</a></h3>
+<h3><a name="enable">GLIBCXX_ENABLE, the <code>--enable</code> howto</a></h3>
 <p>All the GLIBCXX_ENABLE_FOO macros use a common helper, GLIBCXX_ENABLE.
    (You don't have to use it, but it's easy.)  The helper does two things
    for us:
