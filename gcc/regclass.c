@@ -1282,7 +1282,7 @@ init_reg_autoinc (void)
 		     requires secondary reloads, disallow its class from
 		     being used in such addresses.  */
 
-		  if ((secondary_reload_class (1, base_class, m, r)
+		  if ((secondary_reload_class (0, base_class, m, r)
 		       || secondary_reload_class (1, base_class, m, r))
 		      && ! auto_inc_dec_reg_p (r, m))
 		    forbidden_inc_dec_class[i] = 1;
