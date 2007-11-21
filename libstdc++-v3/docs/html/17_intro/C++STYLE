@@ -11,7 +11,7 @@ http://www.gnu.org/prep/standards/standards.html#Formatting
 The rest of this is also interesting reading, but skip the "Design
 Advice" part.
 
-The GCC coding conventions are here, are are also useful:
+The GCC coding conventions are here, and are also useful:
 http://gcc.gnu.org/codingconventions.html
 
 In addition, because it doesn't seem to be stated explicitly anywhere
@@ -289,7 +289,7 @@ namespace std
     virtual 
     ~gribble() throw ();
 
-    // Start with a capitol letter, end with a period.
+    // Start with a capital letter, end with a period.
     inline void  
     public_member(const char* __arg) const;
 
