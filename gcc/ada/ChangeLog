@@ -1,3 +1,8 @@
+2007-11-21  Aurelien Jarno <aurelien@aurel32.net>
+
+	* s-osinte-kfreebsd-gnu.ads (To_Target_Priority): New function.
+	* Makefile.in: Add EH_MECHANISM=-gcc to kfreebsd-gnu. Remove SYMLIB.
+
 2007-11-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/34098

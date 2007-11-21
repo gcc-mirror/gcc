@@ -879,7 +879,7 @@ ifeq ($(strip $(filter-out %86 kfreebsd%,$(arch) $(osys))),)
     mlib-tgt.adb<mlib-tgt-linux.adb \
     indepsw.adb<indepsw-gnu.adb
 
-  SYMLIB = -laddr2line -lbfd -liberty $(LIBINTL)
+  EH_MECHANISM=-gcc
   THREADSLIB = -lpthread
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
