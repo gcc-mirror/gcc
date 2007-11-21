@@ -1,3 +1,13 @@
+2007-11-20  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/html/documentation.html: Validate. Add links to index,
+	correct broken links.
+	* docs/html/17_intro/C++STYLE: Add bits.
+	* docs/html/17_intro/configury.html: Correct, update.
+	* docs/html/17_intro/api.html: Correct HTML.
+
+	* include/bits/stl_algobase.h: Adjust comment.
+	
 2007-11-20  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* testsuite/ext/throw_allocator/variadic_construct.cc: Add
