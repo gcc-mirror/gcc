@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.3-b20071109\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2007-11-08 21:09+0000\n"
-"PO-Revision-Date: 2007-11-15 17:00+0200\n"
+"PO-Revision-Date: 2007-11-20 17:50+0200\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -9203,19 +9203,19 @@ msgid "Operands of user operator '%s' at %%L are %s/%s"
 msgstr "Operanden des Benutzeroperators »%s« bei %%L sind %s/%s"
 
 #: fortran/resolve.c:3018
-#, fuzzy, c-format
+#, c-format
 msgid "Inconsistent ranks for operator at %%L and %%L"
-msgstr "Ränge für Operator bei %L und %L stimmen nicht überein"
+msgstr "Ränge für Operator bei %%L und %%L stimmen nicht überein"
 
 #: fortran/resolve.c:3212
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Array reference at %L is out of bounds (%ld < %ld) in dimension %d"
-msgstr "Feldreferenz bei %L ist außerhalb der Schranken"
+msgstr "Feldreferenz bei %L ist außerhalb der Schranken (%ld < %ld) in Dimension %d"
 
 #: fortran/resolve.c:3220
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Array reference at %L is out of bounds (%ld > %ld) in dimension %d"
-msgstr "Feldreferenz bei %L ist außerhalb der Schranken"
+msgstr "Feldreferenz bei %L ist außerhalb der Schranken (%ld > %ld) in Dimension %d"
 
 #: fortran/resolve.c:3239
 #, no-c-format
@@ -9223,24 +9223,24 @@ msgid "Illegal stride of zero at %L"
 msgstr "Unzulässiger Schritt von Null bei %L"
 
 #: fortran/resolve.c:3256
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Lower array reference at %L is out of bounds (%ld < %ld) in dimension %d"
-msgstr "Feldreferenz bei %L ist außerhalb der Schranken"
+msgstr "Untere Feldreferenz bei %L ist außerhalb der Schranken (%ld < %ld) in Dimension %d"
 
 #: fortran/resolve.c:3264
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Lower array reference at %L is out of bounds (%ld > %ld) in dimension %d"
-msgstr "Feldreferenz bei %L ist außerhalb der Schranken"
+msgstr "Untere Feldreferenz bei %L ist außerhalb der Schranken (%ld > %ld) in Dimension %d"
 
 #: fortran/resolve.c:3280
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Upper array reference at %L is out of bounds (%ld < %ld) in dimension %d"
-msgstr "Feldreferenz bei %L ist außerhalb der Schranken"
+msgstr "Obere Feldreferenz bei %L ist außerhalb der Schranken (%ld < %ld) in Dimension %d"
 
 #: fortran/resolve.c:3289
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Upper array reference at %L is out of bounds (%ld > %ld) in dimension %d"
-msgstr "Feldreferenz bei %L ist außerhalb der Schranken"
+msgstr "Obere Feldreferenz bei %L ist außerhalb der Schranken (%ld > %ld) in Dimension %d"
 
 #: fortran/resolve.c:3328
 #, no-c-format
@@ -9328,7 +9328,7 @@ msgid "Two or more part references with nonzero rank must not be specified at %L
 msgstr "Zwei oder mehr Teilreferenzen mit Rang größer Null dürfen nicht bei %L angegeben werden"
 
 #: fortran/resolve.c:3956
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Variable '%s', used in a specification expression, is referenced at %L before the ENTRY statement in which it is a parameter"
 msgstr "In Spezifikationsausdruck verwendete Variable »%s« wird bei %L vor Anweisung ENTRY referenziert, in der sie ein Parameter ist"
 
@@ -9343,9 +9343,9 @@ msgid "%s at %L must be a scalar"
 msgstr "%s bei %L muss skalar sein"
 
 #: fortran/resolve.c:4248
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Deleted feature: %s at %L must be integer"
-msgstr "Cray-Zeiger bei %C muss eine Ganzzahl sein."
+msgstr "Gelöschte Funktion: %s bei %C muss eine Ganzzahl sein"
 
 #: fortran/resolve.c:4252 fortran/resolve.c:4259
 #, no-c-format
@@ -9388,9 +9388,9 @@ msgid "FORALL stride expression at %L cannot be zero"
 msgstr "FORALL-Schrittausdruck bei %L kann nicht Null sein"
 
 #: fortran/resolve.c:4419
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "FORALL index '%s' may not appear in triplet specification at %L"
-msgstr "Variable »%s« kann nicht im Ausdruck bei %L auftreten"
+msgstr "FORALL-Index »%s« kann nicht in Tripel-Spezifikation bei %L auftreten"
 
 #: fortran/resolve.c:4499
 #, no-c-format
@@ -9398,7 +9398,7 @@ msgid "Expression in DEALLOCATE statement at %L must be ALLOCATABLE or a POINTER
 msgstr "Ausdruck in DEALLOCATE-Ausdruck bei %L muss ALLOCATABLE oder ein POINTER sein"
 
 #: fortran/resolve.c:4506
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Cannot deallocate INTENT(IN) variable '%s' at %L"
 msgstr "INTENT(IN)-Variable »%s« bei %L kann nicht freigegeben werden"
 
@@ -9413,7 +9413,7 @@ msgid "Expression in ALLOCATE statement at %L must be ALLOCATABLE or a POINTER"
 msgstr "Ausdruck in ALLOCATE-Anweisung bei %L muss ALLOCATABLE oder ein POINTER sein"
 
 #: fortran/resolve.c:4719
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Cannot allocate INTENT(IN) variable '%s' at %L"
 msgstr "INTENT(IN)-Variable »%s« bei %L kann nicht alloziert werden"
 
@@ -9535,9 +9535,9 @@ msgid "Label at %L is not in the same block as the GOTO statement at %L"
 msgstr "Marke bei %L ist nicht im gleichen Block wie GOTO-Anweisung bei %L"
 
 #: fortran/resolve.c:5478 fortran/resolve.c:5492
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Deleted feature: GOTO at %L jumps to END of construct at %L"
-msgstr "Veraltet: GOTO bei %L springt zum ENDe des Konstrukts bei %L"
+msgstr "Gelöschte Funktion: GOTO bei %L springt zum ENDe des Konstrukts bei %L"
 
 #: fortran/resolve.c:5569
 #, no-c-format
@@ -9580,9 +9580,9 @@ msgid "Subroutine '%s' called instead of assignment at %L must be PURE"
 msgstr "Das anstelle einer Zuweisung aufgerufene Unterprogramm »%s« bei %L muss PURE sein"
 
 #: fortran/resolve.c:5927
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "CHARACTER expression will be truncated in assignment (%d/%d) at %L"
-msgstr "CHARACTER-Ausdruck bei %L wird abgeschnitten (%d/%d)"
+msgstr "CHARACTER-Ausdruck wird in Zuweisung (%d/%d) bei %L abgeschnitten"
 
 #: fortran/resolve.c:5950
 #, no-c-format
@@ -9590,9 +9590,9 @@ msgid "Cannot assign to variable '%s' in PURE procedure at %L"
 msgstr "In PURE-Prozedur bei %2$L kann nicht an Variable »%1$s« zugewiesen werden"
 
 #: fortran/resolve.c:5962
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "The impure variable at %L is assigned to a derived type variable with a POINTER component in a PURE procedure (12.6)"
-msgstr "Rechte Seite der Zuweisung bei %L ist ein abgeleiteter Typ, der einen POINTER in einer PURE-Prozedur enthält"
+msgstr "Die unreine Variable bei %L wird einer Variable abgeleiteten Typs mit einer POINTER-Komponente in einer PURE-Prozedur zugewiesen (12.6)"
 
 #: fortran/resolve.c:6066
 #, no-c-format
@@ -9698,14 +9698,14 @@ msgid "Array '%s' at %L cannot have a deferred shape"
 msgstr "Feld »%s« bei %L kann keine aufgeschobene Form haben"
 
 #: fortran/resolve.c:6878
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "The type '%s' cannot be host associated at %L because it is blocked by an incompatible object of the same name declared at %L"
-msgstr "Der Typ %s kann bei %L nicht mit Wirt verbunden werden, da er von unverträglichem Objekt des gleichen Namens bei %L blockiert wird"
+msgstr "Der Typ %s kann bei %L nicht mit Wirt verbunden werden, da er von unverträglichem bei %L definiertem Objekt mit gleichem Namen blockiert wird"
 
 #: fortran/resolve.c:6901
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Object '%s' at %L must have the SAVE attribute for default initialization of a component"
-msgstr "Objekt »%s« bei %L muss das SAVE-Attribut %s haben"
+msgstr "Objekt »%s« bei %L muss das SAVE-Attribut für Standardinitialisierung einer Komponente haben"
 
 #. The shape of a main program or module array needs to be
 #. constant.
@@ -9770,9 +9770,9 @@ msgid "Automatic character length function '%s' at %L must have an explicit inte
 msgstr "Automatische Zeichenlängenfunktion »%s« bei %L muss eine explizite Schnittstelle haben"
 
 #: fortran/resolve.c:7103
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: '%s' is of a PRIVATE type and cannot be a dummy argument of '%s', which is PUBLIC at %L"
-msgstr "»%s« hat PRIVATE-Typ und kann kein Scheinargument von »%s« sein, das PUBLIC bei %L ist"
+msgstr "Fortran 2003: »%s« hat PRIVATE-Typ und kann kein Scheinargument von »%s« sein, das PUBLIC bei %L ist"
 
 #: fortran/resolve.c:7126 fortran/resolve.c:7151
 #, no-c-format
@@ -9780,9 +9780,9 @@ msgid "Fortran 2003: Procedure '%s' in PUBLIC interface '%s' at %L takes dummy a
 msgstr ""
 
 #: fortran/resolve.c:7168
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Function '%s' at %L cannot have an initializer"
-msgstr "Funktionsergebnis »%s« bei %L kann keine Initialisierung haben"
+msgstr "Funktion »%s« bei %L kann keine Initialisierung haben"
 
 #: fortran/resolve.c:7177
 #, no-c-format
@@ -9820,9 +9820,9 @@ msgid "CHARACTER(*) function '%s' at %L is obsolescent in fortran 95"
 msgstr "CHARACTER(*)-Funktion »%s« bei %L in Fortran 95 veraltet"
 
 #: fortran/resolve.c:7299
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Character length of component '%s' needs to be a constant specification expression at %L"
-msgstr "Zeichenlänge der Komponente »%s« muss ein konstanter Spezifikationsausdruck bei %L sein."
+msgstr "Zeichenlänge der Komponente »%s« muss ein konstanter Spezifikationsausdruck bei %L sein"
 
 #: fortran/resolve.c:7314
 #, no-c-format
@@ -9840,44 +9840,44 @@ msgid "The pointer component '%s' of '%s' at %L is a type that has not been decl
 msgstr "Die Zeigerkomponente »%s« bei »%s« bei %L hat nicht deklarierten Typ"
 
 #: fortran/resolve.c:7352
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Component '%s' of '%s' at %L must have constant array bounds"
-msgstr "Komponente »%s« von »%s« bei %L muss konstante Feldgrenzen haben."
+msgstr "Komponente »%s« von »%s« bei %L muss konstante Feldgrenzen haben"
 
 #: fortran/resolve.c:7395
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "NAMELIST object '%s' was declared PRIVATE and cannot be member of PUBLIC namelist '%s' at %L"
-msgstr "PRIVATE-Symbol »%s« kann kein Element der PUBLIC-Namensliste bei %L sein"
+msgstr "NAMELIST-Objekt »%s« wurde als PRIVATE deklariert und kann kein Element der PUBLIC-Namensliste »%s« bei %L sein"
 
 #: fortran/resolve.c:7405
 #, no-c-format
 msgid "NAMELIST object '%s' has use-associated PRIVATE components and cannot be member of namelist '%s' at %L"
-msgstr ""
+msgstr "NAMELIST-Objekt »%s« hat benutzungs-verbundene PRIVATE-Komponenten und kann kein Element der Namensliste »%s« bei %L sein"
 
 #: fortran/resolve.c:7418
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "NAMELIST object '%s' has PRIVATE components and cannot be a member of PUBLIC namelist '%s' at %L"
-msgstr "PRIVATE-Symbol »%s« kann kein Element der PUBLIC-Namensliste bei %L sein"
+msgstr "NAMELIST-Objekt »%s« hat PRIVATE-Komponenten und kann kein Element der PUBLIC-Namensliste »%s« bei %L sein"
 
 #: fortran/resolve.c:7430
 #, no-c-format
 msgid "NAMELIST array object '%s' must not have assumed shape in namelist '%s' at %L"
-msgstr ""
+msgstr "NAMELIST-Feldobjekt »%s« darf in Namensliste »%s« bei %L keine vermutete Form haben"
 
 #: fortran/resolve.c:7439
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "NAMELIST array object '%s' must have constant shape in namelist '%s' at %L"
-msgstr "Das Feld »%s« muss konstante Form haben um bei %L ein NAMELIST-Objekt zu sein"
+msgstr "NAMELIST-Feldobjekt »%s« muss konstante Form in Namensliste »%s« bei %L haben"
 
 #: fortran/resolve.c:7451
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "NAMELIST object '%s' in namelist '%s' at %L cannot have ALLOCATABLE components"
-msgstr "Namenslistenobjekt »%s« bei %L kann nicht ALLOCATABLE-Komponenten haben"
+msgstr "NAMELIST-Objekt »%s« in Namensliste »%s« bei %L kann nicht ALLOCATABLE-Komponenten haben"
 
 #: fortran/resolve.c:7459
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "NAMELIST object '%s' in namelist '%s' at %L cannot have POINTER components"
-msgstr "Namenslistenobjekt »%s« bei %L kann nicht ALLOCATABLE-Komponenten haben"
+msgstr "Namenslistenobjekt »%s« in Namensliste »%s« bei %L kann keine POINTER-Komponenten haben"
 
 #: fortran/resolve.c:7485
 #, no-c-format
@@ -9885,7 +9885,7 @@ msgid "PROCEDURE attribute conflicts with NAMELIST attribute in '%s' at %L"
 msgstr "Attribut PROCEDURE steht mit Attribut NAMELIST in »%s« bei %L in Konflikt"
 
 #: fortran/resolve.c:7504
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Parameter array '%s' at %L cannot be automatic or of deferred shape"
 msgstr "Parameterfeld »%s« bei %L kann nicht automatische oder vermutete Form haben"
 
@@ -9900,24 +9900,24 @@ msgid "Incompatible derived type in PARAMETER at %L"
 msgstr "Unverträglicher abgeleiteter Typ in PARAMETER bei %L"
 
 #: fortran/resolve.c:7597
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Interface '%s' of procedure '%s' at %L must be explicit"
-msgstr "Argument »%s« der elementaren Prozedur bei %L muss skalar sein"
+msgstr "Schnittstelle »%s« der Prozedur »%s« bei %L muss explizit sein"
 
 #: fortran/resolve.c:7622
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Type specified for intrinsic function '%s' at %L is ignored"
-msgstr "Alternativer Rückgabespezifizierer in Funktion »%s« bei %L ist nicht erlaubt"
+msgstr "Für intrinsische Funktion »%s« angegebener Typ bei %L wird ignoriert"
 
 #: fortran/resolve.c:7629
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Intrinsic subroutine '%s' at %L shall not have a type specifier"
-msgstr "Intrinsisches »%s« bei %L kann keine Initialisierung haben"
+msgstr "Intrinsisches Unterprogramm »%s« bei %L sollte keine Typspezifizierung haben"
 
 #: fortran/resolve.c:7636
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Intrinsic '%s' at %L does not exist"
-msgstr "Intrinsische Funktion %L existiert nicht"
+msgstr "Intrinsisches »%s« bei %L existiert nicht"
 
 #: fortran/resolve.c:7676
 #, no-c-format
@@ -9937,32 +9937,32 @@ msgstr "Symbol bei %L ist keine Scheinvariable"
 #: fortran/resolve.c:7697
 #, no-c-format
 msgid "'%s' at %L cannot have the VALUE attribute because it is not a dummy argument"
-msgstr ""
+msgstr "»%s« bei %L kann nicht das VALUE-Attribut haben, da es kein Scheinargument ist"
 
 #: fortran/resolve.c:7707
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Character dummy variable '%s' at %L with VALUE attribute must have constant length"
-msgstr "Zeichenwertige Anweisungsfunktion »%s« bei %L muss konstante Länge haben"
+msgstr "Zeichenwertige Scheinvariable »%s« bei %L mit VALUE-Attribut muss konstante Länge haben"
 
 #: fortran/resolve.c:7716
 #, no-c-format
 msgid "C interoperable character dummy variable '%s' at %L with VALUE attribute must have length one"
-msgstr ""
+msgstr "C-kompatible zeichenwertige Scheinvariable »%s« bei %L mit VALUE-Attribut muss Länge eins haben"
 
 #: fortran/resolve.c:7742
 #, no-c-format
 msgid "Variable '%s' at %L cannot be BIND(C) because it is neither a COMMON block nor declared at the module level scope"
-msgstr ""
+msgstr "Variable »%s« bei %L kann nicht BIND(C) sein, weil es weder ein COMMON-Block noch mit Sichtbarkeit auf Modulebene deklariert ist"
 
 #: fortran/resolve.c:7795
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "The derived type '%s' at %L is of type '%s', which has not been defined"
-msgstr "Der abgeleitete Typ »%s« bei %L hat Typ »%s«, der nicht definiert wurde."
+msgstr "Der abgeleitete Typ »%s« bei %L hat Typ »%s«, der nicht definiert wurde"
 
 #: fortran/resolve.c:7811
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: PUBLIC %s '%s' at %L of PRIVATE derived type '%s'"
-msgstr "PUBLIC-Funktion »%s« bei %L kann nicht PRIVATE-Typen »%s« haben"
+msgstr "Fortran 2003: PUBLIC %s »%s« bei %L mit abgeleitetem PRIVATE-Typen »%s«"
 
 #: fortran/resolve.c:7830
 #, no-c-format
@@ -10385,14 +10385,14 @@ msgid "Second argument of NEAREST at %L shall not be zero"
 msgstr "Zweites Argument von NEAREST bei %L sollte nicht Null sein"
 
 #: fortran/simplify.c:2977
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Argument NCOPIES of REPEAT intrinsic is negative at %L"
-msgstr "Argument NCOPIES des intrinsischen REPEAT ist negativ"
+msgstr "Argument NCOPIES des intrinsischen REPEAT ist bei %L negativ"
 
 #: fortran/simplify.c:3032
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Argument NCOPIES of REPEAT intrinsic is too large at %L"
-msgstr "Argument NCOPIES des intrinsischen REPEAT ist negativ"
+msgstr "Argument NCOPIES des intrinsischen REPEAT ist bei %L zu groß"
 
 #: fortran/simplify.c:3122
 #, no-c-format
@@ -10452,7 +10452,7 @@ msgstr "Argument von SQRT bei %L hat negativen Wert"
 #: fortran/simplify.c:4069
 #, no-c-format
 msgid "Intrinsic TRANSFER at %L has partly undefined result: source size %ld < result size %ld"
-msgstr ""
+msgstr "Intrinsisches TRANSFER bei %L hat teilweise undefiniertes Ergebnis: Quellgröße %ld < Ergebnisgröße %ld"
 
 #: fortran/symbol.c:120
 #, no-c-format
@@ -10483,19 +10483,19 @@ msgstr "Symbol »%s« bei %L hat keinen IMPLICIT-Typ"
 #: fortran/symbol.c:261
 #, no-c-format
 msgid "Implicitly declared BIND(C) variable '%s' at %L may not be C interoperable"
-msgstr ""
+msgstr "Implizit deklarierte BIND(C)-Variable »%s« bei %L kann nicht C-kompatibel sein"
 
 #. Dummy args to a BIND(C) routine may not be interoperable if
 #. they are implicitly typed.
 #: fortran/symbol.c:275
 #, no-c-format
 msgid "Implicity declared variable '%s' at %L may not be C interoperable but it is a dummy argument to the BIND(C) procedure '%s' at %L"
-msgstr ""
+msgstr "Implizit deklarierte Variable »%s« bei %L kann nicht C-kompatibel sein, ist aber ein Scheinargument für BIND(C)-Prozedur »%s« bei %L"
 
 #: fortran/symbol.c:316
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Function result '%s' at %L has no IMPLICIT type"
-msgstr "Funktion »%s« bei %L hat IMPLICIT-Typ"
+msgstr "Funktionsergebnis »%s« bei %L hat keinen IMPLICIT-Typ"
 
 #: fortran/symbol.c:395
 #, no-c-format
@@ -10505,7 +10505,7 @@ msgstr "Attribut %s ungültig in BLOCK DATA - Programmeinheit bei %L"
 #: fortran/symbol.c:561
 #, no-c-format
 msgid "Fortran 2003: Procedure pointers at %L are not yet implemented in gfortran"
-msgstr ""
+msgstr "Fortran 2003: Prozedurzeiger bei %L sind in gfortran noch nicht definiert"
 
 #: fortran/symbol.c:690 fortran/symbol.c:1300
 #, no-c-format
@@ -10518,14 +10518,14 @@ msgid "%s attribute conflicts with %s attribute in '%s' at %L"
 msgstr "Attribut %s steht mit Attribut %s in »%s« bei %L in Konflikt"
 
 #: fortran/symbol.c:701
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: %s attribute with %s attribute at %L"
-msgstr "Attribut %s steht mit Attribut %s bei %L in Konflikt"
+msgstr "Fortran 2003: Attribut %s mit Attribut %s bei %L"
 
 #: fortran/symbol.c:707
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: %s attribute with %s attribute in '%s' at %L"
-msgstr "Attribut %s steht mit Attribut %s in »%s« bei %L in Konflikt"
+msgstr "Fortran 2003: Attribut %s mit Attribut %s in »%s« bei %L"
 
 #: fortran/symbol.c:751
 #, no-c-format
@@ -10543,14 +10543,14 @@ msgid "Duplicate %s attribute specified at %L"
 msgstr "Attribut %s doppelt angegeben bei %L"
 
 #: fortran/symbol.c:912
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Cray Pointee at %L appears in multiple pointer() statements"
-msgstr "Cray-Zeigerende bei %L tritt in mehreren pointer()-Anweisungen auf."
+msgstr "Cray-Zeigerende bei %L tritt in mehreren pointer()-Anweisungen auf"
 
 #: fortran/symbol.c:931
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Duplicate PROTECTED attribute specified at %L"
-msgstr "SAVE-Attribut doppelt angegeben bei %L"
+msgstr "Doppeltes PROTECTED-Attribut bei %L angegeben"
 
 #: fortran/symbol.c:964
 #, no-c-format
@@ -10563,19 +10563,19 @@ msgid "Duplicate SAVE attribute specified at %L"
 msgstr "SAVE-Attribut doppelt angegeben bei %L"
 
 #: fortran/symbol.c:993
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Duplicate VALUE attribute specified at %L"
-msgstr "SAVE-Attribut doppelt angegeben bei %L"
+msgstr "Doppeltes VALUE-Attribut bei %L angegeben"
 
 #: fortran/symbol.c:1013
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Duplicate VOLATILE attribute specified at %L"
-msgstr "SAVE-Attribut doppelt angegeben bei %L"
+msgstr "Doppeltes VOLATILE-Attribut bei %L angegeben"
 
 #: fortran/symbol.c:1296
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "%s attribute of '%s' conflicts with %s attribute at %L"
-msgstr "Attribut %s steht mit Attribut %s bei %L in Konflikt"
+msgstr "Attribut %s von »%s« steht mit Attribut %s bei %L in Konflikt"
 
 #: fortran/symbol.c:1330
 #, no-c-format
@@ -10593,14 +10593,14 @@ msgid "ACCESS specification at %L was already specified"
 msgstr "ACCESS-Spezifikation bei %L wurde bereits spezifiziert"
 
 #: fortran/symbol.c:1405
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Duplicate BIND attribute specified at %L"
-msgstr "Attribut %s doppelt angegeben bei %L"
+msgstr "Doppeltes BIND-Attribut bei %L angegeben"
 
 #: fortran/symbol.c:1412
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: BIND(C) at %L"
-msgstr "Fortran 2003: IOMSG-Markierung bei %L"
+msgstr "Fortran 2003: BIND(C) bei %L"
 
 #: fortran/symbol.c:1434
 #, no-c-format
@@ -10679,31 +10679,31 @@ msgid "Symbol '%s' at %C has already been host associated"
 msgstr "Symbol »%s« bei %C wurde bereits mit Host verbunden"
 
 #: fortran/symbol.c:3162
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Derived type '%s' declared at %L must have the BIND attribute to be C interoperable"
-msgstr "Variable »%s« abgeleiteten Typs bei %L muss SEQUENCE-Attribut haben, um EQUIVALENCE-Objekt zu sein"
+msgstr "Abgeleiteter Typ »%s«, bei %L deklariert, muss BIND-Attribut haben, um C-kompatibel zu sein"
 
 #: fortran/symbol.c:3173
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Derived type '%s' at %L is empty"
-msgstr "Abgeleiteter Typ »%s« bei %C wird benutzt bevor er definiert wird"
+msgstr "Abgeleiteter Typ »%s« bei %L ist leer"
 
 #: fortran/symbol.c:3190
 #, no-c-format
 msgid "Component '%s' at %L cannot have the POINTER attribute because it is a member of the BIND(C) derived type '%s' at %L"
-msgstr ""
+msgstr "Komponente »%s« bei %L kann nicht POINTER-Attribut haben, da es Element des BIND(C)-abgeleiteten Typs »%s« bei %L ist"
 
 #: fortran/symbol.c:3202
 #, no-c-format
 msgid "Component '%s' at %L cannot have the ALLOCATABLE attribute because it is a member of the BIND(C) derived type '%s' at %L"
-msgstr ""
+msgstr "Komponente »%s« bei %L kann nicht ALLOCATABLE-Attribut haben, da es Element des BIND(C)-abgeleiteten Typs »%s« bei %L ist"
 
 #. If the derived type is bind(c), all fields must be
 #. interop.
 #: fortran/symbol.c:3241
 #, no-c-format
 msgid "Component '%s' in derived type '%s' at %L may not be C interoperable, even though derived type '%s' is BIND(C)"
-msgstr ""
+msgstr "Komponente »%s« in abgeleiteten Typ »%s« bei %L könnte nicht C-kompatibel sein, obwohl abgeleiteter Typ »%s« BIND(C) ist"
 
 #. If derived type is param to bind(c) routine, or to one
 #. of the iso_c_binding procs, it must be interoperable, so
@@ -10711,22 +10711,22 @@ msgstr ""
 #: fortran/symbol.c:3250
 #, no-c-format
 msgid "Component '%s' in derived type '%s' at %L may not be C interoperable"
-msgstr ""
+msgstr "Komponente »%s« in abgeleitetem Typ »%s« bei %L könnte nicht C-kompatibel sein"
 
 #: fortran/symbol.c:3264
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Derived type '%s' at %L cannot be declared with both PRIVATE and BIND(C) attributes"
-msgstr "der Typ von »%s« bei %C wurde nicht innerhalb der Schnittstelle deklariert"
+msgstr "Abgeleiteter Typ »%s« bei %L kann nicht mit Attributen PRIVATE und BIND(C) deklariert werden"
 
 #: fortran/symbol.c:3272
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Derived type '%s' at %L cannot have the SEQUENCE attribute because it is BIND(C)"
-msgstr "Variable »%s« abgeleiteten Typs bei %L muss SEQUENCE-Attribut haben, um EQUIVALENCE-Objekt zu sein"
+msgstr "Abgeleiteter Typ »%s« bei %L kann nicht das SEQUENCE-Attribut haben, da es BIND(C) ist"
 
 #: fortran/target-memory.c:548
 #, no-c-format
 msgid "Overlapping unequal initializers in EQUIVALENCE at %L"
-msgstr ""
+msgstr "Überlappende ungleiche Initialisierungen in EQUIVALENCE bei %L"
 
 #: fortran/trans-common.c:396
 #, no-c-format
@@ -10783,24 +10783,24 @@ msgid "COMMON '%s' at %L requires %d bytes of padding at start"
 msgstr "COMMON »%s« bei %L erfordert Auffüllen mit »%d« Bytes am Anfang"
 
 #: fortran/trans-decl.c:3016
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Dummy argument '%s' at %L was declared INTENT(OUT) but was not set"
-msgstr "Scheinargument »%s« bei %L kann nicht INTENT(OUT) sein"
+msgstr "Scheinargument »%s« bei %L war als INTENT(OUT) deklariert, aber nicht gesetzt"
 
 #: fortran/trans-decl.c:3020
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Unused dummy argument '%s' at %L"
-msgstr "Zu viele Argumente für %s bei %L"
+msgstr "Ungenutztes Scheinargument %s bei %L"
 
 #: fortran/trans-decl.c:3026
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Unused variable '%s' declared at %L"
-msgstr "Ungenutzte Variable %s bei %L deklariert"
+msgstr "Ungenutzte Variable »%s« bei %L deklariert"
 
 #: fortran/trans-decl.c:3052
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Unused parameter '%s' declared at %L"
-msgstr "Ungenutzter Parameter %s bei %L deklariert"
+msgstr "Ungenutzter Parameter »%s« bei %L deklariert"
 
 #: fortran/trans-expr.c:2036
 #, no-c-format
@@ -10813,9 +10813,9 @@ msgid "'dim' argument of %s intrinsic at %L is not a valid dimension index"
 msgstr "Argument »dim« des intrinsischen »%s« bei %L ist kein gültiger Dimensionsindex"
 
 #: fortran/trans-io.c:1850
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Derived type '%s' at %L has PRIVATE components"
-msgstr "Definition des abgeleiteten Typs bei %C hat keine Komponenten"
+msgstr "Abgeleiteter Typ »%s« bei %L hat PRIVATE-Komponenten"
 
 #: fortran/trans-stmt.c:438
 #, no-c-format
@@ -10836,29 +10836,27 @@ msgstr "Falscher Funktions-Rückgabewert"
 
 #: fortran/trans.c:465 fortran/trans.c:859
 msgid "Attempt to allocate a negative amount of memory."
-msgstr ""
+msgstr "Versuch, einen negativen Betrag von Speicher zu reservieren."
 
 #: fortran/trans.c:479
-#, fuzzy
 msgid "Memory allocation failed"
-msgstr "Gimplifikation gescheitert"
+msgstr "Speicherreservierung gescheitert"
 
 #: fortran/trans.c:567
 msgid "Attempt to allocate negative amount of memory. Possible integer overflow"
-msgstr ""
+msgstr "Versuch, einen negativen Betrag von Speicher zu reservieren. Möglicher Ganzzahlüberlauf"
 
 #: fortran/trans.c:598 fortran/trans.c:876
-#, fuzzy
 msgid "Out of memory"
 msgstr "Platz im Hauptspeicher reicht nicht aus"
 
 #: fortran/trans.c:678
 msgid "Attempting to allocate already allocated array"
-msgstr ""
+msgstr "Versuch, bereits reservierten Speicher zu reservieren"
 
 #: fortran/trans.c:776
 msgid "Attempt to DEALLOCATE unallocated memory."
-msgstr ""
+msgstr "Versuch, nicht reservierten Speicher freizugeben."
 
 #: java/jcf-dump.c:1066
 #, c-format
@@ -11308,9 +11306,8 @@ msgid "Set the source language version"
 msgstr ""
 
 #: java/lang.opt:205
-#, fuzzy
 msgid "Set the target VM version"
-msgstr "Ziel-CPU-Typ angeben"
+msgstr "Ziel-VM-Version angeben"
 
 #: ada/lang.opt:96
 msgid "Specify options to GNAT"
@@ -11517,18 +11514,16 @@ msgid "Size in bytes of the largest array that will be put on the stack"
 msgstr "Größe des größten Feldes, das auf dem Stack abgelegt wird, in Bytes"
 
 #: fortran/lang.opt:237
-#, fuzzy
 msgid "Set default accessibility of module entities to PRIVATE."
-msgstr "Standardzugriff von Modulentitäten auf PRIVATE setzen"
+msgstr "Standardzugriff von Modulentitäten auf PRIVATE setzen."
 
 #: fortran/lang.opt:241
 msgid "Enable OpenMP (also sets frecursive)"
-msgstr ""
+msgstr "OpenMP aktivieren (setzt auch frecursive)"
 
 #: fortran/lang.opt:245
-#, fuzzy
 msgid "Try to lay out derived types as compactly as possible"
-msgstr "Abgeleitete Typen so kompakt wie möglich anordnen"
+msgstr "Versuchen, abgeleitete Typen so kompakt wie möglich anzuordnen"
 
 #: fortran/lang.opt:249
 msgid "Treat the input file as preprocessed"
@@ -11548,7 +11543,7 @@ msgstr "Eine 8-Byte-Datensatzmarkierung für unformatierte Dateien verwenden"
 
 #: fortran/lang.opt:265
 msgid "Allocate local variables on the stack to allow indirect recursion"
-msgstr ""
+msgstr "Lokale Variablen auf Stack anlegen um indirekte Rekursion zu ermöglichen"
 
 #: fortran/lang.opt:269
 msgid "Copy array sections into a contiguous block on procedure entry"
@@ -11564,7 +11559,7 @@ msgstr "Den schmalstmöglichen Ganzzahltyp für Aufzählungstypen verwenden"
 
 #: fortran/lang.opt:281
 msgid "Apply negative sign to zero values"
-msgstr ""
+msgstr "Negatives Vorzeichen auf Null-Werte anwenden"
 
 #: fortran/lang.opt:285
 msgid "Append underscores to externally visible names"
@@ -11572,7 +11567,7 @@ msgstr "Unterstriche an extern sichtbare Namen anhängen"
 
 #: fortran/lang.opt:289
 msgid "Statically link the GNU Fortran helper library (libgfortran)"
-msgstr ""
+msgstr "GNU Fortran Hilfsbibliothek (libgfortran) statisch binden"
 
 #: fortran/lang.opt:293
 msgid "Conform to the ISO Fortran 2003 standard"
@@ -11583,7 +11578,6 @@ msgid "Conform to the ISO Fortran 95 standard"
 msgstr "Mit dem Standard ISO Fortran 95 übereinstimmen"
 
 #: fortran/lang.opt:301
-#, fuzzy
 msgid "Conform to nothing in particular"
 msgstr "Mit nichts besonderem übereinstimmen"
 
@@ -11928,14 +11922,12 @@ msgid "Enable fused multiply/add instructions"
 msgstr "Verschmolzene Multiplikations/Additions-Befehle einschalten"
 
 #: config/s390/s390.opt:51
-#, fuzzy
 msgid "Enable decimal floating point hardware support"
-msgstr "Dezimales Gleitkomma wird für dieses Ziel nicht unterstützt"
+msgstr "Hardwareunterstützung für dezimales Gleitkomma einschalten"
 
 #: config/s390/s390.opt:55
-#, fuzzy
 msgid "Enable hardware floating point"
-msgstr "Hardware-Gleitkomma verwenden"
+msgstr "Hardware-Gleitkomma einschalten"
 
 #: config/s390/s390.opt:67
 msgid "Use packed stack layout"
@@ -11946,9 +11938,8 @@ msgid "Use bras for executable < 64k"
 msgstr "bras für ausführbare Datei < 64k verwenden"
 
 #: config/s390/s390.opt:75
-#, fuzzy
 msgid "Disable hardware floating point"
-msgstr "Hardware-Gleitkomma verwenden"
+msgstr "Hardware-Gleitkomma ausschalten"
 
 #: config/s390/s390.opt:79
 msgid "Set the max. number of bytes which has to be left to stack size before a trap instruction is triggered"
@@ -12312,9 +12303,8 @@ msgid "Generate code for a 68000"
 msgstr "Code für 68000 erzeugen"
 
 #: config/m68k/m68k.opt:47
-#, fuzzy
 msgid "Generate code for a 68010"
-msgstr "Code für 68000 erzeugen"
+msgstr "Code für 68010 erzeugen"
 
 #: config/m68k/m68k.opt:51 config/m68k/m68k.opt:108
 msgid "Generate code for a 68020"
@@ -12373,28 +12363,24 @@ msgid "Generate code for a ColdFire v4e"
 msgstr "Code für ColdFire v4e erzeugen"
 
 #: config/m68k/m68k.opt:116
-#, fuzzy
 msgid "Specify the target CPU"
-msgstr "Die Ziel-MCU auswählen"
+msgstr "Die Ziel-CPU auswählen"
 
 #: config/m68k/m68k.opt:120
 msgid "Generate code for a cpu32"
 msgstr "Code für eine cpu32 erzeugen"
 
 #: config/m68k/m68k.opt:124
-#, fuzzy
 msgid "Use hardware division instructions on ColdFire"
-msgstr "Hardware-Vierfach-Gleitkommabefehle verwenden"
+msgstr "Hardware-Divisionsbefehle auf Coldfire verwenden"
 
 #: config/m68k/m68k.opt:128
-#, fuzzy
 msgid "Generate code for a Fido A"
-msgstr "Code für DLL erzeugen"
+msgstr "Code für Fido A erzeugen"
 
 #: config/m68k/m68k.opt:132
-#, fuzzy
 msgid "Generate code which uses hardware floating point instructions"
-msgstr "Code erzeugen, der 68881-Gleitkommabefehle verwendet"
+msgstr "Code erzeugen, der Hardware-Gleitkommabefehle verwendet"
 
 #: config/m68k/m68k.opt:136
 msgid "Enable ID based shared library"
@@ -12441,9 +12427,8 @@ msgid "Do not use unaligned memory references"
 msgstr "Keine unausgerichteten Speicherreferenzen verwenden"
 
 #: config/m68k/m68k.opt:180
-#, fuzzy
 msgid "Tune for the specified target CPU or architecture"
-msgstr "Namen der Ziel-Architektur angeben"
+msgstr "Für angegebene Ziel-CPU oder Architektur optimieren"
 
 #: config/m68k/ieee.opt:24 config/i386/i386.opt:95
 msgid "Use IEEE math for fp comparisons"
@@ -12583,9 +12568,8 @@ msgid "Use direct references against %gs when accessing tls data"
 msgstr "Direkte Referenzen gegen %gs beim Zugriff auf TLS-Daten verwenden"
 
 #: config/i386/i386.opt:187
-#, fuzzy
 msgid "Vector library ABI to use"
-msgstr "Zu verwendendes ABI"
+msgstr "Zu verwendendes Vektorbibliotheks-ABI"
 
 #: config/i386/i386.opt:193
 msgid "Generate 32bit i386 code"
@@ -12604,9 +12588,8 @@ msgid "Support 3DNow! built-in functions"
 msgstr "Eingebaute 3DNow!-Funktionen unterstützen"
 
 #: config/i386/i386.opt:209
-#, fuzzy
 msgid "Support Athlon 3Dnow! built-in functions"
-msgstr "Eingebaute 3DNow!-Funktionen unterstützen"
+msgstr "Eingebaute Athlon 3Dnow!-Funktionen unterstützen"
 
 #: config/i386/i386.opt:213
 msgid "Support MMX and SSE built-in functions and code generation"
@@ -12621,61 +12604,52 @@ msgid "Support MMX, SSE, SSE2 and SSE3 built-in functions and code generation"
 msgstr "Eingebaute MMX-, SSE-, SSE2- und SSE3-Funktionen und Codeerzeugung unterstützen"
 
 #: config/i386/i386.opt:225
-#, fuzzy
 msgid "Support MMX, SSE, SSE2, SSE3 and SSSE3 built-in functions and code generation"
-msgstr "Eingebaute MMX-, SSE-, SSE2- und SSE3-Funktionen und Codeerzeugung unterstützen"
+msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3- und SSSE3-Funktionen und Codeerzeugung unterstützen"
 
 #: config/i386/i386.opt:229
-#, fuzzy
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3 and SSE4.1 built-in functions and code generation"
-msgstr "Eingebaute MMX-, SSE-, SSE2- und SSE3-Funktionen und Codeerzeugung unterstützen"
+msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3-, SSSE3- und SSE4.1-Funktionen und Codeerzeugung unterstützen"
 
 #: config/i386/i386.opt:233 config/i386/i386.opt:237
-#, fuzzy
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 and SSE4.2 built-in functions and code generation"
-msgstr "Eingebaute MMX-, SSE-, SSE2- und SSE3-Funktionen und Codeerzeugung unterstützen"
+msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1- und SSE4.2-Funktionen und Codeerzeugung unterstützen"
 
 #: config/i386/i386.opt:241
-#, fuzzy
 msgid "Do not support SSE4.1 and SSE4.2 built-in functions and code generation"
-msgstr "Eingebaute MMX-, SSE- und SSE2-Funktionen und Codeerzeugung nicht unterstützen"
+msgstr "Eingebaute SSE4.1- und SSE4.2-Funktionen und Codeerzeugung nicht unterstützen"
 
 #: config/i386/i386.opt:245
-#, fuzzy
 msgid "Support MMX, SSE, SSE2, SSE3 and SSE4A built-in functions and code generation"
-msgstr "Eingebaute MMX-, SSE-, SSE2- und SSE3-Funktionen und Codeerzeugung unterstützen"
+msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3- und SSE4A-Funktionen und Codeerzeugung unterstützen"
 
 #: config/i386/i386.opt:249
-#, fuzzy
 msgid "Support SSE5 built-in functions and code generation"
-msgstr "Eingebaute MMX- und SSE-Funktionen und Codeerzeugung unterstützen"
+msgstr "Eingebaute SSE5-Funktionen und Codeerzeugung unterstützen"
 
 #: config/i386/i386.opt:255
 msgid "Support code generation of Advanced Bit Manipulation (ABM) instructions."
-msgstr ""
+msgstr "Codeerzeugung der Advanced Bit Manipulation Befehle (ABM) unterstützen."
 
 #: config/i386/i386.opt:259
-#, fuzzy
 msgid "Support code generation of cmpxchg16b instruction."
-msgstr "Keinen Einzelfeld-mfcr-Befehl erzeugen"
+msgstr "Codeerzeugung von cmpxchg16b-Befehlen unterstützen."
 
 #: config/i386/i386.opt:263
-#, fuzzy
 msgid "Support code generation of popcnt instruction."
-msgstr "Keinen Einzelfeld-mfcr-Befehl erzeugen"
+msgstr "Codeerzeugung von popcnt-Befehlen unterstützen."
 
 #: config/i386/i386.opt:267
 msgid "Support code generation of sahf instruction in 64bit x86-64 code."
-msgstr ""
+msgstr "Codeerzeugung von sahf-Befehlen in 64-Bit x86-64-Code unterstützen."
 
 #: config/i386/i386.opt:271
 msgid "Generate reciprocals instead of divss and sqrtss."
-msgstr ""
+msgstr "Reziproke statt divss und sqrtss erzeugen."
 
 #: config/i386/i386.opt:275
-#, fuzzy
 msgid "Enable automatic generation of fused floating point multiply-add instructions"
-msgstr "Gleitkomma-Multiplizier-/Addier-Befehle erzeugen"
+msgstr "Automatische Erzeugung verschmolzener Gleitkomma-Multiplizier-/Addier-Befehle einschalten"
 
 #: config/i386/cygming.opt:23
 msgid "Create console application"
@@ -12774,23 +12748,20 @@ msgid "Use PowerPC V2.02 floating point rounding instructions"
 msgstr "PowerPC V2.02 Gleitkomma-Rundungsbefehle verwenden"
 
 #: config/rs6000/rs6000.opt:68
-#, fuzzy
 msgid "Use PowerPC V2.05 compare bytes instruction"
-msgstr "PowerPC V2.02 popcntb-Befehl verwenden"
+msgstr "PowerPC V2.05 Bytevergleichs-Befehl verwenden"
 
 #: config/rs6000/rs6000.opt:72
-#, fuzzy
 msgid "Use extended PowerPC V2.05 move floating point to/from GPR instructions"
-msgstr "PowerPC V2.02 Gleitkomma-Rundungsbefehle verwenden"
+msgstr "Erweiterte Befehle zum Kopieren von Gleitkomma zu/von GPR bei PowerPC V2.05 verwenden"
 
 #: config/rs6000/rs6000.opt:76
 msgid "Use AltiVec instructions"
 msgstr "AltiVec-Befehle verwenden"
 
 #: config/rs6000/rs6000.opt:80
-#, fuzzy
 msgid "Use decimal floating point instructions"
-msgstr "Paarweise-single Gleitkommabefehle verwenden"
+msgstr "Dezimale Gleitkommabefehle verwenden"
 
 #: config/rs6000/rs6000.opt:84
 msgid "Use 4xx half-word multiply instructions"
@@ -12849,9 +12820,8 @@ msgid "Return small structures in registers (SVR4 default)"
 msgstr "Kleine Strukturen über Register zurückgeben (SVR4-Standard)"
 
 #: config/rs6000/rs6000.opt:151
-#, fuzzy
 msgid "Generate software reciprocal sqrt for better throughput"
-msgstr "Software-Gleitkommadivision für besseren Durchsatz erzeugen"
+msgstr "Reziprokes sqrt in Software für besseren Durchsatz erzeugen"
 
 #: config/rs6000/rs6000.opt:155
 msgid "Do not place floating point constants in TOC"
@@ -12898,9 +12868,8 @@ msgid "Generate SPE SIMD instructions on E500"
 msgstr "SPE SIMD Befehle auf E500 erzeugen"
 
 #: config/rs6000/rs6000.opt:206
-#, fuzzy
 msgid "Generate PPC750CL paired-single instructions"
-msgstr "isel-Befehle erzeugen"
+msgstr "Paarweise-Einzel-Befehle für PPC750CL erzeugen"
 
 #: config/rs6000/rs6000.opt:210
 msgid "Deprecated option.  Use -mspe/-mno-spe instead"
@@ -13042,45 +13011,39 @@ msgstr "Code für altes ausführbares BSS PLT erzeugen"
 
 #: config/spu/spu.opt:20
 msgid "Emit warnings when run-time relocations are generated"
-msgstr ""
+msgstr "Warnen, wenn Verschiebungen zur Laufzeit erzeugt werden"
 
 #: config/spu/spu.opt:24
 msgid "Emit errors when run-time relocations are generated"
-msgstr ""
+msgstr "Fehler melden, wenn Verschiebungen zur Laufzeit erzeugt werden"
 
 #: config/spu/spu.opt:28
-#, fuzzy
 msgid "Specify cost of branches (Default 20)"
-msgstr "Sprungkosten setzen"
+msgstr "Sprungkosten angeben (Standard: 20)"
 
 #: config/spu/spu.opt:32
-#, fuzzy
 msgid "Make sure loads and stores are not moved past DMA instructions"
-msgstr "Laden/Speichern mit Aktualisierungsbefehlen erzeugen"
+msgstr "Sicherstellen, dass Laden/Speichern nicht hinter DMA-Befehle verschoben wird"
 
 #: config/spu/spu.opt:36
 msgid "volatile must be specified on any memory that is effected by DMA"
-msgstr ""
+msgstr "volatile muss für jeden Speicher angegeben werden, der von DMA beeinflusst wird"
 
 #: config/spu/spu.opt:40
-#, fuzzy
 msgid "Use standard main function as entry for startup"
-msgstr "JSR und RTS für Funktionsaufrufe und Rückgaben verwenden"
+msgstr "Die Standard-main-Funktion als Einsprungpunkt zum Starten verwenden"
 
 #: config/spu/spu.opt:44
-#, fuzzy
 msgid "Generate branch hints for branches"
-msgstr "Zeichenkettenbefehle für Blockkopieroperationen erzeugen"
+msgstr "Sprunghinweise für Sprünge erzeugen"
 
 #: config/spu/spu.opt:48
-#, fuzzy
 msgid "Generate code for 18 bit addressing"
-msgstr "Code für »big-endian« erzeugen"
+msgstr "Code für 18-Bit-Adressierung erzeugen"
 
 #: config/spu/spu.opt:52
-#, fuzzy
 msgid "Generate code for 32 bit addressing"
-msgstr "Code für »big-endian« erzeugen"
+msgstr "Code für 32-Bit-Adressierung erzeugen"
 
 #: config/mcore/mcore.opt:23
 msgid "Generate code for the M*Core M210"
@@ -13207,33 +13170,28 @@ msgid "Generate SH4-200 code"
 msgstr "SH4-200-Code erzeugen"
 
 #: config/sh/sh.opt:94
-#, fuzzy
 msgid "Generate SH4-300 code"
-msgstr "SH4-100-Code erzeugen"
+msgstr "SH4-300-Code erzeugen"
 
 #: config/sh/sh.opt:98
 msgid "Generate SH4 FPU-less code"
 msgstr "FPU-freien SH4-Code erzeugen"
 
 #: config/sh/sh.opt:102
-#, fuzzy
 msgid "Generate SH4-100 FPU-less code"
-msgstr "FPU-freien SH4-Code erzeugen"
+msgstr "FPU-freien SH4-100-Code erzeugen"
 
 #: config/sh/sh.opt:106
-#, fuzzy
 msgid "Generate SH4-200 FPU-less code"
-msgstr "FPU-freien SH4-Code erzeugen"
+msgstr "FPU-freien SH4-200-Code erzeugen"
 
 #: config/sh/sh.opt:110
-#, fuzzy
 msgid "Generate SH4-300 FPU-less code"
-msgstr "FPU-freien SH4-Code erzeugen"
+msgstr "FPU-freien SH4-300-Code erzeugen"
 
 #: config/sh/sh.opt:114
-#, fuzzy
 msgid "Generate code for SH4 340 series (MMU/FPU-less)"
-msgstr "Code für Serie SH4 400 erzeugen (ohne MMU/FPU)"
+msgstr "Code für Serie SH4 340 erzeugen (ohne MMU/FPU)"
 
 #: config/sh/sh.opt:119
 msgid "Generate code for SH4 400 series (MMU/FPU-less)"
@@ -13256,9 +13214,8 @@ msgid "Generate default single-precision SH4-200 code"
 msgstr "Standard SH4-200-Code mit einfacher Genauigkeit erzeugen"
 
 #: config/sh/sh.opt:141
-#, fuzzy
 msgid "Generate default single-precision SH4-300 code"
-msgstr "Standard SH4-100-Code mit einfacher Genauigkeit erzeugen"
+msgstr "Standard SH4-300-Code mit einfacher Genauigkeit erzeugen"
 
 #: config/sh/sh.opt:145
 msgid "Generate only single-precision SH4 code"
@@ -13273,9 +13230,8 @@ msgid "Generate only single-precision SH4-200 code"
 msgstr "SH4-200-Code nur mit einfacher Genauigkeit erzeugen"
 
 #: config/sh/sh.opt:157
-#, fuzzy
 msgid "Generate only single-precision SH4-300 code"
-msgstr "SH4-100-Code nur mit einfacher Genauigkeit erzeugen"
+msgstr "SH4-300-Code nur mit einfacher Genauigkeit erzeugen"
 
 #: config/sh/sh.opt:161
 msgid "Generate SH4a code"
@@ -13334,21 +13290,20 @@ msgid "Generate 32-bit offsets in switch tables"
 msgstr "32-Bit-Versatz in switch-Tabellen erzeugen"
 
 #: config/sh/sh.opt:217
-#, fuzzy
 msgid "Cost to assume for a branch insn"
-msgstr "Für gettr Befehl anzunehmende Kosten"
+msgstr "Für Sprungbefehl anzunehmende Kosten"
 
 #: config/sh/sh.opt:221
 msgid "Enable cbranchdi4 pattern"
-msgstr ""
+msgstr "cbranchdi4-Muster einschalten"
 
 #: config/sh/sh.opt:225
 msgid "Expand cbranchdi4 pattern early into separate comparisons and branches."
-msgstr ""
+msgstr "cbranchdi4-Muster früh in separate Vergleiche und Sprungbefehle erweitern."
 
 #: config/sh/sh.opt:229
 msgid "Emit cmpeqdi_t pattern even when -mcbranchdi and -mexpand-cbranchdi are in effect."
-msgstr ""
+msgstr "cmpeqdi_t ausgeben, sogar wenn -mcbranchdi und -mexpand-cbranchdi aktiv sind."
 
 #: config/sh/sh.opt:233
 msgid "Enable SH5 cut2 workaround"
@@ -13359,18 +13314,16 @@ msgid "Align doubles at 64-bit boundaries"
 msgstr "Doubles auf 64-Bit-Grenzen ausrichten"
 
 #: config/sh/sh.opt:241
-#, fuzzy
 msgid "Division strategy, one of: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call, inv:call2, inv:fp, call-div1, call-fp, call-table"
-msgstr "Divisionsstrategie, eine von: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call, inv:call2, inv:fp call-div1 call-fp call-table"
+msgstr "Divisionsstrategie, eine von: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call, inv:call2, inv:fp call-div1 call-fp, call-table"
 
 #: config/sh/sh.opt:245
 msgid "Specify name for 32 bit signed division function"
 msgstr "Namen für vorzeichenbehaftete 32-Bit Divisionsfunktion angeben"
 
 #: config/sh/sh.opt:252
-#, fuzzy
 msgid "Enable the use of the fused floating point multiply-accumulate operation"
-msgstr "Verwendung der kurzen Ladebefehle einschalten"
+msgstr "Verwendung der verschmolzenen Gleitkommabefehle zum Multiplizieren/Addieren einschalten"
 
 #: config/sh/sh.opt:256
 msgid "Cost to assume for gettr insn"
