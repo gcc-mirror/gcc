@@ -1,3 +1,8 @@
+2007-11-21  Hans-Peter Nilsson  <hp@axis.com>
+
+	* regclass.c (init_reg_autoinc): Fix typo preventing test of
+	secondary output reload when setting forbidden_inc_dec_class.
+
 2007-11-21  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/34148
