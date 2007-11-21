@@ -742,6 +742,8 @@ resolve_structure_cons (gfc_expr *expr)
 
   for (; comp; comp = comp->next, cons = cons->next)
     {
+      int rank;
+
       if (!cons->expr)
 	continue;
 
@@ -751,14 +753,14 @@ resolve_structure_cons (gfc_expr *expr)
 	  continue;
 	}
 
-      if (cons->expr->expr_type != EXPR_NULL
-	  && comp->as && comp->as->rank != cons->expr->rank
+      rank = comp->as ? comp->as->rank : 0;
+      if (cons->expr->expr_type != EXPR_NULL && rank != cons->expr->rank
 	  && (comp->allocatable || cons->expr->rank))
 	{
 	  gfc_error ("The rank of the element in the derived type "
 		     "constructor at %L does not match that of the "
 		     "component (%d/%d)", &cons->expr->where,
-		     cons->expr->rank, comp->as ? comp->as->rank : 0);
+		     cons->expr->rank, rank);
 	  t = FAILURE;
 	}
 
