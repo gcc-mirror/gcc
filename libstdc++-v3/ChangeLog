@@ -1,3 +1,7 @@
+2007-11-21  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* docs/html/17_intro/C++STYLE: Fix typos.
+
 2007-11-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/html/documentation.html: Validate. Add links to index,
