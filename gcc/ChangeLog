@@ -1,3 +1,11 @@
+2007-11-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34148
+	* tree-ssa-structalias.c (create_variable_info_for): Do not use
+	field-sensitive PTA for single-element structures.
+	* tree-ssa-alias.c (create_overlap_variables_for): Do not create
+	SFTs for single-element structures.
+
 2007-11-20  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/34154

@@ -3837,7 +3837,7 @@ create_overlap_variables_for (tree var)
 			       TREE_TYPE (var));
   /* Make sure to not create SFTs for structs we won't generate variable
      infos for.  See tree-ssa-structalias.c:create_variable_info_for ().  */
-  if (VEC_length (fieldoff_s, fieldstack) != 0
+  if (VEC_length (fieldoff_s, fieldstack) > 1
       && VEC_length (fieldoff_s, fieldstack) <= MAX_FIELDS_FOR_FIELD_SENSITIVE)
     {
       subvar_t *subvars;

@@ -4441,6 +4441,7 @@ create_variable_info_for (tree decl, const char *name)
       && !notokay
       && !vi->is_unknown_size_var
       && var_can_have_subvars (decl)
+      && VEC_length (fieldoff_s, fieldstack) > 1
       && VEC_length (fieldoff_s, fieldstack) <= MAX_FIELDS_FOR_FIELD_SENSITIVE)
     {
       unsigned int newindex = VEC_length (varinfo_t, varmap);
