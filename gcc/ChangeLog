@@ -1,3 +1,11 @@
+2007-11-21  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/34155
+	* config/sh/sh.md (binary_sf_op): Remove.
+	(binary_sf_op0, binary_sf_op1): New define_insn_and_split.
+	* config/sh/sh.c (sh_expand_binop_v2sf): Use gen_binary_sf_op0
+	and gen_binary_sf_op1.
+
 2007-11-21  Hans-Peter Nilsson  <hp@axis.com>
 
 	* regclass.c (init_reg_autoinc): Fix typo preventing test of

@@ -9894,14 +9894,10 @@ sh_expand_unop_v2sf (enum rtx_code code, rtx op0, rtx op1)
 void
 sh_expand_binop_v2sf (enum rtx_code code, rtx op0, rtx op1, rtx op2)
 {
-  rtx sel0 = const0_rtx;
-  rtx sel1 = const1_rtx;
-  rtx (*fn) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx)
-    = gen_binary_sf_op;
   rtx op = gen_rtx_fmt_ee (code, SFmode, op1, op2);
 
-  emit_insn ((*fn) (op0, op1, op2, op, sel0, sel0, sel0, sel1));
-  emit_insn ((*fn) (op0, op1, op2, op, sel1, sel1, sel1, sel0));
+  emit_insn (gen_binary_sf_op0 (op0, op1, op2, op));
+  emit_insn (gen_binary_sf_op1 (op0, op1, op2, op));
 }
 
 /* Return the class of registers for which a mode change from FROM to TO
