@@ -10450,39 +10450,61 @@ mov.l\\t1f,r0\\n\\
 }"
   [(set_attr "type" "fparith_media")])
 
-(define_insn_and_split "binary_sf_op"
+(define_insn_and_split "binary_sf_op0"
   [(set (match_operand:V2SF 0 "fp_arith_reg_operand" "=f")
-	(vec_select:V2SF
-	 (vec_concat:V2SF
-	  (vec_select:SF
-	   (match_dup 0)
-	   (parallel [(match_operand 7 "const_int_operand" "n")]))
+	(vec_concat:V2SF
 	  (match_operator:SF 3 "binary_float_operator"
 	    [(vec_select:SF (match_operand:V2SF 1 "fp_arith_reg_operand" "f")
-			    (parallel [(match_operand 5
-					"const_int_operand" "n")]))
+			    (parallel [(const_int 0)]))
 	     (vec_select:SF (match_operand:V2SF 2 "fp_arith_reg_operand" "f")
-			    (parallel [(match_operand 6
-					"const_int_operand" "n")]))]))
-	 (parallel [(match_dup 7) (match_operand 4 "const_int_operand" "n")])))]
-  "TARGET_SHMEDIA_FPU && INTVAL (operands[4]) != INTVAL (operands[7])"
+			    (parallel [(const_int 0)]))])
+	  (vec_select:SF
+	   (match_dup 0)
+	   (parallel [(const_int 1)]))))]
+  "TARGET_SHMEDIA_FPU"
   "#"
   "&& reload_completed"
-  [(set (match_dup 8) (match_dup 9))]
+  [(set (match_dup 4) (match_dup 5))]
   "
 {
   int endian = TARGET_LITTLE_ENDIAN ? 0 : 1;
   rtx op1 = gen_rtx_REG (SFmode,
-			 (true_regnum (operands[1])
-			  + (INTVAL (operands[5]) ^ endian)));
+			 true_regnum (operands[1]) + endian);
   rtx op2 = gen_rtx_REG (SFmode,
-			 (true_regnum (operands[2])
-			  + (INTVAL (operands[6]) ^ endian)));
+			 true_regnum (operands[2]) + endian);
 
-  operands[8] = gen_rtx_REG (SFmode,
-			     (true_regnum (operands[0])
-			      + (INTVAL (operands[4]) ^ endian)));
-  operands[9] = gen_rtx_fmt_ee (GET_CODE (operands[3]), SFmode, op1, op2);
+  operands[4] = gen_rtx_REG (SFmode,
+			     true_regnum (operands[0]) + endian);
+  operands[5] = gen_rtx_fmt_ee (GET_CODE (operands[3]), SFmode, op1, op2);
+}"
+  [(set_attr "type" "fparith_media")])
+
+(define_insn_and_split "binary_sf_op1"
+  [(set (match_operand:V2SF 0 "fp_arith_reg_operand" "=f")
+	(vec_concat:V2SF
+	  (vec_select:SF
+	   (match_dup 0)
+	   (parallel [(const_int 0)]))
+	  (match_operator:SF 3 "binary_float_operator"
+	    [(vec_select:SF (match_operand:V2SF 1 "fp_arith_reg_operand" "f")
+			    (parallel [(const_int 1)]))
+	     (vec_select:SF (match_operand:V2SF 2 "fp_arith_reg_operand" "f")
+			    (parallel [(const_int 1)]))])))]
+  "TARGET_SHMEDIA_FPU"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 4) (match_dup 5))]
+  "
+{
+  int endian = TARGET_LITTLE_ENDIAN ? 0 : 1;
+  rtx op1 = gen_rtx_REG (SFmode,
+			 true_regnum (operands[1]) + (1 ^ endian));
+  rtx op2 = gen_rtx_REG (SFmode,
+			 true_regnum (operands[2]) + (1 ^ endian));
+
+  operands[4] = gen_rtx_REG (SFmode,
+			     true_regnum (operands[0]) + (1 ^ endian));
+  operands[5] = gen_rtx_fmt_ee (GET_CODE (operands[3]), SFmode, op1, op2);
 }"
   [(set_attr "type" "fparith_media")])
 
