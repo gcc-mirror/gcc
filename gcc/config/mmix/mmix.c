@@ -1161,7 +1161,6 @@ mmix_encode_section_info (tree decl, rtx rtl, int first)
       char *newstr = alloca (len + 2);
       newstr[0] = '@';
       strcpy (newstr + 1, str);
-      *newstr = '@';
       XSTR (XEXP (rtl, 0), 0) = ggc_alloc_string (newstr, len + 1);
     }
 
