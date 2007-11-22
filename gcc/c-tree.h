@@ -487,8 +487,7 @@ extern void c_push_function_context (struct function *);
 extern void c_pop_function_context (struct function *);
 extern void push_parm_decl (const struct c_parm *);
 extern struct c_declarator *set_array_declarator_inner (struct c_declarator *,
-							struct c_declarator *,
-							bool);
+							struct c_declarator *);
 extern tree c_builtin_function (tree);
 extern void shadow_tag (const struct c_declspecs *);
 extern void shadow_tag_warned (const struct c_declspecs *, int);

@@ -1,3 +1,14 @@
+2007-11-22  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/14050
+	* c-decl.c (set_array_declarator_inner): Don't give error for
+	static or type qualifiers in abstract declarator.  Remove
+	abstract_p parameter.
+	* c-tree.h (set_array_declarator_inner): Update prototype.
+	* c-parser.c (c_parser_direct_declarator_inner): Update call to
+	set_array_declarator_inner.
+	* doc/standards.texi: Update for C99 TC3.
+
 2007-11-22  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.c (mmix_encode_section_info): Remove duplicate

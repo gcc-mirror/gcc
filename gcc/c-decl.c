@@ -3081,20 +3081,13 @@ build_array_declarator (tree expr, struct c_declspecs *quals, bool static_p,
 
 /* Set the contained declarator of an array declarator.  DECL is the
    declarator, as constructed by build_array_declarator; INNER is what
-   appears on the left of the [].  ABSTRACT_P is true if it is an
-   abstract declarator, false otherwise; this is used to reject static
-   and type qualifiers in abstract declarators, where they are not in
-   the C99 grammar (subject to possible change in DR#289).  */
+   appears on the left of the [].  */
 
 struct c_declarator *
 set_array_declarator_inner (struct c_declarator *decl,
-			    struct c_declarator *inner, bool abstract_p)
+			    struct c_declarator *inner)
 {
   decl->declarator = inner;
-  if (abstract_p && (decl->u.array.quals != TYPE_UNQUALIFIED
-		     || decl->u.array.attrs != NULL_TREE
-		     || decl->u.array.static_p))
-    error ("static or type qualifiers in abstract declarator");
   return decl;
 }
 
