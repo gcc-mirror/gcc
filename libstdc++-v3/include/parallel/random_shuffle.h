@@ -45,16 +45,16 @@
 
 namespace __gnu_parallel
 {
-  /** @brief Type to hold the index of a bin.
-   *
-   *  Since many variables of this type are allocated, it should be
-   *  chosen as small as possible.
-   */
-  typedef unsigned short bin_index;
+/** @brief Type to hold the index of a bin.
+  *
+  *  Since many variables of this type are allocated, it should be
+  *  chosen as small as possible.
+  */
+typedef unsigned short bin_index;
 
-  /** @brief Data known to every thread participating in
-      __gnu_parallel::parallel_random_shuffle(). */
-  template<typename RandomAccessIterator>
+/** @brief Data known to every thread participating in
+    __gnu_parallel::parallel_random_shuffle(). */
+template<typename RandomAccessIterator>
   struct DRandomShufflingGlobalData
   {
     typedef std::iterator_traits<RandomAccessIterator> traits_type;
@@ -90,17 +90,14 @@ namespace __gnu_parallel
     : source(_source) { }
   };
 
-  /** @brief Local data for a thread participating in
-      __gnu_parallel::parallel_random_shuffle().
-   */
-  template<typename RandomAccessIterator, typename RandomNumberGenerator>
+/** @brief Local data for a thread participating in
+    __gnu_parallel::parallel_random_shuffle().
+  */
+template<typename RandomAccessIterator, typename RandomNumberGenerator>
   struct DRSSorterPU
   {
     /** @brief Number of threads participating in total. */
     int num_threads;
-
-    /** @brief Number of owning thread. */
-    int iam;
 
     /** @brief Begin index for bins taken care of by this thread. */
     bin_index bins_begin;
@@ -115,29 +112,29 @@ namespace __gnu_parallel
     DRandomShufflingGlobalData<RandomAccessIterator>* sd;
   };
 
-  /** @brief Generate a random number in @c [0,2^logp).
-   *  @param logp Logarithm (basis 2) of the upper range bound.
-   *  @param rng Random number generator to use.
-   */
-  template<typename RandomNumberGenerator>
+/** @brief Generate a random number in @c [0,2^logp).
+  *  @param logp Logarithm (basis 2) of the upper range bound.
+  *  @param rng Random number generator to use.
+  */
+template<typename RandomNumberGenerator>
   inline int
   random_number_pow2(int logp, RandomNumberGenerator& rng)
   { return rng.genrand_bits(logp); }
 
-  /** @brief Random shuffle code executed by each thread.
-   *  @param pus Array of thread-local data records. */
-  template<typename RandomAccessIterator, typename RandomNumberGenerator>
+/** @brief Random shuffle code executed by each thread.
+  *  @param pus Array of thread-local data records. */
+template<typename RandomAccessIterator, typename RandomNumberGenerator>
   inline void 
-  parallel_random_shuffle_drs_pu(DRSSorterPU<RandomAccessIterator, 
-				 RandomNumberGenerator>* pus)
+  parallel_random_shuffle_drs_pu(DRSSorterPU<RandomAccessIterator,
+                                 RandomNumberGenerator>* pus)
   {
     typedef std::iterator_traits<RandomAccessIterator> traits_type;
     typedef typename traits_type::value_type value_type;
     typedef typename traits_type::difference_type difference_type;
 
-    DRSSorterPU<RandomAccessIterator, RandomNumberGenerator>* d = &pus[omp_get_thread_num()];
+    thread_index_t iam = omp_get_thread_num();
+    DRSSorterPU<RandomAccessIterator, RandomNumberGenerator>* d = &pus[iam];
     DRandomShufflingGlobalData<RandomAccessIterator>* sd = d->sd;
-    thread_index_t iam = d->iam;
 
     // Indexing: dist[bin][processor]
     difference_type length = sd->starts[iam + 1] - sd->starts[iam];
@@ -156,35 +153,35 @@ namespace __gnu_parallel
     // First main loop.
     for (difference_type i = 0; i < length; i++)
       {
-	bin_index oracle = random_number_pow2(num_bits, rng);
-	oracles[i] = oracle;
+        bin_index oracle = random_number_pow2(num_bits, rng);
+        oracles[i] = oracle;
 
-	// To allow prefix (partial) sum.
-	dist[oracle + 1]++;
+        // To allow prefix (partial) sum.
+        dist[oracle + 1]++;
       }
 
     for (bin_index b = 0; b < sd->num_bins + 1; b++)
       sd->dist[b][iam + 1] = dist[b];
 
-#pragma omp barrier
+#   pragma omp barrier
 
-#pragma omp single
+#   pragma omp single
     {
       // Sum up bins, sd->dist[s + 1][d->num_threads] now contains the
       // total number of items in bin s
       for (bin_index s = 0; s < sd->num_bins; s++)
-	__gnu_sequential::partial_sum(sd->dist[s + 1],
-				      sd->dist[s + 1] + d->num_threads + 1,
-				      sd->dist[s + 1]);
+        __gnu_sequential::partial_sum(sd->dist[s + 1],
+                                      sd->dist[s + 1] + d->num_threads + 1,
+                                      sd->dist[s + 1]);
     }
 
-#pragma omp barrier
+#   pragma omp barrier
 
     sequence_index_t offset = 0, global_offset = 0;
     for (bin_index s = 0; s < d->bins_begin; s++)
       global_offset += sd->dist[s + 1][d->num_threads];
 
-#pragma omp barrier
+#   pragma omp barrier
 
     for (bin_index s = d->bins_begin; s < d->bins_end; s++)
       {
@@ -193,9 +190,10 @@ namespace __gnu_parallel
 	offset = sd->dist[s + 1][d->num_threads];
       }
 
-    sd->temporaries[iam] = static_cast<value_type*>(::operator new(sizeof(value_type) * offset));
+    sd->temporaries[iam] = static_cast<value_type*>(
+      ::operator new(sizeof(value_type) * offset));
 
-#pragma omp barrier
+#   pragma omp barrier
 
     // Draw local copies to avoid false sharing.
     for (bin_index b = 0; b < sd->num_bins + 1; b++)
@@ -211,11 +209,11 @@ namespace __gnu_parallel
     // Distribute according to oracles, second main loop.
     for (difference_type i = 0; i < length; i++)
       {
-	bin_index target_bin = oracles[i];
-	thread_index_t target_p = bin_proc[target_bin];
+        bin_index target_bin = oracles[i];
+        thread_index_t target_p = bin_proc[target_bin];
 
-	// Last column [d->num_threads] stays unchanged.
-	temporaries[target_p][dist[target_bin + 1]++] = *(source + i + start);
+        // Last column [d->num_threads] stays unchanged.
+        temporaries[target_p][dist[target_bin + 1]++] = *(source + i + start);
       }
 
     delete[] oracles;
@@ -223,23 +221,27 @@ namespace __gnu_parallel
     delete[] bin_proc;
     delete[] temporaries;
 
-#pragma omp barrier
+#   pragma omp barrier
 
     // Shuffle bins internally.
     for (bin_index b = d->bins_begin; b < d->bins_end; b++)
       {
-	value_type* begin = sd->temporaries[iam] + ((b == d->bins_begin) ? 0 : sd->dist[b][d->num_threads]),
-	  * end = sd->temporaries[iam] + sd->dist[b + 1][d->num_threads];
-	sequential_random_shuffle(begin, end, rng);
-	std::copy(begin, end, sd->source + global_offset + ((b == d->bins_begin) ? 0 : sd->dist[b][d->num_threads]));
+        value_type* begin =
+                    sd->temporaries[iam] +
+                    ((b == d->bins_begin) ? 0 : sd->dist[b][d->num_threads]),
+                  * end =
+                    sd->temporaries[iam] + sd->dist[b + 1][d->num_threads];
+        sequential_random_shuffle(begin, end, rng);
+        std::copy(begin, end, sd->source + global_offset +
+            ((b == d->bins_begin) ? 0 : sd->dist[b][d->num_threads]));
       }
 
     delete[] sd->temporaries[iam];
   }
 
-  /** @brief Round up to the next greater power of 2.
-   *  @param x Integer to round up */
-  template<typename T>
+/** @brief Round up to the next greater power of 2.
+  *  @param x Integer to round up */
+template<typename T>
   T 
   round_up_to_pow2(T x)
   {
@@ -249,16 +251,21 @@ namespace __gnu_parallel
       return (T)1 << (log2(x - 1) + 1);
   }
 
-  /** @brief Main parallel random shuffle step.
-   *  @param begin Begin iterator of sequence.
-   *  @param end End iterator of sequence.
-   *  @param n Length of sequence.
-   *  @param num_threads Number of threads to use.
-   *  @param rng Random number generator to use.
-   */
-  template<typename RandomAccessIterator, typename RandomNumberGenerator>
+/** @brief Main parallel random shuffle step.
+  *  @param begin Begin iterator of sequence.
+  *  @param end End iterator of sequence.
+  *  @param n Length of sequence.
+  *  @param num_threads Number of threads to use.
+  *  @param rng Random number generator to use.
+  */
+template<typename RandomAccessIterator, typename RandomNumberGenerator>
   inline void
-  parallel_random_shuffle_drs(RandomAccessIterator begin, RandomAccessIterator end, typename std::iterator_traits<RandomAccessIterator>::difference_type n, int num_threads, RandomNumberGenerator& rng)
+  parallel_random_shuffle_drs(
+      RandomAccessIterator begin,
+      RandomAccessIterator end,
+      typename std::iterator_traits<RandomAccessIterator>::difference_type n,
+      thread_index_t num_threads,
+      RandomNumberGenerator& rng)
   {
     typedef std::iterator_traits<RandomAccessIterator> traits_type;
     typedef typename traits_type::value_type value_type;
@@ -275,87 +282,99 @@ namespace __gnu_parallel
     // Try the L1 cache first.
 
     // Must fit into L1.
-    num_bins_cache = std::max((difference_type)1, (difference_type)(n / (Settings::L1_cache_size_lb / sizeof(value_type))));
+    num_bins_cache = std::max<difference_type>(
+        1, n / (Settings::L1_cache_size_lb / sizeof(value_type)));
     num_bins_cache = round_up_to_pow2(num_bins_cache);
 
     // No more buckets than TLB entries, power of 2
     // Power of 2 and at least one element per bin, at most the TLB size.
-    num_bins = std::min(n, (difference_type)num_bins_cache);
+    num_bins = std::min<difference_type>(n, num_bins_cache);
 
 #if _GLIBCXX_RANDOM_SHUFFLE_CONSIDER_TLB
     // 2 TLB entries needed per bin.
-    num_bins = std::min((difference_type)Settings::TLB_size / 2, num_bins);
+    num_bins = std::min<difference_type>(Settings::TLB_size / 2, num_bins);
 #endif
     num_bins = round_up_to_pow2(num_bins);
 
     if (num_bins < num_bins_cache)
       {
 #endif
-	// Now try the L2 cache
-	// Must fit into L2
-	num_bins_cache = static_cast<bin_index>(std::max((difference_type)1, (difference_type)(n / (Settings::L2_cache_size / sizeof(value_type)))));
-	num_bins_cache = round_up_to_pow2(num_bins_cache);
+        // Now try the L2 cache
+        // Must fit into L2
+        num_bins_cache = static_cast<bin_index>(std::max<difference_type>(
+            1, n / (Settings::L2_cache_size / sizeof(value_type))));
+        num_bins_cache = round_up_to_pow2(num_bins_cache);
 
-	// No more buckets than TLB entries, power of 2.
-	num_bins = static_cast<bin_index>(std::min(n, (difference_type)num_bins_cache));
-	// Power of 2 and at least one element per bin, at most the TLB size.
+        // No more buckets than TLB entries, power of 2.
+        num_bins = static_cast<bin_index>(
+            std::min(n, static_cast<difference_type>(num_bins_cache)));
+        // Power of 2 and at least one element per bin, at most the TLB size.
 #if _GLIBCXX_RANDOM_SHUFFLE_CONSIDER_TLB
-	// 2 TLB entries needed per bin.
-	num_bins = std::min((difference_type)Settings::TLB_size / 2, num_bins);
+        // 2 TLB entries needed per bin.
+        num_bins = std::min(
+            static_cast<difference_type>(Settings::TLB_size / 2), num_bins);
 #endif
-	num_bins = round_up_to_pow2(num_bins);
+          num_bins = round_up_to_pow2(num_bins);
 #if _GLIBCXX_RANDOM_SHUFFLE_CONSIDER_L1
       }
 #endif
 
-    num_threads = std::min((bin_index)num_threads, (bin_index)num_bins);
+    num_threads = std::min<bin_index>(num_threads, num_bins);
 
     if (num_threads <= 1)
       return sequential_random_shuffle(begin, end, rng);
 
     DRandomShufflingGlobalData<RandomAccessIterator> sd(begin);
+    DRSSorterPU<RandomAccessIterator, random_number >* pus;
+    difference_type* starts;
 
-    DRSSorterPU<RandomAccessIterator, random_number >* pus = new DRSSorterPU<RandomAccessIterator, random_number >[num_threads];
-
-    sd.temporaries = new value_type*[num_threads];
-    //sd.oracles = new bin_index[n];
-    sd.dist = new difference_type*[num_bins + 1];
-    sd.bin_proc = new thread_index_t[num_bins];
-    for (bin_index b = 0; b < num_bins + 1; b++)
-      sd.dist[b] = new difference_type[num_threads + 1];
-    for (bin_index b = 0; b < (num_bins + 1); b++)
+#   pragma omp parallel num_threads(num_threads)
       {
-	sd.dist[0][0] = 0;
-	sd.dist[b][0] = 0;
-      }
-    difference_type* starts = sd.starts = new difference_type[num_threads + 1];
-    int bin_cursor = 0;
-    sd.num_bins = num_bins;
-    sd.num_bits = log2(num_bins);
+#       pragma omp single
+          {
+            pus = new DRSSorterPU<RandomAccessIterator, random_number>
+                [num_threads];
 
-    difference_type chunk_length = n / num_threads, split = n % num_threads, start = 0;
-    int bin_chunk_length = num_bins / num_threads, bin_split = num_bins % num_threads;
-    for (int i = 0; i < num_threads; i++)
-      {
-	starts[i] = start;
-	start += (i < split) ? (chunk_length + 1) : chunk_length;
-	int j = pus[i].bins_begin = bin_cursor;
+            sd.temporaries = new value_type*[num_threads];
+            sd.dist = new difference_type*[num_bins + 1];
+            sd.bin_proc = new thread_index_t[num_bins];
+            for (bin_index b = 0; b < num_bins + 1; b++)
+              sd.dist[b] = new difference_type[num_threads + 1];
+            for (bin_index b = 0; b < (num_bins + 1); b++)
+              {
+                sd.dist[0][0] = 0;
+                sd.dist[b][0] = 0;
+              }
+            starts = sd.starts = new difference_type[num_threads + 1];
+            int bin_cursor = 0;
+            sd.num_bins = num_bins;
+            sd.num_bits = log2(num_bins);
 
-	// Range of bins for this processor.
-	bin_cursor += (i < bin_split) ? (bin_chunk_length + 1) : bin_chunk_length;
-	pus[i].bins_end = bin_cursor;
-	for (; j < bin_cursor; j++)
-	  sd.bin_proc[j] = i;
-	pus[i].num_threads = num_threads;
-	pus[i].iam = i;
-	pus[i].seed = rng(std::numeric_limits<uint32>::max());
-	pus[i].sd = &sd;
-      }
-    starts[num_threads] = start;
+            difference_type chunk_length = n / num_threads,
+                            split = n % num_threads, start = 0;
+            difference_type bin_chunk_length = num_bins / num_threads,
+                            bin_split = num_bins % num_threads;
+            for (thread_index_t i = 0; i < num_threads; i++)
+              {
+                starts[i] = start;
+                start += (i < split) ? (chunk_length + 1) : chunk_length;
+                int j = pus[i].bins_begin = bin_cursor;
 
-    // Now shuffle in parallel.
-#pragma omp parallel num_threads(num_threads)
-    parallel_random_shuffle_drs_pu(pus);
+                // Range of bins for this processor.
+                bin_cursor += (i < bin_split) ?
+                    (bin_chunk_length + 1) : bin_chunk_length;
+                pus[i].bins_end = bin_cursor;
+                for (; j < bin_cursor; j++)
+                  sd.bin_proc[j] = i;
+                pus[i].num_threads = num_threads;
+                pus[i].seed = rng(std::numeric_limits<uint32>::max());
+                pus[i].sd = &sd;
+              }
+            starts[num_threads] = start;
+          } //single
+      // Now shuffle in parallel.
+      parallel_random_shuffle_drs_pu(pus);
+    }
 
     delete[] starts;
     delete[] sd.bin_proc;
@@ -367,16 +386,16 @@ namespace __gnu_parallel
     delete[] pus;
   }
 
-  /** @brief Sequential cache-efficient random shuffle.
-   *  @param begin Begin iterator of sequence.
-   *  @param end End iterator of sequence.
-   *  @param rng Random number generator to use.
-   */
-  template<typename RandomAccessIterator, typename RandomNumberGenerator>
+/** @brief Sequential cache-efficient random shuffle.
+ *  @param begin Begin iterator of sequence.
+ *  @param end End iterator of sequence.
+ *  @param rng Random number generator to use.
+ */
+template<typename RandomAccessIterator, typename RandomNumberGenerator>
   inline void
   sequential_random_shuffle(RandomAccessIterator begin, 
-			    RandomAccessIterator end, 
-			    RandomNumberGenerator& rng)
+                            RandomAccessIterator end,
+                            RandomNumberGenerator& rng)
   {
     typedef std::iterator_traits<RandomAccessIterator> traits_type;
     typedef typename traits_type::value_type value_type;
@@ -388,7 +407,9 @@ namespace __gnu_parallel
 
 #if _GLIBCXX_RANDOM_SHUFFLE_CONSIDER_L1
     // Try the L1 cache first, must fit into L1.
-    num_bins_cache = std::max((difference_type)1, (difference_type)(n / (Settings::L1_cache_size_lb / sizeof(value_type))));
+    num_bins_cache =
+        std::max<difference_type>
+            (1, n / (Settings::L1_cache_size_lb / sizeof(value_type)));
     num_bins_cache = round_up_to_pow2(num_bins_cache);
 
     // No more buckets than TLB entries, power of 2
@@ -403,19 +424,23 @@ namespace __gnu_parallel
     if (num_bins < num_bins_cache)
       {
 #endif
-	// Now try the L2 cache, must fit into L2.
-	num_bins_cache = static_cast<bin_index>(std::max((difference_type)1, (difference_type)(n / (Settings::L2_cache_size / sizeof(value_type)))));
-	num_bins_cache = round_up_to_pow2(num_bins_cache);
+        // Now try the L2 cache, must fit into L2.
+        num_bins_cache =
+            static_cast<bin_index>(std::max<difference_type>(
+                1, n / (Settings::L2_cache_size / sizeof(value_type))));
+        num_bins_cache = round_up_to_pow2(num_bins_cache);
 
-	// No more buckets than TLB entries, power of 2
-	// Power of 2 and at least one element per bin, at most the TLB size.
-	num_bins = static_cast<bin_index>(std::min(n, (difference_type)num_bins_cache));
+        // No more buckets than TLB entries, power of 2
+        // Power of 2 and at least one element per bin, at most the TLB size.
+        num_bins = static_cast<bin_index>
+            (std::min(n, static_cast<difference_type>(num_bins_cache)));
 
 #if _GLIBCXX_RANDOM_SHUFFLE_CONSIDER_TLB
-	// 2 TLB entries needed per bin
-	num_bins = std::min((difference_type)Settings::TLB_size / 2, num_bins);
+        // 2 TLB entries needed per bin
+        num_bins =
+            std::min<difference_type>(Settings::TLB_size / 2, num_bins);
 #endif
-	num_bins = round_up_to_pow2(num_bins);
+        num_bins = round_up_to_pow2(num_bins);
 #if _GLIBCXX_RANDOM_SHUFFLE_CONSIDER_L1
       }
 #endif
@@ -424,58 +449,62 @@ namespace __gnu_parallel
 
     if (num_bins > 1)
       {
-	value_type* target = static_cast<value_type*>(::operator new(sizeof(value_type) * n));
-	bin_index* oracles = new bin_index[n];
-	difference_type* dist0 = new difference_type[num_bins + 1], * dist1 = new difference_type[num_bins + 1];
+        value_type* target = static_cast<value_type*>(
+          ::operator new(sizeof(value_type) * n));
+        bin_index* oracles = new bin_index[n];
+        difference_type* dist0 = new difference_type[num_bins + 1],
+                       * dist1 = new difference_type[num_bins + 1];
 
-	for (int b = 0; b < num_bins + 1; b++)
-	  dist0[b] = 0;
+        for (int b = 0; b < num_bins + 1; b++)
+          dist0[b] = 0;
 
-	random_number bitrng(rng(0xFFFFFFFF));
+        random_number bitrng(rng(0xFFFFFFFF));
 
-	for (difference_type i = 0; i < n; i++)
-	  {
-	    bin_index oracle = random_number_pow2(num_bits, bitrng);
-	    oracles[i] = oracle;
+        for (difference_type i = 0; i < n; i++)
+          {
+            bin_index oracle = random_number_pow2(num_bits, bitrng);
+            oracles[i] = oracle;
 
-	    // To allow prefix (partial) sum.
-	    dist0[oracle + 1]++;
-	  }
+            // To allow prefix (partial) sum.
+            dist0[oracle + 1]++;
+          }
 
-	// Sum up bins.
-	__gnu_sequential::partial_sum(dist0, dist0 + num_bins + 1, dist0);
+        // Sum up bins.
+        __gnu_sequential::partial_sum(dist0, dist0 + num_bins + 1, dist0);
 
-	for (int b = 0; b < num_bins + 1; b++)
-	  dist1[b] = dist0[b];
+        for (int b = 0; b < num_bins + 1; b++)
+          dist1[b] = dist0[b];
 
-	// Distribute according to oracles.
-	for (difference_type i = 0; i < n; i++)
-	  target[(dist0[oracles[i]])++] = *(begin + i);
+        // Distribute according to oracles.
+        for (difference_type i = 0; i < n; i++)
+          target[(dist0[oracles[i]])++] = *(begin + i);
 
-	for (int b = 0; b < num_bins; b++)
-	  {
-	    sequential_random_shuffle(target + dist1[b], target + dist1[b + 1],
-				      rng);
-	  }
+        for (int b = 0; b < num_bins; b++)
+          {
+            sequential_random_shuffle(target + dist1[b],
+                                      target + dist1[b + 1],
+                                      rng);
+          }
 
-	delete[] dist0;
-	delete[] dist1;
-	delete[] oracles;
-	delete[] target;
+        delete[] dist0;
+        delete[] dist1;
+        delete[] oracles;
+        delete[] target;
       }
     else
       __gnu_sequential::random_shuffle(begin, end, rng);
   }
 
-  /** @brief Parallel random public call.
-   *  @param begin Begin iterator of sequence.
-   *  @param end End iterator of sequence.
-   *  @param rng Random number generator to use.
-   */
-  template<typename RandomAccessIterator, typename RandomNumberGenerator>
+/** @brief Parallel random public call.
+ *  @param begin Begin iterator of sequence.
+ *  @param end End iterator of sequence.
+ *  @param rng Random number generator to use.
+ */
+template<typename RandomAccessIterator, typename RandomNumberGenerator>
   inline void
-  parallel_random_shuffle(RandomAccessIterator begin, RandomAccessIterator end,
-			  RandomNumberGenerator rng = random_number())
+  parallel_random_shuffle(RandomAccessIterator begin,
+                          RandomAccessIterator end,
+                          RandomNumberGenerator rng = random_number())
   {
     typedef std::iterator_traits<RandomAccessIterator> traits_type;
     typedef typename traits_type::difference_type difference_type;

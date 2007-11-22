@@ -1,3 +1,27 @@
+2007-11-22  Johannes Singler  <singler@ira.uka.de>
+
+	PR libstdc++/33893
+        * include/parallel/multiway_merge.h: made omp_dynamic-safe
+        * include/parallel/workstealing.h: made omp_dynamic-safe
+        * include/parallel/base.h: infrastructure, cleanup
+        * include/parallel/par_loop.h: made omp_dynamic-safe
+        * include/parallel/features.h: activate loser tree variant
+        * include/parallel/quicksort.h: made omp_dynamic-safe
+        * include/parallel/compiletime_settings.h: settings overridable
+        * include/parallel/equally_split.h: made omp_dynamic-safe
+        * include/parallel/omp_loop_static.h: made omp_dynamic-safe
+        * include/parallel/random_shuffle.h: made omp_dynamic-safe
+        * include/parallel/balanced_quicksort.h: made omp_dynamic-safe
+        * include/parallel/set_operations.h: made omp_dynamic-safe
+        * include/parallel/unique_copy.h: made omp_dynamic-safe
+        * include/parallel/multiway_mergesort.h: made omp_dynamic-safe
+        * include/parallel/search.h: made omp_dynamic-safe
+        * include/parallel/partition.h: made omp_dynamic-safe
+        * include/parallel/partial_sum.h: made omp_dynamic-safe
+        * include/parallel/find.h: made omp_dynamic-safe
+        * include/parallel/omp_loop.h: made omp_dynamic-safe
+        * include/parallel/losertree.h: avoid default constructor
+
 2007-11-21  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* docs/html/17_intro/C++STYLE: Fix typos.
