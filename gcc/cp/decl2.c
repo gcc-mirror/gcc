@@ -3365,7 +3365,21 @@ cp_write_global_declarations (void)
 	  /* If this static data member is needed, provide it to the
 	     back end.  */
 	  if (DECL_NOT_REALLY_EXTERN (decl) && decl_needed_p (decl))
-	    DECL_EXTERNAL (decl) = 0;
+	    {
+	      /* Error on
+		 namespace { struct A { static int i; }; }
+		 int foo () { return A::i; }
+		 without A::i definition (which can't be defined in
+		 a different CU because of the anonymous namespace).
+		 Don't do this if DECL_INITIAL is set, because for
+		 namespace { struct A { static const int i = 4; } };
+		 decl_needed_p won't reliably detect whether it was
+		 really needed.  */
+	      if (DECL_IN_AGGR_P (decl) && DECL_INITIAL (decl) == NULL_TREE)
+		error ("%Jstatic data member %qD used, but not defined",
+		       decl, decl);
+	      DECL_EXTERNAL (decl) = 0;
+	    }
 	}
       if (VEC_length (tree, pending_statics) != 0
 	  && wrapup_global_declarations (VEC_address (tree, pending_statics),
