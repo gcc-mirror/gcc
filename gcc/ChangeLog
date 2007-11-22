@@ -1,3 +1,13 @@
+2007-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (TARGET_CPU_CPP_BUILTINS): Change checking
+	of ix86_arch and ix86_tune into a switch statement.
+	(enum processor_type): Default PROCESSOR_I386 to 0.
+	* config/i386/i386.c (ix86_decompose_address): Use TARGET_K6 instead
+	of "ix86_tune == PROCESSOR_K6".
+	(ia32_multipass_dfa_lookahead): Change checking of ix86_tune into
+	a switch statement.
+
 2007-11-22  Tom Tromey  <tromey@redhat.com>
 
 	* config/mmix/mmix.c (mmix_encode_section_info): Use alloca to

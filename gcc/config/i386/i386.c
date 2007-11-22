@@ -6781,7 +6781,7 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 
   /* Special case: on K6, [%esi] makes the instruction vector decoded.
      Avoid this by transforming to [%esi+0].  */
-  if (ix86_tune == PROCESSOR_K6 && !optimize_size
+  if (TARGET_K6 && !optimize_size
       && base_reg && !index_reg && !disp
       && REG_P (base_reg)
       && REGNO_REG_CLASS (REGNO (base_reg)) == SIREG)
@@ -16661,15 +16661,18 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 static int
 ia32_multipass_dfa_lookahead (void)
 {
-  if (ix86_tune == PROCESSOR_PENTIUM)
-    return 2;
+  switch (ix86_tune)
+    {
+    case PROCESSOR_PENTIUM:
+      return 2;
 
-  if (ix86_tune == PROCESSOR_PENTIUMPRO
-      || ix86_tune == PROCESSOR_K6)
-    return 1;
+    case PROCESSOR_PENTIUMPRO:
+    case PROCESSOR_K6:
+      return 1;
 
-  else
-    return 0;
+    default:
+      return 0;
+    }
 }
 
 
