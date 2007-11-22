@@ -2471,6 +2471,12 @@ norm32: r25
   rtx scratch1 = operands[8];
   rtx scratch2 = operands[9];
 
+  if (satisfies_constraint_N (dividend))
+    {
+      emit_move_insn (result, dividend);
+      DONE;
+    }
+
   emit_insn (gen_mulsidi3_media (scratch0, inv1, dividend));
   emit_insn (gen_mulsidi3_media (scratch1, inv2, dividend));
   emit_insn (gen_ashrdi3_media (scratch2, scratch0, GEN_INT (63)));
