@@ -66,7 +66,7 @@
  *  @brief Include guarded (sequences may run empty) loser tree,
  *  moving objects.
  *  @see __gnu_parallel::Settings multiway_merge_algorithm */
-#define _GLIBCXX_LOSER_TREE 0
+#define _GLIBCXX_LOSER_TREE 1
 #endif
 
 #ifndef _GLIBCXX_LOSER_TREE_EXPLICIT

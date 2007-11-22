@@ -53,10 +53,10 @@ namespace __gnu_parallel
    *  @param length Length of sequence to search for.
    *  @param advances Returned offsets. 
    */
-  template<typename RandomAccessIterator, typename _DifferenceTp>
+template<typename RandomAccessIterator, typename _DifferenceTp>
   void
   calc_borders(RandomAccessIterator elements, _DifferenceTp length, 
-	       _DifferenceTp* off)
+              _DifferenceTp* off)
   {
     typedef _DifferenceTp difference_type;
 
@@ -66,9 +66,9 @@ namespace __gnu_parallel
     difference_type k = 0;
     for (difference_type j = 2; j <= length; j++)
       {
-	while ((k >= 0) && !(elements[k] == elements[j-1]))
-	  k = off[k];
-	off[j] = ++k;
+        while ((k >= 0) && !(elements[k] == elements[j-1]))
+          k = off[k];
+        off[j] = ++k;
       }
   }
 
@@ -81,11 +81,14 @@ namespace __gnu_parallel
    *  @param end2 End iterator of second sequence.
    *  @param pred Find predicate.
    *  @return Place of finding in first sequences. */
-  template<typename _RandomAccessIterator1, typename _RandomAccessIterator2, typename Pred>
+template<
+    typename _RandomAccessIterator1,
+    typename _RandomAccessIterator2,
+    typename Pred>
   _RandomAccessIterator1
   search_template(_RandomAccessIterator1 begin1, _RandomAccessIterator1 end1,
-		  _RandomAccessIterator2 begin2, _RandomAccessIterator2 end2,
-		  Pred pred)
+                  _RandomAccessIterator2 begin2, _RandomAccessIterator2 end2,
+                  Pred pred)
   {
     typedef std::iterator_traits<_RandomAccessIterator1> traits_type;
     typedef typename traits_type::difference_type difference_type;
@@ -103,59 +106,70 @@ namespace __gnu_parallel
 
     // Where is first occurrence of pattern? defaults to end.
     difference_type result = (end1 - begin1);
+    difference_type *splitters;
 
     // Pattern too long.
     if (input_length < 0)
       return end1;
 
-    thread_index_t num_threads = std::max<difference_type>(1, std::min<difference_type>(input_length, __gnu_parallel::get_max_threads()));
-
     omp_lock_t result_lock;
     omp_init_lock(&result_lock);
 
-    difference_type borders[num_threads + 1];
-    __gnu_parallel::equally_split(input_length, num_threads, borders);
+    thread_index_t num_threads =
+        std::max<difference_type>(1,
+            std::min<difference_type>(input_length, get_max_threads()));
 
     difference_type advances[pattern_length];
     calc_borders(begin2, pattern_length, advances);
 
-#pragma omp parallel num_threads(num_threads)
-    {
-      thread_index_t iam = omp_get_thread_num();
+#   pragma omp parallel num_threads(num_threads)
+      {
+#       pragma omp single
+          {
+            num_threads = omp_get_num_threads();
+            splitters = new difference_type[num_threads + 1];
+            equally_split(input_length, num_threads, splitters);
+          }
 
-      difference_type start = borders[iam], stop = borders[iam + 1];
+        thread_index_t iam = omp_get_thread_num();
 
-      difference_type pos_in_pattern = 0;
-      bool found_pattern = false;
+        difference_type start = splitters[iam], stop = splitters[iam + 1];
 
-      while (start <= stop && !found_pattern)
-	{
-	  // Get new value of result.
-#pragma omp flush(result)
-	  // No chance for this thread to find first occurrence.
-	  if (result < start)
-	    break;
-	  while (pred(begin1[start + pos_in_pattern], begin2[pos_in_pattern]))
-	    {
-	      ++pos_in_pattern;
-	      if (pos_in_pattern == pattern_length)
-		{
-		  // Found new candidate for result.
-                  omp_set_lock(&result_lock);
-		  result = std::min(result, start);
-                  omp_unset_lock(&result_lock);
+        difference_type pos_in_pattern = 0;
+        bool found_pattern = false;
 
-		  found_pattern = true;
-		  break;
-		}
-	    }
-	  // Make safe jump.
-	  start += (pos_in_pattern - advances[pos_in_pattern]);
-	  pos_in_pattern = (advances[pos_in_pattern] < 0) ? 0 : advances[pos_in_pattern];
-	}
-    }
+        while (start <= stop && !found_pattern)
+          {
+            // Get new value of result.
+            #pragma omp flush(result)
+            // No chance for this thread to find first occurrence.
+            if (result < start)
+              break;
+            while (pred(begin1[start + pos_in_pattern],
+                         begin2[pos_in_pattern]))
+              {
+                ++pos_in_pattern;
+                if (pos_in_pattern == pattern_length)
+                  {
+                    // Found new candidate for result.
+                            omp_set_lock(&result_lock);
+                    result = std::min(result, start);
+                            omp_unset_lock(&result_lock);
+
+                    found_pattern = true;
+                    break;
+                  }
+              }
+            // Make safe jump.
+            start += (pos_in_pattern - advances[pos_in_pattern]);
+            pos_in_pattern =
+                (advances[pos_in_pattern] < 0) ? 0 : advances[pos_in_pattern];
+          }
+      } //parallel
 
     omp_destroy_lock(&result_lock);
+
+    delete[] splitters;
 
     // Return iterator on found element.
     return (begin1 + result);

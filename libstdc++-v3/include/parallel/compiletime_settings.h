@@ -39,7 +39,7 @@
 #include <cstdio>
 
 /** @brief Determine verbosity level of the parallel mode.
- *  Level 1 prints a message each time when entering a parallel-mode function. */
+ *  Level 1 prints a message each time a parallel-mode function is entered. */
 #define _GLIBCXX_VERBOSE_LEVEL 0
 
 /** @def _GLIBCXX_CALL
@@ -50,27 +50,40 @@
 #define _GLIBCXX_CALL(n)
 #endif
 #if (_GLIBCXX_VERBOSE_LEVEL == 1)
-#define _GLIBCXX_CALL(n) printf("   %s:\niam = %d, n = %ld, num_threads = %d\n", __PRETTY_FUNCTION__, omp_get_thread_num(), (n), get_max_threads());
+#define _GLIBCXX_CALL(n) \
+  printf("   %s:\niam = %d, n = %ld, num_threads = %d\n", \
+  __PRETTY_FUNCTION__, omp_get_thread_num(), (n), get_max_threads());
 #endif
 
+#ifndef _GLIBCXX_SCALE_DOWN_FPU
 /** @brief Use floating-point scaling instead of modulo for mapping
  *  random numbers to a range.  This can be faster on certain CPUs. */
 #define _GLIBCXX_SCALE_DOWN_FPU 0
+#endif
 
+#ifndef _GLIBCXX_ASSERTIONS
 /** @brief Switch on many _GLIBCXX_PARALLEL_ASSERTions in parallel code.
  *  Should be switched on only locally. */
 #define _GLIBCXX_ASSERTIONS 0
+#endif
 
+#ifndef _GLIBCXX_RANDOM_SHUFFLE_CONSIDER_L1
 /** @brief Switch on many _GLIBCXX_PARALLEL_ASSERTions in parallel code.
- *  Consider the size of the L1 cache for __gnu_parallel::parallel_random_shuffle(). */
+ *  Consider the size of the L1 cache for
+ *  __gnu_parallel::parallel_random_shuffle(). */
 #define _GLIBCXX_RANDOM_SHUFFLE_CONSIDER_L1 0
+#endif
+#ifndef _GLIBCXX_RANDOM_SHUFFLE_CONSIDER_TLB 
 /** @brief Switch on many _GLIBCXX_PARALLEL_ASSERTions in parallel code.
- *  Consider the size of the TLB for __gnu_parallel::parallel_random_shuffle(). */
+ *  Consider the size of the TLB for
+ *  __gnu_parallel::parallel_random_shuffle(). */
 #define _GLIBCXX_RANDOM_SHUFFLE_CONSIDER_TLB 0
+#endif
 
+#ifndef _GLIBCXX_MULTIWAY_MERGESORT_COPY_LAST
 /** @brief First copy the data, sort it locally, and merge it back
  * (0); or copy it back after everything is done (1).
  *
  *  Recommendation: 0 */
 #define _GLIBCXX_MULTIWAY_MERGESORT_COPY_LAST 0
-
+#endif
