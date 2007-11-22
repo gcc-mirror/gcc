@@ -21,9 +21,9 @@
 2007-11-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/30988
-	semantics.c (finish_call_expr): Set current_function_returns_abnormally
-	if fn is noreturn FUNCTION_DECL or OVERLOAD with all noreturn
-	functions.
+	* semantics.c (finish_call_expr): Set
+	current_function_returns_abnormally if fn is noreturn FUNCTION_DECL
+	or OVERLOAD with all noreturn functions.
 
 2007-11-16  Jakub Jelinek  <jakub@redhat.com>
 
