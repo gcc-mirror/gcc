@@ -1,3 +1,10 @@
+2007-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/33947
+	* config/arm/arm.c (arm_init_tls_builtins): Set TREE_NOTHROW
+	and TREE_READONLY on the fn decl rather than passing a chain
+	of attributes.
+
 2007-11-22  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.md (divsi_inv_m3): Handle zero dividend

@@ -14488,14 +14488,14 @@ arm_init_iwmmxt_builtins (void)
 static void
 arm_init_tls_builtins (void)
 {
-  tree ftype;
-  tree nothrow = tree_cons (get_identifier ("nothrow"), NULL, NULL);
-  tree const_nothrow = tree_cons (get_identifier ("const"), NULL, nothrow);
+  tree ftype, decl;
 
   ftype = build_function_type (ptr_type_node, void_list_node);
-  add_builtin_function ("__builtin_thread_pointer", ftype,
-			ARM_BUILTIN_THREAD_POINTER, BUILT_IN_MD,
-			NULL, const_nothrow);
+  decl = add_builtin_function ("__builtin_thread_pointer", ftype,
+			       ARM_BUILTIN_THREAD_POINTER, BUILT_IN_MD,
+			       NULL, NULL_TREE);
+  TREE_NOTHROW (decl) = 1;
+  TREE_READONLY (decl) = 1;
 }
 
 typedef enum {
