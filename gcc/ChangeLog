@@ -1,3 +1,8 @@
+2007-11-22  Tom Tromey  <tromey@redhat.com>
+
+	* config/mmix/mmix.c (mmix_encode_section_info): Use alloca to
+	avoid writing into string allocated by ggc_alloc_string.
+
 2007-11-21  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/34155

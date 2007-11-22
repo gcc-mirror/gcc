@@ -1158,14 +1158,11 @@ mmix_encode_section_info (tree decl, rtx rtl, int first)
 
       const char *str = XSTR (XEXP (rtl, 0), 0);
       int len = strlen (str);
-      char *newstr;
-
-      /* Why is the return type of ggc_alloc_string const?  */
-      newstr = CONST_CAST (char *, ggc_alloc_string ("", len + 1));
-
+      char *newstr = alloca (len + 2);
+      newstr[0] = '@';
       strcpy (newstr + 1, str);
       *newstr = '@';
-      XSTR (XEXP (rtl, 0), 0) = newstr;
+      XSTR (XEXP (rtl, 0), 0) = ggc_alloc_string (newstr, len + 1);
     }
 
   /* Set SYMBOL_REF_FLAG for things that we want to access with GETA.  We
