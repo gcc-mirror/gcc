@@ -1979,7 +1979,7 @@ gfc_match_structure_constructor (gfc_symbol *sym, gfc_expr **result)
   if (gfc_match_char (')') != MATCH_YES)
     goto syntax;
 
-  if (comp->next != NULL)
+  if (comp && comp->next != NULL)
     {
       gfc_error ("Too few components in structure constructor at %C");
       goto cleanup;

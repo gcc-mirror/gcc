@@ -1,5 +1,10 @@
 2007-11-22  Tobias Burnus  <burnus@net-b.de>
 
+	* primary.c (gfc_match_structure_constructor): Allow
+	constructor for types without components.
+
+2007-11-22  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/34079
 	* trans-expr.c (gfc_conv_function_call): Do not append
 	string length arguments when calling bind(c) procedures.
