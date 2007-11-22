@@ -1,7 +1,7 @@
 2007-11-22  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.c (mmix_encode_section_info): Remove duplicate
-	line in my edit of last commit.
+	line in my edit of the last change.
 
 2007-11-22  Jakub Jelinek  <jakub@redhat.com>
 
