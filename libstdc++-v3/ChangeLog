@@ -1,5 +1,10 @@
 2007-11-22  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/stl_tree.h (_Rb_tree<>::_Rb_tree_impl<, true>): Remove,
+	identical in mainline to the primary template.
+
+2007-11-22  Paolo Carlini  <pcarlini@suse.de>
+
 	* config/abi/pre/gnu.ver: Adjust new exports for 128-bit long double.
 
 2007-11-22  Johannes Singler  <singler@ira.uka.de>
