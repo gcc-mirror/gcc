@@ -6158,17 +6158,16 @@ subst_reloads (rtx insn)
 	    }
 #endif /* ENABLE_CHECKING */
 
-	  /* If we're replacing a LABEL_REF with a register, add a
-	     REG_LABEL note to indicate to flow which label this
+	  /* If we're replacing a LABEL_REF jump target with a register,
+	     add a REG_LABEL note to indicate to flow which label this
 	     register refers to.  */
 	  if (GET_CODE (*r->where) == LABEL_REF
-	      && JUMP_P (insn))
-	    {
-	      REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_LABEL,
-						    XEXP (*r->where, 0),
-						    REG_NOTES (insn));
-	      JUMP_LABEL (insn) = XEXP (*r->where, 0);
-	   }
+	      && JUMP_P (insn)
+	      && JUMP_LABEL (insn) == XEXP (*r->where, 0)
+	      && !find_reg_note (insn, REG_LABEL, XEXP (*r->where, 0)))
+	    REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_LABEL,
+						  XEXP (*r->where, 0),
+						  REG_NOTES (insn));
 
 	  /* Encapsulate RELOADREG so its machine mode matches what
 	     used to be there.  Note that gen_lowpart_common will

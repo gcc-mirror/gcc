@@ -1,3 +1,8 @@
+2007-11-22  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR rtl-optimization/33848
+	* gcc.dg/torture/pr33848.c: New test.
+
 2007-11-16  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/34030
