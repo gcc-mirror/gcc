@@ -1,3 +1,8 @@
+2007-11-22  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.c (mmix_encode_section_info): Remove duplicate
+	line in my edit of last commit.
+
 2007-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/33947
