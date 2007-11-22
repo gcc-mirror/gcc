@@ -1,3 +1,12 @@
+2007-11-22  Matthias Klose  <doko@ubuntu.com>
+
+	Backport from mainline:
+	2007-11-17  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34130
+	* fold-const.c (extract_muldiv_1): Do not move negative
+	constants inside ABS_EXPR.
+
 2007-11-22  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR rtl-optimization/33848
