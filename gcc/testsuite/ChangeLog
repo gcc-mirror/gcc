@@ -1,3 +1,8 @@
+2007-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34094
+	* g++.dg/ext/visibility/anon7.C: New test.
+
 2007-11-22  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34079

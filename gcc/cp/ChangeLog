@@ -1,3 +1,10 @@
+2007-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34094
+	* decl2.c (cp_write_global_declarations): Issue error about static
+	data members in anonymous namespace which are declared and used,
+	but not defined.
+
 2007-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34089
