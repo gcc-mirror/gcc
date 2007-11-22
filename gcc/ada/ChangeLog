@@ -1,3 +1,8 @@
+2007-11-22  Olivier Hainque  <hainque@adacore.com>
+
+	* trans.c (gnat_to_gnu) <case N_Free_Statement>: Reformat lines
+	to fit in 80 columns.
+
 2007-11-21  Aurelien Jarno <aurelien@aurel32.net>
 
 	* s-osinte-kfreebsd-gnu.ads (To_Target_Priority): New function.
