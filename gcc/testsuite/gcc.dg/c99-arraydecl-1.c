@@ -9,8 +9,8 @@
    [quals static expr].  Not yet: [quals *].  */
 
 void f00 (int a[const]);
-void f01 (int [const]); /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "abstract" "\[quals\] in abstract declarator" { target *-*-* } 12 } */
+void f01 (int [const]);
+
 void
 f02 (int a[const])
 {
@@ -28,8 +28,8 @@ f03 (a)
 }
 
 void f10 (int a[const 2]);
-void f11 (int [const 2]); /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "abstract" "\[quals expr\] in abstract declarator" { target *-*-* } 31 } */
+void f11 (int [const 2]);
+
 void
 f12 (int a[const 2])
 {
@@ -47,8 +47,8 @@ f13 (a)
 }
 
 void f20 (int a[static 2]);
-void f21 (int [static 2]); /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "abstract" "\[static expr\] in abstract declarator" { target *-*-* } 50 } */
+void f21 (int [static 2]);
+
 void
 f22 (int a[static 2])
 {
@@ -64,8 +64,8 @@ f23 (a)
 }
 
 void f30 (int a[static const 2]);
-void f31 (int [static const 2]); /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "abstract" "\[static quals expr\] in abstract declarator" { target *-*-* } 67 } */
+void f31 (int [static const 2]);
+
 void
 f32 (int a[static const 2])
 {
@@ -83,8 +83,8 @@ f33 (a)
 }
 
 void f40 (int a[const static 2]);
-void f41 (int [const static 2]); /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "abstract" "\[quals static expr\] in abstract declarator" { target *-*-* } 86 } */
+void f41 (int [const static 2]);
+
 void
 f42 (int a[const static 2])
 {

@@ -2499,7 +2499,7 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
 					   star_seen);
       if (declarator == NULL)
 	return NULL;
-      inner = set_array_declarator_inner (declarator, inner, !id_present);
+      inner = set_array_declarator_inner (declarator, inner);
       return c_parser_direct_declarator_inner (parser, id_present, inner);
     }
   else if (c_parser_next_token_is (parser, CPP_OPEN_PAREN))

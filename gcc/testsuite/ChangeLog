@@ -1,3 +1,9 @@
+2007-11-22  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/14050
+	* gcc.dg/c99-arraydecl-1.c: Don't expect errors for static or type
+	qualifiers in abstract declarator.
+
 2007-11-22  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/derived_constructor_comps_3.f90: New.
