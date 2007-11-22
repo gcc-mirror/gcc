@@ -2392,8 +2392,8 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
         }
 
       /* Character strings are passed as two parameters, a length and a
-         pointer.  */
-      if (parmse.string_length != NULL_TREE)
+         pointer - except for Bind(c) which only passes the pointer.  */
+      if (parmse.string_length != NULL_TREE && !sym->attr.is_bind_c)
         stringargs = gfc_chainon_list (stringargs, parmse.string_length);
 
       arglist = gfc_chainon_list (arglist, parmse.expr);

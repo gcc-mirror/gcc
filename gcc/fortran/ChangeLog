@@ -1,3 +1,11 @@
+2007-11-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34079
+	* trans-expr.c (gfc_conv_function_call): Do not append
+	string length arguments when calling bind(c) procedures.
+	* trans-decl.c (create_function_arglist): Do not append
+	string length arguments when declaring bind(c) procedures.
+
 2007-11-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/34083
