@@ -1535,8 +1535,10 @@ create_function_arglist (gfc_symbol * sym)
       typelist = TREE_CHAIN (typelist);
     }
 
-  /* Add the hidden string length parameters.  */
-  arglist = chainon (arglist, hidden_arglist);
+  /* Add the hidden string length parameters, unless the procedure
+     is bind(C).  */
+  if (!sym->attr.is_bind_c)
+    arglist = chainon (arglist, hidden_arglist);
 
   gcc_assert (hidden_typelist == NULL_TREE
               || TREE_VALUE (hidden_typelist) == void_type_node);
