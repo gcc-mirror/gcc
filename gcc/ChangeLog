@@ -1,3 +1,8 @@
+2007-11-22  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.md (divsi_inv_m3): Handle zero dividend
+	specially.
+
 2007-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (TARGET_CPU_CPP_BUILTINS): Change checking
