@@ -1,3 +1,8 @@
+2007-11-23  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Adjust makeinfo version check.
+	* configure: Regenerate.
+
 2007-10-07  Release Manager
 
 	* GCC 4.2.2 released.
