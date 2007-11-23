@@ -1,3 +1,40 @@
+2007-11-23  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_list.h (insert(iterator, value_type&&)): Just
+	forward to emplace.
+	* include/bits/stl_vector.h (insert(iterator, value_type&&)): Likewise.
+	* include/bits/stl_deque.h (insert(iterator, value_type&&)): Likewise.
+	* include/debug/list (insert(iterator, value_type&&)): Likewise.
+	* include/debug/vector (insert(iterator, value_type&&)): Likewise.
+	* include/debug/deque (insert(iterator, value_type&&)): Likewise.
+	* include/bits/list.tcc (insert(iterator, value_type&&)): Remove.
+	* include/bits/vector.tcc (insert(iterator, value_type&&)): Likewise.
+	* include/bits/deque.tcc (insert(iterator, value_type&&)): Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
 2007-11-22  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_tree.h (_Rb_tree<>::_Rb_tree_impl<, true>): Remove,

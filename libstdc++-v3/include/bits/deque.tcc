@@ -108,27 +108,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
   template<typename _Tp, typename _Alloc>
-    typename deque<_Tp, _Alloc>::iterator
-    deque<_Tp, _Alloc>::
-    insert(iterator __position, value_type&& __x)
-    {
-      if (__position._M_cur == this->_M_impl._M_start._M_cur)
-	{
-	  push_front(std::move(__x));
-	  return this->_M_impl._M_start;
-	}
-      else if (__position._M_cur == this->_M_impl._M_finish._M_cur)
-	{
-	  push_back(std::move(__x));
-	  iterator __tmp = this->_M_impl._M_finish;
-	  --__tmp;
-	  return __tmp;
-	}
-      else
-        return _M_insert_aux(__position, std::move(__x));
-    }
-
-  template<typename _Tp, typename _Alloc>
     template<typename... _Args>
       typename deque<_Tp, _Alloc>::iterator
       deque<_Tp, _Alloc>::

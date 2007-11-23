@@ -322,11 +322,7 @@ namespace __debug
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       iterator
       insert(iterator __position, _Tp&& __x)
-      {
-	__glibcxx_check_insert(__position);
-	return iterator(_Base::insert(__position.base(),
-				      std::move(__x)), this);
-      }
+      { return emplace(__position, std::move(__x)); }
 #endif
 
       void
