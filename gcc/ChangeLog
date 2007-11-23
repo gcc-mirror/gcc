@@ -1,3 +1,13 @@
+2007-11-23  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-copy.c (may_propagate_copy): Remove redundant
+	checks.
+	(merge_alias_info): Do verification only if checking is
+	enabled.  Merge flow-sensitive alias information in simple
+	cases.
+	* tree-ssa-operands.c (get_addr_dereference_operands): Also
+	complain about missing NMTs.
+
 2007-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34198
