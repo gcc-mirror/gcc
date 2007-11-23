@@ -86,9 +86,9 @@ package body System.Interrupt_Management is
       pragma Unreferenced (Result);
 
    begin
-      Result := pthread_sigmask (SIG_SETMASK, null, Mask'Unchecked_Access);
+      Result := pthread_sigmask (SIG_SETMASK, null, Mask'Access);
       Result := sigdelset (Mask'Access, signo);
-      Result := pthread_sigmask (SIG_SETMASK, Mask'Unchecked_Access, null);
+      Result := pthread_sigmask (SIG_SETMASK, Mask'Access, null);
 
       Map_And_Raise_Exception (signo);
    end Notify_Exception;

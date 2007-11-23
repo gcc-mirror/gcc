@@ -226,7 +226,7 @@ package body System.Task_Primitives.Operations is
          --  Make sure signals used for RTS internal purpose are unmasked
 
          Result := pthread_sigmask (SIG_UNBLOCK,
-           Unblocked_Signal_Mask'Unchecked_Access, Old_Set'Unchecked_Access);
+           Unblocked_Signal_Mask'Access, Old_Set'Access);
          pragma Assert (Result = 0);
 
          raise Standard'Abort_Signal;

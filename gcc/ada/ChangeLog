@@ -1,3 +1,11 @@
+2007-11-23  Samuel Tardieu  <sam@rfc1149.net>
+
+	* s-inmaop-posix.adb, s-intman-vxworks.adb, s-taprop-hpux-dce.adb,
+	s-taprop-irix.adb, s-taprop-linux.adb, s-taprop-lynxos.adb,
+	s-taprop-posix.adb, s-taprop-tru64.adb, s-taprop-vxworks.adb:
+	Use 'Access instead of 'Unchecked_Access in second and third
+	arguments of pthread_sigmask.
+
 2007-11-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl.c (ceil_alignment): New function.
