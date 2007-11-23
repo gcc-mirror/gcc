@@ -1,4 +1,17 @@
 2007-11-23  Richard Guenther  <rguenther@suse.de>
+	Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/34176
+	* alloc-pool.h (empty_alloc_pool): Declare.
+	* alloc-pool.c (empty_alloc_pool): New function.
+	* tree-ssa-sccvn.c (vn_reference_lookup): Also lookup from the
+	valid table if a lookup from the optimistic table failed.
+	(vn_unary_op_lookup): Likewise.
+	(vn_binary_op_lookup): Likewise.
+	(vn_phi_lookup): Likewise.
+	(process_scc): Clear optimistic tables before every iteration.
+
+2007-11-23  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-copy.c (may_propagate_copy): Remove redundant
 	checks.

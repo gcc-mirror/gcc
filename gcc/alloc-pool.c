@@ -183,7 +183,7 @@ create_alloc_pool (const char *name, size_t size, size_t num)
 
 /* Free all memory allocated for the given memory pool.  */
 void
-free_alloc_pool (alloc_pool pool)
+empty_alloc_pool (alloc_pool pool)
 {
   alloc_pool_list block, next_block;
 #ifdef GATHER_STATISTICS
@@ -201,6 +201,22 @@ free_alloc_pool (alloc_pool pool)
       desc->current -= pool->block_size;
 #endif
     }
+
+  pool->returned_free_list = NULL;
+  pool->virgin_free_list = NULL;
+  pool->virgin_elts_remaining = 0;
+  pool->elts_allocated = 0;
+  pool->elts_free = 0;
+  pool->blocks_allocated = 0;
+  pool->block_list = NULL;
+}
+
+/* Free all memory allocated for the given memory pool and the pool itself.  */
+void
+free_alloc_pool (alloc_pool pool)
+{
+  /* First empty the pool.  */
+  empty_alloc_pool (pool);
 #ifdef ENABLE_CHECKING
   memset (pool, 0xaf, sizeof (*pool));
 #endif
