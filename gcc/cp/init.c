@@ -1786,6 +1786,11 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
 		    (alloc_fn,
 		     build_tree_list (NULL_TREE, class_addr)));
     }
+  else if (TYPE_FOR_JAVA (elt_type))
+    {
+      error ("Java class %q#T object allocated using placement new", elt_type);
+      return error_mark_node;
+    }
   else
     {
       tree fnname;
