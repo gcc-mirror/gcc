@@ -1,3 +1,9 @@
+2007-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/30293
+	PR c++/30294
+	* g++.dg/ext/java-2.C: New test.
+
 2007-11-23  Mark Mitchell  <mark@codesourcery.com>
 	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 	

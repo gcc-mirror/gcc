@@ -5468,6 +5468,20 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	     is *not* defined.  */
 	  && (!DECL_EXTERNAL (decl) || init))
 	{
+	  if (TYPE_FOR_JAVA (type) && IS_AGGR_TYPE (type))
+	    {
+	      tree jclass
+		= IDENTIFIER_GLOBAL_VALUE (get_identifier ("jclass"));
+	      /* Allow libjava/prims.cc define primitive classes.  */
+	      if (init != NULL_TREE
+		  || jclass == NULL_TREE
+		  || TREE_CODE (jclass) != TYPE_DECL
+		  || !POINTER_TYPE_P (TREE_TYPE (jclass))
+		  || !same_type_ignoring_top_level_qualifiers_p
+					(type, TREE_TYPE (TREE_TYPE (jclass))))
+		error ("Java object %qD not allocated with %<new%>", decl);
+	      init = NULL_TREE;
+	    }
 	  if (init)
 	    {
 	      DECL_NONTRIVIALLY_INITIALIZED_P (decl) = 1;
@@ -5538,6 +5552,9 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       else if (TREE_CODE (type) == ARRAY_TYPE)
 	layout_type (type);
     }
+  else if (TREE_CODE (decl) == FIELD_DECL
+	   && TYPE_FOR_JAVA (type) && IS_AGGR_TYPE (type))
+    error ("non-static data member %qD has Java class type", decl);
 
   /* Add this declaration to the statement-tree.  This needs to happen
      after the call to check_initializer so that the DECL_EXPR for a
@@ -9328,6 +9345,16 @@ grokparms (cp_parameter_declarator *first_parm, tree *parms)
 	  TREE_TYPE (decl) = error_mark_node;
 	}
 
+      if (type != error_mark_node
+	  && TYPE_FOR_JAVA (type)
+	  && IS_AGGR_TYPE (type))
+	{
+	  error ("parameter %qD has Java class type", decl);
+	  type = error_mark_node;
+	  TREE_TYPE (decl) = error_mark_node;
+	  init = NULL_TREE;
+	}
+
       if (type != error_mark_node)
 	{
 	  /* Top-level qualifiers on the parameters are
@@ -10914,11 +10941,15 @@ check_function_type (tree decl, tree current_function_parms)
 
   if (dependent_type_p (return_type))
     return;
-  if (!COMPLETE_OR_VOID_TYPE_P (return_type))
+  if (!COMPLETE_OR_VOID_TYPE_P (return_type)
+      || (TYPE_FOR_JAVA (return_type) && IS_AGGR_TYPE (return_type)))
     {
       tree args = TYPE_ARG_TYPES (fntype);
 
-      error ("return type %q#T is incomplete", return_type);
+      if (!COMPLETE_OR_VOID_TYPE_P (return_type))
+	error ("return type %q#T is incomplete", return_type);
+      else
+	error ("return type has Java class type %q#T", return_type);
 
       /* Make it return void instead.  */
       if (TREE_CODE (fntype) == METHOD_TYPE)
