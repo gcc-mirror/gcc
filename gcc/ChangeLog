@@ -1,3 +1,9 @@
+2007-11-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	* reload.c (find_reloads_address_1) <autoincdec cases>:
+	Call REG_OK_FOR_CONTEXT with the autoincdec code, not
+	outer_code.
+
 2007-11-23  Richard Guenther  <rguenther@suse.de>
 	Michael Matz  <matz@suse.de>
 

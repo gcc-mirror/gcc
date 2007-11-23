@@ -5676,8 +5676,10 @@ find_reloads_address_1 (enum machine_mode mode, rtx x, int context,
 		}
 	    }
 
-	  /* If we have a hard register that is ok as an index,
-	     don't make a reload.  If an autoincrement of a nice register
+	  /* If we have a hard register that is ok in this incdec context,
+	     don't make a reload.  If the register isn't nice enough for
+	     autoincdec, we can reload it.  But, if an autoincrement of a
+	     register that we here verified as playing nice, still outside
 	     isn't "valid", it must be that no autoincrement is "valid".
 	     If that is true and something made an autoincrement anyway,
 	     this must be a special context where one is allowed.
@@ -5690,7 +5692,7 @@ find_reloads_address_1 (enum machine_mode mode, rtx x, int context,
 	  if (reg_renumber[regno] >= 0)
 	    regno = reg_renumber[regno];
 	  if (regno >= FIRST_PSEUDO_REGISTER
-	      || !REG_OK_FOR_CONTEXT (context, regno, mode, outer_code,
+	      || !REG_OK_FOR_CONTEXT (context, regno, mode, code,
 				      index_code))
 	    {
 	      int reloadnum;
