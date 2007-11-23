@@ -1,3 +1,10 @@
+2007-11-23  Dirk Mueller  <dmueller@suse.de>
+	Richard Guenther <rguenther@suse.de>
+
+	PR middle-end/34197
+	* tree-vrp.c (check_array_ref): Move check for valid location..
+	(check_array_bounds) here. Use EXPR_HAS_LOCATION().
+
 2007-11-23  Hans-Peter Nilsson  <hp@axis.com>
 
 	* reload.c (find_reloads_address_1) <autoincdec cases>:

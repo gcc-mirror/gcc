@@ -4339,7 +4339,7 @@ check_array_ref (tree ref, location_t* locus, bool ignore_off_by_one)
 
   low_sub = up_sub = TREE_OPERAND (ref, 1);
 
-  if (!up_bound || !locus || TREE_NO_WARNING (ref)
+  if (!up_bound || TREE_NO_WARNING (ref)
       || TREE_CODE (up_bound) != INTEGER_CST
       /* Can not check flexible arrays.  */
       || (TYPE_SIZE (TREE_TYPE (ref)) == NULL_TREE
@@ -4440,6 +4440,12 @@ check_array_bounds (tree *tp, int *walk_subtree, void *data)
   tree t = *tp;
   tree stmt = (tree)data;
   location_t *location = EXPR_LOCUS (stmt);
+
+  if (!EXPR_HAS_LOCATION (stmt))
+    {
+      *walk_subtree = FALSE;
+      return NULL_TREE;
+    }
 
   *walk_subtree = TRUE;
 
