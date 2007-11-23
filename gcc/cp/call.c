@@ -4420,7 +4420,14 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	 about to bind it to a reference, in which case we need to
 	 leave it as an lvalue.  */
       if (inner >= 0)
-	expr = decl_constant_value (expr);
+        {   
+          expr = decl_constant_value (expr);
+          if (expr == null_node && INTEGRAL_TYPE_P (totype))
+            /* If __null has been converted to an integer type, we do not
+               want to warn about uses of EXPR as an integer, rather than
+               as a pointer.  */
+            expr = build_int_cst (totype, 0);
+        }
       return expr;
     case ck_ambig:
       /* Call build_user_type_conversion again for the error.  */
