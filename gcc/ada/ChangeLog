@@ -44,7 +44,7 @@
 
 2007-11-14  Samuel Tardieu  <sam@rfc1149.net>
 
-	* adaint.c init.c initialize.c link.c: Remove system-specific
+	* adaint.c, init.c, initialize.c, link.c: Remove system-specific
 	sections of non-supported Interix target.
 
 	* s-osinte-interix.ads: Removed.
