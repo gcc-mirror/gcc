@@ -1,5 +1,16 @@
 2007-11-23  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/std/bitset (bitset<>::all): Add, per DR 693 [Ready].
+	(_Base_bitset<>::_M_are_all_aux()): Add.
+	* include/debug/bitset (bitset<>::all): Add.
+	* testsuite/23_containers/bitset/all/1.cc: New.
+	* docs/html/ext/howto.html: Add an entry for DR 693.
+	
+	* include/std/bitset (bitset<0>::set, reset, flip, test): Remove,
+	not necessary anymore.
+
+2007-11-23  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/stl_list.h (insert(iterator, value_type&&)): Just
 	forward to emplace.
 	* include/bits/stl_vector.h (insert(iterator, value_type&&)): Likewise.

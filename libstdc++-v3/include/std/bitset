@@ -170,21 +170,27 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       _M_is_equal(const _Base_bitset<_Nw>& __x) const
       {
 	for (size_t __i = 0; __i < _Nw; ++__i)
-	  {
-	    if (_M_w[__i] != __x._M_w[__i])
-	      return false;
-	  }
+	  if (_M_w[__i] != __x._M_w[__i])
+	    return false;
 	return true;
+      }
+
+      size_t
+      _M_are_all_aux() const
+      {
+	for (size_t __i = 0; __i < _Nw - 1; __i++)
+	  if (_M_w[__i] != ~static_cast<_WordT>(0))
+	    return 0;
+	return ((_Nw - 1) * _GLIBCXX_BITSET_BITS_PER_WORD
+		+ __builtin_popcountl(_M_hiword()));
       }
 
       bool
       _M_is_any() const
       {
 	for (size_t __i = 0; __i < _Nw; __i++)
-	  {
-	    if (_M_w[__i] != static_cast<_WordT>(0))
-	      return true;
-	  }
+	  if (_M_w[__i] != static_cast<_WordT>(0))
+	    return true;
 	return false;
       }
 
@@ -412,6 +418,10 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       _M_is_equal(const _Base_bitset<1>& __x) const
       { return _M_w == __x._M_w; }
 
+      size_t
+      _M_are_all_aux() const
+      { return __builtin_popcountl(_M_w); }
+
       bool
       _M_is_any() const
       { return _M_w != 0; }
@@ -539,6 +549,10 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       bool
       _M_is_equal(const _Base_bitset<0>&) const
       { return true; }
+
+      size_t
+      _M_are_all_aux() const
+      { return 0; }
 
       bool
       _M_is_any() const
@@ -1089,7 +1103,17 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	  __throw_out_of_range(__N("bitset::test"));
 	return _Unchecked_test(__position);
       }
-      
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 693. std::bitset::all() missing.
+      /**
+       *  @brief Tests whether all the bits are on.
+       *  @return  True if all the bits are set.
+       */
+      bool
+      all() const
+      { return this->_M_are_all_aux() == _Nb; }
+
       /**
        *  @brief Tests whether any of the bits are on.
        *  @return  True if at least one bit is set.
@@ -1297,44 +1321,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       std::basic_string<_CharT, _Traits> __tmp;
       __x._M_copy_to_string(__tmp);
       return __os << __tmp;
-    }
-
-  // Specializations for zero-sized bitsets, to avoid "unsigned comparison
-  // with zero" warnings.
-  template<>
-    inline bitset<0>&
-    bitset<0>::
-    set(size_t, bool)
-    {
-      __throw_out_of_range(__N("bitset::set"));
-      return *this;
-    }
-      
-  template<>
-    inline bitset<0>&
-    bitset<0>::
-    reset(size_t)
-    {
-      __throw_out_of_range(__N("bitset::reset"));
-      return *this;
-    }
-      
-  template<>
-    inline bitset<0>&
-    bitset<0>::
-    flip(size_t)
-    {
-      __throw_out_of_range(__N("bitset::flip"));
-      return *this;
-    }
-      
-  template<>
-    inline bool
-    bitset<0>::
-    test(size_t) const
-    {
-      __throw_out_of_range(__N("bitset::test"));
-      return false;
     }
   //@}
 
