@@ -1,7 +1,6 @@
 // Debugging bitset implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005
-// Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -279,6 +278,7 @@ namespace __debug
       { return _M_base() != __rhs; }
 
       using _Base::test;
+      using _Base::all;
       using _Base::any;
       using _Base::none;
 
