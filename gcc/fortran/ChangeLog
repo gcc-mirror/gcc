@@ -1,3 +1,8 @@
+2007-11-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	* trans-expr.c (gfc_trans_string_copy): Use "void *" when building a
+	memset.
+		
 2007-11-22  Tobias Burnus  <burnus@net-b.de>
 
 	* primary.c (gfc_match_structure_constructor): Allow
