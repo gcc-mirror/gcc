@@ -774,7 +774,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  used the user should consider using std::list.
        */
       iterator
-      insert(iterator __position, value_type&& __x);
+      insert(iterator __position, value_type&& __x)
+      { return emplace(__position, std::move(__x)); }
 #endif
 
       /**

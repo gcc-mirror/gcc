@@ -349,19 +349,7 @@ namespace __debug
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       iterator
       insert(iterator __position, _Tp&& __x)
-      {
-	__glibcxx_check_insert(__position);
-	bool __realloc = _M_requires_reallocation(this->size() + 1);
-	difference_type __offset = __position - begin();
-	typename _Base::iterator __res = _Base::insert(__position.base(),
-						       std::move(__x));
-	if (__realloc)
-	  this->_M_invalidate_all();
-	else
-	  this->_M_invalidate_if(_After_nth(__offset, _M_base().begin()));
-	_M_update_guaranteed_capacity();
-	return iterator(__res, this);
-      }
+      { return emplace(__position, std::move(__x)); }
 #endif
 
       void

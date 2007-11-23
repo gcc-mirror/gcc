@@ -115,25 +115,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       return iterator(this->_M_impl._M_start + __n);
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-  template<typename _Tp, typename _Alloc>
-    typename vector<_Tp, _Alloc>::iterator
-    vector<_Tp, _Alloc>::
-    insert(iterator __position, value_type&& __x)
-    {
-      const size_type __n = __position - begin();
-      if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage
-	  && __position == end())
-	{
-	  this->_M_impl.construct(this->_M_impl._M_finish, std::move(__x));
-	  ++this->_M_impl._M_finish;
-	}
-      else
-        _M_insert_aux(__position, std::move(__x));
-      return iterator(this->_M_impl._M_start + __n);
-    }
-#endif
-
   template<typename _Tp, typename _Alloc>
     typename vector<_Tp, _Alloc>::iterator
     vector<_Tp, _Alloc>::

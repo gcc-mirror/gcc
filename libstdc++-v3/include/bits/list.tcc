@@ -103,18 +103,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       return iterator(__tmp);
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-  template<typename _Tp, typename _Alloc>
-    typename list<_Tp, _Alloc>::iterator
-    list<_Tp, _Alloc>::
-    insert(iterator __position, value_type&& __x)
-    {
-      _Node* __tmp = _M_create_node(std::move(__x));
-      __tmp->hook(__position._M_node);
-      return iterator(__tmp);
-    }
-#endif
-
   template<typename _Tp, typename _Alloc>
     typename list<_Tp, _Alloc>::iterator
     list<_Tp, _Alloc>::
