@@ -1,3 +1,10 @@
+2007-11-23  Tobias Burnus  <burnus@net-b.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/34192
+	* simplify.c (gfc_simplify_nearest): Fix NEAREST for
+	subnormal numbers.
+
 2007-11-23  Aldy Hernandez  <aldyh@redhat.com>
 
 	* trans-expr.c (gfc_trans_string_copy): Use "void *" when building a
