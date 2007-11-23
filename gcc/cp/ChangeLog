@@ -1,3 +1,10 @@
+2007-11-23  Mark Mitchell  <mark@codesourcery.com>
+	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+	
+	PR c++/5310
+	* call.c (convert_like_real): Build a zero constant when __null is
+	converted to an integer type.
+	
 2007-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34094
