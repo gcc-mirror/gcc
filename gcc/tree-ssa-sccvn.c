@@ -655,6 +655,9 @@ vn_reference_lookup (tree op, VEC (tree, gc) *vuses)
   vr1.hashcode = vn_reference_compute_hash (&vr1);
   slot = htab_find_slot_with_hash (current_info->references, &vr1, vr1.hashcode,
 				   NO_INSERT);
+  if (!slot && current_info == optimistic_info)
+    slot = htab_find_slot_with_hash (valid_info->references, &vr1, vr1.hashcode,
+				     NO_INSERT);
   if (!slot)
     return NULL_TREE;
 
@@ -742,6 +745,9 @@ vn_unary_op_lookup (tree op)
   vuo1.hashcode = vn_unary_op_compute_hash (&vuo1);
   slot = htab_find_slot_with_hash (current_info->unary, &vuo1, vuo1.hashcode,
 				   NO_INSERT);
+  if (!slot && current_info == optimistic_info)
+    slot = htab_find_slot_with_hash (valid_info->unary, &vuo1, vuo1.hashcode,
+				     NO_INSERT);
   if (!slot)
     return NULL_TREE;
   return ((vn_unary_op_t)*slot)->result;
@@ -834,6 +840,9 @@ vn_binary_op_lookup (tree op)
   vbo1.hashcode = vn_binary_op_compute_hash (&vbo1);
   slot = htab_find_slot_with_hash (current_info->binary, &vbo1, vbo1.hashcode,
 				   NO_INSERT);
+  if (!slot && current_info == optimistic_info)
+    slot = htab_find_slot_with_hash (valid_info->binary, &vbo1, vbo1.hashcode,
+				     NO_INSERT);
   if (!slot)
     return NULL_TREE;
   return ((vn_binary_op_t)*slot)->result;
@@ -960,6 +969,9 @@ vn_phi_lookup (tree phi)
   vp1.hashcode = vn_phi_compute_hash (&vp1);
   slot = htab_find_slot_with_hash (current_info->phis, &vp1, vp1.hashcode,
 				   NO_INSERT);
+  if (!slot && current_info == optimistic_info)
+    slot = htab_find_slot_with_hash (valid_info->phis, &vp1, vp1.hashcode,
+				     NO_INSERT);
   if (!slot)
     return NULL_TREE;
   return ((vn_phi_t)*slot)->result;
@@ -1799,6 +1811,14 @@ process_scc (VEC (tree, heap) *scc)
 	{
 	  changed = false;
 	  iterations++;
+	  htab_empty (optimistic_info->unary);
+	  htab_empty (optimistic_info->binary);
+	  htab_empty (optimistic_info->phis);
+	  htab_empty (optimistic_info->references);
+	  empty_alloc_pool (optimistic_info->unary_op_pool);
+	  empty_alloc_pool (optimistic_info->binary_op_pool);
+	  empty_alloc_pool (optimistic_info->phis_pool);
+	  empty_alloc_pool (optimistic_info->references_pool);
 	  for (i = 0; VEC_iterate (tree, scc, i, var); i++)
 	    changed |= visit_use (var);
 	}
