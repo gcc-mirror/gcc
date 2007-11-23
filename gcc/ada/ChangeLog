@@ -1,3 +1,9 @@
+2007-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (ceil_alignment): New function.
+	(gnat_to_gnu_entity): Use it to set the alignment on atomic types.
+	(make_packable_type): Likewise.
+
 2007-11-22  Olivier Hainque  <hainque@adacore.com>
 
 	* trans.c (gnat_to_gnu) <case N_Free_Statement>: Reformat lines
