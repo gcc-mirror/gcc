@@ -1,3 +1,8 @@
+2007-11-23  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Adjust makeinfo version check.
+	* configure: Regenerate.
+
 2007-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/34020
