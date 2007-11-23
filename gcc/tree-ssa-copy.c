@@ -129,8 +129,6 @@ may_propagate_copy (tree dest, tree orig)
       tree mt_orig = symbol_mem_tag (SSA_NAME_VAR (orig));
       if (mt_dest && mt_orig && mt_dest != mt_orig)
 	return false;
-      else if (!useless_type_conversion_p (type_d, type_o))
-	return false;
       else if (get_alias_set (TREE_TYPE (type_d)) != 
 	       get_alias_set (TREE_TYPE (type_o)))
 	return false;
@@ -217,30 +215,12 @@ merge_alias_info (tree orig_name, tree new_name)
       return;
     }
 
-  gcc_assert (POINTER_TYPE_P (TREE_TYPE (orig_name)));
-  gcc_assert (POINTER_TYPE_P (TREE_TYPE (new_name)));
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (orig_name))
+	      && POINTER_TYPE_P (TREE_TYPE (new_name)));
 
 #if defined ENABLE_CHECKING
   gcc_assert (useless_type_conversion_p (TREE_TYPE (orig_name),
 					TREE_TYPE (new_name)));
-
-  /* If the pointed-to alias sets are different, these two pointers
-     would never have the same memory tag.  In this case, NEW should
-     not have been propagated into ORIG.  */
-  gcc_assert (get_alias_set (TREE_TYPE (TREE_TYPE (new_sym)))
-	      == get_alias_set (TREE_TYPE (TREE_TYPE (orig_sym))));
-#endif
-
-  /* Synchronize the symbol tags.  If both pointers had a tag and they
-     are different, then something has gone wrong.  Symbol tags can
-     always be merged because they are flow insensitive, all the SSA
-     names of the same base DECL share the same symbol tag.  */
-  if (new_ann->symbol_mem_tag == NULL_TREE)
-    new_ann->symbol_mem_tag = orig_ann->symbol_mem_tag;
-  else if (orig_ann->symbol_mem_tag == NULL_TREE)
-    orig_ann->symbol_mem_tag = new_ann->symbol_mem_tag;
-  else
-    gcc_assert (new_ann->symbol_mem_tag == orig_ann->symbol_mem_tag);
 
   /* Check that flow-sensitive information is compatible.  Notice that
      we may not merge flow-sensitive information here.  This function
@@ -257,7 +237,11 @@ merge_alias_info (tree orig_name, tree new_name)
 
      Since we cannot distinguish one case from another in this
      function, we can only make sure that if P_i and Q_j have
-     flow-sensitive information, they should be compatible.  */
+     flow-sensitive information, they should be compatible.
+
+     As callers of merge_alias_info are supposed to call may_propagate_copy
+     first, the following check is redundant.  Thus, only do it if checking
+     is enabled.  */
   if (SSA_NAME_PTR_INFO (orig_name) && SSA_NAME_PTR_INFO (new_name))
     {
       struct ptr_info_def *orig_ptr_info = SSA_NAME_PTR_INFO (orig_name);
@@ -278,7 +262,33 @@ merge_alias_info (tree orig_name, tree new_name)
 	gcc_assert (bitmap_intersect_p (new_ptr_info->pt_vars,
 					orig_ptr_info->pt_vars));
     }
-}   
+#endif
+
+  /* Synchronize the symbol tags.  If both pointers had a tag and they
+     are different, then something has gone wrong.  Symbol tags can
+     always be merged because they are flow insensitive, all the SSA
+     names of the same base DECL share the same symbol tag.  */
+  if (new_ann->symbol_mem_tag == NULL_TREE)
+    new_ann->symbol_mem_tag = orig_ann->symbol_mem_tag;
+  else if (orig_ann->symbol_mem_tag == NULL_TREE)
+    orig_ann->symbol_mem_tag = new_ann->symbol_mem_tag;
+  else
+    gcc_assert (new_ann->symbol_mem_tag == orig_ann->symbol_mem_tag);
+
+  /* Copy flow-sensitive alias information in case that NEW_NAME
+     didn't get a NMT but was set to pt_anything for optimization
+     purposes.  In case ORIG_NAME has a NMT we can safely use its
+     flow-sensitive alias information as a conservative estimate.  */
+  if (SSA_NAME_PTR_INFO (orig_name)
+      && SSA_NAME_PTR_INFO (orig_name)->name_mem_tag
+      && (!SSA_NAME_PTR_INFO (new_name)
+	  || !SSA_NAME_PTR_INFO (new_name)->name_mem_tag))
+    {
+      struct ptr_info_def *orig_ptr_info = SSA_NAME_PTR_INFO (orig_name);
+      struct ptr_info_def *new_ptr_info = get_ptr_info (new_name);
+      memcpy (new_ptr_info, orig_ptr_info, sizeof (struct ptr_info_def));
+    }
+}
 
 
 /* Common code for propagate_value and replace_exp.
