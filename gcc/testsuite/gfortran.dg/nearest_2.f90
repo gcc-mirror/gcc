@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-fno-range-check" }
 !
 ! PR fortran/34192
 !
@@ -76,6 +77,15 @@ program test
       /= 42.0) &
     call abort()
 
+  ! INF+ = INF
+  if (nearest(1.0/0.0, 1.0) /= 1.0/0.0) call abort()
+  ! -INF- = -INF
+  if (nearest(-1.0/0.0, -1.0) /= -1.0/0.0) call abort()
+  ! NAN- = NAN
+  if (.not.isnan(nearest(0.0d0/0.0,  1.0))) call abort()
+  ! NAN+ = NAN
+  if (.not.isnan(nearest(0.0d0/0.0, -1.0))) call abort()
+
 ! Double precision
 
   ! 0+ > 0
@@ -144,4 +154,13 @@ program test
   if (nearest(nearest(42.0d0, 1.0), -1.0) &
       /= 42.0d0) &
     call abort()
+
+  ! INF+ = INF
+  if (nearest(1.0d0/0.0d0, 1.0) /= 1.0d0/0.0d0) call abort()
+  ! -INF- = -INF
+  if (nearest(-1.0d0/0.0d0, -1.0) /= -1.0d0/0.0d0) call abort()
+  ! NAN- = NAN
+  if (.not.isnan(nearest(0.0d0/0.0,  1.0))) call abort()
+  ! NAN+ = NAN
+  if (.not.isnan(nearest(0.0d0/0.0, -1.0))) call abort()
 end program test
