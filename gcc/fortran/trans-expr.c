@@ -146,7 +146,7 @@ gfc_conv_expr_present (gfc_symbol * sym)
 /* Converts a missing, dummy argument into a null or zero.  */
 
 void
-gfc_conv_missing_dummy (gfc_se * se, gfc_expr * arg, gfc_typespec ts)
+gfc_conv_missing_dummy (gfc_se * se, gfc_expr * arg, gfc_typespec ts, int kind)
 {
   tree present;
   tree tmp;
@@ -154,9 +154,16 @@ gfc_conv_missing_dummy (gfc_se * se, gfc_expr * arg, gfc_typespec ts)
   present = gfc_conv_expr_present (arg->symtree->n.sym);
 
   tmp = build3 (COND_EXPR, TREE_TYPE (se->expr), present, se->expr,
-		fold_convert (TREE_TYPE (se->expr), integer_zero_node));
-
+		  fold_convert (TREE_TYPE (se->expr), integer_zero_node));
   tmp = gfc_evaluate_now (tmp, &se->pre);
+
+  if (kind > 0)
+    {
+      tmp = gfc_get_int_type (kind);
+      tmp = fold_convert (tmp, se->expr);
+      tmp = gfc_evaluate_now (tmp, &se->pre); 
+    }
+
   se->expr = tmp;
 
   if (ts.type == BT_CHARACTER)
@@ -2324,7 +2331,8 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	     check its presence and substitute a null if absent.  */
 	  if (e->expr_type == EXPR_VARIABLE
 	      && e->symtree->n.sym->attr.optional)
-	    gfc_conv_missing_dummy (&parmse, e, fsym ? fsym->ts : e->ts);
+	    gfc_conv_missing_dummy (&parmse, e, fsym ? fsym->ts : e->ts,
+				    e->representation.length);
 	}
 
       if (fsym && e)

@@ -1,3 +1,23 @@
+2007-11-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/34209
+	* iresolve.c (gfc_resolve_nearest): If sign variable kind does not match
+	kind of input variable, convert it to match.
+
+	PR fortran/33317
+	* trans.h: Modify prototype for gfc_conv_missing_dummy.
+	* trans-expr.c (gfc_conv_missing_dummy): Modify to pass an integer kind
+	parameter in.  Set the type of the dummy to the kind given.
+	(gfc_conv_function_call): Pass representation.length to
+	gfc_conv_missing_dummy.
+	* iresolve.c (gfc_resolve_cshift): Determine the correct kind to use and
+	if appropriate set representation.length to this kind value.
+	(gfc_resolve_eoshift): Likewise.
+	* check.c (gfc_check_cshift): Enable dim_check to allow DIM as an
+	optional argument. (gfc_check_eoshift): Likewise.
+	* trans_intrinsic.c (gfc_conv_intrinsic_function_args): Update call to
+	gfc_conv_missing_dummy.
+
 2007-11-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34187
