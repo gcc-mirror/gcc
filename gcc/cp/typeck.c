@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 
 static tree pfn_from_ptrmemfunc (tree);
+static tree delta_from_ptrmemfunc (tree);
 static tree convert_for_assignment (tree, tree, const char *, tree, int);
 static tree cp_pointer_int_sum (enum tree_code, tree, tree);
 static tree rationalize_conditional_expr (enum tree_code, tree);
@@ -2586,7 +2587,7 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function)
 
       /* Start by extracting all the information from the PMF itself.  */
       e3 = pfn_from_ptrmemfunc (function);
-      delta = build_ptrmemfunc_access_expr (function, delta_identifier);
+      delta = delta_from_ptrmemfunc (function);
       idx = build1 (NOP_EXPR, vtable_index_type, e3);
       switch (TARGET_PTRMEMFUNC_VBIT_LOCATION)
 	{
@@ -3370,8 +3371,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	      == ptrmemfunc_vbit_in_delta)
 	    {
 	      tree pfn0 = pfn_from_ptrmemfunc (op0);
-	      tree delta0 = build_ptrmemfunc_access_expr (op0,
-			 	 			  delta_identifier);
+	      tree delta0 = delta_from_ptrmemfunc (op0);
 	      tree e1 = cp_build_binary_op (EQ_EXPR,
 	  			            pfn0,	
 				      	    fold_convert (TREE_TYPE (pfn0),
@@ -3412,10 +3412,8 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 
 	  pfn0 = pfn_from_ptrmemfunc (op0);
 	  pfn1 = pfn_from_ptrmemfunc (op1);
-	  delta0 = build_ptrmemfunc_access_expr (op0,
-						 delta_identifier);
-	  delta1 = build_ptrmemfunc_access_expr (op1,
-						 delta_identifier);
+	  delta0 = delta_from_ptrmemfunc (op0);
+	  delta1 = delta_from_ptrmemfunc (op1);
 	  if (TARGET_PTRMEMFUNC_VBIT_LOCATION
 	      == ptrmemfunc_vbit_in_delta)
 	    {
@@ -6288,6 +6286,25 @@ pfn_from_ptrmemfunc (tree t)
     }
 
   return build_ptrmemfunc_access_expr (t, pfn_identifier);
+}
+
+/* Return an expression for DELTA from the pointer-to-member function
+   given by T.  */
+
+static tree
+delta_from_ptrmemfunc (tree t)
+{
+  if (TREE_CODE (t) == PTRMEM_CST)
+    {
+      tree delta;
+      tree pfn;
+
+      expand_ptrmemfunc_cst (t, &delta, &pfn);
+      if (delta)
+	return delta;
+    }
+
+  return build_ptrmemfunc_access_expr (t, delta_identifier);
 }
 
 /* Convert value RHS to type TYPE as preparation for an assignment to
