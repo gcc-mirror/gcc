@@ -35,7 +35,7 @@
 
        use mod2
        use mod0, only: w=>foo
-       FOO = (0.0d0, 1.0d0)
+       w = (0.0d0, 1.0d0)  ! Was foo but this is forbidden (11.3.2)
        KANGA = (0.0d0, -1.0d0)
        ROBIN = (99.0d0, 99.0d0)
        call eyeore ()

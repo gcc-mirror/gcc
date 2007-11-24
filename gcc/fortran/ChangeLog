@@ -1,3 +1,15 @@
+2007-11-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/33541
+	* module.c (find_symtree_for_symbol): Move to new location.
+	(find_symbol): New function.
+	(load_generic_interfaces): Rework completely so that symtrees
+	have the local name and symbols have the use name.  Renamed
+	generic interfaces exclude the use of the interface without an
+	ONLY clause (11.3.2).
+	(read_module): Implement 11.3.2 in the same way as for generic
+	interfaces.
+
 2007-11-23 Christopher D. Rickett <crickett@lanl.gov>
 
 	* trans-common.c (build_common_decl): Fix the alignment for
