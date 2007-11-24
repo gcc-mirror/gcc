@@ -1,5 +1,15 @@
 2007-11-23  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/34209
+	* gfortran.dg/nearest_3.f90: New test.
+
+2007-11-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/33317
+	* gfortran.dg/optional_dim_2.f90: New test.
+
+2007-11-23  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/34187
 	* gfortran.dg/bind_c_usage_15.f90: New.
 
