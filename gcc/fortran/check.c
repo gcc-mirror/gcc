@@ -863,8 +863,7 @@ gfc_check_cshift (gfc_expr *array, gfc_expr *shift, gfc_expr *dim)
       /* TODO: more requirements on shift parameter.  */
     }
 
-  /* FIXME (PR33317): Allow optional DIM=.  */
-  if (dim_check (dim, 2, false) == FAILURE)
+  if (dim_check (dim, 2, true) == FAILURE)
     return FAILURE;
 
   return SUCCESS;
@@ -1033,8 +1032,7 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
       /* TODO: more restrictions on boundary.  */
     }
 
-  /* FIXME (PR33317): Allow optional DIM=.  */
-  if (dim_check (dim, 4, false) == FAILURE)
+  if (dim_check (dim, 4, true) == FAILURE)
     return FAILURE;
 
   return SUCCESS;
