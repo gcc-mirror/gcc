@@ -1,4 +1,12 @@
 2007-11-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34187
+	* module.c (load_needed): Ensure binding_label is not lost.
+
+	* decl.c (set_binding_label,gfc_match_bind_c): Replace
+	strncpy by strcpy.
+
+2007-11-23  Tobias Burnus  <burnus@net-b.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/34192

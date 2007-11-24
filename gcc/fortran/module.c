@@ -3419,6 +3419,7 @@ load_needed (pointer_info *p)
 
       sym = gfc_new_symbol (p->u.rsym.true_name, ns);
       sym->module = gfc_get_string (p->u.rsym.module);
+      strcpy (sym->binding_label, p->u.rsym.binding_label);
 
       associate_integer_pointer (p, sym);
     }
