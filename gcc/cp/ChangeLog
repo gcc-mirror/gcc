@@ -1,3 +1,9 @@
+2007-11-24  Ollie Wild  <aaw@google.com>
+
+	* typeck.c (delta_from_ptrmemfunc): New function.
+	(get_member_function_from_ptrfunc): Call delta_from_ptrmemfunc.
+	(build_binary_op): Call delta_from_ptrmemfunc.
+
 2007-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/30293
