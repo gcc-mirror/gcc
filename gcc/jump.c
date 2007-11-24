@@ -1051,6 +1051,9 @@ mark_jump_label_1 (rtx x, rtx insn, bool in_mem, bool is_target)
 	if (insn)
 	  {
 	    if (is_target
+		/* Do not change a previous setting of JUMP_LABEL.  If the
+		   JUMP_LABEL slot is occupied by a different label,
+		   create a note for this label.  */
 		&& (JUMP_LABEL (insn) == NULL || JUMP_LABEL (insn) == label))
 	      JUMP_LABEL (insn) = label;
 	    else

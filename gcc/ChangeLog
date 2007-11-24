@@ -1,3 +1,18 @@
+2007-11-24  Hans-Peter Nilsson  <hp@axis.com>
+
+	* rtlanal.c (label_is_jump_target_p): Return true for a matching
+	REG_LABEL_TARGET.
+	* reorg.c (fill_slots_from_thread): Correct last change to use
+	NULL_RTX, not NULL.  Outside of REG_NOTES loop, increase and
+	decrease LABEL_NUSES for JUMP_LABEL (trial), not XEXP (note, 0).
+	* jump.c (mark_jump_label_1): Add comment for last change
+	regarding JUMP_LABEL setting.
+	* gcse.c (add_label_notes): Remove conditional that the label is
+	mentioned in insn before adding regnote.
+	* sched-rgn.c (is_cfg_nonregular): Don't return 1 for a
+	single_set insn only feeding a label to a jump through a
+	register that dies there.
+
 2007-11-23  Dirk Mueller  <dmueller@suse.de>
 	Richard Guenther <rguenther@suse.de>
 

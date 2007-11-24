@@ -2740,7 +2740,7 @@ fill_slots_from_thread (rtx insn, rtx condition, rtx thread,
 			 temporarily increment the use count on any referenced
 			 label lest it be deleted by delete_related_insns.  */
 		      for (note = REG_NOTES (trial);
-			   note != NULL;
+			   note != NULL_RTX;
 			   note = XEXP (note, 1))
 			if (REG_NOTE_KIND (note) == REG_LABEL_OPERAND
 			    || REG_NOTE_KIND (note) == REG_LABEL_TARGET)
@@ -2754,12 +2754,12 @@ fill_slots_from_thread (rtx insn, rtx condition, rtx thread,
 					  == REG_LABEL_OPERAND);
 			  }
 		      if (JUMP_P (trial) && JUMP_LABEL (trial))
-			LABEL_NUSES (XEXP (note, 0))++;
+			LABEL_NUSES (JUMP_LABEL (trial))++;
 
 		      delete_related_insns (trial);
 
 		      for (note = REG_NOTES (trial);
-			   note != NULL;
+			   note != NULL_RTX;
 			   note = XEXP (note, 1))
 			if (REG_NOTE_KIND (note) == REG_LABEL_OPERAND
 			    || REG_NOTE_KIND (note) == REG_LABEL_TARGET)
@@ -2773,7 +2773,7 @@ fill_slots_from_thread (rtx insn, rtx condition, rtx thread,
 					  == REG_LABEL_OPERAND);
 			  }
 		      if (JUMP_P (trial) && JUMP_LABEL (trial))
-			LABEL_NUSES (XEXP (note, 0))--;
+			LABEL_NUSES (JUMP_LABEL (trial))--;
 		    }
 		  else
 		    new_thread = next_active_insn (trial);
