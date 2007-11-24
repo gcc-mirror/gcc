@@ -3434,6 +3434,9 @@ label_is_jump_target_p (const_rtx label, const_rtx jump_insn)
 	  return true;
     }
 
+  if (find_reg_note (jump_insn, REG_LABEL_TARGET, label))
+    return true;
+
   return false;
 }
 

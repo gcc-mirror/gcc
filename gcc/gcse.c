@@ -4614,18 +4614,16 @@ add_label_notes (rtx x, rtx insn)
 	 We no longer ignore such label references (see LABEL_REF handling in
 	 mark_jump_label for additional information).  */
 
-	if (reg_mentioned_p (XEXP (x, 0), insn))
-	  {
-	    /* There's no reason for current users to emit jump-insns
-	       with such a LABEL_REF, so we don't have to handle
-	       REG_LABEL_TARGET notes.  */
-	    gcc_assert (!JUMP_P (insn));
-	    REG_NOTES (insn)
-	      = gen_rtx_INSN_LIST (REG_LABEL_OPERAND, XEXP (x, 0),
-				   REG_NOTES (insn));
-	    if (LABEL_P (XEXP (x, 0)))
-	      LABEL_NUSES (XEXP (x, 0))++;
-	  }
+      /* There's no reason for current users to emit jump-insns with
+	 such a LABEL_REF, so we don't have to handle REG_LABEL_TARGET
+	 notes.  */
+      gcc_assert (!JUMP_P (insn));
+      REG_NOTES (insn)
+	= gen_rtx_INSN_LIST (REG_LABEL_OPERAND, XEXP (x, 0),
+			     REG_NOTES (insn));
+      if (LABEL_P (XEXP (x, 0)))
+	LABEL_NUSES (XEXP (x, 0))++;
+
       return;
     }
 
