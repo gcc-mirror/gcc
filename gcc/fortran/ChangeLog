@@ -1,3 +1,8 @@
+2007-11-23 Christopher D. Rickett <crickett@lanl.gov>
+
+	* trans-common.c (build_common_decl): Fix the alignment for
+	BIND(C) common blocks.
+
 2007-11-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/34209

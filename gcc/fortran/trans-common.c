@@ -407,7 +407,20 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
       SET_DECL_ASSEMBLER_NAME (decl, gfc_sym_mangled_common_id (com));
       TREE_PUBLIC (decl) = 1;
       TREE_STATIC (decl) = 1;
-      DECL_ALIGN (decl) = BIGGEST_ALIGNMENT;
+      if (!com->is_bind_c)
+	DECL_ALIGN (decl) = BIGGEST_ALIGNMENT;
+      else
+        {
+	  /* Do not set the alignment for bind(c) common blocks to
+	     BIGGEST_ALIGNMENT because that won't match what C does.  Also,
+	     for common blocks with one element, the alignment must be
+	     that of the field within the common block in order to match
+	     what C will do.  */
+	  tree field = NULL_TREE;
+	  field = TYPE_FIELDS (TREE_TYPE (decl));
+	  if (TREE_CHAIN (field) == NULL_TREE)
+	    DECL_ALIGN (decl) = TYPE_ALIGN (TREE_TYPE (field));
+	}
       DECL_USER_ALIGN (decl) = 0;
       GFC_DECL_COMMON_OR_EQUIV (decl) = 1;
 
