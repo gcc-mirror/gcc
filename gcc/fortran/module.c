@@ -3104,6 +3104,63 @@ mio_symbol (gfc_symbol *sym)
 
 /************************* Top level subroutines *************************/
 
+/* Given a root symtree node and a symbol, try to find a symtree that
+   references the symbol that is not a unique name.  */
+
+static gfc_symtree *
+find_symtree_for_symbol (gfc_symtree *st, gfc_symbol *sym)
+{
+  gfc_symtree *s = NULL;
+
+  if (st == NULL)
+    return s;
+
+  s = find_symtree_for_symbol (st->right, sym);
+  if (s != NULL)
+    return s;
+  s = find_symtree_for_symbol (st->left, sym);
+  if (s != NULL)
+    return s;
+
+  if (st->n.sym == sym && !check_unique_name (st->name))
+    return st;
+
+  return s;
+}
+
+
+/* A recursive function to look for a speficic symbol by name and by
+   module.  Whilst several symtrees might point to one symbol, its
+   is sufficient for the purposes here than one exist.  Note that
+   generic interfaces are distinguished.  */
+static gfc_symtree *
+find_symbol (gfc_symtree *st, const char *name,
+	     const char *module, int generic)
+{
+  int c;
+  gfc_symtree *retval;
+
+  if (st == NULL || st->n.sym == NULL)
+    return NULL;
+
+  c = strcmp (name, st->n.sym->name);
+  if (c == 0 && st->n.sym->module
+	     && strcmp (module, st->n.sym->module) == 0)
+    {
+      if ((!generic && !st->n.sym->attr.generic)
+	     || (generic && st->n.sym->attr.generic))
+	return st;
+    }
+
+  retval = find_symbol (st->left, name, module, generic);
+
+  if (retval == NULL)
+    retval = find_symbol (st->right, name, module, generic);
+
+  return retval;
+}
+
+
 /* Skip a list between balanced left and right parens.  */
 
 static void
@@ -3219,41 +3276,79 @@ load_generic_interfaces (void)
 
       for (i = 1; i <= n; i++)
 	{
+	  gfc_symtree *st;
 	  /* Decide if we need to load this one or not.  */
 	  p = find_use_name_n (name, &i, false);
 
-	  if (p == NULL || gfc_find_symbol (p, NULL, 0, &sym))
+	  st = find_symbol (gfc_current_ns->sym_root,
+			    name, module_name, 1);
+
+	  if (!p || gfc_find_symbol (p, NULL, 0, &sym))
 	    {
-	      while (parse_atom () != ATOM_RPAREN);
+	      /* Skip the specific names for these cases.  */
+	      while (i == 1 && parse_atom () != ATOM_RPAREN);
+
 	      continue;
 	    }
 
-	  if (sym == NULL)
-	    {
-	      gfc_get_symbol (p, NULL, &sym);
+	  /* If the symbol exists already and is being USEd without being
+	     in an ONLY clause, do not load a new symtree(11.3.2).  */
+	  if (!only_flag && st)
+	    sym = st->n.sym;
 
-	      sym->attr.flavor = FL_PROCEDURE;
-	      sym->attr.generic = 1;
-	      sym->attr.use_assoc = 1;
+	  if (!sym)
+	    {
+	      /* Make symtree inaccessible by renaming if the symbol has
+		 been added by a USE statement without an ONLY(11.3.2).  */
+	      if (st && !st->n.sym->attr.use_only && only_flag
+		     && strcmp (st->n.sym->module, module_name) == 0)
+		st->name = gfc_get_string ("hidden.%s", name);
+	      else if (st)
+		{
+		  sym = st->n.sym;
+		  if (strcmp (st->name, p) != 0)
+		    {
+	              st = gfc_new_symtree (&gfc_current_ns->sym_root, p);
+		      st->n.sym = sym;
+		      sym->refs++;
+		    }
+		}
+
+	      /* Since we haven't found a valid generic interface, we had
+		 better make one.  */
+	      if (!sym)
+		{
+		  gfc_get_symbol (p, NULL, &sym);
+		  sym->name = gfc_get_string (name);
+		  sym->module = gfc_get_string (module_name);
+		  sym->attr.flavor = FL_PROCEDURE;
+		  sym->attr.generic = 1;
+		  sym->attr.use_assoc = 1;
+		}
 	    }
 	  else
 	    {
 	      /* Unless sym is a generic interface, this reference
 		 is ambiguous.  */
-	      gfc_symtree *st;
-	      p = p ? p : name;
-	      st = gfc_find_symtree (gfc_current_ns->sym_root, p);
-	      if (!sym->attr.generic
-		  && sym->module != NULL
-		  && strcmp(module, sym->module) != 0)
+	      if (st == NULL)
+	        st = gfc_find_symtree (gfc_current_ns->sym_root, p);
+
+	      sym = st->n.sym;
+
+	      if (st && !sym->attr.generic
+		     && sym->module
+		     && strcmp(module, sym->module))
 		st->ambiguous = 1;
 	    }
+
+	  sym->attr.use_only = only_flag;
+
 	  if (i == 1)
 	    {
 	      mio_interface_rest (&sym->generic);
 	      generic = sym->generic;
 	    }
-	  else
+	  else if (!sym->generic)
 	    {
 	      sym->generic = generic;
 	      sym->attr.generic_copy = 1;
@@ -3468,31 +3563,6 @@ read_cleanup (pointer_info *p)
 }
 
 
-/* Given a root symtree node and a symbol, try to find a symtree that
-   references the symbol that is not a unique name.  */
-
-static gfc_symtree *
-find_symtree_for_symbol (gfc_symtree *st, gfc_symbol *sym)
-{
-  gfc_symtree *s = NULL;
-
-  if (st == NULL)
-    return s;
-
-  s = find_symtree_for_symbol (st->right, sym);
-  if (s != NULL)
-    return s;
-  s = find_symtree_for_symbol (st->left, sym);
-  if (s != NULL)
-    return s;
-
-  if (st->n.sym == sym && !check_unique_name (st->name))
-    return st;
-
-  return s;
-}
-
-
 /* Read a module file.  */
 
 static void
@@ -3609,13 +3679,23 @@ read_module (void)
 
 	  /* Skip symtree nodes not in an ONLY clause, unless there
 	     is an existing symtree loaded from another USE statement.  */
-	  if (p == NULL)
+	  if (p == NULL && only_flag)
 	    {
 	      st = gfc_find_symtree (gfc_current_ns->sym_root, name);
 	      if (st != NULL)
 		info->u.rsym.symtree = st;
 	      continue;
 	    }
+
+	  /* If a symbol of the same name and module exists already,
+	     this symbol, which is not in an ONLY clause, must not be
+	     added to the namespace(11.3.2).  Note that find_symbol
+	     only returns the first occurrence that it finds.  */
+	  if (!only_flag
+		&& strcmp (name, module_name) != 0
+		&& find_symbol (gfc_current_ns->sym_root, name,
+				module_name, 0))
+	    continue;
 
 	  st = gfc_find_symtree (gfc_current_ns->sym_root, p);
 
@@ -3628,6 +3708,14 @@ read_module (void)
 	    }
 	  else
 	    {
+	      st = gfc_find_symtree (gfc_current_ns->sym_root, name);
+
+	      /* Make symtree inaccessible by renaming if the symbol has
+		 been added by a USE statement without an ONLY(11.3.2).  */
+	      if (st && !st->n.sym->attr.use_only && only_flag
+		     && strcmp (st->n.sym->module, module_name) == 0)
+		st->name = gfc_get_string ("hidden.%s", name);
+
 	      /* Create a symtree node in the current namespace for this
 		 symbol.  */
 	      st = check_unique_name (p)
