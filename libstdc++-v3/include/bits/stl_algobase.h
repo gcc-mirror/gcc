@@ -166,12 +166,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 				  _ForwardIterator1>)
       __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<
 				  _ForwardIterator2>)
-      __glibcxx_function_requires(_ConvertibleConcept<
-	    typename iterator_traits<_ForwardIterator1>::value_type,
-	    typename iterator_traits<_ForwardIterator2>::value_type>)
-      __glibcxx_function_requires(_ConvertibleConcept<
-	    typename iterator_traits<_ForwardIterator2>::value_type,
-	    typename iterator_traits<_ForwardIterator1>::value_type>)
       __glibcxx_requires_valid_range(__first1, __last1);
 
       for (; __first1 != __last1; ++__first1, ++__first2)
@@ -819,26 +813,31 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     struct __lexicographical_compare
     {
       template<typename _II1, typename _II2>
-        static bool
-        __lc(_II1 __first1, _II1 __last1, _II2 __first2, _II2 __last2)
-        {
-	  typedef typename iterator_traits<_II1>::iterator_category _Category1;
-	  typedef typename iterator_traits<_II2>::iterator_category _Category2;
-	  typedef std::__lc_rai<_Category1, _Category2> 	__rai_type;
-
-	  __last1 = __rai_type::__newlast1(__first1, __last1,
-					   __first2, __last2);
-	  for (; __first1 != __last1 && __rai_type::__cnd2(__first2, __last2);
-	       ++__first1, ++__first2)
-	    {
-	      if (*__first1 < *__first2)
-		return true;
-	      if (*__first2 < *__first1)
-		return false;
-	    }
-	  return __first1 == __last1 && __first2 != __last2;
-	}
+        static bool __lc(_II1, _II1, _II2, _II2);
     };
+
+  template<bool _BoolType>
+    template<typename _II1, typename _II2>
+      bool
+      __lexicographical_compare<_BoolType>::
+      __lc(_II1 __first1, _II1 __last1, _II2 __first2, _II2 __last2)
+      {
+	typedef typename iterator_traits<_II1>::iterator_category _Category1;
+	typedef typename iterator_traits<_II2>::iterator_category _Category2;
+	typedef std::__lc_rai<_Category1, _Category2> 	__rai_type;
+	
+	__last1 = __rai_type::__newlast1(__first1, __last1,
+					 __first2, __last2);
+	for (; __first1 != __last1 && __rai_type::__cnd2(__first2, __last2);
+	     ++__first1, ++__first2)
+	  {
+	    if (*__first1 < *__first2)
+	      return true;
+	    if (*__first2 < *__first1)
+	      return false;
+	  }
+	return __first1 == __last1 && __first2 != __last2;
+      }
 
   template<>
     struct __lexicographical_compare<true>
