@@ -1,3 +1,11 @@
+2007-11-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/33152
+	* decl.c (add_init_expr_to_sym): Remove error message.
+	* resolve.c (check_data_variable): Add new check for a data variable
+	that has an array spec, but no ref and issue an error.
+	* match.c (gfc_match_common): Remove error message.
+
 2007-11-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34079
