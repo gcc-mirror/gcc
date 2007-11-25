@@ -374,6 +374,13 @@ and compile it accordingly. A @command{gfortran} driver program is also
 provided, which is identical to @command{gcc} except that it automatically
 links the Fortran runtime libraries into the compiled program.
 
+Source files with @file{.f}, @file{.for}, @file{.fpp}, @file{.ftn}, @file{.F},
+@file{.FOR}, @file{.FPP}, and @file{.FTN} extensions are treated as fixed form.
+Source files with @file{.f90}, @file{.f95}, @file{.f03}, @file{.F90}, 
+@file{.F95}, and @file{.F03} extensions are treated as free form.  The
+capitalized versions of either form are run through preprocessing. Source files
+with the lower case @file{.fpp} extension are also run through preprocessing.
+
 This manual specifically documents the Fortran front end, which handles
 the programming language's syntax and semantics.  The aspects of GCC
 which relate to the optimization passes and the back-end code generation
@@ -394,9 +401,9 @@ Fortran compiler.
 @cindex Conditional compilation
 @cindex Preprocessing
 
-Many Fortran compilers including GNU Fortran allow to pass the source code
-through a C preprocessor (CPP; sometimes also called Fortran preprocessor,
-FPP) to allow for conditional compilation. In case of GNU Fortran
+Many Fortran compilers including GNU Fortran allow passing the source code
+through a C preprocessor (CPP; sometimes also called the Fortran preprocessor,
+FPP) to allow for conditional compilation. In the case of GNU Fortran,
 this is the GNU C Preprocessor in the traditional mode. On systems with
 case-preserving file names, the preprocessor is automatically invoked if the
 file extension is @code{.F}, @code{.FOR}, @code{.FTN}, @code{.F90},
