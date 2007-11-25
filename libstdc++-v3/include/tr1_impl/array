@@ -136,15 +136,17 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 
       reference
       at(size_type __n)
-      { 
-	_M_check<_Nm>(__n);
+      {
+	if (__builtin_expect(__n >= _Nm, false))
+	  std::__throw_out_of_range(__N("array::at"));
 	return _M_instance[__n];
       }
 
       const_reference
       at(size_type __n) const
       {
-	_M_check<_Nm>(__n);
+	if (__builtin_expect(__n >= _Nm, false))
+	  std::__throw_out_of_range(__N("array::at"));
 	return _M_instance[__n];
       }
 
@@ -171,21 +173,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       const _Tp* 
       data() const
       { return &_M_instance[0]; }
-
-    private:
-      template<std::size_t _Mm>
-        typename __gnu_cxx::__enable_if<_Mm, void>::__type
-        _M_check(size_type __n) const
-        {
-	  if (__builtin_expect(__n >= _Mm, false))
-	    std::__throw_out_of_range(__N("array::_M_check"));
-	}
-
-      // Avoid "unsigned comparison with zero" warnings.
-      template<std::size_t _Mm>
-        typename __gnu_cxx::__enable_if<!_Mm, void>::__type
-        _M_check(size_type) const
-        { std::__throw_out_of_range(__N("array::_M_check")); }
     };
 
   // Array comparisons.

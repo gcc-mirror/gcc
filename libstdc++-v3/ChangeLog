@@ -1,5 +1,13 @@
 2007-11-25  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1_impl/array (array<>::_M_check): Remove, not necessary
+	anymore.
+	(array<>::at): Adjust.
+
+	* docs/html/17_intro/c++0x_status.html: Fix array::data entry.
+
+2007-11-25  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/stl_algobase.h (__lexicographical_compare<>::__lc):
 	Move out of line.
 
