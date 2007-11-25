@@ -1,3 +1,9 @@
+2007-11-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/33152
+	* gfortran.texi: Document default forms assumed for various file
+	extensions.
+
 2007-11-25  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/33499
