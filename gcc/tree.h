@@ -2060,13 +2060,14 @@ struct tree_block GTY(())
   unsigned abstract_flag : 1;
   unsigned block_num : 30;
 
+  location_t locus;
+
   tree vars;
   tree subblocks;
   tree supercontext;
   tree abstract_origin;
   tree fragment_origin;
   tree fragment_chain;
-  location_t locus;
 };
 
 /* Define fields and accessors for nodes representing data types.  */

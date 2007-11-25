@@ -1635,7 +1635,7 @@ instantiate_decls_1 (tree let)
     }
 
   /* Process all subblocks.  */
-  for (t = BLOCK_SUBBLOCKS (let); t; t = TREE_CHAIN (t))
+  for (t = BLOCK_SUBBLOCKS (let); t; t = BLOCK_CHAIN (t))
     instantiate_decls_1 (t);
 }
 
@@ -3542,7 +3542,7 @@ setjmp_vars_warning (bitmap setjmp_crosses, tree block)
                  " %<longjmp%> or %<vfork%>", decl);
     }
 
-  for (sub = BLOCK_SUBBLOCKS (block); sub; sub = TREE_CHAIN (sub))
+  for (sub = BLOCK_SUBBLOCKS (block); sub; sub = BLOCK_CHAIN (sub))
     setjmp_vars_warning (setjmp_crosses, sub);
 }
 

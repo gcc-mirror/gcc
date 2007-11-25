@@ -2441,7 +2441,7 @@ set_used_decls (tree blk)
       set_used_flags (DECL_RTL (t));
 
   /* Now process sub-blocks.  */
-  for (t = BLOCK_SUBBLOCKS (blk); t; t = TREE_CHAIN (t))
+  for (t = BLOCK_SUBBLOCKS (blk); t; t = BLOCK_CHAIN (t))
     set_used_decls (t);
 }
 
