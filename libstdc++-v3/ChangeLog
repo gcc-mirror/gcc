@@ -1,5 +1,40 @@
 2007-11-25  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1_impl/unordered_map
+	(__unordered_map<>::__unordered_map(__unordered_map&&),
+	__unordered_multimap<>::__unordered_multimap(__unordered_multimap&&),
+	unordered_map<>::unordered_map(unordered_map&&),
+	unordered_multimap<>::unordered_multimap(unordered_multimap&&),
+	unordered_map<>::operator=(unordered_map&&),
+	unordered_multimap<>::operator=(unordered_multimap&&),
+	swap(unordered_map<>&&, unordered_map<>&),
+	swap(unordered_map<>&, unordered_map<>&&),
+	swap(unordered_multimap<>&&, unordered_multimap<>&),
+	swap(unordered_multimap<>&, unordered_multimap<>&&)): Add in C++0x.
+	(swap(unordered_multimap<>&, unordered_multimap<>&),
+	swap(unordered_multimap<>&, unordered_multimap<>&)): Add.
+	* include/tr1_impl/unordered_set
+	(__unordered_set<>::__unordered_set(__unordered_set&&),
+	__unordered_multiset<>::__unordered_multiset(__unordered_multiset&&),
+	unordered_set<>::unordered_set(unordered_setp&&),
+	unordered_multiset<>::unordered_multiset(unordered_multiset&&),
+	unordered_set<>::operator=(unordered_set&&),
+	unordered_multiset<>::operator=(unordered_multiset&&),
+	swap(unordered_set<>&&, unordered_set<>&),
+	swap(unordered_set<>&, unordered_set<>&&),
+	swap(unordered_multiset<>&&, unordered_multiset<>&),
+	swap(unordered_multiset<>&, unordered_multiset<>&&)): Likewise.
+	(swap(unordered_set<>&, unordered_set<>&),
+	swap(unordered_multiset<>&, unordered_multiset<>&)): Add.
+	* include/tr1_impl/hashtable (_Hashtable<>::_Hashtable(_Hashtable&&),
+	swap(_Hashtable&&)): Add in C++0x.
+	* testsuite/23_containers/unordered_map/moveable.cc: New.
+	* testsuite/23_containers/unordered_set/moveable.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/moveable.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/moveable.cc: Likewise.
+
+2007-11-25  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1_impl/array (array<>::_M_check): Remove, not necessary
 	anymore.
 	(array<>::at): Adjust.
