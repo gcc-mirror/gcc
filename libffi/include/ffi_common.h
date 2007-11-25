@@ -1,5 +1,6 @@
 /* -----------------------------------------------------------------------
    ffi_common.h - Copyright (c) 1996  Red Hat, Inc.
+   Copyright (C) 2007 Free Software Foundation, Inc
 
    Common internal definitions and macros. Only necessary for building
    libffi.
@@ -18,7 +19,9 @@ extern "C" {
    this is positioned. */
 #ifdef __GNUC__
 # define alloca __builtin_alloca
+# define MAYBE_UNUSED __attribute__((__unused__))
 #else
+# define MAYBE_UNUSED
 # if HAVE_ALLOCA_H
 #  include <alloca.h>
 # else
