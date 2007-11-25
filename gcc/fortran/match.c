@@ -2783,21 +2783,6 @@ gfc_match_common (void)
 	      goto cleanup;
 	    }
 
-	  if (gfc_add_in_common (&sym->attr, sym->name, NULL) == FAILURE) 
-	    goto cleanup;
-
-	  if (sym->value != NULL && sym->value->expr_type != EXPR_NULL
-	      && (name[0] == '\0' || !sym->attr.data))
-	    {
-	      if (name[0] == '\0')
-		gfc_error ("Previously initialized symbol '%s' in "
-			   "blank COMMON block at %C", sym->name);
-	      else
-		gfc_error ("Previously initialized symbol '%s' in "
-			   "COMMON block '%s' at %C", sym->name, name);
-	      goto cleanup;
-	    }
-
 	  if (gfc_add_in_common (&sym->attr, sym->name, NULL) == FAILURE)
 	    goto cleanup;
 

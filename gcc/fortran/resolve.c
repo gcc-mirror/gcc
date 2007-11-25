@@ -8010,6 +8010,13 @@ check_data_variable (gfc_data_variable *var, locus *where)
 		 e->symtree->n.sym->name, &e->symtree->n.sym->declared_at);
     }
 
+  if (e->ref == NULL && e->symtree->n.sym->as)
+    {
+      gfc_error ("DATA array '%s' at %L must be specified in a previous"
+		 " declaration", e->symtree->n.sym->name, where);
+      return FAILURE;
+    }
+
   if (e->rank == 0)
     {
       mpz_init_set_ui (size, 1);
