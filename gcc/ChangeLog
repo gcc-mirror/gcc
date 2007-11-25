@@ -1,3 +1,9 @@
+2007-11-25  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* tree-sra.c (scalarize_use): Adjust the vpos argument to
+	sra_explode_bitfield_assignment in cases where the type is
+	wider than the bitfield.
+
 2007-11-25  Richard Guenther  <rguenther@suse.de>
 
 	* tree.h (struct tree_block): Move locus member next to
