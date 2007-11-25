@@ -1,3 +1,14 @@
+2007-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (gnat_to_gnu_entity) <E_Record_Type>: If the type has
+	strict alignment, no alignment clause and a known static size, cap
+	the type alignment to the greatest power of 2 factor of the size.
+	(gnat_to_gnu_field): If the field has a component clause, is aliased
+	or of a type with strict alignment, require that its size be equal to
+	that of the type.
+	(validate_size): Use the type size as the minimum size for a type with
+	strict alignment.
+
 2007-11-23  Samuel Tardieu  <sam@rfc1149.net>
 
 	* s-inmaop-posix.adb, s-intman-vxworks.adb, s-taprop-hpux-dce.adb,
