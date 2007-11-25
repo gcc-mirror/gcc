@@ -587,7 +587,7 @@ poplevel (int keep, int reverse, int functionbody)
 
   /* In each subblock, record that this is its superior.  */
   if (keep >= 0)
-    for (link = subblocks; link; link = TREE_CHAIN (link))
+    for (link = subblocks; link; link = BLOCK_CHAIN (link))
       BLOCK_SUPERCONTEXT (link) = block;
 
   /* We still support the old for-scope rules, whereby the variables

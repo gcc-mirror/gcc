@@ -298,8 +298,8 @@ gnat_pushlevel ()
   if (free_block_chain)
     {
       newlevel->block = free_block_chain;
-      free_block_chain = TREE_CHAIN (free_block_chain);
-      TREE_CHAIN (newlevel->block) = NULL_TREE;
+      free_block_chain = BLOCK_CHAIN (free_block_chain);
+      BLOCK_CHAIN (newlevel->block) = NULL_TREE;
     }
   else
     newlevel->block = make_node (BLOCK);
@@ -365,12 +365,12 @@ gnat_poplevel ()
       BLOCK_SUBBLOCKS (level->chain->block)
 	= chainon (BLOCK_SUBBLOCKS (block),
 		   BLOCK_SUBBLOCKS (level->chain->block));
-      TREE_CHAIN (block) = free_block_chain;
+      BLOCK_CHAIN (block) = free_block_chain;
       free_block_chain = block;
     }
   else
     {
-      TREE_CHAIN (block) = BLOCK_SUBBLOCKS (level->chain->block);
+      BLOCK_CHAIN (block) = BLOCK_SUBBLOCKS (level->chain->block);
       BLOCK_SUBBLOCKS (level->chain->block) = block;
       TREE_USED (block) = 1;
       set_block_for_group (block);

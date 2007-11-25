@@ -2474,7 +2474,7 @@ add_lexical_block (tree current_block, tree new_block)
   /* Walk to the last sub-block.  */
   for (blk_p = &BLOCK_SUBBLOCKS (current_block);
        *blk_p;
-       blk_p = &TREE_CHAIN (*blk_p))
+       blk_p = &BLOCK_CHAIN (*blk_p))
     ;
   *blk_p = new_block;
   BLOCK_SUPERCONTEXT (new_block) = current_block;

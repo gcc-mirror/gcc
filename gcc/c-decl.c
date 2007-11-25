@@ -375,7 +375,7 @@ static GTY((deletable)) struct c_binding *binding_freelist;
   struct c_scope *s_ = (scope);				\
   tree d_ = (decl);					\
   if (s_->list##_last)					\
-    TREE_CHAIN (s_->list##_last) = d_;			\
+    BLOCK_CHAIN (s_->list##_last) = d_;			\
   else							\
     s_->list = d_;					\
   s_->list##_last = d_;					\
@@ -386,7 +386,7 @@ static GTY((deletable)) struct c_binding *binding_freelist;
   struct c_scope *t_ = (tscope);				\
   struct c_scope *f_ = (fscope);				\
   if (t_->to##_last)						\
-    TREE_CHAIN (t_->to##_last) = f_->from;			\
+    BLOCK_CHAIN (t_->to##_last) = f_->from;			\
   else								\
     t_->to = f_->from;						\
   t_->to##_last = f_->from##_last;				\
@@ -693,7 +693,7 @@ pop_scope (void)
       TREE_USED (block) = 1;
 
       /* In each subblock, record that this is its superior.  */
-      for (p = scope->blocks; p; p = TREE_CHAIN (p))
+      for (p = scope->blocks; p; p = BLOCK_CHAIN (p))
 	BLOCK_SUPERCONTEXT (p) = block;
 
       BLOCK_VARS (block) = 0;
