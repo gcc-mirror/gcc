@@ -217,13 +217,21 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 		   const allocator_type&);
   
       _Hashtable(const _Hashtable&);
+
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+      _Hashtable(_Hashtable&&);
+#endif
       
       _Hashtable&
       operator=(const _Hashtable&);
-  
+
       ~_Hashtable();
 
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+      void swap(_Hashtable&&);
+#else
       void swap(_Hashtable&);
+#endif
 
       // Basic container operations
       iterator
@@ -641,6 +649,32 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	}
     }
 
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+  template<typename _Key, typename _Value, 
+	   typename _Allocator, typename _ExtractKey, typename _Equal,
+	   typename _H1, typename _H2, typename _Hash, typename _RehashPolicy,
+	   bool __chc, bool __cit, bool __uk>
+    _Hashtable<_Key, _Value, _Allocator, _ExtractKey, _Equal,
+	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
+    _Hashtable(_Hashtable&& __ht)
+    : __detail::_Rehash_base<_RehashPolicy, _Hashtable>(__ht),
+      __detail::_Hash_code_base<_Key, _Value, _ExtractKey, _Equal,
+				_H1, _H2, _Hash, __chc>(__ht),
+      __detail::_Map_base<_Key, _Value, _ExtractKey, __uk, _Hashtable>(__ht),
+      _M_node_allocator(__ht._M_node_allocator),
+      _M_bucket_count(__ht._M_bucket_count),
+      _M_element_count(__ht._M_element_count),
+      _M_rehash_policy(__ht._M_rehash_policy),
+      _M_buckets(__ht._M_buckets)
+    {
+      size_type __n_bkt = __ht._M_rehash_policy._M_next_bkt(0);
+      __ht._M_buckets = __ht._M_allocate_buckets(__n_bkt);
+      __ht._M_bucket_count = __n_bkt;
+      __ht._M_element_count = 0;
+      __ht._M_rehash_policy = _RehashPolicy();
+    }
+#endif
+
   template<typename _Key, typename _Value, 
 	   typename _Allocator, typename _ExtractKey, typename _Equal,
 	   typename _H1, typename _H2, typename _Hash, typename _RehashPolicy,
@@ -675,7 +709,11 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     void
     _Hashtable<_Key, _Value, _Allocator, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+    swap(_Hashtable&& __x)
+#else
     swap(_Hashtable& __x)
+#endif
     {
       // The only base class with member variables is hash_code_base.  We
       // define _Hash_code_base::_M_swap because different specializations
