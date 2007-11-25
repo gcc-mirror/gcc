@@ -715,9 +715,7 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
 
       if (*result == NULL)
 	rc = gfc_get_symbol (name, NULL, result);
-      else if (gfc_get_symbol (name, NULL, &sym) == 0
-		 && sym
-		 && sym->ts.type != BT_UNKNOWN
+      else if (!gfc_get_symbol (name, NULL, &sym) && sym
 		 && (*result)->ts.type == BT_UNKNOWN
 		 && sym->attr.flavor == FL_UNKNOWN)
 	/* Pick up the typespec for the entry, if declared in the function
@@ -726,13 +724,24 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
 	   is set to point to the module symbol and a unique symtree
 	   to the local version.  This latter ensures a correct clearing
 	   of the symbols.  */
-	  {
+	{
+	  /* If the ENTRY proceeds its specification, we need to ensure
+	     that this does not raise a "has no IMPLICIT type" error.  */
+	  if (sym->ts.type == BT_UNKNOWN)
+		sym->attr.untyped = 1;
+
 	    (*result)->ts = sym->ts;
-	    gfc_find_sym_tree (name, gfc_current_ns, 0, &st);
-	    st->n.sym = *result;
-	    st = gfc_get_unique_symtree (gfc_current_ns);
-	    st->n.sym = sym;
-	  }
+
+	  /* Put the symbol in the procedure namespace so that, should
+	     the ENTRY preceed its specification, the specification
+	     can be applied.  */
+	  (*result)->ns = gfc_current_ns;
+
+	  gfc_find_sym_tree (name, gfc_current_ns, 0, &st);
+	  st->n.sym = *result;
+	  st = gfc_get_unique_symtree (gfc_current_ns);
+	  st->n.sym = sym;
+	}
     }
   else
     rc = gfc_get_symbol (name, gfc_current_ns->parent, result);
