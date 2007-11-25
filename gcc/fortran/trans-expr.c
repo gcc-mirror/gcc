@@ -2586,6 +2586,15 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
       && !sym->attr.always_explicit)
     se->expr = fold_convert (gfc_get_real_type (sym->ts.kind), se->expr);
 
+  /* Bind(C) character variables may have only length 1.  */
+  if (sym->ts.type == BT_CHARACTER && sym->attr.is_bind_c)
+    {
+      gcc_assert (sym->ts.cl->length
+		  && sym->ts.cl->length->expr_type == EXPR_CONSTANT
+		  && mpz_cmp_si (sym->ts.cl->length->value.integer, 1));
+      se->string_length = build_int_cst (gfc_charlen_type_node, 1);
+    }
+
   /* A pure function may still have side-effects - it may modify its
      parameters.  */
   TREE_SIDE_EFFECTS (se->expr) = 1;
