@@ -1,3 +1,11 @@
+2007-11-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algobase.h (__lexicographical_compare<>::__lc):
+	Move out of line.
+
+	* include/bits/stl_algobase.h (swap_ranges): Remove redundant
+	simulated concept checks.
+
 2007-11-23  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/std/bitset (bitset<>::all): Add, per DR 693 [Ready].
