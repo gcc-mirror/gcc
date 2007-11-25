@@ -2591,7 +2591,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
     {
       gcc_assert (sym->ts.cl->length
 		  && sym->ts.cl->length->expr_type == EXPR_CONSTANT
-		  && mpz_cmp_si (sym->ts.cl->length->value.integer, 1));
+		  && mpz_cmp_si (sym->ts.cl->length->value.integer, 1) == 0);
       se->string_length = build_int_cst (gfc_charlen_type_node, 1);
     }
 
