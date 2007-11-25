@@ -1,3 +1,9 @@
+2007-11-25  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* src/closures.c: Move defintion of MAYBE_UNUSED from here to ...
+	* include/ffi_common.h: ... here.
+	Update copyright.
+
 2007-11-17  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* src/powerpc/sysv.S: Load correct cr to compare if we have long double.

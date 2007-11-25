@@ -1,5 +1,6 @@
 /* -----------------------------------------------------------------------
    closures.c - Copyright (c) 2007  Red Hat, Inc.
+   Copyright (C) 2007 Free Software Foundation, Inc
 
    Code to allocate and deallocate memory for closures.
 
@@ -148,8 +149,6 @@ selinux_enabled_check (void)
 #define is_selinux_enabled() 0
 
 #endif
-
-#define MAYBE_UNUSED __attribute__((__unused__))
 
 /* Declare all functions defined in dlmalloc.c as static.  */
 static void *dlmalloc(size_t);
