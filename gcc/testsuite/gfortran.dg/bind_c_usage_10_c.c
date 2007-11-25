@@ -1,6 +1,6 @@
 /* Check BIND(C) for ENTRY
    PR fortran/34079
-   To be linked with bind_c_usage_10.c
+   To be linked with bind_c_usage_10.f03
 */
 
 void mySub1(int *);

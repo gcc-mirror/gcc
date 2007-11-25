@@ -1,3 +1,10 @@
+2007-11-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34079
+	* gfortran.dg/bind_c_usage_10_c.c: Fix comment.
+	* gfortran.dg/bind_c_usage_16.f03: New.
+	* gfortran.dg/bind_c_usage_16_c.c: New.
+
 2007-11-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/size_clause1.ads: New test.
