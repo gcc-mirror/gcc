@@ -3147,7 +3147,7 @@ scalarize_use (struct sra_elt *elt, tree *expr_p, block_stmt_iterator *bsi,
       if (!elt->use_block_copy)
 	{
 	  tree type = TREE_TYPE (bfexpr);
-	  tree var = make_rename_temp (type, "SR"), tmp, st;
+	  tree var = make_rename_temp (type, "SR"), tmp, st, vpos;
 
 	  GIMPLE_STMT_OPERAND (stmt, 0) = var;
 	  update = true;
@@ -3162,8 +3162,16 @@ scalarize_use (struct sra_elt *elt, tree *expr_p, block_stmt_iterator *bsi,
 	      var = tmp;
 	    }
 
+	  /* If VAR is wider than BLEN bits, it is padded at the
+	     most-significant end.  We want to set VPOS such that
+	     <BIT_FIELD_REF VAR BLEN VPOS> would refer to the
+	     least-significant BLEN bits of VAR.  */
+	  if (BYTES_BIG_ENDIAN)
+	    vpos = size_binop (MINUS_EXPR, TYPE_SIZE (type), blen);
+	  else
+	    vpos = bitsize_int (0);
 	  sra_explode_bitfield_assignment
-	    (var, bitsize_int (0), false, &listafter, blen, bpos, elt);
+	    (var, vpos, false, &listafter, blen, bpos, elt);
 	}
       else
 	sra_sync_for_bitfield_assignment
@@ -3199,7 +3207,7 @@ scalarize_use (struct sra_elt *elt, tree *expr_p, block_stmt_iterator *bsi,
       if (!elt->use_block_copy)
 	{
 	  tree type = TREE_TYPE (bfexpr);
-	  tree var;
+	  tree var, vpos;
 
 	  if (!TYPE_UNSIGNED (type))
 	    type = unsigned_type_for (type);
@@ -3210,8 +3218,16 @@ scalarize_use (struct sra_elt *elt, tree *expr_p, block_stmt_iterator *bsi,
 				    (var, build_int_cst_wide (type, 0, 0)),
 				    &list);
 
+	  /* If VAR is wider than BLEN bits, it is padded at the
+	     most-significant end.  We want to set VPOS such that
+	     <BIT_FIELD_REF VAR BLEN VPOS> would refer to the
+	     least-significant BLEN bits of VAR.  */
+	  if (BYTES_BIG_ENDIAN)
+	    vpos = size_binop (MINUS_EXPR, TYPE_SIZE (type), blen);
+	  else
+	    vpos = bitsize_int (0);
 	  sra_explode_bitfield_assignment
-	    (var, bitsize_int (0), true, &list, blen, bpos, elt);
+	    (var, vpos, true, &list, blen, bpos, elt);
 
 	  GIMPLE_STMT_OPERAND (stmt, 1) = var;
 	  update = true;
