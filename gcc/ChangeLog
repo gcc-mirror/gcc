@@ -1,3 +1,12 @@
+2007-11-26  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.md: (call_internal): Remove mode on
+	operand 0 in order to match UNPSEC'ed calls generated in PIC mode.
+        (call_value_internal): Remove mode on operands 0 and 1 in order to
+	match UNPSEC'ed calls generated in PIC mode.
+        (GOTaddr2picreg): Use copy_rtx to prevent sharing an rtx between
+	two insns.
+
 2007-11-26  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/34233
