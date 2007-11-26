@@ -1,3 +1,9 @@
+2007-11-26  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	PR 34081/C++
+	* treetree.c (tree_code_create_function_wrapup): Pass 'false' 
+	for the new allocate_struct_function parameter.
+
 2007-09-12  Jan Hubicka  <jh@suse.cz>
 
 	* treetree.c (LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION): Kill.

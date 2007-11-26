@@ -457,7 +457,7 @@ tree_code_create_function_wrapup (location_t loc)
                                       BLOCK_VARS (block),
 			              stmts, block);
 
-  allocate_struct_function (fn_decl);
+  allocate_struct_function (fn_decl, false);
   cfun->function_end_locus = loc;
 
   /* Dump the original tree to a file.  */

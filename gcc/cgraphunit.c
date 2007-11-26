@@ -1481,7 +1481,7 @@ cgraph_build_static_cdtor (char which, tree body, int priority)
   DECL_ARTIFICIAL (resdecl) = 1;
   DECL_RESULT (decl) = resdecl;
 
-  allocate_struct_function (decl);
+  allocate_struct_function (decl, false);
 
   TREE_STATIC (decl) = 1;
   TREE_USED (decl) = 1;

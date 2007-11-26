@@ -1,3 +1,10 @@
+2007-11-26  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	PR 34081/C++
+	* decl.c (start_preparsed_function): Pass 
+	processing_template_decl for the new allocate_struct_function
+	parameter.
+
 2007-11-25  Richard Guenther  <rguenther@suse.de>
 
 	decl.c (poplevel): Use BLOCK_CHAIN.

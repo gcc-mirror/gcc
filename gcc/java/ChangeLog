@@ -1,3 +1,9 @@
+2007-11-26  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	PR 34081/C++
+	* decl.c (finish_method): Pass 'false' for the new
+	allocate_struct_function parameter.
+
 2007-11-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	* expr.c (build_jni_stub): Use the computed jni func type for

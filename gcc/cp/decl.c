@@ -11211,7 +11211,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
      CFUN set up, and our per-function variables initialized.
      FIXME factor out the non-RTL stuff.  */
   bl = current_binding_level;
-  allocate_struct_function (decl1);
+  allocate_struct_function (decl1, processing_template_decl);
   current_binding_level = bl;
 
   /* Even though we're inside a function body, we still don't want to
