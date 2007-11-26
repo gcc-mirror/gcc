@@ -95,7 +95,7 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.flag_repack_arrays = 0;
   gfc_option.flag_preprocessed = 0;
   gfc_option.flag_automatic = 1;
-  gfc_option.flag_backslash = 1;
+  gfc_option.flag_backslash = 0;
   gfc_option.flag_module_private = 0;
   gfc_option.flag_backtrace = 0;
   gfc_option.flag_allow_leading_underscore = 0;

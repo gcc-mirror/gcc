@@ -1,3 +1,11 @@
+2007-11-26  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34203
+	* gfortran.dg/backslash_3.f: Add -fbackslash option.
+	* gfortran.dg/init_flag_1.f90: Add -fbackslash option.
+	* gfortran.dg/backslash_1.f90: Remove no longer needed
+	-fno-backslash option.
+
 2007-11-26  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c/23722

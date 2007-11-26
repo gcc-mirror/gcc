@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-finit-local-zero" }
+! { dg-options "-finit-local-zero -fbackslash" }
 
 program init_flag_1
   call real_test
