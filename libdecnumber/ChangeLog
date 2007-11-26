@@ -1,3 +1,14 @@
+2007-11-26  Thiago Jung Bauermann  <bauerman@br.ibm.com>
+
+	* Makefile.in (decimal32.o): Prepend $(srcdir) to dependencies
+	and substitute $< for the source file in compilation command.
+	(decimal64.o): Likewise.
+	(decimal128.o): Likewise.
+	(bid2dpd_dpd2bid.o): Likewise.
+	(host-ieee32.o): Likewise.
+	(host-ieee64.o): Likewise.
+	(host-ieee128.o): Likewise.
+
 2007-10-31  Thiago Jung Bauermann  <bauerman@br.ibm.com>
 
 	* configure.ac: Add ADDITIONAL_OBJS variable.
