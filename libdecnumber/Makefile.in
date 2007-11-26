@@ -115,30 +115,30 @@ decContext.o: decContext.c decContext.h decNumberLocal.h \
 	decContextSymbols.h
 decNumber.o:  decNumber.c decNumber.h decContext.h decNumberLocal.h \
 	decNumberSymbols.h
-decimal32.o:  $(enable_decimal_float)/decimal32.c \
-   $(enable_decimal_float)/decimal32.h \
-   $(enable_decimal_float)/decimal32Symbols.h \
+decimal32.o:  $(srcdir)/$(enable_decimal_float)/decimal32.c \
+   $(srcdir)/$(enable_decimal_float)/decimal32.h \
+   $(srcdir)/$(enable_decimal_float)/decimal32Symbols.h \
    decNumber.h decContext.h decNumberLocal.h
-	$(COMPILE) $<
-decimal64.o:  $(enable_decimal_float)/decimal64.c \
-   $(enable_decimal_float)/decimal64.h \
-   $(enable_decimal_float)/decimal64Symbols.h \
+	$(COMPILE) $(srcdir)/$(enable_decimal_float)/decimal32.c
+decimal64.o:  $(srcdir)/$(enable_decimal_float)/decimal64.c \
+   $(srcdir)/$(enable_decimal_float)/decimal64.h \
+   $(srcdir)/$(enable_decimal_float)/decimal64Symbols.h \
    decNumber.h decContext.h decNumberLocal.h
-	$(COMPILE) $<
-decimal128.o:  $(enable_decimal_float)/decimal128.c \
-   $(enable_decimal_float)/decimal128.h \
-   $(enable_decimal_float)/decimal128Symbols.h\
-   $(enable_decimal_float)/decimal128Local.h\
+	$(COMPILE) $(srcdir)/$(enable_decimal_float)/decimal64.c
+decimal128.o:  $(srcdir)/$(enable_decimal_float)/decimal128.c \
+   $(srcdir)/$(enable_decimal_float)/decimal128.h \
+   $(srcdir)/$(enable_decimal_float)/decimal128Symbols.h\
+   $(srcdir)/$(enable_decimal_float)/decimal128Local.h\
    decNumber.h decContext.h decNumberLocal.h 
-	$(COMPILE) $<
-bid2dpd_dpd2bid.o : bid/bid2dpd_dpd2bid.c bid/bid2dpd_dpd2bid.h
-	$(COMPILE) $<
-host-ieee32.o : bid/host-ieee32.c bid/decimal32.h
-	$(COMPILE) $<
-host-ieee64.o : bid/host-ieee64.c bid/decimal64.h
-	$(COMPILE) $<
-host-ieee128.o : bid/host-ieee128.c bid/decimal128.h
-	$(COMPILE) $<
+	$(COMPILE) $(srcdir)/$(enable_decimal_float)/decimal128.c
+bid2dpd_dpd2bid.o : $(srcdir)/bid/bid2dpd_dpd2bid.c $(srcdir)/bid/bid2dpd_dpd2bid.h
+	$(COMPILE) $(srcdir)/bid/bid2dpd_dpd2bid.c
+host-ieee32.o : $(srcdir)/bid/host-ieee32.c $(srcdir)/bid/decimal32.h
+	$(COMPILE) $(srcdir)/bid/host-ieee32.c
+host-ieee64.o : $(srcdir)/bid/host-ieee64.c $(srcdir)/bid/decimal64.h
+	$(COMPILE) $(srcdir)/bid/host-ieee64.c
+host-ieee128.o : $(srcdir)/bid/host-ieee128.c $(srcdir)/bid/decimal128.h
+	$(COMPILE) $(srcdir)/bid/host-ieee128.c
 # Other miscellaneous targets.
 
 mostlyclean:
