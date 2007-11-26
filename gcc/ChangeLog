@@ -1,3 +1,9 @@
+2007-11-26  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34233
+	* builtins.c (expand_builtin_pow): Use expand_expr to expand
+	the result of build_call_expr.
+
 2007-11-26  Steven Bosscher  <stevenb.gcc@gmail.com> 
 	    Revital Eres  <eres@il.ibm.com> 
 

@@ -1,3 +1,8 @@
+2007-11-26  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34233
+	* gcc.dg/pr34233.c: New testcase.
+
 2007-11-26  Steven Bosscher  <stevenb.gcc@gmail.com>
 	    Revital Eres  <eres@il.ibm.com>
 
