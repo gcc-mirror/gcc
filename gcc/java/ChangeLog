@@ -1,5 +1,10 @@
 2007-11-26  Alexandre Oliva  <aoliva@redhat.com>
 
+	* expr.c (build_jni_stub): Use the computed jni func type for
+	variable meth.
+
+2007-11-26  Alexandre Oliva  <aoliva@redhat.com>
+
 	* class.c (JAVA_TREEHASHHASH_H): Use TYPE_UID.
 
 2007-11-26  Alexandre Oliva  <aoliva@redhat.com>
