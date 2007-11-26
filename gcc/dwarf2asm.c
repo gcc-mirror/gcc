@@ -701,6 +701,31 @@ static GTY(()) int dw2_const_labelno;
 # define USE_LINKONCE_INDIRECT 0
 #endif
 
+/* Comparison function for a splay tree in which the keys are strings.
+   K1 and K2 have the dynamic type "const char *".  Returns <0, 0, or
+   >0 to indicate whether K1 is less than, equal to, or greater than
+   K2, respectively.  */
+
+static int
+splay_tree_compare_strings (splay_tree_key k1, splay_tree_key k2)
+{
+  const char *s1 = (const char *)k1;
+  const char *s2 = (const char *)k2;
+  int ret;
+
+  if (s1 == s2)
+    return 0;
+
+  ret = strcmp (s1, s2);
+
+  /* The strings are always those from IDENTIFIER_NODEs, and,
+     therefore, we should never have two copies of the same
+     string.  */
+  gcc_assert (ret);
+
+  return ret;
+}
+
 /* Put X, a SYMBOL_REF, in memory.  Return a SYMBOL_REF to the allocated
    memory.  Differs from force_const_mem in that a single pool is used for
    the entire unit of translation, and the memory is not guaranteed to be
@@ -715,7 +740,9 @@ dw2_force_const_mem (rtx x, bool public)
   tree decl;
 
   if (! indirect_pool)
-    indirect_pool = splay_tree_new_ggc (splay_tree_compare_pointers);
+    /* We use strcmp, rather than just comparing pointers, so that the
+       sort order will not depend on the host system.  */
+    indirect_pool = splay_tree_new_ggc (splay_tree_compare_strings);
 
   gcc_assert (GET_CODE (x) == SYMBOL_REF);
 

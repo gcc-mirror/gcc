@@ -1,5 +1,10 @@
 2007-11-26  Alexandre Oliva  <aoliva@redhat.com>
 
+	* dwarf2asm.c (splay_tree_compare_strings): New function.
+	(dw2_force_const_mem): Use it.
+
+2007-11-26  Alexandre Oliva  <aoliva@redhat.com>
+
 	* tree.c (type_hash_add): Don't violate strict aliasing rules.
 
 2007-11-26  Alexandre Oliva  <aoliva@redhat.com>
