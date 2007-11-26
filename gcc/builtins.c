@@ -2938,7 +2938,9 @@ expand_builtin_pow (tree exp, rtx target, rtx subtarget)
 	      || n == 1))
 	{
 	  tree call_expr = build_call_expr (fn, 1, narg0);
-	  op = expand_builtin (call_expr, NULL_RTX, subtarget, mode, 0);
+	  /* Use expand_expr in case the newly built call expression
+	     was folded to a non-call.  */
+	  op = expand_expr (call_expr, subtarget, mode, EXPAND_NORMAL);
 	  if (n != 1)
 	    {
 	      op2 = expand_expr (narg0, subtarget, VOIDmode, EXPAND_NORMAL);
