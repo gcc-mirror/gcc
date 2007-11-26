@@ -1,3 +1,25 @@
+2007-11-26  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/25913
+	* include/c_std/cmath (std::fpclassify, isfinite, isinf, isnan,
+	isnormal, signbit, isgreater, isgreaterequal, isless, islessequal,
+	islessgreater, isunordered): Guard with __enable_if and forward
+	with __promote.
+	* include/c_global/cmath: Likewise.
+	* testsuite/26_numerics/headers/cmath/25913.cc: New.
+
+	* include/c_std/cmath (__gnu_cxx::__capture_isfinite,
+	__capture_isinf, __capture_isnan, __capture_isnormal,
+	__capture_signbit, __capture_isgreater, __capture_isgreaterequal,
+	__capture_isless, __capture_islessequal, __capture_islessgreater,
+	__capture_isunordered): Remove.
+	(std::isfinite, isinf, isnan, isnormal, signbit, isgreater,
+	isgreaterequal, isless, islessequal, islessgreater, isunordered):
+	Forward to the corresponding builtin.
+	* include/c_global/cmath: Likewise.
+
+	* include/c_global/cmath (std::atan2, pow): Guard with __enable_if.
+
 2007-11-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1_impl/unordered_map
