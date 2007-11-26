@@ -1,3 +1,8 @@
+2007-11-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/34215
+	* gcc.target/i386/pr34215.c: New test.
+
 2007-11-26  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	PR target/34174
@@ -89,7 +94,7 @@
 	* g++.dg/warn/pr33160.C: New.
 	
 2007-11-23  Richard Guenther  <rguenther@suse.de>
-	Michael Matz  <matz@suse.de>
+	    Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/34176
 	* gcc.c-torture/execute/pr34176.c: New testcase.

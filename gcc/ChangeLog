@@ -1,3 +1,13 @@
+2007-11-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/34215
+	* config/i386/i386.md (truncdfsf2): Select SLOT_TEMP stack slot if
+	virtual registers are instantiated.
+	(truncxf<mode>2): Ditto.
+	(floatsi<mode>2): Ditto.
+	(floatdisf2): Ditto.
+	(floatdidf2): Ditto.
+
 2007-11-26  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	PR target/34174
@@ -66,8 +76,7 @@
 
 2007-11-25  Richard Guenther  <rguenther@suse.de>
 
-	* tree.h (struct tree_block): Move locus member next to
-	flags.
+	* tree.h (struct tree_block): Move locus member next to flags.
 	* c-decl.c (SCOPE_LIST_APPEND): Use BLOCK_CHAIN.
 	(SCOPE_LIST_CONCAT): Likewise.
 	(pop_scope): Likewise.
@@ -92,7 +101,7 @@
 	register that dies there.
 
 2007-11-23  Dirk Mueller  <dmueller@suse.de>
-	Richard Guenther <rguenther@suse.de>
+	    Richard Guenther <rguenther@suse.de>
 
 	PR middle-end/34197
 	* tree-vrp.c (check_array_ref): Move check for valid location..
@@ -105,7 +114,7 @@
 	outer_code.
 
 2007-11-23  Richard Guenther  <rguenther@suse.de>
-	Michael Matz  <matz@suse.de>
+	    Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/34176
 	* alloc-pool.h (empty_alloc_pool): Declare.
@@ -119,11 +128,9 @@
 
 2007-11-23  Richard Guenther  <rguenther@suse.de>
 
-	* tree-ssa-copy.c (may_propagate_copy): Remove redundant
-	checks.
+	* tree-ssa-copy.c (may_propagate_copy): Remove redundant checks.
 	(merge_alias_info): Do verification only if checking is
-	enabled.  Merge flow-sensitive alias information in simple
-	cases.
+	enabled.  Merge flow-sensitive alias information in simple cases.
 	* tree-ssa-operands.c (get_addr_dereference_operands): Also
 	complain about missing NMTs.
 
@@ -160,8 +167,7 @@
 
 2007-11-22  Kaz Kojima  <kkojima@gcc.gnu.org>
 
-	* config/sh/sh.md (divsi_inv_m3): Handle zero dividend
-	specially.
+	* config/sh/sh.md (divsi_inv_m3): Handle zero dividend specially.
 
 2007-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
