@@ -1281,12 +1281,7 @@ conversion_warning (tree type, tree expr)
                && TREE_CODE (type) == INTEGER_TYPE)
         {
 	  /* Don't warn about unsigned char y = 0xff, x = (int) y;  */
-	  int uns;
-	  tree orig_expr = expr;
-	  expr = get_narrower (expr, &uns);
-
-	  if (expr == orig_expr)
-	    uns = TYPE_UNSIGNED (TREE_TYPE (expr));
+	  expr = get_unwidened (expr, 0);
 
           /* Warn for integer types converted to smaller integer types.  */
           if (formal_prec < TYPE_PRECISION (TREE_TYPE (expr))) 
@@ -1295,31 +1290,14 @@ conversion_warning (tree type, tree expr)
 	  /* When they are the same width but different signedness,
 	     then the value may change.  */
 	  else if ((formal_prec == TYPE_PRECISION (TREE_TYPE (expr))
-		    && uns != TYPE_UNSIGNED (type))
+		    && TYPE_UNSIGNED (TREE_TYPE (expr)) != TYPE_UNSIGNED (type))
 		   /* Even when converted to a bigger type, if the type is
 		      unsigned but expr is signed, then negative values
 		      will be changed.  */
-		   || (TYPE_UNSIGNED (type) && !uns))
-	    {
-	      if (uns != TYPE_UNSIGNED (TREE_TYPE (expr)))
-		{
-		  /* For signed char s1, s2 = (int) (unsigned char) s1;
-		     get_narrower returns s1, but uns = 1.  Find the
-		     narrowest type with uns == TYPE_UNSIGNED (type).  */
-		  tree unsexpr = orig_expr;
-
-		  while (TREE_CODE (unsexpr) == NOP_EXPR
-			 && unsexpr != expr
-			 && TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (unsexpr,
-								    0)))
-			    == uns)
-		    unsexpr = TREE_OPERAND (unsexpr, 0);
-		  expr = unsexpr;
-		}
-	      warning (OPT_Wsign_conversion,
-		       "conversion to %qT from %qT may change the sign of the result",
-		       type, TREE_TYPE (expr));
-	    }
+		   || (TYPE_UNSIGNED (type) && !TYPE_UNSIGNED (TREE_TYPE (expr))))
+	    warning (OPT_Wsign_conversion,
+		     "conversion to %qT from %qT may change the sign of the result",
+		     type, TREE_TYPE (expr));
         }
 
       /* Warn for integer types converted to real types if and only if

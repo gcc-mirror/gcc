@@ -1,4 +1,9 @@
 2007-11-26  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+	
+	* c-common.c (conversion_warning): Use get_unwidened instead of
+	get_narrower.
+	
+2007-11-26  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c/23722
 	* c-parser.c (struct c_parser): New bit in_if_block.
