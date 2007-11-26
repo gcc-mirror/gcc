@@ -1,3 +1,7 @@
+2007-11-26  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* config/mips/elfoabi.h (DRIVER_SELF_SPECS): Add missing comma.
+
 2007-11-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	* dwarf2asm.c (splay_tree_compare_strings): New function.
