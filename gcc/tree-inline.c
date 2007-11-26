@@ -2652,6 +2652,8 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
   id->src_cfun = DECL_STRUCT_FUNCTION (fn);
   id->call_expr = t;
 
+  gcc_assert (!id->src_cfun->after_inlining);
+
   initialize_inlined_parameters (id, t, fn, bb);
 
   if (DECL_INITIAL (fn))
