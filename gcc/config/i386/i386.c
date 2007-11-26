@@ -15366,12 +15366,7 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 
   /* Alignment code needs count to be in register.  */
   if (CONST_INT_P (count_exp) && desired_align > align)
-    {
-      enum machine_mode mode = SImode;
-      if (TARGET_64BIT && (count & ~0xffffffff))
-	mode = DImode;
-      count_exp = force_reg (mode, count_exp);
-    }
+    count_exp = force_reg (counter_mode (count_exp), count_exp);
   gcc_assert (desired_align >= 1 && align >= 1);
 
   /* Ensure that alignment prologue won't copy past end of block.  */
@@ -15382,29 +15377,48 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 	 Make sure it is power of 2.  */
       epilogue_size_needed = smallest_pow2_greater_than (epilogue_size_needed);
 
-      label = gen_label_rtx ();
-      emit_cmp_and_jump_insns (count_exp,
-			       GEN_INT (epilogue_size_needed),
-			       LTU, 0, counter_mode (count_exp), 1, label);
-      if (GET_CODE (count_exp) == CONST_INT)
-	;
-      else if (expected_size == -1 || expected_size < epilogue_size_needed)
-	predict_jump (REG_BR_PROB_BASE * 60 / 100);
+      if (CONST_INT_P (count_exp))
+	{
+	  if (UINTVAL (count_exp) < (unsigned HOST_WIDE_INT)epilogue_size_needed)
+	    goto epilogue;
+	}
       else
-	predict_jump (REG_BR_PROB_BASE * 20 / 100);
+	{
+	  label = gen_label_rtx ();
+	  emit_cmp_and_jump_insns (count_exp,
+				   GEN_INT (epilogue_size_needed),
+				   LTU, 0, counter_mode (count_exp), 1, label);
+	  if (expected_size == -1 || expected_size < epilogue_size_needed)
+	    predict_jump (REG_BR_PROB_BASE * 60 / 100);
+	  else
+	    predict_jump (REG_BR_PROB_BASE * 20 / 100);
+	}
     }
+
   /* Emit code to decide on runtime whether library call or inline should be
      used.  */
   if (dynamic_check != -1)
     {
-      rtx hot_label = gen_label_rtx ();
-      jump_around_label = gen_label_rtx ();
-      emit_cmp_and_jump_insns (count_exp, GEN_INT (dynamic_check - 1),
-			       LEU, 0, GET_MODE (count_exp), 1, hot_label);
-      predict_jump (REG_BR_PROB_BASE * 90 / 100);
-      emit_block_move_via_libcall (dst, src, count_exp, false);
-      emit_jump (jump_around_label);
-      emit_label (hot_label);
+      if (CONST_INT_P (count_exp))
+	{
+	  if (UINTVAL (count_exp) >= (unsigned HOST_WIDE_INT)dynamic_check)
+	    {
+	      emit_block_move_via_libcall (dst, src, count_exp, false);
+	      count_exp = const0_rtx;
+	      goto epilogue;
+	    }
+	}
+      else
+	{
+	  rtx hot_label = gen_label_rtx ();
+	  jump_around_label = gen_label_rtx ();
+	  emit_cmp_and_jump_insns (count_exp, GEN_INT (dynamic_check - 1),
+				   LEU, 0, GET_MODE (count_exp), 1, hot_label);
+	  predict_jump (REG_BR_PROB_BASE * 90 / 100);
+	  emit_block_move_via_libcall (dst, src, count_exp, false);
+	  emit_jump (jump_around_label);
+	  emit_label (hot_label);
+	}
     }
 
   /* Step 2: Alignment prologue.  */
@@ -15477,7 +15491,7 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
     }
 
   /* Step 4: Epilogue to copy the remaining bytes.  */
-
+ epilogue:
   if (label)
     {
       /* When the main loop is done, COUNT_EXP might hold original count,

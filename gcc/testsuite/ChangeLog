@@ -1,3 +1,8 @@
+2007-11-13  Michael Meissner  <michael.meissner@amd.com>
+
+	PR target/34077
+	* gcc.target/i386/pr34077.c: New testcase.
+
 2007-11-26  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34203
