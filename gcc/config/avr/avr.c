@@ -251,6 +251,7 @@ static const struct mcu_type_s avr_mcu_types[] = {
   { "atmega128",    ARCH_AVR5, "__AVR_ATmega128__" },
   { "atmega1280",   ARCH_AVR5, "__AVR_ATmega1280__" },
   { "atmega1281",   ARCH_AVR5, "__AVR_ATmega1281__" },
+  { "atmega1284p",  ARCH_AVR5, "__AVR_ATmega1284P__" },
   { "atmega16hva",  ARCH_AVR5, "__AVR_ATmega16HVA__" },
   { "at90can32",    ARCH_AVR5, "__AVR_AT90CAN32__" },
   { "at90can64",    ARCH_AVR5, "__AVR_AT90CAN64__" },
