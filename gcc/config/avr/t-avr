@@ -109,6 +109,7 @@ MULTILIB_MATCHES = \
 	mmcu?avr5=mmcu?atmega128 \
 	mmcu?avr5=mmcu?atmega1280 \
 	mmcu?avr5=mmcu?atmega1281 \
+	mmcu?avr5=mmcu?atmega1284p \
 	mmcu?avr5=mmcu?atmega16hva \
 	mmcu?avr5=mmcu?at90can32 \
 	mmcu?avr5=mmcu?at90can64 \

@@ -789,6 +789,7 @@ mmcu=*:-mmcu=%*}"
   mmcu=atmega645*|\
   mmcu=atmega649*|\
   mmcu=atmega128|\
+  mmcu=atmega1284p|\
   mmcu=atmega162|\
   mmcu=atmega164*|\
   mmcu=atmega165*|\
@@ -902,6 +903,7 @@ mmcu=*:-mmcu=%*}"
 %{mmcu=atmega128:crtm128.o%s} \
 %{mmcu=atmega1280:crtm1280.o%s} \
 %{mmcu=atmega1281:crtm1281.o%s} \
+%{mmcu=atmega1284p:crtm1284p.o%s} \
 %{mmcu=atmega8hva:crtm8hva.o%s} \
 %{mmcu=atmega16hva:crtm16hva.o%s} \
 %{mmcu=at90can32:crtcan32.o%s} \
