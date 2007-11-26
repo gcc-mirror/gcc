@@ -1,3 +1,19 @@
+2007-11-26  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c/23722
+	* c-parser.c (struct c_parser): New bit in_if_block.
+	(c_parser_compound_statement_nostart): Handle unexpected 'else'
+	keyword.
+	(c_parser_statement_after_labels): Set in_if_block to false while
+	parsing.
+	(c_parser_if_body): Don't call c_parser_statement_after_labels if
+	a semicolon is found, just consume it. Don't call
+	c_parser_statement_after_labels if an open brace is found, call
+	c_parser_compound_statement instead.
+	(c_parser_else_body): New.
+	(c_parser_if_statement): Set in_if_block to true when parsing the
+	body of the 'if' statement. Use c_parser_else_body.
+
 2007-11-26  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR 34081/C++

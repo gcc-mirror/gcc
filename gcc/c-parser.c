@@ -280,6 +280,8 @@ typedef struct c_parser GTY(())
   /* True if we're processing a pragma, and shouldn't automatically
      consume CPP_PRAGMA_EOL.  */
   BOOL_BITFIELD in_pragma : 1;
+  /* True if we're parsing the outermost block of an if statement.  */
+  BOOL_BITFIELD in_if_block : 1;
   /* True if we want to lex an untranslated string.  */
   BOOL_BITFIELD lex_untranslated_string : 1;
   /* Objective-C specific parser/lexer information.  */
@@ -3541,6 +3543,20 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	  c_parser_error (parser, "expected declaration or statement");
 	  return;
 	}
+      else if (c_parser_next_token_is_keyword (parser, RID_ELSE))
+        {
+          if (parser->in_if_block) 
+            {
+              error ("%H""expected %<}%> before %<else%>", &loc);
+              return;
+            }
+          else 
+            {
+              error ("%H%<else%> without a previous %<if%>", &loc);
+              c_parser_consume_token (parser);
+              continue;
+            }
+        }
       else
 	{
 	statement:
@@ -3740,6 +3756,8 @@ c_parser_statement_after_labels (c_parser *parser)
 {
   location_t loc = c_parser_peek_token (parser)->location;
   tree stmt = NULL_TREE;
+  bool in_if_block = parser->in_if_block;
+  parser->in_if_block = false;
   switch (c_parser_peek_token (parser)->type)
     {
     case CPP_OPEN_BRACE:
@@ -3873,6 +3891,8 @@ c_parser_statement_after_labels (c_parser *parser)
      earlier?  */
   if (stmt && CAN_HAVE_LOCATION_P (stmt))
     SET_EXPR_LOCATION (stmt, loc);
+
+  parser->in_if_block = in_if_block;
 }
 
 /* Parse a parenthesized condition from an if, do or while statement.
@@ -3906,11 +3926,13 @@ c_parser_c99_block_statement (c_parser *parser)
   return c_end_compound_stmt (block, flag_isoc99);
 }
 
-/* Parse the body of an if statement or the else half thereof.  This
-   is just parsing a statement but (a) it is a block in C99, (b) we
-   track whether the body is an if statement for the sake of
-   -Wparentheses warnings, (c) we handle an empty body specially for
-   the sake of -Wempty-body warnings.  */
+/* Parse the body of an if statement.  This is just parsing a
+   statement but (a) it is a block in C99, (b) we track whether the
+   body is an if statement for the sake of -Wparentheses warnings, (c)
+   we handle an empty body specially for the sake of -Wempty-body
+   warnings, and (d) we call parser_compound_statement directly
+   because c_parser_statement_after_labels resets
+   parser->in_if_block.  */
 
 static tree
 c_parser_if_body (c_parser *parser, bool *if_p)
@@ -3923,8 +3945,37 @@ c_parser_if_body (c_parser *parser, bool *if_p)
     c_parser_label (parser);
   *if_p = c_parser_next_token_is_keyword (parser, RID_IF);
   if (c_parser_next_token_is (parser, CPP_SEMICOLON))
-    add_stmt (build_empty_stmt ());
-  c_parser_statement_after_labels (parser);
+    {
+      add_stmt (build_empty_stmt ());
+      c_parser_consume_token (parser);
+    }
+  else if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
+    add_stmt (c_parser_compound_statement (parser));
+  else
+    c_parser_statement_after_labels (parser);
+  return c_end_compound_stmt (block, flag_isoc99);
+}
+
+/* Parse the else body of an if statement.  This is just parsing a
+   statement but (a) it is a block in C99, (b) we handle an empty body
+   specially for the sake of -Wempty-body warnings.  */
+
+static tree
+c_parser_else_body (c_parser *parser)
+{
+  tree block = c_begin_compound_stmt (flag_isoc99);
+  while (c_parser_next_token_is_keyword (parser, RID_CASE)
+	 || c_parser_next_token_is_keyword (parser, RID_DEFAULT)
+	 || (c_parser_next_token_is (parser, CPP_NAME)
+	     && c_parser_peek_2nd_token (parser)->type == CPP_COLON))
+    c_parser_label (parser);
+  if (c_parser_next_token_is (parser, CPP_SEMICOLON))
+    {
+      add_stmt (build_empty_stmt ());
+      c_parser_consume_token (parser);
+    }
+  else 
+    c_parser_statement_after_labels (parser);
   return c_end_compound_stmt (block, flag_isoc99);
 }
 
@@ -3941,18 +3992,23 @@ c_parser_if_statement (c_parser *parser)
   tree block;
   location_t loc;
   tree cond;
-  bool first_if = false, second_if = false;
+  bool first_if = false;
   tree first_body, second_body;
+  bool in_if_block;
+
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_IF));
   c_parser_consume_token (parser);
   block = c_begin_compound_stmt (flag_isoc99);
   loc = c_parser_peek_token (parser)->location;
   cond = c_parser_paren_condition (parser);
+  in_if_block = parser->in_if_block;
+  parser->in_if_block = true;
   first_body = c_parser_if_body (parser, &first_if);
+  parser->in_if_block = in_if_block;
   if (c_parser_next_token_is_keyword (parser, RID_ELSE))
     {
       c_parser_consume_token (parser);
-      second_body = c_parser_if_body (parser, &second_if);
+      second_body = c_parser_else_body (parser);
     }
   else
     second_body = NULL_TREE;
