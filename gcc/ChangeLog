@@ -1,5 +1,9 @@
 2007-11-26  Alexandre Oliva  <aoliva@redhat.com>
 
+	* tree.c (type_hash_add): Don't violate strict aliasing rules.
+
+2007-11-26  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR c/27898
 	* c-typeck.c (tagged_types_tu_compatible_p): Enable exact
 	matches between anonymous union fields.
