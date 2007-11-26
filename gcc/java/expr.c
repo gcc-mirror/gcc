@@ -433,8 +433,27 @@ type_assertion_hash (const void *p)
   const type_assertion *k_p = p;
   hashval_t hash = iterative_hash (&k_p->assertion_code, sizeof
 				   k_p->assertion_code, 0);
-  hash = iterative_hash (&k_p->op1, sizeof k_p->op1, hash);
-  return iterative_hash (&k_p->op2, sizeof k_p->op2, hash);
+
+  switch (k_p->assertion_code)
+    {
+    case JV_ASSERT_TYPES_COMPATIBLE:
+      hash = iterative_hash (&TYPE_UID (k_p->op2), sizeof TYPE_UID (k_p->op2),
+			     hash);
+      /* Fall through.  */
+
+    case JV_ASSERT_IS_INSTANTIABLE:
+      hash = iterative_hash (&TYPE_UID (k_p->op1), sizeof TYPE_UID (k_p->op1),
+			     hash);
+      /* Fall through.  */
+
+    case JV_ASSERT_END_OF_TABLE:
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return hash;
 }
 
 /* Add an entry to the type assertion table for the given class.  
