@@ -1,5 +1,9 @@
 2007-11-26  Alexandre Oliva  <aoliva@redhat.com>
 
+	* class.c (JAVA_TREEHASHHASH_H): Use TYPE_UID.
+
+2007-11-26  Alexandre Oliva  <aoliva@redhat.com>
+
 	* expr.c (type_assertion_hash): Hash type uids rather than
 	tree pointers.
 
