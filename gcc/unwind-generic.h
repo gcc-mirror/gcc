@@ -141,7 +141,7 @@ extern void _Unwind_DeleteException (struct _Unwind_Exception *);
 extern void LIBGCC2_UNWIND_ATTRIBUTE
 _Unwind_Resume (struct _Unwind_Exception *);
 
-/* @@@ Resume propagation of an FORCE_UNWIND exception, or to rethrow
+/* @@@ Resume propagation of a FORCE_UNWIND exception, or to rethrow
    a normal exception that was handled.  */
 extern _Unwind_Reason_Code LIBGCC2_UNWIND_ATTRIBUTE
 _Unwind_Resume_or_Rethrow (struct _Unwind_Exception *);
@@ -158,7 +158,7 @@ _Unwind_Backtrace (_Unwind_Trace_Fn, void *);
 /* These functions are used for communicating information about the unwind
    context (i.e. the unwind descriptors and the user register state) between
    the unwind library and the personality routine and landing pad.  Only
-   selected registers maybe manipulated.  */
+   selected registers may be manipulated.  */
 
 extern _Unwind_Word _Unwind_GetGR (struct _Unwind_Context *, int);
 extern void _Unwind_SetGR (struct _Unwind_Context *, int, _Unwind_Word);
