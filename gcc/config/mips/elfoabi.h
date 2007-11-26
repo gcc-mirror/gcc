@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 									\
   /* If no ABI option is specified, infer one from the ISA level	\
      or -mgp setting.  */						\
-  "%{!mabi=*: %{" MIPS_32BIT_OPTION_SPEC ": -mabi=32;: -mabi=o64}}"	\
+  "%{!mabi=*: %{" MIPS_32BIT_OPTION_SPEC ": -mabi=32;: -mabi=o64}}",	\
 									\
   /* Remove a redundant -mfp64 for -mabi=o64; we want the !mfp64	\
      multilibs.  There's no need to check whether the architecture	\
