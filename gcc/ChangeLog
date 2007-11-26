@@ -1,3 +1,9 @@
+2007-11-26  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	PR target/34174
+	* config/fr30/fr30.c (fr30_move_double): Sanitize mem->reg case. Copy
+	the address before it is clobbered.
+
 2007-11-26  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.md: (call_internal): Remove mode on
