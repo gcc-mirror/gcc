@@ -247,7 +247,7 @@ push_function_context_to (tree context ATTRIBUTE_UNUSED)
   struct function *p;
 
   if (cfun == 0)
-    allocate_struct_function (NULL);
+    allocate_struct_function (NULL, false);
   p = cfun;
 
   p->outer = outer_function_chain;
@@ -3881,10 +3881,14 @@ get_next_funcdef_no (void)
    directly into cfun and invoke the back end hook explicitly at the
    very end, rather than initializing a temporary and calling set_cfun
    on it.
-*/
+
+   ABSTRACT_P is true if this is a function that will never be seen by
+   the middle-end.  Such functions are front-end concepts (like C++
+   function templates) that do not correspond directly to functions
+   placed in object files.  */
 
 void
-allocate_struct_function (tree fndecl)
+allocate_struct_function (tree fndecl, bool abstract_p)
 {
   tree result;
   tree fntype = fndecl ? TREE_TYPE (fndecl) : NULL_TREE;
@@ -3910,7 +3914,7 @@ allocate_struct_function (tree fndecl)
       cfun->decl = fndecl;
 
       result = DECL_RESULT (fndecl);
-      if (aggregate_value_p (result, fndecl))
+      if (!abstract_p && aggregate_value_p (result, fndecl))
 	{
 #ifdef PCC_STATIC_STRUCT_RETURN
 	  current_function_returns_pcc_struct = 1;
@@ -3943,7 +3947,7 @@ push_struct_function (tree fndecl)
   VEC_safe_push (function_p, heap, cfun_stack, cfun);
   if (fndecl)
     in_system_header = DECL_IN_SYSTEM_HEADER (fndecl);
-  allocate_struct_function (fndecl);
+  allocate_struct_function (fndecl, false);
 }
 
 /* Reset cfun, and other non-struct-function variables to defaults as
@@ -3998,7 +4002,7 @@ init_function_start (tree subr)
   if (subr && DECL_STRUCT_FUNCTION (subr))
     set_cfun (DECL_STRUCT_FUNCTION (subr));
   else
-    allocate_struct_function (subr);
+    allocate_struct_function (subr, false);
   prepare_function_start ();
 
   /* Warn if this value is an aggregate type,

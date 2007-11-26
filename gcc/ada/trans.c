@@ -1776,7 +1776,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   Sloc_to_locus (Sloc (gnat_node), &DECL_SOURCE_LOCATION (gnu_subprog_decl));
 
   /* Initialize the information structure for the function.  */
-  allocate_struct_function (gnu_subprog_decl);
+  allocate_struct_function (gnu_subprog_decl, false);
   DECL_STRUCT_FUNCTION (gnu_subprog_decl)->language
     = GGC_CNEW (struct language_function);
 
@@ -2914,7 +2914,7 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
   push_stack (&gnu_elab_proc_stack, NULL_TREE, gnu_elab_proc_decl);
 
   DECL_ELABORATION_PROC_P (gnu_elab_proc_decl) = 1;
-  allocate_struct_function (gnu_elab_proc_decl);
+  allocate_struct_function (gnu_elab_proc_decl, false);
   Sloc_to_locus (Sloc (gnat_unit_entity), &cfun->function_end_locus);
   set_cfun (NULL);
 

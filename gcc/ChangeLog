@@ -1,3 +1,17 @@
+2007-11-26  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	PR 34081/C++
+	* c-decl.c (store_parm_decls): Pass 'false' for the new
+	allocate_struct_function parameter.
+	* cgraphunit.c (cgraph_build_static_cdtor): Likewise.
+	* tree-parloops.c (create_loop_fn): Likewise.
+	* function.c (push_function_context_to, push_struct_function,
+	init_function_start): Likewise.
+	(allocate_struct_function): Add boolean parameter.
+	* tree.h (allocate_struct_function): Add boolean parameter.
+	* function.h (struct function): Move returns_struct and
+	returns_pcc_struct to the end of the structure definiton.
+
 2007-11-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/34215

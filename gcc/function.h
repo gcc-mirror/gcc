@@ -360,14 +360,6 @@ struct function GTY(())
      probabilities pass.  */
   ENUM_BITFIELD (function_frequency) function_frequency : 2;
 
-  /* Nonzero if function being compiled needs to be given an address
-     where the value should be stored.  */
-  unsigned int returns_struct : 1;
-
-  /* Nonzero if function being compiled needs to
-     return the address of where it has put a structure value.  */
-  unsigned int returns_pcc_struct : 1;
-
   /* Nonzero if function being compiled can call setjmp.  */
   unsigned int calls_setjmp : 1;
 
@@ -456,6 +448,17 @@ struct function GTY(())
      function has been gimplified, so we can make sure we're not
      creating non GIMPLE tuples after gimplification.  */
   unsigned int gimplified : 1;
+
+  /* Fields below this point are not set for abstract functions; see
+     allocate_struct_function.  */
+
+  /* Nonzero if function being compiled needs to be given an address
+     where the value should be stored.  */
+  unsigned int returns_struct : 1;
+
+  /* Nonzero if function being compiled needs to
+     return the address of where it has put a structure value.  */
+  unsigned int returns_pcc_struct : 1;
 };
 
 /* If va_list_[gf]pr_size is set to this, it means we don't know how

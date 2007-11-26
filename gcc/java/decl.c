@@ -1850,7 +1850,7 @@ finish_method (tree fndecl)
   if (DECL_STRUCT_FUNCTION (fndecl))
     set_cfun (DECL_STRUCT_FUNCTION (fndecl));
   else
-    allocate_struct_function (fndecl);
+    allocate_struct_function (fndecl, false);
 #ifdef USE_MAPPED_LOCATION
   cfun->function_end_locus = DECL_FUNCTION_LAST_LINE (fndecl);
 #else

@@ -2983,7 +2983,7 @@ build_function_stub (tree gnu_subprog, Entity_Id gnat_subprog)
 
   gnat_poplevel ();
 
-  allocate_struct_function (gnu_stub_decl);
+  allocate_struct_function (gnu_stub_decl, false);
   end_subprog_body (gnu_body);
 }
 

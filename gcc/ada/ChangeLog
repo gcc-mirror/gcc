@@ -1,3 +1,10 @@
+2007-11-26  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+        PR 34081/C++
+        * trans.c (Subprogram_Body_to_gnu, Compilation_Unit_to_gnu):
+        Pass 'false' for the new allocate_struct_function parameter.
+        * utils.c (build_function_stub): Likewise.
+
 2007-11-25  Richard Guenther  <rguenther@suse.de>
 
 	utils.c (gnat_pushlevel): Use BLOCK_CHAIN.
