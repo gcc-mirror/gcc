@@ -1,3 +1,10 @@
+2007-11-26  Steven Bosscher  <stevenb.gcc@gmail.com> 
+	    Revital Eres  <eres@il.ibm.com> 
+
+	PR middle-end/34085
+	* bb-reorder.c (insert_section_boundary_note): Clear
+	BLOCK_FOR_INSN in NOTE_INSN_SWITCH_TEXT_SECTIONS.
+
 2007-11-26  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* config/mips/elfoabi.h (DRIVER_SELF_SPECS): Add missing comma.

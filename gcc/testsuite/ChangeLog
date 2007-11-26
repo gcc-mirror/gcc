@@ -1,3 +1,9 @@
+2007-11-26  Steven Bosscher  <stevenb.gcc@gmail.com>
+	    Revital Eres  <eres@il.ibm.com>
+
+	PR rtl-optimization/34085
+	* gcc.dg/tree-prof (bb-reorg.c): New test.
+
 2007-11-26  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* lib/target-supports.exp (check_effective_target_mips_soft_float):
