@@ -1,3 +1,7 @@
+2007-11-26  Ben Elliston  <bje@au.ibm.com>
+
+	* unwind-dw2-fde.c: Fix comment typo.
+
 2007-11-25  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* tree-sra.c (scalarize_use): Adjust the vpos argument to

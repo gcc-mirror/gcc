@@ -44,7 +44,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 /* The unseen_objects list contains objects that have been registered
    but not yet categorized in any way.  The seen_objects list has had
-   it's pc_begin and count fields initialized at minimum, and is sorted
+   its pc_begin and count fields initialized at minimum, and is sorted
    by decreasing value of pc_begin.  */
 static struct object *unseen_objects;
 static struct object *seen_objects;
