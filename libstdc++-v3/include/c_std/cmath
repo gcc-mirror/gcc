@@ -1,6 +1,7 @@
 // -*- C++ -*- C forwarding header.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+// 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -467,55 +468,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     inline int
     __capture_fpclassify(_Tp __f) { return fpclassify(__f); }
 
-  template<typename _Tp>
-    inline int
-    __capture_isfinite(_Tp __f) { return isfinite(__f); }
-
-  template<typename _Tp>
-    inline int
-    __capture_isinf(_Tp __f) { return isinf(__f); }
-
-  template<typename _Tp>
-    inline int
-    __capture_isnan(_Tp __f) { return isnan(__f); }
-
-  template<typename _Tp>
-    inline int
-    __capture_isnormal(_Tp __f) { return isnormal(__f); }
-
-  template<typename _Tp>
-    inline int
-    __capture_signbit(_Tp __f) { return signbit(__f); }
-
-  template<typename _Tp>
-    inline int
-    __capture_isgreater(_Tp __f1, _Tp __f2)
-    { return isgreater(__f1, __f2); }
-
-  template<typename _Tp>
-    inline int
-    __capture_isgreaterequal(_Tp __f1, _Tp __f2)
-    { return isgreaterequal(__f1, __f2); }
-
-  template<typename _Tp>
-    inline int
-    __capture_isless(_Tp __f1, _Tp __f2) { return isless(__f1, __f2); }
-
-  template<typename _Tp>
-    inline int
-    __capture_islessequal(_Tp __f1, _Tp __f2)
-    { return islessequal(__f1, __f2); }
-
-  template<typename _Tp>
-    inline int
-    __capture_islessgreater(_Tp __f1, _Tp __f2)
-    { return islessgreater(__f1, __f2); }
-
-  template<typename _Tp>
-    inline int
-    __capture_isunordered(_Tp __f1, _Tp __f2)
-    { return isunordered(__f1, __f2); }
-
 _GLIBCXX_END_NAMESPACE
 
 // Only undefine the C99 FP macros, if actually captured for namespace movement
@@ -535,58 +487,112 @@ _GLIBCXX_END_NAMESPACE
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _Tp>
-    inline int
-    fpclassify(_Tp __f) { return ::__gnu_cxx::__capture_fpclassify(__f); }
+    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
+					   int>::__type
+    fpclassify(_Tp __f)
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return ::__gnu_cxx::__capture_fpclassify(__type(__f));
+    }
 
   template<typename _Tp>
-    inline int
-    isfinite(_Tp __f) { return ::__gnu_cxx::__capture_isfinite(__f); }
+    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
+					   int>::__type
+    isfinite(_Tp __f)
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return __builtin_isfinite(__type(__f));
+    }
 
   template<typename _Tp>
-    inline int
-    isinf(_Tp __f) { return ::__gnu_cxx::__capture_isinf(__f); }
+    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
+					   int>::__type
+    isinf(_Tp __f)
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return __builtin_isinf(__type(__f));
+    }
 
   template<typename _Tp>
-    inline int
-    isnan(_Tp __f) { return ::__gnu_cxx::__capture_isnan(__f); }
+    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
+					   int>::__type
+    isnan(_Tp __f)
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return __builtin_isnan(__type(__f));
+    }
 
   template<typename _Tp>
-    inline int
-    isnormal(_Tp __f) { return ::__gnu_cxx::__capture_isnormal(__f); }
+    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
+					   int>::__type
+    isnormal(_Tp __f)
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return __builtin_isnormal(__type(__f));
+    }
 
   template<typename _Tp>
-    inline int
-    signbit(_Tp __f) { return ::__gnu_cxx::__capture_signbit(__f); }
+    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
+					   int>::__type
+    signbit(_Tp __f)
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return __builtin_signbit(__type(__f));
+    }
 
   template<typename _Tp>
-    inline int
+    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
+					   int>::__type
     isgreater(_Tp __f1, _Tp __f2)
-    { return ::__gnu_cxx::__capture_isgreater(__f1, __f2); }
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return __builtin_isgreater(__type(__f1), __type(__f2));
+    }
 
   template<typename _Tp>
-    inline int
+    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
+					   int>::__type
     isgreaterequal(_Tp __f1, _Tp __f2)
-    { return ::__gnu_cxx::__capture_isgreaterequal(__f1, __f2); }
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return __builtin_isgreaterequal(__type(__f1), __type(__f2));
+    }
 
   template<typename _Tp>
-    inline int
+    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
+					   int>::__type
     isless(_Tp __f1, _Tp __f2)
-    { return ::__gnu_cxx::__capture_isless(__f1, __f2); }
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return __builtin_isless(__type(__f1), __type(__f2));
+    }
 
   template<typename _Tp>
-    inline int
+    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value, 
+					   int>::__type
     islessequal(_Tp __f1, _Tp __f2)
-    { return ::__gnu_cxx::__capture_islessequal(__f1, __f2); }
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return __builtin_islessequal(__type(__f1), __type(__f2));
+    }
 
   template<typename _Tp>
-    inline int
+    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
+					   int>::__type
     islessgreater(_Tp __f1, _Tp __f2)
-    { return ::__gnu_cxx::__capture_islessgreater(__f1, __f2); }
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return __builtin_islessgreater(__type(__f1), __type(__f2));
+    }
 
   template<typename _Tp>
-    inline int
+    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
+					   int>::__type
     isunordered(_Tp __f1, _Tp __f2)
-    { return ::__gnu_cxx::__capture_isunordered(__f1, __f2); }
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return __builtin_isunordered(__type(__f1), __type(__f2));
+    }
 
 _GLIBCXX_END_NAMESPACE
 
