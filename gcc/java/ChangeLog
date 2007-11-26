@@ -1,3 +1,8 @@
+2007-11-26  Alexandre Oliva  <aoliva@redhat.com>
+
+	* expr.c (type_assertion_hash): Hash type uids rather than
+	tree pointers.
+
 2007-11-17  David Daney  <ddaney@avtrex.com>
 	    Andrew Haley  <aph@redhat.com>
 
