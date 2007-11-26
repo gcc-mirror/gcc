@@ -1233,11 +1233,12 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2)
 	  {
 	    int result;
 
-
-	    if (DECL_NAME (s1) == NULL
-		|| DECL_NAME (s1) != DECL_NAME (s2))
+	    if (DECL_NAME (s1) != DECL_NAME (s2))
 	      break;
 	    result = comptypes_internal (TREE_TYPE (s1), TREE_TYPE (s2));
+
+	    if (result != 1 && !DECL_NAME (s1))
+	      break;
 	    if (result == 0)
 	      {
 		tu->val = 0;
@@ -1264,28 +1265,31 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2)
 	  {
 	    bool ok = false;
 
-	    if (DECL_NAME (s1) != NULL)
-	      for (s2 = TYPE_FIELDS (t2); s2; s2 = TREE_CHAIN (s2))
-		if (DECL_NAME (s1) == DECL_NAME (s2))
-		  {
-		    int result;
-		    result = comptypes_internal (TREE_TYPE (s1), TREE_TYPE (s2));
-		    if (result == 0)
-		      {
-			tu->val = 0;
-			return 0;
-		      }
-		    if (result == 2)
-		      needs_warning = true;
+	    for (s2 = TYPE_FIELDS (t2); s2; s2 = TREE_CHAIN (s2))
+	      if (DECL_NAME (s1) == DECL_NAME (s2))
+		{
+		  int result;
 
-		    if (TREE_CODE (s1) == FIELD_DECL
-			&& simple_cst_equal (DECL_FIELD_BIT_OFFSET (s1),
-					     DECL_FIELD_BIT_OFFSET (s2)) != 1)
-		      break;
+		  result = comptypes_internal (TREE_TYPE (s1), TREE_TYPE (s2));
 
-		    ok = true;
+		  if (result != 1 && !DECL_NAME (s1))
+		    continue;
+		  if (result == 0)
+		    {
+		      tu->val = 0;
+		      return 0;
+		    }
+		  if (result == 2)
+		    needs_warning = true;
+
+		  if (TREE_CODE (s1) == FIELD_DECL
+		      && simple_cst_equal (DECL_FIELD_BIT_OFFSET (s1),
+					   DECL_FIELD_BIT_OFFSET (s2)) != 1)
 		    break;
-		  }
+
+		  ok = true;
+		  break;
+		}
 	    if (!ok)
 	      {
 		tu->val = 0;
