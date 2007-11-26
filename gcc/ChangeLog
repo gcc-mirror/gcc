@@ -1,3 +1,11 @@
+2007-11-26  Michael Meissner  <michael.meissner@amd.com>
+
+	PR target/34077
+	* config/i386/i386.c (ix86_expand_movmem): If the copy size is a
+	constant, avoid calling emit_cmp_and_jump_insns.  Use counter_mode
+	to get the mode for loading a pseudo register with a count rather
+	than duplicating code.
+
 2007-11-25  Eric B. Weddington  <eric.weddington@atmel.com>
 
 	* config/avr/avr.c (avr_mcu_types): Add atmega1284p.
