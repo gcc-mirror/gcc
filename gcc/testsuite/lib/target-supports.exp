@@ -615,11 +615,12 @@ proc check_effective_target_mpaired_single { } {
     } "-mpaired-single"]
 }
 
-# Return true if we're testing a soft-float MIPS target.
+# Return true if we're testing a MIPS target that does not have access
+# to FPU instructions.
 
 proc check_effective_target_mips_soft_float { } {
     return [check_no_compiler_messages mips_soft_float assembly {
-	#ifndef __mips_soft_float
+	#if !defined (__mips_soft_float) && !defined (__mips16)
 	#error FOO
 	#endif
     }]
