@@ -500,8 +500,15 @@ remove_unused_scope_block_p (tree scope)
       /* When we are not doing full debug info, we however can keep around
 	 only the used variables for cfgexpand's memory packing saving quite
 	 a lot of memory.  */
-      else if (debug_info_level != DINFO_LEVEL_NORMAL
-	       && debug_info_level != DINFO_LEVEL_VERBOSE)
+      else if (debug_info_level == DINFO_LEVEL_NORMAL
+	       || debug_info_level == DINFO_LEVEL_VERBOSE
+	       /* Removing declarations before inlining is going to affect
+		  DECL_UID that in turn is going to affect hashtables and
+		  code generation.  */
+	       || !cfun->after_inlining)
+	unused = false;
+
+      else
 	{
 	  *t = TREE_CHAIN (*t);
 	  next = t;
@@ -523,7 +530,10 @@ remove_unused_scope_block_p (tree scope)
 	    nsubblocks ++;
 	  }
 	else
-          *t = BLOCK_CHAIN (*t);
+	  {
+	    gcc_assert (!BLOCK_VARS (*t));
+	    *t = BLOCK_CHAIN (*t);
+	  }
       }
     else
       {

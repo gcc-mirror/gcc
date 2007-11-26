@@ -1,3 +1,11 @@
+2007-11-26  Alexandre Oliva  <aoliva@redhat.com>, Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-live.c (remove_unused_scope_block_p): Drop
+	declarations and blocks only after inlining.  Check that
+	non-empty blocks are not dropped.
+	* tree-inline.c (expand_call_inline): Check that functions are
+	not inlined too late.
+
 2007-11-26  Ben Elliston  <bje@au.ibm.com>
 
 	* unwind-dw2-fde.c: Fix comment typo.
