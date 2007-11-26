@@ -1,3 +1,7 @@
+2007-11-26  Alexandre Oliva  <aoliva@redhat.com>
+
+	* compare-debug: Introduce -p flag to preserve .stripped files.
+
 2007-10-08  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* texi2pod.pl: Handle @asis.
