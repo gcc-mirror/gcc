@@ -21,6 +21,15 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
+rm='rm -f'
+
+case $1 in
+-p | --preserve)
+  rm='echo preserving'
+  shift
+  ;;
+esac
+
 if test $# != 2; then
   echo 'usage: compare-debug file1.o file2.o' >&2
   exit 1
@@ -60,7 +69,7 @@ else
   status=1
 fi
 
-rm -f "$1.$suf1" "$2.$suf2"
+$rm "$1.$suf1" "$2.$suf2"
 
 trap "exit $status; exit" 0 1 2 15
 
