@@ -797,6 +797,7 @@ mmcu=*:-mmcu=%*}"
   mmcu=atmega169*|\
   mmcu=atmega8hva|\
   mmcu=atmega16hva|\
+  mmcu=atmega32hvb|\
   mmcu=attiny48|\
   mmcu=attiny88|\
   mmcu=at90can*|\
@@ -891,6 +892,7 @@ mmcu=*:-mmcu=%*}"
 %{mmcu=atmega329p:crtm329p.o%s} \
 %{mmcu=atmega3290:crtm3290.o%s} \
 %{mmcu=atmega3290p:crtm3290p.o%s} \
+%{mmcu=atmega32hvb:crtm32hvb.o%s} \
 %{mmcu=atmega406:crtm406.o%s} \
 %{mmcu=atmega64:crtm64.o%s} \
 %{mmcu=atmega640:crtm640.o%s} \

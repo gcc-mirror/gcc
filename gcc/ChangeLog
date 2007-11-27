@@ -1,3 +1,10 @@
+2007-11-27  Eric B. Weddington  <eric.weddington@atmel.com>
+
+	* config/avr/avr.c (avr_mcu_types): Add atmega32hvb.
+	* config/avr/avr.h (LINK_SPEC): Likewise.
+	(CRT_BINUTILS_SPECS): Likewsie.
+	* config/avr/t-avr (MULTILIB_MATCHES): Likewise.
+	
 2007-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/34225

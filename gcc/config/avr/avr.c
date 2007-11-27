@@ -239,6 +239,7 @@ static const struct mcu_type_s avr_mcu_types[] = {
   { "atmega329p",   ARCH_AVR5, "__AVR_ATmega329P__" },
   { "atmega3290",   ARCH_AVR5, "__AVR_ATmega3290__" },
   { "atmega3290p",  ARCH_AVR5, "__AVR_ATmega3290P__" },
+  { "atmega32hvb",  ARCH_AVR5, "__AVR_ATmega32HVB__" },
   { "atmega406",    ARCH_AVR5, "__AVR_ATmega406__" },
   { "atmega64",     ARCH_AVR5, "__AVR_ATmega64__" },
   { "atmega640",    ARCH_AVR5, "__AVR_ATmega640__" },
