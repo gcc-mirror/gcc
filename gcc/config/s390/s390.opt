@@ -51,7 +51,7 @@ Target Report Mask(HARD_DFP)
 Enable decimal floating point hardware support
 
 mhard-float
-Target Report RejectNegative InverseMask(SOFT_FLOAT, HARD_FLOAT)
+Target Report RejectNegative Negative(msoft-float) InverseMask(SOFT_FLOAT, HARD_FLOAT)
 Enable hardware floating point
 
 mlong-double-128
