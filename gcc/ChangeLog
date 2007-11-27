@@ -1,3 +1,7 @@
+2007-11-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-propagate.c (set_rhs) <GIMPLE_MODIFY_STMT>: Fix typo.
+
 2007-11-26  Michael Meissner  <michael.meissner@amd.com>
 
 	PR target/34077

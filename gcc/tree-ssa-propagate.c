@@ -710,12 +710,9 @@ set_rhs (tree *stmt_p, tree expr)
     case GIMPLE_MODIFY_STMT:
       op = GIMPLE_STMT_OPERAND (stmt, 1);
       if (TREE_CODE (op) == WITH_SIZE_EXPR)
-	{
-	  stmt = op;
-          TREE_OPERAND (stmt, 1) = expr;
-	}
+	TREE_OPERAND (op, 0) = expr;
       else
-        GIMPLE_STMT_OPERAND (stmt, 1) = expr;
+	GIMPLE_STMT_OPERAND (stmt, 1) = expr;
       break;
 
     case COND_EXPR:
