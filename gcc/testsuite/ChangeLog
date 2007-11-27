@@ -1,3 +1,11 @@
+2007-11-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/33541
+	* gfortran.dg/use_11.f90: New test.
+
+	PR fortran/34231
+	* gfortran.dg/generic_15.f90: New test.
+
 2007-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/34225

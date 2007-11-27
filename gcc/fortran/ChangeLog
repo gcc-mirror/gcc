@@ -1,3 +1,23 @@
+2007-11-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/33541
+	*interface.c (compare_actual_formal): Exclude assumed size
+	arrays from the possibility of scalar to array mapping.
+	* decl.c (get_proc_name): Fix whitespace problem.
+
+	PR fortran/34231
+	* gfortran.h : Add 'use_rename' bit to symbol_attribute.
+	* module.c : Add 'renamed' field to pointer_info.u.rsym.
+	(load_generic_interfaces): Add 'renamed' that is set after the
+	number_use_names is called.  This is used to set the attribute
+	use_rename, which, in its turn identifies those symbols that
+	have not been renamed.
+	(load_needed): If pointer_info.u.rsym->renamed is set, then
+	set the use_rename attribute of the symbol.
+	(read_module): Correct an erroneous use of use_flag. Use the
+	renamed flag and the use_rename attribute to determine which
+	symbols are not renamed.
+
 2007-11-26  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/34203
