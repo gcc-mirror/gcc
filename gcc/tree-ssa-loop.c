@@ -272,6 +272,7 @@ struct tree_opt_pass pass_linear_transform =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_dump_func | TODO_verify_loops
+    | TODO_update_ssa_only_virtuals
     | TODO_ggc_collect,			/* todo_flags_finish */
   0				        /* letter */	
 };
