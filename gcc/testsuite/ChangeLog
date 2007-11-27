@@ -1,3 +1,7 @@
+2007-11-27  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/builtins-error.c: New testcase.
+
 2007-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34213

@@ -10063,6 +10063,15 @@ fold_builtin_1 (tree fndecl, tree arg0, bool ignore)
     case BUILT_IN_ISNAND128:
       return fold_builtin_classify (fndecl, arg0, BUILT_IN_ISNAN);
 
+    case BUILT_IN_ISNORMAL:
+      if (!validate_arg (arg0, REAL_TYPE))
+	{
+	  error ("non-floating-point argument to function %qs",
+		 IDENTIFIER_POINTER (DECL_NAME (fndecl)));
+	  return error_mark_node;
+	}
+      break;
+
     case BUILT_IN_PRINTF:
     case BUILT_IN_PRINTF_UNLOCKED:
     case BUILT_IN_VPRINTF:
@@ -10408,7 +10417,55 @@ fold_builtin_4 (tree fndecl, tree arg0, tree arg1, tree arg2, tree arg3,
 static tree
 fold_builtin_n (tree fndecl, tree *args, int nargs, bool ignore)
 {
+  enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
   tree ret = NULL_TREE;
+
+  /* Verify the number of arguments for type-generic and thus variadic
+     builtins.  */
+  switch (fcode)
+    {
+    case BUILT_IN_ISFINITE:
+    case BUILT_IN_ISINF:
+    case BUILT_IN_ISNAN:
+    case BUILT_IN_ISNORMAL:
+      if (nargs < 1)
+	{
+	  error ("too few arguments to function %qs",
+		 IDENTIFIER_POINTER (DECL_NAME (fndecl)));
+	  return error_mark_node;
+	}
+      else if (nargs > 1)
+	{
+	  error ("too many arguments to function %qs",
+		 IDENTIFIER_POINTER (DECL_NAME (fndecl)));
+	  return error_mark_node;
+	}
+      break;
+
+    case BUILT_IN_ISGREATER:
+    case BUILT_IN_ISGREATEREQUAL:
+    case BUILT_IN_ISLESS:
+    case BUILT_IN_ISLESSEQUAL:
+    case BUILT_IN_ISLESSGREATER:
+    case BUILT_IN_ISUNORDERED:
+      if (nargs < 2)
+	{
+	  error ("too few arguments to function %qs",
+		 IDENTIFIER_POINTER (DECL_NAME (fndecl)));
+	  return error_mark_node;
+	}
+      else if (nargs > 2)
+	{
+	  error ("too many arguments to function %qs",
+		 IDENTIFIER_POINTER (DECL_NAME (fndecl)));
+	  return error_mark_node;
+	}
+      break;
+
+    default:
+      break;
+    }
+
   switch (nargs)
     {
     case 0:
