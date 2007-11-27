@@ -1665,6 +1665,8 @@ is_external_proc (gfc_symbol *sym)
 /* Figure out if a function reference is pure or not.  Also set the name
    of the function for a potential error message.  Return nonzero if the
    function is PURE, zero if not.  */
+static int
+pure_stmt_function (gfc_expr *, gfc_symbol *);
 
 static int
 pure_function (gfc_expr *e, const char **name)
@@ -1676,7 +1678,7 @@ pure_function (gfc_expr *e, const char **name)
   if (e->symtree != NULL
         && e->symtree->n.sym != NULL
         && e->symtree->n.sym->attr.proc == PROC_ST_FUNCTION)
-    return 1;
+    return pure_stmt_function (e, e->symtree->n.sym);
 
   if (e->value.function.esym)
     {
@@ -1697,6 +1699,31 @@ pure_function (gfc_expr *e, const char **name)
     }
 
   return pure;
+}
+
+
+static bool
+impure_stmt_fcn (gfc_expr *e, gfc_symbol *sym,
+		 int *f ATTRIBUTE_UNUSED)
+{
+  const char *name;
+
+  /* Don't bother recursing into other statement functions
+     since they will be checked individually for purity.  */
+  if (e->expr_type != EXPR_FUNCTION
+	|| !e->symtree
+	|| e->symtree->n.sym == sym
+	|| e->symtree->n.sym->attr.proc == PROC_ST_FUNCTION)
+    return false;
+
+  return pure_function (e, &name) ? false : true;
+}
+
+
+static int
+pure_stmt_function (gfc_expr *e, gfc_symbol *sym)
+{
+  return gfc_traverse_expr (e, sym, impure_stmt_fcn, 0) ? 0 : 1;
 }
 
 
@@ -4369,8 +4396,9 @@ gfc_resolve_iterator (gfc_iterator *iter, bool real_ok)
 static bool
 forall_index (gfc_expr *expr, gfc_symbol *sym, int *f)
 {
-  gcc_assert (expr->expr_type == EXPR_VARIABLE);
-
+  if (expr->expr_type != EXPR_VARIABLE)
+    return false;
+  
   /* A scalar assignment  */
   if (!expr->ref || *f == 1)
     {
@@ -4552,85 +4580,20 @@ resolve_deallocate_expr (gfc_expr *e)
 }
 
 
-/* Returns true if the expression e contains a reference the symbol sym.  */
+/* Returns true if the expression e contains a reference to the symbol sym.  */
+static bool
+sym_in_expr (gfc_expr *e, gfc_symbol *sym, int *f ATTRIBUTE_UNUSED)
+{
+  if (e->expr_type == EXPR_VARIABLE && e->symtree->n.sym == sym)
+    return true;
+
+  return false;
+}
+
 static bool
 find_sym_in_expr (gfc_symbol *sym, gfc_expr *e)
 {
-  gfc_actual_arglist *arg;
-  gfc_ref *ref;
-  int i;
-  bool rv = false;
-
-  if (e == NULL)
-    return rv;
-
-  switch (e->expr_type)
-    {
-    case EXPR_FUNCTION:
-      for (arg = e->value.function.actual; arg; arg = arg->next)
-	rv = rv || find_sym_in_expr (sym, arg->expr);
-      break;
-
-    /* If the variable is not the same as the dependent, 'sym', and
-       it is not marked as being declared and it is in the same
-       namespace as 'sym', add it to the local declarations.  */
-    case EXPR_VARIABLE:
-      if (sym == e->symtree->n.sym)
-	return true;
-      break;
-
-    case EXPR_OP:
-      rv = rv || find_sym_in_expr (sym, e->value.op.op1);
-      rv = rv || find_sym_in_expr (sym, e->value.op.op2);
-      break;
-
-    default:
-      break;
-    }
-
-  if (e->ref)
-    {
-      for (ref = e->ref; ref; ref = ref->next)
-	{
-	  switch (ref->type)
-	    {
-	    case REF_ARRAY:
-	      for (i = 0; i < ref->u.ar.dimen; i++)
-		{
-		  rv = rv || find_sym_in_expr (sym, ref->u.ar.start[i]);
-		  rv = rv || find_sym_in_expr (sym, ref->u.ar.end[i]);
-		  rv = rv || find_sym_in_expr (sym, ref->u.ar.stride[i]);
-		}
-	      break;
-
-	    case REF_SUBSTRING:
-	      rv = rv || find_sym_in_expr (sym, ref->u.ss.start);
-	      rv = rv || find_sym_in_expr (sym, ref->u.ss.end);
-	      break;
-
-	    case REF_COMPONENT:
-	      if (ref->u.c.component->ts.type == BT_CHARACTER
-		  && ref->u.c.component->ts.cl->length->expr_type
-		     != EXPR_CONSTANT)
-		rv = rv
-		     || find_sym_in_expr (sym,
-					  ref->u.c.component->ts.cl->length);
-
-	      if (ref->u.c.component->as)
-		for (i = 0; i < ref->u.c.component->as->rank; i++)
-		  {
-		    rv = rv
-			 || find_sym_in_expr (sym,
-					      ref->u.c.component->as->lower[i]);
-		    rv = rv
-			 || find_sym_in_expr (sym,
-					      ref->u.c.component->as->upper[i]);
-		  }
-	      break;
-	    }
-	}
-    }
-  return rv;
+  return gfc_traverse_expr (e, sym, sym_in_expr, 0);
 }
 
 
@@ -5970,14 +5933,16 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
     }
 
   /* Ensure that a vector index expression for the lvalue is evaluated
-     to a temporary.  */
+     to a temporary if the lvalue symbol is referenced in it.  */
   if (lhs->rank)
     {
       for (ref = lhs->ref; ref; ref= ref->next)
 	if (ref->type == REF_ARRAY)
 	  {
 	    for (n = 0; n < ref->u.ar.dimen; n++)
-	      if (ref->u.ar.dimen_type[n] == DIMEN_VECTOR)
+	      if (ref->u.ar.dimen_type[n] == DIMEN_VECTOR
+		    && find_sym_in_expr (lhs->symtree->n.sym,
+					 ref->u.ar.start[n]))
 		ref->u.ar.start[n]
 			= gfc_get_parentheses (ref->u.ar.start[n]);
 	  }

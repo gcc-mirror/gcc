@@ -1523,7 +1523,8 @@ static gfc_symtree *old_symtree;
 static bool
 forall_replace (gfc_expr *expr, gfc_symbol *sym, int *f)
 {
-  gcc_assert (expr->expr_type == EXPR_VARIABLE);
+  if (expr->expr_type != EXPR_VARIABLE)
+    return false;
 
   if (*f == 2)
     *f = 1;
@@ -1544,7 +1545,8 @@ forall_restore (gfc_expr *expr,
 		gfc_symbol *sym ATTRIBUTE_UNUSED,
 		int *f ATTRIBUTE_UNUSED)
 {
-  gcc_assert (expr->expr_type == EXPR_VARIABLE);
+  if (expr->expr_type != EXPR_VARIABLE)
+    return false;
 
   if (expr->symtree == new_symtree)
     expr->symtree = old_symtree;

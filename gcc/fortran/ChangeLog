@@ -1,5 +1,34 @@
 2007-11-27  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/29389
+	*resolve.c (resolve_ordinary_assign): Use find_sym_in_expr to
+	test if a temporary should be written for a vector subscript
+	on the lhs.
+
+	PR fortran/33850
+	* restore.c (pure_stmt_function): Add prototype and new
+	function. Calls impure_stmt_fcn.
+	(pure_function): Call it.
+	(impure_stmt_fcn): New function.
+
+	* expr.c (gfc_traverse_expr): Call *func for all expression
+	types, not just variables. Add traversal of character lengths,
+	iterators and component character lengths and arrayspecs.
+	(expr_set_symbols_referenced): Return false if not a variable.
+	* trans-stmt.c (forall_replace, forall_restore): Ditto.
+	* resolve.c (forall_index): Ditto.
+	(sym_in_expr): New function.
+	(find_sym_in_expr): Rewrite to traverse expression calling
+	sym_in_expr.
+	*trans-decl.c (expr_decls): New function.
+	(generate_expr_decls): Rewrite to traverse expression calling
+	expr_decls.
+	*match.c (check_stmt_fcn): New function.
+	(recursive_stmt_fcn): Rewrite to traverse expression calling
+	check_stmt_fcn.
+
+2007-11-27  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/33541
 	*interface.c (compare_actual_formal): Exclude assumed size
 	arrays from the possibility of scalar to array mapping.

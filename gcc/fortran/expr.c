@@ -3010,14 +3010,18 @@ gfc_traverse_expr (gfc_expr *expr, gfc_symbol *sym,
   if (!expr)
     return false;
 
+  if ((*func) (expr, sym, &f))
+    return true;
+
+  if (expr->ts.type == BT_CHARACTER
+	&& expr->ts.cl
+	&& expr->ts.cl->length
+	&& expr->ts.cl->length->expr_type != EXPR_CONSTANT
+	&& gfc_traverse_expr (expr->ts.cl->length, sym, func, f))
+    return true;
+
   switch (expr->expr_type)
     {
-    case EXPR_VARIABLE:
-      gcc_assert (expr->symtree->n.sym);
-
-      if ((*func) (expr, sym, &f))
-	return true;
-
     case EXPR_FUNCTION:
       for (args = expr->value.function.actual; args; args = args->next)
 	{
@@ -3026,6 +3030,7 @@ gfc_traverse_expr (gfc_expr *expr, gfc_symbol *sym,
 	}
       break;
 
+    case EXPR_VARIABLE:
     case EXPR_CONSTANT:
     case EXPR_NULL:
     case EXPR_SUBSTRING:
@@ -3034,7 +3039,21 @@ gfc_traverse_expr (gfc_expr *expr, gfc_symbol *sym,
     case EXPR_STRUCTURE:
     case EXPR_ARRAY:
       for (c = expr->value.constructor; c; c = c->next)
-	gfc_expr_set_symbols_referenced (c->expr);
+	{
+	  if (gfc_traverse_expr (c->expr, sym, func, f))
+	    return true;
+	  if (c->iterator)
+	    {
+	      if (gfc_traverse_expr (c->iterator->var, sym, func, f))
+		return true;
+	      if (gfc_traverse_expr (c->iterator->start, sym, func, f))
+		return true;
+	      if (gfc_traverse_expr (c->iterator->end, sym, func, f))
+		return true;
+	      if (gfc_traverse_expr (c->iterator->step, sym, func, f))
+		return true;
+	    }
+	}
       break;
 
     case EXPR_OP:
@@ -3074,8 +3093,27 @@ gfc_traverse_expr (gfc_expr *expr, gfc_symbol *sym,
 	    return true;
 	  break;
 
-	  case REF_COMPONENT:
-	    break;
+	case REF_COMPONENT:
+	  if (ref->u.c.component->ts.type == BT_CHARACTER
+		&& ref->u.c.component->ts.cl
+		&& ref->u.c.component->ts.cl->length
+		&& ref->u.c.component->ts.cl->length->expr_type
+		     != EXPR_CONSTANT
+		&& gfc_traverse_expr (ref->u.c.component->ts.cl->length,
+				      sym, func, f))
+	    return true;
+
+	  if (ref->u.c.component->as)
+	    for (i = 0; i < ref->u.c.component->as->rank; i++)
+	      {
+		if (gfc_traverse_expr (ref->u.c.component->as->lower[i],
+				       sym, func, f))
+		  return true;
+		if (gfc_traverse_expr (ref->u.c.component->as->upper[i],
+				       sym, func, f))
+		  return true;
+	      }
+	  break;
 
 	default:
 	  gcc_unreachable ();
@@ -3092,6 +3130,8 @@ expr_set_symbols_referenced (gfc_expr *expr,
 			     gfc_symbol *sym ATTRIBUTE_UNUSED,
 			     int *f ATTRIBUTE_UNUSED)
 {
+  if (expr->expr_type != EXPR_VARIABLE)
+    return false;
   gfc_set_sym_referenced (expr->symtree->n.sym);
   return false;
 }
