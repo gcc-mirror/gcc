@@ -1,3 +1,10 @@
+2007-11-27  Richard Guenther  <rguenther@suse.de>
+
+	* builtins.c (fold_builtin_1): Verify the argument types
+	of BUILT_IN_ISNORMAL.
+	(fold_builtin_n): Verify the number of arguments to variadic
+	built-in functions.
+
 2007-11-27  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/elf.h (SUBTARGET_DRIVER_SELF_SPECS): New macro.
