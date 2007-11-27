@@ -1,3 +1,10 @@
+2007-11-27  Ben Elliston  <bje@au.ibm.com>
+
+	* config/rs6000/sysv4.opt (m32): Add Negative(m64).
+	(m64): Add Negative(m32).
+	* config/rs6000/darwin.opt (m32): Add Negative(m64).
+	(m64): Add Negative(m32).
+
 2007-11-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-propagate.c (set_rhs) <GIMPLE_MODIFY_STMT>: Fix typo.

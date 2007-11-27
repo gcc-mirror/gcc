@@ -20,11 +20,11 @@
 ; <http://www.gnu.org/licenses/>.
 
 m64
-Target RejectNegative Mask(64BIT)
+Target RejectNegative Negative(m32) Mask(64BIT)
 Generate 64-bit code
 
 m32
-Target RejectNegative InverseMask(64BIT)
+Target RejectNegative Negative(m64) InverseMask(64BIT)
 Generate 32-bit code
 
 mdynamic-no-pic
