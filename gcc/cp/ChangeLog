@@ -1,6 +1,12 @@
+2007-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34213
+	* tree.c (decl_linkage): Static data members and static member
+	functions in anonymous ns classes are lk_external.
+
 2007-11-26  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-	PR 34081/C++
+	PR c++/34081
 	* decl.c (start_preparsed_function): Pass 
 	processing_template_decl for the new allocate_struct_function
 	parameter.

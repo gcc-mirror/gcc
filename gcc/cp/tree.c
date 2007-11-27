@@ -2526,10 +2526,18 @@ decl_linkage (tree decl)
   /* Members of the anonymous namespace also have TREE_PUBLIC unset, but
      are considered to have external linkage for language purposes.  DECLs
      really meant to have internal linkage have DECL_THIS_STATIC set.  */
-  if (TREE_CODE (decl) == TYPE_DECL
-      || ((TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == FUNCTION_DECL)
-	  && !DECL_THIS_STATIC (decl)))
+  if (TREE_CODE (decl) == TYPE_DECL)
     return lk_external;
+  if (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      if (!DECL_THIS_STATIC (decl))
+	return lk_external;
+
+      /* Static data members and static member functions from classes
+	 in anonymous namespace also don't have TREE_PUBLIC set.  */
+      if (DECL_CLASS_CONTEXT (decl))
+	return lk_external;
+    }
 
   /* Everything else has internal linkage.  */
   return lk_internal;
