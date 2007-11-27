@@ -1,3 +1,9 @@
+2007-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/34016
+	* tree-ssa-loop.c (pass_linear_transform): Add
+	TODO_update_ssa_only_virtuals to todo_flags_finish.
+
 2007-11-27  Eric B. Weddington  <eric.weddington@atmel.com>
 
 	* config/avr/avr.c (avr_mcu_types): Add atmega32hvb.
