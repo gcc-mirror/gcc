@@ -1,5 +1,8 @@
 2007-11-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/34181
+	* method.c (use_thunk): Don't inline the call in the thunk.
+
 	PR c++/34213
 	* tree.c (decl_linkage): Static data members and static member
 	functions in anonymous ns classes are lk_external.

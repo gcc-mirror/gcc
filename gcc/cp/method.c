@@ -481,6 +481,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 	argarray[i] = a;
       t = build_call_a (alias, i, argarray);
       CALL_FROM_THUNK_P (t) = 1;
+      CALL_CANNOT_INLINE_P (t) = 1;
 
       if (VOID_TYPE_P (TREE_TYPE (t)))
 	finish_expr_stmt (t);
