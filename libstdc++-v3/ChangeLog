@@ -1,3 +1,11 @@
+2007-11-26  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (num_put<>::_M_insert_int): When
+	ios_base::showpos and the type is signed and the value is zero,
+	prepend +.
+	* testsuite/22_locale/num_put/put/char/12.cc: New.
+	* testsuite/22_locale/num_put/put/wchar_t/12.cc: Likewise.
+
 2007-10-20  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/random

@@ -1015,13 +1015,13 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	if (__builtin_expect(__dec, true))
 	  {
 	    // Decimal.
-	    if (__v > 0)
+	    if (__v >= 0)
 	      {
 		if (__flags & ios_base::showpos
 		    && numeric_limits<_ValueT>::is_signed)
 		  *--__cs = __lit[__num_base::_S_oplus], ++__len;
 	      }
-	    else if (__v)
+	    else
 	      *--__cs = __lit[__num_base::_S_ominus], ++__len;
 	  }
 	else if (__flags & ios_base::showbase && __v)
