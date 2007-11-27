@@ -874,13 +874,13 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	if (__builtin_expect(__dec, true))
 	  {
 	    // Decimal.
-	    if (__v > 0)
+	    if (__v >= 0)
 	      {
 		if (bool(__flags & ios_base::showpos)
 		    && __gnu_cxx::__numeric_traits<_ValueT>::__is_signed)
 		  *--__cs = __lit[__num_base::_S_oplus], ++__len;
 	      }
-	    else if (__v)
+	    else
 	      *--__cs = __lit[__num_base::_S_ominus], ++__len;
 	  }
 	else if (bool(__flags & ios_base::showbase) && __v)
