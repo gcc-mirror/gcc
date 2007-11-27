@@ -1,3 +1,8 @@
+2007-11-27  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.opt (mhard-float): Add the option to be
+	overridden.  That was missing in my last patch.
+
 2007-11-27  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/34241
