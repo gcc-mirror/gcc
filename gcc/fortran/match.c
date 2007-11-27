@@ -3209,13 +3209,12 @@ cleanup:
    12.5.4 requires that any variable of function that is implicitly typed
    shall have that type confirmed by any subsequent type declaration.  The
    implicit typing is conveniently done here.  */
+static bool
+recursive_stmt_fcn (gfc_expr *, gfc_symbol *);
 
 static bool
-recursive_stmt_fcn (gfc_expr *e, gfc_symbol *sym)
+check_stmt_fcn (gfc_expr *e, gfc_symbol *sym, int *f ATTRIBUTE_UNUSED)
 {
-  gfc_actual_arglist *arg;
-  gfc_ref *ref;
-  int i;
 
   if (e == NULL)
     return false;
@@ -3223,12 +3222,6 @@ recursive_stmt_fcn (gfc_expr *e, gfc_symbol *sym)
   switch (e->expr_type)
     {
     case EXPR_FUNCTION:
-      for (arg = e->value.function.actual; arg; arg = arg->next)
-	{
-	  if (sym->name == arg->name || recursive_stmt_fcn (arg->expr, sym))
-	    return true;
-	}
-
       if (e->symtree == NULL)
 	return false;
 
@@ -3255,46 +3248,18 @@ recursive_stmt_fcn (gfc_expr *e, gfc_symbol *sym)
 	gfc_set_default_type (e->symtree->n.sym, 0, NULL);
       break;
 
-    case EXPR_OP:
-      if (recursive_stmt_fcn (e->value.op.op1, sym)
-	  || recursive_stmt_fcn (e->value.op.op2, sym))
-	return true;
-      break;
-
     default:
       break;
     }
 
-  /* Component references do not need to be checked.  */
-  if (e->ref)
-    {
-      for (ref = e->ref; ref; ref = ref->next)
-	{
-	  switch (ref->type)
-	    {
-	    case REF_ARRAY:
-	      for (i = 0; i < ref->u.ar.dimen; i++)
-		{
-		  if (recursive_stmt_fcn (ref->u.ar.start[i], sym)
-		      || recursive_stmt_fcn (ref->u.ar.end[i], sym)
-		      || recursive_stmt_fcn (ref->u.ar.stride[i], sym))
-		    return true;
-		}
-	      break;
-
-	    case REF_SUBSTRING:
-	      if (recursive_stmt_fcn (ref->u.ss.start, sym)
-		  || recursive_stmt_fcn (ref->u.ss.end, sym))
-		return true;
-
-	      break;
-
-	    default:
-	      break;
-	    }
-	}
-    }
   return false;
+}
+
+
+static bool
+recursive_stmt_fcn (gfc_expr *e, gfc_symbol *sym)
+{
+  return gfc_traverse_expr (e, sym, check_stmt_fcn, 0);
 }
 
 
