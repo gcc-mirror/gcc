@@ -1,3 +1,8 @@
+2007-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34213
+	* g++.dg/ext/visibility/anon8.C: New test.
+
 2007-11-13  Michael Meissner  <michael.meissner@amd.com>
 
 	PR target/34077
@@ -22,7 +27,7 @@
 
 2007-11-26  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-	PR 34081/C++
+	PR c++/34081
 	* g++.dg/template/dependent-expr6.C: New testcase.
 
 2007-11-26  Uros Bizjak  <ubizjak@gmail.com>
