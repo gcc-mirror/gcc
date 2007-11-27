@@ -1,3 +1,9 @@
+2007-11-27  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.opt (m31, m64, mesa, mzarch, msoft-float,
+	mhard-float, mlong-double-64, mlong-double-128): Add the
+	option to be overridden.
+
 2007-11-27  Richard Guenther  <rguenther@suse.de>
 
 	* builtins.c (fold_builtin_1): Verify the argument types
