@@ -1,3 +1,9 @@
+2007-11-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34241
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr): Make sure
+	to only delete real conversion chains.
+
 2007-11-27  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.opt (m31, m64, mesa, mzarch, msoft-float,
