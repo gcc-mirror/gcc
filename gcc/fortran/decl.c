@@ -728,9 +728,9 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
 	  /* If the ENTRY proceeds its specification, we need to ensure
 	     that this does not raise a "has no IMPLICIT type" error.  */
 	  if (sym->ts.type == BT_UNKNOWN)
-		sym->attr.untyped = 1;
+	    sym->attr.untyped = 1;
 
-	    (*result)->ts = sym->ts;
+	  (*result)->ts = sym->ts;
 
 	  /* Put the symbol in the procedure namespace so that, should
 	     the ENTRY preceed its specification, the specification

@@ -1782,7 +1782,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 		       || f->sym->as->type == AS_DEFERRED);
 
       if (f->sym->ts.type == BT_CHARACTER && a->expr->ts.type == BT_CHARACTER
-	  && a->expr->rank == 0
+	  && a->expr->rank == 0 && !ranks_must_agree
 	  && f->sym->as && f->sym->as->type != AS_ASSUMED_SHAPE)
 	{
 	  if (where && (gfc_option.allow_std & GFC_STD_F2003) == 0)
