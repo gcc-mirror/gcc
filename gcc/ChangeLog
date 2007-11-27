@@ -1,3 +1,9 @@
+2007-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/34225
+	* config/rs6000/rs6000.c (adjacent_mem_locations): Don't assume
+	MEM_SIZE is set on all MEMs.
+
 2007-11-27  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.opt (mhard-float): Add the option to be

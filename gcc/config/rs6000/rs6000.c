@@ -18166,9 +18166,8 @@ adjacent_mem_locations (rtx insn1, rtx insn2)
 	  || (GET_CODE (XEXP (b, 0)) == PLUS
 	      && GET_CODE (XEXP (XEXP (b, 0), 1)) == CONST_INT)))
     {
-      HOST_WIDE_INT val0 = 0, val1 = 0;
+      HOST_WIDE_INT val0 = 0, val1 = 0, val_diff;
       rtx reg0, reg1;
-      int val_diff;
 
       if (GET_CODE (XEXP (a, 0)) == PLUS)
         {
@@ -18189,8 +18188,8 @@ adjacent_mem_locations (rtx insn1, rtx insn2)
       val_diff = val1 - val0;
 
       return ((REGNO (reg0) == REGNO (reg1))
-	      && (val_diff == INTVAL (MEM_SIZE (a))
-                  || val_diff == -INTVAL (MEM_SIZE (b))));
+	      && ((MEM_SIZE (a) && val_diff == INTVAL (MEM_SIZE (a)))
+		  || (MEM_SIZE (b) && val_diff == -INTVAL (MEM_SIZE (b)))));
     }
 
   return false;
