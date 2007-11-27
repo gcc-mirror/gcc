@@ -1,3 +1,8 @@
+2007-11-28  Ben Elliston  <bje@au.ibm.com>
+
+	* config/rs6000/aix64.opt (maix64): Add Negative(maix32).
+	(maix32): Add Negative(maix64).
+
 2007-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/34016
