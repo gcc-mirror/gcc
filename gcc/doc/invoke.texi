@@ -8668,6 +8668,8 @@ provided by libgloss to be linked in if @option{-msim} is not given.
 Specifies that the program will be run on the simulator.  This causes
 the simulator BSP provided by libgloss to be linked in.  This option
 has effect only for @samp{bfin-elf} toolchain.
+Certain other options, such as @option{-mid-shared-library} and
+@option{-mfdpic}, imply @option{-msim}.
 
 @item -momit-leaf-frame-pointer
 @opindex momit-leaf-frame-pointer
@@ -8717,6 +8719,7 @@ uClinux kernel.
 Generate code that supports shared libraries via the library ID method.
 This allows for execute in place and shared libraries in an environment
 without virtual memory management.  This option implies @option{-fPIC}.
+With a @samp{bfin-elf} target, this option implies @option{-msim}.
 
 @item -mno-id-shared-library
 @opindex mno-id-shared-library
@@ -9642,6 +9645,7 @@ implies @option{-fPIE}.  With @option{-fpic} or @option{-fpie}, it
 assumes GOT entries and small data are within a 12-bit range from the
 GOT base address; with @option{-fPIC} or @option{-fPIE}, GOT offsets
 are computed with 32 bits.
+With a @samp{bfin-elf} target, this option implies @option{-msim}.
 
 @item -minline-plt
 @opindex minline-plt

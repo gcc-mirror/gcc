@@ -30,4 +30,8 @@ asm ("P3 = [SP + 20];\n\tcall " USER_LABEL_PREFIX #FUNC ";"); \
 asm (TEXT_SECTION_ASM_OP);
 #endif
 
+#undef SUBTARGET_DRIVER_SELF_SPECS
+#define SUBTARGET_DRIVER_SELF_SPECS \
+     "%{mfdpic:-msim} %{mid-shared-library:-msim}"
+
 #define NO_IMPLICIT_EXTERN_C

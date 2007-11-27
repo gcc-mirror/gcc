@@ -1,3 +1,8 @@
+2007-11-27  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/elf.h (SUBTARGET_DRIVER_SELF_SPECS): New macro.
+	* doc/invoke.texi (Blackfin Options): Document the effects.
+
 2007-11-27  Ben Elliston  <bje@au.ibm.com>
 
 	* config/rs6000/sysv4.opt (m32): Add Negative(m64).
