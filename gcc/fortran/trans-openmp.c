@@ -44,7 +44,8 @@ gfc_omp_privatize_by_reference (const_tree decl)
 {
   tree type = TREE_TYPE (decl);
 
-  if (TREE_CODE (type) == REFERENCE_TYPE)
+  if (TREE_CODE (type) == REFERENCE_TYPE
+      && (!DECL_ARTIFICIAL (decl) || TREE_CODE (decl) == PARM_DECL))
     return true;
 
   if (TREE_CODE (type) == POINTER_TYPE)
