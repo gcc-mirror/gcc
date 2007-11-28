@@ -2975,6 +2975,15 @@ package body Sem_Attr is
          Check_E1;
          Check_Integer_Type;
          Resolve (E1, Any_Fixed);
+
+         --  Signal an error if argument type is not a specific fixed-point
+         --  subtype. An error has been signalled already if the argument
+         --  was not of a fixed-point type.
+
+         if Etype (E1) = Any_Fixed and then not Error_Posted (E1) then
+            Error_Attr ("argument of % must be of a fixed-point type", E1);
+         end if;
+
          Set_Etype (N, P_Base_Type);
 
       -----------

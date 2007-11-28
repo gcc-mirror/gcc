@@ -17,6 +17,11 @@
 
 	* snames.ads (Attribute_Class_Array): Moved from sem-attr.ads.
 
+	PR ada/32792
+	* sem_attr.adb (Analyze_Attribute, Attribute_Integer_Value clause):
+	Signal an error when attribute argument is a fixed-point value of
+	an unknown type.
+
 2007-11-26  Andreas Krebbel  <krebbel1@de.ibm.com>
 
         PR 34081/C++
