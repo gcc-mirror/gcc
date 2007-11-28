@@ -2708,7 +2708,10 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlength, tree dest,
 
      We're now doing it here for better optimization, but the logic
      is the same.  */
-  
+
+  dest = fold_convert (pvoid_type_node, dest);
+  src = fold_convert (pvoid_type_node, src);
+
   /* Truncate string if source is too long.  */
   cond2 = fold_build2 (GE_EXPR, boolean_type_node, slen, dlen);
   tmp2 = build_call_expr (built_in_decls[BUILT_IN_MEMMOVE],
