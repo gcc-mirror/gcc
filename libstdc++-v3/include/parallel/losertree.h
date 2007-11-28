@@ -230,6 +230,7 @@ template<typename T, typename Comparator = std::less<T> >
     unsigned int ik, k, offset;
     Loser* losers;
     Comparator comp;
+    bool first_insert;
 
   public:
     inline LoserTree(unsigned int _k, Comparator _comp = std::less<T>())
@@ -240,9 +241,12 @@ template<typename T, typename Comparator = std::less<T> >
       // Next greater power of 2.
       k = 1 << (log2(ik - 1) + 1);
       offset = k;
-      losers = static_cast<Loser*>(::operator new(k * 2 * sizeof(Loser)));
-      for (unsigned int i = ik - 1; i < k; i++)
+      // Avoid default-constructing losers[].key
+      losers = static_cast<Loser*>(::operator new(2 * k * sizeof(Loser)));
+      for (unsigned int i = ik - 1; i < k; ++i)
         losers[i + k].sup = true;
+
+      first_insert = true;
     }
 
     inline ~LoserTree()
@@ -257,9 +261,18 @@ template<typename T, typename Comparator = std::less<T> >
     {
       unsigned int pos = k + source;
 
+      if(first_insert)
+        {
+          // Construct all keys, so we can easily deconstruct them.
+          for (unsigned int i = 0; i < (2 * k); ++i)
+            new(&(losers[i].key)) T(key);
+          first_insert = false;
+        }
+      else
+        new(&(losers[pos].key)) T(key);
+
       losers[pos].sup = sup;
       losers[pos].source = source;
-      new(&(losers[pos].key)) T(key);
     }
 
     unsigned int
@@ -282,7 +295,8 @@ template<typename T, typename Comparator = std::less<T> >
               return left;
             }
           else
-            {	// Right one is less.
+            {
+              // Right one is less.
               losers[root] = losers[left];
               return right;
             }

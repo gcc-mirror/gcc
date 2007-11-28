@@ -73,8 +73,8 @@ template<
       {
         value = bin_op(value, *begin);
         *result = value;
-        result++;
-        begin++;
+        ++result;
+        ++begin;
       }
     return result;
   }
@@ -102,6 +102,9 @@ template<
     typedef std::iterator_traits<InputIterator> traits_type;
     typedef typename traits_type::value_type value_type;
     typedef typename traits_type::difference_type difference_type;
+
+    if (begin == end)
+      return result;
 
     thread_index_t num_threads =
         std::min<difference_type>(get_max_threads(), n - 1);
@@ -133,7 +136,7 @@ template<
                     ((double)num_threads + Settings::partial_sum_dilatation)),
                     borderstart = n - num_threads * chunk_length;
                 borders[0] = 0;
-                for (int i = 1; i < (num_threads + 1); i++)
+                for (int i = 1; i < (num_threads + 1); ++i)
                   {
                     borders[i] = borderstart;
                     borderstart += chunk_length;
@@ -146,20 +149,21 @@ template<
             OutputIterator target_end;
           } //single
 
-        int iam = omp_get_thread_num();
+        thread_index_t iam = omp_get_thread_num();
         if (iam == 0)
           {
             *result = *begin;
             parallel_partial_sum_basecase(begin + 1, begin + borders[1],
                           result + 1, bin_op, *begin);
-            sums[0] = *(result + borders[1] - 1);
+            new(&(sums[iam])) value_type(*(result + borders[1] - 1));
           }
         else
           {
-            sums[iam] = std::accumulate(begin + borders[iam] + 1,
-                            begin + borders[iam + 1],
-                            *(begin + borders[iam]),
-                            bin_op, __gnu_parallel::sequential_tag());
+            new(&(sums[iam])) value_type(
+                                std::accumulate(begin + borders[iam] + 1,
+                                begin + borders[iam + 1],
+                                *(begin + borders[iam]),
+                                bin_op, __gnu_parallel::sequential_tag()));
           }
 
 #       pragma omp barrier

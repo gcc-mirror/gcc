@@ -124,6 +124,8 @@ template<typename RandomAccessIterator, typename _DifferenceTp>
   determine_samples(PMWMSSortingData<RandomAccessIterator>* sd,
                     _DifferenceTp& num_samples)
   {
+    typedef std::iterator_traits<RandomAccessIterator> traits_type;
+    typedef typename traits_type::value_type value_type;
     typedef _DifferenceTp difference_type;
 
     thread_index_t iam = omp_get_thread_num();
@@ -137,8 +139,8 @@ template<typename RandomAccessIterator, typename _DifferenceTp>
                   num_samples + 1, es);
 
     for (difference_type i = 0; i < num_samples; i++)
-      sd->samples[iam * num_samples + i] =
-          sd->source[sd->starts[iam] + es[i + 1]];
+      new(&(sd->samples[iam * num_samples + i])) value_type(
+          sd->source[sd->starts[iam] + es[i + 1]]);
 
     delete[] es;
   }
@@ -213,7 +215,8 @@ template<typename RandomAccessIterator, typename Comparator>
               if (num_samples * iam > 0)
                 sd->pieces[iam][s].begin = 
                     std::lower_bound(sd->sorting_places[s],
-                        sd->sorting_places[s] + sd->starts[s + 1] - sd->starts[s],
+                        sd->sorting_places[s]
+                            + (sd->starts[s + 1] - sd->starts[s]),
                         sd->samples[num_samples * iam],
                         comp)
                     - sd->sorting_places[s];
@@ -224,8 +227,10 @@ template<typename RandomAccessIterator, typename Comparator>
             if ((num_samples * (iam + 1)) < (num_samples * sd->num_threads))
               sd->pieces[iam][s].end =
                   std::lower_bound(sd->sorting_places[s],
-                                   sd->sorting_places[s] + sd->starts[s + 1] - sd->starts[s],
-                                   sd->samples[num_samples * (iam + 1)], comp)
+                          sd->sorting_places[s]
+                              + (sd->starts[s + 1] - sd->starts[s]),
+                          sd->samples[num_samples * (iam + 1)],
+                          comp)
                   - sd->sorting_places[s];
             else
               // Absolute end.
@@ -240,7 +245,8 @@ template<typename RandomAccessIterator, typename Comparator>
             seqs(sd->num_threads);
         for (int s = 0; s < sd->num_threads; s++)
           seqs[s] = std::make_pair(sd->sorting_places[s],
-                                   sd->sorting_places[s] + sd->starts[s + 1] - sd->starts[s]);
+                                   sd->sorting_places[s]
+                                       + (sd->starts[s + 1] - sd->starts[s]));
 
         std::vector<SortingPlacesIterator> offsets(sd->num_threads);
 
@@ -256,7 +262,8 @@ template<typename RandomAccessIterator, typename Comparator>
               sd->pieces[iam][seq].end = offsets[seq] - seqs[seq].first;
             else
               // very end of this sequence
-              sd->pieces[iam][seq].end = sd->starts[seq + 1] - sd->starts[seq];
+              sd->pieces[iam][seq].end =
+                  sd->starts[seq + 1] - sd->starts[seq];
           }
 
 #       pragma omp barrier
@@ -284,6 +291,7 @@ template<typename RandomAccessIterator, typename Comparator>
     // Merge to temporary storage, uninitialized creation not possible
     // since there is no multiway_merge calling the placement new
     // instead of the assignment operator.
+    // XXX incorrect (de)construction
     sd->merging_places[iam] = sd->temporaries[iam] =
         static_cast<value_type*>(
         ::operator new(sizeof(value_type) * length_am));
@@ -296,11 +304,13 @@ template<typename RandomAccessIterator, typename Comparator>
 
     for (int s = 0; s < sd->num_threads; s++)
       {
-        seqs[s] = std::make_pair(sd->sorting_places[s] + sd->pieces[iam][s].begin,
-                                 sd->sorting_places[s] + sd->pieces[iam][s].end);
+        seqs[s] =
+            std::make_pair(sd->sorting_places[s] + sd->pieces[iam][s].begin,
+                           sd->sorting_places[s] + sd->pieces[iam][s].end);
       }
 
-    multiway_merge(seqs.begin(), seqs.end(), sd->merging_places[iam], comp, length_am, sd->stable, false, sequential_tag());
+    multiway_merge(seqs.begin(), seqs.end(), sd->merging_places[iam], comp,
+                   length_am, sd->stable, false, sequential_tag());
 
 #   pragma omp barrier
 
@@ -326,7 +336,8 @@ template<typename RandomAccessIterator, typename Comparator>
   inline void
   parallel_sort_mwms(RandomAccessIterator begin, RandomAccessIterator end,
                      Comparator comp, 
-                     typename std::iterator_traits<RandomAccessIterator>::difference_type n,
+                     typename std::iterator_traits<RandomAccessIterator>
+                        ::difference_type n,
                      int num_threads,
                      bool stable)
   {
@@ -368,7 +379,8 @@ template<typename RandomAccessIterator, typename Comparator>
             if (Settings::sort_splitting == Settings::SAMPLING)
               {
                 unsigned int size = 
-                    (Settings::sort_mwms_oversampling * num_threads - 1) * num_threads;
+                    (Settings::sort_mwms_oversampling * num_threads - 1)
+                        * num_threads;
                 sd.samples = static_cast<value_type*>(
                     ::operator new(size * sizeof(value_type)));
               }

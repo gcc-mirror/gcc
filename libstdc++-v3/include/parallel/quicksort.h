@@ -74,13 +74,13 @@ namespace __gnu_parallel
 
     // Allocate uninitialized, to avoid default constructor.
     value_type* samples = static_cast<value_type*>(
-        operator new(num_samples * sizeof(value_type)));
+      ::operator new(num_samples * sizeof(value_type)));
 
-    for (difference_type s = 0; s < num_samples; s++)
+    for (difference_type s = 0; s < num_samples; ++s)
       {
         const unsigned long long index = static_cast<unsigned long long>(s)
                         * n / num_samples;
-        new(samples + s) value_type(begin[index]);
+        new(&(samples[s])) value_type(begin[index]);
       }
 
     __gnu_sequential::sort(samples, samples + num_samples, comp);
@@ -90,6 +90,8 @@ namespace __gnu_parallel
     __gnu_parallel::binder2nd<Comparator, value_type, value_type, bool>
         pred(comp, pivot);
     difference_type split = parallel_partition(begin, end, pred, num_threads);
+
+    delete[] samples;
 
     return split;
   }

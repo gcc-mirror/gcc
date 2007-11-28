@@ -144,23 +144,23 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
     value_type** temporaries = new value_type*[d->num_threads];
 
     // Compute oracles and count appearances.
-    for (bin_index b = 0; b < sd->num_bins + 1; b++)
+    for (bin_index b = 0; b < sd->num_bins + 1; ++b)
       dist[b] = 0;
     int num_bits = sd->num_bits;
 
     random_number rng(d->seed);
 
     // First main loop.
-    for (difference_type i = 0; i < length; i++)
+    for (difference_type i = 0; i < length; ++i)
       {
         bin_index oracle = random_number_pow2(num_bits, rng);
         oracles[i] = oracle;
 
         // To allow prefix (partial) sum.
-        dist[oracle + 1]++;
+        ++(dist[oracle + 1]);
       }
 
-    for (bin_index b = 0; b < sd->num_bins + 1; b++)
+    for (bin_index b = 0; b < sd->num_bins + 1; ++b)
       sd->dist[b][iam + 1] = dist[b];
 
 #   pragma omp barrier
@@ -169,7 +169,7 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
     {
       // Sum up bins, sd->dist[s + 1][d->num_threads] now contains the
       // total number of items in bin s
-      for (bin_index s = 0; s < sd->num_bins; s++)
+      for (bin_index s = 0; s < sd->num_bins; ++s)
         __gnu_sequential::partial_sum(sd->dist[s + 1],
                                       sd->dist[s + 1] + d->num_threads + 1,
                                       sd->dist[s + 1]);
@@ -178,14 +178,14 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
 #   pragma omp barrier
 
     sequence_index_t offset = 0, global_offset = 0;
-    for (bin_index s = 0; s < d->bins_begin; s++)
+    for (bin_index s = 0; s < d->bins_begin; ++s)
       global_offset += sd->dist[s + 1][d->num_threads];
 
 #   pragma omp barrier
 
-    for (bin_index s = d->bins_begin; s < d->bins_end; s++)
+    for (bin_index s = d->bins_begin; s < d->bins_end; ++s)
       {
-	for (int t = 0; t < d->num_threads + 1; t++)
+	for (int t = 0; t < d->num_threads + 1; ++t)
 	  sd->dist[s + 1][t] += offset;
 	offset = sd->dist[s + 1][d->num_threads];
       }
@@ -196,24 +196,25 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
 #   pragma omp barrier
 
     // Draw local copies to avoid false sharing.
-    for (bin_index b = 0; b < sd->num_bins + 1; b++)
+    for (bin_index b = 0; b < sd->num_bins + 1; ++b)
       dist[b] = sd->dist[b][iam];
-    for (bin_index b = 0; b < sd->num_bins; b++)
+    for (bin_index b = 0; b < sd->num_bins; ++b)
       bin_proc[b] = sd->bin_proc[b];
-    for (thread_index_t t = 0; t < d->num_threads; t++)
+    for (thread_index_t t = 0; t < d->num_threads; ++t)
       temporaries[t] = sd->temporaries[t];
 
     RandomAccessIterator source = sd->source;
     difference_type start = sd->starts[iam];
 
     // Distribute according to oracles, second main loop.
-    for (difference_type i = 0; i < length; i++)
+    for (difference_type i = 0; i < length; ++i)
       {
         bin_index target_bin = oracles[i];
         thread_index_t target_p = bin_proc[target_bin];
 
         // Last column [d->num_threads] stays unchanged.
-        temporaries[target_p][dist[target_bin + 1]++] = *(source + i + start);
+        new(&(temporaries[target_p][dist[target_bin + 1]++])) value_type(
+              *(source + i + start));
       }
 
     delete[] oracles;
@@ -224,7 +225,7 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
 #   pragma omp barrier
 
     // Shuffle bins internally.
-    for (bin_index b = d->bins_begin; b < d->bins_end; b++)
+    for (bin_index b = d->bins_begin; b < d->bins_end; ++b)
       {
         value_type* begin =
                     sd->temporaries[iam] +
@@ -338,9 +339,9 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
             sd.temporaries = new value_type*[num_threads];
             sd.dist = new difference_type*[num_bins + 1];
             sd.bin_proc = new thread_index_t[num_bins];
-            for (bin_index b = 0; b < num_bins + 1; b++)
+            for (bin_index b = 0; b < num_bins + 1; ++b)
               sd.dist[b] = new difference_type[num_threads + 1];
-            for (bin_index b = 0; b < (num_bins + 1); b++)
+            for (bin_index b = 0; b < (num_bins + 1); ++b)
               {
                 sd.dist[0][0] = 0;
                 sd.dist[b][0] = 0;
@@ -354,7 +355,7 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
                             split = n % num_threads, start = 0;
             difference_type bin_chunk_length = num_bins / num_threads,
                             bin_split = num_bins % num_threads;
-            for (thread_index_t i = 0; i < num_threads; i++)
+            for (thread_index_t i = 0; i < num_threads; ++i)
               {
                 starts[i] = start;
                 start += (i < split) ? (chunk_length + 1) : chunk_length;
@@ -364,7 +365,7 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
                 bin_cursor += (i < bin_split) ?
                     (bin_chunk_length + 1) : bin_chunk_length;
                 pus[i].bins_end = bin_cursor;
-                for (; j < bin_cursor; j++)
+                for (; j < bin_cursor; ++j)
                   sd.bin_proc[j] = i;
                 pus[i].num_threads = num_threads;
                 pus[i].seed = rng(std::numeric_limits<uint32>::max());
@@ -378,7 +379,7 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
 
     delete[] starts;
     delete[] sd.bin_proc;
-    for (int s = 0; s < (num_bins + 1); s++)
+    for (int s = 0; s < (num_bins + 1); ++s)
       delete[] sd.dist[s];
     delete[] sd.dist;
     delete[] sd.temporaries;
@@ -455,31 +456,31 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
         difference_type* dist0 = new difference_type[num_bins + 1],
                        * dist1 = new difference_type[num_bins + 1];
 
-        for (int b = 0; b < num_bins + 1; b++)
+        for (int b = 0; b < num_bins + 1; ++b)
           dist0[b] = 0;
 
         random_number bitrng(rng(0xFFFFFFFF));
 
-        for (difference_type i = 0; i < n; i++)
+        for (difference_type i = 0; i < n; ++i)
           {
             bin_index oracle = random_number_pow2(num_bits, bitrng);
             oracles[i] = oracle;
 
             // To allow prefix (partial) sum.
-            dist0[oracle + 1]++;
+            ++(dist0[oracle + 1]);
           }
 
         // Sum up bins.
         __gnu_sequential::partial_sum(dist0, dist0 + num_bins + 1, dist0);
 
-        for (int b = 0; b < num_bins + 1; b++)
+        for (int b = 0; b < num_bins + 1; ++b)
           dist1[b] = dist0[b];
 
         // Distribute according to oracles.
-        for (difference_type i = 0; i < n; i++)
-          target[(dist0[oracles[i]])++] = *(begin + i);
+        for (difference_type i = 0; i < n; ++i)
+          new(&(target[(dist0[oracles[i]])++])) value_type(*(begin + i));
 
-        for (int b = 0; b < num_bins; b++)
+        for (int b = 0; b < num_bins; ++b)
           {
             sequential_random_shuffle(target + dist1[b],
                                       target + dist1[b + 1],
