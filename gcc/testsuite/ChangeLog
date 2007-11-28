@@ -1,3 +1,9 @@
+2007-11-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/34227
+	* gfortran.dg/blockdata_5.f90: New test.
+	* gfortran.dg/blockdata_6.f90: New test.
+
 2007-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/34016
