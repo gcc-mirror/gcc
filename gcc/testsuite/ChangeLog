@@ -3,6 +3,9 @@
 	PR ada/15803
 	* gnat.dg/specs/variant_part.ads: New test.
 
+	PR ada/17317
+	* gnat.dg/specs/attribute_parsing.ads: New test.
+
 2007-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/34140

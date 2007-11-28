@@ -38,9 +38,6 @@ with Types;   use Types;
 
 package Sem_Attr is
 
-   type Attribute_Class_Array is array (Attribute_Id) of Boolean;
-   --  Type used to build attribute classification flag arrays
-
    -----------------------------------------
    -- Implementation Dependent Attributes --
    -----------------------------------------

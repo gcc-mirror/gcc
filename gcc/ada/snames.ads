@@ -1521,6 +1521,13 @@ package Snames is
       Task_Dispatching_FIFO_Within_Priorities);
    --  Id values used to identify task dispatching policies
 
+   ------------------
+   -- Helper types --
+   ------------------
+
+   type Attribute_Class_Array is array (Attribute_Id) of Boolean;
+   --  Type used to build attribute classification flag arrays
+
    -----------------
    -- Subprograms --
    -----------------
