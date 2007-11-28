@@ -2783,6 +2783,16 @@ gfc_match_common (void)
 	      goto cleanup;
 	    }
 
+	  if (((sym->value != NULL && sym->value->expr_type != EXPR_NULL)
+	       || sym->attr.data) && gfc_current_state () != COMP_BLOCK_DATA)
+	    {
+	      if (gfc_notify_std (GFC_STD_GNU, "Initialized symbol '%s' at %C "
+					       "can only be COMMON in "
+					       "BLOCK DATA", sym->name)
+		  == FAILURE)
+		goto cleanup;
+	    }
+
 	  if (gfc_add_in_common (&sym->attr, sym->name, NULL) == FAILURE)
 	    goto cleanup;
 
