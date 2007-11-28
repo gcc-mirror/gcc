@@ -1,3 +1,10 @@
+2007-11-28  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	* config/i386/linux.h (CRT_GET_RFIB_DATA): Add Intel syntax inline
+	asm to macro.
+	* config/i386/sco5.h (CRT_GET_RFIB_DATA): Likewise.
+	* config/i386/sysv4.h (CRT_GET_RFIB_DATA): Likewise.
+
 2007-11-28  Ben Elliston  <bje@au.ibm.com>
 
 	* config/rs6000/aix64.opt (maix64): Add Negative(maix32).
