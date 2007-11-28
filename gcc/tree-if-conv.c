@@ -302,7 +302,8 @@ tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond,
    and it belongs to basic block BB.
    PHI is not if-convertible
    - if it has more than 2 arguments.
-   - Virtual PHI is immediately used in another PHI node.  */
+   - Virtual PHI is immediately used in another PHI node.
+   - Virtual PHI on BB other than header.  */
 
 static bool
 if_convertible_phi_p (struct loop *loop, basic_block bb, tree phi)
@@ -324,6 +325,13 @@ if_convertible_phi_p (struct loop *loop, basic_block bb, tree phi)
     {
       imm_use_iterator imm_iter;
       use_operand_p use_p;
+
+      if (bb != loop->header)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "Virtual phi not on loop header.\n");
+	  return false;
+	}
       FOR_EACH_IMM_USE_FAST (use_p, imm_iter, PHI_RESULT (phi))
 	{
 	  if (TREE_CODE (USE_STMT (use_p)) == PHI_NODE)

@@ -1,3 +1,9 @@
+2007-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/34140
+	* tree-if-conv.c (if_convertible_phi_p): Fail if BB other than
+	loop->header has virtual phi nodes.
+
 2007-11-28  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR target/32406
