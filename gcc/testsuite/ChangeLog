@@ -1,3 +1,11 @@
+2007-11-28  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	Backport from mainline:
+	2007-11-26  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	PR target/34174
+	* gcc.dg/pr34174-1.c: New.
+
 2007-11-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/34215

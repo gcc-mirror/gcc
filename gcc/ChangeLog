@@ -1,3 +1,12 @@
+2007-11-28  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	Backport from mainline:
+	2007-11-26  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	PR target/34174
+	* config/fr30/fr30.c (fr30_move_double): Sanitize mem->reg case. Copy
+	the address before it is clobbered.
+
 2007-11-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/34215
