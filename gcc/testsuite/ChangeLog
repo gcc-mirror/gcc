@@ -1,3 +1,8 @@
+2007-11-28  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR ada/15803
+	* gnat.dg/specs/variant_part.ads: New test.
+
 2007-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/34140

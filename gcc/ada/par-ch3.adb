@@ -3395,6 +3395,7 @@ package body Ch3 is
       Variant_Part_Node : Node_Id;
       Variants_List     : List_Id;
       Case_Node         : Node_Id;
+      Ident_Token       : Token_Type;
 
    begin
       Variant_Part_Node := New_Node (N_Variant_Part, Token_Ptr);
@@ -3404,11 +3405,25 @@ package body Ch3 is
       Scope.Table (Scope.Last).Ecol := Start_Column;
 
       Scan; -- past CASE
-      Case_Node := P_Expression;
-      Set_Name (Variant_Part_Node, Case_Node);
 
-      if Nkind (Case_Node) /= N_Identifier then
+      --  A discriminant name between parentheses will be returned as
+      --  a N_Identifier although it is not allowed by RM 3.8.1. We
+      --  save the token type to check it later. However, in case of
+      --  a discriminant name with parentheses, we can continue the
+      --  analysis as if only the discriminant name had been given.
+
+      Ident_Token := Token;
+      Case_Node := P_Expression;
+
+      if Nkind (Case_Node) = N_Identifier then
+         Set_Name (Variant_Part_Node, Case_Node);
+      else
          Set_Name (Variant_Part_Node, Error);
+      end if;
+
+      if Nkind (Case_Node) /= N_Identifier
+        or else Ident_Token /= Tok_Identifier
+      then
          Error_Msg ("discriminant name expected", Sloc (Case_Node));
       end if;
 
