@@ -123,10 +123,11 @@ along with GCC; see the file COPYING3.  If not see
 #define CRT_GET_RFIB_DATA(BASE)						\
   __asm__ ("call\t.LPR%=\n"						\
 	   ".LPR%=:\n\t"						\
-	   "popl\t%0\n\t"						\
+	   "pop{l}\t%0\n\t"						\
 	   /* Due to a GAS bug, this cannot use EAX.  That encodes	\
 	      smaller than the traditional EBX, which results in the	\
 	      offset being off by one.  */				\
-	   "addl\t$_GLOBAL_OFFSET_TABLE_+[.-.LPR%=],%0"			\
+	   "add{l}\t{$_GLOBAL_OFFSET_TABLE_+[.-.LPR%=],%0"		\
+		   "|%0,_GLOBAL_OFFSET_TABLE_+(.-.LPR%=)}"		\
 	   : "=d"(BASE))
 #endif
