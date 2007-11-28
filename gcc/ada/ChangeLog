@@ -4,7 +4,7 @@
 	* par-ch3.adb (P_Variant_Part): Signal an error when anything other
 	than an identifier is used after "case" in a variant_part.
 
-	PR ada/17317
+	PR ada/17318
 	* par-ch4.adb (Is_Parameterless_Attribute): New map.
 	(P_Name, Scan_Apostrophe block): Parse left parenthesis following
 	attribute name or not depending on the new map.
