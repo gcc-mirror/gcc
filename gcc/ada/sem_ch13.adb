@@ -29,6 +29,7 @@ with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
+with Layout;   use Layout;
 with Lib;      use Lib;
 with Lib.Xref; use Lib.Xref;
 with Namet;    use Namet;
@@ -1375,6 +1376,7 @@ package body Sem_Ch13 is
                Set_Has_Small_Clause (U_Ent);
                Set_Has_Small_Clause (Implicit_Base);
                Set_Has_Non_Standard_Rep (Implicit_Base);
+               Set_Discrete_RM_Size (U_Ent);
             end if;
          end Small;
 

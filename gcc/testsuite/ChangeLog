@@ -9,6 +9,9 @@
 	PR ada/32792
 	* gnat.dg/specs/integer_value.ads: New test.
 
+	PR ada/22559
+	* gnat.dg/specs/delta_small.ads: New test.
+
 2007-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/34140

@@ -4950,11 +4950,12 @@ package body Sem_Ch3 is
       Set_Etype          (Implicit_Base, Parent_Base);
       Set_Ekind          (Implicit_Base, Ekind          (Parent_Base));
       Set_Size_Info      (Implicit_Base,                 Parent_Base);
-      Set_RM_Size        (Implicit_Base, RM_Size        (Parent_Base));
       Set_First_Rep_Item (Implicit_Base, First_Rep_Item (Parent_Base));
       Set_Parent         (Implicit_Base, Parent (Derived_Type));
 
-      if Is_Discrete_Or_Fixed_Point_Type (Parent_Base) then
+      if Is_Discrete_Type (Parent_Base) or else
+        Is_Decimal_Fixed_Point_Type (Parent_Base)
+      then
          Set_RM_Size (Implicit_Base, RM_Size (Parent_Base));
       end if;
 
