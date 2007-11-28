@@ -4,6 +4,19 @@
 	* par-ch3.adb (P_Variant_Part): Signal an error when anything other
 	than an identifier is used after "case" in a variant_part.
 
+	PR ada/17317
+	* par-ch4.adb (Is_Parameterless_Attribute): New map.
+	(P_Name, Scan_Apostrophe block): Parse left parenthesis following
+	attribute name or not depending on the new map.
+
+	* sem-attr.adb (Analyze_Attribute): Parameterless attributes
+	returning a string or a type will not be called with improper
+	arguments.
+
+	* sem-attr.ads (Attribute_Class_Array): Move to snames.ads.
+
+	* snames.ads (Attribute_Class_Array): Moved from sem-attr.ads.
+
 2007-11-26  Andreas Krebbel  <krebbel1@de.ibm.com>
 
         PR 34081/C++

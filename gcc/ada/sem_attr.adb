@@ -2188,7 +2188,7 @@ package body Sem_Attr is
          Typ : Entity_Id;
 
       begin
-         Check_Either_E0_Or_E1;
+         Check_E0;
          Find_Type (P);
          Typ := Entity (P);
 
@@ -2207,37 +2207,9 @@ package body Sem_Attr is
          end if;
 
          Set_Etype (N, Base_Type (Entity (P)));
-
-         --  If we have an expression present, then really this is a conversion
-         --  and the tree must be reformed. Note that this is one of the cases
-         --  in which we do a replace rather than a rewrite, because the
-         --  original tree is junk.
-
-         if Present (E1) then
-            Replace (N,
-              Make_Type_Conversion (Loc,
-                Subtype_Mark =>
-                  Make_Attribute_Reference (Loc,
-                    Prefix => Prefix (N),
-                    Attribute_Name => Name_Base),
-                Expression => Relocate_Node (E1)));
-
-            --  E1 may be overloaded, and its interpretations preserved
-
-            Save_Interps (E1, Expression (N));
-            Analyze (N);
-
-         --  For other cases, set the proper type as the entity of the
-         --  attribute reference, and then rewrite the node to be an
-         --  occurrence of the referenced base type. This way, no one
-         --  else in the compiler has to worry about the base attribute.
-
-         else
-            Set_Entity (N, Base_Type (Entity (P)));
-            Rewrite (N,
-              New_Reference_To (Entity (N), Loc));
-            Analyze (N);
-         end if;
+         Set_Entity (N, Base_Type (Entity (P)));
+         Rewrite (N, New_Reference_To (Entity (N), Loc));
+         Analyze (N);
       end Base;
 
       ---------
@@ -2377,55 +2349,10 @@ package body Sem_Attr is
       -- Class --
       -----------
 
-      when Attribute_Class => Class : declare
-         P : constant Entity_Id := Prefix (N);
-
-      begin
+      when Attribute_Class =>
          Check_Restriction (No_Dispatch, N);
-         Check_Either_E0_Or_E1;
-
-         --  If we have an expression present, then really this is a conversion
-         --  and the tree must be reformed into a proper conversion. This is a
-         --  Replace rather than a Rewrite, because the original tree is junk.
-         --  If expression is overloaded, propagate interpretations to new one.
-
-         if Present (E1) then
-            Replace (N,
-              Make_Type_Conversion (Loc,
-                Subtype_Mark =>
-                  Make_Attribute_Reference (Loc,
-                    Prefix => P,
-                    Attribute_Name => Name_Class),
-                Expression => Relocate_Node (E1)));
-
-            Save_Interps (E1, Expression (N));
-
-            --  Ada 2005 (AI-251): In case of abstract interfaces we have to
-            --  analyze and resolve the type conversion to generate the code
-            --  that displaces the reference to the base of the object.
-
-            if Is_Interface (Etype (P))
-              or else Is_Interface (Etype (E1))
-            then
-               Analyze_And_Resolve (N, Etype (P));
-
-               --  However, the attribute is a name that occurs in a context
-               --  that imposes its own type. Leave the result unanalyzed,
-               --  so that type checking with the context type take place.
-               --  on the new conversion node, otherwise Resolve is a noop.
-
-               Set_Analyzed (N, False);
-
-            else
-               Analyze (N);
-            end if;
-
-         --  Otherwise we just need to find the proper type
-
-         else
-            Find_Type (N);
-         end if;
-      end Class;
+         Check_E0;
+         Find_Type (N);
 
       ------------------
       -- Code_Address --
@@ -3018,6 +2945,7 @@ package body Sem_Attr is
 
       when Attribute_Img => Img :
       begin
+         Check_E0;
          Set_Etype (N, Standard_String);
 
          if not Is_Scalar_Type (P_Type)

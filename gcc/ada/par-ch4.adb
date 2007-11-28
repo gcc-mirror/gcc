@@ -32,6 +32,25 @@ with Stringt; use Stringt;
 separate (Par)
 package body Ch4 is
 
+   ---------------
+   -- Local map --
+   ---------------
+
+   Is_Parameterless_Attribute : constant Attribute_Class_Array :=
+     (Attribute_Body_Version => True,
+      Attribute_External_Tag => True,
+      Attribute_Img          => True,
+      Attribute_Version      => True,
+      Attribute_Base         => True,
+      Attribute_Class        => True,
+      Attribute_Stub_Type    => True,
+      others                 => False);
+   --  This map contains True for parameterless attributes that return a
+   --  string or a type. For those attributes, a left parenthesis after
+   --  the attribute should not be analyzed as the beginning of a parameters
+   --  list because it may denote a slice operation (X'Img (1 .. 2)) or
+   --  a type conversion (X'Class (Y)).
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -486,7 +505,10 @@ package body Ch4 is
 
             --  Scan attribute arguments/designator
 
-            if Token = Tok_Left_Paren then
+            if Token = Tok_Left_Paren
+                 and then
+               not Is_Parameterless_Attribute (Get_Attribute_Id (Attr_Name))
+            then
                Set_Expressions (Name_Node, New_List);
                Scan; -- past left paren
 
