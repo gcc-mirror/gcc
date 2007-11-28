@@ -1,3 +1,19 @@
+2007-11-28  Johannes Singler  <singler@ira.uka.de>
+
+        * include/parallel/multiway_merge.h: Destruct only elements that 
+        were have been constructed before. Code beautifying and formatting.
+        * include/parallel/losertree.h: (Copy) construct all loser tree 
+        item keys, so they can be deconstructed all at once.
+        * include/parallel/quicksort.h: Fix memory leak.
+        * include/parallel/random_shuffle.h: Use copy constructor instead 
+        of assignment. Code beautifying and formatting.
+        * include/parallel/unique_copy.h: Use assignment instead of copy 
+        constructor.
+        * include/parallel/multiway_mergesort.h: Use copy constructor 
+        instead of assignment. Code beautifying and formatting.
+        * include/parallel/random_shuffle.h: Use copy constructor instead 
+        of assignment. Code beautifying.
+
 2007-11-27  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* testsuite/tr1/5_numerical_facilities/special_functions/

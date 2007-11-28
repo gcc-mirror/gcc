@@ -100,16 +100,14 @@ template<
           end = borders[iam + 1];
 
           i++;
-          new (static_cast<void *>(&*out)) value_type(*first);
-          out++;
+          *out++ = *first;
 
           for (InputIterator iter = first + begin; iter < first + end; ++iter)
             {
               if (!binary_pred(*iter, *(iter-1)))
                 {
                   i++;
-                  new (static_cast<void *>(&*out)) value_type(*iter);
-                  out++;
+                  *out++ = *iter;
                 }
             }
         }
@@ -153,8 +151,7 @@ template<
               if (iter == first || !binary_pred(*iter, *(iter-1)))
                 {
                   i++;
-                  new (static_cast<void *>(&*iter_out)) value_type(*iter);
-                  iter_out++;
+                  *iter_out++ = *iter;
                 }
             }
 
@@ -170,8 +167,7 @@ template<
             {
               if (!binary_pred(*iter, *(iter-1)))
                 {
-                  new (static_cast<void *> (&*iter_out)) value_type(*iter);
-                  iter_out++;
+                  *iter_out++ = *iter;
                 }
             }
         }

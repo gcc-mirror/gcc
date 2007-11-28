@@ -57,7 +57,7 @@
 #endif
 
 /** @brief Length of a sequence described by a pair of iterators. */
-#define LENGTH(s) ((s).second - (s).first)
+#define _GLIBCXX_PARALLEL_LENGTH(s) ((s).second - (s).first)
 
 // XXX need iterator typedefs
 namespace __gnu_parallel
@@ -204,7 +204,7 @@ template<typename RandomAccessIterator, typename Comparator>
     inline  unguarded_iterator<RandomAccessIterator, Comparator>&
     operator++()
     {
-      current++;
+      ++current;
       return *this;
     }
 
@@ -293,7 +293,7 @@ template<typename RandomAccessIteratorIterator, typename Comparator>
     // Last element in sequence.
     value_type min = *((*seqs_begin).second - 1);
     min_sequence = 0;
-    for (RandomAccessIteratorIterator s = seqs_begin + 1; s != seqs_end; s++)
+    for (RandomAccessIteratorIterator s = seqs_begin + 1; s != seqs_end; ++s)
       {
         if ((*s).first == (*s).second)
           {
@@ -314,7 +314,7 @@ template<typename RandomAccessIteratorIterator, typename Comparator>
     difference_type overhang_size = 0;
 
     int s = 0;
-    for (s = 0; s <= min_sequence; s++)
+    for (s = 0; s <= min_sequence; ++s)
       {
         RandomAccessIterator1 split;
         if (stable)
@@ -327,7 +327,7 @@ template<typename RandomAccessIteratorIterator, typename Comparator>
         overhang_size += seqs_begin[s].second - split;
       }
 
-    for (; s < (seqs_end - seqs_begin); s++)
+    for (; s < (seqs_end - seqs_begin); ++s)
       {
         RandomAccessIterator1 split = std::lower_bound(
             seqs_begin[s].first, seqs_begin[s].second, min, comp);
@@ -363,7 +363,7 @@ template<typename RandomAccessIteratorIterator, typename Comparator>
 
     // Last element in sequence.
     value_type* max = NULL;
-    for (RandomAccessIteratorIterator s = seqs_begin; s != seqs_end; s++)
+    for (RandomAccessIteratorIterator s = seqs_begin; s != seqs_end; ++s)
       {
         if ((*s).first == (*s).second)
           continue;
@@ -377,7 +377,7 @@ template<typename RandomAccessIteratorIterator, typename Comparator>
       }
 
     difference_type overhang_size = 0;
-    for (RandomAccessIteratorIterator s = seqs_begin; s != seqs_end; s++)
+    for (RandomAccessIteratorIterator s = seqs_begin; s != seqs_end; ++s)
       {
         RandomAccessIterator1 split =
             std::lower_bound((*s).first, (*s).second, *max, comp);
@@ -453,25 +453,25 @@ template<
           goto s210;
       }
 
-#define Merge3Case(a,b,c,c0,c1)				\
-    s ## a ## b ## c :					\
-      *target = *seq ## a;				\
-    ++target;						\
-    length--;						\
-    ++seq ## a;						\
-    if (length == 0) goto finish;			\
-    if (seq ## a c0 seq ## b) goto s ## a ## b ## c;	\
-    if (seq ## a c1 seq ## c) goto s ## b ## a ## c;	\
+#define _GLIBCXX_PARALLEL_MERGE_3_CASE(a,b,c,c0,c1)\
+    s ## a ## b ## c :                                  \
+      *target = *seq ## a;                              \
+    ++target;                                           \
+    --length;                                           \
+    ++seq ## a;                                         \
+    if (length == 0) goto finish;                       \
+    if (seq ## a c0 seq ## b) goto s ## a ## b ## c;    \
+    if (seq ## a c1 seq ## c) goto s ## b ## a ## c;    \
     goto s ## b ## c ## a;
 
-    Merge3Case(0, 1, 2, <=, <=);
-    Merge3Case(1, 2, 0, <=, < );
-    Merge3Case(2, 0, 1, < , < );
-    Merge3Case(1, 0, 2, < , <=);
-    Merge3Case(0, 2, 1, <=, <=);
-    Merge3Case(2, 1, 0, < , < );
+    _GLIBCXX_PARALLEL_MERGE_3_CASE(0, 1, 2, <=, <=);
+    _GLIBCXX_PARALLEL_MERGE_3_CASE(1, 2, 0, <=, < );
+    _GLIBCXX_PARALLEL_MERGE_3_CASE(2, 0, 1, < , < );
+    _GLIBCXX_PARALLEL_MERGE_3_CASE(1, 0, 2, < , <=);
+    _GLIBCXX_PARALLEL_MERGE_3_CASE(0, 2, 1, <=, <=);
+    _GLIBCXX_PARALLEL_MERGE_3_CASE(2, 1, 0, < , < );
 
-#undef Merge3Case
+#undef _GLIBCXX_PARALLEL_MERGE_3_CASE
 
   finish:
     ;
@@ -513,7 +513,7 @@ template<
 
     difference_type total_length = 0;
     for (RandomAccessIteratorIterator s = seqs_begin; s != seqs_end; ++s)
-      total_length += LENGTH(*s);
+      total_length += _GLIBCXX_PARALLEL_LENGTH(*s);
 
     if (overhang != -1)
       {
@@ -600,7 +600,7 @@ template<
       seq2(seqs_begin[2].first, seqs_begin[2].second, comp),
       seq3(seqs_begin[3].first, seqs_begin[3].second, comp);
 
-#define Decision(a,b,c,d) {					\
+#define _GLIBCXX_PARALLEL_DECISION(a,b,c,d) {                   \
       if (seq ## d < seq ## a) goto s ## d ## a ## b ## c;	\
       if (seq ## d < seq ## b) goto s ## a ## d ## b ## c;	\
       if (seq ## d < seq ## c) goto s ## a ## b ## d ## c;	\
@@ -609,65 +609,65 @@ template<
     if (seq0 <= seq1)
       {
         if (seq1 <= seq2)
-          Decision(0,1,2,3)
+          _GLIBCXX_PARALLEL_DECISION(0,1,2,3)
           else
             if (seq2 < seq0)
-              Decision(2,0,1,3)
+              _GLIBCXX_PARALLEL_DECISION(2,0,1,3)
               else
-                Decision(0,2,1,3)
+                _GLIBCXX_PARALLEL_DECISION(0,2,1,3)
                   }
     else
       {
         if (seq1 <= seq2)
           {
             if (seq0 <= seq2)
-              Decision(1,0,2,3)
+              _GLIBCXX_PARALLEL_DECISION(1,0,2,3)
               else
-                Decision(1,2,0,3)
+                _GLIBCXX_PARALLEL_DECISION(1,2,0,3)
                   }
         else
-          Decision(2,1,0,3)
+          _GLIBCXX_PARALLEL_DECISION(2,1,0,3)
             }
 
-#define Merge4Case(a,b,c,d,c0,c1,c2)				\
-    s ## a ## b ## c ## d:					\
-      if (length == 0) goto finish;				\
-    *target = *seq ## a;					\
-    ++target;							\
-    length--;							\
-    ++seq ## a;							\
-    if (seq ## a c0 seq ## b) goto s ## a ## b ## c ## d;	\
-    if (seq ## a c1 seq ## c) goto s ## b ## a ## c ## d;	\
-    if (seq ## a c2 seq ## d) goto s ## b ## c ## a ## d;	\
+#define _GLIBCXX_PARALLEL_MERGE_4_CASE(a,b,c,d,c0,c1,c2)        \
+    s ## a ## b ## c ## d:                                      \
+      if (length == 0) goto finish;                             \
+    *target = *seq ## a;                                        \
+    ++target;                                                   \
+    --length;                                                   \
+    ++seq ## a;                                                 \
+    if (seq ## a c0 seq ## b) goto s ## a ## b ## c ## d;       \
+    if (seq ## a c1 seq ## c) goto s ## b ## a ## c ## d;       \
+    if (seq ## a c2 seq ## d) goto s ## b ## c ## a ## d;       \
     goto s ## b ## c ## d ## a;
 
-    Merge4Case(0, 1, 2, 3, <=, <=, <=);
-    Merge4Case(0, 1, 3, 2, <=, <=, <=);
-    Merge4Case(0, 2, 1, 3, <=, <=, <=);
-    Merge4Case(0, 2, 3, 1, <=, <=, <=);
-    Merge4Case(0, 3, 1, 2, <=, <=, <=);
-    Merge4Case(0, 3, 2, 1, <=, <=, <=);
-    Merge4Case(1, 0, 2, 3, < , <=, <=);
-    Merge4Case(1, 0, 3, 2, < , <=, <=);
-    Merge4Case(1, 2, 0, 3, <=, < , <=);
-    Merge4Case(1, 2, 3, 0, <=, <=, < );
-    Merge4Case(1, 3, 0, 2, <=, < , <=);
-    Merge4Case(1, 3, 2, 0, <=, <=, < );
-    Merge4Case(2, 0, 1, 3, < , < , <=);
-    Merge4Case(2, 0, 3, 1, < , <=, < );
-    Merge4Case(2, 1, 0, 3, < , < , <=);
-    Merge4Case(2, 1, 3, 0, < , <=, < );
-    Merge4Case(2, 3, 0, 1, <=, < , < );
-    Merge4Case(2, 3, 1, 0, <=, < , < );
-    Merge4Case(3, 0, 1, 2, < , < , < );
-    Merge4Case(3, 0, 2, 1, < , < , < );
-    Merge4Case(3, 1, 0, 2, < , < , < );
-    Merge4Case(3, 1, 2, 0, < , < , < );
-    Merge4Case(3, 2, 0, 1, < , < , < );
-    Merge4Case(3, 2, 1, 0, < , < , < );
+    _GLIBCXX_PARALLEL_MERGE_4_CASE(0, 1, 2, 3, <=, <=, <=);
+    _GLIBCXX_PARALLEL_MERGE_4_CASE(0, 1, 3, 2, <=, <=, <=);
+    _GLIBCXX_PARALLEL_MERGE_4_CASE(0, 2, 1, 3, <=, <=, <=);
+    _GLIBCXX_PARALLEL_MERGE_4_CASE(0, 2, 3, 1, <=, <=, <=);
+    _GLIBCXX_PARALLEL_MERGE_4_CASE(0, 3, 1, 2, <=, <=, <=);
+    _GLIBCXX_PARALLEL_MERGE_4_CASE(0, 3, 2, 1, <=, <=, <=);
+    _GLIBCXX_PARALLEL_MERGE_4_CASE(1, 0, 2, 3, < , <=, <=);
+    _GLIBCXX_PARALLEL_MERGE_4_CASE(1, 0, 3, 2, < , <=, <=);
+    _GLIBCXX_PARALLEL_MERGE_4_CASE(1, 2, 0, 3, <=, < , <=);
+    _GLIBCXX_PARALLEL_MERGE_4_CASE(1, 2, 3, 0, <=, <=, < );
+    _GLIBCXX_PARALLEL_MERGE_4_CASE(1, 3, 0, 2, <=, < , <=);
+    _GLIBCXX_PARALLEL_MERGE_4_CASE(1, 3, 2, 0, <=, <=, < );
+    _GLIBCXX_PARALLEL_MERGE_4_CASE(2, 0, 1, 3, < , < , <=);
+    _GLIBCXX_PARALLEL_MERGE_4_CASE(2, 0, 3, 1, < , <=, < );
+    _GLIBCXX_PARALLEL_MERGE_4_CASE(2, 1, 0, 3, < , < , <=);
+    _GLIBCXX_PARALLEL_MERGE_4_CASE(2, 1, 3, 0, < , <=, < );
+    _GLIBCXX_PARALLEL_MERGE_4_CASE(2, 3, 0, 1, <=, < , < );
+    _GLIBCXX_PARALLEL_MERGE_4_CASE(2, 3, 1, 0, <=, < , < );
+    _GLIBCXX_PARALLEL_MERGE_4_CASE(3, 0, 1, 2, < , < , < );
+    _GLIBCXX_PARALLEL_MERGE_4_CASE(3, 0, 2, 1, < , < , < );
+    _GLIBCXX_PARALLEL_MERGE_4_CASE(3, 1, 0, 2, < , < , < );
+    _GLIBCXX_PARALLEL_MERGE_4_CASE(3, 1, 2, 0, < , < , < );
+    _GLIBCXX_PARALLEL_MERGE_4_CASE(3, 2, 0, 1, < , < , < );
+    _GLIBCXX_PARALLEL_MERGE_4_CASE(3, 2, 1, 0, < , < , < );
 
-#undef Merge4Case
-#undef Decision
+#undef _GLIBCXX_PARALLEL_MERGE_4_CASE
+#undef _GLIBCXX_PARALLEL_DECISION
 
   finish:
     ;
@@ -710,7 +710,7 @@ template<
 
     difference_type total_length = 0;
     for (RandomAccessIteratorIterator s = seqs_begin; s != seqs_end; ++s)
-      total_length += LENGTH(*s);
+      total_length += _GLIBCXX_PARALLEL_LENGTH(*s);
 
     if (overhang != -1)
       {
@@ -785,48 +785,47 @@ template<
     typedef typename std::iterator_traits<RandomAccessIterator1>::value_type
       value_type;
 
-    // Num remaining pieces.
-    int k = static_cast<int>(seqs_end - seqs_begin), nrp;
+    int k = static_cast<int>(seqs_end - seqs_begin);
+    int nrs;  // Number of remaining sequences.
 
-    value_type* pl = static_cast<value_type*>(
-      ::operator new(sizeof(value_type) * k));
+    // Avoid default constructor.
+    value_type* fe = static_cast<value_type*>(
+      ::operator new(sizeof(value_type) * k));  // Front elements.
     int* source = new int[k];
     difference_type total_length = 0;
 
-#define POS(i) seqs_begin[(i)].first
-#define STOPS(i) seqs_begin[(i)].second
-
     // Write entries into queue.
-    nrp = 0;
-    for (int pi = 0; pi < k; pi++)
+    nrs = 0;
+    for (int pi = 0; pi < k; ++pi)
       {
-        if (STOPS(pi) != POS(pi))
+        if (seqs_begin[pi].first != seqs_begin[pi].second)
           {
-            pl[nrp] = *(POS(pi));
-            source[nrp] = pi;
-            nrp++;
-            total_length += LENGTH(seqs_begin[pi]);
+            new(&(fe[nrs])) value_type(*(seqs_begin[pi].first));
+            source[nrs] = pi;
+            ++nrs;
+            total_length += _GLIBCXX_PARALLEL_LENGTH(seqs_begin[pi]);
           }
       }
 
     if (stable)
       {
-        for (int k = 0; k < nrp - 1; k++)
-          for (int pi = nrp - 1; pi > k; pi--)
-            if (comp(pl[pi], pl[pi - 1]) ||
-                (!comp(pl[pi - 1], pl[pi]) && source[pi] < source[pi - 1]))
+        // Bubble sort fe and source by fe.
+        for (int k = 0; k < nrs - 1; ++k)
+          for (int pi = nrs - 1; pi > k; --pi)
+            if (comp(fe[pi], fe[pi - 1]) ||
+                (!comp(fe[pi - 1], fe[pi]) && source[pi] < source[pi - 1]))
               {
-                std::swap(pl[pi - 1], pl[pi]);
+                std::swap(fe[pi - 1], fe[pi]);
                 std::swap(source[pi - 1], source[pi]);
               }
       }
     else
       {
-        for (int k = 0; k < nrp - 1; k++)
-          for (int pi = nrp - 1; pi > k; pi--)
-            if (comp(pl[pi], pl[pi-1]))
+        for (int k = 0; k < nrs - 1; ++k)
+          for (int pi = nrs - 1; pi > k; --pi)
+            if (comp(fe[pi], fe[pi-1]))
               {
-                std::swap(pl[pi-1], pl[pi]);
+                std::swap(fe[pi-1], fe[pi]);
                 std::swap(source[pi-1], source[pi]);
               }
       }
@@ -835,106 +834,109 @@ template<
     if (stable)
       {
         int j;
-        while (nrp > 0 && length > 0)
+        while (nrs > 0 && length > 0)
           {
             if (source[0] < source[1])
               {
-                // pl[0] <= pl[1]
-                while ((nrp == 1 || !(comp(pl[1], pl[0]))) && length > 0)
+                // fe[0] <= fe[1]
+                while ((nrs == 1 || !comp(fe[1], fe[0])) && length > 0)
                   {
-                    *target = pl[0];
+                    *target = fe[0];
                     ++target;
-                    ++POS(source[0]);
-                    length--;
-                    if (POS(source[0]) == STOPS(source[0]))
+                    ++(seqs_begin[source[0]].first);
+                    --length;
+                    if (seqs_begin[source[0]].first == seqs_begin[source[0]].second)
                       {
                         // Move everything to the left.
-                        for (int s = 0; s < nrp - 1; s++)
+                        for (int s = 0; s < nrs - 1; ++s)
                           {
-                            pl[s] = pl[s + 1];
+                            fe[s] = fe[s + 1];
                             source[s] = source[s + 1];
                           }
-                        nrp--;
+                        fe[nrs - 1].~value_type();  //Destruct explicitly.
+                        --nrs;
                         break;
                       }
                     else
-                      pl[0] = *(POS(source[0]));
+                      fe[0] = *(seqs_begin[source[0]].first);
                   }
               }
             else
               {
-                // pl[0] < pl[1]
-                while ((nrp == 1 || comp(pl[0], pl[1])) && length > 0)
+                // fe[0] < fe[1]
+                while ((nrs == 1 || comp(fe[0], fe[1])) && length > 0)
                   {
-                    *target = pl[0];
+                    *target = fe[0];
                     ++target;
-                    ++POS(source[0]);
-                    length--;
-                    if (POS(source[0]) == STOPS(source[0]))
+                    ++(seqs_begin[source[0]].first);
+                    --length;
+                    if (seqs_begin[source[0]].first == seqs_begin[source[0]].second)
                       {
-                        for (int s = 0; s < nrp - 1; s++)
+                        for (int s = 0; s < nrs - 1; ++s)
                           {
-                            pl[s] = pl[s + 1];
+                            fe[s] = fe[s + 1];
                             source[s] = source[s + 1];
                           }
-                        nrp--;
+                        fe[nrs - 1].~value_type();  //Destruct explicitly.
+                        --nrs;
                         break;
                       }
                     else
-                      pl[0] = *(POS(source[0]));
+                      fe[0] = *(seqs_begin[source[0]].first);
                   }
               }
 
             // Sink down.
             j = 1;
-            while ((j < nrp) && (comp(pl[j], pl[j - 1]) ||
-                                (!comp(pl[j - 1], pl[j])
+            while ((j < nrs) && (comp(fe[j], fe[j - 1]) ||
+                                (!comp(fe[j - 1], fe[j])
                                     && (source[j] < source[j - 1]))))
               {
-                std::swap(pl[j - 1], pl[j]);
+                std::swap(fe[j - 1], fe[j]);
                 std::swap(source[j - 1], source[j]);
-                j++;
+                ++j;
               }
           }
       }
     else
       {
         int j;
-        while (nrp > 0 && length > 0)
+        while (nrs > 0 && length > 0)
           {
-            // pl[0] <= pl[1]
-            while (nrp == 1 || (!comp(pl[1], pl[0])) && length > 0)
+            // fe[0] <= fe[1]
+            while (nrs == 1 || (!comp(fe[1], fe[0])) && length > 0)
               {
-                *target = pl[0];
+                *target = fe[0];
                 ++target;
-                ++POS(source[0]);
-                length--;
-                if (POS(source[0]) == STOPS(source[0]))
+                ++seqs_begin[source[0]].first;
+                --length;
+                if (seqs_begin[source[0]].first == seqs_begin[source[0]].second)
                   {
-                    for (int s = 0; s < (nrp - 1); s++)
+                    for (int s = 0; s < (nrs - 1); ++s)
                       {
-                        pl[s] = pl[s + 1];
+                        fe[s] = fe[s + 1];
                         source[s] = source[s + 1];
                       }
-                    nrp--;
+                    fe[nrs - 1].~value_type();  //Destruct explicitly.
+                    --nrs;
                     break;
                   }
                 else
-                  pl[0] = *(POS(source[0]));
+                  fe[0] = *(seqs_begin[source[0]].first);
               }
 
             // Sink down.
             j = 1;
-            while ((j < nrp) && comp(pl[j], pl[j - 1]))
+            while ((j < nrs) && comp(fe[j], fe[j - 1]))
               {
-                std::swap(pl[j - 1], pl[j]);
+                std::swap(fe[j - 1], fe[j]);
                 std::swap(source[j - 1], source[j]);
-                j++;
+                ++j;
               }
           }
       }
 
-    delete[] pl;
+    delete fe;  //Destructors already called.
     delete[] source;
 
     return target;
@@ -983,17 +985,17 @@ template<
     // Default value for potentially non-default-constructible types.
     value_type* arbitrary_element = NULL;
 
-    for (int t = 0; t < k; t++)
+    for (int t = 0; t < k; ++t)
       {
-        if(arbitrary_element == NULL && LENGTH(seqs_begin[t]) > 0)
+        if(arbitrary_element == NULL && _GLIBCXX_PARALLEL_LENGTH(seqs_begin[t]) > 0)
           arbitrary_element = &(*seqs_begin[t].first);
-        total_length += LENGTH(seqs_begin[t]);
+        total_length += _GLIBCXX_PARALLEL_LENGTH(seqs_begin[t]);
       }
 
     if(total_length == 0)
       return target;
 
-    for (int t = 0; t < k; t++)
+    for (int t = 0; t < k; ++t)
       {
         if (stable)
           {
@@ -1022,7 +1024,7 @@ template<
 
     if (stable)
       {
-        for (difference_type i = 0; i < total_length; i++)
+        for (difference_type i = 0; i < total_length; ++i)
           {
             // Take out.
             source = lt.get_min_source();
@@ -1040,7 +1042,7 @@ template<
       }
     else
       {
-        for (difference_type i = 0; i < total_length; i++)
+        for (difference_type i = 0; i < total_length; ++i)
           {
             //take out
             source = lt.get_min_source();
@@ -1099,7 +1101,7 @@ template<
 
     difference_type total_length = 0;
 
-    for (int t = 0; t < k; t++)
+    for (int t = 0; t < k; ++t)
       {
 #if _GLIBCXX_ASSERTIONS
         _GLIBCXX_PARALLEL_ASSERT(seqs_begin[t].first != seqs_begin[t].second);
@@ -1109,7 +1111,7 @@ template<
         else
           lt.insert_start(*seqs_begin[t].first, t, false);
 
-        total_length += LENGTH(seqs_begin[t]);
+        total_length += _GLIBCXX_PARALLEL_LENGTH(seqs_begin[t]);
       }
 
     if (stable)
@@ -1145,7 +1147,7 @@ template<
             _GLIBCXX_PARALLEL_ASSERT(
                 (seqs_begin[source].first != seqs_begin[source].second)
                 || (i == length - 1));
-            i++;
+            ++i;
 #endif
             // Feed.
             // Replace from same source.
@@ -1177,7 +1179,7 @@ template<
             _GLIBCXX_PARALLEL_ASSERT(
                 (seqs_begin[source].first != seqs_begin[source].second)
                 || (i >= length - 1));
-            i++;
+            ++i;
 #endif
             // Feed.
             // Replace from same source.
@@ -1216,8 +1218,8 @@ template<
                                           comp, min_seq, stable);
 
     difference_type total_length = 0;
-    for (RandomAccessIteratorIterator s = seqs_begin; s != seqs_end; s++)
-      total_length += LENGTH(*s);
+    for (RandomAccessIteratorIterator s = seqs_begin; s != seqs_end; ++s)
+      total_length += _GLIBCXX_PARALLEL_LENGTH(*s);
 
     if (overhang != -1)
       {
@@ -1279,12 +1281,12 @@ template<
         prepare_unguarded_sentinel(seqs_begin, seqs_end, comp);
 
     difference_type total_length = 0;
-    for (RandomAccessIteratorIterator s = seqs_begin; s != seqs_end; s++)
+    for (RandomAccessIteratorIterator s = seqs_begin; s != seqs_end; ++s)
       {
-        total_length += LENGTH(*s);
+        total_length += _GLIBCXX_PARALLEL_LENGTH(*s);
 
         // Sentinel spot.
-        (*s).second++;
+        ++((*s).second);
       }
 
     difference_type unguarded_length =
@@ -1301,12 +1303,12 @@ template<
 
     // Copy rest stable.
     for (RandomAccessIteratorIterator s = seqs_begin;
-         s != seqs_end && overhang > 0; s++)
+         s != seqs_end && overhang > 0; ++s)
       {
         // Restore.
-        (*s).second--;
+        --((*s).second);
         difference_type local_length =
-            std::min<difference_type>(overhang, LENGTH(*s));
+            std::min<difference_type>(overhang, _GLIBCXX_PARALLEL_LENGTH(*s));
         target_end = std::copy((*s).first, (*s).first + local_length,
                                target_end);
         (*s).first += local_length;
@@ -1324,7 +1326,7 @@ template<
 
 /** @brief Sequential multi-way merging switch.
  *
- *  The decision if based on the branching factor and runtime settings.
+ *  The _GLIBCXX_PARALLEL_DECISION if based on the branching factor and runtime settings.
  *  @param seqs_begin Begin iterator of iterator pair input sequence.
  *  @param seqs_end End iterator of iterator pair input sequence.
  *  @param target Begin iterator out output sequence.
@@ -1356,7 +1358,7 @@ template<
       value_type;
 
 #if _GLIBCXX_ASSERTIONS
-    for (RandomAccessIteratorIterator s = seqs_begin; s != seqs_end; s++)
+    for (RandomAccessIteratorIterator s = seqs_begin; s != seqs_end; ++s)
       _GLIBCXX_PARALLEL_ASSERT(is_sorted((*s).first, (*s).second, comp));
 #endif
 
@@ -1502,7 +1504,7 @@ template<
 
 /** @brief Parallel multi-way merge routine.
  *
- *  The decision if based on the branching factor and runtime settings.
+ *  The _GLIBCXX_PARALLEL_DECISION if based on the branching factor and runtime settings.
  *  @param seqs_begin Begin iterator of iterator pair input sequence.
  *  @param seqs_end End iterator of iterator pair input sequence.
  *  @param target Begin iterator out output sequence.
@@ -1538,8 +1540,8 @@ template<
 
       difference_type total_length = 0;
       for (RandomAccessIteratorIterator raii = seqs_begin;
-           raii != seqs_end; raii++)
-        total_length += LENGTH(*raii);
+           raii != seqs_end; ++raii)
+        total_length += _GLIBCXX_PARALLEL_LENGTH(*raii);
 
       _GLIBCXX_CALL(total_length)
 
@@ -1561,7 +1563,7 @@ template<
               // Thread t will have to merge pieces[iam][0..k - 1]
               pieces = new std::vector<
                   std::pair<difference_type, difference_type> >[num_threads];
-              for (int s = 0; s < num_threads; s++)
+              for (int s = 0; s < num_threads; ++s)
                 pieces[s].resize(k);
 
               difference_type num_samples =
@@ -1572,16 +1574,16 @@ template<
                   value_type* samples = static_cast<value_type*>(
                     ::operator new(sizeof(value_type) * k * num_samples));
                   // Sample.
-                  for (int s = 0; s < k; s++)
-                    for (int i = 0; (difference_type)i < num_samples; i++)
+                  for (int s = 0; s < k; ++s)
+                    for (difference_type i = 0; i < num_samples; ++i)
                       {
                         difference_type sample_index =
                             static_cast<difference_type>(
-                                LENGTH(seqs_begin[s]) * (double(i + 1) /
+                                _GLIBCXX_PARALLEL_LENGTH(seqs_begin[s]) * (double(i + 1) /
                                 (num_samples + 1)) * (double(length)
                                 / total_length));
-                        samples[s * num_samples + i] =
-                            seqs_begin[s].first[sample_index];
+                        new(&(samples[s * num_samples + i])) value_type(
+                            seqs_begin[s].first[sample_index]);
                       }
 
                   if (stable)
@@ -1591,9 +1593,9 @@ template<
                     __gnu_sequential::sort(
                       samples, samples + (num_samples * k), comp);
 
-                  for (int slab = 0; slab < num_threads; slab++)
+                  for (int slab = 0; slab < num_threads; ++slab)
                     // For each slab / processor.
-                    for (int seq = 0; seq < k; seq++)
+                    for (int seq = 0; seq < k; ++seq)
                       {
                         // For each sequence.
                         if (slab > 0)
@@ -1618,7 +1620,7 @@ template<
                                       num_threads], comp)
                               - seqs_begin[seq].first;
                         else
-                        pieces[slab][seq].second = LENGTH(seqs_begin[seq]);
+                        pieces[slab][seq].second = _GLIBCXX_PARALLEL_LENGTH(seqs_begin[seq]);
                       }
                     delete[] samples;
                 }
@@ -1637,7 +1639,7 @@ template<
                       new difference_type[num_threads + 1];
                   equally_split(length, num_threads, borders);
 
-                  for (int s = 0; s < (num_threads - 1); s++)
+                  for (int s = 0; s < (num_threads - 1); ++s)
                     {
                       offsets[s].resize(k);
                       multiseq_partition(
@@ -1655,10 +1657,10 @@ template<
                     }
 
 
-                  for (int slab = 0; slab < num_threads; slab++)
+                  for (int slab = 0; slab < num_threads; ++slab)
                     {
                       // For each slab / processor.
-                      for (int seq = 0; seq < k; seq++)
+                      for (int seq = 0; seq < k; ++seq)
                         {
                           // For each sequence.
                           if (slab == 0)
@@ -1676,7 +1678,7 @@ template<
                             {
                               // slab == num_threads - 1
                               pieces[slab][seq].second =
-                                  LENGTH(seqs_begin[seq]);
+                                  _GLIBCXX_PARALLEL_LENGTH(seqs_begin[seq]);
                             }
                         }
                     }
@@ -1688,7 +1690,7 @@ template<
 
           difference_type target_position = 0;
 
-          for (int c = 0; c < k; c++)
+          for (int c = 0; c < k; ++c)
             target_position += pieces[iam][c].first;
 
           if (k > 2)
@@ -1698,12 +1700,12 @@ template<
                   std::pair<RandomAccessIterator1, RandomAccessIterator1>[k];
 
               difference_type local_length = 0;
-              for (int s = 0; s < k; s++)
+              for (int s = 0; s < k; ++s)
                 {
                   chunks[s] = std::make_pair(
                       seqs_begin[s].first + pieces[iam][s].first,
                       seqs_begin[s].first + pieces[iam][s].second);
-                  local_length += LENGTH(chunks[s]);
+                  local_length += _GLIBCXX_PARALLEL_LENGTH(chunks[s]);
                 }
 
               multiway_merge(
@@ -1734,7 +1736,7 @@ template<
 #endif
 
       // Update ends of sequences.
-      for (int s = 0; s < k; s++)
+      for (int s = 0; s < k; ++s)
         seqs_begin[s].first += pieces[num_threads - 1][s].second;
 
       delete[] pieces;
