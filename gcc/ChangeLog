@@ -1,3 +1,18 @@
+2007-11-28  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR target/32406
+	* builtins.c (expand_builtin_nonlocal_goto): Also emit a use
+	of GP register, if valid and fixed.
+
+	Revert:
+	2007-06-21  David Daney  <ddaney@avtrex.com>
+
+	PR target/32406
+	* config/mips/mips.md (define_constants): Rename UNSPEC_EH_RECEIVER
+	to UNSPEC_NONLOCAL_GOTO_RECEIVER globally.
+	(exception_receiver): Renamed to ...
+	(nonlocal_goto_receiver): ... this.
+
 2007-11-27  H.J. Lu  <hongjiu.lu@intel.com>
 	    Joey Ye <joey.ye@intel.com>
 

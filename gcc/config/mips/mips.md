@@ -30,7 +30,7 @@
    (UNSPEC_GET_FNADDR		 3)
    (UNSPEC_BLOCKAGE		 4)
    (UNSPEC_CPRESTORE		 5)
-   (UNSPEC_NONLOCAL_GOTO_RECEIVER 6)
+   (UNSPEC_EH_RECEIVER		 6)
    (UNSPEC_EH_RETURN		 7)
    (UNSPEC_CONSTTABLE_INT	 8)
    (UNSPEC_CONSTTABLE_FLOAT	 9)
@@ -5598,9 +5598,9 @@
   DONE;
 })
 
-(define_insn_and_split "nonlocal_goto_receiver"
+(define_insn_and_split "exception_receiver"
   [(set (reg:SI 28)
-	(unspec_volatile:SI [(const_int 0)] UNSPEC_NONLOCAL_GOTO_RECEIVER))]
+	(unspec_volatile:SI [(const_int 0)] UNSPEC_EH_RECEIVER))]
   "TARGET_CALL_CLOBBERED_GP"
   "#"
   "&& reload_completed"
