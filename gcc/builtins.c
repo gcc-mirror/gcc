@@ -909,6 +909,20 @@ expand_builtin_nonlocal_goto (tree exp)
 	 not clear if really needed.  */
       emit_insn (gen_rtx_USE (VOIDmode, hard_frame_pointer_rtx));
       emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
+
+      /* If the architecture is using a GP register, we must
+	 conservatively assume that the target function makes use of it.
+	 The prologue of functions with nonlocal gotos must therefore
+	 initialize the GP register to the appropriate value, and we
+	 must then make sure that this value is live at the point
+	 of the jump.  (Note that this doesn't necessarily apply
+	 to targets with a nonlocal_goto pattern; they are free
+	 to implement it in their own way.  Note also that this is
+	 a no-op if the GP register is a global invariant.)  */
+      if ((unsigned) PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM
+	  && fixed_regs[PIC_OFFSET_TABLE_REGNUM])
+	emit_insn (gen_rtx_USE (VOIDmode, pic_offset_table_rtx));
+
       emit_indirect_jump (r_label);
     }
 
