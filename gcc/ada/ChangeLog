@@ -1,3 +1,9 @@
+2007-11-28  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR ada/15803
+	* par-ch3.adb (P_Variant_Part): Signal an error when anything other
+	than an identifier is used after "case" in a variant_part.
+
 2007-11-26  Andreas Krebbel  <krebbel1@de.ibm.com>
 
         PR 34081/C++
