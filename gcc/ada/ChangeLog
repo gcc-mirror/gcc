@@ -22,6 +22,13 @@
 	Signal an error when attribute argument is a fixed-point value of
 	an unknown type.
 
+	PR ada/22559
+	* sem_ch3.adb (Build_Derived_Numeric_Type): Do not set RM_Size on
+	a derived ordinary fixed point type.
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Recompute
+	RM_Size when a Small clause is found.
+
 2007-11-26  Andreas Krebbel  <krebbel1@de.ibm.com>
 
         PR 34081/C++
