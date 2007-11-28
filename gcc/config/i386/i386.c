@@ -4253,10 +4253,13 @@ function_arg_32 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	  int regno = cum->regno;
 
 	  /* Fastcall allocates the first two DWORD (SImode) or
-	     smaller arguments to ECX and EDX.  */
+            smaller arguments to ECX and EDX if it isn't an
+            aggregate type .  */
 	  if (cum->fastcall)
 	    {
-	      if (mode == BLKmode || mode == DImode)
+	      if (mode == BLKmode
+		  || mode == DImode
+		  || (type && AGGREGATE_TYPE_P (type)))
 	        break;
 
 	      /* ECX not EAX is the first allocated register.  */

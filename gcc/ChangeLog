@@ -1,3 +1,10 @@
+2007-11-27  H.J. Lu  <hongjiu.lu@intel.com>
+	    Joey Ye <joey.ye@intel.com>
+
+	PR target/34001
+	* config/i386/i386.c (function_arg_32): Don't pass aggregate
+	arguments in ECX/EDX for fastcall.
+
 2007-11-28  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	* config/i386/linux.h (CRT_GET_RFIB_DATA): Add Intel syntax inline
