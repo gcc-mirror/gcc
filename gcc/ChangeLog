@@ -1,3 +1,10 @@
+2007-11-29  Jan Hubicka  <jh@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/33434
+	* tree-inline.c (setup_one_parameter): If the value passed to
+	a parameter is never used, don't set it up.
+
 2007-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/32130
