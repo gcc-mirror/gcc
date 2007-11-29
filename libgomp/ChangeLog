@@ -1,3 +1,10 @@
+2007-11-29  Andris Pavenis <andris.pavenis@iki.fi>
+	    Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.am: Use space as vpath separator.  Use 'vpath %'
+	instead of 'VPATH ='.
+	* Makefile.in: Regenerate.
+
 2007-11-23  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac: Adjust makeinfo version check.

@@ -111,7 +111,8 @@ VPATH = @srcdir@
 # pattern rule for everything.
 # This vpath could be extended within the Make-lang fragments.
 
-vpath %.texi $(gcc_docdir):$(gcc_docdir)/include
+vpath %.texi $(gcc_docdir)
+vpath %.texi $(gcc_docdir)/include
 
 # ----
 # Default values for variables overridden in Makefile fragments.

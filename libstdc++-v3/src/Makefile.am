@@ -182,7 +182,8 @@ sources = \
 	${host_sources} \
 	${host_sources_extra} 
 
-VPATH = $(top_srcdir)/src:$(top_srcdir)
+vpath % $(top_srcdir)/src
+vpath % $(top_srcdir)
 
 libstdc___la_SOURCES = $(sources)
 

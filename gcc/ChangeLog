@@ -1,3 +1,7 @@
+2007-11-29  Andris Pavenis <andris.pavenis@iki.fi>
+
+	* Makefile.in: Use separate vpath lines for each path.
+
 2007-11-29  Ben Elliston  <bje@au.ibm.com>
 
 	* SERVICE: Update URL.
