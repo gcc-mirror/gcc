@@ -1419,7 +1419,9 @@ is_bitfield_expr_with_lowered_type (const_tree exp)
   switch (TREE_CODE (exp))
     {
     case COND_EXPR:
-      if (!is_bitfield_expr_with_lowered_type (TREE_OPERAND (exp, 1)))
+      if (!is_bitfield_expr_with_lowered_type (TREE_OPERAND (exp, 1)
+					       ? TREE_OPERAND (exp, 1)
+					       : TREE_OPERAND (exp, 0)))
 	return NULL_TREE;
       return is_bitfield_expr_with_lowered_type (TREE_OPERAND (exp, 2));
 

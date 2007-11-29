@@ -1,5 +1,8 @@
 2007-11-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/34270
+	* g++.dg/template/cond7.C: New test.
+
 	PR c++/34267
 	PR c++/34268
 	* g++.dg/cpp0x/decltype7.C: New test.
