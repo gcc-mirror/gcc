@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* We don't (and don't want to) perform this optimisation on soft-float
-   MIPS targets, where each addition is a library call.  */
-/* { dg-skip-if "" { mips_soft_float } { "*" } { "" } } */
+   targets, where each addition is a library call.  */
+/* { dg-require-effective-target hard_float } */
 /* { dg-options "-O2 -funroll-loops --fast-math -fvariable-expansion-in-unroller -dL" } */
 
 extern void abort (void);

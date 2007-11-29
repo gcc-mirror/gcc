@@ -1,3 +1,11 @@
+2007-11-28  Bob Wilson  <bob.wilson@acm.org>
+	
+	* lib/target-supports.exp (check_effective_target_mips_soft_float):
+	Delete.
+	(check_effective_target_hard_float): New.
+	* gcc.dg/var-expand1.c: Skip for targets without FPU instructions.
+	* gcc.dg/pr30957-1.c: Likewise.
+	
 2007-11-28  Samuel Tardieu  <sam@rfc1149.net>
 
 	PR ada/15803
