@@ -1,3 +1,8 @@
+2007-11-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (make_packable_type): Retrieve the real name of the type.
+	(maybe_pad_type): Simplify similar code.
+
 2007-11-28  Samuel Tardieu  <sam@rfc1149.net>
 
 	PR ada/15803

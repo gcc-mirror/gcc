@@ -5198,13 +5198,17 @@ static tree
 make_packable_type (tree type)
 {
   tree new_type = make_node (TREE_CODE (type));
+  tree name = TYPE_NAME (type);
   tree field_list = NULL_TREE;
   tree old_field;
+
+  if (name && TREE_CODE (name) == TYPE_DECL)
+    name = DECL_NAME (name);
 
   /* Copy the name and flags from the old type to that of the new and set
      the alignment to try for an integral type.  For QUAL_UNION_TYPE,
      also copy the size.  */
-  TYPE_NAME (new_type) = TYPE_NAME (type);
+  TYPE_NAME (new_type) = name;
   TYPE_JUSTIFIED_MODULAR_P (new_type)
     = TYPE_JUSTIFIED_MODULAR_P (type);
   TYPE_CONTAINS_TEMPLATE_P (new_type) = TYPE_CONTAINS_TEMPLATE_P (type);
@@ -5394,15 +5398,17 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   /* Unless debugging information isn't being written for the input type,
      write a record that shows what we are a subtype of and also make a
      variable that indicates our size, if variable. */
-  if (TYPE_NAME (record) && AGGREGATE_TYPE_P (type)
+  if (TYPE_NAME (record)
+      && AGGREGATE_TYPE_P (type)
       && (TREE_CODE (TYPE_NAME (type)) != TYPE_DECL
 	  || !DECL_IGNORED_P (TYPE_NAME (type))))
     {
       tree marker = make_node (RECORD_TYPE);
-      tree name = (TREE_CODE (TYPE_NAME (record)) == TYPE_DECL
-		   ? DECL_NAME (TYPE_NAME (record))
-		   : TYPE_NAME (record));
+      tree name = TYPE_NAME (record);
       tree orig_name = TYPE_NAME (type);
+
+      if (TREE_CODE (name) == TYPE_DECL)
+	name = DECL_NAME (name);
 
       if (TREE_CODE (orig_name) == TYPE_DECL)
 	orig_name = DECL_NAME (orig_name);
