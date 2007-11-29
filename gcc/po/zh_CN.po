@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.3-b20071109\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2007-11-08 21:09+0000\n"
-"PO-Revision-Date: 2007-11-12 23:54+0800\n"
+"PO-Revision-Date: 2007-11-28 22:07+0800\n"
 "Last-Translator: Meng Jie <zuxy.meng@gmail.com>\n"
 "Language-Team: Chinese (simplified) <translation-team-zh-cn@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -377,11 +377,11 @@ msgstr "标量初始化带花括号"
 
 #: c-typeck.c:5525
 msgid "initialization of flexible array member in a nested context"
-msgstr "在嵌套的上下文中初始化变长数组成员"
+msgstr "在嵌套的上下文中初始化可变数组成员"
 
 #: c-typeck.c:5527
 msgid "initialization of a flexible array member"
-msgstr "对变长数组成员的初始化"
+msgstr "对可变数组成员的初始化"
 
 #: c-typeck.c:5554
 msgid "missing initializer"
@@ -441,7 +441,7 @@ msgstr "结构初始值设定项中有多余元素"
 
 #: c-typeck.c:6613
 msgid "non-static initialization of a flexible array member"
-msgstr "对变长数组成员非静态地初始化"
+msgstr "对可变数组成员非静态地初始化"
 
 #: c-typeck.c:6681
 msgid "excess elements in union initializer"
@@ -2490,7 +2490,7 @@ msgstr ""
 
 #: params.def:321
 msgid "Bound on the cost of an expression to compute the number of iterations"
-msgstr ""
+msgstr "用于计算迭代次数的表达式的开销的上限值"
 
 #: params.def:327
 msgid "A factor for tuning the upper bound that swing modulo scheduler uses for scheduling a loop"
@@ -2518,7 +2518,7 @@ msgstr ""
 
 #: params.def:354
 msgid "Loops iterating at least selected number of iterations will get loop alignement."
-msgstr ""
+msgstr "对齐循环次数大于或等于设定值的循环"
 
 #: params.def:370
 msgid "The maximum number of loop iterations we predict statically"
@@ -2562,7 +2562,7 @@ msgstr "复制基本块时最大的展开因子"
 
 #: params.def:418
 msgid "The maximum number of insns to duplicate when unfactoring computed gotos"
-msgstr ""
+msgstr "分解计算转移时复制指令的数量上限"
 
 #: params.def:424
 msgid "The maximum length of path considered in cse"
@@ -2574,7 +2574,7 @@ msgstr "清空前公因式消去处理的最大指令数"
 
 #: params.def:435
 msgid "The minimum cost of an expensive expression in the loop invariant motion"
-msgstr "循环不变量转移时一条昂贵的表达式的最小代价"
+msgstr "循环不变量转移时一条昂贵的表达式的最小开销"
 
 #: params.def:444
 msgid "Bound on number of candidates below that all candidates are considered in iv optimizations"
@@ -2582,11 +2582,11 @@ msgstr ""
 
 #: params.def:452
 msgid "Bound on number of iv uses in loop optimized in iv optimizations"
-msgstr ""
+msgstr "对归纳变量数少于设定值的循环进行归纳变量优化"
 
 #: params.def:460
 msgid "If number of candidates in the set is smaller, we always try to remove unused ivs during its optimization"
-msgstr ""
+msgstr "当备选归纳变量少于设定值时总是设法在优化过程中消除未使用的归纳变量"
 
 #: params.def:465
 msgid "Bound on size of expressions used in the scalar evolutions analyzer"
@@ -2594,27 +2594,27 @@ msgstr ""
 
 #: params.def:470
 msgid "Bound on the number of variables in Omega constraint systems"
-msgstr ""
+msgstr "Omega 约束系统中变量数的上限"
 
 #: params.def:475
 msgid "Bound on the number of inequalities in Omega constraint systems"
-msgstr ""
+msgstr "Omega 约束系统中不等式数量的上限"
 
 #: params.def:480
 msgid "Bound on the number of equalities in Omega constraint systems"
-msgstr ""
+msgstr "Omega 约束系统中等式数量的上限"
 
 #: params.def:485
 msgid "Bound on the number of wild cards in Omega constraint systems"
-msgstr ""
+msgstr "Omega 约束系统中通配符数量的上限"
 
 #: params.def:490
 msgid "Bound on the size of the hash table in Omega constraint systems"
-msgstr ""
+msgstr "Omega 约束系统中散列表大小的上限"
 
 #: params.def:495
 msgid "Bound on the number of keys in Omega constraint systems"
-msgstr ""
+msgstr "Omega 约束系统中"
 
 #: params.def:500
 msgid "When set to 1, use expensive methods to eliminate all redundant constraints"
@@ -2622,11 +2622,11 @@ msgstr "设为 1 时，使用昂贵的方法来消除所有冗余的约束"
 
 #: params.def:505
 msgid "Bound on number of runtime checks inserted by the vectorizer's loop versioning for alignment check"
-msgstr "矢量循环版本化插入的运行时对齐检查次数的范围"
+msgstr "矢量循环版本化插入的运行时对齐检查次数的上限"
 
 #: params.def:510
 msgid "Bound on number of runtime checks inserted by the vectorizer's loop versioning for alias check"
-msgstr "矢量循环版本化插入的运行时别名检查次数的范围"
+msgstr "矢量循环版本化插入的运行时别名检查次数的上限"
 
 #: params.def:515
 msgid "The maximum memory locations recorded by cselib"
@@ -3788,7 +3788,7 @@ msgstr "从 %s 转换到 %s，在 %L 处：算术正常"
 #: fortran/arith.c:2001
 #, no-c-format
 msgid "Arithmetic overflow converting %s to %s at %L. This check can be disabled with the option -fno-range-check"
-msgstr ""
+msgstr "将 %s 转换到 %s 时在 %L 处算术溢出。这一检查可用 -fno-range-check 选项关闭"
 
 #: fortran/arith.c:2006
 #, no-c-format
@@ -4792,7 +4792,7 @@ msgstr "Fortran 2003：%C 处的 PROCEDURE 语句"
 #: fortran/decl.c:4186
 #, no-c-format
 msgid "Expected formal argument list in function definition at %C"
-msgstr ""
+msgstr "函数定义在 %C 处需要形参列表"
 
 #: fortran/decl.c:4210 fortran/decl.c:4214 fortran/decl.c:4536
 #: fortran/decl.c:4540 fortran/symbol.c:1402
@@ -6294,12 +6294,12 @@ msgstr "KIND 参数 %s 在 %L 处必须是初始化表达式"
 #: fortran/expr.c:2229
 #, no-c-format
 msgid "Parameter '%s' at %L has not been declared or is a variable, which does not reduce to a constant expression"
-msgstr ""
+msgstr "参数’%s在 %L 处尚未声明或者是一个不能被归约为常量表达式的变量"
 
 #: fortran/expr.c:2317
 #, no-c-format
 msgid "Initialization expression didn't reduce %C"
-msgstr "初始化表达式不能还原 %C"
+msgstr "初始化表达式不能归约 %C"
 
 #: fortran/expr.c:2360
 #, no-c-format
@@ -6850,9 +6850,9 @@ msgid "Extension: backslash character at %C"
 msgstr "扩展：%C 处的反斜杠字符"
 
 #: fortran/io.c:187 fortran/io.c:190
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Extension: Tab character in format at %C"
-msgstr "扩展：%C 处的反斜杠字符"
+msgstr "扩展：%C 处格式中的制表符"
 
 #: fortran/io.c:450
 msgid "Positive width required"
@@ -7974,24 +7974,24 @@ msgid "Variable '%s' in %s clause is used in NAMELIST statement at %L"
 msgstr ""
 
 #: fortran/openmp.c:852
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "%c REDUCTION variable '%s' at %L must be of numeric type, got %s"
-msgstr "实参‘%s’(属于内建函数‘%s’，位于 %L)必须为整数型或实数型"
+msgstr "%c REDUCTION 变量‘%s’在 %L 处必须具有数字类型而非 %s"
 
 #: fortran/openmp.c:863
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "%s REDUCTION variable '%s' must be LOGICAL at %L"
-msgstr "实参‘%s’(属于内建函数‘%s’，位于 %L)必须是一个变量"
+msgstr "%s REDUCTION 变量‘%s’在 %L 处类型必须为 LOGICAL"
 
 #: fortran/openmp.c:874
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "%s REDUCTION variable '%s' must be INTEGER or REAL at %L"
-msgstr "实参‘%s’(属于内建函数‘%s’，位于 %L)必须为整数型或实数型"
+msgstr "%s REDUCTION 变量‘%s’在 %L 处类型必须为 INTEGER 或者 REAL"
 
 #: fortran/openmp.c:883
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "%s REDUCTION variable '%s' must be INTEGER at %L"
-msgstr "%L 处的表达式必须具有 INTEGER 类型"
+msgstr "%s REDUCTION 变量‘%s’在 %L 处类型必须为 INTEGER"
 
 #: fortran/openmp.c:995
 #, no-c-format
@@ -8270,9 +8270,9 @@ msgid "Unexpected end of file in '%s'"
 msgstr "‘%s’中非预期的文件结尾"
 
 #: fortran/parse.c:1558
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: Derived type definition at %C without components"
-msgstr "%C 处的派生类型定义没有组件"
+msgstr "Fortran 2003：%C 处的派生类型定义没有组件"
 
 #: fortran/parse.c:1569
 #, no-c-format
@@ -8689,9 +8689,9 @@ msgid "Symbol at %C is not appropriate for an expression"
 msgstr "%C 处的符号不适用于表达式"
 
 #: fortran/primary.c:2504
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Assigning to PROTECTED variable at %C"
-msgstr "%L 处向 FORALL 索引变量赋值"
+msgstr "%L 处向 PROTECTED 变量赋值"
 
 #: fortran/primary.c:2520
 #, no-c-format
@@ -9443,7 +9443,7 @@ msgstr "%L 处 CASE 语句中的表达式必须为标量"
 #: fortran/resolve.c:5069
 #, no-c-format
 msgid "Selection expression in computed GOTO statement at %L must be a scalar integer expression"
-msgstr ""
+msgstr "%L 处计算转移 GOTO 语句的选择表达式必须是一个标量整数表达式"
 
 #: fortran/resolve.c:5087
 #, no-c-format
@@ -9581,7 +9581,7 @@ msgstr ""
 #: fortran/resolve.c:6066
 #, no-c-format
 msgid "ASSIGNED GOTO statement at %L requires an INTEGER variable"
-msgstr ""
+msgstr "ASSIGNED GOTO 语句在 %L 处需要一个 INTEGER 变量"
 
 #: fortran/resolve.c:6069
 #, fuzzy, no-c-format
@@ -9659,7 +9659,7 @@ msgstr ""
 #: fortran/resolve.c:6540
 #, no-c-format
 msgid "CHARACTER variable has zero length at %L"
-msgstr ""
+msgstr "%L 处的 CHARACTER 变量长度为零"
 
 #: fortran/resolve.c:6828
 #, no-c-format
@@ -10532,9 +10532,9 @@ msgid "Cray Pointee at %L appears in multiple pointer() statements"
 msgstr ""
 
 #: fortran/symbol.c:931
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Duplicate PROTECTED attribute specified at %L"
-msgstr "%L 指定了重复的 SAVE 属性"
+msgstr "%L 处指定了重复的 PROTECTED 属性"
 
 #: fortran/symbol.c:964
 #, no-c-format
@@ -10547,14 +10547,14 @@ msgid "Duplicate SAVE attribute specified at %L"
 msgstr "%L 指定了重复的 SAVE 属性"
 
 #: fortran/symbol.c:993
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Duplicate VALUE attribute specified at %L"
-msgstr "%L 指定了重复的 SAVE 属性"
+msgstr "%L 处指定了重复的 VALUE 属性"
 
 #: fortran/symbol.c:1013
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Duplicate VOLATILE attribute specified at %L"
-msgstr "%L 指定了重复的 SAVE 属性"
+msgstr "%L 处指定了重复的 VOLATILE 属性"
 
 #: fortran/symbol.c:1296
 #, no-c-format
@@ -10577,9 +10577,9 @@ msgid "ACCESS specification at %L was already specified"
 msgstr ""
 
 #: fortran/symbol.c:1405
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Duplicate BIND attribute specified at %L"
-msgstr "重复的 %s 属性在 %L 处被指定"
+msgstr "%L 处指定了重复的 BIND 属性"
 
 #: fortran/symbol.c:1412
 #, no-c-format
@@ -10668,9 +10668,9 @@ msgid "Derived type '%s' declared at %L must have the BIND attribute to be C int
 msgstr ""
 
 #: fortran/symbol.c:3173
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Derived type '%s' at %L is empty"
-msgstr "%C 处的派生类型定义没有组件"
+msgstr "派生类型‘%s’在 %L 处是空的"
 
 #: fortran/symbol.c:3190
 #, no-c-format
@@ -10772,9 +10772,9 @@ msgid "Dummy argument '%s' at %L was declared INTENT(OUT) but was not set"
 msgstr "‘%s’哑元实参在 %L 处不能是 INTENT(OUT)"
 
 #: fortran/trans-decl.c:3020
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Unused dummy argument '%s' at %L"
-msgstr "给予函数 %s 的参数太多，于 %L"
+msgstr "未被使用的哑元实参‘%s’在 %L 处"
 
 #: fortran/trans-decl.c:3026
 #, no-c-format
@@ -11504,7 +11504,6 @@ msgid "Enable OpenMP (also sets frecursive)"
 msgstr "启用 OpenMP(同时设定 -frecursive)"
 
 #: fortran/lang.opt:245
-#, fuzzy
 msgid "Try to lay out derived types as compactly as possible"
 msgstr "为派生类型使用尽可能紧实的布局"
 
@@ -11709,7 +11708,7 @@ msgstr "动态分配 cc 寄存器"
 
 #: config/frv/frv.opt:42
 msgid "Set the cost of branches"
-msgstr "设定分支的代价"
+msgstr "设定分支的开销"
 
 #: config/frv/frv.opt:46
 msgid "Enable conditional execution other than moves/scc"
@@ -12223,7 +12222,7 @@ msgstr "优先使用分支而不是条件执行"
 
 #: config/m32r/m32r.opt:43
 msgid "Give branches their default cost"
-msgstr "为分支指定默认代价"
+msgstr "为分支指定默认开销"
 
 #: config/m32r/m32r.opt:47
 msgid "Display compile time statistics"
@@ -12410,9 +12409,8 @@ msgid "Do not use unaligned memory references"
 msgstr "不使用未对齐的内存引用"
 
 #: config/m68k/m68k.opt:180
-#, fuzzy
 msgid "Tune for the specified target CPU or architecture"
-msgstr "指定目标架构的名称"
+msgstr "为指定的目标 CPU 或架构优化"
 
 #: config/m68k/ieee.opt:24 config/i386/i386.opt:95
 msgid "Use IEEE math for fp comparisons"
@@ -12889,7 +12887,7 @@ msgstr "指定 long double 的大小(64 或 128 位)"
 
 #: config/rs6000/rs6000.opt:250
 msgid "Determine which dependences between insns are considered costly"
-msgstr ""
+msgstr "指定指令间的哪些依赖关系将被认为是有开销的"
 
 #: config/rs6000/rs6000.opt:254
 msgid "Specify which post scheduling nop insertion scheme to apply"
@@ -13003,12 +13001,11 @@ msgstr ""
 
 #: config/spu/spu.opt:28
 msgid "Specify cost of branches (Default 20)"
-msgstr "设定分支的代价(默认为 20)"
+msgstr "设定分支的开销(默认为 20)"
 
 #: config/spu/spu.opt:32
-#, fuzzy
 msgid "Make sure loads and stores are not moved past DMA instructions"
-msgstr "生成带更新的加载/存储指令"
+msgstr "确保读写重排不跨越 DMA 指令"
 
 #: config/spu/spu.opt:36
 msgid "volatile must be specified on any memory that is effected by DMA"
@@ -13277,7 +13274,7 @@ msgstr "在分支表中使用 32 位偏移量"
 
 #: config/sh/sh.opt:217
 msgid "Cost to assume for a branch insn"
-msgstr "为跳转指令设定的代价"
+msgstr "为跳转指令设定的开销"
 
 #: config/sh/sh.opt:221
 msgid "Enable cbranchdi4 pattern"
@@ -13313,7 +13310,7 @@ msgstr "启用对融合浮点乘加指令的使用"
 
 #: config/sh/sh.opt:256
 msgid "Cost to assume for gettr insn"
-msgstr "为 gettr 指令设定的代价"
+msgstr "为 gettr 指令设定的开销"
 
 #: config/sh/sh.opt:260 config/sh/sh.opt:310
 msgid "Follow Renesas (formerly Hitachi) / SuperH calling conventions"
@@ -13369,7 +13366,7 @@ msgstr "不建议使用。请改用 -Os"
 
 #: config/sh/sh.opt:318
 msgid "Cost to assume for a multiply insn"
-msgstr "为乘法指令设定的代价"
+msgstr "为乘法指令设定的开销"
 
 #: config/sh/sh.opt:322
 msgid "Don't generate privileged-mode only code; implies -mno-inline-ic_invalidate if the inline code would not work in user mode."
@@ -13831,7 +13828,7 @@ msgstr ""
 
 #: config/xtensa/xtensa.opt:35
 msgid "Automatically align branch targets to reduce branch penalties"
-msgstr ""
+msgstr "自动对齐跳转目标以减少分支开销"
 
 #: config/xtensa/xtensa.opt:39
 msgid "Intersperse literal pools with code in the text section"
@@ -13858,9 +13855,8 @@ msgid "Generate code for the given ISA"
 msgstr "为给定的 ISA 生成代码"
 
 #: config/mips/mips.opt:39
-#, fuzzy
 msgid "Set the cost of branches to roughly COST instructions"
-msgstr "设定分支的代价"
+msgstr "将分支的开销大致设定为 COST 条指令"
 
 #: config/mips/mips.opt:43
 msgid "Use Branch Likely instructions, overriding the architecture default"
@@ -16401,7 +16397,7 @@ msgstr "在树上进行循环矢量化"
 
 #: common.opt:1190
 msgid "Enable use of cost model in vectorization"
-msgstr "启用矢量化费用模型"
+msgstr "启用矢量化开销模型"
 
 #: common.opt:1194
 msgid "Enable loop versioning when doing loop vectorization on trees"
@@ -17777,12 +17773,12 @@ msgstr "隐式声明与函数%qD不兼容"
 #: c-decl.c:2473
 #, gcc-internal-format
 msgid "%H%qE undeclared here (not in a function)"
-msgstr "%H%qE未声明 (不在函数内)"
+msgstr "%H%qE未声明(不在函数内)"
 
 #: c-decl.c:2478
 #, gcc-internal-format
 msgid "%H%qE undeclared (first use in this function)"
-msgstr "%H%qE未声明 (在此函数内第一次使用)"
+msgstr "%H%qE未声明(在此函数内第一次使用)"
 
 #: c-decl.c:2482
 #, gcc-internal-format
@@ -18169,7 +18165,7 @@ msgstr "%qs声明为函数的数组"
 #: c-decl.c:4289
 #, gcc-internal-format
 msgid "invalid use of structure with flexible array member"
-msgstr "对包含变长数组成员的结构的无效使用"
+msgstr "对包含可变数组成员的结构的无效使用"
 
 #: c-decl.c:4309
 #, gcc-internal-format
@@ -18194,7 +18190,7 @@ msgstr "数组%qs太大"
 #: c-decl.c:4386
 #, gcc-internal-format
 msgid "ISO C90 does not support flexible array members"
-msgstr "ISO C90 不允许变长数组成员"
+msgstr "ISO C90 不允许可变数组成员"
 
 #. C99 6.7.5.2p4
 #: c-decl.c:4399
@@ -18424,22 +18420,22 @@ msgstr "结构体没有成员"
 #: c-decl.c:5616
 #, gcc-internal-format
 msgid "%Jflexible array member in union"
-msgstr "%J联合中出现变长数组成员"
+msgstr "%J联合中出现可变数组成员"
 
 #: c-decl.c:5621
 #, gcc-internal-format
 msgid "%Jflexible array member not at end of struct"
-msgstr "%J结构中的变长数组成员没有出现在结构的末尾"
+msgstr "%J结构中的可变数组成员没有出现在结构的末尾"
 
 #: c-decl.c:5626
 #, gcc-internal-format
 msgid "%Jflexible array member in otherwise empty struct"
-msgstr "%J变长数组是结构中的唯一成员"
+msgstr "%J可变数组是结构中的唯一成员"
 
 #: c-decl.c:5633
 #, gcc-internal-format
 msgid "%Jinvalid use of structure with flexible array member"
-msgstr "%J对包含变长数组成员的结构的无效使用"
+msgstr "%J对包含可变数组成员的结构的无效使用"
 
 #: c-decl.c:5742
 #, gcc-internal-format
@@ -20344,7 +20340,7 @@ msgstr "对 void 表达式的无效使用"
 #: c-typeck.c:203
 #, gcc-internal-format
 msgid "invalid use of flexible array member"
-msgstr "对变长数组成员无效的使用"
+msgstr "对可变数组成员无效的使用"
 
 #: c-typeck.c:209
 #, gcc-internal-format
@@ -21471,27 +21467,27 @@ msgstr "循环 %d 的头并非直接属于该循环 "
 #: cfgloop.c:1386
 #, gcc-internal-format
 msgid "loop %d's latch is marked as part of irreducible region"
-msgstr "循环 %d 的锁存被标记为属于一个不可还原区域"
+msgstr "循环 %d 的锁存被标记为属于一个不可归约区域"
 
 #: cfgloop.c:1419
 #, gcc-internal-format
 msgid "basic block %d should be marked irreducible"
-msgstr "基本块 %d 应被标记为不可还原的"
+msgstr "基本块 %d 应被标记为不可归约的"
 
 #: cfgloop.c:1425
 #, gcc-internal-format
 msgid "basic block %d should not be marked irreducible"
-msgstr "基本块 %d 不应被标记为不可还原的"
+msgstr "基本块 %d 不应被标记为不可归约的"
 
 #: cfgloop.c:1433
 #, gcc-internal-format
 msgid "edge from %d to %d should be marked irreducible"
-msgstr "从 %d 到 %d 的边应被标记为不可还原的"
+msgstr "从 %d 到 %d 的边应被标记为不可归约的"
 
 #: cfgloop.c:1440
 #, gcc-internal-format
 msgid "edge from %d to %d should not be marked irreducible"
-msgstr "从 %d 到 %d 的边不应被标记为不可还原的"
+msgstr "从 %d 到 %d 的边不应被标记为不可归约的"
 
 #: cfgloop.c:1455
 #, gcc-internal-format
@@ -21824,9 +21820,9 @@ msgid "can't convert value to a vector"
 msgstr "不能将值转换为矢量"
 
 #: convert.c:852
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "aggregate value used where a fixed-point was expected"
-msgstr "需要浮点数时使用了聚合值"
+msgstr "需要定点数时使用了聚合值"
 
 #: coverage.c:182
 #, gcc-internal-format
@@ -22069,12 +22065,12 @@ msgstr "对两个互斥的相等比较取%<and%>的结果永远是 0"
 #: fold-const.c:8617
 #, gcc-internal-format
 msgid "assuming signed overflow does not occur when reducing constant in comparison"
-msgstr ""
+msgstr "在比较中归约常量时假定有符号数从不溢出"
 
 #: fold-const.c:8871
 #, gcc-internal-format
 msgid "assuming signed overflow does not occur when combining constants around a comparison"
-msgstr ""
+msgstr "在比较周围组合变量时假定有符号数从不溢出"
 
 #: fold-const.c:13236
 #, gcc-internal-format
@@ -23552,7 +23548,7 @@ msgstr "函数%q+F无法被内联，因为使用了 __builtin_return 或 __built
 #: tree-inline.c:1904
 #, gcc-internal-format
 msgid "function %q+F can never be inlined because it contains a computed goto"
-msgstr "函数%q+F无法被内联，因为包含一个运行时 goto"
+msgstr "函数%q+F无法被内联，因为包含一个计算转移"
 
 #: tree-inline.c:1918
 #, gcc-internal-format
@@ -23612,7 +23608,7 @@ msgstr "%q+D返回值的大小为 %u 字节"
 #: tree-optimize.c:433
 #, gcc-internal-format
 msgid "size of return value of %q+D is larger than %wd bytes"
-msgstr "%q+D返回值的大小为 %wd 字节"
+msgstr "%q+D返回值的大小超过 %wd 字节"
 
 #: tree-outof-ssa.c:637 tree-outof-ssa.c:688 tree-ssa-coalesce.c:936
 #: tree-ssa-coalesce.c:951 tree-ssa-coalesce.c:1163 tree-ssa-live.c:1043
@@ -23648,7 +23644,7 @@ msgstr "未实现的功能"
 #: tree-ssa-alias-warnings.c:814
 #, gcc-internal-format
 msgid "%Hlikely type-punning may break strict-aliasing rules: object %<%s%s%> of main type %qT is referenced at or around %s:%d and may be aliased to object %<%s%s%> of main type %qT which is referenced at or around %s:%d."
-msgstr ""
+msgstr "%H可能的类型双关会破坏强重叠规则：对象%<%s%s%>作为类型%qT在%s:%d或附近的引用可能与对象%<%s%s%>作为类型%qT在%s:%d或附近的引用重叠。"
 
 #: tree-ssa.c:110
 #, gcc-internal-format
@@ -23678,7 +23674,7 @@ msgstr "为一个非寄存器找到一个真实定义"
 #: tree-ssa.c:141
 #, gcc-internal-format
 msgid "found real variable when subvariables should have appeared"
-msgstr ""
+msgstr "需要子变量时发现真实变量"
 
 #: tree-ssa.c:148
 #, gcc-internal-format
@@ -23708,7 +23704,7 @@ msgstr ""
 #: tree-ssa.c:251
 #, gcc-internal-format
 msgid "definition in block %i follows the use"
-msgstr ""
+msgstr "块 %i 的定义在使用之后"
 
 #: tree-ssa.c:258
 #, gcc-internal-format
@@ -23791,9 +23787,9 @@ msgid "verify_call_clobbering failed"
 msgstr "verify_call_clobbering 失败"
 
 #: tree-ssa.c:558
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Memory partitions should have at least one symbol"
-msgstr "提领的指针应具有一个名称或类型标记"
+msgstr "内存分区至少应该有一个符号"
 
 #: tree-ssa.c:568
 #, gcc-internal-format
@@ -23958,9 +23954,9 @@ msgid "tree check: expected omp_clause %s, have %s in %s, at %s:%d"
 msgstr "树检查：需要 omp_clause %s，得到 %s 在 %s，于 %s:%d"
 
 #: tree.c:6974
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "tree check: expected tree that contains %qs structure, have %qs in %s, at %s:%d"
-msgstr "树检查：需要包含%qs结构的树，得到 %s 在 %s，于 %s:%d"
+msgstr "树检查：需要包含%qs结构的树，得到%qs在 %s，于 %s:%d"
 
 #: tree.c:6988
 #, gcc-internal-format
@@ -25715,7 +25711,7 @@ msgstr "使用 C89 修订版 1 的特性必须指定 -munix=98 选项。\n"
 #: config/rs6000/host-darwin.c:61
 #, gcc-internal-format
 msgid "Segmentation Fault (code)"
-msgstr "段错误 (代码)"
+msgstr "段错误(代码)"
 
 #: config/rs6000/host-darwin.c:131
 #, gcc-internal-format
@@ -30168,7 +30164,7 @@ msgstr "建议在%<%s%>空语句体的%<;%>前添加一个空格或者在其周�
 #: cp/parser.c:7468
 #, gcc-internal-format
 msgid "ISO C++ forbids computed gotos"
-msgstr "ISO C++ 不允许运行时可知的 goto 目标"
+msgstr "ISO C++ 不允许计算转移"
 
 #: cp/parser.c:7608
 #, gcc-internal-format
