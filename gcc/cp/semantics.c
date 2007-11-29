@@ -4066,6 +4066,15 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
   if (!expr || error_operand_p (expr))
     return error_mark_node;
 
+  if (TYPE_P (expr)
+      || TREE_CODE (expr) == TYPE_DECL
+      || (TREE_CODE (expr) == BIT_NOT_EXPR
+	  && TYPE_P (TREE_OPERAND (expr, 0))))
+    {
+      error ("argument to decltype must be an expression");
+      return error_mark_node;
+    }
+
   if (type_dependent_expression_p (expr))
     {
       type = make_aggr_type (DECLTYPE_TYPE);

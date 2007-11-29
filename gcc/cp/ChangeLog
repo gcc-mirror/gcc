@@ -1,3 +1,12 @@
+2007-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34267
+	PR c++/34268
+	* parser.c (cp_parser_decltype): Don't call finish_id_expression
+	on ~type.
+	* semantics.c (finish_decltype_type): Issue error on types, TYPE_DECLs
+	and ~type early.
+
 2007-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/34181
