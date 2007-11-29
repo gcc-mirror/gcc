@@ -1,5 +1,10 @@
 2007-11-29  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/34248
+	* gfortran.dg/result_in_spec_3.f90: New.
+
+2007-11-29  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/34262
 	* gfortran.dg/mvbits_3.f90: New.
 

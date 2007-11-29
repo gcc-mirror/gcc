@@ -2924,7 +2924,9 @@ generate_dependency_declarations (gfc_symbol *sym)
   int i;
 
   if (sym->ts.type == BT_CHARACTER
-	&& sym->ts.cl->length->expr_type != EXPR_CONSTANT)
+      && sym->ts.cl
+      && sym->ts.cl->length
+      && sym->ts.cl->length->expr_type != EXPR_CONSTANT)
     generate_expr_decls (sym, sym->ts.cl->length);
 
   if (sym->as && sym->as->rank)
