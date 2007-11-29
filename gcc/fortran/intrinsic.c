@@ -96,7 +96,8 @@ gfc_type_letter (bt type)
 }
 
 
-/* Get a symbol for a resolved name.  */
+/* Get a symbol for a resolved name. Note, if needed be, the elemental
+   attribute has be added afterwards.  */
 
 gfc_symbol *
 gfc_get_intrinsic_sub_symbol (const char *name)
@@ -3501,7 +3502,10 @@ gfc_intrinsic_sub_interface (gfc_code *c, int error_flag)
   if (isym->resolve.s1 != NULL)
     isym->resolve.s1 (c);
   else
-    c->resolved_sym = gfc_get_intrinsic_sub_symbol (isym->lib_name);
+    {
+      c->resolved_sym = gfc_get_intrinsic_sub_symbol (isym->lib_name);
+      c->resolved_sym->attr.elemental = isym->elemental;
+    }
 
   if (gfc_pure (NULL) && !isym->elemental)
     {

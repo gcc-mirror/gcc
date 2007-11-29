@@ -1,3 +1,10 @@
+2007-11-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34262
+	* intrinsic.c (gfc_get_intrinsic_sub_symbol): Add comment.
+	(gfc_intrinsic_sub_interface): Copy elemental state if needed.
+	* iresolve.c (gfc_resolve_mvbits): Mark procedure as elemental.
+
 2007-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-expr.c (gfc_trans_string_copy): Convert both dest and
