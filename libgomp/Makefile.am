@@ -12,9 +12,7 @@ search_path = $(addprefix $(top_srcdir)/config/, $(config_path)) $(top_srcdir)
 fincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/finclude
 libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 
-empty =
-space = $(empty) $(empty)
-VPATH = $(subst $(space),:,$(strip $(search_path)))
+vpath % $(strip $(search_path))
 
 AM_CPPFLAGS = $(addprefix -I, $(search_path))
 AM_CFLAGS = $(XCFLAGS)

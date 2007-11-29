@@ -1,3 +1,11 @@
+2007-11-28  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* config-ml.in: Robustify against white space in absolute file
+	names.
+
+	* config-ml.in (multi-clean): Substitute ${Makefile}.
+	Remove superfluous ${Makefile} in list.
+
 2007-11-19  Thiemo Seufer  <ths@mips.com>
 
 	* config-ml.in: Don't hardcode the Makefile name.
