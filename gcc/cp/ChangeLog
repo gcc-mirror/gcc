@@ -1,5 +1,11 @@
 2007-11-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/34270
+	* tree.c (lvalue_p_1) <case COND_EXPR>: Handle x ?: y
+	in templates.
+	* typeck.c (is_bitfield_expr_with_lowered_type) <case COND_EXPR>:
+	Likewise.
+
 	PR c++/34267
 	PR c++/34268
 	* parser.c (cp_parser_decltype): Don't call finish_id_expression
@@ -25,7 +31,7 @@
 
 2007-11-25  Richard Guenther  <rguenther@suse.de>
 
-	decl.c (poplevel): Use BLOCK_CHAIN.
+	* decl.c (poplevel): Use BLOCK_CHAIN.
 
 2007-11-24  Ollie Wild  <aaw@google.com>
 
