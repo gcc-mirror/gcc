@@ -2581,6 +2581,8 @@ gfc_resolve_mvbits (gfc_code *c)
   name = gfc_get_string (PREFIX ("mvbits_i%d"),
 			 c->ext.actual->expr->ts.kind);
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+  /* Mark as elemental subroutine as this does not happen automatically.  */
+  c->resolved_sym->attr.elemental = 1;
 }
 
 
