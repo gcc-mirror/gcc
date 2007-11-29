@@ -1,3 +1,10 @@
+2007-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34267
+	PR c++/34268
+	* g++.dg/cpp0x/decltype7.C: New test.
+	* g++.dg/cpp0x/decltype8.C: New test.
+
 2007-11-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34248
