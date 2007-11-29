@@ -1,3 +1,9 @@
+2007-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/32130
+	* config/rs6000/eabi-cn.asm (__DTOR_END__): Make it weak.
+	* config/rs6000/sol-cn.asm (__DTOR_END__): Likewise.
+
 2007-11-29  Andris Pavenis <andris.pavenis@iki.fi>
 
 	* Makefile.in: Use separate vpath lines for each path.

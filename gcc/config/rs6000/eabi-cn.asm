@@ -1,5 +1,5 @@
 /* crtn.s for eabi
-   Copyright (C) 1996, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1996, 2000, 2007 Free Software Foundation, Inc.
    Written By Michael Meissner
 
 This file is free software; you can redistribute it and/or modify it
@@ -66,7 +66,7 @@ __FIXUP_END__:
 __CTOR_END__:
 
 	.section ".dtors","aw"
-	.globl	__DTOR_END__
+	.weak	__DTOR_END__
 	.type	__DTOR_END__,@object
 __DTOR_END__:
 

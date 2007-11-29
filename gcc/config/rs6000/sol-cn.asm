@@ -1,6 +1,6 @@
 # crtn.s for sysv4
 
-#   Copyright (C) 1996 Free Software Foundation, Inc.
+#   Copyright (C) 1996, 2007 Free Software Foundation, Inc.
 #   Written By Michael Meissner
 # 
 # This file is free software; you can redistribute it and/or modify it
@@ -54,7 +54,7 @@ __CTOR_END__:
 
 # End list of C++ destructors
 	.section ".dtors","aw"
-	.globl	__DTOR_END__
+	.weak	__DTOR_END__
 	.type	__DTOR_END__,@object
 __DTOR_END__:
 
