@@ -1508,6 +1508,14 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
       return;
     }
 
+  /* If the value of argument is never used, don't care about initializing
+     it.  */
+  if (gimple_in_ssa_p (cfun) && !def && is_gimple_reg (p))
+    {
+      gcc_assert (!value || !TREE_SIDE_EFFECTS (value));
+      return;
+    }
+
   /* Initialize this VAR_DECL from the equivalent argument.  Convert
      the argument to the proper type in case it was promoted.  */
   if (value)
