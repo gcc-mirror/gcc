@@ -1,3 +1,8 @@
+2007-11-30  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/32868:
+	* gcc.dg/cpp/pr32868.c: New file.
+
 2007-11-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/34248
