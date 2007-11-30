@@ -1136,6 +1136,8 @@ GFORTRAN_C99_1.0 {
     j0f;
     j1f;
     jnf;
+    lgamma;
+    lgammaf;
     log10f;
     log10l;
     logf;
@@ -1150,6 +1152,8 @@ GFORTRAN_C99_1.0 {
     sqrtf;
     tanf;
     tanhf;
+    tgamma;
+    tgammaf;
     trunc;
     truncf;
     y0f;

@@ -1,3 +1,9 @@
+2007-11-29  Steven G. Kargl  <kargls@comcast.net>
+
+	PR libfortran/33583
+	* libgfortran/gfortran.map: Add tgammaf, tgamma, lgamma, and lgammaf.
+	* gfortran.dg/gamma_5.f90: Remove xfail.
+
 2007-11-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/33583
