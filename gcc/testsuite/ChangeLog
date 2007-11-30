@@ -1,3 +1,7 @@
+2007-11-30  Zdenek Dvorak  <ook@ucw.cz>
+
+	* gcc.dg/tree-ssa/pr34244.c: Fixed.
+
 2007-11-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34133
