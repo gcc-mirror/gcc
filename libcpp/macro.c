@@ -1695,7 +1695,8 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
   /* Enter definition in hash table.  */
   node->type = NT_MACRO;
   node->value.macro = macro;
-  if (! ustrncmp (NODE_NAME (node), DSC ("__STDC_")))
+  if (! ustrncmp (NODE_NAME (node), DSC ("__STDC_"))
+      && ustrcmp (NODE_NAME (node), (const uchar *) "__STDC_FORMAT_MACROS"))
     node->flags |= NODE_WARN;
 
   return ok;

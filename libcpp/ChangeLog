@@ -1,3 +1,9 @@
+2007-11-30  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/32868:
+	* macro.c (_cpp_create_definition): Special case
+	__STDC_FORMAT_MACROS.
+
 2007-11-16  Michael Matz  <matz@suse.de>
 
 	* files.c (search_path_head): Fix check for absolute paths.
