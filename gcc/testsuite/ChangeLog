@@ -1,3 +1,8 @@
+2007-11-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/34248
+	* gfortran.dg/result_in_spec_3.f90: Add dg-option -std=gnu.
+
 2007-11-30  Martin Michlmayr <tbm@cyrius.com>
 
 	PR rtl-optimization/34171
