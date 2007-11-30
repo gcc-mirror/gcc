@@ -1,3 +1,10 @@
+2007-11-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/34291
+	* io/list_read.c (read_character): When reading an unquoted string,
+	return if special characters that could signify the end of the namelist
+	read are encountered.
+
 2007-11-29  Steven G. Kargl  <kargls@comcast.net>
 
 	PR libfortran/33583
