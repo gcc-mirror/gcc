@@ -465,24 +465,36 @@ emit_insn_at_entry (rtx insn)
   commit_edge_insertions ();
 }
 
-/* Update insns block within BB.  */
+/* Update BLOCK_FOR_INSN of insns between BEGIN and END
+   (or BARRIER if found) and notify df of the bb change. 
+   The insn chain range is inclusive
+   (i.e. both BEGIN and END will be updated. */
 
-void
-update_bb_for_insn (basic_block bb)
+static void
+update_bb_for_insn_chain (rtx begin, rtx end, basic_block bb)
 {
   rtx insn;
 
-  for (insn = BB_HEAD (bb); ; insn = NEXT_INSN (insn))
+  end = NEXT_INSN (end);
+  for (insn = begin; insn != end; insn = NEXT_INSN (insn))
     {
       if (!BARRIER_P (insn))
 	{
 	  set_block_for_insn (insn, bb);
 	  df_insn_change_bb (insn);
 	}
-      if (insn == BB_END (bb))
-	break;
     }
 }
+
+/* Update BLOCK_FOR_INSN of insns in BB to BB,
+   and notify df of the change.  */
+
+void
+update_bb_for_insn (basic_block bb)
+{
+  update_bb_for_insn_chain (BB_HEAD (bb), BB_END (bb), bb);
+}
+
 
 /* Return the INSN immediately following the NOTE_INSN_BASIC_BLOCK
    note associated with the BLOCK.  */
@@ -629,16 +641,7 @@ rtl_merge_blocks (basic_block a, basic_block b)
   /* Reassociate the insns of B with A.  */
   if (!b_empty)
     {
-      rtx x;
-
-      for (x = a_end; x != b_end; x = NEXT_INSN (x))
-	{
-	  set_block_for_insn (x, a);
-	  df_insn_change_bb (x);
-	}
-
-      set_block_for_insn (b_end, a);
-      df_insn_change_bb (b_end);
+      update_bb_for_insn_chain (a_end, b_end, a);
 
       a_end = b_end;
     }
@@ -843,14 +846,9 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
 		 which originally were or were created before jump table are
 		 inside the basic block.  */
 	      rtx new_insn = BB_END (src);
-	      rtx tmp;
 
-	      for (tmp = NEXT_INSN (BB_END (src)); tmp != barrier;
-		   tmp = NEXT_INSN (tmp))
-		{
-		  set_block_for_insn (tmp, src);
-	      	  df_insn_change_bb (tmp);
-		}
+	      update_bb_for_insn_chain (NEXT_INSN (BB_END (src)),
+				        PREV_INSN (barrier), src);
 
 	      NEXT_INSN (PREV_INSN (new_insn)) = NEXT_INSN (new_insn);
 	      PREV_INSN (NEXT_INSN (new_insn)) = PREV_INSN (new_insn);
@@ -2637,6 +2635,13 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
 	first = NEXT_INSN (first);
       gcc_assert (NOTE_INSN_BASIC_BLOCK_P (first));
       BB_HEAD (b) = NULL;
+
+      /* emit_insn_after_noloc doesn't call df_insn_change_bb.
+         We need to explicitly call. */
+      update_bb_for_insn_chain (NEXT_INSN (first),
+				BB_END (b),
+				a);
+
       delete_insn (first);
     }
   /* Otherwise just re-associate the instructions.  */
@@ -2644,13 +2649,7 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
     {
       rtx insn;
 
-      for (insn = BB_HEAD (b);
-	   insn != NEXT_INSN (BB_END (b));
-	   insn = NEXT_INSN (insn))
-	{
-	  set_block_for_insn (insn, a);
-	  df_insn_change_bb (insn);
-	}
+      update_bb_for_insn_chain (BB_HEAD (b), BB_END (b), a);
 
       insn = BB_HEAD (b);
       /* Skip possible DELETED_LABEL insn.  */

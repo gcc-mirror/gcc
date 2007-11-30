@@ -1,3 +1,8 @@
+2007-11-30  Martin Michlmayr <tbm@cyrius.com>
+
+	PR rtl-optimization/34171
+	* gcc.dg/pr34171.c: New testcase.
+
 2007-11-30  Zdenek Dvorak  <ook@ucw.cz>
 
 	* gcc.dg/tree-ssa/pr34244.c: Fixed.
