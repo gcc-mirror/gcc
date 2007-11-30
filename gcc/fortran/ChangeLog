@@ -1,5 +1,16 @@
 2007-11-30  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/34133
+	* match.h: Add bool allow_binding_name to gfc_match_bind_c.
+	* decl.c (match_attr_spec,gfc_match_bind_c_stmt,gfc_match_entry):
+	Adjust accordingly.
+	(gfc_match_bind_c): Add allow_binding_name argument, reject
+	binding name for dummy arguments.
+	(gfc_match_suffix,gfc_match_subroutine): Make use of
+	allow_binding_name.
+
+2007-11-30  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/34186
 	* symbol.c (generate_isocbinding_symbol): Set string length.
 	* dump-parse-tree.c (gfc_show_attr): Show BIND(C) attribute.

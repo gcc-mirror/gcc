@@ -1,7 +1,9 @@
 ! { dg-do compile }
+! { dg-options "-std=f2003" }
 ! PR fortran/34133
 !
-! The compiler should reject internal procedures with BIND(c) attribute.
+! The compiler should reject internal procedures with BIND(c) attribute
+! for Fortran 2003.
 !
 subroutine foo() bind(c)
 contains
@@ -31,7 +33,7 @@ function one2() bind(c)
   one2 = 1
 contains
   subroutine three() bind (c) ! { dg-error "may not be specified for an internal" }
-  end function three ! { dg-error "Expected label" }
+  end subroutine three ! { dg-error "Expecting END FUNCTION statement" }
 end function one2 ! { dg-warning "Extension: CONTAINS statement" }
 
 program main
@@ -40,6 +42,6 @@ program main
 contains
   subroutine test() bind(c) ! { dg-error "may not be specified for an internal" }
   end subroutine test ! { dg-error "Expecting END PROGRAM" }
-  function test2() bind (c) ! { dg-error "may not be specified for an internal" }
+  integer(c_int) function test2() bind (c) ! { dg-error "may not be specified for an internal" }
   end function test2  ! { dg-error "Expecting END PROGRAM" }
 end program main ! { dg-warning "Extension: CONTAINS statement" }
