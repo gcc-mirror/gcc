@@ -1,5 +1,4 @@
 ! { dg-do run }
-! { dg-xfail-if "" { "*-*-freebsd*" } { "*" }  { "" } }
 ! PR 33683 - we used to pick up the wrong gamma function
 ! from the library on some systems.
 program main
