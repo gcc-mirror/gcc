@@ -348,14 +348,27 @@ gfc_check_real_range (mpfr_t p, int kind)
   else if (mpfr_cmp (q, gfc_real_kinds[i].huge) > 0)
     {
       if (gfc_option.flag_range_check == 0)
-	retval = ARITH_OK;
+	{
+	  mpfr_set_inf (p, mpfr_sgn (p));
+	  retval = ARITH_OK;
+	}
       else
 	retval = ARITH_OVERFLOW;
     }
   else if (mpfr_cmp (q, gfc_real_kinds[i].subnormal) < 0)
     {
       if (gfc_option.flag_range_check == 0)
-	retval = ARITH_OK;
+	{
+	  if (mpfr_sgn (p) < 0)
+	    {
+	      mpfr_set_ui (p, 0, GFC_RND_MODE);
+	      mpfr_set_si (q, -1, GFC_RND_MODE);
+	      mpfr_copysign (p, p, q, GFC_RND_MODE);
+	    }
+	  else
+	    mpfr_set_ui (p, 0, GFC_RND_MODE);
+	  retval = ARITH_OK;
+	}
       else
 	retval = ARITH_UNDERFLOW;
     }

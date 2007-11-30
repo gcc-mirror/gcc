@@ -239,6 +239,11 @@ Allow @samp{$} as a valid character in a symbol name.
 @cindex escape characters
 Change the interpretation of backslashes in string literals
 from a single backslash character to ``C-style'' escape characters.
+The following combinations are expanded \a, \b, \f, \n, \r, \t,
+\v, \\, and \0 to the ASCII characters alert, backspace, form feed,
+newline, carriage return, horizontal tab, vertical tab, backslash,
+and NUL, respectively.  All other combinations of a character preceded
+by \ are unexpanded.
 
 @item -fmodule-private
 @opindex @code{fmodule-private}
@@ -303,10 +308,13 @@ in.  The option @option{-fopenmp} implies @option{-frecursive}.
 @item -fno-range-check
 @opindex @code{frange-check}
 Disable range checking on results of simplification of constant
-expressions during compilation.  For example, by default, GNU Fortran
-will give an overflow error at compile time when simplifying @code{a =
-EXP(1000)}. With @option{-fno-range-check}, no error will be given and
-the variable @code{a} will be assigned the value @code{+Infinity}.
+expressions during compilation.  For example, GNU Fortran will give
+an error at compile time when simplifying @code{a = 1. / 0}.
+With this option, no error will be given and @code{a} will be assigned
+the value @code{+Infinity}.  If an expression evaluates to a value
+outside of the relevant range of [@code{-HUGE()}:@code{HUGE()}],
+then the expression will be replaced by @code{-Inf} or @code{+Inf}
+as appropriate.
 Similarly, @code{DATA i/Z'FFFFFFFF'/} will result in an integer overflow
 on most systems, but with @option{-fno-range-check} the value will
 ``wrap around'' and @code{i} will be initialized to @math{-1} instead.
