@@ -1,3 +1,14 @@
+2007-11-29  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/34230
+	* fortran/arith.c (gfc_check_real_range): Set intermediate values
+	to +-Inf and 0 when -fno-range-check is in effect.
+	* fortran/invoke.texi: Improve -fno-range-check description.
+
+	PR fortran/34203
+	* fortran/invoke.texi: Document the C escaped characters activated
+	by -fbackslash.
+
 2007-11-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34248
