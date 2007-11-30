@@ -3810,6 +3810,8 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
 	tmp_sym->value->value.character.string[0]
 	  = (char) c_interop_kinds_table[s].value;
 	tmp_sym->value->value.character.string[1] = '\0';
+	tmp_sym->value->ts.cl = gfc_get_charlen ();
+	tmp_sym->value->ts.cl->length = gfc_int_expr (1);
 
 	/* May not need this in both attr and ts, but do need in
 	   attr for writing module file.  */
