@@ -1,3 +1,7 @@
+2007-11-30  Ben Elliston  <bje@au.ibm.com>
+
+	* config/vax/vax.h (ASM_FORMAT_PRIVATE_NAME): Remove. Use default.
+
 2007-11-29  Zdenek Dvorak  <ook@ucw.cz>
 
 	PR tree-optimization/34244

@@ -824,14 +824,6 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
     assemble_name ((FILE), (NAME)),			\
     fprintf ((FILE), ",%u\n", (int)(ROUNDED)))
 
-/* Store in OUTPUT a string (made with alloca) containing
-   an assembler-name for a local static variable named NAME.
-   LABELNO is an integer which is different for each call.  */
-
-#define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
-  ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
-    sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
-
 /* Print an instruction operand X on file FILE.
    CODE is the code from the %-spec that requested printing this operand;
    if `%z3' was used to print operand 3, then CODE is 'z'.
