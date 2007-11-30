@@ -75,7 +75,7 @@
 	
 2007-11-28  Samuel Tardieu  <sam@rfc1149.net>
 
-	PR ada/15803
+	PR ada/15804
 	* gnat.dg/specs/variant_part.ads: New test.
 
 	PR ada/17318
