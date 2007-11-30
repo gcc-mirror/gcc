@@ -1,3 +1,8 @@
+2007-11-29  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/34230
+	* gfortran.dg/real_const_3.f90: Fix up for new range-check handling.
+
 2007-11-29  Zdenek Dvorak  <ook@ucw.cz>
 
 	PR tree-optimization/34244
