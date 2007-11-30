@@ -1,3 +1,15 @@
+2007-11-30  Seongbae Park <seongbae.park@gmail.com>
+
+	PR rtl-optimization/34171
+	* cfgrtl.c (update_bb_for_insn_chain): New function,
+	refactored from update_bb_for_insn.
+	(update_bb_for_insn): Call update_bb_for_insn.
+	(rtl_merge_blocks, try_redirect_by_replacing_jump):
+	Replace a loop with update_bb_for_insn_chain call.
+	(cfg_layout_merge_blocks): Add a call to
+	update_bb_for_insn_chain. Replace the for loop
+	with a call to update_bb_for_insn_chain.
+
 2007-11-30  Ben Elliston  <bje@au.ibm.com>
 
 	* config/vax/vax.h (ASM_FORMAT_PRIVATE_NAME): Remove. Use default.
