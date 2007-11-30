@@ -2056,6 +2056,10 @@ dump_expr (tree t, int flags)
       pp_expression (cxx_pp, t);
       break;
 
+    case OBJ_TYPE_REF:
+      dump_expr (resolve_virtual_fun_from_obj_type_ref (t), flags);
+      break;
+
       /*  This list is incomplete, but should suffice for now.
 	  It is very important that `sorry' does not call
 	  `report_error_function'.  That could cause an infinite loop.  */

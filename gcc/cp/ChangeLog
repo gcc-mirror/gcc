@@ -1,3 +1,8 @@
+2007-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34275
+	* error.c (dump_expr): Handle OBJ_TYPE_REF.
+
 2007-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34270
