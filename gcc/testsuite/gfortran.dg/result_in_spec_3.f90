@@ -1,5 +1,5 @@
 ! { dg-do compile }
-!
+! { dg-options "-std=gnu" }
 ! PR fortran/34248
 !
 ! There was an ICE for assumed-length functions
