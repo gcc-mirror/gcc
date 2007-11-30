@@ -139,6 +139,9 @@ gfc_basic_typename (bt type)
     case BT_PROCEDURE:
       p = "PROCEDURE";
       break;
+    case BT_VOID:
+      p = "VOID";
+      break;
     case BT_UNKNOWN:
       p = "UNKNOWN";
       break;

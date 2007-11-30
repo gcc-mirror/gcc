@@ -582,6 +582,8 @@ gfc_show_attr (symbol_attribute *attr)
     gfc_status (" RESULT");
   if (attr->entry)
     gfc_status (" ENTRY");
+  if (attr->is_bind_c)
+    gfc_status (" BIND(C)");
 
   if (attr->data)
     gfc_status (" DATA");
