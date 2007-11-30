@@ -1,3 +1,10 @@
+2007-11-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34133
+	* gfortran.dg/bind_c_usage_9.f03: Fixes; add -std=f2003.
+	* gfortran.dg/bind_c_usage_11.f03: New.
+	* gfortran.dg/bind_c_usage_12.f03: New.
+
 2007-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34275
