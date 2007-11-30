@@ -1,3 +1,14 @@
+2007-11-29  Zdenek Dvorak  <ook@ucw.cz>
+
+	PR tree-optimization/34244
+	* tree-vrp.c (adjust_range_with_scev): Clear scev cache.
+	(record_numbers_of_iterations): New function.
+	(execute_vrp): Cache the numbers of iterations of loops.
+	* tree-scalar-evolution.c (scev_reset_except_niters):
+	New function.
+	(scev_reset): Use scev_reset_except_niters.
+	* tree-scalar-evolution.h (scev_reset_except_niters): Declare.
+
 2007-11-29  Jan Hubicka  <jh@suse.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 
