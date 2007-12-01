@@ -1,5 +1,6 @@
 /* -----------------------------------------------------------------*-C-*-
    ffitarget.h - Copyright (c) 1996-2003  Red Hat, Inc.
+   Copyright (C) 2007 Free Software Foundation, Inc
    Target configuration macros for PowerPC.
 
    Permission is hereby granted, free of charge, to any person obtaining
@@ -44,13 +45,18 @@ typedef enum ffi_abi {
   FFI_GCC_SYSV,
   FFI_LINUX64,
   FFI_LINUX,
+  FFI_LINUX_SOFT_FLOAT,
 # ifdef POWERPC64
   FFI_DEFAULT_ABI = FFI_LINUX64,
 # else
-#  if __LDBL_MANT_DIG__ == 106
+#  if (!defined(__NO_FPRS__) && (__LDBL_MANT_DIG__ == 106))
   FFI_DEFAULT_ABI = FFI_LINUX,
 #  else
+#   ifdef __NO_FPRS__
+  FFI_DEFAULT_ABI = FFI_LINUX_SOFT_FLOAT,
+#   else
   FFI_DEFAULT_ABI = FFI_GCC_SYSV,
+#   endif
 #  endif
 # endif
 #endif
@@ -83,8 +89,14 @@ typedef enum ffi_abi {
 #define FFI_CLOSURES 1
 #define FFI_NATIVE_RAW_API 0
 
+/* For additional types like the below, take care about the order in
+   ppc_closures.S. They must follow after the FFI_TYPE_LAST.  */
+
+/* Needed for soft-float long-double-128 support.  */
+#define FFI_TYPE_UINT128 (FFI_TYPE_LAST + 1)
+
 /* Needed for FFI_SYSV small structure returns.  */
-#define FFI_SYSV_TYPE_SMALL_STRUCT  (FFI_TYPE_LAST)
+#define FFI_SYSV_TYPE_SMALL_STRUCT (FFI_TYPE_LAST + 2)
 
 #if defined(POWERPC64) || defined(POWERPC_AIX)
 #define FFI_TRAMPOLINE_SIZE 24

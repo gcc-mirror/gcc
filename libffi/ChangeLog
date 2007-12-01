@@ -1,3 +1,23 @@
+2007-12-01  Andreas Tobler  <a.tobler@schweiz.org>
+
+	PR libffi/31937
+	* src/powerpc/ffitarget.h: Introduce new ABI FFI_LINUX_SOFT_FLOAT.
+	Add local FFI_TYPE_UINT128 to handle soft-float long-double-128.
+	* src/powerpc/ffi.c: Distinguish between __NO_FPRS__ and not and
+	set the NUM_FPR_ARG_REGISTERS according to.
+	Add support for potential soft-float support under hard-float
+	architecture.
+	(ffi_prep_args_SYSV): Set NUM_FPR_ARG_REGISTERS to 0 in case of
+	FFI_LINUX_SOFT_FLOAT, handle float, doubles and long-doubles according
+	to the FFI_LINUX_SOFT_FLOAT ABI.
+	(ffi_prep_cif_machdep): Likewise.
+	(ffi_closure_helper_SYSV): Likewise.
+	* src/powerpc/ppc_closure.S: Make sure not to store float/double
+	on archs where __NO_FPRS__ is true.
+	Add FFI_TYPE_UINT128 support.
+	* src/powerpc/sysv.S: Add support for soft-float long-double-128.
+	Adjust copyright notice.
+
 2007-11-25  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* src/closures.c: Move defintion of MAYBE_UNUSED from here to ...
