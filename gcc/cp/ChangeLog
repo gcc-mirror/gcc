@@ -1,3 +1,9 @@
+2007-12-01  Ollie Wild  <aaw@google.com>
+
+	PR c++/8171
+	* typeck.c (build_binary_op): Add conversion of pointers to function
+	members appearing as operands to the equality operators.
+
 2007-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34275

@@ -3394,9 +3394,9 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	}
       else if (TYPE_PTRMEMFUNC_P (type1) && null_ptr_cst_p (op0))
 	return cp_build_binary_op (code, op1, op0);
-      else if (TYPE_PTRMEMFUNC_P (type0) && TYPE_PTRMEMFUNC_P (type1)
-	       && same_type_p (type0, type1))
+      else if (TYPE_PTRMEMFUNC_P (type0) && TYPE_PTRMEMFUNC_P (type1))
 	{
+	  tree type;
 	  /* E will be the final comparison.  */
 	  tree e;
 	  /* E1 and E2 are for scratch.  */
@@ -3406,6 +3406,16 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	  tree pfn1;
 	  tree delta0;
 	  tree delta1;
+
+	  type = composite_pointer_type (type0, type1, op0, op1, "comparison");
+
+	  if (!same_type_p (TREE_TYPE (op0), type))
+	    op0 = cp_convert_and_check (type, op0);
+	  if (!same_type_p (TREE_TYPE (op1), type))
+	    op1 = cp_convert_and_check (type, op1);
+
+	  if (op0 == error_mark_node || op1 == error_mark_node)
+	    return error_mark_node;
 
 	  if (TREE_SIDE_EFFECTS (op0))
 	    op0 = save_expr (op0);
