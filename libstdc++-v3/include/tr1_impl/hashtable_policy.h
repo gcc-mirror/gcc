@@ -66,14 +66,6 @@ namespace __detail
   // place to put TR1 .cc files yet.  There's no good reason for any of
   // _Prime_rehash_policy's member functions to be inline, and there's
   // certainly no good reason for _Primes<> to exist at all.  
-  struct _LessThan
-  {
-    template<typename _Tp, typename _Up>
-      bool
-      operator()(_Tp __x, _Up __y)
-      { return __x < __y; }
-  };
-
   template<int __ulongsize = sizeof(unsigned long)>
     struct _Primes
     {
@@ -545,7 +537,7 @@ namespace __detail
 					 + _Primes<>::__n_primes);
     const float __min_bkts = __n / _M_max_load_factor;
     const unsigned long* __p = std::lower_bound(_Primes<>::__primes, __last,
-						__min_bkts, _LessThan());
+						__min_bkts);
     _M_next_resize = static_cast<std::size_t>(std::ceil(*__p
 							* _M_max_load_factor));
     return *__p;
@@ -575,8 +567,7 @@ namespace __detail
 	    const unsigned long* const __last = (_Primes<>::__primes
 						 + _Primes<>::__n_primes);
 	    const unsigned long* __p = std::lower_bound(_Primes<>::__primes,
-							__last, __min_bkts,
-							_LessThan());
+							__last, __min_bkts);
 	    _M_next_resize = 
 	      static_cast<std::size_t>(std::ceil(*__p * _M_max_load_factor));
 	    return std::make_pair(true, *__p);

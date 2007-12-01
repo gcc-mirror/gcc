@@ -1,5 +1,11 @@
 2007-12-01  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1_impl/hashtable_policy.h (struct _LessThan): Remove.
+	(_Prime_rehash_policy::_M_bkt_for_elements, _Prime_rehash_policy::
+	_M_need_rehash): Adjust.
+
+2007-12-01  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/stl_tempbuf.h (__get_temporary_buffer): Fold
 	in get_temporary_buffer.
 
