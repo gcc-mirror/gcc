@@ -28,6 +28,7 @@ ENTRY(ffi_closure_SYSV)
 	stw   %r9, 40(%r1)
 	stw   %r10,44(%r1)
 
+#ifndef __NO_FPRS__
 	# next save fpr 1 to fpr 8 (aligned to 8)
 	stfd  %f1, 48(%r1)
 	stfd  %f2, 56(%r1)
@@ -37,6 +38,7 @@ ENTRY(ffi_closure_SYSV)
 	stfd  %f6, 88(%r1)
 	stfd  %f7, 96(%r1)
 	stfd  %f8, 104(%r1)
+#endif
 
 	# set up registers for the routine that actually does the work
 	# get the context pointer from the trampoline
@@ -171,6 +173,12 @@ ENTRY(ffi_closure_SYSV)
 	addi %r1,%r1,144
 	blr
 
+# case FFI_TYPE_UINT128
+	lwz %r3,112+0(%r1)
+	lwz %r4,112+4(%r1)
+	lwz %r5,112+8(%r1)
+	bl .Luint128
+
 # The return types below are only used when the ABI type is FFI_SYSV.
 # case FFI_SYSV_TYPE_SMALL_STRUCT + 1. One byte struct.
 	lbz %r3,112+0(%r1)
@@ -226,6 +234,12 @@ ENTRY(ffi_closure_SYSV)
 	slw %r6,%r3,%r6
 	srw %r3,%r3,%r5
 	or %r4,%r6,%r4
+	mtlr %r0
+	addi %r1,%r1,144
+	blr
+
+.Luint128:
+	lwz %r6,112+12(%r1)
 	mtlr %r0
 	addi %r1,%r1,144
 	blr

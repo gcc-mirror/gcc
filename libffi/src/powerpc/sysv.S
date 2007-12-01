@@ -1,5 +1,6 @@
 /* -----------------------------------------------------------------------
-   sysv.h - Copyright (c) 1998 Geoffrey Keating
+   sysv.S - Copyright (c) 1998 Geoffrey Keating
+   Copyright (C) 2007 Free Software Foundation, Inc
 
    PowerPC Assembly glue.
 
@@ -98,13 +99,17 @@ ENTRY(ffi_call_SYSV)
 	bctrl
 
 	/* Now, deal with the return value.  */
-	mtcrf	0x01,%r31
+	mtcrf	0x01,%r31 /* cr7  */
 	bt-	31,L(small_struct_return_value)
 	bt-	30,L(done_return_value)
 	bt-	29,L(fp_return_value)
 	stw	%r3,0(%r30)
 	bf+	28,L(done_return_value)
 	stw	%r4,4(%r30)
+	mtcrf	0x02,%r31 /* cr6  */
+	bf	27,L(done_return_value)
+	stw     %r5,8(%r30)
+	stw	%r6,12(%r30)
 	/* Fall through...  */
 
 L(done_return_value):
