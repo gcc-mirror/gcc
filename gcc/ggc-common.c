@@ -1018,5 +1018,6 @@ dump_ggc_loc_statistics (bool final ATTRIBUTE_UNUSED)
   fprintf (stderr, "%-48s %10s       %10s       %10s       %10s       %10s\n",
 	   "source location", "Garbage", "Freed", "Leak", "Overhead", "Times");
   fprintf (stderr, "-------------------------------------------------------\n");
+  ggc_force_collect = false;
 #endif
 }
