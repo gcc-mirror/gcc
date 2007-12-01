@@ -60,7 +60,7 @@ internal_proto(stat_i4_sub_0);*/
 
 static void
 stat_i4_sub_0 (char *name, gfc_array_i4 *sarray, GFC_INTEGER_4 *status,
-	       gfc_charlen_type name_len, int is_lstat)
+	       gfc_charlen_type name_len, int is_lstat __attribute__ ((unused)))
 {
   int val;
   char *str;
@@ -179,7 +179,7 @@ iexport(lstat_i4_sub);
 
 static void
 stat_i8_sub_0 (char *name, gfc_array_i8 *sarray, GFC_INTEGER_8 *status,
-	       gfc_charlen_type name_len, int is_lstat)
+	       gfc_charlen_type name_len, int is_lstat __attribute__ ((unused)))
 {
   int val;
   char *str;
