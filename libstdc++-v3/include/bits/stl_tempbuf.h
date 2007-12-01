@@ -69,32 +69,6 @@
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
-   *  @if maint
-   *  This is a helper function.  The unused second parameter exists to
-   *  permit the real get_temporary_buffer to use template parameter deduction.
-   *  @endif
-   */
-  template<typename _Tp>
-    pair<_Tp*, ptrdiff_t>
-    __get_temporary_buffer(ptrdiff_t __len, _Tp*)
-    {
-      const ptrdiff_t __max =
-	__gnu_cxx::__numeric_traits<ptrdiff_t>::__max / sizeof(_Tp);
-      if (__len > __max)
-	__len = __max;
-      
-      while (__len > 0) 
-	{
-	  _Tp* __tmp = static_cast<_Tp*>(::operator new(__len * sizeof(_Tp), 
-							std::nothrow));
-	  if (__tmp != 0)
-	    return std::pair<_Tp*, ptrdiff_t>(__tmp, __len);
-	  __len /= 2;
-	}
-      return std::pair<_Tp*, ptrdiff_t>(static_cast<_Tp*>(0), 0);
-    }
-
-  /**
    *  @brief Allocates a temporary buffer.
    *  @param  len  The number of objects of type Tp.
    *  @return See full description.
@@ -112,9 +86,24 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    * Provides the nothrow exception guarantee.
    */
   template<typename _Tp>
-    inline pair<_Tp*, ptrdiff_t>
+    pair<_Tp*, ptrdiff_t>
     get_temporary_buffer(ptrdiff_t __len)
-    { return std::__get_temporary_buffer(__len, static_cast<_Tp*>(0)); }
+    {
+      const ptrdiff_t __max =
+	__gnu_cxx::__numeric_traits<ptrdiff_t>::__max / sizeof(_Tp);
+      if (__len > __max)
+	__len = __max;
+      
+      while (__len > 0) 
+	{
+	  _Tp* __tmp = static_cast<_Tp*>(::operator new(__len * sizeof(_Tp), 
+							std::nothrow));
+	  if (__tmp != 0)
+	    return std::pair<_Tp*, ptrdiff_t>(__tmp, __len);
+	  __len /= 2;
+	}
+      return std::pair<_Tp*, ptrdiff_t>(static_cast<_Tp*>(0), 0);
+    }
 
   /**
    *  @brief The companion to get_temporary_buffer().
