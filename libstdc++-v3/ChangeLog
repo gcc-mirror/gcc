@@ -1,6 +1,11 @@
+2007-12-01  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_tempbuf.h (__get_temporary_buffer): Fold
+	in get_temporary_buffer.
+
 2007-11-29  Andris Pavenis <andris.pavenis@iki.fi>
 
-    	* src/Makefile.am: Use separate vpath lines for each path.
+	* src/Makefile.am: Use separate vpath lines for each path.
 
 2007-11-28  Johannes Singler  <singler@ira.uka.de>
 
