@@ -39,6 +39,11 @@ Boston, MA 02110-1301, USA.  */
 #include <sys/stat.h>
 #endif
 
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
+
 /* SUBROUTINE UMASK(MASK, OLD)
    INTEGER, INTENT(IN) :: MASK
    INTEGER, INTENT(OUT), OPTIONAL :: OLD  */

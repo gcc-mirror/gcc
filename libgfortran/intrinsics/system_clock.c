@@ -59,7 +59,6 @@ system_clock_4(GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
 	       GFC_INTEGER_4 *count_max)
 {
   GFC_INTEGER_4 cnt;
-  GFC_INTEGER_4 rate;
   GFC_INTEGER_4 mx;
 
 #if defined(HAVE_SYS_TIME_H) && defined(HAVE_GETTIMEOFDAY)
@@ -77,7 +76,6 @@ system_clock_4(GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
 	cnt = ucnt - GFC_INTEGER_4_HUGE - 1;
       else
 	cnt = ucnt;
-      rate = TCK;
       mx = GFC_INTEGER_4_HUGE;
     }
   else
@@ -122,7 +120,6 @@ system_clock_8 (GFC_INTEGER_8 *count, GFC_INTEGER_8 *count_rate,
 		GFC_INTEGER_8 *count_max)
 {
   GFC_INTEGER_8 cnt;
-  GFC_INTEGER_8 rate;
   GFC_INTEGER_8 mx;
 
 #if defined(HAVE_SYS_TIME_H) && defined(HAVE_GETTIMEOFDAY)
@@ -154,7 +151,6 @@ system_clock_8 (GFC_INTEGER_8 *count, GFC_INTEGER_8 *count_rate,
 	    cnt = ucnt;
 	  mx = GFC_INTEGER_8_HUGE;
 	}
-      rate = TCK;
     }
   else
     {
