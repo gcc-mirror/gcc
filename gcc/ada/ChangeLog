@@ -3,6 +3,10 @@
 	* clean.adb (Clean_Library_Directory): Use Empty_String'Access intead
 	of Empty_String'Unchecked_Access.
 
+	* Makefile.in: Add support for sh4-linux.
+
+	* system-linux-sh4.ads: New file.
+
 2007-12-01  Kostik Belousov  <kostikbel@ukr.net>
 
 	PR ada/33722
