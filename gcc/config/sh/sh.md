@@ -648,7 +648,7 @@
 		(match_operand:SI 1 "arith_reg_or_0_operand" "rN")))]
   "TARGET_SH1"
   "cmp/hs	%1,%0"
-  "&& operands[0] == CONST0_RTX (SImode)"
+  "&& operands[1] == CONST0_RTX (SImode)"
   [(pc)]
   "
 {
