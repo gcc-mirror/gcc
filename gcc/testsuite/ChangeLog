@@ -1,5 +1,10 @@
 2007-12-02  Paolo Carlini  <pcarlini@suse.de>
 
+        PR c++/34061
+        * g++.dg/cpp0x/pr34061.C: New.
+
+2007-12-02  Paolo Carlini  <pcarlini@suse.de>
+
         PR c++/34273
         * g++.dg/other/error21.C: New.
 
