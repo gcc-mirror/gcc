@@ -1,3 +1,19 @@
+2007-12-02  Ayal Zaks  <zaks@il.ibm.com>
+	    Revital Eres  <eres@il.ibm.com>
+
+	* modulo-sched.c (calculate_must_precede_follow,
+	try_scheduling_node_in_cycle): New functions.
+	(sms_schedule_by_order): Call the new functions.
+	(ps_insn_find_column): Use must_follow and must_precede only if
+	they are not NULL.
+	(ps_insn_advance_column): Likewise.
+
+2007-12-02  Ayal Zaks  <zaks@il.ibm.com>
+	    Revital Eres  <eres@il.ibm.com>
+
+	* modulo-sched.c (get_sched_window): Fix the direction of the
+	scheduling window and add dump info.
+
 2007-12-02  Samuel Tardieu  <sam@rfc1149.net>
 
 	* config/sh/sh.md (cmpgeusi_t): Fix condition.
