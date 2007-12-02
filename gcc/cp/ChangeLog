@@ -1,3 +1,8 @@
+2007-12-02  Paolo Carlini  <pcarlini@suse.de>
+
+        PR c++/34273
+        * error.c (dump_decl): Handle TREE_BINFO.
+
 2007-12-01  Ollie Wild  <aaw@google.com>
 
 	PR c++/8171

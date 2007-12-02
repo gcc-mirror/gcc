@@ -1,3 +1,8 @@
+2007-12-02  Paolo Carlini  <pcarlini@suse.de>
+
+        PR c++/34273
+        * g++.dg/other/error21.C: New.
+
 2007-12-02  Revital Eres  <eres@il.ibm.com>
 
 	* gcc.dg/sms-4.c: New testcase.
