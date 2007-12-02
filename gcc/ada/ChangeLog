@@ -1,3 +1,8 @@
+2007-12-02  Samuel Tardieu  <sam@rfc1149.net>
+
+	* clean.adb (Clean_Library_Directory): Use Empty_String'Access intead
+	of Empty_String'Unchecked_Access.
+
 2007-12-01  Kostik Belousov  <kostikbel@ukr.net>
 
 	PR ada/33722

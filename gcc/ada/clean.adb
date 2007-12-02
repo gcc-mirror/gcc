@@ -648,8 +648,8 @@ package body Clean is
 
       Delete_File : Boolean;
 
-      Minor : String_Access := Empty_String'Unchecked_Access;
-      Major : String_Access := Empty_String'Unchecked_Access;
+      Minor : String_Access := Empty_String'Access;
+      Major : String_Access := Empty_String'Access;
 
    begin
       if Data.Library then
