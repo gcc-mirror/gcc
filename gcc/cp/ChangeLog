@@ -1,5 +1,10 @@
 2007-12-02  Paolo Carlini  <pcarlini@suse.de>
 
+        PR c++/34061
+        * pt.c (current_template_args): Use error_operand_p.
+
+2007-12-02  Paolo Carlini  <pcarlini@suse.de>
+
         PR c++/34273
         * error.c (dump_decl): Handle TREE_BINFO.
 

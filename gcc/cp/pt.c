@@ -3186,7 +3186,7 @@ current_template_args (void)
 	    {
 	      t = TREE_VALUE (t);
 
-	      if (t != error_mark_node)
+	      if (!error_operand_p (t))
 		{
 		  if (TREE_CODE (t) == TYPE_DECL
 		      || TREE_CODE (t) == TEMPLATE_DECL)
