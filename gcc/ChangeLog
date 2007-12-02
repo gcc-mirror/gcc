@@ -1,3 +1,7 @@
+2007-12-02  Samuel Tardieu  <sam@rfc1149.net>
+
+	* config/sh/sh.md (cmpgeusi_t): Fix condition.
+
 2007-11-30  Jan Hubicka  <jh@suse.cz>
 
 	* ggc-common.c (dump_ggc_loc_statistics): Reset ggc_force_collect
