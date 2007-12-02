@@ -1,3 +1,8 @@
+2007-12-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34186
+	* symbol.c (generate_isocbinding_symbol): Fix setting string length.
+
 2007-11-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34133
