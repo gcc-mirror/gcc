@@ -1,3 +1,12 @@
+2007-12-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/33985
+	* io/transfer.c (read_block, read_block_direct, write_block, write_buf):
+	Don't seek if file position is already there for STREAM I/O.
+	(finalize_transfer): For STREAM I/O don't flush unless the file position
+	has moved past the start position before the transfer.
+
 2007-12-01  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* intrinsic/stat.c (stat_i4_sub_0, stat_i8_sub_0): Mark parameter
