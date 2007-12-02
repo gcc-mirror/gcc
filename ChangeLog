@@ -1,3 +1,7 @@
+2007-12-02  Matthias Klose  <doko@ubuntu.com>
+
+	* config-ml.in: Remove 64bit configure tests.
+
 2007-11-28  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* config-ml.in: Robustify against white space in absolute file
