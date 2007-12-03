@@ -305,10 +305,7 @@ extern int target_flags;
   do						\
     {						\
       if ((OPTIMIZE) >= 2 || (SIZE))		\
-	{					\
-	  flag_force_addr = 1;			\
-	  flag_omit_frame_pointer = 1;		\
-	}					\
+	flag_omit_frame_pointer = 1;		\
     }						\
   while (0)
 

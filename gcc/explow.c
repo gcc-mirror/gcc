@@ -431,18 +431,21 @@ memory_address (enum machine_mode mode, rtx x)
 
       /* At this point, any valid address is accepted.  */
       if (memory_address_p (mode, x))
-	goto win;
+	goto done;
 
       /* If it was valid before but breaking out memory refs invalidated it,
 	 use it the old way.  */
       if (memory_address_p (mode, oldx))
-	goto win2;
+	{
+	  x = oldx;
+	  goto done;
+	}
 
       /* Perform machine-dependent transformations on X
 	 in certain cases.  This is not necessary since the code
 	 below can handle all possible cases, but machine-dependent
 	 transformations can make better code.  */
-      LEGITIMIZE_ADDRESS (x, oldx, mode, win);
+      LEGITIMIZE_ADDRESS (x, oldx, mode, done);
 
       /* PLUS and MULT can appear in special ways
 	 as the result of attempts to make an address usable for indexing.
@@ -482,17 +485,6 @@ memory_address (enum machine_mode mode, rtx x)
 	 the register is a valid address.  */
       else
 	x = force_reg (Pmode, x);
-
-      goto done;
-
-    win2:
-      x = oldx;
-    win:
-      if (flag_force_addr && ! cse_not_expected && !REG_P (x))
-	{
-	  x = force_operand (x, NULL_RTX);
-	  x = force_reg (Pmode, x);
-	}
     }
 
  done:
@@ -515,20 +507,6 @@ memory_address (enum machine_mode mode, rtx x)
   return x;
 }
 
-/* Like `memory_address' but pretend `flag_force_addr' is 0.  */
-
-rtx
-memory_address_noforce (enum machine_mode mode, rtx x)
-{
-  int ambient_force_addr = flag_force_addr;
-  rtx val;
-
-  flag_force_addr = 0;
-  val = memory_address (mode, x);
-  flag_force_addr = ambient_force_addr;
-  return val;
-}
-
 /* Convert a mem ref into one with a valid memory address.
    Pass through anything else unchanged.  */
 
@@ -538,8 +516,7 @@ validize_mem (rtx ref)
   if (!MEM_P (ref))
     return ref;
   ref = use_anchored_address (ref);
-  if (! (flag_force_addr && CONSTANT_ADDRESS_P (XEXP (ref, 0)))
-      && memory_address_p (GET_MODE (ref), XEXP (ref, 0)))
+  if (memory_address_p (GET_MODE (ref), XEXP (ref, 0)))
     return ref;
 
   /* Don't alter REF itself, since that is probably a stack slot.  */

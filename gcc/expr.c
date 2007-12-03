@@ -3391,16 +3391,12 @@ emit_move_insn (rtx x, rtx y)
   /* If X or Y are memory references, verify that their addresses are valid
      for the machine.  */
   if (MEM_P (x)
-      && ((! memory_address_p (GET_MODE (x), XEXP (x, 0))
-	   && ! push_operand (x, GET_MODE (x)))
-	  || (flag_force_addr
-	      && CONSTANT_ADDRESS_P (XEXP (x, 0)))))
+      && (! memory_address_p (GET_MODE (x), XEXP (x, 0))
+	  && ! push_operand (x, GET_MODE (x))))
     x = validize_mem (x);
 
   if (MEM_P (y)
-      && (! memory_address_p (GET_MODE (y), XEXP (y, 0))
-	  || (flag_force_addr
-	      && CONSTANT_ADDRESS_P (XEXP (y, 0)))))
+      && ! memory_address_p (GET_MODE (y), XEXP (y, 0)))
     y = validize_mem (y);
 
   gcc_assert (mode != BLKmode);
@@ -7294,9 +7290,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       if (MEM_P (decl_rtl) && REG_P (XEXP (decl_rtl, 0)))
 	temp = validize_mem (decl_rtl);
 
-      /* If DECL_RTL is memory, we are in the normal case and either
-	 the address is not valid or it is not a register and -fforce-addr
-	 is specified, get the address into a register.  */
+      /* If DECL_RTL is memory, we are in the normal case and the
+	 address is not valid, get the address into a register.  */
 
       else if (MEM_P (decl_rtl) && modifier != EXPAND_INITIALIZER)
 	{
@@ -7305,8 +7300,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  decl_rtl = use_anchored_address (decl_rtl);
 	  if (modifier != EXPAND_CONST_ADDRESS
 	      && modifier != EXPAND_SUM
-	      && (!memory_address_p (DECL_MODE (exp), XEXP (decl_rtl, 0))
-		  || (flag_force_addr && !REG_P (XEXP (decl_rtl, 0)))))
+	      && !memory_address_p (DECL_MODE (exp), XEXP (decl_rtl, 0)))
 	    temp = replace_equiv_address (decl_rtl,
 					  copy_rtx (XEXP (decl_rtl, 0)));
 	}
@@ -7428,8 +7422,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       if (modifier != EXPAND_CONST_ADDRESS
 	  && modifier != EXPAND_INITIALIZER
 	  && modifier != EXPAND_SUM
-	  && (! memory_address_p (mode, XEXP (temp, 0))
-	      || flag_force_addr))
+	  && ! memory_address_p (mode, XEXP (temp, 0)))
 	return replace_equiv_address (temp,
 				      copy_rtx (XEXP (temp, 0)));
       return temp;
@@ -9970,10 +9963,6 @@ do_tablejump (rtx index, enum machine_mode mode, rtx range, rtx table_label,
     index = copy_to_mode_reg (Pmode, index);
 #endif
 
-  /* If flag_force_addr were to affect this address
-     it could interfere with the tricky assumptions made
-     about addresses that contain label-refs,
-     which may be valid only very near the tablejump itself.  */
   /* ??? The only correct use of CASE_VECTOR_MODE is the one inside the
      GET_MODE_SIZE, because this indicates how large insns are.  The other
      uses should all be Pmode, because they are addresses.  This code
@@ -9987,7 +9976,7 @@ do_tablejump (rtx index, enum machine_mode mode, rtx range, rtx table_label,
     index = PIC_CASE_VECTOR_ADDRESS (index);
   else
 #endif
-    index = memory_address_noforce (CASE_VECTOR_MODE, index);
+    index = memory_address (CASE_VECTOR_MODE, index);
   temp = gen_reg_rtx (CASE_VECTOR_MODE);
   vector = gen_const_mem (CASE_VECTOR_MODE, index);
   convert_move (temp, vector, 0);

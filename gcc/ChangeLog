@@ -1,3 +1,24 @@
+2007-12-03  Steven Bosscher  <stevenb.gcc@gmail.com>
+
+	PR33713
+	* doc/invoke.texi: Remove -fforce-addr documentation.
+	* expr.c (emit_move_insn): Remove use of flag_force_addr.
+	(expand_expr_real_1): Same.
+	(do_tablejump): Same.
+	Call memory_address instead of memory_address_noforce.
+	* expr.h (memory_address_noforce): Remove prototype.
+	* explow.c (memory_address): Remove support for flag_force_addr.
+	(validize_mem): Same.
+	(memory_address_noforce): Remove.
+	* common.opt: Add dummy documentation for -fforce-addr.
+	* combine.c (can_combine_p): Remove -fforce-addr comment.
+	* config/cris/cris.h (OPTIMIZATION_OPTIONS): Remove set of
+	flag_force_addr.
+	* config/m68k/m68k.h (PIC_CASE_VECTOR_ADDRESS): Remove comment
+	relating to memory_address_noforce.
+	* testsuite/gcc.c-torture/compile/20050802-1.c: Remove.
+	* testsuite/gcc.c-torture/compile/20011113-1.c: Remove.
+	
 2007-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (lookup_decl_in_outer_ctx): Allow calling this
