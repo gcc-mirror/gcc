@@ -37,7 +37,6 @@
 #  define _GLIBCXX_END_NAMESPACE_TR1 
 #else
 #include <tr1/functional>
-#  define _GLIBCXX_INCLUDE_AS_TR1
 #  define _GLIBCXX_BEGIN_NAMESPACE_TR1 namespace tr1 {
 #  define _GLIBCXX_END_NAMESPACE_TR1 }
 #endif
