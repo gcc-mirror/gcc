@@ -1,3 +1,12 @@
+2007-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/33453
+	* tree-data-ref.c (split_constant_offset): Use POINTER_PLUS_EXPR
+	for pointer addition.
+	* tree-parloops.c (canonicalize_loop_ivs): Likewise.
+	(separate_decls_in_loop_name): Copy DECL_GIMPLE_REG_P from var to
+	var_copy.
+
 2007-12-03  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): Define __FDPIC__ as
@@ -5,8 +14,7 @@
 
 2007-12-03  Razya Ladelsky <razya@il.ibm.com>
 
-    * doc/invoke.texi (fipa-cp, fipa-matrix-reorg): Add documentation.
-
+	* doc/invoke.texi (fipa-cp, fipa-matrix-reorg): Add documentation.
 
 2007-12-03  Jakub Jelinek  <jakub@redhat.com>
 

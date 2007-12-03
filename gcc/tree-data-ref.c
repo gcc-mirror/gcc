@@ -555,9 +555,12 @@ split_constant_offset (tree exp, tree *var, tree *off)
 	  {
 	    split_constant_offset (poffset, &poffset, &off1);
 	    off0 = size_binop (PLUS_EXPR, off0, off1);
-	    base = fold_build2 (PLUS_EXPR, TREE_TYPE (base),
-				base,
-				fold_convert (TREE_TYPE (base), poffset));
+	    if (POINTER_TYPE_P (TREE_TYPE (base)))
+	      base = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (base),
+				  base, fold_convert (sizetype, poffset));
+	    else
+	      base = fold_build2 (PLUS_EXPR, TREE_TYPE (base), base,
+				  fold_convert (TREE_TYPE (base), poffset));
 	  }
 
 	var0 = fold_convert (type, base);
