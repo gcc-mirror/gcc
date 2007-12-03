@@ -1055,7 +1055,7 @@ Enable copy propagation on trees
 
 ftree-store-copy-prop
 Common
-This switch is obsolete
+Does nothing.  Preserved for backward compatibility.
 
 ftree-cselim
 Common Report Var(flag_tree_cselim) Init(2) Optimization
