@@ -1518,12 +1518,10 @@ lookup_decl_in_outer_ctx (tree decl, omp_context *ctx)
   tree t;
   omp_context *up;
 
-  gcc_assert (ctx->is_nested);
-
   for (up = ctx->outer, t = NULL; up && t == NULL; up = up->outer)
     t = maybe_lookup_decl (decl, up);
 
-  gcc_assert (t || is_global_var (decl));
+  gcc_assert (!ctx->is_nested || t || is_global_var (decl));
 
   return t ? t : decl;
 }
@@ -1538,9 +1536,8 @@ maybe_lookup_decl_in_outer_ctx (tree decl, omp_context *ctx)
   tree t = NULL;
   omp_context *up;
 
-  if (ctx->is_nested)
-    for (up = ctx->outer, t = NULL; up && t == NULL; up = up->outer)
-      t = maybe_lookup_decl (decl, up);
+  for (up = ctx->outer, t = NULL; up && t == NULL; up = up->outer)
+    t = maybe_lookup_decl (decl, up);
 
   return t ? t : decl;
 }
@@ -2012,7 +2009,7 @@ lower_copyprivate_clauses (tree clauses, tree *slist, tree *rlist,
       by_ref = use_pointer_for_field (var, false);
 
       ref = build_sender_ref (var, ctx);
-      x = (ctx->is_nested) ? lookup_decl_in_outer_ctx (var, ctx) : var;
+      x = lookup_decl_in_outer_ctx (var, ctx);
       x = by_ref ? build_fold_addr_expr (x) : x;
       x = build_gimple_modify_stmt (ref, x);
       gimplify_and_add (x, slist);
@@ -2053,9 +2050,8 @@ lower_send_clauses (tree clauses, tree *ilist, tree *olist, omp_context *ctx)
 	  continue;
 	}
 
-      var = val = OMP_CLAUSE_DECL (c);
-      if (ctx->is_nested)
-	var = lookup_decl_in_outer_ctx (val, ctx);
+      val = OMP_CLAUSE_DECL (c);
+      var = lookup_decl_in_outer_ctx (val, ctx);
 
       if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_COPYIN
 	  && is_global_var (var))
@@ -2127,13 +2123,10 @@ lower_send_shared_vars (tree *ilist, tree *olist, omp_context *ctx)
       if (!nvar || !DECL_HAS_VALUE_EXPR_P (nvar))
 	continue;
 
-      var = ovar;
-
       /* If CTX is a nested parallel directive.  Find the immediately
 	 enclosing parallel or workshare construct that contains a
 	 mapping for OVAR.  */
-      if (ctx->is_nested)
-	var = lookup_decl_in_outer_ctx (ovar, ctx);
+      var = lookup_decl_in_outer_ctx (ovar, ctx);
 
       if (use_pointer_for_field (ovar, true))
 	{
