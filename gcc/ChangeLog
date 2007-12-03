@@ -1,5 +1,14 @@
 2007-12-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/29749
+	* fold-const.c (fold_binary) <case BIT_AND_EXPR>: Optimize
+	(X << C1) & C2 into (X << C1) & (C2 | ((1 << C1) - 1))
+	and (X >> C1) & C2 into (X >> C1) & (C2 | ~((type) -1 >> C1)).
+	(fold_binary) <case LSHIFT_EXPR, case RSHIFT_EXPR>: Optimize
+	(X & C2) << C1 into (X << C1) & (C2 << C1) and
+	(X & C2) >> C1 into (X >> C1) & (C2 >> C1) if that allows further
+	optimizations.
+
 	PR tree-optimization/33453
 	* tree-data-ref.c (split_constant_offset): Use POINTER_PLUS_EXPR
 	for pointer addition.

@@ -1,5 +1,8 @@
 2007-12-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/29749
+	* gcc.dg/fold-rotate-1.c: New test.
+
 	PR tree-optimization/33453
 	* gcc.c-torture/compile/20071203-1.c: New test.
 
