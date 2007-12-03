@@ -1,5 +1,13 @@
 2007-12-03  Jakub Jelinek  <jakub@redhat.com>
 
+	* omp-low.c (lookup_decl_in_outer_ctx): Allow calling this
+	with !ctx->is_nested.
+	(maybe_lookup_decl_in_outer_ctx): Look up in outer contexts
+	even if !ctx->is_nested.
+	(lower_copyprivate_clauses, lower_send_clauses,
+	lower_send_shared_vars): Call lookup_decl_in_outer_ctx
+	unconditionally.
+
 	PR middle-end/29749
 	* fold-const.c (fold_binary) <case BIT_AND_EXPR>: Optimize
 	(X << C1) & C2 into (X << C1) & (C2 | ((1 << C1) - 1))
