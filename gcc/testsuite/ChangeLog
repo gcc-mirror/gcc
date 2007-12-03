@@ -1,3 +1,12 @@
+2007-12-03  Robert Dewar <dewar@adacore.com>
+            Samuel Tardieu  <sam@rfc1149.net>
+
+    	PR ada/34287
+    	* check_elaboration_code.adb: New test.
+    
+    	* bug_elaboration_code.ads, bug_elaboration_code.adb: New support
+    	files.
+
 2007-12-02  Paolo Carlini  <pcarlini@suse.de>
 
         PR c++/34061

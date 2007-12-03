@@ -8583,12 +8583,16 @@ package body Sem_Util is
 
       --  Skip if volatile or aliased, since funny things might be going on in
       --  these cases which we cannot necessarily track. Also skip any variable
-      --  for which an address clause is given, or whose address is taken.
+      --  for which an address clause is given, or whose address is taken. Also
+      --  never capture value of library level variables (an attempt to do so
+      --  can occur in the case of package elaboration code).
 
       if Treat_As_Volatile (Ent)
         or else Is_Aliased (Ent)
         or else Present (Address_Clause (Ent))
         or else Address_Taken (Ent)
+        or else (Is_Library_Level_Entity (Ent)
+                   and then Ekind (Ent) = E_Variable)
       then
          return False;
       end if;
