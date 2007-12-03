@@ -1,3 +1,8 @@
+2007-11-27  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): Define __FDPIC__ as
+	necessary.
+
 2007-12-03  Razya Ladelsky <razya@il.ibm.com>
 
     * doc/invoke.texi (fipa-cp, fipa-matrix-reorg): Add documentation.
