@@ -1694,7 +1694,7 @@ can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED, rtx succ,
 	 change whether the life span of some REGs crosses calls or not,
 	 and it is a pain to update that information.
 	 Exception: if source is a constant, moving it later can't hurt.
-	 Accept that special case, because it helps -fforce-addr a lot.  */
+	 Accept that as a special case.  */
       || (DF_INSN_LUID (insn) < last_call_luid && ! CONSTANT_P (src)))
     return 0;
 

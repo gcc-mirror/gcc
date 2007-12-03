@@ -324,7 +324,7 @@ Objective-C and Objective-C++ Dialects}.
 -fcse-skip-blocks -fcx-limited-range -fdata-sections -fdce -fdce @gol
 -fdelayed-branch -fdelete-null-pointer-checks -fdse -fdse @gol
 -fearly-inlining -fexpensive-optimizations -ffast-math @gol
--ffinite-math-only -ffloat-store -fforce-addr -fforward-propagate @gol
+-ffinite-math-only -ffloat-store -fforward-propagate @gol
 -ffunction-sections -fgcse -fgcse-after-reload -fgcse-las -fgcse-lm @gol
 -fgcse-sm -fif-conversion -fif-conversion2 -finline-functions @gol
 -finline-functions-called-once -finline-limit=@var{n} @gol
@@ -5140,11 +5140,6 @@ the compiler normally lets arguments accumulate on the stack for several
 function calls and pops them all at once.
 
 Disabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
-
-@item -fforce-addr
-@opindex fforce-addr
-Force memory address constants to be copied into registers before
-doing arithmetic on them.
 
 @item -fforward-propagate
 @opindex fforward-propagate

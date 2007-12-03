@@ -482,11 +482,9 @@ ffloat-store
 Common Report Var(flag_float_store) Optimization
 Don't allocate floats and doubles in extended-precision registers
 
-; Nonzero for -fforce-addr: load memory address into a register before
-; reference to memory.  This makes better cse but slower compilation.
 fforce-addr
-Common Report Var(flag_force_addr) Optimization
-Copy memory address constants into registers before use
+Common
+Does nothing.  Preserved for backward compatibility.
 
 fforward-propagate
 Common Report Var(flag_forward_propagate) Optimization

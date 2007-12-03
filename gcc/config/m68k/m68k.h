@@ -755,9 +755,7 @@ __transfer_from_trampoline ()					\
     }									\
   while (0)
 
-/* Don't call memory_address_noforce for the address to fetch
-   the switch offset.  This address is ok as it stands,
-   but memory_address_noforce would alter it.  */
+/* This address is OK as it stands.  */
 #define PIC_CASE_VECTOR_ADDRESS(index) index
 
 /* For the 68000, we handle X+REG by loading X into a register R and
