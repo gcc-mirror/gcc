@@ -10973,6 +10973,100 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	    return build_int_cst (type, residue & low);
 	}
 
+      /* Fold (X << C1) & C2 into (X << C1) & (C2 | ((1 << C1) - 1))
+	      (X >> C1) & C2 into (X >> C1) & (C2 | ~((type) -1 >> C1))
+	 if the new mask might be further optimized.  */
+      if ((TREE_CODE (arg0) == LSHIFT_EXPR
+	   || TREE_CODE (arg0) == RSHIFT_EXPR)
+	  && host_integerp (TREE_OPERAND (arg0, 1), 1)
+	  && host_integerp (arg1, TYPE_UNSIGNED (TREE_TYPE (arg1)))
+	  && tree_low_cst (TREE_OPERAND (arg0, 1), 1)
+	     < TYPE_PRECISION (TREE_TYPE (arg0))
+	  && TYPE_PRECISION (TREE_TYPE (arg0)) <= HOST_BITS_PER_WIDE_INT
+	  && tree_low_cst (TREE_OPERAND (arg0, 1), 1) > 0)
+	{
+	  unsigned int shiftc = tree_low_cst (TREE_OPERAND (arg0, 1), 1);
+	  unsigned HOST_WIDE_INT mask
+	    = tree_low_cst (arg1, TYPE_UNSIGNED (TREE_TYPE (arg1)));
+	  unsigned HOST_WIDE_INT newmask, zerobits = 0;
+	  tree shift_type = TREE_TYPE (arg0);
+
+	  if (TREE_CODE (arg0) == LSHIFT_EXPR)
+	    zerobits = ((((unsigned HOST_WIDE_INT) 1) << shiftc) - 1);
+	  else if (TREE_CODE (arg0) == RSHIFT_EXPR
+		   && TYPE_PRECISION (TREE_TYPE (arg0))
+		      == GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (arg0))))
+	    {
+	      unsigned int prec = TYPE_PRECISION (TREE_TYPE (arg0));
+	      tree arg00 = TREE_OPERAND (arg0, 0);
+	      /* See if more bits can be proven as zero because of
+		 zero extension.  */
+	      if (TREE_CODE (arg00) == NOP_EXPR
+		  && TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (arg00, 0))))
+		{
+		  tree inner_type = TREE_TYPE (TREE_OPERAND (arg00, 0));
+		  if (TYPE_PRECISION (inner_type)
+		      == GET_MODE_BITSIZE (TYPE_MODE (inner_type))
+		      && TYPE_PRECISION (inner_type) < prec)
+		    {
+		      prec = TYPE_PRECISION (inner_type);
+		      /* See if we can shorten the right shift.  */
+		      if (shiftc < prec)
+			shift_type = inner_type;
+		    }
+		}
+	      zerobits = ~(unsigned HOST_WIDE_INT) 0;
+	      zerobits >>= HOST_BITS_PER_WIDE_INT - shiftc;
+	      zerobits <<= prec - shiftc;
+	      /* For arithmetic shift if sign bit could be set, zerobits
+		 can contain actually sign bits, so no transformation is
+		 possible, unless MASK masks them all away.  In that
+		 case the shift needs to be converted into logical shift.  */
+	      if (!TYPE_UNSIGNED (TREE_TYPE (arg0))
+		  && prec == TYPE_PRECISION (TREE_TYPE (arg0)))
+		{
+		  if ((mask & zerobits) == 0)
+		    shift_type = unsigned_type_for (TREE_TYPE (arg0));
+		  else
+		    zerobits = 0;
+		}
+	    }
+
+	  /* ((X << 16) & 0xff00) is (X, 0).  */
+	  if ((mask & zerobits) == mask)
+	    return omit_one_operand (type, build_int_cst (type, 0), arg0);
+
+	  newmask = mask | zerobits;
+	  if (newmask != mask && (newmask & (newmask + 1)) == 0)
+	    {
+	      unsigned int prec;
+
+	      /* Only do the transformation if NEWMASK is some integer
+		 mode's mask.  */
+	      for (prec = BITS_PER_UNIT;
+		   prec < HOST_BITS_PER_WIDE_INT; prec <<= 1)
+		if (newmask == (((unsigned HOST_WIDE_INT) 1) << prec) - 1)
+		  break;
+	      if (prec < HOST_BITS_PER_WIDE_INT
+		  || newmask == ~(unsigned HOST_WIDE_INT) 0)
+		{
+		  if (shift_type != TREE_TYPE (arg0))
+		    {
+		      tem = fold_build2 (TREE_CODE (arg0), shift_type,
+					 fold_convert (shift_type,
+						       TREE_OPERAND (arg0, 0)),
+					 TREE_OPERAND (arg0, 1));
+		      tem = fold_convert (type, tem);
+		    }
+		  else
+		    tem = op0;
+		  return fold_build2 (BIT_AND_EXPR, type, tem,
+				      build_int_cst_type (TREE_TYPE (op1),
+							  newmask));
+		}
+	    }
+	}
+
       goto associate;
 
     case RDIV_EXPR:
@@ -11525,6 +11619,25 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	       + TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1)))
 	      == (unsigned int) GET_MODE_BITSIZE (TYPE_MODE (type))))
 	return TREE_OPERAND (arg0, 0);
+
+      /* Fold (X & C2) << C1 into (X << C1) & (C2 << C1)
+	      (X & C2) >> C1 into (X >> C1) & (C2 >> C1)
+	 if the latter can be further optimized.  */
+      if ((code == LSHIFT_EXPR || code == RSHIFT_EXPR)
+	  && TREE_CODE (arg0) == BIT_AND_EXPR
+	  && TREE_CODE (arg1) == INTEGER_CST
+	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
+	{
+	  tree mask = fold_build2 (code, type,
+				   fold_convert (type, TREE_OPERAND (arg0, 1)),
+				   arg1);
+	  tree shift = fold_build2 (code, type,
+				    fold_convert (type, TREE_OPERAND (arg0, 0)),
+				    arg1);
+	  tem = fold_binary (BIT_AND_EXPR, type, shift, mask);
+	  if (tem)
+	    return tem;
+	}
 
       return NULL_TREE;
 
