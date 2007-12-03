@@ -1,3 +1,10 @@
+2007-12-03  Robert Dewar <dewar@adacore.com>
+            Samuel Tardieu  <sam@rfc1149.net>
+
+    	PR ada/34287
+    	* sem_util.adb (Safe_To_Capture_Value): Do not capture values
+    	of variables declared in a library-level package.
+    
 2007-12-02  Samuel Tardieu  <sam@rfc1149.net>
 
 	* clean.adb (Clean_Library_Directory): Use Empty_String'Access intead
