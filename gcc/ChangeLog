@@ -1,3 +1,10 @@
+2007-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/34317
+	* opts.c (common_handle_option): Handle OPT_ftree_store_copy_prop.
+	* common.opt (ftree-store-copy-prop): Use the same help text as for
+	other nop switches.
+
 2007-12-02  Ayal Zaks  <zaks@il.ibm.com>
 	    Revital Eres  <eres@il.ibm.com>
 
