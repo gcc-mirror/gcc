@@ -328,7 +328,8 @@ Objective-C and Objective-C++ Dialects}.
 -ffunction-sections -fgcse -fgcse-after-reload -fgcse-las -fgcse-lm @gol
 -fgcse-sm -fif-conversion -fif-conversion2 -finline-functions @gol
 -finline-functions-called-once -finline-limit=@var{n} @gol
--finline-small-functions -fipa-pta -fipa-pure-const -fipa-reference @gol
+-finline-small-functions -fipa-cp -fipa-marix-reorg -fipa-pta @gol 
+-fipa-pure-const -fipa-reference @gol
 -fipa-type-escape -fivopts -fkeep-inline-functions -fkeep-static-consts @gol
 -fmerge-all-constants -fmerge-constants -fmodulo-sched @gol
 -fmodulo-sched-allow-regmoves -fmove-loop-invariants -fmudflap @gol
@@ -5714,6 +5715,29 @@ Enabled by default at @option{-O} and higher.
 @item -fipa-pta
 @opindex fipa-pta
 Perform interprocedural pointer analysis.
+
+@item -fipa-cp
+@opindex fipa-cp
+Perform interprocedural constant propagation.
+This optimization analyzes the program to determine when values passed
+to functions are constants and then optimizes accordingly.  
+This optimization can substantially increase performance
+if the application has constants passed to functions, but
+because this optimization can create multiple copies of functions,
+it may significantly increase code size.
+
+@item -fipa-matrix-reorg
+@opindex fipa-matrix-reorg
+Perform matrix flattening and transposing.
+Matrix flattening tries to replace a m-dimensional matrix 
+with its equivalent n-dimensional matrix, where n < m.
+This reduces the level of indirection needed for accessing the elements
+of the matrix. The second optimization is matrix transposing that
+attemps to change the order of the matrix's dimensions in order to 
+improve cache locality.
+Both optimizations need fwhole-program flag. 
+Transposing is enabled only if profiling information is avaliable.
+
 
 @item -ftree-sink
 @opindex ftree-sink
