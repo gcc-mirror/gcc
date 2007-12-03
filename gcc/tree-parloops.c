@@ -687,6 +687,7 @@ separate_decls_in_loop_name (tree name,
   if (!*dslot)
     {
       var_copy = create_tmp_var (TREE_TYPE (var), get_name (var));
+      DECL_GIMPLE_REG_P (var_copy) = DECL_GIMPLE_REG_P (var);
       add_referenced_var (var_copy);
       nielt = XNEW (struct int_tree_map);
       nielt->uid = uid;
@@ -1266,7 +1267,7 @@ static void
 canonicalize_loop_ivs (struct loop *loop, htab_t reduction_list, tree nit)
 {
   unsigned precision = TYPE_PRECISION (TREE_TYPE (nit));
-  tree phi, prev, res, type, var_before, val, atype, t, next;
+  tree phi, prev, res, type, var_before, val, atype, mtype, t, next;
   block_stmt_iterator bsi;
   bool ok;
   affine_iv iv;
@@ -1313,11 +1314,12 @@ canonicalize_loop_ivs (struct loop *loop, htab_t reduction_list, tree nit)
       remove_phi_node (phi, prev, false);
 
       atype = TREE_TYPE (res);
-      val = fold_build2 (PLUS_EXPR, atype,
-			 unshare_expr (iv.base),
-			 fold_build2 (MULT_EXPR, atype,
-				      unshare_expr (iv.step),
-				      fold_convert (atype, var_before)));
+      mtype = POINTER_TYPE_P (atype) ? sizetype : atype;
+      val = fold_build2 (MULT_EXPR, mtype, unshare_expr (iv.step),
+			 fold_convert (mtype, var_before));
+      val = fold_build2 (POINTER_TYPE_P (atype)
+			 ? POINTER_PLUS_EXPR : PLUS_EXPR,
+			 atype, unshare_expr (iv.base), val);
       val = force_gimple_operand_bsi (&bsi, val, false, NULL_TREE, true,
 				      BSI_SAME_STMT);
       t = build_gimple_modify_stmt (res, val);
