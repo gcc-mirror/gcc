@@ -1,5 +1,9 @@
 2007-12-03  Paolo Carlini  <pcarlini@suse.de>
 
+	* src/hashtable.cc (__prime_list): Use __SIZEOF_LONG__.
+
+2007-12-03  Paolo Carlini  <pcarlini@suse.de>
+
 	* src/hashtable.cc: New.
 	* src/hashtable_c++0x.cc: Likewise.
 	* src/Makefile.am: Add.
