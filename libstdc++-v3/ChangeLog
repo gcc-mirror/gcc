@@ -1,5 +1,18 @@
 2007-12-03  Paolo Carlini  <pcarlini@suse.de>
 
+	* src/hashtable.cc: New.
+	* src/hashtable_c++0x.cc: Likewise.
+	* src/Makefile.am: Add.
+	* src/Makefile.in: Regenerate.
+	* include/tr1_impl/hashtable_policy.h (struct _Primes): Remove.
+	(_Prime_rehash_policy::_M_next_bkt, _M_bkt_for_elements,
+	_M_need_rehash): Adjust.
+	* config/abi/pre/gnu.ver: Update exports.
+
+	* src/hash.cc: Minor tweak.
+
+2007-12-03  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/debug/unordered_map (operator==(const unordered_map&,
 	const unordered_map&), operator!=(const unordered_map&,
 	const unordered_map&), operator==(const unordered_multimap&,

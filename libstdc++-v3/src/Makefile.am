@@ -146,6 +146,8 @@ sources = \
 	hash.cc \
 	hash_c++0x.cc \
 	globals_io.cc \
+	hashtable.cc \
+	hashtable_c++0x.cc \	
 	ios.cc \
 	ios_failure.cc \
 	ios_init.cc \
@@ -227,6 +229,11 @@ system_error.o: system_error.cc
 hash_c++0x.lo: hash_c++0x.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 hash_c++0x.o: hash_c++0x.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
+hashtable_c++0x.lo: hashtable_c++0x.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+hashtable_c++0x.o: hashtable_c++0x.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 if GLIBCXX_LDBL_COMPAT

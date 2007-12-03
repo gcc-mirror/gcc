@@ -789,6 +789,9 @@ GLIBCXX_3.4.10 {
     _ZNSt15basic_streambufI[cw]St11char_traitsI[cw]EE6stosscEv;
 
     _ZSt17__verify_grouping*;
+    
+    _ZNSt8__detail12__prime_listE;
+    _ZNSt3tr18__detail12__prime_listE;
 
 } GLIBCXX_3.4.9;
 
