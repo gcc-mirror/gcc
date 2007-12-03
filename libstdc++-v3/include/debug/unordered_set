@@ -1,6 +1,6 @@
 // Debugging unordered_set/unordered_multiset implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2005, 2007
+// Copyright (C) 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -89,30 +89,58 @@ namespace __debug
       unordered_set(const _Safe_assoc& __x) 
       : _Safe_assoc(__x), _Safe_base() { }
 
+      unordered_set(unordered_set&& __x) 
+      : _Safe_assoc(std::forward<_Safe_assoc>(__x)), _Safe_base() { }
+
+      unordered_set&
+      operator=(unordered_set&& __x)
+      {
+        // NB: DR 675.
+	clear();
+	swap(__x);
+	return *this;
+      }
+
       void
-      swap(unordered_set& __x)
+      swap(unordered_set&& __x)
       {
 	_Safe_assoc::swap(__x);
 	_Safe_base::_M_swap(__x);
       }
+
+      void
+      clear()
+      {
+	_Base::clear();
+	this->_M_invalidate_all();
+      }
+
+    private:
+      void
+      _M_invalidate_all()
+      {
+	typedef typename _Base::const_iterator _Base_const_iterator;
+	typedef __gnu_debug::_Not_equal_to<_Base_const_iterator> _Not_equal;
+	this->_M_invalidate_if(_Not_equal(this->_M_base().end()));
+      }
     };
-
-  template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
-    inline bool
-    operator==(const unordered_set<_Value, _Hash, _Pred, _Alloc>& __x,
-	       const unordered_set<_Value, _Hash, _Pred, _Alloc>& __y)
-    { return __x._M_base() == __y._M_base(); }
-
-  template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
-    inline bool
-    operator!=(const unordered_set<_Value, _Hash, _Pred, _Alloc>& __x,
-	       const unordered_set<_Value, _Hash, _Pred, _Alloc>& __y)
-    { return __x._M_base() != __y._M_base(); }
 
   template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
     inline void
     swap(unordered_set<_Value, _Hash, _Pred, _Alloc>& __x,
 	 unordered_set<_Value, _Hash, _Pred, _Alloc>& __y)
+    { __x.swap(__y); }
+
+  template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
+    inline void
+    swap(unordered_set<_Value, _Hash, _Pred, _Alloc>&& __x,
+	 unordered_set<_Value, _Hash, _Pred, _Alloc>& __y)
+    { __x.swap(__y); }
+
+  template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
+    inline void
+    swap(unordered_set<_Value, _Hash, _Pred, _Alloc>& __x,
+	 unordered_set<_Value, _Hash, _Pred, _Alloc>&& __y)
     { __x.swap(__y); }
 
 #undef _GLIBCXX_BASE
@@ -158,31 +186,60 @@ namespace __debug
       unordered_multiset(const _Safe_assoc& __x) 
       : _Safe_assoc(__x), _Safe_base() { }
 
+      unordered_multiset(unordered_multiset&& __x) 
+      : _Safe_assoc(std::forward<_Safe_assoc>(__x)), _Safe_base() { }
+
+      unordered_multiset&
+      operator=(unordered_multiset&& __x)
+      {
+        // NB: DR 675.
+	clear();
+	swap(__x);
+	return *this;
+      }
+
       void
-      swap(unordered_multiset& __x)
+      swap(unordered_multiset&& __x)
       {
 	_Safe_assoc::swap(__x);
 	_Safe_base::_M_swap(__x);
       }
+
+     void
+      clear()
+      {
+	_Base::clear();
+	this->_M_invalidate_all();
+      }
+
+    private:
+      void
+      _M_invalidate_all()
+      {
+	typedef typename _Base::const_iterator _Base_const_iterator;
+	typedef __gnu_debug::_Not_equal_to<_Base_const_iterator> _Not_equal;
+	this->_M_invalidate_if(_Not_equal(this->_M_base().end()));
+      }
     };
-
-  template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
-    inline bool
-    operator==(const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __x,
-	       const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
-    { return __x._M_base() == __y._M_base(); }
-
-  template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
-    inline bool
-    operator!=(const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __x,
-	       const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
-    { return __x._M_base() != __y._M_base(); }
 
   template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
     inline void
     swap(unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __x,
 	 unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
     { __x.swap(__y); }
+
+  template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
+    inline void
+    swap(unordered_multiset<_Value, _Hash, _Pred, _Alloc>&& __x,
+	 unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
+    { __x.swap(__y); }
+
+  template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
+    inline void
+    swap(unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __x,
+	 unordered_multiset<_Value, _Hash, _Pred, _Alloc>&& __y)
+    { __x.swap(__y); }
+
 } // namespace __debug
 } // namespace std
 

@@ -1,3 +1,35 @@
+2007-12-03  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/debug/unordered_map (operator==(const unordered_map&,
+	const unordered_map&), operator!=(const unordered_map&,
+	const unordered_map&), operator==(const unordered_multimap&,
+	const unordered_multimap&), operator!=(const unordered_multimap&,
+	const unordered_multimap&)): Remove.
+	(unordered_map<>::unordered_map(unordered_map&&),
+	operator=(unordered_map&&), clear, _M_invalidate_all,
+	unordered_multimap<>::unordered_multimap(unordered_multimap&&),
+	operator=(unordered_map&&), clear, _M_invalidate_all,	
+	swap(unordered_map<>&&, unordered_map<>&), swap(unordered_map<>&,
+	unordered_map<>&&), swap(unordered_multimap<>&&,
+	unordered_multimap<>&), swap(unordered_multimap<>&,
+	unordered_multimap<>&&)): Add.
+	* include/debug/unordered_set (operator==(const unordered_set&,
+	const unordered_set&), operator!=(const unordered_set&,
+	const unordered_set&), operator==(const unordered_multiset&,
+	const unordered_multiset&), operator!=(const unordered_multiset&,
+	const unordered_multiset&)): Remove.
+	(unordered_set<>::unordered_set(unordered_set&&),
+	operator=(unordered_set&&), clear, _M_invalidate_all,
+	unordered_multiset<>::unordered_multiset(unordered_multiset&&),
+	operator=(unordered_set&&), clear, _M_invalidate_all,	
+	swap(unordered_set<>&&, unordered_set<>&), swap(unordered_set<>&,
+	unordered_set<>&&), swap(unordered_multiset<>&&,
+	unordered_multiset<>&), swap(unordered_multiset<>&,
+	unordered_multiset<>&&)): Add.
+	* include/debug/safe_association.h (_Safe_association<>::
+	_Safe_association(_Safe_association&&)): Add.
+	(_Safe_association<>::clear, _M_invalidate_all): Remove.
+
 2007-12-01  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1_impl/hashtable_policy.h (struct _LessThan): Remove.
