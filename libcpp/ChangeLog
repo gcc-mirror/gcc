@@ -1,3 +1,9 @@
+2007-12-03  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/34288:
+	* configure.ac, config.in: Rebuilt.
+	* configure.ac: Check for ssize_t.
+
 2007-11-30  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/32868:
