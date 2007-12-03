@@ -1,7 +1,6 @@
 // Safe associated container base class implementation  -*- C++ -*-
 
-// Copyright (C) 2007
-// Free Software Foundation, Inc.
+// Copyright (C) 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -108,6 +107,9 @@ namespace __gnu_debug
 
       _Safe_association(const _Base& __x) : _Base(__x) { }
 
+      _Safe_association(_Safe_association&& __x)
+      : _Base(std::forward<_Base>(__x)) { }
+
       using _Base::size;
       using _Base::max_size;
       using _Base::empty;
@@ -197,27 +199,11 @@ namespace __gnu_debug
 	return iterator(_Base::erase(__first.base(), __last.base()));
       }
 
-      void
-      clear()
-      {
-	_Base::clear();
-	this->_M_invalidate_all();
-      }
-
       _Base&
       _M_base() { return *this; }
 
       const _Base&
       _M_base() const { return *this; }
-
-    private:
-      void
-      _M_invalidate_all()
-      {
-	typedef typename _Base::const_iterator _Base_const_iterator;
-	typedef __gnu_debug::_Not_equal_to<_Base_const_iterator> _Not_equal;
-	this->_M_invalidate_if(_Not_equal(_M_base().end()));
-      }
     };
 } // namespace __gnu_debug
 
