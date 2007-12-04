@@ -1,3 +1,13 @@
+2007-12-04  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34334
+	PR middle-end/34222
+	* tree-ssa-operands.c (get_addr_dereference_operands): If we
+	fall back to using the SMTs aliases, make sure to add virtual
+	operands for the SMT itself.
+	(create_ssa_artificial_load_stmt): Fix typo.  Make sure to also
+	clear the loaded and stored symbols bitmaps.
+
 2007-12-04  Ben Elliston  <bje@au.ibm.com>
 
 	* config/spu/spu.h (ASM_FORMAT_PRIVATE_NAME): Remove; use default.
