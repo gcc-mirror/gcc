@@ -515,10 +515,6 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 #define ASM_OUTPUT_LABELREF(FILE, NAME) \
   asm_fprintf (FILE, "%U%s", default_strip_name_encoding (NAME))
 
-#define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
-( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
-  sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
-
 
 /* Instruction Output */
 #define REGISTER_NAMES \
