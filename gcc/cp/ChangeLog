@@ -1,5 +1,12 @@
 2007-12-04  Douglas Gregor  <doug.gregor@gmail.com>
 
+       PR c++/33509
+       * pt.c (tsubst_exception_specification): Handle substitutions into
+       member templates, where tsubst_pack_expansion returns a
+       TYPE_PACK_EXPANSION.
+
+2007-12-04  Douglas Gregor  <doug.gregor@gmail.com>
+
        PR c++/33091
        * pt.c (unify_pack_expansion): If we didn't deduce any actual
        bindings for the template parameter pack, don't try to keep the

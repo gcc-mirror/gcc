@@ -8653,7 +8653,24 @@ tsubst_exception_specification (tree fntype,
                 expanded_specs = tsubst_pack_expansion (TREE_VALUE (specs),
                                                        args, complain,
                                                        in_decl);
-                len = TREE_VEC_LENGTH (expanded_specs);
+
+		if (expanded_specs == error_mark_node)
+		  return error_mark_node;
+		else if (TREE_CODE (expanded_specs) == TREE_VEC)
+		  len = TREE_VEC_LENGTH (expanded_specs);
+		else
+		  {
+		    /* We're substituting into a member template, so
+		       we got a TYPE_PACK_EXPANSION back.  Add that
+		       expansion and move on.  */
+		    gcc_assert (TREE_CODE (expanded_specs) 
+				== TYPE_PACK_EXPANSION);
+		    new_specs = add_exception_specifier (new_specs,
+							 expanded_specs,
+							 complain);
+		    specs = TREE_CHAIN (specs);
+		    continue;
+		  }
               }
 
             for (i = 0; i < len; ++i)
