@@ -3638,7 +3638,20 @@ c_parser_label (c_parser *parser)
 	}
     }
   if (label)
-    SET_EXPR_LOCATION (label, loc1);
+    {
+      SET_EXPR_LOCATION (label, loc1);
+      if (c_parser_next_token_starts_declspecs (parser)
+	  && !(c_parser_next_token_is (parser, CPP_NAME)
+	       && c_parser_peek_2nd_token (parser)->type == CPP_COLON))
+	{
+	  error ("%Ha label can only be part of a statement and "
+		 "a declaration is not a statement",
+		 &c_parser_peek_token (parser)->location);
+	  c_parser_declaration_or_fndef (parser, /*fndef_ok*/ false, 
+					 /*nested*/ true, /*empty_ok*/ false,
+					 /*start_attr_ok*/ true);
+	}
+    }
 }
 
 /* Parse a statement (C90 6.6, C99 6.8).
@@ -3864,16 +3877,6 @@ c_parser_statement_after_labels (c_parser *parser)
       break;
     default:
     expr_stmt:
-      if (c_parser_next_token_starts_declspecs (parser)) 
-	{
-	  error ("%Ha label can only be part of a statement and "
-		 "a declaration is not a statement",
-		 &c_parser_peek_token (parser)->location);
-	  c_parser_declaration_or_fndef (parser, /*fndef_ok*/ false, 
-					 /*nested*/ true, /*empty_ok*/ false,
-					 /*start_attr_ok*/ true);
-	  return;
-	}
       stmt = c_finish_expr_stmt (c_parser_expression_conv (parser).value);
     expect_semicolon:
       c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");

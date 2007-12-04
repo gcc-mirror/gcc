@@ -1,3 +1,9 @@
+2007-12-04  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* c-parser (c_parser_statement_after_labels): Move error from here...
+	(c_parser_label): ... to here. Check that the declaration is not
+	actually just another label.
+
 2007-12-04  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/34334
