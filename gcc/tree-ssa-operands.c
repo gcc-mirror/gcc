@@ -1665,8 +1665,18 @@ get_addr_dereference_operands (tree stmt, tree *addr, int flags, tree full_ref,
 	     to make sure to not prune virtual operands based on offset
 	     and size.  */
 	  if (v_ann->symbol_mem_tag)
-	    add_virtual_operand (v_ann->symbol_mem_tag, s_ann, flags,
-				 full_ref, 0, -1, false);
+	    {
+	      add_virtual_operand (v_ann->symbol_mem_tag, s_ann, flags,
+				   full_ref, 0, -1, false);
+	      /* Make sure we add the SMT itself.  */
+	      if (!(flags & opf_no_vops))
+		{
+		  if (flags & opf_def)
+		    append_vdef (v_ann->symbol_mem_tag);
+		  else
+		    append_vuse (v_ann->symbol_mem_tag);
+		}
+	    }
 
 	  /* Aliasing information is missing; mark statement as
 	     volatile so we won't optimize it out too actively.  */
@@ -2657,13 +2667,17 @@ create_ssa_artificial_load_stmt (tree new_stmt, tree old_stmt)
     if (TREE_CODE (op) != SSA_NAME)
       var_ann (op)->in_vuse_list = false;
    
-  for (i = 0; VEC_iterate (tree, build_vuses, i, op); i++)
+  for (i = 0; VEC_iterate (tree, build_vdefs, i, op); i++)
     if (TREE_CODE (op) != SSA_NAME)
       var_ann (op)->in_vdef_list = false;
 
   /* Remove any virtual operands that were found.  */
   VEC_truncate (tree, build_vdefs, 0);
   VEC_truncate (tree, build_vuses, 0);
+
+  /* Clear the loads and stores bitmaps.  */
+  bitmap_clear (build_loads);
+  bitmap_clear (build_stores);
 
   /* For each VDEF on the original statement, we want to create a
      VUSE of the VDEF result operand on the new statement.  */
