@@ -1,3 +1,8 @@
+2007-12-04  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+	
+	* gcc.dg/parse-decl-after-if.c: New.
+	* gcc.dg/20031223-1.c: Adjust.
+	
 2007-12-04  Douglas Gregor  <doug.gregor@gmail.com>
 
        PR c++/33509
