@@ -3371,14 +3371,15 @@ code to the call-frame unwinder for use when there is no unwind data
 available.  The most common reason to implement this macro is to unwind
 through signal frames.
 
-This macro is called from @code{uw_frame_state_for} in @file{unwind-dw2.c}
-and @file{unwind-ia64.c}.  @var{context} is an @code{_Unwind_Context};
+This macro is called from @code{uw_frame_state_for} in
+@file{unwind-dw2.c}, @file{unwind-dw2-xtensa.c} and
+@file{unwind-ia64.c}.  @var{context} is an @code{_Unwind_Context};
 @var{fs} is an @code{_Unwind_FrameState}.  Examine @code{context->ra}
 for the address of the code being executed and @code{context->cfa} for
-the stack pointer value.  If the frame can be decoded, the register save
-addresses should be updated in @var{fs} and the macro should evaluate to
-@code{_URC_NO_REASON}.  If the frame cannot be decoded, the macro should
-evaluate to @code{_URC_END_OF_STACK}.
+the stack pointer value.  If the frame can be decoded, the register
+save addresses should be updated in @var{fs} and the macro should
+evaluate to @code{_URC_NO_REASON}.  If the frame cannot be decoded,
+the macro should evaluate to @code{_URC_END_OF_STACK}.
 
 For proper signal handling in Java this macro is accompanied by
 @code{MAKE_THROW_FRAME}, defined in @file{libjava/include/*-signal.h} headers.
