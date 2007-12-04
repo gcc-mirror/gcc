@@ -20,20 +20,18 @@
 
 # This file defines procs for determining features supported by the target.
 
-# Try to compile some code and return the messages printed by the compiler,
-# and optionally the contents for assembly files.  Either a string or
-# a list of two strings are returned, depending on WANT_OUTPUT.
+# Try to compile the code given by CONTENTS into an output file of
+# type TYPE, where TYPE is as for target_compile.  Return a list
+# whose first element contains the compiler messages and whose
+# second element is the name of the output file.
 #
-# BASENAME is a basename to use for temporary files.
-# WANT_OUTPUT is a flag which is 0 to request returning just the
-#   compiler messages, or 1 to return the messages and the contents
-#   of the assembly file.  TYPE should be "assembly" if WANT_OUTPUT
-#   is set.
-# TYPE is the type of compilation to perform (see target_compile).
-# CONTENTS gives the contents of the input file.
-# The rest is optional:
-# OPTIONS: additional compiler options to use.
-proc get_compiler_messages {basename want_output type contents args} {
+# BASENAME is a prefix to use for source and output files.
+# If ARGS is not empty, its first element is a string that
+# should be added to the command line.
+#
+# Assume by default that CONTENTS is C code.  C++ code should contain
+# "// C++" and Fortran code should contain "! Fortran".
+proc check_compile {basename type contents args} {
     global tool
 
     if { [llength $args] > 0 } {
@@ -41,11 +39,15 @@ proc get_compiler_messages {basename want_output type contents args} {
     } else {
 	set options ""
     }
-
-    set src ${basename}[pid].c
+    switch -glob -- $contents {
+	"*! Fortran*" { set src ${basename}[pid].f90 }
+	"*// C++*" { set src ${basename}[pid].cc }
+	default { set src ${basename}[pid].c }
+    }
     switch $type {
 	assembly { set output ${basename}[pid].s }
 	object { set output ${basename}[pid].o }
+	executable { set output ${basename}[pid].exe }
     }
     set f [open $src "w"]
     puts $f $contents
@@ -53,27 +55,7 @@ proc get_compiler_messages {basename want_output type contents args} {
     set lines [${tool}_target_compile $src $output $type "$options"]
     file delete $src
 
-    if { $want_output } {
-	if { $type != "assembly" } {
-	    error "WANT_OUTPUT can only be used with assembly output"
-	} elseif { ![string match "" $lines] } {
-	    # An error occurred.
-	    set result [list $lines ""]
-	} else {
-	    set text ""
-	    set chan [open "$output"]
-	    while {[gets $chan line] >= 0} {
-		append text "$line\n"
-	    }
-	    close $chan
-	    set result [list $lines $text]
-	}
-    } else {
-	set result $lines
-    }
-
-    remote_file build delete $output
-    return $result
+    return [list $lines $output]
 }
 
 proc current_target_name { } {
@@ -104,23 +86,96 @@ proc check_cached_effective_target { prop args } {
     return $value
 }
 
-# Implement an effective-target check for property PROP by invoking
-# the compiler and seeing if it prints any messages.  Assume that the
-# property holds if the compiler doesn't print anything.  The other
-# arguments are as for get_compiler_messages, starting with TYPE.
+# Like check_compile, but delete the output file and return true if the
+# compiler printed no messages.
+proc check_no_compiler_messages_nocache {args} {
+    set result [eval check_compile $args]
+    set lines [lindex $result 0]
+    set output [lindex $result 1]
+    remote_file build delete $output
+    return [string match "" $lines]
+}
+
+# Like check_no_compiler_messages_nocache, but cache the result.
+# PROP is the property we're checking, and doubles as a prefix for
+# temporary filenames.
 proc check_no_compiler_messages {prop args} {
     return [check_cached_effective_target $prop {
-	string match "" [eval get_compiler_messages $prop 0 $args]
+	eval [list check_no_compiler_messages_nocache $prop] $args
     }]
 }
 
-# Similar to check_no_compiler_messages, but also verify that the regular
-# expression PATTERN matches the compiler's output.
+# Like check_compile, but return true if the compiler printed no
+# messages and if the contents of the output file satisfy PATTERN.
+# If PATTERN has the form "!REGEXP", the contents satisfy it if they
+# don't match regular expression REGEXP, otherwise they satisfy it
+# if they do match regular expression PATTERN.  (PATTERN can start
+# with something like "[!]" if the regular expression needs to match
+# "!" as the first character.)
+#
+# Delete the output file before returning.  The other arguments are
+# as for check_compile.
+proc check_no_messages_and_pattern_nocache {basename pattern args} {
+    global tool
+
+    set result [eval [list check_compile $basename] $args]
+    set lines [lindex $result 0]
+    set output [lindex $result 1]
+
+    set ok 0
+    if { [string match "" $lines] } {
+	set chan [open "$output"]
+	set invert [regexp {^!(.*)} $pattern dummy pattern]
+	set ok [expr { [regexp $pattern [read $chan]] != $invert }]
+	close $chan
+    }
+
+    remote_file build delete $output
+    return $ok
+}
+
+# Like check_no_messages_and_pattern_nocache, but cache the result.
+# PROP is the property we're checking, and doubles as a prefix for
+# temporary filenames.
 proc check_no_messages_and_pattern {prop pattern args} {
     return [check_cached_effective_target $prop {
-	set results [eval get_compiler_messages $prop 1 $args]
-	expr { [string match "" [lindex $results 0]]
-	       && [regexp $pattern [lindex $results 1]] }
+	eval [list check_no_messages_and_pattern_nocache $prop $pattern] $args
+    }]
+}
+
+# Try to compile and run an executable from code CONTENTS.  Return true
+# if the compiler reports no messages and if execution "passes" in the
+# usual DejaGNU sense.  The arguments are as for check_compile, with
+# TYPE implicitly being "executable".
+proc check_runtime_nocache {basename contents args} {
+    global tool
+
+    set result [eval [list check_compile $basename executable $contents] $args]
+    set lines [lindex $result 0]
+    set output [lindex $result 1]
+
+    set ok 0
+    if { [string match "" $lines] } {
+	# No error messages, everything is OK.
+	set result [remote_load target "./$output" "" ""]
+	set status [lindex $result 0]
+	verbose "check_runtime_nocache $basename: status is <$status>" 2
+	if { $status == "pass" } {
+	    set ok 1
+	}
+    }
+    remote_file build delete $output
+    return $ok
+}
+
+# Like check_runtime_nocache, but cache the result.  PROP is the
+# property we're checking, and doubles as a prefix for temporary
+# filenames.
+proc check_runtime {prop args} {
+    global tool
+
+    return [check_cached_effective_target $prop {
+	eval [list check_runtime_nocache $prop] $args
     }]
 }
 
@@ -414,37 +469,11 @@ proc check_effective_target_pcc_bitfield_type_matters { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_tls {} {
-    global et_tls_saved
-    global tool
-
-    if [info exists et_tls_saved] {
-	verbose "check_effective_target_tls: using cached result" 2
-    } else {
-	set et_tls_saved 0
-
-	set src tls[pid].c
-	set asm tls[pid].S
-	verbose "check_effective_target_tls: compiling testfile $src" 2
-	set f [open $src "w"]
-	# Compile a small test program.  Make sure that we test accesses
-	# as well as declarations.  
-	puts $f "__thread int i;\n"
-	puts $f "int f (void) { return i; }\n"
-	puts $f "void g (int j) { i = j; }\n"
-	close $f
-
-	# Test for thread-local data supported by the platform.
-	set comp_output \
-	    [${tool}_target_compile $src $asm assembly ""]
-	file delete $src
-	if { [string match "" $comp_output] } {
-	    # No error messages, everything is OK.
-	    set et_tls_saved 1
-	}
-	remove-build-file $asm
-    }
-    verbose "check_effective_target_tls: returning $et_tls_saved" 2
-    return $et_tls_saved
+    return [check_no_compiler_messages tls assembly {
+	__thread int i;
+	int f (void) { return i; }
+	void g (int j) { i = j; }
+    }]
 }
 
 # Return 1 if *native* thread local storage (TLS) is supported, 0 otherwise.
@@ -452,43 +481,11 @@ proc check_effective_target_tls {} {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_tls_native {} {
-    global et_tls_native_saved
-    global tool
-
-    if [info exists et_tls_saved] {
-	verbose "check_effective_target_tls_native: using cached result" 2
-    } else {
-	set et_tls_native_saved 0
-
-	set src tls[pid].c
-	set asm tls[pid].S
-	verbose "check_effective_target_tls_native: compiling testfile $src" 2
-	set f [open $src "w"]
-	# Compile a small test program.  Make sure that we test accesses
-	# as well as declarations.  
-	puts $f "__thread int i;\n"
-	puts $f "int f (void) { return i; }\n"
-	puts $f "void g (int j) { i = j; }\n"
-	close $f
-
-	# Test for thread-local data supported by the platform.
-	set comp_output [${tool}_target_compile $src $asm assembly ""]
-	file delete $src
-	if { [string match "" $comp_output] } {
-	    # No error messages, everything is OK.
-	    set fd [open $asm r]
-	    set text [read $fd]
-	    close $fd
-	    if { [string match "*emutls*" $text]} {
-		set et_tls_native_saved 0
-	    } else {
-		set et_tls_native_saved 1
-	    }
-	}
-	remove-build-file $asm
-    }
-    verbose "check_effective_target_tls_native: returning $et_tls_native_saved" 2
-    return $et_tls_native_saved
+    return [check_no_messages_and_pattern tls_native "!emultls" assembly {
+	__thread int i;
+	int f (void) { return i; }
+	void g (int j) { i = j; }
+    }]
 }
 
 # Return 1 if TLS executables can run correctly, 0 otherwise.
@@ -496,45 +493,10 @@ proc check_effective_target_tls_native {} {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_tls_runtime {} {
-    global et_tls_runtime_saved
-    global tool
-
-    if [info exists et_tls_runtime_saved] {
-	verbose "check_effective_target_tls_runtime: using cached result" 2
-    } else {
-	set et_tls_runtime_saved 0
-
-	set src tls_runtime[pid].c
-	set exe tls_runtime[pid].x
-	verbose "check_effective_target_tls_runtime: compiling testfile $src" 2
-	set f [open $src "w"]
-	# Compile a small test program.
-	puts $f "__thread int thr = 0;\n"
-	puts $f "int main(void)\n {\n return thr;\n}"
-	close $f
-
-	set comp_output \
-	    [${tool}_target_compile $src $exe executable ""]
-	file delete $src
-
-	if [string match "" $comp_output] then {
-	    # No error messages, everything is OK.
-
-	    set result [remote_load target "./$exe" "" ""]
-	    set status [lindex $result 0]
-	    remote_file build delete $exe
-
-	    verbose "check_effective_target_tls_runtime status is <$status>" 2
-
-	    if { $status == "pass" } {
-		set et_tls_runtime_saved 1
-	    }
-
-	    verbose "check_effective_target_tls_runtime: returning $et_tls_runtime_saved" 2
-	}
-    }
-
-    return $et_tls_runtime_saved
+    return [check_runtime tls_runtime {
+	__thread int thr = 0;
+	int main (void) { return thr; }
+    }]
 }
 
 # Return 1 if compilation with -fopenmp is error-free for trivial
@@ -548,35 +510,9 @@ proc check_effective_target_fopenmp {} {
 
 # Return 1 if the target supports -fstack-protector
 proc check_effective_target_fstack_protector {} {
-    global tool
-    set result ""
-
-    set src stack_prot[pid].c
-    set exe stack_prot[pid].x
-
-    verbose "check_effective_target_fstack_protector compiling testfile $src" 2
-
-    set f [open $src "w"]
-    # Compile a small test program.
-    puts $f "int main (void)\n { return 0; }\n"
-    close $f
-
-    set opts "additional_flags=-fstack-protector"
-    set lines [${tool}_target_compile $src $exe executable "$opts" ]
-    file delete $src
-
-    if [string match "" $lines] then {
-        # No error messages, everything is OK.
-        set result [${tool}_load "./$exe" "" ""]
-        set status [lindex $result 0]
-        remote_file build delete $exe
-        verbose "check_iconv_available status is <$status>" 2
-
-        if { $status == "pass" } then {
-            return 1
-        }
-    }
-    return 0
+    return [check_runtime fstack_protector {
+	int main (void) { return 0; }
+    } "-fstack-protector"]
 }
 
 # Return 1 if compilation with -freorder-blocks-and-partition is error-free
@@ -699,45 +635,25 @@ proc check_effective_target_unwrapped { } {
 # Return true if iconv is supported on the target. In particular IBM1047.
 
 proc check_iconv_available { test_what } {
-    global tool
     global libiconv
-
-    set result ""
-
-    set src iconv[pid].c
-    set exe iconv[pid].x
-    verbose "check_iconv_available compiling testfile $src" 2
-    set f [open $src "w"]
-    # Compile a small test program.
-    puts $f "#include <iconv.h>\n"
-    puts $f "int main (void)\n {\n iconv_t cd; \n"
-    puts $f "cd = iconv_open (\"[lindex $test_what 1]\", \"UTF-8\");\n"
-    puts $f "if (cd == (iconv_t) -1)\n return 1;\n"
-    puts $f "return 0;\n}"
-    close $f
 
     # If the tool configuration file has not set libiconv, try "-liconv"
     if { ![info exists libiconv] } {
 	set libiconv "-liconv"
     }
-    set lines [${tool}_target_compile $src $exe executable "libs=$libiconv" ]
-    file delete $src
+    set test_what [lindex $test_what 1]
+    return [check_runtime_nocache $test_what [subst {
+	#include <iconv.h>
+	int main (void)
+	{
+	  iconv_t cd;
 
-    if [string match "" $lines] then {
-	# No error messages, everything is OK.
-
-	set result [${tool}_load "./$exe" "" ""]
-	set status [lindex $result 0]
-	remote_file build delete $exe
-
-	verbose "check_iconv_available status is <$status>" 2
-
-	if { $status == "pass" } then {
-	    return 1
+	  cd = iconv_open ("$test_what", "UTF-8");
+	  if (cd == (iconv_t) -1)
+	    return 1;
+	  return 0;
 	}
-    }
-
-    return 0
+    }] $libiconv]
 }
 
 # Return true if named sections are supported on this target.
@@ -754,56 +670,13 @@ proc check_named_sections_available { } {
 # When the target name changes, replace the cached result.
 
 proc check_effective_target_fortran_large_real { } {
-    global et_fortran_large_real_saved
-    global et_fortran_large_real_target_name
-    global tool
-
-    if { ![info exists et_fortran_large_real_target_name] } {
-	set et_fortran_large_real_target_name ""
-    }
-
-    # If the target has changed since we set the cached value, clear it.
-    set current_target [current_target_name]
-    if { $current_target != $et_fortran_large_real_target_name } {
-	verbose "check_effective_target_fortran_large_real: `$et_fortran_large_real_target_name' `$current_target'" 2
-	set et_fortran_large_real_target_name $current_target
-	if [info exists et_fortran_large_real_saved] {
-	    verbose "check_effective_target_fortran_large_real: removing cached result" 2
-	    unset et_fortran_large_real_saved
-	}
-    }
-
-    if [info exists et_fortran_large_real_saved] {
-	verbose "check_effective_target_fortran_large_real returning saved $et_fortran_large_real_saved" 2
-    } else {
-	set et_fortran_large_real_saved 0
-
-	# Set up, compile, and execute a test program using large real
-	# kinds.  Include the current process ID in the file names to
-	# prevent conflicts with invocations for multiple testsuites.
-	set src real[pid].f90
-        set exe real[pid].x
-
-	set f [open $src "w"]
-	puts $f "integer,parameter :: k = &"
-        puts $f "  selected_real_kind (precision (0.0_8) + 1)"
-        puts $f "real(kind=k) :: x"
-        puts $f "x = cos (x);"
-	puts $f "end"
-	close $f
-
-	verbose "check_effective_target_fortran_large_real compiling testfile $src" 2
-	set lines [${tool}_target_compile $src $exe executable ""]
-	file delete $src
-
-	if [string match "" $lines] then {
-	    # No error message, compilation succeeded.
-	    remote_file build delete $exe
-  	    set et_fortran_large_real_saved 1
-	}
-    }
-
-    return $et_fortran_large_real_saved
+    return [check_no_compiler_messages fortran_large_real executable {
+	! Fortran
+	integer,parameter :: k = selected_real_kind (precision (0.0_8) + 1)
+	real(kind=k) :: x
+	x = cos (x)
+	end
+    }]
 }
 
 # Return 1 if the target supports Fortran integer kinds larger than
@@ -812,55 +685,12 @@ proc check_effective_target_fortran_large_real { } {
 # When the target name changes, replace the cached result.
 
 proc check_effective_target_fortran_large_int { } {
-    global et_fortran_large_int_saved
-    global et_fortran_large_int_target_name
-    global tool
-
-    if { ![info exists et_fortran_large_int_target_name] } {
-	set et_fortran_large_int_target_name ""
-    }
-
-    # If the target has changed since we set the cached value, clear it.
-    set current_target [current_target_name]
-    if { $current_target != $et_fortran_large_int_target_name } {
-	verbose "check_effective_target_fortran_large_int: `$et_fortran_large_int_target_name' `$current_target'" 2
-	set et_fortran_large_int_target_name $current_target
-	if [info exists et_fortran_large_int_saved] {
-	    verbose "check_effective_target_fortran_large_int: removing cached result" 2
-	    unset et_fortran_large_int_saved
-	}
-    }
-
-    if [info exists et_fortran_large_int_saved] {
-	verbose "check_effective_target_fortran_large_int returning saved $et_fortran_large_int_saved" 2
-    } else {
-	set et_fortran_large_int_saved 0
-
-	# Set up, compile, and execute a test program using large integer
-	# kinds.  Include the current process ID in the file names to
-	# prevent conflicts with invocations for multiple testsuites.
-	set src int[pid].f90
-        set exe int[pid].x
-
-	set f [open $src "w"]
-	puts $f "integer,parameter :: k = &"
-        puts $f "  selected_int_kind (range (0_8) + 1)"
-        puts $f "integer(kind=k) :: i"
-	puts $f "end"
-	close $f
-
-	verbose "check_effective_target_fortran_large_int compiling testfile $src" 2
-	set lines [${tool}_target_compile $src $exe executable ""]
-	file delete $src
-
-	if [string match "" $lines] then {
-	    # No error message, compilation succeeded.
-	    remote_file build delete $exe
-	    set et_fortran_large_int_saved 1
-	}
-    }
-
-    return $et_fortran_large_int_saved
+    return [check_no_compiler_messages fortran_large_int executable {
+	! Fortran
+	integer,parameter :: k = selected_int_kind (range (0_8) + 1)
+	integer(kind=k) :: i
+	end
+    }]
 }
 
 # Return 1 if we can statically link libgfortran, 0 otherwise.
@@ -868,177 +698,67 @@ proc check_effective_target_fortran_large_int { } {
 # When the target name changes, replace the cached result.
 
 proc check_effective_target_static_libgfortran { } {
-    global et_static_libgfortran
-    global et_static_libgfortran_target_name
-    global tool
-
-    if { ![info exists et_static_libgfortran_target_name] } {
-       set et_static_libgfortran_target_name ""
-    }
-
-    # If the target has changed since we set the cached value, clear it.
-    set current_target [current_target_name]
-    if { $current_target != $et_static_libgfortran_target_name } {
-       verbose "check_effective_target_static_libgfortran: `$et_static_libgfortran_target_name' `$current_target'" 2
-       set et_static_libgfortran_target_name $current_target
-       if [info exists et_static_libgfortran_saved] {
-           verbose "check_effective_target_static_libgfortran: removing cached result" 2
-           unset et_static_libgfortran_saved
-       }
-    }
-
-    if [info exists et_static_libgfortran_saved] {
-       verbose "check_effective_target_static_libgfortran returning saved $et_static_libgfortran_saved" 2
-    } else {
-       set et_static_libgfortran_saved 0
-
-       # Set up, compile, and execute a test program using static linking.
-       # Include the current process ID in the file names to prevent
-       # conflicts with invocations for multiple testsuites.
-       set opts "additional_flags=-static"
-       set src static[pid].f
-       set exe static[pid].x
-
-       set f [open $src "w"]
-       puts $f "      print *, 'test'"
-       puts $f "      end"
-       close $f
-
-       verbose "check_effective_target_static_libgfortran compiling testfile $src" 2
-       set lines [${tool}_target_compile $src $exe executable "$opts"]
-       file delete $src
-
-       if [string match "" $lines] then {
-           # No error message, compilation succeeded.
-	   remote_file build delete $exe
-           set et_static_libgfortran_saved 1
-       }
-    }
-
-    return $et_static_libgfortran_saved
+    return [check_no_compiler_messages static_libgfortran executable {
+	! Fortran
+	print *, 'test'
+	end
+    } "-static"]
 }
 
 # Return 1 if the target supports executing 750CL paired-single instructions, 0
 # otherwise.  Cache the result.
 
 proc check_750cl_hw_available { } {
-    global 750cl_hw_available_saved
-    global tool
-
-    if [info exists 750cl_hw_available_saved] {
-        verbose "check_hw_available  returning saved $750cl_hw_available_saved" 2
-    } else {
-        set 750cl_hw_available_saved 0
-
-        # If this is not the right target then we can quit.
-        if { ![istarget powerpc-*paired*] } {
-            verbose "check_hw_available  returning 0" 2
-            return $750cl_hw_available_saved
-        }
-
-        # Set up, compile, and execute a test program containing paired-single
-        # instructions.  Include the current process ID in the file
-        # names to prevent conflicts with invocations for multiple
-        # testsuites.
-        set src 750cl[pid].c
-        set exe 750cl[pid].x
-
-        set f [open $src "w"]
-        puts $f "int main() {"
-        puts $f "#ifdef __MACH__"
-        puts $f "  asm volatile (\"ps_mul v0,v0,v0\");"
-        puts $f "#else"
-        puts $f "  asm volatile (\"ps_mul 0,0,0\");"
-        puts $f "#endif"
-        puts $f "  return 0; }"
-        close $f
-
-        verbose "check_750cl_hw_available  compiling testfile $src" 2
-        set lines [${tool}_target_compile $src $exe executable "-mpaired"]
-        file delete $src
-
-        if [string match "" $lines] then {
-            # No error message, compilation succeeded.
-            set result [${tool}_load "./$exe" "" ""]
-            set status [lindex $result 0]
-            remote_file build delete $exe
-            verbose "check_750cl_hw_available testfile status is <$status>" 2
-
-            if { $status == "pass" } then {
-                set 750cl_hw_available_saved 1
-            }
-        } else {
-            verbose "check_750cl_hw_availalble testfile compilation failed" 2
-        }
-    }
-    return $750cl_hw_available_saved
+    return [check_cached_effective_target 750cl_hw_available {
+	# If this is not the right target then we can skip the test.
+	if { ![istarget powerpc-*paired*] } {
+	    expr 0
+	} else {
+	    check_runtime_nocache 750cl_hw_available {
+		 int main()
+		 {
+		 #ifdef __MACH__
+		   asm volatile ("ps_mul v0,v0,v0");
+		 #else
+		   asm volatile ("ps_mul 0,0,0");
+		 #endif
+		   return 0;
+		 }
+	    } "-mpaired"
+	}
+    }]
 }
-
 
 # Return 1 if the target supports executing AltiVec instructions, 0
 # otherwise.  Cache the result.
 
 proc check_vmx_hw_available { } {
-    global vmx_hw_available_saved
-    global tool
-
-    if [info exists vmx_hw_available_saved] {
-	verbose "check_hw_available  returning saved $vmx_hw_available_saved" 2
-    } else {
-	set vmx_hw_available_saved 0
-
+    return [check_cached_effective_target vmx_hw_available {
 	# Some simulators are known to not support VMX instructions.
 	if { [istarget powerpc-*-eabi] || [istarget powerpc*-*-eabispe] } {
-	    verbose "check_hw_available  returning 0" 2
-	    return $vmx_hw_available_saved
-	}
-
-	# Set up, compile, and execute a test program containing VMX
-	# instructions.  Include the current process ID in the file
-	# names to prevent conflicts with invocations for multiple
-	# testsuites.
-	set src vmx[pid].c
-	set exe vmx[pid].x
-
-	set f [open $src "w"]
-	puts $f "int main() {"
-	puts $f "#ifdef __MACH__"
-	puts $f "  asm volatile (\"vor v0,v0,v0\");"
-	puts $f "#else"
-	puts $f "  asm volatile (\"vor 0,0,0\");"
-	puts $f "#endif"
-	puts $f "  return 0; }"
-	close $f
-
-	# Most targets don't require special flags for this test case, but
-	# Darwin does.
-	if { [istarget *-*-darwin*] 
-	     || [istarget *-*-aix*] } {
-	  set opts "additional_flags=-maltivec"
+	    expr 0
 	} else {
-	  set opts ""
-	}
-
-	verbose "check_vmx_hw_available  compiling testfile $src" 2
-	set lines [${tool}_target_compile $src $exe executable "$opts"]
-	file delete $src
-
-	if [string match "" $lines] then {
-	    # No error message, compilation succeeded.
-	    set result [${tool}_load "./$exe" "" ""]
-	    set status [lindex $result 0]
-	    remote_file build delete $exe
-	    verbose "check_vmx_hw_available testfile status is <$status>" 2
-
-	    if { $status == "pass" } then {
-		set vmx_hw_available_saved 1
+	    # Most targets don't require special flags for this test case, but
+	    # Darwin does.
+	    if { [istarget *-*-darwin*]
+		 || [istarget *-*-aix*] } {
+		set options "-maltivec"
+	    } else {
+		set options ""
 	    }
-	} else {
-	    verbose "check_vmx_hw_availalble testfile compilation failed" 2
+	    check_runtime_nocache vmx_hw_available {
+		int main()
+		{
+		#ifdef __MACH__
+		  asm volatile ("vor v0,v0,v0");
+		#else
+		  asm volatile ("vor 0,0,0");
+	        #endif
+		  return 0;
+		}
+	    } $options
 	}
-    }
-
-    return $vmx_hw_available_saved
+    }]
 }
 
 # GCC 3.4.0 for powerpc64-*-linux* included an ABI fix for passing
@@ -1049,122 +769,37 @@ proc check_vmx_hw_available { } {
 # When the target name changes, replace the cached result.
 
 proc check_effective_target_broken_cplxf_arg { } {
-    global et_broken_cplxf_arg_saved
-    global et_broken_cplxf_arg_target_name
-    global tool
-
-    # Skip the work for targets known not to be affected.
-    if { ![istarget powerpc64-*-linux*] } {
-	return 0
-    } elseif { [is-effective-target ilp32] } {
-	return 0
-    }
-
-    if { ![info exists et_broken_cplxf_arg_target_name] } {
-	set et_broken_cplxf_arg_target_name ""
-    }
-
-    # If the target has changed since we set the cached value, clear it.
-    set current_target [current_target_name]
-    if { $current_target != $et_broken_cplxf_arg_target_name } {
-	verbose "check_effective_target_broken_cplxf_arg: `$et_broken_cplxf_arg_target_name'" 2
-	set et_broken_cplxf_arg_target_name $current_target
-	if [info exists et_broken_cplxf_arg_saved] {
-	    verbose "check_effective_target_broken_cplxf_arg: removing cached result" 2
-	    unset et_broken_cplxf_arg_saved
-	}
-    }
-
-    if [info exists et_broken_cplxf_arg_saved] {
-	verbose "check_effective_target_broken_cplxf_arg: using cached result" 2
-    } else {
-	set et_broken_cplxf_arg_saved 0
-	# This is only known to affect one target.
-	if { ![istarget powerpc64-*-linux*] || ![is-effective-target lp64] } {
-	    set et_broken_cplxf_arg_saved 0
-	    verbose "check_effective_target_broken_cplxf_arg: caching 0" 2
-	    return $et_broken_cplxf_arg_saved
-	}
-
-	# Set up, compile, and execute a C test program that calls cabsf.
-	set src cabsf[pid].c
-	set exe cabsf[pid].x
-
-	set f [open $src "w"]
-	puts $f "#include <complex.h>"
-	puts $f "extern void abort (void);"
-	puts $f "float fabsf (float);"
-	puts $f "float cabsf (_Complex float);"
-	puts $f "int main ()"
-	puts $f "{"
-	puts $f "  _Complex float cf;"
-	puts $f "  float f;"
-	puts $f "  cf = 3 + 4.0fi;"
-	puts $f "  f = cabsf (cf);"
-	puts $f "  if (fabsf (f - 5.0) > 0.0001) abort ();"
-	puts $f "  return 0;"
-	puts $f "}"
-	close $f
-
-	set lines [${tool}_target_compile $src $exe executable "-lm"]
-	file delete $src
-
-	if [string match "" $lines] {
-	    # No error message, compilation succeeded.
-	    set result [${tool}_load "./$exe" "" ""]
-	    set status [lindex $result 0]
-	    remote_file build delete $exe
-
-	    verbose "check_effective_target_broken_cplxf_arg: status is <$status>" 2
-
-	    if { $status != "pass" } {
-		set et_broken_cplxf_arg_saved 1
-	    }
+    return [check_cached_effective_target broken_cplxf_arg {
+	# Skip the work for targets known not to be affected.
+	if { ![istarget powerpc64-*-linux*] } {
+	    expr 0
+	} elseif { ![is-effective-target lp64] } {
+	    expr 0
 	} else {
-	    verbose "check_effective_target_broken_cplxf_arg: compilation failed" 2
+	    check_runtime_nocache broken_cplxf_arg {
+		#include <complex.h>
+		extern void abort (void);
+		float fabsf (float);
+		float cabsf (_Complex float);
+		int main ()
+		{
+		  _Complex float cf;
+		  float f;
+		  cf = 3 + 4.0fi;
+		  f = cabsf (cf);
+		  if (fabsf (f - 5.0) > 0.0001)
+		    abort ();
+		  return 0;
+		}
+	    } "-lm"
 	}
-    }
-    return $et_broken_cplxf_arg_saved
+    }]
 }
 
 proc check_alpha_max_hw_available { } {
-    global alpha_max_hw_available_saved
-    global tool
-
-    if [info exists alpha_max_hw_available_saved] {
-	verbose "check_alpha_max_hw_available returning saved $alpha_max_hw_available_saved" 2
-    } else {
-	set alpha_max_hw_available_saved 0
-
-	# Set up, compile, and execute a test program probing bit 8 of the
-	# architecture mask, which indicates presence of MAX instructions.
-	set src max[pid].c
-	set exe max[pid].x
-
-	set f [open $src "w"]
-	puts $f "int main() { return __builtin_alpha_amask(1<<8) != 0; }"
-	close $f
-
-	verbose "check_alpha_max_hw_available compiling testfile $src" 2
-	set lines [${tool}_target_compile $src $exe executable ""]
-	file delete $src
-
-	if [string match "" $lines] then {
-	    # No error message, compilation succeeded.
-	    set result [${tool}_load "./$exe" "" ""]
-	    set status [lindex $result 0]
-	    remote_file build delete $exe
-	    verbose "check_alpha_max_hw_available testfile status is <$status>" 2
-
-	    if { $status == "pass" } then {
-		set alpha_max_hw_available_saved 1
-	    }
-	} else {
-	    verbose "check_alpha_max_hw_availalble testfile compilation failed" 2
-	}
-    }
-
-    return $alpha_max_hw_available_saved
+    return [check_runtime alpha_max_hw_available {
+	int main() { return __builtin_alpha_amask(1<<8) != 0; }
+    }]
 }
 
 # Returns true iff the FUNCTION is available on the target system.
@@ -1172,36 +807,14 @@ proc check_alpha_max_hw_available { } {
 # AC_CHECK_FUNC.)
 
 proc check_function_available { function } {
-    set var "${function}_available_saved"
-    global $var
-    global tool
-
-    if {![info exists $var]} {
-	# Assume it exists.
-	set $var 1
-	# Check to make sure.
-	set src "function[pid].c"
-	set exe "function[pid].exe"
-
-	set f [open $src "w"]
-	puts $f "#ifdef __cplusplus\nextern \"C\"\n#endif\n"
-	puts $f "char $function ();\n"
-	puts $f "int main () { $function (); }"
-	close $f
-
-	set lines [${tool}_target_compile $src $exe executable ""]
-	file delete $src
-	file delete $exe
-
-	if {![string match "" $lines]} then {
-	    set $var 0
-	    verbose -log "$function is not available"
-	} else {
-	    verbose -log "$function is available"
-	}
-    }
-
-    eval return \$$var
+    return [check_no_compiler_messages ${function}_available \
+		executable [subst {
+	#ifdef __cplusplus
+	extern "C"
+	#endif
+	char $function ();
+	int main () { $function (); }
+    }]]
 }
 
 # Returns true iff "fork" is available on the target system.
@@ -1224,90 +837,44 @@ proc check_mkfifo_available {} {
 # Returns true iff "__cxa_atexit" is used on the target system.
 
 proc check_cxa_atexit_available { } {
-    global et_cxa_atexit
-    global et_cxa_atexit_target_name
-    global tool	
-
-    if { ![info exists et_cxa_atexit_target_name] } {
-	set et_cxa_atexit_target_name ""
-    }
-
-    # If the target has changed since we set the cached value, clear it.
-    set current_target [current_target_name]
-    if { $current_target != $et_cxa_atexit_target_name } {
-	verbose "check_cxa_atexit_available: `$et_cxa_atexit_target_name'" 2
-	set et_cxa_atexit_target_name $current_target
-	if [info exists et_cxa_atexit] {
-	    verbose "check_cxa_atexit_available: removing cached result" 2
-	    unset et_cxa_atexit
-	}
-    }
-
-    if [info exists et_cxa_atexit] {
-	verbose "check_cxa_atexit_available: using cached result" 2
-    } elseif { [istarget "hppa*-*-hpux10*"] } {
-	# HP-UX 10 doesn't have __cxa_atexit but subsequent test passes.
-	set et_cxa_atexit 0
-    } else {
-	set et_cxa_atexit 0
-
-	# Set up, compile, and execute a C++ test program that depends
-	# on correct ordering of static object destructors. This is
-	# indicative of the presence and use of __cxa_atexit.
-	set src cxaatexit[pid].cc
-	set exe cxaatexit[pid].x
-
-	set f [open $src "w"]
-	puts $f "#include <stdlib.h>"
-	puts $f "static unsigned int count;"
-	puts $f "struct X"
-	puts $f "{"
-	puts $f "  X() { count = 1; }"
-	puts $f "  ~X()"
-	puts $f "  {"
-	puts $f "    if (count != 3)"
-	puts $f "      exit(1);"
-	puts $f "    count = 4;"
-        puts $f "  }"
-        puts $f "};"
-	puts $f "void f()"
-	puts $f "{"
-	puts $f "  static X x;"
-        puts $f "}"
-	puts $f "struct Y"
-	puts $f "{"
-	puts $f "  Y() { f(); count = 2; }"
-	puts $f "  ~Y()"
-	puts $f "  {"
-	puts $f "    if (count != 2)"
-	puts $f "      exit(1);"
-	puts $f "    count = 3;"
-        puts $f "  }"
-        puts $f "};"
-	puts $f "Y y;"
-	puts $f "int main()"
-	puts $f "{ return 0; }"
-	close $f
-
-	set lines [${tool}_target_compile $src $exe executable ""]
-	file delete $src
-
-	if [string match "" $lines] {
-	    # No error message, compilation succeeded.
-	    set result [${tool}_load "./$exe" "" ""]
-	    set status [lindex $result 0]
-	    remote_file build delete $exe
-
-	    verbose "check_cxa_atexit_available: status is <$status>" 2
-
-	    if { $status == "pass" } {
-		set et_cxa_atexit 1
-	    }
+    return [check_cached_effective_target cxa_atexit_available {
+	if { [istarget "hppa*-*-hpux10*"] } {
+	    # HP-UX 10 doesn't have __cxa_atexit but subsequent test passes.
+	    expr 0
 	} else {
-	    verbose "check_cxa_atexit_available: compilation failed" 2
+	    check_runtime_nocache cxa_atexit_available {
+		// C++
+		#include <stdlib.h>
+		static unsigned int count;
+		struct X
+		{
+		  X() { count = 1; }
+		  ~X()
+		  {
+		    if (count != 3)
+		      exit(1);
+		    count = 4;
+		  }
+		};
+		void f()
+		{
+		  static X x;
+		}
+		struct Y
+		{
+		  Y() { f(); count = 2; }
+		  ~Y()
+		  {
+		    if (count != 2)
+		      exit(1);
+		    count = 3;
+		  }
+		};
+		Y y;
+		int main() { return 0; }
+	    }
 	}
-    }
-    return $et_cxa_atexit
+    }]
 }
 
 
@@ -1392,45 +959,18 @@ proc check_effective_target_fixed_point { } {
 
 proc check_effective_target_dfp_nocache { } {
     verbose "check_effective_target_dfp_nocache: compiling source" 2
-    set ret [string match "" [get_compiler_messages dfp 0 object {
+    set ret [check_no_compiler_messages_nocache dfp object {
         _Decimal32 x; _Decimal64 y; _Decimal128 z;
-    }]]
+    }]
     verbose "check_effective_target_dfp_nocache: returning $ret" 2
     return $ret
 }
 
 proc check_effective_target_dfprt_nocache { } {
-    global tool
-
-    set ret 0
-
-    verbose "check_effective_target_dfprt_nocache: compiling source" 2
-    # Set up, compile, and execute a test program containing decimal
-    # float operations.
-    set src dfprt[pid].c
-    set exe dfprt[pid].x
-
-    set f [open $src "w"]
-    puts $f "_Decimal32 x = 1.2df; _Decimal64 y = 2.3dd; _Decimal128 z;"
-    puts $f "int main () { z = x + y; return 0; }"
-    close $f
-
-    verbose "check_effective_target_dfprt_nocache: compiling testfile $src" 2
-    set lines [${tool}_target_compile $src $exe executable ""]
-    file delete $src
-
-    if [string match "" $lines] then {
-	# No error message, compilation succeeded.
-	set result [${tool}_load "./$exe" "" ""]
-	set status [lindex $result 0]
-	remote_file build delete $exe
-	verbose "check_effective_target_dfprt_nocache: testfile status is <$status>" 2
-	if { $status == "pass" } then {
-	    set ret 1
-	}
-    }
-    return $ret
-    verbose "check_effective_target_dfprt_nocache: returning $ret" 2
+    return [check_runtime_nocache dfprt {
+	_Decimal32 x = 1.2df; _Decimal64 y = 2.3dd; _Decimal128 z;
+	int main () { z = x + y; return 0; }
+    }]
 }
 
 # Return 1 if the target supports compiling Decimal Floating Point,
@@ -1439,15 +979,9 @@ proc check_effective_target_dfprt_nocache { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_dfp { } {
-    global et_dfp_saved
-
-    if [info exists et_dfp_saved] {
-	verbose "check_effective_target_dfp: using cached result" 2
-    } else {
-	set et_dfp_saved [check_effective_target_dfp_nocache]
-    }
-    verbose "check_effective_target_dfp: returning $et_dfp_saved" 2
-    return $et_dfp_saved
+    return [check_cached_effective_target dfp {
+	check_effective_target_dfp_nocache
+    }]
 }
 
 # Return 1 if the target supports linking and executing Decimal Floating
@@ -1456,16 +990,9 @@ proc check_effective_target_dfp { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_dfprt { } {
-    global et_dfprt_saved
-    global tool
-
-    if [info exists et_dfprt_saved] {
-	verbose "check_effective_target_dfprt: using cached result" 2
-    } else {
-	set et_dfprt_saved [check_effective_target_dfprt_nocache]
-    }
-    verbose "check_effective_target_dfprt: returning $et_dfprt_saved" 2
-    return $et_dfprt_saved
+    return [check_cached_effective_target dfprt {
+	check_effective_target_dfprt_nocache
+    }]
 }
 
 # Return 1 if the target needs a command line argument to enable a SIMD
@@ -1619,54 +1146,17 @@ proc check_effective_target_arm_neon_ok { } {
 # otherwise.  Cache the result.
 
 proc check_effective_target_arm_neon_hw { } {
-    global arm_neon_hw_available_saved
-    global tool
-
-    if [info exists arm_neon_hw_available_saved] {
-        verbose "check_arm_neon_hw_available  returning saved $arm_neon_hw_avail
-able_saved" 2
-    } else {
-        set arm_neon_hw_available_saved 0
-
-        # Set up, compile, and execute a test program containing NEON
-        # instructions.  Include the current process ID in the file
-        # names to prevent conflicts with invocations for multiple
-        # testsuites.
-        set src neon[pid].c
-        set exe neon[pid].x
-
-        set f [open $src "w"]
-        puts $f "int main() {"
-        puts $f "  long long a = 0, b = 1;"
-        puts $f "  asm (\"vorr %P0, %P1, %P2\""
-        puts $f "       : \"=w\" (a)"
-        puts $f "       : \"0\" (a), \"w\" (b));"
-        puts $f "  return (a != 1);"
-        puts $f "}"
-        close $f
-
-        set opts "additional_flags=-mfpu=neon additional_flags=-mfloat-abi=softfp"
-
-        verbose "check_arm_neon_hw_available  compiling testfile $src" 2
-        set lines [${tool}_target_compile $src $exe executable "$opts"]
-        file delete $src
-
-        if [string match "" $lines] then {
-            # No error message, compilation succeeded.
-            set result [${tool}_load "./$exe" "" ""]
-            set status [lindex $result 0]
-            remote_file build delete $exe
-            verbose "check_arm_neon_hw_available testfile status is <$status>" 2
-
-            if { $status == "pass" } then {
-                set arm_neon_hw_available_saved 1
-            }
-        } else {
-            verbose "check_arm_neon_hw_available testfile compilation failed" 2
-        }
-    }
-
-    return $arm_neon_hw_available_saved
+    return [check_runtime arm_neon_hw_available {
+	int
+	main (void)
+	{
+	  long long a = 0, b = 1;
+	  asm ("vorr %P0, %P1, %P2"
+	       : "=w" (a)
+	       : "0" (a), "w" (b));
+	  return (a != 1);
+	}
+    } "-mfpu=neon -mfloat-abi=softfp"]
 }
 
 # Return 1 if this is a PowerPC target with floating-point registers.
@@ -1743,44 +1233,9 @@ proc check_effective_target_powerpc_altivec { } {
 # test environment appears to run executables on such a simulator.
 
 proc check_effective_target_ultrasparc_hw { } {
-    global et_ultrasparc_hw_saved
-    global tool
-
-    if [info exists et_ultrasparc_hw_saved] {
-	verbose "check_ultrasparc_hw_available returning saved $et_ultrasparc_hw_saved" 2
-    } else {
-	set et_ultrasparc_hw_saved 0
-
-	# Set up, compile, and execute a simple test program.  The
-	# program will be compiled with -mcpu=ultrasparc to instruct the
-	# assembler to produce EM_SPARC32PLUS executables.
-	set src svect[pid].c
-	set exe svect[pid].x
-
-	set f [open $src "w"]
-	puts $f "int main() { return 0; }"
-	close $f
-
-	verbose "check_ultrasparc_hw_available compiling testfile $src" 2
-	set lines [${tool}_target_compile $src $exe executable "additional_flags=-mcpu=ultrasparc"]
-	file delete $src
-
-	if [string match "" $lines] then {
-	    # No error message, compilation succeeded.
-	    set result [${tool}_load "./$exe" "" ""]
-	    set status [lindex $result 0]
-	    remote_file build delete $exe
-	    verbose "check_ultrasparc_hw_available testfile status is <$status>" 2
-
-	    if { $status == "pass" } then {
-		set et_ultrasparc_hw_saved 1
-	    }
-	} else {
-	    verbose "check_ultrasparc_hw_available testfile compilation failed" 2
-	}
-    }
-
-    return $et_ultrasparc_hw_saved
+    return [check_runtime ultrasparc_hw {
+	int main() { return 0; }
+    } "-mcpu=ultrasparc"]
 }
 
 # Return 1 if the target supports hardware vector shift operation.
@@ -2747,7 +2202,7 @@ proc check_effective_target_c99_runtime { } {
 	    #error FOO
 	    #endif
 	}
-	string match "" [get_compiler_messages c99_runtime 0 assembly \
-			     $contents [add_options_for_c99_runtime ""]]
+	check_no_compiler_messages_nocache c99_runtime assembly \
+	    $contents [add_options_for_c99_runtime ""]
     }]
 }

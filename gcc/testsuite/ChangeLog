@@ -1,3 +1,42 @@
+2007-12-04  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* lib/target-supports.exp (get_compiler_messages): Replace with...
+	(check_compile): ...this new procedure.  Handle TYPE == executable.
+	Use comments in the source to determine the correct extension.
+	Return a pair containing the compiler output and the output filename.
+	Don't delete the file here.
+	(check_no_compiler_messages_nocache): New procedure.
+	(check_no_compiler_messages): Use it.
+	(check_no_messages_and_pattern_nocache): New procedure.
+	(check_no_messages_and_pattern): Use it.
+	(check_runtime_nocache, check_runtime): New procedures.
+	(check_effective_target_tls): Use check_no_compiler_messages.
+	(check_effective_target_tls_native): Use check_no_messages_and_pattern.
+	(check_effective_target_tls_runtime): Use check_runtime.
+	(check_effective_target_fstack_protector): Likewise.
+	(check_iconv_available): Use check_runtime_nocache.
+	(check_effective_target_fortran_large_real): Use
+	check_no_compiler_messages.
+	(check_effective_target_fortran_large_int): Likewise.
+	(check_effective_target_static_libgfortran): Likewise.
+	(check_750cl_hw_available): Use check_cached_effective_target
+	and check_runtime_nocache.
+	(check_vmx_hw_available): Likewise.
+	(check_effective_target_broken_cplxf_arg): Likewise.
+	(check_alpha_max_hw_available): Use check_runtime.
+	(check_function_available): Use check_no_compiler_messages.
+	(check_cxa_atexit_available): Use check_cached_effective_target
+	and check_runtime_nocache.
+	(check_effective_target_dfp_nocache): Use
+	check_no_compiler_messages_nocache.
+	(check_effective_target_dfprt_nocache): Use check_runtime_nocache.
+	(check_effective_target_dfp): Use check_cached_effective_target.
+	(check_effective_target_dfprt): Likewise.
+	(check_effective_target_arm_neon_hw): Use check_runtime.
+	(check_effective_target_ultrasparc_hw): Likewise.
+	(check_effective_target_c99_runtime): Use
+	check_no_compiler_messages_nocache.
+
 2007-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/29749
