@@ -2426,6 +2426,61 @@ remove_exit_barriers (struct omp_region *region)
     }
 }
 
+/* Optimize omp_get_thread_num () and omp_get_num_threads ()
+   calls.  These can't be declared as const functions, but
+   within one parallel body they are constant, so they can be
+   transformed there into __builtin_omp_get_{thread_num,num_threads} ()
+   which are declared const.  */
+
+static void
+optimize_omp_library_calls (void)
+{
+  basic_block bb;
+  block_stmt_iterator bsi;
+  tree thr_num_id
+    = DECL_ASSEMBLER_NAME (built_in_decls [BUILT_IN_OMP_GET_THREAD_NUM]);
+  tree num_thr_id
+    = DECL_ASSEMBLER_NAME (built_in_decls [BUILT_IN_OMP_GET_NUM_THREADS]);
+
+  FOR_EACH_BB (bb)
+    for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+      {
+	tree stmt = bsi_stmt (bsi);
+	tree call = get_call_expr_in (stmt);
+	tree decl;
+
+	if (call
+	    && (decl = get_callee_fndecl (call))
+	    && DECL_EXTERNAL (decl)
+	    && TREE_PUBLIC (decl)
+	    && DECL_INITIAL (decl) == NULL)
+	  {
+	    tree built_in;
+
+	    if (DECL_NAME (decl) == thr_num_id)
+	      built_in = built_in_decls [BUILT_IN_OMP_GET_THREAD_NUM];
+	    else if (DECL_NAME (decl) == num_thr_id)
+	      built_in = built_in_decls [BUILT_IN_OMP_GET_NUM_THREADS];
+	    else
+	      continue;
+
+	    if (DECL_ASSEMBLER_NAME (decl) != DECL_ASSEMBLER_NAME (built_in)
+		|| call_expr_nargs (call) != 0)
+	      continue;
+
+	    if (flag_exceptions && !TREE_NOTHROW (decl))
+	      continue;
+
+	    if (TREE_CODE (TREE_TYPE (decl)) != FUNCTION_TYPE
+		|| TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (decl)))
+		   != TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (built_in))))
+	      continue;
+
+	    CALL_EXPR_FN (call) = build_fold_addr_expr (built_in);
+	  }
+      }
+}
+
 /* Expand the OpenMP parallel directive starting at REGION.  */
 
 static void
@@ -2588,6 +2643,8 @@ expand_omp_parallel (struct omp_region *region)
       /* Fix the callgraph edges for child_cfun.  Those for cfun will be
 	 fixed in a following pass.  */
       push_cfun (child_cfun);
+      if (optimize)
+	optimize_omp_library_calls ();
       rebuild_cgraph_edges ();
       pop_cfun ();
     }

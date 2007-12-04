@@ -1,4 +1,4 @@
-/* Copyright (C) 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2007 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -49,36 +49,39 @@ typedef struct
 
 #ifdef __cplusplus
 extern "C" {
+# define __GOMP_NOTHROW throw ()
+#else
+# define __GOMP_NOTHROW __attribute__((__nothrow__))
 #endif
 
-extern void omp_set_num_threads (int);
-extern int omp_get_num_threads (void);
-extern int omp_get_max_threads (void);
-extern int omp_get_thread_num (void);
-extern int omp_get_num_procs (void);
+extern void omp_set_num_threads (int) __GOMP_NOTHROW;
+extern int omp_get_num_threads (void) __GOMP_NOTHROW;
+extern int omp_get_max_threads (void) __GOMP_NOTHROW;
+extern int omp_get_thread_num (void) __GOMP_NOTHROW;
+extern int omp_get_num_procs (void) __GOMP_NOTHROW;
 
-extern int omp_in_parallel (void);
+extern int omp_in_parallel (void) __GOMP_NOTHROW;
 
-extern void omp_set_dynamic (int);
-extern int omp_get_dynamic (void);
+extern void omp_set_dynamic (int) __GOMP_NOTHROW;
+extern int omp_get_dynamic (void) __GOMP_NOTHROW;
 
-extern void omp_set_nested (int);
-extern int omp_get_nested (void);
+extern void omp_set_nested (int) __GOMP_NOTHROW;
+extern int omp_get_nested (void) __GOMP_NOTHROW;
 
-extern void omp_init_lock (omp_lock_t *);
-extern void omp_destroy_lock (omp_lock_t *);
-extern void omp_set_lock (omp_lock_t *);
-extern void omp_unset_lock (omp_lock_t *);
-extern int omp_test_lock (omp_lock_t *);
+extern void omp_init_lock (omp_lock_t *) __GOMP_NOTHROW;
+extern void omp_destroy_lock (omp_lock_t *) __GOMP_NOTHROW;
+extern void omp_set_lock (omp_lock_t *) __GOMP_NOTHROW;
+extern void omp_unset_lock (omp_lock_t *) __GOMP_NOTHROW;
+extern int omp_test_lock (omp_lock_t *) __GOMP_NOTHROW;
 
-extern void omp_init_nest_lock (omp_nest_lock_t *);
-extern void omp_destroy_nest_lock (omp_nest_lock_t *);
-extern void omp_set_nest_lock (omp_nest_lock_t *);
-extern void omp_unset_nest_lock (omp_nest_lock_t *);
-extern int omp_test_nest_lock (omp_nest_lock_t *);
+extern void omp_init_nest_lock (omp_nest_lock_t *) __GOMP_NOTHROW;
+extern void omp_destroy_nest_lock (omp_nest_lock_t *) __GOMP_NOTHROW;
+extern void omp_set_nest_lock (omp_nest_lock_t *) __GOMP_NOTHROW;
+extern void omp_unset_nest_lock (omp_nest_lock_t *) __GOMP_NOTHROW;
+extern int omp_test_nest_lock (omp_nest_lock_t *) __GOMP_NOTHROW;
 
-extern double omp_get_wtime (void);
-extern double omp_get_wtick (void);
+extern double omp_get_wtime (void) __GOMP_NOTHROW;
+extern double omp_get_wtick (void) __GOMP_NOTHROW;
 
 #ifdef __cplusplus
 }
