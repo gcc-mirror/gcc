@@ -1,3 +1,13 @@
+2007-12-04  Douglas Gregor  <doug.gregor@gmail.com>
+
+       PR c++/33091
+       * pt.c (unify_pack_expansion): If we didn't deduce any actual
+       bindings for the template parameter pack, don't try to keep the
+       empty deduced arguments.
+       (unify): If a parameter is a template-id whose template argument
+       list contains a pack expansion that is not at the end, then we
+       cannot unify against that template-id.
+
 2007-12-02  Paolo Carlini  <pcarlini@suse.de>
 
         PR c++/34061

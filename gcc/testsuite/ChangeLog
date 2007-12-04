@@ -1,3 +1,8 @@
+2007-12-04  Douglas Gregor  <doug.gregor@gmail.com>
+
+       PR c++/33091
+       * g++.dg/cpp0x/variadic-unify.C: New.
+
 2007-12-04  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/34334

@@ -12464,6 +12464,16 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
     {
       tree old_pack = TREE_VALUE (pack);
       tree new_args = TREE_TYPE (pack);
+      int i, len = TREE_VEC_LENGTH (new_args);
+      bool nondeduced_p = false;
+
+      /* If NEW_ARGS contains any NULL_TREE entries, we didn't
+	 actually deduce anything.  */
+      for (i = 0; i < len && !nondeduced_p; ++i)
+	if (TREE_VEC_ELT (new_args, i) == NULL_TREE)
+	  nondeduced_p = true;
+      if (nondeduced_p)
+	continue;
 
       if (old_pack && ARGUMENT_PACK_INCOMPLETE_P (old_pack))
         {
@@ -13156,10 +13166,22 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
         int argslen = TREE_VEC_LENGTH (packed_args);
         int parm_variadic_p = 0;
 
-        /* Check if the parameters end in a pack, making them variadic.  */
-        if (len > 0 
-	    && PACK_EXPANSION_P (TREE_VEC_ELT (packed_parms, len - 1)))
-          parm_variadic_p = 1;
+	for (i = 0; i < len; ++i)
+	  {
+	    if (PACK_EXPANSION_P (TREE_VEC_ELT (packed_parms, i)))
+	      {
+		if (i == len - 1)
+		  /* We can unify against something with a trailing
+		     parameter pack.  */
+		  parm_variadic_p = 1;
+		else
+		  /* Since there is something following the pack
+		     expansion, we cannot unify this template argument
+		     list.  */
+		  return 0;
+	      }
+	  }
+	  
 
         /* If we don't have enough arguments to satisfy the parameters
            (not counting the pack expression at the end), or we have
