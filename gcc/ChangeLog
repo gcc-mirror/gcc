@@ -1,3 +1,7 @@
+2007-12-04  Ben Elliston  <bje@au.ibm.com>
+
+	* doc/tm.texi (Exception Handling): Mention unwind-dw2-xtensa.c.
+
 2007-12-03  Steven Bosscher  <stevenb.gcc@gmail.com>
 
 	PR33713
