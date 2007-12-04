@@ -1,3 +1,8 @@
+2007-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/20071202-1.c: New test.
+	* gcc.dg/tree-ssa/pr34146-2.c: New test.
+
 2007-12-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34318
