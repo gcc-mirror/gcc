@@ -1,3 +1,8 @@
+2007-12-04  Douglas Gregor  <doug.gregor@gmail.com>
+
+       PR c++/34101
+       * g++.dg/cpp0x/variadic-ttp.C: New.
+
 2007-12-04  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 	
 	* gcc.dg/parse-decl-after-if.c: New.

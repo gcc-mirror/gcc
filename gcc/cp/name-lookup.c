@@ -4477,6 +4477,17 @@ arg_assoc_template_arg (struct arg_lookup *k, tree arg)
       else
 	return arg_assoc_class (k, ctx);
     }
+  /* It's an argument pack; handle it recursively.  */
+  else if (ARGUMENT_PACK_P (arg))
+    {
+      tree args = ARGUMENT_PACK_ARGS (arg);
+      int i, len = TREE_VEC_LENGTH (args);
+      for (i = 0; i < len; ++i) 
+	if (arg_assoc_template_arg (k, TREE_VEC_ELT (args, i)))
+	  return true;
+
+      return false;
+    }
   /* It's not a template template argument, but it is a type template
      argument.  */
   else if (TYPE_P (arg))
@@ -4612,15 +4623,6 @@ arg_assoc_type (struct arg_lookup *k, tree type)
       return false;
     case TYPE_PACK_EXPANSION:
       return arg_assoc_type (k, PACK_EXPANSION_PATTERN (type));
-    case TYPE_ARGUMENT_PACK:
-      {
-        tree args = ARGUMENT_PACK_ARGS (type);
-        int i, len = TREE_VEC_LENGTH (args);
-        for (i = 0; i < len; i++)
-          if (arg_assoc_type (k, TREE_VEC_ELT (args, i)))
-            return true;
-      }
-      break;
 
     default:
       gcc_unreachable ();

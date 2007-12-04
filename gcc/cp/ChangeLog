@@ -1,5 +1,13 @@
 2007-12-04  Douglas Gregor  <doug.gregor@gmail.com>
 
+       PR c++/34101
+       * name-lookup.c (arg_assoc_template_arg): Recurse on argument
+       packs.
+       (arg_assoc_type): We don't need to handle TYPE_ARGUMENT_PACK here,
+       since arg_assoc_template_arg will deal with them (better).
+
+2007-12-04  Douglas Gregor  <doug.gregor@gmail.com>
+
        PR c++/33509
        * pt.c (tsubst_exception_specification): Handle substitutions into
        member templates, where tsubst_pack_expansion returns a
