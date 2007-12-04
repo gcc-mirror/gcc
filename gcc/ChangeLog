@@ -1,5 +1,8 @@
 2007-12-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* omp-low.c (optimize_omp_library_calls): New function.
+	(expand_omp_parallel): Call it if optimizing.
+
 	PR middle-end/34134
 	* stmt.c (expand_stack_restore): Call expand_normal on var to get
 	rtx for it instead of assuming it will be a VAR_DECL.
