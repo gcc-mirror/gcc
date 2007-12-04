@@ -1,3 +1,8 @@
+2007-12-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34318
+	* gfortran.dg/module_nan.f90: New.
+
 2007-12-04  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* lib/target-supports.exp (get_compiler_messages): Replace with...

@@ -1,3 +1,8 @@
+2007-12-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34318
+	* module.c (mio_gmp_real): Properly write NaN and Infinity.
+
 2007-12-02  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34186
