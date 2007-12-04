@@ -1995,7 +1995,7 @@ expand_stack_save (void)
 void
 expand_stack_restore (tree var)
 {
-  rtx sa = DECL_RTL (var);
+  rtx sa = expand_normal (var);
 
   emit_stack_restore (SAVE_BLOCK, sa, NULL_RTX);
 }
