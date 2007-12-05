@@ -1,7 +1,7 @@
 2007-12-05  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Sandiford  <rsandifo@nildram.co.uk>
 
-	* optabs.c (clear_insn_codes): New function.
+	* optabs.c (init_insn_codes): New function.
 	(new_optab): Delete.
 	(init_optab, init_optabv): Don't call new_optab.
 	(init_convert_optab): Don't clear the insn codes.
