@@ -59,7 +59,7 @@ __extension__ struct optab optab_table[OTI_MAX]
   = { [0 ... OTI_MAX - 1].handlers[0 ... NUM_MACHINE_MODES - 1].insn_code
       = CODE_FOR_nothing };
 #else
-/* new_optab will do runtime initialization otherwise.  */
+/* init_insn_codes will do runtime initialization otherwise.  */
 struct optab optab_table[OTI_MAX];
 #endif
 
@@ -5564,31 +5564,38 @@ have_insn_for (enum rtx_code code, enum machine_mode mode)
 	      != CODE_FOR_nothing));
 }
 
-/* Create a blank optab.  */
-#if GCC_VERSION >= 4000
-static inline void
-new_optab (optab op ATTRIBUTE_UNUSED)
-{
-  /* All insn_code fields are already initialized using
-     designated initializers.  */
-}
-#else
+/* Set all insn_code fields to CODE_FOR_nothing.  */
+
 static void
-new_optab (optab op)
+init_insn_codes (void)
 {
-  int i;
+  unsigned int i;
 
-  for (i = 0; i < NUM_MACHINE_MODES; i++)
-    optab_handler (op, i)->insn_code = CODE_FOR_nothing;
+  for (i = 0; i < (unsigned int) OTI_MAX; i++)
+    {
+      unsigned int j;
+      optab op;
+
+      op = &optab_table[i];
+      for (j = 0; j < NUM_MACHINE_MODES; j++)
+	optab_handler (op, j)->insn_code = CODE_FOR_nothing;
+    }
+  for (i = 0; i < (unsigned int) COI_MAX; i++)
+    {
+      unsigned int j, k;
+      convert_optab op;
+
+      op = &convert_optab_table[i];
+      for (j = 0; j < NUM_MACHINE_MODES; j++)
+	for (k = 0; k < NUM_MACHINE_MODES; k++)
+	  convert_optab_handler (op, j, k)->insn_code = CODE_FOR_nothing;
+    }
 }
-#endif
 
-/* Same, but fill in its code as CODE, and write it into the
-   code_to_optab table.  */
+/* Initialize OP's code to CODE, and write it into the code_to_optab table.  */
 static inline void
 init_optab (optab op, enum rtx_code code)
 {
-  new_optab (op);
   op->code = code;
   code_to_optab[(int) code] = op;
 }
@@ -5598,7 +5605,6 @@ init_optab (optab op, enum rtx_code code)
 static inline void
 init_optabv (optab op, enum rtx_code code)
 {
-  new_optab (op);
   op->code = code;
 }
 
@@ -5606,13 +5612,6 @@ init_optabv (optab op, enum rtx_code code)
 static void
 init_convert_optab (convert_optab op, enum rtx_code code)
 {
-#if !(GCC_VERSION >= 4000)
-  int i, j;
-
-  for (i = 0; i < NUM_MACHINE_MODES; i++)
-    for (j = 0; j < NUM_MACHINE_MODES; j++)
-      convert_optab_handler (op, i, j)->insn_code = CODE_FOR_nothing;
-#endif
   op->code = code;
 }
 
@@ -6241,6 +6240,7 @@ init_optabs (void)
 {
   unsigned int i;
   enum machine_mode int_mode;
+  static bool reinit;
 
   libfunc_hash = htab_create_ggc (10, hash_libfunc, eq_libfunc, NULL);
   /* Start by initializing all tables to contain CODE_FOR_nothing.  */
@@ -6258,6 +6258,14 @@ init_optabs (void)
       vcond_gen_code[i] = CODE_FOR_nothing;
       vcondu_gen_code[i] = CODE_FOR_nothing;
     }
+
+#if GCC_VERSION >= 4000
+  /* We statically initialize the insn_codes with CODE_FOR_nothing.  */
+  if (reinit)
+    init_insn_codes ();
+#else
+  init_insn_codes ();
+#endif
 
   init_optab (add_optab, PLUS);
   init_optabv (addv_optab, PLUS);
@@ -6736,6 +6744,8 @@ init_optabs (void)
 
   /* Allow the target to add more libcalls or rename some, etc.  */
   targetm.init_libfuncs ();
+
+  reinit = true;
 }
 
 /* Print information about the current contents of the optabs on
