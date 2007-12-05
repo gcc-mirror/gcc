@@ -1,3 +1,12 @@
+2007-12-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* trans.c (lvalue_required_p): Take base node directly instead
+	of its parent.  Rename second parameter to 'gnu_type'.
+	<N_Indexed_Component>: Return 0 if the node isn't the prefix.
+	<N_Slice>: Likewise.
+	(Identifier_to_gnu): Rename parent_requires_lvalue to require_lvalue.
+	Adjust calls to lvalue_required_p.
+
 2007-12-05  Samuel Tardieu  <sam@rfc1149.net>
 
 	PR ada/21489
