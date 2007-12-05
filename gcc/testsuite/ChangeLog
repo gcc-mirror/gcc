@@ -1,3 +1,9 @@
+2007-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34271
+	* g++.dg/cpp0x/decltype9.C: New test.
+	* g++.dg/cpp0x/decltype10.C: New test.
+
 2007-12-05  Samuel Tardieu  <sam@rfc1149.net>
 
 	PR ada/21489

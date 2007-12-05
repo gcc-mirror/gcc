@@ -1,3 +1,11 @@
+2007-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34271
+	* semantics.c (finish_decltype_type): For SCOPE_REF issue an
+	error instead of assertion failure.
+	* parser.c (cp_parser_decltype): If closing paren is not found,
+	return error_mark_node.
+
 2007-12-04  Douglas Gregor  <doug.gregor@gmail.com>
 
        PR c++/34101
