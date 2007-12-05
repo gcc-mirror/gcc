@@ -405,7 +405,9 @@ namespace __detail
     std::pair<bool, std::size_t>
     _M_need_rehash(std::size_t __n_bkt, std::size_t __n_elt,
 		   std::size_t __n_ins) const;
-    
+
+    enum { _S_n_primes = sizeof(unsigned long) != 8 ? 256 : 256 + 48 };
+
     float                _M_max_load_factor;
     float                _M_growth_factor;
     mutable std::size_t  _M_next_resize;
@@ -421,9 +423,8 @@ namespace __detail
   _Prime_rehash_policy::
   _M_next_bkt(std::size_t __n) const
   {
-    const int __n_primes = sizeof(unsigned long) != 8 ? 256 : 256 + 48; 
     const unsigned long* __p = std::lower_bound(__prime_list, __prime_list
-						+ __n_primes, __n);
+						+ _S_n_primes, __n);
     _M_next_resize = static_cast<std::size_t>(std::ceil(*__p
 							* _M_max_load_factor));
     return *__p;
@@ -435,10 +436,9 @@ namespace __detail
   _Prime_rehash_policy::
   _M_bkt_for_elements(std::size_t __n) const
   {
-    const int __n_primes = sizeof(unsigned long) != 8 ? 256 : 256 + 48; 
     const float __min_bkts = __n / _M_max_load_factor;
     const unsigned long* __p = std::lower_bound(__prime_list, __prime_list
-						+ __n_primes, __min_bkts);
+						+ _S_n_primes, __min_bkts);
     _M_next_resize = static_cast<std::size_t>(std::ceil(*__p
 							* _M_max_load_factor));
     return *__p;
@@ -465,9 +465,8 @@ namespace __detail
 	if (__min_bkts > __n_bkt)
 	  {
 	    __min_bkts = std::max(__min_bkts, _M_growth_factor * __n_bkt);
-	    const int __n_primes = sizeof(unsigned long) != 8 ? 256 : 256 + 48; 
 	    const unsigned long* __p =
-	      std::lower_bound(__prime_list, __prime_list + __n_primes,
+	      std::lower_bound(__prime_list, __prime_list + _S_n_primes,
 			       __min_bkts);
 	    _M_next_resize =
 	      static_cast<std::size_t>(std::ceil(*__p * _M_max_load_factor));
