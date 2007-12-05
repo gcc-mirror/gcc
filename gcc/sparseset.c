@@ -18,9 +18,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "libiberty.h"
+#include "config.h"
+#include "system.h"
 #include "sparseset.h"
-
 
 /* Allocate and clear a n_elms SparseSet.  */
 

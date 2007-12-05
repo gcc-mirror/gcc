@@ -1,3 +1,8 @@
+2007-11-27  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	* sparseset.c: Include config.h and system.h before sparseset.h.
+	* sparseset.h: Remove inclusion of system.h.
+
 2007-12-05  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Sandiford  <rsandifo@nildram.co.uk>
 
