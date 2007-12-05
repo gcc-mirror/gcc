@@ -1,3 +1,10 @@
+2007-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/34337
+	* fold-const.c (fold_binary) <case BIT_IOR_EXPR>: Don't minimize
+	number of bits set in C1 if a mode mask for some mode can be used
+	instead.
+
 2007-12-05  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	* varasm.c (merge_weak, weak_finish, assemble_alias): Commentary typo

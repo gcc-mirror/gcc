@@ -10570,8 +10570,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  && TREE_CODE (arg1) == INTEGER_CST
 	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
 	{
-	  unsigned HOST_WIDE_INT hi1, lo1, hi2, lo2, mlo, mhi;
-	  int width = TYPE_PRECISION (type);
+	  unsigned HOST_WIDE_INT hi1, lo1, hi2, lo2, hi3, lo3, mlo, mhi;
+	  int width = TYPE_PRECISION (type), w;
 	  hi1 = TREE_INT_CST_HIGH (TREE_OPERAND (arg0, 1));
 	  lo1 = TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1));
 	  hi2 = TREE_INT_CST_HIGH (arg1);
@@ -10599,16 +10599,35 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	    return fold_build2 (BIT_IOR_EXPR, type,
 				TREE_OPERAND (arg0, 0), arg1);
 
-	  /* Minimize the number of bits set in C1, i.e. C1 := C1 & ~C2.  */
+	  /* Minimize the number of bits set in C1, i.e. C1 := C1 & ~C2,
+	     unless (C1 & ~C2) | (C2 & C3) for some C3 is a mask of some
+	     mode which allows further optimizations.  */
 	  hi1 &= mhi;
 	  lo1 &= mlo;
-	  if ((hi1 & ~hi2) != hi1 || (lo1 & ~lo2) != lo1)
+	  hi2 &= mhi;
+	  lo2 &= mlo;
+	  hi3 = hi1 & ~hi2;
+	  lo3 = lo1 & ~lo2;
+	  for (w = BITS_PER_UNIT;
+	       w <= width && w <= HOST_BITS_PER_WIDE_INT;
+	       w <<= 1)
+	    {
+	      unsigned HOST_WIDE_INT mask
+		= (unsigned HOST_WIDE_INT) -1 >> (HOST_BITS_PER_WIDE_INT - w);
+	      if (((lo1 | lo2) & mask) == mask
+		  && (lo1 & ~mask) == 0 && hi1 == 0)
+		{
+		  hi3 = 0;
+		  lo3 = mask;
+		  break;
+		}
+	    }
+	  if (hi3 != hi1 || lo3 != lo1)
 	    return fold_build2 (BIT_IOR_EXPR, type,
 				fold_build2 (BIT_AND_EXPR, type,
 					     TREE_OPERAND (arg0, 0),
 					     build_int_cst_wide (type,
-								 lo1 & ~lo2,
-								 hi1 & ~hi2)),
+								 lo3, hi3)),
 				arg1);
 	}
 
