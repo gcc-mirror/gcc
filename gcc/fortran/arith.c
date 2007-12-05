@@ -226,8 +226,7 @@ gfc_arith_init_1 (void)
       mpfr_neg (b, b, GFC_RND_MODE);
 
       /* a = min(a, b)  */
-      if (mpfr_cmp (a, b) > 0)
-	mpfr_set (a, b, GFC_RND_MODE);
+      mpfr_min (a, a, b, GFC_RND_MODE);
 
       mpfr_trunc (a, a);
       gfc_mpfr_to_mpz (r, a);
@@ -1115,12 +1114,43 @@ gfc_arith_concat (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
   return ARITH_OK;
 }
 
+/* Comparison between real values; returns 0 if (op1 .op. op2) is true.
+   This function mimics mpr_cmp but takes NaN into account.  */
+
+static int
+compare_real (gfc_expr *op1, gfc_expr *op2, gfc_intrinsic_op op)
+{
+  int rc;
+  switch (op)
+    {
+      case INTRINSIC_EQ:
+	rc = mpfr_equal_p (op1->value.real, op2->value.real) ? 0 : 1;
+	break;
+      case INTRINSIC_GT:
+	rc = mpfr_greater_p (op1->value.real, op2->value.real) ? 1 : -1;
+	break;
+      case INTRINSIC_GE:
+	rc = mpfr_greaterequal_p (op1->value.real, op2->value.real) ? 1 : -1;
+	break;
+      case INTRINSIC_LT:
+	rc = mpfr_less_p (op1->value.real, op2->value.real) ? -1 : 1;
+	break;
+      case INTRINSIC_LE:
+	rc = mpfr_lessequal_p (op1->value.real, op2->value.real) ? -1 : 1;
+	break;
+      default:
+	gfc_internal_error ("compare_real(): Bad operator");
+    }
+
+  return rc;
+}
 
 /* Comparison operators.  Assumes that the two expression nodes
-   contain two constants of the same type.  */
+   contain two constants of the same type. The op argument is
+   needed to handle NaN correctly.  */
 
 int
-gfc_compare_expr (gfc_expr *op1, gfc_expr *op2)
+gfc_compare_expr (gfc_expr *op1, gfc_expr *op2, gfc_intrinsic_op op)
 {
   int rc;
 
@@ -1131,7 +1161,7 @@ gfc_compare_expr (gfc_expr *op1, gfc_expr *op2)
       break;
 
     case BT_REAL:
-      rc = mpfr_cmp (op1->value.real, op2->value.real);
+      rc = compare_real (op1, op2, op);
       break;
 
     case BT_CHARACTER:
@@ -1157,8 +1187,8 @@ gfc_compare_expr (gfc_expr *op1, gfc_expr *op2)
 static int
 compare_complex (gfc_expr *op1, gfc_expr *op2)
 {
-  return (mpfr_cmp (op1->value.complex.r, op2->value.complex.r) == 0
-	  && mpfr_cmp (op1->value.complex.i, op2->value.complex.i) == 0);
+  return (mpfr_equal_p (op1->value.complex.r, op2->value.complex.r)
+	  && mpfr_equal_p (op1->value.complex.i, op2->value.complex.i));
 }
 
 
@@ -1206,7 +1236,7 @@ gfc_arith_eq (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 				&op1->where);
   result->value.logical = (op1->ts.type == BT_COMPLEX)
 			? compare_complex (op1, op2)
-			: (gfc_compare_expr (op1, op2) == 0);
+			: (gfc_compare_expr (op1, op2, INTRINSIC_EQ) == 0);
 
   *resultp = result;
   return ARITH_OK;
@@ -1222,7 +1252,7 @@ gfc_arith_ne (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 				&op1->where);
   result->value.logical = (op1->ts.type == BT_COMPLEX)
 			? !compare_complex (op1, op2)
-			: (gfc_compare_expr (op1, op2) != 0);
+			: (gfc_compare_expr (op1, op2, INTRINSIC_EQ) != 0);
 
   *resultp = result;
   return ARITH_OK;
@@ -1236,7 +1266,7 @@ gfc_arith_gt (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 
   result = gfc_constant_result (BT_LOGICAL, gfc_default_logical_kind,
 				&op1->where);
-  result->value.logical = (gfc_compare_expr (op1, op2) > 0);
+  result->value.logical = (gfc_compare_expr (op1, op2, INTRINSIC_GT) > 0);
   *resultp = result;
 
   return ARITH_OK;
@@ -1250,7 +1280,7 @@ gfc_arith_ge (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 
   result = gfc_constant_result (BT_LOGICAL, gfc_default_logical_kind,
 				&op1->where);
-  result->value.logical = (gfc_compare_expr (op1, op2) >= 0);
+  result->value.logical = (gfc_compare_expr (op1, op2, INTRINSIC_GE) >= 0);
   *resultp = result;
 
   return ARITH_OK;
@@ -1264,7 +1294,7 @@ gfc_arith_lt (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 
   result = gfc_constant_result (BT_LOGICAL, gfc_default_logical_kind,
 				&op1->where);
-  result->value.logical = (gfc_compare_expr (op1, op2) < 0);
+  result->value.logical = (gfc_compare_expr (op1, op2, INTRINSIC_LT) < 0);
   *resultp = result;
 
   return ARITH_OK;
@@ -1278,7 +1308,7 @@ gfc_arith_le (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 
   result = gfc_constant_result (BT_LOGICAL, gfc_default_logical_kind,
 				&op1->where);
-  result->value.logical = (gfc_compare_expr (op1, op2) <= 0);
+  result->value.logical = (gfc_compare_expr (op1, op2, INTRINSIC_LE) <= 0);
   *resultp = result;
 
   return ARITH_OK;

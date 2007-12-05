@@ -2444,10 +2444,13 @@ simplify_min_max (gfc_expr *expr, int sign)
 	  break;
 
 	case BT_REAL:
-	  if (mpfr_cmp (arg->expr->value.real, extremum->expr->value.real)
-	      * sign > 0)
-	    mpfr_set (extremum->expr->value.real, arg->expr->value.real,
-		      GFC_RND_MODE);
+	  /* We need to use mpfr_min and mpfr_max to treat NaN properly.  */
+	  if (sign > 0)
+	    mpfr_max (extremum->expr->value.real, extremum->expr->value.real,
+		      arg->expr->value.real, GFC_RND_MODE);
+	  else
+	    mpfr_min (extremum->expr->value.real, extremum->expr->value.real,
+		      arg->expr->value.real, GFC_RND_MODE);
 	  break;
 
 	case BT_CHARACTER:

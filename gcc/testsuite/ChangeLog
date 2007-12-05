@@ -1,3 +1,8 @@
+2007-12-05  Tobias Burnus  <bU    gcc/stmt.c
+
+	PR fortran/34333
+	* gfortran.dg/nan_2.f90: New.
+
 2007-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34271
@@ -16,8 +21,8 @@
 
 2007-12-04  Douglas Gregor  <doug.gregor@gmail.com>
 
-       PR c++/34101
-       * g++.dg/cpp0x/variadic-ttp.C: New.
+	PR c++/34101
+	* g++.dg/cpp0x/variadic-ttp.C: New.
 
 2007-12-04  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 	
@@ -26,13 +31,13 @@
 	
 2007-12-04  Douglas Gregor  <doug.gregor@gmail.com>
 
-       PR c++/33509
-       * g++.dg/cpp0x/variadic-throw.C: New.
+	PR c++/33509
+	* g++.dg/cpp0x/variadic-throw.C: New.
 
 2007-12-04  Douglas Gregor  <doug.gregor@gmail.com>
 
-       PR c++/33091
-       * g++.dg/cpp0x/variadic-unify.C: New.
+	PR c++/33091
+	* g++.dg/cpp0x/variadic-unify.C: New.
 
 2007-12-04  Richard Guenther  <rguenther@suse.de>
 
