@@ -3198,9 +3198,9 @@ ix86_function_regparm (const_tree type, const_tree decl)
 	  struct function *f;
 
 	  /* Make sure no regparm register is taken by a
-	     global register variable.  */
+	     fixed register or global register variable.  */
 	  for (local_regparm = 0; local_regparm < 3; local_regparm++)
-	    if (global_regs[local_regparm])
+	    if (global_regs[local_regparm] || fixed_regs[local_regparm])
 	      break;
 
 	  /* We can't use regparm(3) for nested functions as these use
@@ -3222,11 +3222,12 @@ ix86_function_regparm (const_tree type, const_tree decl)
 					TYPE_ATTRIBUTES (TREE_TYPE (decl)))))
 	    local_regparm = 2;
 
-	  /* Each global register variable increases register preassure,
-	     so the more global reg vars there are, the smaller regparm
-	     optimization use, unless requested by the user explicitly.  */
+	  /* Each global register variable or fixed register usage
+	     increases register pressure, so less registers should be
+	     used for argument passing.  This functionality can be
+	     overriden by explicit regparm value.  */
 	  for (regno = 0; regno < 6; regno++)
-	    if (global_regs[regno])
+	    if (global_regs[regno] || fixed_regs[regno])
 	      globals++;
 	  local_regparm
 	    = globals < local_regparm ? local_regparm - globals : 0;

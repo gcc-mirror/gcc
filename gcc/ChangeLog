@@ -1,4 +1,12 @@
-2007-11-27  Bernhard Fischer  <aldot@gcc.gnu.org>
+2007-12-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/34312
+	* config/i386/i386.c (ix86_function_regparm): Also check for fixed
+	registers when checking that regparm registers are available.
+	Lower regparm value due to fixed registers usage in addition to
+	global regs usage.
+
+2007-12-05  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	* sparseset.c: Include config.h and system.h before sparseset.h.
 	* sparseset.h: Remove inclusion of system.h.
@@ -130,8 +138,7 @@
 
 2007-11-30  Jan Hubicka  <jh@suse.cz>
 
-	* ggc-common.c (dump_ggc_loc_statistics): Reset ggc_force_collect
-	flag.
+	* ggc-common.c (dump_ggc_loc_statistics): Reset ggc_force_collect flag.
 
 2007-11-30  Seongbae Park <seongbae.park@gmail.com>
 
@@ -318,7 +325,7 @@
 
 2007-11-26  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-	PR 34081/C++
+	PR c++/34081
 	* c-decl.c (store_parm_decls): Pass 'false' for the new
 	allocate_struct_function parameter.
 	* cgraphunit.c (cgraph_build_static_cdtor): Likewise.
@@ -350,9 +357,9 @@
 
 	* config/mn10300/mn10300.md: (call_internal): Remove mode on
 	operand 0 in order to match UNPSEC'ed calls generated in PIC mode.
-        (call_value_internal): Remove mode on operands 0 and 1 in order to
+	(call_value_internal): Remove mode on operands 0 and 1 in order to
 	match UNPSEC'ed calls generated in PIC mode.
-        (GOTaddr2picreg): Use copy_rtx to prevent sharing an rtx between
+	(GOTaddr2picreg): Use copy_rtx to prevent sharing an rtx between
 	two insns.
 
 2007-11-26  Richard Guenther  <rguenther@suse.de>
@@ -442,8 +449,7 @@
 2007-11-23  Hans-Peter Nilsson  <hp@axis.com>
 
 	* reload.c (find_reloads_address_1) <autoincdec cases>:
-	Call REG_OK_FOR_CONTEXT with the autoincdec code, not
-	outer_code.
+	Call REG_OK_FOR_CONTEXT with the autoincdec code, not outer_code.
 
 2007-11-23  Richard Guenther  <rguenther@suse.de>
 	    Michael Matz  <matz@suse.de>
@@ -771,8 +777,7 @@
 
 2007-11-07  Tom Tromey  <tromey@redhat.com>
 
-	* tree-ssa-structalias.c (ipa_pta_execute): Rename 'cfun' to
-	'func'. 
+	* tree-ssa-structalias.c (ipa_pta_execute): Rename 'cfun' to 'func'. 
 	* tree-parloops.c (create_loop_fn): Use set_cfun.
 	* gengtype.c (open_base_files): Emit #undef cfun.
 	* ipa-struct-reorg.c (do_reorg_1): Use set_cfun.
@@ -820,8 +825,7 @@
 
 	* tree-ssa-alias.c (create_overlap_variables_for): Make sure
 	to only create SFTs if we also create variable infos for PTA.
-	* tree-ssa-structalias.c (set_uids_in_ptset): Add all overlapping
-	SFTs.
+	* tree-ssa-structalias.c (set_uids_in_ptset): Add all overlapping SFTs.
 
 2007-11-15  Richard Guenther  <rguenther@suse.de>
 
@@ -880,8 +884,7 @@
 
 2007-11-13  Michael Meissner  <michael.meissner@amd.com>
 
-	* config/i386/i386.c (ix86_sse5_valid_op_p): Put type on separate
-	line.
+	* config/i386/i386.c (ix86_sse5_valid_op_p): Put type on separate line.
 
 2007-11-13  Sterling Augustine  <sterling@tensilica.com>
 	    Bob Wilson  <bob.wilson@acm.org>
@@ -908,39 +911,34 @@
 2007-11-13  Diego Novillo  <dnovillo@google.com>
 
 	PR tree-optimization/33870
-	* tree.h (strcut tree_memory_tag): add field unpartitionable.
-	remove field in_nested_struct.
-	(struct tree_struct_field_tag): add field nesting_level.
-	(sft_in_nested_struct): remove.
-	(sft_nesting_level): define.
-	(sft_unpartitionable_p): define.
-	* tree-ssa-alias.c (mem_sym_score): if mp->var is not
+	* tree.h (strcut tree_memory_tag): Add field unpartitionable.
+	Remove field in_nested_struct.
+	(struct tree_struct_field_tag): Add field nesting_level.
+	(sft_in_nested_struct): Remove.
+	(sft_nesting_level): Define.
+	(sft_unpartitionable_p): Define.
+	* tree-ssa-alias.c (mem_sym_score): If mp->var is not
 	partitionable, return long_max.
-	(compute_memory_partitions): do not partition sfts marked
+	(compute_memory_partitions): Do not partition sfts marked
 	unpartitionable.
-	(create_sft): add argument nesting_level.  set
-	sft_nesting_level with it.  update all users.
-	(create_overlap_variables_for): show nesting level.
-	* tree-dfa.c (dump_subvars_for): likewise.
-	(dump_variable): likewise.
-	show whether the sft is partitionable or not.
-	* tree-flow.h (struct fieldoff): remove field
-	in_nested_struct.
-	add field nesting_level.
-	* tree-ssa-structalias.c (struct variable_info): remove
+	(create_sft): Add argument nesting_level.  Set
+	sft_nesting_level with it.  Update all users.
+	(create_overlap_variables_for): Show nesting level.
+	* tree-dfa.c (dump_subvars_for): Likewise.
+	(dump_variable): Likewise. Show whether the sft is
+	partitionable or not.
+	* tree-flow.h (struct fieldoff): Remove field in_nested_struct.
+	Add field nesting_level.
+	* tree-ssa-structalias.c (struct variable_info): Remove
 	field in_nested_struct.
-	(push_fields_onto_fieldstack): add argument
-	nesting_level.  update all users.
-	update documentation.
-	update pair->nesting_level with nesting_level.
-	make recursive calls with nesting_level + 1.
-	(set_uids_in_ptset): if an sft is added to the points-to
-	set, mark it as unpartitionable.
-	* tree-ssa-operands.c (ref_nesting_level): new.
-	(add_vars_for_offset): call it.
-	add argument full_ref.  update
-	callers.
-	if var is inside a nested structure and the nesting level
+	(push_fields_onto_fieldstack): Add argument nesting_level.
+	Update all users.  Update documentation. Update pair->nesting_level
+	with nesting_level.  Make recursive calls with nesting_level + 1.
+	(set_uids_in_ptset): If an sft is added to the points-to set,
+	mark it as unpartitionable.
+	* tree-ssa-operands.c (ref_nesting_level): New.
+	(add_vars_for_offset): Call it.  Add argument full_ref. Update
+	callers.  If var is inside a nested structure and the nesting level
 	of full_ref is lower than the nesting level of var,
 	adjust offset by the offset of var.
 
@@ -1191,8 +1189,7 @@
 	PR 33870
 	* tree.h (struct tree_struct_field_tag): Add field in_nested_struct.
 	(SFT_IN_NESTED_STRUCT): Define.
-	* tree-dfa.c (dump_subvars_for): Show offset of each
-	sub-var.
+	* tree-dfa.c (dump_subvars_for): Show offset of each sub-var.
 	* tree-flow.h (struct fieldoff): Add field in_nested_struct.
 	* tree-ssa-structalias.c (struct variable_info): Likewise.
 	(push_fields_onto_fieldstack): If OFFSET is positive,
@@ -1202,8 +1199,7 @@
 	(set_uids_in_ptset): Set SFT_IN_NESTED_STRUCT from the
 	variable info object.
 	* tree-ssa-operands.c (add_vars_for_offset): If VAR
-	belongs to a nested structure, adjust OFFSET by
-	SFT_OFFSET(VAR).
+	belongs to a nested structure, adjust OFFSET by SFT_OFFSET(VAR).
 
 2007-11-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
@@ -1257,8 +1253,7 @@
 
 2007-11-06  Diego Novillo  <dnovillo@google.com>
 
-	* tree-flow.h (struct fieldoff): Reformat comment.
-	Document fields.
+	* tree-flow.h (struct fieldoff): Reformat comment. Document fields.
 	* tree-ssa-operands.c: Tidy top-level comments.
 	(add_vop): Likewise.
 	(add_vars_for_offset): Tidy parameter formatting..
@@ -1277,8 +1272,7 @@
 
 	PR target/30961
 	* reload1.c (find_reloads): Also check in_reg when handling a
-	simple move with an input reload and a destination of a hard
-	register.
+	simple move with an input reload and a destination of a hard register.
 
 2007-11-06  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
@@ -1355,8 +1349,7 @@
 2007-11-05  Mark Mitchell  <mark@codesourcery.com>
 
 	PR target/33579
-	* tree.h (DECL_INIT_PRIORITY): Do not require
-	DECL_HAS_INIT_PRIORITY_P.
+	* tree.h (DECL_INIT_PRIORITY): Do not require DECL_HAS_INIT_PRIORITY_P.
 	(DECL_FINI_PRIORITY): Likewise.
 	* tree.c (decl_init_priority_lookup): Remove assert.
 	(decl_fini_priority_insert): Likewise.
@@ -1369,8 +1362,7 @@
 	(compare_dtor): Likewise.
 	(cgraph_build_cdtor_fns): Sort the functions by priority before
 	calling build_cdtor.
-	(cgraph_build_static_cdtor): Put the priority in the function's
-	name.
+	(cgraph_build_static_cdtor): Put the priority in the function's name.
 
 2007-11-05  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -1505,8 +1497,7 @@
 2007-11-02  Diego Novillo  <dnovillo@google.com>
 
 	* langhooks.h (struct lang_hooks_for_callgraph): Remove third
-	argument from function pointer ANALYZE_EXPR.  Update all
-	users.
+	argument from function pointer ANALYZE_EXPR.  Update all users.
 	* cgraph.c (debug_cgraph_node): New.
 	(debug_cgraph): New.
 
@@ -1626,8 +1617,7 @@
 2007-10-31  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR target/33948
-	* config/mips/mips.c (mips_fpr_return_fields): Fix SCALAR_TYPE_P
-	check.
+	* config/mips/mips.c (mips_fpr_return_fields): Fix SCALAR_TYPE_P check.
 
 2007-10-31  Andreas Krebbel  <krebbel1@de.ibm.com>
 
