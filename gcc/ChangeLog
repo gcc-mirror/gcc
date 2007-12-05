@@ -1,3 +1,10 @@
+2007-12-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34138
+	* tree-ssa-forwprop.c (tree_ssa_forward_propagate_single_use_vars):
+	Do not forward propagate addresses if that changes volatileness of
+	the pointed-to type.
+
 2007-12-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/34312
