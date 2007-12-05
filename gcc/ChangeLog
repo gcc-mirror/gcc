@@ -5,7 +5,7 @@
 	(new_optab): Delete.
 	(init_optab, init_optabv): Don't call new_optab.
 	(init_convert_optab): Don't clear the insn codes.
-	(init_optabs): Call clear_insn_codes.
+	(init_optabs): Call init_insn_codes.
 
 2007-12-04  Jakub Jelinek  <jakub@redhat.com>
 
