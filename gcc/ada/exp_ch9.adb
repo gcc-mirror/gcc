@@ -3024,8 +3024,12 @@ package body Exp_Ch9 is
                   --  We have to make an assignment statement separate for the
                   --  case of limited type. We cannot assign it unless the
                   --  Assignment_OK flag is set first.
+                  --  An out formal of an access type must also be initialized
+                  --  from the actual, as stated in RM 6.4.1 (13).
 
-                  if Ekind (Formal) /= E_Out_Parameter then
+                  if Ekind (Formal) /= E_Out_Parameter
+                    or else Is_Access_Type (Etype (Formal))
+                  then
                      N_Var :=
                        New_Reference_To (Defining_Identifier (N_Node), Loc);
                      Set_Assignment_OK (N_Var);

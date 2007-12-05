@@ -1,3 +1,9 @@
+2007-12-05  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR ada/21489
+	* exp_ch9.adb (Build_Simple_Entry_Call): Initialize OUT access type
+	parameters of an entry call.
+
 2007-12-03  Robert Dewar <dewar@adacore.com>
             Samuel Tardieu  <sam@rfc1149.net>
 
