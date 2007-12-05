@@ -4,7 +4,7 @@
 #   2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation,
 #   Inc.
 
-timestamp='2007-07-22'
+timestamp='2007-12-05'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -833,7 +833,14 @@ EOF
 	echo ${UNAME_MACHINE}-pc-minix
 	exit ;;
     arm*:Linux:*:*)
-	echo ${UNAME_MACHINE}-unknown-linux-gnu
+	eval $set_cc_for_build
+	if echo __ARM_EABI__ | $CC_FOR_BUILD -E - 2>/dev/null \
+	    | grep -q __ARM_EABI__
+	then
+	    echo ${UNAME_MACHINE}-unknown-linux-gnu
+	else
+	    echo ${UNAME_MACHINE}-unknown-linux-gnueabi
+	fi
 	exit ;;
     avr32*:Linux:*:*)
 	echo ${UNAME_MACHINE}-unknown-linux-gnu
@@ -954,8 +961,8 @@ EOF
     x86_64:Linux:*:*)
 	echo x86_64-unknown-linux-gnu
 	exit ;;
-    xtensa:Linux:*:*)
-    	echo xtensa-unknown-linux-gnu
+    xtensa*:Linux:*:*)
+    	echo ${UNAME_MACHINE}-unknown-linux-gnu
 	exit ;;
     i*86:Linux:*:*)
 	# The BFD linker knows what the default object file format is, so
