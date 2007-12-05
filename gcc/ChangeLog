@@ -1,3 +1,8 @@
+2007-12-05  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	* varasm.c (merge_weak, weak_finish, assemble_alias): Commentary typo
+	fixes.
+
 2007-12-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/34138

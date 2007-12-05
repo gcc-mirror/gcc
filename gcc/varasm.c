@@ -4857,7 +4857,7 @@ merge_weak (tree newdecl, tree olddecl)
       /* NEWDECL is weak, but OLDDECL is not.  */
 
       /* If we already output the OLDDECL, we're in trouble; we can't
-	 go back and make it weak.  This error cannot caught in
+	 go back and make it weak.  This error cannot be caught in
 	 declare_weak because the NEWDECL and OLDDECL was not yet
 	 been merged; therefore, TREE_ASM_WRITTEN was not set.  */
       if (TREE_ASM_WRITTEN (olddecl))
@@ -4975,7 +4975,7 @@ weak_finish (void)
       else if (! TREE_SYMBOL_REFERENCED (target))
 	{
 	  /* Use ASM_WEAKEN_LABEL only if ASM_WEAKEN_DECL is not
-	     defined, otherwise we and weak_finish_1 would use a
+	     defined, otherwise we and weak_finish_1 would use
 	     different macros.  */
 # if defined ASM_WEAKEN_LABEL && ! defined ASM_WEAKEN_DECL
 	  ASM_WEAKEN_LABEL (asm_out_file, IDENTIFIER_POINTER (target));
@@ -5343,7 +5343,7 @@ assemble_alias (tree decl, tree target)
     varpool_node (decl)->alias = true;
 
   /* If the target has already been emitted, we don't have to queue the
-     alias.  This saves a tad o memory.  */
+     alias.  This saves a tad of memory.  */
   target_decl = find_decl_and_mark_needed (decl, target);
   if (target_decl && TREE_ASM_WRITTEN (target_decl))
     do_assemble_alias (decl, target);
