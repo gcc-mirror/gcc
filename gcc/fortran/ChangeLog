@@ -1,3 +1,20 @@
+2007-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/33739
+	* gfortran.h (gfc_file): Remove included_by field, add sibling and
+	down.
+	(gfc_start_source_files, gfc_end_source_files): New prototypes.
+	* parse.c (gfc_parse_file): Call gfc_start_source_files and
+	gfc_end_source_files instead of calling the debugging hooks directly.
+	* error.c (show_locus): Use up field instead of included_by.
+	* scanner.c (change_file, gfc_start_source_files,
+	gfc_end_source_files): New functions.
+	(gfc_advance_line): Call change_file instead of calling debug hooks
+	directly.
+	(get_file): Set up rather than included_by.  Initialize down and
+	sibling.
+	(preprocessor_line, load_file): Don't set up field here.
+
 2007-12-05  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34333

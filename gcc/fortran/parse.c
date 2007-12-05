@@ -3289,10 +3289,7 @@ gfc_parse_file (void)
   gfc_statement st;
   locus prog_locus;
 
-  /* If the debugger wants the name of the main source file,
-     we give it.  */
-  if (debug_hooks->start_end_main_source_file)
-    (*debug_hooks->start_source_file) (0, gfc_source_file);
+  gfc_start_source_files ();
 
   top.state = COMP_NONE;
   top.sym = NULL;
@@ -3404,9 +3401,7 @@ loop:
   goto loop;
 
 done:
-  if (debug_hooks->start_end_main_source_file)
-    (*debug_hooks->end_source_file) (0);
-
+  gfc_end_source_files ();
   return SUCCESS;
 
 duplicate_main:

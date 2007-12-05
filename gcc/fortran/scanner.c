@@ -299,6 +299,65 @@ gfc_at_eol (void)
   return (*gfc_current_locus.nextc == '\0');
 }
 
+static void
+change_file (gfc_file *to)
+{
+  if (current_file == NULL)
+    return;
+
+  while (current_file != to)
+    if (current_file->down)
+      {
+	gfc_file *f = current_file->down;
+	/* Ensure we don't enter it ever again.  */
+	current_file->down = NULL;
+	current_file = f;
+	(*debug_hooks->start_source_file) (current_file->inclusion_line,
+					   current_file->filename);
+      }
+    else if (current_file->sibling)
+      current_file = current_file->sibling;
+    else
+      {
+	gcc_assert (current_file->up);
+	(*debug_hooks->end_source_file) (current_file->inclusion_line + 1);
+	current_file = current_file->up;
+      }
+}
+
+void
+gfc_start_source_files (void)
+{
+  /* If the debugger wants the name of the main source file,
+     we give it.  */
+  if (debug_hooks->start_end_main_source_file)
+    (*debug_hooks->start_source_file) (0, gfc_source_file);
+
+  if (gfc_current_locus.lb && gfc_current_locus.lb->file)
+    {
+      current_file = gfc_current_locus.lb->file;
+      while (current_file->up)
+	current_file = current_file->up;
+      change_file (gfc_current_locus.lb->file);
+    }
+  else
+    current_file = NULL;
+}
+
+void
+gfc_end_source_files (void)
+{
+  if (current_file != NULL)
+    {
+      gfc_file *to = current_file;
+      while (to->up)
+	to = to->up;
+      change_file (to);
+    }
+
+  if (debug_hooks->start_end_main_source_file)
+    (*debug_hooks->end_source_file) (0);
+}
 
 /* Advance the current line pointer to the next line.  */
 
@@ -315,26 +374,11 @@ gfc_advance_line (void)
     } 
 
   if (gfc_current_locus.lb->next
-      && gfc_current_locus.lb->next->file != gfc_current_locus.lb->file)
+      && gfc_current_locus.lb->next->file != gfc_current_locus.lb->file
+      && !gfc_current_locus.lb->next->dbg_emitted)
     {
-      if (gfc_current_locus.lb->next->file
-	  && !gfc_current_locus.lb->next->dbg_emitted
-	  && gfc_current_locus.lb->file->up == gfc_current_locus.lb->next->file)
-	{
-	  /* We exit from an included file. */
-	  (*debug_hooks->end_source_file)
-		(gfc_linebuf_linenum (gfc_current_locus.lb->next));
-	  gfc_current_locus.lb->next->dbg_emitted = true;
-	}
-      else if (gfc_current_locus.lb->next->file != gfc_current_locus.lb->file
-	       && !gfc_current_locus.lb->next->dbg_emitted)
-	{
-	  /* We enter into a new file.  */
-	  (*debug_hooks->start_source_file)
-		(gfc_linebuf_linenum (gfc_current_locus.lb),
-		 gfc_current_locus.lb->next->file->filename);
-	  gfc_current_locus.lb->next->dbg_emitted = true;
-	}
+      change_file (gfc_current_locus.lb->next->file);
+      gfc_current_locus.lb->next->dbg_emitted = true;
     }
 
   gfc_current_locus.lb = gfc_current_locus.lb->next;
@@ -1219,9 +1263,24 @@ get_file (const char *name, enum lc_reason reason ATTRIBUTE_UNUSED)
   f->next = file_head;
   file_head = f;
 
-  f->included_by = current_file;
+  f->up = current_file;
+  /* Already cleared by gfc_getmem.
+     f->down = NULL;
+     f->sibling = NULL;  */
   if (current_file != NULL)
-    f->inclusion_line = current_file->line;
+    {
+      f->inclusion_line = current_file->line;
+      if (current_file->down == NULL)
+	current_file->down = f;
+      else
+	{
+	  gfc_file *s;
+
+	  for (s = current_file->down; s->sibling; s = s->sibling)
+	    ;
+	  s->sibling = f;
+	}
+    }
 
 #ifdef USE_MAPPED_LOCATION
   linemap_add (line_table, reason, false, f->filename, 1);
@@ -1331,7 +1390,6 @@ preprocessor_line (char *c)
   if (flag[1]) /* Starting new file.  */
     {
       f = get_file (filename, LC_RENAME);
-      f->up = current_file;
       current_file = f;
     }
 
@@ -1499,7 +1557,6 @@ load_file (const char *filename, bool initial)
   /* Load the file.  */
 
   f = get_file (filename, initial ? LC_RENAME : LC_ENTER);
-  f->up = current_file;
   current_file = f;
   current_file->line = 1;
   line = NULL;

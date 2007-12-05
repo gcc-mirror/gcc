@@ -207,7 +207,7 @@ show_locus (locus *loc, int c1, int c2)
     {
       i = f->inclusion_line;
 
-      f = f->included_by;
+      f = f->up;
       if (f == NULL) break;
 
       error_printf ("    Included at %s:%d:", f->filename, i);

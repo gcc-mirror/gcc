@@ -706,7 +706,7 @@ symbol_attribute;
 
 typedef struct gfc_file
 {
-  struct gfc_file *included_by, *next, *up;
+  struct gfc_file *next, *up, *sibling, *down;
   int inclusion_line, line;
   char *filename;
 } gfc_file;
@@ -1937,6 +1937,9 @@ const char * gfc_read_orig_filename (const char *, const char **);
 extern gfc_source_form gfc_current_form;
 extern const char *gfc_source_file;
 extern locus gfc_current_locus;
+
+void gfc_start_source_files (void);
+void gfc_end_source_files (void);
 
 /* misc.c */
 void *gfc_getmem (size_t) ATTRIBUTE_MALLOC;
