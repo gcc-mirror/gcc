@@ -1,3 +1,19 @@
+2007-12-05  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34333
+	* arith.h (gfc_compare_expr): Add operator argument, needed
+	for compare_real.
+	* arith.c (gfc_arith_init_1): Use mpfr_min instead of mpfr_cmp/set
+	to account for NaN.
+	(compare_real): New function, as mpfr_cmp but takes NaN into account.
+	(gfc_compare_expr): Use compare_real.
+	(compare_complex): Take NaN into account.
+	(gfc_arith_eq,gfc_arith_ne,gfc_arith_gt,gfc_arith_ge,gfc_arith_lt,
+	gfc_arith_le): Pass operator to gfc_compare_expr.
+	* resolve.c (compare_cases,resolve_select): Pass operator
+	to gfc_compare_expr.
+	* simplify.c (simplify_min_max): Take NaN into account.
+
 2007-12-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34318

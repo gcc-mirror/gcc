@@ -4822,7 +4822,7 @@ compare_cases (const gfc_case *op1, const gfc_case *op2)
       retval = 0;
       /* op2 = (M:) or (M:N),  L < M  */
       if (op2->low != NULL
-	  && gfc_compare_expr (op1->high, op2->low) < 0)
+	  && gfc_compare_expr (op1->high, op2->low, INTRINSIC_LT) < 0)
 	retval = -1;
     }
   else if (op1->high == NULL) /* op1 = (K:)  */
@@ -4831,23 +4831,25 @@ compare_cases (const gfc_case *op1, const gfc_case *op2)
       retval = 0;
       /* op2 = (:N) or (M:N), K > N  */
       if (op2->high != NULL
-	  && gfc_compare_expr (op1->low, op2->high) > 0)
+	  && gfc_compare_expr (op1->low, op2->high, INTRINSIC_GT) > 0)
 	retval = 1;
     }
   else /* op1 = (K:L)  */
     {
       if (op2->low == NULL)       /* op2 = (:N), K > N  */
-	retval = (gfc_compare_expr (op1->low, op2->high) > 0) ? 1 : 0;
+	retval = (gfc_compare_expr (op1->low, op2->high, INTRINSIC_GT) > 0)
+		 ? 1 : 0;
       else if (op2->high == NULL) /* op2 = (M:), L < M  */
-	retval = (gfc_compare_expr (op1->high, op2->low) < 0) ? -1 : 0;
+	retval = (gfc_compare_expr (op1->high, op2->low, INTRINSIC_LT) < 0)
+		 ? -1 : 0;
       else			/* op2 = (M:N)  */
 	{
 	  retval =  0;
 	  /* L < M  */
-	  if (gfc_compare_expr (op1->high, op2->low) < 0)
+	  if (gfc_compare_expr (op1->high, op2->low, INTRINSIC_LT) < 0)
 	    retval =  -1;
 	  /* K > N  */
-	  else if (gfc_compare_expr (op1->low, op2->high) > 0)
+	  else if (gfc_compare_expr (op1->low, op2->high, INTRINSIC_GT) > 0)
 	    retval =  1;
 	}
     }
@@ -5122,7 +5124,7 @@ resolve_select (gfc_code *code)
 	      /* Unreachable case ranges are discarded, so ignore.  */
 	      if (cp->low != NULL && cp->high != NULL
 		  && cp->low != cp->high
-		  && gfc_compare_expr (cp->low, cp->high) > 0)
+		  && gfc_compare_expr (cp->low, cp->high, INTRINSIC_GT) > 0)
 		continue;
 
 	      /* FIXME: Should a warning be issued?  */
@@ -5210,7 +5212,7 @@ resolve_select (gfc_code *code)
 
 	  if (cp->low != NULL && cp->high != NULL
 	      && cp->low != cp->high
-	      && gfc_compare_expr (cp->low, cp->high) > 0)
+	      && gfc_compare_expr (cp->low, cp->high, INTRINSIC_GT) > 0)
 	    {
 	      if (gfc_option.warn_surprising)
 		gfc_warning ("Range specification at %L can never "
