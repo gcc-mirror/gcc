@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_SPARSESET_H
 #define GCC_SPARSESET_H
 
-#include "system.h"
 #include <assert.h>
 
 #define SPARSESET_ELT_BITS ((unsigned) HOST_BITS_PER_WIDEST_FAST_INT)
@@ -32,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 typedef struct sparseset_def
 {
   SPARSESET_ELT_TYPE *dense;	/* Dense array.  */
-  SPARSESET_ELT_TYPE *sparse; 	/* Sparse array.  */
+  SPARSESET_ELT_TYPE *sparse;	/* Sparse array.  */
   SPARSESET_ELT_TYPE members;	/* Number of elements.  */
   SPARSESET_ELT_TYPE size;	/* Maximum number of elements.  */
   SPARSESET_ELT_TYPE iter;	/* Iterator index.  */
