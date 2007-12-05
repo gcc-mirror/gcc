@@ -97,6 +97,10 @@ public: // actually protected
 public:
   virtual void deliverEvent(::java::awt::Event *);
   virtual ::java::awt::Component * getComponentAt(jint, jint);
+  virtual ::java::awt::Point * getMousePosition(jboolean);
+public: // actually package-private
+  virtual jboolean mouseOverComponent(::java::awt::Component *, jboolean);
+public:
   virtual ::java::awt::Component * locate(jint, jint);
   virtual ::java::awt::Component * getComponentAt(::java::awt::Point *);
   virtual ::java::awt::Component * findComponentAt(jint, jint);

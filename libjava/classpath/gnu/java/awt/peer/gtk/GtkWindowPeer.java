@@ -45,6 +45,7 @@ import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.KeyboardFocusManager;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ComponentEvent;
@@ -390,6 +391,13 @@ public class GtkWindowPeer extends GtkContainerPeer
     super.postMouseEvent (id, when, mods, 
                           x + insets.left, y + insets.top, 
                           clickCount, popupTrigger);
+  }
+
+  public Point getLocationOnScreen()
+  {
+    int point[] = new int[2];
+    gtkWindowGetLocationOnScreen(point);
+    return new Point(point[0], point[1]);
   }
 
   // We override this to keep it in sync with our internal

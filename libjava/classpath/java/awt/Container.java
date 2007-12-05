@@ -1098,6 +1098,33 @@ public class Container extends Component
   }
 
   /**
+   * Returns the mouse pointer position relative to this Container's
+   * top-left corner.  If allowChildren is false, the mouse pointer
+   * must be directly over this container.  If allowChildren is true,
+   * the mouse pointer may be over this container or any of its
+   * descendents.
+   *
+   * @param allowChildren true to allow descendents, false if pointer
+   * must be directly over Container.
+   *
+   * @return relative mouse pointer position
+   *
+   * @throws HeadlessException if in a headless environment
+   */
+  public Point getMousePosition(boolean allowChildren) throws HeadlessException
+  {
+    return super.getMousePositionHelper(allowChildren);
+  }
+
+  boolean mouseOverComponent(Component component, boolean allowChildren)
+  {
+    if (allowChildren)
+      return isAncestorOf(component);
+    else
+      return component == this;
+  }
+
+  /**
    * Returns the component located at the specified point.  This is done
    * by checking whether or not a child component claims to contain this
    * point.  The first child component that does is returned.  If no

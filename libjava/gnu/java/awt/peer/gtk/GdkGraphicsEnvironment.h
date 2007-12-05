@@ -27,6 +27,7 @@ extern "Java"
           {
               class GdkGraphicsEnvironment;
               class GdkScreenGraphicsDevice;
+              class GtkWindowPeer;
           }
         }
       }
@@ -77,6 +78,7 @@ public:
   virtual JArray< ::java::lang::String * > * getAvailableFontFamilyNames(::java::util::Locale *);
 public: // actually package-private
   virtual JArray< jint > * getMouseCoordinates();
+  virtual jboolean isWindowUnderMouse(::gnu::java::awt::peer::gtk::GtkWindowPeer *);
 public:
   virtual ::java::awt::image::WritableRaster * createRaster(::java::awt::image::ColorModel *, ::java::awt::image::SampleModel *);
 private:
