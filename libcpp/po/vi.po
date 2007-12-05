@@ -3,10 +3,10 @@
 # Clytie Siddall <clytie@riverland.net.au>, 2005-2007.
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.2.2\n"
+"Project-Id-Version: cpplib 4.3-b20071109\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2007-11-08 21:08+0000\n"
-"PO-Revision-Date: 2007-10-15 18:37+0930\n"
+"PO-Revision-Date: 2007-11-30 23:15+1030\n"
 "Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
 "Language-Team: Vietnamese <vi-VN@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
@@ -404,14 +404,13 @@ msgid "too many decimal points in number"
 msgstr "con số chứa quá nhiều dấu thập phân"
 
 #: expr.c:290 expr.c:365
-#, fuzzy
 msgid "fixed-point constants are a GCC extension"
-msgstr "hằng ảo là phần mở rộng GCC"
+msgstr "hằng định điểm là phần mở rộng GCC"
 
 #: expr.c:303
-#, fuzzy, c-format
+#, c-format
 msgid "invalid digit \"%c\" in binary constant"
-msgstr "gặp chữ số không hợp lệ « %c » trong hằng bát phân"
+msgstr "gặp chữ số không hợp lệ « %c » trong hằng nhị phân"
 
 #: expr.c:305
 #, c-format
@@ -419,9 +418,8 @@ msgid "invalid digit \"%c\" in octal constant"
 msgstr "gặp chữ số không hợp lệ « %c » trong hằng bát phân"
 
 #: expr.c:313
-#, fuzzy
 msgid "invalid prefix \"0b\" for floating constant"
-msgstr "gặp hậu tố không hợp lệ « %.*s »  nằm trên hằng trôi nổi"
+msgstr "gặp tiền tố không hợp lệ « 0b » cho hằng trôi nổi"
 
 #: expr.c:319
 msgid "use of C99 hexadecimal floating constant"
@@ -451,9 +449,8 @@ msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr "gặp hậu tố không hợp lệ « %.*s »  có hằng trôi nổi thập lục"
 
 #: expr.c:369
-#, fuzzy
 msgid "decimal float constants are a GCC extension"
-msgstr "hằng ảo là phần mở rộng GCC"
+msgstr "hằng trôi nổi thập lục là phần mở rộng GCC"
 
 #: expr.c:379
 #, c-format
@@ -469,9 +466,8 @@ msgid "imaginary constants are a GCC extension"
 msgstr "hằng ảo là phần mở rộng GCC"
 
 #: expr.c:412
-#, fuzzy
 msgid "binary constants are a GCC extension"
-msgstr "hằng ảo là phần mở rộng GCC"
+msgstr "hằng nhị phân là phần mở rộng GCC"
 
 #: expr.c:505
 msgid "integer constant is too large for its type"
@@ -770,7 +766,7 @@ msgstr "không thể quyết định ngày và giờ"
 
 #: macro.c:270
 msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
-msgstr ""
+msgstr "__COUNTER__ đã mở rộng bên trong chỉ thị với « -fdirectives-only »"
 
 #: macro.c:423
 msgid "invalid string literal, ignoring final '\\'"
@@ -890,9 +886,9 @@ msgid "%s: not used because `%s' is defined"
 msgstr "%s: không được dùng vì « %s » đã được xác định"
 
 #: pch.c:558
-#, fuzzy, c-format
+#, c-format
 msgid "%s: not used because `__COUNTER__' is invalid"
-msgstr "%s: không được dùng vì « %s » đã được xác định"
+msgstr "%s: không được dùng vì « __COUNTER__ » không hợp lệ"
 
 #: pch.c:567 pch.c:737
 msgid "while reading precompiled header"
@@ -906,6 +902,3 @@ msgstr "đã phát hiện sự đệ qui trong khi mở rộng vĩ lệnh « %s 
 #: traditional.c:917
 msgid "syntax error in macro parameter list"
 msgstr "gặp lỗi cú pháp trong danh sách tham số vĩ lệnh"
-
-#~ msgid "no newline at end of file"
-#~ msgstr "không có ký tự dòng mới tại kêt thúc của tập tin"
