@@ -1,3 +1,11 @@
+2007-12-05  Bechir Zalila  <bechir.zalila@gmail.com>
+
+	PR ada/34284
+	* configure.ac: Added a missing switch case for *86-*-darwin*
+	when defining the value of TOOLS_TARGET_PAIRS.
+
+	* configure: Regenerated.
+
 2007-06-06  Arnaud Charlet  <charlet@adacore.com>
 
 	* configure.ac: Update TOOLS_TARGET_PAIRS configuration to match
