@@ -1,3 +1,8 @@
+2007-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/34337
+	* gcc.c-torture/execute/20071205-1.c: New test.
+
 2007-12-05  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* gfortran.dg/module_nan.f90: Add -mieee for sh.
