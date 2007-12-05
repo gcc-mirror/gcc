@@ -32,6 +32,7 @@ extern "Java"
         class Component;
         class Dialog;
         class Graphics;
+        class Point;
         class Rectangle;
         class Window;
     }
@@ -101,6 +102,7 @@ public:
 public: // actually protected
   virtual void postMouseEvent(jint, jlong, jint, jint, jint, jint, jboolean);
 public:
+  virtual ::java::awt::Point * getLocationOnScreen();
   virtual ::java::awt::Rectangle * getBounds();
   virtual void updateIconImages();
   virtual void updateMinimumSize();

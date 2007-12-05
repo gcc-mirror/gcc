@@ -354,6 +354,11 @@ public: // actually package-private
   virtual void dispatchEventImpl(::java::awt::AWTEvent *);
   virtual jboolean eventTypeEnabled(jint);
   virtual jboolean isHierarchyVisible();
+public:
+  virtual ::java::awt::Point * getMousePosition();
+public: // actually package-private
+  virtual ::java::awt::Point * getMousePositionHelper(jboolean);
+  virtual jboolean mouseOverComponent(::java::awt::Component *, jboolean);
   virtual ::java::awt::Component * findNextFocusComponent(::java::awt::Component *);
 private:
   void readObject(::java::io::ObjectInputStream *);

@@ -155,6 +155,7 @@ public class GdkGraphicsEnvironment extends ClasspathGraphicsEnvironment
    * Used by GtkMouseInfoPeer.
    */ 
   native int[] getMouseCoordinates();
+  native boolean isWindowUnderMouse(GtkWindowPeer windowPeer);
   
   public WritableRaster createRaster(ColorModel cm, SampleModel sm)
   {

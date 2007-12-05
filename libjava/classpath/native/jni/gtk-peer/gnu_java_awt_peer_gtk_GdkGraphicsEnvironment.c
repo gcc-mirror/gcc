@@ -263,3 +263,37 @@ Java_gnu_java_awt_peer_gtk_GdkGraphicsEnvironment_getMouseCoordinates
 
   return retArray;
 }
+
+JNIEXPORT jboolean JNICALL
+Java_gnu_java_awt_peer_gtk_GdkGraphicsEnvironment_isWindowUnderMouse
+(JNIEnv *env, jobject obj, jobject windowPeer)
+{
+  GdkDisplay *display = NULL;
+  gint x = 0;
+  gint y = 0;
+  GtkWidget *windowToTest = NULL;
+  GdkWindow *windowAtPointer = NULL;
+  jboolean retVal = JNI_FALSE;
+
+  display = (GdkDisplay *) gtkpeer_get_display (env, obj);
+  g_assert (display != NULL);
+
+  windowToTest = (GtkWidget *) gtkpeer_get_widget (env, windowPeer);
+
+  gdk_threads_enter ();
+
+  windowAtPointer = gdk_display_get_window_at_pointer (display, &x, &y);
+
+  while (windowAtPointer
+         && windowAtPointer != windowToTest->window)
+    windowAtPointer = gdk_window_get_parent (windowAtPointer);
+
+  gdk_threads_leave ();
+
+  if (windowAtPointer)
+    retVal = JNI_TRUE;
+  else
+    retVal = JNI_FALSE;
+
+  return retVal;
+}

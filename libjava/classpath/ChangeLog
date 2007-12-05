@@ -1,3 +1,47 @@
+2007-12-05  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java,
+	native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphicsEnvironment.c
+	(isWindowUnderMouse): New method.
+	* include/gnu_java_awt_peer_gtk_GdkGraphicsEnvironment.h:
+	Regenerate.
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java
+	(getLocationOnScreen): Move WindowPeer section to...
+	* gnu/java/awt/peer/gtk/GtkWindowPeer.java (getLocationOnScreen):
+	New method.
+	* gnu/java/awt/peer/gtk/GtkMouseInfoPeer.java
+	(isWindowUnderMouse): Implement.
+	* java/awt/Component.java (getMousePosition): New method.
+	(getMousePositionHelper): Likewise.
+	(mouseOverComponent): Likewise.
+	* java/awt/Container.java (getMousePosition): New method.
+	(mouseOverComponent): Likewise.
+	* classpath/lib/java/awt/Component.class,
+	classpath/lib/java/awt/Component$BltBufferStrategy.class,
+	classpath/lib/java/awt/Container$GfxPaintAllVisitor.class,
+	classpath/lib/java/awt/Component$AccessibleAWTComponent
+	$AccessibleAWTFocusHandler.class,
+	classpath/lib/java/awt/Component$FlipBufferStrategy.class,
+	classpath/lib/java/awt/Container$GfxVisitor.class,
+	classpath/lib/java/awt/Component$AccessibleAWTComponent
+	$AccessibleAWTComponentHandler.class,
+	classpath/lib/java/awt/Container$AccessibleAWTContainer
+	$AccessibleContainerHandler.class,
+	classpath/lib/java/awt/Container.class,
+	classpath/lib/java/awt/Container$AccessibleAWTContainer.class,
+	classpath/lib/java/awt/Container$GfxPrintAllVisitor.class,
+	classpath/lib/java/awt/Component$AccessibleAWTComponent.class,
+	classpath/lib/java/awt/Container$GfxPaintVisitor.class,
+	classpath/lib/java/awt/Container$GfxPrintVisitor.class,
+	classpath/lib/java/awt/Component$HeavyweightInLightweightListener.class,
+	classpath/lib/gnu/java/awt/peer/gtk/GtkComponentPeer.class,
+	classpath/lib/gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.class,
+	classpath/lib/gnu/java/awt/peer/gtk/GtkMouseInfoPeer.class,
+	classpath/lib/gnu/java/awt/peer/gtk/GtkWindowPeer.class,
+	classpath/lib/gnu/java/awt/peer/gtk/GtkComponentPeer
+	$RepaintTimerTask.class:
+	Regenerate.
+
 2007-10-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* scripts/check_jni_methods.sh: Don't depend on diff -b ignoring

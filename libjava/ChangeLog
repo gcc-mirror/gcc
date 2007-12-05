@@ -1,3 +1,10 @@
+2007-12-05  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.h: Regenerate.
+	* gnu/java/awt/peer/gtk/GtkWindowPeer.h: Likewise.
+	* java/awt/Component.h: Likewise.
+	* java/awt/Container.h: Likewise.
+
 2007-11-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure.ac: Don't run config-ml.in directly.

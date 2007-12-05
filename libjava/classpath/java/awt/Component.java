@@ -5834,6 +5834,62 @@ p   * <li>the set of backward traversal keys
   }
 
   /**
+   * Returns the mouse pointer position relative to this Component's
+   * top-left corner.
+   *
+   * @return relative mouse pointer position
+   *
+   * @throws HeadlessException if in a headless environment
+   */
+  public Point getMousePosition() throws HeadlessException
+  {
+    return getMousePositionHelper(true);
+  }
+
+  Point getMousePositionHelper(boolean allowChildren) throws HeadlessException
+  {
+    if (GraphicsEnvironment.isHeadless())
+      throw new HeadlessException("can't get mouse position"
+                                  + " in headless environment");
+    if (!isShowing())
+      return null;
+
+    Component parent = this;
+    int windowRelativeXOffset = 0;
+    int windowRelativeYOffset = 0;
+    while (parent != null && !(parent instanceof Window))
+      {
+        windowRelativeXOffset += parent.getX();
+        windowRelativeYOffset += parent.getY();
+        parent = parent.getParent();
+      }
+    if (parent == null)
+      return null;
+
+    Window window = (Window) parent;
+    if (!Toolkit.getDefaultToolkit()
+        .getMouseInfoPeer().isWindowUnderMouse(window))
+      return null;
+
+    PointerInfo info = MouseInfo.getPointerInfo();
+    Point mouseLocation = info.getLocation();
+    Point windowLocation = window.getLocationOnScreen();
+
+    int x = mouseLocation.x - windowLocation.x;
+    int y = mouseLocation.y - windowLocation.y;
+
+    if (!mouseOverComponent(window.getComponentAt(x, y), allowChildren))
+      return null;
+
+    return new Point(x - windowRelativeXOffset, y - windowRelativeYOffset);
+  }
+
+  boolean mouseOverComponent(Component component, boolean allowChildren)
+  {
+    return component == this;
+  }
+
+  /**
    * This method is used to implement transferFocus(). CHILD is the child
    * making the request. This is overridden by Container; when called for an
    * ordinary component there is no child and so we always return null.
