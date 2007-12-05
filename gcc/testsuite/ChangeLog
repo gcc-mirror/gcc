@@ -1,3 +1,8 @@
+2007-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/33739
+	* gfortran.dg/debug_2.f: New test.
+
 2007-12-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/elab1.ads: New test.
