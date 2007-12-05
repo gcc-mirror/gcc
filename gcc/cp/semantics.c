@@ -4164,7 +4164,8 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
           break;
 
         default:
-          gcc_assert (TYPE_P (expr) || DECL_P (expr));
+	  gcc_assert (TYPE_P (expr) || DECL_P (expr)
+		      || TREE_CODE (expr) == SCOPE_REF);
           error ("argument to decltype must be an expression");
           return error_mark_node;
         }

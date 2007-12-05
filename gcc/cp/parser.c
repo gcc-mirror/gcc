@@ -8602,8 +8602,11 @@ cp_parser_decltype (cp_parser *parser)
   
   /* Parse to the closing `)'.  */
   if (!cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'"))
-    cp_parser_skip_to_closing_parenthesis (parser, true, false,
-					   /*consume_paren=*/true);
+    {
+      cp_parser_skip_to_closing_parenthesis (parser, true, false,
+					     /*consume_paren=*/true);
+      return error_mark_node;
+    }
 
   return finish_decltype_type (expr, id_expression_or_member_access_p);
 }
