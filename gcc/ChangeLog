@@ -1,3 +1,8 @@
+2007-12-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* tree-ssa-loop.c (gate_tree_parallelize_loops): Return true when
+	"flag_tree_parallelize_loops > 1".
+	
 2007-12-06  Zdenek Dvorak  <ook@ucw.cz>
 	    Dorit Nuzman  <dorit@il.ibm.com>
 	    Jakub Jelinek  <jakub@redhat.com>
@@ -98,7 +103,7 @@
 
 2007-12-03  Steven Bosscher  <stevenb.gcc@gmail.com>
 
-	PR33713
+	PR middle-end/33713
 	* doc/invoke.texi: Remove -fforce-addr documentation.
 	* expr.c (emit_move_insn): Remove use of flag_force_addr.
 	(expand_expr_real_1): Same.
@@ -384,7 +389,7 @@
 
 	PR target/34215
 	* config/i386/i386.md (truncdfsf2): Select SLOT_TEMP stack slot if
-	virtual registers are instantiated.
+	virtual registers are already instantiated.
 	(truncxf<mode>2): Ditto.
 	(floatsi<mode>2): Ditto.
 	(floatdisf2): Ditto.

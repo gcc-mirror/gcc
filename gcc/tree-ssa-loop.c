@@ -474,7 +474,7 @@ struct tree_opt_pass pass_complete_unroll =
 static bool
 gate_tree_parallelize_loops (void)
 {
-  return flag_tree_parallelize_loops != 1;
+  return flag_tree_parallelize_loops > 1;
 }
 
 static unsigned
