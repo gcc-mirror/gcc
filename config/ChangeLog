@@ -1,3 +1,8 @@
+2007-12-06  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* mt-sde (CFLAGS_FOR_TARGET, CXXFLAGS_FOR_TARGET): Use +=, not =.
+	* mt-mips-elfoabi: Likewise.
+
 2007-10-15  Maciej W. Rozycki  <macro@linux-mips.org>
 
 	* tls.m4 (GCC_CHECK_TLS): Rename have_tls to gcc_cv_have_tls.

@@ -6,5 +6,5 @@
 # has two purposes: it allows libraries to be used in situations where
 # $gp != our _gp, and it allows them to be built with -G8 while
 # retaining link compability with -G0 and -G4.
-CFLAGS_FOR_TARGET = -Os -minterlink-mips16 -mcode-xonly -mno-gpopt
-CXXFLAGS_FOR_TARGET = -Os -minterlink-mips16 -mcode-xonly -mno-gpopt
+CFLAGS_FOR_TARGET += -Os -minterlink-mips16 -mcode-xonly -mno-gpopt
+CXXFLAGS_FOR_TARGET += -Os -minterlink-mips16 -mcode-xonly -mno-gpopt
