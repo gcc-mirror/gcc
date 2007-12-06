@@ -119,11 +119,13 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
   int vec_inside_cost = 0;
   int vec_outside_cost = 0;
   int scalar_single_iter_cost = 0;
+  int scalar_outside_cost = 0;
+  bool runtime_test = false;
   int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
   int nbbs = loop->num_nodes;
-  int byte_misalign;
+  int byte_misalign = LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo);
   int peel_guard_costs = 0;
   int innerloop_iters = 0, factor;
   VEC (slp_instance, heap) *slp_instances;
@@ -136,6 +138,13 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
         fprintf (vect_dump, "cost model disabled.");      
       return 0;
     }
+
+  /* If the number of iterations is unknown, or the
+     peeling-for-misalignment amount is unknown, we will have to generate
+     a runtime test to test the loop count against the threshold.    */
+  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+      || (byte_misalign < 0))
+    runtime_test = true;
 
   /* Requires loop versioning tests to handle misalignment.  */
 
@@ -211,8 +220,6 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
      TODO: Build an expression that represents peel_iters for prologue and
      epilogue to be used in a run-time test.  */
 
-  byte_misalign = LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo);
-
   if (byte_misalign < 0)
     {
       peel_iters_prologue = vf/2;
@@ -276,24 +283,72 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
                       + (peel_iters_epilogue * scalar_single_iter_cost)
                       + peel_guard_costs;
 
-  /* Allow targets add additional (outside-of-loop) costs. FORNOW, the only
-     information we provide for the target is whether testing against the
-     threshold involves a runtime test.  */
-  if (targetm.vectorize.builtin_vectorization_cost)
-    {
-      bool runtime_test = false;
+  /* FORNOW: The scalar outside cost is incremented in one of the
+     following ways:
 
-      /* If the number of iterations is unknown, or the
-	 peeling-for-misalignment amount is unknown, we eill have to generate
-	 a runtime test to test the loop count against the threshold.  */
-      if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-	  || (byte_misalign < 0))
-	runtime_test = true;
-      vec_outside_cost +=
-	targetm.vectorize.builtin_vectorization_cost (runtime_test);
-      if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "cost model : Adding target out-of-loop cost = %d",
-		  targetm.vectorize.builtin_vectorization_cost (runtime_test));
+     1. The vectorizer checks for alignment and aliasing and generates
+     a condition that allows dynamic vectorization.  A cost model
+     check is ANDED with the versioning condition.  Hence scalar code
+     path now has the added cost of the versioning check.
+
+       if (cost > th & versioning_check)
+         jmp to vector code
+
+     Hence run-time scalar is incremented by not-taken branch cost.
+
+     2. The vectorizer then checks if a prologue is required.  If the
+     cost model check was not done before during versioning, it has to
+     be done before the prologue check.
+
+       if (cost <= th)
+         prologue = scalar_iters
+       if (prologue == 0)
+         jmp to vector code
+       else
+         execute prologue
+       if (prologue == num_iters)
+	 go to exit
+
+     Hence the run-time scalar cost is incremented by a taken branch,
+     plus a not-taken branch, plus a taken branch cost.
+
+     3. The vectorizer then checks if an epilogue is required.  If the
+     cost model check was not done before during prologue check, it
+     has to be done with the epilogue check.
+
+       if (prologue == 0)
+         jmp to vector code
+       else
+         execute prologue
+       if (prologue == num_iters)
+	 go to exit
+       vector code:
+         if ((cost <= th) | (scalar_iters-prologue-epilogue == 0))
+           jmp to epilogue
+
+     Hence the run-time scalar cost should be incremented by 2 taken
+     branches.
+
+     TODO: The back end may reorder the BBS's differently and reverse
+     conditions/branch directions.  Change the stimates below to
+     something more reasonable.  */
+
+  if (runtime_test)
+    {
+      /* Cost model check occurs at versioning.  */
+      if (VEC_length (tree, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo))
+	  || VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)))
+	scalar_outside_cost += TARG_COND_NOT_TAKEN_BRANCH_COST;
+      else
+	{
+	  /* Cost model occurs at prologue generation.  */
+	  if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
+	    scalar_outside_cost += 2 * TARG_COND_TAKEN_BRANCH_COST
+	      + TARG_COND_NOT_TAKEN_BRANCH_COST;
+	  /* Cost model check occurs at epilogue generation.  */
+	  else
+	    scalar_outside_cost += 2 * TARG_COND_TAKEN_BRANCH_COST;
+	}
     }
 
   /* Add SLP costs.  */
@@ -306,9 +361,13 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 
   /* Calculate number of iterations required to make the vector version 
      profitable, relative to the loop bodies only. The following condition
-     must hold true: ((SIC*VF)-VIC)*niters > VOC*VF, where
+     must hold true: 
+     SIC * niters + SOC > VIC * ((niters-PL_ITERS-EP_ITERS)/VF) + VOC
+     where
      SIC = scalar iteration cost, VIC = vector iteration cost,
-     VOC = vector outside cost and VF = vectorization factor.  */
+     VOC = vector outside cost, VF = vectorization factor,
+     PL_ITERS = prologue iterations, EP_ITERS= epilogue iterations
+     SOC = scalar outside cost for run time cost model check.  */
 
   if ((scalar_single_iter_cost * vf) > vec_inside_cost)
     {
@@ -316,15 +375,15 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
         min_profitable_iters = 1;
       else
         {
-          min_profitable_iters = (vec_outside_cost * vf 
-                                  - vec_inside_cost * peel_iters_prologue
+          min_profitable_iters = ((vec_outside_cost - scalar_outside_cost) * vf
+				  - vec_inside_cost * peel_iters_prologue
                                   - vec_inside_cost * peel_iters_epilogue)
                                  / ((scalar_single_iter_cost * vf)
                                     - vec_inside_cost);
 
           if ((scalar_single_iter_cost * vf * min_profitable_iters)
               <= ((vec_inside_cost * min_profitable_iters)
-                  + (vec_outside_cost * vf)))
+                  + ((vec_outside_cost - scalar_outside_cost) * vf)))
             min_profitable_iters++;
         }
     }
@@ -346,7 +405,9 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 	       vec_inside_cost);
       fprintf (vect_dump, "  Vector outside of loop cost: %d\n",
 	       vec_outside_cost);
-      fprintf (vect_dump, "  Scalar cost: %d\n", scalar_single_iter_cost);
+      fprintf (vect_dump, "  Scalar iteration cost: %d\n",
+	       scalar_single_iter_cost);
+      fprintf (vect_dump, "  Scalar outside cost: %d\n", scalar_outside_cost);
       fprintf (vect_dump, "  prologue iterations: %d\n",
                peel_iters_prologue);
       fprintf (vect_dump, "  epilogue iterations: %d\n",
@@ -6467,6 +6528,37 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
     }
 }
 
+/* Return the more conservative threshold between the
+   min_profitable_iters returned by the cost model and the user
+   specified threshold, if provided.  */
+
+static unsigned int
+conservative_cost_threshold (loop_vec_info loop_vinfo,
+			     int min_profitable_iters)
+{
+  unsigned int th;
+  int min_scalar_loop_bound;
+
+  min_scalar_loop_bound = ((PARAM_VALUE (PARAM_MIN_VECT_LOOP_BOUND)
+			    * LOOP_VINFO_VECT_FACTOR (loop_vinfo)) - 1);
+
+  /* Use the cost model only if it is more conservative than user specified
+     threshold.  */
+  th = (unsigned) min_scalar_loop_bound;
+  if (min_profitable_iters
+      && (!min_scalar_loop_bound
+          || min_profitable_iters > min_scalar_loop_bound))
+    th = (unsigned) min_profitable_iters;
+
+  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))	      
+    fprintf (vect_dump, "not vectorized: vectorization may not be"
+	     "profitable.");
+  
+  if (th && vect_print_dump_info (REPORT_DETAILS))
+    fprintf (vect_dump, "Vectorization may not be profitable.");
+
+  return th;
+}
 
 /* Function vect_do_peeling_for_loop_bound
 
@@ -6487,8 +6579,8 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio)
   edge update_e;
   basic_block preheader;
   int loop_num;
-  unsigned int th;
-  int min_scalar_loop_bound;
+  bool check_profitability = false;
+  unsigned int th = 0;
   int min_profitable_iters;
 
   if (vect_print_dump_info (REPORT_DETAILS))
@@ -6506,28 +6598,24 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio)
 
   loop_num  = loop->num; 
 
-  /* Analyze cost to set threshhold for vectorized loop.  */
-  min_profitable_iters = LOOP_VINFO_COST_MODEL_MIN_ITERS (loop_vinfo);
-  min_scalar_loop_bound = ((PARAM_VALUE (PARAM_MIN_VECT_LOOP_BOUND)
-			    * LOOP_VINFO_VECT_FACTOR (loop_vinfo)) - 1);
+  /* If cost model check not done during versioning and 
+     peeling for alignment.  */
+  if (!VEC_length (tree, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo))
+      && !VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo))
+      && !LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo))
+    {
+      check_profitability = true;
 
-  /* Use the cost model only if it is more conservative than user specified
-     threshold.  */
+      /* Get profitability threshold for vectorized loop.  */
+      min_profitable_iters = LOOP_VINFO_COST_MODEL_MIN_ITERS (loop_vinfo);
 
-  th = (unsigned) min_scalar_loop_bound;
-  if (min_profitable_iters
-      && (!min_scalar_loop_bound
-          || min_profitable_iters > min_scalar_loop_bound))
-    th = (unsigned) min_profitable_iters;
-
-  if (((LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo) < 0)
-      || !LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
-      && vect_print_dump_info (REPORT_DETAILS))
-    fprintf (vect_dump, "vectorization may not be profitable.");
+      th = conservative_cost_threshold (loop_vinfo, 
+					min_profitable_iters);
+    }
 
   new_loop = slpeel_tree_peel_loop_to_edge (loop, single_exit (loop),
                                             ratio_mult_vf_name, ni_name, false,
-                                            th);
+                                            th, check_profitability);
   gcc_assert (new_loop);
   gcc_assert (loop_num == loop->num);
 #ifdef ENABLE_CHECKING
@@ -6745,6 +6833,9 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo)
   tree niters_of_prolog_loop, ni_name;
   tree n_iters;
   struct loop *new_loop;
+  bool check_profitability = false;
+  unsigned int th = 0;
+  int min_profitable_iters;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_do_peeling_for_alignment ===");
@@ -6754,10 +6845,26 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo)
   ni_name = vect_build_loop_niters (loop_vinfo);
   niters_of_prolog_loop = vect_gen_niters_for_prolog_loop (loop_vinfo, ni_name);
   
+
+  /* If cost model check not done during versioning.  */
+  if (!VEC_length (tree, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo))
+      && !VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)))
+    {
+      check_profitability = true;
+
+      /* Get profitability threshold for vectorized loop.  */
+      min_profitable_iters = LOOP_VINFO_COST_MODEL_MIN_ITERS (loop_vinfo);
+
+      th = conservative_cost_threshold (loop_vinfo, 
+					min_profitable_iters);
+    }
+
   /* Peel the prolog loop and iterate it niters_of_prolog_loop.  */
-  new_loop = 
-	slpeel_tree_peel_loop_to_edge (loop, loop_preheader_edge (loop), 
-				       niters_of_prolog_loop, ni_name, true, 0); 
+  new_loop =
+    slpeel_tree_peel_loop_to_edge (loop, loop_preheader_edge (loop),
+				   niters_of_prolog_loop, ni_name, true,
+				   th, check_profitability);
+
   gcc_assert (new_loop);
 #ifdef ENABLE_CHECKING
   slpeel_verify_cfg_after_peeling (new_loop, loop);
@@ -6785,6 +6892,8 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo)
    checked at runtime.
 
    Input:
+   COND_EXPR  - input conditional expression.  New conditions will be chained
+                with logical AND operation.
    LOOP_VINFO - two fields of the loop information are used.
                 LOOP_VINFO_PTR_MASK is the mask used to check the alignment.
                 LOOP_VINFO_MAY_MISALIGN_STMTS contains the refs to be checked.
@@ -6801,8 +6910,9 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo)
         test can be done as a&(n-1) == 0.  For example, for 16
         byte vectors the test is a&0xf == 0.  */
 
-static tree
+static void
 vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
+                                   tree *cond_expr,
                                    tree *cond_expr_stmt_list)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -6818,6 +6928,7 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
   tree or_tmp_name = NULL_TREE;
   tree and_tmp, and_tmp_name, and_stmt;
   tree ptrsize_zero;
+  tree part_cond_expr;
 
   /* Check that mask is one less than a power of 2, i.e., mask is
      all zeros followed by all ones.  */
@@ -6891,8 +7002,13 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
   /* Make and_tmp the left operand of the conditional test against zero.
      if and_tmp has a nonzero bit then some address is unaligned.  */
   ptrsize_zero = build_int_cst (int_ptrsize_type, 0);
-  return build2 (EQ_EXPR, boolean_type_node,
-                 and_tmp_name, ptrsize_zero);
+  part_cond_expr = fold_build2 (EQ_EXPR, boolean_type_node,
+				and_tmp_name, ptrsize_zero);
+  if (*cond_expr)
+    *cond_expr = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+			      *cond_expr, part_cond_expr);
+  else
+    *cond_expr = part_cond_expr;
 }
 
 /* Function vect_vfa_segment_size.
@@ -6933,7 +7049,7 @@ vect_vfa_segment_size (struct data_reference *dr, tree vect_factor)
 
    Input:
    COND_EXPR  - input conditional expression.  New conditions will be chained
-                with logical and operation.
+                with logical AND operation.
    LOOP_VINFO - field LOOP_VINFO_MAY_ALIAS_STMTS contains the list of ddrs
 	        to be checked.
 
@@ -7055,7 +7171,11 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
    data references that may or may not be aligned.  An additional
    sequence of runtime tests is generated for each pairs of DDRs whose
    independence was not proven.  The vectorized version of loop is 
-   executed only if both alias and alignment tests are passed.  */
+   executed only if both alias and alignment tests are passed.  
+  
+   The test generated to check which version of loop is executed
+   is modified to also check for profitability as indicated by the 
+   cost model initially.  */
 
 static void
 vect_loop_versioning (loop_vec_info loop_vinfo)
@@ -7072,17 +7192,30 @@ vect_loop_versioning (loop_vec_info loop_vinfo)
   tree orig_phi, new_phi, arg;
   unsigned prob = 4 * REG_BR_PROB_BASE / 5;
   tree gimplify_stmt_list;
+  tree scalar_loop_iters = LOOP_VINFO_NITERS (loop_vinfo);
+  int min_profitable_iters = 0;
+  unsigned int th;
 
-  if (!VEC_length (tree, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo))
-      && !VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)))
-    return;
+  /* Get profitability threshold for vectorized loop.  */
+  min_profitable_iters = LOOP_VINFO_COST_MODEL_MIN_ITERS (loop_vinfo);
+
+  th = conservative_cost_threshold (loop_vinfo,
+				    min_profitable_iters);
+
+  cond_expr =
+    build2 (GT_EXPR, boolean_type_node, scalar_loop_iters, 
+	    build_int_cst (TREE_TYPE (scalar_loop_iters), th));
+
+  cond_expr = force_gimple_operand (cond_expr, &cond_expr_stmt_list,
+				    false, NULL_TREE);
 
   if (VEC_length (tree, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo)))
-    cond_expr =
-      vect_create_cond_for_align_checks (loop_vinfo, &cond_expr_stmt_list);
+      vect_create_cond_for_align_checks (loop_vinfo, &cond_expr,
+					 &cond_expr_stmt_list);
 
   if (VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)))
-    vect_create_cond_for_alias_checks (loop_vinfo, &cond_expr, &cond_expr_stmt_list);
+    vect_create_cond_for_alias_checks (loop_vinfo, &cond_expr, 
+				       &cond_expr_stmt_list);
 
   cond_expr =
     fold_build2 (NE_EXPR, boolean_type_node, cond_expr, integer_zero_node);
@@ -7260,7 +7393,10 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vec_transform_loop ===");
-  vect_loop_versioning (loop_vinfo);
+
+  if (VEC_length (tree, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo))
+      || VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)))
+    vect_loop_versioning (loop_vinfo);
 
   /* CHECKME: we wouldn't need this if we called update_ssa once
      for all loops.  */

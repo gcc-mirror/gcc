@@ -1,3 +1,39 @@
+2007-12-06  Harsha Jagasia <harsha.jagasia@amd.com>
+
+	* tree-vectorizer.c (slpeel_add_loop_guard): Gimplify the condition.
+	(set_prologue_iterations): New. Set the prologue iterations to total
+	number of scalar iterations if the cost model check indicates that
+	scalar code should be generated.
+	(slpeel_tree_peel_loop_to_edge): Add a new parameter and code for 
+	generating the cost condition for epilog. Call
+	set_prologue_iterations to generate cost condition for prolog.
+	(new_loop_vec_info): Initialize LOOP_VINFO_NITERS_UNCHANGED.
+	* tree-vectorizer.h (LOOP_VINFO_NITERS_UNCHANGED): New.
+	(slpeel_tree_peel_loop_to_edge): Update declaration.
+	(set_prologue_iterations): New declaration.
+	* tree-vect-analyze.c (vect_analyze_loop_form): Update 
+	LOOP_VINFO_NITERS_UNCHANGED.
+	* tree-vect-transform.c
+	(vect_estimate_min_profitable_iters): Add new parameter and
+	code to  check if run time cost model test is needed.
+	Remove code that adds builtin vectorization cost to scalar
+	outside cost for the run time cost model test. If run time
+	cost model test is needed add the appropriate guard cost to
+	the scalar outside cost. The guard cost depends on whether
+	the guard is generated at versioning or at prolog generation
+	or at epilog generation. Change cost model equation to include
+	scalar outside cost.
+	(conservative_cost_threshold): New. Return the less conservative
+	profitability threshold between the cost model threshold and the
+	user defined vectorization threshold.
+	(vect_do_peeling_for_loop_bound): Call conservative_cost_threshold.
+	(vect_do_peeling_for_alignment): Same.
+	(vect_loop_versioning): Same.
+	(vect_create_cond_for_align_checks): ANDs the cost model condition
+	with the alignment condition.
+	(vect_transform_loop): Call loop versioning only when there is a
+	misalignment or an aliasing problem.
+
 2007-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/20983
