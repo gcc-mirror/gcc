@@ -417,9 +417,9 @@ ffi_closure_N32:
 	# Call ffi_closure_mips_inner_N32 to do the real work.
 	LA	t9, ffi_closure_mips_inner_N32
 	move	a0, $12	 # Pointer to the ffi_closure
-	addu	a1, $sp, V0_OFF2
-	addu	a2, $sp, A0_OFF2
-	addu	a3, $sp, F12_OFF2
+	ADDU	a1, $sp, V0_OFF2
+	ADDU	a2, $sp, A0_OFF2
+	ADDU	a3, $sp, F12_OFF2
 	jalr	t9
 
 	# Return flags are in v0
