@@ -15,26 +15,26 @@ program main
   close(10,status="delete")
 
   open (10, form="unformatted",convert="big_endian") ! { dg-warning "Extension: CONVERT" }
-  i = (/ Z'11223344', Z'55667700' /)
+  i = (/ Z'11223344', Z'55667700' /) ! { dg-warning "BOZ used outside a DATA statement" }
   write (10) i
   rewind (10)
   read (10) b
-  if (any(b /= (/ Z'11', Z'22', Z'33', Z'44', Z'55', Z'66', Z'77', Z'00' /))) &
+  if (any(b /= (/ Z'11', Z'22', Z'33', Z'44', Z'55', Z'66', Z'77', Z'00' /))) & ! { dg-warning "BOZ used outside a DATA statement" }
     call abort
   backspace 10
   read (10) j
-  if (j /= Z'1122334455667700') call abort
+  if (j /= Z'1122334455667700') call abort ! { dg-warning "BOZ used outside a DATA statement" }
   close (10, status="delete")
 
   open (10, form="unformatted", convert="little_endian") ! { dg-warning "Extension: CONVERT" }
   write (10) i
   rewind (10)
   read (10) b
-  if (any(b /= (/ Z'44', Z'33', Z'22', Z'11', Z'00', Z'77', Z'66', Z'55' /))) &
+  if (any(b /= (/ Z'44', Z'33', Z'22', Z'11', Z'00', Z'77', Z'66', Z'55' /))) & ! { dg-warning "BOZ used outside a DATA statement" }
     call abort
   backspace 10
   read (10) j
-  if (j /= Z'5566770011223344') call abort
+  if (j /= Z'5566770011223344') call abort ! { dg-warning "BOZ used outside a DATA statement" }
   close (10, status="delete")
 
 end program main
