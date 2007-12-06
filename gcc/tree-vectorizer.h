@@ -228,6 +228,9 @@ typedef struct _loop_vec_info {
 #define LOOP_VINFO_LOOP(L)            (L)->loop
 #define LOOP_VINFO_BBS(L)             (L)->bbs
 #define LOOP_VINFO_NITERS(L)          (L)->num_iters
+/* Since LOOP_VINFO_NITERS can change after prologue peeling
+   retain total unchanged scalar loop iterations for cost model.  */
+#define LOOP_VINFO_NITERS_UNCHANGED(L)          (L)->num_iters
 #define LOOP_VINFO_COST_MODEL_MIN_ITERS(L)	(L)->min_profitable_iters
 #define LOOP_VINFO_VECTORIZABLE_P(L)  (L)->vectorizable
 #define LOOP_VINFO_VECT_FACTOR(L)     (L)->vectorization_factor
@@ -630,7 +633,9 @@ extern bitmap vect_memsyms_to_rename;
    divide by the vectorization factor, and to peel the first few iterations
    to force the alignment of data references in the loop.  */
 extern struct loop *slpeel_tree_peel_loop_to_edge 
-  (struct loop *, edge, tree, tree, bool, unsigned int);
+  (struct loop *, edge, tree, tree, bool, unsigned int, bool);
+extern void set_prologue_iterations (basic_block, tree,
+				     struct loop *, unsigned int);
 extern void slpeel_make_loop_iterate_ntimes (struct loop *, tree);
 extern bool slpeel_can_duplicate_loop_p (const struct loop *, const_edge);
 #ifdef ENABLE_CHECKING

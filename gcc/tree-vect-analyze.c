@@ -602,6 +602,7 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 
   min_profitable_iters = vect_estimate_min_profitable_iters (loop_vinfo);
   LOOP_VINFO_COST_MODEL_MIN_ITERS (loop_vinfo) = min_profitable_iters;
+
   if (min_profitable_iters < 0)
     {
       if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
@@ -4216,6 +4217,7 @@ vect_analyze_loop_form (struct loop *loop)
 
   loop_vinfo = new_loop_vec_info (loop);
   LOOP_VINFO_NITERS (loop_vinfo) = number_of_iterations;
+  LOOP_VINFO_NITERS_UNCHANGED (loop_vinfo) = number_of_iterations;
 
   STMT_VINFO_TYPE (vinfo_for_stmt (loop_cond)) = loop_exit_ctrl_vec_info_type;
 

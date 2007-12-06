@@ -918,20 +918,29 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop, edge e)
 
 static edge
 slpeel_add_loop_guard (basic_block guard_bb, tree cond, basic_block exit_bb,
-		        basic_block dom_bb)
+		       basic_block dom_bb)
 {
   block_stmt_iterator bsi;
   edge new_e, enter_e;
   tree cond_stmt;
+  tree gimplify_stmt_list;
 
   enter_e = EDGE_SUCC (guard_bb, 0);
   enter_e->flags &= ~EDGE_FALLTHRU;
   enter_e->flags |= EDGE_FALSE_VALUE;
   bsi = bsi_last (guard_bb);
 
+  cond =
+    force_gimple_operand (cond, &gimplify_stmt_list, true,
+			  NULL_TREE);
   cond_stmt = build3 (COND_EXPR, void_type_node, cond,
 		      NULL_TREE, NULL_TREE);
+  if (gimplify_stmt_list)
+    bsi_insert_after (&bsi, gimplify_stmt_list, BSI_NEW_STMT);
+
+  bsi = bsi_last (guard_bb);
   bsi_insert_after (&bsi, cond_stmt, BSI_NEW_STMT);
+
   /* Add new edge to connect guard block to the merge/loop-exit block.  */
   new_e = make_edge (guard_bb, exit_bb, EDGE_TRUE_VALUE);
   set_immediate_dominator (CDI_DOMINATORS, exit_bb, dom_bb);
@@ -1007,12 +1016,89 @@ slpeel_verify_cfg_after_peeling (struct loop *first_loop,
 }
 #endif
 
+/* If the run time cost model check determines that vectorization is
+   not profitable and hence scalar loop should be generated then set
+   FIRST_NITERS to prologue peeled iterations. This will allow all the
+   iterations to be executed in the prologue peeled scalar loop.  */
+
+void
+set_prologue_iterations (basic_block bb_before_first_loop,
+			 tree first_niters,
+			 struct loop *loop,
+			 unsigned int th)
+{
+  edge e;
+  basic_block cond_bb, then_bb;
+  tree var, prologue_after_cost_adjust_name, stmt;
+  block_stmt_iterator bsi;
+  tree newphi;
+  edge e_true, e_false, e_fallthru;
+  tree cond_stmt;
+  tree gimplify_stmt_list;
+  tree cost_pre_condition = NULL_TREE;
+  tree scalar_loop_iters = 
+    LOOP_VINFO_NITERS_UNCHANGED (loop_vec_info_for_loop (loop));
+
+  e = single_pred_edge (bb_before_first_loop);
+  cond_bb = split_edge(e);
+
+  e = single_pred_edge (bb_before_first_loop);
+  then_bb = split_edge(e);
+  set_immediate_dominator (CDI_DOMINATORS, then_bb, cond_bb);
+
+  e_false = make_single_succ_edge (cond_bb, bb_before_first_loop,
+				   EDGE_FALSE_VALUE);
+  set_immediate_dominator (CDI_DOMINATORS, bb_before_first_loop, cond_bb);
+
+  e_true = EDGE_PRED (then_bb, 0);
+  e_true->flags &= ~EDGE_FALLTHRU;
+  e_true->flags |= EDGE_TRUE_VALUE;
+
+  e_fallthru = EDGE_SUCC (then_bb, 0);
+
+  cost_pre_condition =
+    build2 (LE_EXPR, boolean_type_node, scalar_loop_iters, 
+	    build_int_cst (TREE_TYPE (scalar_loop_iters), th));
+  cost_pre_condition =
+    force_gimple_operand (cost_pre_condition, &gimplify_stmt_list,
+			  true, NULL_TREE);
+  cond_stmt = build3 (COND_EXPR, void_type_node, cost_pre_condition,
+		      NULL_TREE, NULL_TREE);
+
+  bsi = bsi_last (cond_bb);
+  if (gimplify_stmt_list)
+    bsi_insert_after (&bsi, gimplify_stmt_list, BSI_NEW_STMT);
+
+  bsi = bsi_last (cond_bb);
+  bsi_insert_after (&bsi, cond_stmt, BSI_NEW_STMT);
+					  
+  var = create_tmp_var (TREE_TYPE (scalar_loop_iters),
+			"prologue_after_cost_adjust");
+  add_referenced_var (var);
+  prologue_after_cost_adjust_name = 
+    force_gimple_operand (scalar_loop_iters, &stmt, false, var);
+
+  bsi = bsi_last (then_bb);
+  if (stmt)
+    bsi_insert_after (&bsi, stmt, BSI_NEW_STMT);
+
+  newphi = create_phi_node (var, bb_before_first_loop);
+  add_phi_arg (newphi, prologue_after_cost_adjust_name, e_fallthru);
+  add_phi_arg (newphi, first_niters, e_false);
+
+  first_niters = PHI_RESULT (newphi);
+}
+
+
 /* Function slpeel_tree_peel_loop_to_edge.
 
    Peel the first (last) iterations of LOOP into a new prolog (epilog) loop
    that is placed on the entry (exit) edge E of LOOP. After this transformation
    we have two loops one after the other - first-loop iterates FIRST_NITERS
    times, and second-loop iterates the remainder NITERS - FIRST_NITERS times.
+   If the cost model indicates that it is profitable to emit a scalar 
+   loop instead of the vector one, then the prolog (epilog) loop will iterate
+   for the entire unchanged scalar iterations of the loop.
 
    Input:
    - LOOP: the loop to be peeled.
@@ -1027,6 +1113,13 @@ slpeel_verify_cfg_after_peeling (struct loop *first_loop,
         for updating the loop bound of the first-loop to FIRST_NITERS.  If it
         is false, the caller of this function may want to take care of this
         (this can be useful if we don't want new stmts added to first-loop).
+   - TH: cost model profitability threshold of iterations for vectorization.
+   - CHECK_PROFITABILITY: specify whether cost model check has not occured
+                          during versioning and hence needs to occur during
+			  prologue generation or whether cost model check 
+			  has not occured during prologue generation and hence
+			  needs to occur during epilogue generation.
+	    
 
    Output:
    The function returns a pointer to the new loop-copy, or NULL if it failed
@@ -1048,11 +1141,11 @@ struct loop*
 slpeel_tree_peel_loop_to_edge (struct loop *loop, 
 			       edge e, tree first_niters, 
 			       tree niters, bool update_first_loop_count,
-			       unsigned int th)
+			       unsigned int th, bool check_profitability)
 {
   struct loop *new_loop = NULL, *first_loop, *second_loop;
   edge skip_e;
-  tree pre_condition;
+  tree pre_condition = NULL_TREE;
   bitmap definitions;
   basic_block bb_before_second_loop, bb_after_second_loop;
   basic_block bb_before_first_loop;
@@ -1060,6 +1153,9 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
   basic_block new_exit_bb;
   edge exit_e = single_exit (loop);
   LOC loop_loc;
+  tree cost_pre_condition = NULL_TREE;
+  tree scalar_loop_iters = 
+    LOOP_VINFO_NITERS_UNCHANGED (loop_vec_info_for_loop (loop));
   
   if (!slpeel_can_duplicate_loop_p (loop, e))
     return NULL;
@@ -1116,32 +1212,121 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
   rename_variables_in_loop (new_loop);
 
 
-  /* 2. Add the guard that controls whether the first loop is executed.
-        Resulting CFG would be:
+  /* 2.  Add the guard code in one of the following ways:
 
-        bb_before_first_loop:
-        if (FIRST_NITERS == 0) GOTO bb_before_second_loop
-                               GOTO first-loop
+     2.a Add the guard that controls whether the first loop is executed.
+         This occurs when this function is invoked for prologue or epilogiue
+	 generation and when the cost model check can be done at compile time.
 
-        first_loop:
-        do {
-        } while ...
+         Resulting CFG would be:
 
-        bb_before_second_loop:
+         bb_before_first_loop:
+         if (FIRST_NITERS == 0) GOTO bb_before_second_loop
+                                GOTO first-loop
 
-        second_loop:
-        do {
-        } while ...
+         first_loop:
+         do {
+         } while ...
 
-        orig_exit_bb:
-   */
+         bb_before_second_loop:
+
+         second_loop:
+         do {
+         } while ...
+
+         orig_exit_bb:
+
+     2.b Add the cost model check that allows the prologue
+         to iterate for the entire unchanged scalar
+         iterations of the loop in the event that the cost
+         model indicates that the scalar loop is more
+         profitable than the vector one. This occurs when
+	 this function is invoked for prologue generation
+	 and the cost model check needs to be done at run
+	 time.
+
+         Resulting CFG after prologue peeling would be:
+
+         if (scalar_loop_iterations <= th)
+           FIRST_NITERS = scalar_loop_iterations
+
+         bb_before_first_loop:
+         if (FIRST_NITERS == 0) GOTO bb_before_second_loop
+                                GOTO first-loop
+
+         first_loop:
+         do {
+         } while ...
+
+         bb_before_second_loop:
+
+         second_loop:
+         do {
+         } while ...
+
+         orig_exit_bb:
+
+     2.c Add the cost model check that allows the epilogue
+         to iterate for the entire unchanged scalar
+         iterations of the loop in the event that the cost
+         model indicates that the scalar loop is more
+         profitable than the vector one. This occurs when
+	 this function is invoked for epilogue generation
+	 and the cost model check needs to be done at run
+	 time.
+
+         Resulting CFG after prologue peeling would be:
+
+         bb_before_first_loop:
+         if ((scalar_loop_iterations <= th)
+             ||
+             FIRST_NITERS == 0) GOTO bb_before_second_loop
+                                GOTO first-loop
+
+         first_loop:
+         do {
+         } while ...
+
+         bb_before_second_loop:
+
+         second_loop:
+         do {
+         } while ...
+
+         orig_exit_bb:
+  */
 
   bb_before_first_loop = split_edge (loop_preheader_edge (first_loop));
   bb_before_second_loop = split_edge (single_exit (first_loop));
 
-  pre_condition =
-    fold_build2 (LE_EXPR, boolean_type_node, first_niters, 
-	build_int_cst (TREE_TYPE (first_niters), th));
+  /* Epilogue peeling.  */
+  if (!update_first_loop_count)
+    {
+      pre_condition =
+	fold_build2 (LE_EXPR, boolean_type_node, first_niters, 
+		     build_int_cst (TREE_TYPE (first_niters), 0));
+      if (check_profitability)
+	{
+	    cost_pre_condition = 
+	    build2 (LE_EXPR, boolean_type_node, scalar_loop_iters, 
+		    build_int_cst (TREE_TYPE (scalar_loop_iters), th));
+  
+	  pre_condition = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
+				       cost_pre_condition, pre_condition);
+	}
+    }
+
+  /* Prologue peeling.  */  
+  else
+    {
+      if (check_profitability)
+	set_prologue_iterations (bb_before_first_loop, first_niters,
+				 loop, th);
+
+      pre_condition =
+	fold_build2 (LE_EXPR, boolean_type_node, first_niters, 
+		     build_int_cst (TREE_TYPE (first_niters), 0));
+    }
 
   skip_e = slpeel_add_loop_guard (bb_before_first_loop, pre_condition,
                                   bb_before_second_loop, bb_before_first_loop);
@@ -1468,6 +1653,7 @@ new_loop_vec_info (struct loop *loop)
 
   LOOP_VINFO_BBS (res) = bbs;
   LOOP_VINFO_NITERS (res) = NULL;
+  LOOP_VINFO_NITERS_UNCHANGED (res) = NULL;
   LOOP_VINFO_COST_MODEL_MIN_ITERS (res) = 0;
   LOOP_VINFO_VECTORIZABLE_P (res) = 0;
   LOOP_PEELING_FOR_ALIGNMENT (res) = 0;
