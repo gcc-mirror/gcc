@@ -360,8 +360,7 @@ struct cpp_reader
   /* File and directory hash table.  */
   struct htab *file_hash;
   struct htab *dir_hash;
-  struct file_hash_entry *file_hash_entries;
-  unsigned int file_hash_entries_allocated, file_hash_entries_used;
+  struct file_hash_entry_pool *file_hash_entries;
 
   /* Negative path lookup hash table.  */
   struct htab *nonexistent_file_hash;

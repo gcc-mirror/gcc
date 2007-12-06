@@ -150,6 +150,21 @@ struct file_hash_entry
   } u;
 };
 
+/* Number of entries to put in a file_hash_entry pool.  */
+#define FILE_HASH_POOL_SIZE 127
+
+/* A file hash entry pool.  We allocate file_hash_entry object from
+   one of these.  */
+struct file_hash_entry_pool
+{
+  /* Number of entries used from this pool.  */
+  unsigned int file_hash_entries_used;
+  /* Next pool in the chain; used when freeing.  */
+  struct file_hash_entry_pool *next;
+  /* The memory pool.  */
+  struct file_hash_entry pool[FILE_HASH_POOL_SIZE];
+};
+
 static bool open_file (_cpp_file *file);
 static bool pch_open_file (cpp_reader *pfile, _cpp_file *file,
 			   bool *invalid_pch);
@@ -964,6 +979,19 @@ destroy_cpp_file (_cpp_file *file)
   free (file);
 }
 
+/* Release all the files allocated by this reader.  */
+static void
+destroy_all_cpp_files (cpp_reader *pfile)
+{
+  _cpp_file *iter = pfile->all_files;
+  while (iter)
+    {
+      _cpp_file *next = iter->next_file;
+      destroy_cpp_file (iter);
+      iter = next;
+    }
+}
+
 /* A hash of directory names.  The directory names are the path names
    of files which contain a #include "", the included file name is
    appended to this directories.
@@ -1009,20 +1037,35 @@ make_cpp_dir (cpp_reader *pfile, const char *dir_name, int sysp)
 static void
 allocate_file_hash_entries (cpp_reader *pfile)
 {
-  pfile->file_hash_entries_used = 0;
-  pfile->file_hash_entries_allocated = 127;
-  pfile->file_hash_entries = XNEWVEC (struct file_hash_entry,
-                                      pfile->file_hash_entries_allocated);
+  struct file_hash_entry_pool *pool = XNEW (struct file_hash_entry_pool);
+  pool->file_hash_entries_used = 0;
+  pool->next = pfile->file_hash_entries;
+  pfile->file_hash_entries = pool;
 }
 
 /* Return a new file hash entry.  */
 static struct file_hash_entry *
 new_file_hash_entry (cpp_reader *pfile)
 {
-  if (pfile->file_hash_entries_used == pfile->file_hash_entries_allocated)
+  unsigned int idx;
+  if (pfile->file_hash_entries->file_hash_entries_used == FILE_HASH_POOL_SIZE)
     allocate_file_hash_entries (pfile);
 
-  return &pfile->file_hash_entries[pfile->file_hash_entries_used++];
+  idx = pfile->file_hash_entries->file_hash_entries_used++;
+  return &pfile->file_hash_entries->pool[idx];
+}
+
+/* Free the file hash entry pools.  */
+static void
+free_file_hash_entries (cpp_reader *pfile)
+{
+  struct file_hash_entry_pool *iter = pfile->file_hash_entries;
+  while (iter)
+    {
+      struct file_hash_entry_pool *next = iter->next;
+      free (iter);
+      iter = next;
+    }
 }
 
 /* Returns TRUE if a file FNAME has ever been successfully opened.
@@ -1125,6 +1168,19 @@ _cpp_cleanup_files (cpp_reader *pfile)
   htab_delete (pfile->dir_hash);
   htab_delete (pfile->nonexistent_file_hash);
   obstack_free (&pfile->nonexistent_file_ob, 0);
+  free_file_hash_entries (pfile);
+  destroy_all_cpp_files (pfile);
+}
+
+/* Make the parser forget about files it has seen.  This can be useful
+   for resetting the parser to start another run.  */
+void
+cpp_clear_file_cache (cpp_reader *pfile)
+{
+  _cpp_cleanup_files (pfile);
+  pfile->file_hash_entries = NULL;
+  pfile->all_files = NULL;
+  _cpp_init_files (pfile);
 }
 
 /* Enter a file name in the hash for the sake of cpp_included.  */

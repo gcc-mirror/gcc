@@ -1281,6 +1281,7 @@ c_common_parse_file (int set_yydebug)
       if (++i >= num_in_fnames)
 	break;
       cpp_undef_all (parse_in);
+      cpp_clear_file_cache (parse_in);
       this_input_filename
 	= cpp_read_main_file (parse_in, in_fnames[i]);
       /* If an input file is missing, abandon further compilation.

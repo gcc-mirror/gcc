@@ -1,3 +1,8 @@
+2007-12-06  Tom Tromey  <tromey@redhat.com>
+
+	PR c/29172:
+	* c-opts.c (c_common_parse_file): Call cpp_clear_file_cache.
+
 2007-12-06  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* config/mips/mips.c (mips_function_ok_for_sibcall): Check

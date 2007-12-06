@@ -1,3 +1,20 @@
+2007-12-06  Tom Tromey  <tromey@redhat.com>
+
+	PR c/29172:
+	* internal.h (struct cpp_reader) <file_hash_entries>: Changed
+	type.
+	<file_hash_entries_allocated, file_hash_entries_used>: Removed.
+	* files.c (FILE_HASH_POOL_SIZE): New macro.
+	(struct file_hash_entry_pool): New.
+	(destroy_all_cpp_files): New function.
+	(allocate_file_hash_entries): Allocate a file_hash_entry_pool.
+	(new_file_hash_entry): Update.
+	(free_file_hash_entries): New function.
+	(_cpp_cleanup_files): Call free_file_hash_entries and
+	destroy_all_cpp_files.
+	(cpp_clear_file_cache): New function.
+	* include/cpplib.h (cpp_clear_file_cache): Declare.
+
 2007-12-03  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/34288:
