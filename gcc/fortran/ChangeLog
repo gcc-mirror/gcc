@@ -1,6 +1,6 @@
 2007-12-06  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/34435
+	PR fortran/34335
 	* module.c (find_symbol): Do not return symtrees with unique
 	names, which shows that they are private.
 
