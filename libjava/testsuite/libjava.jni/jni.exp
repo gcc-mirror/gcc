@@ -241,6 +241,14 @@ proc gcj_jni_invocation_compile_c_to_binary {file {options {}}} {
 }
 
 proc gcj_jni_get_cxxflags_invocation {} {
+  global LIBJAVA
+  if [info exists LIBJAVA] {
+      set libjava $LIBJAVA;
+  } else {
+      set libjava [libjava_find_lib libjava gcj]
+  }
+  set cxxflags "$libjava -ljvm"
+
   # Darwin needs -liconv linked, otherwise we get some unresolved.
   # If you're building the compiler with --prefix set to a place
   # where it's not yet installed, then the linker won't be able to
@@ -249,15 +257,7 @@ proc gcj_jni_get_cxxflags_invocation {} {
   # to just make the linker find libgcc using -L options.
   # Similar logic applies to libgcj.
   if { [istarget "*-*-darwin*"] } {
-      set cxxflags "-L../.libs -shared-libgcc -ljvm -lgcj -liconv"
-  } else {
-      global LIBJAVA
-      if [info exists LIBJAVA] {
-	  set libjava $LIBJAVA;
-      } else {
-	  set libjava [libjava_find_lib libjava gcj]
-      }
-      set cxxflags "$libjava -ljvm"
+    lappend cxxflags -shared-libgcc -lgcj -liconv
   }
 
   if { [istarget "*-*-solaris*"] } {
