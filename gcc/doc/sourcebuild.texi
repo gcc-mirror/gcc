@@ -447,8 +447,6 @@ versions, the information is on the GCC web site.)
 @item README.Portability
 Information about portability issues when writing code in GCC@.  FIXME:
 why isn't this part of this manual or of the GCC Coding Conventions?
-@item SERVICE
-A pointer to the GNU Service Directory.
 @end table
 
 FIXME: document such files in subdirectories, at least @file{config},
