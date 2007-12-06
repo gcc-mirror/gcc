@@ -747,6 +747,7 @@ finish_record_type (tree record_type, tree fieldlist, int rep_level,
 		    bool do_not_finalize)
 {
   enum tree_code code = TREE_CODE (record_type);
+  tree name = TYPE_NAME (record_type);
   tree ada_size = bitsize_zero_node;
   tree size = bitsize_zero_node;
   bool var_size = false;
@@ -754,9 +755,11 @@ finish_record_type (tree record_type, tree fieldlist, int rep_level,
   bool had_size_unit = TYPE_SIZE_UNIT (record_type) != 0;
   tree field;
 
+  if (name && TREE_CODE (name) == TYPE_DECL)
+    name = DECL_NAME (name);
+
   TYPE_FIELDS (record_type) = fieldlist;
-  TYPE_STUB_DECL (record_type)
-    = build_decl (TYPE_DECL, TYPE_NAME (record_type), record_type);
+  TYPE_STUB_DECL (record_type) = build_decl (TYPE_DECL, name, record_type);
 
   /* We don't need both the typedef name and the record name output in
      the debugging information, since they are the same.  */
