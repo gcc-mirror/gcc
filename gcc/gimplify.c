@@ -94,6 +94,7 @@ struct gimplify_ctx
   int conditions;
   bool save_stack;
   bool into_ssa;
+  bool allow_rhs_cond_expr;
 };
 
 static struct gimplify_ctx *gimplify_ctxp;
@@ -2546,6 +2547,61 @@ gimple_boolify (tree expr)
     }
 }
 
+/* Given a conditional expression *EXPR_P without side effects, gimplify
+   its operands.  New statements are inserted to PRE_P.  */
+
+static enum gimplify_status
+gimplify_pure_cond_expr (tree *expr_p, tree *pre_p)
+{
+  tree expr = *expr_p, cond;
+  enum gimplify_status ret, tret;
+  enum tree_code code;
+
+  cond = gimple_boolify (COND_EXPR_COND (expr));
+
+  /* We need to handle && and || specially, as their gimplification
+     creates pure cond_expr, thus leading to an infinite cycle otherwise.  */
+  code = TREE_CODE (cond);
+  if (code == TRUTH_ANDIF_EXPR)
+    TREE_SET_CODE (cond, TRUTH_AND_EXPR);
+  else if (code == TRUTH_ORIF_EXPR)
+    TREE_SET_CODE (cond, TRUTH_OR_EXPR);
+  ret = gimplify_expr (&cond, pre_p, NULL,
+			      is_gimple_condexpr, fb_rvalue);
+  COND_EXPR_COND (*expr_p) = cond;
+
+  tret = gimplify_expr (&COND_EXPR_THEN (expr), pre_p, NULL,
+				   is_gimple_val, fb_rvalue);
+  ret = MIN (ret, tret);
+  tret = gimplify_expr (&COND_EXPR_ELSE (expr), pre_p, NULL,
+				   is_gimple_val, fb_rvalue);
+
+  return MIN (ret, tret);
+}
+
+/* Returns true if evaluating EXPR could trap.
+   EXPR is GENERIC, while tree_could_trap_p can be called
+   only on GIMPLE.  */
+
+static bool
+generic_expr_could_trap_p (tree expr)
+{
+  unsigned i, n;
+
+  if (!expr || is_gimple_val (expr))
+    return false;
+
+  if (!EXPR_P (expr) || tree_could_trap_p (expr))
+    return true;
+
+  n = TREE_OPERAND_LENGTH (expr);
+  for (i = 0; i < n; i++)
+    if (generic_expr_could_trap_p (TREE_OPERAND (expr, i)))
+      return true;
+
+  return false;
+}
+
 /*  Convert the conditional expression pointed to by EXPR_P '(p) ? a : b;'
     into
 
@@ -2579,6 +2635,15 @@ gimplify_cond_expr (tree *expr_p, tree *pre_p, fallback_t fallback)
 
       if ((fallback & fb_lvalue) == 0)
 	{
+	  if (gimplify_ctxp->allow_rhs_cond_expr
+	      /* If either branch has side effects or could trap, it can't be
+		 evaluated unconditionally.  */
+	      && !TREE_SIDE_EFFECTS (TREE_OPERAND (*expr_p, 1))
+	      && !generic_expr_could_trap_p (TREE_OPERAND (*expr_p, 1))
+	      && !TREE_SIDE_EFFECTS (TREE_OPERAND (*expr_p, 2))
+	      && !generic_expr_could_trap_p (TREE_OPERAND (*expr_p, 2)))
+	    return gimplify_pure_cond_expr (expr_p, pre_p);
+
 	  result = tmp2 = tmp = create_tmp_var (TREE_TYPE (expr), "iftmp");
 	  ret = GS_ALL_DONE;
 	}
@@ -2593,7 +2658,7 @@ gimplify_cond_expr (tree *expr_p, tree *pre_p, fallback_t fallback)
 	  if (TREE_TYPE (TREE_OPERAND (expr, 2)) != void_type_node)
 	    TREE_OPERAND (expr, 2) =
 	      build_fold_addr_expr (TREE_OPERAND (expr, 2));
-	  
+
 	  tmp2 = tmp = create_tmp_var (type, "iftmp");
 
 	  expr = build3 (COND_EXPR, void_type_node, TREE_OPERAND (expr, 0),
@@ -6444,6 +6509,7 @@ force_gimple_operand (tree expr, tree *stmts, bool simple, tree var)
 
   push_gimplify_context ();
   gimplify_ctxp->into_ssa = gimple_in_ssa_p (cfun);
+  gimplify_ctxp->allow_rhs_cond_expr = true;
 
   if (var)
     expr = build_gimple_modify_stmt (var, expr);
