@@ -1,3 +1,15 @@
+2007-12-06  Zdenek Dvorak  <ook@ucw.cz>
+	    Dorit Nuzman  <dorit@il.ibm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/34005
+	* tree-gimple.c (is_gimple_formal_tmp_rhs): Add a case for COND_EXPR.
+	* gimplify.c (gimplify_ctx): Add a new member allow_rhs_cond_expr.
+	(gimplify_pure_cond_expr): New function.
+	(generic_expr_could_trap_p): New function.
+	(gimplify_cond_expr): Call gimplify_pure_cond_expr.
+	(force_gimple_operand): Initialize new field allow_rhs_cond_expr.
+
 2007-12-06  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (s390_emit_stack_tie): New function.
