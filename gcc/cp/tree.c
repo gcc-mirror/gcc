@@ -2602,8 +2602,11 @@ stabilize_call (tree call, tree *initp)
   int i;
   int nargs = call_expr_nargs (call);
 
-  if (call == error_mark_node)
-    return;
+  if (call == error_mark_node || processing_template_decl)
+    {
+      *initp = NULL_TREE;
+      return;
+    }
 
   gcc_assert (TREE_CODE (call) == CALL_EXPR);
 
@@ -2662,7 +2665,7 @@ stabilize_init (tree init, tree *initp)
 
   *initp = NULL_TREE;
 
-  if (t == error_mark_node)
+  if (t == error_mark_node || processing_template_decl)
     return true;
 
   if (TREE_CODE (t) == INIT_EXPR

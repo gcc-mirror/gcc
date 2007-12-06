@@ -1,3 +1,8 @@
+2007-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34336
+	* g++.dg/template/new8.C: New test.
+
 2007-12-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34333
