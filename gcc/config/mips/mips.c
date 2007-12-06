@@ -5616,7 +5616,7 @@ mips_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
      us otherwise.  */
   if (TARGET_INTERLINK_MIPS16
       && decl
-      && !targetm.binds_local_p (decl)
+      && (DECL_EXTERNAL (decl) || !targetm.binds_local_p (decl))
       && !mips_nomips16_decl_p (decl)
       && const_call_insn_operand (XEXP (DECL_RTL (decl), 0), VOIDmode))
     return false;

@@ -1,7 +1,7 @@
 2007-12-06  Richard Sandiford  <rsandifo@nildram.co.uk>
 
-	* config/mips/mips.c (mips_function_ok_for_sibcall): Use
-	targetm.binds_local_p instead of DECL_EXTERNAL.
+	* config/mips/mips.c (mips_function_ok_for_sibcall): Check
+	targetm.binds_local_p as well as DECL_EXTERNAL.
 
 2007-12-06  Harsha Jagasia <harsha.jagasia@amd.com>
 
