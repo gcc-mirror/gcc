@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-pedantic-errors -mieee" { target sh*-*-* } } 
 !
 ! PR fortran/34209
 !

@@ -1,3 +1,9 @@
+2007-12-06  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* gfortran.dg/nan_2.f90: Add -mieee for sh.
+	* gfortran.dg/nearest_2.f90: Likewise.
+	* gfortran.dg/nearest_3.f90: Likewise.
+
 2007-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/34337
