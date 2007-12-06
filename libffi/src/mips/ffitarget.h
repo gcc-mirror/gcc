@@ -42,10 +42,13 @@
 
 #ifdef FFI_MIPS_O32
 /* O32 stack frames have 32bit integer args */
-#define FFI_SIZEOF_ARG         4
+#  define FFI_SIZEOF_ARG    4
 #else
 /* N32 and N64 frames have 64bit integer args */
-#define FFI_SIZEOF_ARG         8
+#  define FFI_SIZEOF_ARG    8
+#  if _MIPS_SIM == _ABIN32
+#    define FFI_SIZEOF_JAVA_RAW  4
+#  endif
 #endif
 
 #define FFI_FLAG_BITS 2

@@ -1,5 +1,31 @@
 2007-12-06  David Daney  <ddaney@avtrex.com>
 
+	* include/ffi.h.in (FFI_SIZEOF_JAVA_RAW): Define if not	already
+	defined.
+	(ffi_java_raw): New typedef.
+	(ffi_java_raw_call, ffi_java_ptrarray_to_raw,
+	ffi_java_raw_to_ptrarray): Change parameter types from ffi_raw to
+	ffi_java_raw.
+	(ffi_java_raw_closure) : Same.
+	(ffi_prep_java_raw_closure, ffi_prep_java_raw_closure_loc): Change
+	parameter types.
+	* src/java_raw_api.c (ffi_java_raw_size):  Replace FFI_SIZEOF_ARG with
+	FFI_SIZEOF_JAVA_RAW.
+	(ffi_java_raw_to_ptrarray): Change type of raw to ffi_java_raw.
+	Replace FFI_SIZEOF_ARG with FFI_SIZEOF_JAVA_RAW. Use
+	sizeof(ffi_java_raw) for alignment calculations.
+	(ffi_java_ptrarray_to_raw): Same.
+	(ffi_java_rvalue_to_raw): Add special handling for FFI_TYPE_POINTER
+        if FFI_SIZEOF_JAVA_RAW == 4.
+	(ffi_java_raw_to_rvalue): Same.
+	(ffi_java_raw_call): Change type of raw to ffi_java_raw.
+	(ffi_java_translate_args): Same.
+	(ffi_prep_java_raw_closure_loc, ffi_prep_java_raw_closure): Change
+	parameter types.
+	* src/mips/ffitarget.h (FFI_SIZEOF_JAVA_RAW): Define for N32 ABI.
+
+2007-12-06  David Daney  <ddaney@avtrex.com>
+
 	* src/mips/n32.S (ffi_closure_N32): Use 64-bit add instruction on 
 	pointer values.
 

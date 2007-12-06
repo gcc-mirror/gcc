@@ -1,3 +1,13 @@
+2007-12-06  David Daney  <ddaney@avtrex.com>
+
+	* interpret.cc: Replace ffi_raw with INTERP_FFI_RAW_TYPE throughout.
+	(ncode_closure, ffi_closure_fun): Define versions for
+	non-FFI_NATIVE_RAW_API case.
+	* include/java-interp.h (INTERP_FFI_RAW_TYPE): Define and use to
+	replace	ffi_raw throughout.
+	* jni.cc, interpret-run.cc: Replace ffi_raw with INTERP_FFI_RAW_TYPE
+	throughout.
+
 2007-12-06  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* testsuite/libjava.jni/jni.exp (gcj_jni_get_cxxflags_invocation): Make
