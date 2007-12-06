@@ -365,6 +365,7 @@ static void frv_setup_incoming_varargs		(CUMULATIVE_ARGS *,
 						 enum machine_mode,
 						 tree, int *, int);
 static rtx frv_expand_builtin_saveregs		(void);
+static void frv_expand_builtin_va_start		(tree, rtx);
 static bool frv_rtx_costs			(rtx, int, int, int*);
 static void frv_asm_out_constructor		(rtx, int);
 static void frv_asm_out_destructor		(rtx, int);
@@ -452,6 +453,9 @@ static void frv_output_dwarf_dtprel		(FILE *, int, rtx)
 #define TARGET_SETUP_INCOMING_VARARGS frv_setup_incoming_varargs
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG frv_reorg
+
+#undef TARGET_EXPAND_BUILTIN_VA_START
+#define TARGET_EXPAND_BUILTIN_VA_START frv_expand_builtin_va_start
 
 #if HAVE_AS_TLS
 #undef TARGET_ASM_OUTPUT_DWARF_DTPREL
@@ -2186,7 +2190,7 @@ frv_expand_builtin_saveregs (void)
 
 /* Expand __builtin_va_start to do the va_start macro.  */
 
-void
+static void
 frv_expand_builtin_va_start (tree valist, rtx nextarg)
 {
   tree t;

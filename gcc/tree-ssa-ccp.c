@@ -2708,6 +2708,78 @@ optimize_stack_restore (basic_block bb, tree call, block_stmt_iterator i)
   return integer_zero_node;
 }
 
+/* If va_list type is a simple pointer and nothing special is needed,
+   optimize __builtin_va_start (&ap, 0) into ap = __builtin_next_arg (0),
+   __builtin_va_end (&ap) out as NOP and __builtin_va_copy into a simple
+   pointer assignment.  */
+
+static tree
+optimize_stdarg_builtin (tree call)
+{
+  tree callee, lhs, rhs;
+  bool va_list_simple_ptr;
+
+  if (TREE_CODE (call) != CALL_EXPR)
+    return NULL_TREE;
+
+  va_list_simple_ptr = POINTER_TYPE_P (va_list_type_node)
+		       && (TREE_TYPE (va_list_type_node) == void_type_node
+			   || TREE_TYPE (va_list_type_node) == char_type_node);
+
+  callee = get_callee_fndecl (call);
+  switch (DECL_FUNCTION_CODE (callee))
+    {
+    case BUILT_IN_VA_START:
+      if (!va_list_simple_ptr
+	  || targetm.expand_builtin_va_start != NULL
+	  || built_in_decls[BUILT_IN_NEXT_ARG] == NULL)
+	return NULL_TREE;
+
+      if (call_expr_nargs (call) != 2)
+	return NULL_TREE;
+
+      lhs = CALL_EXPR_ARG (call, 0);
+      if (!POINTER_TYPE_P (TREE_TYPE (lhs))
+	  || TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (lhs)))
+	     != TYPE_MAIN_VARIANT (va_list_type_node))
+	return NULL_TREE;
+
+      lhs = build_fold_indirect_ref (lhs);
+      rhs = build_call_expr (built_in_decls[BUILT_IN_NEXT_ARG],
+			     1, integer_zero_node);
+      rhs = fold_convert (TREE_TYPE (lhs), rhs);
+      return build2 (MODIFY_EXPR, TREE_TYPE (lhs), lhs, rhs);
+
+    case BUILT_IN_VA_COPY:
+      if (!va_list_simple_ptr)
+	return NULL_TREE;
+
+      if (call_expr_nargs (call) != 2)
+	return NULL_TREE;
+
+      lhs = CALL_EXPR_ARG (call, 0);
+      if (!POINTER_TYPE_P (TREE_TYPE (lhs))
+	  || TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (lhs)))
+	     != TYPE_MAIN_VARIANT (va_list_type_node))
+	return NULL_TREE;
+
+      lhs = build_fold_indirect_ref (lhs);
+      rhs = CALL_EXPR_ARG (call, 1);
+      if (TYPE_MAIN_VARIANT (TREE_TYPE (rhs))
+	  != TYPE_MAIN_VARIANT (va_list_type_node))
+	return NULL_TREE;
+
+      rhs = fold_convert (TREE_TYPE (lhs), rhs);
+      return build2 (MODIFY_EXPR, TREE_TYPE (lhs), lhs, rhs);
+
+    case BUILT_IN_VA_END:
+      return integer_zero_node;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Convert EXPR into a GIMPLE value suitable for substitution on the
    RHS of an assignment.  Insert the necessary statements before
    iterator *SI_P. 
@@ -2794,6 +2866,16 @@ execute_fold_all_builtins (void)
 
 	      case BUILT_IN_STACK_RESTORE:
 		result = optimize_stack_restore (bb, *stmtp, i);
+		if (result)
+		  break;
+		bsi_next (&i);
+		continue;
+
+	      case BUILT_IN_VA_START:
+	      case BUILT_IN_VA_END:
+	      case BUILT_IN_VA_COPY:
+		/* These shouldn't be folded before pass_stdarg.  */
+		result = optimize_stdarg_builtin (*stmtp);
 		if (result)
 		  break;
 		/* FALLTHRU */

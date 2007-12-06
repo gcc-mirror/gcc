@@ -2098,9 +2098,6 @@ typedef struct mips_args {
   (TARGET_NEWABI ? ((LOC) + 15) & -16 : ((LOC) + 7) & -8)
 
 
-/* Implement `va_start' for varargs and stdarg.  */
-#define EXPAND_BUILTIN_VA_START mips_va_start
-
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 

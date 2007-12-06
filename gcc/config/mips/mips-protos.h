@@ -223,7 +223,6 @@ extern rtx mips_function_arg (const CUMULATIVE_ARGS *,
 extern int mips_function_arg_boundary (enum machine_mode, tree);
 extern bool mips_pad_arg_upward (enum machine_mode, const_tree);
 extern bool mips_pad_reg_upward (enum machine_mode, tree);
-extern void mips_va_start (tree, rtx);
 
 extern bool mips_expand_ext_as_unaligned_load (rtx, rtx, HOST_WIDE_INT,
 					       HOST_WIDE_INT);

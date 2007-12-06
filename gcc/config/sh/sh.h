@@ -2076,10 +2076,6 @@ struct sh_args {
 /* Perform any needed actions needed for a function that is receiving a
    variable number of arguments.  */
 
-/* Implement `va_start' for varargs and stdarg.  */
-#define EXPAND_BUILTIN_VA_START(valist, nextarg) \
-  sh_va_start (valist, nextarg)
-
 /* Call the function profiler with a given profile label.
    We use two .aligns, so as to make sure that both the .long is aligned
    on a 4 byte boundary, and that the .long is a fixed distance (2 bytes)

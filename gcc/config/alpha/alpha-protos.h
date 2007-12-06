@@ -75,7 +75,6 @@ extern void print_operand (FILE *, rtx, int);
 extern void print_operand_address (FILE *, rtx);
 extern void alpha_initialize_trampoline (rtx, rtx, rtx, int, int, int);
 
-extern void alpha_va_start (tree, rtx);
 extern rtx alpha_va_arg (tree, tree);
 extern rtx function_arg (CUMULATIVE_ARGS, enum machine_mode, tree, int);
 extern rtx function_value (const_tree, const_tree, enum machine_mode);

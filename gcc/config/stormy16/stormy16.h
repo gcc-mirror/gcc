@@ -461,16 +461,6 @@ enum reg_class
    contains a '%s' sequence, this will be replaced by the name of the function.  */
 /* #define TARGET_CANNOT_INLINE_P(FN_DECL) xstormy16_cannot_inline_p (FN_DECL) */
 
-/* Implementing the Varargs Macros.  */
-
-/* Implement the stdarg/varargs va_start macro.  STDARG_P is nonzero if this
-   is stdarg.h instead of varargs.h.  VALIST is the tree of the va_list
-   variable to initialize.  NEXTARG is the machine independent notion of the
-   'next' argument after the variable arguments.  If not defined, a standard
-   implementation will be defined that works for arguments passed on the stack.  */
-#define EXPAND_BUILTIN_VA_START(VALIST, NEXTARG) \
-  xstormy16_expand_builtin_va_start (VALIST, NEXTARG)
-
 /* Trampolines for Nested Functions.  */
 
 #define TRAMPOLINE_SIZE 8

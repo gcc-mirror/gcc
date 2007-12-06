@@ -120,9 +120,6 @@ extern void sh_expand_binop_v2sf (enum rtx_code, rtx, rtx, rtx);
 extern int sh_expand_t_scc (enum rtx_code code, rtx target);
 extern rtx sh_gen_truncate (enum machine_mode, rtx, int);
 extern bool sh_vector_mode_supported_p (enum machine_mode);
-#ifdef TREE_CODE
-extern void sh_va_start (tree, rtx);
-#endif /* TREE_CODE */
 #endif /* RTX_CODE */
 
 extern const char *output_jump_label_table (void);

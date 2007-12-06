@@ -89,6 +89,7 @@ static void arc_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void arc_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void arc_file_start (void);
 static void arc_internal_label (FILE *, const char *, unsigned long);
+static void arc_va_start (tree, rtx);
 static void arc_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					tree, int *, int);
 static bool arc_rtx_costs (rtx, int, int, int *);
@@ -143,6 +144,9 @@ static bool arc_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS arc_setup_incoming_varargs
+
+#undef TARGET_EXPAND_BUILTIN_VA_START
+#define TARGET_EXPAND_BUILTIN_VA_START arc_va_start
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2274,7 +2278,7 @@ arc_ccfsm_record_branch_deleted (void)
   current_insn_set_cc_p = last_insn_set_cc_p;
 }
 
-void
+static void
 arc_va_start (tree valist, rtx nextarg)
 {
   /* See arc_setup_incoming_varargs for reasons for this oddity.  */

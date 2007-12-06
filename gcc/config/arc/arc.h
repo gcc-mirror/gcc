@@ -1086,8 +1086,3 @@ enum arc_function_type {
 #define ARC_INTERRUPT_P(TYPE) \
 ((TYPE) == ARC_FUNCTION_ILINK1 || (TYPE) == ARC_FUNCTION_ILINK2)
 /* Compute the type of a function from its DECL.  */
-
-
-/* Implement `va_start' for varargs and stdarg.  */
-#define EXPAND_BUILTIN_VA_START(valist, nextarg) \
-  arc_va_start (valist, nextarg)

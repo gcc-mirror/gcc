@@ -4716,11 +4716,10 @@ expand_builtin_va_start (tree exp)
   nextarg = expand_builtin_next_arg ();
   valist = stabilize_va_list (CALL_EXPR_ARG (exp, 0), 1);
 
-#ifdef EXPAND_BUILTIN_VA_START
-  EXPAND_BUILTIN_VA_START (valist, nextarg);
-#else
-  std_expand_builtin_va_start (valist, nextarg);
-#endif
+  if (targetm.expand_builtin_va_start)
+    targetm.expand_builtin_va_start (valist, nextarg);
+  else
+    std_expand_builtin_va_start (valist, nextarg);
 
   return const0_rtx;
 }

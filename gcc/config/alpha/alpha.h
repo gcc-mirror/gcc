@@ -1335,10 +1335,6 @@ do {						\
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) \
   print_operand_address((FILE), (ADDR))
 
-/* Implement `va_start' for varargs and stdarg.  */
-#define EXPAND_BUILTIN_VA_START(valist, nextarg) \
-  alpha_va_start (valist, nextarg)
-
 /* Tell collect that the object format is ECOFF.  */
 #define OBJECT_FORMAT_COFF
 #define EXTENDED_COFF

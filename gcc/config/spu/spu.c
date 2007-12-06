@@ -117,6 +117,7 @@ static int spu_naked_function_p (tree func);
 static unsigned char spu_pass_by_reference (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 					    const_tree type, unsigned char named);
 static tree spu_build_builtin_va_list (void);
+static void spu_va_start (tree, rtx);
 static tree spu_gimplify_va_arg_expr (tree valist, tree type, tree * pre_p,
 				      tree * post_p);
 static int regno_aligned_for_load (int regno);
@@ -246,6 +247,9 @@ const struct attribute_spec spu_attribute_table[];
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST spu_build_builtin_va_list
+
+#undef TARGET_EXPAND_BUILTIN_VA_START
+#define TARGET_EXPAND_BUILTIN_VA_START spu_va_start
 
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS spu_setup_incoming_varargs
@@ -3214,7 +3218,7 @@ spu_build_builtin_va_list (void)
        holds the offset of the first anonymous stack argument
        (relative to the virtual arg pointer).  */
 
-void
+static void
 spu_va_start (tree valist, rtx nextarg)
 {
   tree f_args, f_skip;

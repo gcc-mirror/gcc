@@ -694,6 +694,9 @@ struct gcc_target
   /* Create the __builtin_va_list type.  */
   tree (* build_builtin_va_list) (void);
 
+  /* Expand the __builtin_va_start builtin.  */
+  void (* expand_builtin_va_start) (tree valist, rtx nextarg);
+
   /* Gimplifies a VA_ARG_EXPR.  */
   tree (* gimplify_va_arg_expr) (tree valist, tree type, tree *pre_p,
 				 tree *post_p);

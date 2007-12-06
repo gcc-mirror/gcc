@@ -4735,9 +4735,9 @@ mips_build_builtin_va_list (void)
     return ptr_type_node;
 }
 
-/* Implement EXPAND_BUILTIN_VA_START.  */
+/* Implement TARGET_EXPAND_BUILTIN_VA_START.  */
 
-void
+static void
 mips_va_start (tree valist, rtx nextarg)
 {
   if (EABI_FLOAT_VARARGS_P)
@@ -12445,6 +12445,8 @@ mips_order_regs_for_local_alloc (void)
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST mips_build_builtin_va_list
+#undef TARGET_EXPAND_BUILTIN_VA_START
+#define TARGET_EXPAND_BUILTIN_VA_START mips_va_start
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR mips_gimplify_va_arg_expr
 

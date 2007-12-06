@@ -1700,10 +1700,6 @@ do {									\
     else							\
       sparc_initialize_trampoline (TRAMP, FNADDR, CXT)
 
-/* Implement `va_start' for varargs and stdarg.  */
-#define EXPAND_BUILTIN_VA_START(valist, nextarg) \
-  sparc_va_start (valist, nextarg)
-
 /* Generate RTL to flush the register windows so as to make arbitrary frames
    available.  */
 #define SETUP_FRAME_ADDRESSES()		\

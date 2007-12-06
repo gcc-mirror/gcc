@@ -1,3 +1,88 @@
+2007-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/20983
+	* tree-ssa-ccp.c (optimize_stdarg_builtin): New function.
+	(execute_fold_all_builtins): Call it for BUILT_IN_VA_START,
+	BUILT_IN_VA_COPY and BUILT_IN_VA_END.
+
+	* target.h (struct ggc_target): Add expand_builtin_va_start
+	hook.
+	* target-def.h (TARGET_EXPAND_BUILTIN_VA_START): Define.
+	(TARGET_INITIALIZER): Add it.
+	* builtins.c (expand_builtin_va_start): Use
+	targetm.expand_builtin_va_start hook instead of
+	EXPAND_BUILTIN_VA_START macro.
+	* alpha/alpha.c (alpha_va_start): Made static.
+	(override_options): Clear targetm.expand_builtin_va_start if
+	TARGET_UNICOSMK.
+	(TARGET_EXPAND_BUILTIN_VA_START): Define.
+	* alpha/unicosmk.h (EXPAND_BUILTIN_VA_START): Remove.
+	* alpha/alpha.h (EXPAND_BUILTIN_VA_START): Remove.
+	* alpha/alpha-protos.h (alpha_va_start): Remove prototype.
+	* xtensa/xtensa.h (EXPAND_BUILTIN_VA_START): Remove.
+	* xtensa/xtensa.c (TARGET_EXPAND_BUILTIN_VA_START): Define.
+	(xtensa_va_start): Made static.
+	* xtensa/xtensa-protos.h (xtensa_va_start): Remove prototype.
+	* pa/pa-protos.h (hppa_va_start): Remove prototype.
+	* pa/pa.h (EXPAND_BUILTIN_VA_START): Remove.
+	* pa/pa.c (hppa_va_start): Made static, add prototype.
+	(TARGET_EXPAND_BUILTIN_VA_START): Define.
+	* frv/frv.c (frv_expand_builtin_va_start): Made static, add prototype.
+	(TARGET_EXPAND_BUILTIN_VA_START): Define.
+	* frv/frv-protos.h (frv_expand_builtin_va_start): Remove prototype.
+	* frv/frv.h (EXPAND_BUILTIN_VA_START): Remove.
+	* i386/i386.c (override_options): Clear
+	targetm.expand_builtin_va_start if -m32 or 64-bit MS ABI.
+	(ix86_va_start): Made static.
+	(TARGET_EXPAND_BUILTIN_VA_START): Define.
+	* i386/i386.h (EXPAND_BUILTIN_VA_START): Remove.
+	* i386/i386-protos.h (ix86_va_start, ix86_va_arg): Remove prototypes.
+	* iq2000/iq2000-protos.h (iq2000_va_start): Remove prototype.
+	* iq2000/iq2000.h (EXPAND_BUILTIN_VA_START): Remove.
+	* iq2000/iq2000.c (iq2000_va_start): Made static, add prototype.
+	(TARGET_EXPAND_BUILTIN_VA_START): Define.
+	* rs6000/rs6000-protos.h (rs6000_va_start): Remove prototype.
+	* rs6000/rs6000.c (rs6000_va_start): Made static, add prototype.
+	(TARGET_EXPAND_BUILTIN_VA_START): Define.
+	(rs6000_override_options): Clear targetm.expand_builtin_va_start if
+	DEFAULT_ABI != ABI_V4.
+	* rs6000/rs6000.h (EXPAND_BUILTIN_VA_START): Remove.
+	* spu/spu.c (spu_va_start): Made static, add prototype.
+	(TARGET_EXPAND_BUILTIN_VA_START): Define.
+	* spu/spu.h (EXPAND_BUILTIN_VA_START): Remove.
+	* spu/spu-protos.h spu_va_start): Remove prototype.
+	* stormy16/stormy16.h (EXPAND_BUILTIN_VA_START): Remove.
+	* stormy16/stormy16-protos.h (xstormy16_expand_builtin_va_start):
+	Remove prototype.
+	* stormy16/stormy16.c (xstormy16_expand_builtin_va_start): Made
+	static.
+	(TARGET_EXPAND_BUILTIN_VA_START): Define.
+	* s390/s390-protos.h (s390_va_start): Remove prototype.
+	* s390/s390.c (s390_va_start): Made static.
+	(TARGET_EXPAND_BUILTIN_VA_START): Define.
+	* s390/s390.h (EXPAND_BUILTIN_VA_START): Remove.
+	* mn10300/mn10300.h (EXPAND_BUILTIN_VA_START): Remove.
+	* mn10300/mn10300-protos.h (mn10300_va_start): Remove prototype.
+	* mn10300/mn10300.c (mn10300_va_start): Made static, add prototype.
+	(TARGET_EXPAND_BUILTIN_VA_START): Define.
+	* arc/arc.c (arc_va_start): Made static, add prototype.
+	(TARGET_EXPAND_BUILTIN_VA_START): Define.
+	* arc/arc.h (EXPAND_BUILTIN_VA_START): Remove.
+	* arc/arc-protos.h (arc_va_start): Remove prototype.
+	* mt/mt-protos.h (mt_va_start): Remove prototype.
+	* sparc/sparc.c (sparc_va_start): Made static, add prototype.
+	(TARGET_EXPAND_BUILTIN_VA_START): Define.
+	* sparc/sparc-protos.h (sparc_va_start): Remove prototype.
+	* sparc/sparc.h (EXPAND_BUILTIN_VA_START): Remove.
+	* sh/sh.c (sh_va_start): Made static, add prototype.
+	(TARGET_EXPAND_BUILTIN_VA_START): Define.
+	* sh/sh-protos.h (sh_va_start): Remove prototype.
+	* sh/sh.h (EXPAND_BUILTIN_VA_START): Remove.
+	* mips/mips-protos.h (mips_va_start): Remove prototype.
+	* mips/mips.h (EXPAND_BUILTIN_VA_START): Remove.
+	* mips/mips.c (mips_va_start): Made static.
+	(TARGET_EXPAND_BUILTIN_VA_START): Define.
+
 2007-12-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* tree-ssa-loop.c (gate_tree_parallelize_loops): Return true when

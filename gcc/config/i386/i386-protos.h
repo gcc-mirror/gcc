@@ -137,8 +137,6 @@ extern bool ix86_function_arg_regno_p (int);
 extern int ix86_function_arg_boundary (enum machine_mode, tree);
 extern int ix86_return_in_memory (const_tree);
 extern int ix86_sol10_return_in_memory (const_tree);
-extern void ix86_va_start (tree, rtx);
-extern rtx ix86_va_arg (tree, tree);
 
 extern rtx ix86_force_to_memory (enum machine_mode, rtx);
 extern void ix86_free_from_memory (enum machine_mode);
