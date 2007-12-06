@@ -1,3 +1,9 @@
+2007-12-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (make_packable_type): Revert last change.
+	(gnat_to_gnu_field): Avoid setting size and position multiple times.
+	* utils.c (finish_record_type): Retrieve the real name of the type.
+
 2007-12-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* trans.c (lvalue_required_p): Take base node directly instead
@@ -80,7 +86,7 @@
 
 2007-11-25  Richard Guenther  <rguenther@suse.de>
 
-	utils.c (gnat_pushlevel): Use BLOCK_CHAIN.
+	* utils.c (gnat_pushlevel): Use BLOCK_CHAIN.
 	(gnat_poplevel): Likewise.
 
 2007-11-25  Eric Botcazou  <ebotcazou@adacore.com>
