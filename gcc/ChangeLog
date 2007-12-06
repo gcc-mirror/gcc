@@ -1,3 +1,10 @@
+2007-12-06  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.c (s390_emit_stack_tie): New function.
+	(s390_emit_prologue): Emit a stack tie when writing to the
+	f8-f15 stack slots.
+	* config/s390/s390.md ("stack_tie"): New insn definition.
+
 2007-12-06  Ben Elliston  <bje@au.ibm.com>
 
 	* SERVICE: Remove.

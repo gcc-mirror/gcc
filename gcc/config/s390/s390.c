@@ -7162,6 +7162,18 @@ s390_load_got (void)
   return insns;
 }
 
+/* This ties together stack memory (MEM with an alias set of frame_alias_set)
+   and the change to the stack pointer.  */
+
+static void
+s390_emit_stack_tie (void)
+{
+  rtx mem = gen_frame_mem (BLKmode,
+			   gen_rtx_REG (Pmode, STACK_POINTER_REGNUM));
+
+  emit_insn (gen_stack_tie (mem));
+}
+
 /* Expand the prologue into a bunch of separate insns.  */
 
 void
@@ -7390,6 +7402,11 @@ s390_emit_prologue (void)
 
   if (cfun_save_high_fprs_p && next_fpr)
     {
+      /* If the stack might be accessed through a different register
+	 we have to make sure that the stack pointer decrement is not
+	 moved below the use of the stack slots.  */
+      s390_emit_stack_tie ();
+
       insn = emit_insn (gen_add2_insn (temp_reg, 
 				       GEN_INT (cfun_frame_layout.f8_offset)));
 
