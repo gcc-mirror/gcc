@@ -3153,7 +3153,8 @@ find_symbol (gfc_symtree *st, const char *name,
 
   c = strcmp (name, st->n.sym->name);
   if (c == 0 && st->n.sym->module
-	     && strcmp (module, st->n.sym->module) == 0)
+	     && strcmp (module, st->n.sym->module) == 0
+	     && !check_unique_name (st->name))
     {
       if ((!generic && !st->n.sym->attr.generic)
 	     || (generic && st->n.sym->attr.generic))
