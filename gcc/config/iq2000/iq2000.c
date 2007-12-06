@@ -168,6 +168,7 @@ static bool iq2000_pass_by_reference  (CUMULATIVE_ARGS *, enum machine_mode,
 				       const_tree, bool);
 static int  iq2000_arg_partial_bytes  (CUMULATIVE_ARGS *, enum machine_mode,
 				       tree, bool);
+static void iq2000_va_start	      (tree, rtx);
 
 #undef  TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS 		iq2000_init_builtins
@@ -209,6 +210,9 @@ static int  iq2000_arg_partial_bytes  (CUMULATIVE_ARGS *, enum machine_mode,
 #define TARGET_SETUP_INCOMING_VARARGS	iq2000_setup_incoming_varargs
 #undef  TARGET_STRICT_ARGUMENT_NAMING
 #define TARGET_STRICT_ARGUMENT_NAMING	hook_bool_CUMULATIVE_ARGS_true
+
+#undef	TARGET_EXPAND_BUILTIN_VA_START
+#define	TARGET_EXPAND_BUILTIN_VA_START	iq2000_va_start
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1357,7 +1361,7 @@ iq2000_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
 /* Implement va_start.  */
 
-void
+static void
 iq2000_va_start (tree valist, rtx nextarg)
 {
   int int_arg_words;

@@ -435,6 +435,4 @@ do { fprintf (FILE, "\tbr $1,0\n");			\
 #undef LIB_SPEC
 #define LIB_SPEC "-L/opt/ctl/craylibs/craylibs -lu -lm -lc -lsma"
 
-#undef EXPAND_BUILTIN_VA_START
-
 #define EH_FRAME_IN_DATA_SECTION 1

@@ -124,6 +124,7 @@ static void pa_asm_out_destructor (rtx, int);
 #endif
 static void pa_init_builtins (void);
 static rtx hppa_builtin_saveregs (void);
+static void hppa_va_start (tree, rtx);
 static tree hppa_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 static bool pa_scalar_mode_supported_p (enum machine_mode);
 static bool pa_commutative_p (const_rtx x, int outer_code);
@@ -304,6 +305,8 @@ static size_t n_deferred_plabels = 0;
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS hppa_builtin_saveregs
+#undef TARGET_EXPAND_BUILTIN_VA_START
+#define TARGET_EXPAND_BUILTIN_VA_START hppa_va_start
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR hppa_gimplify_va_arg_expr
 
@@ -5913,7 +5916,7 @@ hppa_builtin_saveregs (void)
 				    offset, 0, 0, OPTAB_LIB_WIDEN));
 }
 
-void
+static void
 hppa_va_start (tree valist, rtx nextarg)
 {
   nextarg = expand_builtin_saveregs ();

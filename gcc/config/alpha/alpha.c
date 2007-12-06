@@ -522,6 +522,11 @@ override_options (void)
   if (!(target_flags_explicit & MASK_LONG_DOUBLE_128))
     target_flags |= MASK_LONG_DOUBLE_128;
 #endif
+
+  /* If using typedef char *va_list, signal that __builtin_va_start (&ap, 0)
+     can be optimized to ap = __builtin_next_arg (0).  */
+  if (TARGET_ABI_UNICOSMK)
+    targetm.expand_builtin_va_start = NULL;
 }
 
 /* Returns 1 if VALUE is a mask that contains full bytes of zero or ones.  */
@@ -6069,7 +6074,7 @@ alpha_setup_incoming_varargs (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
 #endif
 }
 
-void
+static void
 alpha_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 {
   HOST_WIDE_INT offset;
@@ -10703,6 +10708,9 @@ alpha_init_libfuncs (void)
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST alpha_build_builtin_va_list
+
+#undef TARGET_EXPAND_BUILTIN_VA_START
+#define TARGET_EXPAND_BUILTIN_VA_START alpha_va_start
 
 /* The Alpha architecture does not require sequential consistency.  See
    http://www.cs.umd.edu/~pugh/java/memoryModel/AlphaReordering.html

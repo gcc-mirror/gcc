@@ -661,11 +661,6 @@ CUMULATIVE_ARGS;
 #define PROFILE_BEFORE_PROLOGUE 1
 
 
-/* Implementing the varargs macros.  */
-
-#define EXPAND_BUILTIN_VA_START(valist, nextarg) \
-  s390_va_start (valist, nextarg)
-
 /* Trampolines for nested functions.  */
 
 #define TRAMPOLINE_SIZE (TARGET_64BIT ? 32 : 16)

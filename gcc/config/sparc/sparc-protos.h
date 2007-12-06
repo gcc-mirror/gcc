@@ -31,7 +31,6 @@ extern struct rtx_def *function_arg (const CUMULATIVE_ARGS *,
 				     enum machine_mode, tree, int, int);
 #ifdef RTX_CODE
 extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
-extern void sparc_va_start (tree, rtx);
 #endif
 extern unsigned long sparc_type_code (tree);
 #ifdef ARGS_SIZE_RTX

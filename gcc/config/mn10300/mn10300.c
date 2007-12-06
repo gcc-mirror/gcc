@@ -74,6 +74,7 @@ static bool mn10300_rtx_costs (rtx, int, int, int *);
 static void mn10300_file_start (void);
 static bool mn10300_return_in_memory (const_tree, const_tree);
 static rtx mn10300_builtin_saveregs (void);
+static void mn10300_va_start (tree, rtx);
 static bool mn10300_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				       const_tree, bool);
 static int mn10300_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
@@ -114,6 +115,8 @@ static int mn10300_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS mn10300_builtin_saveregs
+#undef TARGET_EXPAND_BUILTIN_VA_START
+#define TARGET_EXPAND_BUILTIN_VA_START mn10300_va_start
 
 static void mn10300_encode_section_info (tree, rtx, int);
 struct gcc_target targetm = TARGET_INITIALIZER;
@@ -1471,7 +1474,7 @@ mn10300_builtin_saveregs (void)
 				    offset, 0, 0, OPTAB_LIB_WIDEN));
 }
 
-void
+static void
 mn10300_va_start (tree valist, rtx nextarg)
 {
   nextarg = expand_builtin_saveregs ();

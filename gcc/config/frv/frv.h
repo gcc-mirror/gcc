@@ -1847,19 +1847,6 @@ typedef struct frv_stack {
 
 #define FUNCTION_PROFILER(FILE, LABELNO)
 
-
-/* Implementing the Varargs Macros.  */
-
-/* Implement the stdarg/varargs va_start macro.  STDARG_P is nonzero if this
-   is stdarg.h instead of varargs.h.  VALIST is the tree of the va_list
-   variable to initialize.  NEXTARG is the machine independent notion of the
-   'next' argument after the variable arguments.  If not defined, a standard
-   implementation will be defined that works for arguments passed on the stack.  */
-
-#define EXPAND_BUILTIN_VA_START(VALIST, NEXTARG)		\
-  (frv_expand_builtin_va_start(VALIST, NEXTARG))
-
-
 /* Trampolines for Nested Functions.  */
 
 /* A C expression for the size in bytes of the trampoline, as an integer.  */

@@ -17,8 +17,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-extern void arc_va_start (tree, rtx);
-
 #ifdef RTX_CODE
 extern enum machine_mode arc_select_cc_mode (enum rtx_code, rtx, rtx);
 

@@ -409,6 +409,7 @@ static bool sparc_promote_prototypes (const_tree);
 static rtx sparc_struct_value_rtx (tree, int);
 static bool sparc_return_in_memory (const_tree, const_tree);
 static bool sparc_strict_argument_naming (CUMULATIVE_ARGS *);
+static void sparc_va_start (tree, rtx);
 static tree sparc_gimplify_va_arg (tree, tree, tree *, tree *);
 static bool sparc_vector_mode_supported_p (enum machine_mode);
 static bool sparc_pass_by_reference (CUMULATIVE_ARGS *,
@@ -545,6 +546,8 @@ static bool fpu_option_set = false;
 #undef TARGET_STRICT_ARGUMENT_NAMING
 #define TARGET_STRICT_ARGUMENT_NAMING sparc_strict_argument_naming
 
+#undef TARGET_EXPAND_BUILTIN_VA_START
+#define TARGET_EXPAND_BUILTIN_VA_START sparc_va_start
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR sparc_gimplify_va_arg
 
@@ -5696,7 +5699,7 @@ sparc_builtin_saveregs (void)
 
 /* Implement `va_start' for stdarg.  */
 
-void
+static void
 sparc_va_start (tree valist, rtx nextarg)
 {
   nextarg = expand_builtin_saveregs ();

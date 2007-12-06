@@ -782,10 +782,6 @@ typedef struct xtensa_args
 		       0, VOIDmode, 1, addr, Pmode);			\
   } while (0)
 
-/* Implement `va_start' for varargs and stdarg.  */
-#define EXPAND_BUILTIN_VA_START(valist, nextarg) \
-  xtensa_va_start (valist, nextarg)
-
 /* If defined, a C expression that produces the machine-specific code
    to setup the stack so that arbitrary frames can be accessed.
 

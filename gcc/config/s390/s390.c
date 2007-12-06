@@ -7978,7 +7978,7 @@ s390_build_builtin_va_list (void)
        holds the offset of the first anonymous stack argument
        (relative to the virtual arg pointer).  */
 
-void
+static void
 s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 {
   HOST_WIDE_INT n_gpr, n_fpr;
@@ -9331,6 +9331,8 @@ s390_reorg (void)
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST s390_build_builtin_va_list
+#undef TARGET_EXPAND_BUILTIN_VA_START
+#define TARGET_EXPAND_BUILTIN_VA_START s390_va_start
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR s390_gimplify_va_arg
 

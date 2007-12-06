@@ -2689,6 +2689,11 @@ override_options (void)
     set_param_value ("l1-cache-size", ix86_cost->l1_cache_size);
   if (!PARAM_SET_P (PARAM_L2_CACHE_SIZE))
     set_param_value ("l2-cache-size", ix86_cost->l2_cache_size);
+
+  /* If using typedef char *va_list, signal that __builtin_va_start (&ap, 0)
+     can be optimized to ap = __builtin_next_arg (0).  */
+  if (!TARGET_64BIT || TARGET_64BIT_MS_ABI)
+    targetm.expand_builtin_va_start = NULL;
 }
 
 /* Return true if this goes in large data/bss.  */
@@ -5041,7 +5046,7 @@ ix86_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
 /* Implement va_start.  */
 
-void
+static void
 ix86_va_start (tree valist, rtx nextarg)
 {
   HOST_WIDE_INT words, n_gpr, n_fpr;
@@ -25252,6 +25257,9 @@ x86_builtin_vectorization_cost (bool runtime_test)
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST ix86_build_builtin_va_list
+
+#undef TARGET_EXPAND_BUILTIN_VA_START
+#define TARGET_EXPAND_BUILTIN_VA_START ix86_va_start
 
 #undef TARGET_MD_ASM_CLOBBERS
 #define TARGET_MD_ASM_CLOBBERS ix86_md_asm_clobbers

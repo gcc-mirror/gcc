@@ -476,12 +476,6 @@ typedef struct iq2000_args
 }
 
 
-/* Implementing the Varargs Macros.  */
-
-#define EXPAND_BUILTIN_VA_START(valist, nextarg) \
-  iq2000_va_start (valist, nextarg)
-
-
 /* Trampolines for Nested Functions.  */
 
 /* A C statement to output, on the stream FILE, assembler code for a

@@ -976,11 +976,6 @@ extern int may_call_alloca;
    
 #define TRAMPOLINE_ADJUST_ADDRESS(ADDR) \
   if (!TARGET_64BIT) (ADDR) = memory_address (Pmode, plus_constant ((ADDR), 46))
-
-/* Implement `va_start' for varargs and stdarg.  */
-
-#define EXPAND_BUILTIN_VA_START(valist, nextarg) \
-  hppa_va_start (valist, nextarg)
 
 /* Addressing modes, and classification of registers for them. 
 

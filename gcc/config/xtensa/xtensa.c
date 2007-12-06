@@ -179,6 +179,9 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST xtensa_build_builtin_va_list
 
+#undef TARGET_EXPAND_BUILTIN_VA_START
+#define TARGET_EXPAND_BUILTIN_VA_START xtensa_va_start
+
 #undef TARGET_PROMOTE_FUNCTION_ARGS
 #define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_const_tree_true
 #undef TARGET_PROMOTE_FUNCTION_RETURN
@@ -2478,7 +2481,7 @@ xtensa_builtin_saveregs (void)
 /* Implement `va_start' for varargs and stdarg.  We look at the
    current function to fill in an initial va_list.  */
 
-void
+static void
 xtensa_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 {
   tree f_stk, stk;

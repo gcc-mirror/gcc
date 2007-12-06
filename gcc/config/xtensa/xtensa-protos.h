@@ -58,7 +58,6 @@ extern rtx xtensa_legitimize_address (rtx, rtx, enum machine_mode);
 
 #ifdef TREE_CODE
 extern void init_cumulative_args (CUMULATIVE_ARGS *, int);
-extern void xtensa_va_start (tree, rtx);
 #endif /* TREE_CODE */
 
 extern void print_operand (FILE *, rtx, int);

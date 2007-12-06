@@ -122,6 +122,5 @@ extern void s390_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 #ifdef RTX_CODE
 extern rtx s390_function_arg (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
 extern rtx s390_function_value (const_tree, enum machine_mode);
-extern void s390_va_start (tree, rtx);
 #endif /* RTX_CODE */
 #endif /* TREE_CODE */
