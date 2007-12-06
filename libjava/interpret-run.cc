@@ -576,7 +576,7 @@ details.  */
       {
 	/* here goes the magic again... */
 	ffi_cif *cif = &rmeth->cif;
-	ffi_raw *raw = (ffi_raw*) sp;
+	INTERP_FFI_RAW_TYPE *raw = (INTERP_FFI_RAW_TYPE *) sp;
 
 	_Jv_value rvalue;
 

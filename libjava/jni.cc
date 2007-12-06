@@ -2293,7 +2293,8 @@ _Jv_LookupJNIMethod (jclass klass, _Jv_Utf8Const *name,
 // This function is the stub which is used to turn an ordinary (CNI)
 // method call into a JNI call.
 void
-_Jv_JNIMethod::call (ffi_cif *, void *ret, ffi_raw *args, void *__this)
+_Jv_JNIMethod::call (ffi_cif *, void *ret, INTERP_FFI_RAW_TYPE *args,
+		     void *__this)
 {
   _Jv_JNIMethod* _this = (_Jv_JNIMethod *) __this;
 
@@ -2325,8 +2326,9 @@ _Jv_JNIMethod::call (ffi_cif *, void *ret, ffi_raw *args, void *__this)
       }
   }
 
-  JvAssert (_this->args_raw_size % sizeof (ffi_raw) == 0);
-  ffi_raw real_args[2 + _this->args_raw_size / sizeof (ffi_raw)];
+  JvAssert (_this->args_raw_size % sizeof (INTERP_FFI_RAW_TYPE) == 0);
+  INTERP_FFI_RAW_TYPE
+      real_args[2 + _this->args_raw_size / sizeof (INTERP_FFI_RAW_TYPE)];
   int offset = 0;
 
   // First argument is always the environment pointer.
