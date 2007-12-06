@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-std=gnu" }
 ! Test that the BOZ constant on the RHS, which are of different KIND than
 ! the LHS, are correctly converted.
 !

@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-std=gnu" }
 !
 ! 13.7.53    INT(A [, KIND])
 !

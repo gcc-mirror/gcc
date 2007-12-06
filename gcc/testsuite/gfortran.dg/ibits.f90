@@ -2,7 +2,7 @@
 ! Test that the mask is properly converted to the kind type of j in ibits.
 program ibits_test
   implicit none
-  integer(8), parameter :: n = z'00000000FFFFFFFF'
+  integer(8), parameter :: n = z'00000000FFFFFFFF' ! { dg-warning "BOZ used outside a DATA statement" }
   integer(8) i,j,k,m
   j = 1
   do i=1,70

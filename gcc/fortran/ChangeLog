@@ -1,3 +1,8 @@
+2007-12-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34333
+	* primary.c (match_boz_constant): Add gfc_notify_std diagnostics.
+
 2007-12-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34335
