@@ -1,3 +1,8 @@
+2007-12-07  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34382
+	* opts.c (common_handle_option): Handle OPT_fforce_addr.
+
 2007-12-07  Aldy Hernandez  <aldyh@redhat.com>
 
 	* m32c.h (LEGITIMIZE_ADDRESS): Use WIN instead of win.

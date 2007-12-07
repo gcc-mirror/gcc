@@ -1778,6 +1778,7 @@ common_handle_option (size_t scode, const char *arg, int value,
     case OPT_frerun_loop_opt:
     case OPT_fstrength_reduce:
     case OPT_ftree_store_copy_prop:
+    case OPT_fforce_addr:
       /* These are no-ops, preserved for backward compatibility.  */
       break;
 
