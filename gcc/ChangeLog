@@ -1,3 +1,10 @@
+2007-12-07  Richard Guenther  <rguenther@suse.de>
+
+	* tree-profile.c (gcov_type_tmp_var): New global variable.
+	(tree_gen_edge_profiler): Use a single shared variable decl per
+	function for edge counter incrementing.
+	(tree_profiling): Re-set the shared variable.
+
 2007-12-06  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (xtensa_va_start): Add prototype.
