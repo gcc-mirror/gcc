@@ -3,6 +3,8 @@
 	PR ada/15805
 	* gnat.dg/specs/access_constants.ads: New test.
 
+	* gnat.dg/specs/access_constant_decl.ads: New test.
+
 2007-12-07  Olivier Hainque  <hainque@adacore.com>
 
 	PR ada/34173
