@@ -561,11 +561,11 @@ typedef struct m32c_cumulative_args
 
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN) \
 	if (m32c_legitimize_address(&(X),OLDX,MODE)) \
-	  goto win;
+	  goto WIN;
 
 #define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_LEVELS,WIN) \
 	if (m32c_legitimize_reload_address(&(X),MODE,OPNUM,TYPE,IND_LEVELS)) \
-	  goto win;
+	  goto WIN;
 
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)
 
