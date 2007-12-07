@@ -1,3 +1,7 @@
+2007-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.old-deja/g++.mike/empty.C: Remove 2 xfails.
+
 2007-12-07  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/tamdt*.ad?: Support for ...
