@@ -1581,11 +1581,24 @@ create_field_decl (tree field_name, tree field_type, tree record_type,
     }
 
   DECL_PACKED (field_decl) = pos ? DECL_BIT_FIELD (field_decl) : packed;
-  DECL_ALIGN (field_decl)
-    = MAX (DECL_ALIGN (field_decl),
-	   DECL_BIT_FIELD (field_decl) ? 1
-	   : packed && TYPE_MODE (field_type) != BLKmode ? BITS_PER_UNIT
-	   : TYPE_ALIGN (field_type));
+
+  /* Bump the alignment if need be, either for bitfield/packing purposes or
+     to satisfy the type requirements if no such consideration applies.  When
+     we get the alignment from the type, indicate if this is from an explicit
+     user request, which prevents stor-layout from lowering it later on.  */
+  {
+    int bit_align
+      = (DECL_BIT_FIELD (field_decl) ? 1
+	 : packed && TYPE_MODE (field_type) != BLKmode ? BITS_PER_UNIT : 0);
+
+    if (bit_align > DECL_ALIGN (field_decl))
+      DECL_ALIGN (field_decl) = bit_align;
+    else if (!bit_align && TYPE_ALIGN (field_type) > DECL_ALIGN (field_decl))
+      {
+	DECL_ALIGN (field_decl) = TYPE_ALIGN (field_type);
+	DECL_USER_ALIGN (field_decl) = TYPE_USER_ALIGN (field_type);
+      }
+  }
 
   if (pos)
     {
