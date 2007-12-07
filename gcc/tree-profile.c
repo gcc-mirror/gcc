@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 
 static GTY(()) tree gcov_type_node;
+static GTY(()) tree gcov_type_tmp_var;
 static GTY(()) tree tree_interval_profiler_fn;
 static GTY(()) tree tree_pow2_profiler_fn;
 static GTY(()) tree tree_one_value_profiler_fn;
@@ -168,15 +169,19 @@ tree_init_edge_profiler (void)
 static void
 tree_gen_edge_profiler (int edgeno, edge e)
 {
-  tree tmp1 = create_tmp_var (gcov_type_node, "PROF");
-  tree tmp2 = create_tmp_var (gcov_type_node, "PROF");
-  tree ref = tree_coverage_counter_ref (GCOV_COUNTER_ARCS, edgeno);
-  tree one = build_int_cst (gcov_type_node, 1);
-  tree stmt1 = build_gimple_modify_stmt (tmp1, ref);
-  tree stmt2 = build_gimple_modify_stmt (tmp2,
-					 build2 (PLUS_EXPR, gcov_type_node,
-						 tmp1, one));
-  tree stmt3 = build_gimple_modify_stmt (ref, tmp2);
+  tree ref, one, stmt1, stmt2, stmt3;
+
+  /* We share one temporary variable declaration per function.  This
+     gets re-set in tree_profiling.  */
+  if (gcov_type_tmp_var == NULL_TREE)
+    gcov_type_tmp_var = create_tmp_var (gcov_type_node, "PROF_edge_counter");
+  ref = tree_coverage_counter_ref (GCOV_COUNTER_ARCS, edgeno);
+  one = build_int_cst (gcov_type_node, 1);
+  stmt1 = build_gimple_modify_stmt (gcov_type_tmp_var, ref);
+  stmt2 = build_gimple_modify_stmt (gcov_type_tmp_var,
+				    build2 (PLUS_EXPR, gcov_type_node,
+					    gcov_type_tmp_var, one));
+  stmt3 = build_gimple_modify_stmt (ref, gcov_type_tmp_var);
   bsi_insert_on_edge (e, stmt1);
   bsi_insert_on_edge (e, stmt2);
   bsi_insert_on_edge (e, stmt3);
@@ -417,6 +422,10 @@ tree_profiling (void)
      the gcov datastructure initializer.  */
   if (cgraph_state == CGRAPH_STATE_FINISHED)
     return 0;
+
+  /* Re-set global shared temporary variable for edge-counters.  */
+  gcov_type_tmp_var = NULL_TREE;
+
   branch_prob ();
 
   if (! flag_branch_probabilities 
