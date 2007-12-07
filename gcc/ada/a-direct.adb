@@ -155,7 +155,9 @@ package body Ada.Directories is
    begin
       --  First, deal with the invalid cases
 
-      if not Is_Valid_Path_Name (Containing_Directory) then
+      if Containing_Directory /= ""
+        and then not Is_Valid_Path_Name (Containing_Directory)
+      then
          raise Name_Error;
 
       elsif
@@ -176,7 +178,7 @@ package body Ada.Directories is
 
          --  Add a directory separator if needed
 
-         if Result (Last) /= Dir_Separator then
+         if Last /= 0 and then Result (Last) /= Dir_Separator then
             Last := Last + 1;
             Result (Last) := Dir_Separator;
          end if;
