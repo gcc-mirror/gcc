@@ -1,3 +1,9 @@
+2007-12-07  Olivier Hainque  <hainque@adacore.com>
+
+	* decl.c (gnat_to_gnu_entity) <case E_Access_Type>: When computing
+	the designated full view, only follow a second level Full_View link
+	for Non_Limited_Views of from_limited_with references.
+	
 2007-12-07  Samuel Tardieu  <sam@rfc1149.net>
 
 	PR ada/15805

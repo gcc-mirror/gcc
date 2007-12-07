@@ -1,5 +1,10 @@
 2007-12-07  Olivier Hainque  <hainque@adacore.com>
 
+	* gnat.dg/tamdt*.ad?: Support for ...
+	* gnat.dg/test_tamdt.adb: New test.
+
+2007-12-07  Olivier Hainque  <hainque@adacore.com>
+
 	* gnat.dg/unc_memops.ads: Comment out the alloc/free/realloc
 	exports and document how these can be exercised.
 
