@@ -1,3 +1,7 @@
+2007-12-06  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (xtensa_va_start): Add prototype.
+
 2007-12-06  Tom Tromey  <tromey@redhat.com>
 
 	PR c/29172:
