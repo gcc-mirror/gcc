@@ -6998,6 +6998,20 @@ package body Sem_Ch6 is
 
             Analyze_Per_Use_Expression (Default, Formal_Type);
 
+            --  Check that an access to constant is not used with an
+            --  access type.
+
+            if Ekind (Formal_Type) = E_Anonymous_Access_Type
+              and then not Is_Access_Constant (Formal_Type)
+              and then Is_Access_Type (Etype (Default))
+              and then Is_Access_Constant (Etype (Default))
+            then
+               Error_Msg_NE ("parameter of type& cannot be initialized " &
+                             "with an access-to-constant expression",
+                             Default,
+                             Formal_Type);
+            end if;
+
             --  Check that the designated type of an access parameter's default
             --  is not a class-wide type unless the parameter's designated type
             --  is also class-wide.
