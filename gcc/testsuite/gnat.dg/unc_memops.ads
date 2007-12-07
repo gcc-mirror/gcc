@@ -17,8 +17,14 @@ package Unc_Memops is
 
 private
 
-   pragma Export (C, Alloc,   "__gnat_malloc");
-   pragma Export (C, Free,    "__gnat_free");
-   pragma Export (C, Realloc, "__gnat_realloc");
+   --  Uncomment the exports below to really exercise the alternate versions.
+
+   --  This only works when using an installed version of the tools which
+   --  grabs the runtime library objects from an archive, hence doesn't force
+   --  the inclusion of s-memory.o.
+
+   --  pragma Export (C, Alloc,   "__gnat_malloc");
+   --  pragma Export (C, Free,    "__gnat_free");
+   --  pragma Export (C, Realloc, "__gnat_realloc");
 
 end;

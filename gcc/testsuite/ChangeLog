@@ -1,3 +1,8 @@
+2007-12-07  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/unc_memops.ads: Comment out the alloc/free/realloc
+	exports and document how these can be exercised.
+
 2007-12-07  Samuel Tardieu  <sam@rfc1149.net>
 
 	PR ada/15805
