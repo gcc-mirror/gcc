@@ -1,3 +1,14 @@
+2007-12-07  Olivier Hainque  <hainque@adacore.com>
+
+	PR ada/34173
+	* decl.c (gnat_to_gnu_entity) <case E_Array_Type>: When setting
+	the alignment on the GCC XUA array type, set TYPE_USER_ALIGN if
+	this is from an alignment clause on the GNAT entity.
+	* utils.c (create_field_decl): Rewrite the computation of DECL_ALIGN
+	to distinguish the case where we set it from the type's alignment.
+	When so, propagate TYPE_USER_ALIGN into DECL_USER_ALIGN to indicate
+	whether this alignment was set from an explicit alignment clause.
+
 2007-12-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl.c (make_packable_type): Revert last change.
