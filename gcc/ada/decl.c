@@ -2996,7 +2996,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	     : (IN (Ekind (gnat_desig_equiv), Incomplete_Or_Private_Kind)
 		? Full_View (gnat_desig_equiv) : Empty));
 	Entity_Id gnat_desig_full_direct
-	  = ((Present (gnat_desig_full_direct_first)
+	  = ((is_from_limited_with
+	      && Present (gnat_desig_full_direct_first)
 	      && IN (Ekind (gnat_desig_full_direct_first), Private_Kind))
 	     ? Full_View (gnat_desig_full_direct_first)
 	     : gnat_desig_full_direct_first);
