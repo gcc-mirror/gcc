@@ -1,3 +1,9 @@
+2007-12-07  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR ada/15805
+	* sem_ch6.adb (Process_Formals): Prevent an access type formal
+	to be initialized with an access to constant object.
+
 2007-12-07  Olivier Hainque  <hainque@adacore.com>
 
 	PR ada/34173
