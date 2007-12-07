@@ -1,3 +1,9 @@
+2007-12-07  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR ada/29157
+	* doc/install.texi: Explain how to check for a clean environment when
+	building GNAT.
+
 2007-12-07  Richard Guenther  <rguenther@suse.de>
 
 	* tree-profile.c (gcov_type_tmp_var): New global variable.

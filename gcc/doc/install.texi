@@ -1913,6 +1913,12 @@ and has a sufficiently recent version; if too old a GNAT version is
 installed, the build will fail unless @option{--enable-languages} is
 used to disable building the Ada front end.
 
+@env{ADA_INCLUDE_PATH} and @env{ADA_OBJECT_PATH} environment variables
+must not be set when building the Ada compiler, the Ada tools, or the
+Ada runtime libraries. You can check that your build environment is clean
+by verifying that @samp{gnatls -v} lists only one explicit path in each
+section.
+
 @section Building with profile feedback
 
 It is possible to use profile feedback to optimize the compiler itself.  This
