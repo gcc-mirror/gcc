@@ -1,3 +1,7 @@
+2007-12-07  David Daney  <ddaney@avtrex.com>
+	* src/mips/ffi.c (ffi_prep_cif_machdep): Handle long double return
+	type.
+
 2007-12-06  David Daney  <ddaney@avtrex.com>
 
 	* include/ffi.h.in (FFI_SIZEOF_JAVA_RAW): Define if not	already

@@ -462,7 +462,13 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
       case FFI_TYPE_DOUBLE:
 	cif->flags += cif->rtype->type << (FFI_FLAG_BITS * 8);
 	break;
-
+      case FFI_TYPE_LONGDOUBLE:
+	/* Long double is returned as if it were a struct containing
+	   two doubles.  */
+	cif->flags += FFI_TYPE_STRUCT << (FFI_FLAG_BITS * 8);
+	cif->flags += (FFI_TYPE_DOUBLE + (FFI_TYPE_DOUBLE << FFI_FLAG_BITS))
+		      << (4 + (FFI_FLAG_BITS * 8));
+	break;
       default:
 	cif->flags += FFI_TYPE_INT << (FFI_FLAG_BITS * 8);
 	break;
