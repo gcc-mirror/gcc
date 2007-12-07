@@ -1,6 +1,6 @@
 2007-12-07  Ludovic Brenta  <ludovic@ludovic-brenta.org>
 
-	PR ada/34261
+	PR ada/34361
 	* mlib-tgt.adb, mlib-tgt.ads: Fix comments at the top to reflect
 	the new implementation of target-specific calls.
 
