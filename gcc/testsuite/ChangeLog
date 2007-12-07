@@ -15,6 +15,9 @@
 
 	* gnat.dg/specs/access_constant_decl.ads: New test.
 
+	PR ada/21346
+	* gnat.dg/compose.adb: New test.
+
 2007-12-07  Olivier Hainque  <hainque@adacore.com>
 
 	PR ada/34173

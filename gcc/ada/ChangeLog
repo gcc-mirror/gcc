@@ -14,6 +14,9 @@
 	when an access to constant is used to initialize an access
 	value.
 
+	PR ada/21346
+	* a-direct.adb (Compose): Containing_Directory can be an empty string.
+
 2007-12-07  Olivier Hainque  <hainque@adacore.com>
 
 	PR ada/34173
