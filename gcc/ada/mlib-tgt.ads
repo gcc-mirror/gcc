@@ -24,12 +24,10 @@
 ------------------------------------------------------------------------------
 
 --  This package provides a set of target dependent routines to build
---  static, dynamic and shared libraries.
-
---  There are several versions for the body of this package
-
---  In the default version, libraries are not supported, so function
---  Support_For_Libraries return None.
+--  static, dynamic and shared libraries.  There are several packages
+--  providing the actual routines; this package calls them indirectly
+--  by means of access-to-subprogram values; each target-dependent
+--  package initializes these values in its elaboration block.
 
 with Prj; use Prj;
 

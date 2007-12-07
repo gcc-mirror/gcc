@@ -1,3 +1,9 @@
+2007-12-07  Ludovic Brenta  <ludovic@ludovic-brenta.org>
+
+	PR ada/34261
+	* mlib-tgt.adb, mlib-tgt.ads: Fix comments at the top to reflect
+	the new implementation of target-specific calls.
+
 2007-12-07  Olivier Hainque  <hainque@adacore.com>
 
 	* decl.c (gnat_to_gnu_entity) <case E_Access_Type>: When computing
