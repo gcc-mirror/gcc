@@ -1,3 +1,7 @@
+2007-12-08  Paul de Weerd  <weerd@weirdnet.nl>
+
+	* gcc.c-torture/compile/20011130-2.c: Fix typo.
+
 2007-12-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34319
