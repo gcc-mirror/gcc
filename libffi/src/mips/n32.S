@@ -78,14 +78,12 @@ sixteen:
 	SUBU	$sp, $sp, v0	# move the stack pointer to reflect the
 				# arg space
 
-	ADDU	a0, $sp, 0      # 4 * FFI_SIZEOF_ARG
+	move	a0, $sp         # 4 * FFI_SIZEOF_ARG
 	ADDU	a3, $fp, 3 * FFI_SIZEOF_ARG
 
 	# Call ffi_prep_args
 	jal	t9
 	
-	#	ADDU	$sp, $sp, 4 * FFI_SIZEOF_ARG	# adjust $sp to new args
-
 	# Copy the stack pointer to t9
 	move	t9, $sp
 	
@@ -96,18 +94,16 @@ sixteen:
 	REG_L	t6, 2*FFI_SIZEOF_ARG($fp)
 
 	# Is it bigger than 8 * FFI_SIZEOF_ARG?
-	dadd	t7, $0, 8 * FFI_SIZEOF_ARG
-	dsub	t8, t6, t7
+	daddiu	t8, t6, -(8 * FFI_SIZEOF_ARG)
 	bltz	t8, loadregs
 
-	add	t9, t9, t8
+	ADDU	t9, t9, t8
 	
 loadregs:	
 
-	REG_L	t4, 3*FFI_SIZEOF_ARG($fp)  # load the flags word
-	add	t6, t4, 0			      # and copy it into t6
+	REG_L	t6, 3*FFI_SIZEOF_ARG($fp)  # load the flags word into t6.
 
-	and	t4, ((1<<FFI_FLAG_BITS)-1)
+	and	t4, t6, ((1<<FFI_FLAG_BITS)-1)
 	bnez	t4, arg1_floatp
 	REG_L	a0, 0*FFI_SIZEOF_ARG(t9)
 	b	arg1_next
@@ -119,8 +115,7 @@ arg1_doublep:
 	l.d	$f12, 0*FFI_SIZEOF_ARG(t9)
 arg1_next:	
 	
-	add	t4, t6, 0
-	SRL	t4, 1*FFI_FLAG_BITS
+	SRL	t4, t6, 1*FFI_FLAG_BITS
 	and	t4, ((1<<FFI_FLAG_BITS)-1)
 	bnez	t4, arg2_floatp
 	REG_L	a1, 1*FFI_SIZEOF_ARG(t9)
@@ -133,8 +128,7 @@ arg2_doublep:
 	l.d	$f13, 1*FFI_SIZEOF_ARG(t9)	
 arg2_next:	
 	
-	add	t4, t6, 0
-	SRL	t4, 2*FFI_FLAG_BITS
+	SRL	t4, t6, 2*FFI_FLAG_BITS
 	and	t4, ((1<<FFI_FLAG_BITS)-1)
 	bnez	t4, arg3_floatp
 	REG_L	a2, 2*FFI_SIZEOF_ARG(t9)
@@ -147,8 +141,7 @@ arg3_doublep:
 	l.d	$f14, 2*FFI_SIZEOF_ARG(t9)	
 arg3_next:	
 	
-	add	t4, t6, 0
-	SRL	t4, 3*FFI_FLAG_BITS
+	SRL	t4, t6, 3*FFI_FLAG_BITS
 	and	t4, ((1<<FFI_FLAG_BITS)-1)
 	bnez	t4, arg4_floatp
 	REG_L	a3, 3*FFI_SIZEOF_ARG(t9)
@@ -161,8 +154,7 @@ arg4_doublep:
 	l.d	$f15, 3*FFI_SIZEOF_ARG(t9)	
 arg4_next:	
 	
-	add	t4, t6, 0
-	SRL	t4, 4*FFI_FLAG_BITS
+	SRL	t4, t6, 4*FFI_FLAG_BITS
 	and	t4, ((1<<FFI_FLAG_BITS)-1)
 	bnez	t4, arg5_floatp
 	REG_L	a4, 4*FFI_SIZEOF_ARG(t9)
@@ -175,8 +167,7 @@ arg5_doublep:
 	l.d	$f16, 4*FFI_SIZEOF_ARG(t9)	
 arg5_next:	
 	
-	add	t4, t6, 0
-	SRL	t4, 5*FFI_FLAG_BITS
+	SRL	t4, t6, 5*FFI_FLAG_BITS
 	and	t4, ((1<<FFI_FLAG_BITS)-1)
 	bnez	t4, arg6_floatp
 	REG_L	a5, 5*FFI_SIZEOF_ARG(t9)
@@ -189,8 +180,7 @@ arg6_doublep:
 	l.d	$f17, 5*FFI_SIZEOF_ARG(t9)	
 arg6_next:	
 	
-	add	t4, t6, 0
-	SRL	t4, 6*FFI_FLAG_BITS
+	SRL	t4, t6, 6*FFI_FLAG_BITS
 	and	t4, ((1<<FFI_FLAG_BITS)-1)
 	bnez	t4, arg7_floatp
 	REG_L	a6, 6*FFI_SIZEOF_ARG(t9)
@@ -203,8 +193,7 @@ arg7_doublep:
 	l.d	$f18, 6*FFI_SIZEOF_ARG(t9)	
 arg7_next:	
 	
-	add	t4, t6, 0
-	SRL	t4, 7*FFI_FLAG_BITS
+	SRL	t4, t6, 7*FFI_FLAG_BITS
 	and	t4, ((1<<FFI_FLAG_BITS)-1)
 	bnez	t4, arg8_floatp
 	REG_L	a7, 7*FFI_SIZEOF_ARG(t9)

@@ -1,3 +1,8 @@
+2007-12-08  David Daney  <ddaney@avtrex.com>
+
+	* src/mips/n32.S (ffi_call_N32):  Replace dadd with ADDU, dsub with 
+	SUBU, add with ADDU and use smaller code sequences.
+
 2007-12-07  David Daney  <ddaney@avtrex.com>
 	* src/mips/ffi.c (ffi_prep_cif_machdep): Handle long double return
 	type.
