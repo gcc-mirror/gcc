@@ -788,6 +788,9 @@ case "${host}" in
     # on Darwin -single_module speeds up loading of the dynamic libraries.
     extra_ldflags_libjava=-Wl,-single_module
     ;;
+*-*-darwin[[9]]*)
+    extra_gij_ldflags=-Wl,-allow_stack_execute
+    ;;
 arm*linux*eabi)
     # Some of the ARM unwinder code is actually in libstdc++.  We
     # could in principle replicate it in libgcj, but it's better to
@@ -798,6 +801,7 @@ arm*linux*eabi)
     ;;
 esac
 AC_SUBST(extra_ldflags_libjava)
+AC_SUBST(extra_gij_ldflags)
 AC_SUBST(extra_ldflags)
 AC_SUBST(LIBSTDCXXSPEC)
 
@@ -1546,7 +1550,7 @@ case "${host}" in
  m68*-*-linux*)
     SIGNAL_HANDLER=include/dwarf2-signal.h
     ;;
- powerpc*-*-darwin*)
+ powerpc*-*-darwin* | i?86-*-darwin9* | x86_64-*-darwin9*)
     SIGNAL_HANDLER=include/darwin-signal.h
     ;;
  *)

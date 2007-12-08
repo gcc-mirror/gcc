@@ -1,3 +1,20 @@
+2007-12-08  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* configure.host: Add bits for i?86-*-darwin9 and x86_64-*-darwin9.
+	* configure.ac: Add darwin-signal.h to x86_64-*-darwin9 and
+	i?86-*darwin9.
+	* configure.in: Regenerate.
+	* darwin.cc: Add definitions for Darwin specific functions for 64-bit.
+	(darwin_java_register_dyld_add_image_hook): Use this specific
+	functions.
+	* Makefile.am (gij_LDFLAGS): Add extra_gij_ldflags for Darwin9.
+	* Makefile.in: Regenerate.
+	* include/Makefile.in: Likewise.
+	* gcj/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+	* testsuite/lib/libjava.exp (libjava_arguments): Add allow_stack_execute
+	for *-*-darwin9*.
+
 2007-12-06  David Daney  <ddaney@avtrex.com>
 
 	* interpret.cc: Replace ffi_raw with INTERP_FFI_RAW_TYPE throughout.
