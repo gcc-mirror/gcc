@@ -1,3 +1,9 @@
+2007-12-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34391
+	* tree-vect-transform.c (vect_setup_realignment): Mark new
+	symbols for renaming.
+
 2007-12-07  Bob Wilson  <bob.wilson@acm.org>
 	
 	* config/xtensa/xtensa.h (ASM_PREFERRED_EH_DATA_FORMAT): Define.

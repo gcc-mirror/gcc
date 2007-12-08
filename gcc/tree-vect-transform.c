@@ -5143,6 +5143,7 @@ vect_setup_realignment (tree stmt, block_stmt_iterator *bsi,
       new_stmt = build_gimple_modify_stmt (vec_dest, data_ref);
       new_temp = make_ssa_name (vec_dest, new_stmt);
       GIMPLE_STMT_OPERAND (new_stmt, 0) = new_temp;
+      mark_symbols_for_renaming (new_stmt);
       new_bb = bsi_insert_on_edge_immediate (pe, new_stmt);
       gcc_assert (!new_bb);
       msq_init = GIMPLE_STMT_OPERAND (new_stmt, 0);
