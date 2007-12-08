@@ -1,3 +1,7 @@
+2007-12-07  Bill Maddox <maddox@google.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2007-12-05  Ben Elliston  <bje@au.ibm.com>
 
 	* config.sub, config.guess: Update from upstream sources.
