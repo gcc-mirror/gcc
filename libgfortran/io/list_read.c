@@ -1078,7 +1078,12 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
     }
 
   if (!isdigit (c) && c != '.')
-    goto bad;
+    {
+      if (c == 'i' || c == 'I' || c == 'n' || c == 'N')
+	goto inf_nan;
+      else
+	goto bad;
+    }
 
   push_char (dtp, c);
 
@@ -1136,6 +1141,13 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
 
  exp2:
   if (!isdigit (c))
+    {
+      if (c == 'i' || c == 'I' || c == 'n' || c == 'N')
+	goto inf_nan;
+      else
+	goto bad;
+    }
+
     goto bad;
   push_char (dtp, c);
 
@@ -1165,6 +1177,41 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
   free_saved (dtp);
 
   return m;
+
+ inf_nan:
+  /* Match INF and Infinity.  */
+  if ((c == 'i' || c == 'I')
+      && ((c = next_char (dtp)) == 'n' || c == 'N')
+      && ((c = next_char (dtp)) == 'f' || c == 'F'))
+    {
+	c = next_char (dtp);
+	if ((c != 'i' && c != 'I')
+	    || ((c == 'i' || c == 'I')
+		&& ((c = next_char (dtp)) == 'n' || c == 'N')
+		&& ((c = next_char (dtp)) == 'i' || c == 'I')
+		&& ((c = next_char (dtp)) == 't' || c == 'T')
+		&& ((c = next_char (dtp)) == 'y' || c == 'Y')
+		&& (c = next_char (dtp))))
+	  {
+	     if (is_separator (c))
+	       unget_char (dtp, c);
+	     push_char (dtp, 'i');
+	     push_char (dtp, 'n');
+	     push_char (dtp, 'f');
+	     goto done;
+	  }
+    } /* Match NaN.  */
+  else if (((c = next_char (dtp)) == 'a' || c == 'A')
+	   && ((c = next_char (dtp)) == 'n' || c == 'N')
+	   && (c = next_char (dtp)))
+    {
+      if (is_separator (c))
+	unget_char (dtp, c);
+      push_char (dtp, 'n');
+      push_char (dtp, 'a');
+      push_char (dtp, 'n');
+      goto done;
+    }
 
  bad:
 
@@ -1293,6 +1340,12 @@ read_real (st_parameter_dt *dtp, int length)
       eat_separator (dtp);
       return;
 
+    case 'i':
+    case 'I':
+    case 'n':
+    case 'N':
+      goto inf_nan;
+
     default:
       goto bad_real;
     }
@@ -1367,7 +1420,12 @@ read_real (st_parameter_dt *dtp, int length)
     }
 
   if (!isdigit (c) && c != '.')
-    goto bad_real;
+    {
+      if (c == 'i' || c == 'I' || c == 'n' || c == 'N')
+	goto inf_nan;
+      else
+	goto bad_real;
+    }
 
   if (c == '.')
     {
@@ -1463,6 +1521,37 @@ read_real (st_parameter_dt *dtp, int length)
   free_saved (dtp);
   dtp->u.p.saved_type = BT_REAL;
   return;
+
+ inf_nan:
+  /* Match INF and Infinity.  */
+  if ((c == 'i' || c == 'I')
+      && ((c = next_char (dtp)) == 'n' || c == 'N')
+      && ((c = next_char (dtp)) == 'f' || c == 'F'))
+    {
+	c = next_char (dtp);
+	if (is_separator (c)
+	    || ((c == 'i' || c == 'I')
+		&& ((c = next_char (dtp)) == 'n' || c == 'N')
+		&& ((c = next_char (dtp)) == 'i' || c == 'I')
+		&& ((c = next_char (dtp)) == 't' || c == 'T')
+		&& ((c = next_char (dtp)) == 'y' || c == 'Y')
+		&& (c = next_char (dtp)) && is_separator (c)))
+	  {
+	     push_char (dtp, 'i');
+	     push_char (dtp, 'n');
+	     push_char (dtp, 'f');
+	     goto done;
+	  }
+    } /* Match NaN.  */
+  else if (((c = next_char (dtp)) == 'a' || c == 'A')
+	   && ((c = next_char (dtp)) == 'n' || c == 'N')
+	   && (c = next_char (dtp)) && is_separator (c))
+    {
+      push_char (dtp, 'n');
+      push_char (dtp, 'a');
+      push_char (dtp, 'n');
+      goto done;
+    }
 
  bad_real:
 
