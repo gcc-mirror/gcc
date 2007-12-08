@@ -1,3 +1,21 @@
+2007-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/34359
+	* gfortran.h (gfc_file): Remove sibling and down fields.
+	* scanner.c (file_changes, file_changes_cur, file_changes_count,
+	file_changes_allocated): New variables.
+	(add_file_change, report_file_change): New functions.
+	(change_file): Remove.
+	(gfc_start_source_files, gfc_end_source_files): Call
+	report_file_change instead of change_file.
+	(gfc_advance_line): Call report_file_change instead of change_file,
+	call it even if lb->file == lb->next->file.
+	(get_file): Revert last changes.
+	(preprocessor_line): Call add_file_change when entering or leaving
+	a file.
+	(load_file): Likewise.  Set file_change[...].lb for all newly added
+	file changes.
+
 2007-12-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34333
