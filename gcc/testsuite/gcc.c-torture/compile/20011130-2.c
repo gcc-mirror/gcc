@@ -1,7 +1,7 @@
 /* This testcase caused infinite loop in life info computation
    after if conversion on IA-64.  Conditional register dead for
    pseudo holding sign-extended k was improperly computed,
-   resulting in this pseudo beeing live at start of bb if it was
+   resulting in this pseudo being live at start of bb if it was
    dead at the end and vice versa; as it was a bb which had edge
    to itself, this resulted in alternative propagating this basic
    block forever.  */
