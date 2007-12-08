@@ -1,6 +1,6 @@
 /* darwin.cc - class loader stuff for Darwin.  */
 
-/* Copyright (C) 2004  Free Software Foundation
+/* Copyright (C) 2004, 2007  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -21,26 +21,43 @@ details.  */
    ourself.  */
 
 #include <stdint.h>
-struct mach_header;
-extern "C" void _dyld_register_func_for_add_image
-  (void (*func)(const struct mach_header *mh, intptr_t vmaddr_slide));
-extern "C" void _dyld_register_func_for_remove_image
-  (void (*func)(const struct mach_header *mh, intptr_t vmaddr_slide));
-extern "C" char *getsectdatafromheader
-(const struct mach_header *mhp, const char *segname, const char *sectname,
- uint32_t *size);
+#if !defined (__LP64__)
+  struct mach_header;
+# define JAVA_MACH_HEADER mach_header
+# define  mh_size_t uint32_t
+  extern "C" void _dyld_register_func_for_add_image
+    (void (*func)(const struct mach_header *mh, intptr_t vmaddr_slide));
+  extern "C" void _dyld_register_func_for_remove_image
+    (void (*func)(const struct mach_header *mh, intptr_t vmaddr_slide));
+  extern "C" char *getsectdatafromheader
+    (const struct mach_header *mhp, const char *segname, const char *sectname,
+     uint32_t *size);
+# define GETSECTDATA getsectdatafromheader
+#else
+  struct mach_header_64;
+# define JAVA_MACH_HEADER mach_header_64
+# define mh_size_t uint64_t
+  extern "C" void _dyld_register_func_for_add_image
+    (void (*func)(const struct mach_header_64 *mh, intptr_t vmaddr_slide));
+  extern "C" void _dyld_register_func_for_remove_image
+    (void (*func)(const struct mach_header_64 *mh, intptr_t vmaddr_slide));
+  extern "C" char *getsectdatafromheader_64
+    (const struct mach_header_64 *mhp, const char *segname,
+     const char *sectname, uint64_t *size);
+# define GETSECTDATA getsectdatafromheader_64
+#endif
 
 /* When a new image is loaded, look to see if it has a jcr section
    and if so register the classes listed in it.  */
 
 static void
-darwin_java_register_dyld_add_image_hook (const struct mach_header *mh,
+darwin_java_register_dyld_add_image_hook (const struct JAVA_MACH_HEADER *mh,
 					  intptr_t slide)
 {
   char *fde;
-  uint32_t sz;
+  mh_size_t sz;
 
-  fde = getsectdatafromheader (mh, "__DATA", "jcr", &sz);
+  fde = GETSECTDATA (mh, "__DATA", "jcr", &sz);
   if (! fde)
     return;
   
