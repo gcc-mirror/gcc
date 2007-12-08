@@ -1,3 +1,8 @@
+2007-12-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34319
+	* io/list_read.c (parse_real, read_real): Support NaN/Infinity.
+
 2007-12-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Thomas Koenig  <tkoenig@gcc.gnu.org>
 
