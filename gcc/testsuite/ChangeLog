@@ -1,3 +1,10 @@
+2007-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/34359
+	* gfortran.dg/include_1.f90: New test.
+	* gfortran.dg/include_1.inc: New.
+	* gfortran.dg/include_2.f90: New test.
+
 2007-12-08  Paul de Weerd  <weerd@weirdnet.nl>
 
 	* gcc.c-torture/compile/20011130-2.c: Fix typo.

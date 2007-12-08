@@ -706,7 +706,7 @@ symbol_attribute;
 
 typedef struct gfc_file
 {
-  struct gfc_file *next, *up, *sibling, *down;
+  struct gfc_file *next, *up;
   int inclusion_line, line;
   char *filename;
 } gfc_file;
