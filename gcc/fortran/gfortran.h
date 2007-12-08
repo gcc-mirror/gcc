@@ -1430,7 +1430,7 @@ typedef struct gfc_expr
 
   /* True if the expression is a call to a function that returns an array,
      and if we have decided not to allocate temporary data for that array.  */
-  unsigned int inline_noncopying_intrinsic : 1;
+  unsigned int inline_noncopying_intrinsic : 1, is_boz : 1;
 
   /* Used to quickly find a given constructor by its offset.  */
   splay_tree con_by_offset;

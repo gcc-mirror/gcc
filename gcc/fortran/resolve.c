@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "arith.h"  /* For gfc_compare_expr().  */
 #include "dependency.h"
 #include "data.h"
+#include "target-memory.h" /* for gfc_simplify_transfer */
 
 /* Types used in equivalence statements.  */
 
@@ -5885,7 +5886,6 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
   int n;
   gfc_ref *ref;
 
-
   if (gfc_extend_assign (code, ns) == SUCCESS)
     {
       lhs = code->ext.actual->expr;
@@ -5911,6 +5911,24 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 
   lhs = code->expr;
   rhs = code->expr2;
+
+  if (rhs->is_boz
+      && gfc_notify_std (GFC_STD_GNU, "Extension: BOZ literal at %L outside "
+                         "a DATA statement and outside INT/REAL/DBLE/CMPLX",
+                         &code->loc) == FAILURE)
+    return false;
+
+  /* Handle the case of a BOZ literal on the RHS.  */
+  if (rhs->is_boz && lhs->ts.type != BT_INTEGER)
+    {
+      if (gfc_option.warn_surprising)
+	gfc_warning ("BOZ literal at %L is bitwise transferred "
+		     "non-integer symbol '%s'", &code->loc,
+		     lhs->symtree->n.sym->name);
+
+      gfc_convert_boz (rhs, &lhs->ts);
+    }
+
 
   if (lhs->ts.type == BT_CHARACTER
 	&& gfc_option.warn_character_truncation)

@@ -1,3 +1,26 @@
+2007-12-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34342
+	PR fortran/34345
+	PR fortran/18026
+	PR fortran/29471
+
+	* gfortran.texi (BOZ literal constants): Improve documentation
+	and adapt for BOZ changes.
+	* Make-lang.ini (resolve.o): Add target-memory.h dependency.
+	* gfortran.h (gfc_expr): Add is_boz flag.
+	* expr.c: Include target-memory.h.
+	(gfc_check_assign): Support transferring BOZ for real/cmlx.
+	* resolve.c: Include target-memory.h
+	(resolve_ordinary_assign): Support transferring BOZ for real/cmlx.
+	* target-memory.c (gfc_convert_boz): New function.
+	* target-memory.c (gfc_convert_boz): Add prototype.
+	* primary.c (match_boz_constant): Set is_boz, enable F95 error
+	also without -pedantic, and allow for Fortran 2003 BOZ.
+	(match_real_constant): Fix comment.
+	* simplify.c (simplify_cmplx,gfc_simplify_dble,gfc_simplify_float,
+	gfc_simplify_real): Support Fortran 2003 BOZ.
+
 2007-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/34359

@@ -595,3 +595,46 @@ gfc_merge_initializers (gfc_typespec ts, gfc_expr *e, unsigned char *data,
 
   return len;
 }
+
+void
+gfc_convert_boz (gfc_expr *expr, gfc_typespec *ts)
+{
+  size_t buffer_size;
+  unsigned char *buffer;
+
+  if (!expr->is_boz)
+    return;
+
+  gcc_assert (expr->expr_type == EXPR_CONSTANT
+	      && expr->ts.type == BT_INTEGER);
+
+  /* Don't convert BOZ to logical, character, derived etc.  */
+  if (ts->type == BT_REAL)
+    buffer_size = size_float (ts->kind);
+  else if (ts->type == BT_COMPLEX)
+    buffer_size = size_complex (ts->kind);
+  else
+    return;
+
+  buffer_size = MAX (buffer_size, size_integer (expr->ts.kind));
+
+  buffer = (unsigned char*)alloca (buffer_size);
+  encode_integer (expr->ts.kind, expr->value.integer, buffer, buffer_size);
+  mpz_clear (expr->value.integer);
+
+  if (ts->type == BT_REAL)
+    {
+      mpfr_init (expr->value.real);
+      gfc_interpret_float (ts->kind, buffer, buffer_size, expr->value.real);
+    }
+  else
+    {
+      mpfr_init (expr->value.complex.r);
+      mpfr_init (expr->value.complex.i);
+      gfc_interpret_complex (ts->kind, buffer, buffer_size,
+			     expr->value.complex.r, expr->value.complex.i);
+    }
+  expr->is_boz = 0;  
+  expr->ts.type = ts->type;
+  expr->ts.kind = ts->kind;
+}

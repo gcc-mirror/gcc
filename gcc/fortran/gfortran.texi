@@ -862,6 +862,9 @@ Renaming of operators in the @code{USE} statement.
 @cindex ISO C Bindings
 Interoperability with C (ISO C Bindings)
 
+@item
+BOZ as argument of INT, REAL, DBLE and CMPLX.
+
 @end itemize
 
 
@@ -1084,26 +1087,45 @@ of the @code{READ} statement, and the output item lists of the
 @section BOZ literal constants
 @cindex BOZ literal constants
 
+Besides decimal constants, Fortran also supports binary (@code{b}),
+octal (@code{o}) and hexadecimal (@code{z}) integer constants. The
+syntax is: @samp{prefix quote digits quote}, were the prefix is
+either @code{b}, @code{o} or @code{z}, quote is either @code{'} or
+@code{"} and the digits are for binary @code{0} or @code{1}, for
+octal between @code{0} and @code{7}, and for hexadecimal between
+@code{0} and @code{F}. (Example: @code{b'01011101'}.)
+
+Up to Fortran 95, BOZ literals were only allowed to initialize
+integer variables in DATA statements. Since Fortran 2003 BOZ literals
+are also allowed as argument of @code{REAL}, @code{DBLE}, @code{INT}
+and @code{CMPLX}; the result is the same as if the integer BOZ
+literal had been converted by @code{TRANSFER} to, respectively,
+@code{real}, @code{double precision}, @code{integer} or @code{complex}.
+The GNU Fortran intrinsic procedure @code{FLOAT}, @code{DFLOAT},
+@code{COMPLEX} and @code{DCMPLX} are treated alike.
+
 As an extension, GNU Fortran allows hexadecimal BOZ literal constants to
-be specified using the X prefix, in addition to the standard Z prefix.
-BOZ literal constants can also be specified by adding a suffix to the
-string. For example, @code{Z'ABC'} and @code{'ABC'Z} are equivalent.
+be specified using the @code{X} prefix, in addition to the standard
+@code{Z} prefix. The BOZ literal can also be specified by adding a
+suffix to the string, for example, @code{Z'ABC'} and @code{'ABC'Z} are
+equivalent.
 
-The Fortran standard restricts the appearance of a BOZ literal constant
-to the @code{DATA} statement, and it is expected to be assigned to an
-@code{INTEGER} variable.  GNU Fortran permits a BOZ literal to appear in
-any initialization expression as well as assignment statements.
+Furthermore, GNU Fortran allows using BOZ literal constants outside
+DATA statements and the four intrinsic functions allowed by Fortran 2003.
+In DATA statements, in direct assignments, where the right-hand side
+only contains a BOZ literal constant, and for old-style initializers of
+the form @code{integer i /o'0173'/}, the constant is transferred
+as if @code{TRANSFER} had been used. In all other cases, the BOZ literal
+constant is converted to an @code{INTEGER} value with
+the largest decimal representation.  This value is then converted
+numerically to the type and kind of the variable in question.
+(For instance @code{real :: r = b'0000001' + 1} initializes @code{r}
+with @code{2.0}.) As different compilers implement the extension
+differently, one should be careful when doing bitwise initialization
+of non-integer variables.
 
-Attempts to use a BOZ literal constant to do a bitwise initialization of
-a variable can lead to confusion.  A BOZ literal constant is converted
-to an @code{INTEGER} value with the kind type with the largest decimal
-representation, and this value is then converted numerically to the type
-and kind of the variable in question.  Thus, one should not expect a
-bitwise copy of the BOZ literal constant to be assigned to a @code{REAL}
-variable.
-
-Similarly, initializing an @code{INTEGER} variable with a statement such
-as @code{DATA i/Z'FFFFFFFF'/} will produce an integer overflow rather
+Note that initializing an @code{INTEGER} variable with a statement such
+as @code{DATA i/Z'FFFFFFFF'/} will give an integer overflow error rather
 than the desired result of @math{-1} when @code{i} is a 32-bit integer
 on a system that supports 64-bit integers.  The @samp{-fno-range-check}
 option can be used as a workaround for legacy code that initializes

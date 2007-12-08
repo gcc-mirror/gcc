@@ -349,7 +349,7 @@ match_boz_constant (gfc_expr **result)
   if (delim != '\'' && delim != '\"')
     goto backup;
 
-  if (x_hex && pedantic
+  if (x_hex
       && (gfc_notify_std (GFC_STD_GNU, "Extension: Hexadecimal "
 			  "constant at %C uses non-standard syntax")
 	  == FAILURE))
@@ -415,6 +415,9 @@ match_boz_constant (gfc_expr **result)
   kind = gfc_max_integer_kind;
   e = gfc_convert_integer (buffer, kind, radix, &gfc_current_locus);
 
+  /* Mark as boz variable.  */
+  e->is_boz = 1;
+
   if (gfc_range_check (e) != ARITH_OK)
     {
       gfc_error ("Integer too big for integer kind %i at %C", kind);
@@ -422,10 +425,8 @@ match_boz_constant (gfc_expr **result)
       return MATCH_ERROR;
     }
 
-  /* FIXME: Fortran 2003 allows BOZ also in REAL(), CMPLX(), INT();
-     see PR18026 and PR29471.  */
   if (!gfc_in_match_data ()
-      && (gfc_notify_std (GFC_STD_GNU, "Extension: BOZ used outside a DATA "
+      && (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: BOZ used outside a DATA "
 			  "statement at %C")
 	  == FAILURE))
       return MATCH_ERROR;
@@ -440,7 +441,7 @@ backup:
 
 
 /* Match a real constant of some sort.  Allow a signed constant if signflag
-   is nonzero.  Allow integer constants if allow_int is true.  */
+   is nonzero.  */
 
 static match
 match_real_constant (gfc_expr **result, int signflag)
