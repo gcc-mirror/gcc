@@ -1148,7 +1148,6 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
 	goto bad;
     }
 
-    goto bad;
   push_char (dtp, c);
 
   for (;;)
