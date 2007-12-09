@@ -67,7 +67,8 @@ tree gfc_type_for_size (unsigned, int);
 tree gfc_type_for_mode (enum machine_mode, int);
 
 tree gfc_get_element_type (tree);
-tree gfc_get_array_type_bounds (tree, int, tree *, tree *, int);
+tree gfc_get_array_type_bounds (tree, int, tree *, tree *, int,
+				enum gfc_array_kind);
 tree gfc_get_nodesc_array_type (tree, gfc_array_spec *, gfc_packed);
 
 /* Add a field of given name and type to a UNION_TYPE or RECORD_TYPE.  */

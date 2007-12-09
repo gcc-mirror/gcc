@@ -1,3 +1,21 @@
+2007-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/22244
+	* langhooks-def.h (LANG_HOOKS_GET_ARRAY_DESCR_INFO): Define.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Add it.
+	* langhooks.h (struct array_descr_info): Forward declaration.
+	(struct lang_hooks_for_types): Add get_array_descr_info field.
+	* dwarf2.h (DW_AT_bit_stride, DW_AT_byte_stride): New.
+	(DW_AT_stride_size, DW_AT_stride): Keep around for Dwarf2
+	compatibility.
+	* dwarf2out.h (struct array_descr_info): New type.
+	* dwarf2out.c (dwarf_attr_name): Rename DW_AT_stride to
+	DW_AT_byte_stride and DW_AT_stride_size to DW_AT_bit_size.
+	(descr_info_loc, add_descr_info_field, gen_descr_array_type_die):
+	New functions.
+	(gen_type_die_with_usage): Call lang_hooks.types.get_array_descr_info
+	and gen_descr_array_type_die.
+
 2007-12-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/34391
