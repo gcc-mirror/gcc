@@ -1,3 +1,11 @@
+2007-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34178
+	PR c++/34340
+	* g++.dg/template/repo6.C: New test.
+	* g++.dg/template/repo7.C: New test.
+	* g++.dg/template/repo8.C: New test.
+
 2007-12-09  H.J. Lu  <hjl@lucon.org>
 	    Tobias Burnus  <burnus@net-b.de>
 

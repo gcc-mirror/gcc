@@ -1,3 +1,13 @@
+2007-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34178
+	PR c++/34340
+	* repo.c (repo_emit_p): Return 2 for DECL_INTEGRAL_CONSTANT_VAR_P
+	in class scope rather than DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P.
+	Return 2 also if DECL_EXPLICIT_INSTANTIATION.
+	* decl2.c (import_export_decl): Don't make VAR_DECLs import_p when
+	flag_use_repository and repo_emit_p returned 2.
+
 2007-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34336
