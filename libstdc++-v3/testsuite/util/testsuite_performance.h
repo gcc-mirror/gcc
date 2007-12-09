@@ -258,7 +258,7 @@ namespace __gnu_test
     out << std::endl;
     out.close();
   }
-}; // namespace __gnu_test
+} // namespace __gnu_test
 
 #endif // _GLIBCXX_PERFORMANCE_H
 

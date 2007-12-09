@@ -334,4 +334,4 @@ namespace __gnu_test
     tmp.tm_isdst = isdst;
     return tmp;
   }
-}; // namespace __gnu_test
+} // namespace __gnu_test

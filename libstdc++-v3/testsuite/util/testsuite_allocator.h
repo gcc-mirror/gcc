@@ -45,7 +45,7 @@ namespace
 {
   bool new_called = false;
   bool delete_called = false;
-};
+}
 
 namespace __gnu_test
 {
@@ -383,6 +383,6 @@ namespace __gnu_test
       
       int personality;
     };
-}; // namespace __gnu_test
+} // namespace __gnu_test
 
 #endif // _GLIBCXX_TESTSUITE_ALLOCATOR_H

@@ -1,3 +1,13 @@
+2007-12-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/util/testsuite_allocator.h,
+	testsuite/util/testsuite_hooks.cc,
+	testsuite/util/testsuite_character.h,
+	testsuite/util/testsuite_performance.h,
+	testsuite/util/testsuite_rvalref.h, testsuite/util/testsuite_io.h,
+	testsuite/util/testsuite_allocator.cc: Remove semi-colons after
+	namespace declarations.
+
 2007-12-05  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1_impl/hashtable_policy.h (_Prime_rehash_policy::

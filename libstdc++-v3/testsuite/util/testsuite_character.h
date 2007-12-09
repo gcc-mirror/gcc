@@ -137,7 +137,7 @@ namespace __gnu_cxx
       inline V2
       __gnu_test::pod_uchar::char_type::to(const char_type& c)
       { return static_cast<V2>(c.value << 5); }
-}; // namespace __gnu_test
+} // namespace __gnu_test
 
 namespace std
 {
