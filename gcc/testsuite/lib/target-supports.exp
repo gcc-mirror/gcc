@@ -481,7 +481,7 @@ proc check_effective_target_tls {} {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_tls_native {} {
-    return [check_no_messages_and_pattern tls_native "!emultls" assembly {
+    return [check_no_messages_and_pattern tls_native "!emutls" assembly {
 	__thread int i;
 	int f (void) { return i; }
 	void g (int j) { i = j; }
