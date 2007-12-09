@@ -5687,12 +5687,49 @@ pa_secondary_reload (bool in_p, rtx x, enum reg_class class,
   if (regno >= FIRST_PSEUDO_REGISTER || GET_CODE (x) == SUBREG)
     regno = true_regnum (x);
 
-  /* Handle out of range displacement for integer mode loads/stores of
-     FP registers.  */
-  if (((regno >= FIRST_PSEUDO_REGISTER || regno == -1)
-       && GET_MODE_CLASS (mode) == MODE_INT
-       && FP_REG_CLASS_P (class))
-      || (class == SHIFT_REGS && (regno <= 0 || regno >= 32)))
+  /* In order to allow 14-bit displacements in integer loads and stores,
+     we need to prevent reload from generating out of range integer mode
+     loads and stores to the floating point registers.  Previously, we
+     used to call for a secondary reload and have emit_move_sequence()
+     fix the instruction sequence.  However, reload occasionally wouldn't
+     generate the reload and we would end up with an invalid REG+D memory
+     address.  So, now we use an intermediate general register for most
+     memory loads and stores.  */
+  if ((regno >= FIRST_PSEUDO_REGISTER || regno == -1)
+      && GET_MODE_CLASS (mode) == MODE_INT
+      && FP_REG_CLASS_P (class))
+    {
+      /* Reload passes (mem:SI (reg/f:DI 30 %r30) when it wants to check
+	 the secondary reload needed for a pseudo.  It never passes a
+	 REG+D address.  */
+      if (GET_CODE (x) == MEM)
+	{
+	  x = XEXP (x, 0);
+
+	  /* We don't need an intermediate for indexed and LO_SUM DLT
+	     memory addresses.  When INT14_OK_STRICT is true, it might
+	     appear that we could directly allow register indirect
+	     memory addresses.  However, this doesn't work because we
+	     don't support SUBREGs in floating-point register copies
+	     and reload doesn't tell us when it's going to use a SUBREG.  */
+	  if (IS_INDEX_ADDR_P (x)
+	      || IS_LO_SUM_DLT_ADDR_P (x))
+	    return NO_REGS;
+
+	  /* Otherwise, we need an intermediate general register.  */
+	  return GENERAL_REGS;
+	}
+
+      /* Request a secondary reload with a general scratch register
+	 for everthing else.  ??? Could symbolic operands be handled
+	 directly when generating non-pic PA 2.0 code?  */
+      sri->icode = in_p ? reload_in_optab[mode] : reload_out_optab[mode];
+      return NO_REGS;
+    }
+
+  /* We need a secondary register (GPR) for copies between the SAR
+     and anything other than a general register.  */
+  if (class == SHIFT_REGS && (regno <= 0 || regno >= 32))
     {
       sri->icode = in_p ? reload_in_optab[mode] : reload_out_optab[mode];
       return NO_REGS;
@@ -5701,16 +5738,15 @@ pa_secondary_reload (bool in_p, rtx x, enum reg_class class,
   /* A SAR<->FP register copy requires a secondary register (GPR) as
      well as secondary memory.  */
   if (regno >= 0 && regno < FIRST_PSEUDO_REGISTER
-      && ((REGNO_REG_CLASS (regno) == SHIFT_REGS && FP_REG_CLASS_P (class))
-	  || (class == SHIFT_REGS
-	      && FP_REG_CLASS_P (REGNO_REG_CLASS (regno)))))
+      && (REGNO_REG_CLASS (regno) == SHIFT_REGS
+      && FP_REG_CLASS_P (class)))
     {
       sri->icode = in_p ? reload_in_optab[mode] : reload_out_optab[mode];
       return NO_REGS;
     }
 
   /* Secondary reloads of symbolic operands require %r1 as a scratch
-     register when we're generating PIC code and the operand isn't
+     register when we're generating PIC code and when the operand isn't
      readonly.  */
   if (GET_CODE (x) == HIGH)
     x = XEXP (x, 0);
@@ -9569,5 +9605,63 @@ pa_hpux_file_end (void)
   VEC_free (extern_symbol, gc, extern_symbols);
 }
 #endif
+
+/* Return true if a change from mode FROM to mode TO for a register
+   in register class CLASS is invalid.  */
+
+bool
+pa_cannot_change_mode_class (enum machine_mode from, enum machine_mode to,
+			     enum reg_class class)
+{
+  if (from == to)
+    return false;
+
+  /* Reject changes to/from complex and vector modes.  */
+  if (COMPLEX_MODE_P (from) || VECTOR_MODE_P (from)
+      || COMPLEX_MODE_P (to) || VECTOR_MODE_P (to))
+    return true;
+      
+  if (GET_MODE_SIZE (from) == GET_MODE_SIZE (to))
+    return false;
+
+  /* There is no way to load QImode or HImode values directly from
+     memory.  SImode loads to the FP registers are not zero extended.
+     On the 64-bit target, this conflicts with the definition of
+     LOAD_EXTEND_OP.  Thus, we can't allow changing between modes
+     with different sizes in the floating-point registers.  */
+  if (MAYBE_FP_REG_CLASS_P (class))
+    return true;
+
+  /* HARD_REGNO_MODE_OK places modes with sizes larger than a word
+     in specific sets of registers.  Thus, we cannot allow changing
+     to a larger mode when it's larger than a word.  */
+  if (GET_MODE_SIZE (to) > UNITS_PER_WORD
+      && GET_MODE_SIZE (to) > GET_MODE_SIZE (from))
+    return true;
+
+  return false;
+}
+
+/* Returns TRUE if it is a good idea to tie two pseudo registers
+   when one has mode MODE1 and one has mode MODE2.
+   If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
+   for any hard reg, then this must be FALSE for correct output.
+   
+   We should return FALSE for QImode and HImode because these modes
+   are not ok in the floating-point registers.  However, this prevents
+   tieing these modes to SImode and DImode in the general registers.
+   So, this isn't a good idea.  We rely on HARD_REGNO_MODE_OK and
+   CANNOT_CHANGE_MODE_CLASS to prevent these modes from being used
+   in the floating-point registers.  */
+
+bool
+pa_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
+{
+  /* Don't tie modes in different classes.  */
+  if (GET_MODE_CLASS (mode1) != GET_MODE_CLASS (mode2))
+    return false;
+
+  return true;
+}
 
 #include "gt-pa.h"

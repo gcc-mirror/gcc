@@ -172,6 +172,9 @@ extern void pa_asm_output_aligned_local (FILE *, const char *,
 					 unsigned HOST_WIDE_INT,
 					 unsigned int);
 extern void pa_hpux_asm_output_external (FILE *, tree, const char *);
+extern bool pa_cannot_change_mode_class (enum machine_mode, enum machine_mode,
+					 enum reg_class);
+extern bool pa_modes_tieable_p (enum machine_mode, enum machine_mode);
 
 extern const int magic_milli[];
 extern int shadd_constant_p (int);

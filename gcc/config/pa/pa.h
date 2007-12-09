@@ -349,7 +349,7 @@ typedef struct machine_function GTY(())
    If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
    for any hard reg, then this must be 0 for correct output.  */
 #define MODES_TIEABLE_P(MODE1, MODE2) \
-  (GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2))
+  pa_modes_tieable_p (MODE1, MODE2)
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
@@ -496,17 +496,6 @@ extern struct rtx_def *hppa_pic_save_rtx (void);
 
 #define MAYBE_FP_REG_CLASS_P(CLASS) \
   reg_classes_intersect_p ((CLASS), FP_REGS)
-
-/* On the PA it is not possible to directly move data between
-   GENERAL_REGS and FP_REGS.  On the 32-bit port, we use the
-   location at SP-16.  We don't expose this location in the RTL to
-   avoid scheduling related problems.  For example, the store and
-   load could be separated by a call to a pure or const function
-   which has no frame and uses SP-16.  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)			\
-  (TARGET_64BIT								\
-   && (MAYBE_FP_REG_CLASS_P (CLASS1) != FP_REG_CLASS_P (CLASS2)		\
-       || MAYBE_FP_REG_CLASS_P (CLASS2) != FP_REG_CLASS_P (CLASS1)))
 
 
 /* Stack layout; function entry, exit and calling.  */
@@ -1116,6 +1105,24 @@ extern int may_call_alloca;
    && REG_OK_FOR_BASE_P (XEXP (OP, 0))			\
    && GET_CODE (XEXP (OP, 1)) == UNSPEC)
 
+/* Nonzero if 14-bit offsets can be used for all loads and stores.
+   This is not possible when generating PA 1.x code as floating point
+   loads and stores only support 5-bit offsets.  Note that we do not
+   forbid the use of 14-bit offsets in GO_IF_LEGITIMATE_ADDRESS.
+   Instead, we use pa_secondary_reload() to reload integer mode
+   REG+D memory addresses used in floating point loads and stores.
+
+   FIXME: the ELF32 linker clobbers the LSB of the FP register number
+   in PA 2.0 floating-point insns with long displacements.  This is
+   because R_PARISC_DPREL14WR and other relocations like it are not
+   yet supported by GNU ld.  For now, we reject long displacements
+   on this target.  */
+
+#define INT14_OK_STRICT \
+  (TARGET_SOFT_FLOAT                                                   \
+   || TARGET_DISABLE_FPREGS                                            \
+   || (TARGET_PA_20 && !TARGET_ELF32))
+
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
    We have two alternate definitions for each of them.
@@ -1134,16 +1141,18 @@ extern int may_call_alloca;
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_INDEX_P(X) \
-(REGNO (X) && (REGNO (X) < 32 || REGNO (X) >= FIRST_PSEUDO_REGISTER))
+  (REGNO (X) && (REGNO (X) < 32 || REGNO (X) >= FIRST_PSEUDO_REGISTER))
+
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_BASE_P(X) \
-(REGNO (X) && (REGNO (X) < 32 || REGNO (X) >= FIRST_PSEUDO_REGISTER))
+  (REGNO (X) && (REGNO (X) < 32 || REGNO (X) >= FIRST_PSEUDO_REGISTER))
 
 #else
 
 /* Nonzero if X is a hard reg that can be used as an index.  */
 #define REG_OK_FOR_INDEX_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
+
 /* Nonzero if X is a hard reg that can be used as a base reg.  */
 #define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
 
@@ -1195,11 +1204,7 @@ extern int may_call_alloca;
 
    We treat a SYMBOL_REF as legitimate if it is part of the current
    function's constant-pool, because such addresses can actually be
-   output as REG+SMALLINT. 
-
-   Note we only allow 5-bit immediates for access to a constant address;
-   doing so avoids losing for loading/storing a FP register at an address
-   which will not fit in 5 bits.  */
+   output as REG+SMALLINT.  */
 
 #define VAL_5_BITS_P(X) ((unsigned HOST_WIDE_INT)(X) + 0x10 < 0x20)
 #define INT_5_BITS(X) VAL_5_BITS_P (INTVAL (X))
@@ -1227,7 +1232,8 @@ extern int may_call_alloca;
   ((TARGET_64BIT && (MODE) == DImode)					\
    || (MODE) == SImode							\
    || (MODE) == HImode							\
-   || (!TARGET_SOFT_FLOAT && ((MODE) == DFmode || (MODE) == SFmode)))
+   || (MODE) == SFmode							\
+   || (MODE) == DFmode)
 
 /* These are the modes that we allow for unscaled indexing.  */
 #define MODE_OK_FOR_UNSCALED_INDEXING_P(MODE) \
@@ -1235,7 +1241,8 @@ extern int may_call_alloca;
    || (MODE) == SImode							\
    || (MODE) == HImode							\
    || (MODE) == QImode							\
-   || (!TARGET_SOFT_FLOAT && ((MODE) == DFmode || (MODE) == SFmode)))
+   || (MODE) == SFmode							\
+   || (MODE) == DFmode)
 
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR) \
 {									\
@@ -1269,20 +1276,10 @@ extern int may_call_alloca;
 			   || (INTVAL (index) % 8) == 0))		\
 		   /* Similarly, the base register for SFmode/DFmode	\
 		      loads and stores with long displacements must	\
-		      be aligned.					\
-									\
-		      FIXME: the ELF32 linker clobbers the LSB of	\
-		      the FP register number in PA 2.0 floating-point	\
-		      insns with long displacements.  This is because	\
-		      R_PARISC_DPREL14WR and other relocations like	\
-		      it are not supported.  For now, we reject long	\
-		      displacements on this target.  */			\
+		      be aligned.  */					\
 		   || (((MODE) == SFmode || (MODE) == DFmode)		\
-		       && (TARGET_SOFT_FLOAT				\
-			   || (TARGET_PA_20				\
-			       && !TARGET_ELF32				\
-			       && (INTVAL (index)			\
-				   % GET_MODE_SIZE (MODE)) == 0)))))	\
+		       && INT14_OK_STRICT				\
+		       && (INTVAL (index) % GET_MODE_SIZE (MODE)) == 0))) \
 	       || INT_5_BITS (index)))					\
 	goto ADDR;							\
       if (!TARGET_DISABLE_INDEXING					\
@@ -1382,7 +1379,7 @@ do { 									\
   rtx new, temp = NULL_RTX;						\
 									\
   mask = (GET_MODE_CLASS (MODE) == MODE_FLOAT				\
-	  ? (TARGET_PA_20 && !TARGET_ELF32 ? 0x3fff : 0x1f) : 0x3fff);	\
+	  ? (INT14_OK_STRICT ? 0x3fff : 0x1f) : 0x3fff);		\
 									\
   if (optimize && GET_CODE (AD) == PLUS)				\
     temp = simplify_binary_operation (PLUS, Pmode,			\
@@ -1404,9 +1401,10 @@ do { 									\
 	newoffset = offset & ~mask;					\
 									\
       /* Ensure that long displacements are aligned.  */		\
-      if (!VAL_5_BITS_P (newoffset)					\
-	  && GET_MODE_CLASS (MODE) == MODE_FLOAT)			\
-	newoffset &= ~(GET_MODE_SIZE (MODE) -1);			\
+      if (mask == 0x3fff						\
+	  && (GET_MODE_CLASS (MODE) == MODE_FLOAT			\
+	      || (TARGET_64BIT && (MODE) == DImode)))			\
+	newoffset &= ~(GET_MODE_SIZE (MODE) - 1);			\
 									\
       if (newoffset != 0 && VAL_14_BITS_P (newoffset))			\
 	{								\
