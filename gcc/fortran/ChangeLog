@@ -1,3 +1,29 @@
+2007-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/22244
+	* trans.h (struct array_descr_info): Forward declaration.
+	(gfc_get_array_descr_info): New prototype.
+	(enum gfc_array_kind): New type.
+	(struct lang_type): Add akind field.
+	(GFC_TYPE_ARRAY_AKIND): Define.
+	* trans-types.c: Include dwarf2out.h.
+	(gfc_build_array_type): Add akind argument.  Adjust
+	gfc_get_array_type_bounds call.
+	(gfc_get_nodesc_array_type): Include proper debug info even for
+	assumed-size arrays.
+	(gfc_get_array_type_bounds): Add akind argument, set
+	GFC_TYPE_ARRAY_AKIND to it.
+	(gfc_sym_type, gfc_get_derived_type): Adjust gfc_build_array_type
+	callers.
+	(gfc_get_array_descr_info): New function.
+	* trans-array.c (gfc_trans_create_temp_array,
+	gfc_conv_expr_descriptor): Adjust gfc_get_array_type_bounds
+	callers.
+	* trans-stmt.c (gfc_trans_pointer_assign_need_temp): Likewise.
+	* trans-types.h (gfc_get_array_type_bounds): Adjust prototype.
+	* Make-lang.in (fortran/trans-types.o): Depend on dwarf2out.h.
+	* f95-lang.c (LANG_HOOKS_GET_ARRAY_DESCR_INFO): Define.
+
 2007-12-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/32129
@@ -19,7 +45,6 @@
 	PR fortran/34345
 	PR fortran/18026
 	PR fortran/29471
-
 	* gfortran.texi (BOZ literal constants): Improve documentation
 	and adapt for BOZ changes.
 	* Make-lang.ini (resolve.o): Add target-memory.h dependency.

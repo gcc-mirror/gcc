@@ -120,6 +120,7 @@ static alias_set_type gfc_get_alias_set (tree);
 #undef LANG_HOOKS_OMP_PRIVATE_DEBUG_CLAUSE
 #undef LANG_HOOKS_OMP_FIRSTPRIVATIZE_TYPE_SIZES
 #undef LANG_HOOKS_BUILTIN_FUNCTION
+#undef LANG_HOOKS_GET_ARRAY_DESCR_INFO
 
 /* Define lang hooks.  */
 #define LANG_HOOKS_NAME                 "GNU F95"
@@ -143,6 +144,7 @@ static alias_set_type gfc_get_alias_set (tree);
 #define LANG_HOOKS_OMP_FIRSTPRIVATIZE_TYPE_SIZES \
   gfc_omp_firstprivatize_type_sizes
 #define LANG_HOOKS_BUILTIN_FUNCTION          gfc_builtin_function
+#define LANG_HOOKS_GET_ARRAY_DESCR_INFO	     gfc_get_array_descr_info
 
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 

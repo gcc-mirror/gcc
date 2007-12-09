@@ -28,6 +28,8 @@ struct diagnostic_info;
 
 struct gimplify_omp_ctx;
 
+struct array_descr_info;
+
 /* A print hook for print_tree ().  */
 typedef void (*lang_print_tree_hook) (FILE *, tree, int indent);
 
@@ -135,6 +137,10 @@ struct lang_hooks_for_types
      At present, this function is only called when both TYPE1 and TYPE2 are
      FUNCTION_TYPEs.  */
   bool (*type_hash_eq) (const_tree, const_tree);
+
+  /* Return TRUE if TYPE uses a hidden descriptor and fills in information
+     for the debugger about the array bounds, strides, etc.  */
+  bool (*get_array_descr_info) (const_tree, struct array_descr_info *);
 
   /* Nonzero if types that are identical are to be hashed so that only
      one copy is kept.  If a language requires unique types for each

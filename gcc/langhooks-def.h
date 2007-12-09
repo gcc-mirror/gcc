@@ -180,6 +180,7 @@ extern tree lhd_make_node (enum tree_code);
 #define LANG_HOOKS_OMP_FIRSTPRIVATIZE_TYPE_SIZES \
   lhd_omp_firstprivatize_type_sizes
 #define LANG_HOOKS_TYPE_HASH_EQ		NULL
+#define LANG_HOOKS_GET_ARRAY_DESCR_INFO	NULL
 #define LANG_HOOKS_HASH_TYPES		true
 
 #define LANG_HOOKS_FOR_TYPES_INITIALIZER { \
@@ -193,6 +194,7 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_TYPE_MAX_SIZE, \
   LANG_HOOKS_OMP_FIRSTPRIVATIZE_TYPE_SIZES, \
   LANG_HOOKS_TYPE_HASH_EQ, \
+  LANG_HOOKS_GET_ARRAY_DESCR_INFO, \
   LANG_HOOKS_HASH_TYPES \
 }
 

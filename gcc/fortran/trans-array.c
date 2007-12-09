@@ -608,7 +608,8 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
 
   /* Initialize the descriptor.  */
   type =
-    gfc_get_array_type_bounds (eltype, info->dimen, loop->from, loop->to, 1);
+    gfc_get_array_type_bounds (eltype, info->dimen, loop->from, loop->to, 1,
+			       GFC_ARRAY_UNKNOWN);
   desc = gfc_create_var (type, "atmp");
   GFC_DECL_PACKED_ARRAY (desc) = 1;
 
@@ -4783,7 +4784,8 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	  /* Otherwise make a new one.  */
 	  parmtype = gfc_get_element_type (TREE_TYPE (desc));
 	  parmtype = gfc_get_array_type_bounds (parmtype, loop.dimen,
-						loop.from, loop.to, 0);
+						loop.from, loop.to, 0,
+						GFC_ARRAY_UNKNOWN);
 	  parm = gfc_create_var (parmtype, "parm");
 	}
 

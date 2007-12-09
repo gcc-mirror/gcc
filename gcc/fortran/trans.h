@@ -483,6 +483,8 @@ tree poplevel (int, int, int);
 tree getdecls (void);
 tree gfc_truthvalue_conversion (tree);
 tree gfc_builtin_function (tree);
+struct array_descr_info;
+bool gfc_get_array_descr_info (const_tree, struct array_descr_info *);
 
 /* In trans-openmp.c */
 bool gfc_omp_privatize_by_reference (const_tree);
@@ -569,10 +571,19 @@ extern GTY(()) tree gfor_fndecl_sr_kind;
 
 /* G95-specific declaration information.  */
 
+enum gfc_array_kind
+{
+  GFC_ARRAY_UNKNOWN,
+  GFC_ARRAY_ASSUMED_SHAPE,
+  GFC_ARRAY_ALLOCATABLE,
+  GFC_ARRAY_POINTER
+};
+
 /* Array types only.  */
 struct lang_type		GTY(())
 {
   int rank;
+  enum gfc_array_kind akind;
   tree lbound[GFC_MAX_DIMENSIONS];
   tree ubound[GFC_MAX_DIMENSIONS];
   tree stride[GFC_MAX_DIMENSIONS];
@@ -626,7 +637,8 @@ struct lang_decl		GTY(())
 #define GFC_TYPE_ARRAY_RANK(node) (TYPE_LANG_SPECIFIC(node)->rank)
 #define GFC_TYPE_ARRAY_SIZE(node) (TYPE_LANG_SPECIFIC(node)->size)
 #define GFC_TYPE_ARRAY_OFFSET(node) (TYPE_LANG_SPECIFIC(node)->offset)
-/* Code should use gfc_get_dtype instead of accesig this directly.  It may
+#define GFC_TYPE_ARRAY_AKIND(node) (TYPE_LANG_SPECIFIC(node)->akind)
+/* Code should use gfc_get_dtype instead of accesing this directly.  It may
    not be known when the type is created.  */
 #define GFC_TYPE_ARRAY_DTYPE(node) (TYPE_LANG_SPECIFIC(node)->dtype)
 #define GFC_TYPE_ARRAY_DATAPTR_TYPE(node) \
