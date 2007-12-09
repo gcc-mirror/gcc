@@ -15983,12 +15983,15 @@ package body Sem_Ch3 is
       --  This is done only once, and only if there is no previous partial
       --  view of the type.
 
+      function Designates_T (Subt : Node_Id) return Boolean;
+      --  Check whether a node designates the enclosing record type
+
       function Mentions_T (Acc_Def : Node_Id) return Boolean;
       --  Check whether an access definition includes a reference to
-      --  the enclosing record type. The reference can be a subtype
-      --  mark in the access definition itself, or a 'Class attribute
-      --  reference, or recursively a reference appearing in a parameter
-      --  type in an access_to_subprogram definition.
+      --  the enclosing record type. The reference can be a subtype mark
+      --  in the access definition itself, a 'Class attribute reference, or
+      --  recursively a reference appearing in a parameter specification
+      --  or result definition of an access_to_subprogram definition.
 
       --------------------------------------
       -- Build_Incomplete_Type_Declaration --
@@ -16071,12 +16074,12 @@ package body Sem_Ch3 is
          end if;
       end Build_Incomplete_Type_Declaration;
 
-      ----------------
-      -- Mentions_T --
-      ----------------
+      ------------------
+      -- Designates_T --
+      ------------------
 
-      function Mentions_T (Acc_Def : Node_Id) return Boolean is
-         Subt : Node_Id;
+      function Designates_T (Subt : Node_Id) return Boolean is
+
          Type_Id : constant Name_Id := Chars (Typ);
 
          function Names_T (Nam : Node_Id) return Boolean;
@@ -16113,75 +16116,94 @@ package body Sem_Ch3 is
             end if;
          end Names_T;
 
-      --  Start of processing for Mentions_T
+      --  Start of processing for Designates_T
 
       begin
-         if No (Access_To_Subprogram_Definition (Acc_Def)) then
-            Subt := Subtype_Mark (Acc_Def);
-
-            if Nkind (Subt) = N_Identifier then
-               return Chars (Subt) = Type_Id;
+         if Nkind (Subt) = N_Identifier then
+            return Chars (Subt) = Type_Id;
 
             --  Reference can be through an expanded name which has not been
             --  analyzed yet, and which designates enclosing scopes.
 
-            elsif Nkind (Subt) = N_Selected_Component then
-               if Names_T (Subt) then
-                  return True;
+         elsif Nkind (Subt) = N_Selected_Component then
+            if Names_T (Subt) then
+               return True;
 
-               --  Otherwise it must denote an entity that is already visible.
-               --  The access definition may name a subtype of the enclosing
-               --  type, if there is a previous incomplete declaration for it.
+            --  Otherwise it must denote an entity that is already visible.
+            --  The access definition may name a subtype of the enclosing
+            --  type, if there is a previous incomplete declaration for it.
 
-               else
-                  Find_Selected_Component (Subt);
-                  return
-                    Is_Entity_Name (Subt)
-                      and then Scope (Entity (Subt)) = Current_Scope
-                      and then (Chars (Base_Type (Entity (Subt))) = Type_Id
-                        or else
-                          (Is_Class_Wide_Type (Entity (Subt))
-                            and then
-                              Chars (Etype (Base_Type (Entity (Subt))))
-                                = Type_Id));
-               end if;
-
-            --  A reference to the current type may appear as the prefix of
-            --  a 'Class attribute.
-
-            elsif Nkind (Subt) = N_Attribute_Reference
-              and then Attribute_Name (Subt) = Name_Class
-            then
-               return Names_T (Prefix (Subt));
             else
-               return False;
+               Find_Selected_Component (Subt);
+               return
+                 Is_Entity_Name (Subt)
+                   and then Scope (Entity (Subt)) = Current_Scope
+                   and then
+                     (Chars (Base_Type (Entity (Subt))) = Type_Id
+                       or else
+                         (Is_Class_Wide_Type (Entity (Subt))
+                           and then
+                           Chars (Etype (Base_Type (Entity (Subt))))
+                             = Type_Id));
             end if;
 
+         --  A reference to the current type may appear as the prefix of
+         --  a 'Class attribute.
+
+         elsif Nkind (Subt) = N_Attribute_Reference
+           and then Attribute_Name (Subt) = Name_Class
+         then
+            return Names_T (Prefix (Subt));
+
          else
-            --  Component is an access_to_subprogram: examine its formals
-
-            declare
-               Param_Spec : Node_Id;
-
-            begin
-               Param_Spec :=
-                 First
-                   (Parameter_Specifications
-                     (Access_To_Subprogram_Definition (Acc_Def)));
-               while Present (Param_Spec) loop
-                  if Nkind (Parameter_Type (Param_Spec))
-                       = N_Access_Definition
-                    and then Mentions_T (Parameter_Type (Param_Spec))
-                  then
-                     return True;
-                  end if;
-
-                  Next (Param_Spec);
-               end loop;
-
-               return False;
-            end;
+            return False;
          end if;
+      end Designates_T;
+
+      ----------------
+      -- Mentions_T --
+      ----------------
+
+      function Mentions_T (Acc_Def : Node_Id) return Boolean is
+         Param_Spec : Node_Id;
+
+         Acc_Subprg : constant Node_Id :=
+           Access_To_Subprogram_Definition (Acc_Def);
+
+      begin
+         if No (Acc_Subprg) then
+            return Designates_T (Subtype_Mark (Acc_Def));
+         end if;
+
+         --  Component is an access_to_subprogram: examine its formals,
+         --  and result definition in the case of an access_to_function.
+
+         Param_Spec := First (Parameter_Specifications (Acc_Subprg));
+         while Present (Param_Spec) loop
+            if Nkind (Parameter_Type (Param_Spec)) = N_Access_Definition
+              and then Mentions_T (Parameter_Type (Param_Spec))
+            then
+               return True;
+
+            elsif Designates_T (Parameter_Type (Param_Spec)) then
+               return True;
+            end if;
+
+            Next (Param_Spec);
+         end loop;
+
+         if Nkind (Acc_Subprg) = N_Access_Function_Definition then
+            if Nkind (Result_Definition (Acc_Subprg)) =
+                 N_Access_Definition
+            then
+               return Mentions_T (Result_Definition (Acc_Subprg));
+            else
+               return Designates_T (Result_Definition (Acc_Subprg));
+            end if;
+         end if;
+
+         return False;
+
       end Mentions_T;
 
    --  Start of processing for Check_Anonymous_Access_Components
@@ -16279,7 +16301,13 @@ package body Sem_Ch3 is
               Make_Component_Definition (Loc,
                 Subtype_Indication =>
                New_Occurrence_Of (Anon_Access, Loc)));
-            Set_Ekind (Anon_Access, E_Anonymous_Access_Type);
+
+            if Ekind (Designated_Type (Anon_Access)) = E_Subprogram_Type then
+               Set_Ekind (Anon_Access, E_Anonymous_Access_Subprogram_Type);
+            else
+               Set_Ekind (Anon_Access, E_Anonymous_Access_Type);
+            end if;
+
             Set_Is_Local_Anonymous_Access (Anon_Access);
          end if;
 

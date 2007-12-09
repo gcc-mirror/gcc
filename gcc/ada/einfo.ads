@@ -3786,7 +3786,9 @@ package Einfo is
 
       E_Anonymous_Access_Subprogram_Type,
       --  An anonymous access to subprogram type, created by an access to
-      --  subprogram declaration.
+      --  subprogram declaration, or generated for a current instance of
+      --  a type name appearing within a component definition that has an
+      --  anonymous access to subprogram type.
 
       E_Access_Protected_Subprogram_Type,
       --  An access to a protected subprogram, created by the corresponding
