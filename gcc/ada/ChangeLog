@@ -1,3 +1,14 @@
+2007-12-09  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR ada/34366
+	* sem_ch3.adb (Designates_T): New function.
+	(Mentions_T): Factor reusable part of the logic into Designates_T.
+	Consider non-access parameters and access and non-access result.
+	(Check_Anonymous_Access_Components): Set ekind of anonymous access to
+	E_Subprogram_Type to E_Anonymous_Access_Subprogram_Type.
+
+	* einfo.ads: Update comment for E_Anonymous_Access_Subprogram_Type.
+
 2007-12-07  Ludovic Brenta  <ludovic@ludovic-brenta.org>
 
 	PR ada/34361

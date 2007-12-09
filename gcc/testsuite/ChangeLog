@@ -1,3 +1,9 @@
+2007-12-09  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR ada/34366
+	* gnat.dg/enclosing_record_reference.ads,
+	gnat.dg/enclosing_record_reference.adb: New test.
+
 2007-12-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/32129
