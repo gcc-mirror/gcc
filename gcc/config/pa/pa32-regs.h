@@ -172,8 +172,7 @@
 #define VALID_FP_MODE_P(MODE)						\
   ((MODE) == SFmode || (MODE) == DFmode					\
    || (MODE) == SCmode || (MODE) == DCmode				\
-   || (MODE) == QImode || (MODE) == HImode || (MODE) == SImode		\
-   || (TARGET_PA_11 && (MODE) == DImode))
+   || (MODE) == SImode || (TARGET_PA_11 && (MODE) == DImode))
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
 
@@ -287,6 +286,11 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FPUPPER_REGS, FP_REGS,
   {0xfffffffe, 0xffffffff, 0x00ffffff},	/* GENERAL_OR_FP_REGS */	\
   {0x00000000, 0x00000000, 0x01000000},	/* SHIFT_REGS */		\
   {0xfffffffe, 0xffffffff, 0x01ffffff}}	/* ALL_REGS */
+
+/* Defines invalid mode changes.  */
+
+#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \
+  pa_cannot_change_mode_class (FROM, TO, CLASS)
 
 /* Return the class number of the smallest class containing
    reg number REGNO.  This could be a conditional expression
