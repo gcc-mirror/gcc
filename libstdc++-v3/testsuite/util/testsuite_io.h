@@ -321,7 +321,7 @@ namespace __gnu_test
 #ifdef _GLIBCXX_USE_WCHAR_T
   typedef  fail_num_put<wchar_t>  fail_num_put_wchar_t;
 #endif
-}; // namespace __gnu_test
+} // namespace __gnu_test
 
 #endif // _GLIBCXX_TESTSUITE_IO_H
 

@@ -189,6 +189,6 @@ namespace __gnu_test
     rhs.val = temp;
   }
   
-}; // namespace __gnu_test
+} // namespace __gnu_test
 
 #endif // _GLIBCXX_TESTSUITE_TR1_H

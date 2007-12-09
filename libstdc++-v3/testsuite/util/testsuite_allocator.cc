@@ -61,5 +61,5 @@ namespace __gnu_test
       }
     return ret;
   }
-}; // namespace __cxx_test
+} // namespace __cxx_test
 
