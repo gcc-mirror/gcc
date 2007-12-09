@@ -1,3 +1,8 @@
+2007-12-09  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34404
+	* io/list_read.c (parse_real): Remove superfluous "goto bad;".
+
 2007-12-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34319
