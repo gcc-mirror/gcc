@@ -1,3 +1,18 @@
+2007-12-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/32129
+	* dump-parse-tree.c (gfc_show_expr_n): New function for
+	debugging.
+	* gfortran.h : Add prototype for gfc_show_expr_n.
+	* expr.c (simplify_constructor): Copy the constructor
+	expression and try to simplify that.  If success, replace the
+	original.  Otherwise discard the copy, keep going through
+	the structure and return success.
+
+	PR fortran/31487
+	* decl.c (build_struct): Pad out default initializers with
+	spaces to the component character length.
+
 2007-12-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34342

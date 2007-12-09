@@ -1,4 +1,13 @@
-2007-12-06  Tobias Burnus  <burnus@net-b.de>
+2007-12-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/32129
+	* gfortran.dg/derived_comp_array_ref_6.f90: New test.
+	* gfortran.dg/derived_comp_array_ref_7.f90: New test.
+
+	PR fortran/31487
+	* gfortran.dg/char_component_initializer_1.f90: New test.
+
+2007-12-09  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34342
 	PR fortran/34345

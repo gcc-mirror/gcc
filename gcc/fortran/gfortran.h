@@ -2359,6 +2359,7 @@ void gfc_show_components (gfc_symbol *);
 void gfc_show_constructor (gfc_constructor *);
 void gfc_show_equiv (gfc_equiv *);
 void gfc_show_expr (gfc_expr *);
+void gfc_show_expr_n (const char *, gfc_expr *);
 void gfc_show_namelist (gfc_namelist *);
 void gfc_show_namespace (gfc_namespace *);
 void gfc_show_ref (gfc_ref *);

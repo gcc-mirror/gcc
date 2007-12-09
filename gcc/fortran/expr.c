@@ -963,6 +963,8 @@ simplify_intrinsic_op (gfc_expr *p, int type)
 static try
 simplify_constructor (gfc_constructor *c, int type)
 {
+  gfc_expr *p;
+
   for (; c; c = c->next)
     {
       if (c->iterator
@@ -971,8 +973,21 @@ simplify_constructor (gfc_constructor *c, int type)
 	      || gfc_simplify_expr (c->iterator->step, type) == FAILURE))
 	return FAILURE;
 
-      if (c->expr && gfc_simplify_expr (c->expr, type) == FAILURE)
-	return FAILURE;
+      if (c->expr)
+	{
+	  /* Try and simplify a copy.  Replace the original if successful
+	     but keep going through the constructor at all costs.  Not
+	     doing so can make a dog's dinner of complicated things.  */
+	  p = gfc_copy_expr (c->expr);
+
+	  if (gfc_simplify_expr (p, type) == FAILURE)
+	    {
+	      gfc_free_expr (p);
+	      continue;
+	    }
+
+	  gfc_replace_expr (c->expr, p);
+	}
     }
 
   return SUCCESS;

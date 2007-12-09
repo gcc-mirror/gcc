@@ -540,6 +540,15 @@ gfc_show_expr (gfc_expr *p)
     }
 }
 
+/* Show an expression for diagnostic purposes. */
+void
+gfc_show_expr_n (const char * msg, gfc_expr *e)
+{
+  if (msg)
+    gfc_status (msg);
+  gfc_show_expr (e);
+  gfc_status_char ('\n');
+}
 
 /* Show symbol attributes.  The flavor and intent are followed by
    whatever single bit attributes are present.  */
