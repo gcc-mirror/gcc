@@ -5736,7 +5736,7 @@ find_reloads_address_1 (enum machine_mode mode, rtx x, int context,
 	      else
 		{
 		  reloadnum
-		    = push_reload (x, NULL_RTX, loc, (rtx*) 0,
+		    = push_reload (x, x, loc, (rtx*) 0,
 				   context_reg_class,
 				   GET_MODE (x), GET_MODE (x), 0, 0,
 				   opnum, type);
