@@ -1800,7 +1800,7 @@ build_class_member_access_expr (tree object, tree member,
 	warn_deprecated_use (member);
     }
   else
-    member_scope = BINFO_TYPE (BASELINK_BINFO (member));
+    member_scope = BINFO_TYPE (BASELINK_ACCESS_BINFO (member));
   /* If MEMBER is from an anonymous aggregate, MEMBER_SCOPE will
      presently be the anonymous union.  Go outwards until we find a
      type related to OBJECT_TYPE.  */
