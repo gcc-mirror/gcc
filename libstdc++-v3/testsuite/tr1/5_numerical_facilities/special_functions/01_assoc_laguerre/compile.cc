@@ -2,7 +2,7 @@
 
 // 2006-02-04  Edward Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2006-2007 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,18 +27,16 @@
 void
 test01()
 {
-
   float xf = 0.5F;
   double xd = 0.5;
   long double xl = 0.5L;
   unsigned int n = 2, m = 1;
 
-  float a = std::tr1::assoc_laguerre(n, m, xf);
-  float b = std::tr1::assoc_laguerref(n, m, xf);
-  double c = std::tr1::assoc_laguerre(n, m, xd);
-  long double d = std::tr1::assoc_laguerre(n, m, xl);
-  long double e = std::tr1::assoc_laguerrel(n, m, xl);
+  std::tr1::assoc_laguerre(n, m, xf);
+  std::tr1::assoc_laguerref(n, m, xf);
+  std::tr1::assoc_laguerre(n, m, xd);
+  std::tr1::assoc_laguerre(n, m, xl);
+  std::tr1::assoc_laguerrel(n, m, xl);
 
   return;
 }
-
