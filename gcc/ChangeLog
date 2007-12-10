@@ -1,3 +1,9 @@
+2007-12-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/34403
+	* config/i386/i386.c (ix86_expand_movmem): Punt if the count is large.
+	(ix86_expand_setmem): Likewise.
+
 2007-12-10  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	PR rtl-optimization/34302

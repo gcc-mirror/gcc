@@ -15282,7 +15282,7 @@ smallest_pow2_greater_than (int val)
 }
 
 /* Expand string move (memcpy) operation.  Use i386 string operations when
-   profitable.  expand_clrmem contains similar code. The code depends upon
+   profitable.  expand_setmem contains similar code.  The code depends upon
    architecture, block size and alignment, but always has the same
    overall structure:
 
@@ -15332,6 +15332,10 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
     count = expected_size = INTVAL (count_exp);
   if (CONST_INT_P (expected_size_exp) && count == 0)
     expected_size = INTVAL (expected_size_exp);
+
+  /* Make sure we don't need to care about overflow later on.  */
+  if (count > ((unsigned HOST_WIDE_INT) 1 << 30))
+    return 0;
 
   /* Step 0: Decide on preferred algorithm, desired alignment and
      size of chunks to be copied by main loop.  */
@@ -15656,6 +15660,10 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
     count = expected_size = INTVAL (count_exp);
   if (CONST_INT_P (expected_size_exp) && count == 0)
     expected_size = INTVAL (expected_size_exp);
+
+  /* Make sure we don't need to care about overflow later on.  */
+  if (count > ((unsigned HOST_WIDE_INT) 1 << 30))
+    return 0;
 
   /* Step 0: Decide on preferred algorithm, desired alignment and
      size of chunks to be copied by main loop.  */
