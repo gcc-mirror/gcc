@@ -121,6 +121,7 @@
 #include <stdexcept>
 #include <streambuf>
 #include <string>
+#include <system_error>
 #include <tuple>
 #include <typeinfo>
 #include <type_traits>

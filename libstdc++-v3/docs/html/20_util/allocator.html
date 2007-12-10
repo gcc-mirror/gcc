@@ -84,34 +84,47 @@
 </h3>
    <p>The easiest way of fulfilling the requirements is to call operator new
       each time a container needs memory, and to call operator delete each
-      time the container releases memory.  <strong>BUT</strong>
-      <a href="http://gcc.gnu.org/ml/libstdc++/2001-05/msg00105.html">this
-      method is horribly slow</a>.
-   </p>
-   <p>Or we can keep old memory around, and reuse it in a pool to save time.
-      The old libstdc++-v2 used a memory pool, and so do we.  As of 3.0,
-      <a href="http://gcc.gnu.org/ml/libstdc++/2001-05/msg00136.html">it's
-      on by default</a>.  The pool is shared among all the containers in the
-      program:  when your program's std::vector&lt;int&gt; gets cut in half
-      and frees a bunch of its storage, that memory can be reused by the
-      private std::list&lt;WonkyWidget&gt; brought in from a KDE library
-      that you linked against.  And we don't have to call operators new and
-      delete to pass the memory on, either, which is a speed bonus.
-      <strong>BUT</strong>...
-   </p>
-   <p>What about threads?  No problem:  in a threadsafe environment, the
-      memory pool is manipulated atomically, so you can grow a container in
-      one thread and shrink it in another, etc.  <strong>BUT</strong> what
-      if threads in libstdc++ aren't set up properly?
-      <a href="../faq/index.html#5_6">That's been answered already</a>.
-   </p>
-   <p><strong>BUT</strong> what if you want to use your own allocator?  What
-      if you plan on using a runtime-loadable version of malloc() which uses
-      shared telepathic anonymous mmap'd sections serializable over a
-      network, so that memory requests <em>should</em> go through malloc?
-      And what if you need to debug it?
+      time the container releases memory. This method may be 
+      <a href="http://gcc.gnu.org/ml/libstdc++/2001-05/msg00105.html">slower</a>
+      than caching the allocations and re-using previously-allocated
+      memory, but has the advantage of working correctly across a wide
+      variety of hardware and operating systems, including large
+      clusters. The <code>__gnu_cxx::new_allocator</code> implements
+      the simple operator new and operator delete semantics, while <code>__gnu_cxx::malloc_allocator</code> implements much the same thing, only with the C language functions <code>std::malloc</code> and <code>std::free</code>.
    </p>
 
+<p> Another approach is to use intelligence within the allocator class
+to cache allocations. This extra machinery can take a variety of
+forms: a bitmap index, an index into an exponentially increasing
+power-of-two-sized buckets, or simpler fixed-size pooling cache.  The
+cache is shared among all the containers in the program: when your
+program's std::vector&lt;int&gt; gets cut in half and frees a bunch of
+its storage, that memory can be reused by the private
+std::list&lt;WonkyWidget&gt; brought in from a KDE library that you
+linked against.  And operators new and delete are not always called to
+pass the memory on, either, which is a speed bonus. Examples of
+allocators that use these techniques
+are <code>__gnu_cxx::bitmap_allocator</code>, <code>__gnu_cxx::pool_allocator</code>,
+and <code>__gnu_cxx::__mt_alloc</code>.
+</p>
+
+<p>Depending on the implementation techniques used, the underlying
+operating system, and compilation environment, scaling caching
+allocators can be tricky. In particular, order-of-destruction and
+order-of-creation for memory pools may be difficult to pin down with
+certainty, which may create problems when used with plugins or loading
+and unloading shared objects in memory. As such, using caching
+allocators on systems that do not
+support <code>abi::__cxa_atexit</code> is not recommended.
+</p>
+
+   <p>Versions of libstdc++ prior to 3.4 cache allocations in a memory
+   pool, instead of passing through to call the global allocation
+   operators (ie, <code>__gnu_cxx::pool_allocator</code>).  More
+   recent versions default to the
+   simpler <code>__gnu_cxx::new_allocator</code>.
+   </p>
+ 
 <h3 class="left">
   <a name="stdallocator">Implementation details of <code>std::allocator</code></a>
 </h3>
@@ -335,6 +348,11 @@
     <td>&lt;ext/array_allocator.h&gt;</td>
     <td>4.0.0</td>
   </tr>
+  <tr>
+    <td>__gnu_cxx::throw_allocator&lt;T&gt;</td>
+    <td>&lt;ext/throw_allocator.h&gt;</td>
+    <td>4.2.0</td>
+  </tr>
 </table>
 
    <p>More details on each of these extension allocators follows. </p>
@@ -369,6 +387,12 @@
          requests to A, and uses the extra memory to store size information.
          When a pointer is passed to <code>deallocate()</code>, the stored
          size is checked, and assert() is used to guarantee they match. 
+     </p>
+     </li>
+      <li><code>throw_allocator</code> 
+     <p> Includes memory tracking and marking abilities as well as hooks for
+     throwing exceptinos at configurable intervals (including random,
+     all, none). 
      </p>
      </li>
      <li><code>__pool_alloc</code>

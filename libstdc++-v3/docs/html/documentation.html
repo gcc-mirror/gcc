@@ -26,7 +26,7 @@ href="http://gcc.gnu.org/libstdc++">project</a> to implement the ISO
 annex D, extensions as described by TR1, and future C++ library
 standards still in progress. For those who want to see exactly how far
 the project has come, or just want the latest bleeding-edge code, the
-up-to-date source is always publically available over anonymous SVN,
+up-to-date source is always publicly available over anonymous SVN,
 and can be browsed over the <a
 href="http://gcc.gnu.org/svn.html">web</a>.
 </p>
@@ -34,13 +34,6 @@ href="http://gcc.gnu.org/svn.html">web</a>.
 <p>Stable versions of libstdc++ are included with releases of
    <a href="http://gcc.gnu.org/releases.html">the GCC compilers</a>.
 </p>
-<!--
-  The list below is automatically generated.  To make changes in the text,
-  edit the appropriate HOWTO file and run "make" in this directory.  In
-  those files, you may reorder entries as you like, but DO NOT change the
-  "#number"s in anchors, for they are used elsewhere and in bookmarks.
--->
-<!-- beginlist -->
   <ul>
    <li>Introduction
    <ul>
@@ -77,26 +70,27 @@ href="http://gcc.gnu.org/svn.html">web</a>.
       <ul>
          <li>Header Files
          <ul>
-         <li><a href="17_intro/howto.html#2.1">Available headers</a></li>
-         <li><a href="17_intro/howto.html#2.2">Headers and <code>namespace std</code></a></li>
-         <li>Pre-compiled headers</li>
+         <li><a href="17_intro/howto.html#2.0">Available headers</a></li>
+         <li><a href="17_intro/howto.html#2.1">Mixing headers</a></li>
+         <li><a href="17_intro/howto.html#2.2">The C Headers and <code>namespace std</code></a></li>
+         <li><a href="17_intro/howto.html#2.3">Precompiled Headers</a></li>
          </ul>
 	 </li>
 
          <li>Namespaces
          <ul>
-         <li><a href="17_intro/howto.html#2.5">Namespace <code>std::</code></a></li>
-         <li><a href="17_intro/howto.html#2.6">Using namespace composition</a></li>
+         <li><a href="17_intro/howto.html#3.0">Available namespaces</li>
+         <li><a href="17_intro/howto.html#3.1">Namespace <code>std::</code></a></li>
+         <li><a href="17_intro/howto.html#3.2">Using namespace composition</a></li>
          </ul>
 	 </li>
          <li><a href="17_intro/howto.html#6">Macros</a></li>
+         <li>Command line options</li>
 
  	<li>Concurrency
          <ul>
-         <li>Atomic Operations</li>
-         <li><a href="17_intro/howto.html#3">Thread safety overview</a></li>
-
 	  <li><a href="faq/index.html#5_6">Is it thread safe?</a></li>
+         <li><a href="17_intro/howto.html#7">Thread safety history and evolution</a></li>
 	  <li><a href="23_containers/howto.html#3">Containers</a></li>
 	  <li><a href="27_io/howto.html#9">IO</a></li>
          </ul>
@@ -122,8 +116,15 @@ href="http://gcc.gnu.org/svn.html">web</a>.
 
    <li>Diagnostics
    <ul>
+     <li>Exceptions
+
+     <ul>
      <li>Exception class hierarchy</li>
      <li><a href="19_diagnostics/howto.html#1">Adding data to exceptions</a></li>
+     <li>Cancellation</li>
+     </ul>
+     </li>
+
      <li><a href="19_diagnostics/howto.html#3">Concept checking</a></li>
    </ul>
    </li>
@@ -248,6 +249,7 @@ href="http://gcc.gnu.org/svn.html">web</a>.
 </ul>
 </li>
      <li><a href="ext/../18_support/howto.html#6">Demangling</a></li>
+     <li><a href="ext/concurrence.html">Concurrency: Threads and Atomics</a></li>
    </ul>
    </li>
 
@@ -277,6 +279,7 @@ href="http://gcc.gnu.org/svn.html">web</a>.
      <li><a href="17_intro/porting.html">Porting to new hardware or operating systems.</a></li>
      <li><a href="17_intro/abi.html">ABI Policy and Guidelines</a></li>
      <li><a href="17_intro/api.html">API Evolution and Deprecation History</a></li>
+     <li><a href="17_intro/backwards_compatibility.html">Backwards Compatibility</a></li>
 </ul>
 </li>
 
