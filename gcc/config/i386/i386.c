@@ -3203,9 +3203,9 @@ ix86_function_regparm (const_tree type, const_tree decl)
 	  struct function *f;
 
 	  /* Make sure no regparm register is taken by a
-	     fixed register or global register variable.  */
-	  for (local_regparm = 0; local_regparm < 3; local_regparm++)
-	    if (global_regs[local_regparm] || fixed_regs[local_regparm])
+	     fixed register variable.  */
+	  for (local_regparm = 0; local_regparm < REGPARM_MAX; local_regparm++)
+	    if (fixed_regs[local_regparm])
 	      break;
 
 	  /* We can't use regparm(3) for nested functions as these use
@@ -3227,13 +3227,14 @@ ix86_function_regparm (const_tree type, const_tree decl)
 					TYPE_ATTRIBUTES (TREE_TYPE (decl)))))
 	    local_regparm = 2;
 
-	  /* Each global register variable or fixed register usage
-	     increases register pressure, so less registers should be
-	     used for argument passing.  This functionality can be
-	     overriden by explicit regparm value.  */
-	  for (regno = 0; regno < 6; regno++)
-	    if (global_regs[regno] || fixed_regs[regno])
+	  /* Each fixed register usage increases register pressure,
+	     so less registers should be used for argument passing.
+	     This functionality can be overriden by an explicit
+	     regparm value.  */
+	  for (regno = 0; regno <= DI_REG; regno++)
+	    if (fixed_regs[regno])
 	      globals++;
+
 	  local_regparm
 	    = globals < local_regparm ? local_regparm - globals : 0;
 
@@ -15108,8 +15109,9 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
      additionally, memset wants eax and memcpy wants esi.  Don't
      consider such algorithms if the user has appropriated those
      registers for their own purposes.	*/
-  bool rep_prefix_usable = !(global_regs[CX_REG] || global_regs[DI_REG]
-                             || (memset ? global_regs[AX_REG] : global_regs[SI_REG]));
+  bool rep_prefix_usable = !(fixed_regs[CX_REG] || fixed_regs[DI_REG]
+                             || (memset
+				 ? fixed_regs[AX_REG] : fixed_regs[SI_REG]));
 
 #define ALG_USABLE_P(alg) (rep_prefix_usable			\
 			   || (alg != rep_prefix_1_byte		\
@@ -16084,7 +16086,7 @@ ix86_expand_strlen (rtx out, rtx src, rtx eoschar, rtx align)
       rtx unspec;
 
       /* Can't use this if the user has appropriated eax, ecx, or edi.  */
-      if (global_regs[AX_REG] || global_regs[CX_REG] || global_regs[DI_REG])
+      if (fixed_regs[AX_REG] || fixed_regs[CX_REG] || fixed_regs[DI_REG])
         return false;
 
       scratch2 = gen_reg_rtx (Pmode);

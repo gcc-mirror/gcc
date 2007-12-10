@@ -1,3 +1,15 @@
+2007-12-10 Uros Bizjak <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_function_regparm): Ditto. Use REGPARM_MAX
+	to check that no regparm hard register is taken by a fixed register
+	variable. Check up to and including DI_REG when adjusting regparm
+	value due to fixed regs usage.
+	(rep_prefix_usable): Check fixed_regs array, not global_regs array for
+	available hard registers.
+	(ix86_expand_strlen): Ditto.
+	* config/i386/i386.md (strmov): Ditto.
+	(cmpstrnsi): Ditto.
+
 2007-12-10  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* genopinit.c: Include tm_p.h in generated file.
@@ -160,8 +172,7 @@
 	(execute_fold_all_builtins): Call it for BUILT_IN_VA_START,
 	BUILT_IN_VA_COPY and BUILT_IN_VA_END.
 
-	* target.h (struct ggc_target): Add expand_builtin_va_start
-	hook.
+	* target.h (struct ggc_target): Add expand_builtin_va_start hook.
 	* target-def.h (TARGET_EXPAND_BUILTIN_VA_START): Define.
 	(TARGET_INITIALIZER): Add it.
 	* builtins.c (expand_builtin_va_start): Use
@@ -238,7 +249,7 @@
 	* mips/mips.c (mips_va_start): Made static.
 	(TARGET_EXPAND_BUILTIN_VA_START): Define.
 
-2007-12-05  Uros Bizjak  <ubizjak@gmail.com>
+2007-12-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* tree-ssa-loop.c (gate_tree_parallelize_loops): Return true when
 	"flag_tree_parallelize_loops > 1".
