@@ -1,5 +1,9 @@
 2007-12-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/34395
+	* error.c (dump_type_prefix, dump_type_suffix): Handle
+	TYPE_PACK_EXPANSION.
+
 	PR c++/34394
 	* error.c (dump_expr): Handle ABS_EXPR.
 

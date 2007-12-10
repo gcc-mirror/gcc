@@ -611,6 +611,7 @@ dump_type_prefix (tree t, int flags)
     case VECTOR_TYPE:
     case TYPEOF_TYPE:
     case DECLTYPE_TYPE:
+    case TYPE_PACK_EXPANSION:
       dump_type (t, flags);
       pp_base (cxx_pp)->padding = pp_before;
       break;
@@ -708,6 +709,7 @@ dump_type_suffix (tree t, int flags)
     case VECTOR_TYPE:
     case TYPEOF_TYPE:
     case DECLTYPE_TYPE:
+    case TYPE_PACK_EXPANSION:
       break;
 
     default:
