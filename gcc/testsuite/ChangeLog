@@ -1,3 +1,8 @@
+2007-12-10  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/34059
+	* g++.dg/parse/crash40.C: New test.
+
 2007-11-28  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	Backport from mainline:

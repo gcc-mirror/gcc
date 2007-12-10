@@ -1,3 +1,9 @@
+2007-12-10  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/34059
+	* typeck.c (build_class_member_access_expr): Compute MEMBER_SCOPE from
+	MEMBER's BASELINK_ACCESS_BINFO instead of its BASELINK_BINFO.
+
 2007-10-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/33744
