@@ -1,5 +1,13 @@
 2007-12-10  Paolo Carlini  <pcarlini@suse.de>
 
+	* testsuite/tr1/5_numerical_facilities/random/linear_congruential/
+	requirements/non_uint_neg.cc: Avoid -Wall warnings.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	01_assoc_laguerre/compile.cc: Likewise.
+	* testsuite/util/testsuite_api.h: Likewise.
+
+2007-12-10  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/25_algorithms/nth_element/2.cc: Avoid -Wall warnings.
 	* testsuite/27_io/basic_streambuf/sgetc/wchar_t/1.cc: Likewise.
 	* testsuite/27_io/basic_streambuf/sgetc/char/1.cc: Likewise.

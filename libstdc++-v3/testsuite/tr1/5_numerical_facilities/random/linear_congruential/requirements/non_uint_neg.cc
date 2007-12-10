@@ -1,6 +1,6 @@
 // 2006-06-04  Stephen M. Webb <stephen.webb@bregmasoft.com>
 //
-// Copyright (C) 2006 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,25 +20,13 @@
 
 // { dg-do compile }
 // { dg-options "-D_GLIBCXX_CONCEPT_CHECKS" }
-// { dg-error "not a valid type" "" { target *-*-* } 37 }
-// { dg-error "invalid type"     "" { target *-*-* } 37 }
+// { dg-error "not a valid type" "" { target *-*-* } 31 }
+// { dg-error "invalid type"     "" { target *-*-* } 31 }
 
 // 5.1.4.1 class template linear_congruential [tr.rand.eng.lcong]
 // 5.1.4.1 [4]
 
 #include <tr1/random>
-#include <testsuite_hooks.h>
+ 
+std::tr1::linear_congruential<double, 48271, 0, 2147483647> x;
 
-void
-test01() 
-{ 
-  using namespace std::tr1;
-
-  linear_congruential<double, 48271, 0, 2147483647> x;
-}
-
-int main()
-{
-  test01();
-  return 0;
-}

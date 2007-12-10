@@ -118,20 +118,17 @@ namespace __gnu_test
     struct void_function
     {
       typedef _Result result_type; 
-      
+
       result_type
       operator()() const
-      { 
-	result_type r;
-	return r;
-      }
+      { return result_type(); }
     };
 
   template<>
     struct void_function<NonDefaultConstructible>
     {
       typedef NonDefaultConstructible result_type; 
-      
+
       result_type
       operator()() const
       { return result_type(2); }
