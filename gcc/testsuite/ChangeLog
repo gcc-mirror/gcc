@@ -1,5 +1,10 @@
 2007-12-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/34302
+	* gcc.c-torture/execute/20071210-1.c: New test.
+
+2007-12-10  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c++/34395
 	* g++.dg/cpp0x/error1.C: New test.
 
