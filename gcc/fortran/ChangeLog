@@ -1,3 +1,9 @@
+2007-12-10  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34425
+	* interface.c (get_expr_storage_size): Use signed integer when
+	obtaining the bounds.
+
 2007-12-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/22244
