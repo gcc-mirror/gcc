@@ -1,3 +1,10 @@
+2007-12-10  Pranav Bhandarkar  <pranav.bhandarkar@celunite.com>
+	    Hans-Peter Nilsson  <hp@axis.com>
+
+	* caller-save.c (insert_one_insn): If inserting before a call_insn
+	then the registers containing the arguments of the call are
+	live_throughout in the new insn.
+
 2007-12-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/32889
