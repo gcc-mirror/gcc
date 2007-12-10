@@ -156,8 +156,7 @@ along with GCC; see the file COPYING3.  If not see
 #define VALID_FP_MODE_P(MODE)						\
   ((MODE) == SFmode || (MODE) == DFmode					\
    || (MODE) == SCmode || (MODE) == DCmode				\
-   || (MODE) == QImode || (MODE) == HImode || (MODE) == SImode		\
-   || (MODE) == DImode)
+   || (MODE) == SImode || (MODE) == DImode)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    On the HP-PA, the cpu registers can hold any mode.  We
@@ -242,17 +241,10 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FPUPPER_REGS, FP_REGS,
   {0x00000000, 0x10000000},	/* SHIFT_REGS */		\
   {0xfffffffe, 0x1fffffff}}	/* ALL_REGS */
 
-/* Defines invalid mode changes.
+/* Defines invalid mode changes.  */
 
-   SImode loads to floating-point registers are not zero-extended.
-   The definition for LOAD_EXTEND_OP specifies that integer loads
-   narrower than BITS_PER_WORD will be zero-extended.  As a result,
-   we inhibit changes from SImode unless they are to a mode that is
-   identical in size.  */
-
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		\
-  ((FROM) == SImode && GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)       \
-   ? reg_classes_intersect_p (CLASS, FP_REGS) : 0)
+#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \
+  pa_cannot_change_mode_class (FROM, TO, CLASS)
 
 /* Return the class number of the smallest class containing
    reg number REGNO.  This could be a conditional expression

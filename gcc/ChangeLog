@@ -1,3 +1,31 @@
+2007-12-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/32889
+	PR target/34091
+	* pa.md: Consolidate HImode and QImode move patterns into one pattern
+	each, eliminating floating-point alternatives.
+	* pa-protos.h (pa_cannot_change_mode_class, pa_modes_tieable_p):
+	Declare functions.
+	* pa-64.h (SECONDARY_MEMORY_NEEDED): Define here.
+	* pa.c (pa_secondary_reload): Use an intermediate general register
+	for copies to/from floating-point register classes.  Simplify code
+	SHIFT_REGS class.  Provide additional comments.
+	(pa_cannot_change_mode_class, pa_modes_tieable_p): New functions.
+	* pa.h (MODES_TIEABLE_P): Use pa_modes_tieable_p.
+	(SECONDARY_MEMORY_NEEDED): Delete define.
+	(INT14_OK_STRICT): Define.
+	(MODE_OK_FOR_SCALED_INDEXING_P): Allow SFmode and DFmode when using
+	soft float.
+	(MODE_OK_FOR_UNSCALED_INDEXING_P): Likewise.
+	(GO_IF_LEGITIMATE_ADDRESS): Use INT14_OK_STRICT in REG+D case for
+	SFmode and DFmode.
+	(LEGITIMIZE_RELOAD_ADDRESS): Use INT14_OK_STRICT in mask selection.
+	Align DImode offsets when generating 64-bit code.
+	* pa32-regs.h (VALID_FP_MODE_P): Remove QImode and HImode.
+	(CANNOT_CHANGE_MODE_CLASS): Define.
+	* pa64-regs.h (VALID_FP_MODE_P): Remove QImode and HImode.
+	(CANNOT_CHANGE_MODE_CLASS): Define using pa_cannot_change_mode_class.
+
 2007-11-28  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	Backport from mainline:
