@@ -1,3 +1,8 @@
+2007-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34394
+	* g++.dg/other/error22.C: New test.
+
 2007-12-10  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR target/32086

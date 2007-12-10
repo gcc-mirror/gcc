@@ -2054,6 +2054,7 @@ dump_expr (tree t, int flags)
     case DELETE_EXPR:
     case VEC_DELETE_EXPR:
     case MODOP_EXPR:
+    case ABS_EXPR:
       pp_expression (cxx_pp, t);
       break;
 
