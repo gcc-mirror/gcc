@@ -1,3 +1,7 @@
+2007-12-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ada-tree.h (TYPE_RETURNS_BY_TARGET_PTR_P): Move around.
+
 2007-12-09  Samuel Tardieu  <sam@rfc1149.net>
 
 	PR ada/34366
