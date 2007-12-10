@@ -5,10 +5,11 @@
 
 2007-12-10 Uros Bizjak <ubizjak@gmail.com>
 
-	* config/i386/i386.c (ix86_function_regparm): Ditto. Use REGPARM_MAX
-	to check that no regparm hard register is taken by a fixed register
-	variable. Check up to and including DI_REG when adjusting regparm
-	value due to fixed regs usage.
+	* config/i386/i386.c (ix86_function_regparm): Do not check global_regs
+	array, registers that are members of global_regs are also members of
+	fixed_regs array.  Use REGPARM_MAX to check that no regparm hard
+	register is taken by a fixed register variable.  Check up to and
+	including DI_REG when adjusting regparm value due to fixed regs usage.
 	(rep_prefix_usable): Check fixed_regs array, not global_regs array for
 	available hard registers.
 	(ix86_expand_strlen): Ditto.
