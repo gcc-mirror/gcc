@@ -1,3 +1,15 @@
+2007-12-10  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* genopinit.c: Include tm_p.h in generated file.
+
+	* config/arm/neon.md (vec_set<mode>_internal): Use INTVAL
+	to extract the integer from operands[2].
+	(vec_setv2di_internal): Likewise.
+
+	* config/arm/arm.c (arm_size_return_regs): Make return type
+	unsigned.
+	(arm_init_neon_builtins): Move code after declarations.
+
 2007-12-10  Hans-Peter Nilsson  <hp@axis.com>
 
 	* reload.c (find_reloads_address_1): To properly mark as an
