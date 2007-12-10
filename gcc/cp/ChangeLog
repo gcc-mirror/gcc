@@ -1,3 +1,8 @@
+2007-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34394
+	* error.c (dump_expr): Handle ABS_EXPR.
+
 2007-12-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34178
