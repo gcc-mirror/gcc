@@ -36,7 +36,7 @@ void test01()
   bool test __attribute__((unused)) = true;
   const char* 		c_lit = "black pearl jasmine tea";
   const char* 	        from_next;
-  int 			size = 25;
+  int 			size = 23;
   char* 		c_arr = new char[size];
   char*                 c_ref = new char[size];
   char*			to_next;

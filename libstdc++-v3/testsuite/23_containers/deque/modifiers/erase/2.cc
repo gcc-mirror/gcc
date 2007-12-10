@@ -1,6 +1,6 @@
 // 2005-11-25  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2005 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,14 +32,14 @@ const int A3[] = {-5, 0, 1, 2, 8, 9, 10, 11};
 const int A4[] = {2, 8, 9, 10, 11};
 const int A5[] = {2, 8, 10, 11};
 const int A6[] = {2, 8, 10};
-const int  N = sizeof(A)  / sizeof(int);
-const int N0 = sizeof(A0) / sizeof(int);
-const int N1 = sizeof(A1) / sizeof(int);
-const int N2 = sizeof(A2) / sizeof(int);
-const int N3 = sizeof(A3) / sizeof(int);
-const int N4 = sizeof(A4) / sizeof(int);
-const int N5 = sizeof(A5) / sizeof(int);
-const int N6 = sizeof(A6) / sizeof(int);
+const unsigned  N = sizeof(A)  / sizeof(int);
+const unsigned N0 = sizeof(A0) / sizeof(int);
+const unsigned N1 = sizeof(A1) / sizeof(int);
+const unsigned N2 = sizeof(A2) / sizeof(int);
+const unsigned N3 = sizeof(A3) / sizeof(int);
+const unsigned N4 = sizeof(A4) / sizeof(int);
+const unsigned N5 = sizeof(A5) / sizeof(int);
+const unsigned N6 = sizeof(A6) / sizeof(int);
 
 template<int Size>
   class My_class

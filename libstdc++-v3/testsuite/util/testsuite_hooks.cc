@@ -173,7 +173,6 @@ namespace __gnu_test
   run_tests_wrapped_locale(const char* name, const func_callback& l)
   {
     using namespace std;
-    bool test = true;
     
     // Set the global locale. 
     locale loc_name = locale(name);
@@ -202,7 +201,6 @@ namespace __gnu_test
 			const func_callback& l)
   {
     using namespace std;
-    bool test = true;
     
 #ifdef _GLIBCXX_HAVE_SETENV 
     // Set the global locale. 

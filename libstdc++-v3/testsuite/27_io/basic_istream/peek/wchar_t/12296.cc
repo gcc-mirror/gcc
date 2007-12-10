@@ -1,4 +1,4 @@
-// Copyright (C) 2004 Free Software Foundation
+// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,7 +30,7 @@ void test01()
   wistringstream stream;
   VERIFY( stream.rdstate() == ios_base::goodbit );
   wistringstream::int_type c = stream.peek();
-  VERIFY( c == istringstream::traits_type::eof() );
+  VERIFY( c == wistringstream::traits_type::eof() );
   VERIFY( stream.rdstate() == ios_base::eofbit );
 }
 

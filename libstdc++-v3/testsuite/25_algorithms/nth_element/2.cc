@@ -1,4 +1,4 @@
-// Copyright (C) 2006 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,27 +23,27 @@
 #include <testsuite_hooks.h>
 
 void
-test_set(std::vector<int>& v, int size)
+test_set(std::vector<unsigned>& v, unsigned size)
 {
   v.clear();
 
-  for (int i = 0; i < size; i += 4)
+  for (unsigned i = 0; i < size; i += 4)
     {
       v.push_back(i / 2);
       v.push_back((size - 2) - (i / 2));
     }
-  for (int i = 1; i < size; i += 2)
+  for (unsigned i = 1; i < size; i += 2)
     v.push_back(i);
 }
 
 void
-do_test01(int size)
+do_test01(unsigned size)
 {
   bool test __attribute__((unused)) = true;
 
-  std::vector<int> v, s;
+  std::vector<unsigned> v, s;
 
-  for (int j = 0; j < size; ++j)
+  for (unsigned j = 0; j < size; ++j)
     {
       test_set(v, size);
       s = v;
@@ -53,10 +53,10 @@ do_test01(int size)
 
       VERIFY( v[j] == s[j] );
       
-      for (int i = 0; i < j; ++i)
+      for (unsigned i = 0; i < j; ++i)
 	VERIFY( !(v[j] < v[i]) );
 
-      for (int i = j; i < v.size(); ++i)
+      for (unsigned i = j; i < v.size(); ++i)
 	VERIFY( !(v[i] < v[j]) );
     }
 }
@@ -64,7 +64,7 @@ do_test01(int size)
 void
 test01()
 {
-  for (int size = 4; size <= 1 << 10; size <<= 1)
+  for (unsigned size = 4; size <= 1 << 10; size <<= 1)
     do_test01(size);
 }
 

@@ -1,6 +1,6 @@
 // 2006-10-12  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2006 Free Software Foundation
+// Copyright (C) 2006, 2007 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,7 +39,7 @@ void test01()
   oss_01 << str_01.c_str();
 
   VERIFY( oss_01.good() );
-  VERIFY( oss_01.str().size() == width );
+  VERIFY( oss_01.str().size() == string::size_type(width) );
 }
 
 int main()

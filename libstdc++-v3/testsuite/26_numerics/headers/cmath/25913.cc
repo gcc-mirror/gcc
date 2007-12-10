@@ -43,5 +43,5 @@ bool isnormal(const employee&)
 void test01()
 {
   manager m;
-  bool b = isnormal(m);
+  isnormal(m);
 }

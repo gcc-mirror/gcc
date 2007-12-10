@@ -51,7 +51,7 @@ void test02()
 
   bool test __attribute__((unused)) = true;
   const char* 		c_lit = "black pearl jasmine tea";
-  int 			size = 25;
+  int 			size = 23;
 
   locale 		loc (locale::classic(), new length_codecvt);
   c_codecvt::state_type state;

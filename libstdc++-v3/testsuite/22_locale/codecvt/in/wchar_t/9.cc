@@ -128,9 +128,6 @@ void test09()
       r1 = cvt->in(state01, efrom, e_lit + i, efrom_next, 
 		   ito, i_arr + esize, ito_next);
       
-      printf("%d %d %d %x %x\n", efrom - e_lit, i, efrom_next - e_lit,
-	     efrom[-1], ito[-1]);
-
       // It it not clear if partial should ever be returned here
       // (see DR 382).
       VERIFY( r1 == codecvt_base::ok || r1 == codecvt_base::partial );

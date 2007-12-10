@@ -106,11 +106,11 @@ void test01()
   buf01.pub_setg(lit01, lit01, (lit01 + i01));
   VERIFY( i01 == buf01.in_avail() );
 
-  VERIFY( buf01.pub_uflow() == lit01[0] );
+  VERIFY( buf01.pub_uflow() == traits_type::to_int_type(lit01[0]) );
   VERIFY( buf01.sgetc() == traits_type::to_int_type(lit01[1]) );
-  VERIFY( buf01.pub_uflow() == lit01[1] );
+  VERIFY( buf01.pub_uflow() == traits_type::to_int_type(lit01[1]) );
   VERIFY( buf01.sgetc() == traits_type::to_int_type(lit01[2]) );
-  VERIFY( buf01.pub_uflow() == lit01[2] );
+  VERIFY( buf01.pub_uflow() == traits_type::to_int_type(lit01[2]) );
   VERIFY( buf01.sgetc() == traits_type::eof() );
 }
 

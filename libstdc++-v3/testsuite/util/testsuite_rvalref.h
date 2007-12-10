@@ -72,6 +72,7 @@ namespace __gnu_test
       VERIFY(valid == false);
       val = newval; 
       valid = true;
+      return *this;
     }
 
     rvalstruct(rvalstruct&& in)
@@ -145,6 +146,7 @@ namespace __gnu_test
     { 
       val = newval;
       valid = true;
+      return *this;
     }
 
     bool
@@ -154,6 +156,7 @@ namespace __gnu_test
       ++copycount;
       val = in.val;
       valid = true;
+      return true;
     }
 
     copycounter&

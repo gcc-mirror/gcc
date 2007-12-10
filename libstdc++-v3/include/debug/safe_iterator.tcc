@@ -1,6 +1,6 @@
 // Debugging iterator implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006
+// Copyright (C) 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -54,8 +54,8 @@ namespace __gnu_debug
 	    static_cast<const _Sequence*>(_M_sequence)->begin();
 	  std::pair<difference_type, _Distance_precision> __dist =
 	    this->_M_get_distance(__begin, *this);
-	  bool __ok =  (__dist.second == __dp_exact && __dist.first >= -__n
-			|| __dist.second != __dp_exact && __dist.first > 0);
+	  bool __ok =  ((__dist.second == __dp_exact && __dist.first >= -__n)
+			|| (__dist.second != __dp_exact && __dist.first > 0));
 	  return __ok;
 	}
       else
@@ -64,8 +64,8 @@ namespace __gnu_debug
 	    static_cast<const _Sequence*>(_M_sequence)->end();
 	  std::pair<difference_type, _Distance_precision> __dist =
 	    this->_M_get_distance(*this, __end);
-	  bool __ok = (__dist.second == __dp_exact && __dist.first >= __n
-		       || __dist.second != __dp_exact && __dist.first > 0);
+	  bool __ok = ((__dist.second == __dp_exact && __dist.first >= __n)
+		       || (__dist.second != __dp_exact && __dist.first > 0));
 	  return __ok;
 	}
     }

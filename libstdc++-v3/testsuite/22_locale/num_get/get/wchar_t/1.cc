@@ -45,7 +45,6 @@ void test01()
   bool b1 = true;
   bool b0 = false;
   unsigned long ul1 = 1294967294;
-  unsigned long ul2 = 0;
   unsigned long ul;
   double d1 =  1.02345e+308;
   double d2 = 3.15e-308;

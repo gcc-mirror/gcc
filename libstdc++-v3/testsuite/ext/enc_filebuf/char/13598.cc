@@ -1,6 +1,6 @@
 // { dg-require-iconv "ISO-8859-1" }
 
-// Copyright (C) 2004, 2007 Free Software Foundation
+// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,6 +20,7 @@
 
 #include <locale>
 #include <cstring>
+#include <cstddef>
 #include <testsuite_hooks.h>
 #include <ext/enc_filebuf.h>
 
@@ -41,8 +42,8 @@ int main()
   std::streamsize n = fb.sputn(str, std::strlen(str));
   int s = fb.pubsync();
   fb.close();
-  
-  VERIFY( n == std::strlen(str) );
+
+  VERIFY( std::size_t(n) == std::strlen(str) );
   VERIFY( s == 0 );
   
   return 0;

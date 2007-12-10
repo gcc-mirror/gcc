@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -80,7 +80,7 @@ public:
   push(const int& r_str);
 
   // Returns a const reference to the largest int in the container.
-  const int
+  int
   top() const
   {
     assert(!empty());

@@ -2,7 +2,8 @@
 
 // 2001-08-15 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2005 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007 
+// Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,19 +49,17 @@ void test02()
 
   // int compare(const charT*, const charT*, const charT*, const charT*) const
 
-  const char* strlit1 = "monkey picked tikuanyin oolong";
   const char* strlit3 = "Äuglein Augment"; // "C" == "Augment Äuglein"
   const char* strlit4 = "Base baß Baß Bast"; // "C" == "Base baß Baß Bast"
 
   int i1;
   int i2;
-  int size1 = char_traits<char>::length(strlit1) - 1;
   int size3 = char_traits<char>::length(strlit3) - 1;
   int size4 = char_traits<char>::length(strlit4) - 1;
 
   i1 = coll_de.compare(strlit3, strlit3 + size3, strlit3, strlit3 + 7);
   VERIFY ( i1 == 1 );
-  i1 = coll_de.compare(strlit3, strlit3 + 7, strlit3, strlit3 + size1);
+  i1 = coll_de.compare(strlit3, strlit3 + 7, strlit3, strlit3 + size3);
   VERIFY ( i1 == -1 );
   i1 = coll_de.compare(strlit3, strlit3 + 7, strlit3, strlit3 + 7);
   VERIFY ( i1 == 0 );

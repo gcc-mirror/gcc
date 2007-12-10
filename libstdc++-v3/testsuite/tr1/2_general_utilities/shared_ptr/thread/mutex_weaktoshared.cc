@@ -164,7 +164,7 @@ test01()
 #endif
   
   pthread_attr_t tattr;
-  int ret = pthread_attr_init(&tattr);
+  pthread_attr_init(&tattr);
 
   shared_and_weak_pools pools(obj_pool, weak_pool[0]);
   pthread_create(threads, &tattr, thread_hammer_and_kill, reinterpret_cast<void*>(&pools));
