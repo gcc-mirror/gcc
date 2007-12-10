@@ -1,3 +1,8 @@
+2007-12-10  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* configure.ac: Enable libjava for x86_64-*-darwin9.
+	* configure: Regenerate.
+
 2007-12-07  Bill Maddox <maddox@google.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
