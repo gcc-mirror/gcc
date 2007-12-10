@@ -1,3 +1,9 @@
+2007-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (gen_array_type_die, gen_descr_array_type_die): For
+	Fortran multi-dimensional arrays use DW_AT_ordering
+	DW_ORD_col_major.
+
 2007-12-10  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR target/32086

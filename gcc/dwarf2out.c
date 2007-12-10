@@ -11636,6 +11636,12 @@ gen_array_type_die (tree type, dw_die_ref context_die)
       add_AT_flag (array_die, DW_AT_GNU_vector, 1);
     }
 
+  /* For Fortran multidimensional arrays use DW_ORD_col_major ordering.  */
+  if (is_fortran ()
+      && TREE_CODE (type) == ARRAY_TYPE
+      && TREE_CODE (TREE_TYPE (type)) == ARRAY_TYPE)
+    add_AT_unsigned (array_die, DW_AT_ordering, DW_ORD_col_major);
+
 #if 0
   /* We default the array ordering.  SDB will probably do
      the right things even if DW_AT_ordering is not present.  It's not even
@@ -11786,6 +11792,11 @@ gen_descr_array_type_die (tree type, struct array_descr_info *info,
   array_die = new_die (DW_TAG_array_type, scope_die, type);
   add_name_attribute (array_die, type_tag (type));
   equate_type_number_to_die (type, array_die);
+
+  /* For Fortran multidimensional arrays use DW_ORD_col_major ordering.  */
+  if (is_fortran ()
+      && info->ndimensions >= 2)
+    add_AT_unsigned (array_die, DW_AT_ordering, DW_ORD_col_major);
 
   if (info->data_location)
     add_descr_info_field (array_die, DW_AT_data_location, info->data_location,
