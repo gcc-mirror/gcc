@@ -1037,7 +1037,7 @@ set_prologue_iterations (basic_block bb_before_first_loop,
   tree gimplify_stmt_list;
   tree cost_pre_condition = NULL_TREE;
   tree scalar_loop_iters = 
-    LOOP_VINFO_NITERS_UNCHANGED (loop_vec_info_for_loop (loop));
+    unshare_expr (LOOP_VINFO_NITERS_UNCHANGED (loop_vec_info_for_loop (loop)));
 
   e = single_pred_edge (bb_before_first_loop);
   cond_bb = split_edge(e);
@@ -1154,8 +1154,6 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
   edge exit_e = single_exit (loop);
   LOC loop_loc;
   tree cost_pre_condition = NULL_TREE;
-  tree scalar_loop_iters = 
-    LOOP_VINFO_NITERS_UNCHANGED (loop_vec_info_for_loop (loop));
   
   if (!slpeel_can_duplicate_loop_p (loop, e))
     return NULL;
@@ -1307,10 +1305,13 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
 		     build_int_cst (TREE_TYPE (first_niters), 0));
       if (check_profitability)
 	{
-	    cost_pre_condition = 
+	  tree scalar_loop_iters
+	    = unshare_expr (LOOP_VINFO_NITERS_UNCHANGED
+					(loop_vec_info_for_loop (loop)));
+	  cost_pre_condition = 
 	    build2 (LE_EXPR, boolean_type_node, scalar_loop_iters, 
 		    build_int_cst (TREE_TYPE (scalar_loop_iters), th));
-  
+
 	  pre_condition = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
 				       cost_pre_condition, pre_condition);
 	}

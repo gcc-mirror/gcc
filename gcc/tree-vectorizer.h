@@ -164,6 +164,7 @@ typedef struct _loop_vec_info {
 
   /* Number of iterations.  */
   tree num_iters;
+  tree num_iters_unchanged;
 
   /* Minimum number of iterations below which vectorization is expected to
      not be profitable (as estimated by the cost model). 
@@ -230,7 +231,7 @@ typedef struct _loop_vec_info {
 #define LOOP_VINFO_NITERS(L)          (L)->num_iters
 /* Since LOOP_VINFO_NITERS can change after prologue peeling
    retain total unchanged scalar loop iterations for cost model.  */
-#define LOOP_VINFO_NITERS_UNCHANGED(L)          (L)->num_iters
+#define LOOP_VINFO_NITERS_UNCHANGED(L)          (L)->num_iters_unchanged
 #define LOOP_VINFO_COST_MODEL_MIN_ITERS(L)	(L)->min_profitable_iters
 #define LOOP_VINFO_VECTORIZABLE_P(L)  (L)->vectorizable
 #define LOOP_VINFO_VECT_FACTOR(L)     (L)->vectorization_factor

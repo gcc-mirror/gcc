@@ -1,3 +1,13 @@
+2007-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/34371
+	* tree-vectorizer.h (struct _loop_vec_info): Add num_iters_unchanged
+	field.
+	(LOOP_VINFO_NITERS_UNCHANGED): Define to num_iters_unchanged field.
+	* tree-vectorizer.c (set_prologue_iterations,
+	slpeel_tree_peel_loop_to_edge): Call unshare_expr on
+	LOOP_VINFO_NITERS_UNCHANGED before using it.
+
 2007-12-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/34403
