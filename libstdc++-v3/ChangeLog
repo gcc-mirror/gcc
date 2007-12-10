@@ -1,3 +1,11 @@
+2007-12-10  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* docs/html/17_intro/backwards_compatibility.html: Fix markup.
+	* docs/html/17_intro/howto.html: Likewise.
+	* docs/html/18_support/howto.html: Likewise.
+	* docs/html/ext/concurrence.html: Likewise.
+	* docs/html/documentation.html: Likewise.
+
 2007-12-10  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/tr1/5_numerical_facilities/random/linear_congruential/

@@ -90,7 +90,7 @@ __atomic_add_dispatch
 </li>
 </ul>
 
-</p>
+<p>
 These functions forward to one of several specialized helper
 functions, depending on the circumstances. For instance, 
 </p>
@@ -138,7 +138,7 @@ _GLIBCXX_READ_MEM_BARRIER
 </p>
 <p>
 <code>
-GLIBCXX_WRITE_MEM_BARRIER 
+_GLIBCXX_WRITE_MEM_BARRIER 
 </code>
 </p>
 
@@ -151,10 +151,10 @@ host hardware and operating system.
   <a name="pthread_api">Pthread Interface</a>
 </h3>
 
-<p>A thin layer above IEEE 1003.1 (ie pthreads) is used to abastract
+<p>A thin layer above IEEE 1003.1 (ie pthreads) is used to abstract
 the thread interface for GCC. This layer is called "gthread," and is
 comprised of one header file that wraps the host's default thread layer with
-a POSIX-like interfaces.
+a POSIX-like interface.
 </p>
 
 <p> The file &lt;gthr-default.h&gt; points to the deduced wrapper for
@@ -247,11 +247,11 @@ namespace other
   foo()
   {
     __gnu_cxx::__scoped_lock sentry(safe_base_mutex);
-    for (int i = 0; i < max;  ++i)
+    for (int i = 0; i &lt; max;  ++i)
       {
 	_Safe_iterator_base* __old = __iter;
-	__iter = __iter->_M_next;
-	__old->_M_detach_single();
+	__iter = __iter-&lt;_M_next;
+	__old-&lt;_M_detach_single();
       }
 }
 </pre>

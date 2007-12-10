@@ -127,7 +127,7 @@ the 1998 standard as updated for 2003, and the draft of the upcoming
 <center><table border="1"><caption>TR1 Headers for C Library Facilities</caption>
 <tr><td>&lt;tr1/cmath&gt;</td><td>&lt;tr1/cfloat&gt;</td><td>&lt;tr1/cstdarg&gt;</td><td>&lt;tr1/cstdio&gt;</td><td>&lt;tr1/ctime&gt;</td></tr>
 <tr><td>&lt;tr1/ccomplex&gt;</td><td>&lt;tr1/cinttypes&gt;</td><td>&lt;tr1/cstdbool&gt;</td><td>&lt;tr1/cstdlib&gt;</td><td>&lt;tr1/cwchar&gt;</td></tr>
-<tr><td>&lt;tr1/cfenv&gt;</td><td>&lt;tr1/climits&gt;</td><td>&lt;tr1/cstdint&gt;</td><td>&lt;tr1/ctgmath&gt;</td><td>&lt;tr1/cwctype&gt;<td></tr>
+<tr><td>&lt;tr1/cfenv&gt;</td><td>&lt;tr1/climits&gt;</td><td>&lt;tr1/cstdint&gt;</td><td>&lt;tr1/ctgmath&gt;</td><td>&lt;tr1/cwctype&gt;</td></tr>
 </table></center>
 
 <p>Also included are files for the C++ ABI interface:
@@ -142,7 +142,7 @@ the 1998 standard as updated for 2003, and the draft of the upcoming
 <center><table border="1"><caption>Extension Headers</caption>
 <tr><td>&lt;ext/algorithm&gt;</td><td>&lt;ext/debug_allocator.h&gt;</td><td>&lt;ext/mt_allocator.h&gt;</td><td>&lt;ext/pod_char_traits.h&gt;</td><td>&lt;ext/stdio_sync_filebuf.h&gt;</td></tr>
 <tr><td>&lt;ext/array_allocator.h&gt;</td><td>&lt;ext/enc_filebuf.h&gt;</td><td>&lt;ext/new_allocator.h&gt;</td><td>&lt;ext/pool_allocator.h&gt;</td><td>&lt;ext/throw_allocator.h&gt;</td></tr>
-<tr><td>&lt;ext/atomicity.h&gt;</td><td>&lt;ext/functional&gt;</td><td>&lt;ext/numeric&gt;</td><td>&lt;ext/rb_tree&gt;</td><td>&lt;ext/typelist.h&gt;<td></tr>
+<tr><td>&lt;ext/atomicity.h&gt;</td><td>&lt;ext/functional&gt;</td><td>&lt;ext/numeric&gt;</td><td>&lt;ext/rb_tree&gt;</td><td>&lt;ext/typelist.h&gt;</td></tr>
 <tr><td>&lt;ext/bitmap_allocator.h&gt;</td><td>&lt;ext/iterator&gt;</td><td>&lt;ext/numeric_traits.h&gt;</td><td>&lt;ext/rope&gt;</td><td>&lt;ext/type_traits.h&gt;</td></tr>
 <tr><td>&lt;ext/codecvt_specializations.h&gt;</td><td>&lt;ext/malloc_allocator.h&gt;</td><td>&lt;ext/pb_ds/assoc_container.h&gt;</td><td>&lt;ext/slist&gt;</td><td>&lt;ext/vstring.h&gt;</td></tr>
 <tr><td>&lt;ext/concurrence.h&gt;</td><td>&lt;ext/memory&gt;</td><td>&lt;ext/pb_ds/priority_queue.h&gt;</td><td>&lt;ext/stdio_filebuf.h&gt;</td></tr>
@@ -162,7 +162,7 @@ the 1998 standard as updated for 2003, and the draft of the upcoming
 </table></center>
 
 <hr />
-<h2><a name="2.1">Recipes for mixing headers</code></a></h2>
+<h2><a name="2.1">Recipes for mixing headers</a></h2>
 
 <p> A few simple rules.
 </p>
@@ -263,7 +263,7 @@ this is:</p>
 <pre>
 g++ -v hello.cc
 
-#include <...> search starts here:
+#include &lt;...&gt; search starts here:
  /mnt/share/bld/H-x86-gcc.20071201/include/c++/4.3.0
 ...
 End of search list.
