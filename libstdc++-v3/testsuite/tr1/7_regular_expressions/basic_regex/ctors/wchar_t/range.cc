@@ -31,7 +31,7 @@ void test01()
   typedef std::tr1::basic_regex<wchar_t> test_type;
 
   wchar_t s[] = L"a+b|c";
-  test_type re(s, s + sizeof(s));
+  test_type re(s, s + 5);
 }
 
 int

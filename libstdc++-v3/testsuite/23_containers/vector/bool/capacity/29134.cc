@@ -39,8 +39,10 @@ void test01()
   // Actually, vector<bool> is special, see libstdc++/31370.
   vector<bool> vb;
   typedef vector<bool>::difference_type difference_type;
+  typedef vector<bool>::size_type size_type;
   VERIFY( vb.max_size()
-	  == (numeric_limits<difference_type>::max() - int(_S_word_bit) + 1) );
+	  == size_type(numeric_limits<difference_type>::max()
+		       - int(_S_word_bit) + 1) );
 }
 
 int main()

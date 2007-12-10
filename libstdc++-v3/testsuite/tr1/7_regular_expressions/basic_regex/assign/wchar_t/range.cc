@@ -32,7 +32,7 @@ void test01()
 
   wchar_t s[] = L"a+b|c";
   test_type re;
-  re.assign(s, s + sizeof(s));
+  re.assign(s, s + 5);
 }
 
 int

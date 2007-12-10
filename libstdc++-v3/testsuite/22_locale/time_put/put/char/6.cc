@@ -2,7 +2,8 @@
 
 // 2001-09-17 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007 
+// Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -55,7 +56,8 @@ void test06()
   string result7 = oss.str();
   VERIFY( result7 == "Sonntag, the second of April");
   iterator_type os_it08 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 
-				      date_ex, date_ex + traits::length(date));
+				      date_ex,
+				      date_ex + traits::length(date_ex));
   string result8 = oss.str();
   VERIFY( result8 != result7 );
 }

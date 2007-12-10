@@ -23,7 +23,7 @@
 #include <testsuite_hooks.h>
 
 // libstdc++/33128
-int test01()
+void test01()
 {
   bool test __attribute__((unused)) = true;
 

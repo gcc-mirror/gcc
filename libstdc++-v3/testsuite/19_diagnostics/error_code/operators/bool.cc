@@ -26,7 +26,6 @@
 int main()
 {
   bool test __attribute__((unused)) = true;
-  bool b;
 
   // 1
   std::error_code e1;

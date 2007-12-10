@@ -31,7 +31,7 @@ void test01()
   typedef std::tr1::basic_regex<char> test_type;
 
   char s[] = "a+b|c";
-  test_type re(s, s + sizeof(s));
+  test_type re(s, s + 5);
 }
 
 int

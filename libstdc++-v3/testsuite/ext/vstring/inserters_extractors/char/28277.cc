@@ -38,7 +38,7 @@ void test01()
   oss_01 << str_01;
 
   VERIFY( oss_01.good() );
-  VERIFY( oss_01.str().size() == width );
+  VERIFY( oss_01.str().size() == __gnu_cxx::__vstring::size_type(width) );
 }
 
 int main()

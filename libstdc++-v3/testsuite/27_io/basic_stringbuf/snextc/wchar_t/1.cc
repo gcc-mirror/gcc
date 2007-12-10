@@ -1,6 +1,7 @@
 // 981208 bkoz test functionality of basic_stringbuf for char_type == wchar_t
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+// 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -62,8 +63,8 @@ void test04()
   c7 = strb_02.snextc();
   VERIFY( c6 != c8 );
   VERIFY( c7 != c9 );
-  VERIFY( c6 == str_01[3] );
-  VERIFY( c7 == str_02[3] ); //should equal fourth letter at this point
+  VERIFY( c6 == traits_type::to_int_type(str_01[3]) );
+  VERIFY( c7 == traits_type::to_int_type(str_02[3]) ); //should equal fourth letter at this point
   c5 = strb_03.snextc();
   VERIFY( c5 == traits_type::eof() );
 }

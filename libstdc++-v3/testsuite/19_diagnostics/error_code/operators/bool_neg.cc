@@ -28,7 +28,7 @@ int main()
   std::error_code e;
   int i = e; 
 
-  return 0;
+  return i;
 }
 
 // { dg-error "invalid conversion" "" { target *-*-* } 29 }

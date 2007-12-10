@@ -1,7 +1,8 @@
 // { dg-do compile }
 // 2001-02-06  Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2003, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,7 +43,7 @@ namespace gnu
   void test02()
   {
     // Must not be (void*)0
-    const int j = NULL;
+    const int j __attribute__((unused)) = NULL;
 
 #ifndef NULL
     #error "NULL_must_be_a_macro"

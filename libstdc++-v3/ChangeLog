@@ -1,3 +1,82 @@
+2007-12-10  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/25_algorithms/nth_element/2.cc: Avoid -Wall warnings.
+	* testsuite/27_io/basic_streambuf/sgetc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sgetc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sgetn/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sgetn/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sbumpc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sbumpc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/snextc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/snextc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/peek/wchar_t/12296.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/
+	28277-2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/
+	28277-3.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/
+	28277-4.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/
+	28277-3.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/
+	28277-4.cc: Likewise.
+	* testsuite/19_diagnostics/error_code/operators/bool.cc: Likewise.
+	* testsuite/19_diagnostics/error_code/operators/bool_neg.cc: Likewise.
+	* testsuite/18_support/headers/cstddef/macros.cc: Likewise.
+	* testsuite/21_strings/basic_string/inserters_extractors/
+	wchar_t/28277.cc: Likewise.
+	* testsuite/21_strings/basic_string/inserters_extractors/
+	char/28277.cc: Likewise.
+	* testsuite/26_numerics/headers/cmath/25913.cc: Likewise.
+	* testsuite/ext/pb_ds/example/priority_queue_xref.cc: Likewise.
+	* testsuite/ext/vstring/inserters_extractors/wchar_t/28277.cc: Likewise.
+	* testsuite/ext/vstring/inserters_extractors/char/28277.cc: Likewise.
+	* testsuite/ext/enc_filebuf/char/13598.cc: Likewise.
+	* testsuite/22_locale/collate/compare/char/2.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/5.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/6.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/7.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/8.cc: Likewise.
+	* testsuite/22_locale/codecvt/unshift/char/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/char/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/char/2.cc: Likewise.
+	* testsuite/22_locale/codecvt/in/wchar_t/9.cc: Likewise.
+	* testsuite/22_locale/codecvt/in/char/1.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/char/1.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/1.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/uniform_int/
+	33128.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/thread/
+	mutex_weaktoshared.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/thread/
+	default_weaktoshared.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/assign/wchar_t/
+	range.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/assign/char/
+	range.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/ctors/wchar_t/
+	range.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/ctors/char/
+	range.cc: Likewise.
+	* testsuite/23_containers/multimap/operations/1.cc: Likewise.
+	* testsuite/23_containers/set/operations/1.cc: Likewise.
+	* testsuite/23_containers/vector/bool/capacity/29134.cc: Likewise.
+	* testsuite/23_containers/deque/modifiers/erase/1.cc: Likewise.
+	* testsuite/23_containers/deque/modifiers/erase/2.cc: Likewise.
+	* testsuite/23_containers/multiset/operations/1.cc: Likewise.
+	* testsuite/23_containers/map/operations/1.cc: Likewise.
+	* testsuite/util/testsuite_hooks.cc: Likewise.
+	* testsuite/util/testsuite_rvalref.h: Likewise.
+
+2007-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/ext/throw_allocator.h (print_to_string): Change sprintf
+	format to %lu and cast ref.second.{first,second} to long.
+	* include/debug/safe_iterator.tcc (_M_can_advance): Add parens to
+	avoid warnings.
+
 2007-12-09  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/html/ext/howto.html: Update.

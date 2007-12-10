@@ -32,7 +32,7 @@ void test01()
 
   char s[] = "a+b|c";
   test_type re;
-  re.assign(s, s + sizeof(s));
+  re.assign(s, s + 5);
 }
 
 int
