@@ -751,7 +751,7 @@
           (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_NEON"
 {
-  HOST_WIDE_INT elem = ffs (operands[2]) - 1;
+  HOST_WIDE_INT elem = ffs ((int) INTVAL (operands[2])) - 1;
   int half_elts = GET_MODE_NUNITS (<MODE>mode) / 2;
   int elt = elem % half_elts;
   int hi = (elem / half_elts) * 2;
@@ -775,7 +775,7 @@
           (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_NEON"
 {
-  HOST_WIDE_INT elem = ffs (operands[2]) - 1;
+  HOST_WIDE_INT elem = ffs ((int) INTVAL (operands[2])) - 1;
   int regno = REGNO (operands[0]) + 2 * elem;
 
   operands[0] = gen_rtx_REG (DImode, regno);
