@@ -1,3 +1,8 @@
+2007-12-10  Mark Heffernan <meheff@google.com>
+
+	* MAINTAINERS (Write After Approval): Add myself and alphabetize two
+	misplaced entries.
+
 2007-12-10  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* configure.ac: Enable libjava for x86_64-*-darwin9.
