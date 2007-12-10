@@ -137,7 +137,7 @@ dnl HAVE_NAMESPACE_STD.
 dnl
 dnl @category Cxx
 dnl @author Todd Veldhuizen
-dnl @author Luc Maisonobe <luc@spaceroots.org>
+dnl @author Luc Maisonobe &lt;luc@spaceroots.org&gt;
 dnl @version 2004-02-04
 dnl @license AllPermissive
 AC_DEFUN([AC_CXX_NAMESPACE_STD], [
@@ -145,8 +145,8 @@ AC_DEFUN([AC_CXX_NAMESPACE_STD], [
   ac_cv_cxx_have_std_namespace,
   [AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
-  AC_TRY_COMPILE([#include <iostream> 
-                  std::istream& is = std::cin;],,
+  AC_TRY_COMPILE([#include &lt;iostream&gt; 
+                  std::istream&amp; is = std::cin;],,
   ac_cv_cxx_have_std_namespace=yes, ac_cv_cxx_have_std_namespace=no)
   AC_LANG_RESTORE
   ])
@@ -557,7 +557,7 @@ AC_DEFUN([AC_HEADER_EXT_HASH_MAP], [
   AC_LANG_CPLUSPLUS
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -Werror"	
-  AC_TRY_COMPILE([#include <ext/hash_map>], [using __gnu_cxx::hash_map;],
+  AC_TRY_COMPILE([#include &lt;ext/hash_map&gt;], [using __gnu_cxx::hash_map;],
   ac_cv_cxx_ext_hash_map=yes, ac_cv_cxx_ext_hash_map=no)
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
@@ -577,7 +577,7 @@ AC_DEFUN([AC_HEADER_EXT_HASH_SET], [
   AC_LANG_CPLUSPLUS
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -Werror"	
-  AC_TRY_COMPILE([#include <ext/hash_set>], [using __gnu_cxx::hash_set;],
+  AC_TRY_COMPILE([#include &lt;ext/hash_set&gt;], [using __gnu_cxx::hash_set;],
   ac_cv_cxx_ext_hash_set=yes, ac_cv_cxx_ext_hash_set=no)
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
@@ -837,7 +837,7 @@ AC_DEFUN([AC_COMPILE_STDCXX_0X], [
 
     typedef check&lt;int&gt; check_type;
     check_type c;
-    check_type&& cr = c;],,
+    check_type&amp;&amp; cr = c;],,
   ac_cv_cxx_compile_cxx0x_native=yes, ac_cv_cxx_compile_cxx0x_native=no)
   AC_LANG_RESTORE
   ])
@@ -862,7 +862,7 @@ AC_DEFUN([AC_COMPILE_STDCXX_0X], [
 
     typedef check&lt;int&gt; check_type;
     check_type c;
-    check_type&& cr = c;],,
+    check_type&amp;&amp; cr = c;],,
   ac_cv_cxx_compile_cxx0x_cxx=yes, ac_cv_cxx_compile_cxx0x_cxx=no)
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
@@ -888,7 +888,7 @@ AC_DEFUN([AC_COMPILE_STDCXX_0X], [
 
     typedef check&lt;int&gt; check_type;
     check_type c;
-    check_type&& cr = c;],,
+    check_type&amp;&amp; cr = c;],,
   ac_cv_cxx_compile_cxx0x_gxx=yes, ac_cv_cxx_compile_cxx0x_gxx=no)
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE

@@ -108,8 +108,8 @@
       print this stuff, it prompted him to run this code through current
       compilers to see what the state of the art is with respect to member
       template functions.  He posted
-      <a href="http://groups.google.com/groups?oi=djq&selm=an_644660779">an
-      article to Usenet</a> after discovering that the code above is not
+      <a href="http://groups.google.com/groups?oi=djq&amp;selm=an_644660779">
+      an article to Usenet</a> after discovering that the code above is not
       valid!  Even though it has no data members, it still needs a
       user-defined constructor (which means that the class needs a type name
       after all).  The ctor can have an empty body; it just needs to be
@@ -248,7 +248,7 @@
 
    struct argument_error : public std::runtime_error
    {  
-     argument_error(const std::string& s): std::runtime_error(s) { }
+     argument_error(const std::string&amp; s): std::runtime_error(s) { }
    };
 
    int main(int argc)
