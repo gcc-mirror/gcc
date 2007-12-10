@@ -1,3 +1,8 @@
+2007-12-10  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34425
+	* gfortran.dg/argument_checking_10.f90: New.
+
 2007-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/34302

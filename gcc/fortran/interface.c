@@ -1642,8 +1642,8 @@ get_expr_storage_size (gfc_expr *e)
 	    if (ref->u.ar.as->lower[i] && ref->u.ar.as->upper[i]
 		&& ref->u.ar.as->lower[i]->expr_type == EXPR_CONSTANT
 		&& ref->u.ar.as->upper[i]->expr_type == EXPR_CONSTANT)
-	      elements *= mpz_get_ui (ref->u.ar.as->upper[i]->value.integer)
-			  - mpz_get_ui (ref->u.ar.as->lower[i]->value.integer)
+	      elements *= mpz_get_si (ref->u.ar.as->upper[i]->value.integer)
+			  - mpz_get_si (ref->u.ar.as->lower[i]->value.integer)
 			  + 1L;
 	    else
 	      return 0;
