@@ -5,8 +5,8 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-   <meta name="AUTHOR" content="bkoz@gcc.gnu.org (Benjamin Kosnik), Felix Natter" />
-   <meta name="KEYWORDS" content="C++, libstdc++, API, deprecate backward" />
+   <meta name="AUTHOR" content="bkoz@gcc.gnu.org (Benjamin Kosnik)" />
+   <meta name="KEYWORDS" content="C++, libstdc++, API, evolution, deprecate" />
    <meta name="DESCRIPTION" content="API evolution and deprecation history" />
    <meta name="GENERATOR" content="emacs and ten fingers" />
    <title>API Evolution and Deprecation History</title>
@@ -22,7 +22,7 @@
 <p class="fineprint"><em>
    The latest version of this document is always available at
    <a href="http://gcc.gnu.org/onlinedocs/libstdc++/17_intro/api.html">
-   http://gcc.gnu.org/onlinedocs/libstdc++/17_intro/abi.html</a>.
+   http://gcc.gnu.org/onlinedocs/libstdc++/17_intro/api.html</a>.
 </em></p>
 
 <p><em>
@@ -30,565 +30,260 @@
 </em></p>
 
 <!-- ####################################################### -->
-<hr />
-<h3 class="left">
-  <a name="C++ API v1">First.</a>
-</h3>
-
-<p>2.72</p>
-<p> The first generation GNU C++ library was called libg++. It had a
-working relationship with at least two kinds of dinosaur. Sadly, the
-details were not pried away from the estate.
-</p>
-
-<p>
-
-</p>
-
-<p>Known Issues include many of the limitations of its immediate ancestor.</p> 
-
-<h5>No <code>ios_base</code></h5>
-
-<p> At least some older implementations don't have <code>std::ios_base</code>, so you should use <code>std::ios::badbit</code>, <code>std::ios::failbit</code> and <code>std::ios::eofbit</code> and <code>std::ios::goodbit</code>.
-</p>
-
-<h5>No <code>cout</code> in <code>ostream.h</code>, no <code>cin</code> in <code>istream.h</code></h5>
-
-<p>
-	In earlier versions of the standard,
-	<tt>&lt;fstream.h&gt;</tt>,
-	<tt>&lt;ostream.h&gt;</tt>
-	and <tt>&lt;istream.h&gt;</tt>
-	used to define
-	<code>cout</code>, <code>cin</code> and so on. ISO C++ specifies that one needs to include
-	<tt>&lt;iostream&gt;</tt>
-	explicitly to get the required definitions.
- </p>
-<p> Some include adjustment may be required.</p>
-
-
-<p>This project is no longer maintained or supported, and the sources
-archived.  The code is considered replaced and rewritten.
-</p>
 
 <hr />
 <h3 class="left">
-  <a name="C++ API v1">Second.</a>
+  <a name="intro">API Evolution, Deprecation, and History of User Visible Changes</a>
 </h3>
-<p> The second generation GNU C++ library was called libstdc++, or
-libstdc++-v2. It was a separate GNU project, although reliably paired
-with GCC. It spans the time between libg++ and pre-ISO C++.
+
+<p> A list of user-visible changes, by release version.
 </p>
 
-<p>egcs 1.x</p>
-<p>2.95</p>
-<p>2.96</p>
-
-<p>Portability Notes</p>
-<p>Implementation Limitations</p>
-
-<h5>Namespace <code>std::</code> not supported.</h5>
+<h3 class="left">
+  <a name="3.0">3.0</a>
+</h3>
 
 <p>
-      Some care is required to support C++ compiler and or library
-      implementation that do not have the standard library in
-      <code>namespace std</code>.
-    </p>
+Extensions moved to <code>include/ext</code>.
+</p>
+
 <p>
-   The following sections list some possible solutions to support compilers
-   that cannot ignore <code>std::</code>-qualified names.
- </p>
+Include files from the SGI/HP sources that pre-date the ISO standard
+are added. These files are placed into
+the <code>include/backward</code> directory and a deprecated warning
+is added that notifies on inclusion (<code>-Wno-deprecated</code>
+deactivates the warning.)
+</p>
 
-<p> First, see if the compiler has a flag for this. Namespace
-      back-portability-issues are generally not a problem for g++
-      compilers that do not have libstdc++ in <code>std::</code>, as
-      the compilers use <code>-fno-honor-std</code> (ignore
-      <code>std::</code>, <code>:: = std::</code>) by default. That
-      is, the responsibility for enabling or disabling
-      <code>std::</code> is on the user; the maintainer does not have
-      to care about it. This probably applies to some other compilers
-      as well.
-    </p>
+<p>Deprecated include &lt;backward/strstream&gt; added.</p>
 
-<p>Second, experiment with a variety of pre-processor tricks.</p>
+<p>Removal of include &lt;builtinbuf.h&gt;, &lt;indstream.h&gt;, &lt;parsestream.h&gt;, &lt;PlotFile.h&gt;, &lt;SFile.h&gt;, &lt;stdiostream.h&gt;, and &lt;stream.h&gt;.</p>
 
-<p> By defining <code>std</code> as a macro, fully-qualified namespace calls become global. Volia. 
-	      
-<pre class="programlisting">
-#ifdef WICKEDLY_OLD_COMPILER
-# define std
-#endif
-</pre>
-(thanks to Juergen Heinzl who posted this solution on gnu.gcc.help)
 
-<p>Define a macro <code>NAMESPACE_STD</code>, which is defined to
-either &quot;&quot; or &quot;std&quot; based on a compile-type
-test. On GNU systems, this can be done with autotools by means of an
-autoconf test (see below) for <code>HAVE_NAMESPACE_STD</code>, then
-using that to set a value for the <code>NAMESPACE_STD</code> macro.
-At that point, one is able to use <code>NAMESPACE_STD::string</code>,
-which will evaluate to <code>std::string</code> or
-<code>::string</code> (ie, in the global namespace on systems that do
-not put <code>string</code> in <code>std::</code>). </p>
+<h3 class="left">
+  <a name="3.1">3.1</a>
+</h3>
 
-<p> 	
-<pre>
-dnl @synopsis AC_CXX_HAVE_STD_NAMESPACE
-dnl
-dnl If the compiler supports the std namespace, define
-dnl HAVE_STD_NAMESPACE.
-dnl
-dnl @category Cxx
-dnl @author Todd Veldhuizen
-dnl @author Luc Maisonobe <luc@spaceroots.org>
-dnl @version 2004-02-04
-dnl @license AllPermissive
-
-AC_DEFUN([AC_CXX_HAVE_STD_NAMESPACE],
-[AC_CACHE_CHECK(whether the compiler supports the std namespace,
-ac_cv_cxx_have_std_namespace,
-[AC_LANG_SAVE
- AC_LANG_CPLUSPLUS
- AC_TRY_COMPILE([#include <iostream>
-	std::istream& is = std::cin;
-	],[return 0;],
- ac_cv_cxx_have_std_namespace=yes, ac_cv_cxx_have_std_namespace=no)
- AC_LANG_RESTORE
-])
-if test "$ac_cv_cxx_have_std_namespace" = yes; then
-  AC_DEFINE(HAVE_STD_NAMESPACE,,[define if the compiler supports the std namespace])
-fi
-])
-</pre>
-
-<h5>Illegal iterator usage.</h5>
 <p>
-      The following illustrate implementation-allowed illegal iterator
-      use, and then correct use.  <div class="itemizedlist"><ul
-      type="disc"> <li><p>you cannot do
-      <code>ostream::operator&lt;&lt;(iterator)</code> to print the
-      address of the iterator =&gt; use <code>operator&lt;&lt;
-      &amp;*iterator</code> instead ?
-	  </p></li>
-<li><p>you cannot clear an iterator's reference
-	    (<code>iterator = 0</code>) =&gt; use
-	    <code>iterator = iterator_type();</code> ?
-	  </p></li>
-<li><p>
-<code>if (iterator)</code> won't work any
-	    more =&gt; use <code>if (iterator != iterator_type())</code>
-	    ?</p></li>
+Extensions from SGI/HP moved from <code>namespace std</code>
+to <code>namespace __gnu_cxx</code>. As part of this, the following
+new includes are
+added: &lt;ext/algorithm&gt;, &lt;ext/functional&gt;, &lt;ext/iterator&gt;, &lt;ext/memory&gt;, and &lt;ext/numeric&gt;.
+</p>
+
+<p>
+Extensions to <code>basic_filebuf</code> introduced: <code>__gnu_cxx::enc_filebuf</code>, and <code>__gnu_cxx::stdio_filebuf</code>.
+</p>
+
+<p>
+Extensions to tree data structures added in &lt;ext/rb_tree&gt;.
+</p>
+
+<p>
+Removal of &lt;ext/tree&gt;, moved to &lt;backward/tree.h&gt;.
+</p>
+
+
+<h3 class="left">
+  <a name="3.2">3.2</a>
+</h3>
+<p>Symbol versioning introduced for shared library.</p>
+
+<p>Removal of include &lt;backward/strstream.h&gt;.</p>
+
+<h3 class="left">
+  <a name="3.3">3.3</a>
+</h3>
+<p>Allocator changes. Change <code>__malloc_alloc</code> to <code>malloc_allocator</code> and <code>__new_alloc</code> to <code>new_allocator</code>. </p>
+
+<p>Error handling in iostreams cleaned up, made consistent. </p>
+
+
+<h3 class="left">
+  <a name="3.4">3.4</a>
+</h3>
+<p>
+Large file support.
+</p>
+
+<p> Extensions for generic characters and <code>char_traits</code> added in &lt;ext/pod_char_traits.h&gt;.
+</p>
+
+<p>
+Support for <code>wchar_t</code> specializations of <code>basic_filebuf</code> enhanced to support <code>UTF-8</code> and <code>Unicode</code>, depending on host. More hosts support basic <code>wchar_t</code> functionality.
+</p>
+
+<p>
+Support for <code>char_traits</code> beyond builtin types.
+</p>
+
+<p>
+Conformant <code>allocator</code> class and usage in containers. As
+part of this, the following extensions are
+added: &lt;ext/bitmap_allocator.h&gt;, &lt;ext/debug_allocator.h&gt;, &lt;ext/mt_allocator.h&gt;, &lt;ext/malloc_allocator.h&gt;,&lt;ext/new_allocator.h&gt;, &lt;ext/pool_allocator.h&gt;.
+</p>
+
+
+<p>
+Debug mode first appears.
+</p>
+
+<p>
+PCH support.
+</p>
+
+<p>
+Macro guard for libstdc++ changed, from _GLIBCPP_ to _GLIBCXX_.
+</p>
+
+<p>
+Extension &lt;ext/stdio_sync_filebuf.h&gt; added.
+</p>
+
+<p>
+Extension &lt;ext/demangle.h&gt; added.
+</p>
+
+
+<h3 class="left">
+  <a name="4.0">4.0</a>
+</h3>
+<p>
+TR1 features first appear.
+</p>
+
+<p>
+Extension allocator &lt;ext/array_allocator.h&gt; added.
+</p>
+
+<p>
+Extension <code>codecvt</code> specializations moved to &lt;ext/codecvt_specializations.h&gt;.
+</p>
+
+<p>
+Removal of &lt;ext/demangle.h&gt;.
+</p>
+
+
+<h3 class="left">
+  <a name="4.1">4.1</a>
+</h3>
+
+<p>
+Removal of &lt;cassert&gt; from all standard headers: now has to be explicitly included for <code>std::assert</code> calls.
+</p>
+
+<p> Extensions for policy-based data structures first added. New includes,
+types, namespace <code>pb_assoc</code>.
+</p>
+
+
+
+<p> Extensions for typelists added in &lt;ext/typelist.h&gt;.
+</p>
+
+<p> Extension for policy-based <code>basic_string</code> first added: <code>__gnu_cxx::__versa_string</code> in &lt;ext/vstring.h&gt;.
+</p>
+
+<h3 class="left">
+  <a name="4.2">4.2</a>
+</h3>
+
+<p> Default visibility attributes applied to <code>namespace std</code>. Support for <code>-fvisibility</code>.
+</p>
+
+<p>TR1 &lt;random&gt;, &lt;complex&gt;, and C compatibility headers added.</p>
+
+<p> Extensions for concurrent programming consolidated
+into &lt;ext/concurrence.h&gt; and &lt;ext/atomicity.h&gt;,
+including change of namespace to <code>__gnu_cxx</code> in some
+cases. Added types
+include <code>_Lock_policy</code>, <code>__concurrence_lock_error</code>, <code>__concurrence_unlock_error</code>, <code>__mutex</code>, <code>__scoped_lock</code>.</p>
+
+<p> Extensions for type traits consolidated
+into &lt;ext/type_traits.h&gt;. Additional traits are added
+(<code>__conditional_type</code>, <code>__enable_if</code>, others.)
+</p>
+
+<p> Extensions for policy-based data structures revised. New includes,
+types, namespace moved to <code>__pb_ds</code>.
+</p>
+
+<p> Extensions for debug mode modified: now nested in <code>namespace
+std::__debug</code> and extensions in <code>namespace
+__gnu_cxx::__debug</code>.</p>
+
+<p> Extensions added: &lt;ext/typelist.h&gt;
+and &lt;ext/throw_allocator.h&gt;.
+</p>
+
+<h3 class="left">
+  <a name="4.3">4.3</a>
+</h3>
+
+<p>
+C++0X features first appear.
+</p>
+
+<p>TR1 &lt;regex&gt; and &lt;cmath&gt;'s mathematical special function added.</p>
+
+<p>
+Backward include edit.
+</p>
+<ul>
+  <li> Removed: &lt;algobase.h&gt; &lt;algo.h&gt; &lt;alloc.h&gt; &lt;bvector.h&gt; &lt;complex.h&gt;
+defalloc.h&gt; &lt;deque.h&gt; &lt;fstream.h&gt; &lt;function.h&gt; &lt;hash_map.h&gt; &lt;hash_set.h&gt;
+hashtable.h&gt; &lt;heap.h&gt; &lt;iomanip.h&gt; &lt;iostream.h&gt; &lt;istream.h&gt; &lt;iterator.h&gt;
+list.h&gt; &lt;map.h&gt; &lt;multimap.h&gt; &lt;multiset.h&gt; &lt;new.h&gt; &lt;ostream.h&gt; &lt;pair.h&gt; &lt;queue.h&gt;
+rope.h&gt; &lt;set.h&gt; &lt;slist.h&gt; &lt;stack.h&gt; &lt;streambuf.h&gt; &lt;stream.h&gt; &lt;tempbuf.h&gt;
+&lt;tree.h&gt; &lt;vector.h&gt;
+  </li>
+  <li> Added: &lt;hash_map&gt; and &lt;hash_set&gt;</li>
+  <li> Added in C++0x: &lt;auto_ptr.h&gt; and &lt;binders.h&gt;</li>
 </ul>
 
-<h5><code>isspace</code> from <tt>&lt;cctype&gt;</tt> is a macro
-</h5>
+<p>
+Header dependency streamlining.
+</p>
 
-<p> Glibc 2.0.x and 2.1.x define <tt>&lt;ctype.h&gt;</tt>
-functionality as macros (isspace, isalpha etc.).    
+<ul>
+  <li>&lt;algorithm&gt; no longer includes &lt;climits&gt;, &lt;cstring&gt;, or &lt;iosfwd&gt; </li>
+  <li>&lt;bitset&gt; no longer includes &lt;istream&gt; or &lt;ostream&gt;, adds &lt;iosfwd&gt; </li>
+  <li>&lt;functional&gt; no longer includes &lt;cstddef&gt;</li>
+  <li>&lt;iomanip&gt; no longer includes &lt;istream&gt;, &lt;istream&gt;, or &lt;functional&gt;, adds &lt;ioswd&gt; </li>
+  <li>&lt;numeric&gt; no longer includes &lt;iterator&gt;</li>
+  <li>&lt;string&gt; no longer includes &lt;algorithm&gt; or &lt;memory&gt;</li>
+
+  <li>&lt;valarray&gt; no longer includes &lt;numeric&gt; or &lt;cstdlib&gt;</li>
+  <li>&lt;tr1/hashtable&gt; no longer includes &lt;memory&gt; or &lt;functional&gt;</li>
+  <li>&lt;tr1/memory&gt; no longer includes &lt;algorithm&gt;</li>
+  <li>&lt;tr1/random&gt; no longer includes &lt;algorithm&gt; or &lt;fstream&gt;</li>
+</ul>
+
+<p>
+Debug mode for &lt;unordered_map&gt; and &lt;unordered_set&gt;.
 </p>
 
 <p>
-This implementations of libstdc++, however, keep these functions as
-macros, and so it is not back-portable to use fully qualified
-names. For example:
+Parallel mode first appears.
 </p>
 
-<pre> 
-#include &lt;cctype&gt; 
-int main() { std::isspace('X'); } 
-</pre> 
-
-<p>Results in something like this:
+<p>Variadic template implementations of items in &lt;tuple&gt; and
+    &lt;functional&gt;. 
 </p>
 
-<pre> 
-std:: (__ctype_b[(int) ( ( 'X' ) )] &amp; (unsigned short int) _ISspace ) ; 
-</pre>
-
-
-<p> A solution is to modify a header-file so that the compiler tells
-<tt>&lt;ctype.h&gt;</tt> to define functions instead of macros:
-</p>
-
-<pre>
-// This keeps isalnum, et al from being propagated as macros. 
-#if __linux__
-# define __NO_CTYPE 1
-#endif
-</pre>
-
-<p>Then, include &lt;ctype.h&gt;
+<p>Default <code>what</code> implementations give more elaborate
+    exception strings for <code>bad_cast</code>,
+    <code>bad_typeid</code>, <code>bad_exception</code>, and
+    <code>bad_alloc</code>.
 </p>
 
 <p>
-Another problem arises if you put a <code>using namespace std;</code>
-declaration at the top, and include <tt>&lt;ctype.h&gt;</tt>. This
-will result in ambiguities between the definitions in the global
-namespace (<tt>&lt;ctype.h&gt;</tt>) and the definitions in namespace
-<code>std::</code> (<code>&lt;cctype&gt;</code>).    
+PCH binary files no longer installed. Instead, the source files are installed. 
 </p>
-
-<h5>No <code>vector::at</code>, <code>deque::at</code>, <code>string::at</code></h5>
 
 <p>
-      One solution is to add an autoconf-test for this:
-</p>
-<pre>
-AC_MSG_CHECKING(for container::at)
-AC_TRY_COMPILE(
-[
-#include &lt;vector&gt;
-#include &lt;deque&gt;
-#include &lt;string&gt;
-	
-using namespace std;
-],
-[
-deque&lt;int&gt; test_deque(3);
-test_deque.at(2);
-vector&lt;int&gt; test_vector(2);
-test_vector.at(1);
-string test_string(&quot;test_string&quot;);
-test_string.at(3);
-],
-[AC_MSG_RESULT(yes)
-AC_DEFINE(HAVE_CONTAINER_AT)],
-[AC_MSG_RESULT(no)])
-</pre>
-
-<p>
-If you are using other (non-GNU) compilers it might be a good idea
-to check for <code>string::at</code> separately.
-</p>
-
-<h5>No <code>std::char_traits&lt;char&gt;::eof</code></h5>
-
-<p>
-Use some kind of autoconf test, plus this:
-</p>      
-<pre> 
-#ifdef HAVE_CHAR_TRAITS
-#define CPP_EOF std::char_traits&lt;char&gt;::eof()
-#else
-#define CPP_EOF EOF
-#endif
-</pre>
-
-<h5>No <code>string::clear</code></h5>
-
-<p>
-      There are two functions for deleting the contents of a string:
-      <code>clear</code> and <code>erase</code> (the latter
-      returns the string).
-      <pre class="programlisting">
-	void 
-	clear() { _M_mutate(0, this-&gt;size(), 0); }
-      </pre>
-      <pre class="programlisting">
-	basic_string&amp; 
-	erase(size_type __pos = 0, size_type __n = npos)
-	{ 
-	return this-&gt;replace(_M_check(__pos), _M_fold(__pos, __n),
-	_M_data(), _M_data()); 
-	}
-      </pre>
-      Unfortunately, ut <code>clear</code> is not
-      implemented in this version, so you should use
-      <code>erase</code> (which is probably faster than
-      <code>operator=(charT*)</code>).
-</p>
-
-<h5>Removal of <code>ostream::form</code> and
-<code>istream::scan</code> extensions.</h5>
-
-<p> These are no longer supported. Please use
-   <a href="#sec-stringstream" title="Using stringstreams">
-    stringstreams</a> instead.	
-</p>
-
-<h5>No <code>basic_stringbuf</code>, <code>basic_stringstream<code></h5>
-
-<p>
-      Libstdc++ provides the new
-      <code>i/ostringstream</code>-classes, (<tt>&lt;sstream&gt;</tt>), but for compatibility
-      with older implementations you still have to use
-      <code>i/ostrstream</code> (<tt>&lt;strstream&gt;</tt>):
-      <pre >
-	#ifdef HAVE_SSTREAM
-	#include &lt;sstream&gt;
-	#else
-	#include &lt;strstream&gt;
-	#endif
-      </pre>
-      <div class="itemizedlist"><ul type="disc">
-<li><p> <code>strstream</code> is considered to be
-	    deprecated
-	  </p></li>
-<li><p> <code>strstream</code> is limited to
-	    <code>char</code>
-	  </p></li>
-<li><p> with <code>ostringstream</code> you don't
-	    have to take care of terminating the string or freeing its
-	    memory
-	  </p></li>
-<li><p> <code>istringstream</code> can be re-filled
-	    (clear(); str(input);)
-	  </p></li>
-</ul></div>
-<p>
-      You can then use output-stringstreams like this:
-      <pre >
-	#ifdef HAVE_SSTREAM
-	std::ostringstream oss;
-	#else
-	std::ostrstream oss;
-	#endif
-	oss &lt;&lt; &quot;Name=&quot; &lt;&lt; m_name &lt;&lt; &quot;, number=&quot; &lt;&lt; m_number &lt;&lt; std::endl;
-	...
-	#ifndef HAVE_SSTREAM
-	oss &lt;&lt; std::ends; // terminate the char*-string
-	#endif
-	// str() returns char* for ostrstream and a string for ostringstream
-	// this also causes ostrstream to think that the buffer's memory
-	// is yours
-	m_label.set_text(oss.str());
-	#ifndef HAVE_SSTREAM
-	// let the ostrstream take care of freeing the memory
-	oss.freeze(false);
-	#endif
-      </pre>
-<p>
-      Input-stringstreams can be used similarly:
-</p>
-      
-<pre> 
-std::string input;
-...
-#ifdef HAVE_SSTREAM
-std::istringstream iss(input);
-#else
-std::istrstream iss(input.c_str());
-#endif
-
-int i;
-iss &gt;&gt; i; 
-</pre>
-
-<p> One (the only?) restriction is that an istrstream cannot be re-filled:
-</p>
-      
-<pre >
-std::istringstream iss(numerator);
-iss &gt;&gt; m_num;
-// this is not possible with istrstream
-iss.clear();
-iss.str(denominator);
-iss &gt;&gt; m_den;
- </pre>
- 
-<p>
-If you don't care about speed, you can put these conversions in
-      a template-function:
-</p>      
-<pre >
-template &lt;class X&gt;
-void fromString(const string&amp; input, X&amp; any)
-{
-#ifdef HAVE_SSTREAM
-std::istringstream iss(input);
-#else
-std::istrstream iss(input.c_str());
-#endif
-X temp;
-iss &gt;&gt; temp;
-if (iss.fail())
-throw runtime_error(..)
-any = temp;
-}
-</pre>
-
-<p> Another example of using stringstreams is in <a href="../21_strings/howto.html" target="_top">this howto</a>.
-</p>
-
-<p> There is additional information in the libstdc++-v2 info files, in
-particular &quot;info iostream&quot;.
-</p>
-
-<h5>Little or no wide character support</h5>
-
-<h5>No templatized iostreams</h5>
-
-<h5>Thread safety issues.</h5>
-
-<p>This project is no longer maintained or supported, and the sources
-archived.  The code is considered replaced and rewritten.
-</p>
-
-
-<hr />
-<h3 class="left">
-  <a name="C++ API v1">Third.</a>
-</h3>
-<p> The third generation GNU C++ library is called libstdc++, or
-libstdc++-v3.
-</p>
-
-      <p>The subset commonly known as the Standard Template Library
-         (chapters 23 through 25, mostly) is adapted from the final release
-         of the SGI STL, with extensive changes.
-      </p>
-
-      <p>A more formal description of the V3 goals can be found in the
-         official <a href="../17_intro/DESIGN">design document</a>.
-      </p>
-
-
-<p>Portability Notes</p>
-
-<h5>Pre-ISO headers moved to backwards</h5>
-<p> The pre-ISO C++ headers (iostream.h etc.) are available, but inclusion
-      generates a warning that you are using deprecated headers.    
-</p>
-
-    <p>This compatibility layer is constructed by including the
-    standard C++ headers, and injecting any items in
-    <code>std::</code> into the global namespace.
-   </p>
-   <p>For those of you new to ISO C++ (welcome, time travelers!), no,
-      that isn't a typo. Yes, the headers really have new names.
-      Marshall Cline's C++ FAQ Lite has a good explanation in <a
-      href="http://www.parashift.com/c++-faq-lite/coding-standards.html#faq-27.4">item
-      [27.4]</a>.
-   </p>
-
-<p> Some include adjustment may be required.</p>
-
-<h5>Extension headers hash_map, hash_set moved to ext</h5>
-
-<p> Header files <code>hash_map</code> and <code>hash_set</code>
-moved to <code>ext/hash_map</code> and <code>ext/hash_set</code>,
-respectively. At the same time, all types in these files are enclosed
-in <code>namespace __gnu_cxx</code>.
-</p>
-
-
-<h5>
-No <code>ios::nocreate/ios::noreplace</code>.
-</h5>
-
-<p> The existence of <code>ios::nocreate</code> being used for
-input-streams has been confirmed, most probably because the author
-thought it would be more correct to specify nocreate explicitly.  So
-it can be left out for input-streams.
-</p>
-
-<p>For output streams, &quot;nocreate&quot; is probably the default,
-unless you specify <code>std::ios::trunc</code> ? To be safe, you can
-open the file for reading, check if it has been opened, and then
-decide whether you want to create/replace or not. To my knowledge,
-even older implementations support <code>app</code>, <code>ate</code>
-and <code>trunc</code> (except for <code>app</code> ?).
-</p>
-
-
-<h5>
-No <code>stream::attach(int fd)</code>.
-</h5>
-
-<p>
-      Phil Edwards writes: It was considered and rejected for the ISO
-      standard.  Not all environments use file descriptors.  Of those
-      that do, not all of them use integers to represent them.
-    </p>  
-
-<p>
-      For a portable solution (among systems which use
-      filedescriptors), you need to implement a subclass of
-      <code>std::streambuf</code> (or
-      <code>std::basic_streambuf&lt;..&gt;</code>) which opens a file
-      given a descriptor, and then pass an instance of this to the
-      stream-constructor. 
-    </p>
-
-<p>
-      An extension is available that implements this.
-      <code>&lt;ext/stdio_filebuf.h&gt;</code> contains a derived class called
-      <a href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/class____gnu__cxx_1_1stdio__filebuf.html"><code>__gnu_cxx::stdio_filebuf</code></a>.
-      This class can be constructed from a C <code>FILE*</code> or a file
-      descriptor, and provides the <code>fd()</code> function.
-    </p>
-
-<p>
- For another example of this, refer to
-      <a href="http://www.josuttis.com/cppcode/fdstream.html" target="_top">fdstream example</a> 
-      by Nicolai Josuttis.
-</p>
-
-<p><a href="http://gcc.gnu.org/bugzilla/buglist.cgi?cmdtype=runnamed&namedcmd=libstdc%2B%2B">Known Issues</a></p>
-
-<h5>
-container iterator types are not necessarily container value_type*
-</h5>
-
-<p>API History, User Visible Changes</p>
-
-<p>3.0.0</p>
-
-
-<p>3.1.0</p>
-<p>3.2.0</p>
-<p>3.3.0</p>
-
-
-<p>3.4.0</p>
-
-Macro guard for libstdc++ changed, from _GLIBCPP_ to _GLIBCXX_, to
-accomodate a request from the C Pre Processor maintainer.
-
-<p>4.0.0</p>
-<p>4.1.0</p>
-
-<cassert> how has to be explicitly included for <code>std::assert</code> calls.
-
-<p>4.2.0</p>
-
-<p>4.3.0</p>
-
-Header streamlining.
-
-Backward include edit.
-
-PCH files built but not installed. 
-
 Namespace pb_ds moved to __gnu_pb_ds.
-
-C++OX features appear.
-
-<hr />
-<h3 class="left">
-  <a name="C++ API v1">Fourth, and future</a>
-</h3>
-
-<hr />
-<h3 class="left">
-  <a name="Deprecation">Deprecation and Backwards Compatibility</a>
-</h3>
-
-<hr />
-<h3 class="left">
-  <a name="Links">Links</a>
-</h3>
-
-<p>
-<a href="http://www.kegel.com/gcc/gcc4.html">Migrating to gcc-4.1</a>, by Dan Kegel.
-</p>
-
-<p>
-<a href="http://lists.debian.org/debian-gcc/2006/03/msg00405.html">Building the whole Debian archive with GCC 4.1: a summary</a>, by Martin Michlmayr
-</p>
-
-<p>
-<a href="http://annwm.lbl.gov/~leggett/Atlas/gcc-3.2.html">Migration guide for GCC-3.2</a>
 </p>
 
 </body>

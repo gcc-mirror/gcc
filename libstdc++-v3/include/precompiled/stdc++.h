@@ -1,6 +1,6 @@
 // C++ includes used for precompiling -*- C++ -*-
 
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -51,6 +51,17 @@
 #include <cstring>
 #include <ctime>
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#include <ccomplex>
+#include <cfenv>
+#include <cinttypes>
+#include <cstdbool>
+#include <cstdint>
+#include <ctgmath>
+#include <cwchar>
+#include <cwctype>
+#endif
+
 // C++
 #include <algorithm>
 #include <bitset>
@@ -84,3 +95,14 @@
 #include <utility>
 #include <valarray>
 #include <vector>
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#include <array>
+#include <random>
+#include <regex>
+#include <system_error>
+#include <tuple>
+#include <type_traits>
+#include <unordered_map>
+#include <unordered_set>
+#endif

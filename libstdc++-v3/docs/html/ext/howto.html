@@ -74,17 +74,12 @@
       are deprecated but available as backwards-compatible extensions,
       as discussed further below.  <code>&lt;rope&gt;</code> is the
       SGI specialization for large strings (&quot;rope,&quot;
-      &quot;large strings,&quot; get it?  love those SGI folks).
+      &quot;large strings,&quot; get it? Love that geeky humor.)
       <code>&lt;slist&gt;</code> is a singly-linked list, for when the
       doubly-linked <code>list&lt;&gt;</code> is too much space
       overhead, and <code>&lt;rb_tree&gt;</code> exposes the red-black
       tree classes used in the implementation of the standard maps and
       sets.
-   </p>
-   <p>Okay, about those hashing classes... these classes have been
-   deprecated by the unordered_set, unordered_multiset, unordered_map,
-   unordered_multimap containers in TR1 and the upcoming C++0x, and
-   may be removed in future releases.
    </p>
    <p>Each of the associative containers map, multimap, set, and multiset
       have a counterpart which uses a
@@ -111,11 +106,13 @@
    components, and if you aren't scared about the possibility of
    pathological cases, you'll probably get better performance from
    hash_map.</em></blockquote>
-   <p>(Side note:  for those of you wondering, <strong>&quot;Why wasn't a hash
-      table included in the Standard in the first #!$@ place?&quot;</strong>
-      I'll give a quick answer:  it was proposed, but too late and in too
-      unorganized a fashion.)
+
+   <p>Okay, about the SGI hashing classes... these classes have been
+   deprecated by the unordered_set, unordered_multiset, unordered_map,
+   unordered_multimap containers in TR1 and the upcoming C++0x, and
+   may be removed in future releases.
    </p>
+
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
    </p>

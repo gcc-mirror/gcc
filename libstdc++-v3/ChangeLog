@@ -1,3 +1,19 @@
+2007-12-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/html/ext/howto.html: Update.
+	* docs/html/ext/sgiexts.html: Same.
+	* docs/html/ext/concurrence.html: New. Document extensions.
+	* docs/html/17_intro/api.html: Move some bits...
+	* docs/html/17_intro/backwards_compatibility.html: here. New. Add
+	compatibility suggestions, move existing ones.
+	* docs/html/17_intro/howto.html: Update info.
+	* docs/html/18_support/howto.html: Tweak.
+	* docs/html/faq/index.html: Update thread info.
+	* docs/html/documentation.html: Add links.
+	* docs/html/20_util/allocator.html: Update info.
+	* include/precompiled/stdc++.h: Add C++0x includes if appropriate.
+	* testsuite/17_intro/headers/c++200x/all.cc: Same.
+
 2007-12-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/util/testsuite_allocator.h,
