@@ -24,7 +24,7 @@ load_lib target-supports.exp
 set DEFAULT_VECTCFLAGS ""
 
 # These flags are used for all targets.
-lappend DEFAULT_VECTCFLAGS "-O2" "-ftree-vectorize" \
+lappend DEFAULT_VECTCFLAGS "-O2" "-ftree-vectorize" "-fno-vect-cost-model" \
   "-ftree-vectorizer-verbose=4" "-fdump-tree-vect-stats"
 
 # If the target system supports vector instructions, the default action

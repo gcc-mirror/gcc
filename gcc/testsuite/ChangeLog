@@ -1,3 +1,10 @@
+2007-12-10  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR target/32086
+	* gcc.dg/vect/vect.exp (DEFAULT_VECTCFLAGS): Disable cost model.
+	* g++.dg/vect/vect.exp (DEFAULT_VECTCFLAGS): Disable cost model.
+	* gfortran.dg/vect/vect.exp (DEFAULT_VECTCFLAGS): Disable cost model.
+
 2007-12-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34178
