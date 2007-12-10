@@ -1,5 +1,9 @@
 2007-12-10  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* docs/html/21_strings/howto.html: Add links to referenced articles.
+
+2007-12-10  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* docs/html/17_intro/backwards_compatibility.html: Fix markup.
 	* docs/html/17_intro/howto.html: Likewise.
 	* docs/html/18_support/howto.html: Likewise.
