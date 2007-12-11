@@ -1,3 +1,8 @@
+2007-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34364
+	* g++.dg/rtti/dyncast2.C: New test.
+
 2007-12-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/34407

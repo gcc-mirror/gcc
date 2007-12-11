@@ -1,3 +1,9 @@
+2007-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34364
+	* rtti.c (build_dynamic_cast): Call convert_from_reference even for
+	dynamic_cast in a template.
+
 2007-12-10  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/34059

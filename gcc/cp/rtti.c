@@ -728,8 +728,7 @@ build_dynamic_cast (tree type, tree expr)
     {
       expr = build_min (DYNAMIC_CAST_EXPR, type, expr);
       TREE_SIDE_EFFECTS (expr) = 1;
-
-      return expr;
+      return convert_from_reference (expr);
     }
 
   return convert_from_reference (build_dynamic_cast_1 (type, expr));
