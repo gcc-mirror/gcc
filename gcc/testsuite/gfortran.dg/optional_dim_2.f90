@@ -19,6 +19,6 @@ contains
    lotto = eoshift((/.true.,.true.,.true.,.true./),1,boundary=bound,dim=dimmy)
    lotto = eoshift(lotto,1,dim=dimmy)
    write(testbuf,*) lotto
-   if (trim(testbuf).ne." T T F F") print *, testbuf
+   if (trim(testbuf).ne." T T F F") call abort
  end subroutine
 end program test
