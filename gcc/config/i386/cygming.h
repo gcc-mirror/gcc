@@ -277,11 +277,9 @@ do {							\
 #define ASM_COMMENT_START " #"
 
 #ifndef DWARF2_UNWIND_INFO
-/* 64-bit target uses DWARF2 unwind by default. If 32-bit target
-   configured with --disable-sjlj-exceptions, use DWARF2, else default
-   to SJLJ.  */
-#if TARGET_64BIT_DEFAULT \
-    || (defined (CONFIG_SJLJ_EXCEPTIONS) && !CONFIG_SJLJ_EXCEPTIONS)
+/* If configured with --disable-sjlj-exceptions, use DWARF2, else
+   default to SJLJ.  */
+#if  (defined (CONFIG_SJLJ_EXCEPTIONS) && !CONFIG_SJLJ_EXCEPTIONS)
 #define DWARF2_UNWIND_INFO 1
 #else
 #define DWARF2_UNWIND_INFO 0

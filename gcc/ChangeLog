@@ -1,3 +1,8 @@
+2007-12-11  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/cygming.h (DWARF2_UNWIND_INFO): Handle 64-bit
+	target same as 32-bit.
+
 2007-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/34371
