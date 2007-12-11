@@ -15694,7 +15694,7 @@ rs6000_emit_prologue (void)
  
        if (spe_regs_addressable_via_sp)
          {
-           spe_save_area_ptr = sp_reg_rtx;
+           spe_save_area_ptr = frame_reg_rtx;
            spe_offset = info->spe_gp_save_offset + sp_offset;
          }
        else
@@ -15715,7 +15715,7 @@ rs6000_emit_prologue (void)
              }
  
            spe_save_area_ptr = gen_rtx_REG (Pmode, 11);
-           emit_insn (gen_addsi3 (spe_save_area_ptr, sp_reg_rtx,
+           emit_insn (gen_addsi3 (spe_save_area_ptr, frame_reg_rtx,
                                   GEN_INT (info->spe_gp_save_offset + sp_offset)));
  
            spe_offset = 0;

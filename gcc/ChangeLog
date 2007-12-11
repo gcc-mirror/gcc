@@ -1,3 +1,8 @@
+2007-12-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Use frame_reg_rtx
+	for SPE saves.
+
 2007-12-11  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/cygming.h (DWARF2_UNWIND_INFO): Handle 64-bit
