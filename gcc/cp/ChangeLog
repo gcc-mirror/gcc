@@ -1,5 +1,8 @@
 2007-12-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/34238
+	* decl2.c (cp_write_global_declarations): Revert 2007-11-22 change.
+
 	PR c++/34364
 	* rtti.c (build_dynamic_cast): Call convert_from_reference even for
 	dynamic_cast in a template.
