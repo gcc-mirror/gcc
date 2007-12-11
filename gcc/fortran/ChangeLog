@@ -1,3 +1,9 @@
+2007-12-11  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	* decl.c (match_prefix): Make seen_type a boolean.
+	(add_global_entry): Cache type distinction.
+	* trans-decl.c: Whitespace cleanup.
+
 2007-12-10  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34425
