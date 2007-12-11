@@ -1,3 +1,9 @@
+2007-12-11  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_bvector.h (vector<bool>::reserve): Move out of
+	line...
+	* include/bits/vector.tcc: ... here.
+
 2007-12-10  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* docs/html/21_strings/howto.html: Add links to referenced articles.
