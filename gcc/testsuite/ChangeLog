@@ -1,5 +1,10 @@
 2007-12-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/34238
+	* g++.dg/ext/visibility/anon7.C: Add xfail.
+	* g++.dg/ext/visibility/anon9.C: New test.
+	* g++.dg/ext/visibility/anon10.C: New test.
+
 	PR c++/34364
 	* g++.dg/rtti/dyncast2.C: New test.
 
