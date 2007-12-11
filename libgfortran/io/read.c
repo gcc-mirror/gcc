@@ -177,6 +177,7 @@ convert_real (st_parameter_dt *dtp, void *dest, const char *buffer, int length)
     {
       generate_error (&dtp->common, LIBERROR_READ_VALUE,
 		      "Error during floating point read");
+      next_record (dtp, 1);
       return 1;
     }
 
@@ -225,6 +226,7 @@ read_l (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
     bad:
       generate_error (&dtp->common, LIBERROR_READ_VALUE,
 		      "Bad value on logical read");
+      next_record (dtp, 1);
       break;
     }
 }
@@ -395,11 +397,13 @@ read_decimal (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
  bad:
   generate_error (&dtp->common, LIBERROR_READ_VALUE,
 		  "Bad value during integer read");
+  next_record (dtp, 1);
   return;
 
  overflow:
   generate_error (&dtp->common, LIBERROR_READ_OVERFLOW,
 		  "Value overflowed during integer read");
+  next_record (dtp, 1);
   return;
 }
 
@@ -539,11 +543,13 @@ read_radix (st_parameter_dt *dtp, const fnode *f, char *dest, int length,
  bad:
   generate_error (&dtp->common, LIBERROR_READ_VALUE,
 		  "Bad value during integer read");
+  next_record (dtp, 1);
   return;
 
  overflow:
   generate_error (&dtp->common, LIBERROR_READ_OVERFLOW,
 		  "Value overflowed during integer read");
+  next_record (dtp, 1);
   return;
 }
 
@@ -659,6 +665,7 @@ read_f (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
  bad_float:
   generate_error (&dtp->common, LIBERROR_READ_VALUE,
 		  "Bad value during floating point read");
+  next_record (dtp, 1);
   return;
 
   /* The value read is zero */
