@@ -1,3 +1,9 @@
+2007-12-10  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/34411
+	* gfortran.dg/error_recovery_5.f90: New.
+	* gfortran.dg/optional_dim_2.f90: Fix test, not related to this PR.
+
 2007-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/34371
