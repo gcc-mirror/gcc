@@ -1,3 +1,8 @@
+2007-12-11  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/34015
+	* include/backward/backward_warning.h: Adjust warning message.
+
 2007-12-11  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_bvector.h (vector<bool>::reserve): Move out of
