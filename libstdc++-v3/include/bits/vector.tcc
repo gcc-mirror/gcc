@@ -537,6 +537,25 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
   template<typename _Alloc>
     void
     vector<bool, _Alloc>::
+    reserve(size_type __n)
+    {
+      if (__n > this->max_size())
+	__throw_length_error(__N("vector::reserve"));
+      if (this->capacity() < __n)
+	{
+	  _Bit_type* __q = this->_M_allocate(__n);
+	  this->_M_impl._M_finish = _M_copy_aligned(begin(), end(),
+						    iterator(__q, 0));
+	  this->_M_deallocate();
+	  this->_M_impl._M_start = iterator(__q, 0);
+	  this->_M_impl._M_end_of_storage = (__q + (__n + int(_S_word_bit) - 1)
+					     / int(_S_word_bit));
+	}
+    }
+
+  template<typename _Alloc>
+    void
+    vector<bool, _Alloc>::
     _M_fill_insert(iterator __position, size_type __n, bool __x)
     {
       if (__n == 0)
