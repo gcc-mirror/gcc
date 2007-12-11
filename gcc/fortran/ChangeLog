@@ -1,3 +1,7 @@
+2007-12-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* decl.c (add_global_entry): Make type unsigned.
+
 2007-12-11  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	* decl.c (match_prefix): Make seen_type a boolean.
