@@ -3653,7 +3653,7 @@ cleanup:
 static match
 match_prefix (gfc_typespec *ts)
 {
-  int seen_type;
+  bool seen_type;
 
   gfc_clear_attr (&current_attr);
   seen_type = 0;
@@ -4334,16 +4334,18 @@ static bool
 add_global_entry (const char *name, int sub)
 {
   gfc_gsymbol *s;
+  int type;
 
   s = gfc_get_gsymbol(name);
+  type = sub ? GSYM_SUBROUTINE : GSYM_FUNCTION;
 
   if (s->defined
       || (s->type != GSYM_UNKNOWN
-	  && s->type != (sub ? GSYM_SUBROUTINE : GSYM_FUNCTION)))
+	  && s->type != type))
     gfc_global_used(s, NULL);
   else
     {
-      s->type = sub ? GSYM_SUBROUTINE : GSYM_FUNCTION;
+      s->type = type;
       s->where = gfc_current_locus;
       s->defined = 1;
       return true;

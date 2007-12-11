@@ -2053,7 +2053,7 @@ gfc_build_intrinsic_function_decls (void)
                                      gfc_charlen_type_node, pchar_type_node,
                                      gfc_logical4_type_node);
 
-  gfor_fndecl_string_trim = 
+  gfor_fndecl_string_trim =
     gfc_build_library_function_decl (get_identifier (PREFIX("string_trim")),
                                      void_type_node,
                                      4,
@@ -2114,7 +2114,7 @@ gfc_build_intrinsic_function_decls (void)
                                      pvoid_type_node);
 
   gfor_fndecl_sr_kind =
-    gfc_build_library_function_decl (get_identifier 
+    gfc_build_library_function_decl (get_identifier
 					(PREFIX("selected_real_kind")),
                                      gfc_int4_type_node,
                                      2, pvoid_type_node,
@@ -3049,7 +3049,7 @@ gfc_trans_entry_master_switch (gfc_entry_list * el)
       val = build_int_cst (gfc_array_index_type, el->id);
       tmp = build3_v (CASE_LABEL_EXPR, val, NULL_TREE, label);
       gfc_add_expr_to_block (&block, tmp);
-      
+
       /* And jump to the actual entry point.  */
       label = gfc_build_label_decl (NULL_TREE);
       tmp = build1_v (GOTO_EXPR, label);
@@ -3131,7 +3131,7 @@ gfc_generate_function_code (gfc_namespace * ns)
   gfc_generate_contained_functions (ns);
 
   generate_local_vars (ns);
-  
+
   /* Keep the parent fake result declaration in module functions
      or external procedures.  */
   if ((ns->parent && ns->parent->proc_name->attr.flavor == FL_MODULE)
