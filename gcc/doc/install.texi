@@ -4280,6 +4280,10 @@ Ports of GCC are included with the
 GCC will build under Cygwin without modification; it does not build
 with Microsoft's C++ compiler and there are no plans to make it do so.
 
+For MinGW, GCC will build with and support only MinGW runtime 3.12 and later.
+Earlier versions of headers are incompatible with the new default semantics
+of @code{extern inline} in @code{-std=c99} and @code{-std=gnu99} modes.
+
 @html
 <hr />
 @end html
