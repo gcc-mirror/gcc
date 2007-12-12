@@ -18383,6 +18383,11 @@ is_mem_ref (rtx pat)
   int i, j;
   bool ret = false;
 
+  /* stack_tie does not produce any real memory traffic.  */
+  if (GET_CODE (pat) == UNSPEC
+      && XINT (pat, 1) == UNSPEC_TIE)
+    return false;
+
   if (GET_CODE (pat) == MEM)
     return true;
 

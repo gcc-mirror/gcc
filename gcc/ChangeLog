@@ -1,3 +1,7 @@
+2007-12-12  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (is_mem_ref): Ignore STACK_TIE.
+
 2007-12-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR tree-optimization/32901
