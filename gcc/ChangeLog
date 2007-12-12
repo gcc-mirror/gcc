@@ -1,3 +1,10 @@
+2007-12-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/32901
+	* gimplify.c (gimplify_modify_expr_rhs): Handle the case when we
+	are assigning from a constant constructor.
+	Fix wrapping in function comment.
+
 2007-12-12  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (s390_O_constraint_str): Limit the range
