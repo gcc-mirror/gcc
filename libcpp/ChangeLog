@@ -1,3 +1,8 @@
+2007-12-11  DJ Delorie  <dj@redhat.com>
+
+	* charset.c (convert_using_iconv): Close out any shift states,
+	returning to the initial state.
+
 2007-12-06  Tom Tromey  <tromey@redhat.com>
 
 	PR c/29172:

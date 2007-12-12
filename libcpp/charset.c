@@ -548,6 +548,15 @@ convert_no_conversion (iconv_t cd ATTRIBUTE_UNUSED,
 /* And this one uses the system iconv primitive.  It's a little
    different, since iconv's interface is a little different.  */
 #if HAVE_ICONV
+
+#define CONVERT_ICONV_GROW_BUFFER \
+  do { \
+      outbytesleft += OUTBUF_BLOCK_SIZE; \
+      to->asize += OUTBUF_BLOCK_SIZE; \
+      to->text = XRESIZEVEC (uchar, to->text, to->asize); \
+      outbuf = (char *)to->text + to->asize - outbytesleft; \
+  } while (0)
+
 static bool
 convert_using_iconv (iconv_t cd, const uchar *from, size_t flen,
 		     struct _cpp_strbuf *to)
@@ -570,16 +579,24 @@ convert_using_iconv (iconv_t cd, const uchar *from, size_t flen,
       iconv (cd, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
       if (__builtin_expect (inbytesleft == 0, 1))
 	{
+	  /* Close out any shift states, returning to the initial state.  */
+	  if (iconv (cd, 0, 0, &outbuf, &outbytesleft) == (size_t)-1)
+	    {
+	      if (errno != E2BIG)
+		return false;
+
+	      CONVERT_ICONV_GROW_BUFFER;
+	      if (iconv (cd, 0, 0, &outbuf, &outbytesleft) == (size_t)-1)
+		return false;
+	    }
+
 	  to->len = to->asize - outbytesleft;
 	  return true;
 	}
       if (errno != E2BIG)
 	return false;
 
-      outbytesleft += OUTBUF_BLOCK_SIZE;
-      to->asize += OUTBUF_BLOCK_SIZE;
-      to->text = XRESIZEVEC (uchar, to->text, to->asize);
-      outbuf = (char *)to->text + to->asize - outbytesleft;
+      CONVERT_ICONV_GROW_BUFFER;
     }
 }
 #else
