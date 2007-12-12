@@ -1,3 +1,8 @@
+2007-12-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34254
+	* gfortran.dg/function_kinds_3.f90: New.
+
 2007-12-12  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* gcc.target/s390/20071212-1.c: New testcase.

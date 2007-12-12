@@ -1843,6 +1843,7 @@ gfc_match_kind_spec (gfc_typespec *ts, bool kind_expr_only)
   locus where, loc;
   gfc_expr *e;
   match m, n;
+  char c;
   const char *msg;
 
   m = MATCH_NO;
@@ -1932,11 +1933,17 @@ kind_expr:
     {
       gfc_error ("Kind %d not supported for type %s at %C", ts->kind,
 		 gfc_basic_typename (ts->type));
-      m = MATCH_ERROR;
+      gfc_current_locus = where;
+      return MATCH_ERROR;
     }
-  else if (gfc_match_char (')') != MATCH_YES)
+
+  gfc_gobble_whitespace ();
+  if ((c = gfc_next_char ()) != ')' && (ts->type != BT_CHARACTER || c != ','))
     {
-      gfc_error ("Missing right parenthesis at %C");
+      if (ts->type == BT_CHARACTER)
+	gfc_error ("Missing right parenthesis or comma at %C");
+      else
+	gfc_error ("Missing right parenthesis at %C");
       m = MATCH_ERROR;
     }
   else
@@ -1969,6 +1976,22 @@ match_char_kind (int * kind, int * is_iso_c)
   where = gfc_current_locus;
 
   n = gfc_match_init_expr (&e);
+
+  if (n != MATCH_YES
+      && (gfc_current_state () == COMP_INTERFACE
+	  || gfc_current_state () == COMP_NONE
+	  || gfc_current_state () == COMP_CONTAINS))
+    {
+      /* Signal using kind = -1 that the expression might include
+	 use-associated or imported parameters and try again after
+	 the specification expressions.  */
+      gfc_free_expr (e);
+      *kind = -1;
+      gfc_function_kind_locus = where;
+      gfc_undo_symbols ();
+      return MATCH_YES;
+    }
+
   if (n == MATCH_NO)
     gfc_error ("Expected initialization expression at %C");
   if (n != MATCH_YES)
