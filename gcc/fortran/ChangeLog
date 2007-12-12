@@ -1,3 +1,11 @@
+2007-12-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34254
+	* decl.c (match_char_kind): Support use-associated/imported
+	kind parameters.
+	(gfc_match_kind_spec): Support als BT_CHARACTER, when
+	re-scanning kind spec.
+
 2007-12-11  Aldy Hernandez  <aldyh@redhat.com>
 
 	* decl.c (add_global_entry): Make type unsigned.
