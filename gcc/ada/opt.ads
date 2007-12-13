@@ -36,6 +36,10 @@
 --  other GNAT tools. The comments indicate which options are used by which
 --  programs (GNAT, GNATBIND, GNATLINK, GNATMAKE, GPRMAKE, etc).
 
+--  Some flags are labelled "PROJECT MANAGER". These are used by tools that
+--  use the Project Manager. These tools include gnatmake, gnatname, the gnat
+--  driver, gnatclean, gprbuild and gprclean.
+
 with Debug;
 with Hostparm; use Hostparm;
 with Types;    use Types;
@@ -177,7 +181,7 @@ package Opt is
    --  building a library. May be set to True by Gnatbind.Scan_Bind_Arg.
 
    Bind_Only : Boolean := False;
-   --  GNATMAKE, GPRMAKE
+   --  GNATMAKE, GPRMAKE, GPRBUILD
    --  Set to True to skip compile and link steps
    --  (except when Compile_Only and/or Link_Only are True).
 
@@ -222,7 +226,7 @@ package Opt is
    --  directly modified by gnatmake, to affect the shared binder routines.
 
    Check_Switches : Boolean := False;
-   --  GNATMAKE, GPRMAKE
+   --  GNATMAKE, GPRMAKE, GPBUILD
    --  Set to True to check compiler options during the make process
 
    Check_Unreferenced : Boolean := False;
@@ -250,11 +254,13 @@ package Opt is
    --  in the output file.
 
    Compile_Only : Boolean := False;
-   --  GNATMAKE, GNATCLEAN, GPRMAKE
-   --  GNATMAKE, GPRMAKE: set to True to skip bind and link steps (except when
-   --                     Bind_Only is True).
-   --  GNATCLEAN: set to True to delete only the files produced by the compiler
-   --             but not the library files or the executable files.
+   --  GNATMAKE, GNATCLEAN, GPRMAKE, GPBUILD, GPRCLEAN
+   --  GNATMAKE, GPRMAKE, GPRMAKE:
+   --    set to True to skip bind and link steps (except when Bind_Only is
+   --    True).
+   --  GNATCLEAN, GPRCLEAN:
+   --    set to True to delete only the files produced by the compiler but not
+   --    the library files or the executable files.
 
    Config_File : Boolean := True;
    --  GNAT
@@ -323,7 +329,7 @@ package Opt is
    --  potentially blocking operations are detected from protected actions.
 
    Display_Compilation_Progress : Boolean := False;
-   --  GNATMAKE, GPRMAKE
+   --  GNATMAKE, GPRMAKE, GPRBUILD
    --  Set True (-d switch) to display information on progress while compiling
    --  files. Internal flag to be used in conjunction with an IDE (e.g GPS).
 
@@ -466,6 +472,11 @@ package Opt is
    --  When True (set by gnatmake switch -x), allow compilation of sources
    --  that are not part of any project file.
 
+   Fast_Math : Boolean := False;
+   --  GNAT
+   --  Indicates the current setting of Fast_Math mode, as set by the use
+   --  of a Fast_Math pragma (set on by Fast_Math (On)).
+
    Float_Format : Character := ' ';
    --  GNAT
    --  A non-blank value indicates that a Float_Format pragma has been
@@ -491,11 +502,11 @@ package Opt is
    --  (-F switch set).
 
    Force_Compilations : Boolean := False;
-   --  GNATMAKE, GPRMAKE
+   --  GNATMAKE, GPRMAKE, GPRBUILD
    --  Set to force recompilations even when the objects are up-to-date.
 
    Full_Path_Name_For_Brief_Errors : Boolean := False;
-   --  GNAT, GNATMAKE, GNATCLEAN, GPRMAKE
+   --  PROJECT MANAGER
    --  When True, in Brief_Output mode, each error message line
    --  will start with the full path name of the source.
    --  When False, only the file name without directory information
@@ -609,9 +620,19 @@ package Opt is
    --  generate code even in case of unsupported construct, so that the byte
    --  code can be used by static analysis tools.
 
-   Follow_Links : Boolean := False;
-   --  GNATMAKE
+   Follow_Links_For_Files : Boolean := False;
+   --  PROJECT MANAGER
    --  Set to True (-eL) to process the project files in trusted mode
+   --  If Follow_Links is False, it is assumed that the project doesn't contain
+   --  any file duplicated through symbolic links (although the latter are
+   --  still valid if they point to a file which is outside of the project),
+   --  and that no directory has a name which is a valid source name.
+
+   Follow_Links_For_Dirs : Boolean := True;
+   --  PROJECT MANAGER
+   --  Whether directories can be links in this project, and therefore
+   --  additional system calls should be performed to ensure we always see the
+   --  same full name for each directory.
 
    Front_End_Inlining : Boolean := False;
    --  GNAT
@@ -630,7 +651,7 @@ package Opt is
    --  if not.
 
    Keep_Going : Boolean := False;
-   --  GNATMAKE, GPRMAKE
+   --  GNATMAKE, GPRMAKE, GPRBUILD
    --  When True signals to ignore compilation errors and keep
    --  processing sources until there is no more work.
 
@@ -645,7 +666,7 @@ package Opt is
    --  children.
 
    Link_Only : Boolean := False;
-   --  GNATMAKE, GPRMAKE
+   --  GNATMAKE, GPRMAKE, GPRBUILD
    --  Set to True to skip compile and bind steps
    --  (except when Bind_Only is set to True).
 
@@ -773,7 +794,7 @@ package Opt is
    --  then this value is initialized by Osint to the appropriate value.
 
    Maximum_Processes : Positive := 1;
-   --  GNATMAKE, GPRMAKE
+   --  GNATMAKE, GPRMAKE, GPRBUILD
    --  Maximum number of processes that should be spawned to carry out
    --  compilations.
 
@@ -920,7 +941,7 @@ package Opt is
    --  used if the policy is set in package System.
 
    Quiet_Output : Boolean := False;
-   --  GNATMAKE, GNATCLEAN, GPRMAKE
+   --  GNATMAKE, GNATCLEAN, GPRMAKE, GPRBUILD, GPRCLEAN
    --  Set to True if the tool should not have any output if there are no
    --  errors or warnings.
 
@@ -981,6 +1002,11 @@ package Opt is
    --  Set True to perform style checks. Activates checks carried out
    --  in package Style (see body of this package for details of checks)
    --  This flag is set True by either the -gnatg or -gnaty switches.
+
+   Suppress_All_Inlining : Boolean := False;
+   --  GNAT
+   --  Set by -fno-inline. Suppresses all inlining, both front end and back end
+   --  regardless of any other switches that are set.
 
    System_Extend_Pragma_Arg : Node_Id := Empty;
    --  GNAT
@@ -1064,6 +1090,12 @@ package Opt is
    --  GNAT
    --  Set to True (-gnatt) to generate output tree file
 
+   True_VMS_Target : Boolean := False;
+   --  Set True if we are on a VMS target. The setting of this flag reflects
+   --  the true state of the compile, unlike Targparm.OpenVMS_On_Target which
+   --  can also be true when debug flag m is set (-gnatdm). This is used in the
+   --  few cases where we do NOT want -gnatdm to trigger the VMS behavior.
+
    Try_Semantics : Boolean := False;
    --  GNAT
    --  Flag set to force attempt at semantic analysis, even if parser errors
@@ -1096,12 +1128,12 @@ package Opt is
    --  corresponding attribute set in GNATBIND.
 
    Upper_Half_Encoding : Boolean := False;
-   --  GNAT
+   --  GNAT, GNATBIND
    --  Normally set False, indicating that upper half ASCII characters are
    --  used in the normal way to represent themselves. If the wide character
    --  encoding method uses the upper bit for this encoding, then this flag is
    --  set True, and upper half characters in the source indicate the start of
-   --  a wide character sequence.
+   --  a wide character sequence. Set by -gnatW or -W switches.
 
    Usage_Requested : Boolean := False;
    --  GNAT, GNATBIND, GNATMAKE
@@ -1129,7 +1161,7 @@ package Opt is
 
    Verbose_Mode : Boolean := False;
    --  GNAT, GNATBIND, GNATMAKE, GNATLINK, GNATLS, GNATNAME, GNATCLEAN,
-   --  GPRMAKE
+   --  GPRMAKE, GPRBUILD, GPRCLEAN
    --  Set to True to get verbose mode (full error message text and location
    --  information sent to standard output, also header, copyright and summary)
 
@@ -1153,6 +1185,11 @@ package Opt is
    --  Set to True to generate all warnings on Ada 2005 compatibility issues,
    --  including warnings on Ada 2005 obsolescent features used in Ada 2005
    --  mode. Set False by -gnatwY.
+
+   Warn_On_Assertion_Failure : Boolean := True;
+   --  GNAT
+   --  Set to True to activate warnings on assertions that can be determined
+   --  at compile time will always fail. Set false by -gnatw.A.
 
    Warn_On_Assumed_Low_Bound : Boolean := True;
    --  GNAT
@@ -1194,13 +1231,16 @@ package Opt is
    Warn_On_Modified_Unread : Boolean := False;
    --  GNAT
    --  Set to True to generate warnings if a variable is assigned but is never
-   --  read. The default is that this warning is suppressed.
+   --  read. Also controls warnings for similar cases involving out parameters,
+   --  but only if there is only one out parameter for the procedure involved.
+   --  The default is that this warning is suppressed.
 
-   Warn_On_Out_Parameter_Unread : Boolean := False;
+   Warn_On_All_Unread_Out_Parameters : Boolean := False;
    --  GNAT
-   --  Set to True to generate warnings if a variable is modified by being
-   --  passed as to an IN OUT or OUT formal, but the resulting value is never
-   --  read. The default is that this warning is suppressed.
+   --  Set to True to generate warnings in all cases where a variable is
+   --  modified by being passed as to an OUT formal, but the resulting value is
+   --  never read. The default is that this warning is suppressed, except in
+   --  the case of
 
    Warn_On_No_Value_Assigned : Boolean := True;
    --  GNAT
@@ -1267,7 +1307,7 @@ package Opt is
    --  are generated and are treated as errors.
 
    Wide_Character_Encoding_Method : WC_Encoding_Method := WCEM_Brackets;
-   --  GNAT
+   --  GNAT, GNATBIND
    --  Method used for encoding wide characters in the source program. See
    --  description of type in unit System.WCh_Con for a list of the methods
    --  that are currently supported. Note that brackets notation is always
@@ -1275,7 +1315,13 @@ package Opt is
    --  variable. The default setting causes only the brackets notation to be
    --  recognized. If this is the main unit, this setting also controls the
    --  output of the W=? parameter in the ALI file, which is used to provide
-   --  the default for Wide_Text_IO files.
+   --  the default for encoding [Wide_[Wide_]]Text_IO files. For the binder,
+   --  the value set here overrides this main unit default.
+
+   Wide_Character_Encoding_Method_Specified : Boolean := False;
+   --  GNAT, GNATBIND
+   --  Set True if the value in Wide_Character_Encoding_Method was set as
+   --  a result of an explicit -gnatW? or -W? switch. False otherwise.
 
    Xref_Active : Boolean := True;
    --  GNAT
@@ -1362,6 +1408,13 @@ package Opt is
    --  External_Name_Imp_Casing at the start of analyzing each unit. Note
    --  however that the setting of this flag is ignored for internal and
    --  predefined units (which are always compiled with Lowercase mode).
+
+   Fast_Math_Config : Boolean;
+   --  GNAT
+   --  This is the value of the configuration switch that controls Fast_Math
+   --  mode, as set by a Fast_Math pragma in configuration pragmas. It is
+   --  used to set the initial value of Fast_Math at the start of each new
+   --  compilation unit.
 
    Persistent_BSS_Mode_Config : Boolean;
    --  GNAT
@@ -1499,6 +1552,7 @@ private
       Extensions_Allowed             : Boolean;
       External_Name_Exp_Casing       : External_Casing_Type;
       External_Name_Imp_Casing       : External_Casing_Type;
+      Fast_Math                      : Boolean;
       Persistent_BSS_Mode            : Boolean;
       Polling_Required               : Boolean;
       Use_VADS_Size                  : Boolean;
