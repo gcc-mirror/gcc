@@ -790,9 +790,8 @@ package body Prj.Dect is
       Declarations := Empty_Node;
 
       loop
-         --  We are always positioned at the token that precedes
-         --  the first token of the declarative element.
-         --  Scan past it
+         --  We are always positioned at the token that precedes the first
+         --  token of the declarative element. Scan past it.
 
          Scan (In_Tree);
 
@@ -802,8 +801,38 @@ package body Prj.Dect is
             when Tok_Identifier =>
 
                if In_Zone = In_Case_Construction then
-                  Error_Msg ("a variable cannot be declared here",
-                             Token_Ptr);
+
+                  --  Check if the variable has already been declared
+
+                  declare
+                     The_Variable : Project_Node_Id := Empty_Node;
+
+                  begin
+                     if Current_Package /= Empty_Node then
+                        The_Variable :=
+                          First_Variable_Of (Current_Package, In_Tree);
+                     elsif Current_Project /= Empty_Node then
+                        The_Variable :=
+                          First_Variable_Of (Current_Project, In_Tree);
+                     end if;
+
+                     while The_Variable /= Empty_Node
+                       and then Name_Of (The_Variable, In_Tree) /=
+                                Token_Name
+                     loop
+                        The_Variable := Next_Variable (The_Variable, In_Tree);
+                     end loop;
+
+                     --  It is an error to declare a variable in a case
+                     --  construction for the first time.
+
+                     if The_Variable = Empty_Node then
+                        Error_Msg
+                          ("a variable cannot be declared " &
+                           "for the first time here",
+                           Token_Ptr);
+                     end if;
+                  end;
                end if;
 
                Parse_Variable_Declaration

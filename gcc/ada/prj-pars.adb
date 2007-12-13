@@ -24,8 +24,8 @@
 ------------------------------------------------------------------------------
 
 with Ada.Exceptions; use Ada.Exceptions;
+with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 
-with Opt;
 with Output;   use Output;
 with Prj.Err;  use Prj.Err;
 with Prj.Part;
@@ -52,6 +52,7 @@ package body Prj.Pars is
       Project_Node      : Project_Node_Id := Empty_Node;
       The_Project       : Project_Id      := No_Project;
       Success           : Boolean         := True;
+      Current_Dir       : constant String := Get_Current_Dir;
 
    begin
       Prj.Tree.Initialize (Project_Node_Tree);
@@ -64,7 +65,8 @@ package body Prj.Pars is
          Project                => Project_Node,
          Project_File_Name      => Project_File_Name,
          Always_Errout_Finalize => False,
-         Packages_To_Check      => Packages_To_Check);
+         Packages_To_Check      => Packages_To_Check,
+         Current_Directory      => Current_Dir);
 
       --  If there were no error, process the tree
 
@@ -76,9 +78,9 @@ package body Prj.Pars is
             From_Project_Node      => Project_Node,
             From_Project_Node_Tree => Project_Node_Tree,
             Report_Error           => null,
-            Follow_Links           => Opt.Follow_Links,
             When_No_Sources        => When_No_Sources,
-            Reset_Tree             => Reset_Tree);
+            Reset_Tree             => Reset_Tree,
+            Current_Dir            => Current_Dir);
          Prj.Err.Finalize;
 
          if not Success then

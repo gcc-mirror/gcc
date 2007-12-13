@@ -77,10 +77,11 @@ package body Prj.Proc is
    procedure Check
      (In_Tree         : Project_Tree_Ref;
       Project         : Project_Id;
-      Follow_Links    : Boolean;
+      Current_Dir     : String;
       When_No_Sources : Error_Warning);
    --  Set all projects to not checked, then call Recursive_Check for the
    --  main project Project. Project is set to No_Project if errors occurred.
+   --  Current_Dir is for optimization purposes, avoiding extra system calls.
 
    procedure Copy_Package_Declarations
      (From    : Declarations;
@@ -140,11 +141,12 @@ package body Prj.Proc is
    procedure Recursive_Check
      (Project         : Project_Id;
       In_Tree         : Project_Tree_Ref;
-      Follow_Links    : Boolean;
+      Current_Dir     : String;
       When_No_Sources : Error_Warning);
    --  If Project is not marked as checked, mark it as checked, call
    --  Check_Naming_Scheme for the project, then call itself for a
    --  possible extended project and all the imported projects of Project.
+   --  Current_Dir is for optimization purposes, avoiding extra system calls.
 
    ---------
    -- Add --
@@ -258,7 +260,7 @@ package body Prj.Proc is
    procedure Check
      (In_Tree         : Project_Tree_Ref;
       Project         : Project_Id;
-      Follow_Links    : Boolean;
+      Current_Dir     : String;
       When_No_Sources : Error_Warning)
    is
    begin
@@ -270,8 +272,7 @@ package body Prj.Proc is
          In_Tree.Projects.Table (Index).Checked := False;
       end loop;
 
-      Recursive_Check
-        (Project, In_Tree, Follow_Links, When_No_Sources);
+      Recursive_Check (Project, In_Tree, Current_Dir, When_No_Sources);
 
       --  Set the Other_Part field for the units
 
@@ -1209,9 +1210,9 @@ package body Prj.Proc is
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Report_Error           : Put_Line_Access;
-      Follow_Links           : Boolean := True;
       When_No_Sources        : Error_Warning := Error;
-      Reset_Tree             : Boolean := True)
+      Reset_Tree             : Boolean := True;
+      Current_Dir            : String := "")
    is
    begin
       Process_Project_Tree_Phase_1
@@ -1231,8 +1232,8 @@ package body Prj.Proc is
             From_Project_Node      => From_Project_Node,
             From_Project_Node_Tree => From_Project_Node_Tree,
             Report_Error           => Report_Error,
-            Follow_Links           => Follow_Links,
-            When_No_Sources        => When_No_Sources);
+            When_No_Sources        => When_No_Sources,
+            Current_Dir            => Current_Dir);
       end if;
    end Process;
 
@@ -2292,8 +2293,8 @@ package body Prj.Proc is
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Report_Error           : Put_Line_Access;
-      Follow_Links           : Boolean := True;
-      When_No_Sources        : Error_Warning := Error)
+      When_No_Sources        : Error_Warning := Error;
+      Current_Dir            : String)
    is
       Obj_Dir    : Path_Name_Type;
       Extending  : Project_Id;
@@ -2306,8 +2307,7 @@ package body Prj.Proc is
       Success := True;
 
       if Project /= No_Project then
-         Check
-           (In_Tree, Project, Follow_Links, When_No_Sources);
+         Check (In_Tree, Project, Current_Dir, When_No_Sources);
       end if;
 
       --  If main project is an extending all project, set the object
@@ -2428,7 +2428,7 @@ package body Prj.Proc is
    procedure Recursive_Check
      (Project         : Project_Id;
       In_Tree         : Project_Tree_Ref;
-      Follow_Links    : Boolean;
+      Current_Dir     : String;
       When_No_Sources : Error_Warning)
    is
       Data                  : Project_Data;
@@ -2451,8 +2451,7 @@ package body Prj.Proc is
          --  Call itself for a possible extended project.
          --  (if there is no extended project, then nothing happens).
 
-         Recursive_Check
-           (Data.Extends, In_Tree, Follow_Links, When_No_Sources);
+         Recursive_Check (Data.Extends, In_Tree, Current_Dir, When_No_Sources);
 
          --  Call itself for all imported projects
 
@@ -2461,7 +2460,7 @@ package body Prj.Proc is
             Recursive_Check
               (In_Tree.Project_Lists.Table
                  (Imported_Project_List).Project,
-               In_Tree, Follow_Links, When_No_Sources);
+               In_Tree, Current_Dir, When_No_Sources);
             Imported_Project_List :=
               In_Tree.Project_Lists.Table
                 (Imported_Project_List).Next;
@@ -2474,7 +2473,8 @@ package body Prj.Proc is
          end if;
 
          Prj.Nmsc.Check
-           (Project, In_Tree, Error_Report, Follow_Links, When_No_Sources);
+           (Project, In_Tree, Error_Report, When_No_Sources,
+            Current_Dir);
       end if;
    end Recursive_Check;
 

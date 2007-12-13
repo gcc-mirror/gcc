@@ -66,7 +66,7 @@ package body Prj.Attr is
    "lVmain#" &
    "LVlanguages#" &
    "SVmain_language#" &
-   "Laroots#" &
+   "Lbroots#" &
    "SVexternally_built#" &
 
    --  Directories
@@ -178,7 +178,7 @@ package body Prj.Attr is
    --  Configuration - Dependencies
 
    "Ladependency_switches#" &
-   "Lacompute_dependency#" &
+   "Ladependency_driver#" &
 
    --  Configuration - Search paths
 

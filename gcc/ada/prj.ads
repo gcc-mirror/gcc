@@ -62,6 +62,17 @@ package Prj is
    procedure Set_Mode (New_Mode : Mode);
    pragma Inline (Set_Mode);
 
+   Default_Language_Is_Ada : Boolean := True;
+   --  If no language was defined in the project or the configuration file, it
+   --  is an error, unless this variable is True, in which case it defaults to
+   --  Ada. Calling Set_Mode will reset this variable, default is for Ada_Only.
+
+   Must_Check_Configuration : Boolean := False;
+   --  Whether the contents of the configuration file must be checked. This is
+   --  in general only needed by gprbuild itself, since other applications can
+   --  ignore such errors when they don't need to build directly. Calling
+   --  Set_Mode will reset this variable, default is for Ada_Only.
+
    function In_Configuration return Boolean;
    pragma Inline (In_Configuration);
 
@@ -74,8 +85,8 @@ package Prj is
 
    type Project_Tree_Data;
    type Project_Tree_Ref is access all Project_Tree_Data;
-   --  Reference to a project tree.
-   --  Several project trees may exist in memory at the same time.
+   --  Reference to a project tree. Several project trees may exist in memory
+   --  at the same time.
 
    No_Project_Tree : constant Project_Tree_Ref;
 
@@ -260,24 +271,33 @@ package Prj is
    --  The table that contains all packages
 
    type Language_Index is new Nat;
+   --  Index of language data
 
    No_Language_Index : constant Language_Index := 0;
+   --  Constant indicating that there is no language data
 
    procedure Display_Language_Name
      (In_Tree  : Project_Tree_Ref;
       Language : Language_Index);
+   --  Output the name of a language
 
-   type Header_Num is range 0 .. 2047;
-
-   function Hash is new System.HTable.Hash (Header_Num => Header_Num);
+   type Header_Num is range 0 .. 6150;
+   --  Size for hash table below. The upper bound is an arbitrary value, the
+   --  value here was chosen after testing to determine a good compromise
+   --  between speed of access and memory usage.
 
    function Hash (Name : Name_Id)        return Header_Num;
    function Hash (Name : File_Name_Type) return Header_Num;
    function Hash (Name : Path_Name_Type) return Header_Num;
+   --  Used for computing hash values for names put into above hash table
 
    type Language_Kind is (File_Based, Unit_Based);
+   --  Type for the kind of language. All languages are file based, except Ada
+   --  which is unit based.
 
    type Dependency_File_Kind is (None, Makefile, ALI_File);
+   --  Type of dependency to be checked: no dependency file, Makefile fragment
+   --  or ALI file (for Ada).
 
    Makefile_Dependency_Suffix : constant String := ".d";
    ALI_Dependency_Suffix      : constant String := ".ali";
@@ -345,8 +365,6 @@ package Prj is
 
    No_Source : constant Source_Id := 0;
 
-   --  All the fields in the below record should be commented ???
-
    type Language_Config is record
       Kind : Language_Kind := File_Based;
       --  Kind of language. All languages are file based, except Ada which is
@@ -370,47 +388,104 @@ package Prj is
       --  shared libraries. Specified in the configuration. When not specified,
       --  there is no need for such switch.
 
-      Runtime_Library_Dir : Name_Id := No_Name;
+      Runtime_Library_Dir        : Name_Id := No_Name;
+      --  Path name of the runtime library directory, if any
 
       Mapping_File_Switches  : Name_List_Index := No_Name_List;
       --  The option(s) to provide a mapping file to the compiler. Specified in
-      --  the configuration. When not ???
+      --  the configuration. When value is No_Name_List, there is no mapping
+      --  file.
 
-      Mapping_Spec_Suffix  : File_Name_Type       := No_File;
-      Mapping_Body_Suffix  : File_Name_Type       := No_File;
-      Config_File_Switches : Name_List_Index      := No_Name_List;
-      Dependency_Kind      : Dependency_File_Kind := None;
-      Dependency_Option    : Name_List_Index      := No_Name_List;
-      Compute_Dependency   : Name_List_Index      := No_Name_List;
-      Include_Option       : Name_List_Index      := No_Name_List;
+      Mapping_Spec_Suffix        : File_Name_Type       := No_File;
+      --  Placeholder representing the spec suffix in a mapping file
+
+      Mapping_Body_Suffix        : File_Name_Type       := No_File;
+      --  Placeholder representing the body suffix in a mapping file
+
+      Config_File_Switches       : Name_List_Index      := No_Name_List;
+      --  The option(s) to provide a config file to the compiler. Specified in
+      --  the configuration. When value is No_Name_List, there is no config
+      --  file.
+
+      Dependency_Kind            : Dependency_File_Kind := None;
+      --  The kind of dependency to be checked: none, Makefile fragment or
+      --  ALI file (for Ada).
+
+      Dependency_Option          : Name_List_Index      := No_Name_List;
+      --  The option(s) to be used to create the dependency file. When value is
+      --  No_Name_List, there is not such option(s).
+
+      Compute_Dependency         : Name_List_Index      := No_Name_List;
+      --  Hold the value of attribute Dependency_Driver, if declared for the
+      --  language.
+
+      Include_Option             : Name_List_Index      := No_Name_List;
+      --  Hold the value of attribute Include_Switches, if declared for the
+      --  language.
 
       Include_Path : Name_Id := No_Name;
-      --  Name of an environment variable
+      --  Name of environment variable declared by attribute Include_Path for
+      --  the language.
 
       Include_Path_File : Name_Id := No_Name;
-      --  Name of an environment variable
+      --  Name of environment variable declared by attribute Include_Path_File
+      --  for the language.
 
       Objects_Path : Name_Id := No_Name;
-      --  Name of an environment variable
+      --  Name of environment variable declared by attribute Objects_Path for
+      --  the language.
 
       Objects_Path_File : Name_Id := No_Name;
-      --  Name of an environment variable
+      --  Name of environment variable declared by attribute Objects_Path_File
+      --  for the language.
 
-      Config_Body           : Name_Id         := No_Name;
+      Config_Body                : Name_Id         := No_Name;
+      --  The template for a pragma Source_File_Name(_Project) for a specific
+      --  file name of a body.
+
       Config_Spec           : Name_Id         := No_Name;
+      --  The template for a pragma Source_File_Name(_Project) for a specific
+      --  file name of a spec.
+
       Config_Body_Pattern   : Name_Id         := No_Name;
+      --  The template for a pragma Source_File_Name(_Project) for a naming
+      --  body pattern.
+
       Config_Spec_Pattern   : Name_Id         := No_Name;
-      Config_File_Unique    : Boolean         := False;
-      Runtime_Project       : Path_Name_Type  := No_Path;
-      Binder_Driver         : File_Name_Type  := No_File;
-      Binder_Driver_Path    : Path_Name_Type  := No_Path;
-      Binder_Required_Switches : Name_List_Index      := No_Name_List;
-      Binder_Prefix         : Name_Id         := No_Name;
-      Toolchain_Version     : Name_Id         := No_Name;
-      Toolchain_Description : Name_Id         := No_Name;
-      PIC_Option            : Name_Id         := No_Name;
-      Objects_Generated     : Boolean         := True;
+      --  The template for a pragma Source_File_Name(_Project) for a naming
+      --  spec pattern.
+
+      Config_File_Unique         : Boolean         := False;
+      --  Indicate if the config file specified to the compiler needs to be
+      --  unique. If it is unique, then all config files are concatenated into
+      --  a temp config file.
+
+      Binder_Driver              : File_Name_Type  := No_File;
+      --  The name of the binder driver for the language, if any
+
+      Binder_Driver_Path         : Path_Name_Type  := No_Path;
+      --  The path name of the binder driver
+
+      Binder_Required_Switches   : Name_List_Index      := No_Name_List;
+      --  Hold the value of attribute Binder'Required_Switches for the language
+
+      Binder_Prefix              : Name_Id         := No_Name;
+      --  Hold the value of attribute Binder'Prefixthe language
+
+      Toolchain_Version          : Name_Id         := No_Name;
+      --  Hold the value of attribute Toolchain_Version for the language
+
+      Toolchain_Description      : Name_Id         := No_Name;
+      --  Hold the value of attribute Toolchain_Description for the language
+
+      PIC_Option                 : Name_Id         := No_Name;
+      --  Hold the value of attribute Compiler'PIC_Option for the language
+
+      Objects_Generated          : Boolean         := True;
+      --  Indicates if objects are generated for the language
+
    end record;
+   --  Record describing the configuration of a language
 
    No_Language_Config : constant Language_Config :=
                           (Kind                       => File_Based,
@@ -437,7 +512,6 @@ package Prj is
                            Config_Body_Pattern        => No_Name,
                            Config_Spec_Pattern        => No_Name,
                            Config_File_Unique         => False,
-                           Runtime_Project            => No_Path,
                            Binder_Driver              => No_File,
                            Binder_Driver_Path         => No_Path,
                            Binder_Required_Switches   => No_Name_List,
@@ -493,30 +567,78 @@ package Prj is
 
    type Source_Kind is (Spec, Impl, Sep);
 
-   --  Following record needs full comments on every field ???
-
    type Source_Data is record
       Project             : Project_Id            := No_Project;
+      --  Project of the source
+
       Language_Name       : Name_Id               := No_Name;
+      --  Name of the language of the source
+
       Language            : Language_Index        := No_Language_Index;
+      --  Index of the language
+
+      Lang_Kind           : Language_Kind         := File_Based;
+      --  Kind of the language
+
       Alternate_Languages : Alternate_Language_Id := No_Alternate_Language;
+      --  List of languages a header file may also be, in addition of
+      --  language Language_Name.
+
       Kind                : Source_Kind           := Spec;
-      Dependency          : Dependency_File_Kind  := Makefile;
+      --  Kind of the source: spec, body or subunit
+
+      Dependency          : Dependency_File_Kind  := None;
+      --  Kind of dependency: none, Makefile fragment or ALI file
+
       Other_Part          : Source_Id             := No_Source;
+      --  Source ID for the other part, if any: for a spec, indicates its body;
+      --  for a body, indicates its spec.
+
       Unit                : Name_Id               := No_Name;
+      --  Name of the unit, if language is unit based
+
       Index               : Int                   := 0;
+      --  Index of the source in a multi unit source file
+
       Locally_Removed     : Boolean               := False;
+      --  True if the source has been "excluded"
+
+      Get_Object          : Boolean               := False;
+      --  Indicates that the object of the source should be put in the global
+      --  archive. This is for Ada, when only the closure of a main needs to
+      --  be compiled/recompiled.
+
       Replaced_By         : Source_Id             := No_Source;
+
       File                : File_Name_Type        := No_File;
+      --  Canonical file name of the source
+
       Display_File        : File_Name_Type        := No_File;
+      --  File name of the source, for display purposes
+
       Path                : Path_Name_Type        := No_Path;
+      --  Canonical path name of the source
+
       Display_Path        : Path_Name_Type        := No_Path;
+      --  Path name of the source, for display purposes
+
       Source_TS           : Time_Stamp_Type       := Empty_Time_Stamp;
+      --  Time stamp of the source file
+
       Object_Project      : Project_Id            := No_Project;
+      --  Project where the object file is
+
       Object_Exists       : Boolean               := True;
+      --  True if an object file exists
+
       Object              : File_Name_Type        := No_File;
+      --  File name of the object file
+
       Current_Object_Path : Path_Name_Type        := No_Path;
+      --  Object path of an existing object file
+
       Object_Path         : Path_Name_Type        := No_Path;
+      --  Object path of the real object file
 
       Object_TS : Time_Stamp_Type := Empty_Time_Stamp;
       --  Object file time stamp
@@ -525,33 +647,49 @@ package Prj is
       --  Dependency file simple name
 
       Current_Dep_Path : Path_Name_Type := No_Path;
+      --  Path name of an existing dependency file
 
       Dep_Path : Path_Name_Type := No_Path;
-      --  Dependency full path name
+      --  Path name of the real dependency file
 
       Dep_TS : Time_Stamp_Type := Empty_Time_Stamp;
       --  Dependency file time stamp
 
-      Switches         : File_Name_Type  := No_File;
-      Switches_Path    : Path_Name_Type  := No_Path;
-      Switches_TS      : Time_Stamp_Type := Empty_Time_Stamp;
-      Naming_Exception : Boolean         := False;
-      Next_In_Sources  : Source_Id       := No_Source;
-      Next_In_Project  : Source_Id       := No_Source;
-      Next_In_Lang     : Source_Id       := No_Source;
+      Switches            : File_Name_Type  := No_File;
+      --  File name of the switches file
+
+      Switches_Path       : Path_Name_Type  := No_Path;
+      --  Path name of the switches file
+
+      Switches_TS         : Time_Stamp_Type := Empty_Time_Stamp;
+      --  Switches file time stamp
+
+      Naming_Exception    : Boolean         := False;
+      --  True if the source has an exceptional name
+
+      Next_In_Sources     : Source_Id       := No_Source;
+      --  Link to another source in the project tree
+
+      Next_In_Project     : Source_Id       := No_Source;
+      --  Link to another source in the project
+
+      Next_In_Lang        : Source_Id       := No_Source;
+      --  Link to another source of the same language
    end record;
 
    No_Source_Data : constant Source_Data :=
                       (Project             => No_Project,
                        Language_Name       => No_Name,
                        Language            => No_Language_Index,
+                       Lang_Kind           => File_Based,
                        Alternate_Languages => No_Alternate_Language,
                        Kind                => Spec,
-                       Dependency          => Makefile,
+                       Dependency          => None,
                        Other_Part          => No_Source,
                        Unit                => No_Name,
                        Index               => 0,
                        Locally_Removed     => False,
+                       Get_Object          => False,
                        Replaced_By         => No_Source,
                        File                => No_File,
                        Display_File        => No_File,
@@ -855,6 +993,11 @@ package Prj is
       Language : String;
       Naming   : Naming_Data) return File_Name_Type;
 
+   function Spec_Suffix_Id_Of
+     (In_Tree     : Project_Tree_Ref;
+      Language_Id : Name_Id;
+      Naming      : Naming_Data) return File_Name_Type;
+
    procedure Set_Spec_Suffix
      (In_Tree  : Project_Tree_Ref;
       Language : String;
@@ -865,6 +1008,11 @@ package Prj is
      (In_Tree  : Project_Tree_Ref;
       Language : String;
       Naming   : Naming_Data) return File_Name_Type;
+
+   function Body_Suffix_Id_Of
+     (In_Tree     : Project_Tree_Ref;
+      Language_Id : Name_Id;
+      Naming      : Naming_Data) return File_Name_Type;
 
    function Body_Suffix_Of
      (In_Tree  : Project_Tree_Ref;
@@ -1034,10 +1182,10 @@ package Prj is
       --  True if the project is externally built. In such case, the Project
       --  Manager will not modify anything in this project.
 
-      Languages        : Name_List_Index := No_Name_List;
+      Languages : Name_List_Index := No_Name_List;
       --  The list of languages of the sources of this project
 
-      Config           : Project_Configuration;
+      Config : Project_Configuration;
 
       First_Referred_By : Project_Id := No_Project;
       --  The project, if any, that was the first to be known as importing or
@@ -1141,7 +1289,7 @@ package Prj is
       Ada_Sources : String_List_Id := Nil_String;
       --  The list of all the Ada source file names (gnatmake only).
 
-      Sources                 : String_List_Id := Nil_String;
+      Sources : String_List_Id := Nil_String;
       --  Identical to Ada_Sources. For upward compatibility of GPS.
 
       First_Source : Source_Id := No_Source;
@@ -1207,7 +1355,7 @@ package Prj is
       --  The naming scheme of this project file
 
       First_Language_Processing : Language_Index := No_Language_Index;
-      --  Comment needed ???
+      --  First index of the language data in the project
 
       Decl : Declarations := No_Declarations;
       --  The declarations (variables, attributes and packages) of this project
@@ -1229,8 +1377,9 @@ package Prj is
       --  use this field directly outside of the compiler, use
       --  Prj.Env.Ada_Objects_Path instead.
 
-      Objects_Path                  : String_Access := null;
-      --  ???
+      Objects_Path : String_Access := null;
+      --  The cached value of the object dir path, used during the binding
+      --  phase of gprbuild.
 
       Objects_Path_File_With_Libs : Path_Name_Type := No_Path;
       --  The cached value of the object path temp file (including library
@@ -1247,13 +1396,13 @@ package Prj is
       --  An indication that the configuration pragmas file is a temporary file
       --  that must be deleted at the end.
 
-      Linker_Name                    : File_Name_Type  := No_File;
+      Linker_Name : File_Name_Type  := No_File;
       --  Value of attribute Language_Processing'Linker in the project file
 
-      Linker_Path                    : Path_Name_Type  := No_Path;
+      Linker_Path : Path_Name_Type  := No_Path;
       --  Path of linker when attribute Language_Processing'Linker is specified
 
-      Minimum_Linker_Options         : Name_List_Index := No_Name_List;
+      Minimum_Linker_Options : Name_List_Index := No_Name_List;
       --  List of options specified in attribute
       --  Language_Processing'Minimum_Linker_Options.
 
@@ -1280,19 +1429,32 @@ package Prj is
       --  True if there are comments in the project sources that cannot be kept
       --  in the project tree.
 
-      --  For gprmake
+      ------------------
+      --  For gprmake --
+      ------------------
 
       Langs          : Languages_In_Project := No_Languages;
       Supp_Languages : Supp_Language_Index  := No_Supp_Language_Index;
       --  Indicate the different languages of the source of this project
 
-      Ada_Sources_Present   : Boolean := True;
-      Other_Sources_Present : Boolean := True;
-      First_Other_Source    : Other_Source_Id := No_Other_Source;
-      Last_Other_Source     : Other_Source_Id := No_Other_Source;
+      Ada_Sources_Present            : Boolean := True;
+      --  True if there are Ada sources in the project
+
+      Other_Sources_Present          : Boolean := True;
+      --  True if there are sources from languages other than Ada in the
+      --  project.
+
+      First_Other_Source             : Other_Source_Id := No_Other_Source;
+      --  First source of a language other than Ada
+
+      Last_Other_Source              : Other_Source_Id := No_Other_Source;
+      --  Last source of a language other than Ada
+
       First_Lang_Processing : First_Language_Processing_Data :=
-                                    Default_First_Language_Processing_Data;
-      Supp_Language_Processing : Supp_Language_Index := No_Supp_Language_Index;
+                                Default_First_Language_Processing_Data;
+      Supp_Language_Processing : Supp_Language_Index :=
+                                   No_Supp_Language_Index;
+      --  Language configurations
    end record;
 
    function Empty_Project (Tree : Project_Tree_Ref) return Project_Data;
@@ -1307,7 +1469,9 @@ package Prj is
    function Is_A_Language
      (Tree          : Project_Tree_Ref;
       Data          : Project_Data;
-      Language_Name : String) return Boolean;
+      Language_Name : Name_Id) return Boolean;
+   --  Whether Language_Name is one of the languages used for the project.
+   --  Language_Name must be lower cased.
 
    function There_Are_Ada_Sources
      (In_Tree : Project_Tree_Ref;
@@ -1329,12 +1493,12 @@ package Prj is
 
    type File_Name_Data is record
       Name         : File_Name_Type := No_File;
-      Index        : Int        := 0;
+      Index        : Int            := 0;
       Display_Name : File_Name_Type := No_File;
       Path         : Path_Name_Type := No_Path;
       Display_Path : Path_Name_Type := No_Path;
-      Project      : Project_Id := No_Project;
-      Needs_Pragma : Boolean    := False;
+      Project      : Project_Id     := No_Project;
+      Needs_Pragma : Boolean        := False;
    end record;
    --  File and Path name of a spec or body
 
@@ -1389,29 +1553,29 @@ package Prj is
       record
          --  Languages and sources of the project
 
-         First_Language           : Language_Index  := No_Language_Index;
+         First_Language : Language_Index  := No_Language_Index;
          --
 
-         First_Source             : Source_Id := No_Source;
+         First_Source : Source_Id := No_Source;
          --
 
          --  Tables
 
-         Languages_Data           : Language_Data_Table.Instance;
-         Name_Lists               : Name_List_Table.Instance;
-         String_Elements          : String_Element_Table.Instance;
-         Variable_Elements        : Variable_Element_Table.Instance;
-         Array_Elements           : Array_Element_Table.Instance;
-         Arrays                   : Array_Table.Instance;
-         Packages                 : Package_Table.Instance;
-         Project_Lists            : Project_List_Table.Instance;
-         Projects                 : Project_Table.Instance;
-         Sources                  : Source_Data_Table.Instance;
-         Alt_Langs                : Alternate_Language_Table.Instance;
-         Units                    : Unit_Table.Instance;
-         Units_HT                 : Units_Htable.Instance;
-         Files_HT                 : Files_Htable.Instance;
-         Source_Paths_HT          : Source_Paths_Htable.Instance;
+         Languages_Data    : Language_Data_Table.Instance;
+         Name_Lists        : Name_List_Table.Instance;
+         String_Elements   : String_Element_Table.Instance;
+         Variable_Elements : Variable_Element_Table.Instance;
+         Array_Elements    : Array_Element_Table.Instance;
+         Arrays            : Array_Table.Instance;
+         Packages          : Package_Table.Instance;
+         Project_Lists     : Project_List_Table.Instance;
+         Projects          : Project_Table.Instance;
+         Sources           : Source_Data_Table.Instance;
+         Alt_Langs         : Alternate_Language_Table.Instance;
+         Units             : Unit_Table.Instance;
+         Units_HT          : Units_Htable.Instance;
+         Files_HT          : Files_Htable.Instance;
+         Source_Paths_HT   : Source_Paths_Htable.Instance;
 
          --  For gprmake:
 
@@ -1422,7 +1586,7 @@ package Prj is
 
          --  Private part
 
-         Private_Part             : Private_Project_Tree_Data;
+         Private_Part : Private_Project_Tree_Data;
       end record;
    --  Data for a project tree
 
@@ -1565,10 +1729,10 @@ private
    Ignored : constant Variable_Kind := Single;
 
    Nil_Variable_Value : constant Variable_Value :=
-     (Project  => No_Project,
-      Kind     => Undefined,
-      Location => No_Location,
-      Default  => False);
+                          (Project  => No_Project,
+                           Kind     => Undefined,
+                           Location => No_Location,
+                           Default  => False);
 
    Virtual_Prefix : constant String := "v$";
    --  The prefix for virtual extending projects. Because of the '$', which is
@@ -1592,7 +1756,7 @@ private
       Table_Low_Bound      => 1,
       Table_Initial        => 5,
       Table_Increment      => 100);
-   --  Comment ???
+   --  Table storing the naming data for gnatmake/gprmake
 
    package Path_File_Table is new GNAT.Dynamic_Tables
      (Table_Component_Type => Path_Name_Type,

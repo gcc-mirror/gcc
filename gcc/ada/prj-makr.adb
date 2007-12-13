@@ -741,6 +741,7 @@ package body Prj.Makr is
                Project_File_Name      => Output_Name (1 .. Output_Name_Last),
                Always_Errout_Finalize => False,
                Store_Comments         => True,
+               Current_Directory      => Get_Current_Dir,
                Packages_To_Check      => Packages_To_Check_By_Gnatname);
 
             --  Fail if parsing was not successful

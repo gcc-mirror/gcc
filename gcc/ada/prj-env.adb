@@ -1331,21 +1331,22 @@ package body Prj.Env is
             while Source /= No_Source loop
                Src_Data := In_Tree.Sources.Table (Source);
 
-               if Src_Data.Language_Name = Language and then
-                 (not Src_Data.Locally_Removed) and then
-                 Src_Data.Replaced_By = No_Source and then
-                 Src_Data.Path /= No_Path
+               if Src_Data.Language_Name = Language
+                 and then not Src_Data.Locally_Removed
+                 and then Src_Data.Replaced_By = No_Source
+                 and then Src_Data.Path /= No_Path
                then
                   if Src_Data.Unit /= No_Name then
                      Get_Name_String (Src_Data.Unit);
 
                      if Src_Data.Kind = Spec then
-                        Suffix := In_Tree.Languages_Data.Table
-                          (Src_Data.Language).Config.Mapping_Spec_Suffix;
-
+                        Suffix :=
+                          In_Tree.Languages_Data.Table
+                            (Src_Data.Language).Config.Mapping_Spec_Suffix;
                      else
-                        Suffix := In_Tree.Languages_Data.Table
-                          (Src_Data.Language).Config.Mapping_Body_Suffix;
+                        Suffix :=
+                          In_Tree.Languages_Data.Table
+                            (Src_Data.Language).Config.Mapping_Body_Suffix;
                      end if;
 
                      if Suffix /= No_File then
@@ -1956,6 +1957,8 @@ package body Prj.Env is
    procedure Initialize is
    begin
       Fill_Mapping_File := True;
+      Current_Source_Path_File := No_Path;
+      Current_Object_Path_File := No_Path;
    end Initialize;
 
    ------------------------------------
@@ -2323,10 +2326,10 @@ package body Prj.Env is
                      --  except if we don't include library project and this
                      --  is a library project.
 
-                     if (Data.Library and then Including_Libraries)
+                     if (Data.Library and Including_Libraries)
                        or else
                          (Data.Object_Directory /= No_Path
-                          and then
+                           and then
                             (not Including_Libraries or else not Data.Library))
                      then
                         --  For a library project, add the library ALI
