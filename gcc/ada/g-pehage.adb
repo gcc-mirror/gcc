@@ -34,7 +34,7 @@
 with Ada.Exceptions;    use Ada.Exceptions;
 with Ada.IO_Exceptions; use Ada.IO_Exceptions;
 
-with GNAT.Heap_Sort_A; use GNAT.Heap_Sort_A;
+with GNAT.Heap_Sort_G;
 with GNAT.OS_Lib;      use GNAT.OS_Lib;
 with GNAT.Table;
 
@@ -696,7 +696,7 @@ package body GNAT.Perfect_Hash_Generators is
 
       procedure Move (From : Natural; To : Natural);
       function Lt (L, R : Natural) return Boolean;
-      --  Subprograms needed for GNAT.Heap_Sort_A
+      --  Subprograms needed for GNAT.Heap_Sort_G
 
       --------
       -- Lt --
@@ -718,11 +718,13 @@ package body GNAT.Perfect_Hash_Generators is
          Set_Edges (To, Get_Edges (From));
       end Move;
 
+      package Sorting is new GNAT.Heap_Sort_G (Move, Lt);
+
    --  Start of processing for Compute_Edges_And_Vertices
 
    begin
       --  We store edges from 1 to 2 * NK and leave zero alone in order to use
-      --  GNAT.Heap_Sort_A.
+      --  GNAT.Heap_Sort_G.
 
       Edges_Len := 2 * NK + 1;
 
@@ -780,10 +782,7 @@ package body GNAT.Perfect_Hash_Generators is
          --  is sorted by X and then Y. To compute the neighbor list, sort the
          --  edges.
 
-         Sort
-           (Edges_Len - 1,
-            Move'Unrestricted_Access,
-            Lt'Unrestricted_Access);
+         Sorting.Sort (Edges_Len - 1);
 
          if Verbose then
             Put_Edges      (Output, "Sorted Edge Table");
@@ -1976,7 +1975,7 @@ package body GNAT.Perfect_Hash_Generators is
 
          function Lt (L, R : Natural) return Boolean;
          procedure Move (From : Natural; To : Natural);
-         --  Subprograms needed by GNAT.Heap_Sort_A
+         --  Subprograms needed by GNAT.Heap_Sort_G
 
          --------
          -- Lt --
@@ -2024,6 +2023,8 @@ package body GNAT.Perfect_Hash_Generators is
             WT.Table (Target) := WT.Table (Source);
          end Move;
 
+         package Sorting is new GNAT.Heap_Sort_G (Move, Lt);
+
       --  Start of processing for Build_Identical_Key_Sets
 
       begin
@@ -2041,10 +2042,7 @@ package body GNAT.Perfect_Hash_Generators is
 
             else
                Offset := Reduced (S (J).First) - 1;
-               Sort
-                 (S (J).Last - S (J).First + 1,
-                  Move'Unrestricted_Access,
-                  Lt'Unrestricted_Access);
+               Sorting.Sort (S (J).Last - S (J).First + 1);
 
                F := S (J).First;
                L := F;

@@ -699,10 +699,14 @@ package body GPrep is
    procedure Scan_Command_Line is
       Switch : Character;
 
+      procedure Check_Version_And_Help is new Check_Version_And_Help_G (Usage);
+
+      --  Start of processing for Scan_Command_Line
+
    begin
       --  First check for --version or --help
 
-      Check_Version_And_Help ("GNATPREP", "1996", Usage'Access);
+      Check_Version_And_Help ("GNATPREP", "1996");
 
       --  Now scan the other switches
 

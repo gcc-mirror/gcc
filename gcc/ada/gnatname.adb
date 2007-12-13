@@ -177,10 +177,15 @@ procedure Gnatname is
    ---------------
 
    procedure Scan_Args is
+
+      procedure Check_Version_And_Help is new Check_Version_And_Help_G (Usage);
+
+      --  Start of processing for Scan_Args
+
    begin
       --  First check for --version or --help
 
-      Check_Version_And_Help ("GNATNAME", "2001", Usage'Unrestricted_Access);
+      Check_Version_And_Help ("GNATNAME", "2001");
 
       --  Now scan the other switches
 

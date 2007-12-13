@@ -403,6 +403,9 @@ procedure Gnatbind is
       end if;
    end Scan_Bind_Arg;
 
+   procedure Check_Version_And_Help is
+      new Check_Version_And_Help_G (Bindusg.Display);
+
 --  Start of processing for Gnatbind
 
 begin
@@ -429,7 +432,7 @@ begin
 
    --  First, scan to detect --version and/or --help
 
-   Check_Version_And_Help ("GNATBIND", "1995", Bindusg.Display'Access);
+   Check_Version_And_Help ("GNATBIND", "1995");
 
    --  Use low level argument routines to avoid dragging in the secondary stack
 

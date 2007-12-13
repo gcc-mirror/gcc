@@ -78,10 +78,15 @@ procedure Gnatfind is
    --------------------
 
    procedure Parse_Cmd_Line is
+
+      procedure Check_Version_And_Help is new Check_Version_And_Help_G (Usage);
+
+      --  Start of processing for Parse_Cmd_Line
+
    begin
       --  First check for --version or --help
 
-      Check_Version_And_Help ("GNATFIND", "1998", Usage'Unrestricted_Access);
+      Check_Version_And_Help ("GNATFIND", "1998");
 
       --  Now scan the other switches
 
