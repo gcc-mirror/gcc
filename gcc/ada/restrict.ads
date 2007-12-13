@@ -207,6 +207,13 @@ package Restrict is
    --  an elaboration routine. If elaboration code is not allowed, an error
    --  message is posted on the node given as argument.
 
+   procedure Check_Implicit_Dynamic_Code_Allowed (N : Node_Id);
+   --  Tests to see if dynamic code generation (dynamically generated
+   --  trampolines, in particular) is allowed by the current restrictions
+   --  settings. This function is called by Gigi when it needs to generate code
+   --  that generates a trampoline. If not allowed, an error message is posted
+   --  on the node given as argument.
+
    procedure Check_No_Implicit_Heap_Alloc (N : Node_Id);
    --  Equivalent to Check_Restriction (No_Implicit_Heap_Allocations, N).
    --  Provided for easy use by back end, which has to check this restriction.

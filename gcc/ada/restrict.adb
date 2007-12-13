@@ -101,18 +101,17 @@ package body Restrict is
 
    procedure Check_Elaboration_Code_Allowed (N : Node_Id) is
    begin
-      --  Avoid calling Namet.Unlock/Lock except when there is an error.
-      --  Even in the error case it is a bit dubious, either gigi needs
-      --  the table locked or it does not! ???
-
-      if Restrictions.Set (No_Elaboration_Code)
-        and then not Suppress_Restriction_Message (N)
-      then
-         Namet.Unlock;
-         Check_Restriction (No_Elaboration_Code, N);
-         Namet.Lock;
-      end if;
+      Check_Restriction (No_Elaboration_Code, N);
    end Check_Elaboration_Code_Allowed;
+
+   -----------------------------------------
+   -- Check_Implicit_Dynamic_Code_Allowed --
+   -----------------------------------------
+
+   procedure Check_Implicit_Dynamic_Code_Allowed (N : Node_Id) is
+   begin
+      Check_Restriction (No_Implicit_Dynamic_Code, N);
+   end Check_Implicit_Dynamic_Code_Allowed;
 
    ----------------------------------
    -- Check_No_Implicit_Heap_Alloc --
