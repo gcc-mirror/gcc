@@ -85,7 +85,7 @@ package body Sem_Ch10 is
 
    procedure Check_Private_Child_Unit (N : Node_Id);
    --  If a with_clause mentions a private child unit, the compilation
-   --  unit must be a member of the same family, as described in 10.1.2 (8).
+   --  unit must be a member of the same family, as described in 10.1.2.
 
    procedure Check_Stub_Level (N : Node_Id);
    --  Verify that a stub is declared immediately within a compilation unit,
@@ -671,9 +671,8 @@ package body Sem_Ch10 is
 
             --  Verify that the library unit is a package declaration
 
-            if Nkind (Unit (Lib_Unit)) /= N_Package_Declaration
-                 and then
-               Nkind (Unit (Lib_Unit)) /= N_Generic_Package_Declaration
+            if not Nkind_In (Unit (Lib_Unit), N_Package_Declaration,
+                                              N_Generic_Package_Declaration)
             then
                Error_Msg_N
                  ("no legal package declaration for package body", N);
@@ -687,8 +686,8 @@ package body Sem_Ch10 is
                Set_Is_Immediately_Visible (Spec_Id, True);
                Version_Update (N, Lib_Unit);
 
-               if Nkind (Defining_Unit_Name (Unit_Node))
-                 = N_Defining_Program_Unit_Name
+               if Nkind (Defining_Unit_Name (Unit_Node)) =
+                                             N_Defining_Program_Unit_Name
                then
                   Generate_Parent_References (Unit_Node, Scope (Spec_Id));
                end if;
@@ -918,10 +917,10 @@ package body Sem_Ch10 is
       --  the next compilation, which is either the main unit or some
       --  other unit in the context.
 
-      if Nkind (Unit_Node) = N_Package_Declaration
+      if Nkind_In (Unit_Node, N_Package_Declaration,
+                              N_Package_Renaming_Declaration,
+                              N_Subprogram_Declaration)
         or else Nkind (Unit_Node) in N_Generic_Declaration
-        or else Nkind (Unit_Node) = N_Package_Renaming_Declaration
-        or else Nkind (Unit_Node) = N_Subprogram_Declaration
         or else
           (Nkind (Unit_Node) = N_Subprogram_Body
             and then Acts_As_Spec (Unit_Node))
@@ -1063,14 +1062,13 @@ package body Sem_Ch10 is
       --  units manufactured by the compiler never need elab checks.
 
       if Comes_From_Source (N)
-        and then
-          (Nkind (Unit_Node) = N_Package_Declaration         or else
-           Nkind (Unit_Node) = N_Generic_Package_Declaration or else
-           Nkind (Unit_Node) = N_Subprogram_Declaration      or else
-           Nkind (Unit_Node) = N_Generic_Subprogram_Declaration)
+        and then Nkind_In (Unit_Node, N_Package_Declaration,
+                                      N_Generic_Package_Declaration,
+                                      N_Subprogram_Declaration,
+                                      N_Generic_Subprogram_Declaration)
       then
          declare
-            Loc  : constant Source_Ptr := Sloc (N);
+            Loc  : constant Source_Ptr       := Sloc (N);
             Unum : constant Unit_Number_Type := Get_Source_Unit (Loc);
 
          begin
@@ -1305,10 +1303,10 @@ package body Sem_Ch10 is
 
                --  Check compilation unit containing the limited-with clause
 
-               if Ukind /= N_Package_Declaration
-                 and then Ukind /= N_Subprogram_Declaration
-                 and then Ukind /= N_Package_Renaming_Declaration
-                 and then Ukind /= N_Subprogram_Renaming_Declaration
+               if not Nkind_In (Ukind, N_Package_Declaration,
+                                       N_Subprogram_Declaration,
+                                       N_Package_Renaming_Declaration,
+                                       N_Subprogram_Renaming_Declaration)
                  and then Ukind not in N_Generic_Declaration
                  and then Ukind not in N_Generic_Renaming_Declaration
                  and then Ukind not in N_Generic_Instantiation
@@ -1366,14 +1364,12 @@ package body Sem_Ch10 is
                           and then Nkind (It) = N_With_Clause
                           and then not Limited_Present (It)
                           and then
-                             (Nkind (Unit (Library_Unit (It)))
-                               = N_Package_Declaration
-                            or else
-                              Nkind (Unit (Library_Unit (It)))
-                               = N_Package_Renaming_Declaration)
+                            Nkind_In (Unit (Library_Unit (It)),
+                                       N_Package_Declaration,
+                                       N_Package_Renaming_Declaration)
                         then
-                           if Nkind (Unit (Library_Unit (It)))
-                                = N_Package_Declaration
+                           if Nkind (Unit (Library_Unit (It))) =
+                                                      N_Package_Declaration
                            then
                               Unit_Name := Name (It);
                            else
@@ -1788,17 +1784,17 @@ package body Sem_Ch10 is
       --  Verify that the identifier for the stub is unique within this
       --  declarative part.
 
-      if Nkind (Parent (N)) = N_Block_Statement
-        or else Nkind (Parent (N)) = N_Package_Body
-        or else Nkind (Parent (N)) = N_Subprogram_Body
+      if Nkind_In (Parent (N), N_Block_Statement,
+                               N_Package_Body,
+                               N_Subprogram_Body)
       then
          Decl := First (Declarations (Parent (N)));
          while Present (Decl)
            and then Decl /= N
          loop
             if Nkind (Decl) = N_Subprogram_Body_Stub
-              and then (Chars (Defining_Unit_Name (Specification (Decl)))
-                      = Chars (Defining_Unit_Name (Specification (N))))
+              and then (Chars (Defining_Unit_Name (Specification (Decl))) =
+                        Chars (Defining_Unit_Name (Specification (N))))
             then
                Error_Msg_N ("identifier for stub is not unique", N);
             end if;
@@ -2338,7 +2334,7 @@ package body Sem_Ch10 is
 
       elsif (Unit_Kind = N_Package_Instantiation
               or else Nkind (Original_Node (Unit (Library_Unit (N)))) =
-                N_Package_Instantiation)
+                                                  N_Package_Instantiation)
         and then Nkind (U) = N_Package_Body
       then
          E_Name := Corresponding_Spec (U);
@@ -2485,9 +2481,7 @@ package body Sem_Ch10 is
    --  Start of processing for Check_Private_Child_Unit
 
    begin
-      if Nkind (Lib_Unit) = N_Package_Body
-        or else Nkind (Lib_Unit) = N_Subprogram_Body
-      then
+      if Nkind_In (Lib_Unit, N_Package_Body, N_Subprogram_Body) then
          Curr_Unit := Defining_Entity (Unit (Library_Unit (N)));
          Par_Lib   := Curr_Unit;
 
@@ -2589,12 +2583,15 @@ package body Sem_Ch10 is
                         Item, Child_Parent);
                   end if;
 
-               elsif not Curr_Private
-                 and then not Private_Present (Item)
-                 and then Nkind (Lib_Unit) /= N_Package_Body
-                 and then Nkind (Lib_Unit) /= N_Subprogram_Body
-                 and then Nkind (Lib_Unit) /= N_Subunit
+               elsif Curr_Private
+                 or else Private_Present (Item)
+                 or else Nkind_In (Lib_Unit, N_Package_Body, N_Subunit)
+                 or else (Nkind (Lib_Unit) = N_Subprogram_Body
+                            and then not Acts_As_Spec (Parent (Lib_Unit)))
                then
+                  null;
+
+               else
                   Error_Msg_NE
                     ("current unit must also be private descendant of&",
                      Item, Child_Parent);
@@ -2616,12 +2613,11 @@ package body Sem_Ch10 is
       Kind : constant Node_Kind := Nkind (Par);
 
    begin
-      if (Kind = N_Package_Body
-           or else Kind = N_Subprogram_Body
-           or else Kind = N_Task_Body
-           or else Kind = N_Protected_Body)
-        and then (Nkind (Parent (Par)) = N_Compilation_Unit
-                    or else Nkind (Parent (Par)) = N_Subunit)
+      if Nkind_In (Kind, N_Package_Body,
+                         N_Subprogram_Body,
+                         N_Task_Body,
+                         N_Protected_Body)
+        and then Nkind_In (Parent (Par), N_Compilation_Unit, N_Subunit)
       then
          null;
 
@@ -2654,11 +2650,32 @@ package body Sem_Ch10 is
       ---------------------
 
       function Build_Unit_Name (Nam : Node_Id) return Node_Id is
-         Result : Node_Id;
+         Renaming : Entity_Id;
+         Result   : Node_Id;
 
       begin
          if Nkind (Nam) = N_Identifier then
-            return New_Occurrence_Of (Entity (Nam), Loc);
+
+            --  If the parent unit P in the name of the with_clause for P.Q
+            --  is a renaming of package R, then the entity of the parent is
+            --  set to R, but the identifier retains Chars (P) to be consistent
+            --  with the source (see details in lib-load). However, the
+            --  implicit_with_clause for the parent must make the entity for
+            --  P visible, because P.Q may be used as a prefix within the
+            --  current unit. The entity for P is the current_entity with that
+            --  name, because the package renaming declaration for it has just
+            --  been analyzed. Note that this case can only happen if P.Q has
+            --  already appeared in a previous with_clause in a related unit,
+            --  such as the library body of the current unit.
+
+            if Chars (Nam) /= Chars (Entity (Nam)) then
+               Renaming := Current_Entity (Nam);
+               pragma Assert (Renamed_Entity (Renaming) = Entity (Nam));
+               return New_Occurrence_Of (Renaming, Loc);
+
+            else
+               return New_Occurrence_Of (Entity (Nam), Loc);
+            end if;
 
          else
             Result :=
@@ -2689,7 +2706,7 @@ package body Sem_Ch10 is
       --  private.
 
       if Nkind (Unit (N)) = N_Package_Declaration then
-         Set_Private_Present       (Withn, Private_Present (Item));
+         Set_Private_Present    (Withn, Private_Present (Item));
       end if;
 
       Prepend (Withn, Context_Items (N));
@@ -2952,7 +2969,7 @@ package body Sem_Ch10 is
                if Nkind (Name (Item)) = N_Expanded_Name then
                   Expand_With_Clause (Item, Prefix (Name (Item)), N);
                else
-                  --  if not an expanded name, the child unit must be a
+                  --  If not an expanded name, the child unit must be a
                   --  renaming, nothing to do.
 
                   null;
@@ -3110,10 +3127,10 @@ package body Sem_Ch10 is
          Install_Siblings (Defining_Entity (Unit (Library_Unit (N))), N);
       end if;
 
-      if Nkind (Lib_Unit) = N_Generic_Package_Declaration
-        or else Nkind (Lib_Unit) = N_Generic_Subprogram_Declaration
-        or else Nkind (Lib_Unit) = N_Package_Declaration
-        or else Nkind (Lib_Unit) = N_Subprogram_Declaration
+      if Nkind_In (Lib_Unit, N_Generic_Package_Declaration,
+                             N_Generic_Subprogram_Declaration,
+                             N_Package_Declaration,
+                             N_Subprogram_Declaration)
       then
          if Is_Child_Spec (Lib_Unit) then
             Lib_Parent := Defining_Entity (Unit (Parent_Spec (Lib_Unit)));
@@ -3303,9 +3320,9 @@ package body Sem_Ch10 is
 
          elsif not Private_Present (Parent (Item))
            and then not Private_Present (Item)
-           and then Nkind (Unit (Parent (Item))) /= N_Package_Body
-           and then Nkind (Unit (Parent (Item))) /= N_Subprogram_Body
-           and then Nkind (Unit (Parent (Item))) /= N_Subunit
+           and then not Nkind_In (Unit (Parent (Item)), N_Package_Body,
+                                                        N_Subprogram_Body,
+                                                        N_Subunit)
          then
             Error_Msg_NE
               ("current unit must also be private descendant of&",
@@ -3460,9 +3477,9 @@ package body Sem_Ch10 is
             then
                if not Private_Present (Item)
                  or else Private_Present (N)
-                 or else Nkind (Unit (N)) = N_Package_Body
-                 or else Nkind (Unit (N)) = N_Subprogram_Body
-                 or else Nkind (Unit (N)) = N_Subunit
+                 or else Nkind_In (Unit (N), N_Package_Body,
+                                             N_Subprogram_Body,
+                                             N_Subunit)
                then
                   Install_Limited_Withed_Unit (Item);
                end if;
@@ -3556,8 +3573,8 @@ package body Sem_Ch10 is
       end if;
 
       if Ekind (P_Name) = E_Generic_Package
-        and then Nkind (Lib_Unit) /= N_Generic_Subprogram_Declaration
-        and then Nkind (Lib_Unit) /= N_Generic_Package_Declaration
+        and then not Nkind_In (Lib_Unit, N_Generic_Subprogram_Declaration,
+                                         N_Generic_Package_Declaration)
         and then Nkind (Lib_Unit) not in N_Generic_Renaming_Declaration
       then
          Error_Msg_N
@@ -3580,7 +3597,6 @@ package body Sem_Ch10 is
       --  indicating that we deal with an instance.
 
       elsif Nkind (Original_Node (P)) = N_Package_Instantiation then
-
          if Nkind (Lib_Unit) in N_Renaming_Declaration
            or else Nkind (Original_Node (Lib_Unit)) in N_Generic_Instantiation
            or else
