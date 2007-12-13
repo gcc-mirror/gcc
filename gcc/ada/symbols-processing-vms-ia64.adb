@@ -61,7 +61,6 @@ package body Processing is
       Success     : out Boolean)
    is
       B : Byte;
-      H : Integer;
       W : Integer;
 
       Str : String (1 .. 1000) := (others => ' ');
@@ -96,10 +95,19 @@ package body Processing is
       OK     : Boolean := True;
 
       procedure Get_Byte (B : out Byte);
+      --  Read one byte from the object file
+
       procedure Get_Half (H : out Integer);
+      --  Read one half work from the object file
+
       procedure Get_Word (W : out Integer);
+      --  Read one full word from the object file
+
       procedure Reset;
-      --  All the above require comments ???
+      --  Restart reading the object file
+
+      procedure Skip_Half;
+      --  Read and disregard one half word from the object file
 
       --------------
       -- Get_Byte --
@@ -144,6 +152,19 @@ package body Processing is
          Byte_IO.Reset (File);
       end Reset;
 
+      ---------------
+      -- Skip_Half --
+      ---------------
+
+      procedure Skip_Half is
+         B : Byte;
+         pragma Unreferenced (B);
+      begin
+         Byte_IO.Read (File, B);
+         Byte_IO.Read (File, B);
+         Offset := Offset + 2;
+      end Skip_Half;
+
    --  Start of processing for Process
 
    begin
@@ -172,11 +193,11 @@ package body Processing is
 
       --  Skip e_type
 
-      Get_Half (H);
+      Skip_Half;
 
       --  Skip e_machine
 
-      Get_Half (H);
+      Skip_Half;
 
       --  Skip e_version
 
@@ -208,15 +229,15 @@ package body Processing is
 
       --  Skip e_ehsize
 
-      Get_Half (H);
+      Skip_Half;
 
       --  Skip e_phentsize
 
-      Get_Half (H);
+      Skip_Half;
 
       --  Skip e_phnum
 
-      Get_Half (H);
+      Skip_Half;
 
       Get_Half (Shentsize);
 
