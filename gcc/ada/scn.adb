@@ -28,12 +28,17 @@ with Csets;    use Csets;
 with Hostparm; use Hostparm;
 with Namet;    use Namet;
 with Opt;      use Opt;
+with Output;   use Output;
 with Restrict; use Restrict;
 with Rident;   use Rident;
 with Scans;    use Scans;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Uintp;    use Uintp;
+
+with GNAT.Byte_Order_Mark; use GNAT.Byte_Order_Mark;
+
+with System.WCh_Con; use System.WCh_Con;
 
 package body Scn is
 
@@ -265,6 +270,42 @@ package body Scn is
       then
          Set_License (Current_Source_File, Determine_License);
       end if;
+
+      --  Check for BOM
+
+      declare
+         BOM : BOM_Kind;
+         Len : Natural;
+         Tst : String (1 .. 5);
+
+      begin
+         for J in 1 .. 5 loop
+            Tst (J) := Source (Scan_Ptr + Source_Ptr (J) - 1);
+         end loop;
+
+         Read_BOM (Tst, Len, BOM, False);
+
+         case BOM is
+            when UTF8_All =>
+               Scan_Ptr := Scan_Ptr + Source_Ptr (Len);
+               Wide_Character_Encoding_Method := WCEM_UTF8;
+               Upper_Half_Encoding := True;
+
+            when UTF16_LE | UTF16_BE =>
+               Write_Line ("UTF-16 encoding format not recognized");
+               raise Unrecoverable_Error;
+
+            when UTF32_LE | UTF32_BE =>
+               Write_Line ("UTF-32 encoding format not recognized");
+               raise Unrecoverable_Error;
+
+            when Unknown =>
+               null;
+
+            when others =>
+               raise Program_Error;
+         end case;
+      end;
 
       --  Because of the License stuff above, Scng.Initialize_Scanner cannot
       --  call Scan. Scan initial token (note this initializes Prev_Token,
