@@ -36,7 +36,12 @@
 package System.Img_Bool is
    pragma Pure;
 
-   function Image_Boolean (V : Boolean) return String;
-   --  Computes Boolean'Image (V) and returns the result
+   procedure Image_Boolean
+     (V : Boolean;
+      S : in out String;
+      P : out Natural);
+   --  Computes Boolean'Image (V) and stores the result in S (1 .. P)
+   --  setting the resulting value of P. The caller guarantees that S
+   --  is long enough to hold the result, and that S'First is 1.
 
 end System.Img_Bool;

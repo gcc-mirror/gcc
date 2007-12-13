@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,18 +39,16 @@ package body System.Img_Uns is
    -- Image_Unsigned --
    --------------------
 
-   function Image_Unsigned
-     (V    : Unsigned)
-      return String
+   procedure Image_Unsigned
+     (V : System.Unsigned_Types.Unsigned;
+      S : in out String;
+      P : out Natural)
    is
-      P : Natural;
-      S : String (1 .. Unsigned'Width);
-
+      pragma Assert (S'First = 1);
    begin
+      S (1) := ' ';
       P := 1;
-      S (P) := ' ';
       Set_Image_Unsigned (V, S, P);
-      return S (1 .. P);
    end Image_Unsigned;
 
    ------------------------
@@ -59,11 +57,15 @@ package body System.Img_Uns is
 
    procedure Set_Image_Unsigned
      (V : Unsigned;
-      S : out String;
+      S : in out String;
       P : in out Natural)
    is
       procedure Set_Digits (T : Unsigned);
       --  Set decimal digits of value of T
+
+      ----------------
+      -- Set_Digits --
+      ----------------
 
       procedure Set_Digits (T : Unsigned) is
       begin
@@ -82,7 +84,6 @@ package body System.Img_Uns is
 
    begin
       Set_Digits (V);
-
    end Set_Image_Unsigned;
 
 end System.Img_Uns;

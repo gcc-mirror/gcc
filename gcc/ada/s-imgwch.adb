@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,10 +41,14 @@ package body System.Img_WChar is
    -- Image_Wide_Character --
    --------------------------
 
-   function Image_Wide_Character
+   procedure Image_Wide_Character
      (V        : Wide_Character;
-      Ada_2005 : Boolean) return String
+      S        : in out String;
+      P        : out Natural;
+      Ada_2005 : Boolean)
    is
+      pragma Assert (S'First = 1);
+
    begin
       --  Annoying Ada 95 incompatibility with FFFE/FFFF
 
@@ -52,49 +56,56 @@ package body System.Img_WChar is
         and then not Ada_2005
       then
          if V = Wide_Character'Val (16#FFFE#) then
-            return "FFFE";
+            S (1 .. 4) := "FFFE";
          else
-            return "FFFF";
+            S (1 .. 4) := "FFFF";
          end if;
-      end if;
+
+         P := 4;
 
       --  Normal case, same as Wide_Wide_Character
 
-      return
-        Image_Wide_Wide_Character
-          (Wide_Wide_Character'Val (Wide_Character'Pos (V)));
+      else
+         Image_Wide_Wide_Character
+           (Wide_Wide_Character'Val (Wide_Character'Pos (V)), S, P);
+      end if;
    end Image_Wide_Character;
 
    -------------------------------
    -- Image_Wide_Wide_Character --
    -------------------------------
 
-   function Image_Wide_Wide_Character
-     (V : Wide_Wide_Character) return String
+   procedure Image_Wide_Wide_Character
+     (V : Wide_Wide_Character;
+      S : in out String;
+      P : out Natural)
    is
+      pragma Assert (S'First = 1);
+
       Val : Unsigned_32 := Wide_Wide_Character'Pos (V);
 
    begin
       --  If in range of standard Character, use Character routine
 
       if Val <= 16#FF# then
-         return Image_Character (Character'Val (Wide_Wide_Character'Pos (V)));
+         Image_Character (Character'Val (Wide_Wide_Character'Pos (V)), S, P);
 
       --  Otherwise value returned is Hex_hhhhhhhh
 
       else
          declare
-            Result : String (1 .. 12) := "Hex_hhhhhhhh";
-            Hex    : constant array (Unsigned_32 range 0 .. 15) of Character :=
-                       "0123456789ABCDEF";
+            Hex : constant array (Unsigned_32 range 0 .. 15) of Character :=
+                    "0123456789ABCDEF";
 
          begin
+            S (1 .. 4) := "Hex_";
+
             for J in reverse 5 .. 12 loop
-               Result (J) := Hex (Val mod 16);
+               S (J) := Hex (Val mod 16);
                Val := Val / 16;
             end loop;
 
-            return Result;
+            P := 12;
          end;
       end if;
    end Image_Wide_Wide_Character;

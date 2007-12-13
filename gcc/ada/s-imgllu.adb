@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1992-2005 Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,31 +39,33 @@ package body System.Img_LLU is
    -- Image_Long_Long_Unsigned --
    ------------------------------
 
-   function Image_Long_Long_Unsigned
-     (V    : Long_Long_Unsigned)
-      return String
+   procedure Image_Long_Long_Unsigned
+     (V : System.Unsigned_Types.Long_Long_Unsigned;
+      S : in out String;
+      P : out Natural)
    is
-      P : Natural;
-      S : String (1 .. Long_Long_Unsigned'Width);
-
+      pragma Assert (S'First = 1);
    begin
+      S (1) := ' ';
       P := 1;
-      S (P) := ' ';
       Set_Image_Long_Long_Unsigned (V, S, P);
-      return S (1 .. P);
    end Image_Long_Long_Unsigned;
 
-   -----------------------
+   ----------------------------------
    -- Set_Image_Long_Long_Unsigned --
-   -----------------------
+   ----------------------------------
 
    procedure Set_Image_Long_Long_Unsigned
      (V : Long_Long_Unsigned;
-      S : out String;
+      S : in out String;
       P : in out Natural)
    is
       procedure Set_Digits (T : Long_Long_Unsigned);
       --  Set digits of absolute value of T
+
+      ----------------
+      -- Set_Digits --
+      ----------------
 
       procedure Set_Digits (T : Long_Long_Unsigned) is
       begin
@@ -82,7 +84,6 @@ package body System.Img_LLU is
 
    begin
       Set_Digits (V);
-
    end Set_Image_Long_Long_Unsigned;
 
 end System.Img_LLU;

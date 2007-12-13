@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1992-2005 Free Software Foundation, Inc.         --
+--           Copyright (C) 1992-2007, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,12 +37,19 @@ package body System.Img_Bool is
    -- Image_Boolean --
    -------------------
 
-   function Image_Boolean (V : Boolean) return String is
+   procedure Image_Boolean
+     (V : Boolean;
+      S : in out String;
+      P : out Natural)
+   is
+      pragma Assert (S'First = 1);
    begin
       if V then
-         return "TRUE";
+         S (1 .. 4) := "TRUE";
+         P := 4;
       else
-         return "FALSE";
+         S (1 .. 5) := "FALSE";
+         P := 5;
       end if;
    end Image_Boolean;
 

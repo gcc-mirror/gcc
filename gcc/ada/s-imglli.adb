@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1992-2005 Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,29 +37,31 @@ package body System.Img_LLI is
    -- Image_Long_Long_Integer --
    -----------------------------
 
-   function Image_Long_Long_Integer (V : Long_Long_Integer) return String is
-      P : Natural;
-      S : String (1 .. Long_Long_Integer'Width);
+   procedure Image_Long_Long_Integer
+     (V : Long_Long_Integer;
+      S : in out String;
+      P : out Natural)
+   is
+      pragma Assert (S'First = 1);
 
    begin
       if V >= 0 then
+         S (1) := ' ';
          P := 1;
-         S (P) := ' ';
       else
          P := 0;
       end if;
 
       Set_Image_Long_Long_Integer (V, S, P);
-      return S (1 .. P);
    end Image_Long_Long_Integer;
 
-   ---------------------------------
+   ------------------------------
    -- Set_Image_Long_Long_Integer --
-   ---------------------------------
+   -----------------------------
 
    procedure Set_Image_Long_Long_Integer
      (V : Long_Long_Integer;
-      S : out String;
+      S : in out String;
       P : in out Natural)
    is
       procedure Set_Digits (T : Long_Long_Integer);
@@ -67,13 +69,16 @@ package body System.Img_LLI is
       --  with the negative of the value so that the largest negative number is
       --  not a special case.
 
+      ----------------
+      -- Set_Digits --
+      ----------------
+
       procedure Set_Digits (T : Long_Long_Integer) is
       begin
          if T <= -10 then
             Set_Digits (T / 10);
             P := P + 1;
             S (P) := Character'Val (48 - (T rem 10));
-
          else
             P := P + 1;
             S (P) := Character'Val (48 - T);
@@ -85,13 +90,11 @@ package body System.Img_LLI is
    begin
       if V >= 0 then
          Set_Digits (-V);
-
       else
          P := P + 1;
          S (P) := '-';
          Set_Digits (V);
       end if;
-
    end Set_Image_Long_Long_Integer;
 
 end System.Img_LLI;
