@@ -1302,9 +1302,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
 
          declare
             K : Key_Type renames Position.Node.Key.all;
-
             E : Element_Type renames Position.Node.Element.all;
-            pragma Unreferenced (E);
 
          begin
             Process (K, E);

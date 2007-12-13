@@ -245,17 +245,25 @@ package body Exp_Smem is
    -------------------
 
    function Is_Out_Actual (N : Node_Id) return Boolean is
-      Kind : Entity_Kind;
-      Call : Node_Id;
+      Formal : Entity_Id;
+      Call   : Node_Id;
 
    begin
-      Find_Actual_Mode (N, Kind, Call);
+      Find_Actual (N, Formal, Call);
 
-      if Kind = E_Out_Parameter or else Kind = E_In_Out_Parameter then
-         Insert_Node := Call;
-         return True;
-      else
+      if No (Formal) then
          return False;
+
+      else
+         if Ekind (Formal) = E_Out_Parameter
+              or else
+            Ekind (Formal) = E_In_Out_Parameter
+         then
+            Insert_Node := Call;
+            return True;
+         else
+            return False;
+         end if;
       end if;
    end Is_Out_Actual;
 

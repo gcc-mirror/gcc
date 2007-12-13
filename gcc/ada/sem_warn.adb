@@ -114,6 +114,13 @@ package body Sem_Warn is
    --  formal, the setting of the flag in the corresponding spec is also
    --  checked (and True returned if either flag is True).
 
+   function Referenced_As_Out_Parameter_Check_Spec
+     (E : Entity_Id) return Boolean;
+   --  Tests Referenced_As_Out_Parameter status for entity E. If E is not a
+   --  formal, this is simply the setting of Referenced_As_Out_Parameter. If E
+   --  is a body formal, the setting of the flag in the corresponding spec is
+   --  also checked (and True returned if either flag is True).
+
    procedure Warn_On_Unreferenced_Entity
      (Spec_E : Entity_Id;
       Body_E : Entity_Id := Empty);
@@ -222,7 +229,7 @@ package body Sem_Warn is
             Ref := N;
             Var := Entity (Ref);
 
-            --  Case of condition is a comparison with compile time known value
+         --  Case of condition is a comparison with compile time known value
 
          elsif Nkind (N) in N_Op_Compare then
             if Compile_Time_Known_Value (Right_Opnd (N)) then
@@ -237,12 +244,12 @@ package body Sem_Warn is
                return;
             end if;
 
-            --  If condition is a negation, check its operand
+         --  If condition is a negation, check its operand
 
          elsif Nkind (N) = N_Op_Not then
             Find_Var (Right_Opnd (N));
 
-            --  Case of condition is function call
+         --  Case of condition is function call
 
          elsif Nkind (N) = N_Function_Call then
 
@@ -252,7 +259,7 @@ package body Sem_Warn is
             if not Is_Entity_Name (Name (N)) then
                return;
 
-               --  Forget it if warnings are suppressed on function entity
+            --  Forget it if warnings are suppressed on function entity
 
             elsif Warnings_Off (Entity (Name (N))) then
                return;
@@ -281,14 +288,14 @@ package body Sem_Warn is
                      Find_Var (First (PA));
                   end if;
 
-                  --  Not one argument
+               --  Not one argument
 
                else
                   return;
                end if;
             end;
 
-            --  Any other kind of node is not something we warn for
+         --  Any other kind of node is not something we warn for
 
          else
             return;
@@ -374,7 +381,7 @@ package body Sem_Warn is
             return False;
          end Substring_Present;
 
-         --  Start of processing for Is_Suspicious_Function_Name
+      --  Start of processing for Is_Suspicious_Function_Name
 
       begin
          S := E;
@@ -405,7 +412,7 @@ package body Sem_Warn is
          if N = Iter then
             return Skip;
 
-            --  Direct reference to variable in question
+         --  Direct reference to variable in question
 
          elsif Is_Entity_Name (N)
            and then Present (Entity (N))
@@ -424,6 +431,7 @@ package body Sem_Warn is
 
             declare
                P : Node_Id;
+
             begin
                P := N;
                loop
@@ -999,8 +1007,8 @@ package body Sem_Warn is
                           ("?variable& is never read and never assigned!");
                      end if;
 
-                     --  Deal with special case where this variable is
-                     --  hidden by a loop variable
+                     --  Deal with special case where this variable is hidden
+                     --  by a loop variable.
 
                      if Ekind (E1) = E_Variable
                        and then Present (Hiding_Loop_Variable (E1))
@@ -1115,13 +1123,27 @@ package body Sem_Warn is
 
                --  Check that warnings on unreferenced entities are enabled
 
-              and then ((Check_Unreferenced and then not Is_Formal (E1))
-                           or else
-                        (Check_Unreferenced_Formals and then Is_Formal (E1))
-                           or else
-                        ((Warn_On_Modified_Unread
-                             or Warn_On_Out_Parameter_Unread)
-                           and then Referenced_As_LHS_Check_Spec (E1)))
+              and then
+                ((Check_Unreferenced and then not Is_Formal (E1))
+
+                     --  Case of warning on unreferenced formal
+
+                     or else
+                      (Check_Unreferenced_Formals and then Is_Formal (E1))
+
+                     --  Case of warning on unread variables modified by an
+                     --  assignment, or an out parameter if it is the only one.
+
+                     or else
+                       (Warn_On_Modified_Unread
+                          and then Referenced_As_LHS_Check_Spec (E1))
+
+                     --  Case of warning on any unread out parameter (note
+                     --  such indications are only set if the appropriate
+                     --  warning options were set, so no need to recheck here.
+
+                     or else
+                       Referenced_As_Out_Parameter_Check_Spec (E1))
 
                --  Labels, and enumeration literals, and exceptions. The
                --  warnings are also placed on local packages that cannot be
@@ -1939,10 +1961,13 @@ package body Sem_Warn is
                --  are referenced. If none of the entities are referenced, we
                --  still post a warning. This occurs if the only use of the
                --  package is in a use clause, or in a package renaming
-               --  declaration.
+               --  declaration. This check is skipped for packages that are
+               --  renamed in a spec, since the entities in such a package are
+               --  visible to clients via the renaming.
 
-               elsif Ekind (Lunit) = E_Package then
-
+               elsif Ekind (Lunit) = E_Package
+                 and then not Renamed_In_Spec (Lunit)
+               then
                   --  If Is_Instantiated is set, it means that the package is
                   --  implicitly instantiated (this is the case of parent
                   --  instance or an actual for a generic package formal), and
@@ -1987,9 +2012,13 @@ package body Sem_Warn is
                            --  Else give the warning
 
                            else
-                              Error_Msg_N
-                                ("?no entities of & are referenced!",
-                                 Name (Item));
+                              if not Has_Pragma_Unreferenced
+                                       (Entity (Name (Item)))
+                              then
+                                 Error_Msg_N
+                                   ("?no entities of & are referenced!",
+                                    Name (Item));
+                              end if;
 
                               --  Look for renamings of this package, and flag
                               --  them as well. If the original package has
@@ -2000,11 +2029,12 @@ package body Sem_Warn is
 
                               if Present (Pack)
                                 and then not Warnings_Off (Lunit)
+                                and then not Has_Pragma_Unreferenced (Pack)
                               then
                                  Error_Msg_NE
                                    ("?no entities of & are referenced!",
                                      Unit_Declaration_Node (Pack),
-                                       Pack);
+                                     Pack);
                               end if;
                            end if;
 
@@ -2016,6 +2046,7 @@ package body Sem_Warn is
 
                         elsif Referenced_Check_Spec (Ent)
                           or else Referenced_As_LHS_Check_Spec (Ent)
+                          or else Referenced_As_Out_Parameter_Check_Spec (Ent)
                           or else
                             (From_With_Type (Ent)
                               and then Is_Incomplete_Type (Ent)
@@ -2105,7 +2136,6 @@ package body Sem_Warn is
 
             Next (Item);
          end loop;
-
       end Check_One_Unit;
 
    --  Start of processing for Check_Unused_Withs
@@ -2517,6 +2547,22 @@ package body Sem_Warn is
       end if;
    end Referenced_As_LHS_Check_Spec;
 
+   --------------------------------------------
+   -- Referenced_As_Out_Parameter_Check_Spec --
+   --------------------------------------------
+
+   function Referenced_As_Out_Parameter_Check_Spec
+     (E : Entity_Id) return Boolean
+   is
+   begin
+      if Is_Formal (E) and then Present (Spec_Entity (E)) then
+         return Referenced_As_Out_Parameter (E)
+           or else Referenced_As_Out_Parameter (Spec_Entity (E));
+      else
+         return Referenced_As_Out_Parameter (E);
+      end if;
+   end Referenced_As_Out_Parameter_Check_Spec;
+
    ----------------------------
    -- Set_Dot_Warning_Switch --
    ----------------------------
@@ -2524,6 +2570,12 @@ package body Sem_Warn is
    function Set_Dot_Warning_Switch (C : Character) return Boolean is
    begin
       case C is
+         when 'a' =>
+            Warn_On_Assertion_Failure           := True;
+
+         when 'A' =>
+            Warn_On_Assertion_Failure           := False;
+
          when 'c' =>
             Warn_On_Unrepped_Components         := True;
 
@@ -2531,10 +2583,10 @@ package body Sem_Warn is
             Warn_On_Unrepped_Components         := False;
 
          when 'o' =>
-            Warn_On_Out_Parameter_Unread        := True;
+            Warn_On_All_Unread_Out_Parameters   := True;
 
          when 'O' =>
-            Warn_On_Out_Parameter_Unread        := False;
+            Warn_On_All_Unread_Out_Parameters   := False;
 
          when 'r' =>
             Warn_On_Object_Renames_Function     := True;
@@ -2570,6 +2622,7 @@ package body Sem_Warn is
             Implementation_Unit_Warnings        := True;
             Ineffective_Inline_Warnings         := True;
             Warn_On_Ada_2005_Compatibility      := True;
+            Warn_On_Assertion_Failure           := True;
             Warn_On_Assumed_Low_Bound           := True;
             Warn_On_Bad_Fixed_Value             := True;
             Warn_On_Constant                    := True;
@@ -2594,6 +2647,8 @@ package body Sem_Warn is
             Implementation_Unit_Warnings        := False;
             Ineffective_Inline_Warnings         := False;
             Warn_On_Ada_2005_Compatibility      := False;
+            Warn_On_Assertion_Failure           := False;
+            Warn_On_Assumed_Low_Bound           := False;
             Warn_On_Bad_Fixed_Value             := False;
             Warn_On_Constant                    := False;
             Warn_On_Deleted_Code                := False;
@@ -2604,7 +2659,7 @@ package body Sem_Warn is
             Warn_On_No_Value_Assigned           := False;
             Warn_On_Non_Local_Exception         := False;
             Warn_On_Obsolescent_Feature         := False;
-            Warn_On_Out_Parameter_Unread        := False;
+            Warn_On_All_Unread_Out_Parameters   := False;
             Warn_On_Questionable_Missing_Parens := False;
             Warn_On_Redundant_Constructs        := False;
             Warn_On_Object_Renames_Function     := False;
@@ -2913,6 +2968,17 @@ package body Sem_Warn is
          end if;
       end if;
    end Warn_On_Known_Condition;
+
+   ---------------------------------------
+   -- Warn_On_Modified_As_Out_Parameter --
+   ---------------------------------------
+
+   function Warn_On_Modified_As_Out_Parameter (E : Entity_Id) return Boolean is
+   begin
+      return
+        (Warn_On_Modified_Unread and then Is_Only_Out_Parameter (E))
+           or else Warn_On_All_Unread_Out_Parameters;
+   end Warn_On_Modified_As_Out_Parameter;
 
    ------------------------------
    -- Warn_On_Suspicious_Index --
@@ -3270,22 +3336,17 @@ package body Sem_Warn is
          case Ekind (E) is
             when E_Variable =>
 
-               --  Case of variable that is assigned but not read. We
-               --  suppress the message if the variable is volatile, has an
-               --  address clause, or is imported.
+               --  Case of variable that is assigned but not read. We suppress
+               --  the message if the variable is volatile, has an address
+               --  clause, is aliasied, or is a renaming, or is imported.
 
                if Referenced_As_LHS_Check_Spec (E)
                  and then No (Address_Clause (E))
                  and then not Is_Volatile (E)
                then
-                  if (Warn_On_Modified_Unread or Warn_On_Out_Parameter_Unread)
+                  if Warn_On_Modified_Unread
                     and then not Is_Imported (E)
                     and then not Is_Return_Object (E)
-
-                     --  Suppress message for aliased or renamed variables,
-                     --  since there may be other entities that read the
-                     --  same memory location.
-
                     and then not Is_Aliased (E)
                     and then No (Renamed_Object (E))
 
@@ -3295,9 +3356,12 @@ package body Sem_Warn is
                      Set_Last_Assignment (E, Empty);
                   end if;
 
-               --  Normal case of neither assigned nor read
+               --  Normal case of neither assigned nor read (exclude variables
+               --  referenced as out parameters, since we already generated
+               --  appropriate warnings at the call point in this case).
 
-               else
+               elsif not Referenced_As_Out_Parameter (E) then
+
                   --  We suppress the message for types for which a valid
                   --  pragma Unreferenced_Objects has been given, otherwise
                   --  we go ahead and give the message.
@@ -3396,10 +3460,10 @@ package body Sem_Warn is
 
    procedure Warn_On_Useless_Assignment
      (Ent : Entity_Id;
-      Loc : Source_Ptr := No_Location)
+      N   : Node_Id := Empty)
    is
-      P : Node_Id;
-      X : Node_Id;
+      P    : Node_Id;
+      X    : Node_Id;
 
       function Check_Ref (N : Node_Id) return Traverse_Result;
       --  Used to instantiate Traverse_Func. Returns Abandon if
@@ -3430,9 +3494,11 @@ package body Sem_Warn is
    --  Start of processing for Warn_On_Useless_Assignment
 
    begin
-      --  Check if this is a case we want to warn on, a variable with the
-      --  last assignment field set, with warnings enabled, and which is
-      --  not imported or exported.
+      --  Check if this is a case we want to warn on, a scalar or access
+      --  variable with the last assignment field set, with warnings enabled,
+      --  and which is not imported or exported. We also check that it is OK
+      --  to capture the value. We are not going to capture any value, but
+      --  the warning messages depends on the same kind of conditions.
 
       if Is_Assignable (Ent)
         and then not Is_Return_Object (Ent)
@@ -3441,6 +3507,7 @@ package body Sem_Warn is
         and then not Has_Pragma_Unreferenced_Check_Spec (Ent)
         and then not Is_Imported (Ent)
         and then not Is_Exported (Ent)
+        and then Safe_To_Capture_Value (N, Ent)
       then
          --  Before we issue the message, check covering exception handlers.
          --  Search up tree for enclosing statement sequences and handlers
@@ -3462,24 +3529,37 @@ package body Sem_Warn is
             then
                --  Case of assigned value never referenced
 
-               if Loc = No_Location then
+               if No (N) then
 
                   --  Don't give this for OUT and IN OUT formals, since
                   --  clearly caller may reference the assigned value.
 
                   if Ekind (Ent) = E_Variable then
-                     Error_Msg_NE
-                       ("?useless assignment to&, value never referenced!",
-                        Last_Assignment (Ent), Ent);
+                     if Referenced_As_Out_Parameter (Ent) then
+                        Error_Msg_NE
+                          ("?& modified by call, but value never referenced",
+                           Last_Assignment (Ent), Ent);
+                     else
+                        Error_Msg_NE
+                          ("?useless assignment to&, value never referenced!",
+                           Last_Assignment (Ent), Ent);
+                     end if;
                   end if;
 
                --  Case of assigned value overwritten
 
                else
-                  Error_Msg_Sloc := Loc;
-                  Error_Msg_NE
-                    ("?useless assignment to&, value overwritten #!",
-                     Last_Assignment (Ent), Ent);
+                  Error_Msg_Sloc := Sloc (N);
+
+                  if Referenced_As_Out_Parameter (Ent) then
+                     Error_Msg_NE
+                       ("?& modified by call, but value overwritten #!",
+                        Last_Assignment (Ent), Ent);
+                  else
+                     Error_Msg_NE
+                       ("?useless assignment to&, value overwritten #!",
+                        Last_Assignment (Ent), Ent);
+                  end if;
                end if;
 
                --  Clear last assignment indication and we are done

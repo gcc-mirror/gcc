@@ -157,6 +157,11 @@ package Sem_Warn is
    --  If all these conditions are met, the warning is issued noting that
    --  the result of the test is always false or always true as appropriate.
 
+   function Warn_On_Modified_As_Out_Parameter (E : Entity_Id) return Boolean;
+   --  Returns True if we should activate warnings for entity E being modified
+   --  as an out parameter. True if either Warn_On_Modified_Unread is set for
+   --  an only OUT parameter, or if Warn_On_All_Unread_Out_Parameters is set.
+
    procedure Warn_On_Suspicious_Index (Name : Entity_Id; X : Node_Id);
    --  This is called after resolving an indexed component or a slice. Name
    --  is the entity for the name of the indexed array, and X is the subscript
@@ -176,14 +181,14 @@ package Sem_Warn is
 
    procedure Warn_On_Useless_Assignment
      (Ent : Entity_Id;
-      Loc : Source_Ptr := No_Location);
+      N   : Node_Id := Empty);
    --  Called to check if we have a case of a useless assignment to the given
    --  entity Ent, as indicated by a non-empty Last_Assignment field. This call
    --  should only be made if at least one of the flags Warn_On_Modified_Unread
-   --  or Warn_On_Out_Parameter_Unread is True, and if Ent is in the extended
-   --  main source unit. Loc is No_Location for the end of block call (warning
-   --  message says value unreferenced), or the it is the location of an
-   --  overwriting assignment (warning message points to this assignment).
+   --  or Warn_On_All_Unread_Out_Parameters is True, and if Ent is in the
+   --  extended main source unit. N is Empty for the end of block call
+   --  (warning message says value unreferenced), or the it is the node for
+   --  an overwriting assignment (warning message points to this assignment).
 
    procedure Warn_On_Useless_Assignments (E : Entity_Id);
    pragma Inline (Warn_On_Useless_Assignments);

@@ -1183,9 +1183,7 @@ package body Ada.Containers.Ordered_Maps is
 
          declare
             K : Key_Type renames Position.Node.Key;
-
             E : Element_Type renames Position.Node.Element;
-            pragma Unreferenced (E);
 
          begin
             Process (K, E);

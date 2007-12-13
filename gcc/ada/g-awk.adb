@@ -1475,7 +1475,6 @@ package body GNAT.AWK is
 
    procedure Split_Line (Session : Session_Type) is
       Fields : Field_Table.Instance renames Session.Data.Fields;
-      pragma Unreferenced (Fields);
    begin
       Field_Table.Init (Fields);
       Split.Current_Line (Session.Data.Separators.all, Session);
