@@ -41,9 +41,10 @@
    version. It is not possible to use it with previous version due to a bug
    in the MingW runtime.  */
 
-#if ((__MINGW32_MAJOR_VERSION == 3 \
+#if (((__MINGW32_MAJOR_VERSION == 3 \
 		   && __MINGW32_MINOR_VERSION >= 9) \
-     || (__MINGW32_MAJOR_VERSION >= 4))
+     || (__MINGW32_MAJOR_VERSION >= 4)) \
+     && !defined (RTX))
 #define GNAT_UNICODE_SUPPORT
 
 #else
