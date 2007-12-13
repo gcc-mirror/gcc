@@ -1783,6 +1783,9 @@ package body Errout is
       Line_Number_Output : Boolean := False;
       --  Set True once line number is output
 
+      Empty_Line : Boolean := True;
+      --  Set False if line includes at least one character
+
    begin
       if Sfile /= Current_Error_Source_File then
          Write_Str ("==============Error messages for ");
@@ -1870,6 +1873,7 @@ package body Errout is
             end if;
          end if;
 
+         Empty_Line := False;
          S := S + 1;
       end loop;
 
@@ -1877,7 +1881,11 @@ package body Errout is
       --  training spaces preserved (so we output the line exactly as input).
 
       if Line_Number_Output then
-         Write_Eol_Keep_Blanks;
+         if Empty_Line then
+            Write_Eol;
+         else
+            Write_Eol_Keep_Blanks;
+         end if;
       end if;
    end Output_Source_Line;
 
