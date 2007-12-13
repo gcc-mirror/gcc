@@ -1315,6 +1315,7 @@ read_real (st_parameter_dt *dtp, int length)
 {
   char c, message[100];
   int seen_dp;
+  int is_inf, i;
 
   seen_dp = 0;
 
@@ -1522,34 +1523,102 @@ read_real (st_parameter_dt *dtp, int length)
   return;
 
  inf_nan:
+  l_push_char (dtp, c);
+  is_inf = 0;
+
   /* Match INF and Infinity.  */
-  if ((c == 'i' || c == 'I')
-      && ((c = next_char (dtp)) == 'n' || c == 'N')
-      && ((c = next_char (dtp)) == 'f' || c == 'F'))
+  if (c == 'i' || c == 'I')
     {
-	c = next_char (dtp);
-	if (is_separator (c)
-	    || ((c == 'i' || c == 'I')
-		&& ((c = next_char (dtp)) == 'n' || c == 'N')
-		&& ((c = next_char (dtp)) == 'i' || c == 'I')
-		&& ((c = next_char (dtp)) == 't' || c == 'T')
-		&& ((c = next_char (dtp)) == 'y' || c == 'Y')
-		&& (c = next_char (dtp)) && is_separator (c)))
-	  {
-	     push_char (dtp, 'i');
-	     push_char (dtp, 'n');
-	     push_char (dtp, 'f');
-	     goto done;
-	  }
+      c = next_char (dtp);
+      l_push_char (dtp, c);
+      if (c != 'n' && c != 'N')
+	goto unwind;
+      c = next_char (dtp);
+      l_push_char (dtp, c);
+      if (c != 'f' && c != 'F')
+	goto unwind;
+      c = next_char (dtp);
+      l_push_char (dtp, c);
+      if (!is_separator (c))
+	{
+	  if (c != 'i' && c != 'I')
+	    goto unwind;
+	  c = next_char (dtp);
+	  l_push_char (dtp, c);
+	  if (c != 'n' && c != 'N')
+	    goto unwind;
+	  c = next_char (dtp);
+	  l_push_char (dtp, c);
+	  if (c != 'i' && c != 'I')
+	    goto unwind;
+	  c = next_char (dtp);
+	  l_push_char (dtp, c);
+	  if (c != 't' && c != 'T')
+	    goto unwind;
+	  c = next_char (dtp);
+	  l_push_char (dtp, c);
+	  if (c != 'y' && c != 'Y')
+	    goto unwind;
+	  c = next_char (dtp);
+	  l_push_char (dtp, c);
+	}
+	is_inf = 1;
     } /* Match NaN.  */
-  else if (((c = next_char (dtp)) == 'a' || c == 'A')
-	   && ((c = next_char (dtp)) == 'n' || c == 'N')
-	   && (c = next_char (dtp)) && is_separator (c))
+  else
+    {
+      c = next_char (dtp);
+      l_push_char (dtp, c);
+      if (c != 'a' && c != 'A')
+	goto unwind;
+      c = next_char (dtp);
+      l_push_char (dtp, c);
+      if (c != 'n' && c != 'N')
+	goto unwind;
+      c = next_char (dtp);
+      l_push_char (dtp, c);
+    }
+
+  if (!is_separator (c) || c == '=')
+    goto unwind;
+
+  if (dtp->u.p.namelist_mode && c != ',' && c != '/')
+    for (i = 0; i < 63; i++)
+    { 
+      eat_spaces (dtp);
+      c = next_char (dtp);
+      l_push_char (dtp, c);
+      if (c == '=')
+	goto unwind;
+
+      if (c == ',' || c == '/' || !is_separator(c))
+	break;
+    }
+
+  if (is_inf)
+    {
+      push_char (dtp, 'i');
+      push_char (dtp, 'n');
+      push_char (dtp, 'f');
+    }
+  else
     {
       push_char (dtp, 'n');
       push_char (dtp, 'a');
       push_char (dtp, 'n');
-      goto done;
+    }
+
+  dtp->u.p.item_count = 0;
+  dtp->u.p.line_buffer_enabled = 0;
+  free_line (dtp);
+  goto done;
+
+ unwind:
+  if (dtp->u.p.namelist_mode)
+    {
+      dtp->u.p.nml_read_error = 1;
+      dtp->u.p.line_buffer_enabled = 1;
+      dtp->u.p.item_count = 0;
+      return;
     }
 
  bad_real:

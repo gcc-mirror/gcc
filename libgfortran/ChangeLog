@@ -1,3 +1,8 @@
+2007-12-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34427
+	* io/list_read.c (read_real): Fix unwinding for namelists.
+
 2007-12-10  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/34411
