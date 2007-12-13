@@ -285,6 +285,10 @@ package body Sem_Disp is
       Indeterm_Ancestor_Call : Boolean := False;
       Indeterm_Ctrl_Type     : Entity_Id;
 
+      Static_Tag : Node_Id := Empty;
+      --  If a controlling formal has a statically tagged actual, the tag of
+      --  this actual is to be used for any tag-indeterminate actual
+
       procedure Check_Dispatching_Context;
       --  If the call is tag-indeterminate and the entity being called is
       --  abstract, verify that the context is a call that will eventually
@@ -379,6 +383,16 @@ package body Sem_Disp is
             then
                Indeterm_Ancestor_Call := True;
                Indeterm_Ctrl_Type     := Etype (Formal);
+
+            --  If the formal is controlling but the actual is not, the type
+            --  of the actual is statically known, and may be used as the
+            --  controlling tag for some other-indeterminate actual.
+
+            elsif Is_Controlling_Formal (Formal)
+              and then Is_Entity_Name (Actual)
+              and then Is_Tagged_Type (Etype (Actual))
+            then
+               Static_Tag := Actual;
             end if;
 
             Next_Actual (Actual);
@@ -400,11 +414,13 @@ package body Sem_Disp is
 
          if No (Control)
            and then Indeterm_Ancestor_Call
+           and then No (Static_Tag)
          then
             Control :=
               Make_Attribute_Reference (Loc,
                 Prefix         => New_Occurrence_Of (Indeterm_Ctrl_Type, Loc),
                 Attribute_Name => Name_Tag);
+
             Analyze (Control);
          end if;
 
@@ -455,12 +471,38 @@ package body Sem_Disp is
             Set_Controlling_Argument (N, Control);
             Check_Restriction (No_Dispatching_Calls, N);
 
+         --  If there is a statically tagged actual, check whether
+         --  some tag-indeterminate actual can use it.
+
+         elsif Present (Static_Tag) then
+            Control :=
+              Make_Attribute_Reference (Loc,
+                Prefix         =>
+                  New_Occurrence_Of (Etype (Static_Tag), Loc),
+                Attribute_Name => Name_Tag);
+
+            Analyze (Control);
+
+            Actual := First_Actual (N);
+            Formal := First_Formal (Subp_Entity);
+            while Present (Actual) loop
+               if Is_Tag_Indeterminate (Actual)
+                 and then Is_Controlling_Formal (Formal)
+               then
+                  Propagate_Tag (Control, Actual);
+               end if;
+
+               Next_Actual (Actual);
+               Next_Formal (Formal);
+            end loop;
+
+            Check_Dispatching_Context;
+
          else
             --  The call is not dispatching, so check that there aren't any
             --  tag-indeterminate abstract calls left.
 
             Actual := First_Actual (N);
-
             while Present (Actual) loop
                if Is_Tag_Indeterminate (Actual) then
 
@@ -1381,6 +1423,7 @@ package body Sem_Disp is
             elsif Is_Subprogram (Prim)
               and then Present (Abstract_Interface_Alias (Prim))
               and then Alias (Prim) = Prev_Op
+              and then Present (Etype (New_Op))
             then
                Set_Alias (Prim, New_Op);
                Check_Subtype_Conformant (New_Op, Prim);
