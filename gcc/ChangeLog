@@ -1,3 +1,10 @@
+2007-12-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/30192
+	* config/arm/ieee754-df.S (floatundidf): Fix for wrong sp value on
+	exit when using hard FPA.
+	* config/arm/ieee754-df.S (floatdidf): Likewise.
+
 2007-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/30589
