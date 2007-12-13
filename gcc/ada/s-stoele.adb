@@ -47,8 +47,9 @@ package body System.Storage_Elements is
      new Ada.Unchecked_Conversion (Address, Storage_Offset);
 
    --  Conversion to/from integers
-   --  Those functions must be place first because they are inlined_always
-   --  and are used in other subprograms defined in this unit.
+
+   --  These functions must be place first because they are inlined_always
+   --  and are used and inlined in other subprograms defined in this unit.
 
    function To_Integer (Value : Address) return Integer_Address is
    begin
@@ -87,12 +88,18 @@ package body System.Storage_Elements is
       Right : Storage_Offset) return Storage_Offset
    is
    begin
-      if Right >= 0 then
+      if Right > 0 then
          return Storage_Offset
-                  (To_Integer (Left) mod Integer_Address (Right));
+           (To_Integer (Left) mod Integer_Address (Right));
+
+         --  The negative case makes no sense since it is a case of a mod where
+         --  the left argument is unsigned and the right argument is signed. In
+         --  accordance with the (spirit of the) permission of RM 13.7.1(16),
+         --  we raise CE, and also include the zero case here. Yes, the RM says
+         --  PE, but this really is so obviously more like a constraint error.
+
       else
-         return -Storage_Offset
-                  ((-To_Integer (Left)) mod Integer_Address (-Right));
+         raise Constraint_Error;
       end if;
    end "mod";
 end System.Storage_Elements;
