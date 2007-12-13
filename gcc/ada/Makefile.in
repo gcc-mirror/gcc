@@ -896,7 +896,7 @@ ifeq ($(strip $(filter-out %86 kfreebsd%,$(arch) $(osys))),)
   system.ads<system-freebsd-x86.ads
 
   TOOLS_TARGET_PAIRS =  \
-    mlib-tgt.adb<mlib-tgt-linux.adb \
+    mlib-tgt-specific.adb<mlib-tgt-linux.adb \
     indepsw.adb<indepsw-gnu.adb
 
   EH_MECHANISM=-gcc
@@ -1457,7 +1457,7 @@ ifeq ($(strip $(filter-out sh4% linux%,$(arch) $(osys))),)
   system.ads<system-linux-sh4.ads
 
   TOOLS_TARGET_PAIRS =  \
-    mlib-tgt.adb<mlib-tgt-linux.adb \
+    mlib-tgt-specific.adb<mlib-tgt-linux.adb \
     indepsw.adb<indepsw-linux.adb
 
   EH_MECHANISM=-gcc
