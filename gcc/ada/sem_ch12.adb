@@ -589,8 +589,8 @@ package body Sem_Ch12 is
    --  is true in the declarative region of the formal package, that is to say
    --  in the enclosing generic or instantiation. For an instantiation, the
    --  parameters of the formal package are made visible in an explicit step.
-   --  Furthermore, if the actual is a visible use_clause, these formals must
-   --  be made potentially use_visible as well. On exit from the enclosing
+   --  Furthermore, if the actual has a visible USE clause, these formals must
+   --  be made potentially use-visible as well. On exit from the enclosing
    --  instantiation, the reverse must be done.
 
    --  For a formal package declared without a box, there are conformance rules
@@ -603,7 +603,7 @@ package body Sem_Ch12 is
    --  formals: the visible and private declarations themselves need not be
    --  created.
 
-   --  In Ada2005, the formal package may be only partially parametrized. In
+   --  In Ada 2005, the formal package may be only partially parametrized. In
    --  that case the visibility step must make visible those actuals whose
    --  corresponding formals were given with a box. A final complication
    --  involves inherited operations from formal derived types, which must be
@@ -1575,18 +1575,15 @@ package body Sem_Ch12 is
       Def : Node_Id)
    is
       Loc   : constant Source_Ptr := Sloc (Def);
-      New_N : Node_Id;
 
    begin
       --  Rewrite as a type declaration of a derived type. This ensures that
       --  the interface list and primitive operations are properly captured.
 
-      New_N :=
+      Rewrite (N,
         Make_Full_Type_Declaration (Loc,
           Defining_Identifier => T,
-           Type_Definition => Def);
-
-      Rewrite (N, New_N);
+          Type_Definition     => Def));
       Analyze (N);
       Set_Is_Generic_Type (T);
    end Analyze_Formal_Derived_Interface_Type;
@@ -1626,9 +1623,9 @@ package body Sem_Ch12 is
              Defining_Identifier => T,
              Discriminant_Specifications =>
                Discriminant_Specifications (Parent (T)),
-              Type_Definition =>
-                Make_Derived_Type_Definition (Loc,
-                  Subtype_Indication => Subtype_Mark (Def)));
+             Type_Definition =>
+               Make_Derived_Type_Definition (Loc,
+                 Subtype_Indication => Subtype_Mark (Def)));
 
          Set_Abstract_Present
            (Type_Definition (New_N), Abstract_Present (Def));
@@ -2482,8 +2479,7 @@ package body Sem_Ch12 is
         and then Nkind (Def) /= N_Formal_Private_Type_Definition
       then
          Error_Msg_N
-           ("discriminants not allowed for this formal type",
-            Defining_Identifier (First (Discriminant_Specifications (N))));
+           ("discriminants not allowed for this formal type", T);
       end if;
 
       --  Enter the new name, and branch to specific routine
@@ -3934,7 +3930,6 @@ package body Sem_Ch12 is
          if Nkind (Parent (N)) = N_Compilation_Unit then
             Set_Body_Required (Parent (N), False);
          end if;
-
       end Analyze_Instance_And_Renamings;
 
    --  Start of processing for Analyze_Subprogram_Instantiation
@@ -6430,9 +6425,26 @@ package body Sem_Ch12 is
          --  Freeze package that encloses instance, and place node after
          --  package that encloses generic. If enclosing package is already
          --  frozen we have to assume it is at the proper place. This may be
-         --  a potential ABE that requires dynamic checking.
+         --  a potential ABE that requires dynamic checking. Do not add a
+         --  freeze node if the package that encloses the generic is inside
+         --  the body that encloses the instance, because the freeze node
+         --  would be in the wrong scope. Additional contortions needed if
+         --  the bodies are within a subunit.
 
-         Insert_After_Last_Decl (Enc_G, Package_Freeze_Node (Enc_I));
+         declare
+            Enclosing_Body : Node_Id;
+
+         begin
+            if Nkind (Enc_I) = N_Package_Body_Stub then
+               Enclosing_Body := Proper_Body (Unit (Library_Unit (Enc_I)));
+            else
+               Enclosing_Body := Enc_I;
+            end if;
+
+            if Parent (List_Containing (Enc_G)) /= Enclosing_Body then
+               Insert_After_Last_Decl (Enc_G, Package_Freeze_Node (Enc_I));
+            end if;
+         end;
 
          --  Freeze enclosing subunit before instance
 
@@ -6887,7 +6899,7 @@ package body Sem_Ch12 is
       --  stub in the current compilation, not the subunit itself.
 
       if Nkind (Parent (Gen_Body)) = N_Subunit then
-         Orig_Body :=  Corresponding_Stub (Parent (Gen_Body));
+         Orig_Body := Corresponding_Stub (Parent (Gen_Body));
       else
          Orig_Body := Gen_Body;
       end if;
@@ -7856,7 +7868,7 @@ package body Sem_Ch12 is
             F := First (Parameter_Specifications (New_Spec));
             while Present (F) loop
                Set_Defining_Identifier (F,
-                  Make_Defining_Identifier (Loc,
+                  Make_Defining_Identifier (Sloc (F),
                     Chars => Chars (Defining_Identifier (F))));
                Next (F);
             end loop;
@@ -9299,6 +9311,17 @@ package body Sem_Ch12 is
             Ancestor := Get_Instance_Of (Etype (Base_Type (A_Gen_T)));
          end if;
 
+         --  If the formal derived type has pragma Preelaborable_Initialization
+         --  then the actual type must have preelaborable initialization.
+
+         if Known_To_Have_Preelab_Init (A_Gen_T)
+           and then not Has_Preelaborable_Initialization (Act_T)
+         then
+            Error_Msg_NE
+              ("actual for & must have preelaborable initialization",
+               Actual, Gen_T);
+         end if;
+
          --  Ada 2005 (AI-251)
 
          if Ada_Version >= Ada_05
@@ -10194,12 +10217,12 @@ package body Sem_Ch12 is
       Previous_Instances : constant Elist_Id := New_Elmt_List;
 
       procedure Collect_Previous_Instances (Decls : List_Id);
-      --  Collect all instantiations in the given list of declarations,
-      --  that precedes the generic that we need to load. If the bodies
-      --  of these instantiations are available, we must analyze them,
-      --  to ensure that the public symbols generated are the same when
-      --  the unit is compiled to generate code, and when it is compiled
-      --  in the context of the unit that needs a particular nested instance.
+      --  Collect all instantiations in the given list of declarations, that
+      --  precede the generic that we need to load. If the bodies of these
+      --  instantiations are available, we must analyze them, to ensure that
+      --  the public symbols generated are the same when the unit is compiled
+      --  to generate code, and when it is compiled in the context of a unit
+      --  that needs a particular nested instance.
 
       --------------------------------
       -- Collect_Previous_Instances --
@@ -10214,7 +10237,17 @@ package body Sem_Ch12 is
             if Sloc (Decl) >= Sloc (Inst_Node) then
                return;
 
-            elsif Nkind (Decl) = N_Package_Instantiation then
+            --  If Decl is an instantiation, then record it as requiring
+            --  instantiation of the corresponding body, except if it is an
+            --  abbreviated instantiation generated internally for conformance
+            --  checking purposes only for the case of a formal package
+            --  declared without a box (see Instantiate_Formal_Package). Such
+            --  an instantiation does not generate any code (the actual code
+            --  comes from actual) and thus does not need to be analyzed here.
+
+            elsif Nkind (Decl) = N_Package_Instantiation
+              and then not Is_Internal (Defining_Entity (Decl))
+            then
                Append_Elmt (Decl, Previous_Instances);
 
             elsif Nkind (Decl) = N_Package_Declaration then
@@ -10342,7 +10375,7 @@ package body Sem_Ch12 is
                   end loop;
 
                   --  Collect previous instantiations in the unit that
-                  --  contains the desired generic,
+                  --  contains the desired generic.
 
                   if Nkind (Parent (True_Parent)) /= N_Compilation_Unit
                     and then not Body_Optional
