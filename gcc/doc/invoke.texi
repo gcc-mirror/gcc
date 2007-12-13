@@ -7182,6 +7182,12 @@ parameter sets a limit on the length of the sets that are computed,
 which prevents the runaway behaviour.  Setting a value of 0 for
 this paramter will allow an unlimited set length.
 
+@item sccvn-max-scc-size
+Maximum size of a strongly connected component (SCC) during SCCVN
+processing.  If this limit is hit, SCCVN processing for the whole
+function will not be done and optimizations depending on it will
+be disabled.  The default maximum SCC size is 10000.
+
 @end table
 @end table
 

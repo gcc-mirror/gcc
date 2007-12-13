@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "langhooks.h"
 #include "cfgloop.h"
+#include "params.h"
 #include "tree-ssa-propagate.h"
 #include "tree-ssa-sccvn.h"
 
@@ -1837,9 +1838,11 @@ process_scc (VEC (tree, heap) *scc)
 /* Depth first search on NAME to discover and process SCC's in the SSA
    graph.
    Execution of this algorithm relies on the fact that the SCC's are
-   popped off the stack in topological order.  */
+   popped off the stack in topological order.
+   Returns true if successful, false if we stopped processing SCC's due
+   to ressource constraints.  */
 
-static void
+static bool
 DFS (tree name)
 {
   ssa_op_iter iter;
@@ -1870,7 +1873,8 @@ DFS (tree name)
 
 	  if (! (VN_INFO (use)->visited))
 	    {
-	      DFS (use);
+	      if (!DFS (use))
+		return false;
 	      VN_INFO (name)->low = MIN (VN_INFO (name)->low,
 					 VN_INFO (use)->low);
 	    }
@@ -1899,6 +1903,17 @@ DFS (tree name)
 	  VEC_safe_push (tree, heap, scc, x);
 	} while (x != name);
 
+      /* Bail out of SCCVN in case a SCC turns out to be incredibly large.  */
+      if (VEC_length (tree, scc)
+	    > (unsigned)PARAM_VALUE (PARAM_SCCVN_MAX_SCC_SIZE))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "WARNING: Giving up with SCCVN due to "
+		     "SCC size %u exceeding %u\n", VEC_length (tree, scc),
+		     (unsigned)PARAM_VALUE (PARAM_SCCVN_MAX_SCC_SIZE));
+	  return false;
+	}
+
       if (VEC_length (tree, scc) > 1)
 	sort_scc (scc);
 
@@ -1909,6 +1924,8 @@ DFS (tree name)
 
       VEC_free (tree, heap, scc);
     }
+
+  return true;
 }
 
 static void
@@ -2074,7 +2091,10 @@ free_scc_vn (void)
     }
 }
 
-void
+/* Do SCCVN.  Returns true if it finished, false if we bailed out
+   due to ressource constraints.  */
+
+bool
 run_scc_vn (void)
 {
   size_t i;
@@ -2100,7 +2120,11 @@ run_scc_vn (void)
       if (name
 	  && VN_INFO (name)->visited == false
 	  && !has_zero_uses (name))
-	DFS (name);
+	if (!DFS (name))
+	  {
+	    free_scc_vn ();
+	    return false;
+	  }
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2123,4 +2147,6 @@ run_scc_vn (void)
 	    }
 	}
     }
+
+  return true;
 }

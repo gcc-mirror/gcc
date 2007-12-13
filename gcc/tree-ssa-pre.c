@@ -3933,7 +3933,13 @@ execute_pre (bool do_fre)
     insert_fake_stores ();
 
   /* Collect and value number expressions computed in each basic block.  */
-  run_scc_vn ();
+  if (!run_scc_vn ())
+    {
+      if (!do_fre)
+	remove_dead_inserted_code ();
+      fini_pre ();
+      return;
+    }
   switch_to_PRE_table ();
   compute_avail ();
 
