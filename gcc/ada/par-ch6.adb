@@ -176,7 +176,7 @@ package body Ch6 is
       Scope.Table (Scope.Last).Ecol := Start_Column;
       Scope.Table (Scope.Last).Lreq := False;
 
-      --  Ada2005: scan leading overriding indicator
+      --  Ada2005: scan leading NOT OVERRIDING indicator
 
       if Token = Tok_Not then
          Scan;  -- past NOT
@@ -184,9 +184,26 @@ package body Ch6 is
          if Token = Tok_Overriding then
             Scan;  --  past OVERRIDING
             Not_Overriding := True;
+
+         --  Overriding keyword used in non Ada 2005 mode
+
+         elsif Token = Tok_Identifier
+           and then Token_Name = Name_Overriding
+         then
+            Error_Msg_SC ("overriding indicator is an Ada 2005 extension");
+            Error_Msg_SC ("\unit must be compiled with -gnat05 switch");
+            Scan;  --  past Overriding
+            Not_Overriding := True;
+
          else
             Error_Msg_SC ("OVERRIDING expected!");
          end if;
+
+      --  Ada 2005: scan leading OVERRIDING indicator
+
+      --  Note: in the case of OVERRIDING keyword used in Ada 95 mode, the
+      --  declaration circuit already gave an error message and changed the
+      --  tokem to Tok_Overriding.
 
       elsif Token = Tok_Overriding then
          Scan;  --  past OVERRIDING
@@ -194,14 +211,14 @@ package body Ch6 is
       end if;
 
       if (Is_Overriding or else Not_Overriding) then
-         if Ada_Version < Ada_05 then
-            Error_Msg_SP (" overriding indicator is an Ada 2005 extension");
-            Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
+
+         --  Note that if we are not in Ada_05 mode, error messages have
+         --  already been given, so no need to give another message here.
 
          --  An overriding indicator is allowed for subprogram declarations,
          --  bodies, renamings, stubs, and instantiations.
 
-         elsif Pf_Flags /= Pf_Decl_Gins_Pbod_Rnam_Stub then
+         if Pf_Flags /= Pf_Decl_Gins_Pbod_Rnam_Stub then
             Error_Msg_SC ("overriding indicator not allowed here!");
 
          elsif Token /= Tok_Function
@@ -1000,7 +1017,8 @@ package body Ch6 is
       Specification_Loop : loop
          begin
             if Token = Tok_Pragma then
-               P_Pragmas_Misplaced;
+               Error_Msg_SC ("pragma not allowed in formal part");
+               Discard_Junk_Node (P_Pragma (Skipping => True));
             end if;
 
             Ignore (Tok_Left_Paren);

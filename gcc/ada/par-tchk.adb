@@ -790,6 +790,32 @@ package body Tchk is
       end if;
    end TF_Use;
 
+   ------------------
+   -- U_Left_Paren --
+   ------------------
+
+   procedure U_Left_Paren is
+   begin
+      if Token = Tok_Left_Paren then
+         Scan;
+      else
+         Error_Msg_AP ("missing ""(""!");
+      end if;
+   end U_Left_Paren;
+
+   -------------------
+   -- U_Right_Paren --
+   -------------------
+
+   procedure U_Right_Paren is
+   begin
+      if Token = Tok_Right_Paren then
+         Scan;
+      else
+         Error_Msg_AP ("missing "")""!");
+      end if;
+   end U_Right_Paren;
+
    -----------------
    -- Wrong_Token --
    -----------------

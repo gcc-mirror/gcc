@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,33 +32,39 @@
 ------------------------------------------------------------------------------
 
 --  This package contains the routine used to convert strings to wide (wide)
---  strings for use by wide (wide) character attributes (value, image etc.)
+--  strings for use by wide (wide) image attribute.
 
 with System.WCh_Con;
 
 package System.WCh_StW is
    pragma Pure;
 
-   function String_To_Wide_String
+   procedure String_To_Wide_String
      (S  : String;
-      EM : System.WCh_Con.WC_Encoding_Method) return Wide_String;
+      R  : out Wide_String;
+      L  : out Natural;
+      EM : System.WCh_Con.WC_Encoding_Method);
    --  This routine simply takes its argument and converts it to wide string
-   --  format. In the context of the Wide_Image attribute, the argument is
-   --  the corresponding 'Image attribute. Any wide character escape sequences
-   --  in the string are converted to the corresponding wide character value.
-   --  No syntax checks are made, it is assumed that any such sequences are
-   --  validly formed (this must be assured by the caller), and results from
-   --  the fact that Wide_Image is only used on strings that have been built
-   --  by the compiler, such as images of enumeration literals. If the method
-   --  for encoding is a shift-in, shift-out convention, then it is assumed
-   --  that normal (non-wide character) mode holds at the start and end of
-   --  the argument string. EM indicates the wide character encoding method.
+   --  format, storing the result in R (1 .. L), with L being set appropriately
+   --  on return. The caller guarantees that R is long enough to accomodate the
+   --  result. This is used in the context of the Wide_Image attribute, where
+   --  the argument is the corresponding 'Image attribute. Any wide character
+   --  escape sequences in the string are converted to the corresponding wide
+   --  character value. No syntax checks are made, it is assumed that any such
+   --  sequences are validly formed (this must be assured by the caller), and
+   --  results from the fact that Wide_Image is only used on strings that have
+   --  been built by the compiler, such as images of enumeration literals. If
+   --  the method for encoding is a shift-in, shift-out convention, then it is
+   --  assumed that normal (non-wide character) mode holds at the start and end
+   --  of the argument string. EM indicates the wide character encoding method.
    --  Note: in the WCEM_Brackets case, the brackets escape sequence is used
    --  only for codes greater than 16#FF#.
 
-   function String_To_Wide_Wide_String
+   procedure String_To_Wide_Wide_String
      (S  : String;
-      EM : System.WCh_Con.WC_Encoding_Method) return Wide_Wide_String;
+      R  : out Wide_Wide_String;
+      L  : out Natural;
+      EM : System.WCh_Con.WC_Encoding_Method);
    --  Same function with Wide_Wide_String output
 
 end System.WCh_StW;

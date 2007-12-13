@@ -180,7 +180,7 @@ package body Ch10 is
          Item := P_Pragma;
 
          if Item = Error
-           or else Chars (Item) > Last_Configuration_Pragma_Name
+           or else not Is_Configuration_Pragma_Name (Chars (Item))
          then
             Restore_Scan_State (Scan_State);
             exit;
@@ -587,19 +587,17 @@ package body Ch10 is
       while Token = Tok_Pragma loop
          Save_Scan_State (Scan_State);
 
-         --  If we are in syntax scan mode allowing multiple units, then
-         --  start the next unit if we encounter a configuration pragma,
-         --  or a source reference pragma. We take care not to actually
-         --  scan the pragma in this case since we don't want it to take
-         --  effect for the current unit.
+         --  If we are in syntax scan mode allowing multiple units, then start
+         --  the next unit if we encounter a configuration pragma, or a source
+         --  reference pragma. We take care not to actually scan the pragma in
+         --  this case (we don't want it to take effect for the current unit).
 
          if Operating_Mode = Check_Syntax then
             Scan;  -- past Pragma
 
             if Token = Tok_Identifier
               and then
-                (Token_Name in
-                         First_Pragma_Name .. Last_Configuration_Pragma_Name
+                (Is_Configuration_Pragma_Name (Token_Name)
                    or else Token_Name = Name_Source_Reference)
             then
                Restore_Scan_State (Scan_State); -- to Pragma
@@ -1022,9 +1020,9 @@ package body Ch10 is
       Body_Node := Error; -- in case no good body found
       Scan; -- past SEPARATE;
 
-      T_Left_Paren;
+      U_Left_Paren;
       Set_Name (Subunit_Node, P_Qualified_Simple_Name);
-      T_Right_Paren;
+      U_Right_Paren;
 
       if Token = Tok_Semicolon then
          Error_Msg_SC ("unexpected semicolon ignored");

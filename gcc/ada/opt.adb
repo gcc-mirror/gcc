@@ -55,6 +55,7 @@ package body Opt is
       Extensions_Allowed_Config             := Extensions_Allowed;
       External_Name_Exp_Casing_Config       := External_Name_Exp_Casing;
       External_Name_Imp_Casing_Config       := External_Name_Imp_Casing;
+      Fast_Math_Config                      := Fast_Math;
       Persistent_BSS_Mode_Config            := Persistent_BSS_Mode;
       Polling_Required_Config               := Polling_Required;
       Use_VADS_Size_Config                  := Use_VADS_Size;
@@ -75,6 +76,7 @@ package body Opt is
       Extensions_Allowed             := Save.Extensions_Allowed;
       External_Name_Exp_Casing       := Save.External_Name_Exp_Casing;
       External_Name_Imp_Casing       := Save.External_Name_Imp_Casing;
+      Fast_Math                      := Save.Fast_Math;
       Persistent_BSS_Mode            := Save.Persistent_BSS_Mode;
       Polling_Required               := Save.Polling_Required;
       Use_VADS_Size                  := Save.Use_VADS_Size;
@@ -95,6 +97,7 @@ package body Opt is
       Save.Extensions_Allowed             := Extensions_Allowed;
       Save.External_Name_Exp_Casing       := External_Name_Exp_Casing;
       Save.External_Name_Imp_Casing       := External_Name_Imp_Casing;
+      Save.Fast_Math                      := Fast_Math;
       Save.Persistent_BSS_Mode            := Persistent_BSS_Mode;
       Save.Polling_Required               := Polling_Required;
       Save.Use_VADS_Size                  := Use_VADS_Size;
@@ -147,11 +150,13 @@ package body Opt is
          Extensions_Allowed         := Extensions_Allowed_Config;
          External_Name_Exp_Casing   := External_Name_Exp_Casing_Config;
          External_Name_Imp_Casing   := External_Name_Imp_Casing_Config;
+         Fast_Math                  := Fast_Math_Config;
          Persistent_BSS_Mode        := Persistent_BSS_Mode_Config;
          Use_VADS_Size              := Use_VADS_Size_Config;
       end if;
 
       Exception_Locations_Suppressed := Exception_Locations_Suppressed_Config;
+      Fast_Math                      := Fast_Math_Config;
       Polling_Required               := Polling_Required_Config;
    end Set_Opt_Config_Switches;
 

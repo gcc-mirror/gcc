@@ -530,7 +530,10 @@ is
    -------------
 
    package Ch2 is
-      function P_Pragma                               return Node_Id;
+      function P_Pragma (Skipping : Boolean := False) return Node_Id;
+      --  Scan out a pragma. If Skipping is True, then the caller is skipping
+      --  the pragma in the context of illegal placement (this is used to avoid
+      --  some junk cascaded messages).
 
       function P_Identifier (C : Id_Check := None) return Node_Id;
       --  Scans out an identifier. The parameter C determines the treatment
@@ -965,7 +968,7 @@ is
       procedure T_When;
       procedure T_With;
 
-      --  Procedures have names of the form TF_xxx, where Tok_xxx is a token
+      --  Procedures having names of the form TF_xxx, where Tok_xxx is a token
       --  name check that the current token matches the required token, and
       --  if so, scan past it. If not, an error message is issued indicating
       --  that the required token is not present (xxx expected).
@@ -987,6 +990,13 @@ is
       procedure TF_Semicolon;
       procedure TF_Then;
       procedure TF_Use;
+
+      --  Procedures with names of the form U_xxx, where Tok_xxx is a token
+      --  name, are just like the corresponding T_xxx procedures except that
+      --  an error message, if given, is unconditional.
+
+      procedure U_Left_Paren;
+      procedure U_Right_Paren;
    end Tchk;
 
    --------------
@@ -1084,6 +1094,10 @@ is
       --  merge is only attempted if the following token matches Nxt. If all
       --  conditions are met, an error message is issued, and the merge is
       --  carried out, modifying the Chars field of Prev.
+
+      function Next_Token_Is (Tok : Token_Type) return Boolean;
+      --  Looks at token after current one and returns True if the token type
+      --  matches Tok. The scan is unconditionally restored on return.
 
       procedure No_Constraint;
       --  Called in a place where no constraint is allowed, but one might
@@ -1242,7 +1256,7 @@ begin
 
                   --  Give error if bad pragma
 
-                  if Chars (P_Node) > Last_Configuration_Pragma_Name
+                  if not Is_Configuration_Pragma_Name (Chars (P_Node))
                     and then Chars (P_Node) /= Name_Source_Reference
                   then
                      if Is_Pragma_Name (Chars (P_Node)) then

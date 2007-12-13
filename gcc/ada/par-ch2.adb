@@ -227,8 +227,7 @@ package body Ch2 is
    --  will think there are missing bodies, and try to change ; to IS, when
    --  in fact the bodies ARE present, supplied by these pragmas.
 
-   function P_Pragma return Node_Id is
-
+   function P_Pragma (Skipping : Boolean := False) return Node_Id is
       Interface_Check_Required : Boolean := False;
       --  Set True if check of pragma INTERFACE is required
 
@@ -259,10 +258,22 @@ package body Ch2 is
       procedure Skip_Pragma_Semicolon is
       begin
          if Token /= Tok_Semicolon then
-            T_Semicolon;
-            Resync_Past_Semicolon;
+
+            --  If skipping the pragma, ignore a missing semicolon
+
+            if Skipping then
+               null;
+
+            --  Otherwise demand a semicolon
+
+            else
+               T_Semicolon;
+            end if;
+
+         --  Scan past semicolon if present
+
          else
-            Scan; -- past semicolon
+            Scan;
          end if;
       end Skip_Pragma_Semicolon;
 
@@ -284,14 +295,14 @@ package body Ch2 is
         and then Token = Tok_Interface
       then
          Pragma_Name := Name_Interface;
-         Ident_Node  := Token_Node;
+         Ident_Node  := Make_Identifier (Token_Ptr, Name_Interface);
          Scan; -- past INTERFACE
       else
          Ident_Node := P_Identifier;
-         Delete_Node (Ident_Node);
       end if;
 
       Set_Chars (Pragma_Node, Pragma_Name);
+      Set_Pragma_Identifier (Pragma_Node, Ident_Node);
 
       --  See if special INTERFACE/IMPORT check is required
 
@@ -336,10 +347,10 @@ package body Ch2 is
             Scan; -- past comma
          end loop;
 
-         --  If we have := for pragma Debug, it is worth special casing
-         --  the error message (it is easy to think of pragma Debug as
-         --  taking a statement, and an assignment statement is the most
-         --  likely candidate for this error)
+         --  If we have := for pragma Debug, it is worth special casing the
+         --  error message (it is easy to think of pragma Debug as taking a
+         --  statement, and an assignment statement is the most likely
+         --  candidate for this error)
 
          if Token = Tok_Colon_Equal and then Pragma_Name = Name_Debug then
             Error_Msg_SC ("argument for pragma Debug must be procedure call");
@@ -394,7 +405,7 @@ package body Ch2 is
    begin
       while Token = Tok_Pragma loop
          Error_Msg_SC ("pragma not allowed here");
-         Discard_Junk_Node (P_Pragma);
+         Discard_Junk_Node (P_Pragma (Skipping => True));
       end loop;
    end P_Pragmas_Misplaced;
 
@@ -469,7 +480,6 @@ package body Ch2 is
             Identifier_Seen := True;
             Scan; -- past arrow
             Set_Chars (Association, Chars (Identifier_Node));
-            Delete_Node (Identifier_Node);
 
             --  Case of argument with no identifier
 

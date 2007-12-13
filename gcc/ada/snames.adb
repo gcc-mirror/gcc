@@ -93,8 +93,9 @@ package body Snames is
      "_disp_asynchronous_select#" &
      "_disp_conditional_select#" &
      "_disp_get_prim_op_kind#" &
-     "_disp_timed_select#" &
      "_disp_get_task_id#" &
+     "_disp_requeue#" &
+     "_disp_timed_select#" &
      "initialize#" &
      "adjust#" &
      "finalize#" &
@@ -194,6 +195,7 @@ package body Snames is
      "extend_system#" &
      "extensions_allowed#" &
      "external_name_casing#" &
+     "favor_top_level#" &
      "float_representation#" &
      "implicit_packing#" &
      "initialize_scalars#" &
@@ -261,6 +263,7 @@ package body Snames is
      "external#" &
      "finalize_storage_only#" &
      "ident#" &
+     "implemented_by_entry#" &
      "import#" &
      "import_exception#" &
      "import_function#" &
@@ -456,6 +459,7 @@ package body Snames is
      "epsilon#" &
      "exponent#" &
      "external_tag#" &
+     "fast_math#" &
      "first#" &
      "first_bit#" &
      "fixed_value#" &
@@ -569,7 +573,6 @@ package body Snames is
      "priority_queuing#" &
      "edf_across_priorities#" &
      "fifo_within_priorities#" &
-     "non_preemptive_within_priorities#" &
      "round_robin_within_priorities#" &
      "access_check#" &
      "accessibility_check#" &
@@ -927,6 +930,8 @@ package body Snames is
    begin
       if N = Name_AST_Entry then
          return Pragma_AST_Entry;
+      elsif N = Name_Fast_Math then
+         return Pragma_Fast_Math;
       elsif N = Name_Interface then
          return Pragma_Interface;
       elsif N = Name_Priority then
@@ -955,8 +960,9 @@ package body Snames is
    -- Get_Task_Dispatching_Policy_Id --
    ------------------------------------
 
-   function Get_Task_Dispatching_Policy_Id (N : Name_Id)
-     return Task_Dispatching_Policy_Id is
+   function Get_Task_Dispatching_Policy_Id
+     (N : Name_Id) return Task_Dispatching_Policy_Id
+   is
    begin
       return Task_Dispatching_Policy_Id'Val
         (N - First_Task_Dispatching_Policy_Name);
@@ -972,10 +978,8 @@ package body Snames is
 
    begin
       P_Index := Preset_Names'First;
-
       loop
          Name_Len := 0;
-
          while Preset_Names (P_Index) /= '#' loop
             Name_Len := Name_Len + 1;
             Name_Buffer (Name_Len) := Preset_Names (P_Index);
@@ -1023,6 +1027,16 @@ package body Snames is
    begin
       return N in First_Attribute_Name .. Last_Attribute_Name;
    end Is_Attribute_Name;
+
+   ----------------------------------
+   -- Is_Configuration_Pragma_Name --
+   ----------------------------------
+
+   function Is_Configuration_Pragma_Name (N : Name_Id) return Boolean is
+   begin
+      return N in First_Pragma_Name .. Last_Configuration_Pragma_Name
+        or else N = Name_Fast_Math;
+   end Is_Configuration_Pragma_Name;
 
    ------------------------
    -- Is_Convention_Name --
@@ -1109,6 +1123,7 @@ package body Snames is
    begin
       return N in First_Pragma_Name .. Last_Pragma_Name
         or else N = Name_AST_Entry
+        or else N = Name_Fast_Math
         or else N = Name_Interface
         or else N = Name_Priority
         or else N = Name_Storage_Size
