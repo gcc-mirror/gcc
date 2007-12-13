@@ -1,3 +1,9 @@
+2007-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/32636
+	* df-scan.c (df_get_entry_block_def_set): Set struct_value_rtx
+	regno in entry_block_defs even if HAVE_prologue && epilogue_completed.
+
 2007-12-13  Uros Bizjak  <ubizjak@gmail.com>
 	    Richard Guenther  <rguenther@suse.de>
 
