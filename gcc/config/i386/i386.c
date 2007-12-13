@@ -22236,7 +22236,7 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int *total)
 	    nbits = 7;
 
 	  /* Compute costs correctly for widening multiplication.  */
-	  if ((GET_CODE (op0) == SIGN_EXTEND || GET_CODE (op1) == ZERO_EXTEND)
+	  if ((GET_CODE (op0) == SIGN_EXTEND || GET_CODE (op0) == ZERO_EXTEND)
 	      && GET_MODE_SIZE (GET_MODE (XEXP (op0, 0))) * 2
 	         == GET_MODE_SIZE (mode))
 	    {
