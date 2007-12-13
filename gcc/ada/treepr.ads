@@ -59,13 +59,14 @@ package Treepr is
 
    procedure pe (E : Elist_Id);
    pragma Export (Ada, pe);
-   --  Debugging procedure (to be called within gdb)
-   --  same as Print_Tree_Elist
+   --  Debugging procedure (to be called within gdb), same as Print_Tree_Elist
 
-   procedure pl (L : List_Id);
+   procedure pl (L : Int);
    pragma Export (Ada, pl);
-   --  Debugging procedure (to be called within gdb)
-   --  same as Print_Tree_List
+   --  Debugging procedure (to be called within gdb), same as Print_Tree_List,
+   --  except that you can use e.g. 66 instead of -99999966. In other words
+   --  for the positive case we fill out to 8 digits on the left and add a
+   --  minus sign. This just saves some typing in the debugger.
 
    procedure pn (N : Node_Id);
    pragma Export (Ada, pn);

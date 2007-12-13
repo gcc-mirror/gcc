@@ -223,9 +223,38 @@ package body Treepr is
    -- pl --
    --------
 
-   procedure pl (L : List_Id) is
+   procedure pl (L : Int) is
+      Lid : Int;
+
    begin
-      Print_Tree_List (L);
+      if L < 0 then
+         Lid := L;
+
+      --  This is the case where we transform e.g. +36 to -99999936
+
+      else
+         if L <= 9 then
+            Lid := -(99999990 + L);
+         elsif L <= 99 then
+            Lid := -(99999900 + L);
+         elsif L <= 999 then
+            Lid := -(99999000 + L);
+         elsif L <= 9999 then
+            Lid := -(99990000 + L);
+         elsif L <= 99999 then
+            Lid := -(99900000 + L);
+         elsif L <= 999999 then
+            Lid := -(99000000 + L);
+         elsif L <= 9999999 then
+            Lid := -(90000000 + L);
+         else
+            Lid := -L;
+         end if;
+      end if;
+
+      --  Now output the list
+
+      Print_Tree_List (List_Id (Lid));
    end pl;
 
    --------
