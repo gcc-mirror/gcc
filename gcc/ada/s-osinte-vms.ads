@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2007, Free Software Foundation, Inc.      --
+--          Copyright (C) 1995-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,12 +42,13 @@
 
 with Interfaces.C;
 with Ada.Unchecked_Conversion;
+with System.Aux_DEC;
 
 package System.OS_Interface is
    pragma Preelaborate;
 
    pragma Linker_Options ("--for-linker=sys$library:pthread$rtl.exe");
-   --  Link in the DEC threads library.
+   --  Link in the DEC threads library
 
    --  pragma Linker_Options ("--for-linker=/threads_enable");
    --  Enable upcalls and multiple kernel threads.
@@ -80,7 +81,7 @@ package System.OS_Interface is
 
    subtype Interrupt_Number_Type is unsigned_long;
 
-   --  OpenVMS system services return values of type Cond_Value_Type.
+   --  OpenVMS system services return values of type Cond_Value_Type
 
    subtype Cond_Value_Type is unsigned_long;
    subtype Short_Cond_Value_Type is unsigned_short;
@@ -92,6 +93,7 @@ package System.OS_Interface is
    end record;
 
    type AST_Handler is access procedure (Param : Address);
+   pragma Convention (C, AST_Handler);
    No_AST_Handler : constant AST_Handler := null;
 
    CMB_M_READONLY  : constant := 16#00000001#;
@@ -173,7 +175,7 @@ package System.OS_Interface is
    --
    procedure Sys_Crembx
      (Status : out Cond_Value_Type;
-      Prmflg : Boolean;
+      Prmflg : unsigned_char;
       Chan   : out unsigned_short;
       Maxmsg : unsigned_long := 0;
       Bufquo : unsigned_long := 0;
@@ -184,7 +186,7 @@ package System.OS_Interface is
    pragma Interface (External, Sys_Crembx);
    pragma Import_Valued_Procedure
      (Sys_Crembx, "SYS$CREMBX",
-      (Cond_Value_Type, Boolean,        unsigned_short,
+      (Cond_Value_Type, unsigned_char,  unsigned_short,
        unsigned_long,   unsigned_long,  unsigned_short,
        unsigned_short,  String,         unsigned_long),
       (Value,           Value,          Reference,
@@ -360,9 +362,10 @@ package System.OS_Interface is
 
    type Thread_Body is access
      function (arg : System.Address) return System.Address;
+   pragma Convention (C, Thread_Body);
 
    function Thread_Body_Access is new
-     Ada.Unchecked_Conversion (System.Address, Thread_Body);
+     Ada.Unchecked_Conversion (System.Aux_DEC.Short_Address, Thread_Body);
 
    type pthread_t           is private;
    subtype Thread_Id        is pthread_t;
@@ -569,6 +572,7 @@ package System.OS_Interface is
    pragma Import (C, pthread_getspecific, "PTHREAD_GETSPECIFIC");
 
    type destructor_pointer is access procedure (arg : System.Address);
+   pragma Convention (C, destructor_pointer);
 
    function pthread_key_create
      (key        : access pthread_key_t;

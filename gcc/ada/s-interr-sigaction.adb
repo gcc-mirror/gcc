@@ -117,6 +117,7 @@ package body System.Interrupts is
    --  that contain interrupt handlers.
 
    procedure Signal_Handler (Sig : Interrupt_ID);
+   pragma Convention (C, Signal_Handler);
    --  This procedure is used to handle all the signals
 
    --  Type and Head, Tail of the list containing Registered Interrupt
@@ -142,6 +143,7 @@ package body System.Interrupts is
    --  Always consider a null handler as registered.
 
    type Handler_Ptr is access procedure (Sig : Interrupt_ID);
+   pragma Convention (C, Handler_Ptr);
 
    function TISR is new Ada.Unchecked_Conversion (Handler_Ptr, isr_address);
 

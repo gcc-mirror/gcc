@@ -465,28 +465,109 @@ private
    pragma Inline_Always (Fetch_From_Address);
    pragma Inline_Always (Assign_To_Address);
 
-   --  Synchronization related subprograms. These are declared to have
-   --  convention C so that the critical parameters are passed by reference.
+   --  Synchronization related subprograms. Mechanism is explicitly set
+   --  so that the critical parameters are passed by reference.
    --  Without this, the parameters are passed by copy, creating load/store
    --  race conditions. We also inline them, since this seems more in the
    --  spirit of the original (hardware intrinsic) routines.
 
-   pragma Convention (C, Clear_Interlocked);
+   pragma Export_Procedure
+     (Clear_Interlocked,
+      External        => "system__aux_dec__clear_interlocked__1",
+      Parameter_Types => (Boolean, Boolean),
+      Mechanism       => (Reference, Reference));
+   pragma Export_Procedure
+     (Clear_Interlocked,
+      External        => "system__aux_dec__clear_interlocked__2",
+      Parameter_Types => (Boolean, Boolean, Natural, Boolean),
+      Mechanism       => (Reference, Reference, Value, Reference));
    pragma Inline_Always (Clear_Interlocked);
 
-   pragma Convention (C, Set_Interlocked);
+   pragma Export_Procedure
+     (Set_Interlocked,
+      External        => "system__aux_dec__set_interlocked__1",
+      Parameter_Types => (Boolean, Boolean),
+      Mechanism       => (Reference, Reference));
+   pragma Export_Procedure
+     (Set_Interlocked,
+      External        => "system__aux_dec__set_interlocked__2",
+      Parameter_Types => (Boolean, Boolean, Natural, Boolean),
+      Mechanism       => (Reference, Reference, Value, Reference));
    pragma Inline_Always (Set_Interlocked);
 
-   pragma Convention (C, Add_Interlocked);
+   pragma Export_Procedure
+     (Add_Interlocked,
+      External        => "system__aux_dec__add_interlocked__1",
+      Mechanism       => (Value, Reference, Reference));
    pragma Inline_Always (Add_Interlocked);
 
-   pragma Convention (C, Add_Atomic);
+   pragma Export_Procedure
+     (Add_Atomic,
+      External        => "system__aux_dec__add_atomic__1",
+      Parameter_Types => (Aligned_Integer, Integer),
+      Mechanism       => (Reference, Value));
+   pragma Export_Procedure
+     (Add_Atomic,
+      External        => "system__aux_dec__add_atomic__2",
+      Parameter_Types => (Aligned_Integer, Integer, Natural, Integer, Boolean),
+      Mechanism       => (Reference, Value, Value, Reference, Reference));
+   pragma Export_Procedure
+     (Add_Atomic,
+      External        => "system__aux_dec__add_atomic__3",
+      Parameter_Types => (Aligned_Long_Integer, Long_Integer),
+      Mechanism       => (Reference, Value));
+   pragma Export_Procedure
+     (Add_Atomic,
+      External        => "system__aux_dec__add_atomic__4",
+      Parameter_Types => (Aligned_Long_Integer, Long_Integer, Natural,
+                          Long_Integer, Boolean),
+      Mechanism       => (Reference, Value, Value, Reference, Reference));
    pragma Inline_Always (Add_Atomic);
 
-   pragma Convention (C, And_Atomic);
+   pragma Export_Procedure
+     (And_Atomic,
+      External        => "system__aux_dec__and_atomic__1",
+      Parameter_Types => (Aligned_Integer, Integer),
+      Mechanism       => (Reference, Value));
+   pragma Export_Procedure
+     (And_Atomic,
+      External        => "system__aux_dec__and_atomic__2",
+      Parameter_Types => (Aligned_Integer, Integer, Natural, Integer, Boolean),
+      Mechanism       => (Reference, Value, Value, Reference, Reference));
+   pragma Export_Procedure
+     (And_Atomic,
+      External        => "system__aux_dec__and_atomic__3",
+      Parameter_Types => (Aligned_Long_Integer, Long_Integer),
+      Mechanism       => (Reference, Value));
+   pragma Export_Procedure
+     (And_Atomic,
+      External        => "system__aux_dec__and_atomic__4",
+      Parameter_Types => (Aligned_Long_Integer, Long_Integer, Natural,
+                          Long_Integer, Boolean),
+      Mechanism       => (Reference, Value, Value, Reference, Reference));
    pragma Inline_Always (And_Atomic);
 
-   pragma Convention (C, Or_Atomic);
+   pragma Export_Procedure
+     (Or_Atomic,
+      External        => "system__aux_dec__or_atomic__1",
+      Parameter_Types => (Aligned_Integer, Integer),
+      Mechanism       => (Reference, Value));
+   pragma Export_Procedure
+     (Or_Atomic,
+      External        => "system__aux_dec__or_atomic__2",
+      Parameter_Types => (Aligned_Integer, Integer, Natural, Integer, Boolean),
+      Mechanism       => (Reference, Value, Value, Reference, Reference));
+   pragma Export_Procedure
+     (Or_Atomic,
+      External        => "system__aux_dec__or_atomic__3",
+      Parameter_Types => (Aligned_Long_Integer, Long_Integer),
+      Mechanism       => (Reference, Value));
+   pragma Export_Procedure
+     (Or_Atomic,
+      External        => "system__aux_dec__or_atomic__4",
+      Parameter_Types => (Aligned_Long_Integer, Long_Integer, Natural,
+                          Long_Integer, Boolean),
+      Mechanism       => (Reference, Value, Value, Reference, Reference));
    pragma Inline_Always (Or_Atomic);
 
    --  Provide proper unchecked conversion definitions for transfer

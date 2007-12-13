@@ -239,6 +239,8 @@ package System.OS_Interface is
 
    type Thread_Body is access
      function (arg : System.Address) return System.Address;
+   pragma Convention (C, Thread_Body);
+
    type pthread_t           is private;
    subtype Thread_Id        is pthread_t;
 
@@ -475,6 +477,7 @@ package System.OS_Interface is
    pragma Import (C, pthread_getspecific, "pthread_getspecific");
 
    type destructor_pointer is access procedure (arg : System.Address);
+   pragma Convention (C, destructor_pointer);
 
    function pthread_key_create
      (key        : access pthread_key_t;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                      Copyright (C) 2002-2006, AdaCore                    --
+--                      Copyright (C) 2002-2007, AdaCore                    --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,12 +42,6 @@
 --  The behavior of this package when using tasking depends on the interaction
 --  between sigaction() and the thread library.
 
---  On most implementations, the interaction will be no different whether
---  tasking is involved or not. An exception is GNU/Linux systems where
---  each task/thread is considered as a separate process by the kernel,
---  meaning in particular that a Ctrl-C from the keyboard will be sent to
---  all tasks instead of only one, resulting in multiple calls to the handler.
-
 package GNAT.Ctrl_C is
 
    type Handler_Type is access procedure;
@@ -63,6 +57,5 @@ package GNAT.Ctrl_C is
    --  If Install_Handler has never been called, this procedure has no effect.
 
 private
-   pragma Import (C, Install_Handler, "__gnat_install_int_handler");
    pragma Import (C, Uninstall_Handler, "__gnat_uninstall_int_handler");
 end GNAT.Ctrl_C;

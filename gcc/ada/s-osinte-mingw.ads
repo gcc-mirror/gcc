@@ -133,6 +133,7 @@ package System.OS_Interface is
    type sigset_t is private;
 
    type isr_address is access procedure (sig : int);
+   pragma Convention (C, isr_address);
 
    function intr_attach (sig : int; handler : isr_address) return long;
    pragma Import (C, intr_attach, "signal");
@@ -206,6 +207,7 @@ package System.OS_Interface is
 
    type Thread_Body is access
      function (arg : System.Address) return System.Address;
+   pragma Convention (C, Thread_Body);
 
    function Thread_Body_Access is new
      Ada.Unchecked_Conversion (System.Address, Thread_Body);
