@@ -1,3 +1,8 @@
+2007-12-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/uninit-13.c: UnXFAIL.
+	* gcc.dg/complex-5.c: New testcase.
+
 2007-12-13  Olga Golovanevsky  <olga@il.ibm.com>
 
 	* gcc.dg/struct/struct-reorg.exp: Replace 

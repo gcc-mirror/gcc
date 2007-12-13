@@ -3728,7 +3728,15 @@ tree_to_gimple_tuple (tree *tp)
 
 /* Promote partial stores to COMPLEX variables to total stores.  *EXPR_P is
    a MODIFY_EXPR with a lhs of a REAL/IMAGPART_EXPR of a variable with
-   DECL_GIMPLE_REG_P set.  */
+   DECL_GIMPLE_REG_P set.
+
+   IMPORTANT NOTE: This promotion is performed by introducing a load of the
+   other, unmodified part of the complex object just before the total store.
+   As a consequence, if the object is still uninitialized, an undefined value
+   will be loaded into a register, which may result in a spurious exception
+   if the register is floating-point and the value happens to be a signaling
+   NaN for example.  Then the fully-fledged complex operations lowering pass
+   followed by a DCE pass are necessary in order to fix things up.  */
 
 static enum gimplify_status
 gimplify_modify_expr_complex_part (tree *expr_p, tree *pre_p, bool want_value)
@@ -6462,7 +6470,7 @@ gimplify_function_tree (tree fndecl)
 
   ret = DECL_RESULT (fndecl);
   if ((TREE_CODE (TREE_TYPE (ret)) == COMPLEX_TYPE
-	   || TREE_CODE (TREE_TYPE (ret)) == VECTOR_TYPE)
+       || TREE_CODE (TREE_TYPE (ret)) == VECTOR_TYPE)
       && !needs_to_live_in_memory (ret))
     DECL_GIMPLE_REG_P (ret) = 1;
 

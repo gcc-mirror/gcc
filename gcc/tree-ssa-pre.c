@@ -383,7 +383,6 @@ static void bitmap_set_copy (bitmap_set_t, bitmap_set_t);
 static bool bitmap_set_contains_value (bitmap_set_t, tree);
 static void bitmap_insert_into_set (bitmap_set_t, tree);
 static bitmap_set_t bitmap_set_new (void);
-static bool is_undefined_value (tree);
 static tree create_expression_by_pieces (basic_block, tree, tree);
 static tree find_or_generate_expression (basic_block, tree, tree);
 
@@ -1328,7 +1327,7 @@ phi_translate_1 (tree expr, bitmap_set_t set1, bitmap_set_t set2,
 	    if (is_gimple_min_invariant (def))
 	      return def;
 
-	    if (is_undefined_value (def))
+	    if (TREE_CODE (def) == SSA_NAME && ssa_undefined_value_p (def))
 	      return NULL;
 
 	    val = get_value_handle (def);
@@ -2889,18 +2888,6 @@ insert (void)
 }
 
 
-/* Return true if VAR is an SSA variable with no defining statement in
-   this procedure, *AND* isn't a live-on-entry parameter.  */
-
-static bool
-is_undefined_value (tree expr)
-{
-  return (TREE_CODE (expr) == SSA_NAME
-	  && IS_EMPTY_STMT (SSA_NAME_DEF_STMT (expr))
-	  /* PARM_DECLs and hard registers are always defined.  */
-	  && TREE_CODE (SSA_NAME_VAR (expr)) != PARM_DECL);
-}
-
 /* Add OP to EXP_GEN (block), and possibly to the maximal set if it is
    not defined by a phi node.
    PHI nodes can't go in the maximal sets because they are not in
@@ -2912,7 +2899,7 @@ add_to_exp_gen (basic_block block, tree op)
 {
   if (!in_fre)
     {
-      if (TREE_CODE (op) == SSA_NAME && is_undefined_value (op))
+      if (TREE_CODE (op) == SSA_NAME && ssa_undefined_value_p (op))
 	return;
       bitmap_value_insert_into_set (EXP_GEN (block), op);
       if (TREE_CODE (op) != SSA_NAME
@@ -3415,7 +3402,7 @@ make_values_for_stmt (tree stmt, basic_block block)
 		       AVAIL_OUT (block));
 	}
       /* None of the rest of these can be PRE'd.  */
-      if (TREE_CODE (rhs) == SSA_NAME && !is_undefined_value (rhs))
+      if (TREE_CODE (rhs) == SSA_NAME && !ssa_undefined_value_p (rhs))
 	add_to_exp_gen (block, rhs);
       return true;
     }

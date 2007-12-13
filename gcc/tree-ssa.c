@@ -1228,9 +1228,28 @@ walk_use_def_chains (tree var, walk_use_def_chains_fn fn, void *data,
 }
 
 
+/* Return true if T, an SSA_NAME, has an undefined value.  */
+
+bool
+ssa_undefined_value_p (tree t)
+{
+  tree var = SSA_NAME_VAR (t);
+
+  /* Parameters get their initial value from the function entry.  */
+  if (TREE_CODE (var) == PARM_DECL)
+    return false;
+
+  /* Hard register variables get their initial value from the ether.  */
+  if (TREE_CODE (var) == VAR_DECL && DECL_HARD_REGISTER (var))
+    return false;
+
+  /* The value is undefined iff its definition statement is empty.  */
+  return IS_EMPTY_STMT (SSA_NAME_DEF_STMT (t));
+}
+
 /* Emit warnings for uninitialized variables.  This is done in two passes.
 
-   The first pass notices real uses of SSA names with default definitions.
+   The first pass notices real uses of SSA names with undefined values.
    Such uses are unconditionally uninitialized, and we can be certain that
    such a use is a mistake.  This pass is run before most optimizations,
    so that we catch as many as we can.
@@ -1250,22 +1269,11 @@ static void
 warn_uninit (tree t, const char *gmsgid, void *data)
 {
   tree var = SSA_NAME_VAR (t);
-  tree def = SSA_NAME_DEF_STMT (t);
   tree context = (tree) data;
   location_t *locus;
   expanded_location xloc, floc;
 
-  /* Default uses (indicated by an empty definition statement),
-     are uninitialized.  */
-  if (!IS_EMPTY_STMT (def))
-    return;
-
-  /* Except for PARMs of course, which are always initialized.  */
-  if (TREE_CODE (var) == PARM_DECL)
-    return;
-
-  /* Hard register variables get their initial value from the ether.  */
-  if (TREE_CODE (var) == VAR_DECL && DECL_HARD_REGISTER (var))
+  if (!ssa_undefined_value_p (t))
     return;
 
   /* TREE_NO_WARNING either means we already warned, or the front end
