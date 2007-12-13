@@ -424,11 +424,11 @@ package body Sem_Type is
         and then Present (Abstract_Interface_Alias (E))
       then
          --  Ada 2005 (AI-251): If this primitive operation corresponds with
-         --  an inmediate ancestor interface there is no need to add it to the
-         --  list of interpretations; the corresponding aliased primitive is
+         --  an immediate ancestor interface there is no need to add it to the
+         --  list of interpretations. The corresponding aliased primitive is
          --  also in this list of primitive operations and will be used instead
-         --  because otherwise we have a dummy between the two subprograms that
-         --  are in fact the same.
+         --  because otherwise we have a dummy ambiguity between the two
+         --  subprograms which are in fact the same.
 
          if not Is_Ancestor
                   (Find_Dispatching_Type (Abstract_Interface_Alias (E)),
@@ -505,8 +505,8 @@ package body Sem_Type is
             end;
 
          else
-            --  Overloaded prefix in indexed or selected component,
-            --  or call whose name is an expression or another call.
+            --  Overloaded prefix in indexed or selected component, or call
+            --  whose name is an expression or another call.
 
             Add_Entry (Etype (N), Etype (N));
          end if;
@@ -530,6 +530,7 @@ package body Sem_Type is
             Write_Entity_Info (All_Interp.Table (J). Nam, " ");
          else
             Write_Str ("No Interp");
+            Write_Eol;
          end if;
 
          Write_Str ("=================");
@@ -641,7 +642,7 @@ package body Sem_Type is
                Add_One_Interp (N, H, Etype (H));
 
                if Debug_Flag_E then
-                  Write_Str ("Add overloaded Interpretation ");
+                  Write_Str ("Add overloaded interpretation ");
                   Write_Int (Int (H));
                   Write_Eol;
                end if;
@@ -1981,7 +1982,10 @@ package body Sem_Type is
       Form_Parm : Node_Id;
 
    begin
-      if Is_Overloaded (N) then
+      --  Why is check on E needed below ???
+      --  In any case this para needs comments ???
+
+      if Is_Overloaded (N) and then Is_Overloadable (E) then
          Act_Parm  := First_Actual (N);
          Form_Parm := First_Formal (E);
          while Present (Act_Parm)
