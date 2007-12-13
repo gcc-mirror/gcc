@@ -1,3 +1,8 @@
+2007-12-13  Torbjorn Granlund  <tege@swox.com>
+
+	* config/i386/i386.c (ix86_rtx_costs) [MULT]: Check op0 for
+	ZERO_EXTEND when computing costs for widening multiplication.
+
 2007-12-13  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/30192
@@ -92,8 +97,7 @@
 	to extract the integer from operands[2].
 	(vec_setv2di_internal): Likewise.
 
-	* config/arm/arm.c (arm_size_return_regs): Make return type
-	unsigned.
+	* config/arm/arm.c (arm_size_return_regs): Make return type unsigned.
 	(arm_init_neon_builtins): Move code after declarations.
 
 2007-12-10  Hans-Peter Nilsson  <hp@axis.com>
@@ -535,8 +539,7 @@
 	* tree-vrp.c (adjust_range_with_scev): Clear scev cache.
 	(record_numbers_of_iterations): New function.
 	(execute_vrp): Cache the numbers of iterations of loops.
-	* tree-scalar-evolution.c (scev_reset_except_niters):
-	New function.
+	* tree-scalar-evolution.c (scev_reset_except_niters): New function.
 	(scev_reset): Use scev_reset_except_niters.
 	* tree-scalar-evolution.h (scev_reset_except_niters): Declare.
 
@@ -1377,9 +1380,9 @@
 	PR tree-optimization/33953
 	* tree-vect-transform.c (vectorizable_operation): In case of SLP,
 	allocate vec_oprnds1 according to the number of created vector
-	statements. In case of shift with scalar argument, store scalar operand
-	for every vector statement to be created for the SLP node. Fix a
-	comment.
+	statements. In case of shift with scalar argument, store scalar
+	operand for every vector statement to be created for the SLP node.
+	Fix a comment.
 
 2007-11-10  Steven Bosscher  <stevenb.gcc@gmail.com>
 
@@ -1445,8 +1448,7 @@
 
 2007-11-09  Richard Guenther  <rguenther@suse.de>
 
-	* tree-flow.h (struct ptr_info_def): Make escape_mask a
-	ENUM_BITFIELD.
+	* tree-flow.h (struct ptr_info_def): Make escape_mask a ENUM_BITFIELD.
 	(struct ptr_info_def): Likewise.
 	(enum escape_type): Also use bit zero.
 
@@ -1845,8 +1847,7 @@
 	(in_safe_group_barrier): New variable.
 	(rws_update): Remove first argument, always set rws_sum array.
 	(rws_access_regno): Use rws_insn_set macro.  Only call rws_update
-	or update rws_sum if !in_safe_group_barrier, adjust rws_update
-	args.
+	or update rws_sum if !in_safe_group_barrier, adjust rws_update args.
 	(rtx_needs_barrier): Use rws_insn_test macro.
 	(safe_group_barrier_needed): Don't save/restore rws_sum array,
 	instead set/clear in_safe_group_barrier flag.
@@ -1996,8 +1997,8 @@
 
 	* config/rs6000/rs6000.opt: Rename -mdfp option to -mhard-dfp.
 
-	* config/s390/s390.c: (override_options): Replace -mhard-dfp/-msoft-dfp
-	with -mhard-dfp/-mno-hard-dfp.
+	* config/s390/s390.c: (override_options): Replace
+	-mhard-dfp/-msoft-dfp with -mhard-dfp/-mno-hard-dfp.
 	* config/s390/s390.opt: Likewise.
 	* config/s390/s390.h: Add MASK_HARD_DFP to the TARGET_DEFAULT
 	definition.
@@ -2493,7 +2494,7 @@
 	SSA_NAME pointers.
 
 2007-10-22  Seongbae Park <seongbae.park@gmail.com>
-	David S. Miller  <davem@davemloft.net>
+	    David S. Miller  <davem@davemloft.net>
 
 	* df-scan.c (df_get_call_refs): Mark global registers as both a
 	DF_REF_REG_USE and a non-clobber DF_REF_REG_DEF.
@@ -3010,8 +3011,7 @@
 2007-10-19  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/32921
-	* tree.c (build_array_type): Do not re-layout unbound array
-	types.
+	* tree.c (build_array_type): Do not re-layout unbound array types.
 
 2007-10-19  Richard Sandiford  <rsandifo@nildram.co.uk>
 
@@ -3765,8 +3765,7 @@
 
 	PR middle-end/33669
 	* ra-conflict.c (record_one_conflict_between_regnos,
-	set_conflicts_for_earlyclobber, global_conflicts): Improved
-	logging.
+	set_conflicts_for_earlyclobber, global_conflicts): Improved logging.
 	(global_conflicts): Removed incorrect check.
 
 2007-10-09  Richard Sandiford  <rsandifo@nildram.co.uk>
@@ -3909,8 +3908,7 @@
 
 	PR tree-optimization/33655
 	PR middle-end/22156
-	* tree-sra.c (bitfield_overlaps_p): Handle array and complex
-	elements.
+	* tree-sra.c (bitfield_overlaps_p): Handle array and complex elements.
 
 2007-10-06  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -4024,8 +4022,7 @@
 
 2007-10-04  Geoffrey Keating  <geoffk@apple.com>
 
-	* cgraphunit.c (cgraph_build_static_cdtor): Don't set
-	DECL_IGNORED_P.
+	* cgraphunit.c (cgraph_build_static_cdtor): Don't set DECL_IGNORED_P.
 
 2007-10-04  Anatoly Sokolov <aesok@post.ru>
 
@@ -4150,8 +4147,7 @@
 2007-10-02  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR middle-end/33617
-	* expr.c (expand_expr_addr_expr_1): Pass CONSTRUCTORs to
-	expand_expr.
+	* expr.c (expand_expr_addr_expr_1): Pass CONSTRUCTORs to expand_expr.
 
 2007-10-02  David Daney  <ddaney@avtrex.com>
 
@@ -4263,14 +4259,12 @@
 	(canon_type_for_field): New.
 	(try_instantiate_multiple_fields): New.  Infer widest possible
 	access mode from decl or member type, but clip it at word
-	size, and only widen it if a field crosses an alignment
-	boundary.
+	size, and only widen it if a field crosses an alignment boundary.
 	(instantiate_missing_elements): Use them.
 	(generate_one_element_ref): Handle BIT_FIELD_REFs.
 	(scalar_bitfield_p): New.
 	(sra_build_assignment): Optimize assignments from scalarizable
-	BIT_FIELD_REFs.  Use BITS_BIG_ENDIAN to determine shift
-	counts.
+	BIT_FIELD_REFs.  Use BITS_BIG_ENDIAN to determine shift counts.
 	(REPLDUP): New.
 	(sra_build_bf_assignment): New.  Optimize assignments to
 	scalarizable BIT_FIELD_REFs.
@@ -4292,8 +4286,7 @@
 	BIT_FIELD_REFs.  Explode or sync needed members for
 	BIT_FIELD_REFs accesses or assignments.  Use REPLDUP.
 	(scalarize_copy): Use REPLDUP.
-	(scalarize_ldst): Move assert before dereference.  Adjust EH
-	handling.
+	(scalarize_ldst): Move assert before dereference.  Adjust EH handling.
 	(dump_sra_elt_name): Handle BIT_FIELD_REFs.
 
 2007-10-01  Paolo Bonzini  <bonzini@gnu.org>
@@ -4579,8 +4572,7 @@
 2007-09-25  DJ Delorie  <dj@redhat.com>
 
 	PR target/33551
-	* config/m32c/m32c.c (m32c_immd_dbl_mov): Use INTVAL instead of
-	XINT.
+	* config/m32c/m32c.c (m32c_immd_dbl_mov): Use INTVAL instead of XINT.
 
 2007-09-25  Michael Meissner  <michael.meissner@amd.com>
 
@@ -4888,8 +4880,7 @@
 2007-09-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/33146
-	* fold-const.c (fold_binary): Use the original tree
-	for negating.
+	* fold-const.c (fold_binary): Use the original tree for negating.
 	* tree.h (STRIP_SIGN_NOPS): Converting from or to pointer
 	also changes "sign".
 
@@ -5352,8 +5343,7 @@
 
 	* doc/tm.texi (LIBGCC2_UNWIND_ATTRIBUTE): Document.
 	* unwind-generic.h (LIBGCC2_UNWIND_ATTRIBUTE): Define.
-	(_Unwind_RaiseException): Add LIBGCC2_UNWIND_ATTRIBUTE to
-	declaration.
+	(_Unwind_RaiseException): Add LIBGCC2_UNWIND_ATTRIBUTE to declaration.
 	(_Unwind_ForcedUnwind): Likewise.
 	(_Unwind_Resume): Likewise.
 	(_Unwind_Resume_or_Rethrow): Likewise.
@@ -5417,8 +5407,7 @@
 
 	PR target/32337
 	* config/ia64/ia64.c (find_gr_spill): Don't decrement
-	current_frame_info.n_local_regs.  Don't return emitted local
-	regs.
+	current_frame_info.n_local_regs.  Don't return emitted local regs.
 	(ia64_compute_frame_size): Improve unwind hack to put
 	RP, PFS, FP in that order by allowing some of the registers
 	been already emitted, as long as they are emitted to the
@@ -5563,19 +5552,15 @@
 	pointer to hold the argument.
 	(function_args_iter_cond): Inline function to return the next
 	argument.
-	(function_args_iter_cond_next): Advance the function args
-	iterator.
-	(stdarg_p): New function, return true if variable argument
-	function.
-	(prototype_p): New function, return true if function is
-	prototyped.
+	(function_args_iter_cond_next): Advance the function args iterator.
+	(stdarg_p): New function, return true if variable argument function.
+	(prototype_p): New function, return true if function is prototyped.
 	(function_args_count): New function, count the number of arguments
 	of a function.
 
 	* tree.c (stdarg_p): New function, return true if variable
 	argument function.
-	(prototype_p): New function, return true if function is
-	prototyped.
+	(prototype_p): New function, return true if function is prototyped.
 
 	* config/i386/i386.h (TARGET_SSE5): New macro for SSE5.
 	(TARGET_ROUND): New macro for the round/ptest instructions which
@@ -6067,8 +6052,8 @@
 2007-09-12  Jan Hubicka  <jh@suse.cz>
 
 	PR target/33393
-	* i386.md (floatsisf2_mixed_memory, floatsisf2_sse_memory): Disable
-	for !SSE_MATH
+	* config/i386/i386.md (floatsisf2_mixed_memory, floatsisf2_sse_memory):
+	Disable for !SSE_MATH
 
 2007-09-12  Christian Bruel  <christian.bruel@st.com>
 
@@ -6084,8 +6069,8 @@
 
 2007-09-12  Ira Rosen  <irar@il.ibm.com>
 
-	* params.def (PARAM_MIN_VECT_LOOP_BOUND): Change default and minimum 
-	to 1.
+	* params.def (PARAM_MIN_VECT_LOOP_BOUND): Change default and
+	minimum to 1.
 
 2007-09-11  James E. Wilson  <wilson@specifix.com>
 
@@ -6285,15 +6270,15 @@
 
 2007-09-11  Zdenek Dvorak  <ook@ucw.cz>
 
-	* fold-const.c (extract_muldiv_1): Do not simplify
-	var * c * c to var.
+	* fold-const.c (extract_muldiv_1): Do not simplify var * c * c to var.
 
 2007-09-11  Jan Hubicka <jh@suse.cz>
 
-	* i386.h (ix86_tune_indices): Add X86_TUNE_INTER_UNIT_CONVERSIONS.
+	* config/i386/i386.h (ix86_tune_indices): Add
+	X86_TUNE_INTER_UNIT_CONVERSIONS.
 	(TARGET_INTER_UNIT_CONVERSIONS): New.
-	* i386.md (floatsi expanders): Remove redundant check for SImode
-	source; offload to memory when asked for.
+	* config/i386/i386.md (floatsi expanders): Remove redundant check
+	for SImode source; offload to memory when asked for.
 	(floatsisf2_mixed, floatsisf2_sse, floatsidf2_mixed, floatsidf2_sse
 	floatdisf2_mixed, floatsisf2_sse, floatsidf2_mixed, floatsidf2_sse):
 	Update conditions;
@@ -6581,7 +6566,7 @@
 
 2007-09-09  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* i386.md (*floatsisf2_mixed_vector): Use cvtdq2ps instead
+	* config/i386/i386.md (*floatsisf2_mixed_vector): Use cvtdq2ps instead
 	of cvtpq2ps.
 	(*floatsisf2_sse_vector): Likewise.
 
@@ -6615,10 +6600,10 @@
 2007-09-09  Jan Hubicka  <jh@suse.cz>
 	    Dwarakanath Rajagopal <dwarak.rajagopal@amd.com>
 
-	* i386.h (ix86_tune_indices): Add X86_USE_VECTOR_CONVERTS.
+	* config/i386/i386.h (ix86_tune_indices): Add X86_USE_VECTOR_CONVERTS.
 	(TARGET_USE_VECTOR_CONVERTS): New.
-	* i386.md: New post-reload splitters for converting SF to DF and DF to
-	SF.
+	* config/i386/i386.md: New post-reload splitters for converting
+	SF to DF and DF to SF.
 	(floatsi* expander): Special case vector conversions.
 	(floatsisf2_mixed_vector, floatsisf2_sse_vector_nointernunit,
 	floatsisf2_sse_vector_internunit, floatsisf2_sse_vector,
@@ -6626,8 +6611,8 @@
 	(floatsisf2_mixed, floatsisf2_sse, floatsidf2_mixed, floatsidf2_sse):
 	Disable when doing vector converts.
 	(floatsi<mode>2_i387): Disable when
-	* sse.md (vec_dupv2df): Export.
-	* i386.c (ix86_tune_features): Enable SSE conversions.
+	* config/i386/sse.md (vec_dupv2df): Export.
+	* config/i386/i386.c (ix86_tune_features): Enable SSE conversions.
 
 2007-09-09  Richard Guenther  <rguenther@suse.de>
 
@@ -7356,8 +7341,8 @@
 
  	2007-09-06  Jan Hubicka  <jh@suse.cz>
  
-	* i386.c (ix86_expand_lround, ix86_expand_round): Update call of
-	real_2expN.
+	* config/i386/i386.c (ix86_expand_lround, ix86_expand_round):
+	Update call of real_2expN.
 
 	2007-09-06  Richard Sandiford  <richard@codesourcery.com>
 
@@ -7514,8 +7499,8 @@
 
 2007-09-06  Jan Hubicka  <jh@suse.cz>
 
-	* i386.c (ix86_expand_lround, ix86_expand_round): Update call of
-	real_2expN.
+	* config/i386/i386.c (ix86_expand_lround, ix86_expand_round):
+	Update call of real_2expN.
 
 2007-09-06  Jan Hubicka  <jh@suse.cz>
 
@@ -10095,7 +10080,7 @@
 	
 2007-08-19  Jan Hubicka  <jh@suse.cz>
 
-	* i386.md: Replace "rim" and "mri" constraints by "g".
+	* config/i386/i386.md: Replace "rim" and "mri" constraints by "g".
 
 2007-08-19  Joseph Myers  <joseph@codesourcery.com>
 
@@ -10547,8 +10532,8 @@
 
 2007-08-14  Kai Tietz  <kai.tietz@onevision.com>
 
-	* i386.c: (legitimize_address): Move dllimported variable check
-	infront of legitimizing pic address of CONST symbols.
+	* config/i386/i386.c (legitimize_address): Move dllimported variable
+	check infront of legitimizing pic address of CONST symbols.
 
 2007-08-14  Steve Ellcey  <sje@cup.hp.com>
 
@@ -11924,8 +11909,8 @@
 
 2007-08-03  Jan Hubicka  <jh@suse.cz>
 
-	* i386.c (setup_incoming_varargs_64): Tolerate 64bit preferred
-	stack boundary.
+	* config/i386/i386.c (setup_incoming_varargs_64): Tolerate 64bit
+	preferred stack boundary.
 
 2007-08-03  David Edelsohn  <edelsohn@gnu.org>
 
@@ -13673,7 +13658,7 @@
 
 2007-07-23  Jan Hubicka  <jH@suse.cz>
 
-	* i386.c (ix86_secondary_memory_needed): Break out to...
+	* config/i386/i386.c (ix86_secondary_memory_needed): Break out to...
 	(inline_secondary_memory_needed): ... here.
 	(ix86_memory_move_cost): Break out to ...
 	(inline_memory_move_cost): ... here; add support for IN value of 2 for
@@ -19411,7 +19396,7 @@
 	extra_headers.
 	(x86_64-*-*): Likewise.
 
-	* i386/i386-modes.def (V2QI): New.
+	* config/i386/i386-modes.def (V2QI): New.
 
 	* config/i386/i386.c (ix86_handle_option): Handle SSE4.1 and
 	SSE4A.
@@ -25875,9 +25860,9 @@
 
 	* reg-stack.c (reg_to_stack): Large models don't allow NAN to be
 	loaded for constant large models.  Non-large 64bit PIC can do.
-	* i386.h (CASE_VECTOR_MODE): Large PIC cases are 64bit.
+	* config/i386/i386.h (CASE_VECTOR_MODE): Large PIC cases are 64bit.
 	* cmodel.h: Add LARGE PIC.
-	* i386.md (UNSPEC_PLTOFF): New.
+	* config/i386/i386.md (UNSPEC_PLTOFF): New.
 	(UNSPEC_SET_RIP, UNSPEC_SET_GOT_OFFSET): New; renumber other
 	unspecs as needed.
 	(*call_1_rex64): Disable for large models.
@@ -25886,10 +25871,10 @@
 	(*call_value_1_rex64_large): New.
 	(set_rip_rex4): New.
 	(set_got_offset_rex64): New.
-	* predicates.md (constant_call_address_operand): For large model
-	constant calls are not possible.
-	* i386-protos.h (construct_plt_address): Declare.
-	* i386.c (override_options): Accept large models.
+	* config/i386/predicates.md (constant_call_address_operand): For
+	large model constant calls are not possible.
+	* config/i386/i386-protos.h (construct_plt_address): Declare.
+	* config/i386/i386.c (override_options): Accept large models.
 	(ix86_expand_prologue): Expand large PIC GOT pointer load.
 	(legitimate_constant_p): Add new UNSPECs.
 	(legitimate_pic_operand_p): Likewise.
@@ -26883,7 +26868,7 @@
 	    Jan Hubicka  <jh@suse.cz>
 
 	PR target/30778
-	* i386.c (counter_mode): New function.
+	* cofnig/i386/i386.c (counter_mode): New function.
 	(expand_set_or_movmem_via_loop): Use it.
 	(expand_movmem_epilogue): Likewise; fix pasto.
 	(ix86_expand_movmem): Do emit guard even for constant counts.
@@ -30316,7 +30301,8 @@
 	* Makefile.in (LIBGCOV): Add new constants.
 	* libgcov.c (__gcov_merge_ior, __gcov_average_profiler,
 	__gcov_ior_profiler): New.
-	* i386.md (movmem/setmem expanders): Add new optional arguments.
+	* config/i386/i386.md (movmem/setmem expanders): Add new optional
+	arguments.
 
 2007-01-28  David Edelsohn  <edelsohn@gnu.org>
 
@@ -31184,8 +31170,8 @@
 
 2007-01-18  Michael Meissner  <michael.meissner@amd.com>
 
-	* i386.c (ix86_compute_frame_layout): Make fprintf's in #if 0 code
-	type correct.
+	* config/i386/i386.c (ix86_compute_frame_layout): Make fprintf's
+	in #if 0 code type correct.
 
 2007-01-18  Jan Hubicka  <jh@suse.cz>
 
