@@ -1,3 +1,19 @@
+2007-12-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34450
+	* params.def (PARAM_SCCVN_MAX_SCC_SIZE): New param.
+	* invoke.texi (sccvn-max-scc-size): Document.
+	* Makefile.in (tree-ssa-sccvn.o): Add $(PARAMS_H) dependency.
+	* tree-ssa-sccvn.h (run_scc_vn): Return true on success, false
+	on error.
+	* tree-ssa-sccvn.c (params.h): Include.
+	(DFS): Return true if all went well, return false as soon as
+	a SCC exceeds the size of PARAM_SCCVN_MAX_SCC_SIZE.
+	(run_scc_vn): Return true if all went well, return false if
+	we aborted during DFS.
+	* tree-ssa-pre.c (execute_pre): Check if SCCVN finished
+	successfully, otherwise bail out.
+
 2007-12-13  Olga Golovanevsky  <olga@il.ibm.com>
 
 	* ipa-struct-reorg.c (is_candidate): Print information to dump 

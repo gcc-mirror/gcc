@@ -48,7 +48,7 @@ typedef struct vn_ssa_aux
 /* Return the value numbering info for an SSA_NAME.  */
 extern vn_ssa_aux_t VN_INFO (tree);
 extern vn_ssa_aux_t VN_INFO_GET (tree);
-void run_scc_vn (void);
+bool run_scc_vn (void);
 void free_scc_vn (void);
 void switch_to_PRE_table (void);
 tree vn_binary_op_lookup (tree);

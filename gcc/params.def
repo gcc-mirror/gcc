@@ -713,6 +713,17 @@ DEFPARAM (PARAM_MAX_PARTIAL_ANTIC_LENGTH,
 	  "Maximum length of partial antic set when performing tree pre optimization",
 	  100, 0, 0)
 
+/* The following is used as a stop-gap limit for cases where really huge
+   SCCs blow up memory and compile-time use too much.  If we hit this limit,
+   SCCVN and such FRE and PRE will be not done at all for the current
+   function.  */
+
+DEFPARAM (PARAM_SCCVN_MAX_SCC_SIZE,
+	  "sccvn-max-scc-size",
+	  "Maximum size of a SCC before SCCVN stops processing a function",
+	  10000, 10, 0)
+
+
 /*
 Local variables:
 mode:c
