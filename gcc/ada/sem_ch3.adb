@@ -2367,6 +2367,20 @@ package body Sem_Ch3 is
 
          Set_Is_True_Constant (Id, True);
 
+         --  If the initialization expression is an access to constant,
+         --  it cannot be used with an access type.
+
+         if Is_Access_Type (Etype (E))
+           and then Is_Access_Constant (Etype (E))
+           and then Is_Access_Type (T)
+           and then not Is_Access_Constant (T)
+         then
+            Error_Msg_NE ("object of type& cannot be initialized with " &
+                          "an access-to-constant expression",
+                          E,
+                          T);
+         end if;
+
          --  If we are analyzing a constant declaration, set its completion
          --  flag after analyzing the expression.
 
