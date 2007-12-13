@@ -3285,6 +3285,11 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
       CONSTRUCTOR_APPEND_ELT (v, cm->backend_decl, val);
     }
   se->expr = build_constructor (type, v);
+  if (init) 
+    {
+      TREE_CONSTANT(se->expr) = 1;
+      TREE_INVARIANT(se->expr) = 1;
+    }
 }
 
 

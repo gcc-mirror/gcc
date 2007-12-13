@@ -2325,7 +2325,9 @@ gfc_build_builtin_function_decls (void)
 
   gfor_fndecl_select_string =
     gfc_build_library_function_decl (get_identifier (PREFIX("select_string")),
-                                     integer_type_node, 0);
+				     integer_type_node, 4, pvoid_type_node,
+				     integer_type_node, pchar_type_node,
+				     integer_type_node);
 
   gfor_fndecl_runtime_error =
     gfc_build_library_function_decl (get_identifier (PREFIX("runtime_error")),
@@ -2379,7 +2381,7 @@ gfc_build_builtin_function_decls (void)
 
   gfor_fndecl_in_unpack = gfc_build_library_function_decl (
         get_identifier (PREFIX("internal_unpack")),
-        pvoid_type_node, 1, pvoid_type_node);
+        void_type_node, 2, pvoid_type_node, pvoid_type_node);
 
   gfor_fndecl_associated =
     gfc_build_library_function_decl (
