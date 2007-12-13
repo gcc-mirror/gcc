@@ -36,10 +36,15 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This version of System is a generic version that is used in building
---  the compiler. Right now, we have a host/target problem if we try to
---  use the "proper" System, and since the compiler itself does not care
---  about most System parameters, this generic version works fine.
+--  This version of System is a generic version that is used in building the
+--  compiler. Right now, we have a host/target problem if we try to use the
+--  "proper" System, and since the compiler itself does not care about most
+--  System parameters, this generic version works fine.
+
+pragma Restrictions (No_Implicit_Dynamic_Code);
+--  We want to avoid trampolines in the compiler, so it can be used in systems
+--  which prevent execution of code on the stack, e.g. in windows environments
+--  with DEP (Data Execution Protection) enabled.
 
 package System is
    pragma Pure;
@@ -150,11 +155,14 @@ private
    Signed_Zeros              : constant Boolean := True;
    Stack_Check_Default       : constant Boolean := False;
    Stack_Check_Probes        : constant Boolean := False;
+   Stack_Check_Limits        : constant Boolean := False;
    Support_64_Bit_Divides    : constant Boolean := True;
    Support_Aggregates        : constant Boolean := True;
    Support_Composite_Assign  : constant Boolean := True;
    Support_Composite_Compare : constant Boolean := True;
    Support_Long_Shifts       : constant Boolean := True;
+   Always_Compatible_Rep     : constant Boolean := True;
+   Dynamic_Trampolines_Used  : constant Boolean := True;
    Suppress_Standard_Library : constant Boolean := False;
    Use_Ada_Main_Program_Name : constant Boolean := False;
    ZCX_By_Default            : constant Boolean := False;

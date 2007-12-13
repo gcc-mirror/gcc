@@ -114,6 +114,14 @@ package body System.Task_Primitives.Operations is
    Foreign_Task_Elaborated : aliased Boolean := True;
    --  Used to identified fake tasks (i.e., non-Ada Threads)
 
+   type Set_Stack_Limit_Proc_Acc is access procedure;
+   pragma Convention (C, Set_Stack_Limit_Proc_Acc);
+
+   Set_Stack_Limit_Hook : Set_Stack_Limit_Proc_Acc;
+   pragma Import (C, Set_Stack_Limit_Hook, "__gnat_set_stack_limit_hook");
+   --  Procedure to be called when a task is created to set stack
+   --  limit.
+
    --------------------
    -- Local Packages --
    --------------------
@@ -843,6 +851,11 @@ package body System.Task_Primitives.Operations is
       end loop;
 
       Unlock_RTS;
+
+      --  If stack checking is enabled set the stack limit for this task.
+      if Set_Stack_Limit_Hook /= null then
+         Set_Stack_Limit_Hook.all;
+      end if;
    end Enter_Task;
 
    --------------

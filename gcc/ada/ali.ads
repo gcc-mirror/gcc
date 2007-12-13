@@ -476,6 +476,10 @@ package ALI is
    --  ali files, showing whether a restriction pragma exists anywhere, and
    --  accumulating the aggregate knowledge of violations.
 
+   Stack_Check_Switch_Set : Boolean := False;
+   --  Set to True if at least one ALI file contains '-fstack-check' in its
+   --  argument list.
+
    Static_Elaboration_Model_Used : Boolean := False;
    --  Set to False by Initialize_ALI. Set to True if any ALI file for a
    --  non-internal unit compiled with the static elaboration model is

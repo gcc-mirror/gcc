@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2006, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2007, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -175,10 +175,12 @@ extern Boolean Back_Annotate_Rep_Info;
 #define No_Exception_Handlers_Set      restrict__no_exception_handlers_set
 #define Check_No_Implicit_Heap_Alloc   restrict__check_no_implicit_heap_alloc
 #define Check_Elaboration_Code_Allowed restrict__check_elaboration_code_allowed
+#define Check_Implicit_Dynamic_Code_Allowed restrict__check_implicit_dynamic_code_allowed
 
 extern Boolean No_Exception_Handlers_Set   (void);
 extern void Check_No_Implicit_Heap_Alloc   (Node_Id);
 extern void Check_Elaboration_Code_Allowed (Node_Id);
+extern void Check_Implicit_Dynamic_Code_Allowed (Node_Id);
 
 /* sem_elim: */
 
@@ -221,5 +223,7 @@ extern void Set_Has_No_Elaboration_Code	(Node_Id, Boolean);
 /* targparm: */
 
 #define Stack_Check_Probes_On_Target targparm__stack_check_probes_on_target
+#define Stack_Check_Limits_On_Target targparm__stack_check_limits_on_target
 
 extern Boolean Stack_Check_Probes_On_Target;
+extern Boolean Stack_Check_Limits_On_Target;

@@ -1713,19 +1713,24 @@ __gnat_map_signal (int sig)
       msg = "SIGBUS: possible stack overflow";
       break;
 #else
+#ifdef __RTP__
+    /* In RTP mode a SIGSEGV is most likely due to a stack overflow,
+       since stack checking uses the probing mechanism.  */
     case SIGILL:
       exception = &constraint_error;
       msg = "SIGILL";
       break;
-/* In RTP mode a SIGSEGV is most likely due to a stack overflow. This is not
-   the case in kernel mode where stack overflow detection uses a comparison
-   method instead of memory probes. */
-#ifdef __RTP__
     case SIGSEGV:
       exception = &storage_error;
       msg = "SIGSEGV: possible stack overflow";
       break;
 #else
+    /* In kernel mode a SIGILL is most likely due to a stack overflow,
+       since stack checking uses the stack limit mechanism.  */
+    case SIGILL:
+      exception = &storage_error;
+      msg = "SIGILL: possible stack overflow";
+      break;
     case SIGSEGV:
       exception = &program_error;
       msg = "SIGSEGV";
@@ -1825,6 +1830,14 @@ __gnat_init_float (void)
   }
 #endif
 }
+
+/* This subprogram is called by System.Task_Primitives.Operations.Enter_Task
+   (if not null) when a new task is created.  It is initialized by
+   System.Stack_Checking.Operations.Initialize_Stack_Limit.
+   The use of a hook avoids to drag stack checking subprograms if stack
+   checking is not used.  */
+void (*__gnat_set_stack_limit_hook)(void) = (void (*)(void))0;
+
 
 /******************/
 /* NetBSD Section */
