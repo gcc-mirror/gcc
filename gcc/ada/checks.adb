@@ -2501,19 +2501,44 @@ package body Checks is
          P := Parent (N);
          K := Nkind (P);
 
-         if K not in N_Subexpr then
+         --  Done if out of subexpression (note that we allow generated stuff
+         --  such as itype declarations in this context, to keep the loop going
+         --  since we may well have generated such stuff in complex situations.
+         --  Also done if no parent (probably an error condition, but no point
+         --  in behaving nasty if we find it!)
+
+         if No (P)
+           or else (K not in N_Subexpr and then Comes_From_Source (P))
+         then
             return True;
 
-         --  Or/Or Else case, left operand must be equality test
+         --  Or/Or Else case, where test is part of the right operand, or is
+         --  part of one of the actions associated with the right operand, and
+         --  the left operand is an equality test.
 
-         elsif K = N_Op_Or or else K = N_Or_Else then
+         elsif K = N_Op_Or then
             exit when N = Right_Opnd (P)
               and then Nkind (Left_Opnd (P)) = N_Op_Eq;
 
-         --  And/And then case, left operand must be inequality test
+         elsif K = N_Or_Else then
+            exit when (N = Right_Opnd (P)
+                        or else
+                          (Is_List_Member (N)
+                             and then List_Containing (N) = Actions (P)))
+              and then Nkind (Left_Opnd (P)) = N_Op_Eq;
 
-         elsif K = N_Op_And or else K = N_And_Then then
+         --  Similar test for the And/And then case, where the left operand
+         --  is an inequality test.
+
+         elsif K = N_Op_And then
             exit when N = Right_Opnd (P)
+              and then Nkind (Left_Opnd (P)) = N_Op_Ne;
+
+         elsif K = N_And_Then then
+            exit when (N = Right_Opnd (P)
+                        or else
+                          (Is_List_Member (N)
+                             and then List_Containing (N) = Actions (P)))
               and then Nkind (Left_Opnd (P)) = N_Op_Ne;
          end if;
 
@@ -2524,11 +2549,6 @@ package body Checks is
       --  appropriate test as its left operand. So test further.
 
       L := Left_Opnd (P);
-
-      if Nkind (L) = N_Op_Not then
-         L := Right_Opnd (L);
-      end if;
-
       R := Right_Opnd (L);
       L := Left_Opnd (L);
 
