@@ -390,13 +390,17 @@ package body Ada.Directories is
 
             --  Look for the end of an intermediate directory
 
-            if New_Dir (J) /= Dir_Separator then
+            if New_Dir (J) /= Dir_Separator and then
+               New_Dir (J) /= '/'
+            then
                Last := J;
 
             --  We have found a new intermediate directory each time we find
             --  a first directory separator.
 
-            elsif New_Dir (J - 1) /= Dir_Separator then
+            elsif New_Dir (J - 1) /= Dir_Separator and then
+                  New_Dir (J - 1) /= '/'
+            then
 
                --  No need to create the directory if it already exists
 
