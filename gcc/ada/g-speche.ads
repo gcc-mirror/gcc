@@ -34,6 +34,7 @@
 --  Spelling checker
 
 --  This package provides a utility routine for checking for bad spellings
+--  for the case of String arguments.
 
 pragma Warnings (Off);
 pragma Compiler_Unit;
@@ -45,16 +46,14 @@ package GNAT.Spelling_Checker is
    function Is_Bad_Spelling_Of
      (Found  : String;
       Expect : String) return Boolean;
-   --  Determines if the string Found is a plausible misspelling of the
-   --  string Expect. Returns True for an exact match or a probably
-   --  misspelling, False if no near match is detected. This routine
-   --  is case sensitive, so the caller should fold both strings to
-   --  get a case insensitive match.
+   --  Determines if the string Found is a plausible misspelling of the string
+   --  Expect. Returns True for an exact match or a probably misspelling, False
+   --  if no near match is detected. This routine is case sensitive, so the
+   --  caller should fold both strings to get a case insensitive match.
    --
-   --  Note: the spec of this routine is deliberately rather vague. This
-   --  routine is the one used by GNAT itself to detect misspelled keywords
-   --  and identifiers, and is heuristically adjusted to be appropriate to
-   --  this usage. It will work well in any similar case of named entities
-   --  with relatively short mnemonic names.
+   --  Note: the spec of this routine is deliberately rather vague. It is used
+   --  by GNAT itself to detect misspelled keywords and identifiers, and is
+   --  heuristically adjusted to be appropriate to this usage. It will work
+   --  well in any similar case of named entities.
 
 end GNAT.Spelling_Checker;
