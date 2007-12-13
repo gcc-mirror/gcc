@@ -41,9 +41,6 @@ package System.Stack_Usage is
 
    package SSE renames System.Storage_Elements;
 
-   Byte_Size : constant := 8;
-   Unsigned_32_Size : constant := 4 * Byte_Size;
-
    --  The alignment clause seems dubious, what about architectures where
    --  the maximum alignment is less than 4???
    --  Anyway, why not use Interfaces.Unsigned_32???
@@ -270,6 +267,9 @@ private
    package Unsigned_32_Addr is
      new System.Address_To_Access_Conversions (Interfaces.Unsigned_32);
 
+   subtype Pattern_Type is Interfaces.Unsigned_32;
+   Bytes_Per_Pattern : constant := Pattern_Type'Object_Size / Storage_Unit;
+
    type Stack_Analyzer is record
       Task_Name : String (1 .. Task_Name_Length);
       --  Name of the task
@@ -277,7 +277,7 @@ private
       Size : Natural;
       --  Size of the pattern zone
 
-      Pattern : Interfaces.Unsigned_32;
+      Pattern : Pattern_Type;
       --  Pattern used to recognize untouched memory
 
       Bottom_Pattern_Mark : Stack_Address;
@@ -296,13 +296,9 @@ private
       --  Address of the bottom of the stack, as given by the caller of
       --  Initialize_Analyzer.
 
-      Array_Address : System.Address;
-      --  Address of the array of Unsigned_32 that represents the pattern zone
-
-      First_Is_Topmost : Boolean;
-      --  Set to true if the first element of the array of Unsigned_32 that
-      --  represents the pattern zone is at the topmost address of the
-      --  pattern zone; false if it is the bottommost address.
+      Stack_Overlay_Address : System.Address;
+      --  Address of the stack abstraction object we overlay over a
+      --  task's real stack, typically a pattern-initialized array.
 
       Result_Id : Positive;
       --  Id of the result. If less than value given to gnatbind -u corresponds

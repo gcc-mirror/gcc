@@ -41,12 +41,141 @@ package body System.Stack_Usage is
    use System.IO;
    use Interfaces;
 
-   Index_Str               : constant String  := "Index";
-   Task_Name_Str           : constant String  := "Task Name";
-   Stack_Size_Str          : constant String  := "Stack Size";
-   Actual_Size_Str         : constant String  := "Stack usage [min - max]";
-   Pattern_Array_Elem_Size : constant Natural :=
-                               (Unsigned_32_Size / Byte_Size);
+   -----------------
+   -- Stack_Slots --
+   -----------------
+
+   --  Stackl_Slots is an internal data type to represent a sequence of real
+   --  stack slots initialized with a provided pattern, with operations to
+   --  abstract away the target call stack growth direction.
+
+   type Stack_Slots is array (Integer range <>) of Pattern_Type;
+   for Stack_Slots'Component_Size use Pattern_Type'Object_Size;
+
+   --  We will carefully handle the initializations ourselves and might want
+   --  to remap an initialized overlay later on with an address clause.
+
+   pragma Suppress_Initialization (Stack_Slots);
+
+   --  The abstract Stack_Slots operations all operate over the simple array
+   --  memory model:
+
+   --  memory addresses increasing ---->
+
+   --  Slots('First)                                           Slots('Last)
+   --    |                                                             |
+   --    V                                                             V
+   --  +------------------------------------------------------------------+
+   --  |####|                                                        |####|
+   --  +------------------------------------------------------------------+
+
+   --  What we call Top or Bottom always denotes call chain leaves or entry
+   --  points respectively, and their relative positions in the stack array
+   --  depends on the target stack growth direction:
+
+   --                           Stack_Grows_Down
+
+   --                <----- calls push frames towards decreasing addresses
+
+   --   Top(most) Slot                                   Bottom(most) Slot
+   --    |                                                            |
+   --    V                                                            V
+   --  +------------------------------------------------------------------+
+   --  |####|                            | leaf frame | ... | entry frame |
+   --  +------------------------------------------------------------------+
+
+   --                           Stack_Grows_Up
+
+   --   calls push frames towards increasing addresses ----->
+
+   --   Bottom(most) Slot                                    Top(most) Slot
+   --    |                                                             |
+   --    V                                                             V
+   --  +------------------------------------------------------------------+
+   --  | entry frame | ... | leaf frame |                            |####|
+   --  +------------------------------------------------------------------+
+
+   function Top_Slot_Index_In (Stack : Stack_Slots) return Integer;
+   --  Index of the stack Top slot in the Slots array, denoting the latest
+   --  possible slot available to call chain leaves.
+
+   function Bottom_Slot_Index_In (Stack : Stack_Slots) return Integer;
+   --  Index of the stack Bottom slot in the Slots array, denoting the first
+   --  possible slot available to call chain entry points.
+
+   function Push_Index_Step_For (Stack : Stack_Slots) return Integer;
+   --  By how much do we need to update a Slots index to Push a single slot on
+   --  the stack.
+
+   function Pop_Index_Step_For (Stack : Stack_Slots) return Integer;
+   --  By how much do we need to update a Slots index to Pop a single slot off
+   --  the stack.
+
+   pragma Inline_Always (Top_Slot_Index_In);
+   pragma Inline_Always (Bottom_Slot_Index_In);
+   pragma Inline_Always (Push_Index_Step_For);
+   pragma Inline_Always (Pop_Index_Step_For);
+
+   -----------------------
+   -- Top_Slot_Index_In --
+   -----------------------
+
+   function Top_Slot_Index_In (Stack : Stack_Slots) return Integer is
+   begin
+      if System.Parameters.Stack_Grows_Down then
+         return Stack'First;
+      else
+         return Stack'Last;
+      end if;
+   end Top_Slot_Index_In;
+
+   ----------------------------
+   --  Bottom_Slot_Index_In  --
+   ----------------------------
+
+   function Bottom_Slot_Index_In (Stack : Stack_Slots) return Integer is
+   begin
+      if System.Parameters.Stack_Grows_Down then
+         return Stack'Last;
+      else
+         return Stack'First;
+      end if;
+   end Bottom_Slot_Index_In;
+
+   -------------------------
+   -- Push_Index_Step_For --
+   -------------------------
+
+   function Push_Index_Step_For (Stack : Stack_Slots) return Integer is
+      pragma Unreferenced (Stack);
+   begin
+      if System.Parameters.Stack_Grows_Down then
+         return -1;
+      else
+         return +1;
+      end if;
+   end Push_Index_Step_For;
+
+   ------------------------
+   -- Pop_Index_Step_For --
+   ------------------------
+
+   function Pop_Index_Step_For (Stack : Stack_Slots) return Integer is
+   begin
+      return -Push_Index_Step_For (Stack);
+   end Pop_Index_Step_For;
+
+   -------------------
+   -- Unit Services --
+   -------------------
+
+   --  Now the implementation of the services offered by this unit, on top of
+   --  the Stack_Slots abstraction above.
+
+   Index_Str       : constant String  := "Index";
+   Task_Name_Str   : constant String  := "Task Name";
+   Stack_Size_Str  : constant String  := "Stack Size";
+   Actual_Size_Str : constant String  := "Stack usage [min - max]";
 
    function Get_Usage_Range (Result : Task_Result) return String;
    --  Return string representing the range of possible result of stack usage
@@ -61,30 +190,6 @@ package body System.Stack_Usage is
    --  Max_Stack_Size_Len and Max_Actual_Use_Len are used for displaying the
    --  proper layout. They hold the maximum length of the string representing
    --  the Stack_Size and Actual_Use values.
-
-   function Closer_To_Bottom
-     (A1 : Stack_Address;
-      A2 : Stack_Address) return Boolean;
-   pragma Inline (Closer_To_Bottom);
-   --  Return True if, according to the direction of the stack growth, A1 is
-   --  closer to the bottom than A2. Inlined to reduce the size of the stack
-   --  used by the instrumentation code.
-
-   ----------------------
-   -- Closer_To_Bottom --
-   ----------------------
-
-   function Closer_To_Bottom
-     (A1 : Stack_Address;
-      A2 : Stack_Address) return Boolean
-   is
-   begin
-      if System.Parameters.Stack_Grows_Down then
-         return A1 > A2;
-      else
-         return A2 > A1;
-      end if;
-   end Closer_To_Bottom;
 
    ----------------
    -- Initialize --
@@ -154,39 +259,17 @@ package body System.Stack_Usage is
       --  big, the more an "instrumentation threshold at writing" error is
       --  likely to happen.
 
-      type Unsigned_32_Arr is
-        array (1 .. Analyzer.Size / Pattern_Array_Elem_Size) of Unsigned_32;
-      for Unsigned_32_Arr'Component_Size use 32;
-
-      package Arr_Addr is
-        new System.Address_To_Access_Conversions (Unsigned_32_Arr);
-
-      Arr : aliased Unsigned_32_Arr;
+      Stack : aliased Stack_Slots (1 .. Analyzer.Size / Bytes_Per_Pattern);
 
    begin
-      --  Fill the stack with the pattern
+      Stack := (others => Analyzer.Pattern);
 
-      for J in Unsigned_32_Arr'Range loop
-         Arr (J) := Analyzer.Pattern;
-      end loop;
+      Analyzer.Stack_Overlay_Address := Stack'Address;
 
-      --  Initialize the analyzer value
-
-      Analyzer.Array_Address := Arr_Addr.To_Address (Arr'Access);
-      Analyzer.Bottom_Pattern_Mark := To_Stack_Address (Arr (1)'Address);
+      Analyzer.Bottom_Pattern_Mark :=
+        To_Stack_Address (Stack (Bottom_Slot_Index_In (Stack))'Address);
       Analyzer.Top_Pattern_Mark :=
-        To_Stack_Address (Arr (Unsigned_32_Arr'Last)'Address);
-
-      if
-        Closer_To_Bottom
-          (Analyzer.Top_Pattern_Mark, Analyzer.Bottom_Pattern_Mark)
-      then
-         Analyzer.Bottom_Pattern_Mark := Analyzer.Top_Pattern_Mark;
-         Analyzer.Top_Pattern_Mark := To_Stack_Address (Arr (1)'Address);
-         Analyzer.First_Is_Topmost := True;
-      else
-         Analyzer.First_Is_Topmost := False;
-      end if;
+        To_Stack_Address (Stack (Top_Slot_Index_In (Stack))'Address);
 
       --  If Arr has been packed, the following assertion must be true (we add
       --  the size of the element whose address is:
@@ -263,33 +346,35 @@ package body System.Stack_Usage is
       --  is, the more an "instrumentation threshold at reading" error is
       --  likely to happen.
 
-      type Unsigned_32_Arr is
-        array (1 .. Analyzer.Size / Pattern_Array_Elem_Size) of Unsigned_32;
-      for Unsigned_32_Arr'Component_Size use 32;
-
-      package Arr_Addr is
-        new System.Address_To_Access_Conversions (Unsigned_32_Arr);
-
-      Arr_Access : Arr_Addr.Object_Pointer;
+      Stack : Stack_Slots (1 .. Analyzer.Size / Bytes_Per_Pattern);
+      for Stack'Address use Analyzer.Stack_Overlay_Address;
 
    begin
-      Arr_Access := Arr_Addr.To_Pointer (Analyzer.Array_Address);
       Analyzer.Topmost_Touched_Mark := Analyzer.Bottom_Pattern_Mark;
 
-      --  Look backward from the end of the stack to the beginning. The first
-      --  index not equals to the patterns marks the beginning of the used
-      --  stack.
+      --  Look backward from the topmost possible end of the marked stack to
+      --  the bottom of it. The first index not equals to the patterns marks
+      --  the beginning of the used stack.
 
-      for J in Unsigned_32_Arr'Range loop
-         if Arr_Access (J) /= Analyzer.Pattern then
-            Analyzer.Topmost_Touched_Mark :=
-              To_Stack_Address (Arr_Access (J)'Address);
+      declare
+         Top_Index    : constant Integer := Top_Slot_Index_In (Stack);
+         Bottom_Index : constant Integer := Bottom_Slot_Index_In (Stack);
+         Step         : constant Integer := Pop_Index_Step_For (Stack);
+         J            : Integer;
 
-            if Analyzer.First_Is_Topmost then
+      begin
+         J := Top_Index;
+         loop
+            if Stack (J) /= Analyzer.Pattern then
+               Analyzer.Topmost_Touched_Mark
+                 := To_Stack_Address (Stack (J)'Address);
                exit;
             end if;
-         end if;
-      end loop;
+
+            exit when J = Bottom_Index;
+            J := J + Step;
+         end loop;
+      end;
    end Compute_Result;
 
    ---------------------
@@ -303,7 +388,7 @@ package body System.Stack_Usage is
                        Natural'Image (Result.Measure + Result.Overflow_Guard);
    begin
       return "[" & Min_Used_Str (2 .. Min_Used_Str'Last) & " -"
-        & Max_Used_Str & "]";
+             & Max_Used_Str & "]";
    end Get_Usage_Range;
 
    ---------------------
@@ -323,12 +408,15 @@ package body System.Stack_Usage is
       Result_Id_Blanks  : constant
         String (1 .. Index_Str'Length - Result_Id_Str'Length)    :=
           (others => ' ');
+
       Stack_Size_Blanks : constant
         String (1 .. Max_Stack_Size_Len - Stack_Size_Str'Length) :=
           (others => ' ');
+
       Actual_Use_Blanks : constant
         String (1 .. Max_Actual_Use_Len - Actual_Use_Str'Length) :=
           (others => ' ');
+
    begin
       Set_Output (Standard_Error);
       Put (Result_Id_Blanks & Natural'Image (Result_Id));
@@ -350,9 +438,9 @@ package body System.Stack_Usage is
       Max_Actual_Use_Result_Id               : Natural := Result_Array'First;
       Max_Stack_Size_Len, Max_Actual_Use_Len : Natural := 0;
 
-      Task_Name_Blanks :
-        constant String (1 .. Task_Name_Length - Task_Name_Str'Length) :=
-                                                 (others => ' ');
+      Task_Name_Blanks : constant
+        String (1 .. Task_Name_Length - Task_Name_Str'Length) :=
+          (others => ' ');
 
    begin
       Set_Output (Standard_Error);
@@ -392,10 +480,11 @@ package body System.Stack_Usage is
          declare
             Stack_Size_Blanks  : constant
               String (1 .. Max_Stack_Size_Len - Stack_Size_Str'Length) :=
-              (others => ' ');
+                (others => ' ');
+
             Stack_Usage_Blanks : constant
               String (1 .. Max_Actual_Use_Len - Actual_Size_Str'Length) :=
-              (others => ' ');
+                (others => ' ');
 
          begin
             if Stack_Size_Str'Length > Max_Stack_Size_Len then
@@ -421,9 +510,10 @@ package body System.Stack_Usage is
             Output_Result
               (J, Result_Array (J), Max_Stack_Size_Len, Max_Actual_Use_Len);
          end loop;
-      else
-         --  If there are no result stored, we'll still display the labels
 
+      --  Case of no result stored, still display the labels
+
+      else
          Put
            (Index_Str & " | " & Task_Name_Str & Task_Name_Blanks & " | "
             & Stack_Size_Str & " | " & Actual_Size_Str);
@@ -437,14 +527,15 @@ package body System.Stack_Usage is
 
    procedure Report_Result (Analyzer : Stack_Analyzer) is
       Result : constant Task_Result :=
-        (Task_Name      => Analyzer.Task_Name,
-         Max_Size       => Analyzer.Size + Analyzer.Overflow_Guard,
-         Measure        => Stack_Size
-                             (Analyzer.Topmost_Touched_Mark,
-                              Analyzer.Bottom_Of_Stack),
-         Overflow_Guard => Analyzer.Overflow_Guard -
-                             Natural (Analyzer.Bottom_Of_Stack -
-                               Analyzer.Bottom_Pattern_Mark));
+                 (Task_Name      => Analyzer.Task_Name,
+                  Max_Size       => Analyzer.Size + Analyzer.Overflow_Guard,
+                  Measure        => Stack_Size
+                                      (Analyzer.Topmost_Touched_Mark,
+                                       Analyzer.Bottom_Of_Stack),
+                  Overflow_Guard => Analyzer.Overflow_Guard -
+                                      Natural (Analyzer.Bottom_Of_Stack -
+                                        Analyzer.Bottom_Pattern_Mark));
+
    begin
       if Analyzer.Result_Id in Result_Array'Range then
 
@@ -453,7 +544,6 @@ package body System.Stack_Usage is
          Result_Array (Analyzer.Result_Id) := Result;
 
       else
-
          --  If the result cannot be stored, then we display it right away
 
          declare
