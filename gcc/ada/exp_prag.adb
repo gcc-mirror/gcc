@@ -323,7 +323,8 @@ package body Exp_Prag is
 
       --  If new condition is always false, give a warning
 
-      if Nkind (N) = N_Procedure_Call_Statement
+      if Warn_On_Assertion_Failure
+        and then Nkind (N) = N_Procedure_Call_Statement
         and then Is_RTE (Entity (Name (N)), RE_Raise_Assert_Failure)
       then
          --  If original condition was a Standard.False, we assume that this is

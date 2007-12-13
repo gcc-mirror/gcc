@@ -2846,6 +2846,30 @@ package body Sem_Res is
 
          --  Case where actual is present
 
+         --  If the actual is an entity,  generate a reference to it now. We
+         --  do this before the actual is resolved, because a formal of some
+         --  protected subprogram, or a task discriminant, will be rewritten
+         --  during expansion, and the reference to the source entity may
+         --  be lost.
+
+         if Present (A)
+           and then Is_Entity_Name (A)
+           and then Comes_From_Source (N)
+         then
+            Orig_A := Entity (A);
+
+            if Present (Orig_A) then
+               if Is_Formal (Orig_A)
+                 and then Ekind (F) /= E_In_Parameter
+               then
+                  Generate_Reference (Orig_A, A, 'm');
+
+               elsif not Is_Overloaded (A) then
+                  Generate_Reference (Orig_A, A);
+               end if;
+            end if;
+         end if;
+
          if Present (A)
            and then (Nkind (Parent (A)) /= N_Parameter_Association
                        or else
@@ -3043,41 +3067,36 @@ package body Sem_Res is
                end if;
             end if;
 
-            --  For IN parameter, this is where we generate a reference after
-            --  resolution is complete.
-
-            if Ekind (F) = E_In_Parameter then
-               Orig_A := Original_Node (A);
-
-               if Is_Entity_Name (Orig_A)
-                 and then Present (Entity (Orig_A))
-               then
-                  Generate_Reference (Entity (Orig_A), Orig_A);
-               end if;
-
             --  Case of OUT or IN OUT parameter
 
-            else
-               --  Validate the form of the actual. Note that the call to
-               --  Is_OK_Variable_For_Out_Formal generates the required
-               --  reference in this case.
-
-               if not Is_OK_Variable_For_Out_Formal (A) then
-                  Error_Msg_NE ("actual for& must be a variable", A, F);
-               end if;
+            if Ekind (F) /= E_In_Parameter then
 
                --  For an Out parameter, check for useless assignment. Note
                --  that we can't set Last_Assignment this early, because we
                --  may kill current values in Resolve_Call, and that call
                --  would clobber the Last_Assignment field.
 
+               --  Note: call Warn_On_Useless_Assignment before doing the
+               --  check below for Is_OK_Variable_For_Out_Formal so that the
+               --  setting of Referenced_As_LHS/Referenced_As_Out_Formal
+               --  properly reflects the last assignment, not this one!
+
                if Ekind (F) = E_Out_Parameter then
-                  if Warn_On_Out_Parameter_Unread
+                  if Warn_On_Modified_As_Out_Parameter (F)
                     and then Is_Entity_Name (A)
                     and then Present (Entity (A))
+                    and then Comes_From_Source (N)
                   then
-                     Warn_On_Useless_Assignment (Entity (A), Sloc (A));
+                     Warn_On_Useless_Assignment (Entity (A), A);
                   end if;
+               end if;
+
+               --  Validate the form of the actual. Note that the call to
+               --  Is_OK_Variable_For_Out_Formal generates the required
+               --  reference in this case.
+
+               if not Is_OK_Variable_For_Out_Formal (A) then
+                  Error_Msg_NE ("actual for& must be a variable", A, F);
                end if;
 
                --  What's the following about???
@@ -4718,7 +4737,7 @@ package body Sem_Res is
       --  for it, precisely because we will not do it within the init proc
       --  itself.
 
-      --  If the subprogram is marked Inlined_Always, then even if it returns
+      --  If the subprogram is marked Inline_Always, then even if it returns
       --  an unconstrained type the call does not require use of the secondary
       --  stack.
 
@@ -4809,12 +4828,12 @@ package body Sem_Res is
          Kill_Current_Values;
       end if;
 
-      --  If we are warning about unread out parameters, this is the place to
-      --  set Last_Assignment for out parameters. We have to do this after the
-      --  above call to Kill_Current_Values (since that call clears the
-      --  Last_Assignment field of all local variables).
+      --  If we are warning about unread OUT parameters, this is the place to
+      --  set Last_Assignment for OUT and IN OUT parameters. We have to do this
+      --  after the above call to Kill_Current_Values (since that call clears
+      --  the Last_Assignment field of all local variables).
 
-      if Warn_On_Out_Parameter_Unread
+      if (Warn_On_Modified_Unread or Warn_On_All_Unread_Out_Parameters)
         and then Comes_From_Source (N)
         and then In_Extended_Main_Source_Unit (N)
       then
@@ -4826,9 +4845,12 @@ package body Sem_Res is
             F := First_Formal (Nam);
             A := First_Actual (N);
             while Present (F) and then Present (A) loop
-               if Ekind (F) = E_Out_Parameter
+               if (Ekind (F) = E_Out_Parameter
+                     or else Ekind (F) = E_In_Out_Parameter)
+                 and then Warn_On_Modified_As_Out_Parameter (F)
                  and then Is_Entity_Name (A)
                  and then Present (Entity (A))
+                 and then Comes_From_Source (N)
                  and then Safe_To_Capture_Value (N, Entity (A))
                then
                   Set_Last_Assignment (Entity (A), A);
@@ -6930,6 +6952,14 @@ package body Sem_Res is
             end if;
 
             if Is_Record_Type (T) then
+
+               --  The visible components of a class-wide type are those of
+               --  the root type.
+
+               if Is_Class_Wide_Type (T) then
+                  T := Etype (T);
+               end if;
+
                Comp := First_Entity (T);
                while Present (Comp) loop
                   if Chars (Comp) = Chars (S)
@@ -7089,6 +7119,58 @@ package body Sem_Res is
    begin
       Resolve (L, B_Typ);
       Resolve (R, B_Typ);
+
+      --  Check for issuing warning for always False assert, this happens
+      --  when assertions are turned off, in which case the pragma Assert
+      --  was transformed into:
+
+      --     if False and then <condition> then ...
+
+      --  and we detect this pattern
+
+      if Warn_On_Assertion_Failure
+        and then Is_Entity_Name (R)
+        and then Entity (R) = Standard_False
+        and then Nkind (Parent (N)) = N_If_Statement
+        and then Nkind (N) = N_And_Then
+        and then Is_Entity_Name (L)
+        and then Entity (L) = Standard_False
+      then
+         declare
+            Orig : constant Node_Id := Original_Node (Parent (N));
+         begin
+            if Nkind (Orig) = N_Pragma
+              and then Chars (Orig) = Name_Assert
+            then
+               --  Don't want to warn if original condition is explicit False
+
+               declare
+                  Expr : constant Node_Id :=
+                           Original_Node
+                             (Expression
+                               (First (Pragma_Argument_Associations (Orig))));
+               begin
+                  if Is_Entity_Name (Expr)
+                    and then Entity (Expr) = Standard_False
+                  then
+                     null;
+                  else
+                     --  Issue warning. Note that we don't want to make this
+                     --  an unconditional warning, because if the assert is
+                     --  within deleted code we do not want the warning. But
+                     --  we do not want the deletion of the IF/AND-THEN to
+                     --  take this message with it. We achieve this by making
+                     --  sure that the expanded code points to the Sloc of
+                     --  the expression, not the original pragma.
+
+                     Error_Msg_N ("?assertion would fail at run-time", Orig);
+                  end if;
+               end;
+            end if;
+         end;
+      end if;
+
+      --  Continue with processing of short circuit
 
       Check_Unset_Reference (L);
       Check_Unset_Reference (R);
@@ -8232,7 +8314,12 @@ package body Sem_Res is
             Set_Parent (Drange, N);
             Analyze_And_Resolve (Drange, Index_Type);
 
-            Set_Etype        (Index_Subtype, Index_Type);
+            --  In the context, the Index_Type may already have a constraint,
+            --  so use common base type on string subtype. The base type may
+            --  be used when generating attributes of the string, for example
+            --  in the context of a slice assignment.
+
+            Set_Etype        (Index_Subtype, Base_Type (Index_Type));
             Set_Size_Info    (Index_Subtype, Index_Type);
             Set_RM_Size      (Index_Subtype, RM_Size (Index_Type));
 

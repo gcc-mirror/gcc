@@ -112,6 +112,8 @@ gcc -c          ^ GNAT COMPILE
 -gnatw          ^ /WARNINGS
 -gnatwa         ^ /WARNINGS=OPTIONAL
 -gnatwA         ^ /WARNINGS=NOOPTIONAL
+-gnatw.a        ^ /WARNINGS=FAILING_ASSERTIONS
+-gnatw.A        ^ /WARNINGS=NO_FAILING_ASSERTIONS
 -gnatwb         ^ /WARNINGS=BAD_FIXED_VALUES
 -gnatwB         ^ /WARNINGS=NO_BAD_FIXED_VALUES
 -gnatwc         ^ /WARNINGS=CONDITIONALS

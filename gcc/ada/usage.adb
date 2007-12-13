@@ -364,6 +364,8 @@ begin
    Write_Line ("Enable selected warning modes, xx = list of parameters:");
    Write_Line ("        a    turn on all optional warnings (except d h l .o)");
    Write_Line ("        A    turn off all optional warnings");
+   Write_Line ("        .a*  turn on warnings for failing assertions");
+   Write_Line ("        .A   turn off warnings for failing assertions");
    Write_Line ("        b    turn on warnings for bad fixed value " &
                                                   "(not multiple of small)");
    Write_Line ("        B*   turn off warnings for bad fixed value " &
@@ -400,9 +402,9 @@ begin
    Write_Line ("        n*   normal warning mode (cancels -gnatws/-gnatwe)");
    Write_Line ("        o*   turn on warnings for address clause overlay");
    Write_Line ("        O    turn off warnings for address clause overlay");
-   Write_Line ("        .o   turn on warnings for out parameter assigned " &
+   Write_Line ("        .o   turn on warnings for out parameters assigned " &
                                                   "but not read");
-   Write_Line ("        .O*  turn off warnings for out parameter assigned " &
+   Write_Line ("        .O*  turn off warnings for out parameters assigned " &
                                                   "but not read");
    Write_Line ("        p    turn on warnings for ineffective pragma " &
                                              "Inline in frontend");
