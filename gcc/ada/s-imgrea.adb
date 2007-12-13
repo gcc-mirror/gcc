@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,13 +78,13 @@ package body System.Img_Real is
    -- Image_Floating_Point --
    --------------------------
 
-   function Image_Floating_Point
+   procedure Image_Floating_Point
      (V    : Long_Long_Float;
+      S    : in out String;
+      P    : out Natural;
       Digs : Natural)
-      return String
    is
-      P : Natural := 0;
-      S : String (1 .. Long_Long_Float'Width);
+      pragma Assert (S'First = 1);
 
    begin
       --  Decide wether a blank should be prepended before the call to
@@ -101,32 +101,36 @@ package body System.Img_Real is
       then
          S (1) := ' ';
          P := 1;
+      else
+         P := 0;
       end if;
 
       Set_Image_Real (V, S, P, 1, Digs - 1, 3);
-      return S (1 .. P);
    end Image_Floating_Point;
 
    --------------------------------
    -- Image_Ordinary_Fixed_Point --
    --------------------------------
 
-   function Image_Ordinary_Fixed_Point
-     (V    : Long_Long_Float;
-      Aft  : Natural)
-      return String
+   procedure Image_Ordinary_Fixed_Point
+     (V   : Long_Long_Float;
+      S   : in out String;
+      P   : out Natural;
+      Aft : Natural)
    is
-      P : Natural := 0;
-      S : String (1 .. Long_Long_Float'Width);
+      pragma Assert (S'First = 1);
 
    begin
+      --  Output space at start if non-negative
+
       if V >= 0.0 then
          S (1) := ' ';
          P := 1;
+      else
+         P := 0;
       end if;
 
       Set_Image_Real (V, S, P, 1, Aft, 0);
-      return S (1 .. P);
    end Image_Ordinary_Fixed_Point;
 
    --------------------

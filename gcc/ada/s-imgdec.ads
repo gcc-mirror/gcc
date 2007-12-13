@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,18 +35,23 @@
 --  type does not exceed Integer'Size (also used for Text_IO.Decimal_IO output)
 
 package System.Img_Dec is
-   pragma Preelaborate;
+   pragma Pure;
 
-   function Image_Decimal
+   procedure Image_Decimal
      (V     : Integer;
-      Scale : Integer) return String;
-   --  Compute 'Image of V, the integer value (in units of delta) of a decimal
-   --  type whose Scale is as given and return the result. THe image is given
-   --  by the rules in RM 3.5(34) for fixed-point type image functions.
+      S     : in out String;
+      P     : out Natural;
+      Scale : Integer);
+   --  Computes fixed_type'Image (V), where V is the integer value (in units of
+   --  delta) of a decimal type whose Scale is as given and stores the result
+   --  S (1 .. P), updating P to the value of L. The image is given by the
+   --  rules in RM 3.5(34) for fixed-point type image functions. The caller
+   --  guarantees that S is long enough to hold the result. S need not have a
+   --  lower bound of 1.
 
    procedure Set_Image_Decimal
      (V     : Integer;
-      S     : out String;
+      S     : in out String;
       P     : in out Natural;
       Scale : Integer;
       Fore  : Natural;
@@ -59,7 +64,7 @@ package System.Img_Dec is
    --  will not necessarily be raised if this requirement is violated, since
    --  it is perfectly valid to compile this unit with checks off. The Fore,
    --  Aft and Exp values can be set to any valid values for the case of use
-   --  by Text_IO.Decimal_IO.
+   --  by Text_IO.Decimal_IO. Note that there is no leading space stored.
 
    procedure Set_Decimal_Digits
      (Digs  : in out String;

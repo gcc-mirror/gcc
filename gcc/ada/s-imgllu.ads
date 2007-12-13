@@ -40,20 +40,24 @@ with System.Unsigned_Types;
 package System.Img_LLU is
    pragma Pure;
 
-   function Image_Long_Long_Unsigned
-     (V :    System.Unsigned_Types.Long_Long_Unsigned)
-      return String;
-   --  Computes Long_Long_Unsigned'Image (V) and returns the result
+   procedure Image_Long_Long_Unsigned
+     (V : System.Unsigned_Types.Long_Long_Unsigned;
+      S : in out String;
+      P : out Natural);
+   pragma Inline (Image_Long_Long_Unsigned);
+
+   --  Computes Long_Long_Unsigned'Image (V) and stores the result in
+   --  S (1 .. P) setting the resulting value of P. The caller guarantees
+   --  that S is long enough to hold the result, and that S'First is 1.
 
    procedure Set_Image_Long_Long_Unsigned
      (V : System.Unsigned_Types.Long_Long_Unsigned;
-      S : out String;
+      S : in out String;
       P : in out Natural);
-   --  Sets the image of V starting at S (P + 1) with no leading spaces (i.e.
-   --  Text_IO format where Width = 0), starting at S (P + 1), updating P
-   --  to point to the last character stored. The caller promises that the
-   --  buffer is large enough and no check is made for this (Constraint_Error
-   --  will not be necessarily raised if this is violated since it is perfectly
-   --  valid to compile this unit with checks off).
+   --  Stores the image of V in S starting at S (P + 1), P is updated to point
+   --  to the last character stored. The value stored is identical to the value
+   --  of Long_Long_Unsigned'Image (V) except that no leading space is stored.
+   --  The caller guarantees that S is long enough to hold the result. S need
+   --  not have a lower bound of 1.
 
 end System.Img_LLU;

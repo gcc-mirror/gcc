@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,10 +37,14 @@ package body System.Img_Char is
    -- Image_Character --
    ---------------------
 
-   function Image_Character (V : Character) return String is
-      subtype Cname is String (1 .. 3);
+   procedure Image_Character
+     (V : Character;
+      S : in out String;
+      P : out Natural)
+   is
+      pragma Assert (S'First = 1);
 
-      S : Cname;
+      subtype Cname is String (1 .. 3);
 
       subtype C0_Range is Character
         range Character'Val (16#00#) .. Character'Val (16#1F#);
@@ -121,22 +125,22 @@ package body System.Img_Char is
       --  Control characters are represented by their names (RM 3.5(32))
 
       if V in C0_Range then
-         S := C0 (V);
+         S (1 .. 3) := C0 (V);
 
          if S (3) = ' ' then
-            return S (1 .. 2);
+            P := 2;
          else
-            return S;
+            P := 3;
          end if;
 
       elsif V in C1_Range then
-         S := C1 (V);
+         S (1 .. 3) := C1 (V);
 
          if S (1) /= 'r' then
             if S (3) = ' ' then
-               return S (1 .. 2);
+               P := 2;
             else
-               return S;
+               P := 3;
             end if;
 
          --  Special case, res means RESERVED_nnn where nnn is the three digit
@@ -146,13 +150,12 @@ package body System.Img_Char is
          else
             declare
                VP : constant Natural := Character'Pos (V);
-               St : String (1 .. 12) := "RESERVED_xxx";
-
             begin
-               St (10) := Character'Val (48 + VP / 100);
-               St (11) := Character'Val (48 + (VP / 10) mod 10);
-               St (12) := Character'Val (48 + VP mod 10);
-               return St;
+               S (1 .. 9) := "RESERVED_";
+               S (10) := Character'Val (48 + VP / 100);
+               S (11) := Character'Val (48 + (VP / 10) mod 10);
+               S (12) := Character'Val (48 + VP mod 10);
+               P := 12;
             end;
          end if;
 
@@ -162,7 +165,7 @@ package body System.Img_Char is
          S (1) := ''';
          S (2) := V;
          S (3) := ''';
-         return S;
+         P := 3;
       end if;
    end Image_Character;
 

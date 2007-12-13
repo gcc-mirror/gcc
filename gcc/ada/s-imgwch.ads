@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,14 +36,23 @@
 package System.Img_WChar is
    pragma Pure;
 
-   function Image_Wide_Character
+   procedure Image_Wide_Character
      (V        : Wide_Character;
-      Ada_2005 : Boolean) return String;
-   --  Computes Wide_Character'Image (V) and returns the computed result. The
-   --  parameter Ada_2005 is True if operating in Ada 2005 mode (or beyond).
-   --  This is needed for the annoying FFFE/FFFF incompatibility.
+      S        : in out String;
+      P        : out Natural;
+      Ada_2005 : Boolean);
+   --  Computes Wide_Character'Image (V) and stores the result in S (1 .. P)
+   --  setting the resulting value of P. The caller guarantees that S is long
+   --  enough to hold the result, and that S'First is 1. The parameter Ada_2005
+   --  is True if operating in Ada 2005 mode (or beyond). This is required to
+   --  deal with the annoying FFFE/FFFF incompatibility.
 
-   function Image_Wide_Wide_Character (V : Wide_Wide_Character) return String;
-   --  Computes Wide_Wide_Character'Image (V) and returns the computed result
+   procedure Image_Wide_Wide_Character
+     (V : Wide_Wide_Character;
+      S : in out String;
+      P : out Natural);
+   --  Computes Wide_Wide_Character'Image (V) and stores the result in
+   --  S (1 .. P) setting the resulting value of P. The caller guarantees
+   --  that S is long enough to hold the result, and that S'First is 1.
 
 end System.Img_WChar;
