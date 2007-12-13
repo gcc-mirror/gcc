@@ -135,9 +135,12 @@ Implementation Defined Pragmas
 * Pragma Extend_System::
 * Pragma External::
 * Pragma External_Name_Casing::
+* Pragma Fast_Math::
+* Pragma Favor_Top_Level::
 * Pragma Finalize_Storage_Only::
 * Pragma Float_Representation::
 * Pragma Ident::
+* Pragma Implemented_By_Entry::
 * Pragma Implicit_Packing::
 * Pragma Import_Exception::
 * Pragma Import_Function::
@@ -175,6 +178,7 @@ Implementation Defined Pragmas
 * Pragma Psect_Object::
 * Pragma Pure_Function::
 * Pragma Restriction_Warnings::
+* Pragma Shared::
 * Pragma Source_File_Name::
 * Pragma Source_File_Name_Project::
 * Pragma Source_Reference::
@@ -238,6 +242,7 @@ Implementation Defined Attributes
 * Null_Parameter::
 * Object_Size::
 * Passed_By_Reference::
+* Pool_Address::
 * Range_Length::
 * Safe_Emax::
 * Safe_Large::
@@ -305,6 +310,7 @@ The GNAT Library
 * GNAT.Bubble_Sort (g-bubsor.ads)::
 * GNAT.Bubble_Sort_A (g-busora.ads)::
 * GNAT.Bubble_Sort_G (g-busorg.ads)::
+* GNAT.Byte_Order_Mark (g-byorma.ads)::
 * GNAT.Byte_Swapping (g-bytswa.ads)::
 * GNAT.Calendar (g-calend.ads)::
 * GNAT.Calendar.Time_IO (g-catiio.ads)::
@@ -319,9 +325,14 @@ The GNAT Library
 * GNAT.Current_Exception (g-curexc.ads)::
 * GNAT.Debug_Pools (g-debpoo.ads)::
 * GNAT.Debug_Utilities (g-debuti.ads)::
+* GNAT.Decode_String (g-decstr.ads)::
+* GNAT.Decode_UTF8_String (g-deutst.ads)::
 * GNAT.Directory_Operations (g-dirope.ads)::
+* GNAT.Directory_Operations.Iteration (g-diopit.ads)::
 * GNAT.Dynamic_HTables (g-dynhta.ads)::
 * GNAT.Dynamic_Tables (g-dyntab.ads)::
+* GNAT.Encode_String (g-encstr.ads)::
+* GNAT.Encode_UTF8_String (g-enutst.ads)::
 * GNAT.Exception_Actions (g-excact.ads)::
 * GNAT.Exception_Traces (g-exctra.ads)::
 * GNAT.Exceptions (g-except.ads)::
@@ -339,6 +350,7 @@ The GNAT Library
 * GNAT.Most_Recent_Exception (g-moreex.ads)::
 * GNAT.OS_Lib (g-os_lib.ads)::
 * GNAT.Perfect_Hash_Generators (g-pehage.ads)::
+* GNAT.Random_Numbers (g-rannum.ads)
 * GNAT.Regexp (g-regexp.ads)::
 * GNAT.Registry (g-regist.ads)::
 * GNAT.Regpat (g-regpat.ads)::
@@ -348,7 +360,8 @@ The GNAT Library
 * GNAT.Signals (g-signal.ads)::
 * GNAT.Sockets (g-socket.ads)::
 * GNAT.Source_Info (g-souinf.ads)::
-* GNAT.Spell_Checker (g-speche.ads)::
+* GNAT.Spelling_Checker (g-speche.ads)::
+* GNAT.Spelling_Checker_Generic (g-spchge.ads)::
 * GNAT.Spitbol.Patterns (g-spipat.ads)::
 * GNAT.Spitbol (g-spitbo.ads)::
 * GNAT.Spitbol.Table_Boolean (g-sptabo.ads)::
@@ -361,7 +374,11 @@ The GNAT Library
 * GNAT.Threads (g-thread.ads)::
 * GNAT.Traceback (g-traceb.ads)::
 * GNAT.Traceback.Symbolic (g-trasym.ads)::
+* GNAT.UTF_32 (g-utf_32.ads)::
+* GNAT.UTF_32_Spelling_Checker (g-u3spch.ads)::
+* GNAT.Wide_Spelling_Checker (g-wispch.ads)::
 * GNAT.Wide_String_Split (g-wistsp.ads)::
+* GNAT.Wide_Wide_Spelling_Checker (g-zspche.ads)::
 * GNAT.Wide_Wide_String_Split (g-zistsp.ads)::
 * Interfaces.C.Extensions (i-cexten.ads)::
 * Interfaces.C.Streams (i-cstrea.ads)::
@@ -658,11 +675,11 @@ Manual.
 
 In addition, Ada allows implementations to define additional pragmas
 whose meaning is defined by the implementation.  GNAT provides a number
-of these implementation-dependent pragmas which can be used to extend
+of these implementation-defined pragmas, which can be used to extend
 and enhance the functionality of the compiler.  This section of the GNAT
 Reference Manual describes these additional pragmas.
 
-Note that any program using these pragmas may not be portable to other
+Note that any program using these pragmas might not be portable to other
 compilers (although GNAT implements this set of pragmas on all
 platforms).  Therefore if portability to other compilers is an important
 consideration, the use of these pragmas should be minimized.
@@ -704,9 +721,12 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Extend_System::
 * Pragma External::
 * Pragma External_Name_Casing::
+* Pragma Fast_Math::
+* Pragma Favor_Top_Level::
 * Pragma Finalize_Storage_Only::
 * Pragma Float_Representation::
 * Pragma Ident::
+* Pragma Implemented_By_Entry::
 * Pragma Implicit_Packing::
 * Pragma Import_Exception::
 * Pragma Import_Function::
@@ -744,6 +764,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Psect_Object::
 * Pragma Pure_Function::
 * Pragma Restriction_Warnings::
+* Pragma Shared::
 * Pragma Source_File_Name::
 * Pragma Source_File_Name_Project::
 * Pragma Source_Reference::
@@ -807,7 +828,7 @@ which it applies, regardless of the mode set by the command line
 switches.  In Ada 83 mode, GNAT attempts to be as compatible with
 the syntax and semantics of Ada 83, as defined in the original Ada
 83 Reference Manual as possible.  In particular, the keywords added by Ada 95
-(and Ada 2005) are not recognized, optional package bodies are allowed,
+and Ada 2005 are not recognized, optional package bodies are allowed,
 and generics may name types with unknown discriminants without using
 the @code{(<>)} notation.  In addition, some but not all of the additional
 restrictions of Ada 83 are enforced.
@@ -882,7 +903,7 @@ ARG ::= NAME | EXPRESSION
 
 @noindent
 This pragma is used to annotate programs.  @var{identifier} identifies
-the type of annotation.  GNAT verifies this is an identifier, but does
+the type of annotation.  GNAT verifies that it is an identifier, but does
 not otherwise analyze it.  The @var{arg} argument
 can be either a string literal or an
 expression.  String literals are assumed to be of type
@@ -942,22 +963,21 @@ type of the expression is either @code{Standard.Boolean}, or any type derived
 from this standard type.
 
 If assertions are disabled (switch @code{-gnata} not used), then there
-is no effect (and in particular, any side effects from the expression
-are suppressed).  More precisely it is not quite true that the pragma
-has no effect, since the expression is analyzed, and may cause types
-to be frozen if they are mentioned here for the first time.
+is no run-time effect (and in particular, any side effects from the
+expression will not occur at run time).  (The expression is still
+analyzed at compile time, and may cause types to be frozen if they are
+mentioned here for the first time).
 
 If assertions are enabled, then the given expression is tested, and if
 it is @code{False} then @code{System.Assertions.Raise_Assert_Failure} is called
 which results in the raising of @code{Assert_Failure} with the given message.
 
-If the boolean expression has side effects, these side effects will turn
-on and off with the setting of the assertions mode, resulting in
-assertions that have an effect on the program.  You should generally
-avoid side effects in the expression arguments of this pragma.  However,
-the expressions are analyzed for semantic correctness whether or not
-assertions are enabled, so turning assertions on and off cannot affect
-the legality of a program.
+You should generally avoid side effects in the expression arguments of
+this pragma, because these side effects will turn on and off with the
+setting of the assertions mode, resulting in assertions that have an
+effect on the program.  However, the expressions are analyzed for
+semantic correctness whether or not assertions are enabled, so turning
+assertions on and off cannot affect the legality of a program.
 
 @node Pragma Ast_Entry
 @unnumberedsec Pragma Ast_Entry
@@ -1001,7 +1021,8 @@ copy if all of the following conditions are met:
 
 @itemize @bullet
 @item
-The size of the record type does not exceed@*@var{static_integer_expression}.
+The size of the record type does not exceed the value specified for
+@code{Max_Size}.
 @item
 The record type has @code{Convention C}.
 @item
@@ -1031,7 +1052,7 @@ pragma Check_Name (check_name_IDENTIFIER);
 @end smallexample
 
 @noindent
-This is a configuration pragma which defines a new implementation
+This is a configuration pragma that defines a new implementation
 defined check name (unless IDENTIFIER matches one of the predefined
 check names, in which case the pragma has no effect). Check names
 are global to a partition, so if two more more configuration pragmas
@@ -1048,7 +1069,6 @@ the current unit, or if it appears at the start of any unit that
 is part of the dependency set of the current unit (e.g. units that
 are mentioned in @code{with} clauses.
 
-Normally the default mechanism for passing C convention records to C
 @node Pragma Comment
 @unnumberedsec Pragma Comment
 @findex Comment
@@ -1076,7 +1096,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Common_Object (
-     [Internal =>] local_NAME,
+     [Internal =>] LOCAL_NAME
   [, [External =>] EXTERNAL_SYMBOL]
   [, [Size     =>] EXTERNAL_SYMBOL] );
 
@@ -1089,10 +1109,10 @@ EXTERNAL_SYMBOL ::=
 This pragma enables the shared use of variables stored in overlaid
 linker areas corresponding to the use of @code{COMMON}
 in Fortran.  The single
-object @var{local_NAME} is assigned to the area designated by
+object @var{LOCAL_NAME} is assigned to the area designated by
 the @var{External} argument.
 You may define a record to correspond to a series
-of fields.  The @var{size} argument
+of fields.  The @var{Size} argument
 is syntax checked in GNAT, but otherwise ignored.
 
 @code{Common_Object} is not supported on all platforms.  If no
@@ -1139,19 +1159,8 @@ pragma Compile_Time_Warning
 @end smallexample
 
 @noindent
-This pragma can be used to generate additional compile time warnings. It
-is particularly useful in generics, where warnings can be issued for
-specific problematic instantiations. The first parameter is a boolean
-expression. The pragma is effective only if the value of this expression
-is known at compile time, and has the value True. The set of expressions
-whose values are known at compile time includes all static boolean
-expressions, and also other values which the compiler can determine
-at compile time (e.g. the size of a record type set by an explicit
-size representation clause, or the value of a variable which was
-initialized to a constant and is known not to have been modified).
-If these conditions are met, a warning message is generated using
-the value given as the second argument. This string value may contain
-embedded ASCII.LF characters to break the message into multiple lines.
+Same as pragma Compile_Time_Error, except a warning is issued instead
+of an error message.
 
 @node Pragma Complete_Representation
 @unnumberedsec Pragma Complete_Representation
@@ -1180,7 +1189,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Complex_Representation
-        ([Entity =>] local_NAME);
+        ([Entity =>] LOCAL_NAME);
 @end smallexample
 
 @noindent
@@ -1204,7 +1213,7 @@ Syntax:
 @smallexample @c ada
 pragma Component_Alignment (
      [Form =>] ALIGNMENT_CHOICE
-  [, [Name =>] type_local_NAME]);
+  [, [Name =>] type_LOCAL_NAME]);
 
 ALIGNMENT_CHOICE ::=
   Component_Size
@@ -1251,7 +1260,7 @@ alignment).
 @end table
 
 @noindent
-If the @code{Name} parameter is present, @var{type_local_NAME} must
+If the @code{Name} parameter is present, @var{type_LOCAL_NAME} must
 refer to a local record or array type, and the specified alignment
 choice applies to the specified type.  The use of
 @code{Component_Alignment} together with a pragma @code{Pack} causes the
@@ -1315,7 +1324,7 @@ would be used system-wide.
 Syntax:
 
 @smallexample @c ada
-pragma CPP_Class ([Entity =>] local_NAME);
+pragma CPP_Class ([Entity =>] LOCAL_NAME);
 @end smallexample
 
 @noindent
@@ -1347,7 +1356,7 @@ using pragma @code{Import} with @code{Convention} = @code{CPP}.
 Syntax:
 
 @smallexample @c ada
-pragma CPP_Constructor ([Entity =>] local_NAME
+pragma CPP_Constructor ([Entity =>] LOCAL_NAME
   [, [External_Name =>] static_string_EXPRESSION ]
   [, [Link_Name     =>] static_string_EXPRESSION ]);
 @end smallexample
@@ -1653,8 +1662,8 @@ Syntax:
 
 @smallexample @c ada
 pragma Export_Exception (
-     [Internal =>] local_NAME,
-  [, [External =>] EXTERNAL_SYMBOL,]
+     [Internal =>] LOCAL_NAME
+  [, [External =>] EXTERNAL_SYMBOL]
   [, [Form     =>] Ada | VMS]
   [, [Code     =>] static_integer_EXPRESSION]);
 
@@ -1682,7 +1691,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Export_Function (
-     [Internal         =>] local_NAME,
+     [Internal         =>] LOCAL_NAME
   [, [External         =>] EXTERNAL_SYMBOL]
   [, [Parameter_Types  =>] PARAMETER_TYPES]
   [, [Result_Type      =>] result_SUBTYPE_MARK]
@@ -1760,7 +1769,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Export_Object
-      [Internal =>] local_NAME,
+      [Internal =>] LOCAL_NAME
    [, [External =>] EXTERNAL_SYMBOL]
    [, [Size     =>] EXTERNAL_SYMBOL]
 
@@ -1785,7 +1794,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Export_Procedure (
-     [Internal        =>] local_NAME
+     [Internal        =>] LOCAL_NAME
   [, [External        =>] EXTERNAL_SYMBOL]
   [, [Parameter_Types =>] PARAMETER_TYPES]
   [, [Mechanism       =>] MECHANISM]);
@@ -1867,7 +1876,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Export_Valued_Procedure (
-     [Internal        =>] local_NAME
+     [Internal        =>] LOCAL_NAME
   [, [External        =>] EXTERNAL_SYMBOL]
   [, [Parameter_Types =>] PARAMETER_TYPES]
   [, [Mechanism       =>] MECHANISM]);
@@ -1902,7 +1911,7 @@ CLASS_NAME ::= ubs | ubsb | uba | s | sb | a
 
 @noindent
 This pragma is identical to @code{Export_Procedure} except that the
-first parameter of @var{local_NAME}, which must be present, must be of
+first parameter of @var{LOCAL_NAME}, which must be present, must be of
 mode @code{OUT}, and externally the subprogram is treated as a function
 with this parameter as the result of the function.  GNAT provides for
 this capability to allow the use of @code{OUT} and @code{IN OUT}
@@ -1981,7 +1990,7 @@ Syntax:
 @smallexample @c ada
 pragma External (
   [   Convention    =>] convention_IDENTIFIER,
-  [   Entity        =>] local_NAME
+  [   Entity        =>] LOCAL_NAME
   [, [External_Name =>] static_string_EXPRESSION ]
   [, [Link_Name     =>] static_string_EXPRESSION ]);
 @end smallexample
@@ -2076,6 +2085,52 @@ pragma External_Name_Casing (Uppercase, Uppercase);
 @noindent
 to enforce the upper casing of all external symbols.
 
+@node Pragma Fast_Math
+@unnumberedsec Pragma Fast_Math
+@findex Fast_Math
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Fast_Math;
+@end smallexample
+
+@noindent
+This is a configuration pragma which activates a mode in which speed is
+considered more important for floating-point operations than absolutely
+accurate adherence to the requirements of the standard. Currently the
+following operations are affected:
+
+@table @asis
+@item Complex Multiplication
+The normal simple formula for complex multiplication can result in intermediate
+overflows for numbers near the end of the range. The Ada standard requires that
+this situation be detected and corrected by scaling, but in Fast_Math mode such
+cases will simply result in overflow. Note that to take advantage of this you
+must instantiate your own version of @code{Ada.Numerics.Generic_Complex_Types}
+under control of the pragma, rather than use the preinstantiated versions.
+@end table
+
+@node Pragma Favor_Top_Level
+@unnumberedsec Pragma Favor_Top_Level
+@findex Favor_Top_Level
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Favor_Top_Level (type_NAME);
+@end smallexample
+
+@noindent
+The named type must be an access-to-subprogram type. This pragma is an
+efficiency hint to the compiler, regarding the use of 'Access or
+'Unrestricted_Access on nested (non-library-level) subprograms. The
+pragma means that nested subprograms are not used with this type, or
+are rare, so that the generated code should be efficient in the
+top-level case. When this pragma is used, dynamically generated
+trampolines may be used on some targets for nested subprograms.
+See also the No_Implicit_Dynamic_Code restriction.
+
 @node Pragma Finalize_Storage_Only
 @unnumberedsec Pragma Finalize_Storage_Only
 @findex Finalize_Storage_Only
@@ -2083,7 +2138,7 @@ to enforce the upper casing of all external symbols.
 Syntax:
 
 @smallexample @c ada
-pragma Finalize_Storage_Only (first_subtype_local_NAME);
+pragma Finalize_Storage_Only (first_subtype_LOCAL_NAME);
 @end smallexample
 
 @noindent
@@ -2159,6 +2214,42 @@ maximum allowed length is 31 characters, so if it is important to
 maintain compatibility with this compiler, you should obey this length
 limit.
 
+@node Pragma Implemented_By_Entry
+@unnumberedsec Pragma Implemented_By_Entry
+@findex Implemented_By_Entry
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Implemented_By_Entry (LOCAL_NAME);
+@end smallexample
+
+@noindent
+This is a representation pragma which applies to protected, synchronized and
+task interface primitives. If the pragma is applied to primitive operation Op
+of interface Iface, it is illegal to override Op in a type that implements
+Iface, with anything other than an entry.
+
+@smallexample @c ada
+type Iface is protected interface;
+procedure Do_Something (Object : in out Iface) is abstract;
+pragma Implemented_By_Entry (Do_Something);
+
+protected type P is new Iface with
+   procedure Do_Something;  --  Illegal
+end P;
+
+task type T is new Iface with
+   entry Do_Something;      --  Legal
+end T;
+@end smallexample
+
+@noindent
+NOTE: The pragma is still in its design stage by the Ada Rapporteur Group. It
+is intended to be used in conjunction with dispatching requeue statements as
+described in AI05-0030. Should the ARG decide on an official name and syntax,
+this pragma will become language-defined rather than GNAT-specific.
+
 @node Pragma Implicit_Packing
 @unnumberedsec Pragma Implicit_Packing
 @findex Implicit_Packing
@@ -2203,8 +2294,8 @@ Syntax:
 
 @smallexample @c ada
 pragma Import_Exception (
-     [Internal =>] local_NAME,
-  [, [External =>] EXTERNAL_SYMBOL,]
+     [Internal =>] LOCAL_NAME
+  [, [External =>] EXTERNAL_SYMBOL]
   [, [Form     =>] Ada | VMS]
   [, [Code     =>] static_integer_EXPRESSION]);
 
@@ -2230,7 +2321,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Import_Function (
-     [Internal                 =>] local_NAME,
+     [Internal                 =>] LOCAL_NAME,
   [, [External                 =>] EXTERNAL_SYMBOL]
   [, [Parameter_Types          =>] PARAMETER_TYPES]
   [, [Result_Type              =>] SUBTYPE_MARK]
@@ -2312,8 +2403,8 @@ Syntax:
 
 @smallexample @c ada
 pragma Import_Object
-     [Internal =>] local_NAME,
-  [, [External =>] EXTERNAL_SYMBOL],
+     [Internal =>] LOCAL_NAME
+  [, [External =>] EXTERNAL_SYMBOL]
   [, [Size     =>] EXTERNAL_SYMBOL]);
 
 EXTERNAL_SYMBOL ::=
@@ -2338,7 +2429,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Import_Procedure (
-     [Internal                 =>] local_NAME,
+     [Internal                 =>] LOCAL_NAME
   [, [External                 =>] EXTERNAL_SYMBOL]
   [, [Parameter_Types          =>] PARAMETER_TYPES]
   [, [Mechanism                =>] MECHANISM]
@@ -2384,7 +2475,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Import_Valued_Procedure (
-     [Internal                 =>] local_NAME,
+     [Internal                 =>] LOCAL_NAME
   [, [External                 =>] EXTERNAL_SYMBOL]
   [, [Parameter_Types          =>] PARAMETER_TYPES]
   [, [Mechanism                =>] MECHANISM]
@@ -2419,7 +2510,7 @@ CLASS_NAME ::= ubs | ubsb | uba | s | sb | a | nca
 
 @noindent
 This pragma is identical to @code{Import_Procedure} except that the
-first parameter of @var{local_NAME}, which must be present, must be of
+first parameter of @var{LOCAL_NAME}, which must be present, must be of
 mode @code{OUT}, and externally the subprogram is treated as a function
 with this parameter as the result of the function.  The purpose of this
 capability is to allow the use of @code{OUT} and @code{IN OUT}
@@ -2535,8 +2626,8 @@ Syntax:
 @smallexample @c ada
 pragma Interface (
      [Convention    =>] convention_identifier,
-     [Entity =>] local_NAME
-  [, [External_Name =>] static_string_expression],
+     [Entity        =>] local_NAME
+  [, [External_Name =>] static_string_expression]
   [, [Link_Name     =>] static_string_expression]);
 @end smallexample
 
@@ -2556,7 +2647,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Interface_Name (
-     [Entity        =>] local_NAME
+     [Entity        =>] LOCAL_NAME
   [, [External_Name =>] static_string_EXPRESSION]
   [, [Link_Name     =>] static_string_EXPRESSION]);
 @end smallexample
@@ -2574,7 +2665,7 @@ least one of @var{External_Name} or @var{Link_Name}.
 Syntax:
 
 @smallexample @c ada
-pragma Interrupt_Handler (procedure_local_NAME);
+pragma Interrupt_Handler (procedure_LOCAL_NAME);
 @end smallexample
 
 @noindent
@@ -2670,11 +2761,11 @@ and in the case of the signal used to implement the @code{abort} statement.
 Syntax:
 
 @smallexample @c ada
-pragma Keep_Names ([On =>] enumeration_first_subtype_local_NAME);
+pragma Keep_Names ([On =>] enumeration_first_subtype_LOCAL_NAME);
 @end smallexample
 
 @noindent
-The @var{local_NAME} argument
+The @var{LOCAL_NAME} argument
 must refer to an enumeration first subtype
 in the current declarative part. The effect is to retain the enumeration
 literal names for use by @code{Image} and @code{Value} even if a global
@@ -2812,17 +2903,17 @@ Syntax:
 
 @smallexample @c ada
 pragma Linker_Alias (
-  [Entity =>] local_NAME
+  [Entity =>] LOCAL_NAME,
   [Target =>] static_string_EXPRESSION);
 @end smallexample
 
 @noindent
-@var{local_NAME} must refer to an object that is declared at the library
+@var{LOCAL_NAME} must refer to an object that is declared at the library
 level. This pragma establishes the given entity as a linker alias for the
 given target. It is equivalent to @code{__attribute__((alias))} in GNU C
-and causes @var{local_NAME} to be emitted as an alias for the symbol
+and causes @var{LOCAL_NAME} to be emitted as an alias for the symbol
 @var{static_string_EXPRESSION} in the object file, that is to say no space
-is reserved for @var{local_NAME} by the assembler and it will be resolved
+is reserved for @var{LOCAL_NAME} by the assembler and it will be resolved
 to the same address as @var{static_string_EXPRESSION} by the linker.
 
 The actual linker name for the target must be used (e.g. the fully
@@ -2831,7 +2922,7 @@ or it must be declared using the C convention with @code{pragma Import}
 or @code{pragma Export}.
 
 Not all target machines support this pragma. On some of them it is accepted
-only if @code{pragma Weak_External} has been applied to @var{local_NAME}.
+only if @code{pragma Weak_External} has been applied to @var{LOCAL_NAME}.
 
 @smallexample @c ada
 --  Example of the use of pragma Linker_Alias
@@ -2856,7 +2947,7 @@ pragma Linker_Constructor (procedure_LOCAL_NAME);
 @end smallexample
 
 @noindent
-@var{procedure_local_NAME} must refer to a parameterless procedure that
+@var{procedure_LOCAL_NAME} must refer to a parameterless procedure that
 is declared at the library level. A procedure to which this pragma is
 applied will be treated as an initialization routine by the linker.
 It is equivalent to @code{__attribute__((constructor))} in GNU C and
@@ -2886,7 +2977,7 @@ pragma Linker_Destructor (procedure_LOCAL_NAME);
 @end smallexample
 
 @noindent
-@var{procedure_local_NAME} must refer to a parameterless procedure that
+@var{procedure_LOCAL_NAME} must refer to a parameterless procedure that
 is declared at the library level. A procedure to which this pragma is
 applied will be treated as a finalization routine by the linker.
 It is equivalent to @code{__attribute__((destructor))} in GNU C and
@@ -2906,15 +2997,15 @@ Syntax:
 
 @smallexample @c ada
 pragma Linker_Section (
-  [Entity  =>] local_NAME
+  [Entity  =>] LOCAL_NAME,
   [Section =>] static_string_EXPRESSION);
 @end smallexample
 
 @noindent
-@var{local_NAME} must refer to an object that is declared at the library
+@var{LOCAL_NAME} must refer to an object that is declared at the library
 level. This pragma specifies the name of the linker section for the given
 entity. It is equivalent to @code{__attribute__((section))} in GNU C and
-causes @var{local_NAME} to be placed in the @var{static_string_EXPRESSION}
+causes @var{LOCAL_NAME} to be placed in the @var{static_string_EXPRESSION}
 section of the executable (assuming the linker doesn't rename the section).
 
 The compiler normally places library-level objects in standard sections
@@ -2979,19 +3070,24 @@ Syntax:
 
 @smallexample @c ada
 pragma Machine_Attribute (
-  [Attribute_Name =>] string_EXPRESSION,
-  [Entity         =>] local_NAME);
+     [Entity         =>] LOCAL_NAME,
+     [Attribute_Name =>] static_string_EXPRESSION
+  [, [Info           =>] static_string_EXPRESSION] );
 @end smallexample
 
 @noindent
 Machine-dependent attributes can be specified for types and/or
 declarations.  This pragma is semantically equivalent to
-@code{__attribute__((@var{string_expression}))} in GNU C,
-where @code{@var{string_expression}} is
-recognized by the target macro @code{TARGET_ATTRIBUTE_TABLE} which is
-defined for each machine.  See the GCC manual for further information.
-It is not possible to specify attributes defined by other languages,
-only attributes defined by the machine the code is intended to run on.
+@code{__attribute__((@var{attribute_name}))} (if @var{info} is not
+specified) or @code{__attribute__((@var{attribute_name}(@var{info})))}
+in GNU C, where @code{@var{attribute_name}} is recognized by the
+target macro @code{TARGET_ATTRIBUTE_TABLE} which is defined for each
+machine.  The optional parameter @var{info} is transformed into an
+identifier, which may make this pragma unusable for some attributes
+(parameter of some attributes must be a number or a string). See the
+GCC manual for further information.  It is not possible to specify
+attributes defined by other languages, only attributes defined by the
+machine the code is intended to run on.
 
 @node Pragma Main
 @unnumberedsec Pragma Main
@@ -3065,11 +3161,11 @@ earlier versions of the package body.
 Syntax:
 
 @smallexample @c ada
-pragma No_Return (procedure_local_NAME @{, procedure_local_NAME@});
+pragma No_Return (procedure_LOCAL_NAME @{, procedure_LOCAL_NAME@});
 @end smallexample
 
 @noindent
-Each @var{procedure_local_NAME} argument must refer to one or more procedure
+Each @var{procedure_LOCAL_NAME} argument must refer to one or more procedure
 declarations in the current declarative part.  A procedure to which this
 pragma is applied may not contain any explicit @code{return} statements.
 In addition, if the procedure contains any implicit returns from falling
@@ -3299,7 +3395,7 @@ optimized.  GNAT does not attempt to optimize any tasks in this manner
 Syntax:
 
 @smallexample @c ada
-pragma Persistent_BSS [(local_NAME)]
+pragma Persistent_BSS [(LOCAL_NAME)]
 @end smallexample
 
 @noindent
@@ -3551,7 +3647,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Psect_Object (
-     [Internal =>] local_NAME,
+     [Internal =>] LOCAL_NAME,
   [, [External =>] EXTERNAL_SYMBOL]
   [, [Size     =>] EXTERNAL_SYMBOL]);
 
@@ -3570,7 +3666,7 @@ This pragma is identical in effect to pragma @code{Common_Object}.
 Syntax:
 
 @smallexample @c ada
-pragma Pure_Function ([Entity =>] function_local_NAME);
+pragma Pure_Function ([Entity =>] function_LOCAL_NAME);
 @end smallexample
 
 @noindent
@@ -3636,6 +3732,14 @@ pragma @code{Restrictions}). For each of these identifiers
 the compiler checks for violations of the restriction, but
 generates a warning message rather than an error message
 if the restriction is violated.
+
+@node Pragma Shared
+@unnumberedsec Pragma Shared
+@findex Shared
+
+@noindent
+This pragma is provided for compatibility with Ada 83. The syntax and
+semantics are identical to pragma Atomic.
 
 @node Pragma Source_File_Name
 @unnumberedsec Pragma Source_File_Name
@@ -3749,7 +3853,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Stream_Convert (
-  [Entity =>] type_local_NAME,
+  [Entity =>] type_LOCAL_NAME,
   [Read   =>] function_NAME,
   [Write  =>] function_NAME);
 @end smallexample
@@ -3823,7 +3927,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Style_Checks (string_LITERAL | ALL_CHECKS |
-                     On | Off [, local_NAME]);
+                     On | Off [, LOCAL_NAME]);
 @end smallexample
 
 @noindent
@@ -4062,7 +4166,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Task_Storage (
-  [Task_Type =>] local_NAME,
+  [Task_Type =>] LOCAL_NAME,
   [Top_Guard =>] static_integer_EXPRESSION);
 @end smallexample
 
@@ -4126,7 +4230,7 @@ following the normal rules for procedure calls in Ada.
 Syntax:
 
 @smallexample @c ada
-pragma Unchecked_Union (first_subtype_local_NAME);
+pragma Unchecked_Union (first_subtype_LOCAL_NAME);
 @end smallexample
 
 @noindent
@@ -4208,7 +4312,7 @@ compilations of units where universal addressing of the data is desired.
 Syntax:
 
 @smallexample @c ada
-pragma Unreferenced (local_NAME @{, local_NAME@});
+pragma Unreferenced (LOCAL_NAME @{, LOCAL_NAME@});
 pragma Unreferenced (library_unit_NAME @{, library_unit_NAME@});
 @end smallexample
 
@@ -4227,7 +4331,7 @@ and that this is deliberate. It can also be useful in the case of
 objects declared only for their initialization or finalization side
 effects.
 
-If @code{local_NAME} identifies more than one matching homonym in the
+If @code{LOCAL_NAME} identifies more than one matching homonym in the
 current scope, then the entity most recently declared is the one to which
 the pragma applies. Note that in the case of accept formals, the pragma
 Unreferenced may appear immediately after the keyword @code{do} which
@@ -4248,7 +4352,7 @@ The second form of pragma @code{Unreferenced} is used within a context
 clause. In this case the arguments must be unit names of units previously
 mentioned in @code{with} clauses (similar to the usage of pragma
 @code{Elaborate_All}. The effect is to suppress warnings about unreferenced
-units.
+units and unreferenced entities within these units.
 
 @node Pragma Unreferenced_Objects
 @unnumberedsec Pragma Unreferenced_Objects
@@ -4417,7 +4521,7 @@ A := C;                       -- C will be validity checked
 Syntax:
 
 @smallexample @c ada
-pragma Volatile (local_NAME);
+pragma Volatile (LOCAL_NAME);
 @end smallexample
 
 @noindent
@@ -4436,7 +4540,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Warnings (On | Off);
-pragma Warnings (On | Off, local_NAME);
+pragma Warnings (On | Off, LOCAL_NAME);
 pragma Warnings (static_string_EXPRESSION);
 pragma Warnings (On | Off, static_string_EXPRESSION);
 @end smallexample
@@ -4451,7 +4555,7 @@ setting of the command line switches.
 
 The form with a single argument may be used as a configuration pragma.
 
-If the @var{local_NAME} parameter is present, warnings are suppressed for
+If the @var{LOCAL_NAME} parameter is present, warnings are suppressed for
 the specified entity.  This suppression is effective from the point where
 it occurs till the end of the extended scope of the variable (similar to
 the scope of @code{Suppress}).
@@ -4561,14 +4665,14 @@ and at least one matching warning must be suppressed.
 Syntax:
 
 @smallexample @c ada
-pragma Weak_External ([Entity =>] local_NAME);
+pragma Weak_External ([Entity =>] LOCAL_NAME);
 @end smallexample
 
 @noindent
-@var{local_NAME} must refer to an object that is declared at the library
+@var{LOCAL_NAME} must refer to an object that is declared at the library
 level. This pragma specifies that the given entity should be marked as a
 weak symbol for the linker. It is equivalent to @code{__attribute__((weak))}
-in GNU C and causes @var{local_NAME} to be emitted as a weak symbol instead
+in GNU C and causes @var{LOCAL_NAME} to be emitted as a weak symbol instead
 of a regular symbol, that is to say a symbol that does not have to be
 resolved by the linker if used in conjunction with a pragma Import.
 
@@ -4682,6 +4786,7 @@ consideration, you should minimize the use of these attributes.
 * Null_Parameter::
 * Object_Size::
 * Passed_By_Reference::
+* Pool_Address::
 * Range_Length::
 * Safe_Emax::
 * Safe_Large::
@@ -5252,6 +5357,25 @@ a value of type @code{Boolean} value that is @code{True} if the type is
 normally passed by reference and @code{False} if the type is normally
 passed by copy in calls.  For scalar types, the result is always @code{False}
 and is static.  For non-scalar types, the result is non-static.
+
+@node Pool_Address
+@unnumberedsec Pool_Address
+@cindex Parameters, when passed by reference
+@findex Pool_Address
+@noindent
+@code{@var{X}'Pool_Address} for any object @var{X} returns the address
+of X within its storage pool. This is the same as
+@code{@var{X}'Address}, except that for an unconstrained array whose
+bounds are allocated just before the first component,
+@code{@var{X}'Pool_Address} returns the address of those bounds,
+whereas @code{@var{X}'Address} returns the address of the first
+component.
+
+Here, we are interpreting ``storage pool'' broadly to mean ``wherever
+the object is allocated'', which could be a user-defined storage pool,
+the global heap, on the stack, or in a static memory area. For an
+object created by @code{new}, @code{@var{Ptr.all}'Pool_Address} is
+what is passed to @code{Allocate} and returned from @code{Deallocate}.
 
 @node Range_Length
 @unnumberedsec Range_Length
@@ -9845,8 +9969,8 @@ will be flagged as illegal by GNAT@.
 Since the misconception that Bit_Order automatically deals with all
 endian-related incompatibilities is a common one, the specification of
 a component field that is an integral number of bytes will always
-generate a warning.  This warning may be suppressed using
-@code{pragma Suppress} if desired.  The following section contains additional
+generate a warning.  This warning may be suppressed using @code{pragma
+Warnings (Off)} if desired.  The following section contains additional
 details regarding the issue of byte ordering.
 
 @node Effect of Bit_Order on Byte Ordering
@@ -12641,6 +12765,7 @@ of GNAT, and will generate a warning message.
 * GNAT.Bubble_Sort (g-bubsor.ads)::
 * GNAT.Bubble_Sort_A (g-busora.ads)::
 * GNAT.Bubble_Sort_G (g-busorg.ads)::
+* GNAT.Byte_Order_Mark (g-byorma.ads)::
 * GNAT.Byte_Swapping (g-bytswa.ads)::
 * GNAT.Calendar (g-calend.ads)::
 * GNAT.Calendar.Time_IO (g-catiio.ads)::
@@ -12655,9 +12780,14 @@ of GNAT, and will generate a warning message.
 * GNAT.Current_Exception (g-curexc.ads)::
 * GNAT.Debug_Pools (g-debpoo.ads)::
 * GNAT.Debug_Utilities (g-debuti.ads)::
+* GNAT.Decode_String (g-decstr.ads)::
+* GNAT.Decode_UTF8_String (g-deutst.ads)::
 * GNAT.Directory_Operations (g-dirope.ads)::
+* GNAT.Directory_Operations.Iteration (g-diopit.ads)::
 * GNAT.Dynamic_HTables (g-dynhta.ads)::
 * GNAT.Dynamic_Tables (g-dyntab.ads)::
+* GNAT.Encode_String (g-encstr.ads)::
+* GNAT.Encode_UTF8_String (g-enutst.ads)::
 * GNAT.Exception_Actions (g-excact.ads)::
 * GNAT.Exception_Traces (g-exctra.ads)::
 * GNAT.Exceptions (g-except.ads)::
@@ -12675,6 +12805,7 @@ of GNAT, and will generate a warning message.
 * GNAT.Most_Recent_Exception (g-moreex.ads)::
 * GNAT.OS_Lib (g-os_lib.ads)::
 * GNAT.Perfect_Hash_Generators (g-pehage.ads)::
+* GNAT.Random_Numbers (g-rannum.ads)::
 * GNAT.Regexp (g-regexp.ads)::
 * GNAT.Registry (g-regist.ads)::
 * GNAT.Regpat (g-regpat.ads)::
@@ -12684,7 +12815,8 @@ of GNAT, and will generate a warning message.
 * GNAT.Signals (g-signal.ads)::
 * GNAT.Sockets (g-socket.ads)::
 * GNAT.Source_Info (g-souinf.ads)::
-* GNAT.Spell_Checker (g-speche.ads)::
+* GNAT.Spelling_Checker (g-speche.ads)::
+* GNAT.Spelling_Checker_Generic (g-spchge.ads)::
 * GNAT.Spitbol.Patterns (g-spipat.ads)::
 * GNAT.Spitbol (g-spitbo.ads)::
 * GNAT.Spitbol.Table_Boolean (g-sptabo.ads)::
@@ -12692,13 +12824,16 @@ of GNAT, and will generate a warning message.
 * GNAT.Spitbol.Table_VString (g-sptavs.ads)::
 * GNAT.Strings (g-string.ads)::
 * GNAT.String_Split (g-strspl.ads)::
-* GNAT.UTF_32 (g-utf_32.ads)::
 * GNAT.Table (g-table.ads)::
 * GNAT.Task_Lock (g-tasloc.ads)::
 * GNAT.Threads (g-thread.ads)::
 * GNAT.Traceback (g-traceb.ads)::
 * GNAT.Traceback.Symbolic (g-trasym.ads)::
+* GNAT.UTF_32 (g-utf_32.ads)::
+* GNAT.UTF_32_Spelling_Checker (g-u3spch.ads)::
+* GNAT.Wide_Spelling_Checker (g-wispch.ads)::
 * GNAT.Wide_String_Split (g-wistsp.ads)::
+* GNAT.Wide_Wide_Spelling_Checker (g-zspche.ads)::
 * GNAT.Wide_Wide_String_Split (g-zistsp.ads)::
 * Interfaces.C.Extensions (i-cexten.ads)::
 * Interfaces.C.Streams (i-cstrea.ads)::
@@ -13059,6 +13194,18 @@ are provided as generic parameters, this improves efficiency, especially
 if the procedures can be inlined, at the expense of duplicating code for
 multiple instantiations.
 
+@node GNAT.Byte_Order_Mark (g-byorma.ads)
+@section @code{GNAT.Byte_Order_Mark} (@file{g-byorma.ads})
+@cindex @code{GNAT.Byte_Order_Mark} (@file{g-byorma.ads})
+@cindex UTF-8 representation
+@cindex Wide characte representations
+
+@noindent
+Provides a routine which given a string, reads the start of the string to
+see whether it is one of the standard byte order marks (BOM's) which signal
+the encoding of the string. The routine includes detection of special XML
+sequences for various UCS input formats.
+
 @node GNAT.Byte_Swapping (g-bytswa.ads)
 @section @code{GNAT.Byte_Swapping} (@file{g-bytswa.ads})
 @cindex @code{GNAT.Byte_Swapping} (@file{g-bytswa.ads})
@@ -13208,6 +13355,36 @@ Provides a few useful utilities for debugging purposes, including conversion
 to and from string images of address values. Supports both C and Ada formats
 for hexadecimal literals.
 
+@node GNAT.Decode_String (g-decstr.ads)
+@section @code{GNAT.Decode_String} (@file{g-decstr.ads})
+@cindex @code{GNAT.Decode_String} (@file{g-decstr.ads})
+@cindex Decoding strings
+@cindex String decoding
+@cindex Wide chararacter encoding
+@cindex UTF-8
+@cindex Unicode
+
+@noindent
+A generic package providing routines for decoding wide character and wide wide
+character strings encoded as sequences of 8-bit characters using a specified
+encoding method. Includes validation routines, and also routines for stepping
+to next or previous encoded character in an encoded string.
+Useful in conjunction with Unicode character coding. Note there is a
+preinstiation for UTF-8. See next entry.
+
+@node GNAT.Decode_UTF8_String (g-deutst.ads)
+@section @code{GNAT.Decode_UTF8_String} (@file{g-deutst.ads})
+@cindex @code{GNAT.Decode_UTF8_String} (@file{g-deutst.ads})
+@cindex Decoding strings
+@cindex Decoding UTF-8 strings
+@cindex UTF-8 string decoding
+@cindex Wide chararacter decoding
+@cindex UTF-8
+@cindex Unicode
+
+@noindent
+A preinstantion of GNAT.Decode_Strings for UTF-8 encoding.
+
 @node GNAT.Directory_Operations (g-dirope.ads)
 @section @code{GNAT.Directory_Operations} (@file{g-dirope.ads})
 @cindex @code{GNAT.Directory_Operations} (@file{g-dirope.ads})
@@ -13217,6 +13394,15 @@ for hexadecimal literals.
 Provides a set of routines for manipulating directories, including changing
 the current directory, making new directories, and scanning the files in a
 directory.
+
+@node GNAT.Directory_Operations.Iteration (g-diopit.ads)
+@section @code{GNAT.Directory_Operations.Iteration} (@file{g-diopit.ads})
+@cindex @code{GNAT.Directory_Operations.Iteration} (@file{g-diopit.ads})
+@cindex Directory operations iteration
+
+@noindent
+A child unit of GNAT.Directory_Operations providing additional operations
+for iterating through directories.
 
 @node GNAT.Dynamic_HTables (g-dynhta.ads)
 @section @code{GNAT.Dynamic_HTables} (@file{g-dynhta.ads})
@@ -13249,6 +13435,34 @@ This package provides a facility similar to that of @code{GNAT.Table},
 except that this package declares a type that can be used to define
 dynamic instances of the table, while an instantiation of
 @code{GNAT.Table} creates a single instance of the table type.
+
+@node GNAT.Encode_String (g-encstr.ads)
+@section @code{GNAT.Encode_String} (@file{g-encstr.ads})
+@cindex @code{GNAT.Encode_String} (@file{g-encstr.ads})
+@cindex Encoding strings
+@cindex String encoding
+@cindex Wide chararacter encoding
+@cindex UTF-8
+@cindex Unicode
+
+@noindent
+A generic package providing routines for encoding wide character and wide
+wide character strings as sequences of 8-bit characters using a specified
+encoding method. Useful in conjunction with Unicode character coding.
+Note there is a preinstiation for UTF-8. See next entry.
+
+@node GNAT.Encode_UTF8_String (g-enutst.ads)
+@section @code{GNAT.Encode_UTF8_String} (@file{g-enutst.ads})
+@cindex @code{GNAT.Encode_UTF8_String} (@file{g-enutst.ads})
+@cindex Encoding strings
+@cindex Encoding UTF-8 strings
+@cindex UTF-8 string encoding
+@cindex Wide chararacter encoding
+@cindex UTF-8
+@cindex Unicode
+
+@noindent
+A preinstantion of GNAT.Encode_Strings for UTF-8 encoding.
 
 @node GNAT.Exception_Actions (g-excact.ads)
 @section @code{GNAT.Exception_Actions} (@file{g-excact.ads})
@@ -13441,6 +13655,15 @@ preserving. If w2 is inserted after w1 in the generator, their
 hashcode are in the same order. These hashing functions are very
 convenient for use with realtime applications.
 
+@node GNAT.Random_Numbers (g-rannum.ads)
+@section @code{GNAT.Random_Numbers} (@file{g-rannum.ads})
+@cindex @code{GNAT.Random_Numbers} (@file{g-rannum.ads})
+@cindex Random number generation
+
+@noindent
+Provides random number capabilities which extend those available in the
+standard Ada library and are more convenient to use.
+
 @node GNAT.Regexp (g-regexp.ads)
 @section @code{GNAT.Regexp} (@file{g-regexp.ads})
 @cindex @code{GNAT.Regexp} (@file{g-regexp.ads})
@@ -13530,14 +13753,24 @@ for the LynxOS@ cross port.
 Provides subprograms that give access to source code information known at
 compile time, such as the current file name and line number.
 
-@node GNAT.Spell_Checker (g-speche.ads)
-@section @code{GNAT.Spell_Checker} (@file{g-speche.ads})
-@cindex @code{GNAT.Spell_Checker} (@file{g-speche.ads})
+@node GNAT.Spelling_Checker (g-speche.ads)
+@section @code{GNAT.Spelling_Checker} (@file{g-speche.ads})
+@cindex @code{GNAT.Spelling_Checker} (@file{g-speche.ads})
 @cindex Spell checking
 
 @noindent
 Provides a function for determining whether one string is a plausible
 near misspelling of another string.
+
+@node GNAT.Spelling_Checker_Generic (g-spchge.ads)
+@section @code{GNAT.Spelling_Checker_Generic} (@file{g-spchge.ads})
+@cindex @code{GNAT.Spelling_Checker_Generic} (@file{g-spchge.ads})
+@cindex Spell checking
+
+@noindent
+Provides a generic function that can be instantiated with a string type for
+determining whether one string is a plausible near misspelling of another
+string.
 
 @node GNAT.Spitbol.Patterns (g-spipat.ads)
 @section @code{GNAT.Spitbol.Patterns} (@file{g-spipat.ads})
@@ -13617,22 +13850,6 @@ a string wherever the separators appear, and provide direct access
 to the resulting slices. This package is instantiated from
 @code{GNAT.Array_Split}.
 
-@node GNAT.UTF_32 (g-utf_32.ads)
-@section @code{GNAT.UTF_32} (@file{g-table.ads})
-@cindex @code{GNAT.UTF_32} (@file{g-table.ads})
-@cindex Wide character codes
-
-@noindent
-This is a package intended to be used in conjunction with the
-@code{Wide_Character} type in Ada 95 and the
-@code{Wide_Wide_Character} type in Ada 2005 (available
-in @code{GNAT} in Ada 2005 mode). This package contains
-Unicode categorization routines, as well as lexical
-categorization routines corresponding to the Ada 2005
-lexical rules for identifiers and strings, and also a
-lower case to upper case fold routine corresponding to
-the Ada 2005 rules for identifier equivalence.
-
 @node GNAT.Table (g-table.ads)
 @section @code{GNAT.Table} (@file{g-table.ads})
 @cindex @code{GNAT.Table} (@file{g-table.ads})
@@ -13687,10 +13904,40 @@ in various debugging situations.
 @cindex @code{GNAT.Traceback.Symbolic} (@file{g-trasym.ads})
 @cindex Trace back facilities
 
+@node GNAT.UTF_32 (g-utf_32.ads)
+@section @code{GNAT.UTF_32} (@file{g-table.ads})
+@cindex @code{GNAT.UTF_32} (@file{g-table.ads})
+@cindex Wide character codes
+
 @noindent
-Provides symbolic traceback information that includes the subprogram
-name and line number information. Note that this capability is not available
-on all targets, see g-trasym.ads for list of supported targets.
+This is a package intended to be used in conjunction with the
+@code{Wide_Character} type in Ada 95 and the
+@code{Wide_Wide_Character} type in Ada 2005 (available
+in @code{GNAT} in Ada 2005 mode). This package contains
+Unicode categorization routines, as well as lexical
+categorization routines corresponding to the Ada 2005
+lexical rules for identifiers and strings, and also a
+lower case to upper case fold routine corresponding to
+the Ada 2005 rules for identifier equivalence.
+
+@node GNAT.UTF_32_Spelling_Checker (g-u3spch.ads)
+@section @code{GNAT.Wide_Spelling_Checker} (@file{g-u3spch.ads})
+@cindex @code{GNAT.Wide_Spelling_Checker} (@file{g-u3spch.ads})
+@cindex Spell checking
+
+@noindent
+Provides a function for determining whether one wide wide string is a plausible
+near misspelling of another wide wide string, where the strings are represented
+using the UTF_32_String type defined in System.Wch_Cnv.
+
+@node GNAT.Wide_Spelling_Checker (g-wispch.ads)
+@section @code{GNAT.Wide_Spelling_Checker} (@file{g-wispch.ads})
+@cindex @code{GNAT.Wide_Spelling_Checker} (@file{g-wispch.ads})
+@cindex Spell checking
+
+@noindent
+Provides a function for determining whether one wide string is a plausible
+near misspelling of another wide string.
 
 @node GNAT.Wide_String_Split (g-wistsp.ads)
 @section @code{GNAT.Wide_String_Split} (@file{g-wistsp.ads})
@@ -13702,6 +13949,15 @@ Useful wide string manipulation routines: given a set of separators, split
 a wide string wherever the separators appear, and provide direct access
 to the resulting slices. This package is instantiated from
 @code{GNAT.Array_Split}.
+
+@node GNAT.Wide_Wide_Spelling_Checker (g-zspche.ads)
+@section @code{GNAT.Wide_Wide_Spelling_Checker} (@file{g-zspche.ads})
+@cindex @code{GNAT.Wide_Wide_Spelling_Checker} (@file{g-zspche.ads})
+@cindex Spell checking
+
+@noindent
+Provides a function for determining whether one wide wide string is a plausible
+near misspelling of another wide wide string.
 
 @node GNAT.Wide_Wide_String_Split (g-zistsp.ads)
 @section @code{GNAT.Wide_Wide_String_Split} (@file{g-zistsp.ads})
@@ -14026,7 +14282,7 @@ inter-operability between Ada tagged types and C++ class definitions.
 See @ref{Implementation Defined Pragmas}, for more details.
 
 @table @code
-@item pragma CPP_Class ([Entity =>] @var{local_NAME})
+@item pragma CPP_Class ([Entity =>] @var{LOCAL_NAME})
 The argument denotes an entity in the current declarative region that is
 declared as a tagged or untagged record type. It indicates that the type
 corresponds to an externally declared C++ class type, and is to be laid
@@ -14036,7 +14292,7 @@ Note: Pragma @code{CPP_Class} is currently obsolete. It is supported
 for backward compatibility but its functionality is available
 using pragma @code{Import} with @code{Convention} = @code{CPP}.
 
-@item pragma CPP_Constructor ([Entity =>] @var{local_NAME})
+@item pragma CPP_Constructor ([Entity =>] @var{LOCAL_NAME})
 This pragma identifies an imported function (imported in the usual way
 with pragma @code{Import}) as corresponding to a C++ constructor.
 @end table

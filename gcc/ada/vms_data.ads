@@ -622,6 +622,26 @@ package VMS_Data is
                                             "-ws";
    --  NODOC (see /WARNINGS)
 
+   S_Bind_Wide    : aliased constant S := "/WIDE_CHARACTER_ENCODING="      &
+                                            "BRACKETS "                    &
+                                               "-gnatWb "                  &
+                                            "HEX "                         &
+                                               "-gnatWh "                  &
+                                            "UPPER "                       &
+                                               "-gnatWu "                  &
+                                            "SHIFT_JIS "                   &
+                                               "-gnatWs "                  &
+                                            "UTF8 "                        &
+                                               "-gnatW8 "                  &
+                                            "EUC "                         &
+                                               "-gnatWe";
+   --        /NOWIDE_CHARACTER_ENCODING (D)
+   --        /WIDE_CHARACTER_ENCODING[=encode-type]
+   --
+   --   Specifies the mechanism used to encode wide characters, overriding
+   --   the default as set by the /WIDE_CHARACTER_ENCODING option for the
+   --   compilation of the main program.
+
    S_Bind_Zero    : aliased constant S := "/ZERO_MAIN "                    &
                                             "-z";
    --        /NOZERO_MAIN (D)
@@ -677,6 +697,7 @@ package VMS_Data is
                       S_Bind_Verbose 'Access,
                       S_Bind_Warn    'Access,
                       S_Bind_WarnX   'Access,
+                      S_Bind_Wide    'Access,
                       S_Bind_Zero    'Access);
 
    -----------------------------
@@ -2594,6 +2615,10 @@ package VMS_Data is
                                                "-gnatwA "                  &
                                             "ALL_GCC "                     &
                                                "-Wall "                    &
+                                            "FAILING_ASSERTIONS "          &
+                                               "-gnatw.a "                 &
+                                            "NO_FAILING_ASSERTIONS "       &
+                                               "-gnatw.A "                 &
                                             "BAD_FIXED_VALUES "            &
                                                "-gnatwb "                  &
                                             "NO_BAD_FIXED_VALUES "         &
@@ -5261,6 +5286,13 @@ package VMS_Data is
    --   Place the THEN keyword in IF statement and the LOOP keyword in for-
    --   and while-loops on a separate line.
 
+   S_Pretty_N_Sep_Loop_Then : aliased constant S := "/NO_SEPARATE_LOOP_THEN " &
+                                                    "--no-separate-loop-then";
+   --        /NO_SEPARATE_LOOP_THEN
+   --
+   --   Do not place the THEN keyword in IF statement and the LOOP keyword in
+   --   for- and while-loops on a separate line.
+
    S_Pretty_Use_On_New_Line : aliased constant S := "/USE_ON_NEW_LINE "   &
                                                       "--use-on-new-line";
    --        /USE_ON_NEW_LINE
@@ -5617,6 +5649,7 @@ package VMS_Data is
                         S_Pretty_RTS            'Access,
                         S_Pretty_Search         'Access,
                         S_Pretty_Sep_Loop_Then  'Access,
+                        S_Pretty_N_Sep_Loop_Then'Access,
                         S_Pretty_Use_On_New_Line'Access,
                         S_Pretty_Stnm_On_Nw_Line'Access,
                         S_Pretty_Specific       'Access,
