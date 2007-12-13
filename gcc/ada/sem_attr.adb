@@ -534,14 +534,7 @@ package body Sem_Attr is
          if Is_Entity_Name (P)
            and then Is_Overloadable (Entity (P))
          then
-            --  Not allowed for nested subprograms if No_Implicit_Dynamic_Code
-            --  restriction set (since in general a trampoline is required).
-
-            if not Is_Library_Level_Entity (Entity (P)) then
-               Check_Restriction (No_Implicit_Dynamic_Code, P);
-            end if;
-
-            if Is_Always_Inlined (Entity (P)) then
+            if Has_Pragma_Inline_Always (Entity (P)) then
                Error_Attr_P
                  ("prefix of % attribute cannot be Inline_Always subprogram");
             end if;
@@ -1399,7 +1392,6 @@ package body Sem_Attr is
          then
             Error_Attr ("only allowed prefix for % attribute is Standard", P);
          end if;
-
       end Check_Standard_Prefix;
 
       ----------------------------
@@ -1921,10 +1913,6 @@ package body Sem_Attr is
 
             begin
                if Is_Subprogram (Ent) then
-                  if not Is_Library_Level_Entity (Ent) then
-                     Check_Restriction (No_Implicit_Dynamic_Code, P);
-                  end if;
-
                   Set_Address_Taken (Ent);
                   Kill_Current_Values (Ent);
 
@@ -1934,7 +1922,7 @@ package body Sem_Attr is
                   --  errors about implicit uses of Address in the dispatch
                   --  table initialization).
 
-                  if Is_Always_Inlined (Entity (P))
+                  if Has_Pragma_Inline_Always (Entity (P))
                     and then Comes_From_Source (P)
                   then
                      Error_Attr_P
@@ -2807,6 +2795,20 @@ package body Sem_Attr is
 
          if not Is_Tagged_Type (P_Type) then
             Error_Attr_P ("prefix of % attribute must be tagged");
+         end if;
+
+      ---------------
+      -- Fast_Math --
+      ---------------
+
+      when Attribute_Fast_Math =>
+         Check_E0;
+         Check_Standard_Prefix;
+
+         if Opt.Fast_Math then
+            Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
+         else
+            Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
          end if;
 
       -----------
@@ -3869,6 +3871,9 @@ package body Sem_Attr is
          if Comes_From_Source (N) then
             Check_Not_Incomplete_Type;
          end if;
+
+         --  Set appropriate type
+
          Set_Etype (N, RTE (RE_Tag));
 
       -----------------
@@ -6914,6 +6919,7 @@ package body Sem_Attr is
            Attribute_Elab_Spec                |
            Attribute_Enabled                  |
            Attribute_External_Tag             |
+           Attribute_Fast_Math                |
            Attribute_First_Bit                |
            Attribute_Input                    |
            Attribute_Last_Bit                 |
@@ -7439,6 +7445,26 @@ package body Sem_Attr is
                end if;
             end if;
 
+            Des_Btyp := Designated_Type (Btyp);
+
+            if Ada_Version >= Ada_05
+              and then Is_Incomplete_Type (Des_Btyp)
+            then
+               --  Ada 2005 (AI-412): If the (sub)type is a limited view of an
+               --  imported entity, and the non-limited view is visible, make
+               --  use of it. If it is an incomplete subtype, use the base type
+               --  in any case.
+
+               if From_With_Type (Des_Btyp)
+                 and then Present (Non_Limited_View (Des_Btyp))
+               then
+                  Des_Btyp := Non_Limited_View (Des_Btyp);
+
+               elsif Ekind (Des_Btyp) = E_Incomplete_Subtype then
+                  Des_Btyp := Etype (Des_Btyp);
+               end if;
+            end if;
+
             if (Attr_Id = Attribute_Access
                   or else
                 Attr_Id = Attribute_Unchecked_Access)
@@ -7487,23 +7513,6 @@ package body Sem_Attr is
 
                if Is_Constr_Subt_For_U_Nominal (Nom_Subt) then
                   Nom_Subt := Base_Type (Nom_Subt);
-               end if;
-
-               Des_Btyp := Designated_Type (Btyp);
-
-               if Ekind (Des_Btyp) = E_Incomplete_Subtype then
-
-                  --  Ada 2005 (AI-412): Subtypes of incomplete types visible
-                  --  through a limited with clause or regular incomplete
-                  --  subtypes.
-
-                  if From_With_Type (Des_Btyp)
-                    and then Present (Non_Limited_View (Des_Btyp))
-                  then
-                     Des_Btyp := Non_Limited_View (Des_Btyp);
-                  else
-                     Des_Btyp := Etype (Des_Btyp);
-                  end if;
                end if;
 
                if Is_Tagged_Type (Designated_Type (Typ)) then
@@ -7568,16 +7577,20 @@ package body Sem_Attr is
                --  (because access values must be assumed to designate mutable
                --  objects when designated type does not impose a constraint).
 
-               elsif not Subtypes_Statically_Match (Des_Btyp, Nom_Subt)
+               elsif Subtypes_Statically_Match (Des_Btyp, Nom_Subt) then
+                  null;
+
+               elsif Has_Discriminants (Designated_Type (Typ))
+                 and then not Is_Constrained (Des_Btyp)
                  and then
-                   not (Has_Discriminants (Designated_Type (Typ))
-                          and then not Is_Constrained (Des_Btyp)
-                          and then
-                            (Ada_Version < Ada_05
-                              or else
-                                not Has_Constrained_Partial_View
-                                      (Designated_Type (Base_Type (Typ)))))
+                   (Ada_Version < Ada_05
+                     or else
+                       not Has_Constrained_Partial_View
+                             (Designated_Type (Base_Type (Typ))))
                then
+                  null;
+
+               else
                   Error_Msg_F
                     ("object subtype must statically match "
                      & "designated subtype", P);

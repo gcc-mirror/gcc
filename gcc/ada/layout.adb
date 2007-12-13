@@ -2300,6 +2300,8 @@ package body Layout is
    -----------------
 
    procedure Layout_Type (E : Entity_Id) is
+      Desig_Type : Entity_Id;
+
    begin
       --  For string literal types, for now, kill the size always, this
       --  is because gigi does not like or need the size to be set ???
@@ -2320,6 +2322,18 @@ package body Layout is
       --  the base type since Gigi represents them the same way.
 
       if Is_Access_Type (E) then
+
+         Desig_Type :=  Underlying_Type (Designated_Type (E));
+
+         --  If we only have a limited view of the type, see whether the
+         --  non-limited view is available.
+
+         if From_With_Type (Designated_Type (E))
+           and then Ekind (Designated_Type (E)) = E_Incomplete_Type
+           and then Present (Non_Limited_View (Designated_Type (E)))
+         then
+            Desig_Type := Non_Limited_View (Designated_Type (E));
+         end if;
 
          --  If Esize already set (e.g. by a size clause), then nothing
          --  further to be done here.
@@ -2344,11 +2358,10 @@ package body Layout is
          --  a fat pointer is used (pointer-to-unconstrained array case),
          --  twice the address size to accommodate a fat pointer.
 
-         elsif Present (Underlying_Type (Designated_Type (E)))
-            and then Is_Array_Type (Underlying_Type (Designated_Type (E)))
-            and then not Is_Constrained (Underlying_Type (Designated_Type (E)))
-            and then not Has_Completion_In_Body (Underlying_Type
-                                                 (Designated_Type (E)))
+         elsif Present (Desig_Type)
+            and then Is_Array_Type (Desig_Type)
+            and then not Is_Constrained (Desig_Type)
+            and then not Has_Completion_In_Body (Desig_Type)
             and then not Debug_Flag_6
          then
             Init_Size (E, 2 * System_Address_Size);
@@ -2364,6 +2377,19 @@ package body Layout is
                Error_Msg_N
                  ("?this access type does not correspond to C pointer", E);
             end if;
+
+         --  If the designated type is a limited view it is unanalyzed. We
+         --  can examine the declaration itself to determine whether it will
+         --  need a fat pointer.
+
+         elsif Present (Desig_Type)
+            and then Present (Parent (Desig_Type))
+            and then Nkind (Parent (Desig_Type)) = N_Full_Type_Declaration
+            and then
+              Nkind (Type_Definition (Parent (Desig_Type)))
+                 = N_Unconstrained_Array_Definition
+         then
+            Init_Size (E, 2 * System_Address_Size);
 
          --  When the target is AAMP, access-to-subprogram types are fat
          --  pointers consisting of the subprogram address and a static
@@ -2395,7 +2421,10 @@ package body Layout is
          --  for this purpose, since it would be weird not to inherit the size
          --  in this case.
 
-         if OpenVMS_On_Target
+         --  We do NOT do this if we are in -gnatdm mode on a non-VMS target
+         --  since in that case we want the normal pointer representation.
+
+         if Opt.True_VMS_Target
            and then (Convention (E) = Convention_C
                       or else
                      Convention (E) = Convention_CPP)

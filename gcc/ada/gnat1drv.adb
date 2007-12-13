@@ -370,6 +370,12 @@ begin
          Ttypes.Bytes_Big_Endian := not Ttypes.Bytes_Big_Endian;
       end if;
 
+      --  Deal with forcing OpenVMS switches Ture if debug flag M is set, but
+      --  record the setting of Targparm.Open_VMS_On_Target in True_VMS_Target
+      --  before doing this.
+
+      Opt.True_VMS_Target := Targparm.OpenVMS_On_Target;
+
       if Debug_Flag_M then
          Targparm.OpenVMS_On_Target := True;
          Hostparm.OpenVMS := True;
