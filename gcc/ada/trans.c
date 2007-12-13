@@ -878,6 +878,29 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	  if (TREE_CODE (gnu_expr) == ADDR_EXPR)
 	    TREE_STATIC (gnu_expr) = TREE_CONSTANT (gnu_expr) = 1;
 	}
+
+      /* For other address attributes applied to a nested function,
+	 find an inner ADDR_EXPR and annotate it so that we can issue
+	 a useful warning with -Wtrampolines.  */
+      else if (TREE_CODE (TREE_TYPE (gnu_prefix)) == FUNCTION_TYPE)
+	{
+	  for (gnu_expr = gnu_result;
+	       TREE_CODE (gnu_expr) == NOP_EXPR
+	       || TREE_CODE (gnu_expr) == CONVERT_EXPR;
+	       gnu_expr = TREE_OPERAND (gnu_expr, 0))
+	    ;
+
+	  if (TREE_CODE (gnu_expr) == ADDR_EXPR
+	      && decl_function_context (TREE_OPERAND (gnu_expr, 0)))
+	    {
+	      set_expr_location_from_node (gnu_expr, gnat_node);
+
+	      /* Check that we're not violating the No_Implicit_Dynamic_Code
+		 restriction.  Be conservative if we don't know anything
+		 about the trampoline strategy for the target.  */
+	      Check_Implicit_Dynamic_Code_Allowed (gnat_node);
+	    }
+	}
       break;
 
     case Attr_Pool_Address:
@@ -4643,15 +4666,15 @@ gnat_to_gnu (Node_Id gnat_node)
  	     (see build_allocator).  What we need to pass to free is the
  	     initial allocator's return value, which has been stored just in
  	     front of the block we have.  */
- 
+
  	  if (No (Procedure_To_Call (gnat_node))
-	      && align > default_allocator_alignment
+ 	      && align > default_allocator_alignment
  	      && ! TYPE_FAT_OR_THIN_POINTER_P (gnu_ptr_type))
  	    {
  	      /* We set GNU_PTR
  		 as * (void **)((void *)GNU_PTR - (void *)sizeof(void *))
  		 in two steps:  */
- 	      
+
  	      /* GNU_PTR (void *)
 		 = (void *)GNU_PTR - (void *)sizeof (void *))  */
  	      gnu_ptr
@@ -4660,7 +4683,7 @@ gnat_to_gnu (Node_Id gnat_node)
 		     convert (ptr_void_type_node, gnu_ptr),
 		     convert (ptr_void_type_node,
 			      TYPE_SIZE_UNIT (ptr_void_type_node)));
- 	      
+
  	      /* GNU_PTR (void *) = *(void **)GNU_PTR  */
  	      gnu_ptr
  		= build_unary_op
@@ -4668,7 +4691,7 @@ gnat_to_gnu (Node_Id gnat_node)
 		     convert (build_pointer_type (ptr_void_type_node),
 			      gnu_ptr));
  	    }
- 
+
 	  gnu_result = build_call_alloc_dealloc (gnu_ptr, gnu_obj_size, align,
 						 Procedure_To_Call (gnat_node),
 						 Storage_Pool (gnat_node),
