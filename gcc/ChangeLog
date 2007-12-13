@@ -1,3 +1,8 @@
+2007-12-13  Golovanevsky Olga  <olga@il.ibm.com>
+
+	* doc/invoke.texi (Optimiza Options): Document new -fipa-struct-reorg
+	option and struct-reorg-cold-struct-ratio parameter.
+	
 2007-12-13  Torbjorn Granlund  <tege@swox.com>
 
 	* config/i386/i386.c (ix86_rtx_costs) [MULT]: Check op0 for

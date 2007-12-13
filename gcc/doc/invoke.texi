@@ -329,7 +329,7 @@ Objective-C and Objective-C++ Dialects}.
 -fgcse-sm -fif-conversion -fif-conversion2 -finline-functions @gol
 -finline-functions-called-once -finline-limit=@var{n} @gol
 -finline-small-functions -fipa-cp -fipa-marix-reorg -fipa-pta @gol 
--fipa-pure-const -fipa-reference @gol
+-fipa-pure-const -fipa-reference -fipa-struct-reorg @gol
 -fipa-type-escape -fivopts -fkeep-inline-functions -fkeep-static-consts @gol
 -fmerge-all-constants -fmerge-constants -fmodulo-sched @gol
 -fmodulo-sched-allow-regmoves -fmove-loop-invariants -fmudflap @gol
@@ -5707,6 +5707,20 @@ Discover which static variables do not escape cannot escape the
 compilation unit.
 Enabled by default at @option{-O} and higher.
 
+@item -fipa-struct-reorg
+@opindex fipa-struct-reorg
+Perform structure reorganization optimization, that change C-like structures 
+layout in order to better utilize spatial locality.  This transformation is 
+affective for programs containing arrays of structures.  Available in two 
+compilation modes: profile-based (enabled with @option{-fprofile-generate})
+or static (which uses built-in heuristics).  Require @option{-fipa-type-escape}
+to provide the safety of this transformation.  It works only in whole program
+mode, so it requires @option{-fwhole-program} and @option{-combine} to be
+enabled.  Structures considered @samp{cold} by this transformation are not
+affected (see @option{--param struct-reorg-cold-struct-ratio=@var{value}}).
+
+With this flag, the program debug info reflects a new structure layout.
+
 @item -fipa-pta
 @opindex fipa-pta
 Perform interprocedural pointer analysis.
@@ -6642,6 +6656,15 @@ the complete structure size.  We say that if the ratio of the number
 of bytes in instantiated fields to the number of bytes in the complete
 structure exceeds this parameter, then block copies are not used.  The
 default is 75.
+
+@item struct-reorg-cold-struct-ratio
+The threshold ratio (as a percentage) between a structure frequency
+and the frequency of the hottest structure in the program.  This parameter
+is used by struct-reorg optimization enabled by @option{-fipa-struct-reorg}.
+We say that if the ratio of a structure frequency, calculated by profiling, 
+to the hottest structure frequency in the program is less than this 
+parameter, then structure reorganization is not applied to this structure.
+The default is 10.
 
 @item max-crossjump-edges
 The maximum number of incoming edges to consider for crossjumping.
