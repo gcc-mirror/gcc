@@ -40,16 +40,17 @@
 --  initialized, they are set to the real tasking versions.
 
 pragma Warnings (Off);
+--  When compiling this package with older compilers, there are many warnings,
+--  so we suppress them throughout most of this file. Pragmas Compiler_Unit,
+--  Preelaborate_05, and Favor_Top_Level are not supported by older compilers.
+
 pragma Compiler_Unit;
-pragma Warnings (On);
 
 with Ada.Exceptions;
 with System.Stack_Checking;
 
 package System.Soft_Links is
-   pragma Warnings (Off);
    pragma Preelaborate_05;
-   pragma Warnings (On);
 
    subtype EOA is Ada.Exceptions.Exception_Occurrence_Access;
    subtype EO is Ada.Exceptions.Exception_Occurrence;
@@ -64,32 +65,47 @@ package System.Soft_Links is
    --  values, which by default point to dummy no tasking versions of routines.
 
    type No_Param_Proc     is access procedure;
+   pragma Favor_Top_Level (No_Param_Proc);
    type Addr_Param_Proc   is access procedure (Addr : Address);
+   pragma Favor_Top_Level (Addr_Param_Proc);
    type EO_Param_Proc     is access procedure (Excep : EO);
+   pragma Favor_Top_Level (EO_Param_Proc);
 
    type Get_Address_Call  is access function return Address;
+   pragma Favor_Top_Level (Get_Address_Call);
    type Set_Address_Call  is access procedure (Addr : Address);
+   pragma Favor_Top_Level (Set_Address_Call);
    type Set_Address_Call2 is access procedure
      (Self_ID : Address; Addr : Address);
+   pragma Favor_Top_Level (Set_Address_Call2);
 
    type Get_Integer_Call  is access function return Integer;
+   pragma Favor_Top_Level (Get_Integer_Call);
    type Set_Integer_Call  is access procedure (Len : Integer);
+   pragma Favor_Top_Level (Set_Integer_Call);
 
    type Get_EOA_Call      is access function return EOA;
+   pragma Favor_Top_Level (Get_EOA_Call);
    type Set_EOA_Call      is access procedure (Excep : EOA);
+   pragma Favor_Top_Level (Set_EOA_Call);
    type Set_EO_Call       is access procedure (Excep : EO);
+   pragma Favor_Top_Level (Set_EO_Call);
 
    type Special_EO_Call   is access
      procedure (Excep : EO := Current_Target_Exception);
+   pragma Favor_Top_Level (Special_EO_Call);
 
    type Timed_Delay_Call  is access
      procedure (Time : Duration; Mode : Integer);
+   pragma Favor_Top_Level (Timed_Delay_Call);
 
    type Get_Stack_Access_Call is access
      function return Stack_Checking.Stack_Access;
+   pragma Favor_Top_Level (Get_Stack_Access_Call);
 
    type Task_Name_Call is access
      function return String;
+   pragma Favor_Top_Level (Task_Name_Call);
 
    --  Suppress checks on all these types, since we know the corrresponding
    --  values can never be null (the soft links are always initialized).
@@ -115,6 +131,8 @@ package System.Soft_Links is
      function (Traceback : System.Address;
                Len       : Natural)
                return      String;
+   pragma Favor_Top_Level (Traceback_Decorator_Wrapper_Call);
+   pragma Warnings (On);
 
    --  Declarations for the no tasking versions of the required routines
 
