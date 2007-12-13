@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1997-2004 Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,7 +46,7 @@ package System.VMS_Exception_Table is
    --  Register an exception in the hash table mapping with a VMS
    --  condition code.
 
-   --  LOTS more comments needed here regarding the enire scheme ???
+   --  LOTS more comments needed here regarding the entire scheme ???
 
 private
 

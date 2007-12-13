@@ -63,18 +63,21 @@ procedure XNmake is
    Err : exception;
    --  Raised to terminate execution
 
-   A          : VString := Nul;
-   Arg        : VString := Nul;
-   Arg_List   : VString := Nul;
-   Comment    : VString := Nul;
-   Default    : VString := Nul;
-   Field      : VString := Nul;
-   Line       : VString := Nul;
-   Node       : VString := Nul;
-   Op_Name    : VString := Nul;
-   Prevl      : VString := Nul;
-   Synonym    : VString := Nul;
-   X          : VString := Nul;
+   pragma Warnings (Off);
+   --  The following are modified by * operator
+
+   A        : VString := Nul;
+   Arg      : VString := Nul;
+   Arg_List : VString := Nul;
+   Comment  : VString := Nul;
+   Default  : VString := Nul;
+   Field    : VString := Nul;
+   Line     : VString := Nul;
+   Node     : VString := Nul;
+   Op_Name  : VString := Nul;
+   Prevl    : VString := Nul;
+   Synonym  : VString := Nul;
+   X        : VString := Nul;
 
    NWidth : Natural;
 
@@ -90,37 +93,43 @@ procedure XNmake is
    InS,  InT  : Ada.Text_IO.File_Type;
    OutS, OutB : Sfile;
 
-   wsp : Pattern := Span (' ' & ASCII.HT);
+   wsp : constant Pattern := Span (' ' & ASCII.HT);
 
-   Body_Only : Pattern := BreakX (' ') * X & Span (' ') & "--  body only";
-   Spec_Only : Pattern := BreakX (' ') * X & Span (' ') & "--  spec only";
+   Body_Only : constant Pattern := BreakX (' ') * X
+                                   & Span (' ') & "--  body only";
+   Spec_Only : constant Pattern := BreakX (' ') * X
+                                   & Span (' ') & "--  spec only";
 
-   Node_Hdr  : Pattern := wsp & "--  N_" & Rest * Node;
-   Punc      : Pattern := BreakX (" .,");
+   Node_Hdr  : constant Pattern := wsp & "--  N_" & Rest * Node;
+   Punc      : constant Pattern := BreakX (" .,");
 
-   Binop     : Pattern := wsp & "--  plus fields for binary operator";
-   Unop      : Pattern := wsp & "--  plus fields for unary operator";
-   Syn       : Pattern := wsp & "--  " & Break (' ') * Synonym
-                            & " (" & Break (')') * Field & Rest * Comment;
+   Binop     : constant Pattern := wsp
+                                   & "--  plus fields for binary operator";
+   Unop      : constant Pattern := wsp
+                                   & "--  plus fields for unary operator";
+   Syn       : constant Pattern := wsp & "--  " & Break (' ') * Synonym
+                                   & " (" & Break (')') * Field
+                                   & Rest * Comment;
 
-   Templ     : Pattern := BreakX ('T') * A & "T e m p l a t e";
-   Spec      : Pattern := BreakX ('S') * A & "S p e c";
+   Templ     : constant Pattern := BreakX ('T') * A & "T e m p l a t e";
+   Spec      : constant Pattern := BreakX ('S') * A & "S p e c";
 
-   Sem_Field : Pattern := BreakX ('-') & "-Sem";
-   Lib_Field : Pattern := BreakX ('-') & "-Lib";
+   Sem_Field : constant Pattern := BreakX ('-') & "-Sem";
+   Lib_Field : constant Pattern := BreakX ('-') & "-Lib";
 
-   Get_Field : Pattern := BreakX (Decimal_Digit_Set) * Field;
+   Get_Field : constant Pattern := BreakX (Decimal_Digit_Set) * Field;
 
-   Get_Dflt  : Pattern := BreakX ('(') & "(set to "
-                            & Break (" ") * Default & " if";
+   Get_Dflt  : constant Pattern := BreakX ('(') & "(set to "
+                                   & Break (" ") * Default & " if";
 
-   Next_Arg  : Pattern := Break (',') * Arg & ',';
+   Next_Arg  : constant Pattern := Break (',') * Arg & ',';
 
-   Op_Node   : Pattern := "Op_" & Rest * Op_Name;
+   Op_Node   : constant Pattern := "Op_" & Rest * Op_Name;
 
-   Shft_Rot  : Pattern := "Shift_" or "Rotate_";
+   Shft_Rot  : constant Pattern := "Shift_" or "Rotate_";
 
-   No_Ent    : Pattern := "Or_Else" or "And_Then" or "In" or "Not_In";
+   No_Ent    : constant Pattern := "Or_Else" or "And_Then"
+                                     or "In" or "Not_In";
 
    M : Match_Result;
 

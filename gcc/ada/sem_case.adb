@@ -756,7 +756,6 @@ package body Sem_Case is
 
             else
                Choice := First (Get_Choices (Alt));
-
                while Present (Choice) loop
                   Analyze (Choice);
                   Kind := Nkind (Choice);

@@ -34,6 +34,8 @@
 --  This version is used on VMS, LynxOS, and VxWorks. There are two versions of
 --  the body: one for VMS and LynxOS, the other for VxWorks.
 
+--  This package should not be directly with'ed by an application
+
 package GNAT.Sockets.Thin.Task_Safe_NetDB is
 
    ----------------------------------------

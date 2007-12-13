@@ -458,6 +458,10 @@ begin
    Spawn (Addr2line_Cmd.all,
           Addr2line_Args (1 .. Addr2line_Args_Count), Success);
 
+   if not Success then
+      Error ("Couldn't spawn " & Addr2line_Cmd.all);
+   end if;
+
 exception
    when others =>
 

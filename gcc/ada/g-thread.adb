@@ -68,7 +68,6 @@ package body GNAT.Threads is
       Parm : Void_Ptr;
       Code : Code_Proc)
    is
-      pragma Unreferenced (Parm);
       pragma Priority (Prio);
       pragma Storage_Size (Stsz);
    end Thread;

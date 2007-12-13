@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                         (Soft Binding Version)                           --
 --                                                                          --
---          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,17 +48,6 @@ with GNAT.Altivec.Conversions;         use  GNAT.Altivec.Conversions;
 with GNAT.Altivec.Low_Level_Interface; use  GNAT.Altivec.Low_Level_Interface;
 
 package body GNAT.Altivec.Low_Level_Vectors is
-
-   --  This package assumes C_float is an IEEE single-precision float type
-
-   pragma Assert (C_float'Machine_Radix = 2);
-   pragma Assert (C_float'Machine_Mantissa = 24);
-   pragma Assert (C_float'Machine_Emin = -125);
-   pragma Assert (C_float'Machine_Emax = 128);
-   pragma Assert (C_float'Machine_Rounds);
-   pragma Assert (not C_float'Machine_Overflows);
-   pragma Assert (C_float'Signed_Zeros);
-   pragma Assert (C_float'Denorm);
 
    --  Pixel types. As defined in [PIM-2.1 Data types]:
    --  A 16-bit pixel is 1/5/5/5;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2001-2005, AdaCore                     --
+--                     Copyright (C) 2001-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,6 +37,8 @@
 --  This is an empty version for default use where no additional libraries
 --  are required. On some targets a target specific version of this unit
 --  ensures linking with required libraries for proper sockets operation.
+
+--  This package should not be directly with'ed by an application program
 
 package GNAT.Sockets.Linker_Options is
 end GNAT.Sockets.Linker_Options;

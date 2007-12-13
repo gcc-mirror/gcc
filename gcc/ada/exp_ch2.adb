@@ -433,11 +433,10 @@ package body Exp_Ch2 is
          --  ??? passing a formal as actual for a mode IN formal is
          --  considered as an assignment?
 
-         if Nkind (Parent (N)) = N_Procedure_Call_Statement
-           or else Nkind (Parent (N)) = N_Entry_Call_Statement
-           or else
-             (Nkind (Parent (N)) = N_Assignment_Statement
-                 and then N = Name (Parent (N)))
+         if Nkind_In (Parent (N), N_Procedure_Call_Statement,
+                                  N_Entry_Call_Statement)
+           or else (Nkind (Parent (N)) = N_Assignment_Statement
+                      and then N = Name (Parent (N)))
          then
             return True;
 
@@ -451,9 +450,9 @@ package body Exp_Ch2 is
          --  which case there is an implicit dereference, and the formal itself
          --  is not being assigned to).
 
-         elsif (Nkind (Parent (N)) = N_Selected_Component
-                 or else Nkind (Parent (N)) = N_Indexed_Component
-                 or else Nkind (Parent (N)) = N_Slice)
+         elsif Nkind_In (Parent (N), N_Selected_Component,
+                                     N_Indexed_Component,
+                                     N_Slice)
            and then N = Prefix (Parent (N))
            and then not Is_Access_Type (Etype (N))
            and then In_Assignment_Context (Parent (N))
@@ -697,7 +696,7 @@ package body Exp_Ch2 is
    begin
       --  Simple reference case
 
-      if Nkind (N) = N_Identifier or else Nkind (N) = N_Expanded_Name then
+      if Nkind_In (N, N_Identifier, N_Expanded_Name) then
          if Is_Formal (Entity (N)) then
             return Entity (N);
 

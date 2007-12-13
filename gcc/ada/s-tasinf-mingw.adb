@@ -4,7 +4,7 @@
 --                                                                          --
 --                     S Y S T E M . T A S K _ I N F O                      --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
 --            Copyright (C) 2007, Free Software Foundation, Inc.            --
 --                                                                          --

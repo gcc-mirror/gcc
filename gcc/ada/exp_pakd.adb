@@ -635,8 +635,8 @@ package body Exp_Pakd is
                       Attribute_Name => Name_Pos,
                       Expressions    => New_List (
                         Make_Attribute_Reference (Loc,
-                        Prefix         => New_Occurrence_Of (Styp, Loc),
-                        Attribute_Name => Name_First)))));
+                          Prefix         => New_Occurrence_Of (Styp, Loc),
+                          Attribute_Name => Name_First)))));
          end if;
 
          Set_Paren_Count (Newsub, 1);
@@ -960,23 +960,23 @@ package body Exp_Pakd is
                                Make_Range (Loc,
                                  Low_Bound =>
                                    Make_Attribute_Reference (Loc,
-                                     Prefix =>
+                                     Prefix         =>
                                        New_Occurrence_Of (Indx_Typ, Loc),
                                      Attribute_Name => Name_Pos,
-                                     Expressions => New_List (
+                                     Expressions    => New_List (
                                        Make_Attribute_Reference (Loc,
-                                         Prefix =>
+                                         Prefix         =>
                                            New_Occurrence_Of (Indx_Typ, Loc),
                                          Attribute_Name => Name_First))),
 
                                  High_Bound =>
                                    Make_Attribute_Reference (Loc,
-                                     Prefix =>
+                                     Prefix         =>
                                        New_Occurrence_Of (Indx_Typ, Loc),
                                      Attribute_Name => Name_Pos,
-                                     Expressions => New_List (
+                                     Expressions    => New_List (
                                        Make_Attribute_Reference (Loc,
-                                         Prefix =>
+                                         Prefix         =>
                                            New_Occurrence_Of (Indx_Typ, Loc),
                                          Attribute_Name => Name_Last)))))));
 
@@ -1622,8 +1622,8 @@ package body Exp_Pakd is
                   Name => New_Occurrence_Of (Set_nn, Loc),
                   Parameter_Associations => New_List (
                     Make_Attribute_Reference (Loc,
-                      Attribute_Name => Name_Address,
-                      Prefix         => Obj),
+                      Prefix         => Obj,
+                      Attribute_Name => Name_Address),
                     Subscr,
                     Unchecked_Convert_To (Bits_nn,
                       Convert_To (Ctyp, Rhs)))));
@@ -1881,36 +1881,38 @@ package body Exp_Pakd is
                   Parameter_Associations => New_List (
 
                     Make_Byte_Aligned_Attribute_Reference (Loc,
-                      Attribute_Name => Name_Address,
-                      Prefix         => L),
+                      Prefix         => L,
+                      Attribute_Name => Name_Address),
 
                     Make_Op_Multiply (Loc,
                       Left_Opnd =>
                         Make_Attribute_Reference (Loc,
-                          Prefix =>
+                          Prefix         =>
                             New_Occurrence_Of
                               (Etype (First_Index (Ltyp)), Loc),
                           Attribute_Name => Name_Range_Length),
+
                       Right_Opnd =>
                         Make_Integer_Literal (Loc, Component_Size (Ltyp))),
 
                     Make_Byte_Aligned_Attribute_Reference (Loc,
-                      Attribute_Name => Name_Address,
-                      Prefix         => R),
+                      Prefix         => R,
+                      Attribute_Name => Name_Address),
 
                     Make_Op_Multiply (Loc,
                       Left_Opnd =>
                         Make_Attribute_Reference (Loc,
-                          Prefix =>
+                          Prefix         =>
                             New_Occurrence_Of
                               (Etype (First_Index (Rtyp)), Loc),
                           Attribute_Name => Name_Range_Length),
+
                       Right_Opnd =>
                         Make_Integer_Literal (Loc, Component_Size (Rtyp))),
 
                     Make_Byte_Aligned_Attribute_Reference (Loc,
-                      Attribute_Name => Name_Address,
-                      Prefix => New_Occurrence_Of (Result_Ent, Loc))))));
+                      Prefix => New_Occurrence_Of (Result_Ent, Loc),
+                      Attribute_Name => Name_Address)))));
 
             Rewrite (N,
               New_Occurrence_Of (Result_Ent, Loc));
@@ -2032,8 +2034,8 @@ package body Exp_Pakd is
                   Name => New_Occurrence_Of (Get_nn, Loc),
                   Parameter_Associations => New_List (
                     Make_Attribute_Reference (Loc,
-                      Attribute_Name => Name_Address,
-                      Prefix         => Obj),
+                      Prefix         => Obj,
+                      Attribute_Name => Name_Address),
                     Subscr))));
          end;
       end if;
@@ -2074,8 +2076,8 @@ package body Exp_Pakd is
         Make_Op_Multiply (Loc,
           Left_Opnd =>
             Make_Attribute_Reference (Loc,
-              Attribute_Name => Name_Length,
-              Prefix         => New_Occurrence_Of (Ltyp, Loc)),
+              Prefix         => New_Occurrence_Of (Ltyp, Loc),
+              Attribute_Name => Name_Length),
           Right_Opnd =>
             Make_Integer_Literal (Loc, Component_Size (Ltyp)));
 
@@ -2083,8 +2085,8 @@ package body Exp_Pakd is
         Make_Op_Multiply (Loc,
           Left_Opnd =>
             Make_Attribute_Reference (Loc,
-              Attribute_Name => Name_Length,
-              Prefix         => New_Occurrence_Of (Rtyp, Loc)),
+              Prefix         => New_Occurrence_Of (Rtyp, Loc),
+              Attribute_Name => Name_Length),
           Right_Opnd =>
             Make_Integer_Literal (Loc, Component_Size (Rtyp)));
 
@@ -2125,14 +2127,14 @@ package body Exp_Pakd is
              Name => New_Occurrence_Of (RTE (RE_Bit_Eq), Loc),
              Parameter_Associations => New_List (
                Make_Byte_Aligned_Attribute_Reference (Loc,
-                 Attribute_Name => Name_Address,
-                 Prefix         => L),
+                 Prefix         => L,
+                 Attribute_Name => Name_Address),
 
                LLexpr,
 
                Make_Byte_Aligned_Attribute_Reference (Loc,
-                 Attribute_Name => Name_Address,
-                 Prefix         => R),
+                 Prefix         => R,
+                 Attribute_Name => Name_Address),
 
                RLexpr)));
       end if;
@@ -2244,22 +2246,23 @@ package body Exp_Pakd is
                   Parameter_Associations => New_List (
 
                     Make_Byte_Aligned_Attribute_Reference (Loc,
-                      Attribute_Name => Name_Address,
-                      Prefix         => Opnd),
+                      Prefix         => Opnd,
+                      Attribute_Name => Name_Address),
 
                     Make_Op_Multiply (Loc,
                       Left_Opnd =>
                         Make_Attribute_Reference (Loc,
-                          Prefix =>
+                          Prefix         =>
                             New_Occurrence_Of
                               (Etype (First_Index (Rtyp)), Loc),
                           Attribute_Name => Name_Range_Length),
+
                       Right_Opnd =>
                         Make_Integer_Literal (Loc, Component_Size (Rtyp))),
 
                     Make_Byte_Aligned_Attribute_Reference (Loc,
-                      Attribute_Name => Name_Address,
-                      Prefix => New_Occurrence_Of (Result_Ent, Loc))))));
+                      Prefix => New_Occurrence_Of (Result_Ent, Loc),
+                      Attribute_Name => Name_Address)))));
 
             Rewrite (N,
               New_Occurrence_Of (Result_Ent, Loc));
