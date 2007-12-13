@@ -51,6 +51,7 @@ with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 with Urealp;   use Urealp;
@@ -136,8 +137,9 @@ package body Exp_Intr is
       Inst_Pkg   : constant Node_Id    := Parent (Subp_Decl);
       Act_Rename : Node_Id;
       Act_Constr : Entity_Id;
-      Result_Typ : Entity_Id;
+      Iface_Tag  : Node_Id := Empty;
       Cnstr_Call : Node_Id;
+      Result_Typ : Entity_Id;
 
    begin
       --  The subprogram is the third actual in the instantiation, and is
@@ -159,6 +161,30 @@ package body Exp_Intr is
 
       if Is_Interface (Etype (Act_Constr)) then
          Set_Etype (Act_Constr, Result_Typ);
+
+         --  If the result type is not parent of Tag_Arg then we need to
+         --  locate the tag of the secondary dispatch table.
+
+         if not Is_Parent (Etype (Result_Typ), Etype (Tag_Arg)) then
+            pragma Assert (not Is_Interface (Etype (Tag_Arg)));
+
+            Iface_Tag :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier =>
+                  Make_Defining_Identifier (Loc, New_Internal_Name ('V')),
+                Object_Definition =>
+                  New_Reference_To (RTE (RE_Tag), Loc),
+                Expression =>
+                  Make_Function_Call (Loc,
+                    Name => New_Reference_To (RTE (RE_Secondary_Tag), Loc),
+                    Parameter_Associations => New_List (
+                      Relocate_Node (Tag_Arg),
+                      New_Reference_To
+                        (Node (First_Elmt (Access_Disp_Table
+                                            (Etype (Etype (Act_Constr))))),
+                         Loc))));
+            Insert_Action (N, Iface_Tag);
+         end if;
       end if;
 
       --  Create the call to the actual Constructor function
@@ -173,8 +199,14 @@ package body Exp_Intr is
       --  should be generated now, to prevent out-of-order insertions during
       --  the expansion of that call when stack-checking is enabled.
 
-      Remove_Side_Effects (Tag_Arg);
-      Set_Controlling_Argument (Cnstr_Call, Relocate_Node (Tag_Arg));
+      if Present (Iface_Tag) then
+         Set_Controlling_Argument (Cnstr_Call,
+           New_Occurrence_Of (Defining_Identifier (Iface_Tag), Loc));
+      else
+         Remove_Side_Effects (Tag_Arg);
+         Set_Controlling_Argument (Cnstr_Call,
+           Relocate_Node (Tag_Arg));
+      end if;
 
       --  Rewrite and analyze the call to the instance as a class-wide
       --  conversion of the call to the actual constructor.
@@ -183,9 +215,11 @@ package body Exp_Intr is
       Analyze_And_Resolve (N, Etype (Act_Constr));
 
       --  Do not generate a run-time check on the built object if tag
-      --  checks are suppressed for the result type.
+      --  checks are suppressed for the result type or VM_Target /= No_VM
 
-      if Tag_Checks_Suppressed (Etype (Result_Typ)) then
+      if Tag_Checks_Suppressed (Etype (Result_Typ))
+        or else VM_Target /= No_VM
+      then
          null;
 
       --  Generate a class-wide membership test to ensure that the call's tag
@@ -225,7 +259,7 @@ package body Exp_Intr is
                     Name => New_Occurrence_Of (RTE (RE_IW_Membership), Loc),
                     Parameter_Associations => New_List (
                       Make_Attribute_Reference (Loc,
-                        Prefix => Duplicate_Subexpr (Tag_Arg),
+                        Prefix         => Duplicate_Subexpr (Tag_Arg),
                         Attribute_Name => Name_Address),
 
                       New_Reference_To (
@@ -345,8 +379,8 @@ package body Exp_Intr is
       Rewrite (N,
         Unchecked_Convert_To (Etype (Ent),
           Make_Attribute_Reference (Loc,
-            Attribute_Name => Name_Address,
-            Prefix => Make_Identifier (Loc, Chars (Dum)))));
+            Prefix         => Make_Identifier (Loc, Chars (Dum)),
+            Attribute_Name => Name_Address)));
 
       Analyze_And_Resolve (N, Etype (Ent));
    end Expand_Import_Call;
@@ -992,12 +1026,15 @@ package body Exp_Intr is
 
       --  Ada 2005 (AI-251): In case of abstract interface type we must
       --  displace the pointer to reference the base of the object to
-      --  deallocate its memory.
+      --  deallocate its memory, unless we're targetting a VM, in which case
+      --  no special processing is required.
 
       --  Generate:
       --    free (Base_Address (Obj_Ptr))
 
-      if Is_Interface (Directly_Designated_Type (Typ)) then
+      if Is_Interface (Directly_Designated_Type (Typ))
+        and then VM_Target = No_VM
+      then
          Set_Expression (Free_Node,
            Unchecked_Convert_To (Typ,
              Make_Function_Call (Loc,
@@ -1083,8 +1120,8 @@ package body Exp_Intr is
               Right_Opnd => Make_Null (Loc)),
             New_Occurrence_Of (RTE (RE_Null_Address), Loc),
             Make_Attribute_Reference (Loc,
-              Attribute_Name => Name_Address,
-              Prefix => Obj))));
+              Prefix         => Obj,
+              Attribute_Name => Name_Address))));
 
       Analyze_And_Resolve (N, RTE (RE_Address));
    end Expand_To_Address;
