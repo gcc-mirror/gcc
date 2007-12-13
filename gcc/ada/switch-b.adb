@@ -417,21 +417,21 @@ package body Switch.B is
          --  Processing for W switch
 
          when 'W' =>
-            if Ptr = Max then
+            Ptr := Ptr + 1;
+
+            if Ptr > Max then
                Bad_Switch (Switch_Chars);
             end if;
 
-            Ptr := Ptr + 1;
-
-            for J in WC_Encoding_Method loop
-               if Switch_Chars (Ptr) = WC_Encoding_Letters (J) then
-                  Wide_Character_Encoding_Method := J;
-                  exit;
-
-               elsif J = WC_Encoding_Method'Last then
+            begin
+               Wide_Character_Encoding_Method :=
+                 Get_WC_Encoding_Method (Switch_Chars (Ptr));
+            exception
+               when Constraint_Error =>
                   Bad_Switch (Switch_Chars);
-               end if;
-            end loop;
+            end;
+
+            Wide_Character_Encoding_Method_Specified := True;
 
             Upper_Half_Encoding :=
               Wide_Character_Encoding_Method in

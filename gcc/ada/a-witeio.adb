@@ -31,7 +31,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Exceptions;       use Ada.Exceptions;
 with Ada.Streams;          use Ada.Streams;
 with Interfaces.C_Streams; use Interfaces.C_Streams;
 
@@ -76,9 +75,9 @@ package body Ada.Wide_Text_IO is
    --  done in Get_Immediate mode (i.e. without waiting for a line return).
 
    procedure Set_WCEM (File : in out File_Type);
-   --  Called by Open and Create to set the wide character encoding method
-   --  for the file, processing a WCEM form parameter if one is present.
-   --  File is IN OUT because it may be closed in case of an error.
+   --  Called by Open and Create to set the wide character encoding method for
+   --  the file, processing a WCEM form parameter if one is present. File is
+   --  IN OUT because it may be closed in case of an error.
 
    -------------------
    -- AFCB_Allocate --
@@ -249,7 +248,6 @@ package body Ada.Wide_Text_IO is
          return False;
 
       elsif File.Before_LM then
-
          if File.Before_LM_PM then
             return Nextc (File) = EOF;
          end if;
@@ -420,6 +418,8 @@ package body Ada.Wide_Text_IO is
          File.Before_Wide_Character := False;
          Item := File.Saved_Wide_Character;
 
+      --  Ada.Text_IO checks Before_LM_PM here, shouldn't we do the same???
+
       else
          Get_Character (File, C);
          Item := Get_Wide_Char (C, File);
@@ -555,6 +555,8 @@ package body Ada.Wide_Text_IO is
          Item := Wide_Character'Val (LM);
 
       else
+         --  Shouldn't we use getc_immediate_nowait here, like Text_IO???
+
          ch := Getc_Immed (File);
 
          if ch = EOF then
@@ -749,7 +751,7 @@ package body Ada.Wide_Text_IO is
          end if;
       end In_Char;
 
-   --  Start of processing for In_Char
+   --  Start of processing for Get_Wide_Char
 
    begin
       return WC_In (C, File.WC_Method);
@@ -904,7 +906,7 @@ package body Ada.Wide_Text_IO is
          End_Of_Line := True;
          Item := Wide_Character'Val (0);
 
-      --  If we are before a wide character, just return it (this happens
+      --  If we are before a wide character, just return it (this can happen
       --  if there are two calls to Look_Ahead in a row).
 
       elsif File.Before_Wide_Character then
@@ -924,19 +926,21 @@ package body Ada.Wide_Text_IO is
             Ungetc (ch, File);
             Item := Wide_Character'Val (0);
 
-         --  If the character is in the range 16#0000# to 16#007F# it stands
-         --  for itself and occupies a single byte, so we can unget it with
+         --  Case where character obtained does not represent the start of an
+         --  encoded sequence so it stands for itself and we can unget it with
          --  no difficulty.
 
-         elsif ch <= 16#0080# then
+         elsif not Is_Start_Of_Encoding
+                     (Character'Val (ch), File.WC_Method)
+         then
             End_Of_Line := False;
             Ungetc (ch, File);
             Item := Wide_Character'Val (ch);
 
-         --  For a character above this range, we read the character, using
-         --  the Get_Wide_Char routine. It may well occupy more than one byte
-         --  so we can't put it back with ungetc. Instead we save it in the
-         --  control block, setting a flag that everyone interested in reading
+         --  For the start of an encoding, we read the character using the
+         --  Get_Wide_Char routine. It will occupy more than one byte so we
+         --  can't put it back with ungetc. Instead we save it in the control
+         --  block, setting a flag that everyone interested in reading
          --  characters must test before reading the stream.
 
          else
@@ -1552,7 +1556,7 @@ package body Ada.Wide_Text_IO is
          end if;
 
          Close (File);
-         Raise_Exception (Use_Error'Identity, "invalid WCEM form parameter");
+         raise Use_Error with "invalid WCEM form parameter";
       end if;
    end Set_WCEM;
 
@@ -1638,7 +1642,6 @@ package body Ada.Wide_Text_IO is
                Ungetc (ch, File);
             end if;
          end if;
-
       end loop;
 
       File.Before_Wide_Character := False;

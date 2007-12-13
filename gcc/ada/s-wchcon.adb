@@ -71,4 +71,18 @@ package body System.WCh_Con is
       end if;
    end Get_WC_Encoding_Method;
 
+   --------------------------
+   -- Is_Start_Of_Encoding --
+   --------------------------
+
+   function Is_Start_Of_Encoding
+     (C  : Character;
+      EM : WC_Encoding_Method) return Boolean
+   is
+   begin
+      return (EM in WC_Upper_Half_Encoding_Method
+               and then Character'Pos (C) >= 16#80#)
+        or else (EM in WC_ESC_Encoding_Method and then C = ASCII.ESC);
+   end Is_Start_Of_Encoding;
+
 end System.WCh_Con;

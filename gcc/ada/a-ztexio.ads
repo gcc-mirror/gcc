@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -49,8 +49,6 @@ with System.File_Control_Block;
 with System.WCh_Con;
 
 package Ada.Wide_Wide_Text_IO is
-
-   package WCh_Con renames System.WCh_Con;
 
    type File_Type is limited private;
    type File_Mode is (In_File, Out_File, Append_File);
@@ -303,6 +301,8 @@ package Ada.Wide_Wide_Text_IO is
    Layout_Error : exception renames IO_Exceptions.Layout_Error;
 
 private
+   package WCh_Con renames System.WCh_Con;
+
    -----------------------------------
    -- Handling of Format Characters --
    -----------------------------------
