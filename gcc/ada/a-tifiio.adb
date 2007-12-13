@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -423,7 +423,7 @@ package body Ada.Text_IO.Fixed_IO is
       X   : constant Int64   := Int64'Integer_Value (Item);
       A   : constant Field   := Field'Max (Aft, 1);
       Neg : constant Boolean := (Item < 0.0);
-      Pos : Integer;  -- Next digit X has value X * 10.0**Pos;
+      Pos : Integer := 0;  -- Next digit X has value X * 10.0**Pos;
 
       Y, Z : Int64;
       E : constant Integer := Boolean'Pos (not Exact)
@@ -538,11 +538,21 @@ package body Ada.Text_IO.Fixed_IO is
             return;
          end if;
 
-         Pos := Scale;
-
          if X not in -9 .. 9 then
             Put_Int64 (X / 10, Scale + 1);
          end if;
+
+         --  Use Put_Digit to advance Pos. This fixes a case where the second
+         --  or later Scaled_Divide would omit leading zeroes, resulting in
+         --  too few digits produced and a Layout_Error as result.
+
+         while Pos > Scale loop
+            Put_Digit (0);
+         end loop;
+
+         --  If Pos is less than Scale now, reset to equal Scale
+
+         Pos := Scale;
 
          Put_Digit (abs (X rem 10));
       end Put_Int64;
