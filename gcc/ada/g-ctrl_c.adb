@@ -1,22 +1,21 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---    S Y S T E M . T A S K _ P R I M I T I V E S . O P E R A T I O N S .   --
---                                   D E C                                  --
+--                          G N A T . C T R L _ C                           --
 --                                                                          --
---                                  S p e c                                 --
+--                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2000-2007, Free Software Foundation, Inc.          --
+--                      Copyright (C) 2002-2007, AdaCore                    --
 --                                                                          --
--- GNARL is free software; you can  redistribute it  and/or modify it under --
+-- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
 -- ware  Foundation;  either version 2,  or (at your option) any later ver- --
--- sion. GNARL is distributed in the hope that it will be useful, but WITH- --
+-- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
 -- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
 -- for  more details.  You should have  received  a copy of the GNU General --
--- Public License  distributed with GNARL; see file COPYING.  If not, write --
+-- Public License  distributed with GNAT;  see file COPYING.  If not, write --
 -- to  the  Free Software Foundation,  51  Franklin  Street,  Fifth  Floor, --
 -- Boston, MA 02110-1301, USA.                                              --
 --                                                                          --
@@ -27,30 +26,32 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University.       --
--- Extensive contributions were provided by Ada Core Technologies, Inc.     --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package is for OpenVMS/Alpha.
---
-with System.Aux_DEC;
-package System.Task_Primitives.Operations.DEC is
+package body GNAT.Ctrl_C is
 
-   procedure Interrupt_AST_Handler (ID : Address);
-   pragma Convention (C, Interrupt_AST_Handler);
-   --  Handles the AST for Ada95 Interrupts.
+   type C_Handler_Type is access procedure;
+   pragma Convention (C, C_Handler_Type);
 
-   procedure RMS_AST_Handler (ID : Address);
-   --  Handles the AST for RMS_Asynch_Operations.
+   Ada_Handler : Handler_Type;
 
-   function Self return System.Aux_DEC.Unsigned_Longword;
-   --  Returns the task identification for the AST.
+   procedure C_Handler;
+   pragma Convention (C, C_Handler);
 
-   procedure Starlet_AST_Handler (ID : Address);
-   --  Handles the AST for Starlet Tasking_Services.
+   procedure C_Handler is
+   begin
+      Ada_Handler.all;
+   end C_Handler;
 
-   procedure Task_Synch;
-   --  Synchronizes the task after the system service completes.
+   procedure Install_Handler (Handler : Handler_Type) is
+      procedure Internal (Handler : C_Handler_Type);
+      pragma Import (C, Internal, "__gnat_install_int_handler");
+   begin
+      Ada_Handler := Handler;
+      Internal (C_Handler'Access);
+   end Install_Handler;
 
-end System.Task_Primitives.Operations.DEC;
+end GNAT.Ctrl_C;

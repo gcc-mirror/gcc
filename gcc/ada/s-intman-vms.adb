@@ -59,7 +59,7 @@ package body System.Interrupt_Management is
 
       Sys_Crembx
         (Status => Status,
-         Prmflg => False,
+         Prmflg => 0,
          Chan   => Rcv_Interrupt_Chan,
          Maxmsg => Interrupt_ID'Size,
          Bufquo => Interrupt_Bufquo,

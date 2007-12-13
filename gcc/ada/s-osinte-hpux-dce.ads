@@ -133,6 +133,7 @@ package System.OS_Interface is
    type sigset_t is private;
 
    type isr_address is access procedure (sig : int);
+   pragma Convention (C, isr_address);
 
    function intr_attach (sig : int; handler : isr_address) return long;
 
@@ -238,6 +239,7 @@ package System.OS_Interface is
 
    type Thread_Body is access
      function (arg : System.Address) return System.Address;
+   pragma Convention (C, Thread_Body);
 
    function Thread_Body_Access is new
      Ada.Unchecked_Conversion (System.Address, Thread_Body);
@@ -426,6 +428,7 @@ package System.OS_Interface is
    --  DCE_THREADS has a nonstandard pthread_getspecific
 
    type destructor_pointer is access procedure (arg : System.Address);
+   pragma Convention (C, destructor_pointer);
 
    function pthread_key_create
      (key        : access pthread_key_t;

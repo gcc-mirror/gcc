@@ -179,6 +179,7 @@ package System.OS_Interface is
    pragma Import (C, sigaction, "sigaction");
 
    type isr_address is access procedure (sig : int);
+   pragma Convention (C, isr_address);
 
    function c_signal (sig : Signal; handler : isr_address) return isr_address;
    pragma Import (C, c_signal, "signal");
