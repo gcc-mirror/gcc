@@ -366,22 +366,22 @@ package body Sinput is
    Source_Cache_First : Source_Ptr := 1;
    Source_Cache_Last  : Source_Ptr := 0;
    --  Records the First and Last subscript values for the most recently
-   --  referenced entry in the source table, to optimize the common case
-   --  of repeated references to the same entry. The initial values force
-   --  an initial search to set the cache value.
+   --  referenced entry in the source table, to optimize the common case of
+   --  repeated references to the same entry. The initial values force an
+   --  initial search to set the cache value.
 
    Source_Cache_Index : Source_File_Index := No_Source_File;
    --  Contains the index of the entry corresponding to Source_Cache
 
-   function Get_Source_File_Index
-     (S    : Source_Ptr)
-      return Source_File_Index
-   is
+   function Get_Source_File_Index (S : Source_Ptr) return Source_File_Index is
    begin
       if S in Source_Cache_First .. Source_Cache_Last then
          return Source_Cache_Index;
 
       else
+         pragma Assert (Source_File_Index_Table (Int (S) / Chunk_Size)
+                          /=
+                        No_Source_File);
          for J in Source_File_Index_Table (Int (S) / Chunk_Size)
                                                     .. Source_File.Last
          loop
@@ -811,7 +811,7 @@ package body Sinput is
          begin
             --  For the instantiation case, we do not read in any data. Instead
             --  we share the data for the generic template entry. Since the
-            --  template always occurs first, we can safetly refer to its data.
+            --  template always occurs first, we can safely refer to its data.
 
             if S.Instantiation /= No_Location then
                declare
