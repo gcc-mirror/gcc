@@ -1356,7 +1356,6 @@ package body GNAT.Spitbol.Patterns is
       E   : constant PE_Ptr := new PE'(PC_R_Enter,    0, EOP);
       A   : constant PE_Ptr :=
               new PE'(PC_Assign_Imm, 0, EOP, Var'Unrestricted_Access);
-
    begin
       return (AFC with P.Stk + 3, Bracket (E, Pat, A));
    end "*";
@@ -1366,7 +1365,6 @@ package body GNAT.Spitbol.Patterns is
       E   : constant PE_Ptr := new PE'(PC_R_Enter,    0, EOP);
       A   : constant PE_Ptr :=
               new PE'(PC_Assign_Imm, 0, EOP, Var'Unrestricted_Access);
-
    begin
       return (AFC with 3, Bracket (E, Pat, A));
    end "*";
@@ -1376,7 +1374,6 @@ package body GNAT.Spitbol.Patterns is
       E   : constant PE_Ptr := new PE'(PC_R_Enter,    0, EOP);
       A   : constant PE_Ptr :=
               new PE'(PC_Assign_Imm, 0, EOP, Var'Unrestricted_Access);
-
    begin
       return (AFC with 3, Bracket (E, Pat, A));
    end "*";
@@ -1395,7 +1392,6 @@ package body GNAT.Spitbol.Patterns is
       Pat : constant PE_Ptr := Copy (P.P);
       E   : constant PE_Ptr := new PE'(PC_R_Enter,   0, EOP);
       W   : constant PE_Ptr := new PE'(PC_Write_Imm, 0, EOP, Fil);
-
    begin
       return (AFC with 3, Bracket (E, Pat, W));
    end "*";
@@ -1404,7 +1400,6 @@ package body GNAT.Spitbol.Patterns is
       Pat : constant PE_Ptr := S_To_PE (P);
       E   : constant PE_Ptr := new PE'(PC_R_Enter,   0, EOP);
       W   : constant PE_Ptr := new PE'(PC_Write_Imm, 0, EOP, Fil);
-
    begin
       return (AFC with 3, Bracket (E, Pat, W));
    end "*";
@@ -1413,7 +1408,6 @@ package body GNAT.Spitbol.Patterns is
       Pat : constant PE_Ptr := C_To_PE (P);
       E   : constant PE_Ptr := new PE'(PC_R_Enter,   0, EOP);
       W   : constant PE_Ptr := new PE'(PC_Write_Imm, 0, EOP, Fil);
-
    begin
       return (AFC with 3, Bracket (E, Pat, W));
    end "*";
@@ -1437,7 +1431,6 @@ package body GNAT.Spitbol.Patterns is
       E   : constant PE_Ptr := new PE'(PC_R_Enter,    0, EOP);
       A   : constant PE_Ptr :=
               new PE'(PC_Assign_OnM, 0, EOP, Var'Unrestricted_Access);
-
    begin
       return (AFC with P.Stk + 3, Bracket (E, Pat, A));
    end "**";
@@ -1447,7 +1440,6 @@ package body GNAT.Spitbol.Patterns is
       E   : constant PE_Ptr := new PE'(PC_R_Enter,    0, EOP);
       A   : constant PE_Ptr :=
               new PE'(PC_Assign_OnM, 0, EOP, Var'Unrestricted_Access);
-
    begin
       return (AFC with 3, Bracket (E, Pat, A));
    end "**";
@@ -1457,7 +1449,6 @@ package body GNAT.Spitbol.Patterns is
       E   : constant PE_Ptr := new PE'(PC_R_Enter,    0, EOP);
       A   : constant PE_Ptr :=
               new PE'(PC_Assign_OnM, 0, EOP, Var'Unrestricted_Access);
-
    begin
       return (AFC with 3, Bracket (E, Pat, A));
    end "**";
@@ -1476,7 +1467,6 @@ package body GNAT.Spitbol.Patterns is
       Pat : constant PE_Ptr := Copy (P.P);
       E   : constant PE_Ptr := new PE'(PC_R_Enter,   0, EOP);
       W   : constant PE_Ptr := new PE'(PC_Write_OnM, 0, EOP, Fil);
-
    begin
       return (AFC with P.Stk + 3, Bracket (E, Pat, W));
    end "**";
@@ -1485,7 +1475,6 @@ package body GNAT.Spitbol.Patterns is
       Pat : constant PE_Ptr := S_To_PE (P);
       E   : constant PE_Ptr := new PE'(PC_R_Enter,   0, EOP);
       W   : constant PE_Ptr := new PE'(PC_Write_OnM, 0, EOP, Fil);
-
    begin
       return (AFC with 3, Bracket (E, Pat, W));
    end "**";
@@ -1494,7 +1483,6 @@ package body GNAT.Spitbol.Patterns is
       Pat : constant PE_Ptr := C_To_PE (P);
       E   : constant PE_Ptr := new PE'(PC_R_Enter,   0, EOP);
       W   : constant PE_Ptr := new PE'(PC_Write_OnM, 0, EOP, Fil);
-
    begin
       return (AFC with 3, Bracket (E, Pat, W));
    end "**";
@@ -1674,7 +1662,6 @@ package body GNAT.Spitbol.Patterns is
    function Arb return Pattern is
       Y : constant PE_Ptr := new PE'(PC_Arb_Y, 1, EOP);
       X : constant PE_Ptr := new PE'(PC_Arb_X, 2, EOP, Y);
-
    begin
       return (AFC with 1, X);
    end Arb;
@@ -1687,7 +1674,6 @@ package body GNAT.Spitbol.Patterns is
    begin
       if P'Length = 0 then
          return (AFC with 0, EOP);
-
       else
          return (AFC with 0, Arbno_Simple (S_To_PE (P)));
       end if;
@@ -1733,7 +1719,6 @@ package body GNAT.Spitbol.Patterns is
          X   : constant PE_Ptr := new PE'(PC_Arbno_X, 0, EOP, E);
          Y   : constant PE_Ptr := new PE'(PC_Arbno_Y, 0, X,   P.Stk + 3);
          EPY : constant PE_Ptr := Bracket (E, Pat, Y);
-
       begin
          X.Alt := EPY;
          X.Index := EPY.Index + 1;
@@ -1765,7 +1750,6 @@ package body GNAT.Spitbol.Patterns is
 
    function Arbno_Simple (P : PE_Ptr) return PE_Ptr is
       S : constant PE_Ptr := new PE'(PC_Arbno_S, P.Index + 1, EOP, P);
-
    begin
       Set_Successor (P, S);
       return S;
@@ -1827,7 +1811,8 @@ package body GNAT.Spitbol.Patterns is
 
    function Break (Str : not null access VString) return Pattern is
    begin
-      return (AFC with 0, new PE'(PC_Break_VP, 1, EOP, VString_Ptr (Str)));
+      return (AFC with 0,
+              new PE'(PC_Break_VP, 1, EOP, Str.all'Unchecked_Access));
    end Break;
 
    function Break (Str : VString_Func) return Pattern is
@@ -1888,7 +1873,6 @@ package body GNAT.Spitbol.Patterns is
    function BreakX_Make (B : PE_Ptr) return Pattern is
       X : constant PE_Ptr := new PE'(PC_BreakX_X, 2, B);
       A : constant PE_Ptr := new PE'(PC_Alt,      1, EOP, X);
-
    begin
       B.Pthen := A;
       return (AFC with 2, B);
@@ -1903,6 +1887,10 @@ package body GNAT.Spitbol.Patterns is
       procedure Record_PE (E : PE_Ptr);
       --  Record given pattern element if not already recorded in RA,
       --  and also record any referenced pattern elements recursively.
+
+      ---------------
+      -- Record_PE --
+      ---------------
 
       procedure Record_PE (E : PE_Ptr) is
       begin
@@ -2091,6 +2079,10 @@ package body GNAT.Spitbol.Patterns is
       procedure Write_Node_Id (E : PE_Ptr);
       --  Writes out a string identifying the given pattern element
 
+      -------------------
+      -- Write_Node_Id --
+      -------------------
+
       procedure Write_Node_Id (E : PE_Ptr) is
       begin
          if E = EOP then
@@ -2117,6 +2109,8 @@ package body GNAT.Spitbol.Patterns is
             end;
          end if;
       end Write_Node_Id;
+
+   --  Start of processing for Dump
 
    begin
       New_Line;
@@ -2313,7 +2307,6 @@ package body GNAT.Spitbol.Patterns is
       Pat : constant PE_Ptr := Copy (P.P);
       E   : constant PE_Ptr := new PE'(PC_R_Enter, 0, EOP);
       X   : constant PE_Ptr := new PE'(PC_Fence_X, 0, EOP);
-
    begin
       return (AFC with P.Stk + 1, Bracket (E, Pat, X));
    end Fence;
@@ -2402,7 +2395,6 @@ package body GNAT.Spitbol.Patterns is
 
       procedure Delete_Ampersand is
          L : constant Natural := Length (Result);
-
       begin
          if L > 2 then
             Delete (Result, L - 1, L);
@@ -4340,7 +4332,6 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_Len_NF => declare
             N : constant Natural := Node.NF.all;
-
          begin
             if Cursor + N > Length then
                goto Fail;
@@ -4504,7 +4495,6 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_Pos_NF => declare
             N : constant Natural := Node.NF.all;
-
          begin
             if Cursor = N then
                goto Succeed;
@@ -4593,7 +4583,6 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_RPos_NF => declare
             N : constant Natural := Node.NF.all;
-
          begin
             if Length - Cursor = N then
                goto Succeed;
@@ -4625,7 +4614,6 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_RTab_NF => declare
             N : constant Natural := Node.NF.all;
-
          begin
             if Length - Cursor >= N then
                Cursor := Length - N;
@@ -4654,9 +4642,10 @@ package body GNAT.Spitbol.Patterns is
          --  Span (one character case)
 
          when PC_Span_CH => declare
-            P : Natural := Cursor;
+            P : Natural;
 
          begin
+            P := Cursor;
             while P < Length
               and then Subject (P + 1) = Node.Char
             loop
@@ -4674,9 +4663,10 @@ package body GNAT.Spitbol.Patterns is
          --  Span (character set case)
 
          when PC_Span_CS => declare
-            P : Natural := Cursor;
+            P : Natural;
 
          begin
+            P := Cursor;
             while P < Length
               and then Is_In (Subject (P + 1), Node.CS)
             loop
@@ -4807,7 +4797,6 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_String => declare
             Len : constant Natural := Node.Str'Length;
-
          begin
             if (Length - Cursor) >= Len
               and then Node.Str.all = Subject (Cursor + 1 .. Cursor + Len)
@@ -4879,7 +4868,6 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_Tab_NF => declare
             N : constant Natural := Node.NF.all;
-
          begin
             if Cursor <= N then
                Cursor := N;
