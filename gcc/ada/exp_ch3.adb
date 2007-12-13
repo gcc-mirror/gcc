@@ -237,8 +237,11 @@ package body Exp_Ch3 is
    procedure Make_Predefined_Primitive_Specs
      (Tag_Typ     : Entity_Id;
       Predef_List : out List_Id;
-      Renamed_Eq  : out Node_Id);
+      Renamed_Eq  : out Entity_Id);
    --  Create a list with the specs of the predefined primitive operations.
+   --  For tagged types that are interfaces all these primitives are defined
+   --  abstract.
+   --
    --  The following entries are present for all tagged types, and provide
    --  the results of the corresponding attribute applied to the object.
    --  Dispatching is required in general, since the result of the attribute
@@ -328,7 +331,7 @@ package body Exp_Ch3 is
 
    function Predefined_Primitive_Bodies
      (Tag_Typ    : Entity_Id;
-      Renamed_Eq : Node_Id) return List_Id;
+      Renamed_Eq : Entity_Id) return List_Id;
    --  Create the bodies of the predefined primitives that are described in
    --  Predefined_Primitive_Specs. When not empty, Renamed_Eq must denote
    --  the defining unit name of the type's predefined equality as returned
@@ -797,9 +800,8 @@ package body Exp_Ch3 is
             --  If we fall off the top, we are at the outer level, and the
             --  environment task is our effective master, so nothing to mark.
 
-            if Nkind (Par) = N_Task_Body
-              or else Nkind (Par) = N_Block_Statement
-              or else Nkind (Par) = N_Subprogram_Body
+            if Nkind_In
+                (Par, N_Task_Body, N_Block_Statement, N_Subprogram_Body)
             then
                Set_Is_Task_Master (Par, True);
                exit;
@@ -2120,10 +2122,13 @@ package body Exp_Ch3 is
       begin
          --  Offset_To_Top_Functions are built only for derivations of types
          --  with discriminants that cover interface types.
+         --  Nothing is needed either in case of virtual machines, since
+         --  interfaces are handled directly by the VM.
 
          if not Is_Tagged_Type (Rec_Type)
            or else Etype (Rec_Type) = Rec_Type
            or else not Has_Discriminants (Etype (Rec_Type))
+           or else VM_Target /= No_VM
          then
             return;
          end if;
@@ -4343,7 +4348,9 @@ package body Exp_Ch3 is
             end if;
 
             --  Ada 2005 (AI-251): Rewrite the expression that initializes a
-            --  class-wide object to ensure that we copy the full object.
+            --  class-wide object to ensure that we copy the full object,
+            --  unless we're targetting a VM where interfaces are handled by
+            --  VM itself.
 
             --  Replace
             --      CW : I'Class := Obj;
@@ -4354,6 +4361,7 @@ package body Exp_Ch3 is
             if Is_Interface (Typ)
               and then Is_Class_Wide_Type (Etype (Expr))
               and then Comes_From_Source (Def_Id)
+              and then VM_Target = No_VM
             then
                declare
                   Decl_1 : Node_Id;
@@ -4523,10 +4531,15 @@ package body Exp_Ch3 is
                end if;
             end if;
 
-            --  If validity checking on copies, validate initial expression
+            --  If validity checking on copies, validate initial expression.
+            --  But skip this if declaration is for a generic type, since it
+            --  makes no sense to validate generic types. Not clear if this
+            --  can happen for legal programs, but it definitely can arise
+            --  from previous instantiation errors.
 
             if Validity_Checks_On
-               and then Validity_Check_Copies
+              and then Validity_Check_Copies
+              and then not Is_Generic_Type (Etype (Def_Id))
             then
                Ensure_Valid (Expr);
                Set_Is_Known_Valid (Def_Id);
@@ -4588,10 +4601,7 @@ package body Exp_Ch3 is
          Validity_Check_Range (Range_Expression (Constraint (N)));
       end if;
 
-      if Nkind (Parent (N)) = N_Constrained_Array_Definition
-           or else
-         Nkind (Parent (N)) = N_Slice
-      then
+      if Nkind_In (Parent (N), N_Constrained_Array_Definition, N_Slice) then
          Apply_Range_Check (Ran, Typ);
       end if;
    end Expand_N_Subtype_Indication;
@@ -4628,11 +4638,13 @@ package body Exp_Ch3 is
 
    begin
       --  Find all access types declared in the current scope, whose
-      --  designated type is Def_Id.
+      --  designated type is Def_Id. If it does not have a Master_Id,
+      --  create one now.
 
       while Present (T) loop
          if Is_Access_Type (T)
            and then Designated_Type (T) = Def_Id
+           and then No (Master_Id (T))
          then
             Build_Master_Entity (Def_Id);
             Build_Master_Renaming (Parent (Def_Id), T);
@@ -4727,7 +4739,7 @@ package body Exp_Ch3 is
                --  between the secondary tag and its adjacent component.
 
                    or else Present
-                             (Related_Interface
+                             (Related_Type
                                (Defining_Identifier (First_Comp))))
             loop
                Next (First_Comp);
@@ -5258,7 +5270,11 @@ package body Exp_Ch3 is
       --  access components whose designated type is potentially controlled.
 
       Renamed_Eq : Node_Id := Empty;
-      --  Could use some comments ???
+      --  Defining unit name for the predefined equality function in the case
+      --  where the type has a primitive operation that is a renaming of
+      --  predefined equality (but only if there is also an overriding
+      --  user-defined equality function). Used to pass this entity from
+      --  Make_Predefined_Primitive_Specs to Predefined_Primitive_Bodies.
 
       Wrapper_Decl_List   : List_Id := No_List;
       Wrapper_Body_List   : List_Id := No_List;
@@ -5587,11 +5603,16 @@ package body Exp_Ch3 is
          Build_Record_Init_Proc (Type_Decl, Def_Id);
       end if;
 
-      --  For tagged type, build bodies of primitive operations. Note that we
-      --  do this after building the record initialization experiment, since
-      --  the primitive operations may need the initialization routine
+      --  For tagged type that are not interfaces, build bodies of primitive
+      --  operations. Note that we do this after building the record
+      --  initialization procedure, since the primitive operations may need
+      --  the initialization routine. There is no need to add predefined
+      --  primitives of interfaces because all their predefined primitives
+      --  are abstract.
 
-      if Is_Tagged_Type (Def_Id) then
+      if Is_Tagged_Type (Def_Id)
+        and then not Is_Interface (Def_Id)
+      then
 
          --  Do not add the body of the predefined primitives if we are
          --  compiling under restriction No_Dispatching_Calls
@@ -6118,9 +6139,7 @@ package body Exp_Ch3 is
          --  Similarly, if it is an aggregate it must be qualified, because an
          --  unchecked conversion does not provide a context for it.
 
-         if Nkind (Val) = N_Null
-           or else Nkind (Val) = N_Aggregate
-         then
+         if Nkind_In (Val, N_Null, N_Aggregate) then
             Val :=
               Make_Qualified_Expression (Loc,
                 Subtype_Mark =>
@@ -6821,12 +6840,14 @@ package body Exp_Ch3 is
             while Present (Idx) loop
                if Nkind (Idx) = N_Range then
                   if (Nkind (Low_Bound (Idx)) = N_Identifier
-                      and then Present (Entity (Low_Bound (Idx)))
-                      and then Ekind (Entity (Low_Bound (Idx))) /= E_Constant)
+                       and then Present (Entity (Low_Bound (Idx)))
+                       and then
+                         Ekind (Entity (Low_Bound (Idx))) /= E_Constant)
                     or else
                      (Nkind (High_Bound (Idx)) = N_Identifier
-                      and then Present (Entity (High_Bound (Idx)))
-                      and then Ekind (Entity (High_Bound (Idx))) /= E_Constant)
+                       and then Present (Entity (High_Bound (Idx)))
+                       and then
+                         Ekind (Entity (High_Bound (Idx))) /= E_Constant)
                   then
                      return True;
                   end if;
@@ -7267,7 +7288,7 @@ package body Exp_Ch3 is
    procedure Make_Predefined_Primitive_Specs
      (Tag_Typ     : Entity_Id;
       Predef_List : out List_Id;
-      Renamed_Eq  : out Node_Id)
+      Renamed_Eq  : out Entity_Id)
    is
       Loc       : constant Source_Ptr := Sloc (Tag_Typ);
       Res       : constant List_Id    := New_List;
@@ -7342,13 +7363,12 @@ package body Exp_Ch3 is
          end loop;
       end;
 
-      --  Spec of "=" if expanded if the type is not limited and if a
+      --  Spec of "=" is expanded if the type is not limited and if a
       --  user defined "=" was not already declared for the non-full
       --  view of a private extension
 
       if not Is_Limited_Type (Tag_Typ) then
          Eq_Needed := True;
-
          Prim := First_Elmt (Primitive_Operations (Tag_Typ));
          while Present (Prim) loop
 
@@ -7364,6 +7384,8 @@ package body Exp_Ch3 is
             if Is_Predefined_Eq_Renaming (Node (Prim)) then
                Eq_Name := New_External_Name (Chars (Node (Prim)), 'E');
 
+            --  User-defined equality
+
             elsif Chars (Node (Prim)) = Name_Op_Eq
               and then (No (Alias (Node (Prim)))
                          or else Nkind (Unit_Declaration_Node (Node (Prim))) =
@@ -7371,15 +7393,16 @@ package body Exp_Ch3 is
               and then Etype (First_Formal (Node (Prim))) =
                          Etype (Next_Formal (First_Formal (Node (Prim))))
               and then Base_Type (Etype (Node (Prim))) = Standard_Boolean
-
             then
                Eq_Needed := False;
                exit;
 
-            --  If the parent equality is abstract, the inherited equality is
-            --  abstract as well, and no body can be created for for it.
+            --  If the parent is not an interface type and has an abstract
+            --  equality function, the inherited equality is abstract as well,
+            --  and no body can be created for it.
 
             elsif Chars (Node (Prim)) = Name_Op_Eq
+              and then not Is_Interface (Etype (Tag_Typ))
               and then Present (Alias (Node (Prim)))
               and then Is_Abstract_Subprogram (Alias (Node (Prim)))
             then
@@ -7469,11 +7492,12 @@ package body Exp_Ch3 is
       --  operations for limited interfaces and synchronized types that
       --  implement a limited interface.
 
-      --    disp_asynchronous_select
-      --    disp_conditional_select
-      --    disp_get_prim_op_kind
-      --    disp_get_task_id
-      --    disp_timed_select
+      --    Disp_Asynchronous_Select
+      --    Disp_Conditional_Select
+      --    Disp_Get_Prim_Op_Kind
+      --    Disp_Get_Task_Id
+      --    Disp_Requeue
+      --    Disp_Timed_Select
 
       --  These operations cannot be implemented on VM targets, so we simply
       --  disable their generation in this case. We also disable generation
@@ -7481,35 +7505,83 @@ package body Exp_Ch3 is
 
       if Ada_Version >= Ada_05
         and then VM_Target = No_VM
-        and then
-          ((Is_Interface (Tag_Typ) and then Is_Limited_Record (Tag_Typ))
-              or else (Is_Concurrent_Record_Type (Tag_Typ)
-                         and then Has_Abstract_Interfaces (Tag_Typ)))
       then
-         Append_To (Res,
-           Make_Subprogram_Declaration (Loc,
-             Specification =>
-               Make_Disp_Asynchronous_Select_Spec (Tag_Typ)));
+         --  These primitives are defined abstract in interface types
 
-         Append_To (Res,
-           Make_Subprogram_Declaration (Loc,
-             Specification =>
-               Make_Disp_Conditional_Select_Spec (Tag_Typ)));
+         if Is_Interface (Tag_Typ)
+           and then Is_Limited_Record (Tag_Typ)
+         then
+            Append_To (Res,
+              Make_Abstract_Subprogram_Declaration (Loc,
+                Specification =>
+                  Make_Disp_Asynchronous_Select_Spec (Tag_Typ)));
 
-         Append_To (Res,
-           Make_Subprogram_Declaration (Loc,
-             Specification =>
-               Make_Disp_Get_Prim_Op_Kind_Spec (Tag_Typ)));
+            Append_To (Res,
+              Make_Abstract_Subprogram_Declaration (Loc,
+                Specification =>
+                  Make_Disp_Conditional_Select_Spec (Tag_Typ)));
 
-         Append_To (Res,
-           Make_Subprogram_Declaration (Loc,
-             Specification =>
-               Make_Disp_Get_Task_Id_Spec (Tag_Typ)));
+            Append_To (Res,
+              Make_Abstract_Subprogram_Declaration (Loc,
+                Specification =>
+                  Make_Disp_Get_Prim_Op_Kind_Spec (Tag_Typ)));
 
-         Append_To (Res,
-           Make_Subprogram_Declaration (Loc,
-             Specification =>
-               Make_Disp_Timed_Select_Spec (Tag_Typ)));
+            Append_To (Res,
+              Make_Abstract_Subprogram_Declaration (Loc,
+                Specification =>
+                  Make_Disp_Get_Task_Id_Spec (Tag_Typ)));
+
+            Append_To (Res,
+              Make_Abstract_Subprogram_Declaration (Loc,
+                Specification =>
+                  Make_Disp_Requeue_Spec (Tag_Typ)));
+
+            Append_To (Res,
+              Make_Abstract_Subprogram_Declaration (Loc,
+                Specification =>
+                  Make_Disp_Timed_Select_Spec (Tag_Typ)));
+
+         --  If the ancestor is an interface type we declare non-abstract
+         --  primitives to override the abstract primitives of the interface
+         --  type.
+
+         elsif (not Is_Interface (Tag_Typ)
+                  and then Is_Interface (Etype (Tag_Typ))
+                  and then Is_Limited_Record (Etype (Tag_Typ)))
+             or else
+               (Is_Concurrent_Record_Type (Tag_Typ)
+                  and then Has_Abstract_Interfaces (Tag_Typ))
+         then
+            Append_To (Res,
+              Make_Subprogram_Declaration (Loc,
+                Specification =>
+                  Make_Disp_Asynchronous_Select_Spec (Tag_Typ)));
+
+            Append_To (Res,
+              Make_Subprogram_Declaration (Loc,
+                Specification =>
+                  Make_Disp_Conditional_Select_Spec (Tag_Typ)));
+
+            Append_To (Res,
+              Make_Subprogram_Declaration (Loc,
+                Specification =>
+                  Make_Disp_Get_Prim_Op_Kind_Spec (Tag_Typ)));
+
+            Append_To (Res,
+              Make_Subprogram_Declaration (Loc,
+                Specification =>
+                  Make_Disp_Get_Task_Id_Spec (Tag_Typ)));
+
+            Append_To (Res,
+              Make_Subprogram_Declaration (Loc,
+                Specification =>
+                  Make_Disp_Requeue_Spec (Tag_Typ)));
+
+            Append_To (Res,
+              Make_Subprogram_Declaration (Loc,
+                Specification =>
+                  Make_Disp_Timed_Select_Spec (Tag_Typ)));
+         end if;
       end if;
 
       --  Specs for finalization actions that may be required in case a future
@@ -7696,12 +7768,15 @@ package body Exp_Ch3 is
                New_Reference_To (Ret_Type, Loc));
       end if;
 
+      if Is_Interface (Tag_Typ) then
+         return Make_Abstract_Subprogram_Declaration (Loc, Spec);
+
       --  If body case, return empty subprogram body. Note that this is ill-
       --  formed, because there is not even a null statement, and certainly not
       --  a return in the function case. The caller is expected to do surgery
       --  on the body to add the appropriate stuff.
 
-      if For_Body then
+      elsif For_Body then
          return Make_Subprogram_Body (Loc, Spec, Empty_List, Empty);
 
       --  For the case of an Input attribute predefined for an abstract type,
@@ -7754,7 +7829,7 @@ package body Exp_Ch3 is
 
    function Predefined_Primitive_Bodies
      (Tag_Typ    : Entity_Id;
-      Renamed_Eq : Node_Id) return List_Id
+      Renamed_Eq : Entity_Id) return List_Id
    is
       Loc       : constant Source_Ptr := Sloc (Tag_Typ);
       Res       : constant List_Id    := New_List;
@@ -7767,11 +7842,34 @@ package body Exp_Ch3 is
       pragma Warnings (Off, Ent);
 
    begin
+      pragma Assert (not Is_Interface (Tag_Typ));
+
       --  See if we have a predefined "=" operator
 
       if Present (Renamed_Eq) then
          Eq_Needed := True;
          Eq_Name   := Chars (Renamed_Eq);
+
+      --  If the parent is an interface type then it has defined all the
+      --  predefined primitives abstract and we need to check if the type
+      --  has some user defined "=" function to avoid generating it.
+
+      elsif Is_Interface (Etype (Tag_Typ)) then
+         Eq_Needed := True;
+         Eq_Name := Name_Op_Eq;
+
+         Prim := First_Elmt (Primitive_Operations (Tag_Typ));
+         while Present (Prim) loop
+            if Chars (Node (Prim)) = Name_Op_Eq
+              and then not Is_Internal (Node (Prim))
+            then
+               Eq_Needed := False;
+               Eq_Name := No_Name;
+               exit;
+            end if;
+
+            Next_Elmt (Prim);
+         end loop;
 
       else
          Eq_Needed := False;
@@ -7784,6 +7882,7 @@ package body Exp_Ch3 is
             then
                Eq_Needed := True;
                Eq_Name := Name_Op_Eq;
+               exit;
             end if;
 
             Next_Elmt (Prim);
@@ -7893,20 +7992,24 @@ package body Exp_Ch3 is
       if Ada_Version >= Ada_05
         and then VM_Target = No_VM
         and then not Restriction_Active (No_Dispatching_Calls)
+        and then not Is_Interface (Tag_Typ)
         and then
-          ((Is_Interface (Tag_Typ) and then Is_Limited_Record (Tag_Typ))
-              or else (Is_Concurrent_Record_Type (Tag_Typ)
-                        and then Has_Abstract_Interfaces (Tag_Typ)))
+          ((Is_Interface (Etype (Tag_Typ))
+              and then Is_Limited_Record (Etype (Tag_Typ)))
+           or else (Is_Concurrent_Record_Type (Tag_Typ)
+                     and then Has_Abstract_Interfaces (Tag_Typ)))
       then
          Append_To (Res, Make_Disp_Asynchronous_Select_Body (Tag_Typ));
          Append_To (Res, Make_Disp_Conditional_Select_Body  (Tag_Typ));
          Append_To (Res, Make_Disp_Get_Prim_Op_Kind_Body    (Tag_Typ));
          Append_To (Res, Make_Disp_Get_Task_Id_Body         (Tag_Typ));
+         Append_To (Res, Make_Disp_Requeue_Body             (Tag_Typ));
          Append_To (Res, Make_Disp_Timed_Select_Body        (Tag_Typ));
       end if;
 
-      if not Is_Limited_Type (Tag_Typ) then
-
+      if not Is_Limited_Type (Tag_Typ)
+        and then not Is_Interface (Tag_Typ)
+      then
          --  Body for equality
 
          if Eq_Needed then
