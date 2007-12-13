@@ -60,8 +60,9 @@ package body System.Interrupt_Management.Operations is
    Initial_Action : array (Signal) of aliased struct_sigaction;
 
    Default_Action : aliased struct_sigaction;
+   pragma Warnings (Off, Default_Action);
 
-   Ignore_Action  : aliased struct_sigaction;
+   Ignore_Action : aliased struct_sigaction;
 
    ----------------------------
    -- Thread_Block_Interrupt --
@@ -136,11 +137,11 @@ package body System.Interrupt_Management.Operations is
    --------------------
 
    function Interrupt_Wait
-     (Mask : access Interrupt_Mask)
-      return Interrupt_ID
+     (Mask : access Interrupt_Mask) return Interrupt_ID
    is
       Result : Interfaces.C.int;
       Sig    : aliased Signal;
+
    begin
       Result := sigwait (Mask, Sig'Access);
 

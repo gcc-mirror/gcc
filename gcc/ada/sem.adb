@@ -727,6 +727,7 @@ package body Sem is
       To   : Entity_Id)
    is
       Found : Boolean;
+      pragma Warnings (Off, Found);
 
       procedure Search_Stack
         (Top   : Suppress_Stack_Entry_Ptr;
@@ -1282,10 +1283,10 @@ package body Sem is
       S_Sem_Unit         : constant Unit_Number_Type := Current_Sem_Unit;
       S_GNAT_Mode        : constant Boolean          := GNAT_Mode;
       S_Discard_Names    : constant Boolean          := Global_Discard_Names;
-      Generic_Main       : constant Boolean :=
-                             Nkind (Unit (Cunit (Main_Unit)))
-                               in N_Generic_Declaration;
 
+      Generic_Main : constant Boolean :=
+                       Nkind (Unit (Cunit (Main_Unit)))
+                         in N_Generic_Declaration;
       --  If the main unit is generic, every compiled unit, including its
       --  context, is compiled with expansion disabled.
 

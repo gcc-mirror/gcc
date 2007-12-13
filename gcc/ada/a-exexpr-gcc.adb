@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -242,18 +242,19 @@ package body Exception_Propagation is
    --  Copy all the components of Source to Target as well as the
    --  Private_Data pointer.
 
-   ------------------------------------------------------------
-   -- Accessors to basic components of a GNAT exception data --
-   ------------------------------------------------------------
+   --------------------------------------------------------------------
+   -- Accessors to Basic Components of a GNAT Exception Data Pointer --
+   --------------------------------------------------------------------
 
-   --  As of today, these are only used by the C implementation of the
-   --  GCC propagation personality routine to avoid having to rely on a C
+   --  As of today, these are only used by the C implementation of the GCC
+   --  propagation personality routine to avoid having to rely on a C
    --  counterpart of the whole exception_data structure, which is both
-   --  painful and error prone. These subprograms could be moved to a
-   --  more widely visible location if need be.
+   --  painful and error prone. These subprograms could be moved to a more
+   --  widely visible location if need be.
 
    function Is_Handled_By_Others (E : Exception_Data_Ptr) return Boolean;
    pragma Export (C, Is_Handled_By_Others, "__gnat_is_handled_by_others");
+   pragma Warnings (Off, Is_Handled_By_Others);
 
    function Language_For (E : Exception_Data_Ptr) return Character;
    pragma Export (C, Language_For, "__gnat_language_for");

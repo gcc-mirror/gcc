@@ -852,9 +852,10 @@ package body Ada.Containers.Hashed_Maps is
          declare
             K : Key_Type renames Position.Node.Key;
             E : Element_Type renames Position.Node.Element;
-            pragma Unreferenced (E);
+
          begin
             Process (K, E);
+
          exception
             when others =>
                L := L - 1;

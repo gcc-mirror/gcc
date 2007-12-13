@@ -220,9 +220,7 @@ package body Sem_Ch5 is
          --  If assignment operand is a component reference, then we get the
          --  actual subtype of the component for the unconstrained case.
 
-         elsif
-           (Nkind (Opnd) = N_Selected_Component
-             or else Nkind (Opnd) = N_Explicit_Dereference)
+         elsif Nkind_In (Opnd, N_Selected_Component, N_Explicit_Dereference)
            and then not Is_Unchecked_Union (Opnd_Type)
          then
             Decl := Build_Actual_Subtype_Of_Component (Opnd_Type, Opnd);
@@ -685,6 +683,17 @@ package body Sem_Ch5 is
          Check_Elab_Assign (Lhs);
       end if;
 
+      --  Set Referenced_As_LHS if appropriate. We only set this flag if the
+      --  assignment is a source assignment in the extended main source unit.
+      --  We are not interested in any reference information outside this
+      --  context, or in compiler generated assignment statements.
+
+      if Comes_From_Source (N)
+        and then In_Extended_Main_Source_Unit (Lhs)
+      then
+         Set_Referenced_Modified (Lhs, Out_Param => False);
+      end if;
+
       --  Final step. If left side is an entity, then we may be able to
       --  reset the current tracked values to new safe values. We only have
       --  something to do if the left side is an entity name, and expansion
@@ -715,7 +724,7 @@ package body Sem_Ch5 is
                  and then Comes_From_Source (N)
                  and then In_Extended_Main_Source_Unit (Ent)
                then
-                  Warn_On_Useless_Assignment (Ent, Sloc (N));
+                  Warn_On_Useless_Assignment (Ent, N);
                   Set_Last_Assignment (Ent, Lhs);
                end if;
 
@@ -1458,8 +1467,8 @@ package body Sem_Ch5 is
             if Analyzed (Original_Bound) then
                return Original_Bound;
 
-            elsif Nkind (Analyzed_Bound) = N_Integer_Literal
-              or else Nkind (Analyzed_Bound) = N_Character_Literal
+            elsif Nkind_In (Analyzed_Bound, N_Integer_Literal,
+                                            N_Character_Literal)
               or else Is_Entity_Name (Analyzed_Bound)
             then
                Analyze_And_Resolve (Original_Bound, Typ);

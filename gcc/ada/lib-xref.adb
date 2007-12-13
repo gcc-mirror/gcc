@@ -167,8 +167,8 @@ package body Lib.Xref is
       if Sloc (Entity (N)) /= Standard_Location then
          Generate_Reference (Entity (N), N);
 
-         --  A reference to an implicit inequality operator is a also a
-         --  reference to the user-defined equality.
+         --  A reference to an implicit inequality operator is also a reference
+         --  to the user-defined equality.
 
          if Nkind (N) = N_Op_Ne
            and then not Comes_From_Source (Entity (N))
@@ -200,11 +200,11 @@ package body Lib.Xref is
    ------------------------
 
    procedure Generate_Reference
-     (E             : Entity_Id;
-      N             : Node_Id;
-      Typ           : Character := 'r';
-      Set_Ref       : Boolean   := True;
-      Force         : Boolean   := False)
+     (E       : Entity_Id;
+      N       : Node_Id;
+      Typ     : Character := 'r';
+      Set_Ref : Boolean   := True;
+      Force   : Boolean   := False)
    is
       Indx : Nat;
       Nod  : Node_Id;
@@ -212,9 +212,12 @@ package body Lib.Xref is
       Def  : Source_Ptr;
       Ent  : Entity_Id;
 
+      Call   : Node_Id;
+      Formal : Entity_Id;
+      --  Used for call to Find_Actual
+
       Kind : Entity_Kind;
-      Call : Node_Id;
-      --  Arguments used in call to Find_Actual_Mode
+      --  If Formal is non-Empty, then its Ekind, otherwise E_Void
 
       function Is_On_LHS (Node : Node_Id) return Boolean;
       --  Used to check if a node is on the left hand side of an assignment.
@@ -256,7 +259,7 @@ package body Lib.Xref is
             return False;
          end if;
 
-         --  Immediat return if appeared as OUT parameter
+         --  Immediate return if appeared as OUT parameter
 
          if Kind = E_Out_Parameter then
             return True;
@@ -311,7 +314,13 @@ package body Lib.Xref is
 
    begin
       pragma Assert (Nkind (E) in N_Entity);
-      Find_Actual_Mode (N, Kind, Call);
+      Find_Actual (N, Formal, Call);
+
+      if Present (Formal) then
+         Kind := Ekind (Formal);
+      else
+         Kind := E_Void;
+      end if;
 
       --  Check for obsolescent reference to package ASCII. GNAT treats this
       --  element of annex J specially since in practice, programs make a lot
@@ -407,25 +416,45 @@ package body Lib.Xref is
 
       if Set_Ref then
 
-         --  For a variable that appears on the left side of an assignment
-         --  statement, we set the Referenced_As_LHS flag since this is indeed
-         --  a left hand side. We also set the Referenced_As_LHS flag of a
-         --  prefix of selected or indexed component.
+         --  Assignable object appearing on left side of assignment or as
+         --  an out parameter.
 
-         if (Ekind (E) = E_Variable or else Is_Formal (E))
+         if Is_Assignable (E)
            and then Is_On_LHS (N)
+           and then Ekind (E) /= E_In_Out_Parameter
          then
-            --  If we have the OUT parameter case and the warning mode for
-            --  OUT parameters is not set, treat this as an ordinary reference
-            --  since we don't want warnings about it being unset.
+            --  For objects that are renamings, just set as simply referenced
+            --  we do not try to do assignment type tracking in this case.
 
-            if Kind = E_Out_Parameter and not Warn_On_Out_Parameter_Unread then
+            if Present (Renamed_Object (E)) then
                Set_Referenced (E);
 
-            --  For other cases, set referenced on LHS
+            --  Out parameter case
+
+            elsif Kind = E_Out_Parameter then
+
+               --  If warning mode for all out parameters is set, or this is
+               --  the only warning parameter, then we want to mark this for
+               --  later warning logic by setting Referenced_As_Out_Parameter
+
+               if Warn_On_Modified_As_Out_Parameter (Formal) then
+                  Set_Referenced_As_Out_Parameter (E, True);
+                  Set_Referenced_As_LHS (E, False);
+
+               --  For OUT parameter not covered by the above cases, we simply
+               --  regard it as a normal reference (in this case we do not
+               --  want any of the warning machinery for out parameters).
+
+               else
+                  Set_Referenced (E);
+               end if;
+
+            --  For the left hand of an assignment case, we do nothing here.
+            --  The processing for Analyze_Assignment_Statement will set the
+            --  Referenced_As_LHS flag.
 
             else
-               Set_Referenced_As_LHS (E);
+               null;
             end if;
 
          --  Check for a reference in a pragma that should not count as a
@@ -469,33 +498,33 @@ package body Lib.Xref is
          --  All other cases
 
          else
-            --  Special processing for IN OUT and OUT parameters, where we
-            --  have an implicit assignment to a simple variable.
+            --  Special processing for IN OUT parameters, where we have an
+            --  implicit assignment to a simple variable.
 
-            if (Kind = E_Out_Parameter or else Kind = E_In_Out_Parameter)
-              and then Is_Entity_Name (N)
-              and then Present (Entity (N))
-              and then Is_Assignable (Entity (N))
+            if Kind = E_In_Out_Parameter
+              and then Is_Assignable (E)
             then
-               --  Record implicit assignment unless we have an intrinsic
-               --  subprogram, which is most likely an instantiation of
-               --  Unchecked_Deallocation which we do not want to consider
-               --  as an assignment since it generates false positives. We
-               --  also exclude the case of an IN OUT parameter to a procedure
-               --  called Free, since we suspect similar semantics.
+               --  For sure this counts as a normal read reference
 
-               if Is_Entity_Name (Name (Call))
+               Set_Referenced (E);
+               Set_Last_Assignment (E, Empty);
+
+               --  We count it as being referenced as an out parameter if the
+               --  option is set to warn on all out parameters, except that we
+               --  have a special exclusion for an intrinsic subprogram, which
+               --  is most likely an instantiation of Unchecked_Deallocation
+               --  which we do not want to consider as an assignment since it
+               --  generates false positives. We also exclude the case of an
+               --  IN OUT parameter if the name of the procedure is Free,
+               --  since we suspect similar semantics.
+
+               if Warn_On_All_Unread_Out_Parameters
+                 and then Is_Entity_Name (Name (Call))
                  and then not Is_Intrinsic_Subprogram (Entity (Name (Call)))
-                 and then (Kind /= E_In_Out_Parameter
-                             or else Chars (Name (Call)) /= Name_Free)
+                 and then Chars (Name (Call)) /= Name_Free
                then
-                  Set_Referenced_As_LHS (E);
-               end if;
-
-               --  For IN OUT case, treat as also being normal reference
-
-               if Kind = E_In_Out_Parameter then
-                  Set_Referenced (E);
+                  Set_Referenced_As_Out_Parameter (E, True);
+                  Set_Referenced_As_LHS (E, False);
                end if;
 
                --  Any other occurrence counts as referencing the entity
@@ -549,7 +578,7 @@ package body Lib.Xref is
                   while Present (BE) loop
                      if Chars (BE) = Chars (E) then
                         Error_Msg_NE
-                          ("?pragma Unreferenced given for&", N, BE);
+                          ("?pragma Unreferenced given for&!", N, BE);
                         exit;
                      end if;
 
@@ -560,7 +589,7 @@ package body Lib.Xref is
             --  Here we issue the warning, since this is a real reference
 
             else
-               Error_Msg_NE ("?pragma Unreferenced given for&", N, E);
+               Error_Msg_NE ("?pragma Unreferenced given for&!", N, E);
             end if;
          end if;
 
@@ -663,6 +692,15 @@ package body Lib.Xref is
            and then Comes_From_Source (Original_Record_Component (E))
          then
             Ent := Original_Record_Component (E);
+
+         --  If this is an expanded reference to a discriminant, recover the
+         --  original discriminant, which gets the reference.
+
+         elsif Ekind (E) = E_In_Parameter
+           and then  Present (Discriminal_Link (E))
+         then
+            Ent := Discriminal_Link (E);
+            Set_Referenced (Ent);
 
          --  Ignore reference to any other entity that is not from source
 
@@ -1424,11 +1462,13 @@ package body Lib.Xref is
                           (Int (Get_Logical_Line_Number (Sloc (Tref))));
 
                         declare
-                           Ent  : Entity_Id := Tref;
-                           Kind : constant Entity_Kind := Ekind (Ent);
-                           Ctyp : Character := Xref_Entity_Letters (Kind);
+                           Ent  : Entity_Id;
+                           Ctyp : Character;
 
                         begin
+                           Ent := Tref;
+                           Ctyp := Xref_Entity_Letters (Ekind (Ent));
+
                            if Ctyp = '+'
                              and then Present (Full_View (Ent))
                            then
