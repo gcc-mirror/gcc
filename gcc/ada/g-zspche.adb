@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                 G N A T . S P E L L I N G _ C H E C K E R                --
+--       G N A T . W I D E _W I D E _ S P E L L I N G _ C H E C K E R       --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -31,25 +31,21 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Warnings (Off);
-pragma Compiler_Unit;
-pragma Warnings (On);
-
 with GNAT.Spelling_Checker_Generic;
 
-package body GNAT.Spelling_Checker is
+package body GNAT.Wide_Wide_Spelling_Checker is
 
    function IBS is new
      GNAT.Spelling_Checker_Generic.Is_Bad_Spelling_Of
-       (Character, String);
+       (Wide_Wide_Character, Wide_Wide_String);
 
    ------------------------
    -- Is_Bad_Spelling_Of --
    ------------------------
 
    function Is_Bad_Spelling_Of
-     (Found  : String;
-      Expect : String) return Boolean
+     (Found  : Wide_Wide_String;
+      Expect : Wide_Wide_String) return Boolean
    renames IBS;
 
-end GNAT.Spelling_Checker;
+end GNAT.Wide_Wide_Spelling_Checker;

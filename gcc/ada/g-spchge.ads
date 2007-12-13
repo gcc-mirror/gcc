@@ -2,9 +2,9 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                 G N A T . S P E L L I N G _ C H E C K E R                --
+--          G N A T . S P E L L I N G _ C H E C K E R _ G E N E R I C       --
 --                                                                          --
---                                 B o d y                                  --
+--                                 S p e c                                  --
 --                                                                          --
 --                     Copyright (C) 1998-2007, AdaCore                     --
 --                                                                          --
@@ -31,25 +31,39 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  Spelling checker
+
+--  This package provides a utility generic routine for checking for bad
+--  spellings. This routine must be instantiated with an appropriate array
+--  element type, which must represent a character encoding in which the
+--  codes for ASCII characters in the range 16#20#..16#7F# have their normal
+--  expected encoding values (e.g. the Pos value 16#31# must be digit 1).
+
 pragma Warnings (Off);
 pragma Compiler_Unit;
 pragma Warnings (On);
 
-with GNAT.Spelling_Checker_Generic;
+package GNAT.Spelling_Checker_Generic is
+   pragma Pure;
 
-package body GNAT.Spelling_Checker is
+   generic
+      type Char_Type is (<>);
+      --  See above for restrictions on what types can be used here
 
-   function IBS is new
-     GNAT.Spelling_Checker_Generic.Is_Bad_Spelling_Of
-       (Character, String);
-
-   ------------------------
-   -- Is_Bad_Spelling_Of --
-   ------------------------
+      type String_Type is array (Positive range <>) of Char_Type;
 
    function Is_Bad_Spelling_Of
-     (Found  : String;
-      Expect : String) return Boolean
-   renames IBS;
+     (Found  : String_Type;
+      Expect : String_Type) return Boolean;
+   --  Determines if the string Found is a plausible misspelling of the string
+   --  Expect. Returns True for an exact match or a probably misspelling, False
+   --  if no near match is detected. This routine is case sensitive, so the
+   --  caller should fold both strings to get a case insensitive match if the
+   --  character encoding represents upper/lower case.
+   --
+   --  Note: the spec of this routine is deliberately rather vague. This
+   --  routine is the one used by GNAT itself to detect misspelled keywords
+   --  and identifiers, and is heuristically adjusted to be appropriate to
+   --  this usage. It will work well in any similar case of named entities.
 
-end GNAT.Spelling_Checker;
+end GNAT.Spelling_Checker_Generic;

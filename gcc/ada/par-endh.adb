@@ -23,8 +23,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Stringt; use Stringt;
-with Uintp;   use Uintp;
+with Namet.Sp; use Namet.Sp;
+with Stringt;  use Stringt;
+with Uintp;    use Uintp;
 
 with GNAT.Spelling_Checker; use GNAT.Spelling_Checker;
 
@@ -711,25 +712,15 @@ package body Endh is
               and then Chars (End_Labl) > Error_Name
               and then Chars (Nam) > Error_Name
             then
-               Get_Name_String (Chars (End_Labl));
                Error_Msg_Name_1 := Chars (Nam);
 
                if Error_Msg_Name_1 > Error_Name then
-                  declare
-                     S : constant String (1 .. Name_Len) :=
-                           Name_Buffer (1 .. Name_Len);
-
-                  begin
-                     Get_Name_String (Error_Msg_Name_1);
-
-                     if Is_Bad_Spelling_Of
-                         (Name_Buffer (1 .. Name_Len), S)
-                     then
-                        Error_Msg_N ("misspelling of %", End_Labl);
-                        Syntax_OK := True;
-                        return;
-                     end if;
-                  end;
+                  if Is_Bad_Spelling_Of (Chars (Nam), Chars (End_Labl)) then
+                     Error_Msg_Name_1 := Chars (Nam);
+                     Error_Msg_N ("misspelling of %", End_Labl);
+                     Syntax_OK := True;
+                     return;
+                  end if;
                end if;
             end if;
          end;
