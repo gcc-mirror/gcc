@@ -199,12 +199,22 @@ st_backspace (st_parameter_filepos *fpp)
       goto done;
     }
 
-  /* Ignore direct access.  Non-advancing I/O is only allowed for formatted
-     sequential I/O and the next direct access transfer repositions the file 
-     anyway.  */
+  /* Direct access is prohibited, and so is unformatted stream access.  */
 
-  if (u->flags.access == ACCESS_DIRECT || u->flags.access == ACCESS_STREAM)
-    goto done;
+
+  if (u->flags.access == ACCESS_DIRECT)
+    {
+      generate_error (&fpp->common, LIBERROR_OPTION_CONFLICT,
+		      "Cannot BACKSPACE a file opened for DIRECT access");
+      goto done;
+    }
+
+    if (u->flags.access == ACCESS_STREAM && u->flags.form == FORM_UNFORMATTED)
+      {
+	generate_error (&fpp->common, LIBERROR_OPTION_CONFLICT,
+			"Cannot BACKSPACE an unformatted stream file");
+	goto done;
+      }
 
   /* Check for special cases involving the ENDFILE record first.  */
 
@@ -224,6 +234,15 @@ st_backspace (st_parameter_filepos *fpp)
 
       if (u->mode == WRITING)
 	{
+	  /* If there are previously written bytes from a write with
+	     ADVANCE="no", add a record marker before performing the
+	     BACKSPACE.  */
+
+	  if (u->previous_nonadvancing_write)
+	    finish_last_advance_record (u);
+
+	  u->previous_nonadvancing_write = 0;
+
 	  flush (u->s);
 	  struncate (u->s);
 	  u->mode = READING;
@@ -261,6 +280,22 @@ st_endfile (st_parameter_filepos *fpp)
   u = find_unit (fpp->common.unit);
   if (u != NULL)
     {
+      if (u->flags.access == ACCESS_DIRECT)
+	{
+	  generate_error (&fpp->common, LIBERROR_OPTION_CONFLICT,
+			  "Cannot perform ENDFILE on a file opened"
+			  " for DIRECT access");
+	  goto done;
+	}
+
+      /* If there are previously written bytes from a write with ADVANCE="no",
+	 add a record marker before performing the ENDFILE.  */
+
+      if (u->previous_nonadvancing_write)
+	finish_last_advance_record (u);
+
+      u->previous_nonadvancing_write = 0;
+
       if (u->current_record)
 	{
 	  st_parameter_dt dtp;
@@ -274,6 +309,7 @@ st_endfile (st_parameter_filepos *fpp)
       struncate (u->s);
       u->endfile = AFTER_ENDFILE;
       update_position (u);
+    done:
       unlock_unit (u);
     }
 
@@ -299,6 +335,14 @@ st_rewind (st_parameter_filepos *fpp)
 			"Cannot REWIND a file opened for DIRECT access");
       else
 	{
+	  /* If there are previously written bytes from a write with ADVANCE="no",
+	     add a record marker before performing the ENDFILE.  */
+
+	  if (u->previous_nonadvancing_write)
+	    finish_last_advance_record (u);
+
+	  u->previous_nonadvancing_write = 0;
+
 	  /* Flush the buffers.  If we have been writing to the file, the last
 	       written record is the last record in the file, so truncate the
 	       file now.  Reset to read mode so two consecutive rewind

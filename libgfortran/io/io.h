@@ -451,7 +451,8 @@ typedef struct gfc_unit
   struct gfc_unit *left, *right;
   int priority;
 
-  int read_bad, current_record, saved_pos;
+  int read_bad, current_record, saved_pos, previous_nonadvancing_write;
+
   enum
   { NO_ENDFILE, AT_ENDFILE, AFTER_ENDFILE }
   endfile;
@@ -691,6 +692,9 @@ internal_proto(unlock_unit);
 
 extern void update_position (gfc_unit *);
 internal_proto(update_position);
+
+extern void finish_last_advance_record (gfc_unit *u);
+internal_proto (finish_last_advance_record);
 
 /* open.c */
 
