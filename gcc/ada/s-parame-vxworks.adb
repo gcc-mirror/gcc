@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Version used on all VxWorks targets
+--  Version used on all VxWorks and Nucleus targets
 
 package body System.Parameters is
 
