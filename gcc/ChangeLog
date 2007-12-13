@@ -1,3 +1,18 @@
+2007-12-13  Olga Golovanevsky  <olga@il.ibm.com>
+
+	* ipa-struct-reorg.c (is_candidate): Print information to dump 
+	file when the type is initialized.
+	(get_stmt_accesses):  Likewise when a structure has bitfields
+	or field access is too complicate.
+	(safe_cond_expr_check): Likewise for unsafe condition expressions.
+	(exclude_cold_structs): Likewise for cold structures.
+	(collect_structures): Suppress redundant print when there are 
+	no structures to transform.
+	(do_reorg): Print to dump file a number of structures that 
+	will be transformed.
+	(dump_new_types): Print a number of new types to replace 
+	an original structure type.
+	
 2007-12-13  Golovanevsky Olga  <olga@il.ibm.com>
 
 	* doc/invoke.texi (Optimiza Options): Document new -fipa-struct-reorg
