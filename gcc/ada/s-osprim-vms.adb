@@ -177,6 +177,7 @@ package body System.OS_Primitives is
    is
       Sleep_Time : OS_Time;
       Status     : Cond_Value_Type;
+      pragma Unreferenced (Status);
 
    begin
       Sleep_Time := To_OS_Time (Time, Mode);

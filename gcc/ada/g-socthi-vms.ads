@@ -44,6 +44,7 @@ with GNAT.OS_Lib;
 with GNAT.Sockets.Constants;
 
 with System;
+with System.Aux_DEC;
 
 package GNAT.Sockets.Thin is
 
@@ -80,7 +81,7 @@ package GNAT.Sockets.Thin is
 
    end Host_Error_Messages;
 
-   subtype Fd_Set_Access is System.Address;
+   subtype Fd_Set_Access is System.Aux_DEC.Short_Address;
    No_Fd_Set : constant Fd_Set_Access := System.Null_Address;
 
    type time_t is
