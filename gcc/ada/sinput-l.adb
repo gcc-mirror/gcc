@@ -73,8 +73,7 @@ package body Sinput.L is
    --  Used to initialize the preprocessor.
 
    procedure New_EOL_In_Prep_Buffer;
-   --  Add an LF to Prep_Buffer.
-   --  Used to initialize the preprocessor.
+   --  Add an LF to Prep_Buffer (used to initialize the preprocessor)
 
    function Load_File
      (N : File_Name_Type;
@@ -90,10 +89,10 @@ package body Sinput.L is
       Loc : constant Source_Ptr := Sloc (N);
 
    begin
-      --  We only do the adjustment if the value is between the appropriate
-      --  low and high values. It is not clear that this should ever not be
-      --  the case, but in practice there seem to be some nodes that get
-      --  copied twice, and this is a defence against that happening.
+      --  We only do the adjustment if the value is between the appropriate low
+      --  and high values. It is not clear that this should ever not be the
+      --  case, but in practice there seem to be some nodes that get copied
+      --  twice, and this is a defence against that happening.
 
       if A.Lo <= Loc and then Loc <= A.Hi then
          Set_Sloc (N, Loc + A.Adjust);
@@ -232,19 +231,19 @@ package body Sinput.L is
          Write_Eol;
       end if;
 
-      --  For a given character in the source, a higher subscript will be
-      --  used to access the instantiation, which means that the virtual
-      --  origin must have a corresponding lower value. We compute this
-      --  new origin by taking the address of the appropriate adjusted
-      --  element in the old array. Since this adjusted element will be
-      --  at a negative subscript, we must suppress checks.
+      --  For a given character in the source, a higher subscript will be used
+      --  to access the instantiation, which means that the virtual origin must
+      --  have a corresponding lower value. We compute this new origin by
+      --  taking the address of the appropriate adjusted element in the old
+      --  array. Since this adjusted element will be at a negative subscript,
+      --  we must suppress checks.
 
       declare
          pragma Suppress (All_Checks);
 
          pragma Warnings (Off);
-         --  This unchecked conversion is aliasing safe, since it is never
-         --  used to create improperly aliased pointer values.
+         --  This unchecked conversion is aliasing safe, since it is never used
+         --  to create improperly aliased pointer values.
 
          function To_Source_Buffer_Ptr is new
            Unchecked_Conversion (Address, Source_Buffer_Ptr);
@@ -472,6 +471,10 @@ package body Sinput.L is
                T : constant Nat := Total_Errors_Detected;
                --  Used to check if there were errors during preprocessing
 
+               Save_Style_Check : Boolean;
+               --  Saved state of the Style_Check flag (which needs to be
+               --  temporarily set to False during preprocessing, see below).
+
             begin
                --  If this is the first time we preprocess a source, allocate
                --  the preprocessing buffer.
@@ -494,25 +497,33 @@ package body Sinput.L is
                   Put_Char          => Put_Char_In_Prep_Buffer'Access,
                   New_EOL           => New_EOL_In_Prep_Buffer'Access);
 
-               --  Initialize the scanner and set its behavior for
-               --  preprocessing, then preprocess.
+               --  Initialize scanner and set its behavior for preprocessing,
+               --  then preprocess. Also disable style checks, since some of
+               --  them are done in the scanner (specifically, those dealing
+               --  with line length and line termination), and cannot be done
+               --  during preprocessing (because the source file index table
+               --  has not been set yet).
 
                Scn.Scanner.Initialize_Scanner (X);
 
                Scn.Scanner.Set_Special_Character ('#');
                Scn.Scanner.Set_Special_Character ('$');
                Scn.Scanner.Set_End_Of_Line_As_Token (True);
+               Save_Style_Check := Opt.Style_Check;
+               Opt.Style_Check := False;
 
                Preprocess;
 
-               --  Reset the scanner to its standard behavior
+               --  Reset the scanner to its standard behavior, and restore the
+               --  Style_Checks flag.
 
                Scn.Scanner.Reset_Special_Characters;
                Scn.Scanner.Set_End_Of_Line_As_Token (False);
+               Opt.Style_Check := Save_Style_Check;
 
-               --  If there were errors during preprocessing, record an
-               --  error at the start of the file, and do not change the
-               --  source buffer.
+               --  If there were errors during preprocessing, record an error
+               --  at the start of the file, and do not change the source
+               --  buffer.
 
                if T /= Total_Errors_Detected then
                   Errout.Error_Msg
@@ -531,12 +542,11 @@ package body Sinput.L is
                      --  Physical buffer allocated
 
                      type Actual_Source_Ptr is access Actual_Source_Buffer;
-                     --  This is the pointer type for the physical buffer
-                     --  allocated.
+                     --  Pointer type for the physical buffer allocated
 
                      Actual_Ptr : constant Actual_Source_Ptr :=
                                     new Actual_Source_Buffer;
-                     --  And this is the actual physical buffer
+                     --  Actual physical buffer
 
                   begin
                      Actual_Ptr (Lo .. Hi - 1) :=
@@ -544,9 +554,9 @@ package body Sinput.L is
                      Actual_Ptr (Hi) := EOF;
 
                      --  Now we need to work out the proper virtual origin
-                     --  pointer to return. This is exactly
-                     --  Actual_Ptr (0)'Address, but we have to be careful to
-                     --  suppress checks to compute this address.
+                     --  pointer to return. This is Actual_Ptr (0)'Address, but
+                     --  we have to be careful to suppress checks to compute
+                     --  this address.
 
                      declare
                         pragma Suppress (All_Checks);
@@ -679,11 +689,10 @@ package body Sinput.L is
    begin
       Initialize_Scanner (No_Unit, X);
 
-      --  We scan past junk to the first interesting compilation unit
-      --  token, to see if it is SEPARATE. We ignore WITH keywords during
-      --  this and also PRIVATE. The reason for ignoring PRIVATE is that
-      --  it handles some error situations, and also to handle PRIVATE WITH
-      --  in Ada 2005 mode.
+      --  We scan past junk to the first interesting compilation unit token, to
+      --  see if it is SEPARATE. We ignore WITH keywords during this and also
+      --  PRIVATE. The reason for ignoring PRIVATE is that it handles some
+      --  error situations, and also to handle PRIVATE WITH in Ada 2005 mode.
 
       while Token = Tok_With
         or else Token = Tok_Private
