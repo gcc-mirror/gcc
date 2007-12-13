@@ -120,18 +120,16 @@ package Sem_Ch3  is
    --  subprogram of the parent type.
 
    procedure Derive_Subprograms
-     (Parent_Type           : Entity_Id;
-      Derived_Type          : Entity_Id;
-      Generic_Actual        : Entity_Id := Empty);
+     (Parent_Type    : Entity_Id;
+      Derived_Type   : Entity_Id;
+      Generic_Actual : Entity_Id := Empty);
    --  To complete type derivation, collect/retrieve the primitive operations
    --  of the parent type, and replace the subsidiary subtypes with the derived
    --  type, to build the specs of the inherited ops. For generic actuals, the
    --  mapping of the primitive operations to those of the parent type is also
    --  done by rederiving the operations within the instance. For tagged types,
    --  the derived subprograms are aliased to those of the actual, not those of
-   --  the ancestor. The last two params are used in case of derivation from
-   --  abstract interface types: No_Predefined_Prims is used to avoid the
-   --  derivation of predefined primitives from an abstract interface.
+   --  the ancestor.
    --
    --  Note: one might expect this to be private to the package body, but
    --  there is one rather unusual usage in package Exp_Dist.
