@@ -730,9 +730,10 @@ package body Exp_Ch9 is
       Name  : Name_Id;
       Loc   : Source_Ptr)
    is
-      Def      : constant Node_Id   := Protected_Definition (Parent (Typ));
-      Decl     : Node_Id;
       Body_Ent : constant Entity_Id := Corresponding_Body   (Parent (Typ));
+      Def      : constant Node_Id   := Protected_Definition (Parent (Typ));
+
+      Decl     : Node_Id;
       P        : Node_Id;
       Pdef     : Entity_Id;
 
@@ -923,12 +924,12 @@ package body Exp_Ch9 is
 
       P := Parent (N);
 
-      while Nkind (P) /= N_Subprogram_Body
-        and then Nkind (P) /= N_Package_Declaration
-        and then Nkind (P) /= N_Package_Body
-        and then Nkind (P) /= N_Block_Statement
-        and then Nkind (P) /= N_Task_Body
-        and then Nkind (P) /= N_Extended_Return_Statement
+      while not Nkind_In (P, N_Subprogram_Body,
+                             N_Package_Declaration,
+                             N_Package_Body,
+                             N_Block_Statement,
+                             N_Task_Body,
+                             N_Extended_Return_Statement)
       loop
          P := Parent (P);
       end loop;
@@ -1521,28 +1522,6 @@ package body Exp_Ch9 is
             Proc_Param    : Node_Id;
             Proc_Typ      : Entity_Id;
 
-            function Find_Parameter_Type (Param : Node_Id) return Entity_Id;
-            --  Return the controlling type denoted by a formal parameter
-
-            -------------------------
-            -- Find_Parameter_Type --
-            -------------------------
-
-            function Find_Parameter_Type (Param : Node_Id) return Entity_Id is
-            begin
-               if Nkind (Param) /= N_Parameter_Specification then
-                  return Empty;
-
-               elsif Nkind (Parameter_Type (Param)) = N_Access_Definition then
-                  return Etype (Subtype_Mark (Parameter_Type (Param)));
-
-               else
-                  return Etype (Parameter_Type (Param));
-               end if;
-            end Find_Parameter_Type;
-
-         --  Start of processing for Type_Conformant_Parameters
-
          begin
             --  Skip the first parameter of the primitive operation
 
@@ -1598,9 +1577,9 @@ package body Exp_Ch9 is
               Present (Parameter_Specifications (Prim_Op_Spec))
                 and then
               Nkind (Parameter_Type
-                     (First
-                      (Parameter_Specifications (Prim_Op_Spec))))
-                        = N_Access_Definition;
+                      (First
+                        (Parameter_Specifications (Prim_Op_Spec)))) =
+                                                          N_Access_Definition;
 
             if not Is_Out_Present
               and then not Is_Access_To_Variable
@@ -2083,9 +2062,8 @@ package body Exp_Ch9 is
          --  If we fall off the top, we are at the outer level, and the
          --  environment task is our effective master, so nothing to mark.
 
-         if Nkind (P) = N_Task_Body
-           or else Nkind (P) = N_Block_Statement
-           or else Nkind (P) = N_Subprogram_Body
+         if Nkind_In
+              (P, N_Task_Body, N_Block_Statement, N_Subprogram_Body)
          then
             Set_Is_Task_Master (P, True);
             return;
@@ -2472,12 +2450,12 @@ package body Exp_Ch9 is
 
             function Is_Call_Or_Raise (N : Node_Id) return Boolean is
             begin
-               return Nkind (N) = N_Procedure_Call_Statement
-                 or else Nkind (N) = N_Function_Call
-                 or else Nkind (N) = N_Raise_Statement
-                 or else Nkind (N) = N_Raise_Constraint_Error
-                 or else Nkind (N) = N_Raise_Program_Error
-                 or else Nkind (N) = N_Raise_Storage_Error;
+               return Nkind_In (N, N_Procedure_Call_Statement,
+                                   N_Function_Call,
+                                   N_Raise_Statement,
+                                   N_Raise_Constraint_Error,
+                                   N_Raise_Program_Error,
+                                   N_Raise_Storage_Error);
             end Is_Call_Or_Raise;
 
          --  Start of processing for Has_Side_Effect
@@ -3021,11 +2999,11 @@ package body Exp_Ch9 is
 
                   Set_No_Initialization (N_Node);
 
-                  --  We have to make an assignment statement separate for the
+                  --  We must make an assignment statement separate for the
                   --  case of limited type. We cannot assign it unless the
-                  --  Assignment_OK flag is set first.
-                  --  An out formal of an access type must also be initialized
-                  --  from the actual, as stated in RM 6.4.1 (13).
+                  --  Assignment_OK flag is set first. An out formal of an
+                  --  access type must also be initialized from the actual,
+                  --  as stated in RM 6.4.1 (13).
 
                   if Ekind (Formal) /= E_Out_Parameter
                     or else Is_Access_Type (Etype (Formal))
@@ -3098,8 +3076,8 @@ package body Exp_Ch9 is
 
             Parm3 :=
               Make_Attribute_Reference (Loc,
-                Attribute_Name => Name_Address,
-                Prefix => New_Reference_To (P, Loc));
+                Prefix => New_Reference_To (P, Loc),
+                Attribute_Name => Name_Address);
 
             Append (Pdecl, Decls);
          end if;
@@ -3832,12 +3810,14 @@ package body Exp_Ch9 is
          end if;
 
       else
-         pragma Assert (Is_Concurrent_Type (Ntyp));
-
          if Is_Protected_Type (Ntyp) then
             Sel := Name_uObject;
-         else
+
+         elsif Is_Task_Type (Ntyp) then
             Sel := Name_uTask_Id;
+
+         else
+            raise Program_Error;
          end if;
 
          return
@@ -4630,8 +4610,9 @@ package body Exp_Ch9 is
       Block   : Node_Id;
 
       function Null_Statements (Stats : List_Id) return Boolean;
-      --  Check for null statement sequence (i.e a list of labels and
-      --  null statements).
+      --  Used to check do-end sequence. Checks for equivalent of do null; end.
+      --  Allows labels, and pragma Warnings/Unreferenced in the sequence as
+      --  well to still count as null. Returns True for a null sequence.
 
       ---------------------
       -- Null_Statements --
@@ -4643,9 +4624,12 @@ package body Exp_Ch9 is
       begin
          Stmt := First (Stats);
          while Nkind (Stmt) /= N_Empty
-           and then (Nkind (Stmt) = N_Null_Statement
+           and then (Nkind_In (Stmt, N_Null_Statement, N_Label)
                        or else
-                     Nkind (Stmt) = N_Label)
+                         (Nkind (Stmt) = N_Pragma
+                            and then (Chars (Stmt) = Name_Unreferenced
+                                        or else
+                                      Chars (Stmt) = Name_Warnings)))
          loop
             Next (Stmt);
          end loop;
@@ -4668,17 +4652,18 @@ package body Exp_Ch9 is
       --  If the accept statement has declarations, then just insert them
       --  before the procedure call.
 
-      --  We avoid this optimization when FIFO_Within_Priorities is active,
-      --  since it is not correct according to annex D semantics. The problem
-      --  is that the call is required to reorder the acceptors position on
-      --  its ready queue, even though there is nothing to be done. However,
-      --  if no policy is specified, then we decide that our dispatching
-      --  policy always reorders the queue right after the RV to look the
-      --  way they were just before the RV. Since we are allowed to freely
-      --  reorder same-priority queues (this is part of what dispatching
+      --  We avoid this optimization when FIFO_Within_Priorities or some other
+      --  specified dispatching policy is active, since this may not be not
+      --  correct according to annex D semantics. For example, in the case of
+      --  FIFO_Within_Priorities, the call is required to reorder the acceptors
+      --  position on its ready queue, even though there is nothing to be done.
+      --  However, if no policy is specified, then we decide that the default
+      --  dispatching policy always reorders the queue right after the RV to
+      --  look the way they were just before the RV. Since we are allowed to
+      --  freely reorder same-priority queues (this is part of what dispatching
       --  policies are all about), the optimization is legitimate.
 
-      elsif Opt.Task_Dispatching_Policy /= 'F'
+      elsif Opt.Task_Dispatching_Policy = ' '
         and then (No (Stats) or else Null_Statements (Statements (Stats)))
       then
          --  Remove declarations for renamings, because the parameter block
@@ -4842,18 +4827,18 @@ package body Exp_Ch9 is
    --    begin
    --       Abort_Defer;
    --       Task_Entry_Call
-   --         (acceptor-task,
-   --          entry-index,
-   --          P'Address,
-   --          Asynchronous_Call,
-   --          B);
+   --         (<acceptor-task>,    --  Acceptor
+   --          <entry-index>,      --  E
+   --          P'Address,          --  Uninterpreted_Data
+   --          Asynchronous_Call,  --  Mode
+   --          B);                 --  Rendezvous_Successful
 
    --       begin
    --          begin
    --             Abort_Undefer;
    --             <abortable-part>
    --          at end
-   --             _clean;        --  Added by Exp_Ch7.Expand_Cleanup_Actions.
+   --             _clean;  --  Added by Exp_Ch7.Expand_Cleanup_Actions
    --          end;
    --       exception
    --          when Abort_Signal => Abort_Undefer;
@@ -4867,9 +4852,9 @@ package body Exp_Ch9 is
    --       end if;
    --    end;
 
-   --  Note that Build_Simple_Entry_Call is used to expand the entry
-   --  of the asynchronous entry call (by the
-   --  Expand_N_Entry_Call_Statement procedure) as follows:
+   --  Note that Build_Simple_Entry_Call is used to expand the entry of the
+   --  asynchronous entry call (by Expand_N_Entry_Call_Statement procedure)
+   --  as follows:
 
    --    declare
    --       P : parms := (parm, parm, parm);
@@ -4882,8 +4867,8 @@ package body Exp_Ch9 is
 
    --  so the task at hand is to convert the latter expansion into the former
 
-   --  If the trigger is a protected entry call, the select is
-   --  implemented with Protected_Entry_Call:
+   --  If the trigger is a protected entry call, the select is implemented
+   --  with Protected_Entry_Call:
 
    --  declare
    --     P   : E1_Params := (param, param, param);
@@ -4891,7 +4876,9 @@ package body Exp_Ch9 is
 
    --  begin
    --     declare
+
    --        --  Clean is added by Exp_Ch7.Expand_Cleanup_Actions.
+
    --        procedure _clean is
    --        begin
    --           ...
@@ -4903,17 +4890,18 @@ package body Exp_Ch9 is
 
    --     begin
    --        begin
-   --           Protected_Entry_Call (
-   --             Object => po._object'Access,
-   --             E => <entry index>;
-   --             Uninterpreted_Data => P'Address;
-   --             Mode => Asynchronous_Call;
-   --             Block => Bnn);
+   --           Protected_Entry_Call
+   --             (po._object'Access,  --  Object
+   --              <entry index>,      --  E
+   --              P'Address,          --  Uninterpreted_Data
+   --              Asynchronous_Call,  --  Mode
+   --              Bnn);               --  Block
+
    --           if Enqueued (Bnn) then
    --              <abortable-part>
    --           end if;
    --        at end
-   --           _clean;        --  Added by Exp_Ch7.Expand_Cleanup_Actions.
+   --           _clean;  --  Added by Exp_Ch7.Expand_Cleanup_Actions
    --        end;
    --     exception
    --        when Abort_Signal => Abort_Undefer;
@@ -4924,20 +4912,20 @@ package body Exp_Ch9 is
    --     end if;
    --  end;
 
-   --  Build_Simple_Entry_Call is used to expand the all to a simple
-   --  protected entry call:
+   --  Build_Simple_Entry_Call is used to expand the all to a simple protected
+   --  entry call:
 
    --  declare
    --     P   : E1_Params := (param, param, param);
    --     Bnn : Communications_Block;
 
    --  begin
-   --     Protected_Entry_Call (
-   --       Object => po._object'Access,
-   --       E => <entry index>;
-   --       Uninterpreted_Data => P'Address;
-   --       Mode => Simple_Call;
-   --       Block => Bnn);
+   --     Protected_Entry_Call
+   --       (po._object'Access,  --  Object
+   --        <entry index>,      --  E
+   --        P'Address,          --  Uninterpreted_Data
+   --        Simple_Call,        --  Mode
+   --        Bnn);               --  Block
    --     parm := P.param;
    --     parm := P.param;
    --       ...
@@ -4950,7 +4938,7 @@ package body Exp_Ch9 is
    --       B   : Boolean := False;
    --       Bnn : Communication_Block;
    --       C   : Ada.Tags.Prim_Op_Kind;
-   --       D   : Dummy_Communication_Block;
+   --       D   : System.Storage_Elements.Dummy_Communication_Block;
    --       K   : Ada.Tags.Tagged_Kind :=
    --               Ada.Tags.Get_Tagged_Kind (Ada.Tags.Tag (<object>));
    --       P   : Parameters := (Param1 .. ParamN);
@@ -4963,8 +4951,9 @@ package body Exp_Ch9 is
    --          <triggering-statements>;
 
    --       else
-   --          S := Ada.Tags.Get_Offset_Index (Ada.Tags.Tag (<object>),
-   --                 DT_Position (<dispatching-call>));
+   --          S :=
+   --            Ada.Tags.Get_Offset_Index
+   --              (Ada.Tags.Tag (<object>), DT_Position (<dispatching-call>));
 
    --          _Disp_Get_Prim_Op_Kind (<object>, S, C);
 
@@ -4980,7 +4969,7 @@ package body Exp_Ch9 is
    --             begin
    --                begin
    --                   _Disp_Asynchronous_Select
-   --                     (<object>, S, P'address, D, B);
+   --                     (<object>, S, P'Address, D, B);
    --                   Bnn := Communication_Block (D);
 
    --                   Param1 := P.Param1;
@@ -4991,7 +4980,7 @@ package body Exp_Ch9 is
    --                      <abortable-statements>
    --                   end if;
    --                at end
-   --                   _clean;
+   --                   _clean;  --  Added by Exp_Ch7.Expand_Cleanup_Actions
    --                end;
    --             exception
    --                when Abort_Signal => Abort_Undefer;
@@ -5012,7 +5001,7 @@ package body Exp_Ch9 is
    --                Abort_Defer;
 
    --                _Disp_Asynchronous_Select
-   --                  (<object>, S, P'address, D, B);
+   --                  (<object>, S, P'Address, D, B);
    --                Bnn := Communication_Bloc (D);
 
    --                Param1 := P.Param1;
@@ -5024,7 +5013,7 @@ package body Exp_Ch9 is
    --                      Abort_Undefer;
    --                      <abortable-statements>
    --                   at end
-   --                      _clean;
+   --                      _clean;  --  Added by Exp_Ch7.Expand_Cleanup_Actions
    --                   end;
    --                exception
    --                   when Abort_Signal => Abort_Undefer;
@@ -5053,8 +5042,8 @@ package body Exp_Ch9 is
    --  the entry call. This object is used by the runtime to queue the delay
    --  request.
 
-   --  For a description of the use of P and the assignments after the
-   --  call, see Expand_N_Entry_Call_Statement.
+   --  For a description of the use of P and the assignments after the call,
+   --  see Expand_N_Entry_Call_Statement.
 
    procedure Expand_N_Asynchronous_Select (N : Node_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
@@ -5118,8 +5107,8 @@ package body Exp_Ch9 is
 
       if Nkind (Ecall) = N_Block_Statement then
          Ecall := First (Statements (Handled_Statement_Sequence (Ecall)));
-         while Nkind (Ecall) /= N_Procedure_Call_Statement
-           and then Nkind (Ecall) /= N_Entry_Call_Statement
+         while not Nkind_In (Ecall, N_Procedure_Call_Statement,
+                                    N_Entry_Call_Statement)
          loop
             Next (Ecall);
          end loop;
@@ -5132,10 +5121,9 @@ package body Exp_Ch9 is
          if Ada_Version >= Ada_05
            and then
              (No (Original_Node (Ecall))
-                or else
-                  (Nkind (Original_Node (Ecall)) /= N_Delay_Relative_Statement
-                     and then
-                   Nkind (Original_Node (Ecall)) /= N_Delay_Until_Statement))
+                or else not Nkind_In (Original_Node (Ecall),
+                                        N_Delay_Relative_Statement,
+                                        N_Delay_Until_Statement))
          then
             Extract_Dispatching_Call (Ecall, Call_Ent, Obj, Actuals, Formals);
 
@@ -5204,8 +5192,9 @@ package body Exp_Ch9 is
                 Object_Definition =>
                   New_Reference_To (Standard_Boolean, Loc)));
 
-            --  ---------------------------------------------------------------
-            --  Protected entry handling
+            ------------------------------
+            -- Protected entry handling --
+            ------------------------------
 
             --  Generate:
             --    Param1 := P.Param1;
@@ -5229,7 +5218,7 @@ package body Exp_Ch9 is
                       Make_Identifier (Loc, Name_uD))));
 
             --  Generate:
-            --    _Disp_Asynchronous_Select (<object>, S, P'address, D, B);
+            --    _Disp_Asynchronous_Select (<object>, S, P'Address, D, B);
 
             Prepend_To (Cleanup_Stmts,
               Make_Procedure_Call_Statement (Loc,
@@ -5240,13 +5229,15 @@ package body Exp_Ch9 is
                     Loc),
                 Parameter_Associations =>
                   New_List (
-                    New_Copy_Tree    (Obj),
-                    New_Reference_To (S, Loc),
-                    Make_Attribute_Reference (Loc,
-                      Prefix => New_Reference_To (P, Loc),
-                      Attribute_Name => Name_Address),
-                    Make_Identifier (Loc, Name_uD),
-                    New_Reference_To (B, Loc))));
+                    New_Copy_Tree (Obj),             --  <object>
+                    New_Reference_To (S, Loc),       --  S
+                    Make_Attribute_Reference (Loc,   --  P'Address
+                      Prefix =>
+                        New_Reference_To (P, Loc),
+                      Attribute_Name =>
+                        Name_Address),
+                    Make_Identifier (Loc, Name_uD),  --  D
+                    New_Reference_To (B, Loc))));    --  B
 
             --  Generate:
             --    if Enqueued (Bnn) then
@@ -5304,7 +5295,8 @@ package body Exp_Ch9 is
             ProtE_Stmts :=
               New_List (
                 Make_Implicit_Label_Declaration (Loc,
-                  Defining_Identifier => Abort_Block_Ent),
+                  Defining_Identifier =>
+                    Abort_Block_Ent),
 
                 Build_Abort_Block
                   (Loc, Abort_Block_Ent, Cleanup_Block_Ent, Cleanup_Block));
@@ -5329,8 +5321,9 @@ package body Exp_Ch9 is
                 Then_Statements =>
                   New_Copy_List_Tree (Tstats)));
 
-            --  ---------------------------------------------------------------
-            --  Task entry handling
+            -------------------------
+            -- Task entry handling --
+            -------------------------
 
             --  Generate:
             --    Param1 := P.Param1;
@@ -5354,7 +5347,7 @@ package body Exp_Ch9 is
                       Make_Identifier (Loc, Name_uD))));
 
             --  Generate:
-            --    _Disp_Asynchronous_Select (<object>, S, P'address, D, B);
+            --    _Disp_Asynchronous_Select (<object>, S, P'Address, D, B);
 
             Prepend_To (TaskE_Stmts,
               Make_Procedure_Call_Statement (Loc,
@@ -5365,13 +5358,15 @@ package body Exp_Ch9 is
                     Loc),
                 Parameter_Associations =>
                   New_List (
-                    New_Copy_Tree    (Obj),
-                    New_Reference_To (S, Loc),
-                    Make_Attribute_Reference (Loc,
-                      Prefix => New_Reference_To (P, Loc),
-                      Attribute_Name => Name_Address),
-                    Make_Identifier (Loc, Name_uD),
-                    New_Reference_To (B, Loc))));
+                    New_Copy_Tree (Obj),             --  <object>
+                    New_Reference_To (S, Loc),       --  S
+                    Make_Attribute_Reference (Loc,   --  P'Address
+                      Prefix =>
+                        New_Reference_To (P, Loc),
+                      Attribute_Name =>
+                        Name_Address),
+                    Make_Identifier (Loc, Name_uD),  --  D
+                    New_Reference_To (B, Loc))));    --  B
 
             --  Generate:
             --    Abort_Defer;
@@ -5431,7 +5426,8 @@ package body Exp_Ch9 is
 
             Append_To (TaskE_Stmts,
               Make_Implicit_Label_Declaration (Loc,
-                Defining_Identifier => Abort_Block_Ent));
+                Defining_Identifier =>
+                  Abort_Block_Ent));
 
             Append_To (TaskE_Stmts,
               Build_Abort_Block
@@ -5452,8 +5448,9 @@ package body Exp_Ch9 is
                 Then_Statements =>
                   New_Copy_List_Tree (Tstats)));
 
-            -------------------------------------------------------------------
-            --  Protected procedure handling
+            ----------------------------------
+            -- Protected procedure handling --
+            ----------------------------------
 
             --  Generate:
             --    <dispatching-call>;
@@ -5463,11 +5460,11 @@ package body Exp_Ch9 is
             Prepend_To (ProtP_Stmts, New_Copy_Tree (Ecall));
 
             --  Generate:
-            --    S := Ada.Tags.Get_Offset_Index (
-            --           Ada.Tags.Tag (<object>), DT_Position (Call_Ent));
+            --    S := Ada.Tags.Get_Offset_Index
+            --           (Ada.Tags.Tag (<object>), DT_Position (Call_Ent));
 
-            Conc_Typ_Stmts := New_List (
-              Build_S_Assignment (Loc, S, Obj, Call_Ent));
+            Conc_Typ_Stmts :=
+              New_List (Build_S_Assignment (Loc, S, Obj, Call_Ent));
 
             --  Generate:
             --    _Disp_Get_Prim_Op_Kind (<object>, S, C);
@@ -5481,7 +5478,7 @@ package body Exp_Ch9 is
                     Loc),
                 Parameter_Associations =>
                   New_List (
-                    New_Copy_Tree    (Obj),
+                    New_Copy_Tree (Obj),
                     New_Reference_To (S, Loc),
                     New_Reference_To (C, Loc))));
 
@@ -5845,9 +5842,10 @@ package body Exp_Ch9 is
            Make_Implicit_Exception_Handler (Loc,
              Exception_Choices =>
                New_List (New_Reference_To (Stand.Abort_Signal, Loc)),
-             Statements => New_List (
-               Make_Procedure_Call_Statement (Loc,
-                 Name => New_Reference_To (RTE (RE_Abort_Undefer), Loc)))));
+             Statements =>
+               New_List (
+                 Make_Procedure_Call_Statement (Loc,
+                   Name => New_Reference_To (RTE (RE_Abort_Undefer), Loc)))));
 
          Prepend_To (Astats,
            Make_Procedure_Call_Statement (Loc,
@@ -5868,8 +5866,10 @@ package body Exp_Ch9 is
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => New_List (
                    Make_Implicit_Label_Declaration (Loc,
-                     Defining_Identifier => Blk_Ent,
-                     Label_Construct     => Abortable_Block),
+                     Defining_Identifier =>
+                       Blk_Ent,
+                     Label_Construct =>
+                       Abortable_Block),
                    Abortable_Block),
                  Exception_Handlers => Hdle)));
 
@@ -5931,11 +5931,11 @@ package body Exp_Ch9 is
 
    --    begin
    --       Task_Entry_Call
-   --         (acceptor-task,
-   --          entry-index,
-   --          P'Address,
-   --          Conditional_Call,
-   --          B);
+   --         (<acceptor-task>,   --  Acceptor
+   --          <entry-index>,     --  E
+   --          P'Address,         --  Uninterpreted_Data
+   --          Conditional_Call,  --  Mode
+   --          B);                --  Rendezvous_Successful
    --       parm := P.param;
    --       parm := P.param;
    --       ...
@@ -5946,10 +5946,10 @@ package body Exp_Ch9 is
    --       end if;
    --    end;
 
-   --  For a description of the use of P and the assignments after the
-   --  call, see Expand_N_Entry_Call_Statement. Note that the entry call
-   --  of the conditional entry call has already been expanded (by the
-   --  Expand_N_Entry_Call_Statement procedure) as follows:
+   --  For a description of the use of P and the assignments after the call,
+   --  see Expand_N_Entry_Call_Statement. Note that the entry call of the
+   --  conditional entry call has already been expanded (by the Expand_N_Entry
+   --  _Call_Statement procedure) as follows:
 
    --    declare
    --       P : parms := (parm, parm, parm);
@@ -5971,12 +5971,12 @@ package body Exp_Ch9 is
    --       Bnn : Communications_Block;
 
    --    begin
-   --       Protected_Entry_Call (
-   --         Object => po._object'Access,
-   --         E => <entry index>;
-   --         Uninterpreted_Data => P'Address;
-   --         Mode => Conditional_Call;
-   --         Block => Bnn);
+   --       Protected_Entry_Call
+   --         (po._object'Access,  --  Object
+   --          <entry index>,      --  E
+   --          P'Address,          --  Uninterpreted_Data
+   --          Conditional_Call,   --  Mode
+   --          Bnn);               --  Block
    --       parm := P.param;
    --       parm := P.param;
    --       ...
@@ -5985,26 +5985,6 @@ package body Exp_Ch9 is
    --       else
    --          normal-statements
    --       end if;
-   --    end;
-
-   --  As for tasks, the entry call of the conditional entry call has
-   --  already been expanded (by the Expand_N_Entry_Call_Statement procedure)
-   --  as follows:
-
-   --    declare
-   --       P   : E1_Params := (param, param, param);
-   --       Bnn : Communications_Block;
-
-   --    begin
-   --       Protected_Entry_Call (
-   --         Object => po._object'Access,
-   --         E => <entry index>;
-   --         Uninterpreted_Data => P'Address;
-   --         Mode => Simple_Call;
-   --         Block => Bnn);
-   --       parm := P.param;
-   --       parm := P.param;
-   --         ...
    --    end;
 
    --  Ada 2005 (AI-345): A dispatching conditional entry call is converted
@@ -6024,10 +6004,11 @@ package body Exp_Ch9 is
    --          <triggering-statements>
 
    --       else
-   --          S := Ada.Tags.Get_Offset_Index (Ada.Tags.Tag (<object>),
-   --                 DT_Position (<dispatching-call>));
+   --          S :=
+   --            Ada.Tags.Get_Offset_Index
+   --              (Ada.Tags.Tag (<object>), DT_Position (<dispatching-call>));
 
-   --          _Disp_Conditional_Select (<object>, S, P'address, C, B);
+   --          _Disp_Conditional_Select (<object>, S, P'Address, C, B);
 
    --          if C = POK_Protected_Entry
    --            or else C = POK_Task_Entry
@@ -6056,7 +6037,6 @@ package body Exp_Ch9 is
       Loc : constant Source_Ptr := Sloc (N);
       Alt : constant Node_Id    := Entry_Call_Alternative (N);
       Blk : Node_Id             := Entry_Call_Statement (Alt);
-      Transient_Blk : Node_Id;
 
       Actuals        : List_Id;
       Blk_Typ        : Entity_Id;
@@ -6073,6 +6053,7 @@ package body Exp_Ch9 is
       Params         : List_Id;
       Stmt           : Node_Id;
       Stmts          : List_Id;
+      Transient_Blk  : Node_Id;
       Unpack         : List_Id;
 
       B : Entity_Id;  --  Call status flag
@@ -6118,14 +6099,14 @@ package body Exp_Ch9 is
          S := Build_S (Loc, Decls);
 
          --  Generate:
-         --    S := Ada.Tags.Get_Offset_Index (
-         --           Ada.Tags.Tag (<object>), DT_Position (Call_Ent));
+         --    S := Ada.Tags.Get_Offset_Index
+         --           (Ada.Tags.Tag (<object>), DT_Position (Call_Ent));
 
-         Conc_Typ_Stmts := New_List (
-           Build_S_Assignment (Loc, S, Obj, Call_Ent));
+         Conc_Typ_Stmts :=
+           New_List (Build_S_Assignment (Loc, S, Obj, Call_Ent));
 
          --  Generate:
-         --    _Disp_Conditional_Select (<object>, S, P'address, C, B);
+         --    _Disp_Conditional_Select (<object>, S, P'Address, C, B);
 
          Append_To (Conc_Typ_Stmts,
            Make_Procedure_Call_Statement (Loc,
@@ -6136,13 +6117,15 @@ package body Exp_Ch9 is
                  Loc),
              Parameter_Associations =>
                New_List (
-                 New_Copy_Tree    (Obj),
-                 New_Reference_To (S, Loc),
-                 Make_Attribute_Reference (Loc,
-                   Prefix => New_Reference_To (P, Loc),
-                   Attribute_Name => Name_Address),
-                 New_Reference_To (C, Loc),
-                 New_Reference_To (B, Loc))));
+                 New_Copy_Tree (Obj),            --  <object>
+                 New_Reference_To (S, Loc),      --  S
+                 Make_Attribute_Reference (Loc,  --  P'Address
+                   Prefix =>
+                     New_Reference_To (P, Loc),
+                   Attribute_Name =>
+                     Name_Address),
+                 New_Reference_To (C, Loc),      --  C
+                 New_Reference_To (B, Loc))));   --  B
 
          --  Generate:
          --    if C = POK_Protected_Entry
@@ -6231,7 +6214,7 @@ package body Exp_Ch9 is
 
          Append_To (Conc_Typ_Stmts,
            Make_If_Statement (Loc,
-             Condition       => New_Reference_To (B, Loc),
+             Condition => New_Reference_To (B, Loc),
              Then_Statements => N_Stats,
              Else_Statements => Else_Statements (N)));
 
@@ -6266,7 +6249,8 @@ package body Exp_Ch9 is
 
          Rewrite (N,
            Make_Block_Statement (Loc,
-             Declarations               => Decls,
+             Declarations =>
+               Decls,
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc, Stmts)));
 
@@ -6279,7 +6263,7 @@ package body Exp_Ch9 is
 
       else
          Transient_Blk :=
-            First_Real_Statement (Handled_Statement_Sequence (Blk));
+           First_Real_Statement (Handled_Statement_Sequence (Blk));
 
          if Present (Transient_Blk)
            and then Nkind (Transient_Blk) = N_Block_Statement
@@ -7803,12 +7787,13 @@ package body Exp_Ch9 is
    -- Expand_N_Requeue_Statement --
    --------------------------------
 
-   --  A requeue statement is expanded into one of four GNARLI operations,
-   --  depending on the source and destination (task or protected object). In
-   --  addition, code must be generated to jump around the remainder of
-   --  processing for the original entry and, if the destination is (different)
-   --  protected object, to attempt to service it. The following illustrates
-   --  the various cases:
+   --  A non-dispatching requeue statement is expanded into one of four GNARLI
+   --  operations, depending on the source and destination (task or protected
+   --  object). A dispatching requeue statement is expanded into a call to the
+   --  predefined primitive _Disp_Requeue. In addition, code is generated to
+   --  jump around the remainder of processing for the original entry and, if
+   --  the destination is (different) protected object, to attempt to service
+   --  it. The following illustrates the various cases:
 
    --  procedure entE
    --    (O : System.Address;
@@ -7818,7 +7803,7 @@ package body Exp_Ch9 is
    --     <discriminant renamings>
    --     <private object renamings>
    --     type poVP is access poV;
-   --     _Object : ptVP := ptVP!(O);
+   --     _object : ptVP := ptVP!(O);
 
    --  begin
    --     begin
@@ -7845,12 +7830,12 @@ package body Exp_Ch9 is
    --        return;
 
    --        <rest of statement sequence for entry>
-   --        Complete_Entry_Body (_Object._Object);
+   --        Complete_Entry_Body (_object._object);
 
    --     exception
    --        when all others =>
    --           Exceptional_Complete_Entry_Body (
-   --             _Object._Object, Get_GNAT_Exception);
+   --             _object._object, Get_GNAT_Exception);
    --     end;
    --  end entE;
 
@@ -7886,104 +7871,247 @@ package body Exp_Ch9 is
    --     when all others =>
    --        Exceptional_Complete_Rendezvous (Get_GNAT_Exception);
 
-   --  Further details on these expansions can be found in
-   --  Expand_N_Protected_Body and Expand_N_Accept_Statement.
+   --  Ada 2005 (AI05-0030): Dispatching requeue from protected to interface
+   --  class-wide type:
+
+   --  procedure entE
+   --    (O : System.Address;
+   --     P : System.Address;
+   --     E : Protected_Entry_Index)
+   --  is
+   --     <discriminant renamings>
+   --     <private object renamings>
+   --     type poVP is access poV;
+   --     _object : ptVP := ptVP!(O);
+
+   --  begin
+   --     begin
+   --        <start of statement sequence for entry>
+
+   --        _Disp_Requeue
+   --          (<interface class-wide object>,
+   --           True,
+   --           _object'Address,
+   --           Ada.Tags.Get_Offset_Index
+   --             (Tag (_object),
+   --              <interface dispatch table index of target entry>),
+   --           Abort_Present);
+   --        return;
+
+   --        <rest of statement sequence for entry>
+   --        Complete_Entry_Body (_object._object);
+
+   --     exception
+   --        when all others =>
+   --           Exceptional_Complete_Entry_Body (
+   --             _object._object, Get_GNAT_Exception);
+   --     end;
+   --  end entE;
+
+   --  Ada 2005 (AI05-0030): Dispatching requeue from task to interface
+   --  class-wide type:
+
+   --  Accept_Call (E, Ann);
+   --     <start of statement sequence for accept statement>
+   --     _Disp_Requeue
+   --       (<interface class-wide object>,
+   --        False,
+   --        null,
+   --        Ada.Tags.Get_Offset_Index
+   --          (Tag (_object),
+   --           <interface dispatch table index of target entrt>),
+   --        Abort_Present);
+   --     newS (new, Pnn);
+   --     goto Lnn;
+   --     <rest of statement sequence for accept statement>
+   --     <<Lnn>>
+   --     Complete_Rendezvous;
+
+   --  exception
+   --     when all others =>
+   --        Exceptional_Complete_Rendezvous (Get_GNAT_Exception);
+
+   --  Further details on these expansions can be found in Expand_N_Protected_
+   --  Body and Expand_N_Accept_Statement.
 
    procedure Expand_N_Requeue_Statement (N : Node_Id) is
       Loc        : constant Source_Ptr := Sloc (N);
+      Abortable  : Node_Id;
       Acc_Stat   : Node_Id;
+      Conc_Typ   : Entity_Id;
       Concval    : Node_Id;
       Ename      : Node_Id;
       Index      : Node_Id;
-      Conctyp    : Entity_Id;
-      Oldtyp     : Entity_Id;
       Lab_Node   : Node_Id;
-      Rcall      : Node_Id;
-      Abortable  : Node_Id;
-      Skip_Stat  : Node_Id;
-      Self_Param : Node_Id;
       New_Param  : Node_Id;
+      Old_Typ    : Entity_Id;
       Params     : List_Id;
+      Rcall      : Node_Id;
       RTS_Call   : Entity_Id;
+      Self_Param : Node_Id;
+      Skip_Stat  : Node_Id;
 
    begin
       Abortable :=
         New_Occurrence_Of (Boolean_Literals (Abort_Present (N)), Loc);
 
-      --  Set up the target object
+      --  Extract the components of the entry call
 
       Extract_Entry (N, Concval, Ename, Index);
-      Conctyp := Etype (Concval);
-      New_Param := Concurrent_Ref (Concval);
+      Conc_Typ := Etype (Concval);
 
-      --  The target entry index and abortable flag are the same for all cases
+      --  Examine the scope stack in order to find nearest enclosing protected
+      --  or task type. This will constitute our invocation source.
 
-      Params := New_List (
-        Entry_Index_Expression (Loc, Entity (Ename), Index, Conctyp),
-        Abortable);
-
-      --  Determine proper GNARLI call and required additional parameters
-      --  Loop to find nearest enclosing task type or protected type
-
-      Oldtyp := Current_Scope;
+      Old_Typ := Current_Scope;
+      while Present (Old_Typ)
+        and then not Is_Protected_Type (Old_Typ)
+        and then not Is_Task_Type (Old_Typ)
       loop
-         if Is_Task_Type (Oldtyp) then
-            if Is_Task_Type (Conctyp) then
-               RTS_Call := RTE (RE_Requeue_Task_Entry);
+         Old_Typ := Scope (Old_Typ);
+      end loop;
 
-            else
-               pragma Assert (Is_Protected_Type (Conctyp));
-               RTS_Call := RTE (RE_Requeue_Task_To_Protected_Entry);
-               New_Param :=
-                 Make_Attribute_Reference (Loc,
-                   Prefix => New_Param,
-                   Attribute_Name => Name_Unchecked_Access);
-            end if;
+      --  Generate the parameter list for all cases. The abortable flag is
+      --  common among dispatching and regular requeue.
 
-            Prepend (New_Param, Params);
-            exit;
+      Params := New_List (Abortable);
 
-         elsif Is_Protected_Type (Oldtyp) then
+      --  Ada 2005 (AI05-0030): We have a dispatching requeue of the form
+      --  Concval.Ename where the type of Concval is class-wide concurrent
+      --  interface.
+
+      if Ada_Version >= Ada_05
+        and then Present (Concval)
+        and then Is_Class_Wide_Type (Conc_Typ)
+        and then Is_Concurrent_Interface (Conc_Typ)
+      then
+         RTS_Call := Make_Identifier (Loc, Name_uDisp_Requeue);
+
+         --  Generate:
+         --    Ada.Tags.Get_Offset_Index
+         --      (Ada.Tags.Tag (Concval),
+         --       <interface dispatch table position of Ename>)
+
+         Prepend_To (Params,
+           Make_Function_Call (Loc,
+             Name =>
+               New_Reference_To (RTE (RE_Get_Offset_Index), Loc),
+             Parameter_Associations =>
+               New_List (
+                 Unchecked_Convert_To (RTE (RE_Tag), Concval),
+                 Make_Integer_Literal (Loc, DT_Position (Entity (Ename))))));
+
+         --  Specific actuals for protected to interface class-wide type
+         --  requeue.
+
+         if Is_Protected_Type (Old_Typ) then
+            Prepend_To (Params,
+              Make_Attribute_Reference (Loc,        --  _object'Address
+                Prefix =>
+                  Concurrent_Ref (New_Occurrence_Of (Old_Typ, Loc)),
+                Attribute_Name =>
+                  Name_Address));
+            Prepend_To (Params,                     --  True
+              New_Reference_To (Standard_True, Loc));
+
+         --  Specific actuals for task to interface class-wide type requeue
+
+         else
+            pragma Assert (Is_Task_Type (Old_Typ));
+
+            Prepend_To (Params,                     --  null
+              New_Reference_To (RTE (RE_Null_Address), Loc));
+            Prepend_To (Params,                     --  False
+              New_Reference_To (Standard_False, Loc));
+         end if;
+
+         --  Finally, add the common object parameter
+
+         Prepend_To (Params, New_Copy_Tree (Concval));
+
+      --  Regular requeue processing
+
+      else
+         New_Param := Concurrent_Ref (Concval);
+
+         --  The index expression is common among all four cases
+
+         Prepend_To (Params,
+           Entry_Index_Expression (Loc, Entity (Ename), Index, Conc_Typ));
+
+         if Is_Protected_Type (Old_Typ) then
             Self_Param :=
               Make_Attribute_Reference (Loc,
-                Prefix => Concurrent_Ref (New_Occurrence_Of (Oldtyp, Loc)),
-                Attribute_Name => Name_Unchecked_Access);
+                Prefix =>
+                  Concurrent_Ref (New_Occurrence_Of (Old_Typ, Loc)),
+                Attribute_Name =>
+                  Name_Unchecked_Access);
 
-            if Is_Task_Type (Conctyp) then
-               RTS_Call := RTE (RE_Requeue_Protected_To_Task_Entry);
+            --  Protected to protected requeue
 
-            else
-               pragma Assert (Is_Protected_Type (Conctyp));
-               RTS_Call := RTE (RE_Requeue_Protected_Entry);
+            if Is_Protected_Type (Conc_Typ) then
+               RTS_Call :=
+                 New_Reference_To (RTE (RE_Requeue_Protected_Entry), Loc);
+
                New_Param :=
                  Make_Attribute_Reference (Loc,
-                   Prefix => New_Param,
-                   Attribute_Name => Name_Unchecked_Access);
+                   Prefix =>
+                     New_Param,
+                   Attribute_Name =>
+                     Name_Unchecked_Access);
+
+            --  Protected to task requeue
+
+            else
+               pragma Assert (Is_Task_Type (Conc_Typ));
+               RTS_Call :=
+                 New_Reference_To (
+                   RTE (RE_Requeue_Protected_To_Task_Entry), Loc);
             end if;
 
             Prepend (New_Param, Params);
             Prepend (Self_Param, Params);
-            exit;
-
-         --  If neither task type or protected type, must be in some inner
-         --  enclosing block, so move on out
 
          else
-            Oldtyp := Scope (Oldtyp);
+            pragma Assert (Is_Task_Type (Old_Typ));
+
+            --  Task to protected requeue
+
+            if Is_Protected_Type (Conc_Typ) then
+               RTS_Call :=
+                 New_Reference_To (
+                   RTE (RE_Requeue_Task_To_Protected_Entry), Loc);
+
+               New_Param :=
+                 Make_Attribute_Reference (Loc,
+                   Prefix =>
+                     New_Param,
+                   Attribute_Name =>
+                     Name_Unchecked_Access);
+
+            --  Task to task requeue
+
+            else
+               pragma Assert (Is_Task_Type (Conc_Typ));
+               RTS_Call :=
+                 New_Reference_To (RTE (RE_Requeue_Task_Entry), Loc);
+            end if;
+
+            Prepend (New_Param, Params);
          end if;
-      end loop;
+      end if;
 
-      --  Create the GNARLI call
+      --  Create the GNARLI or predefined primitive call
 
-      Rcall := Make_Procedure_Call_Statement (Loc,
-        Name =>
-          New_Occurrence_Of (RTS_Call, Loc),
-        Parameter_Associations => Params);
+      Rcall :=
+        Make_Procedure_Call_Statement (Loc,
+          Name => RTS_Call,
+          Parameter_Associations => Params);
 
       Rewrite (N, Rcall);
       Analyze (N);
 
-      if Is_Protected_Type (Oldtyp) then
+      if Is_Protected_Type (Old_Typ) then
 
          --  Build the return statement to skip the rest of the entry body
 
@@ -9776,8 +9904,8 @@ package body Exp_Ch9 is
    --       P  : parms := (parm, parm, parm);
 
    --    begin
-   --       Timed_Protected_Entry_Call (<acceptor-task>, X, P'Address,
-   --         DX, M, B);
+   --       Timed_Protected_Entry_Call
+   --         (<acceptor-task>, X, P'Address, DX, M, B);
    --       if B then
    --          S1;
    --       else
@@ -9795,8 +9923,8 @@ package body Exp_Ch9 is
    --       P  : parms := (parm, parm, parm);
 
    --    begin
-   --       Timed_Protected_Entry_Call (<object>'unchecked_access, X,
-   --         P'Address, DX, M, B);
+   --       Timed_Protected_Entry_Call
+   --         (<object>'unchecked_access, X, P'Address, DX, M, B);
    --       if B then
    --          S1;
    --       else
@@ -9810,8 +9938,8 @@ package body Exp_Ch9 is
    --       B  : Boolean := False;
    --       C  : Ada.Tags.Prim_Op_Kind;
    --       DX : Duration := To_Duration (D)
-   --       K : Ada.Tags.Tagged_Kind :=
-   --             Ada.Tags.Get_Tagged_Kind (Ada.Tags.Tag (<object>));
+   --       K  : Ada.Tags.Tagged_Kind :=
+   --              Ada.Tags.Get_Tagged_Kind (Ada.Tags.Tag (<object>));
    --       M  : Integer :=...;
    --       P  : Parameters := (Param1 .. ParamN);
    --       S  : Iteger;
@@ -9822,8 +9950,9 @@ package body Exp_Ch9 is
    --          <triggering-statements>
 
    --       else
-   --          S := Ada.Tags.Get_Offset_Index (Ada.Tags.Tag (<object>),
-   --                 DT_Position (<dispatching-call>));
+   --          S :=
+   --            Ada.Tags.Get_Offset_Index
+   --              (Ada.Tags.Tag (<object>), DT_Position (<dispatching-call>));
 
    --          _Disp_Timed_Select (<object>, S, P'Address, DX, M, C, B);
 
@@ -9857,7 +9986,7 @@ package body Exp_Ch9 is
                   Entry_Call_Statement (Entry_Call_Alternative (N));
       E_Stats : constant List_Id :=
                   Statements (Entry_Call_Alternative (N));
-      D_Stat  : constant Node_Id :=
+      D_Stat  : Node_Id :=
                   Delay_Statement (Delay_Alternative (N));
       D_Stats : constant List_Id :=
                   Statements (Delay_Alternative (N));
@@ -9876,6 +10005,7 @@ package body Exp_Ch9 is
       Ename          : Node_Id;
       Formals        : List_Id;
       Index          : Node_Id;
+      Is_Disp_Select : Boolean;
       Lim_Typ_Stmts  : List_Id;
       N_Stats        : List_Id;
       Obj            : Entity_Id;
@@ -9901,20 +10031,38 @@ package body Exp_Ch9 is
 
       if Nkind (E_Call) = N_Block_Statement then
          E_Call := First (Statements (Handled_Statement_Sequence (E_Call)));
-         while Nkind (E_Call) /= N_Procedure_Call_Statement
-           and then Nkind (E_Call) /= N_Entry_Call_Statement
+         while not Nkind_In (E_Call, N_Procedure_Call_Statement,
+                                     N_Entry_Call_Statement)
          loop
             Next (E_Call);
          end loop;
       end if;
 
-      if Ada_Version >= Ada_05
-        and then Nkind (E_Call) = N_Procedure_Call_Statement
-      then
+      Is_Disp_Select :=
+        Ada_Version >= Ada_05
+          and then Nkind (E_Call) = N_Procedure_Call_Statement;
+
+      if Is_Disp_Select then
          Extract_Dispatching_Call (E_Call, Call_Ent, Obj, Actuals, Formals);
 
          Decls := New_List;
          Stmts := New_List;
+
+         --  Generate:
+         --    B : Boolean := False;
+
+         B := Build_B (Loc, Decls);
+
+         --  Generate:
+         --    C : Ada.Tags.Prim_Op_Kind;
+
+         C := Build_C (Loc, Decls);
+
+         --  Because the analysis of all statements was disabled, manually
+         --  analyze the delay statement.
+
+         Analyze (D_Stat);
+         D_Stat := Original_Node (D_Stat);
 
       else
          --  Build an entry call using Simple_Entry_Call
@@ -9928,19 +10076,7 @@ package body Exp_Ch9 is
          if No (Decls) then
             Decls := New_List;
          end if;
-      end if;
 
-      --  Call status flag processing
-
-      if Ada_Version >= Ada_05
-        and then Nkind (E_Call) = N_Procedure_Call_Statement
-      then
-         --  Generate:
-         --    B : Boolean := False;
-
-         B := Build_B (Loc, Decls);
-
-      else
          --  Generate:
          --    B : Boolean;
 
@@ -9954,23 +10090,12 @@ package body Exp_Ch9 is
                New_Reference_To (Standard_Boolean, Loc)));
       end if;
 
-      --  Call kind processing
-
-      if Ada_Version >= Ada_05
-        and then Nkind (E_Call) = N_Procedure_Call_Statement
-      then
-         --  Generate:
-         --    C : Ada.Tags.Prim_Op_Kind;
-
-         C := Build_C (Loc, Decls);
-      end if;
-
       --  Duration and mode processing
 
       D_Type := Base_Type (Etype (Expression (D_Stat)));
 
-      --  Use the type of the delay expression (Calendar or Real_Time)
-      --  to generate the appropriate conversion.
+      --  Use the type of the delay expression (Calendar or Real_Time) to
+      --  generate the appropriate conversion.
 
       if Nkind (D_Stat) = N_Delay_Relative_Statement then
          D_Disc := Make_Integer_Literal (Loc, 0);
@@ -10031,9 +10156,8 @@ package body Exp_Ch9 is
       --  case of entries, the block has already been created during the call
       --  to Build_Simple_Entry_Call.
 
-      if Ada_Version >= Ada_05
-        and then Nkind (E_Call) = N_Procedure_Call_Statement
-      then
+      if Is_Disp_Select then
+
          --  Tagged kind processing, generate:
          --    K : Ada.Tags.Tagged_Kind :=
          --          Ada.Tags.Get_Tagged_Kind (Ada.Tags.Tag <object>));
@@ -10041,8 +10165,8 @@ package body Exp_Ch9 is
          K := Build_K (Loc, Decls, Obj);
 
          Blk_Typ := Build_Parameter_Block (Loc, Actuals, Formals, Decls);
-         P       := Parameter_Block_Pack  (Loc, Blk_Typ, Actuals, Formals,
-                      Decls, Stmts);
+         P := Parameter_Block_Pack
+                (Loc, Blk_Typ, Actuals, Formals, Decls, Stmts);
 
          --  Dispatch table slot processing, generate:
          --    S : Integer;
@@ -10050,14 +10174,14 @@ package body Exp_Ch9 is
          S := Build_S (Loc, Decls);
 
          --  Generate:
-         --    S := Ada.Tags.Get_Offset_Index (
-         --           Ada.Tags.Tag (<object>), DT_Position (Call_Ent));
+         --    S := Ada.Tags.Get_Offset_Index
+         --           (Ada.Tags.Tag (<object>), DT_Position (Call_Ent));
 
-         Conc_Typ_Stmts := New_List (
-           Build_S_Assignment (Loc, S, Obj, Call_Ent));
+         Conc_Typ_Stmts :=
+           New_List (Build_S_Assignment (Loc, S, Obj, Call_Ent));
 
          --  Generate:
-         --    _Disp_Timed_Select (<object>, S, P'address, D, M, C, B);
+         --    _Disp_Timed_Select (<object>, S, P'Address, D, M, C, B);
 
          --  where Obj is the controlling formal parameter, S is the dispatch
          --  table slot number of the dispatching operation, P is the wrapped
@@ -10066,7 +10190,7 @@ package body Exp_Ch9 is
 
          Params := New_List;
 
-         Append_To (Params, New_Copy_Tree    (Obj));
+         Append_To (Params, New_Copy_Tree (Obj));
          Append_To (Params, New_Reference_To (S, Loc));
          Append_To (Params, Make_Attribute_Reference (Loc,
                               Prefix => New_Reference_To (P, Loc),
@@ -10173,7 +10297,7 @@ package body Exp_Ch9 is
 
          Append_To (Conc_Typ_Stmts,
            Make_If_Statement (Loc,
-             Condition       => New_Reference_To (B, Loc),
+             Condition => New_Reference_To (B, Loc),
              Then_Statements => N_Stats,
              Else_Statements => D_Stats));
 
@@ -10700,8 +10824,7 @@ package body Exp_Ch9 is
    begin
       First_Op := First (D);
       while Present (First_Op)
-        and then Nkind (First_Op) /= N_Subprogram_Body
-        and then Nkind (First_Op) /= N_Entry_Body
+        and then not Nkind_In (First_Op, N_Subprogram_Body, N_Entry_Body)
       loop
          Next (First_Op);
       end loop;
@@ -10868,8 +10991,8 @@ package body Exp_Ch9 is
       --  of this type should have been removed during semantic analysis.
 
       Pdec := Parent (Ptyp);
-      while Nkind (Pdec) /= N_Protected_Type_Declaration
-        and then Nkind (Pdec) /= N_Single_Protected_Declaration
+      while not Nkind_In (Pdec, N_Protected_Type_Declaration,
+                                N_Single_Protected_Declaration)
       loop
          Next (Pdec);
       end loop;
@@ -11159,8 +11282,8 @@ package body Exp_Ch9 is
       --  this type should have been removed during semantic analysis.
 
       Tdec := Parent (Ttyp);
-      while Nkind (Tdec) /= N_Task_Type_Declaration
-        and then Nkind (Tdec) /= N_Single_Task_Declaration
+      while not Nkind_In (Tdec, N_Task_Type_Declaration,
+                                N_Single_Task_Declaration)
       loop
          Next (Tdec);
       end loop;
@@ -11354,8 +11477,7 @@ package body Exp_Ch9 is
    begin
       Next_Op := Next (N);
       while Present (Next_Op)
-        and then Nkind (Next_Op) /= N_Subprogram_Body
-        and then Nkind (Next_Op) /= N_Entry_Body
+        and then not Nkind_In (Next_Op, N_Subprogram_Body, N_Entry_Body)
       loop
          Next (Next_Op);
       end loop;
@@ -11590,8 +11712,7 @@ package body Exp_Ch9 is
 
    begin
       pragma Assert (Nkind (Dec) = N_Protected_Type_Declaration);
-      pragma Assert
-        (Nkind (Op) = N_Subprogram_Body or else Nkind (Op) = N_Entry_Body);
+      pragma Assert (Nkind_In (Op, N_Subprogram_Body, N_Entry_Body));
 
       Def := Protected_Definition (Dec);
 
@@ -11611,11 +11732,12 @@ package body Exp_Ch9 is
                       Chars => New_External_Name (Chars (P_Id)));
                end if;
 
-               Set_Ekind     (Priv, E_Variable);
-               Set_Etype     (Priv, Etype (P_Id));
-               Set_Scope     (Priv, Scope (P_Id));
-               Set_Esize     (Priv, Esize (Etype (P_Id)));
-               Set_Alignment (Priv, Alignment (Etype (P_Id)));
+               Set_Ekind      (Priv, E_Variable);
+               Set_Etype      (Priv, Etype (P_Id));
+               Set_Scope      (Priv, Scope (P_Id));
+               Set_Esize      (Priv, Esize (Etype (P_Id)));
+               Set_Is_Aliased (Priv, Is_Aliased (P_Id));
+               Set_Alignment  (Priv, Alignment (Etype (P_Id)));
 
                --  If the type of the component is an itype, we must create a
                --  new itype for the corresponding prival in each protected
@@ -11733,9 +11855,9 @@ package body Exp_Ch9 is
 
             return OK;
 
-         elsif Nkind (N) = N_Defining_Identifier
-           or else Nkind (N) = N_Defining_Operator_Symbol
-           or else Nkind (N) = N_Defining_Character_Literal
+         elsif Nkind_In (N, N_Defining_Identifier,
+                            N_Defining_Operator_Symbol,
+                            N_Defining_Character_Literal)
          then
             return Skip;
 
