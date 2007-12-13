@@ -1,0 +1,33 @@
+/* { dg-do compile } */
+/* { dg-do run } */
+
+#include <stdlib.h>
+typedef struct
+{
+  int a;
+  int b;
+}str_t;
+
+#define N 3
+
+str_t str;
+
+int
+main ()
+{
+  int i;
+  int res = 1<<(1<<N);
+  str.a = 2;
+
+  for (i = 0; i < N; i++)
+    str.a = str.a * str.a;
+  
+  if (str.a != res)
+    abort ();
+
+  return str.a;
+}
+
+/*--------------------------------------------------------------------------*/
+/* { dg-final { scan-ipa-dump "Number of structures to transform is 1" "ipa_struct_reorg" } } */
+/* { dg-final { cleanup-ipa-dump "*" } } */
