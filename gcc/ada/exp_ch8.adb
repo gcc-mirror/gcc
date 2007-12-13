@@ -131,9 +131,7 @@ package body Exp_Ch8 is
          --  the prefix, which is itself a name, recursively, and then force
          --  the evaluation of all the subscripts (or attribute expressions).
 
-         elsif K = N_Indexed_Component
-           or else K = N_Attribute_Reference
-         then
+         elsif Nkind_In (K, N_Indexed_Component, N_Attribute_Reference) then
             Evaluate_Name (Prefix (Fname));
 
             E := First (Expressions (Fname));
@@ -203,9 +201,7 @@ package body Exp_Ch8 is
 
       function Evaluation_Required (Nam : Node_Id) return Boolean is
       begin
-         if Nkind (Nam) = N_Indexed_Component
-           or else Nkind (Nam) = N_Slice
-         then
+         if Nkind_In (Nam, N_Indexed_Component, N_Slice) then
             if Is_Packed (Etype (Prefix (Nam))) then
                return True;
             else
@@ -336,5 +332,31 @@ package body Exp_Ch8 is
          end if;
       end if;
    end Expand_N_Package_Renaming_Declaration;
+
+   ----------------------------------------------
+   -- Expand_N_Subprogram_Renaming_Declaration --
+   ----------------------------------------------
+
+   procedure Expand_N_Subprogram_Renaming_Declaration (N : Node_Id) is
+      Nam : constant Node_Id := Name (N);
+
+   begin
+      --  When the prefix of the name is a function call, we must force the
+      --  call to be made by removing side effects from the call, since we
+      --  must only call the function once.
+
+      if Nkind (Nam) = N_Selected_Component
+        and then Nkind (Prefix (Nam)) = N_Function_Call
+      then
+         Remove_Side_Effects (Prefix (Nam));
+
+      --  For an explicit dereference, the prefix must be captured to prevent
+      --  reevaluation on calls through the renaming, which could result in
+      --  calling the wrong subprogram if the access value were to be changed.
+
+      elsif Nkind (Nam) = N_Explicit_Dereference then
+         Force_Evaluation (Prefix (Nam));
+      end if;
+   end Expand_N_Subprogram_Renaming_Declaration;
 
 end Exp_Ch8;
