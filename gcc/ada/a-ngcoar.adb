@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2006, Free Software Foundation, Inc.            --
+--            Copyright (C) 2006-2007, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -748,7 +748,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
    begin
       if Left'Length (2) /= Right'Length (1) then
          raise Constraint_Error with
-            "incompatible dimensions in matrix-matrix multipication";
+            "incompatible dimensions in matrix-matrix multiplication";
       end if;
 
       gemm (Trans_A => No_Trans'Access,

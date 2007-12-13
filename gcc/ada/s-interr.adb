@@ -140,9 +140,8 @@ package body System.Interrupts is
    -- Local Tasks --
    -----------------
 
-   --  WARNING: System.Tasking.Stages performs calls to this task
-   --  with low-level constructs. Do not change this spec without synchro-
-   --  nizing it.
+   --  WARNING: System.Tasking.Stages performs calls to this task with
+   --  low-level constructs. Do not change this spec without synchronizing it.
 
    task Interrupt_Manager is
       entry Detach_Interrupt_Entries (T : Task_Id);
@@ -183,10 +182,10 @@ package body System.Interrupts is
 
    task type Server_Task (Interrupt : Interrupt_ID) is
       pragma Priority (System.Interrupt_Priority'Last);
-      --  Note: the above pragma Priority is strictly speaking improper
-      --  since it is outside the range of allowed priorities, but the
-      --  compiler treats system units specially and does not apply
-      --  this range checking rule to system units.
+      --  Note: the above pragma Priority is strictly speaking improper since
+      --  it is outside the range of allowed priorities, but the compiler
+      --  treats system units specially and does not apply this range checking
+      --  rule to system units.
 
    end Server_Task;
 
@@ -210,9 +209,9 @@ package body System.Interrupts is
                     (others => (null, Static => False));
    pragma Volatile_Components (User_Handler);
    --  Holds the protected procedure handler (if any) and its Static
-   --  information  for each interrupt. A handler is a Static one if
-   --  it is specified through the pragma Attach_Handler.
-   --  Attach_Handler. Otherwise, not static)
+   --  information for each interrupt. A handler is a Static one if it is
+   --  specified through the pragma Attach_Handler. Attach_Handler. Otherwise,
+   --  not static)
 
    User_Entry : array (Interrupt_ID'Range) of Entry_Assoc :=
                   (others => (T => Null_Task, E => Null_Task_Entry));
@@ -230,16 +229,16 @@ package body System.Interrupts is
    Last_Unblocker :
      array (Interrupt_ID'Range) of Task_Id := (others => Null_Task);
    pragma Atomic_Components (Last_Unblocker);
-   --  Holds the ID of the last Task which Unblocked this Interrupt.
-   --  It contains Null_Task if no tasks have ever requested the
-   --  Unblocking operation or the Interrupt is currently Blocked.
+   --  Holds the ID of the last Task which Unblocked this Interrupt. It
+   --  contains Null_Task if no tasks have ever requested the Unblocking
+   --  operation or the Interrupt is currently Blocked.
 
    Server_ID : array (Interrupt_ID'Range) of Task_Id :=
                  (others => Null_Task);
    pragma Atomic_Components (Server_ID);
-   --  Holds the Task_Id of the Server_Task for each interrupt.
-   --  Task_Id is needed to accomplish locking per Interrupt base. Also
-   --  is needed to decide whether to create a new Server_Task.
+   --  Holds the Task_Id of the Server_Task for each interrupt. Task_Id is
+   --  needed to accomplish locking per Interrupt base. Also is needed to
+   --  decide whether to create a new Server_Task.
 
    --  Type and Head, Tail of the list containing Registered Interrupt
    --  Handlers. These definitions are used to register the handlers
@@ -264,20 +263,20 @@ package body System.Interrupts is
    -----------------------
 
    function Is_Registered (Handler : Parameterless_Handler) return Boolean;
-   --  See if the Handler has been "pragma"ed using Interrupt_Handler.
-   --  Always consider a null handler as registered.
+   --  See if the Handler has been "pragma"ed using Interrupt_Handler. Always
+   --  consider a null handler as registered.
 
    --------------------
    -- Attach_Handler --
    --------------------
 
-   --  Calling this procedure with New_Handler = null and Static = True
-   --  means we want to detach the current handler regardless of the
-   --  previous handler's binding status (ie. do not care if it is a
-   --  dynamic or static handler).
+   --  Calling this procedure with New_Handler = null and Static = True means
+   --  we want to detach the current handler regardless of the previous
+   --  handler's binding status (ie. do not care if it is a dynamic or static
+   --  handler).
 
-   --  This option is needed so that during the finalization of a PO, we
-   --  can detach handlers attached through pragma Attach_Handler.
+   --  This option is needed so that during the finalization of a PO, we can
+   --  detach handlers attached through pragma Attach_Handler.
 
    procedure Attach_Handler
      (New_Handler : Parameterless_Handler;
@@ -298,8 +297,8 @@ package body System.Interrupts is
    -- Bind_Interrupt_To_Entry --
    -----------------------------
 
-   --  This procedure raises a Program_Error if it tries to bind an
-   --  interrupt to which an Entry or a Procedure is already bound.
+   --  This procedure raises a Program_Error if it tries to bind an interrupt
+   --  to which an Entry or a Procedure is already bound.
 
    procedure Bind_Interrupt_To_Entry
      (T       : Task_Id;
@@ -389,13 +388,13 @@ package body System.Interrupts is
    -- Exchange_Handler --
    ----------------------
 
-   --  Calling this procedure with New_Handler = null and Static = True
-   --  means we want to detach the current handler regardless of the
-   --  previous handler's binding status (ie. do not care if it is a
-   --  dynamic or static handler).
+   --  Calling this procedure with New_Handler = null and Static = True means
+   --  we want to detach the current handler regardless of the previous
+   --  handler's binding status (ie. do not care if it is a dynamic or static
+   --  handler).
 
-   --  This option is needed so that during the finalization of a PO,
-   --  we can detach handlers attached through pragma Attach_Handler.
+   --  This option is needed so that during the finalization of a PO, we can
+   --  detach handlers attached through pragma Attach_Handler.
 
    procedure Exchange_Handler
      (Old_Handler : out Parameterless_Handler;

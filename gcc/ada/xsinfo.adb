@@ -55,6 +55,9 @@ procedure XSinfo is
    Done : exception;
    Err  : exception;
 
+   pragma Warnings (Off);
+   --  Below variables are referenced using * operator
+
    A         : VString := Nul;
    Arg       : VString := Nul;
    Comment   : VString := Nul;
@@ -65,23 +68,26 @@ procedure XSinfo is
    Rtn       : VString := Nul;
    Term      : VString := Nul;
 
+   pragma Warnings (On);
+
    InS       : File_Type;
    Ofile     : File_Type;
 
-   wsp     : Pattern := Span (' ' & ASCII.HT);
-   Wsp_For : Pattern := wsp & "for";
-   Is_Cmnt : Pattern := wsp & "--";
-   Typ_Nod : Pattern := wsp * A & "type Node_Kind is";
-   Get_Nam : Pattern := wsp * A & "N_" &  Break (",)") * Nam
-                          & Len (1) * Term;
-   Sub_Typ : Pattern := wsp * A & "subtype " &  Break (' ') * N;
-   No_Cont : Pattern := wsp & Break (' ') * N1 & " .. " & Break (';') * N2;
-   Cont_N1 : Pattern := wsp & Break (' ') * N1 & " .." & Rpos (0);
-   Cont_N2 : Pattern := Span (' ') & Break (';') * N2;
-   Is_Func : Pattern := wsp * A & "function " & Rest * Nam;
-   Get_Arg : Pattern := wsp & "(N : " & Break (')') * Arg
-                          & ") return " & Break (';') * Rtn
-                          & ';' & wsp & "--" & wsp & Rest * Comment;
+   wsp     : constant Pattern := Span (' ' & ASCII.HT);
+   Wsp_For : constant Pattern := wsp & "for";
+   Is_Cmnt : constant Pattern := wsp & "--";
+   Typ_Nod : constant Pattern := wsp * A & "type Node_Kind is";
+   Get_Nam : constant Pattern := wsp * A & "N_" &  Break (",)") * Nam
+                                 & Len (1) * Term;
+   Sub_Typ : constant Pattern := wsp * A & "subtype " &  Break (' ') * N;
+   No_Cont : constant Pattern := wsp & Break (' ') * N1
+                                 & " .. " & Break (';') * N2;
+   Cont_N1 : constant Pattern := wsp & Break (' ') * N1 & " .." & Rpos (0);
+   Cont_N2 : constant Pattern := Span (' ') & Break (';') * N2;
+   Is_Func : constant Pattern := wsp * A & "function " & Rest * Nam;
+   Get_Arg : constant Pattern := wsp & "(N : " & Break (')') * Arg
+                                 & ") return " & Break (';') * Rtn
+                                 & ';' & wsp & "--" & wsp & Rest * Comment;
 
    NKV : Natural;
 

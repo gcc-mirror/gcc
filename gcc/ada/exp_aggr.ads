@@ -40,9 +40,9 @@ package Exp_Aggr is
    --  This procedure performs in-place aggregate assignment.
 
    procedure Convert_Aggr_In_Allocator
-     (Alloc :  Node_Id;
-      Decl  :  Node_Id;
-      Aggr  :  Node_Id);
+     (Alloc : Node_Id;
+      Decl  : Node_Id;
+      Aggr  : Node_Id);
    --  Alloc is the allocator whose expression is the aggregate Aggr.
    --  Decl is an N_Object_Declaration created during allocator expansion.
    --  This procedure perform in-place aggregate assignment into the

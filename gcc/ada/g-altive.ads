@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -341,6 +341,14 @@ package GNAT.Altivec is
 
    type C_float is digits FLOAT_DIGIT range FLOAT_MIN .. FLOAT_MAX;
    for C_float'Size use FLOAT_BIT;
+   --  Altivec operations always use the standard native floating-point
+   --  support of the target. Note that this means that there may be
+   --  minor differences in results between targets when the floating-
+   --  point implementations are slightly different, as would happen
+   --  with normal non-altivec floating-point operations. In particular
+   --  the Altivec simulations may yield slightly different results
+   --  from those obtained on a true hardware Altivec target if the
+   --  floating-point implementation is not 100% compatible.
 
    ----------------------
    -- pixel components --

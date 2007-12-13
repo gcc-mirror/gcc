@@ -36,6 +36,8 @@
 --  from C; see gsocket.h for details. Different versions are provided on
 --  platforms where this functionality is implemented in Ada.
 
+--  This package should not be directly with'ed by an application
+
 package GNAT.Sockets.Thin.Task_Safe_NetDB is
 
    ----------------------------------------

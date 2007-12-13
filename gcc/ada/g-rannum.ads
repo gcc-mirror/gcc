@@ -33,22 +33,21 @@
 
 --  Extended pseudo-random number generation
 
---  This package provides a type representing pseudo-random number
---  generators, and subprograms to extract various distributions of numbers
---  from them. It also provides types for representing initialization values
---  and snapshots of internal generator state, which permit reproducible
---  pseudo-random streams.
+--  This package provides a type representing pseudo-random number generators,
+--  and subprograms to extract various distributions of numbers from them. It
+--  also provides types for representing initialization values and snapshots of
+--  internal generator state, which permit reproducible pseudo-random streams.
 
 --  The generator currently provided by this package has an extremely long
---  period (at least 2**19937-1), and passes the Big Crush test suite, with
---  the exception of the two linear complexity tests. Therefore, it is
---  suitable for simulations, but should not be used as a cryptographic
---  pseudo-random source without additional processing.
+--  period (at least 2**19937-1), and passes the Big Crush test suite, with the
+--  exception of the two linear complexity tests. Therefore, it is suitable for
+--  simulations, but should not be used as a cryptographic pseudo-random source
+--  without additional processing.
 
---  The design of this package effects some simplification from that of
---  the standard Ada.Numerics packages. There is no separate State type;
---  the Generator type itself suffices for this purpose. The parameter
---  modes on Reset procedures better reflect the effect of these routines.
+--  The design of this package effects is simplified compared to the design
+--  of standard Ada.Numerics packages. There is no separate State type; the
+--  Generator type itself suffices for this purpose. The parameter modes on
+--  Reset procedures better reflect the effect of these routines.
 
 with System.Random_Numbers;
 with Interfaces; use Interfaces;

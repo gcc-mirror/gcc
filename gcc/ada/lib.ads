@@ -208,10 +208,10 @@ package Lib is
    -- Special Handling of Subprogram Bodies --
    -------------------------------------------
 
-   --  A subprogram body (in an adb file) may stand for both a spec and a
-   --  body. A simple model (and one that was adopted through version 2.07),
-   --  is simply to assume that such an adb file acts as its own spec if no
-   --  ads file is present.
+   --  A subprogram body (in an adb file) may stand for both a spec and a body.
+   --  A simple model (and one that was adopted through version 2.07) is simply
+   --  to assume that such an adb file acts as its own spec if no ads file is
+   --  is present.
 
    --  However, this is not correct. RM 10.1.4(4) requires that such a body
    --  act as a spec unless a subprogram declaration of the same name is
