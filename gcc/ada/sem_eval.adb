@@ -2241,14 +2241,16 @@ package body Sem_Eval is
    --  in the expander that do not correspond to static expressions.
 
    procedure Eval_Real_Literal (N : Node_Id) is
-   begin
-      --  If the literal appears in a non-expression context, then it is
-      --  certainly appearing in a non-static context, so check it.
+      PK : constant Node_Kind := Nkind (Parent (N));
 
-      if Nkind (Parent (N)) not in N_Subexpr then
+   begin
+      --  If the literal appears in a non-expression context
+      --  and not as part of a number declaration, then it is
+      --  appearing in a non-static context, so check it.
+
+      if PK not in N_Subexpr and then PK /= N_Number_Declaration then
          Check_Non_Static_Context (N);
       end if;
-
    end Eval_Real_Literal;
 
    ------------------------
