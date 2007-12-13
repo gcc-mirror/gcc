@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   S p e c                                --
 --                                                                          --
---                     Copyright (C) 1999-2005, AdaCore                     --
+--                     Copyright (C) 1999-2007, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,6 +44,11 @@
 --
 --  For complete documentation of the operations in this package, please
 --  consult the VxWorks Programmer's Manual and VxWorks Reference Manual.
+
+pragma Warnings (Off, "*foreign convention*");
+pragma Warnings (Off, "*add Convention pragma*");
+--  These are temporary pragmas to supress warnings about mismatching
+--  conventions, which will be a problem when we get rid of trampolines ???
 
 with System.VxWorks;
 
