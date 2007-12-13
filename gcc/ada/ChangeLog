@@ -1,3 +1,9 @@
+2007-12-13  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR ada/34360
+	* Makefile.in: Change two occurrences of mlib-tgt.adb by correct name
+	mlib-tgt-specific.adb.
+
 2007-12-13  Bob Duff  <duff@adacore.com>
 
 	* trans.c (Attribute_to_gnu): Check for violations of the
