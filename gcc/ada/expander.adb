@@ -342,6 +342,9 @@ package body Expander is
                when N_Package_Renaming_Declaration =>
                   Expand_N_Package_Renaming_Declaration (N);
 
+               when N_Subprogram_Renaming_Declaration =>
+                  Expand_N_Subprogram_Renaming_Declaration (N);
+
                when N_Pragma =>
                   Expand_N_Pragma (N);
 
