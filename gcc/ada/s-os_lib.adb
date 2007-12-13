@@ -1822,9 +1822,6 @@ package body System.OS_Lib is
          end if;
       end Get_Directory;
 
-      Reference_Dir : constant String := Get_Directory (Directory);
-      --  Current directory name specified
-
    --  Start of processing for Normalize_Pathname
 
    begin
@@ -1927,12 +1924,18 @@ package body System.OS_Lib is
          if Last = 1
            and then not Is_Absolute_Path (Path_Buffer (1 .. End_Path))
          then
-            Path_Buffer
-              (Reference_Dir'Length + 1 .. Reference_Dir'Length + End_Path) :=
+            declare
+               Reference_Dir : constant String  := Get_Directory (Directory);
+               Ref_Dir_Len   : constant Natural := Reference_Dir'Length;
+               --  Current directory name specified and its length
+
+            begin
+               Path_Buffer (Ref_Dir_Len + 1 .. Ref_Dir_Len + End_Path) :=
                  Path_Buffer (1 .. End_Path);
-            End_Path := Reference_Dir'Length + End_Path;
-            Path_Buffer (1 .. Reference_Dir'Length) := Reference_Dir;
-            Last := Reference_Dir'Length;
+               End_Path := Ref_Dir_Len + End_Path;
+               Path_Buffer (1 .. Ref_Dir_Len) := Reference_Dir;
+               Last := Ref_Dir_Len;
+            end;
          end if;
 
          Start  := Last + 1;
