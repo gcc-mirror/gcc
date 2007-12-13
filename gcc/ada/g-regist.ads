@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -95,8 +95,14 @@ package GNAT.Registry is
    --  REG_EXPAND_SZ the returned value will have the %name% variables
    --  replaced by the corresponding environment variable value.
 
-   procedure Set_Value (From_Key : HKEY; Sub_Key : String; Value : String);
-   --  Add the pair (Sub_Key, Value) into From_Key registry key
+   procedure Set_Value
+      (From_Key : HKEY;
+       Sub_Key  : String;
+       Value    : String;
+       Expand   : Boolean := False);
+   --  Add the pair (Sub_Key, Value) into From_Key registry key.
+   --  By default the value created is of type REG_SZ, unless
+   --  Expand is True in which case it is of type REG_EXPAND_SZ
 
    procedure Delete_Key (From_Key : HKEY; Sub_Key : String);
    --  Remove Sub_Key from the registry key From_Key
