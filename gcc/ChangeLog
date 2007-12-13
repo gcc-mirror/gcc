@@ -1,3 +1,8 @@
+2007-12-13  Torbjorn Granlund  <tege@swox.com>
+
+	* config/i386/i386.c (ix86_rtx_costs) [MULT]: Check op0 for
+	ZERO_EXTEND when computing costs for widening multiplication.
+
 2007-12-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/32889
