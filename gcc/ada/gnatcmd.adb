@@ -2228,10 +2228,14 @@ begin
 
          --  For gnatmetric, the generated files should be put in the object
          --  directory. This must be the first switch, because it may be
-         --  overriden by a switch in package Metrics in the project file or by
-         --  a command line option.
+         --  overriden by a switch in package Metrics in the project file or
+         --  by a command line option. Note that we don't add the -d= switch
+         --  if there is no object directory available.
 
-         if The_Command = Metric then
+         if The_Command = Metric
+           and then
+             Project_Tree.Projects.Table (Project).Object_Directory /= No_Path
+         then
             First_Switches.Increment_Last;
             First_Switches.Table (2 .. First_Switches.Last) :=
               First_Switches.Table (1 .. First_Switches.Last - 1);
@@ -2297,15 +2301,18 @@ begin
          if ASIS_Main /= null then
             Get_Closure;
 
-            --  On VMS, set up again the env var for source dirs file. This is
+            --  On VMS, set up the env var again for source dirs file. This is
             --  because the call to gnatmake has set this env var to another
             --  file that has now been deleted.
 
             if Hostparm.OpenVMS then
-               Setenv
-                 (Project_Include_Path_File,
-                  Prj.Env.Ada_Include_Path
-                    (Project, Project_Tree, Recursive => True));
+
+               --  First make sure that the recorded file names are empty
+
+               Prj.Env.Initialize;
+
+               Prj.Env.Set_Ada_Paths
+                 (Project, Project_Tree, Including_Libraries => False);
             end if;
 
          --  For gnat check, gnat pretty, gnat metric, gnat list, and gnat
@@ -2313,10 +2320,10 @@ begin
          --  with all the sources of the main project.
 
          elsif The_Command = Check  or else
-            The_Command = Pretty or else
-            The_Command = Metric or else
-            The_Command = List   or else
-            The_Command = Stack
+               The_Command = Pretty or else
+               The_Command = Metric or else
+               The_Command = List   or else
+               The_Command = Stack
          then
             Check_Files;
          end if;
