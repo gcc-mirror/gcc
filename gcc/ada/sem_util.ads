@@ -27,7 +27,8 @@
 
 with Einfo;  use Einfo;
 with Namet;  use Namet;
-with Nmake;
+with Nmake;  use Nmake;
+with Snames; use Snames;
 with Types;  use Types;
 with Uintp;  use Uintp;
 with Urealp; use Urealp;
@@ -283,16 +284,16 @@ package Sem_Util is
    --  adds additional continuation lines to the message explaining
    --  why type T is limited. Messages are placed at node N.
 
-   procedure Find_Actual_Mode
-     (N    : Node_Id;
-      Kind : out Entity_Kind;
-      Call : out Node_Id);
+   procedure Find_Actual
+     (N      : Node_Id;
+      Formal : out Entity_Id;
+      Call   : out Node_Id);
    --  Determines if the node N is an actual parameter of a procedure call. If
-   --  so, then Kind is E_In_Parameter, E_Out_Parameter, E_In_Out_Parameter on
-   --  return as appropriate, and Call is set to the node for the corresponding
-   --  call. If the node N is not an actual parameter, then Kind = E_Void, Call
-   --  = Empty. Note that this only applies to procedure calls, for function
-   --  calls, the result is always E_Void.
+   --  so, then Formal points to the entity for the formal (whose Ekind is one
+   --  of E_In_Parameter, E_Out_Parameter, E_In_Out_Parameter) and Call is set
+   --  to the node for the corresponding call. If the node N is not an actual
+   --  parameter, or is an actual parameter of a function call, then Formal and
+   --  Call are set to Empty.
 
    function Find_Corresponding_Discriminant
      (Id   : Node_Id;
@@ -321,6 +322,10 @@ package Sem_Util is
    --  In_Scope is used to designate whether the entry or subprogram was
    --  declared inside the scope of the synchronized type or after. Return
    --  the overridden entity or Empty.
+
+   function Find_Parameter_Type (Param : Node_Id) return Entity_Id;
+   --  Return the type of formal parameter Param as determined by its
+   --  specification.
 
    function Find_Static_Alternative (N : Node_Id) return Node_Id;
    --  N is a case statement whose expression is a compile-time value.
@@ -626,6 +631,10 @@ package Sem_Util is
    --  This is the RM definition, a type is a descendent of another type if it
    --  is the same type or is derived from a descendent of the other type.
 
+   function Is_Concurrent_Interface (T : Entity_Id) return Boolean;
+   --  First determine whether type T is an interface and then check whether
+   --  it is of protected, synchronized or task kind.
+
    function Is_False (U : Uint) return Boolean;
    --  The argument is a Uint value which is the Boolean'Pos value of a
    --  Boolean operand (i.e. is either 0 for False, or 1 for True). This
@@ -802,7 +811,7 @@ package Sem_Util is
    function Make_Simple_Return_Statement
      (Sloc       : Source_Ptr;
       Expression : Node_Id := Empty) return Node_Id
-     renames Nmake.Make_Return_Statement;
+     renames Make_Return_Statement;
    --  See Sinfo. We rename Make_Return_Statement to the correct Ada 2005
    --  terminology here. Clients should use Make_Simple_Return_Statement.
 
@@ -1010,6 +1019,11 @@ package Sem_Util is
    --  Like Scope_Within_Or_Same, except that this function returns
    --  False in the case where Scope1 and Scope2 are the same scope.
 
+   procedure Set_Convention (E : Entity_Id; Val : Convention_Id);
+   --  Same as Basic_Set_Convention, but with an extra check for access types.
+   --  In particular, if E is an access-to-subprogram type, and Val is a
+   --  foreign convention, then we set Can_Use_Internal_Rep to False on E.
+
    procedure Set_Current_Entity (E : Entity_Id);
    --  Establish the entity E as the currently visible definition of its
    --  associated name (i.e. the Node_Id associated with its name)
@@ -1034,6 +1048,13 @@ package Sem_Util is
    --  If an entity (visible or otherwise) is defined in a library
    --  package, or a package that is itself public, then this subprogram
    --  labels the entity public as well.
+
+   procedure Set_Referenced_Modified (N : Node_Id; Out_Param : Boolean);
+   --  N is the node for either a left hand side (Out_Param set to False),
+   --  or an Out or In_Out parameter (Out_Param set to True). If there is
+   --  an assignable entity being referenced, then the appropriate flag
+   --  (Referenced_As_LHS if Out_Param is False, Referenced_As_Out_Parameter
+   --  if Out_Param is True) is set True, and the other flag set False.
 
    procedure Set_Scope_Is_Transient (V : Boolean := True);
    --  Set the flag Is_Transient of the current scope
