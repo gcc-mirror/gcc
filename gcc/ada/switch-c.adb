@@ -479,6 +479,7 @@ package body Switch.C is
                Constant_Condition_Warnings     := True;
                Implementation_Unit_Warnings    := True;
                Ineffective_Inline_Warnings     := True;
+               Warn_On_Assertion_Failure       := True;
                Warn_On_Assumed_Low_Bound       := True;
                Warn_On_Bad_Fixed_Value         := True;
                Warn_On_Constant                := True;
@@ -833,9 +834,11 @@ package body Switch.C is
                      Bad_Switch ("-gnatW" & Switch_Chars (Ptr .. Max));
                end;
 
+               Wide_Character_Encoding_Method_Specified := True;
+
                Upper_Half_Encoding :=
                  Wide_Character_Encoding_Method in
-                 WC_Upper_Half_Encoding_Method;
+                   WC_Upper_Half_Encoding_Method;
 
                Ptr := Ptr + 1;
 

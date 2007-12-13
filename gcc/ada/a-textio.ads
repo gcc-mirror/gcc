@@ -45,6 +45,7 @@ with Ada.IO_Exceptions;
 with Ada.Streams;
 with System;
 with System.File_Control_Block;
+with System.WCh_Con;
 
 package Ada.Text_IO is
    pragma Elaborate_Body;
@@ -334,6 +335,11 @@ private
    -- Text_IO File Control Block --
    --------------------------------
 
+   Default_WCEM : System.WCh_Con.WC_Encoding_Method :=
+                    System.WCh_Con.WCEM_UTF8;
+   --  This gets modified during initialization (see body) using
+   --  the default value established in the call to Set_Globals.
+
    package FCB renames System.File_Control_Block;
 
    type Text_AFCB;
@@ -365,6 +371,31 @@ private
       --  This flag similarly handles the case of being physically positioned
       --  after a LM-PM sequence when logically we are before the LM-PM. This
       --  flag can only be set if Before_LM is also set.
+
+      WC_Method : System.WCh_Con.WC_Encoding_Method := Default_WCEM;
+      --  Encoding method to be used for this file. Text_IO does not deal with
+      --  wide characters, but it does deal with upper half characters in the
+      --  range 16#80#-16#FF# which may need encoding, e.g. in UTF-8 mode.
+
+      Before_Upper_Half_Character : Boolean := False;
+      --  This flag is set to indicate that an encoded upper half character has
+      --  been read by Text_IO.Look_Ahead. If it is set to True, then it means
+      --  that the stream is logically positioned before the character but is
+      --  physically positioned after it. The character involved must be in
+      --  the range 16#80#-16#FF#, i.e. if the flag is set, then we know the
+      --  next character has a code greater than 16#7F#, and the value of this
+      --  character is saved in Saved_Upper_Half_Character.
+
+      Saved_Upper_Half_Character : Character;
+      --  This field is valid only if Before_Upper_Half_Character is set. It
+      --  contains an upper-half character read by Look_Ahead. If Look_Ahead
+      --  reads a character in the range 16#00# to 16#7F#, then it can use
+      --  ungetc to put it back, but ungetc cannot be called more than once,
+      --  so for characters above this range, we don't try to back up the
+      --  file. Instead we save the character in this field and set the flag
+      --  Before_Upper_Half_Character to True to indicate that we are logically
+      --  positioned before this character even though the stream is physically
+      --  positioned after it.
 
    end record;
 

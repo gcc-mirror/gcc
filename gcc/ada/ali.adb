@@ -824,7 +824,7 @@ package body ALI is
         Sfile                      => No_File,
         Task_Dispatching_Policy    => ' ',
         Time_Slice_Value           => -1,
-        WC_Encoding                => '8',
+        WC_Encoding                => 'b',
         Unit_Exception_Table       => False,
         Ver                        => (others => ' '),
         Ver_Len                    => 0,
@@ -930,12 +930,22 @@ package body ALI is
 
          else
             Checkc (' ');
-            Name_Len := 0;
 
+            --  Scan out argument
+
+            Name_Len := 0;
             while not At_Eol loop
                Name_Len := Name_Len + 1;
                Name_Buffer (Name_Len) := Getc;
             end loop;
+
+            --  If -fstack-check, record that it occurred
+
+            if Name_Buffer (1 .. Name_Len) = "-fstack-check" then
+               Stack_Check_Switch_Set := True;
+            end if;
+
+            --  Store the argument
 
             Args.Increment_Last;
             Args.Table (Args.Last) := new String'(Name_Buffer (1 .. Name_Len));
