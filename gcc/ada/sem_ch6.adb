@@ -196,12 +196,6 @@ package body Sem_Ch6 is
    --  Flag functions that can be called without parameters, i.e. those that
    --  have no parameters, or those for which defaults exist for all parameters
 
-   procedure Reference_Body_Formals (Spec : Entity_Id; Bod : Entity_Id);
-   --  If there is a separate spec for a subprogram or generic subprogram, the
-   --  formals of the body are treated as references to the corresponding
-   --  formals of the spec. This reference does not count as an actual use of
-   --  the formal, in order to diagnose formals that are unused in the body.
-
    procedure Set_Formal_Validity (Formal_Id : Entity_Id);
    --  Formal_Id is an formal parameter entity. This procedure deals with
    --  setting the proper validity status for this entity, which depends
@@ -213,9 +207,8 @@ package body Sem_Ch6 is
 
    procedure Analyze_Return_Statement (N : Node_Id) is
 
-      pragma Assert (Nkind (N) = N_Simple_Return_Statement
-                       or else
-                     Nkind (N) = N_Extended_Return_Statement);
+      pragma Assert (Nkind_In (N, N_Simple_Return_Statement,
+                                  N_Extended_Return_Statement));
 
       Returns_Object : constant Boolean :=
                          Nkind (N) = N_Extended_Return_Statement
@@ -914,14 +907,16 @@ package body Sem_Ch6 is
       Par : constant Node_Id := Parent (N);
 
    begin
-      if        (Nkind (Par) = N_Function_Call and then N = Name (Par))
+      if        (Nkind (Par) = N_Function_Call
+                   and then N = Name (Par))
         or else  Nkind (Par) = N_Function_Instantiation
-        or else (Nkind (Par) = N_Indexed_Component and then N = Prefix (Par))
+        or else (Nkind (Par) = N_Indexed_Component
+                   and then N = Prefix (Par))
         or else (Nkind (Par) = N_Pragma_Argument_Association
                    and then not Is_Pragma_String_Literal (Par))
         or else  Nkind (Par) = N_Subprogram_Renaming_Declaration
-        or else  (Nkind (Par) = N_Attribute_Reference
-                   and then Attribute_Name (Par) /= Name_Value)
+        or else (Nkind (Par) = N_Attribute_Reference
+                  and then Attribute_Name (Par) /= Name_Value)
       then
          Find_Direct_Name (N);
 
@@ -1463,7 +1458,7 @@ package body Sem_Ch6 is
          Write_Eol;
       end if;
 
-      Trace_Scope (N, Body_Id, " Analyze subprogram");
+      Trace_Scope (N, Body_Id, " Analyze subprogram: ");
 
       --  Generic subprograms are handled separately. They always have a
       --  generic specification. Determine whether current scope has a
@@ -1945,7 +1940,7 @@ package body Sem_Ch6 is
       elsif Present (Spec_Id)
         and then Expander_Active
         and then
-          (Is_Always_Inlined (Spec_Id)
+          (Has_Pragma_Inline_Always (Spec_Id)
              or else (Has_Pragma_Inline (Spec_Id) and Front_End_Inlining))
       then
          Build_Body_To_Inline (N, Spec_Id);
@@ -2092,13 +2087,14 @@ package body Sem_Ch6 is
       --  initialized!
 
       declare
-         Stm : Node_Id := First (Statements (HSS));
+         Stm : Node_Id;
 
       begin
          --  Skip initial labels (for one thing this occurs when we are in
          --  front end ZCX mode, but in any case it is irrelevant), and also
          --  initial Push_xxx_Error_Label nodes, which are also irrelevant.
 
+         Stm := First (Statements (HSS));
          while Nkind (Stm) = N_Label
            or else Nkind (Stm) in N_Push_xxx_Label
          loop
@@ -2212,7 +2208,7 @@ package body Sem_Ch6 is
       Trace_Scope
         (N,
          Defining_Entity (N),
-         " Analyze subprogram spec. ");
+         " Analyze subprogram spec: ");
 
       if Debug_Flag_C then
          Write_Str ("====  Compiling subprogram spec ");
@@ -2355,8 +2351,7 @@ package body Sem_Ch6 is
          Set_Etype (Designator, Standard_Void_Type);
       end if;
 
-      --  Introduce new scope for analysis of the formals and of the
-      --  return type.
+      --  Introduce new scope for analysis of the formals and the return type
 
       Set_Scope (Designator, Current_Scope);
 
@@ -2495,12 +2490,10 @@ package body Sem_Ch6 is
             then
                Conv := Current_Entity (Id);
 
-            elsif (Nkind (Id) = N_Selected_Component
-                    or else Nkind (Id) = N_Expanded_Name)
+            elsif Nkind_In (Id, N_Selected_Component, N_Expanded_Name)
               and then Chars (Selector_Name (Id)) = Name_Unchecked_Conversion
             then
                Conv := Current_Entity (Selector_Name (Id));
-
             else
                return False;
             end if;
@@ -2515,16 +2508,15 @@ package body Sem_Ch6 is
 
       begin
          D := First (Decls);
-
          while Present (D) loop
-            if       (Nkind (D) = N_Function_Instantiation
-                        and then not Is_Unchecked_Conversion (D))
-              or else Nkind (D) = N_Protected_Type_Declaration
-              or else Nkind (D) = N_Package_Declaration
-              or else Nkind (D) = N_Package_Instantiation
-              or else Nkind (D) = N_Subprogram_Body
-              or else Nkind (D) = N_Procedure_Instantiation
-              or else Nkind (D) = N_Task_Type_Declaration
+            if (Nkind (D) = N_Function_Instantiation
+                  and then not Is_Unchecked_Conversion (D))
+              or else Nkind_In (D, N_Protected_Type_Declaration,
+                                   N_Package_Declaration,
+                                   N_Package_Instantiation,
+                                   N_Subprogram_Body,
+                                   N_Procedure_Instantiation,
+                                   N_Task_Type_Declaration)
             then
                Cannot_Inline
                  ("cannot inline & (non-allowed declaration)?", D, Subp);
@@ -2550,13 +2542,13 @@ package body Sem_Ch6 is
          while Present (S) loop
             Stat_Count := Stat_Count + 1;
 
-            if Nkind (S) = N_Abort_Statement
-              or else Nkind (S) = N_Asynchronous_Select
-              or else Nkind (S) = N_Conditional_Entry_Call
-              or else Nkind (S) = N_Delay_Relative_Statement
-              or else Nkind (S) = N_Delay_Until_Statement
-              or else Nkind (S) = N_Selective_Accept
-              or else Nkind (S) = N_Timed_Entry_Call
+            if Nkind_In (S, N_Abort_Statement,
+                            N_Asynchronous_Select,
+                            N_Conditional_Entry_Call,
+                            N_Delay_Relative_Statement,
+                            N_Delay_Until_Statement,
+                            N_Selective_Accept,
+                            N_Timed_Entry_Call)
             then
                Cannot_Inline
                  ("cannot inline & (non-allowed statement)?", S, Subp);
@@ -2821,7 +2813,7 @@ package body Sem_Ch6 is
       --  checks on inlining (forbidden declarations, handlers, etc).
 
       if Stat_Count > Max_Size
-        and then not Is_Always_Inlined (Subp)
+        and then not Has_Pragma_Inline_Always (Subp)
       then
          Cannot_Inline ("cannot inline& (body too large)?", N, Subp);
          return;
@@ -2917,7 +2909,7 @@ package body Sem_Ch6 is
       then
          null;
 
-      elsif Is_Always_Inlined (Subp) then
+      elsif Has_Pragma_Inline_Always (Subp) then
 
          --  Remove last character (question mark) to make this into an error,
          --  because the Inline_Always pragma cannot be obeyed.
@@ -3828,11 +3820,11 @@ package body Sem_Ch6 is
          Decl := Unit_Declaration_Node (Subp);
       end if;
 
-      if Nkind (Decl) = N_Subprogram_Body
-        or else Nkind (Decl) = N_Subprogram_Body_Stub
-        or else Nkind (Decl) = N_Subprogram_Declaration
-        or else Nkind (Decl) = N_Abstract_Subprogram_Declaration
-        or else Nkind (Decl) = N_Subprogram_Renaming_Declaration
+      if Nkind_In (Decl, N_Subprogram_Body,
+                         N_Subprogram_Body_Stub,
+                         N_Subprogram_Declaration,
+                         N_Abstract_Subprogram_Declaration,
+                         N_Subprogram_Renaming_Declaration)
       then
          Spec := Specification (Decl);
 
@@ -3864,7 +3856,7 @@ package body Sem_Ch6 is
       --  argument the signature that may match that of a standard operation.
 
       elsif Nkind (Subp) = N_Defining_Operator_Symbol
-        and then  Must_Not_Override (Spec)
+        and then Must_Not_Override (Spec)
       then
          if Operator_Matches_Spec (Subp, Subp) then
             Error_Msg_NE
@@ -4023,9 +4015,9 @@ package body Sem_Ch6 is
          --  Don't count exception junk
 
            or else
-             ((Nkind (Last_Stm) = N_Goto_Statement
-                 or else Nkind (Last_Stm) = N_Label
-                 or else Nkind (Last_Stm) = N_Object_Declaration)
+             (Nkind_In (Last_Stm, N_Goto_Statement,
+                                   N_Label,
+                                   N_Object_Declaration)
                 and then Exception_Junk (Last_Stm))
            or else Nkind (Last_Stm) in N_Push_xxx_Label
            or else Nkind (Last_Stm) in N_Pop_xxx_Label
@@ -4111,7 +4103,6 @@ package body Sem_Ch6 is
          elsif Kind = N_Case_Statement then
             declare
                Case_Alt : Node_Id;
-
             begin
                Case_Alt := First_Non_Pragma (Alternatives (Last_Stm));
                while Present (Case_Alt) loop
@@ -4247,12 +4238,15 @@ package body Sem_Ch6 is
          --  Otherwise we have the case of a procedure marked No_Return
 
          else
-            Error_Msg_N
-              ("?implied return after this statement will raise Program_Error",
-               Last_Stm);
-            Error_Msg_NE
-              ("?procedure & is marked as No_Return",
-               Last_Stm, Proc);
+            if not Raise_Exception_Call then
+               Error_Msg_N
+                 ("?implied return after this statement " &
+                  "will raise Program_Error",
+                  Last_Stm);
+               Error_Msg_NE
+                 ("\?procedure & is marked as No_Return!",
+                  Last_Stm, Proc);
+            end if;
 
             declare
                RE : constant Node_Id :=
@@ -4574,7 +4568,7 @@ package body Sem_Ch6 is
       Are_Anonymous_Access_To_Subprogram_Types :=
         Ekind (Type_1) = Ekind (Type_2)
           and then
-            (Ekind (Type_1) =  E_Anonymous_Access_Subprogram_Type
+            (Ekind (Type_1) = E_Anonymous_Access_Subprogram_Type
              or else
                Ekind (Type_1) = E_Anonymous_Access_Protected_Subprogram_Type);
 
@@ -6146,9 +6140,8 @@ package body Sem_Ch6 is
                then
                   return True;
 
-               elsif (Nkind (N) = N_Private_Type_Declaration
-                       or else
-                      Nkind (N) = N_Private_Extension_Declaration)
+               elsif Nkind_In (N, N_Private_Type_Declaration,
+                                  N_Private_Extension_Declaration)
                  and then Present (Defining_Identifier (N))
                  and then T = Full_View (Defining_Identifier (N))
                then
@@ -6303,9 +6296,10 @@ package body Sem_Ch6 is
          --  operation in a type derivation on for a generic actual.
 
          if Nkind (Parent (Typ)) /= N_Full_Type_Declaration
-           and then Nkind (Parent (Def_Id)) /= N_Subtype_Declaration
-           and then Nkind (Parent (Def_Id)) /= N_Task_Type_Declaration
-           and then Nkind (Parent (Def_Id)) /= N_Protected_Type_Declaration
+           and then
+             not Nkind_In (Parent (Def_Id), N_Subtype_Declaration,
+                                            N_Task_Type_Declaration,
+                                            N_Protected_Type_Declaration)
          then
             Collect_Abstract_Interfaces (Typ, Ifaces_List);
 
@@ -6838,6 +6832,10 @@ package body Sem_Ch6 is
       Default     : Node_Id;
       Ptype       : Entity_Id;
 
+      --  The following are used for setting Is_Only_Out_
+      Num_Out_Params  : Nat       := 0;
+      First_Out_Param : Entity_Id := Empty;
+
       function Is_Class_Wide_Default (D : Node_Id) return Boolean;
       --  Check whether the default has a class-wide type. After analysis the
       --  default has the type of the formal, so we must also check explicitly
@@ -6895,8 +6893,8 @@ package body Sem_Ch6 is
                elsif Is_Value_Type (Formal_Type) then
                   null;
 
-               elsif Nkind (Parent (T)) /= N_Access_Function_Definition
-                 and then Nkind (Parent (T)) /= N_Access_Procedure_Definition
+               elsif not Nkind_In (Parent (T), N_Access_Function_Definition,
+                                               N_Access_Procedure_Definition)
                then
                   Error_Msg_N ("invalid use of incomplete type", Param_Spec);
 
@@ -7075,10 +7073,24 @@ package body Sem_Ch6 is
                   Apply_Scalar_Range_Check (Default, Formal_Type);
                end if;
             end if;
+
+         elsif Ekind (Formal) = E_Out_Parameter then
+            Num_Out_Params := Num_Out_Params + 1;
+
+            if Num_Out_Params = 1 then
+               First_Out_Param := Formal;
+            end if;
+
+         elsif Ekind (Formal) = E_In_Out_Parameter then
+            Num_Out_Params := Num_Out_Params + 1;
          end if;
 
          Next (Param_Spec);
       end loop;
+
+      if Present (First_Out_Param) and then Num_Out_Params = 1 then
+         Set_Is_Only_Out_Parameter (First_Out_Param);
+      end if;
    end Process_Formals;
 
    ----------------------------

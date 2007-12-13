@@ -176,6 +176,16 @@ package Sem_Ch6 is
    --  access parameter are attached to the Related_Nod which comes from the
    --  context.
 
+   procedure Reference_Body_Formals (Spec : Entity_Id; Bod : Entity_Id);
+   --  If there is a separate spec for a subprogram or generic subprogram, the
+   --  formals of the body are treated as references to the corresponding
+   --  formals of the spec. This reference does not count as an actual use of
+   --  the formal, in order to diagnose formals that are unused in the body.
+   --  This procedure is also used in renaming_as_body declarations, where
+   --  the formals of the specification must be treated as body formals that
+   --  correspond to the previous subprogram declaration, and not as new
+   --  entities with their defining entry in the cross-reference information.
+
    procedure Set_Actual_Subtypes (N : Node_Id; Subp : Entity_Id);
    --  If the formals of a subprogram are unconstrained, build a subtype
    --  declaration that uses the bounds or discriminants of the actual to
