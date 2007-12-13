@@ -20,12 +20,12 @@
 load_lib gcc-dg.exp
 load_lib target-supports.exp
 
-set DEFAULT_CFLAGS "-O3 -fipa-struct-reorg -fdump-ipa-all -fwhole-program -combine -fipa-type-escape"
+set STRUCT_REORG_CFLAGS "-O3 -fipa-struct-reorg -fdump-ipa-all -fwhole-program -combine -fipa-type-escape"
 
 # Initialize `dg'.
 dg-init
 
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/wo_prof_*.c]] "" $DEFAULT_CFLAGS
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/wo_prof_*.c]] "" $STRUCT_REORG_CFLAGS
 
 dg-final
 
