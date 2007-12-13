@@ -40,22 +40,22 @@
 package System.Traceback_Entries is
    pragma Preelaborate;
 
-   --  Symbolization is done by a VMS service which requires an instruction
-   --  and a frame pointer for each traceback entry.
+   --  Symbolization is performed by a VMS service which requires more
+   --  than an instruction pointer.
 
    type Traceback_Entry is record
-      PC : System.Address;
-      FP : System.Address;
+      PC : System.Address;  --  Program Counter
+      PV : System.Address;  --  Procedure Value
    end record;
 
    pragma Suppress_Initialization (Traceback_Entry);
 
    Null_TB_Entry : constant Traceback_Entry :=
                      (PC => System.Null_Address,
-                      FP => System.Null_Address);
+                      PV => System.Null_Address);
 
    function PC_For (TB_Entry : Traceback_Entry) return System.Address;
-   function FP_For (TB_Entry : Traceback_Entry) return System.Address;
+   function PV_For (TB_Entry : Traceback_Entry) return System.Address;
 
    function TB_Entry_For (PC : System.Address) return Traceback_Entry;
 

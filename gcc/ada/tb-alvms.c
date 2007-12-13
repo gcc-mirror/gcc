@@ -337,8 +337,8 @@ unwind_kernel_handler (frame_state_t * fs)
    system functions need more than just a mere PC to compute info on a frame
    (e.g. for non-symbolic->symbolic translation purposes).  */
 typedef struct {
-  ADDR pc; /* instruction pointer */
-  ADDR fp; /* frame pointer */
+  ADDR pc;  /* Program Counter.  */
+  ADDR pv;  /* Procedure Value.  */
 } tb_entry_t;
 
 /********************
@@ -383,7 +383,7 @@ __gnat_backtrace (void **array, int size,
 	  && (frame_state.pc < exclude_min || frame_state.pc > exclude_max))
 	{
 	  tbe->pc = (ADDR) frame_state.pc;
-	  tbe->fp = (ADDR) frame_state.fp;
+	  tbe->pv = (ADDR) PV_FOR (frame_state.fp);
 
 	  cnt ++;
 	  tbe ++;
