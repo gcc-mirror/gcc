@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2006, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2007, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -59,8 +59,13 @@
 #include <windows.h>
 
 extern void __gnat_init_float (void);
-extern void __gnat_plist_init (void);
 extern void __gnat_install_SEH_handler (void *);
+
+#ifndef RTX
+/* Do not define for RTX since it is only used for creating child processes
+   which is not supported in RTX. */
+extern void __gnat_plist_init (void);
+#endif
 
 void
 __gnat_initialize (void *eh)
@@ -71,9 +76,11 @@ __gnat_initialize (void *eh)
       given that we have set Max_Digits etc with this in mind */
    __gnat_init_float ();
 
+#ifndef RTX
    /* Initialize a lock for a process handle list - see adaint.c for the
       implementation of __gnat_portable_no_block_spawn, __gnat_portable_wait */
    __gnat_plist_init();
+#endif
 
    /* Note that we do not activate this for the compiler itself to avoid a
       bootstrap path problem.  Older version of gnatbind will generate a call

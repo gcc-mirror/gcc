@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *         Copyright (C) 1992-2006, Free Software Foundation, Inc.          *
+ *         Copyright (C) 1992-2007, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -213,6 +213,23 @@ __gnat_ttyname (int filedes)
    Calling FlushConsoleInputBuffer just after getch() fix the bug under
    95/98. */
 
+#ifdef RTX
+
+static void winflush_nt (void);
+
+/* winflush_function will do nothing since we only have problems with Windows
+   95/98 which are not supported by RTX. */
+
+static void (*winflush_function) (void) = winflush_nt;
+
+static void
+winflush_nt (void)
+{
+  /* Does nothing as there is no problem under NT.  */
+}
+
+#else
+
 static void winflush_init (void);
 
 static void winflush_95 (void);
@@ -279,6 +296,8 @@ __gnat_is_windows_xp (void)
 
 #endif
 
+#endif
+
 #else
 
 static const char *mode_read_text = "r";
@@ -309,15 +328,13 @@ __gnat_set_text_mode (int handle ATTRIBUTE_UNUSED)
 char *
 __gnat_ttyname (int filedes)
 {
-#ifndef __vxworks
+#if defined (__vxworks) || defined (__nucleus)
+  return "";
+#else
   extern char *ttyname (int);
 
   return ttyname (filedes);
-
-#else
-  return "";
-
-#endif
+#endif /* defined (__vxworks) || defined (__nucleus) */
 }
 #endif
 
@@ -870,32 +887,6 @@ __gnat_get_task_options (void)
 #else
   return options;
 #endif
-}
-
-typedef struct
-{
-  int  size;
-  char *base;
-  char *end;
-} stack_info;
-
-/* __gnat_get_stack_info is used by s-stchop.adb only for VxWorks. This
-   procedure fills the stack information associated to the currently
-   executing task. */
-extern void __gnat_get_stack_info (stack_info *vxworks_stack_info);
-
-void
-__gnat_get_stack_info (stack_info *vxworks_stack_info)
-{
-  TASK_DESC descriptor;
-
-  /* Ask the VxWorks kernel about stack values */
-  taskInfoGet (taskIdSelf (), &descriptor);
-
-  /* Fill the stack data with the information provided by the kernel */
-  vxworks_stack_info->size = descriptor.td_stackSize;
-  vxworks_stack_info->base = descriptor.td_pStackBase;
-  vxworks_stack_info->end  = descriptor.td_pStackEnd;
 }
 
 #endif
