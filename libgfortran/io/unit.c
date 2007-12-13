@@ -581,27 +581,8 @@ close_unit_1 (gfc_unit *u, int locked)
 
   /* If there are previously written bytes from a write with ADVANCE="no"
      Reposition the buffer before closing.  */
-  if (u->saved_pos > 0)
-    {
-      char *p;
-
-      p = salloc_w (u->s, &u->saved_pos);
-
-      if (!(u->unit_number == options.stdout_unit
-	    || u->unit_number == options.stderr_unit))
-	{
-	  size_t len;
-
-	  const char crlf[] = "\r\n";
-#ifdef HAVE_CRLF
-	  len = 2;
-#else
-	  len = 1;
-#endif
-	  if (swrite (u->s, &crlf[2-len], &len) != 0)
-	    os_error ("Close after ADVANCE_NO failed");
-	}
-    }
+  if (u->previous_nonadvancing_write)
+    finish_last_advance_record (u);
 
   rc = (u->s == NULL) ? 0 : sclose (u->s) == FAILURE;
 
@@ -716,5 +697,29 @@ filename_from_unit (int n)
     }
   else
     return (char *) NULL;
+}
+
+void
+finish_last_advance_record (gfc_unit *u)
+{
+  char *p;
+
+  if (u->saved_pos > 0)
+    p = salloc_w (u->s, &u->saved_pos);
+
+  if (!(u->unit_number == options.stdout_unit
+	|| u->unit_number == options.stderr_unit))
+    {
+      size_t len;
+
+      const char crlf[] = "\r\n";
+#ifdef HAVE_CRLF
+      len = 2;
+#else
+      len = 1;
+#endif
+      if (swrite (u->s, &crlf[2-len], &len) != 0)
+	os_error ("Completing record after ADVANCE_NO failed");
+    }
 }
 

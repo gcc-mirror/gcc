@@ -1,3 +1,29 @@
+2007-12-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/34370
+	PR libfortran/34323
+	PR libfortran/34405
+	* io/io.h:  Add previous_nonadvancing_write to gfc_unit.
+	Add prototype for finish_last_advance_record.
+	* io/file_pos.c (st_backspace):  Generate error if backspace is
+	attempted for direct access or unformatted stream.
+	If there are bytes left from a previous ADVANCE="no", write
+	them out before performing the backspace.
+	(st_endfile):  Generate error if endfile is attempted for
+	direct access.
+	If there are bytes left from a previous ADVANCE="no", write
+	them out before performing the endfile.
+	(st_rewind):  Generate error if rewind is attempted for
+	direct access.
+	* unit.c (close_unit_1):  Move functionality to write
+	previously written bytes to...
+	(finish_last_advance_record):  ... here.
+	* transfer.c (data_transfer_init):  If reading, reset
+	previous_nonadvancing_write.
+	(finalize_transfer):  Set the previous_noadvancing_write
+	flag if we are writing and ADVANCE="no" was specified.
+	Only call next_record() if advance="no" wasn't specified.
+
 2007-12-13  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34427

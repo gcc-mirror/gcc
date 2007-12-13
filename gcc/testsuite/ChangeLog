@@ -1,3 +1,12 @@
+2007-12-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/34370
+	PR libfortran/34323
+	PR libfortran/34405
+	* gfortran.dg/advance_6.f90:  New test case.
+	* gfortran.dg/direct_io_7.f90:  New test case.
+	* gfortran.dg/streamio_13.f90:  New test case.
+
 2007-12-13  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* g++.dg/cpp0x/__func__.C: New.

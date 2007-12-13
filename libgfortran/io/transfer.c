@@ -1891,6 +1891,8 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 
   if (read_flag)
     {
+      dtp->u.p.current_unit->previous_nonadvancing_write = 0;
+
       if ((cf & IOPARM_EOR) != 0 && dtp->u.p.advance_status != ADVANCE_NO)
 	{
 	  generate_error (&dtp->common, LIBERROR_MISSING_OPTION,
@@ -2644,9 +2646,14 @@ finalize_transfer (st_parameter_dt *dtp)
       return;
     }
 
+  if (dtp->u.p.mode == WRITING)
+    dtp->u.p.current_unit->previous_nonadvancing_write
+      = dtp->u.p.advance_status == ADVANCE_NO;
+
   if (is_stream_io (dtp))
     {
-      if (dtp->u.p.current_unit->flags.form == FORM_FORMATTED)
+      if (dtp->u.p.current_unit->flags.form == FORM_FORMATTED
+	  && dtp->u.p.advance_status != ADVANCE_NO)
 	next_record (dtp, 1);
 
       if (dtp->u.p.current_unit->flags.form == FORM_UNFORMATTED
