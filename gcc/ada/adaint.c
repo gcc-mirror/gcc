@@ -76,7 +76,12 @@
 #include "version.h"
 #endif
 
-#if defined (__MINGW32__)
+#if defined (RTX)
+#include <windows.h>
+#include <Rtapi.h>
+#include <sys/utime.h>
+
+#elif defined (__MINGW32__)
 
 #include "mingw32.h"
 #include <sys/utime.h>
@@ -995,7 +1000,12 @@ __gnat_tmp_name (char *tmp_filename)
 
 DIR* __gnat_opendir (char *name)
 {
-#ifdef __MINGW32__
+#if defined (RTX)
+  /* Not supported in RTX */
+
+  return NULL;
+
+#elif defined (__MINGW32__)
   TCHAR wname[GNAT_MAX_PATH_LEN];
 
   S2WSU (wname, name, GNAT_MAX_PATH_LEN);
@@ -1012,7 +1022,11 @@ DIR* __gnat_opendir (char *name)
 char *
 __gnat_readdir (DIR *dirp, char *buffer, int *len)
 {
-#if defined (__MINGW32__)
+#if defined (RTX)
+  /* Not supported in RTX */
+
+  return NULL;
+#elif defined (__MINGW32__)
   struct _tdirent *dirent = _treaddir ((_TDIR*)dirp);
 
   if (dirent != NULL)
@@ -1054,7 +1068,12 @@ __gnat_readdir (DIR *dirp, char *buffer, int *len)
 
 int __gnat_closedir (DIR *dirp)
 {
-#ifdef __MINGW32__
+#if defined (RTX)
+  /* Not supported in RTX */
+
+  return 0;
+
+#elif defined (__MINGW32__)
   return _tclosedir ((_TDIR*)dirp);
 
 #else
@@ -1074,7 +1093,7 @@ __gnat_readdir_is_thread_safe (void)
 #endif
 }
 
-#ifdef _WIN32
+#if defined (_WIN32) && !defined (RTX)
 /* Number of seconds between <Jan 1st 1601> and <Jan 1st 1970>.  */
 static const unsigned long long w32_epoch_offset = 11644473600ULL;
 
@@ -1114,7 +1133,7 @@ __gnat_file_time_name (char *name)
   close (fd);
   return (OS_Time)ret;
 
-#elif defined (_WIN32)
+#elif defined (_WIN32) && !defined (RTX)
   time_t ret = -1;
   TCHAR wname[GNAT_MAX_PATH_LEN];
 
@@ -1217,7 +1236,7 @@ __gnat_file_time_fd (int fd)
   tot_secs += file_tsec * 2;
   return (OS_Time) tot_secs;
 
-#elif defined (_WIN32)
+#elif defined (_WIN32) && !defined (RTX)
   HANDLE h = (HANDLE) _get_osfhandle (fd);
   time_t ret = win32_filetime (h);
   return (OS_Time) ret;
@@ -1247,7 +1266,7 @@ __gnat_set_file_time_name (char *name, time_t time_stamp)
 
 /* Code to implement __gnat_set_file_time_name for these systems.  */
 
-#elif defined (_WIN32)
+#elif defined (_WIN32) && !defined (RTX)
   union
   {
     FILETIME ft_time;
@@ -1462,7 +1481,7 @@ __gnat_get_libraries_from_registry (void)
 {
   char *result = (char *) "";
 
-#if defined (_WIN32) && ! defined (__vxworks) && ! defined (CROSS_DIRECTORY_STRUCTURE)
+#if defined (_WIN32) && ! defined (__vxworks) && ! defined (CROSS_DIRECTORY_STRUCTURE) && ! defined (RTX)
 
   HKEY reg_key;
   DWORD name_size, value_size;
@@ -1552,7 +1571,7 @@ __gnat_stat (char *name, struct stat *statbuf)
 int
 __gnat_file_exists (char *name)
 {
-#ifdef __MINGW32__
+#if defined (__MINGW32__) && !defined (RTX)
   /*  On Windows do not use __gnat_stat() because a bug in Microsoft
   _stat() routine. When the system time-zone is set with a negative
   offset the _stat() routine fails on specific files like CON:  */
@@ -1720,7 +1739,10 @@ __gnat_portable_spawn (char *args[])
   int finished ATTRIBUTE_UNUSED;
   int pid ATTRIBUTE_UNUSED;
 
-#if defined (MSDOS) || defined (_WIN32)
+#if defined (__vxworks) || defined(__nucleus__) || defined(RTX)
+  return -1;
+
+#elif defined (MSDOS) || defined (_WIN32)
   /* args[0] must be quotes as it could contain a full pathname with spaces */
   char *args_0 = args[0];
   args[0] = (char *)xmalloc (strlen (args_0) + 3);
@@ -1739,8 +1761,6 @@ __gnat_portable_spawn (char *args[])
   else
     return status;
 
-#elif defined (__vxworks) || defined(__nucleus__)
-  return -1;
 #else
 
 #ifdef __EMX__
@@ -1809,7 +1829,7 @@ __gnat_dup2 (int oldfd, int newfd)
 
 /* WIN32 code to implement a wait call that wait for any child process.  */
 
-#ifdef _WIN32
+#if defined (_WIN32) && !defined (RTX)
 
 /* Synchronization code, to be thread safe.  */
 
@@ -2021,7 +2041,10 @@ __gnat_portable_no_block_spawn (char *args[])
 {
   int pid = 0;
 
-#if defined (__EMX__) || defined (MSDOS)
+#if defined (__vxworks) || defined (__nucleus__) || defined (RTX)
+  return -1;
+
+#elif defined (__EMX__) || defined (MSDOS)
 
   /* ??? For PC machines I (Franco) don't know the system calls to implement
      this routine. So I'll fake it as follows. This routine will behave
@@ -2038,9 +2061,6 @@ __gnat_portable_no_block_spawn (char *args[])
 
   pid = win32_no_block_spawn (args[0], args);
   return pid;
-
-#elif defined (__vxworks) || defined (__nucleus__)
-  return -1;
 
 #else
   pid = fork ();
@@ -2067,16 +2087,17 @@ __gnat_portable_wait (int *process_status)
   int status = 0;
   int pid = 0;
 
-#if defined (_WIN32)
+#if defined (__vxworks) || defined (__nucleus__) || defined (RTX)
+  /* Not sure what to do here, so do same as __EMX__ case, i.e., nothing but
+     return zero.  */
+
+#elif defined (_WIN32)
 
   pid = win32_wait (&status);
 
 #elif defined (__EMX__) || defined (MSDOS)
   /* ??? See corresponding comment in portable_no_block_spawn.  */
 
-#elif defined (__vxworks) || defined (__nucleus__)
-  /* Not sure what to do here, so do same as __EMX__ case, i.e., nothing but
-     return zero.  */
 #else
 
   pid = waitpid (-1, &status, 0);
@@ -2218,7 +2239,7 @@ __gnat_locate_exec_on_path (char *exec_name)
 {
   char *apath_val;
 
-#ifdef _WIN32
+#if defined (_WIN32) && !defined (RTX)
   TCHAR *wpath_val = _tgetenv (_T("PATH"));
   TCHAR *wapath_val;
   /* In Win32 systems we expand the PATH as for XP environment
@@ -2990,3 +3011,42 @@ __gnat_sals_init_using_constructors ()
    return 1;
 #endif
 }
+
+/* In RTX mode, the procedure to get the time (as file time) is different
+   in RTSS mode and Win32 mode. In order to avoid duplicating an Ada file,
+   we introduce an intermediate procedure to link against the corresponding
+   one in each situation. */
+#ifdef RTX
+
+void GetTimeAsFileTime(LPFILETIME pTime)
+{
+#ifdef RTSS
+  RtGetRtssTimeAsFileTime (pTime); /* RTSS interface */
+#else
+  GetSystemTimeAsFileTime (pTime); /* w32 interface */
+#endif
+}
+#endif
+
+#if defined (linux)
+/* pthread affinity support */
+
+#ifdef CPU_SETSIZE
+#include <pthread.h>
+int
+__gnat_pthread_setaffinity_np (pthread_t th,
+			       size_t cpusetsize,
+			       const cpu_set_t *cpuset)
+{
+  return pthread_setaffinity_np (th, cpusetsize, cpuset);
+}
+#else
+int
+__gnat_pthread_setaffinity_np (pthread_t th,
+			       size_t cpusetsize,
+			       const void *cpuset)
+{
+  return 0;
+}
+#endif
+#endif
