@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                 G N A T . S P E L L I N G _ C H E C K E R                --
+--          G N A T . U T F _ 3 2 _ S P E L L I N G _ C H E C K E R         --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -37,19 +37,19 @@ pragma Warnings (On);
 
 with GNAT.Spelling_Checker_Generic;
 
-package body GNAT.Spelling_Checker is
+package body GNAT.UTF_32_Spelling_Checker is
 
    function IBS is new
      GNAT.Spelling_Checker_Generic.Is_Bad_Spelling_Of
-       (Character, String);
+       (System.WCh_Cnv.UTF_32_Code, System.WCh_Cnv.UTF_32_String);
 
    ------------------------
    -- Is_Bad_Spelling_Of --
    ------------------------
 
    function Is_Bad_Spelling_Of
-     (Found  : String;
-      Expect : String) return Boolean
+     (Found  : System.WCh_Cnv.UTF_32_String;
+      Expect : System.WCh_Cnv.UTF_32_String) return Boolean
    renames IBS;
 
-end GNAT.Spelling_Checker;
+end GNAT.UTF_32_Spelling_Checker;

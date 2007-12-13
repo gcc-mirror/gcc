@@ -31,6 +31,7 @@
 
 with Fname.UF; use Fname.UF;
 with Lib.Load; use Lib.Load;
+with Namet.Sp; use Namet.Sp;
 with Uname;    use Uname;
 with Osint;    use Osint;
 with Sinput.L; use Sinput.L;
@@ -225,8 +226,7 @@ begin
             --  unit name is indeed a plausible misspelling of the one we got.
 
             if Is_Bad_Spelling_Of
-              (Found  => Get_Name_String (Expect_Name),
-               Expect => Get_Name_String (Actual_Name))
+              (Name_Id (Expect_Name), Name_Id (Actual_Name))
             then
                Error_Msg_Unit_1 := Actual_Name;
                Error_Msg ("possible misspelling of $$!", Loc);

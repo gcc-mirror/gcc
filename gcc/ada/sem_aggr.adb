@@ -35,6 +35,7 @@ with Itypes;   use Itypes;
 with Lib;      use Lib;
 with Lib.Xref; use Lib.Xref;
 with Namet;    use Namet;
+with Namet.Sp; use Namet.Sp;
 with Nmake;    use Nmake;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
@@ -54,8 +55,6 @@ with Stand;    use Stand;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
-
-with GNAT.Spelling_Checker; use GNAT.Spelling_Checker;
 
 package body Sem_Aggr is
 
@@ -730,44 +729,37 @@ package body Sem_Aggr is
       --  misspellings, these misspellings will be suggested as
       --  possible correction.
 
-      Get_Name_String (Chars (Component));
+      Component_Elmt := First_Elmt (Elements);
+      while Nr_Of_Suggestions <= Max_Suggestions
+        and then Present (Component_Elmt)
+      loop
+         if Is_Bad_Spelling_Of
+              (Chars (Node (Component_Elmt)),
+               Chars (Component))
+         then
+            Nr_Of_Suggestions := Nr_Of_Suggestions + 1;
 
-      declare
-         S  : constant String (1 .. Name_Len) :=
-                Name_Buffer (1 .. Name_Len);
-
-      begin
-         Component_Elmt := First_Elmt (Elements);
-         while Nr_Of_Suggestions <= Max_Suggestions
-            and then Present (Component_Elmt)
-         loop
-            Get_Name_String (Chars (Node (Component_Elmt)));
-
-            if Is_Bad_Spelling_Of (Name_Buffer (1 .. Name_Len), S) then
-               Nr_Of_Suggestions := Nr_Of_Suggestions + 1;
-
-               case Nr_Of_Suggestions is
-                  when 1      => Suggestion_1 := Node (Component_Elmt);
-                  when 2      => Suggestion_2 := Node (Component_Elmt);
-                  when others => exit;
-               end case;
-            end if;
-
-            Next_Elmt (Component_Elmt);
-         end loop;
-
-         --  Report at most two suggestions
-
-         if Nr_Of_Suggestions = 1 then
-            Error_Msg_NE ("\possible misspelling of&",
-               Component, Suggestion_1);
-
-         elsif Nr_Of_Suggestions = 2 then
-            Error_Msg_Node_2 := Suggestion_2;
-            Error_Msg_NE ("\possible misspelling of& or&",
-              Component, Suggestion_1);
+            case Nr_Of_Suggestions is
+               when 1      => Suggestion_1 := Node (Component_Elmt);
+               when 2      => Suggestion_2 := Node (Component_Elmt);
+               when others => exit;
+            end case;
          end if;
-      end;
+
+         Next_Elmt (Component_Elmt);
+      end loop;
+
+      --  Report at most two suggestions
+
+      if Nr_Of_Suggestions = 1 then
+         Error_Msg_NE
+           ("\possible misspelling of&", Component, Suggestion_1);
+
+      elsif Nr_Of_Suggestions = 2 then
+         Error_Msg_Node_2 := Suggestion_2;
+         Error_Msg_NE
+           ("\possible misspelling of& or&", Component, Suggestion_1);
+      end if;
    end Check_Misspelled_Component;
 
    ----------------------------------------
@@ -3029,15 +3021,18 @@ package body Sem_Aggr is
 
                --  A box-defaulted access component gets the value null. Also
                --  included are components of private types whose underlying
-               --  type is an access type.
+               --  type is an access type. In either case set the type of the
+               --  literal, for subsequent use in semantic checks.
 
                elsif Present (Underlying_Type (Ctyp))
                  and then Is_Access_Type (Underlying_Type (Ctyp))
                then
                   if not Is_Private_Type (Ctyp) then
+                     Expr := Make_Null (Sloc (N));
+                     Set_Etype (Expr, Ctyp);
                      Add_Association
                        (Component => Component,
-                        Expr      => Make_Null (Sloc (N)));
+                        Expr      => Expr);
 
                   --  If the component's type is private with an access type as
                   --  its underlying type then we have to create an unchecked
@@ -3184,9 +3179,7 @@ package body Sem_Aggr is
             --  Ignore hidden components associated with the position of the
             --  interface tags: these are initialized dynamically.
 
-            if Present (Related_Interface (Component)) then
-               null;
-            else
+            if not Present (Related_Type (Component)) then
                Error_Msg_NE
                  ("no value supplied for component &!", N, Component);
             end if;

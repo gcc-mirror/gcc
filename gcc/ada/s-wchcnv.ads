@@ -32,8 +32,15 @@
 ------------------------------------------------------------------------------
 
 --  This package contains generic subprograms used for converting between
---  sequences of Character and Wide_Character. All access to wide character
---  sequences is isolated in this unit.
+--  sequences of Character and Wide_Character. Wide_Wide_Character values
+--  are also handled, but represented using integer range types defined in
+--  this package, so that this package can be used from applications that
+--  are restricted to Ada 95 compatibility (such as the compiler itself).
+
+--  All the algorithms for encoding and decoding are isolated in this package
+--  and in System.WCh_JIS and should not be duplicated elsewhere. The only
+--  exception to this is that GNAT.Decode_String and GNAT.Encode_String have
+--  their own circuits for UTF-8 conversions, for improved efficiency.
 
 --  This unit may be used directly from an application program by providing
 --  an appropriate WITH, and the interface can be expected to remain stable.
@@ -51,6 +58,8 @@ package System.WCh_Cnv is
    for UTF_32_Code'Size use 32;
    --  Range of allowed UTF-32 encoding values
 
+   type UTF_32_String is array (Positive range <>) of UTF_32_Code;
+
    generic
       with function In_Char return Character;
    function Char_Sequence_To_Wide_Char
@@ -62,6 +71,16 @@ package System.WCh_Cnv is
    --  corresponding wide character value. Constraint_Error is raised if the
    --  sequence of characters encountered is not a valid wide character
    --  sequence for the given encoding method.
+   --
+   --  Note on the use of brackets encoding (WCEM_Brackets). The brackets
+   --  encoding method is ambiguous in the context of this function, since
+   --  there is no way to tell if ["1234"] is eight unencoded characters or
+   --  one encoded character. In the context of Ada sources, any sequence
+   --  starting [" must be the start of an encoding (since that sequence is
+   --  not valid in Ada source otherwise). The routines in this package use
+   --  the same approach. If the input string contains the sequence [" then
+   --  this is assumed to be the start of a brackets encoding sequence, and
+   --  if it does not match the syntax, an error is raised.
 
    generic
       with function In_Char return Character;
@@ -82,6 +101,11 @@ package System.WCh_Cnv is
    --  more characters, calling the given Out_Char procedure for each.
    --  Constraint_Error is raised if the given wide character value is
    --  not a valid value for the given encoding method.
+   --
+   --  Note on brackets encoding (WCEM_Brackets). For the input routines above,
+   --  upper half characters can be represented as ["hh"] but this procedure
+   --  will only use brackets encodings for codes higher than 16#FF#, so upper
+   --  half characters will be output as single Character values.
 
    generic
       with procedure Out_Char (C : Character);

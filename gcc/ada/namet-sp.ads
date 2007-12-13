@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUN-TIME COMPONENTS                         --
+--                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                 G N A T . S P E L L I N G _ C H E C K E R                --
+--                             N A M E T - S P                              --
 --                                                                          --
---                                 B o d y                                  --
+--                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1998-2007, AdaCore                     --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,25 +31,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Warnings (Off);
-pragma Compiler_Unit;
-pragma Warnings (On);
+--  This child package contains a spell checker for Name_Id values. It is
+--  separated off as a child package, because of the extra dependencies,
+--  in particular on GNAT.UTF_32_ Spelling_Checker. There are a number of
+--  packages that use Namet that do not need the spell checking feature,
+--  and this separation helps in dealing with older versions of GNAT.
 
-with GNAT.Spelling_Checker_Generic;
+package Namet.Sp is
 
-package body GNAT.Spelling_Checker is
+   function Is_Bad_Spelling_Of (Found, Expect : Name_Id) return Boolean;
+   --  Compares two identifier names from the names table, and returns True if
+   --  Found is a plausible misspelling of Expect. This function properly deals
+   --  with wide and wide wide character encodings in the input names.
 
-   function IBS is new
-     GNAT.Spelling_Checker_Generic.Is_Bad_Spelling_Of
-       (Character, String);
-
-   ------------------------
-   -- Is_Bad_Spelling_Of --
-   ------------------------
-
-   function Is_Bad_Spelling_Of
-     (Found  : String;
-      Expect : String) return Boolean
-   renames IBS;
-
-end GNAT.Spelling_Checker;
+end Namet.Sp;
