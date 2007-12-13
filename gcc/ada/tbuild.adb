@@ -347,6 +347,25 @@ package body Tbuild is
       return LS;
    end Make_Linker_Section_Pragma;
 
+   -----------------
+   -- Make_Pragma --
+   -----------------
+
+   function Make_Pragma
+     (Sloc                         : Source_Ptr;
+      Chars                        : Name_Id;
+      Pragma_Argument_Associations : List_Id := No_List;
+      Debug_Statement              : Node_Id := Empty) return Node_Id
+   is
+   begin
+      return
+        Make_Pragma (Sloc,
+          Chars                        => Chars,
+          Pragma_Argument_Associations => Pragma_Argument_Associations,
+          Debug_Statement              => Debug_Statement,
+          Pragma_Identifier            => Make_Identifier (Sloc, Chars));
+   end Make_Pragma;
+
    ---------------------------------
    -- Make_Raise_Constraint_Error --
    ---------------------------------

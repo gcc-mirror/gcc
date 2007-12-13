@@ -48,17 +48,17 @@ package Tbuild is
 
    procedure Discard_Node (N : Node_Or_Entity_Id);
    pragma Inline (Discard_Node);
-   --  This is a dummy procedure that simply returns and does nothing.
-   --  It is used when a function returning a Node_Id value is called
-   --  for its side effect (e.g. a call to Make to construct a node)
-   --  but the Node_Id value is not required.
+   --  This is a dummy procedure that simply returns and does nothing. It is
+   --  used when a function returning a Node_Id value is called for its side
+   --  effect (e.g. a call to Make to construct a node) but the Node_Id value
+   --  is not required.
 
    procedure Discard_List (L : List_Id);
    pragma Inline (Discard_List);
-   --  This is a dummy procedure that simply returns and does nothing.
-   --  It is used when a function returning a Node_Id value is called
-   --  for its side effect (e.g. a call to the pareser to parse a list
-   --  of compilation units), but the List_Id value is not required.
+   --  This is a dummy procedure that simply returns and does nothing. It is
+   --  used when a function returning a Node_Id value is called for its side
+   --  effect (e.g. a call to the pareser to parse a list of compilation
+   --  units), but the List_Id value is not required.
 
    function Make_Byte_Aligned_Attribute_Reference
      (Sloc           : Source_Ptr;
@@ -71,8 +71,8 @@ package Tbuild is
 
    function Make_DT_Access
      (Loc : Source_Ptr; Rec : Node_Id; Typ : Entity_Id) return Node_Id;
-   --  Create an access to the Dispatch Table by using the Tag field
-   --  of a tagged record : Acc_Dt (Rec.tag).all
+   --  Create an access to the Dispatch Table by using the Tag field of a
+   --  tagged record : Acc_Dt (Rec.tag).all
 
    function Make_Implicit_Exception_Handler
      (Sloc              : Source_Ptr;
@@ -135,6 +135,14 @@ package Tbuild is
       Sec : String) return Node_Id;
    --  Construct a Linker_Section pragma for entity Ent, using string Sec as
    --  the section name. Loc is the Sloc value to use in building the pragma.
+
+   function Make_Pragma
+     (Sloc                         : Source_Ptr;
+      Chars                        : Name_Id;
+      Pragma_Argument_Associations : List_Id := No_List;
+      Debug_Statement              : Node_Id := Empty) return Node_Id;
+   --  A convenient form of Make_Pragma not requiring a Pragma_Identifier
+   --  argument (this argument is built from the value given for Chars).
 
    function Make_Raise_Constraint_Error
      (Sloc      : Source_Ptr;
