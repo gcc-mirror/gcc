@@ -2010,7 +2010,15 @@ is_candidate (tree var, tree *type_p, VEC (tree, heap) **unsuitable_types)
       else
 	{
 	  if (initialized && unsuitable_types && *unsuitable_types)
-	    add_unsuitable_type (unsuitable_types, type);
+	    {
+	      if (dump_file)
+		{
+		  fprintf (dump_file, "The type ");
+		  print_generic_expr (dump_file, type, 0);
+		  fprintf (dump_file, " is initialized...Excluded.");		  
+		}
+	      add_unsuitable_type (unsuitable_types, type);
+	    }
 	  *type_p = type;
 	  return true;
       }
@@ -2437,7 +2445,15 @@ get_stmt_accesses (tree *tp, int *walk_subtrees, void *data)
 	unsigned i = find_structure (type);
 
 	if (i != VEC_length (structure, structures))
-	  remove_structure (i);	
+	  {
+	    if (dump_file)
+	      {
+		fprintf (dump_file, "\nThe type ");
+		print_generic_expr (dump_file, type, 0);
+		fprintf (dump_file, " has bitfield.");
+	      }	    
+	    remove_structure (i);
+	  }
       }
       break;
 
@@ -2476,6 +2492,15 @@ get_stmt_accesses (tree *tp, int *walk_subtrees, void *data)
 		       we can deal with.  */
 		    if (!decompose_access (str->decl, acc))
 		      {
+			if (dump_file)
+			  {
+			    fprintf (dump_file, "\nThe type ");
+			    print_generic_expr (dump_file, type, 0);
+			    fprintf (dump_file, 
+				     " has complicate access in statement ");
+			    print_generic_stmt (dump_file, stmt, 0);
+			  }
+			
 			remove_structure (i);
 			free (acc);
 		      }
@@ -3056,7 +3081,14 @@ safe_cond_expr_check (void **slot, void *data)
   if (TREE_CODE (acc->stmt) == COND_EXPR)
     {
       if (!is_safe_cond_expr (acc->stmt))
-	remove_structure (*(unsigned *) data);
+	{
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "\nUnsafe conditional statement ");
+	      print_generic_stmt (dump_file, acc->stmt, 0);
+	    }
+	  remove_structure (*(unsigned *) data);
+	}
     }
   return 1;
 }
@@ -3469,7 +3501,15 @@ collect_alloc_sites (void)
 			    add_alloc_site (node->decl, stmt, str);
 			  }
 			else
-			  remove_structure (i);		
+			  {
+			    if (dump_file)
+			      {
+				fprintf (dump_file, 
+					 "\nUnsupported allocation function ");
+				print_generic_stmt (dump_file, stmt, 0);
+			      }
+			    remove_structure (i);		
+			  }
 		      }
 		  }
 	      }	      
@@ -3682,8 +3722,17 @@ dump_new_types (void)
 	   " this optimization:\n");
 
   for (i = 0; VEC_iterate (structure, structures, i, str); i++)
-    for (j = 0; VEC_iterate (tree, str->new_types, j, type); j++)
-      dump_struct_type (type, 2, 0); 
+    {
+      if (dump_file)
+	{
+	  fprintf (dump_file, "\nFor type ");
+	  dump_struct_type (str->decl, 2, 0);
+	  fprintf (dump_file, "\nthe number of new types is %d\n",
+		   VEC_length (tree, str->new_types));
+	}      
+      for (j = 0; VEC_iterate (tree, str->new_types, j, type); j++)
+	dump_struct_type (type, 2, 0); 
+    }
 }
 
 /* This function creates new types to replace old structure types.  */
@@ -3743,13 +3792,6 @@ collect_structures (void)
 
   remove_unsuitable_types (unsuitable_types);
   VEC_free (tree, heap, unsuitable_types);
-
-  if (!VEC_length (structure, structures))
-    {
-      if (dump_file)
-	fprintf (dump_file, "\nNo structures to transform. Exiting...");
-      return;
-    }
 }
 
 /* Collect structure allocation sites. In case of arrays
@@ -3814,7 +3856,15 @@ exclude_cold_structs (void)
   /* Remove cold structures from structures vector.  */
   for (i = 0; VEC_iterate (structure, structures, i, str); i++)
     if (str->count * 100 < (hotest * STRUCT_REORG_COLD_STRUCT_RATIO))
-      remove_structure (i);
+      {
+	if (dump_file)
+	  {
+	    fprintf (dump_file, "\nThe structure ");
+	    print_generic_expr (dump_file, str->decl, 0);
+	    fprintf (dump_file, " is cold.");
+	  }
+	remove_structure (i);
+      }
 }
 
 /* This function decomposes original structure into substructures, 
@@ -3839,7 +3889,19 @@ do_reorg (void)
 {
   /* Check that there is a work to do.  */
   if (!VEC_length (structure, structures))
-    return;
+    {
+      if (dump_file)
+	fprintf (dump_file, "\nNo structures to transform. Exiting...");
+      return;
+    }
+  else
+    {
+      if (dump_file)
+	{
+	  fprintf (dump_file, "\nNumber of structures to transform is %d",
+		   VEC_length (structure, structures));
+	}
+    }
 
   /* Generate new types.  */
   create_new_types ();
