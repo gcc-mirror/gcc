@@ -52,16 +52,18 @@ package body Ada.Numerics.Generic_Complex_Types is
       X := Left.Re * Right.Re - Left.Im * Right.Im;
       Y := Left.Re * Right.Im + Left.Im * Right.Re;
 
-      --  If either component overflows, try to scale
+      --  If either component overflows, try to scale (skip in fast math mode)
 
-      if abs (X) > R'Last then
-         X := R'(4.0) * (R'(Left.Re / 2.0)  * R'(Right.Re / 2.0)
-                - R'(Left.Im / 2.0) * R'(Right.Im / 2.0));
-      end if;
+      if not Standard'Fast_Math then
+         if abs (X) > R'Last then
+            X := R'(4.0) * (R'(Left.Re / 2.0)  * R'(Right.Re / 2.0)
+                            - R'(Left.Im / 2.0) * R'(Right.Im / 2.0));
+         end if;
 
-      if abs (Y) > R'Last then
-         Y := R'(4.0) * (R'(Left.Re / 2.0)  * R'(Right.Im / 2.0)
-                - R'(Left.Im / 2.0) * R'(Right.Re / 2.0));
+         if abs (Y) > R'Last then
+            Y := R'(4.0) * (R'(Left.Re / 2.0)  * R'(Right.Im / 2.0)
+                            - R'(Left.Im / 2.0) * R'(Right.Re / 2.0));
+         end if;
       end if;
 
       return (X, Y);
@@ -143,7 +145,6 @@ package body Ada.Numerics.Generic_Complex_Types is
          --  1.0 / infinity, and the closest model number will be zero.
 
          begin
-
             while Exp /= 0 loop
                if Exp rem 2 /= 0 then
                   Result := Result * Factor;
@@ -156,7 +157,6 @@ package body Ada.Numerics.Generic_Complex_Types is
             return R'(1.0) / Result;
 
          exception
-
             when Constraint_Error =>
                return (0.0, 0.0);
          end;

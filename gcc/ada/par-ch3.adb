@@ -174,7 +174,9 @@ package body Ch3 is
       if Token = Tok_Identifier then
 
          --  Ada 2005 (AI-284): Compiling in Ada95 mode we warn that INTERFACE,
-         --  OVERRIDING, and SYNCHRONIZED are new reserved words.
+         --  OVERRIDING, and SYNCHRONIZED are new reserved words. Note that
+         --  in the case where these keywords are misused in Ada 95 mode,
+         --  this routine will generally not be called at all.
 
          if Ada_Version = Ada_95
            and then Warn_On_Ada_2005_Compatibility
@@ -1128,7 +1130,6 @@ package body Ch3 is
               Make_Attribute_Reference (Prev_Token_Ptr,
                 Prefix => Prefix,
                 Attribute_Name => Token_Name);
-            Delete_Node (Token_Node);
             Scan; -- past type attribute identifier
          end if;
 
@@ -1279,6 +1280,10 @@ package body Ch3 is
       --  returns True, otherwise returns False. Includes checking for some
       --  common error cases.
 
+      -------------
+      -- No_List --
+      -------------
+
       procedure No_List is
       begin
          if Num_Idents > 1 then
@@ -1288,6 +1293,10 @@ package body Ch3 is
 
          List_OK := False;
       end No_List;
+
+      ----------------------
+      -- Token_Is_Renames --
+      ----------------------
 
       function Token_Is_Renames return Boolean is
          At_Colon : Saved_Scan_State;
@@ -1922,7 +1931,6 @@ package body Ch3 is
                 Abstract_Present    => Abstract_Present (Typedef_Node),
                 Interface_List      => Interface_List (Typedef_Node));
 
-            Delete_Node (Typedef_Node);
             return Typedecl_Node;
 
          --  Derived type definition with record extension part
@@ -2715,27 +2723,37 @@ package body Ch3 is
       Scan_State : Saved_Scan_State;
 
    begin
-      if Token /= Tok_Left_Paren then
+      --  If <> right now, then this is missing left paren
+
+      if Token = Tok_Box then
+         U_Left_Paren;
+
+      --  If not <> or left paren, then definitely no box
+
+      elsif Token /= Tok_Left_Paren then
          return False;
+
+      --  Left paren, so might be a box after it
 
       else
          Save_Scan_State (Scan_State);
          Scan; -- past the left paren
 
-         if Token = Tok_Box then
-            if Ada_Version = Ada_83 then
-               Error_Msg_SC ("(Ada 83) unknown discriminant not allowed!");
-            end if;
-
-            Scan; -- past the box
-            T_Right_Paren; -- must be followed by right paren
-            return True;
-
-         else
+         if Token /= Tok_Box then
             Restore_Scan_State (Scan_State);
             return False;
          end if;
       end if;
+
+      --  We are now pointing to the box
+
+      if Ada_Version = Ada_83 then
+         Error_Msg_SC ("(Ada 83) unknown discriminant not allowed!");
+      end if;
+
+      Scan; -- past the box
+      U_Right_Paren; -- must be followed by right paren
+      return True;
    end P_Unknown_Discriminant_Part_Opt;
 
    ----------------------------------
@@ -4039,11 +4057,28 @@ package body Ch3 is
 
          when Tok_Identifier =>
             Check_Bad_Layout;
-            P_Identifier_Declarations (Decls, Done, In_Spec);
+
+            --  Special check for misuse of overriding not in Ada 2005 mode
+
+            if Token_Name = Name_Overriding
+              and then not Next_Token_Is (Tok_Colon)
+            then
+               Error_Msg_SC ("overriding indicator is an Ada 2005 extension");
+               Error_Msg_SC ("\unit must be compiled with -gnat05 switch");
+
+               Token := Tok_Overriding;
+               Append (P_Subprogram (Pf_Decl_Gins_Pbod_Rnam_Stub), Decls);
+               Done := False;
+
+            --  Normal case, no overriding, or overriding followed by colon
+
+            else
+               P_Identifier_Declarations (Decls, Done, In_Spec);
+            end if;
 
          --  Ada2005: A subprogram declaration can start with "not" or
          --  "overriding". In older versions, "overriding" is handled
-         --  like an identifier, with the appropriate warning.
+         --  like an identifier, with the appropriate messages.
 
          when Tok_Not =>
             Check_Bad_Layout;

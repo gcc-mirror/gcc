@@ -318,6 +318,21 @@ package body Ada.Tags is
       return This - Offset_To_Top (This);
    end Base_Address;
 
+   --------------------
+   -- Descendant_Tag --
+   --------------------
+
+   function Descendant_Tag (External : String; Ancestor : Tag) return Tag is
+      Int_Tag : constant Tag := Internal_Tag (External);
+
+   begin
+      if not Is_Descendant_At_Same_Level (Int_Tag, Ancestor) then
+         raise Tag_Error;
+      end if;
+
+      return Int_Tag;
+   end Descendant_Tag;
+
    --------------
    -- Displace --
    --------------
@@ -433,21 +448,6 @@ package body Ada.Tags is
 
       return False;
    end IW_Membership;
-
-   --------------------
-   -- Descendant_Tag --
-   --------------------
-
-   function Descendant_Tag (External : String; Ancestor : Tag) return Tag is
-      Int_Tag : constant Tag := Internal_Tag (External);
-
-   begin
-      if not Is_Descendant_At_Same_Level (Int_Tag, Ancestor) then
-         raise Tag_Error;
-      end if;
-
-      return Int_Tag;
-   end Descendant_Tag;
 
    -------------------
    -- Expanded_Name --
@@ -846,6 +846,35 @@ package body Ada.Tags is
       External_Tag_HTable.Set (T);
    end Register_Tag;
 
+   -------------------
+   -- Secondary_Tag --
+   -------------------
+
+   function Secondary_Tag (T, Iface : Tag) return Tag is
+      Iface_Table : Interface_Data_Ptr;
+      Obj_DT      : Dispatch_Table_Ptr;
+
+   begin
+      if not Is_Primary_DT (T) then
+         raise Program_Error;
+      end if;
+
+      Obj_DT      := DT (T);
+      Iface_Table := To_Type_Specific_Data_Ptr (Obj_DT.TSD).Interfaces_Table;
+
+      if Iface_Table /= null then
+         for Id in 1 .. Iface_Table.Nb_Ifaces loop
+            if Iface_Table.Ifaces_Table (Id).Iface_Tag = Iface then
+               return Iface_Table.Ifaces_Table (Id).Secondary_DT;
+            end if;
+         end loop;
+      end if;
+
+      --  If the object does not implement the interface we must raise CE
+
+      raise Constraint_Error with "invalid interface conversion";
+   end Secondary_Tag;
+
    ---------------------
    -- Set_Entry_Index --
    ---------------------
@@ -948,9 +977,13 @@ package body Ada.Tags is
    --  Encoding method for source, as exported by binder
 
    function Wide_Expanded_Name (T : Tag) return Wide_String is
+      S : constant String := Expanded_Name (T);
+      W : Wide_String (1 .. S'Length);
+      L : Natural;
    begin
-      return String_To_Wide_String
-        (Expanded_Name (T), Get_WC_Encoding_Method (WC_Encoding));
+      String_To_Wide_String
+        (S, W, L, Get_WC_Encoding_Method (WC_Encoding));
+      return W (1 .. L);
    end Wide_Expanded_Name;
 
    -----------------------------
@@ -958,9 +991,13 @@ package body Ada.Tags is
    -----------------------------
 
    function Wide_Wide_Expanded_Name (T : Tag) return Wide_Wide_String is
+      S : constant String := Expanded_Name (T);
+      W : Wide_Wide_String (1 .. S'Length);
+      L : Natural;
    begin
-      return String_To_Wide_Wide_String
-        (Expanded_Name (T), Get_WC_Encoding_Method (WC_Encoding));
+      String_To_Wide_Wide_String
+        (S, W, L, Get_WC_Encoding_Method (WC_Encoding));
+      return W (1 .. L);
    end Wide_Wide_Expanded_Name;
 
 end Ada.Tags;

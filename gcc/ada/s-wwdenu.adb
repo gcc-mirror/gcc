@@ -63,12 +63,14 @@ package body System.WWd_Enum is
       W := 0;
       for J in Lo .. Hi loop
          declare
-            WS : constant Wide_Wide_String :=
-                   String_To_Wide_Wide_String
-                     (Names (Natural (IndexesT (J)) ..
-                             Natural (IndexesT (J + 1)) - 1), EM);
+            S  : constant String :=
+                   Names (Natural (IndexesT (J)) ..
+                          Natural (IndexesT (J + 1)) - 1);
+            WS : Wide_Wide_String (1 .. S'Length);
+            L  : Natural;
          begin
-            W := Natural'Max (W, WS'Length);
+            String_To_Wide_Wide_String (S, WS, L, EM);
+            W := Natural'Max (W, L);
          end;
       end loop;
 
@@ -100,12 +102,14 @@ package body System.WWd_Enum is
       W := 0;
       for J in Lo .. Hi loop
          declare
-            WS : constant Wide_Wide_String :=
-                   String_To_Wide_Wide_String
-                     (Names (Natural (IndexesT (J)) ..
-                             Natural (IndexesT (J + 1)) - 1), EM);
+            S  : constant String :=
+                   Names (Natural (IndexesT (J)) ..
+                          Natural (IndexesT (J + 1)) - 1);
+            WS : Wide_Wide_String (1 .. S'Length);
+            L  : Natural;
          begin
-            W := Natural'Max (W, WS'Length);
+            String_To_Wide_Wide_String (S, WS, L, EM);
+            W := Natural'Max (W, L);
          end;
       end loop;
 
@@ -137,12 +141,14 @@ package body System.WWd_Enum is
       W := 0;
       for J in Lo .. Hi loop
          declare
-            WS : constant Wide_Wide_String :=
-                   String_To_Wide_Wide_String
-                     (Names (Natural (IndexesT (J)) ..
-                             Natural (IndexesT (J + 1)) - 1), EM);
+            S  : constant String :=
+                   Names (Natural (IndexesT (J)) ..
+                          Natural (IndexesT (J + 1)) - 1);
+            WS : Wide_Wide_String (1 .. S'Length);
+            L  : Natural;
          begin
-            W := Natural'Max (W, WS'Length);
+            String_To_Wide_Wide_String (S, WS, L, EM);
+            W := Natural'Max (W, L);
          end;
       end loop;
 
@@ -174,12 +180,14 @@ package body System.WWd_Enum is
       W := 0;
       for J in Lo .. Hi loop
          declare
-            WS : constant Wide_String :=
-                   String_To_Wide_String
-                     (Names (Natural (IndexesT (J)) ..
-                             Natural (IndexesT (J + 1)) - 1), EM);
+            S  : constant String :=
+                   Names (Natural (IndexesT (J)) ..
+                          Natural (IndexesT (J + 1)) - 1);
+            WS : Wide_String (1 .. S'Length);
+            L  : Natural;
          begin
-            W := Natural'Max (W, WS'Length);
+            String_To_Wide_String (S, WS, L, EM);
+            W := Natural'Max (W, L);
          end;
       end loop;
 
@@ -211,12 +219,14 @@ package body System.WWd_Enum is
       W := 0;
       for J in Lo .. Hi loop
          declare
-            WS : constant Wide_String :=
-                   String_To_Wide_String
-                     (Names (Natural (IndexesT (J)) ..
-                             Natural (IndexesT (J + 1)) - 1), EM);
+            S  : constant String :=
+                   Names (Natural (IndexesT (J)) ..
+                          Natural (IndexesT (J + 1)) - 1);
+            WS : Wide_String (1 .. S'Length);
+            L  : Natural;
          begin
-            W := Natural'Max (W, WS'Length);
+            String_To_Wide_String (S, WS, L, EM);
+            W := Natural'Max (W, L);
          end;
       end loop;
 
@@ -248,12 +258,14 @@ package body System.WWd_Enum is
       W := 0;
       for J in Lo .. Hi loop
          declare
-            WS : constant Wide_String :=
-                   String_To_Wide_String
-                     (Names (Natural (IndexesT (J)) ..
-                             Natural (IndexesT (J + 1)) - 1), EM);
+            S  : constant String :=
+                   Names (Natural (IndexesT (J)) ..
+                          Natural (IndexesT (J + 1)) - 1);
+            WS : Wide_String (1 .. S'Length);
+            L  : Natural;
          begin
-            W := Natural'Max (W, WS'Length);
+            String_To_Wide_String (S, WS, L, EM);
+            W := Natural'Max (W, L);
          end;
       end loop;
 

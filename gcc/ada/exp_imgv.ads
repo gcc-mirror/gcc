@@ -73,6 +73,14 @@ package Exp_Imgv is
    --  This procedure is called from Exp_Attr to expand an occurrence
    --  of the attribute Image.
 
+   procedure Expand_Wide_Image_Attribute (N : Node_Id);
+   --  This procedure is called from Exp_Attr to expand an occurrence
+   --  of the attribute Wide_Image.
+
+   procedure Expand_Wide_Wide_Image_Attribute (N : Node_Id);
+   --  This procedure is called from Exp_Attr to expand an occurrence
+   --  of the attribute Wide_Wide_Image.
+
    procedure Expand_Value_Attribute (N : Node_Id);
    --  This procedure is called from Exp_Attr to expand an occurrence
    --  of the attribute Value.

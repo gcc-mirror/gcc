@@ -1359,17 +1359,27 @@ package body Ada.Exceptions is
    --  Encoding method for source, as exported by binder
 
    function Wide_Exception_Name
-     (Id : Exception_Id) return Wide_String is
+     (Id : Exception_Id) return Wide_String
+   is
+      S : constant String := Exception_Name (Id);
+      W : Wide_String (1 .. S'Length);
+      L : Natural;
    begin
-      return String_To_Wide_String
-        (Exception_Name (Id), Get_WC_Encoding_Method (WC_Encoding));
+      String_To_Wide_String
+        (S, W, L, Get_WC_Encoding_Method (WC_Encoding));
+      return W (1 .. L);
    end Wide_Exception_Name;
 
    function Wide_Exception_Name
-     (X : Exception_Occurrence) return Wide_String is
+     (X : Exception_Occurrence) return Wide_String
+   is
+      S : constant String := Exception_Name (X);
+      W : Wide_String (1 .. S'Length);
+      L : Natural;
    begin
-      return String_To_Wide_String
-        (Exception_Name (X), Get_WC_Encoding_Method (WC_Encoding));
+      String_To_Wide_String
+        (S, W, L, Get_WC_Encoding_Method (WC_Encoding));
+      return W (1 .. L);
    end Wide_Exception_Name;
 
    ----------------------------
@@ -1379,17 +1389,25 @@ package body Ada.Exceptions is
    function Wide_Wide_Exception_Name
      (Id : Exception_Id) return Wide_Wide_String
    is
+      S : constant String := Exception_Name (Id);
+      W : Wide_Wide_String (1 .. S'Length);
+      L : Natural;
    begin
-      return String_To_Wide_Wide_String
-        (Exception_Name (Id), Get_WC_Encoding_Method (WC_Encoding));
+      String_To_Wide_Wide_String
+        (S, W, L, Get_WC_Encoding_Method (WC_Encoding));
+      return W (1 .. L);
    end Wide_Wide_Exception_Name;
 
    function Wide_Wide_Exception_Name
      (X : Exception_Occurrence) return Wide_Wide_String
    is
+      S : constant String := Exception_Name (X);
+      W : Wide_Wide_String (1 .. S'Length);
+      L : Natural;
    begin
-      return String_To_Wide_Wide_String
-        (Exception_Name (X), Get_WC_Encoding_Method (WC_Encoding));
+      String_To_Wide_Wide_String
+        (S, W, L, Get_WC_Encoding_Method (WC_Encoding));
+      return W (1 .. L);
    end Wide_Wide_Exception_Name;
 
    --------------------------

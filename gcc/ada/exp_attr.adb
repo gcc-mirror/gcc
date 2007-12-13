@@ -129,7 +129,7 @@ package body Exp_Attr is
    --  operand with overflow checking required.
 
    function Get_Index_Subtype (N : Node_Id) return Entity_Id;
-   --  Used for Last, Last, and Length, when the prefix is an array type,
+   --  Used for Last, Last, and Length, when the prefix is an array type.
    --  Obtains the corresponding index subtype.
 
    procedure Find_Fat_Info
@@ -838,8 +838,12 @@ package body Exp_Attr is
          --  generate a call to a run-time subprogram that returns the base
          --  address of the object.
 
+         --  This processing is not needed in the VM case, where dispatching
+         --  issues are taken care of by the virtual machine.
+
          elsif Is_Class_Wide_Type (Etype (Pref))
            and then Is_Interface (Etype (Pref))
+           and then VM_Target = No_VM
            and then not (Nkind (Pref) in N_Has_Entity
                           and then Is_Subprogram (Entity (Pref)))
          then
@@ -1923,8 +1927,27 @@ package body Exp_Attr is
          else
             Id_Kind := RTE (RO_AT_Task_Id);
 
-            Rewrite (N,
-              Unchecked_Convert_To (Id_Kind, Concurrent_Ref (Pref)));
+            --  If the prefix is a task interface, the Task_Id is obtained
+            --  dynamically through a dispatching call, as for other task
+            --  attributes applied to interfaces.
+
+            if Ada_Version >= Ada_05
+              and then Ekind (Etype (Pref)) = E_Class_Wide_Type
+              and then Is_Interface (Etype (Pref))
+              and then Is_Task_Interface (Etype (Pref))
+            then
+               Rewrite (N,
+                 Unchecked_Convert_To (Id_Kind,
+                   Make_Selected_Component (Loc,
+                     Prefix =>
+                       New_Copy_Tree (Pref),
+                     Selector_Name =>
+                       Make_Identifier (Loc, Name_uDisp_Get_Task_Id))));
+
+            else
+               Rewrite (N,
+                 Unchecked_Convert_To (Id_Kind, Concurrent_Ref (Pref)));
+            end if;
          end if;
 
          Analyze_And_Resolve (N, Id_Kind);
@@ -4052,13 +4075,17 @@ package body Exp_Attr is
             --  Note that Prefix'Address is recursively expanded into a call
             --  to Base_Address (Obj.Tag)
 
-            Rewrite (N,
-              Make_Explicit_Dereference (Loc,
-                Unchecked_Convert_To (RTE (RE_Tag_Ptr),
-                  Make_Attribute_Reference (Loc,
-                    Prefix => Relocate_Node (Pref),
-                    Attribute_Name => Name_Address))));
-            Analyze_And_Resolve (N, RTE (RE_Tag));
+            --  Not needed for VM targets, since all handled by the VM
+
+            if VM_Target = No_VM then
+               Rewrite (N,
+                 Make_Explicit_Dereference (Loc,
+                   Unchecked_Convert_To (RTE (RE_Tag_Ptr),
+                     Make_Attribute_Reference (Loc,
+                       Prefix => Relocate_Node (Pref),
+                       Attribute_Name => Name_Address))));
+               Analyze_And_Resolve (N, RTE (RE_Tag));
+            end if;
 
          else
             Rewrite (N,
@@ -4581,66 +4608,19 @@ package body Exp_Attr is
       -- Wide_Image --
       ----------------
 
-      --  We expand typ'Wide_Image (X) into
+      --  Wide_Image attribute is handled in separate unit Exp_Imgv
 
-      --    String_To_Wide_String
-      --      (typ'Image (X), Wide_Character_Encoding_Method)
-
-      --  This works in all cases because String_To_Wide_String converts any
-      --  wide character escape sequences resulting from the Image call to the
-      --  proper Wide_Character equivalent
-
-      --  not quite right for typ = Wide_Character ???
-
-      when Attribute_Wide_Image => Wide_Image :
-      begin
-         Rewrite (N,
-           Make_Function_Call (Loc,
-             Name => New_Reference_To (RTE (RE_String_To_Wide_String), Loc),
-             Parameter_Associations => New_List (
-               Make_Attribute_Reference (Loc,
-                 Prefix         => Pref,
-                 Attribute_Name => Name_Image,
-                 Expressions    => Exprs),
-
-               Make_Integer_Literal (Loc,
-                 Intval => Int (Wide_Character_Encoding_Method)))));
-
-         Analyze_And_Resolve (N, Standard_Wide_String);
-      end Wide_Image;
+      when Attribute_Wide_Image =>
+         Exp_Imgv.Expand_Wide_Image_Attribute (N);
 
       ---------------------
       -- Wide_Wide_Image --
       ---------------------
 
-      --  We expand typ'Wide_Wide_Image (X) into
+      --  Wide_Wide_Image attribute is handled in separate unit Exp_Imgv
 
-      --    String_To_Wide_Wide_String
-      --      (typ'Image (X), Wide_Character_Encoding_Method)
-
-      --  This works in all cases because String_To_Wide_Wide_String converts
-      --  any wide character escape sequences resulting from the Image call to
-      --  the proper Wide_Character equivalent
-
-      --  not quite right for typ = Wide_Wide_Character ???
-
-      when Attribute_Wide_Wide_Image => Wide_Wide_Image :
-      begin
-         Rewrite (N,
-           Make_Function_Call (Loc,
-             Name => New_Reference_To
-               (RTE (RE_String_To_Wide_Wide_String), Loc),
-             Parameter_Associations => New_List (
-               Make_Attribute_Reference (Loc,
-                 Prefix         => Pref,
-                 Attribute_Name => Name_Image,
-                 Expressions    => Exprs),
-
-               Make_Integer_Literal (Loc,
-                 Intval => Int (Wide_Character_Encoding_Method)))));
-
-         Analyze_And_Resolve (N, Standard_Wide_Wide_String);
-      end Wide_Wide_Image;
+      when Attribute_Wide_Wide_Image =>
+         Exp_Imgv.Expand_Wide_Wide_Image_Attribute (N);
 
       ----------------
       -- Wide_Value --
@@ -4935,6 +4915,7 @@ package body Exp_Attr is
            Attribute_Emax                         |
            Attribute_Enabled                      |
            Attribute_Epsilon                      |
+           Attribute_Fast_Math                    |
            Attribute_Has_Access_Values            |
            Attribute_Has_Discriminants            |
            Attribute_Large                        |

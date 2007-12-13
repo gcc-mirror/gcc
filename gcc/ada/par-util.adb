@@ -23,9 +23,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Csets;   use Csets;
-with Stylesw; use Stylesw;
-with Uintp;   use Uintp;
+with Csets;    use Csets;
+with Namet.Sp; use Namet.Sp;
+with Stylesw;  use Stylesw;
+with Uintp;    use Uintp;
 
 with GNAT.Spelling_Checker; use GNAT.Spelling_Checker;
 
@@ -587,6 +588,21 @@ package body Util is
    end Merge_Identifier;
 
    -------------------
+   -- Next_Token_Is --
+   -------------------
+
+   function Next_Token_Is (Tok : Token_Type) return Boolean is
+      Scan_State : Saved_Scan_State;
+      Result     : Boolean;
+   begin
+      Save_Scan_State (Scan_State);
+      Scan;
+      Result := (Token = Tok);
+      Restore_Scan_State (Scan_State);
+      return Result;
+   end Next_Token_Is;
+
+   -------------------
    -- No_Constraint --
    -------------------
 
@@ -677,27 +693,15 @@ package body Util is
 
       --  Check for possible misspelling
 
-      Get_Name_String (Token_Name);
+      Error_Msg_Name_1 := First_Attribute_Name;
+      while Error_Msg_Name_1 <= Last_Attribute_Name loop
+         if Is_Bad_Spelling_Of (Token_Name, Error_Msg_Name_1) then
+            Error_Msg_N ("\possible misspelling of %", Token_Node);
+            exit;
+         end if;
 
-      declare
-         AN : constant String := Name_Buffer (1 .. Name_Len);
-
-      begin
-         Error_Msg_Name_1 := First_Attribute_Name;
-         while Error_Msg_Name_1 <= Last_Attribute_Name loop
-            Get_Name_String (Error_Msg_Name_1);
-
-            if Is_Bad_Spelling_Of
-                 (AN, Name_Buffer (1 .. Name_Len))
-            then
-               Error_Msg_N
-                 ("\possible misspelling of %", Token_Node);
-               exit;
-            end if;
-
-            Error_Msg_Name_1 := Error_Msg_Name_1 + 1;
-         end loop;
-      end;
+         Error_Msg_Name_1 := Error_Msg_Name_1 + 1;
+      end loop;
    end Signal_Bad_Attribute;
 
    -----------------------------
