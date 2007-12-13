@@ -1,3 +1,7 @@
+2007-12-13  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* g++.dg/cpp0x/__func__.C: New.
+
 2007-12-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/34435
