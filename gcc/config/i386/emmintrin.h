@@ -887,8 +887,9 @@ _mm_shuffle_pd(__m128d __A, __m128d __B, const int __mask)
   return (__m128d)__builtin_ia32_shufpd ((__v2df)__A, (__v2df)__B, __mask);
 }
 #else
-#define _mm_shuffle_pd(__A, __B, __C) \
-  ((__m128d)__builtin_ia32_shufpd ((__v2df)__A, (__v2df)__B, (__C)))
+#define _mm_shuffle_pd(__A, __B, __C)					\
+  ((__m128d)__builtin_ia32_shufpd ((__v2df)(__m128d)__A,		\
+				   (__v2df)(__m128d)__B, (int)(__C)))
 #endif
 
 static __inline __m128d __attribute__((__always_inline__, __artificial__))
@@ -1320,9 +1321,10 @@ _mm_insert_epi16 (__m128i const __A, int const __D, int const __N)
 }
 #else
 #define _mm_extract_epi16(A, N) \
-  ((int) __builtin_ia32_vec_ext_v8hi ((__v8hi)(A), (N)))
-#define _mm_insert_epi16(A, D, N) \
-  ((__m128i) __builtin_ia32_vec_set_v8hi ((__v8hi)(A), (D), (N)))
+  ((int) __builtin_ia32_vec_ext_v8hi ((__v8hi)(__m128i)(A), (int)(N)))
+#define _mm_insert_epi16(A, D, N)				\
+  ((__m128i) __builtin_ia32_vec_set_v8hi ((__v8hi)(__m128i)(A),	\
+					  (int)(D), (int)(N)))
 #endif
 
 static __inline __m128i __attribute__((__always_inline__, __artificial__))
@@ -1381,11 +1383,11 @@ _mm_shuffle_epi32 (__m128i __A, const int __mask)
 }
 #else
 #define _mm_shufflehi_epi16(__A, __B) \
-  ((__m128i)__builtin_ia32_pshufhw ((__v8hi)__A, __B))
+  ((__m128i)__builtin_ia32_pshufhw ((__v8hi)(__m128i)__A, (int)__B))
 #define _mm_shufflelo_epi16(__A, __B) \
-  ((__m128i)__builtin_ia32_pshuflw ((__v8hi)__A, __B))
+  ((__m128i)__builtin_ia32_pshuflw ((__v8hi)(__m128i)__A, (int)__B))
 #define _mm_shuffle_epi32(__A, __B) \
-  ((__m128i)__builtin_ia32_pshufd ((__v4si)__A, __B))
+  ((__m128i)__builtin_ia32_pshufd ((__v4si)(__m128i)__A, (int)__B))
 #endif
 
 static __inline void __attribute__((__always_inline__, __artificial__))

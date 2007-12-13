@@ -352,33 +352,37 @@ _mm_rot_epi64(__m128i __A,  __m128i __B)
 /* Rotates - Immediate form */
 #ifdef __OPTIMIZE__
 static __inline __m128i __attribute__((__always_inline__, __artificial__))
-_mm_roti_epi8(__m128i __A,  int __B)
+_mm_roti_epi8(__m128i __A, const int __B)
 {
   return  (__m128i) __builtin_ia32_protbi ((__v16qi)__A, __B);
 }
 
 static __inline __m128i __attribute__((__always_inline__, __artificial__))
-_mm_roti_epi16(__m128i __A, int __B)
+_mm_roti_epi16(__m128i __A, const int __B)
 {
   return  (__m128i) __builtin_ia32_protwi ((__v8hi)__A, __B);
 }
 
 static __inline __m128i __attribute__((__always_inline__, __artificial__))
-_mm_roti_epi32(__m128i __A, int __B)
+_mm_roti_epi32(__m128i __A, const int __B)
 {
   return  (__m128i) __builtin_ia32_protdi ((__v4si)__A, __B);
 }
 
 static __inline __m128i __attribute__((__always_inline__, __artificial__))
-_mm_roti_epi64(__m128i __A, int __B)
+_mm_roti_epi64(__m128i __A, const int __B)
 {
   return  (__m128i) __builtin_ia32_protqi ((__v2di)__A, __B);
 }
 #else
-#define _mm_roti_epi8(A, B) ((_m128i) __builtin_ia32_protbi ((__v16qi)(A), B)
-#define _mm_roti_epi16(A, B) ((_m128i) __builtin_ia32_protwi ((__v8hi)(A), B)
-#define _mm_roti_epi32(A, B) ((_m128i) __builtin_ia32_protdi ((__v4si)(A), B)
-#define _mm_roti_epi64(A, B) ((_m128i) __builtin_ia32_protqi ((__v2di)(A), B)
+#define _mm_roti_epi8(A, B) \
+  ((__m128i) __builtin_ia32_protbi ((__v16qi)(__m128i)(A), (int)(B)))
+#define _mm_roti_epi16(A, B) \
+  ((__m128i) __builtin_ia32_protwi ((__v8hi)(__m128i)(A), (int)(B)))
+#define _mm_roti_epi32(A, B) \
+  ((__m128i) __builtin_ia32_protdi ((__v4si)(__m128i)(A), (int)(B)))
+#define _mm_roti_epi64(A, B) \
+  ((__m128i) __builtin_ia32_protqi ((__v2di)(__m128i)(A), (int)(B))
 #endif
 
 /* pshl */

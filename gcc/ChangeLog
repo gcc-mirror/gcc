@@ -1,3 +1,28 @@
+2007-12-13  Uros Bizjak  <ubizjak@gmail.com>
+	    Richard Guenther  <rguenther@suse.de>
+
+	PR target/34435
+	* config/i386/emmintrin.h (_mm_shuffle_pd, _mm_extract_epi16,
+	_mm_insert_epi16, _mm_shufflehi_epi16, _mm_shufflelo_epi16,
+	_mm_shuffle_epi32): Cast non-constant input values to either __m64,
+	__m128, __m128i or __m128d in a macro version of the intrinsic.
+	Cast constant input values to int.
+	* config/i386/ammintrin.h (_mm_extracti_si64, _mm_inserti_si64): Ditto.
+	* config/i386/bmmintrin.h (_mm_roti_epi8, _mm_roti_epi16,
+	_mm_roti_epi32, _mm_roti_epi64): Ditto.
+	* config/i386/smmintrin.h (_mm_blend_epi16, _mm_blend_ps, _mm_blend_pd,
+	_mm_dp_ps, _mm_dp_pd, _mm_insert_ps, _mm_extract_ps, _mm_insert_epi8,
+	_mm_insert_epi32, _mm_insert_epi64, _mm_extract_epi8, mm_extract_epi32,
+	_mm_extract_epi64, _mm_mpsadbw_epu8, _mm_cmpistrm, _mm_cmpistri,
+	_mm_cmpestrm, _mm_cmpestri, _mm_cmpistra, _mm_cmpistrc, _mm_cmpistro,
+	_mm_cmpistrs, _mm_cmpistrz, _mm_cmpestra, _mm_cmpestrc, _mm_cmpestro,
+	_mm_cmpestrs, _mm_cmpestrz): Ditto.
+	* config/i386/tmmintrin.h (_mm_alignr_epi8, _mm_alignr_pi8): Ditto.
+	* config/i386/xmmintrin.h (_mm_shuffle_ps, _mm_extract_pi16, _m_pextrw,
+	_mm_insert_pi16, _m_pinsrw, _mm_shuffle_pi16, _m_pshufw): Ditto.
+	* config/i386/mmintrin-common.h (_mm_round_pd, _mm_round_sd,
+	_mm_round_ps, _mm_round_ss): Ditto.
+
 2007-12-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/34450
@@ -29,7 +54,7 @@
 	(dump_new_types): Print a number of new types to replace 
 	an original structure type.
 	
-2007-12-13  Golovanevsky Olga  <olga@il.ibm.com>
+2007-12-13  Olga Golovanevsky  <olga@il.ibm.com>
 
 	* doc/invoke.texi (Optimiza Options): Document new -fipa-struct-reorg
 	option and struct-reorg-cold-struct-ratio parameter.
@@ -334,8 +359,7 @@
 	* stormy16/stormy16.h (EXPAND_BUILTIN_VA_START): Remove.
 	* stormy16/stormy16-protos.h (xstormy16_expand_builtin_va_start):
 	Remove prototype.
-	* stormy16/stormy16.c (xstormy16_expand_builtin_va_start): Made
-	static.
+	* stormy16/stormy16.c (xstormy16_expand_builtin_va_start): Made static.
 	(TARGET_EXPAND_BUILTIN_VA_START): Define.
 	* s390/s390-protos.h (s390_va_start): Remove prototype.
 	* s390/s390.c (s390_va_start): Made static.

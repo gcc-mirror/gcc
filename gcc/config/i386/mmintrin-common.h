@@ -108,10 +108,11 @@ _mm_round_sd(__m128d __D, __m128d __V, const int __M)
 }
 #else
 #define _mm_round_pd(V, M) \
-  ((__m128d) __builtin_ia32_roundpd ((__v2df)(V), (M)))
+  ((__m128d) __builtin_ia32_roundpd ((__v2df)(__m128d)(V), (int)(M)))
 
-#define _mm_round_sd(D, V, M) \
-  ((__m128d) __builtin_ia32_roundsd ((__v2df)(D), (__v2df)(V), (M)))
+#define _mm_round_sd(D, V, M)						\
+  ((__m128d) __builtin_ia32_roundsd ((__v2df)(__m128d)(D),		\
+				     (__v2df)(__m128d)(V), (int)(M)))
 #endif
 
 /* Packed/scalar single precision floating point rounding.  */
@@ -132,10 +133,11 @@ _mm_round_ss (__m128 __D, __m128 __V, const int __M)
 }
 #else
 #define _mm_round_ps(V, M) \
-  ((__m128) __builtin_ia32_roundps ((__v4sf)(V), (M)))
+  ((__m128) __builtin_ia32_roundps ((__v4sf)(__m128)(V), (int)(M)))
 
-#define _mm_round_ss(D, V, M) \
-  ((__m128) __builtin_ia32_roundss ((__v4sf)(D), (__v4sf)(V), (M)))
+#define _mm_round_ss(D, V, M)						\
+  ((__m128) __builtin_ia32_roundss ((__v4sf)(__m128)(D),		\
+				    (__v4sf)(__m128)(V), (int)(M)))
 #endif
 
 /* Macros for ceil/floor intrinsics.  */
