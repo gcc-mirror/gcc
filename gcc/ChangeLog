@@ -1,3 +1,10 @@
+2007-12-13  Andrew Pinski  <pinskia@gmail.com>
+	    David Daney  <ddaney@avtrex.com>
+
+	PR bootstrap/34144
+	* system.h: Make -Wuninitialized non-fatal if ASSERT_CHECKING
+	is disabled.
+
 2007-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/32636
