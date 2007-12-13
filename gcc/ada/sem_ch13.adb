@@ -1039,7 +1039,7 @@ package body Sem_Ch13 is
 
             if Has_Component_Size_Clause (Btype) then
                Error_Msg_N
-                 ("component size clase for& previously given", Nam);
+                 ("component size clause for& previously given", Nam);
 
             elsif Csize /= No_Uint then
                Check_Size (Expr, Component_Type (Btype), Csize, Biased);
@@ -1058,34 +1058,50 @@ package body Sem_Ch13 is
                --  that will be used to represent the biased subtype that
                --  reflects the biased representation of components. We need
                --  this subtype to get proper conversions on referencing
-               --  elements of the array.
+               --  elements of the array. Note that component size clauses
+               --  are ignored in VM mode.
 
-               if Biased then
-                  New_Ctyp :=
-                    Make_Defining_Identifier (Loc,
-                      Chars => New_External_Name (Chars (U_Ent), 'C', 0, 'T'));
+               if VM_Target = No_VM then
+                  if Biased then
+                     New_Ctyp :=
+                       Make_Defining_Identifier (Loc,
+                         Chars =>
+                           New_External_Name (Chars (U_Ent), 'C', 0, 'T'));
 
-                  Decl :=
-                    Make_Subtype_Declaration (Loc,
-                      Defining_Identifier => New_Ctyp,
-                      Subtype_Indication  =>
-                        New_Occurrence_Of (Component_Type (Btype), Loc));
+                     Decl :=
+                       Make_Subtype_Declaration (Loc,
+                         Defining_Identifier => New_Ctyp,
+                         Subtype_Indication  =>
+                           New_Occurrence_Of (Component_Type (Btype), Loc));
 
-                  Set_Parent (Decl, N);
-                  Analyze (Decl, Suppress => All_Checks);
+                     Set_Parent (Decl, N);
+                     Analyze (Decl, Suppress => All_Checks);
 
-                  Set_Has_Delayed_Freeze        (New_Ctyp, False);
-                  Set_Esize                     (New_Ctyp, Csize);
-                  Set_RM_Size                   (New_Ctyp, Csize);
-                  Init_Alignment                (New_Ctyp);
-                  Set_Has_Biased_Representation (New_Ctyp, True);
-                  Set_Is_Itype                  (New_Ctyp, True);
-                  Set_Associated_Node_For_Itype (New_Ctyp, U_Ent);
+                     Set_Has_Delayed_Freeze        (New_Ctyp, False);
+                     Set_Esize                     (New_Ctyp, Csize);
+                     Set_RM_Size                   (New_Ctyp, Csize);
+                     Init_Alignment                (New_Ctyp);
+                     Set_Has_Biased_Representation (New_Ctyp, True);
+                     Set_Is_Itype                  (New_Ctyp, True);
+                     Set_Associated_Node_For_Itype (New_Ctyp, U_Ent);
 
-                  Set_Component_Type (Btype, New_Ctyp);
+                     Set_Component_Type (Btype, New_Ctyp);
+                  end if;
+
+                  Set_Component_Size (Btype, Csize);
+
+               --  For VM case, we ignore component size clauses
+
+               else
+                  --  Give a warning unless we are in GNAT mode, in which case
+                  --  the warning is suppressed since it is not useful.
+
+                  if not GNAT_Mode then
+                     Error_Msg_N
+                       ("?component size ignored in this configuration", N);
+                  end if;
                end if;
 
-               Set_Component_Size            (Btype, Csize);
                Set_Has_Component_Size_Clause (Btype, True);
                Set_Has_Non_Standard_Rep      (Btype, True);
             end if;
@@ -2190,14 +2206,19 @@ package body Sem_Ch13 is
          end;
       end if;
 
-      --  Clear any existing component clauses for the type (this happens with
-      --  derived types, where we are now overriding the original).
+      --  For untagged types, clear any existing component clauses for the
+      --  type. If the type is derived, this is what allows us to override
+      --  a rep clause for the parent. For type extensions, the representation
+      --  of the inherited components is inherited, so we want to keep previous
+      --  component clauses for completeness.
 
-      Comp := First_Component_Or_Discriminant (Rectype);
-      while Present (Comp) loop
-         Set_Component_Clause (Comp, Empty);
-         Next_Component_Or_Discriminant (Comp);
-      end loop;
+      if not Is_Tagged_Type (Rectype) then
+         Comp := First_Component_Or_Discriminant (Rectype);
+         while Present (Comp) loop
+            Set_Component_Clause (Comp, Empty);
+            Next_Component_Or_Discriminant (Comp);
+         end loop;
+      end if;
 
       --  All done if no component clauses
 
@@ -2323,9 +2344,40 @@ package body Sem_Ch13 is
                        ("component clause is for non-existent field", CC);
 
                   elsif Present (Component_Clause (Comp)) then
-                     Error_Msg_Sloc := Sloc (Component_Clause (Comp));
-                     Error_Msg_N
-                       ("component clause previously given#", CC);
+
+                     --  Diagose duplicate rep clause, or check consistency
+                     --  if this is inherited component. In a double fault,
+                     --  there may be a duplicate inconsistent clause for an
+                     --  inherited component.
+
+                     if
+                       Scope (Original_Record_Component (Comp)) = Rectype
+                         or else Parent (Component_Clause (Comp)) = N
+                     then
+                        Error_Msg_Sloc := Sloc (Component_Clause (Comp));
+                        Error_Msg_N ("component clause previously given#", CC);
+
+                     else
+                        declare
+                           Rep1 : constant Node_Id := Component_Clause (Comp);
+
+                        begin
+                           if Intval (Position (Rep1)) /=
+                                                   Intval (Position (CC))
+                             or else Intval (First_Bit (Rep1)) /=
+                                                   Intval (First_Bit (CC))
+                             or else Intval (Last_Bit (Rep1)) /=
+                                                   Intval (Last_Bit (CC))
+                           then
+                              Error_Msg_N ("component clause inconsistent "
+                                & "with representation of ancestor", CC);
+
+                           elsif Warn_On_Redundant_Constructs then
+                              Error_Msg_N ("?redundant component clause "
+                                & "for inherited component!", CC);
+                           end if;
+                        end;
+                     end if;
 
                   else
                      --  Make reference for field in record rep clause and set
@@ -2684,6 +2736,7 @@ package body Sem_Ch13 is
             while Present (Comp) loop
                if Present (Component_Clause (Comp)) then
                   Num_Repped_Components := Num_Repped_Components + 1;
+
                else
                   Num_Unrepped_Components := Num_Unrepped_Components + 1;
                end if;
@@ -2702,6 +2755,7 @@ package body Sem_Ch13 is
                Comp := First_Component_Or_Discriminant (Rectype);
                while Present (Comp) loop
                   if No (Component_Clause (Comp))
+                    and then Comes_From_Source (Comp)
                     and then (Is_Scalar_Type (Underlying_Type (Etype (Comp)))
                                 or else Size_Known_At_Compile_Time
                                              (Underlying_Type (Etype (Comp))))
@@ -3413,6 +3467,17 @@ package body Sem_Ch13 is
                return 0;
             end if;
 
+            --  Note: In the following two tests for LoSet and HiSet, it may
+            --  seem redundant to test for N_Real_Literal here since normally
+            --  one would assume that the test for the value being known at
+            --  compile time includes this case. However, there is a glitch.
+            --  If the real literal comes from folding a non-static expression,
+            --  then we don't consider any non- static expression to be known
+            --  at compile time if we are in configurable run time mode (needed
+            --  in some cases to give a clearer definition of what is and what
+            --  is not accepted). So the test is indeed needed. Without it, we
+            --  would set neither Lo_Set nor Hi_Set and get an infinite loop.
+
             if not LoSet then
                if Nkind (Type_Low_Bound (Ancest)) = N_Real_Literal
                  or else Compile_Time_Known_Value (Type_Low_Bound (Ancest))
@@ -3752,9 +3817,29 @@ package body Sem_Ch13 is
          end if;
       end if;
 
-      --  No error, link item into head of chain of rep items for the entity
+      --  No error, link item into head of chain of rep items for the entity,
+      --  but avoid chaining if we have an overloadable entity, and the pragma
+      --  is one that can apply to multiple overloaded entities.
 
-      Record_Rep_Item (T, N);
+      if Is_Overloadable (T)
+        and then Nkind (N) = N_Pragma
+        and then (Chars (N) = Name_Convention
+                    or else
+                  Chars (N) = Name_Import
+                    or else
+                  Chars (N) = Name_Export
+                    or else
+                  Chars (N) = Name_External
+                    or else
+                  Chars (N) = Name_Interface)
+      then
+         null;
+      else
+         Record_Rep_Item (T, N);
+      end if;
+
+      --  Rep item was OK, not too late
+
       return False;
    end Rep_Item_Too_Late;
 
@@ -4184,6 +4269,36 @@ package body Sem_Ch13 is
       then
          Error_Msg_N
            ("?conversion between pointers with different conventions!", N);
+      end if;
+
+      --  Warn if one of the operands is Ada.Calendar.Time. Do not emit a
+      --  warning when compiling GNAT-related sources.
+
+      if Warn_On_Unchecked_Conversion
+        and then not In_Predefined_Unit (N)
+        and then RTU_Loaded (Ada_Calendar)
+        and then
+          (Chars (Source) = Name_Time
+             or else
+           Chars (Target) = Name_Time)
+      then
+         --  If Ada.Calendar is loaded and the name of one of the operands is
+         --  Time, there is a good chance that this is Ada.Calendar.Time.
+
+         declare
+            Calendar_Time : constant Entity_Id :=
+                              Full_View (RTE (RO_CA_Time));
+         begin
+            pragma Assert (Present (Calendar_Time));
+
+            if Source = Calendar_Time
+              or else Target = Calendar_Time
+            then
+               Error_Msg_N
+                 ("?representation of 'Time values may change between " &
+                  "'G'N'A'T versions", N);
+            end if;
+         end;
       end if;
 
       --  Make entry in unchecked conversion table for later processing

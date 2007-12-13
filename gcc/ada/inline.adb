@@ -393,7 +393,7 @@ package body Inline is
 
          --  If subprogram is marked Inline_Always, inlining is mandatory
 
-         if Is_Always_Inlined (Subp) then
+         if Has_Pragma_Inline_Always (Subp) then
             return False;
          end if;
 
@@ -726,7 +726,7 @@ package body Inline is
          E := First_Entity (P);
 
          while Present (E) loop
-            if Is_Always_Inlined (E)
+            if Has_Pragma_Inline_Always (E)
               or else (Front_End_Inlining and then Has_Pragma_Inline (E))
             then
                if not Is_Loaded (Bname) then
