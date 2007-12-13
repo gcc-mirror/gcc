@@ -1637,10 +1637,12 @@ package body Clean is
       Source_Index : Int := 0;
       Index        : Positive;
 
+      procedure Check_Version_And_Help is new Check_Version_And_Help_G (Usage);
+
    begin
       --  First, check for --version and --help
 
-      Check_Version_And_Help ("GNATCLEAN", "2003", Usage'Access);
+      Check_Version_And_Help ("GNATCLEAN", "2003");
 
       Index := 1;
       while Index <= Last loop
@@ -1968,6 +1970,9 @@ package body Clean is
                    "GNAT Project Files");
          Put_Line ("  -Xnm=val Specify an external reference " &
                    "for GNAT Project Files");
+         New_Line;
+
+         Put_Line ("  -aPdir   Add directory dir to project search path");
          New_Line;
 
          Put_Line ("  -aOdir   Specify ALI/object files search path");

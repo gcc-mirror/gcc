@@ -292,10 +292,14 @@ procedure Gnatlink is
       --  Set to true if the next argument is to be added into the list of
       --  linker's argument without parsing it.
 
+      procedure Check_Version_And_Help is new Check_Version_And_Help_G (Usage);
+
+      --  Start of processing for Process_Args
+
    begin
       --  First, check for --version and --help
 
-      Check_Version_And_Help ("GNATLINK", "1995", Usage'Unrestricted_Access);
+      Check_Version_And_Help ("GNATLINK", "1995");
 
       --  Loop through arguments of gnatlink command
 
@@ -1765,7 +1769,12 @@ begin
               Binder_Options.Table (J);
          end loop;
 
-         Args (Args'Last) := Binder_Body_Src_File;
+         --  Use the full path of the binder generated source, so that it is
+         --  guaranteed that the debugger will find this source, even with
+         --  STABS.
+
+         Args (Args'Last) :=
+           new String'(Normalize_Pathname (Binder_Body_Src_File.all));
 
          if Verbose_Mode then
             Write_Str (Base_Name (Gcc_Path.all));

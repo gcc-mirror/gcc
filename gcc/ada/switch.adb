@@ -42,14 +42,13 @@ package body Switch is
       Osint.Fail ("invalid switch: ", Switch);
    end Bad_Switch;
 
-   ----------------------------
-   -- Check_Version_And_Help --
-   ----------------------------
+   ------------------------------
+   -- Check_Version_And_Help_G --
+   ------------------------------
 
-   procedure Check_Version_And_Help
+   procedure Check_Version_And_Help_G
      (Tool_Name      : String;
       Initial_Year   : String;
-      Usage          : Procedure_Ptr;
       Version_String : String := Gnatvsn.Gnat_Version_String)
    is
       Version_Switch_Present : Boolean := False;
@@ -92,12 +91,12 @@ package body Switch is
 
       if Help_Switch_Present then
          Set_Standard_Output;
-         Usage.all;
+         Usage;
          Write_Eol;
          Write_Line ("Report bugs to report@adacore.com");
          Exit_Program (E_Success);
       end if;
-   end Check_Version_And_Help;
+   end Check_Version_And_Help_G;
 
    ---------------------
    -- Display_Version --
