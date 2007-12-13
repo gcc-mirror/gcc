@@ -229,7 +229,7 @@ package body GNAT.Traceback.Symbolic is
               (Status,
                PC_For (Traceback (J)),
                PC_For (Traceback (J)),
-               FP_For (Traceback (J)),
+               PV_For (Traceback (J)),
                Return_Address,
                Image_Name_Addr,
                Module_Name_Addr,
