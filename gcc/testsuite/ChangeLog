@@ -1,4 +1,9 @@
-2007-11-26  Olga Golovanevsky  <olga@il.ibm.com>
+2007-12-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/34435
+	* g++.dg/other/pr34435.C: New testcase.
+
+2007-12-13  Olga Golovanevsky  <olga@il.ibm.com>
 
 	* gcc.dg/struct: New directory with tests 
 	for struct-reorg optimizaion.

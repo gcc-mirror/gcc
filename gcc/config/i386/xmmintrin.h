@@ -723,8 +723,9 @@ _mm_shuffle_ps (__m128 __A, __m128 __B, int const __mask)
   return (__m128) __builtin_ia32_shufps ((__v4sf)__A, (__v4sf)__B, __mask);
 }
 #else
-#define _mm_shuffle_ps(A, B, MASK) \
- ((__m128) __builtin_ia32_shufps ((__v4sf)(A), (__v4sf)(B), (MASK)))
+#define _mm_shuffle_ps(A, B, MASK)					\
+  ((__m128) __builtin_ia32_shufps ((__v4sf)(__m128)(A),			\
+				   (__v4sf)(__m128)(B), (int)(MASK)))
 #endif
 
 /* Selects and interleaves the upper two SPFP values from A and B.  */
@@ -1004,8 +1005,10 @@ _m_pextrw (__m64 const __A, int const __N)
   return _mm_extract_pi16 (__A, __N);
 }
 #else
-#define _mm_extract_pi16(A, N)	__builtin_ia32_vec_ext_v4hi ((__v4hi)(A), (N))
-#define _m_pextrw(A, N)		_mm_extract_pi16((A), (N))
+#define _mm_extract_pi16(A, N)	\
+  ((int) __builtin_ia32_vec_ext_v4hi ((__v4hi)(__m64)(A), (int)(N)))
+#define _m_pextrw(A, N) \
+  ((int) _mm_extract_pi16((__m64)(A),(int)(N)))
 #endif
 
 /* Inserts word D into one of four words of A.  The selector N must be
@@ -1023,9 +1026,11 @@ _m_pinsrw (__m64 const __A, int const __D, int const __N)
   return _mm_insert_pi16 (__A, __D, __N);
 }
 #else
-#define _mm_insert_pi16(A, D, N) \
-  ((__m64) __builtin_ia32_vec_set_v4hi ((__v4hi)(A), (D), (N)))
-#define _m_pinsrw(A, D, N)	 _mm_insert_pi16((A), (D), (N))
+#define _mm_insert_pi16(A, D, N)				\
+  ((__m64) __builtin_ia32_vec_set_v4hi ((__v4hi)(__m64)(A),	\
+					(int)(D), (int)(N)))
+#define _m_pinsrw(A, D, N) \
+  ((__m64) _mm_insert_pi16((__m64)(A), (int)(D), (int)(N))
 #endif
 
 /* Compute the element-wise maximum of signed 16-bit values.  */
@@ -1123,8 +1128,9 @@ _m_pshufw (__m64 __A, int const __N)
 }
 #else
 #define _mm_shuffle_pi16(A, N) \
-  ((__m64) __builtin_ia32_pshufw ((__v4hi)(A), (N)))
-#define _m_pshufw(A, N)		_mm_shuffle_pi16 ((A), (N))
+  ((__m64) __builtin_ia32_pshufw ((__v4hi)(__m64)(A), (int)(N)))
+#define _m_pshufw(A, N) \
+  ((__m64) _mm_shuffle_pi16 ((__m64)(A), (int)(N))
 #endif
 
 /* Conditionally store byte elements of A into P.  The high bit of each

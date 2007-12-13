@@ -185,18 +185,25 @@ _mm_sign_pi32 (__m64 __X, __m64 __Y)
 static __inline __m128i __attribute__((__always_inline__, __artificial__))
 _mm_alignr_epi8(__m128i __X, __m128i __Y, const int __N)
 {
-  return (__m128i)__builtin_ia32_palignr128 ((__v2di)__X, (__v2di)__Y, __N * 8);}
+  return (__m128i) __builtin_ia32_palignr128 ((__v2di)__X,
+					      (__v2di)__Y, __N * 8);
+}
 
 static __inline __m64 __attribute__((__always_inline__, __artificial__))
 _mm_alignr_pi8(__m64 __X, __m64 __Y, const int __N)
 {
-  return (__m64)__builtin_ia32_palignr ((long long)__X, (long long)__Y, __N * 8);
+  return (__m64) __builtin_ia32_palignr ((long long)__X,
+					 (long long)__Y, __N * 8);
 }
 #else
-#define _mm_alignr_epi8(__X, __Y, __N) \
-  ((__m128i)__builtin_ia32_palignr128 ((__v2di) __X, (__v2di) __Y, (__N) * 8))
-#define _mm_alignr_pi8(__X, __Y, __N) \
-  ((__m64)__builtin_ia32_palignr ((long long) (__X), (long long) (__Y), (__N) * 8))
+#define _mm_alignr_epi8(X, Y, N)					\
+  ((__m128i) __builtin_ia32_palignr128 ((__v2di)(__m128i)(X),		\
+					(__v2di)(__m128i)(Y),		\
+					(int)(N) * 8))
+#define _mm_alignr_pi8(X, Y, N)						\
+  ((__m64) __builtin_ia32_palignr ((long long)(__m64)(__X),		\
+				   (long long)(__m64)(__Y),		\
+				   (int)(N) * 8))
 #endif
 
 static __inline __m128i __attribute__((__always_inline__, __artificial__))
