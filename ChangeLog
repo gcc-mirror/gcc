@@ -1,3 +1,9 @@
+2007-12-13  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* Makefile.tpl (CFLAGS_FOR_TARGET): Add -g.
+	(CXXFLAGS_FOR_TARGET): Add -O2 -g.
+	* Makefile.in: Regenerate.
+
 2007-12-10  Mark Heffernan <meheff@google.com>
 
 	* MAINTAINERS (Write After Approval): Add myself and alphabetize two
