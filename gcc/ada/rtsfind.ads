@@ -227,6 +227,7 @@ package Rtsfind is
       System_Img_Char,
       System_Img_Dec,
       System_Img_Enum,
+      System_Img_Enum_New,
       System_Img_Int,
       System_Img_LLD,
       System_Img_LLI,
@@ -542,6 +543,7 @@ package Rtsfind is
      RE_Register_Tag,                    -- Ada.Tags
      RE_Transportable,                   -- Ada.Tags
      RE_Secondary_DT,                    -- Ada.Tags
+     RE_Secondary_Tag,                   -- Ada.Tags
      RE_Select_Specific_Data,            -- Ada.Tags
      RE_Set_Entry_Index,                 -- Ada.Tags
      RE_Set_Offset_To_Top,               -- Ada.Tags
@@ -723,9 +725,9 @@ package Rtsfind is
 
      RE_Image_Decimal,                   -- System.Img_Dec
 
-     RE_Image_Enumeration_8,             -- System.Img_Enum
-     RE_Image_Enumeration_16,            -- System.Img_Enum
-     RE_Image_Enumeration_32,            -- System.Img_Enum
+     RE_Image_Enumeration_8,             -- System.Img_Enum_New
+     RE_Image_Enumeration_16,            -- System.Img_Enum_New
+     RE_Image_Enumeration_32,            -- System.Img_Enum_New
 
      RE_Image_Integer,                   -- System.Img_Int
 
@@ -1464,6 +1466,7 @@ package Rtsfind is
 
      RE_Protected_Entry_Body_Array,      -- Tasking.Protected_Objects.Entries
      RE_Protection_Entries,              -- Tasking.Protected_Objects.Entries
+     RE_Protection_Entries_Access,       -- Tasking.Protected_Objects.Entries
      RE_Initialize_Protection_Entries,   -- Tasking.Protected_Objects.Entries
      RE_Lock_Entries,                    -- Tasking.Protected_Objects.Entries
      RO_PE_Get_Ceiling,                  -- Tasking.Protected_Objects.Entries
@@ -1644,6 +1647,7 @@ package Rtsfind is
      RE_Register_Tag                     => Ada_Tags,
      RE_Transportable                    => Ada_Tags,
      RE_Secondary_DT                     => Ada_Tags,
+     RE_Secondary_Tag                    => Ada_Tags,
      RE_Select_Specific_Data             => Ada_Tags,
      RE_Set_Entry_Index                  => Ada_Tags,
      RE_Set_Offset_To_Top                => Ada_Tags,
@@ -1823,9 +1827,9 @@ package Rtsfind is
 
      RE_Image_Decimal                    => System_Img_Dec,
 
-     RE_Image_Enumeration_8              => System_Img_Enum,
-     RE_Image_Enumeration_16             => System_Img_Enum,
-     RE_Image_Enumeration_32             => System_Img_Enum,
+     RE_Image_Enumeration_8              => System_Img_Enum_New,
+     RE_Image_Enumeration_16             => System_Img_Enum_New,
+     RE_Image_Enumeration_32             => System_Img_Enum_New,
 
      RE_Image_Integer                    => System_Img_Int,
 
@@ -2566,6 +2570,8 @@ package Rtsfind is
      RE_Protected_Entry_Body_Array       =>
        System_Tasking_Protected_Objects_Entries,
      RE_Protection_Entries               =>
+       System_Tasking_Protected_Objects_Entries,
+     RE_Protection_Entries_Access        =>
        System_Tasking_Protected_Objects_Entries,
      RE_Initialize_Protection_Entries    =>
        System_Tasking_Protected_Objects_Entries,
