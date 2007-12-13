@@ -573,6 +573,8 @@ package body GNAT.Sockets is
      (Socket : Socket_Type;
       Server : in out Sock_Addr_Type)
    is
+      pragma Warnings (Off, Server);
+
       Res : C.int;
       Sin : aliased Sockaddr_In;
       Len : constant C.int := Sin'Size / 8;
@@ -1376,6 +1378,8 @@ package body GNAT.Sockets is
       Item   : out Ada.Streams.Stream_Element_Array;
       Last   : out Ada.Streams.Stream_Element_Offset)
    is
+      pragma Warnings (Off, Stream);
+
       First : Ada.Streams.Stream_Element_Offset          := Item'First;
       Index : Ada.Streams.Stream_Element_Offset          := First - 1;
       Max   : constant Ada.Streams.Stream_Element_Offset := Item'Last;
@@ -2111,6 +2115,8 @@ package body GNAT.Sockets is
      (Stream : in out Datagram_Socket_Stream_Type;
       Item   : Ada.Streams.Stream_Element_Array)
    is
+      pragma Warnings (Off, Stream);
+
       First : Ada.Streams.Stream_Element_Offset          := Item'First;
       Index : Ada.Streams.Stream_Element_Offset          := First - 1;
       Max   : constant Ada.Streams.Stream_Element_Offset := Item'Last;
@@ -2144,6 +2150,8 @@ package body GNAT.Sockets is
      (Stream : in out Stream_Socket_Stream_Type;
       Item   : Ada.Streams.Stream_Element_Array)
    is
+      pragma Warnings (Off, Stream);
+
       First : Ada.Streams.Stream_Element_Offset          := Item'First;
       Index : Ada.Streams.Stream_Element_Offset          := First - 1;
       Max   : constant Ada.Streams.Stream_Element_Offset := Item'Last;
