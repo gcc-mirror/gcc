@@ -1327,7 +1327,7 @@ package body Exp_Util is
 
    function Find_Interface_ADT
      (T     : Entity_Id;
-      Iface : Entity_Id) return Entity_Id
+      Iface : Entity_Id) return Elmt_Id
    is
       ADT   : Elmt_Id;
       Found : Boolean   := False;
@@ -1385,6 +1385,7 @@ package body Exp_Util is
                end if;
 
                Next_Elmt (ADT);
+               Next_Elmt (ADT);
                Next_Elmt (AI_Elmt);
             end loop;
          end if;
@@ -1423,7 +1424,7 @@ package body Exp_Util is
       pragma Assert (Present (Node (ADT)));
       Find_Secondary_Table (Typ);
       pragma Assert (Found);
-      return Node (ADT);
+      return ADT;
    end Find_Interface_ADT;
 
    ------------------------
@@ -2336,13 +2337,30 @@ package body Exp_Util is
 
             when N_And_Then | N_Or_Else =>
                if N = Right_Opnd (P) then
+
+                  --  We are now going to either append the actions to the
+                  --  actions field of the short-circuit operation. We will
+                  --  also analyze the actions now.
+
+                  --  This analysis is really too early, the proper thing would
+                  --  be to just park them there now, and only analyze them if
+                  --  we find we really need them, and to it at the proper
+                  --  final insertion point. However attempting to this proved
+                  --  tricky, so for now we just kill current values before and
+                  --  after the analyze call to make sure we avoid peculiar
+                  --  optimizations from this out of order insertion.
+
+                  Kill_Current_Values;
+
                   if Present (Actions (P)) then
                      Insert_List_After_And_Analyze
-                      (Last (Actions (P)), Ins_Actions);
+                       (Last (Actions (P)), Ins_Actions);
                   else
                      Set_Actions (P, Ins_Actions);
                      Analyze_List (Actions (P));
                   end if;
+
+                  Kill_Current_Values;
 
                   return;
                end if;
@@ -2985,11 +3003,12 @@ package body Exp_Util is
            or else TSS_Name  = TSS_Deep_Adjust
            or else TSS_Name  = TSS_Deep_Finalize
            or else (Ada_Version >= Ada_05
-             and then (Chars (E) = Name_uDisp_Asynchronous_Select
-               or else Chars (E) = Name_uDisp_Conditional_Select
-               or else Chars (E) = Name_uDisp_Get_Prim_Op_Kind
-               or else Chars (E) = Name_uDisp_Get_Task_Id
-               or else Chars (E) = Name_uDisp_Timed_Select))
+                      and then (Chars (E) = Name_uDisp_Asynchronous_Select
+                        or else Chars (E) = Name_uDisp_Conditional_Select
+                        or else Chars (E) = Name_uDisp_Get_Prim_Op_Kind
+                        or else Chars (E) = Name_uDisp_Get_Task_Id
+                        or else Chars (E) = Name_uDisp_Requeue
+                        or else Chars (E) = Name_uDisp_Timed_Select))
          then
             return True;
          end if;
@@ -3459,8 +3478,6 @@ package body Exp_Util is
          elsif Nkind (N) in N_Generic_Instantiation then
             Remove_Dead_Instance (N);
          end if;
-
-         Delete_Tree (N);
       end if;
    end Kill_Dead_Code;
 
@@ -3472,11 +3489,11 @@ package body Exp_Util is
    begin
       W := Warn;
       if Is_Non_Empty_List (L) then
-         loop
-            N := Remove_Head (L);
-            exit when No (N);
+         N := First (L);
+         while Present (N) loop
             Kill_Dead_Code (N, W);
             W := False;
+            Next (N);
          end loop;
       end if;
    end Kill_Dead_Code;

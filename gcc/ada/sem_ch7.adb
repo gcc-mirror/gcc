@@ -592,9 +592,9 @@ package body Sem_Ch7 is
                   --  the flag for outer level entities that are not
                   --  imported/exported, and which have no interface name.
 
-                  elsif K = N_Object_Declaration
-                    or else K = N_Exception_Declaration
-                    or else K = N_Subprogram_Declaration
+                  elsif Nkind_In (K, N_Object_Declaration,
+                                     N_Exception_Declaration,
+                                     N_Subprogram_Declaration)
                   then
                      E := Defining_Entity (D);
 
@@ -844,8 +844,8 @@ package body Sem_Ch7 is
          then
             Generate_Reference (Id, Scope (Id), 'k', False);
 
-         elsif Nkind (Unit (Cunit (Main_Unit))) /= N_Subprogram_Body
-           and then Nkind (Unit (Cunit (Main_Unit))) /= N_Subunit
+         elsif not Nkind_In (Unit (Cunit (Main_Unit)), N_Subprogram_Body,
+                                                       N_Subunit)
          then
             --  If current unit is an ancestor of main unit, generate
             --  a reference to its own parent.
@@ -909,16 +909,16 @@ package body Sem_Ch7 is
             --  with a known_discriminant_part whose full view is an
             --  Unchecked_Union.
 
-            if (Nkind (Decl) = N_Incomplete_Type_Declaration
-                  or else
-                Nkind (Decl) = N_Private_Type_Declaration)
+            if Nkind_In (Decl, N_Incomplete_Type_Declaration,
+                               N_Private_Type_Declaration)
               and then Has_Discriminants (Defining_Identifier (Decl))
               and then Present (Full_View (Defining_Identifier (Decl)))
-              and then Is_Unchecked_Union
-                (Full_View (Defining_Identifier (Decl)))
+              and then
+                Is_Unchecked_Union (Full_View (Defining_Identifier (Decl)))
             then
-               Error_Msg_N ("completion of discriminated partial view" &
-                 " cannot be an Unchecked_Union",
+               Error_Msg_N
+                 ("completion of discriminated partial view "
+                  & "cannot be an Unchecked_Union",
                  Full_View (Defining_Identifier (Decl)));
             end if;
 
@@ -942,8 +942,8 @@ package body Sem_Ch7 is
          while Present (Gen_Par) and then Is_Child_Unit (Gen_Par) loop
             Inst_Node := Get_Package_Instantiation_Node (Inst_Par);
 
-            if (Nkind (Inst_Node) = N_Package_Instantiation
-                  or else Nkind (Inst_Node) = N_Formal_Package_Declaration)
+            if Nkind_In (Inst_Node, N_Package_Instantiation,
+                                    N_Formal_Package_Declaration)
               and then Nkind (Name (Inst_Node)) = N_Expanded_Name
             then
                Inst_Par := Entity (Prefix (Name (Inst_Node)));

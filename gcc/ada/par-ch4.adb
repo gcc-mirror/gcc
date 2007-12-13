@@ -463,8 +463,6 @@ package body Ch4 is
                   Style.Check_Attribute_Name (False);
                end if;
 
-               Delete_Node (Token_Node);
-
             --  Here for case of attribute designator is not an identifier
 
             else

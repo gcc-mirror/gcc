@@ -338,9 +338,10 @@ package Exp_Util is
 
    function Find_Interface_ADT
      (T     : Entity_Id;
-      Iface : Entity_Id) return Entity_Id;
+      Iface : Entity_Id) return Elmt_Id;
    --  Ada 2005 (AI-251): Given a type T implementing the interface Iface,
-   --  return the Access_Disp_Table value of the interface.
+   --  return the element of Access_Disp_Table containing the tag of the
+   --  interface.
 
    function Find_Interface_Tag
      (T     : Entity_Id;
@@ -483,16 +484,16 @@ package Exp_Util is
    --  or is a private type whose completion is such a type.
 
    procedure Kill_Dead_Code (N : Node_Id; Warn : Boolean := False);
-   --  N represents a node for a section of code that is known to be dead. The
-   --  node is deleted, and any exception handler references and warning
-   --  messages relating to this code are removed. If Warn is True, a warning
-   --  will be output at the start of N indicating the deletion of the code.
+   --  N represents a node for a section of code that is known to be dead. Any
+   --  exception handler references and warning messages relating to this code
+   --  are removed. If Warn is True, a warning will be output at the start of N
+   --  indicating the deletion of the code. Note that the tree for the deleted
+   --  code is left intact so that e.g. cross-reference data is still valid.
 
    procedure Kill_Dead_Code (L : List_Id; Warn : Boolean := False);
    --  Like the above procedure, but applies to every element in the given
-   --  list. Each of the entries is removed from the list before killing it.
-   --  If Warn is True, a warning will be output at the start of N indicating
-   --  the deletion of the code.
+   --  list. If Warn is True, a warning will be output at the start of N
+   --  indicating the deletion of the code.
 
    function Known_Non_Negative (Opnd : Node_Id) return Boolean;
    --  Given a node for a subexpression, determines if it represents a value

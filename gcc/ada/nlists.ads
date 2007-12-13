@@ -333,9 +333,6 @@ package Nlists is
    --  These functions return the addresses of the Next_Node and Prev_Node
    --  tables (used in Back_End for Gigi).
 
-   procedure Delete_List (L : List_Id);
-   --  Removes all elements of the given list, and calls Delete_Tree on each
-
    function p (U : Union_Id) return Node_Id;
    --  This function is intended for use from the debugger, it determines
    --  whether U is a Node_Id or List_Id, and calls the appropriate Parent
