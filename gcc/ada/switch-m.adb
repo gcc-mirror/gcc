@@ -584,7 +584,7 @@ package body Switch.M is
                      Bad_Switch (Switch_Chars);
 
                   else
-                     Follow_Links := True;
+                     Follow_Links_For_Files := True;
                   end if;
 
                --  Processing for eS switch

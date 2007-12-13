@@ -38,17 +38,14 @@ package Prj.Proc is
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Report_Error           : Put_Line_Access;
-      Follow_Links           : Boolean := True;
       When_No_Sources        : Error_Warning := Error;
-      Reset_Tree             : Boolean := True);
+      Reset_Tree             : Boolean := True;
+      Current_Dir            : String := "");
    --  Process a project file tree into project file data structures. If
    --  Report_Error is null, use the error reporting mechanism. Otherwise,
    --  report errors using Report_Error.
    --
-   --  If Follow_Links is False, it is assumed that the project doesn't contain
-   --  any file duplicated through symbolic links (although the latter are
-   --  still valid if they point to a file which is outside of the project),
-   --  and that no directory has a name which is a valid source name.
+   --  Current_Dir is for optimization purposes, avoiding extra system calls.
    --
    --  When_No_Sources indicates what should be done when no sources are found
    --  in a project for a specified or implied language.
@@ -79,8 +76,8 @@ package Prj.Proc is
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Report_Error           : Put_Line_Access;
-      Follow_Links           : Boolean := True;
-      When_No_Sources        : Error_Warning := Error);
+      When_No_Sources        : Error_Warning := Error;
+      Current_Dir            : String);
    --  See documentation of parameters in procedure Process above
 
 end Prj.Proc;

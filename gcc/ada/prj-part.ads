@@ -35,7 +35,8 @@ package Prj.Part is
       Project_File_Name      : String;
       Always_Errout_Finalize : Boolean;
       Packages_To_Check      : String_List_Access := All_Packages;
-      Store_Comments         : Boolean := False);
+      Store_Comments         : Boolean := False;
+      Current_Directory      : String := "");
    --  Parse project file and all its imported project files and create a tree.
    --  Return the node for the project (or Empty_Node if parsing failed). If
    --  Always_Errout_Finalize is True, Errout.Finalize is called in all cases,
@@ -44,6 +45,9 @@ package Prj.Part is
    --  where any unknown attribute produces an error. For other packages, an
    --  unknown attribute produces a warning. When Store_Comments is True,
    --  comments are stored in the parse tree.
+   --
+   --  Current_Directory is used for optimization purposes only, avoiding extra
+   --  system calls.
 
    type Extension_Origin is (None, Extending_Simple, Extending_All);
    --  Type of parameter From_Extended for procedures Parse_Single_Project and
@@ -59,7 +63,8 @@ package Prj.Part is
       From_Extended     : Extension_Origin;
       In_Limited        : Boolean;
       Packages_To_Check : String_List_Access;
-      Depth             : Natural);
+      Depth             : Natural;
+      Current_Dir       : String);
    --  Parse a project file.
    --  Recursive procedure: it calls itself for imported and extended
    --  projects. When From_Extended is not None, if the project has already

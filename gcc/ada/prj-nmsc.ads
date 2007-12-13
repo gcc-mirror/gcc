@@ -35,8 +35,8 @@ private package Prj.Nmsc is
      (Project         : Project_Id;
       In_Tree         : Project_Tree_Ref;
       Report_Error    : Put_Line_Access;
-      Follow_Links    : Boolean;
-      When_No_Sources : Error_Warning);
+      When_No_Sources : Error_Warning;
+      Current_Dir     : String);
    --  Check the object directory and the source directories
    --
    --  Check the library attributes, including the library directory if any
@@ -53,10 +53,7 @@ private package Prj.Nmsc is
    --  If Report_Error is null , use the standard error reporting mechanism
    --  (Errout). Otherwise, report errors using Report_Error.
    --
-   --  If Follow_Links is False, it is assumed that the project doesn't contain
-   --  any file duplicated through symbolic links (although the latter are
-   --  still valid if they point to a file which is outside of the project),
-   --  and that no directory has a name which is a valid source name.
+   --  Current_Dir is for optimization purposes only, avoiding system calls.
    --
    --  When_No_Sources indicates what should be done when no sources of a
    --  language are found in a project where this language is declared.

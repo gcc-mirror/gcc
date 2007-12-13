@@ -66,7 +66,6 @@ package body Prj.Ext is
    --  first for external reference in this table, before checking the
    --  environment. Htable is emptied (reset) by procedure Reset.
 
-   ---------
    package Search_Directories is new Table.Table
      (Table_Component_Type => Name_Id,
       Table_Index_Type     => Natural,
@@ -76,6 +75,7 @@ package body Prj.Ext is
       Table_Name           => "Prj.Ext.Search_Directories");
    --  The table for the directories specified with -aP switches
 
+   ---------
    -- Add --
    ---------
 
@@ -142,20 +142,18 @@ package body Prj.Ext is
       Prj_Path        : String_Access := Gpr_Prj_Path;
 
    begin
-      if Get_Mode = Ada_Only then
-         if Gpr_Prj_Path.all /= "" then
+      if Gpr_Prj_Path.all /= "" then
 
-            --  Warn if both environment variables are defined
+         --  In Ada only mode, warn if both environment variables are defined
 
-            if Ada_Prj_Path.all /= "" then
-               Write_Line
-                 ("Warning: ADA_PROJECT_PATH is not taken into account");
-               Write_Line ("         when GPR_PROJECT_PATH is defined");
-            end if;
-
-         else
-            Prj_Path := Ada_Prj_Path;
+         if Get_Mode = Ada_Only and then Ada_Prj_Path.all /= "" then
+            Write_Line
+              ("Warning: ADA_PROJECT_PATH is not taken into account");
+            Write_Line ("         when GPR_PROJECT_PATH is defined");
          end if;
+
+      else
+         Prj_Path := Ada_Prj_Path;
       end if;
 
       --  The current directory is always first
