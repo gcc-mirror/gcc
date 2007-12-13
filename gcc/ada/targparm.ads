@@ -31,8 +31,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package obtains parameters from the target runtime version of
---  System, to indicate parameters relevant to the target environment.
+--  This package obtains parameters from the target runtime version of System,
+--  to indicate parameters relevant to the target environment.
+
+--  Is it right for this to be modified GPL???
 
 --  Conceptually, these parameters could be obtained using rtsfind, but
 --  we do not do this for four reasons:
@@ -180,12 +182,10 @@ package Targparm is
    --  The following parameters correspond to the variables defined in the
    --  private part of System (without the terminating _On_Target). Note
    --  that it is required that all parameters defined here be specified
-   --  in the target specific version of system.ads (there are no defaults).
-
-   --  All these parameters should be regarded as read only by all clients
-   --  of the package. The only way they get modified is by calling the
-   --  Get_Target_Parameters routine which reads the values from a provided
-   --  text buffer containing the source of the system package.
+   --  in the target specific version of system.ads. Thus, to add a new
+   --  parameter, add it to all system*.ads files. (There is a defaulting
+   --  mechanism, but we don't normally take advantage of it, as explained
+   --  below.)
 
    --  The default values here are used if no value is found in system.ads.
    --  This should normally happen if the special version of system.ads used
@@ -196,6 +196,11 @@ package Targparm is
    --  parameters added) being used to compile older versions of the compiler
    --  sources, as well as avoiding duplicating values in all system-*.ads
    --  files for flags that are used on a few platforms only.
+
+   --  All these parameters should be regarded as read only by all clients
+   --  of the package. The only way they get modified is by calling the
+   --  Get_Target_Parameters routine which reads the values from a provided
+   --  text buffer containing the source of the system package.
 
    ----------------------------
    -- Special Target Control --
@@ -425,6 +430,23 @@ package Targparm is
    --  the source program may not contain explicit 64-bit shifts. In addition,
    --  the code generated for packed arrays will avoid the use of long shifts.
 
+   --------------------
+   -- Indirect Calls --
+   --------------------
+
+   Always_Compatible_Rep_On_Target : Boolean := True;
+   --  If True, the Can_Use_Internal_Rep flag (see Einfo) is set to False in
+   --  all cases. This corresponds to the traditional code generation
+   --  strategy. False allows the front end to choose a policy that partly or
+   --  entirely eliminates dynamically generated trampolines.
+
+   Dynamic_Trampolines_Used_On_Target : Boolean := True;
+   --  True if the back end uses dynamically generated trampolines to implement
+   --  '[Unrestricted_]Access of nested subprograms when Can_Use_Internal_Rep
+   --  is False for the access type. (Can_Use_Internal_Rep = True forbids the
+   --  use of such trampolines.) Used in the implementation of pragma
+   --  Restrictions (No_Implicit_Dynamic_Code).
+
    -------------------------------
    -- Control of Stack Checking --
    -------------------------------
@@ -444,6 +466,18 @@ package Targparm is
    --      size for the environment task depends on the operating
    --      system and cannot be set in a system-independent way.
 
+   --   GCC Stack-limit Mechanism
+
+   --      This approach uses the GCC stack limits mechanism.
+   --      It relies on comparing the stack pointer with the
+   --      values of a global symbol. If the check fails, a
+   --      trap is explicitly generated. The advantage is
+   --      that the mechanism requires no memory protection,
+   --      but operating system and run-time support are
+   --      needed to manage the per-task values of the symbol.
+   --      This is the default method after probing where it
+   --      is available.
+
    --   GNAT Stack-limit Checking
 
    --      This method relies on comparing the stack pointer
@@ -452,13 +486,17 @@ package Targparm is
    --      that the method requires no extra system dependent
    --      runtime support and can be used on systems without
    --      memory protection as well, but at the cost of more
-   --      overhead for doing the check. This method is the
-   --      default on systems that lack complete support for
-   --      probing.
+   --      overhead for doing the check. This is the fallback
+   --      method if the above two are not supported.
 
    Stack_Check_Probes_On_Target : Boolean := False;
-   --  Indicates if stack check probes are used, as opposed to the standard
-   --  target independent comparison method.
+   --  Indicates if the GCC probing mechanism is used
+
+   Stack_Check_Limits_On_Target : Boolean := False;
+   --  Indicates if the GCC stack-limit mechanism is used
+
+   --  Both flags cannot be simultaneously set to True. If neither
+   --  is, the target independent fallback method is used.
 
    Stack_Check_Default_On_Target : Boolean := False;
    --  Indicates if stack checking is on by default

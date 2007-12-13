@@ -31,8 +31,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides a implementation of stack checking operations using
---  comparison with stack base and limit.
+--  This version of this package is for implementations which use
+--  the stack limit approach (the limit of the stack is stored into a per
+--  thread variable).
 
 pragma Restrictions (No_Elaboration_Code);
 --  We want to guarantee the absence of elaboration code because the binder
@@ -42,43 +43,13 @@ pragma Polling (Off);
 --  Turn off polling, we do not want polling to take place during stack
 --  checking operations. It causes infinite loops and other problems.
 
-with System.Storage_Elements;
-
 package System.Stack_Checking.Operations is
    pragma Preelaborate;
 
-   procedure Update_Stack_Cache (Stack : Stack_Access);
-   --  Set the stack cache for the current task. Note that this is only for
-   --  optimization purposes, nothing can be assumed about the contents of the
-   --  cache at any time, see Set_Stack_Info.
-   --
-   --  The stack cache should contain the bounds of the current task.  But
-   --  because the RTS is not aware of task switches, the stack cache may be
-   --  incorrect.  So when the stack pointer is not within the bounds of the
-   --  stack cache, Stack_Check first update the cache (which is a costly
-   --  operation hence the need of a cache).
-
-   procedure Invalidate_Stack_Cache (Any_Stack : Stack_Access);
-   --  Invalidate cache entries for the task T that owns Any_Stack. This causes
-   --  the Set_Stack_Info function to be called during the next stack check
-   --  done by T. This can be used to interrupt task T asynchronously.
-   --  Stack_Check should be called in loops for this to work reliably.
-
-   function Stack_Check (Stack_Address : System.Address) return Stack_Access;
-   --  This version of Stack_Check should not be inlined
-
-   procedure Notify_Stack_Attributes
-     (Initial_SP : System.Address;
-      Size       : System.Storage_Elements.Storage_Offset);
-   --  Register Initial_SP as the initial stack pointer value for the current
-   --  task when it starts and Size as the associated stack area size. This
-   --  should be called once, after the soft-links have been initialized and
-   --  prior to the first "Stack_Check" call.
-
-private
-   Cache : aliased Stack_Access := Null_Stack;
-
-   pragma Export (C, Cache, "_gnat_stack_cache");
-   pragma Export (C, Stack_Check, "_gnat_stack_check");
-
+   procedure Initialize_Stack_Limit;
+   pragma Export (C, Initialize_Stack_Limit,
+                    "__gnat_initialize_stack_limit");
+   --  This procedure is called before elaboration to setup the stack limit
+   --  for the environment task and to register the hook to be called at
+   --  task creation.
 end System.Stack_Checking.Operations;
