@@ -93,6 +93,12 @@ __gnat_kill (int pid, int sig, int close)
 	    CloseHandle ((HANDLE)pid);
 	}
     }
+  else if (sig == 2)
+    {
+      GenerateConsoleCtrlEvent (CTRL_C_EVENT, (HANDLE)pid);
+      if (close)
+	CloseHandle ((HANDLE)pid);
+    }
 }
 
 int
