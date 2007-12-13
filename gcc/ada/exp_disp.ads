@@ -104,7 +104,13 @@ package Exp_Disp is
    --      of the cases. See Expand_N_Attribute_Reference in Exp_Attr and
    --      Expand_N_Abort_Statement in Exp_Ch9 for more information.
 
-   --      _Disp_Timed_Select (15) - used in the expansion of timed selects
+   --      _Disp_Requeue (15) - used in the expansion of dispatching requeue
+   --      statements. Null implementation is provided for protected, task
+   --      and synchronized interfaces. Protected and task types implementing
+   --      concurrent interfaces receive full bodies. See Expand_N_Requeue_
+   --      Statement in Exp_Ch9 for more information.
+
+   --      _Disp_Timed_Select (16) - used in the expansion of timed selects
    --      with dispatching triggers. Null implementation for limited
    --      interfaces, full body generation for types that implement limited
    --      interfaces, not generated for the rest of the cases. See Expand_N_
@@ -258,10 +264,21 @@ package Exp_Disp is
    --  of type Typ used for retrieving the _task_id field of a task interface
    --  class-wide type.
 
+   function Make_Disp_Requeue_Body
+     (Typ : Entity_Id) return Node_Id;
+   --  Ada 2005 (AI05-0030): Generate the body of the primitive operation of
+   --  type Typ used for dispatching on requeue statements. Generate a body
+   --  containing a single null-statement if Typ is an interface type.
+
+   function Make_Disp_Requeue_Spec
+     (Typ : Entity_Id) return Node_Id;
+   --  Ada 2005 (AI05-0030): Generate the specification of the primitive
+   --  operation of type Typ used for dispatching requeue statements.
+
    function Make_Disp_Timed_Select_Body
      (Typ : Entity_Id) return Node_Id;
    --  Ada 2005 (AI-345): Generate the body of the primitive operation of type
-   --  Typ used for dispatching in timed selects. Generates a body containing
+   --  Typ used for dispatching in timed selects. Generate a body containing
    --  a single null-statement if Typ is an interface type.
 
    function Make_Disp_Timed_Select_Spec
