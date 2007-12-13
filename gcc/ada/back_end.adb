@@ -123,7 +123,6 @@ package body Back_End is
    -----------------------------
 
    procedure Scan_Compiler_Arguments is
-
       Next_Arg : Pos := 1;
 
       subtype Big_String is String (Positive);
@@ -216,6 +215,13 @@ package body Back_End is
             --  Store any other GCC switches
 
             Store_Compilation_Switch (Switch_Chars);
+
+            --  Special check, the back end switch -fno-inline also sets the
+            --  front end flag to entirely inhibit all inlining.
+
+            if Switch_Chars (First .. Last) = "fno-inline" then
+               Opt.Suppress_All_Inlining := True;
+            end if;
          end if;
       end Scan_Back_End_Switches;
 
