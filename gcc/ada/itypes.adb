@@ -23,11 +23,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree; use Atree;
-with Opt;   use Opt;
-with Sem;   use Sem;
-with Sinfo; use Sinfo;
-with Stand; use Stand;
+with Atree;    use Atree;
+with Opt;      use Opt;
+with Sem;      use Sem;
+with Sinfo;    use Sinfo;
+with Stand;    use Stand;
+with Targparm; use Targparm;
 
 package body Itypes is
 
@@ -65,6 +66,10 @@ package body Itypes is
         and then not ASIS_Mode
       then
          Set_Is_Frozen (Typ);
+      end if;
+
+      if Ekind in Access_Subprogram_Type_Kind then
+         Set_Can_Use_Internal_Rep (Typ, not Always_Compatible_Rep_On_Target);
       end if;
 
       return Typ;
