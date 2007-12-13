@@ -317,6 +317,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-bubsor$(objext) \
   g-busora$(objext) \
   g-busorg$(objext) \
+  g-byorma$(objext) \
   g-bytswa$(objext) \
   g-calend$(objext) \
   g-casuti$(objext) \
@@ -331,10 +332,14 @@ GNATRTL_NONTASKING_OBJS= \
   g-curexc$(objext) \
   g-debuti$(objext) \
   g-debpoo$(objext) \
+  g-decstr$(objext) \
+  g-deutst$(objext) \
   g-diopit$(objext) \
   g-dirope$(objext) \
   g-dyntab$(objext) \
   g-dynhta$(objext) \
+  g-encstr$(objext) \
+  g-enutst$(objext) \
   g-except$(objext) \
   g-excact$(objext) \
   g-exctra$(objext) \
@@ -363,6 +368,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-soliop$(objext) \
   g-souinf$(objext) \
   g-speche$(objext) \
+  g-spchge$(objext) \
   g-spipat$(objext) \
   g-spitbo$(objext) \
   g-sptabo$(objext) \
@@ -375,7 +381,10 @@ GNATRTL_NONTASKING_OBJS= \
   g-tasloc$(objext) \
   g-traceb$(objext) \
   g-utf_32$(objext) \
+  g-u3spch$(objext) \
+  g-wispch$(objext) \
   g-wistsp$(objext) \
+  g-zspche$(objext) \
   g-zstspl$(objext) \
   gnat$(objext) \
   i-c$(objext) \
@@ -440,6 +449,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-fvagfl$(objext) \
   s-geveop$(objext) \
   s-htable$(objext) \
+  s-imenne$(objext) \
   s-imgbiu$(objext) \
   s-imgboo$(objext) \
   s-imgcha$(objext) \

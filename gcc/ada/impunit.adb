@@ -30,6 +30,9 @@ with Lib;      use Lib;
 with Namet;    use Namet;
 with Uname;    use Uname;
 
+--  Note: this package body is used by GPS and GNATBench to supply a list of
+--  entries for help on available library routines.
+
 package body Impunit is
 
    subtype File_Name_8 is String (1 .. 8);
@@ -200,10 +203,10 @@ package body Impunit is
    ------------------------
 
      "g-altive",    -- GNAT.Altivec
+     "g-altcon",    -- GNAT.Altivec.Conversions
+     "g-alveop",    -- GNAT.Altivec.Vector_Operations
      "g-alvety",    -- GNAT.Altivec.Vector_Types
      "g-alvevi",    -- GNAT.Altivec.Vector_Views
-     "g-alveop",    -- GNAT.Altivec.Vector_Operations
-     "g-altcon",    -- GNAT.Altivec.Conversions
      "g-arrspl",    -- GNAT.Array_Split
      "g-awk   ",    -- GNAT.AWK
      "g-boubuf",    -- GNAT.Bounded_Buffers
@@ -211,10 +214,11 @@ package body Impunit is
      "g-bubsor",    -- GNAT.Bubble_Sort
      "g-busora",    -- GNAT.Bubble_Sort_A
      "g-busorg",    -- GNAT.Bubble_Sort_G
-     "g-bytswa",    -- Gnat.Byte_Swapping
+     "g-byorma",    -- GNAT.Byte_Order_Mark
+     "g-bytswa",    -- GNAT.Byte_Swapping
      "g-calend",    -- GNAT.Calendar
-     "g-casuti",    -- GNAT.Case_Util
      "g-catiio",    -- GNAT.Calendar.Time_IO
+     "g-casuti",    -- GNAT.Case_Util
      "g-cgi   ",    -- GNAT.CGI
      "g-cgicoo",    -- GNAT.CGI.Cookie
      "g-cgideb",    -- GNAT.CGI.Debug
@@ -225,10 +229,14 @@ package body Impunit is
      "g-curexc",    -- GNAT.Current_Exception
      "g-debpoo",    -- GNAT.Debug_Pools
      "g-debuti",    -- GNAT.Debug_Utilities
-     "g-diopit",    -- GNAT.Directory_Operations.Iteration
+     "g-decstr",    -- GNAT.Decode_String
+     "g-deutst",    -- GNAT.Decode_UTF8_String
      "g-dirope",    -- GNAT.Directory_Operations
+     "g-diopit",    -- GNAT.Directory_Operations.Iteration
      "g-dynhta",    -- GNAT.Dynamic_HTables
      "g-dyntab",    -- GNAT.Dynamic_Tables
+     "g-encstr",    -- GNAT.Encode_String
+     "g-enutst",    -- GNAT.Encode_UTF8_String
      "g-excact",    -- GNAT.Exception_Actions
      "g-except",    -- GNAT.Exceptions
      "g-exctra",    -- GNAT.Exception_Traces
@@ -257,8 +265,9 @@ package body Impunit is
      "g-socket",    -- GNAT.Sockets
      "g-souinf",    -- GNAT.Source_Info
      "g-speche",    -- GNAT.Spell_Checker
-     "g-spipat",    -- GNAT.Spitbol.Patterns
+     "g-spchge",    -- GNAT.Spell_Checker_Generic
      "g-spitbo",    -- GNAT.Spitbol
+     "g-spipat",    -- GNAT.Spitbol.Patterns
      "g-sptabo",    -- GNAT.Spitbol.Table_Boolean
      "g-sptain",    -- GNAT.Spitbol.Table_Integer
      "g-sptavs",    -- GNAT.Spitbol.Table_Vstring
@@ -270,7 +279,11 @@ package body Impunit is
      "g-traceb",    -- GNAT.Traceback
      "g-trasym",    -- GNAT.Traceback.Symbolic
      "g-utf_32",    -- GNAT.UTF_32
+     "g-u3spch",    -- GNAT.UTF_32_Spelling_Checker
+     "g-wispch",    -- GNAT.Wide_Spelling_Checker
      "g-wistsp",    -- GNAT.Wide_String_Split
+     "g-zspche",    -- GNAT.Wide_Wide_Spelling_Checker
+     "g-zstspl",    -- GNAT.Wide_Wide_String_Split
 
    -----------------------------------------------------
    -- Interface Hierarchy Units from Reference Manual --
@@ -451,6 +464,7 @@ package body Impunit is
    -- GNAT Library Units --
    ------------------------
 
+     "g-zspche",    -- GNAT.Wide_Wide_Spelling_Checker
      "g-zstspl");   -- GNAT.Wide_Wide_String_Split
 
    ----------------------
