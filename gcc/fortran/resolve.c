@@ -5921,12 +5921,29 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
   /* Handle the case of a BOZ literal on the RHS.  */
   if (rhs->is_boz && lhs->ts.type != BT_INTEGER)
     {
+      int rc;
       if (gfc_option.warn_surprising)
 	gfc_warning ("BOZ literal at %L is bitwise transferred "
 		     "non-integer symbol '%s'", &code->loc,
 		     lhs->symtree->n.sym->name);
 
       gfc_convert_boz (rhs, &lhs->ts);
+      if ((rc = gfc_range_check (rhs)) != ARITH_OK)
+	{
+	  if (rc == ARITH_UNDERFLOW)
+	    gfc_error ("Arithmetic underflow of bit-wise transferred BOZ at %L"
+		       ". This check can be disabled with the option "
+		       "-fno-range-check", &rhs->where);
+	  else if (rc == ARITH_OVERFLOW)
+	    gfc_error ("Arithmetic overflow of bit-wise transferred BOZ at %L"
+		       ". This check can be disabled with the option "
+		       "-fno-range-check", &rhs->where);
+	  else if (rc == ARITH_NAN)
+	    gfc_error ("Arithmetic NaN of bit-wise transferred BOZ at %L"
+		       ". This check can be disabled with the option "
+		       "-fno-range-check", &rhs->where);
+	  return false;
+	}
     }
 
 
