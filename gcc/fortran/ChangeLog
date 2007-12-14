@@ -1,5 +1,11 @@
 2007-12-14  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/34438
+	* resolve.c (resolve_symbol): Do not emit public-variable-
+	of-private-derived-type error for non-module variables.
+
+2007-12-14  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/34398
 	* expr.c (gfc_check_assign): Add range checks for assignments of BOZs.
 	* resolve.c (resolve_ordinary_assign): Ditto.

@@ -7848,10 +7848,11 @@ resolve_symbol (gfc_symbol *sym)
      See 4.4.1 (F95) and 4.5.1.1 (F2003); and related interpretation
      161 in 95-006r3.  */
   if (sym->ts.type == BT_DERIVED
+      && sym->ns->proc_name && sym->ns->proc_name->attr.flavor == FL_MODULE
+      && !sym->ts.derived->attr.use_assoc
       && gfc_check_access (sym->attr.access, sym->ns->default_access)
       && !gfc_check_access (sym->ts.derived->attr.access,
 			    sym->ts.derived->ns->default_access)
-      && !sym->ts.derived->attr.use_assoc
       && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: PUBLIC %s '%s' at %L "
 		         "of PRIVATE derived type '%s'",
 			 (sym->attr.flavor == FL_PARAMETER) ? "parameter"
