@@ -1,3 +1,8 @@
+2007-12-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/34091
+	* gcc.c-torture/compile/pr34091.c: New test.
+
 2007-12-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/uninit-13.c: UnXFAIL.
