@@ -71,7 +71,7 @@ USAGE:
 
 Here is an example of using the dataflow routines.
 
-      df_[ru,rd,urec,ri,chain]_add_problem (flags);
+      df_[chain,live,note,rd]_add_problem (flags);
 
       df_set_blocks (blocks);
 
@@ -81,7 +81,7 @@ Here is an example of using the dataflow routines.
 
       df_finish_pass (false);
 
-DF_[ru,rd,urec,ri,chain]_ADD_PROBLEM adds a problem, defined by an
+DF_[chain,live,note,rd]_ADD_PROBLEM adds a problem, defined by an
 instance to struct df_problem, to the set of problems solved in this
 instance of df.  All calls to add a problem for a given instance of df
 must occur before the first call to DF_ANALYZE.
@@ -628,9 +628,9 @@ df_remove_problem (struct dataflow *dflow)
 }
 
 
-/* Remove all of the problems that are not permanent.  Scanning, lr,
-   ur and live are permanent, the rest are removable.  Also clear all
-   of the changeable_flags.  */
+/* Remove all of the problems that are not permanent.  Scanning, LR
+   and (at -O2 or higher) LIVE are permanent, the rest are removable.
+   Also clear all of the changeable_flags.  */
 
 void
 df_finish_pass (bool verify ATTRIBUTE_UNUSED)

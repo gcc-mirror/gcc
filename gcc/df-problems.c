@@ -1304,16 +1304,22 @@ df_lr_verify_transfer_functions (void)
 
 
 /*----------------------------------------------------------------------------
-   COMBINED LIVE REGISTERS AND UNINITIALIZED REGISTERS.
+   LIVE AND MUST-INITIALIZED REGISTERS.
 
-   First find the set of uses for registers that are reachable from
-   the entry block without passing thru a definition.  In and out
-   bitvectors are built for each basic block.  The regnum is used to
-   index into these sets.  See df.h for details.
+   This problem first computes the IN and OUT bitvectors for the
+   must-initialized registers problems, which is a forward problem.
+   It gives the set of registers for which we MUST have an available
+   definition on any path from the entry block to the entry/exit of
+   a basic block.  Sets generate a definition, while clobbers kill
+   a definition.
 
-   Then the in and out sets here are the anded results of the in and
-   out sets from the lr and ur
-   problems. 
+   In and out bitvectors are built for each basic block and are indexed by
+   regnum (see df.h for details).  In and out bitvectors in struct
+   df_live_bb_info actually refers to the must-initialized problem;
+
+   Then, the in and out sets for the LIVE problem itself are computed.
+   These are the logical AND of the IN and OUT sets from the LR problem
+   and the must-initialized problem. 
 ----------------------------------------------------------------------------*/
 
 /* Private data used to verify the solution for this problem.  */
@@ -1510,7 +1516,7 @@ df_live_init (bitmap all_blocks)
     }
 }
 
-/* Confluence function that ignores fake edges.  */
+/* Forward confluence function that ignores fake edges.  */
 
 static void
 df_live_confluence_n (edge e)
@@ -1525,7 +1531,7 @@ df_live_confluence_n (edge e)
 } 
 
 
-/* Transfer function.  */
+/* Transfer function for the forwards must-initialized problem.  */
 
 static bool
 df_live_transfer_function (int bb_index)
@@ -1540,7 +1546,7 @@ df_live_transfer_function (int bb_index)
 }
 
 
-/* And the LR and UR info to produce the LIVE info.  */
+/* And the LR info with the must-initialized registers, to produce the LIVE info.  */
 
 static void
 df_live_local_finalize (bitmap all_blocks)
@@ -2916,10 +2922,6 @@ static struct df_problem problem_NOTE =
   NULL,                       /* Debugging end block.  */
   NULL,                       /* Incremental solution verify start.  */
   NULL,                       /* Incremental solution verify end.  */
-
-  /* Technically this is only dependent on the live registers problem
-     but it will produce information if built one of uninitialized
-     register problems (UR, UREC) is also run.  */
   &problem_LR,                /* Dependent problem.  */
   TV_DF_NOTE,                 /* Timing variable.  */
   false                       /* Reset blocks on dropping out of blocks_to_analyze.  */
