@@ -1,3 +1,8 @@
+2007-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/29978
+	* gcc.target/i386/pr29978.c: New test.
+
 2007-12-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/sse-12.c (dg-options): Use -msse4
