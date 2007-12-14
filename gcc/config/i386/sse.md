@@ -7309,9 +7309,9 @@
 (define_insn_and_split "sse4_2_pcmpestr"
   [(set (match_operand:SI 0 "register_operand" "=c,c")
 	(unspec:SI
-	  [(match_operand:V16QI 2 "register_operand" "x,x")
+	  [(match_operand:V16QI 2 "reg_not_xmm0_operand" "x,x")
 	   (match_operand:SI 3 "register_operand" "a,a")
-	   (match_operand:V16QI 4 "nonimmediate_operand" "x,m")
+	   (match_operand:V16QI 4 "nonimm_not_xmm0_operand" "x,m")
 	   (match_operand:SI 5 "register_operand" "d,d")
 	   (match_operand:SI 6 "const_0_to_255_operand" "n,n")]
 	  UNSPEC_PCMPESTR))
@@ -7350,7 +7350,8 @@
 				     operands[3], operands[4],
 				     operands[5], operands[6]));
   if (flags && !(ecx || xmm0))
-    emit_insn (gen_sse4_2_pcmpestr_cconly (operands[2], operands[3],
+    emit_insn (gen_sse4_2_pcmpestr_cconly (NULL, NULL,
+					   operands[2], operands[3],
 					   operands[4], operands[5],
 					   operands[6]));
   DONE;
@@ -7414,20 +7415,20 @@
 (define_insn "sse4_2_pcmpestr_cconly"
   [(set (reg:CC FLAGS_REG)
 	(unspec:CC
-	  [(match_operand:V16QI 0 "register_operand" "x,x,x,x")
-	   (match_operand:SI 1 "register_operand" "a,a,a,a")
-	   (match_operand:V16QI 2 "nonimmediate_operand" "x,m,x,m")
-	   (match_operand:SI 3 "register_operand" "d,d,d,d")
-	   (match_operand:SI 4 "const_0_to_255_operand" "n,n,n,n")]
+	  [(match_operand:V16QI 2 "register_operand" "x,x,x,x")
+	   (match_operand:SI 3 "register_operand" "a,a,a,a")
+	   (match_operand:V16QI 4 "nonimmediate_operand" "x,m,x,m")
+	   (match_operand:SI 5 "register_operand" "d,d,d,d")
+	   (match_operand:SI 6 "const_0_to_255_operand" "n,n,n,n")]
 	  UNSPEC_PCMPESTR))
-   (clobber (match_scratch:V16QI 5 "=Yz,Yz,X,X"))
-   (clobber (match_scratch:SI    6 "= X, X,c,c"))]
+   (clobber (match_scratch:V16QI 0 "=Yz,Yz,X,X"))
+   (clobber (match_scratch:SI    1 "= X, X,c,c"))]
   "TARGET_SSE4_2"
   "@
-   pcmpestrm\t{%4, %2, %0|%0, %2, %4}
-   pcmpestrm\t{%4, %2, %0|%0, %2, %4}
-   pcmpestri\t{%4, %2, %0|%0, %2, %4}
-   pcmpestri\t{%4, %2, %0|%0, %2, %4}"
+   pcmpestrm\t{%6, %4, %2|%2, %4, %6}
+   pcmpestrm\t{%6, %4, %2|%2, %4, %6}
+   pcmpestri\t{%6, %4, %2|%2, %4, %6}
+   pcmpestri\t{%6, %4, %2|%2, %4, %6}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_data16" "1")
    (set_attr "prefix_extra" "1")
@@ -7437,8 +7438,8 @@
 (define_insn_and_split "sse4_2_pcmpistr"
   [(set (match_operand:SI 0 "register_operand" "=c,c")
 	(unspec:SI
-	  [(match_operand:V16QI 2 "register_operand" "x,x")
-	   (match_operand:V16QI 3 "nonimmediate_operand" "x,m")
+	  [(match_operand:V16QI 2 "reg_not_xmm0_operand" "x,x")
+	   (match_operand:V16QI 3 "nonimm_not_xmm0_operand" "x,m")
 	   (match_operand:SI 4 "const_0_to_255_operand" "n,n")]
 	  UNSPEC_PCMPISTR))
    (set (match_operand:V16QI 1 "register_operand" "=Yz,Yz")
@@ -7470,7 +7471,8 @@
     emit_insn (gen_sse4_2_pcmpistrm (operands[1], operands[2],
 				     operands[3], operands[4]));
   if (flags && !(ecx || xmm0))
-    emit_insn (gen_sse4_2_pcmpistr_cconly (operands[2], operands[3],
+    emit_insn (gen_sse4_2_pcmpistr_cconly (NULL, NULL,
+					   operands[2], operands[3],
 					   operands[4]));
   DONE;
 }
@@ -7525,18 +7527,18 @@
 (define_insn "sse4_2_pcmpistr_cconly"
   [(set (reg:CC FLAGS_REG)
 	(unspec:CC
-	  [(match_operand:V16QI 0 "register_operand" "x,x,x,x")
-	   (match_operand:V16QI 1 "nonimmediate_operand" "x,m,x,m")
-	   (match_operand:SI 2 "const_0_to_255_operand" "n,n,n,n")]
+	  [(match_operand:V16QI 2 "register_operand" "x,x,x,x")
+	   (match_operand:V16QI 3 "nonimmediate_operand" "x,m,x,m")
+	   (match_operand:SI 4 "const_0_to_255_operand" "n,n,n,n")]
 	  UNSPEC_PCMPISTR))
-   (clobber (match_scratch:V16QI 3 "=Yz,Yz,X,X"))
-   (clobber (match_scratch:SI    4 "= X, X,c,c"))]
+   (clobber (match_scratch:V16QI 0 "=Yz,Yz,X,X"))
+   (clobber (match_scratch:SI    1 "= X, X,c,c"))]
   "TARGET_SSE4_2"
   "@
-   pcmpistrm\t{%2, %1, %0|%0, %1, %2}
-   pcmpistrm\t{%2, %1, %0|%0, %1, %2}
-   pcmpistri\t{%2, %1, %0|%0, %1, %2}
-   pcmpistri\t{%2, %1, %0|%0, %1, %2}"
+   pcmpistrm\t{%4, %3, %2|%2, %3, %4}
+   pcmpistrm\t{%4, %3, %2|%2, %3, %4}
+   pcmpistri\t{%4, %3, %2|%2, %3, %4}
+   pcmpistri\t{%4, %3, %2|%2, %3, %4}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_data16" "1")
    (set_attr "prefix_extra" "1")
