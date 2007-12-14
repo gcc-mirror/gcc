@@ -1,3 +1,14 @@
+2007-12-14  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34462
+	* tree-ssa-operands.h (create_ssa_artificial_load_stmt): Add
+	parameter to say whether to unlink immediate uses.
+	* tree-ssa-operands.c (create_ssa_artificial_load_stmt): Do not
+	mark the artificial stmt as modified.  Unlink immediate uses
+	only if requested.
+	* tree-ssa-dom.c (record_equivalences_from_stmt): Update caller.
+	* tree-ssa-pre.c (insert_fake_stores): Likewise.
+
 2007-12-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR middle-end/33088

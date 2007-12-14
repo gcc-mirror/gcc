@@ -210,7 +210,7 @@ extern void free_stmt_operands (tree);
 extern bool verify_imm_links (FILE *f, tree var);
 
 extern void copy_virtual_operands (tree, tree);
-extern void create_ssa_artificial_load_stmt (tree, tree);
+extern void create_ssa_artificial_load_stmt (tree, tree, bool);
 
 extern void dump_immediate_uses (FILE *file);
 extern void dump_immediate_uses_for (FILE *file, tree var);

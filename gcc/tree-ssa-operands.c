@@ -2647,17 +2647,23 @@ copy_virtual_operands (tree dest, tree src)
    create an artificial stmt which looks like a load from the store, this can
    be used to eliminate redundant loads.  OLD_OPS are the operands from the 
    store stmt, and NEW_STMT is the new load which represents a load of the
-   values stored.  */
+   values stored.  If DELINK_IMM_USES_P is specified, the immediate
+   uses of this stmt will be de-linked.  */
 
 void
-create_ssa_artificial_load_stmt (tree new_stmt, tree old_stmt)
+create_ssa_artificial_load_stmt (tree new_stmt, tree old_stmt,
+				 bool delink_imm_uses_p)
 {
   tree op;
   ssa_op_iter iter;
   use_operand_p use_p;
   unsigned i;
+  stmt_ann_t ann;
 
-  get_stmt_ann (new_stmt);
+  /* Create the stmt annotation but make sure to not mark the stmt
+     as modified as we will build operands ourselves.  */
+  ann = get_stmt_ann (new_stmt);
+  ann->modified = 0;
 
   /* Process NEW_STMT looking for operands.  */
   start_ssa_stmt_operands ();
@@ -2687,8 +2693,9 @@ create_ssa_artificial_load_stmt (tree new_stmt, tree old_stmt)
   finalize_ssa_stmt_operands (new_stmt);
 
   /* All uses in this fake stmt must not be in the immediate use lists.  */
-  FOR_EACH_SSA_USE_OPERAND (use_p, new_stmt, iter, SSA_OP_ALL_USES)
-    delink_imm_use (use_p);
+  if (delink_imm_uses_p)
+    FOR_EACH_SSA_USE_OPERAND (use_p, new_stmt, iter, SSA_OP_ALL_USES)
+      delink_imm_use (use_p);
 }
 
 
