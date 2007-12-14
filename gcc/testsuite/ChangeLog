@@ -1,3 +1,10 @@
+2007-12-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse-12.c (dg-options): Use -msse4
+	instead of -msse4.1.
+	* gcc.target/i386/sse-12.c (dg-options): Ditto.
+	* g++.dg/other/i386-2.C (dg-options): Ditto.
+
 2007-12-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34438

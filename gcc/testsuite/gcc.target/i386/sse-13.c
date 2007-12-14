@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=k8 -m3dnow -msse4.1 -msse5" } */
+/* { dg-options "-O2 -march=k8 -m3dnow -msse4 -msse5" } */
 
 /* Test that the intrinsics compile with optimization.  All of them are
    defined as inline functions in {,x,e,p,t,s,a,b}mmintrin.h and mm3dnow.h

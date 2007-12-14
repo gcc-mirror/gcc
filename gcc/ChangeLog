@@ -1,3 +1,16 @@
+2007-12-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (sse4_2_pcmpestr): Use reg_not_xmm0_operand
+	constraint for operand2.  Use nonimm_not_xmm0_operand constraint
+	for operand 4.  Update arguments in the call to
+	gen_sse4_2_pcmpestr_cconly.
+	(sse_4_2_pcmpestr_cconly): Renumber insn operands and update insn
+	template accordingly.
+	(sse4_2_pcmpistr): Use reg_not_xmm0_operand constraint for operand2.
+	Use nonimm_not_xmm0_operand constraint for operand 3.  Update
+	arguments in the call to gen_sse4_2_pcmpistr_cconly.
+	(sse_4_2_pcmpistr_cconly): Renumber insn operands and update insn
+
 2007-12-14  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/34462
