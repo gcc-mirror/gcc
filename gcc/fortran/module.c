@@ -1116,7 +1116,7 @@ parse_atom (void)
     {
       c = module_char ();
     }
-  while (c == ' ' || c == '\n');
+  while (c == ' ' || c == '\r' || c == '\n');
 
   switch (c)
     {

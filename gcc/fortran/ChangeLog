@@ -1,3 +1,9 @@
+2007-12-14  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/34324
+	* module.c (parse_atom): Fixed parsing of modules files whose
+	lines are terminated by CRLF.
+
 2007-12-13  Anton Korobeynikov  <asl@math.spbu.ru>
 
 	* trans-decl.c (gfc_build_builtin_function_decls): Correct decl
