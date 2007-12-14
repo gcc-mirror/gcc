@@ -36,10 +36,12 @@ struct df_problem;
 struct df_link;
 
 /* Data flow problems.  All problems must have a unique id here.  */ 
+
 /* Scanning is not really a dataflow problem, but it is useful to have
    the basic block functions in the vector so that things get done in
-   a uniform manner.  The first four problems are always defined.  The
-   last 5 are optional and can be added or deleted at any time.  */
+   a uniform manner.  The last four problems can be added or deleted
+   at any time are always defined (though LIVE is always there at -O2
+   or higher); the others are always there.  */
 #define DF_SCAN  0 
 #define DF_LR    1      /* Live Registers backward. */
 #define DF_LIVE  2      /* Live Registers & Uninitialized Registers */

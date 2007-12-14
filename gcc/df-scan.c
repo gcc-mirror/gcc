@@ -3381,7 +3381,7 @@ df_bb_refs_record (int bb_index, bool scan_insns)
   df_refs_add_to_chains (&collection_rec, bb, NULL);
 
   /* Now that the block has been processed, set the block as dirty so
-     lr and ur will get it processed.  */
+     LR and LIVE will get it processed.  */
   df_set_bb_dirty (bb);
 }
 
