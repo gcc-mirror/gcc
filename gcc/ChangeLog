@@ -1,3 +1,9 @@
+2007-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/29978
+	* config/i386/i386.c (ix86_expand_branch): Optimize LE/LEU/GT/GTU
+	DImode comparisons against constant with all 1's in the lower word.
+
 2007-12-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (sse4_2_pcmpestr): Use reg_not_xmm0_operand
