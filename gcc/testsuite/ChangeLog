@@ -1,3 +1,12 @@
+2007-12-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse-14.c (test_1, test_2, test_2x, test_4): New
+	macros to test macroized SSE intrinsics.  Use new macros to test
+	macroized SSE intrinsics from ammintrin.h, smmintrin.h, tmmintrin.h,
+	emmintrin.h, xmmintrin.h and bmmintrin.h
+	* gcc.target/i386/sse-13.c (__builtin_ia32_pcmp?str*128): Redefine
+	to test with immediate operand.
+
 2007-12-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/34091

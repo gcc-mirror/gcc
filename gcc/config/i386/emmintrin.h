@@ -887,9 +887,9 @@ _mm_shuffle_pd(__m128d __A, __m128d __B, const int __mask)
   return (__m128d)__builtin_ia32_shufpd ((__v2df)__A, (__v2df)__B, __mask);
 }
 #else
-#define _mm_shuffle_pd(__A, __B, __C)					\
-  ((__m128d)__builtin_ia32_shufpd ((__v2df)(__m128d)__A,		\
-				   (__v2df)(__m128d)__B, (int)(__C)))
+#define _mm_shuffle_pd(A, B, N)						\
+  ((__m128d)__builtin_ia32_shufpd ((__v2df)(__m128d)(A),		\
+				   (__v2df)(__m128d)(B), (int)(N)))
 #endif
 
 static __inline __m128d __attribute__((__always_inline__, __artificial__))
@@ -1146,21 +1146,21 @@ _mm_srai_epi32 (__m128i __A, int __B)
 
 #ifdef __OPTIMIZE__
 static __inline __m128i __attribute__((__always_inline__, __artificial__))
-_mm_srli_si128 (__m128i __A, const int __B)
+_mm_srli_si128 (__m128i __A, const int __N)
 {
-  return (__m128i)__builtin_ia32_psrldqi128 (__A, __B * 8);
+  return (__m128i)__builtin_ia32_psrldqi128 (__A, __N * 8);
 }
 
 static __inline __m128i __attribute__((__always_inline__, __artificial__))
-_mm_slli_si128 (__m128i __A, const int __B)
+_mm_slli_si128 (__m128i __A, const int __N)
 {
-  return (__m128i)__builtin_ia32_pslldqi128 (__A, __B * 8);
+  return (__m128i)__builtin_ia32_pslldqi128 (__A, __N * 8);
 }
 #else
-#define _mm_srli_si128(__A, __B) \
-  ((__m128i)__builtin_ia32_psrldqi128 (__A, (__B) * 8))
-#define _mm_slli_si128(__A, __B) \
-  ((__m128i)__builtin_ia32_pslldqi128 (__A, (__B) * 8))
+#define _mm_srli_si128(A, N) \
+  ((__m128i)__builtin_ia32_psrldqi128 ((__m128i)(A), (int)(N) * 8))
+#define _mm_slli_si128(A, N) \
+  ((__m128i)__builtin_ia32_pslldqi128 ((__m128i)(A), (int)(N) * 8))
 #endif
 
 static __inline __m128i __attribute__((__always_inline__, __artificial__))
@@ -1382,12 +1382,12 @@ _mm_shuffle_epi32 (__m128i __A, const int __mask)
   return (__m128i)__builtin_ia32_pshufd ((__v4si)__A, __mask);
 }
 #else
-#define _mm_shufflehi_epi16(__A, __B) \
-  ((__m128i)__builtin_ia32_pshufhw ((__v8hi)(__m128i)__A, (int)__B))
-#define _mm_shufflelo_epi16(__A, __B) \
-  ((__m128i)__builtin_ia32_pshuflw ((__v8hi)(__m128i)__A, (int)__B))
-#define _mm_shuffle_epi32(__A, __B) \
-  ((__m128i)__builtin_ia32_pshufd ((__v4si)(__m128i)__A, (int)__B))
+#define _mm_shufflehi_epi16(A, N) \
+  ((__m128i)__builtin_ia32_pshufhw ((__v8hi)(__m128i)(A), (int)(N)))
+#define _mm_shufflelo_epi16(A, N) \
+  ((__m128i)__builtin_ia32_pshuflw ((__v8hi)(__m128i)(A), (int)(N)))
+#define _mm_shuffle_epi32(A, N) \
+  ((__m128i)__builtin_ia32_pshufd ((__v4si)(__m128i)(A), (int)(N)))
 #endif
 
 static __inline void __attribute__((__always_inline__, __artificial__))

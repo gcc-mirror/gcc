@@ -201,8 +201,8 @@ _mm_alignr_pi8(__m64 __X, __m64 __Y, const int __N)
 					(__v2di)(__m128i)(Y),		\
 					(int)(N) * 8))
 #define _mm_alignr_pi8(X, Y, N)						\
-  ((__m64) __builtin_ia32_palignr ((long long)(__m64)(__X),		\
-				   (long long)(__m64)(__Y),		\
+  ((__m64) __builtin_ia32_palignr ((long long)(__m64)(X),		\
+				   (long long)(__m64)(Y),		\
 				   (int)(N) * 8))
 #endif
 
