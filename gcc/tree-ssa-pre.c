@@ -3171,7 +3171,7 @@ insert_fake_stores (void)
 
 	      lhs = make_ssa_name (storetemp, new_tree);
 	      GIMPLE_STMT_OPERAND (new_tree, 0) = lhs;
-	      create_ssa_artificial_load_stmt (new_tree, stmt);
+	      create_ssa_artificial_load_stmt (new_tree, stmt, false);
 
 	      NECESSARY (new_tree) = 0;
 	      VEC_safe_push (tree, heap, inserted_exprs, new_tree);

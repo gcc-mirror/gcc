@@ -1,3 +1,8 @@
+2007-12-14  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34462
+	* gcc.c-torture/compile/20071214-1.c: New testcase.
+
 2007-12-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/sse-14.c (test_1, test_2, test_2x, test_4): New

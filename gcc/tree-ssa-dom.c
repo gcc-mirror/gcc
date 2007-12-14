@@ -1618,7 +1618,7 @@ record_equivalences_from_stmt (tree stmt, int may_optimize_p, stmt_ann_t ann)
 	  /* Build a new statement with the RHS and LHS exchanged.  */
 	  new_stmt = build_gimple_modify_stmt (rhs, lhs);
 
-	  create_ssa_artificial_load_stmt (new_stmt, stmt);
+	  create_ssa_artificial_load_stmt (new_stmt, stmt, true);
 
 	  /* Finally enter the statement into the available expression
 	     table.  */
