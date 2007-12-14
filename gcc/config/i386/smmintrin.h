@@ -341,9 +341,9 @@ _mm_extract_epi64 (__m128i __X, const int __N)
 #endif
 #else
 #define _mm_extract_epi8(X, N) \
-  __builtin_ia32_vec_ext_v16qi ((__v16qi)(__m128i)(X), (int)(N))
+  ((int) __builtin_ia32_vec_ext_v16qi ((__v16qi)(__m128i)(X), (int)(N)))
 #define _mm_extract_epi32(X, N) \
-  __builtin_ia32_vec_ext_v4si ((__v4si)(__m128i)(X), (int)(N))
+  ((int) __builtin_ia32_vec_ext_v4si ((__v4si)(__m128i)(X), (int)(N)))
 
 #ifdef __x86_64__
 #define _mm_extract_epi64(X, N) \
@@ -544,7 +544,7 @@ _mm_cmpestri (__m128i __X, int __LX, __m128i __Y, int __LY, const int __M)
 #define _mm_cmpestri(X, LX, Y, LY, M)					\
   ((int) __builtin_ia32_pcmpestri128 ((__v16qi)(__m128i)(X), (int)(LX),	\
 				      (__v16qi)(__m128i)(Y), (int)(LY),	\
-				      (int)(M))
+				      (int)(M)))
 #endif
 
 /* Intrinsics for text/string processing and reading values of

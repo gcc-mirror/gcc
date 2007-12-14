@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=k8 -m3dnow -msse4.1 -msse5 " } */
+/* { dg-options "-O2 -march=k8 -m3dnow -msse4.1 -msse5" } */
 
 /* Test that the intrinsics compile with optimization.  All of them are
    defined as inline functions in {,x,e,p,t,s,a,b}mmintrin.h and mm3dnow.h
@@ -34,6 +34,34 @@
 #define __builtin_ia32_roundps(V, M) __builtin_ia32_roundps(V, 1)
 #define __builtin_ia32_roundss(D, V, M) __builtin_ia32_roundss(D, V, 1)
 #define __builtin_ia32_mpsadbw128(X, Y, M) __builtin_ia32_mpsadbw128(X, Y, 1)
+#define __builtin_ia32_pcmpistrm128(X, Y, M) \
+  __builtin_ia32_pcmpistrm128(X, Y, 1)
+#define __builtin_ia32_pcmpistri128(X, Y, M) \
+  __builtin_ia32_pcmpistri128(X, Y, 1)
+#define __builtin_ia32_pcmpestrm128(X, LX, Y, LY, M) \
+  __builtin_ia32_pcmpestrm128(X, LX, Y, LY, 1)
+#define __builtin_ia32_pcmpestri128(X, LX, Y, LY, M) \
+  __builtin_ia32_pcmpestri128(X, LX, Y, LY, 1)
+#define __builtin_ia32_pcmpistria128(X, Y, M) \
+  __builtin_ia32_pcmpistria128(X, Y, 1)
+#define __builtin_ia32_pcmpistric128(X, Y, M) \
+  __builtin_ia32_pcmpistric128(X, Y, 1)
+#define __builtin_ia32_pcmpistrio128(X, Y, M) \
+  __builtin_ia32_pcmpistrio128(X, Y, 1)
+#define __builtin_ia32_pcmpistris128(X, Y, M) \
+  __builtin_ia32_pcmpistris128(X, Y, 1)
+#define __builtin_ia32_pcmpistriz128(X, Y, M) \
+  __builtin_ia32_pcmpistriz128(X, Y, 1)
+#define __builtin_ia32_pcmpestria128(X, LX, Y, LY, M) \
+  __builtin_ia32_pcmpestria128(X, LX, Y, LY, 1)
+#define __builtin_ia32_pcmpestric128(X, LX, Y, LY, M) \
+  __builtin_ia32_pcmpestric128(X, LX, Y, LY, 1)
+#define __builtin_ia32_pcmpestrio128(X, LX, Y, LY, M) \
+  __builtin_ia32_pcmpestrio128(X, LX, Y, LY, 1)
+#define __builtin_ia32_pcmpestris128(X, LX, Y, LY, M) \
+  __builtin_ia32_pcmpestris128(X, LX, Y, LY, 1)
+#define __builtin_ia32_pcmpestriz128(X, LX, Y, LY, M) \
+  __builtin_ia32_pcmpestriz128(X, LX, Y, LY, 1)
 
 /* tmmintrin.h */
 #define __builtin_ia32_palignr128(X, Y, N) __builtin_ia32_palignr128(X, Y, 8)
