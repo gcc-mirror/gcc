@@ -532,6 +532,7 @@ arith
 gfc_range_check (gfc_expr *e)
 {
   arith rc;
+  arith rc2;
 
   switch (e->ts.type)
     {
@@ -558,13 +559,16 @@ gfc_range_check (gfc_expr *e)
       if (rc == ARITH_NAN)
 	mpfr_set_nan (e->value.complex.r);
 
-      rc = gfc_check_real_range (e->value.complex.i, e->ts.kind);
+      rc2 = gfc_check_real_range (e->value.complex.i, e->ts.kind);
       if (rc == ARITH_UNDERFLOW)
 	mpfr_set_ui (e->value.complex.i, 0, GFC_RND_MODE);
       if (rc == ARITH_OVERFLOW)
 	mpfr_set_inf (e->value.complex.i, mpfr_sgn (e->value.complex.i));
       if (rc == ARITH_NAN)
 	mpfr_set_nan (e->value.complex.i);
+
+      if (rc == ARITH_OK)
+	rc = rc2;
       break;
 
     default:

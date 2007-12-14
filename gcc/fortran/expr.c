@@ -2755,11 +2755,28 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
   /* Handle the case of a BOZ literal on the RHS.  */
   if (rvalue->is_boz && lvalue->ts.type != BT_INTEGER)
     {
+      int rc;
       if (gfc_option.warn_surprising)
         gfc_warning ("BOZ literal at %L is bitwise transferred "
                      "non-integer symbol '%s'", &rvalue->where,
                      lvalue->symtree->n.sym->name);
       gfc_convert_boz (rvalue, &lvalue->ts);
+      if ((rc = gfc_range_check (rvalue)) != ARITH_OK)
+	{
+	  if (rc == ARITH_UNDERFLOW)
+	    gfc_error ("Arithmetic underflow of bit-wise transferred BOZ at %L"
+		       ". This check can be disabled with the option "
+		       "-fno-range-check", &rvalue->where);
+	  else if (rc == ARITH_OVERFLOW)
+	    gfc_error ("Arithmetic overflow of bit-wise transferred BOZ at %L"
+		       ". This check can be disabled with the option "
+		       "-fno-range-check", &rvalue->where);
+	  else if (rc == ARITH_NAN)
+	    gfc_error ("Arithmetic NaN of bit-wise transferred BOZ at %L"
+		       ". This check can be disabled with the option "
+		       "-fno-range-check", &rvalue->where);
+	  return FAILURE;
+	}
     }
 
   if (gfc_compare_types (&lvalue->ts, &rvalue->ts))

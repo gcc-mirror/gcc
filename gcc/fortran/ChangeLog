@@ -1,3 +1,10 @@
+2007-12-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34398
+	* expr.c (gfc_check_assign): Add range checks for assignments of BOZs.
+	* resolve.c (resolve_ordinary_assign): Ditto.
+	* arith.c (gfc_range_check): Fix return value for complex numbers.
+
 2007-12-14  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/34324
