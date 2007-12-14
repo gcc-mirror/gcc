@@ -1,3 +1,13 @@
+2007-12-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/30127
+	PR libstdc++/34449
+	* include/bits/locale_classes.h (use_facet): Check facet hierarchy.
+	(has_facet): Same.
+	* testsuite/22_locale/global_templates/user_facet_hierarchies.cc: New.
+	* testsuite/22_locale/global_templates/
+	standard_facet_hierarchies.cc: New.
+	
 2007-12-11  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/34015
