@@ -2016,7 +2016,7 @@ process_options (void)
   if (flag_unwind_tables && !ACCUMULATE_OUTGOING_ARGS
       && flag_omit_frame_pointer)
     {
-      warning (0, "unwind tables currently requires a frame pointer "
+      warning (0, "unwind tables currently require a frame pointer "
 	       "for correctness");
       flag_omit_frame_pointer = 0;
     }
