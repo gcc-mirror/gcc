@@ -1,3 +1,7 @@
+2007-12-15  Bernhard Fischer  <>
+
+	* toplev.c (process_options): Fix typo in warning.
+
 2007-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/29978
