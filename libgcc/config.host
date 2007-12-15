@@ -264,10 +264,10 @@ c4x-* | tic4x-*)
 	;;
 cris-*-aout)
 	;;
-cris-*-elf | cris-*-none)
+crisv32-*-elf | crisv32-*-none | cris-*-elf | cris-*-none)
 	extra_parts="crtbegin.o crtend.o"
 	;;
-cris-*-linux*)
+cris-*-linux* | crisv32-*-linux*)
 	;;
 crx-*-elf)
 	;;
