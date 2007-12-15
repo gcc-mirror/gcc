@@ -1,4 +1,8 @@
-2007-12-15  Bernhard Fischer  <>
+2007-12-15  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	* tree-flow-inline.h.c (next_readonly_imm_use): Fix typo in comment.
+
+2007-12-15  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	* toplev.c (process_options): Fix typo in warning.
 

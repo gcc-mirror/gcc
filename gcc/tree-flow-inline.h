@@ -497,8 +497,8 @@ next_readonly_imm_use (imm_use_iterator *imm)
   use_operand_p old = imm->imm_use;
 
 #ifdef ENABLE_CHECKING
-  /* If this assertion fails, it indicates the 'next' pointer has changed 
-     since we the last bump.  This indicates that the list is being modified
+  /* If this assertion fails, it indicates the 'next' pointer has changed
+     since the last bump.  This indicates that the list is being modified
      via stmt changes, or SET_USE, or somesuch thing, and you need to be
      using the SAFE version of the iterator.  */
   gcc_assert (imm->iter_node.next == old->next);
