@@ -1,3 +1,24 @@
+2007-12-15  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/peep2-xsrand.c, gcc.target/cris/asmreg-1.c,
+	gcc.target/cris/peep2-andu1.c, gcc.target/cris/peep2-xsrand2.c,
+	gcc.target/cris/20011127-1.c: Drop redundant target-specifier.
+	* gcc.target/cris/peep2-andu2.c: Ditto.  Make dg-do assemble and
+	add -save-temps.
+	* gcc.target/cris/torture/cris-torture.exp,
+	gcc.target/cris/cris.exp: Run for crisv32-*-* too.
+	* gcc.target/cris/builtin_ctz_v3.c,
+	gcc.target/cris/builtin_ctz_v8.c,
+	gcc.target/cris/builtin_clz_v0.c,
+	gcc.target/cris/builtin_clz_v3.c,
+	gcc.target/cris/builtin_bswap_v3.c,
+	gcc.target/cris/builtin_bswap_v8.c, gcc.dg/sibcall-4.c,
+	gcc.dg/pr19340.c, gcc.dg/20020919-1.c, gcc.dg/pr31866.c,
+	gcc.dg/torture/cris-asm-mof-1.c, gcc.dg/torture/cris-volatile-1.c,
+	gcc.dg/weak/typeof-2.c, gcc.dg/tree-ssa/loop-1.c,
+	gcc.dg/tree-ssa/20040204-1.c, gcc.dg/sibcall-3.c,
+	lib/target-supports.exp: Adjust for crisv32-*-*.
+
 2007-12-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.dg/debug/const-3.c: New.

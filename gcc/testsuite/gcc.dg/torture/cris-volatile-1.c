@@ -2,7 +2,7 @@
    Check that size-optimizations for move insns (specifically peephole
    optimizations) aren't applied to volatile objects in the CRIS port.
    Origin: Hans-Peter Nilsson.  */
-/* { dg-do compile { target cris-*-* } } */
+/* { dg-do compile { target cris-*-* crisv32-*-* } } */
 /* { dg-final { scan-assembler-not {movu\...\[} } } */
 /* { dg-final { scan-assembler-not {move\.[^d].\[} } } */
 /* { dg-final { scan-assembler-not {and\.[^d].\[} } } */

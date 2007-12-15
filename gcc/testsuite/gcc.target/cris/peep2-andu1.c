@@ -1,4 +1,4 @@
-/* { dg-do compile { target cris-*-* } } */
+/* { dg-do compile } */
 /* { dg-final { scan-assembler-not "and.d " } } */
 /* { dg-final { scan-assembler-not "move.d " } } */
 /* { dg-final { scan-assembler "cLear.b" } } */

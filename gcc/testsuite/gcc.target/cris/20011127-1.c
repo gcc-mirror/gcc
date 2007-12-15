@@ -3,9 +3,9 @@
 
    Making sure that invalid asm operand modifiers don't cause an ICE.  */
 
-/* { dg-do compile { target cris-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-message "reg:SI|const_double:DF" "prune debug_rtx output" { target cris-*-* } 0 } */
+/* { dg-message "reg:SI|const_double:DF" "prune debug_rtx output" { target *-*-* } 0 } */
 
 void
 foo (void)

@@ -1,7 +1,7 @@
 /* Check that we use the swap insn for ctz by checking assembler output.
    The swap instruction was implemented in v8.  */
 /* { dg-do compile } */
-/* { dg-skip-if "" { "cris-*-elf" } { "-march*" } { "" } } */
+/* { dg-skip-if "" { "cris*-*-elf" } { "-march*" } { "" } } */
 /* { dg-options "-O2 -march=v8" } */
 /* { dg-final { scan-assembler "\[ \t\]swapwbr\[ \t\]" } } */
 

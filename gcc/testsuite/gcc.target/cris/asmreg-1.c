@@ -1,4 +1,4 @@
-/* { dg-do compile { target cris-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-O2" } */
 /* { dg-final { scan-assembler "\\\.ifnc \\\$r9-\\\$r10-\\\$r11-\\\$r12" } } */
 
