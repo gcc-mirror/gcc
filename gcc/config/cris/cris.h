@@ -131,10 +131,42 @@ extern int cris_cpu_version;
   %(cpp_subtarget)"
 
 /* For the cris-*-elf subtarget.  */
+
+#define CRIS_DEFAULT_TUNE "10"
+#define CRIS_ARCH_CPP_DEFAULT
+#define CRIS_DEFAULT_ASM_ARCH_OPTION ""
+
+#ifdef TARGET_CPU_DEFAULT
+#if TARGET_CPU_DEFAULT != 32 && TARGET_CPU_DEFAULT != 10
+ #error "Due to '()'; e.g. '#define TARGET_CPU_DEFAULT (10)', stringize TARGET_CPU_DEFAULT isn't useful: update manually."
+#endif
+
+#if TARGET_CPU_DEFAULT == 32
+#undef CRIS_DEFAULT_TUNE
+#define CRIS_DEFAULT_TUNE "32"
+/* To enable use of "generic" cris-axis-elf binutils, always pass the
+   architecture option to GAS.  (We don't do this for non-v32.)  */
+#undef CRIS_DEFAULT_ASM_ARCH_OPTION
+#define CRIS_DEFAULT_ASM_ARCH_OPTION "--march=v32"
+#endif
+
+#undef CRIS_ARCH_CPP_DEFAULT
+#define CRIS_ARCH_CPP_DEFAULT \
+ "%{!march=*:\
+   %{!metrax*:\
+    %{!mcpu=*:\
+     %{!mtune=*:-D__tune_v" CRIS_DEFAULT_TUNE "}\
+     -D__arch_v"CRIS_DEFAULT_TUNE\
+   " -D__CRIS_arch_version=" CRIS_DEFAULT_TUNE "}}}"
+#endif
+
 #define CRIS_CPP_SUBTARGET_SPEC \
  "%{mbest-lib-options:\
    %{!moverride-best-lib-options:\
-    %{!march=*:%{!metrax*:%{!mcpu=*:-D__tune_v10 -D__CRIS_arch_tune=10}}}}}"
+   %{!march=*:%{!metrax*:%{!mcpu=*:\
+      -D__tune_v" CRIS_DEFAULT_TUNE \
+    " -D__CRIS_arch_tune=" CRIS_DEFAULT_TUNE "}}}}}"\
+ CRIS_ARCH_CPP_DEFAULT
 
 /* Remove those Sun-make "target" switches.  */
 /* Override previous definitions (linux.h).  */
@@ -150,7 +182,8 @@ extern int cris_cpu_version;
  "-melf\
   %{mbest-lib-options:\
    %{!moverride-best-lib-options:\
-    %{!march=*:%{!mcpu=*:-mtune=v10 -D__CRIS_arch_tune=10}}\
+   %{!march=*:%{!mcpu=*:-mtune=v" CRIS_DEFAULT_TUNE\
+       " -D__CRIS_arch_tune=" CRIS_DEFAULT_TUNE "}}\
     %{!finhibit-size-directive:\
       %{!fno-function-sections: -ffunction-sections}\
       %{!fno-data-sections: -fdata-sections}}}}"
@@ -174,10 +207,13 @@ extern int cris_cpu_version;
 #define ASM_SPEC \
  MAYBE_AS_NO_MUL_BUG_ABORT \
  "%{v:-v}\
-  %(asm_subtarget)"
+ %(asm_subtarget)\
+ %{march=*:%{cpu=*:%eDo not specify both -march=... and -mcpu=...}}\
+ %{march=v32:--march=v32} %{mcpu=v32:--march=v32}"
 
 /* For the cris-*-elf subtarget.  */
-#define CRIS_ASM_SUBTARGET_SPEC "--em=criself"
+#define CRIS_ASM_SUBTARGET_SPEC \
+ "--em=criself %{!march=*:%{!cpu=*:" CRIS_DEFAULT_ASM_ARCH_OPTION "}}"
 
 /* FIXME: We should propagate the -melf option to make the criself
    "emulation" unless a linker script is provided (-T*), but I don't know
@@ -258,14 +294,6 @@ extern int target_flags;
    for -melinux.  */
 #define TARGET_LINUX 0
 
-/* Default target_flags if no switches specified.  */
-#ifndef TARGET_DEFAULT
-# define TARGET_DEFAULT \
- (MASK_SIDE_EFFECT_PREFIXES + MASK_STACK_ALIGN \
-  + MASK_CONST_ALIGN + MASK_DATA_ALIGN \
-  + MASK_PROLOGUE_EPILOGUE + MASK_MUL_BUG)
-#endif
-
 /* For the cris-*-elf subtarget.  */
 #define CRIS_SUBTARGET_DEFAULT 0
 
@@ -273,13 +301,34 @@ extern int target_flags;
 #define CRIS_CPU_ETRAX4 3	/* Just lz added.  */
 #define CRIS_CPU_SVINTO 8	/* Added swap, jsrc & Co., 32-bit accesses.  */
 #define CRIS_CPU_NG 10		/* Added mul[su].  */
+#define CRIS_CPU_V32 32		/* Major changes.  */
+
+#ifndef TARGET_CPU_DEFAULT
+#define TARGET_CPU_DEFAULT CRIS_CPU_BASE
+#endif
+
+/* Default target_flags if no switches specified.  */
+#ifndef TARGET_DEFAULT
+# if TARGET_CPU_DEFAULT == 32
+#  define TARGET_DEFAULT \
+ (MASK_STACK_ALIGN \
+  + MASK_CONST_ALIGN + MASK_DATA_ALIGN \
+  + MASK_PROLOGUE_EPILOGUE)
+# else  /* 10 */
+# define TARGET_DEFAULT \
+ (MASK_SIDE_EFFECT_PREFIXES + MASK_STACK_ALIGN \
+  + MASK_CONST_ALIGN + MASK_DATA_ALIGN \
+  + MASK_PROLOGUE_EPILOGUE + MASK_MUL_BUG)
+# endif
+#endif
 
 /* Local, providing a default for cris_cpu_version.  */
-#define CRIS_DEFAULT_CPU_VERSION CRIS_CPU_BASE
+#define CRIS_DEFAULT_CPU_VERSION TARGET_CPU_DEFAULT
 
 #define TARGET_HAS_MUL_INSNS (cris_cpu_version >= CRIS_CPU_NG)
 #define TARGET_HAS_LZ (cris_cpu_version >= CRIS_CPU_ETRAX4)
 #define TARGET_HAS_SWAP (cris_cpu_version >= CRIS_CPU_SVINTO)
+#define TARGET_V32 (cris_cpu_version >= CRIS_CPU_V32)
 
 #define CRIS_SUBTARGET_HANDLE_OPTION(x, y, z)
 
@@ -466,6 +515,13 @@ extern int target_flags;
 #define REG_ALLOC_ORDER \
  {9, 13, 12, 11, 10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 14, 15, 17, 16, 18, 19}
 
+/* Use MOF and ACR.  Prefer ACR before any other register.  Prefer MOF
+   then SRP after saved registers.  The *after* is because they're only
+   useful for storage, not for things being computed, which is
+   apparently more common.  */
+#define REG_ALLOC_ORDER_V32 \
+ {15, 9, 13, 12, 11, 10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 17, 16, 14, 18, 19}
+
 
 /* Node: Values in Registers */
 
@@ -482,7 +538,7 @@ extern int target_flags;
  (((MODE) == CCmode				\
    || (REGNO) != CRIS_CC0_REGNUM)		\
   && (GET_MODE_SIZE (MODE) <= UNITS_PER_WORD	\
-      || (REGNO) != CRIS_MOF_REGNUM))
+      || ((REGNO) != CRIS_MOF_REGNUM && (REGNO) != CRIS_ACR_REGNUM)))
 
 /* Because CCmode isn't covered by the "narrower mode" statement in
    tm.texi, we can still say all modes are tieable despite not having an
@@ -499,18 +555,30 @@ extern int target_flags;
 
 /* Node: Register Classes */
 
-enum reg_class 
+/* FIXME: A separate class for the return register would make sense.
+
+   We need a separate register class to handle register allocation for
+   ACR, since it can't be used for post-increment.
+
+   It's not obvious, but having subunions of all movable-between
+   register classes does really help register allocation.  */
+enum reg_class
   {
     NO_REGS,
-    MOF_REGS, CC0_REGS, SPECIAL_REGS, GENERAL_REGS, ALL_REGS,
+    ACR_REGS, MOF_REGS, CC0_REGS, SPECIAL_REGS,
+    SPEC_ACR_REGS, GENNONACR_REGS,
+    SPEC_GENNONACR_REGS, GENERAL_REGS,
+    ALL_REGS,
     LIM_REG_CLASSES
   };
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
-#define REG_CLASS_NAMES							\
-  {"NO_REGS",								\
-   "MOF_REGS", "CC0_REGS", "SPECIAL_REGS", "GENERAL_REGS", "ALL_REGS"}
+#define REG_CLASS_NAMES						\
+  {"NO_REGS",							\
+   "ACR_REGS", "MOF_REGS", "CC0_REGS", "SPECIAL_REGS",		\
+   "SPEC_ACR_REGS", "GENNONACR_REGS", "SPEC_GENNONACR_REGS",	\
+   "GENERAL_REGS", "ALL_REGS"}
 
 #define CRIS_SPECIAL_REGS_CONTENTS					\
  ((1 << CRIS_SRP_REGNUM) | (1 << CRIS_MOF_REGNUM) | (1 << CRIS_CC0_REGNUM))
@@ -519,26 +587,39 @@ enum reg_class
 #define REG_CLASS_CONTENTS			\
   {						\
    {0},						\
+   {1 << CRIS_ACR_REGNUM},			\
    {1 << CRIS_MOF_REGNUM},			\
    {1 << CRIS_CC0_REGNUM},			\
    {CRIS_SPECIAL_REGS_CONTENTS},		\
+   {CRIS_SPECIAL_REGS_CONTENTS			\
+    | (1 << CRIS_ACR_REGNUM)},			\
+   {(0xffff | (1 << CRIS_AP_REGNUM))		\
+    & ~(1 << CRIS_ACR_REGNUM)},			\
+   {(0xffff | (1 << CRIS_AP_REGNUM)		\
+    | CRIS_SPECIAL_REGS_CONTENTS)		\
+    & ~(1 << CRIS_ACR_REGNUM)},			\
    {0xffff | (1 << CRIS_AP_REGNUM)},		\
    {0xffff | (1 << CRIS_AP_REGNUM)		\
     | CRIS_SPECIAL_REGS_CONTENTS}		\
   }
 
 #define REGNO_REG_CLASS(REGNO)			\
-  ((REGNO) == CRIS_MOF_REGNUM ? MOF_REGS :	\
+  ((REGNO) == CRIS_ACR_REGNUM ? ACR_REGS :	\
+   (REGNO) == CRIS_MOF_REGNUM ? MOF_REGS :	\
    (REGNO) == CRIS_CC0_REGNUM ? CC0_REGS :	\
    (REGNO) == CRIS_SRP_REGNUM ? SPECIAL_REGS :	\
    GENERAL_REGS)
 
 #define BASE_REG_CLASS GENERAL_REGS
 
+#define MODE_CODE_BASE_REG_CLASS(MODE, OCODE, ICODE)	\
+  ((OCODE) != POST_INC ? BASE_REG_CLASS : GENNONACR_REGS)
+
 #define INDEX_REG_CLASS GENERAL_REGS
 
 #define REG_CLASS_FROM_LETTER(C)		\
   (						\
+   (C) == 'a' ? ACR_REGS :			\
    (C) == 'h' ? MOF_REGS :			\
    (C) == 'x' ? SPECIAL_REGS :			\
    (C) == 'c' ? CC0_REGS :			\
@@ -553,6 +634,14 @@ enum reg_class
   || (unsigned) reg_renumber[REGNO] <= CRIS_LAST_GENERAL_REGISTER	\
   || (unsigned) reg_renumber[REGNO] == ARG_POINTER_REGNUM)
 
+/* REGNO_OK_FOR_BASE_P seems to be obsolete wrt. this one, but not yet
+   documented as such.  */
+#define REGNO_MODE_CODE_OK_FOR_BASE_P(REGNO, MODE, OCODE, ICODE)	\
+ (REGNO_OK_FOR_BASE_P (REGNO)						\
+  && ((OCODE) != POST_INC						\
+      || !((REGNO) == CRIS_ACR_REGNUM					\
+	   || (unsigned) reg_renumber[REGNO] == CRIS_ACR_REGNUM)))
+
 /* See REGNO_OK_FOR_BASE_P.  */
 #define REGNO_OK_FOR_INDEX_P(REGNO) REGNO_OK_FOR_BASE_P(REGNO)
 
@@ -565,7 +654,8 @@ enum reg_class
    they need to be reloaded.  FIXME: Investigate whether that constitutes
    a bug.  */
 #define PREFERRED_RELOAD_CLASS(X, CLASS)	\
- ((CLASS) != MOF_REGS				\
+ ((CLASS) != ACR_REGS				\
+  && (CLASS) != MOF_REGS			\
   && (CLASS) != CC0_REGS			\
   && (CLASS) != SPECIAL_REGS			\
   ? GENERAL_REGS : (CLASS))
@@ -577,6 +667,11 @@ enum reg_class
    || GET_MODE_SIZE (MODE) == 4				\
    || !MEM_P (X)					\
    ? NO_REGS : GENERAL_REGS)
+
+/* FIXME: Fix regrename.c; it should check validity of replacements,
+   not just with a silly pass-specific macro.  We may miss some
+   opportunities, but we must stop regrename from creating acr++.  */
+#define HARD_REGNO_RENAME_OK(FROM, TO) ((TO) != CRIS_ACR_REGNUM)
 
 /* For CRIS, this is always the size of MODE in words,
    since all registers are the same size.  To use omitted modes in
@@ -632,6 +727,8 @@ enum reg_class
   (C) == 'S' ? EXTRA_CONSTRAINT_S (X) :		\
   /* A three-address addressing-mode?  */	\
   (C) == 'T' ? EXTRA_CONSTRAINT_T (X) :		\
+  /* A PLT symbol?  */				\
+  (C) == 'U' ? EXTRA_CONSTRAINT_U (X) :		\
   0)
 
 #define EXTRA_MEMORY_CONSTRAINT(X, STR) ((X) == 'Q')
@@ -683,7 +780,12 @@ enum reg_class
 
 /* PIC-constructs for symbols.  */
 #define EXTRA_CONSTRAINT_S(X)						\
- (flag_pic && GET_CODE (X) == CONST && cris_valid_pic_const (X))
+ (flag_pic && GET_CODE (X) == CONST && cris_valid_pic_const (X, false))
+
+#define EXTRA_CONSTRAINT_U(X)						\
+ (flag_pic								\
+  && CONSTANT_P (X)							\
+  && cris_nonmemory_operand_or_callable_symbol (X, VOIDmode))
 
 
 /* Node: Frame Layout */
@@ -877,22 +979,65 @@ struct cum_args {int regs;};
    somewhat lack of elegance.
     (Do not be tempted to "straighten up" whitespace in the asms; the
    assembler #NO_APP state mandates strict spacing).  */
-#define TRAMPOLINE_TEMPLATE(FILE)		\
-  do						\
-    {						\
-      fprintf (FILE, "\tmove.d $%s,[$pc+20]\n",	\
-	       reg_names[STATIC_CHAIN_REGNUM]);	\
-      fprintf (FILE, "\tmove $srp,[$pc+22]\n");	\
-      fprintf (FILE, "\tmove.d 0,$%s\n",	\
-	       reg_names[STATIC_CHAIN_REGNUM]);	\
-      fprintf (FILE, "\tjsr 0\n");		\
-      fprintf (FILE, "\tmove.d 0,$%s\n",	\
-	       reg_names[STATIC_CHAIN_REGNUM]);	\
-      fprintf (FILE, "\tjump 0\n");		\
-    }						\
+#define TRAMPOLINE_TEMPLATE(FILE)				       \
+  do								       \
+    {								       \
+      if (TARGET_V32)						       \
+       {							       \
+	 /* This normally-unused nop insn acts as an instruction to    \
+	    the simulator to flush its instruction cache.  None of     \
+	    the other instructions in the trampoline template suits    \
+	    as a trigger for V32.  The pc-relative addressing mode     \
+	    works nicely as a trigger for V10.			       \
+	    FIXME: Have specific V32 template (possibly avoiding the   \
+	    use of a special instruction).  */			       \
+	 fprintf (FILE, "\tclearf x\n");			       \
+	 /* We have to use a register as an intermediate, choosing     \
+	    semi-randomly R1 (which has to not be the		       \
+	    STATIC_CHAIN_REGNUM), so we can use it for address	       \
+	    indirection and jsr target.	 */			       \
+	 fprintf (FILE, "\tmove $r1,$mof\n");			       \
+	 /* +4 */						       \
+	 fprintf (FILE, "\tmove.d 0,$r1\n");			       \
+	 fprintf (FILE, "\tmove.d $%s,[$r1]\n",			       \
+		  reg_names[STATIC_CHAIN_REGNUM]);		       \
+	 fprintf (FILE, "\taddq 6,$r1\n");			       \
+	 fprintf (FILE, "\tmove $mof,[$r1]\n");			       \
+	 fprintf (FILE, "\taddq 6,$r1\n");			       \
+	 fprintf (FILE, "\tmove $srp,[$r1]\n");			       \
+	 /* +20 */						       \
+	 fprintf (FILE, "\tmove.d 0,$%s\n",			       \
+		  reg_names[STATIC_CHAIN_REGNUM]);		       \
+	 /* +26 */						       \
+	 fprintf (FILE, "\tmove.d 0,$r1\n");			       \
+	 fprintf (FILE, "\tjsr $r1\n");				       \
+	 fprintf (FILE, "\tsetf\n");				       \
+	 /* +36 */						       \
+	 fprintf (FILE, "\tmove.d 0,$%s\n",			       \
+		  reg_names[STATIC_CHAIN_REGNUM]);		       \
+	 /* +42 */						       \
+	 fprintf (FILE, "\tmove.d 0,$r1\n");			       \
+	 /* +48 */						       \
+	 fprintf (FILE, "\tmove.d 0,$r9\n");			       \
+	 fprintf (FILE, "\tjump $r9\n");			       \
+	 fprintf (FILE, "\tsetf\n");				       \
+       }							       \
+      else							       \
+       {							       \
+	 fprintf (FILE, "\tmove.d $%s,[$pc+20]\n",		       \
+		  reg_names[STATIC_CHAIN_REGNUM]);		       \
+	 fprintf (FILE, "\tmove $srp,[$pc+22]\n");		       \
+	 fprintf (FILE, "\tmove.d 0,$%s\n",			       \
+		  reg_names[STATIC_CHAIN_REGNUM]);		       \
+	 fprintf (FILE, "\tjsr 0\n");				       \
+	 fprintf (FILE, "\tmove.d 0,$%s\n",			       \
+		  reg_names[STATIC_CHAIN_REGNUM]);		       \
+	 fprintf (FILE, "\tjump 0\n");				       \
+       }							       \
+    }								       \
   while (0)
 
-#define TRAMPOLINE_SIZE 32
+#define TRAMPOLINE_SIZE (TARGET_V32 ? 58 : 32)
 
 /* CRIS wants instructions on word-boundary.
    Note that due to a bug (reported) in 2.7.2 and earlier, this is
@@ -900,16 +1045,29 @@ struct cum_args {int regs;};
    this is not fatal, only a slight waste of stack space).  */
 #define TRAMPOLINE_ALIGNMENT 16
 
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)		\
-  do								\
-    {								\
-      emit_move_insn (gen_rtx_MEM (SImode,			\
-			       plus_constant (TRAMP, 10)),	\
-		      CXT);					\
-      emit_move_insn (gen_rtx_MEM (SImode,			\
-			       plus_constant (TRAMP, 16)),	\
-		      FNADDR);					\
-    }								\
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
+  do									\
+    if (TARGET_V32)							\
+      {									\
+	emit_move_insn (gen_rtx_MEM (SImode,				\
+				     plus_constant (TRAMP, 6)),		\
+		 	plus_constant (TRAMP, 38));			\
+	emit_move_insn (gen_rtx_MEM (SImode,				\
+				     plus_constant (TRAMP, 22)),	\
+			CXT);						\
+	emit_move_insn (gen_rtx_MEM (SImode,				\
+				     plus_constant (TRAMP, 28)),	\
+		 	FNADDR);					\
+      }									\
+    else								\
+      {									\
+	emit_move_insn (gen_rtx_MEM (SImode,				\
+				     plus_constant (TRAMP, 10)),	\
+			CXT);						\
+	emit_move_insn (gen_rtx_MEM (SImode,				\
+				     plus_constant (TRAMP, 16)),	\
+		 	FNADDR);					\
+      }									\
   while (0)
 
 /* Note that there is no need to do anything with the cache for sake of
@@ -929,6 +1087,8 @@ struct cum_args {int regs;};
 
 #define CONSTANT_ADDRESS_P(X) CONSTANT_P (X)
 
+/* Must be a compile-time constant, so we go with the highest value
+   among all CRIS variants.  */
 #define MAX_REGS_PER_ADDRESS 2
 
 /* There are helper macros defined here which are used only in
@@ -945,15 +1105,18 @@ struct cum_args {int regs;};
 /* No symbol can be used as an index (or more correct, as a base) together
    with a register with PIC; the PIC register must be there.  */
 #define CONSTANT_INDEX_P(X) \
- (CONSTANT_P (X) && (!flag_pic || cris_valid_pic_const (X)))
+ (CONSTANT_P (X) && (!flag_pic || cris_valid_pic_const (X, true)))
 
 /* True if X is a valid base register.  */
 #define BASE_P(X) \
  (REG_P (X) && REG_OK_FOR_BASE_P (X))
 
 /* True if X is a valid base register with or without autoincrement.  */
-#define BASE_OR_AUTOINCR_P(X) \
- (BASE_P (X) || (GET_CODE (X) == POST_INC && BASE_P (XEXP (X, 0))))
+#define BASE_OR_AUTOINCR_P(X)				\
+ (BASE_P (X)						\
+  || (GET_CODE (X) == POST_INC				\
+      && BASE_P (XEXP (X, 0))				\
+      && REGNO (XEXP (X, 0)) != CRIS_ACR_REGNUM))
 
 /* True if X is a valid (register) index for BDAP, i.e. [Rs].S or [Rs+].S.  */
 #define BDAP_INDEX_P(X)					\
@@ -975,12 +1138,6 @@ struct cum_args {int regs;};
       && (INTVAL (XEXP (X, 1)) == 2		\
 	  || INTVAL (XEXP (X, 1)) == 4)))
 
-/* True if X is an address that doesn't need a prefix i.e. [Rs] or [Rs+].  */
-#define SIMPLE_ADDRESS_P(X)	\
- (BASE_P (X)			\
-  || (GET_CODE (X) == POST_INC	\
-      && BASE_P (XEXP (X, 0))))
-
 /* A PIC operand looks like a normal symbol here.  At output we dress it
    in "[rPIC+symbol:GOT]" (global symbol) or "rPIC+symbol:GOTOFF" (local
    symbol) so we exclude all addressing modes where we can't replace a
@@ -990,12 +1147,15 @@ struct cum_args {int regs;};
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)			\
  {								\
    rtx x1, x2;							\
-   if (SIMPLE_ADDRESS_P (X))					\
+   if (BASE_OR_AUTOINCR_P (X))					\
      goto ADDR;							\
-   if (CONSTANT_INDEX_P (X))					\
+   else if (TARGET_V32)						\
+     /* Nothing else is valid then.  */				\
+     ;								\
+   else if (CONSTANT_INDEX_P (X))				\
      goto ADDR;							\
    /* Indexed?  */						\
-   if (GET_CODE (X) == PLUS)					\
+   else if (GET_CODE (X) == PLUS)				\
      {								\
        x1 = XEXP (X, 0);					\
        x2 = XEXP (X, 1);					\
@@ -1081,32 +1241,8 @@ struct cum_args {int regs;};
 
 /* Node: Costs */
 
-/* Can't move to and from a SPECIAL_REGS register, so we have to say
-   their move cost within that class is higher.  How about 7?  That's 3
-   for a move to a GENERAL_REGS register, 3 for the move from the
-   GENERAL_REGS register, and 1 for the increased register pressure.
-   Also, it's higher than the memory move cost, which is in order.  
-   We also do this for ALL_REGS, since we don't want that class to be
-   preferred (even to memory) at all where GENERAL_REGS doesn't fit.
-   Whenever it's about to be used, it's for SPECIAL_REGS.  If we don't
-   present a higher cost for ALL_REGS than memory, a SPECIAL_REGS may be
-   used when a GENERAL_REGS should be used, even if there are call-saved
-   GENERAL_REGS left to allocate.  This is because the fall-back when
-   the most preferred register class isn't available, isn't the next
-   (or next good) wider register class, but the *most widest* register
-   class.
-   Give the cost 3 between a special register and a general register,
-   because we want constraints verified.  */
-
-#define REGISTER_MOVE_COST(MODE, FROM, TO)		\
- ((((FROM) == SPECIAL_REGS || (FROM) == MOF_REGS)	\
-   && ((TO) == SPECIAL_REGS || (TO) == MOF_REGS))	\
-  || (FROM) == ALL_REGS					\
-  || (TO) == ALL_REGS					\
-  ? 7 :							\
-  ((FROM) == SPECIAL_REGS || (FROM) == MOF_REGS		\
-   || (TO) == SPECIAL_REGS || (TO) == MOF_REGS)		\
-  ? 3 : 2)
+#define REGISTER_MOVE_COST(MODE, FROM, TO)	\
+  cris_register_move_cost (MODE, FROM, TO)
 
 /* This isn't strictly correct for v0..3 in buswidth-8bit mode, but
    should suffice.  */
@@ -1146,7 +1282,7 @@ enum cris_pic_symbol_type
   {
     cris_no_symbol = 0,
     cris_got_symbol = 1,
-    cris_gotrel_symbol = 2,
+    cris_rel_symbol = 2,
     cris_got_symbol_needing_fixup = 3,
     cris_invalid_pic_symbol = 4
   };
@@ -1264,10 +1400,10 @@ enum cris_pic_symbol_type
 
 #define REGISTER_NAMES					\
  {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8",	\
-  "r9", "r10", "r11", "r12", "r13", "sp", "pc", "srp", "mof", "faked_ap", "dccr"}
+  "r9", "r10", "r11", "r12", "r13", "sp", "acr", "srp", "mof", "faked_ap", "dccr"}
 
 #define ADDITIONAL_REGISTER_NAMES \
- {{"r14", 14}, {"r15", 15}}
+ {{"r14", 14}, {"r15", 15}, {"pc", 15}}
 
 #define PRINT_OPERAND(FILE, X, CODE)		\
  cris_print_operand (FILE, X, CODE)
@@ -1297,17 +1433,27 @@ enum cris_pic_symbol_type
 #undef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX "_"
 
-#define ASM_OUTPUT_REG_PUSH(FILE, REGNO) \
-  fprintf (FILE, "\tpush $%s\n", reg_names[REGNO])
+#define ASM_OUTPUT_REG_PUSH(FILE, REGNO)				\
+  fprintf (FILE,							\
+	   TARGET_V32							\
+	   ? "\tsubq 4,$sp\n\tmove $%s,[$sp]\n" : "\tpush $%s\n",	\
+	   reg_names[REGNO])
 
 #define ASM_OUTPUT_REG_POP(FILE, REGNO) \
-  fprintf (FILE, "\tpop $%s\n", reg_names[REGNO])
+  fprintf (FILE, "\tmove [$sp+],$%s\n", reg_names[REGNO])
 
 
 /* Node: Dispatch Tables */
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)	\
-  asm_fprintf (FILE, "\t.word %LL%d-%LL%d\n", VALUE, REL)
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)		\
+  do									\
+    {									\
+      if (TARGET_V32)							\
+       asm_fprintf (FILE, "\t.word %LL%d-.\n", VALUE);			\
+      else								\
+       asm_fprintf (FILE, "\t.word %LL%d-%LL%d\n", VALUE, REL);		\
+    }									\
+  while (0)
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
   asm_fprintf (FILE, "\t.dword %LL%d\n", VALUE)
@@ -1322,20 +1468,7 @@ enum cris_pic_symbol_type
    the expanded casesi core-insn.
    FIXME: Check this construct when changing to new version of gcc.  */
 #define ASM_OUTPUT_CASE_END(STREAM, NUM, TABLE)				\
-  do									\
-    {									\
-      asm_fprintf (STREAM, "\t.word %LL%d-%LL%d%s\n",			\
-		   CODE_LABEL_NUMBER					\
-		    (XEXP (XEXP (XEXP					\
-				  (XVECEXP				\
-				    (PATTERN				\
-				     (prev_nonnote_insn			\
-				      (PREV_INSN (TABLE))),		\
-				     0, 0), 1), 2), 0)),		\
-		   NUM,							\
-		   (TARGET_PDEBUG ? "; default" : ""));			\
-    }									\
-  while (0)
+  cris_asm_output_case_end (STREAM, NUM, TABLE)
 
 
 /* Node: Exception Region Output */
