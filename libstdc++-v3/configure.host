@@ -94,6 +94,9 @@ case "${host_cpu}" in
   arm* | xscale | ep9312)
     try_cpu=arm
     ;;
+  crisv32)
+    try_cpu=cris
+    ;;
   i[567]86 | x86_64)
     try_cpu=i486
     ;;
