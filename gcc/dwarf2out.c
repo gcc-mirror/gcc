@@ -10365,6 +10365,8 @@ reference_to_unused (tree * tp, int * walk_subtrees,
       if (!node->output)
 	return *tp;
     }
+  else if (TREE_CODE (*tp) == STRING_CST && !TREE_ASM_WRITTEN (*tp))
+    return *tp;
 
   return NULL_TREE;
 }
