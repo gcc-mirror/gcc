@@ -64,6 +64,8 @@ static bool java_decl_ok_for_sibcall (const_tree);
 static tree java_get_callee_fndecl (const_tree);
 static void java_clear_binding_stack (void);
 
+static enum classify_record java_classify_record (tree type);
+
 #ifndef TARGET_OBJECT_SUFFIX
 # define TARGET_OBJECT_SUFFIX ".o"
 #endif
@@ -180,6 +182,8 @@ struct language_function GTY(())
 #define LANG_HOOKS_TYPE_FOR_MODE java_type_for_mode
 #undef LANG_HOOKS_TYPE_FOR_SIZE
 #define LANG_HOOKS_TYPE_FOR_SIZE java_type_for_size
+#undef LANG_HOOKS_CLASSIFY_RECORD
+#define LANG_HOOKS_CLASSIFY_RECORD java_classify_record
 
 #undef LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN
 #define LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN java_dump_tree
@@ -953,6 +957,18 @@ java_clear_binding_stack (void)
 {
   while (!global_bindings_p ())
     poplevel (0, 0, 0);
+}
+
+static enum classify_record
+java_classify_record (tree type)
+{
+  if (! CLASS_P (type))
+    return RECORD_IS_STRUCT;
+
+  if (CLASS_INTERFACE (TYPE_NAME (type)))
+    return RECORD_IS_INTERFACE;
+
+  return RECORD_IS_CLASS;
 }
 
 #include "gt-java-lang.h"

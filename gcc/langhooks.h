@@ -33,6 +33,9 @@ struct array_descr_info;
 /* A print hook for print_tree ().  */
 typedef void (*lang_print_tree_hook) (FILE *, tree, int indent);
 
+enum classify_record
+  { RECORD_IS_STRUCT, RECORD_IS_CLASS, RECORD_IS_INTERFACE };
+
 /* The following hooks are documented in langhooks.c.  Must not be
    NULL.  */
 
@@ -90,6 +93,11 @@ struct lang_hooks_for_types
   /* Return a new type (with the indicated CODE), doing whatever
      language-specific processing is required.  */
   tree (*make_type) (enum tree_code);
+
+  /* Return what kind of RECORD_TYPE this is, mainly for purposes of
+     debug information.  If not defined, record types are assumed to
+     be structures.  */
+  enum classify_record (*classify_record) (tree);
 
   /* Given MODE and UNSIGNEDP, return a suitable type-tree with that
      mode.  */

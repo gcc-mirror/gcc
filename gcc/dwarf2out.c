@@ -4562,8 +4562,6 @@ dwarf_tag_name (unsigned int tag)
       return "DW_TAG_namelist";
     case DW_TAG_namelist_item:
       return "DW_TAG_namelist_item";
-    case DW_TAG_namespace:
-      return "DW_TAG_namespace";
     case DW_TAG_packed_type:
       return "DW_TAG_packed_type";
     case DW_TAG_subprogram:
@@ -4582,8 +4580,26 @@ dwarf_tag_name (unsigned int tag)
       return "DW_TAG_variable";
     case DW_TAG_volatile_type:
       return "DW_TAG_volatile_type";
+    case DW_TAG_dwarf_procedure:
+      return "DW_TAG_dwarf_procedure";
+    case DW_TAG_restrict_type:
+      return "DW_TAG_restrict_type";
+    case DW_TAG_interface_type:
+      return "DW_TAG_interface_type";
+    case DW_TAG_namespace:
+      return "DW_TAG_namespace";
     case DW_TAG_imported_module:
       return "DW_TAG_imported_module";
+    case DW_TAG_unspecified_type:
+      return "DW_TAG_unspecified_type";
+    case DW_TAG_partial_unit:
+      return "DW_TAG_partial_unit";
+    case DW_TAG_imported_unit:
+      return "DW_TAG_imported_unit";
+    case DW_TAG_condition:
+      return "DW_TAG_condition";
+    case DW_TAG_shared_type:
+      return "DW_TAG_shared_type";
     case DW_TAG_MIPS_loop:
       return "DW_TAG_MIPS_loop";
     case DW_TAG_format_label:
@@ -6301,6 +6317,7 @@ is_type_die (dw_die_ref die)
     {
     case DW_TAG_array_type:
     case DW_TAG_class_type:
+    case DW_TAG_interface_type:
     case DW_TAG_enumeration_type:
     case DW_TAG_pointer_type:
     case DW_TAG_reference_type:
@@ -11475,6 +11492,8 @@ class_or_namespace_scope_p (dw_die_ref context_die)
 {
   return (context_die
 	  && (context_die->die_tag == DW_TAG_structure_type
+	      || context_die->die_tag == DW_TAG_class_type
+	      || context_die->die_tag == DW_TAG_interface_type
 	      || context_die->die_tag == DW_TAG_union_type
 	      || context_die->die_tag == DW_TAG_namespace));
 }
@@ -11893,12 +11912,36 @@ gen_inlined_enumeration_type_die (tree type, dw_die_ref context_die)
   add_abstract_origin_attribute (type_die, type);
 }
 
+/* Determine what tag to use for a record type.  */
+
+static enum dwarf_tag
+record_type_tag (tree type)
+{
+  if (! lang_hooks.types.classify_record)
+    return DW_TAG_structure_type;
+
+  switch (lang_hooks.types.classify_record (type))
+    {
+    case RECORD_IS_STRUCT:
+      return DW_TAG_structure_type;
+
+    case RECORD_IS_CLASS:
+      return DW_TAG_class_type;
+
+    case RECORD_IS_INTERFACE:
+      return DW_TAG_interface_type;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Generate a DIE to represent an inlined instance of a structure type.  */
 
 static void
 gen_inlined_structure_type_die (tree type, dw_die_ref context_die)
 {
-  dw_die_ref type_die = new_die (DW_TAG_structure_type, context_die, type);
+  dw_die_ref type_die = new_die (record_type_tag (type), context_die, type);
 
   /* We do not check for TREE_ASM_WRITTEN (type) being set, as the type may
      be incomplete and such types are not marked.  */
@@ -13099,7 +13142,7 @@ gen_struct_or_union_type_die (tree type, dw_die_ref context_die,
       dw_die_ref old_die = type_die;
 
       type_die = new_die (TREE_CODE (type) == RECORD_TYPE
-			  ? DW_TAG_structure_type : DW_TAG_union_type,
+			  ? record_type_tag (type) : DW_TAG_union_type,
 			  scope_die, type);
       equate_type_number_to_die (type, type_die);
       if (old_die)
@@ -14773,6 +14816,7 @@ prune_unused_types_walk (dw_die_ref die)
     case DW_TAG_structure_type:
     case DW_TAG_union_type:
     case DW_TAG_class_type:
+    case DW_TAG_interface_type:
     case DW_TAG_friend:
     case DW_TAG_variant_part:
     case DW_TAG_enumeration_type:
