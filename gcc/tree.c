@@ -4677,7 +4677,7 @@ type_hash_add (hashval_t hashcode, tree type)
   h->hash = hashcode;
   h->type = type;
   loc = htab_find_slot_with_hash (type_hash_table, h, hashcode, INSERT);
-  *loc = (void*)h;
+  *loc = (void *)h;
 }
 
 /* Given TYPE, and HASHCODE its hash code, return the canonical
