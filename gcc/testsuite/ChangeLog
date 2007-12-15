@@ -1,3 +1,8 @@
+2007-12-16  Danny Smith <dannysmith@users.sourceforge.net>
+
+	* gcc.target/i386/fastcall-1.c: (f4): Change return type to
+	void. 
+
 2007-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/34003
