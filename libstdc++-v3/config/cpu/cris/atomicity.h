@@ -37,7 +37,20 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     int __tmp;
     _Atomic_word __result;
 
-#if (__CRIS_arch_version >= 10)
+#if (__CRIS_arch_version >= 32)
+  __asm__ __volatile__ (" clearf p	       \n"
+		       "0:		       \n"
+		       " move.d %4,%2	       \n"
+		       " move.d [%3],%0	       \n"
+		       " add.d %0,%2	       \n"
+		       " ax		       \n"
+		       " move.d %2,[%3]	       \n"
+		       " bcs 0b		       \n"
+		       " clearf p	       \n"
+		       :  "=&r" (__result), "=Q" (*__mem), "=&r" (__tmp)
+		       : "r" (__mem), "g" (__val), "Q" (*__mem)
+		       : "memory");
+#elif (__CRIS_arch_version >= 10)
     __asm__ __volatile__ (" clearf		\n"
 			"0:			\n"
 			" move.d %4,%2		\n"

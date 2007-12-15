@@ -1,3 +1,9 @@
+2007-12-15  Hans-Peter Nilsson  <hp@axis.com>
+
+	* configure.host (try_cpu settings): Set try_cpu=cris for crisv32.
+	* config/cpu/cris/atomicity.h (__exchange_and_add)
+	[__CRIS_arch_version >= 32]: Add support for CRIS v32.
+
 2007-12-15  Benjamin Kosnik  <bkoz@redhat.com>
 	    Paolo Carlini  <pcarlini@suse.de>
 	
