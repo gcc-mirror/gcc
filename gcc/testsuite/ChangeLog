@@ -1,3 +1,7 @@
+2007-12-15  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.dg/debug/const-3.c: New.
+
 2007-12-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* g++.dg/other/datasec1.C: Require named section support.
