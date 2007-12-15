@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
-// Copyright (C) 2007 Free Software Foundation
+// Copyright (C) 2006, 2007 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -14,11 +14,18 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
-// You should have received a copy of the GNU General Public License
-// along with this library; see the file COPYING.  If not, write to
-// the Free Software Foundation, 51 Franklin Street, Fifth Floor,
-// Boston, MA 02110-1301, USA.
+// You should have received a copy of the GNU General Public License along
+// with this library; see the file COPYING.  If not, write to the Free
+// Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+// USA.
+
+// 20.6.6.2 Template class shared_ptr [util.smartptr.shared]
 
 #include <memory>
 
-template class std::weak_ptr<int>;
+// DR 541. shared_ptr template assignment and void
+void test01()
+{
+  std::shared_ptr<void> p;
+  p.operator=<void>(p);
+}

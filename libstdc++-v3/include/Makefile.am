@@ -77,6 +77,7 @@ bits_headers = \
 	${bits_srcdir}/basic_string.h \
 	${bits_srcdir}/basic_string.tcc \
 	${bits_srcdir}/boost_concept_check.h \
+	${bits_srcdir}/boost_sp_shared_count.h \
 	${bits_srcdir}/char_traits.h \
 	${bits_srcdir}/codecvt.h \
 	${bits_srcdir}/concept_check.h \
@@ -515,6 +516,7 @@ tr1_headers = \
 	${tr1_srcdir}/array \
 	${tr1_srcdir}/bessel_function.tcc \
 	${tr1_srcdir}/beta_function.tcc \
+	${tr1_srcdir}/boost_sp_shared_count.h \
 	${tr1_srcdir}/ccomplex \
 	${tr1_srcdir}/cctype \
 	${tr1_srcdir}/cfenv \
@@ -575,6 +577,7 @@ tr1_impl_builddir = ./tr1_impl
 tr1_impl_headers = \
 	${tr1_impl_srcdir}/array \
 	${tr1_impl_srcdir}/boost_shared_ptr.h \
+	${tr1_impl_srcdir}/boost_sp_counted_base.h \
 	${tr1_impl_srcdir}/cctype \
 	${tr1_impl_srcdir}/cfenv \
 	${tr1_impl_srcdir}/cinttypes \
