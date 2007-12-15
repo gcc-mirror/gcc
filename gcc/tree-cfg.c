@@ -6188,12 +6188,6 @@ debug_function (tree fn, int flags)
 }
 
 
-/* Pretty print of the loops intermediate representation.  */
-static void print_loop (FILE *, struct loop *, int);
-static void print_pred_bbs (FILE *, basic_block bb);
-static void print_succ_bbs (FILE *, basic_block bb);
-
-
 /* Print on FILE the indexes for the predecessors of basic_block BB.  */
 
 static void
@@ -6219,11 +6213,42 @@ print_succ_bbs (FILE *file, basic_block bb)
     fprintf (file, "bb_%d ", e->dest->index);
 }
 
+/* Print to FILE the basic block BB following the VERBOSITY level.  */
 
-/* Pretty print LOOP on FILE, indented INDENT spaces.  */
+void 
+print_loops_bb (FILE *file, basic_block bb, int indent, int verbosity)
+{
+  char *s_indent = (char *) alloca ((size_t) indent + 1);
+  memset ((void *) s_indent, ' ', (size_t) indent);
+  s_indent[indent] = '\0';
+
+  /* Print basic_block's header.  */
+  if (verbosity >= 2)
+    {
+      fprintf (file, "%s  bb_%d (preds = {", s_indent, bb->index);
+      print_pred_bbs (file, bb);
+      fprintf (file, "}, succs = {");
+      print_succ_bbs (file, bb);
+      fprintf (file, "})\n");
+    }
+
+  /* Print basic_block's body.  */
+  if (verbosity >= 3)
+    {
+      fprintf (file, "%s  {\n", s_indent);
+      tree_dump_bb (bb, file, indent + 4);
+      fprintf (file, "%s  }\n", s_indent);
+    }
+}
+
+static void print_loop_and_siblings (FILE *, struct loop *, int, int);
+
+/* Pretty print LOOP on FILE, indented INDENT spaces.  Following
+   VERBOSITY level this outputs the contents of the loop, or just its
+   structure.  */
 
 static void
-print_loop (FILE *file, struct loop *loop, int indent)
+print_loop (FILE *file, struct loop *loop, int indent, int verbosity)
 {
   char *s_indent;
   basic_block bb;
@@ -6235,55 +6260,90 @@ print_loop (FILE *file, struct loop *loop, int indent)
   memset ((void *) s_indent, ' ', (size_t) indent);
   s_indent[indent] = '\0';
 
-  /* Print the loop's header.  */
-  fprintf (file, "%sloop_%d\n", s_indent, loop->num);
+  /* Print loop's header.  */
+  fprintf (file, "%sloop_%d (header = %d, latch = %d", s_indent, 
+	   loop->num, loop->header->index, loop->latch->index);
+  fprintf (file, ", niter = ");
+  print_generic_expr (file, loop->nb_iterations, 0);
 
-  /* Print the loop's body.  */
-  fprintf (file, "%s{\n", s_indent);
-  FOR_EACH_BB (bb)
-    if (bb->loop_father == loop)
-      {
-	/* Print the basic_block's header.  */
-	fprintf (file, "%s  bb_%d (preds = {", s_indent, bb->index);
-	print_pred_bbs (file, bb);
-	fprintf (file, "}, succs = {");
-	print_succ_bbs (file, bb);
-	fprintf (file, "})\n");
+  if (loop->any_upper_bound)
+    {
+      fprintf (file, ", upper_bound = ");
+      dump_double_int (file, loop->nb_iterations_upper_bound, true);
+    }
 
-	/* Print the basic_block's body.  */
-	fprintf (file, "%s  {\n", s_indent);
-	tree_dump_bb (bb, file, indent + 4);
-	fprintf (file, "%s  }\n", s_indent);
-      }
+  if (loop->any_estimate)
+    {
+      fprintf (file, ", estimate = ");
+      dump_double_int (file, loop->nb_iterations_estimate, true);
+    }
+  fprintf (file, ")\n");
 
-  print_loop (file, loop->inner, indent + 2);
-  fprintf (file, "%s}\n", s_indent);
-  print_loop (file, loop->next, indent);
+  /* Print loop's body.  */
+  if (verbosity >= 1)
+    {
+      fprintf (file, "%s{\n", s_indent);
+      FOR_EACH_BB (bb)
+	if (bb->loop_father == loop)
+	  print_loops_bb (file, bb, indent, verbosity);
+
+      print_loop_and_siblings (file, loop->inner, indent + 2, verbosity);
+      fprintf (file, "%s}\n", s_indent);
+    }
 }
 
+/* Print the LOOP and its sibling loops on FILE, indented INDENT
+   spaces.  Following VERBOSITY level this outputs the contents of the
+   loop, or just its structure.  */
+
+static void
+print_loop_and_siblings (FILE *file, struct loop *loop, int indent, int verbosity)
+{
+  if (loop == NULL)
+    return;
+
+  print_loop (file, loop, indent, verbosity);
+  print_loop_and_siblings (file, loop->next, indent, verbosity);
+}
 
 /* Follow a CFG edge from the entry point of the program, and on entry
    of a loop, pretty print the loop structure on FILE.  */
 
 void
-print_loop_ir (FILE *file)
+print_loops (FILE *file, int verbosity)
 {
   basic_block bb;
 
   bb = BASIC_BLOCK (NUM_FIXED_BLOCKS);
   if (bb && bb->loop_father)
-    print_loop (file, bb->loop_father, 0);
+    print_loop_and_siblings (file, bb->loop_father, 0, verbosity);
 }
 
 
-/* Debugging loops structure at tree level.  */
+/* Debugging loops structure at tree level, at some VERBOSITY level.  */
 
 void
-debug_loop_ir (void)
+debug_loops (int verbosity)
 {
-  print_loop_ir (stderr);
+  print_loops (stderr, verbosity);
 }
 
+/* Print on stderr the code of LOOP, at some VERBOSITY level.  */
+
+void
+debug_loop (struct loop *loop, int verbosity)
+{
+  print_loop (stderr, loop, 0, verbosity);
+}
+
+/* Print on stderr the code of loop number NUM, at some VERBOSITY
+   level.  */
+
+void
+debug_loop_num (unsigned num, int verbosity)
+{
+  debug_loop (get_loop (num), verbosity);
+}
 
 /* Return true if BB ends with a call, possibly followed by some
    instructions that must stay with the call.  Return false,
