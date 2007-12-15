@@ -1,4 +1,4 @@
-/* { dg-do compile { target cris-*-* } } */
+/* { dg-do compile } */
 /* { dg-final { scan-assembler "and.w -137," } } */
 /* { dg-final { scan-assembler "and.b -64," } } */
 /* { dg-final { scan-assembler "and.w -139," } } */

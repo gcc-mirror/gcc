@@ -421,6 +421,7 @@ proc check_profiling_available { test_what } {
 	     || [istarget strongarm*-*-elf]
 	     || [istarget xscale*-*-elf]
 	     || [istarget cris-*-*]
+	     || [istarget crisv32-*-*]
 	     || [istarget fido-*-elf]
 	     || [istarget h8300-*-*]
 	     || [istarget m32c-*-elf]
