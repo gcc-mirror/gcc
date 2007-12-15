@@ -52,11 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 #define ADDITIVE_SIZE_MODIFIER(size) \
  ((size) <= 63 ? "q" : (size) <= 255 ? "u.b" : (size) <= 65535 ? "u.w" : ".d")
 
-#define ASSERT_PLT_UNSPEC(x)						\
-  CRIS_ASSERT (XINT (x, 1) == CRIS_UNSPEC_PLT				\
-	       && ((GET_CODE (XVECEXP (x, 0, 0)) == SYMBOL_REF)		\
-		   || GET_CODE (XVECEXP (x, 0, 0)) == LABEL_REF))
-
 #define LOSE_AND_RETURN(msgid, x)			\
   do						\
     {						\
@@ -229,9 +224,11 @@ cris_movem_load_rest_p (rtx op, int offs)
   else
     i = offs + 1;
 
-  /* FIXME: These two only for pre-v32.  */
-  regno_dir = -1;
-  regno = reg_count - 1;
+  if (!TARGET_V32)
+    {
+      regno_dir = -1;
+      regno = reg_count - 1;
+    }
 
   elt = XVECEXP (op, 0, offs);
   src_addr = XEXP (SET_SRC (elt), 0);
@@ -331,9 +328,11 @@ cris_store_multiple_op_p (rtx op)
   else
     i = 1;
 
-  /* FIXME: These two only for pre-v32.  */
-  regno_dir = -1;
-  regno = reg_count - 1;
+  if (!TARGET_V32)
+    {
+      regno_dir = -1;
+      regno = reg_count - 1;
+    }
 
   if (GET_CODE (elt) != SET
       || !REG_P (SET_SRC (elt))
@@ -389,6 +388,20 @@ cris_conditional_register_usage (void)
   if (flag_pic)
     fixed_regs[PIC_OFFSET_TABLE_REGNUM]
       = call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
+
+  /* Allow use of ACR (PC in pre-V32) and tweak order.  */
+  if (TARGET_V32)
+    {
+      static const int reg_alloc_order_v32[] = REG_ALLOC_ORDER_V32;
+      unsigned int i;
+
+      fixed_regs[CRIS_ACR_REGNUM] = 0;
+
+      for (i = 0;
+          i < sizeof (reg_alloc_order_v32)/sizeof (reg_alloc_order_v32[0]);
+          i++)
+       reg_alloc_order[i] = reg_alloc_order_v32[i];
+    }
 
   if (TARGET_HAS_MUL_INSNS)
     fixed_regs[CRIS_MOF_REGNUM] = 0;
@@ -551,7 +564,10 @@ cris_print_base (rtx base, FILE *file)
   if (REG_P (base))
     fprintf (file, "$%s", reg_names[REGNO (base)]);
   else if (GET_CODE (base) == POST_INC)
-    fprintf (file, "$%s+", reg_names[REGNO (XEXP (base, 0))]);
+    {
+      gcc_assert (REGNO (XEXP (base, 0)) != CRIS_ACR_REGNUM);
+      fprintf (file, "$%s+", reg_names[REGNO (XEXP (base, 0))]);
+    }
   else
     cris_operand_lossage ("unexpected base-type in cris_print_base",
 			  base);
@@ -781,6 +797,16 @@ cris_print_operand (FILE *file, rtx x, int code)
       putc (INTVAL (x) >= -128 && INTVAL (x) <= 255 ? 'b' : 'w', file);
       return;
 
+    case 'Z':
+      /* If this is a GOT-symbol, print the size-letter corresponding to
+	 -fpic/-fPIC.  For everything else, print "d".  */
+      putc ((flag_pic == 1
+	     && GET_CODE (x) == CONST
+	     && GET_CODE (XEXP (x, 0)) == UNSPEC
+	     && XINT (XEXP (x, 0), 1) == CRIS_UNSPEC_GOTREAD)
+	    ? 'w' : 'd', file);
+      return;
+
     case '#':
       /* Output a 'nop' if there's nothing for the delay slot.
 	 This method stolen from the sparc files.  */
@@ -835,8 +861,12 @@ cris_print_operand (FILE *file, rtx x, int code)
 
 	case REG:
 	  /* Print reg + 1.  Check that there's not an attempt to print
-	     high-parts of registers like stack-pointer or higher.  */
-	  if (REGNO (operand) > STACK_POINTER_REGNUM - 2)
+	     high-parts of registers like stack-pointer or higher, except
+	     for SRP (where the "high part" is MOF).  */
+	  if (REGNO (operand) > STACK_POINTER_REGNUM - 2
+	      && (REGNO (operand) != CRIS_SRP_REGNUM
+		  || CRIS_SRP_REGNUM + 1 != CRIS_MOF_REGNUM
+		  || fixed_regs[CRIS_MOF_REGNUM] != 0))
 	    LOSE_AND_RETURN ("bad register", operand);
 	  fprintf (file, "$%s", reg_names[REGNO (operand) + 1]);
 	  return;
@@ -962,6 +992,17 @@ cris_print_operand (FILE *file, rtx x, int code)
       if (!CONST_INT_P (operand) || INTVAL (operand) > 4)
 	LOSE_AND_RETURN ("invalid operand for 'T' modifier", x);
       fprintf (file, "%s", mults[INTVAL (operand)]);
+      return;
+
+    case 'u':
+      /* Print "u.w" if a GOT symbol and flag_pic == 1, else ".d".  */
+      if (flag_pic == 1
+	  && GET_CODE (operand) == CONST
+	  && GET_CODE (XEXP (operand, 0)) == UNSPEC
+	  && XINT (XEXP (operand, 0), 1) == CRIS_UNSPEC_GOTREAD)
+	fprintf (file, "u.w");
+      else
+	fprintf (file, ".d");
       return;
 
     case 0:
@@ -1227,6 +1268,9 @@ cris_reload_address_legitimized (rtx x,
   if (GET_CODE (x) != PLUS)
     return false;
 
+  if (TARGET_V32)
+    return false;
+
   op0 = XEXP (x, 0);
   op0p = &XEXP (x, 0);
   op1 = XEXP (x, 1);
@@ -1284,6 +1328,291 @@ cris_reload_address_legitimized (rtx x,
   return false;
 }
 
+/* Worker function for REGISTER_MOVE_COST.  */
+
+int
+cris_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+			 enum reg_class from, enum reg_class to) 
+{
+  if (!TARGET_V32)
+    {
+      /* Pretend that classes that we don't support are ALL_REGS, so
+	 we give them the highest cost.  */
+      if (from != SPECIAL_REGS && from != MOF_REGS
+	  && from != GENERAL_REGS && from != GENNONACR_REGS)
+	from = ALL_REGS;
+
+      if (to != SPECIAL_REGS && to != MOF_REGS
+	  && to != GENERAL_REGS && to != GENNONACR_REGS)
+	to = ALL_REGS;
+    }
+
+  /* Can't move to and from a SPECIAL_REGS register, so we have to say
+     their move cost within that class is higher.  How about 7?  That's 3
+     for a move to a GENERAL_REGS register, 3 for the move from the
+     GENERAL_REGS register, and 1 for the increased register pressure.
+     Also, it's higher than the memory move cost, which is in order.  
+     We also do this for ALL_REGS, since we don't want that class to be
+     preferred (even to memory) at all where GENERAL_REGS doesn't fit.
+     Whenever it's about to be used, it's for SPECIAL_REGS.  If we don't
+     present a higher cost for ALL_REGS than memory, a SPECIAL_REGS may be
+     used when a GENERAL_REGS should be used, even if there are call-saved
+     GENERAL_REGS left to allocate.  This is because the fall-back when
+     the most preferred register class isn't available, isn't the next
+     (or next good) wider register class, but the *most widest* register
+     class.  */
+
+  if ((reg_classes_intersect_p (from, SPECIAL_REGS)
+       && reg_classes_intersect_p (to, SPECIAL_REGS))
+      || from == ALL_REGS || to == ALL_REGS)
+    return 7;
+
+  if (reg_classes_intersect_p (from, SPECIAL_REGS)
+      || reg_classes_intersect_p (to, SPECIAL_REGS))
+    return 3;
+
+  return 2;
+}
+
+/* Worker for cris_notice_update_cc; handles the "normal" cases.
+   FIXME: this code is historical; its functionality should be
+   refactored to look at insn attributes and moved to
+   cris_notice_update_cc.  Except, we better lose cc0 entirely.  */
+
+static void
+cris_normal_notice_update_cc (rtx exp, rtx insn)
+{
+  /* "Normal" means, for:
+     (set (cc0) (...)):
+     CC is (...).
+
+     (set (reg) (...)):
+     CC is (reg) and (...) - unless (...) is 0 or reg is a special
+        register or (v32 and (...) is -32..-1), then CC does not change.
+     CC_NO_OVERFLOW unless (...) is reg or mem.
+
+     (set (mem) (...)):
+     CC does not change.
+
+     (set (pc) (...)):
+     CC does not change.
+
+     (parallel
+      (set (reg1) (mem (bdap/biap)))
+      (set (reg2) (bdap/biap))):
+     CC is (reg1) and (mem (reg2))
+
+     (parallel
+      (set (mem (bdap/biap)) (reg1)) [or 0]
+      (set (reg2) (bdap/biap))):
+     CC does not change.
+
+     (where reg and mem includes strict_low_parts variants thereof)
+
+     For all others, assume CC is clobbered.
+     Note that we do not have to care about setting CC_NO_OVERFLOW,
+     since the overflow flag is set to 0 (i.e. right) for
+     instructions where it does not have any sane sense, but where
+     other flags have meanings.  (This includes shifts; the carry is
+     not set by them).
+
+     Note that there are other parallel constructs we could match,
+     but we don't do that yet.  */
+
+  if (GET_CODE (exp) == SET)
+    {
+      /* FIXME: Check when this happens.  It looks like we should
+	 actually do a CC_STATUS_INIT here to be safe.  */
+      if (SET_DEST (exp) == pc_rtx)
+	return;
+
+      /* Record CC0 changes, so we do not have to output multiple
+	 test insns.  */
+      if (SET_DEST (exp) == cc0_rtx)
+	{
+	  CC_STATUS_INIT;
+	  cc_status.value1 = SET_SRC (exp);
+
+	  /* Handle flags for the special btstq on one bit.  */
+	  if (GET_CODE (SET_SRC (exp)) == ZERO_EXTRACT
+	      && XEXP (SET_SRC (exp), 1) == const1_rtx)
+	    {
+	      if (CONST_INT_P (XEXP (SET_SRC (exp), 0)))
+		/* Using cmpq.  */
+		cc_status.flags = CC_INVERTED;
+	      else
+		/* A one-bit btstq.  */
+		cc_status.flags = CC_Z_IN_NOT_N;
+	    }
+
+	  if (GET_CODE (SET_SRC (exp)) == COMPARE)
+	    {
+	      if (!REG_P (XEXP (SET_SRC (exp), 0))
+		  && XEXP (SET_SRC (exp), 1) != const0_rtx)
+		/* For some reason gcc will not canonicalize compare
+		   operations, reversing the sign by itself if
+		   operands are in wrong order.  */
+		/* (But NOT inverted; eq is still eq.) */
+		cc_status.flags = CC_REVERSED;
+
+	      /* This seems to be overlooked by gcc.  FIXME: Check again.
+		 FIXME:  Is it really safe?  */
+	      cc_status.value2
+		= gen_rtx_MINUS (GET_MODE (SET_SRC (exp)),
+				 XEXP (SET_SRC (exp), 0),
+				 XEXP (SET_SRC (exp), 1));
+	    }
+	  return;
+	}
+      else if (REG_P (SET_DEST (exp))
+	       || (GET_CODE (SET_DEST (exp)) == STRICT_LOW_PART
+		   && REG_P (XEXP (SET_DEST (exp), 0))))
+	{
+	  /* A register is set; normally CC is set to show that no
+	     test insn is needed.  Catch the exceptions.  */
+
+	  /* If not to cc0, then no "set"s in non-natural mode give
+	     ok cc0...  */
+	  if (GET_MODE_SIZE (GET_MODE (SET_DEST (exp))) > UNITS_PER_WORD
+	      || GET_MODE_CLASS (GET_MODE (SET_DEST (exp))) == MODE_FLOAT)
+	    {
+	      /* ... except add:s and sub:s in DImode.  */
+	      if (GET_MODE (SET_DEST (exp)) == DImode
+		  && (GET_CODE (SET_SRC (exp)) == PLUS
+		      || GET_CODE (SET_SRC (exp)) == MINUS))
+		{
+		  CC_STATUS_INIT;
+		  cc_status.value1 = SET_DEST (exp);
+		  cc_status.value2 = SET_SRC (exp);
+
+		  if (cris_reg_overlap_mentioned_p (cc_status.value1,
+						    cc_status.value2))
+		    cc_status.value2 = 0;
+
+		  /* Add and sub may set V, which gets us
+		     unoptimizable results in "gt" and "le" condition
+		     codes.  */
+		  cc_status.flags |= CC_NO_OVERFLOW;
+
+		  return;
+		}
+	    }
+	  else if (SET_SRC (exp) == const0_rtx
+		   || (REG_P (SET_SRC (exp))
+		       && (REGNO (SET_SRC (exp))
+			   > CRIS_LAST_GENERAL_REGISTER))
+		   || (TARGET_V32
+		       && GET_CODE (SET_SRC (exp)) == CONST_INT
+		       && CONST_OK_FOR_LETTER_P (INTVAL (SET_SRC (exp)),
+						 'I')))
+	    {
+	      /* There's no CC0 change for this case.  Just check
+		 for overlap.  */
+	      if (cc_status.value1
+		  && modified_in_p (cc_status.value1, insn))
+		cc_status.value1 = 0;
+
+	      if (cc_status.value2
+		  && modified_in_p (cc_status.value2, insn))
+		cc_status.value2 = 0;
+
+	      return;
+	    }
+	  else
+	    {
+	      CC_STATUS_INIT;
+	      cc_status.value1 = SET_DEST (exp);
+	      cc_status.value2 = SET_SRC (exp);
+
+	      if (cris_reg_overlap_mentioned_p (cc_status.value1,
+						cc_status.value2))
+		cc_status.value2 = 0;
+
+	      /* Some operations may set V, which gets us
+		 unoptimizable results in "gt" and "le" condition
+		 codes.  */
+	      if (GET_CODE (SET_SRC (exp)) == PLUS
+		  || GET_CODE (SET_SRC (exp)) == MINUS
+		  || GET_CODE (SET_SRC (exp)) == NEG)
+		cc_status.flags |= CC_NO_OVERFLOW;
+
+	      /* For V32, nothing with a register destination sets
+		 C and V usefully.  */
+	      if (TARGET_V32)
+		cc_status.flags |= CC_NO_OVERFLOW;
+
+	      return;
+	    }
+	}
+      else if (MEM_P (SET_DEST (exp))
+	       || (GET_CODE (SET_DEST (exp)) == STRICT_LOW_PART
+		   && MEM_P (XEXP (SET_DEST (exp), 0))))
+	{
+	  /* When SET to MEM, then CC is not changed (except for
+	     overlap).  */
+	  if (cc_status.value1
+	      && modified_in_p (cc_status.value1, insn))
+	    cc_status.value1 = 0;
+
+	  if (cc_status.value2
+	      && modified_in_p (cc_status.value2, insn))
+	    cc_status.value2 = 0;
+
+	  return;
+	}
+    }
+  else if (GET_CODE (exp) == PARALLEL)
+    {
+      if (GET_CODE (XVECEXP (exp, 0, 0)) == SET
+	  && GET_CODE (XVECEXP (exp, 0, 1)) == SET
+	  && REG_P (XEXP (XVECEXP (exp, 0, 1), 0)))
+	{
+	  if (REG_P (XEXP (XVECEXP (exp, 0, 0), 0))
+	      && MEM_P (XEXP (XVECEXP (exp, 0, 0), 1)))
+	    {
+	      CC_STATUS_INIT;
+
+	      /* For "move.S [rx=ry+o],rz", say CC reflects
+		 value1=rz and value2=[rx] */
+	      cc_status.value1 = XEXP (XVECEXP (exp, 0, 0), 0);
+	      cc_status.value2
+		= replace_equiv_address (XEXP (XVECEXP (exp, 0, 0), 1),
+					 XEXP (XVECEXP (exp, 0, 1), 0));
+
+	      /* Huh?  A side-effect cannot change the destination
+		 register.  */
+	      if (cris_reg_overlap_mentioned_p (cc_status.value1,
+						cc_status.value2))
+		internal_error ("internal error: sideeffect-insn affecting main effect");
+
+	      /* For V32, moves to registers don't set C and V.  */
+	      if (TARGET_V32)
+		cc_status.flags |= CC_NO_OVERFLOW;
+	      return;
+	    }
+	  else if ((REG_P (XEXP (XVECEXP (exp, 0, 0), 1))
+		    || XEXP (XVECEXP (exp, 0, 0), 1) == const0_rtx)
+		   && MEM_P (XEXP (XVECEXP (exp, 0, 0), 0)))
+	    {
+	      /* For "move.S rz,[rx=ry+o]" and "clear.S [rx=ry+o]",
+		 say flags are not changed, except for overlap.  */
+	      if (cc_status.value1
+		  && modified_in_p (cc_status.value1, insn))
+		cc_status.value1 = 0;
+
+	      if (cc_status.value2
+		  && modified_in_p (cc_status.value2, insn))
+		cc_status.value2 = 0;
+
+	      return;
+	    }
+	}
+    }
+
+  /* If we got here, the case wasn't covered by the code above.  */
+  CC_STATUS_INIT;
+}
+
 /*  This function looks into the pattern to see how this insn affects
     condition codes.
 
@@ -1298,19 +1627,25 @@ cris_reload_address_legitimized (rtx x,
 void
 cris_notice_update_cc (rtx exp, rtx insn)
 {
-  /* Check if user specified "-mcc-init" as a bug-workaround.  FIXME:
-     TARGET_CCINIT does not work; we must set CC_REVERSED as below.
-     Several testcases will otherwise fail, for example
+  enum attr_cc attrval = get_attr_cc (insn);
+
+  /* Check if user specified "-mcc-init" as a bug-workaround.  Remember
+     to still set CC_REVERSED as below, since that's required by some
+     compare insn alternatives.  (FIXME: GCC should do this virtual
+     operand swap by itself.)  A test-case that may otherwise fail is
      gcc.c-torture/execute/20000217-1.c -O0 and -O1.  */
   if (TARGET_CCINIT)
     {
       CC_STATUS_INIT;
+
+      if (attrval == CC_REV)
+	cc_status.flags = CC_REVERSED;
       return;
     }
 
   /* Slowly, we're converting to using attributes to control the setting
      of condition-code status.  */
-  switch (get_attr_cc (insn))
+  switch (attrval)
     {
     case CC_NONE:
       /* Even if it is "none", a setting may clobber a previous
@@ -1329,220 +1664,20 @@ cris_notice_update_cc (rtx exp, rtx insn)
 
     case CC_CLOBBER:
       CC_STATUS_INIT;
-      break;
+      return;
 
+    case CC_REV:
+    case CC_NOOV32:
     case CC_NORMAL:
-      /* Which means, for:
-	 (set (cc0) (...)):
-	 CC is (...).
+      cris_normal_notice_update_cc (exp, insn);
 
-	 (set (reg) (...)):
-	 CC is (reg) and (...) - unless (...) is 0, then CC does not change.
-	 CC_NO_OVERFLOW unless (...) is reg or mem.
-
-	 (set (mem) (...)):
-	 CC does not change.
-
-	 (set (pc) (...)):
-	 CC does not change.
-
-	 (parallel
-	  (set (reg1) (mem (bdap/biap)))
-	  (set (reg2) (bdap/biap))):
-	 CC is (reg1) and (mem (reg2))
-
-	 (parallel
-	  (set (mem (bdap/biap)) (reg1)) [or 0]
-	  (set (reg2) (bdap/biap))):
-	 CC does not change.
-
-	 (where reg and mem includes strict_low_parts variants thereof)
-
-	 For all others, assume CC is clobbered.
-	 Note that we do not have to care about setting CC_NO_OVERFLOW,
-	 since the overflow flag is set to 0 (i.e. right) for
-	 instructions where it does not have any sane sense, but where
-	 other flags have meanings.  (This includes shifts; the carry is
-	 not set by them).
-
-	 Note that there are other parallel constructs we could match,
-	 but we don't do that yet.  */
-
-      if (GET_CODE (exp) == SET)
-	{
-	  /* FIXME: Check when this happens.  It looks like we should
-	     actually do a CC_STATUS_INIT here to be safe.  */
-	  if (SET_DEST (exp) == pc_rtx)
-	    return;
-
-	  /* Record CC0 changes, so we do not have to output multiple
-	     test insns.  */
-	  if (SET_DEST (exp) == cc0_rtx)
-	    {
-	      cc_status.value1 = SET_SRC (exp);
-	      cc_status.value2 = 0;
-
-	      /* Handle flags for the special btstq on one bit.  */
-	      if (GET_CODE (SET_SRC (exp)) == ZERO_EXTRACT
-		  && XEXP (SET_SRC (exp), 1) == const1_rtx)
-		{
-		  if (CONST_INT_P (XEXP (SET_SRC (exp), 0)))
-		    /* Using cmpq.  */
-		    cc_status.flags = CC_INVERTED;
-		  else
-		    /* A one-bit btstq.  */
-		    cc_status.flags = CC_Z_IN_NOT_N;
-		}
-	      else
-		cc_status.flags = 0;
-
-	      if (GET_CODE (SET_SRC (exp)) == COMPARE)
-		{
-		  if (!REG_P (XEXP (SET_SRC (exp), 0))
-		      && XEXP (SET_SRC (exp), 1) != const0_rtx)
-		    /* For some reason gcc will not canonicalize compare
-		       operations, reversing the sign by itself if
-		       operands are in wrong order.  */
-		    /* (But NOT inverted; eq is still eq.) */
-		    cc_status.flags = CC_REVERSED;
-
-		  /* This seems to be overlooked by gcc.  FIXME: Check again.
-		     FIXME:  Is it really safe?  */
-		  cc_status.value2
-		    = gen_rtx_MINUS (GET_MODE (SET_SRC (exp)),
-				     XEXP (SET_SRC (exp), 0),
-				     XEXP (SET_SRC (exp), 1));
-		}
-	      return;
-	    }
-	  else if (REG_P (SET_DEST (exp))
-		   || (GET_CODE (SET_DEST (exp)) == STRICT_LOW_PART
-		       && REG_P (XEXP (SET_DEST (exp), 0))))
-	    {
-	      /* A register is set; normally CC is set to show that no
-		 test insn is needed.  Catch the exceptions.  */
-
-	      /* If not to cc0, then no "set"s in non-natural mode give
-		 ok cc0...  */
-	      if (GET_MODE_SIZE (GET_MODE (SET_DEST (exp))) > UNITS_PER_WORD
-		  || GET_MODE_CLASS (GET_MODE (SET_DEST (exp))) == MODE_FLOAT)
-		{
-		  /* ... except add:s and sub:s in DImode.  */
-		  if (GET_MODE (SET_DEST (exp)) == DImode
-		      && (GET_CODE (SET_SRC (exp)) == PLUS
-			  || GET_CODE (SET_SRC (exp)) == MINUS))
-		    {
-		      cc_status.flags = 0;
-		      cc_status.value1 = SET_DEST (exp);
-		      cc_status.value2 = SET_SRC (exp);
-
-		      if (cris_reg_overlap_mentioned_p (cc_status.value1,
-							cc_status.value2))
-			cc_status.value2 = 0;
-
-		      /* Add and sub may set V, which gets us
-			 unoptimizable results in "gt" and "le" condition
-			 codes.  */
-		      cc_status.flags |= CC_NO_OVERFLOW;
-
-		      return;
-		    }
-		}
-	      else if (SET_SRC (exp) == const0_rtx)
-		{
-		  /* There's no CC0 change when clearing a register or
-		     memory.  Just check for overlap.  */
-		  if (cc_status.value1
-		      && modified_in_p (cc_status.value1, insn))
-		    cc_status.value1 = 0;
-
-		  if (cc_status.value2
-		      && modified_in_p (cc_status.value2, insn))
-		    cc_status.value2 = 0;
-
-		  return;
-		}
-	      else
-		{
-		  cc_status.flags = 0;
-		  cc_status.value1 = SET_DEST (exp);
-		  cc_status.value2 = SET_SRC (exp);
-
-		  if (cris_reg_overlap_mentioned_p (cc_status.value1,
-						    cc_status.value2))
-		    cc_status.value2 = 0;
-
-		  /* Some operations may set V, which gets us
-		     unoptimizable results in "gt" and "le" condition
-		     codes.  */
-		  if (GET_CODE (SET_SRC (exp)) == PLUS
-		      || GET_CODE (SET_SRC (exp)) == MINUS
-		      || GET_CODE (SET_SRC (exp)) == NEG)
-		    cc_status.flags |= CC_NO_OVERFLOW;
-
-		  return;
-		}
-	    }
-	  else if (MEM_P (SET_DEST (exp))
-		   || (GET_CODE (SET_DEST (exp)) == STRICT_LOW_PART
-		       && MEM_P (XEXP (SET_DEST (exp), 0))))
-	    {
-	      /* When SET to MEM, then CC is not changed (except for
-		 overlap).  */
-	      if (cc_status.value1
-		  && modified_in_p (cc_status.value1, insn))
-		cc_status.value1 = 0;
-
-	      if (cc_status.value2
-		  && modified_in_p (cc_status.value2, insn))
-		cc_status.value2 = 0;
-
-	      return;
-	    }
-	}
-      else if (GET_CODE (exp) == PARALLEL)
-	{
-	  if (GET_CODE (XVECEXP (exp, 0, 0)) == SET
-	      && GET_CODE (XVECEXP (exp, 0, 1)) == SET
-	      && REG_P (XEXP (XVECEXP (exp, 0, 1), 0)))
-	    {
-	      if (REG_P (XEXP (XVECEXP (exp, 0, 0), 0))
-		  && MEM_P (XEXP (XVECEXP (exp, 0, 0), 1)))
-		{
-		  /* For "move.S [rx=ry+o],rz", say CC reflects
-		     value1=rz and value2=[rx] */
-		  cc_status.value1 = XEXP (XVECEXP (exp, 0, 0), 0);
-		  cc_status.value2
-		    = replace_equiv_address (XEXP (XVECEXP (exp, 0, 0), 1),
-					     XEXP (XVECEXP (exp, 0, 1), 0));
-		  cc_status.flags = 0;
-
-		  /* Huh?  A side-effect cannot change the destination
-		     register.  */
-		  if (cris_reg_overlap_mentioned_p (cc_status.value1,
-						    cc_status.value2))
-		    internal_error ("internal error: sideeffect-insn affecting main effect");
-		  return;
-		}
-	      else if ((REG_P (XEXP (XVECEXP (exp, 0, 0), 1))
-			|| XEXP (XVECEXP (exp, 0, 0), 1) == const0_rtx)
-		       && MEM_P (XEXP (XVECEXP (exp, 0, 0), 0)))
-		{
-		  /* For "move.S rz,[rx=ry+o]" and "clear.S [rx=ry+o]",
-		     say flags are not changed, except for overlap.  */
-		  if (cc_status.value1
-		      && modified_in_p (cc_status.value1, insn))
-		    cc_status.value1 = 0;
-
-		  if (cc_status.value2
-		      && modified_in_p (cc_status.value2, insn))
-		    cc_status.value2 = 0;
-
-		  return;
-		}
-	    }
-	}
-      break;
+      /* The "test" insn doesn't clear (carry and) overflow on V32.  We
+        can change bge => bpl and blt => bmi by passing on to the cc0
+        user that V should not be considered; bgt and ble are taken
+        care of by other methods (see {tst,cmp}{si,hi,qi}).  */
+      if (attrval == CC_NOOV32 && TARGET_V32)
+	cc_status.flags |= CC_NO_OVERFLOW;
+      return;
 
     default:
       internal_error ("unknown cc_attr value");
@@ -1573,6 +1708,10 @@ cris_simple_epilogue (void)
       /* If we're not supposed to emit prologue and epilogue, we must
 	 not emit return-type instructions.  */
       || !TARGET_PROLOGUE_EPILOGUE)
+    return false;
+
+  /* Can't return from stacked return address with v32.  */
+  if (TARGET_V32 && cris_return_address_on_stack ())
     return false;
 
   if (current_function_uses_pic_offset_table)
@@ -1901,6 +2040,49 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
   internal_error ("internal error: cris_side_effect_mode_ok with bad operands");
 }
 
+/* Whether next_cc0_user of insn is LE or GT or requires a real compare
+   insn for other reasons.  */
+
+bool
+cris_cc0_user_requires_cmp (rtx insn)
+{
+  rtx cc0_user = NULL;
+  rtx body;
+  rtx set;
+
+  gcc_assert (insn != NULL);
+
+  if (!TARGET_V32)
+    return false;
+
+  cc0_user = next_cc0_user (insn);
+  if (cc0_user == NULL)
+    return false;
+
+  body = PATTERN (cc0_user);
+  set = single_set (cc0_user);
+
+  /* Users can be sCC and bCC.  */
+  if (JUMP_P (cc0_user)
+      && GET_CODE (body) == SET
+      && SET_DEST (body) == pc_rtx
+      && GET_CODE (SET_SRC (body)) == IF_THEN_ELSE
+      && XEXP (XEXP (SET_SRC (body), 0), 0) == cc0_rtx)
+    {
+      return
+	GET_CODE (XEXP (SET_SRC (body), 0)) == GT
+	|| GET_CODE (XEXP (SET_SRC (body), 0)) == LE;
+    }
+  else if (set)
+    {
+      return
+	GET_CODE (SET_SRC (body)) == GT
+	|| GET_CODE (SET_SRC (body)) == LE;
+    }
+
+  gcc_unreachable ();
+}
+
 /* The function reg_overlap_mentioned_p in CVS (still as of 2001-05-16)
    does not handle the case where the IN operand is strict_low_part; it
    does handle it for X.  Test-case in Axis-20010516.  This function takes
@@ -1931,10 +2113,12 @@ cris_target_asm_named_section (const char *name, unsigned int flags,
     default_elf_asm_named_section (name, flags, decl);
 }
 
-/* Return TRUE iff X is a CONST valid for e.g. indexing.  */
+/* Return TRUE iff X is a CONST valid for e.g. indexing.
+   ANY_OPERAND is 0 if X is in a CALL_P insn or movsi, 1
+   elsewhere.  */
 
 bool
-cris_valid_pic_const (rtx x)
+cris_valid_pic_const (rtx x, bool any_operand)
 {
   gcc_assert (flag_pic);
 
@@ -1955,14 +2139,20 @@ cris_valid_pic_const (rtx x)
   /* Handle (const (plus (unspec .. UNSPEC_GOTREL) (const_int ...))).  */
   if (GET_CODE (x) == PLUS
       && GET_CODE (XEXP (x, 0)) == UNSPEC
-      && XINT (XEXP (x, 0), 1) == CRIS_UNSPEC_GOTREL
+      && (XINT (XEXP (x, 0), 1) == CRIS_UNSPEC_GOTREL
+	  || XINT (XEXP (x, 0), 1) == CRIS_UNSPEC_PCREL)
       && CONST_INT_P (XEXP (x, 1)))
     x = XEXP (x, 0);
 
   if (GET_CODE (x) == UNSPEC)
     switch (XINT (x, 1))
       {
-      case CRIS_UNSPEC_PLT:
+	/* A PCREL operand is only valid for call and movsi.  */
+      case CRIS_UNSPEC_PLT_PCREL:
+      case CRIS_UNSPEC_PCREL:
+	return !any_operand;
+
+      case CRIS_UNSPEC_PLT_GOTREL:
       case CRIS_UNSPEC_PLTGOTREAD:
       case CRIS_UNSPEC_GOTREAD:
       case CRIS_UNSPEC_GOTREL:
@@ -1984,10 +2174,10 @@ cris_pic_symbol_type_of (rtx x)
     {
     case SYMBOL_REF:
       return SYMBOL_REF_LOCAL_P (x)
-	? cris_gotrel_symbol : cris_got_symbol;
+	? cris_rel_symbol : cris_got_symbol;
 
     case LABEL_REF:
-      return cris_gotrel_symbol;
+      return cris_rel_symbol;
 
     case CONST:
       return cris_pic_symbol_type_of (XEXP (x, 0));
@@ -2028,7 +2218,45 @@ int
 cris_legitimate_pic_operand (rtx x)
 {
   /* Symbols are not valid PIC operands as-is; just constants.  */
-  return cris_valid_pic_const (x);
+  return cris_valid_pic_const (x, true);
+}
+
+/* The ASM_OUTPUT_CASE_END worker.  */
+
+void
+cris_asm_output_case_end (FILE *stream, int num, rtx table)
+{
+  if (TARGET_V32)
+    {
+      rtx whole_jump_insn = PATTERN (PREV_INSN (PREV_INSN (table)));
+
+      /* This can be a SEQUENCE, meaning the delay-slot of the jump is
+	 filled.  */
+      rtx parallel_jump
+	= (GET_CODE (whole_jump_insn) == SEQUENCE
+	   ? PATTERN (XVECEXP (whole_jump_insn, 0, 0)) : whole_jump_insn);
+
+      asm_fprintf (stream,
+		   "\t.word %LL%d-.%s\n",
+		   CODE_LABEL_NUMBER (XEXP (XEXP (XEXP (XVECEXP
+							(parallel_jump, 0, 0),
+							1), 2), 0)),
+		   (TARGET_PDEBUG ? "; default" : ""));
+      return;
+    }
+
+  asm_fprintf (stream,
+	       "\t.word %LL%d-%LL%d%s\n",
+	       CODE_LABEL_NUMBER (XEXP
+				  (XEXP
+				   (XEXP
+				    (XVECEXP
+				     (PATTERN
+				      (PREV_INSN
+				       (PREV_INSN (table))), 0, 0), 1),
+				    2), 0)),
+	       num,
+	       (TARGET_PDEBUG ? "; default" : ""));
 }
 
 /* TARGET_HANDLE_OPTION worker.  We just store the values into local
@@ -2128,7 +2356,7 @@ cris_override_options (void)
 	  || strcmp ("etrax100lx", cris_cpu_str) == 0)
 	cris_cpu_version = 10;
 
-      if (cris_cpu_version < 0 || cris_cpu_version > 10)
+      if (cris_cpu_version < 0 || cris_cpu_version > 32)
 	error ("unknown CRIS version specification in -march= or -mcpu= : %s",
 	       cris_cpu_str);
 
@@ -2164,7 +2392,7 @@ cris_override_options (void)
 	  || strcmp ("etrax100lx", cris_tune_str) == 0)
 	cris_tune = 10;
 
-      if (cris_tune < 0 || cris_tune > 10)
+      if (cris_tune < 0 || cris_tune > 32)
 	error ("unknown CRIS cpu version specification in -mtune= : %s",
 	       cris_tune_str);
 
@@ -2175,6 +2403,9 @@ cris_override_options (void)
 	  |= (MASK_STACK_ALIGN | MASK_CONST_ALIGN
 	      | MASK_DATA_ALIGN | MASK_ALIGN_BY_32);
     }
+
+  if (cris_cpu_version >= CRIS_CPU_V32)
+    target_flags &= ~(MASK_SIDE_EFFECT_PREFIXES|MASK_MUL_BUG);
 
   if (flag_pic)
     {
@@ -2229,15 +2460,28 @@ cris_asm_output_mi_thunk (FILE *stream,
       const char *name = XSTR (XEXP (DECL_RTL (funcdecl), 0), 0);
 
       name = (* targetm.strip_name_encoding) (name);
-      fprintf (stream, "add.d ");
-      assemble_name (stream, name);
-      fprintf (stream, "%s,$pc\n", CRIS_PLT_PCOFFSET_SUFFIX);
+
+      if (TARGET_V32)
+	{
+	  fprintf (stream, "\tba ");
+	  assemble_name (stream, name);
+	  fprintf (stream, "%s\n", CRIS_PLT_PCOFFSET_SUFFIX);
+	}
+      else
+	{
+	  fprintf (stream, "add.d ");
+	  assemble_name (stream, name);
+	  fprintf (stream, "%s,$pc\n", CRIS_PLT_PCOFFSET_SUFFIX);
+	}
     }
   else
     {
       fprintf (stream, "jump ");
       assemble_name (stream, XSTR (XEXP (DECL_RTL (funcdecl), 0), 0));
       fprintf (stream, "\n");
+
+      if (TARGET_V32)
+	fprintf (stream, "\tnop\n");
     }
 }
 
@@ -2374,7 +2618,7 @@ cris_split_movdx (rtx *operands)
 		  = alloc_EXPR_LIST (REG_INC, XEXP (XEXP (mem, 0), 0),
 				     REG_NOTES (insn));
 
-	      mem = change_address (src, SImode, addr);
+	      mem = copy_rtx (mem);
 	      insn
 		= gen_rtx_SET (VOIDmode,
 			       operand_subword (dest, 1, TRUE, mode), mem);
@@ -2438,7 +2682,7 @@ cris_split_movdx (rtx *operands)
 	      = alloc_EXPR_LIST (REG_INC, XEXP (XEXP (mem, 0), 0),
 				 REG_NOTES (insn));
 
-	  mem = change_address (dest, SImode, addr);
+	  mem = copy_rtx (mem);
 	  insn
 	    = gen_rtx_SET (VOIDmode,
 			   mem,
@@ -2924,7 +3168,7 @@ cris_expand_epilogue (void)
      the return address on the stack.  */
   if (return_address_on_stack && pretend == 0)
     {
-      if (current_function_calls_eh_return)
+      if (TARGET_V32 || current_function_calls_eh_return)
 	{
 	  rtx mem;
 	  rtx insn;
@@ -2940,10 +3184,11 @@ cris_expand_epilogue (void)
 	  REG_NOTES (insn)
 	    = alloc_EXPR_LIST (REG_INC, stack_pointer_rtx, REG_NOTES (insn));
 
-	  emit_insn (gen_addsi3 (stack_pointer_rtx,
-				 stack_pointer_rtx,
-				 gen_rtx_raw_REG (SImode,
-						  CRIS_STACKADJ_REG)));
+	  if (current_function_calls_eh_return)
+	    emit_insn (gen_addsi3 (stack_pointer_rtx,
+				   stack_pointer_rtx,
+				   gen_rtx_raw_REG (SImode,
+						    CRIS_STACKADJ_REG)));
 	  cris_expand_return (false);
 	}
       else
@@ -3002,6 +3247,12 @@ cris_gen_movem_load (rtx src, rtx nregs_rtx, int nprefix)
   unsigned int regno = nregs - 1;
   int regno_inc = -1;
 
+  if (TARGET_V32)
+    {
+      regno = 0;
+      regno_inc = 1;
+    }
+
   if (GET_CODE (srcreg) == POST_INC)
     srcreg = XEXP (srcreg, 0);
 
@@ -3054,6 +3305,12 @@ cris_emit_movem_store (rtx dest, rtx nregs_rtx, int increment,
   rtx destreg = XEXP (dest, 0);
   unsigned int regno = nregs - 1;
   int regno_inc = -1;
+
+  if (TARGET_V32)
+    {
+      regno = 0;
+      regno_inc = 1;
+    }
 
   if (GET_CODE (destreg) == POST_INC)
     increment += nregs * 4;
@@ -3191,32 +3448,61 @@ cris_expand_pic_call_address (rtx *opp)
       /* For local symbols (non-PLT), just get the plain symbol
 	 reference into a register.  For symbols that can be PLT, make
 	 them PLT.  */
-      if (t == cris_gotrel_symbol)
-	op = force_reg (Pmode, op);
+      if (t == cris_rel_symbol)
+	{
+	  /* For v32, we're fine as-is; just PICify the symbol.  Forcing
+	     into a register caused performance regression for 3.2.1,
+	     observable in __floatdidf and elsewhere in libgcc.  */
+	  if (TARGET_V32)
+	    {
+	      rtx sym = GET_CODE (op) != CONST ? op : get_related_value (op);
+	      HOST_WIDE_INT offs = get_integer_term (op);
+
+	      /* We can't get calls to sym+N, N integer, can we?  */
+	      gcc_assert (offs == 0);
+
+	      op = gen_rtx_CONST (Pmode,
+				  gen_rtx_UNSPEC (Pmode, gen_rtvec (1, sym),
+						  CRIS_UNSPEC_PCREL));
+	    }
+	  else
+	    op = force_reg (Pmode, op);
+	}
       else if (t == cris_got_symbol)
 	{
 	  if (TARGET_AVOID_GOTPLT)
 	    {
 	      /* Change a "jsr sym" into (allocate register rM, rO)
-		 "move.d (const (unspec [sym] CRIS_UNSPEC_PLT)),rM"
-		 "add.d rPIC,rM,rO", "jsr rO".  */
+		 "move.d (const (unspec [sym rPIC] CRIS_UNSPEC_PLT_GOTREL)),rM"
+		 "add.d rPIC,rM,rO", "jsr rO" for pre-v32 and
+		 "jsr (const (unspec [sym rPIC] CRIS_UNSPEC_PLT_PCREL))"
+		 for v32.  */
 	      rtx tem, rm, ro;
 	      gcc_assert (can_create_pseudo_p ());
 	      current_function_uses_pic_offset_table = 1;
-	      tem = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op), CRIS_UNSPEC_PLT);
-	      rm = gen_reg_rtx (Pmode);
-	      emit_move_insn (rm, gen_rtx_CONST (Pmode, tem));
-	      ro = gen_reg_rtx (Pmode);
-	      if (expand_binop (Pmode, add_optab, rm,
-				pic_offset_table_rtx,
-				ro, 0, OPTAB_LIB_WIDEN) != ro)
-		internal_error ("expand_binop failed in movsi got");
-	      op = ro;
+	      tem = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op),
+				    TARGET_V32
+				    ? CRIS_UNSPEC_PLT_PCREL
+				    : CRIS_UNSPEC_PLT_GOTREL);
+	      tem = gen_rtx_CONST (Pmode, tem);
+	      if (TARGET_V32)
+		op = tem;
+	      else
+		{
+		  rm = gen_reg_rtx (Pmode);
+		  emit_move_insn (rm, tem);
+		  ro = gen_reg_rtx (Pmode);
+		  if (expand_binop (Pmode, add_optab, rm,
+				    pic_offset_table_rtx,
+				    ro, 0, OPTAB_LIB_WIDEN) != ro)
+		    internal_error ("expand_binop failed in movsi got");
+		  op = ro;
+		}
 	    }
 	  else
 	    {
 	      /* Change a "jsr sym" into (allocate register rM, rO)
-		 "move.d (const (unspec [sym] CRIS_UNSPEC_PLTGOT)),rM"
+		 "move.d (const (unspec [sym] CRIS_UNSPEC_PLTGOTREAD)),rM"
 		 "add.d rPIC,rM,rO" "jsr [rO]" with the memory access
 		 marked as not trapping and not aliasing.  No "move.d
 		 [rO],rP" as that would invite to re-use of a value
@@ -3300,7 +3586,7 @@ cris_asm_output_symbol_ref (FILE *file, rtx x)
      assemble_name (file, str);
 
      /* Sanity check.  */
-     if (! current_function_uses_pic_offset_table)
+     if (!TARGET_V32 && !current_function_uses_pic_offset_table)
        output_operand_lossage ("PIC register isn't set up");
     }
   else
@@ -3317,7 +3603,7 @@ cris_asm_output_label_ref (FILE *file, char *buf)
       assemble_name (file, buf);
 
       /* Sanity check.  */
-      if (! current_function_uses_pic_offset_table)
+      if (!TARGET_V32 && !current_function_uses_pic_offset_table)
 	internal_error ("emitting PIC operand, but PIC register isn't set up");
     }
   else
@@ -3341,11 +3627,25 @@ cris_output_addr_const_extra (FILE *file, rtx xconst)
       output_addr_const (file, x);
       switch (XINT (xconst, 1))
 	{
-	case CRIS_UNSPEC_PLT:
+	case CRIS_UNSPEC_PCREL:
+	  /* We only get this with -fpic/PIC to tell it apart from an
+	     invalid symbol.  We can't tell here, but it should only
+	     be the operand of a call or movsi.  */
+	  gcc_assert (TARGET_V32 && flag_pic);
+	  break;
+
+	case CRIS_UNSPEC_PLT_PCREL:
+	  gcc_assert (TARGET_V32);
+	  fprintf (file, ":PLT");
+	  break;
+
+	case CRIS_UNSPEC_PLT_GOTREL:
+	  gcc_assert (!TARGET_V32);
 	  fprintf (file, ":PLTG");
 	  break;
 
 	case CRIS_UNSPEC_GOTREL:
+	  gcc_assert (!TARGET_V32);
 	  fprintf (file, ":GOTOFF");
 	  break;
 
