@@ -139,7 +139,7 @@ template<typename RandomAccessIterator, typename _DifferenceTp>
                   num_samples + 1, es);
 
     for (difference_type i = 0; i < num_samples; i++)
-      new(&(sd->samples[iam * num_samples + i])) value_type(
+      ::new(&(sd->samples[iam * num_samples + i])) value_type(
           sd->source[sd->starts[iam] + es[i + 1]]);
 
     delete[] es;
