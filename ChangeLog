@@ -1,3 +1,7 @@
+2007-12-15  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	* MAINTAINERS: Update my email address.
+
 2007-12-13  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* Makefile.tpl (CFLAGS_FOR_TARGET): Add -g.
@@ -126,7 +130,7 @@
 
 	PR bootstrap/31906
 	* libtool-ldflags: Don't prefix arguments with -Xcompiler if
-        they're already prefixed.
+	they're already prefixed.
 
 2007-09-19  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -143,7 +147,7 @@
 
 2007-09-17  Johannes Singler <singler@ira.uka.de>
 
-        * MAINTAINERS (write-after-approval) add myself
+	* MAINTAINERS (write-after-approval) add myself
 
 2007-09-15  Alan Modra  <amodra@bigpond.net.au>
 
