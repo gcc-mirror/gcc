@@ -290,11 +290,11 @@ TARGET_ADA_SRCS =
 # Since the RTL should be built with the latest compiler, remove the
 #  stamp target in the parent directory whenever gnat1 is rebuilt
 gnat1$(exeext): $(TARGET_ADA_SRCS) $(GNAT1_OBJS) $(ADA_BACKEND) $(LIBDEPS)
-	$(GCC_LINK) -o $@ $(GNAT1_OBJS) $(ADA_BACKEND) $(LIBS) $(SYSLIBS)
+	$(GCC_LINK) -o $@ $(GNAT1_OBJS) $(ADA_BACKEND) $(ALL_CFLAGS) $(LIBS) $(SYSLIBS)
 	$(RM) stamp-gnatlib2 stamp-tools
 
 gnatbind$(exeext): ada/b_gnatb.o $(CONFIG_H) $(GNATBIND_OBJS)
-	$(GCC_LINK) -o $@ ada/b_gnatb.o $(GNATBIND_OBJS) $(LIBS) $(SYSLIBS)
+	$(GCC_LINK) -o $@ ada/b_gnatb.o $(GNATBIND_OBJS) $(ALL_CFLAGS) $(LIBS) $(SYSLIBS)
 
 # use cross-gcc
 gnat-cross: force

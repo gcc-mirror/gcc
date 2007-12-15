@@ -1,3 +1,7 @@
+2007-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (gnat1, gnatbind): Pass ALL_CFLAGS on the link line.
+
 2007-12-13  Samuel Tardieu  <sam@rfc1149.net>
 
 	PR ada/34360
