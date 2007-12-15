@@ -1,3 +1,7 @@
+2007-12-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* g++.dg/other/datasec1.C: Require named section support.
+
 2007-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/29978
