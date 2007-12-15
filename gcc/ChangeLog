@@ -1,5 +1,20 @@
 2007-12-15  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/7081
+	* dwarf2out.c (dwarf_tag_name): Synchronize with dwarf2.h.
+	(is_type_die): Cover interface types.
+	(class_or_namespace_scope_p): Cover interface and class types.
+	(record_type_tag): New.
+	(gen_inlined_structure_type_die): Use it.
+	(gen_struct_or_union_type_die): Likewise.
+	(prune_unused_types_walk): Cover interface types.
+	* langhooks.h (classify_record): New enum.
+	(classify_record): New member in struct langhooks_for_types.
+	* langhooks-def.h (LANG_HOOKS_CLASSIFY_RECORD): New.
+	(LANGHOOKS_FOR_TYPES_INITIALIZER): Adjust.
+
+2007-12-15  Alexandre Oliva  <aoliva@redhat.com>
+
 	* dwarf2out.c (reference_to_unused): Don't emit strings in
 	initializers just because of debug information.
 	* tree.h (TREE_ASM_WRITTEN): Document use for STRING_CSTs.

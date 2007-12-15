@@ -172,6 +172,7 @@ extern tree lhd_make_node (enum tree_code);
 /* Types hooks.  There are no reasonable defaults for most of them,
    so we create a compile-time error instead.  */
 #define LANG_HOOKS_MAKE_TYPE lhd_make_node
+#define LANG_HOOKS_CLASSIFY_RECORD	NULL
 #define LANG_HOOKS_INCOMPLETE_TYPE_ERROR lhd_incomplete_type_error
 #define LANG_HOOKS_GENERIC_TYPE_P	hook_bool_const_tree_false
 #define LANG_HOOKS_TYPE_PROMOTES_TO lhd_type_promotes_to
@@ -185,6 +186,7 @@ extern tree lhd_make_node (enum tree_code);
 
 #define LANG_HOOKS_FOR_TYPES_INITIALIZER { \
   LANG_HOOKS_MAKE_TYPE, \
+  LANG_HOOKS_CLASSIFY_RECORD, \
   LANG_HOOKS_TYPE_FOR_MODE, \
   LANG_HOOKS_TYPE_FOR_SIZE, \
   LANG_HOOKS_GENERIC_TYPE_P, \
