@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE html
+          PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, STL" />
+   <meta name="DESCRIPTION" content="Notes on the shared_ptr implementation." />
+   <title>Notes on the shared_ptr implementation.</title>
+<link rel="StyleSheet" href="../lib3styles.css" type="text/css" />
+<link rel="Start" href="../documentation.html" type="text/html"
+  title="GNU C++ Standard Library" />
+<link rel="Bookmark" href="howto.html" type="text/html" title="General Utilities" />
+<link rel="Copyright" href="../17_intro/license.html" type="text/html" />
+<link rel="Help" href="../faq/index.html" type="text/html" title="F.A.Q." />
+</head>
+<body>
+<h1>
+Notes on the <code>shared_ptr</code> implementation.
+</h1>
+<em>
+prepared by Jonathan Wakely on November 11, 2007
+</em>
+
+<h2>
+1. Abstract
+</h2>
+<p>
+The shared_ptr class template stores a pointer, usually obtained via new,
+and implements shared ownership semantics.
+</p>
+
+<h2>
+2. What the standard says
+</h2>
+
+<blockquote>
+20.6.6.2 - Class template shared_ptr [util.smartptr.shared]
+</blockquote>
+
+<p>
+The standard deliberately doesn't require a reference-counted implementation,
+allowing other techniques such as a circular-linked-list.
+</p>
+
+<p>
+At the time of writing the C++0x working paper doesn't mention how threads
+affect shared_ptr, but it is likely to follow the existing practice set by
+<code>boost::shared_ptr</code>.  The shared_ptr in libstdc++ is derived
+from Boost's, so the same rules apply.
+</p>
+
+<h2>
+3. Problems with shared_ptr: TR1 vs C++0x, thread safety.
+</h2>
+
+<p>
+The interface of <code>tr1::shared_ptr</code> was extended for C++0x with
+support for rvalue-references and the other features from N2351. As
+with other libstdc++ headers shared by TR1 and C++0x, boost_shared_ptr.h
+uses conditional compilation, based on the macros _GLIBCXX_INCLUDE_AS_CXX0X
+and _GLIBCXX_INCLUDE_AS_TR1, to enable and disable features.
+</p>
+
+<p>
+C++0x-only features are: rvalue-ref/move support, allocator support,
+aliasing constructor, make_shared &amp; allocate_shared. Additionally, the
+constructors taking auto_ptr parameters are deprecated in C++0x mode.
+</p>
+
+<p>
+The 
+<a href="http://boost.org/libs/smart_ptr/shared_ptr.htm#ThreadSafety">Thread
+Safety</a> section of the Boost shared_ptr documentation says "shared_ptr
+objects offer the same level of thread safety as built-in types."
+The implementation must ensure that concurrent updates to separate shared_ptr
+instances are correct even when those instances share a reference count e.g.
+</p>
+<pre>
+shared_ptr&lt;A&gt; a(new A);
+shared_ptr&lt;A&gt; b(a);
+
+// Thread 1     // Thread 2
+   a.reset();      b.reset();
+</pre>
+<p>
+The dynamically-allocated object must be destroyed by exactly one of the
+threads. Weak references make things even more interesting.
+The shared state used to implement shared_ptr must be transparent to the
+user and invariants must be preserved at all times.
+The key pieces of shared state are the strong and weak reference counts.
+Updates to these need to be atomic and visible to all threads to ensure
+correct cleanup of the managed resource (which is, after all, shared_ptr's
+job!)
+On multi-processor systems memory synchronisation may be needed so that
+reference-count updates and the destruction of the managed resource are
+race-free.
+</p>
+
+<p>
+The function <code>_Sp_counted_base::_M_add_ref_lock()</code>, called when
+obtaining a shared_ptr from a weak_ptr, has to test if the managed
+resource still exists and either increment the reference count or throw
+<code>std::bad_weak_ptr</code>.
+In a multi-threaded program there is a potential race condition if the last
+reference is dropped (and the managed resource destroyed) between testing
+the reference count and incrementing it, which could result in a shared_ptr
+pointing to invalid memory.
+</p>
+<p>
+The Boost shared_ptr (as used in GCC) features a clever lock-free algorithm
+to avoid the race condition, but this relies on the processor supporting
+an atomic <em>Compare-And-Swap</em> instruction. For other platforms there
+are fall-backs using mutex locks.  Boost (as of version 1.35) includes
+several different implementations and the preprocessor selects one based
+on the compiler, standard library, platform etc. For the version of
+shared_ptr in libstdc++ the compiler and library are fixed, which makes
+things much simpler: we have an atomic CAS or we don't, see Lock Policy
+below for details.
+</p>
+
+<h2>
+4. Design and Implementation Details
+</h2>
+
+<p>
+The shared_ptr code in libstdc++ was kindly donated to GCC by the Boost
+project and the original authors of the code. The basic design and
+algorithms are from Boost, the notes below describe details specific to
+the GCC implementation. Names have been uglified in this implementation,
+but the design should be recognisable to anyone familiar with the Boost
+1.32 shared_ptr.
+</p>
+
+<p>
+The basic design is an abstract base class, <code>_Sp_counted_base</code> that
+does the reference-counting and calls virtual functions when the count
+drops to zero.
+Derived classes override those functions to destroy resources in a context
+where the correct dynamic type is known. This is an application of the
+technique known as type erasure.
+</p>
+
+<h3>
+C++0x and TR1 Implementations
+</h3>
+
+<p>
+The classes derived from <code>_Sp_counted_base</code> (see Class Hierarchy
+below) and <code>__shared_count</code> are implemented separately for C++0x
+and TR1, in <tt>bits/boost_sp_shared_count.h</tt> and
+<tt>tr1/boost_sp_shared_count.h</tt> respectively.  All other classes
+including <code>_Sp_counted_base</code> are shared by both implementations.
+</p>
+
+<p>
+The TR1 implementation is considered relatively stable, so is unlikely to
+change unless bug fixes require it to.  If the code that is common to both
+C++0x and TR1 modes needs to diverge further then it might be necessary to 
+duplicate additional classes and only make changes to the C++0x versions.
+</p>
+
+<h3>
+Lock Policy
+</h3>
+
+<p>
+Libstdc++ has a single <code>_Sp_counted_base</code> class, which is a
+template parameterized on the enum <code>__gnu_cxx::_Lock_policy</code>.
+The entire family of classes is parameterized on the lock policy, right up
+to <code>__shared_ptr</code>, <code>__weak_ptr</code> and
+<code>__enable_shared_from_this</code>. The actual
+<code>std::shared_ptr</code> class inherits from <code>__shared_ptr</code>
+with the lock policy parameter selected automatically based on the thread
+model and platform that libstdc++ is configured for, so that the best
+available template specialization will be used. This design is necessary
+because it would not be conforming for <code>std::shared_ptr</code> to have
+an extra template parameter, even if it had a default value.
+The available policies are:
+</p>
+
+<dl>
+<dt><code>_S_Atomic</code></dt>
+<dd>
+Selected when GCC supports a builtin atomic compare-and-swap
+operation on the target processor (see
+<a href="http://gcc.gnu.org/onlinedocs/gcc/Atomic-Builtins.html">Atomic
+Builtins</a>.)
+The reference counts are maintained using a lock-free algorithm and GCC's
+atomic builtins, which provide the required memory synchronisation.
+</dd>
+<dt><code>_S_Mutex</code></dt>
+<dd>
+The _Sp_counted_base specialization for this policy contains a mutex,
+which is locked in add_ref_lock(). This policy is used when GCC's atomic
+builtins aren't available so explicit memory barriers are needed in places.
+</dd>
+<dt><code>_S_Single</code></dt>
+<dd>
+This policy uses a non-reentrant add_ref_lock() with no locking. It is
+used when libstdc++ is built without <em>--enable-threads</em>.
+</dd>
+</dl>
+
+<p>
+For all three policies, reference count increments and decrements are done
+via the functions in <tt>&lt;ext/atomicity.h&gt;</tt>, which detect if the
+program is multi-threaded.
+If only one thread of execution exists in the program then less expensive
+non-atomic operations are used.
+</p>
+
+<h3>
+Class Hierarchy
+</h3>
+
+<p>
+A <code>shared_ptr&lt;T&gt;</code> contains a pointer of type <code>T*</code>
+and an object of type <code>__shared_count</code>. The shared_count contains
+a pointer of type <code>_Sp_counted_base*</code> which points to the object
+that maintains the reference-counts and destroys the managed resource.
+</p>
+
+<dl>
+<dt><code>_Sp_counted_base&lt;Lp&gt;</code></dt>
+<dd>
+The base of the hierarchy is parameterized on the lock policy alone.
+_Sp_counted_base doesn't depend on the type of pointer being managed,
+it only maintains the reference counts and calls virtual functions when
+the counts drop to zero. The managed object is destroyed when the last
+strong reference is dropped, but the _Sp_counted_base itself must exist
+until the last weak reference is dropped.
+</dd>
+<dt><code>_Sp_counted_base_impl&lt;Ptr, Deleter, Lp&gt;</code></dt>
+<dd>
+Inherits from _Sp_counted_base and stores a pointer of type <code>Ptr</code>
+and a deleter of type <code>Deleter</code>.  <code>_Sp_deleter</code> is
+used when the user doesn't supply a custom deleter. Unlike Boost's, this
+default deleter is not "checked" because GCC already issues a warning if
+<code>delete</code> is used with an incomplete type.
+This is the only derived type used by <code>tr1::shared_ptr&lt;Ptr&gt;</code>
+and it is never used by <code>std::shared_ptr</code>, which uses one of
+the following types, depending on how the shared_ptr is constructed.
+</dd>
+<dt><code>_Sp_counted_ptr&lt;Ptr, Lp&gt;</code></dt>
+<dd>
+Inherits from _Sp_counted_base and stores a pointer of type <code>Ptr</code>,
+which is passed to <code>delete</code> when the last reference is dropped.
+This is the simplest form and is used when there is no custom deleter or
+allocator.
+</dd>
+<dt><code>_Sp_counted_deleter&lt;Ptr, Deleter, Alloc&gt;</code></dt>
+<dd>
+Inherits from _Sp_counted_ptr and adds support for custom deleter and
+allocator. Empty Base Optimization is used for the allocator. This class
+is used even when the user only provides a custom deleter, in which case
+<code>std::allocator</code> is used as the allocator.
+</dd>
+<dt><code>_Sp_counted_ptr_inplace&lt;Tp, Alloc, Lp&gt;</code></dt>
+<dd>
+Used by <code>allocate_shared</code> and <code>make_shared</code>.
+Contains aligned storage to hold an object of type <code>Tp</code>,
+which is constructed in-place with placement <code>new</code>.
+Has a variadic template constructor allowing any number of arguments to
+be forwarded to <code>Tp</code>'s constructor.
+Unlike the other _Sp_counted_* classes, this one is parameterized on the
+type of object, not the type of pointer; this is purely a convenience
+that simplifies the implementation slightly.
+</dd>
+</dl>
+
+<h3>
+Related functions and classes
+</h3>
+
+<dl>
+<dt><code>dynamic_pointer_cast</code>, <code>static_pointer_cast</code>,
+<code>const_pointer_cast</code></dt>
+<dd>
+As noted in N2351, these functions can be implemented non-intrusively using
+the alias constructor.  However the aliasing constructor is only available
+in C++0x mode, so in TR1 mode these casts rely on three non-standard
+constructors in shared_ptr and __shared_ptr.
+In C++0x mode these constructors and the related tag types are not needed.
+</dd>
+<dt><code>enable_shared_from_this</code></dt>
+<dd>
+The clever overload to detect a base class of type
+<code>enable_shared_from_this</code> comes straight from Boost.
+There is an extra overload for <code>__enable_shared_from_this</code> to 
+work smoothly with <code>__shared_ptr&lt;Tp, Lp&gt;</code> using any lock
+policy.
+</dd>
+<dt><code>make_shared</code>, <code>allocate_shared</code></dt>
+<dd>
+<code>make_shared</code> simply forwards to <code>allocate_shared</code>
+with <code>std::allocator</code> as the allocator.
+Although these functions can be implemented non-intrusively using the
+alias constructor, if they have access to the implementation then it is
+possible to save storage and reduce the number of heap allocations. The
+newly constructed object and the _Sp_counted_* can be allocated in a single
+block and the standard says implementations are "encouraged, but not required,"
+to do so. This implementation provides additional non-standard constructors
+(selected with the type <code>_Sp_make_shared_tag</code>) which create an
+object of type <code>_Sp_counted_ptr_inplace</code> to hold the new object.
+The returned <code>shared_ptr&lt;A&gt;</code> needs to know the address of the
+new <code>A</code> object embedded in the <code>_Sp_counted_ptr_inplace</code>,
+but it has no way to access it.
+This implementation uses a "covert channel" to return the address of the
+embedded object when <code>get_deleter&lt;_Sp_make_shared_tag&gt;()</code>
+is called.  Users should not try to use this.
+As well as the extra constructors, this implementation also needs some
+members of _Sp_counted_deleter to be protected where they could otherwise
+be private.
+</dd>
+</dl>
+
+<h2>
+5. Examples
+</h2>
+
+<p>
+Examples of use can be found in the testsuite, under
+<tt>testsuite/tr1/2_general_utilities/shared_ptr</tt>.
+</p>
+
+<h2>
+6. Unresolved Issues
+</h2>
+
+<p>
+The resolution to C++ Standard Library issue <a
+href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#674">674</a>,
+"shared_ptr interface changes for consistency with N1856" will need to be
+implemented after it is accepted into the working paper. Issue <a 
+href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#743">743</a>
+might also require changes.
+</p>
+
+<p>
+The _S_single policy uses atomics when used in MT code, because it uses
+the same dispatcher functions that check __gthread_active_p(). This could be
+addressed by providing template specialisations for some members of
+_Sp_counted_base&lt;_S_single&gt;.
+</p>
+
+<p>
+Unlike Boost, this implementation does not use separate classes for the
+pointer+deleter and pointer+deleter+allocator cases in C++0x mode, combining
+both into _Sp_counted_deleter and using std::allocator when the user doesn't
+specify an allocator.
+If it was found to be beneficial an additional class could easily be added.
+With the current implementation, the _Sp_counted_deleter and __shared_count
+constructors taking a custom deleter but no allocator are technically
+redundant and could be removed, changing callers to always specify an
+allocator. If a separate pointer+deleter class was added the __shared_count
+constructor would be needed, so it has been kept for now.
+</p>
+
+<p>
+The hack used to get the address of the managed object from
+_Sp_counted_ptr_inplace::_M_get_deleter() is accessible to users. This
+could be prevented if get_deleter&lt;_Sp_make_shared_tag&gt;() always
+returned NULL, since the hack only needs to work at a lower level, not
+in the public API. This wouldn't be difficult, but hasn't been done since
+there is no danger of accidental misuse: users already know they are
+relying on unsupported features if they refer to implementation details
+such as _Sp_make_shared_tag.
+</p>
+
+<p>
+tr1::_Sp_deleter could be a private member of tr1::__shared_count but it
+would alter the ABI.
+</p>
+
+<p>
+Exposing the alias constructor in TR1 mode could simplify the *_pointer_cast
+functions.
+Constructor could be private in TR1 mode, with the cast functions as friends.
+</p>
+
+<h2>
+7. Acknowledgments
+</h2>
+<p>
+The original authors of the Boost shared_ptr, which is really nice code
+to work with, Peter Dimov in particular for his help and invaluable advice
+on thread safety.
+Phillip Jordan and Paolo Carlini for the lock policy implementation.
+</p>
+
+
+<h2>
+8. Bibliography / Referenced Documents
+</h2>
+
+<p>
+N2351 Improving shared_ptr for C++0x, Revision 2
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2351.htm">http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2351.htm</a>
+</p>
+
+<p>
+N2456 C++ Standard Library Active Issues List (Revision R52)
+<a href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2456.html">http://open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2456.html</a></p>
+<p>
+N2461 Working Draft, Standard for Programming Language C++
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2461.pdf">http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2461.pdf</a>
+</p>
+
+<p>
+Boost C++ Libraries documentation - shared_ptr class template
+<a href="http://boost.org/libs/smart_ptr/shared_ptr.htm">http://boost.org/libs/smart_ptr/shared_ptr.htm</a>
+</p>
+
+</body>
+</html>
+
