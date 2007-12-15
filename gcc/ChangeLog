@@ -1,3 +1,190 @@
+2007-12-15  Hans-Peter Nilsson  <hp@axis.com>
+
+	Add CRIS v32 support.  Fix -mcc-init.
+	* config.gcc: Make crisv32-* have cpu_type cris.  Handle
+	crisv32-*-elf and crisv32-*-none like cris-*-elf and cris-*-none
+	but without multilibs and with target_cpu_default=32.
+	(crisv32-*-linux*): Handle as cris-*-linux*.  Set
+	target_cpu_default to 32 and 10 accordingly.
+	* config/cris/cris.c (ASSERT_PLT_UNSPEC): Remove unused macro.
+	(cris_movem_load_rest_p, cris_store_multiple_op_p): Remove FIXME.
+	Change regno_dir and regno only if !TARGET_V32.
+	(cris_conditional_register_usage): If TARGET_V32, set
+	reg_alloc_order as per REG_ALLOC_ORDER_V32 and make
+	CRIS_ACR_REGNUM non-fixed.
+	(cris_print_base): Add gcc_assert for post_inc on CRIS_ACR_REGNUM.
+	(cris_print_operand) <case 'Z', case 'u'>: New cases.
+	<case REG of case 'H'>: Allow for CRIS_SRP_REGNUM.
+	(cris_reload_address_legitimized): Always return false for
+	TARGET_V32.
+	(cris_register_move_cost): New function, guts from
+	REGISTER_MOVE_COST adjusted for CRIS v32.
+	(cris_normal_notice_update_cc): New function split out from...
+	(cris_notice_update_cc): Set cc_status.flags CC_REVERSED for
+	TARGET_CCINIT.  Call cris_normal_notice_update_cc for CC_REV,
+	CC_NOOV32 and CC_NORMAL, but set cc_status.flags CC_NO_OVERFLOW
+	for CC_NOOV32 and TARGET_V32.
+	(cris_simple_epilogue): Always return false for TARGET_V32 if
+	cris_return_address_on_stack yields true.
+	(cris_cc0_user_requires_cmp): New function.
+	(cris_valid_pic_const): Add argument ANY_OPERAND.  All callers
+	changed.  Handle CRIS_UNSPEC_PLT_PCREL and CRIS_UNSPEC_PCREL.
+	(cris_asm_output_case_end): New function, guts from
+	ASM_OUTPUT_CASE_END adjusted for CRIS v32.
+	(cris_override_options): Adjust for CRIS v32.  Mask out
+	TARGET_SIDE_EFFECT_PREFIXES and TARGET_MUL_BUG if v32.
+	(cris_asm_output_mi_thunk, cris_expand_epilogue)
+	(cris_gen_movem_load, cris_emit_movem_store)
+	(cris_expand_pic_call_address, cris_asm_output_symbol_ref)
+	(cris_asm_output_label_ref, cris_output_addr_const_extra): Adjust
+	for CRIS v32.
+	(cris_split_movdx): Copy re-used MEM.
+	* config/cris/t-elfmulti: Add multilib v32 for -march=v32.
+	* config/cris/predicates.md
+	("cris_general_operand_or_pic_source"): New predicate.
+	("cris_general_operand_or_plt_symbol"): Replace by...
+	("cris_nonmemory_operand_or_callable_symbol"): New predicate.
+	* config/cris/linux.h: Sanity-check TARGET_CPU_DEFAULT for
+	presence and contents.
+	(CRIS_SUBTARGET_DEFAULT_ARCH): New macro, MASK_AVOID_GOTPLT for
+	v32, 0 otherwise.
+	(CRIS_CPP_SUBTARGET_SPEC, CRIS_CC1_SUBTARGET_SPEC,
+	CRIS_ASM_SUBTARGET_SPEC): Adjust for different
+	TARGET_CPU_DEFAULT.
+	(CRIS_SUBTARGET_DEFAULT): Add CRIS_SUBTARGET_DEFAULT_ARCH.
+	* config/cris/cris.h: Sanity-check TARGET_CPU_DEFAULT for contents.
+	(CRIS_DEFAULT_TUNE, CRIS_ARCH_CPP_DEFAULT)
+	(CRIS_DEFAULT_ASM_ARCH_OPTION): New macros.
+	(CRIS_CC1_SUBTARGET_SPEC): Change default tuning to use
+	CRIS_DEFAULT_TUNE. 
+	(CRIS_CPP_SUBTARGET_SPEC): Ditto.  Add CRIS_ARCH_CPP_DEFAULT.
+	(ASM_SPEC): Add sanity-check erroring out when both -march= and
+	-mcpu= are specified.  Pass on either as --march=v32.
+	(CRIS_ASM_SUBTARGET_SPEC): When neither -march= or -mcpu= are
+	specified, pass on CRIS_DEFAULT_ASM_ARCH_OPTION.
+	(CRIS_CPU_V32): New macro.
+	[!TARGET_CPU_DEFAULT]: Default-define as CRIS_CPU_BASE.
+	[!TARGET_DEFAULT, TARGET_CPU_DEFAULT == 32]: Move default
+	TARGET_DEFAULT definition after new TARGET_CPU_DEFAULT definition.
+	Define v32-adjusted TARGET_DEFAULT.
+	(CRIS_DEFAULT_CPU_VERSION): Change to TARGET_CPU_DEFAULT from
+	CRIS_CPU_BASE.
+	(TARGET_V32): New macro.
+	(REG_ALLOC_ORDER_V32): New macro.
+	(HARD_REGNO_MODE_OK): Do not allow larger-than-register-size modes
+	into CRIS_ACR_REGNUM.
+	(enum reg_class): New classes ACR_REGS, SPEC_ACR_REGS,
+	GENNONACR_REGS and SPEC_GENNONACR_REGS.
+	(REG_CLASS_NAMES, REG_CLASS_CONTENTS): Adjust for new classes.
+	(REGNO_REG_CLASS): Give ACR_REGS for CRIS_ACR_REGNUM.
+	(MODE_CODE_BASE_REG_CLASS): Define, give for OCODE POST_INC
+	GENNONACR_REGS, BASE_REG_CLASS otherwise.
+	(REG_CLASS_FROM_LETTER): 'a' is for ACR_REGS.
+	(REGNO_MODE_CODE_OK_FOR_BASE_P): Define, refusing OCODE POST_INC
+	for CRIS_ACR_REGNUM.
+	(PREFERRED_RELOAD_CLASS): Keep ACR_REGS as preferred.
+	(HARD_REGNO_RENAME_OK): Refuse CRIS_ACR_REGNUM as TO.
+	(EXTRA_CONSTRAINT): New constraint 'U'.
+	(TRAMPOLINE_TEMPLATE, TRAMPOLINE_SIZE, INITIALIZE_TRAMPOLINE)
+	(ASM_OUTPUT_ADDR_DIFF_ELT): Adjust for CRIS v32.
+	(BASE_OR_AUTOINCR_P): Refuse POST_INC for CRIS_ACR_REGNUM.
+	(SIMPLE_ADDRESS_P): Remove.
+	(GO_IF_LEGITIMATE_ADDRESS): Use BASE_OR_AUTOINCR_P, not redundant
+	SIMPLE_ADDRESS_P.  Make one chained if-else, finishing as
+	non-match after BASE_OR_AUTOINCR_P for TARGET_V32.
+	(REGISTER_MOVE_COST): Just call the new function
+	cris_register_move_cost.
+	(enum cris_pic_symbol_type): Rename cris_gotrel_symbol to
+	cris_rel_symbol.  All users changed.
+	(REGISTER_NAMES): Replace "pc" with "acr".
+	(ADDITIONAL_REGISTER_NAMES): Add "pc" for 15.
+	(ASM_OUTPUT_REG_PUSH): Change to v32-compatible sequence.
+	(ASM_OUTPUT_REG_POP): Change to v32-compatible syntax.
+	(ASM_OUTPUT_CASE_END): Just call the new function
+	cris_asm_output_case_end.
+	* gcc/config/cris/cris.md: Group related constants together, with
+	comments local.
+	(CRIS_UNSPEC_PLT_GOTREL, CRIS_UNSPEC_PLT_PCREL, CRIS_UNSPEC_PCREL)
+	(CRIS_UNSPEC_CASESI): New constants.
+	(CRIS_UNSPEC_PLT): Remove constant.
+	(CRIS_ACR_REGNUM): New constant.
+	("slottable"): New attr alternatives "has_return_slot" and
+	"has_call_slot".
+	("cc"): New attr alternatives "noov32" and "rev".
+	((eq_attr "slottable" "has_call_slot"))
+	((eq_attr "slottable" "has_return_slot")): New define_delays.
+	("movdi", "movsi"): Adjust operands for CRIS v32.
+	("tstdi", "cmpdi", "adddi3", "subdi3", "uminsi3")
+	("indirect_jump"): Ditto.  Make define_expand.
+	("*tstdi_non_v32", "*tstdi_v32", "*tst<mode>_cmp")
+	("*tst<mode>_non_cmp", "*cmpdi_non_v32", "*cmpdi_v32")
+	("*movdi_v32", "*adddi3_non_v32", "*adddi3_v32")
+	("*addsi3_non_v32", "*addsi3_v32", "*addhi3_non_v32")
+	("*addhi3_v32", "*addqi3_non_v32", "*addqi3_v32")
+	("*subdi3_non_v32", "*subdi3_v32", "*subsi3_non_v32")
+	("*subsi3_v32", "*sub<mode>3_nonv32", "*sub<mode>3_v32")
+	("*andqi3_non_v32", "*andqi3_v32", "*iorsi3_non_v32")
+	("*iorsi3_v32", "*iorhi3_non_v32", "*iorhi3_v32")
+	("*iorqi3_non_v32", "*iorqi3_v32", "*uminsi3_non_v32")
+	("*uminsi3_v32", "*indirect_jump_non_v32", "*indirect_jump_v32")
+	("*expanded_call_v32", "*expanded_call_value_v32"): New patterns,
+	for the corresponding standard name.
+	("tst<mode>"): Limit to BW and make define_expand.
+	("tstsi"): Make separate insn, adjusting for CRIS v32.
+	("*cmp_swapext<mode>"): Adjust for v32.  Specify "rev" for attr "cc".
+	("cmpsi", "cmp<mode>"): Remove special cases for zero.  Specify
+	attr "cc".
+	("*btst"): Don't match for TARGET_CCINIT.  Replace test of
+	register with compatible "cmpq 0".  Specify attr "cc".
+	("*movdi_insn_non_v32"): New pattern, replacing "*movdi_insn" and
+	define_split.
+	(define_split for DI move): Match CRIS v32 only.
+	("*movsi_got_load", "*movsi_internal", "*addi"): Adjust for CRIS
+	v32.
+	("load_multiple", "store_multiple", "*addsbw_v32", "*addubw_v32")
+	("*adds<mode>_v32", "*addu<mode>_v32", "*bound<mode>_v32")
+	("*casesi_jump_v32", "*expanded_andsi_v32", "*expanded_andhi_v32")
+	("*extop<mode>si_v32", "*extopqihi_v32", "*andhi_lowpart_v32")
+	("*andqi_lowpart_v32", "cris_casesi_v32"): New patterns. 
+	("add<mode>3"): Make addsi3, addhi3 and addqi3 define_expand.
+	("sub<mode>3"): Ditto subsi3, subhi3 and subqi3.
+	("ior<mode>3"): Ditto iorsi3, iorhi3 and iorqi3.
+	("*extopqihi_non_v32"): Replace "*extopqihi".
+	("*extop<mode>si_non_v32"): Replace "*extop<mode>si".
+	("*addxqihi_swap_non_v32"): Rename from "*extopqihi_swap", make
+	non-v32 only.
+	("*extop<mode>si_swap_non_v32"): Ditto "*extop<mode>si_swap".
+	("*expanded_andsi_non_v32"): Ditto "*expanded_andsi".
+	("*expanded_andhi_non_v32"): Ditto "*expanded_andhi".
+	("*andhi_lowpart_non_v32"): Ditto "*andhi_lowpart".
+	("*andqi_lowpart_non_v32"): Ditto "*andqi_lowpart".
+	("*expanded_call_non_v32"): Ditto "*expanded_call".  Change from
+	"cris_general_operand_or_plt_symbol" to "general_operand".
+	("*expanded_call_value_non_v32") Ditto "*expanded_call_value".
+	("*casesi_adds_w", "mstep_shift", "mstep_mul")
+	("*expanded_call_side", "*expanded_call_value_side")
+	(op-extend-split, op-extend-split-rx=rz, op-extend-split-swapped)
+	(op-extend-split-swapped-rx=rz, op-extend, op-split-rx=rz)
+	(op-split-swapped, op-split-swapped-rx=rz): Make non-v32 only.
+	("dstep_mul", "xorsi3", "one_cmplsi2", "<shlr>si3")
+	("*expanded_<shlr><mode>", "*<shlr><mode>_lowpart", "ashl<mode>3")
+	("*ashl<mode>_lowpart", "abssi2", "clzsi2", "bswapsi2", "cris_swap_bits"): Specify "noov32" for
+	attr "cc".
+	("<su>mulsi3_highpart"): Ditto.  Correct operand 0 to
+	register_operand.
+	("andqi3"): Make define_expand.
+	("*return_expanded"): For attr "slottable", change from "has_slot"
+	to "has_return_slot".
+	("cris_casesi_non_v32"): New pattern, old contents of "casesi".
+	("casesi"): Divert into "cris_casesi_v32" and
+	"cris_casesi_non_v32".
+	(moversideqi, movemsideqi, mover2side): Require
+	TARGET_SIDE_EFFECT_PREFIXES.
+	(gotplt-to-plt, gotplt-to-plt-side): Change from CRIS_UNSPEC_PLT
+	to CRIS_UNSPEC_PLT_GOTREL.
+	* config/cris/cris-protos.h (cris_register_move_cost)
+	(cris_cc0_user_requires_cmp, cris_asm_output_case_end): Declare.
+
 2007-12-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/7081
