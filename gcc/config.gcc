@@ -265,6 +265,9 @@ arm*-*-*)
 bfin*-*)
 	cpu_type=bfin
 	;;
+crisv32-*)
+	cpu_type=cris
+	;;
 ep9312*-*-*)
 	cpu_type=arm
 	;;
@@ -844,17 +847,32 @@ cris-*-aout)
 	tmake_file="cris/t-cris cris/t-aout"
 	extra_options="${extra_options} cris/aout.opt"
 	;;
+crisv32-*-elf | crisv32-*-none)
+	tm_file="dbxelf.h elfos.h ${tm_file}"
+	tmake_file="cris/t-cris"
+	target_cpu_default=32
+	gas=yes
+	extra_options="${extra_options} cris/elf.opt"
+	;;
 cris-*-elf | cris-*-none)
 	tm_file="dbxelf.h elfos.h ${tm_file}"
 	tmake_file="cris/t-cris cris/t-elfmulti"
 	gas=yes
 	extra_options="${extra_options} cris/elf.opt"
 	;;
-cris-*-linux*)
+crisv32-*-linux* | cris-*-linux*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} linux.h cris/linux.h"
 	# We need to avoid using t-linux, so override default tmake_file
 	tmake_file="cris/t-cris t-slibgcc-elf-ver cris/t-linux"
 	extra_options="${extra_options} cris/linux.opt"
+	case $target in
+	  cris-*-*)
+		target_cpu_default=10
+		;;
+	  crisv32-*-*)
+		target_cpu_default=32
+		;;
+	esac
 	;;
 crx-*-elf)
 	tm_file="elfos.h ${tm_file}"
