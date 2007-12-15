@@ -12,6 +12,6 @@ void
 __fastcall
 f3() { }
 
-int
+void
 __attribute__ ((fastcall))
 f4(int x, int y, int z) { }
