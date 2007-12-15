@@ -1,3 +1,16 @@
+2007-12-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* tree-scalar-evolution.c (number_of_iterations_for_all_loops): Replace
+	print_loop_ir with print_loops.
+	* tree-flow.h (dot_cfg, debug_loops, debug_loop, debug_loop_num,
+	print_loops, print_loops_bb): Declare.
+	* tree-cfg.c (print_loops_bb): New.
+	(print_loop): Print header, latch, bounds, estimation of iterations.
+	(print_loop_and_siblings): New.
+	(print_loop_ir): Renamed print_loops.
+	(debug_loop_ir): Renamed debug_loops.
+	(debug_loop, debug_loop_num): New.
+
 2007-12-15  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	* tree-flow-inline.h.c (next_readonly_imm_use): Fix typo in comment.
