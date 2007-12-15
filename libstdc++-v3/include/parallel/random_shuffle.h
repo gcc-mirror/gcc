@@ -213,7 +213,7 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
         thread_index_t target_p = bin_proc[target_bin];
 
         // Last column [d->num_threads] stays unchanged.
-        new(&(temporaries[target_p][dist[target_bin + 1]++])) value_type(
+        ::new(&(temporaries[target_p][dist[target_bin + 1]++])) value_type(
               *(source + i + start));
       }
 
@@ -478,7 +478,7 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
 
         // Distribute according to oracles.
         for (difference_type i = 0; i < n; ++i)
-          new(&(target[(dist0[oracles[i]])++])) value_type(*(begin + i));
+          ::new(&(target[(dist0[oracles[i]])++])) value_type(*(begin + i));
 
         for (int b = 0; b < num_bins; ++b)
           {

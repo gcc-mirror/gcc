@@ -80,7 +80,7 @@ namespace __gnu_parallel
       {
         const unsigned long long index = static_cast<unsigned long long>(s)
                         * n / num_samples;
-        new(&(samples[s])) value_type(begin[index]);
+        ::new(&(samples[s])) value_type(begin[index]);
       }
 
     __gnu_sequential::sort(samples, samples + num_samples, comp);

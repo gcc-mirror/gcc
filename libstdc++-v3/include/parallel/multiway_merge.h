@@ -800,7 +800,7 @@ template<
       {
         if (seqs_begin[pi].first != seqs_begin[pi].second)
           {
-            new(&(fe[nrs])) value_type(*(seqs_begin[pi].first));
+            ::new(&(fe[nrs])) value_type(*(seqs_begin[pi].first));
             source[nrs] = pi;
             ++nrs;
             total_length += _GLIBCXX_PARALLEL_LENGTH(seqs_begin[pi]);
@@ -1582,7 +1582,7 @@ template<
                                 _GLIBCXX_PARALLEL_LENGTH(seqs_begin[s]) * (double(i + 1) /
                                 (num_samples + 1)) * (double(length)
                                 / total_length));
-                        new(&(samples[s * num_samples + i])) value_type(
+                        ::new(&(samples[s * num_samples + i])) value_type(
                             seqs_begin[s].first[sample_index]);
                       }
 

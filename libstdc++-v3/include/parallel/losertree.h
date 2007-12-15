@@ -265,11 +265,11 @@ template<typename T, typename Comparator = std::less<T> >
         {
           // Construct all keys, so we can easily deconstruct them.
           for (unsigned int i = 0; i < (2 * k); ++i)
-            new(&(losers[i].key)) T(key);
+            ::new(&(losers[i].key)) T(key);
           first_insert = false;
         }
       else
-        new(&(losers[pos].key)) T(key);
+        ::new(&(losers[pos].key)) T(key);
 
       losers[pos].sup = sup;
       losers[pos].source = source;

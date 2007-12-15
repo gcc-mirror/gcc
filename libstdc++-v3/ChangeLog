@@ -1,3 +1,13 @@
+2007-12-15  Benjamin Kosnik  <bkoz@redhat.com>
+	    Paolo Carlini  <pcarlini@suse.de>
+	
+	* include/parallel/partial_sum.h: Include new. Fix for DR 402.	
+	* include/parallel/multiway_merge.h:Fix for DR 402.
+	* include/parallel/losertree.h: Same.
+	* include/parallel/quicksort.h: Same.
+	* include/parallel/random_shuffle.h: Same.
+	* include/parallel/multiway_mergesort.h: Same.
+	
 2007-12-14  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/30127
