@@ -63,7 +63,7 @@
 (define_predicate "cris_bdap_const_operand"
   (and (match_code "label_ref, symbol_ref, const_int, const_double, const")
        (ior (not (match_test "flag_pic"))
-	    (match_test "cris_valid_pic_const (op)"))))
+	    (match_test "cris_valid_pic_const (op, true)"))))
 
 (define_predicate "cris_simple_address_operand"
   (ior (match_operand:SI 0 "register_operand")
@@ -140,15 +140,26 @@
        	    ; The following test is actually just an assertion.
 	    (match_test "cris_pic_symbol_type_of (op) != cris_no_symbol"))))
 
+;; A predicate for the anon movsi expansion, one that fits a PCREL
+;; operand as well as general_operand.
+
+(define_special_predicate "cris_general_operand_or_pic_source"
+  (ior (match_operand 0 "general_operand")
+       (and (match_test "flag_pic")
+	    (match_test "cris_valid_pic_const (op, false)"))))
+
 ;; Since a PLT symbol is not a general_operand, we have to have a
 ;; predicate that matches it when we need it.  We use this in the expanded
 ;; "call" and "call_value" anonymous patterns.
 
-(define_predicate "cris_general_operand_or_plt_symbol"
-  (ior (match_operand 0 "general_operand")
+(define_predicate "cris_nonmemory_operand_or_callable_symbol"
+  (ior (match_operand 0 "nonmemory_operand")
        (and (match_code "const")
-	    (and (match_test "GET_CODE (XEXP (op, 0)) == UNSPEC")
-		 (not (match_test "TARGET_AVOID_GOTPLT"))))))
+	    (and
+	     (match_test "GET_CODE (XEXP (op, 0)) == UNSPEC")
+	     (ior
+	      (match_test "XINT (XEXP (op, 0), 1) == CRIS_UNSPEC_PLT_PCREL")
+	      (match_test "XINT (XEXP (op, 0), 1) == CRIS_UNSPEC_PCREL"))))))
 
 ;; This matches a (MEM (general_operand)) or
 ;; (MEM (cris_general_operand_or_symbol)).  The second one isn't a valid
