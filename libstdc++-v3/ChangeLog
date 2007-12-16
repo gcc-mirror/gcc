@@ -1,3 +1,9 @@
+2007-12-16  Jonathan Wakely  <jwakely-gcc@gmail.com>
+
+	* testsuite/20_util/shared_ptr/thread/default_weaktoshared.cc: Add
+	required dg-option for cygwin and darwin targets.
+	* testsuite/20_util/shared_ptr/thread/mutex_weaktoshared.cc: Likewise.
+
 2007-12-15  Jonathan Wakely  <jwakely-gcc@gmail.com>
 
 	* include/tr1_impl/boost_shared_ptr.h: Add support for allocators,
