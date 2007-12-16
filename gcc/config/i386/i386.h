@@ -479,9 +479,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /* Support for configure-time defaults of some command line options.
    The order here is important so that -march doesn't squash the
    tune or cpu values.  */
-#define OPTION_DEFAULT_SPECS \
+#define OPTION_DEFAULT_SPECS					   \
   {"tune", "%{!mtune=*:%{!mcpu=*:%{!march=*:-mtune=%(VALUE)}}}" }, \
-  {"cpu", "%{!mtune=*:%{!mcpu=*:%{!march=*:-mtune=%(VALUE)}}}" }, \
+  {"cpu", "%{!mtune=*:%{!mcpu=*:%{!march=*:-mtune=%(VALUE)}}}" },  \
   {"arch", "%{!march=*:-march=%(VALUE)}"}
 
 /* Specs for the compiler proper */
@@ -749,6 +749,8 @@ enum target_cpu_default
 
 #define LONG_DOUBLE_TYPE_SIZE 80
 
+#define WIDEST_HARDWARE_FP_SIZE 80
+
 /* Set the value of FLT_EVAL_METHOD in float.h.  When using only the
    FPU, assume that the fpcw is set to extended precision; when using
    only SSE, rounding is correct; when using both SSE and the FPU,
@@ -918,6 +920,7 @@ enum target_cpu_default
    for details.  */
 
 #define STACK_REGS
+
 #define IS_STACK_MODE(MODE)					\
   (((MODE) == SFmode && (!TARGET_SSE || !TARGET_SSE_MATH))	\
    || ((MODE) == DFmode && (!TARGET_SSE2 || !TARGET_SSE_MATH))  \
@@ -968,7 +971,7 @@ enum target_cpu_default
 /*  r8,  r9, r10, r11, r12, r13, r14, r15*/			\
      2,   2,   2,   2,   2,   2,   2,   2,			\
 /*xmm8,xmm9,xmm10,xmm11,xmm12,xmm13,xmm14,xmm15*/		\
-     2,   2,    2,    2,    2,    2,    2,    2}
+     2,   2,    2,    2,    2,    2,    2,    2 }
 
 
 /* 1 for registers not available across function calls.
@@ -996,7 +999,7 @@ enum target_cpu_default
 /*  r8,  r9, r10, r11, r12, r13, r14, r15*/			\
      1,   1,   1,   1,   2,   2,   2,   2,			\
 /*xmm8,xmm9,xmm10,xmm11,xmm12,xmm13,xmm14,xmm15*/		\
-     1,   1,    1,    1,    1,    1,    1,    1}		\
+     1,   1,    1,    1,    1,    1,    1,    1 }
 
 /* Order in which to allocate registers.  Each register must be
    listed once, even those in FIXED_REGISTERS.  List frame pointer
@@ -1087,7 +1090,7 @@ do {									\
    applied to them.
    */
 
-#define HARD_REGNO_NREGS(REGNO, MODE)   \
+#define HARD_REGNO_NREGS(REGNO, MODE)					\
   (FP_REGNO_P (REGNO) || SSE_REGNO_P (REGNO) || MMX_REGNO_P (REGNO)	\
    ? (COMPLEX_MODE_P (MODE) ? 2 : 1)					\
    : ((MODE) == XFmode							\
@@ -1105,16 +1108,16 @@ do {									\
 
 #define HARD_REGNO_NREGS_WITH_PADDING(REGNO, MODE) ((MODE) == XFmode ? 4 : 8)
 
-#define VALID_SSE2_REG_MODE(MODE) \
-    ((MODE) == V16QImode || (MODE) == V8HImode || (MODE) == V2DFmode    \
-     || (MODE) == V2DImode || (MODE) == DFmode)
+#define VALID_SSE2_REG_MODE(MODE)					\
+  ((MODE) == V16QImode || (MODE) == V8HImode || (MODE) == V2DFmode	\
+   || (MODE) == V2DImode || (MODE) == DFmode)
 
 #define VALID_SSE_REG_MODE(MODE)					\
-    ((MODE) == TImode || (MODE) == V4SFmode || (MODE) == V4SImode	\
-     || (MODE) == SFmode || (MODE) == TFmode)
+  ((MODE) == TImode || (MODE) == V4SFmode || (MODE) == V4SImode		\
+   || (MODE) == SFmode || (MODE) == TFmode)
 
 #define VALID_MMX_REG_MODE_3DNOW(MODE) \
-    ((MODE) == V2SFmode || (MODE) == SFmode)
+  ((MODE) == V2SFmode || (MODE) == SFmode)
 
 #define VALID_MMX_REG_MODE(MODE)					\
     ((MODE) == DImode || (MODE) == V8QImode || (MODE) == V4HImode	\
@@ -1124,24 +1127,24 @@ do {									\
    place emms and femms instructions.  */
 #define UNITS_PER_SIMD_WORD (TARGET_SSE ? 16 : UNITS_PER_WORD)
 
-#define VALID_DFP_MODE_P(MODE)						\
-    ((MODE) == SDmode || (MODE) == DDmode || (MODE) == TDmode)
+#define VALID_DFP_MODE_P(MODE) \
+  ((MODE) == SDmode || (MODE) == DDmode || (MODE) == TDmode)
 
 #define VALID_FP_MODE_P(MODE)						\
-    ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode		\
-     || (MODE) == SCmode || (MODE) == DCmode || (MODE) == XCmode)	\
+  ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode		\
+   || (MODE) == SCmode || (MODE) == DCmode || (MODE) == XCmode)		\
 
 #define VALID_INT_MODE_P(MODE)						\
-    ((MODE) == QImode || (MODE) == HImode || (MODE) == SImode		\
-     || (MODE) == DImode						\
-     || (MODE) == CQImode || (MODE) == CHImode || (MODE) == CSImode	\
-     || (MODE) == CDImode						\
-     || (TARGET_64BIT && ((MODE) == TImode || (MODE) == CTImode		\
-         || (MODE) == TFmode || (MODE) == TCmode)))
+  ((MODE) == QImode || (MODE) == HImode || (MODE) == SImode		\
+   || (MODE) == DImode							\
+   || (MODE) == CQImode || (MODE) == CHImode || (MODE) == CSImode	\
+   || (MODE) == CDImode							\
+   || (TARGET_64BIT && ((MODE) == TImode || (MODE) == CTImode		\
+			|| (MODE) == TFmode || (MODE) == TCmode)))
 
 /* Return true for modes passed in SSE registers.  */
-#define SSE_REG_MODE_P(MODE) \
- ((MODE) == TImode || (MODE) == V16QImode || (MODE) == TFmode		\
+#define SSE_REG_MODE_P(MODE)						\
+  ((MODE) == TImode || (MODE) == V16QImode || (MODE) == TFmode		\
    || (MODE) == V8HImode || (MODE) == V2DFmode || (MODE) == V2DImode	\
    || (MODE) == V4SFmode || (MODE) == V4SImode)
 
@@ -1169,10 +1172,11 @@ do {									\
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE)			\
   (CC_REGNO_P (REGNO) ? VOIDmode					\
    : (MODE) == VOIDmode && (NREGS) != 1 ? VOIDmode			\
-   : (MODE) == VOIDmode ? choose_hard_reg_mode ((REGNO), (NREGS), false)\
+   : (MODE) == VOIDmode ? choose_hard_reg_mode ((REGNO), (NREGS), false) \
    : (MODE) == HImode && !TARGET_PARTIAL_REG_STALL ? SImode		\
    : (MODE) == QImode && (REGNO) >= 4 && !TARGET_64BIT ? SImode 	\
    : (MODE))
+
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
 
