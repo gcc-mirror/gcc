@@ -1,3 +1,7 @@
+2007-12-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (WIDEST_HARDWARE_FP_SIZE): Define.
+
 2007-12-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* tree-vect-transform.c (conservative_cost_threshold): Add missing
