@@ -178,11 +178,7 @@ freport () {
 
 cleanup () {
     cd $SOURCE
-
-    # FORNOW: Until this script is not committed to trunk, save and restore it.
-    mv $SOURCE/contrib/patch_tester.sh $STATE
     svn cleanup && svn revert -R . && svn st | cut -d' ' -f5- | xargs rm -v
-    mv $STATE/patch_tester.sh $SOURCE/contrib/
 }
 
 selfexec () {
