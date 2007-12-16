@@ -2047,11 +2047,11 @@ add_functions (void)
 	     gfc_check_fn_c, gfc_simplify_realpart, gfc_resolve_realpart,
 	     a, BT_UNKNOWN, dr, REQUIRED);
 
-  add_sym_1 ("float", GFC_ISYM_REAL, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F77,
+  add_sym_1 ("float", GFC_ISYM_REAL, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_GNU,
 	     gfc_check_i, gfc_simplify_float, NULL,
 	     a, BT_INTEGER, di, REQUIRED);
 
-  add_sym_1 ("sngl", GFC_ISYM_REAL, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F77,
+  add_sym_1 ("sngl", GFC_ISYM_REAL, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_GNU,
 	     NULL, gfc_simplify_sngl, NULL,
 	     a, BT_REAL, dd, REQUIRED);
 
@@ -3386,6 +3386,14 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
     }
 
   if (check_intrinsic_standard (name, isym->standard, &expr->where) == FAILURE)
+    return MATCH_ERROR;
+
+  if ((isym->id == GFC_ISYM_REAL || isym->id == GFC_ISYM_DBLE
+       || isym->id == GFC_ISYM_CMPLX)
+      && gfc_init_expr
+      && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Function '%s' "
+			 "as initialization expression at %L", name,
+			 &expr->where) == FAILURE)
     return MATCH_ERROR;
 
   gfc_current_intrinsic_where = &expr->where;
