@@ -1,3 +1,8 @@
+2007-12-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* patch_tester.sh: New.
+	* prepare_patch.sh: New.
+
 2007-11-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	* compare-debug: Introduce -p flag to preserve .stripped files.
