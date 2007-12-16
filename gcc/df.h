@@ -559,9 +559,9 @@ struct df
 #define DF_LIVE_IN(BB) (DF_LIVE_BB_INFO(BB)->in) 
 #define DF_LIVE_OUT(BB) (DF_LIVE_BB_INFO(BB)->out) 
 
-/* These macros are currently used by only reg-stack since it is not
-   tolerant of uninitialized variables.  This intolerance should be
-   fixed because it causes other problems.  */ 
+/* These macros are used by passes that are not tolerant of
+   uninitialized variables.  This intolerance should eventually
+   be fixed.  */
 #define DF_LR_IN(BB) (DF_LR_BB_INFO(BB)->in) 
 #define DF_LR_OUT(BB) (DF_LR_BB_INFO(BB)->out) 
 
