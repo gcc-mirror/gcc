@@ -6552,7 +6552,7 @@ conservative_cost_threshold (loop_vec_info loop_vinfo,
     th = (unsigned) min_profitable_iters;
 
   if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))	      
-    fprintf (vect_dump, "not vectorized: vectorization may not be"
+    fprintf (vect_dump, "not vectorized: vectorization may not be "
 	     "profitable.");
   
   if (th && vect_print_dump_info (REPORT_DETAILS))

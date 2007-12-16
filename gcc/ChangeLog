@@ -1,3 +1,8 @@
+2007-12-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* tree-vect-transform.c (conservative_cost_threshold): Add missing
+	space to "not vectorized" message.
+
 2007-12-16  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR rtl-optimization/34415
@@ -33,8 +38,7 @@
 	(cris_print_base): Add gcc_assert for post_inc on CRIS_ACR_REGNUM.
 	(cris_print_operand) <case 'Z', case 'u'>: New cases.
 	<case REG of case 'H'>: Allow for CRIS_SRP_REGNUM.
-	(cris_reload_address_legitimized): Always return false for
-	TARGET_V32.
+	(cris_reload_address_legitimized): Always return false for TARGET_V32.
 	(cris_register_move_cost): New function, guts from
 	REGISTER_MOVE_COST adjusted for CRIS v32.
 	(cris_normal_notice_update_cc): New function split out from...
@@ -67,8 +71,7 @@
 	(CRIS_SUBTARGET_DEFAULT_ARCH): New macro, MASK_AVOID_GOTPLT for
 	v32, 0 otherwise.
 	(CRIS_CPP_SUBTARGET_SPEC, CRIS_CC1_SUBTARGET_SPEC,
-	CRIS_ASM_SUBTARGET_SPEC): Adjust for different
-	TARGET_CPU_DEFAULT.
+	CRIS_ASM_SUBTARGET_SPEC): Adjust for different TARGET_CPU_DEFAULT.
 	(CRIS_SUBTARGET_DEFAULT): Add CRIS_SUBTARGET_DEFAULT_ARCH.
 	* config/cris/cris.h: Sanity-check TARGET_CPU_DEFAULT for contents.
 	(CRIS_DEFAULT_TUNE, CRIS_ARCH_CPP_DEFAULT)
@@ -91,8 +94,8 @@
 	(REG_ALLOC_ORDER_V32): New macro.
 	(HARD_REGNO_MODE_OK): Do not allow larger-than-register-size modes
 	into CRIS_ACR_REGNUM.
-	(enum reg_class): New classes ACR_REGS, SPEC_ACR_REGS,
-	GENNONACR_REGS and SPEC_GENNONACR_REGS.
+	(enum reg_class): New classes ACR_REGS, SPEC_ACR_REGS, GENNONACR_REGS
+	and SPEC_GENNONACR_REGS.
 	(REG_CLASS_NAMES, REG_CLASS_CONTENTS): Adjust for new classes.
 	(REGNO_REG_CLASS): Give ACR_REGS for CRIS_ACR_REGNUM.
 	(MODE_CODE_BASE_REG_CLASS): Define, give for OCODE POST_INC
@@ -157,8 +160,7 @@
 	("*movdi_insn_non_v32"): New pattern, replacing "*movdi_insn" and
 	define_split.
 	(define_split for DI move): Match CRIS v32 only.
-	("*movsi_got_load", "*movsi_internal", "*addi"): Adjust for CRIS
-	v32.
+	("*movsi_got_load", "*movsi_internal", "*addi"): Adjust for CRIS v32.
 	("load_multiple", "store_multiple", "*addsbw_v32", "*addubw_v32")
 	("*adds<mode>_v32", "*addu<mode>_v32", "*bound<mode>_v32")
 	("*casesi_jump_v32", "*expanded_andsi_v32", "*expanded_andhi_v32")
@@ -186,16 +188,14 @@
 	(op-split-swapped, op-split-swapped-rx=rz): Make non-v32 only.
 	("dstep_mul", "xorsi3", "one_cmplsi2", "<shlr>si3")
 	("*expanded_<shlr><mode>", "*<shlr><mode>_lowpart", "ashl<mode>3")
-	("*ashl<mode>_lowpart", "abssi2", "clzsi2", "bswapsi2", "cris_swap_bits"): Specify "noov32" for
-	attr "cc".
-	("<su>mulsi3_highpart"): Ditto.  Correct operand 0 to
-	register_operand.
+	("*ashl<mode>_lowpart", "abssi2", "clzsi2", "bswapsi2")
+	("cris_swap_bits"): Specify "noov32" for attr "cc".
+	("<su>mulsi3_highpart"): Ditto.  Correct operand 0 to register_operand.
 	("andqi3"): Make define_expand.
 	("*return_expanded"): For attr "slottable", change from "has_slot"
 	to "has_return_slot".
 	("cris_casesi_non_v32"): New pattern, old contents of "casesi".
-	("casesi"): Divert into "cris_casesi_v32" and
-	"cris_casesi_non_v32".
+	("casesi"): Divert into "cris_casesi_v32" and "cris_casesi_non_v32".
 	(moversideqi, movemsideqi, mover2side): Require
 	TARGET_SIDE_EFFECT_PREFIXES.
 	(gotplt-to-plt, gotplt-to-plt-side): Change from CRIS_UNSPEC_PLT
@@ -254,7 +254,7 @@
 2007-12-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (sse4_2_pcmpestr): Use reg_not_xmm0_operand
-	constraint for operand2.  Use nonimm_not_xmm0_operand constraint
+	constraint for operand 2.  Use nonimm_not_xmm0_operand constraint
 	for operand 4.  Update arguments in the call to
 	gen_sse4_2_pcmpestr_cconly.
 	(sse_4_2_pcmpestr_cconly): Renumber insn operands and update insn
@@ -263,6 +263,7 @@
 	Use nonimm_not_xmm0_operand constraint for operand 3.  Update
 	arguments in the call to gen_sse4_2_pcmpistr_cconly.
 	(sse_4_2_pcmpistr_cconly): Renumber insn operands and update insn
+	template accordingly.
 
 2007-12-14  Richard Guenther  <rguenther@suse.de>
 
