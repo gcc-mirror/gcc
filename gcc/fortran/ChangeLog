@@ -1,3 +1,9 @@
+2007-12-16  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	* errors.c (gfc_notify_std): As originally stated but improperly
+	changed, disregard warnings_are_errors for deciding which buffer
+	to use for warnings.
+
 2007-12-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31213
