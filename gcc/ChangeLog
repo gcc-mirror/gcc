@@ -1,3 +1,9 @@
+2007-12-17  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR target/34025
+	* config/i386/t-crtpc: Add $(MULTILIB_CFLAGS).
+	* config/i386/t-crtfm: Likewise.
+
 2007-12-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (WIDEST_HARDWARE_FP_SIZE): Define.
