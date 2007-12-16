@@ -1,3 +1,8 @@
+2007-12-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/34305
+	* gfortran.dg/real_dimension_1.f:  New test case.
+
 2007-12-16  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	* gcc.dg/torture/pr24257.c: Remove -O from options.
