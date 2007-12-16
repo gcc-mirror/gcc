@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fgcse -fgcse-sm" } */
+/* { dg-options "-fgcse -fgcse-sm" } */
 
 typedef struct A {
     int buf, left;

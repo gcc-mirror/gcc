@@ -1,3 +1,7 @@
+2007-12-16  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	* gcc.dg/torture/pr24257.c: Remove -O from options.
+
 2007-12-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34246
