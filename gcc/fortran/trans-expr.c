@@ -2559,7 +2559,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
   gfc_finish_interface_mapping (&mapping, &se->pre, &se->post);
 
   ts = sym->ts;
-  if (ts.type == BT_CHARACTER)
+  if (ts.type == BT_CHARACTER && !sym->attr.is_bind_c)
     {
       if (sym->ts.cl->length == NULL)
 	{
@@ -2736,15 +2736,6 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
       && !sym->attr.always_explicit)
     se->expr = fold_convert (gfc_get_real_type (sym->ts.kind), se->expr);
 
-  /* Bind(C) character variables may have only length 1.  */
-  if (sym->ts.type == BT_CHARACTER && sym->attr.is_bind_c)
-    {
-      gcc_assert (sym->ts.cl->length
-		  && sym->ts.cl->length->expr_type == EXPR_CONSTANT
-		  && mpz_cmp_si (sym->ts.cl->length->value.integer, 1) == 0);
-      se->string_length = build_int_cst (gfc_charlen_type_node, 1);
-    }
-
   /* A pure function may still have side-effects - it may modify its
      parameters.  */
   TREE_SIDE_EFFECTS (se->expr) = 1;
@@ -2820,12 +2811,34 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlength, tree dest,
   tree tmp4;
   stmtblock_t tempblock;
 
-  dlen = fold_convert (size_type_node, gfc_evaluate_now (dlength, block));
-  slen = fold_convert (size_type_node, gfc_evaluate_now (slength, block));
+  if (slength != NULL_TREE)
+    {
+      slen = fold_convert (size_type_node, gfc_evaluate_now (slength, block));
+      ssc = gfc_to_single_character (slen, src);
+    }
+  else
+    {
+      slen = build_int_cst (size_type_node, 1);
+      ssc =  src;
+    }
 
-  /* Deal with single character specially.  */
-  dsc = gfc_to_single_character (dlen, dest);
-  ssc = gfc_to_single_character (slen, src);
+  if (dlength != NULL_TREE)
+    {
+      dlen = fold_convert (size_type_node, gfc_evaluate_now (dlength, block));
+      dsc = gfc_to_single_character (slen, dest);
+    }
+  else
+    {
+      dlen = build_int_cst (size_type_node, 1);
+      dsc =  dest;
+    }
+
+  if (slength != NULL_TREE && POINTER_TYPE_P (TREE_TYPE (src)))
+    ssc = gfc_to_single_character (slen, src);
+  if (dlength != NULL_TREE && POINTER_TYPE_P (TREE_TYPE (dest)))
+    dsc = gfc_to_single_character (dlen, dest);
+
+
   if (dsc != NULL_TREE && ssc != NULL_TREE)
     {
       gfc_add_modify_expr (block, dsc, ssc);
@@ -2859,8 +2872,15 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlength, tree dest,
      We're now doing it here for better optimization, but the logic
      is the same.  */
 
-  dest = fold_convert (pvoid_type_node, dest);
-  src = fold_convert (pvoid_type_node, src);
+  if (dlength)
+    dest = fold_convert (pvoid_type_node, dest);
+  else
+    dest = gfc_build_addr_expr (pvoid_type_node, dest);
+
+  if (slength)
+    src = fold_convert (pvoid_type_node, src);
+  else
+    src = gfc_build_addr_expr (pvoid_type_node, src);
 
   /* Truncate string if source is too long.  */
   cond2 = fold_build2 (GE_EXPR, boolean_type_node, slen, dlen);
@@ -3806,17 +3826,25 @@ gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, gfc_typespec ts,
 
   if (ts.type == BT_CHARACTER)
     {
-      gcc_assert (lse->string_length != NULL_TREE
-	      && rse->string_length != NULL_TREE);
+      tree rlen = NULL;
+      tree llen = NULL;
 
-      gfc_conv_string_parameter (lse);
-      gfc_conv_string_parameter (rse);
+      if (lse->string_length != NULL_TREE)
+	{
+	  gfc_conv_string_parameter (lse);
+	  gfc_add_block_to_block (&block, &lse->pre);
+	  llen = lse->string_length;
+	}
 
-      gfc_add_block_to_block (&block, &lse->pre);
-      gfc_add_block_to_block (&block, &rse->pre);
+      if (rse->string_length != NULL_TREE)
+	{
+	  gcc_assert (rse->string_length != NULL_TREE);
+	  gfc_conv_string_parameter (rse);
+	  gfc_add_block_to_block (&block, &rse->pre);
+	  rlen = rse->string_length;
+	}
 
-      gfc_trans_string_copy (&block, lse->string_length, lse->expr,
-			     rse->string_length, rse->expr);
+      gfc_trans_string_copy (&block, llen, lse->expr, rlen, rse->expr);
     }
   else if (ts.type == BT_DERIVED && ts.derived->attr.alloc_comp)
     {

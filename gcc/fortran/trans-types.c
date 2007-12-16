@@ -717,8 +717,8 @@ gfc_init_types (void)
       PUSH_TYPE (name_buf, type);
     }
 
-  gfc_character1_type_node = build_type_variant (unsigned_char_type_node, 
-						 0, 0);
+  gfc_character1_type_node = build_qualified_type (unsigned_char_type_node, 
+						   TYPE_UNQUALIFIED);
   PUSH_TYPE ("character(kind=1)", gfc_character1_type_node);
 
   PUSH_TYPE ("byte", unsigned_char_type_node);
@@ -1555,7 +1555,11 @@ gfc_sym_type (gfc_symbol * sym)
   if (sym->backend_decl && !sym->attr.function)
     return TREE_TYPE (sym->backend_decl);
 
-  type = gfc_typenode_for_spec (&sym->ts);
+  if (sym->ts.type == BT_CHARACTER && sym->attr.is_bind_c
+      && (sym->attr.function || sym->attr.result))
+    type = gfc_character1_type_node;
+  else
+    type = gfc_typenode_for_spec (&sym->ts);
 
   if (sym->attr.dummy && !sym->attr.function && !sym->attr.value)
     byref = 1;
