@@ -3149,8 +3149,11 @@ compare_bound (gfc_expr *a, gfc_expr *b)
       || b == NULL || b->expr_type != EXPR_CONSTANT)
     return CMP_UNKNOWN;
 
+  /* If either of the types isn't INTEGER, we must have
+     raised an error earlier.  */
+
   if (a->ts.type != BT_INTEGER || b->ts.type != BT_INTEGER)
-    gfc_internal_error ("compare_bound(): Bad expression");
+    return CMP_UNKNOWN;
 
   i = mpz_cmp (a->value.integer, b->value.integer);
 
