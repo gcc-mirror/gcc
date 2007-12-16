@@ -1,3 +1,15 @@
+2007-12-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34246
+	* trans-types.c (gfc_init_types): Change build_type_variant
+	to build_qualified_type.
+	(gfc_sym_type): Return gfc_character1_type_node for
+	character-returning bind(C) functions.
+	* trans-expr.c (gfc_conv_function_call): Do not set
+	se->string_length for character-returning bind(c) functions.
+	(gfc_trans_string_copy,gfc_trans_scalar_assign):
+	Support also single characters.
+
 2007-12-16  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	* errors.c (gfc_notify_std): As originally stated but improperly

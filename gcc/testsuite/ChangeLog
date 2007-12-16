@@ -1,3 +1,8 @@
+2007-12-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34246
+	* gfortran.dg/bind_c_usage_16.f03: Extend test.
+
 2007-12-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31213
