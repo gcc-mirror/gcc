@@ -1,3 +1,8 @@
+2007-12-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34495
+	* gfortran.dg/initialization_16.f90: New.
+
 2007-12-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/34305

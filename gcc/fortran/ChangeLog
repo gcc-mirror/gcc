@@ -1,3 +1,10 @@
+2007-12-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34495
+	* intrinsic.c (add_functions): Mark float and sngl as STD_GNU.
+	(gfc_intrinsic_func_interface): Reject REAL, DBLE and CMPLX
+	in initialization expressions for -std=f95.
+
 2007-12-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/34305
