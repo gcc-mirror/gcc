@@ -2364,6 +2364,7 @@ void gfc_show_namelist (gfc_namelist *);
 void gfc_show_namespace (gfc_namespace *);
 void gfc_show_ref (gfc_ref *);
 void gfc_show_symbol (gfc_symbol *);
+void gfc_show_symbol_n (const char *, gfc_symbol *);
 void gfc_show_typespec (gfc_typespec *);
 
 /* parse.c */

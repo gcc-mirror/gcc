@@ -1225,10 +1225,21 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 
 	  loopbody = gfc_finish_block (&body);
 
-	  gfc_init_se (&se, NULL);
-	  gfc_conv_expr (&se, c->iterator->var);
-	  gfc_add_block_to_block (pblock, &se.pre);
-	  loopvar = se.expr;
+	  if (c->iterator->var->symtree->n.sym->backend_decl)
+	    {
+	      gfc_init_se (&se, NULL);
+	      gfc_conv_expr (&se, c->iterator->var);
+	      gfc_add_block_to_block (pblock, &se.pre);
+	      loopvar = se.expr;
+	    }
+	  else
+	    {
+	      /* If the iterator appears in a specification expression in
+		 an interface mapping, we need to make a temp for the loop
+		 variable because it is not declared locally.  */
+	      loopvar = gfc_typenode_for_spec (&c->iterator->var->ts);
+	      loopvar = gfc_create_var (loopvar, "loopvar");
+	    }
 
 	  /* Make a temporary, store the current value in that
 	     and return it, once the loop is done.  */
@@ -4491,6 +4502,47 @@ gfc_get_dataptr_offset (stmtblock_t *block, tree parm, tree desc, tree offset,
 }
 
 
+/* gfc_conv_expr_descriptor needs the character length of elemental
+   functions before the function is called so that the size of the
+   temporary can be obtained.  The only way to do this is to convert
+   the expression, mapping onto the actual arguments.  */
+static void
+get_elemental_fcn_charlen (gfc_expr *expr, gfc_se *se)
+{
+  gfc_interface_mapping mapping;
+  gfc_formal_arglist *formal;
+  gfc_actual_arglist *arg;
+  gfc_se tse;
+
+  formal = expr->symtree->n.sym->formal;
+  arg = expr->value.function.actual;
+  gfc_init_interface_mapping (&mapping);
+
+  /* Set se = NULL in the calls to the interface mapping, to supress any
+     backend stuff.  */
+  for (; arg != NULL; arg = arg->next, formal = formal ? formal->next : NULL)
+    {
+      if (!arg->expr)
+	continue;
+      if (formal->sym)
+	gfc_add_interface_mapping (&mapping, formal->sym, NULL, arg->expr);
+    }
+
+  gfc_init_se (&tse, NULL);
+
+  /* Build the expression for the character length and convert it.  */
+  gfc_apply_interface_mapping (&mapping, &tse, expr->ts.cl->length);
+
+  gfc_add_block_to_block (&se->pre, &tse.pre);
+  gfc_add_block_to_block (&se->post, &tse.post);
+  tse.expr = fold_convert (gfc_charlen_type_node, tse.expr);
+  tse.expr = fold_build2 (MAX_EXPR, gfc_charlen_type_node, tse.expr,
+			  build_int_cst (gfc_charlen_type_node, 0));
+  expr->ts.cl->backend_decl = tse.expr;
+  gfc_free_interface_mapping (&mapping);
+}
+
+
 /* Convert an array for passing as an actual argument.  Expressions and
    vector subscripts are evaluated and stored in a temporary, which is then
    passed.  For whole arrays the descriptor is passed.  For array sections
@@ -4624,6 +4676,10 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	{
 	  /* Elemental function.  */
 	  need_tmp = 1;
+	  if (expr->ts.type == BT_CHARACTER
+		&& expr->ts.cl->length->expr_type != EXPR_CONSTANT)
+	    get_elemental_fcn_charlen (expr, se);
+
 	  info = NULL;
 	}
       else

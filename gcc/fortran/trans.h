@@ -695,6 +695,7 @@ typedef struct gfc_interface_sym_mapping
   struct gfc_interface_sym_mapping *next;
   gfc_symbol *old;
   gfc_symtree *new;
+  gfc_expr *expr;
 }
 gfc_interface_sym_mapping;
 
@@ -716,7 +717,7 @@ gfc_interface_mapping;
 void gfc_init_interface_mapping (gfc_interface_mapping *);
 void gfc_free_interface_mapping (gfc_interface_mapping *);
 void gfc_add_interface_mapping (gfc_interface_mapping *,
-				gfc_symbol *, gfc_se *);
+				gfc_symbol *, gfc_se *, gfc_expr *);
 void gfc_finish_interface_mapping (gfc_interface_mapping *,
 				   stmtblock_t *, stmtblock_t *);
 void gfc_apply_interface_mapping (gfc_interface_mapping *,
