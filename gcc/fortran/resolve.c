@@ -1425,6 +1425,8 @@ resolve_generic_f0 (gfc_expr *expr, gfc_symbol *sym)
 	  else if (s->result != NULL && s->result->as != NULL)
 	    expr->rank = s->result->as->rank;
 
+	  gfc_set_sym_referenced (expr->value.function.esym);
+
 	  return MATCH_YES;
 	}
 

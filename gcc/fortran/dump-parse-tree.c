@@ -731,6 +731,17 @@ gfc_show_symbol (gfc_symbol *sym)
 }
 
 
+/* Show a symbol for diagnostic purposes. */
+void
+gfc_show_symbol_n (const char * msg, gfc_symbol *sym)
+{
+  if (msg)
+    gfc_status (msg);
+  gfc_show_symbol (sym);
+  gfc_status_char ('\n');
+}
+
+
 /* Show a user-defined operator.  Just prints an operator
    and the name of the associated subroutine, really.  */
 
