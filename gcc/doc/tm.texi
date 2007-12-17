@@ -2614,9 +2614,9 @@ of the scratch register(s).
 In some cases, both an intermediate and a scratch register are required.
 
 For input reloads, this target hook is called with nonzero @var{in_p},
-and @var{x} is an rtx that needs to be copied to a register in of class
+and @var{x} is an rtx that needs to be copied to a register of class
 @var{reload_class} in @var{reload_mode}.  For output reloads, this target
-hook is called with zero @var{in_p}, and a register of class @var{reload_mode}
+hook is called with zero @var{in_p}, and a register of class @var{reload_class}
 needs to be copied to rtx @var{x} in @var{reload_mode}.
 
 If copying a register of @var{reload_class} from/to @var{x} requires
