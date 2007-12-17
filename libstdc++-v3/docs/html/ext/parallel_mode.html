@@ -425,7 +425,7 @@ For each algorithm, a minimum problem size can be stated,
 usually using the variable
 <code>__gnu_parallel::Settings::[algorithm]_minimal_n</code>.
 Please see <a href="latest-doxygen/settings_8h.html">
-<code>&lt;settings.h&gt;</code><a> for details.</p>
+<code>&lt;settings.h&gt;</code></a> for details.</p>
 
 
 
@@ -434,7 +434,7 @@ Please see <a href="latest-doxygen/settings_8h.html">
 <p>All parallel algorithms are intended to have signatures that are
 equivalent to the ISO C++ algorithms replaced. For instance, the
 <code>std::adjacent_find</code> function is declared as:
-
+</p>
 <pre>
 namespace std
 {
@@ -444,8 +444,10 @@ namespace std
 }
 </pre>
 
+<p>
 Which means that there should be something equivalent for the parallel
 version. Indeed, this is the case:
+</p>
 
 <pre>
 namespace std
@@ -495,7 +497,7 @@ of threads available, etc., and are denoted by the use of the enum
 
 <p> Putting all this together, the general view of overloads for the
 parallel algorithms look like this:
-<p>
+</p>
 <ul>
    <li>ISO C++ signature</li>
    <li>ISO C++ signature + sequential_tag argument</li>
