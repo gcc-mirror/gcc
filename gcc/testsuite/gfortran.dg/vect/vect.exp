@@ -103,6 +103,12 @@ lappend DEFAULT_VECTCFLAGS "-ffast-math"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/fast-math-*.\[fF\]{,90,95,03} ]]  \
         "" $DEFAULT_VECTCFLAGS
 
+# -fvect-cost-model tests
+set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
+lappend DEFAULT_VECTCFLAGS "-fvect-cost-model"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/cost-model-*.\[fF\]{,90,95,03} ]]  \
+        "" $DEFAULT_VECTCFLAGS
+
 # --param vect-max-version-for-alias-checks=0 tests
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
 lappend DEFAULT_VECTCFLAGS "--param" "vect-max-version-for-alias-checks=0"
