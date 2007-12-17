@@ -4550,7 +4550,7 @@ int
 main ()
 {
 
-    #if MPFR_VERSION < MPFR_VERSION_NUM(2,2,0)
+    #if MPFR_VERSION < MPFR_VERSION_NUM(2,2,1)
     choke me
     #endif
     mpfr_t n;
@@ -4600,7 +4600,7 @@ int
 main ()
 {
 
-    #if MPFR_VERSION < MPFR_VERSION_NUM(2,2,1)
+    #if MPFR_VERSION < MPFR_VERSION_NUM(2,3,0)
     choke me
     #endif
     mpfr_t n; mpfr_init(n);
@@ -4656,7 +4656,7 @@ rm -f conftest.err conftest.$ac_objext \
   CFLAGS="$saved_CFLAGS"
 
   if test x$have_gmp != xyes; then
-    { { echo "$as_me:$LINENO: error: Building GCC requires GMP 4.1+ and MPFR 2.2.1+.
+    { { echo "$as_me:$LINENO: error: Building GCC requires GMP 4.1+ and MPFR 2.3.0+.
 Try the --with-gmp and/or --with-mpfr options to specify their locations.
 Copies of these libraries' source code can be found at their respective
 hosting sites as well as at ftp://gcc.gnu.org/pub/gcc/infrastructure/.
@@ -4664,7 +4664,7 @@ See also http://gcc.gnu.org/install/prerequisites.html for additional info.
 If you obtained GMP and/or MPFR from a vendor distribution package, make
 sure that you have installed both the libraries and the header files.
 They may be located in separate packages." >&5
-echo "$as_me: error: Building GCC requires GMP 4.1+ and MPFR 2.2.1+.
+echo "$as_me: error: Building GCC requires GMP 4.1+ and MPFR 2.3.0+.
 Try the --with-gmp and/or --with-mpfr options to specify their locations.
 Copies of these libraries' source code can be found at their respective
 hosting sites as well as at ftp://gcc.gnu.org/pub/gcc/infrastructure/.

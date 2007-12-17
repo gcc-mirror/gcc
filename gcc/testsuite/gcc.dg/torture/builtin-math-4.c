@@ -7,8 +7,6 @@
    Origin: Kaveh R. Ghazi,  April 23, 2007.  */
 
 /* { dg-do link } */
-/* Expect failures at least until mpfr-2.3.0 is released. */
-/* { dg-xfail-if "This test requires mpfr-2.3.0" { *-*-* } { "*" } { "" } } */
 
 /* All references to link_error should go away at compile-time.  */
 extern void link_error(int);
