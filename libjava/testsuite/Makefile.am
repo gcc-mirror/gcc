@@ -43,7 +43,7 @@ if JAVA_MAINTAINER_MODE
 	      testdep="libjava.loader/MyLoader.java";; \
 	    libjava.jni/register2.java) \
 	      ;; \
-	    libjava.jni/*.java) \
+	    libjava.jni/*.java|libjava.jvmti/interp/*.java) \
 	      genheader=-jni;; \
 	    libjava.jvmti/*.java|libjava.cni/*.java) \
 	      genheader=-cni;; \

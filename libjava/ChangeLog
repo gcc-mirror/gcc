@@ -1,3 +1,9 @@
+2007-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/Makefile.am (compile-tests): Build
+	libjava.jvmti/interp/*.h with -jni rather than -cni.
+	* testsuite/Makefile.in: Rebuilt.
+
 2007-12-08  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* configure.host: Add bits for i?86-*-darwin9 and x86_64-*-darwin9.
