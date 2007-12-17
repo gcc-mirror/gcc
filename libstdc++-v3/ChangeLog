@@ -1,5 +1,9 @@
 2007-12-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/bits/locale_classes.h: Simplify RTTI checks.
+
+2007-12-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* docs/html/test.html: Fix paths and notes on running subset of tests.
 	* docs/html/ext/parallel_mode.html: Fix markup typos.
 	* docs/html/ext/pb_ds/index.html: Likewise.
