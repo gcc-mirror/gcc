@@ -1,3 +1,16 @@
+2007-12-17  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* tree-vectorizer.h (verbosity_levels): Add new verbosity level
+	REPORT_COST.
+	* tree-vect-transform.c (vect_estimate_min_profitable_iters): Change
+	verbosity level to REPORT_COST.
+	(vect_model_reduction_cost): Likewise.
+	(vect_model_induction_cost): Likewise.
+	(vect_model_simple_cost): likewise.
+	(vect_model_store_cost): likewise.
+	(vect_model_load_cost): likewise.
+	(conservative_cost_threshold): Likewise. Remove print.
+
 2007-12-17  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	* doc/tm.texi (TARGET_SECONDARY_RELOAD): Fix typos.
