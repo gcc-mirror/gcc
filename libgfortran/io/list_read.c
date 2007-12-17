@@ -307,15 +307,31 @@ eat_separator (st_parameter_dt *dtp)
       break;
 
     case '\r':
+      dtp->u.p.at_eol = 1;
       n = next_char(dtp);
       if (n == '\n')
-	dtp->u.p.at_eol = 1;
+	{
+	  if (dtp->u.p.namelist_mode)
+	    {
+	      do
+		c = next_char (dtp);
+	      while (c == '\n' || c == '\r' || c == ' ');
+	      unget_char (dtp, c);
+	    }
+	}
       else
 	unget_char (dtp, n);
       break;
 
     case '\n':
       dtp->u.p.at_eol = 1;
+      if (dtp->u.p.namelist_mode)
+	{
+	  do
+	    c = next_char (dtp);
+	  while (c == '\n' || c == '\r' || c == ' ');
+	  unget_char (dtp, c);
+	}
       break;
 
     case '!':
@@ -1141,12 +1157,7 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
 
  exp2:
   if (!isdigit (c))
-    {
-      if (c == 'i' || c == 'I' || c == 'n' || c == 'N')
-	goto inf_nan;
-      else
-	goto bad;
-    }
+    goto bad;
 
   push_char (dtp, c);
 
@@ -1315,7 +1326,7 @@ read_real (st_parameter_dt *dtp, int length)
 {
   char c, message[100];
   int seen_dp;
-  int is_inf, i;
+  int is_inf;
 
   seen_dp = 0;
 
@@ -1578,20 +1589,22 @@ read_real (st_parameter_dt *dtp, int length)
       l_push_char (dtp, c);
     }
 
-  if (!is_separator (c) || c == '=')
+  if (!is_separator (c))
     goto unwind;
 
-  if (dtp->u.p.namelist_mode && c != ',' && c != '/')
-    for (i = 0; i < 63; i++)
-    { 
-      eat_spaces (dtp);
-      c = next_char (dtp);
-      l_push_char (dtp, c);
-      if (c == '=')
-	goto unwind;
+  if (dtp->u.p.namelist_mode)
+    {	
+      if (c == ' ' || c =='\n' || c == '\r')
+	{
+	  do
+	    c = next_char (dtp);
+	  while (c == ' ' || c =='\n' || c == '\r');
 
-      if (c == ',' || c == '/' || !is_separator(c))
-	break;
+	  l_push_char (dtp, c);
+
+	  if (c == '=')
+	    goto unwind;
+	}
     }
 
   if (is_inf)
@@ -2594,7 +2607,8 @@ get_name:
 
   do
     {
-      push_char (dtp, tolower(c));
+      if (!is_separator (c))
+	push_char (dtp, tolower(c));
       c = next_char (dtp);
     } while (!( c=='=' || c==' ' || c=='\t' || c =='(' || c =='%' ));
 
