@@ -558,7 +558,7 @@ compile-tests:
 @JAVA_MAINTAINER_MODE_TRUE@	      testdep="libjava.loader/MyLoader.java";; \
 @JAVA_MAINTAINER_MODE_TRUE@	    libjava.jni/register2.java) \
 @JAVA_MAINTAINER_MODE_TRUE@	      ;; \
-@JAVA_MAINTAINER_MODE_TRUE@	    libjava.jni/*.java) \
+@JAVA_MAINTAINER_MODE_TRUE@	    libjava.jni/*.java|libjava.jvmti/interp/*.java) \
 @JAVA_MAINTAINER_MODE_TRUE@	      genheader=-jni;; \
 @JAVA_MAINTAINER_MODE_TRUE@	    libjava.jvmti/*.java|libjava.cni/*.java) \
 @JAVA_MAINTAINER_MODE_TRUE@	      genheader=-cni;; \
