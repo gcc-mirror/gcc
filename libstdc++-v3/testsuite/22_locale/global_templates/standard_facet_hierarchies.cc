@@ -36,7 +36,7 @@ int main()
 
   locale loc_c = locale::classic();
   locale loc_base = loc_c;
-  locale loc_derived(loc_c, new derived_facet(""));
+  locale loc_derived(loc_c, new derived_facet("C"));
 
   bool b;
 
