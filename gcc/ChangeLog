@@ -1,3 +1,9 @@
+2007-12-17  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/34445
+	* tree-vect-trasnform.c (vect_estimate_min_profitable_iters): Skip 
+	stmts (including live stmts) that are not relevant.
+
 2007-12-17  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR target/34025
