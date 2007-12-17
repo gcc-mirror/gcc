@@ -3850,7 +3850,7 @@ end program test_fdate
 @code{FLOAT(I)} converts the integer @var{I} to a default real value.
 
 @item @emph{Standard}:
-GNU extension
+F77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -9700,7 +9700,7 @@ to a default real value. This is an archaic form of @code{REAL}
 that is specific to one type for @var{A}.
 
 @item @emph{Standard}:
-GNU extension
+F77 and later
 
 @item @emph{Class}:
 Elemental function

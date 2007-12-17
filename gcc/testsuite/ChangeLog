@@ -1,3 +1,8 @@
+2007-12-17  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/initialization_16.f90: Update as FLOAT/SNGL are
+	part of Fortran 77/95/2003.
+
 2007-12-17  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/34445
