@@ -1,3 +1,9 @@
+2007-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/34506
+	* parser.c (cp_parser_omp_all_clauses): Accept optional comma
+	in between clauses.
+
 2007-12-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/7081

@@ -7262,13 +7262,21 @@ c_parser_omp_all_clauses (c_parser *parser, unsigned int mask,
 			  const char *where)
 {
   tree clauses = NULL;
+  bool first = true;
 
   while (c_parser_next_token_is_not (parser, CPP_PRAGMA_EOL))
     {
-      location_t here = c_parser_peek_token (parser)->location;
-      const pragma_omp_clause c_kind = c_parser_omp_clause_name (parser);
+      location_t here;
+      pragma_omp_clause c_kind;
       const char *c_name;
       tree prev = clauses;
+
+      if (!first && c_parser_next_token_is (parser, CPP_COMMA))
+	c_parser_consume_token (parser);
+
+      first = false;
+      here = c_parser_peek_token (parser)->location;
+      c_kind = c_parser_omp_clause_name (parser);
 
       switch (c_kind)
 	{
