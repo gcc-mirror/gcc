@@ -3230,7 +3230,7 @@ Only warns when the converted pointer is dereferenced.
 Does not warn about incomplete types.
 
 @item -Wstrict-overflow
-@item -Wstrict-overflow=@var{n}
+@itemx -Wstrict-overflow=@var{n}
 @opindex Wstrict-overflow
 This option is only active when @option{-fstrict-overflow} is active.
 It warns about cases where the compiler optimizes based on the
