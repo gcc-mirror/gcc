@@ -1,3 +1,11 @@
+2007-12-17  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* gcc.dg/tree-ssa/gen-vect-2.c: Change verbosity level to 4.	
+	* gcc.dg/tree-ssa/gen-vect-32.c: Likewise
+	* gcc.dg/tree-ssa/gen-vect-25.c: Likewise
+	* gcc.dg/tree-ssa/gen-vect-26.c: Likewise
+	* gcc.dg/tree-ssa/gen-vect-28.c: Likewise
+
 2007-12-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/34506

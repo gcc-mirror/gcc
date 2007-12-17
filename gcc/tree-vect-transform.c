@@ -134,7 +134,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
   /* Cost model disabled.  */
   if (!flag_vect_cost_model)
     {
-      if (vect_print_dump_info (REPORT_DETAILS))
+      if (vect_print_dump_info (REPORT_COST))
         fprintf (vect_dump, "cost model disabled.");      
       return 0;
     }
@@ -153,7 +153,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
       /*  FIXME: Make cost depend on complexity of individual check.  */
       vec_outside_cost +=
         VEC_length (tree, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo));
-      if (vect_print_dump_info (REPORT_DETAILS))
+      if (vect_print_dump_info (REPORT_COST))
         fprintf (vect_dump, "cost model: Adding cost of checks for loop "
                  "versioning to treat misalignment.\n");
     }
@@ -163,7 +163,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
       /*  FIXME: Make cost depend on complexity of individual check.  */
       vec_outside_cost +=
         VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo));
-      if (vect_print_dump_info (REPORT_DETAILS))
+      if (vect_print_dump_info (REPORT_COST))
         fprintf (vect_dump, "cost model: Adding cost of checks for loop "
                  "versioning aliasing.\n");
     }
@@ -224,14 +224,14 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
   if (byte_misalign < 0)
     {
       peel_iters_prologue = vf/2;
-      if (vect_print_dump_info (REPORT_DETAILS))
+      if (vect_print_dump_info (REPORT_COST))
         fprintf (vect_dump, "cost model: "
                  "prologue peel iters set to vf/2.");
 
       /* If peeling for alignment is unknown, loop bound of main loop becomes
          unknown.  */
       peel_iters_epilogue = vf/2;
-      if (vect_print_dump_info (REPORT_DETAILS))
+      if (vect_print_dump_info (REPORT_COST))
         fprintf (vect_dump, "cost model: "
                  "epilogue peel iters set to vf/2 because "
                  "peeling for alignment is unknown .");
@@ -261,7 +261,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
       if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
         {
           peel_iters_epilogue = vf/2;
-          if (vect_print_dump_info (REPORT_DETAILS))
+          if (vect_print_dump_info (REPORT_COST))
             fprintf (vect_dump, "cost model: "
                      "epilogue peel iters set to vf/2 because "
                      "loop iterations are unknown .");
@@ -391,7 +391,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
   /* vector version will never be profitable.  */
   else
     {
-      if (vect_print_dump_info (REPORT_DETAILS))
+      if (vect_print_dump_info (REPORT_COST))
         fprintf (vect_dump, "cost model: vector iteration cost = %d "
                  "is divisible by scalar iteration cost = %d by a factor "
                  "greater than or equal to the vectorization factor = %d .",
@@ -399,7 +399,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
       return -1;
     }
 
-  if (vect_print_dump_info (REPORT_DETAILS))
+  if (vect_print_dump_info (REPORT_COST))
     {
       fprintf (vect_dump, "Cost model analysis: \n");
       fprintf (vect_dump, "  Vector inside of loop cost: %d\n",
@@ -425,7 +425,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
        then skip the vectorized loop.  */
   min_profitable_iters--;
 
-  if (vect_print_dump_info (REPORT_DETAILS))
+  if (vect_print_dump_info (REPORT_COST))
     fprintf (vect_dump, "  Profitability threshold = %d\n",
 	     min_profitable_iters);
     
@@ -465,7 +465,7 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
   vectype = get_vectype_for_scalar_type (TREE_TYPE (reduction_op));
   if (!vectype)
     {
-      if (vect_print_dump_info (REPORT_DETAILS))
+      if (vect_print_dump_info (REPORT_COST))
         {
           fprintf (vect_dump, "unsupported data-type ");
           print_generic_expr (vect_dump, TREE_TYPE (reduction_op), TDF_SLIM);
@@ -520,7 +520,7 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
 
   STMT_VINFO_OUTSIDE_OF_LOOP_COST (stmt_info) = outer_cost;
 
-  if (vect_print_dump_info (REPORT_DETAILS))
+  if (vect_print_dump_info (REPORT_COST))
     fprintf (vect_dump, "vect_model_reduction_cost: inside_cost = %d, "
              "outside_cost = %d .", STMT_VINFO_INSIDE_OF_LOOP_COST (stmt_info),
              STMT_VINFO_OUTSIDE_OF_LOOP_COST (stmt_info));
@@ -541,7 +541,7 @@ vect_model_induction_cost (stmt_vec_info stmt_info, int ncopies)
   /* prologue cost for vec_init and vec_step.  */
   STMT_VINFO_OUTSIDE_OF_LOOP_COST (stmt_info) = 2 * TARG_SCALAR_TO_VEC_COST;
   
-  if (vect_print_dump_info (REPORT_DETAILS))
+  if (vect_print_dump_info (REPORT_COST))
     fprintf (vect_dump, "vect_model_induction_cost: inside_cost = %d, "
              "outside_cost = %d .", STMT_VINFO_INSIDE_OF_LOOP_COST (stmt_info),
              STMT_VINFO_OUTSIDE_OF_LOOP_COST (stmt_info));
@@ -570,7 +570,7 @@ vect_model_simple_cost (stmt_vec_info stmt_info, int ncopies,
 	outside_cost += TARG_SCALAR_TO_VEC_COST; 
     }
   
-  if (vect_print_dump_info (REPORT_DETAILS))
+  if (vect_print_dump_info (REPORT_COST))
     fprintf (vect_dump, "vect_model_simple_cost: inside_cost = %d, "
              "outside_cost = %d .", inside_cost, outside_cost);
 
@@ -628,7 +628,7 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
       inside_cost = ncopies * exact_log2(group_size) * group_size 
              * TARG_VEC_STMT_COST;
 
-      if (vect_print_dump_info (REPORT_DETAILS))
+      if (vect_print_dump_info (REPORT_COST))
         fprintf (vect_dump, "vect_model_store_cost: strided group_size = %d .",
                  group_size);
 
@@ -637,7 +637,7 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
   /* Costs of the stores.  */
   inside_cost += ncopies * TARG_VEC_STORE_COST;
 
-  if (vect_print_dump_info (REPORT_DETAILS))
+  if (vect_print_dump_info (REPORT_COST))
     fprintf (vect_dump, "vect_model_store_cost: inside_cost = %d, "
              "outside_cost = %d .", inside_cost, outside_cost);
 
@@ -688,7 +688,7 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, slp_tree slp_node)
       inside_cost = ncopies * exact_log2(group_size) * group_size
 	* TARG_VEC_STMT_COST;
 
-      if (vect_print_dump_info (REPORT_DETAILS))
+      if (vect_print_dump_info (REPORT_COST))
         fprintf (vect_dump, "vect_model_load_cost: strided group_size = %d .",
                  group_size);
 
@@ -701,7 +701,7 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, slp_tree slp_node)
       {
         inside_cost += ncopies * TARG_VEC_LOAD_COST;
 
-        if (vect_print_dump_info (REPORT_DETAILS))
+        if (vect_print_dump_info (REPORT_COST))
           fprintf (vect_dump, "vect_model_load_cost: aligned.");
 
         break;
@@ -711,7 +711,7 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, slp_tree slp_node)
         /* Here, we assign an additional cost for the unaligned load.  */
         inside_cost += ncopies * TARG_VEC_UNALIGNED_LOAD_COST;
 
-        if (vect_print_dump_info (REPORT_DETAILS))
+        if (vect_print_dump_info (REPORT_COST))
           fprintf (vect_dump, "vect_model_load_cost: unaligned supported by "
                    "hardware.");
 
@@ -731,7 +731,7 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, slp_tree slp_node)
       }
     case dr_explicit_realign_optimized:
       {
-        if (vect_print_dump_info (REPORT_DETAILS))
+        if (vect_print_dump_info (REPORT_COST))
           fprintf (vect_dump, "vect_model_load_cost: unaligned software "
                    "pipelined.");
 
@@ -758,7 +758,7 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, slp_tree slp_node)
       gcc_unreachable ();
     }
   
-  if (vect_print_dump_info (REPORT_DETAILS))
+  if (vect_print_dump_info (REPORT_COST))
     fprintf (vect_dump, "vect_model_load_cost: inside_cost = %d, "
              "outside_cost = %d .", inside_cost, outside_cost);
 
@@ -6552,11 +6552,7 @@ conservative_cost_threshold (loop_vec_info loop_vinfo,
           || min_profitable_iters > min_scalar_loop_bound))
     th = (unsigned) min_profitable_iters;
 
-  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))	      
-    fprintf (vect_dump, "not vectorized: vectorization may not be "
-	     "profitable.");
-  
-  if (th && vect_print_dump_info (REPORT_DETAILS))
+  if (th && vect_print_dump_info (REPORT_COST))
     fprintf (vect_dump, "Vectorization may not be profitable.");
 
   return th;
