@@ -1220,11 +1220,11 @@ if test -d ${srcdir}/gcc && test "x$have_gmp" = xno; then
   if test x"$have_gmp" = xyes; then
     saved_LIBS="$LIBS"
     LIBS="$LIBS $gmplibs"
-    dnl MPFR 2.2.0 is acceptable but buggy, MPFR 2.2.1 is better.
+    dnl MPFR 2.2.1 is acceptable, but MPFR 2.3.0 is better.
     AC_MSG_CHECKING([for correct version of mpfr.h])
     AC_TRY_LINK([#include <gmp.h>
     #include <mpfr.h>],[
-    #if MPFR_VERSION < MPFR_VERSION_NUM(2,2,0)
+    #if MPFR_VERSION < MPFR_VERSION_NUM(2,2,1)
     choke me
     #endif
     mpfr_t n;
@@ -1237,7 +1237,7 @@ if test -d ${srcdir}/gcc && test "x$have_gmp" = xno; then
     mpfr_subnormalize (x, t, GMP_RNDN);
     ], [AC_TRY_LINK([#include <gmp.h>
     #include <mpfr.h>],[
-    #if MPFR_VERSION < MPFR_VERSION_NUM(2,2,1)
+    #if MPFR_VERSION < MPFR_VERSION_NUM(2,3,0)
     choke me
     #endif
     mpfr_t n; mpfr_init(n);
@@ -1248,7 +1248,7 @@ if test -d ${srcdir}/gcc && test "x$have_gmp" = xno; then
   CFLAGS="$saved_CFLAGS"
 
   if test x$have_gmp != xyes; then
-    AC_MSG_ERROR([Building GCC requires GMP 4.1+ and MPFR 2.2.1+.
+    AC_MSG_ERROR([Building GCC requires GMP 4.1+ and MPFR 2.3.0+.
 Try the --with-gmp and/or --with-mpfr options to specify their locations.
 Copies of these libraries' source code can be found at their respective
 hosting sites as well as at ftp://gcc.gnu.org/pub/gcc/infrastructure/.
