@@ -1,3 +1,7 @@
+2007-12-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-vxwork-alpha.ads: Removed, no longer used.
+
 2007-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* Make-lang.in (gnat1, gnatbind): Pass ALL_CFLAGS on the link line.
