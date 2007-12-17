@@ -1,3 +1,10 @@
+2007-12-17  Tobias Burnus  <burnus@net-b.de>
+
+	* intrinsic.c (add_functions): Undo change; mark float and
+	sngl as STD_F77.
+	* intrinsic.texi (FLOAT, SNGL): Change standard to F77 and later.
+	* gfortran.texi (BOZ): Make note about FLOAT etc. clearer.
+
 2007-12-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34495

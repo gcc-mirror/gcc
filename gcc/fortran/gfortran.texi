@@ -1101,8 +1101,8 @@ are also allowed as argument of @code{REAL}, @code{DBLE}, @code{INT}
 and @code{CMPLX}; the result is the same as if the integer BOZ
 literal had been converted by @code{TRANSFER} to, respectively,
 @code{real}, @code{double precision}, @code{integer} or @code{complex}.
-The GNU Fortran intrinsic procedure @code{FLOAT}, @code{DFLOAT},
-@code{COMPLEX} and @code{DCMPLX} are treated alike.
+As GNU Fortran extension the intrinsic procedures @code{FLOAT},
+@code{DFLOAT}, @code{COMPLEX} and @code{DCMPLX} are treated alike.
 
 As an extension, GNU Fortran allows hexadecimal BOZ literal constants to
 be specified using the @code{X} prefix, in addition to the standard

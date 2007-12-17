@@ -2047,11 +2047,11 @@ add_functions (void)
 	     gfc_check_fn_c, gfc_simplify_realpart, gfc_resolve_realpart,
 	     a, BT_UNKNOWN, dr, REQUIRED);
 
-  add_sym_1 ("float", GFC_ISYM_REAL, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_GNU,
+  add_sym_1 ("float", GFC_ISYM_REAL, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F77,
 	     gfc_check_i, gfc_simplify_float, NULL,
 	     a, BT_INTEGER, di, REQUIRED);
 
-  add_sym_1 ("sngl", GFC_ISYM_REAL, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_GNU,
+  add_sym_1 ("sngl", GFC_ISYM_REAL, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F77,
 	     NULL, gfc_simplify_sngl, NULL,
 	     a, BT_REAL, dd, REQUIRED);
 
