@@ -1,3 +1,7 @@
+2007-12-17  Andreas Schwab  <schwab@suse.de>
+
+	* doc/invoke.texi (Warning Options): Use @itemx.
+
 2007-12-17  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* tree-vectorizer.h (verbosity_levels): Add new verbosity level
