@@ -1890,18 +1890,27 @@ java_mark_decl_local (tree decl)
 static void
 java_mark_cni_decl_local (tree decl)
 {
-  /* Setting DECL_LOCAL_CNI_METHOD_P changes the behavior of the mangler.
-     We expect that we should not yet have referenced this decl in a 
-     context that requires it.  Check this invariant even if we don't have
-     support for hidden aliases.  */
-  gcc_assert (!DECL_ASSEMBLER_NAME_SET_P (decl));
-
 #if !defined(HAVE_GAS_HIDDEN) || !defined(ASM_OUTPUT_DEF)
   return;
 #endif
 
   DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
   DECL_LOCAL_CNI_METHOD_P (decl) = 1;
+
+  /* Setting DECL_LOCAL_CNI_METHOD_P changes the behavior of the
+     mangler.  We might have already referenced this native method and
+     therefore created its name, but even if we have it won't hurt.
+     We'll just go via its externally visible name, rather than its
+     hidden alias.  However, we must force things so that the correct
+     mangling is done.  */
+
+  if (DECL_ASSEMBLER_NAME_SET_P (decl))
+    java_mangle_decl (decl);
+  if (DECL_RTL_SET_P (decl))
+    {
+      SET_DECL_RTL (decl, 0);
+      make_decl_rtl (decl);
+    }
 }
 
 /* Use the preceding two functions and mark all members of the class.  */
