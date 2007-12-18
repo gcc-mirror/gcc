@@ -1,3 +1,12 @@
+2007-12-18  Razya Ladelsky <razya@il.ibm.com>
+
+        * tree-parloops.c (reduiction_info): Change documentation of
+        reduction_initial field.
+        (initialize_reductions): Remove creation of reduction_initial
+        variable.
+        (create_loads_for_reductions): don't join reduction_initial to
+        the loaded value.
+
 2007-12-18  Kaz Kylheku  <kaz@zeugmasystems.com>
 
 	PR rtl-optimization/34456

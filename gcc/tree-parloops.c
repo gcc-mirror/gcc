@@ -106,25 +106,22 @@ parloop
 ....
 
 
-  # A new variable is created for each reduction:
-  "reduction_initial" is the initial value given by the user.
-  It is kept and will be used after the parallel computing is done.  #
+  # Storing the the initial value given by the user.  #
 
-  reduction_initial.24_46 = 1;
-  
-  # Storing the neutral value of the
-  particular reduction's operation, e.g. 0 for PLUS_EXPR, 
-  1 for MULT_EXPR, etc. into the reduction field.
-  This is done in create_stores_for_reduction.  #
+  .paral_data_store.32.sum.27 = 1;
  
-  .paral_data_store.32.sum.27 = 0;
-  
   #pragma omp parallel num_threads(4) 
 
   #pragma omp for schedule(static)
-  # sum.27_29 = PHI <sum.27_11, 0> # The neutral element replaces
- 			           the user's inital value.  #
+
+  # The neutral element corresponding to the particular
+  reduction's operation, e.g. 0 for PLUS_EXPR,
+  1 for MULT_EXPR, etc. replaces the user's initial value.  #
+
+  # sum.27_29 = PHI <sum.27_11, 0>
+
   sum.27_11 = D.1827_8 + sum.27_29;
+
   OMP_CONTINUE
 
   # Adding this reduction phi is done at create_phi_for_local_result() #
@@ -143,12 +140,12 @@ parloop
   
  # collecting the result after the join of the threads is done at
   create_loads_for_reductions().
-  a new variable "reduction_final" is created.  It calculates the final
-  value from the initial value and the value computed by the threads #
+  The value computed by the threads is loaded from the
+  shared struct.  #
+
  
   .paral_data_load.33_52 = &.paral_data_store.32;
-  reduction_final.34_53 = .paral_data_load.33_52->sum.27;
-  sum_37 = reduction_initial.24_46 + reduction_final.34_53;
+  sum_37 =  .paral_data_load.33_52->sum.27;
   sum_43 = D.1795_41 + sum_37;
 
   exit bb:
@@ -174,8 +171,7 @@ struct reduction_info
   enum tree_code reduction_code;	/* code for the reduction operation.  */
   tree keep_res;		/* The PHI_RESULT of this phi is the resulting value 
 				   of the reduction variable when existing the loop. */
-  tree initial_value;		/* An ssa name representing a new variable holding
-				   the initial value of the reduction var before entering the loop.   */
+  tree initial_value;		/* The initial value of the reduction var before entering the loop.  */
   tree field;			/*  the name of the field in the parloop data structure intended for reduction.  */
   tree init;			/* reduction initialization value.  */
   tree new_phi;			/* (helper field) Newly created phi node whose result 
@@ -490,9 +486,7 @@ take_address_of (tree var, tree type, struct loop *loop, htab_t decl_address)
 static int
 initialize_reductions (void **slot, void *data)
 {
-  tree stmt;
   tree init, c;
-  tree name1;
   tree bvar, type, arg;
   edge e;
 
@@ -529,19 +523,10 @@ initialize_reductions (void **slot, void *data)
   e = loop_preheader_edge (loop);
   arg = PHI_ARG_DEF_FROM_EDGE (reduc->reduc_phi, e);
   /* Create new variable to hold the initial value.  */
-  type = TREE_TYPE (bvar);
-  bvar = create_tmp_var (type, "reduction_initial");
-  add_referenced_var (bvar);
 
-  stmt = build_gimple_modify_stmt (bvar, arg);
-  name1 = make_ssa_name (bvar, stmt);
-  GIMPLE_STMT_OPERAND (stmt, 0) = name1;
-  SSA_NAME_DEF_STMT (name1) = stmt;
-
-  bsi_insert_on_edge_immediate (e, stmt);
   SET_USE (PHI_ARG_DEF_PTR_FROM_EDGE
 	   (reduc->reduc_phi, loop_preheader_edge (loop)), init);
-  reduc->initial_value = name1;
+  reduc->initial_value = arg;
   return 1;
 }
 
@@ -928,11 +913,8 @@ create_call_for_reduction (struct loop *loop, htab_t reduction_list,
   htab_traverse (reduction_list, create_call_for_reduction_1, ld_st_data);
 }
 
-/* Callback for htab_traverse.  Create a new variable that loads the 
-   final reduction value at the  
-   join point of all threads, adds the initial value the reduction 
-   variable had before the parallel computation started, and 
-   inserts it in the right place.  */
+/* Callback for htab_traverse.  Loads the final reduction value at the
+   join point of all threads, and inserts it in the right place.  */
 
 static int
 create_loads_for_reductions (void **slot, void *data)
@@ -944,28 +926,15 @@ create_loads_for_reductions (void **slot, void *data)
   tree type = TREE_TYPE (GIMPLE_STMT_OPERAND (red->reduc_stmt, 0));
   tree struct_type = TREE_TYPE (TREE_TYPE (clsn_data->load));
   tree load_struct;
-  tree bvar, name;
+  tree name;
   tree x;
 
   bsi = bsi_after_labels (clsn_data->load_bb);
   load_struct = fold_build1 (INDIRECT_REF, struct_type, clsn_data->load);
   load_struct = build3 (COMPONENT_REF, type, load_struct, red->field,
 			NULL_TREE);
-  bvar = create_tmp_var (type, "reduction_final");
-  add_referenced_var (bvar);
 
-  /* Apply operation between the new variable which is the result
-     of computation all threads, and the initial value which is kept
-     at reduction->inital_value.  */
-
-  stmt = build_gimple_modify_stmt (bvar, load_struct);
-  name = make_ssa_name (bvar, stmt);
-  GIMPLE_STMT_OPERAND (stmt, 0) = name;
-  SSA_NAME_DEF_STMT (name) = stmt;
-  bsi_insert_after (&bsi, stmt, BSI_NEW_STMT);
-  x =
-    fold_build2 (red->reduction_code, TREE_TYPE (load_struct),
-		 name, red->initial_value);
+  x = load_struct;
   name = PHI_RESULT (red->keep_res);
   stmt = build_gimple_modify_stmt (name, x);
   GIMPLE_STMT_OPERAND (stmt, 0) = name;
@@ -1022,7 +991,7 @@ create_stores_for_reduction (void **slot, void *data)
     build_gimple_modify_stmt (build3
                               (COMPONENT_REF, type, clsn_data->store,
                                red->field, NULL_TREE),
-                               red->init );
+                               red->initial_value);
   mark_virtual_ops_for_renaming (stmt);
   bsi_insert_after (&bsi, stmt, BSI_NEW_STMT);
 
@@ -1169,8 +1138,8 @@ separate_decls_in_loop (struct loop *loop, htab_t reduction_list,
       htab_traverse (name_copies, create_loads_and_stores_for_name,
 		     ld_st_data);
 
-      /* Load the calculation from memory into a new 
-         reduction variable (after the join of the threads).  */
+      /* Load the calculation from memory (after the join of the threads).  */
+
       if (htab_elements (reduction_list) > 0)
 	{
 	  htab_traverse (reduction_list, create_stores_for_reduction,
