@@ -1,3 +1,18 @@
+2007-12-18  Douglas Gregor  <doug.gregor@gmail.com>
+            Jakub Jelinek  <jakub@redhat.com>
+	
+	PR c++/32565
+	PR c++/33943
+	PR c++/33965
+	* pt.c (template_template_parm_bindings_ok_p): New; verifies
+	bindings of template template parameters after all template
+	arguments have been deduced.
+	(coerce_template_parms): Don't complain when COMPLAIN doesn't
+	include tf_error.
+	(fn_type_unification): Use template_template_parm_bindings_ok_p. 
+	(unify): Deal with variadic, bound template template parameters. 
+	(get_class_bindings): Use template_template_parm_bindings_ok_p. 
+
 2007-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34488
