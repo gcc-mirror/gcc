@@ -1,3 +1,7 @@
+2007-12-18  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/torture/builtin-modf-1.c: Remove -funsafe-math-optimizations.
+
 2007-12-18  Douglas Gregor  <doug.gregor@gmail.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 	

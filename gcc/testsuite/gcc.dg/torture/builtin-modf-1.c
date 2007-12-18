@@ -7,9 +7,6 @@
 
 /* { dg-do link } */
 /* { dg-options "-fno-finite-math-only" { target sh*-*-* } } */
-/* In order to fold algebraic exprs below, targets with "composite"
-   floating point formats need -funsafe-math-optimizations.  */
-/* { dg-options "-funsafe-math-optimizations" { target mips*-*-irix6* powerpc*-*-* } } */
 
 extern void link_error(int);
 
