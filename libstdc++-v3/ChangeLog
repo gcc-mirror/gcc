@@ -1,6 +1,7 @@
 2007-12-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
-	* include/bits/locale_classes.h: Simplify RTTI checks.
+	* include/bits/locale_classes.h (has_facet, use_facet): Simplify
+	RTTI checks.
 
 2007-12-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
