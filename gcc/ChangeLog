@@ -1,3 +1,9 @@
+2007-12-18  Kaz Kylheku  <kaz@zeugmasystems.com>
+
+	PR rtl-optimization/34456
+	* resource.c (mark_set_resources): Use regs_invalidated_by_call
+	rather than call_used_regs and global_regs.
+
 2007-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/34490
