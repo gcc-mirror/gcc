@@ -1,3 +1,8 @@
+2007-12-18  David Daney  <ddaney@avtrex.com>
+
+	* config/mips/mips.md (clear_hazard): Use PRINT_OPERAND punctuation
+	instead of .set push and .set pop.
+
 2007-12-18  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	PR target/33474
