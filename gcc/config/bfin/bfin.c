@@ -3376,6 +3376,8 @@ bfin_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
   if (dep_insn_type == TYPE_MOVE || dep_insn_type == TYPE_MCLD)
     {
       rtx pat = PATTERN (dep_insn);
+      if (GET_CODE (pat) == PARALLEL)
+	pat = XVECEXP (pat, 0, 0);
       rtx dest = SET_DEST (pat);
       rtx src = SET_SRC (pat);
       if (! ADDRESS_REGNO_P (REGNO (dest))
