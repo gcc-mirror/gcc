@@ -1,3 +1,15 @@
+2007-12-18  Douglas Gregor  <doug.gregor@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+	
+	PR c++/32565
+	PR c++/33943
+	PR c++/33965
+	* g++.dg/cpp0x/variadic86.C: New.
+	* g++.dg/cpp0x/variadic87.C: New.
+	* g++.dg/cpp0x/variadic84.C: New.
+	* g++.dg/cpp0x/variadic85.C: New.
+	* g++.dg/template/ttp25.C: New.
+
 2007-12-18  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/34123
