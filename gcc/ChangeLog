@@ -1,3 +1,9 @@
+2007-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/34490
+	* simplify-rtx.c (simplify_const_relational_operation): If !sign,
+	don't reduce mmin/mmax using num_sign_bit_copies.
+
 2007-12-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* doc/install.texi: Change recommended MPFR from 2.2.1 > 2.3.0.
