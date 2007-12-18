@@ -1,3 +1,10 @@
+2007-12-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/34206
+	* pt.c (tsubst_aggr_type): Do nothing if the type already doesn't 
+	use template parms.
+	(dependent_type_p_r): Handle the domain of an array.
+
 2007-12-18  Douglas Gregor  <doug.gregor@gmail.com>
             Jakub Jelinek  <jakub@redhat.com>
 	

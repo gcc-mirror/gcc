@@ -7638,7 +7638,7 @@ tsubst_aggr_type (tree t,
       /* Else fall through.  */
     case ENUMERAL_TYPE:
     case UNION_TYPE:
-      if (TYPE_TEMPLATE_INFO (t))
+      if (TYPE_TEMPLATE_INFO (t) && uses_template_parms (t))
 	{
 	  tree argvec;
 	  tree context;
@@ -15455,12 +15455,17 @@ dependent_type_p_r (tree type)
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
       if (TYPE_DOMAIN (type)
-	  && ((value_dependent_expression_p
-	       (TYPE_MAX_VALUE (TYPE_DOMAIN (type))))
-	      || (type_dependent_expression_p
-		  (TYPE_MAX_VALUE (TYPE_DOMAIN (type))))))
+	  && dependent_type_p (TYPE_DOMAIN (type)))
 	return true;
       return dependent_type_p (TREE_TYPE (type));
+    }
+  else if (TREE_CODE (type) == INTEGER_TYPE
+	   && !TREE_CONSTANT (TYPE_MAX_VALUE (type)))
+    {
+      /* If this is the TYPE_DOMAIN of an array type, consider it
+	 dependent.  */
+      return (value_dependent_expression_p (TYPE_MAX_VALUE (type))
+	      || type_dependent_expression_p (TYPE_MAX_VALUE (type)));
     }
 
   /* -- a template-id in which either the template name is a template
