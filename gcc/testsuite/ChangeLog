@@ -1,5 +1,7 @@
 2007-12-18  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/pr32912-3.c: Compile with -w.
+
 	* gcc.dg/torture/builtin-modf-1.c: Remove -funsafe-math-optimizations.
 
 2007-12-18  Douglas Gregor  <doug.gregor@gmail.com>

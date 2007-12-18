@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-w -O2 -fdump-tree-optimized" } */
 
 typedef int __m128i __attribute__ ((__vector_size__ (16)));
 
