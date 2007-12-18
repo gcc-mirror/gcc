@@ -2177,7 +2177,128 @@ can_put_after_inner_loop (struct loop *loop, tree stmt)
   return true;
 }
 
+/* Return true when the induction variable IV is simple enough to be
+   re-synthesized.  */
 
+static bool
+can_duplicate_iv (tree iv, struct loop *loop)
+{
+  tree scev = instantiate_parameters
+    (loop, analyze_scalar_evolution (loop, iv));
+
+  if (!automatically_generated_chrec_p (scev))
+    {
+      tree step = evolution_part_in_loop_num (scev, loop->num);
+
+      if (step && step != chrec_dont_know && TREE_CODE (step) == INTEGER_CST)
+	return true;
+    }
+
+  return false;
+}
+
+/* If this is a scalar operation that can be put back into the inner
+   loop, or after the inner loop, through copying, then do so. This
+   works on the theory that any amount of scalar code we have to
+   reduplicate into or after the loops is less expensive that the win
+   we get from rearranging the memory walk the loop is doing so that
+   it has better cache behavior.  */
+
+static bool
+cannot_convert_modify_to_perfect_nest (tree stmt, struct loop *loop)
+{
+  
+  use_operand_p use_a, use_b;
+  imm_use_iterator imm_iter;
+  ssa_op_iter op_iter, op_iter1;
+  tree op0 = GIMPLE_STMT_OPERAND (stmt, 0);
+
+  /* The statement should not define a variable used in the inner
+     loop.  */
+  if (TREE_CODE (op0) == SSA_NAME
+      && !can_duplicate_iv (op0, loop))
+    FOR_EACH_IMM_USE_FAST (use_a, imm_iter, op0)
+      if (bb_for_stmt (USE_STMT (use_a))->loop_father
+	  == loop->inner)
+	return true;
+
+  FOR_EACH_SSA_USE_OPERAND (use_a, stmt, op_iter, SSA_OP_USE)
+    {
+      tree node, op = USE_FROM_PTR (use_a);
+
+      /* The variables should not be used in both loops.  */
+      if (!can_duplicate_iv (op, loop))
+	FOR_EACH_IMM_USE_FAST (use_b, imm_iter, op)
+	  if (bb_for_stmt (USE_STMT (use_b))->loop_father
+	      == loop->inner)
+	    return true;
+
+      /* The statement should not use the value of a scalar that was
+	 modified in the loop.  */
+      node = SSA_NAME_DEF_STMT (op);
+      if (TREE_CODE (node) == PHI_NODE)
+	FOR_EACH_PHI_ARG (use_b, node, op_iter1, SSA_OP_USE)
+	{
+	  tree arg = USE_FROM_PTR (use_b);
+
+	  if (TREE_CODE (arg) == SSA_NAME)
+	    {
+	      tree arg_stmt = SSA_NAME_DEF_STMT (arg);
+
+	      if (bb_for_stmt (arg_stmt)
+		  && (bb_for_stmt (arg_stmt)->loop_father
+		      == loop->inner))
+		return true;
+	    }
+	}
+    }
+
+  return false;
+}
+
+/* Return true when BB contains statements that can harm the transform
+   to a perfect loop nest.  */
+
+static bool
+cannot_convert_bb_to_perfect_nest (basic_block bb, struct loop *loop)
+{
+  block_stmt_iterator bsi;
+  tree exit_condition = get_loop_exit_condition (loop);
+
+  for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+    { 
+      tree stmt = bsi_stmt (bsi);
+
+      if (stmt == exit_condition
+	  || not_interesting_stmt (stmt)
+	  || stmt_is_bumper_for_loop (loop, stmt))
+	continue;
+
+      if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
+	{
+	  if (cannot_convert_modify_to_perfect_nest (stmt, loop))
+	    return true;
+
+	  if (can_duplicate_iv (GIMPLE_STMT_OPERAND (stmt, 0), loop))
+	    continue;
+
+	  if (can_put_in_inner_loop (loop->inner, stmt)
+	      || can_put_after_inner_loop (loop, stmt))
+	    continue;
+	}
+
+      /* If the bb of a statement we care about isn't dominated by the
+	 header of the inner loop, then we can't handle this case
+	 right now.  This test ensures that the statement comes
+	 completely *after* the inner loop.  */
+      if (!dominated_by_p (CDI_DOMINATORS,
+			   bb_for_stmt (stmt), 
+			   loop->inner->header))
+	return true;
+    }
+
+  return false;
+}
 
 /* Return TRUE if LOOP is an imperfect nest that we can convert to a
    perfect one.  At the moment, we only handle imperfect nests of
@@ -2187,117 +2308,22 @@ static bool
 can_convert_to_perfect_nest (struct loop *loop)
 {
   basic_block *bbs;
-  tree exit_condition, phi;
+  tree phi;
   size_t i;
-  block_stmt_iterator bsi;
-  basic_block exitdest;
 
   /* Can't handle triply nested+ loops yet.  */
   if (!loop->inner || loop->inner->inner)
     return false;
   
   bbs = get_loop_body (loop);
-  exit_condition = get_loop_exit_condition (loop);
   for (i = 0; i < loop->num_nodes; i++)
-    {
-      if (bbs[i]->loop_father == loop)
-	{
-	  for (bsi = bsi_start (bbs[i]); !bsi_end_p (bsi); bsi_next (&bsi))
-	    { 
-	      tree stmt = bsi_stmt (bsi);
-
-	      if (stmt == exit_condition
-		  || not_interesting_stmt (stmt)
-		  || stmt_is_bumper_for_loop (loop, stmt))
-		continue;
-
-	      /* If this is a scalar operation that can be put back
-	         into the inner loop, or after the inner loop, through
-		 copying, then do so. This works on the theory that
-		 any amount of scalar code we have to reduplicate
-		 into or after the loops is less expensive that the
-		 win we get from rearranging the memory walk
-		 the loop is doing so that it has better
-		 cache behavior.  */
-	      if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
-		{
-		  use_operand_p use_a, use_b;
-		  imm_use_iterator imm_iter;
-		  ssa_op_iter op_iter, op_iter1;
-		  tree op0 = GIMPLE_STMT_OPERAND (stmt, 0);
-		  tree scev = instantiate_parameters
-		    (loop, analyze_scalar_evolution (loop, op0));
-
-		  /* If the IV is simple, it can be duplicated.  */
-		  if (!automatically_generated_chrec_p (scev))
-		    {
-		      tree step = evolution_part_in_loop_num (scev, loop->num);
-		      if (step && step != chrec_dont_know 
-			  && TREE_CODE (step) == INTEGER_CST)
-			continue;
-		    }
-
-		  /* The statement should not define a variable used
-		     in the inner loop.  */
-		  if (TREE_CODE (op0) == SSA_NAME)
-		    FOR_EACH_IMM_USE_FAST (use_a, imm_iter, op0)
-		      if (bb_for_stmt (USE_STMT (use_a))->loop_father
-			  == loop->inner)
-			goto fail;
-
-		  FOR_EACH_SSA_USE_OPERAND (use_a, stmt, op_iter, SSA_OP_USE)
-		    {
-		      tree node, op = USE_FROM_PTR (use_a);
-
-		      /* The variables should not be used in both loops.  */
-		      FOR_EACH_IMM_USE_FAST (use_b, imm_iter, op)
-		      if (bb_for_stmt (USE_STMT (use_b))->loop_father
-			  == loop->inner)
-			goto fail;
-
-		      /* The statement should not use the value of a
-			 scalar that was modified in the loop.  */
-		      node = SSA_NAME_DEF_STMT (op);
-		      if (TREE_CODE (node) == PHI_NODE)
-			FOR_EACH_PHI_ARG (use_b, node, op_iter1, SSA_OP_USE)
-			  {
-			    tree arg = USE_FROM_PTR (use_b);
-
-			    if (TREE_CODE (arg) == SSA_NAME)
-			      {
-				tree arg_stmt = SSA_NAME_DEF_STMT (arg);
-
-				if (bb_for_stmt (arg_stmt)
-				    && (bb_for_stmt (arg_stmt)->loop_father
-					== loop->inner))
-				  goto fail;
-			      }
-			  }
-		    }
-
-		  if (can_put_in_inner_loop (loop->inner, stmt)
-		      || can_put_after_inner_loop (loop, stmt))
-		    continue;
-		}
-
-	      /* Otherwise, if the bb of a statement we care about isn't
-		 dominated by the header of the inner loop, then we can't
-		 handle this case right now.  This test ensures that the
-		 statement comes completely *after* the inner loop.  */
-	      if (!dominated_by_p (CDI_DOMINATORS,
-				   bb_for_stmt (stmt), 
-				   loop->inner->header))
-		goto fail;
-	    }
-	}
-    }
+    if (bbs[i]->loop_father == loop
+	&& cannot_convert_bb_to_perfect_nest (bbs[i], loop))
+      goto fail;
 
   /* We also need to make sure the loop exit only has simple copy phis in it,
-     otherwise we don't know how to transform it into a perfect nest right
-     now.  */
-  exitdest = single_exit (loop)->dest;
-  
-  for (phi = phi_nodes (exitdest); phi; phi = PHI_CHAIN (phi))
+     otherwise we don't know how to transform it into a perfect nest.  */
+  for (phi = phi_nodes (single_exit (loop)->dest); phi; phi = PHI_CHAIN (phi))
     if (PHI_NUM_ARGS (phi) != 1)
       goto fail;
   

@@ -1,3 +1,8 @@
+2007-12-18  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/34123
+	* gcc.dg/tree-ssa/pr34123.c: New test.
+
 2007-12-18  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR rtl-optimization/34456
