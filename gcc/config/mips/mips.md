@@ -4398,15 +4398,11 @@
    (clobber (reg:SI 31))]
   "ISA_HAS_SYNCI"
 {
-  return ".set\tpush\n"
-         "\t.set\tnoreorder\n"
-         "\t.set\tnomacro\n"
-         "\tbal\t1f\n"
+  return "%(%<bal\t1f\n"
          "\tnop\n"
          "1:\taddiu\t$31,$31,12\n"
          "\tjr.hb\t$31\n"
-         "\tnop\n"
-         "\t.set\tpop";
+         "\tnop%>%)";
 }
   [(set_attr "length" "20")])
 
