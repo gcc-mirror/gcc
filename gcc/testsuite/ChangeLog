@@ -1,3 +1,9 @@
+2007-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/34003
+	* gcc.dg/pr34003-1.c: New test.
+	* gcc.dg/pr34003-2.c: New.
+
 2007-12-10  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/34059
