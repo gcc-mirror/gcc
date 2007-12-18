@@ -1,3 +1,10 @@
+2007-12-18  Hans-Peter Nilsson  <hp@axis.com>
+
+	* inclhack.def: (glibc_c99_inline_1a, glibc_c99_inline_5): New.
+	* fixincl.x: Regenerate.
+	* tests/base/wchar.h: Update.
+	* tests/base/features.h: New.
+
 2007-10-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/33700
