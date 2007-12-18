@@ -8818,6 +8818,13 @@ grokdeclarator (const cp_declarator *declarator,
 		    return error_mark_node;
 		  }
 	      }
+	    else if (sfk == sfk_constructor && friendp)
+	      {
+		error ("expected qualified name in friend declaration "
+		       "for constructor %qD",
+		       id_declarator->u.id.unqualified_name);
+		return error_mark_node;
+	      }
 
 	    /* Tell grokfndecl if it needs to set TREE_PUBLIC on the node.  */
 	    function_context = (ctype != NULL_TREE) ?
