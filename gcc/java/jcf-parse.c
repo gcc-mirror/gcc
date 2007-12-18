@@ -1596,6 +1596,8 @@ parse_class_file (void)
   file_start_location = input_location;
   (*debug_hooks->start_source_file) (input_line, input_filename);
 
+  java_mark_class_local (current_class);
+
   gen_indirect_dispatch_tables (current_class);
 
   for (method = TYPE_METHODS (current_class);
@@ -1965,13 +1967,6 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 #endif
 #endif
 	}
-    }
-
-  /* Do this before lowering any code.  */
-  for (node = current_file_list; node; node = TREE_CHAIN (node))
-    {
-      if (CLASS_FILE_P (node))
-	java_mark_class_local (TREE_TYPE (node));
     }
 
   for (node = current_file_list; node; node = TREE_CHAIN (node))
