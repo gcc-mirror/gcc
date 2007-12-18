@@ -1,3 +1,11 @@
+2007-12-18  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/34123
+	* lambda-code.c (can_duplicate_iv): New.
+	(cannot_convert_modify_to_perfect_nest): New.
+	(cannot_convert_bb_to_perfect_nest): New.
+	(can_convert_to_perfect_nest): Split up.
+
 2007-12-18  David Daney  <ddaney@avtrex.com>
 
 	* config/mips/mips.md (clear_hazard): Use PRINT_OPERAND punctuation
