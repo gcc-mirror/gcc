@@ -1,3 +1,9 @@
+2007-12-18  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	PR target/33474
+	* config/bfin/bfin.c (bfin_adjust_cost): Dig into PARALLELs to find
+	the SET.
+
 2007-12-18  Razya Ladelsky <razya@il.ibm.com>
 
         * tree-parloops.c (reduiction_info): Change documentation of
