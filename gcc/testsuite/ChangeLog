@@ -1,3 +1,10 @@
+2007-12-19  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/34495
+	* gfortran.dg/transfer_simplify_2.f90: Fixed invalid initialization
+	expressions.
+	* gfortran.dg/transfer_simplify_7.f90: New test.
+
 2007-12-18  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/pr32912-3.c: Compile with -w.

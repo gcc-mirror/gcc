@@ -1,3 +1,13 @@
+2007-12-19  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/34495
+	* expr.c (check_init_expr): Check whether variables with flavor
+	FL_PARAMETER do have a value assigned. Added error messages where
+	appropriate.
+	* simplify.c (gfc_simplify_transfer): Added check if the MOLD
+	argument is a constant if working with initialization
+	expressions.
+
 2007-12-17  Tobias Burnus  <burnus@net-b.de>
 
 	* intrinsic.c (add_functions): Undo change; mark float and

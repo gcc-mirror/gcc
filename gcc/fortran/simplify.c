@@ -4088,6 +4088,7 @@ gfc_simplify_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
   unsigned char *buffer;
 
   if (!gfc_is_constant_expr (source)
+	|| (gfc_init_expr && !gfc_is_constant_expr (mold))
 	|| !gfc_is_constant_expr (size))
     return NULL;
 

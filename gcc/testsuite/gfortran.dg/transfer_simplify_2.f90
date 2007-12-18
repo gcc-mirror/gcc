@@ -71,7 +71,7 @@ contains
 
   subroutine integer8_to_real4
     integer               ::  k
-    integer(8), parameter ::  i1(2) = transfer ((/asin (1.0_8), log (1.0_8)/), i1)
+    integer(8), parameter ::  i1(2) = transfer ((/asin (1.0_8), log (1.0_8)/), 0_8)
     integer(8)            ::  i2(2) = i1
     real(4), parameter    ::  r1(4) = transfer (i1, (/(1.0_4,k=1,4)/))
     real(4)               ::  r2(4)
@@ -82,7 +82,7 @@ contains
 
   subroutine integer8_to_complex4
     integer               ::  k
-    integer(8), parameter ::  i1(2) = transfer ((/asin (1.0_8), log (1.0_8)/), i1)
+    integer(8), parameter ::  i1(2) = transfer ((/asin (1.0_8), log (1.0_8)/), 0_8)
     integer(8)            ::  i2(2) = i1
     complex(4), parameter ::  z1(2) = transfer (i1, (/((1.0_4,2.0_4),k=1,2)/))
     complex(4)            ::  z2(2)
