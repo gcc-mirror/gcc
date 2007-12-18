@@ -1,5 +1,8 @@
 2007-12-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/34488
+	* g++.dg/parse/friend7.C: New test.
+
 	PR rtl-optimization/34490
 	* gcc.c-torture/execute/20071216-1.c: New test.
 

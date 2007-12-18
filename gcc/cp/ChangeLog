@@ -1,3 +1,9 @@
+2007-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34488
+	* decl.c (grokdeclarator): Reject friend sfk_constructor
+	FUNCTION_TYPE.
+
 2007-12-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/34506
