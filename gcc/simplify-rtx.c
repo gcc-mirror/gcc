@@ -4233,15 +4233,17 @@ simplify_const_relational_operation (enum rtx_code code,
       else
 	{
 	  rtx mmin_rtx, mmax_rtx;
-	  unsigned int sign_copies = num_sign_bit_copies (trueop0, mode);
 	  get_mode_bounds (mode, sign, mode, &mmin_rtx, &mmax_rtx);
 
-	  /* Since unsigned mmin will never be interpreted as negative, use
-	     INTVAL (and an arithmetic right shift).  */
-	  mmin = INTVAL (mmin_rtx) >> (sign_copies - 1);
-	  /* Since signed mmax will always be positive, use UINTVAL (and
-	     a logical right shift).  */
-	  mmax = UINTVAL (mmax_rtx) >> (sign_copies - 1);
+	  mmin = INTVAL (mmin_rtx);
+	  mmax = INTVAL (mmax_rtx);
+	  if (sign)
+	    {
+	      unsigned int sign_copies = num_sign_bit_copies (trueop0, mode);
+
+	      mmin >>= (sign_copies - 1);
+	      mmax >>= (sign_copies - 1);
+	    }
 	}
 
       switch (code)
