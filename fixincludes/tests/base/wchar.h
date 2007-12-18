@@ -13,3 +13,18 @@
 extern wchar_t *wcstok __((wchar_t *, const wchar_t *, wchar_t **)) __asm__("wcstok_r");
 extern size_t   wcsftime __((wchar_t *, size_t, const wchar_t *, const struct tm *)) __asm__("__wcsftime_isoc");
 #endif  /* ALPHA_WCHAR_CHECK */
+
+
+#if defined( GLIBC_C99_INLINE_5_CHECK )
+__extension__
+#ifdef __GNUC_GNU_INLINE__
+extern
+#endif
+__inline double
+__extension__ __extern_inline long
+
+#ifdef __GNUC_GNU_INLINE__
+extern
+#endif
+__inline unsigned int
+#endif  /* GLIBC_C99_INLINE_5_CHECK */
