@@ -32,6 +32,7 @@ prefix = @prefix@
 
 exec_prefix = @exec_prefix@
 libdir = @libdir@
+shlib_slibdir = @slibdir@
 
 SHELL = @SHELL@
 
@@ -739,7 +740,8 @@ libgcc_s$(SHLIB_EXT): $(libgcc-s-objects) $(extra-parts)
 		@shlib_objs@,$(objects),$(subst \
 		@shlib_base_name@,libgcc_s,$(subst \
 		@shlib_map_file@,$(mapfile),$(subst \
-		@shlib_slibdir_qual@,$(MULTIOSSUBDIR),$(SHLIB_LINK)))))))
+		@shlib_slibdir_qual@,$(MULTIOSSUBDIR),$(subst \
+		@shlib_slibdir@,$(shlib_slibdir),$(SHLIB_LINK))))))))
 
 libunwind$(SHLIB_EXT): $(libunwind-s-objects) $(extra-parts)
 	# @multilib_flags@ is still needed because this may use
