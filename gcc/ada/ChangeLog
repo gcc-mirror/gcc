@@ -132,6 +132,7 @@
 
 2007-12-19  Ed Schonberg  <schonberg@adacore.com>
 	    Gary Dismukes  <dismukes@adacore.com>
+	    Samuel Tardieu  <sam@rfc1149.net>
 
 	PR ada/15803, ada/15805
 	* sem_ch6.adb, sem_ch3.adb (Constrain_Access): In Ada2005, diagnose
