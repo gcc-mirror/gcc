@@ -1,3 +1,11 @@
+2007-12-19  Zdenek Dvorak  <ook@ucw.cz>
+
+	PR tree-optimization/34355
+	* tree-parloops.c (take_address_of): Handle expresions
+	instead of just variables.
+	(eliminate_local_variables_1): Force whole invariant
+	address to ssa name.
+
 2007-12-19  Alexander Monakov  <amonakov@ispras.ru>
 	    Revital Eres  <eres@il.ibm.com>
 

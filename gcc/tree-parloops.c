@@ -431,29 +431,37 @@ loop_parallel_p (struct loop *loop, htab_t reduction_list, struct tree_niter_des
   return ret;
 }
 
-/* Assigns the address of VAR in TYPE to an ssa name, and returns this name.
+/* Assigns the address of OBJ in TYPE to an ssa name, and returns this name.
    The assignment statement is placed before LOOP.  DECL_ADDRESS maps decls
-   to their addresses that can be reused.  */
+   to their addresses that can be reused.  The address of OBJ is known to
+   be invariant in the whole function.  */
 
 static tree
-take_address_of (tree var, tree type, struct loop *loop, htab_t decl_address)
+take_address_of (tree obj, tree type, struct loop *loop, htab_t decl_address)
 {
-  int uid = DECL_UID (var);
+  int uid;
   void **dslot;
   struct int_tree_map ielt, *nielt;
-  tree name, bvar, stmt;
+  tree *var_p, name, bvar, stmt, addr;
   edge entry = loop_preheader_edge (loop);
+
+  /* Since the address of OBJ is invariant, the trees may be shared.
+     Avoid rewriting unrelated parts of the code.  */
+  obj = unshare_expr (obj);
+  for (var_p = &obj;
+       handled_component_p (*var_p);
+       var_p = &TREE_OPERAND (*var_p, 0))
+    continue;
+  uid = DECL_UID (*var_p);
 
   ielt.uid = uid;
   dslot = htab_find_slot_with_hash (decl_address, &ielt, uid, INSERT);
   if (!*dslot)
     {
-      bvar = create_tmp_var (type, get_name (var));
+      addr = build_addr (*var_p, current_function_decl);
+      bvar = create_tmp_var (TREE_TYPE (addr), get_name (*var_p));
       add_referenced_var (bvar);
-      stmt = build_gimple_modify_stmt (bvar,
-				       fold_convert (type,
-						     build_addr (var,
-								 current_function_decl)));
+      stmt = build_gimple_modify_stmt (bvar, addr);
       name = make_ssa_name (bvar, stmt);
       GIMPLE_STMT_OPERAND (stmt, 0) = name;
       bsi_insert_on_edge_immediate (entry, stmt);
@@ -462,19 +470,26 @@ take_address_of (tree var, tree type, struct loop *loop, htab_t decl_address)
       nielt->uid = uid;
       nielt->to = name;
       *dslot = nielt;
+    }
+  else
+    name = ((struct int_tree_map *) *dslot)->to;
 
-      return name;
+  if (var_p != &obj)
+    {
+      *var_p = build1 (INDIRECT_REF, TREE_TYPE (*var_p), name);
+      name = force_gimple_operand (build_addr (obj, current_function_decl),
+				   &stmt, true, NULL_TREE);
+      if (stmt)
+	bsi_insert_on_edge_immediate (entry, stmt);
     }
 
-  name = ((struct int_tree_map *) *dslot)->to;
-  if (TREE_TYPE (name) == type)
-    return name;
-
-  bvar = SSA_NAME_VAR (name);
-  stmt = build_gimple_modify_stmt (bvar, fold_convert (type, name));
-  name = make_ssa_name (bvar, stmt);
-  GIMPLE_STMT_OPERAND (stmt, 0) = name;
-  bsi_insert_on_edge_immediate (entry, stmt);
+  if (TREE_TYPE (name) != type)
+    {
+      name = force_gimple_operand (fold_convert (type, name), &stmt, true,
+				   NULL_TREE);
+      if (stmt)
+	bsi_insert_on_edge_immediate (entry, stmt);
+    }
 
   return name;
 }
@@ -543,10 +558,10 @@ struct elv_data
    walk_tree.  */
 
 static tree
-eliminate_local_variables_1 (tree * tp, int *walk_subtrees, void *data)
+eliminate_local_variables_1 (tree *tp, int *walk_subtrees, void *data)
 {
   struct elv_data *dta = data;
-  tree t = *tp, var, addr, addr_type, type;
+  tree t = *tp, var, addr, addr_type, type, obj;
 
   if (DECL_P (t))
     {
@@ -566,16 +581,28 @@ eliminate_local_variables_1 (tree * tp, int *walk_subtrees, void *data)
 
   if (TREE_CODE (t) == ADDR_EXPR)
     {
-      var = TREE_OPERAND (t, 0);
-      if (!DECL_P (var))
+      /* ADDR_EXPR may appear in two contexts:
+	 -- as a gimple operand, when the address taken is a function invariant
+	 -- as gimple rhs, when the resulting address in not a function
+	    invariant
+	 We do not need to do anything special in the latter case (the base of
+	 the memory reference whose address is taken may be replaced in the
+	 DECL_P case).  The former case is more complicated, as we need to
+	 ensure that the new address is still a gimple operand.  Thus, it
+	 is not sufficient to replace just the base of the memory reference --
+	 we need to move the whole computation of the address out of the
+	 loop.  */
+      if (!is_gimple_val (t))
 	return NULL_TREE;
 
       *walk_subtrees = 0;
-      if (!SSA_VAR_P (var) || DECL_EXTERNAL (var))
+      obj = TREE_OPERAND (t, 0);
+      var = get_base_address (obj);
+      if (!var || !SSA_VAR_P (var) || DECL_EXTERNAL (var))
 	return NULL_TREE;
 
       addr_type = TREE_TYPE (t);
-      addr = take_address_of (var, addr_type, dta->loop, dta->decl_address);
+      addr = take_address_of (obj, addr_type, dta->loop, dta->decl_address);
       *tp = addr;
 
       dta->changed = true;
