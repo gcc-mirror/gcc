@@ -573,6 +573,11 @@ CND(IP_ADD_MEMBERSHIP, "Join a multicast group")
 #endif
 CND(IP_DROP_MEMBERSHIP, "Leave a multicast group")
 
+#ifndef IP_PKTINFO
+#define IP_PKTINFO -1
+#endif
+CND(IP_PKTINFO, "Get datagram info")
+
 _NL
 TXT("   -------------------")
 TXT("   -- System limits --")
