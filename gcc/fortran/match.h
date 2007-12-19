@@ -54,6 +54,7 @@ match gfc_match_intrinsic_op (gfc_intrinsic_op *);
 match gfc_match_char (char);
 match gfc_match (const char *, ...);
 match gfc_match_iterator (gfc_iterator *, int);
+match gfc_match_parens (void);
 
 /* Statement matchers.  */
 match gfc_match_program (void);
