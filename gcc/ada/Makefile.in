@@ -1452,6 +1452,8 @@ ifeq ($(strip $(filter-out sh4% linux%,$(arch) $(osys))),)
   s-osinte.ads<s-osinte-linux.ads \
   s-osprim.adb<s-osprim-posix.adb \
   s-taprop.adb<s-taprop-linux.adb \
+  s-tasinf.ads<s-tasinf-linux.ads \
+  s-tasinf.adb<s-tasinf-linux.adb \
   s-taspri.ads<s-taspri-posix.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   system.ads<system-linux-sh4.ads

@@ -1,3 +1,7 @@
+2007-12-19  Samuel Tardieu  <sam@rfc1149.net>
+
+	* Makefile.in: Add s-tasinf.ad[bs] substitutions for sh4-linux target.
+
 2007-12-17  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-vxwork-alpha.ads: Removed, no longer used.
