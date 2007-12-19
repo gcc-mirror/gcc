@@ -47,7 +47,6 @@ package body Targparm is
       CRT,  --   Configurable_Run_Times
       D32,  --   Duration_32_Bits
       DEN,  --   Denorm
-      DTU,  --   Dynamic_Trampolines_Used
       EXS,  --   Exit_Status_Supported
       FEL,  --   Frontend_Layout
       FFO,  --   Fractional_Fixed_Ops
@@ -84,7 +83,6 @@ package body Targparm is
    CRT_Str : aliased constant Source_Buffer := "Configurable_Run_Time";
    D32_Str : aliased constant Source_Buffer := "Duration_32_Bits";
    DEN_Str : aliased constant Source_Buffer := "Denorm";
-   DTU_Str : aliased constant Source_Buffer := "Dynamic_Trampolines_Used";
    EXS_Str : aliased constant Source_Buffer := "Exit_Status_Supported";
    FEL_Str : aliased constant Source_Buffer := "Frontend_Layout";
    FFO_Str : aliased constant Source_Buffer := "Fractional_Fixed_Ops";
@@ -121,7 +119,6 @@ package body Targparm is
       CRT_Str'Access,
       D32_Str'Access,
       DEN_Str'Access,
-      DTU_Str'Access,
       EXS_Str'Access,
       FEL_Str'Access,
       FFO_Str'Access,
@@ -565,7 +562,6 @@ package body Targparm is
                      when CRT => Configurable_Run_Time_On_Target     := Result;
                      when D32 => Duration_32_Bits_On_Target          := Result;
                      when DEN => Denorm_On_Target                    := Result;
-                     when DTU => Dynamic_Trampolines_Used_On_Target  := Result;
                      when EXS => Exit_Status_Supported_On_Target     := Result;
                      when FEL => Frontend_Layout_On_Target           := Result;
                      when FFO => Fractional_Fixed_Ops_On_Target      := Result;

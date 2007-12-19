@@ -440,13 +440,6 @@ package Targparm is
    --  strategy. False allows the front end to choose a policy that partly or
    --  entirely eliminates dynamically generated trampolines.
 
-   Dynamic_Trampolines_Used_On_Target : Boolean := True;
-   --  True if the back end uses dynamically generated trampolines to implement
-   --  '[Unrestricted_]Access of nested subprograms when Can_Use_Internal_Rep
-   --  is False for the access type. (Can_Use_Internal_Rep = True forbids the
-   --  use of such trampolines.) Used in the implementation of pragma
-   --  Restrictions (No_Implicit_Dynamic_Code).
-
    -------------------------------
    -- Control of Stack Checking --
    -------------------------------

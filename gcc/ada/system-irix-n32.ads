@@ -151,7 +151,6 @@ private
    Support_Composite_Compare : constant Boolean := True;
    Support_Long_Shifts       : constant Boolean := True;
    Always_Compatible_Rep     : constant Boolean := True;
-   Dynamic_Trampolines_Used  : constant Boolean := True;
    Suppress_Standard_Library : constant Boolean := False;
    Use_Ada_Main_Program_Name : constant Boolean := False;
    ZCX_By_Default            : constant Boolean := True;
