@@ -1,5 +1,9 @@
 2007-12-19  Zdenek Dvorak  <ook@ucw.cz>
 
+	* gcc.dg/gomp/combined-1.c: New test.
+
+2007-12-19  Zdenek Dvorak  <ook@ucw.cz>
+
 	PR tree-optimization/34355
 	* g++.dg/tree-ssa/pr34355.C: New test.
 

@@ -1,5 +1,11 @@
 2007-12-19  Zdenek Dvorak  <ook@ucw.cz>
 
+	* omp-low.c (build_omp_regions_1): Recognition of combined parallels
+	moved ...
+	(expand_omp): ... here.
+
+2007-12-19  Zdenek Dvorak  <ook@ucw.cz>
+
 	PR tree-optimization/34355
 	* tree-parloops.c (take_address_of): Handle expresions
 	instead of just variables.
