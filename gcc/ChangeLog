@@ -1,3 +1,11 @@
+2007-12-19  Alexander Monakov  <amonakov@ispras.ru>
+	    Revital Eres  <eres@il.ibm.com>
+
+	* modulo-sched.c (generate_reg_moves): Insert the reg-moves
+	right before the notes which precedes the insn, if they exists.
+	(loop_canon_p): Add dump info.
+	(sms_schedule): Likewise.
+
 2007-12-19  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* tree.h (set_decl_incoming_rtl): Add a by_reference_p parameter.
