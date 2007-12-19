@@ -1045,13 +1045,14 @@ set_decl_rtl (tree t, rtx x)
     set_reg_attrs_for_decl_rtl (t, x);
 }
 
-/* Assign the RTX X to parameter declaration T.  */
+/* Assign the RTX X to parameter declaration T.  BY_REFERENCE_P is true
+   if the ABI requires the parameter to be passed by reference.  */
 
 void
-set_decl_incoming_rtl (tree t, rtx x)
+set_decl_incoming_rtl (tree t, rtx x, bool by_reference_p)
 {
   DECL_INCOMING_RTL (t) = x;
-  if (x)
+  if (x && !by_reference_p)
     set_reg_attrs_for_decl_rtl (t, x);
 }
 

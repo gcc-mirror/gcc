@@ -5135,7 +5135,7 @@ extern tree walk_tree_without_duplicates_1 (tree*, walk_tree_fn, void*,
 /* Assign the RTX to declaration.  */
 
 extern void set_decl_rtl (tree, rtx);
-extern void set_decl_incoming_rtl (tree, rtx);
+extern void set_decl_incoming_rtl (tree, rtx, bool);
 
 /* Enum and arrays used for tree allocation stats.
    Keep in sync with tree.c:tree_node_kind_names.  */
