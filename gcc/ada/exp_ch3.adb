@@ -4051,6 +4051,7 @@ package body Exp_Ch3 is
       Expr     : constant Node_Id    := Expression (N);
       Loc      : constant Source_Ptr := Sloc (N);
       Typ      : constant Entity_Id  := Etype (Def_Id);
+      Base_Typ : constant Entity_Id  := Base_Type (Typ);
       Expr_Q   : Node_Id;
       Id_Ref   : Node_Id;
       New_Ref  : Node_Id;
@@ -4075,20 +4076,20 @@ package body Exp_Ch3 is
       if VM_Target = No_VM
         and then Static_Dispatch_Tables
         and then Is_Library_Level_Entity (Def_Id)
-        and then Is_Library_Level_Tagged_Type (Typ)
-        and then (Ekind (Typ) = E_Record_Type
-                    or else Ekind (Typ) = E_Protected_Type
-                    or else Ekind (Typ) = E_Task_Type)
-        and then not Has_Dispatch_Table (Typ)
+        and then Is_Library_Level_Tagged_Type (Base_Typ)
+        and then (Ekind (Base_Typ) = E_Record_Type
+                    or else Ekind (Base_Typ) = E_Protected_Type
+                    or else Ekind (Base_Typ) = E_Task_Type)
+        and then not Has_Dispatch_Table (Base_Typ)
       then
          declare
             New_Nodes : List_Id := No_List;
 
          begin
-            if Is_Concurrent_Type (Typ) then
-               New_Nodes := Make_DT (Corresponding_Record_Type (Typ), N);
+            if Is_Concurrent_Type (Base_Typ) then
+               New_Nodes := Make_DT (Corresponding_Record_Type (Base_Typ), N);
             else
-               New_Nodes := Make_DT (Typ, N);
+               New_Nodes := Make_DT (Base_Typ, N);
             end if;
 
             if not Is_Empty_List (New_Nodes) then
