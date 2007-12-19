@@ -714,8 +714,6 @@ package body Prj.Nmsc is
    is
       Data      : Project_Data := In_Tree.Projects.Table (Project);
       Extending : Boolean := False;
-      Lang_Proc_Pkg   : Package_Id;
-      Linker_Name     : Variable_Value;
 
    begin
       Nmsc.When_No_Sources := When_No_Sources;
@@ -839,33 +837,6 @@ package body Prj.Nmsc is
       --  Put the list of Mains, if any, in the project data
 
       Get_Mains (Project, In_Tree, Data);
-
-      --  In multi-language mode, check if there is a linker specified
-
-      if Get_Mode = Multi_Language then
-         Lang_Proc_Pkg :=
-           Value_Of (Name_Language_Processing, Data.Decl.Packages, In_Tree);
-
-         if Lang_Proc_Pkg /= No_Package then
-            Linker_Name :=
-              Value_Of
-                (Variable_Name => Name_Linker,
-                 In_Variables  =>
-                   In_Tree.Packages.Table (Lang_Proc_Pkg).Decl.Attributes,
-                 In_Tree       => In_Tree);
-
-            if Linker_Name /= Nil_Variable_Value then
-               Get_Name_String (Linker_Name.Value);
-
-               if Name_Len > 0 then
-                  --  A non empty linker name was specified
-
-                  Data.Linker_Name := File_Name_Type (Linker_Name.Value);
-
-               end if;
-            end if;
-         end if;
-      end if;
 
       --  Update the project data in the Projects table
 

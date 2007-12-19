@@ -981,10 +981,7 @@ package body Prj.Dect is
 
          Current_Package := Package_Node_Id_Of (Token_Name);
 
-         if Current_Package  /= Empty_Package then
-            First_Attribute := First_Attribute_Of (Current_Package);
-
-         else
+         if Current_Package = Empty_Package then
             if not Quiet_Output then
                Error_Msg ("?""" &
                           Get_Name_String
@@ -1001,6 +998,16 @@ package body Prj.Dect is
             --  Add the unknown package in the list of packages
 
             Add_Unknown_Package (Token_Name, Current_Package);
+
+         elsif Current_Package = Unknown_Package then
+
+            --  Set the package declaration to "ignored" so that it is not
+            --  processed by Prj.Proc.Process.
+
+            Set_Expression_Kind_Of (Package_Declaration, In_Tree, Ignored);
+
+         else
+            First_Attribute := First_Attribute_Of (Current_Package);
          end if;
 
          Set_Package_Id_Of
