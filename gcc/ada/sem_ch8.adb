@@ -1945,6 +1945,37 @@ package body Sem_Ch8 is
               (Ren => New_S,
                Sub => Entity (Nam));
          end if;
+
+         --  Enforce the Ada 2005 rule that the renamed entity cannot require
+         --  overriding. The flag Requires_Overriding is set very selectively
+         --  and misses some other illegal cases. The additional conditions
+         --  checked below are sufficient but not necessary ???
+
+         --  The rule does not apply to the renaming generated for an actual
+         --  subprogram in an instance.
+
+         if Is_Actual then
+            null;
+
+         --  Guard agaisnt previous errors, and omit renamings of predefined
+         --  operators.
+
+         elsif Ekind (Old_S) /= E_Function
+           and then Ekind (Old_S) /= E_Procedure
+         then
+            null;
+
+         elsif Requires_Overriding (Old_S)
+           or else
+              (Is_Abstract_Subprogram (Old_S)
+                 and then Present (Find_Dispatching_Type (Old_S))
+                 and then
+                   not Is_Abstract_Type (Find_Dispatching_Type (Old_S)))
+         then
+            Error_Msg_N
+              ("renamed entity cannot be "
+               & "subprogram that requires overriding (RM 8.5.4 (5.1))", N);
+         end if;
       end if;
 
       if Old_S /= Any_Id then
@@ -5211,7 +5242,7 @@ package body Sem_Ch8 is
 
                   --  It is legal to denote the class type of an incomplete
                   --  type. The full type will have to be tagged, of course.
-                  --  In Ada2005 this usage is declared obsolescent, so we
+                  --  In Ada 2005 this usage is declared obsolescent, so we
                   --  warn accordingly.
 
                   --  ??? This test is temporarily disabled (always False)
@@ -6306,6 +6337,11 @@ package body Sem_Ch8 is
          Error_Msg_N
            ("subprogram&! cannot be used before end of its declaration",
             N);
+
+      elsif Kind = N_Full_Type_Declaration then
+         Error_Msg_N
+           ("type& cannot be used before end of its declaration!", N);
+
       else
          Error_Msg_N
            ("object& cannot be used before end of its declaration!", N);
