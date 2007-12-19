@@ -1,3 +1,9 @@
+2007-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34513
+	* testsuite/libgomp.c/pr34513.c: New test.
+	* testsuite/libgomp.c++/pr34513.C: New test.
+
 2007-12-17  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR target/32765
