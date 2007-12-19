@@ -1430,8 +1430,20 @@ package body Exp_Pakd is
             end if;
          end if;
 
-         New_Lhs := Duplicate_Subexpr (Obj, True);
-         New_Rhs := Duplicate_Subexpr_No_Checks (Obj);
+         --  Now create copies removing side effects. Note that in some
+         --  complex cases, this may cause the fact that we have already
+         --  set a packed array type on Obj to get lost. So we save the
+         --  type of Obj, and make sure it is reset properly.
+
+         declare
+            T : constant Entity_Id := Etype (Obj);
+         begin
+            New_Lhs := Duplicate_Subexpr (Obj, True);
+            New_Rhs := Duplicate_Subexpr_No_Checks (Obj);
+            Set_Etype (Obj, T);
+            Set_Etype (New_Lhs, T);
+            Set_Etype (New_Rhs, T);
+         end;
 
          --  First we deal with the "and"
 
