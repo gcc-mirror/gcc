@@ -1532,6 +1532,8 @@ package Einfo is
 --      Present in E_Variable and E_Constant entities. Set if the entity is
 --      declared in a local procedure p and is accessed in a procedure nested
 --      inside p. Only set when VM_Target /= No_VM currently.
+--      Why only set it under those conditions, sounds reasonable to always
+--      set this flag when appropriate ???
 
 --    Has_Nested_Block_With_Handler (Flag101)
 --       Present in scope entities. Set if there is a nested block within the
@@ -1619,9 +1621,15 @@ package Einfo is
 --       Pure_Function was given for the entity. In some cases, we need to
 --       know that Is_Pure was explicitly set using this pragma.
 
+--    Has_Pragma_Unmodified (Flag233)
+--       Present in all entities. Can only be set for variables (E_Variable,
+--       E_Out_Parameter, E_In_Out_Parameter). Set if a valid pragma Unmodified
+--       applies to the variable, indicating that no warning should be given
+--       if the entity is never modified.
+
 --    Has_Pragma_Unreferenced (Flag180)
 --       Present in all entities. Set if a valid pragma Unreferenced applies
---       to the pragma, indicating that no warning should be given if the
+--       to the entity, indicating that no warning should be given if the
 --       entity has no references, but a warning should be given if it is
 --       in fact referenced. For private types, this flag is set in both the
 --       private entity and full entity if the pragma applies to either.
@@ -2402,8 +2410,8 @@ package Einfo is
 --       extended Import pragmas. Can only be set for OpenVMS versions of GNAT.
 
 --    Is_Ordinary_Fixed_Point_Type (synthesized)
---       Applies to all entities, true for ordinary fixed point types
---       and subtypes
+--       Applies to all entities, true for ordinary fixed point types and
+--       subtypes.
 
 --    Is_Overriding_Operation (Flag39)
 --       Present in subprograms. Set if the subprogram is a primitive
@@ -2479,8 +2487,8 @@ package Einfo is
 
 --    Is_Primitive (Flag218)
 --       Present in overloadable entities and in generic subprograms. Set to
---       indicate that this is a primitive operation of some type, which may be
---       a tagged type or a non-tagged type. Used to verify overriding
+--       indicate that this is a primitive operation of some type, which may
+--       be a tagged type or a non-tagged type. Used to verify overriding
 --       indicators in bodies.
 
 --    Is_Primitive_Wrapper (Flag195)
@@ -2650,14 +2658,14 @@ package Einfo is
 --       associated with accessibility level.
 
 --    Is_True_Constant (Flag163)
---       This flag applies to all entities for constants and variables. Set
---       in constants and variables which have an initial value specified but
---       which are never assigned, partially or in the whole. For variables, it
---       means that the variable was initialized but never modified, and hence
---       can be treated as a constant by the code generator. For a constant, it
---       means that the constant was not modified by generated code (e.g. to
---       set a discriminant in an init proc). Assignments by user or generated
---       code will reset this flag.
+--       Present in all entities for constants and variables. Set in constants
+--       and variables which have an initial value specified but which are
+--       never assigned, partially or in the whole. For variables, it means
+--       that the variable was initialized but never modified, and hence can be
+--       treated as a constant by the code generator. For a constant, it means
+--       that the constant was not modified by generated code (e.g. to set a
+--       discriminant in an init proc). Assignments by user or generated code
+--       will reset this flag.
 --
 --       Note: there is one situation in which the back end does not permit
 --       this flag to be set, even if no assignments are generated. This is
@@ -3378,7 +3386,7 @@ package Einfo is
 --       the Scope will be the parent package, and for a non-child package,
 --       the Scope will be Standard.
 
---    Scope_Depth (synth)
+--    Scope_Depth (synthesized)
 --       Applies to program units, blocks, concurrent types and entries,
 --       and also to record types, i.e. to any entity that can appear on
 --       the scope stack. Yields the scope depth value, which for those
@@ -4473,6 +4481,7 @@ package Einfo is
    --    Has_Pragma_Pack                     (Flag121)  (base type only)
    --    Has_Pragma_Pure                     (Flag203)
    --    Has_Pragma_Pure_Function            (Flag179)
+   --    Has_Pragma_Unmodified               (Flag233)
    --    Has_Pragma_Unreferenced             (Flag180)
    --    Has_Private_Declaration             (Flag155)
    --    Has_Qualified_Name                  (Flag161)
@@ -5781,6 +5790,7 @@ package Einfo is
    function Has_Pragma_Preelab_Init             (Id : E) return B;
    function Has_Pragma_Pure                     (Id : E) return B;
    function Has_Pragma_Pure_Function            (Id : E) return B;
+   function Has_Pragma_Unmodified               (Id : E) return B;
    function Has_Pragma_Unreferenced             (Id : E) return B;
    function Has_Pragma_Unreferenced_Objects     (Id : E) return B;
    function Has_Primitive_Operations            (Id : E) return B;
@@ -6322,6 +6332,7 @@ package Einfo is
    procedure Set_Has_Pragma_Preelab_Init         (Id : E; V : B := True);
    procedure Set_Has_Pragma_Pure                 (Id : E; V : B := True);
    procedure Set_Has_Pragma_Pure_Function        (Id : E; V : B := True);
+   procedure Set_Has_Pragma_Unmodified           (Id : E; V : B := True);
    procedure Set_Has_Pragma_Unreferenced         (Id : E; V : B := True);
    procedure Set_Has_Pragma_Unreferenced_Objects (Id : E; V : B := True);
    procedure Set_Has_Primitive_Operations        (Id : E; V : B := True);
@@ -6644,7 +6655,7 @@ package Einfo is
      renames Proc_Next_Component;
 
    procedure Next_Component_Or_Discriminant (N : in out Node_Id)
-     renames Proc_Next_Component;
+     renames Proc_Next_Component_Or_Discriminant;
 
    procedure Next_Discriminant              (N : in out Node_Id)
      renames Proc_Next_Discriminant;
@@ -6931,6 +6942,7 @@ package Einfo is
    pragma Inline (Has_Pragma_Preelab_Init);
    pragma Inline (Has_Pragma_Pure);
    pragma Inline (Has_Pragma_Pure_Function);
+   pragma Inline (Has_Pragma_Unmodified);
    pragma Inline (Has_Pragma_Unreferenced);
    pragma Inline (Has_Pragma_Unreferenced_Objects);
    pragma Inline (Has_Primitive_Operations);
@@ -7343,6 +7355,7 @@ package Einfo is
    pragma Inline (Set_Has_Pragma_Preelab_Init);
    pragma Inline (Set_Has_Pragma_Pure);
    pragma Inline (Set_Has_Pragma_Pure_Function);
+   pragma Inline (Set_Has_Pragma_Unmodified);
    pragma Inline (Set_Has_Pragma_Unreferenced);
    pragma Inline (Set_Has_Pragma_Unreferenced_Objects);
    pragma Inline (Set_Has_Primitive_Operations);

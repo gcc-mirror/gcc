@@ -1082,6 +1082,9 @@ package body GNAT.Expect is
       Args  : System.Address)
    is
       pragma Warnings (Off, Pid);
+      pragma Warnings (Off, Pipe1);
+      pragma Warnings (Off, Pipe2);
+      pragma Warnings (Off, Pipe3);
 
    begin
       --  Since the code between fork and exec on VMS executes
@@ -1099,6 +1102,7 @@ package body GNAT.Expect is
       --  Since we are still called from the parent process, there is no way
       --  currently we can cleanly close the unneeded ends of the pipes, but
       --  this doesn't really matter.
+
       --  We could close Pipe1.Output, Pipe2.Input, Pipe3.Input.
 
       Dup2 (Pipe1.Input,  GNAT.OS_Lib.Standin);
@@ -1106,7 +1110,6 @@ package body GNAT.Expect is
       Dup2 (Pipe3.Output, GNAT.OS_Lib.Standerr);
 
       Portable_Execvp (Pid.Pid'Access, Cmd & ASCII.Nul, Args);
-
    end Set_Up_Child_Communications;
 
    ---------------------------
@@ -1156,6 +1159,9 @@ package body GNAT.Expect is
       Pipe3 : in out Pipe_Type)
    is
       pragma Warnings (Off, Pid);
+      pragma Warnings (Off, Pipe1);
+      pragma Warnings (Off, Pipe2);
+      pragma Warnings (Off, Pipe3);
 
    begin
 

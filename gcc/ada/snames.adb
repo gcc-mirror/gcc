@@ -326,6 +326,7 @@ package body Snames is
      "unchecked_union#" &
      "unimplemented_unit#" &
      "universal_aliasing#" &
+     "unmodified#" &
      "unreferenced#" &
      "unreferenced_objects#" &
      "unreserve_all_interrupts#" &

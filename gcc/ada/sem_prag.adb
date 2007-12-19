@@ -10755,6 +10755,54 @@ package body Sem_Prag is
                Error_Pragma ("?pragma% ignored (applies only to AAMP)");
             end if;
 
+         ----------------
+         -- Unmodified --
+         ----------------
+
+         --  pragma Unmodified (local_Name {, local_Name});
+
+         when Pragma_Unmodified => Unmodified : declare
+            Arg_Node : Node_Id;
+            Arg_Expr : Node_Id;
+            Arg_Ent  : Entity_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_At_Least_N_Arguments (1);
+
+            --  Loop through arguments
+
+            Arg_Node := Arg1;
+            while Present (Arg_Node) loop
+               Check_No_Identifier (Arg_Node);
+
+               --  Note: the analyze call done by Check_Arg_Is_Local_Name
+               --  will in fact generate reference, so that the entity will
+               --  have a reference, which will inhibit any warnings about
+               --  it not being referenced, and also properly show up in the
+               --  ali file as a reference. But this reference is recorded
+               --  before the Has_Pragma_Unreferenced flag is set, so that
+               --  no warning is generated for this reference.
+
+               Check_Arg_Is_Local_Name (Arg_Node);
+               Arg_Expr := Get_Pragma_Arg (Arg_Node);
+
+               if Is_Entity_Name (Arg_Expr) then
+                  Arg_Ent := Entity (Arg_Expr);
+
+                  if not Is_Assignable (Arg_Ent) then
+                     Error_Pragma_Arg
+                       ("pragma% can only be applied to a variable",
+                        Arg_Expr);
+                  else
+                     Set_Has_Pragma_Unmodified (Arg_Ent);
+                  end if;
+               end if;
+
+               Next (Arg_Node);
+            end loop;
+         end Unmodified;
+
          ------------------
          -- Unreferenced --
          ------------------
@@ -11501,6 +11549,7 @@ package body Sem_Prag is
       Pragma_Unimplemented_Unit            => -1,
       Pragma_Universal_Aliasing            => -1,
       Pragma_Universal_Data                => -1,
+      Pragma_Unmodified                    => -1,
       Pragma_Unreferenced                  => -1,
       Pragma_Unreferenced_Objects          => -1,
       Pragma_Unreserve_All_Interrupts      => -1,

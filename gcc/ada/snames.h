@@ -367,17 +367,18 @@ extern unsigned char Get_Pragma_Id (int);
 #define  Pragma_Unchecked_Union               148
 #define  Pragma_Unimplemented_Unit            149
 #define  Pragma_Universal_Aliasing            150
-#define  Pragma_Unreferenced                  151
-#define  Pragma_Unreferenced_Objects          152
-#define  Pragma_Unreserve_All_Interrupts      153
-#define  Pragma_Volatile                      154
-#define  Pragma_Volatile_Components           155
-#define  Pragma_Weak_External                 156
-#define  Pragma_AST_Entry                     157
-#define  Pragma_Fast_Math                     158
-#define  Pragma_Interface                     159
-#define  Pragma_Priority                      160
-#define  Pragma_Storage_Size                  161
-#define  Pragma_Storage_Unit                  162
+#define  Pragma_Unmodified                    151
+#define  Pragma_Unreferenced                  152
+#define  Pragma_Unreferenced_Objects          153
+#define  Pragma_Unreserve_All_Interrupts      154
+#define  Pragma_Volatile                      155
+#define  Pragma_Volatile_Components           156
+#define  Pragma_Weak_External                 157
+#define  Pragma_AST_Entry                     158
+#define  Pragma_Fast_Math                     159
+#define  Pragma_Interface                     160
+#define  Pragma_Priority                      161
+#define  Pragma_Storage_Size                  162
+#define  Pragma_Storage_Unit                  163
 
 /* End of snames.h (C version of Snames package spec) */
