@@ -104,6 +104,68 @@ gfc_op2string (gfc_intrinsic_op op)
 
 /******************** Generic matching subroutines ************************/
 
+/* This function scans the current statement counting the opened and closed
+   parenthesis to make sure they are balanced.  */
+
+match
+gfc_match_parens (void)
+{
+  locus old_loc, where;
+  int c, count, instring;
+  char quote;
+
+  old_loc = gfc_current_locus;
+  count = 0;
+  instring = 0;
+  quote = ' ';
+
+  for (;;)
+    {
+      c = gfc_next_char_literal (instring);
+      if (c == '\n')
+	break;
+      if (quote == ' ' && ((c == '\'') || (c == '"')))
+	{
+	  quote = (char) c;
+	  instring = 1;
+	  continue;
+	}
+      if (quote != ' ' && c == quote)
+	{
+	  quote = ' ';
+	  instring = 0;
+	  continue;
+	}
+
+      if (c == '(' && quote == ' ')
+	{
+	  count++;
+	  where = gfc_current_locus;
+	}
+      if (c == ')' && quote == ' ')
+	{
+	  count--;
+	  where = gfc_current_locus;
+	}
+    }
+
+  gfc_current_locus = old_loc;
+
+  if (count > 0)
+    {
+      gfc_error ("Missing ')' in statement before %L", &where);
+      return MATCH_ERROR;
+    }
+  if (count < 0)
+    {
+      gfc_error ("Missing '(' in statement before %L", &where);
+      return MATCH_ERROR;
+    }
+
+  return MATCH_YES;
+}
+
+
 /* See if the next character is a special character that has
    escaped by a \ via the -fbackslash option.  */
 
@@ -1321,7 +1383,7 @@ gfc_match_if (gfc_statement *if_type)
 {
   gfc_expr *expr;
   gfc_st_label *l1, *l2, *l3;
-  locus old_loc;
+  locus old_loc, old_loc2;
   gfc_code *p;
   match m, n;
 
@@ -1334,6 +1396,14 @@ gfc_match_if (gfc_statement *if_type)
   m = gfc_match (" if ( %e", &expr);
   if (m != MATCH_YES)
     return m;
+
+  old_loc2 = gfc_current_locus;
+  gfc_current_locus = old_loc;
+  
+  if (gfc_match_parens () == MATCH_ERROR)
+    return MATCH_ERROR;
+
+  gfc_current_locus = old_loc2;
 
   if (gfc_match_char (')') != MATCH_YES)
     {
@@ -1386,7 +1456,7 @@ gfc_match_if (gfc_statement *if_type)
 
   if (n == MATCH_YES)
     {
-      gfc_error ("Block label is not appropriate IF statement at %C");
+      gfc_error ("Block label is not appropriate for IF statement at %C");
       gfc_free_expr (expr);
       return MATCH_ERROR;
     }
