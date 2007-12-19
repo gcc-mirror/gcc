@@ -837,6 +837,22 @@ gen_rtvec_v (int n, rtx *argp)
   return rt_val;
 }
 
+/* Return the number of bytes between the start of an OUTER_MODE
+   in-memory value and the start of an INNER_MODE in-memory value,
+   given that the former is a lowpart of the latter.  It may be a
+   paradoxical lowpart, in which case the offset will be negative
+   on big-endian targets.  */
+
+int
+byte_lowpart_offset (enum machine_mode outer_mode,
+		     enum machine_mode inner_mode)
+{
+  if (GET_MODE_SIZE (outer_mode) < GET_MODE_SIZE (inner_mode))
+    return subreg_lowpart_offset (outer_mode, inner_mode);
+  else
+    return -subreg_lowpart_offset (inner_mode, outer_mode);
+}
+
 /* Generate a REG rtx for a new pseudo register of mode MODE.
    This pseudo is assigned the next sequential register number.  */
 
@@ -891,101 +907,18 @@ gen_reg_rtx (enum machine_mode mode)
   return val;
 }
 
-/* Update NEW with the same attributes as REG, but offsetted by OFFSET.
-   Do the big endian correction if needed.  */
+/* Update NEW with the same attributes as REG, but with OFFSET added
+   to the REG_OFFSET.  */
 
 static void
 update_reg_offset (rtx new, rtx reg, int offset)
 {
-  tree decl;
-  HOST_WIDE_INT var_size;
-
-  /* PR middle-end/14084
-     The problem appears when a variable is stored in a larger register
-     and later it is used in the original mode or some mode in between
-     or some part of variable is accessed.
-
-     On little endian machines there is no problem because
-     the REG_OFFSET of the start of the variable is the same when
-     accessed in any mode (it is 0).
-
-     However, this is not true on big endian machines.
-     The offset of the start of the variable is different when accessed
-     in different modes.
-     When we are taking a part of the REG we have to change the OFFSET
-     from offset WRT size of mode of REG to offset WRT size of variable.
-
-     If we would not do the big endian correction the resulting REG_OFFSET
-     would be larger than the size of the DECL.
-
-     Examples of correction, for BYTES_BIG_ENDIAN WORDS_BIG_ENDIAN machine:
-
-     REG.mode  MODE  DECL size  old offset  new offset  description
-     DI        SI    4          4           0           int32 in SImode
-     DI        SI    1          4           0           char in SImode
-     DI        QI    1          7           0           char in QImode
-     DI        QI    4          5           1           1st element in QImode
-                                                        of char[4]
-     DI        HI    4          6           2           1st element in HImode
-                                                        of int16[2]
-
-     If the size of DECL is equal or greater than the size of REG
-     we can't do this correction because the register holds the
-     whole variable or a part of the variable and thus the REG_OFFSET
-     is already correct.  */
-
-  decl = REG_EXPR (reg);
-  if ((BYTES_BIG_ENDIAN || WORDS_BIG_ENDIAN)
-      && decl != NULL
-      && offset > 0
-      && GET_MODE_SIZE (GET_MODE (reg)) > GET_MODE_SIZE (GET_MODE (new))
-      && ((var_size = int_size_in_bytes (TREE_TYPE (decl))) > 0
-	  && var_size < GET_MODE_SIZE (GET_MODE (reg))))
-    {
-      int offset_le;
-
-      /* Convert machine endian to little endian WRT size of mode of REG.  */
-      if (WORDS_BIG_ENDIAN)
-	offset_le = ((GET_MODE_SIZE (GET_MODE (reg)) - 1 - offset)
-		     / UNITS_PER_WORD) * UNITS_PER_WORD;
-      else
-	offset_le = (offset / UNITS_PER_WORD) * UNITS_PER_WORD;
-
-      if (BYTES_BIG_ENDIAN)
-	offset_le += ((GET_MODE_SIZE (GET_MODE (reg)) - 1 - offset)
-		      % UNITS_PER_WORD);
-      else
-	offset_le += offset % UNITS_PER_WORD;
-
-      if (offset_le >= var_size)
-	{
-	  /* MODE is wider than the variable so the new reg will cover
-	     the whole variable so the resulting OFFSET should be 0.  */
-	  offset = 0;
-	}
-      else
-	{
-	  /* Convert little endian to machine endian WRT size of variable.  */
-	  if (WORDS_BIG_ENDIAN)
-	    offset = ((var_size - 1 - offset_le)
-		      / UNITS_PER_WORD) * UNITS_PER_WORD;
-	  else
-	    offset = (offset_le / UNITS_PER_WORD) * UNITS_PER_WORD;
-
-	  if (BYTES_BIG_ENDIAN)
-	    offset += ((var_size - 1 - offset_le)
-		       % UNITS_PER_WORD);
-	  else
-	    offset += offset_le % UNITS_PER_WORD;
-	}
-    }
-
   REG_ATTRS (new) = get_reg_attrs (REG_EXPR (reg),
 				   REG_OFFSET (reg) + offset);
 }
 
-/* Generate a register with same attributes as REG, but offsetted by
-   OFFSET.  */
+/* Generate a register with same attributes as REG, but with OFFSET
+   added to the REG_OFFSET.  */
 
 rtx
 gen_rtx_REG_offset (rtx reg, enum machine_mode mode, unsigned int regno,
@@ -998,7 +931,7 @@ gen_rtx_REG_offset (rtx reg, enum machine_mode mode, unsigned int regno,
 }
 
 /* Generate a new pseudo-register with the same attributes as REG, but
-   offsetted by OFFSET.  */
+   with OFFSET added to the REG_OFFSET.  */
 
 rtx
 gen_reg_rtx_offset (rtx reg, enum machine_mode mode, int offset)
@@ -1009,14 +942,30 @@ gen_reg_rtx_offset (rtx reg, enum machine_mode mode, int offset)
   return new;
 }
 
-/* Set REG to the decl that MEM refers to.  */
+/* Adjust REG in-place so that it has mode MODE.  It is assumed that the
+   new register is a (possibly paradoxical) lowpart of the old one.  */
 
 void
-set_reg_attrs_from_mem (rtx reg, rtx mem)
+adjust_reg_mode (rtx reg, enum machine_mode mode)
 {
-  if (MEM_OFFSET (mem) && GET_CODE (MEM_OFFSET (mem)) == CONST_INT)
+  update_reg_offset (reg, reg, byte_lowpart_offset (mode, GET_MODE (reg)));
+  PUT_MODE (reg, mode);
+}
+
+/* Copy REG's attributes from X, if X has any attributes.  If REG and X
+   have different modes, REG is a (possibly paradoxical) lowpart of X.  */
+
+void
+set_reg_attrs_from_value (rtx reg, rtx x)
+{
+  int offset;
+
+  offset = byte_lowpart_offset (GET_MODE (reg), GET_MODE (x));
+  if (MEM_P (x) && MEM_OFFSET (x) && GET_CODE (MEM_OFFSET (x)) == CONST_INT)
     REG_ATTRS (reg)
-      = get_reg_attrs (MEM_EXPR (mem), INTVAL (MEM_OFFSET (mem)));
+      = get_reg_attrs (MEM_EXPR (x), INTVAL (MEM_OFFSET (x)) + offset);
+  if (REG_P (x) && REG_ATTRS (x))
+    update_reg_offset (reg, x, offset);
 }
 
 /* Set the register attributes for registers contained in PARM_RTX.
@@ -1026,7 +975,7 @@ void
 set_reg_attrs_for_parm (rtx parm_rtx, rtx mem)
 {
   if (REG_P (parm_rtx))
-    set_reg_attrs_from_mem (parm_rtx, mem);
+    set_reg_attrs_from_value (parm_rtx, mem);
   else if (GET_CODE (parm_rtx) == PARALLEL)
     {
       /* Check for a NULL entry in the first slot, used to indicate that the
@@ -1043,54 +992,21 @@ set_reg_attrs_for_parm (rtx parm_rtx, rtx mem)
     }
 }
 
-/* Assign the RTX X to declaration T.  */
-void
-set_decl_rtl (tree t, rtx x)
+/* Set the REG_ATTRS for registers in value X, given that X represents
+   decl T.  */
+
+static void
+set_reg_attrs_for_decl_rtl (tree t, rtx x)
 {
-  DECL_WRTL_CHECK (t)->decl_with_rtl.rtl = x;
-
-  if (!x)
-    return;
-  /* For register, we maintain the reverse information too.  */
-  if (REG_P (x))
-    REG_ATTRS (x) = get_reg_attrs (t, 0);
-  else if (GET_CODE (x) == SUBREG)
-    REG_ATTRS (SUBREG_REG (x))
-      = get_reg_attrs (t, -SUBREG_BYTE (x));
-  if (GET_CODE (x) == CONCAT)
+  if (GET_CODE (x) == SUBREG)
     {
-      if (REG_P (XEXP (x, 0)))
-        REG_ATTRS (XEXP (x, 0)) = get_reg_attrs (t, 0);
-      if (REG_P (XEXP (x, 1)))
-	REG_ATTRS (XEXP (x, 1))
-	  = get_reg_attrs (t, GET_MODE_UNIT_SIZE (GET_MODE (XEXP (x, 0))));
+      gcc_assert (subreg_lowpart_p (x));
+      x = SUBREG_REG (x);
     }
-  if (GET_CODE (x) == PARALLEL)
-    {
-      int i;
-      for (i = 0; i < XVECLEN (x, 0); i++)
-	{
-	  rtx y = XVECEXP (x, 0, i);
-	  if (REG_P (XEXP (y, 0)))
-	    REG_ATTRS (XEXP (y, 0)) = get_reg_attrs (t, INTVAL (XEXP (y, 1)));
-	}
-    }
-}
-
-/* Assign the RTX X to parameter declaration T.  */
-void
-set_decl_incoming_rtl (tree t, rtx x)
-{
-  DECL_INCOMING_RTL (t) = x;
-
-  if (!x)
-    return;
-  /* For register, we maintain the reverse information too.  */
   if (REG_P (x))
-    REG_ATTRS (x) = get_reg_attrs (t, 0);
-  else if (GET_CODE (x) == SUBREG)
-    REG_ATTRS (SUBREG_REG (x))
-      = get_reg_attrs (t, -SUBREG_BYTE (x));
+    REG_ATTRS (x)
+      = get_reg_attrs (t, byte_lowpart_offset (GET_MODE (x),
+					       TYPE_MODE (TREE_TYPE (t))));
   if (GET_CODE (x) == CONCAT)
     {
       if (REG_P (XEXP (x, 0)))
@@ -1117,6 +1033,26 @@ set_decl_incoming_rtl (tree t, rtx x)
 	    REG_ATTRS (XEXP (y, 0)) = get_reg_attrs (t, INTVAL (XEXP (y, 1)));
 	}
     }
+}
+
+/* Assign the RTX X to declaration T.  */
+
+void
+set_decl_rtl (tree t, rtx x)
+{
+  DECL_WRTL_CHECK (t)->decl_with_rtl.rtl = x;
+  if (x)
+    set_reg_attrs_for_decl_rtl (t, x);
+}
+
+/* Assign the RTX X to parameter declaration T.  */
+
+void
+set_decl_incoming_rtl (tree t, rtx x)
+{
+  DECL_INCOMING_RTL (t) = x;
+  if (x)
+    set_reg_attrs_for_decl_rtl (t, x);
 }
 
 /* Identify REG (which may be a CONCAT) as a user register.  */
@@ -1304,8 +1240,7 @@ gen_highpart_mode (enum machine_mode outermode, enum machine_mode innermode, rtx
 			      subreg_highpart_offset (outermode, innermode));
 }
 
-/* Return offset in bytes to get OUTERMODE low part
-   of the value in mode INNERMODE stored in memory in target format.  */
+/* Return the SUBREG_BYTE for an OUTERMODE lowpart of an INNERMODE value.  */
 
 unsigned int
 subreg_lowpart_offset (enum machine_mode outermode, enum machine_mode innermode)

@@ -149,7 +149,11 @@ typedef struct mem_attrs GTY(())
 } mem_attrs;
 
 /* Structure used to describe the attributes of a REG in similar way as
-   mem_attrs does for MEM above.  */
+   mem_attrs does for MEM above.  Note that the OFFSET field is calculated
+   in the same way as for mem_attrs, rather than in the same way as a
+   SUBREG_BYTE.  For example, if a big-endian target stores a byte
+   object in the low part of a 4-byte register, the OFFSET field
+   will be -3 rather than 0.  */
 
 typedef struct reg_attrs GTY(())
 {
@@ -1476,9 +1480,10 @@ extern rtx copy_insn_1 (rtx);
 extern rtx copy_insn (rtx);
 extern rtx gen_int_mode (HOST_WIDE_INT, enum machine_mode);
 extern rtx emit_copy_of_insn_after (rtx, rtx);
-extern void set_reg_attrs_from_mem (rtx, rtx);
+extern void set_reg_attrs_from_value (rtx, rtx);
 extern void set_mem_attrs_from_reg (rtx, rtx);
 extern void set_reg_attrs_for_parm (rtx, rtx);
+extern void adjust_reg_mode (rtx, enum machine_mode);
 extern int mem_expr_equal_p (const_tree, const_tree);
 
 /* In rtl.c */
@@ -1522,6 +1527,7 @@ extern unsigned int subreg_lowpart_offset (enum machine_mode,
 					   enum machine_mode);
 extern unsigned int subreg_highpart_offset (enum machine_mode,
 					    enum machine_mode);
+extern int byte_lowpart_offset (enum machine_mode, enum machine_mode);
 extern rtx make_safe_from (rtx, rtx);
 extern rtx convert_memory_address (enum machine_mode, rtx);
 extern rtx get_insns (void);

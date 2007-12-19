@@ -2435,10 +2435,7 @@ reg_scan_mark_refs (rtx x, rtx insn)
 		 || (GET_CODE (src) == SUBREG && subreg_lowpart_p (src)))
 	    src = XEXP (src, 0);
 
-	  if (REG_P (src))
-	    REG_ATTRS (dest) = REG_ATTRS (src);
-	  if (MEM_P (src))
-	    set_reg_attrs_from_mem (dest, src);
+	  set_reg_attrs_from_value (dest, src);
 	}
 
       /* ... fall through ...  */

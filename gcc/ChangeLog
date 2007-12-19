@@ -1,3 +1,52 @@
+2007-12-19  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* rtl.def (SUBREG): Update comments.
+	* rtl.h (reg_attrs): Be explicit about the type of offset used.
+	(set_reg_attrs_from_mem): Rename to...
+	(set_reg_attrs_from_value): ...this.
+	(adjust_reg_mode, byte_lowpart_offset): Declare.
+	* emit-rtl.c (byte_lowpart_offset): New function.
+	(update_reg_offset): Remove special offset handling for big-endian
+	targets.
+	(gen_rtx_REG_offset, gen_reg_rtx_offset): Explicitly say that the
+	offset parameter is added to REG_OFFSET.
+	(adjust_reg_mode): New function.
+	(set_reg_attrs_for_mem): Rename to...
+	(set_reg_attrs_for_value): ...this and generalize to all values.
+	If the register is a lowpart of the value, adjust the offset
+	accordingly.
+	(set_reg_attrs_for_parm): Update after the above renaming.
+	(set_reg_attrs_for_decl_rtl): New function, split out from
+	set_decl_incoming_rtl.  Set the offset of plain REGs to the
+	offset of the REG's mode from the decl's.  Assert that all
+	subregs are lowparts and handle their inner registers in the
+	same way as plain REGs.
+	(set_decl_rtl, set_incoming_decl_rtl): Use reg_attrs_for_decl_rtl.
+	(subreg_lowpart_offset): Explicitly say that the returned offset
+	is a SUBREG_BYTE.
+	* combine.c (do_SUBST_MODE, try_combine, undo_all): Use adjust_reg_mode
+	instead of PUT_MODE.
+	* final.c (alter_subreg): Fix/update argument to gen_rtx_REG_offset.
+	* config/ia64/ia64.c (ia64_expand_load_address): Likewise.
+	* regclass.c (reg_scan_mark_refs): Use set_reg_attrs_from_value.
+	* reload.c (find_reloads_subreg_address): Call set_mem_offset
+	when offseting a MEM.
+	* var-tracking.c (offset_valid_for_tracked_p): Delete.
+	(mode_for_reg_attrs): Replace with...
+	(track_loc_p): ...this new function.  Return the mode and offset
+	to the caller, checking that the latter is valid.  If the rtx is
+	a paradoxical lowpart of the decl, use the decl's mode instead.
+	Do the same when storing to a register that contains the entire decl.
+	(var_lowpart): Use byte_lowpart_offset rather than
+	subreg_lowpart_offset when adjusting the offset attribute.
+	(count_uses, add_uses, add_stores): Use track_reg_p instead of
+	REG_EXPR, MEM_EXPR, REG_OFFSET, INT_MEM_OFFSET, track_expr_p,
+	offset_valid_for_tracked_p and mode_for_reg_attrs.  Generate
+	lowparts for MEMs as well as REGs.
+	(vt_add_function_parameters): When obtaining the information from
+	the decl_rtl, adjust the offset to match incoming.  Use track_loc_p
+	and var_lowpart.
+
 2007-12-18  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/34123
