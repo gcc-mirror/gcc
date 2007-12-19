@@ -3952,6 +3952,11 @@ expand_omp (struct omp_region *region)
 {
   while (region)
     {
+      /* First, determine whether this is a combined parallel+workshare
+       	 region.  */
+      if (region->type == OMP_PARALLEL)
+	determine_parallel_type (region);
+
       if (region->inner)
 	expand_omp (region->inner);
 
@@ -4028,11 +4033,6 @@ build_omp_regions_1 (basic_block bb, struct omp_region *parent,
 	  region = parent;
 	  region->exit = bb;
 	  parent = parent->outer;
-
-	  /* If REGION is a parallel region, determine whether it is
-	     a combined parallel+workshare region.  */
-	  if (region->type == OMP_PARALLEL)
-	    determine_parallel_type (region);
 	}
       else if (code == OMP_ATOMIC_STORE)
 	{
