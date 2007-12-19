@@ -61,6 +61,16 @@ package body Sem_Warn is
      Table_Increment      => Alloc.Unreferenced_Entities_Increment,
      Table_Name           => "Unreferenced_Entities");
 
+   --  The following table collects potential warnings for IN OUT parameters
+   --  that are referenced but not modified. These warnings are processed when
+   --  the front end calls the procedure Output_Non_Modifed_In_Out_Warnings.
+   --  The reason that we defer output of these messages is that we want to
+   --  detect the case where the relevant procedure is used as a generic actual
+   --  in an instantation, since we suppress the warnings in this case. The
+   --  flag Used_As_Generic_Actual will be set in this case, but will not be
+   --  set till later. Similarly, we suppress the message if the address of
+   --  the procedure is taken, where the flag Address_Taken may be set later.
+
    package In_Out_Warnings is new Table.Table (
      Table_Component_Type => Entity_Id,
      Table_Index_Type     => Nat,
@@ -83,6 +93,12 @@ package body Sem_Warn is
    function Goto_Spec_Entity (E : Entity_Id) return Entity_Id;
    --  If E is a parameter entity for a subprogram body, then this function
    --  returns the corresponding spec entity, if not, E is returned unchanged.
+
+   function Has_Pragma_Unmodified_Check_Spec (E : Entity_Id) return Boolean;
+   --  Tests Has_Pragma_Unmodified flag for entity E. If E is not a formal,
+   --  this is simply the setting of the flag Has_Pragma_Unmodified. If E is
+   --  a body formal, the setting of the flag in the corresponding spec is
+   --  also checked (and True returned if either flag is True).
 
    function Has_Pragma_Unreferenced_Check_Spec (E : Entity_Id) return Boolean;
    --  Tests Has_Pragma_Unreferenced flag for entity E. If E is not a formal,
@@ -551,8 +567,9 @@ package body Sem_Warn is
    ----------------------
 
    procedure Check_References (E : Entity_Id; Anod : Node_Id := Empty) is
-      E1 : Entity_Id;
-      UR : Node_Id;
+      E1  : Entity_Id;
+      E1T : Entity_Id;
+      UR  : Node_Id;
 
       function Body_Formal
         (E                : Entity_Id;
@@ -653,6 +670,12 @@ package body Sem_Warn is
 
       procedure Output_Reference_Error (M : String) is
       begin
+         --  Never issue messages for internal names
+
+         if Is_Internal_Name (Chars (E1)) then
+            return;
+         end if;
+
          --  Don't output message for IN OUT formal unless we have the warning
          --  flag specifically set. It is a bit odd to distinguish IN OUT
          --  formals from other cases. This distinction is historical in
@@ -792,14 +815,18 @@ package body Sem_Warn is
 
       E1 := First_Entity (E);
       while Present (E1) loop
+         E1T := Etype (E1);
 
          --  We only look at source entities with warning flag on. We also
          --  ignore objects whose type or base type has warnings suppressed.
+         --  We also don't issue warnings within instances, since the proper
+         --  place for such warnings is on the template when it is compiled.
 
          if Comes_From_Source (E1)
            and then not Warnings_Off (E1)
-           and then not Warnings_Off (Etype (E1))
-           and then not Warnings_Off (Base_Type (Etype (E1)))
+           and then not Warnings_Off (E1T)
+           and then not Warnings_Off (Base_Type (E1T))
+           and then Instantiation_Location (Sloc (E1)) = No_Location
          then
             --  We are interested in variables and out/in-out parameters, but
             --  we exclude protected types, too complicated to worry about.
@@ -832,8 +859,10 @@ package body Sem_Warn is
                then
                   null;
 
+               --  Special processing for access types
+
                elsif Present (UR)
-                 and then Is_Access_Type (Etype (E1))
+                 and then Is_Access_Type (E1T)
                then
                   --  For access types, the only time we made a UR entry was
                   --  for a dereference, and so we post the appropriate warning
@@ -852,10 +881,8 @@ package body Sem_Warn is
                --  the package.
 
                elsif Warn_On_Constant
-                 and then ((Ekind (E1) = E_Variable
-                              and then Has_Initial_Value (E1))
-                             or else
-                            Ekind (E1) = E_In_Out_Parameter)
+                 and then (Ekind (E1) = E_Variable
+                             and then Has_Initial_Value (E1))
                  and then Never_Set_In_Source_Check_Spec (E1)
                  and then not Address_Taken (E1)
                  and then not Generic_Package_Spec_Entity (E1)
@@ -875,73 +902,29 @@ package body Sem_Warn is
                   --  the case of exception choice (and a bit more too, but not
                   --  worth doing more investigation here).
 
-                  elsif Is_RTE (Etype (E1), RE_Exception_Occurrence) then
+                  elsif Is_RTE (E1T, RE_Exception_Occurrence) then
                      null;
 
                   --  Here we give the warning if referenced and no pragma
-                  --  Unreferenced is present.
+                  --  Unreferenced or Unmodified is present.
 
                   else
+                     --  Variable case
+
                      if Ekind (E1) = E_Variable then
                         if Referenced_Check_Spec (E1)
                           and then not Has_Pragma_Unreferenced_Check_Spec (E1)
+                          and then not Has_Pragma_Unmodified_Check_Spec (E1)
                         then
                            Error_Msg_N
                              ("?& is not modified, "
                               & "could be declared constant!",
                               E1);
                         end if;
-
-                     else pragma Assert (Ekind (E1) = E_In_Out_Parameter);
-                        if Referenced_Check_Spec (E1)
-                          and then
-                            not Has_Pragma_Unreferenced_Check_Spec (E1)
-                        then
-                           --  Suppress warning if private type, since in this
-                           --  case it may be quite reasonable for the logical
-                           --  view to be in out, even if the implementation
-                           --  ends up using access types.
-
-                           if Has_Private_Declaration (Etype (E1)) then
-                              null;
-
-                           --  Suppress warning for any composite type, since
-                           --  for composites it seems quite reasonable to pass
-                           --  a value of the composite type and then modify
-                           --  just a component.
-
-                           elsif Is_Composite_Type (Etype (E1)) then
-                              null;
-
-                           --  Suppress warning for parameter of dispatching
-                           --  operation, since it is quite reasonable to have
-                           --  an operation that is overridden, and for some
-                           --  subclasses needs to be IN OUT and for others
-                           --  the parameter does not happen to be assigned.
-
-                           elsif Is_Dispatching_Operation
-                             (Scope (Goto_Spec_Entity (E1)))
-                           then
-                              null;
-
-                           --  OK, looks like warning for an IN OUT parameter
-                           --  that could be IN makes sense, but we delay the
-                           --  output of the warning, pending possibly finding
-                           --  out later on that the associated subprogram is
-                           --  used as a generic actual, or its address/access
-                           --  is taken. In these two cases, we suppress the
-                           --  warning because the context may force use of IN
-                           --  OUT, even if in this particular case the formal
-                           --  is not modifed.
-
-                           else
-                              In_Out_Warnings.Append (E1);
-                           end if;
-                        end if;
                      end if;
                   end if;
 
-                  --  Other cases of a variable never set in source
+               --  Other cases of a variable or parameter never set in source
 
                elsif Never_Set_In_Source_Check_Spec (E1)
 
@@ -971,9 +954,9 @@ package body Sem_Warn is
                   --  never referenced, since again it seems odd to rely on
                   --  default initialization to set an out parameter value.
 
-                 and then (Is_Access_Type (Etype (E1))
+                 and then (Is_Access_Type (E1T)
                             or else Ekind (E1) = E_Out_Parameter
-                            or else not Is_Fully_Initialized_Type (Etype (E1)))
+                            or else not Is_Fully_Initialized_Type (E1T))
                then
                   --  Do not output complaint about never being assigned a
                   --  value if a pragma Unreferenced applies to the variable
@@ -981,16 +964,79 @@ package body Sem_Warn is
                   --  a pragma Unreferenced for the corresponding spec.
 
                   if Has_Pragma_Unreferenced_Check_Spec (E1)
-                    or else Has_Pragma_Unreferenced_Objects (Etype (E1))
+                    or else Has_Pragma_Unreferenced_Objects (E1T)
                   then
                      null;
 
-                  --  Case of unreferenced formal
+                  --  IN OUT parameter case where parameter is referenced. We
+                  --  separate this out, since this is the case where we delay
+                  --  output of the warning until more information is available
+                  --  (about use in an instantiation or address being taken).
+
+                  elsif Ekind (E1) = E_In_Out_Parameter
+                    and then Referenced_Check_Spec (E1)
+                  then
+                     --  Suppress warning if private type, and the procedure
+                     --  has a separate declaration in a different unit. This
+                     --  is the case where the client of a package sees only
+                     --  the private type, and it it may be quite reasonable
+                     --  for the logical view to be in out, even if the
+                     --  implementation ends up using access types or some
+                     --  other method to achieve the local effect of a
+                     --  modification. On the other hand if the spec and body
+                     --  are in the same unit, we are in the package body and
+                     --  there we less  excuse for a junk IN OUT parameter.
+
+                     if Has_Private_Declaration (E1T)
+                       and then Present (Spec_Entity (E1))
+                       and then not In_Same_Source_Unit (E1, Spec_Entity (E1))
+                     then
+                        null;
+
+                     --  Suppress warning for any parameter of a dispatching
+                     --  operation, since it is quite reasonable to have an
+                     --  operation that is overridden, and for some subclasses
+                     --  needs to be IN OUT and for others the parameter does
+                     --  not happen to be assigned.
+
+                     elsif Is_Dispatching_Operation
+                             (Scope (Goto_Spec_Entity (E1)))
+                     then
+                        null;
+
+                     --  Suppress warning if composite type containing any
+                     --  access element component, since the logical effect
+                     --  of modifying a parameter may be achieved by modifying
+                     --  a referenced entity.
+
+                     elsif Is_Composite_Type (E1T)
+                       and then Has_Access_Values (E1T)
+                     then
+                        null;
+
+                     --  OK, looks like warning for an IN OUT parameter that
+                     --  could be IN makes sense, but we delay the output of
+                     --  the warning, pending possibly finding out later on
+                     --  that the associated subprogram is used as a generic
+                     --  actual, or its address/access is taken. In these two
+                     --  cases, we suppress the warning because the context may
+                     --  force use of IN OUT, even if in this particular case
+                     --  the formal is not modifed.
+
+                     else
+                        In_Out_Warnings.Append (E1);
+                     end if;
+
+                  --  Other cases of formals
 
                   elsif Is_Formal (E1) then
                      if Referenced_Check_Spec (E1) then
-                        Output_Reference_Error
-                          ("?formal parameter& is read but never assigned!");
+                        if not Has_Pragma_Unmodified_Check_Spec (E1) then
+                           Output_Reference_Error
+                             ("?formal parameter& is read but "
+                              & "never assigned!");
+                        end if;
+
                      else
                         Output_Reference_Error
                           ("?formal parameter& is not referenced!");
@@ -1054,7 +1100,9 @@ package body Sem_Warn is
                   --  are only for functions, and functions do not allow OUT
                   --  parameters.)
 
-                  if Nkind (UR) = N_Simple_Return_Statement then
+                  if Nkind (UR) = N_Simple_Return_Statement
+                    and then not Has_Pragma_Unmodified_Check_Spec (E1)
+                  then
                      Error_Msg_NE
                        ("?OUT parameter& not set before return", UR, E1);
 
@@ -1073,7 +1121,7 @@ package body Sem_Warn is
                            Comp : Entity_Id;
 
                         begin
-                           Comp := First_Entity (Etype (E1));
+                           Comp := First_Entity (E1T);
                            while Present (Comp) loop
                               if Ekind (Comp) = E_Component
                                 and then Nkind (Parent (Comp)) =
@@ -1235,7 +1283,7 @@ package body Sem_Warn is
                and then ((Ekind (E1) /= E_Variable
                              and then Ekind (E1) /= E_Constant
                              and then Ekind (E1) /= E_Component)
-                           or else not Is_Task_Type (Etype (E1)))
+                           or else not Is_Task_Type (E1T))
 
                --  For subunits, only place warnings on the main unit itself,
                --  since parent units are not completely compiled
@@ -2219,6 +2267,23 @@ package body Sem_Warn is
       end if;
    end Goto_Spec_Entity;
 
+   --------------------------------------
+   -- Has_Pragma_Unmodified_Check_Spec --
+   --------------------------------------
+
+   function Has_Pragma_Unmodified_Check_Spec
+     (E : Entity_Id) return Boolean
+   is
+   begin
+      if Is_Formal (E) and then Present (Spec_Entity (E)) then
+         return Has_Pragma_Unmodified (E)
+                  or else
+                Has_Pragma_Unmodified (Spec_Entity (E));
+      else
+         return Has_Pragma_Unmodified (E);
+      end if;
+   end Has_Pragma_Unmodified_Check_Spec;
+
    ----------------------------------------
    -- Has_Pragma_Unreferenced_Check_Spec --
    ----------------------------------------
@@ -2344,16 +2409,31 @@ package body Sem_Warn is
 
          begin
             --  Suppress warning in specific cases (see details in comments for
-            --  No_Warn_On_In_Out).
+            --  No_Warn_On_In_Out), or if there is a pragma Unmodified.
 
-            if No_Warn_On_In_Out (E1) then
+            if No_Warn_On_In_Out (E1)
+              or else Has_Pragma_Unmodified_Check_Spec (E1)
+            then
                null;
 
             --  Here we generate the warning
 
             else
-               Error_Msg_N ("?formal parameter & is not modified!", E1);
-               Error_Msg_N ("\?mode could be IN instead of `IN OUT`!", E1);
+               --  If -gnatwc is set then output message that we could be IN
+
+               if Warn_On_Constant then
+                  Error_Msg_N ("?formal parameter & is not modified!", E1);
+                  Error_Msg_N ("\?mode could be IN instead of `IN OUT`!", E1);
+
+               --  We do not generate warnings for IN OUT parameters unless we
+               --  have at least -gnatwu. This is deliberately inconsistent
+               --  with the treatment of variables, but otherwise we get too
+               --  many unexpected warnings in default mode.
+
+               elsif Check_Unreferenced then
+                  Error_Msg_N ("?formal parameter& is read but "
+                               & "never assigned!", E1);
+               end if;
 
                --  Kill any other warnings on this entity, since this is the
                --  one that should dominate any other unreferenced warning.
@@ -3349,10 +3429,12 @@ package body Sem_Warn is
                     and then not Is_Return_Object (E)
                     and then not Is_Aliased (E)
                     and then No (Renamed_Object (E))
-
                   then
-                     Error_Msg_N
-                       ("?variable & is assigned but never read!", E);
+                     if not Has_Pragma_Unmodified_Check_Spec (E) then
+                        Error_Msg_N
+                          ("?variable & is assigned but never read!", E);
+                     end if;
+
                      Set_Last_Assignment (E, Empty);
                   end if;
 
@@ -3532,9 +3614,12 @@ package body Sem_Warn is
                if No (N) then
 
                   --  Don't give this for OUT and IN OUT formals, since
-                  --  clearly caller may reference the assigned value.
+                  --  clearly caller may reference the assigned value. Also
+                  --  never give such warnings for internal variables.
 
-                  if Ekind (Ent) = E_Variable then
+                  if Ekind (Ent) = E_Variable
+                    and then not Is_Internal_Name (Chars (Ent))
+                  then
                      if Referenced_As_Out_Parameter (Ent) then
                         Error_Msg_NE
                           ("?& modified by call, but value never referenced",

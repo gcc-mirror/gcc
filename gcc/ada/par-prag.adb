@@ -1181,6 +1181,7 @@ begin
            Pragma_Unimplemented_Unit            |
            Pragma_Universal_Aliasing            |
            Pragma_Universal_Data                |
+           Pragma_Unmodified                    |
            Pragma_Unreferenced                  |
            Pragma_Unreferenced_Objects          |
            Pragma_Unreserve_All_Interrupts      |

@@ -494,8 +494,8 @@ package body Einfo is
 
    --    Renamed_In_Spec                 Flag231
    --    Implemented_By_Entry            Flag232
+   --    Has_Pragma_Unmodified           Flag233
 
-   --    (unused)                        Flag233
    --    (unused)                        Flag234
    --    (unused)                        Flag235
    --    (unused)                        Flag236
@@ -1361,6 +1361,11 @@ package body Einfo is
    begin
       return Flag179 (Id);
    end Has_Pragma_Pure_Function;
+
+   function Has_Pragma_Unmodified (Id : E) return B is
+   begin
+      return Flag233 (Id);
+   end Has_Pragma_Unmodified;
 
    function Has_Pragma_Unreferenced (Id : E) return B is
    begin
@@ -3711,6 +3716,11 @@ package body Einfo is
    begin
       Set_Flag179 (Id, V);
    end Set_Has_Pragma_Pure_Function;
+
+   procedure Set_Has_Pragma_Unmodified (Id : E; V : B := True) is
+   begin
+      Set_Flag233 (Id, V);
+   end Set_Has_Pragma_Unmodified;
 
    procedure Set_Has_Pragma_Unreferenced (Id : E; V : B := True) is
    begin
@@ -7275,6 +7285,7 @@ package body Einfo is
       W ("Has_Pragma_Preelab_Init",         Flag221 (Id));
       W ("Has_Pragma_Pure",                 Flag203 (Id));
       W ("Has_Pragma_Pure_Function",        Flag179 (Id));
+      W ("Has_Pragma_Unmodified",           Flag233 (Id));
       W ("Has_Pragma_Unreferenced",         Flag180 (Id));
       W ("Has_Pragma_Unreferenced_Objects", Flag212 (Id));
       W ("Has_Primitive_Operations",        Flag120 (Id));
@@ -8446,7 +8457,13 @@ package body Einfo is
 
    procedure Proc_Next_Component_Or_Discriminant (N : in out Node_Id) is
    begin
-      N := Next_Component (N);
+      N := Next_Entity (N);
+      while Present (N) loop
+         exit when Ekind (N) = E_Component
+                     or else
+                   Ekind (N) = E_Discriminant;
+         N := Next_Entity (N);
+      end loop;
    end Proc_Next_Component_Or_Discriminant;
 
    procedure Proc_Next_Discriminant              (N : in out Node_Id) is

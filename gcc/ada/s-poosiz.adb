@@ -301,6 +301,8 @@ package body System.Pool_Size is
          Storage_Size : SSE.Storage_Count;
          Alignment    : SSE.Storage_Count)
       is
+         pragma Warnings (Off, Pool);
+
          Align_Size : constant SSE.Storage_Count :=
                         ((Storage_Size + Alignment - 1) / Alignment) *
                                                                  Alignment;

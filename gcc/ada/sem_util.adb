@@ -7398,7 +7398,9 @@ package body Sem_Util is
    -----------------------
 
    procedure Mark_Coextensions (Context_Nod : Node_Id; Root_Nod : Node_Id) is
-      Is_Dynamic : Boolean := False;
+      Is_Dynamic : Boolean;
+      --  Indicates whether the context causes nested coextensions to be
+      --  dynamic or static
 
       function Mark_Allocator (N : Node_Id) return Traverse_Result;
       --  Recognize an allocator node and label it as a dynamic coextension
@@ -7932,6 +7934,10 @@ package body Sem_Util is
                if Comes_From_Source (Exp)
                  or else Modification_Comes_From_Source
                then
+                  if Has_Pragma_Unmodified (Ent) then
+                     Error_Msg_NE ("?pragma Unmodified given for &!", N, Ent);
+                  end if;
+
                   Set_Never_Set_In_Source (Ent, False);
                end if;
 
@@ -8565,16 +8571,12 @@ package body Sem_Util is
          return OK;
       end Clear_Analyzed;
 
-      function Reset_Analyzed is
-        new Traverse_Func (Clear_Analyzed);
-
-      Discard : Traverse_Result;
-      pragma Warnings (Off, Discard);
+      procedure Reset_Analyzed is new Traverse_Proc (Clear_Analyzed);
 
    --  Start of processing for Reset_Analyzed_Flags
 
    begin
-      Discard := Reset_Analyzed (N);
+      Reset_Analyzed (N);
    end Reset_Analyzed_Flags;
 
    ---------------------------
