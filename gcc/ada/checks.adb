@@ -2360,7 +2360,6 @@ package body Checks is
          Analyze_And_Resolve (N, Typ);
          return;
       end if;
-
    end Apply_Universal_Integer_Attribute_Checks;
 
    -------------------------------
@@ -5366,14 +5365,11 @@ package body Checks is
    -------------------
 
    procedure Remove_Checks (Expr : Node_Id) is
-      Discard : Traverse_Result;
-      pragma Warnings (Off, Discard);
-
       function Process (N : Node_Id) return Traverse_Result;
       --  Process a single node during the traversal
 
-      function Traverse is new Traverse_Func (Process);
-      --  The traversal function itself
+      procedure Traverse is new Traverse_Proc (Process);
+      --  The traversal procedure itself
 
       -------------
       -- Process --
@@ -5389,7 +5385,7 @@ package body Checks is
 
          case Nkind (N) is
             when N_And_Then =>
-               Discard := Traverse (Left_Opnd (N));
+               Traverse (Left_Opnd (N));
                return Skip;
 
             when N_Attribute_Reference =>
@@ -5425,7 +5421,7 @@ package body Checks is
                end case;
 
             when N_Or_Else =>
-               Discard := Traverse (Left_Opnd (N));
+               Traverse (Left_Opnd (N));
                return Skip;
 
             when N_Selected_Component =>
@@ -5446,7 +5442,7 @@ package body Checks is
    --  Start of processing for Remove_Checks
 
    begin
-      Discard := Traverse (Expr);
+      Traverse (Expr);
    end Remove_Checks;
 
    ----------------------------

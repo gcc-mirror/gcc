@@ -2624,12 +2624,12 @@ package body Atree is
    -- Traverse_Func --
    -------------------
 
-   function Traverse_Func (Node : Node_Id) return Traverse_Result is
+   function Traverse_Func (Node : Node_Id) return Traverse_Final_Result is
 
       function Traverse_Field
         (Nod : Node_Id;
          Fld : Union_Id;
-         FN  : Field_Num) return Traverse_Result;
+         FN  : Field_Num) return Traverse_Final_Result;
       --  Fld is one of the fields of Nod. If the field points to syntactic
       --  node or list, then this node or list is traversed, and the result is
       --  the result of this traversal. Otherwise a value of True is returned
@@ -2642,7 +2642,7 @@ package body Atree is
       function Traverse_Field
         (Nod : Node_Id;
          Fld : Union_Id;
-         FN  : Field_Num) return Traverse_Result
+         FN  : Field_Num) return Traverse_Final_Result
       is
       begin
          if Fld = Union_Id (Empty) then
@@ -2697,10 +2697,21 @@ package body Atree is
          end if;
       end Traverse_Field;
 
+      Cur_Node : Node_Id := Node;
+
    --  Start of processing for Traverse_Func
 
    begin
-      case Process (Node) is
+      --  We walk Field2 last, and if it is a node, we eliminate the tail
+      --  recursion by jumping back to this label. This is because Field2 is
+      --  where the Left_Opnd field of N_Op_Concat is stored, and in practice
+      --  concatenations are sometimes deeply nested, as in X1&X2&...&XN. This
+      --  trick prevents us from running out of memory in that case. We don't
+      --  bother eliminating the tail recursion if Field2 is a list.
+
+      <<Tail_Recurse>>
+
+      case Process (Cur_Node) is
          when Abandon =>
             return Abandon;
 
@@ -2708,41 +2719,37 @@ package body Atree is
             return OK;
 
          when OK =>
-            if Traverse_Field (Node, Union_Id (Field1 (Node)), 1) = Abandon
-                 or else
-               Traverse_Field (Node, Union_Id (Field2 (Node)), 2) = Abandon
-                 or else
-               Traverse_Field (Node, Union_Id (Field3 (Node)), 3) = Abandon
-                 or else
-               Traverse_Field (Node, Union_Id (Field4 (Node)), 4) = Abandon
-                 or else
-               Traverse_Field (Node, Union_Id (Field5 (Node)), 5) = Abandon
-            then
-               return Abandon;
-            else
-               return OK;
-            end if;
+            null;
 
          when OK_Orig =>
-            declare
-               Onod : constant Node_Id := Original_Node (Node);
-            begin
-               if Traverse_Field (Onod, Union_Id (Field1 (Onod)), 1) = Abandon
-                    or else
-                  Traverse_Field (Onod, Union_Id (Field2 (Onod)), 2) = Abandon
-                    or else
-                  Traverse_Field (Onod, Union_Id (Field3 (Onod)), 3) = Abandon
-                    or else
-                  Traverse_Field (Onod, Union_Id (Field4 (Onod)), 4) = Abandon
-                    or else
-                  Traverse_Field (Onod, Union_Id (Field5 (Onod)), 5) = Abandon
-               then
-                  return Abandon;
-               else
-                  return OK_Orig;
-               end if;
-            end;
+            Cur_Node := Original_Node (Cur_Node);
       end case;
+
+      if Traverse_Field (Cur_Node, Field1 (Cur_Node), 1) = Abandon
+           or else  --  skip Field2 here
+         Traverse_Field (Cur_Node, Field3 (Cur_Node), 3) = Abandon
+           or else
+         Traverse_Field (Cur_Node, Field4 (Cur_Node), 4) = Abandon
+           or else
+         Traverse_Field (Cur_Node, Field5 (Cur_Node), 5) = Abandon
+      then
+         return Abandon;
+      end if;
+
+      if Field2 (Cur_Node) not in Node_Range then
+         return Traverse_Field (Cur_Node, Field2 (Cur_Node), 2);
+      elsif Is_Syntactic_Field (Nkind (Cur_Node), 2) and then
+        Field2 (Cur_Node) /= Empty_List_Or_Node
+      then
+         --  Here is the tail recursion step, we reset Cur_Node and jump
+         --  back to the start of the procedure, which has the same
+         --  semantic effect as a call.
+
+         Cur_Node := Node_Id (Field2 (Cur_Node));
+         goto Tail_Recurse;
+      end if;
+
+      return OK;
    end Traverse_Func;
 
    -------------------
@@ -2751,7 +2758,7 @@ package body Atree is
 
    procedure Traverse_Proc (Node : Node_Id) is
       function Traverse is new Traverse_Func (Process);
-      Discard : Traverse_Result;
+      Discard : Traverse_Final_Result;
       pragma Warnings (Off, Discard);
    begin
       Discard := Traverse (Node);
