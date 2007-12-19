@@ -1,3 +1,204 @@
+2007-12-19  Robert Dewar  <dewar@adacore.com>
+
+	* g-expect-vms.adb, g-expect.adb, s-poosiz.adb: 
+	Add pragma Warnings (Off) for unassigned IN OUT arguments
+
+	* sem_warn.adb (Output_Reference): Suppress messages for internal names
+	(Check_References): Extensive changes to tune up warnings
+	(Output_Non_Modifed_In_Out_Warnings): Changes to tune up warnings
+	(Has_Pragma_Unmodifed_Check_Spec): New function
+	(Check_References): Implement pragma Unmodified
+	(Warn_On_Unassigned_Out_Parameter): Implement pragma Unmodified
+
+	* par-prag.adb: Dummy entry for pragma Unmodified
+
+	* sem_prag.adb: Implement pragma Unmodified
+
+	* einfo.ads, einfo.adb: (Has_Pragma_Unmodified): New flag
+	(Proc_Next_Component_Or_Discriminant): Fix typo.
+	Update comments.
+
+	* sem_util.adb (Note_Possible_Modification): Add processinng for pragma
+	Unmodified.
+	(Reset_Analyzed_Flags): Use Traverse_Proc instead of Traverse_Func,
+	because the former already takes care of discarding the result.
+	(Mark_Coextensions): Remove ununused initial value from Is_Dynamic.
+	Add comment.
+
+	* snames.h, snames.ads, snames.adb: Add entry for pragma Unmodified
+
+2007-12-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* targparm.adb, targparm.ads, system.ads, system-darwin-ppc.ads,
+	system-vxworks-x86.ads, system-linux-ppc.ads, system-linux-hppa.ads,
+	system-hpux-ia64.ads, system-vxworks-arm.ads, system-darwin-x86.ads,
+	system-vms_64.ads, system-vms-ia64.ads, system-linux-ia64.ads,
+	system-freebsd-x86.ads, system-linux-x86_64.ads, system-tru64.ads,
+	system-aix.ads, system-vxworks-sparcv9.ads, system-solaris-x86.ads,
+	system-irix-o32.ads, system-irix-n32.ads, system-hpux.ads,
+	system-vxworks-m68k.ads, system-linux-x86.ads, system-vxworks-mips.ads,
+	system-solaris-sparc.ads, system-solaris-sparcv9.ads, system-vms.ads,
+	system-mingw.ads, system-vms-zcx.ads, system-vxworks-ppc.ads
+	(Dynamic_Trampolines_Used): Delete.
+
+	* system-lynxos-x86.ads, system-lynxos-ppc.ads: Ditto.
+	Turn on stack probing mechanism on LynxOS.
+
+2007-12-19  Bob Duff  <duff@adacore.com>
+
+	* atree.ads, atree.adb (Traverse_Func): Walk Field2 last, and eliminate
+	the resulting tail recursion by hand. This prevents running out of
+	memory on deeply nested concatenations, since Field2 is where the left
+	operand of concatenations is stored.
+	Fix bug (was returning OK_Orig in some cases). Fix return subtype to
+	clarify that it can only return OK or Abandon.
+
+	* sem_res.adb (Resolve_Op_Concat): Replace the recursion on the left
+	operand by iteration, in order to avoid running out of memory on
+	deeply-nested concatenations. Use the Parent pointer to get back up the
+	tree.
+	(Resolve_Op_Concat_Arg, Resolve_Op_Concat_First,
+	 Resolve_Op_Concat_Rest): New procedures split out of
+	Resolve_Op_Concat, so the iterative algorithm in Resolve_Op_Concat is
+	clearer.
+
+	* checks.adb (Remove_Checks): Use Traverse_Proc instead of
+	Traverse_Func, because the former already takes care of discarding the
+	result.
+
+	* errout.adb (First_Node): Use Traverse_Proc instead of Traverse_Func,
+	because the former already takes care of discarding the result.
+	(Remove_Warning_Messages): Use appropriate subtype for Status and
+	Discard 
+
+2007-12-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Not_OK_For_Backend): A component of a private type with
+	discriminants forces expansion of the aggregate into assignments.
+	(Init_Record_Controller):  If the type of the aggregate is untagged and
+	is not inherently limited, the record controller is not limited either.
+
+2007-12-19  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference, case Size): Fix error in
+	handling compile time known size of record or array (case of front end
+	layout active, e.g. in GNAAMP).
+
+2007-12-19  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Complete the circuitry
+	that forces the construction of static dispatch tables in case of
+	record subtypes.
+
+2007-12-19  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch9.adb (Null_Statements): Moved to library level
+	(Trivial_Accept_OK): New function
+	(Expand_Accept_Declaration): Use Trivial_Accept_OK
+	(Expand_N_Accept_Statement): Use Trivial_Accept_OK
+
+2007-12-19  Robert Dewar  <dewar@adacore.com>
+
+	* exp_pakd.adb (Expand_Bit_Packed_Element_Set): Fix packed array type
+	in complex case where array is Volatile.
+
+2007-12-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type, Check_Current_Instance): Implement
+	properly the Ada2005 rules concerning when the current instance of a
+	record type is aliased.
+
+2007-12-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch3.adb (P_Record_Declaration): Guard against cascaded errors in
+	mangled declaration
+	(P_Type_Declaration): Diagnose misuse of "abstract" in untagged record
+	declarations.
+	(P_Variant_Part): Cleaner patch for parenthesized discriminant
+
+2007-12-19  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb (Package_Node_Id_Of): Returns Unknown_Package when
+	package is not known
+
+	* prj-attr.ads (Unknown_Package): New constant
+	Do not crash when an unknown package is in several projects
+
+	* prj-dect.adb (Parse_Package_Declaration): Mark an unknown package as
+	ignored
+
+	* prj-nmsc.adb (Check): Remove obsolete code related to no longer
+	existing package Language_Processing.
+
+2007-12-19  Ed Schonberg  <schonberg@adacore.com>
+	    Gary Dismukes  <dismukes@adacore.com>
+
+	PR ada/15803, ada/15805
+	* sem_ch6.adb, sem_ch3.adb (Constrain_Access): In Ada2005, diagnose
+	illegal access subtypes when there is a constrained partial view.
+	(Check_For_Premature_Usage): New procedure inside
+	Access_Subprogram_Declaration for checking that an access-to-subprogram
+	type doesn't reference its own name within any formal parameters or
+	result type (including within nested anonymous access types).
+	(Access_Subprogram_Declaration): Add call to Check_For_Premature_Usage.
+	(Sem_Ch3.Analyze_Object_Declaration, Sem_ch6.Process_Formals): if the
+	context is an access_to_variable, the expression cannot be an
+	access_to_constant.
+
+2007-12-19  Bob Duff  <duff@adacore.com>
+
+	* sem_ch4.adb (Analyze_Concatenation_Rest): New procedure.
+	(Analyze_Concatenation): Use iteration instead of recursion in order
+	to avoid running out of stack space for deeply nested concatenations.
+
+2007-12-19  Ed Schonberg  <schonberg@adacore.com>
+	    Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Diagnose illegal renamings
+	whose renamed entity is a subprogram that requires overriding.
+	(Premature_Usage): Test for the case of N_Full_Type_Declaration when
+	issuing an error for premature usage and issue a message that says
+	'type' rather than 'object'.
+
+2007-12-19  Gary Dismukes  <dismukes@adacore.com>
+
+	PR ada/34149
+	* sem_disp.adb (Check_Dispatching_Call): Augment existing test for
+	presence of a statically tagged operand (Present (Static_Tag)) with
+	test for Indeterm_Ancestor_Call when determining whether to propagate
+	the static tag to tag-indeterminate operands (which forces dispatching
+	on such calls).
+	(Check_Controlling_Formals): Ada2005, access parameters can have
+	defaults.
+	(Add_Dispatching_Operation, Check_Operation_From_Private_View): do
+	not insert subprogram in list of primitive operations if already there.
+
+2007-12-19  Tristan Gingold  <gingold@adacore.com>
+
+	* utils.c (create_var_decl_1): call rest_of_decl_compilation only for
+	global variable.
+
+2007-12-19  Thomas Quinot  <quinot@adacore.com>
+
+	Part of PR ada/33688
+	* gen-soccon.c: Add constant IP_PKTINFO to allow getting ancillary
+	datagram info on Linux.
+
+2007-12-19  Vincent Celier  <celier@adacore.com>
+
+	* makegpr.adb (Check_Compilation_Needed): Normalize C_Source_Path so
+	that the source path name is always found in the dependencies.
+
+2007-12-19  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi, gnat_ugn.texi: Update documentation of -gnatw.o
+	Fix name of Wide_Wide_Latin_1/9 file names
+	Add documentation for Ada.Exceptions.Last_Chance_Handler (a-elchha.ads)
+	Add missing documentation for Ada.Wide_[Wide_]Characters.Unicode
+	Add missing documentation for Ada.Command_Line.Response_File
+	Update list of warning letters for Warnings pragma
+	Add documentation for pragma Unmodified
+
 2007-12-19  Samuel Tardieu  <sam@rfc1149.net>
 
 	* Makefile.in: Add s-tasinf.ad[bs] substitutions for sh4-linux target.
