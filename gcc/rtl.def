@@ -371,14 +371,8 @@ DEF_RTL_EXPR(REG, "reg", "i00", RTX_OBJ)
    marked as having one operand so it can be turned into a REG.  */
 DEF_RTL_EXPR(SCRATCH, "scratch", "0", RTX_OBJ)
 
-/* One word of a multi-word value.
-   The first operand is the complete value; the second says which word.
-   The WORDS_BIG_ENDIAN flag controls whether word number 0
-   (as numbered in a SUBREG) is the most or least significant word.
-
-   This is also used to refer to a value in a different machine mode.
-   For example, it can be used to refer to a SImode value as if it were
-   Qimode, or vice versa.  Then the word number is always 0.  */
+/* A reference to a part of another value.  The first operand is the
+   complete value and the second is the byte offset of the selected part.   */
 DEF_RTL_EXPR(SUBREG, "subreg", "ei", RTX_EXTRA)
 
 /* This one-argument rtx is used for move instructions

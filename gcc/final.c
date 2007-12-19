@@ -2763,8 +2763,15 @@ alter_subreg (rtx *xp)
       else if (REG_P (y))
 	{
 	  /* Simplify_subreg can't handle some REG cases, but we have to.  */
-	  unsigned int regno = subreg_regno (x);
-	  *xp = gen_rtx_REG_offset (y, GET_MODE (x), regno, SUBREG_BYTE (x));
+	  unsigned int regno;
+	  HOST_WIDE_INT offset;
+
+	  regno = subreg_regno (x);
+	  if (subreg_lowpart_p (x))
+	    offset = byte_lowpart_offset (GET_MODE (x), GET_MODE (y));
+	  else
+	    offset = SUBREG_BYTE (x);
+	  *xp = gen_rtx_REG_offset (y, GET_MODE (x), regno, offset);
 	}
     }
 

@@ -1645,18 +1645,6 @@ track_expr_p (tree expr)
   return 1;
 }
 
-/* Return true if OFFSET is a valid offset for a register or memory
-   access we want to track.  This is used to reject out-of-bounds
-   accesses that can cause assertions to fail later.  Note that we
-   don't reject negative offsets because they can be generated for
-   paradoxical subregs on big-endian architectures.  */
-
-static inline bool
-offset_valid_for_tracked_p (HOST_WIDE_INT offset)
-{
-  return (-MAX_VAR_PARTS < offset) && (offset < MAX_VAR_PARTS);
-}
-
 /* Determine whether a given LOC refers to the same variable part as
    EXPR+OFFSET.  */
 
@@ -1691,28 +1679,65 @@ same_variable_part_p (rtx loc, tree expr, HOST_WIDE_INT offset)
   return (expr == expr2 && offset == offset2);
 }
 
-/* REG is a register we want to track.  If not all of REG contains useful
-   information, return the mode of the lowpart that does contain useful
-   information, otherwise return the mode of REG.
+/* LOC is a REG or MEM that we would like to track if possible.
+   If EXPR is null, we don't know what expression LOC refers to,
+   otherwise it refers to EXPR + OFFSET.  STORE_REG_P is true if
+   LOC is an lvalue register.
 
-   If REG was a paradoxical subreg, its REG_ATTRS will describe the
-   whole subreg, but only the old inner part is really relevant.  */
+   Return true if EXPR is nonnull and if LOC, or some lowpart of it,
+   is something we can track.  When returning true, store the mode of
+   the lowpart we can track in *MODE_OUT (if nonnull) and its offset
+   from EXPR in *OFFSET_OUT (if nonnull).  */
 
-static enum machine_mode
-mode_for_reg_attrs (rtx reg)
+static bool
+track_loc_p (rtx loc, tree expr, HOST_WIDE_INT offset, bool store_reg_p,
+	     enum machine_mode *mode_out, HOST_WIDE_INT *offset_out)
 {
   enum machine_mode mode;
 
-  mode = GET_MODE (reg);
-  if (!HARD_REGISTER_NUM_P (ORIGINAL_REGNO (reg)))
+  if (expr == NULL || !track_expr_p (expr))
+    return false;
+
+  /* If REG was a paradoxical subreg, its REG_ATTRS will describe the
+     whole subreg, but only the old inner part is really relevant.  */
+  mode = GET_MODE (loc);
+  if (REG_P (loc) && !HARD_REGISTER_NUM_P (ORIGINAL_REGNO (loc)))
     {
       enum machine_mode pseudo_mode;
 
-      pseudo_mode = PSEUDO_REGNO_MODE (ORIGINAL_REGNO (reg));
+      pseudo_mode = PSEUDO_REGNO_MODE (ORIGINAL_REGNO (loc));
       if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (pseudo_mode))
-	mode = pseudo_mode;
+	{
+	  offset += byte_lowpart_offset (pseudo_mode, mode);
+	  mode = pseudo_mode;
+	}
     }
-  return mode;
+
+  /* If LOC is a paradoxical lowpart of EXPR, refer to EXPR itself.
+     Do the same if we are storing to a register and EXPR occupies
+     the whole of register LOC; in that case, the whole of EXPR is
+     being changed.  We exclude complex modes from the second case
+     because the real and imaginary parts are represented as separate
+     pseudo registers, even if the whole complex value fits into one
+     hard register.  */
+  if ((GET_MODE_SIZE (mode) > GET_MODE_SIZE (DECL_MODE (expr))
+       || (store_reg_p
+	   && !COMPLEX_MODE_P (DECL_MODE (expr))
+	   && hard_regno_nregs[REGNO (loc)][DECL_MODE (expr)] == 1))
+      && offset + byte_lowpart_offset (DECL_MODE (expr), mode) == 0)
+    {
+      mode = DECL_MODE (expr);
+      offset = 0;
+    }
+
+  if (offset < 0 || offset >= MAX_VAR_PARTS)
+    return false;
+
+  if (mode_out)
+    *mode_out = mode;
+  if (offset_out)
+    *offset_out = offset;
+  return true;
 }
 
 /* Return the MODE lowpart of LOC, or null if LOC is not something we
@@ -1722,7 +1747,7 @@ mode_for_reg_attrs (rtx reg)
 static rtx
 var_lowpart (enum machine_mode mode, rtx loc)
 {
-  unsigned int offset, regno;
+  unsigned int offset, reg_offset, regno;
 
   if (!REG_P (loc) && !MEM_P (loc))
     return NULL;
@@ -1730,13 +1755,14 @@ var_lowpart (enum machine_mode mode, rtx loc)
   if (GET_MODE (loc) == mode)
     return loc;
 
-  offset = subreg_lowpart_offset (mode, GET_MODE (loc));
+  offset = byte_lowpart_offset (mode, GET_MODE (loc));
 
   if (MEM_P (loc))
     return adjust_address_nv (loc, mode, offset);
 
+  reg_offset = subreg_lowpart_offset (mode, GET_MODE (loc));
   regno = REGNO (loc) + subreg_regno_offset (REGNO (loc), GET_MODE (loc),
-					     offset, mode);
+					     reg_offset, mode);
   return gen_rtx_REG_offset (loc, mode, regno, offset);
 }
 
@@ -1754,9 +1780,8 @@ count_uses (rtx *loc, void *insn)
       VTI (bb)->n_mos++;
     }
   else if (MEM_P (*loc)
-	   && MEM_EXPR (*loc)
-	   && track_expr_p (MEM_EXPR (*loc))
-	   && offset_valid_for_tracked_p (INT_MEM_OFFSET (*loc)))
+	   && track_loc_p (*loc, MEM_EXPR (*loc), INT_MEM_OFFSET (*loc),
+			   false, NULL, NULL))
     {
       VTI (bb)->n_mos++;
     }
@@ -1787,17 +1812,18 @@ count_stores (rtx loc, const_rtx expr ATTRIBUTE_UNUSED, void *insn)
 static int
 add_uses (rtx *loc, void *insn)
 {
+  enum machine_mode mode;
+
   if (REG_P (*loc))
     {
       basic_block bb = BLOCK_FOR_INSN ((rtx) insn);
       micro_operation *mo = VTI (bb)->mos + VTI (bb)->n_mos++;
 
-      if (REG_EXPR (*loc)
-	  && track_expr_p (REG_EXPR (*loc))
-	  && offset_valid_for_tracked_p (REG_OFFSET (*loc)))
+      if (track_loc_p (*loc, REG_EXPR (*loc), REG_OFFSET (*loc),
+		       false, &mode, NULL))
 	{
 	  mo->type = MO_USE;
-	  mo->u.loc = var_lowpart (mode_for_reg_attrs (*loc), *loc);
+	  mo->u.loc = var_lowpart (mode, *loc);
 	}
       else
 	{
@@ -1807,15 +1833,14 @@ add_uses (rtx *loc, void *insn)
       mo->insn = (rtx) insn;
     }
   else if (MEM_P (*loc)
-	   && MEM_EXPR (*loc)
-	   && track_expr_p (MEM_EXPR (*loc))
-	   && offset_valid_for_tracked_p (INT_MEM_OFFSET (*loc)))
+	   && track_loc_p (*loc, MEM_EXPR (*loc), INT_MEM_OFFSET (*loc),
+			   false, &mode, NULL))
     {
       basic_block bb = BLOCK_FOR_INSN ((rtx) insn);
       micro_operation *mo = VTI (bb)->mos + VTI (bb)->n_mos++;
 
       mo->type = MO_USE;
-      mo->u.loc = *loc;
+      mo->u.loc = var_lowpart (mode, *loc);
       mo->insn = (rtx) insn;
     }
 
@@ -1837,22 +1862,22 @@ add_uses_1 (rtx *x, void *insn)
 static void
 add_stores (rtx loc, const_rtx expr, void *insn)
 {
+  enum machine_mode mode;
+
   if (REG_P (loc))
     {
       basic_block bb = BLOCK_FOR_INSN ((rtx) insn);
       micro_operation *mo = VTI (bb)->mos + VTI (bb)->n_mos++;
 
       if (GET_CODE (expr) == CLOBBER
-	  || !(REG_EXPR (loc)
-	       && track_expr_p (REG_EXPR (loc))
-	       && offset_valid_for_tracked_p (REG_OFFSET (loc))))
+	  || !track_loc_p (loc, REG_EXPR (loc), REG_OFFSET (loc),
+			   true, &mode, NULL))
 	{
 	  mo->type = MO_CLOBBER;
 	  mo->u.loc = loc;
 	}
       else
 	{
-	  enum machine_mode mode = mode_for_reg_attrs (loc);
 	  rtx src = NULL;
 
 	  if (GET_CODE (expr) == SET && SET_DEST (expr) == loc)
@@ -1878,9 +1903,8 @@ add_stores (rtx loc, const_rtx expr, void *insn)
       mo->insn = (rtx) insn;
     }
   else if (MEM_P (loc)
-	   && MEM_EXPR (loc)
-	   && track_expr_p (MEM_EXPR (loc))
-	   && offset_valid_for_tracked_p (INT_MEM_OFFSET (loc)))
+	   && track_loc_p (loc, MEM_EXPR (loc), INT_MEM_OFFSET (loc),
+			   false, &mode, NULL))
     {
       basic_block bb = BLOCK_FOR_INSN ((rtx) insn);
       micro_operation *mo = VTI (bb)->mos + VTI (bb)->n_mos++;
@@ -1888,14 +1912,15 @@ add_stores (rtx loc, const_rtx expr, void *insn)
       if (GET_CODE (expr) == CLOBBER)
 	{
 	  mo->type = MO_CLOBBER;
-	  mo->u.loc = loc;
+	  mo->u.loc = var_lowpart (mode, loc);
 	}
       else
 	{
 	  rtx src = NULL;
 
 	  if (GET_CODE (expr) == SET && SET_DEST (expr) == loc)
-	    src = var_lowpart (GET_MODE (loc), SET_SRC (expr));
+	    src = var_lowpart (mode, SET_SRC (expr));
+	  loc = var_lowpart (mode, loc);
 
 	  if (src == NULL)
 	    {
@@ -1904,6 +1929,8 @@ add_stores (rtx loc, const_rtx expr, void *insn)
 	    }
 	  else
 	    {
+	      if (SET_SRC (expr) != src)
+		expr = gen_rtx_SET (VOIDmode, loc, src);
 	      if (same_variable_part_p (SET_SRC (expr),
 					MEM_EXPR (loc),
 					INT_MEM_OFFSET (loc)))
@@ -3115,6 +3142,7 @@ vt_add_function_parameters (void)
       rtx decl_rtl = DECL_RTL_IF_SET (parm);
       rtx incoming = DECL_INCOMING_RTL (parm);
       tree decl;
+      enum machine_mode mode;
       HOST_WIDE_INT offset;
       dataflow_set *out;
 
@@ -3131,18 +3159,26 @@ vt_add_function_parameters (void)
 	continue;
 
       if (!vt_get_decl_and_offset (incoming, &decl, &offset))
-	if (!vt_get_decl_and_offset (decl_rtl, &decl, &offset))
-	  continue;
+	{
+	  if (!vt_get_decl_and_offset (decl_rtl, &decl, &offset))
+	    continue;
+	  offset += byte_lowpart_offset (GET_MODE (incoming),
+					 GET_MODE (decl_rtl));
+	}
 
       if (!decl)
 	continue;
 
       gcc_assert (parm == decl);
 
+      if (!track_loc_p (incoming, parm, offset, false, &mode, &offset))
+	continue;
+
       out = &VTI (ENTRY_BLOCK_PTR)->out;
 
       if (REG_P (incoming))
 	{
+	  incoming = var_lowpart (mode, incoming);
 	  gcc_assert (REGNO (incoming) < FIRST_PSEUDO_REGISTER);
 	  attrs_list_insert (&out->regs[REGNO (incoming)],
 			     parm, offset, incoming);
@@ -3150,8 +3186,11 @@ vt_add_function_parameters (void)
 			     NULL);
 	}
       else if (MEM_P (incoming))
-	set_variable_part (out, incoming, parm, offset, VAR_INIT_STATUS_INITIALIZED, 
-			   NULL);
+	{
+	  incoming = var_lowpart (mode, incoming);
+	  set_variable_part (out, incoming, parm, offset,
+			     VAR_INIT_STATUS_INITIALIZED, NULL);
+	}
     }
 }
 

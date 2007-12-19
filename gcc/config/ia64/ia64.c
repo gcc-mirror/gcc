@@ -796,7 +796,8 @@ ia64_expand_load_address (rtx dest, rtx src)
      computation below are also more natural to compute as 64-bit quantities.
      If we've been given an SImode destination register, change it.  */
   if (GET_MODE (dest) != Pmode)
-    dest = gen_rtx_REG_offset (dest, Pmode, REGNO (dest), 0);
+    dest = gen_rtx_REG_offset (dest, Pmode, REGNO (dest),
+			       byte_lowpart_offset (Pmode, GET_MODE (dest)));
 
   if (TARGET_NO_PIC)
     return false;
