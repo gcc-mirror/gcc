@@ -7050,6 +7050,28 @@
 	* config/s390/s390.c (s390_dump_pool): Create copy of constant
 	pool entries since they might hold values that must not be shared.
 
+2007-09-10 Robert Kidd <rkidd@crhc.uiuc.edu>
+
+	* bb-reorder.c (rest_of_handler_reorder_blocks): Removed call to
+	RTL level tracer pass.
+	* passes.c (init_optimization_passes): Move pass_tracer from
+	after pass_rtl_ifcvt to after pass_dce.
+	* tracer.c: Update copyright.
+	(layout_superblocks): Remove function.
+	(mark_bb_seen): New.
+	(bb_seen_p): New.
+	(count_insns): Change to estimate instructions in a Tree-SSA
+	statement.
+	(find_trace): Use bb_seen_p.
+	(tail_duplicate): Use bb_seen_p.  Call add_phi_args_after_copy
+	after duplicate_block.
+	(tracer): Change prototype to match that of a pass execute
+	callback.
+	(gate_tracer): Rename from gate_handle_tracer.
+	(rest_of_handle_tracer): Remove function.
+	* rtl.h: Remove prototype for tracer.
+	* testsuite/gcc.dg/tree-prof/tracer-1.c: New.
+
 2007-09-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/33369
