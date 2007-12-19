@@ -1,3 +1,11 @@
+2007-12-19  Etsushi Kato  <ek.kato@gmail.com>
+	    Paolo Bonzini  <bonzini@gnu.org>
+
+	PR target/30572
+	* Makefile.in: Use @shlib_slibdir@ substitution to get correct install name
+	on darwin.
+	* config/t-slibgcc-darwin: Use @shlib_slibdir@ for -install_name.
+				
 2007-12-15  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config.host (crisv32-*-elf, crisv32-*-none): New, same as
