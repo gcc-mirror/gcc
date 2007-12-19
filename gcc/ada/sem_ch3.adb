@@ -917,12 +917,65 @@ package body Sem_Ch3 is
      (T_Name : Entity_Id;
       T_Def  : Node_Id)
    is
-      Formals : constant List_Id := Parameter_Specifications (T_Def);
-      Formal  : Entity_Id;
-      D_Ityp  : Node_Id;
 
+      procedure Check_For_Premature_Usage (Def : Node_Id);
+      --  Check that type T_Name is not used, directly or recursively,
+      --  as a parameter or a return type in Def. Def is either a subtype,
+      --  an access_definition, or an access_to_subprogram_definition.
+
+      -------------------------------
+      -- Check_For_Premature_Usage --
+      -------------------------------
+
+      procedure Check_For_Premature_Usage (Def : Node_Id) is
+         Param : Node_Id;
+
+      begin
+         --  Check for a subtype mark
+
+         if Nkind (Def) in N_Has_Etype then
+            if Etype (Def) = T_Name then
+               Error_Msg_N
+                 ("type& cannot be used before end of its declaration", Def);
+            end if;
+
+         --  If this is not a subtype, then this is an access_definition
+
+         elsif Nkind (Def) = N_Access_Definition then
+            if Present (Access_To_Subprogram_Definition (Def)) then
+               Check_For_Premature_Usage
+                 (Access_To_Subprogram_Definition (Def));
+            else
+               Check_For_Premature_Usage (Subtype_Mark (Def));
+            end if;
+
+         --  The only cases left are N_Access_Function_Definition and
+         --  N_Access_Procedure_Definition.
+
+         else
+            if Present (Parameter_Specifications (Def)) then
+               Param := First (Parameter_Specifications (Def));
+               while Present (Param) loop
+                  Check_For_Premature_Usage (Parameter_Type (Param));
+                  Param := Next (Param);
+               end loop;
+            end if;
+
+            if Nkind (Def) = N_Access_Function_Definition then
+               Check_For_Premature_Usage (Result_Definition (Def));
+            end if;
+         end if;
+      end Check_For_Premature_Usage;
+
+      --  Local variables
+
+      Formals    : constant List_Id := Parameter_Specifications (T_Def);
+      Formal     : Entity_Id;
+      D_Ityp     : Node_Id;
       Desig_Type : constant Entity_Id :=
                      Create_Itype (E_Subprogram_Type, Parent (T_Def));
+
+   --  Start of processing for Access_Subprogram_Declaration
 
    begin
       --  Associate the Itype node with the inner full-type declaration or
@@ -1017,6 +1070,10 @@ package body Sem_Ch3 is
          End_Scope;
          Set_Parent (Desig_Type, Empty);
       end if;
+
+      --  Check for premature usage of the type being defined
+
+      Check_For_Premature_Usage (T_Def);
 
       --  The return type and/or any parameter type may be incomplete. Mark
       --  the subprogram_type as depending on the incomplete type, so that
@@ -2355,7 +2412,7 @@ package body Sem_Ch3 is
          Analyze (E);
 
          --  In case of errors detected in the analysis of the expression,
-         --  decorate it with the expected type to avoid cascade errors
+         --  decorate it with the expected type to avoid cascaded errors
 
          if No (Etype (E)) then
             Set_Etype (E, T);
@@ -2367,18 +2424,17 @@ package body Sem_Ch3 is
 
          Set_Is_True_Constant (Id, True);
 
-         --  If the initialization expression is an access to constant,
-         --  it cannot be used with an access type.
+         --  If the object is an access to variable, the initialization
+         --  expression cannot be an access to constant.
 
-         if Is_Access_Type (Etype (E))
-           and then Is_Access_Constant (Etype (E))
-           and then Is_Access_Type (T)
+         if Is_Access_Type (T)
            and then not Is_Access_Constant (T)
+           and then Is_Access_Type (Etype (E))
+           and then Is_Access_Constant (Etype (E))
          then
-            Error_Msg_NE ("object of type& cannot be initialized with " &
-                          "an access-to-constant expression",
-                          E,
-                          T);
+            Error_Msg_N
+              ("object that is an access to variable cannot be initialized " &
+                "with an access-to-constant expression", E);
          end if;
 
          --  If we are analyzing a constant declaration, set its completion
@@ -8999,9 +9055,11 @@ package body Sem_Ch3 is
             return;
          end if;
 
-         if Ekind (T) = E_General_Access_Type
+         if (Ekind (T) = E_General_Access_Type
+              or else Ada_Version >= Ada_05)
            and then Has_Private_Declaration (Desig_Type)
            and then In_Open_Scopes (Scope (Desig_Type))
+           and then Has_Discriminants (Desig_Type)
          then
             --  Enforce rule that the constraint is illegal if there is
             --  an unconstrained view of the designated type. This means
@@ -9012,7 +9070,8 @@ package body Sem_Ch3 is
 
             --  Rule updated for Ada 2005: the private type is said to have
             --  a constrained partial view, given that objects of the type
-            --  can be declared.
+            --  can be declared. Furthermore, the rule applies to all access
+            --  types, unlike the rule concerning default discriminants.
 
             declare
                Pack  : constant Node_Id :=
