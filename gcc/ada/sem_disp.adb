@@ -79,8 +79,14 @@ package body Sem_Disp is
       New_Op      : Entity_Id)
    is
       List : constant Elist_Id := Primitive_Operations (Tagged_Type);
+
    begin
-      Append_Elmt (New_Op, List);
+      --  The dispatching operation may already be on the list, if it the
+      --  wrapper for an inherited function of a null extension (see exp_ch3
+      --  for the construction of function wrappers). The list of primitive
+      --  operations must not contain duplicates.
+
+      Append_Unique_Elmt (New_Op, List);
    end Add_Dispatching_Operation;
 
    -------------------------------
@@ -143,7 +149,12 @@ package body Sem_Disp is
                end if;
 
                if Present (Default_Value (Formal)) then
-                  if Ekind (Etype (Formal)) = E_Anonymous_Access_Type then
+
+                  --  In Ada 2005, access parameters can have defaults
+
+                  if Ekind (Etype (Formal)) = E_Anonymous_Access_Type
+                    and then Ada_Version < Ada_05
+                  then
                      Error_Msg_N
                        ("default not allowed for controlling access parameter",
                         Default_Value (Formal));
@@ -471,10 +482,12 @@ package body Sem_Disp is
             Set_Controlling_Argument (N, Control);
             Check_Restriction (No_Dispatching_Calls, N);
 
-         --  If there is a statically tagged actual, check whether
-         --  some tag-indeterminate actual can use it.
+         --  If there is a statically tagged actual and a tag-indeterminate
+         --  call to a function of the ancestor (such as that provided by a
+         --  default), then treat this as a dispatching call and propagate
+         --  the tag to the tag-indeterminate call(s).
 
-         elsif Present (Static_Tag) then
+         elsif Present (Static_Tag) and then Indeterm_Ancestor_Call then
             Control :=
               Make_Attribute_Reference (Loc,
                 Prefix         =>
@@ -1091,8 +1104,10 @@ package body Sem_Disp is
          Set_Scope (Subp, Current_Scope);
          Tagged_Type := Find_Dispatching_Type (Subp);
 
+         --  Add Old_Subp to primitive operations if not already present.
+
          if Present (Tagged_Type) and then Is_Tagged_Type (Tagged_Type) then
-            Append_Elmt (Old_Subp, Primitive_Operations (Tagged_Type));
+            Append_Unique_Elmt (Old_Subp, Primitive_Operations (Tagged_Type));
 
             --  If Old_Subp isn't already marked as dispatching then
             --  this is the case of an operation of an untagged private
