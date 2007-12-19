@@ -63,6 +63,10 @@ package body Sem_Ch4 is
    -- Local Subprograms --
    -----------------------
 
+   procedure Analyze_Concatenation_Rest (N : Node_Id);
+   --  Does the "rest" of the work of Analyze_Concatenation, after the left
+   --  operand has been analyzed. See Analyze_Concatenation for details.
+
    procedure Analyze_Expression (N : Node_Id);
    --  For expressions that are not names, this is just a call to analyze.
    --  If the expression is a name, it may be a call to a parameterless
@@ -1031,12 +1035,67 @@ package body Sem_Ch4 is
    -- Analyze_Concatenation --
    ---------------------------
 
+   procedure Analyze_Concatenation (N : Node_Id) is
+
+      --  We wish to avoid deep recursion, because concatenations are often
+      --  deeply nested, as in A&B&...&Z. Therefore, we walk down the left
+      --  operands nonrecursively until we find something that is not a
+      --  concatenation (A in this case), or has already been analyzed. We
+      --  analyze that, and then walk back up the tree following Parent
+      --  pointers, calling Analyze_Concatenation_Rest to do the rest of the
+      --  work at each level. The Parent pointers allow us to avoid recursion,
+      --  and thus avoid running out of memory.
+
+      NN : Node_Id := N;
+      L  : Node_Id;
+
+   begin
+      Candidate_Type := Empty;
+
+      --  The following code is equivalent to:
+
+      --    Set_Etype (N, Any_Type);
+      --    Analyze_Expression (Left_Opnd (N));
+      --    Analyze_Concatenation_Rest (N);
+
+      --  where the Analyze_Expression call recurses back here if the left
+      --  operand is a concatenation.
+
+      --  Walk down left operands
+
+      loop
+         Set_Etype (NN, Any_Type);
+         L := Left_Opnd (NN);
+         exit when Nkind (L) /= N_Op_Concat or else Analyzed (L);
+         NN := L;
+      end loop;
+
+      --  Now (given the above example) NN is A&B and L is A
+
+      --  First analyze L ...
+
+      Analyze_Expression (L);
+
+      --  ... then walk NN back up until we reach N (where we started), calling
+      --  Analyze_Concatenation_Rest along the way.
+
+      loop
+         Analyze_Concatenation_Rest (NN);
+         exit when NN = N;
+         NN := Parent (NN);
+      end loop;
+   end Analyze_Concatenation;
+
+   --------------------------------
+   -- Analyze_Concatenation_Rest --
+   --------------------------------
+
    --  If the only one-dimensional array type in scope is String,
    --  this is the resulting type of the operation. Otherwise there
    --  will be a concatenation operation defined for each user-defined
    --  one-dimensional array.
 
-   procedure Analyze_Concatenation (N : Node_Id) is
+   procedure Analyze_Concatenation_Rest (N : Node_Id) is
       L     : constant Node_Id := Left_Opnd (N);
       R     : constant Node_Id := Right_Opnd (N);
       Op_Id : Entity_Id        := Entity (N);
@@ -1044,10 +1103,6 @@ package body Sem_Ch4 is
       RT    : Entity_Id;
 
    begin
-      Set_Etype (N, Any_Type);
-      Candidate_Type := Empty;
-
-      Analyze_Expression (L);
       Analyze_Expression (R);
 
       --  If the entity is present, the node appears in an instance, and
@@ -1126,7 +1181,7 @@ package body Sem_Ch4 is
       end if;
 
       Operator_Check (N);
-   end Analyze_Concatenation;
+   end Analyze_Concatenation_Rest;
 
    ------------------------------------
    -- Analyze_Conditional_Expression --
@@ -1525,10 +1580,10 @@ package body Sem_Ch4 is
       -------------------------------
 
       procedure Process_Indexed_Component is
-         Exp          : Node_Id;
-         Array_Type   : Entity_Id;
-         Index        : Node_Id;
-         Pent         : Entity_Id := Empty;
+         Exp        : Node_Id;
+         Array_Type : Entity_Id;
+         Index      : Node_Id;
+         Pent       : Entity_Id := Empty;
 
       begin
          Exp := First (Exprs);
