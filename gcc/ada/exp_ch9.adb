@@ -347,6 +347,12 @@ package body Exp_Ch9 is
       Lo         : Node_Id;
       Hi         : Node_Id) return Boolean;
 
+   function Null_Statements (Stats : List_Id) return Boolean;
+   --  Used to check DO-END sequence. Checks for equivalent of DO NULL; END.
+   --  Allows labels, and pragma Warnings/Unreferenced in the sequence as
+   --  well to still count as null. Returns True for a null sequence. The
+   --  argument is the list of statements from the DO-END sequence.
+
    function Parameter_Block_Pack
      (Loc     : Source_Ptr;
       Blk_Typ : Entity_Id;
@@ -377,6 +383,16 @@ package body Exp_Ch9 is
    --    <actual1> := P.<formal1>;
    --    ...
    --    <actualN> := P.<formalN>;
+
+   function Trivial_Accept_OK return Boolean;
+   --  If there is no DO-END block for an accept, or if the DO-END block has
+   --  only null statements, then it is possible to do the Rendezvous with much
+   --  less overhead using the Accept_Trivial routine in the run-time library.
+   --  However, this is not always a valid optimization. Whether it is valid or
+   --  not depends on the Task_Dispatching_Policy. The issue is whether a full
+   --  rescheduling action is required or not. In FIFO_Within_Priorities, such
+   --  a rescheduling is required, so this optimization is not allowed. This
+   --  function returns True if the optimization is permitted.
 
    procedure Update_Prival_Subtypes (N : Node_Id);
    --  The actual subtypes of the privals will differ from the type of the
@@ -3646,8 +3662,12 @@ package body Exp_Ch9 is
       Formal   : Entity_Id;
 
    begin
-      if Nkind (New_Res) = N_Access_Definition then
+      --  If the result type is an access_to_subprogram, we must create
+      --  new entities for its spec.
 
+      if Nkind (New_Res) = N_Access_Definition
+        and then Present (Access_To_Subprogram_Definition (New_Res))
+      then
          --  Provide new entities for the formals
 
          Par_Spec := First (Parameter_Specifications
@@ -4016,7 +4036,8 @@ package body Exp_Ch9 is
 
    procedure Expand_Accept_Declarations (N : Node_Id; Ent : Entity_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
-      Ann    : Entity_Id := Empty;
+      Stats  : constant Node_Id    := Handled_Statement_Sequence (N);
+      Ann    : Entity_Id           := Empty;
       Adecl  : Node_Id;
       Lab_Id : Node_Id;
       Lab    : Node_Id;
@@ -4026,20 +4047,13 @@ package body Exp_Ch9 is
    begin
       if Expander_Active then
 
-         --  If we have no handled statement sequence, then build a dummy
-         --  sequence consisting of a null statement. This is only done if
-         --  pragma FIFO_Within_Priorities is specified. The issue here is
-         --  that even a null accept body has an effect on the called task
-         --  in terms of its position in the queue, so we cannot optimize
-         --  the context switch away. However, if FIFO_Within_Priorities
-         --  is not active, the optimization is legitimate, since we can
-         --  say that our dispatching policy (i.e. the default dispatching
-         --  policy) reorders the queue to be the same as just before the
-         --  call. In the absence of a specified dispatching policy, we are
-         --  allowed to modify queue orders for a given priority at will!
+         --  If we have no handled statement sequence, we may need to build
+         --  a dummy sequence consisting of a null statement. This can be
+         --  skipped if the trivial accept optimization is permitted.
 
-         if Opt.Task_Dispatching_Policy = 'F' and then
-           No (Handled_Statement_Sequence (N))
+         if not Trivial_Accept_OK
+           and then
+             (No (Stats) or else Null_Statements (Statements (Stats)))
          then
             Set_Handled_Statement_Sequence (N,
               Make_Handled_Sequence_Of_Statements (Loc,
@@ -4609,34 +4623,6 @@ package body Exp_Ch9 is
       Call    : Node_Id;
       Block   : Node_Id;
 
-      function Null_Statements (Stats : List_Id) return Boolean;
-      --  Used to check do-end sequence. Checks for equivalent of do null; end.
-      --  Allows labels, and pragma Warnings/Unreferenced in the sequence as
-      --  well to still count as null. Returns True for a null sequence.
-
-      ---------------------
-      -- Null_Statements --
-      ---------------------
-
-      function Null_Statements (Stats : List_Id) return Boolean is
-         Stmt : Node_Id;
-
-      begin
-         Stmt := First (Stats);
-         while Nkind (Stmt) /= N_Empty
-           and then (Nkind_In (Stmt, N_Null_Statement, N_Label)
-                       or else
-                         (Nkind (Stmt) = N_Pragma
-                            and then (Chars (Stmt) = Name_Unreferenced
-                                        or else
-                                      Chars (Stmt) = Name_Warnings)))
-         loop
-            Next (Stmt);
-         end loop;
-
-         return Nkind (Stmt) = N_Empty;
-      end Null_Statements;
-
    --  Start of processing for Expand_N_Accept_Statement
 
    begin
@@ -4652,18 +4638,7 @@ package body Exp_Ch9 is
       --  If the accept statement has declarations, then just insert them
       --  before the procedure call.
 
-      --  We avoid this optimization when FIFO_Within_Priorities or some other
-      --  specified dispatching policy is active, since this may not be not
-      --  correct according to annex D semantics. For example, in the case of
-      --  FIFO_Within_Priorities, the call is required to reorder the acceptors
-      --  position on its ready queue, even though there is nothing to be done.
-      --  However, if no policy is specified, then we decide that the default
-      --  dispatching policy always reorders the queue right after the RV to
-      --  look the way they were just before the RV. Since we are allowed to
-      --  freely reorder same-priority queues (this is part of what dispatching
-      --  policies are all about), the optimization is legitimate.
-
-      elsif Opt.Task_Dispatching_Policy = ' '
+      elsif Trivial_Accept_OK
         and then (No (Stats) or else Null_Statements (Statements (Stats)))
       then
          --  Remove declarations for renamings, because the parameter block
@@ -4877,7 +4852,7 @@ package body Exp_Ch9 is
    --  begin
    --     declare
 
-   --        --  Clean is added by Exp_Ch7.Expand_Cleanup_Actions.
+   --        --  Clean is added by Exp_Ch7.Expand_Cleanup_Actions
 
    --        procedure _clean is
    --        begin
@@ -11485,6 +11460,29 @@ package body Exp_Ch9 is
       return Next_Op;
    end Next_Protected_Operation;
 
+   ---------------------
+   -- Null_Statements --
+   ---------------------
+
+   function Null_Statements (Stats : List_Id) return Boolean is
+      Stmt : Node_Id;
+
+   begin
+      Stmt := First (Stats);
+      while Nkind (Stmt) /= N_Empty
+        and then (Nkind_In (Stmt, N_Null_Statement, N_Label)
+                    or else
+                      (Nkind (Stmt) = N_Pragma
+                         and then (Chars (Stmt) = Name_Unreferenced
+                                     or else
+                                   Chars (Stmt) = Name_Warnings)))
+      loop
+         Next (Stmt);
+      end loop;
+
+      return Nkind (Stmt) = N_Empty;
+   end Null_Statements;
+
    --------------------------
    -- Parameter_Block_Pack --
    --------------------------
@@ -11801,6 +11799,41 @@ package body Exp_Ch9 is
       Set_Is_Aliased (Priv);
       Set_Object_Ref (Body_Ent, Priv);
    end Set_Privals;
+
+   -----------------------
+   -- Trivial_Accept_OK --
+   -----------------------
+
+   function Trivial_Accept_OK return Boolean is
+   begin
+      case Opt.Task_Dispatching_Policy is
+
+         --  If we have the default task dispatching policy in effect, we can
+         --  definitely do the optimization (one way of looking at this is to
+         --  think of the formal definition of the default policy being allowed
+         --  to run any task it likes after a rendezvous, so even if notionally
+         --  a full rescheduling occurs, we can say that our dispatching policy
+         --  (i.e. the default dispatching policy) reorders the queue to be the
+         --  same as just before the call.
+
+         when ' ' =>
+            return True;
+
+         --  FIFO_Within_Priorities certainly certainly does not permit this
+         --  optimization since the Rendezvous is a scheduling action that may
+         --  require some other task to be run.
+
+         when 'F' =>
+            return False;
+
+         --  For now, disallow the optimization for all other policies. This
+         --  may be over-conservative, but it is certainly not incorrect.
+
+         when others =>
+            return False;
+
+      end case;
+   end Trivial_Accept_OK;
 
    ----------------------------
    -- Update_Prival_Subtypes --
