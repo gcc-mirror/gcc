@@ -5039,7 +5039,9 @@ another.
 @cindex @option{-gnatw.o} (@command{gcc})
 This switch activates warnings for variables that are modified by using
 them as actuals for a call to a procedure with an out mode formal, where
-the resulting assigned value is never read.
+the resulting assigned value is never read. It is applicable in the case
+where there is more than one out mode formal. If there is only one out
+mode formal, the waraning is issued by default (controlled by -gnatwu).
 The warning is suppressed for volatile
 variables and also for variables that are renamings of other variables
 or for which an address clause is given.
