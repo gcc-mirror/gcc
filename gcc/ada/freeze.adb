@@ -1452,6 +1452,11 @@ package body Freeze is
 
       procedure Check_Current_Instance (Comp_Decl : Node_Id) is
 
+         Rec_Type : constant Entity_Id :=
+                      Scope (Defining_Identifier (Comp_Decl));
+
+         Decl : constant Node_Id := Parent (Rec_Type);
+
          function Process (N : Node_Id) return Traverse_Result;
          --  Process routine to apply check to given node
 
@@ -1486,7 +1491,25 @@ package body Freeze is
       --  Start of processing for Check_Current_Instance
 
       begin
-         Traverse (Comp_Decl);
+         --  In Ada95, the (imprecise) rule is that the current instance of a
+         --  limited type is aliased. In Ada2005, limitedness must be explicit:
+         --  either a tagged type, or a limited record.
+
+         if Is_Limited_Type (Rec_Type)
+           and then
+             (Ada_Version < Ada_05
+               or else Is_Tagged_Type (Rec_Type))
+         then
+            return;
+
+         elsif Nkind (Decl) = N_Full_Type_Declaration
+           and then Limited_Present (Type_Definition (Decl))
+         then
+            return;
+
+         else
+            Traverse (Comp_Decl);
+         end if;
       end Check_Current_Instance;
 
       ------------------------
@@ -2028,9 +2051,8 @@ package body Freeze is
                   Set_Has_Unchecked_Union (Rec);
                end if;
 
-               if Has_Per_Object_Constraint (Comp)
-                 and then not Is_Limited_Type (Rec)
-               then
+               if Has_Per_Object_Constraint (Comp) then
+
                   --  Scan component declaration for likely misuses of current
                   --  instance, either in a constraint or a default expression.
 
