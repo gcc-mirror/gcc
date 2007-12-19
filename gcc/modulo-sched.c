@@ -506,7 +506,9 @@ generate_reg_moves (partial_schedule_ptr ps, bool rescan)
       /* Now generate the reg_moves, attaching relevant uses to them.  */
       SCHED_NREG_MOVES (u) = nreg_moves;
       old_reg = prev_reg = copy_rtx (SET_DEST (single_set (u->insn)));
-      last_reg_move = u->insn;
+      /* Insert the reg-moves right before the notes which precede
+         the insn they relates to.  */
+      last_reg_move = u->first_note;
 
       for (i_reg_move = 0; i_reg_move < nreg_moves; i_reg_move++)
 	{
@@ -794,7 +796,11 @@ loop_canon_p (struct loop *loop)
 {
 
   if (loop->inner || !loop_outer (loop))
+  {
+    if (dump_file)
+      fprintf (dump_file, "SMS loop inner or !loop_outer\n");
     return false;
+  }
 
   if (!single_exit (loop))
     {
@@ -910,6 +916,12 @@ sms_schedule (void)
      We use loop->num as index into this array.  */
   g_arr = XCNEWVEC (ddg_ptr, number_of_loops ());
 
+  if (dump_file)
+  {
+    fprintf (dump_file, "\n\nSMS analysis phase\n");
+    fprintf (dump_file, "===================\n\n");
+  }
+
   /* Build DDGs for all the relevant loops and hold them in G_ARR
      indexed by the loop index.  */
   FOR_EACH_LOOP (li, loop, 0)
@@ -926,11 +938,24 @@ sms_schedule (void)
           break;
         }
 
+      if (dump_file)
+      {
+         rtx insn = BB_END (loop->header);
+
+         fprintf (dump_file, "SMS loop num: %d, file: %s, line: %d\n",
+                  loop->num, insn_file (insn), insn_line (insn));
+
+      }
+
       if (! loop_canon_p (loop))
         continue;
 
       if (! loop_single_full_bb_p (loop))
+      {
+        if (dump_file)
+          fprintf (dump_file, "SMS not loop_single_full_bb_p\n");
 	continue;
+      }
 
       bb = loop->header;
 
@@ -971,7 +996,11 @@ sms_schedule (void)
 
       /* Make sure this is a doloop.  */
       if ( !(count_reg = doloop_register_get (head, tail)))
+      {
+        if (dump_file)
+          fprintf (dump_file, "SMS doloop_register_get failed\n");
 	continue;
+      }
 
       /* Don't handle BBs with calls or barriers, or !single_set insns,
          or auto-increment insns (to avoid creating invalid reg-moves
@@ -1021,7 +1050,15 @@ sms_schedule (void)
         }
 
       g_arr[loop->num] = g;
+      if (dump_file)
+        fprintf (dump_file, "...OK\n");
+
     }
+  if (dump_file)
+  {
+    fprintf (dump_file, "\nSMS transformation phase\n");
+    fprintf (dump_file, "=========================\n\n");
+  }
 
   /* We don't want to perform SMS on new loops - created by versioning.  */
   FOR_EACH_LOOP (li, loop, 0)
@@ -1036,7 +1073,14 @@ sms_schedule (void)
         continue;
 
       if (dump_file)
-	print_ddg (dump_file, g);
+      {
+         rtx insn = BB_END (loop->header);
+
+         fprintf (dump_file, "SMS loop num: %d, file: %s, line: %d\n",
+                  loop->num, insn_file (insn), insn_line (insn));
+
+         print_ddg (dump_file, g);
+      }
 
       get_ebb_head_tail (loop->header, loop->header, &head, &tail);
 
