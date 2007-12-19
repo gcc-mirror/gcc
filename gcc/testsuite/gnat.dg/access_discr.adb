@@ -11,7 +11,7 @@ procedure access_discr is
    type Two_Iface (Parent : access One) is limited new Iface with null record;
    type Two_Base (Parent : access One) is new Base with null record;
    
-   type One is record
+   type One is limited record
       TA : Two_Alone (One'Access);
       TI : Two_Iface (One'Access); --  OFFENDING LINE
       TB : Two_Base (One'Access);
