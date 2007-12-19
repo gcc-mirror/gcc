@@ -13,7 +13,7 @@ private
   type type1 is tagged record
      f2 : array_t2;
   end record;
-    type type3 is record
+    type type3 is limited record
         the_task : aliased task_t (type3'Access);
         the_array : array_t (1 .. 10) := (others => to_type1 (-1));
     end record;
