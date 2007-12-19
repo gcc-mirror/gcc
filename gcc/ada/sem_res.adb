@@ -131,6 +131,23 @@ package body Sem_Res is
    --  of the task, it must be replaced with a reference to the discriminant
    --  of the task being called.
 
+   procedure Resolve_Op_Concat_Arg
+     (N       : Node_Id;
+      Arg     : Node_Id;
+      Typ     : Entity_Id;
+      Is_Comp : Boolean);
+   --  Internal procedure for Resolve_Op_Concat to resolve one operand of
+   --  concatenation operator.  The operand is either of the array type or of
+   --  the component type. If the operand is an aggregate, and the component
+   --  type is composite, this is ambiguous if component type has aggregates.
+
+   procedure Resolve_Op_Concat_First (N : Node_Id; Typ : Entity_Id);
+   --  Does the first part of the work of Resolve_Op_Concat
+
+   procedure Resolve_Op_Concat_Rest (N : Node_Id; Typ : Entity_Id);
+   --  Does the "rest" of the work of Resolve_Op_Concat, after the left operand
+   --  has been resolved. See Resolve_Op_Concat for details.
+
    procedure Resolve_Allocator                 (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Arithmetic_Op             (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Call                      (N : Node_Id; Typ : Entity_Id);
@@ -6354,116 +6371,167 @@ package body Sem_Res is
    -----------------------
 
    procedure Resolve_Op_Concat (N : Node_Id; Typ : Entity_Id) is
+
+      --  We wish to avoid deep recursion, because concatenations are often
+      --  deeply nested, as in A&B&...&Z. Therefore, we walk down the left
+      --  operands nonrecursively until we find something that is not a simple
+      --  concatenation (A in this case). We resolve that, and then walk back
+      --  up the tree following Parent pointers, calling Resolve_Op_Concat_Rest
+      --  to do the rest of the work at each level. The Parent pointers allow
+      --  us to avoid recursion, and thus avoid running out of memory. See also
+      --  Sem_Ch4.Analyze_Concatenation, where a similar hack is used.
+
+      NN  : Node_Id := N;
+      Op1 : Node_Id;
+
+   begin
+      --  The following code is equivalent to:
+
+      --    Resolve_Op_Concat_First (NN, Typ);
+      --    Resolve_Op_Concat_Arg (N, ...);
+      --    Resolve_Op_Concat_Rest (N, Typ);
+
+      --  where the Resolve_Op_Concat_Arg call recurses back here if the left
+      --  operand is a concatenation.
+
+      --  Walk down left operands
+
+      loop
+         Resolve_Op_Concat_First (NN, Typ);
+         Op1 := Left_Opnd (NN);
+         exit when not (Nkind (Op1) = N_Op_Concat
+                         and then not Is_Array_Type (Component_Type (Typ))
+                         and then Entity (Op1) = Entity (NN));
+         NN := Op1;
+      end loop;
+
+      --  Now (given the above example) NN is A&B and Op1 is A
+
+      --  First resolve Op1 ...
+
+      Resolve_Op_Concat_Arg (NN, Op1, Typ, Is_Component_Left_Opnd  (NN));
+
+      --  ... then walk NN back up until we reach N (where we started), calling
+      --  Resolve_Op_Concat_Rest along the way.
+
+      loop
+         Resolve_Op_Concat_Rest (NN, Typ);
+         exit when NN = N;
+         NN := Parent (NN);
+      end loop;
+   end Resolve_Op_Concat;
+
+   ---------------------------
+   -- Resolve_Op_Concat_Arg --
+   ---------------------------
+
+   procedure Resolve_Op_Concat_Arg
+     (N       : Node_Id;
+      Arg     : Node_Id;
+      Typ     : Entity_Id;
+      Is_Comp : Boolean)
+   is
       Btyp : constant Entity_Id := Base_Type (Typ);
-      Op1  : constant Node_Id := Left_Opnd (N);
-      Op2  : constant Node_Id := Right_Opnd (N);
 
-      procedure Resolve_Concatenation_Arg (Arg : Node_Id; Is_Comp : Boolean);
-      --  Internal procedure to resolve one operand of concatenation operator.
-      --  The operand is either of the array type or of the component type.
-      --  If the operand is an aggregate, and the component type is composite,
-      --  this is ambiguous if component type has aggregates.
-
-      -------------------------------
-      -- Resolve_Concatenation_Arg --
-      -------------------------------
-
-      procedure Resolve_Concatenation_Arg (Arg : Node_Id; Is_Comp : Boolean) is
-      begin
-         if In_Instance then
-            if Is_Comp
-              or else (not Is_Overloaded (Arg)
-               and then Etype (Arg) /= Any_Composite
-               and then Covers (Component_Type (Typ), Etype (Arg)))
-            then
-               Resolve (Arg, Component_Type (Typ));
-            else
-               Resolve (Arg, Btyp);
-            end if;
-
-         elsif Has_Compatible_Type (Arg, Component_Type (Typ)) then
-
-            if Nkind (Arg) = N_Aggregate
-              and then Is_Composite_Type (Component_Type (Typ))
-            then
-               if Is_Private_Type (Component_Type (Typ)) then
-                  Resolve (Arg, Btyp);
-
-               else
-                  Error_Msg_N ("ambiguous aggregate must be qualified", Arg);
-                  Set_Etype (Arg, Any_Type);
-               end if;
-
-            else
-               if Is_Overloaded (Arg)
-                 and then Has_Compatible_Type (Arg, Typ)
-                 and then Etype (Arg) /= Any_Type
-               then
-
-                  declare
-                     I    : Interp_Index;
-                     It   : Interp;
-                     Func : Entity_Id;
-
-                  begin
-                     Get_First_Interp (Arg, I, It);
-                     Func := It.Nam;
-                     Get_Next_Interp (I, It);
-
-                     --  Special-case the error message when the overloading
-                     --  is caused by a function that yields and array and
-                     --  can be called without parameters.
-
-                     if It.Nam = Func then
-                        Error_Msg_Sloc := Sloc (Func);
-                        Error_Msg_N ("ambiguous call to function#", Arg);
-                        Error_Msg_NE
-                          ("\\interpretation as call yields&", Arg, Typ);
-                        Error_Msg_NE
-                          ("\\interpretation as indexing of call yields&",
-                            Arg, Component_Type (Typ));
-
-                     else
-                        Error_Msg_N
-                          ("ambiguous operand for concatenation!", Arg);
-                        Get_First_Interp (Arg, I, It);
-                        while Present (It.Nam) loop
-                           Error_Msg_Sloc := Sloc (It.Nam);
-
-                           if Base_Type (It.Typ) = Base_Type (Typ)
-                             or else Base_Type (It.Typ) =
-                               Base_Type (Component_Type (Typ))
-                           then
-                              Error_Msg_N ("\\possible interpretation#", Arg);
-                           end if;
-
-                           Get_Next_Interp (I, It);
-                        end loop;
-                     end if;
-                  end;
-               end if;
-
-               Resolve (Arg, Component_Type (Typ));
-
-               if Nkind (Arg) = N_String_Literal then
-                  Set_Etype (Arg, Component_Type (Typ));
-               end if;
-
-               if Arg = Left_Opnd (N) then
-                  Set_Is_Component_Left_Opnd (N);
-               else
-                  Set_Is_Component_Right_Opnd (N);
-               end if;
-            end if;
-
+   begin
+      if In_Instance then
+         if Is_Comp
+           or else (not Is_Overloaded (Arg)
+                     and then Etype (Arg) /= Any_Composite
+                     and then Covers (Component_Type (Typ), Etype (Arg)))
+         then
+            Resolve (Arg, Component_Type (Typ));
          else
             Resolve (Arg, Btyp);
          end if;
 
-         Check_Unset_Reference (Arg);
-      end Resolve_Concatenation_Arg;
+      elsif Has_Compatible_Type (Arg, Component_Type (Typ)) then
+         if Nkind (Arg) = N_Aggregate
+           and then Is_Composite_Type (Component_Type (Typ))
+         then
+            if Is_Private_Type (Component_Type (Typ)) then
+               Resolve (Arg, Btyp);
+            else
+               Error_Msg_N ("ambiguous aggregate must be qualified", Arg);
+               Set_Etype (Arg, Any_Type);
+            end if;
 
-   --  Start of processing for Resolve_Op_Concat
+         else
+            if Is_Overloaded (Arg)
+              and then Has_Compatible_Type (Arg, Typ)
+              and then Etype (Arg) /= Any_Type
+            then
+               declare
+                  I    : Interp_Index;
+                  It   : Interp;
+                  Func : Entity_Id;
+
+               begin
+                  Get_First_Interp (Arg, I, It);
+                  Func := It.Nam;
+                  Get_Next_Interp (I, It);
+
+                  --  Special-case the error message when the overloading is
+                  --  caused by a function that yields an array and can be
+                  --  called without parameters.
+
+                  if It.Nam = Func then
+                     Error_Msg_Sloc := Sloc (Func);
+                     Error_Msg_N ("ambiguous call to function#", Arg);
+                     Error_Msg_NE
+                       ("\\interpretation as call yields&", Arg, Typ);
+                     Error_Msg_NE
+                       ("\\interpretation as indexing of call yields&",
+                         Arg, Component_Type (Typ));
+
+                  else
+                     Error_Msg_N
+                       ("ambiguous operand for concatenation!", Arg);
+                     Get_First_Interp (Arg, I, It);
+                     while Present (It.Nam) loop
+                        Error_Msg_Sloc := Sloc (It.Nam);
+
+                        if Base_Type (It.Typ) = Base_Type (Typ)
+                          or else Base_Type (It.Typ) =
+                            Base_Type (Component_Type (Typ))
+                        then
+                           Error_Msg_N ("\\possible interpretation#", Arg);
+                        end if;
+
+                        Get_Next_Interp (I, It);
+                     end loop;
+                  end if;
+               end;
+            end if;
+
+            Resolve (Arg, Component_Type (Typ));
+
+            if Nkind (Arg) = N_String_Literal then
+               Set_Etype (Arg, Component_Type (Typ));
+            end if;
+
+            if Arg = Left_Opnd (N) then
+               Set_Is_Component_Left_Opnd (N);
+            else
+               Set_Is_Component_Right_Opnd (N);
+            end if;
+         end if;
+
+      else
+         Resolve (Arg, Btyp);
+      end if;
+
+      Check_Unset_Reference (Arg);
+   end Resolve_Op_Concat_Arg;
+
+   -----------------------------
+   -- Resolve_Op_Concat_First --
+   -----------------------------
+
+   procedure Resolve_Op_Concat_First (N : Node_Id; Typ : Entity_Id) is
+      Btyp : constant Entity_Id := Base_Type (Typ);
+      Op1  : constant Node_Id := Left_Opnd (N);
+      Op2  : constant Node_Id := Right_Opnd (N);
 
    begin
       --  The parser folds an enormous sequence of concatenations of string
@@ -6488,30 +6556,18 @@ package body Sem_Res is
          Error_Msg_N ("concatenation not available for limited array", N);
          Explain_Limited_Type (Btyp, N);
       end if;
+   end Resolve_Op_Concat_First;
 
-      --  If the operands are themselves concatenations, resolve them as such
-      --  directly. This removes several layers of recursion and allows GNAT to
-      --  handle larger multiple concatenations.
+   ----------------------------
+   -- Resolve_Op_Concat_Rest --
+   ----------------------------
 
-      if Nkind (Op1) = N_Op_Concat
-        and then not Is_Array_Type (Component_Type (Typ))
-        and then Entity (Op1) = Entity (N)
-      then
-         Resolve_Op_Concat (Op1, Typ);
-      else
-         Resolve_Concatenation_Arg
-           (Op1,  Is_Component_Left_Opnd  (N));
-      end if;
+   procedure Resolve_Op_Concat_Rest (N : Node_Id; Typ : Entity_Id) is
+      Op1  : constant Node_Id := Left_Opnd (N);
+      Op2  : constant Node_Id := Right_Opnd (N);
 
-      if Nkind (Op2) = N_Op_Concat
-        and then not Is_Array_Type (Component_Type (Typ))
-        and then Entity (Op2) = Entity (N)
-      then
-         Resolve_Op_Concat (Op2, Typ);
-      else
-         Resolve_Concatenation_Arg
-           (Op2, Is_Component_Right_Opnd  (N));
-      end if;
+   begin
+      Resolve_Op_Concat_Arg (N, Op2, Typ, Is_Component_Right_Opnd  (N));
 
       Generate_Operator_Reference (N, Typ);
 
@@ -6520,7 +6576,7 @@ package body Sem_Res is
       end if;
 
       --  If this is not a static concatenation, but the result is a
-      --  string type (and not an array of strings) insure that static
+      --  string type (and not an array of strings) ensure that static
       --  string operands have their subtypes properly constructed.
 
       if Nkind (N) /= N_String_Literal
@@ -6529,7 +6585,7 @@ package body Sem_Res is
          Set_String_Literal_Subtype (Op1, Typ);
          Set_String_Literal_Subtype (Op2, Typ);
       end if;
-   end Resolve_Op_Concat;
+   end Resolve_Op_Concat_Rest;
 
    ----------------------
    -- Resolve_Op_Expon --

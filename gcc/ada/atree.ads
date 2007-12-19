@@ -503,18 +503,22 @@ package Atree is
    --  function is used only by Sinfo.CN to change nodes into their
    --  corresponding entities.
 
-   type Traverse_Result is (OK, OK_Orig, Skip, Abandon);
+   type Traverse_Result is (Abandon, OK, OK_Orig, Skip);
    --  This is the type of the result returned by the Process function passed
-   --  to Traverse_Func and Traverse_Proc and also the type of the result of
-   --  Traverse_Func itself. See descriptions below for details.
+   --  to Traverse_Func and Traverse_Proc. See below for details.
+
+   subtype Traverse_Final_Result is Traverse_Result range Abandon .. OK;
+   --  This is the type of the final result returned Traverse_Func, based on
+   --  the results of Process calls. See below for details.
 
    generic
      with function Process (N : Node_Id) return Traverse_Result is <>;
-   function Traverse_Func (Node : Node_Id) return Traverse_Result;
+   function Traverse_Func (Node : Node_Id) return Traverse_Final_Result;
    --  This is a generic function that, given the parent node for a subtree,
    --  traverses all syntactic nodes of this tree, calling the given function
-   --  Process on each one. The traversal is controlled as follows by the
-   --  result returned by Process:
+   --  Process on each one, in pre order (i.e. top-down). The order of
+   --  traversing subtrees is arbitrary. The traversal is controlled as follows
+   --  by the result returned by Process:
 
    --    OK       The traversal continues normally with the syntactic
    --             children of the node just processed.
@@ -537,7 +541,7 @@ package Atree is
      with function Process (N : Node_Id) return Traverse_Result is <>;
    procedure Traverse_Proc (Node : Node_Id);
    pragma Inline (Traverse_Proc);
-   --  This is similar to Traverse_Func except that no result is returned,
+   --  This is the same as Traverse_Func except that no result is returned,
    --  i.e. Traverse_Func is called and the result is simply discarded.
 
    ---------------------------
