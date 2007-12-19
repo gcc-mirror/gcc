@@ -1973,9 +1973,10 @@ package body Exp_Aggr is
          Attach  : Node_Id;
          Init_Pr : Boolean) return List_Id
       is
-         L   : constant List_Id := New_List;
-         Ref : Node_Id;
-         RC  : RE_Id;
+         L           : constant List_Id := New_List;
+         Ref         : Node_Id;
+         RC          : RE_Id;
+         Target_Type : Entity_Id;
 
       begin
          --  Generate:
@@ -1989,27 +1990,47 @@ package body Exp_Aggr is
              Selector_Name => Make_Identifier (Loc, Name_uController));
          Set_Assignment_OK (Ref);
 
-         --  Ada 2005 (AI-287): Give support to default initialization of
-         --  limited types and components.
+         --  Ada 2005 (AI-287): Give support to aggregates of limited
+         --  types. If the type is intrinsically_limited the controller
+         --  is limited as well. If it is tagged and limited then so is
+         --  the controller. Otherwise an untagged type may have limited
+         --  components without its full view being limited, so the
+         --  controller is not limited.
 
-         if (Nkind (Target) = N_Identifier
-              and then Present (Etype (Target))
-              and then Is_Limited_Type (Etype (Target)))
-           or else
-            (Nkind (Target) = N_Selected_Component
-              and then Present (Etype (Selector_Name (Target)))
-              and then Is_Limited_Type (Etype (Selector_Name (Target))))
-           or else
-            (Nkind (Target) = N_Unchecked_Type_Conversion
-              and then Present (Etype (Target))
-              and then Is_Limited_Type (Etype (Target)))
-           or else
-            (Nkind (Target) = N_Unchecked_Expression
-              and then Nkind (Expression (Target)) = N_Indexed_Component
-              and then Present (Etype (Prefix (Expression (Target))))
-              and then Is_Limited_Type (Etype (Prefix (Expression (Target)))))
+         if Nkind (Target) = N_Identifier then
+            Target_Type := Etype (Target);
+
+         elsif Nkind (Target) = N_Selected_Component then
+            Target_Type := Etype (Selector_Name (Target));
+
+         elsif Nkind (Target) = N_Unchecked_Type_Conversion then
+            Target_Type := Etype (Target);
+
+         elsif Nkind (Target) = N_Unchecked_Expression
+           and then Nkind (Expression (Target)) = N_Indexed_Component
+         then
+            Target_Type := Etype (Prefix (Expression (Target)));
+
+         else
+            Target_Type := Etype (Target);
+         end if;
+
+         --  If the target has not been analyzed yet, as will happen with
+         --  delayed expansion, use the given type (either the aggregate
+         --  type or an ancestor) to determine limitedness.
+
+         if No (Target_Type) then
+            Target_Type := Typ;
+         end if;
+
+         if (Is_Tagged_Type (Target_Type))
+           and then Is_Limited_Type (Target_Type)
          then
             RC := RE_Limited_Record_Controller;
+
+         elsif Is_Inherently_Limited_Type (Target_Type) then
+            RC := RE_Limited_Record_Controller;
+
          else
             RC := RE_Record_Controller;
          end if;
@@ -5183,6 +5204,19 @@ package body Exp_Aggr is
       --  of assignment statements. Cases checked for are a nested aggregate
       --  needing Late_Expansion, the presence of a tagged component which may
       --  need tag adjustment, and a bit unaligned component reference.
+      --
+      --  We also force expansion into assignments if a component is of a
+      --  mutable type (including a private type with discriminants) because
+      --  in that case the size of the component to be copied may be smaller
+      --  than the side of the target, and there is no simple way for gigi
+      --  to compute the size of the object to be copied.
+      --
+      --  NOTE: This is part of the ongoing work to define precisely the
+      --  interface between front-end and back-end handling of aggregates.
+      --  In general it is desirable to pass aggregates as they are to gigi,
+      --  in order to minimize elaboration code. This is one case where the
+      --  semantics of Ada complicate the analysis and lead to anomalies in
+      --  the gcc back-end if the aggregate is not expanded into assignments.
 
       ----------------------------------
       -- Component_Not_OK_For_Backend --
@@ -5241,6 +5275,12 @@ package body Exp_Aggr is
               or else not Compile_Time_Known_Aggregate (Expr_Q)
             then
                Static_Components := False;
+
+               if Is_Private_Type (Etype (Expr_Q))
+                 and then Has_Discriminants (Etype (Expr_Q))
+               then
+                  return True;
+               end if;
             end if;
 
             Next (C);
@@ -5333,7 +5373,7 @@ package body Exp_Aggr is
          Convert_To_Assignments (N, Typ);
 
       --  If some components are mutable, the size of the aggregate component
-      --  may be disctinct from the default size of the type component, so
+      --  may be distinct from the default size of the type component, so
       --  we need to expand to insure that the back-end copies the proper
       --  size of the data.
 
