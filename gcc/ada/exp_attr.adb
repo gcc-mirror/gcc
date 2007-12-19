@@ -3756,13 +3756,29 @@ package body Exp_Attr is
          --  Common processing for record and array component case
 
          if Siz /= No_Uint and then Siz /= 0 then
-            Rewrite (N, Make_Integer_Literal (Loc, Siz));
+            declare
+               CS : constant Boolean := Comes_From_Source (N);
 
-            Analyze_And_Resolve (N, Typ);
+            begin
+               Rewrite (N, Make_Integer_Literal (Loc, Siz));
 
-            --  The result is not a static expression
+               --  This integer literal is not a static expression. We do not
+               --  call Analyze_And_Resolve here, because this would activate
+               --  the circuit for deciding that a static value was out of
+               --  range, and we don't want that.
 
-            Set_Is_Static_Expression (N, False);
+               --  So just manually set the type, mark the expression as non-
+               --  static, and then ensure that the result is checked properly
+               --  if the attribute comes from source (if it was internally
+               --  generated, we never need a constraint check).
+
+               Set_Etype (N, Typ);
+               Set_Is_Static_Expression (N, False);
+
+               if CS then
+                  Apply_Constraint_Check (N, Typ);
+               end if;
+            end;
          end if;
       end Size;
 
