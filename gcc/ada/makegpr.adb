@@ -1822,7 +1822,11 @@ package body Makegpr is
       Object_Name   : constant String := Get_Name_String (Source.Object_Name);
       C_Object_Name : String := Object_Name;
       Dep_Name      : constant String := Get_Name_String (Source.Dep_Name);
-      C_Source_Path : String := Source_Path;
+      C_Source_Path : constant String :=
+                        Normalize_Pathname
+                          (Name           => Source_Path,
+                           Resolve_Links  => False,
+                           Case_Sensitive => False);
 
       Source_In_Dependencies : Boolean := False;
       --  Set True if source was found in dependency file of its object file
@@ -1835,7 +1839,6 @@ package body Makegpr is
       --  Set to True at the end of the first Big_Loop
 
    begin
-      Canonical_Case_File_Name (C_Source_Path);
       Canonical_Case_File_Name (C_Object_Name);
 
       --  Assume the worst, so that statement "return;" may be used if there
