@@ -20271,7 +20271,7 @@ cp_parser_omp_parallel (cp_parser *parser, cp_token *pragma_tok)
   switch (p_kind)
     {
     case PRAGMA_OMP_PARALLEL:
-      cp_parser_already_scoped_statement (parser);
+      cp_parser_statement (parser, NULL_TREE, false, NULL);
       par_clause = clauses;
       break;
 

@@ -1,3 +1,10 @@
+2007-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34513
+	* parser.c (cp_parser_omp_parallel): For non-combined parallel
+	call cp_parser_statement rather than
+	cp_parser_already_scoped_statement.
+
 2007-12-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/34206
