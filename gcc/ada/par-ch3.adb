@@ -620,6 +620,14 @@ package body Ch3 is
                   if Ada_Version = Ada_83 then
                      Error_Msg_SP
                        ("(Ada 83) limited record declaration not allowed!");
+
+                  --  In Ada2005, "abstract limited" can appear before "new",
+                  --  but it cannot be part of an untagged record declaration.
+
+                  elsif Abstract_Present
+                    and then Prev_Token /= Tok_Tagged
+                  then
+                     Error_Msg_SP ("TAGGED expected");
                   end if;
 
                   Typedef_Node := P_Record_Definition;
@@ -3099,6 +3107,12 @@ package body Ch3 is
          T_Record;
          Set_Null_Present (Rec_Node, True);
 
+      --  Catch incomplete declaration to prevent cascaded errors, see
+      --  ACATS B393002 for an example.
+
+      elsif Token = Tok_Semicolon then
+         Error_Msg_AP ("missing record definition");
+
       --  Case starting with RECORD keyword. Build scope stack entry. For the
       --  column, we use the first non-blank character on the line, to deal
       --  with situations such as:
@@ -3107,7 +3121,8 @@ package body Ch3 is
       --      ...
       --    end record;
 
-      --  which is not official RM indentation, but is not uncommon usage
+      --  which is not official RM indentation, but is not uncommon usage, and
+      --  in particular is standard GNAT coding style, so handle it nicely.
 
       else
          Push_Scope_Stack;
@@ -3413,7 +3428,6 @@ package body Ch3 is
       Variant_Part_Node : Node_Id;
       Variants_List     : List_Id;
       Case_Node         : Node_Id;
-      Ident_Token       : Token_Type;
 
    begin
       Variant_Part_Node := New_Node (N_Variant_Part, Token_Ptr);
@@ -3423,26 +3437,17 @@ package body Ch3 is
       Scope.Table (Scope.Last).Ecol := Start_Column;
 
       Scan; -- past CASE
-
-      --  A discriminant name between parentheses will be returned as
-      --  a N_Identifier although it is not allowed by RM 3.8.1. We
-      --  save the token type to check it later. However, in case of
-      --  a discriminant name with parentheses, we can continue the
-      --  analysis as if only the discriminant name had been given.
-
-      Ident_Token := Token;
       Case_Node := P_Expression;
+      Set_Name (Variant_Part_Node, Case_Node);
 
-      if Nkind (Case_Node) = N_Identifier then
-         Set_Name (Variant_Part_Node, Case_Node);
-      else
+      if Nkind (Case_Node) /= N_Identifier then
          Set_Name (Variant_Part_Node, Error);
-      end if;
-
-      if Nkind (Case_Node) /= N_Identifier
-        or else Ident_Token /= Tok_Identifier
-      then
          Error_Msg ("discriminant name expected", Sloc (Case_Node));
+
+      elsif Paren_Count (Case_Node) /= 0 then
+         Error_Msg ("|discriminant name may not be parenthesized",
+                    Sloc (Case_Node));
+         Set_Paren_Count (Case_Node, 0);
       end if;
 
       TF_Is;
