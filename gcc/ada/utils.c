@@ -1467,7 +1467,10 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
     TREE_ADDRESSABLE (var_decl) = 1;
 
   if (TREE_CODE (var_decl) != CONST_DECL)
-    rest_of_decl_compilation (var_decl, global_bindings_p (), 0);
+    {
+      if (global_bindings_p ())
+	rest_of_decl_compilation (var_decl, true, 0);
+    }
   else
     expand_decl (var_decl);
 
