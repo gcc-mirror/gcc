@@ -602,7 +602,11 @@ package body Prj.Attr is
    begin
       for Index in Package_Attributes.First .. Package_Attributes.Last loop
          if Package_Attributes.Table (Index).Name = Name then
-            return (Value => Index);
+            if Package_Attributes.Table (Index).Known then
+               return (Value => Index);
+            else
+               return Unknown_Package;
+            end if;
          end if;
       end loop;
 
@@ -689,6 +693,7 @@ package body Prj.Attr is
          Attr_Kind      => Real_Attr_Kind,
          Read_Only      => False,
          Next           => First_Attr);
+
       Package_Attributes.Table (In_Package.Value).First_Attribute :=
         Attrs.Last;
    end Register_New_Attribute;
