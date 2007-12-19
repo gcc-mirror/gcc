@@ -1,5 +1,13 @@
 2007-12-19  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* tree.h (set_decl_incoming_rtl): Add a by_reference_p parameter.
+	* emit-rtl.c (set_decl_incoming_rtl): Likewise.  Don't set the
+	rtl's register attributes when the parameter is true.
+	* function.c (assign_parms_unsplit_complex, assign_parms)
+	(expand_function_start): Update calls to set_decl_incoming_rtl.
+
+2007-12-19  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* rtl.def (SUBREG): Update comments.
 	* rtl.h (reg_attrs): Be explicit about the type of offset used.
 	(set_reg_attrs_from_mem): Rename to...
