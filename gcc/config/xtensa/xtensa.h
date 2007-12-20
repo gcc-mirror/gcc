@@ -72,6 +72,7 @@ extern unsigned xtensa_current_frame_size;
 #define TARGET_ADDX		XCHAL_HAVE_ADDX
 #define TARGET_RELEASE_SYNC	XCHAL_HAVE_RELEASE_SYNC
 #define TARGET_S32C1I		XCHAL_HAVE_S32C1I
+#define TARGET_ABSOLUTE_LITERALS XSHAL_USE_ABSOLUTE_LITERALS
 
 #define TARGET_DEFAULT (						\
   (XCHAL_HAVE_L32R	? 0 : MASK_CONST16))
@@ -704,83 +705,19 @@ typedef struct xtensa_args
 /* Stack pointer value doesn't matter at exit.  */
 #define EXIT_IGNORE_STACK 1
 
-/* A C statement to output, on the stream FILE, assembler code for a
-   block of data that contains the constant parts of a trampoline. 
-   This code should not include a label--the label is taken care of
-   automatically.
-
-   For Xtensa, the trampoline must perform an entry instruction with a
-   minimal stack frame in order to get some free registers.  Once the
-   actual call target is known, the proper stack frame size is extracted
-   from the entry instruction at the target and the current frame is
-   adjusted to match.  The trampoline then transfers control to the
-   instruction following the entry at the target.  Note: this assumes
-   that the target begins with an entry instruction.  */
-
-/* minimum frame = reg save area (4 words) plus static chain (1 word)
-   and the total number of words must be a multiple of 128 bits */
-#define MIN_FRAME_SIZE (8 * UNITS_PER_WORD)
-
-#define TRAMPOLINE_TEMPLATE(STREAM)					\
-  do {									\
-    fprintf (STREAM, "\t.begin no-transform\n");			\
-    fprintf (STREAM, "\tentry\tsp, %d\n", MIN_FRAME_SIZE);		\
-									\
-    /* save the return address */					\
-    fprintf (STREAM, "\tmov\ta10, a0\n");				\
-									\
-    /* Use a CALL0 instruction to skip past the constants and in the	\
-       process get the PC into A0.  This allows PC-relative access to	\
-       the constants without relying on L32R, which may not always be	\
-       available.  */							\
-									\
-    fprintf (STREAM, "\tcall0\t.Lskipconsts\n");			\
-    fprintf (STREAM, "\t.align\t4\n");					\
-    fprintf (STREAM, ".Lchainval:%s0\n", integer_asm_op (4, TRUE));	\
-    fprintf (STREAM, ".Lfnaddr:%s0\n", integer_asm_op (4, TRUE));	\
-    fprintf (STREAM, ".Lskipconsts:\n");				\
-									\
-    /* store the static chain */					\
-    fprintf (STREAM, "\taddi\ta0, a0, 3\n");				\
-    fprintf (STREAM, "\tl32i\ta8, a0, 0\n");				\
-    fprintf (STREAM, "\ts32i\ta8, sp, %d\n", MIN_FRAME_SIZE - 20);	\
-									\
-    /* set the proper stack pointer value */				\
-    fprintf (STREAM, "\tl32i\ta8, a0, 4\n");				\
-    fprintf (STREAM, "\tl32i\ta9, a8, 0\n");				\
-    fprintf (STREAM, "\textui\ta9, a9, %d, 12\n",			\
-	     TARGET_BIG_ENDIAN ? 8 : 12);				\
-    fprintf (STREAM, "\tslli\ta9, a9, 3\n");				\
-    fprintf (STREAM, "\taddi\ta9, a9, %d\n", -MIN_FRAME_SIZE);		\
-    fprintf (STREAM, "\tsub\ta9, sp, a9\n");				\
-    fprintf (STREAM, "\tmovsp\tsp, a9\n");				\
-									\
-    /* restore the return address */					\
-    fprintf (STREAM, "\tmov\ta0, a10\n");				\
-									\
-    /* jump to the instruction following the entry */			\
-    fprintf (STREAM, "\taddi\ta8, a8, 3\n");				\
-    fprintf (STREAM, "\tjx\ta8\n");					\
-    fprintf (STREAM, "\t.byte\t0\n");					\
-    fprintf (STREAM, "\t.end no-transform\n");				\
-  } while (0)
+#define TRAMPOLINE_TEMPLATE(STREAM) xtensa_trampoline_template (STREAM)
 
 /* Size in bytes of the trampoline, as an integer.  Make sure this is
    a multiple of TRAMPOLINE_ALIGNMENT to avoid -Wpadded warnings.  */
-#define TRAMPOLINE_SIZE 60
+#define TRAMPOLINE_SIZE (TARGET_CONST16 || TARGET_ABSOLUTE_LITERALS ? 60 : 52)
 
 /* Alignment required for trampolines, in bits.  */
-#define TRAMPOLINE_ALIGNMENT (32)
+#define TRAMPOLINE_ALIGNMENT 32
 
 /* A C statement to initialize the variable parts of a trampoline.  */
 #define INITIALIZE_TRAMPOLINE(ADDR, FUNC, CHAIN)			\
-  do {									\
-    rtx addr = ADDR;							\
-    emit_move_insn (gen_rtx_MEM (SImode, plus_constant (addr, 12)), CHAIN); \
-    emit_move_insn (gen_rtx_MEM (SImode, plus_constant (addr, 16)), FUNC); \
-    emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__xtensa_sync_caches"), \
-		       0, VOIDmode, 1, addr, Pmode);			\
-  } while (0)
+  xtensa_initialize_trampoline (ADDR, FUNC, CHAIN)
+
 
 /* If defined, a C expression that produces the machine-specific code
    to setup the stack so that arbitrary frames can be accessed.

@@ -1,5 +1,5 @@
 /* IEEE-754 single-precision functions for Xtensa
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
    This file is part of GCC.
@@ -488,6 +488,10 @@ __subsf3:
 #ifdef L_mulsf3
 
 	/* Multiplication */
+#if !XCHAL_HAVE_MUL16 && !XCHAL_HAVE_MUL32 && !XCHAL_HAVE_MAC16
+#define XCHAL_NO_MUL 1
+#endif
+
 __mulsf3_aux:
 
 	/* Handle unusual cases (zeros, subnormals, NaNs and Infinities).
@@ -570,13 +574,19 @@ __mulsf3_aux:
 	.global	__mulsf3
 	.type	__mulsf3, @function
 __mulsf3:
-	leaf_entry sp, 32
 #if __XTENSA_CALL0_ABI__
+	leaf_entry sp, 32
 	addi	sp, sp, -32
 	s32i	a12, sp, 16
 	s32i	a13, sp, 20
 	s32i	a14, sp, 24
 	s32i	a15, sp, 28
+#elif XCHAL_NO_MUL
+	/* This is not really a leaf function; allocate enough stack space
+	   to allow CALL12s to a helper function.  */
+	leaf_entry sp, 64
+#else
+	leaf_entry sp, 32
 #endif
 	movi	a6, 0x7f800000
 
@@ -633,7 +643,7 @@ __mulsf3:
 	   chunks can be extracted when setting up the arguments to the
 	   separate multiply function.  */
 
-#if !XCHAL_HAVE_MUL16 && !XCHAL_HAVE_MUL32 && !XCHAL_HAVE_MAC16
+#if __XTENSA_CALL0_ABI__ && XCHAL_NO_MUL
 	/* Calling a separate multiply function will clobber a0 and requires
 	   use of a8 as a temporary, so save those values now.  (The function
 	   uses a custom ABI so nothing else needs to be saved.)  */
@@ -693,12 +703,21 @@ __mulsf3:
 #define set_arg_h(dst, src) \
 	srli	dst, src, 16
 
+#if __XTENSA_CALL0_ABI__
 #define do_mul(dst, xreg, xhalf, yreg, yhalf) \
 	set_arg_ ## xhalf (a13, xreg); \
 	set_arg_ ## yhalf (a14, yreg); \
 	call0	.Lmul_mulsi3; \
 	mov	dst, a12
-#endif
+#else
+#define do_mul(dst, xreg, xhalf, yreg, yhalf) \
+	set_arg_ ## xhalf (a14, xreg); \
+	set_arg_ ## yhalf (a15, yreg); \
+	call12	.Lmul_mulsi3; \
+	mov	dst, a14
+#endif /* __XTENSA_CALL0_ABI__ */
+
+#endif /* no multiply hardware */
 
 	/* Add pp1 and pp2 into a6 with carry-out in a9.  */
 	do_mul(a6, a2, l, a3, h)	/* pp 1 */
@@ -724,12 +743,12 @@ __mulsf3:
 	do_mul(a2, a2, h, a3, h)	/* pp 3 */
 	add	a2, a2, a9
 	
-#if !XCHAL_HAVE_MUL16 && !XCHAL_HAVE_MUL32 && !XCHAL_HAVE_MAC16
+#if __XTENSA_CALL0_ABI__ && XCHAL_NO_MUL
 	/* Restore values saved on the stack during the multiplication.  */
 	l32i	a0, sp, 0
 	l32i	a8, sp, 4
 #endif
-#endif
+#endif /* ! XCHAL_HAVE_MUL32_HIGH */
 
 	/* Shift left by 9 bits, unless there was a carry-out from the
 	   multiply, in which case, shift by 8 bits and increment the
@@ -825,38 +844,47 @@ __mulsf3:
 	slli	a2, a2, 31
 	j	.Lmul_done
 
-#if !XCHAL_HAVE_MUL16 && !XCHAL_HAVE_MUL32 && !XCHAL_HAVE_MAC16
+#if XCHAL_NO_MUL
 	
 	/* For Xtensa processors with no multiply hardware, this simplified
 	   version of _mulsi3 is used for multiplying 16-bit chunks of
-	   the floating-point mantissas.  It uses a custom ABI:	the inputs
-	   are passed in a13 and a14, the result is returned in a12, and
-	   a8 and a15 are clobbered.  */
+	   the floating-point mantissas.  When using CALL0, this function
+	   uses a custom ABI: the inputs are passed in a13 and a14, the
+	   result is returned in a12, and a8 and a15 are clobbered.  */
 	.align	4
 .Lmul_mulsi3:
-	movi	a12, 0
-.Lmul_mult_loop:
-	add	a15, a14, a12
-	extui	a8, a13, 0, 1
-	movnez	a12, a15, a8
+	leaf_entry sp, 16
+	.macro mul_mulsi3_body dst, src1, src2, tmp1, tmp2
+	movi	\dst, 0
+1:	add	\tmp1, \src2, \dst
+	extui	\tmp2, \src1, 0, 1
+	movnez	\dst, \tmp1, \tmp2
 
-	do_addx2 a15, a14, a12, a15
-	extui	a8, a13, 1, 1
-	movnez	a12, a15, a8
+	do_addx2 \tmp1, \src2, \dst, \tmp1
+	extui	\tmp2, \src1, 1, 1
+	movnez	\dst, \tmp1, \tmp2
 
-	do_addx4 a15, a14, a12, a15
-	extui	a8, a13, 2, 1
-	movnez	a12, a15, a8
+	do_addx4 \tmp1, \src2, \dst, \tmp1
+	extui	\tmp2, \src1, 2, 1
+	movnez	\dst, \tmp1, \tmp2
 
-	do_addx8 a15, a14, a12, a15
-	extui	a8, a13, 3, 1
-	movnez	a12, a15, a8
+	do_addx8 \tmp1, \src2, \dst, \tmp1
+	extui	\tmp2, \src1, 3, 1
+	movnez	\dst, \tmp1, \tmp2
 
-	srli	a13, a13, 4
-	slli	a14, a14, 4
-	bnez	a13, .Lmul_mult_loop
-	ret
-#endif /* !MUL16 && !MUL32 && !MAC16 */
+	srli	\src1, \src1, 4
+	slli	\src2, \src2, 4
+	bnez	\src1, 1b
+	.endm
+#if __XTENSA_CALL0_ABI__
+	mul_mulsi3_body a12, a13, a14, a15, a8
+#else
+	/* The result will be written into a2, so save that argument in a4.  */
+	mov	a4, a2
+	mul_mulsi3_body a2, a4, a3, a5, a6
+#endif
+	leaf_return
+#endif /* XCHAL_NO_MUL */
 #endif /* L_mulsf3 */
 
 #ifdef L_divsf3

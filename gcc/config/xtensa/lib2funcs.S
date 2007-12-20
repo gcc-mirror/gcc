@@ -1,5 +1,5 @@
 /* Assembly functions for libgcc2.
-   Copyright (C) 2001, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -151,6 +151,7 @@ __xtensa_nonlocal_goto:
    make sure that the modified instructions are loaded into the instruction
    fetch buffer.  */
 
+/* Use the maximum trampoline size.  Flushing a bit extra is OK.  */
 #define TRAMPOLINE_SIZE 60
 
 	.text
