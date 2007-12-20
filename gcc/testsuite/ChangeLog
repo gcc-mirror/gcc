@@ -1,3 +1,8 @@
+2007-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34459
+	* gcc.c-torture/execute/20071219-1.c: New test.
+
 2007-12-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34530
