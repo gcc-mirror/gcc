@@ -1666,21 +1666,6 @@
    (set_attr "mode"	"none")
    (set_attr "length"	"0")])
 
-;; The fix_return_addr pattern sets the high 2 bits of an address in a
-;; register to match the high bits of the current PC.
-(define_insn "fix_return_addr"
-  [(set (match_operand:SI 0 "register_operand" "=a")
-	(unspec:SI [(match_operand:SI 1 "register_operand" "r")]
-		   UNSPEC_RET_ADDR))
-   (clobber (match_scratch:SI 2 "=r"))
-   (clobber (match_scratch:SI 3 "=r"))]
-  ""
-  "mov\t%2, a0\;call0\t0f\;.align\t4\;0:\;mov\t%3, a0\;mov\ta0, %2\;\
-srli\t%3, %3, 30\;slli\t%0, %1, 2\;ssai\t2\;src\t%0, %3, %0"
-  [(set_attr "type"	"multi")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"24")])
-
 
 ;; Instructions for the Xtensa "boolean" option.
 

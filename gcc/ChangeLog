@@ -1,3 +1,29 @@
+2007-12-20  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.md (fix_return_addr): Remove.
+	* config/xtensa/xtensa-protos.h (xtensa_initialize_trampoline): New.
+	(xtensa_trampoline_template): New.
+	* config/xtensa/xtensa.c (MIN_FRAME_SIZE): Moved here from xtensa.h.
+	(xtensa_return_addr): Expand to standard Xtensa insns instead of
+	fix_return_addr.  Get high bits from a local label.
+	(xtensa_trampoline_template): New function with code moved from
+	TRAMPOLINE_TEMPLATE in xtensa.h.  Use L32R instead of CALL0 except
+	when using CONST16 or absolute-mode literals.
+	(xtensa_initialize_trampoline): New function with code moved from
+	INITIALIZE_TRAMPOLINE in xtensa.h.  Use different offsets depending
+	on which trampoline version is used.
+	* config/xtensa/lib2funcs.S (TRAMPOLINE_SIZE): Add comment.
+	* config/xtensa/xtensa.h (TARGET_ABSOLUTE_LITERALS): Define.
+	(MIN_FRAME_SIZE): Moved to xtensa.c.
+	(TRAMPOLINE_TEMPLATE): Use xtensa_trampoline_template.
+	(TRAMPOLINE_SIZE): Two versions of the trampoline have different sizes.
+	(INITIALIZE_TRAMPOLINE): Use xtensa_initialize_trampoline.
+	* config/xtensa/ieee754-df.S (XCHAL_NO_MUL): Define.
+	(__muldf3): Use CALL12 instead of CALL0 to invoke .Lmul_mulsi3
+	helper when not using the CALL0 ABI.  Change .Lmul_mulsi3 to match.
+	* config/xtensa/lib1funcs.asm (__umulsidi3): Likewise.
+	* config/xtensa/ieee754-sf.S (__mulsf3): Likewise.
+	
 2007-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34459

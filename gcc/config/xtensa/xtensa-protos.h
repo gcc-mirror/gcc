@@ -69,6 +69,7 @@ extern enum reg_class xtensa_preferred_reload_class (rtx, enum reg_class, int);
 extern enum reg_class xtensa_secondary_reload_class (enum reg_class,
 						     enum machine_mode, rtx,
 						     int);
+extern void xtensa_initialize_trampoline (rtx, rtx, rtx);
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
@@ -85,5 +86,6 @@ extern long compute_frame_size (int);
 extern int xtensa_frame_pointer_required (void);
 extern void xtensa_expand_prologue (void);
 extern void order_regs_for_local_alloc (void);
+extern void xtensa_trampoline_template (FILE *);
 
 #endif /* !__XTENSA_PROTOS_H__ */
