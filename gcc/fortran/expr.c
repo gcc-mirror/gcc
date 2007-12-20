@@ -2777,7 +2777,8 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
         gfc_warning ("BOZ literal at %L is bitwise transferred "
                      "non-integer symbol '%s'", &rvalue->where,
                      lvalue->symtree->n.sym->name);
-      gfc_convert_boz (rvalue, &lvalue->ts);
+      if (!gfc_convert_boz (rvalue, &lvalue->ts))
+	return FAILURE;
       if ((rc = gfc_range_check (rvalue)) != ARITH_OK)
 	{
 	  if (rc == ARITH_UNDERFLOW)

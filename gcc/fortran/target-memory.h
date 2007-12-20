@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 
 /* Convert a BOZ to REAL or COMPLEX.  */
-void gfc_convert_boz (gfc_expr *, gfc_typespec *);
+bool gfc_convert_boz (gfc_expr *, gfc_typespec *);
 
 /* Return the size of an expression in its target representation.  */
 size_t gfc_target_expr_size (gfc_expr *);

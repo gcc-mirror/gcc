@@ -596,26 +596,54 @@ gfc_merge_initializers (gfc_typespec ts, gfc_expr *e, unsigned char *data,
   return len;
 }
 
-void
+
+/* Transfer the bitpattern of a (integer) BOZ to real or complex variables.
+   When successful, no BOZ or nothing to do, true is returned.  */
+
+bool
 gfc_convert_boz (gfc_expr *expr, gfc_typespec *ts)
 {
-  size_t buffer_size;
+  size_t buffer_size, boz_bit_size, ts_bit_size;
+  int index;
   unsigned char *buffer;
 
   if (!expr->is_boz)
-    return;
+    return true;
 
   gcc_assert (expr->expr_type == EXPR_CONSTANT
 	      && expr->ts.type == BT_INTEGER);
 
   /* Don't convert BOZ to logical, character, derived etc.  */
   if (ts->type == BT_REAL)
-    buffer_size = size_float (ts->kind);
+    {
+      buffer_size = size_float (ts->kind);
+      ts_bit_size = buffer_size * 8;
+    }
   else if (ts->type == BT_COMPLEX)
-    buffer_size = size_complex (ts->kind);
+    {
+      buffer_size = size_complex (ts->kind);
+      ts_bit_size = buffer_size * 8 / 2;
+    }
   else
-    return;
+    return true;
 
+  /* Convert BOZ to the smallest possible integer kind.  */
+  boz_bit_size = mpz_sizeinbase (expr->value.integer, 2);
+
+  if (boz_bit_size > ts_bit_size)
+    {
+      gfc_error_now ("BOZ constant at %L is too large (%ld vs %ld bits)",
+		     &expr->where, (long) boz_bit_size, (long) ts_bit_size);
+      return false;
+    }
+
+  for (index = 0; gfc_integer_kinds[index].kind != 0; ++index)
+    {
+	if ((unsigned) gfc_integer_kinds[index].bit_size >= ts_bit_size)
+	  break;
+    }
+
+  expr->ts.kind = gfc_integer_kinds[index].kind;
   buffer_size = MAX (buffer_size, size_integer (expr->ts.kind));
 
   buffer = (unsigned char*)alloca (buffer_size);
@@ -637,4 +665,6 @@ gfc_convert_boz (gfc_expr *expr, gfc_typespec *ts)
   expr->is_boz = 0;  
   expr->ts.type = ts->type;
   expr->ts.kind = ts->kind;
+
+  return true;
 }

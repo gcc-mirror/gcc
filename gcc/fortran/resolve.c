@@ -5932,7 +5932,8 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 		     "non-integer symbol '%s'", &code->loc,
 		     lhs->symtree->n.sym->name);
 
-      gfc_convert_boz (rhs, &lhs->ts);
+      if (!gfc_convert_boz (rhs, &lhs->ts))
+	return false;
       if ((rc = gfc_range_check (rhs)) != ARITH_OK)
 	{
 	  if (rc == ARITH_UNDERFLOW)
