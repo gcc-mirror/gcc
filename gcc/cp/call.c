@@ -861,14 +861,7 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
   else if (fcode == VECTOR_TYPE && tcode == VECTOR_TYPE
 	   && vector_types_convertible_p (from, to, false))
     return build_conv (ck_std, to, conv);
-  /* A derived-to-base conversion sequence is a user-defined conversion
-     because it involves a constructor call, even though it has the rank of
-     a standard conversion, so we don't consider it if we aren't allowing
-     user-defined conversions.  But if we're binding directly to a
-     reference, it's only a pointer conversion.  */
-  else if ((!(flags & LOOKUP_NO_CONVERSION)
-	    || (flags & LOOKUP_NO_TEMP_BIND))
-	   && IS_AGGR_TYPE (to) && IS_AGGR_TYPE (from)
+  else if (IS_AGGR_TYPE (to) && IS_AGGR_TYPE (from)
 	   && is_properly_derived_from (from, to))
     {
       if (conv->kind == ck_rvalue)
