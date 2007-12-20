@@ -275,6 +275,20 @@ eat_spaces (st_parameter_dt *dtp)
 }
 
 
+/* This function reads characters through to the end of the current line and
+   just ignores them.  */
+
+static void
+eat_line (st_parameter_dt *dtp)
+{
+  char c;
+  if (!is_internal_unit (dtp))
+    do
+      c = next_char (dtp);
+    while (c != '\n');
+}
+
+
 /* Skip over a separator.  Technically, we don't always eat the whole
    separator.  This is because if we've processed the last input item,
    then a separator is unnecessary.  Plus the fact that operating
@@ -328,7 +342,14 @@ eat_separator (st_parameter_dt *dtp)
       if (dtp->u.p.namelist_mode)
 	{
 	  do
-	    c = next_char (dtp);
+	    {
+	      c = next_char (dtp);
+	      if (c == '!')
+		{
+		  eat_line (dtp);
+		  c = next_char (dtp);
+		}
+	    }
 	  while (c == '\n' || c == '\r' || c == ' ');
 	  unget_char (dtp, c);
 	}
@@ -404,20 +425,6 @@ finish_separator (st_parameter_dt *dtp)
       unget_char (dtp, c);
       break;
     }
-}
-
-
-/* This function reads characters through to the end of the current line and
-   just ignores them.  */
-
-static void
-eat_line (st_parameter_dt *dtp)
-{
-  char c;
-  if (!is_internal_unit (dtp))
-    do
-      c = next_char (dtp);
-    while (c != '\n');
 }
 
 

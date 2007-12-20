@@ -1,3 +1,9 @@
+2007-12-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34530
+	* io/list_read.c (eat_line): Move up in the file.
+	(eat_separator): In namelist mode, skip over comment lines.
+
 2007-12-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/34427
