@@ -1,3 +1,8 @@
+2007-12-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/34525
+	* pa.c (legitimize_pic_address): Force function labels into memory.
+
 2007-12-19  Zdenek Dvorak  <ook@ucw.cz>
 
 	* omp-low.c (build_omp_regions_1): Recognition of combined parallels

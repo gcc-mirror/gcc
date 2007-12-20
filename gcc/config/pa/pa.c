@@ -694,6 +694,10 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
       tmp_reg = ((reload_in_progress || reload_completed)
 		 ? reg : gen_reg_rtx (Pmode));
 
+      /* Force function labels into memory.  */
+      if (function_label_operand (orig, mode))
+	orig = force_const_mem (mode, orig);
+
       emit_move_insn (tmp_reg,
 		      gen_rtx_PLUS (word_mode, pic_offset_table_rtx,
 				    gen_rtx_HIGH (word_mode, orig)));
