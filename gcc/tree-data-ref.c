@@ -959,17 +959,17 @@ affine_fn_op (enum tree_code op, affine_fn fna, affine_fn fnb)
   ret = VEC_alloc (tree, heap, m);
   for (i = 0; i < n; i++)
     VEC_quick_push (tree, ret,
-		    fold_build2 (op, integer_type_node,
+		    fold_build2 (op, long_integer_type_node,
 				 VEC_index (tree, fna, i), 
 				 VEC_index (tree, fnb, i)));
 
   for (; VEC_iterate (tree, fna, i, coef); i++)
     VEC_quick_push (tree, ret,
-		    fold_build2 (op, integer_type_node,
+		    fold_build2 (op, long_integer_type_node,
 				 coef, integer_zero_node));
   for (; VEC_iterate (tree, fnb, i, coef); i++)
     VEC_quick_push (tree, ret,
-		    fold_build2 (op, integer_type_node,
+		    fold_build2 (op, long_integer_type_node,
 				 integer_zero_node, coef));
 
   return ret;
@@ -1490,9 +1490,9 @@ analyze_ziv_subscript (tree chrec_a,
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "(analyze_ziv_subscript \n");
   
-  chrec_a = chrec_convert (integer_type_node, chrec_a, NULL_TREE);
-  chrec_b = chrec_convert (integer_type_node, chrec_b, NULL_TREE);
-  difference = chrec_fold_minus (integer_type_node, chrec_a, chrec_b);
+  chrec_a = chrec_convert (long_integer_type_node, chrec_a, NULL_TREE);
+  chrec_b = chrec_convert (long_integer_type_node, chrec_b, NULL_TREE);
+  difference = chrec_fold_minus (long_integer_type_node, chrec_a, chrec_b);
   
   switch (TREE_CODE (difference))
     {
@@ -1620,10 +1620,10 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
   bool value0, value1, value2;
   tree difference, tmp;
 
-  chrec_a = chrec_convert (integer_type_node, chrec_a, NULL_TREE);
-  chrec_b = chrec_convert (integer_type_node, chrec_b, NULL_TREE);
+  chrec_a = chrec_convert (long_integer_type_node, chrec_a, NULL_TREE);
+  chrec_b = chrec_convert (long_integer_type_node, chrec_b, NULL_TREE);
   difference = chrec_fold_minus 
-    (integer_type_node, initial_condition (chrec_b), chrec_a);
+    (long_integer_type_node, initial_condition (chrec_b), chrec_a);
   
   if (!chrec_is_positive (initial_condition (difference), &value0))
     {
@@ -1666,9 +1666,9 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 		      struct loop *loop = get_chrec_loop (chrec_b);
 
 		      *overlaps_a = conflict_fn (1, affine_fn_cst (integer_zero_node));
-		      tmp = fold_build2 (EXACT_DIV_EXPR, integer_type_node,
+		      tmp = fold_build2 (EXACT_DIV_EXPR, long_integer_type_node,
 					 fold_build1 (ABS_EXPR,
-						      integer_type_node,
+						      long_integer_type_node,
 						      difference),
 					 CHREC_RIGHT (chrec_b));
 		      *overlaps_b = conflict_fn (1, affine_fn_cst (tmp));
@@ -1749,7 +1749,7 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 
 		      *overlaps_a = conflict_fn (1, affine_fn_cst (integer_zero_node));
 		      tmp = fold_build2 (EXACT_DIV_EXPR,
-					 integer_type_node, difference, 
+					 long_integer_type_node, difference, 
 					 CHREC_RIGHT (chrec_b));
 		      *overlaps_b = conflict_fn (1, affine_fn_cst (tmp));
 		      *last_conflicts = integer_one_node;
@@ -2450,9 +2450,9 @@ analyze_miv_subscript (tree chrec_a,
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "(analyze_miv_subscript \n");
 
-  chrec_a = chrec_convert (integer_type_node, chrec_a, NULL_TREE);
-  chrec_b = chrec_convert (integer_type_node, chrec_b, NULL_TREE);
-  difference = chrec_fold_minus (integer_type_node, chrec_a, chrec_b);
+  chrec_a = chrec_convert (long_integer_type_node, chrec_a, NULL_TREE);
+  chrec_b = chrec_convert (long_integer_type_node, chrec_b, NULL_TREE);
+  difference = chrec_fold_minus (long_integer_type_node, chrec_a, chrec_b);
   
   if (eq_evolutions_p (chrec_a, chrec_b))
     {
@@ -3400,9 +3400,9 @@ omega_setup_subscript (tree access_fun_a, tree access_fun_b,
 		       omega_pb pb, bool *maybe_dependent)
 {
   int eq;
-  tree fun_a = chrec_convert (integer_type_node, access_fun_a, NULL_TREE);
-  tree fun_b = chrec_convert (integer_type_node, access_fun_b, NULL_TREE);
-  tree difference = chrec_fold_minus (integer_type_node, fun_a, fun_b);
+  tree fun_a = chrec_convert (long_integer_type_node, access_fun_a, NULL_TREE);
+  tree fun_b = chrec_convert (long_integer_type_node, access_fun_b, NULL_TREE);
+  tree difference = chrec_fold_minus (long_integer_type_node, fun_a, fun_b);
 
   /* When the fun_a - fun_b is not constant, the dependence is not
      captured by the classic distance vector representation.  */
@@ -3417,7 +3417,7 @@ omega_setup_subscript (tree access_fun_a, tree access_fun_b,
       return true;
     }
 
-  fun_b = chrec_fold_multiply (integer_type_node, fun_b, 
+  fun_b = chrec_fold_multiply (long_integer_type_node, fun_b, 
 			       integer_minus_one_node);
 
   eq = omega_add_zero_eq (pb, omega_black);

@@ -1,3 +1,11 @@
+2007-12-19  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/34413
+	* tree-data-ref.c (affine_fn_op, analyze_ziv_subscript,
+	analyze_siv_subscript_cst_affine, analyze_miv_subscript,
+	omega_setup_subscript): Use long_integer_type_node instead of
+	integer_type_node.
+
 2007-12-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/34525
