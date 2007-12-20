@@ -965,7 +965,9 @@ java_classify_record (tree type)
   if (! CLASS_P (type))
     return RECORD_IS_STRUCT;
 
-  if (CLASS_INTERFACE (TYPE_NAME (type)))
+  /* ??? GDB does not support DW_TAG_interface_type as of December,
+     2007.  Re-enable this at a later time.  */
+  if (0 && CLASS_INTERFACE (TYPE_NAME (type)))
     return RECORD_IS_INTERFACE;
 
   return RECORD_IS_CLASS;
