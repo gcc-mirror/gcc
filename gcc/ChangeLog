@@ -1,3 +1,10 @@
+2007-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34459
+	* tree-ssa-dse.c (dse_optimize_stmt): Don't eliminate store if
+	USE_STMT not only stores into the same object as STMT, but might
+	read it too.
+
 2007-12-19  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/34413
