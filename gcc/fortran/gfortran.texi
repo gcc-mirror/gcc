@@ -1115,8 +1115,9 @@ DATA statements and the four intrinsic functions allowed by Fortran 2003.
 In DATA statements, in direct assignments, where the right-hand side
 only contains a BOZ literal constant, and for old-style initializers of
 the form @code{integer i /o'0173'/}, the constant is transferred
-as if @code{TRANSFER} had been used. In all other cases, the BOZ literal
-constant is converted to an @code{INTEGER} value with
+as if @code{TRANSFER} had been used; for @code{COMPLEX} numbers, only
+the real part is initialized unless @code{CMPLX} is used. In all other
+cases, the BOZ literal constant is converted to an @code{INTEGER} value with
 the largest decimal representation.  This value is then converted
 numerically to the type and kind of the variable in question.
 (For instance @code{real :: r = b'0000001' + 1} initializes @code{r}

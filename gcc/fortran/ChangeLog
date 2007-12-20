@@ -1,3 +1,16 @@
+2007-12-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34482
+	* gfortran.texi (BOZ): Document behavior for complex
+	numbers.
+	* target-memory.h (gfc_convert_boz): Update prototype.
+	* target-memory.c (gfc_convert_boz): Add error check
+	and convert BOZ to smallest possible bit size.
+	* resolve.c (resolve_ordinary_assign): Check return value.
+	* expr.c (gfc_check_assign): Ditto.
+	* simplify.c (simplify_cmplx, gfc_simplify_dble,
+	gfc_simplify_float, gfc_simplify_real): Ditto.
+
 2007-12-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/34325

@@ -781,7 +781,8 @@ simplify_cmplx (const char *name, gfc_expr *x, gfc_expr *y, int kind)
       gfc_typespec ts;
       ts.kind = result->ts.kind;
       ts.type = BT_REAL;
-      gfc_convert_boz (x, &ts);
+      if (!gfc_convert_boz (x, &ts))
+	return &gfc_bad_expr;
       mpfr_set (result->value.complex.r, x->value.real, GFC_RND_MODE);
     }
 
@@ -790,7 +791,8 @@ simplify_cmplx (const char *name, gfc_expr *x, gfc_expr *y, int kind)
       gfc_typespec ts;
       ts.kind = result->ts.kind;
       ts.type = BT_REAL;
-      gfc_convert_boz (y, &ts);
+      if (!gfc_convert_boz (y, &ts))
+	return &gfc_bad_expr;
       mpfr_set (result->value.complex.i, y->value.real, GFC_RND_MODE);
     }
 
@@ -961,7 +963,8 @@ gfc_simplify_dble (gfc_expr *e)
       ts.type = BT_REAL;
       ts.kind = gfc_default_double_kind;
       result = gfc_copy_expr (e);
-      gfc_convert_boz (result, &ts);
+      if (!gfc_convert_boz (result, &ts))
+	return &gfc_bad_expr;
     }
 
   return range_check (result, "DBLE");
@@ -1150,7 +1153,8 @@ gfc_simplify_float (gfc_expr *a)
       ts.kind = gfc_default_real_kind;
 
       result = gfc_copy_expr (a);
-      gfc_convert_boz (result, &ts);
+      if (!gfc_convert_boz (result, &ts))
+	return &gfc_bad_expr;
     }
   else
     result = gfc_int2real (a, gfc_default_real_kind);
@@ -3019,7 +3023,8 @@ gfc_simplify_real (gfc_expr *e, gfc_expr *k)
       ts.type = BT_REAL;
       ts.kind = kind;
       result = gfc_copy_expr (e);
-      gfc_convert_boz (result, &ts);
+      if (!gfc_convert_boz (result, &ts))
+	return &gfc_bad_expr;
     }
   return range_check (result, "REAL");
 }
