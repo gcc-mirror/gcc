@@ -1,3 +1,9 @@
+2007-12-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/34111
+	* call.c (standard_conversion): Derived-to-base is considered a
+	standard conversion.
+
 2007-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34513
