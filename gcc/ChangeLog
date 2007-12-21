@@ -1,3 +1,10 @@
+2007-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/34003
+	* c-decl.c (merge_decls): Copy RTL from olddecl to newdecl.
+	* config/pa/pa.c (pa_encode_section_info): If !first, preserve
+	SYMBOL_FLAG_REFERENCED flag.
+
 2007-12-19  Kaz Kylheku  <kaz@zeugmasystems.com>
 
 	PR rtl-optimization/34456

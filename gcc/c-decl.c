@@ -1644,6 +1644,9 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	  }
     }
 
+  /* Keep the old rtl since we can safely use it.  */
+  if (HAS_RTL_P (olddecl))
+    COPY_DECL_RTL (olddecl, newdecl);
 
   /* Merge the type qualifiers.  */
   if (TREE_READONLY (newdecl))
