@@ -1,4 +1,4 @@
-2007-12-17  Jakub Jelinek  <jakub@redhat.com>
+2007-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/34003
 	* gcc.dg/pr34003-1.c: New test.
