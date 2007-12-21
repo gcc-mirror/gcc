@@ -1,3 +1,13 @@
+2007-12-21  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* tree-data-ref.c (signed_type_for_types): New.
+	(affine_fn_op): Use signed_type_for_types and signed_type_for instead
+	of long_integer_type_node.
+	(analyze_ziv_subscript): Same.
+	(analyze_siv_subscript_cst_affine): Same.
+	(analyze_miv_subscript): Same.
+	(omega_setup_subscript): Same.
+
 2007-12-21  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* config/mips/mips.c (mips_emit_loadgp): Replace gen_* calls with
