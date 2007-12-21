@@ -1,3 +1,18 @@
+2007-12-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34438
+	* trans-decl.c (gfc_finish_var_decl): Do not mark derived types
+	with default initializers as TREE_STATIC unless they are in the
+	main program scope.
+	(gfc_get_symbol_decl): Pass derived types with a default
+	initializer to gfc_defer_symbol_init.
+	(init_default_dt): Apply default initializer to a derived type.
+	(init_intent_out_dt): Call init_default_dt.
+	(gfc_trans_deferred_vars): Ditto.
+
+	* module.c (read_module): Check sym->module is there before
+	using it in a string comparison.
+
 2007-12-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34482
