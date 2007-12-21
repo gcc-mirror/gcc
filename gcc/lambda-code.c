@@ -1702,12 +1702,12 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
   size_t depth = 0;
   VEC(tree,heap) *new_ivs = NULL;
   tree oldiv;
-  
   block_stmt_iterator bsi;
+
+  transform = lambda_trans_matrix_inverse (transform);
 
   if (dump_file)
     {
-      transform = lambda_trans_matrix_inverse (transform);
       fprintf (dump_file, "Inverse of transformation matrix:\n");
       print_lambda_trans_matrix (dump_file, transform);
     }
