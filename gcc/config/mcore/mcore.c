@@ -2729,7 +2729,7 @@ mcore_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED)
   
   mode = TYPE_MODE (valtype);
 
-  PROMOTE_MODE (mode, unsigned_p, NULL);
+  mode = promote_mode (valtype, mode, &unsigned_p, 1);
   
   return handle_structs_in_regs (mode, valtype, FIRST_RET_REG);
 }
