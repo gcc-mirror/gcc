@@ -1,3 +1,9 @@
+2007-12-21  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* gcc.target/mips/mips.exp (setup_mips_tests): Fix _MIPS_SIM
+	conditions.
+	(dg-mips-options): Treat -march=24k* as a 32-bit option.
+
 2007-12-20  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* gcc.dg/torture/builtin-modf-1.c: Pass "-funsafe-math-optimizations 
