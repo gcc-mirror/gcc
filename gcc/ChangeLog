@@ -1,5 +1,9 @@
 2007-12-21  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* lambda-code.c (lambda_loopnest_to_gcc_loopnest): Fix typo.
+
+2007-12-21  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-data-ref.c (signed_type_for_types): New.
 	(affine_fn_op): Use signed_type_for_types and signed_type_for instead
 	of long_integer_type_node.
