@@ -1,3 +1,8 @@
+2007-12-20  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	* gcc.dg/torture/builtin-modf-1.c: Pass "-funsafe-math-optimizations 
+	-fsigned-zeros -fno-associative-math" on powerpc-*-darwin*.
+
 2007-12-20  Jason Merrill  <jason@redhat.com>
 
 	* gcc.dg/overload/arg[14].C: Remove expected errors.
