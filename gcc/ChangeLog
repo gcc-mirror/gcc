@@ -1,3 +1,9 @@
+2007-12-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/34525
+	* pa.c (legitimize_pic_address): Emit insn to load function label
+	forced to memory.
+
 2007-12-21  Andrew Pinski  <pinskia@gmail.com>
 	Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
