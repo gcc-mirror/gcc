@@ -1,3 +1,7 @@
+2007-12-20  Jason Merrill  <jason@redhat.com>
+
+	* gcc.dg/overload/arg[14].C: Remove expected errors.
+
 2007-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34459
