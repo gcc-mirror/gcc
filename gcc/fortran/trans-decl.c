@@ -517,8 +517,15 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
       TREE_STATIC (decl) = 1;
     }
 
-  if ((sym->attr.save || sym->attr.data || sym->value)
-      && !sym->attr.use_assoc)
+  /* Derived types are a bit peculiar because of the possibility of
+     a default initializer; this must be applied each time the variable
+     comes into scope it therefore need not be static.  These variables
+     are SAVE_NONE but have an initializer.  Otherwise explicitly
+     intitialized variables are SAVE_IMPLICIT and explicitly saved are
+     SAVE_EXPLICIT.  */
+  if (!sym->attr.use_assoc
+	&& (sym->attr.save != SAVE_NONE || sym->attr.data
+	      || (sym->value && sym->ns->proc_name->attr.is_main_program)))
     TREE_STATIC (decl) = 1;
 
   if (sym->attr.volatile_)
@@ -994,6 +1001,14 @@ gfc_get_symbol_decl (gfc_symbol * sym)
     }
 
   if (sym->ts.type == BT_DERIVED && sym->ts.derived->attr.alloc_comp)
+    gfc_defer_symbol_init (sym);
+  /* This applies a derived type default initializer.  */
+  else if (sym->ts.type == BT_DERIVED
+	     && sym->attr.save == SAVE_NONE
+	     && !sym->attr.data
+	     && !sym->attr.allocatable
+	     && (sym->value && !sym->ns->proc_name->attr.is_main_program)
+	     && !sym->attr.use_assoc)
     gfc_defer_symbol_init (sym);
 
   gfc_finish_var_decl (decl, sym);
@@ -2572,42 +2587,52 @@ gfc_trans_vla_type_sizes (gfc_symbol *sym, stmtblock_t *body)
 }
 
 
+/* Initialize a derived type by building an lvalue from the symbol
+   and using trans_assignment to do the work.  */
+static tree
+init_default_dt (gfc_symbol * sym, tree body)
+{
+  stmtblock_t fnblock;
+  gfc_expr *e;
+  tree tmp;
+  tree present;
+
+  gfc_init_block (&fnblock);
+  gcc_assert (!sym->attr.allocatable);
+  gfc_set_sym_referenced (sym);
+  e = gfc_lval_expr_from_sym (sym);
+  tmp = gfc_trans_assignment (e, sym->value, false);
+  if (sym->attr.dummy)
+    {
+      present = gfc_conv_expr_present (sym);
+      tmp = build3 (COND_EXPR, TREE_TYPE (tmp), present,
+		    tmp, build_empty_stmt ());
+    }
+  gfc_add_expr_to_block (&fnblock, tmp);
+  gfc_free_expr (e);
+  gfc_add_expr_to_block (&fnblock, body);
+  return gfc_finish_block (&fnblock);
+}
+
+
 /* Initialize INTENT(OUT) derived type dummies.  */
 static tree
 init_intent_out_dt (gfc_symbol * proc_sym, tree body)
 {
   stmtblock_t fnblock;
   gfc_formal_arglist *f;
-  gfc_expr *tmpe;
-  tree tmp;
-  tree present;
 
   gfc_init_block (&fnblock);
-
   for (f = proc_sym->formal; f; f = f->next)
-    {
-      if (f->sym && f->sym->attr.intent == INTENT_OUT
-	    && f->sym->ts.type == BT_DERIVED
-	    && !f->sym->ts.derived->attr.alloc_comp
-	    && f->sym->value)
-	{
-	  gcc_assert (!f->sym->attr.allocatable);
-	  gfc_set_sym_referenced (f->sym);
-	  tmpe = gfc_lval_expr_from_sym (f->sym);
-	  tmp = gfc_trans_assignment (tmpe, f->sym->value, false);
-
-	  present = gfc_conv_expr_present (f->sym);
-	  tmp = build3 (COND_EXPR, TREE_TYPE (tmp), present,
-			tmp, build_empty_stmt ());
-	  gfc_add_expr_to_block (&fnblock, tmp);
-	  gfc_free_expr (tmpe);
-	}
-    }
+    if (f->sym && f->sym->attr.intent == INTENT_OUT
+	  && f->sym->ts.type == BT_DERIVED
+	  && !f->sym->ts.derived->attr.alloc_comp
+	  && f->sym->value)
+      body = init_default_dt (f->sym, body);
 
   gfc_add_expr_to_block (&fnblock, body);
   return gfc_finish_block (&fnblock);
 }
-
 
 
 /* Generate function entry and exit code, and add it to the function body.
@@ -2698,6 +2723,11 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 		      seen_trans_deferred_array = true;
 		      fnbody = gfc_trans_deferred_array (sym, fnbody);
 		    }
+		  else if (sym->ts.type == BT_DERIVED
+			     && sym->value
+			     && !sym->attr.data
+			     && sym->attr.save == SAVE_NONE)
+		    fnbody = init_default_dt (sym, fnbody);
 
 		  gfc_get_backend_locus (&loc);
 		  gfc_set_backend_locus (&sym->declared_at);
@@ -2753,6 +2783,11 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 	  fnbody = gfc_trans_assign_aux_var (sym, fnbody);
 	  gfc_set_backend_locus (&loc);
 	}
+      else if (sym->ts.type == BT_DERIVED
+		 && sym->value
+		 && !sym->attr.data
+		 && sym->attr.save == SAVE_NONE)
+	fnbody = init_default_dt (sym, fnbody);
       else
 	gcc_unreachable ();
     }

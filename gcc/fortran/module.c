@@ -3732,6 +3732,7 @@ read_module (void)
 	      if (st && only_flag
 		     && !st->n.sym->attr.use_only
 		     && !st->n.sym->attr.use_rename
+		     && st->n.sym->module
 		     && strcmp (st->n.sym->module, module_name) == 0)
 		st->name = gfc_get_string ("hidden.%s", name);
 
