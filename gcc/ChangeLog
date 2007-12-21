@@ -1,3 +1,14 @@
+2007-12-21  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* config/mips/mips.c (mips_emit_loadgp): Replace gen_* calls with
+	separate gen_*_si and gen_*_di calls.  Pass pic_offset_table_rtx
+	as the first argument.
+	* config/mips/mips.md (loadgp_newabi, loadgp_absolute)
+	(loadgp_rtp): Rename to...
+	(loadgp_newabi_<mode>, loadgp_absolute<mode>, loadgp_rtp<mode>):
+	...these.  Add modes to all operands.  Add the target register
+	as an operand.  Combine loadgp_rtp<mode> with its splitter.
+
 2007-12-20  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.md (fix_return_addr): Remove.
