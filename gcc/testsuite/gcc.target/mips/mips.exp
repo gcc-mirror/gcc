@@ -93,11 +93,11 @@ proc setup_mips_tests {} {
 	#endif
 	#if !defined _MIPS_SIM
 	const char *abi = "eabi";
-	#elif _MIPS_SIM=_ABIO32
+	#elif _MIPS_SIM==_ABIO32
 	const char *abi = "32";
-	#elif _MIPS_SIM=_ABIO64
+	#elif _MIPS_SIM==_ABIO64
 	const char *abi = "o64";
-	#elif _MIPS_SIM=_ABIN32
+	#elif _MIPS_SIM==_ABIN32
 	const char *abi = "n32";
 	#else
 	const char *abi = "64";
@@ -242,6 +242,7 @@ proc dg-mips-options {args} {
 	    -mips[12] -
 	    -mips32* -
 	    -march=mips32* -
+	    -march=24k* -
 	    -mabi=32 -
 	    -mgp32 {
 		set mips_new_gp 32
