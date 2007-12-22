@@ -1,5 +1,7 @@
 2007-12-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* pa.c (hppa_legitimize_address): Use INT14_OK_STRICT in mask selection.
+
 	PR target/34525
 	* pa.c (legitimize_pic_address): Emit insn to load function label
 	forced to memory.
