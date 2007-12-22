@@ -1,3 +1,7 @@
+2007-12-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (hppa_legitimize_address): Use INT14_OK_STRICT in mask selection.
+
 2007-12-19  Kaz Kylheku  <kaz@zeugmasystems.com>
 
 	PR rtl-optimization/34456
