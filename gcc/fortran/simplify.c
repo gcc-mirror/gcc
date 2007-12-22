@@ -3128,7 +3128,9 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  if (len || mpz_sgn (e->ts.cl->length->value.integer) != 0)
+  if (len || 
+      (e->ts.cl->length && 
+       mpz_sgn (e->ts.cl->length->value.integer)) != 0)
     {
       const char *res = gfc_extract_int (n, &ncop);
       gcc_assert (res == NULL);
