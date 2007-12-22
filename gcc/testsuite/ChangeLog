@@ -1,3 +1,8 @@
+2007-12-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/34540
+	* gfortran.dg/shift-kind_2.f90: New test.
+
 2007-12-21  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR target/8835
