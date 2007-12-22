@@ -1,3 +1,8 @@
+2007-12-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/34549
+	* cshift_shift_real_1.f90:  New test.
+
 2007-12-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/34540

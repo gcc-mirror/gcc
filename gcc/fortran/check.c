@@ -853,6 +853,9 @@ gfc_check_cshift (gfc_expr *array, gfc_expr *shift, gfc_expr *dim)
   if (array_check (array, 0) == FAILURE)
     return FAILURE;
 
+  if (type_check (shift, 1, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
   if (array->rank == 1)
     {
       if (scalar_check (shift, 1) == FAILURE)
