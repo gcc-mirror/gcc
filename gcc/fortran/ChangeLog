@@ -1,3 +1,10 @@
+2007-12-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/34540
+	* iresolve.c (gfc_resolve_cshift): Take optional dim path
+	only if the argument is an optional itself.
+	* iresolve.c (gfc_resolve_eoshift): Same.
+
 2007-12-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34438
