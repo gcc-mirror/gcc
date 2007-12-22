@@ -1,3 +1,7 @@
+2007-12-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/pack2.adb: New test.
+
 2007-12-22  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/34559

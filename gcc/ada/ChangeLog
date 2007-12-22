@@ -1,3 +1,9 @@
+2007-12-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* trans.c (call_to_gnu): Make the temporary for non-addressable
+	In parameters passed by reference.
+	(addressable_p): Return true for STRING_CST and CALL_EXPR.
+
 2007-12-19  Robert Dewar  <dewar@adacore.com>
 
 	* g-expect-vms.adb, g-expect.adb, s-poosiz.adb: 

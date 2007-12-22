@@ -2089,80 +2089,77 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
       tree gnu_actual;
 
       /* If it's possible we may need to use this expression twice, make sure
-	 than any side-effects are handled via SAVE_EXPRs. Likewise if we need
+	 that any side-effects are handled via SAVE_EXPRs.  Likewise if we need
 	 to force side-effects before the call.
 
 	 ??? This is more conservative than we need since we don't need to do
-	 this for pass-by-ref with no conversion. If we are passing a
-	 non-addressable Out or In Out parameter by reference, pass the address
-	 of a copy and set up to copy back out after the call.  */
+	 this for pass-by-ref with no conversion.  */
       if (Ekind (gnat_formal) != E_In_Parameter)
+	gnu_name = gnat_stabilize_reference (gnu_name, true);
+
+      /* If we are passing a non-addressable parameter by reference, pass the
+	 address of a copy.  In the Out or In Out case, set up to copy back
+	 out after the call.  */
+      if (!addressable_p (gnu_name)
+	  && gnu_formal
+	  && (DECL_BY_REF_P (gnu_formal)
+	      || (TREE_CODE (gnu_formal) == PARM_DECL
+		  && (DECL_BY_COMPONENT_PTR_P (gnu_formal)
+		      || (DECL_BY_DESCRIPTOR_P (gnu_formal))))))
 	{
-	  gnu_name = gnat_stabilize_reference (gnu_name, true);
+	  tree gnu_copy = gnu_name, gnu_temp;
 
-	  if (!addressable_p (gnu_name)
-	      && gnu_formal
-	      && (DECL_BY_REF_P (gnu_formal)
-		  || (TREE_CODE (gnu_formal) == PARM_DECL
-		      && (DECL_BY_COMPONENT_PTR_P (gnu_formal)
-			  || (DECL_BY_DESCRIPTOR_P (gnu_formal))))))
+	  /* If the type is by_reference, a copy is not allowed.  */
+	  if (Is_By_Reference_Type (Etype (gnat_formal)))
+	    post_error
+	      ("misaligned & cannot be passed by reference", gnat_actual);
+
+	  /* For users of Starlet we issue a warning because the
+	     interface apparently assumes that by-ref parameters
+	     outlive the procedure invocation.  The code still
+	     will not work as intended, but we cannot do much
+	     better since other low-level parts of the back-end
+	     would allocate temporaries at will because of the
+	     misalignment if we did not do so here.  */
+	  else if (Is_Valued_Procedure (Entity (Name (gnat_node))))
 	    {
-	      tree gnu_copy = gnu_name;
-	      tree gnu_temp;
+	      post_error
+		("?possible violation of implicit assumption", gnat_actual);
+	      post_error_ne
+		("?made by pragma Import_Valued_Procedure on &", gnat_actual,
+		 Entity (Name (gnat_node)));
+	      post_error_ne ("?because of misalignment of &", gnat_actual,
+			     gnat_formal);
+	    }
 
-	      /* If the type is by_reference, a copy is not allowed.  */
-	      if (Is_By_Reference_Type (Etype (gnat_formal)))
-		post_error
-		  ("misaligned & cannot be passed by reference", gnat_actual);
+	  /* Remove any unpadding on the actual and make a copy.  But if
+	     the actual is a justified modular type, first convert to it.  */
+	  if (TREE_CODE (gnu_name) == COMPONENT_REF
+	      && ((TREE_CODE (TREE_TYPE (TREE_OPERAND (gnu_name, 0)))
+		   == RECORD_TYPE)
+		  && (TYPE_IS_PADDING_P
+		      (TREE_TYPE (TREE_OPERAND (gnu_name, 0))))))
+	    gnu_name = gnu_copy = TREE_OPERAND (gnu_name, 0);
 
-	      /* For users of Starlet we issue a warning because the
-		 interface apparently assumes that by-ref parameters
-		 outlive the procedure invocation.  The code still
-		 will not work as intended, but we cannot do much
-		 better since other low-level parts of the back-end
-		 would allocate temporaries at will because of the
-		 misalignment if we did not do so here.  */
+	  else if (TREE_CODE (gnu_name_type) == RECORD_TYPE
+		   && (TYPE_JUSTIFIED_MODULAR_P (gnu_name_type)))
+	    gnu_name = convert (gnu_name_type, gnu_name);
 
-	      else if (Is_Valued_Procedure (Entity (Name (gnat_node))))
-		{
-		  post_error
-		    ("?possible violation of implicit assumption",
-		     gnat_actual);
-		  post_error_ne
-		    ("?made by pragma Import_Valued_Procedure on &",
-		     gnat_actual, Entity (Name (gnat_node)));
-		  post_error_ne
-		    ("?because of misalignment of &",
-		     gnat_actual, gnat_formal);
-		}
+	  /* Make a SAVE_EXPR to both properly account for potential side
+	     effects and handle the creation of a temporary copy.  Special
+	     code in gnat_gimplify_expr ensures that the same temporary is
+	     used as the actual and copied back after the call if needed.  */
+	  gnu_name = build1 (SAVE_EXPR, TREE_TYPE (gnu_name), gnu_name);
+	  TREE_SIDE_EFFECTS (gnu_name) = 1;
+	  TREE_INVARIANT (gnu_name) = 1;
 
-	      /* Remove any unpadding on the actual and make a copy.  But if
-		 the actual is a justified modular type, first convert
-		 to it.  */
-	      if (TREE_CODE (gnu_name) == COMPONENT_REF
-		  && ((TREE_CODE (TREE_TYPE (TREE_OPERAND (gnu_name, 0)))
-		       == RECORD_TYPE)
-		      && (TYPE_IS_PADDING_P
-			  (TREE_TYPE (TREE_OPERAND (gnu_name, 0))))))
-		gnu_name = gnu_copy = TREE_OPERAND (gnu_name, 0);
-	      else if (TREE_CODE (gnu_name_type) == RECORD_TYPE
-		       && (TYPE_JUSTIFIED_MODULAR_P (gnu_name_type)))
-		gnu_name = convert (gnu_name_type, gnu_name);
-
-	      /* Make a SAVE_EXPR to both properly account for potential side
-		 effects and handle the creation of a temporary copy.  Special
-		 code in gnat_gimplify_expr ensures that the same temporary is
-		 used as the actual and copied back after the call.  */
-	      gnu_actual = save_expr (gnu_name);
-
-	      /* Set up to move the copy back to the original.  */
-	      gnu_temp = build_binary_op (MODIFY_EXPR, NULL_TREE,
-					  gnu_copy, gnu_actual);
+	  /* Set up to move the copy back to the original.  */
+	  if (Ekind (gnat_formal) != E_In_Parameter)
+	    {
+	      gnu_temp = build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_copy,
+					  gnu_name);
 	      set_expr_location_from_node (gnu_temp, gnat_actual);
 	      append_to_statement_list (gnu_temp, &gnu_after_list);
-
-	      /* Account for next statement just below.  */
-	      gnu_name = gnu_actual;
 	    }
 	}
 
@@ -2222,7 +2219,8 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	 copied in. Otherwise, look at the PARM_DECL to see if it is passed by
 	 reference. */
       if (gnu_formal
-	  && TREE_CODE (gnu_formal) == PARM_DECL && DECL_BY_REF_P (gnu_formal))
+	  && TREE_CODE (gnu_formal) == PARM_DECL
+	  && DECL_BY_REF_P (gnu_formal))
 	{
 	  if (Ekind (gnat_formal) != E_In_Parameter)
 	    {
@@ -2250,32 +2248,13 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 				      gnu_actual);
 	    }
 
-	  /* Otherwise, if we have a non-addressable COMPONENT_REF of a
-	     variable-size type see if it's doing a unpadding operation.  If
-	     so, remove that operation since we have no way of allocating the
-	     required temporary.  */
-	  if (TREE_CODE (gnu_actual) == COMPONENT_REF
-	      && !TREE_CONSTANT (TYPE_SIZE (TREE_TYPE (gnu_actual)))
-	      && (TREE_CODE (TREE_TYPE (TREE_OPERAND (gnu_actual, 0)))
-		  == RECORD_TYPE)
-	      && TYPE_IS_PADDING_P (TREE_TYPE
-				    (TREE_OPERAND (gnu_actual, 0)))
-	      && !addressable_p (gnu_actual))
-	    gnu_actual = TREE_OPERAND (gnu_actual, 0);
-
-	  /* For In parameters, gnu_actual might still not be addressable at
-	     this point and we need the creation of a temporary copy since
-	     this is to be passed by ref.  Resorting to save_expr to force a
-	     SAVE_EXPR temporary creation here is not guaranteed to work
-	     because the actual might be invariant or readonly without side
-	     effects, so we let the gimplifier process this case.  */
-
 	  /* The symmetry of the paths to the type of an entity is broken here
 	     since arguments don't know that they will be passed by ref. */
 	  gnu_formal_type = TREE_TYPE (get_gnu_tree (gnat_formal));
 	  gnu_actual = build_unary_op (ADDR_EXPR, gnu_formal_type, gnu_actual);
 	}
-      else if (gnu_formal && TREE_CODE (gnu_formal) == PARM_DECL
+      else if (gnu_formal
+	       && TREE_CODE (gnu_formal) == PARM_DECL
 	       && DECL_BY_COMPONENT_PTR_P (gnu_formal))
 	{
 	  gnu_formal_type = TREE_TYPE (get_gnu_tree (gnat_formal));
@@ -2299,7 +2278,8 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 				build_unary_op (ADDR_EXPR, NULL_TREE,
 						gnu_actual));
 	}
-      else if (gnu_formal && TREE_CODE (gnu_formal) == PARM_DECL
+      else if (gnu_formal
+	       && TREE_CODE (gnu_formal) == PARM_DECL
 	       && DECL_BY_DESCRIPTOR_P (gnu_formal))
 	{
 	  /* If arg is 'Null_Parameter, pass zero descriptor.  */
@@ -6077,8 +6057,10 @@ addressable_p (tree gnu_expr)
     case UNCONSTRAINED_ARRAY_REF:
     case INDIRECT_REF:
     case CONSTRUCTOR:
+    case STRING_CST:
     case NULL_EXPR:
     case SAVE_EXPR:
+    case CALL_EXPR:
       return true;
 
     case COMPONENT_REF:
