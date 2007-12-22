@@ -1,3 +1,9 @@
+2007-12-22  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/34559
+	* simplify.c (gfc_simplify_repeat): Added safeguard for empty
+	string literals.
+
 2007-12-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/34549
@@ -26,6 +32,7 @@
 	* module.c (read_module): Check sym->module is there before
 	using it in a string comparison.
 
+>>>>>>> .r131138
 2007-12-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34482
