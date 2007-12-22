@@ -1554,6 +1554,16 @@ using non-functional stubs for native method implementations.
 @item --disable-jvmpi
 Disable JVMPI support.
 
+@item --disable-libgcj-bc
+Disable BC ABI compilation of certain parts of libgcj.  By default,
+some portions of libgcj are compiled with @option{-findirect-dispatch}
+@option{-fno-indirect-classes}.  This allows them to be overridden at
+runtime.
+
+If @option{--disable-libgcj-bc} is specified, libgcj is built without
+these options.  This makes it impossible to override portions of
+libgcj at runtime, but can make it easier to statically link to libgcj.
+
 @item --with-ecos
 Enable runtime eCos target support.
 

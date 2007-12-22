@@ -1,3 +1,7 @@
+2007-12-22  David Daney  <ddaney@avtrex.com>
+
+	* doc/install.texi (disable-libgcj-bc): Document new option.
+
 2007-12-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (hppa_legitimize_address): Use INT14_OK_STRICT in mask selection.
