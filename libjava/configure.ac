@@ -514,6 +514,15 @@ AC_ARG_WITH(java-home,
 AM_CONDITIONAL(JAVA_HOME_SET, test ! -z "$JAVA_HOME")
 AC_SUBST(JAVA_HOME)
 
+suppress_libgcj_bc=no
+AC_ARG_ENABLE(libgcj-bc,
+  AS_HELP_STRING([--enable-libgcj-bc],
+                 [enable(default) or disable BC ABI for portions of libgcj]),
+  [if test "$enable_libgcj_bc" = "no"; then
+     suppress_libgcj_bc=yes
+   fi])
+AM_CONDITIONAL(SUPPRESS_LIBGCJ_BC, test "$suppress_libgcj_bc" = "yes")
+
 # What is the native OS API for MinGW?
 AC_ARG_WITH(win32-nlsapi,
   AS_HELP_STRING([--with-win32-nlsapi=ansi or unicows or unicode],

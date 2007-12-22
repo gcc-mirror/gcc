@@ -155,6 +155,12 @@ if USING_GCC
 AM_CFLAGS += $(WARNINGS)
 endif
 
+if SUPPRESS_LIBGCJ_BC
+LIBGCJ_BC_FLAGS =
+else
+LIBGCJ_BC_FLAGS = -findirect-dispatch -fno-indirect-classes
+endif
+
 ## Extra CFLAGS used for JNI C sources shared with GNU Classpath.
 PEDANTIC_CFLAGS = -ansi -pedantic -Wall -Wno-long-long
 

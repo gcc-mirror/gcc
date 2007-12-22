@@ -317,7 +317,9 @@ proc emit_bc_rule {package} {
   if {$package_map($package) == "bc"} {
     puts -nonewline "-fjni "
   }
-  puts "-findirect-dispatch -fno-indirect-classes -c -o $loname @$tname"
+  # Unless bc is disabled with --disable-libgcj-bc, $(LIBGCJ_BC_FLAGS) is:
+  #   -findirect-dispatch -fno-indirect-classes
+  puts "\$(LIBGCJ_BC_FLAGS) -c -o $loname @$tname"
   puts "\t@rm -f $tname"
   puts ""
 
