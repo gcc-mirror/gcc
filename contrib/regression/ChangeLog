@@ -1,5 +1,7 @@
 2007-12-22  Geoff Keating  <geoffk@geoffk.org>
 
+	* btest-gcc.sh (TESTLOGS): Add gfortran, and optionally libgomp.
+
 	* GCC_Regression_Tester.wdgt/widget.html: Mark as HTML 4.01,
 	which it now is, rather than XHTML, which it never was.
 	(<head>): Mark as UTF-8.  Add title.  Move CSS to top of
