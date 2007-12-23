@@ -1,3 +1,16 @@
+2007-12-22  Geoff Keating  <geoffk@geoffk.org>
+
+	* GCC_Regression_Tester.wdgt/widget.html: Mark as HTML 4.01,
+	which it now is, rather than XHTML, which it never was.
+	(<head>): Mark as UTF-8.  Add title.  Move CSS to top of
+	document, specify type.  Mark script as 'defer'.
+	(updateContents): If loaded from HTTP, look for status in same
+	place as widget.
+	(gotContents): Use DOM methods to change text rather than innerHTML.
+	(<body>): Eliminate unnecessary DIV element.
+	* GCC_Regression_Tester.wdgt/Info.plist: Update version, copyright
+	notice.
+
 2006-09-05  Geoffrey Keating  <geoffk@apple.com>
 
 	* btest-gcc.sh: .bad_compare has moved to toplevel from gcc/.
