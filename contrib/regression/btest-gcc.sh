@@ -116,6 +116,7 @@ H_REAL_TARGET=`$SOURCE/config.sub $H_TARGET || exit 1`
 # look at.
 TESTLOGS="gcc/testsuite/gcc/gcc.sum
 gcc/testsuite/g++/g++.sum
+gcc/testsuite/gfortran/gfortran.sum
 gcc/testsuite/objc/objc.sum"
 
 # Build.
@@ -151,6 +152,10 @@ fi
 
 if [ -f $BUILD/$H_TARGET/libjava/testsuite/libjava.sum ] ; then
   TESTLOGS="$TESTLOGS $H_TARGET/libjava/testsuite/libjava.sum"
+fi
+
+if [ -f $BUILD/$H_TARGET/libgomp/testsuite/libgomp.sum ] ; then
+  TESTLOGS="$TESTLOGS $H_TARGET/libgomp/testsuite/libgomp.sum"
 fi
 
 # Test the just-built GCC with the GDB testsuite.
