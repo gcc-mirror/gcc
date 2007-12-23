@@ -1,3 +1,9 @@
+2007-12-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34421
+	* resolve.c (resolve_entries): Add standard error for functions
+	returning characters with different length.
+
 2007-12-23  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/34536 
