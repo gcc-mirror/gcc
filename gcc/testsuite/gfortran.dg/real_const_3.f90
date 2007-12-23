@@ -28,7 +28,7 @@ program main
   write(str,*) 0.0/0.0
   if (trim(adjustl(str)) .ne. 'NaN') call abort
 
-  write(str,*) 1.0/-0.
+  write(str,*) 1.0/(-0.)
   if (trim(adjustl(str)) .ne. '-Infinity') call abort
 
   write(str,*) -2.0/0.
