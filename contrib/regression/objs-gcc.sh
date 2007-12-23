@@ -113,7 +113,7 @@ else
   make install || exit 1
 fi
 
-if [ -x $PREFIX/bin/$TARGET-gdb ] ; then
+if [ -x $PREFIX/bin/$TARGET-gdb -o -x $PREFIX/bin/gdb ] ; then
   mkdir -p $PREFIX/share/gdb-testsuite || exit 1
   cd $SOURCE/gdb/testsuite || exit 1
   find . -print | cpio -pdmu $PREFIX/share/gdb-testsuite || exit 1

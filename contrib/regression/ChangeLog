@@ -1,3 +1,8 @@
+2007-12-23  Geoff Keating  <geoffk@geoffk.org>
+
+	* objs-gcc.sh: Set up the GDB testsuite even if the gdb installed
+	is just called 'gdb'.
+
 2007-12-22  Geoff Keating  <geoffk@geoffk.org>
 
 	* btest-gcc.sh (TESTLOGS): Add gfortran, and optionally libgomp.
