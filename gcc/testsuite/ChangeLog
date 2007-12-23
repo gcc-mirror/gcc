@@ -1,3 +1,10 @@
+2007-12-23  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/34536
+	* gfortran.dg/integer_exponentiation_2.f90: Fixed testcase.
+	* gfortran.dg/real_const_3.f90: Likewise.
+	* gfortran.dg/unary_operator.f90: New test.
+
 2007-12-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/pack2.adb: New test.

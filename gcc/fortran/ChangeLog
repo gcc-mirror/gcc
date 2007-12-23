@@ -1,3 +1,10 @@
+2007-12-23  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/34536 
+	* matchexp.c (match_ext_mult_operand): Print warning for unary 
+	operators following arithmetic ones by default.
+	(match_ext_add_operand): Likewise.
+
 2007-12-22  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/34559

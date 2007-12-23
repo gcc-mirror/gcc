@@ -345,10 +345,15 @@ match_ext_mult_operand (gfc_expr **result)
   if (i == 0)
     return match_mult_operand (result);
 
-  if (gfc_notify_std (GFC_STD_GNU, "Extension: Unary operator following "
-		      "arithmetic operator (use parentheses) at %C")
-      == FAILURE)
-    return MATCH_ERROR;
+  if (gfc_notification_std (GFC_STD_GNU) == ERROR)
+    {
+      gfc_error ("Extension: Unary operator following "
+		 "arithmetic operator (use parentheses) at %C");
+      return MATCH_ERROR;
+    }
+  else
+    gfc_warning ("Extension: Unary operator following "
+		 "arithmetic operator (use parentheses) at %C");
 
   m = match_ext_mult_operand (&e);
   if (m != MATCH_YES)
@@ -449,10 +454,15 @@ match_ext_add_operand (gfc_expr **result)
   if (i == 0)
     return match_add_operand (result);
 
-  if (gfc_notify_std (GFC_STD_GNU, "Extension: Unary operator following "
-		      "arithmetic operator (use parentheses) at %C")
-      == FAILURE)
-    return MATCH_ERROR;
+  if (gfc_notification_std (GFC_STD_GNU) == ERROR)
+    {
+      gfc_error ("Extension: Unary operator following "
+		 "arithmetic operator (use parentheses) at %C");
+      return MATCH_ERROR;
+    }
+  else
+    gfc_warning ("Extension: Unary operator following "
+		"arithmetic operator (use parentheses) at %C");
 
   m = match_ext_add_operand (&e);
   if (m != MATCH_YES)
