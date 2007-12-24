@@ -40,12 +40,11 @@
 #  error TR1 header cannot be included from C++0x header
 #endif
 
-#include <cmath>
-#include <string>
 #include <utility>
 #include <algorithm> // lower_bound
 #include <bits/allocator.h>
 #include <bits/stl_function.h> // equal_to, _Identity, _Select1st
+#include <bits/stringfwd.h>
 #include <tr1/type_traits>
 #include <tr1/functional_hash.h>
 #include <tr1/hashtable.h>

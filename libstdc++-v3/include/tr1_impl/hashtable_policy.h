@@ -425,8 +425,8 @@ namespace __detail
   {
     const unsigned long* __p = std::lower_bound(__prime_list, __prime_list
 						+ _S_n_primes, __n);
-    _M_next_resize = static_cast<std::size_t>(std::ceil(*__p
-							* _M_max_load_factor));
+    _M_next_resize = 
+      static_cast<std::size_t>(__builtin_ceil(*__p * _M_max_load_factor));
     return *__p;
   }
 
@@ -439,8 +439,8 @@ namespace __detail
     const float __min_bkts = __n / _M_max_load_factor;
     const unsigned long* __p = std::lower_bound(__prime_list, __prime_list
 						+ _S_n_primes, __min_bkts);
-    _M_next_resize = static_cast<std::size_t>(std::ceil(*__p
-							* _M_max_load_factor));
+    _M_next_resize =
+      static_cast<std::size_t>(__builtin_ceil(*__p * _M_max_load_factor));
     return *__p;
   }
 
@@ -468,15 +468,14 @@ namespace __detail
 	    const unsigned long* __p =
 	      std::lower_bound(__prime_list, __prime_list + _S_n_primes,
 			       __min_bkts);
-	    _M_next_resize =
-	      static_cast<std::size_t>(std::ceil(*__p * _M_max_load_factor));
+	    _M_next_resize = static_cast<std::size_t>
+	      (__builtin_ceil(*__p * _M_max_load_factor));
 	    return std::make_pair(true, *__p);
 	  }
 	else 
 	  {
-	    _M_next_resize =
-	      static_cast<std::size_t>(std::ceil(__n_bkt
-						 * _M_max_load_factor));
+	    _M_next_resize = static_cast<std::size_t>
+	      (__builtin_ceil(__n_bkt * _M_max_load_factor));
 	    return std::make_pair(false, 0);
 	  }
       }
