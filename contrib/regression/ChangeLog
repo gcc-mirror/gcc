@@ -1,3 +1,7 @@
+2007-12-24  Geoff Keating  <geoffk@geoffk.org>
+
+	* objs-gcc.sh: Revert previous change.
+
 2007-12-23  Geoff Keating  <geoffk@geoffk.org>
 
 	* objs-gcc.sh: Set up the GDB testsuite even if the gdb installed
