@@ -82,7 +82,7 @@ struct shared_and_weak_pools
 
 void* thread_hammer_and_kill(void* opaque_pools)
 {
-  shared_and_weak_pools& pools = *reinterpret_cast<shared_and_weak_pools*>(opaque_pools);
+  shared_and_weak_pools& pools = *static_cast<shared_and_weak_pools*>(opaque_pools);
   // Using the same parameters as in the RNG test cases.
   std::tr1::mersenne_twister<
     unsigned long, 32, 624, 397, 31,
@@ -117,7 +117,7 @@ void* thread_hammer_and_kill(void* opaque_pools)
 
 void* thread_hammer(void* opaque_weak)
 {
-  wp_vector_t& weak_pool = *reinterpret_cast<wp_vector_t*>(opaque_weak);
+  wp_vector_t& weak_pool = *static_cast<wp_vector_t*>(opaque_weak);
   // Using the same parameters as in the RNG test cases.
   std::tr1::mersenne_twister<
     unsigned long, 32, 624, 397, 31,
@@ -165,11 +165,11 @@ test01()
   pthread_attr_init(&tattr);
 
   shared_and_weak_pools pools(obj_pool, weak_pool[0]);
-  pthread_create(threads, &tattr, thread_hammer_and_kill, reinterpret_cast<void*>(&pools));
+  pthread_create(threads, &tattr, thread_hammer_and_kill, static_cast<void*>(&pools));
   for (unsigned int worker = 1; worker < HAMMER_MAX_THREADS; worker++)
     {
       if (pthread_create(&threads[worker], &tattr,
-			 thread_hammer, reinterpret_cast<void*>(&weak_pool[worker])))
+			 thread_hammer, static_cast<void*>(&weak_pool[worker])))
 	std::abort();
     }
   // Wait for threads to complete, then check integrity of reference.

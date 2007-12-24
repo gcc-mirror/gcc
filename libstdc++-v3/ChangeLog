@@ -1,3 +1,10 @@
+2007-12-24  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/tr1/2_general_utilities/shared_ptr/thread/
+	default_weaktoshared.cc: Use static_cast not reinterpret_cast.
+	* testsuite/tr1/2_general_utilities/shared_ptr/thread/
+	mutex_weaktoshared.cc: Likewise.
+
 2007-12-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1_impl/hashtable_policy.h (_Prime_rehash_policy::
