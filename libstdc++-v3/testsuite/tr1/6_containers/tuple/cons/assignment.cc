@@ -1,6 +1,6 @@
 // 2004-09-23 Chris Jefferson <chris@bubblescope.net>
 
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,6 +28,8 @@ using namespace std::tr1;
 int
 main()
 {
+  bool test __attribute__((unused)) = true;
+
   tuple<> ta;
   tuple<> tb;
   ta = tb;

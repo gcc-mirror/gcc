@@ -28,6 +28,6 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include <tr1/tuple>
+#include <tuple>
 
-template class std::tr1::tuple<short, int, double>;
+template class std::tuple<short, int, double>;

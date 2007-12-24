@@ -1,6 +1,6 @@
-// 2004-09-23 Chris Jefferson <chris@bubblescope.net>
+// { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,27 +20,20 @@
 
 // Tuple
 
-#include <tr1/tuple>
+#include <tuple>
 #include <testsuite_hooks.h>
 
-using namespace std::tr1;
+using namespace std;
 
 int
 main()
 {
   bool test __attribute__((unused)) = true;
 
-  int j=1;
-  const int k=2;
-  tuple<int,int &,const int&> a(0,j,k);
-  const tuple<int,int &,const int&> b(1,j,k); 
-  VERIFY(get<0>(a)==0 && get<1>(a)==1 && get<2>(a)==2);
-  get<0>(a)=3;
-  get<1>(a)=4;  
-  VERIFY(get<0>(a)==3 && get<1>(a)==4);
-  VERIFY(j==4);
-  get<1>(b)=5;
-  VERIFY(get<0>(b)==1 && get<1>(b)==5 && get<2>(b)==2);
-  VERIFY(j==5);
+  VERIFY(tuple_size<tuple<> >::value == 0);
+  VERIFY(tuple_size<tuple<int> >::value == 1);
+  VERIFY(tuple_size<tuple<void> >::value == 1);
+  typedef tuple<int,const int&,void> test_tuple1;
+  VERIFY(tuple_size<test_tuple1>::value == 3);
+  VERIFY(tuple_size<tuple<tuple<void> > >::value == 1);
 }
-
