@@ -1,6 +1,6 @@
-// 2004-09-23 Chris Jefferson <chris@bubblescope.net>
+// { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,10 +20,10 @@
 
 // Tuple
 
-#include <tr1/tuple>
+#include <tuple>
 #include <testsuite_hooks.h>
 
-using namespace std::tr1;
+using namespace std;
 
 int
 main()
@@ -43,4 +43,3 @@ main()
   VERIFY(get<0>(b)==1 && get<1>(b)==5 && get<2>(b)==2);
   VERIFY(j==5);
 }
-

@@ -1,6 +1,6 @@
-// 2004-09-23 Chris Jefferson <chris@bubblescope.net>
+// { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,11 +20,10 @@
 
 // Tuple
 
-#include <tr1/tuple>
+#include <tuple>
 #include <testsuite_hooks.h>
 
-using namespace std::tr1;
-using std::pair;
+using namespace std;
 
 // A simple class without conversions to check some things
 struct foo
@@ -103,6 +102,4 @@ main(void)
     tuple_element<0,type3>::type q2(q1);
     tuple_element<9,type3>::type q3(q1);
   }
-  
 }
-

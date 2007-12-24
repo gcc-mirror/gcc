@@ -1,6 +1,6 @@
-// 2004-09-23 Chris Jefferson <chris@bubblescope.net>
+// { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,18 +20,13 @@
 
 // Tuple
 
-#include <tr1/tuple>
+#include <tuple>
 #include <testsuite_hooks.h>
 
-using namespace std::tr1;
-using std::pair;
+using namespace std;
 
-// A simple class without conversions to check some things
-struct foo
-{ };
-
-void
-test_constructors()
+int
+main()
 {
   bool test __attribute__((unused)) = true;
 
@@ -56,53 +51,15 @@ test_constructors()
   // Test different tuple copy constructor
   tuple<int,double> ti(tc);
   tuple<int,double> tj(td);
+  //tuple<int&, int&> tk(tc);
+  tuple<const int&, const int&> tl(tc);
+  tuple<const int&, const int&> tm(tl);
   // Test constructing from a pair
   pair<int,int> pair1(1,1);
   const pair<int,int> pair2(pair1);
-  tuple<int,int> tl(pair1);
-  tuple<int,const int&> tm(pair1);
-  tuple<int,int> tn(pair2);
-  tuple<int,const int&> to(pair2);  
+  tuple<int,int> tn(pair1);
+  tuple<int,const int&> to(pair1);
+  tuple<int,int> tp(pair2);
+  tuple<int,const int&> tq(pair2);  
+  return 0;
 }
-
-int 
-main(void) 
-{
-  //test construction
-  typedef tuple<int,int,int,int,int,int,int,int,int,int> type1;
-  type1 a(0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
-  type1 b(0, 0, 0, 0, 0, 0, 0, 0, 0, 2);
-  type1 c(a);
-  typedef tuple<int,int,int,int,int,int,int,int,int,char> type2;
-  type2 d(0, 0, 0, 0, 0, 0, 0, 0, 0, 3);
-  type1 e(d);
-  typedef tuple<foo,int,int,int,int,int,int,int,int,foo> type3;
-  // get
-  VERIFY(get<9>(a)==1 && get<9>(b)==2);
-  // comparisons
-  VERIFY(a==a && !(a!=a) && a<=a && a>=a && !(a<a) && !(a>a));
-  VERIFY(!(a==b) && a!=b && a<=b && a<b && !(a>=b) && !(a>b));
-  //tie
-  {
-    int i = 0;
-  tie(ignore, ignore, ignore, ignore, ignore, ignore, ignore, ignore, 
-      ignore, i) = a;
-  VERIFY(i == 1);
-  }
-  //test_assignment
-  a=d;
-  a=b;
-  //make_tuple
-  make_tuple(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-  
-  //tuple_size
-  VERIFY(tuple_size<type3>::value == 10);
-  //tuple_element
-  {  
-    foo q1;
-    tuple_element<0,type3>::type q2(q1);
-    tuple_element<9,type3>::type q3(q1);
-  }
-  
-}
-

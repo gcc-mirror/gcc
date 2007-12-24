@@ -1,3 +1,32 @@
+2007-12-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/20_util/tuple/cons/big_tuples.cc: New.
+	* testsuite/20_util/tuple/cons/constructor.cc: Likewise.
+	* testsuite/20_util/tuple/cons/assignment.cc: Likewise.
+	* testsuite/20_util/tuple/tuple_element.cc: Likewise.
+	* testsuite/20_util/tuple/tuple_size.cc: Likewise.
+	* testsuite/20_util/tuple/comparison_operators/comparisons.cc:
+	Likewise.
+	* testsuite/20_util/tuple/element_access/get.cc: Likewise.
+	* testsuite/20_util/tuple/creation_functions/23978.cc: Likewise.
+	* testsuite/20_util/tuple/creation_functions/tie.cc: Likewise.
+	* testsuite/20_util/tuple/creation_functions/make_tuple.cc: Likewise.
+
+	* testsuite/20_util/tuple/requirements/explicit_instantiation.cc:
+	Fix header file and namespace.
+
+	* testsuite/tr1/6_containers/tuple/cons/big_tuples.cc: Minor tweaks.
+	* testsuite/tr1/6_containers/tuple/cons/constructor.cc: Likewise.
+	* testsuite/tr1/6_containers/tuple/cons/assignment.cc: Likewise.
+	* testsuite/tr1/6_containers/tuple/tuple_element.cc: Likewise.
+	* testsuite/tr1/6_containers/tuple/tuple_size.cc: Likewise.
+	* testsuite/tr1/6_containers/tuple/comparison_operators/
+	comparisons.cc: Likewise.
+	* testsuite/tr1/6_containers/tuple/element_access/get.cc: Likewise.
+	* testsuite/tr1/6_containers/tuple/creation_functions/tie.cc: Likewise.
+	* testsuite/tr1/6_containers/tuple/creation_functions/make_tuple.cc:
+	Likewise.
+
 2007-12-24  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/tr1/2_general_utilities/shared_ptr/thread/

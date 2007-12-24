@@ -1,6 +1,6 @@
 // 2004-09-23 Chris Jefferson <chris@bubblescope.net>
 
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,7 +31,7 @@ struct foo
 int
 main()
 {
-  // As foo isn't constructable from anything else, this
+  // As foo isn't constructible from anything else, this
   // lets us check if type is returning foo when it should
   foo q1;
   tuple_element<0,tuple<foo,void,int> >::type q2(q1);

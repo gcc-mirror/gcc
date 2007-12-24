@@ -1,6 +1,6 @@
-// 2004-09-23 Chris Jefferson <chris@bubblescope.net>
+// { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,27 +20,19 @@
 
 // Tuple
 
-#include <tr1/tuple>
-#include <testsuite_hooks.h>
+#include <tuple>
 
-using namespace std::tr1;
+using namespace std;
+
+struct foo
+{ };
 
 int
 main()
 {
-  bool test __attribute__((unused)) = true;
-
-  int j=1;
-  const int k=2;
-  tuple<int,int &,const int&> a(0,j,k);
-  const tuple<int,int &,const int&> b(1,j,k); 
-  VERIFY(get<0>(a)==0 && get<1>(a)==1 && get<2>(a)==2);
-  get<0>(a)=3;
-  get<1>(a)=4;  
-  VERIFY(get<0>(a)==3 && get<1>(a)==4);
-  VERIFY(j==4);
-  get<1>(b)=5;
-  VERIFY(get<0>(b)==1 && get<1>(b)==5 && get<2>(b)==2);
-  VERIFY(j==5);
+  // As foo isn't constructible from anything else, this
+  // lets us check if type is returning foo when it should
+  foo q1;
+  tuple_element<0,tuple<foo,void,int> >::type q2(q1);
+  tuple_element<2,tuple<void,int,foo> >::type q3(q1);
 }
-

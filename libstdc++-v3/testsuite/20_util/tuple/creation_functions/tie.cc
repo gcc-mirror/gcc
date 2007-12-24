@@ -1,6 +1,6 @@
-// 2004-09-23 Chris Jefferson <chris@bubblescope.net>
+// { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,27 +20,24 @@
 
 // Tuple
 
-#include <tr1/tuple>
+#include <tuple>
 #include <testsuite_hooks.h>
 
-using namespace std::tr1;
+using namespace std;
 
 int
 main()
 {
-  bool test __attribute__((unused)) = true;
+  bool test __attribute__((unused)) = true; 
 
-  int j=1;
-  const int k=2;
-  tuple<int,int &,const int&> a(0,j,k);
-  const tuple<int,int &,const int&> b(1,j,k); 
-  VERIFY(get<0>(a)==0 && get<1>(a)==1 && get<2>(a)==2);
-  get<0>(a)=3;
-  get<1>(a)=4;  
-  VERIFY(get<0>(a)==3 && get<1>(a)==4);
-  VERIFY(j==4);
-  get<1>(b)=5;
-  VERIFY(get<0>(b)==1 && get<1>(b)==5 && get<2>(b)==2);
-  VERIFY(j==5);
+  int x1 = 0;
+  int x2 = 0;
+  int y1 = 0;
+  int y2 = 0;
+  tuple<int,int> ta(1,1);
+  tuple<const int&,const int&> tc(x1,x2);
+  tie(y1,y2)=ta;
+  VERIFY(y1 == 1 && y2 == 1);
+  tie(y1,y2)=tc;
+  VERIFY(y1 == 0 && y2 == 0);
 }
-
