@@ -1061,10 +1061,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __imag__ _M_value; }
 
   inline
-  complex<float>::complex(float r, float i)
+  complex<float>::complex(float __r, float __i)
   {
-    __real__ _M_value = r;
-    __imag__ _M_value = i;
+    __real__ _M_value = __r;
+    __imag__ _M_value = __i;
   }
 
   inline complex<float>&
@@ -1476,7 +1476,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   inline
   complex<double>::complex(const complex<long double>& __z)
-    : _M_value(__z.__rep()) { }
+  : _M_value(__z.__rep()) { }
 
   inline
   complex<long double>::complex(const complex<float>& __z)

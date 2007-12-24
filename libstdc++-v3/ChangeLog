@@ -1,3 +1,8 @@
+2007-12-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/std/complex (complex<float>::complex(float, float)):
+	Uglify parameters.
+
 2007-12-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/locale_classes.h (has_facet, use_facet): Simplify
