@@ -45,8 +45,8 @@
 #endif
 
 #include <utility>
-#include <algorithm> // lower_bound
 #include <type_traits>
+#include <bits/stl_algobase.h>
 #include <bits/allocator.h>
 #include <bits/stl_function.h> // equal_to, _Identity, _Select1st
 #include <bits/stringfwd.h>
