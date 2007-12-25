@@ -1,3 +1,11 @@
+2007-12-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/34566
+	* m4/matmull.m4:  Multiply xstride and ystride by correct kind.
+	* generated/matmul_l4.c:  Regenerated.
+	* generated/matmul_l8.c:  Regenerated.
+	* generated/matmul_l16.c:  Regenerated.
+
 2007-12-19  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34530
