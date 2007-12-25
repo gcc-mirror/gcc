@@ -1,5 +1,6 @@
 2007-12-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	PR testsuite/34499
 	* g++.dg/ext/visibility/namespace2.C: Add missing argument to
 	dg-require-visibility statement.
 
