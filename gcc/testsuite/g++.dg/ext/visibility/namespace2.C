@@ -1,6 +1,6 @@
 // PR c++/32470
 
-// { dg-require-visibility }
+// { dg-require-visibility "" }
 // { dg-options "-fvisibility=hidden" }
 // { dg-final { scan-hidden "_ZN4Test4testEv" } }
 
