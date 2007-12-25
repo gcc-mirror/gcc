@@ -4097,6 +4097,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
     case GFC_ISYM_ACCESS:
     case GFC_ISYM_CHDIR:
     case GFC_ISYM_CHMOD:
+    case GFC_ISYM_DTIME:
     case GFC_ISYM_ETIME:
     case GFC_ISYM_FGET:
     case GFC_ISYM_FGETC:

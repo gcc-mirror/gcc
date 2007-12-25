@@ -3230,7 +3230,7 @@ gfc_check_ctime_sub (gfc_expr *time, gfc_expr *result)
 
 
 try
-gfc_check_etime (gfc_expr *x)
+gfc_check_dtime_etime (gfc_expr *x)
 {
   if (array_check (x, 0) == FAILURE)
     return FAILURE;
@@ -3252,7 +3252,7 @@ gfc_check_etime (gfc_expr *x)
 
 
 try
-gfc_check_etime_sub (gfc_expr *values, gfc_expr *time)
+gfc_check_dtime_etime_sub (gfc_expr *values, gfc_expr *time)
 {
   if (array_check (values, 0) == FAILURE)
     return FAILURE;

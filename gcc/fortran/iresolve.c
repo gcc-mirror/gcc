@@ -2676,7 +2676,15 @@ gfc_resolve_symlnk_sub (gfc_code *c)
 }
 
 
-/* G77 compatibility subroutines etime() and dtime().  */
+/* G77 compatibility subroutines dtime() and etime().  */
+
+void
+gfc_resolve_dtime_sub (gfc_code *c)
+{
+  const char *name;
+  name = gfc_get_string (PREFIX ("dtime_sub"));
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
 
 void
 gfc_resolve_etime_sub (gfc_code *c)

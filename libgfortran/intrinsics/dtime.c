@@ -1,6 +1,5 @@
-/* Implementation of the ETIME intrinsic.
+/* Implementation of the dtime intrinsic.
    Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
-   Contributed by Steven G. Kargl <kargls@comcast.net>.
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
 
@@ -30,23 +29,32 @@ Boston, MA 02110-1301, USA.  */
 
 #include "libgfortran.h"
 #include "time_1.h"
+#include <gthr.h>
 
-extern void etime_sub (gfc_array_r4 *t, GFC_REAL_4 *result);
-iexport_proto(etime_sub);
+#ifdef __GTHREAD_MUTEX_INIT
+static __gthread_mutex_t dtime_update_lock = __GTHREAD_MUTEX_INIT;
+#else
+static __gthread_mutex_t dtime_update_lock;
+#endif
+
+extern void dtime_sub (gfc_array_r4 *t, GFC_REAL_4 *result);
+iexport_proto(dtime_sub);
 
 void
-etime_sub (gfc_array_r4 *t, GFC_REAL_4 *result)
+dtime_sub (gfc_array_r4 *t, GFC_REAL_4 *result)
 {
-  GFC_REAL_4 tu, ts, tt, *tp;
+  static GFC_REAL_4 tu = 0.0, ts = 0.0, tt = 0.0;
+  GFC_REAL_4 *tp;
   long user_sec, user_usec, system_sec, system_usec;
 
   if (((t->dim[0].ubound + 1 - t->dim[0].lbound)) < 2)
     runtime_error ("Insufficient number of elements in TARRAY.");
 
+  __gthread_mutex_lock (&dtime_update_lock);
   if (__time_1 (&user_sec, &user_usec, &system_sec, &system_usec) == 0)
     {
-      tu = (GFC_REAL_4)(user_sec + 1.e-6 * user_usec);
-      ts = (GFC_REAL_4)(system_sec + 1.e-6 * system_usec);
+      tu = (GFC_REAL_4)(user_sec + 1.e-6 * user_usec) - tu;
+      ts = (GFC_REAL_4)(system_sec + 1.e-6 * system_usec) - ts;
       tt = tu + ts;
     }
   else
@@ -62,16 +70,17 @@ etime_sub (gfc_array_r4 *t, GFC_REAL_4 *result)
   tp += t->dim[0].stride;
   *tp = ts;
   *result = tt;
+  __gthread_mutex_unlock (&dtime_update_lock);
 }
-iexport(etime_sub);
+iexport(dtime_sub);
 
-extern GFC_REAL_4 etime (gfc_array_r4 *t);
-export_proto(etime);
+extern GFC_REAL_4 dtime (gfc_array_r4 *t);
+export_proto(dtime);
 
 GFC_REAL_4
-etime (gfc_array_r4 *t)
+dtime (gfc_array_r4 *t)
 {
   GFC_REAL_4 val;
-  etime_sub (t, &val);
+  dtime_sub (t, &val);
   return val;
 }

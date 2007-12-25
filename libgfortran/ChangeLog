@@ -1,3 +1,17 @@
+2007-12-25  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/34533
+	* intrinsics/cpu_time.c: Moved code commonly usable for CPU_TIME,
+	DTIME and ETIME to ...
+	* intrinsics/time_1.h: ... here.
+	* intrinsics/dtime.c: New file.
+	* intrinsics/etime.c: Newly implemented using the common 
+	time-aquisition function from time_1.h.
+	* gfortran.map (_gfortran_dtime, _gfortran_dtime_sub): New.
+	* Makefile.am: Added new file.
+	* Makefile.in: Regenerated.
+	* configure: Regenerated.
+
 2007-12-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/34566

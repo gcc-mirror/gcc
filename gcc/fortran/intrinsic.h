@@ -55,7 +55,7 @@ try gfc_check_digits (gfc_expr *);
 try gfc_check_dot_product (gfc_expr *, gfc_expr *);
 try gfc_check_dprod (gfc_expr *, gfc_expr *);
 try gfc_check_eoshift (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
-try gfc_check_etime (gfc_expr *);
+try gfc_check_dtime_etime (gfc_expr *);
 try gfc_check_fgetputc (gfc_expr *, gfc_expr *);
 try gfc_check_fgetput (gfc_expr *);
 try gfc_check_fstat (gfc_expr *, gfc_expr *);
@@ -165,7 +165,7 @@ try gfc_check_mvbits (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
 		      gfc_expr *);
 try gfc_check_random_number (gfc_expr *);
 try gfc_check_random_seed (gfc_expr *, gfc_expr *, gfc_expr *);
-try gfc_check_etime_sub (gfc_expr *, gfc_expr *);
+try gfc_check_dtime_etime_sub (gfc_expr *, gfc_expr *);
 try gfc_check_fgetputc_sub (gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_fgetput_sub (gfc_expr *, gfc_expr *);
 try gfc_check_fseek_sub (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
@@ -345,6 +345,7 @@ void gfc_resolve_dble (gfc_expr *, gfc_expr *);
 void gfc_resolve_dim (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_dot_product (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_dprod (gfc_expr *, gfc_expr *, gfc_expr *);
+void gfc_resolve_dtime_sub (gfc_code *);
 void gfc_resolve_eoshift (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
 			  gfc_expr *);
 void gfc_resolve_etime_sub (gfc_code *);

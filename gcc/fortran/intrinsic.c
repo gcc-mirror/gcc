@@ -1360,11 +1360,15 @@ add_functions (void)
   make_generic ("erfc", GFC_ISYM_ERFC, GFC_STD_GNU);
 
   /* G77 compatibility */
-  add_sym_1 ("etime", GFC_ISYM_ETIME, NO_CLASS, ACTUAL_NO, BT_REAL, 4,  GFC_STD_GNU,
-	     gfc_check_etime, NULL, NULL,
+  add_sym_1 ("dtime", GFC_ISYM_DTIME, NO_CLASS, ACTUAL_NO, BT_REAL, 4,  GFC_STD_GNU,
+	     gfc_check_dtime_etime, NULL, NULL,
 	     x, BT_REAL, 4, REQUIRED);
 
-  make_alias ("dtime", GFC_STD_GNU);
+  make_generic ("dtime", GFC_ISYM_DTIME, GFC_STD_GNU);
+
+  add_sym_1 ("etime", GFC_ISYM_ETIME, NO_CLASS, ACTUAL_NO, BT_REAL, 4,  GFC_STD_GNU,
+	     gfc_check_dtime_etime, NULL, NULL,
+	     x, BT_REAL, 4, REQUIRED);
 
   make_generic ("etime", GFC_ISYM_ETIME, GFC_STD_GNU);
 
@@ -2437,11 +2441,11 @@ add_subroutines (void)
 
   /* More G77 compatibility garbage.  */
   add_sym_2s ("etime", GFC_ISYM_ETIME, NO_CLASS, BT_UNKNOWN, 0, GFC_STD_GNU,
-	      gfc_check_etime_sub, NULL, gfc_resolve_etime_sub,
+	      gfc_check_dtime_etime_sub, NULL, gfc_resolve_etime_sub,
 	      vl, BT_REAL, 4, REQUIRED, tm, BT_REAL, 4, REQUIRED);
 
   add_sym_2s ("dtime", GFC_ISYM_DTIME, NO_CLASS, BT_UNKNOWN, 0, GFC_STD_GNU,
-	      gfc_check_etime_sub, NULL, gfc_resolve_etime_sub,
+	      gfc_check_dtime_etime_sub, NULL, gfc_resolve_dtime_sub,
 	      vl, BT_REAL, 4, REQUIRED, tm, BT_REAL, 4, REQUIRED);
 
   add_sym_1s ("fdate", GFC_ISYM_FDATE, NO_CLASS, BT_UNKNOWN, 0, GFC_STD_GNU,

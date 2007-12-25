@@ -1,3 +1,26 @@
+2007-12-25  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/34533
+	* intrinsic.h (gfc_check_etime): Renamed to ...
+	(gfc_check_dtime_etime): ... this.
+	(gfc_check_etime_sub): Renamed to ...
+	(gfc_check_dtime_etime_sub): ... this.
+	(gfc_resolve_dtime_sub): New prototype.
+	* check.c (gfc_check_etime): Renamed to ...
+	(gfc_check_dtime_etime): ... this.
+	(gfc_check_etime_sub): Renamed to ...
+	(gfc_check_dtime_etime_sub): ... this.
+	* iresolve.c (gfc_resolve_dtime_sub): New implementation.
+	* intrinsic.c (add_functions): Removed alias from ETIME to DTIME,
+	added stand-alone intrinsic DTIME.
+	(add_subroutines): Adjusted check and resolve function names for
+	DTIME and ETIME.
+	* trans-intrinsic.c (gfc_conv_intrinsic_function): Added DTIME
+	to known functions in switch.
+	* intrinsic.texi (DTIME): Added paragraph about thread-safety,
+	fixed return value section.
+	(CPU_TIME): Clarified intent and added implementation notes.
+
 2007-12-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34421

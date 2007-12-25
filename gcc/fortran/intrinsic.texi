@@ -2717,6 +2717,16 @@ Returns a @code{REAL(*)} value representing the elapsed CPU time in
 seconds.  This is useful for testing segments of code to determine
 execution time.
 
+If a time source is available, time will be reported with microsecond
+resolution. If no time source is available, @var{TIME} is set to
+@code{-1.0}.
+
+Note that @var{TIME} may contain a, system dependent, arbitrary offset
+and may not start with @code{0.0}. For @code{CPU_TIME}, the absolute
+value is meaningless, only differences between subsequent calls to
+this subroutine, as shown in the example below, should be used.
+
+
 @item @emph{Standard}:
 F95 and later
 
@@ -3321,6 +3331,12 @@ sufficiently small limits that overflows (wrap around) are possible, such as
 become, negative, or numerically less than previous values, during a single
 run of the compiled program.
 
+Please note, that this implementation is thread safe if used within OpenMP
+directives, i. e. its state will be consistent while called from multiple
+threads. However, if @code{DTIME} is called from multiple threads, the result
+is still the time since the last invocation. This may not give the intended
+results. If possible, use @code{CPU_TIME} instead.
+
 This intrinsic is provided in both subroutine and function forms; however,
 only one form can be used in any given program unit.
 
@@ -3351,7 +3367,8 @@ Subroutine, function
 @end multitable
 
 @item @emph{Return value}:
-Elapsed time in seconds since the start of program execution.
+Elapsed time in seconds since the last invocation or since the start of program
+execution if not called before.
 
 @item @emph{Example}:
 @smallexample
@@ -3372,6 +3389,10 @@ program test_dtime
     print *, tarray(2)
 end program test_dtime
 @end smallexample
+
+@item @emph{See also}:
+@ref{CPU_TIME}
+
 @end table
 
 
