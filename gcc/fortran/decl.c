@@ -5151,6 +5151,14 @@ attr_decl1 (void)
 	  goto cleanup;
 	}
 
+      if (current_attr.dimension && sym->value)
+	{
+	  gfc_error ("Dimensions specified for %s at %L after its "
+		     "initialisation", sym->name, &var_locus);
+	  m = MATCH_ERROR;
+	  goto cleanup;
+	}
+
       if ((current_attr.allocatable || current_attr.pointer)
 	  && (m == MATCH_YES) && (as->type != AS_DEFERRED))
 	{
@@ -5749,6 +5757,13 @@ do_parm (void)
   if (gfc_check_assign_symbol (sym, init) == FAILURE
       || gfc_add_flavor (&sym->attr, FL_PARAMETER, sym->name, NULL) == FAILURE)
     {
+      m = MATCH_ERROR;
+      goto cleanup;
+    }
+
+  if (sym->value)
+    {
+      gfc_error ("Initializing already initialized variable at %C");
       m = MATCH_ERROR;
       goto cleanup;
     }

@@ -1,3 +1,10 @@
+2007-12-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34514
+	* decl.c (attr_decl1): Reject specifying the DIMENSION for
+	already initialized variable.
+	(do_parm): Reject PARAMETER for already initialized variable.
+
 2007-12-25  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/34533
