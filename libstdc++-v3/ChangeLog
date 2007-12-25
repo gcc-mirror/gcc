@@ -1,3 +1,14 @@
+2007-12-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1_impl/hashtable_policy.h (__lower_bound): Add.
+	(_Prime_rehash_policy::_M_next_bkt, _M_bkt_for_elements,
+	_M_need_rehash): Use __lower_bound.
+	* include/std/unordered_map: Do not include the whole <algorithm>,
+	include <bits/stl_algobase.h>.
+	* include/std/unordered_set: Likewise.
+	* include/tr1/unordered_map: Likewise.
+	* include/tr1/unordered_set: Likewise.
+
 2007-12-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/20_util/tuple/cons/big_tuples.cc: New.
