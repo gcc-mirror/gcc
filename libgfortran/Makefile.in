@@ -362,7 +362,7 @@ am__libgfortran_la_SOURCES_DIST = runtime/backtrace.c \
 	intrinsics/c99_functions.c intrinsics/chdir.c \
 	intrinsics/chmod.c intrinsics/clock.c intrinsics/cpu_time.c \
 	intrinsics/cshift0.c intrinsics/ctime.c \
-	intrinsics/date_and_time.c intrinsics/env.c \
+	intrinsics/date_and_time.c intrinsics/dtime.c intrinsics/env.c \
 	intrinsics/eoshift0.c intrinsics/eoshift2.c intrinsics/etime.c \
 	intrinsics/exit.c intrinsics/fnum.c intrinsics/gerror.c \
 	intrinsics/getcwd.c intrinsics/getlog.c intrinsics/getXid.c \
@@ -633,9 +633,9 @@ am__objects_31 = close.lo file_pos.lo format.lo inquire.lo \
 	size_from_kind.lo transfer.lo unit.lo unix.lo write.lo
 am__objects_32 = associated.lo abort.lo access.lo args.lo \
 	c99_functions.lo chdir.lo chmod.lo clock.lo cpu_time.lo \
-	cshift0.lo ctime.lo date_and_time.lo env.lo eoshift0.lo \
-	eoshift2.lo etime.lo exit.lo fnum.lo gerror.lo getcwd.lo \
-	getlog.lo getXid.lo hostnm.lo ierrno.lo ishftc.lo \
+	cshift0.lo ctime.lo date_and_time.lo dtime.lo env.lo \
+	eoshift0.lo eoshift2.lo etime.lo exit.lo fnum.lo gerror.lo \
+	getcwd.lo getlog.lo getXid.lo hostnm.lo ierrno.lo ishftc.lo \
 	iso_c_generated_procs.lo iso_c_binding.lo kill.lo link.lo \
 	malloc.lo mvbits.lo move_alloc.lo pack_generic.lo perror.lo \
 	signal.lo size.lo sleep.lo spread_generic.lo \
@@ -899,6 +899,7 @@ intrinsics/cpu_time.c \
 intrinsics/cshift0.c \
 intrinsics/ctime.c \
 intrinsics/date_and_time.c \
+intrinsics/dtime.c \
 intrinsics/env.c \
 intrinsics/eoshift0.c \
 intrinsics/eoshift2.c \
@@ -1645,6 +1646,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ctime.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/date_and_time.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dtime.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/env.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/environ.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eoshift0.Plo@am__quote@
@@ -4669,6 +4671,13 @@ date_and_time.lo: intrinsics/date_and_time.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/date_and_time.c' object='date_and_time.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o date_and_time.lo `test -f 'intrinsics/date_and_time.c' || echo '$(srcdir)/'`intrinsics/date_and_time.c
+
+dtime.lo: intrinsics/dtime.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT dtime.lo -MD -MP -MF "$(DEPDIR)/dtime.Tpo" -c -o dtime.lo `test -f 'intrinsics/dtime.c' || echo '$(srcdir)/'`intrinsics/dtime.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/dtime.Tpo" "$(DEPDIR)/dtime.Plo"; else rm -f "$(DEPDIR)/dtime.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/dtime.c' object='dtime.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dtime.lo `test -f 'intrinsics/dtime.c' || echo '$(srcdir)/'`intrinsics/dtime.c
 
 env.lo: intrinsics/env.c
 @am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT env.lo -MD -MP -MF "$(DEPDIR)/env.Tpo" -c -o env.lo `test -f 'intrinsics/env.c' || echo '$(srcdir)/'`intrinsics/env.c; \

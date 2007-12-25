@@ -28,37 +28,11 @@ write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
 #include "libgfortran.h"
-
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
-/* The CPU_TIME intrinsic to "compare different algorithms on the same
-   computer or discover which parts are the most expensive", so we
-   need a way to get the CPU time with the finest resolution possible.
-   We can only be accurate up to microseconds.
-
-   As usual with UNIX systems, unfortunately no single way is
-   available for all systems.  */
-
-#ifdef TIME_WITH_SYS_TIME
-#  include <sys/time.h>
-#  include <time.h>
-#else
-#  if HAVE_SYS_TIME_H
-#    include <sys/time.h>
-#  else
-#    ifdef HAVE_TIME_H
-#      include <time.h>
-#    endif
-#  endif
-#endif
+#include "time_1.h"
 
 /* The most accurate way to get the CPU time is getrusage ().
    If we have times(), that's good enough, too.  */
-#if defined (HAVE_GETRUSAGE) && defined (HAVE_SYS_RESOURCE_H)
-#  include <sys/resource.h>
-#else
+#if !defined (HAVE_GETRUSAGE) || !defined (HAVE_SYS_RESOURCE_H)
 /* For times(), we _must_ know the number of clock ticks per second.  */
 #  if defined (HAVE_TIMES) && (defined (HZ) || defined (_SC_CLK_TCK) || defined (CLK_TCK))
 #    ifdef HAVE_SYS_PARAM_H
@@ -75,65 +49,18 @@ Boston, MA 02110-1301, USA.  */
 #      endif
 #    endif
 #  endif  /* HAVE_TIMES etc.  */
-#endif  /* HAVE_GETRUSAGE && HAVE_SYS_RESOURCE_H  */
-
-#if defined (__GNUC__) && (__GNUC__ >= 3)
-#  define ATTRIBUTE_ALWAYS_INLINE __attribute__ ((__always_inline__))
-#else
-#  define ATTRIBUTE_ALWAYS_INLINE
-#endif
+#endif  /* !HAVE_GETRUSAGE || !HAVE_SYS_RESOURCE_H  */
 
 static inline void __cpu_time_1 (long *, long *) ATTRIBUTE_ALWAYS_INLINE;
-
-/* Helper function for the actual implementation of the CPU_TIME
-   intrinsic.  Returns a CPU time in microseconds or -1 if no CPU time
-   could be computed.  */
-
-#ifdef __MINGW32__
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
-static void
-__cpu_time_1 (long *sec, long *usec)
-{
-  union {
-    FILETIME ft;
-    unsigned long long ulltime;
-  } kernel_time,  user_time;
-
-  FILETIME unused1, unused2;
-  unsigned long long total_time;
-
-  /* No support for Win9x.  The high order bit of the DWORD
-     returned by GetVersion is 0 for NT and higher. */
-  if (GetVersion () >= 0x80000000)
-    {
-      *sec = -1;
-      *usec = 0;
-      return;
-    }
-
-  /* The FILETIME structs filled in by GetProcessTimes represent
-     time in 100 nanosecond units. */
-  GetProcessTimes (GetCurrentProcess (), &unused1, &unused2,
-              	   &kernel_time.ft, &user_time.ft);
-      
-  total_time = (kernel_time.ulltime + user_time.ulltime)/10; 
-  *sec = total_time / 1000000;
-  *usec = total_time % 1000000;
-}
-
-#else
 
 static inline void
 __cpu_time_1 (long *sec, long *usec)
 {
-#if defined (HAVE_GETRUSAGE) && defined (HAVE_SYS_RESOURCE_H)
-  struct rusage usage;
-  getrusage (0, &usage);
-  *sec = usage.ru_utime.tv_sec + usage.ru_stime.tv_sec;
-  *usec = usage.ru_utime.tv_usec + usage.ru_stime.tv_usec;
+#if defined(__MINGW32__) || defined (HAVE_GETRUSAGE) && defined (HAVE_SYS_RESOURCE_H)
+  long user_sec, user_usec, system_sec, system_usec;
+  __time_1 (&user_sec, &user_usec, &system_sec, &system_usec);
+  *sec = user_sec + system_sec;
+  *usec = user_usec + system_usec;
 #else /* ! HAVE_GETRUSAGE || ! HAVE_SYS_RESOURCE_H  */
 #ifdef HAVE_TIMES
   struct tms buf;
@@ -145,10 +72,9 @@ __cpu_time_1 (long *sec, long *usec)
   *sec = -1;
   *usec = 0;
 #endif  /* HAVE_TIMES */
-#endif  /* HAVE_GETRUSAGE */
+#endif  /* __MINGW32__ || HAVE_GETRUSAGE */
 }
 
-#endif
 
 extern void cpu_time_4 (GFC_REAL_4 *);
 iexport_proto(cpu_time_4);

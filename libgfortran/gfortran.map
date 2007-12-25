@@ -58,6 +58,8 @@ GFORTRAN_1.0 {
     _gfortran_ctime;
     _gfortran_ctime_sub;
     _gfortran_date_and_time;
+    _gfortran_dtime;
+    _gfortran_dtime_sub;
     _gfortran_eoshift0_1;
     _gfortran_eoshift0_1_char;
     _gfortran_eoshift0_2;

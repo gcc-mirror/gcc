@@ -60,6 +60,7 @@ intrinsics/cpu_time.c \
 intrinsics/cshift0.c \
 intrinsics/ctime.c \
 intrinsics/date_and_time.c \
+intrinsics/dtime.c \
 intrinsics/env.c \
 intrinsics/eoshift0.c \
 intrinsics/eoshift2.c \
