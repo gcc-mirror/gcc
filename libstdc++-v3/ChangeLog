@@ -1,3 +1,18 @@
+2007-12-26  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/34595
+	* include/bits/stl_algobase.h (struct __cm_assign): Remove.
+	(struct __copy_move<true, false, _Category>,
+	struct __copy_move<true, false, random_access_iterator_tag>,
+	struct __copy_move_backward<true, false, _Category>,
+	struct __copy_move_backward<true, false, random_access_iterator_tag>):
+	Add.
+	(struct __copy_move, struct __copy_move_backward,
+	struct __copy_move<false, false, random_access_iterator_tag>,
+	struct __copy_move_backward<false, false, random_access_iterator_tag>):
+	Adjust.
+	* testsuite/25_algorithms/copy/34595.C: New.
+
 2007-12-26  Chris Fairles  <chris.fairles@gmail.com>
 	    Paolo Carlini  <pcarlini@suse.de>
 
