@@ -1,3 +1,7 @@
+2007-12-26  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* patch_tester.sh: Changed to GPLv3.
+
 2007-12-15  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* patch_tester.sh: Don't save the script anymore.
