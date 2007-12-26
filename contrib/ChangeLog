@@ -1,5 +1,16 @@
 2007-12-26  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* compareSumTests3: Changed to GPLv3.
+	* prepare_patch.sh: Same.
+	* uninclude: Same.
+	* dglib.pm: Same.
+	* gennews: Same.
+	* texi2pod.pl: Same.
+	* analyze_brprob: Same.
+	* gcc_build: Same.
+
+2007-12-26  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* patch_tester.sh: Changed to GPLv3.
 
 2007-12-15  Sebastian Pop  <sebastian.pop@amd.com>

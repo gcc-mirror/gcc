@@ -5,7 +5,7 @@
 
 # This gawk/shell script is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as published
-# by the Free Software Foundation; either version 2, or (at your option)
+# by the Free Software Foundation; either version 3, or (at your option)
 # any later version.
 
 # Given a preprocessed C/C++ code snippet, this script will replace any
