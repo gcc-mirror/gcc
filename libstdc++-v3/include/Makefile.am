@@ -595,7 +595,6 @@ tr1_impl_headers = \
 	${tr1_impl_srcdir}/random \
 	${tr1_impl_srcdir}/random.tcc \
 	${tr1_impl_srcdir}/regex \
-	${tr1_impl_srcdir}/tuple \
 	${tr1_impl_srcdir}/type_traits \
 	${tr1_impl_srcdir}/unordered_map \
 	${tr1_impl_srcdir}/unordered_set \
