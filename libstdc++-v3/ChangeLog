@@ -1,3 +1,12 @@
+2007-12-26  Chris Fairles  <chris.fairles@gmail.com>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+	* include/std/tuple: New.
+	* include/tr1/tuple: New, adjust from tr1_impl/tuple code.	
+	* include/tr1_impl/tuple: Remove.
+	* include/Makefile.am: Update.
+	* include/Makefile.in: Regenerate.
+
 2007-12-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1_impl/hashtable_policy.h (__lower_bound): Add.
