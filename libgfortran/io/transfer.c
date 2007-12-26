@@ -166,7 +166,14 @@ read_sf (st_parameter_dt *dtp, int *length, int no_error)
     {
       readlen = *length;
       q = salloc_r (dtp->u.p.current_unit->s, &readlen);
-      memcpy (p, q, readlen);
+      if (readlen < *length)
+	{
+	  generate_error (&dtp->common, LIBERROR_END, NULL);
+	  return NULL;
+	}
+	
+      if (q != NULL)
+        memcpy (p, q, readlen);
       goto done;
     }
 

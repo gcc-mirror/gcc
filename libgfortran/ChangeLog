@@ -1,3 +1,8 @@
+2007-12-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/transfer.c (read_sf): Check if readlen was less than the requested
+	number of bytes to read and if so, generate error.
+
 2007-12-25  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/34533
