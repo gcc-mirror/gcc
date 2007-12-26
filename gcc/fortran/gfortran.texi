@@ -1165,12 +1165,17 @@ zero, and @code{.TRUE.} is interpreted as one.  When converting from
 @code{.FALSE.} and any nonzero value is interpreted as @code{.TRUE.}.
 
 @smallexample
-       INTEGER :: i = 1
-       IF (i) PRINT *, 'True'
+        LOGICAL :: l
+        l = 1
+@end smallexample
+@smallexample
+        INTEGER :: i
+        i = .TRUE.
 @end smallexample
 
-However, there is no implicit conversion of @code{LOGICAL} and
-@code{INTEGER} values performed during I/O operations.
+However, there is no implicit conversion of @code{INTEGER} values in
+@code{if}-statements, nor of @code{LOGICAL} or @code{INTEGER} values
+in I/O operations.
 
 @node Hollerith constants support
 @section Hollerith constants support

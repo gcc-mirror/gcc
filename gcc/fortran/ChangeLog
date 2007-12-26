@@ -1,3 +1,9 @@
+2007-12-26  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/34532
+	* gfortran.texi: Fixed section about implicit conversion of
+	logical and integer variables.
+
 2007-12-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34514
