@@ -128,6 +128,7 @@ static const struct base_arch_s avr_arch_types[] = {
   { 0, 0, 0, 0, "__AVR_ARCH__=2" },
   { 0, 0, 0, 1, "__AVR_ARCH__=25"},
   { 0, 0, 1, 0, "__AVR_ARCH__=3" },
+  { 0, 0, 1, 1, "__AVR_ARCH__=35"},
   { 0, 1, 0, 1, "__AVR_ARCH__=4" },
   { 0, 1, 1, 1, "__AVR_ARCH__=5" }
 };
@@ -142,6 +143,7 @@ enum avr_arch
   ARCH_AVR2,
   ARCH_AVR25,
   ARCH_AVR3,
+  ARCH_AVR35,
   ARCH_AVR4,
   ARCH_AVR5
 };
@@ -199,6 +201,10 @@ static const struct mcu_type_s avr_mcu_types[] = {
   { "at43usb320",   ARCH_AVR3, "__AVR_AT43USB320__" },
   { "at43usb355",   ARCH_AVR3, "__AVR_AT43USB355__" },
   { "at76c711",     ARCH_AVR3, "__AVR_AT76C711__" },
+    /* Classic + MOVW + JMP/CALL.  */
+  { "avr35",        ARCH_AVR35, NULL },
+  { "at90usb82",    ARCH_AVR35, "__AVR_AT90USB82__" },
+  { "at90usb162",   ARCH_AVR35, "__AVR_AT90USB162__" },
     /* Enhanced, <= 8K.  */
   { "avr4",         ARCH_AVR4, NULL },
   { "atmega8",      ARCH_AVR4, "__AVR_ATmega8__" },
@@ -259,8 +265,6 @@ static const struct mcu_type_s avr_mcu_types[] = {
   { "at90can128",   ARCH_AVR5, "__AVR_AT90CAN128__" },
   { "at90pwm216",   ARCH_AVR5, "__AVR_AT90PWM216__" },
   { "at90pwm316",   ARCH_AVR5, "__AVR_AT90PWM316__" },
-  { "at90usb82",    ARCH_AVR5, "__AVR_AT90USB82__" },
-  { "at90usb162",   ARCH_AVR5, "__AVR_AT90USB162__" },
   { "at90usb646",   ARCH_AVR5, "__AVR_AT90USB646__" },
   { "at90usb647",   ARCH_AVR5, "__AVR_AT90USB647__" },
   { "at90usb1286",  ARCH_AVR5, "__AVR_AT90USB1286__" },

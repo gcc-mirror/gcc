@@ -1,3 +1,16 @@
+2007-12-26  Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/avr.h (LINK_SPEC, CRT_BINUTILS_SPECS): Move AT90USB82 
+	and AT90USB162 devices from 'avr5' to 'avr35' architecture.
+	(ASM_SPEC): Add 'avr35' architecture.
+	* config/avr/avr.c (avr_mcu_types): Move AT90USB82 and AT90USB162 
+	devices from 'avr5' to 'avr35' architecture.
+	(avr_arch_types): Add "avr23" entries.
+	(avr_arch): Add 'ARCH_AVR35'.
+	* config/avr/t-avr (MULTILIB_OPTIONS, MULTILIB_DIRNAMES): Add 'avr35'.
+	(MULTILIB_MATCHES): Move AT90USB82 and AT90USB162 devices from 'avr5'
+	to 'avr35' architecture.
+
 2007-12-22  David Daney  <ddaney@avtrex.com>
 
 	* doc/install.texi (disable-libgcj-bc): Document new option.
