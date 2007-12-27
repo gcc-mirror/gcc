@@ -1,3 +1,9 @@
+2007-12-27  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* Makefile.in (all): Use install-leaf rather than install.
+	(install): Split most of the rule into...
+	(install-leaf): ...this new one.
+
 2007-12-19  Etsushi Kato  <ek.kato@gmail.com>
 	    Paolo Bonzini  <bonzini@gnu.org>
 
