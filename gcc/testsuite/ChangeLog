@@ -1,3 +1,8 @@
+2007-12-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/34594
+	* gfortran.dg/direct_io_8.f90:  New test case.
+
 2007-12-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/34281
