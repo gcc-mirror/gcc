@@ -100,7 +100,7 @@ all: all-multi
 	# them back to the GCC directory.  Too many things (other
 	# in-tree libraries, and DejaGNU) know about the layout
 	# of the build tree, for now.
-	$(MAKE) install DESTDIR=$(gcc_objdir) \
+	$(MAKE) install-leaf DESTDIR=$(gcc_objdir) \
 	  slibdir= libsubdir= MULTIOSDIR=$(MULTIDIR)
 
 .PHONY: all-multi
@@ -884,7 +884,7 @@ install-shared:
 		@shlib_base_name@,libgcc_s,$(subst \
 		@shlib_slibdir_qual@,$(MULTIOSSUBDIR),$(SHLIB_INSTALL))))
 
-install: $(install-shared) $(install-libunwind)
+install-leaf: $(install-shared) $(install-libunwind)
 	$(mkinstalldirs) $(DESTDIR)$(inst_libdir)
 
 	$(INSTALL_DATA) libgcc.a $(DESTDIR)$(inst_libdir)/
@@ -900,6 +900,7 @@ install: $(install-shared) $(install-libunwind)
 	  $(INSTALL_DATA) $$file $(DESTDIR)$(inst_libdir)/;	\
 	done
 
+install: install-leaf
 	@$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
 
 .PHONY: install install-shared install-libunwind
