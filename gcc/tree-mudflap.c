@@ -301,6 +301,10 @@ mf_make_builtin (enum tree_code category, const char *name, tree type)
   TREE_PUBLIC (decl) = 1;
   DECL_EXTERNAL (decl) = 1;
   lang_hooks.decls.pushdecl (decl);
+  /* The decl was declared by the compiler.  */
+  DECL_ARTIFICIAL (decl) = 1;
+  /* And we don't want debug info for it.  */
+  DECL_IGNORED_P (decl) = 1;
   return decl;
 }
 

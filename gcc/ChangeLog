@@ -1,3 +1,9 @@
+2007-12-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/34535
+	* tree-mudflap.c (mf_make_builtin): Make decl artificial
+	and don't emit debug info for it.
+
 2007-12-26  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.h (LINK_SPEC, CRT_BINUTILS_SPECS): Move AT90USB82 
