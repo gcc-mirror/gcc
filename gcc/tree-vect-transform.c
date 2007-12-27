@@ -202,7 +202,8 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 	  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
 	  /* Skip stmts that are not vectorized inside the loop.  */
 	  if (!STMT_VINFO_RELEVANT_P (stmt_info)
-	      && STMT_VINFO_DEF_TYPE (stmt_info) != vect_reduction_def)
+	      && (!STMT_VINFO_LIVE_P (stmt_info)
+		  || STMT_VINFO_DEF_TYPE (stmt_info) != vect_reduction_def))
 	    continue;
 	  scalar_single_iter_cost += cost_for_stmt (stmt) * factor;
 	  vec_inside_cost += STMT_VINFO_INSIDE_OF_LOOP_COST (stmt_info) * factor;
