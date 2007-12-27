@@ -306,25 +306,25 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
 }
 
 extern void pack (gfc_array_char *, const gfc_array_char *,
-		  const gfc_array_l4 *, const gfc_array_char *);
+		  const gfc_array_l1 *, const gfc_array_char *);
 export_proto(pack);
 
 void
 pack (gfc_array_char *ret, const gfc_array_char *array,
-      const gfc_array_l4 *mask, const gfc_array_char *vector)
+      const gfc_array_l1 *mask, const gfc_array_char *vector)
 {
   pack_internal (ret, array, mask, vector, GFC_DESCRIPTOR_SIZE (array));
 }
 
 extern void pack_char (gfc_array_char *, GFC_INTEGER_4, const gfc_array_char *,
-		       const gfc_array_l4 *, const gfc_array_char *,
+		       const gfc_array_l1 *, const gfc_array_char *,
 		       GFC_INTEGER_4, GFC_INTEGER_4);
 export_proto(pack_char);
 
 void
 pack_char (gfc_array_char *ret,
 	   GFC_INTEGER_4 ret_length __attribute__((unused)),
-	   const gfc_array_char *array, const gfc_array_l4 *mask,
+	   const gfc_array_char *array, const gfc_array_l1 *mask,
 	   const gfc_array_char *vector, GFC_INTEGER_4 array_length,
 	   GFC_INTEGER_4 vector_length __attribute__((unused)))
 {

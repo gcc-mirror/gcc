@@ -1,5 +1,16 @@
 2007-12-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR libfortran/22423
+	* intrinsics/pack_generic.c (pack): Change type of mask argument
+	to gfc_array_l1 * in prototype and function.
+	(pack_char):  Likewise.
+	* intrinsics/unpack_generic.c (unpack1):  Likewise.
+	(unpack1_char):  Likewise.
+	(unpack0):  Likewise.
+	(unpack0_char):  Likewise.
+
+2007-12-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR libfortran/34594
 	* runtime/error.c: If there was a previous error, don't
 	mask it with another error mesage, EOF or EOR condition.
