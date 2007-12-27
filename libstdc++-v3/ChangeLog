@@ -1,5 +1,9 @@
 2007-12-26  Paolo Carlini  <pcarlini@suse.de>
 
+	* testsuite/25_algorithms/copy/34595.C: Rename to 34595.cc.
+
+2007-12-26  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/34595
 	* include/bits/stl_algobase.h (struct __cm_assign): Remove.
 	(struct __copy_move<true, false, _Category>,
