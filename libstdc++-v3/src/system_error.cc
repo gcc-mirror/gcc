@@ -44,7 +44,7 @@ namespace
       return category;
     }
 
-    virtual std::posix_errno 
+    virtual std::posix_error::posix_errno 
     posix(int __v) const
     {
 #ifdef _GLIBCXX_HAVE_SYS_NERR
@@ -53,9 +53,9 @@ namespace
       const int last_errorno = std::numeric_limits<int>::max();
 #endif
       if (__v > 0 && __v <= last_errorno)
-	return std::posix_errno(__v);
+	return std::posix_error::posix_errno(__v);
       else
-	return std::no_posix_equivalent;
+	return std::posix_error::no_posix_equivalent;
     }
   };
 

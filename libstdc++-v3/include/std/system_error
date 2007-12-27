@@ -65,7 +65,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     operator!=(const error_category& __other) const
     { return this != &__other; }
 
-    virtual posix_errno 
+    virtual posix_error::posix_errno 
     posix(int __v) const = 0;
 
     virtual const string& 
@@ -86,7 +86,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     error_code(int __v, const error_category& __cat) throw()
     : _M_value(__v), _M_cat(&__cat) { }
 
-    error_code(posix_errno __v)
+    error_code(posix_error::posix_errno __v)
     : _M_value(__v), _M_cat(&system_category) { }
 
     void 
@@ -109,7 +109,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     const error_category&  
     category() const { return *_M_cat; }
 
-    posix_errno            
+    posix_error::posix_errno            
     posix() const throw() { return this->category().posix(_M_value); }
 
     // Safe bool idiom.

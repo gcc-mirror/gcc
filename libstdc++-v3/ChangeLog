@@ -1,3 +1,32 @@
+2007-12-27  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/34538
+	* config/os/generic/error_constants.h (enum posix_errno): Move
+	inside namespace posix_error.
+	* include/std/system_error (error_category::posix,
+	error_code::error_code(posix_errno), error_code::posix): Adjust.
+	* src/system_error.cc (gnu_error_category::posix): Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/error_code.cc:
+	Adjust.
+	* testsuite/27_io/basic_ostream/inserters_other/char/error_code.cc:
+	Likewise.
+	* testsuite/19_diagnostics/error_code/cons/1.cc: Likewise.
+	* testsuite/19_diagnostics/error_code/operators/bool.cc: Likewise.
+	* testsuite/19_diagnostics/error_code/operators/equal.cc: Likewise.
+	* testsuite/19_diagnostics/error_code/operators/not_equal.cc:
+	Likewise.
+	* testsuite/19_diagnostics/error_category/cons/copy_neg.cc: Likewise.
+	* testsuite/19_diagnostics/error_category/cons/default.cc: Likewise.
+	* testsuite/19_diagnostics/error_category/operators/equal.cc:
+	Likewise.
+	* testsuite/19_diagnostics/error_category/operators/not_equal.cc:
+	Likewise.
+	* testsuite/19_diagnostics/headers/system_error/types_std_c++0x.cc:
+	Likewise.
+	* testsuite/19_diagnostics/system_error/cons-1.cc: Likewise.
+	* testsuite/19_diagnostics/system_error/what-4.cc: Likewise.
+	* testsuite/19_diagnostics/headers/system_error/34538.cc: New.
+
 2007-12-26  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/25_algorithms/copy/34595.C: Rename to 34595.cc.

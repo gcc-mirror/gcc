@@ -26,9 +26,9 @@ namespace __gnu_test
 {
   struct test_category : public std::error_category
   { 
-    virtual std::posix_errno 
+    virtual std::posix_error::posix_errno 
     posix(int __v) const
-    { return std::posix_errno(__v); }
+    { return std::posix_error::posix_errno(__v); }
 
     virtual const std::string& 
     name() const 
@@ -45,7 +45,7 @@ int main()
   bool test __attribute__((unused)) = true;
 
   std::error_code e1;
-  std::error_code e2(std::operation_not_supported);
+  std::error_code e2(std::posix_error::operation_not_supported);
 
   VERIFY( e1 == e1 );
   VERIFY( !(e1 == e2) );
