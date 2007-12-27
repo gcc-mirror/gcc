@@ -1,3 +1,9 @@
+2007-12-27  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR ada/34553
+	* adaint.c (__gnat_open_new_temp, __gnat_tmp_name): Use mkstemp()
+	instead of mktemp() or tmpnam() on NetBSD.
+
 2007-12-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* trans.c (call_to_gnu): Make the temporary for non-addressable
