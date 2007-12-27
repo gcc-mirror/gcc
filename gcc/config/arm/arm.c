@@ -17765,14 +17765,20 @@ arm_output_load_gr (rtx *operands)
 
 static void
 arm_setup_incoming_varargs (CUMULATIVE_ARGS *cum,
-			    enum machine_mode mode ATTRIBUTE_UNUSED,
-			    tree type ATTRIBUTE_UNUSED,
+			    enum machine_mode mode,
+			    tree type,
 			    int *pretend_size,
 			    int second_time ATTRIBUTE_UNUSED)
 {
+  int nregs = cum->nregs;
+  if (nregs & 1
+      && ARM_DOUBLEWORD_ALIGN
+      && arm_needs_doubleword_align (mode, type))
+    nregs++;
+
   cfun->machine->uses_anonymous_args = 1;
-  if (cum->nregs < NUM_ARG_REGS)
-    *pretend_size = (NUM_ARG_REGS - cum->nregs) * UNITS_PER_WORD;
+  if (nregs < NUM_ARG_REGS)
+    *pretend_size = (NUM_ARG_REGS - nregs) * UNITS_PER_WORD;
 }
 
 /* Return nonzero if the CONSUMER instruction (a store) does not need
