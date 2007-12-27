@@ -1,5 +1,10 @@
 2007-12-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/34281
+	* config/arm/arm.c (arm_setup_incoming_varargs): If last named
+	argument needs double word alignment and cum->nregs is odd, account
+	for the inserted padding.
+
 	PR debug/34535
 	* tree-mudflap.c (mf_make_builtin): Make decl artificial
 	and don't emit debug info for it.
