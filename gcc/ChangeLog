@@ -1,3 +1,8 @@
+2007-12-08  Brian Dessent  <brian@dessent.net>
+
+	* doc/invoke.texi (Optimize Options): Add missing opindex for
+	-fno-toplevel-reorder.
+
 2007-12-27  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/34591
