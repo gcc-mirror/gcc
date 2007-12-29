@@ -1,3 +1,8 @@
+2007-12-29  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/os/mingw32/error_constants.h (enum posix_errno): Move
+	inside namespace posix_error
+.
 2007-12-27  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/34538

@@ -41,8 +41,9 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
+namespace posix_error {
 // Most of the commented-out error codes are socket-related and could be
-// replaced bu Winsock WSA-prefixed equivalents. 
+// replaced bu Winsock WSA-prefixed equivalents.
   enum posix_errno
     {
 //    address_family_not_supported = 		EAFNOSUPPORT,
@@ -125,6 +126,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
  //   wrong_protocol_type = 			EPROTOTYPE,
       no_posix_equivalent = 1L << 16
    };
+}
 
 _GLIBCXX_END_NAMESPACE
 
