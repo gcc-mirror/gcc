@@ -1,3 +1,7 @@
+2007-12-29  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config/os/mingw32/error_constants.h: Fix typo in comment.
+
 2007-12-29  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/os/mingw32/error_constants.h (enum posix_errno): Move
