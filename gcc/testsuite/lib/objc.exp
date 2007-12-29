@@ -115,7 +115,7 @@ proc objc_init { args } {
 
     objc_maybe_build_wrapper "${tmpdir}/objc-testglue.o"
 
-    append objc_libgcc_s_path [gcc-set-multilib-library-path $OBJC_UNDER_TEST]
+    set objc_libgcc_s_path [gcc-set-multilib-library-path $OBJC_UNDER_TEST]
 }
 
 proc objc_target_compile { source dest type options } {
