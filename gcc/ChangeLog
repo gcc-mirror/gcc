@@ -1,4 +1,23 @@
-2007-12-08  Brian Dessent  <brian@dessent.net>
+2007-12-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md ("*divv4sf3"): Rename to "sse_divv4sf3".
+	("*sse_rsqrtv4sf2"): Export.
+	("*sse_sqrtv4sf2"): Ditto.
+	* config/i386/i386.c (enum ix86_builtins) [IX86_BUILTIN_RSQRTPS_NR,
+	IX86_BUILTIN_SQRTPS_NR]: New constants.
+	(struct builtin_description) [IX86_BUILTIN_DIVPS]: Use
+	CODE_FOR_sse_divv4sf3.
+	[IX86_BUILTIN_SQRTPS]: Use CODE_FOR_sse_sqrtv4sf2.
+	[IX86_BUILTIN_SQRTPS_NR]: New.
+	[IX86_BUILTIN_RSQRTPS_NR]: Ditto.
+	(ix86_init_mmx_sse_builtins): Initialize __builtin_ia32_rsqrtps_nr and
+	__builtin_ia32_sqrtps_nr.
+	(ix86_builtin_vectorized_function): Convert BUILT_IN_SQRTF to
+	IX86_BUILTIN_SQRTPS_NR.
+	(ix86_builtin_reciprocal): Convert IX86_BUILTIN_SQRTPS_NR to
+	IX86_BUILTIN_RSQRTPS_NR.
+
+2007-12-27  Brian Dessent  <brian@dessent.net>
 
 	* doc/invoke.texi (Optimize Options): Add missing opindex for
 	-fno-toplevel-reorder.
@@ -39,7 +58,8 @@
 
 2007-12-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
-	* pa.c (hppa_legitimize_address): Use INT14_OK_STRICT in mask selection.
+	* config/pa/pa.c (hppa_legitimize_address): Use INT14_OK_STRICT in
+	mask selection.
 
 	PR target/34525
 	* pa.c (legitimize_pic_address): Emit insn to load function label
@@ -223,12 +243,11 @@
 
 2007-12-18  Razya Ladelsky <razya@il.ibm.com>
 
-        * tree-parloops.c (reduiction_info): Change documentation of
-        reduction_initial field.
-        (initialize_reductions): Remove creation of reduction_initial
-        variable.
-        (create_loads_for_reductions): don't join reduction_initial to
-        the loaded value.
+	* tree-parloops.c (reduiction_info): Change documentation of
+	reduction_initial field.
+	(initialize_reductions): Remove creation of reduction_initial variable.
+	(create_loads_for_reductions): don't join reduction_initial to
+	the loaded value.
 
 2007-12-18  Kaz Kylheku  <kaz@zeugmasystems.com>
 

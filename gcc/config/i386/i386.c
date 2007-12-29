@@ -17093,9 +17093,11 @@ enum ix86_builtins
   IX86_BUILTIN_RCPPS,
   IX86_BUILTIN_RCPSS,
   IX86_BUILTIN_RSQRTPS,
+  IX86_BUILTIN_RSQRTPS_NR,
   IX86_BUILTIN_RSQRTSS,
   IX86_BUILTIN_RSQRTF,
   IX86_BUILTIN_SQRTPS,
+  IX86_BUILTIN_SQRTPS_NR,
   IX86_BUILTIN_SQRTSS,
 
   IX86_BUILTIN_UNPCKHPS,
@@ -17849,7 +17851,7 @@ static const struct builtin_description bdesc_2arg[] =
   { OPTION_MASK_ISA_SSE, CODE_FOR_addv4sf3, "__builtin_ia32_addps", IX86_BUILTIN_ADDPS, UNKNOWN, 0 },
   { OPTION_MASK_ISA_SSE, CODE_FOR_subv4sf3, "__builtin_ia32_subps", IX86_BUILTIN_SUBPS, UNKNOWN, 0 },
   { OPTION_MASK_ISA_SSE, CODE_FOR_mulv4sf3, "__builtin_ia32_mulps", IX86_BUILTIN_MULPS, UNKNOWN, 0 },
-  { OPTION_MASK_ISA_SSE, CODE_FOR_divv4sf3, "__builtin_ia32_divps", IX86_BUILTIN_DIVPS, UNKNOWN, 0 },
+  { OPTION_MASK_ISA_SSE, CODE_FOR_sse_divv4sf3, "__builtin_ia32_divps", IX86_BUILTIN_DIVPS, UNKNOWN, 0 },
   { OPTION_MASK_ISA_SSE, CODE_FOR_sse_vmaddv4sf3,  "__builtin_ia32_addss", IX86_BUILTIN_ADDSS, UNKNOWN, 0 },
   { OPTION_MASK_ISA_SSE, CODE_FOR_sse_vmsubv4sf3,  "__builtin_ia32_subss", IX86_BUILTIN_SUBSS, UNKNOWN, 0 },
   { OPTION_MASK_ISA_SSE, CODE_FOR_sse_vmmulv4sf3,  "__builtin_ia32_mulss", IX86_BUILTIN_MULSS, UNKNOWN, 0 },
@@ -18158,8 +18160,10 @@ static const struct builtin_description bdesc_1arg[] =
   { OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A, CODE_FOR_mmx_pmovmskb, 0, IX86_BUILTIN_PMOVMSKB, UNKNOWN, 0 },
   { OPTION_MASK_ISA_SSE, CODE_FOR_sse_movmskps, 0, IX86_BUILTIN_MOVMSKPS, UNKNOWN, 0 },
 
-  { OPTION_MASK_ISA_SSE, CODE_FOR_sqrtv4sf2, 0, IX86_BUILTIN_SQRTPS, UNKNOWN, 0 },
+  { OPTION_MASK_ISA_SSE, CODE_FOR_sse_sqrtv4sf2, 0, IX86_BUILTIN_SQRTPS, UNKNOWN, 0 },
+  { OPTION_MASK_ISA_SSE, CODE_FOR_sqrtv4sf2, 0, IX86_BUILTIN_SQRTPS_NR, UNKNOWN, 0 },
   { OPTION_MASK_ISA_SSE, CODE_FOR_sse_rsqrtv4sf2, 0, IX86_BUILTIN_RSQRTPS, UNKNOWN, 0 },
+  { OPTION_MASK_ISA_SSE, CODE_FOR_rsqrtv4sf2, 0, IX86_BUILTIN_RSQRTPS_NR, UNKNOWN, 0 },
   { OPTION_MASK_ISA_SSE, CODE_FOR_sse_rcpv4sf2, 0, IX86_BUILTIN_RCPPS, UNKNOWN, 0 },
 
   { OPTION_MASK_ISA_SSE, CODE_FOR_sse_cvtps2pi, 0, IX86_BUILTIN_CVTPS2PI, UNKNOWN, 0 },
@@ -19279,12 +19283,14 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin_const (OPTION_MASK_ISA_SSE, "__builtin_ia32_rcpps", v4sf_ftype_v4sf, IX86_BUILTIN_RCPPS);
   def_builtin_const (OPTION_MASK_ISA_SSE, "__builtin_ia32_rcpss", v4sf_ftype_v4sf, IX86_BUILTIN_RCPSS);
   def_builtin_const (OPTION_MASK_ISA_SSE, "__builtin_ia32_rsqrtps", v4sf_ftype_v4sf, IX86_BUILTIN_RSQRTPS);
+  def_builtin_const (OPTION_MASK_ISA_SSE, "__builtin_ia32_rsqrtps_nr", v4sf_ftype_v4sf, IX86_BUILTIN_RSQRTPS_NR);
   def_builtin_const (OPTION_MASK_ISA_SSE, "__builtin_ia32_rsqrtss", v4sf_ftype_v4sf, IX86_BUILTIN_RSQRTSS);
   ftype = build_function_type_list (float_type_node,
 				    float_type_node,
 				    NULL_TREE);
   def_builtin_const (OPTION_MASK_ISA_SSE, "__builtin_ia32_rsqrtf", ftype, IX86_BUILTIN_RSQRTF);
   def_builtin_const (OPTION_MASK_ISA_SSE, "__builtin_ia32_sqrtps", v4sf_ftype_v4sf, IX86_BUILTIN_SQRTPS);
+  def_builtin_const (OPTION_MASK_ISA_SSE, "__builtin_ia32_sqrtps_nr", v4sf_ftype_v4sf, IX86_BUILTIN_SQRTPS_NR);
   def_builtin_const (OPTION_MASK_ISA_SSE, "__builtin_ia32_sqrtss", v4sf_ftype_v4sf, IX86_BUILTIN_SQRTSS);
 
   def_builtin_const (OPTION_MASK_ISA_SSE, "__builtin_ia32_shufps", v4sf_ftype_v4sf_v4sf_int, IX86_BUILTIN_SHUFPS);
@@ -21301,7 +21307,7 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
     case BUILT_IN_SQRTF:
       if (out_mode == SFmode && out_n == 4
 	  && in_mode == SFmode && in_n == 4)
-	return ix86_builtins[IX86_BUILTIN_SQRTPS];
+	return ix86_builtins[IX86_BUILTIN_SQRTPS_NR];
       break;
 
     case BUILT_IN_LRINT:
@@ -21463,8 +21469,8 @@ ix86_builtin_reciprocal (unsigned int fn, bool md_fn,
     switch (fn)
       {
 	/* Vectorized version of sqrt to rsqrt conversion.  */
-      case IX86_BUILTIN_SQRTPS:
-	return ix86_builtins[IX86_BUILTIN_RSQRTPS];
+      case IX86_BUILTIN_SQRTPS_NR:
+	return ix86_builtins[IX86_BUILTIN_RSQRTPS_NR];
 
       default:
 	return NULL_TREE;
