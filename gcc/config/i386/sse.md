@@ -490,7 +490,7 @@
     }
 })
 
-(define_insn "*divv4sf3"
+(define_insn "sse_divv4sf3"
   [(set (match_operand:V4SF 0 "register_operand" "=x")
 	(div:V4SF (match_operand:V4SF 1 "register_operand" "0")
 		  (match_operand:V4SF 2 "nonimmediate_operand" "xm")))]
@@ -532,16 +532,7 @@
   [(set_attr "type" "sse")
    (set_attr "mode" "SF")])
 
-(define_insn "*sse_rsqrtv4sf2"
-  [(set (match_operand:V4SF 0 "register_operand" "=x")
-	(unspec:V4SF
-	  [(match_operand:V4SF 1 "nonimmediate_operand" "xm")] UNSPEC_RSQRT))]
-  "TARGET_SSE"
-  "rsqrtps\t{%1, %0|%0, %1}"
-  [(set_attr "type" "sse")
-   (set_attr "mode" "V4SF")])
-
-(define_expand "sse_rsqrtv4sf2"
+(define_expand "rsqrtv4sf2"
   [(set (match_operand:V4SF 0 "register_operand" "")
 	(unspec:V4SF
 	  [(match_operand:V4SF 1 "nonimmediate_operand" "")] UNSPEC_RSQRT))]
@@ -556,6 +547,15 @@
     }
 })
 
+(define_insn "sse_rsqrtv4sf2"
+  [(set (match_operand:V4SF 0 "register_operand" "=x")
+	(unspec:V4SF
+	  [(match_operand:V4SF 1 "nonimmediate_operand" "xm")] UNSPEC_RSQRT))]
+  "TARGET_SSE"
+  "rsqrtps\t{%1, %0|%0, %1}"
+  [(set_attr "type" "sse")
+   (set_attr "mode" "V4SF")])
+
 (define_insn "sse_vmrsqrtv4sf2"
   [(set (match_operand:V4SF 0 "register_operand" "=x")
 	(vec_merge:V4SF
@@ -567,14 +567,6 @@
   "rsqrtss\t{%1, %0|%0, %1}"
   [(set_attr "type" "sse")
    (set_attr "mode" "SF")])
-
-(define_insn "*sqrtv4sf2"
-  [(set (match_operand:V4SF 0 "register_operand" "=x")
-	(sqrt:V4SF (match_operand:V4SF 1 "nonimmediate_operand" "xm")))]
-  "TARGET_SSE"
-  "sqrtps\t{%1, %0|%0, %1}"
-  [(set_attr "type" "sse")
-   (set_attr "mode" "V4SF")])
 
 (define_expand "sqrtv4sf2"
   [(set (match_operand:V4SF 0 "register_operand" "=")
@@ -589,6 +581,14 @@
       DONE;
     }
 })
+
+(define_insn "sse_sqrtv4sf2"
+  [(set (match_operand:V4SF 0 "register_operand" "=x")
+	(sqrt:V4SF (match_operand:V4SF 1 "nonimmediate_operand" "xm")))]
+  "TARGET_SSE"
+  "sqrtps\t{%1, %0|%0, %1}"
+  [(set_attr "type" "sse")
+   (set_attr "mode" "V4SF")])
 
 (define_insn "sse_vmsqrtv4sf2"
   [(set (match_operand:V4SF 0 "register_operand" "=x")
