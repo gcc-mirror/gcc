@@ -1,3 +1,25 @@
+2007-12-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/std/tuple (_Tuple_impl<>::_Tuple_impl(typename
+	std::remove_reference<>::type&&, typename
+	std::remove_reference<>::type&&...),
+	_Tuple_impl(const _Tuple_impl<>&), _Tuple_impl(_Tuple_impl&&),
+	_Tuple_impl(_Tuple_impl<>&&), operator=(_Tuple_impl&&),
+	operator=(const _Tuple_impl<>&), operator=(_Tuple_impl<>&&)): Add.
+	(tuple<>::tuple(const _Elements&...), tuple(_UElements&&...),
+	tuple(tuple&&), tuple(const tuple<>&), tuple(tuple<>&&),
+	operator=(tuple&&), operator=(const tuple<>&), operator=(tuple<>&&)):
+	Likewise.
+	(tuple<_T1, _T2>::tuple(const _T1&, const _T2&, tuple(_U1&&, _U2&&),
+	tuple(tuple&&), tuple(tuple<>&&), tuple(pair<>&&), operator=(tuple&&),
+	operator=(tuple<>&&), operator=(pair<>&&)): Likewise.
+	(tuple<>::tuple(typename __add_c_ref<_Elements>::type...),
+	tuple<_T1, _T2>::tuple(typename __add_c_ref<>::type,
+	typename __add_c_ref<>::type)): Remove.
+	* testsuite/tr1/6_containers/tuple/creation_functions/tie2.cc: New.
+	* testsuite/20_util/tuple/creation_functions/tie2.cc: Likewise.
+	* testsuite/20_util/tuple/moveable.cc: Likewise.
+
 2007-12-29  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* config/os/mingw32/error_constants.h: Fix typo in comment.
