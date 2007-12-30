@@ -63,8 +63,8 @@ namespace std
     { typedef _Tp& type; };
 
   template<int _Idx, typename _Head, bool _IsEmpty>
-    struct _Head_base;    
- 
+    struct _Head_base;
+
   template<int _Idx, typename _Head>
     struct _Head_base<_Idx, _Head, true>
     : public _Head
@@ -151,12 +151,44 @@ namespace std
 		  typename __add_c_ref<_Tail>::type... __tail)
       : _Inherited(__tail...), _Base(__head) { }
 
-      template<typename... _UElements>
-      _Tuple_impl(const _Tuple_impl<_Idx, _UElements...>& __in)
-      : _Inherited(__in._M_tail()), _Base(__in._M_head()) { }
+      template<typename _UHead, typename... _UTail> 
+        explicit
+        _Tuple_impl(typename std::remove_reference<_UHead>::type&& __head,
+		    typename std::remove_reference<_UTail>::type&&... __tail)
+	: _Inherited(std::forward<_Inherited>(__tail)...),
+	  _Base(std::forward<_Base>(__head)) { }
 
       _Tuple_impl(const _Tuple_impl& __in)
       : _Inherited(__in._M_tail()), _Base(__in._M_head()) { }
+
+      _Tuple_impl(_Tuple_impl&& __in)
+      : _Inherited(std::forward<_Inherited>(__in._M_tail())),
+	_Base(std::forward<_Base>(__in._M_head())) { }
+
+      template<typename... _UElements>
+        _Tuple_impl(const _Tuple_impl<_Idx, _UElements...>& __in)
+	: _Inherited(__in._M_tail()), _Base(__in._M_head()) { }
+
+      template<typename... _UElements>
+        _Tuple_impl(_Tuple_impl<_Idx, _UElements...>&& __in)
+	: _Inherited(std::forward<_Inherited>(__in._M_tail())),
+	  _Base(std::forward<_Base>(__in._M_head())) { }
+
+      _Tuple_impl&
+      operator=(const _Tuple_impl& __in)
+      {
+	_M_head() = __in._M_head();
+	_M_tail() = __in._M_tail();
+	return *this;
+      }
+
+      _Tuple_impl&
+      operator=(_Tuple_impl&& __in)
+      {
+	_M_head() = std::move(__in._M_head());
+	_M_tail() = std::move(__in._M_tail());
+	return *this;
+      }
 
       template<typename... _UElements>
         _Tuple_impl&
@@ -167,13 +199,14 @@ namespace std
 	  return *this;
 	}
 
-      _Tuple_impl&
-      operator=(const _Tuple_impl& __in)
-      {
-	_M_head() = __in._M_head();
-	_M_tail() = __in._M_tail();
-	return *this;
-      }
+      template<typename... _UElements>
+        _Tuple_impl&
+        operator=(_Tuple_impl<_Idx, _UElements...>&& __in)
+        {
+	  _M_head() = std::move(__in._M_head());
+	  _M_tail() = std::move(__in._M_tail());
+	  return *this;
+	}
     };
 
   template<typename... _Elements> 
@@ -186,15 +219,41 @@ namespace std
       : _Inherited() { }
 
       explicit
-      tuple(typename __add_c_ref<_Elements>::type... __elements)
+      tuple(const _Elements&... __elements)
       : _Inherited(__elements...) { }
+
+      template<typename... _UElements>
+        explicit
+        tuple(_UElements&&... __elements)
+	: _Inherited(std::forward<_UElements>(__elements)...) { }
+
+      tuple(const tuple& __in)
+      : _Inherited(__in) { }
+
+      tuple(tuple&& __in)
+      : _Inherited(std::move(__in)) { }
 
       template<typename... _UElements>
         tuple(const tuple<_UElements...>& __in)
 	: _Inherited(__in) { }
 
-      tuple(const tuple& __in)
-      : _Inherited(__in) { }
+      template<typename... _UElements>
+        tuple(tuple<_UElements...>&& __in)
+	: _Inherited(std::move(__in)) { }
+
+      tuple&
+      operator=(const tuple& __in)
+      {
+	static_cast<_Inherited&>(*this) = __in;
+	return *this;
+      }
+
+      tuple&
+      operator=(tuple&& __in)
+      {
+	static_cast<_Inherited&>(*this) = std::move(__in);
+	return *this;
+      }
 
       template<typename... _UElements>
         tuple&
@@ -204,12 +263,13 @@ namespace std
 	  return *this;
 	}
 
-      tuple&
-      operator=(const tuple& __in)
-      {
-	static_cast<_Inherited&>(*this) = __in;
-	return *this;
-      }
+      template<typename... _UElements>
+        tuple&
+        operator=(tuple<_UElements...>&& __in)
+        {
+	  static_cast<_Inherited&>(*this) = std::move(__in);
+	  return *this;
+	}
     };
 
   template<> class tuple<> { };
@@ -225,16 +285,27 @@ namespace std
       : _Inherited() { }
 
       explicit
-      tuple(typename __add_c_ref<_T1>::type __a1,
-	    typename __add_c_ref<_T2>::type __a2)
+      tuple(const _T1& __a1, const _T2& __a2)
       : _Inherited(__a1, __a2) { }
+
+      template<typename _U1, typename _U2>
+        explicit
+        tuple(_U1&& __a1, _U2&& __a2)
+	: _Inherited(std::forward<_U1>(__a1), std::forward<_U2>(__a2)) { }
+
+      tuple(const tuple& __in)
+      : _Inherited(__in) { }
+
+      tuple(tuple&& __in)
+      : _Inherited(std::move(__in)) { }
 
       template<typename _U1, typename _U2>
         tuple(const tuple<_U1, _U2>& __in)
 	: _Inherited(__in) { }
 
-      tuple(const tuple& __in)
-      : _Inherited(__in) { }
+      template<typename _U1, typename _U2>
+        tuple(tuple<_U1, _U2>&& __in)
+	: _Inherited(std::move(__in)) { }
 
       template<typename _U1, typename _U2>
         tuple(const pair<_U1, _U2>& __in)
@@ -243,14 +314,14 @@ namespace std
 		     typename __add_c_ref<_U2>::type>(__in.first, 
 						      __in.second))
         { }
-  
+
       template<typename _U1, typename _U2>
-        tuple&
-        operator=(const tuple<_U1, _U2>& __in)
-        {
-	  static_cast<_Inherited&>(*this) = __in;
-	  return *this;
-	}
+        tuple(pair<_U1, _U2>&& __in)
+	: _Inherited(_Tuple_impl<0, 
+		     typename std::remove_reference<_U1>::type&&,
+		     typename std::remove_reference<_U2>::type&&>
+		     (std::move(__in.first), std::move(__in.second)))
+        { }
 
       tuple&
       operator=(const tuple& __in)
@@ -259,12 +330,44 @@ namespace std
 	return *this;
       }
 
+      tuple&
+      operator=(tuple&& __in)
+      {
+	static_cast<_Inherited&>(*this) = std::move(__in);
+	return *this;
+      }
+
+      template<typename _U1, typename _U2>
+        tuple&
+        operator=(const tuple<_U1, _U2>& __in)
+        {
+	  static_cast<_Inherited&>(*this) = __in;
+	  return *this;
+	}
+
+      template<typename _U1, typename _U2>
+        tuple&
+        operator=(tuple<_U1, _U2>&& __in)
+        {
+	  static_cast<_Inherited&>(*this) = std::move(__in);
+	  return *this;
+	}
+
       template<typename _U1, typename _U2>
         tuple&
         operator=(const pair<_U1, _U2>& __in)
         {
 	  this->_M_head() = __in.first;
 	  this->_M_tail()._M_head() = __in.second;
+	  return *this;
+	}
+
+      template<typename _U1, typename _U2>
+        tuple&
+        operator=(pair<_U1, _U2>&& __in)
+        {
+	  this->_M_head() = std::move(__in.first);
+	  this->_M_tail()._M_head() = std::move(__in.second);
 	  return *this;
 	}
     };
