@@ -129,6 +129,10 @@ along with GCC; see the file COPYING3.  If not see
 #define SCAN_LIBRARIES
 #endif
 
+#ifndef SHLIB_SUFFIX
+#define SHLIB_SUFFIX ".so"
+#endif
+
 #ifdef USE_COLLECT2
 int do_collecting = 1;
 #else
@@ -1868,9 +1872,9 @@ write_c_file_stat (FILE *stream, const char *name ATTRIBUTE_UNUSED)
 	}
       else
 	{
-	  if (strncmp (q, ".so", 3) == 0)
+	  if (strncmp (q, SHLIB_SUFFIX, strlen (SHLIB_SUFFIX)) == 0)
 	    {
-	      q += 3;
+	      q += strlen (SHLIB_SUFFIX);
 	      break;
 	    }
 	  else
