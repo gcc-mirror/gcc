@@ -1,3 +1,9 @@
+2007-12-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34558
+	* interface.c (gfc_compare_types): Prevent linked lists from
+	putting this function into an endless recursive loop.
+
 2007-12-26  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/34532

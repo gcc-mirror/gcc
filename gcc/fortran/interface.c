@@ -407,7 +407,17 @@ gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
       if (dt1->dimension && gfc_compare_array_spec (dt1->as, dt2->as) == 0)
 	return 0;
 
-      if (gfc_compare_types (&dt1->ts, &dt2->ts) == 0)
+      /* Make sure that link lists do not put this function in an
+	 endless loop!  */
+      if (!(dt1->ts.type == BT_DERIVED && derived1 == dt1->ts.derived)
+	    && !(dt1->ts.type == BT_DERIVED && derived1 == dt1->ts.derived)
+	    && gfc_compare_types (&dt1->ts, &dt2->ts) == 0)
+	return 0;
+
+      else if (dt1->ts.type != BT_DERIVED
+		 || derived1 != dt1->ts.derived
+		 || dt2->ts.type != BT_DERIVED
+		 || derived2 != dt2->ts.derived)
 	return 0;
 
       dt1 = dt1->next;
