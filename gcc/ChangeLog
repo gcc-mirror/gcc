@@ -1,3 +1,11 @@
+2007-12-31  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR driver/33772
+	* collect2.c (SHLIB_SUFFIX): Define if not defined.
+	(write_c_file_stat): Use SHLIB_SUFFIX.
+	* som.h (SHLIB_SUFFIX): Define.
+	* doc/tm.texi (SHLIB_SUFFIX): Document.
+
 2007-12-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md ("*divv4sf3"): Rename to "sse_divv4sf3".
