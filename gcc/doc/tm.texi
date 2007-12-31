@@ -7314,6 +7314,14 @@ code must advance @var{ptr} to the beginning of the filename on that
 line.  Otherwise, it must set @var{ptr} to @code{NULL}.
 @end defmac
 
+@defmac SHLIB_SUFFIX
+Define this macro to a C string constant containing the default shared
+library extension of the target (e.g., @samp{".so"}).  @command{collect2}
+strips version information after this suffix when generating global
+constructor and destructor names.  This define is only needed on targets
+that use @command{collect2} to process constructors and destructors.
+@end defmac
+
 @node Instruction Output
 @subsection Output of Assembler Instructions
 

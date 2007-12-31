@@ -360,3 +360,7 @@ do {						\
 /* We can't handle weak aliases, and therefore can't support pragma weak.
    Suppress the use of pragma weak in gthr-dce.h and gthr-posix.h.  */
 #define GTHREAD_USE_WEAK 0
+
+/* Shared library suffix.  Collect2 strips the version string after
+   this suffix when generating constructor/destructor names.  */ 
+#define SHLIB_SUFFIX ".sl"
