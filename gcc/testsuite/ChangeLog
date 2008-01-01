@@ -1,3 +1,9 @@
+2008-01-01  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* gcc.target/spu/tag_manager.c : Include stdlib.h.
+	* gcc.target/spu/Wmain.c: Fix the line numbers for the
+	warning on the function main.
+
 2008-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/i386.exp (check_effective_target_sse5): Use __v8hi
