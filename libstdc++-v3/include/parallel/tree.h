@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -1344,7 +1344,7 @@ namespace __gnu_parallel
 	_M_sorted_bulk_construction(sorted_access, beg_partition, n, num_threads, strictly_less_or_less_equal);
       else
 	_M_sorted_bulk_insertion(sorted_access, beg_partition, n, num_threads, strictly_less_or_less_equal);
-      delete v;
+      ::operator delete(v);
     }
 
     /** @brief Construct a tree sequentially using the parallel routine
