@@ -1045,8 +1045,11 @@ mx_register_decls (tree decl, tree *stmt_list)
 
           /* Add the __mf_register call at the current appending point.  */
           if (tsi_end_p (initially_stmts))
-	    warning (0, "mudflap cannot track %qs in stub function",
-		     IDENTIFIER_POINTER (DECL_NAME (decl)));
+	    {
+	      if (!DECL_ARTIFICIAL (decl))
+		warning (0, "mudflap cannot track %qs in stub function",
+			 IDENTIFIER_POINTER (DECL_NAME (decl)));
+	    }
 	  else
 	    {
 	      tsi_link_before (&initially_stmts, register_fncall,

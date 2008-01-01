@@ -1,3 +1,9 @@
+2008-01-01  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	PR libmudflap/26442
+	* tree-mudflap.c (mx_register_decls): Guard warning by
+	!DECL_ARTIFICIAL check.
+
 2008-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (sse5_pperm, sse5_pperm_pack_v2di_v4si,
