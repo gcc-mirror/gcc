@@ -1,3 +1,8 @@
+2008-01-01  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	PR libmudflap/26442
+	* testsuite/libmudflap.c++/pass60-frag.cxx: New test.
+
 2007-10-15  Maciej W. Rozycki  <macro@linux-mips.org>
 
 	* configure: Regenerate following changes to ../config/tls.m4.
