@@ -18,6 +18,7 @@
 /* { dg-do run } */
 
 #include <spu_mfcio.h>
+#include <stdlib.h>
 
 /* This test directly accesses the internal table used
    by the MFC tag manager.  */
