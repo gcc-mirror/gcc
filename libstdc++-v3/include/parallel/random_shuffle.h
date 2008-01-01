@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -237,7 +237,7 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
             ((b == d->bins_begin) ? 0 : sd->dist[b][d->num_threads]));
       }
 
-    delete[] sd->temporaries[iam];
+    ::operator delete(sd->temporaries[iam]);
   }
 
 /** @brief Round up to the next greater power of 2.
@@ -490,7 +490,7 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
         delete[] dist0;
         delete[] dist1;
         delete[] oracles;
-        delete[] target;
+        ::operator delete(target);
       }
     else
       __gnu_sequential::random_shuffle(begin, end, rng);

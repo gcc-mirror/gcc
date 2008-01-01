@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -321,7 +321,7 @@ template<typename RandomAccessIterator, typename Comparator>
               sd->source + offset);
 #endif
 
-    delete[] sd->temporaries[iam];
+    ::operator delete(sd->temporaries[iam]);
   }
 
 /** @brief PMWMS main call.
@@ -415,7 +415,7 @@ template<typename RandomAccessIterator, typename Comparator>
     delete[] sd.merging_places;
 
     if (Settings::sort_splitting == Settings::SAMPLING)
-        delete[] sd.samples;
+      ::operator delete(sd.samples);
 
     delete[] sd.offsets;
     delete[] sd.pieces;

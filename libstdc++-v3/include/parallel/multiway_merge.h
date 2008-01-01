@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -936,7 +936,7 @@ template<
           }
       }
 
-    delete fe;  //Destructors already called.
+    ::operator delete(fe);  //Destructors already called.
     delete[] source;
 
     return target;
@@ -1622,7 +1622,7 @@ template<
                         else
                         pieces[slab][seq].second = _GLIBCXX_PARALLEL_LENGTH(seqs_begin[seq]);
                       }
-                    delete[] samples;
+		  ::operator delete(samples);
                 }
               else
                 {

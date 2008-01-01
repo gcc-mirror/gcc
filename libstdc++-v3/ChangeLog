@@ -1,5 +1,23 @@
 2008-01-01  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/34095
+	* include/parallel/multiway_merge.h (multiway_merge_bubble,
+	parallel_multiway_merge): Together with ::operator new use
+	::operator delete.
+	* include/parallel/losertree.h (LoserTree<>::~LoserTree): Likewise.
+	* include/parallel/quicksort.h (parallel_sort_qs_divide): Likewise.
+	* include/parallel/random_shuffle.h (parallel_random_shuffle_drs_pu,
+	sequential_random_shuffle): Likewise.
+	* include/parallel/tree.h (_M_not_sorted_bulk_insertion_construction):
+	Likewise.
+	* include/parallel/multiway_mergesort.h (parallel_sort_mwms_pu,
+	parallel_sort_mwms): Likewise.
+	* include/parallel/partial_sum.h (parallel_partial_sum_linear):
+	Likewise. 
+	* testsuite/25_algorithms/sort/34095.cc: New.
+
+2008-01-01  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/25_algorithms/sort/34636.cc: Fix Copyright year.
 
 2008-01-01  Paolo Carlini  <pcarlini@suse.de>
