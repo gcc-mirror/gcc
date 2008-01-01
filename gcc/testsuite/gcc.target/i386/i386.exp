@@ -68,13 +68,13 @@ proc check_effective_target_sse4a { } {
 proc check_effective_target_sse5 { } {
     return [check_no_compiler_messages sse5 object {
 	typedef long long __m128i __attribute__ ((__vector_size__ (16)));
-	typedef long long __v2di __attribute__ ((__vector_size__ (16)));
+	typedef short __v8hi __attribute__ ((__vector_size__ (16)));
 
 	__m128i _mm_maccs_epi16(__m128i __A, __m128i __B, __m128i __C)
 	{
-	    return (__m128i) __builtin_ia32_pmacssww ((__v2di)__A,
-						      (__v2di)__B,
-						      (__v2di)__C);
+	    return (__m128i) __builtin_ia32_pmacssww ((__v8hi)__A,
+						      (__v8hi)__B,
+						      (__v8hi)__C);
 	}
     } "-O2 -msse5" ]
 }
