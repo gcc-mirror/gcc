@@ -215,13 +215,7 @@ namespace __parallel
 					   random_access_iterator_tag(), 
 					   random_access_iterator_tag());
 
-	    // Less because shorter.
-	    const bool lbs = mm.first == end1;
-
-	    // Less because differing elements less.
-	    const bool lbdel = pred(*mm.first, *mm.second);
-
-	    return lbs || lbdel;
+	    return (mm.first == end1) || bool(pred(*mm.first, *mm.second));
 	  }
 	else
 	  {
@@ -231,13 +225,7 @@ namespace __parallel
 					   random_access_iterator_tag(), 
 					   random_access_iterator_tag());
 
-	    // Less because shorter.
-	    const bool lbs = mm.first != end2;
-
-	    // Less because differing element less.
-	    const bool lbdel = pred(*mm.second, *mm.first);
-
-	    return lbs && lbdel;
+	    return (mm.first != end2) && bool(pred(*mm.second, *mm.first));
 	  }
       }
     else
