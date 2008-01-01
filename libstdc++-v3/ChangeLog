@@ -1,5 +1,9 @@
 2008-01-01  Paolo Carlini  <pcarlini@suse.de>
 
+	* testsuite/25_algorithms/sort/34636.cc: Fix Copyright year.
+
+2008-01-01  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/34636
 	* include/parallel/algobase.h (lexicographical_compare_switch(...,
 	random_access_iterator_tag, random_access_iterator_tag)): Careful
