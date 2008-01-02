@@ -1,3 +1,9 @@
+2008-01-01  Douglas Gregor  <doug.gregor@gmail.com>
+
+       * parser.c (cp_parser_check_decl_spec): Don't warn about "long
+       long" in C++0x mode; change the warning to note that "long long"
+       is only unsupported in C++98 mode.
+
 2007-12-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/34111

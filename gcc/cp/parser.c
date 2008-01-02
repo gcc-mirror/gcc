@@ -2147,8 +2147,9 @@ cp_parser_check_decl_spec (cp_decl_specifier_seq *decl_specs)
 	{
 	  if (count > 2)
 	    error ("%<long long long%> is too long for GCC");
-	  else if (pedantic && !in_system_header && warn_long_long)
-	    pedwarn ("ISO C++ does not support %<long long%>");
+	  else if (pedantic && !in_system_header && warn_long_long
+                   && cxx_dialect == cxx98)
+	    pedwarn ("ISO C++ 1998 does not support %<long long%>");
 	}
       else if (count > 1)
 	{
