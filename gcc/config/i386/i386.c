@@ -6318,8 +6318,12 @@ ix86_expand_prologue (void)
     allocate += frame.nregs * UNITS_PER_WORD;
 
   /* When using red zone we may start register saving before allocating
-     the stack frame saving one cycle of the prologue.  */
-  if (TARGET_RED_ZONE && frame.save_regs_using_mov)
+     the stack frame saving one cycle of the prologue. However I will
+     avoid doing this if I am going to have to probe the stack since
+     at least on x86_64 the stack probe can turn into a call that clobbers
+     a red zone location */
+  if (TARGET_RED_ZONE && frame.save_regs_using_mov
+      && (! TARGET_STACK_PROBE || allocate < CHECK_STACK_LIMIT))
     ix86_emit_save_regs_using_mov (frame_pointer_needed ? hard_frame_pointer_rtx
 				   : stack_pointer_rtx,
 				   -frame.nregs * UNITS_PER_WORD);
@@ -6375,7 +6379,9 @@ ix86_expand_prologue (void)
 	}
     }
 
-  if (frame.save_regs_using_mov && !TARGET_RED_ZONE)
+  if (frame.save_regs_using_mov
+      && !(TARGET_RED_ZONE
+         && (! TARGET_STACK_PROBE || allocate < CHECK_STACK_LIMIT)))
     {
       if (!frame_pointer_needed || !frame.to_allocate)
         ix86_emit_save_regs_using_mov (stack_pointer_rtx, frame.to_allocate);
