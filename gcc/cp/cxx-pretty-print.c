@@ -512,14 +512,7 @@ pp_cxx_postfix_expression (cxx_pretty_printer *pp, tree t)
       break;
 
     case TYPEID_EXPR:
-      t = TREE_OPERAND (t, 0);
-      pp_cxx_identifier (pp, "typeid");
-      pp_left_paren (pp);
-      if (TYPE_P (t))
-	pp_cxx_type_id (pp, t);
-      else
-	pp_cxx_expression (pp, t);
-      pp_right_paren (pp);
+      pp_cxx_typeid_expression (pp, t);
       break;
 
     case PSEUDO_DTOR_EXPR:
@@ -1966,6 +1959,19 @@ pp_cxx_declaration (cxx_pretty_printer *pp, tree t)
       pp_unsupported_tree (pp, t);
       break;
     }
+}
+
+void
+pp_cxx_typeid_expression (cxx_pretty_printer *pp, tree t)
+{
+  t = TREE_OPERAND (t, 0);
+  pp_cxx_identifier (pp, "typeid");
+  pp_cxx_left_paren (pp);
+  if (TYPE_P (t))
+    pp_cxx_type_id (pp, t);
+  else
+    pp_cxx_expression (pp, t);
+  pp_cxx_right_paren (pp);
 }
 
 

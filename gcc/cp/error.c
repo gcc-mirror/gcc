@@ -1893,6 +1893,10 @@ dump_expr (tree t, int flags)
       dump_expr (TREE_OPERAND (t, 0), flags);
       break;
 
+    case TYPEID_EXPR:
+      pp_cxx_typeid_expression (cxx_pp, t);
+      break;
+
       /*  This list is incomplete, but should suffice for now.
 	  It is very important that `sorry' does not call
 	  `report_error_function'.  That could cause an infinite loop.  */
