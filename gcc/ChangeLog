@@ -1,3 +1,8 @@
+2008-01-02  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* tree-sra.c (scalarize_init): Insert the generate_element_init
+	statements after the generate_element_zero statements.
+
 2008-01-02  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/34093
