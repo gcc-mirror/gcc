@@ -3354,19 +3354,20 @@ static void
 scalarize_init (struct sra_elt *lhs_elt, tree rhs, block_stmt_iterator *bsi)
 {
   bool result = true;
-  tree list = NULL;
+  tree list = NULL, init_list = NULL;
 
   /* Generate initialization statements for all members extant in the RHS.  */
   if (rhs)
     {
       /* Unshare the expression just in case this is from a decl's initial.  */
       rhs = unshare_expr (rhs);
-      result = generate_element_init (lhs_elt, rhs, &list);
+      result = generate_element_init (lhs_elt, rhs, &init_list);
     }
 
   /* CONSTRUCTOR is defined such that any member not mentioned is assigned
      a zero value.  Initialize the rest of the instantiated elements.  */
   generate_element_zero (lhs_elt, &list);
+  append_to_statement_list (init_list, &list);
 
   if (!result)
     {
