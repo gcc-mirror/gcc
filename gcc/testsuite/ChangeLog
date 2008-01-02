@@ -1,3 +1,8 @@
+2008-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/34608
+	* g++.dg/gomp/pr34608.C: New test.
+
 2008-01-02  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/34093

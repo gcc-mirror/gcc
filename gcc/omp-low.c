@@ -3,7 +3,7 @@
    marshalling to implement data sharing and copying clauses.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
-   Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2646,6 +2646,24 @@ expand_omp_parallel (struct omp_region *region)
       if (optimize)
 	optimize_omp_library_calls ();
       rebuild_cgraph_edges ();
+
+      /* Some EH regions might become dead, see PR34608.  If
+	 pass_cleanup_cfg isn't the first pass to happen with the
+	 new child, these dead EH edges might cause problems.
+	 Clean them up now.  */
+      if (flag_exceptions)
+	{
+	  basic_block bb;
+	  tree save_current = current_function_decl;
+	  bool changed = false;
+
+	  current_function_decl = child_fn;
+	  FOR_EACH_BB (bb)
+	    changed |= tree_purge_dead_eh_edges (bb);
+	  if (changed)
+	    cleanup_tree_cfg ();
+	  current_function_decl = save_current;
+	}
       pop_cfun ();
     }
   
