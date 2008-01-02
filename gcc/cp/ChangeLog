@@ -1,6 +1,14 @@
 2008-01-02  Volker Reichelt  <reichelt@netcologne.de>
 
 	Backport:
+	2007-09-27  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/33493
+	* error.c (dump_expr): Deal with DELETE_EXPR and VEC_DELETE_EXPR.
+	* cxx-pretty-print.c (pp_cxx_delete_expression): Add missing
+	spaces in the formatting.
+	* cxx-pretty-print.h (pp_cxx_delete_expression): Declare.
+
 	2007-09-18  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33462
