@@ -1,3 +1,9 @@
+2008-01-02  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34093
+	PR middle-end/31976
+	* gcc.c-torture/compile/pr34093.c: New testcase.
+
 2008-01-01  Douglas Gregor  <doug.gregor@gmail.com>
 
        * g++.dg/cpp0x/long_long.C: New.

@@ -1,3 +1,10 @@
+2008-01-02  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34093
+	PR middle-end/31976
+	* tree-ssa-operands.c (ssa_operand_alloc): Also allocate a buffer
+	for very large number of operands instead of ICEing.
+
 2008-01-02  Arthur Norman <acn1@cam.ac.uk>
 
 	PR 34013
