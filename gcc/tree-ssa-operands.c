@@ -477,11 +477,10 @@ ssa_operand_alloc (unsigned size)
         gimple_ssa_operands (cfun)->ssa_operand_mem_size
 	  = OP_SIZE_3 * sizeof (struct voptype_d);
 
-      /* Fail if there is not enough space.  If there are this many operands
-	 required, first make sure there isn't a different problem causing this
-	 many operands.  If the decision is that this is OK, then we can 
-	 specially allocate a buffer just for this request.  */
-      gcc_assert (size <= gimple_ssa_operands (cfun)->ssa_operand_mem_size);
+      /* We can reliably trigger the case that we need arbitrary many
+	 operands (see PR34093), so allocate a buffer just for this request.  */
+      if (size > gimple_ssa_operands (cfun)->ssa_operand_mem_size)
+	gimple_ssa_operands (cfun)->ssa_operand_mem_size = size;
 
       ptr = (struct ssa_operand_memory_d *) 
 	      ggc_alloc (sizeof (struct ssa_operand_memory_d) 
