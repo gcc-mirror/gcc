@@ -1,6 +1,12 @@
+2008-01-02  Arthur Norman <acn1@cam.ac.uk>
+
+	PR 34013
+	* gcc/config/i386/i386.c: (ix86_expand_prologue): Save red-zone
+	while stack probing.
+
 2008-01-01  Douglas Gregor  <doug.gregor@gmail.com>
 
-       * c-opts.c (sanitize_cpp_opts): Don't warn about "long long" when
+	* c-opts.c (sanitize_cpp_opts): Don't warn about "long long" when
        in C++0x mode.
 
 2008-01-01  Volker Reichelt  <v.reichelt@netcologne.de>
