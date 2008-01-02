@@ -1,6 +1,18 @@
 2008-01-02  Volker Reichelt  <reichelt@netcologne.de>
 
 	Backport:
+	2007-10-31  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/33494
+	* cxx-pretty-print.c (pp_cxx_typeid_expression,
+	pp_cxx_delete_expression): Change to static linkage.
+	* cxx-pretty-print.h: Adjust declarations.
+	* error.c (dump_expr, case SCOPE_REF, TYPEID_EXPR, DELETE_EXPR,
+	VEC_DELETE_EXPR, MODOP_EXPR): Forward to pp_expression.
+
+	* cxx-pretty-print.c (pp_cxx_expression, case NON_DEPENDENT_EXPR):
+	Fix typo.
+
 	2007-11-02  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33495

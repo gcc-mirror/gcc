@@ -43,6 +43,7 @@ static void pp_cxx_abstract_declarator (cxx_pretty_printer *, tree);
 static void pp_cxx_statement (cxx_pretty_printer *, tree);
 static void pp_cxx_template_parameter (cxx_pretty_printer *, tree);
 static void pp_cxx_cast_expression (cxx_pretty_printer *, tree);
+static void pp_cxx_typeid_expression (cxx_pretty_printer *, tree);
 
 
 static inline void
@@ -604,7 +605,7 @@ pp_cxx_new_expression (cxx_pretty_printer *pp, tree t)
       ::(opt) delete cast-expression
       ::(opt) delete [ ] cast-expression   */
 
-void
+static void
 pp_cxx_delete_expression (cxx_pretty_printer *pp, tree t)
 {
   enum tree_code code = TREE_CODE (t);
@@ -976,7 +977,7 @@ pp_cxx_expression (cxx_pretty_printer *pp, tree t)
 
     case NON_DEPENDENT_EXPR:
     case MUST_NOT_THROW_EXPR:
-      pp_cxx_expression (pp, t);
+      pp_cxx_expression (pp, TREE_OPERAND (t, 0));
       break;
 
     default:
@@ -1971,7 +1972,7 @@ pp_cxx_declaration (cxx_pretty_printer *pp, tree t)
     }
 }
 
-void
+static void
 pp_cxx_typeid_expression (cxx_pretty_printer *pp, tree t)
 {
   t = TREE_OPERAND (t, 0);

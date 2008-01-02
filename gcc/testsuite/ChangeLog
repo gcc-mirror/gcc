@@ -1,6 +1,11 @@
 2008-01-02  Volker Reichelt  <reichelt@netcologne.de>
 
 	Backport:
+	2007-10-31  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/33494
+	* g++.dg/template/error35.C: New.
+
 	2007-11-02  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33495
