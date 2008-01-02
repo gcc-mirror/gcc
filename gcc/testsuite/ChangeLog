@@ -2,6 +2,11 @@
 
 	Backport:
 	2007-09-18  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/33462
+	* g++.dg/ext/va-arg1.C: New.
+
+	2007-09-18  Paolo Carlini  <pcarlini@suse.de>
  
 	PR c++/33463
 	* g++.dg/rtti/typeid6.C: New.

@@ -1897,6 +1897,10 @@ dump_expr (tree t, int flags)
       pp_cxx_typeid_expression (cxx_pp, t);
       break;
 
+    case VA_ARG_EXPR:
+      pp_cxx_va_arg_expression (cxx_pp, t);
+      break;
+
       /*  This list is incomplete, but should suffice for now.
 	  It is very important that `sorry' does not call
 	  `report_error_function'.  That could cause an infinite loop.  */
