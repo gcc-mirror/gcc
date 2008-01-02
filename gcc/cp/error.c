@@ -1324,6 +1324,12 @@ dump_expr (tree t, int flags)
   if (t == 0)
     return;
 
+  if (STATEMENT_CLASS_P (t))
+    {
+      pp_cxx_identifier (cxx_pp, "<statement>");
+      return;
+    }
+
   switch (TREE_CODE (t))
     {
     case VAR_DECL:

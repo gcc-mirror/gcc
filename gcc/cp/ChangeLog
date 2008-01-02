@@ -1,6 +1,11 @@
 2008-01-02  Volker Reichelt  <reichelt@netcologne.de>
 
 	Backport:
+	2007-11-02  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/33495
+	* error.c (dump_expr): Deal specially with statements.
+
 	2007-09-27  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33493
