@@ -1,3 +1,9 @@
+2008-01-03  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/34602.
+	* directives.c (do_line): Don't try to spell EOF token.
+	(do_linemarker): Add comment.
+
 2007-12-11  DJ Delorie  <dj@redhat.com>
 
 	* charset.c (convert_using_iconv): Close out any shift states,
