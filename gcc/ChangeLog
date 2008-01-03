@@ -1,3 +1,12 @@
+2008-01-03  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/34458
+	* tree-data-ref.c (dd_int_cst_value): New.
+	(initialize_matrix_A, compute_overlap_steps_for_affine_1_2,
+	analyze_subscript_affine_affine, build_classic_dist_vector_1,
+	add_multivariate_self_dist, init_omega_eq_with_af): Use 
+	dd_int_cst_value instead of int_cst_value.
+
 2008-01-03  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/31081
@@ -20,7 +29,7 @@
 	* doc/extend.texi (Labels as Values): Document &&foo behaviour
 	vs. inlining.
 
-2007-12-19  Sebastian Pop  <sebastian.pop@amd.com>
+2008-01-03  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/34635
 	* tree-data-ref.c (add_other_self_distances): Make sure that the
