@@ -97,6 +97,9 @@ typedef struct copy_body_data
 
   /* Statements that might be possibly folded.  */
   struct pointer_set_t *statements_to_fold;
+
+  /* Entry basic block to currently copied body.  */
+  struct basic_block_def *entry_bb;
 } copy_body_data;
 
 /* Weights of constructions for estimate_num_insns.  */

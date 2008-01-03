@@ -186,15 +186,42 @@ remap_ssa_name (tree name, copy_body_data *id)
     {
       new = make_ssa_name (new, NULL);
       insert_decl_map (id, name, new);
-      if (IS_EMPTY_STMT (SSA_NAME_DEF_STMT (name)))
-	{
-	  SSA_NAME_DEF_STMT (new) = build_empty_stmt ();
-	  if (gimple_default_def (id->src_cfun, SSA_NAME_VAR (name)) == name)
-	    set_default_def (SSA_NAME_VAR (new), new);
-	}
       SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new)
 	= SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name);
       TREE_TYPE (new) = TREE_TYPE (SSA_NAME_VAR (new));
+      if (IS_EMPTY_STMT (SSA_NAME_DEF_STMT (name)))
+	{
+	  /* By inlining function having uninitialized variable, we might
+	     extend the lifetime (variable might get reused).  This cause
+	     ICE in the case we end up extending lifetime of SSA name across
+	     abnormal edge, but also increase register presure.
+
+	     We simply initialize all uninitialized vars by 0 except for case
+	     we are inlining to very first BB.  We can avoid this for all
+	     BBs that are not withing strongly connected regions of the CFG,
+	     but this is bit expensive to test.
+	   */
+	  if (id->entry_bb && is_gimple_reg (SSA_NAME_VAR (name))
+	      && TREE_CODE (SSA_NAME_VAR (name)) != PARM_DECL
+	      && (id->entry_bb != EDGE_SUCC (ENTRY_BLOCK_PTR, 0)
+		  || EDGE_COUNT (id->entry_bb->preds) != 1))
+	    {
+	      block_stmt_iterator bsi = bsi_last (id->entry_bb);
+	      tree init_stmt
+		  = build_gimple_modify_stmt (new,
+				  	      fold_convert (TREE_TYPE (new),
+					       		    integer_zero_node));
+	      bsi_insert_after (&bsi, init_stmt, BSI_NEW_STMT);
+	      SSA_NAME_DEF_STMT (new) = init_stmt;
+	      SSA_NAME_IS_DEFAULT_DEF (new) = 0;
+	    }
+	  else
+	    {
+	      SSA_NAME_DEF_STMT (new) = build_empty_stmt ();
+	      if (gimple_default_def (id->src_cfun, SSA_NAME_VAR (name)) == name)
+	        set_default_def (SSA_NAME_VAR (new), new);
+	    }
+	}
     }
   else
     insert_decl_map (id, name, new);
@@ -259,7 +286,8 @@ remap_decl (tree decl, copy_body_data *id)
 	      tree map = remap_ssa_name (def, id);
 	      /* Watch out RESULT_DECLs whose SSA names map directly
 		 to them.  */
-	      if (TREE_CODE (map) == SSA_NAME)
+	      if (TREE_CODE (map) == SSA_NAME
+		  && IS_EMPTY_STMT (SSA_NAME_DEF_STMT (map)))
 	        set_default_def (t, map);
 	    }
 	  add_referenced_var (t);
@@ -2698,6 +2726,7 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
 
   gcc_assert (!id->src_cfun->after_inlining);
 
+  id->entry_bb = bb;
   initialize_inlined_parameters (id, t, fn, bb);
 
   if (DECL_INITIAL (fn))
