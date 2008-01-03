@@ -1,5 +1,9 @@
 2008-01-03  Sebastian Pop  <sebastian.pop@amd.com>
 
+	Revert fix for PR tree-optimization/34458.
+
+2008-01-03  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR tree-optimization/34458
 	* tree-data-ref.c (dd_int_cst_value): New.
 	(initialize_matrix_A, compute_overlap_steps_for_affine_1_2,

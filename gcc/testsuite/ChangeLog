@@ -1,5 +1,9 @@
 2008-01-03  Sebastian Pop  <sebastian.pop@amd.com>
 
+	Revert fix for PR tree-optimization/34458.
+
+2008-01-03  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR tree-optimization/34458
 	* gcc.dg/tree-ssa/pr34458.c: New.
 
