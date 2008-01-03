@@ -1,3 +1,9 @@
+2008-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/29484
+	* gcc.c-torture/execute/20071220-1.c: New test.
+	* gcc.c-torture/execute/20071220-2.c: New test.
+
 2007-12-19  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/34635
