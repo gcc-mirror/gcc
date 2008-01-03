@@ -369,6 +369,7 @@ gfc_unit *
 get_internal_unit (st_parameter_dt *dtp)
 {
   gfc_unit * iunit;
+  gfc_offset start_record = 0;
 
   /* Allocate memory for a unit structure.  */
 
@@ -405,12 +406,15 @@ get_internal_unit (st_parameter_dt *dtp)
       iunit->ls = (array_loop_spec *)
 	get_mem (iunit->rank * sizeof (array_loop_spec));
       dtp->internal_unit_len *=
-	init_loop_spec (dtp->internal_unit_desc, iunit->ls);
+	init_loop_spec (dtp->internal_unit_desc, iunit->ls, &start_record);
+
+      start_record *= iunit->recl;
     }
 
   /* Set initial values for unit parameters.  */
 
-  iunit->s = open_internal (dtp->internal_unit, dtp->internal_unit_len);
+  iunit->s = open_internal (dtp->internal_unit - start_record,
+			    dtp->internal_unit_len, -start_record);
   iunit->bytes_left = iunit->recl;
   iunit->last_record=0;
   iunit->maxrec=0;

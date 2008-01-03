@@ -1,3 +1,9 @@
+2008-01-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/34565
+	* gfortran.dg/internal_readwrite_1.f90:  New test.
+	* gfortran.dg/internal_readwrite_2.f90:  New test.
+
 2008-01-03  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/34602:

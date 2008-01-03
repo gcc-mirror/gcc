@@ -2068,42 +2068,63 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 }
 
 /* Initialize an array_loop_spec given the array descriptor.  The function
-   returns the index of the last element of the array.  */
+   returns the index of the last element of the array, and also returns
+   starting record, where the first I/O goes to (necessary in case of
+   negative strides).  */
    
 gfc_offset
-init_loop_spec (gfc_array_char *desc, array_loop_spec *ls)
+init_loop_spec (gfc_array_char *desc, array_loop_spec *ls,
+		gfc_offset *start_record)
 {
   int rank = GFC_DESCRIPTOR_RANK(desc);
   int i;
   gfc_offset index; 
+  int empty;
 
+  empty = 0;
   index = 1;
+  *start_record = 0;
+
   for (i=0; i<rank; i++)
     {
       ls[i].idx = desc->dim[i].lbound;
       ls[i].start = desc->dim[i].lbound;
       ls[i].end = desc->dim[i].ubound;
       ls[i].step = desc->dim[i].stride;
-      
-      index += (desc->dim[i].ubound - desc->dim[i].lbound)
-                      * desc->dim[i].stride;
+      empty = empty || (desc->dim[i].ubound < desc->dim[i].lbound);
+
+      if (desc->dim[i].stride > 0)
+	{
+	  index += (desc->dim[i].ubound - desc->dim[i].lbound)
+	    * desc->dim[i].stride;
+	}
+      else
+	{
+	  index -= (desc->dim[i].ubound - desc->dim[i].lbound)
+	    * desc->dim[i].stride;
+	  *start_record -= (desc->dim[i].ubound - desc->dim[i].lbound)
+	    * desc->dim[i].stride;
+	}
     }
-  return index;
+
+  if (empty)
+    return 0;
+  else
+    return index;
 }
 
 /* Determine the index to the next record in an internal unit array by
-   by incrementing through the array_loop_spec.  TODO:  Implement handling
-   negative strides. */
+   by incrementing through the array_loop_spec.  */
    
 gfc_offset
-next_array_record (st_parameter_dt *dtp, array_loop_spec *ls)
+next_array_record (st_parameter_dt *dtp, array_loop_spec *ls, int *finished)
 {
   int i, carry;
   gfc_offset index;
   
   carry = 1;
   index = 0;
-  
+
   for (i = 0; i < dtp->u.p.current_unit->rank; i++)
     {
       if (carry)
@@ -2119,6 +2140,8 @@ next_array_record (st_parameter_dt *dtp, array_loop_spec *ls)
         }
       index = index + (ls[i].idx - ls[i].start) * ls[i].step;
     }
+
+  *finished = carry;
 
   return index;
 }
@@ -2241,7 +2264,10 @@ next_record_r (st_parameter_dt *dtp)
 	{
 	  if (is_array_io (dtp))
 	    {
-	      record = next_array_record (dtp, dtp->u.p.current_unit->ls);
+	      int finished;
+
+	      record = next_array_record (dtp, dtp->u.p.current_unit->ls,
+					  &finished);
 
 	      /* Now seek to this record.  */
 	      record = record * dtp->u.p.current_unit->recl;
@@ -2460,6 +2486,8 @@ next_record_w (st_parameter_dt *dtp, int done)
 	{
 	  if (is_array_io (dtp))
 	    {
+	      int finished;
+
 	      length = (int) dtp->u.p.current_unit->bytes_left;
 	      
 	      /* If the farthest position reached is greater than current
@@ -2483,8 +2511,9 @@ next_record_w (st_parameter_dt *dtp, int done)
 
 	      /* Now that the current record has been padded out,
 		 determine where the next record in the array is. */
-	      record = next_array_record (dtp, dtp->u.p.current_unit->ls);
-	      if (record == 0)
+	      record = next_array_record (dtp, dtp->u.p.current_unit->ls,
+					  &finished);
+	      if (finished)
 		dtp->u.p.current_unit->endfile = AT_ENDFILE;
 	      
 	      /* Now seek to this record */

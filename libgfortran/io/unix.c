@@ -1078,7 +1078,7 @@ empty_internal_buffer(stream *strm)
 /* open_internal()-- Returns a stream structure from an internal file */
 
 stream *
-open_internal (char *base, int length)
+open_internal (char *base, int length, gfc_offset offset)
 {
   int_stream *s;
 
@@ -1086,7 +1086,7 @@ open_internal (char *base, int length)
   memset (s, '\0', sizeof (int_stream));
 
   s->buffer = base;
-  s->buffer_offset = 0;
+  s->buffer_offset = offset;
 
   s->logical_offset = 0;
   s->active = s->file_length = length;
