@@ -203,7 +203,7 @@ remap_ssa_name (tree name, copy_body_data *id)
 	   */
 	  if (id->entry_bb && is_gimple_reg (SSA_NAME_VAR (name))
 	      && TREE_CODE (SSA_NAME_VAR (name)) != PARM_DECL
-	      && (id->entry_bb != EDGE_SUCC (ENTRY_BLOCK_PTR, 0)
+	      && (id->entry_bb != EDGE_SUCC (ENTRY_BLOCK_PTR, 0)->dest
 		  || EDGE_COUNT (id->entry_bb->preds) != 1))
 	    {
 	      block_stmt_iterator bsi = bsi_last (id->entry_bb);
