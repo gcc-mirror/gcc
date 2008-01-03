@@ -1,3 +1,12 @@
+2008-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/29484
+	* tree-inline.c (inline_forbidden_p_2): New function.
+	(inline_forbidden_p): Disallow inlining if some static var
+	has an address of a local LABEL_DECL in its initializer.
+	* doc/extend.texi (Labels as Values): Document &&foo behaviour
+	vs. inlining.
+
 2007-12-19  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/34635

@@ -370,6 +370,12 @@ This is more friendly to code living in shared libraries, as it reduces
 the number of dynamic relocations that are needed, and by consequence,
 allows the data to be read-only.
 
+The @code{&&foo} expressions for the same label might have different values
+if the containing function is inlined or cloned.  If a program relies on
+them being always the same, @code{__attribute__((__noinline__))} should
+be used to prevent inlining.  If @code{&&foo} is used
+in a static variable initializer, inlining is forbidden.
+
 @node Nested Functions
 @section Nested Functions
 @cindex nested functions

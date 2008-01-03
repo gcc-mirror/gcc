@@ -1951,6 +1951,27 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
   return NULL_TREE;
 }
 
+static tree
+inline_forbidden_p_2 (tree *nodep, int *walk_subtrees,
+		      void *fnp)
+{
+  tree node = *nodep;
+  tree fn = (tree) fnp;
+
+  if (TREE_CODE (node) == LABEL_DECL && DECL_CONTEXT (node) == fn)
+    {
+      inline_forbidden_reason
+	= G_("function %q+F can never be inlined "
+	     "because it saves address of local label in a static variable");
+      return node;
+    }
+
+  if (TYPE_P (node))
+    *walk_subtrees = 0;
+
+  return NULL_TREE;
+}
+
 /* Return subexpression representing possible alloca call, if any.  */
 static tree
 inline_forbidden_p (tree fndecl)
@@ -1959,15 +1980,30 @@ inline_forbidden_p (tree fndecl)
   block_stmt_iterator bsi;
   basic_block bb;
   tree ret = NULL_TREE;
+  struct function *fun = DECL_STRUCT_FUNCTION (fndecl);
+  tree step;
 
-  FOR_EACH_BB_FN (bb, DECL_STRUCT_FUNCTION (fndecl))
+  FOR_EACH_BB_FN (bb, fun)
     for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
       {
 	ret = walk_tree_without_duplicates (bsi_stmt_ptr (bsi),
-				    inline_forbidden_p_1, fndecl);
+					    inline_forbidden_p_1, fndecl);
 	if (ret)
 	  goto egress;
       }
+
+  for (step = fun->unexpanded_var_list; step; step = TREE_CHAIN (step))
+    {
+      tree decl = TREE_VALUE (step);
+      if (TREE_CODE (decl) == VAR_DECL
+	  && TREE_STATIC (decl)
+	  && !DECL_EXTERNAL (decl)
+	  && DECL_INITIAL (decl))
+	ret = walk_tree_without_duplicates (&DECL_INITIAL (decl),
+					    inline_forbidden_p_2, fndecl);
+	if (ret)
+	  goto egress;
+    }
 
 egress:
   input_location = saved_loc;
