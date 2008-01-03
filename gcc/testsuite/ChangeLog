@@ -1,3 +1,8 @@
+2008-01-03  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/34458
+	* gcc.dg/tree-ssa/pr34458.c: New.
+
 2008-01-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/34565
@@ -15,7 +20,7 @@
 	* gcc.c-torture/execute/20071220-1.c: New test.
 	* gcc.c-torture/execute/20071220-2.c: New test.
 
-2007-12-19  Sebastian Pop  <sebastian.pop@amd.com>
+2008-01-03  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/34635
 	* gcc.dg/tree-ssa/pr34635.c: New.

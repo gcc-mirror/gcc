@@ -1817,6 +1817,17 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
     }
 }
 
+/* Return the HWI converted value of X.  */
+
+static inline HOST_WIDE_INT
+dd_int_cst_value (tree x)
+{
+  if (TYPE_PRECISION (TREE_TYPE (x)) > HOST_BITS_PER_WIDE_INT)
+    x = fold_convert (integer_type_node, x);
+
+  return int_cst_value (x);
+}
+
 /* Helper recursive function for initializing the matrix A.  Returns
    the initial value of CHREC.  */
 
@@ -1826,9 +1837,9 @@ initialize_matrix_A (lambda_matrix A, tree chrec, unsigned index, int mult)
   gcc_assert (chrec);
 
   if (TREE_CODE (chrec) != POLYNOMIAL_CHREC)
-    return int_cst_value (chrec);
+    return dd_int_cst_value (chrec);
 
-  A[index][0] = mult * int_cst_value (CHREC_RIGHT (chrec));
+  A[index][0] = mult * dd_int_cst_value (CHREC_RIGHT (chrec));
   return initialize_matrix_A (A, CHREC_LEFT (chrec), index + 1, mult);
 }
 
@@ -1913,9 +1924,9 @@ compute_overlap_steps_for_affine_1_2 (tree chrec_a, tree chrec_b,
   affine_fn ova1, ova2, ovb;
   tree last_conflicts_xz, last_conflicts_yz, last_conflicts_xyz;
 
-  step_x = int_cst_value (CHREC_RIGHT (CHREC_LEFT (chrec_a)));
-  step_y = int_cst_value (CHREC_RIGHT (chrec_a));
-  step_z = int_cst_value (CHREC_RIGHT (chrec_b));
+  step_x = dd_int_cst_value (CHREC_RIGHT (CHREC_LEFT (chrec_a)));
+  step_y = dd_int_cst_value (CHREC_RIGHT (chrec_a));
+  step_z = dd_int_cst_value (CHREC_RIGHT (chrec_b));
 
   niter_x = 
     estimated_loop_iterations_int (get_chrec_loop (CHREC_LEFT (chrec_a)),
@@ -2086,8 +2097,8 @@ analyze_subscript_affine_affine (tree chrec_a,
 	  niter_b = estimated_loop_iterations_int (get_chrec_loop (chrec_b),
 						   false);
 	  niter = MIN (niter_a, niter_b);
-	  step_a = int_cst_value (CHREC_RIGHT (chrec_a));
-	  step_b = int_cst_value (CHREC_RIGHT (chrec_b));
+	  step_a = dd_int_cst_value (CHREC_RIGHT (chrec_a));
+	  step_b = dd_int_cst_value (CHREC_RIGHT (chrec_b));
 
 	  compute_overlap_steps_for_affine_univar (niter, step_a, step_b, 
 						   &ova, &ovb, 
@@ -2752,7 +2763,7 @@ build_classic_dist_vector_1 (struct data_dependence_relation *ddr,
 	      return false;
 	    }
 	  
-	  dist = int_cst_value (SUB_DISTANCE (subscript));
+	  dist = dd_int_cst_value (SUB_DISTANCE (subscript));
 
 	  /* This is the subscript coupling test.  If we have already
 	     recorded a distance for this loop (a distance coming from
@@ -2847,8 +2858,8 @@ add_multivariate_self_dist (struct data_dependence_relation *ddr, tree c_2)
 
   /* For "{{0, +, 2}_1, +, 3}_2" the distance vector is (3, -2).  */
   dist_v = lambda_vector_new (DDR_NB_LOOPS (ddr));
-  v1 = int_cst_value (CHREC_RIGHT (c_1));
-  v2 = int_cst_value (CHREC_RIGHT (c_2));
+  v1 = dd_int_cst_value (CHREC_RIGHT (c_1));
+  v2 = dd_int_cst_value (CHREC_RIGHT (c_2));
   cd = gcd (v1, v2);
   v1 /= cd;
   v2 /= cd;
@@ -3275,14 +3286,14 @@ init_omega_eq_with_af (omega_pb pb, unsigned eq,
 	  return false;
 
 	var_idx = index_in_loop_nest (var, DDR_LOOP_NEST (ddr));
-	pb->eqs[eq].coef[offset + var_idx + 1] = int_cst_value (right);
+	pb->eqs[eq].coef[offset + var_idx + 1] = dd_int_cst_value (right);
 
 	/* Compute the innermost loop index.  */
 	DDR_INNER_LOOP (ddr) = MAX (DDR_INNER_LOOP (ddr), var_idx);
 
 	if (offset == 0)
 	  pb->eqs[eq].coef[var_idx + DDR_NB_LOOPS (ddr) + 1] 
-	    += int_cst_value (right);
+	    += dd_int_cst_value (right);
 
 	switch (TREE_CODE (left))
 	  {
@@ -3290,7 +3301,7 @@ init_omega_eq_with_af (omega_pb pb, unsigned eq,
 	    return init_omega_eq_with_af (pb, eq, offset, left, ddr);
 
 	  case INTEGER_CST:
-	    pb->eqs[eq].coef[0] += int_cst_value (left);
+	    pb->eqs[eq].coef[0] += dd_int_cst_value (left);
 	    return true;
 
 	  default:
@@ -3299,7 +3310,7 @@ init_omega_eq_with_af (omega_pb pb, unsigned eq,
       }
 
     case INTEGER_CST:
-      pb->eqs[eq].coef[0] += int_cst_value (access_fun);
+      pb->eqs[eq].coef[0] += dd_int_cst_value (access_fun);
       return true;
 
     default:
