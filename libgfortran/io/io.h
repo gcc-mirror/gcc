@@ -569,7 +569,7 @@ internal_proto(compare_files);
 extern stream *open_external (st_parameter_open *, unit_flags *);
 internal_proto(open_external);
 
-extern stream *open_internal (char *, int);
+extern stream *open_internal (char *, int, gfc_offset);
 internal_proto(open_internal);
 
 extern stream *input_stream (void);
@@ -734,10 +734,12 @@ internal_proto(read_sf);
 extern void *write_block (st_parameter_dt *, int);
 internal_proto(write_block);
 
-extern gfc_offset next_array_record (st_parameter_dt *, array_loop_spec *);
+extern gfc_offset next_array_record (st_parameter_dt *, array_loop_spec *,
+				     int*);
 internal_proto(next_array_record);
 
-extern gfc_offset init_loop_spec (gfc_array_char *, array_loop_spec *);
+extern gfc_offset init_loop_spec (gfc_array_char *, array_loop_spec *,
+				  gfc_offset *);
 internal_proto(init_loop_spec);
 
 extern void next_record (st_parameter_dt *, int);

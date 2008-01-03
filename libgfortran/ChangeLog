@@ -1,0 +1,18 @@
+2008-01-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/34565
+	* io/io.h:  Adjust protoypes for open_internal(),
+	next_array_record() and init_loop_spec().
+	* io/list_read.c (next_char):  Use argument "finished"
+	of next_array_record to check for end on internal file.
+	* io/unit.c:  Calculate the offset for an array
+	internal file and supply this informatin to open_internal().
+	* io/unix.c (open_internal):  Set the offset for the internal
+	file on open.
+	* io/transfer.c (init_loop_spec):  Calculate the starting
+	record in case of negative strides.  Return size of 0 for
+	an empty array.
+	(next_array_record):  Use an extra flag to signal that the
+	array is finished.
+	(next_record_r):  Use the new flag to next_array_record().
+	(next_record_w):  Likewise.
