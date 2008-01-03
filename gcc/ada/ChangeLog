@@ -1,3 +1,24 @@
+2008-01-03  Tero Koskinen <tero.koskinen@iki.fi>
+
+	PR ada/34647
+	* adaint.c (__gnat_open_new_temp, __gnat_tmp_name): Use mkstemp()
+	on OpenBSD as is done on other BSD systems.
+
+	PR ada/34645
+	* sysdep.c (__gnat_ttyname, getc_immediate_nowait,
+	getc_immediate_common): Treat OpenBSD as FreeBSD regarding immediate
+	I/O.
+
+	PR ada/34644
+	* env.c (__gnat_clearenv): Treat OpenBSD as other BSD systems missing
+	clearenv().
+
+	PR ada/34646
+	* init.c (__gnat_error_handler, __gnat_install_handler,
+	__gnat_init_float): Define for OpenBSD.
+
+	* initialize.c (__gnat_initialize): Define for OpenBSD.
+
 2007-12-27  Samuel Tardieu  <sam@rfc1149.net>
 
 	PR ada/34553
