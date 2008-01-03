@@ -1,3 +1,12 @@
+2008-01-03  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/31081
+	* tree-inline.c (remap_ssa_name): Initialize uninitialized SSA vars to
+	0 when inlining and not inlining to first basic block.
+	(remap_decl): When var is initialized to 0, don't set default_def.
+	(expand_call_inline): Set entry_bb.
+	* tree-inline.h (copy_body_data): Add entry_bb.
+
 2008-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34619
