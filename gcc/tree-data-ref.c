@@ -2818,9 +2818,9 @@ constant_access_functions (const struct data_dependence_relation *ddr)
   return true;
 }
 
-
 /* Helper function for the case where DDR_A and DDR_B are the same
-   multivariate access function.  */
+   multivariate access function with a constant step.  For an example
+   see pr34635-1.c.  */
 
 static void
 add_multivariate_self_dist (struct data_dependence_relation *ddr, tree c_2)
@@ -2890,7 +2890,17 @@ add_other_self_distances (struct data_dependence_relation *ddr)
 		  return;
 		}
 
-	      add_multivariate_self_dist (ddr, DR_ACCESS_FN (DDR_A (ddr), 0));
+	      access_fun = DR_ACCESS_FN (DDR_A (ddr), 0);
+
+	      if (TREE_CODE (CHREC_LEFT (access_fun)) == POLYNOMIAL_CHREC)
+		add_multivariate_self_dist (ddr, access_fun);
+	      else
+		/* The evolution step is not constant: it varies in
+		   the outer loop, so this cannot be represented by a
+		   distance vector.  For example in pr34635.c the
+		   evolution is {0, +, {0, +, 4}_1}_2.  */
+		DDR_AFFINE_P (ddr) = false;
+
 	      return;
 	    }
 

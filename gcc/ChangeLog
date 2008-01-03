@@ -1,3 +1,9 @@
+2007-12-19  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/34635
+	* tree-data-ref.c (add_other_self_distances): Make sure that the
+	evolution step is constant.
+
 2008-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/34608

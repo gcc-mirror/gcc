@@ -1,3 +1,9 @@
+2007-12-19  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/34635
+	* gcc.dg/tree-ssa/pr34635.c: New.
+	* gcc.dg/tree-ssa/pr34635-1.c: New.
+
 2008-01-02  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/34562
