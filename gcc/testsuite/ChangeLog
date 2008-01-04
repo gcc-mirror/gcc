@@ -1,3 +1,9 @@
+2008-01-04  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34029
+	* gcc.c-torture/compile/pr34029-1.c: New testcase.
+	* gcc.c-torture/compile/pr34029-2.c: Likewise.
+
 2008-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR gcov-profile/34609
