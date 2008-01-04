@@ -1,3 +1,9 @@
+2008-01-04  Andrew Haley  <aph@redhat.com>
+
+	PR libgcj/34444
+	* java/lang/natClass.cc (Class::getEnclosingClass): Call
+	getDeclaringClass().
+
 2007-12-22  David Daney  <ddaney@avtrex.com>
 
 	* scripts/makemake.tcl (emit_bc_rule): Use $(LIBGCJ_BC_FLAGS)
