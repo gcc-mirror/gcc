@@ -583,14 +583,19 @@
   [DF (SF "!TARGET_FIX_SB1 || flag_unsafe_math_optimizations")
    (V2SF "TARGET_SB1 && (!TARGET_FIX_SB1 || flag_unsafe_math_optimizations)")])
 
-; This attribute gives the condition for which sqrt instructions exist.
+;; This attribute gives the conditions under which SQRT.fmt instructions
+;; can be used.
 (define_mode_attr sqrt_condition
   [(SF "!ISA_MIPS1") (DF "!ISA_MIPS1") (V2SF "TARGET_SB1")])
 
-; This attribute gives the condition for which recip and rsqrt instructions
-; exist.
+;; This attribute gives the conditions under which RECIP.fmt and RSQRT.fmt
+;; instructions can be used.  The MIPS32 and MIPS64 ISAs say that RECIP.D
+;; and RSQRT.D are unpredictable when doubles are stored in pairs of FPRs,
+;; so for safety's sake, we apply this restriction to all targets.
 (define_mode_attr recip_condition
-  [(SF "ISA_HAS_FP4") (DF "ISA_HAS_FP4") (V2SF "TARGET_SB1")])
+  [(SF "ISA_HAS_FP4")
+   (DF "ISA_HAS_FP4 && TARGET_FLOAT64")
+   (V2SF "TARGET_SB1")])
 
 ;; This code iterator allows all branch instructions to be generated from
 ;; a single define_expand template.

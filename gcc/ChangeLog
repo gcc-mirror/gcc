@@ -1,3 +1,8 @@
+2008-01-04  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* config/mips/mips.md (sqrt_condition): Tweak comment.
+	(recip_condition): Likewise.  Require TARGET_FLOAT64 for DFmode.
+
 2008-01-03  Tom Tromey  <tromey@redhat.com>
 
 	PR c/34457:
