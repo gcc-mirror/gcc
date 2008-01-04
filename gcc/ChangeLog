@@ -1,3 +1,9 @@
+2008-01-04  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34029
+	* tree-cfg.c (verify_expr): Do not look inside ADDR_EXPRs
+	for verifying purposes if they are is_gimple_min_invariant.
+
 2008-01-04  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR tree-optimization/34448

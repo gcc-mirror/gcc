@@ -3218,6 +3218,11 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	    error ("address taken, but ADDRESSABLE bit not set");
 	    return x;
 	  }
+
+	/* Stop recursing and verifying invariant ADDR_EXPRs, they tend
+	   to become arbitrary complicated.  */
+	if (is_gimple_min_invariant (t))
+	  *walk_subtrees = 0;
 	break;
       }
 
