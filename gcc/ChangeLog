@@ -1,3 +1,9 @@
+2008-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/34609
+	* tree-inline.c (declare_return_variable): Set TREE_ADDRESSABLE on
+	return_slot if result is TREE_ADDRESSABLE.
+
 2008-01-04  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* config/mips/mips.md (sqrt_condition): Tweak comment.
@@ -5,7 +11,7 @@
 
 2008-01-03  Tom Tromey  <tromey@redhat.com>
 
-	PR c/34457:
+	PR c/34457
 	* c-common.c (c_type_hash): Handle VLAs.
 
 2008-01-03  Jan Hubicka  <jh@suse.cz>
@@ -964,7 +970,7 @@
 
 2007-12-06  Tom Tromey  <tromey@redhat.com>
 
-	PR c/29172:
+	PR c/29172
 	* c-opts.c (c_common_parse_file): Call cpp_clear_file_cache.
 
 2007-12-06  Richard Sandiford  <rsandifo@nildram.co.uk>
@@ -2446,7 +2452,8 @@
 
 2007-11-06  Tom Tromey  <tromey@redhat.com>
 
-	PR c++/32256, PR c++/32368:
+	PR c++/32256
+	PR c++/32368
 	* function.c (saved_in_system_header): New global.
 	(push_cfun): Save in_system_header.
 	(pop_cfun): Restore in_system_header.
@@ -25910,7 +25917,7 @@
 
 2007-03-13  David Taylor  <taylor@candd.org>
 
-	PR driver/12448:
+	PR driver/12448
 	* gcc.c (cpp_unique_options): If -MT or -MQ is seen, don't pass
 	default -MQ.
 
@@ -33089,7 +33096,8 @@
 
 2007-01-11  Tom Tromey  <tromey@redhat.com>
 
-	PR preprocessor/15185, PR preprocessor/20989:
+	PR preprocessor/15185
+	PR preprocessor/20989
 	* doc/cppopts.texi <-MT>: Update description of algorithm for
 	computing default target.
 	<-M, -MD>: Reword "basename" text.
