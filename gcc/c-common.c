@@ -1,6 +1,6 @@
 /* Subroutines shared by all languages that are variants of C.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3171,7 +3171,11 @@ c_type_hash (const void *p)
     }
   for (; t2; t2 = TREE_CHAIN (t2))
     i++;
-  size = TREE_INT_CST_LOW (TYPE_SIZE (t));
+  /* We might have a VLA here.  */
+  if (TREE_CODE (TYPE_SIZE (t)) != INTEGER_CST)
+    size = 0;
+  else
+    size = TREE_INT_CST_LOW (TYPE_SIZE (t));
   return ((size << 24) | (i << shift));
 }
 
