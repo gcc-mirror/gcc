@@ -1679,6 +1679,7 @@ match_varspec (gfc_expr *primary, int equiv_flag)
 
   tail = NULL;
 
+  gfc_gobble_whitespace ();
   if ((equiv_flag && gfc_peek_char () == '(') || sym->attr.dimension)
     {
       /* In EQUIVALENCE, we don't know yet whether we are seeing
@@ -1692,6 +1693,7 @@ match_varspec (gfc_expr *primary, int equiv_flag)
       if (m != MATCH_YES)
 	return m;
 
+      gfc_gobble_whitespace ();
       if (equiv_flag && gfc_peek_char () == '(')
 	{
 	  tail = extend_ref (primary, tail);
