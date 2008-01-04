@@ -143,7 +143,12 @@ dump_template_argument (tree arg, int flags)
   else if (TYPE_P (arg) || TREE_CODE (arg) == TEMPLATE_DECL)
     dump_type (arg, flags & ~TFF_CLASS_KEY_OR_ENUM);
   else
-    dump_expr (arg, (flags | TFF_EXPR_IN_PARENS) & ~TFF_CLASS_KEY_OR_ENUM);
+    {
+      if (TREE_CODE (arg) == TREE_LIST)
+	arg = TREE_VALUE (arg);
+
+      dump_expr (arg, (flags | TFF_EXPR_IN_PARENS) & ~TFF_CLASS_KEY_OR_ENUM);
+    }
 }
 
 /* Dump a template-argument-list ARGS (always a TREE_VEC) under control
