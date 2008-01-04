@@ -1,3 +1,8 @@
+2008-01-03  Tom Tromey  <tromey@redhat.com>
+
+	PR c/34457:
+	* c-common.c (c_type_hash): Handle VLAs.
+
 2008-01-03  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/31081

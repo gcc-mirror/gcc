@@ -1,3 +1,9 @@
+2008-01-03  Tom Tromey  <tromey@redhat.com>
+
+	PR c/34457:
+	* gcc.dg/pr34457-2.c: New file.
+	* gcc.dg/pr34457-1.c: New file.
+
 2008-01-03  Sebastian Pop  <sebastian.pop@amd.com>
 
 	Revert fix for PR tree-optimization/34458.
