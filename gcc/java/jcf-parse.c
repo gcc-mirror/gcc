@@ -2076,6 +2076,7 @@ parse_zip_file_entries (void)
 	  {
 	    char *class_name = compute_class_name (zdir);
 	    class = lookup_class (get_identifier (class_name));
+	    int previous_alias_set = -1;
 	    FREE (class_name);
 	    current_jcf = TYPE_JCF (class);
 	    output_class = current_class = class;
@@ -2085,17 +2086,25 @@ parse_zip_file_entries (void)
 	    gcc_assert (! TYPE_DUMMY (class));
 
 	    /* This is for a corner case where we have a superclass
-	       but no superclass fields.  
+	       but no superclass fields.
 
 	       This can happen if we earlier failed to lay out this
 	       class because its superclass was still in the process
 	       of being laid out; this occurs when we have recursive
-	       class dependencies via inner classes.  Setting
-	       TYPE_SIZE to null here causes CLASS_LOADED_P to return
-	       false, so layout_class() will be called again.  */
+	       class dependencies via inner classes.  We must record
+	       the previous alias set and restore it after laying out
+	       the class.
+
+	       FIXME: this really is a kludge.  We should figure out a
+	       way to lay out the class properly before this
+	       happens.  */
 	    if (TYPE_SIZE (class) && CLASSTYPE_SUPER (class)
 		&& integer_zerop (TYPE_SIZE (class)))
-	      TYPE_SIZE (class) = NULL_TREE;
+	      {
+		TYPE_SIZE (class) = NULL_TREE;
+		previous_alias_set = TYPE_ALIAS_SET (class);
+		TYPE_ALIAS_SET (class) = -1;
+	      }
 
 	    if (! CLASS_LOADED_P (class))
 	      {
@@ -2107,6 +2116,9 @@ parse_zip_file_entries (void)
 		layout_class (current_class);
 		load_inner_classes (current_class);
 	      }
+
+	    if (previous_alias_set != -1)
+	      TYPE_ALIAS_SET (class) = previous_alias_set;
 
 	    if (TYPE_SIZE (current_class) != error_mark_node)
 	      {
