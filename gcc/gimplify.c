@@ -3119,11 +3119,18 @@ gimplify_init_ctor_eval (tree object, VEC(constructor_elt,gc) *elts,
 
    Note that we still need to clear any elements that don't have explicit
    initializers, so if not all elements are initialized we keep the
-   original MODIFY_EXPR, we just remove all of the constructor elements.  */
+   original MODIFY_EXPR, we just remove all of the constructor elements.
+
+   If NOTIFY_TEMP_CREATION is true, do not gimplify, just return
+   GS_ERROR if we would have to create a temporary when gimplifying
+   this constructor.  Otherwise, return GS_OK.
+
+   If NOTIFY_TEMP_CREATION is false, just do the gimplification.  */
 
 static enum gimplify_status
 gimplify_init_constructor (tree *expr_p, tree *pre_p,
-			   tree *post_p, bool want_value)
+			   tree *post_p, bool want_value,
+			   bool notify_temp_creation)
 {
   tree object;
   tree ctor = GENERIC_TREE_OPERAND (*expr_p, 1);
@@ -3134,10 +3141,13 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
   if (TREE_CODE (ctor) != CONSTRUCTOR)
     return GS_UNHANDLED;
 
-  ret = gimplify_expr (&GENERIC_TREE_OPERAND (*expr_p, 0), pre_p, post_p,
-		       is_gimple_lvalue, fb_lvalue);
-  if (ret == GS_ERROR)
-    return ret;
+  if (!notify_temp_creation)
+    {
+      ret = gimplify_expr (&GENERIC_TREE_OPERAND (*expr_p, 0), pre_p, post_p,
+			   is_gimple_lvalue, fb_lvalue);
+      if (ret == GS_ERROR)
+	return ret;
+    }
   object = GENERIC_TREE_OPERAND (*expr_p, 0);
 
   elts = CONSTRUCTOR_ELTS (ctor);
@@ -3159,7 +3169,11 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 	   individual elements.  The exception is that a CONSTRUCTOR node
 	   with no elements indicates zero-initialization of the whole.  */
 	if (VEC_empty (constructor_elt, elts))
-	  break;
+	  {
+	    if (notify_temp_creation)
+	      return GS_OK;
+	    break;
+	  }
 
 	/* Fetch information about the constructor to direct later processing.
 	   We might want to make static versions of it in various cases, and
@@ -3175,6 +3189,8 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 	    && TREE_READONLY (object)
 	    && TREE_CODE (object) == VAR_DECL)
 	  {
+	    if (notify_temp_creation)
+	      return GS_ERROR;
 	    DECL_INITIAL (object) = ctor;
 	    TREE_STATIC (object) = 1;
 	    if (!DECL_NAME (object))
@@ -3251,7 +3267,12 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 
 	    if (size > 0 && !can_move_by_pieces (size, align))
 	      {
-		tree new = create_tmp_var_raw (type, "C");
+		tree new;
+
+		if (notify_temp_creation)
+		  return GS_ERROR;
+
+		new = create_tmp_var_raw (type, "C");
 
 		gimple_add_tmp_var (new);
 		TREE_STATIC (new) = 1;
@@ -3272,6 +3293,9 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 		return GS_UNHANDLED;
 	      }
 	  }
+
+	if (notify_temp_creation)
+	  return GS_OK;
 
 	/* If there are nonzero elements, pre-evaluate to capture elements
 	   overlapping with the lhs into temporaries.  We must do this before
@@ -3312,6 +3336,9 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
       {
 	tree r, i;
 
+	if (notify_temp_creation)
+	  return GS_OK;
+
 	/* Extract the real and imaginary parts out of the ctor.  */
 	gcc_assert (VEC_length (constructor_elt, elts) == 2);
 	r = VEC_index (constructor_elt, elts, 0)->value;
@@ -3347,6 +3374,9 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
       {
 	unsigned HOST_WIDE_INT ix;
 	constructor_elt *ce;
+
+	if (notify_temp_creation)
+	  return GS_OK;
 
 	/* Go ahead and simplify constant constructors to VECTOR_CST.  */
 	if (TREE_CONSTANT (ctor))
@@ -3488,10 +3518,27 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
 	   constructor expression to the RHS of the MODIFY_EXPR.  */
 	if (DECL_INITIAL (*from_p)
 	    && TYPE_READONLY (TREE_TYPE (*from_p))
+	    && !TREE_THIS_VOLATILE (*from_p)
 	    && TREE_CODE (DECL_INITIAL (*from_p)) == CONSTRUCTOR)
 	  {
-	    *from_p = DECL_INITIAL (*from_p);
-	    ret = GS_OK;
+	    tree old_from = *from_p;
+
+	    /* Move the constructor into the RHS.  */
+	    *from_p = unshare_expr (DECL_INITIAL (*from_p));
+
+	    /* Let's see if gimplify_init_constructor will need to put
+	       it in memory.  If so, revert the change.  */
+	    ret = gimplify_init_constructor (expr_p, NULL, NULL, false, true);
+	    if (ret == GS_ERROR)
+	      {
+		*from_p = old_from;
+		/* Fall through.  */
+	      }
+	    else
+	      {
+		ret = GS_OK;
+		break;
+	      }
 	  }
 	ret = GS_UNHANDLED;
 	break;
@@ -3551,7 +3598,8 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
       case CONSTRUCTOR:
 	/* If we're initializing from a CONSTRUCTOR, break this into
 	   individual MODIFY_EXPRs.  */
-	return gimplify_init_constructor (expr_p, pre_p, post_p, want_value);
+	return gimplify_init_constructor (expr_p, pre_p, post_p, want_value,
+					  false);
 
       case COND_EXPR:
 	/* If we're assigning to a non-register type, push the assignment

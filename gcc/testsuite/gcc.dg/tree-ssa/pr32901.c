@@ -7,7 +7,7 @@ struct foo {
         unsigned : 4;
 };
 
-extern struct foo thefoo;
+extern struct foo thefoo, theotherfoo;
 
 void setup_foo(void)
 {
@@ -15,10 +15,16 @@ void setup_foo(void)
                 .a1 = 1,
                 .a2 = 5,
         };
+	volatile const struct foo volinit = {
+		.a1 = 0,
+		.a2 = 6
+	};
         thefoo = init;
+	theotherfoo = volinit;
 }
 
-/* { dg-final { scan-tree-dump-times "thefoo.0 = \{\}" 1 "gimple"} } */
-/* { dg-final { scan-tree-dump-times "thefoo.0.a1 = 1" 1 "gimple"} } */
-/* { dg-final { scan-tree-dump-times "thefoo.0.a2 = 5" 1 "gimple"} } */
+/* { dg-final { scan-tree-dump-times "thefoo.* = {}" 1 "gimple"} } */
+/* { dg-final { scan-tree-dump-times "thefoo.* = 1" 1 "gimple"} } */
+/* { dg-final { scan-tree-dump-times "thefoo.* = 5" 1 "gimple"} } */
+/* { dg-final { scan-tree-dump-times "theotherfoo = volinit" 1 "gimple"} } */
 /* { dg-final { cleanup-tree-dump "gimple" } } */

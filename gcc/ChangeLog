@@ -1,3 +1,16 @@
+2008-01-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/34448
+	PR tree-optimization/34465
+	* gimplify.c (gimplify_init_constructor): Add new parameter
+	notify_temp_creation.  Use it.
+	(gimplify_modify_expr_rhs): Take volatiles into account when
+	optimizing constructors.
+	Do not optimize constructors if gimplify_init_constructor will dump to
+	memory.
+	* gcc.dg/tree-ssa/pr32901.c: Tests const volatiles.
+	* gcc.c-torture/compile/pr34448.c: New.
+
 2008-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR gcov-profile/34609
