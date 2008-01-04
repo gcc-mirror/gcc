@@ -1,3 +1,9 @@
+2008-01-03  Andrew Haley  <aph@redhat.com>
+
+	PR java/17779
+	* jcf-parse.c (parse_zip_file_entries): Unset TYPE_ALIAS_SET if
+	we're about to re-layout the type.
+
 2007-12-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	* lang.c (java_classify_record): Don't return
