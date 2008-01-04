@@ -1,3 +1,9 @@
+2008-01-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/31081
+	* g++.dg/torture/pr31081-1.C: New testcase.
+	* g++.dg/torture/pr31081-2.C: Likewise.
+
 2008-01-04  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* gcc.target/mips/rsqrt-1.c: Require -mgp64.
