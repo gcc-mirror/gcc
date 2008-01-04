@@ -1,3 +1,9 @@
+2008-01-04  Andrew Haley  <aph@redhat.com>
+
+	PR java/17779
+	* jcf-parse.c (parse_zip_file_entries): Move decl to compile on
+	C90.
+
 2008-01-03  Andrew Haley  <aph@redhat.com>
 
 	PR java/17779

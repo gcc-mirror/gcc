@@ -2075,8 +2075,8 @@ parse_zip_file_entries (void)
 	case 1:
 	  {
 	    char *class_name = compute_class_name (zdir);
-	    class = lookup_class (get_identifier (class_name));
 	    int previous_alias_set = -1;
+	    class = lookup_class (get_identifier (class_name));
 	    FREE (class_name);
 	    current_jcf = TYPE_JCF (class);
 	    output_class = current_class = class;
