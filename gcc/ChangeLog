@@ -1,3 +1,8 @@
+2008-01-05  Zhouyi Zhou  <zhouzhouyi@FreeBSD.org>
+
+	* tree-vrp.c (find_conditional_asserts): Remove redundant check that
+	edge does not point to current bb before changing need_assert.
+
 2008-01-04  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/34029
@@ -64,8 +69,7 @@
 2008-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/34608
-	* omp-low.c (expand_omp_parallel): Purge dead EH edges in the
-	child fn.
+	* omp-low.c (expand_omp_parallel): Purge dead EH edges in the child fn.
 
 2008-01-02  Richard Sandiford  <rsandifo@nildram.co.uk>
 
@@ -81,14 +85,14 @@
 
 2008-01-02  Arthur Norman <acn1@cam.ac.uk>
 
-	PR 34013
-	* gcc/config/i386/i386.c: (ix86_expand_prologue): Save red-zone
+	PR target/34013
+	* gcc/config/i386/i386.c (ix86_expand_prologue): Save red-zone
 	while stack probing.
 
 2008-01-01  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* c-opts.c (sanitize_cpp_opts): Don't warn about "long long" when
-       in C++0x mode.
+	in C++0x mode.
 
 2008-01-01  Volker Reichelt  <v.reichelt@netcologne.de>
 

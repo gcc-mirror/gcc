@@ -3825,8 +3825,7 @@ find_conditional_asserts (basic_block bb, tree last)
       /* Traverse the strictly dominated sub-graph rooted at E->DEST
 	 to determine if any of the operands in the conditional
 	 predicate are used.  */
-      if (e->dest != bb)
-	need_assert |= find_assert_locations (e->dest);
+      need_assert |= find_assert_locations (e->dest);
 
       /* Register the necessary assertions for each operand in the
 	 conditional predicate.  */
