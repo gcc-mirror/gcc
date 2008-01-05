@@ -1,3 +1,9 @@
+2008-01-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_builtin_reciprocal): Remove check
+	for TARGET_RECIP.
+	(ix86_emit_swsqrtsf): Do not filter out infinity for rsqrt expansion.
+
 2008-01-05  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* c-omp.c (check_omp_for_incr_expr): Handle CONVERT_EXPR.
