@@ -1,3 +1,22 @@
+2008-01-05  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/34680
+
+	Revert:
+	2007-12-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
+	* include/bits/locale_facets.tcc (has_facet, use_facet): Simplify
+	RTTI checks.
+
+	2007-12-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+        PR libstdc++/30127
+        PR libstdc++/34449
+        * include/bits/locale_facets.tcc (use_facet): Check facet hierarchy.
+        (has_facet): Same.
+        * testsuite/22_locale/global_templates/user_facet_hierarchies.cc: New.
+        * testsuite/22_locale/global_templates/
+        standard_facet_hierarchies.cc: New.
+
 2007-12-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/locale_facets.tcc (has_facet, use_facet): Simplify
@@ -12,7 +31,7 @@
 
         PR libstdc++/30127
         PR libstdc++/34449
-        * include/bits/locale_classes.h (use_facet): Check facet hierarchy.
+        * include/bits/locale_facets.tcc (use_facet): Check facet hierarchy.
         (has_facet): Same.
         * testsuite/22_locale/global_templates/user_facet_hierarchies.cc: New.
         * testsuite/22_locale/global_templates/
