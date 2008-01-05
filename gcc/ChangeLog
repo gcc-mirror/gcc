@@ -1,3 +1,15 @@
+2008-01-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/34673
+	* config/i386/i386.c (ix86_emit_swsqrtsf): Swap input operands
+	in the call to gen_rtx_NE.  Remove unneeded VECTOR_MODE_P check.
+	Update copyright year.
+
+	* config/i386/i386.md (rsqrtsf2): Enable for TARGET_SSE_MATH.
+	Update copyright year.
+	* config/i386/sse.md (rsqrtv4sf2): Ditto. Unconditionally expand
+	using NR fixup.
+
 2008-01-05  Zhouyi Zhou  <zhouzhouyi@FreeBSD.org>
 
 	* tree-vrp.c (find_conditional_asserts): Remove redundant check that

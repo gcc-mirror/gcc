@@ -1,6 +1,7 @@
 /* Subroutines used for code generation on IA-32.
    Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24239,22 +24240,15 @@ void ix86_emit_swsqrtsf (rtx res, rtx a, enum machine_mode mode,
 
   /* Compare a to zero.  */
   emit_insn (gen_rtx_SET (VOIDmode, mask,
-			  gen_rtx_NE (mode, a, zero)));
+			  gen_rtx_NE (mode, zero, a)));
 
   /* x0 = 1./sqrt(a) estimate */
   emit_insn (gen_rtx_SET (VOIDmode, x0,
 			  gen_rtx_UNSPEC (mode, gen_rtvec (1, a),
 					  UNSPEC_RSQRT)));
   /* Filter out infinity.  */
-  if (VECTOR_MODE_P (mode))
-    emit_insn (gen_rtx_SET (VOIDmode, gen_lowpart (V4SFmode, x0),
-			    gen_rtx_AND (mode,
-					 gen_lowpart (V4SFmode, x0),
-					 gen_lowpart (V4SFmode, mask))));
-  else
-    emit_insn (gen_rtx_SET (VOIDmode, x0,
-			    gen_rtx_AND (mode, x0, mask)));
-
+  emit_insn (gen_rtx_SET (VOIDmode, x0,
+			  gen_rtx_AND (mode, x0, mask)));
   /* e0 = x0 * a */
   emit_insn (gen_rtx_SET (VOIDmode, e0,
 			  gen_rtx_MULT (mode, x0, a)));
