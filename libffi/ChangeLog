@@ -1,3 +1,21 @@
+2008-01-05  Andreas Tobler  <a.tobler@schweiz.org>
+
+	PR testsuite/32843
+	* src/x86/ffi.c (ffi_prep_cif_machdep): Add code for
+	signed/unsigned int8/16 for X86_DARWIN.
+	Updated copyright info.
+	Handle one and two byte structs with special cif->flags.
+	* src/x86/ffitarget.h: Add special types for one and two byte structs.
+	Updated copyright info.
+	* src/x86/darwin.S (ffi_call_SYSV): Rewrite to use a jump table like
+	sysv.S
+	Remove code to pop args from the stack after call.
+	Special-case signed/unsigned for int8/16, one and two byte structs.
+	(ffi_closure_raw_SYSV): Handle FFI_TYPE_UINT8,
+	FFI_TYPE_SINT8, FFI_TYPE_UINT16, FFI_TYPE_SINT16, FFI_TYPE_UINT32,
+	FFI_TYPE_SINT32.
+	Updated copyright info.
+
 2007-12-08  David Daney  <ddaney@avtrex.com>
 
 	* src/mips/n32.S (ffi_call_N32):  Replace dadd with ADDU, dsub with 

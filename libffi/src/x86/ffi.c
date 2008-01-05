@@ -3,8 +3,9 @@
            Copyright (c) 2002  Ranjit Mathew
            Copyright (c) 2002  Bo Thorsen
            Copyright (c) 2002  Roger Sayle
-   
-   x86 Foreign Function Interface 
+	   Copyright (C) 2008  Free Software Foundation, Inc.
+
+   x86 Foreign Function Interface
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -121,10 +122,13 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
     case FFI_TYPE_VOID:
 #ifdef X86
     case FFI_TYPE_STRUCT:
+#else
+# if defined(X86) || defined(X86_DARWIN)
     case FFI_TYPE_UINT8:
     case FFI_TYPE_UINT16:
     case FFI_TYPE_SINT8:
     case FFI_TYPE_SINT16:
+# endif
 #endif
 
     case FFI_TYPE_SINT64:
@@ -142,11 +146,11 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
     case FFI_TYPE_STRUCT:
       if (cif->rtype->size == 1)
         {
-          cif->flags = FFI_TYPE_SINT8; /* same as char size */
+          cif->flags = FFI_TYPE_SMALL_STRUCT_1B; /* same as char size */
         }
       else if (cif->rtype->size == 2)
         {
-          cif->flags = FFI_TYPE_SINT16; /* same as short size */
+          cif->flags = FFI_TYPE_SMALL_STRUCT_2B; /* same as short size */
         }
       else if (cif->rtype->size == 4)
         {
