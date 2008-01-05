@@ -1,5 +1,5 @@
 /* Convert a program in SSA form into Normal form.
-   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Andrew Macleod <amacleod@redhat.com>
 
 This file is part of GCC.
@@ -119,6 +119,7 @@ create_temp (tree t)
     }
   DECL_ARTIFICIAL (tmp) = DECL_ARTIFICIAL (t);
   DECL_IGNORED_P (tmp) = DECL_IGNORED_P (t);
+  DECL_GIMPLE_REG_P (tmp) = DECL_GIMPLE_REG_P (t);
   add_referenced_var (tmp);
 
   /* add_referenced_var will create the annotation and set up some
