@@ -236,10 +236,15 @@ next_char (st_parameter_dt *dtp)
 	}
       if (length == 0)
 	{
-	  if (dtp->u.p.current_unit->endfile == AT_ENDFILE)
+	  if (dtp->u.p.advance_status == ADVANCE_NO)
+	    {
+	      if (dtp->u.p.current_unit->endfile == AT_ENDFILE)
+		longjmp (*dtp->u.p.eof_jump, 1);
+	      dtp->u.p.current_unit->endfile = AT_ENDFILE;
+	      c = '\n';
+	    }
+	  else
 	    longjmp (*dtp->u.p.eof_jump, 1);
-	  dtp->u.p.current_unit->endfile = AT_ENDFILE;
-	  c = '\n';
 	}
       else
 	c = *p;

@@ -1,3 +1,9 @@
+2008-01-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/34676
+	* io/list_read.c (next_char): Only save the EOF condition for later if
+	advance="no".
+
 2008-01-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/34565
