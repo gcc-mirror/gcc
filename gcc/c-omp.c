@@ -172,6 +172,7 @@ check_omp_for_incr_expr (tree exp, tree decl)
   switch (TREE_CODE (exp))
     {
     case NOP_EXPR:
+    case CONVERT_EXPR:
       t = check_omp_for_incr_expr (TREE_OPERAND (exp, 0), decl);
       if (t != error_mark_node)
         return fold_convert (TREE_TYPE (exp), t);
