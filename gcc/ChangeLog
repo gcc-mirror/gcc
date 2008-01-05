@@ -1,3 +1,7 @@
+2008-01-05  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* config/mips/mips.c (mips_in_small_data_p): Reinstate size > 0 check.
+
 2008-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/34618
