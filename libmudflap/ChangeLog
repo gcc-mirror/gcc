@@ -1,3 +1,8 @@
+2008-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/34618
+	* testsuite/libmudflap.c/pass62-frag.c: New test.
+
 2008-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34619

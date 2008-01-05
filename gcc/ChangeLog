@@ -1,3 +1,9 @@
+2008-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/34618
+	* tree-outof-ssa.c (create_temp): Copy over DECL_GIMPLE_REG_P
+	flag from T.
+
 2008-01-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/34673
