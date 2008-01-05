@@ -6677,8 +6677,10 @@ mips_in_small_data_p (const_tree decl)
 	return false;
     }
 
+  /* We have traditionally not treated zero-sized objects as small data,
+     so this is now effectively part of the ABI.  */
   size = int_size_in_bytes (TREE_TYPE (decl));
-  return size <= mips_small_data_threshold;
+  return size > 0 && size <= mips_small_data_threshold;
 }
 
 /* Implement TARGET_USE_ANCHORS_FOR_SYMBOL_P.  We don't want to use
