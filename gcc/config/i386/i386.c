@@ -21466,7 +21466,7 @@ static tree
 ix86_builtin_reciprocal (unsigned int fn, bool md_fn,
 			 bool sqrt ATTRIBUTE_UNUSED)
 {
-  if (! (TARGET_SSE_MATH && TARGET_RECIP && !optimize_size
+  if (! (TARGET_SSE_MATH && !optimize_size
 	 && flag_finite_math_only && !flag_trapping_math
 	 && flag_unsafe_math_optimizations))
     return NULL_TREE;
@@ -24239,16 +24239,18 @@ void ix86_emit_swsqrtsf (rtx res, rtx a, enum machine_mode mode,
      1.0 / sqrt(a) = 0.5 * rsqrtss(a) * (3.0 - a * rsqrtss(a) * rsqrtss(a)) */
 
   /* Compare a to zero.  */
-  emit_insn (gen_rtx_SET (VOIDmode, mask,
-			  gen_rtx_NE (mode, zero, a)));
+  if (!recip)
+    emit_insn (gen_rtx_SET (VOIDmode, mask,
+			    gen_rtx_NE (mode, zero, a)));
 
   /* x0 = 1./sqrt(a) estimate */
   emit_insn (gen_rtx_SET (VOIDmode, x0,
 			  gen_rtx_UNSPEC (mode, gen_rtvec (1, a),
 					  UNSPEC_RSQRT)));
   /* Filter out infinity.  */
-  emit_insn (gen_rtx_SET (VOIDmode, x0,
-			  gen_rtx_AND (mode, x0, mask)));
+  if (!recip)
+    emit_insn (gen_rtx_SET (VOIDmode, x0,
+			    gen_rtx_AND (mode, x0, mask)));
   /* e0 = x0 * a */
   emit_insn (gen_rtx_SET (VOIDmode, e0,
 			  gen_rtx_MULT (mode, x0, a)));
