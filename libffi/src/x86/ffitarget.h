@@ -1,5 +1,7 @@
 /* -----------------------------------------------------------------*-C-*-
    ffitarget.h - Copyright (c) 1996-2003  Red Hat, Inc.
+   Copyright (C) 2008  Free Software Foundation, Inc.
+
    Target configuration macros for x86 and x86-64.
 
    Permission is hereby granted, free of charge, to any person obtaining
@@ -68,6 +70,8 @@ typedef enum ffi_abi {
 /* ---- Definitions for closures ----------------------------------------- */
 
 #define FFI_CLOSURES 1
+#define FFI_TYPE_SMALL_STRUCT_1B (FFI_TYPE_LAST + 1)
+#define FFI_TYPE_SMALL_STRUCT_2B (FFI_TYPE_LAST + 2)
 
 #if defined (X86_64) || (defined (__x86_64__) && defined (X86_DARWIN))
 #define FFI_TRAMPOLINE_SIZE 24
