@@ -20,7 +20,7 @@ end type data_type2
 type(data_type) :: dd, ff
 type(data_type2) :: gg
 integer :: j, k, m
-EQUIVALENCE(dd,J) ! { dg-error "with default initializations cannot be in EQUIVALENCE with a variable in COMMON" }
+EQUIVALENCE(dd,J) ! { dg-error "with default initialization cannot be in EQUIVALENCE with a variable in COMMON" }
 EQUIVALENCE(ff,k)
 EQUIVALENCE(gg,m)
 COMMON /COM/ j
