@@ -1,3 +1,8 @@
+2008-01-06  Revital Eres  <eres@il.ibm.com>
+
+	PR tree-optimization/34263
+	* gcc.dg/pr34263.c:  New testcase.
+
 2008-01-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34654

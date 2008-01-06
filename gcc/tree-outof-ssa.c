@@ -872,6 +872,158 @@ fini_analyze_edges_for_bb (void)
   BITMAP_FREE (leader_has_match);
 }
 
+/* A helper function to be called via walk_tree.  Return DATA if it is
+  contained in subtree TP.  */
+ 
+static tree
+contains_tree_r (tree * tp, int *walk_subtrees, void *data)
+{
+  if (*tp == data)
+    {
+      *walk_subtrees = 0;
+      return data;
+    }
+  else
+    return NULL_TREE;
+}
+
+/* A threshold for the number of insns contained in the latch block.
+   It is used to prevent blowing the loop with too many copies from
+   the latch.  */
+#define MAX_STMTS_IN_LATCH 2
+
+/* Return TRUE if the stmts on SINGLE-EDGE can be moved to the
+   body of the loop.  This should be permitted only if SINGLE-EDGE is a
+   single-basic-block latch edge and thus cleaning the latch will help
+   to create a single-basic-block loop.  Otherwise return FALSE.  */
+
+static bool
+process_single_block_loop_latch (edge single_edge)
+{
+  tree stmts;
+  basic_block b_exit, b_pheader, b_loop = single_edge->src;
+  edge_iterator ei;
+  edge e;
+  block_stmt_iterator bsi, bsi_exit;
+  tree_stmt_iterator tsi;
+  tree expr, stmt;
+  unsigned int count = 0;
+
+  if (single_edge == NULL || (single_edge->dest != single_edge->src)
+      || (EDGE_COUNT (b_loop->succs) != 2)
+      || (EDGE_COUNT (b_loop->preds) != 2))
+    return false;
+
+  /* Get the stmts on the latch edge.  */
+  stmts = PENDING_STMT (single_edge);
+
+  /* Find the successor edge which is not the latch edge.  */
+  FOR_EACH_EDGE (e, ei, b_loop->succs) 
+   if (e->dest != b_loop)
+    break;
+
+  b_exit = e->dest;
+
+  /* Check that the exit block has only the loop as a predecessor,
+     and that there are no pending stmts on that edge as well.   */
+  if (EDGE_COUNT (b_exit->preds) != 1 || PENDING_STMT (e))
+    return false;
+
+  /* Find the predecessor edge which is not the latch edge.  */
+  FOR_EACH_EDGE (e, ei, b_loop->preds) 
+   if (e->src != b_loop)
+    break;
+
+  b_pheader = e->src;
+
+  if (b_exit == b_pheader || b_exit == b_loop || b_pheader == b_loop)
+    return false;
+
+  bsi_exit = bsi_after_labels (b_exit);
+
+  /* Get the last stmt in the loop body.  */
+  bsi = bsi_last (single_edge->src);
+  stmt = bsi_stmt (bsi);
+
+  if (TREE_CODE (stmt) != COND_EXPR)
+    return false;
+
+  expr = COND_EXPR_COND (stmt);
+  /* Iterate over the insns on the latch and count them.  */
+  for (tsi = tsi_start (stmts); !tsi_end_p (tsi); tsi_next (&tsi))
+    {
+      tree stmt1 = tsi_stmt (tsi);
+      tree var;
+
+      count++;
+      /* Check that the condition does not contain any new definition
+         created in the latch as the stmts from the latch intended
+         to precede it.  */
+      if (TREE_CODE (stmt1) != GIMPLE_MODIFY_STMT)
+        return false;
+      var = GIMPLE_STMT_OPERAND (stmt1, 0);
+      if (TREE_THIS_VOLATILE (var)
+	  || TYPE_VOLATILE (TREE_TYPE (var))
+	  || walk_tree (&expr, contains_tree_r, var, NULL))
+	return false;
+    }
+  /* Check that the latch does not contain more than MAX_STMTS_IN_LATCH
+     insns.  The purpose of this restriction is to prevent blowing the
+     loop with too many copies from the latch.  */
+  if (count > MAX_STMTS_IN_LATCH)
+    return false;
+
+  /* Apply the transformation - clean up the latch block:  
+
+     var = something; 
+     L1:
+     x1 = expr;
+     if (cond) goto L2 else goto L3;
+     L2:
+     var = x1;
+     goto L1
+     L3:
+     ...
+
+     ==>
+
+     var = something;
+     L1:
+     x1 = expr;
+     tmp_var = var;
+     var = x1;
+     if (cond) goto L1 else goto L2;
+     L2:
+     var = tmp_var;
+     ... 
+   */
+  for (tsi = tsi_start (stmts); !tsi_end_p (tsi); tsi_next (&tsi))
+    {
+      tree stmt1 = tsi_stmt (tsi);
+      tree var, tmp_var, copy;
+
+      /* Create a new variable to load back the value of var in case
+         we exit the loop.  */
+      var = GIMPLE_STMT_OPERAND (stmt1, 0);
+      tmp_var = create_temp (var);
+      copy = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (tmp_var), tmp_var, var);
+      set_is_used (tmp_var);
+      bsi_insert_before (&bsi, copy, BSI_SAME_STMT);
+      copy = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (tmp_var), var, tmp_var);
+      bsi_insert_before (&bsi_exit, copy, BSI_SAME_STMT);
+    }
+
+  PENDING_STMT (single_edge) = 0;
+  /* Insert the new stmts to the loop body.  */
+  bsi_insert_before (&bsi, stmts, BSI_NEW_STMT);
+
+  if (dump_file)
+    fprintf (dump_file,
+	     "\nCleaned-up latch block of loop with single BB: %d\n\n",
+	     single_edge->dest->index);
+
+  return true;
+}
 
 /* Look at all the incoming edges to block BB, and decide where the best place
    to insert the stmts on each edge are, and perform those insertions.  */
@@ -945,7 +1097,12 @@ analyze_edges_for_bb (basic_block bb)
   if (count < 2)
     {
       if (single_edge)
-        bsi_commit_one_edge_insert (single_edge, NULL);
+      {
+       /* Add stmts to the edge unless processed specially as a
+          single-block loop latch edge. */
+       if (!process_single_block_loop_latch (single_edge))
+         bsi_commit_one_edge_insert (single_edge, NULL);
+      }
       return;
     }
 
