@@ -1,3 +1,8 @@
+2008-01-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_emit_swsqrtsf): Use negative constants in
+	order to use commutative addition instead of subtraction.
+
 2008-01-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 	    Mircea Namolaru  <namolaru@il.ibm.com>
 	    Vladimir Yanovsky  <yanov@il.ibm.com>
