@@ -1,5 +1,9 @@
 2008-01-06  Tobias Burnus  <burnus@net-b.de>
 
+	* gfortran.dg/equiv_constraint_9.f90: Fix typo.
+
+2008-01-06  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/34655
 	* gfortran.dg/equiv_constraint_9.f90: New.
 
