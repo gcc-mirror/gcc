@@ -1348,24 +1348,6 @@ EOT;
 
 
 /*
- *  Similar, but a version that didn't have __NO_INLINE__
- */
-fix = {
-    hackname  = glibc_c99_inline_1a;
-    files     = features.h, '*/features.h';
-    select    = "(\\) && defined __OPTIMIZE__ && !defined __OPTIMIZE_SIZE__)\n"
-		"(#[ \t]*define[ \t]*__USE_EXTERN_INLINES[ \t]*1)";
-    c_fix     = format;
-    c_fix_arg = "%1 && (defined __extern_inline || defined __GNUC_GNU_INLINE__)\n%2";
-    test_text = <<-EOT
-#if __GNUC_PREREQ (2, 7) && defined __OPTIMIZE__ && !defined __OPTIMIZE_SIZE__
-# define __USE_EXTERN_INLINES	1
-#endif
-EOT;
-};
-
-
-/*
  * The glibc_c99_inline_1 fix should have fixed everything.  Unfortunately
  * there are many glibc headers which do not respect __USE_EXTERN_INLINES.
  * The remaining glibc_c99_inline_* fixes deal with some of those headers.
@@ -1421,21 +1403,6 @@ fix = {
     test_text = <<-EOT
 	__extension__ extern __inline unsigned int
 	__extension__ __extern_inline unsigned int
-	extern __inline unsigned int
-	EOT;
-};
-
-
-fix = {
-    hackname  = glibc_c99_inline_5;
-    files     = wchar.h, '*/wchar.h';
-    bypass    = "__STDC_VERSION__";
-    select    = "(^| )extern __inline";
-    c_fix     = format;
-    c_fix_arg = "\n#ifdef __GNUC_GNU_INLINE__\nextern\n#endif\n__inline";
-    test_text = <<-EOT
-	__extension__ extern __inline double
-	__extension__ __extern_inline long
 	extern __inline unsigned int
 	EOT;
 };
