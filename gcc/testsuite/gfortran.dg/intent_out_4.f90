@@ -11,8 +11,8 @@ function test()
   integer :: test
   interface
     subroutine foo(a)
-      integer(inout) :: a
+      integer, intent(inout) :: a
     end subroutine foo
   end interface
-  call foo(a)
+  call foo(test)
 end function test
