@@ -1,4 +1,9 @@
-2007-01-06  Tobias Burnus  <burnus@net-b.de>
+2008-01-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/34540
+	* gfortran.dg/optional_dim_3.f90: New test.
+
+2008-01-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34658
 	* gfortran.dg/common_11.f90: New.
