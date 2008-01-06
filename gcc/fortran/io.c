@@ -2669,6 +2669,11 @@ if (condition) \
 		     "REC tag at %L is incompatible with internal file",
 		     &dt->rec->where);
 
+      io_constraint (dt->format_expr == NULL && dt->format_label == NULL
+		     && dt->namelist == NULL,
+		     "Unformatted I/O not allowed with internal unit at %L",
+		     &dt->io_unit->where);
+
       if (dt->namelist != NULL)
 	{
 	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Internal file "
