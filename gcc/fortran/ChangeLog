@@ -1,3 +1,13 @@
+2007-01-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34658
+	* match.c (gfc_match_common): Remove blank common in
+	DATA BLOCK warning.
+	* resolve.c (resolve_common_vars): New function.
+	(resolve_common_blocks): Move checks to resolve_common_vars
+	and invoke that function.
+	(resolve_types): Call resolve_common_vars for blank commons.
+
 2008-01-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34655

@@ -646,23 +646,27 @@ has_default_initializer (gfc_symbol *der)
   return c != NULL;
 }
 
-
-/* Resolve common blocks.  */
+/* Resolve common variables.  */
 static void
-resolve_common_blocks (gfc_symtree *common_root)
+resolve_common_vars (gfc_symbol *sym, bool named_common)
 {
-  gfc_symbol *sym, *csym;
+  gfc_symbol *csym = sym;
 
-  if (common_root == NULL)
-    return;
-
-  if (common_root->left)
-    resolve_common_blocks (common_root->left);
-  if (common_root->right)
-    resolve_common_blocks (common_root->right);
-
-  for (csym = common_root->n.common->head; csym; csym = csym->common_next)
+  for (; csym; csym = csym->common_next)
     {
+      if (csym->value || csym->attr.data)
+	{
+	  if (!csym->ns->is_block_data)
+	    gfc_notify_std (GFC_STD_GNU, "Variable '%s' at %L is in COMMON "
+			    "but only in BLOCK DATA initialization is "
+			    "allowed", csym->name, &csym->declared_at);
+	  else if (!named_common)
+	    gfc_notify_std (GFC_STD_GNU, "Initialized variable '%s' at %L is "
+			    "in a blank COMMON but initialization is only "
+			    "allowed in named common blocks", csym->name,
+			    &csym->declared_at);
+	}
+
       if (csym->ts.type != BT_DERIVED)
 	continue;
 
@@ -680,6 +684,23 @@ resolve_common_blocks (gfc_symtree *common_root)
 		       "may not have default initializer", csym->name,
 		       &csym->declared_at);
     }
+}
+
+/* Resolve common blocks.  */
+static void
+resolve_common_blocks (gfc_symtree *common_root)
+{
+  gfc_symbol *sym;
+
+  if (common_root == NULL)
+    return;
+
+  if (common_root->left)
+    resolve_common_blocks (common_root->left);
+  if (common_root->right)
+    resolve_common_blocks (common_root->right);
+
+  resolve_common_vars (common_root->n.common->head, true);
 
   gfc_find_symbol (common_root->name, gfc_current_ns, 0, &sym);
   if (sym == NULL)
@@ -8939,6 +8960,7 @@ resolve_types (gfc_namespace *ns)
 
   resolve_entries (ns);
 
+  resolve_common_vars (ns->blank_common.head, false);
   resolve_common_blocks (ns->common_root);
 
   resolve_contained_functions (ns);
