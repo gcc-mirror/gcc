@@ -1,6 +1,11 @@
 2008-01-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34689
+	* gfortran.dg/intent_out_4.f90: Fix test case.
+
+2008-01-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34689
 	* gfortran.dg/intent_out_4.f90: New.
 
 2008-01-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
