@@ -122,13 +122,12 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
     case FFI_TYPE_VOID:
 #ifdef X86
     case FFI_TYPE_STRUCT:
-#else
-# if defined(X86) || defined(X86_DARWIN)
+#endif
+#if defined(X86) || defined(X86_DARWIN)
     case FFI_TYPE_UINT8:
     case FFI_TYPE_UINT16:
     case FFI_TYPE_SINT8:
     case FFI_TYPE_SINT16:
-# endif
 #endif
 
     case FFI_TYPE_SINT64:

@@ -1,3 +1,7 @@
+2008-01-06  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* src/x86/ffi.c (ffi_prep_cif_machdep): Fix thinko.
+
 2008-01-05  Andreas Tobler  <a.tobler@schweiz.org>
 
 	PR testsuite/32843
