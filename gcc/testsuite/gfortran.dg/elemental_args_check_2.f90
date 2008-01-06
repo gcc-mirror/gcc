@@ -8,10 +8,10 @@
 MODULE M1
 IMPLICIT NONE
 CONTAINS
- PURE ELEMENTAL SUBROUTINE S1(I,F)
+ PURE ELEMENTAL SUBROUTINE S1(I,F) ! { dg-error "Dummy procedure 'f' not allowed in elemental procedure" }
    INTEGER, INTENT(IN) :: I
    INTERFACE
-     PURE INTEGER FUNCTION F(I) ! { dg-error "Dummy procedure 'f' not allowed in elemental procedure" }
+     PURE INTEGER FUNCTION F(I)
       INTEGER, INTENT(IN) :: I
      END FUNCTION F
    END INTERFACE
