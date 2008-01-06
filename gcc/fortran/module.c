@@ -3525,6 +3525,12 @@ load_needed (pointer_info *p)
 	  associate_integer_pointer (q, ns);
 	}
 
+      /* Use the module sym as 'proc_name' so that gfc_get_symbol_decl
+	 doesn't go pear-shaped if the symbol is used.  */
+      if (!ns->proc_name)
+	gfc_find_symbol (p->u.rsym.module, gfc_current_ns,
+				 1, &ns->proc_name);
+
       sym = gfc_new_symbol (p->u.rsym.true_name, ns);
       sym->module = gfc_get_string (p->u.rsym.module);
       strcpy (sym->binding_label, p->u.rsym.binding_label);
