@@ -1909,7 +1909,8 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 
       /* Check intent = OUT/INOUT for definable actual argument.  */
       if ((a->expr->expr_type != EXPR_VARIABLE
-	   || a->expr->symtree->n.sym->attr.flavor != FL_VARIABLE)
+	   || (a->expr->symtree->n.sym->attr.flavor != FL_VARIABLE
+	       && a->expr->symtree->n.sym->attr.flavor != FL_PROCEDURE))
 	  && (f->sym->attr.intent == INTENT_OUT
 	      || f->sym->attr.intent == INTENT_INOUT))
 	{

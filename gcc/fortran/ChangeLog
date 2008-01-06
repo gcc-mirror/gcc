@@ -1,3 +1,9 @@
+2008-01-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34689
+	* interface.c (compare_actual_formal): Fix intent(out) check for
+	function result variables.
+
 2008-01-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/34387
