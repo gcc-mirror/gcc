@@ -1908,13 +1908,15 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	}
 
       /* Check intent = OUT/INOUT for definable actual argument.  */
-      if (a->expr->expr_type != EXPR_VARIABLE
+      if ((a->expr->expr_type != EXPR_VARIABLE
+	   || a->expr->symtree->n.sym->attr.flavor != FL_VARIABLE)
 	  && (f->sym->attr.intent == INTENT_OUT
 	      || f->sym->attr.intent == INTENT_INOUT))
 	{
 	  if (where)
-	    gfc_error ("Actual argument at %L must be definable to "
-		       "match dummy INTENT = OUT/INOUT", &a->expr->where);
+	    gfc_error ("Actual argument at %L must be definable as "
+		       "the dummy argument '%s' is INTENT = OUT/INOUT",
+		       &a->expr->where, f->sym->name);
 	  return 0;
 	}
 
