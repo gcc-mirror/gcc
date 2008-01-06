@@ -154,18 +154,24 @@ gfc_conv_missing_dummy (gfc_se * se, gfc_expr * arg, gfc_typespec ts, int kind)
 
   present = gfc_conv_expr_present (arg->symtree->n.sym);
 
-  tmp = build3 (COND_EXPR, TREE_TYPE (se->expr), present, se->expr,
-		  fold_convert (TREE_TYPE (se->expr), integer_zero_node));
-  tmp = gfc_evaluate_now (tmp, &se->pre);
-
   if (kind > 0)
     {
+      /* Create a temporary and convert it to the correct type.  */
       tmp = gfc_get_int_type (kind);
-      tmp = fold_convert (tmp, se->expr);
-      tmp = gfc_evaluate_now (tmp, &se->pre); 
+      tmp = fold_convert (tmp, build_fold_indirect_ref (se->expr));
+    
+      /* Test for a NULL value.  */
+      tmp = build3 (COND_EXPR, TREE_TYPE (tmp), present, tmp, integer_one_node);
+      tmp = gfc_evaluate_now (tmp, &se->pre);
+      se->expr = build_fold_addr_expr (tmp);
     }
-
-  se->expr = tmp;
+  else
+    {
+      tmp = build3 (COND_EXPR, TREE_TYPE (se->expr), present, se->expr,
+		    fold_convert (TREE_TYPE (se->expr), integer_zero_node));
+      tmp = gfc_evaluate_now (tmp, &se->pre);
+      se->expr = tmp;
+    }
 
   if (ts.type == BT_CHARACTER)
     {
