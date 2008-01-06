@@ -3,6 +3,6 @@
 ! proc_name from an unnamed block data which we intended to use as locus
 ! for a blank common.
 block data
-  common c ! { dg-warning "cannot contain blank COMMON" }
+  common c
 end !block data
 end
