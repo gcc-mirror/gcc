@@ -1,5 +1,11 @@
 2008-01-06  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/34660
+	* resolve.c (resolve_formal_arglist): Reject dummy procedure in
+	ELEMENTAL functions.
+
+2008-01-06  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/34662
 	* interface.c (compare_actual_formal): Reject parameter
 	actual to intent(out) dummy.

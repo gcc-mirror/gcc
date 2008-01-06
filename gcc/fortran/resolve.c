@@ -225,6 +225,14 @@ resolve_formal_arglist (gfc_symbol *proc)
 			 &sym->declared_at);
 	      continue;
 	    }
+
+	  if (sym->attr.flavor == FL_PROCEDURE)
+	    {
+	      gfc_error ("Dummy procedure '%s' not allowed in elemental "
+			 "procedure '%s' at %L", sym->name, proc->name,
+			 &sym->declared_at);
+	      continue;
+	    }
 	}
 
       /* Each dummy shall be specified to be scalar.  */
