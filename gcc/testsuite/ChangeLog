@@ -1,3 +1,8 @@
+2008-01-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34662
+	* gfortran.dg/intent_out_3.f90: New.
+
 2008-01-05  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* objc.dg/stabs-1.m: Allow labels to be begin with $L as well as .L.
