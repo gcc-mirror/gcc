@@ -1,5 +1,11 @@
 2008-01-06  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/34655
+	* resolve.c (resolve_equivalence_derived): Reject derived types with
+	default initialization if equivalenced with COMMON variable.
+
+2008-01-06  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/34654
 	* io.c (check_io_constraints): Disallow unformatted I/O for
 	internal units.
