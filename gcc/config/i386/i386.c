@@ -24187,7 +24187,7 @@ void ix86_emit_swdivsf (rtx res, rtx a, rtx b, enum machine_mode mode)
 
   /* a / b = a * rcp(b) * (2.0 - b * rcp(b)) */
 
-  /* x0 = 1./b estimate */
+  /* x0 = rcp(b) estimate */
   emit_insn (gen_rtx_SET (VOIDmode, x0,
 			  gen_rtx_UNSPEC (mode, gen_rtvec (1, b),
 					  UNSPEC_RCP)));
@@ -24211,7 +24211,8 @@ void ix86_emit_swdivsf (rtx res, rtx a, rtx b, enum machine_mode mode)
 void ix86_emit_swsqrtsf (rtx res, rtx a, enum machine_mode mode,
 			 bool recip)
 {
-  rtx x0, e0, e1, e2, e3, three, half, zero, mask;
+  rtx x0, e0, e1, e2, e3, mthree, mhalf;
+  REAL_VALUE_TYPE r;
 
   x0 = gen_reg_rtx (mode);
   e0 = gen_reg_rtx (mode);
@@ -24219,55 +24220,63 @@ void ix86_emit_swsqrtsf (rtx res, rtx a, enum machine_mode mode,
   e2 = gen_reg_rtx (mode);
   e3 = gen_reg_rtx (mode);
 
-  three = CONST_DOUBLE_FROM_REAL_VALUE (dconst3, SFmode);
-  half = CONST_DOUBLE_FROM_REAL_VALUE (dconsthalf, SFmode);
+  real_arithmetic (&r, NEGATE_EXPR, &dconst3, NULL);
+  mthree = CONST_DOUBLE_FROM_REAL_VALUE (r, SFmode);
 
-  mask = gen_reg_rtx (mode);
+  real_arithmetic (&r, NEGATE_EXPR, &dconsthalf, NULL);
+  mhalf = CONST_DOUBLE_FROM_REAL_VALUE (r, SFmode);
 
   if (VECTOR_MODE_P (mode))
     {
-      three = ix86_build_const_vector (SFmode, true, three);
-      half = ix86_build_const_vector (SFmode, true, half);
+      mthree = ix86_build_const_vector (SFmode, true, mthree);
+      mhalf = ix86_build_const_vector (SFmode, true, mhalf);
     }
 
-  three = force_reg (mode, three);
-  half = force_reg (mode, half);
+  /* sqrt(a)  = -0.5 * a * rsqrtss(a) * (a * rsqrtss(a) * rsqrtss(a) - 3.0)
+     rsqrt(a) = -0.5     * rsqrtss(a) * (a * rsqrtss(a) * rsqrtss(a) - 3.0) */
 
-  zero = force_reg (mode, CONST0_RTX(mode));
-
-  /* sqrt(a) = 0.5 * a * rsqrtss(a) * (3.0 - a * rsqrtss(a) * rsqrtss(a))
-     1.0 / sqrt(a) = 0.5 * rsqrtss(a) * (3.0 - a * rsqrtss(a) * rsqrtss(a)) */
-
-  /* Compare a to zero.  */
-  if (!recip)
-    emit_insn (gen_rtx_SET (VOIDmode, mask,
-			    gen_rtx_NE (mode, zero, a)));
-
-  /* x0 = 1./sqrt(a) estimate */
+  /* x0 = rsqrt(a) estimate */
   emit_insn (gen_rtx_SET (VOIDmode, x0,
 			  gen_rtx_UNSPEC (mode, gen_rtvec (1, a),
 					  UNSPEC_RSQRT)));
-  /* Filter out infinity.  */
+
+  /* If (a == 0.0) Filter out infinity to prevent NaN for sqrt(0.0).  */
   if (!recip)
-    emit_insn (gen_rtx_SET (VOIDmode, x0,
-			    gen_rtx_AND (mode, x0, mask)));
+    {
+      rtx zero, mask;
+
+      zero = gen_reg_rtx (mode);
+      mask = gen_reg_rtx (mode);
+
+      zero = force_reg (mode, CONST0_RTX(mode));
+      emit_insn (gen_rtx_SET (VOIDmode, mask,
+			      gen_rtx_NE (mode, zero, a)));
+
+      emit_insn (gen_rtx_SET (VOIDmode, x0,
+			      gen_rtx_AND (mode, x0, mask)));
+    }
+
   /* e0 = x0 * a */
   emit_insn (gen_rtx_SET (VOIDmode, e0,
 			  gen_rtx_MULT (mode, x0, a)));
   /* e1 = e0 * x0 */
   emit_insn (gen_rtx_SET (VOIDmode, e1,
 			  gen_rtx_MULT (mode, e0, x0)));
-  /* e2 = 3. - e1 */
+
+  /* e2 = e1 - 3. */
+  mthree = force_reg (mode, mthree);
   emit_insn (gen_rtx_SET (VOIDmode, e2,
-			  gen_rtx_MINUS (mode, three, e1)));
+			  gen_rtx_PLUS (mode, e1, mthree)));
+
+  mhalf = force_reg (mode, mhalf);
   if (recip)
-    /* e3 = .5 * x0 */
+    /* e3 = -.5 * x0 */
     emit_insn (gen_rtx_SET (VOIDmode, e3,
-			    gen_rtx_MULT (mode, half, x0)));
+			    gen_rtx_MULT (mode, x0, mhalf)));
   else
-    /* e3 = .5 * e0 */
+    /* e3 = -.5 * e0 */
     emit_insn (gen_rtx_SET (VOIDmode, e3,
-			    gen_rtx_MULT (mode, half, e0)));
+			    gen_rtx_MULT (mode, e0, mhalf)));
   /* ret = e2 * e3 */
   emit_insn (gen_rtx_SET (VOIDmode, res,
 			  gen_rtx_MULT (mode, e2, e3)));
