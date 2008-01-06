@@ -1,3 +1,14 @@
+2008-01-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+	    Mircea Namolaru  <namolaru@il.ibm.com>
+	    Vladimir Yanovsky  <yanov@il.ibm.com>
+	    Revital Eres  <eres@il.ibm.com>
+
+	PR tree-optimization/34263
+	* tree-outof-ssa.c (process_single_block_loop_latch,
+	contains_tree_r): New functions.
+	(analyze_edges_for_bb): Call process_single_block_loop_latch
+	function to empty single-basic-block latch block if possible.
+
 2008-01-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_builtin_reciprocal): Remove check
