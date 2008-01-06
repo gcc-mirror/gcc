@@ -449,6 +449,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	cpp_define (pfile, "__GXX_WEAK__=0");
       if (warn_deprecated)
 	cpp_define (pfile, "__DEPRECATED");
+      if (flag_rtti)
+	cpp_define (pfile, "__GXX_RTTI");
       if (cxx_dialect == cxx0x)
         cpp_define (pfile, "__GXX_EXPERIMENTAL_CXX0X__");
     }
