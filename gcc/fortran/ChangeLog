@@ -1,3 +1,10 @@
+2008-01-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/34387
+	* trans-expr.c (gfc_conv_missing_dummy): Use a temporary to type convert
+	the dummy variable expression, test for NULL, and pass the variable
+	address to the called function.
+
 2007-01-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34658
