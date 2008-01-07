@@ -11020,7 +11020,6 @@ ix86_expand_fp_absneg_operator (enum rtx_code code, enum machine_mode mode,
 				rtx operands[])
 {
   rtx mask, set, use, clob, dst, src;
-  bool matching_memory;
   bool use_sse = false;
   bool vector_mode = VECTOR_MODE_P (mode);
   enum machine_mode elt_mode = mode;
@@ -11045,19 +11044,6 @@ ix86_expand_fp_absneg_operator (enum rtx_code code, enum machine_mode mode,
   dst = operands[0];
   src = operands[1];
 
-  /* If the destination is memory, and we don't have matching source
-     operands or we're using the x87, do things in registers.  */
-  matching_memory = false;
-  if (MEM_P (dst))
-    {
-      if (use_sse && rtx_equal_p (dst, src))
-	matching_memory = true;
-      else
-	dst = gen_reg_rtx (mode);
-    }
-  if (MEM_P (src) && !matching_memory)
-    src = force_reg (mode, src);
-
   if (vector_mode)
     {
       set = gen_rtx_fmt_ee (code == NEG ? XOR : AND, mode, src, mask);
@@ -11078,9 +11064,6 @@ ix86_expand_fp_absneg_operator (enum rtx_code code, enum machine_mode mode,
       else
 	emit_insn (set);
     }
-
-  if (dst != operands[0])
-    emit_move_insn (operands[0], dst);
 }
 
 /* Expand a copysign operation.  Special case operand 0 being a constant.  */
