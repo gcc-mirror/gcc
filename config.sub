@@ -1,10 +1,10 @@
 #! /bin/sh
 # Configuration validation subroutine script.
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-#   2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation,
-#   Inc.
+#   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+#   Free Software Foundation, Inc.
 
-timestamp='2007-12-05'
+timestamp='2008-01-08'
 
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
@@ -72,8 +72,8 @@ Report bugs and patches to <config-patches@gnu.org>."
 version="\
 GNU config.sub ($timestamp)
 
-Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
-Free Software Foundation, Inc.
+Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
+2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE."
