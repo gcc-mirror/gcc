@@ -1,3 +1,28 @@
+2008-01-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/34682
+	* config/i386/i386.md (neg<mode>2): Rename from negsf2, negdf2 and
+	negxf2.  Macroize expander using X87MODEF mode iterator.  Change
+	predicates of op0 and op1 to register_operand.
+	(abs<mode>2): Rename from abssf2, absdf2 and negxf2.  Macroize expander
+	using X87MODEF mode iterator.  Change predicates of op0 and op1 to
+	register_operand.
+	("*absneg<mode>2_mixed", "*absneg<mode>2_sse"): Rename from
+	corresponding patterns and macroize using MODEF macro.  Change
+	predicates of op0 and op1 to register_operand and remove
+	"m" constraint. Disparage "r" alternative with "!".
+	("*absneg<mode>2_i387"): Rename from corresponding patterns and
+	macroize using X87MODEF macro.  Change predicates of op0 and op1
+	to register_operand and remove "m" constraint.  Disparage "r"
+	alternative with "!".
+	(absneg splitter with memory operands): Remove.
+	("*neg<mode>2_1", "*abs<mode>2_1"): Rename from corresponding
+	patterns and macroize using X87MODEF mode iterator.
+	* config/i386/sse.md (negv4sf2, absv4sf2, neg2vdf2, absv2df2):
+	Change predicate of op1 to register_operand.
+	* config/i386/i386.c (ix86_expand_fp_absneg_operator): Remove support
+	for memory operands.2008-01-07  Richard Guenther  <rguenther@suse.de>
+
 2008-01-07  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Add clause for mcpu=8548.
@@ -17,9 +42,9 @@
 
 2008-01-07  Sa Liu  <saliu@de.ibm.com>
 
-	* config/spu/spu.md (divdf3): Genetate inline code for double division. 
-	The implementation doesn't handle INF or NAN, therefore it only applies 
-	when -ffinite-math-only is given.
+	* config/spu/spu.md (divdf3): Genetate inline code for double
+	division.  The implementation doesn't handle INF or NAN, therefore it
+	only applies when -ffinite-math-only is given.
 
 2008-01-06  Paolo Carlini  <pcarlini@suse.de>
 

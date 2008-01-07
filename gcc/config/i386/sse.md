@@ -378,13 +378,13 @@
 
 (define_expand "negv4sf2"
   [(set (match_operand:V4SF 0 "register_operand" "")
-	(neg:V4SF (match_operand:V4SF 1 "nonimmediate_operand" "")))]
+	(neg:V4SF (match_operand:V4SF 1 "register_operand" "")))]
   "TARGET_SSE"
   "ix86_expand_fp_absneg_operator (NEG, V4SFmode, operands); DONE;")
 
 (define_expand "absv4sf2"
   [(set (match_operand:V4SF 0 "register_operand" "")
-	(abs:V4SF (match_operand:V4SF 1 "nonimmediate_operand" "")))]
+	(abs:V4SF (match_operand:V4SF 1 "register_operand" "")))]
   "TARGET_SSE"
   "ix86_expand_fp_absneg_operator (ABS, V4SFmode, operands); DONE;")
 
@@ -2143,13 +2143,13 @@
 
 (define_expand "negv2df2"
   [(set (match_operand:V2DF 0 "register_operand" "")
-	(neg:V2DF (match_operand:V2DF 1 "nonimmediate_operand" "")))]
+	(neg:V2DF (match_operand:V2DF 1 "register_operand" "")))]
   "TARGET_SSE2"
   "ix86_expand_fp_absneg_operator (NEG, V2DFmode, operands); DONE;")
 
 (define_expand "absv2df2"
   [(set (match_operand:V2DF 0 "register_operand" "")
-	(abs:V2DF (match_operand:V2DF 1 "nonimmediate_operand" "")))]
+	(abs:V2DF (match_operand:V2DF 1 "register_operand" "")))]
   "TARGET_SSE2"
   "ix86_expand_fp_absneg_operator (ABS, V2DFmode, operands); DONE;")
 
