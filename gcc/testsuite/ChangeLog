@@ -1,5 +1,7 @@
 2008-01-07  Jack Howarth  <howarth@bromo.med.uc.edu>
 
+	* gcc.dg/out-of-bounds-1.c: Don't use -mstrict-align for Darwin.
+
 	PR testsuite/34575
 	* gcc.target/powerpc/popcount-1.c: Skip on darwin.
 	* gcc.target/powerpc/parity-1.c: Likewise.

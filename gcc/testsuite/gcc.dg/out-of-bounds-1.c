@@ -3,7 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-O -g" } */
-/* { dg-options "-O -g -mstrict-align" { target powerpc*-*-* } } */
+/* { dg-options "-O -g -mstrict-align" { target { powerpc*-*-linux* powerpc*-*-elf* } } } */
 
 void ProjectOverlay(const float localTextureAxis[2], char *lump)
 {
