@@ -2133,8 +2133,13 @@ enabled by default, but can be disabled with @option{-Wno-deprecated}.
 
 @item __EXCEPTIONS
 This macro is defined, with value 1, when compiling a C++ source file
-with exceptions enabled.  If @option{-fno-exceptions} was used when
-compiling the file, then this macro will not be defined.
+with exceptions enabled.  If @option{-fno-exceptions} is used when
+compiling the file, then this macro is not defined.
+
+@item __GXX_RTTI
+This macro is defined, with value 1, when compiling a C++ source file
+with runtime type identification enabled.  If @option{-fno-rtti} is
+used when compiling the file, then this macro is not defined.
 
 @item __USING_SJLJ_EXCEPTIONS__
 This macro is defined, with value 1, if the compiler uses the old
