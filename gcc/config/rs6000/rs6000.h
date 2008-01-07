@@ -116,6 +116,7 @@
 %{mcpu=970: -mpower4 -maltivec} \
 %{mcpu=G5: -mpower4 -maltivec} \
 %{mcpu=8540: -me500} \
+%{mcpu=8548: -me500} \
 %{maltivec: -maltivec} \
 -many"
 

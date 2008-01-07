@@ -1,3 +1,7 @@
+2008-01-07  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Add clause for mcpu=8548.
+
 2008-01-07  Richard Guenther  <rguenther@suse.de>
 
 	* basic-block.h (struct edge_def): Pair dest_idx with goto_locus
