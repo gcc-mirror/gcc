@@ -1,3 +1,9 @@
+2008-01-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/34659
+	* scanner.c (load_line): Do not count ' ' as printable when checking for
+	continuations.
+
 2008-01-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34545

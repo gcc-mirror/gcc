@@ -1176,7 +1176,7 @@ load_line (FILE *input, char **pbuf, int *pbuflen)
 	    seen_ampersand = 1;
 	}
 
-      if ((c != '&' && c != '!') || (c == '!' && !seen_ampersand))
+      if ((c != '&' && c != '!' && c != ' ') || (c == '!' && !seen_ampersand))
 	seen_printable = 1;
 
       /* Is this a fixed-form comment?  */
