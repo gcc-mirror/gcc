@@ -1,3 +1,8 @@
+2008-01-07  Sa Liu  <saliu@de.ibm.com>
+	* config/spu/spu.md (divdf3): Genetate inline code for double division. 
+	The implementation doesn't handle INF or NAN, therefore it only applies 
+	when -ffinite-math-only is given.
+
 2008-01-06  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/34680
