@@ -1,3 +1,9 @@
+2008-01-07  Fred Fish  <fnf@specifix.com>
+
+	PR preprocessor/30363:
+	* gcc.dg/cpp/trad/macroargs.c: Add code to test quoting in
+	macro expansions.
+
 2008-01-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34672

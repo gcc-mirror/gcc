@@ -8,6 +8,17 @@
 
 extern void abort (void);
 
+void testquoting ()
+{
+  const char *str1 = f("a", "\"a\"");
+  const char *str2 = f( \t, " \t");
+
+  if (strcmp (str1, "\"a\"  \"\\\"a\\\"\""))
+    abort ();
+  if (strcmp (str2, " \t  \" \\t\""))
+    abort ();
+}
+
 int main ()
 {
   const char *str1 = f( foo ,bar);
@@ -25,6 +36,8 @@ foo
   if (strcmp (g /* { dg-bogus "unterminated 2" } */ ("1
 , 2"), "1 , 2"))	
     abort ();
+
+  testquoting ();
 
   return 0;
 }
