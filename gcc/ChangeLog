@@ -1,5 +1,10 @@
 2008-01-07  Richard Guenther  <rguenther@suse.de>
 
+	* basic-block.h (struct edge_def): Pair dest_idx with goto_locus
+	fields.
+
+2008-01-07  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/34683
 	* tree-ssa-sccvn.c (vuses_to_vec): Pre-allocate the vector of
 	VOPs of the needed size to save memory.  Use VEC_quick_push

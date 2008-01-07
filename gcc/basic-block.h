@@ -132,14 +132,14 @@ struct edge_def GTY(())
   /* Location of any goto implicit in the edge, during tree-ssa.  */
   source_locus goto_locus;
 
+  /* The index number corresponding to this edge in the edge vector
+     dest->preds.  */
+  unsigned int dest_idx;
+
   int flags;			/* see EDGE_* below  */
   int probability;		/* biased by REG_BR_PROB_BASE */
   gcov_type count;		/* Expected number of executions calculated
 				   in profile.c  */
-
-  /* The index number corresponding to this edge in the edge vector
-     dest->preds.  */
-  unsigned int dest_idx;
 };
 
 typedef struct edge_def *edge;
