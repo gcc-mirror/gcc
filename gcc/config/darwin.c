@@ -1,6 +1,6 @@
 /* Functions for generic Darwin as target machine for GNU C compiler.
    Copyright (C) 1989, 1990, 1991, 1992, 1993, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007
+   2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
@@ -1136,6 +1136,8 @@ darwin_mergeable_string_section (tree exp,
       && TREE_CODE (exp) == STRING_CST
       && TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
       && align <= 256
+      && (int_size_in_bytes (TREE_TYPE (exp))
+	  == TREE_STRING_LENGTH (exp))
       && ((size_t) TREE_STRING_LENGTH (exp)
 	  == strlen (TREE_STRING_POINTER (exp)) + 1))
     return darwin_sections[cstring_section];

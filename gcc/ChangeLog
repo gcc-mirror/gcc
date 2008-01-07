@@ -1,3 +1,9 @@
+2008-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/34622
+	* config/darwin.c (darwin_mergeable_string_section): Don't use
+	.cstring if int_size_in_bytes != TREE_STRING_LENGTH.
+
 2008-01-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/34682
