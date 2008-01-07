@@ -1,7 +1,7 @@
 // Locale support -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007
+// 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -574,14 +574,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @return  true if locale contains a facet of type Facet, else false.
   */
   template<typename _Facet>
-    inline bool
-    has_facet(const locale& __loc) throw()
-    {
-      const size_t __i = _Facet::id._M_id();
-      const locale::facet** __facets = __loc._M_impl->_M_facets;
-      return __i < __loc._M_impl->_M_facets_size
-	      && dynamic_cast<const _Facet*>(__facets[__i]) != NULL;
-    }
+    bool
+    has_facet(const locale& __loc) throw();
 
   /**
    *  @brief  Return a facet.
@@ -597,15 +591,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @throw  std::bad_cast if locale doesn't contain a facet of type Facet.
   */
   template<typename _Facet>
-    inline const _Facet&
-    use_facet(const locale& __loc)
-    {
-      const size_t __i = _Facet::id._M_id();
-      const locale::facet** __facets = __loc._M_impl->_M_facets;
-      if (__i >= __loc._M_impl->_M_facets_size || __facets[__i] == NULL)
-        __throw_bad_cast();
-      return dynamic_cast<const _Facet&>(*__facets[__i]);
-    }
+    const _Facet&
+    use_facet(const locale& __loc);
 
 
   /**
