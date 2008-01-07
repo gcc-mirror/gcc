@@ -389,8 +389,10 @@ vuses_to_vec (tree stmt, VEC (tree, gc) **result)
   if (!stmt)
     return;
 
+  *result = VEC_alloc (tree, gc, num_ssa_operands (stmt, SSA_OP_VIRTUAL_USES));
+
   FOR_EACH_SSA_TREE_OPERAND (vuse, stmt, iter, SSA_OP_VIRTUAL_USES)
-    VEC_safe_push (tree, gc, *result, vuse);
+    VEC_quick_push (tree, *result, vuse);
 
   if (VEC_length (tree, *result) > 1)
     sort_vuses (*result);
@@ -421,8 +423,10 @@ vdefs_to_vec (tree stmt, VEC (tree, gc) **result)
   if (!stmt)
     return;
 
+  *result = VEC_alloc (tree, gc, num_ssa_operands (stmt, SSA_OP_VIRTUAL_DEFS));
+
   FOR_EACH_SSA_TREE_OPERAND (vdef, stmt, iter, SSA_OP_VIRTUAL_DEFS)
-    VEC_safe_push (tree, gc, *result, vdef);
+    VEC_quick_push (tree, *result, vdef);
 
   if (VEC_length (tree, *result) > 1)
     sort_vuses (*result);

@@ -1,4 +1,13 @@
+2008-01-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34683
+	* tree-ssa-sccvn.c (vuses_to_vec): Pre-allocate the vector of
+	VOPs of the needed size to save memory.  Use VEC_quick_push
+	to save compile-time.
+	(vdefs_to_vec): Likewise.
+
 2008-01-07  Sa Liu  <saliu@de.ibm.com>
+
 	* config/spu/spu.md (divdf3): Genetate inline code for double division. 
 	The implementation doesn't handle INF or NAN, therefore it only applies 
 	when -ffinite-math-only is given.
