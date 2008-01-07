@@ -1,3 +1,9 @@
+2008-01-07  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR testsuite/34575
+	* gcc.target/powerpc/popcount-1.c: Skip on darwin.
+	* gcc.target/powerpc/parity-1.c: Likewise.
+
 2008-01-07  Fred Fish  <fnf@specifix.com>
 
 	PR preprocessor/30363:
