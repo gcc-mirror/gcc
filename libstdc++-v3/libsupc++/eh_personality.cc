@@ -1,5 +1,5 @@
 // -*- C++ -*- The GNU C++ exception personality routine.
-// Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2006, 2008 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -434,7 +434,7 @@ PERSONALITY_FUNCTION (int version,
   // Parse the LSDA header.
   p = parse_lsda_header (context, language_specific_data, &info);
   info.ttype_base = base_of_encoded_value (info.ttype_encoding, context);
-#ifdef HAVE_GETIPINFO
+#ifdef _GLIBCXX_HAVE_GETIPINFO
   ip = _Unwind_GetIPInfo (context, &ip_before_insn);
 #else
   ip = _Unwind_GetIP (context);
