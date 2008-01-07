@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,7 +44,8 @@
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _Facet>
-    locale::locale(const locale& __other, _Facet* __f)
+    locale::
+    locale(const locale& __other, _Facet* __f)
     {
       _M_impl = new _Impl(*__other._M_impl, 1);
 
@@ -61,7 +62,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _Facet>
     locale
-    locale::combine(const locale& __other) const
+    locale::
+    combine(const locale& __other) const
     {
       _Impl* __tmp = new _Impl(*_M_impl, 1);
       try
@@ -78,13 +80,44 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     bool
-    locale::operator()(const basic_string<_CharT, _Traits, _Alloc>& __s1,
-                       const basic_string<_CharT, _Traits, _Alloc>& __s2) const
+    locale::
+    operator()(const basic_string<_CharT, _Traits, _Alloc>& __s1,
+	       const basic_string<_CharT, _Traits, _Alloc>& __s2) const
     {
       typedef std::collate<_CharT> __collate_type;
       const __collate_type& __collate = use_facet<__collate_type>(*this);
       return (__collate.compare(__s1.data(), __s1.data() + __s1.length(),
 				__s2.data(), __s2.data() + __s2.length()) < 0);
+    }
+
+
+  template<typename _Facet>
+    bool
+    has_facet(const locale& __loc) throw()
+    {
+      const size_t __i = _Facet::id._M_id();
+      const locale::facet** __facets = __loc._M_impl->_M_facets;
+      return (__i < __loc._M_impl->_M_facets_size
+#ifdef __GXX_RTTI
+	      && dynamic_cast<const _Facet*>(__facets[__i]));
+#else
+              && static_cast<const _Facet*>(__facets[__i]));
+#endif
+    }
+
+  template<typename _Facet>
+    const _Facet&
+    use_facet(const locale& __loc)
+    {
+      const size_t __i = _Facet::id._M_id();
+      const locale::facet** __facets = __loc._M_impl->_M_facets;
+      if (__i >= __loc._M_impl->_M_facets_size || !__facets[__i])
+        __throw_bad_cast();
+#ifdef __GXX_RTTI
+      return dynamic_cast<const _Facet&>(*__facets[__i]);
+#else
+      return static_cast<const _Facet&>(*__facets[__i]);
+#endif
     }
 
 
