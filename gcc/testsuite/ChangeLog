@@ -1,3 +1,8 @@
+2008-01-07  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_powerpc_spu): New.
+	* g++.dg/other/spu2vmx-1.C: Use it.
+
 2008-01-07  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* gcc.dg/out-of-bounds-1.c: Don't use -mstrict-align for Darwin.
