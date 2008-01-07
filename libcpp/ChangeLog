@@ -1,3 +1,12 @@
+2008-01-07  Fred Fish  <fnf@specifix.com>
+
+	PR preprocessor/30363:
+	* traditional.c (replace_args_and_push): Add local variable
+	cxtquote, calculate the replacement text size assuming a 
+	worst case of every input character quoted with backslash,
+	and properly handle output quoting of quote characters in
+	actual arguments used in function-like macros.
+
 2008-01-03  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/34602.
