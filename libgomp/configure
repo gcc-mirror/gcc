@@ -1003,8 +1003,6 @@ Optional Features:
   --enable-version-specific-runtime-libs
                           Specify that runtime libraries should be installed
                           in a compiler-specific directory [default=no]
-  --enable-linux-futex    Use the Linux futex system call
-                          [default=default]
   --enable-generated-files-in-srcdir
                           put copies of generated files in source dir intended
                           for creating source tarballs for users without
@@ -1021,6 +1019,8 @@ Optional Features:
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --enable-maintainer-mode  enable make rules and dependencies not useful
 			  (and sometimes confusing) to the casual installer
+  --enable-linux-futex    use the Linux futex system call
+                          [default=default]
   --enable-tls            Use thread-local storage [default=yes]
   --enable-symvers=STYLE  enables symbol versioning of the shared library
                           [default=yes]
@@ -1517,26 +1517,6 @@ fi;
 
 echo "$as_me:$LINENO: result: $enable_version_specific_runtime_libs" >&5
 echo "${ECHO_T}$enable_version_specific_runtime_libs" >&6
-
-echo "$as_me:$LINENO: checking for --enable-linux-futex" >&5
-echo $ECHO_N "checking for --enable-linux-futex... $ECHO_C" >&6
- # Check whether --enable-linux-futex or --disable-linux-futex was given.
-if test "${enable_linux_futex+set}" = set; then
-  enableval="$enable_linux_futex"
-
-      case "$enableval" in
-       yes|no|default) ;;
-       *) { { echo "$as_me:$LINENO: error: Unknown argument to enable/disable linux-futex" >&5
-echo "$as_me: error: Unknown argument to enable/disable linux-futex" >&2;}
-   { (exit 1); exit 1; }; } ;;
-                          esac
-
-else
-  enable_linux_futex=default
-fi;
-
-echo "$as_me:$LINENO: result: $enable_linux_futex" >&5
-echo "${ECHO_T}$enable_linux_futex" >&6
 
 # We would like our source tree to be readonly. However when releases or
 # pre-releases are generated, the flex/bison generated files as well as the
@@ -16661,6 +16641,24 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
     ;;
+esac
+
+ # Check whether --enable-linux-futex or --disable-linux-futex was given.
+if test "${enable_linux_futex+set}" = set; then
+  enableval="$enable_linux_futex"
+
+      case "$enableval" in
+       yes|no|default) ;;
+       *) { { echo "$as_me:$LINENO: error: Unknown argument to enable/disable linux-futex" >&5
+echo "$as_me: error: Unknown argument to enable/disable linux-futex" >&2;}
+   { (exit 1); exit 1; }; } ;;
+                          esac
+
+else
+  enable_linux_futex=default
+fi;
+
+case "$target" in
   *-linux*)
     case "$enable_linux_futex" in
       default)
@@ -16709,7 +16707,9 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  cat >conftest.$ac_ext <<_ACEOF
+  save_LIBS="$LIBS"
+	   LIBS="-lpthread $LIBS"
+	   cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
@@ -16757,7 +16757,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
 
 if test x$cross_compiling = xno; then
 	       if getconf GNU_LIBPTHREAD_VERSION 2>/dev/null \
-		  | LC_ALL=C grep -i NPTL > /dev/null 2>/dev/null; then
+		  | LC_ALL=C grep -i NPTL > /dev/null 2>/dev/null; then :; else
 		 { echo "$as_me:$LINENO: WARNING: The kernel might not support futex or gettid syscalls.
 If so, please configure with --disable-linux-futex" >&5
 echo "$as_me: WARNING: The kernel might not support futex or gettid syscalls.
@@ -16768,6 +16768,7 @@ If so, please configure with --disable-linux-futex" >&2;}
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
+	   LIBS="$save_LIBS"
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
@@ -16776,7 +16777,7 @@ fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
 	;;
-      yes)
+        yes)
 	cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -16829,7 +16830,14 @@ rm -f conftest.err conftest.$ac_objext \
 	;;
     esac
     ;;
+  *)
+    enable_linux_futex=no
+    ;;
 esac
+if test x$enable_linux_futex = xyes; then
+  :
+fi
+
 
 # Check for pthread_{,attr_}[sg]etaffinity_np.
 cat >conftest.$ac_ext <<_ACEOF

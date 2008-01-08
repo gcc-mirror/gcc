@@ -295,8 +295,9 @@ else
 
   # Assume we have _Unwind_GetIPInfo for cross-compiles.
   AC_DEFINE(HAVE_GETIPINFO)
-
 fi
+
+GCC_LINUX_FUTEX([AC_DEFINE(HAVE_LINUX_FUTEX, 1, [Define if futex syscall is available.])])
 
 # This depends on GLIBCXX CHECK_LINKER_FEATURES, but without it assumes no.
 GLIBCXX_ENABLE_SYMVERS([yes])

@@ -11,7 +11,7 @@
 #  XLDFLAGS		Add extra link flags to use.
 
 # Optimize TLS usage by avoiding the overhead of dynamic allocation.
-if test $have_tls = yes ; then
+if test $gcc_cv_have_tls = yes ; then
   case "${target}" in
 
     *-*-linux*)

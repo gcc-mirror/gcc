@@ -1,6 +1,6 @@
 // Control various target specific ABI tweaks.  Generic version.
 
-// Copyright (C) 2004, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2006, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,6 +44,9 @@ namespace __cxxabiv1
   // The generic ABI uses the first byte of a 64-bit guard variable.
 #define _GLIBCXX_GUARD_TEST(x) (*(char *) (x) != 0)
 #define _GLIBCXX_GUARD_SET(x) *(char *) (x) = 1
+#define _GLIBCXX_GUARD_BIT __guard_test_bit (0, 1)
+#define _GLIBCXX_GUARD_PENDING_BIT __guard_test_bit (1, 1)
+#define _GLIBCXX_GUARD_WAITING_BIT __guard_test_bit (2, 1)
   __extension__ typedef int __guard __attribute__((mode (__DI__)));
 
   // __cxa_vec_ctor has void return type.

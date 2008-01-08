@@ -1,3 +1,23 @@
+2008-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac (--enable-linux-futex): Add new configure option.
+	(HAVE_LINUX_FUTEX): New AC_DEFINE.
+	* Makefile.in: Rebuilt.
+	* aclocal.m4: Rebuilt.
+	* configure: Rebuilt.
+	* config.h.in: Rebuilt.
+	* config/cpu/generic/cxxabi_tweaks.h (_GLIBCXX_GUARD_BIT,
+	_GLIBCXX_GUARD_PENDING_BIT, _GLIBCXX_GUARD_WAITING_BIT): Define.
+	* config/cpu/arm/cxxabi_tweaks.h (_GLIBCXX_GUARD_BIT,
+	_GLIBCXX_GUARD_PENDING_BIT, _GLIBCXX_GUARD_WAITING_BIT): Define.
+	* libsupc++/guard.cc: Include climits and syscall.h.
+	(_GLIBCXX_USE_FUTEX): Define if futex syscall and atomic builtins
+	are supported.
+	(_GLIBCXX_FUTEX_WAIT, _GLIBCXX_FUTEX_WAKE): Likewise.
+	(__guard_test_bit): New static inline.
+	(__cxa_guard_acquire, __cxa_guard_release, __cxa_guard_abort): Use
+	atomic builtins and futex syscall if _GLIBCXX_USE_FUTEX.
+
 2008-01-07  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/34680
