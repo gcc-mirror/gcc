@@ -190,23 +190,28 @@ fill_referenced_var_vec (VEC (tree, heap) **vec)
 static inline var_ann_t
 var_ann (const_tree t)
 {
-  gcc_assert (t);
-  gcc_assert (DECL_P (t));
-  gcc_assert (TREE_CODE (t) != FUNCTION_DECL);
-  if (!MTAG_P (t) && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
+  var_ann_t ann;
+
+  if (!MTAG_P (t)
+      && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
     {
       struct static_var_ann_d *sann
         = ((struct static_var_ann_d *)
 	   htab_find_with_hash (gimple_var_anns (cfun), t, DECL_UID (t)));
       if (!sann)
 	return NULL;
-      gcc_assert (sann->ann.common.type == VAR_ANN);
-      return &sann->ann;
+      ann = &sann->ann;
     }
-  gcc_assert (!t->base.ann
-	      || t->base.ann->common.type == VAR_ANN);
+  else
+    {
+      if (!t->base.ann)
+	return NULL;
+      ann = (var_ann_t) t->base.ann;
+    }
 
-  return (var_ann_t) t->base.ann;
+  gcc_assert (ann->common.type == VAR_ANN);
+
+  return ann;
 }
 
 /* Return the variable annotation for T, which must be a _DECL node.
