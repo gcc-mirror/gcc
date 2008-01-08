@@ -525,6 +525,9 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
      SAVE_EXPLICIT.  */
   if (!sym->attr.use_assoc
 	&& (sym->attr.save != SAVE_NONE || sym->attr.data
+	      || (sym->ts.type == BT_DERIVED
+		    && sym->ts.derived->attr.alloc_comp
+		    && sym->value)
 	      || (sym->value && sym->ns->proc_name->attr.is_main_program)))
     TREE_STATIC (decl) = 1;
 
