@@ -1,3 +1,9 @@
+2008-01-08  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/31863
+	* tree-ssa-structalias.c (push_fields_onto_fieldstack): Bail
+	out early if the result will be unused.
+
 2008-01-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/34709

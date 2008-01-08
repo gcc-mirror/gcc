@@ -4062,7 +4062,13 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 {
   tree field;
   int count = 0;
-  int first_element = VEC_length (fieldoff_s, *fieldstack);
+  unsigned int first_element = VEC_length (fieldoff_s, *fieldstack);
+
+  /* If the vector of fields is growing too big, bail out early.
+     Callers check for VEC_length <= MAX_FIELDS_FOR_FIELD_SENSITIVE, make
+     sure this fails.  */
+  if (first_element > MAX_FIELDS_FOR_FIELD_SENSITIVE)
+    return 0;
 
   if (TREE_CODE (type) == COMPLEX_TYPE)
     {
