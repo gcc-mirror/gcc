@@ -701,7 +701,7 @@ struct processor_costs k8_cost = {
      to limit number of prefetches at all, as their execution also takes some
      time).  */
   100,					/* number of parallel prefetches */
-  5,					/* Branch cost */
+  3,					/* Branch cost */
   COSTS_N_INSNS (4),			/* cost of FADD and FSUB insns.  */
   COSTS_N_INSNS (4),			/* cost of FMUL instruction.  */
   COSTS_N_INSNS (19),			/* cost of FDIV instruction.  */
@@ -725,8 +725,8 @@ struct processor_costs k8_cost = {
   2,                                    /* vec_align_load_cost.  */
   3,                                    /* vec_unalign_load_cost.  */
   3,                                    /* vec_store_cost.  */
-  6,                                    /* cond_taken_branch_cost.  */
-  1,                                    /* cond_not_taken_branch_cost.  */
+  3,                                    /* cond_taken_branch_cost.  */
+  2,                                    /* cond_not_taken_branch_cost.  */
 };
 
 struct processor_costs amdfam10_cost = {
@@ -787,7 +787,7 @@ struct processor_costs amdfam10_cost = {
      to limit number of prefetches at all, as their execution also takes some
      time).  */
   100,					/* number of parallel prefetches */
-  5,					/* Branch cost */
+  2,					/* Branch cost */
   COSTS_N_INSNS (4),			/* cost of FADD and FSUB insns.  */
   COSTS_N_INSNS (4),			/* cost of FMUL instruction.  */
   COSTS_N_INSNS (19),			/* cost of FDIV instruction.  */
@@ -812,7 +812,7 @@ struct processor_costs amdfam10_cost = {
   2,                                    /* vec_align_load_cost.  */
   2,                                    /* vec_unalign_load_cost.  */
   2,                                    /* vec_store_cost.  */
-  6,                                    /* cond_taken_branch_cost.  */
+  2,                                    /* cond_taken_branch_cost.  */
   1,                                    /* cond_not_taken_branch_cost.  */
 };
 
