@@ -10647,9 +10647,14 @@ or @code{remainder} built-in functions: see @ref{Other Builtins} for details.
 @item -mrecip
 @opindex mrecip
 This option will enable GCC to use RCPSS and RSQRTSS instructions (and their
-vectorized variants RCPPS and RSQRTPS) instead of DIVSS and SQRTSS (and their
-vectorized variants).  These instructions will be generated only when
-@option{-funsafe-math-optimizations} is enabled.
+vectorized variants RCPPS and RSQRTPS) with additional Newton-Rhapson step
+to increase precision instead of DIVSS and SQRTSS (and their vectorized
+variants) for single precision floating point arguments.  These instructions
+are generated only when @option{-funsafe-math-optimizations} is enabled
+together with @option{-finite-math-only} and @option{-fno-trapping-math}.
+Note that while the throughput of the sequence is higher than the throughput
+of the non-reciprocal instruction, the precision of the sequence can be
+decreased up to 2 ulp (i.e. the inverse of 1.0 equals 0.99999994).
 
 @item -mveclibabi=@var{type}
 @opindex mveclibabi
