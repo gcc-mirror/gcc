@@ -1,3 +1,9 @@
+2008-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33890
+	* semantics.c (finish_omp_for): Don't call
+	fold_build_cleanup_point_expr if processing_template_decl.
+
 2008-01-04  Paolo Carlini  <pcarlini@suse.de>
 	    Jakub Jelinek  <jakub@redhat.com>
 
