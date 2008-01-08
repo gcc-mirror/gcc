@@ -1,7 +1,16 @@
+2008-01-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/34709
+	Revert:
+
+	2008-01-05  Uros Bizjak  <ubizjak@gmail.com>
+	* config/i386/i386.c (ix86_builtin_reciprocal): Remove check
+	for TARGET_RECIP.	
+	
 2008-01-08  Jan Sjodin  <jan.sjodin@amd.com>
 	
-	* config/i386/i386.c:
-	(k8_cost, amdfam10_cost): Branch costs for vectorization tuned.
+	* config/i386/i386.c (k8_cost, amdfam10_cost): Branch costs
+	for vectorization tuned.
 	
 2008-01-08  Richard Guenther  <rguenther@suse.de>
 
