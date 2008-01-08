@@ -1,3 +1,8 @@
+2008-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/34694
+	* omp-low.c (copy_var_decl): Copy also DECL_SOURCE_LOCATION.
+
 2008-01-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/34702
