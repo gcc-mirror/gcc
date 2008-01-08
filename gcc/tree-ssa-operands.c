@@ -210,7 +210,7 @@ get_name_decl (const_tree t)
 
 /* Comparison function for qsort used in operand_build_sort_virtual.  */
 
-static int
+int
 operand_build_cmp (const void *p, const void *q)
 {
   const_tree const e1 = *((const_tree const *)p);
