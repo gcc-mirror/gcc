@@ -3,8 +3,8 @@
    building RTL.  These routines are used both during actual parsing
    and during the instantiation of template functions.
 
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
-   Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+		 2008 Free Software Foundation, Inc.
    Written by Mark Mitchell (mmitchell@usa.net) based on code found
    formerly in parse.y and pt.c.
 
@@ -3893,15 +3893,17 @@ finish_omp_for (location_t locus, tree decl, tree init, tree cond,
       pre_body = NULL;
     }
 
-  init = fold_build_cleanup_point_expr (TREE_TYPE (init), init);
+  if (!processing_template_decl)
+    init = fold_build_cleanup_point_expr (TREE_TYPE (init), init);
   init = build_modify_expr (decl, NOP_EXPR, init);
   if (cond && TREE_SIDE_EFFECTS (cond) && COMPARISON_CLASS_P (cond))
     {
       int n = TREE_SIDE_EFFECTS (TREE_OPERAND (cond, 1)) != 0;
       tree t = TREE_OPERAND (cond, n);
 
-      TREE_OPERAND (cond, n)
-	= fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+      if (!processing_template_decl)
+	TREE_OPERAND (cond, n)
+	  = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
     }
   omp_for = c_finish_omp_for (locus, decl, init, cond, incr, body, pre_body);
   if (omp_for != NULL
@@ -3912,9 +3914,10 @@ finish_omp_for (location_t locus, tree decl, tree init, tree cond,
       tree t = TREE_OPERAND (OMP_FOR_INCR (omp_for), 1);
       int n = TREE_SIDE_EFFECTS (TREE_OPERAND (t, 1)) != 0;
 
-      TREE_OPERAND (t, n)
-	= fold_build_cleanup_point_expr (TREE_TYPE (TREE_OPERAND (t, n)),
-					 TREE_OPERAND (t, n));
+      if (!processing_template_decl)
+	TREE_OPERAND (t, n)
+	  = fold_build_cleanup_point_expr (TREE_TYPE (TREE_OPERAND (t, n)),
+					   TREE_OPERAND (t, n));
     }
   return omp_for;
 }
