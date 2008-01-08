@@ -1,3 +1,14 @@
+2008-01-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34681
+	* trans_array.c (gfc_trans_deferred_array): Do not null the
+	data pointer on entering scope, nor deallocate it on leaving
+	scope, if the symbol has the 'save' attribute.
+
+	PR fortran/34704
+	* trans_decl.c (gfc_finish_var_decl): Derived types with
+	allocatable components and an initializer must be TREE_STATIC.
+
 2008-01-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34672
