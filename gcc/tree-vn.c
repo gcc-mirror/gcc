@@ -107,19 +107,6 @@ set_value_handle (tree e, tree v)
     gcc_assert (is_gimple_min_invariant (e));
 }
 
-/* A comparison function for use in qsort to compare vuses.  Simply
-   subtracts version numbers.  */
-
-static int
-vuses_compare (const void *pa, const void *pb)
-{
-  const tree vusea = *((const tree *)pa);
-  const tree vuseb = *((const tree *)pb);
-  int sn = SSA_NAME_VERSION (vusea) - SSA_NAME_VERSION (vuseb);
-
-  return sn;
-}
-
 /* Print out the "Created value <x> for <Y>" statement to the
    dump_file.
    This is factored because both versions of lookup use it, and it
@@ -161,7 +148,7 @@ sort_vuses (VEC (tree,gc) *vuses)
     qsort (VEC_address (tree, vuses),
 	   VEC_length (tree, vuses),
 	   sizeof (tree),
-	   vuses_compare);
+	   operand_build_cmp);
 }
 
 /* Sort the VUSE array so that we can do equality comparisons
@@ -174,7 +161,7 @@ sort_vuses_heap (VEC (tree,heap) *vuses)
     qsort (VEC_address (tree, vuses),
 	   VEC_length (tree, vuses),
 	   sizeof (tree),
-	   vuses_compare);
+	   operand_build_cmp);
 }
 /* Insert EXPR into VALUE_TABLE with value VAL, and add expression
    EXPR to the value set for value VAL.  */

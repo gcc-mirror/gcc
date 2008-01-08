@@ -389,13 +389,11 @@ vuses_to_vec (tree stmt, VEC (tree, gc) **result)
   if (!stmt)
     return;
 
-  *result = VEC_alloc (tree, gc, num_ssa_operands (stmt, SSA_OP_VIRTUAL_USES));
+  VEC_reserve_exact (tree, gc, *result,
+		     num_ssa_operands (stmt, SSA_OP_VIRTUAL_USES));
 
   FOR_EACH_SSA_TREE_OPERAND (vuse, stmt, iter, SSA_OP_VIRTUAL_USES)
     VEC_quick_push (tree, *result, vuse);
-
-  if (VEC_length (tree, *result) > 1)
-    sort_vuses (*result);
 }
 
 
@@ -427,9 +425,6 @@ vdefs_to_vec (tree stmt, VEC (tree, gc) **result)
 
   FOR_EACH_SSA_TREE_OPERAND (vdef, stmt, iter, SSA_OP_VIRTUAL_DEFS)
     VEC_quick_push (tree, *result, vdef);
-
-  if (VEC_length (tree, *result) > 1)
-    sort_vuses (*result);
 }
 
 /* Copy the names of vdef results in STMT into a vector, and return

@@ -1,3 +1,15 @@
+2008-01-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34683
+	* tree-ssa-operands.c (operand_build_cmp): Export.
+	* tree-ssa-operands.h (operand_build_cmp): Declare.
+	* tree-vn.c (vuses_compare): Remove.
+	(sort_vuses): Use operand_build_cmp.
+	(sort_vuses_heap): Likewise.
+	* tree-ssa-sccvn.c (vuses_to_vec): Use VEC_reserve, not VEC_alloc
+	to re-use old VEC if available.  Do not sort already sorted VUSEs.
+	(vdefs_to_vec): Do not sort already sorted VDEFs.
+
 2008-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/34694
