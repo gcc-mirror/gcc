@@ -1,5 +1,12 @@
 2008-01-08  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/34476
+	* expr.c (find_array_element): Check that the array bounds are
+	constant before using them.  Use lower, as well as upper bound.
+	(check_restricted): Allow implied index variable.
+
+2008-01-08  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/34681
 	* trans_array.c (gfc_trans_deferred_array): Do not null the
 	data pointer on entering scope, nor deallocate it on leaving
