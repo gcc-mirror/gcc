@@ -232,6 +232,9 @@
 /* Only used in build directory testsuite_hooks.h. */
 #undef HAVE_LIMIT_VMEM
 
+/* Define if futex syscall is available. */
+#undef HAVE_LINUX_FUTEX
+
 /* Define to 1 if you have the <locale.h> header file. */
 #undef HAVE_LOCALE_H
 

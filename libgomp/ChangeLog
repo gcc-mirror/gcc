@@ -1,3 +1,13 @@
+2008-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Move futex checking into ../config/futex.m4.
+	* configure: Rebuilt.
+	* aclocal.m4: Rebuilt.
+	* Makefile.in: Rebuilt.
+
+	* configure.tgt: Rename have_tls to gcc_cv_have_tls to match
+	2007-10-15 ../config/tls.m4 change.
+
 2007-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34513

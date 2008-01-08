@@ -35,12 +35,21 @@
 #include <new>
 #include <ext/atomicity.h>
 #include <ext/concurrence.h>
+#if defined(__GTHREADS) && defined(__GTHREAD_HAS_COND) \
+    && defined(_GLIBCXX_ATOMIC_BUILTINS) && defined(_GLIBCXX_HAVE_LINUX_FUTEX)
+# include <climits>
+# include <syscall.h>
+# define _GLIBCXX_USE_FUTEX
+# define _GLIBCXX_FUTEX_WAIT 0
+# define _GLIBCXX_FUTEX_WAKE 1
+#endif
 
 // The IA64/generic ABI uses the first byte of the guard variable.
 // The ARM EABI uses the least significant bit.
 
 // Thread-safe static local initialization support.
 #ifdef __GTHREADS
+# ifndef _GLIBCXX_USE_FUTEX
 namespace
 {
   // A single mutex controlling all static initializations.
@@ -75,8 +84,9 @@ namespace
     }
   };
 }
+# endif
 
-#ifdef __GTHREAD_HAS_COND
+# if defined(__GTHREAD_HAS_COND) && !defined(_GLIBCXX_USE_FUTEX)
 namespace
 {
   // A single conditional variable controlling all static initializations.
@@ -98,9 +108,9 @@ namespace
     return *static_cond;
   }
 }
-#endif
+# endif
 
-#ifndef _GLIBCXX_GUARD_TEST_AND_ACQUIRE
+# ifndef _GLIBCXX_GUARD_TEST_AND_ACQUIRE
 inline bool
 __test_and_acquire (__cxxabiv1::__guard *g)
 {
@@ -108,24 +118,24 @@ __test_and_acquire (__cxxabiv1::__guard *g)
   _GLIBCXX_READ_MEM_BARRIER;
   return b;
 }
-#define _GLIBCXX_GUARD_TEST_AND_ACQUIRE(G) __test_and_acquire (G)
-#endif
+#  define _GLIBCXX_GUARD_TEST_AND_ACQUIRE(G) __test_and_acquire (G)
+# endif
 
-#ifndef _GLIBCXX_GUARD_SET_AND_RELEASE
+# ifndef _GLIBCXX_GUARD_SET_AND_RELEASE
 inline void
 __set_and_release (__cxxabiv1::__guard *g)
 {
   _GLIBCXX_WRITE_MEM_BARRIER;
   _GLIBCXX_GUARD_SET (g);
 }
-#define _GLIBCXX_GUARD_SET_AND_RELEASE(G) __set_and_release (G)
-#endif
+#  define _GLIBCXX_GUARD_SET_AND_RELEASE(G) __set_and_release (G)
+# endif
 
 #else /* !__GTHREADS */
 
-#undef _GLIBCXX_GUARD_TEST_AND_ACQUIRE
-#undef _GLIBCXX_GUARD_SET_AND_RELEASE
-#define _GLIBCXX_GUARD_SET_AND_RELEASE(G) _GLIBCXX_GUARD_SET (G)
+# undef _GLIBCXX_GUARD_TEST_AND_ACQUIRE
+# undef _GLIBCXX_GUARD_SET_AND_RELEASE
+# define _GLIBCXX_GUARD_SET_AND_RELEASE(G) _GLIBCXX_GUARD_SET (G)
 
 #endif /* __GTHREADS */
 
@@ -176,8 +186,35 @@ namespace __gnu_cxx
 // headers define a symbol __GTHREAD_HAS_COND for platforms that support POSIX
 // like conditional variables. For platforms that do not support conditional
 // variables, we need to fall back to the old code.
+
+// If _GLIBCXX_USE_FUTEX, no global mutex or conditional variable is used,
+// only atomic operations are used together with futex syscall.
+// Valid values of the first integer in guard are:
+// 0				  No thread encountered the guarded init
+//				  yet or it has been aborted.
+// _GLIBCXX_GUARD_BIT		  The guarded static var has been successfully
+//				  initialized.
+// _GLIBCXX_GUARD_PENDING_BIT	  The guarded static var is being initialized
+//				  and no other thread is waiting for its
+//				  initialization.
+// (_GLIBCXX_GUARD_PENDING_BIT    The guarded static var is being initialized
+//  | _GLIBCXX_GUARD_WAITING_BIT) and some other threads are waiting until
+//				  it is initialized.
+
 namespace __cxxabiv1 
 {
+#ifdef _GLIBCXX_USE_FUTEX
+  namespace
+  {
+    static inline int __guard_test_bit (const int __byte, const int __val)
+    {
+      union { int __i; char __c[sizeof (int)]; } __u = { 0 };
+      __u.__c[__byte] = __val;
+      return __u.__i;
+    }
+  }
+#endif
+
   static inline int
   init_in_progress_flag(__guard* g)
   { return ((char *)g)[1]; }
@@ -207,7 +244,7 @@ namespace __cxxabiv1
       return 0;
 
     if (init_in_progress_flag(g))
-	throw_recursive_init_exception();
+      throw_recursive_init_exception();
 
     set_init_in_progress_flag(g, 1);
     return 1;
@@ -223,14 +260,46 @@ namespace __cxxabiv1
     if (_GLIBCXX_GUARD_TEST_AND_ACQUIRE (g))
       return 0;
 
+# ifdef _GLIBCXX_USE_FUTEX
+    // If __sync_* and futex syscall are supported, don't use any global
+    // mutex.
+    if (__gthread_active_p ())
+      {
+	int *gi = (int *) (void *) g;
+	const int guard_bit = _GLIBCXX_GUARD_BIT;
+	const int pending_bit = _GLIBCXX_GUARD_PENDING_BIT;
+	const int waiting_bit = _GLIBCXX_GUARD_WAITING_BIT;
+
+	while (1)
+	  {
+	    int old = __sync_val_compare_and_swap (gi, 0, pending_bit);
+	    if (old == 0)
+	      return 1;	// This thread should do the initialization.
+
+	    if (old == guard_bit)
+	      return 0;	// Already initialized.
+
+	    if (old == pending_bit)
+	      {
+		int newv = old | waiting_bit;
+		if (__sync_val_compare_and_swap (gi, old, newv) != old)
+		  continue;
+
+		old = newv;
+	      }
+
+	    syscall (SYS_futex, gi, _GLIBCXX_FUTEX_WAIT, old, 0);
+	  }
+      }
+# else
     if (__gthread_active_p ())
       {
 	mutex_wrapper mw;
 
 	while (1)	// When this loop is executing, mutex is locked.
 	  {
-#ifdef __GTHREAD_HAS_COND
-	    // The static is allready initialized.
+#  ifdef __GTHREAD_HAS_COND
+	    // The static is already initialized.
 	    if (_GLIBCXX_GUARD_TEST(g))
 	      return 0;	// The mutex will be unlocked via wrapper
 
@@ -247,7 +316,7 @@ namespace __cxxabiv1
 		set_init_in_progress_flag(g, 1);
 		return 1; // The mutex will be unlocked via wrapper.
 	      }
-#else
+#  else
 	    // This provides compatibility with older systems not supporting
 	    // POSIX like conditional variables.
 	    if (acquire(g))
@@ -256,9 +325,10 @@ namespace __cxxabiv1
 		return 1; // The mutex still locked.
 	      }
 	    return 0; // The mutex will be unlocked via wrapper.
-#endif
+#  endif
 	  }
       }
+# endif
 #endif
 
     return acquire (g);
@@ -267,7 +337,20 @@ namespace __cxxabiv1
   extern "C"
   void __cxa_guard_abort (__guard *g)
   {
-#ifdef __GTHREAD_HAS_COND
+#ifdef _GLIBCXX_USE_FUTEX
+    // If __sync_* and futex syscall are supported, don't use any global
+    // mutex.
+    if (__gthread_active_p ())
+      {
+	int *gi = (int *) (void *) g;
+	const int waiting_bit = _GLIBCXX_GUARD_WAITING_BIT;
+	int old = __sync_lock_test_and_set (gi, 0);
+
+	if ((old & waiting_bit) != 0)
+	  syscall (SYS_futex, gi, _GLIBCXX_FUTEX_WAKE, INT_MAX);
+	return;
+      }
+#elif defined(__GTHREAD_HAS_COND)
     if (__gthread_active_p())
       {	
 	mutex_wrapper mw;
@@ -293,7 +376,21 @@ namespace __cxxabiv1
   extern "C"
   void __cxa_guard_release (__guard *g)
   {
-#ifdef __GTHREAD_HAS_COND
+#ifdef _GLIBCXX_USE_FUTEX
+    // If __sync_* and futex syscall are supported, don't use any global
+    // mutex.
+    if (__gthread_active_p ())
+      {
+	int *gi = (int *) (void *) g;
+	const int guard_bit = _GLIBCXX_GUARD_BIT;
+	const int waiting_bit = _GLIBCXX_GUARD_WAITING_BIT;
+	int old = __sync_lock_test_and_set (gi, guard_bit);
+
+	if ((old & waiting_bit) != 0)
+	  syscall (SYS_futex, gi, _GLIBCXX_FUTEX_WAKE, INT_MAX);
+	return;
+      }
+#elif defined(__GTHREAD_HAS_COND)
     if (__gthread_active_p())
       {
 	mutex_wrapper mw;
