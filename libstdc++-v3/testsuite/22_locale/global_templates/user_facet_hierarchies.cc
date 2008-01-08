@@ -1,4 +1,4 @@
-// Copyright (C) 2007 Free Software Foundation
+// Copyright (C) 2007, 2008 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,7 +18,6 @@
 
 #include <string>
 #include <locale>
-#include <cassert>
 #include <testsuite_hooks.h>
 
 // Based on Langer Kreft "Standard C++ IOStreams and Locales" p 316-318
