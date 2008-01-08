@@ -1,3 +1,11 @@
+2008-01-08  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/22_locale/global_templates/user_facet_hierarchies.cc: Do
+	not include <cassert>.
+	* testsuite/22_locale/global_templates/standard_facet_hierarchies.cc:
+	Likewise.
+	* testsuite/util/testsuite_common_types.h: Include <algorithm>.
+
 2008-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac (--enable-linux-futex): Add new configure option.
