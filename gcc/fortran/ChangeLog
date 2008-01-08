@@ -1,3 +1,10 @@
+2008-01-08  Richard Guenther  <rguenther@suse.de>
+
+	PR fortran/34706
+	PR tree-optimization/34683
+	* trans-types.c (gfc_get_array_type_bounds): Use an array type
+	with known size for accesses if that is known.
+
 2008-01-08  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34476
