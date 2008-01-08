@@ -1024,14 +1024,17 @@ find_array_element (gfc_constructor *cons, gfc_array_ref *ar,
 	  cons = NULL;
 	  goto depart;
 	}
-
-      /* Check the bounds.  */
-      if (ar->as->upper[i]
-	  && (mpz_cmp (e->value.integer, ar->as->upper[i]->value.integer) > 0
-	      || mpz_cmp (e->value.integer,
-			  ar->as->lower[i]->value.integer) < 0))
+        /* Check the bounds.  */
+      if ((ar->as->upper[i]
+	     && ar->as->upper[i]->expr_type == EXPR_CONSTANT
+	     && mpz_cmp (e->value.integer,
+			 ar->as->upper[i]->value.integer) > 0)
+		||
+	  (ar->as->lower[i]->expr_type == EXPR_CONSTANT
+	     && mpz_cmp (e->value.integer,
+			 ar->as->lower[i]->value.integer) < 0))
 	{
-	  gfc_error ("index in dimension %d is out of bounds "
+	  gfc_error ("Index in dimension %d is out of bounds "
 		     "at %L", i + 1, &ar->c_where[i]);
 	  cons = NULL;
 	  t = FAILURE;
@@ -2496,6 +2499,7 @@ check_restricted (gfc_expr *e)
       if (sym->attr.in_common
 	  || sym->attr.use_assoc
 	  || sym->attr.dummy
+	  || sym->attr.implied_index
 	  || sym->ns != gfc_current_ns
 	  || (sym->ns->proc_name != NULL
 	      && sym->ns->proc_name->attr.flavor == FL_MODULE)
