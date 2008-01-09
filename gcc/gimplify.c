@@ -2633,7 +2633,11 @@ gimplify_cond_expr (tree *expr_p, tree *pre_p, fallback_t fallback)
     {
       tree result;
 
-      if ((fallback & fb_lvalue) == 0)
+      /* If an rvalue is ok or we do not require an lvalue, avoid creating
+	 an addressable temporary.  */
+      if (((fallback & fb_rvalue)
+	   || !(fallback & fb_lvalue))
+	  && !TREE_ADDRESSABLE (type))
 	{
 	  if (gimplify_ctxp->allow_rhs_cond_expr
 	      /* If either branch has side effects or could trap, it can't be

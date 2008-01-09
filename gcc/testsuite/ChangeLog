@@ -1,4 +1,10 @@
 2008-01-09  Richard Guenther  <rguenther@suse.de>
+	Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/30132
+	* gcc.c-torture/compile/pr30132.c: New testcase.
+
+2008-01-09  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/34458
 	* gcc.c-torture/compile/pr34458.c: New testcase.

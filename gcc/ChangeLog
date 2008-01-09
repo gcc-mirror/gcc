@@ -1,4 +1,11 @@
 2008-01-09  Richard Guenther  <rguenther@suse.de>
+	Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/30132
+	* gimplify.c (gimplify_cond_expr): Do not create an addressable
+	temporary if an rvalue is ok or an lvalue is not required.
+
+2008-01-09  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/34458
 	* tree-data-ref.c (initialize_matrix_A): Use tree_low_cst,
