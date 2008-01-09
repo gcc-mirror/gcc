@@ -1,3 +1,11 @@
+2008-01-09  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/34708
+	* tree-inline.c (estimate_num_insns_1): Compute cost of SWITCH_EXPR
+	based on number of case labels.
+	(init_inline_once): Remove switch_cost.
+	* tree-inline.h (eni_weights_d): Remove switch_cost.
+
 2008-01-09  Richard Guenther  <rguenther@suse.de>
 	Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
