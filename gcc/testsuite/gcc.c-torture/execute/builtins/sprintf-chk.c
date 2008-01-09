@@ -13,7 +13,7 @@ extern int sprintf (char *, const char *, ...);
 
 #include "chk.h"
 
-const char s1[] = "123";
+LOCAL const char s1[] = "123";
 char p[32] = "";
 char *s2 = "defg";
 char *s3 = "FGH";

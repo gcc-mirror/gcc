@@ -79,3 +79,11 @@ extern volatile int memset_disallowed, strcpy_disallowed, stpcpy_disallowed;
 extern volatile int strncpy_disallowed, strcat_disallowed, strncat_disallowed;
 extern volatile int sprintf_disallowed, vsprintf_disallowed;
 extern volatile int snprintf_disallowed, vsnprintf_disallowed;
+
+/* A storage class that ensures that declarations bind locally.  We want
+   to test non-static declarations where we know it is safe to do so.  */
+#if __PIC__ || __pic__
+#define LOCAL static
+#else
+#define LOCAL
+#endif

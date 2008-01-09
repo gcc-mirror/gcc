@@ -490,6 +490,16 @@ proc check_effective_target_fpic { } {
     return 0
 }
 
+# Return 1 if the current multilib does not generate PIC by default.
+
+proc check_effective_target_nonpic { } {
+    return [check_no_compiler_messages nonpic assembly {
+	#if __PIC__ || __pic__
+	#error FOO
+	#endif
+    }]
+}
+
 # Return true if iconv is supported on the target. In particular IBM1047.
 
 proc check_iconv_available { test_what } {
