@@ -1,3 +1,7 @@
+2008-01-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/html/17_intro/api.html: Fix markup for rope.h.
+
 2008-01-09  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/parallel/iterator.h: Reformat to 80 columns; adjust some
