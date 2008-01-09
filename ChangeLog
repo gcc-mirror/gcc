@@ -5,7 +5,7 @@
 2007-12-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.ac: Change required MPFR from 2.2.0 -> 2.2.1.
-	Change recommended MPFR from 2.2.1 > 2.3.0.
+	Change recommended MPFR from 2.2.1 -> 2.3.0.
 	* configure: Regenerate.
 
 2007-12-15  Sebastian Pop  <sebastian.pop@amd.com>
