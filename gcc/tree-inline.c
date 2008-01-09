@@ -2387,9 +2387,12 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
       break;
 
     case SWITCH_EXPR:
-      /* TODO: Cost of a switch should be derived from the number of
-	 branches.  */
-      d->count += d->weights->switch_cost;
+      /* Take into account cost of the switch + guess 2 conditional jumps for
+         each case label.  
+
+	 TODO: once the switch expansion logic is sufficiently separated, we can
+	 do better job on estimating cost of the switch.  */
+      d->count += TREE_VEC_LENGTH (SWITCH_LABELS (x)) * 2;
       break;
 
     /* Few special cases of expensive operations.  This is useful
@@ -2518,13 +2521,11 @@ init_inline_once (void)
   eni_inlining_weights.call_cost = PARAM_VALUE (PARAM_INLINE_CALL_COST);
   eni_inlining_weights.target_builtin_call_cost = 1;
   eni_inlining_weights.div_mod_cost = 10;
-  eni_inlining_weights.switch_cost = 1;
   eni_inlining_weights.omp_cost = 40;
 
   eni_size_weights.call_cost = 1;
   eni_size_weights.target_builtin_call_cost = 1;
   eni_size_weights.div_mod_cost = 1;
-  eni_size_weights.switch_cost = 10;
   eni_size_weights.omp_cost = 40;
 
   /* Estimating time for call is difficult, since we have no idea what the
@@ -2534,7 +2535,6 @@ init_inline_once (void)
   eni_time_weights.call_cost = 10;
   eni_time_weights.target_builtin_call_cost = 10;
   eni_time_weights.div_mod_cost = 10;
-  eni_time_weights.switch_cost = 4;
   eni_time_weights.omp_cost = 40;
 }
 

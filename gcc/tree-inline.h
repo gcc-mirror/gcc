@@ -115,9 +115,6 @@ typedef struct eni_weights_d
   /* Cost of "expensive" div and mod operations.  */
   unsigned div_mod_cost;
 
-  /* Cost of switch statement.  */
-  unsigned switch_cost;
-
   /* Cost for omp construct.  */
   unsigned omp_cost;
 } eni_weights;
