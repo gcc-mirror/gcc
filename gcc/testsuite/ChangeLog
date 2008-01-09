@@ -1,3 +1,35 @@
+2008-01-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.c-torture/execute/builtins/chk.h: Don't check !__PIE__.
+	* gcc.dg/assign-warn-3.c: Use "static inline" instead of "inline".
+	
+	Backport:
+	
+	2007-04-14  Kazu Hirata  <kazu@codesourcery.com>
+	* gcc.c-torture/compile/pr27528.c: Require nonpic.
+
+	2007-03-21  Richard Sandiford  <richard@codesourcery.com>
+	* gcc.c-torture/execute/builtins/chk.h (LOCAL): Define.
+	* gcc.c-torture/execute/builtins/sprintf-chk.c (s1): Make LOCAL.
+	* gcc.c-torture/execute/builtins/stpcpy-chk.c (s1): Likewise.
+	* gcc.c-torture/execute/builtins/strcpy-chk.c (s1): Likewise.
+
+	2007-07-26  Nathan Froyd  <froydnj@codesourcery.com>
+	PR/19232
+	* gcc.dg/assign-warn-3.c (f0): Declare as inline.
+	(f1): Likewise.
+
+	2007-01-15  Dale Johannesen  <dalej@apple.com>
+	* gcc.dg/tree-ssa/loop-3.c:  Disable with -fpic or -fPIC.
+	
+	2007-08-27  Uros Bizjak  <ubizjak@gmail.com>
+	* gcc.target/i386/stack-prot-kernel.c: Require nonpic effective
+	target.
+	
+	2007-03-21  Richard Sandiford  <richard@codesourcery.com>
+	* lib/target-supports.exp (check_effective_target_nonpic): New
+	procedure.
+
 2008-01-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR testsuite/30459
