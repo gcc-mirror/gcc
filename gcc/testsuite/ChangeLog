@@ -1,3 +1,8 @@
+2008-01-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR testsuite/30459
+	g++.dg/eh/ia64-2.C: Require weak support.
+
 2008-01-08  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/31863
