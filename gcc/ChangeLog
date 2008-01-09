@@ -535,7 +535,7 @@
 
 2007-12-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
-	* doc/install.texi: Change recommended MPFR from 2.2.1 > 2.3.0.
+	* doc/install.texi: Change recommended MPFR from 2.2.1 -> 2.3.0.
 
 2007-12-17  Andreas Schwab  <schwab@suse.de>
 
