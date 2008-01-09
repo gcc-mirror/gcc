@@ -1,3 +1,9 @@
+2008-01-09  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/34017
+	* lambda-code.c (lambda_loopnest_to_gcc_loopnest): Generate code
+	also for PHI_NODE expressions.
+
 2008-01-09  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/34708
