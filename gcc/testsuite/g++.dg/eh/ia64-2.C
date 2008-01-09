@@ -5,6 +5,7 @@
 // But br.call returns to the start of the next bundlem so during
 // unwinding the call was considered to be outside of the EH region
 // while it should have been inside.
+// { dg-require-weak "" }
 // { dg-options "-O2" }
 // { dg-do run }
 
