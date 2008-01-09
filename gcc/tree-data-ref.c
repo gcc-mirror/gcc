@@ -1820,15 +1820,24 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 /* Helper recursive function for initializing the matrix A.  Returns
    the initial value of CHREC.  */
 
-static int
+static HOST_WIDE_INT
 initialize_matrix_A (lambda_matrix A, tree chrec, unsigned index, int mult)
 {
+  tree type;
+
   gcc_assert (chrec);
 
+  type = TREE_TYPE (chrec);
   if (TREE_CODE (chrec) != POLYNOMIAL_CHREC)
-    return int_cst_value (chrec);
+    return tree_low_cst (chrec, TYPE_UNSIGNED (type)
+				&& !(TREE_CODE (type) == INTEGER_TYPE
+				     && TYPE_IS_SIZETYPE (type)));
 
-  A[index][0] = mult * int_cst_value (CHREC_RIGHT (chrec));
+  type = TREE_TYPE (CHREC_RIGHT (chrec));
+  A[index][0] = mult * tree_low_cst (CHREC_RIGHT (chrec),
+				     TYPE_UNSIGNED (type)
+				     && !(TREE_CODE (type) == INTEGER_TYPE
+					  && TYPE_IS_SIZETYPE (type)));
   return initialize_matrix_A (A, CHREC_LEFT (chrec), index + 1, mult);
 }
 
