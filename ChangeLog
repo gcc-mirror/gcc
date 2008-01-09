@@ -1,3 +1,7 @@
+2008-01-09  Raksit Ashok  <raksit@google.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2008-01-08  Ben Elliston  <bje@au.ibm.com>
 
 	* config.sub, config.guess: Update from upstream sources.
