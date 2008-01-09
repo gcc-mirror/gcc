@@ -1,3 +1,8 @@
+2008-01-09  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/34017
+	* gcc.dg/tree-ssa/pr34017.c: New.
+
 2008-01-09  Richard Guenther  <rguenther@suse.de>
 	Andrew Pinski  <andrew_pinski@playstation.sony.com>
 

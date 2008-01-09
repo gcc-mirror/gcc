@@ -1675,7 +1675,6 @@ remove_iv (tree iv_stmt)
     }
 }
 
-
 /* Transform a lambda loopnest NEW_LOOPNEST, which had TRANSFORM applied to
    it, back into gcc code.  This changes the
    loops, their induction variables, and their bodies, so that they
@@ -1699,6 +1698,7 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 {
   struct loop *temp;
   size_t i = 0;
+  int j;
   size_t depth = 0;
   VEC(tree,heap) *new_ivs = NULL;
   tree oldiv;
@@ -1837,8 +1837,6 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 	  tree newiv, stmts;
 	  lambda_body_vector lbv, newlbv;
 
-	  gcc_assert (TREE_CODE (stmt) != PHI_NODE);
-
 	  /* Compute the new expression for the induction
 	     variable.  */
 	  depth = VEC_length (tree, new_ivs);
@@ -1850,7 +1848,8 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 
 	  newiv = lbv_to_gcc_expression (newlbv, TREE_TYPE (oldiv),
 					 new_ivs, &stmts);
-	  if (stmts)
+
+	  if (stmts && TREE_CODE (stmt) != PHI_NODE)
 	    {
 	      bsi = bsi_for_stmt (stmt);
 	      bsi_insert_before (&bsi, stmts, BSI_SAME_STMT);
@@ -1858,6 +1857,12 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 
 	  FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
 	    propagate_value (use_p, newiv);
+
+	  if (stmts && TREE_CODE (stmt) == PHI_NODE)
+	    for (j = 0; j < PHI_NUM_ARGS (stmt); j++)
+	      if (PHI_ARG_DEF (stmt, j) == newiv)
+		bsi_insert_on_edge (PHI_ARG_EDGE (stmt, j), stmts);
+
 	  update_stmt (stmt);
 	}
 
