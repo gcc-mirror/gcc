@@ -1,3 +1,9 @@
+2008-01-09  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34679
+	* tree.c (host_integerp): Check for sizetype only if the
+	type is an integer type.
+
 2008-01-06  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.h (LINK_SPEC, CRT_BINUTILS_SPECS): Move AT90USB82 
