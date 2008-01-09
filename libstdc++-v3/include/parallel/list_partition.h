@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -52,36 +52,35 @@ namespace __gnu_parallel
    *  grown or not
    */
   template<typename InputIterator>
-  void
-  shrink_and_double(std::vector<InputIterator>& os_starts, size_t& count_to_two, size_t& range_length, const bool make_twice)
-  {
-    ++count_to_two;
-    if (not make_twice or count_to_two < 2)
-      {
+    void
+    shrink_and_double(std::vector<InputIterator>& os_starts,
+		      size_t& count_to_two, size_t& range_length,
+		      const bool make_twice)
+    {
+      ++count_to_two;
+      if (not make_twice or count_to_two < 2)
 	shrink(os_starts, count_to_two, range_length);
-      }
-    else
-      {
-	os_starts.resize((os_starts.size() - 1) * 2 + 1);
-	count_to_two = 0;
-      }
-  }
+      else
+	{
+	  os_starts.resize((os_starts.size() - 1) * 2 + 1);
+	  count_to_two = 0;
+	}
+    }
 
   /** @brief Combines two ranges into one and thus halves the number of ranges.
    *  @param os_starts Start positions worked on (oversampled).
    *  @param count_to_two Counts up to 2.
    *  @param range_length Current length of a chunk. */
   template<typename InputIterator>
-  void
-  shrink(std::vector<InputIterator>& os_starts, size_t& count_to_two,
-	 size_t& range_length)
-  {
-    for (typename std::vector<InputIterator>::size_type i = 0; i <= (os_starts.size() / 2); ++i)
-      {
+    void
+    shrink(std::vector<InputIterator>& os_starts, size_t& count_to_two,
+	   size_t& range_length)
+    {
+      for (typename std::vector<InputIterator>::size_type i = 0;
+	   i <= (os_starts.size() / 2); ++i)
 	os_starts[i] = os_starts[i * 2];
-      }
-    range_length *= 2;
-  }
+      range_length *= 2;
+    }
 
   /** @brief Splits a sequence given by input iterators into parts of
    * almost equal size
@@ -103,79 +102,81 @@ namespace __gnu_parallel
    *  @return Length of the whole sequence.
    */
   template<typename InputIterator, typename FunctorType>
-  size_t
-  list_partition(const InputIterator begin, const InputIterator end,
-		 InputIterator* starts, size_t* lengths, const int num_parts,
-		 FunctorType& f, int oversampling = 0)
-  {
-    bool make_twice = false;
+    size_t
+    list_partition(const InputIterator begin, const InputIterator end,
+		   InputIterator* starts, size_t* lengths, const int num_parts,
+		   FunctorType& f, int oversampling = 0)
+    {
+      bool make_twice = false;
 
-    // According to the oversampling factor, the resizing algorithm is chosen.
-    if (oversampling == 0)
-      {
-	make_twice = true;
-	oversampling = 1;
-      }
-
-    std::vector<InputIterator> os_starts(2 * oversampling * num_parts + 1);
-
-    os_starts[0]= begin;
-    InputIterator prev = begin, it = begin;
-    size_t dist_limit = 0, dist = 0;
-    size_t cur = 1, next = 1;
-    size_t range_length = 1;
-    size_t count_to_two = 0;
-    while (it != end){
-      cur = next;
-      for (; cur < os_starts.size() and it != end; ++cur)
+      // According to the oversampling factor, the resizing algorithm is chosen.
+      if (oversampling == 0)
 	{
-	  for (dist_limit += range_length; dist < dist_limit and it != end; ++dist)
-	    {
-	      f(it);
-	      ++it;
-	    }
-	  os_starts[cur] = it;
+	  make_twice = true;
+	  oversampling = 1;
 	}
 
-      // Must compare for end and not cur < os_starts.size() , because
-      // cur could be == os_starts.size() as well
-      if (it == end)
-	break;
+      std::vector<InputIterator> os_starts(2 * oversampling * num_parts + 1);
 
-      shrink_and_double(os_starts, count_to_two, range_length, make_twice);
-      next = os_starts.size()/2 + 1;
+      os_starts[0]= begin;
+      InputIterator prev = begin, it = begin;
+      size_t dist_limit = 0, dist = 0;
+      size_t cur = 1, next = 1;
+      size_t range_length = 1;
+      size_t count_to_two = 0;
+      while (it != end)
+	{
+	  cur = next;
+	  for (; cur < os_starts.size() and it != end; ++cur)
+	    {
+	      for (dist_limit += range_length;
+		   dist < dist_limit and it != end; ++dist)
+		{
+		  f(it);
+		  ++it;
+		}
+	      os_starts[cur] = it;
+	    }
+
+	  // Must compare for end and not cur < os_starts.size() , because
+	  // cur could be == os_starts.size() as well
+	  if (it == end)
+	    break;
+
+	  shrink_and_double(os_starts, count_to_two, range_length, make_twice);
+	  next = os_starts.size() / 2 + 1;
+	}
+
+      // Calculation of the parts (one must be extracted from current
+      // because the partition beginning at end, consists only of
+      // itself).
+      size_t size_part = (cur - 1) / num_parts;
+      int size_greater = static_cast<int>((cur - 1) % num_parts);
+      starts[0] = os_starts[0];
+
+      size_t index = 0;
+
+      // Smallest partitions.
+      for (int i = 1; i < (num_parts + 1 - size_greater); ++i)
+	{
+	  lengths[i-1] =  size_part * range_length;
+	  index += size_part;
+	  starts[i] = os_starts[index];
+	}
+
+      // Biggest partitions.
+      for (int i = num_parts + 1 - size_greater; i <= num_parts; ++i)
+	{
+	  lengths[i-1] =  (size_part+1) * range_length;
+	  index += (size_part+1);
+	  starts[i] = os_starts[index];
+	}
+
+      // Correction of the end size (the end iteration has not finished).
+      lengths[num_parts - 1] -= (dist_limit - dist);
+
+      return dist;
     }
-
-    // Calculation of the parts (one must be extracted from current
-    // because the partition beginning at end, consists only of
-    // itself).
-    size_t size_part = (cur - 1) / num_parts;
-    int size_greater = static_cast<int>((cur - 1) % num_parts);
-    starts[0] = os_starts[0];
-
-    size_t index = 0;
-
-    // Smallest partitions.
-    for (int i = 1; i < (num_parts + 1 - size_greater); ++i)
-      {
-	lengths[i-1] =  size_part * range_length;
-	index += size_part;
-	starts[i] = os_starts[index];
-      }
-
-    // Biggest partitions.
-    for (int i = num_parts + 1 - size_greater; i <= num_parts; ++i)
-      {
-	lengths[i-1] =  (size_part+1) * range_length;
-	index += (size_part+1);
-	starts[i] = os_starts[index];
-      }
-
-    // Correction of the end size (the end iteration has not finished).
-    lengths[num_parts - 1] -= (dist_limit - dist);
-
-    return dist;
-  }
 }
 
 #endif

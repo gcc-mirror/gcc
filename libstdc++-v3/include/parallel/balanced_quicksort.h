@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -102,7 +102,7 @@ template<typename RandomAccessIterator>
   *  this part.
   *  @pre @c (end-begin)>=1 */
 template<typename RandomAccessIterator, typename Comparator>
-  inline typename std::iterator_traits<RandomAccessIterator>::difference_type
+  typename std::iterator_traits<RandomAccessIterator>::difference_type
   qsb_divide(RandomAccessIterator begin, RandomAccessIterator end,
              Comparator comp, thread_index_t num_threads)
   {
@@ -164,7 +164,7 @@ template<typename RandomAccessIterator, typename Comparator>
   *  @param num_threads
   *          Number of threads that are allowed to work on this part. */
 template<typename RandomAccessIterator, typename Comparator>
-  inline void
+  void
   qsb_conquer(QSBThreadLocal<RandomAccessIterator>** tls,
               RandomAccessIterator begin, RandomAccessIterator end,
               Comparator comp,
@@ -240,7 +240,7 @@ template<typename RandomAccessIterator, typename Comparator>
   *  @param iam Number of the thread processing this function.
   */
 template<typename RandomAccessIterator, typename Comparator>
-  inline void
+  void
   qsb_local_sort_with_helping(QSBThreadLocal<RandomAccessIterator>** tls,
                               Comparator& comp, int iam, bool wait)
   {
@@ -418,7 +418,7 @@ template<typename RandomAccessIterator, typename Comparator>
   *  this part.
   */
 template<typename RandomAccessIterator, typename Comparator>
-  inline void
+  void
   parallel_sort_qsb(RandomAccessIterator begin, RandomAccessIterator end,
                     Comparator comp,
                     typename std::iterator_traits<RandomAccessIterator>

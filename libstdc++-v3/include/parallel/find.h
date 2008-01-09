@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -58,11 +58,10 @@ namespace __gnu_parallel
  *  @param selector Functionality (e. g. std::find_if (), std::equal(),...)
  *  @return Place of finding in both sequences.
  */
-template<
-    typename RandomAccessIterator1,
-    typename RandomAccessIterator2,
-    typename Pred,
-    typename Selector>
+template<typename RandomAccessIterator1,
+	 typename RandomAccessIterator2,
+	 typename Pred,
+	 typename Selector>
   std::pair<RandomAccessIterator1, RandomAccessIterator2>
   find_template(RandomAccessIterator1 begin1, RandomAccessIterator1 end1,
                 RandomAccessIterator2 begin2, Pred pred, Selector selector)
@@ -96,11 +95,10 @@ template<
  *  @param selector Functionality (e. g. std::find_if (), std::equal(),...)
  *  @return Place of finding in both sequences.
  */
-template<
-    typename RandomAccessIterator1,
-    typename RandomAccessIterator2,
-    typename Pred,
-    typename Selector>
+template<typename RandomAccessIterator1,
+	 typename RandomAccessIterator2,
+	 typename Pred,
+	 typename Selector>
   std::pair<RandomAccessIterator1, RandomAccessIterator2>
   find_template(RandomAccessIterator1 begin1,
                 RandomAccessIterator1 end1,
@@ -190,11 +188,10 @@ template<
  *     for CSB, the blocks are allocated in a predetermined manner,
  *     namely spacial round-robin.
  */
-template<
-    typename RandomAccessIterator1,
-    typename RandomAccessIterator2,
-    typename Pred,
-    typename Selector>
+template<typename RandomAccessIterator1,
+	 typename RandomAccessIterator2,
+	 typename Pred,
+	 typename Selector>
   std::pair<RandomAccessIterator1, RandomAccessIterator2>
   find_template(RandomAccessIterator1 begin1, RandomAccessIterator1 end1,
                 RandomAccessIterator2 begin2, Pred pred, Selector selector,
@@ -311,11 +308,10 @@ template<
  *  blocks are allocated in a predetermined manner, namely spacial
  *  round-robin.
  */
-template<
-    typename RandomAccessIterator1,
-    typename RandomAccessIterator2,
-    typename Pred,
-    typename Selector>
+template<typename RandomAccessIterator1,
+	 typename RandomAccessIterator2,
+	 typename Pred,
+	 typename Selector>
   std::pair<RandomAccessIterator1, RandomAccessIterator2>
   find_template(RandomAccessIterator1 begin1, RandomAccessIterator1 end1,
                 RandomAccessIterator2 begin2, Pred pred, Selector selector,
