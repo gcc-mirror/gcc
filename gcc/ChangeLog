@@ -1,3 +1,9 @@
+2008-01-09  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34679
+	* tree.c (host_integerp): Check for sizetype only if the
+	type is an integer type.
+
 2008-01-09  Steven Bosscher  <stevenb.gcc@gmail.com>
 
 	PR debug/26364
