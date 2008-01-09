@@ -4946,7 +4946,8 @@ host_integerp (const_tree t, int pos)
 	      || (! pos && TREE_INT_CST_HIGH (t) == -1
 		  && (HOST_WIDE_INT) TREE_INT_CST_LOW (t) < 0
 		  && (!TYPE_UNSIGNED (TREE_TYPE (t))
-		      || TYPE_IS_SIZETYPE (TREE_TYPE (t))))
+		      || (TREE_CODE (TREE_TYPE (t)) == INTEGER_TYPE
+			  && TYPE_IS_SIZETYPE (TREE_TYPE (t)))))
 	      || (pos && TREE_INT_CST_HIGH (t) == 0)));
 }
 
