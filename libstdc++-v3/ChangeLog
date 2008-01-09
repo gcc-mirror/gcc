@@ -1,3 +1,8 @@
+2008-01-09  Francesco Biscani  <bluescarni@gmail.com>
+
+	* include/tr1_impl/hashtable (_Hashtable): Fix friend declaration
+	of __detail::_Map_base<>.
+
 2008-01-08  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/22_locale/global_templates/user_facet_hierarchies.cc: Do

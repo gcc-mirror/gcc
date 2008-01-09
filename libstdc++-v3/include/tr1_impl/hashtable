@@ -168,7 +168,8 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 						  __cache_hash_code>
                                                           const_iterator;
 
-      template<typename _Key2, typename _Pair, typename _Hashtable>
+      template<typename _Key2, typename _Value2, typename _Ex2, bool __unique2,
+	       typename _Hashtable2>
         friend struct __detail::_Map_base;
 
     private:
