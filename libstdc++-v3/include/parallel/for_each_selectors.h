@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -63,11 +63,12 @@ namespace __gnu_parallel
      *  @param o Operator.
      *  @param i Iterator referencing object. */
     template<typename Op>
-    inline bool operator()(Op& o, It i)
-    {
-      o(*i);
-      return true;
-    }
+      bool
+      operator()(Op& o, It i)
+      {
+	o(*i);
+	return true;
+      }
   };
 
   /** @brief std::generate() selector. */
@@ -78,11 +79,12 @@ namespace __gnu_parallel
      *  @param o Operator.
      *  @param i Iterator referencing object. */
     template<typename Op>
-    inline bool operator()(Op& o, It i)
-    {
-      *i = o();
-      return true;
-    }
+      bool
+      operator()(Op& o, It i)
+      {
+	*i = o();
+	return true;
+      }
   };
 
   /** @brief std::fill() selector. */
@@ -93,11 +95,12 @@ namespace __gnu_parallel
      *  @param v Current value.
      *  @param i Iterator referencing object. */
     template<typename Val>
-    inline bool operator()(Val& v, It i)
-    {
-      *i = v;
-      return true;
-    }
+      bool
+      operator()(Val& v, It i)
+      {
+	*i = v;
+	return true;
+      }
   };
 
   /** @brief std::transform() selector, one input sequence variant. */
@@ -108,11 +111,12 @@ namespace __gnu_parallel
      *  @param o Operator.
      *  @param i Iterator referencing object. */
     template<typename Op>
-    inline bool operator()(Op& o, It i)
-    {
-      *i.second = o(*i.first);
-      return true;
-    }
+      bool
+      operator()(Op& o, It i)
+      {
+	*i.second = o(*i.first);
+	return true;
+      }
   };
 
   /** @brief std::transform() selector, two input sequences variant. */
@@ -123,11 +127,12 @@ namespace __gnu_parallel
      *  @param o Operator.
      *  @param i Iterator referencing object. */
     template<typename Op>
-    inline bool operator()(Op& o, It i)
-    {
-      *i.third = o(*i.first, *i.second);
-      return true;
-    }
+      bool
+      operator()(Op& o, It i)
+      {
+	*i.third = o(*i.first, *i.second);
+	return true;
+      }
   };
 
   /** @brief std::replace() selector. */
@@ -144,7 +149,8 @@ namespace __gnu_parallel
     /** @brief Functor execution.
      *  @param v Current value.
      *  @param i Iterator referencing object. */
-    inline bool operator()(T& v, It i)
+    bool
+    operator()(T& v, It i)
     {
       if (*i == v)
 	*i = new_val;
@@ -166,7 +172,8 @@ namespace __gnu_parallel
     /** @brief Functor execution.
      *  @param o Operator.
      *  @param i Iterator referencing object. */
-    inline bool operator()(Op& o, It i)
+    bool
+    operator()(Op& o, It i)
     {
       if (o(*i))
 	*i = new_val;
@@ -183,8 +190,9 @@ namespace __gnu_parallel
      *  @param i Iterator referencing object.
      *  @return 1 if count, 0 if does not count. */
     template<typename Val>
-    inline Diff operator()(Val& v, It i)
-    { return (v == *i) ? 1 : 0; }
+      Diff
+      operator()(Val& v, It i)
+      { return (v == *i) ? 1 : 0; }
   };
 
   /** @brief std::count_if () selector. */
@@ -196,8 +204,9 @@ namespace __gnu_parallel
      *  @param i Iterator referencing object.
      *  @return 1 if count, 0 if does not count. */
     template<typename Op>
-    inline Diff operator()(Op& o, It i)
-    { return (o(*i)) ? 1 : 0; }
+      Diff
+      operator()(Op& o, It i)
+      { return (o(*i)) ? 1 : 0; }
   };
 
   /** @brief std::accumulate() selector. */
@@ -209,8 +218,8 @@ namespace __gnu_parallel
      *  @param i Iterator referencing object.
      *  @return The current value. */
     template<typename Op>
-    inline typename std::iterator_traits<It>::value_type operator()(Op o, It i)
-    { return *i; }
+      typename std::iterator_traits<It>::value_type operator()(Op o, It i)
+      { return *i; }
   };
 
   /** @brief std::inner_product() selector. */
@@ -226,18 +235,21 @@ namespace __gnu_parallel
     /** @brief Constructor.
      *  @param b1 Begin iterator of first sequence.
      *  @param b2 Begin iterator of second sequence. */
-    explicit inner_product_selector(It b1, It2 b2) : begin1_iterator(b1), begin2_iterator(b2) { }
+    explicit inner_product_selector(It b1, It2 b2)
+    : begin1_iterator(b1), begin2_iterator(b2) { }
 
     /** @brief Functor execution.
      *  @param mult Multiplication functor.
      *  @param current Iterator referencing object.
      *  @return Inner product elemental result. */
     template<typename Op>
-    inline T operator()(Op mult, It current)
-    {
-      typename std::iterator_traits<It>::difference_type position = current - begin1_iterator;
-      return mult(*current, *(begin2_iterator + position));
-    }
+      T
+      operator()(Op mult, It current)
+      {
+	typename std::iterator_traits<It>::difference_type position
+	  = current - begin1_iterator;
+	return mult(*current, *(begin2_iterator + position));
+      }
   };
 
   /** @brief Selector that just returns the passed iterator. */
@@ -249,8 +261,9 @@ namespace __gnu_parallel
      *  @param i Iterator referencing object.
      *  @return Passed iterator. */
     template<typename Op>
-    inline It operator()(Op o, It i)
-    { return i; }
+      It
+      operator()(Op o, It i)
+      { return i; }
   };
 
   /** @brief Selector that returns the difference between two adjacent
@@ -260,13 +273,14 @@ namespace __gnu_parallel
   struct adjacent_difference_selector : public generic_for_each_selector<It>
   {
     template<typename Op>
-    inline bool operator()(Op& o, It i)
-    {
-      typename It::first_type go_back_one = i.first;
-      --go_back_one;
-      *i.second = o(*i.first, *go_back_one);
-      return true;
-    }
+      bool
+      operator()(Op& o, It i)
+      {
+	typename It::first_type go_back_one = i.first;
+	--go_back_one;
+	*i.second = o(*i.first, *go_back_one);
+	return true;
+      }
   };
 
   // XXX move into type_traits?
@@ -280,14 +294,15 @@ namespace __gnu_parallel
     /** @brief Functor execution.
      *  @param i Iterator referencing object. */
     template<typename It>
-    inline void operator()(It i)
-    { }
+      void
+      operator()(It i) { }
   };
 
   /** @brief Reduction function doing nothing. */
   struct dummy_reduct
   {
-    inline bool operator()(bool /*x*/, bool /*y*/) const
+    bool
+    operator()(bool /*x*/, bool /*y*/) const
     { return true; }
   };
 
@@ -300,7 +315,8 @@ namespace __gnu_parallel
     explicit min_element_reduct(Comp &c) : comp(c)
     { }
 
-    inline It operator()(It x, It y)
+    It
+    operator()(It x, It y)
     {
       if (comp(*x, *y))
 	return x;
@@ -318,7 +334,8 @@ namespace __gnu_parallel
     explicit max_element_reduct(Comp& c) : comp(c)
     { }
 
-    inline It operator()(It x, It y)
+    It
+    operator()(It x, It y)
     {
       if (comp(*x, *y))
 	return y;
@@ -336,7 +353,9 @@ namespace __gnu_parallel
     explicit accumulate_binop_reduct(BinOp& b) : binop(b) {}
 
     template<typename Result, typename Addend>
-    Result operator()(const Result& x, const Addend& y) { return binop(x, y); }
+      Result
+      operator()(const Result& x, const Addend& y)
+      { return binop(x, y); }
   };
 }
 

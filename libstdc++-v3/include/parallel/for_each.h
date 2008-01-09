@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -61,22 +61,42 @@ namespace __gnu_parallel
    *  @param output Output iterator.
    *  @param bound Maximum number of elements processed.
    *  @param parallelism_tag Parallelization method */
-  template<typename InputIterator, typename UserOp, typename Functionality, typename Red, typename Result>
-  UserOp
-  for_each_template_random_access(InputIterator begin, InputIterator end,
-				  UserOp user_op, Functionality& functionality,
-				  Red reduction, Result reduction_start,
-				  Result& output,
-				  typename std::iterator_traits<InputIterator>::difference_type bound, parallelism parallelism_tag)
-  {
-    if (parallelism_tag == parallel_unbalanced)
-      return for_each_template_random_access_ed(begin, end, user_op, functionality, reduction, reduction_start, output, bound);
-    else if (parallelism_tag == parallel_omp_loop)
-      return for_each_template_random_access_omp_loop(begin, end, user_op, functionality, reduction, reduction_start, output, bound);
-    else if (parallelism_tag == parallel_omp_loop_static)
-      return for_each_template_random_access_omp_loop(begin, end, user_op, functionality, reduction, reduction_start, output, bound);
-    else	//e. g. parallel_balanced
-      return for_each_template_random_access_workstealing(begin, end, user_op, functionality, reduction, reduction_start, output, bound);
+  template<typename InputIterator, typename UserOp,
+	   typename Functionality, typename Red, typename Result>
+    UserOp
+    for_each_template_random_access(InputIterator begin, InputIterator end,
+				    UserOp user_op,
+				    Functionality& functionality,
+				    Red reduction, Result reduction_start,
+				    Result& output, typename
+				    std::iterator_traits<InputIterator>::
+				    difference_type bound,
+				    parallelism parallelism_tag)
+    {
+      if (parallelism_tag == parallel_unbalanced)
+	return for_each_template_random_access_ed(begin, end, user_op,
+						  functionality, reduction,
+						  reduction_start,
+						  output, bound);
+      else if (parallelism_tag == parallel_omp_loop)
+	return for_each_template_random_access_omp_loop(begin, end, user_op,
+							functionality,
+							reduction,
+							reduction_start,
+							output, bound);
+      else if (parallelism_tag == parallel_omp_loop_static)
+	return for_each_template_random_access_omp_loop(begin, end, user_op,
+							functionality,
+							reduction,
+							reduction_start,
+							output, bound);
+      else	//e. g. parallel_balanced
+	return for_each_template_random_access_workstealing(begin, end,
+							    user_op,
+							    functionality,
+							    reduction,
+							    reduction_start,
+							    output, bound);
   }
 }
 

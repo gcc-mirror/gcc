@@ -1,3 +1,21 @@
+2008-01-09  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/parallel/iterator.h: Reformat to 80 columns; adjust some
+	inline specifiers.
+	* include/parallel/find_selectors.h: Likewise.
+	* include/parallel/losertree.h: Likewise.
+	* include/parallel/list_partition.h: Likewise.
+	* include/parallel/for_each.h: Likewise.
+	* include/parallel/multiseq_selection.h: Likewise.
+	* include/parallel/algorithmfwd.h: Likewise.
+	* include/parallel/for_each_selectors.h: Likewise.
+	* include/parallel/balanced_quicksort.h: Likewise.
+	* include/parallel/merge.h: Likewise.
+	* include/parallel/algobase.h: Likewise.
+	* include/parallel/find.h: Likewise.
+	* include/parallel/algo.h: Likewise.
+	* include/parallel/checkers.h: Likewise.	
+
 2008-01-09  Francesco Biscani  <bluescarni@gmail.com>
 
 	* include/tr1_impl/hashtable (_Hashtable): Fix friend declaration
