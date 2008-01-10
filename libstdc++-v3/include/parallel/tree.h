@@ -77,11 +77,11 @@ namespace __gnu_parallel
       component, if present. Set kind component.
    *  @param T Simple type, nothing to unconst */
   template<typename T>
-  struct unconst_first_component
-  {
-    /** @brief New type after removing the const */
-    typedef T type;
-  };
+    struct unconst_first_component
+    {
+      /** @brief New type after removing the const */
+      typedef T type;
+    };
 
   /** @brief Helper class: remove the const modifier from the first
       component, if present. Map kind component
@@ -89,11 +89,11 @@ namespace __gnu_parallel
    *  @param Load Second component
    *  @sa unconst_first_component */
   template<typename Key, typename Load>
-  struct unconst_first_component<std::pair<const Key, Load> >
-  {
-    /** @brief New type after removing the const */
-    typedef std::pair<Key, Load> type;
-  };
+    struct unconst_first_component<std::pair<const Key, Load> >
+    {
+      /** @brief New type after removing the const */
+      typedef std::pair<Key, Load> type;
+    };
 
   /** @brief Helper class: set the appropriate comparator to deal with
    * repetitions. Comparator for unique dictionaries.
@@ -103,24 +103,23 @@ namespace __gnu_parallel
    *  @param _Key Keys to compare
    *  @param _Compare Comparator equal to conceptual < */
   template<typename _Key, typename _Compare>
-  struct StrictlyLess : public std::binary_function<_Key, _Key, bool>
-  {
-    /** @brief Comparator equal to conceptual < */
-    _Compare c;
-
-    /** @brief Constructor given a Comparator */
-    StrictlyLess(const _Compare& _c) : c(_c) { }
-
-    /** @brief Copy constructor */
-    StrictlyLess(const StrictlyLess<_Key, _Compare>& strictly_less)
-    : c(strictly_less.c) { }
-
-    /** @brief Operator() */
-    bool operator()(const _Key& k1, const _Key& k2) const
+    struct StrictlyLess : public std::binary_function<_Key, _Key, bool>
     {
-      return c(k1, k2);
-    }
-  };
+      /** @brief Comparator equal to conceptual < */
+      _Compare c;
+
+      /** @brief Constructor given a Comparator */
+      StrictlyLess(const _Compare& _c) : c(_c) { }
+
+      /** @brief Copy constructor */
+      StrictlyLess(const StrictlyLess<_Key, _Compare>& strictly_less)
+      : c(strictly_less.c) { }
+
+      /** @brief Operator() */
+      bool
+      operator()(const _Key& k1, const _Key& k2) const
+      { return c(k1, k2); }
+    };
 
   /** @brief Helper class: set the appropriate comparator to deal with
    * repetitions. Comparator for non-unique dictionaries.
@@ -130,22 +129,23 @@ namespace __gnu_parallel
    *  @param _Key Keys to compare
    *  @param _Compare Comparator equal to conceptual <= */
   template<typename _Key, typename _Compare>
-  struct LessEqual : public std::binary_function<_Key, _Key, bool>
-  {
-    /** @brief Comparator equal to conceptual < */
-    _Compare c;
+    struct LessEqual : public std::binary_function<_Key, _Key, bool>
+    {
+      /** @brief Comparator equal to conceptual < */
+      _Compare c;
 
-    /** @brief Constructor given a Comparator */
-    LessEqual(const _Compare& _c) : c(_c) { }
+      /** @brief Constructor given a Comparator */
+      LessEqual(const _Compare& _c) : c(_c) { }
 
-    /** @brief Copy constructor */
-    LessEqual(const LessEqual<_Key, _Compare>& less_equal)
-    : c(less_equal.c) { }
+      /** @brief Copy constructor */
+      LessEqual(const LessEqual<_Key, _Compare>& less_equal)
+      : c(less_equal.c) { }
 
-    /** @brief Operator() */
-    bool operator()(const _Key& k1, const _Key& k2) const
-    { return !c(k2, k1); }
-  };
+      /** @brief Operator() */
+      bool
+      operator()(const _Key& k1, const _Key& k2) const
+      { return !c(k2, k1); }
+    };
 
 
   /** @brief Parallel red-black tree.
@@ -240,28 +240,28 @@ namespace __gnu_parallel
      * @param __last Last element of the input
      */
     template<typename _InputIterator>
-    void
-    _M_insert_unique(_InputIterator __first, _InputIterator __last)
-    {
-      if (__first==__last) return;
-      if (_GLIBCXX_PARALLEL_CONDITION(true))
-	if (base_type::_M_impl._M_node_count == 0)
-	  {
-	    _M_bulk_insertion_construction(__first, __last, true, 
-					   strictly_less);
-	    _GLIBCXX_PARALLEL_ASSERT(rb_verify());
-	  }
+      void
+      _M_insert_unique(_InputIterator __first, _InputIterator __last)
+      {
+	if (__first == __last)
+	  return;
+	
+	if (_GLIBCXX_PARALLEL_CONDITION(true))
+	  if (base_type::_M_impl._M_node_count == 0)
+	    {
+	      _M_bulk_insertion_construction(__first, __last, true, 
+					     strictly_less);
+	      _GLIBCXX_PARALLEL_ASSERT(rb_verify());
+	    }
+	  else
+	    {
+	      _M_bulk_insertion_construction(__first, __last, false, 
+					     strictly_less);
+	      _GLIBCXX_PARALLEL_ASSERT(rb_verify());
+	    }
 	else
-	  {
-	    _M_bulk_insertion_construction(__first, __last, false, 
-					   strictly_less);
-	    _GLIBCXX_PARALLEL_ASSERT(rb_verify());
-	  }
-      else
-	{
 	  base_type::_M_insert_unique(__first, __last);
-	}
-    }
+      }
 
     /** @brief Parallel replacement of the sequential
      * std::_Rb_tree::_M_insert_equal()
@@ -272,19 +272,21 @@ namespace __gnu_parallel
      * @param __first First element of the input
      * @param __last Last element of the input 	*/
     template<typename _InputIterator>
-    void
-    _M_insert_equal(_InputIterator __first, _InputIterator __last)
-    {
-      if (__first==__last) return;
-      if (_GLIBCXX_PARALLEL_CONDITION(true))
-	if (base_type::_M_impl._M_node_count == 0)
-	  _M_bulk_insertion_construction(__first, __last, true, less_equal);
+      void
+      _M_insert_equal(_InputIterator __first, _InputIterator __last)
+      {
+	if (__first == __last)
+	  return;
+      
+	if (_GLIBCXX_PARALLEL_CONDITION(true))
+	  if (base_type::_M_impl._M_node_count == 0)
+	    _M_bulk_insertion_construction(__first, __last, true, less_equal);
+	  else
+	    _M_bulk_insertion_construction(__first, __last, false, less_equal);
 	else
-	  _M_bulk_insertion_construction(__first, __last, false, less_equal);
-      else
-	base_type::_M_insert_equal(__first, __last);
-      _GLIBCXX_PARALLEL_ASSERT(rb_verify());
-    }
+	  base_type::_M_insert_equal(__first, __last);
+	_GLIBCXX_PARALLEL_ASSERT(rb_verify());
+      }
 
   private:
 
@@ -295,274 +297,273 @@ namespace __gnu_parallel
      * @param ranker Calculates the position of a node in an array of nodes
      */
     template<typename ranker>
-    class nodes_initializer
-    {
-      /** @brief Renaming of tree size_type */
+      class nodes_initializer
+      {
+	/** @brief Renaming of tree size_type */
       
-      typedef _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc> tree_type;
-      typedef typename tree_type::size_type size_type;
-    public:
+	typedef _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc> tree_type;
+	typedef typename tree_type::size_type size_type;
+      public:
 
-      /** @brief mask[%i]= 0..01..1, where the number of 1s is %i+1 */
-      size_type mask[sizeof(size_type)*8];
+	/** @brief mask[%i]= 0..01..1, where the number of 1s is %i+1 */
+	size_type mask[sizeof(size_type)*8];
 
-      /** @brief Array of nodes (initial address)	 */
-      const _Rb_tree_node_ptr* r_init;
+	/** @brief Array of nodes (initial address)	 */
+	const _Rb_tree_node_ptr* r_init;
 
-      /** @brief Total number of (used) nodes */
-      size_type n;
+	/** @brief Total number of (used) nodes */
+	size_type n;
 
-      /** @brief Rank of the last tree node that can be calculated
-	  taking into account a complete tree
-      */
-      size_type splitting_point;
+	/** @brief Rank of the last tree node that can be calculated
+	    taking into account a complete tree
+	*/
+	size_type splitting_point;
 
-      /** @brief Rank of the tree root */
-      size_type rank_root;
+	/** @brief Rank of the tree root */
+	size_type rank_root;
 
-      /** @brief Height of the tree */
-      int height;
+	/** @brief Height of the tree */
+	int height;
 
-      /** @brief Number of threads into which divide the work */
-      const thread_index_t num_threads;
+	/** @brief Number of threads into which divide the work */
+	const thread_index_t num_threads;
 
-      /** @brief Helper object to mind potential gaps in r_init */
-      const ranker& rank;
+	/** @brief Helper object to mind potential gaps in r_init */
+	const ranker& rank;
 
-      /** @brief Constructor
-       * @param r Array of nodes
-       * @param _n Total number of (used) nodes
-       * @param _num_threads Number of threads into which divide the work
-       * @param _rank Helper object to mind potential gaps in @c r_init */
-      nodes_initializer(const _Rb_tree_node_ptr* r, const size_type _n, 
-			const thread_index_t _num_threads, const ranker& _rank):
-	r_init(r),
-	n(_n),
-	num_threads(_num_threads),
-	rank(_rank)
-      {
-	height = log2(n);
-	splitting_point = 2 * (n - ((1 << height) - 1)) -1;
+	/** @brief Constructor
+	 * @param r Array of nodes
+	 * @param _n Total number of (used) nodes
+	 * @param _num_threads Number of threads into which divide the work
+	 * @param _rank Helper object to mind potential gaps in @c r_init */
+	nodes_initializer(const _Rb_tree_node_ptr* r, const size_type _n, 
+			  const thread_index_t _num_threads,
+			  const ranker& _rank)
+	: r_init(r), n(_n), num_threads(_num_threads), rank(_rank)
+	{
+	  height = log2(n);
+	  splitting_point = 2 * (n - ((1 << height) - 1)) -1;
 
-	// Rank root.
-	size_type max = 1 << (height + 1);
-	rank_root= (max-2) >> 1;
-	if (rank_root > splitting_point)
-	  rank_root = complete_to_original(rank_root);
+	  // Rank root.
+	  size_type max = 1 << (height + 1);
+	  rank_root= (max-2) >> 1;
+	  if (rank_root > splitting_point)
+	    rank_root = complete_to_original(rank_root);
 
-	mask[0] = 0x1;
-	for (unsigned int i = 1; i < sizeof(size_type)*8; ++i)
-	  {
+	  mask[0] = 0x1;
+	  for (unsigned int i = 1; i < sizeof(size_type)*8; ++i)
 	    mask[i] = (mask[i-1] << 1) + 1;
-	  }
-      }
+	}
 
-      /** @brief Query for tree height
-       * @return Tree height */
-      int 
-      get_height() const
-      { return height; }
+	/** @brief Query for tree height
+	 * @return Tree height */
+	int
+	get_height() const
+	{ return height; }
 
-      /** @brief Query for the splitting point
-       * @return Splitting point */
-      size_type 
-      get_shifted_splitting_point() const
-      { return rank.get_shifted_rank(splitting_point, 0); }
+	/** @brief Query for the splitting point
+	 * @return Splitting point */
+	size_type
+	get_shifted_splitting_point() const
+	{ return rank.get_shifted_rank(splitting_point, 0); }
 
-      /** @brief Query for the tree root node
-       * @return Tree root node */
-      _Rb_tree_node_ptr 
-      get_root() const
-      { return  r_init[rank.get_shifted_rank(rank_root,num_threads/2)]; }
+	/** @brief Query for the tree root node
+	 * @return Tree root node */
+	_Rb_tree_node_ptr 
+	get_root() const
+	{ return  r_init[rank.get_shifted_rank(rank_root,num_threads/2)]; }
 
-      /** @brief Calculation of the parent position in the array of nodes
-       * @hideinitializer */
+	/** @brief Calculation of the parent position in the array of nodes
+	 * @hideinitializer */
 #define CALCULATE_PARENT						\
-      if (p_s> splitting_point)						\
-	p_s = complete_to_original(p_s);				\
-	    int s_r = rank.get_shifted_rank(p_s,iam);			\
-	    r->_M_parent = r_init[s_r];					\
+	if (p_s> splitting_point)					\
+	  p_s = complete_to_original(p_s);				\
+	int s_r = rank.get_shifted_rank(p_s,iam);			\
+	r->_M_parent = r_init[s_r];					\
 									\
-      /** @brief Link a node with its parent and children taking into
-	  account that its rank (without gaps) is different to that in
-	  a complete tree
-       * @param r Pointer to the node
-       * @param iam Partition of the array in which the node is, where
-       * iam is in [0..num_threads)
-       * @sa link_complete */
-      void 
-      link_incomplete(const _Rb_tree_node_ptr& r, const int iam) const
-      {
-	size_type real_pos = rank.get_real_rank(&r-r_init, iam);
-	size_type l_s, r_s, p_s;
-	int mod_pos= original_to_complete(real_pos);
-	int zero= first_0_right(mod_pos);
+	/** @brief Link a node with its parent and children taking into
+	    account that its rank (without gaps) is different to that in
+	    a complete tree
+	    * @param r Pointer to the node
+	    * @param iam Partition of the array in which the node is, where
+	    * iam is in [0..num_threads)
+	    * @sa link_complete */
+	void
+	link_incomplete(const _Rb_tree_node_ptr& r, const int iam) const
+	{
+	  size_type real_pos = rank.get_real_rank(&r-r_init, iam);
+	  size_type l_s, r_s, p_s;
+	  int mod_pos= original_to_complete(real_pos);
+	  int zero= first_0_right(mod_pos);
 
-	// 1. Convert n to n', where n' will be its rank if the tree
-	//    was complete
-	// 2. Calculate neighbours for n'
-	// 3. Convert the neighbors n1', n2' and n3' to their
-	//    appropriate values n1, n2, n3. Note that it must be
-	//    checked that these neighbors actually exist.
-	calculate_shifts_pos_level(mod_pos, zero, l_s, r_s, p_s);
-	if (l_s > splitting_point)
-	  {
-	    _GLIBCXX_PARALLEL_ASSERT(r_s > splitting_point);
-	    if (zero == 1)
-	      {
-		r->_M_left = 0;
-		r->_M_right = 0;
-	      }
-	    else
-	      {
-		r->_M_left= r_init[rank.get_shifted_rank(complete_to_original(l_s),iam)];
-		r->_M_right= r_init[rank.get_shifted_rank(complete_to_original(r_s),iam)];
-	      }
-
-	  }
-	else{
-	  r->_M_left= r_init[rank.get_shifted_rank(l_s,iam)];
-	  if (zero != 1)
+	  // 1. Convert n to n', where n' will be its rank if the tree
+	  //    was complete
+	  // 2. Calculate neighbours for n'
+	  // 3. Convert the neighbors n1', n2' and n3' to their
+	  //    appropriate values n1, n2, n3. Note that it must be
+	  //    checked that these neighbors actually exist.
+	  calculate_shifts_pos_level(mod_pos, zero, l_s, r_s, p_s);
+	  if (l_s > splitting_point)
 	    {
-	      r->_M_right= r_init[rank.get_shifted_rank(complete_to_original(r_s),iam)];
+	      _GLIBCXX_PARALLEL_ASSERT(r_s > splitting_point);
+	      if (zero == 1)
+		{
+		  r->_M_left = 0;
+		  r->_M_right = 0;
+		}
+	      else
+		{
+		  r->_M_left =
+		    r_init[rank.get_shifted_rank(complete_to_original(l_s),
+						 iam)];
+		  r->_M_right =
+		    r_init[rank.get_shifted_rank(complete_to_original(r_s),
+						 iam)];
+		}
 	    }
 	  else
 	    {
-	      r->_M_right = 0;
+	      r->_M_left= r_init[rank.get_shifted_rank(l_s,iam)];
+	      if (zero != 1)
+		r->_M_right
+		  = r_init[rank.get_shifted_rank(complete_to_original(r_s),
+						 iam)];
+	      else
+		r->_M_right = 0;
 	    }
+	  r->_M_color = std::_S_black;
+	  CALCULATE_PARENT;
 	}
-	r->_M_color = std::_S_black;
-	CALCULATE_PARENT;
-      }
 
-      /** @brief Link a node with its parent and children taking into
-	  account that its rank (without gaps) is the same as that in
-	  a complete tree
-       * @param r Pointer to the node
-       * @param iam Partition of the array in which the node is, where
-       * iam is in [0..@c num_threads)
-       * @sa link_incomplete
-       */
-      void 
-      link_complete(const _Rb_tree_node_ptr& r, const int iam) const
-      {
-	size_type real_pos = rank.get_real_rank(&r-r_init, iam);
-	size_type p_s;
+	/** @brief Link a node with its parent and children taking into
+	    account that its rank (without gaps) is the same as that in
+	    a complete tree
+	    * @param r Pointer to the node
+	    * @param iam Partition of the array in which the node is, where
+	    * iam is in [0..@c num_threads)
+	    * @sa link_incomplete
+	    */
+	void
+	link_complete(const _Rb_tree_node_ptr& r, const int iam) const
+	{
+	  size_type real_pos = rank.get_real_rank(&r-r_init, iam);
+	  size_type p_s;
 
-	// Test if it is a leaf on the last not necessarily full level
-	if ((real_pos & mask[0]) == 0)
-	  {
-	    if ((real_pos & 0x2) == 0)
-	      p_s = real_pos + 1;
-	    else
-	      p_s = real_pos - 1;
-	    r->_M_color = std::_S_red;
-	    r->_M_left = 0;
+	  // Test if it is a leaf on the last not necessarily full level
+	  if ((real_pos & mask[0]) == 0)
+	    {
+	      if ((real_pos & 0x2) == 0)
+		p_s = real_pos + 1;
+	      else
+		p_s = real_pos - 1;
+	      r->_M_color = std::_S_red;
+	      r->_M_left = 0;
 	    r->_M_right = 0;
-	  }
-	else
-	  {
-	    size_type l_s, r_s;
-	    int zero = first_0_right(real_pos);
-	    calculate_shifts_pos_level(real_pos, zero, l_s, r_s, p_s);
-	    r->_M_color = std::_S_black;
+	    }
+	  else
+	    {
+	      size_type l_s, r_s;
+	      int zero = first_0_right(real_pos);
+	      calculate_shifts_pos_level(real_pos, zero, l_s, r_s, p_s);
+	      r->_M_color = std::_S_black;
 
-	    r->_M_left = r_init[rank.get_shifted_rank(l_s,iam)];
-	    if (r_s > splitting_point)
-	      r_s = complete_to_original(r_s);
-	    r->_M_right = r_init[rank.get_shifted_rank(r_s,iam)];
-	  }
-	CALCULATE_PARENT;
-      }
+	      r->_M_left = r_init[rank.get_shifted_rank(l_s,iam)];
+	      if (r_s > splitting_point)
+		r_s = complete_to_original(r_s);
+	      r->_M_right = r_init[rank.get_shifted_rank(r_s,iam)];
+	    }
+	  CALCULATE_PARENT;
+	}
 
 #undef CALCULATE_PARENT
 
-    private:
-      /** @brief Change of "base": Convert the rank in the actual tree
-	  into the corresponding rank if the tree was complete
-       * @param pos Rank in the actual incomplete tree
-       * @return Rank in the corresponding complete tree
-       * @sa complete_to_original  */
-      int 
-      original_to_complete(const int pos) const
-      { return (pos << 1) - splitting_point; }
+      private:
+	/** @brief Change of "base": Convert the rank in the actual tree
+	    into the corresponding rank if the tree was complete
+	    * @param pos Rank in the actual incomplete tree
+	    * @return Rank in the corresponding complete tree
+	    * @sa complete_to_original  */
+	int
+	original_to_complete(const int pos) const
+	{ return (pos << 1) - splitting_point; }
 
-      /** @brief Change of "base": Convert the rank if the tree was
-	  complete into the corresponding rank in the actual tree
-       * @param pos Rank in the complete tree
-       * @return Rank in the actual incomplete tree
-       * @sa original_to_complete */
-      int 
-      complete_to_original(const int pos) const
-      { return (pos + splitting_point) >> 1; }
+	/** @brief Change of "base": Convert the rank if the tree was
+	    complete into the corresponding rank in the actual tree
+	    * @param pos Rank in the complete tree
+	    * @return Rank in the actual incomplete tree
+	    * @sa original_to_complete */
+	int
+	complete_to_original(const int pos) const
+	{ return (pos + splitting_point) >> 1; }
 
 
-      /** @brief Calculate the rank in the complete tree of the parent
-	  and children of a node
-       * @param pos Rank in the complete tree of the node whose parent
-       * and children rank must be calculated
-       * @param level Tree level in which the node at pos is in
-       * (starting to count at leaves). @pre @c level > 1
-       * @param left_shift Rank in the complete tree of the left child
-       * of pos (out parameter)
-       * @param right_shift Rank in the complete tree of the right
-       * child of pos (out parameter)
-       * @param parent_shift Rank in the complete tree of the parent
-       * of pos (out parameter)
-       */
-      void 
-      calculate_shifts_pos_level(const size_type pos, const int level, 
-				 size_type& left_shift, size_type& right_shift,
-				 size_type& parent_shift) const
-      {
-	int stride =  1 << (level -1);
-	left_shift = pos - stride;
-	right_shift = pos + stride;
-	if (((pos >> (level + 1)) & 0x1) == 0)
-	  parent_shift = pos + 2*stride;
-	else
-	  parent_shift = pos - 2*stride;
-      }
+	/** @brief Calculate the rank in the complete tree of the parent
+	    and children of a node
+	    * @param pos Rank in the complete tree of the node whose parent
+	    * and children rank must be calculated
+	    * @param level Tree level in which the node at pos is in
+	    * (starting to count at leaves). @pre @c level > 1
+	    * @param left_shift Rank in the complete tree of the left child
+	    * of pos (out parameter)
+	    * @param right_shift Rank in the complete tree of the right
+	    * child of pos (out parameter)
+	    * @param parent_shift Rank in the complete tree of the parent
+	    * of pos (out parameter)
+	    */
+	void
+	calculate_shifts_pos_level(const size_type pos, const int level, 
+				   size_type& left_shift,
+				   size_type& right_shift,
+				   size_type& parent_shift) const
+	{
+	  int stride =  1 << (level -1);
+	  left_shift = pos - stride;
+	  right_shift = pos + stride;
+	  if (((pos >> (level + 1)) & 0x1) == 0)
+	    parent_shift = pos + 2*stride;
+	  else
+	    parent_shift = pos - 2*stride;
+	}
 
-      /** @brief Search for the first 0 bit (growing the weight)
-       * @param x Binary number (corresponding to a rank in the tree)
-       * whose first 0 bit must be calculated
-       * @return Position of the first 0 bit in @c x (starting to
-       * count with 1)
-       */
-      int 
-      first_0_right(const size_type x) const
-      {
-	if ((x & 0x2) == 0)
-	  return 1;
-	else
-	  return first_0_right_bs(x);
-      }
+	/** @brief Search for the first 0 bit (growing the weight)
+	 * @param x Binary number (corresponding to a rank in the tree)
+	 * whose first 0 bit must be calculated
+	 * @return Position of the first 0 bit in @c x (starting to
+	 * count with 1)
+	 */
+	int
+	first_0_right(const size_type x) const
+	{
+	  if ((x & 0x2) == 0)
+	    return 1;
+	  else
+	    return first_0_right_bs(x);
+	}
 
-      /** @brief Search for the first 0 bit (growing the weight) using
-       * binary search
-       *
-       * Binary search can be used instead of a naive loop using the
-       * masks in mask array
-       * @param x Binary number (corresponding to a rank in the tree)
-       * whose first 0 bit must be calculated
-       * @param k_beg Position in which to start searching. By default is 2.
-       * @return Position of the first 0 bit in x (starting to count with 1) */
-      int 
-      first_0_right_bs(const size_type x, int k_beg=2) const
-      {
-	int k_end = sizeof(size_type)*8;
-	size_type not_x = x ^ mask[k_end-1];
-	while ((k_end-k_beg) > 1)
-	  {
-	    int k = k_beg + (k_end-k_beg)/2;
-	    if ((not_x & mask[k-1]) != 0)
-	      k_end = k;
-	    else
-	      k_beg = k;
-	  }
-	return k_beg;
-      }
+	/** @brief Search for the first 0 bit (growing the weight) using
+	 * binary search
+	 *
+	 * Binary search can be used instead of a naive loop using the
+	 * masks in mask array
+	 * @param x Binary number (corresponding to a rank in the tree)
+	 * whose first 0 bit must be calculated
+	 * @param k_beg Position in which to start searching. By default is 2.
+	 * @return Position of the first 0 bit in x (starting to count with 1) */
+	int
+	first_0_right_bs(const size_type x, int k_beg=2) const
+	{
+	  int k_end = sizeof(size_type)*8;
+	  size_type not_x = x ^ mask[k_end-1];
+	  while ((k_end-k_beg) > 1)
+	    {
+	      int k = k_beg + (k_end-k_beg)/2;
+	      if ((not_x & mask[k-1]) != 0)
+		k_end = k;
+	      else
+		k_beg = k;
+	    }
+	  return k_beg;
+	}
     };
 
     /***** Dealing with repetitions (EFFICIENCY ISSUE) *****/
@@ -605,18 +606,17 @@ namespace __gnu_parallel
        * @param _num_threads Number of partitions (and threads that
        * work on it) */
       ranker_gaps(const size_type* size_p, const size_type* shift_r, 
-		  const thread_index_t _num_threads) :
-	beg_shift_partition(size_p),
-	rank_shift(shift_r),
+		  const thread_index_t _num_threads)
+      : beg_shift_partition(size_p), rank_shift(shift_r),
 	num_threads(_num_threads)
       {
 	beg_partition = new size_type[num_threads+1];
 	beg_partition[0] = 0;
 	for (int i = 1; i <= num_threads; ++i)
-	  {
-	    beg_partition[i] = beg_partition[i-1] + (beg_shift_partition[i] - beg_shift_partition[i-1]) - (rank_shift[i] - rank_shift[i-1]);
-
-	  }
+	  beg_partition[i] = (beg_partition[i-1]
+			      + (beg_shift_partition[i]
+				 - beg_shift_partition[i-1])
+			      - (rank_shift[i] - rank_shift[i-1]));
 
 	// Ghost element, strictly larger than any index requested.
 	++beg_partition[num_threads];
@@ -728,156 +728,163 @@ namespace __gnu_parallel
      * @param _Comp Comparator to invert
      * @param _Iterator Iterator to the elements to compare */
     template<typename _Comp, typename _Iterator>
-    class gr_or_eq
-    {
-      /** @brief Renaming value_type of _Iterator */
-      typedef typename std::iterator_traits<_Iterator>::value_type value_type;
-
-      /** @brief Comparator to be inverted */
-      const _Comp comp;
-
-    public:
-      /** @brief Constructor
-       * @param c Comparator */
-      gr_or_eq(const _Comp& c) : comp(c) { }
-
-      /** @brief Operator()
-       * @param a First value to compare
-       * @param b Second value to compare */
-      bool operator()(const value_type& a, const value_type& b) const
+      class gr_or_eq
       {
-	if (not (comp(_KeyOfValue()(a), _KeyOfValue()(b))))
-	  return true;
-	return false;
-      }
-    };
+	/** @brief Renaming value_type of _Iterator */
+	typedef typename std::iterator_traits<_Iterator>::value_type
+	value_type;
+
+	/** @brief Comparator to be inverted */
+	const _Comp comp;
+
+      public:
+	/** @brief Constructor
+	 * @param c Comparator */
+	gr_or_eq(const _Comp& c) : comp(c) { }
+
+	/** @brief Operator()
+	 * @param a First value to compare
+	 * @param b Second value to compare */
+	bool
+	operator()(const value_type& a, const value_type& b) const
+	{
+	  if (not (comp(_KeyOfValue()(a), _KeyOfValue()(b))))
+	    return true;
+	  return false;
+	}
+      };
 
     /** @brief Helper comparator class: Passed as a parameter of
 	list_partition to check that a sequence is sorted
      * @param _InputIterator Iterator to the elements to compare
      * @param _CompIsSorted  Comparator to check for sortednesss */
     template<typename _InputIterator, typename _CompIsSorted>
-    class is_sorted_functor
-    {
-      /** @brief Element to compare with (first parameter of comp) */
-      _InputIterator prev;
-
-      /** @brief Comparator to check for sortednesss */
-      const _CompIsSorted comp;
-
-      /** @brief Sum up the history of the operator() of this
-       * comparator class Its value is true if all calls to comp from
-       * this class have returned true. It is false otherwise */
-      bool sorted;
-
-    public:
-      /** @brief Constructor
-       *
-       * Sorted is set to true
-       * @param first Element to compare with the first time the
-       * operator() is called
-       * @param c  Comparator to check for sortedness */
-      is_sorted_functor(const _InputIterator first, const _CompIsSorted c)
-      : prev(first), comp(c), sorted(true) { }
-
-      /** @brief Operator() with only one explicit parameter. Updates
-	  the class member @c prev and sorted.
-       * @param it Iterator to the element which must be compared to
-       * the element pointed by the the class member @c prev */
-      void operator()(const _InputIterator it)
+      class is_sorted_functor
       {
-	if (sorted and it != prev and comp(_KeyOfValue()(*it),
-					   _KeyOfValue()(*prev)))
-	  sorted = false;
-	prev = it;
-      }
+	/** @brief Element to compare with (first parameter of comp) */
+	_InputIterator prev;
 
-      /** @brief Query method for sorted
-       * @return Current value of sorted */
-      bool is_sorted() const
-      {
-	return sorted;
-      }
-    };
+	/** @brief Comparator to check for sortednesss */
+	const _CompIsSorted comp;
+
+	/** @brief Sum up the history of the operator() of this
+	 * comparator class Its value is true if all calls to comp from
+	 * this class have returned true. It is false otherwise */
+	bool sorted;
+
+      public:
+	/** @brief Constructor
+	 *
+	 * Sorted is set to true
+	 * @param first Element to compare with the first time the
+	 * operator() is called
+	 * @param c  Comparator to check for sortedness */
+	is_sorted_functor(const _InputIterator first, const _CompIsSorted c)
+	: prev(first), comp(c), sorted(true) { }
+
+	/** @brief Operator() with only one explicit parameter. Updates
+	    the class member @c prev and sorted.
+	    * @param it Iterator to the element which must be compared to
+	    * the element pointed by the the class member @c prev */
+	void
+	operator()(const _InputIterator it)
+	{
+	  if (sorted and it != prev and comp(_KeyOfValue()(*it),
+					     _KeyOfValue()(*prev)))
+	    sorted = false;
+	  prev = it;
+	}
+
+	/** @brief Query method for sorted
+	 * @return Current value of sorted */
+	bool
+	is_sorted() const
+	{ return sorted; }
+      };
 
     /** @brief Helper functor: sort the input based upon elements
 	instead of keys
      * @param KeyComparator Comparator for the key of values */
     template<typename KeyComparator>
-    class ValueCompare
-    : public std::binary_function<value_type, value_type, bool>
-    {
-      /** @brief Comparator for the key of values */
-      const KeyComparator comp;
+      class ValueCompare
+      : public std::binary_function<value_type, value_type, bool>
+      {
+	/** @brief Comparator for the key of values */
+	const KeyComparator comp;
 
-    public:
-      /** @brief Constructor
-       * @param c Comparator for the key of values */
-      ValueCompare(const KeyComparator& c): comp(c)  { }
+      public:
+	/** @brief Constructor
+	 * @param c Comparator for the key of values */
+	ValueCompare(const KeyComparator& c): comp(c)  { }
 
-      /** @brief Operator(): Analogous to comp but for values and not keys
-       * @param v1 First value to compare
-       * @param v2 Second value to compare
-       * @return Result of the comparison */
-      bool operator()(const value_type& v1, const value_type& v2) const
-      { return comp(_KeyOfValue()(v1),_KeyOfValue()(v2)); }
-    };
+	/** @brief Operator(): Analogous to comp but for values and not keys
+	 * @param v1 First value to compare
+	 * @param v2 Second value to compare
+	 * @return Result of the comparison */
+	bool
+	operator()(const value_type& v1, const value_type& v2) const
+	{ return comp(_KeyOfValue()(v1),_KeyOfValue()(v2)); }
+      };
 
     /** @brief Helper comparator: compare a key with the key in a node
      * @param _Comparator Comparator for keys */
     template<typename _Comparator>
-    struct compare_node_key
-    {
-      /** @brief Comparator for keys */
-      const _Comparator& c;
+      struct compare_node_key
+      {
+	/** @brief Comparator for keys */
+	const _Comparator& c;
 
-      /** @brief Constructor
-       * @param _c Comparator for keys */
-      compare_node_key(const _Comparator& _c) : c(_c) { }
+	/** @brief Constructor
+	 * @param _c Comparator for keys */
+	compare_node_key(const _Comparator& _c) : c(_c) { }
 
-      /** @brief Operator() with the first parameter being a node
-       * @param r Node whose key is to be compared
-       * @param k Key to be compared
-       * @return Result of the comparison */
-      bool operator()(const _Rb_tree_node_ptr r, const key_type& k) const
-      { return c(base_type::_S_key(r),k); }
+	/** @brief Operator() with the first parameter being a node
+	 * @param r Node whose key is to be compared
+	 * @param k Key to be compared
+	 * @return Result of the comparison */
+	bool
+	operator()(const _Rb_tree_node_ptr r, const key_type& k) const
+	{ return c(base_type::_S_key(r),k); }
 
-      /** @brief Operator() with the second parameter being a node
-       * @param k Key to be compared
-       * @param r Node whose key is to be compared
-       * @return Result of the comparison */
-      bool operator()(const key_type& k, const _Rb_tree_node_ptr r) const
-      { return c(k, base_type::_S_key(r)); }
-    };
+	/** @brief Operator() with the second parameter being a node
+	 * @param k Key to be compared
+	 * @param r Node whose key is to be compared
+	 * @return Result of the comparison */
+	bool
+	operator()(const key_type& k, const _Rb_tree_node_ptr r) const
+	{ return c(k, base_type::_S_key(r)); }
+      };
 
     /** @brief Helper comparator: compare a key with the key of a
 	value pointed by an iterator
      * @param _Comparator Comparator for keys 
      */
     template<typename _Iterator, typename _Comparator>
-    struct compare_value_key
-    {
-      /** @brief Comparator for keys */
-      const _Comparator& c;
+      struct compare_value_key
+      {
+	/** @brief Comparator for keys */
+	const _Comparator& c;
 
-      /** @brief Constructor
-       * @param _c Comparator for keys */
-      compare_value_key(const _Comparator& _c) : c(_c){ }
+	/** @brief Constructor
+	 * @param _c Comparator for keys */
+	compare_value_key(const _Comparator& _c) : c(_c){ }
 
-      /** @brief Operator() with the first parameter being an iterator
-       * @param v Iterator to the value whose key is to be compared
-       * @param k Key to be compared
-       * @return Result of the comparison */
-      bool operator()(const _Iterator& v, const key_type& k) const
-      { return c(_KeyOfValue()(*v),k); }
+	/** @brief Operator() with the first parameter being an iterator
+	 * @param v Iterator to the value whose key is to be compared
+	 * @param k Key to be compared
+	 * @return Result of the comparison */
+	bool
+	operator()(const _Iterator& v, const key_type& k) const
+	{ return c(_KeyOfValue()(*v),k); }
 
-      /** @brief Operator() with the second parameter being an iterator
-       * @param k Key to be compared
-       * @param v Iterator to the value whose key is to be compared
-       * @return Result of the comparison */
-      bool operator()(const key_type& k, const _Iterator& v) const
-      { return c(k, _KeyOfValue()(*v)); }
-    };
+	/** @brief Operator() with the second parameter being an iterator
+	 * @param k Key to be compared
+	 * @param v Iterator to the value whose key is to be compared
+	 * @return Result of the comparison */
+	bool
+	operator()(const key_type& k, const _Iterator& v) const
+	{ return c(k, _KeyOfValue()(*v)); }
+      };
 
     /** @brief Helper class of _Rb_tree to avoid some symmetric code
 	in tree operations */
@@ -886,13 +893,15 @@ namespace __gnu_parallel
       /** @brief Obtain the conceptual left child of a node
        * @param parent Node whose child must be obtained
        * @return Reference to the child node */
-      static _Rb_tree_node_base*& left(_Rb_tree_node_base* parent)
+      static _Rb_tree_node_base*&
+      left(_Rb_tree_node_base* parent)
       { return parent->_M_left; }
 
       /** @brief Obtain the conceptual right child of a node
        * @param parent Node whose child must be obtained
        * @return Reference to the child node */
-      static _Rb_tree_node_base*& right(_Rb_tree_node_base* parent)
+      static _Rb_tree_node_base*&
+      right(_Rb_tree_node_base* parent)
       { return parent->_M_right; }
     };
 
@@ -901,22 +910,24 @@ namespace __gnu_parallel
      * @param S Symmetry to inverse
      * @sa LeftRight */
     template<typename S>
-    struct Opposite
-    {
-      /** @brief Obtain the conceptual left child of a node, inverting
-	  the symmetry
-       * @param parent Node whose child must be obtained
-       * @return Reference to the child node */
-      static _Rb_tree_node_base*& left(_Rb_tree_node_base* parent)
-      { return S::right(parent);}
+      struct Opposite
+      {
+	/** @brief Obtain the conceptual left child of a node, inverting
+	    the symmetry
+	    * @param parent Node whose child must be obtained
+	    * @return Reference to the child node */
+	static _Rb_tree_node_base*&
+	left(_Rb_tree_node_base* parent)
+	{ return S::right(parent);}
 
-      /** @brief Obtain the conceptual right child of a node,
-	  inverting the symmetry
-       * @param parent Node whose child must be obtained
-       * @return Reference to the child node */
-      static _Rb_tree_node_base*& right(_Rb_tree_node_base* parent)
-      { return S::left(parent);}
-    };
+	/** @brief Obtain the conceptual right child of a node,
+	    inverting the symmetry
+	    * @param parent Node whose child must be obtained
+	    * @return Reference to the child node */
+	static _Rb_tree_node_base*&
+	right(_Rb_tree_node_base* parent)
+        { return S::left(parent);}
+      };
 
     /** @brief Inverse symmetry of LeftRight */
     typedef Opposite<LeftRight> RightLeft;
@@ -926,148 +937,153 @@ namespace __gnu_parallel
      * @param Comparator Comparator for values
      * @param _ValuePtr Pointer to values */
     template<typename Comparator, typename _ValuePtr>
-    class PtrComparator 
-    : public std::binary_function<_ValuePtr, _ValuePtr, bool>
-    {
-      /** @brief Comparator for values */
-      Comparator comp;
+      class PtrComparator 
+      : public std::binary_function<_ValuePtr, _ValuePtr, bool>
+      {
+	/** @brief Comparator for values */
+	Comparator comp;
 
-    public:
-      /** @brief Constructor
-       * @param comp Comparator for values */
-      PtrComparator(Comparator comp) : comp(comp)  { }
+      public:
+	/** @brief Constructor
+	 * @param comp Comparator for values */
+	PtrComparator(Comparator comp) : comp(comp)  { }
 
-      /** @brief Operator(): compare the values instead of the pointers
-       * @param v1 Pointer to the first element to compare
-       * @param v2 Pointer to the second element to compare */
-      bool operator()(const _ValuePtr& v1, const _ValuePtr& v2) const
-      { return comp(*v1,*v2); }
-    };
+	/** @brief Operator(): compare the values instead of the pointers
+	 * @param v1 Pointer to the first element to compare
+	 * @param v2 Pointer to the second element to compare */
+	bool
+	operator()(const _ValuePtr& v1, const _ValuePtr& v2) const
+	{ return comp(*v1,*v2); }
+      };
 
     /** @brief Iterator whose elements are pointers
      * @param value_type Type pointed by the pointers */
     template<typename _ValueTp>
-    class PtrIterator
-    {
-    public:
-      /** @brief The iterator category is random access iterator */
-      typedef typename std::random_access_iterator_tag iterator_category;
-      typedef _ValueTp  value_type;
-      typedef size_t difference_type;
-      typedef value_type* ValuePtr;
-      typedef ValuePtr& reference;
-      typedef value_type** pointer;
-
-      /** @brief Element accessed by the iterator */
-      value_type** ptr;
-
-      /** @brief Trivial constructor */
-      PtrIterator() { }
-
-      /** @brief Constructor from an element */
-      PtrIterator(const ValuePtr& __i) : ptr(&__i) { }
-
-      /** @brief Constructor from a pointer */
-      PtrIterator(const pointer& __i) : ptr(__i) { }
-
-      /** @brief Copy constructor */
-      PtrIterator(const PtrIterator<value_type>& __i) : ptr(__i.ptr) { }
-
-      reference
-      operator*() const
-      { return **ptr; }
-
-      ValuePtr
-      operator->() const
-      { return *ptr; }
-
-      /** @brief Bidirectional iterator requirement */
-      PtrIterator&
-      operator++()
+      class PtrIterator
       {
-	++ptr;
-	return *this;
-      }
+      public:
+	/** @brief The iterator category is random access iterator */
+	typedef typename std::random_access_iterator_tag iterator_category;
+	typedef _ValueTp  value_type;
+	typedef size_t difference_type;
+	typedef value_type* ValuePtr;
+	typedef ValuePtr& reference;
+	typedef value_type** pointer;
 
-      /** @brief Bidirectional iterator requirement */
-      PtrIterator
-      operator++(int)
-      { return PtrIterator(ptr++); }
+	/** @brief Element accessed by the iterator */
+	value_type** ptr;
 
-      /** @brief Bidirectional iterator requirement */
-      PtrIterator&
-      operator--()
-      {
-	--ptr;
-	return *this;
-      }
+	/** @brief Trivial constructor */
+	PtrIterator() { }
 
-      /** @brief Bidirectional iterator requirement */
-      PtrIterator
-      operator--(int)
-      { return PtrIterator(ptr--); }
+	/** @brief Constructor from an element */
+	PtrIterator(const ValuePtr& __i) : ptr(&__i) { }
 
-      /** @brief Random access iterator requirement */
-      reference
-      operator[](const difference_type& __n) const
-      { return *ptr[__n]; }
+	/** @brief Constructor from a pointer */
+	PtrIterator(const pointer& __i) : ptr(__i) { }
 
-      /** @brief Random access iterator requirement */
-      PtrIterator&
-      operator+=(const difference_type& __n)
-      {
-	ptr += __n;
-	return *this;
-      }
+	/** @brief Copy constructor */
+	PtrIterator(const PtrIterator<value_type>& __i) : ptr(__i.ptr) { }
 
-      /** @brief Random access iterator requirement */
-      PtrIterator
-      operator+(const difference_type& __n) const
-      { return PtrIterator(ptr + __n); }
+	reference
+	operator*() const
+	{ return **ptr; }
 
-      /** @brief Random access iterator requirement */
-      PtrIterator&
-      operator-=(const difference_type& __n)
-      {
-	ptr -= __n;
-	return *this;
-      }
+	ValuePtr
+	operator->() const
+	{ return *ptr; }
 
-      /** @brief Random access iterator requirement */
-      PtrIterator
-      operator-(const difference_type& __n) const
-      { return PtrIterator(ptr - __n); }
+	/** @brief Bidirectional iterator requirement */
+	PtrIterator&
+	operator++()
+	{
+	  ++ptr;
+	  return *this;
+	}
 
-      /** @brief Random access iterator requirement */
-      difference_type
-      operator-(const PtrIterator<value_type>& iter) const
-      { return ptr - iter.ptr; }
+	/** @brief Bidirectional iterator requirement */
+	PtrIterator
+	operator++(int)
+	{ return PtrIterator(ptr++); }
 
-      /** @brief Random access iterator requirement */
-      difference_type
-      operator+(const PtrIterator<value_type>& iter) const
-      { return ptr + iter.ptr; }
+	/** @brief Bidirectional iterator requirement */
+	PtrIterator&
+	operator--()
+	{
+	  --ptr;
+	  return *this;
+	}
 
-      /** @brief Allow assignment of an element ValuePtr to the iterator */
-      PtrIterator<value_type>& operator=(const ValuePtr sptr)
-      {
-	ptr = &sptr;
-	return *this;
-      }
+	/** @brief Bidirectional iterator requirement */
+	PtrIterator
+	operator--(int)
+	{ return PtrIterator(ptr--); }
 
-      PtrIterator<value_type>& operator=(const PtrIterator<value_type>& piter)
-      {
-	ptr = piter.ptr;
-	return *this;
-      }
+	/** @brief Random access iterator requirement */
+	reference
+	operator[](const difference_type& __n) const
+	{ return *ptr[__n]; }
 
-      bool operator==(const PtrIterator<value_type>& piter)
-      { return ptr == piter.ptr; }
+	/** @brief Random access iterator requirement */
+	PtrIterator&
+	operator+=(const difference_type& __n)
+        {
+	  ptr += __n;
+	  return *this;
+	}
 
-      bool operator!=(const PtrIterator<value_type>& piter)
-      { return ptr != piter.ptr; }
+	/** @brief Random access iterator requirement */
+	PtrIterator
+	operator+(const difference_type& __n) const
+	{ return PtrIterator(ptr + __n); }
 
-    };
+	/** @brief Random access iterator requirement */
+	PtrIterator&
+	operator-=(const difference_type& __n)
+	{
+	  ptr -= __n;
+	  return *this;
+	}
+
+	/** @brief Random access iterator requirement */
+	PtrIterator
+	operator-(const difference_type& __n) const
+	{ return PtrIterator(ptr - __n); }
+
+	/** @brief Random access iterator requirement */
+	difference_type
+	operator-(const PtrIterator<value_type>& iter) const
+	{ return ptr - iter.ptr; }
+
+	/** @brief Random access iterator requirement */
+	difference_type
+	operator+(const PtrIterator<value_type>& iter) const
+	{ return ptr + iter.ptr; }
+
+	/** @brief Allow assignment of an element ValuePtr to the iterator */
+	PtrIterator<value_type>&
+	operator=(const ValuePtr sptr)
+	{
+	  ptr = &sptr;
+	  return *this;
+	}
+
+	PtrIterator<value_type>&
+	operator=(const PtrIterator<value_type>& piter)
+	{
+	  ptr = piter.ptr;
+	  return *this;
+	}
+
+	bool
+	operator==(const PtrIterator<value_type>& piter)
+	{ return ptr == piter.ptr; }
+
+	bool
+	operator!=(const PtrIterator<value_type>& piter)
+	{ return ptr != piter.ptr; }
+
+      };
 
 
     /** @brief Bulk insertion helper: synchronization and construction
@@ -1207,47 +1223,55 @@ namespace __gnu_parallel
      * saved so that afterwards the sequence can be processed
      * effectively in parallel. */
     template<typename _InputIterator, typename StrictlyLessOrLessEqual>
-    void
-    _M_bulk_insertion_construction(const _InputIterator __first, const _InputIterator __last, const bool is_construction, StrictlyLessOrLessEqual strictly_less_or_less_equal)
-    {
-      thread_index_t num_threads = get_max_threads();
-      size_type n;
-      size_type beg_partition[num_threads+1];
-      _InputIterator access[num_threads+1];
-      beg_partition[0] = 0;
-      bool is_sorted= is_sorted_distance_accessors(__first, __last, access, beg_partition,n, num_threads, std::__iterator_category(__first));
+      void
+      _M_bulk_insertion_construction(const _InputIterator __first,
+				     const _InputIterator __last,
+				     const bool is_construction,
+				     StrictlyLessOrLessEqual
+				     strictly_less_or_less_equal)
+      {
+	thread_index_t num_threads = get_max_threads();
+	size_type n;
+	size_type beg_partition[num_threads+1];
+	_InputIterator access[num_threads+1];
+	beg_partition[0] = 0;
+	bool is_sorted =
+	  is_sorted_distance_accessors(__first, __last, access,
+				       beg_partition, n, num_threads,
+				       std::__iterator_category(__first));
 
-      if (not is_sorted)
-	{
-	  _M_not_sorted_bulk_insertion_construction(access, beg_partition, n, num_threads, is_construction, strictly_less_or_less_equal);
-	}
-      else
-	{
-	  // The vector must be moved... all ranges must have at least
-	  // one element, or make just sequential???
-	  if (static_cast<size_type>(num_threads) > n)
-	    {
-	      int j = 1;
-	      for (int i = 1; i <= num_threads; ++i)
-		{
-		  if (beg_partition[j-1] != beg_partition[i])
-		    {
-		      beg_partition[j] = beg_partition[i];
-		      access[j] = access[i];
-		      ++j;
-		    }
-		}
-	      num_threads = static_cast<thread_index_t>(n);
-	    }
+	if (not is_sorted)
+	  _M_not_sorted_bulk_insertion_construction(
+	    access, beg_partition, n, num_threads,
+	    is_construction, strictly_less_or_less_equal);
+	else
+	  {
+	    // The vector must be moved... all ranges must have at least
+	    // one element, or make just sequential???
+	    if (static_cast<size_type>(num_threads) > n)
+	      {
+		int j = 1;
+		for (int i = 1; i <= num_threads; ++i)
+		  {
+		    if (beg_partition[j-1] != beg_partition[i])
+		      {
+			beg_partition[j] = beg_partition[i];
+			access[j] = access[i];
+			++j;
+		      }
+		  }
+		num_threads = static_cast<thread_index_t>(n);
+	      }
 
-	  if (is_construction)
-	    _M_sorted_bulk_construction(access, beg_partition, n, num_threads, 
-					strictly_less_or_less_equal);
-	  else
-	    _M_sorted_bulk_insertion(access, beg_partition, n, num_threads, 
-				     strictly_less_or_less_equal);
-	}
-    }
+	    if (is_construction)
+	      _M_sorted_bulk_construction(access, beg_partition, n,
+					  num_threads, 
+					  strictly_less_or_less_equal);
+	    else
+	      _M_sorted_bulk_insertion(access, beg_partition, n, num_threads, 
+				       strictly_less_or_less_equal);
+	  }
+      }
 
     /** @brief Bulk construction and insertion helper method on an
      * input sequence which is not sorted
@@ -1273,39 +1297,54 @@ namespace __gnu_parallel
      * of the wrapping container 
      */
     template<typename _InputIterator, typename StrictlyLessOrLessEqual>
-    void
-    _M_not_sorted_bulk_insertion_construction(_InputIterator* access,
-					      size_type* beg_partition,
-					      const size_type n,
-					      const thread_index_t num_threads,
-					      const bool is_construction,
-			   StrictlyLessOrLessEqual strictly_less_or_less_equal)
-    {
-      // Copy entire elements. In the case of a map, we would be
-      // copying the pair. Therefore, the copy should be reconsidered
-      // when objects are big. Essentially two cases:
-      // - The key is small: make that the pair, is a pointer to data
-      //   instead of a copy to it
-      // - The key is big: we simply have a pointer to the iterator
+      void
+      _M_not_sorted_bulk_insertion_construction(_InputIterator* access,
+						size_type* beg_partition,
+						const size_type n,
+						const thread_index_t
+						num_threads,
+						const bool is_construction,
+						StrictlyLessOrLessEqual
+						strictly_less_or_less_equal)
+      {
+	// Copy entire elements. In the case of a map, we would be
+	// copying the pair. Therefore, the copy should be reconsidered
+	// when objects are big. Essentially two cases:
+	// - The key is small: make that the pair, is a pointer to data
+	//   instead of a copy to it
+	// - The key is big: we simply have a pointer to the iterator
 #if _GLIBCXX_TREE_FULL_COPY
-      nc_value_type* v = static_cast<nc_value_type*> (::operator new(sizeof(nc_value_type)*(n+1)));
+	nc_value_type* v = 
+	  static_cast<nc_value_type*>(::operator new(sizeof(nc_value_type)
+						     * (n+1)));
 
-      uninitialized_copy_from_accessors(access, beg_partition, v, num_threads);
+	uninitialized_copy_from_accessors(access, beg_partition,
+					  v, num_threads);
 
-      _M_not_sorted_bulk_insertion_construction<nc_value_type, nc_value_type*, ValueCompare<_Compare> >
-	(beg_partition, v, ValueCompare<_Compare>(base_type::_M_impl._M_key_compare), n, num_threads, is_construction, strictly_less_or_less_equal);
+	_M_not_sorted_bulk_insertion_construction<nc_value_type,
+	  nc_value_type*, ValueCompare<_Compare> >
+	  (beg_partition, v, ValueCompare<_Compare>(base_type::
+						    _M_impl._M_key_compare),
+	   n, num_threads, is_construction, strictly_less_or_less_equal);
 #else
-      // For sorting, we cannot use the new PtrIterator because we
-      // want the pointers to be exchanged and not the elements.
-      typedef PtrComparator<ValueCompare<_Compare>, nc_value_type*>  this_ptr_comparator;
-      nc_value_type** v = static_cast<nc_value_type**> (::operator new(sizeof(nc_value_type*)*(n+1)));
+	// For sorting, we cannot use the new PtrIterator because we
+	// want the pointers to be exchanged and not the elements.
+	typedef PtrComparator<ValueCompare<_Compare>, nc_value_type*>
+	  this_ptr_comparator;
+	nc_value_type** v = 
+	  static_cast<nc_value_type**>(::operator new(sizeof(nc_value_type*)
+						      * (n+1)));
 
-      uninitialized_ptr_copy_from_accessors(access, beg_partition, v, num_threads);
+	uninitialized_ptr_copy_from_accessors(access, beg_partition,
+					      v, num_threads);
 
-      _M_not_sorted_bulk_insertion_construction<nc_value_type*, PtrIterator<nc_value_type>, this_ptr_comparator>
-	(beg_partition, v, this_ptr_comparator(ValueCompare<_Compare>(base_type::_M_impl._M_key_compare)), n, num_threads, is_construction, strictly_less_or_less_equal);
+	_M_not_sorted_bulk_insertion_construction<nc_value_type*,
+	  PtrIterator<nc_value_type>, this_ptr_comparator>
+	  (beg_partition, v, this_ptr_comparator(
+	    ValueCompare<_Compare>(base_type::_M_impl._M_key_compare)),
+	   n, num_threads, is_construction, strictly_less_or_less_equal);
 #endif
-    }
+      }
 
     /** @brief Bulk construction and insertion helper method on an
      * input sequence which is not sorted
@@ -1327,25 +1366,40 @@ namespace __gnu_parallel
      * transparently with repetitions with respect to the uniqueness
      * of the wrapping container
      */
-    template<typename ElementsToSort, typename IteratorSortedElements, typename Comparator, typename StrictlyLessOrLessEqual>
-    void
-    _M_not_sorted_bulk_insertion_construction(size_type* beg_partition, ElementsToSort* v, Comparator comp, const size_type n, thread_index_t num_threads, const bool is_construction, StrictlyLessOrLessEqual strictly_less_or_less_equal)
-    {
-      // The accessors have been calculated for the non sorted.
-      num_threads = static_cast<thread_index_t>(std::min<size_type>(num_threads, n));
+    template<typename ElementsToSort, typename IteratorSortedElements,
+	     typename Comparator, typename StrictlyLessOrLessEqual>
+       void
+       _M_not_sorted_bulk_insertion_construction(size_type* beg_partition,
+						 ElementsToSort* v,
+						 Comparator comp,
+						 const size_type n,
+						 thread_index_t num_threads,
+						 const bool is_construction,
+						 StrictlyLessOrLessEqual
+						 strictly_less_or_less_equal)
+      {
+	// The accessors have been calculated for the non sorted.
+	num_threads =
+	  static_cast<thread_index_t>(std::min<size_type>(num_threads, n));
 
-      std::stable_sort(v, v+n, comp);
+	std::stable_sort(v, v+n, comp);
 
-      IteratorSortedElements sorted_access[num_threads+1];
-      range_accessors(IteratorSortedElements(v), IteratorSortedElements(v+n), sorted_access, beg_partition, n, num_threads, std::__iterator_category(v));
+	IteratorSortedElements sorted_access[num_threads+1];
+	range_accessors(IteratorSortedElements(v),
+			IteratorSortedElements(v + n),
+			sorted_access, beg_partition, n, num_threads,
+			std::__iterator_category(v));
 
-      // Partial template specialization not available.
-      if (is_construction)
-	_M_sorted_bulk_construction(sorted_access, beg_partition, n, num_threads, strictly_less_or_less_equal);
-      else
-	_M_sorted_bulk_insertion(sorted_access, beg_partition, n, num_threads, strictly_less_or_less_equal);
-      ::operator delete(v);
-    }
+	// Partial template specialization not available.
+	if (is_construction)
+	  _M_sorted_bulk_construction(sorted_access, beg_partition, n,
+				      num_threads,
+				      strictly_less_or_less_equal);
+	else
+	  _M_sorted_bulk_insertion(sorted_access, beg_partition, n,
+				   num_threads, strictly_less_or_less_equal);
+	::operator delete(v);
+      }
 
     /** @brief Construct a tree sequentially using the parallel routine
      * @param r_array Array of nodes from which to take the nodes to
@@ -1414,31 +1468,37 @@ namespace __gnu_parallel
      * going to be shared
      */
     template<typename _Iterator>
-    _Rb_tree_node_ptr* 
-    _M_unsorted_bulk_allocation_and_initialization(const _Iterator* access, const size_type* beg_partition, const size_type n, const thread_index_t num_threads)
-    {
-      _Rb_tree_node_ptr* r = static_cast<_Rb_tree_node_ptr*> (::operator new (sizeof(_Rb_tree_node_ptr)*(n+1)));
-
-      // Allocate and initialize the nodes (don't check for uniqueness
-      // because the sequence is not necessarily sorted.
-#pragma omp parallel num_threads(num_threads)
+      _Rb_tree_node_ptr* 
+      _M_unsorted_bulk_allocation_and_initialization(const _Iterator* access,
+						     const size_type*
+						     beg_partition,
+						     const size_type n,
+						     const thread_index_t
+						     num_threads)
       {
+	_Rb_tree_node_ptr* r = static_cast<_Rb_tree_node_ptr*>(
+	  ::operator new (sizeof(_Rb_tree_node_ptr) * (n + 1)));
+
+	// Allocate and initialize the nodes (don't check for uniqueness
+	// because the sequence is not necessarily sorted.
+#pragma omp parallel num_threads(num_threads)
+	{
 #if USE_PAPI
-	PAPI_register_thread();
+	  PAPI_register_thread();
 #endif
 
-	int iam = omp_get_thread_num();
-	_Iterator it = access[iam];
-	size_type i = beg_partition[iam];
-	while (it!= access[iam+1])
-	  {
-	    r[i] = base_type::_M_create_node(*it);
-	    ++i;
-	    ++it;
-	  }
+	  int iam = omp_get_thread_num();
+	  _Iterator it = access[iam];
+	  size_type i = beg_partition[iam];
+	  while (it!= access[iam+1])
+	    {
+	      r[i] = base_type::_M_create_node(*it);
+	      ++i;
+	      ++it;
+	    }
+	}
+	return r;
       }
-      return r;
-    }
 
 
     /** @brief Allocation of an array of nodes and initialization of
@@ -1470,104 +1530,123 @@ namespace __gnu_parallel
      * of the wrapping container
      */
     template<typename _Iterator, typename StrictlyLessOrLessEqual>
-    _Rb_tree_node_ptr* 
-    _M_sorted_bulk_allocation_and_initialization(_Iterator* access, size_type*  beg_partition, size_type* rank_shift, const size_type n, thread_index_t& num_threads, StrictlyLessOrLessEqual strictly_less_or_less_equal)
-    {
-      // Ghost node at the end to avoid extra comparisons in nodes_initializer.
-      _Rb_tree_node_ptr* r = static_cast<_Rb_tree_node_ptr*> (::operator new (sizeof(_Rb_tree_node_ptr)*(n+1)));
-      r[n] = NULL;
-
-      // Dealing with repetitions (EFFICIENCY ISSUE).
-      _Iterator access_copy[num_threads+1];
-      for (int i = 0; i <= num_threads; ++i)
-	access_copy[i] = access[i];
-      // Allocate and initialize the nodes
-#pragma omp parallel num_threads(num_threads)
+      _Rb_tree_node_ptr* 
+      _M_sorted_bulk_allocation_and_initialization(_Iterator* access,
+						   size_type* beg_partition,
+						   size_type* rank_shift,
+						   const size_type n,
+						   thread_index_t& num_threads,
+						   StrictlyLessOrLessEqual
+						   strictly_less_or_less_equal)
       {
+	// Ghost node at the end to avoid extra comparisons
+	// in nodes_initializer.
+	_Rb_tree_node_ptr* r = static_cast<_Rb_tree_node_ptr*>(
+	  ::operator new(sizeof(_Rb_tree_node_ptr) * (n + 1)));
+	r[n] = NULL;
+
+	// Dealing with repetitions (EFFICIENCY ISSUE).
+	_Iterator access_copy[num_threads+1];
+	for (int i = 0; i <= num_threads; ++i)
+	  access_copy[i] = access[i];
+	// Allocate and initialize the nodes
+#pragma omp parallel num_threads(num_threads)
+	{
 #if USE_PAPI
-	PAPI_register_thread();
+	  PAPI_register_thread();
 #endif
-	thread_index_t iam = omp_get_thread_num();
-	_Iterator prev = access[iam];
-	size_type i = beg_partition[iam];
-	_Iterator it = prev;
-	if (iam != 0)
-	  {
-	    --prev;
-	    // Dealing with repetitions (CORRECTNESS ISSUE).
-	    while (it!= access_copy[iam+1] and not strictly_less_or_less_equal(_KeyOfValue()(*prev), _KeyOfValue()(*it)))
-	      {
-		_GLIBCXX_PARALLEL_ASSERT(not base_type::_M_impl._M_key_compare(_KeyOfValue()(*it),_KeyOfValue()(*prev)));
+	  thread_index_t iam = omp_get_thread_num();
+	  _Iterator prev = access[iam];
+	  size_type i = beg_partition[iam];
+	  _Iterator it = prev;
+	  if (iam != 0)
+	    {
+	      --prev;
+	      // Dealing with repetitions (CORRECTNESS ISSUE).
+	      while (it!= access_copy[iam+1]
+		     and not strictly_less_or_less_equal(_KeyOfValue()(*prev),
+							 _KeyOfValue()(*it)))
+		{
+		  _GLIBCXX_PARALLEL_ASSERT(not base_type::
+					   _M_impl._M_key_compare
+					   (_KeyOfValue()(*it),
+					    _KeyOfValue()(*prev)));
+		  ++it;
+		}
+	      access[iam] = it;
+	      if (it != access_copy[iam+1]){
+		r[i] = base_type::_M_create_node(*it);
+		++i;
+		prev=it;
 		++it;
 	      }
-	    access[iam] = it;
-	    if (it != access_copy[iam+1]){
-	      r[i] = base_type::_M_create_node(*it);
+	      //}
+	    }
+	  else
+	    {
+	      r[i] = base_type::_M_create_node(*prev);
 	      ++i;
-	      prev=it;
 	      ++it;
 	    }
-	    //}
-	  }
-	else
-	  {
-	    r[i] = base_type::_M_create_node(*prev);
-	    ++i;
-	    ++it;
-	  }
-	while (it!= access_copy[iam+1])
-	  {
+	  while (it != access_copy[iam+1])
+	    {
 	    /*****	Dealing with repetitions (CORRECTNESS ISSUE) *****/
-	    if (strictly_less_or_less_equal(_KeyOfValue()(*prev),_KeyOfValue()(*it)))
+	    if (strictly_less_or_less_equal(_KeyOfValue()(*prev),
+					    _KeyOfValue()(*it)))
 	      {
 		r[i] = base_type::_M_create_node(*it);
 		++i;
 		prev=it;
 	      }
-	    else{
-	      _GLIBCXX_PARALLEL_ASSERT(not base_type::_M_impl._M_key_compare(_KeyOfValue()(*it),_KeyOfValue()(*prev)));
-	    }
+	    else
+	      _GLIBCXX_PARALLEL_ASSERT(not base_type::
+				       _M_impl._M_key_compare
+				       (_KeyOfValue()(*it),
+					_KeyOfValue()(*prev)));
 	    ++it;
 	  }
+	  /*****	Dealing with repetitions (EFFICIENCY ISSUE) *****/
+	  rank_shift[iam+1] =  beg_partition[iam+1] - i;
+	}
 	/*****	Dealing with repetitions (EFFICIENCY ISSUE) *****/
-	rank_shift[iam+1] =  beg_partition[iam+1] - i;
-      }
-      /*****	Dealing with repetitions (EFFICIENCY ISSUE) *****/
-      rank_shift[0] = 0;
-      /* Guarantee that there are no empty intervals.
-      - If an empty interval is found, is joined with the previous one
-	 (the rank_shift of the previous is augmented with all the new
-	 repetitions)
-      */
-      thread_index_t i = 1;
-      while (i <= num_threads and rank_shift[i] != (beg_partition[i] - beg_partition[i-1]))
-	{
-	  rank_shift[i] += rank_shift[i-1];
-	  ++i;
-	}
-      if (i <= num_threads)
-	{
-	  thread_index_t j = i - 1;
-	  while (true)
-	    {
-	      do
-		{
-		  rank_shift[j] += rank_shift[i];
-		  ++i;
-		} while (i <= num_threads and rank_shift[i] == (beg_partition[i] - beg_partition[i-1]));
+	rank_shift[0] = 0;
+	/* Guarantee that there are no empty intervals.
+	   - If an empty interval is found, is joined with the previous one
+	   (the rank_shift of the previous is augmented with all the new
+	   repetitions)
+	*/
+	thread_index_t i = 1;
+	while (i <= num_threads
+	       and rank_shift[i] != (beg_partition[i] - beg_partition[i-1]))
+	  {
+	    rank_shift[i] += rank_shift[i-1];
+	    ++i;
+	  }
+	if (i <= num_threads)
+	  {
+	    thread_index_t j = i - 1;
+	    while (true)
+	      {
+		do
+		  {
+		    rank_shift[j] += rank_shift[i];
+		    ++i;
+		  }
+		while (i <= num_threads
+		       and rank_shift[i] == (beg_partition[i]
+					     - beg_partition[i-1]));
 
-	      beg_partition[j] = beg_partition[i-1];
-	      access[j] = access[i-1];
-	      if (i > num_threads) break;
-	      ++j;
+		beg_partition[j] = beg_partition[i-1];
+		access[j] = access[i-1];
+		if (i > num_threads) break;
+		++j;
 
-	      // Initialize with the previous.
-	      rank_shift[j] = rank_shift[j-1];
-	    }
-	  num_threads = j;
-	}
-      return r;
-
+		// Initialize with the previous.
+		rank_shift[j] = rank_shift[j-1];
+	      }
+	    num_threads = j;
+	  }
+	return r;
     }
 
     /** @brief Allocation of an array of nodes and initialization of
@@ -1598,42 +1677,45 @@ namespace __gnu_parallel
      * of the wrapping container
      */
     template<typename _Iterator, typename StrictlyLessOrLessEqual>
-    _Rb_tree_node_ptr* 
-    _M_sorted_no_gapped_bulk_allocation_and_initialization(_Iterator* access, size_type* beg_partition, size_type& n, const thread_index_t num_threads, StrictlyLessOrLessEqual strictly_less_or_less_equal)
-    {
-      size_type* sums = static_cast<size_type*> (::operator new (sizeof(size_type)*n));
-      // Allocate and initialize the nodes
-      /*		try
-	{*/
-#pragma omp parallel num_threads(num_threads)
+      _Rb_tree_node_ptr* 
+      _M_sorted_no_gapped_bulk_allocation_and_initialization
+      (_Iterator* access, size_type* beg_partition, size_type& n,
+       const thread_index_t num_threads,
+       StrictlyLessOrLessEqual strictly_less_or_less_equal)
       {
+	size_type* sums =
+	  static_cast<size_type*>(::operator new (sizeof(size_type) * n));
+	// Allocate and initialize the nodes
+	/*		try
+			{*/
+#pragma omp parallel num_threads(num_threads)
+	{
 #if USE_PAPI
-	PAPI_register_thread();
+	  PAPI_register_thread();
 #endif
-	int iam = omp_get_thread_num();
-	_Iterator prev = access[iam];
-	size_type i = beg_partition[iam];
-	_Iterator it = prev;
-	if (iam !=0)
-	  {
-	    --prev;
+	  int iam = omp_get_thread_num();
+	  _Iterator prev = access[iam];
+	  size_type i = beg_partition[iam];
+	  _Iterator it = prev;
+	  if (iam !=0)
+	    {
+	      --prev;
 
-	    // First iteration here, to update accessor in case was
-	    // equal to the last element of the previous range
+	      // First iteration here, to update accessor in case was
+	      // equal to the last element of the previous range
 
-	    // Dealing with repetitions (CORRECTNESS ISSUE).
-	    if (strictly_less_or_less_equal(_KeyOfValue()(*prev),_KeyOfValue()(*it)))
-	      {
-		sums[i] = 0;
-		prev=it;
-	      }
-	    else
-	      {
+	      // Dealing with repetitions (CORRECTNESS ISSUE).
+	      if (strictly_less_or_less_equal(_KeyOfValue()(*prev),
+					      _KeyOfValue()(*it)))
+		{
+		  sums[i] = 0;
+		  prev=it;
+		}
+	      else
 		sums[i] = 1;
-	      }
-	    ++i;
-	    ++it;
-	  }
+	      ++i;
+	      ++it;
+	    }
 	else
 	  {
 	    sums[i] = 0;
@@ -1643,7 +1725,8 @@ namespace __gnu_parallel
 	while (it!= access[iam+1])
 	  {
 	    // Dealing with repetitions (CORRECTNESS ISSUE).
-	    if (strictly_less_or_less_equal(_KeyOfValue()(*prev),_KeyOfValue()(*it)))
+	    if (strictly_less_or_less_equal(_KeyOfValue()(*prev),
+					    _KeyOfValue()(*it)))
 	      {
 		sums[i] = 0;
 		prev=it;
@@ -1658,7 +1741,8 @@ namespace __gnu_parallel
       partial_sum(sums,sums + n, sums);
 
       n -= sums[n-1];
-      _Rb_tree_node_ptr* r = static_cast<_Rb_tree_node_ptr*> (::operator new (sizeof(_Rb_tree_node_ptr)*(n+1)));
+      _Rb_tree_node_ptr* r = static_cast<_Rb_tree_node_ptr*>(
+	::operator new(sizeof(_Rb_tree_node_ptr) * (n + 1)));
       r[n]=0;
 
 #pragma omp parallel num_threads(num_threads)
@@ -1721,70 +1805,79 @@ namespace __gnu_parallel
      * of the wrapping container
      */
     template<typename _Iterator, typename StrictlyLessOrLessEqual>
-    void
-    _M_sorted_bulk_construction(_Iterator* access, size_type* beg_partition, const size_type n, thread_index_t num_threads, StrictlyLessOrLessEqual strictly_less_or_less_equal)
-    {
-      // Dealing with repetitions (EFFICIENCY ISSUE).
-      size_type rank_shift[num_threads+1];
+      void
+      _M_sorted_bulk_construction(_Iterator* access, size_type* beg_partition,
+				  const size_type n,
+				  thread_index_t num_threads,
+				  StrictlyLessOrLessEqual
+				  strictly_less_or_less_equal)
+      {
+	// Dealing with repetitions (EFFICIENCY ISSUE).
+	size_type rank_shift[num_threads+1];
 
-      _Rb_tree_node_ptr* r = _M_sorted_bulk_allocation_and_initialization(access, beg_partition, rank_shift, n, num_threads, strictly_less_or_less_equal);
-
-      // Link the tree appropriately.
-      // Dealing with repetitions (EFFICIENCY ISSUE).
-      ranker_gaps rank(beg_partition, rank_shift, num_threads);
-      nodes_initializer<ranker_gaps> nodes_init(r, n - rank_shift[num_threads], num_threads, rank);
-      size_type split = nodes_init.get_shifted_splitting_point();
+	_Rb_tree_node_ptr* r = _M_sorted_bulk_allocation_and_initialization
+	  (access, beg_partition, rank_shift, n, num_threads,
+	   strictly_less_or_less_equal);
+	
+	// Link the tree appropriately.
+	// Dealing with repetitions (EFFICIENCY ISSUE).
+	ranker_gaps rank(beg_partition, rank_shift, num_threads);
+	nodes_initializer<ranker_gaps>
+	  nodes_init(r, n - rank_shift[num_threads], num_threads, rank);
+	size_type split = nodes_init.get_shifted_splitting_point();
 
 #pragma omp parallel num_threads(num_threads)
-      {
-#if USE_PAPI
-	PAPI_register_thread();
-#endif
-	int iam = omp_get_thread_num();
-	size_type beg = beg_partition[iam];
-	// Dealing with repetitions (EFFICIENCY ISSUE).
-	size_type end = beg_partition[iam+1] - (rank_shift[iam+1] - rank_shift[iam]);
-	if (split >= end)
-	  {
-	    for (size_type i = beg; i < end; ++i)
-	      {
-		nodes_init.link_complete(r[i],iam);
-	      }
-	  }
-	else
-	  {
-	    if (split <= beg)
-	      {
-		for (size_type i = beg; i < end; ++i)
-		  nodes_init.link_incomplete(r[i],iam);
-	      }
-	    else
-	      {
-		for (size_type i = beg; i < split; ++i)
-		  nodes_init.link_complete(r[i],iam);
-		for (size_type i = split; i < end; ++i)
-		  nodes_init.link_incomplete(r[i],iam);
-	      }
-	  }
-      }
-      // If the execution reaches this point, there has been no
-      // exception, and so the structure can be initialized.
-
-      // Join the tree laid on the array of ptrs with the header node.
-      // Dealing with repetitions (EFFICIENCY ISSUE).
-      base_type::_M_impl._M_node_count = n - rank_shift[num_threads];
-      base_type::_M_impl._M_header._M_left = r[0];
-      thread_index_t with_element =  num_threads;
-      while ((beg_partition[with_element] - beg_partition[with_element-1]) == (rank_shift[with_element] - rank_shift[with_element-1]))
 	{
-	  --with_element;
+#if USE_PAPI
+	  PAPI_register_thread();
+#endif
+	  int iam = omp_get_thread_num();
+	  size_type beg = beg_partition[iam];
+	  // Dealing with repetitions (EFFICIENCY ISSUE).
+	  size_type end = (beg_partition[iam+1]
+			   - (rank_shift[iam+1] - rank_shift[iam]));
+	  if (split >= end)
+	    {
+	      for (size_type i = beg; i < end; ++i)
+		nodes_init.link_complete(r[i],iam);
+	    }
+	  else
+	    {
+	      if (split <= beg)
+		{
+		  for (size_type i = beg; i < end; ++i)
+		    nodes_init.link_incomplete(r[i],iam);
+		}
+	      else
+		{
+		  for (size_type i = beg; i < split; ++i)
+		    nodes_init.link_complete(r[i],iam);
+		  for (size_type i = split; i < end; ++i)
+		    nodes_init.link_incomplete(r[i],iam);
+		}
+	    }
 	}
-      base_type::_M_impl._M_header._M_right = r[beg_partition[with_element] - (rank_shift[with_element] - rank_shift[with_element-1]) - 1];
-      base_type::_M_impl._M_header._M_parent = nodes_init.get_root();
-      nodes_init.get_root()->_M_parent= &base_type::_M_impl._M_header;
+	// If the execution reaches this point, there has been no
+	// exception, and so the structure can be initialized.
 
-      ::operator delete(r);
-    }
+	// Join the tree laid on the array of ptrs with the header node.
+	// Dealing with repetitions (EFFICIENCY ISSUE).
+	base_type::_M_impl._M_node_count = n - rank_shift[num_threads];
+	base_type::_M_impl._M_header._M_left = r[0];
+	thread_index_t with_element =  num_threads;
+	while ((beg_partition[with_element]
+		- beg_partition[with_element-1])
+	       == (rank_shift[with_element] - rank_shift[with_element-1]))
+	  --with_element;
+	
+	base_type::_M_impl._M_header._M_right =
+	  r[beg_partition[with_element]
+	    - (rank_shift[with_element] - rank_shift[with_element-1]) - 1];
+	base_type::_M_impl._M_header._M_parent = nodes_init.get_root();
+	nodes_init.get_root()->_M_parent= &base_type::_M_impl._M_header;
+
+	::operator delete(r);
+      }
 
 
     /** @brief Main bulk insertion method: perform the actual
@@ -1807,204 +1900,272 @@ namespace __gnu_parallel
      * of the wrapping container
      */
     template<typename _Iterator, typename StrictlyLessOrLessEqual>
-    void
-    _M_sorted_bulk_insertion(_Iterator* access, size_type* beg_partition, size_type k, thread_index_t num_threads, StrictlyLessOrLessEqual strictly_less_or_less_equal)
-    {
-      _GLIBCXX_PARALLEL_ASSERT((size_type)num_threads <= k);
-      // num_thr-1 problems in the upper part of the tree
-      // num_thr problems to further parallelize
-      std::vector<size_type> existing(num_threads,0);
-#if _GLIBCXX_TREE_INITIAL_SPLITTING
-      /*****	Dealing with repetitions (EFFICIENCY ISSUE) *****/
-      size_type rank_shift[num_threads+1];
-
-      // Need to create them dynamically because they are so erased
-      concat_problem* conc[2*num_threads-1];
-#endif
-      _Rb_tree_node_ptr* r;
-      /*****	Dealing with repetitions (EFFICIENCY ISSUE) *****/
-      if (not strictly_less_or_less_equal(base_type::_S_key(base_type::_M_root()),base_type::_S_key(base_type::_M_root()) ))
-	{
-	  // Unique container
-	  // Set 1 and 2 could be done in parallel ...
-	  // 1. Construct the nodes with their corresponding data
-#if _GLIBCXX_TREE_INITIAL_SPLITTING
-	  r = _M_sorted_bulk_allocation_and_initialization(access, beg_partition, rank_shift, k, num_threads, strictly_less_or_less_equal);
-#else
-	  r = _M_sorted_no_gapped_bulk_allocation_and_initialization(access, beg_partition, k, num_threads, strictly_less_or_less_equal);
-#endif
-	}
-      else
-	{
-	  // Not unique container.
-	  r = _M_unsorted_bulk_allocation_and_initialization(access, beg_partition, k, num_threads);
-#if _GLIBCXX_TREE_INITIAL_SPLITTING
-	  // Trivial initialization of rank_shift.
-	  for (int i=0; i <= num_threads; ++i)
-	    rank_shift[i] = 0;
-#endif
-	}
-#if _GLIBCXX_TREE_INITIAL_SPLITTING
-      // Calculate position of last element to be inserted: must be
-      // done now, or otherwise becomes messy.
-
-  /***** Dealing with
-      repetitions (EFFICIENCY ISSUE) *****/
-      size_type last = beg_partition[num_threads] - (rank_shift[num_threads] - rank_shift[num_threads - 1]);
-
-      //2. Split the tree according to access in num_threads parts
-      //Initialize upper concat_problems
-      //Allocate them dynamically because they are afterwards so erased
-      for (int i=0; i < (2*num_threads-1); ++i)
-	{
-	  conc[i] = new concat_problem ();
-	}
-      concat_problem* root_problem = _M_bulk_insertion_initialize_upper_problems(conc, 0, num_threads, NULL);
-
-      // The first position of access and the last are ignored, so we
-      // have exactly num_threads subtrees.
-      bool before = omp_get_nested();
-      omp_set_nested(true);
-      _M_bulk_insertion_split_tree_by_pivot(static_cast<_Rb_tree_node_ptr>(base_type::_M_root()), r, access, beg_partition, rank_shift, 0, num_threads-1, conc, num_threads, strictly_less_or_less_equal);
-      omp_set_nested(before);
-
-      // Construct upper tree with the first elements of ranges if
-      // they are NULL We cannot do this by default because they could
-      // be repeated and would not be checked.
-      size_type r_s = 0;
-      for (int pos = 1; pos < num_threads; ++pos)
-	{
-	  _GLIBCXX_PARALLEL_ASSERT(conc[(pos-1)*2]->t == NULL or conc[pos*2-1]->t == NULL or strictly_less_or_less_equal(base_type::_S_key(base_type::_S_maximum(conc[(pos-1)*2]->t)), base_type::_S_key(conc[pos*2-1]->t)));
-	  _GLIBCXX_PARALLEL_ASSERT(conc[pos*2]->t == NULL  or conc[pos*2-1]->t == NULL or strictly_less_or_less_equal( base_type::_S_key(conc[pos*2-1]->t), base_type::_S_key(base_type::_S_minimum(conc[pos*2]->t))));
-	  /*****	Dealing with repetitions (CORRECTNESS ISSUE) *****/
-
-	  // The first element of the range is the root.
-	  if (conc[pos*2-1]->t == NULL or (not(strictly_less_or_less_equal(base_type::_S_key(static_cast<_Rb_tree_node_ptr>(conc[pos*2-1]->t)), _KeyOfValue()(*access[pos])))))
-	    {
-	      // There was not a candidate element
-	      // or
-	      // Exists an initialized position in the array which
-	      // corresponds to conc[pos*2-1]->t */
-	      if (conc[pos*2-1]->t == NULL)
-		{
-		  size_t np = beg_partition[pos];
-		  _GLIBCXX_PARALLEL_ASSERT(conc[(pos-1)*2]->t == NULL or strictly_less_or_less_equal(base_type::_S_key(base_type::_S_maximum(conc[(pos-1)*2]->t)), base_type::_S_key(r[np])));
-		  _GLIBCXX_PARALLEL_ASSERT(conc[pos*2]->t == NULL  or strictly_less_or_less_equal( base_type::_S_key(r[np]), base_type::_S_key(base_type::_S_minimum(conc[pos*2]->t))));
-		  conc[pos*2-1]->t = r[np];
-		  r[np]->_M_color = std::_S_black;
-		  ++base_type::_M_impl._M_node_count;
-		}
-	      else
-		{
-		  base_type::_M_destroy_node(r[beg_partition[pos]]);
-		}
-	      ++(access[pos]);
-	      ++(beg_partition[pos]);
-	      ++r_s;
-	    }
-	  _GLIBCXX_PARALLEL_ASSERT(conc[(pos-1)*2]->t == NULL or conc[(pos-1)*2]->t->_M_color == std::_S_black);
-	  /*****	Dealing with repetitions (EFFICIENCY ISSUE) *****/
-	  rank_shift[pos] += r_s;
-	}
-      /*****	Dealing with repetitions (EFFICIENCY ISSUE) *****/
-      rank_shift[num_threads] += r_s;
-#else
-      concat_problem root_problem_on_stack(static_cast<_Rb_tree_node_ptr>(base_type::_M_root()), black_height(static_cast<_Rb_tree_node_ptr>(base_type::_M_root())), NULL);
-      concat_problem * root_problem = &root_problem_on_stack;
-      size_type last = k;
-#endif
-
-      // 3. Split the range according to tree and create
-      // 3. insertion/concatenation problems to be solved in parallel
-#if _GLIBCXX_TREE_DYNAMIC_BALANCING
-      size_type min_problem = (k/num_threads) / (log2(k/num_threads + 1)+1);
-#else
-      size_type min_problem = base_type::size() + k;
-#endif
-
-      RestrictedBoundedConcurrentQueue<insertion_problem>* ins_problems[num_threads];
-
-#pragma omp parallel num_threads(num_threads)
+      void
+      _M_sorted_bulk_insertion(_Iterator* access, size_type* beg_partition,
+			       size_type k, thread_index_t num_threads,
+			       StrictlyLessOrLessEqual
+			       strictly_less_or_less_equal)
       {
-	int num_thread = omp_get_thread_num();
-	ins_problems[num_thread] = new RestrictedBoundedConcurrentQueue<insertion_problem>(2*(log2(base_type::size())+1));
+	_GLIBCXX_PARALLEL_ASSERT((size_type)num_threads <= k);
+	// num_thr-1 problems in the upper part of the tree
+	// num_thr problems to further parallelize
+	std::vector<size_type> existing(num_threads,0);
 #if _GLIBCXX_TREE_INITIAL_SPLITTING
 	/*****	Dealing with repetitions (EFFICIENCY ISSUE) *****/
-	size_type end_k_thread = beg_partition[num_thread+1]  - (rank_shift[num_thread+1] - rank_shift[num_thread]);
-	ins_problems[num_thread]->push_front(insertion_problem(beg_partition[num_thread], end_k_thread, num_thread, conc[num_thread*2]));
-#else
-	// size_type end_k_thread = beg_partition[num_thread+1];
+	size_type rank_shift[num_threads+1];
+
+	// Need to create them dynamically because they are so erased
+	concat_problem* conc[2*num_threads-1];
 #endif
-	insertion_problem ip_to_solve;
-	bool change;
+	_Rb_tree_node_ptr* r;
+	/*****	Dealing with repetitions (EFFICIENCY ISSUE) *****/
+	if (not strictly_less_or_less_equal
+	    (base_type::_S_key(base_type::_M_root()),
+	     base_type::_S_key(base_type::_M_root()) ))
+	  {
+	    // Unique container
+	    // Set 1 and 2 could be done in parallel ...
+	    // 1. Construct the nodes with their corresponding data
+#if _GLIBCXX_TREE_INITIAL_SPLITTING
+	    r = _M_sorted_bulk_allocation_and_initialization
+	      (access, beg_partition, rank_shift, k, num_threads,
+	       strictly_less_or_less_equal);
+#else
+	    r = _M_sorted_no_gapped_bulk_allocation_and_initialization
+	      (access, beg_partition, k, num_threads,
+	       strictly_less_or_less_equal);
+#endif
+	  }
+	else
+	  {
+	    // Not unique container.
+	    r = _M_unsorted_bulk_allocation_and_initialization
+	      (access, beg_partition, k, num_threads);
+#if _GLIBCXX_TREE_INITIAL_SPLITTING
+	    // Trivial initialization of rank_shift.
+	    for (int i=0; i <= num_threads; ++i)
+	      rank_shift[i] = 0;
+#endif
+	  }
+#if _GLIBCXX_TREE_INITIAL_SPLITTING
+	// Calculate position of last element to be inserted: must be
+	// done now, or otherwise becomes messy.
+
+	/***** Dealing with
+	 repetitions (EFFICIENCY ISSUE) *****/
+	size_type last = (beg_partition[num_threads]
+			  - (rank_shift[num_threads]
+			     - rank_shift[num_threads - 1]));
+
+	//2. Split the tree according to access in num_threads parts
+	//Initialize upper concat_problems
+	//Allocate them dynamically because they are afterwards so erased
+	for (int i=0; i < (2*num_threads-1); ++i)
+	  conc[i] = new concat_problem ();
+	concat_problem* root_problem =
+	  _M_bulk_insertion_initialize_upper_problems(conc, 0,
+						      num_threads, NULL);
+
+	// The first position of access and the last are ignored, so we
+	// have exactly num_threads subtrees.
+	bool before = omp_get_nested();
+	omp_set_nested(true);
+
+	_M_bulk_insertion_split_tree_by_pivot(
+	  static_cast<_Rb_tree_node_ptr>(base_type::_M_root()), r,
+	  access, beg_partition, rank_shift, 0, num_threads - 1, conc,
+	  num_threads, strictly_less_or_less_equal);
+
+	omp_set_nested(before);
+
+	// Construct upper tree with the first elements of ranges if
+	// they are NULL We cannot do this by default because they could
+	// be repeated and would not be checked.
+	size_type r_s = 0;
+	for (int pos = 1; pos < num_threads; ++pos)
+	  {
+	    _GLIBCXX_PARALLEL_ASSERT(
+	      conc[(pos-1)*2]->t == NULL or conc[pos*2-1]->t == NULL
+	      or strictly_less_or_less_equal
+	      (base_type::_S_key(base_type::_S_maximum(conc[(pos-1)*2]->t)),
+	       base_type::_S_key(conc[pos*2-1]->t)));
+	    _GLIBCXX_PARALLEL_ASSERT(
+	      conc[pos*2]->t == NULL or conc[pos*2-1]->t == NULL
+	      or strictly_less_or_less_equal(
+		base_type::_S_key(conc[pos*2-1]->t),
+		base_type::_S_key(base_type::_S_minimum(conc[pos*2]->t))));
+	    /*****	Dealing with repetitions (CORRECTNESS ISSUE) *****/
+
+	    // The first element of the range is the root.
+	    if (conc[pos*2-1]->t == NULL
+		or (not(strictly_less_or_less_equal(
+			  base_type::_S_key(static_cast<_Rb_tree_node_ptr>
+					    (conc[pos*2-1]->t)),
+			  _KeyOfValue()(*access[pos])))))
+	      {
+		// There was not a candidate element
+		// or
+		// Exists an initialized position in the array which
+		// corresponds to conc[pos*2-1]->t */
+		if (conc[pos*2-1]->t == NULL)
+		  {
+		    size_t np = beg_partition[pos];
+		    _GLIBCXX_PARALLEL_ASSERT(
+		      conc[(pos-1)*2]->t == NULL
+		      or strictly_less_or_less_equal
+		      (base_type::_S_key(base_type::
+					 _S_maximum(conc[(pos-1)*2]->t)),
+		       base_type::_S_key(r[np])));
+		    _GLIBCXX_PARALLEL_ASSERT(
+		      conc[pos*2]->t == NULL
+		      or strictly_less_or_less_equal(
+			base_type::_S_key(r[np]),
+			base_type::_S_key(base_type::
+					  _S_minimum(conc[pos*2]->t))));
+		    conc[pos*2-1]->t = r[np];
+		    r[np]->_M_color = std::_S_black;
+		    ++base_type::_M_impl._M_node_count;
+		  }
+		else
+		  base_type::_M_destroy_node(r[beg_partition[pos]]);
+		++(access[pos]);
+		++(beg_partition[pos]);
+		++r_s;
+	      }
+	    _GLIBCXX_PARALLEL_ASSERT(
+	      conc[(pos-1)*2]->t == NULL
+	      or conc[(pos-1)*2]->t->_M_color == std::_S_black);
+	    /*****	Dealing with repetitions (EFFICIENCY ISSUE) *****/
+	    rank_shift[pos] += r_s;
+	  }
+	/*****	Dealing with repetitions (EFFICIENCY ISSUE) *****/
+	rank_shift[num_threads] += r_s;
+#else
+	concat_problem root_problem_on_stack(
+	  static_cast<_Rb_tree_node_ptr>(base_type::_M_root()),
+	  black_height(static_cast<_Rb_tree_node_ptr>(base_type::_M_root())),
+	  NULL);
+	concat_problem * root_problem = &root_problem_on_stack;
+	size_type last = k;
+#endif
+
+	// 3. Split the range according to tree and create
+	// 3. insertion/concatenation problems to be solved in parallel
+#if _GLIBCXX_TREE_DYNAMIC_BALANCING
+	size_type min_problem = (k/num_threads) / (log2(k/num_threads + 1)+1);
+#else
+	size_type min_problem = base_type::size() + k;
+#endif
+
+	RestrictedBoundedConcurrentQueue<insertion_problem>* 
+	  ins_problems[num_threads];
+
+#pragma omp parallel num_threads(num_threads)
+	{
+	  int num_thread = omp_get_thread_num();
+	  ins_problems[num_thread] =
+	    new RestrictedBoundedConcurrentQueue<insertion_problem>
+	    (2 * (log2(base_type::size()) + 1));
+#if _GLIBCXX_TREE_INITIAL_SPLITTING
+	  /*****	Dealing with repetitions (EFFICIENCY ISSUE) *****/
+	  size_type end_k_thread = (beg_partition[num_thread+1]
+				    - (rank_shift[num_thread+1]
+				       - rank_shift[num_thread]));
+	  ins_problems[num_thread]->push_front(
+	    insertion_problem(beg_partition[num_thread], end_k_thread,
+			      num_thread, conc[num_thread*2]));
+#else
+	  // size_type end_k_thread = beg_partition[num_thread+1];
+#endif
+	  insertion_problem ip_to_solve;
+	  bool change;
 
 #if _GLIBCXX_TREE_INITIAL_SPLITTING
 #pragma omp barrier
 #else
 #pragma omp single
-	ins_problems[num_thread]->push_front(insertion_problem(0, k, num_thread, root_problem));
+	  ins_problems[num_thread]->push_front(insertion_problem(
+						 0, k, num_thread,
+						 root_problem));
 #endif
 
-	do
-	  {
-	    // First do own work.
-	    while (ins_problems[num_thread]->pop_front(ip_to_solve))
-	      {
-		_GLIBCXX_PARALLEL_ASSERT(ip_to_solve.pos_beg <= ip_to_solve.pos_end);
-		_M_bulk_insertion_split_sequence(r, ins_problems[num_thread], ip_to_solve, existing[num_thread], min_problem, strictly_less_or_less_equal);
+	  do
+	    {
+	      // First do own work.
+	      while (ins_problems[num_thread]->pop_front(ip_to_solve))
+		{
+		  _GLIBCXX_PARALLEL_ASSERT(ip_to_solve.pos_beg
+					   <= ip_to_solve.pos_end);
+		  _M_bulk_insertion_split_sequence(
+		    r, ins_problems[num_thread], ip_to_solve,
+		    existing[num_thread], min_problem,
+		    strictly_less_or_less_equal);
 
-	      }
-	    yield();
-	    change = false;
+		}
+	      yield();
+	      change = false;
 
-	    //Then, try to steal from others (and become own).
-	    for (int i=1; i<num_threads; ++i)
-	      {
-		if (ins_problems[(num_thread+i)%num_threads]->pop_back(ip_to_solve))
-		  {
-		    change = true;
-		    _M_bulk_insertion_split_sequence(r, ins_problems[num_thread], ip_to_solve, existing[num_thread], min_problem, strictly_less_or_less_equal);
-		    break;
-		  }
-	      }
-	  } while (change);
-      }
-
-      // Update root and sizes.
-      base_type::_M_root() = root_problem->t;
-      root_problem->t->_M_parent = &(base_type::_M_impl._M_header);
-      /*****	Dealing with repetitions (EFFICIENCY ISSUE) *****/
-
-      // Add the k elements that wanted to be inserted, minus the ones
-      // that were repeated.
-#if _GLIBCXX_TREE_INITIAL_SPLITTING
-      base_type::_M_impl._M_node_count += (k - (rank_shift[num_threads]));
-#else
-      base_type::_M_impl._M_node_count += k;
-#endif
-      // Also then, take out the ones that were already existing in the tree.
-      for (int i = 0; i< num_threads; ++i)
-	{
-	  base_type::_M_impl._M_node_count -= existing[i];
+	      //Then, try to steal from others (and become own).
+	      for (int i=1; i<num_threads; ++i)
+		{
+		  if (ins_problems[(num_thread + i)
+				   % num_threads]->pop_back(ip_to_solve))
+		    {
+		      change = true;
+		      _M_bulk_insertion_split_sequence(
+			r, ins_problems[num_thread], ip_to_solve,
+			existing[num_thread], min_problem,
+			strictly_less_or_less_equal);
+		      break;
+		    }
+		}
+	    } while (change);
 	}
-      // Update leftmost and rightmost.
-      /*****	Dealing with repetitions (EFFICIENCY ISSUE) *****/
-      if (not strictly_less_or_less_equal(base_type::_S_key(base_type::_M_root()), base_type::_S_key(base_type::_M_root()))){
-	// Unique container.
-	if (base_type::_M_impl._M_key_compare(_KeyOfValue()(*(access[0])), base_type::_S_key(base_type::_M_leftmost())))
-	  base_type::_M_leftmost() = r[0];
-	if (base_type::_M_impl._M_key_compare(base_type::_S_key(base_type::_M_rightmost()), _KeyOfValue()(*(--access[num_threads]))))
-	  base_type::_M_rightmost() = r[last - 1];
-      }
-      else{
-	if (strictly_less_or_less_equal(_KeyOfValue()(*(access[0])), base_type::_S_key(base_type::_M_leftmost())))
-	  base_type::_M_leftmost() = base_type::_S_minimum(base_type::_M_root());
-	if (strictly_less_or_less_equal(base_type::_S_key(base_type::_M_rightmost()), _KeyOfValue()(*(--access[num_threads]))))
-	  base_type::_M_rightmost() =  base_type::_S_maximum(base_type::_M_root());
-      }
 
-
-
+	// Update root and sizes.
+	base_type::_M_root() = root_problem->t;
+	root_problem->t->_M_parent = &(base_type::_M_impl._M_header);
+	/*****	Dealing with repetitions (EFFICIENCY ISSUE) *****/
+	
+	// Add the k elements that wanted to be inserted, minus the ones
+	// that were repeated.
+#if _GLIBCXX_TREE_INITIAL_SPLITTING
+	base_type::_M_impl._M_node_count += (k - (rank_shift[num_threads]));
+#else
+	base_type::_M_impl._M_node_count += k;
+#endif
+	// Also then, take out the ones that were already existing in the tree.
+	for (int i = 0; i< num_threads; ++i)
+	  base_type::_M_impl._M_node_count -= existing[i];
+	// Update leftmost and rightmost.
+	/*****	Dealing with repetitions (EFFICIENCY ISSUE) *****/
+	if (not strictly_less_or_less_equal(
+	      base_type::_S_key(base_type::_M_root()),
+	      base_type::_S_key(base_type::_M_root())))
+	  {
+	    // Unique container.
+	    if (base_type::_M_impl._M_key_compare(
+		  _KeyOfValue()(*(access[0])),
+		  base_type::_S_key(base_type::_M_leftmost())))
+	      base_type::_M_leftmost() = r[0];
+	    if (base_type::_M_impl._M_key_compare(
+		  base_type::_S_key(base_type::_M_rightmost()),
+		  _KeyOfValue()(*(--access[num_threads]))))
+	      base_type::_M_rightmost() = r[last - 1];
+	  }
+	else
+	  {
+	    if (strictly_less_or_less_equal(_KeyOfValue()(*(access[0])),
+					    base_type::_S_key(base_type::
+							      _M_leftmost())))
+	      base_type::_M_leftmost() =
+		base_type::_S_minimum(base_type::_M_root());
+	    if (strictly_less_or_less_equal(
+		  base_type::_S_key(base_type::_M_rightmost()),
+		  _KeyOfValue()(*(--access[num_threads]))))
+	      base_type::_M_rightmost() = 
+		base_type::_S_maximum(base_type::_M_root());
+	  }
 
 #if _GLIBCXX_TREE_INITIAL_SPLITTING
       // Delete root problem
@@ -2013,9 +2174,7 @@ namespace __gnu_parallel
 
       // Delete queues
       for (int pos = 0; pos < num_threads; ++pos)
-	{
-	  delete ins_problems[pos];
-	}
+	delete ins_problems[pos];
 
       // Delete array of pointers
       ::operator delete(r);
@@ -2056,101 +2215,136 @@ namespace __gnu_parallel
      * of the wrapping container
      */
     template<typename _Iterator, typename StrictlyLessOrLessEqual>
-    void
-    _M_bulk_insertion_split_tree_by_pivot(_Rb_tree_node_ptr t, _Rb_tree_node_ptr* r, _Iterator* access,  size_type* beg_partition, size_type* rank_shift, const size_type pos_beg, const size_type pos_end, concat_problem** conc, const thread_index_t num_threads, StrictlyLessOrLessEqual strictly_less_or_less_equal)
-    {
-      if (pos_beg == pos_end)
-	{
-	  //Elements are in [pos_beg, pos_end]
-	  conc[pos_beg*2]->t = t;
-	  conc[pos_beg*2]->black_h = black_height(t);
-	  force_black_root (conc[pos_beg*2]->t, conc[pos_beg*2]->black_h);
-	  return;
-	}
-      if (t == 0)
-	{
-	  for (size_type i = pos_beg; i < pos_end; ++i)
-	    {
-	      conc[i*2]->t = NULL;
-	      conc[i*2]->black_h = 0;
-	      conc[i*2+1]->t = NULL;
-	    }
-	  conc[pos_end*2]->t = NULL;
-	  conc[pos_end*2]->black_h = 0;
-	  return;
-	}
+      void
+      _M_bulk_insertion_split_tree_by_pivot(_Rb_tree_node_ptr t,
+					    _Rb_tree_node_ptr* r,
+					    _Iterator* access,
+					    size_type* beg_partition,
+					    size_type* rank_shift,
+					    const size_type pos_beg,
+					    const size_type pos_end,
+					    concat_problem** conc,
+					    const thread_index_t num_threads,
+					    StrictlyLessOrLessEqual
+					    strictly_less_or_less_equal)
+      {
+	if (pos_beg == pos_end)
+	  {
+	    //Elements are in [pos_beg, pos_end]
+	    conc[pos_beg*2]->t = t;
+	    conc[pos_beg*2]->black_h = black_height(t);
+	    force_black_root (conc[pos_beg*2]->t, conc[pos_beg*2]->black_h);
+	    return;
+	  }
+	if (t == 0)
+	  {
+	    for (size_type i = pos_beg; i < pos_end; ++i)
+	      {
+		conc[i*2]->t = NULL;
+		conc[i*2]->black_h = 0;
+		conc[i*2+1]->t = NULL;
+	      }
+	    conc[pos_end*2]->t = NULL;
+	    conc[pos_end*2]->black_h = 0;
+	    return;
+	  }
 
-      // Return the last pos, in which key >= (pos-1).
-      // Search in the range [pos_beg, pos_end]
-      size_type pos = std::upper_bound(access + pos_beg, access + pos_end + 1, base_type::_S_key(t), compare_value_key<_Iterator, _Compare>(base_type::_M_impl._M_key_compare)) - access;
-      if (pos != pos_beg)
-	{
+	// Return the last pos, in which key >= (pos-1).
+	// Search in the range [pos_beg, pos_end]
+	size_type pos = (std::upper_bound(access + pos_beg,
+					 access + pos_end + 1,
+					 base_type::_S_key(t),
+					 compare_value_key<_Iterator,
+					 _Compare>(base_type::
+						   _M_impl._M_key_compare))
+			 - access);
+	if (pos != pos_beg)
 	  --pos;
-	}
-      _GLIBCXX_PARALLEL_ASSERT(pos == 0 or not base_type::_M_impl._M_key_compare(base_type::_S_key(t), _KeyOfValue()(*access[pos])));
 
+	_GLIBCXX_PARALLEL_ASSERT(
+	  pos == 0
+	  or not base_type::_M_impl._M_key_compare(
+	    base_type::_S_key(t), _KeyOfValue()(*access[pos])));
 
-      _Rb_tree_node_ptr ll, lr;
-      int black_h_ll, black_h_lr;
-      _Rb_tree_node_ptr rl, rr;
-      int black_h_rl, black_h_rr;
+	
+	_Rb_tree_node_ptr ll, lr;
+	int black_h_ll, black_h_lr;
+	_Rb_tree_node_ptr rl, rr;
+	int black_h_rl, black_h_rr;
 
-      if (pos != pos_beg)
-	{
-	  _Rb_tree_node_ptr prev = r[beg_partition[pos] - 1 - (rank_shift[pos] - rank_shift[pos - 1])];
+	if (pos != pos_beg)
+	  {
+	    _Rb_tree_node_ptr prev = (r[beg_partition[pos] - 1
+					- (rank_shift[pos]
+					   - rank_shift[pos - 1])]);
 
-	  _GLIBCXX_PARALLEL_ASSERT(strictly_less_or_less_equal(base_type::_S_key(prev), _KeyOfValue()(*access[pos])));
+	    _GLIBCXX_PARALLEL_ASSERT(
+	      strictly_less_or_less_equal(base_type::_S_key(prev),
+					  _KeyOfValue()(*access[pos])));
 
-	  split(static_cast<_Rb_tree_node_ptr>(t->_M_left),
-		static_cast<const key_type&>(_KeyOfValue()(*access[pos])),
-		static_cast<const key_type&>(base_type::_S_key(prev)),
-		conc[pos*2-1]->t, ll, lr, black_h_ll, black_h_lr,
-		strictly_less_or_less_equal);
+	    split(static_cast<_Rb_tree_node_ptr>(t->_M_left),
+		  static_cast<const key_type&>(_KeyOfValue()(*access[pos])),
+		  static_cast<const key_type&>(base_type::_S_key(prev)),
+		  conc[pos*2-1]->t, ll, lr, black_h_ll, black_h_lr,
+		  strictly_less_or_less_equal);
 
-	  _M_bulk_insertion_split_tree_by_pivot(ll, r, access, beg_partition, rank_shift, pos_beg, pos-1, conc,num_threads, strictly_less_or_less_equal);
-	}
-      else
-	{
-	  lr = static_cast<_Rb_tree_node_ptr>(t->_M_left);
-	  black_h_lr = black_height (lr);
-	  force_black_root (lr, black_h_lr);
-	}
+	    _M_bulk_insertion_split_tree_by_pivot(
+	      ll, r, access, beg_partition, rank_shift, pos_beg, pos-1,
+	      conc, num_threads, strictly_less_or_less_equal);
+	  }
+	else
+	  {
+	    lr = static_cast<_Rb_tree_node_ptr>(t->_M_left);
+	    black_h_lr = black_height (lr);
+	    force_black_root (lr, black_h_lr);
+	  }
 
-      if (pos != pos_end)
-	{
-	  _Rb_tree_node_ptr prev = r[beg_partition[pos+1] - 1 - (rank_shift[pos+1] - rank_shift[pos])];
+	if (pos != pos_end)
+	  {
+	    _Rb_tree_node_ptr prev = (r[beg_partition[pos+1] - 1
+					- (rank_shift[pos+1]
+					   - rank_shift[pos])]);
 
-	  _GLIBCXX_PARALLEL_ASSERT(not base_type::_M_impl._M_key_compare(_KeyOfValue()(*access[pos+1]), base_type::_S_key(prev)));
-	  _GLIBCXX_PARALLEL_ASSERT(strictly_less_or_less_equal(base_type::_S_key(prev), _KeyOfValue()(*access[pos+1])));
+	    _GLIBCXX_PARALLEL_ASSERT(
+	      not base_type::_M_impl._M_key_compare(
+		_KeyOfValue()(*access[pos+1]), base_type::_S_key(prev)));
+	    _GLIBCXX_PARALLEL_ASSERT(
+	      strictly_less_or_less_equal(base_type::_S_key(prev),
+					  _KeyOfValue()(*access[pos+1])));
 
-	  split(static_cast<_Rb_tree_node_ptr>(t->_M_right),
-		static_cast<const key_type&>(_KeyOfValue()(*access[pos+1])),
-		static_cast<const key_type&>(base_type::_S_key(prev)),
-		conc[pos*2+1]->t, rl, rr, black_h_rl, black_h_rr,
-		strictly_less_or_less_equal);
+	    split(static_cast<_Rb_tree_node_ptr>(t->_M_right),
+		  static_cast<const key_type&>(_KeyOfValue()(*access[pos+1])),
+		  static_cast<const key_type&>(base_type::_S_key(prev)),
+		  conc[pos*2+1]->t, rl, rr, black_h_rl, black_h_rr,
+		  strictly_less_or_less_equal);
 
-	  _M_bulk_insertion_split_tree_by_pivot(rr, r, access, beg_partition, rank_shift, pos+1, pos_end, conc,num_threads, strictly_less_or_less_equal);
-	}
-      else
-	{
-	  rl = static_cast<_Rb_tree_node_ptr>(t->_M_right);
-	  black_h_rl = black_height (rl);
-	  force_black_root (rl, black_h_rl);
-	}
+	    _M_bulk_insertion_split_tree_by_pivot(
+	      rr, r, access, beg_partition, rank_shift, pos+1, pos_end,
+	      conc,num_threads, strictly_less_or_less_equal);
+	  }
+	else
+	  {
+	    rl = static_cast<_Rb_tree_node_ptr>(t->_M_right);
+	    black_h_rl = black_height (rl);
+	    force_black_root (rl, black_h_rl);
+	  }
 
-      // When key(t) is equal to key(access[pos]) and no other key in
-      // the left tree satisfies the criteria to be conc[pos*2-1]->t,
-      // key(t) must be assigned to it to avoid repetitions.
-      // Therefore, we do not have a root parameter for the
-      // concatenate function and a new concatenate function must be
-      // provided.
-      if (pos != pos_beg and conc[pos*2-1]->t == NULL and not strictly_less_or_less_equal(_KeyOfValue()(*access[pos]), base_type::_S_key(t)))
-	{
-	  conc[pos*2-1]->t = t;
-	  t = NULL;
-	}
-      concatenate(t, lr, rl, black_h_lr, black_h_rl, conc[pos*2]->t, conc[pos*2]->black_h);
-    }
+	// When key(t) is equal to key(access[pos]) and no other key in
+	// the left tree satisfies the criteria to be conc[pos*2-1]->t,
+	// key(t) must be assigned to it to avoid repetitions.
+	// Therefore, we do not have a root parameter for the
+	// concatenate function and a new concatenate function must be
+	// provided.
+	if (pos != pos_beg and conc[pos*2-1]->t == NULL
+	    and not strictly_less_or_less_equal(_KeyOfValue()(*access[pos]),
+						base_type::_S_key(t)))
+	  {
+	    conc[pos*2-1]->t = t;
+	    t = NULL;
+	  }
+	concatenate(t, lr, rl, black_h_lr, black_h_rl,
+		    conc[pos*2]->t, conc[pos*2]->black_h);
+      }
 
     /** @brief Divide the insertion problem until a leaf is reached or
      * the problem is small.
@@ -2174,41 +2368,52 @@ namespace __gnu_parallel
      * of the wrapping container
      */
     template<typename StrictlyLessOrLessEqual>
-    void
-    _M_bulk_insertion_split_sequence(_Rb_tree_node_ptr* r, RestrictedBoundedConcurrentQueue<insertion_problem>* ins_problems,  insertion_problem& ip, size_type& existing, const size_type min_problem, StrictlyLessOrLessEqual strictly_less_or_less_equal)
-    {
-      _GLIBCXX_PARALLEL_ASSERT(ip.t == ip.conc->t);
-      if (ip.t == NULL or (ip.pos_end- ip.pos_beg) <= min_problem)
-	{
-	  // SOLVE PROBLEM SEQUENTIALLY
-	  // Start solving the problem.
-	  _GLIBCXX_PARALLEL_ASSERT(ip.pos_beg <= ip.pos_end);
-	  _M_bulk_insertion_merge_concatenate(r, ip, existing, strictly_less_or_less_equal);
-	  return;
-	}
+      void
+      _M_bulk_insertion_split_sequence(
+	_Rb_tree_node_ptr* r,
+	RestrictedBoundedConcurrentQueue<insertion_problem>* ins_problems,
+	insertion_problem& ip, size_type& existing,
+	const size_type min_problem,
+	StrictlyLessOrLessEqual strictly_less_or_less_equal)
+      {
+	_GLIBCXX_PARALLEL_ASSERT(ip.t == ip.conc->t);
+	if (ip.t == NULL or (ip.pos_end- ip.pos_beg) <= min_problem)
+	  {
+	    // SOLVE PROBLEM SEQUENTIALLY
+	    // Start solving the problem.
+	    _GLIBCXX_PARALLEL_ASSERT(ip.pos_beg <= ip.pos_end);
+	    _M_bulk_insertion_merge_concatenate(r, ip, existing,
+						strictly_less_or_less_equal);
+	    return;
+	  }
 
-      size_type pos_beg_right;
-      size_type pos_end_left = divide(r, ip.pos_beg, ip.pos_end, base_type::_S_key(ip.t), pos_beg_right, existing, strictly_less_or_less_equal);
+	size_type pos_beg_right;
+	size_type pos_end_left = divide(r, ip.pos_beg, ip.pos_end,
+					base_type::_S_key(ip.t), pos_beg_right,
+					existing, strictly_less_or_less_equal);
 
-      int black_h_l, black_h_r;
-      if (ip.t->_M_color == std::_S_black)
-	{
+	int black_h_l, black_h_r;
+	if (ip.t->_M_color == std::_S_black)
 	  black_h_l = black_h_r = ip.conc->black_h - 1;
-	}
-      else
-	{
+	else
 	  black_h_l = black_h_r = ip.conc->black_h;
-	}
 
       // Right problem into the queue.
-      ip.conc->right_problem = new concat_problem(static_cast<_Rb_tree_node_ptr>(ip.t->_M_right), black_h_r, ip.conc);
-      ip.conc->left_problem = new concat_problem(static_cast<_Rb_tree_node_ptr>(ip.t->_M_left), black_h_l, ip.conc);
+      ip.conc->right_problem = new concat_problem(
+	static_cast<_Rb_tree_node_ptr>(ip.t->_M_right), black_h_r, ip.conc);
+      ip.conc->left_problem = new concat_problem(
+	static_cast<_Rb_tree_node_ptr>(ip.t->_M_left), black_h_l, ip.conc);
 
-      ins_problems->push_front(insertion_problem(pos_beg_right, ip.pos_end, ip.array_partition, ip.conc->right_problem));
+      ins_problems->push_front(insertion_problem(pos_beg_right, ip.pos_end,
+						 ip.array_partition,
+						 ip.conc->right_problem));
 
       // Solve left problem.
-      insertion_problem ip_left(ip.pos_beg, pos_end_left, ip.array_partition, ip.conc->left_problem);
-      _M_bulk_insertion_split_sequence(r, ins_problems, ip_left, existing, min_problem, strictly_less_or_less_equal);
+      insertion_problem ip_left(ip.pos_beg, pos_end_left, ip.array_partition,
+				ip.conc->left_problem);
+      _M_bulk_insertion_split_sequence(r, ins_problems, ip_left, existing,
+				       min_problem,
+				       strictly_less_or_less_equal);
     }
 
 
@@ -2237,60 +2442,70 @@ namespace __gnu_parallel
      *  @return Resulting tree after the elements have been inserted
      */
     template<typename StrictlyLessOrLessEqual>
-    _Rb_tree_node_ptr 
-    _M_bulk_insertion_merge(_Rb_tree_node_ptr* r_array, _Rb_tree_node_ptr t, const size_type pos_beg, const size_type pos_end,  size_type& existing, int& black_h, StrictlyLessOrLessEqual strictly_less_or_less_equal)
-    {
+      _Rb_tree_node_ptr 
+      _M_bulk_insertion_merge(_Rb_tree_node_ptr* r_array, _Rb_tree_node_ptr t,
+			      const size_type pos_beg,
+			      const size_type pos_end,
+			      size_type& existing, int& black_h,
+			      StrictlyLessOrLessEqual
+			      strictly_less_or_less_equal)
+      {
 #ifndef NDEBUG
-      int count;
+	int count;
 #endif
-      _GLIBCXX_PARALLEL_ASSERT(pos_beg<=pos_end);
+	_GLIBCXX_PARALLEL_ASSERT(pos_beg<=pos_end);
 
-      // Leaf: a tree with the range must be constructed. Returns its
-      // height in black nodes and its root (in ip.t) If there is
-      // nothing to insert, we still need the height for balancing.
-      if (t == NULL)
-	{
-	  if (pos_end == pos_beg) return NULL;
-	  t = simple_tree_construct(r_array,pos_beg, pos_end, black_h);
-	  _GLIBCXX_PARALLEL_ASSERT(rb_verify_tree(t,count));
+	// Leaf: a tree with the range must be constructed. Returns its
+	// height in black nodes and its root (in ip.t) If there is
+	// nothing to insert, we still need the height for balancing.
+	if (t == NULL)
+	  {
+	    if (pos_end == pos_beg)
+	      return NULL;
+	    t = simple_tree_construct(r_array,pos_beg, pos_end, black_h);
+	    _GLIBCXX_PARALLEL_ASSERT(rb_verify_tree(t,count));
+	    return t;
+	  }
+	if (pos_end == pos_beg)
 	  return t;
-	}
-      if (pos_end == pos_beg)
-	return t;
-      if ((pos_end - pos_beg) <= (size_type)(black_h))
-	{
-	  // Exponential size tree with respect the number of elements
-	  // to be inserted.
-	  for (size_type p = pos_beg; p < pos_end; ++p)
-	    {
-	      t = _M_insert_local(t, r_array[p], existing, black_h, strictly_less_or_less_equal);
-	    }
-	  _GLIBCXX_PARALLEL_ASSERT(rb_verify_tree(t,count));
-	  return t;
-	}
+	if ((pos_end - pos_beg) <= (size_type)(black_h))
+	  {
+	    // Exponential size tree with respect the number of elements
+	    // to be inserted.
+	    for (size_type p = pos_beg; p < pos_end; ++p)
+	      t = _M_insert_local(t, r_array[p], existing, black_h,
+				  strictly_less_or_less_equal);
+	    _GLIBCXX_PARALLEL_ASSERT(rb_verify_tree(t,count));
+	    return t;
+	  }
 
-      size_type pos_beg_right;
-      size_type pos_end_left = divide(r_array, pos_beg, pos_end, base_type::_S_key(t), pos_beg_right, existing, strictly_less_or_less_equal);
+	size_type pos_beg_right;
+	size_type pos_end_left = divide(r_array, pos_beg, pos_end,
+					base_type::_S_key(t), pos_beg_right,
+					existing, strictly_less_or_less_equal);
 
-
-      int black_h_l, black_h_r;
-      if (t->_M_color == std::_S_black)
-	{
+	int black_h_l, black_h_r;
+	if (t->_M_color == std::_S_black)
 	  black_h_l = black_h_r = black_h - 1;
-	}
-      else
-	{
+	else
 	  black_h_l = black_h_r = black_h;
-	}
-      force_black_root(t->_M_left, black_h_l);
-      _Rb_tree_node_ptr l = _M_bulk_insertion_merge(r_array, static_cast<_Rb_tree_node_ptr>(t->_M_left), pos_beg, pos_end_left, existing, black_h_l, strictly_less_or_less_equal);
-      force_black_root(t->_M_right, black_h_r);
-      _Rb_tree_node_ptr r = _M_bulk_insertion_merge(r_array, static_cast<_Rb_tree_node_ptr>(t->_M_right), pos_beg_right, pos_end, existing, black_h_r, strictly_less_or_less_equal);
+	
+	force_black_root(t->_M_left, black_h_l);
 
-      concatenate(t, l, r, black_h_l,  black_h_r, t, black_h);
+	_Rb_tree_node_ptr l = _M_bulk_insertion_merge(
+	  r_array, static_cast<_Rb_tree_node_ptr>(t->_M_left), pos_beg,
+	  pos_end_left, existing, black_h_l, strictly_less_or_less_equal);
 
-      return t;
-    }
+	force_black_root(t->_M_right, black_h_r);
+
+	_Rb_tree_node_ptr r = _M_bulk_insertion_merge(
+	  r_array, static_cast<_Rb_tree_node_ptr>(t->_M_right), pos_beg_right,
+	  pos_end, existing, black_h_r, strictly_less_or_less_equal);
+
+	concatenate(t, l, r, black_h_l,  black_h_r, t, black_h);
+
+	return t;
+      }
 
     /** @brief Solve a given insertion problem and all the parent
      * concatenation problem that are ready to be solved.
@@ -2311,35 +2526,50 @@ namespace __gnu_parallel
      *  of the wrapping container
      */
     template<typename StrictlyLessOrLessEqual>
-    void 
-    _M_bulk_insertion_merge_concatenate(_Rb_tree_node_ptr* r, insertion_problem& ip, size_type& existing, StrictlyLessOrLessEqual strictly_less_or_less_equal)
-    {
-      concat_problem* conc = ip.conc;
-      _GLIBCXX_PARALLEL_ASSERT(ip.pos_beg <= ip.pos_end);
+      void
+      _M_bulk_insertion_merge_concatenate(_Rb_tree_node_ptr* r,
+					  insertion_problem& ip,
+					  size_type& existing,
+					  StrictlyLessOrLessEqual
+					  strictly_less_or_less_equal)
+      {
+	concat_problem* conc = ip.conc;
+	_GLIBCXX_PARALLEL_ASSERT(ip.pos_beg <= ip.pos_end);
 
-      conc->t = _M_bulk_insertion_merge(r, ip.t, ip.pos_beg, ip.pos_end, existing, conc->black_h, strictly_less_or_less_equal);
-      _GLIBCXX_PARALLEL_ASSERT(conc->t == NULL or conc->t->_M_color == std::_S_black);
+	conc->t = _M_bulk_insertion_merge(r, ip.t, ip.pos_beg, ip.pos_end,
+					  existing, conc->black_h,
+					  strictly_less_or_less_equal);
+	_GLIBCXX_PARALLEL_ASSERT(conc->t == NULL
+				 or conc->t->_M_color == std::_S_black);
 
-      bool is_ready = true;
-      while (conc->par_problem != NULL and is_ready)
-	{
-	  // Pre: exists left and right problem, so there is not a deadlock
-	  if (compare_and_swap(&conc->par_problem->is_ready, concat_problem::READY_NO,  concat_problem::READY_YES))
-	    is_ready = false;
+	bool is_ready = true;
+	while (conc->par_problem != NULL and is_ready)
+	  {
+	    // Pre: exists left and right problem, so there is not a deadlock
+	    if (compare_and_swap(&conc->par_problem->is_ready,
+				 concat_problem::READY_NO,
+				 concat_problem::READY_YES))
+	      is_ready = false;
 
-	  if (is_ready)
-	    {
-	      conc = conc->par_problem;
-	      _GLIBCXX_PARALLEL_ASSERT(conc->left_problem!=NULL and conc->right_problem!=NULL);
-	      _GLIBCXX_PARALLEL_ASSERT (conc->left_problem->black_h >=0 and conc->right_problem->black_h>=0);
-	      // Finished working with the problems.
-	      concatenate(conc->t, conc->left_problem->t, conc->right_problem->t, conc->left_problem->black_h,  conc->right_problem->black_h, conc->t, conc->black_h);
+	    if (is_ready)
+	      {
+		conc = conc->par_problem;
+		_GLIBCXX_PARALLEL_ASSERT(conc->left_problem!=NULL
+					 and conc->right_problem!=NULL);
+		_GLIBCXX_PARALLEL_ASSERT(conc->left_problem->black_h >=0
+					 and conc->right_problem->black_h>=0);
+		// Finished working with the problems.
+		concatenate(conc->t, conc->left_problem->t,
+			    conc->right_problem->t,
+			    conc->left_problem->black_h, 
+			    conc->right_problem->black_h,
+			    conc->t, conc->black_h);
 
-	      delete conc->left_problem;
-	      delete conc->right_problem;
-	    }
-	}
-    }
+		delete conc->left_problem;
+		delete conc->right_problem;
+	      }
+	  }
+      }
 
     // Begin of sorting, searching and related comparison-based helper methods.
 
@@ -2351,15 +2581,19 @@ namespace __gnu_parallel
      *  @param dist Size of the sequence (out)
      *  @return sequence is sorted. */
     template<typename _RandomAccessIterator>
-    bool
-    is_sorted_distance(const _RandomAccessIterator __first, const _RandomAccessIterator __last, size_type& dist, std::random_access_iterator_tag) const
-    {
-      gr_or_eq<_Compare, _RandomAccessIterator> geq(base_type::_M_impl._M_key_compare);
-      dist = __last - __first;
+      bool
+      is_sorted_distance(const _RandomAccessIterator __first,
+			 const _RandomAccessIterator __last,
+			 size_type& dist,
+			 std::random_access_iterator_tag) const
+      {
+	gr_or_eq<_Compare, _RandomAccessIterator>
+	  geq(base_type::_M_impl._M_key_compare);
+	dist = __last - __first;
 
-      // In parallel.
-      return equal(__first + 1, __last, __first, geq);
-    }
+	// In parallel.
+	return equal(__first + 1, __last, __first, geq);
+      }
 
     /** @brief Check whether an input sequence is sorted, and
      * calculate its size.
@@ -2371,32 +2605,35 @@ namespace __gnu_parallel
      *  @param dist Size of the sequence (out)
      *  @return sequence is sorted. */
     template<typename _InputIterator>
-    bool
-    is_sorted_distance(const _InputIterator __first, const _InputIterator __last, size_type& dist, std::input_iterator_tag) const
-    {
-      dist = 1;
-      bool is_sorted = true;
-      _InputIterator it = __first;
-      _InputIterator prev = it++;
-      while (it != __last)
-	{
-	  ++dist;
-	  if (base_type::_M_impl._M_key_compare(_KeyOfValue()(*it),_KeyOfValue()(*prev)))
-	    {
-	      is_sorted = false;
-	      ++it;
-	      break;
-	    }
-	  prev = it;
-	  ++it;
-	}
-      while (it != __last)
-	{
-	  ++dist;
-	  ++it;
-	}
-      return is_sorted;
-    }
+      bool
+      is_sorted_distance(const _InputIterator __first,
+			 const _InputIterator __last, size_type& dist,
+			 std::input_iterator_tag) const
+      {
+	dist = 1;
+	bool is_sorted = true;
+	_InputIterator it = __first;
+	_InputIterator prev = it++;
+	while (it != __last)
+	  {
+	    ++dist;
+	    if (base_type::_M_impl._M_key_compare(_KeyOfValue()(*it),
+						  _KeyOfValue()(*prev)))
+	      {
+		is_sorted = false;
+		++it;
+		break;
+	      }
+	    prev = it;
+	    ++it;
+	  }
+	while (it != __last)
+	  {
+	    ++dist;
+	    ++it;
+	  }
+	return is_sorted;
+      }
 
     /** @brief Check whether a random-access sequence is sorted,
      * calculate its size, and obtain intermediate accessors to the
@@ -2416,17 +2653,24 @@ namespace __gnu_parallel
      *  @param num_pieces Number of pieces to generate.
      *  @return Sequence is sorted. */
     template<typename _RandomAccessIterator>
-    bool
-    is_sorted_distance_accessors(const _RandomAccessIterator __first, const _RandomAccessIterator __last,  _RandomAccessIterator* access, size_type* beg_partition, size_type& dist, thread_index_t& num_pieces, std::random_access_iterator_tag) const
-    {
-      bool is_sorted = is_sorted_distance(__first, __last, dist,std::__iterator_category(__first));
-      if (dist < (unsigned int) num_pieces)
-	num_pieces = dist;
+      bool
+      is_sorted_distance_accessors(const _RandomAccessIterator __first,
+				   const _RandomAccessIterator __last,
+				   _RandomAccessIterator* access,
+				   size_type* beg_partition, size_type& dist,
+				   thread_index_t& num_pieces,
+				   std::random_access_iterator_tag) const
+      {
+	bool is_sorted = is_sorted_distance(__first, __last, dist,
+					    std::__iterator_category(__first));
+	if (dist < (unsigned int) num_pieces)
+	  num_pieces = dist;
 
-      // Do it opposite way to use accessors in equal function???
-      range_accessors(__first,__last, access, beg_partition, dist, num_pieces, std::__iterator_category(__first));
-      return is_sorted;
-    }
+	// Do it opposite way to use accessors in equal function???
+	range_accessors(__first,__last, access, beg_partition, dist,
+			num_pieces, std::__iterator_category(__first));
+	return is_sorted;
+      }
 
     /** @brief Check whether an input sequence is sorted, calculate
      * its size, and obtain intermediate accessors to the sequence to
@@ -2448,23 +2692,28 @@ namespace __gnu_parallel
      *  @param num_pieces Number of pieces to generate.
      *  @return Sequence is sorted. */
     template<typename _InputIterator>
-    bool
-    is_sorted_distance_accessors(const _InputIterator __first, const _InputIterator __last, _InputIterator* access,  size_type* beg_partition, size_type& dist, thread_index_t& num_pieces, std::input_iterator_tag) const
-    {
-      is_sorted_functor<_InputIterator, _Compare> sorted(__first, base_type::_M_impl._M_key_compare);
-      dist = list_partition(__first, __last, access,  (beg_partition+1),  num_pieces, sorted,  0);
+      bool
+      is_sorted_distance_accessors(const _InputIterator __first,
+				   const _InputIterator __last,
+				   _InputIterator* access,
+				   size_type* beg_partition, size_type& dist,
+				   thread_index_t& num_pieces,
+				   std::input_iterator_tag) const
+      {
+	is_sorted_functor<_InputIterator, _Compare>
+	  sorted(__first, base_type::_M_impl._M_key_compare);
+	dist = list_partition(__first, __last, access, (beg_partition+1),
+			      num_pieces, sorted,  0);
 
-      // Calculate the rank of the beginning each partition from the
-      // sequence sizes (what is stored at this point in beg_partition
-      // array).
-      beg_partition[0] = 0;
-      for (int i = 0; i < num_pieces; ++i)
-	{
+	// Calculate the rank of the beginning each partition from the
+	// sequence sizes (what is stored at this point in beg_partition
+	// array).
+	beg_partition[0] = 0;
+	for (int i = 0; i < num_pieces; ++i)
 	  beg_partition[i+1] += beg_partition[i];
-	}
 
-      return sorted.is_sorted();
-    }
+	return sorted.is_sorted();
+      }
 
     /** @brief Make a full copy of the elements of a sequence
      *
@@ -2481,15 +2730,19 @@ namespace __gnu_parallel
      *  @param out Begin iterator of output sequence.
      *  @param num_threads Number of threads to use. */
     template<typename _InputIterator, typename _OutputIterator>
-    static void
-    uninitialized_copy_from_accessors(_InputIterator* access, size_type* beg_partition, _OutputIterator out, const thread_index_t num_threads)
-    {
-#pragma omp parallel num_threads(num_threads)
+      static void
+      uninitialized_copy_from_accessors(_InputIterator* access,
+					size_type* beg_partition,
+					_OutputIterator out,
+					const thread_index_t num_threads)
       {
-	int iam = omp_get_thread_num();
-	uninitialized_copy(access[iam], access[iam+1], out+beg_partition[iam]);
+#pragma omp parallel num_threads(num_threads)
+	{
+	  int iam = omp_get_thread_num();
+	  uninitialized_copy(access[iam], access[iam + 1],
+			     out + beg_partition[iam]);
+	}
       }
-    }
 
     /** @brief Make a copy of the pointers of the elements of a sequence
      *  @param access Array of size @c num_threads + 1 that defines @c
@@ -2502,20 +2755,23 @@ namespace __gnu_parallel
      *  @param out Begin iterator of output sequence.
      *  @param num_threads Number of threads to use. */
     template<typename _InputIterator, typename _OutputIterator>
-    static void
-    uninitialized_ptr_copy_from_accessors(_InputIterator* access, size_type* beg_partition, _OutputIterator out, const thread_index_t num_threads)
-    {
-#pragma omp parallel num_threads(num_threads)
+      static void
+      uninitialized_ptr_copy_from_accessors(_InputIterator* access,
+					    size_type* beg_partition,
+					    _OutputIterator out,
+					    const thread_index_t num_threads)
       {
-	int iam = omp_get_thread_num();
-	_OutputIterator itout = out + beg_partition[iam];
-	for (_InputIterator it = access[iam]; it != access[iam+1]; ++it)
-	  {
-	    *itout = &(*it);
-	    ++itout;
-	  }
+#pragma omp parallel num_threads(num_threads)
+	{
+	  int iam = omp_get_thread_num();
+	  _OutputIterator itout = out + beg_partition[iam];
+	  for (_InputIterator it = access[iam]; it != access[iam+1]; ++it)
+	    {
+	      *itout = &(*it);
+	      ++itout;
+	    }
+	}
       }
-    }
 
     /** @brief Split a sorted node array in two parts according to a key.
      *
@@ -2540,28 +2796,44 @@ namespace __gnu_parallel
      *  resulting left partition (out)
      */
     template<typename StrictlyLessOrLessEqual>
-    size_type
-    divide(_Rb_tree_node_ptr* r, const size_type pos_beg, const size_type pos_end, const key_type& key, size_type& pos_beg_right, size_type& existing, StrictlyLessOrLessEqual strictly_less_or_less_equal)
-    {
-      pos_beg_right = std::lower_bound(r + pos_beg, r + pos_end, key, compare_node_key<_Compare>(base_type::_M_impl._M_key_compare)) - r;
+      size_type
+      divide(_Rb_tree_node_ptr* r, const size_type pos_beg,
+	     const size_type pos_end, const key_type& key,
+	     size_type& pos_beg_right, size_type& existing,
+	     StrictlyLessOrLessEqual strictly_less_or_less_equal)
+      {
+	pos_beg_right = std::lower_bound(
+	  r + pos_beg, r + pos_end, key, compare_node_key<_Compare>(
+	    base_type::_M_impl._M_key_compare)) - r;
 
-      //Check if the element exists.
-      size_type pos_end_left = pos_beg_right;
+	//Check if the element exists.
+	size_type pos_end_left = pos_beg_right;
 
-      // If r[pos_beg_right] is equal to key, must be erased
-      /*****	Dealing with repetitions (CORRECTNESS ISSUE) *****/
-      _GLIBCXX_PARALLEL_ASSERT((pos_beg_right == pos_end) or not base_type::_M_impl._M_key_compare(base_type::_S_key(r[pos_beg_right]),key));
-      _GLIBCXX_PARALLEL_ASSERT((pos_beg_right + 1 >= pos_end) or strictly_less_or_less_equal(key, base_type::_S_key(r[pos_beg_right + 1])));
-      if (pos_beg_right != pos_end and not strictly_less_or_less_equal(key, base_type::_S_key(r[pos_beg_right])))
-	{
-	  _M_destroy_node(r[pos_beg_right]);
-	  r[pos_beg_right] = NULL;
-	  ++pos_beg_right;
-	  ++existing;
-	}
-      _GLIBCXX_PARALLEL_ASSERT(pos_end_left <= pos_beg_right and pos_beg_right <= pos_end and pos_end_left >= pos_beg);
-      return pos_end_left;
-    }
+	// If r[pos_beg_right] is equal to key, must be erased
+	/*****	Dealing with repetitions (CORRECTNESS ISSUE) *****/
+	_GLIBCXX_PARALLEL_ASSERT(
+	  (pos_beg_right == pos_end)
+	  or not base_type::_M_impl._M_key_compare(
+	    base_type::_S_key(r[pos_beg_right]),key));
+	_GLIBCXX_PARALLEL_ASSERT(
+	  (pos_beg_right + 1 >= pos_end)
+	  or strictly_less_or_less_equal(
+	    key, base_type::_S_key(r[pos_beg_right + 1])));
+
+	if (pos_beg_right != pos_end
+	    and not strictly_less_or_less_equal(
+	      key, base_type::_S_key(r[pos_beg_right])))
+	  {
+	    _M_destroy_node(r[pos_beg_right]);
+	    r[pos_beg_right] = NULL;
+	    ++pos_beg_right;
+	    ++existing;
+	  }
+	_GLIBCXX_PARALLEL_ASSERT(pos_end_left <= pos_beg_right
+				 and pos_beg_right <= pos_end
+				 and pos_end_left >= pos_beg);
+	return pos_end_left;
+      }
 
 
     /** @brief Parallelization helper method: Given a random-access
@@ -2579,18 +2851,26 @@ namespace __gnu_parallel
      *  @param n Sequence size
      *  @param num_pieces Number of pieces. */
     template<typename _RandomAccessIterator>
-    static void
-    range_accessors(const _RandomAccessIterator __first, const _RandomAccessIterator __last,  _RandomAccessIterator* access, size_type* beg_partition, const size_type n, const thread_index_t num_pieces, std::random_access_iterator_tag)
-    {
-      access[0] = __first;
-      for (int i=1; i< num_pieces; ++i)
-	{
-	  access[i] = access[i-1] + (__last-__first)/num_pieces;
-	  beg_partition[i]= beg_partition[i-1]+ (__last-__first)/num_pieces;
-	}
-      beg_partition[num_pieces] = __last - access[num_pieces-1] +  beg_partition[num_pieces-1];
-      access[num_pieces]= __last;
-    }
+      static void
+      range_accessors(const _RandomAccessIterator __first,
+		      const _RandomAccessIterator __last,
+		      _RandomAccessIterator* access,
+		      size_type* beg_partition,
+		      const size_type n,
+		      const thread_index_t num_pieces,
+		      std::random_access_iterator_tag)
+      {
+	access[0] = __first;
+	for (int i = 1; i< num_pieces; ++i)
+	  {
+	    access[i] = access[i-1] + (__last-__first)/num_pieces;
+	    beg_partition[i] = (beg_partition[i - 1]
+				+ (__last - __first) / num_pieces);
+	  }
+	beg_partition[num_pieces] = (__last - access[num_pieces - 1]
+				     +  beg_partition[num_pieces - 1]);
+	access[num_pieces]= __last;
+      }
 
     /** @brief Parallelization helper method: Given an input-access
 	sequence of known size, divide it into pieces of almost the
@@ -2607,21 +2887,26 @@ namespace __gnu_parallel
      *  @param n Sequence size
      *  @param num_pieces Number of pieces. */
     template<typename _InputIterator>
-    static void
-    range_accessors(const _InputIterator __first, const _InputIterator __last, _InputIterator* access,  size_type* beg_partition, const size_type n, const thread_index_t num_pieces, std::input_iterator_tag)
-    {
-      access[0] = __first;
-      _InputIterator it= __first;
-      for (int i=1; i< num_pieces; ++i)
-	{
-	  for (int j=0; j< n/num_pieces; ++j)
+      static void
+      range_accessors(const _InputIterator __first,
+		      const _InputIterator __last, _InputIterator* access,
+		      size_type* beg_partition, const size_type n,
+		      const thread_index_t num_pieces, std::input_iterator_tag)
+      {
+	access[0] = __first;
+	_InputIterator it= __first;
+	for (int i = 1; i < num_pieces; ++i)
+	  {
+	    for (int j=0; j< n/num_pieces; ++j)
 	    ++it;
-	  access[i] = it;
-	  beg_partition[i]= n/num_pieces + beg_partition[i-1];
+	    access[i] = it;
+	    beg_partition[i]= n / num_pieces + beg_partition[i - 1];
 	}
-      access[num_pieces] = __last;
-      beg_partition[num_pieces] = n - (num_pieces-1)*(n/num_pieces) + beg_partition[num_pieces-1];
-    }
+	access[num_pieces] = __last;
+	beg_partition[num_pieces] = (n - (num_pieces - 1)
+				     * (n / num_pieces)
+				     + beg_partition[num_pieces - 1]);
+      }
 
     /** @brief Initialize an array of concatenation problems for bulk
 	insertion. They are linked as a tree with (end - beg) leaves.
@@ -2631,21 +2916,27 @@ namespace __gnu_parallel
      *  @param parent Pointer to the parent concatenation problem.
      */
     static concat_problem*
-    _M_bulk_insertion_initialize_upper_problems(concat_problem** conc, const int beg, const int end, concat_problem* parent)
-    {
-      if (beg + 1 == end)
-	{
-	  conc[2*beg]->par_problem = parent;
-	  return conc[2*beg];
-	}
+    _M_bulk_insertion_initialize_upper_problems(concat_problem** conc,
+						const int beg, const int end,
+						concat_problem* parent)
+      {
+	if (beg + 1 == end)
+	  {
+	    conc[2*beg]->par_problem = parent;
+	    return conc[2*beg];
+	  }
 
-      int size = end - beg;
-      int mid = beg + size/2;
-      conc[2*mid-1]->par_problem = parent;
-      conc[2*mid-1]->left_problem = _M_bulk_insertion_initialize_upper_problems(conc, beg, mid, conc[2*mid-1]);
-      conc[2*mid-1]->right_problem = _M_bulk_insertion_initialize_upper_problems(conc, mid, end, conc[2*mid-1]);
-      return conc[2*mid-1];
-    }
+	int size = end - beg;
+	int mid = beg + size/2;
+	conc[2*mid-1]->par_problem = parent;
+	conc[2*mid-1]->left_problem =
+	  _M_bulk_insertion_initialize_upper_problems(conc, beg, mid,
+						      conc[2*mid-1]);
+	conc[2*mid-1]->right_problem =
+	  _M_bulk_insertion_initialize_upper_problems(conc, mid, end,
+						      conc[2*mid-1]);
+	return conc[2*mid-1];
+      }
 
 
     /** @brief Determine black height of a node recursively.
@@ -2656,7 +2947,7 @@ namespace __gnu_parallel
     {
       if (t == NULL) 
 	return 0;
-      int bh = black_height (static_cast<const _Rb_tree_node_ptr> (t->_M_left));
+      int bh = black_height(static_cast<const _Rb_tree_node_ptr>(t->_M_left));
       if (t->_M_color == std::_S_black)
 	++bh;
       return bh;
@@ -2735,8 +3026,10 @@ namespace __gnu_parallel
       _GLIBCXX_PARALLEL_ASSERT(rb_verify_tree(l, count1));
       _GLIBCXX_PARALLEL_ASSERT(rb_verify_tree(r, count2));
 
-      _GLIBCXX_PARALLEL_ASSERT(l != NULL ? l->_M_color != std::_S_red and black_h_l > 0 : black_h_l == 0);
-      _GLIBCXX_PARALLEL_ASSERT(r != NULL ? r->_M_color != std::_S_red and black_h_r > 0 : black_h_r == 0);
+      _GLIBCXX_PARALLEL_ASSERT(l != NULL ? l->_M_color != std::_S_red
+			       and black_h_l > 0 : black_h_l == 0);
+      _GLIBCXX_PARALLEL_ASSERT(r != NULL ? r->_M_color != std::_S_red
+			       and black_h_r > 0 : black_h_r == 0);
 
       if (black_h_l > black_h_r)
 	if (root != NULL)
@@ -2751,13 +3044,16 @@ namespace __gnu_parallel
 	    else
 	      {
 		// XXX SHOULD BE the same as extract_min but slower.
-		/*
-		   root = static_cast<_Rb_tree_node_ptr>(_Rb_tree_node_base::_S_minimum(r));
-		   split(r, _S_key(_Rb_tree_increment(root)), _S_key(root), root, t, r, black_h, black_h_r);
+		/* root = static_cast<_Rb_tree_node_ptr>(
+		   _Rb_tree_node_base::_S_minimum(r));
+
+		   split(r, _S_key(_Rb_tree_increment(root)),
+		   _S_key(root), root, t, r, black_h, black_h_r);
 		*/
 		extract_min(r, root, r, black_h_r);
 		_GLIBCXX_PARALLEL_ASSERT(root != NULL);
-		concatenate<LeftRight>(root, l, r, black_h_l, black_h_r, t, black_h);
+		concatenate<LeftRight>(root, l, r, black_h_l,
+				       black_h_r, t, black_h);
 	      }
 	  }
       else
@@ -2774,12 +3070,16 @@ namespace __gnu_parallel
 	      {
 		// XXX SHOULD BE the same as extract_max but slower
 		/*
-		   root = static_cast<_Rb_tree_node_ptr>(_Rb_tree_node_base::_S_maximum(l));
-		   split(l, _S_key(root), _S_key(_Rb_tree_decrement(root)), root, l, t, black_h_l, black_h);
+		   root = static_cast<_Rb_tree_node_ptr>(
+		   _Rb_tree_node_base::_S_maximum(l));
+
+		   split(l, _S_key(root), _S_key(_Rb_tree_decrement(root)),
+		   root, l, t, black_h_l, black_h);
 		*/
 		extract_max(l, root, l, black_h_l);
 		_GLIBCXX_PARALLEL_ASSERT(root != NULL);
-		concatenate<RightLeft>(root, r, l, black_h_r, black_h_l, t, black_h);
+		concatenate<RightLeft>(root, r, l, black_h_r,
+				       black_h_l, t, black_h);
 	      }
 	  }
 #ifndef NDEBUG
@@ -2808,47 +3108,55 @@ namespace __gnu_parallel
      *  @post @c t is correct red-black tree with height @c black_h.
      */
     template<typename S>
-    static void
-    concatenate(const _Rb_tree_node_ptr rt, _Rb_tree_node_ptr l, 
-		_Rb_tree_node_ptr r, int black_h_l, int black_h_r, 
-		_Rb_tree_node_ptr& t, int& black_h)
-    {
-      _Rb_tree_node_base* root = l;
-      _Rb_tree_node_ptr parent = NULL;
-      black_h = black_h_l;
-      _GLIBCXX_PARALLEL_ASSERT(black_h_l >= black_h_r);
-      while (black_h_l != black_h_r)
-	{
-	  if (l->_M_color == std::_S_black)
-	    --black_h_l;
-	  parent = l;
-	  l = static_cast<_Rb_tree_node_ptr>(S::right(l));
-	  _GLIBCXX_PARALLEL_ASSERT((black_h_l == 0 and (l == NULL or l->_M_color == std::_S_red)) or (black_h_l != 0 and l != NULL));
-	  _GLIBCXX_PARALLEL_ASSERT((black_h_r == 0 and (r == NULL or r->_M_color == std::_S_red)) or (black_h_r != 0 and r != NULL));
-	}
-      if (l != NULL and l->_M_color == std::_S_red)
-	{
-	  //the root needs to be black
-	  parent = l;
-	  l = static_cast<_Rb_tree_node_ptr>(S::right(l));
-	}
-      _GLIBCXX_PARALLEL_ASSERT(l != NULL ? l->_M_color == std::_S_black : true);
-      _GLIBCXX_PARALLEL_ASSERT(r != NULL ? r->_M_color == std::_S_black : true);
-      t = plant<S>(rt, l, r);
-      t->_M_parent = parent;
-      if (parent != NULL)
-	{
-	  S::right(parent) = t;
-	  black_h += _Rb_tree_rebalance(t, root);
-	  t = static_cast<_Rb_tree_node_ptr> (root);
-	}
-      else
-	{
-	  ++black_h;
-	  t->_M_color = std::_S_black;
-	}
-      _GLIBCXX_PARALLEL_ASSERT(t->_M_color == std::_S_black);
-    }
+      static void
+      concatenate(const _Rb_tree_node_ptr rt, _Rb_tree_node_ptr l, 
+		  _Rb_tree_node_ptr r, int black_h_l, int black_h_r, 
+		  _Rb_tree_node_ptr& t, int& black_h)
+      {
+	_Rb_tree_node_base* root = l;
+	_Rb_tree_node_ptr parent = NULL;
+	black_h = black_h_l;
+	_GLIBCXX_PARALLEL_ASSERT(black_h_l >= black_h_r);
+	while (black_h_l != black_h_r)
+	  {
+	    if (l->_M_color == std::_S_black)
+	      --black_h_l;
+	    parent = l;
+	    l = static_cast<_Rb_tree_node_ptr>(S::right(l));
+	    _GLIBCXX_PARALLEL_ASSERT(
+	      (black_h_l == 0 and (l == NULL or l->_M_color == std::_S_red))
+	      or (black_h_l != 0 and l != NULL));
+	    _GLIBCXX_PARALLEL_ASSERT(
+	      (black_h_r == 0 and (r == NULL or r->_M_color == std::_S_red))
+	      or (black_h_r != 0 and r != NULL));
+	  }
+	if (l != NULL and l->_M_color == std::_S_red)
+	  {
+	    //the root needs to be black
+	    parent = l;
+	    l = static_cast<_Rb_tree_node_ptr>(S::right(l));
+	  }
+
+	_GLIBCXX_PARALLEL_ASSERT(
+	  l != NULL ? l->_M_color == std::_S_black : true);
+	_GLIBCXX_PARALLEL_ASSERT(
+	  r != NULL ? r->_M_color == std::_S_black : true);
+
+	t = plant<S>(rt, l, r);
+	t->_M_parent = parent;
+	if (parent != NULL)
+	  {
+	    S::right(parent) = t;
+	    black_h += _Rb_tree_rebalance(t, root);
+	    t = static_cast<_Rb_tree_node_ptr> (root);
+	  }
+	else
+	  {
+	    ++black_h;
+	    t->_M_color = std::_S_black;
+	  }
+	_GLIBCXX_PARALLEL_ASSERT(t->_M_color == std::_S_black);
+      }
 
     /** @brief Split a tree according to key in three parts: a left
      *  child, a right child and an intermediate node.
@@ -2872,36 +3180,48 @@ namespace __gnu_parallel
      *  of the wrapping container
      *  @return Black height of t */
     template<typename StrictlyLessOrEqual>
-    int
-    split(_Rb_tree_node_ptr t, const key_type& key, const key_type& prev_k, 
-	  _Rb_tree_node_ptr& root, _Rb_tree_node_ptr& l, _Rb_tree_node_ptr& r, 
-	  int& black_h_l, int& black_h_r, 
-	  StrictlyLessOrEqual strictly_less_or_less_equal) const
-    {
-      if (t != NULL)
-	{
-	  // Must be initialized, in case we never go left!!!
-	  root = NULL;
-	  int h = split_not_null(t, key, prev_k, root, l, r, black_h_l, black_h_r, strictly_less_or_less_equal);
+      int
+      split(_Rb_tree_node_ptr t, const key_type& key, const key_type& prev_k, 
+	    _Rb_tree_node_ptr& root, _Rb_tree_node_ptr& l,
+	    _Rb_tree_node_ptr& r, int& black_h_l, int& black_h_r, 
+	    StrictlyLessOrEqual strictly_less_or_less_equal)
+      {
+	if (t != NULL)
+	  {
+	    // Must be initialized, in case we never go left!!!
+	    root = NULL;
+	    int h = split_not_null(t, key, prev_k, root, l, r, black_h_l,
+				   black_h_r, strictly_less_or_less_equal);
 #ifndef NDEBUG
-	  _GLIBCXX_PARALLEL_ASSERT(l == NULL or base_type::_M_impl._M_key_compare(base_type::_S_key(base_type::_S_maximum(l)),key));
-	  _GLIBCXX_PARALLEL_ASSERT(r == NULL or not base_type::_M_impl._M_key_compare(base_type::_S_key(base_type::_S_minimum(r)),key));
-	  int count1, count2;
-	  _GLIBCXX_PARALLEL_ASSERT(rb_verify_tree(l, count1));
-	  _GLIBCXX_PARALLEL_ASSERT(rb_verify_tree(r, count2));
-	  _GLIBCXX_PARALLEL_ASSERT(root == NULL or base_type::_M_impl._M_key_compare(prev_k, base_type::_S_key(root)) and not base_type::_M_impl._M_key_compare(key, base_type::_S_key(root)));
-	  _GLIBCXX_PARALLEL_ASSERT(root != NULL or l==NULL or  not base_type::_M_impl._M_key_compare(prev_k, base_type::_S_key(base_type::_S_maximum(l))));
+	    _GLIBCXX_PARALLEL_ASSERT(
+	      l == NULL or base_type::_M_impl._M_key_compare(
+		base_type::_S_key(base_type::_S_maximum(l)),key));
+	    _GLIBCXX_PARALLEL_ASSERT(
+	      r == NULL or not base_type::_M_impl._M_key_compare(
+		base_type::_S_key(base_type::_S_minimum(r)),key));
+	    int count1, count2;
+	    _GLIBCXX_PARALLEL_ASSERT(rb_verify_tree(l, count1));
+	    _GLIBCXX_PARALLEL_ASSERT(rb_verify_tree(r, count2));
+	    _GLIBCXX_PARALLEL_ASSERT(
+	      root == NULL or base_type::_M_impl._M_key_compare(
+		prev_k, base_type::_S_key(root))
+	      and not base_type::_M_impl._M_key_compare(
+		key, base_type::_S_key(root)));
+	    _GLIBCXX_PARALLEL_ASSERT(
+	      root != NULL or l==NULL
+	      or not base_type::_M_impl._M_key_compare(
+		prev_k, base_type::_S_key(base_type::_S_maximum(l))));
 #endif
-	  return h;
-	}
+	    return h;
+	  }
 
-      r = NULL;
-      root = NULL;
-      l = NULL;
-      black_h_r = 0;
-      black_h_l = 0;
-      return 0;
-    }
+	r = NULL;
+	root = NULL;
+	l = NULL;
+	black_h_r = 0;
+	black_h_l = 0;
+	return 0;
+      }
 
     /** @brief Split a tree according to key in three parts: a left
      * child, a right child and an intermediate node.
@@ -2923,98 +3243,119 @@ namespace __gnu_parallel
      *  @pre t != NULL
      *  @return Black height of t */
     template<typename StrictlyLessOrEqual>
-    int
-    split_not_null(const _Rb_tree_node_ptr t, const key_type& key, 
-		   const key_type& prev_k, _Rb_tree_node_ptr& root, 
-		   _Rb_tree_node_ptr& l, _Rb_tree_node_ptr& r, int& black_h_l, 
-		   int& black_h_r, 
-		   StrictlyLessOrEqual strictly_less_or_equal) const
-    {
-      _GLIBCXX_PARALLEL_ASSERT (t != NULL);
-      int black_h, b_h;
-      int black_node = 0;
-      if (t->_M_color == std::_S_black)
-	++black_node;
-      if (strictly_less_or_equal(key, base_type::_S_key(t)))
-	{
-	  if (t->_M_left != NULL )
-	    {
-	      // t->M_right is at most one node
-	      // go to the left
-	      b_h = black_h = split_not_null( static_cast<_Rb_tree_node_ptr>(t->_M_left), key, prev_k, root, l, r, black_h_l, black_h_r, strictly_less_or_equal);
-	      // Moin root and right subtree to already existing right
-	      // half, leave left subtree.
-	      force_black_root(t->_M_right, b_h);
-	      concatenate(t, r, static_cast<_Rb_tree_node_ptr>(t->_M_right), black_h_r, b_h, r, black_h_r);
-	    }
-	  else
-	    {
-	      // t->M_right is at most one node
-	      r = t;
-	      black_h_r = black_node;
-	      force_black_root(r, black_h_r);
+      int
+      split_not_null(const _Rb_tree_node_ptr t, const key_type& key, 
+		     const key_type& prev_k, _Rb_tree_node_ptr& root, 
+		     _Rb_tree_node_ptr& l, _Rb_tree_node_ptr& r,
+		     int& black_h_l, int& black_h_r, 
+		     StrictlyLessOrEqual strictly_less_or_equal)
+      {
+	_GLIBCXX_PARALLEL_ASSERT (t != NULL);
+	int black_h, b_h;
+	int black_node = 0;
+	if (t->_M_color == std::_S_black)
+	  ++black_node;
+	if (strictly_less_or_equal(key, base_type::_S_key(t)))
+	  {
+	    if (t->_M_left != NULL )
+	      {
+		// t->M_right is at most one node
+		// go to the left
+		b_h = black_h = split_not_null(
+		  static_cast<_Rb_tree_node_ptr>(t->_M_left), key, prev_k,
+		  root, l, r, black_h_l, black_h_r,
+		  strictly_less_or_equal);
+		// Moin root and right subtree to already existing right
+		// half, leave left subtree.
+		force_black_root(t->_M_right, b_h);
+		concatenate(t, r, static_cast<_Rb_tree_node_ptr>(t->_M_right),
+			    black_h_r, b_h, r, black_h_r);
+	      }
+	    else
+	      {
+		// t->M_right is at most one node
+		r = t;
+		black_h_r = black_node;
+		force_black_root(r, black_h_r);
 
-	      black_h = 0;
-	      l = NULL;
-	      black_h_l = 0;
-	    }
-	  _GLIBCXX_PARALLEL_ASSERT(l == NULL or base_type::_M_impl._M_key_compare(base_type::_S_key(base_type::_S_maximum(l)),key));
-	  _GLIBCXX_PARALLEL_ASSERT(r == NULL or not base_type::_M_impl._M_key_compare(base_type::_S_key(base_type::_S_minimum(r)),key));
-	}
-      else
-	{
-	  if (t->_M_right != NULL )
-	    {
-	      // Go to the right.
-	      if (strictly_less_or_equal(prev_k, base_type::_S_key(t)))
-		root = t;
-	      b_h = black_h = split_not_null(static_cast<_Rb_tree_node_ptr>(t->_M_right), key, prev_k, root, l, r, black_h_l, black_h_r, strictly_less_or_equal);
-	      // Join root and left subtree to already existing left
-	      // half, leave right subtree.
-	      force_black_root(t->_M_left, b_h);
-	      if (root != t)
-		{
-		  // There was another point where we went right.
-		  concatenate(t, static_cast<_Rb_tree_node_ptr>(t->_M_left), l, b_h, black_h_l, l, black_h_l);
-		}
-	      else
-		{
-		  l = static_cast<_Rb_tree_node_ptr>(t->_M_left);
-		  black_h_l = b_h;
-		}
-	      _GLIBCXX_PARALLEL_ASSERT(l == NULL or base_type::_M_impl._M_key_compare(base_type::_S_key(base_type::_S_maximum(l)),key));
-	      _GLIBCXX_PARALLEL_ASSERT(r == NULL or not base_type::_M_impl._M_key_compare(base_type::_S_key(base_type::_S_minimum(r)),key));
-	    }
-	  else
-	    {
-	      if (strictly_less_or_equal(prev_k, base_type::_S_key(t)))
-		{
+		black_h = 0;
+		l = NULL;
+		black_h_l = 0;
+	      }
+	    _GLIBCXX_PARALLEL_ASSERT(
+	      l == NULL or base_type::_M_impl._M_key_compare(
+		base_type::_S_key(base_type::_S_maximum(l)),key));
+	    _GLIBCXX_PARALLEL_ASSERT(
+	      r == NULL or not base_type::_M_impl._M_key_compare(
+		base_type::_S_key(base_type::_S_minimum(r)),key));
+	  }
+	else
+	  {
+	    if (t->_M_right != NULL )
+	      {
+		// Go to the right.
+		if (strictly_less_or_equal(prev_k, base_type::_S_key(t)))
 		  root = t;
-		  l= static_cast<_Rb_tree_node_ptr>(t->_M_left);
-		  make_black_leaf(l, black_h_l);
-		  _GLIBCXX_PARALLEL_ASSERT(l == NULL or base_type::_M_impl._M_key_compare(base_type::_S_key(base_type::_S_maximum(l)),key));
-		}
-	      else
-		{
-		  l= t;
-		  black_h_l = black_node;
-		  force_black_root(l, black_h_l);
-		  _GLIBCXX_PARALLEL_ASSERT(l == NULL or base_type::_M_impl._M_key_compare(base_type::_S_key(base_type::_S_maximum(l)),key));
-		}
+		b_h = black_h = split_not_null(
+		  static_cast<_Rb_tree_node_ptr>(t->_M_right), key, prev_k,
+		  root, l, r, black_h_l, black_h_r, strictly_less_or_equal);
+		// Join root and left subtree to already existing left
+		// half, leave right subtree.
+		force_black_root(t->_M_left, b_h);
+		if (root != t)
+		  {
+		    // There was another point where we went right.
+		    concatenate(t, static_cast<_Rb_tree_node_ptr>(
+				  t->_M_left), l, b_h, black_h_l,
+				l, black_h_l);
+		  }
+		else
+		  {
+		    l = static_cast<_Rb_tree_node_ptr>(t->_M_left);
+		    black_h_l = b_h;
+		  }
+		_GLIBCXX_PARALLEL_ASSERT(
+		  l == NULL or base_type::_M_impl._M_key_compare(
+		    base_type::_S_key(base_type::_S_maximum(l)),key));
+		_GLIBCXX_PARALLEL_ASSERT(
+		  r == NULL or not base_type::_M_impl._M_key_compare(
+		    base_type::_S_key(base_type::_S_minimum(r)),key));
+	      }
+	    else
+	      {
+		if (strictly_less_or_equal(prev_k, base_type::_S_key(t)))
+		  {
+		    root = t;
+		    l= static_cast<_Rb_tree_node_ptr>(t->_M_left);
+		    make_black_leaf(l, black_h_l);
+		    _GLIBCXX_PARALLEL_ASSERT(
+		      l == NULL or base_type::_M_impl._M_key_compare(
+			base_type::_S_key(base_type::_S_maximum(l)),key));
+		  }
+		else
+		  {
+		    l= t;
+		    black_h_l = black_node;
+		    force_black_root(l, black_h_l);
+		    _GLIBCXX_PARALLEL_ASSERT(
+		      l == NULL or base_type::_M_impl._M_key_compare(
+			base_type::_S_key(base_type::_S_maximum(l)),key));
+		  }
 
-	      r = NULL;
-	      black_h = 0;
-	      black_h_r = 0;
-	    }
-	}
-      return black_h + black_node;
-    }
+		r = NULL;
+		black_h = 0;
+		black_h_r = 0;
+	      }
+	  }
+	return black_h + black_node;
+      }
 
     /** @brief Color the root black and update the black height accordingly.
      *
      * @param t Root of the tree.
      * @param black_h Black height of the tree @c t (out) */
-    static void force_black_root(_Rb_tree_node_base* t, int& black_h)
+    static void
+    force_black_root(_Rb_tree_node_base* t, int& black_h)
     {
       if (t != NULL and t->_M_color == std::_S_red)
 	{
@@ -3032,7 +3373,7 @@ namespace __gnu_parallel
      *  @return Black height of the original tree  */
     int
     extract_min(const _Rb_tree_node_ptr t, _Rb_tree_node_ptr& root, 
-		_Rb_tree_node_ptr& r, int& black_h_r) const
+		_Rb_tree_node_ptr& r, int& black_h_r)
     {
       _GLIBCXX_PARALLEL_ASSERT (t != NULL);
       int black_h, b_h;
@@ -3044,12 +3385,14 @@ namespace __gnu_parallel
 	{
 	  // t->M_right is at most one node
 	  // go to the left
-	  b_h = black_h = extract_min( static_cast<_Rb_tree_node_ptr>(t->_M_left), root, r, black_h_r);
+	  b_h = black_h = extract_min(
+	    static_cast<_Rb_tree_node_ptr>(t->_M_left), root, r, black_h_r);
 
 	  // Join root and right subtree to already existing right
 	  // half, leave left subtree
 	  force_black_root(t->_M_right, b_h);
-	  concatenate(t, r, static_cast<_Rb_tree_node_ptr>(t->_M_right), black_h_r, b_h, r, black_h_r);
+	  concatenate(t, r, static_cast<_Rb_tree_node_ptr>(t->_M_right),
+		      black_h_r, b_h, r, black_h_r);
 	}
       else
 	{
@@ -3091,13 +3434,15 @@ namespace __gnu_parallel
 
       if (t->_M_right != NULL )
 	{
-	  b_h = black_h = extract_max(static_cast<_Rb_tree_node_ptr>(t->_M_right), root, l,  black_h_l);
+	  b_h = black_h = extract_max(
+	    static_cast<_Rb_tree_node_ptr>(t->_M_right), root, l,  black_h_l);
 
 	  // Join root and left subtree to already existing left half,
 	  // leave right subtree.
 	  force_black_root(t->_M_left, b_h);
 
-	  concatenate(t, static_cast<_Rb_tree_node_ptr>(t->_M_left), l, b_h, black_h_l, l, black_h_l);
+	  concatenate(t, static_cast<_Rb_tree_node_ptr>(
+			t->_M_left), l, b_h, black_h_l, l, black_h_l);
 	}
       else
 	{
@@ -3142,25 +3487,32 @@ namespace __gnu_parallel
 	  int black_node = 0;
 	  if (t->_M_color == std::_S_black)
 	    ++black_node;
-	  if (not (base_type::_M_impl._M_key_compare(base_type::_S_key(t), key)))
+	  if (not (base_type::_M_impl._M_key_compare(base_type::_S_key(t),
+						     key)))
 	    {
 	      // Go to the left.
-	      b_h = black_h = split( static_cast<_Rb_tree_node_ptr>(t->_M_left), key, l, r, black_h_l, black_h_r);
+	      b_h = black_h = split(
+		static_cast<_Rb_tree_node_ptr>(t->_M_left), key, l, r,
+		black_h_l, black_h_r);
 
 	      // Join root and right subtree to already existing right
 	      // half, leave left subtree.
 	      force_black_root(t->_M_right, b_h);
-	      concatenate(t, r, static_cast<_Rb_tree_node_ptr>(t->_M_right), black_h_r, b_h, r, black_h_r);
+	      concatenate(t, r, static_cast<_Rb_tree_node_ptr>(
+			    t->_M_right), black_h_r, b_h, r, black_h_r);
 	    }
 	  else
 	    {
 	      // Go to the right.
-	      b_h = black_h = split(static_cast<_Rb_tree_node_ptr>(t->_M_right), key, l, r, black_h_l, black_h_r);
+	      b_h = black_h = split(static_cast<_Rb_tree_node_ptr>(
+				      t->_M_right), key, l, r,
+				    black_h_l, black_h_r);
 
 	      // Join root and left subtree to already existing left
 	      // half, leave right subtree.
 	      force_black_root(t->_M_left, b_h);
-	      concatenate(t, static_cast<_Rb_tree_node_ptr>(t->_M_left), l, b_h, black_h_l, l, black_h_l);
+	      concatenate(t, static_cast<_Rb_tree_node_ptr>(
+			    t->_M_left), l, b_h, black_h_l, l, black_h_l);
 	    }
 	  return black_h + black_node;
 	}
@@ -3192,19 +3544,20 @@ namespace __gnu_parallel
      *  of the wrapping container
      *  @return Resulting tree after insertion */
     template<typename StrictlyLessOrLessEqual>
-    _Rb_tree_node_ptr
-    _M_insert_local(_Rb_tree_node_base* t, const _Rb_tree_node_ptr new_t, 
-		    size_type& existing, int& black_h, 
-		    StrictlyLessOrLessEqual strictly_less_or_less_equal)
-    {
-      _GLIBCXX_PARALLEL_ASSERT(t != NULL);
-      if (_M_insert_local_top_down(t, new_t, NULL, NULL, true, strictly_less_or_less_equal))
-	{
-	  t->_M_parent = NULL;
-	  black_h += _Rb_tree_rebalance(new_t, t);
-	  _GLIBCXX_PARALLEL_ASSERT(t->_M_color == std::_S_black);
-	  return static_cast<_Rb_tree_node_ptr>(t);
-	}
+      _Rb_tree_node_ptr
+      _M_insert_local(_Rb_tree_node_base* t, const _Rb_tree_node_ptr new_t, 
+		      size_type& existing, int& black_h, 
+		      StrictlyLessOrLessEqual strictly_less_or_less_equal)
+      {
+	_GLIBCXX_PARALLEL_ASSERT(t != NULL);
+	if (_M_insert_local_top_down(t, new_t, NULL, NULL,
+				     true, strictly_less_or_less_equal))
+	  {
+	    t->_M_parent = NULL;
+	    black_h += _Rb_tree_rebalance(new_t, t);
+	    _GLIBCXX_PARALLEL_ASSERT(t->_M_color == std::_S_black);
+	    return static_cast<_Rb_tree_node_ptr>(t);
+	  }
       else
 	{
 	  base_type::_M_destroy_node(new_t);
@@ -3230,50 +3583,47 @@ namespace __gnu_parallel
      *  @return Success of the insertion 
      */
     template<typename StrictlyLessOrLessEqual>
-    bool
-    _M_insert_local_top_down(_Rb_tree_node_base* t, 
-			     const _Rb_tree_node_ptr new_t, 
-			     _Rb_tree_node_base* eq_t, 
-			     _Rb_tree_node_base* parent, const bool is_left, 
-		    StrictlyLessOrLessEqual strictly_less_or_less_equal) const
-    {
-      if (t != NULL)
-	{
-	  if (strictly_less_or_less_equal(_S_key(new_t), _S_key(static_cast<_Rb_tree_node_ptr>(t))))
-	    {
-	      return _M_insert_local_top_down(t->_M_left, new_t, eq_t, t, true, strictly_less_or_less_equal);
-	    }
-	  else
-	    {
-	      return _M_insert_local_top_down(t->_M_right, new_t, t, t, false, strictly_less_or_less_equal);
-	    }
-	}
+      bool
+      _M_insert_local_top_down(_Rb_tree_node_base* t, 
+			       const _Rb_tree_node_ptr new_t, 
+			       _Rb_tree_node_base* eq_t, 
+			       _Rb_tree_node_base* parent, const bool is_left, 
+			       StrictlyLessOrLessEqual
+			       strictly_less_or_less_equal) const
+      {
+	if (t != NULL)
+	  {
+	    if (strictly_less_or_less_equal(
+		  _S_key(new_t), _S_key(static_cast<_Rb_tree_node_ptr>(t))))
+	      return _M_insert_local_top_down(t->_M_left, new_t, eq_t, t, true,
+					      strictly_less_or_less_equal);
+	    else
+	      return _M_insert_local_top_down(t->_M_right, new_t, t, t, false,
+					      strictly_less_or_less_equal);
+	  }
 
-      _GLIBCXX_PARALLEL_ASSERT(parent != NULL);
+	_GLIBCXX_PARALLEL_ASSERT(parent != NULL);
 
-      // Base case.
-      if (eq_t == NULL or strictly_less_or_less_equal(_S_key(static_cast<_Rb_tree_node_ptr>(eq_t)), _S_key(new_t)))
-	{
-	  // The element to be inserted did not existed.
-	  if (is_left)
-	    {
+	// Base case.
+	if (eq_t == NULL or strictly_less_or_less_equal(
+	      _S_key(static_cast<_Rb_tree_node_ptr>(eq_t)), _S_key(new_t)))
+	  {
+	    // The element to be inserted did not existed.
+	    if (is_left)
 	      parent->_M_left = new_t;
-	    }
-	  else
-	    {
+	    else
 	      parent->_M_right = new_t;
-	    }
 
-	  new_t->_M_parent = parent;
-	  new_t->_M_left = NULL;
-	  new_t->_M_right = NULL;
-	  new_t->_M_color = std::_S_red;
+	    new_t->_M_parent = parent;
+	    new_t->_M_left = NULL;
+	    new_t->_M_right = NULL;
+	    new_t->_M_color = std::_S_red;
 
-	  return true;
-	}
-      else
-	return false;
-    }
+	    return true;
+	  }
+	else
+	  return false;
+      }
 
     /** @brief Rebalance a tree locally.
      *
@@ -3343,10 +3693,14 @@ namespace __gnu_parallel
       if (__root->_M_color == std::_S_red)
 	{
 	  __root->_M_color = std::_S_black;
-	  _GLIBCXX_PARALLEL_ASSERT(rb_verify_tree(static_cast<typename base_type::_Const_Link_type>(__root)));
+	  _GLIBCXX_PARALLEL_ASSERT(
+	    rb_verify_tree(static_cast<typename base_type::
+			   _Const_Link_type>(__root)));
 	  return 1;
 	}
-      _GLIBCXX_PARALLEL_ASSERT(rb_verify_tree(static_cast<typename base_type::_Const_Link_type>(__root)));
+      _GLIBCXX_PARALLEL_ASSERT(
+	rb_verify_tree(static_cast<typename base_type::
+		       _Const_Link_type>(__root)));
       return 0;
     }
 
@@ -3356,7 +3710,8 @@ namespace __gnu_parallel
      *  @return Tree correct. 
      */
     bool
-    rb_verify_tree(const typename base_type::_Const_Link_type __x, int& count) const
+    rb_verify_tree(const typename base_type::_Const_Link_type __x,
+		   int& count) const
     {
       int bh;
       return rb_verify_tree_node(__x) and rb_verify_tree(__x, count, bh);
@@ -3374,9 +3729,9 @@ namespace __gnu_parallel
 	return true;
       else
 	{
-	  return rb_verify_node(__x) and
-	    rb_verify_tree_node(base_type::_S_left(__x)) and
-	    rb_verify_tree_node( base_type::_S_right(__x));
+	  return rb_verify_node(__x)
+	    and rb_verify_tree_node(base_type::_S_left(__x))
+	    and rb_verify_tree_node( base_type::_S_right(__x));
 	}
     }
 
@@ -3432,25 +3787,24 @@ namespace __gnu_parallel
       if (__x->_M_color == std::_S_red)
 	if ((__L && __L->_M_color == std::_S_red)
 	    || (__R && __R->_M_color == std::_S_red))
-	  {
-	    return false;
-	  }
+	  return false;
+      
       if (__L != NULL)
 	{
-	  __L = static_cast<typename base_type::_Const_Link_type>(base_type::_S_maximum(__L));
-	  if (base_type::_M_impl._M_key_compare(base_type::_S_key(__x), base_type::_S_key(__L)))
-	    {
-	      return false;
-	    }
+	  __L = static_cast<typename base_type::_Const_Link_type>(
+	    base_type::_S_maximum(__L));
+	  if (base_type::_M_impl._M_key_compare(base_type::_S_key(__x),
+						base_type::_S_key(__L)))
+	    return false;
 	}
 
       if (__R != NULL)
 	{
-	  __R = static_cast<typename base_type::_Const_Link_type>(base_type::_S_minimum(__R));
-	  if (base_type::_M_impl._M_key_compare(base_type::_S_key(__R), base_type::_S_key(__x)))
-	    {
-	      return false;
-	    }
+	  __R = static_cast<typename base_type::_Const_Link_type>(
+	    base_type::_S_minimum(__R));
+	  if (base_type::_M_impl._M_key_compare(base_type::_S_key(__R),
+						base_type::_S_key(__x)))
+	    return false;
 	}
 
       return true;
@@ -3532,21 +3886,27 @@ namespace __gnu_parallel
     bool
     rb_verify()
     {
-      if (base_type::_M_impl._M_node_count == 0 || base_type::begin() == base_type::end())
+      if (base_type::_M_impl._M_node_count == 0
+	  || base_type::begin() == base_type::end())
 	{
-	  bool res = base_type::_M_impl._M_node_count == 0 && base_type::begin() == base_type::end()
+	  bool res = base_type::_M_impl._M_node_count == 0
+	    && base_type::begin() == base_type::end()
 	    && base_type::_M_impl._M_header._M_left ==base_type::_M_end()
 	    && base_type::_M_impl._M_header._M_right == base_type::_M_end();
 	  _GLIBCXX_PARALLEL_ASSERT(res);
 	  return res;
 	}
       size_type i=0;
-      unsigned int __len = _Rb_tree_black_count(base_type::_M_leftmost(), base_type::_M_root());
-      for (typename base_type::const_iterator __it =base_type::begin(); __it != base_type::end(); ++__it)
+      unsigned int __len = _Rb_tree_black_count(base_type::_M_leftmost(),
+						base_type::_M_root());
+      for (typename base_type::const_iterator __it =base_type::begin();
+	   __it != base_type::end(); ++__it)
 	{
-	  typename base_type::_Const_Link_type __x = static_cast<typename base_type::_Const_Link_type>(__it._M_node);
+	  typename base_type::_Const_Link_type __x =
+	    static_cast<typename base_type::_Const_Link_type>(__it._M_node);
 	  if (not rb_verify_node(__x)) return false;
-	  if (!base_type::_S_left(__x)&& !base_type::_S_right(__x) && _Rb_tree_black_count(__x,base_type::_M_root()) != __len)
+	  if (!base_type::_S_left(__x)&& !base_type::_S_right(__x)
+	      && _Rb_tree_black_count(__x,base_type::_M_root()) != __len)
 	    {
 	      _GLIBCXX_PARALLEL_ASSERT(false);
 	      return false;
@@ -3557,12 +3917,14 @@ namespace __gnu_parallel
       if (i != base_type::_M_impl._M_node_count)
 	printf("%ld != %ld\n", i, base_type::_M_impl._M_node_count);
 
-      if (base_type::_M_leftmost() != std::_Rb_tree_node_base::_S_minimum(base_type::_M_root()))
+      if (base_type::_M_leftmost()
+	  != std::_Rb_tree_node_base::_S_minimum(base_type::_M_root()))
 	{
 	  _GLIBCXX_PARALLEL_ASSERT(false);
 	  return false;
 	}
-      if (base_type::_M_rightmost() != std::_Rb_tree_node_base::_S_maximum(base_type::_M_root()))
+      if (base_type::_M_rightmost()
+	  != std::_Rb_tree_node_base::_S_maximum(base_type::_M_root()))
 	{
 	  _GLIBCXX_PARALLEL_ASSERT(false);
 	  return false;

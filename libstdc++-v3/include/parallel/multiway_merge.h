@@ -73,7 +73,7 @@ template<typename RandomAccessIterator, typename Comparator>
 template<typename RandomAccessIterator, typename Comparator>
   inline bool
   operator<=(guarded_iterator<RandomAccessIterator, Comparator>& bi1,
-            guarded_iterator<RandomAccessIterator, Comparator>& bi2);
+	     guarded_iterator<RandomAccessIterator, Comparator>& bi2);
 
   /** @brief Iterator wrapper supporting an implicit supremum at the end
       of the sequence, dominating all comparisons.
@@ -99,14 +99,14 @@ template<typename RandomAccessIterator, typename Comparator>
     *  @param end End iterator of sequence.
     *  @param comp Comparator provided for associated overloaded
     *  compare operators. */
-    inline guarded_iterator(RandomAccessIterator begin,
-                            RandomAccessIterator end, Comparator& comp)
+    guarded_iterator(RandomAccessIterator begin,
+		     RandomAccessIterator end, Comparator& comp)
     : current(begin), end(end), comp(comp)
     { }
 
     /** @brief Pre-increment operator.
     *  @return This. */
-    inline guarded_iterator<RandomAccessIterator, Comparator>&
+    guarded_iterator<RandomAccessIterator, Comparator>&
     operator++()
     {
       ++current;
@@ -115,24 +115,24 @@ template<typename RandomAccessIterator, typename Comparator>
 
     /** @brief Dereference operator.
     *  @return Referenced element. */
-    inline typename std::iterator_traits<RandomAccessIterator>::value_type
+    typename std::iterator_traits<RandomAccessIterator>::value_type
     operator*()
     { return *current; }
 
     /** @brief Convert to wrapped iterator.
     *  @return Wrapped iterator. */
-    inline operator RandomAccessIterator()
+    operator RandomAccessIterator()
     { return current; }
 
     friend bool
     operator< <RandomAccessIterator, Comparator>(
-        guarded_iterator<RandomAccessIterator, Comparator>& bi1,
-        guarded_iterator<RandomAccessIterator, Comparator>& bi2);
+      guarded_iterator<RandomAccessIterator, Comparator>& bi1,
+      guarded_iterator<RandomAccessIterator, Comparator>& bi2);
 
     friend bool
     operator<= <RandomAccessIterator, Comparator>(
-        guarded_iterator<RandomAccessIterator, Comparator>& bi1,
-        guarded_iterator<RandomAccessIterator, Comparator>& bi2);
+      guarded_iterator<RandomAccessIterator, Comparator>& bi1,
+      guarded_iterator<RandomAccessIterator, Comparator>& bi2);
   };
 
 /** @brief Compare two elements referenced by guarded iterators.
@@ -158,7 +158,7 @@ template<typename RandomAccessIterator, typename Comparator>
 template<typename RandomAccessIterator, typename Comparator>
   inline bool
   operator<=(guarded_iterator<RandomAccessIterator, Comparator>& bi1,
-            guarded_iterator<RandomAccessIterator, Comparator>& bi2)
+	     guarded_iterator<RandomAccessIterator, Comparator>& bi2)
   {
     if (bi2.current == bi2.end)	//bi1 is sup
       return bi1.current != bi1.end;	//bi2 is not sup
@@ -194,14 +194,14 @@ template<typename RandomAccessIterator, typename Comparator>
     *  @param begin Begin iterator of sequence.
     *  @param end Unused, only for compatibility.
     *  @param comp Unused, only for compatibility. */
-    inline unguarded_iterator(RandomAccessIterator begin,
-                              RandomAccessIterator end, Comparator& comp)
+    unguarded_iterator(RandomAccessIterator begin,
+		       RandomAccessIterator end, Comparator& comp)
     : current(begin), comp(comp)
     { }
 
     /** @brief Pre-increment operator.
     *  @return This. */
-    inline  unguarded_iterator<RandomAccessIterator, Comparator>&
+    unguarded_iterator<RandomAccessIterator, Comparator>&
     operator++()
     {
       ++current;
@@ -210,25 +210,24 @@ template<typename RandomAccessIterator, typename Comparator>
 
     /** @brief Dereference operator.
     *  @return Referenced element. */
-    inline typename std::iterator_traits<RandomAccessIterator>::value_type
+    typename std::iterator_traits<RandomAccessIterator>::value_type
     operator*()
     { return *current; }
 
     /** @brief Convert to wrapped iterator.
     *  @return Wrapped iterator. */
-    inline
     operator RandomAccessIterator()
     { return current; }
 
     friend bool
     operator< <RandomAccessIterator, Comparator>(
-        unguarded_iterator<RandomAccessIterator, Comparator>& bi1,
-        unguarded_iterator<RandomAccessIterator, Comparator>& bi2);
+      unguarded_iterator<RandomAccessIterator, Comparator>& bi1,
+      unguarded_iterator<RandomAccessIterator, Comparator>& bi2);
 
     friend bool
     operator<= <RandomAccessIterator, Comparator>(
-        unguarded_iterator<RandomAccessIterator, Comparator>& bi1,
-        unguarded_iterator<RandomAccessIterator, Comparator>& bi2);
+      unguarded_iterator<RandomAccessIterator, Comparator>& bi1,
+      unguarded_iterator<RandomAccessIterator, Comparator>& bi2);
   };
 
 /** @brief Compare two elements referenced by unguarded iterators.
@@ -399,18 +398,17 @@ template<typename RandomAccessIteratorIterator, typename Comparator>
  *  @param length Maximum length to merge.
  *  @param stable Unused, stable anyway.
  *  @return End iterator of output sequence. */
-template<
-    template<typename RAI, typename C> class iterator,
-    typename RandomAccessIteratorIterator,
-    typename RandomAccessIterator3,
-    typename _DifferenceTp,
-    typename Comparator>
+template<template<typename RAI, typename C> class iterator,
+	 typename RandomAccessIteratorIterator,
+	 typename RandomAccessIterator3,
+	 typename _DifferenceTp,
+	 typename Comparator>
   RandomAccessIterator3
-  multiway_merge_3_variant(
-      RandomAccessIteratorIterator seqs_begin,
-      RandomAccessIteratorIterator seqs_end,
-      RandomAccessIterator3 target,
-      Comparator comp, _DifferenceTp length, bool stable)
+  multiway_merge_3_variant(RandomAccessIteratorIterator seqs_begin,
+			   RandomAccessIteratorIterator seqs_end,
+			   RandomAccessIterator3 target,
+			   Comparator comp, _DifferenceTp length,
+			   bool stable)
   {
     _GLIBCXX_CALL(length);
 
@@ -483,11 +481,10 @@ template<
     return target;
   }
 
-template<
-    typename RandomAccessIteratorIterator,
-    typename RandomAccessIterator3,
-    typename _DifferenceTp,
-    typename Comparator>
+template<typename RandomAccessIteratorIterator,
+	 typename RandomAccessIterator3,
+	 typename _DifferenceTp,
+	 typename Comparator>
   RandomAccessIterator3
   multiway_merge_3_combined(RandomAccessIteratorIterator seqs_begin,
                             RandomAccessIteratorIterator seqs_end,
@@ -573,12 +570,11 @@ template<
  *  @param length Maximum length to merge.
  *  @param stable Unused, stable anyway.
  *  @return End iterator of output sequence. */
-template<
-    template<typename RAI, typename C> class iterator,
-    typename RandomAccessIteratorIterator,
-    typename RandomAccessIterator3,
-    typename _DifferenceTp,
-    typename Comparator>
+template<template<typename RAI, typename C> class iterator,
+	 typename RandomAccessIteratorIterator,
+	 typename RandomAccessIterator3,
+	 typename _DifferenceTp,
+	 typename Comparator>
   RandomAccessIterator3
   multiway_merge_4_variant(RandomAccessIteratorIterator seqs_begin,
                            RandomAccessIteratorIterator seqs_end,
@@ -680,11 +676,10 @@ template<
     return target;
   }
 
-template<
-    typename RandomAccessIteratorIterator,
-    typename RandomAccessIterator3,
-    typename _DifferenceTp,
-    typename Comparator>
+template<typename RandomAccessIteratorIterator,
+	 typename RandomAccessIterator3,
+	 typename _DifferenceTp,
+	 typename Comparator>
   RandomAccessIterator3
   multiway_merge_4_combined(RandomAccessIteratorIterator seqs_begin,
                             RandomAccessIteratorIterator seqs_end,
@@ -765,11 +760,10 @@ template<
  *  @param stable Stable merging incurs a performance penalty.
  *  @return End iterator of output sequence.
  */
-template<
-    typename RandomAccessIteratorIterator,
-    typename RandomAccessIterator3,
-    typename _DifferenceTp,
-    typename Comparator>
+template<typename RandomAccessIteratorIterator,
+	 typename RandomAccessIterator3,
+	 typename _DifferenceTp,
+	 typename Comparator>
   RandomAccessIterator3
   multiway_merge_bubble(RandomAccessIteratorIterator seqs_begin,
                         RandomAccessIteratorIterator seqs_end,
@@ -845,7 +839,8 @@ template<
                     ++target;
                     ++(seqs_begin[source[0]].first);
                     --length;
-                    if (seqs_begin[source[0]].first == seqs_begin[source[0]].second)
+                    if (seqs_begin[source[0]].first
+			== seqs_begin[source[0]].second)
                       {
                         // Move everything to the left.
                         for (int s = 0; s < nrs - 1; ++s)
@@ -870,7 +865,8 @@ template<
                     ++target;
                     ++(seqs_begin[source[0]].first);
                     --length;
-                    if (seqs_begin[source[0]].first == seqs_begin[source[0]].second)
+                    if (seqs_begin[source[0]].first
+			== seqs_begin[source[0]].second)
                       {
                         for (int s = 0; s < nrs - 1; ++s)
                           {
@@ -888,9 +884,9 @@ template<
 
             // Sink down.
             j = 1;
-            while ((j < nrs) && (comp(fe[j], fe[j - 1]) ||
-                                (!comp(fe[j - 1], fe[j])
-                                    && (source[j] < source[j - 1]))))
+            while ((j < nrs) && (comp(fe[j], fe[j - 1])
+				 || (!comp(fe[j - 1], fe[j])
+				     && (source[j] < source[j - 1]))))
               {
                 std::swap(fe[j - 1], fe[j]);
                 std::swap(source[j - 1], source[j]);
@@ -910,7 +906,8 @@ template<
                 ++target;
                 ++seqs_begin[source[0]].first;
                 --length;
-                if (seqs_begin[source[0]].first == seqs_begin[source[0]].second)
+                if (seqs_begin[source[0]].first
+		    == seqs_begin[source[0]].second)
                   {
                     for (int s = 0; s < (nrs - 1); ++s)
                       {
@@ -954,12 +951,11 @@ template<
  *   @param stable Stable merging incurs a performance penalty.
  *  @return End iterator of output sequence.
  */
-template<
-    typename LT,
-    typename RandomAccessIteratorIterator,
-    typename RandomAccessIterator3,
-    typename _DifferenceTp,
-    typename Comparator>
+template<typename LT,
+	 typename RandomAccessIteratorIterator,
+	 typename RandomAccessIterator3,
+	 typename _DifferenceTp,
+	 typename Comparator>
   RandomAccessIterator3
   multiway_merge_loser_tree(RandomAccessIteratorIterator seqs_begin,
                             RandomAccessIteratorIterator seqs_end,
@@ -987,7 +983,8 @@ template<
 
     for (int t = 0; t < k; ++t)
       {
-        if(arbitrary_element == NULL && _GLIBCXX_PARALLEL_LENGTH(seqs_begin[t]) > 0)
+        if(arbitrary_element == NULL
+	   && _GLIBCXX_PARALLEL_LENGTH(seqs_begin[t]) > 0)
           arbitrary_element = &(*seqs_begin[t].first);
         total_length += _GLIBCXX_PARALLEL_LENGTH(seqs_begin[t]);
       }
@@ -1074,11 +1071,10 @@ template<
  *  @return End iterator of output sequence.
  *  @pre No input will run out of elements during the merge.
  */
-template<
-    typename LT,
-    typename RandomAccessIteratorIterator,
-    typename RandomAccessIterator3,
-    typename _DifferenceTp, typename Comparator>
+template<typename LT,
+	 typename RandomAccessIteratorIterator,
+	 typename RandomAccessIterator3,
+	 typename _DifferenceTp, typename Comparator>
   RandomAccessIterator3
   multiway_merge_loser_tree_unguarded(RandomAccessIteratorIterator seqs_begin,
                                       RandomAccessIteratorIterator seqs_end,
@@ -1190,11 +1186,10 @@ template<
     return target;
   }
 
-template<
-    typename RandomAccessIteratorIterator,
-    typename RandomAccessIterator3,
-    typename _DifferenceTp,
-    typename Comparator>
+template<typename RandomAccessIteratorIterator,
+	 typename RandomAccessIterator3,
+	 typename _DifferenceTp,
+	 typename Comparator>
   RandomAccessIterator3
   multiway_merge_loser_tree_combined(RandomAccessIteratorIterator seqs_begin,
                                      RandomAccessIteratorIterator seqs_end,
@@ -1254,17 +1249,16 @@ template<
     return target_end;
   }
 
-template<
-    typename RandomAccessIteratorIterator,
-    typename RandomAccessIterator3,
-    typename _DifferenceTp,
-    typename Comparator>
+template<typename RandomAccessIteratorIterator,
+	 typename RandomAccessIterator3,
+	 typename _DifferenceTp,
+	 typename Comparator>
   RandomAccessIterator3
   multiway_merge_loser_tree_sentinel(RandomAccessIteratorIterator seqs_begin,
                                      RandomAccessIteratorIterator seqs_end,
-                                      RandomAccessIterator3 target,
-                                      Comparator comp,
-                                      _DifferenceTp length, bool stable)
+				     RandomAccessIterator3 target,
+				     Comparator comp,
+				     _DifferenceTp length, bool stable)
   {
     _GLIBCXX_CALL(length)
 
@@ -1326,7 +1320,8 @@ template<
 
 /** @brief Sequential multi-way merging switch.
  *
- *  The _GLIBCXX_PARALLEL_DECISION if based on the branching factor and runtime settings.
+ *  The _GLIBCXX_PARALLEL_DECISION if based on the branching factor and
+ *  runtime settings.
  *  @param seqs_begin Begin iterator of iterator pair input sequence.
  *  @param seqs_end End iterator of iterator pair input sequence.
  *  @param target Begin iterator out output sequence.
@@ -1335,11 +1330,10 @@ template<
  *  @param stable Stable merging incurs a performance penalty.
  *  @param sentinel The sequences have a sentinel element.
  *  @return End iterator of output sequence. */
-template<
-    typename RandomAccessIteratorIterator,
-    typename RandomAccessIterator3,
-    typename _DifferenceTp,
-    typename Comparator>
+template<typename RandomAccessIteratorIterator,
+	 typename RandomAccessIterator3,
+	 typename _DifferenceTp,
+	 typename Comparator>
   RandomAccessIterator3
   multiway_merge(RandomAccessIteratorIterator seqs_begin,
                  RandomAccessIteratorIterator seqs_end,
@@ -1393,23 +1387,26 @@ template<
           {
           case Settings::LOSER_TREE_COMBINED:
             return_target = multiway_merge_3_combined(seqs_begin,
-                seqs_end,
-                target,
-                comp, length, stable);
+						      seqs_end,
+						      target,
+						      comp, length,
+						      stable);
             break;
           case Settings::LOSER_TREE_SENTINEL:
-            return_target = multiway_merge_3_variant<unguarded_iterator>(
-                seqs_begin,
-                seqs_end,
-                target,
-                comp, length, stable);
+            return_target =
+	      multiway_merge_3_variant<unguarded_iterator>(seqs_begin,
+							   seqs_end,
+							   target,
+							   comp, length,
+							   stable);
             break;
           default:
-            return_target = multiway_merge_3_variant<guarded_iterator>(
-                seqs_begin,
-                seqs_end,
-                target,
-                comp, length, stable);
+            return_target = 
+	      multiway_merge_3_variant<guarded_iterator>(seqs_begin,
+							 seqs_end,
+							 target,
+							 comp, length,
+							 stable);
             break;
           }
         break;
@@ -1417,25 +1414,25 @@ template<
         switch (mwma)
           {
           case Settings::LOSER_TREE_COMBINED:
-            return_target = multiway_merge_4_combined(
-                seqs_begin,
-                seqs_end,
-                target,
-                comp, length, stable);
+            return_target = multiway_merge_4_combined(seqs_begin,
+						      seqs_end,
+						      target,
+						      comp, length, stable);
             break;
           case Settings::LOSER_TREE_SENTINEL:
-            return_target = multiway_merge_4_variant<unguarded_iterator>(
-                seqs_begin,
-                seqs_end,
-                target,
-                comp, length, stable);
+            return_target = 
+	      multiway_merge_4_variant<unguarded_iterator>(seqs_begin,
+							   seqs_end,
+							   target,
+							   comp, length,
+							   stable);
             break;
           default:
             return_target = multiway_merge_4_variant<guarded_iterator>(
-                seqs_begin,
-                seqs_end,
-                target,
-                comp, length, stable);
+	      seqs_begin,
+	      seqs_end,
+	      target,
+	      comp, length, stable);
             break;
           }
         break;
@@ -1444,48 +1441,47 @@ template<
           switch (mwma)
             {
             case Settings::BUBBLE:
-              return_target = multiway_merge_bubble(
-                  seqs_begin,
-                  seqs_end,
-                  target,
-                  comp, length, stable);
+              return_target = multiway_merge_bubble(seqs_begin,
+						    seqs_end,
+						    target,
+						    comp, length, stable);
               break;
 #if _GLIBCXX_LOSER_TREE_EXPLICIT
             case Settings::LOSER_TREE_EXPLICIT:
               return_target = multiway_merge_loser_tree<
-                    LoserTreeExplicit<value_type, Comparator> >(
-                  seqs_begin,
-                  seqs_end,
-                  target,
-                  comp, length, stable);
+	      LoserTreeExplicit<value_type, Comparator> >(seqs_begin,
+							  seqs_end,
+							  target,
+							  comp, length,
+							  stable);
               break;
 #endif
 #if _GLIBCXX_LOSER_TREE
             case Settings::LOSER_TREE:
               return_target = multiway_merge_loser_tree<
-                    LoserTree<value_type, Comparator> >(
-                  seqs_begin,
-                  seqs_end,
-                  target,
-                  comp, length, stable);
+                    LoserTree<value_type, Comparator> >(seqs_begin,
+							seqs_end,
+							target,
+							comp, length,
+							stable);
               break;
 #endif
 #if _GLIBCXX_LOSER_TREE_COMBINED
             case Settings::LOSER_TREE_COMBINED:
-              return_target = multiway_merge_loser_tree_combined(
-                  seqs_begin,
-                  seqs_end,
-                  target,
-                  comp, length, stable);
+              return_target = multiway_merge_loser_tree_combined(seqs_begin,
+								 seqs_end,
+								 target,
+								 comp, length,
+								 stable);
               break;
 #endif
 #if _GLIBCXX_LOSER_TREE_SENTINEL
             case Settings::LOSER_TREE_SENTINEL:
-              return_target = multiway_merge_loser_tree_sentinel(
-                  seqs_begin,
-                  seqs_end,
-                  target,
-                  comp, length, stable);
+              return_target = multiway_merge_loser_tree_sentinel(seqs_begin,
+								 seqs_end,
+								 target,
+								 comp, length,
+								 stable);
               break;
 #endif
             default:
@@ -1504,7 +1500,8 @@ template<
 
 /** @brief Parallel multi-way merge routine.
  *
- *  The _GLIBCXX_PARALLEL_DECISION if based on the branching factor and runtime settings.
+ *  The _GLIBCXX_PARALLEL_DECISION if based on the branching factor
+ *  and runtime settings.
  *  @param seqs_begin Begin iterator of iterator pair input sequence.
  *  @param seqs_end End iterator of iterator pair input sequence.
  *  @param target Begin iterator out output sequence.
@@ -1514,11 +1511,10 @@ template<
  *  @param sentinel Ignored.
  *  @return End iterator of output sequence.
  */
-template<
-    typename RandomAccessIteratorIterator,
-    typename RandomAccessIterator3,
-    typename _DifferenceTp,
-    typename Comparator>
+template<typename RandomAccessIteratorIterator,
+	 typename RandomAccessIterator3,
+	 typename _DifferenceTp,
+	 typename Comparator>
   RandomAccessIterator3
   parallel_multiway_merge(RandomAccessIteratorIterator seqs_begin,
                           RandomAccessIteratorIterator seqs_end,
@@ -1553,7 +1549,7 @@ template<
       std::vector<std::pair<difference_type, difference_type> >* pieces;
 
       thread_index_t num_threads = static_cast<thread_index_t>(
-          std::min<difference_type>(get_max_threads(), total_length));
+	std::min<difference_type>(get_max_threads(), total_length));
 
 #     pragma omp parallel num_threads (num_threads)
         {
@@ -1578,20 +1574,20 @@ template<
                     for (difference_type i = 0; i < num_samples; ++i)
                       {
                         difference_type sample_index =
-                            static_cast<difference_type>(
-                                _GLIBCXX_PARALLEL_LENGTH(seqs_begin[s]) * (double(i + 1) /
-                                (num_samples + 1)) * (double(length)
-                                / total_length));
-                        ::new(&(samples[s * num_samples + i])) value_type(
-                            seqs_begin[s].first[sample_index]);
+			  static_cast<difference_type>(
+			    _GLIBCXX_PARALLEL_LENGTH(seqs_begin[s])
+			    * (double(i + 1) / (num_samples + 1))
+			    * (double(length) / total_length));
+                        ::new(&(samples[s * num_samples + i]))
+			    value_type(seqs_begin[s].first[sample_index]);
                       }
 
                   if (stable)
-                    __gnu_sequential::stable_sort(
-                      samples, samples + (num_samples * k), comp);
+                    __gnu_sequential::stable_sort(samples, samples
+						  + (num_samples * k), comp);
                   else
-                    __gnu_sequential::sort(
-                      samples, samples + (num_samples * k), comp);
+                    __gnu_sequential::sort(samples, samples
+					   + (num_samples * k), comp);
 
                   for (int slab = 0; slab < num_threads; ++slab)
                     // For each slab / processor.
@@ -1600,12 +1596,12 @@ template<
                         // For each sequence.
                         if (slab > 0)
                           pieces[slab][seq].first =
-                              std::upper_bound(
-                                seqs_begin[seq].first,
-                                seqs_begin[seq].second,
-                                samples[num_samples * k * slab / num_threads],
-                                  comp)
-                              - seqs_begin[seq].first;
+                              std::upper_bound(seqs_begin[seq].first,
+					       seqs_begin[seq].second,
+					       samples[num_samples * k
+						       * slab / num_threads],
+					       comp)
+			    - seqs_begin[seq].first;
                         else
                           {
                             // Absolute beginning.
@@ -1613,14 +1609,15 @@ template<
                           }
                         if ((slab + 1) < num_threads)
                           pieces[slab][seq].second =
-                              std::upper_bound(
-                                  seqs_begin[seq].first,
-                                  seqs_begin[seq].second,
-                                  samples[num_samples * k * (slab + 1) /
-                                      num_threads], comp)
-                              - seqs_begin[seq].first;
+			    std::upper_bound(seqs_begin[seq].first,
+					     seqs_begin[seq].second,
+					     samples[num_samples * k
+						     * (slab + 1)
+						     / num_threads], comp)
+			    - seqs_begin[seq].first;
                         else
-                        pieces[slab][seq].second = _GLIBCXX_PARALLEL_LENGTH(seqs_begin[seq]);
+			  pieces[slab][seq].second 
+			    = _GLIBCXX_PARALLEL_LENGTH(seqs_begin[seq]);
                       }
 		  ::operator delete(samples);
                 }
@@ -1651,8 +1648,9 @@ template<
                         {
                           offsets[num_threads - 1].resize(k);
                           multiseq_partition(se.begin(), se.end(),
-                                difference_type(length),
-                                offsets[num_threads - 1].begin(),  comp);
+					     difference_type(length),
+					     offsets[num_threads - 1].begin(),
+					     comp);
                         }
                     }
 
@@ -1673,12 +1671,12 @@ template<
                                 pieces[slab - 1][seq].second;
                           if (!tight || slab < (num_threads - 1))
                             pieces[slab][seq].second =
-                                offsets[slab][seq] - seqs_begin[seq].first;
+			      offsets[slab][seq] - seqs_begin[seq].first;
                           else
                             {
                               // slab == num_threads - 1
                               pieces[slab][seq].second =
-                                  _GLIBCXX_PARALLEL_LENGTH(seqs_begin[seq]);
+				_GLIBCXX_PARALLEL_LENGTH(seqs_begin[seq]);
                             }
                         }
                     }
@@ -1703,8 +1701,8 @@ template<
               for (int s = 0; s < k; ++s)
                 {
                   chunks[s] = std::make_pair(
-                      seqs_begin[s].first + pieces[iam][s].first,
-                      seqs_begin[s].first + pieces[iam][s].second);
+		    seqs_begin[s].first + pieces[iam][s].first,
+		    seqs_begin[s].first + pieces[iam][s].second);
                   local_length += _GLIBCXX_PARALLEL_LENGTH(chunks[s]);
                 }
 
@@ -1721,13 +1719,13 @@ template<
                   begin0 = seqs_begin[0].first + pieces[iam][0].first,
                   begin1 = seqs_begin[1].first + pieces[iam][1].first;
               merge_advance(begin0,
-                    seqs_begin[0].first + pieces[iam][0].second,
-                    begin1,
-                    seqs_begin[1].first + pieces[iam][1].second,
-                    target + target_position,
-                    (pieces[iam][0].second - pieces[iam][0].first) +
-                        (pieces[iam][1].second - pieces[iam][1].first),
-                    comp);
+			    seqs_begin[0].first + pieces[iam][0].second,
+			    begin1,
+			    seqs_begin[1].first + pieces[iam][1].second,
+			    target + target_position,
+			    (pieces[iam][0].second - pieces[iam][0].first) +
+			    (pieces[iam][1].second - pieces[iam][1].first),
+			    comp);
             }
         } //parallel
 
@@ -1754,11 +1752,10 @@ template<
  *  @param stable Stable merging incurs a performance penalty.
  *  @return End iterator of output sequence.
  */
-template<
-    typename RandomAccessIteratorPairIterator,
-    typename RandomAccessIterator3,
-    typename _DifferenceTp,
-    typename Comparator>
+template<typename RandomAccessIteratorPairIterator,
+	 typename RandomAccessIterator3,
+	 typename _DifferenceTp,
+	 typename Comparator>
   RandomAccessIterator3
   multiway_merge(RandomAccessIteratorPairIterator seqs_begin,
                 RandomAccessIteratorPairIterator seqs_end,
@@ -1775,13 +1772,13 @@ template<
     if (_GLIBCXX_PARALLEL_CONDITION(
         ((seqs_end - seqs_begin) >= Settings::multiway_merge_minimal_k)
         && ((sequence_index_t)length >= Settings::multiway_merge_minimal_n)))
-      target_end = parallel_multiway_merge(
-          seqs_begin, seqs_end,
-          target, comp, static_cast<difference_type>(length), stable, false);
+      target_end = parallel_multiway_merge(seqs_begin, seqs_end,
+					   target, comp,
+					  static_cast<difference_type>(length),
+					   stable, false);
     else
-      target_end = multiway_merge(
-          seqs_begin, seqs_end,
-          target, comp, length, stable, false, sequential_tag());
+      target_end = multiway_merge(seqs_begin, seqs_end, target, comp, length,
+				  stable, false, sequential_tag());
 
     return target_end;
   }
@@ -1797,11 +1794,10 @@ template<
  *  @pre For each @c i, @c seqs_begin[i].second must be the end
  *  marker of the sequence, but also reference the one more sentinel
  *  element. */
-template<
-    typename RandomAccessIteratorPairIterator,
-    typename RandomAccessIterator3,
-    typename _DifferenceTp,
-    typename Comparator>
+template<typename RandomAccessIteratorPairIterator,
+	 typename RandomAccessIterator3,
+	 typename _DifferenceTp,
+	 typename Comparator>
   RandomAccessIterator3
   multiway_merge_sentinel(RandomAccessIteratorPairIterator seqs_begin,
                           RandomAccessIteratorPairIterator seqs_end,
@@ -1824,9 +1820,9 @@ template<
           seqs_begin, seqs_end,
           target, comp, static_cast<difference_type>(length), stable, true);
     else
-      return multiway_merge(
-          seqs_begin, seqs_end,
-          target, comp, length, stable, true, sequential_tag());
+      return multiway_merge(seqs_begin, seqs_end,
+			    target, comp, length, stable,
+			    true, sequential_tag());
   }
 }
 

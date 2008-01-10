@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -96,20 +96,19 @@ template<typename _DifferenceTp>
   *  std::count_n()).
   *  @return User-supplied functor (that may contain a part of the result).
   */
-template<
-    typename RandomAccessIterator,
-    typename Op,
-    typename Fu,
-    typename Red,
-    typename Result>
+template<typename RandomAccessIterator,
+	 typename Op,
+	 typename Fu,
+	 typename Red,
+	 typename Result>
   Op
-  for_each_template_random_access_workstealing(
-      RandomAccessIterator begin,
-      RandomAccessIterator end,
-      Op op, Fu& f, Red r,
-      Result base, Result& output,
-      typename std::iterator_traits<RandomAccessIterator>::difference_type
-          bound)
+  for_each_template_random_access_workstealing(RandomAccessIterator begin,
+					       RandomAccessIterator end,
+					       Op op, Fu& f, Red r,
+					       Result base, Result& output,
+					       typename std::iterator_traits
+					       <RandomAccessIterator>::
+					       difference_type bound)
   {
     _GLIBCXX_CALL(end - begin)
 
@@ -180,7 +179,7 @@ template<
 
         // This thread is currently working.
 #       pragma omp atomic
-          busy++;
+          ++busy;
 
         iam_working = true;
 
@@ -198,8 +197,8 @@ template<
             // Cannot use volatile variable directly.
             difference_type my_first = my_job.first;
             result = f(op, begin + my_first);
-            my_job.first++;
-            my_job.load--;
+            ++my_job.first;
+            --my_job.load;
           }
 
         RandomAccessIterator current;
@@ -226,11 +225,11 @@ template<
                 my_job.load = my_job.last - my_job.first + 1;
                 for (difference_type job_counter = 0;
                      job_counter < chunk_size && current_job <= my_job.last;
-                     job_counter++)
+                     ++job_counter)
                   {
                     // Yes: process it!
                     current = begin + current_job;
-                    current_job++;
+                    ++current_job;
 
                     // Do actual work.
                     result = r(result, f(op, current));
@@ -244,7 +243,7 @@ template<
               {
                 // This thread no longer has work.
 #               pragma omp atomic
-                busy--;
+                --busy;
 
                 iam_working = false;
               }
@@ -286,7 +285,7 @@ template<
 
                 // Has potential work again.
 #               pragma omp atomic
-                  busy++;
+                  ++busy;
                 iam_working = true;
 
 #               pragma omp flush(busy)

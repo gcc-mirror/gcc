@@ -159,7 +159,7 @@ namespace __gnu_parallel
       // Smallest partitions.
       for (int i = 1; i < (num_parts + 1 - size_greater); ++i)
 	{
-	  lengths[i-1] =  size_part * range_length;
+	  lengths[i - 1] =  size_part * range_length;
 	  index += size_part;
 	  starts[i] = os_starts[index];
 	}
@@ -167,7 +167,7 @@ namespace __gnu_parallel
       // Biggest partitions.
       for (int i = num_parts + 1 - size_greater; i <= num_parts; ++i)
 	{
-	  lengths[i-1] =  (size_part+1) * range_length;
+	  lengths[i - 1] =  (size_part+1) * range_length;
 	  index += (size_part+1);
 	  starts[i] = os_starts[index];
 	}

@@ -120,7 +120,7 @@ template<typename RandomAccessIterator>
   *  @param num_samples Number of samples to select.
   */
 template<typename RandomAccessIterator, typename _DifferenceTp>
-  inline void 
+  void 
   determine_samples(PMWMSSortingData<RandomAccessIterator>* sd,
                     _DifferenceTp& num_samples)
   {
@@ -138,9 +138,9 @@ template<typename RandomAccessIterator, typename _DifferenceTp>
     equally_split(sd->starts[iam + 1] - sd->starts[iam], 
                   num_samples + 1, es);
 
-    for (difference_type i = 0; i < num_samples; i++)
-      ::new(&(sd->samples[iam * num_samples + i])) value_type(
-          sd->source[sd->starts[iam] + es[i + 1]]);
+    for (difference_type i = 0; i < num_samples; ++i)
+      ::new(&(sd->samples[iam * num_samples + i]))
+	  value_type(sd->source[sd->starts[iam] + es[i + 1]]);
 
     delete[] es;
   }
@@ -150,7 +150,7 @@ template<typename RandomAccessIterator, typename _DifferenceTp>
   *  @param comp Comparator.
   */
 template<typename RandomAccessIterator, typename Comparator>
-  inline void 
+  void 
   parallel_sort_mwms_pu(PMWMSSortingData<RandomAccessIterator>* sd,
                         Comparator& comp)
   {
@@ -209,7 +209,7 @@ template<typename RandomAccessIterator, typename Comparator>
 
 #       pragma omp barrier
 
-        for (int s = 0; s < sd->num_threads; s++)
+        for (int s = 0; s < sd->num_threads; ++s)
           {
             // For each sequence.
               if (num_samples * iam > 0)
@@ -243,7 +243,7 @@ template<typename RandomAccessIterator, typename Comparator>
 
         std::vector<std::pair<SortingPlacesIterator, SortingPlacesIterator> >
             seqs(sd->num_threads);
-        for (int s = 0; s < sd->num_threads; s++)
+        for (int s = 0; s < sd->num_threads; ++s)
           seqs[s] = std::make_pair(sd->sorting_places[s],
                                    sd->sorting_places[s]
                                        + (sd->starts[s + 1] - sd->starts[s]));
@@ -255,20 +255,20 @@ template<typename RandomAccessIterator, typename Comparator>
           multiseq_partition(seqs.begin(), seqs.end(),
                              sd->starts[iam + 1], offsets.begin(), comp);
 
-        for (int seq = 0; seq < sd->num_threads; seq++)
+        for (int seq = 0; seq < sd->num_threads; ++seq)
           {
             // for each sequence
             if (iam < (sd->num_threads - 1))
               sd->pieces[iam][seq].end = offsets[seq] - seqs[seq].first;
             else
               // very end of this sequence
-              sd->pieces[iam][seq].end =
-                  sd->starts[seq + 1] - sd->starts[seq];
+              sd->pieces[iam][seq].end = (sd->starts[seq + 1]
+					  - sd->starts[seq]);
           }
 
 #       pragma omp barrier
 
-        for (int seq = 0; seq < sd->num_threads; seq++)
+        for (int seq = 0; seq < sd->num_threads; ++seq)
           {
             // For each sequence.
             if (iam > 0)
@@ -281,7 +281,7 @@ template<typename RandomAccessIterator, typename Comparator>
 
     // Offset from target begin, length after merging.
     difference_type offset = 0, length_am = 0;
-    for (int s = 0; s < sd->num_threads; s++)
+    for (int s = 0; s < sd->num_threads; ++s)
       {
         length_am += sd->pieces[iam][s].end - sd->pieces[iam][s].begin;
         offset += sd->pieces[iam][s].begin;
@@ -293,8 +293,8 @@ template<typename RandomAccessIterator, typename Comparator>
     // instead of the assignment operator.
     // XXX incorrect (de)construction
     sd->merging_places[iam] = sd->temporaries[iam] =
-        static_cast<value_type*>(
-        ::operator new(sizeof(value_type) * length_am));
+        static_cast<value_type*>(::operator new(sizeof(value_type)
+						* length_am));
 #else
     // Merge directly to target.
     sd->merging_places[iam] = sd->source + offset;
@@ -302,11 +302,11 @@ template<typename RandomAccessIterator, typename Comparator>
     std::vector<std::pair<SortingPlacesIterator, SortingPlacesIterator> >
         seqs(sd->num_threads);
 
-    for (int s = 0; s < sd->num_threads; s++)
+    for (int s = 0; s < sd->num_threads; ++s)
       {
         seqs[s] =
-            std::make_pair(sd->sorting_places[s] + sd->pieces[iam][s].begin,
-                           sd->sorting_places[s] + sd->pieces[iam][s].end);
+	  std::make_pair(sd->sorting_places[s] + sd->pieces[iam][s].begin,
+			 sd->sorting_places[s] + sd->pieces[iam][s].end);
       }
 
     multiway_merge(seqs.begin(), seqs.end(), sd->merging_places[iam], comp,
@@ -333,13 +333,11 @@ template<typename RandomAccessIterator, typename Comparator>
   *  @param stable Stable sorting.
   */
 template<typename RandomAccessIterator, typename Comparator>
-  inline void
+  void
   parallel_sort_mwms(RandomAccessIterator begin, RandomAccessIterator end,
-                     Comparator comp, 
-                     typename std::iterator_traits<RandomAccessIterator>
-                        ::difference_type n,
-                     int num_threads,
-                     bool stable)
+                     Comparator comp, typename
+		     std::iterator_traits<RandomAccessIterator>::
+		     difference_type n, int num_threads, bool stable)
   {
     _GLIBCXX_CALL(n)
 
@@ -382,14 +380,14 @@ template<typename RandomAccessIterator, typename Comparator>
                     (Settings::sort_mwms_oversampling * num_threads - 1)
                         * num_threads;
                 sd.samples = static_cast<value_type*>(
-                    ::operator new(size * sizeof(value_type)));
+		  ::operator new(size * sizeof(value_type)));
               }
             else
               sd.samples = NULL;
 
             sd.offsets = new difference_type[num_threads - 1];
             sd.pieces = new std::vector<Piece<difference_type> >[num_threads];
-            for (int s = 0; s < num_threads; s++)
+            for (int s = 0; s < num_threads; ++s)
               sd.pieces[s].resize(num_threads);
             starts = sd.starts = new difference_type[num_threads + 1];
             sd.stable = stable;
@@ -397,7 +395,7 @@ template<typename RandomAccessIterator, typename Comparator>
             difference_type chunk_length = n / num_threads;
             difference_type split = n % num_threads;
             difference_type pos = 0;
-            for (int i = 0; i < num_threads; i++)
+            for (int i = 0; i < num_threads; ++i)
               {
                 starts[i] = pos;
                 pos += (i < split) ? (chunk_length + 1) : chunk_length;

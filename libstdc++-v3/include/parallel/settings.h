@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -33,7 +33,8 @@
  *  whether to use parallelized algorithms.
  *  This file is a GNU parallel extension to the Standard C++ Library.
  *
- *  @section parallelization_decision  The decision whether to run an algorithm in parallel.
+ *  @section parallelization_decision  The decision whether to run
+ *                                     an algorithm in parallel.
  *
  *  There are several ways the user can switch on and off the 
  *  parallel execution of an algorithm, both at compile- and 
@@ -104,7 +105,10 @@
   * __gnu_parallel::Settings::force_parallel, i. e. usually a decision based on
   * the input size.
   */
-#define _GLIBCXX_PARALLEL_CONDITION(c) (!(__gnu_parallel::Settings::force_sequential) && ((__gnu_parallel::get_max_threads() > 1 && (c)) || __gnu_parallel::Settings::force_parallel))
+#define _GLIBCXX_PARALLEL_CONDITION(c) \
+(!(__gnu_parallel::Settings::force_sequential) \
+ && ((__gnu_parallel::get_max_threads() > 1 \
+      && (c)) || __gnu_parallel::Settings::force_parallel))
 
 namespace __gnu_parallel
 {
@@ -131,7 +135,8 @@ namespace
     /** @brief Different merging algorithms: bubblesort-alike,
 	loser-tree variants, enum sentinel */
     enum MultiwayMergeAlgorithm
-    { BUBBLE, LOSER_TREE_EXPLICIT, LOSER_TREE, LOSER_TREE_COMBINED, LOSER_TREE_SENTINEL, MWM_ALGORITHM_LAST };
+    { BUBBLE, LOSER_TREE_EXPLICIT, LOSER_TREE, LOSER_TREE_COMBINED,
+      LOSER_TREE_SENTINEL, MWM_ALGORITHM_LAST };
 
     /** @brief Different splitting strategies for sorting/merging:
 	by sampling, exact */
@@ -340,7 +345,8 @@ namespace
   volatile sequence_index_t Settings::partition_chunk_size = 1000;
   volatile double Settings::partition_chunk_share = 0.0;
   volatile unsigned int Settings::adjacent_difference_minimal_n = 1000;
-  volatile  Settings::PartialSumAlgorithm Settings::partial_sum_algorithm = Settings::LINEAR;
+  volatile  Settings::PartialSumAlgorithm Settings::
+  partial_sum_algorithm = Settings::LINEAR;
   volatile unsigned int Settings::partial_sum_minimal_n = 1000;
   volatile float Settings::partial_sum_dilatation = 1.0f;
   volatile unsigned int Settings::random_shuffle_minimal_n = 1000;
@@ -352,10 +358,13 @@ namespace
 
   // unique copy
   volatile sequence_index_t Settings::unique_copy_minimal_n = 10000;
-  volatile  Settings::MultiwayMergeAlgorithm Settings::multiway_merge_algorithm = Settings::LOSER_TREE;
-  volatile  Settings::Splitting Settings::multiway_merge_splitting = Settings::EXACT;
+  volatile  Settings::MultiwayMergeAlgorithm Settings::
+  multiway_merge_algorithm = Settings::LOSER_TREE;
+  volatile  Settings::Splitting Settings::multiway_merge_splitting =
+    Settings::EXACT;
   volatile unsigned int Settings::multiway_merge_oversampling = 10;
-  volatile  Settings::FindDistribution Settings::find_distribution = Settings::CONSTANT_SIZE_BLOCKS;
+  volatile  Settings::FindDistribution Settings::find_distribution =
+    Settings::CONSTANT_SIZE_BLOCKS;
   volatile sequence_index_t Settings::find_sequential_search_size = 256;
   volatile sequence_index_t Settings::find_initial_block_size = 256;
   volatile sequence_index_t Settings::find_maximum_block_size = 8192;
@@ -375,7 +384,8 @@ namespace
   volatile sequence_index_t Settings::set_union_minimal_n = 1000;
   volatile sequence_index_t Settings::set_intersection_minimal_n = 1000;
   volatile sequence_index_t Settings::set_difference_minimal_n = 1000;
-  volatile sequence_index_t Settings::set_symmetric_difference_minimal_n = 1000;
+  volatile sequence_index_t Settings::set_symmetric_difference_minimal_n =
+    1000;
   volatile unsigned long long Settings::L1_cache_size = 16 << 10;
   volatile unsigned long long Settings::L2_cache_size = 256 << 10;
   volatile unsigned int Settings::TLB_size = 128;
