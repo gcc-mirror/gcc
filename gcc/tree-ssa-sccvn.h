@@ -26,23 +26,24 @@ extern tree VN_TOP;
 
 typedef struct vn_ssa_aux
 {
-  /* SCC information.  */
-  unsigned int dfsnum;
-  bool visited;
-  unsigned int low;
-  bool on_sccstack;
-
   /* Value number. This may be an SSA name or a constant.  */
   tree valnum;
   /* Representative expression, if not a direct constant. */
   tree expr;
+
+  /* SCC information.  */
+  unsigned int dfsnum;
+  unsigned int low;
+  unsigned visited : 1;
+  unsigned on_sccstack : 1;
+
   /* Whether the representative expression contains constants.  */
-  bool has_constants;
+  unsigned has_constants : 1;
   /* Whether the SSA_NAME has been value numbered already.  This is
      only saying whether visit_use has been called on it at least
      once.  It cannot be used to avoid visitation for SSA_NAME's
      involved in non-singleton SCC's.  */
-  bool use_processed;
+  unsigned use_processed : 1;
 } *vn_ssa_aux_t;
 
 /* Return the value numbering info for an SSA_NAME.  */
