@@ -1,3 +1,8 @@
+2008-01-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/cmov7.c: Add -mbranch-cost=5 to dg-options.
+	* gcc.target/i386/addr-sel-1.c: Require nonpic effective target.
+
 2008-01-10  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR middle-end/34641
