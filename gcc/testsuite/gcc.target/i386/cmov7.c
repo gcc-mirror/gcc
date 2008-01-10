@@ -1,7 +1,7 @@
 /* PR middle-end/33187 */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=k8 -ffast-math -mfpmath=387" } */
+/* { dg-options "-O2 -ffast-math -march=k8 -mbranch-cost=5 -mfpmath=387" } */
 /* { dg-final { scan-assembler "fcmov" } } */
 
 /* compress_float_constant generates load + float_extend
