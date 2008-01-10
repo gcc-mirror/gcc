@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -50,11 +50,10 @@ namespace __gnu_parallel
   *  @param result Begin iterator of result sequence.
   *  @param binary_pred Equality predicate.
   *  @return End iterator of result sequence. */
-template<
-    typename InputIterator,
-    class OutputIterator,
-    class BinaryPredicate>
-  inline OutputIterator
+template<typename InputIterator,
+	 class OutputIterator,
+	 class BinaryPredicate>
+  OutputIterator
   parallel_unique_copy(InputIterator first, InputIterator last,
                        OutputIterator result, BinaryPredicate binary_pred)
   {
@@ -79,10 +78,10 @@ template<
       {
 #       pragma omp single
           {
-                num_threads = omp_get_num_threads();
-                borders = new difference_type[num_threads + 2];
-                equally_split(size, num_threads + 1, borders);
-                counter = new difference_type[num_threads + 1];
+	    num_threads = omp_get_num_threads();
+	    borders = new difference_type[num_threads + 2];
+	    equally_split(size, num_threads + 1, borders);
+	    counter = new difference_type[num_threads + 1];
           }
 
         thread_index_t iam = omp_get_thread_num();
@@ -99,14 +98,14 @@ template<
           begin = borders[0] + 1;	// == 1
           end = borders[iam + 1];
 
-          i++;
+          ++i;
           *out++ = *first;
 
           for (InputIterator iter = first + begin; iter < first + end; ++iter)
             {
               if (!binary_pred(*iter, *(iter-1)))
                 {
-                  i++;
+                  ++i;
                   *out++ = *iter;
                 }
             }
@@ -118,11 +117,9 @@ template<
 
           for (InputIterator iter = first + begin; iter < first + end; ++iter)
             {
-              if (!binary_pred(*iter, *(iter-1)))
-                {
-                  i++;
-                }
-            }
+              if (!binary_pred(*iter, *(iter - 1)))
+		++i;
+	    }
         }
       counter[iam] = i;
 
@@ -136,7 +133,7 @@ template<
 
       if (iam == 0)
         {
-          for (int t = 0; t < num_threads; t++)
+          for (int t = 0; t < num_threads; ++t)
             begin_output += counter[t];
 
           i = 0;
@@ -148,9 +145,9 @@ template<
 
           for (InputIterator iter = first + begin; iter < first + end; ++iter)
             {
-              if (iter == first || !binary_pred(*iter, *(iter-1)))
+              if (iter == first || !binary_pred(*iter, *(iter - 1)))
                 {
-                  i++;
+                  ++i;
                   *iter_out++ = *iter;
                 }
             }
@@ -166,10 +163,8 @@ template<
           for (InputIterator iter = first + begin; iter < first + end; ++iter)
             {
               if (!binary_pred(*iter, *(iter-1)))
-                {
-                  *iter_out++ = *iter;
-                }
-            }
+		*iter_out++ = *iter;
+	    }
         }
     }
 
@@ -193,8 +188,8 @@ template<typename InputIterator, class OutputIterator>
                        OutputIterator result)
   {
     typedef typename std::iterator_traits<InputIterator>::value_type value_type;
-
-    return parallel_unique_copy(first, last, result, std::equal_to<value_type>());
+    return parallel_unique_copy(first, last, result,
+				std::equal_to<value_type>());
   }
 
 }//namespace __gnu_parallel

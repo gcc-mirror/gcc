@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -55,96 +55,98 @@ namespace __gnu_parallel
    *  Calling them would not make sense in a concurrent setting.
    *  @param T Contained element type. */
   template<typename T>
-  class RestrictedBoundedConcurrentQueue
-  {
-  private:
-    /** @brief Array of elements, seen as cyclic buffer. */
-    T* base;
-
-    /** @brief Maximal number of elements contained at the same time. */
-    sequence_index_t max_size;
-
-    /** @brief Cyclic begin and end pointers contained in one
-	atomically changeable value. */
-    _GLIBCXX_VOLATILE lcas_t borders;
-
-  public:
-    /** @brief Constructor. Not to be called concurrent, of course.
-     *  @param max_size Maximal number of elements to be contained. */
-    RestrictedBoundedConcurrentQueue(sequence_index_t max_size)
+    class RestrictedBoundedConcurrentQueue
     {
-      this->max_size = max_size;
-      base = new T[max_size];
-      borders = encode2(0, 0);
+    private:
+      /** @brief Array of elements, seen as cyclic buffer. */
+      T* base;
+
+      /** @brief Maximal number of elements contained at the same time. */
+      sequence_index_t max_size;
+
+      /** @brief Cyclic begin and end pointers contained in one
+	  atomically changeable value. */
+      _GLIBCXX_VOLATILE lcas_t borders;
+
+    public:
+      /** @brief Constructor. Not to be called concurrent, of course.
+       *  @param max_size Maximal number of elements to be contained. */
+      RestrictedBoundedConcurrentQueue(sequence_index_t max_size)
+      {
+	this->max_size = max_size;
+	base = new T[max_size];
+	borders = encode2(0, 0);
 #pragma omp flush
-    }
+      }
 
-    /** @brief Destructor. Not to be called concurrent, of course. */
-    ~RestrictedBoundedConcurrentQueue()
-    {
-      delete[] base;
-    }
+      /** @brief Destructor. Not to be called concurrent, of course. */
+      ~RestrictedBoundedConcurrentQueue()
+      { delete[] base; }
 
-    /** @brief Pushes one element into the queue at the front end.
-     *  Must not be called concurrently with pop_front(). */
-    void push_front(const T& t)
-    {
-      lcas_t former_borders = borders;
-      int former_front, former_back;
-      decode2(former_borders, former_front, former_back);
-      *(base + former_front % max_size) = t;
+      /** @brief Pushes one element into the queue at the front end.
+       *  Must not be called concurrently with pop_front(). */
+      void
+      push_front(const T& t)
+      {
+	lcas_t former_borders = borders;
+	int former_front, former_back;
+	decode2(former_borders, former_front, former_back);
+	*(base + former_front % max_size) = t;
 #if _GLIBCXX_ASSERTIONS
-      // Otherwise: front - back > max_size eventually.
-      _GLIBCXX_PARALLEL_ASSERT(((former_front + 1) - former_back) <= max_size);
+	// Otherwise: front - back > max_size eventually.
+	_GLIBCXX_PARALLEL_ASSERT(((former_front + 1) - former_back)
+				 <= max_size);
 #endif
-      fetch_and_add(&borders, encode2(1, 0));
-    }
+	fetch_and_add(&borders, encode2(1, 0));
+      }
 
-    /** @brief Pops one element from the queue at the front end.
-     *  Must not be called concurrently with pop_front(). */
-    bool pop_front(T& t)
-    {
-      int former_front, former_back;
+      /** @brief Pops one element from the queue at the front end.
+       *  Must not be called concurrently with pop_front(). */
+      bool
+      pop_front(T& t)
+      {
+	int former_front, former_back;
 #pragma omp flush
-      decode2(borders, former_front, former_back);
-      while (former_front > former_back)
-	{
-	  // Chance.
-	  lcas_t former_borders = encode2(former_front, former_back);
-	  lcas_t new_borders = encode2(former_front - 1, former_back);
-	  if (compare_and_swap(&borders, former_borders, new_borders))
-	    {
-	      t = *(base + (former_front - 1) % max_size);
-	      return true;
-	    }
+	decode2(borders, former_front, former_back);
+	while (former_front > former_back)
+	  {
+	    // Chance.
+	    lcas_t former_borders = encode2(former_front, former_back);
+	    lcas_t new_borders = encode2(former_front - 1, former_back);
+	    if (compare_and_swap(&borders, former_borders, new_borders))
+	      {
+		t = *(base + (former_front - 1) % max_size);
+		return true;
+	      }
 #pragma omp flush
-	  decode2(borders, former_front, former_back);
-	}
-      return false;
-    }
+	    decode2(borders, former_front, former_back);
+	  }
+	return false;
+      }
 
-    /** @brief Pops one element from the queue at the front end.
-     *  Must not be called concurrently with pop_front(). */
-    bool pop_back(T& t)	//queue behavior
-    {
-      int former_front, former_back;
+      /** @brief Pops one element from the queue at the front end.
+       *  Must not be called concurrently with pop_front(). */
+      bool
+      pop_back(T& t)	//queue behavior
+      {
+	int former_front, former_back;
 #pragma omp flush
-      decode2(borders, former_front, former_back);
-      while (former_front > former_back)
-	{
-	  // Chance.
-	  lcas_t former_borders = encode2(former_front, former_back);
-	  lcas_t new_borders = encode2(former_front, former_back + 1);
-	  if (compare_and_swap(&borders, former_borders, new_borders))
-	    {
-	      t = *(base + former_back % max_size);
-	      return true;
-	    }
+	decode2(borders, former_front, former_back);
+	while (former_front > former_back)
+	  {
+	    // Chance.
+	    lcas_t former_borders = encode2(former_front, former_back);
+	    lcas_t new_borders = encode2(former_front, former_back + 1);
+	    if (compare_and_swap(&borders, former_borders, new_borders))
+	      {
+		t = *(base + former_back % max_size);
+		return true;
+	      }
 #pragma omp flush
-	  decode2(borders, former_front, former_back);
-	}
-      return false;
-    }
+	    decode2(borders, former_front, former_back);
+	  }
+	return false;
+      }
   };
 }	//namespace __gnu_parallel
 

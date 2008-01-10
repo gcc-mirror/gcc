@@ -74,7 +74,7 @@ namespace __gnu_parallel
 	    *target++ = *begin2++;
 	  else
 	    *target++ = *begin1++;
-	  max_length--;
+	  --max_length;
 	}
 
       if (begin1 != end1)
@@ -143,8 +143,8 @@ namespace __gnu_parallel
 
 	  *target = element1;
 
-	  target++;
-	  max_length--;
+	  ++target;
+	  --max_length;
 	}
       if (begin1 != end1)
 	{

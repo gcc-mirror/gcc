@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -105,7 +105,8 @@ namespace __gnu_parallel
 #elif defined(__ECC)	//IA-64 version
     return _InterlockedExchangeAdd((void*)ptr, addend);
 #elif defined(__ICL) || defined(_MSC_VER)
-    return _InterlockedExchangeAdd(reinterpret_cast<volatile long*>(ptr), addend);
+    return _InterlockedExchangeAdd(reinterpret_cast<volatile long*>(ptr),
+				   addend);
 #elif defined(__GNUC__)
     return __sync_fetch_and_add(ptr, addend);
 #elif defined(__SUNPRO_CC) && defined(__sparc)
@@ -114,7 +115,8 @@ namespace __gnu_parallel
       {
 	before = *ptr;
 	after = before + addend;
-      } while (atomic_cas_32((volatile unsigned int*)ptr, before, after) != before);
+      } while (atomic_cas_32((volatile unsigned int*)ptr, before,
+			     after) != before);
     return before;
 #else	//fallback, slow
 #pragma message("slow fetch_and_add_32")
@@ -159,7 +161,8 @@ namespace __gnu_parallel
       {
 	before = *ptr;
 	after = before + addend;
-      } while (atomic_cas_64((volatile unsigned long long*)ptr, before, after) != before);
+      } while (atomic_cas_64((volatile unsigned long long*)ptr, before,
+			     after) != before);
     return before;
 #else	//fallback, slow
 #if defined(__GNUC__) && defined(__i386)
@@ -238,15 +241,19 @@ namespace __gnu_parallel
   compare_and_swap_32(volatile int32* ptr, int32 comparand, int32 replacement)
   {
 #if defined(__ICC)	//x86 version
-    return _InterlockedCompareExchange((void*)ptr, replacement, comparand) == comparand;
+    return _InterlockedCompareExchange((void*)ptr, replacement,
+				       comparand) == comparand;
 #elif defined(__ECC)	//IA-64 version
-    return _InterlockedCompareExchange((void*)ptr, replacement, comparand) == comparand;
+    return _InterlockedCompareExchange((void*)ptr, replacement,
+				       comparand) == comparand;
 #elif defined(__ICL) || defined(_MSC_VER)
-    return _InterlockedCompareExchange(reinterpret_cast<volatile long*>(ptr), replacement, comparand) == comparand;
+    return _InterlockedCompareExchange(reinterpret_cast<volatile long*>(ptr),
+				       replacement, comparand) == comparand;
 #elif defined(__GNUC__)
     return __sync_bool_compare_and_swap(ptr, comparand, replacement);
 #elif defined(__SUNPRO_CC) && defined(__sparc)
-    return atomic_cas_32((volatile unsigned int*)ptr, comparand, replacement) == comparand;
+    return atomic_cas_32((volatile unsigned int*)ptr, comparand,
+			 replacement) == comparand;
 #else
 #pragma message("slow compare_and_swap_32")
     bool res = false;
@@ -276,13 +283,15 @@ namespace __gnu_parallel
 #if defined(__ICC) && defined(__x86_64)	//x86 version
     return cas64<int>(ptr, comparand, replacement) == comparand;
 #elif defined(__ECC)	//IA-64 version
-    return _InterlockedCompareExchange64((void*)ptr, replacement, comparand) == comparand;
+    return _InterlockedCompareExchange64((void*)ptr, replacement,
+					 comparand) == comparand;
 #elif defined(__ICL) || defined(_MSC_VER)
 #ifndef _WIN64
     _GLIBCXX_PARALLEL_ASSERT(false);	//not available in this case
     return 0;
 #else
-    return _InterlockedCompareExchange64(ptr, replacement, comparand) == comparand;
+    return _InterlockedCompareExchange64(ptr, replacement,
+					 comparand) == comparand;
 #endif
 
 #elif defined(__GNUC__) && defined(__x86_64)
@@ -291,7 +300,8 @@ namespace __gnu_parallel
   (defined(__i686) || defined(__pentium4) || defined(__athlon))
     return __sync_bool_compare_and_swap(ptr, comparand, replacement);
 #elif defined(__SUNPRO_CC) && defined(__sparc)
-    return atomic_cas_64((volatile unsigned long long*)ptr, comparand, replacement) == comparand;
+    return atomic_cas_64((volatile unsigned long long*)ptr,
+			 comparand, replacement) == comparand;
 #else
 #if defined(__GNUC__) && defined(__i386)
     // XXX -march=native
@@ -323,9 +333,11 @@ namespace __gnu_parallel
   compare_and_swap(volatile T* ptr, T comparand, T replacement)
   {
     if (sizeof(T) == sizeof(int32))
-      return compare_and_swap_32((volatile int32*) ptr, (int32)comparand, (int32)replacement);
+      return compare_and_swap_32((volatile int32*) ptr,
+				 (int32)comparand, (int32)replacement);
     else if (sizeof(T) == sizeof(int64))
-      return compare_and_swap_64((volatile int64*) ptr, (int64)comparand, (int64)replacement);
+      return compare_and_swap_64((volatile int64*) ptr,
+				 (int64)comparand, (int64)replacement);
     else
       _GLIBCXX_PARALLEL_ASSERT(false);
   }

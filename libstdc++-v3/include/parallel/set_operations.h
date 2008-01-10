@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -48,7 +48,7 @@
 namespace __gnu_parallel
 {
 template<typename InputIterator, typename OutputIterator>
-  inline OutputIterator
+  OutputIterator
   copy_tail(std::pair<InputIterator, InputIterator> b,
             std::pair<InputIterator, InputIterator> e, OutputIterator r)
   {
@@ -68,10 +68,9 @@ template<typename InputIterator, typename OutputIterator>
     return r;
   }
 
-template<
-    typename InputIterator,
-    typename OutputIterator,
-    typename Comparator>
+template<typename InputIterator,
+	 typename OutputIterator,
+	 typename Comparator>
   struct symmetric_difference_func
   {
     typedef std::iterator_traits<InputIterator> traits_type;
@@ -82,9 +81,10 @@ template<
 
     Comparator comp;
 
-    inline OutputIterator invoke(InputIterator a, InputIterator b,
-                                  InputIterator c, InputIterator d,
-                                  OutputIterator r) const
+    OutputIterator
+    invoke(InputIterator a, InputIterator b,
+	   InputIterator c, InputIterator d,
+	   OutputIterator r) const
     {
       while (a != b && c != d)
         {
@@ -109,9 +109,9 @@ template<
       return std::copy(c, d, std::copy(a, b, r));
     }
 
-    inline difference_type
-    count(InputIterator a, InputIterator b, InputIterator c, InputIterator d)
-        const
+    difference_type
+    count(InputIterator a, InputIterator b,
+	  InputIterator c, InputIterator d) const
     {
       difference_type counter = 0;
 
@@ -137,21 +137,19 @@ template<
       return counter + (b - a) + (d - c);
     }
 
-    inline OutputIterator
+    OutputIterator
     first_empty(InputIterator c, InputIterator d, OutputIterator out) const
     { return std::copy(c, d, out); }
 
-    inline OutputIterator
+    OutputIterator
     second_empty(InputIterator a, InputIterator b, OutputIterator out) const
     { return std::copy(a, b, out); }
-
   };
 
 
-template<
-    typename InputIterator,
-    typename OutputIterator,
-    typename Comparator>
+template<typename InputIterator,
+	 typename OutputIterator,
+	 typename Comparator>
   struct difference_func
   {
     typedef std::iterator_traits<InputIterator> traits_type;
@@ -162,7 +160,7 @@ template<
 
     Comparator comp;
 
-    inline OutputIterator
+    OutputIterator
     invoke(InputIterator a, InputIterator b, InputIterator c, InputIterator d,
           OutputIterator r) const
     {
@@ -185,9 +183,9 @@ template<
       return std::copy(a, b, r);
     }
 
-    inline difference_type
-    count(InputIterator a, InputIterator b, InputIterator c, InputIterator d)
-        const
+    difference_type
+    count(InputIterator a, InputIterator b,
+	  InputIterator c, InputIterator d) const
     {
       difference_type counter = 0;
 
@@ -217,10 +215,9 @@ template<
   };
 
 
-template<
-    typename InputIterator,
-    typename OutputIterator,
-    typename Comparator>
+template<typename InputIterator,
+	 typename OutputIterator,
+	 typename Comparator>
   struct intersection_func
   {
     typedef std::iterator_traits<InputIterator> traits_type;
@@ -231,7 +228,7 @@ template<
 
     Comparator comp;
 
-    inline OutputIterator
+    OutputIterator
     invoke(InputIterator a, InputIterator b, InputIterator c, InputIterator d,
           OutputIterator r) const
     {
@@ -253,9 +250,9 @@ template<
       return r;
     }
 
-    inline difference_type
-    count(InputIterator a, InputIterator b, InputIterator c, InputIterator d)
-        const
+    difference_type
+    count(InputIterator a, InputIterator b,
+	  InputIterator c, InputIterator d) const
     {
       difference_type counter = 0;
 
@@ -289,13 +286,13 @@ template<class InputIterator, class OutputIterator, class Comparator>
   struct union_func
   {
     typedef typename std::iterator_traits<InputIterator>::difference_type
-        difference_type;
+    difference_type;
 
     union_func(Comparator c) : comp(c) {}
 
     Comparator comp;
 
-    inline OutputIterator
+    OutputIterator
     invoke(InputIterator a, const InputIterator b, InputIterator c,
           const InputIterator d, OutputIterator r) const
     {
@@ -322,9 +319,9 @@ template<class InputIterator, class OutputIterator, class Comparator>
       return std::copy(c, d, std::copy(a, b, r));
     }
 
-    inline difference_type
-    count(InputIterator a, InputIterator b, InputIterator c, InputIterator d)
-        const
+    difference_type
+    count(InputIterator a, InputIterator b,
+	  InputIterator c, InputIterator d) const
     {
       difference_type counter = 0;
 
@@ -356,10 +353,9 @@ template<class InputIterator, class OutputIterator, class Comparator>
     { return std::copy(a, b, out); }
   };
 
-template<
-    typename InputIterator,
-    typename OutputIterator,
-    typename Operation>
+template<typename InputIterator,
+	 typename OutputIterator,
+	 typename Operation>
   OutputIterator
   parallel_set_operation(InputIterator begin1, InputIterator end1,
                          InputIterator begin2, InputIterator end2,
@@ -480,11 +476,10 @@ template<
   }
 
 
-template<
-    typename InputIterator,
-    typename OutputIterator,
-    typename Comparator>
-  OutputIterator
+template<typename InputIterator,
+	 typename OutputIterator,
+	 typename Comparator>
+  inline OutputIterator
   parallel_set_union(InputIterator begin1, InputIterator end1,
                      InputIterator begin2, InputIterator end2,
                      OutputIterator result, Comparator comp)
@@ -493,11 +488,10 @@ template<
         union_func< InputIterator, OutputIterator, Comparator>(comp));
   }
 
-template<
-    typename InputIterator,
-    typename OutputIterator,
-    typename Comparator>
-  OutputIterator
+template<typename InputIterator,
+	 typename OutputIterator,
+	 typename Comparator>
+  inline OutputIterator
   parallel_set_intersection(InputIterator begin1, InputIterator end1,
                             InputIterator begin2, InputIterator end2,
                             OutputIterator result, Comparator comp)
@@ -508,7 +502,7 @@ template<
 
 
 template<typename InputIterator, typename OutputIterator>
-  OutputIterator
+  inline OutputIterator
   set_intersection(InputIterator begin1, InputIterator end1,
                    InputIterator begin2, InputIterator end2,
                    OutputIterator result)
@@ -517,14 +511,13 @@ template<typename InputIterator, typename OutputIterator>
     typedef typename traits_type::value_type value_type;
 
     return set_intersection(begin1, end1, begin2, end2, result,
-                  std::less<value_type>());
+			    std::less<value_type>());
   }
 
-template<
-    typename InputIterator,
-    typename OutputIterator,
-    typename Comparator>
-  OutputIterator
+template<typename InputIterator,
+	 typename OutputIterator,
+	 typename Comparator>
+  inline OutputIterator
   parallel_set_difference(InputIterator begin1, InputIterator end1,
                           InputIterator begin2, InputIterator end2,
                           OutputIterator result, Comparator comp)
@@ -533,11 +526,10 @@ template<
         difference_func<InputIterator, OutputIterator, Comparator>(comp));
   }
 
-template<
-    typename InputIterator,
-    typename OutputIterator,
-    typename Comparator>
-  OutputIterator
+template<typename InputIterator,
+	 typename OutputIterator,
+	 typename Comparator>
+  inline OutputIterator
   parallel_set_symmetric_difference(InputIterator begin1, InputIterator end1,
                                     InputIterator begin2, InputIterator end2,
                                     OutputIterator result, Comparator comp)

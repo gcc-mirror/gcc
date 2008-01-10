@@ -82,7 +82,7 @@ template<typename T, typename Comparator = std::less<T> >
       size = _size;
       offset = size;
       losers = new Loser[size];
-      for (unsigned int l = 0; l < size; l++)
+      for (unsigned int l = 0; l < size; ++l)
         {
           //losers[l].key = ... 	stays unset
           losers[l].inf = true;
@@ -156,9 +156,10 @@ template<typename T, typename Comparator = std::less<T> >
       bool inf = false;
       for (unsigned int pos = (offset + source) / 2; pos > 0; pos /= 2)
         {
-          if ((!inf && !losers[pos].inf && !sup && !losers[pos].sup &&
-              ((comp(losers[pos].key, key)) ||
-                (!comp(key, losers[pos].key) && losers[pos].source < source)))
+          if ((!inf && !losers[pos].inf && !sup && !losers[pos].sup
+	       && ((comp(losers[pos].key, key))
+		   || (!comp(key, losers[pos].key)
+		       && losers[pos].source < source)))
               || losers[pos].inf || sup)
             {
               // Take next key.
@@ -186,8 +187,9 @@ template<typename T, typename Comparator = std::less<T> >
       for (unsigned int pos = (offset + source) / 2; pos > 0; pos /= 2)
         {
           if ((!inf && !losers[pos].inf && !sup && !losers[pos].sup
-              && ((comp(losers[pos].key, key)) ||
-                (!comp(key, losers[pos].key) && losers[pos].source < source)))
+              && ((comp(losers[pos].key, key))
+		  || (!comp(key, losers[pos].key)
+		      && losers[pos].source < source)))
               || losers[pos].inf || sup)
             {
               std::swap(losers[pos].key, key);
@@ -285,9 +287,9 @@ template<typename T, typename Comparator = std::less<T> >
         {
           unsigned int left = init_winner (2 * root);
           unsigned int right = init_winner (2 * root + 1);
-          if (losers[right].sup ||
-              (!losers[left].sup
-                && !comp(losers[right].key, losers[left].key)))
+          if (losers[right].sup
+	      || (!losers[left].sup
+		  && !comp(losers[right].key, losers[left].key)))
             {
               // Left one is less or equal.
               losers[root] = losers[right];
@@ -345,7 +347,7 @@ template<typename T, typename Comparator = std::less<T> >
           unsigned int right = init_winner (2 * root + 1);
           if (losers[right].sup
               || (!losers[left].sup
-                && !comp(losers[right].key, losers[left].key)))
+		  && !comp(losers[right].key, losers[left].key)))
             {
               // Left one is less or equal.
               losers[root] = losers[right];
@@ -443,7 +445,7 @@ template<typename T, typename Comparator = std::less<T> >
 #ifndef COPY
       keys = new T[ik];
 #endif
-      for (unsigned int i = ik - 1; i < k; i++)
+      for (unsigned int i = ik - 1; i < k; ++i)
         losers[i + k].sup = true;
     }
 
@@ -569,11 +571,11 @@ template<typename T, typename Comparator = std::less<T> >
       for (unsigned int pos = (k + source) / 2; pos > 0; pos /= 2)
         {
           // The smaller one gets promoted, ties are broken by source.
-          if (	(sup && (!losers[pos].sup || losers[pos].source < source)) ||
-                (!sup && !losers[pos].sup &&
-                ((comp(KEY(pos), KEY_SOURCE(source))) ||
-                  (!comp(KEY_SOURCE(source), KEY(pos))
-                    && losers[pos].source < source))))
+          if ((sup && (!losers[pos].sup || losers[pos].source < source))
+	      || (!sup && !losers[pos].sup
+		  && ((comp(KEY(pos), KEY_SOURCE(source)))
+		      || (!comp(KEY_SOURCE(source), KEY(pos))
+			  && losers[pos].source < source))))
             {
               // The other one is smaller.
               std::swap(losers[pos].sup, sup);
@@ -629,7 +631,7 @@ template<typename T, typename Comparator = std::less<T> >
       k = 1 << (log2(ik - 1) + 1);
       offset = k;
       losers = new Loser[k * 2];
-      for (unsigned int i = ik - 1; i < k; i++)
+      for (unsigned int i = ik - 1; i < k; ++i)
         losers[i + k].sup = true;
     }
 
@@ -746,11 +748,11 @@ template<typename T, typename Comparator = std::less<T> >
       for (unsigned int pos = (k + source) / 2; pos > 0; pos /= 2)
         {
           // The smaller one gets promoted, ties are broken by source.
-          if (	(sup && (!losers[pos].sup || losers[pos].source < source)) ||
-                (!sup && !losers[pos].sup &&
-                ((comp(*losers[pos].keyp, *keyp)) ||
-                  (!comp(*keyp, *losers[pos].keyp)
-                  && losers[pos].source < source))))
+          if (	(sup && (!losers[pos].sup || losers[pos].source < source))
+		|| (!sup && !losers[pos].sup &&
+		    ((comp(*losers[pos].keyp, *keyp))
+		     || (!comp(*keyp, *losers[pos].keyp)
+			 && losers[pos].source < source))))
             {
               // The other one is smaller.
               std::swap(losers[pos].sup, sup);
@@ -995,8 +997,8 @@ template<typename T, typename Comparator = std::less<T> >
           // Next greater or equal power of 2.
           unsigned int division = 1 << (log2(end - begin - 1));
           unsigned int left = init_winner(2 * root, begin, begin + division);
-          unsigned int right
-                          = init_winner(2 * root + 1, begin + division, end);
+          unsigned int right = init_winner(2 * root + 1,
+					   begin + division, end);
           if (!comp(*losers[right].keyp, *losers[left].keyp))
             {
               // Left one is less or equal.

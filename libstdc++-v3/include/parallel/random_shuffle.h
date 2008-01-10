@@ -124,7 +124,7 @@ template<typename RandomNumberGenerator>
 /** @brief Random shuffle code executed by each thread.
   *  @param pus Array of thread-local data records. */
 template<typename RandomAccessIterator, typename RandomNumberGenerator>
-  inline void 
+  void 
   parallel_random_shuffle_drs_pu(DRSSorterPU<RandomAccessIterator,
                                  RandomNumberGenerator>* pus)
   {
@@ -213,8 +213,8 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
         thread_index_t target_p = bin_proc[target_bin];
 
         // Last column [d->num_threads] stays unchanged.
-        ::new(&(temporaries[target_p][dist[target_bin + 1]++])) value_type(
-              *(source + i + start));
+        ::new(&(temporaries[target_p][dist[target_bin + 1]++]))
+	    value_type(*(source + i + start));
       }
 
     delete[] oracles;
@@ -260,13 +260,13 @@ template<typename T>
   *  @param rng Random number generator to use.
   */
 template<typename RandomAccessIterator, typename RandomNumberGenerator>
-  inline void
-  parallel_random_shuffle_drs(
-      RandomAccessIterator begin,
-      RandomAccessIterator end,
-      typename std::iterator_traits<RandomAccessIterator>::difference_type n,
-      thread_index_t num_threads,
-      RandomNumberGenerator& rng)
+  void
+  parallel_random_shuffle_drs(RandomAccessIterator begin,
+			      RandomAccessIterator end,
+			      typename std::iterator_traits
+			      <RandomAccessIterator>::difference_type n,
+			      thread_index_t num_threads,
+			      RandomNumberGenerator& rng)
   {
     typedef std::iterator_traits<RandomAccessIterator> traits_type;
     typedef typename traits_type::value_type value_type;
@@ -393,7 +393,7 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
  *  @param rng Random number generator to use.
  */
 template<typename RandomAccessIterator, typename RandomNumberGenerator>
-  inline void
+  void
   sequential_random_shuffle(RandomAccessIterator begin, 
                             RandomAccessIterator end,
                             RandomNumberGenerator& rng)

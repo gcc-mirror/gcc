@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -65,25 +65,26 @@ namespace __gnu_parallel
    *  @return User-supplied functor (that may contain a part of the result).
    */
 template<typename RandomAccessIterator,
-          typename Op,
-          typename Fu,
-          typename Red,
-          typename Result>
+	 typename Op,
+	 typename Fu,
+	 typename Red,
+	 typename Result>
   Op
-  for_each_template_random_access_omp_loop_static(
-              RandomAccessIterator begin,
-              RandomAccessIterator end,
-              Op o, Fu& f, Red r, Result base, Result& output,
-              typename std::iterator_traits<RandomAccessIterator>::
-                  difference_type bound)
+  for_each_template_random_access_omp_loop_static(RandomAccessIterator begin,
+						  RandomAccessIterator end,
+						  Op o, Fu& f, Red r,
+						  Result base, Result& output,
+						  typename std::iterator_traits
+						  <RandomAccessIterator>::
+						  difference_type bound)
   {
     typedef typename
-        std::iterator_traits<RandomAccessIterator>::difference_type
-        difference_type;
+      std::iterator_traits<RandomAccessIterator>::difference_type
+      difference_type;
 
     difference_type length = end - begin;
     thread_index_t num_threads =
-        std::min<difference_type>(get_max_threads(), length);
+      std::min<difference_type>(get_max_threads(), length);
 
     Result *thread_results;
 
@@ -94,20 +95,19 @@ template<typename RandomAccessIterator,
             num_threads = omp_get_num_threads();
             thread_results = new Result[num_threads];
 
-            for (thread_index_t i = 0; i < num_threads; i++)
+            for (thread_index_t i = 0; i < num_threads; ++i)
               thread_results[i] = Result();
           }
 
         thread_index_t iam = omp_get_thread_num();
 
 #       pragma omp for schedule(static, Settings::workstealing_chunk_size)
-        for (difference_type pos = 0; pos < length; pos++)
-          thread_results[iam] =
-              r(thread_results[iam], f(o, begin+pos));
+        for (difference_type pos = 0; pos < length; ++pos)
+          thread_results[iam] = r(thread_results[iam], f(o, begin+pos));
       } //parallel
 
-    for (thread_index_t i = 0; i < num_threads; i++)
-        output = r(output, thread_results[i]);
+    for (thread_index_t i = 0; i < num_threads; ++i)
+      output = r(output, thread_results[i]);
 
     delete [] thread_results;
 

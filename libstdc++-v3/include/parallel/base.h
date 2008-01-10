@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -96,17 +96,13 @@ decode2(lcas_t x, int& a, int& b)
 template<typename T>
   const T&
   min(const T& a, const T& b)
-  {
-    return (a < b) ? a : b;
-  };
+  { return (a < b) ? a : b; }
 
 /** @brief Equivalent to std::max. */
 template<typename T>
   const T&
   max(const T& a, const T& b)
-  {
-    return (a > b) ? a : b;
-  };
+  { return (a > b) ? a : b; }
 
 /** @brief Constructs predicate for equality from strict weak
   *  ordering predicate
@@ -402,7 +398,7 @@ template<typename _ValueTp>
   *  @param comp Comparator.
   */
 template<typename RandomAccessIterator, typename Comparator>
-RandomAccessIterator
+  RandomAccessIterator
   median_of_three_iterators(RandomAccessIterator a, RandomAccessIterator b,
                             RandomAccessIterator c, Comparator& comp)
   {

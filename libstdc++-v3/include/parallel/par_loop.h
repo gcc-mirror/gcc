@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -64,19 +64,19 @@ namespace __gnu_parallel
   *  std::count_n()).
   *  @return User-supplied functor (that may contain a part of the result).
   */
-template<
-    typename RandomAccessIterator,
-    typename Op,
-    typename Fu,
-    typename Red,
-    typename Result>
+template<typename RandomAccessIterator,
+	 typename Op,
+	 typename Fu,
+	 typename Red,
+	 typename Result>
   Op
-  for_each_template_random_access_ed(
-              RandomAccessIterator begin,
-              RandomAccessIterator end,
-              Op o, Fu& f, Red r, Result base, Result& output,
-              typename std::iterator_traits<RandomAccessIterator>::
-                  difference_type bound)
+  for_each_template_random_access_ed(RandomAccessIterator begin,
+				     RandomAccessIterator end,
+				     Op o, Fu& f, Red r, Result base,
+				     Result& output,
+				     typename std::iterator_traits
+				     <RandomAccessIterator>::
+				     difference_type bound)
   {
     typedef std::iterator_traits<RandomAccessIterator> traits_type;
     typedef typename traits_type::difference_type difference_type;
@@ -85,7 +85,7 @@ template<
     Result *thread_results;
 
     thread_index_t num_threads =
-        __gnu_parallel::min<difference_type>(get_max_threads(), length);
+      __gnu_parallel::min<difference_type>(get_max_threads(), length);
 
 #   pragma omp parallel num_threads(num_threads)
       {
@@ -116,7 +116,7 @@ template<
         thread_results[iam] = reduct;
       } //parallel
 
-    for (thread_index_t i = 0; i < num_threads; i++)
+    for (thread_index_t i = 0; i < num_threads; ++i)
       output = r(output, thread_results[i]);
 
     // Points to last element processed (needed as return value for

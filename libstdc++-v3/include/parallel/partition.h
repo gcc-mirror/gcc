@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -92,10 +92,11 @@ template<typename RandomAccessIterator, typename Predicate>
             reserved_right = new bool[num_threads];
 
             if (Settings::partition_chunk_share > 0.0)
-              chunk_size = std::max<difference_type>(
-                  Settings::partition_chunk_size,
-                  (double)n * Settings::partition_chunk_share /
-                        (double)num_threads);
+              chunk_size = std::max<difference_type>(Settings::
+						     partition_chunk_size,
+						     (double)n * Settings::
+						     partition_chunk_share
+						     / (double)num_threads);
             else
               chunk_size = Settings::partition_chunk_size;
           }
@@ -106,7 +107,7 @@ template<typename RandomAccessIterator, typename Predicate>
               {
                 difference_type num_chunks = (right - left + 1) / chunk_size;
 
-                for (int r = 0; r < num_threads; r++)
+                for (int r = 0; r < num_threads; ++r)
                   {
                     reserved_left[r] = false;
                     reserved_right[r] = false;
@@ -164,10 +165,10 @@ template<typename RandomAccessIterator, typename Predicate>
                   {
                     while (pred(begin[thread_left])
                             && thread_left <= thread_left_border)
-                      thread_left++;
+                      ++thread_left;
                     while (!pred(begin[thread_right])
                             && thread_right >= thread_right_border)
-                      thread_right--;
+                      --thread_right;
 
                     if (thread_left > thread_left_border
                         || thread_right < thread_right_border)
@@ -175,18 +176,18 @@ template<typename RandomAccessIterator, typename Predicate>
                       break;
 
                     std::swap(begin[thread_left], begin[thread_right]);
-                    thread_left++;
-                    thread_right--;
+                    ++thread_left;
+                    --thread_right;
                   }
               }
 
             // Now swap the leftover chunks to the right places.
             if (thread_left <= thread_left_border)
 #             pragma omp atomic
-              leftover_left++;
+              ++leftover_left;
             if (thread_right >= thread_right_border)
 #             pragma omp atomic
-              leftover_right++;
+              ++leftover_right;
 
 #           pragma omp barrier
 
@@ -212,9 +213,8 @@ template<typename RandomAccessIterator, typename Predicate>
                 && thread_right_border <= rightnew)
               {
                 // Chunk already in place, reserve spot.
-                reserved_right
-                    [((thread_right_border - 1) - right) / chunk_size]
-                    = true;
+                reserved_right[((thread_right_border - 1) - right)
+			       / chunk_size] = true;
               }
 
 #           pragma omp barrier
@@ -225,7 +225,7 @@ template<typename RandomAccessIterator, typename Predicate>
                 // Find spot and swap.
                 difference_type swapstart = -1;
                 omp_set_lock(&result_lock);
-                for (int r = 0; r < leftover_left; r++)
+                for (int r = 0; r < leftover_left; ++r)
                   if (!reserved_left[r])
                     {
                       reserved_left[r] = true;
@@ -238,10 +238,10 @@ template<typename RandomAccessIterator, typename Predicate>
                 _GLIBCXX_PARALLEL_ASSERT(swapstart != -1);
 #endif
 
-                std::swap_ranges(
-                    begin + thread_left_border - (chunk_size - 1),
-                    begin + thread_left_border + 1,
-                    begin + swapstart);
+                std::swap_ranges(begin + thread_left_border
+				 - (chunk_size - 1),
+				 begin + thread_left_border + 1,
+				 begin + swapstart);
               }
 
             if (thread_right >= thread_right_border
@@ -250,7 +250,7 @@ template<typename RandomAccessIterator, typename Predicate>
                 // Find spot and swap
                 difference_type swapstart = -1;
                 omp_set_lock(&result_lock);
-                for (int r = 0; r < leftover_right; r++)
+                for (int r = 0; r < leftover_right; ++r)
                   if (!reserved_right[r])
                     {
                       reserved_right[r] = true;
@@ -264,17 +264,17 @@ template<typename RandomAccessIterator, typename Predicate>
 #endif
 
                 std::swap_ranges(begin + thread_right_border,
-                                begin + thread_right_border + chunk_size,
-                                begin + swapstart);
+				 begin + thread_right_border + chunk_size,
+				 begin + swapstart);
               }
 #if _GLIBCXX_ASSERTIONS
 #             pragma omp barrier
 
 #             pragma omp single
                 {
-                  for (int r = 0; r < leftover_left; r++)
+                  for (int r = 0; r < leftover_left; ++r)
                     _GLIBCXX_PARALLEL_ASSERT(reserved_left[r]);
-                  for (int r = 0; r < leftover_right; r++)
+                  for (int r = 0; r < leftover_right; ++r)
                     _GLIBCXX_PARALLEL_ASSERT(reserved_right[r]);
                 }
 
@@ -295,17 +295,17 @@ template<typename RandomAccessIterator, typename Predicate>
       {
         // Go right until key is geq than pivot.
         while (pred(begin[final_left]) && final_left < final_right)
-          final_left++;
+          ++final_left;
 
         // Go left until key is less than pivot.
         while (!pred(begin[final_right]) && final_left < final_right)
-          final_right--;
+          --final_right;
 
         if (final_left == final_right)
           break;
         std::swap(begin[final_left], begin[final_right]);
-        final_left++;
-        final_right--;
+        ++final_left;
+        --final_right;
       }
 
     // All elements on the left side are < piv, all elements on the
@@ -345,7 +345,8 @@ template<typename RandomAccessIterator, typename Comparator>
     RandomAccessIterator split;
     random_number rng;
 
-    difference_type minimum_length = std::max<difference_type>(2, Settings::partition_minimal_n);
+    difference_type minimum_length =
+      std::max<difference_type>(2, Settings::partition_minimal_n);
 
     // Break if input range to small.
     while (static_cast<sequence_index_t>(end - begin) >= minimum_length)
@@ -359,15 +360,19 @@ template<typename RandomAccessIterator, typename Comparator>
           std::swap(*pivot_pos, *(end - 1));
         pivot_pos = end - 1;
 
-        // XXX Comparator must have first_value_type, second_value_type, result_type
-        // Comparator == __gnu_parallel::lexicographic<S, int, __gnu_parallel::less<S, S> >
+        // XXX Comparator must have first_value_type, second_value_type,
+	// result_type
+        // Comparator == __gnu_parallel::lexicographic<S, int,
+	// __gnu_parallel::less<S, S> >
         // pivot_pos == std::pair<S, int>*
         // XXX binder2nd only for RandomAccessIterators??
-        __gnu_parallel::binder2nd<Comparator, value_type, value_type, bool> pred(comp, *pivot_pos);
+        __gnu_parallel::binder2nd<Comparator, value_type, value_type, bool>
+	  pred(comp, *pivot_pos);
 
         // Divide, leave pivot unchanged in last place.
         RandomAccessIterator split_pos1, split_pos2;
-        split_pos1 = begin + parallel_partition(begin, end - 1, pred, get_max_threads());
+        split_pos1 = begin + parallel_partition(begin, end - 1, pred,
+						get_max_threads());
 
         // Left side: < pivot_pos; right side: >= pivot_pos
 
@@ -377,14 +382,19 @@ template<typename RandomAccessIterator, typename Comparator>
         pivot_pos = split_pos1;
 
         // In case all elements are equal, split_pos1 == 0
-        if ((split_pos1 + 1 - begin) < (n >> 7) || (end - split_pos1) < (n >> 7))
+        if ((split_pos1 + 1 - begin) < (n >> 7)
+	    || (end - split_pos1) < (n >> 7))
           {
             // Very unequal split, one part smaller than one 128th
             // elements not stricly larger than the pivot.
-            __gnu_parallel::unary_negate<__gnu_parallel::binder1st<Comparator, value_type, value_type, bool>, value_type> pred(__gnu_parallel::binder1st<Comparator, value_type, value_type, bool>(comp, *pivot_pos));
+            __gnu_parallel::unary_negate<__gnu_parallel::
+	      binder1st<Comparator, value_type, value_type, bool>, value_type>
+	      pred(__gnu_parallel::binder1st<Comparator, value_type,
+		   value_type, bool>(comp, *pivot_pos));
 
             // Find other end of pivot-equal range.
-            split_pos2 = __gnu_sequential::partition(split_pos1 + 1, end, pred);
+            split_pos2 = __gnu_sequential::partition(split_pos1 + 1,
+						     end, pred);
           }
         else
           // Only skip the pivot.
@@ -410,7 +420,9 @@ template<typename RandomAccessIterator, typename Comparator>
 *  @param comp Comparator. */
 template<typename RandomAccessIterator, typename Comparator>
   void
-  parallel_partial_sort(RandomAccessIterator begin, RandomAccessIterator middle, RandomAccessIterator end, Comparator comp)
+  parallel_partial_sort(RandomAccessIterator begin,
+			RandomAccessIterator middle,
+			RandomAccessIterator end, Comparator comp)
   {
     parallel_nth_element(begin, middle, end, comp);
     std::sort(begin, middle, comp);

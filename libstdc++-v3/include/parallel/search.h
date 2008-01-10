@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -81,10 +81,9 @@ template<typename RandomAccessIterator, typename _DifferenceTp>
    *  @param end2 End iterator of second sequence.
    *  @param pred Find predicate.
    *  @return Place of finding in first sequences. */
-template<
-    typename _RandomAccessIterator1,
-    typename _RandomAccessIterator2,
-    typename Pred>
+template<typename _RandomAccessIterator1,
+	 typename _RandomAccessIterator2,
+	 typename Pred>
   _RandomAccessIterator1
   search_template(_RandomAccessIterator1 begin1, _RandomAccessIterator1 end1,
                   _RandomAccessIterator2 begin2, _RandomAccessIterator2 end2,

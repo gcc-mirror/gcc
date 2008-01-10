@@ -454,8 +454,8 @@ namespace __parallel
     _RAIter3
     transform2_switch(_RAIter1, _RAIter1, _RAIter2, _RAIter3, _BiOperation, 
 		      random_access_iterator_tag, random_access_iterator_tag, 
-		      random_access_iterator_tag, 
-		      __gnu_parallel::parallelism parallelism_tag);
+		      random_access_iterator_tag,
+		      __gnu_parallel::parallelism);
 
   template<typename _IIter1, typename _IIter2, typename _OIter,
 	   typename _BiOperation, typename _Tag1,
@@ -525,7 +525,7 @@ namespace __parallel
 
   template<typename _FIter>
     _FIter
-    max_element(_FIter, _FIter, __gnu_parallel::parallelism parallelism_tag);
+    max_element(_FIter, _FIter, __gnu_parallel::parallelism);
 
   template<typename _FIter, typename _Compare>
     _FIter

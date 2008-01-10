@@ -212,7 +212,7 @@ namespace __gnu_parallel
       difference_type localrank = rank * m / N ;
 
       int j;
-      for (j = 0; j < localrank && ((n + 1) <= ns[sample[j].second]); j++)
+      for (j = 0; j < localrank && ((n + 1) <= ns[sample[j].second]); ++j)
 	a[sample[j].second] += n + 1;
       for (; j < m; j++)
 	b[sample[j].second] -= n + 1;
@@ -279,7 +279,7 @@ namespace __gnu_parallel
 		if (b[i] < ns[i])
 		  pq.push(std::make_pair(S(i)[b[i]], i));
 
-	      for (; skew != 0 && !pq.empty(); skew--)
+	      for (; skew != 0 && !pq.empty(); --skew)
 		{
 		  int source = pq.top().second;
 		  pq.pop();
@@ -302,7 +302,7 @@ namespace __gnu_parallel
 		if (a[i] > 0)
 		  pq.push(std::make_pair(S(i)[a[i] - 1], i));
 
-	      for (; skew != 0; skew++)
+	      for (; skew != 0; ++skew)
 		{
 		  int source = pq.top().second;
 		  pq.pop();
@@ -416,7 +416,7 @@ namespace __gnu_parallel
 
       ns[0] = std::distance(begin_seqs[0].first, begin_seqs[0].second);
       nmax = ns[0];
-      for (int i = 0; i < m; i++)
+      for (int i = 0; i < m; ++i)
 	{
 	  ns[i] = std::distance(begin_seqs[i].first, begin_seqs[i].second);
 	  nmax = std::max(nmax, ns[i]);
@@ -431,7 +431,7 @@ namespace __gnu_parallel
       // From now on, including padding.
       N = l * m;
 
-      for (int i = 0; i < m; i++)
+      for (int i = 0; i < m; ++i)
 	{
 	  a[i] = 0;
 	  b[i] = l;
@@ -460,9 +460,9 @@ namespace __gnu_parallel
       difference_type localrank = rank * m / N ;
 
       int j;
-      for (j = 0; j < localrank && ((n + 1) <= ns[sample[j].second]); j++)
+      for (j = 0; j < localrank && ((n + 1) <= ns[sample[j].second]); ++j)
 	a[sample[j].second] += n + 1;
-      for (; j < m; j++)
+      for (; j < m; ++j)
 	b[sample[j].second] -= n + 1;
 
       // Further refinement.
@@ -471,7 +471,7 @@ namespace __gnu_parallel
 	  n /= 2;
 
 	  const T* lmax = NULL;
-	  for (int i = 0; i < m; i++)
+	  for (int i = 0; i < m; ++i)
 	    {
 	      if (a[i] > 0)
 		{
@@ -496,7 +496,7 @@ namespace __gnu_parallel
 	    }
 
 	  difference_type leftsize = 0, total = 0;
-	  for (int i = 0; i < m; i++)
+	  for (int i = 0; i < m; ++i)
 	    {
 	      leftsize += a[i] / (n + 1);
 	      total += l / (n + 1);
@@ -512,7 +512,7 @@ namespace __gnu_parallel
 		std::vector<std::pair<T, int> >,
 		lexicographic_reverse<T, int, Comparator> > pq(lrcomp);
 
-	      for (int i = 0; i < m; i++)
+	      for (int i = 0; i < m; ++i)
 		if (b[i] < ns[i])
 		  pq.push(std::make_pair(S(i)[b[i]], i));
 
@@ -535,7 +535,7 @@ namespace __gnu_parallel
 		std::vector<std::pair<T, int> >,
 		lexicographic<T, int, Comparator> > pq(lcomp);
 
-	      for (int i = 0; i < m; i++)
+	      for (int i = 0; i < m; ++i)
 		if (a[i] > 0)
 		  pq.push(std::make_pair(S(i)[a[i] - 1], i));
 
@@ -566,7 +566,7 @@ namespace __gnu_parallel
 
       // Impossible to avoid the warning?
       T maxleft, minright;
-      for (int i = 0; i < m; i++)
+      for (int i = 0; i < m; ++i)
 	{
 	  if (a[i] > 0)
 	    {
@@ -610,7 +610,7 @@ namespace __gnu_parallel
 	  // We have to calculate an offset.
 	  offset = 0;
 
-	  for (int i = 0; i < m; i++)
+	  for (int i = 0; i < m; ++i)
 	    {
 	      difference_type lb = std::lower_bound(S(i), S(i) + ns[i],
 						    minright,

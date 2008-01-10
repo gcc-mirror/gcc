@@ -112,8 +112,9 @@ template<typename RandomAccessIterator, typename Comparator>
     typedef typename traits_type::value_type value_type;
     typedef typename traits_type::difference_type difference_type;
 
-    RandomAccessIterator pivot_pos = median_of_three_iterators(
-        begin, begin + (end - begin) / 2, end  - 1, comp);
+    RandomAccessIterator pivot_pos =
+      median_of_three_iterators(begin, begin + (end - begin) / 2,
+				end  - 1, comp);
 
 #if defined(_GLIBCXX_ASSERTIONS)
     // Must be in between somewhere.
@@ -146,9 +147,9 @@ template<typename RandomAccessIterator, typename Comparator>
 
 #if _GLIBCXX_ASSERTIONS
     RandomAccessIterator r;
-    for (r = begin; r != pivot_pos; r++)
+    for (r = begin; r != pivot_pos; ++r)
       _GLIBCXX_PARALLEL_ASSERT(comp(*r, *pivot_pos));
-    for (; r != end; r++)
+    for (; r != end; ++r)
       _GLIBCXX_PARALLEL_ASSERT(!comp(*r, *pivot_pos));
 #endif
 
@@ -308,12 +309,12 @@ template<typename RandomAccessIterator, typename Comparator>
                 __gnu_parallel::unary_negate<__gnu_parallel::binder1st
                     <Comparator, value_type, value_type, bool>, value_type>
                     pred(__gnu_parallel::binder1st
-                        <Comparator, value_type, value_type, bool>(
-                        comp, *pivot_pos));
+                        <Comparator, value_type, value_type, bool>(comp,
+								   *pivot_pos));
 
                 // Find other end of pivot-equal range.
-                split_pos2 = __gnu_sequential::partition(
-                    split_pos1 + 1, end, pred);
+                split_pos2 = __gnu_sequential::partition(split_pos1 + 1,
+							 end, pred);
               }
             else
               // Only skip the pivot.
@@ -339,8 +340,8 @@ template<typename RandomAccessIterator, typename Comparator>
               {
                 // Left side larger.
                 if (begin != split_pos1)
-                  tl.leftover_parts.push_front(
-                      std::make_pair(begin, split_pos1));
+                  tl.leftover_parts.push_front(std::make_pair(begin,
+							      split_pos1));
 
                 current.first = split_pos2;
                 //current.second = end;	//already set anyway
@@ -394,8 +395,8 @@ template<typename RandomAccessIterator, typename Comparator>
             if (omp_get_wtime() >= (search_start + 1.0))
               {
                 sleep(1);
-                _GLIBCXX_PARALLEL_ASSERT(
-                    omp_get_wtime() < (search_start + 1.0));
+                _GLIBCXX_PARALLEL_ASSERT(omp_get_wtime()
+					 < (search_start + 1.0));
               }
 #endif
             if (!successfully_stolen)
@@ -452,7 +453,7 @@ template<typename RandomAccessIterator, typename Comparator>
     // 2. The largest range has at most length n
     // 3. Each range is larger than half of the range remaining
     volatile difference_type elements_leftover = n;
-    for (int i = 0; i < num_threads; i++)
+    for (int i = 0; i < num_threads; ++i)
       {
         tls[i]->elements_leftover = &elements_leftover;
         tls[i]->num_threads = num_threads;
@@ -468,11 +469,11 @@ template<typename RandomAccessIterator, typename Comparator>
 #if _GLIBCXX_ASSERTIONS
     // All stack must be empty.
     Piece dummy;
-    for (int i = 1; i < num_threads; i++)
+    for (int i = 1; i < num_threads; ++i)
       _GLIBCXX_PARALLEL_ASSERT(!tls[i]->leftover_parts.pop_back(dummy));
 #endif
 
-    for (int i = 0; i < num_threads; i++)
+    for (int i = 0; i < num_threads; ++i)
       delete tls[i];
     delete[] tls;
   }
