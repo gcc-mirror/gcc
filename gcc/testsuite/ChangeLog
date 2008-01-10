@@ -1,3 +1,8 @@
+2008-01-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34651
+	* g++.dg/torture/pr34651.C: New testcase.
+
 2008-01-09  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/34017

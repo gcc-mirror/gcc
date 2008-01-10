@@ -2127,30 +2127,37 @@ static tree
 sra_build_assignment (tree dst, tree src)
 {
   /* Turning BIT_FIELD_REFs into bit operations enables other passes
-     to do a much better job at optimizing the code.  */
+     to do a much better job at optimizing the code.
+     From dst = BIT_FIELD_REF <var, sz, off> we produce
+
+	SR.1 = (scalar type) var;
+	SR.2 = SR.1 >> off;
+	SR.3 = SR.2 & ((1 << sz) - 1);
+	... possible sign extension of SR.3 ...
+	dst = (destination type) SR.3;
+   */
   if (scalar_bitfield_p (src))
     {
-      tree cst, cst2, mask, minshift, maxshift;
-      tree tmp, var, utype, stype;
+      tree var, shift, width;
+      tree utype, stype, stmp, utmp;
       tree list, stmt;
       bool unsignedp = BIT_FIELD_REF_UNSIGNED (src);
 
       var = TREE_OPERAND (src, 0);
-      cst = TREE_OPERAND (src, 2);
-      cst2 = size_binop (PLUS_EXPR, TREE_OPERAND (src, 1),
-			 TREE_OPERAND (src, 2));
-
+      width = TREE_OPERAND (src, 1);
+      /* The offset needs to be adjusted to a right shift quantity
+	 depending on the endianess.  */
       if (BYTES_BIG_ENDIAN)
 	{
-	  maxshift = size_binop (MINUS_EXPR, TYPE_SIZE (TREE_TYPE (var)), cst);
-	  minshift = size_binop (MINUS_EXPR, TYPE_SIZE (TREE_TYPE (var)), cst2);
+	  tree tmp = size_binop (PLUS_EXPR, width, TREE_OPERAND (src, 2));
+	  shift = size_binop (MINUS_EXPR, TYPE_SIZE (TREE_TYPE (var)), tmp);
 	}
       else
-	{
-	  maxshift = cst2;
-	  minshift = cst;
-	}
+	shift = TREE_OPERAND (src, 2);
 
+      /* In weird cases we have non-integral types for the source or
+	 destination object.
+	 ???  For unknown reasons we also want an unsigned scalar type.  */
       stype = TREE_TYPE (var);
       if (!INTEGRAL_TYPE_P (stype))
 	stype = lang_hooks.types.type_for_size (TREE_INT_CST_LOW
@@ -2166,117 +2173,92 @@ sra_build_assignment (tree dst, tree src)
 	utype = unsigned_type_for (utype);
 
       list = NULL;
+      stmp = make_rename_temp (stype, "SR");
 
-      cst2 = size_binop (MINUS_EXPR, maxshift, minshift);
-      if (TREE_INT_CST_LOW (cst2) == TYPE_PRECISION (utype))
-	{
-	  unsignedp = true;
-	  mask = NULL_TREE;
-	}
-      else
-	{
-	  mask = build_int_cst_wide (utype, 1, 0);
-	  cst = int_const_binop (LSHIFT_EXPR, mask, cst2, true);
-	  mask = int_const_binop (MINUS_EXPR, cst, mask, true);
-	}
-
-      tmp = make_rename_temp (stype, "SR");
-      if (TYPE_MAIN_VARIANT (TREE_TYPE (var)) != TYPE_MAIN_VARIANT (stype))
+      /* Convert the base var of the BIT_FIELD_REF to the scalar type
+	 we use for computation if we cannot use it directly.  */
+      if (!useless_type_conversion_p (stype, TREE_TYPE (var)))
 	{
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (var)))
-	    stmt = build_gimple_modify_stmt (tmp,
+	    stmt = build_gimple_modify_stmt (stmp,
 					     fold_convert (stype, var));
 	  else
-	    stmt = build_gimple_modify_stmt (tmp,
+	    stmt = build_gimple_modify_stmt (stmp,
 					     fold_build1 (VIEW_CONVERT_EXPR,
 							  stype, var));
 	  append_to_statement_list (stmt, &list);
-
-	  var = tmp;
+	  var = stmp;
 	}
 
-      if (!integer_zerop (minshift))
+      if (!integer_zerop (shift))
 	{
-	  tmp = make_rename_temp (stype, "SR");
-	  stmt = build_gimple_modify_stmt (tmp,
+	  stmt = build_gimple_modify_stmt (stmp,
 					   fold_build2 (RSHIFT_EXPR, stype,
-							var, minshift));
+							var, shift));
 	  append_to_statement_list (stmt, &list);
-
-	  var = tmp;
+	  var = stmp;
 	}
 
-      if (TYPE_MAIN_VARIANT (utype) != TYPE_MAIN_VARIANT (stype))
+      /* If we need a masking operation, produce one.  */
+      if (TREE_INT_CST_LOW (width) == TYPE_PRECISION (stype))
+	unsignedp = true;
+      else
 	{
-	  if (!mask && unsignedp
-	      && (TYPE_MAIN_VARIANT (utype)
-		  == TYPE_MAIN_VARIANT (TREE_TYPE (dst))))
-	    tmp = dst;
-	  else
-	    tmp = make_rename_temp (utype, "SR");
+	  tree one = build_int_cst_wide (stype, 1, 0);
+	  tree mask = int_const_binop (LSHIFT_EXPR, one, width, 0);
+	  mask = int_const_binop (MINUS_EXPR, mask, one, 0);
 
-	  stmt = build_gimple_modify_stmt (tmp, fold_convert (utype, var));
-	  append_to_statement_list (stmt, &list);
-
-	  var = tmp;
-	}
-
-      if (mask)
-	{
-	  if (!unsignedp
-	      || (TYPE_MAIN_VARIANT (TREE_TYPE (dst))
-		  != TYPE_MAIN_VARIANT (utype)))
-	    tmp = make_rename_temp (utype, "SR");
-	  else
-	    tmp = dst;
-
-	  stmt = build_gimple_modify_stmt (tmp,
-					   fold_build2 (BIT_AND_EXPR, utype,
+	  stmt = build_gimple_modify_stmt (stmp,
+					   fold_build2 (BIT_AND_EXPR, stype,
 							var, mask));
 	  append_to_statement_list (stmt, &list);
-
-	  var = tmp;
+	  var = stmp;
 	}
 
+      /* After shifting and masking, convert to the target type.  */
+      utmp = stmp;
+      if (!useless_type_conversion_p (utype, stype))
+	{
+	  utmp = make_rename_temp (utype, "SR");
+
+	  stmt = build_gimple_modify_stmt (utmp, fold_convert (utype, var));
+	  append_to_statement_list (stmt, &list);
+
+	  var = utmp;
+	}
+
+      /* Perform sign extension, if required.
+	 ???  This should never be necessary.  */
       if (!unsignedp)
 	{
 	  tree signbit = int_const_binop (LSHIFT_EXPR,
 					  build_int_cst_wide (utype, 1, 0),
-					  size_binop (MINUS_EXPR, cst2,
-						      bitsize_int (1)),
-					  true);
+					  size_binop (MINUS_EXPR, width,
+						      bitsize_int (1)), 0);
 
-	  tmp = make_rename_temp (utype, "SR");
-	  stmt = build_gimple_modify_stmt (tmp,
+	  stmt = build_gimple_modify_stmt (utmp,
 					   fold_build2 (BIT_XOR_EXPR, utype,
 							var, signbit));
 	  append_to_statement_list (stmt, &list);
 
-	  var = tmp;
-
-	  if (TYPE_MAIN_VARIANT (TREE_TYPE (dst)) != TYPE_MAIN_VARIANT (utype))
-	    tmp = make_rename_temp (utype, "SR");
-	  else
-	    tmp = dst;
-
-	  stmt = build_gimple_modify_stmt (tmp,
+	  stmt = build_gimple_modify_stmt (utmp,
 					   fold_build2 (MINUS_EXPR, utype,
-							var, signbit));
+							utmp, signbit));
 	  append_to_statement_list (stmt, &list);
 
-	  var = tmp;
+	  var = utmp;
 	}
 
-      if (var != dst)
+      /* Finally, move and convert to the destination.  */
+      if (!useless_type_conversion_p (TREE_TYPE (dst), TREE_TYPE (var)))
 	{
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (dst)))
 	    var = fold_convert (TREE_TYPE (dst), var);
 	  else
 	    var = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (dst), var);
-
-	  stmt = build_gimple_modify_stmt (dst, var);
-	  append_to_statement_list (stmt, &list);
 	}
+      stmt = build_gimple_modify_stmt (dst, var);
+      append_to_statement_list (stmt, &list);
 
       return list;
     }

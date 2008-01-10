@@ -1,3 +1,9 @@
+2008-01-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34651
+	* tree-sra.c (sra_build_assignment): Sanitize.  Use the correct
+	types and ordering for masking and converting.
+
 2008-01-09  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/34017
