@@ -922,29 +922,33 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
   if (outmode == VOIDmode && out != 0)
     outmode = GET_MODE (out);
 
-  /* If IN is a pseudo register everywhere-equivalent to a constant, and
-     it is not in a hard register, reload straight from the constant,
-     since we want to get rid of such pseudo registers.
-     Often this is done earlier, but not always in find_reloads_address.  */
+  /* If find_reloads and friends until now missed to replace a pseudo
+     with a constant of reg_equiv_constant something went wrong
+     beforehand.
+     Note that it can't simply be done here if we missed it earlier
+     since the constant might need to be pushed into the literal pool
+     and the resulting memref would probably need further
+     reloading.  */
   if (in != 0 && REG_P (in))
     {
       int regno = REGNO (in);
 
-      if (regno >= FIRST_PSEUDO_REGISTER && reg_renumber[regno] < 0
-	  && reg_equiv_constant[regno] != 0)
-	in = reg_equiv_constant[regno];
+      gcc_assert (regno < FIRST_PSEUDO_REGISTER
+		  || reg_renumber[regno] >= 0
+		  || reg_equiv_constant[regno] == NULL_RTX);
     }
 
-  /* Likewise for OUT.  Of course, OUT will never be equivalent to
-     an actual constant, but it might be equivalent to a memory location
-     (in the case of a parameter).  */
+  /* reg_equiv_constant only contains constants which are obviously
+     not appropriate as destination.  So if we would need to replace
+     the destination pseudo with a constant we are in real
+     trouble.  */
   if (out != 0 && REG_P (out))
     {
       int regno = REGNO (out);
 
-      if (regno >= FIRST_PSEUDO_REGISTER && reg_renumber[regno] < 0
-	  && reg_equiv_constant[regno] != 0)
-	out = reg_equiv_constant[regno];
+      gcc_assert (regno < FIRST_PSEUDO_REGISTER
+		  || reg_renumber[regno] >= 0
+		  || reg_equiv_constant[regno] == NULL_RTX);
     }
 
   /* If we have a read-write operand with an address side-effect,
@@ -4772,15 +4776,12 @@ find_reloads_address (enum machine_mode mode, rtx *memrefloc, rtx ad,
     {
       regno = REGNO (ad);
 
-      /* If the register is equivalent to an invariant expression, substitute
-	 the invariant, and eliminate any eliminable register references.  */
-      tem = reg_equiv_constant[regno];
-      if (tem != 0
-	  && (tem = eliminate_regs (tem, mode, insn))
-	  && strict_memory_address_p (mode, tem))
+      if (reg_equiv_constant[regno] != 0)
 	{
-	  *loc = ad = tem;
-	  return 0;
+	  find_reloads_address_part (reg_equiv_constant[regno], loc,
+				     base_reg_class (mode, MEM, SCRATCH),
+				     GET_MODE (ad), opnum, type, ind_levels);
+	  return 1;
 	}
 
       tem = reg_equiv_memory_loc[regno];
