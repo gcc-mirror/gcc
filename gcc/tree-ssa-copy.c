@@ -62,6 +62,17 @@ may_propagate_copy (tree dest, tree orig)
   tree type_d = TREE_TYPE (dest);
   tree type_o = TREE_TYPE (orig);
 
+  /* If ORIG flows in from an abnormal edge, it cannot be propagated.  */
+  if (TREE_CODE (orig) == SSA_NAME
+      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (orig))
+    return false;
+
+  /* If DEST is an SSA_NAME that flows from an abnormal edge, then it
+     cannot be replaced.  */
+  if (TREE_CODE (dest) == SSA_NAME
+      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (dest))
+    return false;
+
   /* For memory partitions, copies are OK as long as the memory symbol
      belongs to the partition.  */
   if (TREE_CODE (dest) == SSA_NAME
@@ -163,17 +174,6 @@ may_propagate_copy (tree dest, tree orig)
 	 operand.  Reject these.  */
       return false;
     }
-
-  /* If ORIG flows in from an abnormal edge, it cannot be propagated.  */
-  if (TREE_CODE (orig) == SSA_NAME
-      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (orig))
-    return false;
-
-  /* If DEST is an SSA_NAME that flows from an abnormal edge, then it
-     cannot be replaced.  */
-  if (TREE_CODE (dest) == SSA_NAME
-      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (dest))
-    return false;
 
   /* Anything else is OK.  */
   return true;

@@ -1,3 +1,12 @@
+2008-01-10  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34683
+	* tree-cfg.c (tree_merge_blocks): Do not go through the
+	full-blown folding and stmt updating path if we just deal
+	with virtual operands.
+	* tree-ssa-copy.c (may_propagate_copy): Do not short-cut
+	test for abnormal SSA_NAMEs.
+
 2008-01-10  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR middle-end/34641
