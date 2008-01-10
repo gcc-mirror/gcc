@@ -2803,7 +2803,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 
 /* Generate code to copy a string.  */
 
-static void
+void
 gfc_trans_string_copy (stmtblock_t * block, tree dlength, tree dest,
 		       tree slength, tree src)
 {

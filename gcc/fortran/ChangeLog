@@ -1,3 +1,12 @@
+2008-01-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34396
+	* trans-array.c (gfc_trans_array_ctor_element):  Use gfc_trans_string_copy
+	to assign strings and perform bounds checks on the string length.
+	(get_array_ctor_strlen): Remove bounds checking.
+	(gfc_trans_array_constructor): Initialize string length checking.
+	* trans-array.h : Add prototype for gfc_trans_string_copy.
+
 2008-01-08  Richard Guenther  <rguenther@suse.de>
 
 	PR fortran/34706
