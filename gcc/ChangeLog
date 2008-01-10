@@ -1,3 +1,9 @@
+2008-01-10  Steven Bosscher  <stevenb.gcc@gmail.com>
+
+	* tree-ssa-sccvn.h (struct vn_ssa_aux): Make the most accessed
+	field (valnum) the first in the struct.  Replace bools with
+	unit bit fields.
+
 2008-01-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/34651
