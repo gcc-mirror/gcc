@@ -523,8 +523,8 @@ m32c_conditional_register_usage (void)
 /* Implements HARD_REGNO_NREGS.  This is complicated by the fact that
    different registers are different sizes from each other, *and* may
    be different sizes in different chip families.  */
-int
-m32c_hard_regno_nregs (int regno, enum machine_mode mode)
+static int
+m32c_hard_regno_nregs_1 (int regno, enum machine_mode mode)
 {
   if (regno == FLG_REGNO && mode == CCmode)
     return 1;
@@ -549,12 +549,19 @@ m32c_hard_regno_nregs (int regno, enum machine_mode mode)
   return 0;
 }
 
+int
+m32c_hard_regno_nregs (int regno, enum machine_mode mode)
+{
+  int rv = m32c_hard_regno_nregs_1 (regno, mode);
+  return rv ? rv : 1;
+}
+
 /* Implements HARD_REGNO_MODE_OK.  The above function does the work
    already; just test its return value.  */
 int
 m32c_hard_regno_ok (int regno, enum machine_mode mode)
 {
-  return m32c_hard_regno_nregs (regno, mode) != 0;
+  return m32c_hard_regno_nregs_1 (regno, mode) != 0;
 }
 
 /* Implements MODES_TIEABLE_P.  In general, modes aren't tieable since

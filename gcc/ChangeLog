@@ -1,3 +1,9 @@
+2008-01-10  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.c (m32c_hard_regno_nregs_1): Renamed from...
+	(m32c_hard_regno_nregs): ...this, which is now a wrapper.
+	(m32c_hard_regno_ok): Call the underlying function.
+
 2008-01-10  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/34683
