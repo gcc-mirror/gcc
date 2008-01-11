@@ -115,7 +115,25 @@ count_8_l4 (gfc_array_i8 * const restrict retarray,
   else
     {
       if (rank != GFC_DESCRIPTOR_RANK (retarray))
-	runtime_error ("rank of return array incorrect");
+	runtime_error ("rank of return array incorrect in"
+		       " COUNT intrinsic: is %d, should be %d",
+		       GFC_DESCRIPTOR_RANK (retarray), rank);
+
+      if (compile_options.bounds_check)
+	{
+	  for (n=0; n < rank; n++)
+	    {
+	      index_type ret_extent;
+
+	      ret_extent = retarray->dim[n].ubound + 1
+		- retarray->dim[n].lbound;
+	      if (extent[n] != ret_extent)
+		runtime_error ("Incorrect extent in return value of"
+			       " COUNT intrinsic in dimension %d:"
+			       " is %ld, should be %ld", n + 1,
+			       (long int) ret_extent, (long int) extent[n]);
+	    }
+	}
     }
 
   for (n = 0; n < rank; n++)
