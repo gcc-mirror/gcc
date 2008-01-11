@@ -1,3 +1,7 @@
+2008-01-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/struct-ret-3.c: New test.
+
 2008-01-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34537

@@ -1,3 +1,9 @@
+2008-01-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/31309
+	* expr.c (copy_blkmode_from_reg): Use a mode suited to the size
+	when copying to memory.
+
 2008-01-11  Steven Bosscher  <stevenb.gcc@gmail.com>
 
 	PR rtl-optimization/30905
