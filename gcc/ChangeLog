@@ -1,3 +1,9 @@
+2008-01-11  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (struct vn_binary_op_s): Move hashcode near opcode.
+	(struct vn_unary_op_s): Likewise.
+	(vn_reference_insert): Free old reference on hash collision.
+
 2008-01-10  Raksit Ashok  <raksit@google.com>
 
 	PR rtl-optimization/27971

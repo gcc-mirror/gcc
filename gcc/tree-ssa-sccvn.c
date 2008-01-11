@@ -125,10 +125,10 @@ typedef struct vn_tables_s
 typedef struct vn_binary_op_s
 {
   enum tree_code opcode;
+  hashval_t hashcode;
   tree type;
   tree op0;
   tree op1;
-  hashval_t hashcode;
   tree result;
 } *vn_binary_op_t;
 typedef const struct vn_binary_op_s *const_vn_binary_op_t;
@@ -140,9 +140,9 @@ typedef const struct vn_binary_op_s *const_vn_binary_op_t;
 typedef struct vn_unary_op_s
 {
   enum tree_code opcode;
+  hashval_t hashcode;
   tree type;
   tree op0;
-  hashval_t hashcode;
   tree result;
 } *vn_unary_op_t;
 typedef const struct vn_unary_op_s *const_vn_unary_op_t;
@@ -279,6 +279,24 @@ VN_INFO_GET (tree name)
   return newinfo;
 }
 
+
+/* Free a phi operation structure VP.  */
+
+static void
+free_phi (void *vp)
+{
+  vn_phi_t phi = vp;
+  VEC_free (tree, heap, phi->phiargs);
+}
+
+/* Free a reference operation structure VP.  */
+
+static void
+free_reference (void *vp)
+{
+  vn_reference_t vr = vp;
+  VEC_free (vn_reference_op_s, heap, vr->operands);
+}
 
 /* Compare two reference operands P1 and P2 for equality.  return true if
    they are equal, and false otherwise.  */
@@ -691,6 +709,9 @@ vn_reference_insert (tree op, tree result, VEC (tree, gc) *vuses)
      the other lookup functions, you cannot gcc_assert (!*slot)
      here.  */
 
+  /* But free the old slot in case of a collision.  */
+  if (*slot)
+    free_reference (*slot);
 
   *slot = vr1;
 }
@@ -1925,23 +1946,6 @@ DFS (tree name)
     }
 
   return true;
-}
-
-static void
-free_phi (void *vp)
-{
-  vn_phi_t phi = vp;
-  VEC_free (tree, heap, phi->phiargs);
-}
-
-
-/* Free a reference operation structure VP.  */
-
-static void
-free_reference (void *vp)
-{
-  vn_reference_t vr = vp;
-  VEC_free (vn_reference_op_s, heap, vr->operands);
 }
 
 /* Allocate a value number table.  */
