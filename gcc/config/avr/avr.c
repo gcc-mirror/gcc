@@ -607,7 +607,9 @@ expand_prologue (void)
 
   live_seq = sequent_regs_live ();
   minimize = (TARGET_CALL_PROLOGUES
-	      && !(cfun->machine->is_interrupt || cfun->machine->is_signal) 
+	      && !cfun->machine->is_interrupt
+	      && !cfun->machine->is_signal
+	      && !cfun->machine->is_OS_task
 	      && live_seq);
 
   if (cfun->machine->is_interrupt || cfun->machine->is_signal)
@@ -668,9 +670,13 @@ expand_prologue (void)
         }
       if (frame_pointer_needed)
         {
-          /* Push frame pointer.  */
-	  insn = emit_move_insn (pushword, frame_pointer_rtx);
-          RTX_FRAME_RELATED_P (insn) = 1;
+	  if(!cfun->machine->is_OS_task)
+	    {
+              /* Push frame pointer.  */
+	      insn = emit_move_insn (pushword, frame_pointer_rtx);
+              RTX_FRAME_RELATED_P (insn) = 1;
+	    }
+
           if (!size)
             {
               insn = emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
@@ -813,7 +819,9 @@ expand_epilogue (void)
 
   live_seq = sequent_regs_live ();
   minimize = (TARGET_CALL_PROLOGUES
-	      && !(cfun->machine->is_interrupt || cfun->machine->is_signal)
+	      && !cfun->machine->is_interrupt
+	      && !cfun->machine->is_signal
+	      && !cfun->machine->is_OS_task
 	      && live_seq);
   
   if (minimize && (frame_pointer_needed || live_seq > 4))
@@ -876,9 +884,11 @@ expand_epilogue (void)
                   emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
                 }
             }
-        
-          /* Restore previous frame_pointer.  */
-	  emit_insn (gen_pophi (frame_pointer_rtx));
+	  if(!cfun->machine->is_OS_task)
+	    {
+              /* Restore previous frame_pointer.  */
+	      emit_insn (gen_pophi (frame_pointer_rtx));
+	    }
 	}
       /* Restore used registers.  */
       HARD_REG_SET set;      
