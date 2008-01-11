@@ -1095,6 +1095,7 @@ create_dummy_iostat (void)
   st->n.sym->ts.type = BT_INTEGER;
   st->n.sym->ts.kind = gfc_default_integer_kind;
   gfc_set_sym_referenced (st->n.sym);
+  gfc_commit_symbol (st->n.sym);
   st->n.sym->backend_decl
 	= gfc_create_var (gfc_get_int_type (st->n.sym->ts.kind),
 			  st->n.sym->name);
