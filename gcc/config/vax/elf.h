@@ -45,6 +45,9 @@ along with GCC; see the file COPYING3.  If not see
    count pushed by the CALLS and before the start of the saved registers.  */
 #define INCOMING_FRAME_SP_OFFSET 0
 
+/* Offset from the frame pointer register value to the top of the stack.  */
+#define FRAME_POINTER_CFA_OFFSET(FNDECL) 0
+
 /* We use R2-R5 (call-clobbered) registers for exceptions.  */
 #define EH_RETURN_DATA_REGNO(N) ((N) < 4 ? (N) + 2 : INVALID_REGNUM)
 
