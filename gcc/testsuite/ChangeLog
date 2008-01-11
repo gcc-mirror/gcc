@@ -1,3 +1,8 @@
+2008-01-10  Raksit Ashok  <raksit@google.com>
+
+	PR rtl-optimization/27971
+	* gcc.target/i386/pr27971.c: New testcase.
+
 2008-01-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34396
