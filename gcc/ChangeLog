@@ -1,3 +1,16 @@
+2008-01-11  Steven Bosscher  <stevenb.gcc@gmail.com>
+
+	PR rtl-optimization/30905
+	* cfgcleanup.c: Include dce.h
+	(crossjumps_occured): New global variable.
+	(try_crossjump_bb): Exit loop after finding a fallthru edge.
+	If something changed, set crossjumps_occured to true.
+	(try_optimize_cfg): Clear crossjumps_occured at the beginning.
+	Don't add/remove fake edges to exit here...
+	(cleanup_cfg): ...but do it here, when crossjumping.
+	Run a fast DCE when successful crossjumps occured in the latest
+	iteration of try_optimize_cfg.
+
 2008-01-11  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (struct vn_binary_op_s): Move hashcode near opcode.
