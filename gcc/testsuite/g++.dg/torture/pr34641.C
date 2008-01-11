@@ -1,9 +1,10 @@
 // { dg-require-effective-target fpic }
+// { dg-require-visibility "" }
 // { dg-options "-fPIC" }
 // { dg-do compile }
 
 
-typedef long unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 extern "C" void *
 malloc (size_t __size)
 throw () __attribute__ ((__malloc__));

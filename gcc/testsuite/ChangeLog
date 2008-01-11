@@ -1,3 +1,8 @@
+2008-01-11  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* g++.dg/torture/pr34641.C: Add dg-require-visibility.  Define
+	size_t using predefined macro.
+
 2008-01-10  Raksit Ashok  <raksit@google.com>
 
 	PR rtl-optimization/27971
