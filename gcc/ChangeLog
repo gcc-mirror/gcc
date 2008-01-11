@@ -20,8 +20,8 @@
 2008-01-10  Raksit Ashok  <raksit@google.com>
 
 	PR rtl-optimization/27971
-	* combine.c (find_split_point): introduced a new split for certain
-	types of mem rtx.
+	* combine.c (find_split_point): Split PLUS expressions which are
+	inside a MEM rtx, and whose first operand is complex.
 
 2008-01-10  DJ Delorie  <dj@redhat.com>
 
