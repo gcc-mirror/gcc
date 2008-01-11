@@ -54,11 +54,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "expr.h"
 #include "df.h"
+#include "dce.h"
 
 #define FORWARDER_BLOCK_P(BB) ((BB)->flags & BB_FORWARDER_BLOCK)
 
 /* Set to true when we are running first pass of try_optimize_cfg loop.  */
 static bool first_pass;
+
+/* Set to true if crossjumps occured in the latest run of try_optimize_cfg.  */
+static bool crossjumps_occured;
+
 static bool try_crossjump_to_edge (int, edge, edge);
 static bool try_crossjump_bb (int, basic_block);
 static bool outgoing_edges_match (int, basic_block, basic_block);
@@ -1838,7 +1843,10 @@ try_crossjump_bb (int mode, basic_block bb)
   FOR_EACH_EDGE (e, ei, bb->preds)
     {
       if (e->flags & EDGE_FALLTHRU)
-	fallthru = e;
+	{
+	  fallthru = e;
+	  break;
+	}
     }
 
   changed = false;
@@ -1847,7 +1855,8 @@ try_crossjump_bb (int mode, basic_block bb)
       e = EDGE_PRED (ev, ix);
       ix++;
 
-      /* As noted above, first try with the fallthru predecessor.  */
+      /* As noted above, first try with the fallthru predecessor (or, a
+	 fallthru predecessor if we are in cfglayout mode).  */
       if (fallthru)
 	{
 	  /* Don't combine the fallthru edge into anything else.
@@ -1921,6 +1930,9 @@ try_crossjump_bb (int mode, basic_block bb)
 	}
     }
 
+  if (changed)
+    crossjumps_occured = true;
+
   return changed;
 }
 
@@ -1935,11 +1947,10 @@ try_optimize_cfg (int mode)
   int iterations = 0;
   basic_block bb, b, next;
 
-  if (mode & CLEANUP_CROSSJUMP)
-    add_noreturn_fake_exit_edges ();
-
   if (mode & (CLEANUP_CROSSJUMP | CLEANUP_THREADING))
     clear_bb_flags ();
+
+  crossjumps_occured = false;
 
   FOR_EACH_BB (bb)
     update_forwarder_flag (bb);
@@ -2131,9 +2142,6 @@ try_optimize_cfg (int mode)
       while (changed);
     }
 
-  if (mode & CLEANUP_CROSSJUMP)
-    remove_fake_exit_edges ();
-
   FOR_ALL_BB (b)
     b->flags &= ~(BB_FORWARDER_BLOCK | BB_NONTHREADABLE_BLOCK);
 
@@ -2235,19 +2243,43 @@ cleanup_cfg (int mode)
 
   compact_blocks ();
 
+  /* To tail-merge blocks ending in the same noreturn function (e.g.
+     a call to abort) we have to insert fake edges to exit.  Do this
+     here once.  The fake edges do not interfere with any other CFG
+     cleanups.  */
+  if (mode & CLEANUP_CROSSJUMP)
+    add_noreturn_fake_exit_edges ();
+
   while (try_optimize_cfg (mode))
     {
       delete_unreachable_blocks (), changed = true;
-      if (!(mode & CLEANUP_NO_INSN_DEL)
-	  && (mode & CLEANUP_EXPENSIVE)
-	  && !reload_completed)
+      if (!(mode & CLEANUP_NO_INSN_DEL))
 	{
-	  if (!delete_trivially_dead_insns (get_insns (), max_reg_num ()))
+	  /* Try to remove some trivially dead insns when doing an expensive
+	     cleanup.  But delete_trivially_dead_insns doesn't work after
+	     reload (it only handles pseudos) and run_fast_dce is too costly
+	     to run in every iteration.
+
+	     For effective cross jumping, we really want to run a fast DCE to
+	     clean up any dead conditions, or they get in the way of performing
+	     useful tail merges.
+
+	     Other transformations in cleanup_cfg are not so sensitive to dead
+	     code, so delete_trivially_dead_insns or even doing nothing at all
+	     is good enough.  */
+	  if ((mode & CLEANUP_EXPENSIVE) && !reload_completed
+	      && !delete_trivially_dead_insns (get_insns (), max_reg_num ()))
 	    break;
+	  else if ((mode & CLEANUP_CROSSJUMP)
+		   && crossjumps_occured)
+	    run_fast_dce ();
 	}
       else
 	break;
     }
+
+  if (mode & CLEANUP_CROSSJUMP)
+    remove_fake_exit_edges ();
 
   /* Don't call delete_dead_jumptables in cfglayout mode, because
      that function assumes that jump tables are in the insns stream.
