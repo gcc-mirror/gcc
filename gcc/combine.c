@@ -3967,6 +3967,15 @@ find_split_point (rtx *loc, rtx insn)
 			 && OBJECT_P (SUBREG_REG (XEXP (XEXP (x, 0), 0)))))
 	    return &XEXP (XEXP (x, 0), 0);
 	}
+
+      /* If we have a PLUS whose first operand is complex, try computing it
+         separately by making a split there.  */
+      if (GET_CODE (XEXP (x, 0)) == PLUS
+          && ! memory_address_p (GET_MODE (x), XEXP (x, 0))
+          && ! OBJECT_P (XEXP (XEXP (x, 0), 0))
+          && ! (GET_CODE (XEXP (XEXP (x, 0), 0)) == SUBREG
+                && OBJECT_P (SUBREG_REG (XEXP (XEXP (x, 0), 0)))))
+        return &XEXP (XEXP (x, 0), 0);
       break;
 
     case SET:
