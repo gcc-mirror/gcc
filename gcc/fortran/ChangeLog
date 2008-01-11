@@ -1,3 +1,8 @@
+2008-01-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/34722
+	* trans-io.c (create_dummy_iostat): Commit the symbol.
+
 2008-01-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34537
