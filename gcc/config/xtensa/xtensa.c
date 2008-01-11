@@ -1908,6 +1908,8 @@ override_options (void)
   /* There's no need for -fPIC (as opposed to -fpic) on Xtensa.  */
   if (flag_pic > 1)
     flag_pic = 1;
+  if (flag_pic && !flag_pie)
+    flag_shlib = 1;
 
   /* Hot/cold partitioning does not work on this architecture, because of
      constant pools (the load instruction cannot necessarily reach that far).
