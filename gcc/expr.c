@@ -2116,6 +2116,7 @@ copy_blkmode_from_reg (rtx tgtblk, rtx srcreg, tree type)
   rtx src = NULL, dst = NULL;
   unsigned HOST_WIDE_INT bitsize = MIN (TYPE_ALIGN (type), BITS_PER_WORD);
   unsigned HOST_WIDE_INT bitpos, xbitpos, padding_correction = 0;
+  enum machine_mode copy_mode;
 
   if (tgtblk == 0)
     {
@@ -2149,11 +2150,23 @@ copy_blkmode_from_reg (rtx tgtblk, rtx srcreg, tree type)
     padding_correction
       = (BITS_PER_WORD - ((bytes % UNITS_PER_WORD) * BITS_PER_UNIT));
 
-  /* Copy the structure BITSIZE bites at a time.
+  /* Copy the structure BITSIZE bits at a time.  If the target lives in
+     memory, take care of not reading/writing past its end by selecting
+     a copy mode suited to BITSIZE.  This should always be possible given
+     how it is computed.
 
      We could probably emit more efficient code for machines which do not use
      strict alignment, but it doesn't seem worth the effort at the current
      time.  */
+
+  copy_mode = word_mode;
+  if (MEM_P (tgtblk))
+    {
+      enum machine_mode mem_mode = mode_for_size (bitsize, MODE_INT, 1);
+      if (mem_mode != BLKmode)
+	copy_mode = mem_mode;
+    }
+
   for (bitpos = 0, xbitpos = padding_correction;
        bitpos < bytes * BITS_PER_UNIT;
        bitpos += bitsize, xbitpos += bitsize)
@@ -2172,11 +2185,11 @@ copy_blkmode_from_reg (rtx tgtblk, rtx srcreg, tree type)
 	dst = operand_subword (tgtblk, bitpos / BITS_PER_WORD, 1, BLKmode);
 
       /* Use xbitpos for the source extraction (right justified) and
-	 xbitpos for the destination store (left justified).  */
-      store_bit_field (dst, bitsize, bitpos % BITS_PER_WORD, word_mode,
+	 bitpos for the destination store (left justified).  */
+      store_bit_field (dst, bitsize, bitpos % BITS_PER_WORD, copy_mode,
 		       extract_bit_field (src, bitsize,
 					  xbitpos % BITS_PER_WORD, 1,
-					  NULL_RTX, word_mode, word_mode));
+					  NULL_RTX, copy_mode, copy_mode));
     }
 
   return tgtblk;
