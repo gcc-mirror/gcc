@@ -4121,11 +4121,17 @@ gfc_simplify_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
   /* Set result character length, if needed.  Note that this needs to be
      set even for array expressions, in order to pass this information into 
      gfc_target_interpret_expr.  */
-  if (result->ts.type == BT_CHARACTER)
+  if (result->ts.type == BT_CHARACTER && gfc_is_constant_expr (mold_element))
     result->value.character.length = mold_element->value.character.length;
   
   /* Set the number of elements in the result, and determine its size.  */
   result_elt_size = gfc_target_expr_size (mold_element);
+  if (result_elt_size == 0)
+    {
+      gfc_free_expr (result);
+      return NULL;
+    }
+
   if (mold->expr_type == EXPR_ARRAY || mold->rank || size)
     {
       int result_length;

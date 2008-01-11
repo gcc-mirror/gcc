@@ -1,3 +1,10 @@
+2008-01-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34537
+	* simplify.c (gfc_simplify_transfer): Return NULL if the size
+	of the element is unavailable and only assign character length
+	to the result, if 'mold' is constant.
+
 2008-01-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34396
