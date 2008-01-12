@@ -24,7 +24,7 @@ typedef struct VEC_edge_base
 {
 }
 VEC_edge_base;
-edge
+__attribute__ ((noinline)) static edge
 VEC_edge_base_index (const VEC_edge_base * vec_, unsigned ix_)
 {
 }
@@ -56,7 +56,7 @@ ei_start_1 (VEC_edge_gc ** ev)
   i.container = ev;
   return i;
 }
-ei_next (edge_iterator * i)
+__attribute__ ((noinline)) static ei_next (edge_iterator * i)
 {
 }
 static __inline__ edge
@@ -75,7 +75,7 @@ static __inline__ tree
 get_def_from_ptr (def_operand_p def)
 {
 }
-tree
+__attribute__ ((noinline)) static tree
 phi_nodes (basic_block bb)
 {
 }
