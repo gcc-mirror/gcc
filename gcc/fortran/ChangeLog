@@ -1,6 +1,6 @@
 2008-01-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR fortran/34722
+	PR fortran/34432
 	* match.c (gfc_match_name): Don't error if leading character is a '(',
 	just return MATCH_NO.
 
