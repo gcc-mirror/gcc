@@ -1436,6 +1436,9 @@ transform_to_exit_first_loop (struct loop *loop, htab_t reduction_list, tree nit
 
   /* Initialize the control variable to NIT.  */
   bsi = bsi_after_labels (ex_bb);
+  nit = force_gimple_operand_bsi (&bsi,
+				  fold_convert (TREE_TYPE (control_name), nit),
+				  false, NULL_TREE, false, BSI_SAME_STMT);
   t = build_gimple_modify_stmt (control_name, nit);
   bsi_insert_before (&bsi, t, BSI_NEW_STMT);
   SSA_NAME_DEF_STMT (control_name) = t;
