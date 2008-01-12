@@ -496,7 +496,7 @@ gfc_match_name (char *buffer)
   c = gfc_next_char ();
   if (!(ISALPHA (c) || (c == '_' && gfc_option.flag_allow_leading_underscore)))
     {
-      if (gfc_error_flag_test() == 0)
+      if (gfc_error_flag_test() == 0 && c != '(')
 	gfc_error ("Invalid character in name at %C");
       gfc_current_locus = old_loc;
       return MATCH_NO;
