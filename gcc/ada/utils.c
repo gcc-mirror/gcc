@@ -3842,8 +3842,8 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 
       expr = convert (rtype, expr);
       if (type != rtype)
-	expr = build1 (final_unchecked ? VIEW_CONVERT_EXPR : NOP_EXPR,
-		       type, expr);
+	expr = fold_build1 (final_unchecked ? VIEW_CONVERT_EXPR : NOP_EXPR,
+			    type, expr);
     }
 
   /* If we are converting TO an integral type whose precision is not the
@@ -3894,13 +3894,8 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
   else
     {
       expr = maybe_unconstrained_array (expr);
-
-      /* There's no point in doing two unchecked conversions in a row.  */
-      if (TREE_CODE (expr) == VIEW_CONVERT_EXPR)
-	expr = TREE_OPERAND (expr, 0);
-
       etype = TREE_TYPE (expr);
-      expr = build1 (VIEW_CONVERT_EXPR, type, expr);
+      expr = fold_build1 (VIEW_CONVERT_EXPR, type, expr);
     }
 
   /* If the result is an integral type whose size is not equal to

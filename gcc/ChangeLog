@@ -1,3 +1,9 @@
+2008-01-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/33788
+	* fold-const.c (fold_unary) <VIEW_CONVERT_EXPR>: Fold an existing
+	NOP_EXPR if it is between integral types with the same precision.
+
 2008-01-12  Jan Hubicka  <jh@suse.cz>
 
 	PR other/28023
