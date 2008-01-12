@@ -1,3 +1,8 @@
+2008-01-12  Jan Hubicka  <jh@suse.cz>
+
+	PR other/28023
+	* invoke.texi (max-inline-recursive-depth): Fix default value.
+
 2008-01-12  Zdenek Dvorak  <ook@ucw.cz>
 
 	* tree-parloops.c (transform_to_exit_first_loop): Cast nit to the
