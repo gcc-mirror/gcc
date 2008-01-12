@@ -4,7 +4,7 @@ int p;
 int r;
 
 __attribute__ ((noinline))
-int a(void)
+static int a(void)
 {
   return p;
 }

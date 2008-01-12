@@ -1,5 +1,8 @@
 2008-01-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* gcc.dg/tree-ssa/loadpre5.c: Use static.
+	* gcc.dg/tree-ssa/loadpre8.c: Likewise.
+
 	* gcc.dg/pr33826.c: Require nonpic.
 
 2008-01-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
