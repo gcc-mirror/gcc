@@ -1,3 +1,8 @@
+2008-01-13  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/32135
+	* gcc.dg/pr32135.c: new.
+
 2008-01-12  Doug Kwan  <dougkwan@google.com>
 
 	* gcc.dg/qual-return-1.c: Add -Wignored-qualifiers.
