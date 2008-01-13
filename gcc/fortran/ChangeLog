@@ -1,3 +1,9 @@
+2008-01-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34759
+	* check.c (gfc_check_shape): Accept array ranges of
+	assumed-size arrays.
+
 2008-01-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/34432
