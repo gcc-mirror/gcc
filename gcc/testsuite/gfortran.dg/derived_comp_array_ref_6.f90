@@ -20,7 +20,7 @@
         USE cdf_aux_mod
         INTEGER :: which
           which = 1
-          CALL set_bound(the_beta%parameters(1:which)) ! { dg-error "Type/rank mismatch" }
+          CALL set_bound(the_beta%parameters(1:which)) ! { dg-error "Rank mismatch" }
       END SUBROUTINE cdf_beta
     END MODULE cdf_beta_mod
 

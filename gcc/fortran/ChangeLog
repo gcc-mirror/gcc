@@ -1,5 +1,15 @@
 2008-01-13  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/34665
+	* resolve.c (resolve_actual_arglist): For expressions,
+	also check for assume-sized arrays.
+	* interface.c (compare_parameter): Move F2003 character checks
+	here, print error messages here, reject elements of
+	assumed-shape array as argument to dummy arrays.
+	(compare_actual_formal): Update for the changes above.
+
+2008-01-13  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/34763
 	* decl.c (contained_procedure): Only check directly preceeding state.
 

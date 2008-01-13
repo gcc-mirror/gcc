@@ -14,8 +14,8 @@ end module addon
   use addon
   INTEGER :: I(2,2)
   I=RESHAPE((/1,2,3,4/),(/2,2/))
-  CALL TST(I)   ! { dg-error "Type/rank mismatch in argument" }
-  i = foo (i)   ! { dg-error "Type/rank mismatch|Incompatible ranks" }
+  CALL TST(I)   ! { dg-error "Rank mismatch in argument" }
+  i = foo (i)   ! { dg-error "Rank mismatch|Incompatible ranks" }
 CONTAINS
   SUBROUTINE TST(I)
     INTEGER :: I(:)

@@ -71,10 +71,10 @@ program foo
   integer(dp) :: i8
   y%i = 2
   i8 = 8
-  call bar(y,i8) ! { dg-error "Type/rank mismatch in argument" }
+  call bar(y,i8) ! { dg-error "Type mismatch in argument" }
   if(y%i /= 5 .or. i8/= 42) call abort()
   z%i = 7
-  call test(z) ! { dg-error "Type/rank mismatch in argument" }
+  call test(z) ! { dg-error "Type mismatch in argument" }
   if(z%i /= 1) call abort()
 end program foo
 ! { dg-final { cleanup-modules "testmod" } }

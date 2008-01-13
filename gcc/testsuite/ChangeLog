@@ -1,5 +1,20 @@
 2008-01-13  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/34665
+	* gfortran.dg/argument_checking_11.f90: New.
+	* gfortran.dg/argument_checking_12.f90: New.
+	* gfortran.dg/used_dummy_types_4.f90: Update dg-error.
+	* gfortran.dg/c_assoc_2.f03: Update dg-error.
+	* gfortran.dg/argument_checking_3.f90: Ditto.
+	* gfortran.dg/pointer_intent_2.f90: Ditto.
+	* gfortran.dg/import2.f90: Ditto.
+	* gfortran.dg/assumed_shape_ranks_1.f90: Ditto.
+	* gfortran.dg/implicit_actual.f90: Ditto.
+	* gfortran.dg/used_dummy_types_3.f90: Ditto.
+	* gfortran.dg/derived_comp_array_ref_6.f90: Ditto.
+
+2008-01-13  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/34763
 	* gfortran.dg/interface_proc_end.f90: New.
 
