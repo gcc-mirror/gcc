@@ -242,6 +242,10 @@ Warn about zero-length formats
 Wformat=
 C ObjC C++ ObjC++ Joined Warning
 
+Wignored-qualifiers
+C C++ Var(warn_ignored_qualifiers) Init(-1) Warning
+Warn whenever type qualifiers are ignored.
+
 Winit-self
 C ObjC C++ ObjC++ Var(warn_init_self) Warning
 Warn about variables which are initialized to themselves

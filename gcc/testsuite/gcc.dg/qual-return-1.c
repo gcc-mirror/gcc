@@ -1,7 +1,7 @@
 /* Test for warnings for qualified function return types.  */
 /* Origin: Joseph Myers <jsm28@cam.ac.uk> */
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99 -Wreturn-type" } */
+/* { dg-options "-std=gnu99 -Wreturn-type -Wignored-qualifiers" } */
 
 /* Qualifying a function return type makes no sense.  */
 

@@ -1,3 +1,17 @@
+2008-01-12  Doug Kwan  <dougkwan@google.com>
+
+	* c-decl.c: (grokdeclarator): Use OPT_Wignored_qualifiers
+	instead of OPT_Wreturn_type in warning due to ignored return type
+	qualifiers.
+	* c-opt.c (c_common_post_option): Add -Wignored-qualifiers to
+	options included in -Wextra.
+	* c.opt: New option -Wignored_qualifiers.
+	* doc/invoke.texi (Warning Options, -Wextra): Add new option
+	-Wignore_qualifiers.
+	(-Wignored-qualifiers): Document.
+	(-Wreturn-type): Remove description of functionality now handled
+	by -Wignored-qualifiers.
+
 2008-01-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/33788

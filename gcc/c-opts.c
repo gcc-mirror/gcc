@@ -1064,7 +1064,7 @@ c_common_post_options (const char **pfilename)
   /* -Wextra implies -Wtype-limits, -Wclobbered, 
      -Wempty-body, -Wsign-compare, 
      -Wmissing-field-initializers, -Wmissing-parameter-type
-     -Wold-style-declaration, and -Woverride-init, 
+     -Wold-style-declaration, -Woverride-init and -Wignored-qualifiers
      but not if explicitly overridden.  */
   if (warn_type_limits == -1)
     warn_type_limits = extra_warnings;
@@ -1082,6 +1082,8 @@ c_common_post_options (const char **pfilename)
     warn_old_style_declaration = extra_warnings;
   if (warn_override_init == -1)
     warn_override_init = extra_warnings;
+  if (warn_ignored_qualifiers == -1)
+    warn_ignored_qualifiers = extra_warnings;
 
   /* -Wpointer_sign is disabled by default, but it is enabled if any
      of -Wall or -pedantic are given.  */

@@ -1,3 +1,12 @@
+2008-01-12  Doug Kwan  <dougkwan@google.com>
+
+	* decl.c: (grokdeclarator): Use OPT_Wignored_qualifiers
+	instead of OPT_Wreturn_type in warning due to ignored return type
+	qualifiers.
+	* pt.c: (tsubst_function_type): Use OPT_Wignored_qualifiers
+	instead of OPT_Wreturn_type in warning due to ignored return type
+	qualifiers.
+
 2008-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/33890
