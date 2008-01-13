@@ -1,6 +1,6 @@
 // Debugging support implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2005, 2006
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -140,21 +140,9 @@ _GLIBCXX_DEBUG_VERIFY(! this->empty(),					\
 		      _M_message(__gnu_debug::__msg_empty)	        \
                       ._M_sequence(*this, "this"))
 
-// Verify that the < operator for elements in the sequence is a
-// StrictWeakOrdering by checking that it is irreflexive.
-#define __glibcxx_check_strict_weak_ordering(_First,_Last)	\
-_GLIBCXX_DEBUG_ASSERT(_First == _Last || !(*_First < *_First))
-
-// Verify that the predicate is StrictWeakOrdering by checking that it
-// is irreflexive.
-#define __glibcxx_check_strict_weak_ordering_pred(_First,_Last,_Pred)	\
-_GLIBCXX_DEBUG_ASSERT(_First == _Last || !_Pred(*_First, *_First))
-
-
 // Verify that the iterator range [_First, _Last) is sorted
 #define __glibcxx_check_sorted(_First,_Last)				\
 __glibcxx_check_valid_range(_First,_Last);				\
-__glibcxx_check_strict_weak_ordering(_First,_Last);			\
 _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_sorted(_First, _Last),	\
 		      _M_message(__gnu_debug::__msg_unsorted)	        \
                       ._M_iterator(_First, #_First)			\
@@ -164,12 +152,30 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_sorted(_First, _Last),	\
     predicate _Pred. */
 #define __glibcxx_check_sorted_pred(_First,_Last,_Pred)			\
 __glibcxx_check_valid_range(_First,_Last);				\
-__glibcxx_check_strict_weak_ordering_pred(_First,_Last,_Pred);	        \
 _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_sorted(_First, _Last, _Pred), \
 		      _M_message(__gnu_debug::__msg_unsorted_pred)      \
                       ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last)			\
 		      ._M_string(#_Pred))
+
+// Special variant for std::merge, std::includes, std::set_*
+#define __glibcxx_check_sorted_set(_First1,_Last1,_First2)		\
+__glibcxx_check_valid_range(_First1,_Last1);				\
+_GLIBCXX_DEBUG_VERIFY(                                                  \
+  __gnu_debug::__check_sorted_set(_First1, _Last1, _First2),		\
+  _M_message(__gnu_debug::__msg_unsorted)				\
+  ._M_iterator(_First1, #_First1)					\
+  ._M_iterator(_Last1, #_Last1))
+
+// Likewise with a _Pred.
+#define __glibcxx_check_sorted_set_pred(_First1,_Last1,_First2,_Pred)	\
+__glibcxx_check_valid_range(_First1,_Last1);        			\
+_GLIBCXX_DEBUG_VERIFY(							\
+  __gnu_debug::__check_sorted_set(_First1, _Last1, _First2, _Pred),	\
+  _M_message(__gnu_debug::__msg_unsorted_pred)				\
+  ._M_iterator(_First1, #_First1)					\
+  ._M_iterator(_Last1, #_Last1)						\
+  ._M_string(#_Pred))
 
 /** Verify that the iterator range [_First, _Last) is partitioned
     w.r.t. the value _Value. */

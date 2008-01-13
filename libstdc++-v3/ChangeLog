@@ -1,3 +1,20 @@
+2008-01-12  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/34730
+	* include/debug/functions.h (__check_sorted_set,
+	__check_sorted_set_aux): Add.
+	(__check_sorted): Check StrictWeakOrdering.
+	* include/debug/macros.h (__glibcxx_check_strict_weak_ordering,
+	__glibcxx_check_strict_weak_ordering_pred): Remove.
+	(__glibcxx_check_sorted, __glibcxx_check_sorted_pred): Adjust.
+	(__glibcxx_check_sorted_set, __glibcxx_check_sorted_set_pred): Add.
+	* include/debug/debug.h (__glibcxx_requires_sorted_set,
+	__glibcxx_requires_sorted_set_pred): Add.
+	* include/bits/stl_algo.h (merge, includes, set_union,
+	set_intersection, set_difference, set_symmetric_difference):
+	Adjust, use __glibcxx_requires_sorted_set* instead. 
+	* testsuite/25_algorithms/set_intersection/34730.cc: New.
+
 2008-01-09  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/parallel/multiway_merge.h: Reformat to 80 columns;

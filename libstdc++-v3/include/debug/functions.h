@@ -1,6 +1,6 @@
 // Debugging support implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2005, 2006
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -205,10 +205,9 @@ namespace __gnu_debug
         return true;
 
       _ForwardIterator __next = __first;
-      for (++__next; __next != __last; __first = __next, ++__next) {
+      for (++__next; __next != __last; __first = __next, ++__next)
         if (*__next < *__first)
           return false;
-      }
 
       return true;
     }
@@ -232,10 +231,9 @@ namespace __gnu_debug
         return true;
 
       _ForwardIterator __next = __first;
-      for (++__next; __next != __last; __first = __next, ++__next) {
+      for (++__next; __next != __last; __first = __next, ++__next)
         if (__pred(*__next, *__first))
           return false;
-      }
 
       return true;
     }
@@ -247,6 +245,11 @@ namespace __gnu_debug
     {
       typedef typename std::iterator_traits<_InputIterator>::iterator_category
         _Category;
+
+      // Verify that the < operator for elements in the sequence is a
+      // StrictWeakOrdering by checking that it is irreflexive.
+      _GLIBCXX_DEBUG_ASSERT(__first == __last || !(*__first < *__first));
+
       return __check_sorted_aux(__first, __last, _Category());
     }
 
@@ -257,9 +260,79 @@ namespace __gnu_debug
     {
       typedef typename std::iterator_traits<_InputIterator>::iterator_category
         _Category;
-      return __check_sorted_aux(__first, __last, __pred,
-					     _Category());
+
+      // Verify that the predicate is StrictWeakOrdering by checking that it
+      // is irreflexive.
+      _GLIBCXX_DEBUG_ASSERT(__first == __last || !__pred(*__first, *__first));
+
+      return __check_sorted_aux(__first, __last, __pred, _Category());
     }
+
+  template<typename _InputIterator1, typename _InputIterator2>
+    inline bool
+    __check_sorted_set_aux(const _InputIterator1& __first,
+			   const _InputIterator1& __last,
+			   const _InputIterator2&, std::__true_type)
+    { return __check_sorted(__first, __last); }
+
+  template<typename _InputIterator1, typename _InputIterator2>
+    inline bool
+    __check_sorted_set_aux(const _InputIterator1&,
+			   const _InputIterator1&,
+			   const _InputIterator2&, std::__false_type)
+    { return true; }
+
+  template<typename _InputIterator1, typename _InputIterator2,
+	   typename _Predicate>
+    inline bool
+    __check_sorted_set_aux(const _InputIterator1& __first,
+			   const _InputIterator1& __last,
+			   const _InputIterator2&, _Predicate __pred,
+			   std::__true_type)
+    { return __check_sorted(__first, __last, __pred); }
+
+  template<typename _InputIterator1, typename _InputIterator2,
+	   typename _Predicate>
+    inline bool
+    __check_sorted_set_aux(const _InputIterator1&,
+			   const _InputIterator1&,
+			   const _InputIterator2&, _Predicate,
+			   std::__false_type)
+    { return true; }
+
+  // ... special variant used in std::merge, std::includes, std::set_*.
+  template<typename _InputIterator1, typename _InputIterator2>
+    inline bool
+    __check_sorted_set(const _InputIterator1& __first,
+		       const _InputIterator1& __last,
+		       const _InputIterator2&)
+    {
+      typedef typename std::iterator_traits<_InputIterator1>::value_type
+	_ValueType1;
+      typedef typename std::iterator_traits<_InputIterator2>::value_type
+	_ValueType2;
+
+      typedef typename std::__are_same<_ValueType1, _ValueType2>::__type
+	_SameType;
+      return __check_sorted_set_aux(__first, __last, _SameType());
+    }
+
+  template<typename _InputIterator1, typename _InputIterator2,
+	   typename _Predicate>
+    inline bool
+    __check_sorted_set(const _InputIterator1& __first,
+		       const _InputIterator1& __last,
+		       const _InputIterator2&, _Predicate __pred)
+    {
+      typedef typename std::iterator_traits<_InputIterator1>::value_type
+	_ValueType1;
+      typedef typename std::iterator_traits<_InputIterator2>::value_type
+	_ValueType2;
+
+      typedef typename std::__are_same<_ValueType1, _ValueType2>::__type
+	_SameType;
+      return __check_sorted_set_aux(__first, __last, __pred, _SameType());
+   }
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 270. Binary search requirements overly strict
