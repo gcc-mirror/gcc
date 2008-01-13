@@ -44,13 +44,13 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
 	  ret_rank = GFC_DESCRIPTOR_RANK (retarray);
 	  if (ret_rank != 1)
 	    runtime_error ("rank of return array in u_name intrinsic"
-			   " should be 1, is %d", ret_rank);
+			   " should be 1, is %ld", (long int) ret_rank);
 
 	  ret_extent = retarray->dim[0].ubound + 1 - retarray->dim[0].lbound;
 	  if (ret_extent != rank)
 	    runtime_error ("Incorrect extent in return value of"
-			   " u_name intrnisic: is %ld, should be %d",
-			   (long int) ret_extent, rank);
+			   " u_name intrnisic: is %ld, should be %ld",
+			   (long int) ret_extent, (long int) rank);
 	}
     }
 
@@ -162,18 +162,19 @@ void
 	  ret_rank = GFC_DESCRIPTOR_RANK (retarray);
 	  if (ret_rank != 1)
 	    runtime_error ("rank of return array in u_name intrinsic"
-			   " should be 1, is %d", ret_rank);
+			   " should be 1, is %ld", (long int) ret_rank);
 
 	  ret_extent = retarray->dim[0].ubound + 1 - retarray->dim[0].lbound;
 	  if (ret_extent != rank)
 	    runtime_error ("Incorrect extent in return value of"
-			   " u_name intrnisic: is %ld, should be %d",
-			   (long int) ret_extent, rank);
+			   " u_name intrnisic: is %ld, should be %ld",
+			   (long int) ret_extent, (long int) rank);
 	
 	  mask_rank = GFC_DESCRIPTOR_RANK (mask);
 	  if (rank != mask_rank)
 	    runtime_error ("rank of MASK argument in u_name intrnisic"
-	                   "should be %d, is %d", rank, mask_rank);
+	                   "should be %ld, is %ld", (long int) rank,
+			   (long int) mask_rank);
 
 	  for (n=0; n<rank; n++)
 	    {
@@ -181,8 +182,8 @@ void
 	      mask_extent = mask->dim[n].ubound + 1 - mask->dim[n].lbound;
 	      if (array_extent != mask_extent)
 		runtime_error ("Incorrect extent in MASK argument of"
-			       " u_name intrinsic in dimension %d:"
-			       " is %ld, should be %ld", n + 1,
+			       " u_name intrinsic in dimension %ld:"
+			       " is %ld, should be %ld", (long int) n + 1,
 			       (long int) mask_extent, (long int) array_extent);
 	    }
 	}
@@ -318,7 +319,7 @@ void
 	  ret_rank = GFC_DESCRIPTOR_RANK (retarray);
 	  if (ret_rank != 1)
 	    runtime_error ("rank of return array in u_name intrinsic"
-			   " should be 1, is %d", ret_rank);
+			   " should be 1, is %ld", (long int) ret_rank);
 
 	  ret_extent = retarray->dim[0].ubound + 1 - retarray->dim[0].lbound;
 	    if (ret_extent != rank)
