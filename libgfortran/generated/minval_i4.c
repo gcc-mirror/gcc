@@ -116,8 +116,9 @@ minval_i4 (gfc_array_i4 * const restrict retarray,
     {
       if (rank != GFC_DESCRIPTOR_RANK (retarray))
 	runtime_error ("rank of return array incorrect in"
-		       " MINVAL intrinsic: is %d, should be %d",
-		       GFC_DESCRIPTOR_RANK (retarray), rank);
+		       " MINVAL intrinsic: is %ld, should be %ld",
+		       (long int) (GFC_DESCRIPTOR_RANK (retarray)),
+		       (long int) rank);
 
       if (compile_options.bounds_check)
 	{
@@ -129,8 +130,8 @@ minval_i4 (gfc_array_i4 * const restrict retarray,
 		- retarray->dim[n].lbound;
 	      if (extent[n] != ret_extent)
 		runtime_error ("Incorrect extent in return value of"
-			       " MINVAL intrinsic in dimension %d:"
-			       " is %ld, should be %ld", n + 1,
+			       " MINVAL intrinsic in dimension %ld:"
+			       " is %ld, should be %ld", (long int) n + 1,
 			       (long int) ret_extent, (long int) extent[n]);
 	    }
 	}
@@ -317,8 +318,8 @@ mminval_i4 (gfc_array_i4 * const restrict retarray,
 		- retarray->dim[n].lbound;
 	      if (extent[n] != ret_extent)
 		runtime_error ("Incorrect extent in return value of"
-			       " MINVAL intrinsic in dimension %d:"
-			       " is %ld, should be %ld", n + 1,
+			       " MINVAL intrinsic in dimension %ld:"
+			       " is %ld, should be %ld", (long int) n + 1,
 			       (long int) ret_extent, (long int) extent[n]);
 	    }
           for (n=0; n<= rank; n++)
@@ -329,8 +330,8 @@ mminval_i4 (gfc_array_i4 * const restrict retarray,
 	      mask_extent = mask->dim[n].ubound + 1 - mask->dim[n].lbound;
 	      if (array_extent != mask_extent)
 		runtime_error ("Incorrect extent in MASK argument of"
-			       " MINVAL intrinsic in dimension %d:"
-			       " is %ld, should be %ld", n + 1,
+			       " MINVAL intrinsic in dimension %ld:"
+			       " is %ld, should be %ld", (long int) n + 1,
 			       (long int) mask_extent, (long int) array_extent);
 	    }
 	}
@@ -449,7 +450,7 @@ sminval_i4 (gfc_array_i4 * const restrict retarray,
 	  ret_rank = GFC_DESCRIPTOR_RANK (retarray);
 	  if (ret_rank != 1)
 	    runtime_error ("rank of return array in MINVAL intrinsic"
-			   " should be 1, is %d", ret_rank);
+			   " should be 1, is %ld", (long int) ret_rank);
 
 	  ret_extent = retarray->dim[0].ubound + 1 - retarray->dim[0].lbound;
 	    if (ret_extent != rank)
