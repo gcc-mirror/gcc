@@ -8663,7 +8663,7 @@ tsubst_function_type (tree t,
       && in_decl != NULL_TREE
       && !TREE_NO_WARNING (in_decl)
       && (SCALAR_TYPE_P (return_type) || VOID_TYPE_P (return_type)))
-    warning (OPT_Wreturn_type,
+    warning (OPT_Wignored_qualifiers,
             "type qualifiers ignored on function return type");
 
   /* Construct a new type node and return it.  */

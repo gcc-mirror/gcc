@@ -1,3 +1,9 @@
+2008-01-12  Doug Kwan  <dougkwan@google.com>
+
+	* gcc.dg/qual-return-1.c: Add -Wignored-qualifiers.
+	* g++.dg/warn/Wreturn-type-4.C: Replace -Wreturn-type by
+	-Wignored-qualifiers.
+
 2008-01-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/slice3.adb: New test.

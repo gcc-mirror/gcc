@@ -236,7 +236,7 @@ Objective-C and Objective-C++ Dialects}.
 -Werror  -Werror=* @gol
 -Wfatal-errors  -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wno-format-extra-args -Wformat-nonliteral @gol
--Wformat-security  -Wformat-y2k @gol
+-Wformat-security  -Wformat-y2k -Wignored-qualifiers @gol
 -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
 -Wimport  -Wno-import  -Winit-self  -Winline @gol
 -Wno-int-to-pointer-cast -Wno-invalid-offsetof @gol
@@ -2675,6 +2675,7 @@ name is still supported, but the newer name is more descriptive.)
 
 @gccoptlist{-Wclobbered  @gol
 -Wempty-body  @gol
+-Wignored-qualifiers @gol
 -Wmissing-field-initializers  @gol
 -Wmissing-parameter-type @r{(C only)}  @gol
 -Wold-style-declaration @r{(C only)}  @gol
@@ -2864,6 +2865,19 @@ enabled by default and it is made into an error by
 Same as @option{-Wimplicit-int} and @option{-Wimplicit-function-declaration}.
 This warning is enabled by @option{-Wall}.
 
+@item -Wignored-qualifiers
+@opindex Wignored-qualifiers
+@opindex Wno-ignored-qualifiers
+Warn if the return type of a function has a type qualifier
+such as @code{const}.  For ISO C such a type qualifier has no effect,
+since the value returned by a function is not an lvalue.
+For C++, the warning is only emitted for scalar types or @code{void}.
+ISO C prohibits qualified @code{void} return types on function
+definitions, so such return types always receive a warning
+even without this option.
+
+This warning is also enabled by @option{-Wextra}.
+
 @item -Wmain
 @opindex Wmain
 Warn if the type of @samp{main} is suspicious.  @samp{main} should be a
@@ -2995,14 +3009,6 @@ return-value in a function whose return-type is not @code{void}
 (falling off the end of the function body is considered returning
 without a value), and about a @code{return} statement with a
 expression in a function whose return-type is @code{void}.
-
-Also warn if the return type of a function has a type qualifier
-such as @code{const}.  For ISO C such a type qualifier has no effect,
-since the value returned by a function is not an lvalue.
-For C++, the warning is only emitted for scalar types or @code{void}.
-ISO C prohibits qualified @code{void} return types on function
-definitions, so such return types always receive a warning
-even without this option.
 
 For C++, a function without return type always produces a diagnostic
 message, even when @option{-Wno-return-type} is specified.  The only

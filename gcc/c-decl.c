@@ -4526,7 +4526,7 @@ grokdeclarator (const struct c_declarator *declarator,
 		if (VOID_TYPE_P (type) && really_funcdef)
 		  pedwarn ("function definition has qualified void return type");
 		else
-		  warning (OPT_Wreturn_type,
+		  warning (OPT_Wignored_qualifiers,
 			   "type qualifiers ignored on function return type");
 
 		type = c_build_qualified_type (type, type_quals);

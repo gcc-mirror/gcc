@@ -8018,7 +8018,7 @@ grokdeclarator (const cp_declarator *declarator,
 	    if (type_quals != TYPE_UNQUALIFIED)
 	      {
 		if (SCALAR_TYPE_P (type) || VOID_TYPE_P (type))
-		  warning (OPT_Wreturn_type,
+		  warning (OPT_Wignored_qualifiers,
 			   "type qualifiers ignored on function return type");
 		/* We now know that the TYPE_QUALS don't apply to the
 		   decl, but to its return type.  */

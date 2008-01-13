@@ -1,6 +1,6 @@
 /* PR c++/18313 */
 /* { dg-do compile } */
-/* { dg-options "-Wreturn-type" } */
+/* { dg-options "-Wignored-qualifiers" } */
 
 volatile void bar(); /* { dg-warning "type qualifiers ignored" } */
 
