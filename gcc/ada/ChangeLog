@@ -1,3 +1,12 @@
+2008-01-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* trans.c (call_to_gnu):Invoke the addressable_p predicate only
+	when necessary.  Merge some conditional statements.  Update comments.
+	Rename unchecked_convert_p local variable to suppress_type_conversion.
+	Do not suppress conversions in the In case.
+	(addressable_p) <VIEW_CONVERT_EXPR>: Do not take alignment issues
+	into account on non strict-alignment platforms.
+
 2008-01-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* utils.c (aggregate_type_contains_array_p): New predicate.
