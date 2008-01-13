@@ -1,5 +1,10 @@
 2008-01-12  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/slice3.adb: New test.
+	* gnat.dg/slice4.adb: Likewise.
+
+2008-01-12  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/bit_packed_array.ad[sb]: New test.
 
 2008-01-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>

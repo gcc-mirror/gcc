@@ -1509,6 +1509,33 @@ create_true_var_decl (tree var_name, tree asm_name, tree type, tree var_init,
 			    attr_list, gnat_node);
 }
 
+/* Return true if TYPE, an aggregate type, contains (or is) an array.  */
+
+static bool
+aggregate_type_contains_array_p (tree type)
+{
+  switch (TREE_CODE (type))
+    {
+    case RECORD_TYPE:
+    case UNION_TYPE:
+    case QUAL_UNION_TYPE:
+      {
+	tree field;
+	for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	  if (AGGREGATE_TYPE_P (TREE_TYPE (field))
+	      && aggregate_type_contains_array_p (TREE_TYPE (field)))
+	    return true;
+	return false;
+      }
+
+    case ARRAY_TYPE:
+      return true;
+    
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Returns a FIELD_DECL node. FIELD_NAME the field name, FIELD_TYPE is its
    type, and RECORD_TYPE is the type of the parent.  PACKED is nonzero if
    this field is in a record type with a "pragma pack".  If SIZE is nonzero
@@ -1527,8 +1554,15 @@ create_field_decl (tree field_name, tree field_type, tree record_type,
   TREE_READONLY (field_decl) = TYPE_READONLY (field_type);
 
   /* If FIELD_TYPE is BLKmode, we must ensure this is aligned to at least a
-     byte boundary since GCC cannot handle less-aligned BLKmode bitfields.  */
-  if (packed && TYPE_MODE (field_type) == BLKmode)
+     byte boundary since GCC cannot handle less-aligned BLKmode bitfields.
+     Likewise for an aggregate without specified position that contains an
+     array, because in this case slices of variable length of this array
+     must be handled by GCC and variable-sized objects need to be aligned
+     to at least a byte boundary.  */
+  if (packed && (TYPE_MODE (field_type) == BLKmode
+		 || (!pos
+		     && AGGREGATE_TYPE_P (field_type)
+		     && aggregate_type_contains_array_p (field_type))))
     DECL_ALIGN (field_decl) = BITS_PER_UNIT;
 
   /* If a size is specified, use it.  Otherwise, if the record type is packed

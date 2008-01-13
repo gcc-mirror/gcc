@@ -1,5 +1,11 @@
 2008-01-12  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* utils.c (aggregate_type_contains_array_p): New predicate.
+	(create_field_decl): In a packed record, force byte alignment
+	for fields without specified position that contain an array.
+
+2008-01-12  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* utils.c (unchecked_convert): Fold the VIEW_CONVERT_EXPR expression.
 
 2008-01-10  John David Anglin  <dave.anglin.@nrc-cnrc.gc.ca>
