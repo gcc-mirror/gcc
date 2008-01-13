@@ -1,3 +1,9 @@
+2008-01-13  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34601
+	* emit-rtl.c (set_reg_attrs_for_decl_rtl): Use DECL_MODE
+	instead of TYPE_MODE to deal with calls from expand_one_error_var.
+
 2008-01-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcse.c (cprop_jump): Call validate_unshare_change instead of
