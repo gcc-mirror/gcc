@@ -1,5 +1,10 @@
 2008-01-13  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/struct-ret-3.c: Adjust testcase to make stack
+	readable and writable again before exiting.
+
+2008-01-13  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/34601
 	* gcc.dg/noncompile/incomplete-4.c: New testcase.
 

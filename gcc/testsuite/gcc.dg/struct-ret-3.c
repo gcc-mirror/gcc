@@ -90,5 +90,9 @@ int main(void)
    u->dp.pDictRidderInfo = &u->di;
    Initialize(&u->o, 0);
 
+   mprotect(u->c1, 4096, PROT_READ|PROT_WRITE);
+   mprotect(u->c2, 4096, PROT_READ|PROT_WRITE);
+   mprotect(u->c3, 4096, PROT_READ|PROT_WRITE);
+
    return 0;
 }
