@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2007, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2008, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -495,7 +495,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
     case E_Out_Parameter:
     case E_Variable:
 
-      /* Simple variables, loop variables, OUT parameters, and exceptions.  */
+      /* Simple variables, loop variables, Out parameters, and exceptions.  */
     object:
       {
 	bool used_by_ref = false;
@@ -3395,7 +3395,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
        Each parameter is first checked by calling must_pass_by_ref on its
        type to determine if it is passed by reference.  For parameters which
-       are copied in, if they are Ada IN OUT or OUT parameters, their return
+       are copied in, if they are Ada In Out or Out parameters, their return
        value becomes part of a record which becomes the return type of the
        function (C function - note that this applies only to Ada procedures
        so there is no Ada return type). Additional code to store back the
@@ -3406,7 +3406,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
        equivalent source rewritings that follow:
 
 						struct temp {int a,b};
-       procedure P (A,B: IN OUT ...) is		temp P (int A,B)
+       procedure P (A,B: In Out ...) is		temp P (int A,B)
        begin					{
 	 ..					  ..
        end P;					  return {A,B};
@@ -3438,7 +3438,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   parameters.  */
 	tree gnu_field_list = NULL_TREE;
 	/* Non-null for subprograms containing parameters passed by copy-in
-	   copy-out (Ada IN OUT or OUT parameters not passed by reference),
+	   copy-out (Ada In Out or Out parameters not passed by reference),
 	   in which case it is the list of nodes used to specify the values of
 	   the in out/out parameters that are returned as a record upon
 	   procedure return.  The TREE_PURPOSE of an element of this list is
@@ -4545,7 +4545,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
 
   /* If we must pass or were requested to pass by reference, do so.
      If we were requested to pass by copy, do so.
-     Otherwise, for foreign conventions, pass IN OUT or OUT parameters
+     Otherwise, for foreign conventions, pass In Out or Out parameters
      or aggregates by reference.  For COBOL and Fortran, pass all
      integer and FP types that way too.  For Convention Ada, use
      the standard Ada default.  */
@@ -4566,22 +4566,22 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
       by_ref = true;
     }
 
-  /* Pass IN OUT or OUT parameters using copy-in copy-out mechanism.  */
+  /* Pass In Out or Out parameters using copy-in copy-out mechanism.  */
   else if (!in_param)
     *cico = true;
 
   if (mech == By_Copy && (by_ref || by_component_ptr))
     post_error ("?cannot pass & by copy", gnat_param);
 
-  /* If this is an OUT parameter that isn't passed by reference and isn't
+  /* If this is an Out parameter that isn't passed by reference and isn't
      a pointer or aggregate, we don't make a PARM_DECL for it.  Instead,
      it will be a VAR_DECL created when we process the procedure, so just
      return its type.  For the special parameter of a valued procedure,
      never pass it in.
 
      An exception is made to cover the RM-6.4.1 rule requiring "by copy"
-     OUT parameters with discriminants or implicit initial values to be
-     handled like IN OUT parameters.  These type are normally built as
+     Out parameters with discriminants or implicit initial values to be
+     handled like In Out parameters.  These type are normally built as
      aggregates, hence passed by reference, except for some packed arrays
      which end up encoded in special integer types.
 
