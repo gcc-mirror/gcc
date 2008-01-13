@@ -3034,15 +3034,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       while (__last - __first >= __two_step)
 	{
 	  __result = _GLIBCXX_STD_P::merge(__first, __first + __step_size,
-				__first + __step_size, __first + __two_step,
-				__result);
+					   __first + __step_size,
+					   __first + __two_step,
+					   __result);
 	  __first += __two_step;
 	}
 
       __step_size = std::min(_Distance(__last - __first), __step_size);
       _GLIBCXX_STD_P::merge(__first, __first + __step_size, 
 			    __first + __step_size, __last,
-		 __result);
+			    __result);
     }
 
   template<typename _RandomAccessIterator1, typename _RandomAccessIterator2,
@@ -3291,8 +3292,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
       __glibcxx_function_requires(_LessThanOpConcept<_ValueType1, _ValueType2>)
       __glibcxx_function_requires(_LessThanOpConcept<_ValueType2, _ValueType1>)
-      __glibcxx_requires_sorted(__first1, __last1);
-      __glibcxx_requires_sorted(__first2, __last2);
+      __glibcxx_requires_sorted_set(__first1, __last1, __first2);
+      __glibcxx_requires_sorted_set(__first2, __last2, __first1);
 
       while (__first1 != __last1 && __first2 != __last2)
 	if (*__first2 < *__first1)
@@ -3328,7 +3329,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	   typename _Compare>
     bool
     includes(_InputIterator1 __first1, _InputIterator1 __last1,
-	     _InputIterator2 __first2, _InputIterator2 __last2, _Compare __comp)
+	     _InputIterator2 __first2, _InputIterator2 __last2,
+	     _Compare __comp)
     {
       typedef typename iterator_traits<_InputIterator1>::value_type
 	_ValueType1;
@@ -3342,8 +3344,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 				  _ValueType1, _ValueType2>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
 				  _ValueType2, _ValueType1>)
-      __glibcxx_requires_sorted_pred(__first1, __last1, __comp);
-      __glibcxx_requires_sorted_pred(__first2, __last2, __comp);
+      __glibcxx_requires_sorted_set_pred(__first1, __last1, __first2, __comp);
+      __glibcxx_requires_sorted_set_pred(__first2, __last2, __first1, __comp);
 
       while (__first1 != __last1 && __first2 != __last2)
 	if (__comp(*__first2, *__first1))
@@ -5029,8 +5031,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
       __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
 				  _ValueType2>)
       __glibcxx_function_requires(_LessThanOpConcept<_ValueType2, _ValueType1>)	
-      __glibcxx_requires_sorted(__first1, __last1);
-      __glibcxx_requires_sorted(__first2, __last2);
+      __glibcxx_requires_sorted_set(__first1, __last1, __first2);
+      __glibcxx_requires_sorted_set(__first2, __last2, __first1);
 
       while (__first1 != __last1 && __first2 != __last2)
 	{
@@ -5092,8 +5094,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
 				  _ValueType2>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
 				  _ValueType2, _ValueType1>)
-      __glibcxx_requires_sorted_pred(__first1, __last1, __comp);
-      __glibcxx_requires_sorted_pred(__first2, __last2, __comp);
+      __glibcxx_requires_sorted_set_pred(__first1, __last1, __first2, __comp);
+      __glibcxx_requires_sorted_set_pred(__first2, __last2, __first1, __comp);
 
       while (__first1 != __last1 && __first2 != __last2)
 	{
@@ -5237,8 +5239,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
 				  _ValueType2>)
       __glibcxx_function_requires(_LessThanOpConcept<_ValueType1, _ValueType2>)
       __glibcxx_function_requires(_LessThanOpConcept<_ValueType2, _ValueType1>)
-      __glibcxx_requires_sorted(__first1, __last1);
-      __glibcxx_requires_sorted(__first2, __last2);
+      __glibcxx_requires_sorted_set(__first1, __last1, __first2);
+      __glibcxx_requires_sorted_set(__first2, __last2, __first1);
 
       while (__first1 != __last1 && __first2 != __last2)
 	{
@@ -5305,8 +5307,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
 				  _ValueType1, _ValueType2>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
 				  _ValueType2, _ValueType1>)
-      __glibcxx_requires_sorted_pred(__first1, __last1, __comp);
-      __glibcxx_requires_sorted_pred(__first2, __last2, __comp);
+      __glibcxx_requires_sorted_set_pred(__first1, __last1, __first2, __comp);
+      __glibcxx_requires_sorted_set_pred(__first2, __last2, __first1, __comp);
 
       while (__first1 != __last1 && __first2 != __last2)
 	{
@@ -5367,8 +5369,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
 				  _ValueType1>)
       __glibcxx_function_requires(_LessThanOpConcept<_ValueType1, _ValueType2>)
       __glibcxx_function_requires(_LessThanOpConcept<_ValueType2, _ValueType1>)
-      __glibcxx_requires_sorted(__first1, __last1);
-      __glibcxx_requires_sorted(__first2, __last2);
+      __glibcxx_requires_sorted_set(__first1, __last1, __first2);
+      __glibcxx_requires_sorted_set(__first2, __last2, __first1);
 
       while (__first1 != __last1 && __first2 != __last2)
 	if (*__first1 < *__first2)
@@ -5425,8 +5427,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
 				  _ValueType1, _ValueType2>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
 				  _ValueType2, _ValueType1>)
-      __glibcxx_requires_sorted_pred(__first1, __last1, __comp);
-      __glibcxx_requires_sorted_pred(__first2, __last2, __comp);
+      __glibcxx_requires_sorted_set_pred(__first1, __last1, __first2, __comp);
+      __glibcxx_requires_sorted_set_pred(__first2, __last2, __first1, __comp);
 
       while (__first1 != __last1 && __first2 != __last2)
 	if (__comp(*__first1, *__first2))
@@ -5480,8 +5482,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
 				  _ValueType1>)
       __glibcxx_function_requires(_LessThanOpConcept<_ValueType1, _ValueType2>)
       __glibcxx_function_requires(_LessThanOpConcept<_ValueType2, _ValueType1>)	
-      __glibcxx_requires_sorted(__first1, __last1);
-      __glibcxx_requires_sorted(__first2, __last2);
+      __glibcxx_requires_sorted_set(__first1, __last1, __first2);
+      __glibcxx_requires_sorted_set(__first2, __last2, __first1);
 
       while (__first1 != __last1 && __first2 != __last2)
 	if (*__first1 < *__first2)
@@ -5542,8 +5544,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
 				  _ValueType1, _ValueType2>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
 				  _ValueType2, _ValueType1>)
-      __glibcxx_requires_sorted_pred(__first1, __last1, __comp);
-      __glibcxx_requires_sorted_pred(__first2, __last2, __comp);
+      __glibcxx_requires_sorted_set_pred(__first1, __last1, __first2, __comp);
+      __glibcxx_requires_sorted_set_pred(__first2, __last2, __first1, __comp);
 
       while (__first1 != __last1 && __first2 != __last2)
 	if (__comp(*__first1, *__first2))
@@ -5599,8 +5601,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
 				  _ValueType2>)
       __glibcxx_function_requires(_LessThanOpConcept<_ValueType1, _ValueType2>)
       __glibcxx_function_requires(_LessThanOpConcept<_ValueType2, _ValueType1>)	
-      __glibcxx_requires_sorted(__first1, __last1);
-      __glibcxx_requires_sorted(__first2, __last2);
+      __glibcxx_requires_sorted_set(__first1, __last1, __first2);
+      __glibcxx_requires_sorted_set(__first2, __last2, __first1);
 
       while (__first1 != __last1 && __first2 != __last2)
 	if (*__first1 < *__first2)
@@ -5667,8 +5669,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
 				  _ValueType1, _ValueType2>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
 				  _ValueType2, _ValueType1>)
-      __glibcxx_requires_sorted_pred(__first1, __last1, __comp);
-      __glibcxx_requires_sorted_pred(__first2, __last2, __comp);
+      __glibcxx_requires_sorted_set_pred(__first1, __last1, __first2, __comp);
+      __glibcxx_requires_sorted_set_pred(__first2, __last2, __first1, __comp);
 
       while (__first1 != __last1 && __first2 != __last2)
 	if (__comp(*__first1, *__first2))
