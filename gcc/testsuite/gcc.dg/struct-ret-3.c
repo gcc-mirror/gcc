@@ -45,7 +45,8 @@ struct STRUCT_6_BYTES INIT_6_BYTES_ZERO()
 
 void Initialize(struct XXX *this, int iIndex)
 {
-   struct SQLU_DICT_INFO_0 *pDictRidderInfo = this->m_pDatapart[iIndex].pDictRidderInfo;
+   struct SQLU_DICT_INFO_0 *pDictRidderInfo
+     = this->m_pDatapart[iIndex].pDictRidderInfo;
    pDictRidderInfo->bSomeFlag1 = 0;
    pDictRidderInfo->bSomeFlag2 = 0;
    pDictRidderInfo->dRID = INIT_6_BYTES_ZERO();
@@ -68,7 +69,7 @@ int main(void)
 
    char buf[sizeof(struct stuff)+4096];
    struct stuff *u = (struct stuff *)ossAlignX((unsigned long)&buf[0], 4096);
-   memset(u, 1, sizeof(u));
+   memset(u, 1, sizeof(struct stuff));
    u->c1[0] = '\xAA';
    u->c2[0] = '\xBB';
    u->c3[0] = '\xCC';
