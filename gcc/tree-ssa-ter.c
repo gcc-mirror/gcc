@@ -227,6 +227,7 @@ free_temp_expr_table (temp_expr_table_p t)
 #endif
 
   BITMAP_FREE (t->partition_in_use);
+  BITMAP_FREE (t->new_replaceable_dependencies);
 
   for (i = 0; i <= num_ssa_names; i++)
     if (t->expr_decl_uids[i])
@@ -235,6 +236,7 @@ free_temp_expr_table (temp_expr_table_p t)
 
   free (t->kill_list);
   free (t->partition_dependencies);
+  free (t->num_in_part);
 
   if (t->replaceable_expressions)
     ret = t->replaceable_expressions;
