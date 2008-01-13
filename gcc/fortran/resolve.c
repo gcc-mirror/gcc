@@ -1013,6 +1013,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype)
   gfc_symbol *sym;
   gfc_symtree *parent_st;
   gfc_expr *e;
+  int save_need_full_assumed_size;
 
   for (; arg; arg = arg->next)
     {
@@ -1041,8 +1042,12 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype)
 
       if (e->ts.type != BT_PROCEDURE)
 	{
+	  save_need_full_assumed_size = need_full_assumed_size;
+	  if (e->expr_type != FL_VARIABLE)
+	    need_full_assumed_size = 0;
 	  if (gfc_resolve_expr (e) != SUCCESS)
 	    return FAILURE;
+	  need_full_assumed_size = save_need_full_assumed_size;
 	  goto argument_list;
 	}
 
@@ -1181,8 +1186,12 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype)
 	 primary.c (match_actual_arg). If above code determines that it
 	 is a  variable instead, it needs to be resolved as it was not
 	 done at the beginning of this function.  */
+      save_need_full_assumed_size = need_full_assumed_size;
+      if (e->expr_type != FL_VARIABLE)
+	need_full_assumed_size = 0;
       if (gfc_resolve_expr (e) != SUCCESS)
 	return FAILURE;
+      need_full_assumed_size = save_need_full_assumed_size;
 
     argument_list:
       /* Check argument list functions %VAL, %LOC and %REF.  There is

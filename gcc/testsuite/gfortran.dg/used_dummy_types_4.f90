@@ -47,7 +47,7 @@ end module global
 ! These are different.
   st1 = dt                ! { dg-error "convert REAL" }
 
-  call foo (st1)          ! { dg-error "Type/rank mismatch in argument" }
+  call foo (st1)          ! { dg-error "Type mismatch in argument" }
 
 contains
 

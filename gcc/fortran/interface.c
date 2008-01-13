@@ -1420,9 +1420,10 @@ compare_pointer (gfc_symbol *formal, gfc_expr *actual)
 
 static int
 compare_parameter (gfc_symbol *formal, gfc_expr *actual,
-		   int ranks_must_agree, int is_elemental)
+		   int ranks_must_agree, int is_elemental, locus *where)
 {
   gfc_ref *ref;
+  bool rank_check;
 
   /* If the formal arg has type BT_VOID, it's to one of the iso_c_binding
      procs c_f_pointer or c_f_procpointer, and we need to accept most
@@ -1439,51 +1440,119 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   if (actual->ts.type == BT_PROCEDURE)
     {
       if (formal->attr.flavor != FL_PROCEDURE)
-	return 0;
+	goto proc_fail;
 
       if (formal->attr.function
 	  && !compare_type_rank (formal, actual->symtree->n.sym))
-	return 0;
+	goto proc_fail;
 
       if (formal->attr.if_source == IFSRC_UNKNOWN
 	  || actual->symtree->n.sym->attr.external)
 	return 1;		/* Assume match.  */
 
       if (actual->symtree->n.sym->attr.intrinsic)
-	return compare_intr_interfaces (formal, actual->symtree->n.sym);
-      else
-	return compare_interfaces (formal, actual->symtree->n.sym, 0);
+	{
+	 if (!compare_intr_interfaces (formal, actual->symtree->n.sym))
+	   goto proc_fail;
+	}
+      else if (!compare_interfaces (formal, actual->symtree->n.sym, 0))
+	goto proc_fail;
+
+      return 1;
+
+      proc_fail:
+	if (where)
+	  gfc_error ("Type/rank mismatch in argument '%s' at %L",
+		     formal->name, &actual->where);
+      return 0;
     }
 
   if ((actual->expr_type != EXPR_NULL || actual->ts.type != BT_UNKNOWN)
       && !gfc_compare_types (&formal->ts, &actual->ts))
-    return 0;
+    {
+      if (where && actual->ts.type == BT_DERIVED
+	  && formal->ts.type == BT_DERIVED)
+	gfc_error ("Type mismatch in argument '%s' at %L; passed type(%s) to "
+		   "type(%s)", formal->name, &actual->where,
+		   actual->ts.derived->name, formal->ts.derived->name);
+      else if (where)
+	gfc_error ("Type mismatch in argument '%s' at %L; passed %s to %s",
+		   formal->name, &actual->where,
+		   actual->ts.type == BT_DERIVED ? "derived type"
+				     : gfc_basic_typename (actual->ts.type),
+		   formal->ts.type == BT_DERIVED ? "derived type"
+				     : gfc_basic_typename (formal->ts.type));
+      return 0;
+    }
 
   if (symbol_rank (formal) == actual->rank)
     return 1;
 
-  /* At this point the ranks didn't agree.  */
-  if (ranks_must_agree || formal->attr.pointer)
-    return 0;
+  rank_check = where != NULL && !is_elemental && formal->as
+	       && (formal->as->type == AS_ASSUMED_SHAPE
+		   || formal->as->type == AS_DEFERRED);
 
-  if (actual->rank != 0)
-    return is_elemental || formal->attr.dimension;
-
-  /* At this point, we are considering a scalar passed to an array.
-     This is legal if the scalar is an array element of the right sort.  */
-  if (formal->as->type == AS_ASSUMED_SHAPE)
-    return 0;
-
-  for (ref = actual->ref; ref; ref = ref->next)
-    if (ref->type == REF_SUBSTRING)
+  if (rank_check || ranks_must_agree || formal->attr.pointer
+      || (actual->rank != 0 && !(is_elemental || formal->attr.dimension))
+      || (actual->rank == 0 && formal->as->type == AS_ASSUMED_SHAPE))
+    {
+      if (where)
+	gfc_error ("Rank mismatch in argument '%s' at %L (%d and %d)",
+		   formal->name, &actual->where, symbol_rank (formal),
+		   actual->rank);
       return 0;
+    }
+  else if (actual->rank != 0 && (is_elemental || formal->attr.dimension))
+    return 1;
+
+  /* At this point, we are considering a scalar passed to an array.   This
+     is valid (cf. F95 12.4.1.1; F2003 12.4.1.2),
+     - if the actual argument is (a substring of) an element of a
+       non-assumed-shape/non-pointer array;
+     - (F2003) if the actual argument is of type character.  */
 
   for (ref = actual->ref; ref; ref = ref->next)
     if (ref->type == REF_ARRAY && ref->u.ar.type == AR_ELEMENT)
       break;
 
-  if (ref == NULL)
-    return 0;			/* Not an array element.  */
+  /* Not an array element.  */
+  if (formal->ts.type == BT_CHARACTER
+      && (ref == NULL
+          || (actual->expr_type == EXPR_VARIABLE
+	      && (actual->symtree->n.sym->as->type == AS_ASSUMED_SHAPE
+		  || actual->symtree->n.sym->as->type == AS_DEFERRED))))
+    {
+      if (where && (gfc_option.allow_std & GFC_STD_F2003) == 0)
+	{
+	  gfc_error ("Fortran 2003: Scalar CHARACTER actual argument with "
+		     "array dummy argument '%s' at %L",
+		     formal->name, &actual->where);
+	  return 0;
+	}
+      else if ((gfc_option.allow_std & GFC_STD_F2003) == 0)
+	return 0;
+      else
+	return 1;
+    }
+  else if (ref == NULL)
+    {
+      if (where)
+	gfc_error ("Rank mismatch in argument '%s' at %L (%d and %d)",
+		   formal->name, &actual->where, symbol_rank (formal),
+		   actual->rank);
+      return 0;
+    }
+
+  if (actual->expr_type == EXPR_VARIABLE
+      && actual->symtree->n.sym->as
+      && (actual->symtree->n.sym->as->type == AS_ASSUMED_SHAPE
+	  || actual->symtree->n.sym->as->type == AS_DEFERRED))
+    {
+      if (where)
+	gfc_error ("Element of assumed-shaped array passed to dummy "
+		   "argument '%s' at %L", formal->name, &actual->where);
+      return 0;
+    }
 
   return 1;
 }
@@ -1708,7 +1777,6 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
   gfc_actual_arglist **new, *a, *actual, temp;
   gfc_formal_arglist *f;
   int i, n, na;
-  bool rank_check;
   unsigned long actual_size, formal_size;
 
   actual = *ap;
@@ -1788,34 +1856,10 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 		       "call at %L", where);
 	  return 0;
 	}
-
-      rank_check = where != NULL && !is_elemental && f->sym->as
-		   && (f->sym->as->type == AS_ASSUMED_SHAPE
-		       || f->sym->as->type == AS_DEFERRED);
-
-      if (f->sym->ts.type == BT_CHARACTER && a->expr->ts.type == BT_CHARACTER
-	  && a->expr->rank == 0 && !ranks_must_agree
-	  && f->sym->as && f->sym->as->type != AS_ASSUMED_SHAPE)
-	{
-	  if (where && (gfc_option.allow_std & GFC_STD_F2003) == 0)
-	    {
-	      gfc_error ("Fortran 2003: Scalar CHARACTER actual argument "
-			 "with array dummy argument '%s' at %L",
-			 f->sym->name, &a->expr->where);
-	      return 0;
-	    }
-	  else if ((gfc_option.allow_std & GFC_STD_F2003) == 0)
-	    return 0;
-
-	}
-      else if (!compare_parameter (f->sym, a->expr,
-				   ranks_must_agree || rank_check, is_elemental))
-	{
-	  if (where)
-	    gfc_error ("Type/rank mismatch in argument '%s' at %L",
-		       f->sym->name, &a->expr->where);
-	  return 0;
-	}
+      
+      if (!compare_parameter (f->sym, a->expr, ranks_must_agree,
+			      is_elemental, where))
+	return 0;
 
       if (a->expr->ts.type == BT_CHARACTER
 	   && a->expr->ts.cl && a->expr->ts.cl->length

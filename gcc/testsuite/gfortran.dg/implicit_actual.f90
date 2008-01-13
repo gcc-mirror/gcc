@@ -16,7 +16,7 @@ program snafu
 !  use global
   implicit type (t3) (z)
 
-  call foo (zin) ! { dg-error "defined|Type/rank" }
+  call foo (zin) ! { dg-error "defined|Type mismatch" }
 
 contains
 

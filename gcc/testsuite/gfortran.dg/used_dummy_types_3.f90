@@ -31,7 +31,7 @@
     USE T1
     USE T2 , ONLY : TEST
     TYPE(data_type) :: x
-    CALL TEST(x)         ! { dg-error "Type/rank mismatch in argument" }
+    CALL TEST(x)         ! { dg-error "Type mismatch in argument" }
   END
 
 ! { dg-final { cleanup-modules "T1 T2" } }

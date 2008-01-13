@@ -28,7 +28,7 @@ contains
        call abort()
     end if
 
-    if(.not. c_associated(my_integer)) then ! { dg-error "Type/rank mismatch" }
+    if(.not. c_associated(my_integer)) then ! { dg-error "Type mismatch" }
        call abort()
     end if
   end subroutine sub0
