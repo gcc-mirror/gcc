@@ -1,5 +1,10 @@
 2008-01-13  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/34763
+	* gfortran.dg/interface_proc_end.f90: New.
+
+2008-01-13  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/34759
 	* gfortran.dg/assumed_size_refs_4.f90: New.
 

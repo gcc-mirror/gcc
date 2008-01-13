@@ -1,5 +1,10 @@
 2008-01-13  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/34763
+	* decl.c (contained_procedure): Only check directly preceeding state.
+
+2008-01-13  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/34759
 	* check.c (gfc_check_shape): Accept array ranges of
 	assumed-size arrays.
