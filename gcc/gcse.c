@@ -2821,7 +2821,7 @@ cprop_jump (basic_block bb, rtx setcc, rtx jump, rtx from, rtx src)
          to one computed by setcc.  */
       if (setcc && modified_in_p (new, setcc))
 	return 0;
-      if (! validate_change (jump, &SET_SRC (set), new, 0))
+      if (! validate_unshare_change (jump, &SET_SRC (set), new, 0))
 	{
 	  /* When (some) constants are not valid in a comparison, and there
 	     are two registers to be replaced by constants before the entire

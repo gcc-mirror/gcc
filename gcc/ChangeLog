@@ -1,3 +1,8 @@
+2008-01-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcse.c (cprop_jump): Call validate_unshare_change instead of
+	validate_change to unshare the source of the PC set.
+
 2008-01-12  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/32135
