@@ -147,7 +147,7 @@ sources = \
 	hash_c++0x.cc \
 	globals_io.cc \
 	hashtable.cc \
-	hashtable_c++0x.cc \	
+	hashtable_c++0x.cc \
 	ios.cc \
 	ios_failure.cc \
 	ios_init.cc \
