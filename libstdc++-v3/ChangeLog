@@ -1,3 +1,19 @@
+2008-01-14  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/parallel/tree.h: Remove.
+	* include/Makefile.am: Update.
+	* include/Makefile.in: Rebuild.
+
+	* src/Makefile.am: Remove spurious trailing backslash.
+	* src/Makefile.in: Rebuild.
+	* po/Makefile.in: Likewise.
+	* libmath/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+	* libsupc++/Makefile.in: Likewise.
+	* aclocal.m4: Likewise.
+	* Makefile.in: Likewise.
+	* configure: Likewise.
+
 2008-01-12  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/34730

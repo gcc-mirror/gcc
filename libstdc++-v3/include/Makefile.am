@@ -1,6 +1,6 @@
 ## Makefile for the include subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+## Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 ## Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
@@ -745,7 +745,6 @@ parallel_headers = \
         ${parallel_srcdir}/settings.h \
         ${parallel_srcdir}/sort.h \
         ${parallel_srcdir}/tags.h \
-        ${parallel_srcdir}/tree.h \
         ${parallel_srcdir}/types.h \
         ${parallel_srcdir}/unique_copy.h \
         ${parallel_srcdir}/workstealing.h 
