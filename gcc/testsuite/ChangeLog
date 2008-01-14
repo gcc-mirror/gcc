@@ -1,3 +1,7 @@
+2008-01-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/compile/20080114-1.c: New test.
+
 2008-01-13  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34665

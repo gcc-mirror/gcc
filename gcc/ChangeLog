@@ -1,3 +1,10 @@
+2008-01-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/31944
+	* cse.c (remove_pseudo_from_table): New function.
+	(merge_equiv_classes): Use above function to remove pseudo-registers.
+	(invalidate): Likewise.
+
 2008-01-13  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/34601
