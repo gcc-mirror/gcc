@@ -1,3 +1,9 @@
+2008-01-14  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/24924
+	* g++.dg/cpp/pedantic-errors.C: Delete.
+	* g++.dg/cpp/permissive.C: Delete.
+	
 2008-01-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/compile/20080114-1.c: New test.
