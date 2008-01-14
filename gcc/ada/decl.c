@@ -740,23 +740,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 					   (TYPE_QUALS (gnu_type)
 					    | TYPE_QUAL_VOLATILE));
 
-	/* Convert the expression to the type of the object except in the
-	   case where the object's type is unconstrained or the object's type
-	   is a padded record whose field is of self-referential size.  In
-	   the former case, converting will generate unnecessary evaluations
-	   of the CONSTRUCTOR to compute the size and in the latter case, we
-	   want to only copy the actual data.  */
-	if (gnu_expr
-	    && TREE_CODE (gnu_type) != UNCONSTRAINED_ARRAY_TYPE
-	    && !CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_type))
-	    && !(TREE_CODE (gnu_type) == RECORD_TYPE
-		 && TYPE_IS_PADDING_P (gnu_type)
-		 && (CONTAINS_PLACEHOLDER_P
-		     (TYPE_SIZE (TREE_TYPE (TYPE_FIELDS (gnu_type)))))))
-	  gnu_expr = convert (gnu_type, gnu_expr);
-
 	/* If this is a renaming, avoid as much as possible to create a new
-	   object.  However, in several cases, creating it is required.  */
+	   object.  However, in several cases, creating it is required.
+	   This processing needs to be applied to the raw expression so
+	   as to make it more likely to rename the underlying object.  */
 	if (Present (Renamed_Object (gnat_entity)))
 	  {
 	    bool create_normal_object = false;
@@ -905,7 +892,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   the object.  If there is an initializer, it will have already
 	   been converted to the right type, but we need to create the
 	   template if there is no initializer.  */
-	else if (definition && TREE_CODE (gnu_type) == RECORD_TYPE
+	else if (definition
+		 && TREE_CODE (gnu_type) == RECORD_TYPE
 		 && (TYPE_CONTAINS_TEMPLATE_P (gnu_type)
 		     /* Beware that padding might have been introduced
 			via maybe_pad_type above.  */
@@ -931,6 +919,21 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 				NULL_TREE),
 		NULL_TREE));
 	  }
+
+	/* Convert the expression to the type of the object except in the
+	   case where the object's type is unconstrained or the object's type
+	   is a padded record whose field is of self-referential size.  In
+	   the former case, converting will generate unnecessary evaluations
+	   of the CONSTRUCTOR to compute the size and in the latter case, we
+	   want to only copy the actual data.  */
+	if (gnu_expr
+	    && TREE_CODE (gnu_type) != UNCONSTRAINED_ARRAY_TYPE
+	    && !CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_type))
+	    && !(TREE_CODE (gnu_type) == RECORD_TYPE
+		 && TYPE_IS_PADDING_P (gnu_type)
+		 && (CONTAINS_PLACEHOLDER_P
+		     (TYPE_SIZE (TREE_TYPE (TYPE_FIELDS (gnu_type)))))))
+	  gnu_expr = convert (gnu_type, gnu_expr);
 
 	/* If this is a pointer and it does not have an initializing
 	   expression, initialize it to NULL, unless the object is

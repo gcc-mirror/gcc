@@ -6503,6 +6503,28 @@ maybe_stabilize_reference (tree ref, bool force, bool *success)
       result = gnat_stabilize_reference_1 (ref, force);
       break;
 
+    case CONSTRUCTOR:
+      /* Constructors with 1 element are used extensively to formally
+	 convert objects to special wrapping types.  */
+      if (TREE_CODE (type) == RECORD_TYPE
+	  && VEC_length (constructor_elt, CONSTRUCTOR_ELTS (ref)) == 1)
+	{
+	  tree index
+	    = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (ref), 0)->index;
+	  tree value
+	    = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (ref), 0)->value;
+	  result
+	    = build_constructor_single (type, index,
+					gnat_stabilize_reference_1 (value,
+								    force));
+	}
+      else
+	{
+	  *success = false;
+	  return ref;
+	}
+      break;
+
     case ERROR_MARK:
       ref = error_mark_node;
 
