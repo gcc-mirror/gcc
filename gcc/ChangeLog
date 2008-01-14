@@ -1,3 +1,9 @@
+2008-01-14  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/24924
+	* c-opts (c_common_post_options): Do not enable CPP
+	flag_pedantic_errors by default.
+	
 2008-01-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/31944
