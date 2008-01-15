@@ -230,11 +230,11 @@ MAKING CHANGES TO INCLHACK.DEF
             c_fix_arg = "#define[ \t]+([A-Z][A-Z0-9a-z_]*).*";
 
         This would wrap a one line #define inside of a "#ifndef"/"#endif"
-        pair.  The second "c_fix_arg" may be omitted *IF* there is a select
-        clause and the first one identifies the text you wish to reformat.
-        It will then be used as the second "c_fix_arg".  You may delete the
-        selected text by supplying an empty string for the format (the first
-        "c_fix_arg").
+        pair.  The second "c_fix_arg" may be omitted *IF* there is at least
+        one select clause and the first one identifies the text you wish to
+        reformat.  It will then be used as the second "c_fix_arg".  You may
+        delete the selected text by supplying an empty string for the
+        replacement format (the first "c_fix_arg").
 
 	Note: In general, a format c_fix may be used in place of one
 	sed expression.  However, it will need to be rewritten by
