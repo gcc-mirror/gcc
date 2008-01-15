@@ -1,3 +1,8 @@
+2008-01-14  Seongbae Park <seongbae.park@gmail.com>
+
+	* crossconfig.m4: Add missing header checks, C99 TR1 check,
+	and sigsetjmp check.
+
 2008-01-14  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/parallel/tree.h: Remove.
