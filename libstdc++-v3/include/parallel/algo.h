@@ -1585,7 +1585,7 @@ namespace __parallel
 
   // Parallel algorithm for random access iterators.
   template<typename RandomAccessIterator, typename Size, typename Generator>
-    RandomAccessIterator
+    inline RandomAccessIterator
     generate_n_switch(RandomAccessIterator begin, Size n, Generator gen, 
 		      random_access_iterator_tag, 
 		      __gnu_parallel::parallelism parallelism_tag
@@ -1940,10 +1940,10 @@ namespace __parallel
 
   // Sequential fallback
   template<typename RandomAccessIterator>
-  void
-  partial_sort(RandomAccessIterator begin, RandomAccessIterator middle, 
-	       RandomAccessIterator end, __gnu_parallel::sequential_tag)
-  { _GLIBCXX_STD_P::partial_sort(begin, middle, end); }
+    inline void
+    partial_sort(RandomAccessIterator begin, RandomAccessIterator middle, 
+		 RandomAccessIterator end, __gnu_parallel::sequential_tag)
+    { _GLIBCXX_STD_P::partial_sort(begin, middle, end); }
 
   // Public interface, parallel algorithm for random access iterators
   template<typename RandomAccessIterator, typename _Compare>
@@ -2155,4 +2155,3 @@ namespace __parallel
 } // end namespace
 
 #endif /* _GLIBCXX_ALGORITHM_H */
-

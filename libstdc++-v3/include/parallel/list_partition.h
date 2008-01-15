@@ -109,7 +109,7 @@ namespace __gnu_parallel
     {
       bool make_twice = false;
 
-      // According to the oversampling factor, the resizing algorithm is chosen.
+      // The resizing algorithm is chosen according to the oversampling factor.
       if (oversampling == 0)
 	{
 	  make_twice = true;

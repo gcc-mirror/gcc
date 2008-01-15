@@ -1,3 +1,12 @@
+2008-01-14  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/parallel/list_partition.h: Formatting fixes, inline tweaks.
+	* include/parallel/numeric: Likewise.
+	* include/parallel/balanced_quicksort.h: Likewise.
+	* include/parallel/unique_copy.h: Likewise.
+	* include/parallel/algobase.h: Likewise.
+	* include/parallel/algo.h: Likewise.
+
 2008-01-14  Seongbae Park <seongbae.park@gmail.com>
 
 	* crossconfig.m4: Add missing header checks, C99 TR1 check,
