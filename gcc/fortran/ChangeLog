@@ -1,3 +1,11 @@
+2008-01-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/34671
+	* iresolve.c (gfc_resolve_all):  Call resolve_mask_arg.
+	(gfc_resolve_any):  Likewise.
+	(gfc_resolve_count):  Likewise.  Don't append kind of
+	argument to function name.
+
 2008-01-13  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34665

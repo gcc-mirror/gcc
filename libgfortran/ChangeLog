@@ -1,3 +1,55 @@
+2008-01-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/34671
+	* gfortran.am: Added _gfortran_all_l1, _gfortran_all_l2,
+	_gfortran_any_l1, _gfortran_any_l2, -28,15 _gfortran_count_1_l,
+	_gfortran_count_16_l, _gfortran_count_2_l, _gfortran_count_4_l and
+	_gfortran_count_8_l Removed _gfortran_count_16_l16,
+	_gfortran_count_16_l4, _gfortran_count_16_l8,
+	_gfortran_count_4_l16, _gfortran_count_4_l4, _gfortran_count_4_l8,
+	_gfortran_count_8_l16, _gfortran_count_8_l4 and
+	_gfortran_count_8_l8.
+	* Makefile.am: Added generated/any_l1.c and generated/any_l2.c to
+	i_any_c.  Added generated/all_l1. and generated/all_l2.c to
+	i_all_c.  Removed generated/count_4_l4.c, generated/count_8_l4.c,
+	generated/count_16_l4.c, generated/count_4_l8.c,
+	generated/count_8_l8.c, generated/count_16_l8.c,
+	generated/count_4_l16.c, generated/count_8_l16.c, and
+	generated/count_16_l16.c from i_count_c.  Added count_1_l.c,
+	count_2_l.c, count_4_l.c, count_8_l.c and count_16_l.c to
+	i_count_c.  I_M4_DEPS2 depends on ifunction_logical.m4, for
+	any of the files generated from all.m4, any.m4 and count.m4.
+	* Makefile.in:  Regenerated.
+	* m4/ifunction_logical.m4:  New file.  Use
+	GFC_LOGICAL_1 pointer for access to source arrays.
+	* m4/any.m4:  Include ifunction_logical.m4 instead of
+	ifunction.m4.  Don't check atype_name.
+	* m4/all.m4:  Likewise.
+	* m4/count.m4:  Likewise.
+	* generated/any_l1.c:  New file.
+	* generated/any_l2.c:  New file.
+	* generated/all_l1.c:  New file.
+	* generated/count_1_l.c:  New file.
+	* generated/count_2_l.c:  New file.
+	* generated/count_4_l.c:  New file.
+	* generated/count_8_l.c:  New file.
+	* generated/count_16_l.c:  New file.
+	* generated/any_l4.c:  Regenerated.
+	* generated/any_l8.c:  Regenerated.
+	* generated/any_l16.c:  Regenerated.
+	* generated/all_l4.c: Regenerated.
+	* generated/all_l8.c: Regenerated.
+	* generated/all_l16.c: Regenerated.
+	* generated/count_4_l4.c:  Removed.
+	* generated/count_4_l8.c:  Removed.
+	* generated/count_4_l16.c:  Removed.
+	* generated/count_8_l4.c:  Removed.
+	* generated/count_8_l8.c:  Removed.
+	* generated/count_8_l16.c:  Removed.
+	* generated/count_16_l4.c:  Removed.
+	* generated/count_16_l8.c:  Removed.
+	* generated/count_16_l16.c:  Removed.
+
 2008-01-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/34746

@@ -121,25 +121,25 @@ runtime/string.c \
 runtime/select.c
 
 i_all_c= \
+$(srcdir)/generated/all_l1.c \
+$(srcdir)/generated/all_l2.c \
 $(srcdir)/generated/all_l4.c \
 $(srcdir)/generated/all_l8.c \
 $(srcdir)/generated/all_l16.c
 
 i_any_c= \
+$(srcdir)/generated/any_l1.c \
+$(srcdir)/generated/any_l2.c \
 $(srcdir)/generated/any_l4.c \
 $(srcdir)/generated/any_l8.c \
 $(srcdir)/generated/any_l16.c
 
 i_count_c= \
-$(srcdir)/generated/count_4_l4.c \
-$(srcdir)/generated/count_8_l4.c \
-$(srcdir)/generated/count_16_l4.c \
-$(srcdir)/generated/count_4_l8.c \
-$(srcdir)/generated/count_8_l8.c \
-$(srcdir)/generated/count_16_l8.c \
-$(srcdir)/generated/count_4_l16.c \
-$(srcdir)/generated/count_8_l16.c \
-$(srcdir)/generated/count_16_l16.c
+$(srcdir)/generated/count_1_l.c \
+$(srcdir)/generated/count_2_l.c \
+$(srcdir)/generated/count_4_l.c \
+$(srcdir)/generated/count_8_l.c \
+$(srcdir)/generated/count_16_l.c
 
 i_maxloc0_c= \
 $(srcdir)/generated/maxloc0_4_i1.c \
@@ -463,7 +463,7 @@ $(srcdir)/generated/pow_c16_i16.c
 m4_files= m4/iparm.m4 m4/ifunction.m4 m4/iforeach.m4 m4/all.m4 \
     m4/any.m4 m4/count.m4 m4/maxloc0.m4 m4/maxloc1.m4 m4/maxval.m4 \
     m4/minloc0.m4 m4/minloc1.m4 m4/minval.m4 m4/product.m4 m4/sum.m4 \
-    m4/matmul.m4 m4/matmull.m4 \
+    m4/matmul.m4 m4/matmull.m4 m4/ifunction_logical.m4 \
     m4/ctrig.m4 m4/cexp.m4 m4/chyp.m4 m4/mtype.m4 \
     m4/specific.m4 m4/specific2.m4 m4/head.m4 m4/shape.m4 m4/reshape.m4 \
     m4/transpose.m4 m4/eoshift1.m4 m4/eoshift3.m4 m4/exponent.m4 \
@@ -684,6 +684,7 @@ endif
 I_M4_DEPS=m4/iparm.m4
 I_M4_DEPS0=$(I_M4_DEPS) m4/iforeach.m4
 I_M4_DEPS1=$(I_M4_DEPS) m4/ifunction.m4
+I_M4_DEPS2=$(I_M4_DEPS) m4/ifunction_logical.m4
 
 kinds.h: $(srcdir)/mk-kinds-h.sh
 	$(SHELL) $(srcdir)/mk-kinds-h.sh '$(FCCOMPILE)' > $@ || rm $@
@@ -707,13 +708,13 @@ fpu-target.h: $(srcdir)/$(FPU_HOST_HEADER)
 ## so we only include them in maintainer mode
 
 if MAINTAINER_MODE
-$(i_all_c): m4/all.m4 $(I_M4_DEPS1)
+$(i_all_c): m4/all.m4 $(I_M4_DEPS2)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 all.m4 > $@
 
-$(i_any_c): m4/any.m4 $(I_M4_DEPS1)
+$(i_any_c): m4/any.m4 $(I_M4_DEPS2)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 any.m4 > $@
 
-$(i_count_c): m4/count.m4 $(I_M4_DEPS1)
+$(i_count_c): m4/count.m4 $(I_M4_DEPS2)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 count.m4 > $@
 
 $(i_maxloc0_c): m4/maxloc0.m4 $(I_M4_DEPS0)

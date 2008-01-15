@@ -1,72 +1,58 @@
-/* Implementation of the COUNT intrinsic
-   Copyright 2002, 2007 Free Software Foundation, Inc.
-   Contributed by Paul Brook <paul@nowt.org>
-
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
-
-Libgfortran is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public
-License as published by the Free Software Foundation; either
-version 2 of the License, or (at your option) any later version.
-
-In addition to the permissions in the GNU General Public License, the
-Free Software Foundation gives you unlimited permission to link the
-compiled version of this file into combinations with other programs,
-and to distribute those combinations without any restriction coming
-from the use of this file.  (The General Public License restrictions
-do apply in other respects; for example, they cover modification of
-the file, and distribution when not linked into a combine
-executable.)
-
-Libgfortran is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public
-License along with libgfortran; see the file COPYING.  If not,
-write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-Boston, MA 02110-1301, USA.  */
-
-#include "libgfortran.h"
-#include <stdlib.h>
-#include <assert.h>
-
-
-#if defined (HAVE_GFC_LOGICAL_4) && defined (HAVE_GFC_INTEGER_16)
-
-
-extern void count_16_l4 (gfc_array_i16 * const restrict, 
-	gfc_array_l4 * const restrict, const index_type * const restrict);
-export_proto(count_16_l4);
+dnl Support macro file for intrinsic functions.
+dnl Contains the generic sections of the array functions.
+dnl This file is part of the GNU Fortran 95 Runtime Library (libgfortran)
+dnl Distributed under the GNU GPL with exception.  See COPYING for details.
+dnl
+dnl Pass the implementation for a single section as the parameter to
+dnl {MASK_}ARRAY_FUNCTION.
+dnl The variables base, delta, and len describe the input section.
+dnl For masked section the mask is described by mbase and mdelta.
+dnl These should not be modified. The result should be stored in *dest.
+dnl The names count, extent, sstride, dstride, base, dest, rank, dim
+dnl retarray, array, pdim and mstride should not be used.
+dnl The variable n is declared as index_type and may be used.
+dnl Other variable declarations may be placed at the start of the code,
+dnl The types of the array parameter and the return value are
+dnl atype_name and rtype_name respectively.
+dnl Execution should be allowed to continue to the end of the block.
+dnl You should not return or break from the inner loop of the implementation.
+dnl Care should also be taken to avoid using the names defined in iparm.m4
+define(START_ARRAY_FUNCTION,
+`
+extern void name`'rtype_qual`_'atype_code (rtype * const restrict, 
+	gfc_array_l1 * const restrict, const index_type * const restrict);
+export_proto(name`'rtype_qual`_'atype_code);
 
 void
-count_16_l4 (gfc_array_i16 * const restrict retarray, 
-	gfc_array_l4 * const restrict array, 
+name`'rtype_qual`_'atype_code (rtype * const restrict retarray, 
+	gfc_array_l1 * const restrict array, 
 	const index_type * const restrict pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
-  const GFC_LOGICAL_4 * restrict base;
-  GFC_INTEGER_16 * restrict dest;
+  const GFC_LOGICAL_1 * restrict base;
+  rtype_name * restrict dest;
   index_type rank;
   index_type n;
   index_type len;
   index_type delta;
   index_type dim;
+  int src_kind;
 
   /* Make dim zero based to avoid confusion.  */
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
 
+  src_kind = GFC_DESCRIPTOR_SIZE (array);
+
   len = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
-  delta = array->dim[dim].stride;
+  delta = array->dim[dim].stride * src_kind;
 
   for (n = 0; n < dim; n++)
     {
-      sstride[n] = array->dim[n].stride;
+      sstride[n] = array->dim[n].stride * src_kind;
       extent[n] = array->dim[n].ubound + 1 - array->dim[n].lbound;
 
       if (extent[n] < 0)
@@ -74,7 +60,7 @@ count_16_l4 (gfc_array_i16 * const restrict retarray,
     }
   for (n = dim; n < rank; n++)
     {
-      sstride[n] = array->dim[n + 1].stride;
+      sstride[n] = array->dim[n + 1].stride * src_kind;
       extent[n] =
         array->dim[n + 1].ubound + 1 - array->dim[n + 1].lbound;
 
@@ -99,7 +85,7 @@ count_16_l4 (gfc_array_i16 * const restrict retarray,
       retarray->offset = 0;
       retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
 
-      alloc_size = sizeof (GFC_INTEGER_16) * retarray->dim[rank-1].stride
+      alloc_size = sizeof (rtype_name) * retarray->dim[rank-1].stride
     		   * extent[rank-1];
 
       if (alloc_size == 0)
@@ -116,9 +102,8 @@ count_16_l4 (gfc_array_i16 * const restrict retarray,
     {
       if (rank != GFC_DESCRIPTOR_RANK (retarray))
 	runtime_error ("rank of return array incorrect in"
-		       " COUNT intrinsic: is %ld, should be %ld",
-		       (long int) (GFC_DESCRIPTOR_RANK (retarray)),
-		       (long int) rank);
+		       " u_name intrinsic: is %d, should be %d",
+		       GFC_DESCRIPTOR_RANK (retarray), rank);
 
       if (compile_options.bounds_check)
 	{
@@ -130,8 +115,8 @@ count_16_l4 (gfc_array_i16 * const restrict retarray,
 		- retarray->dim[n].lbound;
 	      if (extent[n] != ret_extent)
 		runtime_error ("Incorrect extent in return value of"
-			       " COUNT intrinsic in dimension %ld:"
-			       " is %ld, should be %ld", (long int) n + 1,
+			       " u_name intrinsic in dimension %d:"
+			       " is %ld, should be %ld", n + 1,
 			       (long int) ret_extent, (long int) extent[n]);
 	    }
 	}
@@ -146,26 +131,38 @@ count_16_l4 (gfc_array_i16 * const restrict retarray,
     }
 
   base = array->data;
+
+  if (src_kind == 1 || src_kind == 2 || src_kind == 4 || src_kind == 8
+#ifdef HAVE_GFC_LOGICAL_16
+      || src_kind == 16
+#endif
+    )
+    {
+      if (base)
+	base = GFOR_POINTER_TO_L1 (base, src_kind);
+    }
+  else
+    internal_error (NULL, "Funny sized logical array in u_name intrinsic");
+
   dest = retarray->data;
 
   while (base)
     {
-      const GFC_LOGICAL_4 * restrict src;
-      GFC_INTEGER_16 result;
+      const GFC_LOGICAL_1 * restrict src;
+      rtype_name result;
       src = base;
       {
-
-  result = 0;
-        if (len <= 0)
-	  *dest = 0;
+')dnl
+define(START_ARRAY_BLOCK,
+`        if (len <= 0)
+	  *dest = '$1`;
 	else
 	  {
 	    for (n = 0; n < len; n++, src += delta)
 	      {
-
-  if (*src)
-    result++;
-          }
+')dnl
+define(FINISH_ARRAY_FUNCTION,
+    `          }
 	    *dest = result;
 	  }
       }
@@ -198,6 +195,10 @@ count_16_l4 (gfc_array_i16 * const restrict retarray,
             }
         }
     }
-}
-
-#endif
+}')dnl
+define(ARRAY_FUNCTION,
+`START_ARRAY_FUNCTION
+$2
+START_ARRAY_BLOCK($1)
+$3
+FINISH_ARRAY_FUNCTION')dnl

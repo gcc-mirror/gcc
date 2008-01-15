@@ -33,40 +33,43 @@ Boston, MA 02110-1301, USA.  */
 #include <assert.h>
 
 
-#if defined (HAVE_GFC_LOGICAL_8) && defined (HAVE_GFC_INTEGER_4)
+#if defined (HAVE_GFC_INTEGER_4)
 
 
-extern void count_4_l8 (gfc_array_i4 * const restrict, 
-	gfc_array_l8 * const restrict, const index_type * const restrict);
-export_proto(count_4_l8);
+extern void count_4_l (gfc_array_i4 * const restrict, 
+	gfc_array_l1 * const restrict, const index_type * const restrict);
+export_proto(count_4_l);
 
 void
-count_4_l8 (gfc_array_i4 * const restrict retarray, 
-	gfc_array_l8 * const restrict array, 
+count_4_l (gfc_array_i4 * const restrict retarray, 
+	gfc_array_l1 * const restrict array, 
 	const index_type * const restrict pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
-  const GFC_LOGICAL_8 * restrict base;
+  const GFC_LOGICAL_1 * restrict base;
   GFC_INTEGER_4 * restrict dest;
   index_type rank;
   index_type n;
   index_type len;
   index_type delta;
   index_type dim;
+  int src_kind;
 
   /* Make dim zero based to avoid confusion.  */
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
 
+  src_kind = GFC_DESCRIPTOR_SIZE (array);
+
   len = array->dim[dim].ubound + 1 - array->dim[dim].lbound;
-  delta = array->dim[dim].stride;
+  delta = array->dim[dim].stride * src_kind;
 
   for (n = 0; n < dim; n++)
     {
-      sstride[n] = array->dim[n].stride;
+      sstride[n] = array->dim[n].stride * src_kind;
       extent[n] = array->dim[n].ubound + 1 - array->dim[n].lbound;
 
       if (extent[n] < 0)
@@ -74,7 +77,7 @@ count_4_l8 (gfc_array_i4 * const restrict retarray,
     }
   for (n = dim; n < rank; n++)
     {
-      sstride[n] = array->dim[n + 1].stride;
+      sstride[n] = array->dim[n + 1].stride * src_kind;
       extent[n] =
         array->dim[n + 1].ubound + 1 - array->dim[n + 1].lbound;
 
@@ -116,9 +119,8 @@ count_4_l8 (gfc_array_i4 * const restrict retarray,
     {
       if (rank != GFC_DESCRIPTOR_RANK (retarray))
 	runtime_error ("rank of return array incorrect in"
-		       " COUNT intrinsic: is %ld, should be %ld",
-		       (long int) (GFC_DESCRIPTOR_RANK (retarray)),
-		       (long int) rank);
+		       " COUNT intrinsic: is %d, should be %d",
+		       GFC_DESCRIPTOR_RANK (retarray), rank);
 
       if (compile_options.bounds_check)
 	{
@@ -130,8 +132,8 @@ count_4_l8 (gfc_array_i4 * const restrict retarray,
 		- retarray->dim[n].lbound;
 	      if (extent[n] != ret_extent)
 		runtime_error ("Incorrect extent in return value of"
-			       " COUNT intrinsic in dimension %ld:"
-			       " is %ld, should be %ld", (long int) n + 1,
+			       " COUNT intrinsic in dimension %d:"
+			       " is %ld, should be %ld", n + 1,
 			       (long int) ret_extent, (long int) extent[n]);
 	    }
 	}
@@ -146,11 +148,24 @@ count_4_l8 (gfc_array_i4 * const restrict retarray,
     }
 
   base = array->data;
+
+  if (src_kind == 1 || src_kind == 2 || src_kind == 4 || src_kind == 8
+#ifdef HAVE_GFC_LOGICAL_16
+      || src_kind == 16
+#endif
+    )
+    {
+      if (base)
+	base = GFOR_POINTER_TO_L1 (base, src_kind);
+    }
+  else
+    internal_error (NULL, "Funny sized logical array in COUNT intrinsic");
+
   dest = retarray->data;
 
   while (base)
     {
-      const GFC_LOGICAL_8 * restrict src;
+      const GFC_LOGICAL_1 * restrict src;
       GFC_INTEGER_4 result;
       src = base;
       {
