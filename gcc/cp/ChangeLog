@@ -1,5 +1,11 @@
 2008-01-15  Douglas Gregor  <doug.gregor@gmail.com>
 
+	PR c++/34399
+	* friend.c (do_friend): Don't query TYPE_BEING_DEFINED unless we
+	know we have a class type.
+
+2008-01-15  Douglas Gregor  <doug.gregor@gmail.com>
+
 	PR c++/34751
 	* pt.c (coerce_template_parameter_pack): When substituting into
 	the type of a non-type template parameter pack. use the

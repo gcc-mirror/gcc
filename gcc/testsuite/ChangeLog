@@ -1,5 +1,11 @@
 2008-01-15  Douglas Gregor  <doug.gregor@gmail.com>
 
+	PR c++/34399
+	* g++.dg/cpp0x/vt-34399.C: New.
+	* g++.dg/template/friend50.C: New.
+
+2008-01-15  Douglas Gregor  <doug.gregor@gmail.com>
+
 	PR c++/34751
 	* g++.dg/cpp0x/vt-34751.C: New.
 
