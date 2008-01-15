@@ -754,6 +754,10 @@ dump_simple_decl (tree t, tree type, int flags)
 	  || TREE_CODE (DECL_INITIAL (t)) != TEMPLATE_PARM_INDEX))
     dump_scope (CP_DECL_CONTEXT (t), flags);
   flags &= ~TFF_UNQUALIFIED_NAME;
+  if ((flags & TFF_DECL_SPECIFIERS)
+      && DECL_TEMPLATE_PARM_P (t) 
+      && TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (t)))
+    pp_identifier (cxx_pp, "...");
   if (DECL_NAME (t))
     dump_decl (DECL_NAME (t), flags);
   else
@@ -778,8 +782,14 @@ dump_decl (tree t, int flags)
 	{
 	  if ((flags & TFF_DECL_SPECIFIERS)
 	      && TREE_CODE (TREE_TYPE (t)) == TEMPLATE_TYPE_PARM)
-	    /* Say `class T' not just `T'.  */
-	    pp_cxx_identifier (cxx_pp, "class");
+	    {
+	      /* Say `class T' not just `T'.  */
+	      pp_cxx_identifier (cxx_pp, "class");
+
+	      /* Emit the `...' for a parameter pack.  */
+	      if (TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (t)))
+		pp_cxx_identifier (cxx_pp, "...");
+	    }
 
 	  dump_type (TREE_TYPE (t), flags);
 	  break;
@@ -1015,8 +1025,14 @@ dump_template_decl (tree t, int flags)
       nreverse(orig_parms);
 
       if (DECL_TEMPLATE_TEMPLATE_PARM_P (t))
-	/* Say `template<arg> class TT' not just `template<arg> TT'.  */
-	pp_cxx_identifier (cxx_pp, "class");
+	{
+	  /* Say `template<arg> class TT' not just `template<arg> TT'.  */
+	  pp_cxx_identifier (cxx_pp, "class");
+
+	  /* If this is a parameter pack, print the ellipsis.  */
+	  if (TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (t)))
+	    pp_cxx_identifier (cxx_pp, "...");
+	}
     }
 
   if (TREE_CODE (DECL_TEMPLATE_RESULT (t)) == TYPE_DECL)

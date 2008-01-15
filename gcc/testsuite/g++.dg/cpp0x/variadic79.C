@@ -4,4 +4,4 @@
 
 template<template<typename> class...> struct A;
 
-template<template<typename...> class... B> struct A<B...> {}; // { dg-error "mismatch|'template<class ...> class B ...'" }
+template<template<typename...> class... B> struct A<B...> {}; // { dg-error "mismatch|'template<class ...> class ... B ...'" }
