@@ -1,6 +1,6 @@
 /* C++ Parser.
    Copyright (C) 2000, 2001, 2002, 2003, 2004,
-   2005, 2007  Free Software Foundation, Inc.
+   2005, 2007, 2008  Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
    This file is part of GCC.
@@ -9318,6 +9318,7 @@ cp_parser_template_parameter (cp_parser* parser, bool *is_non_type,
 {
   cp_token *token;
   cp_parameter_declarator *parameter_declarator;
+  cp_declarator *id_declarator;
   tree parm;
 
   /* Assume it is a type parameter or a template parameter.  */
@@ -9408,7 +9409,7 @@ cp_parser_template_parameter (cp_parser* parser, bool *is_non_type,
 	  cp_lexer_consume_token (parser->lexer);
 
 	  /* Find the name of the parameter pack.  */     
-	  cp_declarator *id_declarator = parameter_declarator->declarator;
+	  id_declarator = parameter_declarator->declarator;
 	  while (id_declarator && id_declarator->kind != cdk_id)
 	    id_declarator = id_declarator->declarator;
 	  
