@@ -2577,6 +2577,11 @@ recheck:
       *walk_subtrees = 0;
       return NULL_TREE;
 
+    case IDENTIFIER_NODE:
+      cp_walk_tree (&TREE_TYPE (t), &find_parameter_packs_r, ppd, NULL);
+      *walk_subtrees = 0;
+      return NULL_TREE;
+
     default:
       return NULL_TREE;
     }
@@ -2731,8 +2736,8 @@ make_pack_expansion (tree arg)
    g(h(args)), or f(g(h(args))), because we would produce erroneous
    error messages. 
 
-   Returns TRUE if there were no bare parameter packs, returns FALSE
-   (and emits an error) if there were bare parameter packs.*/
+   Returns TRUE and emits an error if there were bare parameter packs,
+   returns FALSE otherwise.  */
 bool 
 check_for_bare_parameter_packs (tree* t)
 {
@@ -2740,7 +2745,7 @@ check_for_bare_parameter_packs (tree* t)
   struct find_parameter_pack_data ppd;
 
   if (!processing_template_decl || !t || !*t || *t == error_mark_node)
-    return true;
+    return false;
 
   if (TREE_CODE (*t) == TYPE_DECL)
     t = &TREE_TYPE (*t);
@@ -2783,10 +2788,10 @@ check_for_bare_parameter_packs (tree* t)
       cp_walk_tree (t, &find_parameter_packs_r, &ppd, NULL);
       pointer_set_destroy (ppd.visited);
 
-      return false;
+      return true;
     }
 
-  return true;
+  return false;
 }
 
 /* Expand any parameter packs that occur in the template arguments in
@@ -3885,7 +3890,7 @@ push_template_decl_real (tree decl, bool is_friend)
       while (arg && argtype)
         {
           if (!FUNCTION_PARAMETER_PACK_P (arg)
-              && !check_for_bare_parameter_packs (&TREE_TYPE (arg)))
+              && check_for_bare_parameter_packs (&TREE_TYPE (arg)))
             {
             /* This is a PARM_DECL that contains unexpanded parameter
                packs. We have already complained about this in the
@@ -3901,14 +3906,14 @@ push_template_decl_real (tree decl, bool is_friend)
 
       /* Check for bare parameter packs in the return type and the
          exception specifiers.  */
-      if (!check_for_bare_parameter_packs (&TREE_TYPE (type)))
+      if (check_for_bare_parameter_packs (&TREE_TYPE (type)))
 	/* Errors were already issued, set return type to int
 	   as the frontend doesn't expect error_mark_node as
 	   the return type.  */
 	TREE_TYPE (type) = integer_type_node;
       check_for_bare_parameter_packs (&TYPE_RAISES_EXCEPTIONS (type));
     }
-  else if (!check_for_bare_parameter_packs (&TREE_TYPE (decl)))
+  else if (check_for_bare_parameter_packs (&TREE_TYPE (decl)))
     return error_mark_node;
 
   if (is_partial)
