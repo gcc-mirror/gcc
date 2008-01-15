@@ -1,3 +1,8 @@
+2008-01-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* f95-lang.c (gfc_init_builtin_functions): Initialize GOMP builtins
+	for flag_tree_parallelize_loops.
+
 2008-01-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/34671
