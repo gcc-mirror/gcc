@@ -125,7 +125,7 @@ static tree convert_nontype_argument (tree, tree);
 static tree convert_template_argument (tree, tree, tree,
 				       tsubst_flags_t, int, tree);
 static int for_each_template_parm (tree, tree_fn_t, void*,
-				   struct pointer_set_t*);
+				   struct pointer_set_t*, bool);
 static tree expand_template_argument_pack (tree);
 static tree build_template_parm_index (int, int, int, tree, tree);
 static bool inline_needs_template_parms (tree);
@@ -3378,7 +3378,8 @@ process_partial_specialization (tree decl)
       for_each_template_parm (TREE_VEC_ELT (inner_args, i),
 			      &mark_template_parm,
 			      &tpd,
-			      NULL);
+			      NULL,
+			      /*include_nondeduced_p=*/false);
     }
   for (i = 0; i < ntparms; ++i)
     if (tpd.parms[i] == 0)
@@ -3501,7 +3502,8 @@ process_partial_specialization (tree decl)
                   for_each_template_parm (type,
                                           &mark_template_parm,
                                           &tpd2,
-                                          NULL);
+                                          NULL,
+					  /*include_nondeduced_p=*/false);
 
                   if (tpd2.arg_uses_template_parms [i])
                     {
@@ -5929,6 +5931,9 @@ struct pair_fn_data
 {
   tree_fn_t fn;
   void *data;
+  /* True when we should also visit template parameters that occur in
+     non-deduced contexts.  */
+  bool include_nondeduced_p;
   struct pointer_set_t *visited;
 };
 
@@ -5943,7 +5948,9 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
   void *data = pfd->data;
 
   if (TYPE_P (t)
-      && for_each_template_parm (TYPE_CONTEXT (t), fn, data, pfd->visited))
+      && (pfd->include_nondeduced_p || TREE_CODE (t) != TYPENAME_TYPE)
+      && for_each_template_parm (TYPE_CONTEXT (t), fn, data, pfd->visited,
+				 pfd->include_nondeduced_p))
     return error_mark_node;
 
   switch (TREE_CODE (t))
@@ -5958,15 +5965,18 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
       if (!TYPE_TEMPLATE_INFO (t))
 	*walk_subtrees = 0;
       else if (for_each_template_parm (TREE_VALUE (TYPE_TEMPLATE_INFO (t)),
-				       fn, data, pfd->visited))
+				       fn, data, pfd->visited, 
+				       pfd->include_nondeduced_p))
 	return error_mark_node;
       break;
 
     case INTEGER_TYPE:
       if (for_each_template_parm (TYPE_MIN_VALUE (t),
-				  fn, data, pfd->visited)
+				  fn, data, pfd->visited, 
+				  pfd->include_nondeduced_p)
 	  || for_each_template_parm (TYPE_MAX_VALUE (t),
-				     fn, data, pfd->visited))
+				     fn, data, pfd->visited,
+				     pfd->include_nondeduced_p))
 	return error_mark_node;
       break;
 
@@ -5974,13 +5984,14 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
       /* Since we're not going to walk subtrees, we have to do this
 	 explicitly here.  */
       if (for_each_template_parm (TYPE_METHOD_BASETYPE (t), fn, data,
-				  pfd->visited))
+				  pfd->visited, pfd->include_nondeduced_p))
 	return error_mark_node;
       /* Fall through.  */
 
     case FUNCTION_TYPE:
       /* Check the return type.  */
-      if (for_each_template_parm (TREE_TYPE (t), fn, data, pfd->visited))
+      if (for_each_template_parm (TREE_TYPE (t), fn, data, pfd->visited,
+				  pfd->include_nondeduced_p))
 	return error_mark_node;
 
       /* Check the parameter types.  Since default arguments are not
@@ -5994,7 +6005,7 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
 
 	for (parm = TYPE_ARG_TYPES (t); parm; parm = TREE_CHAIN (parm))
 	  if (for_each_template_parm (TREE_VALUE (parm), fn, data,
-				      pfd->visited))
+				      pfd->visited, pfd->include_nondeduced_p))
 	    return error_mark_node;
 
 	/* Since we've already handled the TYPE_ARG_TYPES, we don't
@@ -6004,8 +6015,10 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
       break;
 
     case TYPEOF_TYPE:
-      if (for_each_template_parm (TYPE_FIELDS (t), fn, data,
-				  pfd->visited))
+      if (pfd->include_nondeduced_p
+	  && for_each_template_parm (TYPE_FIELDS (t), fn, data,
+				     pfd->visited, 
+				     pfd->include_nondeduced_p))
 	return error_mark_node;
       break;
 
@@ -6013,7 +6026,7 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
     case VAR_DECL:
       if (DECL_LANG_SPECIFIC (t) && DECL_TEMPLATE_INFO (t)
 	  && for_each_template_parm (DECL_TI_ARGS (t), fn, data,
-				     pfd->visited))
+				     pfd->visited, pfd->include_nondeduced_p))
 	return error_mark_node;
       /* Fall through.  */
 
@@ -6021,17 +6034,19 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
     case CONST_DECL:
       if (TREE_CODE (t) == CONST_DECL && DECL_TEMPLATE_PARM_P (t)
 	  && for_each_template_parm (DECL_INITIAL (t), fn, data,
-				     pfd->visited))
+				     pfd->visited, pfd->include_nondeduced_p))
 	return error_mark_node;
       if (DECL_CONTEXT (t)
+	  && pfd->include_nondeduced_p
 	  && for_each_template_parm (DECL_CONTEXT (t), fn, data,
-				     pfd->visited))
+				     pfd->visited, pfd->include_nondeduced_p))
 	return error_mark_node;
       break;
 
     case BOUND_TEMPLATE_TEMPLATE_PARM:
       /* Record template parameters such as `T' inside `TT<T>'.  */
-      if (for_each_template_parm (TYPE_TI_ARGS (t), fn, data, pfd->visited))
+      if (for_each_template_parm (TYPE_TI_ARGS (t), fn, data, pfd->visited,
+				  pfd->include_nondeduced_p))
 	return error_mark_node;
       /* Fall through.  */
 
@@ -6047,7 +6062,8 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
     case TEMPLATE_DECL:
       /* A template template parameter is encountered.  */
       if (DECL_TEMPLATE_TEMPLATE_PARM_P (t)
-	  && for_each_template_parm (TREE_TYPE (t), fn, data, pfd->visited))
+	  && for_each_template_parm (TREE_TYPE (t), fn, data, pfd->visited,
+				     pfd->include_nondeduced_p))
 	return error_mark_node;
 
       /* Already substituted template template parameter */
@@ -6057,15 +6073,17 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
     case TYPENAME_TYPE:
       if (!fn
 	  || for_each_template_parm (TYPENAME_TYPE_FULLNAME (t), fn,
-				     data, pfd->visited))
+				     data, pfd->visited, 
+				     pfd->include_nondeduced_p))
 	return error_mark_node;
       break;
 
     case CONSTRUCTOR:
       if (TREE_TYPE (t) && TYPE_PTRMEMFUNC_P (TREE_TYPE (t))
+	  && pfd->include_nondeduced_p
 	  && for_each_template_parm (TYPE_PTRMEMFUNC_FN_TYPE
 				     (TREE_TYPE (t)), fn, data,
-				     pfd->visited))
+				     pfd->visited, pfd->include_nondeduced_p))
 	return error_mark_node;
       break;
 
@@ -6106,11 +6124,16 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
    for_each_template_parm returns 1.  Otherwise, the iteration
    continues.  If FN never returns a nonzero value, the value
    returned by for_each_template_parm is 0.  If FN is NULL, it is
-   considered to be the function which always returns 1.  */
+   considered to be the function which always returns 1.
+
+   If INCLUDE_NONDEDUCED_P, then this routine will also visit template
+   parameters that occur in non-deduced contexts.  When false, only
+   visits those template parameters that can be deduced.  */
 
 static int
 for_each_template_parm (tree t, tree_fn_t fn, void* data,
-			struct pointer_set_t *visited)
+			struct pointer_set_t *visited,
+			bool include_nondeduced_p)
 {
   struct pair_fn_data pfd;
   int result;
@@ -6118,6 +6141,7 @@ for_each_template_parm (tree t, tree_fn_t fn, void* data,
   /* Set up.  */
   pfd.fn = fn;
   pfd.data = data;
+  pfd.include_nondeduced_p = include_nondeduced_p;
 
   /* Walk the tree.  (Conceptually, we would like to walk without
      duplicates, but for_each_template_parm_r recursively calls
@@ -6189,7 +6213,8 @@ uses_template_parms (tree t)
 int
 uses_template_parms_level (tree t, int level)
 {
-  return for_each_template_parm (t, template_parm_this_level_p, &level, NULL);
+  return for_each_template_parm (t, template_parm_this_level_p, &level, NULL,
+				 /*include_nondeduced_p=*/true);
 }
 
 static int tinst_depth;

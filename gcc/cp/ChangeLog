@@ -1,5 +1,19 @@
 2008-01-15  Douglas Gregor  <doug.gregor@gmail.com>
 
+       PR c++/33964
+       * pt.c (process_partial_specialization): Don't mark template
+       parameters that occur in non-deduced contexts.
+       (struct pair_fn_data): Add include_nondeduced_p.
+       (for_each_template_parm_r): Only visit non-deduced contexts if
+       include_nondeduced_p is set.
+       (for_each_template_parm): Added parameter include_nondeduced_p,
+       which states whether template parameters found in non-deduced
+       contexts should be visited.
+       (uses_template_parms): Visit all template parameters, even those
+       in non-deduced contexts.
+
+2008-01-15  Douglas Gregor  <doug.gregor@gmail.com>
+
        PR c++/34052
        * pt.c (check_default_tmpl_args): Check for parameter packs that
        aren't at the end of a primary template.
