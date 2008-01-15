@@ -1,3 +1,15 @@
+2008-01-15  Douglas Gregor  <doug.gregor@gmail.com>
+
+       PR c++/34052
+       * pt.c (check_default_tmpl_args): Check for parameter packs that
+       aren't at the end of a primary template.
+       (push_template_decl_real): Remove check for parameter packs that
+       aren't at the end of a primary template; that now happens in
+       check_default_tmpl_args.
+       * semantics.c (finish_template_template_parm): Use
+       check_default_tmpl_args to check for errors in the template
+       parameter list.
+	
 2008-01-12  Doug Kwan  <dougkwan@google.com>
 
 	* decl.c: (grokdeclarator): Use OPT_Wignored_qualifiers

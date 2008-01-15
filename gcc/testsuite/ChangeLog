@@ -1,3 +1,9 @@
+2008-01-15  Douglas Gregor  <doug.gregor@gmail.com>
+
+       PR c++/34052
+       * g++.dg/cpp0x/vt-34052.C: New.
+       * g++.dg/template/ttp26.C: New.
+	
 2008-01-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/rep_clause2.ad[sb]: New test.
