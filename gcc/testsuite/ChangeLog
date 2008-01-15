@@ -1,5 +1,11 @@
 2008-01-15  Douglas Gregor  <doug.gregor@gmail.com>
 
+       PR c++/33964
+       * g++.dg/cpp0x/vt-33964.C: New.
+       * g++.dg/template/partial5.C: New.
+
+2008-01-15  Douglas Gregor  <doug.gregor@gmail.com>
+
        PR c++/34052
        * g++.dg/cpp0x/vt-34052.C: New.
        * g++.dg/template/ttp26.C: New.
