@@ -5138,7 +5138,7 @@ coerce_template_parameter_pack (tree parms,
     {
       argument_pack = make_node (NONTYPE_ARGUMENT_PACK);
       TREE_TYPE (argument_pack) 
-        = tsubst (TREE_TYPE (TREE_VALUE (parm)), args, complain, in_decl);
+        = tsubst (TREE_TYPE (TREE_VALUE (parm)), new_args, complain, in_decl);
       TREE_CONSTANT (argument_pack) = 1;
     }
 
