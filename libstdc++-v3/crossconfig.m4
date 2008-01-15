@@ -196,7 +196,8 @@ case "${host}" in
   *-linux* | *-uclinux* | *-gnu* | *-kfreebsd*-gnu | *-knetbsd*-gnu)
     AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h \
       machine/endian.h machine/param.h sys/machine.h sys/types.h \
-      fp.h float.h endian.h inttypes.h locale.h float.h stdint.h])
+      fp.h float.h endian.h inttypes.h locale.h float.h stdint.h \
+      sys/ipc.h sys/sem.h gconf.h])
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
     AC_SUBST(SECTION_FLAGS)
     GLIBCXX_CHECK_COMPILER_FEATURES
@@ -218,6 +219,18 @@ case "${host}" in
     # For xsputn_2().
     AC_CHECK_HEADERS(sys/uio.h)
     GLIBCXX_CHECK_WRITEV
+
+    # For C99 support to TR1.
+    GLIBCXX_CHECK_C99_TR1
+
+    # Check for sigsetjmp
+    AC_TRY_COMPILE(
+      [#include <setjmp.h>],
+      [sigjmp_buf env;
+       while (! sigsetjmp (env, 1))
+         siglongjmp (env, 1);
+      ],
+      [AC_DEFINE(HAVE_SIGSETJMP, 1, [Define if sigsetjmp is available.])])
     ;;
   *-mingw32*)
     AC_CHECK_HEADERS([sys/types.h locale.h float.h])
