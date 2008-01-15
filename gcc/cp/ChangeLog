@@ -1,3 +1,8 @@
+2008-01-15  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* parser.c (cp_parser_template_parameter): Fix C90 issue with mixing
+	declaration and code.  Update copyright year.
+
 2008-01-15  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR c++/34399
