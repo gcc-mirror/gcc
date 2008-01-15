@@ -3537,10 +3537,11 @@ process_partial_specialization (tree decl)
   return decl;
 }
 
-/* Check that a template declaration's use of default arguments is not
-   invalid.  Here, PARMS are the template parameters.  IS_PRIMARY is
-   nonzero if DECL is the thing declared by a primary template.
-   IS_PARTIAL is nonzero if DECL is a partial specialization.
+/* Check that a template declaration's use of default arguments and
+   parameter packs is not invalid.  Here, PARMS are the template
+   parameters.  IS_PRIMARY is nonzero if DECL is the thing declared by
+   a primary template.  IS_PARTIAL is nonzero if DECL is a partial
+   specialization.
    
 
    IS_FRIEND_DECL is nonzero if DECL is a friend function template
@@ -3625,6 +3626,29 @@ check_default_tmpl_args (tree decl, tree parms, int is_primary,
                   TREE_PURPOSE (parm) = error_mark_node;
                   no_errors = false;
                 }
+	      else if (is_primary
+		       && !is_partial
+		       && !is_friend_decl
+		       && TREE_CODE (decl) == TYPE_DECL
+		       && i < ntparms - 1
+		       && template_parameter_pack_p (TREE_VALUE (parm)))
+		{
+		  /* A primary class template can only have one
+		     parameter pack, at the end of the template
+		     parameter list.  */
+
+		  if (TREE_CODE (TREE_VALUE (parm)) == PARM_DECL)
+		    error ("parameter pack %qE must be at the end of the"
+			   " template parameter list", TREE_VALUE (parm));
+		  else
+		    error ("parameter pack %qT must be at the end of the"
+			   " template parameter list", 
+			   TREE_TYPE (TREE_VALUE (parm)));
+
+		  TREE_VALUE (TREE_VEC_ELT (inner_parms, i)) 
+		    = error_mark_node;
+		  no_errors = false;
+		}
             }
         }
     }
@@ -3887,31 +3911,6 @@ push_template_decl_real (tree decl, bool is_friend)
 
   if (is_partial)
     return process_partial_specialization (decl);
-
-  /* A primary class template can only have one parameter pack, at the
-     end of the template parameter list.  */
-  if (primary && TREE_CODE (decl) == TYPE_DECL)
-    {
-      tree inner_parms 
-	= INNERMOST_TEMPLATE_PARMS (current_template_parms);
-      int i, len = TREE_VEC_LENGTH (inner_parms);
-      for (i = 0; i < len - 1; i++)
-        {
-          tree parm = TREE_VALUE (TREE_VEC_ELT (inner_parms, i));
-
-	  if (template_parameter_pack_p (parm))
-	    {
-	      if (TREE_CODE (parm) == PARM_DECL)
-		error ("parameter pack %qE must be at the end of the"
-		       " template parameter list", parm);
-	      else
-		error ("parameter pack %qT must be at the end of the"
-		       " template parameter list", TREE_TYPE (parm));
-
-	      TREE_VALUE (TREE_VEC_ELT (inner_parms, i)) = error_mark_node;
-	    }
-        }
-    }
 
   args = current_template_args ();
 
