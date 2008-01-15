@@ -187,7 +187,8 @@ template<typename InputIterator, class OutputIterator>
   parallel_unique_copy(InputIterator first, InputIterator last,
                        OutputIterator result)
   {
-    typedef typename std::iterator_traits<InputIterator>::value_type value_type;
+    typedef typename std::iterator_traits<InputIterator>::value_type
+      value_type;
     return parallel_unique_copy(first, last, result,
 				std::equal_to<value_type>());
   }

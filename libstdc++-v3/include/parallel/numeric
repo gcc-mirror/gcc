@@ -78,7 +78,7 @@ namespace __parallel
 
   template<typename InputIterator, typename T, typename BinaryOperation,
 	   typename IteratorTag>
-    T
+    inline T
     accumulate_switch(InputIterator begin, InputIterator end, T init, 
 		      BinaryOperation binary_op, IteratorTag)
     { return accumulate(begin, end, init, binary_op, 
@@ -345,10 +345,9 @@ namespace __parallel
 		       OutputIterator result, BinaryOperation bin_op,
 		       random_access_iterator_tag, random_access_iterator_tag)
     {
-      if (_GLIBCXX_PARALLEL_CONDITION(static_cast<__gnu_parallel::
-				      sequence_index_t>(end - begin)
-				      >= __gnu_parallel::Settings::
-				      partial_sum_minimal_n))
+      if (_GLIBCXX_PARALLEL_CONDITION(
+	    static_cast<__gnu_parallel::sequence_index_t>(end - begin)
+	    >= __gnu_parallel::Settings::partial_sum_minimal_n))
 	return __gnu_parallel::parallel_partial_sum(begin, end,
 						    result, bin_op);
       else

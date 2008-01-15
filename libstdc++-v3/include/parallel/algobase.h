@@ -58,7 +58,7 @@ namespace __parallel
   // Sequential fallback
   template<typename InputIterator1, typename InputIterator2>
     inline pair<InputIterator1, InputIterator2>
-    mismatch(InputIterator1 begin1, InputIterator1 end1, InputIterator2 begin2, 
+    mismatch(InputIterator1 begin1, InputIterator1 end1, InputIterator2 begin2,
 	     __gnu_parallel::sequential_tag)
     { return _GLIBCXX_STD_P::mismatch(begin1, end1, begin2); }
 
@@ -66,7 +66,7 @@ namespace __parallel
   template<typename InputIterator1, typename InputIterator2,
 	   typename Predicate>
     inline pair<InputIterator1, InputIterator2>
-    mismatch(InputIterator1 begin1, InputIterator1 end1, InputIterator2 begin2, 
+    mismatch(InputIterator1 begin1, InputIterator1 end1, InputIterator2 begin2,
 	     Predicate pred, __gnu_parallel::sequential_tag)
     { return _GLIBCXX_STD_P::mismatch(begin1, end1, begin2, pred); }
 
@@ -83,7 +83,7 @@ namespace __parallel
   template<typename RandomAccessIterator1, typename RandomAccessIterator2,
 	   typename Predicate>
     pair<RandomAccessIterator1, RandomAccessIterator2>
-    mismatch_switch(RandomAccessIterator1 begin1, RandomAccessIterator1 end1, 
+    mismatch_switch(RandomAccessIterator1 begin1, RandomAccessIterator1 end1,
 		    RandomAccessIterator2 begin2, Predicate pred, 
 		    random_access_iterator_tag, random_access_iterator_tag)
     {

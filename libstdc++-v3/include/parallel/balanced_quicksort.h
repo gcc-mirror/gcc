@@ -307,10 +307,10 @@ template<typename RandomAccessIterator, typename Comparator>
                 // Very unequal split, one part smaller than one 128th
                 // elements not strictly larger than the pivot.
                 __gnu_parallel::unary_negate<__gnu_parallel::binder1st
-                    <Comparator, value_type, value_type, bool>, value_type>
-                    pred(__gnu_parallel::binder1st
-                        <Comparator, value_type, value_type, bool>(comp,
-								   *pivot_pos));
+		  <Comparator, value_type, value_type, bool>, value_type>
+		  pred(__gnu_parallel::binder1st
+		       <Comparator, value_type, value_type, bool>(comp,
+								  *pivot_pos));
 
                 // Find other end of pivot-equal range.
                 split_pos2 = __gnu_sequential::partition(split_pos1 + 1,
@@ -330,7 +330,8 @@ template<typename RandomAccessIterator, typename Comparator>
               {
                 // Right side larger.
                 if ((split_pos2) != end)
-                  tl.leftover_parts.push_front(std::make_pair(split_pos2, end));
+                  tl.leftover_parts.push_front(std::make_pair(split_pos2,
+							      end));
 
                 //current.first = begin;	//already set anyway
                 current.second = split_pos1;
