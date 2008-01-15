@@ -1,5 +1,37 @@
 2008-01-15  Douglas Gregor  <doug.gregor@gmail.com>
 
+	PR c++/34051
+	PR c++/34055
+	PR c++/34102
+	PR c++/34103
+	* typeck.c (check_return_expr): If there are bare parameter packs
+	in the return value, set it to error_mark_node.
+	* tree.c (cp_walk_subtrees): Walk USING_DECL nodes.
+	* pt.c (find_parameter_packs_r): Look at the type of
+	IDENTIFIER_NODEs (e.g., for user-defined conversions).
+	(check_for_bare_parameter_packs): Flip the result: now returns
+	TRUE when there were bare parameter packs, FALSE otherwise.
+	(push_template_decl_real): Deal with flipped result of
+	check_for_bare_parameter_packs.
+	* semantics.c (finish_cond): If there are bare parameter packs in
+	the conditional, set it to error_mark_node.
+	(finish_expr_stmt): If there are bare parameter packs in the
+	expression, set it to error_mark_node.
+	(finish_for_expr): Ditto.
+	(finish_switch_cond): If there are bare parameter packs in
+	the conditional, set it to error_mark_node.
+	(finish_mem_initializers): If there are bare parameter packs in
+	the member initializer, set it to error_mark_node.
+	(finish_member_declaration): Check the attributes of the
+	declaration for bare parameter packs, and remove the attributes if
+	any have bare parameter packs.
+	* parser.c (cp_parser_using_declaration): Check the using
+	declaration for bare parameter packs.
+	(cp_parser_base_clause): If there are bare parameter packs in a
+	base specifier, don't add it to the chain.
+
+2008-01-15  Douglas Gregor  <doug.gregor@gmail.com>
+
        PR c++/34314
        * error.c (dump_simple_decl): Display ellipsis for template
        non-type parameter packs.

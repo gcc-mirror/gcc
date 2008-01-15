@@ -1,5 +1,24 @@
 2008-01-15  Douglas Gregor  <doug.gregor@gmail.com>
 
+	PR c++/34051
+	PR c++/34055
+	PR c++/34102
+	PR c++/34103
+	* g++.dg/cpp0x/vt-34051-2.C: New.
+	* g++.dg/cpp0x/vt-34102.C: New.
+	* g++.dg/cpp0x/vt-34051.C: New.
+	* g++.dg/cpp0x/vt-34055.C: New.
+	* g++.dg/cpp0x/vt-34103.C: New.
+
+2008-01-15  Douglas Gregor  <doug.gregor@gmail.com>
+
+       PR c++/34314
+       * g++.dg/cpp0x/vt-34314.C: New.
+       * g++.dg/cpp0x/variadic79.C: Fix the error message to reflect
+       reality (the error message was wrong previously).
+
+2008-01-15  Douglas Gregor  <doug.gregor@gmail.com>
+
        PR c++/33964
        * g++.dg/cpp0x/vt-33964.C: New.
        * g++.dg/template/partial5.C: New.
