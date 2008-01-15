@@ -1,5 +1,10 @@
 2008-01-15  Douglas Gregor  <doug.gregor@gmail.com>
 
+	PR c++/34751
+	* g++.dg/cpp0x/vt-34751.C: New.
+
+2008-01-15  Douglas Gregor  <doug.gregor@gmail.com>
+
 	PR c++/34051
 	PR c++/34055
 	PR c++/34102

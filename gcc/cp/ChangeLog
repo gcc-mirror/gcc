@@ -1,5 +1,23 @@
 2008-01-15  Douglas Gregor  <doug.gregor@gmail.com>
 
+	PR c++/34751
+	* pt.c (coerce_template_parameter_pack): When substituting into
+	the type of a non-type template parameter pack. use the
+	deduced/substituted arguments.
+	* parser.c (declarator_can_be_parameter_pack): A pointer-to-member
+	can be a parameter pack with the ellipsis following it.  When we
+	have an erroneous declaration, allow it to be a parameter pack.
+	(cp_parser_template_parameter): Complain about default
+	arguments on non-type template parameter packs, and parse them
+	using the new cp_parser_default_argument.
+	(cp_parser_parameter_declaration): Complain about parameter packs
+	with default arguments. Move parsing of default arguments into a
+	new function, cp_parser_default_argument.
+	(cp_parser_default_argument): New; extracted from
+	cp_parser_parameter_declaration.
+
+2008-01-15  Douglas Gregor  <doug.gregor@gmail.com>
+
 	PR c++/34051
 	PR c++/34055
 	PR c++/34102
