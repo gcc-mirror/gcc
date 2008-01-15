@@ -468,7 +468,7 @@ do_friend (tree ctype, tree declarator, tree decl,
 	 the process of being defined.  */
       if (class_template_depth
 	  || COMPLETE_TYPE_P (ctype)
-	  || TYPE_BEING_DEFINED (ctype))
+	  || (CLASS_TYPE_P (ctype) && TYPE_BEING_DEFINED (ctype)))
 	{
 	  if (DECL_TEMPLATE_INFO (decl))
 	    /* DECL is a template specialization.  No need to
