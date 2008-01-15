@@ -1,4 +1,4 @@
-/* Implementation of the ALL intrinsic
+/* Implementation of the COUNT intrinsic
    Copyright 2002, 2007 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
@@ -33,15 +33,15 @@ Boston, MA 02110-1301, USA.  */
 #include <assert.h>
 
 
-#if defined (HAVE_GFC_LOGICAL_8)
+#if defined (HAVE_GFC_INTEGER_2)
 
 
-extern void all_l8 (gfc_array_l8 * const restrict, 
+extern void count_2_l (gfc_array_i2 * const restrict, 
 	gfc_array_l1 * const restrict, const index_type * const restrict);
-export_proto(all_l8);
+export_proto(count_2_l);
 
 void
-all_l8 (gfc_array_l8 * const restrict retarray, 
+count_2_l (gfc_array_i2 * const restrict retarray, 
 	gfc_array_l1 * const restrict array, 
 	const index_type * const restrict pdim)
 {
@@ -50,7 +50,7 @@ all_l8 (gfc_array_l8 * const restrict retarray,
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
   const GFC_LOGICAL_1 * restrict base;
-  GFC_LOGICAL_8 * restrict dest;
+  GFC_INTEGER_2 * restrict dest;
   index_type rank;
   index_type n;
   index_type len;
@@ -102,7 +102,7 @@ all_l8 (gfc_array_l8 * const restrict retarray,
       retarray->offset = 0;
       retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
 
-      alloc_size = sizeof (GFC_LOGICAL_8) * retarray->dim[rank-1].stride
+      alloc_size = sizeof (GFC_INTEGER_2) * retarray->dim[rank-1].stride
     		   * extent[rank-1];
 
       if (alloc_size == 0)
@@ -119,7 +119,7 @@ all_l8 (gfc_array_l8 * const restrict retarray,
     {
       if (rank != GFC_DESCRIPTOR_RANK (retarray))
 	runtime_error ("rank of return array incorrect in"
-		       " ALL intrinsic: is %d, should be %d",
+		       " COUNT intrinsic: is %d, should be %d",
 		       GFC_DESCRIPTOR_RANK (retarray), rank);
 
       if (compile_options.bounds_check)
@@ -132,7 +132,7 @@ all_l8 (gfc_array_l8 * const restrict retarray,
 		- retarray->dim[n].lbound;
 	      if (extent[n] != ret_extent)
 		runtime_error ("Incorrect extent in return value of"
-			       " ALL intrinsic in dimension %d:"
+			       " COUNT intrinsic in dimension %d:"
 			       " is %ld, should be %ld", n + 1,
 			       (long int) ret_extent, (long int) extent[n]);
 	    }
@@ -159,31 +159,27 @@ all_l8 (gfc_array_l8 * const restrict retarray,
 	base = GFOR_POINTER_TO_L1 (base, src_kind);
     }
   else
-    internal_error (NULL, "Funny sized logical array in ALL intrinsic");
+    internal_error (NULL, "Funny sized logical array in COUNT intrinsic");
 
   dest = retarray->data;
 
   while (base)
     {
       const GFC_LOGICAL_1 * restrict src;
-      GFC_LOGICAL_8 result;
+      GFC_INTEGER_2 result;
       src = base;
       {
 
-  /* Return true only if all the elements are set.  */
-  result = 1;
+  result = 0;
         if (len <= 0)
-	  *dest = 1;
+	  *dest = 0;
 	else
 	  {
 	    for (n = 0; n < len; n++, src += delta)
 	      {
 
-  if (! *src)
-    {
-      result = 0;
-      break;
-    }
+  if (*src)
+    result++;
           }
 	    *dest = result;
 	  }

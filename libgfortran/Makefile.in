@@ -80,18 +80,16 @@ am__libgfortran_la_SOURCES_DIST = runtime/backtrace.c \
 	runtime/compile_options.c runtime/environ.c runtime/error.c \
 	runtime/fpu.c runtime/main.c runtime/memory.c runtime/pause.c \
 	runtime/stop.c runtime/string.c runtime/select.c \
+	$(srcdir)/generated/all_l1.c $(srcdir)/generated/all_l2.c \
 	$(srcdir)/generated/all_l4.c $(srcdir)/generated/all_l8.c \
-	$(srcdir)/generated/all_l16.c $(srcdir)/generated/any_l4.c \
+	$(srcdir)/generated/all_l16.c $(srcdir)/generated/any_l1.c \
+	$(srcdir)/generated/any_l2.c $(srcdir)/generated/any_l4.c \
 	$(srcdir)/generated/any_l8.c $(srcdir)/generated/any_l16.c \
-	$(srcdir)/generated/count_4_l4.c \
-	$(srcdir)/generated/count_8_l4.c \
-	$(srcdir)/generated/count_16_l4.c \
-	$(srcdir)/generated/count_4_l8.c \
-	$(srcdir)/generated/count_8_l8.c \
-	$(srcdir)/generated/count_16_l8.c \
-	$(srcdir)/generated/count_4_l16.c \
-	$(srcdir)/generated/count_8_l16.c \
-	$(srcdir)/generated/count_16_l16.c \
+	$(srcdir)/generated/count_1_l.c \
+	$(srcdir)/generated/count_2_l.c \
+	$(srcdir)/generated/count_4_l.c \
+	$(srcdir)/generated/count_8_l.c \
+	$(srcdir)/generated/count_16_l.c \
 	$(srcdir)/generated/maxloc0_4_i1.c \
 	$(srcdir)/generated/maxloc0_8_i1.c \
 	$(srcdir)/generated/maxloc0_16_i1.c \
@@ -523,11 +521,10 @@ am__libgfortran_la_SOURCES_DIST = runtime/backtrace.c \
 	%.c,$(prereq_SRC))
 am__objects_1 = backtrace.lo compile_options.lo environ.lo error.lo \
 	fpu.lo main.lo memory.lo pause.lo stop.lo string.lo select.lo
-am__objects_2 = all_l4.lo all_l8.lo all_l16.lo
-am__objects_3 = any_l4.lo any_l8.lo any_l16.lo
-am__objects_4 = count_4_l4.lo count_8_l4.lo count_16_l4.lo \
-	count_4_l8.lo count_8_l8.lo count_16_l8.lo count_4_l16.lo \
-	count_8_l16.lo count_16_l16.lo
+am__objects_2 = all_l1.lo all_l2.lo all_l4.lo all_l8.lo all_l16.lo
+am__objects_3 = any_l1.lo any_l2.lo any_l4.lo any_l8.lo any_l16.lo
+am__objects_4 = count_1_l.lo count_2_l.lo count_4_l.lo count_8_l.lo \
+	count_16_l.lo
 am__objects_5 = maxloc0_4_i1.lo maxloc0_8_i1.lo maxloc0_16_i1.lo \
 	maxloc0_4_i2.lo maxloc0_8_i2.lo maxloc0_16_i2.lo \
 	maxloc0_4_i4.lo maxloc0_8_i4.lo maxloc0_16_i4.lo \
@@ -960,25 +957,25 @@ runtime/string.c \
 runtime/select.c
 
 i_all_c = \
+$(srcdir)/generated/all_l1.c \
+$(srcdir)/generated/all_l2.c \
 $(srcdir)/generated/all_l4.c \
 $(srcdir)/generated/all_l8.c \
 $(srcdir)/generated/all_l16.c
 
 i_any_c = \
+$(srcdir)/generated/any_l1.c \
+$(srcdir)/generated/any_l2.c \
 $(srcdir)/generated/any_l4.c \
 $(srcdir)/generated/any_l8.c \
 $(srcdir)/generated/any_l16.c
 
 i_count_c = \
-$(srcdir)/generated/count_4_l4.c \
-$(srcdir)/generated/count_8_l4.c \
-$(srcdir)/generated/count_16_l4.c \
-$(srcdir)/generated/count_4_l8.c \
-$(srcdir)/generated/count_8_l8.c \
-$(srcdir)/generated/count_16_l8.c \
-$(srcdir)/generated/count_4_l16.c \
-$(srcdir)/generated/count_8_l16.c \
-$(srcdir)/generated/count_16_l16.c
+$(srcdir)/generated/count_1_l.c \
+$(srcdir)/generated/count_2_l.c \
+$(srcdir)/generated/count_4_l.c \
+$(srcdir)/generated/count_8_l.c \
+$(srcdir)/generated/count_16_l.c
 
 i_maxloc0_c = \
 $(srcdir)/generated/maxloc0_4_i1.c \
@@ -1302,7 +1299,7 @@ $(srcdir)/generated/pow_c16_i16.c
 m4_files = m4/iparm.m4 m4/ifunction.m4 m4/iforeach.m4 m4/all.m4 \
     m4/any.m4 m4/count.m4 m4/maxloc0.m4 m4/maxloc1.m4 m4/maxval.m4 \
     m4/minloc0.m4 m4/minloc1.m4 m4/minval.m4 m4/product.m4 m4/sum.m4 \
-    m4/matmul.m4 m4/matmull.m4 \
+    m4/matmul.m4 m4/matmull.m4 m4/ifunction_logical.m4 \
     m4/ctrig.m4 m4/cexp.m4 m4/chyp.m4 m4/mtype.m4 \
     m4/specific.m4 m4/specific2.m4 m4/head.m4 m4/shape.m4 m4/reshape.m4 \
     m4/transpose.m4 m4/eoshift1.m4 m4/eoshift3.m4 m4/exponent.m4 \
@@ -1492,6 +1489,7 @@ prereq_SRC = $(gfor_src) $(gfor_built_src) $(gfor_io_src) \
 I_M4_DEPS = m4/iparm.m4
 I_M4_DEPS0 = $(I_M4_DEPS) m4/iforeach.m4
 I_M4_DEPS1 = $(I_M4_DEPS) m4/ifunction.m4
+I_M4_DEPS2 = $(I_M4_DEPS) m4/ifunction_logical.m4
 EXTRA_DIST = $(m4_files)
 all: $(BUILT_SOURCES) config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -1615,10 +1613,14 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/abort.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/access.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/all_l1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/all_l16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/all_l2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/all_l4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/all_l8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/any_l1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/any_l16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/any_l2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/any_l4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/any_l8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/args.Plo@am__quote@
@@ -1630,15 +1632,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/clock.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/close.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/compile_options.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/count_16_l16.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/count_16_l4.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/count_16_l8.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/count_4_l16.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/count_4_l4.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/count_4_l8.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/count_8_l16.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/count_8_l4.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/count_8_l8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/count_16_l.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/count_1_l.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/count_2_l.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/count_4_l.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/count_8_l.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpu_time.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift0.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cshift1_16.Plo@am__quote@
@@ -2502,6 +2500,20 @@ select.lo: runtime/select.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o select.lo `test -f 'runtime/select.c' || echo '$(srcdir)/'`runtime/select.c
 
+all_l1.lo: $(srcdir)/generated/all_l1.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT all_l1.lo -MD -MP -MF "$(DEPDIR)/all_l1.Tpo" -c -o all_l1.lo `test -f '$(srcdir)/generated/all_l1.c' || echo '$(srcdir)/'`$(srcdir)/generated/all_l1.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/all_l1.Tpo" "$(DEPDIR)/all_l1.Plo"; else rm -f "$(DEPDIR)/all_l1.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/all_l1.c' object='all_l1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o all_l1.lo `test -f '$(srcdir)/generated/all_l1.c' || echo '$(srcdir)/'`$(srcdir)/generated/all_l1.c
+
+all_l2.lo: $(srcdir)/generated/all_l2.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT all_l2.lo -MD -MP -MF "$(DEPDIR)/all_l2.Tpo" -c -o all_l2.lo `test -f '$(srcdir)/generated/all_l2.c' || echo '$(srcdir)/'`$(srcdir)/generated/all_l2.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/all_l2.Tpo" "$(DEPDIR)/all_l2.Plo"; else rm -f "$(DEPDIR)/all_l2.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/all_l2.c' object='all_l2.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o all_l2.lo `test -f '$(srcdir)/generated/all_l2.c' || echo '$(srcdir)/'`$(srcdir)/generated/all_l2.c
+
 all_l4.lo: $(srcdir)/generated/all_l4.c
 @am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT all_l4.lo -MD -MP -MF "$(DEPDIR)/all_l4.Tpo" -c -o all_l4.lo `test -f '$(srcdir)/generated/all_l4.c' || echo '$(srcdir)/'`$(srcdir)/generated/all_l4.c; \
 @am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/all_l4.Tpo" "$(DEPDIR)/all_l4.Plo"; else rm -f "$(DEPDIR)/all_l4.Tpo"; exit 1; fi
@@ -2522,6 +2534,20 @@ all_l16.lo: $(srcdir)/generated/all_l16.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/all_l16.c' object='all_l16.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o all_l16.lo `test -f '$(srcdir)/generated/all_l16.c' || echo '$(srcdir)/'`$(srcdir)/generated/all_l16.c
+
+any_l1.lo: $(srcdir)/generated/any_l1.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT any_l1.lo -MD -MP -MF "$(DEPDIR)/any_l1.Tpo" -c -o any_l1.lo `test -f '$(srcdir)/generated/any_l1.c' || echo '$(srcdir)/'`$(srcdir)/generated/any_l1.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/any_l1.Tpo" "$(DEPDIR)/any_l1.Plo"; else rm -f "$(DEPDIR)/any_l1.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/any_l1.c' object='any_l1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o any_l1.lo `test -f '$(srcdir)/generated/any_l1.c' || echo '$(srcdir)/'`$(srcdir)/generated/any_l1.c
+
+any_l2.lo: $(srcdir)/generated/any_l2.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT any_l2.lo -MD -MP -MF "$(DEPDIR)/any_l2.Tpo" -c -o any_l2.lo `test -f '$(srcdir)/generated/any_l2.c' || echo '$(srcdir)/'`$(srcdir)/generated/any_l2.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/any_l2.Tpo" "$(DEPDIR)/any_l2.Plo"; else rm -f "$(DEPDIR)/any_l2.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/any_l2.c' object='any_l2.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o any_l2.lo `test -f '$(srcdir)/generated/any_l2.c' || echo '$(srcdir)/'`$(srcdir)/generated/any_l2.c
 
 any_l4.lo: $(srcdir)/generated/any_l4.c
 @am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT any_l4.lo -MD -MP -MF "$(DEPDIR)/any_l4.Tpo" -c -o any_l4.lo `test -f '$(srcdir)/generated/any_l4.c' || echo '$(srcdir)/'`$(srcdir)/generated/any_l4.c; \
@@ -2544,68 +2570,40 @@ any_l16.lo: $(srcdir)/generated/any_l16.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o any_l16.lo `test -f '$(srcdir)/generated/any_l16.c' || echo '$(srcdir)/'`$(srcdir)/generated/any_l16.c
 
-count_4_l4.lo: $(srcdir)/generated/count_4_l4.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT count_4_l4.lo -MD -MP -MF "$(DEPDIR)/count_4_l4.Tpo" -c -o count_4_l4.lo `test -f '$(srcdir)/generated/count_4_l4.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_4_l4.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/count_4_l4.Tpo" "$(DEPDIR)/count_4_l4.Plo"; else rm -f "$(DEPDIR)/count_4_l4.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/count_4_l4.c' object='count_4_l4.lo' libtool=yes @AMDEPBACKSLASH@
+count_1_l.lo: $(srcdir)/generated/count_1_l.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT count_1_l.lo -MD -MP -MF "$(DEPDIR)/count_1_l.Tpo" -c -o count_1_l.lo `test -f '$(srcdir)/generated/count_1_l.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_1_l.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/count_1_l.Tpo" "$(DEPDIR)/count_1_l.Plo"; else rm -f "$(DEPDIR)/count_1_l.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/count_1_l.c' object='count_1_l.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o count_4_l4.lo `test -f '$(srcdir)/generated/count_4_l4.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_4_l4.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o count_1_l.lo `test -f '$(srcdir)/generated/count_1_l.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_1_l.c
 
-count_8_l4.lo: $(srcdir)/generated/count_8_l4.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT count_8_l4.lo -MD -MP -MF "$(DEPDIR)/count_8_l4.Tpo" -c -o count_8_l4.lo `test -f '$(srcdir)/generated/count_8_l4.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_8_l4.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/count_8_l4.Tpo" "$(DEPDIR)/count_8_l4.Plo"; else rm -f "$(DEPDIR)/count_8_l4.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/count_8_l4.c' object='count_8_l4.lo' libtool=yes @AMDEPBACKSLASH@
+count_2_l.lo: $(srcdir)/generated/count_2_l.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT count_2_l.lo -MD -MP -MF "$(DEPDIR)/count_2_l.Tpo" -c -o count_2_l.lo `test -f '$(srcdir)/generated/count_2_l.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_2_l.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/count_2_l.Tpo" "$(DEPDIR)/count_2_l.Plo"; else rm -f "$(DEPDIR)/count_2_l.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/count_2_l.c' object='count_2_l.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o count_8_l4.lo `test -f '$(srcdir)/generated/count_8_l4.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_8_l4.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o count_2_l.lo `test -f '$(srcdir)/generated/count_2_l.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_2_l.c
 
-count_16_l4.lo: $(srcdir)/generated/count_16_l4.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT count_16_l4.lo -MD -MP -MF "$(DEPDIR)/count_16_l4.Tpo" -c -o count_16_l4.lo `test -f '$(srcdir)/generated/count_16_l4.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_16_l4.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/count_16_l4.Tpo" "$(DEPDIR)/count_16_l4.Plo"; else rm -f "$(DEPDIR)/count_16_l4.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/count_16_l4.c' object='count_16_l4.lo' libtool=yes @AMDEPBACKSLASH@
+count_4_l.lo: $(srcdir)/generated/count_4_l.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT count_4_l.lo -MD -MP -MF "$(DEPDIR)/count_4_l.Tpo" -c -o count_4_l.lo `test -f '$(srcdir)/generated/count_4_l.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_4_l.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/count_4_l.Tpo" "$(DEPDIR)/count_4_l.Plo"; else rm -f "$(DEPDIR)/count_4_l.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/count_4_l.c' object='count_4_l.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o count_16_l4.lo `test -f '$(srcdir)/generated/count_16_l4.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_16_l4.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o count_4_l.lo `test -f '$(srcdir)/generated/count_4_l.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_4_l.c
 
-count_4_l8.lo: $(srcdir)/generated/count_4_l8.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT count_4_l8.lo -MD -MP -MF "$(DEPDIR)/count_4_l8.Tpo" -c -o count_4_l8.lo `test -f '$(srcdir)/generated/count_4_l8.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_4_l8.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/count_4_l8.Tpo" "$(DEPDIR)/count_4_l8.Plo"; else rm -f "$(DEPDIR)/count_4_l8.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/count_4_l8.c' object='count_4_l8.lo' libtool=yes @AMDEPBACKSLASH@
+count_8_l.lo: $(srcdir)/generated/count_8_l.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT count_8_l.lo -MD -MP -MF "$(DEPDIR)/count_8_l.Tpo" -c -o count_8_l.lo `test -f '$(srcdir)/generated/count_8_l.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_8_l.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/count_8_l.Tpo" "$(DEPDIR)/count_8_l.Plo"; else rm -f "$(DEPDIR)/count_8_l.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/count_8_l.c' object='count_8_l.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o count_4_l8.lo `test -f '$(srcdir)/generated/count_4_l8.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_4_l8.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o count_8_l.lo `test -f '$(srcdir)/generated/count_8_l.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_8_l.c
 
-count_8_l8.lo: $(srcdir)/generated/count_8_l8.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT count_8_l8.lo -MD -MP -MF "$(DEPDIR)/count_8_l8.Tpo" -c -o count_8_l8.lo `test -f '$(srcdir)/generated/count_8_l8.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_8_l8.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/count_8_l8.Tpo" "$(DEPDIR)/count_8_l8.Plo"; else rm -f "$(DEPDIR)/count_8_l8.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/count_8_l8.c' object='count_8_l8.lo' libtool=yes @AMDEPBACKSLASH@
+count_16_l.lo: $(srcdir)/generated/count_16_l.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT count_16_l.lo -MD -MP -MF "$(DEPDIR)/count_16_l.Tpo" -c -o count_16_l.lo `test -f '$(srcdir)/generated/count_16_l.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_16_l.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/count_16_l.Tpo" "$(DEPDIR)/count_16_l.Plo"; else rm -f "$(DEPDIR)/count_16_l.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/count_16_l.c' object='count_16_l.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o count_8_l8.lo `test -f '$(srcdir)/generated/count_8_l8.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_8_l8.c
-
-count_16_l8.lo: $(srcdir)/generated/count_16_l8.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT count_16_l8.lo -MD -MP -MF "$(DEPDIR)/count_16_l8.Tpo" -c -o count_16_l8.lo `test -f '$(srcdir)/generated/count_16_l8.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_16_l8.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/count_16_l8.Tpo" "$(DEPDIR)/count_16_l8.Plo"; else rm -f "$(DEPDIR)/count_16_l8.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/count_16_l8.c' object='count_16_l8.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o count_16_l8.lo `test -f '$(srcdir)/generated/count_16_l8.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_16_l8.c
-
-count_4_l16.lo: $(srcdir)/generated/count_4_l16.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT count_4_l16.lo -MD -MP -MF "$(DEPDIR)/count_4_l16.Tpo" -c -o count_4_l16.lo `test -f '$(srcdir)/generated/count_4_l16.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_4_l16.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/count_4_l16.Tpo" "$(DEPDIR)/count_4_l16.Plo"; else rm -f "$(DEPDIR)/count_4_l16.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/count_4_l16.c' object='count_4_l16.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o count_4_l16.lo `test -f '$(srcdir)/generated/count_4_l16.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_4_l16.c
-
-count_8_l16.lo: $(srcdir)/generated/count_8_l16.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT count_8_l16.lo -MD -MP -MF "$(DEPDIR)/count_8_l16.Tpo" -c -o count_8_l16.lo `test -f '$(srcdir)/generated/count_8_l16.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_8_l16.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/count_8_l16.Tpo" "$(DEPDIR)/count_8_l16.Plo"; else rm -f "$(DEPDIR)/count_8_l16.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/count_8_l16.c' object='count_8_l16.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o count_8_l16.lo `test -f '$(srcdir)/generated/count_8_l16.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_8_l16.c
-
-count_16_l16.lo: $(srcdir)/generated/count_16_l16.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT count_16_l16.lo -MD -MP -MF "$(DEPDIR)/count_16_l16.Tpo" -c -o count_16_l16.lo `test -f '$(srcdir)/generated/count_16_l16.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_16_l16.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/count_16_l16.Tpo" "$(DEPDIR)/count_16_l16.Plo"; else rm -f "$(DEPDIR)/count_16_l16.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/count_16_l16.c' object='count_16_l16.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o count_16_l16.lo `test -f '$(srcdir)/generated/count_16_l16.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_16_l16.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o count_16_l.lo `test -f '$(srcdir)/generated/count_16_l.c' || echo '$(srcdir)/'`$(srcdir)/generated/count_16_l.c
 
 maxloc0_4_i1.lo: $(srcdir)/generated/maxloc0_4_i1.c
 @am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT maxloc0_4_i1.lo -MD -MP -MF "$(DEPDIR)/maxloc0_4_i1.Tpo" -c -o maxloc0_4_i1.lo `test -f '$(srcdir)/generated/maxloc0_4_i1.c' || echo '$(srcdir)/'`$(srcdir)/generated/maxloc0_4_i1.c; \
@@ -5350,13 +5348,13 @@ selected_real_kind.inc: $(srcdir)/mk-srk-inc.sh
 fpu-target.h: $(srcdir)/$(FPU_HOST_HEADER)
 	cp $(srcdir)/$(FPU_HOST_HEADER) $@
 
-@MAINTAINER_MODE_TRUE@$(i_all_c): m4/all.m4 $(I_M4_DEPS1)
+@MAINTAINER_MODE_TRUE@$(i_all_c): m4/all.m4 $(I_M4_DEPS2)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 all.m4 > $@
 
-@MAINTAINER_MODE_TRUE@$(i_any_c): m4/any.m4 $(I_M4_DEPS1)
+@MAINTAINER_MODE_TRUE@$(i_any_c): m4/any.m4 $(I_M4_DEPS2)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 any.m4 > $@
 
-@MAINTAINER_MODE_TRUE@$(i_count_c): m4/count.m4 $(I_M4_DEPS1)
+@MAINTAINER_MODE_TRUE@$(i_count_c): m4/count.m4 $(I_M4_DEPS2)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 count.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_maxloc0_c): m4/maxloc0.m4 $(I_M4_DEPS0)
