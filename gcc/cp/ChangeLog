@@ -1,5 +1,17 @@
 2008-01-15  Douglas Gregor  <doug.gregor@gmail.com>
 
+       PR c++/34314
+       * error.c (dump_simple_decl): Display ellipsis for template
+       non-type parameter packs.
+       (dump_decl): Display ellipsis for template type parameter packs.
+       (dump_template_decl): Display ellipsis for template template
+       parameter packs.
+       * pt.c (redeclare_class_template): When redeclaring a class
+       template, check for collisions between template parameters and
+       template parameter packs.
+
+2008-01-15  Douglas Gregor  <doug.gregor@gmail.com>
+
        PR c++/33964
        * pt.c (process_partial_specialization): Don't mark template
        parameters that occur in non-deduced contexts.
