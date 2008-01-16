@@ -1604,6 +1604,7 @@ gen_parallel_loop (struct loop *loop, htab_t reduction_list,
   basic_block parallel_head;
   struct clsn_data clsn_data;
   unsigned prob;
+  loop_iterator li;
 
   /* From
 
