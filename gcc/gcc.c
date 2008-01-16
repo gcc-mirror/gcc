@@ -721,7 +721,7 @@ proper position among the other output files.  */
     %(linker) %l " LINK_PIE_SPEC "%X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} %{r}\
     %{s} %{t} %{u*} %{x} %{z} %{Z} %{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
     %{static:} %{L*} %(mfwrap) %(link_libgcc) %o\
-    %{fopenmp:%:include(libgomp.spec)%(link_gomp)} %(mflib)\
+    %{fopenmp|ftree-parallelize-loops=*:%:include(libgomp.spec)%(link_gomp)} %(mflib)\
     %{fprofile-arcs|fprofile-generate|coverage:-lgcov}\
     %{!nostdlib:%{!nodefaultlibs:%(link_ssp) %(link_gcc_c_sequence)}}\
     %{!A:%{!nostdlib:%{!nostartfiles:%E}}} %{T*} }}}}}}"
@@ -870,7 +870,7 @@ static const char *const multilib_defaults_raw[] = MULTILIB_DEFAULTS;
 /* Adding -fopenmp should imply pthreads.  This is particularly important
    for targets that use different start files and suchlike.  */
 #ifndef GOMP_SELF_SPECS
-#define GOMP_SELF_SPECS "%{fopenmp: -pthread}"
+#define GOMP_SELF_SPECS "%{fopenmp|ftree-parallelize-loops=*: -pthread}"
 #endif
 
 static const char *const driver_self_specs[] = {

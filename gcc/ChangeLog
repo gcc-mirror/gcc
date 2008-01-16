@@ -1,3 +1,9 @@
+2008-01-16  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* gcc.c (LINK_COMMAND_SPEC): Add includes and link options for
+	libgomp when compiling with ftree-parallelize-loops.
+	(GOMP_SELF_SPECS): Add -pthread for ftree-parallelize-loops.
+
 2008-01-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/34769
