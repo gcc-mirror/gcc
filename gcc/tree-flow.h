@@ -1125,6 +1125,7 @@ extern void register_jump_thread (edge, edge);
 tree force_gimple_operand (tree, tree *, bool, tree);
 tree force_gimple_operand_bsi (block_stmt_iterator *, tree, bool, tree,
 			       bool, enum bsi_iterator_update);
+tree gimple_fold_indirect_ref (tree);
 
 /* In tree-ssa-structalias.c */
 bool find_what_p_points_to (tree);

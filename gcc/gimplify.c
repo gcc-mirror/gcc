@@ -1,6 +1,6 @@
 /* Tree lowering pass.  This pass converts the GENERIC functions-as-trees
    tree representation into the GIMPLE form.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Major work done by Sebastian Pop <s.pop@laposte.net>,
    Diego Novillo <dnovillo@redhat.com> and Jason Merrill <jason@redhat.com>.
@@ -3449,13 +3449,12 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 
 /* Given a pointer value OP0, return a simplified version of an
    indirection through OP0, or NULL_TREE if no simplification is
-   possible.  This may only be applied to a rhs of an expression.
-   Note that the resulting type may be different from the type pointed
-   to in the sense that it is still compatible from the langhooks
-   point of view. */
+   possible.  Note that the resulting type may be different from
+   the type pointed to in the sense that it is still compatible
+   from the langhooks point of view. */
 
-static tree
-fold_indirect_ref_rhs (tree t)
+tree
+gimple_fold_indirect_ref (tree t)
 {
   tree type = TREE_TYPE (TREE_TYPE (t));
   tree sub = t;
@@ -3473,9 +3472,10 @@ fold_indirect_ref_rhs (tree t)
       /* *&p => p */
       if (useless_type_conversion_p (type, optype))
         return op;
+
       /* *(foo *)&fooarray => fooarray[0] */
-      else if (TREE_CODE (optype) == ARRAY_TYPE
-	       && useless_type_conversion_p (type, TREE_TYPE (optype)))
+      if (TREE_CODE (optype) == ARRAY_TYPE
+	  && useless_type_conversion_p (type, TREE_TYPE (optype)))
        {
          tree type_domain = TYPE_DOMAIN (optype);
          tree min_val = size_zero_node;
@@ -3492,7 +3492,7 @@ fold_indirect_ref_rhs (tree t)
       tree type_domain;
       tree min_val = size_zero_node;
       tree osub = sub;
-      sub = fold_indirect_ref_rhs (sub);
+      sub = gimple_fold_indirect_ref (sub);
       if (! sub)
 	sub = build1 (INDIRECT_REF, TREE_TYPE (subtype), osub);
       type_domain = TYPE_DOMAIN (TREE_TYPE (sub));
@@ -3502,6 +3502,19 @@ fold_indirect_ref_rhs (tree t)
     }
 
   return NULL_TREE;
+}
+
+/* Given a pointer value OP0, return a simplified version of an
+   indirection through OP0, or NULL_TREE if no simplification is
+   possible.  This may only be applied to a rhs of an expression.
+   Note that the resulting type may be different from the type pointed
+   to in the sense that it is still compatible from the langhooks
+   point of view. */
+
+static tree
+gimple_fold_indirect_ref_rhs (tree t)
+{
+  return gimple_fold_indirect_ref (t);
 }
 
 /* Subroutine of gimplify_modify_expr to do simplifications of
@@ -3557,7 +3570,7 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
 	     This kind of code arises in C++ when an object is bound
 	     to a const reference, and if "x" is a TARGET_EXPR we want
 	     to take advantage of the optimization below.  */
-	  tree t = fold_indirect_ref_rhs (TREE_OPERAND (*from_p, 0));
+	  tree t = gimple_fold_indirect_ref_rhs (TREE_OPERAND (*from_p, 0));
 	  if (t)
 	    {
 	      *from_p = t;
