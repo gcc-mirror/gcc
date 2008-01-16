@@ -1,3 +1,9 @@
+2008-01-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR debug/34249
+	* dwarf2out.c (output_call_frame_info): Move output of FDE initial
+	location address to the correct place.  Update copyright year.
+
 2008-01-16  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* lambda-code.c (lambda_transform_legal_p): Handle the case of
