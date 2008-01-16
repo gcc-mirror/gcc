@@ -1,3 +1,9 @@
+2008-01-16  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/33819
+	* typeck.c (is_bitfield_expr_with_lowered_type): Recurse
+	for conversions to type variants.
+
 2008-01-15  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* parser.c (cp_parser_template_parameter): Fix C90 issue with mixing

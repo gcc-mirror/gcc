@@ -1445,6 +1445,13 @@ is_bitfield_expr_with_lowered_type (const_tree exp)
 	return DECL_BIT_FIELD_TYPE (field);
       }
 
+    case NOP_EXPR:
+    case CONVERT_EXPR:
+      if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (exp, 0)))
+	  == TYPE_MAIN_VARIANT (TREE_TYPE (exp)))
+	return is_bitfield_expr_with_lowered_type (TREE_OPERAND (exp, 0));
+      /* Fallthrough.  */
+
     default:
       return NULL_TREE;
     }
