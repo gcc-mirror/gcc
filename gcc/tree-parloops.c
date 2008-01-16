@@ -1723,6 +1723,11 @@ gen_parallel_loop (struct loop *loop, htab_t reduction_list,
      expander to do it).  */
   cancel_loop_tree (loop);
 
+  /* Free loop bound estimations that could contain references to
+     removed statements.  */
+  FOR_EACH_LOOP (li, loop, 0)
+    free_numbers_of_iterations_estimates_loop (loop);
+
   /* Expand the parallel constructs.  We do it directly here instead of running
      a separate expand_omp pass, since it is more efficient, and less likely to
      cause troubles with further analyses not being able to deal with the

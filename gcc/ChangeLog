@@ -1,5 +1,9 @@
 2008-01-12  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-parloops.c (gen_parallel_loop): Free loop bound estimations.
+
+2008-01-12  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-parloops.c (loop_has_blocks_with_irreducible_flag): New.
 	(parallelize_loops): Don't parallelize irreducible components.
 
