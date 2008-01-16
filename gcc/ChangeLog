@@ -1,3 +1,11 @@
+2008-01-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34769
+	* tree-data-ref.c (initialize_matrix_A): Revert fix for PR34458.
+	* tree.c (int_cst_value): Instead make this function more
+	permissive in what it accepts as valid input.  Document this
+	function always sign-extends the value.
+
 2008-01-16  Jakub Jelinek  <jakub@redhat.com>
 	Richard Guenther  <rguenther@suse.de>
 
