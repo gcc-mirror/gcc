@@ -1,3 +1,9 @@
+2008-01-16  Richard Guenther  <rguenther@suse.de>
+
+	PR c/34768
+	* c-typeck.c (common_pointer_type): Do not merge inconsistent
+	type qualifiers for function types.
+
 2008-01-15  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* tree-parloops (gen_parallel_loop): Revert my fix.
