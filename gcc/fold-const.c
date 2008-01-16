@@ -2122,8 +2122,22 @@ fold_convert_const_int_from_int (tree type, const_tree arg1)
   t = force_fit_type_double (type, TREE_INT_CST_LOW (arg1),
 			     TREE_INT_CST_HIGH (arg1),
 		             /* Don't set the overflow when
-		      		converting a pointer  */
-			     !POINTER_TYPE_P (TREE_TYPE (arg1)),
+		      		converting from a pointer,  */
+			     !POINTER_TYPE_P (TREE_TYPE (arg1))
+			     /* or to a sizetype with same signedness
+				and the precision is unchanged.
+				???  sizetype is always sign-extended,
+				but its signedness depends on the
+				frontend.  Thus we see spurious overflows
+				here if we do not check this.  */
+			     && !((TYPE_PRECISION (TREE_TYPE (arg1))
+				   == TYPE_PRECISION (type))
+				  && (TYPE_UNSIGNED (TREE_TYPE (arg1))
+				      == TYPE_UNSIGNED (type))
+				  && ((TREE_CODE (TREE_TYPE (arg1)) == INTEGER_TYPE
+				       && TYPE_IS_SIZETYPE (TREE_TYPE (arg1)))
+				      || (TREE_CODE (type) == INTEGER_TYPE
+					  && TYPE_IS_SIZETYPE (type)))),
 			     (TREE_INT_CST_HIGH (arg1) < 0
 		 	      && (TYPE_UNSIGNED (type)
 				  < TYPE_UNSIGNED (TREE_TYPE (arg1))))

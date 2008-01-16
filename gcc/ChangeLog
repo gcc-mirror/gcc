@@ -1,3 +1,11 @@
+2008-01-16  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/32628
+	* fold-const.c (fold_convert_const_int_from_int): Do not
+	set overflow if that occured only because of a sign extension
+	change when converting from/to a sizetype with the same
+	precision and signedness.
+
 2008-01-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR debug/34249
