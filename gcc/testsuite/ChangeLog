@@ -1,3 +1,7 @@
+2008-01-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/tree-ssa/loop-19.c: Require nonpic.
+
 2008-01-16  Jakub Jelinek  <jakub@redhat.com>
 	Richard Guenther  <rguenther@suse.de>
 
