@@ -3659,7 +3659,6 @@ static void dwarf2out_imported_module_or_decl (tree, tree);
 static void dwarf2out_abstract_function (tree);
 static void dwarf2out_var_location (rtx);
 static void dwarf2out_begin_function (tree);
-static void dwarf2out_switch_text_section (void);
 
 /* The debug hooks structure.  */
 
@@ -7094,7 +7093,7 @@ dwarf2out_note_section_used (void)
     cold_text_section_used = true;
 }
 
-static void
+void
 dwarf2out_switch_text_section (void)
 {
   dw_fde_ref fde;

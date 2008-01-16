@@ -1777,7 +1777,13 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 
 	case NOTE_INSN_SWITCH_TEXT_SECTIONS:
 	  in_cold_section_p = !in_cold_section_p;
-	  (*debug_hooks->switch_text_section) ();
+#ifdef DWARF2_UNWIND_INFO
+	  if (dwarf2out_do_frame ())
+	    dwarf2out_switch_text_section ();
+	  else
+#endif
+	    (*debug_hooks->switch_text_section) ();
+
 	  switch_to_section (current_function_section ());
 	  break;
 
