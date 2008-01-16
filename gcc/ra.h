@@ -32,6 +32,9 @@ struct allocno
   /* Number of calls crossed by each allocno.  */
   int calls_crossed;
 
+  /* Estimated frequency of crossing call by each allocno.  */
+  int freq_calls_crossed;
+
   /* Number of calls that might throw crossed by each allocno.  */
   int throwing_calls_crossed;
 

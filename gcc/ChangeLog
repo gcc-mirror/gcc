@@ -1,3 +1,20 @@
+2008-01-16  Jan Hubicka  <jh@suse.cz>
+
+	PR rtl-optimization/31396
+	* regstat.c (regstat_bb_compute_ri): Compute FREQ_CALLS_CROSSED.
+	* cfg.c (dump_reg_info): Print it.
+	* regs.h (struct reg_info_t): add freq_calls_crossed.
+	(REG_FREQ_CALLS_CROSSED): New macro.
+	* global.c (global_alloc): Compute freq_calls_crossed for allocno.
+	(find_reg): Update call of CALLER_SAVE_PROFITABLE.
+	* regmove.c (optimize_reg_copy_1, optimize_reg_copy_2, fixup_match_2,
+	regmove_optimize): Update call crossed frequencies.
+	* local-alloc.c (struct qty): Add freq_calls_crossed.
+	(alloc_qty): Copute freq_calls_crossed.
+	(update_equiv_regs, combine_regs): Update REG_FREQ_CALLS_CROSSED.
+	(find_free_reg): Update call of CALLER_SAVE_PROFITABLE.
+	* ra.h (struct allocno): Add freq_calls_crossed.
+
 2008-01-16  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* gcc.c (LINK_COMMAND_SPEC): Add includes and link options for

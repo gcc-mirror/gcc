@@ -506,6 +506,8 @@ optimize_reg_copy_1 (rtx insn, rtx dest, rtx src)
 	  int s_length = 0;
 	  int d_n_calls = 0;
 	  int s_n_calls = 0;
+	  int s_freq_calls = 0;
+	  int d_freq_calls = 0;
 
 	  /* We can do the optimization.  Scan forward from INSN again,
 	     replacing regs as we go.  Set FAILED if a replacement can't
@@ -556,8 +558,12 @@ optimize_reg_copy_1 (rtx insn, rtx dest, rtx src)
 		  /* Similarly, total calls for SREGNO, total calls beyond
 		     the death note for DREGNO.  */
 		  s_n_calls++;
+		  s_freq_calls += REG_FREQ_FROM_BB  (BLOCK_FOR_INSN (q));
 		  if (dest_death)
-		    d_n_calls++;
+		    {
+		      d_n_calls++;
+		      d_freq_calls += REG_FREQ_FROM_BB  (BLOCK_FOR_INSN (q));
+		    }
 		}
 
 	      /* If DEST dies here, remove the death note and save it for
@@ -590,6 +596,7 @@ optimize_reg_copy_1 (rtx insn, rtx dest, rtx src)
 		    }
 
 		  REG_N_CALLS_CROSSED (sregno) -= s_n_calls;
+		  REG_FREQ_CALLS_CROSSED (sregno) -= s_freq_calls;
 		}
 
 	      /* Move death note of SRC from P to INSN.  */
@@ -619,6 +626,7 @@ optimize_reg_copy_1 (rtx insn, rtx dest, rtx src)
 		  if (REG_LIVE_LENGTH (dregno) >= 0)
 		    REG_LIVE_LENGTH (dregno) += d_length;
 		  REG_N_CALLS_CROSSED (dregno) += d_n_calls;
+		  REG_FREQ_CALLS_CROSSED (dregno) += d_freq_calls;
 		}
 	    }
 
@@ -684,8 +692,11 @@ optimize_reg_copy_2 (rtx insn, rtx dest, rtx src)
 
 		if (CALL_P (q))
 		  {
+		    int freq = REG_FREQ_FROM_BB  (BLOCK_FOR_INSN (q));
 		    REG_N_CALLS_CROSSED (dregno)--;
 		    REG_N_CALLS_CROSSED (sregno)++;
+		    REG_FREQ_CALLS_CROSSED (dregno) -= freq;
+		    REG_FREQ_CALLS_CROSSED (sregno) += freq;
 		  }
 	      }
 
@@ -953,7 +964,7 @@ static int
 fixup_match_2 (rtx insn, rtx dst, rtx src, rtx offset)
 {
   rtx p, dst_death = 0;
-  int length, num_calls = 0;
+  int length, num_calls = 0, freq_calls = 0;
 
   /* If SRC dies in INSN, we'd have to move the death note.  This is
      considered to be very unlikely, so we just skip the optimization
@@ -997,6 +1008,7 @@ fixup_match_2 (rtx insn, rtx dst, rtx src, rtx offset)
 		  remove_death (REGNO (dst), dst_death);
 		  REG_LIVE_LENGTH (REGNO (dst)) += length;
 		  REG_N_CALLS_CROSSED (REGNO (dst)) += num_calls;
+		  REG_FREQ_CALLS_CROSSED (REGNO (dst)) += freq_calls;
 		}
 
 	      if (dump_file)
@@ -1049,7 +1061,10 @@ fixup_match_2 (rtx insn, rtx dst, rtx src, rtx offset)
       if (CALL_P (p))
 	{
 	  if (! dst_death)
-	    num_calls++;
+	    {
+	      num_calls++;
+	      freq_calls += REG_FREQ_FROM_BB  (BLOCK_FOR_INSN (p));
+	    }
 
 	  if (REG_N_CALLS_CROSSED (REGNO (src)) == 0)
 	    break;
@@ -1276,7 +1291,7 @@ regmove_optimize (rtx f, int nregs)
 	    {
 	      rtx set, p, src, dst;
 	      rtx src_note, dst_note;
-	      int num_calls = 0;
+	      int num_calls = 0, freq_calls = 0;
 	      enum reg_class src_class, dst_class;
 	      int length;
 
@@ -1465,6 +1480,7 @@ regmove_optimize (rtx f, int nregs)
 		  if (CALL_P (p))
 		    {
 		      num_calls++;
+		      freq_calls += REG_FREQ_FROM_BB  (BLOCK_FOR_INSN (p));
 
 		      if (REG_N_CALLS_CROSSED (REGNO (dst)) == 0)
 			break;
@@ -1497,6 +1513,8 @@ regmove_optimize (rtx f, int nregs)
 
 		  REG_N_CALLS_CROSSED (dstno) += num_calls;
 		  REG_N_CALLS_CROSSED (srcno) -= num_calls;
+		  REG_FREQ_CALLS_CROSSED (dstno) += freq_calls;
+		  REG_FREQ_CALLS_CROSSED (srcno) -= freq_calls;
 
 		  REG_LIVE_LENGTH (dstno) += length;
 		  if (REG_LIVE_LENGTH (srcno) >= 0)
