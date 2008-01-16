@@ -1,16 +1,18 @@
+2008-01-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR debug/34249
+	* debug.h (dwarf2out_switch_text_section): Move declaration from ...
+	* dwarf2out.c (dwarf2out_switch_text_section): ... here.  Make
+	function global.
+	* final.c (final_scan_insn) [NOTE_INSN_SWITCH_TEXT_SECTIONS]:
+	Depending on dwarf2out_do_frame, call dwarf2out_switch_text_section
+	for DWARF2_UNWIND_INFO targets.
+
 2008-01-16  Richard Guenther  <rguenther@suse.de>
 
 	PR c/34768
 	* c-typeck.c (common_pointer_type): Do not merge inconsistent
 	type qualifiers for function types.
-
-2008-01-15  Sebastian Pop  <sebastian.pop@amd.com>
-
-	* tree-parloops (gen_parallel_loop): Revert my fix.
-
-2008-01-15  Sebastian Pop  <sebastian.pop@amd.com>
-
-	* tree-parloops.c (gen_parallel_loop): Fix previous change, declare li.
 
 2008-01-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
