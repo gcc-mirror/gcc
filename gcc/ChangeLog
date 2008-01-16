@@ -1,4 +1,9 @@
-2008-01-12  Sebastian Pop  <sebastian.pop@amd.com>
+2008-01-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* tree-parloops.c (gen_parallel_loop): Fix ommision of declaration for
+	loop_iterator li from previous commit.
+
+2008-01-15  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* tree-parloops.c (gen_parallel_loop): Free loop bound estimations.
 
