@@ -1,5 +1,10 @@
 2008-01-16  Richard Guenther  <rguenther@suse.de>
 
+	PR c++/33819
+	* g++.dg/torture/pr33819.C: New testcase.
+
+2008-01-16  Richard Guenther  <rguenther@suse.de>
+
 	PR c/34768
 	* gcc.c-torture/execute/pr34768-1.c: New testcase.
 	* gcc.c-torture/execute/pr34768-2.c: Likewise.
