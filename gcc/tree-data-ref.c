@@ -3205,6 +3205,11 @@ subscript_dependence_tester_1 (struct data_dependence_relation *ddr,
 
       else
  	{
+	  if (SUB_CONFLICTS_IN_A (subscript))
+	    free_conflict_function (SUB_CONFLICTS_IN_A (subscript));
+	  if (SUB_CONFLICTS_IN_B (subscript))
+	    free_conflict_function (SUB_CONFLICTS_IN_B (subscript));
+
  	  SUB_CONFLICTS_IN_A (subscript) = overlaps_a;
  	  SUB_CONFLICTS_IN_B (subscript) = overlaps_b;
 	  SUB_LAST_CONFLICT (subscript) = last_conflicts;
@@ -3896,11 +3901,16 @@ compute_self_dependence (struct data_dependence_relation *ddr)
   for (i = 0; VEC_iterate (subscript_p, DDR_SUBSCRIPTS (ddr), i, subscript);
        i++)
     {
+      if (SUB_CONFLICTS_IN_A (subscript))
+	free_conflict_function (SUB_CONFLICTS_IN_A (subscript));
+      if (SUB_CONFLICTS_IN_B (subscript))
+	free_conflict_function (SUB_CONFLICTS_IN_B (subscript));
+
       /* The accessed index overlaps for each iteration.  */
       SUB_CONFLICTS_IN_A (subscript)
-	      = conflict_fn (1, affine_fn_cst (integer_zero_node));
+	= conflict_fn (1, affine_fn_cst (integer_zero_node));
       SUB_CONFLICTS_IN_B (subscript)
-	      = conflict_fn (1, affine_fn_cst (integer_zero_node));
+	= conflict_fn (1, affine_fn_cst (integer_zero_node));
       SUB_LAST_CONFLICT (subscript) = chrec_dont_know;
     }
 
