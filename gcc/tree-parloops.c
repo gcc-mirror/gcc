@@ -1598,6 +1598,7 @@ gen_parallel_loop (struct loop *loop, htab_t reduction_list,
 		   unsigned n_threads, struct tree_niter_desc *niter)
 {
   struct loop *nloop;
+  loop_iterator li;
   tree many_iterations_cond, type, nit;
   tree stmts, arg_struct, new_arg_struct;
   basic_block parallel_head;
