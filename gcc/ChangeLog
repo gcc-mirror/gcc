@@ -1,3 +1,9 @@
+2008-01-16  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* tree-data-ref.c (subscript_dependence_tester_1): Call 
+	free_conflict_function.
+	(compute_self_dependence): Same.
+
 2008-01-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR debug/34249
