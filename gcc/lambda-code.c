@@ -2595,11 +2595,16 @@ lambda_transform_legal_p (lambda_trans_matrix trans,
   gcc_assert (LTM_COLSIZE (trans) == nb_loops
 	      && LTM_ROWSIZE (trans) == nb_loops);
 
-  /* When there is an unknown relation in the dependence_relations, we
-     know that it is no worth looking at this loop nest: give up.  */
+  /* When there are no dependences, the transformation is correct.  */
+  if (VEC_length (ddr_p, dependence_relations) == 0)
+    return true;
+
   ddr = VEC_index (ddr_p, dependence_relations, 0);
   if (ddr == NULL)
     return true;
+
+  /* When there is an unknown relation in the dependence_relations, we
+     know that it is no worth looking at this loop nest: give up.  */
   if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
     return false;
 
