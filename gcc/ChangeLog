@@ -1,3 +1,17 @@
+2008-01-16  Jakub Jelinek  <jakub@redhat.com>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR c/34668
+	* gimplify.c (fold_indirect_ref_rhs): Rename to ...
+	(gimple_fold_indirect_ref_rhs): ... this.
+	(gimple_fold_indirect_ref): New function with foldings
+	that preserve lvalueness.
+	(gimplify_modify_expr_rhs): Call gimple_fold_indirect_ref_rhs.
+	* tree-flow.h (gimple_fold_indirect_ref): Declare.
+	* tree-inline.c (copy_body_r): Use gimple_fold_indirect_ref
+	to fold an INDIRECT_REF, fall back to the old use of
+	fold_indirect_ref_1.
+
 2008-01-16  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* tree-data-ref.c (subscript_dependence_tester_1): Call 

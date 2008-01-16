@@ -696,11 +696,18 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 	      tree type = TREE_TYPE (TREE_TYPE (*n));
 	      new = unshare_expr (*n);
 	      old = *tp;
-	      *tp = fold_indirect_ref_1 (type, new);
+	      *tp = gimple_fold_indirect_ref (new);
 	      if (! *tp)
 	        {
 		  if (TREE_CODE (new) == ADDR_EXPR)
-		    *tp = TREE_OPERAND (new, 0);
+		    {
+		      *tp = fold_indirect_ref_1 (type, new);
+		      /* ???  We should either assert here or build
+			 a VIEW_CONVERT_EXPR instead of blindly leaking
+			 incompatible types to our IL.  */
+		      if (! *tp)
+			*tp = TREE_OPERAND (new, 0);
+		    }
 	          else
 		    {
 	              *tp = build1 (INDIRECT_REF, type, new);
