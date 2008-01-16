@@ -8,7 +8,7 @@ c=0
 for k in $possible_kinds; do
   echo "  integer (kind=$k) :: x" > tmp$$.f90
   echo "  end" >> tmp$$.f90
-  if $compile -c tmp$$.f90 > /dev/null 2>&1; then
+  if $compile -S tmp$$.f90 > /dev/null 2>&1; then
     kinds="$kinds $k"
     c=`expr $c + 1`
   fi

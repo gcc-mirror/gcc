@@ -1,3 +1,12 @@
+2008-01-16  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR libfortran/34669
+	* mk-kinds-h.sh: Compile with -S to avoid calling the assembler,
+	to avoid piping the -fdump-parse-tree output to the assembler
+	when configuring with -pipe.
+	* mk-sik-inc.sh: Likewise.
+	* mk-srk-inc.sh: Likewise.
+
 2008-01-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/34671

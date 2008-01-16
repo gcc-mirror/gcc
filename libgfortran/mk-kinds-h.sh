@@ -14,7 +14,7 @@ smallest=""
 for k in $possible_integer_kinds; do
   echo "  integer (kind=$k) :: i" > tmp$$.f90
   echo "  end" >> tmp$$.f90
-  if $compile -c tmp$$.f90 > /dev/null 2>&1; then
+  if $compile -S tmp$$.f90 > /dev/null 2>&1; then
     s=`expr 8 \* $k`
     largest="$k"
 
@@ -47,7 +47,7 @@ echo ""
 for k in $possible_real_kinds; do
   echo "  real (kind=$k) :: x" > tmp$$.f90
   echo "  end" >> tmp$$.f90
-  if $compile -c tmp$$.f90 > /dev/null 2>&1; then
+  if $compile -S tmp$$.f90 > /dev/null 2>&1; then
     case $k in
       4) ctype="float" ; suffix="f" ;;
       8) ctype="double" ; suffix="" ;;
@@ -58,19 +58,19 @@ for k in $possible_real_kinds; do
 
     # Check for the value of HUGE
     echo "print *, huge(0._$k) ; end" > tmq$$.f90
-    huge=`$compile -c -fdump-parse-tree tmq$$.f90 | grep TRANSFER \
+    huge=`$compile -S -fdump-parse-tree tmq$$.f90 | grep TRANSFER \
 		| sed 's/ *TRANSFER *//' | sed 's/_.*//'`
     rm -f tmq$$.*
 
     # Check for the value of DIGITS
     echo "print *, digits(0._$k) ; end" > tmq$$.f90
-    digits=`$compile -c -fdump-parse-tree tmq$$.f90 | grep TRANSFER \
+    digits=`$compile -S -fdump-parse-tree tmq$$.f90 | grep TRANSFER \
 		| sed 's/ *TRANSFER *//'`
     rm -f tmq$$.*
 
     # Check for the value of RADIX
     echo "print *, radix(0._$k) ; end" > tmq$$.f90
-    radix=`$compile -c -fdump-parse-tree tmq$$.f90 | grep TRANSFER \
+    radix=`$compile -S -fdump-parse-tree tmq$$.f90 | grep TRANSFER \
 		| sed 's/ *TRANSFER *//'`
     rm -f tmq$$.*
 
