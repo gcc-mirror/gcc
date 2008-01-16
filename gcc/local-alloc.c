@@ -126,6 +126,10 @@ struct qty
 
   int n_calls_crossed;
 
+  /* Number of times a reg tied to given qty lives across a CALL_INSN.  */
+
+  int freq_calls_crossed;
+
   /* Number of times a reg tied to given qty lives across a CALL_INSN
      that might throw.  */
 
@@ -332,6 +336,7 @@ alloc_qty (int regno, enum machine_mode mode, int size, int birth)
   qty[qtyno].mode = mode;
   qty[qtyno].birth = birth;
   qty[qtyno].n_calls_crossed = REG_N_CALLS_CROSSED (regno);
+  qty[qtyno].freq_calls_crossed = REG_FREQ_CALLS_CROSSED (regno);
   qty[qtyno].n_throwing_calls_crossed = REG_N_THROWING_CALLS_CROSSED (regno);
   qty[qtyno].min_class = reg_preferred_class (regno);
   qty[qtyno].alternate_class = reg_alternate_class (regno);
@@ -1193,6 +1198,7 @@ update_equiv_regs (void)
 
 		      REG_BASIC_BLOCK (regno) = bb->index;
 		      REG_N_CALLS_CROSSED (regno) = 0;
+		      REG_FREQ_CALLS_CROSSED (regno) = 0;
 		      REG_N_THROWING_CALLS_CROSSED (regno) = 0;
 		      REG_LIVE_LENGTH (regno) = 2;
 
@@ -2026,6 +2032,7 @@ combine_regs (rtx usedreg, rtx setreg, int may_save_copy, int insn_number,
 
       /* Update info about quantity SQTY.  */
       qty[sqty].n_calls_crossed += REG_N_CALLS_CROSSED (sreg);
+      qty[sqty].freq_calls_crossed += REG_FREQ_CALLS_CROSSED (sreg);
       qty[sqty].n_throwing_calls_crossed
 	+= REG_N_THROWING_CALLS_CROSSED (sreg);
       qty[sqty].n_refs += REG_N_REFS (sreg);
@@ -2338,8 +2345,9 @@ find_free_reg (enum reg_class class, enum machine_mode mode, int qtyno,
       && ! just_try_suggested
       && qty[qtyno].n_calls_crossed != 0
       && qty[qtyno].n_throwing_calls_crossed == 0
-      && CALLER_SAVE_PROFITABLE (qty[qtyno].n_refs,
-				 qty[qtyno].n_calls_crossed))
+      && CALLER_SAVE_PROFITABLE (optimize_size ? qty[qtyno].n_refs : qty[qtyno].freq,
+				 optimize_size ? qty[qtyno].n_calls_crossed
+				 : qty[qtyno].freq_calls_crossed))
     {
       i = find_free_reg (class, mode, qtyno, 1, 0, born_index, dead_index);
       if (i >= 0)

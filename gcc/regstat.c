@@ -180,6 +180,7 @@ regstat_bb_compute_ri (unsigned int bb_index,
 	  EXECUTE_IF_SET_IN_BITMAP (live, 0, regno, bi)
 	    {
 	      REG_N_CALLS_CROSSED (regno)++;
+	      REG_FREQ_CALLS_CROSSED (regno) += REG_FREQ_FROM_BB (bb);
 	      if (can_throw)
 		REG_N_THROWING_CALLS_CROSSED (regno)++;
 	      
@@ -445,7 +446,10 @@ regstat_bb_compute_calls_crossed (unsigned int bb_index, bitmap live)
 	{
 	  bitmap_iterator bi;
 	  EXECUTE_IF_SET_IN_BITMAP (live, 0, regno, bi)
-	    REG_N_CALLS_CROSSED (regno)++;
+	    {
+	      REG_N_CALLS_CROSSED (regno)++;
+	      REG_FREQ_CALLS_CROSSED (regno) += REG_FREQ_FROM_BB (bb);
+	    }
 	}
 	  
       /* All of the defs except the return value are some sort of
