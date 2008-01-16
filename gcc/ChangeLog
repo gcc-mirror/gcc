@@ -1,3 +1,8 @@
+2008-01-12  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* tree-parloops.c (loop_has_blocks_with_irreducible_flag): New.
+	(parallelize_loops): Don't parallelize irreducible components.
+
 2008-01-14  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c++/24924
