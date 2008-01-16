@@ -1,5 +1,9 @@
 2008-01-15  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-parloops (gen_parallel_loop): Revert my fix.
+
+2008-01-15  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-parloops.c (gen_parallel_loop): Fix previous change, declare li.
 
 2008-01-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
