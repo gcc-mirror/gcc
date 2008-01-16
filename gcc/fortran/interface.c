@@ -1520,7 +1520,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       && (ref == NULL
           || (actual->expr_type == EXPR_VARIABLE
 	      && (actual->symtree->n.sym->as->type == AS_ASSUMED_SHAPE
-		  || actual->symtree->n.sym->as->type == AS_DEFERRED))))
+		  || actual->symtree->n.sym->attr.pointer))))
     {
       if (where && (gfc_option.allow_std & GFC_STD_F2003) == 0)
 	{
@@ -1546,7 +1546,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   if (actual->expr_type == EXPR_VARIABLE
       && actual->symtree->n.sym->as
       && (actual->symtree->n.sym->as->type == AS_ASSUMED_SHAPE
-	  || actual->symtree->n.sym->as->type == AS_DEFERRED))
+	  || actual->symtree->n.sym->attr.pointer))
     {
       if (where)
 	gfc_error ("Element of assumed-shaped array passed to dummy "
@@ -1638,6 +1638,7 @@ get_expr_storage_size (gfc_expr *e)
 {
   int i;
   long int strlen, elements;
+  long int substrlen = 0;
   gfc_ref *ref;
 
   if (e == NULL)
@@ -1672,6 +1673,16 @@ get_expr_storage_size (gfc_expr *e)
 
   for (ref = e->ref; ref; ref = ref->next)
     {
+      if (ref->type == REF_SUBSTRING && ref->u.ss.start
+	  && ref->u.ss.start->expr_type == EXPR_CONSTANT)
+	{
+	  int len = strlen;
+	  if (ref->u.ss.end && ref->u.ss.end->expr_type == EXPR_CONSTANT)
+	    len = mpz_get_ui (ref->u.ss.end->value.integer);
+	  substrlen = len - mpz_get_ui (ref->u.ss.start->value.integer) + 1;
+	  continue;
+	}
+
       if (ref->type == REF_ARRAY && ref->u.ar.type == AR_SECTION
 	  && ref->u.ar.start && ref->u.ar.end && ref->u.ar.stride
 	  && ref->u.ar.as->upper)
@@ -1729,12 +1740,20 @@ get_expr_storage_size (gfc_expr *e)
 	    else
 	      return 0;
 	  }
+      else if (ref->type == REF_ARRAY && ref->u.ar.type == AR_ELEMENT
+	       && e->expr_type == EXPR_VARIABLE
+	       && (e->symtree->n.sym->as->type == AS_ASSUMED_SHAPE
+                  || e->symtree->n.sym->attr.pointer))
+	elements = 1;
       else
         /* TODO: Determine the number of remaining elements in the element
-           sequence for array element designators.
+           sequence for array element designators. See PR 32616.
            See also get_array_index in data.c.  */
 	return 0;
     }
+
+  if (substrlen)
+    return elements*substrlen;
 
   return elements*strlen;
 }

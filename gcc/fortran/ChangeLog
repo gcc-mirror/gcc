@@ -1,3 +1,11 @@
+2008-01-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34796
+	* interface.c (compare_parameter): Allow AS_DEFERRED array
+	elements and reject attr.pointer array elemenents.
+	(get_expr_storage_size): Return storage size of elements of
+	assumed-shape and pointer arrays.
+
 2008-01-15  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* f95-lang.c (gfc_init_builtin_functions): Initialize GOMP builtins
