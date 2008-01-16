@@ -1,3 +1,9 @@
+2008-01-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34796
+	* gfortran.dg/argument_checking_13.f90: New.
+	* gfortran.dg/argument_checking_14.f90: New.
+
 2008-01-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	
 	PR libfortran/34671
