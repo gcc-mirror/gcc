@@ -1,3 +1,7 @@
+2008-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/sizetype.adb: New test.
+
 2008-01-16  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/32628
