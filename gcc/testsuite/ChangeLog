@@ -1,3 +1,8 @@
+2008-01-16  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/32628
+	* gcc.dg/overflow-warn-7.c: New testcase.
+
 2008-01-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/tree-ssa/loop-19.c: Require nonpic.
