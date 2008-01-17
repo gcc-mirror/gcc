@@ -1590,7 +1590,7 @@ get_sched_window (partial_schedule_ptr ps, int *nodes_order, int i,
    MUST_PRECEDE/MUST_FOLLOW contains all predecessors/successors of U_NODE
    which are in SCHED_NODES (already scheduled nodes) and scheduled at
    the same row as the first/last row of U_NODE's scheduling window.
-   The first and last rows are calculated using the following paramaters:
+   The first and last rows are calculated using the following parameters:
    START/END rows - The cycles that begins/ends the traversal on the window;
    searching for an empty cycle to schedule U_NODE.
    STEP - The direction in which we traverse the window.
