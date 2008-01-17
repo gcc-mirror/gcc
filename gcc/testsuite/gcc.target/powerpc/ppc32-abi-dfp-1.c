@@ -216,14 +216,11 @@ main ()
   func1 (1.dd, 2.dl, 3.dd, 4.dl, 5.dd, 6.dl, 7.dd, 8.dl);
   func2 (1.dl, 2.dd, 3.dl, 4.dd, 5.dl, 6.dd, 7.dl, 8.dd);
   func3 (1.dd, 2.dl, 3.dd, 4.dl, 5.dl);
-#if 0
-  /* _Decimal32 doesn't yet follow the ABI; enable this when it does.  */
   func4 (501.2df, 502.2df, 503.2df, 504.2df, 505.2df, 506.2df, 507.2df,
 	 508.2df, 509.2df, 510.2df, 511.2df, 512.2df, 513.2df, 514.2df,
 	 515.2df, 516.2df);
   func5 (601.2df, 602.2dd, 603.2dl, 604.2df, 605.2dd, 606.2dl,
 	 607.2df, 608.2dd, 609.2dl, 610.2df, 611.2dd, 612.2dl);
-#endif
 
   if (failcnt != 0)
     abort ();
