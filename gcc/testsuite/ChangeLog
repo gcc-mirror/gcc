@@ -1,3 +1,23 @@
+2008-01-17  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR testsuite/34821
+	* gcc.dg/autopar/autopar.exp: New.
+	* g++.dg/tree-ssa/pr34355.C: Require pthread.
+	* lib/target-supports.exp (check_effective_target_pthread): New.
+
+	* gcc.dg/tree-ssa/parallelization-1.c: Moved to gcc.dg/autopar.
+	* gcc.dg/tree-ssa/reduc-1short.c: Same.
+	* gcc.dg/tree-ssa/reduc-1.c: Same.
+	* gcc.dg/tree-ssa/reduc-2short.c: Same.
+	* gcc.dg/tree-ssa/reduc-2.c: Same
+	* gcc.dg/tree-ssa/reduc-3.c: Same.
+	* gcc.dg/tree-ssa/reduc-1char.c: Same.
+	* gcc.dg/tree-ssa/reduc-6.c: Same.
+	* gcc.dg/tree-ssa/reduc-7.c: Same.
+	* gcc.dg/tree-ssa/reduc-2char.c: Same.
+	* gcc.dg/tree-ssa/reduc-8.c: Same.
+	* gcc.dg/tree-ssa/reduc-9.c: Same.
+
 2008-01-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/discr5.adb: New test.
