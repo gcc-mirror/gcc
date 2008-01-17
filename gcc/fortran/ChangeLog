@@ -1,3 +1,31 @@
+2008-01-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34429
+	PR fortran/34431
+	PR fortran/34471
+	* decl.c : Remove gfc_function_kind_locus and
+	gfc_function_type_locus. Add gfc_matching_function.
+	(match_char_length): If matching a function and the length
+	does not match, return MATCH_YES and try again later.
+	(gfc_match_kind_spec): The same.
+	(match_char_kind): The same.
+	(gfc_match_type_spec): The same for numeric and derived types.
+	(match_prefix): Rename as gfc_match_prefix.
+	(gfc_match_function_decl): Except for function valued character
+	lengths, defer applying kind, type and charlen info until the
+	end of specification block.
+	gfortran.h (gfc_statement): Add ST_GET_FCN_CHARACTERISTICS.
+	parse.c (decode_specification_statement): New function.
+	(decode_statement): Call it when a function has kind = -1. Set
+	and reset gfc_matching function, as function statement is being
+	matched.
+	(match_deferred_characteristics): Simplify with a single call
+	to gfc_match_prefix. Do appropriate error handling. In any
+	case, make sure that kind = -1 is reset or corrected.
+	(parse_spec): Call above on seeing ST_GET_FCN_CHARACTERISTICS.
+	Throw an error if kind = -1 after last specification statement.
+	parse.h : Prototype for gfc_match_prefix.
+
 2008-01-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34796
