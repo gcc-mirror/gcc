@@ -1,13 +1,17 @@
-/* { dg-do run { xfail vax-*-* powerpc-*-*spe } } */
+/* { dg-do run { xfail *-*-* } } */
 /* We don't (and don't want to) perform this optimisation on soft-float
-   targets, where each addition is a library call.  */
+   targets, where each addition is a library call.  This test requires
+   -fassociative-math for enabling the variable-expansion as well as
+   -fsigned-zeros for honoring the sign of zero; but
+   they can not co-exist; also under -funsafe-math-optimizations, so we
+   expect it to fail.  */
 /* { dg-require-effective-target hard_float } */
 /* { dg-options "-O2 -funroll-loops -funsafe-math-optimizations -fvariable-expansion-in-unroller -dL" } */
 
 extern void abort (void);
 extern void exit (int);
 
-float
+float __attribute__((noinline))
 foo (float d, int n)
 {
   unsigned i;
