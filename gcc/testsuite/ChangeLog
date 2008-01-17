@@ -1,3 +1,8 @@
+2008-01-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/34648
+	* gcc.c-torture/compile/pr34648.c: New testcase.
+
 2008-01-17  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR testsuite/34821
