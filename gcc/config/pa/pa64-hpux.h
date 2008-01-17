@@ -64,7 +64,8 @@ along with GCC; see the file COPYING3.  If not see
 	   %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
      %{pg:%{static:%{!mhp-ld:-a shared}%{mhp-ld:-a archive_shared}}\
        -lgprof %{static:-a archive} %{static|mt|pthread:-lpthread} -lc\
-       %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}"
+       %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
+   %{shared:%{mt|pthread:-lpthread}}"
 #else
 #define LIB_SPEC \
   "%{!shared:\
@@ -75,7 +76,8 @@ along with GCC; see the file COPYING3.  If not see
 	   %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
      %{pg:%{static:%{mgnu-ld:-a shared}%{!mgnu-ld:-a archive_shared}}\
        -lgprof %{static:-a archive} %{static|mt|pthread:-lpthread} -lc\
-       %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}"
+       %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
+   %{shared:%{mt|pthread:-lpthread}}"
 #endif
 
 /* The libgcc_stub.a and milli.a libraries need to come last.  */
