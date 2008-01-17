@@ -2530,8 +2530,8 @@ substitute_in_expr (tree exp, tree f, tree r)
 	{
 	  tree copy = NULL_TREE;
 	  int i;
-	  int n = TREE_OPERAND_LENGTH (exp);
-	  for (i = 1; i < n; i++)
+
+	  for (i = 1; i < TREE_OPERAND_LENGTH (exp); i++)
 	    {
 	      tree op = TREE_OPERAND (exp, i);
 	      tree newop = SUBSTITUTE_IN_EXPR (op, f, r);
@@ -2546,6 +2546,7 @@ substitute_in_expr (tree exp, tree f, tree r)
 	  else
 	    return exp;
 	}
+	break;
 
       default:
 	gcc_unreachable ();
