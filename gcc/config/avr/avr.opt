@@ -58,3 +58,11 @@ Output instruction sizes to the asm file
 mtiny-stack
 Target Report Mask(TINY_STACK)
 Change only the low 8 bits of the stack pointer
+
+mrelax
+Target Report
+Relax branches
+
+mpmem-wrap-around
+Target Report
+Make the linker relaxation machine assume that a program counter wrap-around occures.

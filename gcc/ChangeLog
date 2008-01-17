@@ -1,3 +1,8 @@
+2008-01-17  Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/avr.h (LINK_SPEC): Support -mrelax and -mpmem-wrap-around.
+	* config/avr/avr.opt (mrelax, mpmem-wrap-around): Add.
+
 2008-01-17  Seongbae Park  <seongbae.park@gmail.com>
 
 	PR rtl-optimization/34400
