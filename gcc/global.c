@@ -1011,6 +1011,16 @@ find_reg (int num, HARD_REG_SET losers, int alt_regs_p, int accept_call_clobbere
     IOR_HARD_REG_SET (used1, losers);
 
   IOR_COMPL_HARD_REG_SET (used1, reg_class_contents[(int) class]);
+
+#ifdef EH_RETURN_DATA_REGNO
+  if (allocno[num].no_eh_reg)
+    {
+      unsigned int j;
+      for (j = 0; EH_RETURN_DATA_REGNO (j) != INVALID_REGNUM; j++)
+	SET_HARD_REG_BIT (used1, EH_RETURN_DATA_REGNO (j));
+    }
+#endif
+
   COPY_HARD_REG_SET (used2, used1);
 
   IOR_HARD_REG_SET (used1, allocno[num].hard_reg_conflicts);

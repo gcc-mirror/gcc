@@ -75,9 +75,14 @@ struct allocno
 
   HARD_REG_SET regs_someone_prefers;
 
+#ifdef EH_RETURN_DATA_REGNO
+  /* Set to true if allocno can't be allocated in an eh register.  */
+  unsigned int no_eh_reg:1;
+#endif
+
 #ifdef STACK_REGS
   /* Set to true if allocno can't be allocated in the stack register.  */
-  bool no_stack_reg;
+  unsigned int no_stack_reg:1;
 #endif
 };
 extern struct allocno *allocno;
