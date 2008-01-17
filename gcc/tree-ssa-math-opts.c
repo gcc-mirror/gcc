@@ -275,7 +275,11 @@ is_division_by (tree use_stmt, tree def)
 {
   return TREE_CODE (use_stmt) == GIMPLE_MODIFY_STMT
 	 && TREE_CODE (GIMPLE_STMT_OPERAND (use_stmt, 1)) == RDIV_EXPR
-	 && TREE_OPERAND (GIMPLE_STMT_OPERAND (use_stmt, 1), 1) == def;
+	 && TREE_OPERAND (GIMPLE_STMT_OPERAND (use_stmt, 1), 1) == def
+	 /* Do not recognize x / x as valid division, as we are getting
+	    confused later by replacing all immediate uses x in such
+	    a stmt.  */
+	 && TREE_OPERAND (GIMPLE_STMT_OPERAND (use_stmt, 1), 0) != def;
 }
 
 /* Walk the subset of the dominator tree rooted at OCC, setting the
