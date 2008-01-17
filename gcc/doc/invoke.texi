@@ -1519,7 +1519,9 @@ freestanding and hosted environments.
 Enable handling of OpenMP directives @code{#pragma omp} in C/C++ and
 @code{!$omp} in Fortran.  When @option{-fopenmp} is specified, the
 compiler generates parallel code according to the OpenMP Application
-Program Interface v2.5 @w{@uref{http://www.openmp.org/}}.
+Program Interface v2.5 @w{@uref{http://www.openmp.org/}}.  This option
+implies @option{-pthread}, and thus is only supported on targets that
+have support for @option{-pthread}.
 
 @item -fms-extensions
 @opindex fms-extensions
@@ -5841,7 +5843,9 @@ Parallelize loops, i.e., split their iteration space to run in n threads.
 This is only possible for loops whose iterations are independent
 and can be arbitrarily reordered.  The optimization is only
 profitable on multiprocessor machines, for loops that are CPU-intensive,
-rather than constrained e.g. by memory bandwidth.
+rather than constrained e.g. by memory bandwidth.  This option
+implies @option{-pthread}, and thus is only supported on targets
+that have support for @option{-pthread}.
 
 @item -ftree-sra
 @opindex ftree-sra

@@ -1,3 +1,9 @@
+2008-01-16  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR testsuite/34821
+	* doc/invoke.texi: Document the dependence on pthread for fopenmp
+	and ftree-parallelize-loops.
+
 2008-01-17  Mircea Namolaru  <namolaru@il.ibm.com>
 
 	PR rtl-optimization/34826
