@@ -98,7 +98,7 @@ Boston, MA 02110-1301, USA.  */
 #undef LINK_SPEC
 #if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_PA_11)
 #define LINK_SPEC \
-  "%{!mpa-risc-1-0:%{!march=1.0:%{!shared:-L/lib/pa1.1 -L/usr/lib/pa1.1 }}}%{mlinker-opt:-O} %{!shared:-u main} %{static:-a archive} %{g*:-a archive} %{shared:-b}"
+  "%{!mpa-risc-1-0:%{!march=1.0:%{static:-L/lib/pa1.1 -L/usr/lib/pa1.1 }}}%{mlinker-opt:-O} %{!shared:-u main} %{static:-a archive} %{g*:-a archive} %{shared:-b}"
 #else
 #define LINK_SPEC \
   "%{mlinker-opt:-O} %{!shared:-u main} %{static:-a archive} %{g*:-a archive} %{shared:-b}"

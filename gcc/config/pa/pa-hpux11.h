@@ -106,18 +106,6 @@ Boston, MA 02110-1301, USA.  */
 /* We can debug dynamically linked executables on hpux11; we also
    want dereferencing of a NULL pointer to cause a SEGV.  */
 #undef LINK_SPEC
-#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_PA_11)
-#define LINK_SPEC \
-  "%{!mpa-risc-1-0:%{!march=1.0:%{!shared:-L/lib/pa1.1 -L/usr/lib/pa1.1 }}}\
-   %{!shared:%{p:-L/lib/libp -L/usr/lib/libp %{!static:\
-     %nWarning: consider linking with `-static' as system libraries with\n\
-     %n  profiling support are only provided in archive format}}}\
-   %{!shared:%{pg:-L/lib/libp -L/usr/lib/libp %{!static:\
-     %nWarning: consider linking with `-static' as system libraries with\n\
-     %n  profiling support are only provided in archive format}}}\
-   -z %{mlinker-opt:-O} %{!shared:-u main -u __gcc_plt_call}\
-   %{static:-a archive} %{shared:-b}"
-#else
 #define LINK_SPEC \
   "%{!shared:%{p:-L/lib/libp -L/usr/lib/libp %{!static:\
      %nWarning: consider linking with `-static' as system libraries with\n\
@@ -127,7 +115,6 @@ Boston, MA 02110-1301, USA.  */
      %n  profiling support are only provided in archive format}}}\
    -z %{mlinker-opt:-O} %{!shared:-u main -u __gcc_plt_call}\
    %{static:-a archive} %{shared:-b}"
-#endif
 
 /* hpux 11 has posix threads.  */
 #undef LIB_SPEC
