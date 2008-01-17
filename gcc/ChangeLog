@@ -1,3 +1,9 @@
+2008-01-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa64-hpux.h (LIB_SPEC): Add "-lpthread" in shared links if "-mt" or
+	"-pthread" is specified.
+	* pa-hpux11.h (LIB_SPEC): Likewise.
+
 2007-01-16  Janis Johnson  <janis187@us.ibm.com>
 	    Peter Bergner  <bergner@vnet.ibm.com>
 
