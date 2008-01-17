@@ -1,3 +1,7 @@
+2008-01-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* utils.c (build_function_stub): Properly build the call expression.
+
 2008-01-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl.c (gnat_to_gnu_entity) <object>: Process renamings
