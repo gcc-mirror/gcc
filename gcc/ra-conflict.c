@@ -1184,6 +1184,11 @@ global_conflicts (void)
 		break;
 	      record_one_conflict (allocnos_live, &hard_regs_live, regno);
 	    }
+
+	  EXECUTE_IF_SET_IN_SPARSESET (allocnos_live, i)
+	    {
+	      allocno[i].no_eh_reg = 1;
+	    }
 	}
 #endif
 
