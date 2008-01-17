@@ -1,3 +1,4 @@
+// { dg-require-effective-target pthread } 
 // { dg-do compile }
 // { dg-options "-O3 -ftree-parallelize-loops=4" }
 
