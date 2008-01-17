@@ -74,8 +74,8 @@ void
 gfc_clear_ts (gfc_typespec *ts)
 {
   ts->type = BT_UNKNOWN;
-  ts->kind = 0;
   ts->derived = NULL;
+  ts->kind = 0;
   ts->cl = NULL;
   /* flag that says if the type is C interoperable */
   ts->is_c_interop = 0;

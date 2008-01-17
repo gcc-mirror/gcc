@@ -7,11 +7,11 @@ module m1
     end type t1
 
     private :: t1
-    public :: f1     ! { dg-error "cannot be of PRIVATE type" }
+    public :: f1
 
 contains
 
-    type(t1) function f1()
+    type(t1) function f1() ! { dg-error "cannot be of PRIVATE type" }
     end function
 
 end module

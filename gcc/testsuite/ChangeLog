@@ -1,3 +1,23 @@
+2008-01-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34429
+	* gfortran.dg/function_charlen_1.f90: New test.
+
+	PR fortran/34431
+	* gfortran.dg/function_types_1.f90: New test.
+	* gfortran.dg/function_types_2.f90: New test.
+
+	PR fortran/34471
+	* gfortran.dg/function_kinds_4.f90: New test.
+	* gfortran.dg/function_kinds_5.f90: New test.
+
+	* gfortran.dg/defined_operators_1.f90: Errors now at function
+	declarations.
+	* gfortran.dg/private_type_4.f90: The same.
+	* gfortran.dg/interface_15.f90: The same.
+	* gfortran.dg/elemental_args_check_2.f90: The same.
+	* gfortran.dg/auto_internal_assumed.f90: The same.
+
 2008-01-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/sizetype.adb: New test.

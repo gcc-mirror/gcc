@@ -86,8 +86,7 @@ static enumerator_history *max_enum = NULL;
 
 gfc_symbol *gfc_new_block;
 
-locus gfc_function_kind_locus;
-locus gfc_function_type_locus;
+bool gfc_matching_function;
 
 
 /********************* DATA statement subroutines *********************/
@@ -653,6 +652,12 @@ match_char_length (gfc_expr **expr)
     goto syntax;
 
   m = char_len_param_value (expr);
+  if (m != MATCH_YES && gfc_matching_function)
+    {
+      gfc_undo_symbols ();
+      m = MATCH_YES;
+    }
+
   if (m == MATCH_ERROR)
     return m;
   if (m == MATCH_NO)
@@ -1869,13 +1874,11 @@ kind_expr:
 
   if (n != MATCH_YES)
     {
-      if (gfc_current_state () == COMP_INTERFACE
-            || gfc_current_state () == COMP_NONE
-            || gfc_current_state () == COMP_CONTAINS)
+      if (gfc_matching_function)
 	{
-	  /* Signal using kind = -1 that the expression might include
-	     use associated or imported parameters and try again after
-	     the specification expressions.....  */
+	  /* The function kind expression might include use associated or 
+	     imported parameters and try again after the specification
+	     expressions.....  */
 	  if (gfc_match_char (')') != MATCH_YES)
 	    {
 	      gfc_error ("Missing right parenthesis at %C");
@@ -1884,8 +1887,6 @@ kind_expr:
 	    }
 
 	  gfc_free_expr (e);
-	  ts->kind = -1;
-	  gfc_function_kind_locus = loc;
 	  gfc_undo_symbols ();
 	  return MATCH_YES;
 	}
@@ -1907,6 +1908,7 @@ kind_expr:
     }
 
   msg = gfc_extract_int (e, &ts->kind);
+
   if (msg != NULL)
     {
       gfc_error (msg);
@@ -1977,17 +1979,12 @@ match_char_kind (int * kind, int * is_iso_c)
 
   n = gfc_match_init_expr (&e);
 
-  if (n != MATCH_YES
-      && (gfc_current_state () == COMP_INTERFACE
-	  || gfc_current_state () == COMP_NONE
-	  || gfc_current_state () == COMP_CONTAINS))
+  if (n != MATCH_YES && gfc_matching_function)
     {
-      /* Signal using kind = -1 that the expression might include
-	 use-associated or imported parameters and try again after
-	 the specification expressions.  */
+      /* The expression might include use-associated or imported
+	 parameters and try again after the specification 
+	 expressions.  */
       gfc_free_expr (e);
-      *kind = -1;
-      gfc_function_kind_locus = where;
       gfc_undo_symbols ();
       return MATCH_YES;
     }
@@ -2154,6 +2151,17 @@ syntax:
   return m;
 
 done:
+  /* Except in the case of the length being a function, where symbol
+     association looks after itself, deal with character functions
+     after the specification statements.  */
+  if (gfc_matching_function
+	&& !(len && len->expr_type != EXPR_VARIABLE
+		 && len->expr_type != EXPR_OP))
+    {
+      gfc_undo_symbols ();
+      return MATCH_YES;
+    }
+
   if (m != MATCH_YES)
     {
       gfc_free_expr (len);
@@ -2209,9 +2217,16 @@ gfc_match_type_spec (gfc_typespec *ts, int implicit_flag)
   gfc_symbol *sym;
   match m;
   int c;
-  locus loc = gfc_current_locus;
+  bool seen_deferred_kind;
 
+  /* A belt and braces check that the typespec is correctly being treated
+     as a deferred characteristic association.  */
+  seen_deferred_kind = (gfc_current_state () == COMP_FUNCTION)
+					&& (gfc_current_block ()->result->ts.kind == -1)
+					&& (ts->kind == -1);
   gfc_clear_ts (ts);
+  if (seen_deferred_kind)
+    ts->kind = -1;
 
   /* Clear the current binding label, in case one is given.  */
   curr_binding_label[0] = '\0';
@@ -2293,18 +2308,24 @@ gfc_match_type_spec (gfc_typespec *ts, int implicit_flag)
   if (m != MATCH_YES)
     return m;
 
-  if (gfc_current_state () == COMP_INTERFACE
-	|| gfc_current_state () == COMP_NONE)
+  ts->type = BT_DERIVED;
+
+  /* Defer association of the derived type until the end of the
+     specification block.  However, if the derived type can be
+     found, add it to the typespec.  */  
+  if (gfc_matching_function)
     {
-      gfc_function_type_locus = loc;
-      ts->type = BT_UNKNOWN;
-      ts->kind = -1;
+      ts->derived = NULL;
+      if (gfc_current_state () != COMP_INTERFACE
+	    && !gfc_find_symbol (name, NULL, 1, &sym) && sym)
+	ts->derived = sym;
       return MATCH_YES;
     }
 
   /* Search for the name but allow the components to be defined later.  If
      type = -1, this typespec has been seen in a function declaration but
-     the type could not legally be accessed at that point.  */
+     the type could not be accessed at that point.  */
+  sym = NULL;
   if (ts->kind != -1 && gfc_get_ha_symbol (name, &sym))
     {
       gfc_error ("Type name '%s' at %C is ambiguous", name);
@@ -2312,12 +2333,15 @@ gfc_match_type_spec (gfc_typespec *ts, int implicit_flag)
     }
   else if (ts->kind == -1)
     {
-      if (gfc_find_symbol (name, NULL, 0, &sym))
+      int iface = gfc_state_stack->previous->state != COMP_INTERFACE
+		    || gfc_current_ns->has_import_set;
+      if (gfc_find_symbol (name, NULL, iface, &sym))
 	{       
 	  gfc_error ("Type name '%s' at %C is ambiguous", name);
 	  return MATCH_ERROR;
 	}
 
+      ts->kind = 0;
       if (sym == NULL)
 	return MATCH_NO;
     }
@@ -2326,8 +2350,7 @@ gfc_match_type_spec (gfc_typespec *ts, int implicit_flag)
       && gfc_add_flavor (&sym->attr, FL_DERIVED, sym->name, NULL) == FAILURE)
     return MATCH_ERROR;
 
-  ts->type = BT_DERIVED;
-  ts->kind = 0;
+  gfc_set_sym_referenced (sym);
   ts->derived = sym;
 
   return MATCH_YES;
@@ -2349,6 +2372,12 @@ get_kind:
   m = gfc_match_kind_spec (ts, false);
   if (m == MATCH_NO && ts->type != BT_CHARACTER)
     m = gfc_match_old_kind_spec (ts);
+
+  /* Defer association of the KIND expression of function results
+     until after USE and IMPORT statements.  */
+  if ((gfc_current_state () == COMP_NONE && gfc_error_flag_test ())
+	 || gfc_matching_function)
+    return MATCH_YES;
 
   if (m == MATCH_NO)
     m = MATCH_YES;		/* No kind specifier found.  */
@@ -3673,8 +3702,8 @@ cleanup:
    can be matched.  Note that if nothing matches, MATCH_YES is
    returned (the null string was matched).  */
 
-static match
-match_prefix (gfc_typespec *ts)
+match
+gfc_match_prefix (gfc_typespec *ts)
 {
   bool seen_type;
 
@@ -3720,7 +3749,7 @@ loop:
 }
 
 
-/* Copy attributes matched by match_prefix() to attributes on a symbol.  */
+/* Copy attributes matched by gfc_match_prefix() to attributes on a symbol.  */
 
 static try
 copy_prefix (symbol_attribute *dest, locus *where)
@@ -4245,7 +4274,7 @@ gfc_match_function_decl (void)
 
   old_loc = gfc_current_locus;
 
-  m = match_prefix (&current_ts);
+  m = gfc_match_prefix (&current_ts);
   if (m != MATCH_YES)
     {
       gfc_current_locus = old_loc;
@@ -4327,6 +4356,22 @@ gfc_match_function_decl (void)
 	  gfc_error ("Function '%s' at %C already has a type of %s", name,
 		     gfc_basic_typename (sym->ts.type));
 	  goto cleanup;
+	}
+
+      /* Except in the case of a function valued character length,
+	 delay matching the function characteristics until after the
+	 specification block by signalling kind=-1.  */
+      if (!(current_ts.type == BT_CHARACTER
+	      && current_ts.cl
+	      && current_ts.cl->length
+	      && current_ts.cl->length->expr_type != EXPR_OP
+	      && current_ts.cl->length->expr_type != EXPR_VARIABLE))
+	{
+	  sym->declared_at = old_loc;
+	  if (current_ts.type != BT_UNKNOWN)
+	    current_ts.kind = -1;
+	  else
+	    current_ts.kind = 0;
 	}
 
       if (result == NULL)
@@ -4635,7 +4680,7 @@ gfc_match_subroutine (void)
       && gfc_current_state () != COMP_CONTAINS)
     return MATCH_NO;
 
-  m = match_prefix (NULL);
+  m = gfc_match_prefix (NULL);
   if (m != MATCH_YES)
     return m;
 
