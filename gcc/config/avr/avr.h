@@ -737,12 +737,21 @@ extern int avr_case_values_threshold;
 #define ASM_SPEC "%{mmcu=avr25:-mmcu=avr2;mmcu=avr35:-mmcu=avr3;\
 mmcu=*:-mmcu=%*}"
 
-#define LINK_SPEC " %{!mmcu*:-m avr2}\
+#define LINK_SPEC "\
+%{mrelax:--relax\
+         %{mpmem-wrap-around:%{mmcu=at90usb8*:--pmem-wrap-around=8k}\
+                             %{mmcu=atmega16*:--pmem-wrap-around=16k}\
+                             %{mmcu=atmega32*|\
+                               mmcu=at90can32*:--pmem-wrap-around=32k}\
+                             %{mmcu=atmega64*|\
+                               mmcu=at90can64*|\
+                               mmcu=at90usb64*:--pmem-wrap-around=64k}}}\
+%{!mmcu*: -m avr2}\
 %{mmcu=at90s1200|\
   mmcu=attiny11|\
   mmcu=attiny12|\
   mmcu=attiny15|\
-  mmcu=attiny28:-m avr1}\
+  mmcu=attiny28: -m avr1}\
 %{mmcu=attiny22|\
   mmcu=attiny26|\
   mmcu=at90s2*|\
@@ -756,19 +765,19 @@ mmcu=*:-mmcu=%*}"
   mmcu=attiny25|\
   mmcu=attiny261|\
   mmcu=attiny4*|\
-  mmcu=attiny8*:-m avr2}\
+  mmcu=attiny8*: -m avr2}\
 %{mmcu=atmega103|\
   mmcu=at43*|\
   mmcu=at76*|\
   mmcu=at90usb82|\
-  mmcu=at90usb162:-m avr3}\
+  mmcu=at90usb162: -m avr3}\
 %{mmcu=atmega8*|\
   mmcu=atmega48*|\
   mmcu=at90pwm1|\
   mmcu=at90pwm2|\
   mmcu=at90pwm2b|\
   mmcu=at90pwm3|\
-  mmcu=at90pwm3b:-m avr4}\
+  mmcu=at90pwm3b: -m avr4}\
 %{mmcu=atmega16*|\
   mmcu=atmega32*|\
   mmcu=atmega406|\
@@ -779,7 +788,7 @@ mmcu=*:-mmcu=%*}"
   mmcu=at90pwm316|\
   mmcu=at90usb64*|\
   mmcu=at90usb128*|\
-  mmcu=at94k:-m avr5}\
+  mmcu=at94k: -m avr5}\
 %{mmcu=atmega324*|\
   mmcu=atmega325*|\
   mmcu=atmega328p|\
