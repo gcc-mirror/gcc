@@ -123,7 +123,8 @@ along with GCC; see the file COPYING3.  If not see
 #define LIB_SPEC \
   "%{!shared:\
      %{mt|pthread:-lpthread} -lc \
-     %{static:%{!nolibdld:-a shared -ldld -a archive -lpthread -lc}}}"
+     %{static:%{!nolibdld:-a shared -ldld -a archive -lpthread -lc}}}\
+   %{shared:%{mt|pthread:-lpthread}}"
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \
