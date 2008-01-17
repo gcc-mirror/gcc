@@ -1609,7 +1609,8 @@ visit_use (tree use)
 	  changed = visit_phi (stmt);
 	}
       else if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT
-	       || (ann && ann->has_volatile_ops))
+	       || (ann && ann->has_volatile_ops)
+	       || tree_could_throw_p (stmt))
 	{
 	  changed = defs_to_varying (stmt);
 	}

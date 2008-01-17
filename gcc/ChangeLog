@@ -1,3 +1,8 @@
+2008-01-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/34648
+	* tree-ssa-sccvn.c (visit_use): Expressions which can throw are varying.
+
 2008-01-17  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.h (LINK_SPEC): Support -mrelax and -mpmem-wrap-around.
