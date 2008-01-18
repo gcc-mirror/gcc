@@ -14,6 +14,6 @@ int&f (int);
 
 int main()
 {
-  g(2);    // f(char) followed by f(int)
+  g(2);    // two f(char)
   g('a');  // two f(char)
 }

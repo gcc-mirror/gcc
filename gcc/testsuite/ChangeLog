@@ -1,3 +1,7 @@
+2008-01-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* gcc/testsuite/g++.dg/lookup/two-stage2.C: fix comment.
+
 2008-01-18  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/debug/dwarf2/var1.c: Add -fno-merge-debug-strings.
