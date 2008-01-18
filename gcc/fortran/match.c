@@ -2951,6 +2951,8 @@ done:
   return MATCH_YES;
 
 syntax:
+  gfc_free_common_tree (gfc_current_ns->common_root);
+  gfc_current_ns->common_root = NULL;
   gfc_syntax_error (ST_COMMON);
 
 cleanup:
