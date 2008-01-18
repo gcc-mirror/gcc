@@ -16,6 +16,6 @@ program main
   enum, bind (c)  ! { dg-error "Unexpected" } 
     enumerator :: red, black = 2  ! { dg-error "ENUM definition statement expected" }
     enumerator :: blue = 1  ! { dg-error "ENUM definition statement expected" }
-  end enum  ! { dg-excess-errors "Expecting END PROGRAM" }
+  end enum  ! { dg-error "Expecting END PROGRAM" }
 
 end program main        
