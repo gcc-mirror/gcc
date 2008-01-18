@@ -1639,6 +1639,7 @@ get_expr_storage_size (gfc_expr *e)
   int i;
   long int strlen, elements;
   long int substrlen = 0;
+  bool is_str_storage = false;
   gfc_ref *ref;
 
   if (e == NULL)
@@ -1676,10 +1677,17 @@ get_expr_storage_size (gfc_expr *e)
       if (ref->type == REF_SUBSTRING && ref->u.ss.start
 	  && ref->u.ss.start->expr_type == EXPR_CONSTANT)
 	{
-	  int len = strlen;
-	  if (ref->u.ss.end && ref->u.ss.end->expr_type == EXPR_CONSTANT)
-	    len = mpz_get_ui (ref->u.ss.end->value.integer);
-	  substrlen = len - mpz_get_ui (ref->u.ss.start->value.integer) + 1;
+	  if (is_str_storage)
+	    {
+	      /* The string length is the substring length.
+		 Set now to full string length.  */
+	      if (ref->u.ss.length == NULL
+		  || ref->u.ss.length->length->expr_type != EXPR_CONSTANT)
+		return 0;
+
+	      strlen = mpz_get_ui (ref->u.ss.length->length->value.integer);
+	    }
+	  substrlen = strlen - mpz_get_ui (ref->u.ss.start->value.integer) + 1;
 	  continue;
 	}
 
@@ -1741,21 +1749,46 @@ get_expr_storage_size (gfc_expr *e)
 	      return 0;
 	  }
       else if (ref->type == REF_ARRAY && ref->u.ar.type == AR_ELEMENT
-	       && e->expr_type == EXPR_VARIABLE
-	       && (e->symtree->n.sym->as->type == AS_ASSUMED_SHAPE
-                  || e->symtree->n.sym->attr.pointer))
-	elements = 1;
+	       && e->expr_type == EXPR_VARIABLE)
+	{
+	  if (e->symtree->n.sym->as->type == AS_ASSUMED_SHAPE
+	      || e->symtree->n.sym->attr.pointer)
+	    {
+	      elements = 1;
+	      continue;
+	    }
+
+	  /* Determine the number of remaining elements in the element
+	     sequence for array element designators.  */
+	  is_str_storage = true;
+	  for (i = ref->u.ar.dimen - 1; i >= 0; i--)
+	    {
+	      if (ref->u.ar.start[i] == NULL
+		  || ref->u.ar.start[i]->expr_type != EXPR_CONSTANT
+		  || ref->u.ar.as->upper[i] == NULL
+		  || ref->u.ar.as->lower[i] == NULL
+		  || ref->u.ar.as->upper[i]->expr_type != EXPR_CONSTANT
+		  || ref->u.ar.as->lower[i]->expr_type != EXPR_CONSTANT)
+		return 0;
+
+	      elements
+		   = elements
+		     * (mpz_get_si (ref->u.ar.as->upper[i]->value.integer)
+			- mpz_get_si (ref->u.ar.as->lower[i]->value.integer)
+			+ 1L)
+		     - (mpz_get_si (ref->u.ar.start[i]->value.integer)
+			- mpz_get_si (ref->u.ar.as->lower[i]->value.integer));
+	    }
+        }
       else
-        /* TODO: Determine the number of remaining elements in the element
-           sequence for array element designators. See PR 32616.
-           See also get_array_index in data.c.  */
 	return 0;
     }
 
   if (substrlen)
-    return elements*substrlen;
-
-  return elements*strlen;
+    return (is_str_storage) ? substrlen + (elements-1)*strlen
+			    : elements*strlen;
+  else
+    return elements*strlen;
 }
 
 
@@ -1880,23 +1913,34 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 			      is_elemental, where))
 	return 0;
 
+      /* Special case for character arguments.  For allocatable, pointer
+	 and assumed-shape dummies, the string length needs to match
+	 exactly.  */
       if (a->expr->ts.type == BT_CHARACTER
 	   && a->expr->ts.cl && a->expr->ts.cl->length
 	   && a->expr->ts.cl->length->expr_type == EXPR_CONSTANT
 	   && f->sym->ts.cl && f->sym->ts.cl && f->sym->ts.cl->length
-	   && f->sym->ts.cl->length->expr_type == EXPR_CONSTANT)
+	   && f->sym->ts.cl->length->expr_type == EXPR_CONSTANT
+	   && (f->sym->attr.pointer || f->sym->attr.allocatable
+	       || (f->sym->as && f->sym->as->type == AS_ASSUMED_SHAPE))
+	   && (mpz_cmp (a->expr->ts.cl->length->value.integer,
+			f->sym->ts.cl->length->value.integer) != 0))
 	 {
-	   if ((f->sym->attr.pointer || f->sym->attr.allocatable)
-	       && (mpz_cmp (a->expr->ts.cl->length->value.integer,
-			   f->sym->ts.cl->length->value.integer) != 0))
-	     {
-		if (where)
-		  gfc_warning ("Character length mismatch between actual "
-			       "argument and pointer or allocatable dummy "
-			       "argument '%s' at %L",
-			       f->sym->name, &a->expr->where);
-		return 0;
-	     }
+	   if (where && (f->sym->attr.pointer || f->sym->attr.allocatable))
+	     gfc_warning ("Character length mismatch (%ld/%ld) between actual "
+			  "argument and pointer or allocatable dummy argument "
+			  "'%s' at %L",
+			  mpz_get_si (a->expr->ts.cl->length->value.integer),
+			  mpz_get_si (f->sym->ts.cl->length->value.integer),
+			  f->sym->name, &a->expr->where);
+	   else if (where)
+	     gfc_warning ("Character length mismatch (%ld/%ld) between actual "
+			  "argument and assumed-shape dummy argument '%s' "
+			  "at %L",
+			  mpz_get_si (a->expr->ts.cl->length->value.integer),
+			  mpz_get_si (f->sym->ts.cl->length->value.integer),
+			  f->sym->name, &a->expr->where);
+	   return 0;
 	 }
 
       actual_size = get_expr_storage_size (a->expr);
@@ -2001,7 +2045,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	{
 	  if (where)
 	    gfc_error ("Array-section actual argument with vector subscripts "
-		       "at %L is incompatible with INTENT(IN), INTENT(INOUT) "
+		       "at %L is incompatible with INTENT(OUT), INTENT(INOUT) "
 		       "or VOLATILE attribute of the dummy argument '%s'",
 		       &a->expr->where, f->sym->name);
 	  return 0;
