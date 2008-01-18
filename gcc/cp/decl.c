@@ -1,6 +1,7 @@
 /* Process declarations and variables for C++ compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007  Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -1804,6 +1805,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  TREE_READONLY (newdecl) |= TREE_READONLY (olddecl);
 	  TREE_NOTHROW (newdecl) |= TREE_NOTHROW (olddecl);
 	  DECL_IS_MALLOC (newdecl) |= DECL_IS_MALLOC (olddecl);
+	  DECL_IS_OPERATOR_NEW (newdecl) |= DECL_IS_OPERATOR_NEW (olddecl);
 	  DECL_IS_PURE (newdecl) |= DECL_IS_PURE (olddecl);
 	  /* Keep the old RTL.  */
 	  COPY_DECL_RTL (olddecl, newdecl);
@@ -9761,7 +9763,10 @@ grok_op_properties (tree decl, bool complain)
     }
 
   if (operator_code == NEW_EXPR || operator_code == VEC_NEW_EXPR)
-    TREE_TYPE (decl) = coerce_new_type (TREE_TYPE (decl));
+    {
+      TREE_TYPE (decl) = coerce_new_type (TREE_TYPE (decl));
+      DECL_IS_OPERATOR_NEW (decl) = 1;
+    }
   else if (operator_code == DELETE_EXPR || operator_code == VEC_DELETE_EXPR)
     TREE_TYPE (decl) = coerce_delete_type (TREE_TYPE (decl));
   else

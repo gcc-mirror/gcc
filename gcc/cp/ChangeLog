@@ -1,3 +1,10 @@
+2008-01-18  Ian Lance Taylor  <iant@google.com>
+
+	PR c++/33407
+	* decl.c (duplicate_decls): Copy DECL_IS_OPERATOR_NEW flag.
+	(grok_op_properties): For NEW_EXPR and VEC_NEW_EXPR set
+	DECL_IS_OPERATOR_NEW flag.
+
 2008-01-16  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/33819

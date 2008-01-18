@@ -1,3 +1,13 @@
+2008-01-18  Ian Lance Taylor  <iant@google.com>
+
+	PR c++/33407
+	* tree.h (DECL_IS_OPERATOR_NEW): Define.
+	(struct tree_function_decl): Add new field operator_new_flag.
+	* tree-inline.c (expand_call_inline): When inlining a call to
+	operator new, force the return value to go into a variable, and
+	set DECL_NO_TBAA_P on that variable.
+	* c-decl.c (merge_decls): Merge DECL_IS_OPERATOR_NEW flag.
+
 2008-01-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR debug/34484
