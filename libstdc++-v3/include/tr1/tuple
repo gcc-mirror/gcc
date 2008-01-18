@@ -1,6 +1,6 @@
 // class template tuple -*- C++ -*-
 
-// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -64,33 +64,27 @@ namespace tr1
     { typedef _Tp& type; };
 
   /**
-   * @if maint
    * Contains the actual implementation of the @c tuple template, stored
    * as a recursive inheritance hierarchy from the first element (most
    * derived class) to the last (least derived class). The @c Idx
    * parameter gives the 0-based index of the element stored at this
    * point in the hierarchy; we use it to implement a constant-time
    * get() operation.
-   * @endif
    */
   template<int _Idx, typename... _Elements>
     struct _Tuple_impl; 
 
   /**
-   * @if maint
    * Zero-element tuple implementation. This is the basis case for the 
    * inheritance recursion.
-   * @endif maint
    */
   template<int _Idx>
     struct _Tuple_impl<_Idx> { };
 
   /**
-   * @if maint
    * Recursive tuple implementation. Here we store the @c Head element
    * and derive from a @c Tuple_impl containing the remaining elements
    * (which contains the @c Tail).
-   * @endif
    */
   template<int _Idx, typename _Head, typename... _Tail>
     struct _Tuple_impl<_Idx, _Head, _Tail...>
@@ -232,19 +226,15 @@ namespace tr1
     struct tuple_element;
 
   /**
-   * @if maint
    * Recursive case for tuple_element: strip off the first element in
    * the tuple and retrieve the (i-1)th element of the remaining tuple.
-   * @endif
    */
   template<int __i, typename _Head, typename... _Tail>
     struct tuple_element<__i, tuple<_Head, _Tail...> >
     : tuple_element<__i - 1, tuple<_Tail...> > { };
 
   /**
-   * @if maint
    * Basis case for tuple_element: The first element is the one we're seeking.
-   * @endif
    */
   template<typename _Head, typename... _Tail>
     struct tuple_element<0, tuple<_Head, _Tail...> >

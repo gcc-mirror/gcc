@@ -1,6 +1,6 @@
 ## Makefile for the toplevel directory of the GNU C++ Standard library.
 ##
-## Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+## Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2008
 ## Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
@@ -25,40 +25,19 @@
 include $(top_srcdir)/fragment.am
 
 if GLIBCXX_HOSTED
-  hosted_source = libmath src po testsuite
+  hosted_source = libmath doc src po testsuite
 endif
 ## Keep this list sync'd with acinclude.m4:GLIBCXX_CONFIGURE.
 SUBDIRS = include libsupc++ $(hosted_source)
 
 ACLOCAL_AMFLAGS = -I . -I .. -I ../config
 
-# These rules are messy, but are hella worth it.
-doxygen:
-	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
-	  builddir=`${PWD_COMMAND}`; \
-	  ${SHELL} ${srcdir}/docs/doxygen/run_doxygen \
-	            --host_alias=${host_alias} \
-	            --mode=user $${srcdir} $${builddir})
-
-doxygen-maint:
-	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
-	  builddir=`${PWD_COMMAND}`; \
-	  ${SHELL} ${srcdir}/docs/doxygen/run_doxygen \
-	            --host_alias=${host_alias} \
-	            --mode=maint $${srcdir} $${builddir})
-
-doxygen-man:
-	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
-	  builddir=`${PWD_COMMAND}`; \
-	  ${SHELL} ${srcdir}/docs/doxygen/run_doxygen \
-	            --host_alias=${host_alias} \
-	            --mode=man $${srcdir} $${builddir})
-
-.PHONY: doxygen doxygen-maint doxygen-man
-
 # Handy forwarding targets.
 check-%:
 	cd testsuite && $(MAKE) $@
+
+doc-%:
+	cd doc && $(MAKE) $@
 
 # Multilib support.
 MAKEOVERRIDES=
@@ -110,11 +89,3 @@ AM_MAKEFLAGS = \
 
 # Subdir rules rely on $(FLAGS_TO_PASS)
 FLAGS_TO_PASS = $(AM_MAKEFLAGS)
-
-# Installation of distribution html documentation not yet supported
-# TODO: Write custom install-html rule.
-.PHONY: install-html install-pdf
-install-html:
-
-# No install-pdf support in automake yet
-install-pdf:

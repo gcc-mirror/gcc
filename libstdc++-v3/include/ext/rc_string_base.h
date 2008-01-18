@@ -1,6 +1,6 @@
 // Reference-counted versatile string base -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,7 +42,6 @@
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   /**
-   *  @if maint
    *  Documentation?  What's that?
    *  Nathan Myers <ncm@cantrip.org>.
    *
@@ -82,7 +81,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
    *
    *  All but the last paragraph is considered pretty conventional
    *  for a C++ string implementation.
-   *  @endif
   */
  template<typename _CharT, typename _Traits, typename _Alloc>
     class __rc_string_base

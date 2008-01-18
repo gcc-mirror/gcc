@@ -34,7 +34,7 @@ host_triplet = @host@
 target_triplet = @target@
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/fragment.am
-subdir = po
+subdir = doc
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/enable.m4 \
 	$(top_srcdir)/../config/futex.m4 \
@@ -251,25 +251,14 @@ WARN_CXXFLAGS = \
 # -I/-D flags to pass when compiling.
 AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
 
-# Location of installation directories.
-locale_installdir = $(DESTDIR)$(datadir)/locale
-locale_builddir = $(glibcxx_localedir)
+# Generates the plots and graphs for performance testing.
+doc_performance_script = ${top_srcdir}/scripts/make_graphs.py
 
-# Tell automake that foo.po makes foo.mo
-SUFFIXES = .po .mo
-LOCALE_IN = $(glibcxx_POFILES)
-LOCALE_OUT = $(glibcxx_MOFILES)
-MSGFMT = msgfmt
-
-# Necessary files.
-EXTRA_DIST = string_literals.cc POTFILES.in $(PACKAGE).pot $(LOCALE_IN)
-
-# Specify what gets cleaned up on a 'make clean'
-CLEANFILES = $(LOCALE_OUT)
+# By adding these files here, automake will remove them for 'make clean'
+CLEANFILES = 
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .po .mo
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir)/fragment.am $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -279,9 +268,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  --ignore-deps po/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  --ignore-deps doc/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign  --ignore-deps po/Makefile
+	  $(AUTOMAKE) --foreign  --ignore-deps doc/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -340,7 +329,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile all-local
+all-am: Makefile
 installdirs:
 install: install-am
 install-exec: install-exec-am
@@ -369,7 +358,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libtool mostlyclean-am
+clean-am: clean-generic clean-libtool clean-local mostlyclean-am
 
 distclean: distclean-am
 	-rm -f Makefile
@@ -385,19 +374,15 @@ info: info-am
 
 info-am:
 
-install-data-am: install-data-local
+install-data-am:
 
 install-dvi: install-dvi-am
 
 install-exec-am:
 
-install-html: install-html-am
-
 install-info: install-info-am
 
 install-man:
-
-install-pdf: install-pdf-am
 
 install-ps: install-ps-am
 
@@ -423,62 +408,52 @@ uninstall-am:
 
 .MAKE: install-am install-strip
 
-.PHONY: all all-am all-local check check-am clean clean-generic \
-	clean-libtool distclean distclean-generic distclean-libtool \
+.PHONY: all all-am check check-am clean clean-generic clean-libtool \
+	clean-local distclean distclean-generic distclean-libtool \
 	distdir dvi dvi-am html html-am info info-am install \
-	install-am install-data install-data-am install-data-local \
-	install-dvi install-dvi-am install-exec install-exec-am \
-	install-html install-html-am install-info install-info-am \
-	install-man install-pdf install-pdf-am install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-generic mostlyclean-libtool pdf pdf-am \
-	ps ps-am uninstall uninstall-am
+	install-am install-data install-data-am install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	uninstall uninstall-am
 
 
-.po.mo:
-	$(MSGFMT) -o $@ $<
+# These rules are messy, but are hella worth it.
+# XXX mode=html always enables maintainer mode
+doc-doxygen-html:
+	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
+	  builddir=`cd ..; ${PWD_COMMAND}`; \
+	  ${SHELL} ${top_srcdir}/doc/doxygen/run_doxygen \
+	  --host_alias=${host_alias} --mode=html $${srcdir} $${builddir})
 
-all-local: all-local-$(USE_NLS)
-all-local-no:
-all-local-yes: $(LOCALE_OUT)
+doc-doxygen-man:
+	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
+	  builddir=`cd ..; ${PWD_COMMAND}`; \
+	  ${SHELL} ${top_srcdir}/doc/doxygen/run_doxygen \
+	  --host_alias=${host_alias} --mode=man $${srcdir} $${builddir})
+doc-performance:
+	-@(chmod + ${doc_performance_script}; \
+	`echo "Required dependencies are PyChart and Beautiful Soup` \
+	${doc_performance_script} ${top_srcdir} \
+	${glibcxx_builddir}/testsuite \
+	${top_srcdir}/testsuite/data/make_graph_htmls.xml \
+	${top_srcdir}/testsuite/data/make_graph_test_infos.xml local g++)
 
-# 'make check' needs the catalogs constructed in build directory.
-check: check-$(USE_NLS)
-check-no:
-check-yes:
-	$(mkinstalldirs) $(locale_builddir)
-	catalogs='$(LOCALE_OUT)'; \
-	for cat in $$catalogs; do \
-	  cat=`basename $$cat`; \
-	  lang=`echo $$cat | sed 's/\.mo$$//'`; \
-	  install_dir=$(locale_builddir)/$$lang/LC_MESSAGES; \
-	  $(mkinstalldirs) $$install_dir; \
-	  $(INSTALL_DATA) $$cat $$install_dir/$(PACKAGE).mo; \
-	done
+# No install-pdf, install-html support in automake yet
+install-pdf:
+install-html:
 
-# Install rules here.
-# Wish install could just `cp -R ./share $(locale_installdir)` ...
-install-data-local: install-data-local-$(USE_NLS)
-install-data-local-no:
-install-data-local-yes: all-local-yes
-	$(mkinstalldirs) $(locale_installdir)
-	catalogs='$(LOCALE_OUT)'; \
-	for cat in $$catalogs; do \
-	  cat=`basename $$cat`; \
-	  lang=`echo $$cat | sed 's/\.mo$$//'`; \
-	  install_dir=$(locale_installdir)/$$lang/LC_MESSAGES; \
-	  $(mkinstalldirs) $$install_dir; \
-	  $(INSTALL_DATA) $$cat $$install_dir/$(PACKAGE).mo; \
-	done
+# Installation of distribution html documentation not yet supported
+# TODO: Write custom install-html rule.
+.PHONY: install-html install-pdf \
+	doc-doxygen-html doc-doxygen-man doc-performance
 
-# Maintainence of the .po template file.  This rule is never run automatically,
-# and updates the source directory.
-pot:
-	cd $(glibcxx_srcdir); \
-	xgettext --default-domain=$(PACKAGE) --add-comments --c++ --debug \
-	  --join-existing -o po/$(PACKAGE).pot --keyword=__N \
-	  `grep -r -l '__N(".*")' .`
+# To remove directories.
+clean-local:
+	rm -rf man doxygen
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # Runs doxygen and massages the output files.
-# Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2002, 2003, 2004, 2008 Free Software Foundation, Inc.
 #
-# Synopsis:  run_doxygen --mode=[user|maint|man] --host_alias=<alias> \
+# Synopsis:  run_doxygen --mode=[html|man] --host_alias=<alias> \
 #                        v3srcdir  v3builddir
 #
 # Originally hacked together by Phil Edwards <pme@gcc.gnu.org>
 
 
 # We can check now that the version of doxygen is >= this variable.
-DOXYVER=1.3.9
+DOXYVER=1.5.4
 
 find_doxygen() {
     local -r v_required=`echo $DOXYVER |  \
@@ -47,14 +47,10 @@ print_usage() {
 Usage:  run_doxygen --mode=MODE --host_alias=BUILD_ALIAS [<options>]
                     <v3-src-dir> <v3-build-dir>
       MODE is one of:
-          user           Generate user-level HTML library documentation.
-          maint          Generate maintainers' HTML documentation (lots more;
-                             exposes non-public members, etc).
+          html           Generate user-level HTML library documentation.
           man            Generate user-level man pages.
 
       BUILD_ALIAS is the GCC build alias set at configure time.
-
-      more options when i think of them
 
 Note:  Requires Doxygen ${DOXYVER} or later; get it at
        ftp://ftp.stack.nl/pub/users/dimitri/doxygen-${DOXYVER}.src.tar.gz
@@ -86,7 +82,7 @@ parse_options() {
           srcdir=$o
         elif test $outdir = unset; then
           builddir=${o}
-          outdir=${o}/docs/doxygen
+          outdir=${o}/doc/doxygen
         else
           echo run_doxygen error:  Too many arguments 1>&2
           exit 1
@@ -121,16 +117,10 @@ if test $srcdir = unset || test $outdir = unset || test $mode = unset || test $h
 fi
 
 case x"$mode" in
-    xuser)
-      do_html=true
-      LEVELtext='User'
-      generate_tagfile="$outdir/html_$mode/libstdc++.tag"
-      ;;
-    xmaint)
+    xhtml)
       do_html=true
       enabled_sections=maint
-      LEVELtext='Maintainer'
-      generate_tagfile="$outdir/html_$mode/libstdc++.tag"
+      generate_tagfile="$outdir/html/libstdc++.tag"
       ;;
     xman)
       do_man=true
@@ -140,7 +130,6 @@ case x"$mode" in
       exit 1 ;;
 esac
 
-#rm -rf $outdir
 mkdir -p $outdir
 chmod u+w $outdir
 
@@ -157,12 +146,12 @@ fi
       -e "s=@srcdir@=${srcdir}=g" \
       -e "s=@builddir@=${builddir}=g" \
       -e "s=@host_alias@=${host_alias}=g" \
-      -e "s=@html_output_dir@=html_${mode}=" \
+      -e "s=@html_output_dir@=html=" \
       -e "s=@enabled_sections@=${enabled_sections}=" \
       -e "s=@do_html@=${do_html}=" \
       -e "s=@do_man@=${do_man}=" \
       -e "s=@generate_tagfile@=${generate_tagfile}=" \
-      ${srcdir}/docs/doxygen/user.cfg.in > ${outdir}/${mode}.cfg
+      ${srcdir}/doc/doxygen/user.cfg.in > ${outdir}/${mode}.cfg
   echo :: NOTE that this may take some time...
   echo doxygen ${outdir}/${mode}.cfg
   doxygen ${outdir}/${mode}.cfg
@@ -172,15 +161,14 @@ ret=$?
 test $ret -ne 0 && exit $ret
 
 if $do_html; then
-  cd ${outdir}/html_${mode}
+  cd ${outdir}/html
 
   #doxytag -t libstdc++.tag . > /dev/null 2>&1
   sed -e '/<path>/d' libstdc++.tag > TEMP
   mv TEMP libstdc++.tag
 
-  sed -e "s=@LEVEL@=${LEVELtext}=" \
-      -e "s=@DATE@=${DATEtext}=" \
-      ${srcdir}/docs/doxygen/mainpage.html > index.html
+  sed -e "s=@DATE@=${DATEtext}=" \
+      ${srcdir}/doc/doxygen/mainpage.html > index.html
 
   # The following bit of line noise changes annoying
   #   std::foo < typename _Ugly1, typename _Ugly2, .... _DefaultUgly17 >
@@ -196,10 +184,10 @@ if $do_html; then
       mv TEMP $f
   done
 
-  cp ${srcdir}/docs/doxygen/tables.html tables.html
+  cp ${srcdir}/doc/doxygen/tables.html tables.html
   echo ::
   echo :: HTML pages begin with
-  echo :: ${outdir}/html_${mode}/index.html
+  echo :: ${outdir}/html/index.html
 fi
 
 # Mess with the man pages.  We don't need documentation of the internal
@@ -224,7 +212,7 @@ mv s20_3_2_arithmetic.3     Arithmetic_functors.3
 mv s20_3_3_comparisons.3    Comparison_functors.3
 mv s20_3_4_logical.3        Logical_functors.3
 mv s20_3_5_negators.3       Negation_functors.3
-mv s20_3_6_binder.3         Binder_functors.3
+#mv s20_3_6_binder.3         Binder_functors.3
 mv s20_3_7_adaptors.3       Func_ptr_functors.3
 mv s20_3_8_memadaptors.3    Member_ptr_functors.3
 mv iterator_tags.3          Iterator_types.3
@@ -244,7 +232,7 @@ rm -f *.h.3 *config* *.cc.3 *.tcc.3 *_t.3
 # enough to rewrite all this, feel free.  This only gets run once a century,
 # and I'm off getting coffee then anyhow, so I didn't care enough to make
 # this super-fast.
-g++ ${srcdir}/docs/doxygen/stdheader.cc -o ./stdheader
+g++ ${srcdir}/doc/doxygen/stdheader.cc -o ./stdheader
 problematic=`egrep -l '#include <.*_.*>' [a-z]*.3`
 for f in $problematic; do
     # this is also slow, but safe and easy to debug
@@ -279,10 +267,22 @@ for f in $problematic; do
     mv TEMP $f
 done
 
-cp ${srcdir}/docs/doxygen/Intro.3 C++Intro.3
+cp ${srcdir}/doc/doxygen/Intro.3 C++Intro.3
 
 # Why didn't I do this at the start?  Were rabid weasels eating my brain?
 # Who the fsck would "man std_vector" when the class isn't named that?
+
+# First, deal with nested namespaces.
+for f in *__detail_*; do
+    newname=`echo $f | sed 's/__detail_/__detail::/'`
+    mv $f $newname
+done
+for f in *__parallel_*; do
+    newname=`echo $f | sed 's/__parallel_/__parallel::/'`
+    mv $f $newname
+done
+
+# Then, clean up other top-level namespaces.
 for f in std_tr1_*; do
     newname=`echo $f | sed 's/^std_tr1_/std::tr1::/'`
     mv $f $newname
@@ -295,8 +295,16 @@ for f in __gnu_cxx_*; do
     newname=`echo $f | sed 's/^__gnu_cxx_/__gnu_cxx::/'`
     mv $f $newname
 done
+for f in __gnu_debug_*; do
+    newname=`echo $f | sed 's/^__gnu_debug_/__gnu_debug::/'`
+    mv $f $newname
+done
+for f in __gnu_parallel_*; do
+    newname=`echo $f | sed 's/^__gnu_parallel_/__gnu_parallel::/'`
+    mv $f $newname
+done
 
-# Generic reoval bits, where there are things in the generated man
+# Generic removal bits, where there are things in the generated man
 # pages that need to be killed.
 for f in *_libstdc__-v3_*; do
     rm $f 
@@ -324,5 +332,3 @@ fi
 echo ::
 
 exit 0
-
-# vim:ts=4:et:

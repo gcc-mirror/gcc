@@ -1,6 +1,6 @@
 // The template and inlines for the numeric_limits classes. -*- C++ -*- 
 
-// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -205,9 +205,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     /** True if the type is signed.  */
     static const bool is_signed = false;
     /** True if the type is integer.
-     *  @if maint
      *  Is this supposed to be "if the type is integral"?
-     *  @endif
     */
     static const bool is_integer = false;
     /** True if the type uses an exact representation.  "All integer types are
@@ -278,10 +276,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  non-fundamental types, the functions will return 0 and the data
    *  members will all be @c false.
    *
-   *  @if maint
    *  _GLIBCXX_RESOLVE_LIB_DEFECTS:  DRs 201 and 184 (hi Gaby!) are
    *  noted, but not incorporated in this documented (yet).
-   *  @endif
   */
   template<typename _Tp>
     struct numeric_limits : public __numeric_limits_base

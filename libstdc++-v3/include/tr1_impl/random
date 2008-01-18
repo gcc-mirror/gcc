@@ -1,6 +1,6 @@
 // random number generation -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -647,11 +647,9 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
    * N1688[4.13] says "the template parameter _IntType shall denote an integral
    * type large enough to store values up to m."
    *
-   * @if maint
    * @var _M_x     The state of the generator.  This is a ring buffer.
    * @var _M_carry The carry.
    * @var _M_p     Current index of x(i - r).
-   * @endif
    */
   template<typename _IntType, _IntType __m, int __s, int __r>
     class subtract_with_carry
@@ -821,12 +819,10 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   /**
    * @brief The Marsaglia-Zaman generator (floats version).
    *
-   * @if maint
    * @var _M_x     The state of the generator.  This is a ring buffer.
    * @var _M_carry The carry.
    * @var _M_p     Current index of x(i - r).
    * @var _M_npows Precomputed negative powers of 2.   
-   * @endif
    */
   template<typename _RealType, int __w, int __s, int __r>
     class subtract_with_carry_01

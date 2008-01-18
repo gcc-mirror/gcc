@@ -1,6 +1,6 @@
 // Set implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -83,11 +83,9 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
    *  @param  Compare  Comparison function object type, defaults to less<Key>.
    *  @param  Alloc  Allocator type, defaults to allocator<Key>.
    *
-   *  @if maint
    *  The private tree data is declared exactly the same way for set and
    *  multiset; the distinction is made entirely in how the tree functions are
    *  called (*_unique versus *_equal, same as the standard).
-   *  @endif
   */
   template<typename _Key, typename _Compare = std::less<_Key>,
 	   typename _Alloc = std::allocator<_Key> >
@@ -116,7 +114,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
       typedef _Rb_tree<key_type, value_type, _Identity<value_type>,
 		       key_compare, _Key_alloc_type> _Rep_type;
-      _Rep_type _M_t;  // red-black tree representing set
+      _Rep_type _M_t;  // Red-black tree representing set.
 
     public:
       //@{

@@ -1,6 +1,6 @@
 // Iterators -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -860,14 +860,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // 24.4.3  Move iterators
   /**
-   *  @if maint
    *  Class template move_iterator is an iterator adapter with the same
    *  behavior as the underlying iterator except that its dereference
    *  operator implicitly converts the value returned by the underlying
    *  iterator's dereference operator to an rvalue reference.  Some
    *  generic algorithms can be called with move iterators to replace
    *  copying with moving.
-   *  @endif
    */
   template<typename _Iterator>
     class move_iterator
