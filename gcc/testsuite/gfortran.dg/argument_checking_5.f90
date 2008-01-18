@@ -19,7 +19,7 @@ call foobar(b(1:3)) ! { dg-warning "contains too few elements" }
 call foobar(b(1:5))
 call foobar(b(1:5:2)) ! { dg-warning "contains too few elements" }
 call foobar(b(2))
-call foobar(b(3)) ! TODO: contains too few elements
+call foobar(b(3)) ! { dg-warning "Actual argument contains too few elements" }
 call foobar(reshape(a(1:3),[2,1])) ! { dg-warning "contains too few elements" }
 call foobar(reshape(b(2:5),[2,2]))
 
@@ -29,7 +29,7 @@ call arr(b(1:3)) ! { dg-warning "contains too few elements" }
 call arr(b(1:5))
 call arr(b(1:5:2)) ! { dg-warning "contains too few elements" }
 call arr(b(2))
-call arr(b(3)) ! TODO: contains too few elements
+call arr(b(3)) ! { dg-warning "contains too few elements" }
 call arr(reshape(a(1:3),[2,1])) ! { dg-warning "contains too few elements" }
 call arr(reshape(b(2:5),[2,2]))
 end program test

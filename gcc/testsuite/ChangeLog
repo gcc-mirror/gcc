@@ -1,5 +1,12 @@
 2008-01-18  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/32616
+	* gfortran.dg/argument_checking_15.f90: New.
+	* gfortran.dg/argument_checking_5.f90: Change TODO into
+	dg-warning.
+
+2008-01-18  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.dg/enum_4.f90: Replace dg-excess-errors by dg-error.
 	* gfortran.dg/enum_5.f90: Ditto.
 	* gfortran.dg/enum_6.f90: Ditto.
