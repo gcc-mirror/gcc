@@ -3164,6 +3164,30 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
 }
 
 
+/* Test that the expression is an constant array.  */
+
+static bool
+is_constant_array_expr (gfc_expr *e)
+{
+  gfc_constructor *c;
+
+  if (e == NULL)
+    return true;
+
+  if (e->expr_type != EXPR_ARRAY || !gfc_is_constant_expr (e))
+    return false;
+  
+  if (e->value.constructor == NULL)
+    return false;
+  
+  for (c = e->value.constructor; c; c = c->next)
+    if (c->expr->expr_type != EXPR_CONSTANT)
+      return false;
+
+  return true;
+}
+
+
 /* This one is a bear, but mainly has to do with shuffling elements.  */
 
 gfc_expr *
@@ -3178,21 +3202,20 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
   size_t nsource;
   gfc_expr *e;
 
-  /* Unpack the shape array.  */
-  if (source->expr_type != EXPR_ARRAY || !gfc_is_constant_expr (source))
+  /* Check that argument expression types are OK.  */
+  if (!is_constant_array_expr (source))
     return NULL;
 
-  if (shape_exp->expr_type != EXPR_ARRAY || !gfc_is_constant_expr (shape_exp))
+  if (!is_constant_array_expr (shape_exp))
     return NULL;
 
-  if (pad != NULL
-      && (pad->expr_type != EXPR_ARRAY || !gfc_is_constant_expr (pad)))
+  if (!is_constant_array_expr (pad))
     return NULL;
 
-  if (order_exp != NULL
-      && (order_exp->expr_type != EXPR_ARRAY
-	  || !gfc_is_constant_expr (order_exp)))
+  if (!is_constant_array_expr (order_exp))
     return NULL;
+
+  /* Proceed with simplification, unpacking the array.  */
 
   mpz_init (index);
   rank = 0;
