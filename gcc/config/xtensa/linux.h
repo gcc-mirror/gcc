@@ -1,6 +1,7 @@
 /* Xtensa Linux configuration.
    Derived from the configuration for GCC for Intel i386 running Linux.
-   Copyright (C) 2001, 2002, 2003, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2006, 2007, 2008
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -59,3 +60,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Always enable "-fpic" for Xtensa Linux.  */
 #define XTENSA_ALWAYS_PIC 1
+
+#define MD_UNWIND_SUPPORT "config/xtensa/linux-unwind.h"
+

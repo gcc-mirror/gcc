@@ -1,5 +1,5 @@
 /* DWARF2 frame unwind data structure for Xtensa.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2007
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2007, 2008
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -39,9 +39,6 @@
    _Unwind_FrameState.  */
 typedef struct
 {
-  /* The PC described by the current frame state.  */
-  void *pc;
-
   /* The information we care about from the CIE/FDE.  */
   _Unwind_Personality_Fn personality;
   _Unwind_Word retaddr_column;
@@ -53,5 +50,6 @@ typedef struct
 
   /* Saved registers for a signal frame.  */
   _Unwind_Word *signal_regs;
+  _Unwind_Word signal_ra;
 } _Unwind_FrameState;
 

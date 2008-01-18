@@ -1,3 +1,16 @@
+2007-01-17  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/unwind-dw2-xtensa.h (_Unwind_FrameState): Remove pc
+	field and add signal_ra.
+	* config/xtensa/unwind-dw2-xtensa.c (uw_frame_state_for): Remove
+	assignments to frame state pc.  Move end of stack check after
+	MD_FALLBACK_FRAME_STATE_FOR.
+	(uw_update_context_1): Use frame state signal_regs if set, instead
+	of checking signal_frame flag.
+	(uw_update_context): Use frame state signal_ra if set.
+	* config/xtensa/linux.h (MD_UNWIND_SUPPORT): Define.
+	* config/xtensa/linux-unwind.h: New file.
+
 2007-01-18  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	* modulo-sched.c (get_sched_window): Fix comment typo.
