@@ -339,6 +339,17 @@ static GTY ((param_is (struct indirect_string_node))) htab_t debug_str_hash;
 static GTY(()) int dw2_string_counter;
 static GTY(()) unsigned long dwarf2out_cfi_label_num;
 
+/* True if the compilation unit places functions in more than one section.  */
+static GTY(()) bool have_multiple_function_sections = false;
+
+/* Whether the default text and cold text sections have been used at all.  */
+
+static GTY(()) bool text_section_used = false;
+static GTY(()) bool cold_text_section_used = false;
+
+/* The default cold text section.  */
+static GTY(()) section *cold_text_section;
+
 #if defined (DWARF2_DEBUGGING_INFO) || defined (DWARF2_UNWIND_INFO)
 
 /* Forward declarations for functions defined in this file.  */
@@ -357,6 +368,7 @@ static void initial_return_save (rtx);
 static HOST_WIDE_INT stack_adjust_offset (const_rtx);
 static void output_cfi (dw_cfi_ref, dw_fde_ref, int);
 static void output_call_frame_info (int);
+static void dwarf2out_note_section_used (void);
 static void dwarf2out_stack_adjust (rtx, bool);
 static void flush_queued_reg_saves (void);
 static bool clobbers_queued_reg_save (const_rtx);
@@ -2685,6 +2697,40 @@ dwarf2out_frame_finish (void)
     output_call_frame_info (1);
 #endif
 }
+
+/* Note that the current function section is being used for code.  */
+
+static void
+dwarf2out_note_section_used (void)
+{
+  section *sec = current_function_section ();
+  if (sec == text_section)
+    text_section_used = true;
+  else if (sec == cold_text_section)
+    cold_text_section_used = true;
+}
+
+void
+dwarf2out_switch_text_section (void)
+{
+  dw_fde_ref fde;
+
+  gcc_assert (cfun);
+
+  fde = &fde_table[fde_table_in_use - 1];
+  fde->dw_fde_switched_sections = true;
+  fde->dw_fde_hot_section_label = cfun->hot_section_label;
+  fde->dw_fde_hot_section_end_label = cfun->hot_section_end_label;
+  fde->dw_fde_unlikely_section_label = cfun->cold_section_label;
+  fde->dw_fde_unlikely_section_end_label = cfun->cold_section_end_label;
+  have_multiple_function_sections = true;
+
+  /* Reset the current label on switching text sections, so that we
+     don't attempt to advance_loc4 between labels in different sections.  */
+  fde->dw_fde_current_label = NULL;
+
+  dwarf2out_note_section_used ();
+}
 #endif
 
 /* And now, the subset of the debugging information support code necessary
@@ -3971,9 +4017,6 @@ static GTY(()) unsigned line_info_table_allocated;
 /* Number of elements in line_info_table currently in use.  */
 static GTY(()) unsigned line_info_table_in_use;
 
-/* True if the compilation unit places functions in more than one section.  */
-static GTY(()) bool have_multiple_function_sections = false;
-
 /* A pointer to the base of a table that contains line information
    for each source code line outside of .text in the compilation unit.  */
 static GTY ((length ("separate_line_info_table_allocated")))
@@ -4055,15 +4098,6 @@ static GTY(()) int label_num;
 
 /* Cached result of previous call to lookup_filename.  */
 static GTY(()) struct dwarf_file_data * file_table_last_lookup;
-
-/* Whether the default text and cold text sections have been used at
-   all.  */
-
-static GTY(()) bool text_section_used = false;
-static GTY(()) bool cold_text_section_used = false;
-
-/* The default cold text section.  */
-static GTY(()) section *cold_text_section;
 
 #ifdef DWARF2_DEBUGGING_INFO
 
@@ -7083,40 +7117,6 @@ add_loc_descr_to_loc_list (dw_loc_list_ref *list_head, dw_loc_descr_ref descr,
 
   /* Add a new location list node to the list.  */
   *d = new_loc_list (descr, begin, end, section, 0);
-}
-
-/* Note that the current function section is being used for code.  */
-
-static void
-dwarf2out_note_section_used (void)
-{
-  section *sec = current_function_section ();
-  if (sec == text_section)
-    text_section_used = true;
-  else if (sec == cold_text_section)
-    cold_text_section_used = true;
-}
-
-void
-dwarf2out_switch_text_section (void)
-{
-  dw_fde_ref fde;
-
-  gcc_assert (cfun);
-
-  fde = &fde_table[fde_table_in_use - 1];
-  fde->dw_fde_switched_sections = true;
-  fde->dw_fde_hot_section_label = cfun->hot_section_label;
-  fde->dw_fde_hot_section_end_label = cfun->hot_section_end_label;
-  fde->dw_fde_unlikely_section_label = cfun->cold_section_label;
-  fde->dw_fde_unlikely_section_end_label = cfun->cold_section_end_label;
-  have_multiple_function_sections = true;
-
-  /* Reset the current label on switching text sections, so that we
-     don't attempt to advance_loc4 between labels in different sections.  */
-  fde->dw_fde_current_label = NULL;
-
-  dwarf2out_note_section_used ();
 }
 
 /* Output the location list given to us.  */
