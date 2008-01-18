@@ -1,3 +1,13 @@
+2008-01-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR debug/34484
+	* dwarf2out.c (dwarf2out_switch_text_section): Do not guard with
+	DWARF2_DEBUGGING_INFO.
+	(dwarf2out_note_section_used): Ditto.  Add prototype.
+	(have_multiple_function_sections, text_section_used,
+	cold_text_section_used, *cold_text_sections): Move declarations
+	before their uses.
+
 2007-01-17  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/unwind-dw2-xtensa.h (_Unwind_FrameState): Remove pc
