@@ -1,6 +1,7 @@
 // link.cc - Code for linking and resolving classes and pool entries.
 
-/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Free Software Foundation
 
    This file is part of libgcj.
 
@@ -662,10 +663,11 @@ _Jv_Linker::prepare_constant_time_tables (jclass klass)
   // interfaces or primitive types.
    
   jclass klass0 = klass;
-  jboolean has_interfaces = 0;
+  jboolean has_interfaces = false;
   while (klass0 != &java::lang::Object::class$)
     {
-      has_interfaces += klass0->interface_count;
+      if (klass0->interface_count)
+	has_interfaces = true;
       klass0 = klass0->superclass;
       klass->depth++;
     }

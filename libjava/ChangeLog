@@ -1,3 +1,9 @@
+2008-01-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c++/33887
+	* link.cc (_Jv_Linker::prepare_constant_time_tables):
+	has_interfaces is boolean, treat it as such.
+
 2008-01-04  Andrew Haley  <aph@redhat.com>
 
 	PR libgcj/34444
