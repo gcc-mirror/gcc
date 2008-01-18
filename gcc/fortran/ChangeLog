@@ -1,3 +1,16 @@
+2008-01-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR fortran/33375
+	* symbol.c (free_common_tree): Renamed to ...
+	(gfc_free_common_tree): This.  Remove static.
+	(gfc_free_namespace): Updated.
+
+	* gfortran.h (gfc_free_common_tree): New.
+
+	* match.c (gfc_match_common): Call gfc_free_common_tree () with
+	gfc_current_ns->common_root and set gfc_current_ns->common_root
+	to NULL on syntax error.
+
 2008-01-18  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR fortran/34686
