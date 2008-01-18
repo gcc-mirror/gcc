@@ -2567,7 +2567,7 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
 {
   copy_body_data *id;
   tree t;
-  tree use_retvar;
+  tree retvar, use_retvar;
   tree fn;
   struct pointer_map_t *st;
   tree return_slot;
@@ -2769,9 +2769,27 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
   else
     modify_dest = NULL;
 
+  /* If we are inlining a call to the C++ operator new, we don't want
+     to use type based alias analysis on the return value.  Otherwise
+     we may get confused if the compiler sees that the inlined new
+     function returns a pointer which was just deleted.  See bug
+     33407.  */
+  if (DECL_IS_OPERATOR_NEW (fn))
+    {
+      return_slot = NULL;
+      modify_dest = NULL;
+    }
+
   /* Declare the return variable for the function.  */
-  declare_return_variable (id, return_slot,
-			   modify_dest, &use_retvar);
+  retvar = declare_return_variable (id, return_slot,
+				    modify_dest, &use_retvar);
+
+  if (DECL_IS_OPERATOR_NEW (fn))
+    {
+      gcc_assert (TREE_CODE (retvar) == VAR_DECL
+		  && POINTER_TYPE_P (TREE_TYPE (retvar)));
+      DECL_NO_TBAA_P (retvar) = 1;
+    }
 
   /* This is it.  Duplicate the callee body.  Assume callee is
      pre-gimplified.  Note that we must not alter the caller
