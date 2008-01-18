@@ -2660,13 +2660,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	     character pointers.  */
 	  if (sym->attr.pointer || sym->attr.allocatable)
 	    {
-	      /* Build char[0:len-1] * pstr.  */
-	      tmp = fold_build2 (MINUS_EXPR, gfc_charlen_type_node, len,
-				 build_int_cst (gfc_charlen_type_node, 1));
-	      tmp = build_range_type (gfc_array_index_type,
-				      gfc_index_zero_node, tmp);
-	      tmp = build_array_type (gfc_character1_type_node, tmp);
-	      var = gfc_create_var (build_pointer_type (tmp), "pstr");
+	      var = gfc_create_var (type, "pstr");
 
 	      /* Provide an address expression for the function arguments.  */
 	      var = build_fold_addr_expr (var);
