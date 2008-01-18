@@ -1,3 +1,8 @@
+2008-01-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/transfer.c (formatted_transfer_scalar): Set max_pos to the greater
+	of the current max_pos or the newly calculated position.
+
 2008-01-18  Tobias Burnus  <burnus@net-b.de>
 
 	* io/write.c (write_real): Increase default precision
