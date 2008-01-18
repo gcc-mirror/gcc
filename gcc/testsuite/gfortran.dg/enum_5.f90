@@ -12,4 +12,5 @@ program main
 
   blue = 10  ! { dg-error " assign to a named constant" }
 
-end program main  ! { dg-excess-errors "" }
+end program main  ! { dg-error "Expecting END ENUM" }
+ ! { dg-error "Unexpected end of file" "" { target "*-*-*" } 0 }

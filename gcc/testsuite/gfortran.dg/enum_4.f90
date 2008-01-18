@@ -13,4 +13,5 @@ program main
     enumerator , save :: g = 1  ! { dg-error "Syntax error" }  
   end  ! { dg-error " END ENUM" } 
 
-end program main  ! { dg-excess-errors "" }
+end program main  ! { dg-error "Expecting END ENUM statement" }
+! { dg-error "Unexpected end of file" "" { target "*-*-*" } 0 }

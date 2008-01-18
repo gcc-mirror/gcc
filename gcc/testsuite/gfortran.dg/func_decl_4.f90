@@ -14,4 +14,5 @@ end function
 
 function f3() RESULT (f3)          ! { dg-error "must be different than function name" }
   integer :: f3 = 42
-end function                       ! { dg-excess-errors "" }
+end function                       ! { dg-error "Expecting END PROGRAM" }
+! { dg-error "Unexpected end of file" "" { target "*-*-*" } 0 }
