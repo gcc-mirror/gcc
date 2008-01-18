@@ -1,3 +1,8 @@
+2008-01-18  Tobias Burnus  <burnus@net-b.de>
+
+	* io/write.c (write_real): Increase default precision
+	for REAL(16) by one.
+
 2008-01-16  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR libfortran/34669

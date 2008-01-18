@@ -6,7 +6,7 @@ program large_real_kind_form_io_1
   integer, parameter :: k = selected_real_kind (precision (0.0_8) + 1)
   real(kind=k) :: a,b(2), c, eps
   complex(kind=k) :: d, e, f(2), g
-  character(len=180) :: tmp
+  character(len=200) :: tmp
   ! Test real(k) scalar and array formatted IO
   eps = 10 * spacing (2.0_k) ! 10 ulp precision is enough.
   b(:) = 2.0_k
