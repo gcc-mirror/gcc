@@ -1,5 +1,5 @@
-/* GCC was not warning about taking the address of paramaters or
-   fields of struct paramaters when returning them.  */
+/* GCC was not warning about taking the address of parameters or
+   fields of struct parameters when returning them.  */
 /* PR c/14156 */
 
 /* { dg-do compile  } */
