@@ -948,9 +948,12 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 	{
 	  if (dtp->u.p.skips > 0)
 	    {
+	      int tmp;
 	      write_x (dtp, dtp->u.p.skips, dtp->u.p.pending_spaces);
-	      dtp->u.p.max_pos = (int)(dtp->u.p.current_unit->recl
-				       - dtp->u.p.current_unit->bytes_left);
+	      tmp = (int)(dtp->u.p.current_unit->recl
+			  - dtp->u.p.current_unit->bytes_left);
+	      dtp->u.p.max_pos = 
+		dtp->u.p.max_pos > tmp ? dtp->u.p.max_pos : tmp;
 	    }
 	  if (dtp->u.p.skips < 0)
 	    {
