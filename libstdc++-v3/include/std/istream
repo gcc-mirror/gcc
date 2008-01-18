@@ -77,10 +77,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     protected:
       // Data Members:
       /**
-       *  @if maint
        *  The number of characters extracted in the previous unformatted
        *  function; see gcount().
-       *  @endif
       */
       streamsize 		_M_gcount;
 

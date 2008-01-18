@@ -1,6 +1,6 @@
 // TR1 functional header -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,11 +40,9 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     class _Mem_fn;
 
   /**
-   *  @if maint
    *  Actual implementation of _Has_result_type, which uses SFINAE to
    *  determine if the type _Tp has a publicly-accessible member type
    *  result_type.
-   *  @endif
   */
   template<typename _Tp>
     class _Has_result_type_helper : __sfinae_types
@@ -70,10 +68,9 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     { };
 
   /**
-   *  @if maint
-   *  If we have found a result_type, extract it.
-   *  @endif
+   *  
   */
+  /// If we have found a result_type, extract it.
   template<bool _Has_result_type, typename _Functor>
     struct _Maybe_get_result_type
     { };
@@ -85,10 +82,8 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     };
 
   /**
-   *  @if maint
    *  Base class for any function object that has a weak result type, as
    *  defined in 3.3/3 of TR1.
-   *  @endif
   */
   template<typename _Functor>
     struct _Weak_result_type_impl
@@ -96,77 +91,49 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     {
     };
 
-  /**
-   * @if maint
-   * Retrieve the result type for a function type.
-   * @endif 
-   */
+  /// Retrieve the result type for a function type.
   template<typename _Res, typename... _ArgTypes> 
     struct _Weak_result_type_impl<_Res(_ArgTypes...)>
     {
       typedef _Res result_type;
     };
 
-  /**
-   * @if maint
-   * Retrieve the result type for a function reference.
-   * @endif 
-   */
+  /// Retrieve the result type for a function reference.
   template<typename _Res, typename... _ArgTypes> 
     struct _Weak_result_type_impl<_Res(&)(_ArgTypes...)>
     {
       typedef _Res result_type;
     };
 
-  /**
-   * @if maint
-   * Retrieve the result type for a function pointer.
-   * @endif 
-   */
+  /// Retrieve the result type for a function pointer.
   template<typename _Res, typename... _ArgTypes> 
     struct _Weak_result_type_impl<_Res(*)(_ArgTypes...)>
     {
       typedef _Res result_type;
     };
 
-  /**
-   * @if maint
-   * Retrieve result type for a member function pointer.
-   * @endif maint
-   */ 
+  /// Retrieve result type for a member function pointer. 
   template<typename _Res, typename _Class, typename... _ArgTypes> 
     struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes...)>
     {
       typedef _Res result_type;
     };
 
-  /**
-   * @if maint
-   * Retrieve result type for a const member function pointer.
-   * @endif maint
-   */ 
+  /// Retrieve result type for a const member function pointer. 
   template<typename _Res, typename _Class, typename... _ArgTypes> 
     struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes...) const>
     {
       typedef _Res result_type;
     };
 
-  /**
-   * @if maint
-   * Retrieve result type for a volatile member function pointer.
-   * @endif maint
-   */ 
+  /// Retrieve result type for a volatile member function pointer. 
   template<typename _Res, typename _Class, typename... _ArgTypes> 
     struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes...) volatile>
     {
       typedef _Res result_type;
     };
 
-  /**
-   * @if maint
-   * Retrieve result type for a const volatile member function pointer.
-   * @endif maint
-   */ 
+  /// Retrieve result type for a const volatile member function pointer. 
   template<typename _Res, typename _Class, typename... _ArgTypes> 
     struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes...)const volatile>
     {
@@ -174,10 +141,8 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     };
 
   /**
-   *  @if maint
    *  Strip top-level cv-qualifiers from the function object and let
    *  _Weak_result_type_impl perform the real work.
-   *  @endif
   */
   template<typename _Functor>
     struct _Weak_result_type
@@ -189,12 +154,10 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     class result_of;
 
   /**
-   *  @if maint
    *  Actual implementation of result_of. When _Has_result_type is
    *  true, gets its result from _Weak_result_type. Otherwise, uses
    *  the function object's member template result to extract the
    *  result type.
-   *  @endif
   */
   template<bool _Has_result_type, typename _Signature>
     struct _Result_of_impl;
@@ -208,10 +171,8 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     };
 
   /**
-   * @if maint
    * Determine whether we can determine a result type from @c Functor 
    * alone.
-   * @endif
    */ 
   template<typename _Functor, typename... _ArgTypes>
     class result_of<_Functor(_ArgTypes...)>
@@ -221,11 +182,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     {
     };
 
-  /**
-   * @if maint
-   * We already know the result type for @c Functor; use it.
-   * @endif
-   */
+  /// We already know the result type for @c Functor; use it.
   template<typename _Functor, typename... _ArgTypes>
     struct _Result_of_impl<true, _Functor(_ArgTypes...)>
     {
@@ -233,10 +190,8 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     };
 
   /**
-   * @if maint
    * We need to compute the result type for this invocation the hard 
    * way.
-   * @endif
    */
   template<typename _Functor, typename... _ArgTypes>
     struct _Result_of_impl<false, _Functor(_ArgTypes...)>
@@ -246,10 +201,8 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     };
 
   /**
-   * @if maint
    * It is unsafe to access ::result when there are zero arguments, so we 
    * return @c void instead.
-   * @endif
    */
   template<typename _Functor>
     struct _Result_of_impl<false, _Functor()>
@@ -257,11 +210,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       typedef void type;
     };
 
-  /**
-   *  @if maint
-   *  Determines if the type _Tp derives from unary_function.
-   *  @endif
-  */
+  /// Determines if the type _Tp derives from unary_function.
   template<typename _Tp>
     struct _Derives_from_unary_function : __sfinae_types
     {
@@ -277,11 +226,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       static const bool value = sizeof(__test((_Tp*)0)) == 1;
     };
 
-  /**
-   *  @if maint
-   *  Determines if the type _Tp derives from binary_function.
-   *  @endif
-  */
+  /// Determines if the type _Tp derives from binary_function.
   template<typename _Tp>
     struct _Derives_from_binary_function : __sfinae_types
     {
@@ -297,11 +242,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       static const bool value = sizeof(__test((_Tp*)0)) == 1;
     };
 
-  /**
-   *  @if maint
-   *  Turns a function type into a function pointer type
-   *  @endif
-  */
+  /// Turns a function type into a function pointer type
   template<typename _Tp, bool _IsFunctionType = is_function<_Tp>::value>
     struct _Function_to_function_pointer
     {
@@ -315,10 +256,8 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     };
 
   /**
-   * @if maint
    * Invoke a function object, which may be either a member pointer or a
    * function object. The first parameter will tell which.
-   * @endif
    */
   template<typename _Functor, typename... _Args>
     inline
@@ -360,16 +299,14 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     }
 
   /**
-   *  @if maint
    *  Knowing which of unary_function and binary_function _Tp derives
    *  from, derives from the same and ensures that reference_wrapper
    *  will have a weak result type. See cases below.
-   *  @endif
    */
   template<bool _Unary, bool _Binary, typename _Tp>
     struct _Reference_wrapper_base_impl;
 
-  // Not a unary_function or binary_function, so try a weak result type
+  // Not a unary_function or binary_function, so try a weak result type.
   template<typename _Tp>
     struct _Reference_wrapper_base_impl<false, false, _Tp>
     : _Weak_result_type<_Tp>
@@ -390,7 +327,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 		      typename _Tp::result_type>
     { };
 
-  // both unary_function and binary_function. import result_type to
+  // Both unary_function and binary_function. Import result_type to
   // avoid conflicts.
    template<typename _Tp>
     struct _Reference_wrapper_base_impl<true, true, _Tp>
@@ -404,12 +341,10 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     };
 
   /**
-   *  @if maint
    *  Derives from unary_function or binary_function when it
    *  can. Specializations handle all of the easy cases. The primary
    *  template determines what to do with a class type, which may
    *  derive from both unary_function and binary_function.
-   *  @endif
   */
   template<typename _Tp>
     struct _Reference_wrapper_base
@@ -570,38 +505,24 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     };
 
   /**
-   * @if maint
    * Derives from @c unary_function or @c binary_function, or perhaps
    * nothing, depending on the number of arguments provided. The
    * primary template is the basis case, which derives nothing.
-   * @endif maint
    */
   template<typename _Res, typename... _ArgTypes> 
     struct _Maybe_unary_or_binary_function { };
 
-  /**
-   * @if maint
-   * Derives from @c unary_function, as appropriate.
-   * @endif
-   */ 
+  /// Derives from @c unary_function, as appropriate. 
   template<typename _Res, typename _T1> 
     struct _Maybe_unary_or_binary_function<_Res, _T1>
     : std::unary_function<_T1, _Res> { };
 
-  /**
-   * @if maint
-   * Derives from @c binary_function, as appropriate.
-   * @endif
-   */ 
+  /// Derives from @c binary_function, as appropriate. 
   template<typename _Res, typename _T1, typename _T2> 
     struct _Maybe_unary_or_binary_function<_Res, _T1, _T2>
     : std::binary_function<_T1, _T2, _Res> { };
 
-  /**
-   * @if maint
-   * Implementation of @c mem_fn for member function pointers.
-   * @endif
-   */
+  /// Implementation of @c mem_fn for member function pointers.
   template<typename _Res, typename _Class, typename... _ArgTypes>
     class _Mem_fn<_Res (_Class::*)(_ArgTypes...)>
     : public _Maybe_unary_or_binary_function<_Res, _Class*, _ArgTypes...>
@@ -644,11 +565,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       _Functor __pmf;
     };
 
-  /**
-   * @if maint
-   * Implementation of @c mem_fn for const member function pointers.
-   * @endif
-   */
+  /// Implementation of @c mem_fn for const member function pointers.
   template<typename _Res, typename _Class, typename... _ArgTypes>
     class _Mem_fn<_Res (_Class::*)(_ArgTypes...) const>
     : public _Maybe_unary_or_binary_function<_Res, const _Class*, 
@@ -691,11 +608,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       _Functor __pmf;
     };
 
-  /**
-   * @if maint
-   * Implementation of @c mem_fn for volatile member function pointers.
-   * @endif
-   */
+  /// Implementation of @c mem_fn for volatile member function pointers.
   template<typename _Res, typename _Class, typename... _ArgTypes>
     class _Mem_fn<_Res (_Class::*)(_ArgTypes...) volatile>
     : public _Maybe_unary_or_binary_function<_Res, volatile _Class*, 
@@ -739,11 +652,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       _Functor __pmf;
     };
 
-  /**
-   * @if maint
-   * Implementation of @c mem_fn for const volatile member function pointers.
-   * @endif
-   */
+  /// Implementation of @c mem_fn for const volatile member function pointers.
   template<typename _Res, typename _Class, typename... _ArgTypes>
     class _Mem_fn<_Res (_Class::*)(_ArgTypes...) const volatile>
     : public _Maybe_unary_or_binary_function<_Res, const volatile _Class*, 
@@ -914,53 +823,51 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   template<typename _Tp>
     const int is_placeholder<_Tp>::value;
 
-  /**
-   *  @if maint
-   *  The type of placeholder objects defined by libstdc++.
-   *  @endif
-   */
+  /// The type of placeholder objects defined by libstdc++.
   template<int _Num> struct _Placeholder { };
 
   // Define a large number of placeholders. There is no way to
   // simplify this with variadic templates, because we're introducing
   // unique names for each.
-  namespace placeholders { namespace {
-    _Placeholder<1> _1;
-    _Placeholder<2> _2;
-    _Placeholder<3> _3;
-    _Placeholder<4> _4;
-    _Placeholder<5> _5;
-    _Placeholder<6> _6;
-    _Placeholder<7> _7;
-    _Placeholder<8> _8;
-    _Placeholder<9> _9;
-    _Placeholder<10> _10;
-    _Placeholder<11> _11;
-    _Placeholder<12> _12;
-    _Placeholder<13> _13;
-    _Placeholder<14> _14;
-    _Placeholder<15> _15;
-    _Placeholder<16> _16;
-    _Placeholder<17> _17;
-    _Placeholder<18> _18;
-    _Placeholder<19> _19;
-    _Placeholder<20> _20;
-    _Placeholder<21> _21;
-    _Placeholder<22> _22;
-    _Placeholder<23> _23;
-    _Placeholder<24> _24;
-    _Placeholder<25> _25;
-    _Placeholder<26> _26;
-    _Placeholder<27> _27;
-    _Placeholder<28> _28;
-    _Placeholder<29> _29;
-  } }
+  namespace placeholders 
+  { 
+    namespace 
+    {
+      _Placeholder<1> _1;
+      _Placeholder<2> _2;
+      _Placeholder<3> _3;
+      _Placeholder<4> _4;
+      _Placeholder<5> _5;
+      _Placeholder<6> _6;
+      _Placeholder<7> _7;
+      _Placeholder<8> _8;
+      _Placeholder<9> _9;
+      _Placeholder<10> _10;
+      _Placeholder<11> _11;
+      _Placeholder<12> _12;
+      _Placeholder<13> _13;
+      _Placeholder<14> _14;
+      _Placeholder<15> _15;
+      _Placeholder<16> _16;
+      _Placeholder<17> _17;
+      _Placeholder<18> _18;
+      _Placeholder<19> _19;
+      _Placeholder<20> _20;
+      _Placeholder<21> _21;
+      _Placeholder<22> _22;
+      _Placeholder<23> _23;
+      _Placeholder<24> _24;
+      _Placeholder<25> _25;
+      _Placeholder<26> _26;
+      _Placeholder<27> _27;
+      _Placeholder<28> _28;
+      _Placeholder<29> _29;
+    } 
+  }
 
   /**
-   *  @if maint
    *  Partial specialization of is_placeholder that provides the placeholder
    *  number for the placeholder objects defined by libstdc++.
-   *  @endif
    */
   template<int _Num>
     struct is_placeholder<_Placeholder<_Num> >
@@ -970,19 +877,13 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     const int is_placeholder<_Placeholder<_Num> >::value;
 
   /**
-   * @if maint
    * Stores a tuple of indices. Used by bind() to extract the elements
    * in a tuple. 
-   * @endif
    */
   template<int... _Indexes>
     struct _Index_tuple { };
 
-  /**
-   *  @if maint
-   *  Builds an _Index_tuple<0, 1, 2, ..., _Num-1>.
-   *  @endif
-   */
+  /// Builds an _Index_tuple<0, 1, 2, ..., _Num-1>.
   template<std::size_t _Num, typename _Tuple = _Index_tuple<> >
     struct _Build_index_tuple;
  
@@ -1000,30 +901,24 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     };
 
   /** 
-   * @if maint
    * Used by _Safe_tuple_element to indicate that there is no tuple
    * element at this position.
-   * @endif
    */
   struct _No_tuple_element;
 
   /**
-   * @if maint
    * Implementation helper for _Safe_tuple_element. This primary
    * template handles the case where it is safe to use @c
    * tuple_element.
-   * @endif
    */
   template<int __i, typename _Tuple, bool _IsSafe>
     struct _Safe_tuple_element_impl
     : tuple_element<__i, _Tuple> { };
 
   /**
-   * @if maint
    * Implementation helper for _Safe_tuple_element. This partial
    * specialization handles the case where it is not safe to use @c
    * tuple_element. We just return @c _No_tuple_element.
-   * @endif
    */
   template<int __i, typename _Tuple>
     struct _Safe_tuple_element_impl<__i, _Tuple, false>
@@ -1043,7 +938,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
    };
 
   /**
-   *  @if maint
    *  Maps an argument to bind() into an actual argument to the bound
    *  function object [TR1 3.6.3/5]. Only the first parameter should
    *  be specified: the rest are used to determine among the various
@@ -1053,7 +947,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
    *  bind expression. The first parameter is the bound argument and
    *  the second parameter is a tuple containing references to the
    *  rest of the arguments.
-   *  @endif
    */
   template<typename _Arg,
            bool _IsBindExp = is_bind_expression<_Arg>::value,
@@ -1061,10 +954,8 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     class _Mu;
 
   /**
-   *  @if maint
    *  If the argument is reference_wrapper<_Tp>, returns the
    *  underlying reference. [TR1 3.6.3/5 bullet 1]
-   *  @endif
    */
   template<typename _Tp>
     class _Mu<reference_wrapper<_Tp>, false, false>
@@ -1083,11 +974,9 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     };
 
   /**
-   *  @if maint
    *  If the argument is a bind expression, we invoke the underlying
    *  function object with the same cv-qualifiers as we are given and
    *  pass along all of our arguments (unwrapped). [TR1 3.6.3/5 bullet 2]
-   *  @endif
    */
   template<typename _Arg>
     class _Mu<_Arg, true, false>
@@ -1126,11 +1015,9 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     };
 
   /**
-   *  @if maint
    *  If the argument is a placeholder for the Nth argument, returns
    *  a reference to the Nth argument to the bind function object.
    *  [TR1 3.6.3/5 bullet 3]
-   *  @endif
    */
   template<typename _Arg>
     class _Mu<_Arg, false, true>
@@ -1166,11 +1053,9 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     };
 
   /**
-   *  @if maint
    *  If the argument is just a value, returns a reference to that
    *  value. The cv-qualifiers on the reference are the same as the
    *  cv-qualifiers on the _Mu object. [TR1 3.6.3/5 bullet 4]
-   *  @endif
    */
   template<typename _Arg>
     class _Mu<_Arg, false, false>
@@ -1196,11 +1081,9 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     };
 
   /**
-   *  @if maint
    *  Maps member pointers into instances of _Mem_fn but leaves all
    *  other function objects untouched. Used by tr1::bind(). The
    *  primary template handles the non--member-pointer case.
-   *  @endif
    */
   template<typename _Tp>
     struct _Maybe_wrap_member_pointer
@@ -1213,11 +1096,9 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     };
 
   /**
-   *  @if maint
    *  Maps member pointers into instances of _Mem_fn but leaves all
    *  other function objects untouched. Used by tr1::bind(). This
    *  partial specialization handles the member pointer case.
-   *  @endif
    */
   template<typename _Tp, typename _Class>
     struct _Maybe_wrap_member_pointer<_Tp _Class::*>
@@ -1229,11 +1110,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       { return type(__pm); }
     };
 
-  /**
-   *  @if maint
-   *  Type of the function object returned from bind().
-   *  @endif
-   */
+  /// Type of the function object returned from bind().
   template<typename _Signature>
     struct _Bind;
 
@@ -1351,11 +1228,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
         }
     };
 
-  /**
-   *  @if maint
-   *  Type of the function object returned from bind<R>().
-   *  @endif
-   */
+  /// Type of the function object returned from bind<R>().
   template<typename _Result, typename _Signature>
     struct _Bind_result;
 
@@ -1447,11 +1320,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
         }
     };
 
-  /**
-   *  @if maint
-   *  Class template _Bind is always a bind expression.
-   *  @endif
-   */
+  /// Class template _Bind is always a bind expression.
   template<typename _Signature>
     struct is_bind_expression<_Bind<_Signature> >
     { static const bool value = true; };
@@ -1459,11 +1328,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   template<typename _Signature>
     const bool is_bind_expression<_Bind<_Signature> >::value;
 
-  /**
-   *  @if maint
-   *  Class template _Bind_result is always a bind expression.
-   *  @endif
-   */
+  /// Class template _Bind_result is always a bind expression.
   template<typename _Result, typename _Signature>
     struct is_bind_expression<_Bind_result<_Result, _Signature> >
     { static const bool value = true; };
@@ -1504,20 +1369,16 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   class bad_function_call : public std::exception { };
 
   /**
-   *  @if maint
    *  The integral constant expression 0 can be converted into a
    *  pointer to this type. It is used by the function template to
    *  accept NULL pointers.
-   *  @endif
    */
   struct _M_clear_type;
 
   /**
-   *  @if maint
    *  Trait identifying "location-invariant" types, meaning that the
    *  address of the object (or any of its members) will not escape.
    *  Also implies a trivial copy constructor and assignment operator.
-   *   @endif
    */
   template<typename _Tp>
     struct __is_location_invariant
@@ -1564,8 +1425,8 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     __destroy_functor
   };
 
-  /* Simple type wrapper that helps avoid annoying const problems
-     when casting between void pointers and pointers-to-pointers. */
+  // Simple type wrapper that helps avoid annoying const problems
+  // when casting between void pointers and pointers-to-pointers.
   template<typename _Tp>
     struct _Simple_type_wrapper
     {
@@ -1600,11 +1461,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   template<typename _Signature>
     class function;
 
-  /**
-   *  @if maint
-   *  Base class of all polymorphic function object wrappers.
-   *  @endif
-   */
+  /// Base class of all polymorphic function object wrappers.
   class _Function_base
   {
   public:
@@ -1693,50 +1550,36 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 
 	static void
 	_M_init_functor(_Any_data& __functor, const _Functor& __f)
-	{
-	  _M_init_functor(__functor, __f, _Local_storage());
-	}
+	{ _M_init_functor(__functor, __f, _Local_storage()); }
 	
 	template<typename _Signature>
 	  static bool
 	  _M_not_empty_function(const function<_Signature>& __f)
-	  {
-	    return __f;
-	  }
+	  { return __f; }
 
 	template<typename _Tp>
 	  static bool
 	  _M_not_empty_function(const _Tp*& __fp)
-	  {
-	    return __fp;
-	  }
+	  { return __fp; }
 
 	template<typename _Class, typename _Tp>
 	  static bool
 	  _M_not_empty_function(_Tp _Class::* const& __mp)
-	  {
-	    return __mp;
-	  }
+	  { return __mp; }
 
 	template<typename _Tp>
 	  static bool
 	  _M_not_empty_function(const _Tp&)
-	  {
-	    return true;
-	  }
+	  { return true; }
 
       private:
 	static void
 	_M_init_functor(_Any_data& __functor, const _Functor& __f, true_type)
-	{
-	  new (__functor._M_access()) _Functor(__f);
-	}
+	{ new (__functor._M_access()) _Functor(__f); }
 
 	static void
 	_M_init_functor(_Any_data& __functor, const _Functor& __f, false_type)
-	{
-	  __functor._M_access<_Functor*>() = new _Functor(__f);
-	}
+	{ __functor._M_access<_Functor*>() = new _Functor(__f); }
       };
 
     template<typename _Functor>
@@ -1769,7 +1612,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	static void
 	_M_init_functor(_Any_data& __functor, reference_wrapper<_Functor> __f)
 	{
-	  // TBD: Use address_of function instead
+	  // TBD: Use address_of function instead.
 	  _Base::_M_init_functor(__functor, &__f.get());
 	}
       };
@@ -1913,26 +1756,18 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     : public _Maybe_unary_or_binary_function<_Res, _ArgTypes...>,
       private _Function_base
     {
-      /**
-       *  @if maint
-       *  This class is used to implement the safe_bool idiom.
-       *  @endif
-       */
+      /// This class is used to implement the safe_bool idiom.
       struct _Hidden_type
       {
 	_Hidden_type* _M_bool;
       };
 
-      /**
-       *  @if maint
-       *  This typedef is used to implement the safe_bool idiom.
-       *  @endif
-       */
+      /// This typedef is used to implement the safe_bool idiom.
       typedef _Hidden_type* _Hidden_type::* _Safe_bool;
 
       typedef _Res _Signature_type(_ArgTypes...);
       
-      struct _Useless {};
+      struct _Useless { };
       
     public:
       typedef _Res result_type;
@@ -2121,9 +1956,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
        */
       template<typename _Functor>       _Functor* target();
       
-      /**
-       *  @overload
-       */
+      /// @overload
       template<typename _Functor> const _Functor* target() const;
       
     private:
@@ -2246,19 +2079,13 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   template<typename _Signature>
     inline bool
     operator==(const function<_Signature>& __f, _M_clear_type*)
-    { 
-      return !__f;
-    }
+    { return !__f; }
 
-  /**
-   *  @overload
-   */
+  /// @overload
   template<typename _Signature>
     inline bool
     operator==(_M_clear_type*, const function<_Signature>& __f)
-    {
-      return !__f;
-    }
+    { return !__f; }
 
   /**
    *  @brief Compares a polymorphic function object wrapper against 0
@@ -2270,19 +2097,13 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   template<typename _Signature>
     inline bool
     operator!=(const function<_Signature>& __f, _M_clear_type*)
-    {
-      return __f;
-    }
+    { return __f; }
 
-  /**
-   *  @overload
-   */
+  /// @overload
   template<typename _Signature>
     inline bool
     operator!=(_M_clear_type*, const function<_Signature>& __f)
-    {
-      return __f;
-    }
+    { return __f; }
 
   // [3.7.2.8] specialized algorithms
 
@@ -2294,9 +2115,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   template<typename _Signature>
     inline void
     swap(function<_Signature>& __x, function<_Signature>& __y)
-    {
-      __x.swap(__y);
-    }
+    { __x.swap(__y); }
 
 _GLIBCXX_END_NAMESPACE_TR1
 }

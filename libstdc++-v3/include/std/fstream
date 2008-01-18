@@ -1,7 +1,7 @@
 // File based streams -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007
+// 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -91,11 +91,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // External buffer.
       __file_type 		_M_file;
 
-      /**
-       *  @if maint
-       *  Place to stash in || out || in | out settings for current filebuf.
-       *  @endif
-      */
+      /// Place to stash in || out || in | out settings for current filebuf.
       ios_base::openmode 	_M_mode;
 
       // Beginning state type for codecvt.
@@ -110,19 +106,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // to eback() and _M_ext_buf.
       __state_type		_M_state_last;
 
-      /**
-       *  @if maint
-       *  Pointer to the beginning of internal buffer.
-       *  @endif
-      */
+      /// Pointer to the beginning of internal buffer.
       char_type*		_M_buf; 	
 
       /**
-       *  @if maint
        *  Actual size of internal buffer. This number is equal to the size
        *  of the put area + 1 position, reserved for the overflow char of
        *  a full area.
-       *  @endif
       */
       size_t			_M_buf_size;
 
@@ -130,24 +120,20 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       bool			_M_buf_allocated;
 
       /**
-       *  @if maint
        *  _M_reading == false && _M_writing == false for 'uncommitted' mode;  
        *  _M_reading == true for 'read' mode;
        *  _M_writing == true for 'write' mode;
        *
        *  NB: _M_reading == true && _M_writing == true is unused.
-       *  @endif
       */ 
       bool                      _M_reading;
       bool                      _M_writing;
 
       //@{
       /**
-       *  @if maint
        *  Necessary bits for putback buffer management.
        *
        *  @note pbacks of over one character are not currently supported.
-       *  @endif
       */
       char_type			_M_pback; 
       char_type*		_M_pback_cur_save;
@@ -159,37 +145,29 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       const __codecvt_type* 	_M_codecvt;
 
       /**
-       *  @if maint
        *  Buffer for external characters. Used for input when
        *  codecvt::always_noconv() == false. When valid, this corresponds
        *  to eback().
-       *  @endif
       */ 
       char*			_M_ext_buf;
 
       /**
-       *  @if maint
        *  Size of buffer held by _M_ext_buf.
-       *  @endif
       */ 
       streamsize		_M_ext_buf_size;
 
       /**
-       *  @if maint
        *  Pointers into the buffer held by _M_ext_buf that delimit a
        *  subsequence of bytes that have been read but not yet converted.
        *  When valid, _M_ext_next corresponds to egptr().
-       *  @endif
       */ 
       const char*		_M_ext_next;
       char*			_M_ext_end;
 
       /**
-       *  @if maint
        *  Initializes pback buffers, and moves normal buffers to safety.
        *  Assumptions:
        *  _M_in_cur has already been moved back
-       *  @endif
       */
       void
       _M_create_pback()
@@ -204,11 +182,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       }
 
       /**
-       *  @if maint
        *  Deactivates pback buffer contents, and restores normal buffer.
        *  Assumptions:
        *  The pback buffer has only moved forward.
-       *  @endif
       */ 
       void
       _M_destroy_pback() throw()
@@ -384,7 +360,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _M_terminate_output();
 
       /**
-       *  @if maint 
        *  This function sets the pointers of the internal buffer, both get
        *  and put areas. Typically:
        *
@@ -395,7 +370,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  NB: epptr() - pbase() == _M_buf_size - 1, since _M_buf_size
        *  reflects the actual allocated memory and the last cell is reserved
        *  for the overflow char of a full put area.
-       *  @endif
       */
       void
       _M_set_buffer(streamsize __off)

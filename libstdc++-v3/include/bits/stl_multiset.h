@@ -1,6 +1,6 @@
 // Multiset implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -80,11 +80,9 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
    *
    *  Multisets support bidirectional iterators.
    *
-   *  @if maint
    *  The private tree data is declared exactly the same way for set and
    *  multiset; the distinction is made entirely in how the tree functions are
    *  called (*_unique versus *_equal, same as the standard).
-   *  @endif
   */
   template <typename _Key, typename _Compare = std::less<_Key>,
 	    typename _Alloc = std::allocator<_Key> >
@@ -106,12 +104,12 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       typedef _Alloc   allocator_type;
 
     private:
-      /// @if maint  This turns a red-black tree into a [multi]set.  @endif
+      /// This turns a red-black tree into a [multi]set.
       typedef typename _Alloc::template rebind<_Key>::other _Key_alloc_type;
 
       typedef _Rb_tree<key_type, value_type, _Identity<value_type>,
 		       key_compare, _Key_alloc_type> _Rep_type;
-      /// @if maint  The actual tree structure.  @endif
+      /// The actual tree structure.
       _Rep_type _M_t;
 
     public:

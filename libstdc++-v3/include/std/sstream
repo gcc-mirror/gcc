@@ -1,7 +1,7 @@
 // String based streams -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
-// Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+// 2006, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -77,11 +77,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef typename __string_type::size_type		__size_type;
 
     protected:
-      /**
-       *  @if maint
-       *  Place to stash in || out || in | out settings for current stringbuf.
-       *  @endif
-      */
+      /// Place to stash in || out || in | out settings for current stringbuf.
       ios_base::openmode 	_M_mode;
 
       // Data Members:
@@ -290,10 +286,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  Initializes @c sb using @c mode|in, and passes @c &sb to the base
        *  class initializer.  Does not allocate any buffer.
        *
-       *  @if maint
        *  That's a lie.  We initialize the base class with NULL, because the
        *  string class does its own memory management.
-       *  @endif
       */
       explicit
       basic_istringstream(ios_base::openmode __mode = ios_base::in)
@@ -310,10 +304,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  Initializes @c sb using @a str and @c mode|in, and passes @c &sb
        *  to the base class initializer.
        *
-       *  @if maint
        *  That's a lie.  We initialize the base class with NULL, because the
        *  string class does its own memory management.
-       *  @endif
       */
       explicit
       basic_istringstream(const __string_type& __str,
@@ -403,10 +395,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  Initializes @c sb using @c mode|out, and passes @c &sb to the base
        *  class initializer.  Does not allocate any buffer.
        *
-       *  @if maint
        *  That's a lie.  We initialize the base class with NULL, because the
        *  string class does its own memory management.
-       *  @endif
       */
       explicit
       basic_ostringstream(ios_base::openmode __mode = ios_base::out)
@@ -423,10 +413,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  Initializes @c sb using @a str and @c mode|out, and passes @c &sb
        *  to the base class initializer.
        *
-       *  @if maint
        *  That's a lie.  We initialize the base class with NULL, because the
        *  string class does its own memory management.
-       *  @endif
       */
       explicit
       basic_ostringstream(const __string_type& __str,
@@ -514,10 +502,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  Initializes @c sb using @c mode, and passes @c &sb to the base
        *  class initializer.  Does not allocate any buffer.
        *
-       *  @if maint
        *  That's a lie.  We initialize the base class with NULL, because the
        *  string class does its own memory management.
-       *  @endif
       */
       explicit
       basic_stringstream(ios_base::openmode __m = ios_base::out | ios_base::in)
@@ -532,10 +518,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  Initializes @c sb using @a str and @c mode, and passes @c &sb
        *  to the base class initializer.
        *
-       *  @if maint
        *  That's a lie.  We initialize the base class with NULL, because the
        *  string class does its own memory management.
-       *  @endif
       */
       explicit
       basic_stringstream(const __string_type& __str,

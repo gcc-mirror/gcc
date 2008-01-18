@@ -1,6 +1,6 @@
 // Temporary buffer implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -119,11 +119,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 
   /**
-   *  @if maint
    *  This class is used in two places: stl_algo.h and ext/memory,
    *  where it is wrapped as the temporary_buffer class.  See
    *  temporary_buffer docs for more notes.
-   *  @endif
    */
   template<typename _ForwardIterator, typename _Tp>
     class _Temporary_buffer

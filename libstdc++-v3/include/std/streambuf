@@ -1,7 +1,7 @@
 // Stream buffer classes -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007 Free Software Foundation, Inc.
+// 2006, 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,11 +50,6 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
-  /**
-   *  @if maint
-   *  Does stuff.
-   *  @endif
-  */
   template<typename _CharT, typename _Traits>
     streamsize
     __copy_streambufs_eof(basic_streambuf<_CharT, _Traits>*,
@@ -138,11 +133,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       //@}
 
       //@{
-      /**
-       *  @if maint
-       *  This is a non-standard type.
-       *  @endif
-      */
+      /// This is a non-standard type.
       typedef basic_streambuf<char_type, traits_type>  	__streambuf_type;
       //@}
       
@@ -184,13 +175,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     protected:
       //@{
       /**
-       *  @if maint
        *  This is based on _IO_FILE, just reordered to be more consistent,
        *  and is intended to be the most minimal abstraction for an
        *  internal buffer.
        *  -  get == input == read
        *  -  put == output == write
-       *  @endif
       */
       char_type* 		_M_in_beg;     // Start of get area. 
       char_type* 		_M_in_cur;     // Current read area. 
@@ -199,11 +188,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       char_type* 		_M_out_cur;    // Current put area. 
       char_type* 		_M_out_end;    // End of put area.
 
-      /**
-       *  @if maint
-       *  Current locale setting.
-       *  @endif
-      */
+      /// Current locale setting.
       locale 			_M_buf_locale;	
 
   public:

@@ -1,6 +1,6 @@
 // nonstandard construct and destroy functions -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -67,10 +67,8 @@
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
-   * @if maint
    * Constructs an object in existing memory by invoking an allocated
    * object's constructor with an initializer.
-   * @endif
    */
   template<typename _T1, typename _T2>
     inline void
@@ -82,9 +80,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
   /**
-   * @if maint
    * Destroy the object pointed to by a pointer type.
-   * @endif
    */
   template<typename _Tp>
     inline void
@@ -92,11 +88,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     { __pointer->~_Tp(); }
 
   /**
-   * @if maint
    * Destroy a range of objects.  If the value_type of the object has
    * a trivial destructor, the compiler should optimize all of this
    * away, otherwise the objects' destructors must be invoked.
-   * @endif
    */
   template<typename _ForwardIterator>
     inline void
@@ -110,11 +104,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
   /**
-   * @if maint
    * Destroy a range of objects using the supplied allocator.  For
    * nondefault allocators we do not optimize away invocation of 
    * destroy() even if _Tp has a trivial destructor.
-   * @endif
    */
 
   template <typename _Tp> class allocator;

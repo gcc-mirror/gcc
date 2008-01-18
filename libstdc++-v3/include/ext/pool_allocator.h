@@ -1,6 +1,6 @@
 // Allocators -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -64,7 +64,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   /**
    *  @brief  Base class for __pool_alloc.
    *
-   *  @if maint
    *  Uses various allocators to fulfill underlying requests (and makes as
    *  few requests as possible when in default high-speed pool mode).
    *
@@ -76,8 +75,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
    *     _S_round_up(requested_size).  Thus the client has enough size
    *     information that we can return the object to the proper free list
    *     without permanently losing part of the object.
-   *
-   *  @endif
    */
     class __pool_alloc_base
     {

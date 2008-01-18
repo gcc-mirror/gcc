@@ -24,18 +24,17 @@
 <hr />
 
 <a name="creating"><h2>Creating the pages</h2></a>
-<p>The Makefile rules <code>'make doxygen'</code>,
-   <code>'make doxygen-maint'</code>, and <code>'make doxygen-man'</code>
-   in the libstdc++ build directory generate the user-level HTML docs, the
-   maintainer-level HTML docs, and the man pages, respectively.  Prerequisite
-   tools are Bash 2.x, 
+<p>The Makefile rules <code>'make doc-doxygen-html'</code>,
+   and <code>'make doc-doxygen-man'</code> in the libstdc++ build
+   directory generate the HTML docs, the and the man pages,
+   respectively.  Prerequisite tools are Bash 2.x,
    <a href="http://www.doxygen.org/">
    <!-- snagged from the generated page -->
    <img src="doxygen.png" alt="Doxygen" align=center border=0 width=110 height=53>
    </a>, a working version of <code>g++</code> somewhere in the PATH, and
    the <a href="http://www.gnu.org/software/coreutils/">GNU coreutils</a>.
 
-   In addition, to generate the pretty pictures, the 
+   In addition, to generate the pretty pictures and hierarchy graphs, the 
    <a href=
    "http://www.research.att.com/sw/tools/graphviz/download.html">Graphviz</a>
    package will need to be installed.

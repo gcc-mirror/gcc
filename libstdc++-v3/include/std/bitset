@@ -1,6 +1,6 @@
 // <bitset> -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -65,12 +65,10 @@
 _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
   /**
-   *  @if maint
    *  Base class, general case.  It is a class inveriant that _Nw will be
    *  nonnegative.
    *
    *  See documentation for bitset.
-   *  @endif
   */
   template<size_t _Nw>
     struct _Base_bitset
@@ -330,11 +328,9 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
     } // end _M_do_find_next
 
   /**
-   *  @if maint
    *  Base class, specialization for a single word.
    *
    *  See documentation for bitset.
-   *  @endif
   */
   template<>
     struct _Base_bitset<1>
@@ -460,11 +456,9 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
     };
 
   /**
-   *  @if maint
    *  Base class, specialization for no storage (zero-length %bitset).
    *
    *  See documentation for bitset.
-   *  @endif
   */
   template<>
     struct _Base_bitset<0>
@@ -643,7 +637,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
    *  Also see http://gcc.gnu.org/onlinedocs/libstdc++/ext/sgiexts.html#ch23
    *  for a description of extensions.
    *
-   *  @if maint
    *  Most of the actual code isn't contained in %bitset<> itself, but in the
    *  base class _Base_bitset.  The base class works with whole words, not with
    *  individual bits.  This allows us to specialize _Base_bitset for the
@@ -652,7 +645,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
    *  Extra confusion can result due to the fact that the storage for
    *  _Base_bitset @e is a regular array, and is indexed as such.  This is
    *  carefully encapsulated.
-   *  @endif
   */
   template<size_t _Nb>
     class bitset
@@ -991,13 +983,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  @note  These operators do no range checking and throw no exceptions,
        *         as required by DR 11 to the standard.
        *
-       *  @if maint
        *  _GLIBCXX_RESOLVE_LIB_DEFECTS Note that this implementation already
        *  resolves DR 11 (items 1 and 2), but does not do the range-checking
        *  required by that DR's resolution.  -pme
        *  The DR has since been changed:  range-checking is a precondition
        *  (users' responsibility), and these functions must not throw.  -pme
-       *  @endif
        */
       reference
       operator[](size_t __position)

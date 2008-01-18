@@ -111,14 +111,6 @@ check-performance: testsuite_files_performance ${performance_script}
 	-@(chmod + ${check_performance_script}; \
 	  ${check_performance_script} ${glibcxx_srcdir} ${glibcxx_builddir})
 
-# Generates the plots and graphs for performance testing.
-doc_performance_script=${glibcxx_srcdir}/scripts/make_graphs.py
-doc-performance:
-	-@(chmod + ${doc_performance_script}; \
-	${doc_performance_script} ${glibcxx_srcdir} \
-	${glibcxx_builddir}/testsuite \
-	${glibcxx_srcdir}/testsuite/data/make_graph_htmls.xml \
-	${glibcxx_srcdir}/testsuite/data/make_graph_test_infos.xml local g++)
 
 # Runs the testsuite in parallel mode.
 libgomp_dir=${glibcxx_builddir}/../libgomp

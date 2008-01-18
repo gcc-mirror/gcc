@@ -1,7 +1,7 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007
+// 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -64,7 +64,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @doctodo
    *
    *
-   *  @if maint
    *  Documentation?  What's that?
    *  Nathan Myers <ncm@cantrip.org>.
    *
@@ -104,7 +103,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *
    *  All but the last paragraph is considered pretty conventional
    *  for a C++ string implementation.
-   *  @endif
   */
   // 21.3  Template class basic_string
   template<typename _CharT, typename _Traits, typename _Alloc>

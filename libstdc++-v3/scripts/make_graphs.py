@@ -70,7 +70,7 @@ def make_png_str(label, test_name, build):
 	return ret
 
 def process_html(html_f_name, src_dir, build_dir, htmls_xml_f_name, tests_info_xml_f_name, build_name, compiler_name):
-	doc_dir = src_dir + "/docs/html/ext/pb_ds"
+	doc_dir = src_dir + "/doc/html/ext/pb_ds"
 	res_dir = build_dir 
 	html_f = open(doc_dir + '/' + html_f_name)	
 	soup = BeautifulSoup(html_f.read())			
@@ -146,7 +146,7 @@ if __name__ == "__main__":
 	tests_info_xml_f_name = sys.argv[4]
 	build_name = sys.argv[5]
 	compiler_name = sys.argv[6]
-	doc_dir = src_dir + "/docs/html/ext/pb_ds"
+	doc_dir = src_dir + "/doc/html/ext/pb_ds"
 	htmls_dat = minidom.parse(htmls_xml_f_name)
 	for html in htmls_dat.getElementsByTagName('html'):
 		html_f_name = html.attributes['name'].value

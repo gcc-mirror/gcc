@@ -1,7 +1,7 @@
 // Position types -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007
+// 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -62,12 +62,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /**
    *  @brief  Type used by fpos, char_traits<char>, and char_traits<wchar_t>.
    *
-   *  @if maint
    *  In clauses 21.1.3.1 and 27.4.1 streamoff is described as an
    *  implementation defined type.
    *  Note: In versions of GCC up to and including GCC 3.3, streamoff
    *  was typedef long.
-   *  @endif
   */  
 #ifdef _GLIBCXX_HAVE_INT64_T
   typedef int64_t       streamoff;
