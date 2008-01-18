@@ -1,5 +1,9 @@
 2008-01-18  Ian Lance Taylor  <iant@google.com>
 
+	* gcc.dg/debug/dwarf2/var1.c: Add -fno-merge-debug-strings.
+
+2008-01-18  Ian Lance Taylor  <iant@google.com>
+
 	PR c++/33407
 	* g++.dg/init/new26.C: New test.
 

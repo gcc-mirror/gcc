@@ -1,5 +1,14 @@
 2008-01-18  Ian Lance Taylor  <iant@google.com>
 
+	* common.opt: Add fmerge-debug-strings.
+	* dwarf2out.c (DEBUG_STR_SECTION_FLAGS): Test
+	flag_merge_debug_strings rather than flag_merge_constants.
+	* doc/invoke.texi (Option Summary): Mention
+	-fmerge-debug-strings.
+	(Debugging Options): Document -fmerge-debug-strings.
+
+2008-01-18  Ian Lance Taylor  <iant@google.com>
+
 	PR c++/33407
 	* tree.h (DECL_IS_OPERATOR_NEW): Define.
 	(struct tree_function_decl): Add new field operator_new_flag.
