@@ -713,8 +713,8 @@ write_real (st_parameter_dt *dtp, const char *source, int length)
       f.u.real.e = 4;
       break;
     case 16:
-      f.u.real.w = 43;
-      f.u.real.d = 34;
+      f.u.real.w = 44;
+      f.u.real.d = 35;
       f.u.real.e = 4;
       break;
     default:
