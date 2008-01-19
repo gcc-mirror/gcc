@@ -2497,6 +2497,9 @@ expand_omp_parallel (struct omp_region *region)
   entry_stmt = last_stmt (region->entry);
   child_fn = OMP_PARALLEL_FN (entry_stmt);
   child_cfun = DECL_STRUCT_FUNCTION (child_fn);
+  /* If this function has been already instrumented, make sure
+     the child function isn't instrumented again.  */
+  child_cfun->after_tree_profile = cfun->after_tree_profile;
 
   entry_bb = region->entry;
   exit_bb = region->exit;
@@ -3336,6 +3339,16 @@ expand_omp_for (struct omp_region *region)
 
   extract_omp_for_data (last_stmt (region->entry), &fd);
   region->sched_kind = fd.sched_kind;
+
+  gcc_assert (EDGE_COUNT (region->entry->succs) == 2);
+  BRANCH_EDGE (region->entry)->flags &= ~EDGE_ABNORMAL;
+  FALLTHRU_EDGE (region->entry)->flags &= ~EDGE_ABNORMAL;
+  if (region->cont)
+    {
+      gcc_assert (EDGE_COUNT (region->cont->succs) == 2);
+      BRANCH_EDGE (region->cont)->flags &= ~EDGE_ABNORMAL;
+      FALLTHRU_EDGE (region->cont)->flags &= ~EDGE_ABNORMAL;
+    }
 
   if (fd.sched_kind == OMP_CLAUSE_SCHEDULE_STATIC
       && !fd.have_ordered

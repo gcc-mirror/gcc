@@ -1,3 +1,18 @@
+2008-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/34610
+	* tree-cfg.c (make_edges): Mark both outgoing edges from
+	OMP_CONTINUE and from OMP_FOR as EDGE_ABNORMAL.
+	* omp-low.c (expand_omp_for): Clear EDGE_ABNORMAL bits
+	from OMP_FOR and OMP_CONTINUE outgoing edges.
+
+	* tree-profile.c (tree_profiling): Return early if
+	cfun->after_tree_profile != 0.  Set cfun->after_tree_profile
+	at the end.
+	* omp-low.c (expand_omp_parallel): Copy after_tree_profile
+	from cfun to child_cfun.
+	* function.h (struct function): Add after_tree_profile bit.
+
 2008-01-19 Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.S (_exit): Disable interrupt.

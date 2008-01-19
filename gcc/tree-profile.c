@@ -1,6 +1,6 @@
 /* Calculate branch probabilities, and basic block execution counts.
    Copyright (C) 1990, 1991, 1992, 1993, 1994, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
@@ -419,8 +419,11 @@ static unsigned int
 tree_profiling (void)
 {
   /* Don't profile functions produced at destruction time, particularly
-     the gcov datastructure initializer.  */
-  if (cgraph_state == CGRAPH_STATE_FINISHED)
+     the gcov datastructure initializer.  Don't profile if it has been
+     already instrumented either (when OpenMP expansion creates
+     child function from already instrumented body).  */
+  if (cgraph_state == CGRAPH_STATE_FINISHED
+      || cfun->after_tree_profile)
     return 0;
 
   /* Re-set global shared temporary variable for edge-counters.  */
@@ -441,6 +444,7 @@ tree_profiling (void)
      easy to adjust it, if and when there is some.  */
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
+  cfun->after_tree_profile = 1;
   return 0;
 }
 
