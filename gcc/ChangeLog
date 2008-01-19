@@ -1,3 +1,7 @@
+2008-01-19 Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/avr.S (_exit): Disable interrupt.
+
 2008-01-18  Kenneth Zadeck  <zadeck@naturalbridge.com>
 	    Steven Bosscher  <stevenb.gcc@gmail.com>
 
