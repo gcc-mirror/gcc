@@ -1,3 +1,9 @@
+2008-01-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* g++.dg/eh/ia64-2.C: Place "dg-do run" statement before
+	"dg-require-weak" statement.
+	* g++.dg/eh/weak1.C: Likewise.
+
 2008-01-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	Backport:
