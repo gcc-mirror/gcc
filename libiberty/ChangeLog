@@ -1,3 +1,9 @@
+2008-01-19  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR other/33768
+	* splay-tree.c (rotate_left): Fix minor typo in comment.
+	(rotate_right): Likewise.
+
 2007-11-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* floatformat.c (floatformat_ibm_long_double_is_valid): Fix
