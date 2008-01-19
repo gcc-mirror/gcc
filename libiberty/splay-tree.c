@@ -107,7 +107,7 @@ splay_tree_delete_helper (splay_tree sp, splay_tree_node node)
 }
 
 /* Rotate the edge joining the left child N with its parent P.  PP is the
-   grandparents pointer to P.  */
+   grandparents' pointer to P.  */
 
 static inline void
 rotate_left (splay_tree_node *pp, splay_tree_node p, splay_tree_node n)
@@ -120,7 +120,7 @@ rotate_left (splay_tree_node *pp, splay_tree_node p, splay_tree_node n)
 }
 
 /* Rotate the edge joining the right child N with its parent P.  PP is the
-   grandparents pointer to P.  */
+   grandparents' pointer to P.  */
 
 static inline void
 rotate_right (splay_tree_node *pp, splay_tree_node p, splay_tree_node n)
