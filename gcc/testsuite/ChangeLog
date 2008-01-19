@@ -1,3 +1,16 @@
+2008-01-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34760
+	* gfortran.dg/implicit_11.f90: New.
+	* gfortran.dg/allocate_stat.f90: Update dg-error pattern.
+	* gfortran.dg/entry_15.f90: Ditto.
+	* gfortran.dg/func_assign.f90: Ditto.
+	* gfortran.dg/gomp/reduction3.f90: Ditto.
+	* gfortran.dg/proc_assign_1.f90: Ditto.
+
+	* gfortran.dg/interface_proc_end.f90: Use dg-error instead
+	of dg-excess-errors.
+
 2008-01-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/32616

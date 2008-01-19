@@ -23,8 +23,8 @@ contains
      subroutine sub()
      end subroutine sub
    end interface
-   sub = 'a'  ! { dg-error "Expected VARIABLE" }
-   fun = 4.4  ! { dg-error "Expected VARIABLE" }
+   sub = 'a'  ! { dg-error "is not a variable" }
+   fun = 4.4  ! { dg-error "is not a variable" }
    funget = 4 ! { dg-error "is not a VALUE" }
    bar = 5    ! { dg-error "is not a VALUE" }
   end subroutine a

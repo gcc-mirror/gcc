@@ -48,7 +48,7 @@ subroutine f4
   integer :: i, ior
   i = 6
 !$omp parallel reduction (ior:i)
-  ior = 4			 ! { dg-error "Expected VARIABLE" }
+  ior = 4			 ! { dg-error "is not a variable" }
 !$omp end parallel
 end subroutine f4
 subroutine f5

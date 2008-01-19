@@ -58,12 +58,12 @@ end module simpler
     end interface
     stmt_fcn (w) = sin (w)     
     call x (y ())
-    x = 10                   ! { dg-error "Expected VARIABLE" }
+    x = 10                   ! { dg-error "is not a variable" }
     y = 20                   ! { dg-error "is not a VALUE" }
     foo_er = 8               ! { dg-error "is not a VALUE" }
     ext1 = 99                ! { dg-error "is not a VALUE" }
     ext2 = 99                ! { dg-error "is not a VALUE" }
-    stmt_fcn = 1.0           ! { dg-error "Expected VARIABLE" }
+    stmt_fcn = 1.0           ! { dg-error "is not a variable" }
     w = stmt_fcn (1.0)
 contains
     subroutine x (i)

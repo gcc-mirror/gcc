@@ -16,4 +16,4 @@
       END INTERFACE
       end ! { dg-error "END SUBROUTINE statement" }
       end module ! { dg-error "END SUBROUTINE statement" }
-! { dg-excess-errors "Unexpected end of file" }
+! { dg-error "Unexpected end of file" "" { target "*-*-*" } 0 }

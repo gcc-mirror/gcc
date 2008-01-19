@@ -38,7 +38,7 @@ function func2() result(res)
   implicit none
   real, pointer :: gain 
   integer :: res
-  allocate (gain,STAT=func2) ! { dg-error "Expected VARIABLE" }
+  allocate (gain,STAT=func2) ! { dg-error "is not a variable" }
   deallocate(gain)
   res = 0
 end function func2
