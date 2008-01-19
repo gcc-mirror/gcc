@@ -1329,6 +1329,10 @@ struct df_live_problem_data
   bitmap *out;
 };
 
+/* Scratch var used by transfer functions.  This is used to implement
+   an optimization to reduce the amount of space used to compute the
+   combined lr and live analysis.  */
+static bitmap df_live_scratch;
 
 /* Set basic block info.  */
 
@@ -1372,6 +1376,8 @@ df_live_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
   if (!df_live->block_pool)
     df_live->block_pool = create_alloc_pool ("df_live_block pool", 
 					   sizeof (struct df_live_bb_info), 100);
+  if (!df_live_scratch)
+    df_live_scratch = BITMAP_ALLOC (NULL);
 
   df_grow_bb_info (df_live);
 
@@ -1407,7 +1413,7 @@ df_live_reset (bitmap all_blocks)
 
   EXECUTE_IF_SET_IN_BITMAP (all_blocks, 0, bb_index, bi)
     {
-      struct df_lr_bb_info *bb_info = df_lr_get_bb_info (bb_index);
+      struct df_live_bb_info *bb_info = df_live_get_bb_info (bb_index);
       gcc_assert (bb_info);
       bitmap_clear (bb_info->in);
       bitmap_clear (bb_info->out);
@@ -1425,13 +1431,6 @@ df_live_bb_local_compute (unsigned int bb_index)
   rtx insn;
   struct df_ref **def_rec;
   int luid = 0;
-
-  for (def_rec = df_get_artificial_defs (bb_index); *def_rec; def_rec++)
-    {
-      struct df_ref *def = *def_rec;
-      if (DF_REF_FLAGS (def) & DF_REF_AT_TOP)
-	bitmap_set_bit (bb_info->gen, DF_REF_REGNO (def));
-    }
 
   FOR_BB_INSNS (bb, insn)
     {
@@ -1473,8 +1472,7 @@ df_live_bb_local_compute (unsigned int bb_index)
   for (def_rec = df_get_artificial_defs (bb_index); *def_rec; def_rec++)
     {
       struct df_ref *def = *def_rec;
-      if ((DF_REF_FLAGS (def) & DF_REF_AT_TOP) == 0)
-	bitmap_set_bit (bb_info->gen, DF_REF_REGNO (def));
+      bitmap_set_bit (bb_info->gen, DF_REF_REGNO (def));
     }
 }
 
@@ -1510,8 +1508,11 @@ df_live_init (bitmap all_blocks)
   EXECUTE_IF_SET_IN_BITMAP (all_blocks, 0, bb_index, bi)
     {
       struct df_live_bb_info *bb_info = df_live_get_bb_info (bb_index);
+      struct df_lr_bb_info *bb_lr_info = df_lr_get_bb_info (bb_index);
 
-      bitmap_copy (bb_info->out, bb_info->gen);
+      /* No register may reach a location where it is not used.  Thus
+	 we trim the rr result to the places where it is used.  */
+      bitmap_and (bb_info->out, bb_info->gen, bb_lr_info->out);
       bitmap_clear (bb_info->in);
     }
 }
@@ -1537,12 +1538,22 @@ static bool
 df_live_transfer_function (int bb_index)
 {
   struct df_live_bb_info *bb_info = df_live_get_bb_info (bb_index);
+  struct df_lr_bb_info *bb_lr_info = df_lr_get_bb_info (bb_index);
   bitmap in = bb_info->in;
   bitmap out = bb_info->out;
   bitmap gen = bb_info->gen;
   bitmap kill = bb_info->kill;
 
-  return bitmap_ior_and_compl (out, gen, in, kill);
+  /* We need to use a scratch set here so that the value returned from
+     this function invocation properly reflects if the sets changed in
+     a significant way; i.e. not just because the lr set was anded
+     in.  */
+  bitmap_and (df_live_scratch, gen, bb_lr_info->out);
+  /* No register may reach a location where it is not used.  Thus
+     we trim the rr result to the places where it is used.  */
+  bitmap_and_into (in, bb_lr_info->in);
+
+  return bitmap_ior_and_compl (out, df_live_scratch, in, kill);
 }
 
 
@@ -1597,6 +1608,9 @@ df_live_free (void)
       free_alloc_pool (df_live->block_pool);
       df_live->block_info_size = 0;
       free (df_live->block_info);
+
+      if (df_live_scratch)
+	BITMAP_FREE (df_live_scratch);
     }
   BITMAP_FREE (df_live->out_of_date_transfer_functions);
   free (df_live);
