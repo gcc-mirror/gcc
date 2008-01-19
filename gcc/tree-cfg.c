@@ -1,5 +1,5 @@
 /* Control flow functions for trees.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
@@ -544,14 +544,19 @@ make_edges (void)
 	      switch (cur_region->type)
 		{
 		case OMP_FOR:
+		  /* Mark all OMP_FOR and OMP_CONTINUE succs edges as abnormal
+		     to prevent splitting them.  */
+		  single_succ_edge (cur_region->entry)->flags |= EDGE_ABNORMAL;
 		  /* Make the loopback edge.  */
-		  make_edge (bb, single_succ (cur_region->entry), 0);
-	      
+		  make_edge (bb, single_succ (cur_region->entry),
+			     EDGE_ABNORMAL);
+
 		  /* Create an edge from OMP_FOR to exit, which corresponds to
 		     the case that the body of the loop is not executed at
 		     all.  */
-		  make_edge (cur_region->entry, bb->next_bb, 0);
-		  fallthru = true;
+		  make_edge (cur_region->entry, bb->next_bb, EDGE_ABNORMAL);
+		  make_edge (bb, bb->next_bb, EDGE_FALLTHRU | EDGE_ABNORMAL);
+		  fallthru = false;
 		  break;
 
 		case OMP_SECTIONS:

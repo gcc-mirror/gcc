@@ -1,6 +1,7 @@
 /* Structure for saving state for a nested function.
    Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   1999, 2000, 2003, 2004, 2005, 2006, 2007, 2008
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -459,6 +460,9 @@ struct function GTY(())
   /* Nonzero if function being compiled needs to
      return the address of where it has put a structure value.  */
   unsigned int returns_pcc_struct : 1;
+
+  /* Nonzero if pass_tree_profile was run on this function.  */
+  unsigned int after_tree_profile : 1;
 };
 
 /* If va_list_[gf]pr_size is set to this, it means we don't know how
