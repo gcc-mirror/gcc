@@ -1,5 +1,6 @@
 /*  -*- Mode: Asm -*-  */
-/* Copyright (C) 1998, 1999, 2000, 2007 Free Software Foundation, Inc.
+/* Copyright (C) 1998, 1999, 2000, 2007, 2008 
+   Free Software Foundation, Inc.
    Contributed by Denis Chertykov <denisc@overta.ru>
 
 This file is free software; you can redistribute it and/or modify it
@@ -647,6 +648,7 @@ exit:
 	/* Code from .fini8 ... .fini1 sections inserted by ld script.  */
 
 	.section .fini0,"ax",@progbits
+	cli
 __stop_program:
 	rjmp	__stop_program
 	.endfunc
