@@ -1,3 +1,10 @@
+2008-01-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	Backport:
+	2007-03-21  Richard Sandiford  <richard@codesourcery.com>
+	 
+	* gcc.target/i386/pr21291.c: Require nonpic or ! ilp32.
+
 2008-01-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/compile/20080114-1.c: Use empty asm statements.
