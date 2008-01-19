@@ -16,7 +16,7 @@ function func(a)
   func = a*8
   return
 entry ent(a) result(func2)
-  ent = -a*4.0 ! { dg-error "Expected VARIABLE" }
+  ent = -a*4.0 ! { dg-error "is not a variable" }
   return
 end function func
 end module m2
@@ -31,7 +31,7 @@ function func(a) result(res)
   res = a*12
   return
 entry ent(a) result(func2)
-  ent = -a*6.0 ! { dg-error "Expected VARIABLE" }
+  ent = -a*6.0 ! { dg-error "is not a variable" }
   return
 end function func
 end module m3

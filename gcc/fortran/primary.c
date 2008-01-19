@@ -2521,12 +2521,22 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
       break;
 
     case FL_UNKNOWN:
-      if (sym->attr.access == ACCESS_PUBLIC
-	  || sym->attr.access == ACCESS_PRIVATE)
-	break;
-      if (gfc_add_flavor (&sym->attr, FL_VARIABLE,
-			  sym->name, NULL) == FAILURE)
-	return MATCH_ERROR;
+      {
+	sym_flavor flavor = FL_UNKNOWN;
+
+	gfc_gobble_whitespace ();
+
+	if (sym->attr.external || sym->attr.procedure
+	    || sym->attr.function || sym->attr.subroutine)
+	  flavor = FL_PROCEDURE;
+	else if (gfc_peek_char () != '(' || sym->ts.type != BT_UNKNOWN
+		 || sym->attr.pointer || sym->as != NULL)
+	  flavor = FL_VARIABLE;
+
+	if (flavor != FL_UNKNOWN
+	    && gfc_add_flavor (&sym->attr, flavor, sym->name, NULL) == FAILURE)
+	  return MATCH_ERROR;
+      }
       break;
 
     case FL_PARAMETER:
@@ -2553,7 +2563,7 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
       /* Fall through to error */
 
     default:
-      gfc_error ("Expected VARIABLE at %C");
+      gfc_error ("'%s' at %C is not a variable", sym->name);
       return MATCH_ERROR;
     }
 
