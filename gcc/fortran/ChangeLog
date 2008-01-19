@@ -1,3 +1,11 @@
+2008-01-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/34817
+	PR fortran/34838
+	* iresolve.c (gfc_resolve_all):  Remove conversion of mask
+	argument to kind=1 by removing call to resolve_mask_arg().
+	(gfc_resolve_any):  Likewise.
+
 2008-01-19  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34760

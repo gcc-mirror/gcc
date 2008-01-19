@@ -256,8 +256,6 @@ gfc_resolve_all (gfc_expr *f, gfc_expr *mask, gfc_expr *dim)
       f->shape = gfc_copy_shape_excluding (mask->shape, mask->rank, dim);
     }
 
-  resolve_mask_arg (mask);
-
   f->value.function.name
     = gfc_get_string (PREFIX ("all_%c%d"), gfc_type_letter (mask->ts.type),
 		      mask->ts.kind);
@@ -305,8 +303,6 @@ gfc_resolve_any (gfc_expr *f, gfc_expr *mask, gfc_expr *dim)
       f->rank = mask->rank - 1;
       f->shape = gfc_copy_shape_excluding (mask->shape, mask->rank, dim);
     }
-
-  resolve_mask_arg (mask);
 
   f->value.function.name
     = gfc_get_string (PREFIX ("any_%c%d"), gfc_type_letter (mask->ts.type),
