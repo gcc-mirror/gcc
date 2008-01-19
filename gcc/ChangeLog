@@ -1,3 +1,8 @@
+2008-01-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* dwarf2out.c (dwarf2out_switch_text_section): Do not call
+	dwarf2out_note_section_used if cold_text_section is NULL.
+
 2008-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR gcov-profile/34610
@@ -197,7 +202,7 @@
 	function always sign-extends the value.
 
 2008-01-16  Jakub Jelinek  <jakub@redhat.com>
-	Richard Guenther  <rguenther@suse.de>
+	    Richard Guenther  <rguenther@suse.de>
 
 	PR c/34668
 	* gimplify.c (fold_indirect_ref_rhs): Rename to ...

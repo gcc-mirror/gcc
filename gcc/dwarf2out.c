@@ -2729,7 +2729,9 @@ dwarf2out_switch_text_section (void)
      don't attempt to advance_loc4 between labels in different sections.  */
   fde->dw_fde_current_label = NULL;
 
-  dwarf2out_note_section_used ();
+  /* There is no need to mark used sections when not debugging.  */
+  if (cold_text_section != NULL)
+    dwarf2out_note_section_used ();
 }
 #endif
 
