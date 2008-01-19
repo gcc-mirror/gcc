@@ -1,3 +1,19 @@
+2008-01-18  Kenneth Zadeck  <zadeck@naturalbridge.com>
+	    Steven Bosscher  <stevenb.gcc@gmail.com>
+
+	PR rtl-optimization/26854
+	PR rtl-optimization/34400
+	* df-problems.c (df_live_scratch): New scratch bitmap.
+	(df_live_alloc): Allocate df_live_scratch when doing df_live.
+	(df_live_reset): Clear the proper bitmaps.
+	(df_live_bb_local_compute): Only process the artificial defs once
+	since the order is not important.
+	(df_live_init): Init the df_live sets only with the variables
+	found live by df_lr.
+	(df_live_transfer_function): Use the df_lr sets to prune the
+	df_live sets as they are being computed.  
+	(df_live_free): Free df_live_scratch.
+
 2008-01-18  Ian Lance Taylor  <iant@google.com>
 
 	* common.opt: Add fmerge-debug-strings.
