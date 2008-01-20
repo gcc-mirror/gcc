@@ -1016,8 +1016,13 @@ find_reg (int num, HARD_REG_SET losers, int alt_regs_p, int accept_call_clobbere
   if (allocno[num].no_eh_reg)
     {
       unsigned int j;
-      for (j = 0; EH_RETURN_DATA_REGNO (j) != INVALID_REGNUM; j++)
-	SET_HARD_REG_BIT (used1, EH_RETURN_DATA_REGNO (j));
+      for (j = 0; ; ++j)
+	{
+	  unsigned int regno = EH_RETURN_DATA_REGNO (j);
+	  if (regno == INVALID_REGNUM)
+	    break;
+	  SET_HARD_REG_BIT (used1, regno);
+	}
     }
 #endif
 

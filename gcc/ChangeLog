@@ -1,3 +1,8 @@
+2008-01-20  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* global.c (find_reg): Only compute EH_RETURN_DATA_REGNO once per
+	input.
+
 2008-01-19  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	PR rtl-optimization/26854
