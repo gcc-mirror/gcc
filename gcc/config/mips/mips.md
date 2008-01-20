@@ -1936,7 +1936,7 @@
   "<divide_condition>"
 {
   if (const_1_operand (operands[1], <MODE>mode))
-    if (!(ISA_HAS_FP4 && flag_unsafe_math_optimizations))
+    if (!(<recip_condition> && flag_unsafe_math_optimizations))
       operands[1] = force_reg (<MODE>mode, operands[1]);
 })
 
