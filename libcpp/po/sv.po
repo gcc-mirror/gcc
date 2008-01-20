@@ -1,16 +1,16 @@
 # Swedish messages for cpplib.
-# Copyright © 2000, 2005, 2006, 2007 Free Software Foundation, Inc.
+# Copyright © 2000, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 # Dennis Björklund <db@zigo.dhs.org>, 2000, 2001, 2002.
-# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006, 2007.
+# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006, 2007, 2008.
 #
 # Remember: GCC team does not want RCS keywords in the header!
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.2.1\n"
+"Project-Id-Version: cpplib 4.3-b20071109\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2007-11-08 21:08+0000\n"
-"PO-Revision-Date: 2007-09-01 12:51+0200\n"
+"PO-Revision-Date: 2008-01-18 21:02+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -406,14 +406,13 @@ msgid "too many decimal points in number"
 msgstr "för många decimalpunker i tal"
 
 #: expr.c:290 expr.c:365
-#, fuzzy
 msgid "fixed-point constants are a GCC extension"
-msgstr "imaginära konstanter är en GCC-utvidgning"
+msgstr "fastdecimalskonstanter är en GCC-utvidgning"
 
 #: expr.c:303
-#, fuzzy, c-format
+#, c-format
 msgid "invalid digit \"%c\" in binary constant"
-msgstr "ogiltigt siffra \"%c\" i oktal konstant"
+msgstr "ogiltigt siffra \"%c\" i binär konstant"
 
 #: expr.c:305
 #, c-format
@@ -421,9 +420,8 @@ msgid "invalid digit \"%c\" in octal constant"
 msgstr "ogiltigt siffra \"%c\" i oktal konstant"
 
 #: expr.c:313
-#, fuzzy
 msgid "invalid prefix \"0b\" for floating constant"
-msgstr "ogiltigt suffix \"%.*s\" på flyttalskonstant"
+msgstr "ogiltigt prefix \"0b\" på flyttalskonstant"
 
 #: expr.c:319
 msgid "use of C99 hexadecimal floating constant"
@@ -453,9 +451,8 @@ msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr "ogiltigt suffix \"%.*s\" på hexadecimal flyttalskonstant"
 
 #: expr.c:369
-#, fuzzy
 msgid "decimal float constants are a GCC extension"
-msgstr "imaginära konstanter är en GCC-utvidgning"
+msgstr "decimala flyttalskonstanter är en GCC-utvidgning"
 
 #: expr.c:379
 #, c-format
@@ -471,9 +468,8 @@ msgid "imaginary constants are a GCC extension"
 msgstr "imaginära konstanter är en GCC-utvidgning"
 
 #: expr.c:412
-#, fuzzy
 msgid "binary constants are a GCC extension"
-msgstr "imaginära konstanter är en GCC-utvidgning"
+msgstr "binära konstanter är en GCC-utvidgning"
 
 #: expr.c:505
 msgid "integer constant is too large for its type"
@@ -772,7 +768,7 @@ msgstr "det gick inte att avgöra datum och tid"
 
 #: macro.c:270
 msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
-msgstr ""
+msgstr "__COUNTER__ expanderade inuti direktiv med -fdirectives-only"
 
 #: macro.c:423
 msgid "invalid string literal, ignoring final '\\'"
@@ -892,9 +888,9 @@ msgid "%s: not used because `%s' is defined"
 msgstr "%s: inte använd för att \"%s\" är definierad"
 
 #: pch.c:558
-#, fuzzy, c-format
+#, c-format
 msgid "%s: not used because `__COUNTER__' is invalid"
-msgstr "%s: inte använd för att \"%s\" är definierad"
+msgstr "%s: inte använd för att \"__COUNTER__\" är ogiltig"
 
 #: pch.c:567 pch.c:737
 msgid "while reading precompiled header"
@@ -908,6 +904,3 @@ msgstr "upptäckte rekursion vid under expansion av makrot \"%s\""
 #: traditional.c:917
 msgid "syntax error in macro parameter list"
 msgstr "syntaxfel i makroparameterlista"
-
-#~ msgid "no newline at end of file"
-#~ msgstr "inget nyradstecken vid slutet av filen"
