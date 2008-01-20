@@ -1,3 +1,8 @@
+2008-01-20  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR target/34831
+	* gcc.target/mips/pr34831.c: New test.
+
 2008-01-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/34817
