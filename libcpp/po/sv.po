@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: cpplib 4.3-b20071109\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2007-11-08 21:08+0000\n"
-"PO-Revision-Date: 2008-01-18 23:17+0100\n"
+"PO-Revision-Date: 2008-01-20 15:24+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -298,7 +298,7 @@ msgstr "#pragma once i huvudfil"
 
 #: directives.c:1385
 msgid "invalid #pragma GCC poison directive"
-msgstr "ogiltigt GCC-direktiv #pragma poison"
+msgstr "ogiltigt direktiv #pragma GCC poison"
 
 #: directives.c:1394
 #, c-format
@@ -413,7 +413,7 @@ msgstr "fastdecimalskonstanter är en GCC-utvidgning"
 #: expr.c:303
 #, c-format
 msgid "invalid digit \"%c\" in binary constant"
-msgstr "ogiltigt siffra \"%c\" i binär konstant"
+msgstr "ogiltig siffra \"%c\" i binär konstant"
 
 #: expr.c:305
 #, c-format
@@ -769,7 +769,7 @@ msgstr "det gick inte att avgöra datum och tid"
 
 #: macro.c:270
 msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
-msgstr "__COUNTER__ expanderade inuti direktiv med -fdirectives-only"
+msgstr "__COUNTER__ expanderad inuti direktiv med -fdirectives-only"
 
 #: macro.c:423
 msgid "invalid string literal, ignoring final '\\'"
