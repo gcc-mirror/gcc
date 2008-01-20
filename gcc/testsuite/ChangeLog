@@ -1,3 +1,12 @@
+2008-01-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34784
+	* gfortran.dg/array_constructor_20.f90: New test.
+	* gfortran.dg/mapping_2.f90: Correct ubound expression for h4.
+
+	PR fortran/34785
+	* gfortran.dg/array_constructor_21.f90: New test.
+
 2008-01-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/34795

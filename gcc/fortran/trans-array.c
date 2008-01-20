@@ -1906,6 +1906,18 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript)
 	  break;
 
 	case GFC_SS_CONSTRUCTOR:
+	  if (ss->expr->ts.type == BT_CHARACTER
+		&& ss->string_length== NULL
+		&& ss->expr->ts.cl
+		&& ss->expr->ts.cl->length)
+	    {
+	      gfc_init_se (&se, NULL);
+	      gfc_conv_expr_type (&se, ss->expr->ts.cl->length,
+				  gfc_charlen_type_node);
+	      ss->string_length = se.expr;
+	      gfc_add_block_to_block (&loop->pre, &se.pre);
+	      gfc_add_block_to_block (&loop->post, &se.post);
+	    }
 	  gfc_trans_array_constructor (loop, ss);
 	  break;
 
@@ -5042,7 +5054,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
     {
       get_array_ctor_strlen (&se->pre, expr->value.constructor, &tmp);
       expr->ts.cl->backend_decl = tmp;
-      se->string_length = gfc_evaluate_now (tmp, &se->pre);
+      se->string_length = tmp;
     }
 
   /* Is this the result of the enclosing procedure?  */
