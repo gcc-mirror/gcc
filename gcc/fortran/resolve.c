@@ -496,7 +496,8 @@ resolve_entries (gfc_namespace *ns)
 	      || (el->sym->result->attr.pointer
 		  != ns->entries->sym->result->attr.pointer))
 	    break;
-	  else if (as && fas && gfc_compare_array_spec (as, fas) == 0)
+	  else if (as && fas && ns->entries->sym->result != el->sym->result
+		      && gfc_compare_array_spec (as, fas) == 0)
 	    gfc_error ("Function %s at %L has entries with mismatched "
 		       "array specifications", ns->entries->sym->name,
 		       &ns->entries->sym->declared_at);

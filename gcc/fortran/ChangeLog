@@ -1,5 +1,15 @@
 2008-01-20  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/34861
+	* resolve.c (resolve_entries): Do not do an array bounds check
+	if the result symbols are the same.
+
+	PR fortran/34854
+	* module.c (read_module) : Hide the symtree of the previous
+	version of the symbol if this symbol is renamed.
+
+2008-01-20  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/34784
 	* array.c (gfc_check_constructor_type): Clear the expression ts
 	so that the checking starts from the deepest level of array

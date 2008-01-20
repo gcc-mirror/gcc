@@ -3735,7 +3735,7 @@ read_module (void)
 
 	      /* Make symtree inaccessible by renaming if the symbol has
 		 been added by a USE statement without an ONLY(11.3.2).  */
-	      if (st && only_flag
+	      if (st && (only_flag || info->u.rsym.renamed)
 		     && !st->n.sym->attr.use_only
 		     && !st->n.sym->attr.use_rename
 		     && st->n.sym->module
