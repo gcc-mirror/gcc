@@ -22,9 +22,10 @@ along with GCC; see the file COPYING3.  If not see
    doloop optimization and branch prediction.  The iv information is computed
    on demand.
 
-   Induction variable is analyzed by walking the use-def chains.  When a biv
-   is found, it is cached in the bivs hash table.  When register is proved
-   to be a giv, its description is stored to DF_REF_DATA of the def reference.
+   Induction variables are analyzed by walking the use-def chains.  When
+   a basic induction variable (biv) is found, it is cached in the bivs
+   hash table.  When register is proved to be a biv, its description
+   is stored to DF_REF_DATA of the def reference.
 
    The analysis works always with one loop -- you must call
    iv_analysis_loop_init (loop) for it.  All the other functions then work with
@@ -277,6 +278,7 @@ iv_analysis_loop_init (struct loop *loop)
   df_remove_problem (df_chain);
   df_process_deferred_rescans ();
   df_chain_add_problem (DF_UD_CHAIN);
+  df_set_flags (DF_RD_NO_TRIM);
   df_set_blocks (blocks);
   df_analyze ();
   if (dump_file)
