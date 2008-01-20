@@ -1,3 +1,20 @@
+2008-01-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34784
+	* array.c (gfc_check_constructor_type): Clear the expression ts
+	so that the checking starts from the deepest level of array
+	constructor.
+	* primary.c (match_varspec): If an unknown type is changed to
+	default character and the attempt to match a substring fails,
+	change it back to unknown.
+
+	PR fortran/34785
+	* trans-array.c (gfc_add_loop_ss_code) : If ss->string_length is
+	NULL for an array constructor, use the cl.length expression to
+	build it.
+	(gfc_conv_array_parameter): Change call to gfc_evaluate_now to
+	a tree assignment.
+
 2008-01-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/34817

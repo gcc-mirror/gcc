@@ -1025,6 +1025,7 @@ gfc_check_constructor_type (gfc_expr *e)
 
   cons_state = CONS_START;
   gfc_clear_ts (&constructor_ts);
+  gfc_clear_ts (&e->ts);
 
   t = check_constructor_type (e->value.constructor);
   if (t == SUCCESS && e->ts.type == BT_UNKNOWN)

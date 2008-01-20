@@ -1676,6 +1676,7 @@ match_varspec (gfc_expr *primary, int equiv_flag)
   gfc_component *component;
   gfc_symbol *sym = primary->symtree->n.sym;
   match m;
+  bool unknown;
 
   tail = NULL;
 
@@ -1753,12 +1754,14 @@ match_varspec (gfc_expr *primary, int equiv_flag)
     }
 
 check_substring:
+  unknown = false;
   if (primary->ts.type == BT_UNKNOWN)
     {
       if (gfc_get_default_type (sym, sym->ns)->type == BT_CHARACTER)
        {
 	 gfc_set_default_type (sym, 0, sym->ns);
 	 primary->ts = sym->ts;
+	 unknown = true;
        }
     }
 
@@ -1781,6 +1784,8 @@ check_substring:
 	  break;
 
 	case MATCH_NO:
+	  if (unknown)
+	    gfc_clear_ts (&primary->ts);
 	  break;
 
 	case MATCH_ERROR:
