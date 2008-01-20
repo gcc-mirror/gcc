@@ -5046,7 +5046,7 @@ msgstr "Variablennamen bei %C in PARAMETER-Anweisung erwartet"
 #: fortran/decl.c:5575
 #, no-c-format
 msgid "Expected = sign in PARAMETER statement at %C"
-msgstr "Zeichen »=« in PARAMETER-Anweisung bei %C erwartet"
+msgstr "Zeichen »=« in PARAMATER-Anweisung bei %C erwartet"
 
 #: fortran/decl.c:5581
 #, no-c-format
