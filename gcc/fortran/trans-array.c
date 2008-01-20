@@ -1907,7 +1907,7 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript)
 
 	case GFC_SS_CONSTRUCTOR:
 	  if (ss->expr->ts.type == BT_CHARACTER
-		&& ss->string_length== NULL
+		&& ss->string_length == NULL
 		&& ss->expr->ts.cl
 		&& ss->expr->ts.cl->length)
 	    {
