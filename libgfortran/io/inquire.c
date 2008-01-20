@@ -99,21 +99,39 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
       if (u == NULL)
 	p = inquire_sequential (NULL, 0);
       else
-	{
-          /* disallow an open direct access file to be accessed sequentially */
-          if (u->flags.access == ACCESS_DIRECT)
-            p = "NO";
-          else   
-            p = inquire_sequential (u->file, u->file_len);
-	}
+	switch (u->flags.access)
+	  {
+	  case ACCESS_DIRECT:
+	  case ACCESS_STREAM:
+	    p = "NO";
+	    break;
+	  case ACCESS_SEQUENTIAL:
+	    p = "YES";
+	    break;
+	  default:
+	    internal_error (&iqp->common, "inquire_via_unit(): Bad access");
+	  }
 
       cf_strcpy (iqp->sequential, iqp->sequential_len, p);
     }
 
   if ((cf & IOPARM_INQUIRE_HAS_DIRECT) != 0)
     {
-      p = (u == NULL) ? inquire_direct (NULL, 0) :
-	inquire_direct (u->file, u->file_len);
+      if (u == NULL)
+	p = inquire_direct (NULL, 0);
+      else
+	switch (u->flags.access)
+	  {
+	  case ACCESS_SEQUENTIAL:
+	  case ACCESS_STREAM:
+	    p = "NO";
+	    break;
+	  case ACCESS_DIRECT:
+	    p = "YES";
+	    break;
+	  default:
+	    internal_error (&iqp->common, "inquire_via_unit(): Bad access");
+	  }
 
       cf_strcpy (iqp->direct, iqp->direct_len, p);
     }
@@ -140,16 +158,40 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 
   if ((cf & IOPARM_INQUIRE_HAS_FORMATTED) != 0)
     {
-      p = (u == NULL) ? inquire_formatted (NULL, 0) :
-	inquire_formatted (u->file, u->file_len);
+      if (u == NULL)
+	p = inquire_formatted (NULL, 0);
+      else
+	switch (u->flags.form)
+	  {
+	  case FORM_FORMATTED:
+	    p = "YES";
+	    break;
+	  case FORM_UNFORMATTED:
+	    p = "NO";
+	    break;
+	  default:
+	    internal_error (&iqp->common, "inquire_via_unit(): Bad form");
+	  }
 
       cf_strcpy (iqp->formatted, iqp->formatted_len, p);
     }
 
   if ((cf & IOPARM_INQUIRE_HAS_UNFORMATTED) != 0)
     {
-      p = (u == NULL) ? inquire_unformatted (NULL, 0) :
-	inquire_unformatted (u->file, u->file_len);
+      if (u == NULL)
+	p = inquire_unformatted (NULL, 0);
+      else
+	switch (u->flags.form)
+	  {
+	  case FORM_FORMATTED:
+	    p = "NO";
+	    break;
+	  case FORM_UNFORMATTED:
+	    p = "YES";
+	    break;
+	  default:
+	    internal_error (&iqp->common, "inquire_via_unit(): Bad form");
+	  }
 
       cf_strcpy (iqp->unformatted, iqp->unformatted_len, p);
     }
@@ -359,13 +401,13 @@ inquire_via_filename (st_parameter_inquire *iqp)
 
   if ((cf & IOPARM_INQUIRE_HAS_SEQUENTIAL) != 0)
     {
-      p = inquire_sequential (iqp->file, iqp->file_len);
+      p = "UNKNOWN";
       cf_strcpy (iqp->sequential, iqp->sequential_len, p);
     }
 
   if ((cf & IOPARM_INQUIRE_HAS_DIRECT) != 0)
     {
-      p = inquire_direct (iqp->file, iqp->file_len);
+      p = "UNKNOWN";
       cf_strcpy (iqp->direct, iqp->direct_len, p);
     }
 
@@ -374,13 +416,13 @@ inquire_via_filename (st_parameter_inquire *iqp)
 
   if ((cf & IOPARM_INQUIRE_HAS_FORMATTED) != 0)
     {
-      p = inquire_formatted (iqp->file, iqp->file_len);
+      p = "UNKNOWN";
       cf_strcpy (iqp->formatted, iqp->formatted_len, p);
     }
 
   if ((cf & IOPARM_INQUIRE_HAS_UNFORMATTED) != 0)
     {
-      p = inquire_unformatted (iqp->file, iqp->file_len);
+      p = "UNKNOWN";
       cf_strcpy (iqp->unformatted, iqp->unformatted_len, p);
     }
 

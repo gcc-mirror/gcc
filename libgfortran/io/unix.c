@@ -1806,7 +1806,7 @@ inquire_sequential (const char *string, int len)
 
   if (S_ISREG (statbuf.st_mode) ||
       S_ISCHR (statbuf.st_mode) || S_ISFIFO (statbuf.st_mode))
-    return yes;
+    return unknown;
 
   if (S_ISDIR (statbuf.st_mode) || S_ISBLK (statbuf.st_mode))
     return no;
@@ -1829,7 +1829,7 @@ inquire_direct (const char *string, int len)
     return unknown;
 
   if (S_ISREG (statbuf.st_mode) || S_ISBLK (statbuf.st_mode))
-    return yes;
+    return unknown;
 
   if (S_ISDIR (statbuf.st_mode) ||
       S_ISCHR (statbuf.st_mode) || S_ISFIFO (statbuf.st_mode))
@@ -1855,7 +1855,7 @@ inquire_formatted (const char *string, int len)
   if (S_ISREG (statbuf.st_mode) ||
       S_ISBLK (statbuf.st_mode) ||
       S_ISCHR (statbuf.st_mode) || S_ISFIFO (statbuf.st_mode))
-    return yes;
+    return unknown;
 
   if (S_ISDIR (statbuf.st_mode))
     return no;

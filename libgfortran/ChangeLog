@@ -1,3 +1,13 @@
+2008-01-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/inquire.c (inquire_via_unit): If a unit is opened, return values
+	according to the open action for DIRECT, FORMATTED, and	UNFORMATTED.
+	(inquire_via_filename): Return "UNKNOWN" for SEQUENTIAL, DIRECT,
+	FORAMATTED, and UNFORMATTED inquiries.
+	* io/unix.c (inquire_sequential): Return "UNKNOWN" when appropriate
+	for files that are not opened. (inquire_direct): Same.
+	(inquire_formatted): Same.
+	
 2008-01-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* io/transfer.c (formatted_transfer_scalar): Set max_pos to the greater
