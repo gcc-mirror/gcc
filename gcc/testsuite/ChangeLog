@@ -1,6 +1,17 @@
 2008-01-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34784
+	* gfortran.dg/mapping_2.f90: Correct ubound expression for h4.
+
+	PR fortran/34861
+	* gfortran.dg/entry_array_specs_3.f90: New test.
+
+	PR fortran/34854
+	* gfortran.dg/use_rename_1.f90: New test.
+
+2008-01-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34784
 	* gfortran.dg/array_constructor_20.f90: New test.
 	* gfortran.dg/mapping_2.f90: Correct ubound expression for h4.
 
