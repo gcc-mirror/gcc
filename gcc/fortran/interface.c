@@ -1470,18 +1470,10 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   if ((actual->expr_type != EXPR_NULL || actual->ts.type != BT_UNKNOWN)
       && !gfc_compare_types (&formal->ts, &actual->ts))
     {
-      if (where && actual->ts.type == BT_DERIVED
-	  && formal->ts.type == BT_DERIVED)
-	gfc_error ("Type mismatch in argument '%s' at %L; passed type(%s) to "
-		   "type(%s)", formal->name, &actual->where,
-		   actual->ts.derived->name, formal->ts.derived->name);
-      else if (where)
+      if (where)
 	gfc_error ("Type mismatch in argument '%s' at %L; passed %s to %s",
-		   formal->name, &actual->where,
-		   actual->ts.type == BT_DERIVED ? "derived type"
-				     : gfc_basic_typename (actual->ts.type),
-		   formal->ts.type == BT_DERIVED ? "derived type"
-				     : gfc_basic_typename (formal->ts.type));
+		   formal->name, &actual->where, gfc_typename (&actual->ts),
+		   gfc_typename (&formal->ts));
       return 0;
     }
 
