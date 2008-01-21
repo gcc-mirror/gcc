@@ -1,3 +1,9 @@
+2008-01-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* trans.c (gnat_to_gnu) <N_Free_Statement>: Use POINTER_PLUS_EXPR
+	in pointer arithmetics.
+	* utils2.c (build_allocator): Likewise.
+
 2008-01-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* utils.c (build_function_stub): Properly build the call expression.

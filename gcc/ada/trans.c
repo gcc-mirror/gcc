@@ -4672,10 +4672,9 @@ gnat_to_gnu (Node_Id gnat_node)
 		 = (void *)GNU_PTR - (void *)sizeof (void *))  */
  	      gnu_ptr
  		= build_binary_op
-		    (MINUS_EXPR, ptr_void_type_node,
+		    (POINTER_PLUS_EXPR, ptr_void_type_node,
 		     convert (ptr_void_type_node, gnu_ptr),
-		     convert (ptr_void_type_node,
-			      TYPE_SIZE_UNIT (ptr_void_type_node)));
+		     size_int (-POINTER_SIZE/BITS_PER_UNIT));
 
  	      /* GNU_PTR (void *) = *(void **)GNU_PTR  */
  	      gnu_ptr
