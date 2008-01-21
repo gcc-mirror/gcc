@@ -1785,6 +1785,7 @@ dump_expr (tree t, int flags)
 
     case NOP_EXPR:
     case CONVERT_EXPR:
+    case VIEW_CONVERT_EXPR:
       {
 	tree op = TREE_OPERAND (t, 0);
 

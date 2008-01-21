@@ -1,5 +1,10 @@
 2008-01-20  Paolo Carlini  <pcarlini@suse.de>
 
+        PR c++/34891
+        * error.c (dump_expr): Deal with VIEW_CONVERT_EXPR.
+
+2008-01-20  Paolo Carlini  <pcarlini@suse.de>
+
         PR c++/34776
 	PR c++/34486
         * name-lookup.c (do_class_using_decl): Do not call constructor_name_p

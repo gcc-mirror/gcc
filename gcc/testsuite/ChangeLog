@@ -1,5 +1,10 @@
 2008-01-20  Paolo Carlini  <pcarlini@suse.de>
 
+        PR c++/34891
+        * g++.dg/ext/vector9.C: New.
+
+2008-01-20  Paolo Carlini  <pcarlini@suse.de>
+
         PR c++/34776
 	PR c++/34486
         * g++.dg/template/crash75.C: New.
