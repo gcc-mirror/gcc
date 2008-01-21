@@ -226,7 +226,11 @@ log10f(float x)
 double
 scalbn(double x, int y)
 {
+#if (FLT_RADIX == 2) && defined(HAVE_LDEXP)
+  return ldexp (x, y);
+#else
   return x * pow(FLT_RADIX, y);
+#endif
 }
 #endif
 

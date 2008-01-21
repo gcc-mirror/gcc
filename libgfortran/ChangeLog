@@ -1,3 +1,12 @@
+2008-01-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR libfortran/34699
+	Backport:
+	2007-09-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/26253
+	* intrinsics/c99_functions.c (scalbn): Use ldexp if appopriate.
+
 2007-05-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/31964
