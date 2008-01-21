@@ -11,7 +11,7 @@
 #####################################################################
 
 SVNROOT=${SVNROOT:-"file:///svn/gcc"}
-GETTHIS='libstdc++-v3/docs/html'
+GETTHIS='libstdc++-v3/doc/html'
 WWWDIR=/www/gcc/htdocs/onlinedocs/libstdc++
 #WWWDIR=/tmp/fake-onlinedocs-testing
 
@@ -33,8 +33,8 @@ cd $WORKDIR
 
 
 # checkout all the HTML files, get down into an interesting directory
-svn -q export $SVNROOT/trunk/$GETTHIS docs
-cd docs
+svn -q export $SVNROOT/trunk/$GETTHIS doc
+cd doc
 rm -f Makefile
 
 # build a compressed copy of the HTML, preserve directory structure
