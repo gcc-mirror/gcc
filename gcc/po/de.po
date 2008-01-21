@@ -1,7 +1,7 @@
 # German translation of gcc messages.
 # Copyright © 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 # Karl Eichwalder <ke@suse.de>, 2002, 2003.
-# Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005, 2006, 2007.
+# Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005, 2006, 2007, 2008.
 # This file is distributed under the same license as the gcc package.
 #
 msgid ""
@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.3-b20071109\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2007-11-08 21:09+0000\n"
-"PO-Revision-Date: 2007-11-22 18:00+0200\n"
+"PO-Revision-Date: 2008-01-21 10:15+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -5046,7 +5046,7 @@ msgstr "Variablennamen bei %C in PARAMETER-Anweisung erwartet"
 #: fortran/decl.c:5575
 #, no-c-format
 msgid "Expected = sign in PARAMETER statement at %C"
-msgstr "Zeichen »=« in PARAMATER-Anweisung bei %C erwartet"
+msgstr "Zeichen »=« in PARAMETER-Anweisung bei %C erwartet"
 
 #: fortran/decl.c:5581
 #, no-c-format
@@ -6709,7 +6709,7 @@ msgstr "Zeichenlänge des effektiven Arguments kürzer als das des Scheinargumen
 #: fortran/interface.c:1776
 #, no-c-format
 msgid "Actual argument contains too few elements for dummy argument '%s' (%lu/%lu) at %L"
-msgstr "Effektives Argument enthält zu viele Elemente für Scheinargument »%s« (%lu/%lu) bei %L"
+msgstr "Effektives Argument enthält zuwenige Elemente für Scheinargument »%s« (%lu/%lu) bei %L"
 
 #: fortran/interface.c:1790
 #, no-c-format
