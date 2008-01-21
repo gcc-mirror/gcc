@@ -1,3 +1,7 @@
+2008-01-20  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* doc/install.texi: Add doc for --enable-checking=df.
+	
 2008-01-20  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR rtl-optimization/34808
