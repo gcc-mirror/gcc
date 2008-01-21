@@ -1271,12 +1271,12 @@ checks available are @samp{yes} (most common checks
 all), @samp{all} (all but @samp{valgrind}), @samp{release} (cheapest
 checks @samp{assert,runtime}) or @samp{none} (same as @samp{no}).
 Individual checks can be enabled with these flags @samp{assert},
-@samp{fold}, @samp{gc}, @samp{gcac} @samp{misc}, @samp{rtl},
+@samp{df}, @samp{fold}, @samp{gc}, @samp{gcac} @samp{misc}, @samp{rtl},
 @samp{rtlflag}, @samp{runtime}, @samp{tree}, and @samp{valgrind}.
 
 The @samp{valgrind} check requires the external @command{valgrind}
 simulator, available from @uref{http://valgrind.org/}.  The
-@samp{rtl}, @samp{gcac} and @samp{valgrind} checks are very expensive.
+@samp{df}, @samp{rtl}, @samp{gcac} and @samp{valgrind} checks are very expensive.
 To disable all checking, @samp{--disable-checking} or
 @samp{--enable-checking=none} must be explicitly requested.  Disabling
 assertions will make the compiler and runtime slightly faster but
