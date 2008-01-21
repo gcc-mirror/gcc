@@ -1,3 +1,12 @@
+2008-01-21  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34856
+	* tree-cfg.c (verify_expr): Allow all invariant expressions
+	instead of just constant class ones as reference argument.
+	* tree-ssa-loop-im.c (for_each_index): Handle CONSTRUCTOR
+	like any other constant.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Likewise.
+
 2008-01-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* regmove.c (fixup_match_1): Update call crossed frequencies.
