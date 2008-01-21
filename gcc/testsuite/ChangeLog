@@ -1,3 +1,7 @@
+2008-01-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/alignment1.ads: New test.
+
 2008-01-21  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/34850
