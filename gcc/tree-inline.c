@@ -1444,7 +1444,16 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
   if (value
       && value != error_mark_node
       && !useless_type_conversion_p (TREE_TYPE (p), TREE_TYPE (value)))
-    rhs = fold_build1 (NOP_EXPR, TREE_TYPE (p), value);
+    {
+      if (fold_convertible_p (TREE_TYPE (p), value))
+	rhs = fold_build1 (NOP_EXPR, TREE_TYPE (p), value);
+      else
+	/* ???  For valid (GIMPLE) programs we should not end up here.
+	   Still if something has gone wrong and we end up with truly
+	   mismatched types here, fall back to using a VIEW_CONVERT_EXPR
+	   to not leak invalid GIMPLE to the following passes.  */
+	rhs = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (p), value);
+    }
 
   /* If the parameter is never assigned to, has no SSA_NAMEs created,
      we may not need to create a new variable here at all.  Instead, we may
