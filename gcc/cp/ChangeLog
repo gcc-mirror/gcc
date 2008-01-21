@@ -1,3 +1,9 @@
+2008-01-21  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/34850
+	* error.c (cp_print_error_function): Deal with recursive
+	BLOCK trees.
+
 2008-01-20  Paolo Carlini  <pcarlini@suse.de>
 
         PR c++/34891
