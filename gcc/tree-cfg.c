@@ -3304,7 +3304,7 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	  t = TREE_OPERAND (t, 0);
 	}
 
-      if (!CONSTANT_CLASS_P (t) && !is_gimple_lvalue (t))
+      if (!is_gimple_min_invariant (t) && !is_gimple_lvalue (t))
 	{
 	  error ("invalid reference prefix");
 	  return t;
