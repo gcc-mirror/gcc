@@ -1,3 +1,9 @@
+2008-01-21  Luciano Chavez  <lnx1138@us.ibm.com>
+
+	PR libgcj/34369:
+	* java/net/URI.java (relativize): Check initial segment for
+	trailing "/".
+
 2007-12-05  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java,

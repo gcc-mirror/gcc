@@ -1,5 +1,5 @@
 /* URI.java -- An URI class
-   Copyright (C) 2002, 2004, 2005, 2006  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006, 2008  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -968,12 +968,18 @@ public final class URI
       return uri;
     if (rawAuthority != null && !(rawAuthority.equals(uri.getRawAuthority())))
       return uri;
-    if (!(uri.getRawPath().startsWith(rawPath)))
-      return uri;
+    String basePath = rawPath;
+    if (!(uri.getRawPath().equals(rawPath)))
+      {
+	if (!(basePath.endsWith("/")))
+	  basePath = basePath.concat("/");
+	if (!(uri.getRawPath().startsWith(basePath)))
+	  return uri;
+      }
     try
       {
 	return new URI(null, null, 
-		       uri.getRawPath().substring(rawPath.length()),
+		       uri.getRawPath().substring(basePath.length()),
 		       uri.getRawQuery(), uri.getRawFragment());
       }
     catch (URISyntaxException e)
