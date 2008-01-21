@@ -1,3 +1,7 @@
+2008-01-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* regmove.c (fixup_match_1): Update call crossed frequencies.
+
 2008-01-21  Richard Guenther  <rguenther@suse.de>
 
 	PR c/34885
