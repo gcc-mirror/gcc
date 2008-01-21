@@ -1,3 +1,10 @@
+2008-01-20  Paolo Carlini  <pcarlini@suse.de>
+
+        PR c++/34776
+	PR c++/34486
+        * g++.dg/template/crash75.C: New.
+        * g++.dg/template/crash76.C: Likewise.	
+
 2008-01-20  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR rtl-optimization/34808

@@ -1730,12 +1730,15 @@ constructor_name (tree type)
   return name;
 }
 
-/* Returns TRUE if NAME is the name for the constructor for TYPE.  */
+/* Returns TRUE if NAME is the name for the constructor for TYPE,
+   which must be a class type.  */
 
 bool
 constructor_name_p (tree name, tree type)
 {
   tree ctor_name;
+
+  gcc_assert (IS_AGGR_TYPE (type));
 
   if (!name)
     return false;
@@ -2824,7 +2827,7 @@ do_class_using_decl (tree scope, tree name)
       error ("%<%T::%D%> names destructor", scope, name);
       return NULL_TREE;
     }
-  if (constructor_name_p (name, scope))
+  if (IS_AGGR_TYPE (scope) && constructor_name_p (name, scope))
     {
       error ("%<%T::%D%> names constructor", scope, name);
       return NULL_TREE;
