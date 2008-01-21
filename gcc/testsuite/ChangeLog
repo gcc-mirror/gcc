@@ -1,3 +1,9 @@
+2008-01-21  Alon Dayan  <alond@il.ibm.com>
+	    Olga Golovanevsky  <olga@il.ibm.com>
+
+	PR tree-optimization/34701
+	* gcc.dg/struct/wo_prof_array_field.c: New test.
+	
 2008-01-20  Paolo Carlini  <pcarlini@suse.de>
 
         PR c++/34891

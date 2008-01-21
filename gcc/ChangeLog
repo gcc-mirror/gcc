@@ -1,3 +1,10 @@
+2008-01-21  Alon Dayan  <alond@il.ibm.com>
+	    Olga Golovanevsky  <olga@il.ibm.com>
+	
+	PR tree-optimization/34701
+	* ipa-struct-reorg.c (gen_size): Fix the malloc parameter calculation
+	when the structure size is not a power of 2.
+
 2008-01-20  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* doc/install.texi: Add doc for --enable-checking=df.
