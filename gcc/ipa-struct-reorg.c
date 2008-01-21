@@ -623,7 +623,12 @@ gen_size (tree num, tree type, tree *res)
     add_referenced_var (*res);
 
   if (exact_log2 (struct_size_int) == -1)
-    new_stmt = build_gimple_modify_stmt (num, struct_size);
+    {
+      tree size = build_int_cst (TREE_TYPE (num), struct_size_int);
+      new_stmt = build_gimple_modify_stmt (*res, build2 (MULT_EXPR,
+							 TREE_TYPE (num),
+							 num, size));
+    }
   else
     {
       tree C = build_int_cst (TREE_TYPE (num), exact_log2 (struct_size_int));
