@@ -1695,7 +1695,7 @@ fixup_match_1 (rtx insn, rtx set, rtx src, rtx src_subreg, rtx dst,
   rtx p;
   rtx post_inc = 0, post_inc_set = 0, search_end = 0;
   int success = 0;
-  int num_calls = 0, s_num_calls = 0;
+  int num_calls = 0, freq_calls = 0, s_num_calls = 0, s_freq_calls = 0;
   enum rtx_code code = NOTE;
   HOST_WIDE_INT insn_const = 0, newconst = 0;
   rtx overlap = 0; /* need to move insn ? */
@@ -1887,10 +1887,13 @@ fixup_match_1 (rtx insn, rtx set, rtx src, rtx src_subreg, rtx dst,
 	    break;
 
 	  num_calls++;
+	  freq_calls += REG_FREQ_FROM_BB  (BLOCK_FOR_INSN (p));
 
 	  if (src_note)
-	    s_num_calls++;
-
+	    {
+	      s_num_calls++;
+	      s_freq_calls += REG_FREQ_FROM_BB  (BLOCK_FOR_INSN (p));
+	    }
 	}
     }
 
@@ -1939,7 +1942,7 @@ fixup_match_1 (rtx insn, rtx set, rtx src, rtx src_subreg, rtx dst,
     {
       rtx note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
       rtx q, set2 = NULL_RTX;
-      int num_calls2 = 0, s_length2 = 0;
+      int num_calls2 = 0, s_length2 = 0, freq_calls2 = 0;
 
       if (note && CONSTANT_P (XEXP (note, 0)))
 	{
@@ -1968,7 +1971,10 @@ fixup_match_1 (rtx insn, rtx set, rtx src, rtx src_subreg, rtx dst,
 		  break;
 		}
 	      if (CALL_P (p))
-		num_calls2++;
+		{
+		  num_calls2++;
+		  freq_calls2 += REG_FREQ_FROM_BB  (BLOCK_FOR_INSN (p));
+		}
 	    }
 	  if (q && set2 && SET_DEST (set2) == src && CONSTANT_P (SET_SRC (set2))
 	      && validate_change (insn, &SET_SRC (set), XEXP (note, 0), 0))
@@ -1976,6 +1982,7 @@ fixup_match_1 (rtx insn, rtx set, rtx src, rtx src_subreg, rtx dst,
 	      delete_insn (q);
 	      INC_REG_N_SETS (REGNO (src), -1);
 	      REG_N_CALLS_CROSSED (REGNO (src)) -= num_calls2;
+	      REG_FREQ_CALLS_CROSSED (REGNO (src)) -= freq_calls2;
 	      REG_LIVE_LENGTH (REGNO (src)) -= s_length2;
 	      insn_const = 0;
 	    }
@@ -2044,12 +2051,14 @@ fixup_match_1 (rtx insn, rtx set, rtx src, rtx src_subreg, rtx dst,
       REG_NOTES (p) = src_note;
 
       REG_N_CALLS_CROSSED (REGNO (src)) += s_num_calls;
+      REG_FREQ_CALLS_CROSSED (REGNO (src)) += s_freq_calls;
     }
 
   INC_REG_N_SETS (REGNO (src), 1);
   INC_REG_N_SETS (REGNO (dst), -1);
 
   REG_N_CALLS_CROSSED (REGNO (dst)) -= num_calls;
+  REG_FREQ_CALLS_CROSSED (REGNO (dst)) -= freq_calls;
 
   REG_LIVE_LENGTH (REGNO (src)) += s_length;
   if (REG_LIVE_LENGTH (REGNO (dst)) >= 0)
