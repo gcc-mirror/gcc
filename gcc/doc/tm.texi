@@ -2079,7 +2079,9 @@ consecutive registers are needed for a given mode.
 @defmac HARD_REGNO_NREGS (@var{regno}, @var{mode})
 A C expression for the number of consecutive hard registers, starting
 at register number @var{regno}, required to hold a value of mode
-@var{mode}.
+@var{mode}.  This macro must never return zero, even if a register
+cannot hold the requested mode - indicate that with HARD_REGNO_MODE_OK
+and/or CANNOT_CHANGE_MODE_CLASS instead.
 
 On a machine where all registers are exactly one word, a suitable
 definition of this macro is
