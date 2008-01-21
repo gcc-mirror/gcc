@@ -1,3 +1,8 @@
+2008-01-21  DJ Delorie  <dj@redhat.com>
+
+	* doc/tm.texi (HARD_REGNO_NREGS): Note that this macro must not
+	return zero.
+
 2008-01-21  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/34856
