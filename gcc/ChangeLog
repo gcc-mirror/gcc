@@ -1,3 +1,9 @@
+2008-01-21  Richard Guenther  <rguenther@suse.de>
+
+	PR c/34885
+	* tree-inline.c (setup_one_parameter): Deal with mismatched
+	types using a VIEW_CONVERT_EXPR.
+
 2008-01-21  Alon Dayan  <alond@il.ibm.com>
 	    Olga Golovanevsky  <olga@il.ibm.com>
 	
