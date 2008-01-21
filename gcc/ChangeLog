@@ -1,3 +1,8 @@
+2008-01-20  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR rtl-optimization/34808
+	* emit-rtl.c (try_split): Handle REG_RETVAL notes.
+
 2008-01-20  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* global.c (find_reg): Only compute EH_RETURN_DATA_REGNO once per

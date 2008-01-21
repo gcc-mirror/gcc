@@ -1,3 +1,8 @@
+2008-01-20  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR rtl-optimization/34808
+	* gcc.c-torture/compile/pr34808.c: New test.
+
 2008-01-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34784
