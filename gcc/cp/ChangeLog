@@ -1,3 +1,11 @@
+2008-01-20  Paolo Carlini  <pcarlini@suse.de>
+
+        PR c++/34776
+	PR c++/34486
+        * name-lookup.c (do_class_using_decl): Do not call constructor_name_p
+	on non-IS_AGGR_TYPE scope.
+	(constructor_name_p): Assert IS_AGGR_TYPE.
+
 2008-01-18  Ian Lance Taylor  <iant@google.com>
 
 	PR c++/33407
