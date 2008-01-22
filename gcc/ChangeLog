@@ -1,3 +1,10 @@
+2008-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/34196
+	* tree.h (TRY_CATCH_IS_CLEANUP): New macro.
+	* tree-eh.c (honor_protect_cleanup_actions): Strip TRY_CATCH_EXPR
+	if it is set.
+
 2008-01-21  DJ Delorie  <dj@redhat.com>
 
 	* doc/tm.texi (HARD_REGNO_NREGS): Note that this macro must not

@@ -447,6 +447,8 @@ struct gimple_stmt GTY(())
            IDENTIFIER_NODE
        CLEANUP_EH_ONLY in
            TARGET_EXPR, WITH_CLEANUP_EXPR
+       TRY_CATCH_IS_CLEANUP in
+           TRY_CATCH_EXPR
        ASM_INPUT_P in
            ASM_EXPR
        EH_FILTER_MUST_NOT_THROW in EH_FILTER_EXPR
@@ -1166,10 +1168,15 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    should be cleaned up some day.  */
 #define TREE_STATIC(NODE) ((NODE)->base.static_flag)
 
-/* In a TARGET_EXPR, WITH_CLEANUP_EXPR, means that the pertinent cleanup
+/* In a TARGET_EXPR or WITH_CLEANUP_EXPR, means that the pertinent cleanup
    should only be executed if an exception is thrown, not on normal exit
    of its scope.  */
 #define CLEANUP_EH_ONLY(NODE) ((NODE)->base.static_flag)
+
+/* In a TRY_CATCH_EXPR, means that the handler should be considered a
+   separate cleanup in honor_protect_cleanup_actions.  */
+#define TRY_CATCH_IS_CLEANUP(NODE) \
+  (TRY_CATCH_EXPR_CHECK (NODE)->base.static_flag)
 
 /* Used as a temporary field on a CASE_LABEL_EXPR to indicate that the
    CASE_HIGH operand has been processed.  */
