@@ -1,3 +1,8 @@
+2008-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34917
+	* g++.dg/ext/vector12.C: New test.
+
 2008-01-22  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 32102

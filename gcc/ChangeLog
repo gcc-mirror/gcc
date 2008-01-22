@@ -1,3 +1,9 @@
+2008-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34917
+	* tree.c (build_type_attribute_qual_variant): Call
+	build_qualified_type if attributes are equal, but quals are not.
+
 2008-01-22  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 32102
