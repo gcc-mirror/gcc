@@ -3735,6 +3735,8 @@ build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
 
       ttype = build_qualified_type (ntype, quals);
     }
+  else if (TYPE_QUALS (ttype) != quals)
+    ttype = build_qualified_type (ttype, quals);
 
   return ttype;
 }
