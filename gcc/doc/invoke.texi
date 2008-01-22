@@ -2649,7 +2649,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wsequence-point  @gol
 -Wsign-compare @r{(only in C++)}  @gol
 -Wstrict-aliasing  @gol
--Wstrict-overflow  @gol
+-Wstrict-overflow=1  @gol
 -Wswitch  @gol
 -Wtrigraphs  @gol
 -Wuninitialized @r{(only with} @option{-O1} @r{and above)}  @gol

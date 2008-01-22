@@ -137,16 +137,6 @@ extern void set_Wstrict_aliasing (int onoff);
 extern bool warn_larger_than;
 extern HOST_WIDE_INT larger_than_size;
 
-/* Nonzero means warn about constructs which might not be strict
-   aliasing safe.  */
-
-extern int warn_strict_aliasing;
-
-/* Nonzero means warn about optimizations which rely on undefined
-   signed overflow.  */
-
-extern int warn_strict_overflow;
-
 /* Temporarily suppress certain warnings.
    This is set while reading code from a system header file.  */
 

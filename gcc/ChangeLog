@@ -1,3 +1,18 @@
+2008-01-22  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 32102
+	* doc/invoke.texi (-Wall): -Wall enables -Wstrict-overflow=1.
+	* flags.h (warn_strict_aliasing): Remove.
+	(warn_strict_overflow): Remove.
+	* opts.c (warn_strict_aliasing): Remove.
+	(warn_strict_overflow): Remove.
+	* c-opts.c (c_common_handle_option): -Wall only sets
+	-Wstrict-aliasing or -Wstrict-overflow if they are uninitialized.
+	(c_common_post_options): Give default values to -Wstrict-aliasing
+	and -Wstrict-overflow if they are uninitialized.
+	* common.opt (Wstrict-aliasing): Specify Var and Init.
+	(Wstrict-overflow): Likewise.
+
 2008-01-22  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	PR rtl-optimization/26854
