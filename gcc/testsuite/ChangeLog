@@ -1,5 +1,11 @@
 2008-01-22  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	PR 32102
+	* gcc.dg/Wstrict-overflow-21.c: New.
+	* g++.dg/warn/Wstrict-aliasing-8.C: New.
+
+2008-01-22  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	PR middle-end/33092
 	* gcc.dg/pr33092.c: New.
 

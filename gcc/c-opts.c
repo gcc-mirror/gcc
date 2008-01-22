@@ -401,9 +401,11 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       warn_return_type = value;
       warn_sequence_point = value;	/* Was C only.  */
       warn_switch = value;
-      set_Wstrict_aliasing (value);
+      if (warn_strict_aliasing == -1)
+	set_Wstrict_aliasing (value);
       warn_address = value;
-      warn_strict_overflow = value;
+      if (warn_strict_overflow == -1)
+	warn_strict_overflow = value;
       warn_array_bounds = value;
 
       /* Only warn about unknown pragmas that are not in system
@@ -1089,6 +1091,11 @@ c_common_post_options (const char **pfilename)
      of -Wall or -pedantic are given.  */
   if (warn_pointer_sign == -1)
     warn_pointer_sign = 0;
+
+  if (warn_strict_aliasing == -1)
+    warn_strict_aliasing = 0;
+  if (warn_strict_overflow == -1)
+    warn_strict_overflow = 0;
 
   /* -Woverlength-strings is off by default, but is enabled by -pedantic.
      It is never enabled in C++, as the minimum limit is not normative
