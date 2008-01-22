@@ -6070,6 +6070,7 @@ addressable_p (tree gnu_expr)
     case INDIRECT_REF:
     case CONSTRUCTOR:
     case STRING_CST:
+    case INTEGER_CST:
     case NULL_EXPR:
     case SAVE_EXPR:
     case CALL_EXPR:

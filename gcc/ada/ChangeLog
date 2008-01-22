@@ -1,3 +1,9 @@
+2008-01-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (components_to_record): Do not reuse the empty union type
+	if there is a representation clause on the record.
+	* trans.c (addressable_p): Return true for INTEGER_CST.
+
 2008-01-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* trans.c (gnat_to_gnu) <N_Free_Statement>: Use POINTER_PLUS_EXPR

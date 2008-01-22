@@ -1,3 +1,7 @@
+2008-01-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/unchecked_union1.adb: New test.
+
 2008-01-22  Tom Tromey  <tromey@redhat.com>
 
 	PR c++/34829:
