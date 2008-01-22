@@ -840,6 +840,23 @@ honor_protect_cleanup_actions (struct leh_state *outer_state,
   if (this_state)
     finally = lower_try_finally_dup_block (finally, outer_state);
 
+  /* If this cleanup consists of a TRY_CATCH_EXPR with TRY_CATCH_IS_CLEANUP
+     set, the handler of the TRY_CATCH_EXPR is another cleanup which ought
+     to be in an enclosing scope, but needs to be implemented at this level
+     to avoid a nesting violation (see wrap_temporary_cleanups in
+     cp/decl.c).  Since it's logically at an outer level, we should call
+     terminate before we get to it, so strip it away before adding the
+     MUST_NOT_THROW filter.  */
+  i = tsi_start (finally);
+  x = tsi_stmt (i);
+  if (protect_cleanup_actions
+      && TREE_CODE (x) == TRY_CATCH_EXPR
+      && TRY_CATCH_IS_CLEANUP (x))
+    {
+      tsi_link_before (&i, TREE_OPERAND (x, 0), TSI_SAME_STMT);
+      tsi_delink (&i);
+    }
+
   /* Resume execution after the exception.  Adding this now lets
      lower_eh_filter not add unnecessary gotos, as it is clear that
      we never fallthru from this copy of the finally block.  */

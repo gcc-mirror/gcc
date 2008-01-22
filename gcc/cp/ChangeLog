@@ -1,3 +1,8 @@
+2008-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/34196
+	* decl.c (wrap_cleanups_r): Set TRY_CATCH_IS_CLEANUP.
+
 2008-01-21  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/34850

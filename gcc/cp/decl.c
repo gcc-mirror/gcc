@@ -5165,7 +5165,10 @@ wrap_cleanups_r (tree *stmt_p, int *walk_subtrees, void *data)
       tree tcleanup = TARGET_EXPR_CLEANUP (*stmt_p);
 
       tcleanup = build2 (TRY_CATCH_EXPR, void_type_node, tcleanup, guard);
-
+      /* Tell honor_protect_cleanup_actions to handle this as a separate
+	 cleanup.  */
+      TRY_CATCH_IS_CLEANUP (tcleanup) = 1;
+ 
       TARGET_EXPR_CLEANUP (*stmt_p) = tcleanup;
     }
 
@@ -5175,7 +5178,18 @@ wrap_cleanups_r (tree *stmt_p, int *walk_subtrees, void *data)
 /* We're initializing a local variable which has a cleanup GUARD.  If there
    are any temporaries used in the initializer INIT of this variable, we
    need to wrap their cleanups with TRY_CATCH_EXPR (, GUARD) so that the
-   variable will be cleaned up properly if one of them throws.  */
+   variable will be cleaned up properly if one of them throws.
+
+   Unfortunately, there's no way to express this properly in terms of
+   nesting, as the regions for the temporaries overlap the region for the
+   variable itself; if there are two temporaries, the variable needs to be
+   the first thing destroyed if either of them throws.  However, we only
+   want to run the variable's cleanup if it actually got constructed.  So
+   we need to guard the temporary cleanups with the variable's cleanup if
+   they are run on the normal path, but not if they are run on the
+   exceptional path.  We implement this by telling
+   honor_protect_cleanup_actions to strip the variable cleanup from the
+   exceptional path.  */
 
 static void
 wrap_temporary_cleanups (tree init, tree guard)
