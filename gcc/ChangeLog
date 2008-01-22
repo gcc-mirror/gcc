@@ -1,3 +1,23 @@
+2008-01-22  Wolfgang Gellerich  <gellerich@de.ibm.com>
+
+	* config/s390/s390.h (S390_TDC_POSITIVE_NORMALIZED_NUMBER):
+	Renamed to S390_TDC_POSITIVE_NORMALIZED_BFP_NUMBER.
+	(S390_TDC_NEGATIVE_NORMALIZED_NUMBER): Renamed to
+	S390_TDC_NEGATIVE_NORMALIZED_BFP_NUMBER.
+	(S390_TDC_POSITIVE_DENORMALIZED_NUMBER): Renamed to
+	S390_TDC_POSITIVE_DENORMALIZED_BFP_NUMBER.
+	(S390_TDC_NEGATIVE_DENORMALIZED_NUMBER): Renamed to
+	S390_TDC_NEGATIVE_DENORMALIZED_BFP_NUMBER.
+	(S390_TDC_POSITIVE_NORMALIZED_BFP_NUMBER): New constant.
+	(S390_TDC_NEGATIVE_NORMALIZED_BFP_NUMBER): New constant.
+	(S390_TDC_POSITIVE_DENORMALIZED_BFP_NUMBER): New constant.
+	(S390_TDC_NEGATIVE_DENORMALIZED_BFP_NUMBER): New constant.
+	* config/s390/s390.md (FP_ALL): New mode iterator.
+	(_d): New mode attribute.
+	("*signbit<mode>2>"): Changed mode of first operand.
+	("isinf<mode>2"): Changed mode of first operand.
+	("*TDC_insn"): Adaptation for DFP modes.
+
 2008-01-22  Ben Elliston  <bje@au.ibm.com>
 
 	* tree.c (check_qualified_type): Improve function description.
