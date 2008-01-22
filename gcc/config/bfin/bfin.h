@@ -1,5 +1,5 @@
 /* Definitions for the Blackfin port.
-   Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Analog Devices.
 
    This file is part of GCC.
@@ -53,8 +53,20 @@ extern int target_flags;
 	  builtin_define ("__ADSPBF522__");	\
 	  builtin_define ("__ADSPBF52x__");	\
 	  break;				\
+	case BFIN_CPU_BF523:			\
+	  builtin_define ("__ADSPBF523__");	\
+	  builtin_define ("__ADSPBF52x__");	\
+	  break;				\
+	case BFIN_CPU_BF524:			\
+	  builtin_define ("__ADSPBF524__");	\
+	  builtin_define ("__ADSPBF52x__");	\
+	  break;				\
 	case BFIN_CPU_BF525:			\
 	  builtin_define ("__ADSPBF525__");	\
+	  builtin_define ("__ADSPBF52x__");	\
+	  break;				\
+	case BFIN_CPU_BF526:			\
+	  builtin_define ("__ADSPBF526__");	\
 	  builtin_define ("__ADSPBF52x__");	\
 	  break;				\
 	case BFIN_CPU_BF527:			\
@@ -95,6 +107,10 @@ extern int target_flags;
 	  break;				\
 	case BFIN_CPU_BF548:			\
 	  builtin_define ("__ADSPBF548__");	\
+	  builtin_define ("__ADSPBF54x__");	\
+	  break;				\
+	case BFIN_CPU_BF547:			\
+	  builtin_define ("__ADSPBF547__");	\
 	  builtin_define ("__ADSPBF54x__");	\
 	  break;				\
 	case BFIN_CPU_BF549:			\
