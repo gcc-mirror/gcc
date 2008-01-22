@@ -1,3 +1,9 @@
+2008-01-22  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/34529
+	* config/rs6000/rs6000.c (rs6000_legitimate_offset_address_p):
+	Offset addresses are not valid for Altivec or paired float modes.
+
 2008-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34607
