@@ -1,3 +1,12 @@
+2008-01-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/34912
+	* friend.c (do_friend): Check for prior declaration of a friend 
+	function of a local class.
+	* name-lookup.c (lookup_name_innermost_nonclass_level): 
+	No longer static.
+	* name-lookup.h: Declare it.
+
 2008-01-22  Tom Tromey  <tromey@redhat.com>
 
 	PR c++/34829:

@@ -2,7 +2,7 @@
 void f ()
 {
   struct A {
-    friend void g ();
+    friend void g ();		// { dg-error "without prior declaration" }
   };
 }
 void h () {
