@@ -1,3 +1,8 @@
+2008-01-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34875
+	* gfortran.dg/vector_subscript_3.f90: New test.
+
 2008-01-22  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34848

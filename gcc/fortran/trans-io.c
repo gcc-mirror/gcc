@@ -1972,6 +1972,7 @@ gfc_trans_transfer (gfc_code * code)
   gfc_ss *ss;
   gfc_se se;
   tree tmp;
+  int n;
 
   gfc_start_block (&block);
   gfc_init_block (&body);
@@ -2004,9 +2005,28 @@ gfc_trans_transfer (gfc_code * code)
 	    && ref && ref->next == NULL
 	    && !is_subref_array (expr))
 	{
-	  /* Get the descriptor.  */
-	  gfc_conv_expr_descriptor (&se, expr, ss);
-	  tmp = build_fold_addr_expr (se.expr);
+	  bool seen_vector = false;
+
+	  if (ref && ref->u.ar.type == AR_SECTION)
+	    {
+	      for (n = 0; n < ref->u.ar.dimen; n++)
+		if (ref->u.ar.dimen_type[n] == DIMEN_VECTOR)
+		  seen_vector = true;
+	    }
+
+	  if (seen_vector && last_dt == READ)
+	    {
+	      /* Create a temp, read to that and copy it back.  */
+	      gfc_conv_subref_array_arg (&se, expr, 0, INTENT_OUT);
+	      tmp =  se.expr;
+	    }
+	  else
+	    {
+	      /* Get the descriptor.  */
+	      gfc_conv_expr_descriptor (&se, expr, ss);
+	      tmp = build_fold_addr_expr (se.expr);
+	    }
+
 	  transfer_array_desc (&se, &expr->ts, tmp);
 	  goto finish_block_label;
 	}
