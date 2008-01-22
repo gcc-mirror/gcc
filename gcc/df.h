@@ -405,27 +405,20 @@ enum df_changeable_flags
   DF_LR_RUN_DCE           = 1 << 0, /* Run DCE.  */
   DF_NO_HARD_REGS         = 1 << 1, /* Skip hard registers in RD and CHAIN Building.  */
 
-  /* Do not trim the solution using the LR result.  This can make the
-     solution take much longer and take more memory.  This is
-     necessary for the loop optimizations, but has a very small time
-     and space penalty because the loop optimizations process only a
-     single loop at a time.  Any pass that looks at the entire
-     function should not set this flag.  */
-  DF_RD_NO_TRIM           = 1 << 2,
-  DF_EQ_NOTES             = 1 << 3, /* Build chains with uses present in EQUIV/EQUAL notes. */
-  DF_NO_REGS_EVER_LIVE    = 1 << 4, /* Do not compute the regs_ever_live.  */
+  DF_EQ_NOTES             = 1 << 2, /* Build chains with uses present in EQUIV/EQUAL notes. */
+  DF_NO_REGS_EVER_LIVE    = 1 << 3, /* Do not compute the regs_ever_live.  */
 
   /* Cause df_insn_rescan df_notes_rescan and df_insn_delete, to
   return immediately.  This is used by passes that know how to update
   the scanning them selves.  */
-  DF_NO_INSN_RESCAN       = 1 << 5,
+  DF_NO_INSN_RESCAN       = 1 << 4,
 
   /* Cause df_insn_rescan df_notes_rescan and df_insn_delete, to
   return after marking the insn for later processing.  This allows all
   rescans to be batched.  */
-  DF_DEFER_INSN_RESCAN    = 1 << 6,
+  DF_DEFER_INSN_RESCAN    = 1 << 5,
 
-  DF_VERIFY_SCHEDULED     = 1 << 7
+  DF_VERIFY_SCHEDULED     = 1 << 6
 };
 
 /* Two of these structures are inline in df, one for the uses and one
@@ -719,37 +712,9 @@ struct df_rd_bb_info
   /* Local sets to describe the basic blocks.   */
   bitmap kill;  
   bitmap sparse_kill;
+  bitmap gen;   /* The set of defs generated in this block.  */
 
-  /* Expanded version of the DF_LT->out bitmap to match the positions
-     of gen, in and out here.  Only allocated if DF_RD_NO_TRIM is
-     false.  */
-  bitmap expanded_lr_out;
-
-  /* The set of defs generated in this block.  This is not set unless
-     the def reaches the end of the block.  */
-  bitmap gen;
-
-  /* The results of the dataflow problem.  
-
-     If DF_RD_NO_TRIM is not set, these sets are SOMEWHAT trimmed by
-     the output of the DF_LR problem.  The out set is precisely
-     trimmed during propagation which means that the result is also
-     trimmed when the propagation terminates.  The in set is not
-     explicitly trimmed, because this is expensive (adding about 5% to
-     the cost of a bootstrap).  However since the out sets are trimmed
-     and the in sets are built from the out of the pred, the in set is
-     MOSTLY trimmed.
-
-     The counter case happens at a branch where the variable V is in
-     DF_LR->in the true branch but not the false branch.  If V is
-     defined before the branch, RD will propagate that into the
-     DF_RD_in sets of both branches.  When the block is processed, the
-     DF_RD->out set will have V trimmed out of it but it will still be
-     left in DF_RD->in.  
-
-     If this not a problem for the current optimizers since they were
-     designed before any trimming was available.  This can be fixed by
-     checking the DF_LR->in set directly.  */
+  /* The results of the dataflow problem.  */
   bitmap in;    /* At the top of the block.  */
   bitmap out;   /* At the bottom of the block.  */
 };
