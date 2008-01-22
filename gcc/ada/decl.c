@@ -6007,11 +6007,15 @@ components_to_record (tree gnu_record_type, Node_Id component_list,
       gnu_union_name = concat_id_with_name (gnu_name,
 					    IDENTIFIER_POINTER (gnu_var_name));
 
-      if (!gnu_field_list && TREE_CODE (gnu_record_type) == UNION_TYPE)
+      /* Reuse an enclosing union if all fields are in the variant part
+	 and there is no representation clause on the record, to match
+	 the layout of C unions.  There is an associated check below.  */
+      if (!gnu_field_list
+	  && TREE_CODE (gnu_record_type) == UNION_TYPE
+	  && !TYPE_PACKED (gnu_record_type))
 	gnu_union_type = gnu_record_type;
       else
 	{
-
 	  gnu_union_type
 	    = make_node (unchecked_union ? UNION_TYPE : QUAL_UNION_TYPE);
 
@@ -6116,7 +6120,9 @@ components_to_record (tree gnu_record_type, Node_Id component_list,
 	     return.  */
 	  if (gnu_union_type == gnu_record_type)
 	    {
-	      gcc_assert (!gnu_field_list && unchecked_union);
+	      gcc_assert (unchecked_union
+			  && !gnu_field_list
+			  && !gnu_our_rep_list);
 	      return;
 	    }
 
