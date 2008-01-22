@@ -1,3 +1,22 @@
+2008-01-22  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	PR rtl-optimization/26854
+	PR rtl-optimization/34400
+	PR rtl-optimization/34884
+	* ddg.c (create_ddg_dep_from_intra_loop_link): Use
+	DF_RD->gen.
+	* df.h (df_changeable_flags.DF_RD_NO_TRIM): Deleted
+	(df_rd_bb_info.expanded_lr_out): Deleted
+	* loop_invariant.c (find_defs): Deleted DF_RD_NO_TRIM flag.
+	* loop_iv.c (iv_analysis_loop_init): Ditto.  * df-problems.c
+	(df_rd_free_bb_info, df_rd_alloc, df_rd_confluence_n,
+	df_rd_bb_local_compute, df_rd_transfer_function, df_rd_free):
+	Removed code to allocate, initialize or free expanded_lr_out.
+	(df_rd_bb_local_compute_process_def): Restructured to make more
+	understandable.
+	(df_rd_confluence_n): Removed code to no apply invalidate_by_call
+	sets if the sets are being trimmed.
+
 2008-01-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/32287

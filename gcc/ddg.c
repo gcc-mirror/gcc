@@ -184,13 +184,12 @@ create_ddg_dep_from_intra_loop_link (ddg_ptr g, ddg_node_ptr src_node,
         {
           int regno = REGNO (SET_DEST (set));
           struct df_ref *first_def;
-          struct df_ref *last_def;
+          struct df_rd_bb_info *bb_info = DF_RD_BB_INFO (g->bb);
 
           first_def = df_bb_regno_first_def_find (g->bb, regno);
           gcc_assert (first_def);
 
-          last_def = df_bb_regno_last_def_find (g->bb, regno);
-          if (first_def == last_def)
+          if (bitmap_bit_p (bb_info->gen, first_def->id))
             return;
         }
     }
