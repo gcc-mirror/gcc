@@ -1,3 +1,12 @@
+2008-01-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	Backport:
+	2007-09-27  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/33436
+	* expr.c (emit_group_load_1): Split constant double when destination
+	length is half source length.
+
 2008-01-22  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/34739

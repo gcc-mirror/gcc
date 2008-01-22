@@ -1739,8 +1739,25 @@ emit_group_load_1 (rtx *tmps, rtx dst, rtx orig_src, tree type, int ssize)
       else if (CONSTANT_P (src) && GET_MODE (dst) != BLKmode
                && XVECLEN (dst, 0) > 1)
         tmps[i] = simplify_gen_subreg (mode, src, GET_MODE(dst), bytepos);
-      else if (CONSTANT_P (src)
-	       || (REG_P (src) && GET_MODE (src) == mode))
+      else if (CONSTANT_P (src))
+	{
+	  HOST_WIDE_INT len = (HOST_WIDE_INT) bytelen;
+
+	  if (len == ssize)
+	    tmps[i] = src;
+	  else
+	    {
+	      rtx first, second;
+
+	      gcc_assert (2 * len == ssize);
+	      split_double (src, &first, &second);
+	      if (i)
+		tmps[i] = second;
+	      else
+		tmps[i] = first;
+	    }
+	}
+      else if (REG_P (src) && GET_MODE (src) == mode)
 	tmps[i] = src;
       else
 	tmps[i] = extract_bit_field (src, bytelen * BITS_PER_UNIT,
