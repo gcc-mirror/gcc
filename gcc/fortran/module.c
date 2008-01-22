@@ -3769,6 +3769,9 @@ read_module (void)
 	      st->n.sym = sym;
 	      st->n.sym->refs++;
 
+	      if (strcmp (name, p) != 0)
+		sym->attr.use_rename = 1;
+
 	      /* Store the symtree pointing to this symbol.  */
 	      info->u.rsym.symtree = st;
 

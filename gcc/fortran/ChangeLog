@@ -1,3 +1,8 @@
+2008-01-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34896
+	* module.c (read_module): Set use_rename attribute.
+
 2007-01-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34901
