@@ -1,3 +1,8 @@
+2008-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/33959
+	* pt.c (tsubst_aggr_type): Make sure our context is complete.
+
 2008-01-02  Volker Reichelt  <reichelt@netcologne.de>
 
 	Backport:
