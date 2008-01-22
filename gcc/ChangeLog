@@ -1,3 +1,10 @@
+2008-01-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/32287
+	* configure.ac (ld_vers): Support GNU linker version xx.xx.*
+	(as_vers): Likewise.
+	* configure: Regenerated.
+
 2008-01-22  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR middle-end/33092
