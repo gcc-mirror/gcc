@@ -278,6 +278,7 @@ extern struct tree_opt_pass pass_ccp;
 extern struct tree_opt_pass pass_phi_only_cprop;
 extern struct tree_opt_pass pass_build_ssa;
 extern struct tree_opt_pass pass_del_ssa;
+extern struct tree_opt_pass pass_build_alias;
 extern struct tree_opt_pass pass_dominator;
 extern struct tree_opt_pass pass_dce;
 extern struct tree_opt_pass pass_dce_loop;
