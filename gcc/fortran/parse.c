@@ -2189,7 +2189,7 @@ loop:
 
       gfc_current_block ()->ts.kind = 0;
       /* Keep the derived type; if it's bad, it will be discovered later.  */
-      if (!(ts->type = BT_DERIVED && ts->derived))
+      if (!(ts->type == BT_DERIVED && ts->derived))
         ts->type = BT_UNKNOWN;
     }
 
