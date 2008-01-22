@@ -1,3 +1,10 @@
+2008-01-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34875
+	* trans-io.c (gfc_trans_transfer): If the array reference in a
+	read has a vector subscript, use gfc_conv_subref_array_arg to
+	copy back the temporary.
+
 2008-01-22  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34848
