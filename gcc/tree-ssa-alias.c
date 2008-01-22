@@ -4252,3 +4252,27 @@ struct tree_opt_pass pass_reset_cc_flags =
   0,         	         /* todo_flags_finish */
   0			 /* letter */
 };
+
+static bool
+gate_build_alias (void)
+{
+  return !gate_structure_vars();
+}
+
+
+struct tree_opt_pass pass_build_alias =
+{
+  "build_alias",            /* name */
+  gate_build_alias,         /* gate */
+  NULL,                     /* execute */
+  NULL,                     /* sub */
+  NULL,                     /* next */
+  0,                        /* static_pass_number */
+  0,                        /* tv_id */
+  PROP_cfg | PROP_ssa,      /* properties_required */
+  PROP_alias,               /* properties_provided */
+  0,                        /* properties_destroyed */
+  0,                        /* todo_flags_start */
+  TODO_rebuild_alias,        /* todo_flags_finish */
+  0                         /* letter */
+};
