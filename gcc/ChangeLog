@@ -1,3 +1,28 @@
+2008-01-22  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34739
+	Backport from mainline
+	2008-01-16  Richard Guenther  <rguenther@suse.de>
+
+	PR c/34768
+	* c-typeck.c (common_pointer_type): Do not merge inconsistent
+	type qualifiers for function types.
+
+	2007-11-12  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34070
+	* fold-const.c (fold_binary): If testing for non-negative
+	operands with tree_expr_nonnegative_warnv_p make sure to
+	use op0 which has all (sign) conversions retained.
+
+	2006-10-24  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/28796
+	* builtins.c (fold_builtin_classify): Use HONOR_INFINITIES
+	and HONOR_NANS instead of MODE_HAS_INFINITIES and MODE_HAS_NANS
+	for deciding optimizations in consistency with fold-const.c
+	(fold_builtin_unordered_cmp): Likewise.
+
 2008-01-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Backport from mainline:

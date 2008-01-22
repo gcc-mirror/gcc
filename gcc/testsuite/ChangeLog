@@ -1,3 +1,25 @@
+2008-01-22  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34739
+	Backport from mainline
+	2008-01-16  Richard Guenther  <rguenther@suse.de>
+
+	PR c/34768
+	* gcc.c-torture/execute/pr34768-1.c: New testcase.
+	* gcc.c-torture/execute/pr34768-2.c: Likewise.
+
+	2007-11-12  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34070
+	* gcc.c-torture/execute/pr34070-1.c: New testcase.
+	* gcc.c-torture/execute/pr34070-2.c: Likewise.
+
+	2006-10-24  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/28796
+	* gcc.dg/pr28796-1.c: New testcase.
+	* gcc.dg/pr28796-2.c: Likewise.
+
 2008-01-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* g++.dg/eh/ia64-2.C: Place "dg-do run" statement before
