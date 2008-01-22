@@ -1,3 +1,11 @@
+2008-01-23  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	From Michael Frysinger  <michael.frysinger@analog.com>
+	* gcc.target/bfin/mcpu-bf547.c: New test.
+	* gcc.target/bfin/mcpu-bf523.c: New test.
+	* gcc.target/bfin/mcpu-bf524.c: New test.
+	* gcc.target/bfin/mcpu-bf526.c: New test.
+
 2008-01-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20080122-1.c: New test.

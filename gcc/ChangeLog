@@ -1,3 +1,20 @@
+2008-01-22  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	From  Michael Frysinger  <michael.frysinger@analog.com>
+	* config/bfin/bfin-protos.h (enum bfin_cpu_type): Add
+	BFIN_CPU_BF547, BFIN_CPU_BF523, BFIN_CPU_BF524, and BFIN_CPU_BF526.
+
+	* config/bfin/elf.h (LIB_SPEC): Use proper linker script
+	for bf547, bf523, bf524, and bf526.
+	* config/bfin/bfin.c (bfin_cpus[]): Add bf547,  bf523, bf524, and
+	bf526.
+	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): Define
+	__ADSPBF523__ for bf523, __ADSPBF524__ for bf524,
+	__ADSPBF526__ for bf526, __ADSPBF52x__ for all three, as well as
+	__ADSPBF547__ and __ADSPBF54x__ for bf547.
+	* doc/invoke.texi (Blackfin Options): Document that
+	-mcpu now accept bf547, bf523, bf524, and bf526.
+
 2008-01-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/34628

@@ -1,5 +1,5 @@
 /* The Blackfin code generation auxiliary output file.
-   Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Analog Devices.
 
    This file is part of GCC.
@@ -116,7 +116,16 @@ struct bfin_cpu bfin_cpus[] =
   {"bf522", BFIN_CPU_BF522, 0x0000,
    WA_SPECULATIVE_LOADS},
 
+  {"bf523", BFIN_CPU_BF523, 0x0000,
+   WA_SPECULATIVE_LOADS},
+
+  {"bf524", BFIN_CPU_BF524, 0x0000,
+   WA_SPECULATIVE_LOADS},
+
   {"bf525", BFIN_CPU_BF525, 0x0000,
+   WA_SPECULATIVE_LOADS},
+
+  {"bf526", BFIN_CPU_BF526, 0x0000,
    WA_SPECULATIVE_LOADS},
 
   {"bf527", BFIN_CPU_BF527, 0x0000,
@@ -180,6 +189,9 @@ struct bfin_cpu bfin_cpus[] =
    WA_SPECULATIVE_LOADS},
 
   {"bf544", BFIN_CPU_BF544, 0x0000,
+   WA_SPECULATIVE_LOADS},
+
+  {"bf547", BFIN_CPU_BF547, 0x0000,
    WA_SPECULATIVE_LOADS},
 
   {"bf548", BFIN_CPU_BF548, 0x0000,
