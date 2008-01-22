@@ -3827,7 +3827,7 @@ tree
 finish_omp_for (location_t locus, tree decl, tree init, tree cond,
 		tree incr, tree body, tree pre_body)
 {
-  tree omp_for;
+  tree omp_for = NULL;
 
   if (decl == NULL)
     {
@@ -3919,7 +3919,8 @@ finish_omp_for (location_t locus, tree decl, tree init, tree cond,
 	TREE_OPERAND (cond, n)
 	  = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
     }
-  omp_for = c_finish_omp_for (locus, decl, init, cond, incr, body, pre_body);
+  if (decl != error_mark_node && init != error_mark_node)
+    omp_for = c_finish_omp_for (locus, decl, init, cond, incr, body, pre_body);
   if (omp_for != NULL
       && TREE_CODE (OMP_FOR_INCR (omp_for)) == MODIFY_EXPR
       && TREE_SIDE_EFFECTS (TREE_OPERAND (OMP_FOR_INCR (omp_for), 1))

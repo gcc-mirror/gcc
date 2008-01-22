@@ -1,5 +1,9 @@
 2008-01-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/34607
+	* semantics.c (finish_omp_for): Don't call c_finish_omp_for
+	if decl or init is error_mark_node.
+
 	PR c++/34918
 	* error.c (dump_expr): Handle VECTOR_CST.
 

@@ -1,5 +1,9 @@
 2008-01-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/34607
+	* c-parser.c (c_parser_omp_for_loop): Don't call c_finish_omp_for
+	if DECL_INITIAL (decl) is error_mark_node.
+
 	PR c++/34914
 	* c-common.c (handle_vector_size_attribute): Only allow
 	integral, scalar float and fixed point types.  Handle OFFSET_TYPE
