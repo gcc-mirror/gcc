@@ -1,5 +1,16 @@
 2008-01-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/33959
+	* pt.c (tsubst_aggr_type): Make sure our context is complete.
+
+	PR c++/34573
+	* pt.c (retrieve_local_specialization): Robustify.
+	(tsubst_pack_expansion, tsubst_decl): Remove redundant checks.
+
+	PR c++/34846
+	* pt.c (tsubst): Only call retrieve_local_specialization if the
+	original typedef was in a function template.
+
 	PR c++/34196
 	* decl.c (wrap_cleanups_r): Set TRY_CATCH_IS_CLEANUP.
 

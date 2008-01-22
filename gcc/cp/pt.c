@@ -976,8 +976,13 @@ retrieve_specialization (tree tmpl, tree args,
 static tree
 retrieve_local_specialization (tree tmpl)
 {
-  tree spec = (tree) htab_find_with_hash (local_specializations, tmpl,
-					  htab_hash_pointer (tmpl));
+  tree spec;
+
+  if (local_specializations == NULL)
+    return NULL_TREE;
+
+  spec = (tree) htab_find_with_hash (local_specializations, tmpl,
+				     htab_hash_pointer (tmpl));
   return spec ? TREE_PURPOSE (spec) : NULL_TREE;
 }
 
@@ -7305,10 +7310,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
       tree orig_arg = NULL_TREE;
 
       if (TREE_CODE (parm_pack) == PARM_DECL)
-        {
-          if (local_specializations)
-            arg_pack = retrieve_local_specialization (parm_pack);
-        }
+	arg_pack = retrieve_local_specialization (parm_pack);
       else
         {
           int level, idx, levels;
@@ -7688,8 +7690,14 @@ tsubst_aggr_type (tree t,
 	     up.  */
 	  context = TYPE_CONTEXT (t);
 	  if (context)
-	    context = tsubst_aggr_type (context, args, complain,
-					in_decl, /*entering_scope=*/1);
+	    {
+	      context = tsubst_aggr_type (context, args, complain,
+					  in_decl, /*entering_scope=*/1);
+	      /* If context is a nested class inside a class template,
+	         it may still need to be instantiated (c++/33959).  */
+	      if (TYPE_P (context))
+		context = complete_type (context);
+	    }
 
 	  /* Then, figure out what arguments are appropriate for the
 	     type we are trying to find.  For example, given:
@@ -8201,9 +8209,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
                substitution from inside tsubst_pack_expansion. Just
                return the local specialization (which will be a single
                parm).  */
-            tree spec = NULL_TREE;
-            if (local_specializations)
-              spec = retrieve_local_specialization (t);
+            tree spec = retrieve_local_specialization (t);
             if (spec 
                 && TREE_CODE (spec) == PARM_DECL
                 && TREE_CODE (TREE_TYPE (spec)) != TYPE_PACK_EXPANSION)
@@ -8855,11 +8861,13 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  tree gen_args = tsubst (DECL_TI_ARGS (decl), args, complain, in_decl);
 	  r = retrieve_specialization (tmpl, gen_args, false);
 	}
-      else if (DECL_FUNCTION_SCOPE_P (decl))
+      else if (DECL_FUNCTION_SCOPE_P (decl)
+	       && DECL_TEMPLATE_INFO (DECL_CONTEXT (decl)))
 	r = retrieve_local_specialization (decl);
       else
-	r = NULL_TREE;
-	
+	/* The typedef is from a non-template context.  */
+	return t;
+
       if (r)
 	{
 	  r = TREE_TYPE (r);
