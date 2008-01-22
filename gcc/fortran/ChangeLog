@@ -1,5 +1,11 @@
 2008-01-22  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/34848
+	* interface.c (compare_actual_formal): Fix adding type
+	to missing_arg_type for absent optional arguments.
+
+2008-01-22  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/34907
 	* parse.c (parse_spec): Change = into ==.
 
