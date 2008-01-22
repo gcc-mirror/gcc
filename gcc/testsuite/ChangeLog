@@ -1,5 +1,8 @@
 2008-01-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/34914
+	* g++.dg/ext/vector10.C: New test.
+
 	PR c++/34918
 	* g++.dg/other/error23.C: New test.
 
