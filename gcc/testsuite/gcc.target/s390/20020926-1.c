@@ -2,7 +2,7 @@
    negative displacements.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -mesa" } */
+/* { dg-options "-O2 -m31 -mesa" } */
 
 int test (int *addr)
 {
