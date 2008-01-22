@@ -1106,6 +1106,7 @@ load_line (FILE *input, char **pbuf, int *pbuflen)
   int trunc_flag = 0, seen_comment = 0;
   int seen_printable = 0, seen_ampersand = 0;
   char *buffer;
+  bool found_tab = false;
 
   /* Determine the maximum allowed line length.  */
   if (gfc_current_form == FORM_FREE)
@@ -1184,17 +1185,30 @@ load_line (FILE *input, char **pbuf, int *pbuflen)
 	  && (c == '*' || c == 'c' || c == 'd'))
 	seen_comment = 1;
 
-      if (gfc_current_form == FORM_FIXED && c == '\t' && i <= 6)
+      /* Vendor extension: "<tab>1" marks a continuation line.  */
+      if (found_tab)
 	{
+	  found_tab = false;
+	  if (c >= '1' && c <= '9')
+	    {
+	      *(buffer-1) = c;
+	      continue;
+	    }
+	}
+
+      if (gfc_current_form == FORM_FIXED && c == '\t' && i < 6)
+	{
+	  found_tab = true;
+
 	  if (!gfc_option.warn_tabs && seen_comment == 0
 	      && current_line != linenum)
 	    {
 	      linenum = current_line;
-	      gfc_warning_now ("Nonconforming tab character in column 1 "
-			       "of line %d", linenum);
+	      gfc_warning_now ("Nonconforming tab character in column %d "
+			       "of line %d", i+1, linenum);
 	    }
 
-	  while (i <= 6)
+	  while (i < 6)
 	    {
 	      *buffer++ = ' ';
 	      i++;
