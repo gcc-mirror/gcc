@@ -1,7 +1,7 @@
 /* Part of CPP library.  (Macro and #define handling.)
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006, 2007 Free Software Foundation, Inc.
+   2006, 2007, 2008 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -1696,7 +1696,13 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
   node->type = NT_MACRO;
   node->value.macro = macro;
   if (! ustrncmp (NODE_NAME (node), DSC ("__STDC_"))
-      && ustrcmp (NODE_NAME (node), (const uchar *) "__STDC_FORMAT_MACROS"))
+      && ustrcmp (NODE_NAME (node), (const uchar *) "__STDC_FORMAT_MACROS")
+      /* __STDC_LIMIT_MACROS and __STDC_CONSTANT_MACROS are mentioned
+	 in the C standard, as something that one must use in C++.
+	 However DR#593 indicates that these aren't actually mentioned
+	 in the C++ standard.  We special-case them anyway.  */
+      && ustrcmp (NODE_NAME (node), (const uchar *) "__STDC_LIMIT_MACROS")
+      && ustrcmp (NODE_NAME (node), (const uchar *) "__STDC_CONSTANT_MACROS"))
     node->flags |= NODE_WARN;
 
   return ok;
