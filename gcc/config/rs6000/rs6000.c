@@ -3365,19 +3365,17 @@ rs6000_legitimate_offset_address_p (enum machine_mode mode, rtx x, int strict)
     case V4SFmode:
     case V4SImode:
       /* AltiVec vector modes.  Only reg+reg addressing is valid and
-	 constant offset zero should not occur due to canonicalization.
-	 Allow any offset when not strict before reload.  */
-      return !strict;
+	 constant offset zero should not occur due to canonicalization.  */
+      return false;
 
     case V4HImode:
     case V2SImode:
     case V1DImode:
     case V2SFmode:
        /* Paired vector modes.  Only reg+reg addressing is valid and
-         constant offset zero should not occur due to canonicalization.
-         Allow any offset when not strict before reload.  */
+	  constant offset zero should not occur due to canonicalization.  */
       if (TARGET_PAIRED_FLOAT)
-        return !strict;
+        return false;
       /* SPE vector modes.  */
       return SPE_CONST_OFFSET_OK (offset);
 
