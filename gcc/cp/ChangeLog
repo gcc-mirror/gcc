@@ -1,3 +1,8 @@
+2008-01-22  Tom Tromey  <tromey@redhat.com>
+
+	PR c++/34829:
+	* init.c (build_new_1): Only disallow Java aggregates.
+
 2008-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34607
