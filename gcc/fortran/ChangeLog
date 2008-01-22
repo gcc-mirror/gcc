@@ -1,3 +1,8 @@
+2008-01-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34907
+	* parse.c (parse_spec): Change = into ==.
+
 2008-01-22  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/34915
