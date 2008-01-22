@@ -1,3 +1,7 @@
+2008-01-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20080122-1.c: New test.
+
 2008-01-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/vect/vect-ifcvt-9.c: Use inline.

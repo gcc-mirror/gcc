@@ -1,3 +1,10 @@
+2008-01-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/34628
+	* combine.c (try_combine): Stop and undo after the first combination
+	if an autoincrement side-effect on the first insn has effectively
+	been lost.
+
 2008-01-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	Backport:
