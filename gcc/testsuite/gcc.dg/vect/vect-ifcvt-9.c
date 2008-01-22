@@ -11,7 +11,7 @@ extern void abort(void);
 
 int A[N] = {36,39,42,45,43,32,21,12,23,34,45,56,67,78,89,11};
 int B[N] = {0,0,42,42,42,0,0,0,0,0,42,42,42,42,42,0};
-void foo ()  __attribute__((always_inline));
+inline void foo ()  __attribute__((always_inline));
 void foo ()
 {  
   int i, j;

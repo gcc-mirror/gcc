@@ -1,3 +1,7 @@
+2008-01-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/vect/vect-ifcvt-9.c: Use inline.
+
 2008-01-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* g++.dg/eh/ia64-2.C: Add "dg-require-weak" statement.  Place
