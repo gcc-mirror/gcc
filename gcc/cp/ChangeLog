@@ -1,3 +1,8 @@
+2008-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34918
+	* error.c (dump_expr): Handle VECTOR_CST.
+
 2008-01-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/33959

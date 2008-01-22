@@ -1,7 +1,7 @@
 /* Call-backs for C++ error reporting.
    This code is non-reentrant.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2002,
-   2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
    This file is part of GCC.
 
 GCC is free software; you can redistribute it and/or modify
@@ -2079,6 +2079,7 @@ dump_expr (tree t, int flags)
     case VEC_DELETE_EXPR:
     case MODOP_EXPR:
     case ABS_EXPR:
+    case VECTOR_CST:
       pp_expression (cxx_pp, t);
       break;
 
