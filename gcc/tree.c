@@ -4151,7 +4151,7 @@ set_type_quals (tree type, int type_quals)
   TYPE_RESTRICT (type) = (type_quals & TYPE_QUAL_RESTRICT) != 0;
 }
 
-/* Returns true iff cand is equivalent to base with type_quals.  */
+/* Returns true iff CAND is equivalent to BASE with TYPE_QUALS.  */
 
 bool
 check_qualified_type (const_tree cand, const_tree base, int type_quals)

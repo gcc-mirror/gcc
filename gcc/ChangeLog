@@ -1,3 +1,7 @@
+2008-01-22  Ben Elliston  <bje@au.ibm.com>
+
+	* tree.c (check_qualified_type): Improve function description.
+
 2008-01-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/34196
