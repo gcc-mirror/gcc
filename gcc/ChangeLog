@@ -1,3 +1,22 @@
+2008-01-23 Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/avr.c (avr_current_arch): New variable.
+	(avr_arch_types): Add 'avr31' and 'avr51' entries.
+	(avr_arch): Add 'ARCH_AVR31' and 'ARCH_AVR51'.
+	(avr_mcu_types): Add 'avr31' and 'avr51' architectures.
+	(avr_override_options): Init 'avr_current_arch'. 
+	(base_arch_s): Move from here...
+	* config/avr/avr.h (base_arch_s): ... here. Add new members 
+	'have_elpm', 'have_elpmx', 'have_eijmp_eicall', 'reserved'. Rename 
+	'mega' to 'have_jmp_call'.
+	(TARGET_CPU_CPP_BUILTINS): Define "__AVR_HAVE_JMP_CALL__", 
+	"__AVR_HAVE_RAMPZ__", 	"__AVR_HAVE_ELPM__" and  "__AVR_HAVE_ELPMX__"
+	macros.
+	(LINK_SPEC, CRT_BINUTILS_SPECS, ASM_SPEC): Add 'avr31' and 'avr51' 
+	architectures.
+	* config/avr/t-avr (MULTILIB_OPTIONS, MULTILIB_DIRNAMES, 
+	MULTILIB_MATCHES): (Ditto.).
+
 2008-01-23  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/31529

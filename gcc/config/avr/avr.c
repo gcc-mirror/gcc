@@ -100,6 +100,9 @@ static int last_insn_address = 0;
 const char *avr_base_arch_macro;
 const char *avr_extra_arch_macro;
 
+/* Current architecture.  */
+const struct base_arch_s *avr_current_arch;
+
 section *progmem_section;
 
 /* More than 8K of program memory: use "call" and "jmp".  */
@@ -114,23 +117,17 @@ int avr_asm_only_p = 0;
 /* Core have 'MOVW' and 'LPM Rx,Z' instructions.  */
 int avr_have_movw_lpmx_p = 0;
 
-struct base_arch_s {
-  int asm_only;
-  int have_mul;
-  int mega;
-  int have_movw_lpmx;
-  const char *const macro;
-};
-
 static const struct base_arch_s avr_arch_types[] = {
-  { 1, 0, 0, 0,  NULL },  /* unknown device specified */
-  { 1, 0, 0, 0, "__AVR_ARCH__=1" },
-  { 0, 0, 0, 0, "__AVR_ARCH__=2" },
-  { 0, 0, 0, 1, "__AVR_ARCH__=25"},
-  { 0, 0, 1, 0, "__AVR_ARCH__=3" },
-  { 0, 0, 1, 1, "__AVR_ARCH__=35"},
-  { 0, 1, 0, 1, "__AVR_ARCH__=4" },
-  { 0, 1, 1, 1, "__AVR_ARCH__=5" }
+  { 1, 0, 0, 0, 0, 0, 0, 0, NULL },  /* unknown device specified */
+  { 1, 0, 0, 0, 0, 0, 0, 0, "__AVR_ARCH__=1"   },
+  { 0, 0, 0, 0, 0, 0, 0, 0, "__AVR_ARCH__=2"   },
+  { 0, 0, 0, 1, 0, 0, 0, 0, "__AVR_ARCH__=25"  },
+  { 0, 0, 1, 0, 0, 0, 0, 0, "__AVR_ARCH__=3"   },
+  { 0, 0, 1, 0, 1, 0, 0, 0, "__AVR_ARCH__=31"  },
+  { 0, 0, 1, 1, 0, 0, 0, 0, "__AVR_ARCH__=35"  },
+  { 0, 1, 0, 1, 0, 0, 0, 0, "__AVR_ARCH__=4"   },
+  { 0, 1, 1, 1, 0, 0, 0, 0, "__AVR_ARCH__=5"   },
+  { 0, 1, 1, 1, 1, 1, 0, 0, "__AVR_ARCH__=51"  }
 };
 
 /* These names are used as the index into the avr_arch_types[] table 
@@ -143,9 +140,11 @@ enum avr_arch
   ARCH_AVR2,
   ARCH_AVR25,
   ARCH_AVR3,
+  ARCH_AVR31,
   ARCH_AVR35,
   ARCH_AVR4,
-  ARCH_AVR5
+  ARCH_AVR5,
+  ARCH_AVR51
 };
 
 struct mcu_type_s {
@@ -195,12 +194,14 @@ static const struct mcu_type_s avr_mcu_types[] = {
   { "attiny48",     ARCH_AVR25, "__AVR_ATtiny48__" },
   { "attiny88",     ARCH_AVR25, "__AVR_ATtiny88__" },
   { "at86rf401",    ARCH_AVR25, "__AVR_AT86RF401__" },
-    /* Classic, > 8K.  */
+    /* Classic, > 8K, <= 64K.  */
   { "avr3",         ARCH_AVR3, NULL },
-  { "atmega103",    ARCH_AVR3, "__AVR_ATmega103__" },
   { "at43usb320",   ARCH_AVR3, "__AVR_AT43USB320__" },
   { "at43usb355",   ARCH_AVR3, "__AVR_AT43USB355__" },
   { "at76c711",     ARCH_AVR3, "__AVR_AT76C711__" },
+    /* Classic, == 128K.  */
+  { "avr31",        ARCH_AVR31, NULL },
+  { "atmega103",    ARCH_AVR3, "__AVR_ATmega103__" },
     /* Classic + MOVW + JMP/CALL.  */
   { "avr35",        ARCH_AVR35, NULL },
   { "at90usb82",    ARCH_AVR35, "__AVR_AT90USB82__" },
@@ -220,7 +221,7 @@ static const struct mcu_type_s avr_mcu_types[] = {
   { "at90pwm2b",    ARCH_AVR4, "__AVR_AT90PWM2B__" },
   { "at90pwm3",     ARCH_AVR4, "__AVR_AT90PWM3__" },
   { "at90pwm3b",    ARCH_AVR4, "__AVR_AT90PWM3B__" },
-    /* Enhanced, > 8K.  */
+    /* Enhanced, > 8K, <= 64K.  */
   { "avr5",         ARCH_AVR5, NULL },
   { "atmega16",     ARCH_AVR5, "__AVR_ATmega16__" },
   { "atmega161",    ARCH_AVR5, "__AVR_ATmega161__" },
@@ -255,21 +256,23 @@ static const struct mcu_type_s avr_mcu_types[] = {
   { "atmega6450",   ARCH_AVR5, "__AVR_ATmega6450__" },
   { "atmega649",    ARCH_AVR5, "__AVR_ATmega649__" },
   { "atmega6490",   ARCH_AVR5, "__AVR_ATmega6490__" },
-  { "atmega128",    ARCH_AVR5, "__AVR_ATmega128__" },
-  { "atmega1280",   ARCH_AVR5, "__AVR_ATmega1280__" },
-  { "atmega1281",   ARCH_AVR5, "__AVR_ATmega1281__" },
-  { "atmega1284p",  ARCH_AVR5, "__AVR_ATmega1284P__" },
   { "atmega16hva",  ARCH_AVR5, "__AVR_ATmega16HVA__" },
   { "at90can32",    ARCH_AVR5, "__AVR_AT90CAN32__" },
   { "at90can64",    ARCH_AVR5, "__AVR_AT90CAN64__" },
-  { "at90can128",   ARCH_AVR5, "__AVR_AT90CAN128__" },
   { "at90pwm216",   ARCH_AVR5, "__AVR_AT90PWM216__" },
   { "at90pwm316",   ARCH_AVR5, "__AVR_AT90PWM316__" },
   { "at90usb646",   ARCH_AVR5, "__AVR_AT90USB646__" },
   { "at90usb647",   ARCH_AVR5, "__AVR_AT90USB647__" },
-  { "at90usb1286",  ARCH_AVR5, "__AVR_AT90USB1286__" },
-  { "at90usb1287",  ARCH_AVR5, "__AVR_AT90USB1287__" },
   { "at94k",        ARCH_AVR5, "__AVR_AT94K__" },
+    /* Enhanced, == 128K.  */
+  { "avr51",        ARCH_AVR51, NULL },
+  { "atmega128",    ARCH_AVR51, "__AVR_ATmega128__" },
+  { "atmega1280",   ARCH_AVR51, "__AVR_ATmega1280__" },
+  { "atmega1281",   ARCH_AVR51, "__AVR_ATmega1281__" },
+  { "atmega1284p",  ARCH_AVR51, "__AVR_ATmega1284P__" },
+  { "at90can128",   ARCH_AVR51, "__AVR_AT90CAN128__" },
+  { "at90usb1286",  ARCH_AVR51, "__AVR_AT90USB1286__" },
+  { "at90usb1287",  ARCH_AVR51, "__AVR_AT90USB1287__" },
     /* Assembler only.  */
   { "avr1",         ARCH_AVR1, NULL },
   { "at90s1200",    ARCH_AVR1, "__AVR_AT90S1200__" },
@@ -347,10 +350,11 @@ avr_override_options (void)
 	fprintf (stderr,"   %s\n", t->name);
     }
 
+  avr_current_arch = &avr_arch_types[t->arch];
   base = &avr_arch_types[t->arch];
   avr_asm_only_p = base->asm_only;
   avr_have_mul_p = base->have_mul;
-  avr_mega_p = base->mega;
+  avr_mega_p = base->have_jmp_call;
   avr_have_movw_lpmx_p = base->have_movw_lpmx;
   avr_base_arch_macro = base->macro;
   avr_extra_arch_macro = t->macro;
