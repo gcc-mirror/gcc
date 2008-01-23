@@ -6331,7 +6331,7 @@ tsubst_aggr_type (tree t,
 	      /* If context is a nested class inside a class template,
 	         it may still need to be instantiated (c++/33959).  */
 	      if (TYPE_P (context))
-		complete_type (context);
+		context = complete_type (context);
 	    }
 
 	  /* Then, figure out what arguments are appropriate for the
