@@ -1,5 +1,8 @@
 2008-01-23  Hans-Peter Nilsson  <hp@axis.com>
 
+	* config/cris/cris.h (CC1PLUS_SPEC, OPTIMIZATION_OPTIONS): Drop
+	stale and straggling -fforce-addr comments above.
+
 	* config/cris/cris.h (CRIS_SUBTARGET_VERSION, TARGET_VERSION): Don't
 	define.
 	* config/cris/linux.h (CRIS_SUBTARGET_VERSION): Don't define.
