@@ -1,5 +1,6 @@
 2008-01-23  Jason Merrill  <jason@redhat.com>
 
+	PR bootstrap/34944
 	* pt.c (tsubst_aggr_type): Correct previous change.
 
 2008-01-21  Jason Merrill  <jason@redhat.com>
