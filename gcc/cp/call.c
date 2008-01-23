@@ -1,6 +1,6 @@
 /* Functions related to invoking methods and overloaded functions.
    Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) and
    modified by Brendan Kehoe (brendan@cygnus.com).
@@ -1114,6 +1114,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
   conversion *conv = NULL;
   tree to = TREE_TYPE (rto);
   tree from = rfrom;
+  tree tfrom;
   bool related_p;
   bool compatible_p;
   cp_lvalue_kind lvalue_p = clk_none;
@@ -1135,16 +1136,20 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
   else if (expr)
     lvalue_p = real_lvalue_p (expr);
 
+  tfrom = from;
+  if ((lvalue_p & clk_bitfield) != 0)
+    tfrom = unlowered_expr_type (expr);
+
   /* Figure out whether or not the types are reference-related and
      reference compatible.  We have do do this after stripping
      references from FROM.  */
-  related_p = reference_related_p (to, from);
+  related_p = reference_related_p (to, tfrom);
   /* If this is a C cast, first convert to an appropriately qualified
      type, so that we can later do a const_cast to the desired type.  */
   if (related_p && c_cast_p
-      && !at_least_as_qualified_p (to, from))
-    to = build_qualified_type (to, cp_type_quals (from));
-  compatible_p = reference_compatible_p (to, from);
+      && !at_least_as_qualified_p (to, tfrom))
+    to = build_qualified_type (to, cp_type_quals (tfrom));
+  compatible_p = reference_compatible_p (to, tfrom);
 
   /* Directly bind reference when target expression's type is compatible with
      the reference and expression is an lvalue. In DR391, the wording in
@@ -1171,7 +1176,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
 	 is bound to the object represented by the rvalue or to a sub-object
 	 within that object.  */
 
-      conv = build_identity_conv (from, expr);
+      conv = build_identity_conv (tfrom, expr);
       conv = direct_reference_binding (rto, conv);
 
       if (flags & LOOKUP_PREFER_RVALUE)
@@ -2084,7 +2089,7 @@ add_builtin_candidates (struct z_candidate **candidates, enum tree_code code,
   for (i = 0; i < 3; ++i)
     {
       if (args[i])
-	argtypes[i]  = lvalue_type (args[i]);
+	argtypes[i] = unlowered_expr_type (args[i]);
       else
 	argtypes[i] = NULL_TREE;
     }
