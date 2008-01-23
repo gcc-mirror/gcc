@@ -574,8 +574,9 @@ cgraph_reset_node (struct cgraph_node *node)
   cgraph_node_remove_callees (node);
 
   /* We may need to re-queue the node for assembling in case
-     we already proceeded it and ignored as not needed.  */
-  if (node->reachable && !flag_unit_at_a_time)
+     we already proceeded it and ignored as not needed or got
+     a re-declaration in IMA mode.  */
+  if (node->reachable)
     {
       struct cgraph_node *n;
 
