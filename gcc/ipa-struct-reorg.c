@@ -1735,7 +1735,7 @@ create_new_malloc (tree malloc_stmt, tree new_type, tree *new_stmts, tree num)
   append_to_statement_list (new_stmt, new_stmts);
 
   /* Generate new call for malloc.  */
-  malloc_res = create_tmp_var (integer_type_node, NULL);
+  malloc_res = create_tmp_var (ptr_type_node, NULL);
 
   if (malloc_res)
     add_referenced_var (malloc_res);
