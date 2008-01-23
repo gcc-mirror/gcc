@@ -1,4 +1,12 @@
-2008-01-22  Bernd Schmidt  <bernd.schmidt@analog.com>
+2008-01-23  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin-protos.h (WA_RETS, ENABLE_WA_RETS): New macros.
+	* config/bfin/bfin.c (bfin_cpus): Add WA_RETS everywhere.
+	(cputype_selected): New static variable.
+	(bfin_handle_option): Set it if -mcpu is used.
+	(override_option): Select default set of workarounds if no cpu type
+	selected on the command line.
+	(workaround_rts_anomaly): Only run if ENABLE_WA_RETS.
 
 	From  Michael Frysinger  <michael.frysinger@analog.com>
 	* config/bfin/bfin-protos.h (enum bfin_cpu_type): Add

@@ -65,6 +65,11 @@ extern unsigned int bfin_workarounds;
 #define ENABLE_WA_SPECULATIVE_SYNCS \
   (bfin_workarounds & WA_SPECULATIVE_SYNCS)
 
+/* For the anomaly 05-00-0371 */
+#define WA_RETS 0x00000004
+#define ENABLE_WA_RETS \
+  (bfin_workarounds & WA_RETS)
+
 
 #define Mmode enum machine_mode
 
