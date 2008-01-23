@@ -1,3 +1,10 @@
+2008-01-23  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2006-10-21  Richard Guenther  <rguenther@suse.de>
+
+	* builtins.c (fold_builtin_classify): Fix typo.
+
 2008-01-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/34628
