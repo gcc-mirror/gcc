@@ -4,7 +4,7 @@
 #   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 #   Free Software Foundation, Inc.
 
-timestamp='2008-01-08'
+timestamp='2008-01-16'
 
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
@@ -1048,6 +1048,10 @@ case $basic_machine in
 	tic6x | c6x*)
 		basic_machine=tic6x-unknown
 		os=-coff
+		;;
+	tile*)
+		basic_machine=tile-unknown
+		os=-linux-gnu
 		;;
 	tx39)
 		basic_machine=mipstx39-unknown
