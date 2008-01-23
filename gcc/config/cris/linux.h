@@ -102,9 +102,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef CRIS_DEFAULT_CPU_VERSION
 #define CRIS_DEFAULT_CPU_VERSION CRIS_CPU_NG
 
-#undef CRIS_SUBTARGET_VERSION
-#define CRIS_SUBTARGET_VERSION " - cris-axis-linux-gnu"
-
 #define GLIBC_DYNAMIC_LINKER "/lib/ld.so.1"
 
 /* We need an -rpath-link to ld.so.1, and presumably to each directory

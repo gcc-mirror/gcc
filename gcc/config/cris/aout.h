@@ -99,9 +99,6 @@ along with GCC; see the file COPYING3.  If not see
     }							\
   while (0)
 
-#undef CRIS_SUBTARGET_VERSION
-#define CRIS_SUBTARGET_VERSION " - a.out"
-
 #undef CRIS_SUBTARGET_DEFAULT
 #define CRIS_SUBTARGET_DEFAULT 0
 

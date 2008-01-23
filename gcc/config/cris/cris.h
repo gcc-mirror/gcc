@@ -332,17 +332,6 @@ extern int target_flags;
 
 #define CRIS_SUBTARGET_HANDLE_OPTION(x, y, z)
 
-/* Print subsidiary information on the compiler version in use.
-   Do not use VD.D syntax (D=digit), since this will cause confusion
-   with the base gcc version among users, when we ask which version of
-   gcc-cris they are using.  Please use some flavor of "R<number>" for
-   the version (no need for major.minor versions, I believe).  */
-#define TARGET_VERSION \
- fprintf (stderr, " [Axis CRIS%s]", CRIS_SUBTARGET_VERSION)
-
-/* For the cris-*-elf subtarget.  */
-#define CRIS_SUBTARGET_VERSION " - generic ELF"
-
 #define OVERRIDE_OPTIONS cris_override_options ()
 
 /* The following gives optimal code for gcc-2.7.2, but *may* be subject
