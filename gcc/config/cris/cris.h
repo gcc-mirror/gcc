@@ -188,11 +188,7 @@ extern int cris_cpu_version;
       %{!fno-function-sections: -ffunction-sections}\
       %{!fno-data-sections: -fdata-sections}}}}"
 
-/* This adds to CC1_SPEC.  When bugs are removed from -fvtable-gc
-   (-fforce-addr causes invalid .vtable_entry asm in tinfo.cc and
-   nothing at all works in GCC 3.0-pre), add this line:
-   "%{mbest-lib-options:%{!moverride-best-lib-options:\
-   %{!melinux:%{!maout|melf:%{!fno-vtable-gc:-fvtable-gc}}}}}".  */
+/* This adds to CC1_SPEC.  */
 #define CC1PLUS_SPEC ""
 
 #ifdef HAVE_AS_NO_MUL_BUG_ABORT_OPTION
@@ -334,11 +330,6 @@ extern int target_flags;
 
 #define OVERRIDE_OPTIONS cris_override_options ()
 
-/* The following gives optimal code for gcc-2.7.2, but *may* be subject
-   to change.  Omitting flag_force_addr gives .1-.7% faster code for gcc
-   *only*, but 1.3% larger code.  On ipps it gives 5.3-10.6% slower
-   code(!) and 0.3% larger code.  For products, images gets .1-1.8%
-   larger.  Do not set strict aliasing from optimization options.  */
 #define OPTIMIZATION_OPTIONS(OPTIMIZE, SIZE)	\
   do						\
     {						\
