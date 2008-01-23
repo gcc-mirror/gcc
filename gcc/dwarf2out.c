@@ -13736,11 +13736,8 @@ force_type_die (tree type)
       else
 	context_die = comp_unit_die;
 
-      type_die = lookup_type_die (type);
-      if (type_die)
-	return type_die;
-      gen_type_die (type, context_die);
-      type_die = lookup_type_die (type);
+      type_die = modified_type_die (type, TYPE_READONLY (type),
+				    TYPE_VOLATILE (type), context_die);
       gcc_assert (type_die);
     }
   return type_die;

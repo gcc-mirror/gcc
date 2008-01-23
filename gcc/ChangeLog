@@ -1,3 +1,9 @@
+2008-01-23  Michael Matz  <matz@suse.de>
+
+	PR debug/34895
+	* dwarf2out.c (force_type_die): Use modified_type_die instead of
+	gen_type_die.
+
 2008-01-23  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* ipa-struct-reorg.c (create_new_malloc): Use pointer type as

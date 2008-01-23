@@ -1,3 +1,8 @@
+2008-01-23  Michael Matz  <matz@suse.de>
+
+	PR debug/34895
+	* g++.dg/debug/pr34895.cc: New testcase.
+
 2008-01-23  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/31529
