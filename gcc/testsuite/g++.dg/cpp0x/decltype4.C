@@ -70,7 +70,7 @@ struct B {
     CHECK_DECLTYPE(decltype(bit), int);
     CHECK_DECLTYPE(decltype((bit)), int&);
     CHECK_DECLTYPE(decltype(cbit), const int);
-    CHECK_DECLTYPE(decltype((cbit)), const int&); // { dg-bogus "static assertion failed" "GCC gets the actual type of this expression wrong" { xfail *-*-* } 73 }
+    CHECK_DECLTYPE(decltype((cbit)), const int&);
   }
 };
 

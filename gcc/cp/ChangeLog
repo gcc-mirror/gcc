@@ -1,3 +1,12 @@
+2008-01-22  Jakub Jelinek  <jakub@redhat.com>, Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c++/33984
+	* call.c (reference_binding): For bitfields use the declared bitfield
+	type.
+	(add_builtin_candidates): Likewise.
+	* class.c (layout_class_type): For bitfields copy over the
+	original type quals.
+
 2008-01-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/34912

@@ -4795,14 +4795,18 @@ layout_class_type (tree t, tree *virtuals_p)
 	 must be converted to the type given the bitfield here.  */
       if (DECL_C_BIT_FIELD (field))
 	{
-	  tree ftype;
 	  unsigned HOST_WIDE_INT width;
-	  ftype = TREE_TYPE (field);
+	  tree ftype = TREE_TYPE (field);
 	  width = tree_low_cst (DECL_SIZE (field), /*unsignedp=*/1);
 	  if (width != TYPE_PRECISION (ftype))
-	    TREE_TYPE (field)
-	      = c_build_bitfield_integer_type (width,
-					       TYPE_UNSIGNED (ftype));
+	    {
+	      TREE_TYPE (field)
+		= c_build_bitfield_integer_type (width,
+						 TYPE_UNSIGNED (ftype));
+	      TREE_TYPE (field)
+		= cp_build_qualified_type (TREE_TYPE (field),
+					   TYPE_QUALS (ftype));
+	    }
 	}
 
       /* If we needed additional padding after this field, add it
