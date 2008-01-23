@@ -4,7 +4,7 @@
 #   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 #   Free Software Foundation, Inc.
 
-timestamp='2008-01-08'
+timestamp='2008-01-23'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -1484,9 +1484,9 @@ This script, last modified $timestamp, has failed to recognize
 the operating system you are using. It is advised that you
 download the most up to date version of the config scripts from
 
-  http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.guess
+  http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD
 and
-  http://savannah.gnu.org/cgi-bin/viewcvs/*checkout*/config/config/config.sub
+  http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD
 
 If the version you run ($0) is already up to date, please
 send the following data and any information you think might be
