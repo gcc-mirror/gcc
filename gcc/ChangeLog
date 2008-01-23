@@ -1,3 +1,10 @@
+2008-01-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.h (CRIS_SUBTARGET_VERSION, TARGET_VERSION): Don't
+	define.
+	* config/cris/linux.h (CRIS_SUBTARGET_VERSION): Don't define.
+	* config/cris/aout.h (CRIS_SUBTARGET_VERSION): Don't define.
+
 2008-01-23  Michael Matz  <matz@suse.de>
 
 	PR debug/34895
