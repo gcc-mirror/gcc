@@ -1,3 +1,9 @@
+2008-01-23  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/31529
+	* cgraphunit.c (cgraph_reset_node): Always mark the node
+	not reachable if it is not queued already.
+
 2008-01-23  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin-protos.h (WA_RETS, ENABLE_WA_RETS): New macros.
