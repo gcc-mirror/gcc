@@ -1,3 +1,14 @@
+2008-01-23  David Daney  <ddaney@avtrex.com>
+
+	* class.c (hide)  Rename to...
+	(java_hide_decl) ... this throughout, and make public.
+	* resource.c (Jr_count): Remove.
+	(compile_resource_data): Call java_mangle_resource_name to generate
+	decl name.  Make resource decl public and hidden.
+	* mangle.c (java_mangle_resource_name): New function.
+	* java-tree.h (java_hide_decl, java_mangle_resource_name): Declare
+	functions.
+
 2008-01-04  Andrew Haley  <aph@redhat.com>
 
 	PR java/17779

@@ -742,8 +742,8 @@ build_java_method_type (tree fntype, tree this_class, int access_flags)
   return fntype;
 }
 
-static void
-hide (tree decl ATTRIBUTE_UNUSED)
+void
+java_hide_decl (tree decl ATTRIBUTE_UNUSED)
 {
 #ifdef HAVE_GAS_HIDDEN
   DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
@@ -872,7 +872,7 @@ add_field (tree class, tree name, tree field_type, int flags)
       /* Hide everything that shouldn't be visible outside a DSO.  */
       if (flag_indirect_classes
 	  || (FIELD_PRIVATE (field)))
-	hide (field);
+	java_hide_decl (field);
       /* Considered external unless we are compiling it into this
 	 object file.  */
       DECL_EXTERNAL (field) = (is_compiled_class (class) != 2);
@@ -1031,7 +1031,7 @@ build_static_class_ref (tree type)
 	{
 	  TREE_PUBLIC (decl) = 1;
 	  if (CLASS_PRIVATE (TYPE_NAME (type)))
-	    hide (decl);
+	    java_hide_decl (decl);
 	}
       DECL_IGNORED_P (decl) = 1;
       DECL_ARTIFICIAL (decl) = 1;
@@ -1071,7 +1071,7 @@ build_classdollar_field (tree type)
       TREE_CONSTANT (decl) = 1;
       TREE_READONLY (decl) = 1;
       TREE_PUBLIC (decl) = 1;
-      hide (decl);
+      java_hide_decl (decl);
       DECL_IGNORED_P (decl) = 1;
       DECL_ARTIFICIAL (decl) = 1;
       MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (decl);
@@ -1760,7 +1760,7 @@ make_class_data (tree type)
       /* The only dispatch table exported from a DSO is the dispatch
 	 table for java.lang.Class.  */
       if (DECL_NAME (type_decl) != id_class)
-	hide (dtable_decl);
+	java_hide_decl (dtable_decl);
       if (! flag_indirect_classes)
 	rest_of_decl_compilation (dtable_decl, 1, 0);
       /* Maybe we're compiling Class as the first class.  If so, set
@@ -2613,7 +2613,7 @@ layout_class_method (tree this_class, tree super_class,
       || (METHOD_PRIVATE (method_decl) && METHOD_STATIC (method_decl)
 	  && ! METHOD_NATIVE (method_decl)
 	  && ! special_method_p (method_decl)))
-    hide (method_decl);
+    java_hide_decl (method_decl);
 
   /* Considered external unless it is being compiled into this object
      file, or it was already flagged as external.  */
