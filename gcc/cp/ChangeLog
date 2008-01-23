@@ -9,6 +9,10 @@
 
 2008-01-22  Jason Merrill  <jason@redhat.com>
 
+	PR c++/28560
+	* decl.c (groktypename): Also ignore attributes on dependent 
+	possibly-class types.
+
 	PR c++/34912
 	* friend.c (do_friend): Check for prior declaration of a friend 
 	function of a local class.

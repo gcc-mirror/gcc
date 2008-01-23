@@ -3908,8 +3908,12 @@ groktypename (cp_decl_specifier_seq *type_specifiers,
   if (attrs)
     {
       if (CLASS_TYPE_P (type))
-	warning (OPT_Wattributes, "ignoring attributes applied to class type "
-		 "outside of definition");
+	warning (OPT_Wattributes, "ignoring attributes applied to class type %qT "
+		 "outside of definition", type);
+      else if (IS_AGGR_TYPE (type))
+	/* A template type parameter or other dependent type.  */
+	warning (OPT_Wattributes, "ignoring attributes applied to dependent "
+		 "type %qT without an associated declaration", type);
       else
 	cplus_decl_attributes (&type, attrs, 0);
     }
