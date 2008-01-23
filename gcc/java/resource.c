@@ -51,14 +51,10 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 /* A list of all the resources files.  */
 static GTY(()) tree resources = NULL;
 
-/* Count of all the resources compiled in this invocation.  */
-static int Jr_count = 0;
-
 void
 compile_resource_data (const char *name, const char *buffer, int length)
 {
   tree rtype, field = NULL_TREE, data_type, rinit, data, decl;
-  char buf[60];
 
   data_type = build_prim_array_type (unsigned_byte_type_node,
 				     strlen (name) + length);
@@ -79,11 +75,10 @@ compile_resource_data (const char *name, const char *buffer, int length)
   TREE_CONSTANT (rinit) = 1;
   TREE_INVARIANT (rinit) = 1;
 
-  /* Generate a unique-enough identifier.  */
-  sprintf (buf, "_Jr%d", ++Jr_count);
-
-  decl = build_decl (VAR_DECL, get_identifier (buf), rtype);
+  decl = build_decl (VAR_DECL, java_mangle_resource_name (name), rtype);
   TREE_STATIC (decl) = 1;
+  TREE_PUBLIC (decl) = 1;
+  java_hide_decl (decl);
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
   TREE_READONLY (decl) = 1;

@@ -1026,6 +1026,7 @@ extern tree parse_signature (struct JCF *jcf, int sig_index);
 extern tree add_field (tree, tree, tree, int);
 extern tree add_method (tree, int, tree, tree);
 extern tree add_method_1 (tree, int, tree, tree);
+extern void java_hide_decl (tree);
 extern tree make_class (void);
 extern tree push_class (tree, tree);
 extern tree unmangle_classname (const char *name, int name_length);
@@ -1205,6 +1206,7 @@ extern void java_check_methods (tree);
 extern void java_mangle_decl (tree);
 extern tree java_mangle_class_field (struct obstack *, tree);
 extern tree java_mangle_vtable (struct obstack *, tree);
+extern tree java_mangle_resource_name (const char *);
 extern void append_gpp_mangled_name (const char *, int);
 
 extern void add_predefined_file (tree);

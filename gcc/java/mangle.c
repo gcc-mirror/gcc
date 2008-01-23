@@ -796,6 +796,59 @@ compression_table_add (tree type)
   TREE_VEC_ELT (compression_table, compression_next++) = type;
 }
 
+/* Mangle an embedded resource file name.  "_ZGr" is the prefix.  A
+   '_' is prepended to the name so that names starting with a digit
+   can be demangled.  The length and then the resulting name itself
+   are appended while escaping '$', '.', and '/' to: "$$", "$_", and
+   "$S".  */
+
+tree
+java_mangle_resource_name (const char *name)
+{
+  int len = strlen (name);
+  char *buf = (char *) alloca (2 * len + 1);
+  char *pos;
+  const unsigned char *w1 = (const unsigned char *) name;
+  const unsigned char *w2;
+  const unsigned char *limit = w1 + len;
+
+  pos = buf;
+
+  init_mangling ();
+  MANGLE_RAW_STRING ("Gr");
+
+  *pos++ = '_';
+  while (w1 < limit)
+    {
+      int ch;
+      w2 = w1;
+      ch = UTF8_GET (w1, limit);
+      gcc_assert (ch > 0);
+      switch (ch)
+	{
+	case '$':
+	  *pos++ = '$';
+	  *pos++ = '$';
+	  break;
+	case '.':
+	  *pos++ = '$';
+	  *pos++ = '_';
+	  break;
+	case '/':
+	  *pos++ = '$';
+	  *pos++ = 'S';
+	  break;
+	default:
+	  memcpy (pos, w2, w1 - w2);
+	  pos += w1 - w2;
+	  break;
+	}
+    }
+  append_gpp_mangled_name (buf, pos - buf);
+
+  return finish_mangling ();
+}
+
 /* Mangling initialization routine.  */
 
 static void
