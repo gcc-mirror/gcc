@@ -9,7 +9,9 @@ extern "Java"
   typedef __java_byte jbyte;
 }
 
-void *operator new (unsigned int s, void *m)
+typedef __SIZE_TYPE__ size_t;
+
+void *operator new (size_t, void *m)
 {
   return m;
 }
