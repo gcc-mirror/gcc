@@ -1,3 +1,10 @@
+2008-01-23  Thiago Jung Bauermann  <bauerman@br.ibm.com>
+
+	* cplus-dem.c (demangle_function_name): Changed to return value
+	indicating if a name was correctly demangled.
+	(iterate_demangle_function): Use demangle_function_name return
+	value.
+
 2008-01-19  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR other/33768
