@@ -1,3 +1,13 @@
+2008-01-24  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR tree-optimization/34472
+	* ipa-struct-reorg.c (safe_cond_expr_check): Change the DATA
+	parameter to a "bool *" and set *DATA to false if there is
+	an unsafe access.  Do not delete the structure here.
+	(check_cond_exprs): Delete it here instead.
+	(check_cond_exprs, exclude_cold_structs): Do not increase
+	I when removing a structure.
+
 2008-01-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/34856

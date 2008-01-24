@@ -3074,26 +3074,24 @@ dump_accs (d_str str)
 }
 
 /* This function checks whether an access statement, pointed by SLOT,
-   is a condition we are capable to transform. If not, it removes
-   the structure with index, represented by DATA, from the vector
-   of structures.  */
+   is a condition we are capable to transform.  It returns false if not,
+   setting bool *DATA to false.  */
  
 static int
 safe_cond_expr_check (void **slot, void *data)
 {
   struct access_site *acc = *(struct access_site **) slot;
 
-  if (TREE_CODE (acc->stmt) == COND_EXPR)
+  if (TREE_CODE (acc->stmt) == COND_EXPR
+      && !is_safe_cond_expr (acc->stmt))
     {
-      if (!is_safe_cond_expr (acc->stmt))
+      if (dump_file)
 	{
-	  if (dump_file)
-	    {
-	      fprintf (dump_file, "\nUnsafe conditional statement ");
-	      print_generic_stmt (dump_file, acc->stmt, 0);
-	    }
-	  remove_structure (*(unsigned *) data);
+	  fprintf (dump_file, "\nUnsafe conditional statement ");
+	  print_generic_stmt (dump_file, acc->stmt, 0);
 	}
+      *(bool *) data = false;
+      return 0;
     }
   return 1;
 }
@@ -3547,9 +3545,18 @@ check_cond_exprs (void)
   d_str str;
   unsigned i;
 
-  for (i = 0; VEC_iterate (structure, structures, i, str); i++)
-    if (str->accs)
-      htab_traverse (str->accs, safe_cond_expr_check, &i);
+  i = 0;
+  while (VEC_iterate (structure, structures, i, str))
+    {
+      bool safe_p = true;
+
+      if (str->accs)
+	htab_traverse (str->accs, safe_cond_expr_check, &safe_p);
+      if (!safe_p)
+	remove_structure (i);
+      else
+	i++;
+    }
 }
 
 /* We exclude from non-field accesses of the structure 
@@ -3859,7 +3866,8 @@ exclude_cold_structs (void)
     sum_counts (str, &hotest);
 
   /* Remove cold structures from structures vector.  */
-  for (i = 0; VEC_iterate (structure, structures, i, str); i++)
+  i = 0;
+  while (VEC_iterate (structure, structures, i, str))
     if (str->count * 100 < (hotest * STRUCT_REORG_COLD_STRUCT_RATIO))
       {
 	if (dump_file)
@@ -3870,6 +3878,8 @@ exclude_cold_structs (void)
 	  }
 	remove_structure (i);
       }
+    else
+      i++;
 }
 
 /* This function decomposes original structure into substructures, 
