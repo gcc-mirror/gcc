@@ -2582,6 +2582,33 @@ gfc_undo_symbols (void)
       if (p->new)
 	{
 	  /* Symbol was new.  */
+	  if (p->attr.in_common && p->common_block->head)
+	    {
+	      /* If the symbol was added to any common block, it
+		 needs to be removed to stop the resolver looking
+		 for a (possibly) dead symbol.  */
+
+	      if (p->common_block->head == p)
+	        p->common_block->head = p->common_next;
+	      else
+		{
+		  gfc_symbol *cparent, *csym;
+
+		  cparent = p->common_block->head;
+		  csym = cparent->common_next;
+
+		  while (csym != p)
+		    {
+		      cparent = csym;
+		      csym = csym->common_next;
+		    }
+
+		  gcc_assert(cparent->common_next == p);
+
+		  cparent->common_next = csym->common_next;
+		}
+	    }
+
 	  delete_symtree (&p->ns->sym_root, p->name);
 
 	  p->refs--;
@@ -2726,14 +2753,14 @@ gfc_commit_symbol (gfc_symbol *sym)
 /* Recursive function that deletes an entire tree and all the common
    head structures it points to.  */
 
-void
-gfc_free_common_tree (gfc_symtree * common_tree)
+static void
+free_common_tree (gfc_symtree * common_tree)
 {
   if (common_tree == NULL)
     return;
 
-  gfc_free_common_tree (common_tree->left);
-  gfc_free_common_tree (common_tree->right);
+  free_common_tree (common_tree->left);
+  free_common_tree (common_tree->right);
 
   gfc_free (common_tree);
 }  
@@ -2863,7 +2890,7 @@ gfc_free_namespace (gfc_namespace *ns)
 
   free_sym_tree (ns->sym_root);
   free_uop_tree (ns->uop_root);
-  gfc_free_common_tree (ns->common_root);
+  free_common_tree (ns->common_root);
 
   for (cl = ns->cl_list; cl; cl = cl2)
     {
