@@ -34,13 +34,6 @@ find_base_value (src)
 }
 
 
-/* There should be four IF conditionals.  */
-/* { dg-final { scan-tree-dump-times "if " 4 "dom3"} } */
-
 /* There should be no casts to short unsigned int.  */
 /* { dg-final { scan-tree-dump-times "\\(short unsigned int\\)" 0 "dom3"} } */
 
-/* There should be two loads of ->code.  */
-/* { dg-final { scan-tree-dump-times "->code" 2 "dom3"} } */
-
-/* { dg-final { cleanup-tree-dump "dom3" } } */

@@ -1,3 +1,17 @@
+2008-01-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	Backport:
+	2008-01-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/pr33826.c: Require nonpic.
+	
+	2007-11-08  Kenneth Zadeck <zadeck@naturalbridge.com>
+	
+	PR middle-end/33826
+	* gcc.dg/pr33826.c: New.
+	* gcc.dg/tree-ssa/20030714-1.c: Removed two tests that depend on 
+	recursive functions being marked pure or const.
+
 2008-01-24  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/34953
