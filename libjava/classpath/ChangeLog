@@ -1,3 +1,10 @@
+2008-01-24  Tom Tromey  <tromey@redhat.com>
+
+	* resource/gnu/classpath/tools/native2ascii/messages.properties
+	(Native2ASCII.ReversedHelpCompat): New.
+	* tools/gnu/classpath/tools/native2ascii/Native2ASCII.java
+	(createParser): Add -reverse.  Update -reversed.
+
 2008-01-21  Luciano Chavez  <lnx1138@us.ibm.com>
 
 	PR libgcj/34369:
