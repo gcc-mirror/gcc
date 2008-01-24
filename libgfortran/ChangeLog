@@ -1,3 +1,7 @@
+2008-01-24  David Edelsohn  <edelsohn@gnu.org>
+
+	* configure: Regenerate.
+
 2008-01-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/34795
