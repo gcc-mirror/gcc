@@ -1,3 +1,9 @@
+2008-01-24  Jakub Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/34934
+	* tree-stdarg.c (reachable_at_most_once): Use VEC vector instead of
+	a fixed vector for stack.
+
 2008-01-24  Ben Elliston  <bje@au.ibm.com>
 
 	PR c++/25701
