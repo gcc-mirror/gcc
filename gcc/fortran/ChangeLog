@@ -1,3 +1,10 @@
+2008-01-24  Daniel Franke  <franke.daniel@gmail.com>
+
+	* gfortran.texi (OpenMP): Extended existing documentation.
+	(contributors): Added major contributors of 2008 that were
+	not listed yet.
+	(proposed extensions): Removed implemented items.
+
 2008-01-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34872
