@@ -1,3 +1,9 @@
+2008-01-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/34856
+	* config/i386/i386.c (ix86_expand_vector_init): Consider only
+	CONST_INT, CONST_DOUBLE and CONST_FIXED as constant vector elements.
+
 2008-01-24  Jakub Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/34934
