@@ -795,7 +795,7 @@ static gfc_statement
 next_statement (void)
 {
   gfc_statement st;
-
+  locus old_locus;
   gfc_new_block = NULL;
 
   for (;;)
@@ -824,6 +824,8 @@ next_statement (void)
       if (gfc_define_undef_line ())
 	continue;
 
+      old_locus = gfc_current_locus;
+
       st = (gfc_current_form == FORM_FIXED) ? next_fixed () : next_free ();
 
       if (st != ST_NONE)
@@ -831,6 +833,13 @@ next_statement (void)
     }
 
   gfc_buffer_error (0);
+
+  if (st == ST_GET_FCN_CHARACTERISTICS && gfc_statement_label != NULL)
+    {
+      gfc_free_st_label (gfc_statement_label);
+      gfc_statement_label = NULL;
+      gfc_current_locus = old_locus;
+    }
 
   if (st != ST_NONE)
     check_statement_label (st);

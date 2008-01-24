@@ -1,3 +1,10 @@
+2008-01-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34872
+	* parse.c (next_statement) : If ST_GET_FCN_CHARACTERISTICS  is
+	seen, check for a statement label and, if present, delete it
+	and set the locus to the start of the statement.
+
 2008-01-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34875
