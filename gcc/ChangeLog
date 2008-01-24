@@ -1,3 +1,7 @@
+2008-01-24  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.h (MOVE_RATIO): Define new target macro.
+
 2008-01-24  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR tree-optimization/34472
