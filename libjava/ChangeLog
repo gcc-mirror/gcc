@@ -1,3 +1,8 @@
+2008-01-24  David Edelsohn  <edelsohn@gnu.org>
+
+	* shlibpath.m4: Add AIX 6 support.
+	* configure: Regenerate.
+
 2008-01-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/33887
