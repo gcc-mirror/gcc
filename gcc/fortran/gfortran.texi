@@ -1400,18 +1400,60 @@ portable.
 @section OpenMP
 @cindex OpenMP
 
-GNU Fortran attempts to be OpenMP Application Program Interface v2.5
-compatible when invoked with the @option{-fopenmp} option.  GNU Fortran
-then generates parallelized code according to the OpenMP directives
-used in the source.  The OpenMP Fortran runtime library
-routines are provided both in a form of a Fortran 90 module named
-@code{omp_lib} and in a form of a Fortran @code{include} file named
-@file{omp_lib.h}.
+OpenMP (Open Multi-Processing) is an application programming
+interface (API) that supports multi-platform shared memory 
+multiprocessing programming in C/C++ and Fortran on many 
+architectures, including Unix and Microsoft Windows platforms.
+It consists of a set of compiler directives, library routines,
+and environment variables that influence run-time behavior.
 
-For details refer to the actual
+GNU Fortran strives to be compatible to the 
 @uref{http://www.openmp.org/drupal/mp-documents/spec25.pdf,
-OpenMP Application Program Interface v2.5} specification and to the
-@ref{Top,,Introduction,libgomp,GNU OpenMP runtime library}.
+OpenMP Application Program Interface v2.5}.
+
+To enable the processing of the OpenMP directive @code{!$omp} in
+free-form source code; the @code{c$omp}, @code{*$omp} and @code{!$omp}
+directives in fixed form; the @code{!$} conditional compilation sentinels
+in free form; and the @code{c$}, @code{*$} and @code{!$} sentinels
+in fixed form, @command{gfortran} needs to be invoked with the
+@option{-fopenmp}. This also arranges for automatic linking of the
+GNU OpenMP runtime library @ref{Top,,libgomp,libgomp,GNU OpenMP
+runtime library}.
+
+The OpenMP Fortran runtime library routines are provided both in a
+form of a Fortran 90 module named @code{omp_lib} and in a form of
+a Fortran @code{include} file named @file{omp_lib.h}.
+
+An example of a parallelized loop taken from Appendix A.1 of
+the OpenMP Application Program Interface v2.5:
+@smallexample
+SUBROUTINE A1(N, A, B)
+  INTEGER I, N
+  REAL B(N), A(N)
+!$OMP PARALLEL DO !I is private by default
+  DO I=2,N
+    B(I) = (A(I) + A(I-1)) / 2.0
+  ENDDO
+!$OMP END PARALLEL DO
+END SUBROUTINE A1
+@end smallexample
+
+Please note:
+@itemize
+@item
+@option{-fopenmp} implies @option{-frecursive}, i.e. all local arrays
+will be allocated on the stack. When porting existing code to OpenMP,
+this may lead to surprising results, especially to segmentation faults
+if the stacksize is limited.
+
+@item
+On glibc-based systems, OpenMP enabled applications can not be statically
+linked due to limitations of the underlying pthreads-implementation. It
+might be possible to get a working solution if 
+@command{-Wl,--whole-archive -lpthread -Wl,--no-whole-archive} is added
+to the command line. However, this is not supported by @command{gcc} and
+thus not recommended.
+@end itemize
 
 @node Argument list functions
 @section Argument list functions %VAL, %REF and %LOC
@@ -1508,35 +1550,41 @@ Most of the interface with GCC was written by @emph{Paul Brook}.
 
 The following individuals have contributed code and/or
 ideas and significant help to the GNU Fortran project
-(in no particular order):
+(in alphabetical order):
 
 @itemize @minus
-@item Andy Vaught
-@item Katherine Holcomb
-@item Tobias Schl@"uter
+@item Janne Blomqvist
 @item Steven Bosscher
-@item Toon Moene
-@item Tim Prince
+@item Paul Brook
+@item Tobias Burnus
+@item Fran@,{c}ois-Xavier Coudert
+@item Bud Davis
+@item Jerry DeLisle
+@item Erik Edelmann
+@item Bernhard Fischer
+@item Daniel Franke
+@item Richard Guenther
+@item Richard Henderson
+@item Katherine Holcomb
+@item Jakub Jelinek
 @item Niels Kristian Bech Jensen
 @item Steven Johnson
-@item Paul Brook
-@item Feng Wang
-@item Bud Davis
-@item Paul Thomas
-@item Fran@,{c}ois-Xavier Coudert
 @item Steven G. Kargl
-@item Jerry Delisle
-@item Janne Blomqvist
-@item Erik Edelmann
 @item Thomas Koenig
 @item Asher Langton
-@item Jakub Jelinek
-@item Roger Sayle
-@item H.J. Lu
-@item Richard Henderson
+@item H. J. Lu
+@item Toon Moene
+@item Brooks Moses
+@item Andrew Pinski
+@item Tim Prince
+@item Christopher D. Rickett
 @item Richard Sandiford
-@item Richard Guenther
-@item Bernhard Fischer
+@item Tobias Schl@"uter
+@item Roger Sayle
+@item Paul Thomas
+@item Andy Vaught
+@item Feng Wang
+@item Janus Weil
 @end itemize
 
 The following people have contributed bug reports,
@@ -1545,9 +1593,10 @@ and much needed feedback and encouragement for the
 GNU Fortran project: 
 
 @itemize @minus
-@item Erik Schnetter
 @item Bill Clodius
+@item Dominique d'Humieres
 @item Kate Hedstrom
+@item Erik Schnetter
 @end itemize
 
 Many other individuals have helped debug,
@@ -1625,13 +1674,6 @@ Flag to force local variables into static space.
 
 @item
 Flag to force local variables onto stack.
-
-@item
-Flag for maximum errors before ending compile.
-
-@item
-Option to initialize otherwise uninitialized integer and floating
-point variables.
 @end itemize
 
 
