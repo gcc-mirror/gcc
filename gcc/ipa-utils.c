@@ -78,7 +78,7 @@ struct searchc_env {
    has been customized for cgraph_nodes.  The env parameter is because
    it is recursive and there are no nested functions here.  This
    function should only be called from itself or
-   cgraph_reduced_inorder.  ENV is a stack env and would be
+   ipa_utils_reduced_inorder.  ENV is a stack env and would be
    unnecessary if C had nested functions.  V is the node to start
    searching from.  */
 

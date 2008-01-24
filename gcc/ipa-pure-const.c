@@ -639,6 +639,7 @@ static_execute (void)
   for (i = 0; i < order_pos; i++ )
     {
       enum pure_const_state_e pure_const_state = IPA_CONST;
+      int count = 0;
       node = order[i];
 
       /* Find the worst state for any node in the cycle.  */
@@ -655,11 +656,40 @@ static_execute (void)
 	  if (!w_l->state_set_in_source)
 	    {
 	      struct cgraph_edge *e;
+	      count++;
+
+	      /* FIXME!!!  Because of pr33826, we cannot have either
+		 immediate or transitive recursive functions marked as
+		 pure or const because dce can delete a function that
+		 is in reality an infinite loop.  A better solution
+		 than just outlawing them is to add another bit the
+		 functions to distinguish recursive from non recursive
+		 pure and const function.  This would allow the
+		 recursive ones to be cse'd but not dce'd.  In this
+		 same vein, we could allow functions with loops to
+		 also be cse'd but not dce'd.
+
+		 Unfortunately we are late in stage 3, and the fix
+		 described above is is not appropriate.  */
+	      if (count > 1)
+		{
+		  pure_const_state = IPA_NEITHER;
+		  break;
+		}
+		    
 	      for (e = w->callees; e; e = e->next_callee) 
 		{
 		  struct cgraph_node *y = e->callee;
 		  /* Only look at the master nodes and skip external nodes.  */
 		  y = cgraph_master_clone (y);
+
+		  /* Check for immediate recursive functions.  See the
+		     FIXME above.  */
+		  if (w == y)
+		    {
+		      pure_const_state = IPA_NEITHER;
+		      break;
+		    }
 		  if (y)
 		    {
 		      funct_state y_l = get_function_state (y);
