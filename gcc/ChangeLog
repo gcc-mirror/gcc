@@ -1,3 +1,20 @@
+2008-01-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR driver/34904
+	* gcc.c (SWITCH_OK): Removed.
+	(SWITCH_LIVE): Changed to bit.
+	(SWITCH_FALSE): Likewise.
+	(SWITCH_IGNORE): Likewise.
+	(switchstr): Change live_cond to unsigned int.
+	(process_command): Replace SWITCH_OK with 0.
+	(do_self_spec): Likewise.
+	(set_collect_gcc_options): Check the SWITCH_IGNORE bit.
+	(give_switch): Likewise.
+	(used_arg): Likewise.
+	(do_spec_1): Set the SWITCH_IGNORE bit.
+	(check_live_switch): Check both SWITCH_LIVE and SWITCH_FALSE
+	bits.  Set the SWITCH_LIVE bit.
+
 2008-01-24  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.h (MOVE_RATIO): Define new target macro.
