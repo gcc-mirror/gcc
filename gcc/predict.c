@@ -1198,7 +1198,8 @@ apply_return_prediction (int *heads)
   FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
     {
       return_stmt = last_stmt (e->src);
-      if (TREE_CODE (return_stmt) == RETURN_EXPR)
+      if (return_stmt
+	  && TREE_CODE (return_stmt) == RETURN_EXPR)
 	break;
     }
   if (!e)
@@ -1311,11 +1312,14 @@ tree_estimate_probability (void)
 
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
+	  tree tmp;
+
 	  /* Predict early returns to be probable, as we've already taken
 	     care for error returns and other cases are often used for
 	     fast paths through function.  */
 	  if (e->dest == EXIT_BLOCK_PTR
-	      && TREE_CODE (last_stmt (bb)) == RETURN_EXPR
+	      && (tmp = last_stmt (bb))
+	      && TREE_CODE (tmp) == RETURN_EXPR
 	      && !single_pred_p (bb))
 	    {
 	      edge e1;

@@ -1,3 +1,8 @@
+2008-01-24  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34953
+	* g++.dg/torture/pr34953.C: New testcase.
+
 2008-01-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20080122-1.c: New test.

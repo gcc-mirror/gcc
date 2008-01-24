@@ -1,3 +1,9 @@
+2008-01-24  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34953
+	* predict.c (apply_return_prediction): Check for empty blocks.
+	(tree_estimate_probability): Likewise.
+
 2008-01-23  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
