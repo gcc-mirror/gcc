@@ -1,3 +1,9 @@
+2008-01-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/34913
+	* decl2.c (is_late_template_attribute): Defer any attribute with 
+	dependent args.  Also defer type attributes if the type is dependent.
+
 2008-01-22  Jakub Jelinek  <jakub@redhat.com>, Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/33984
