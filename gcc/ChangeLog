@@ -1,8 +1,3 @@
-2008-01-24  Ben Elliston  <bje@au.ibm.com>
-
-	PR other/22232
-	* fixproto: Escape "." in sed expression that strips leading "./".
-
 2008-01-23  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.h (CC1PLUS_SPEC, OPTIMIZATION_OPTIONS): Drop
