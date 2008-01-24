@@ -1,3 +1,7 @@
+2008-01-24  David Edelsohn  <edelsohn@gnu.org>
+
+	* configure: Regenerate.
+
 2008-01-06  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* src/x86/ffi.c (ffi_prep_cif_machdep): Fix thinko.
