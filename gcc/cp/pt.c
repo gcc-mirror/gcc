@@ -1,6 +1,6 @@
 /* Handle parameterized types (templates) for GNU C++.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2007  Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004, 2005, 2007, 2008  Free Software Foundation, Inc.
    Written by Ken Raeburn (raeburn@cygnus.com) while at Watchmaker Computing.
    Rewritten by Jason Merrill (jason@cygnus.com).
 
@@ -3977,7 +3977,7 @@ push_template_decl_real (tree decl, bool is_friend)
       if (!tinfo)
 	{
 	  error ("template definition of non-template %q#D", decl);
-	  return decl;
+	  return error_mark_node;
 	}
 
       tmpl = TI_TEMPLATE (tinfo);

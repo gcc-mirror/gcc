@@ -1,10 +1,17 @@
+2008-01-24  Paolo Carlini  <pcarlini@suse.de>
+
+        PR c++/34603
+        * pt.c (push_template_decl_real): Return error_mark_node in case
+	of template definition of non-template.
+
 2008-01-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/34913
 	* decl2.c (is_late_template_attribute): Defer any attribute with 
 	dependent args.  Also defer type attributes if the type is dependent.
 
-2008-01-22  Jakub Jelinek  <jakub@redhat.com>, Alexandre Oliva  <aoliva@redhat.com>
+2008-01-22  Jakub Jelinek  <jakub@redhat.com>
+	    Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/33984
 	* call.c (reference_binding): For bitfields use the declared bitfield
