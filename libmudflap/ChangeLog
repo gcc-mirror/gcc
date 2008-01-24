@@ -1,3 +1,7 @@
+2008-01-24  David Edelsohn  <edelsohn@gnu.org>
+
+	* configure: Regenerate.
+
 2008-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/34618
