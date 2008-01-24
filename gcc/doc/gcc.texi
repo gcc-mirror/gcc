@@ -66,6 +66,7 @@ included in the section entitled ``GNU Free Documentation License''.
 @dircategory Software development
 @direntry
 * gcc: (gcc).                  The GNU Compiler Collection.
+* g++: (gcc).                  The GNU C++ compiler.
 @end direntry
 This file documents the use of the GNU compilers.
 @sp 1
