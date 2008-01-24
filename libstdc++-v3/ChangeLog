@@ -1,3 +1,7 @@
+2008-01-24  David Edelsohn  <edelsohn@gnu.org>
+
+	* configure: Regenerate.
+
 2008-01-21  Matthias Klose  <doko@ubuntu.com>
 
 	* doc/doxygen/user.cfg.in: Set SHORT_NAMES to YES.
