@@ -1,7 +1,12 @@
+2008-01-24  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/34202
+	* gfortran.dg/empty_type.f90: New test.
+
 2008-01-24  Paolo Carlini  <pcarlini@suse.de>
 
-        PR c++/34603
-        * g++.dg/template/crash77.C: New.
+	PR c++/34603
+	* g++.dg/template/crash77.C: New.
 
 2008-01-24  Uros Bizjak  <ubizjak@gmail.com>
 

@@ -688,7 +688,7 @@ formalize_structure_cons (gfc_expr *expr)
   c = expr->value.constructor;
 
   /* Constructor is already formalized.  */
-  if (c->n.component == NULL)
+  if (!c || c->n.component == NULL)
     return;
 
   head = tail = NULL;
