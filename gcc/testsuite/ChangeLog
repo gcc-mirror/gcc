@@ -1,3 +1,8 @@
+2008-01-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/34856
+	* gcc.dg/pr34856.c: New test.
+
 2008-01-24  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/namelist_39.f90: Delete temporary files.
