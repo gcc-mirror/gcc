@@ -177,3 +177,6 @@ along with GCC; see the file COPYING3.  If not see
    with secondary definition (weak) symbols.  */
 #undef TARGET_SOM_SDEF
 #define TARGET_SOM_SDEF 1
+
+#undef TARGET_HPUX_11
+#define TARGET_HPUX_11 1
