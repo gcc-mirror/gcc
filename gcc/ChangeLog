@@ -1,3 +1,8 @@
+2008-01-25  Ben Elliston  <bje@au.ibm.com>
+
+	PR other/22232
+	* fixproto: Escape "." in sed expression that strips leading "./".
+
 2008-01-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR driver/34904

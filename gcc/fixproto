@@ -197,7 +197,7 @@ for code in ALL STD ; do
 	fi
       fi
       # Append "/"; remove initial "./". Hence "." -> "" and "sys" -> "sys/".
-      rel_source_prefix=`echo $rel_source_subdir | sed -e 's|$|/|' -e 's|^./||'`
+      rel_source_prefix=`echo $rel_source_subdir | sed -e 's|$|/|' -e 's|^\./||'`
 
       case $code in
 	ALL)
