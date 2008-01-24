@@ -1,3 +1,8 @@
+2008-01-24  Paolo Carlini  <pcarlini@suse.de>
+
+        PR c++/34603
+        * g++.dg/template/crash77.C: New.
+
 2008-01-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/34856
