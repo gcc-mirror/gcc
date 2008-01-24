@@ -23,7 +23,7 @@ program gfcbug77
   write(nnml,*) "/"
   rewind(nnml)
   read (nnml, nml=BLACKLIST)
-  close(nnml)
+  close(nnml,status="delete")
   if(file /= "myfile" .or. default) call abort()
 !  write (*,nml=BLACKLIST)
 end program gfcbug77

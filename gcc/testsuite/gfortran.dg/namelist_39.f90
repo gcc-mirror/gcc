@@ -17,7 +17,7 @@ write(99,'(4(a,/),a)') "&NAM", &
       " /"
 rewind(99)
 read(99,nml=nam)
-close(99)
+close(99,status="delete")
 
 if (b01234567890123456789012345678901234567890123456789012345678901(1).ne.&
     " AAP NOOT MIES WIM ZUS JET                   ") call abort

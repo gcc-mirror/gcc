@@ -1,3 +1,8 @@
+2008-01-24  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/namelist_39.f90: Delete temporary files.
+	* gfortran.dg/namelist_44.f90: Ditto.
+
 2008-01-24  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/34953
