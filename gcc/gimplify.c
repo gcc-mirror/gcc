@@ -5330,6 +5330,10 @@ gimplify_omp_for (tree *expr_p, tree *pre_p)
   else
     var = decl;
 
+  /* If OMP_FOR is re-gimplified, ensure all variables in pre-body
+     are noticed.  */
+  gimplify_stmt (&OMP_FOR_PRE_BODY (for_stmt));
+
   ret |= gimplify_expr (&GENERIC_TREE_OPERAND (t, 1),
 			&OMP_FOR_PRE_BODY (for_stmt),
 			NULL, is_gimple_val, fb_rvalue);
