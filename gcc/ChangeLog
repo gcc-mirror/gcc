@@ -1,3 +1,9 @@
+2008-01-25  Golovanevsky Olga  <olga@il.ibm.com>
+
+	* ipa-struct-reorg.c (is_safe_cond_expr, 
+	create_new_stmts_for_cond_expr): Use integer_zerop function,
+	that recognize not only zero-pointer, but zero-integer too.
+
 2008-01-25  Ben Elliston  <bje@au.ibm.com>
 
 	PR other/22232
