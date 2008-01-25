@@ -3159,10 +3159,13 @@ record_builtin_java_type (const char* name, int size)
   tree type, decl;
   if (size > 0)
     type = make_signed_type (size);
+  else if (size == -1)
+    { /* "__java_boolean".  */
+      type = build_variant_type_copy (boolean_type_node);
+    }
   else if (size > -32)
-    { /* "__java_char" or ""__java_boolean".  */
+    { /* "__java_char".  */
       type = make_unsigned_type (-size);
-      /*if (size == -1)	TREE_SET_CODE (type, BOOLEAN_TYPE);*/
     }
   else
     { /* "__java_float" or ""__java_double".  */

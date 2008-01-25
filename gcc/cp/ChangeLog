@@ -1,3 +1,11 @@
+2008-01-25  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/33887
+	* decl.c (record_builtin_java_type): Make __java_boolean
+	a variant of bool.
+	* typeck.c (structural_comptypes): Move TYPE_FOR_JAVA check
+	after TYPE_MAIN_VARIANT check.
+
 2008-01-25  Jason Merrill  <jason@redhat.com>
 
 	* decl2.c (is_late_template_attribute): Don't defer attribute
