@@ -1,3 +1,8 @@
+2008-01-25  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (override_options): Reorder tests so that
+	flag_pic gets enabled for -msep-data.
+
 2008-01-25  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/32244
