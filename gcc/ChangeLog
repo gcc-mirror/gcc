@@ -1,3 +1,10 @@
+2008-01-25  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34966
+	* tree-ssa-math-opts.c (execute_cse_sincos_1): For all but
+	default defs and PHI_NODEs we have to insert after the
+	defining statement.
+
 2008-01-24  Nick Clifton  <nickc@redhat.com>
 
 	* config/stormy16/stormy16-lib2.c (MIN_UNITS_PER_WORD):
