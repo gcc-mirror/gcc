@@ -1,6 +1,6 @@
 /* Xstormy16 target functions.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006, 2007 Free Software Foundation, Inc.
+   2006, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
 This file is part of GCC.
@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "langhooks.h"
 #include "tree-gimple.h"
+#include "df.h"
 #include "ggc.h"
 
 static rtx emit_addhi3_postreload (rtx, rtx, rtx);
@@ -481,35 +482,6 @@ xstormy16_secondary_reload_class (enum reg_class class,
   return NO_REGS;
 }
 
-/* Recognize a PLUS that needs the carry register.  */
-int
-xstormy16_carry_plus_operand (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (x) == PLUS
-	  && GET_CODE (XEXP (x, 1)) == CONST_INT
-	  && (INTVAL (XEXP (x, 1)) < -4 || INTVAL (XEXP (x, 1)) > 4));
-}
-
-/* Detect and error out on out-of-range constants for movhi.  */
-int
-xs_hi_general_operand (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  if ((GET_CODE (x) == CONST_INT) 
-   && ((INTVAL (x) >= 32768) || (INTVAL (x) < -32768)))
-    error ("constant halfword load operand out of range");
-  return general_operand (x, mode);
-}
-
-/* Detect and error out on out-of-range constants for addhi and subhi.  */
-int
-xs_hi_nonmemory_operand (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  if ((GET_CODE (x) == CONST_INT) 
-   && ((INTVAL (x) >= 32768) || (INTVAL (x) < -32768)))
-    error ("constant arithmetic operand out of range");
-  return nonmemory_operand (x, mode);
-}
-
 enum reg_class
 xstormy16_preferred_reload_class (rtx x, enum reg_class class)
 {
@@ -669,7 +641,7 @@ xstormy16_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
       && (! strict || REGNO (x) < FIRST_PSEUDO_REGISTER))
     return 1;
 
-  if (xstormy16_below100_symbol(x, mode))
+  if (xstormy16_below100_symbol (x, mode))
     return 1;
   
   return 0;
@@ -759,7 +731,7 @@ xstormy16_extra_constraint_p (rtx x, int c)
 	      && (INTVAL (x) == 0));
 
     case 'W':
-      return xstormy16_below100_operand(x, GET_MODE(x));
+      return xstormy16_below100_operand (x, GET_MODE (x));
 
     default:
       return 0;
@@ -1357,7 +1329,7 @@ xstormy16_expand_builtin_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 {
   tree f_base, f_count;
   tree base, count;
-  tree t;
+  tree t,u;
 
   if (xstormy16_interrupt_function_p ())
     error ("cannot use va_start in interrupt function");
@@ -1370,8 +1342,9 @@ xstormy16_expand_builtin_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 		  NULL_TREE);
 
   t = make_tree (TREE_TYPE (base), virtual_incoming_args_rtx);
-  t = build2 (PLUS_EXPR, TREE_TYPE (base), t, 
-	      build_int_cst (NULL_TREE, INCOMING_FRAME_SP_OFFSET));
+  u = build_int_cst (NULL_TREE, INCOMING_FRAME_SP_OFFSET);
+  u = fold_convert (TREE_TYPE (count), u);
+  t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (base), t, u);
   t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (base), base, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -1388,8 +1361,8 @@ xstormy16_expand_builtin_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
    Note:  This algorithm is documented in stormy-abi.  */
    
 static tree
-xstormy16_expand_builtin_va_arg (tree valist, tree type, tree *pre_p,
-				 tree *post_p ATTRIBUTE_UNUSED)
+xstormy16_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
+				tree *post_p ATTRIBUTE_UNUSED)
 {
   tree f_base, f_count;
   tree base, count;
@@ -1428,9 +1401,8 @@ xstormy16_expand_builtin_va_arg (tree valist, tree type, tree *pre_p,
 		  build1 (GOTO_EXPR, void_type_node, lab_fromstack),
 		  NULL_TREE);
       gimplify_and_add (t, pre_p);
-  
-      t = fold_convert (ptr_type_node, count_tmp);
-      t = build2 (PLUS_EXPR, ptr_type_node, base, t);
+
+      t = build2 (POINTER_PLUS_EXPR, ptr_type_node, base, count_tmp);
       t = build2 (GIMPLE_MODIFY_STMT, void_type_node, addr, t);
       gimplify_and_add (t, pre_p);
 
@@ -1464,8 +1436,9 @@ xstormy16_expand_builtin_va_arg (tree valist, tree type, tree *pre_p,
   t = build2 (MINUS_EXPR, TREE_TYPE (count), count_tmp, t);
   t = build2 (PLUS_EXPR, TREE_TYPE (count), t,
 	      fold_convert (TREE_TYPE (count), size_tree));
-  t = fold_convert (TREE_TYPE (base), fold (t));
-  t = build2 (MINUS_EXPR, TREE_TYPE (base), base, t);
+  t = fold_convert (TREE_TYPE (t), fold (t));
+  t = fold_build1 (NEGATE_EXPR, TREE_TYPE (t), t);
+  t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (base), base, t);
   t = build2 (GIMPLE_MODIFY_STMT, void_type_node, addr, t);
   gimplify_and_add (t, pre_p);
 
@@ -2338,10 +2311,10 @@ xstormy16_init_builtins (void)
 }
 
 static rtx
-xstormy16_expand_builtin(tree exp, rtx target,
-			 rtx subtarget ATTRIBUTE_UNUSED,
-			 enum machine_mode mode ATTRIBUTE_UNUSED,
-			 int ignore ATTRIBUTE_UNUSED)
+xstormy16_expand_builtin (tree exp, rtx target,
+			  rtx subtarget ATTRIBUTE_UNUSED,
+			  enum machine_mode mode ATTRIBUTE_UNUSED,
+			  int ignore ATTRIBUTE_UNUSED)
 {
   rtx op[10], args[10], pat, copyto[10], retval = 0;
   tree fndecl, argtree;
@@ -2669,7 +2642,7 @@ xstormy16_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 #undef TARGET_EXPAND_BUILTIN_VA_START
 #define TARGET_EXPAND_BUILTIN_VA_START xstormy16_expand_builtin_va_start
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
-#define TARGET_GIMPLIFY_VA_ARG_EXPR xstormy16_expand_builtin_va_arg
+#define TARGET_GIMPLIFY_VA_ARG_EXPR xstormy16_gimplify_va_arg_expr
 
 #undef TARGET_PROMOTE_FUNCTION_ARGS
 #define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_const_tree_true
