@@ -661,8 +661,9 @@ execute_cse_sincos_1 (tree name)
   call = build_call_expr (fndecl, 1, name);
   stmt = build_gimple_modify_stmt (res, call);
   def_stmt = SSA_NAME_DEF_STMT (name);
-  if (bb_for_stmt (def_stmt) == top_bb
-      && TREE_CODE (def_stmt) == GIMPLE_MODIFY_STMT)
+  if (!SSA_NAME_IS_DEFAULT_DEF (name)
+      && TREE_CODE (def_stmt) != PHI_NODE
+      && bb_for_stmt (def_stmt) == top_bb)
     {
       bsi = bsi_for_stmt (def_stmt);
       bsi_insert_after (&bsi, stmt, BSI_SAME_STMT);
