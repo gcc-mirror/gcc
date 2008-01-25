@@ -1,6 +1,6 @@
 # libgcc host-specific configuration file.
-# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
-# Free Software Foundation, Inc.
+# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+# 2008 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -137,9 +137,6 @@ s390*-*-*)
 sh[123456789lbe]*-*-*)
 	cpu_type=sh
 	;;
-tic4x-*-*)
-        cpu_type=c4x
-        ;;
 esac
 
 # Common parts for widely ported systems.
@@ -258,10 +255,6 @@ bfin*-linux-uclibc*)
 	;;
 bfin*-*)
         ;;
-c4x-*-rtems* | tic4x-*-rtems*)
-	;;
-c4x-* | tic4x-*)
-	;;
 cris-*-aout)
 	;;
 crisv32-*-elf | crisv32-*-none | cris-*-elf | cris-*-none)
@@ -278,8 +271,6 @@ fr30-*-elf)
 frv-*-elf)
 	;;
 frv-*-*linux*)
-	;;
-h8300-*-rtemscoff*)
 	;;
 h8300-*-rtems*)
 	;;
@@ -473,11 +464,6 @@ mn10300-*-*)
 	;;
 mt-*-elf)
         ;;
-ns32k-*-netbsdelf*)
-	echo "GCC does not yet support the ${host} target"; exit 1
-	;;
-ns32k-*-netbsd*)
-	;;
 pdp11-*-bsd)
         ;;
 pdp11-*-*)
@@ -573,8 +559,6 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 		tmake_file="${tmake_file} sh/t-linux"
 		;;
 	esac
-	;;
-sh-*-rtemscoff*)
 	;;
 sh-*-rtems*)
 	;;

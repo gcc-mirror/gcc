@@ -1,3 +1,25 @@
+2008-01-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/c4x: Remove directory.
+	* config.gcc (crx-*, mt-*): Mark obsolete.
+	(c4x-*, tic4x-*, c4x-*-rtems*, tic4x-*-rtems*, c4x-*, tic4x-*,
+	h8300-*-rtemscoff*, ns32k-*-netbsdelf*, ns32k-*-netbsd*,
+	sh-*-rtemscoff*): Remove cases.
+	* defaults.h (C4X_FLOAT_FORMAT): Remove.
+	* real.c (encode_c4x_single, decode_c4x_single,
+	encode_c4x_extended, decode_c4x_extended, c4x_single_format,
+	c4x_extended_format): Remove.
+	* real.h (c4x_single_format, c4x_extended_format): Remove.
+	* doc/extend.texi (interrupt, naked): Remove mention of attributes
+	on C4x.
+	(Pragmas): Remove comment about c4x pragmas.
+	* doc/install.texi (c4x): Remove target-specific instructions.
+	* doc/invoke.texi (TMS320C3x/C4x Options): Remove.
+	* doc/md.texi (Machine Constraints): Remove C4x documentation.
+	* doc/tm.texi (MEMBER_TYPE_FORCES_BLK, c_register_pragma): Do not
+	refer to C4x source files as examples.
+	(C4X_FLOAT_FORMAT): Remove documentation.
+
 2008-01-25  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (override_options): Reorder tests so that

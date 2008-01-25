@@ -1,6 +1,6 @@
 # GCC target-specific configuration file.
-# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
-# Free Software Foundation, Inc.
+# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+# 2008 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -195,8 +195,8 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
-   c4x-*		\
- | tic4x-*		\
+   crx-*		\
+ | mt-*			\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
@@ -351,9 +351,6 @@ sh[123456789lbe]*-*-*)
 	cpu_type=sh
 	need_64bit_hwint=yes
 	;;
-tic4x-*-*)
-        cpu_type=c4x
-        ;;
 esac
 
 tm_file=${cpu_type}/${cpu_type}.h
@@ -830,17 +827,6 @@ bfin*-*)
 	tmake_file=bfin/t-bfin
 	use_collect2=no
 	;;
-c4x-*-rtems* | tic4x-*-rtems*)
-	tmake_file="c4x/t-c4x t-rtems c4x/t-rtems"
-	tm_file="c4x/c4x.h c4x/rtems.h rtems.h"
-	c_target_objs="c4x-c.o"
-	cxx_target_objs="c4x-c.o"
-	;;
-c4x-* | tic4x-*)
-	tmake_file=c4x/t-c4x
-	c_target_objs="c4x-c.o"
-	cxx_target_objs="c4x-c.o"
-	;;
 cris-*-aout)
 	tm_file="dbxelf.h ${tm_file} cris/aout.h"
 	gas=yes
@@ -894,10 +880,6 @@ frv-*-*linux*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} \
 	         linux.h frv/linux.h frv/frv-abi.h"
 	tmake_file="${tmake_file} frv/t-frv frv/t-linux"
-	;;
-h8300-*-rtemscoff*)
-	tmake_file="h8300/t-h8300 t-rtems h8300/t-rtems"
-	tm_file="h8300/h8300.h dbxcoff.h h8300/coff.h h8300/rtems.h rtems.h"
 	;;
 h8300-*-rtems*)
 	tmake_file="h8300/t-h8300 h8300/t-elf t-rtems h8300/t-rtems"
@@ -1828,16 +1810,6 @@ mt-*-elf)
         tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
         tmake_file="${tmake_file} mt/t-mt"
         ;;
-ns32k-*-netbsdelf*)
-	echo "GCC does not yet support the ${target} target"; exit 1
-	;;
-ns32k-*-netbsd*)
-	tm_file="${tm_file} netbsd.h netbsd-aout.h ns32k/netbsd.h"
-	# On NetBSD, the headers are already okay, except for math.h.
-	tmake_file="t-netbsd ns32k/t-ns32k"
-	extra_parts=""
-	use_collect2=yes
-	;;
 pdp11-*-bsd)
 	tm_file="${tm_file} pdp11/2bsd.h"
 	use_fixproto=yes
@@ -2303,10 +2275,6 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 		tm_defines="$tm_defines SUPPORT_SH1=1 SUPPORT_SH2E=1 SUPPORT_SH4=1 SUPPORT_SH4_SINGLE=1 SUPPORT_SH2A=1 SUPPORT_SH2A_SINGLE=1 SUPPORT_SH5_32MEDIA=1 SUPPORT_SH5_32MEDIA_NOFPU=1 SUPPORT_SH5_64MEDIA=1 SUPPORT_SH5_64MEDIA_NOFPU=1"
 	fi
 	use_fixproto=yes
-	;;
-sh-*-rtemscoff*)
-	tmake_file="sh/t-sh t-rtems sh/t-rtems"
-	tm_file="${tm_file} dbxcoff.h sh/coff.h sh/rtems.h rtems.h"
 	;;
 sh-*-rtems*)
 	tmake_file="sh/t-sh sh/t-elf t-rtems sh/t-rtems"

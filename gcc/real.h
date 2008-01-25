@@ -1,6 +1,6 @@
 /* Definitions of floating-point access for GNU compiler.
    Copyright (C) 1989, 1991, 1994, 1996, 1997, 1998, 1999,
-   2000, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   2000, 2002, 2003, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -271,8 +271,6 @@ extern const struct real_format mips_quad_format;
 extern const struct real_format vax_f_format;
 extern const struct real_format vax_d_format;
 extern const struct real_format vax_g_format;
-extern const struct real_format c4x_single_format;
-extern const struct real_format c4x_extended_format;
 extern const struct real_format real_internal_format;
 extern const struct real_format decimal_single_format;
 extern const struct real_format decimal_double_format;

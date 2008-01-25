@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1996, 1998, 1999, 2000, 2001,
-@c 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+@c 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -2844,88 +2844,6 @@ An immediate for and/xor/or instructions.  const_int is sign extended as a 128 b
 
 @item Z
 An immediate for the @code{iohl} instruction.  const_int is sign extended to 128 bit.  
-
-@end table
-
-@item TMS320C3x/C4x---@file{config/c4x/c4x.h}
-@table @code
-@item a
-Auxiliary (address) register (ar0-ar7)
-
-@item b
-Stack pointer register (sp)
-
-@item c
-Standard (32-bit) precision integer register
-
-@item f
-Extended (40-bit) precision register (r0-r11)
-
-@item k
-Block count register (bk)
-
-@item q
-Extended (40-bit) precision low register (r0-r7)
-
-@item t
-Extended (40-bit) precision register (r0-r1)
-
-@item u
-Extended (40-bit) precision register (r2-r3)
-
-@item v
-Repeat count register (rc)
-
-@item x
-Index register (ir0-ir1)
-
-@item y
-Status (condition code) register (st)
-
-@item z
-Data page register (dp)
-
-@item G
-Floating-point zero
-
-@item H
-Immediate 16-bit floating-point constant
-
-@item I
-Signed 16-bit constant
-
-@item J
-Signed 8-bit constant
-
-@item K
-Signed 5-bit constant
-
-@item L
-Unsigned 16-bit constant
-
-@item M
-Unsigned 8-bit constant
-
-@item N
-Ones complement of unsigned 16-bit constant
-
-@item O
-High 16-bit constant (32-bit constant with 16 LSBs zero)
-
-@item Q
-Indirect memory reference with signed 8-bit or index register displacement
-
-@item R
-Indirect memory reference with unsigned 5-bit displacement
-
-@item S
-Indirect memory reference with 1 bit or index register displacement
-
-@item T
-Direct memory reference
-
-@item U
-Symbolic address
 
 @end table
 

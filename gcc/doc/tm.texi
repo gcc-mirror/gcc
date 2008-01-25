@@ -1,5 +1,5 @@
 @c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,
-@c 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+@c 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -1288,9 +1288,7 @@ mode, otherwise @var{mode} is VOIDmode.  @var{mode} is provided in the
 case where structures of one field would require the structure's mode to
 retain the field's mode.
 
-Normally, this is not needed.  See the file @file{c4x.h} for an example
-of how to use this macro to prevent a structure having a floating point
-field from being accessed in an integer mode.
+Normally, this is not needed.
 @end defmac
 
 @defmac ROUND_TYPE_ALIGN (@var{type}, @var{computed}, @var{specified})
@@ -1351,7 +1349,7 @@ targets.
 
 @defmac TARGET_FLOAT_FORMAT
 A code distinguishing the floating point format of the target machine.
-There are four defined values:
+There are two defined values:
 
 @ftable @code
 @item IEEE_FLOAT_FORMAT
@@ -1361,9 +1359,6 @@ need to define @code{TARGET_FLOAT_FORMAT} when the format is IEEE@.
 @item VAX_FLOAT_FORMAT
 This code indicates the ``F float'' (for @code{float}) and ``D float''
 or ``G float'' formats (for @code{double}) used on the VAX and PDP-11@.
-
-@item C4X_FLOAT_FORMAT
-This code indicates the format used on the TMS320C3x/C4x.
 @end ftable
 
 If your target uses a floating point format other than these, you must
@@ -9806,9 +9801,6 @@ a token of type @code{CPP_EOF}.  Macro expansion occurs on the
 arguments of pragmas registered with
 @code{c_register_pragma_with_expansion} but not on the arguments of
 pragmas registered with @code{c_register_pragma}.
-
-For an example use of this routine, see @file{c4x.h} and the callback
-routines defined in @file{c4x-c.c}.
 
 Note that the use of @code{pragma_lex} is specific to the C and C++
 compilers.  It will not work in the Java or Fortran compilers, or any

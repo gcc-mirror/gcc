@@ -1,6 +1,6 @@
 /* Definitions of various defaults for tm.h macros.
    Copyright (C) 1992, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2007
+   2005, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com)
 
@@ -655,7 +655,6 @@ along with GCC; see the file COPYING3.  If not see
 #define UNKNOWN_FLOAT_FORMAT 0
 #define IEEE_FLOAT_FORMAT 1
 #define VAX_FLOAT_FORMAT 2
-#define C4X_FLOAT_FORMAT 3
 
 /* Default to IEEE float if not specified.  Nearly all machines use it.  */
 #ifndef TARGET_FLOAT_FORMAT
