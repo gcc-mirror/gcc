@@ -1,3 +1,9 @@
+2008-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/33880
+	* testsuite/libgomp.c/pr33880.c: New test.
+	* testsuite/libgomp.fortran/pr33880.f90: New test.
+
 2008-01-24  David Edelsohn  <edelsohn@gnu.org>
 
 	* configure: Regenerate.
