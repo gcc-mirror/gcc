@@ -50,6 +50,8 @@
 /* OR) or the rounding mode read; all other fields are ignored and */
 /* untouched. */
 
+#include "decCommonSymbols.h"
+
 /* names for simpler testing and default context */
 #if DECPMAX==7
   #define SINGLE     1

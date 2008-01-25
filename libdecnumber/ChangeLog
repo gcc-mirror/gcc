@@ -1,3 +1,20 @@
+2008-01-25  Janis Johnson  <janis187@us.ibm.com>
+
+	* Makefile.in (libdecnumber_a_SOURCES): List Symbols headers.
+	* decCommonSymbols.h: New file.
+	* decCommon.c: Include it.
+	* decDPDSymbols.h: New file.
+	* decDPD.h: Include it.
+	* decNumberLocal.h: Include the two new files.
+	* decContextSymbols.h (DECPOWERS, DECSTICKYTAB): New.
+	* decNumberSymbols.h (LNnn, d2utable): New.
+	* dpd/decimal32Symbols.h (COMBEXP, COMBMSD, DPD2BIN, BIN2DPD): New.
+	* dpd/decimal64Symbols.h (COMBEXP, COMBMSD, DPD2BIN, BIN2DPD): New.
+	* dpd/decimal128Symbols.h (COMBEXP, COMBMSD, DPD2BIN, BIN2DPD): New.
+	* dpd/decimal32.c: Remove redefine of DPD2BIN, BIN2DPD.
+	* dpd/decimal64.c: Ditto.
+	* dpd/decimal128.c: Ditto.
+
 2007-11-26  Thiago Jung Bauermann  <bauerman@br.ibm.com>
 
 	* Makefile.in (decimal32.o): Prepend $(srcdir) to dependencies

@@ -65,9 +65,10 @@ libdecnumber_a_OBJS = decNumber.o decContext.o \
 
 libdecnumber_a_SOURCES = decContext.c decContext.h decDPD.h \
 	decNumber.c decNumber.h decNumberLocal.h \
-	dpd/decimal128.c dpd/decimal128.h \
-	dpd/decimal32.c dpd/decimal32.h \
-	dpd/decimal64.c dpd/decimal64.h \
+	decContextSymbols.h decDPDSymbols.h decNumberSymbols.h \
+	dpd/decimal128.c dpd/decimal128.h dpd/decimal128Symbols.h \
+	dpd/decimal32.c dpd/decimal32.h dpd/decimal32Symbols.h \
+	dpd/decimal64.c dpd/decimal64.h dpd/decimal64Symbols.h \
 	bid/decimal128.c bid/decimal128.h \
 	bid/decimal32.c bid/decimal32.h \
 	bid/decimal64.c bid/decimal64.h
