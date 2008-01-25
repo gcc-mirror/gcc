@@ -8920,8 +8920,11 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	target = 0;
       op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget,
 			 VOIDmode, EXPAND_NORMAL);
-      return expand_shift (code, mode, op0, TREE_OPERAND (exp, 1), target,
+      temp = expand_shift (code, mode, op0, TREE_OPERAND (exp, 1), target,
 			   unsignedp);
+      if (code == LSHIFT_EXPR)
+	temp = REDUCE_BIT_FIELD (temp);
+      return temp;
 
       /* Could determine the answer when only additive constants differ.  Also,
 	 the addition of one can be handled by changing the condition.  */
