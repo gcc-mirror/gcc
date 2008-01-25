@@ -1,5 +1,8 @@
 2008-01-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/33333
+	* g++.dg/gomp/pr33333.C: New test.
+
 	PR preprocessor/34692
 	* gcc.dg/cpp/pr34692.c: New test.
 	* gcc.dg/gomp/pr34692.c: New test.

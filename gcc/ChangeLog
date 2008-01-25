@@ -1,3 +1,8 @@
+2008-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/33333
+	* gimplify.c (gimplify_omp_for): Gimplify OMP_FOR_PRE_BODY.
+
 2008-01-25  Golovanevsky Olga  <olga@il.ibm.com>
 
 	* ipa-struct-reorg.c (remove_str_allocs_in_func, remove_str_allocs):
