@@ -1,3 +1,8 @@
+2008-01-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/34856
+	* gcc.dg/pr34856.c: Use pointer mode for "pin".
+
 2008-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/33333
@@ -9,7 +14,7 @@
 
 2008-01-25  Olga Golovanevsky  <olga@il.ibm.com>
 
-        * gcc.dg/struct/wo_prof_malloc_size_var.c: UnXFAIL.
+	* gcc.dg/struct/wo_prof_malloc_size_var.c: UnXFAIL.
 
 2008-01-24  Daniel Franke  <franke.daniel@gmail.com>
 

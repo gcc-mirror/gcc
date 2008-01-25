@@ -2916,7 +2916,12 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 
   if (VECTOR_MODE_P (mode)
       && code == VEC_CONCAT
-      && CONSTANT_P (op0) && CONSTANT_P (op1))
+      && (CONST_INT_P (op0)
+	  || GET_CODE (op0) == CONST_DOUBLE
+	  || GET_CODE (op0) == CONST_FIXED)
+      && (CONST_INT_P (op1)
+	  || GET_CODE (op1) == CONST_DOUBLE
+	  || GET_CODE (op1) == CONST_FIXED))
     {
       unsigned n_elts = GET_MODE_NUNITS (mode);
       rtvec v = rtvec_alloc (n_elts);
