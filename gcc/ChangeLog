@@ -1,3 +1,45 @@
+2008-01-24  Nick Clifton  <nickc@redhat.com>
+
+	* config/stormy16/stormy16-lib2.c (MIN_UNITS_PER_WORD):
+	Provide a default definition.
+	(LIBGCC2_UNITS_PER_WORD): Likewise.
+
+	* config/stormy16/stormy16.c: Include df.h for the prototype
+	for df_regs_ever_live_p.
+	(xstormy16_expand_builtin_va_start): Convert the stack offset
+	into a component_ref and then use POINTER_PLUS_EXPR to add it
+	to the incoming_virtual_args_rtx.
+	(xstormy16_gimplify_va_arg_expr): Rename to
+	xstormy16_gimplify_va_arg_expr.
+	Use POINTER_PLUS_EXPR when performing pointer arithmetic.
+	(TARGET_GIMPLIFY_VA_ARG_EXPR): Use renamed
+	xstormy16_gimplify_va_arg_expr.
+	Fix up some formatting issues.
+
+	* config/stormy16/stormy16.c: (xstormy16_carry_plus_operand):
+	Move to predicates.md.
+	(xs_hi_general_operand): Likewise.
+	(xs_hi_nonmemory_operand): Likewise.
+	* config/stormy16/predicates.md:
+	(xstormy16_carry_plus_operand): New predicate.
+	(xs_hi_general_operand): New predicate.
+	(xs_hi_nonmemory_operand): New predicate.
+	* config/stormy16/stormy16-protos.h:
+	(xstormy16_carry_plus_operand): Delete prototype.
+	(xs_hi_general_operand): Likewise.
+	(xs_hi_nonmemory_operand): Likewise.
+
+	* config/storm16/stormy16.md (addhi3): Remove earlyclobber
+	modifiers as they are no longer needed and they can trigger
+	reload spill failures.
+
+	* config/storm16/stormy16.md (ineqbranchsi): Replace match_dup
+	with a match_operand in order to help reload.
+
+	* config/storm16/stormy16.md (movhi_internal): Replace 'r'
+	constraint with 'e' for the 8th alternative as this version of
+	the mov.w instruction only accepts the lower 8 registers.
+
 2008-01-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/34856

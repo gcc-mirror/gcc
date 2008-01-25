@@ -143,3 +143,36 @@
 	  && ! xstormy16_extra_constraint_p (op, 'Q')
 	  && ! xstormy16_extra_constraint_p (op, 'R'));
 })
+
+(define_predicate "xstormy16_carry_plus_operand"
+  (match_code "plus")
+{
+  return (GET_CODE (XEXP (op, 1)) == CONST_INT
+	  && (INTVAL (XEXP (op, 1)) < -4 || INTVAL (XEXP (op, 1)) > 4));
+})
+
+(define_predicate "xs_hi_general_operand"
+  (match_code "const_int,reg,subreg,mem,symbol_ref,label_ref,const")
+{
+  if ((GET_CODE (op) == CONST_INT)
+       && ((INTVAL (op) >= 32768) || (INTVAL (op) < -32768)))
+    {
+      error ("constant halfword load operand out of range");
+      return false;
+    }
+    
+  return general_operand (op, mode);
+})
+
+(define_predicate "xs_hi_nonmemory_operand"
+  (match_code "const_int,reg,subreg,const")
+{
+  if ((GET_CODE (op) == CONST_INT) 
+       && ((INTVAL (op) >= 32768) || (INTVAL (op) < -32768)))
+    {
+      error ("constant arithmetic operand out of range");
+      return false;
+    }
+
+  return nonmemory_operand (op, mode);
+})
