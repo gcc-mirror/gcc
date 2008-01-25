@@ -1,3 +1,8 @@
+2008-01-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/34876
+	* gfortran.dg/direct_io_9.f: New test.
+
 2008-01-25  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/34661
