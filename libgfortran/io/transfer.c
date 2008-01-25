@@ -638,6 +638,14 @@ write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
 	  return FAILURE;
 	}
 
+      if (buf == NULL && nbytes == 0)
+	{
+	   char *p;
+	   p = write_block (dtp, dtp->u.p.current_unit->recl);
+	   memset (p, 0, dtp->u.p.current_unit->recl);
+	   return SUCCESS;
+	}
+
       if (swrite (dtp->u.p.current_unit->s, buf, &nbytes) != 0)
 	{
 	  generate_error (&dtp->common, LIBERROR_OS, NULL);
@@ -648,7 +656,6 @@ write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
       dtp->u.p.current_unit->bytes_left -= (gfc_offset) nbytes;
 
       return SUCCESS;
-
     }
 
   /* Unformatted sequential.  */
@@ -1507,9 +1514,15 @@ transfer_array (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
       extent[n] = desc->dim[n].ubound + 1 - desc->dim[n].lbound;
 
       /* If the extent of even one dimension is zero, then the entire
-	 array section contains zero elements, so we return.  */
+	 array section contains zero elements, so we return after writing
+	 a zero array record.  */
       if (extent[n] <= 0)
-	return;
+	{
+	  data = NULL;
+	  tsize = 0;
+	  dtp->u.p.transfer (dtp, iotype, data, kind, size, tsize);
+	  return;
+	}
     }
 
   stride0 = stride[0];
