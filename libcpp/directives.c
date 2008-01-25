@@ -475,7 +475,7 @@ _cpp_handle_directive (cpp_reader *pfile, int indented)
     _cpp_backup_tokens (pfile, 1);
 
   end_directive (pfile, skip);
-  if (was_parsing_args)
+  if (was_parsing_args && !pfile->state.in_deferred_pragma)
     {
       /* Restore state when within macro args.  */
       pfile->state.parsing_args = 2;
