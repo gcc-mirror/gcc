@@ -1,3 +1,9 @@
+2008-01-25  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/33887
+	* cp-lang.c (LANG_HOOKS_REDUCE_BIT_FIELD_OPERATIONS): Define
+	to true.
+
 2008-01-24  Paolo Carlini  <pcarlini@suse.de>
 
         PR c++/34603
