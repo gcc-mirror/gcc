@@ -1,3 +1,11 @@
+2008-01-25  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/33887
+	* g++.dg/torture/pr33887-1.C: New testcase.
+	* g++.dg/torture/pr33887-2.C: Likewise.
+	* g++.dg/torture/pr33887-3.C: Likewise.
+	* gcc.c-torture/execute/20071211-1.c: Likewise.
+
 2008-01-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/34856
