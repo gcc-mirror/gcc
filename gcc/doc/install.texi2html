@@ -23,6 +23,17 @@ if [ ! -d $DESTDIR ]; then
     mkdir -p $DESTDIR
 fi
 
+# Generate gcc-vers.texi.
+(
+   echo "@set version-GCC $(cat $SOURCEDIR/../BASE-VER)"
+   if [ "$(cat $SOURCEDIR/../DEV-PHASE)" = "experimental" ]; then
+      echo "@set DEVELOPMENT"
+   else
+      echo "@clear DEVELOPMENT"
+   fi
+   echo "@set srcdir $SOURCEDIR/.."
+) > $SOURCEDIR/include/gcc-vers.texi
+
 for x in index.html specific.html prerequisites.html download.html configure.html \
          build.html test.html finalinstall.html binaries.html old.html \
          gfdl.html
@@ -31,3 +42,5 @@ do
     echo "define = $define"
     $MAKEINFO -I $SOURCEDIR -I $SOURCEDIR/include $SOURCEDIR/install.texi --html --no-split -D$define -o$DESTDIR/$x
 done
+
+rm $SOURCEDIR/include/gcc-vers.texi
