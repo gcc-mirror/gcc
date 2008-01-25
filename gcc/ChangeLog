@@ -1,3 +1,10 @@
+2008-01-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/34856
+	* simplifx-rtx.c (simplify_const_binary_operation) [VEC_CONCAT]:
+	Consider only CONST_INT, CONST_DOUBLE and CONST_FIXED as constant
+	vector elements.
+
 2008-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/33333
