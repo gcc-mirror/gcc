@@ -846,8 +846,8 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
     }
   /* We don't check for ENUMERAL_TYPE here because there are no standard
      conversions to enum type.  */
-  else if (tcode == INTEGER_TYPE || tcode == BOOLEAN_TYPE
-	   || tcode == REAL_TYPE)
+  /* As an extension, allow conversion to complex type.  */
+  else if (ARITHMETIC_TYPE_P (to))
     {
       if (! (INTEGRAL_CODE_P (fcode) || fcode == REAL_TYPE))
 	return NULL;
@@ -5937,6 +5937,10 @@ compare_ics (conversion *ics1, conversion *ics2)
       from_type2 = t2->type;
     }
 
+  /* One sequence can only be a subsequence of the other if they start with
+     the same type.  They can start with different types when comparing the
+     second standard conversion sequence in two user-defined conversion
+     sequences.  */
   if (same_type_p (from_type1, from_type2))
     {
       if (is_subseq (ics1, ics2))
@@ -5944,10 +5948,6 @@ compare_ics (conversion *ics1, conversion *ics2)
       if (is_subseq (ics2, ics1))
 	return -1;
     }
-  /* Otherwise, one sequence cannot be a subsequence of the other; they
-     don't start with the same type.  This can happen when comparing the
-     second standard conversion sequence in two user-defined conversion
-     sequences.  */
 
   /* [over.ics.rank]
 
@@ -5976,6 +5976,21 @@ compare_ics (conversion *ics1, conversion *ics2)
 
   to_type1 = ics1->type;
   to_type2 = ics2->type;
+
+  /* A conversion from scalar arithmetic type to complex is worse than a
+     conversion between scalar arithmetic types.  */
+  if (same_type_p (from_type1, from_type2)
+      && ARITHMETIC_TYPE_P (from_type1)
+      && ARITHMETIC_TYPE_P (to_type1)
+      && ARITHMETIC_TYPE_P (to_type2)
+      && ((TREE_CODE (to_type1) == COMPLEX_TYPE)
+	  != (TREE_CODE (to_type2) == COMPLEX_TYPE)))
+    {
+      if (TREE_CODE (to_type1) == COMPLEX_TYPE)
+	return -1;
+      else
+	return 1;
+    }
 
   if (TYPE_PTR_P (from_type1)
       && TYPE_PTR_P (from_type2)
