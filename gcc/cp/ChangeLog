@@ -1,3 +1,12 @@
+2008-01-25  Jason Merrill  <jason@redhat.com>
+	    Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/31780
+	* call.c (standard_conversion): Allow conversion from integer/real
+	to complex.
+	(compare_ics): Such a conversion is worse than a normal arithmetic
+	conversion.
+	
 2008-01-25  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/33887
