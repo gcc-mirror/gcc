@@ -187,7 +187,7 @@ typedef struct func_alloc_sites *fallocs_t;
 typedef const struct func_alloc_sites *const_fallocs_t;
 
 /* All allocation sites in the program.  */
-htab_t alloc_sites;
+htab_t alloc_sites = NULL;
 
 /* New global variables. Generated once for whole program.  */
 htab_t new_global_vars;
@@ -2347,6 +2347,41 @@ dump_access_sites (htab_t accs)
     htab_traverse (accs, dump_acc, NULL);
 }
 
+/* This function is a callback for alloc_sites hashtable 
+   traversal. SLOT is a pointer to fallocs_t. This function
+   removes all allocations of the structure defined by DATA.  */
+
+static int
+remove_str_allocs_in_func (void **slot, void *data)
+{
+  fallocs_t fallocs = *(fallocs_t *) slot;
+  unsigned i = 0;
+  alloc_site_t *call;
+
+  while (VEC_iterate (alloc_site_t, fallocs->allocs, i, call))
+    {
+      if (call->str == (d_str) data)
+	VEC_ordered_remove (alloc_site_t, fallocs->allocs, i);
+      else
+	i++;
+    }
+
+  return 1;
+}
+
+/* This function remove all entries corresponding to the STR structure
+   from alloc_sites hashtable.   */
+
+static void
+remove_str_allocs (d_str str)
+{
+  if (!str)
+    return;
+
+  if (alloc_sites)
+    htab_traverse (alloc_sites, remove_str_allocs_in_func, str);
+}
+
 /* This function removes the structure with index I from structures vector.  */
 
 static void 
@@ -2357,7 +2392,11 @@ remove_structure (unsigned i)
   if (i >= VEC_length (structure, structures))
     return;
 
-  str = VEC_index (structure, structures, i);  
+  str = VEC_index (structure, structures, i);
+  
+  /* Before removing the structure str, we have to remove its
+     allocations from alloc_sites hashtable.  */
+  remove_str_allocs (str);
   free_data_struct (str);
   VEC_ordered_remove (structure, structures, i);
 }

@@ -1,5 +1,11 @@
 2008-01-25  Golovanevsky Olga  <olga@il.ibm.com>
 
+	* ipa-struct-reorg.c (remove_str_allocs_in_func, remove_str_allocs):
+	New functions.
+	(remove_structure): Update allocations list before removing structure.
+	
+2008-01-25  Golovanevsky Olga  <olga@il.ibm.com>
+
 	* ipa-struct-reorg.c (is_safe_cond_expr, 
 	create_new_stmts_for_cond_expr): Use integer_zerop function,
 	that recognize not only zero-pointer, but zero-integer too.
