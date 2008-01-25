@@ -1,3 +1,8 @@
+2008-01-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* paranoia.cc (main): Remove handling of c4x_single and
+	c4x_extended formats.
+
 2007-12-26  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* compareSumTests3: Changed to GPLv3.

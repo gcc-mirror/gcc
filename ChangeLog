@@ -1,3 +1,7 @@
+2008-01-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* MAINTAINERS (c4x port): Remove.
+
 2008-01-24  David Edelsohn  <edelsohn@gnu.org>
 
 	* libtool.m4: Backport AIX 6 support from ToT Libtool.

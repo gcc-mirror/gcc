@@ -45,7 +45,7 @@
 @end ifset
 
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-@c 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+@c 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
 @c IMPORTANT: whenever you modify this file, run `install.texi2html' to
@@ -71,7 +71,7 @@
 @c Part 2 Summary Description and Copyright
 @copying
 Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 @sp 1
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2 or
@@ -2492,8 +2492,6 @@ information are.
 @item
 @uref{#bfin,,Blackfin}
 @item
-@uref{#c4x,,c4x}
-@item
 @uref{#dos,,DOS}
 @item
 @uref{#x-x-freebsd,,*-*-freebsd*}
@@ -2820,36 +2818,6 @@ See ``Blackfin Options'' in the main manual
 
 More information, and a version of binutils with support for this processor,
 is available at @uref{http://blackfin.uclinux.org}
-
-@html
-<hr />
-@end html
-@heading @anchor{c4x}c4x
-
-Texas Instruments TMS320C3x and TMS320C4x Floating Point Digital Signal
-Processors.  These are used in embedded applications.  There are no
-standard Unix configurations.
-@ifnothtml
-@xref{TMS320C3x/C4x Options,, TMS320C3x/C4x Options, gcc, Using the
-GNU Compiler Collection (GCC)},
-@end ifnothtml
-@ifhtml
-See ``TMS320C3x/C4x Options'' in the main manual
-@end ifhtml
-for the list of supported MCU types.
-
-GCC can be configured as a cross compiler for both the C3x and C4x
-architectures on the same system.  Use @samp{configure --target=c4x
---enable-languages="c,c++"} to configure.
-
-
-Further installation notes and other useful information about C4x tools
-can also be obtained from:
-
-@itemize @bullet
-@item
-@uref{http://www.elec.canterbury.ac.nz/c4x/,,http://www.elec.canterbury.ac.nz/c4x/}
-@end itemize
 
 @html
 <hr />

@@ -1,3 +1,9 @@
+2008-01-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/builtin-inf-1.c, gcc.dg/compare6.c, gcc.dg/sibcall-3.c,
+	gcc.dg/sibcall-4.c, gcc.dg/torture/builtin-attr-1.c: Don't handle
+	c4x-*-* targets.
+
 2008-01-25  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/32244
