@@ -1,3 +1,8 @@
+2008-01-25  Joseph Myers  <joseph@codesourcery.com>
+
+	PR other/31955
+	* doc/install.texi2html: Generate gcc-vers.texi.
+
 2008-01-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	Backport:
