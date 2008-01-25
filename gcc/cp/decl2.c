@@ -1014,9 +1014,12 @@ is_late_template_attribute (tree attr, tree decl)
 	  || code == BOUND_TEMPLATE_TEMPLATE_PARM
 	  || code == TYPENAME_TYPE)
 	return true;
-      /* Also defer attributes on dependent types.  This is not necessary
-	 in all cases, but is the better default.  */
-      else if (dependent_type_p (type))
+      /* Also defer most attributes on dependent types.  This is not
+	 necessary in all cases, but is the better default.  */
+      else if (dependent_type_p (type)
+	       /* But attribute visibility specifically works on
+		  templates.  */
+	       && !is_attribute_p ("visibility", name))
 	return true;
       else
 	return false;
