@@ -32,6 +32,5 @@ main ()
 }
 
 /*--------------------------------------------------------------------------*/
-/* Currently the condition `if (p == 0)` is incorrectly reported as unsafe.  */
-/* { dg-final { scan-ipa-dump "Number of structures to transform is 1" "ipa_struct_reorg" { xfail *-*-* } } } */
+/* { dg-final { scan-ipa-dump "Number of structures to transform is 1" "ipa_struct_reorg" } } */
 /* { dg-final { cleanup-ipa-dump "*" } } */

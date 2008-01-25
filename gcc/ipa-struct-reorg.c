@@ -1251,12 +1251,15 @@ create_new_stmts_for_cond_expr (tree stmt)
   s0 = (str0 != length) ? true : false;
   s1 = (str1 != length) ? true : false;
 
-  gcc_assert ((!s0 && s1) || (!s1 && s0));
+  gcc_assert (s0 || s1);
+  /* For now we allow only comparison with 0 or NULL.  */
+  gcc_assert (integer_zerop (arg0) || integer_zerop (arg1));
   
-  str = s0 ? VEC_index (structure, structures, str0): 
-    VEC_index (structure, structures, str1);
-  arg = s0 ? arg0 : arg1;
-  pos = s0 ? 0 : 1;
+  str = integer_zerop (arg0) ?
+    VEC_index (structure, structures, str1): 
+    VEC_index (structure, structures, str0);
+  arg = integer_zerop (arg0) ? arg1 : arg0;
+  pos = integer_zerop (arg0) ? 1 : 0;
   
   for (i = 0; VEC_iterate (tree, str->new_types, i, type); i++)
     {
@@ -2388,8 +2391,12 @@ is_safe_cond_expr (tree cond_stmt)
 
   s0 = (str0 != length) ? true : false;
   s1 = (str1 != length) ? true : false;
+  
+  if (!s0 && !s1)
+    return false;
 
-  if (!((!s0 && s1) || (!s1 && s0)))
+  /* For now we allow only comparison with 0 or NULL.  */
+  if (!integer_zerop (arg0) && !integer_zerop (arg1))
     return false;
 
   return true;
