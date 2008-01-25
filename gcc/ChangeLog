@@ -1,3 +1,7 @@
+2008-01-25  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.h (ASM_PREFERRED_EH_DATA_FORMAT): Define.
+
 2008-01-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/c4x: Remove directory.
