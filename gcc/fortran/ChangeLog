@@ -1,3 +1,10 @@
+2008-01-25  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/34661
+	* resolve.c (resolve_where): Added check if user-defined assignment 
+	operator is an elemental subroutine.
+	(gfc_resolve_where_code_in_forall): Likewise.
+
 2008-01-24  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/33375

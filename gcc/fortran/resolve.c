@@ -5656,6 +5656,9 @@ resolve_where (gfc_code *code, gfc_expr *mask)
   
 	    case EXEC_ASSIGN_CALL:
 	      resolve_call (cnext);
+	      if (!cnext->resolved_sym->attr.elemental)
+		gfc_error("Non-ELEMETAL user-defined assignment in WHERE at %L",
+			  &cnext->ext.actual->expr->where);
 	      break;
 
 	    /* WHERE or WHERE construct is part of a where-body-construct */
@@ -5738,6 +5741,9 @@ gfc_resolve_where_code_in_forall (gfc_code *code, int nvar,
 	    /* WHERE operator assignment statement */
 	    case EXEC_ASSIGN_CALL:
 	      resolve_call (cnext);
+	      if (!cnext->resolved_sym->attr.elemental)
+		gfc_error("Non-ELEMETAL user-defined assignment in WHERE at %L",
+			  &cnext->ext.actual->expr->where);
 	      break;
 
 	    /* WHERE or WHERE construct is part of a where-body-construct */
