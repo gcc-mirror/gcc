@@ -1,3 +1,9 @@
+2008-01-25  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/32244
+	* expr.c (expand_expr_real_1): Reduce result of LSHIFT_EXPR
+	to its bitfield precision if required.
+
 2008-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/33880
