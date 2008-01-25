@@ -1,3 +1,8 @@
+2008-01-25  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/34661
+	* gfortran.dg/where_operator_assign_4.f90: New test.
+
 2008-01-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/builtin-inf-1.c, gcc.dg/compare6.c, gcc.dg/sibcall-3.c,
