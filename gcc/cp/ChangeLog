@@ -1,4 +1,9 @@
 2008-01-25  Jason Merrill  <jason@redhat.com>
+
+	* decl2.c (is_late_template_attribute): Don't defer attribute
+	visibility just because the type is dependent.
+
+2008-01-25  Jason Merrill  <jason@redhat.com>
 	    Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/31780
