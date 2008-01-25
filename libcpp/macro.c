@@ -41,11 +41,13 @@ struct macro_arg
 
 /* Macro expansion.  */
 
-static int enter_macro_context (cpp_reader *, cpp_hashnode *);
+static int enter_macro_context (cpp_reader *, cpp_hashnode *,
+				const cpp_token *);
 static int builtin_macro (cpp_reader *, cpp_hashnode *);
 static void push_ptoken_context (cpp_reader *, cpp_hashnode *, _cpp_buff *,
 				 const cpp_token **, unsigned int);
-static _cpp_buff *collect_args (cpp_reader *, const cpp_hashnode *);
+static _cpp_buff *collect_args (cpp_reader *, const cpp_hashnode *,
+				_cpp_buff **);
 static cpp_context *next_context (cpp_reader *);
 static const cpp_token *padding_token (cpp_reader *, const cpp_token *);
 static void expand_arg (cpp_reader *, macro_arg *);
@@ -55,7 +57,8 @@ static void paste_all_tokens (cpp_reader *, const cpp_token *);
 static bool paste_tokens (cpp_reader *, const cpp_token **, const cpp_token *);
 static void replace_args (cpp_reader *, cpp_hashnode *, cpp_macro *,
 			  macro_arg *);
-static _cpp_buff *funlike_invocation_p (cpp_reader *, cpp_hashnode *);
+static _cpp_buff *funlike_invocation_p (cpp_reader *, cpp_hashnode *,
+					_cpp_buff **);
 static bool create_iso_definition (cpp_reader *, cpp_macro *);
 
 /* #define directive parsing and handling.  */
@@ -575,9 +578,12 @@ _cpp_arguments_ok (cpp_reader *pfile, cpp_macro *macro, const cpp_hashnode *node
    invocation.  Assumes the opening parenthesis has been processed.
    If there is an error, emits an appropriate diagnostic and returns
    NULL.  Each argument is terminated by a CPP_EOF token, for the
-   future benefit of expand_arg().  */
+   future benefit of expand_arg().  If there are any deferred
+   #pragma directives among macro arguments, store pointers to the
+   CPP_PRAGMA ... CPP_PRAGMA_EOL tokens into *PRAGMA_BUFF buffer.  */
 static _cpp_buff *
-collect_args (cpp_reader *pfile, const cpp_hashnode *node)
+collect_args (cpp_reader *pfile, const cpp_hashnode *node,
+	      _cpp_buff **pragma_buff)
 {
   _cpp_buff *buff, *base_buff;
   cpp_macro *macro;
@@ -645,6 +651,51 @@ collect_args (cpp_reader *pfile, const cpp_hashnode *node)
 	  else if (token->type == CPP_EOF
 		   || (token->type == CPP_HASH && token->flags & BOL))
 	    break;
+	  else if (token->type == CPP_PRAGMA)
+	    {
+	      cpp_token *newtok = _cpp_temp_token (pfile);
+
+	      /* CPP_PRAGMA token lives in directive_result, which will
+		 be overwritten on the next directive.  */
+	      *newtok = *token;
+	      token = newtok;
+	      do
+		{
+		  if (*pragma_buff == NULL
+		      || BUFF_ROOM (*pragma_buff) < sizeof (cpp_token *))
+		    {
+		      _cpp_buff *next;
+		      if (*pragma_buff == NULL)
+			*pragma_buff
+			  = _cpp_get_buff (pfile, 32 * sizeof (cpp_token *));
+		      else
+			{
+			  next = *pragma_buff;
+			  *pragma_buff
+			    = _cpp_get_buff (pfile,
+					     (BUFF_FRONT (*pragma_buff)
+					      - (*pragma_buff)->base) * 2);
+			  (*pragma_buff)->next = next;
+			}
+		    }
+		  *(const cpp_token **) BUFF_FRONT (*pragma_buff) = token;
+		  BUFF_FRONT (*pragma_buff) += sizeof (cpp_token *);
+		  if (token->type == CPP_PRAGMA_EOL)
+		    break;
+		  token = cpp_get_token (pfile);
+		}
+	      while (token->type != CPP_EOF);
+
+	      /* In deferred pragmas parsing_args and prevent_expansion
+		 had been changed, reset it.  */
+	      pfile->state.parsing_args = 2;
+	      pfile->state.prevent_expansion = 1;
+
+	      if (token->type == CPP_EOF)
+		break;
+	      else
+		continue;
+	    }
 
 	  arg->first[ntokens++] = token;
 	}
@@ -709,9 +760,11 @@ collect_args (cpp_reader *pfile, const cpp_hashnode *node)
 /* Search for an opening parenthesis to the macro of NODE, in such a
    way that, if none is found, we don't lose the information in any
    intervening padding tokens.  If we find the parenthesis, collect
-   the arguments and return the buffer containing them.  */
+   the arguments and return the buffer containing them.  PRAGMA_BUFF
+   argument is the same as in collect_args.  */
 static _cpp_buff *
-funlike_invocation_p (cpp_reader *pfile, cpp_hashnode *node)
+funlike_invocation_p (cpp_reader *pfile, cpp_hashnode *node,
+		      _cpp_buff **pragma_buff)
 {
   const cpp_token *token, *padding = NULL;
 
@@ -728,7 +781,7 @@ funlike_invocation_p (cpp_reader *pfile, cpp_hashnode *node)
   if (token->type == CPP_OPEN_PAREN)
     {
       pfile->state.parsing_args = 2;
-      return collect_args (pfile, node);
+      return collect_args (pfile, node, pragma_buff);
     }
 
   /* CPP_EOF can be the end of macro arguments, or the end of the
@@ -749,9 +802,13 @@ funlike_invocation_p (cpp_reader *pfile, cpp_hashnode *node)
 /* Push the context of a macro with hash entry NODE onto the context
    stack.  If we can successfully expand the macro, we push a context
    containing its yet-to-be-rescanned replacement list and return one.
-   Otherwise, we don't push a context and return zero.  */
+   If there were additionally any unexpanded deferred #pragma directives
+   among macro arguments, push another context containing the
+   pragma tokens before the yet-to-be-rescanned replacement list
+   and return two.  Otherwise, we don't push a context and return zero.  */
 static int
-enter_macro_context (cpp_reader *pfile, cpp_hashnode *node)
+enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
+		     const cpp_token *result)
 {
   /* The presence of a macro invalidates a file's controlling macro.  */
   pfile->mi_valid = false;
@@ -762,6 +819,7 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node)
   if (! (node->flags & NODE_BUILTIN))
     {
       cpp_macro *macro = node->value.macro;
+      _cpp_buff *pragma_buff = NULL;
 
       if (macro->fun_like)
 	{
@@ -770,7 +828,7 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node)
 	  pfile->state.prevent_expansion++;
 	  pfile->keep_tokens++;
 	  pfile->state.parsing_args = 1;
-	  buff = funlike_invocation_p (pfile, node);
+	  buff = funlike_invocation_p (pfile, node, &pragma_buff);
 	  pfile->state.parsing_args = 0;
 	  pfile->keep_tokens--;
 	  pfile->state.prevent_expansion--;
@@ -781,6 +839,9 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node)
 		cpp_error (pfile, CPP_DL_WARNING,
  "function-like macro \"%s\" must be used with arguments in traditional C",
 			   NODE_NAME (node));
+
+	      if (pragma_buff)
+		_cpp_release_buff (pfile, pragma_buff);
 
 	      return 0;
 	    }
@@ -797,6 +858,25 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node)
 
       if (macro->paramc == 0)
 	_cpp_push_token_context (pfile, node, macro->exp.tokens, macro->count);
+
+      if (pragma_buff)
+	{
+	  if (!pfile->state.in_directive)
+	    _cpp_push_token_context (pfile, NULL,
+				     padding_token (pfile, result), 1);
+	  do
+	    {
+	      _cpp_buff *tail = pragma_buff->next;
+	      pragma_buff->next = NULL;
+	      push_ptoken_context (pfile, NULL, pragma_buff,
+				   (const cpp_token **) pragma_buff->base,
+				   ((const cpp_token **) BUFF_FRONT (pragma_buff)
+				    - (const cpp_token **) pragma_buff->base));
+	      pragma_buff = tail;
+	    }
+	  while (pragma_buff != NULL);
+	  return 2;
+	}
 
       return 1;
     }
@@ -1144,14 +1224,17 @@ cpp_get_token (cpp_reader *pfile)
 
       if (!(node->flags & NODE_DISABLED))
 	{
+	  int ret;
 	  /* If not in a macro context, and we're going to start an
 	     expansion, record the location.  */
 	  if (can_set && !context->macro)
 	    pfile->invocation_location = result->src_loc;
-	  if (!pfile->state.prevent_expansion
-	      && enter_macro_context (pfile, node))
+	  if (pfile->state.prevent_expansion)
+	    break;
+	  ret = enter_macro_context (pfile, node, result);
+	  if (ret)
 	    {
-	      if (pfile->state.in_directive)
+	      if (pfile->state.in_directive || ret == 2)
 		continue;
 	      return padding_token (pfile, result);
 	    }

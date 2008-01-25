@@ -1,12 +1,30 @@
+2008-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/34692
+	* macro.c (collect_args): Add pragma_buff argument.  Push
+	CPP_PRAGMA ... CPP_PRAGMA_EOL tokens to *pragma_buff, rather
+	than into arguments.  Reset prevent_expansion and parsing_args
+	state at CPP_PRAGMA_EOL/CPP_EOF.
+	(funlike_invocation_p): Add pragma_buff argument, pass it through
+	to collect_args.
+	(enter_macro_context): Add result argument.  Adjust
+	funlike_invocation_p caller.  Emit all deferred pragma tokens
+	gathered during collect_args before the expansion, add a padding
+	token.  Return 2 instead of 1 if any pragma tokens were prepended.
+	(cpp_get_token): If enter_macro_context returns 2, don't return
+	a padding token, instead cycle to grab CPP_PRAGMA token.
+	* directives.c (_cpp_handle_directive): If was_parsing_args
+	in deferred pragma, leave parsing_args and prevent_expansion as is.
+
 2008-01-22  Tom Tromey  <tromey@redhat.com>
 
-	PR c++/34859:
+	PR c++/34859
 	* macro.c (_cpp_create_definition): Handle __STDC_LIMIT_MACROS and
 	__STDC_CONSTANT_MACROS.
 
 2008-01-07  Fred Fish  <fnf@specifix.com>
 
-	PR preprocessor/30363:
+	PR preprocessor/30363
 	* traditional.c (replace_args_and_push): Add local variable
 	cxtquote, calculate the replacement text size assuming a 
 	worst case of every input character quoted with backslash,
@@ -15,7 +33,7 @@
 
 2008-01-03  Tom Tromey  <tromey@redhat.com>
 
-	PR preprocessor/34602.
+	PR preprocessor/34602
 	* directives.c (do_line): Don't try to spell EOF token.
 	(do_linemarker): Add comment.
 
@@ -26,7 +44,7 @@
 
 2007-12-06  Tom Tromey  <tromey@redhat.com>
 
-	PR c/29172:
+	PR c/29172
 	* internal.h (struct cpp_reader) <file_hash_entries>: Changed
 	type.
 	<file_hash_entries_allocated, file_hash_entries_used>: Removed.
@@ -43,13 +61,13 @@
 
 2007-12-03  Tom Tromey  <tromey@redhat.com>
 
-	PR preprocessor/34288:
+	PR preprocessor/34288
 	* configure.ac, config.in: Rebuilt.
 	* configure.ac: Check for ssize_t.
 
 2007-11-30  Tom Tromey  <tromey@redhat.com>
 
-	PR preprocessor/32868:
+	PR preprocessor/32868
 	* macro.c (_cpp_create_definition): Special case
 	__STDC_FORMAT_MACROS.
 
@@ -59,7 +77,7 @@
 
 2007-11-11  Tom Tromey  <tromey@redhat.com>
 
-	PR c++/17557:
+	PR c++/17557
 	* include/cpplib.h (cpp_included_before): Declare.
 	* files.c (struct file_hash_entry) <location>: New field.
 	(_cpp_find_file): Initialize new field.
@@ -68,13 +86,13 @@
 
 2007-11-01  Tom Tromey  <tromey@redhat.com>
 
-	PR preprocessor/30805:
+	PR preprocessor/30805
 	* macro.c (paste_tokens): Handle padding token.
 	(paste_tokens): Don't abort unless padding has PASTE_LEFT flag.
 
 2007-10-31  Tom Tromey  <tromey@redhat.com>
 
-	PR preprocessor/30786:
+	PR preprocessor/30786
 	* macro.c (builtin_macro): Return result of _cpp_do__Pragma.
 	* directives.c (_cpp_do__Pragma): Return error status.
 	* internal.h (_cpp_do__Pragma): Update.
@@ -112,7 +130,7 @@
 
 2007-08-18  Tom Tromey  <tromey@redhat.com>
 
-	PR preprocessor/32974:
+	PR preprocessor/32974
 	* directives.c (parse_include): Don't check for EOL when
 	processing #pragma dependency.
 
@@ -227,7 +245,7 @@
 
 2007-05-02  Tom Tromey  <tromey@redhat.com>
 
-	PR preprocessor/28709:
+	PR preprocessor/28709
 	* macro.c (paste_tokens): Remove PASTE_LEFT from the old lhs.
 
 2007-03-30  Michael Meissner  <michael.meissner@amd.com>
@@ -247,13 +265,13 @@
 
 2007-01-30  Tom Tromey  <tromey@redhat.com>
 
-	PR preprocessor/30468:
+	PR preprocessor/30468
 	* mkdeps.c (apply_vpath): Strip successive '/'s if we stripped
 	'./'.
 
 2007-01-30  Tom Tromey  <tromey@redhat.com>
 
-	PR preprocessor/29966:
+	PR preprocessor/29966
 	* macro.c (lex_expansion_token): Save and restore cpp_reader's
 	cur_token.
 	(_cpp_create_definition): Don't restore cur_token here.
@@ -265,7 +283,7 @@
 
 2007-01-12  Tom Tromey  <tromey@redhat.com>
 
-	PR preprocessor/28227:
+	PR preprocessor/28227
 	* directives.c (lex_macro_node): Added 'is_def_or_undef'
 	argument.
 	(do_define): Update.
@@ -283,7 +301,7 @@
 
 2007-01-04  Tom Tromey  <tromey@redhat.com>
 
-	PR preprocessor/28165:
+	PR preprocessor/28165
 	* internal.h (cpp_in_primary_file): New function.
 	* directives.c (do_include_next): Use cpp_in_primary_file.
 	(do_pragma_once): Likewise.
@@ -302,7 +320,7 @@
 
 2006-12-28  Tom Tromey  <tromey@redhat.com>
 
-	PR preprocessor/30001:
+	PR preprocessor/30001
 	* charset.c (_cpp_convert_input): Check that to.len is greater
 	than zero.
 

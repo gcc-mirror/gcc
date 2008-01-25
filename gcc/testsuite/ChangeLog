@@ -1,3 +1,9 @@
+2008-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/34692
+	* gcc.dg/cpp/pr34692.c: New test.
+	* gcc.dg/gomp/pr34692.c: New test.
+
 2008-01-25  Olga Golovanevsky  <olga@il.ibm.com>
 
         * gcc.dg/struct/wo_prof_malloc_size_var.c: UnXFAIL.
