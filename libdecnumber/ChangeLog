@@ -1,5 +1,8 @@
 2008-01-25  Janis Johnson  <janis187@us.ibm.com>
 
+	* decCommonSymbols.h: Commit.
+	* decDPDSybmols.h: Commit.
+
 	* Makefile.in (libdecnumber_a_SOURCES): List Symbols headers.
 	* decCommonSymbols.h: New file.
 	* decCommon.c: Include it.
