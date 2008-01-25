@@ -17,6 +17,8 @@
 #define decContextTestSavedStatus __decContextTestSavedStatus
 #define decContextTestStatus __decContextTestStatus
 #define decContextZeroStatus __decContextZeroStatus
+#define DECPOWERS __decPOWERS
+#define DECSTICKYTAB __decSTICKYTAB
 #endif
 
 #endif

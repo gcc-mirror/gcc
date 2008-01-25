@@ -64,6 +64,8 @@
 #define decNumberVersion __decNumberVersion
 #define decNumberXor __decNumberXor
 #define decNumberZero __decNumberZero
+#define LNnn __decLNnn
+#define d2utable __decd2utable
 #endif
 
 #endif
