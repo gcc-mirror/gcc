@@ -1,3 +1,12 @@
+2008-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/33880
+	* tree-nested.c (walk_omp_for): New function.
+	(convert_nonlocal_reference, convert_local_reference): Call
+	walk_omp_for on OMP_FOR.
+	(convert_call_expr): Call walk_body on OMP_FOR's
+	OMP_FOR_PRE_INIT_BODY.
+
 2008-01-25  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/34966
