@@ -1,6 +1,6 @@
 // Specific definitions for AIX  -*- C++ -*-
 
-// Copyright (C) 2000, 2002, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002, 2005, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,6 +46,11 @@
 // atomic types
 #ifndef _ALL_SOURCE
 #define _ALL_SOURCE
+#endif
+
+// C99 math
+#ifndef __COMPATMATH__
+#define __COMPATMATH__
 #endif
 
 #endif
