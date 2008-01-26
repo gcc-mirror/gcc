@@ -3065,10 +3065,6 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
      Also implies COMMON.  */
   int short_compare = 0;
 
-  /* Nonzero if this is a right-shift operation, which can be computed on the
-     original short and then promoted if the operand is a promoted short.  */
-  int short_shift = 0;
-
   /* Nonzero means set RESULT_TYPE to the common type of the args.  */
   int common = 0;
 
@@ -3270,8 +3266,6 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 		warning (0, "right shift count is negative");
 	      else
 		{
-		  if (! integer_zerop (op1))
-		    short_shift = 1;
 		  if (compare_tree_int (op1, TYPE_PRECISION (type0)) >= 0)
 		    warning (0, "right shift count >= width of type");
 		}
@@ -3684,45 +3678,6 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 		       (unsigned0, TREE_TYPE (arg0)),
 		       int_fits_type_p (arg1, type)))
 	    result_type = type;
-	}
-
-      /* Shifts can be shortened if shifting right.  */
-
-      if (short_shift)
-	{
-	  int unsigned_arg;
-	  tree arg0 = get_narrower (op0, &unsigned_arg);
-
-	  final_type = result_type;
-
-	  if (arg0 == op0 && final_type == TREE_TYPE (op0))
-	    unsigned_arg = TYPE_UNSIGNED (TREE_TYPE (op0));
-
-	  if (TYPE_PRECISION (TREE_TYPE (arg0)) < TYPE_PRECISION (result_type)
-	      /* We can shorten only if the shift count is less than the
-		 number of bits in the smaller type size.  */
-	      && compare_tree_int (op1, TYPE_PRECISION (TREE_TYPE (arg0))) < 0
-	      /* If arg is sign-extended and then unsigned-shifted,
-		 we can simulate this with a signed shift in arg's type
-		 only if the extended result is at least twice as wide
-		 as the arg.  Otherwise, the shift could use up all the
-		 ones made by sign-extension and bring in zeros.
-		 We can't optimize that case at all, but in most machines
-		 it never happens because available widths are 2**N.  */
-	      && (!TYPE_UNSIGNED (final_type)
-		  || unsigned_arg
-		  || (((unsigned) 2 * TYPE_PRECISION (TREE_TYPE (arg0)))
-		      <= TYPE_PRECISION (result_type))))
-	    {
-	      /* Do an unsigned shift if the operand was zero-extended.  */
-	      result_type
-		= c_common_signed_or_unsigned_type (unsigned_arg,
-						    TREE_TYPE (arg0));
-	      /* Convert value-to-be-shifted to that type.  */
-	      if (TREE_TYPE (op0) != result_type)
-		op0 = cp_convert (result_type, op0);
-	      converted = 1;
-	    }
 	}
 
       /* Comparison operations are shortened too but differently.
