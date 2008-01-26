@@ -1,3 +1,8 @@
+2008-01-26  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR target/34970
+	* config/i386/cygming.h (ASM_OUTPUT_LABELREF): Define.
+
 2008-01-25  Joseph Myers  <joseph@codesourcery.com>
 
 	PR other/31955
