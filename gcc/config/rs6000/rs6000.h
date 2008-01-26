@@ -622,7 +622,7 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
 #define SLOW_UNALIGNED_ACCESS(MODE, ALIGN)				\
   (STRICT_ALIGNMENT							\
    || (((MODE) == SFmode || (MODE) == DFmode || (MODE) == TFmode	\
-	|| (MODE) == DDmode || (MODE) == TDmode				\
+	|| (MODE) == SDmode || (MODE) == DDmode || (MODE) == TDmode	\
 	|| (MODE) == DImode)						\
        && (ALIGN) < 32))
 
@@ -1172,6 +1172,13 @@ enum reg_class
 				       && (MODE != DImode))))		\
 			   || (CLASS1) == ALTIVEC_REGS			\
 			   || (CLASS2) == ALTIVEC_REGS))
+
+/* For cpus that cannot load/store SDmode values from the 64-bit
+   FP registers without using a full 64-bit load/store, we need
+   to allocate a full 64-bit stack slot for them.  */
+
+#define SECONDARY_MEMORY_NEEDED_RTX(MODE) \
+  rs6000_secondary_memory_needed_rtx (MODE)
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.

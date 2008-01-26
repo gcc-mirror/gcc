@@ -1502,6 +1502,20 @@ Returns true if the target supports decimal floating point.
 Returns true if the target supports fixed-point arithmetic.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_EXPAND_TO_RTL_HOOK (void)
+This hook is called just before expansion into rtl, allowing the target
+to perform additional initializations or analysis before the expansion.
+For example, the rs6000 port uses it to allocate a scratch stack slot
+for use in copying SDmode values between memory and floating point
+registers whenever the function being expanded has any SDmode
+usage.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_INSTANTIATE_DECLS (void)
+This hook allows the backend to perform additional instantiations on rtl
+that are not actually in any insns yet, but will be later.
+@end deftypefn
+
 @deftypefn {Target Hook} {const char *} TARGET_MANGLE_TYPE (tree @var{type})
 If your target defines any fundamental types, or any types your target
 uses should be mangled differently from the default, define this hook

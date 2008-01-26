@@ -20,6 +20,138 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
+;;
+;; UNSPEC usage
+;;
+
+(define_constants
+  [(UNSPEC_MOVSD_LOAD		400)
+   (UNSPEC_MOVSD_STORE		401)
+  ])
+
+
+(define_expand "movsd"
+  [(set (match_operand:SD 0 "nonimmediate_operand" "")
+	(match_operand:SD 1 "any_operand" ""))]
+  "TARGET_HARD_FLOAT && TARGET_FPRS"
+  "{ rs6000_emit_move (operands[0], operands[1], SDmode); DONE; }")
+
+(define_split
+  [(set (match_operand:SD 0 "gpc_reg_operand" "")
+	(match_operand:SD 1 "const_double_operand" ""))]
+  "reload_completed
+   && ((GET_CODE (operands[0]) == REG && REGNO (operands[0]) <= 31)
+       || (GET_CODE (operands[0]) == SUBREG
+	   && GET_CODE (SUBREG_REG (operands[0])) == REG
+	   && REGNO (SUBREG_REG (operands[0])) <= 31))"
+  [(set (match_dup 2) (match_dup 3))]
+  "
+{
+  long l;
+  REAL_VALUE_TYPE rv;
+
+  REAL_VALUE_FROM_CONST_DOUBLE (rv, operands[1]);
+  REAL_VALUE_TO_TARGET_DECIMAL32 (rv, l);
+
+  if (! TARGET_POWERPC64)
+    operands[2] = operand_subword (operands[0], 0, 0, SDmode);
+  else
+    operands[2] = gen_lowpart (SImode, operands[0]);
+
+  operands[3] = gen_int_mode (l, SImode);
+}")
+
+(define_insn "movsd_hardfloat"
+  [(set (match_operand:SD 0 "nonimmediate_operand" "=r,r,m,f,*c*l,*q,!r,*h,!r,!r")
+	(match_operand:SD 1 "input_operand"        "r,m,r,f,r,r,h,0,G,Fn"))]
+  "(gpc_reg_operand (operands[0], SDmode)
+   || gpc_reg_operand (operands[1], SDmode))
+   && (TARGET_HARD_FLOAT && TARGET_FPRS)"
+  "@
+   mr %0,%1
+   {l%U1%X1|lwz%U1%X1} %0,%1
+   {st%U0%X0|stw%U0%X0} %1,%0
+   fmr %0,%1
+   mt%0 %1
+   mt%0 %1
+   mf%1 %0
+   {cror 0,0,0|nop}
+   #
+   #"
+  [(set_attr "type" "*,load,store,fp,mtjmpr,*,mfjmpr,*,*,*")
+   (set_attr "length" "4,4,4,4,4,4,4,4,4,8")])
+
+(define_insn "movsd_softfloat"
+  [(set (match_operand:SD 0 "nonimmediate_operand" "=r,cl,q,r,r,m,r,r,r,r,r,*h")
+	(match_operand:SD 1 "input_operand" "r,r,r,h,m,r,I,L,R,G,Fn,0"))]
+  "(gpc_reg_operand (operands[0], SDmode)
+   || gpc_reg_operand (operands[1], SDmode))
+   && (TARGET_SOFT_FLOAT || !TARGET_FPRS)"
+  "@
+   mr %0,%1
+   mt%0 %1
+   mt%0 %1
+   mf%1 %0
+   {l%U1%X1|lwz%U1%X1} %0,%1
+   {st%U0%X0|stw%U0%X0} %1,%0
+   {lil|li} %0,%1
+   {liu|lis} %0,%v1
+   {cal|la} %0,%a1
+   #
+   #
+   {cror 0,0,0|nop}"
+  [(set_attr "type" "*,mtjmpr,*,mfjmpr,load,store,*,*,*,*,*,*")
+   (set_attr "length" "4,4,4,4,4,4,4,4,4,4,8,4")])
+
+(define_insn "movsd_store"
+  [(set (match_operand:DD 0 "nonimmediate_operand" "=m")
+	(unspec:DD [(match_operand:SD 1 "input_operand" "f")]
+		   UNSPEC_MOVSD_STORE))]
+  "(gpc_reg_operand (operands[0], DDmode)
+   || gpc_reg_operand (operands[1], SDmode))
+   && TARGET_HARD_FLOAT && TARGET_FPRS"
+  "stfd%U0%X0 %1,%0"
+  [(set_attr "type" "fpstore")
+   (set_attr "length" "4")])
+
+(define_insn "movsd_load"
+  [(set (match_operand:SD 0 "nonimmediate_operand" "=f")
+	(unspec:SD [(match_operand:DD 1 "input_operand" "m")]
+		   UNSPEC_MOVSD_LOAD))]
+  "(gpc_reg_operand (operands[0], SDmode)
+   || gpc_reg_operand (operands[1], DDmode))
+   && TARGET_HARD_FLOAT && TARGET_FPRS"
+  "lfd%U1%X1 %0,%1"
+  [(set_attr "type" "fpload")
+   (set_attr "length" "4")])
+
+;; Hardware support for decimal floating point operations.
+
+(define_insn "extendsddd2"
+  [(set (match_operand:DD 0 "gpc_reg_operand" "=f")
+	(float_extend:DD (match_operand:SD 1 "gpc_reg_operand" "f")))]
+  "TARGET_DFP"
+  "dctdp %0,%1"
+  [(set_attr "type" "fp")])
+
+(define_expand "extendsdtd2"
+  [(set (match_operand:TD 0 "gpc_reg_operand" "=f")
+	(float_extend:TD (match_operand:SD 1 "gpc_reg_operand" "f")))]
+  "TARGET_DFP"
+{
+  rtx tmp = gen_reg_rtx (DDmode);
+  emit_insn (gen_extendsddd2 (tmp, operands[1]));
+  emit_insn (gen_extendddtd2 (operands[0], tmp));
+  DONE;
+})
+
+(define_insn "truncddsd2"
+  [(set (match_operand:SD 0 "gpc_reg_operand" "=f")
+	(float_truncate:SD (match_operand:DD 1 "gpc_reg_operand" "f")))]
+  "TARGET_DFP"
+  "drsp %0,%1"
+  [(set_attr "type" "fp")])
+
 (define_expand "negdd2"
   [(set (match_operand:DD 0 "gpc_reg_operand" "")
 	(neg:DD (match_operand:DD 1 "gpc_reg_operand" "")))]
@@ -309,7 +441,7 @@
    (set_attr "length" "4,4,4,4,4,4,4,4,4,8,12,16,4,4")])
 
 ; ld/std require word-aligned displacements -> 'Y' constraint.
-; List Y->r and r->Y before r->r for reload.(define_insn "*movdd_hardfloat64"
+; List Y->r and r->Y before r->r for reload.
 (define_insn "*movdd_hardfloat64"
   [(set (match_operand:DD 0 "nonimmediate_operand" "=Y,r,!r,f,f,m,*c*l,!r,*h,!r,!r,!r")
 	(match_operand:DD 1 "input_operand" "r,Y,r,f,m,f,r,h,0,G,H,F"))]

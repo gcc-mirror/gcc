@@ -604,6 +604,14 @@
 #define TARGET_SECONDARY_RELOAD default_secondary_reload
 #endif
 
+#ifndef TARGET_EXPAND_TO_RTL_HOOK
+#define TARGET_EXPAND_TO_RTL_HOOK hook_void_void
+#endif
+
+#ifndef TARGET_INSTANTIATE_DECLS
+#define TARGET_INSTANTIATE_DECLS hook_void_void
+#endif
+
 /* C specific.  */
 #ifndef TARGET_C_MODE_FOR_SUFFIX
 #define TARGET_C_MODE_FOR_SUFFIX default_mode_for_suffix
@@ -771,6 +779,8 @@
   TARGET_INVALID_UNARY_OP,			\
   TARGET_INVALID_BINARY_OP,			\
   TARGET_SECONDARY_RELOAD,			\
+  TARGET_EXPAND_TO_RTL_HOOK,			\
+  TARGET_INSTANTIATE_DECLS,			\
   TARGET_C,					\
   TARGET_CXX,					\
   TARGET_EXTRA_LIVE_ON_ENTRY,			\
