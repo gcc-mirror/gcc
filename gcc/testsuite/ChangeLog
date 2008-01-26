@@ -1,3 +1,8 @@
+2008-01-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/31610
+	* gfortran.dg/array_3.f90: New test.
+
 2008-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/pr34966.c (atan): Only use asm
