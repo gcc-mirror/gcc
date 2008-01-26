@@ -3,6 +3,10 @@
 	* gcc.c-torture/compile/pr34966.c (atan): Only use asm
 	on i?86/x86_64.
 
+	PR c++/34965
+	* gcc.dg/pr34965.c: New test.
+	* g++.dg/other/error24.C: New test.
+
 2008-01-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfofortran/34887

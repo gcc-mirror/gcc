@@ -2083,6 +2083,16 @@ dump_expr (tree t, int flags)
       pp_expression (cxx_pp, t);
       break;
 
+    case TRUTH_AND_EXPR:
+    case TRUTH_OR_EXPR:
+    case TRUTH_XOR_EXPR:
+      if (flags & TFF_EXPR_IN_PARENS)
+	pp_cxx_left_paren (cxx_pp);
+      pp_expression (cxx_pp, t);
+      if (flags & TFF_EXPR_IN_PARENS)
+	pp_cxx_right_paren (cxx_pp);
+      break;
+
     case OBJ_TYPE_REF:
       dump_expr (resolve_virtual_fun_from_obj_type_ref (t), flags);
       break;
