@@ -1,4 +1,5 @@
 /* { dg-do link } */
+/* { dg-xfail-if "" { *-*-* } { "*" } { "" } }  See PR34743.  */
 /* { dg-options "-O2" } */
 
 struct A
@@ -9,7 +10,8 @@ struct A
 
 volatile float X, Y;
 
-int baz (struct A *z, struct A *y)
+int __attribute__ ((__noinline__))
+baz (struct A *z, struct A *y)
 {
   z->x = (int) X;
   z->y = Y;
