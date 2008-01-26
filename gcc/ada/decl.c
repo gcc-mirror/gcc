@@ -6066,8 +6066,9 @@ components_to_record (tree gnu_record_type, Node_Id component_list,
 	  Set_Present_Expr (variant, annotate_value (gnu_qual));
 
 	  /* If this is an Unchecked_Union and we have exactly one field,
-	     use that field here.  */
-	  if (unchecked_union && TYPE_FIELDS (gnu_variant_type)
+	     use this field directly to match the layout of C unions.  */
+	  if (unchecked_union
+	      && TYPE_FIELDS (gnu_variant_type)
 	      && !TREE_CHAIN (TYPE_FIELDS (gnu_variant_type)))
 	    gnu_field = TYPE_FIELDS (gnu_variant_type);
 	  else
