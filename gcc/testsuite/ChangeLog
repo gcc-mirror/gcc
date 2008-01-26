@@ -1,3 +1,9 @@
+2008-01-26  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR target/34970
+	* gcc.target/i386/fastcall-1.c: Scan for correct label.
+	Use -std=gnu89 switch.
+
 2008-01-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/34876

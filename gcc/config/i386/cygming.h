@@ -1,7 +1,7 @@
 /* Operating system specific defines to be used when targeting GCC for
    hosting on Windows32, using a Unix style C library and tools.
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-   2004, 2005, 2007
+   2004, 2005, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -195,6 +195,17 @@ do {									\
 do {							\
   i386_pe_maybe_record_exported_symbol (DECL, NAME, 1);	\
   ASM_OUTPUT_LABEL ((STREAM), (NAME));			\
+} while (0)
+
+/* Output a reference to a label. Fastcall function symbols
+   keep their '@' prefix, while other symbols are prefixed
+   with USER_LABEL_PREFIX.  */
+#undef ASM_OUTPUT_LABELREF
+#define  ASM_OUTPUT_LABELREF(STREAM, NAME)	\
+do {						\
+  if ((NAME)[0] != FASTCALL_PREFIX)		\
+    fputs (USER_LABEL_PREFIX, (STREAM));	\
+  fputs ((NAME), (STREAM));			\
 } while (0)
 
 
