@@ -1,3 +1,14 @@
+2008-01-26  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR target/34981
+	* gcc.target/mips/lazy-binding-1.c: New test.
+	* gcc.target/mips/mips.exp (setup_mips_tests): Set
+	mips_forced_no_abicalls and mips_forced_no_shared.
+	(dg-mips-options): Avoid using -mabicalls with an implicit -mabi=eabi.
+	Avoid using small data with -mabicalls.  Don't make -G0 force
+	-mn-abicalls.  Skip -mabicalls and -mshared tests if the multilib
+	forces the opposite option.
+
 2008-01-26  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR target/34970
