@@ -3273,6 +3273,7 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
     {
       rtx insns;
       rtx value;
+      rtx eq_value;
       enum machine_mode outmode = mode;
 
       /* All of these functions return small values.  Thus we choose to
@@ -3292,8 +3293,12 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
       end_sequence ();
 
       target = gen_reg_rtx (outmode);
-      emit_libcall_block (insns, target, value,
-			  gen_rtx_fmt_e (unoptab->code, outmode, op0));
+      eq_value = gen_rtx_fmt_e (unoptab->code, mode, op0);
+      if (GET_MODE_SIZE (outmode) < GET_MODE_SIZE (mode))
+	eq_value = simplify_gen_unary (TRUNCATE, outmode, eq_value, mode);
+      else if (GET_MODE_SIZE (outmode) > GET_MODE_SIZE (mode))
+	eq_value = simplify_gen_unary (ZERO_EXTEND, outmode, eq_value, mode);
+      emit_libcall_block (insns, target, value, eq_value);
 
       return target;
     }
