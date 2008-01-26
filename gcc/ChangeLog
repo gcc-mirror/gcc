@@ -1,3 +1,11 @@
+2008-01-26  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/34794
+	* config.gcc: Separate AIX 5.3 from AIX 6.1.
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Define
+	__LONGDOUBLE128 too.
+	* config/rs6000/aix61.h: New file.
+
 2008-01-26  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR rtl-optimization/34959
