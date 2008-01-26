@@ -2573,21 +2573,18 @@ next_record_w (st_parameter_dt *dtp, int done)
 	}
       else
 	{
-	  /* If this is the last call to next_record move to the farthest
-	  position reached in preparation for completing the record.
-	  (for file unit) */
-	  if (done)
-	    {
-	      m = dtp->u.p.current_unit->recl -
-			dtp->u.p.current_unit->bytes_left;
-	      if (max_pos > m)
-		{
-		  length = (int) (max_pos - m);
-		  p = salloc_w (dtp->u.p.current_unit->s, &length);
-		}
- 	    }
 	  size_t len;
 	  const char crlf[] = "\r\n";
+
+	  /* Move to the farthest position reached in preparation for
+	  completing the record.  (for file unit) */
+	  m = dtp->u.p.current_unit->recl -
+	    dtp->u.p.current_unit->bytes_left;
+	  if (max_pos > m)
+	    {
+	      length = (int) (max_pos - m);
+	      p = salloc_w (dtp->u.p.current_unit->s, &length);
+	    }
 #ifdef HAVE_CRLF
 	  len = 2;
 #else
