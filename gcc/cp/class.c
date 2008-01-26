@@ -291,7 +291,8 @@ build_base_path (enum tree_code code,
   target_type = code == PLUS_EXPR ? BINFO_TYPE (binfo) : BINFO_TYPE (d_binfo);
 
   /* Do we need to look in the vtable for the real offset?  */
-  virtual_access = (v_binfo && fixed_type_p <= 0);
+  /* Don't bother inside sizeof; the source type might not be complete.  */
+  virtual_access = (v_binfo && fixed_type_p <= 0) && !skip_evaluation;
 
   /* Do we need to check for a null pointer?  */
   if (want_pointer && !nonnull)
