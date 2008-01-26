@@ -1375,6 +1375,9 @@
 #     else
 #	define ALIGNMENT 4
 #     endif
+#     ifndef HBLKSIZE
+#       define HBLKSIZE 4096
+#     endif
 #     define USE_GENERIC_PUSH_REGS
 #     if __GLIBC__ == 2 && __GLIBC_MINOR__ >= 2 || __GLIBC__ > 2
 #        define LINUX_STACKBOTTOM
