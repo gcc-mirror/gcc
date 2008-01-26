@@ -1,3 +1,8 @@
+2008-01-26  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/34235
+	* g++.dg/torture/pr34235.C: New testcase.
+
 2008-01-26  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* g++.dg/tree-ssa/ivopts-1.C: XFAIL for MIPS too.
