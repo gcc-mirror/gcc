@@ -1,3 +1,8 @@
+2008-01-26  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	PR middle-end/34688
+	* final.c (output_addr_const): Handle TRUNCATE.
+
 2008-01-26  Zdenek Dvorak  <ook@ucw.cz>
 
 	PR target/34711
@@ -23,7 +28,7 @@
 	(try_add_cand_for): Prefer using ivs not specific to some object.
 	* tree-flow.h (force_expr_to_var_cost): Declaration removed.
 
-2007-01-26  Peter Bergner  <bergner@vnet.ibm.com>
+2008-01-26  Peter Bergner  <bergner@vnet.ibm.com>
 	    Janis Johnson  <janis187@us.ibm.com>
 
 	PR target/34814
