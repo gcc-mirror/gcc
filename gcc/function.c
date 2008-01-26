@@ -1568,8 +1568,8 @@ instantiate_virtual_regs_in_insn (rtx insn)
 /* Subroutine of instantiate_decls.  Given RTL representing a decl,
    do any instantiation required.  */
 
-static void
-instantiate_decl (rtx x)
+void
+instantiate_decl_rtl (rtx x)
 {
   rtx addr;
 
@@ -1579,8 +1579,8 @@ instantiate_decl (rtx x)
   /* If this is a CONCAT, recurse for the pieces.  */
   if (GET_CODE (x) == CONCAT)
     {
-      instantiate_decl (XEXP (x, 0));
-      instantiate_decl (XEXP (x, 1));
+      instantiate_decl_rtl (XEXP (x, 0));
+      instantiate_decl_rtl (XEXP (x, 1));
       return;
     }
 
@@ -1610,7 +1610,7 @@ instantiate_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
     {
       *walk_subtrees = 0;
       if (DECL_P (t) && DECL_RTL_SET_P (t))
-	instantiate_decl (DECL_RTL (t));
+	instantiate_decl_rtl (DECL_RTL (t));
     }
   return NULL;
 }
@@ -1626,7 +1626,7 @@ instantiate_decls_1 (tree let)
   for (t = BLOCK_VARS (let); t; t = TREE_CHAIN (t))
     {
       if (DECL_RTL_SET_P (t))
-	instantiate_decl (DECL_RTL (t));
+	instantiate_decl_rtl (DECL_RTL (t));
       if (TREE_CODE (t) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (t))
 	{
 	  tree v = DECL_VALUE_EXPR (t);
@@ -1650,8 +1650,8 @@ instantiate_decls (tree fndecl)
   /* Process all parameters of the function.  */
   for (decl = DECL_ARGUMENTS (fndecl); decl; decl = TREE_CHAIN (decl))
     {
-      instantiate_decl (DECL_RTL (decl));
-      instantiate_decl (DECL_INCOMING_RTL (decl));
+      instantiate_decl_rtl (DECL_RTL (decl));
+      instantiate_decl_rtl (DECL_INCOMING_RTL (decl));
       if (DECL_HAS_VALUE_EXPR_P (decl))
 	{
 	  tree v = DECL_VALUE_EXPR (decl);
@@ -1714,6 +1714,8 @@ instantiate_virtual_regs (void)
 
   /* Instantiate the virtual registers in the DECLs for debugging purposes.  */
   instantiate_decls (current_function_decl);
+
+  targetm.instantiate_decls ();
 
   /* Indicate that, from now on, assign_stack_local should use
      frame_pointer_rtx.  */

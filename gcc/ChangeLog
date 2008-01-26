@@ -1,3 +1,58 @@
+2007-01-26  Peter Bergner  <bergner@vnet.ibm.com>
+	    Janis Johnson  <janis187@us.ibm.com>
+
+	PR target/34814
+	* doc/tm.texi (TARGET_EXPAND_TO_RTL_HOOK): Document.
+	(TARGET_INSTANTIATE_DECLS): Likewise.
+	* target.h (expand_to_rtl_hook): New target hook.
+	(instantiate_decls): Likewise.
+	* function.c (instantiate_decl): Make non-static.  Rename to...
+	(instantiate_decl_rtl): ... this.
+	(instantiate_expr): Use instantiate_decl_rtl.
+	(instantiate_decls_1): Likewise.
+	(instantiate_decls): Likewise.
+	(instantiate_virtual_regs: Call new instantiate_decls taget hook.
+	* function.h (instantiate_decl_rtl): Add prototype.
+	* cfgexpand.c (target.h): New include.
+	(tree_expand_cfg): Call new expand_to_rtl_hook target hook.
+	* target-def.h (TARGET_EXPAND_TO_RTL_HOOK): New define.
+	(TARGET_INSTANTIATE_DECLS): Likewise.
+	(TARGET_INITIALIZER): New target hooks added.
+	* config/rs6000/rs6000-protos.h (rs6000_secondary_memory_needed_rtx):
+	New prototype.
+	* config/rs6000/rs6000.c (tree-flow.h): New include.
+	(machine_function): Add sdmode_stack_slot field.
+	(rs6000_alloc_sdmode_stack_slot): New function.
+	(rs6000_instantiate_decls): Likewise.
+	(rs6000_secondary_memory_needed_rtx): Likewise.
+	(rs6000_check_sdmode): Likewise.
+	(TARGET_EXPAND_TO_RTL_HOOK): Target macro defined.
+	(TARGET_INSTANTIATE_DECLS): Likewise.
+	(rs6000_hard_regno_mode_ok): Allow SDmode.
+	(num_insns_constant): Likewise.  Handle _Decimal32 constants.
+	(rs6000_emit_move): Handle SDmode.
+	(function_arg_advance): Likewise.
+	(function_arg): Likewise.
+	(rs6000_gimplify_va_arg): Likewise.  Add special handling of
+	SDmode var args for 32-bit compiles.
+	(rs6000_secondary_reload_class): Handle SDmode.
+	(rs6000_output_function_epilogue): Likewise.
+	(rs6000_function_value): Simplify if statement.
+	(rs6000_libcall_value): Likewise.
+	* config/rs6000/rs6000.h (SLOW_UNALIGNED_ACCESS): Handle SDmode.
+	(SECONDARY_MEMORY_NEEDED_RTX): Add define.
+	* config/rs6000/dfp.md (movsd): New define_expand and splitter.
+	(movsd_hardfloat): New define_insn.
+	(movsd_softfloat): Likewise.
+	(movsd_store): Likewise.
+	(movsd_load): Likewise.
+	(extendsddd2): Likewise.
+	(extendsdtd2): Likewise.
+	(truncddsd2): Likewise.
+	(movdd_hardfloat64): Fixup comment.
+	(UNSPEC_MOVSD_LOAD): New constant.
+	(UNSPEC_MOVSD_STORE): Likewise.
+
 2008-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/34965

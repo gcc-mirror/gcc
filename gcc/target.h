@@ -849,6 +849,15 @@ struct gcc_target
 				      enum machine_mode,
 				      struct secondary_reload_info *);
 
+  /* This target hook allows the backend to perform additional
+     processing while initializing for variable expansion.  */
+  void (* expand_to_rtl_hook) (void);
+
+  /* This target hook allows the backend to perform additional
+     instantiations on rtx that are not actually in insns yet,
+     but will be later.  */
+  void (* instantiate_decls) (void);
+
   /* Functions specific to the C family of frontends.  */
   struct c {
     /* Return machine mode for non-standard suffix

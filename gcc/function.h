@@ -491,6 +491,7 @@ extern int trampolines_created;
 extern void set_cfun (struct function *new_cfun);
 extern void push_cfun (struct function *new_cfun);
 extern void pop_cfun (void);
+extern void instantiate_decl_rtl (rtx x);
 
 /* For backward compatibility... eventually these should all go away.  */
 #define current_function_pops_args (cfun->pops_args)

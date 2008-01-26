@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "tree-inline.h"
 #include "value-prof.h"
+#include "target.h"
 
 /* Verify that there is exactly single jump instruction since last and attach
    REG_BR_PROB note specifying probability.
@@ -1872,6 +1873,8 @@ tree_expand_cfg (void)
 
   /* Mark arrays indexed with non-constant indices with TREE_ADDRESSABLE.  */
   discover_nonconstant_array_refs ();
+
+  targetm.expand_to_rtl_hook ();
 
   /* Expand the variables recorded during gimple lowering.  */
   expand_used_vars ();
