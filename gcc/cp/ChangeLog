@@ -8,6 +8,12 @@
 
 2008-01-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/27177
+	* class.c (build_base_path): Don't mess with virtual access if
+	skip_evaluation.
+	* call.c (standard_conversion): Don't check whether source type
+	is complete.
+
 	* decl2.c (is_late_template_attribute): Don't defer attribute
 	visibility just because the type is dependent.
 
