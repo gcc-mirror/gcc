@@ -1,3 +1,9 @@
+2008-01-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/31610
+	* trans-array.c (gfc_trans_create_temp_array): Remove call to
+	gcc_assert (integer_zerop (loop->from[n])).
+
 2008-01-25  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/34661
