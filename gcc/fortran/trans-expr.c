@@ -2506,7 +2506,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	    }
 	}
 
-      if (fsym && need_interface_mapping)
+      if (fsym && need_interface_mapping && e)
 	gfc_add_interface_mapping (&mapping, fsym, &parmse, e);
 
       gfc_add_block_to_block (&se->pre, &parmse.pre);
