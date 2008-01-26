@@ -1,3 +1,28 @@
+2008-01-26  Zdenek Dvorak  <ook@ucw.cz>
+
+	PR target/34711
+	* tree-ssa-loop-ivopts.c (comp_cost): New type.
+	(zero_cost, infinite_cost): New constants.
+	(struct cost_pair): Change type of cost to comp_cost.
+	(struct iv_ca): Change type of cand_use_cost and cost to comp_cost.
+	(new_cost, add_costs, sub_costs, compare_costs, infinite_cost_p):
+	New functions.
+	(set_use_iv_cost, force_expr_to_var_cost, force_var_cost,
+	split_address_cost, ptr_difference_cost, difference_cost,
+	get_computation_cost_at, get_computation_cost,
+	determine_use_iv_cost_generic, determine_use_iv_cost_address,
+	determine_use_iv_cost_condition, determine_use_iv_costs,
+	cheaper_cost_pair, iv_ca_recount_cost, iv_ca_set_no_cp,
+	iv_ca_set_cp, iv_ca_cost, iv_ca_new, iv_ca_dump, iv_ca_extend,
+	iv_ca_narrow, iv_ca_prune, try_improve_iv_set, find_optimal_iv_set):
+	Change type of cost to comp_cost.
+	(determine_iv_cost): Increase cost of non-original ivs, instead
+	of decreasing the cost of original ones.
+	(get_address_cost): Indicate the complexity of the addressing mode 
+	in comp_cost.
+	(try_add_cand_for): Prefer using ivs not specific to some object.
+	* tree-flow.h (force_expr_to_var_cost): Declaration removed.
+
 2007-01-26  Peter Bergner  <bergner@vnet.ibm.com>
 	    Janis Johnson  <janis187@us.ibm.com>
 
