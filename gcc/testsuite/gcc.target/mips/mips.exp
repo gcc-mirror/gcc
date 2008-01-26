@@ -44,6 +44,10 @@ load_lib gcc-dg.exp
 #    $mips_forced_be	 true if the command line uses -EB or -meb
 #    $mips_forced_le	 true if the command line uses -EL or -mel
 #    $mips_forced_gp	 true if the command line forces a particular GP mode
+#    $mips_forced_no_abicalls
+#			 true if the command line contains -mno-abicalls
+#    $mips_forced_no_shared
+#			 true if the command line contains -mno-shared
 #    $mips_forced_no_er  true if the command line contains -mno-explicit-relocs
 proc setup_mips_tests {} {
     global mips_isa
@@ -61,6 +65,8 @@ proc setup_mips_tests {} {
     global mips_forced_be
     global mips_forced_le
     global mips_forced_gp
+    global mips_forced_no_abicalls
+    global mips_forced_no_shared
     global mips_forced_no_er
     global mips_forced_regs
 
@@ -123,6 +129,8 @@ proc setup_mips_tests {} {
     set mips_forced_be [regexp -- {-(EB|meb)[[:>:]]} $compiler_flags]
     set mips_forced_le [regexp -- {-(EL|mel)[[:>:]]} $compiler_flags]
     set mips_forced_gp [regexp -- {-(G|m(|no-)((extern|local)-sdata|gpopt)|mabicalls|mrtp)} $compiler_flags]
+    set mips_forced_no_abicalls [regexp -- {-mno-abicalls} $compiler_flags]
+    set mips_forced_no_shared [regexp -- {-mno-shared} $compiler_flags]
     set mips_forced_no_er [regexp -- {-mno-explicit-relocs} $compiler_flags]
 
     if {$mips_forced_regs && $mips_gp == 32 && $mips_fp == 64} {
@@ -178,6 +186,11 @@ proc setup_mips_tests {} {
 #	the multilib flags already contain such an option, or specify
 #	something that might be incompatible with them.
 #
+#    -mabicalls
+#    -mshared
+#	Select the form of SVR4 PIC.  Skip the test if the multilib flags
+#	conflict with the required setting.
+#
 #    -mexplicit-relocs
 #	Select explicit relocations.  Skip the test if the multilib flags
 #	force -mno-explicit-relocs.
@@ -204,6 +217,8 @@ proc dg-mips-options {args} {
     global mips_forced_be
     global mips_forced_le
     global mips_forced_gp
+    global mips_forced_no_abicalls
+    global mips_forced_no_shared
     global mips_forced_no_er
 
     set flags [lindex $args 1]
@@ -281,6 +296,21 @@ proc dg-mips-options {args} {
 	}
     }
 
+    foreach flag $flags {
+	if {[string match -mabicalls $flag]} {
+	    # EABI has no SVR4-style PIC mode, so try to force another ABI.
+	    if {$mips_abi == "eabi" && [lsearch $flags "-mabi=*"] < 0} {
+		if {$mips_new_gp == 32} {
+		    append flags " -mabi=32"
+		} else {
+		    append flags " -mabi=n32"
+		}
+	    }
+	    # Turn off small data, if on by default.
+	    append flags " -G0"
+	}
+    }
+
     # Handle the other options.
     foreach flag $flags {
 	if {[regexp -- {^-mabi=(.*)} $flag dummy abi]} {
@@ -313,8 +343,18 @@ proc dg-mips-options {args} {
 		set matches 0
 	    }
 	} elseif {[regexp -- {^-(G|m(|no-)((extern|local)-sdata|gpopt))} $flag]} {
-	    append flags " -mno-abicalls"
+	    if {$flag != "-G0"} {
+		append flags " -mno-abicalls"
+	    }
 	    if {$mips_forced_gp} {
+		set matches 0
+	    }
+	} elseif {[regexp -- {^-mabicalls$} $flag]} {
+	    if {$mips_forced_no_abicalls} {
+		set matches 0
+	    }
+	} elseif {[regexp -- {^-mshared$} $flag]} {
+	    if {$mips_forced_no_shared} {
 		set matches 0
 	    }
 	} elseif {[regexp -- {^-mexplicit-relocs$} $flag]} {
