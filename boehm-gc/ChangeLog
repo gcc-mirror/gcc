@@ -1,3 +1,7 @@
+2008-01-26  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* include/private/gcconfig.h (HBLKSIZE): Define for MIPS.
+
 2008-01-24  David Edelsohn  <edelsohn@gnu.org>
 
 	* configure: Regenerate.
