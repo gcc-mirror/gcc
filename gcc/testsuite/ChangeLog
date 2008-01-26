@@ -1,3 +1,7 @@
+2008-01-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/pr29254.c (func1): Mark static when pic.
+
 2008-01-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	Backport:

@@ -8,6 +8,9 @@ list_compare (int * list1)
     value_compare ();
 }
 
+#ifdef __PIC__
+static
+#endif
 func1 (int * f){}
 
 value_compare (int * a)
