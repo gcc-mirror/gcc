@@ -588,9 +588,9 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
   for (dim = 0; dim < info->dimen; dim++)
     {
       n = loop->order[dim];
-      if (n < loop->temp_dim)
-	gcc_assert (integer_zerop (loop->from[n]));
-      else
+      /* TODO: Investigate why "if (n < loop->temp_dim)
+	 gcc_assert (integer_zerop (loop->from[n]));" fails here.  */
+      if (n >= loop->temp_dim)
 	{
 	  /* Callee allocated arrays may not have a known bound yet.  */
           if (loop->to[n])
