@@ -362,7 +362,15 @@ enum demangle_component_type
      using 'n' instead of '-', we want a way to indicate a negative
      number which involves neither modifying the mangled string nor
      allocating a new copy of the literal in memory.  */
-  DEMANGLE_COMPONENT_LITERAL_NEG
+  DEMANGLE_COMPONENT_LITERAL_NEG,
+  /* A libgcj compiled resource.  The left subtree is the name of the
+     resource.  */
+  DEMANGLE_COMPONENT_JAVA_RESOURCE,
+  /* A name formed by the concatenation of two parts.  The left
+     subtree is the first part and the right subtree the second.  */
+  DEMANGLE_COMPONENT_COMPOUND_NAME,
+  /* A name formed by a single character.  */
+  DEMANGLE_COMPONENT_CHARACTER
 };
 
 /* Types which are only used internally.  */
@@ -447,6 +455,12 @@ struct demangle_component
       /* Template parameter index.  */
       long number;
     } s_number;
+
+    /* For DEMANGLE_COMPONENT_CHARACTER.  */
+    struct
+    {
+      int character;
+    } s_character;
 
     /* For other types.  */
     struct

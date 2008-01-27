@@ -1,3 +1,19 @@
+2008-01-26  David Daney  <ddaney@avtrex.com>
+
+	* cp-demangle.c (d_dump): Handle DEMANGLE_COMPONENT_JAVA_RESOURCE,
+	DEMANGLE_COMPONENT_COMPOUND_NAME, and
+	DEMANGLE_COMPONENT_CHARACTER cases.
+	(d_make_comp): Handle DEMANGLE_COMPONENT_COMPOUND_NAME and
+	DEMANGLE_COMPONENT_JAVA_RESOURCE cases.
+	(d_make_character): New function.
+	(d_java_resource): Same.
+	(d_special_name): Handle "Gr" case.
+	(d_print_comp): Handle DEMANGLE_COMPONENT_JAVA_RESOURCE,
+	DEMANGLE_COMPONENT_COMPOUND_NAME, and
+	DEMANGLE_COMPONENT_CHARACTER cases.
+	* testsuite/demangle-expected: Add test for java resource name
+	mangling.
+
 2008-01-23  Thiago Jung Bauermann  <bauerman@br.ibm.com>
 
 	* cplus-dem.c (demangle_function_name): Changed to return value

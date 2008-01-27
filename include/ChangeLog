@@ -1,3 +1,11 @@
+2008-01-26  David Daney  <ddaney@avtrex.com>
+
+	* demangle.h (demangle_component_type):  Add
+	DEMANGLE_COMPONENT_JAVA_RESOURCE,
+	DEMANGLE_COMPONENT_COMPOUND_NAME, and
+	DEMANGLE_COMPONENT_CHARACTER as new enum values.
+	(demangle_component): Add struct s_character to union u.
+
 2007-11-07  Joseph Myers  <joseph@codesourcery.com>
 	    Daniel Jacobowitz  <dan@codesourcery.com>
 
