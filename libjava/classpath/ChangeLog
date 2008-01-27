@@ -1,3 +1,7 @@
+2008-01-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/README.jaxp: Fix typos.
+
 2008-01-24  Tom Tromey  <tromey@redhat.com>
 
 	* resource/gnu/classpath/tools/native2ascii/messages.properties
