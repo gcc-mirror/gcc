@@ -1,3 +1,9 @@
+2008-01-27  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	* configure.ac (__stack_chk_fail): Add detecion for availability
+	of SSP in uClibc by checking if __UCLIBC_HAS_SSP__ is defined.
+	* configure: Regenerate.
+
 2008-01-26  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	PR middle-end/34688
