@@ -1,5 +1,9 @@
 2008-01-27  Bernhard Fischer  <aldot@gcc.gnu.org>
 
+	* basic-block.h (condjump_equiv_p): Fix comment.
+
+2008-01-27  Bernhard Fischer  <aldot@gcc.gnu.org>
+
 	* tree-pretty-print.c (print_generic_decl, print_generic_stmt,
 	print_generic_stmt_indented): Fix comment.
 
