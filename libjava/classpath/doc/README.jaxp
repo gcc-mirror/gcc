@@ -155,7 +155,7 @@ To enable the various GNU JAXP factories, set the following system properties
 When using libxmlj, the libxmlj shared library must be available.
 In general it is picked up by the runtime using GNU Classpath. If not you
 might want to try adding the directory where libxmlj.so is installed
-(by default ${prefix}/lib/classpath/) with ldconfig or specifing in the
+(by default ${prefix}/lib/classpath/) with ldconfig or specifying in the
 LD_LIBRARY_PATH environment variable. Additionally, you may need to specify
 the location of your shared libraries to the runtime environment using the
 java.library.path system property.
@@ -174,7 +174,7 @@ Update: it may be possible to make libxmlj thread-safe nonetheless
 using thread context variables.
 
 Update: thread context variables have been introduced. This is very
-untested though, libxmll therefore still has the single thread
+untested though, libxmlj therefore still has the single thread
 bottleneck.
 
 
