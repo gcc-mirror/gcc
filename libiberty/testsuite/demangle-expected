@@ -3858,3 +3858,7 @@ foo()::var1
 --format=gnu-v3
 _ZZN7myspaceL3foo_1EvEN11localstruct1fEZNS_3fooEvE16otherlocalstruct
 myspace::foo()::localstruct::f(myspace::foo()::otherlocalstruct)
+# Java resource name
+--format=gnu-v3
+_ZGr32_java$Sutil$Siso4217$_properties
+java resource java/util/iso4217.properties
