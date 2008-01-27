@@ -56,14 +56,6 @@ bool extra_warnings;
 bool warn_larger_than;
 HOST_WIDE_INT larger_than_size;
 
-/* Nonzero means warn about constructs which might not be
-   strict-aliasing safe.  */
-int warn_strict_aliasing;
-
-/* Nonzero means warn about optimizations which rely on undefined
-   signed overflow.  */
-int warn_strict_overflow;
-
 /* Hack for cooperation between set_Wunused and set_Wextra.  */
 static bool maybe_warn_unused_parameter;
 

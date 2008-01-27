@@ -1,5 +1,5 @@
 /* C/ObjC/C++ command line option handling.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
@@ -392,8 +392,10 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       if (c_dialect_cxx ())
 	warn_sign_compare = value;
       warn_switch = value;
-      warn_strict_aliasing = value;
-      warn_strict_overflow = value;
+      if (warn_strict_aliasing == -1)
+	warn_strict_aliasing = value;
+      if (warn_strict_overflow == -1)
+	warn_strict_overflow = value;
       warn_address = value;
 
       /* Only warn about unknown pragmas that are not in system
@@ -1035,6 +1037,11 @@ c_common_post_options (const char **pfilename)
      of -Wall or -pedantic are given.  */
   if (warn_pointer_sign == -1)
     warn_pointer_sign = 0;
+
+  if (warn_strict_aliasing == -1)
+    warn_strict_aliasing = 0;
+  if (warn_strict_overflow == -1)
+    warn_strict_overflow = 0;
 
   /* -Woverlength-strings is off by default, but is enabled by -pedantic.
      It is never enabled in C++, as the minimum limit is not normative

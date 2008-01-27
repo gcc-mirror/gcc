@@ -1,3 +1,9 @@
+2008-01-27  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 32102
+	* gcc.dg/Wstrict-overflow-21.c: New.
+	* g++.dg/warn/Wstrict-aliasing-8.C: New.
+
 2008-01-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/pr29254.c (func1): Mark static when pic.
