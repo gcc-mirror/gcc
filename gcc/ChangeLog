@@ -1,5 +1,10 @@
 2008-01-27  Bernhard Fischer  <aldot@gcc.gnu.org>
 
+	* tree-pretty-print.c (print_generic_decl, print_generic_stmt,
+	print_generic_stmt_indented): Fix comment.
+
+2008-01-27  Bernhard Fischer  <aldot@gcc.gnu.org>
+
 	* configure.ac (__stack_chk_fail): Add detecion for availability
 	of SSP in uClibc by checking if __UCLIBC_HAS_SSP__ is defined.
 	* configure: Regenerate.
