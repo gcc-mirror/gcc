@@ -1117,7 +1117,7 @@ extern int struct_equiv_block_eq (int, struct equiv_info *);
 extern bool struct_equiv_init (int, struct equiv_info *);
 extern bool rtx_equiv_p (rtx *, rtx, int, struct equiv_info *);
 
-/* In cfgrtl.c */
+/* In cfgcleanup.c */
 extern bool condjump_equiv_p (struct equiv_info *, bool);
 
 /* Return true when one of the predecessor edges of BB is marked with EDGE_EH.  */
