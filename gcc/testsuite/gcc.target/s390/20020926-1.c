@@ -1,7 +1,7 @@
 /* Make sure that LEGITIMIZE_ADDRESS is called to handle
    negative displacements.  */
 
-/* { dg-do compile } */
+/* { dg-do compile { target { s390-*-* } } } */
 /* { dg-options "-O2 -m31 -mesa" } */
 
 int test (int *addr)
