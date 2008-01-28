@@ -216,7 +216,7 @@ EOF
     inform "Building compiler"
     OBJECT_DIRECTORY=../objdir
     contrib/gcc_build -d ${SOURCE_DIRECTORY} -o ${OBJECT_DIRECTORY} \
-      -c "--enable-generated-files-in-srcdir" build || \
+      -c "--enable-generated-files-in-srcdir --disable-multilib" build || \
       error "Could not rebuild GCC"
   fi
 
@@ -505,7 +505,7 @@ export LC_ALL
 DATE=`date "+%Y%m%d"`
 LONG_DATE=`date "+%Y-%m-%d"`
 
-SVN=${SVN:-/usr/bin/svn}
+SVN=${SVN:-svn}
 # The CVS server containing the GCC repository.
 SVN_SERVER="gcc.gnu.org"
 # The path to the repository on that server.
