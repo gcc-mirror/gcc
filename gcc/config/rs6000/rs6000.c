@@ -3238,6 +3238,13 @@ small_data_operand (rtx op ATTRIBUTE_UNUSED,
   if (DEFAULT_ABI != ABI_V4)
     return 0;
 
+  /* Vector and float memory instructions have a limited offset on the
+     SPE, so using a vector or float variable directly as an operand is
+     not useful.  */
+  if (TARGET_SPE
+      && (SPE_VECTOR_MODE (mode) || FLOAT_MODE_P (mode)))
+    return 0;
+
   if (GET_CODE (op) == SYMBOL_REF)
     sym_ref = op;
 
