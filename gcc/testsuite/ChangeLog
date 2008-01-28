@@ -1,3 +1,7 @@
+2008-01-28  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	* g++.old-deja/g++.pt/incomplete1.C: Fix typo in comment.
+
 2008-01-28  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR 31535
