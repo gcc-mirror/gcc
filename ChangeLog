@@ -1,3 +1,7 @@
+2008-01-28  Nick Clifton  <nickc@redhat.com>
+
+	* MAINTAINERS (xstormy16): Take over maintainership.
+
 2008-01-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* MAINTAINERS (c4x port): Remove.
