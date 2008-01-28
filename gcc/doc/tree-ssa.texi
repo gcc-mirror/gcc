@@ -1198,7 +1198,8 @@ the version number and the statement that created the
 @code{SSA_NAME}.  Only definitions and virtual definitions may
 create new @code{SSA_NAME} nodes.
 
-Sometimes, flow of control makes it impossible to determine what is the
+@cindex PHI nodes
+Sometimes, flow of control makes it impossible to determine the
 most recent version of a variable.  In these cases, the compiler
 inserts an artificial definition for that variable called
 @dfn{PHI function} or @dfn{PHI node}.  This new definition merges

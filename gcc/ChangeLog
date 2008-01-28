@@ -1,5 +1,9 @@
 2008-01-28  Bernhard Fischer  <aldot@gcc.gnu.org>
 
+	* doc/tree-ssa.texi: Add cindex PHI nodes and improve wording.
+
+2008-01-28  Bernhard Fischer  <aldot@gcc.gnu.org>
+
 	* config/vx-common.h: Fix typo in comment.
 
 2008-01-28  Ian Lance Taylor  <iant@google.com>
