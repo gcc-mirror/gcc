@@ -1,5 +1,9 @@
 2008-01-28  David Daney  <ddaney@avtrex.com>
 
+	* doc/install.texi (mips-*-*): Recommend binutils 2.18.
+
+2008-01-28  David Daney  <ddaney@avtrex.com>
+
 	* doc/install.texi (--disable-libgcj-bc):  Reword documentation.
 
 2008-01-27  Joseph Myers  <joseph@codesourcery.com>
