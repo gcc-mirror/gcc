@@ -49,6 +49,9 @@ shape_'rtype_kind` ('rtype` * const restrict ret,
 
   stride = ret->dim[0].stride;
 
+  if (ret->dim[0].ubound < ret->dim[0].lbound)
+    return;
+
   for (n = 0; n < GFC_DESCRIPTOR_RANK (array); n++)
     {
       ret->data[n * stride] =
