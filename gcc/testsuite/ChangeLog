@@ -1,3 +1,9 @@
+2008-01-28  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR 31535
+	* gcc.target/powerpc/spe-small-data-1.c: New test.
+	* gcc.target/powerpc/spe-small-data-2.c: New test.
+
 2008-01-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/34980
