@@ -1,3 +1,8 @@
+2008-01-28  Tom Tromey  <tromey@redhat.com>
+
+	* tools/classes/gnu/classpath/tools/native2ascii/Native2ASCII$3.class:
+	Added.
+
 2007-09-04  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac: Append libgcj soversion to nativeexeclibdir.
