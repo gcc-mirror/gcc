@@ -48,6 +48,9 @@ shape_8 (gfc_array_i8 * const restrict ret,
 
   stride = ret->dim[0].stride;
 
+  if (ret->dim[0].ubound < ret->dim[0].lbound)
+    return;
+
   for (n = 0; n < GFC_DESCRIPTOR_RANK (array); n++)
     {
       ret->data[n * stride] =

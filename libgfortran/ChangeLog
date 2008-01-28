@@ -1,3 +1,11 @@
+2008-01-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/34980
+	* m4/shape.m4:  If return array is empty, return early.
+	* generated/shape_i4.c:  Regenerated.
+	* generated/shape_i8.c:  Regenerated.
+	* generated/shape_i16.c:  Regenerated.
+
 2008-01-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfofortran/34887
