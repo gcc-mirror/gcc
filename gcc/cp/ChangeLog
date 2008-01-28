@@ -1,3 +1,14 @@
+2008-01-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/27177
+	* class.c (build_base_path): Fix previous change.
+
+	PR c++/27177
+	* class.c (build_base_path): Don't mess with virtual access if
+	skip_evaluation.
+	* call.c (standard_conversion): Don't check whether source type
+	is complete.
+
 2008-01-23  Jason Merrill  <jason@redhat.com>
 
 	PR bootstrap/34944
