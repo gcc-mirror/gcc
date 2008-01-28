@@ -999,7 +999,7 @@ public class SimpleTimeZone extends TimeZone
   /**
    * Serializes this object to a stream.  @serialdata The object is
    * first written in the old JDK 1.1 format, so that it can be read
-   * by by the old classes.  This means, that the
+   * by the old classes.  This means, that the
    * <code>start/endDay(OfWeek)</code>-Fields are written in the
    * DOW_IN_MONTH_MODE rule, since this was the only supported rule
    * in 1.1.
