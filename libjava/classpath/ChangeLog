@@ -1,3 +1,9 @@
+2008-01-27  Bernhard Fischer  <rep.dot.nop@gmail.com>
+
+	* java/util/SimpleTimeZone.java (SimpleTimeZone): Fix typo in comment.
+	* gnu/CORBA/GIOP/v1_2/RequestHeader.java (RequestHeader): Fix typo in
+	exception message.
+
 2008-01-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/README.jaxp: Fix typos.

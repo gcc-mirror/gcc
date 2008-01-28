@@ -153,7 +153,7 @@ public class RequestHeader
               throw new NO_IMPLEMENT("Object addressing by IOP tagged profile");
 
             case ReferenceAddr :
-              throw new NO_IMPLEMENT("Object addressing by by IOR addressing info");
+              throw new NO_IMPLEMENT("Object addressing by IOR addressing info");
 
             default :
               MARSHAL m = new MARSHAL("Unknow addressing method in request, " +
