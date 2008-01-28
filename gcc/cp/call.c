@@ -714,19 +714,7 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 		  that necessitates this conversion is ill-formed.
 		  Therefore, we use DERIVED_FROM_P, and do not check
 		  access or uniqueness.  */
-	       && DERIVED_FROM_P (TREE_TYPE (to), TREE_TYPE (from))
-	       /* If FROM is not yet complete, then we must be parsing
-		  the body of a class.  We know what's derived from
-		  what, but we can't actually perform a
-		  derived-to-base conversion.  For example, in:
-
-		     struct D : public B { 
-                       static const int i = sizeof((B*)(D*)0);
-                     };
-
-                  the D*-to-B* conversion is a reinterpret_cast, not a
-		  static_cast.  */
-	       && COMPLETE_TYPE_P (TREE_TYPE (from)))
+	       && DERIVED_FROM_P (TREE_TYPE (to), TREE_TYPE (from)))
 	{
 	  from =
 	    cp_build_qualified_type (TREE_TYPE (to),
