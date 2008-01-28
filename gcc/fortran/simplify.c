@@ -3714,7 +3714,11 @@ gfc_simplify_shape (gfc_expr *source)
   int n;
   try t;
 
-  if (source->rank == 0 || source->expr_type != EXPR_VARIABLE)
+  if (source->rank == 0)
+    return gfc_start_constructor (BT_INTEGER, gfc_default_integer_kind,
+				  &source->where);
+
+  if (source->expr_type != EXPR_VARIABLE)
     return NULL;
 
   result = gfc_start_constructor (BT_INTEGER, gfc_default_integer_kind,
