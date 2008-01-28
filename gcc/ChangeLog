@@ -1,3 +1,7 @@
+2008-01-28  David Daney  <ddaney@avtrex.com>
+
+	* doc/install.texi (--disable-libgcj-bc):  Reword documentation.
+
 2008-01-27  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.gcc (strongarm*-*, ep9312*-*, xscale*-*, parisc*-*,
