@@ -1,3 +1,8 @@
+2008-01-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/34980
+	* gfortran.dg/shape_3.f90:  New test.
+
 2008-01-28  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* gcc.target/s390/20020926-1.c: Remove -m31.
