@@ -1557,12 +1557,13 @@ Disable JVMPI support.
 @item --disable-libgcj-bc
 Disable BC ABI compilation of certain parts of libgcj.  By default,
 some portions of libgcj are compiled with @option{-findirect-dispatch}
-@option{-fno-indirect-classes}.  This allows them to be overridden at
-runtime.
+and @option{-fno-indirect-classes}, allowing them to be overridden at
+run-time.
 
 If @option{--disable-libgcj-bc} is specified, libgcj is built without
-these options.  This makes it impossible to override portions of
-libgcj at runtime, but can make it easier to statically link to libgcj.
+these options.  This allows the compile-time linker to resolve
+dependencies when statically linking to libgcj.  However it makes it
+impossible to override the affected portions of libgcj at run-time.
 
 @item --with-ecos
 Enable runtime eCos target support.
