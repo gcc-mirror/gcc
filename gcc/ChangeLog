@@ -1,3 +1,9 @@
+2008-01-28  Andy Hutchinson   <hutchinsonandy@netscape.net>
+
+	PR target/34412
+	* config/avr/avr.c (expand_prologue): Use correct QI mode frame 
+	pointer for tiny stack.
+
 2008-01-28  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	* doc/tree-ssa.texi: Add cindex PHI nodes and improve wording.

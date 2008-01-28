@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for ATMEL AVR micro controllers
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Denis Chertykov (denisc@overta.ru)
 
@@ -754,7 +754,7 @@ expand_prologue (void)
                   insn = emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
                   RTX_FRAME_RELATED_P (insn) = 1;
                   insn = emit_move_insn (myfp,
-                                         gen_rtx_PLUS (GET_MODE(myfp), frame_pointer_rtx, 
+                                         gen_rtx_PLUS (GET_MODE(myfp), myfp, 
                                                        gen_int_mode (-size, GET_MODE(myfp))));
                   RTX_FRAME_RELATED_P (insn) = 1;
                   insn = emit_move_insn ( stack_pointer_rtx, frame_pointer_rtx);
