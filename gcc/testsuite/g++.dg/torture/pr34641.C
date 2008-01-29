@@ -1,7 +1,7 @@
+// { dg-do compile }
 // { dg-require-effective-target fpic }
 // { dg-require-visibility "" }
 // { dg-options "-fPIC" }
-// { dg-do compile }
 
 
 typedef __SIZE_TYPE__ size_t;

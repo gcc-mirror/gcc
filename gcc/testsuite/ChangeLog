@@ -1,5 +1,9 @@
 2008-01-29  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* g++.dg/torture/pr34641.C: Put the dg-do first.
+
+2008-01-29  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* gcc.target/mips/lazy-binding-1.c: Skip for mips16.
 
 2008-01-28  Bernhard Fischer  <aldot@gcc.gnu.org>
