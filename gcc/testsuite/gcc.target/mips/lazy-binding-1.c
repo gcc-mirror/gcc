@@ -1,3 +1,4 @@
+/* { dg-do compile { target nomips16 } } */
 /* { dg-mips-options "-mabicalls -mshared -mexplicit-relocs -O2 -fno-delayed-branch" } */
 
 void bar (void);
