@@ -508,7 +508,7 @@ finish_cond (tree *cond_p, tree expr)
       if (TREE_CODE (cond) == DECL_EXPR)
 	expr = cond;
 
-      if (check_for_bare_parameter_packs (&expr))
+      if (check_for_bare_parameter_packs (expr))
         *cond_p = error_mark_node;
     }
   *cond_p = expr;
@@ -619,7 +619,7 @@ finish_expr_stmt (tree expr)
       else if (!type_dependent_expression_p (expr))
 	convert_to_void (build_non_dependent_expr (expr), "statement");
 
-      if (check_for_bare_parameter_packs (&expr))
+      if (check_for_bare_parameter_packs (expr))
         expr = error_mark_node;
 
       /* Simplification of inner statement expressions, compound exprs,
@@ -877,7 +877,7 @@ finish_for_expr (tree expr, tree for_stmt)
   else if (!type_dependent_expression_p (expr))
     convert_to_void (build_non_dependent_expr (expr), "3rd expression in for");
   expr = maybe_cleanup_point_expr_void (expr);
-  if (check_for_bare_parameter_packs (&expr))
+  if (check_for_bare_parameter_packs (expr))
     expr = error_mark_node;
   FOR_EXPR (for_stmt) = expr;
 }
@@ -974,7 +974,7 @@ finish_switch_cond (tree cond, tree switch_stmt)
 	    cond = index;
 	}
     }
-  if (check_for_bare_parameter_packs (&cond))
+  if (check_for_bare_parameter_packs (cond))
     cond = error_mark_node;
   finish_cond (&SWITCH_STMT_COND (switch_stmt), cond);
   SWITCH_STMT_TYPE (switch_stmt) = orig_type;
@@ -1393,7 +1393,7 @@ finish_mem_initializers (tree mem_inits)
              bound as part of the TREE_PURPOSE.  See
              make_pack_expansion for more information.  */
           if (TREE_CODE (TREE_PURPOSE (mem)) != TYPE_PACK_EXPANSION
-              && check_for_bare_parameter_packs (&TREE_VALUE (mem)))
+              && check_for_bare_parameter_packs (TREE_VALUE (mem)))
             TREE_VALUE (mem) = error_mark_node;
         }
 
@@ -2331,9 +2331,9 @@ finish_member_declaration (tree decl)
   /* Check for bare parameter packs in the member variable declaration.  */
   if (TREE_CODE (decl) == FIELD_DECL)
     {
-      if (check_for_bare_parameter_packs (&TREE_TYPE (decl)))
+      if (check_for_bare_parameter_packs (TREE_TYPE (decl)))
         TREE_TYPE (decl) = error_mark_node;
-      if (check_for_bare_parameter_packs (&DECL_ATTRIBUTES (decl)))
+      if (check_for_bare_parameter_packs (DECL_ATTRIBUTES (decl)))
         DECL_ATTRIBUTES (decl) = NULL_TREE;
     }
 
@@ -4025,6 +4025,9 @@ void
 finish_static_assert (tree condition, tree message, location_t location, 
                       bool member_p)
 {
+  if (check_for_bare_parameter_packs (condition))
+    condition = error_mark_node;
+
   if (type_dependent_expression_p (condition) 
       || value_dependent_expression_p (condition))
     {

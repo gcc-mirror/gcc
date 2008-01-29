@@ -1040,6 +1040,8 @@ add_method (tree type, tree method, tree using_decl)
 	 coming from the using class in overload resolution.  */
       if (! DECL_STATIC_FUNCTION_P (fn)
 	  && ! DECL_STATIC_FUNCTION_P (method)
+	  && TREE_TYPE (TREE_VALUE (parms1)) != error_mark_node
+	  && TREE_TYPE (TREE_VALUE (parms2)) != error_mark_node
 	  && (TYPE_QUALS (TREE_TYPE (TREE_VALUE (parms1)))
 	      != TYPE_QUALS (TREE_TYPE (TREE_VALUE (parms2)))))
 	continue;

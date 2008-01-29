@@ -4435,7 +4435,7 @@ extern int comp_template_parms			(const_tree, const_tree);
 extern bool uses_parameter_packs                (tree);
 extern bool template_parameter_pack_p           (const_tree);
 extern tree make_pack_expansion                 (tree);
-extern bool check_for_bare_parameter_packs      (tree*);
+extern bool check_for_bare_parameter_packs      (tree);
 extern tree get_template_info			(tree);
 extern int template_class_depth			(tree);
 extern int is_specialization_of			(tree, tree);

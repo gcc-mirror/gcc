@@ -225,7 +225,10 @@ pp_c_space_for_pointer_operator (c_pretty_printer *pp, tree t)
 void
 pp_c_type_qualifier_list (c_pretty_printer *pp, tree t)
 {
-   int qualifiers;
+  int qualifiers;
+
+  if (!t || t == error_mark_node)
+    return;
 
   if (!TYPE_P (t))
     t = TREE_TYPE (t);

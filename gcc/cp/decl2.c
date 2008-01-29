@@ -1107,6 +1107,9 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
 
   if (processing_template_decl)
     {
+      if (check_for_bare_parameter_packs (attributes))
+	return;
+
       save_template_attributes (&attributes, decl);
       if (attributes == NULL_TREE)
 	return;

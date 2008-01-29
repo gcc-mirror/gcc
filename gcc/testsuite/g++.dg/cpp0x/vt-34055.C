@@ -1,10 +1,31 @@
 // { dg-options "-std=c++0x" }
 // PR c++/34055
-template<typename...> struct A; // { dg-error "declaration" }
+template<typename...> struct A;
 
 template<typename...T> struct A<T*> // { dg-error "parameter packs|T" }
-{
-  void foo();
+{   // { dg-error "parameter packs|T" }
+  void foo();  // { dg-error "parameter packs|T|candidate" }
 };
 
-template<typename...T> void A<T*>::foo() {} // { dg-error "invalid use" }
+template<typename...T> void A<T*>::foo() {} // { dg-error "does not match" }
+
+
+
+template<typename...> struct B;
+
+template<typename...T> struct B<T&> // { dg-error "parameter packs|T" }
+{ // { dg-error "parameter packs|T" }
+  void foo(); // { dg-error "parameter packs|T" }
+};
+
+template<typename...T> void B<T&>::foo() {} // { dg-error "does not match" }
+
+
+template<typename...> struct C;
+
+template<typename...T> struct C<T()> // { dg-error "parameter packs|T" }
+{ // { dg-error "parameter packs|T" }
+  void foo(); // { dg-error "parameter packs|T" }
+};
+
+template<typename...T> void C<T()>::foo() {} // { dg-error "does not match" }

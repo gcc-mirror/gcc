@@ -1,3 +1,17 @@
+2008-01-29  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/34055
+	PR c++/34103
+	PR c++/34219
+	PR c++/34606
+	PR c++/34753
+	PR c++/34754
+	PR c++/34755
+	PR c++/34919
+	PR c++/34961
+	* c-pretty-print.c (pp_c_type_qualifier_list): Don't try to print
+	qualifiers for an ERROR_MARK_NODE or a NULL_TREE.
+
 2008-01-28  Andy Hutchinson   <hutchinsonandy@netscape.net>
 
 	PR target/34412

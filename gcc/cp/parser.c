@@ -11776,7 +11776,7 @@ cp_parser_using_declaration (cp_parser* parser,
 	  /* Create the USING_DECL.  */
 	  decl = do_class_using_decl (parser->scope, identifier);
 
-	  if (check_for_bare_parameter_packs (&decl))
+	  if (check_for_bare_parameter_packs (decl))
             return false;
           else
 	    /* Add it to the list of members in this class.  */
@@ -11787,7 +11787,7 @@ cp_parser_using_declaration (cp_parser* parser,
 	  decl = cp_parser_lookup_name_simple (parser, identifier);
 	  if (decl == error_mark_node)
 	    cp_parser_name_lookup_error (parser, identifier, decl, NULL);
-	  else if (check_for_bare_parameter_packs (&decl))
+	  else if (check_for_bare_parameter_packs (decl))
 	    return false;
 	  else if (!at_namespace_scope_p ())
 	    do_local_using_decl (decl, qscope, identifier);
@@ -15327,7 +15327,7 @@ cp_parser_base_clause (cp_parser* parser)
             TREE_VALUE (base) = make_pack_expansion (TREE_VALUE (base));
           
 
-          if (!check_for_bare_parameter_packs (&TREE_VALUE (base)))
+          if (!check_for_bare_parameter_packs (TREE_VALUE (base)))
             {
               TREE_CHAIN (base) = bases;
               bases = base;

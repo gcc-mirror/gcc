@@ -2434,10 +2434,6 @@ struct find_parameter_pack_data
 
   /* Set of AST nodes that have been visited by the traversal.  */
   struct pointer_set_t *visited;
-
-  /* Whether we should replace parameter packs with
-     ERROR_MARK_NODE. Used by check_for_bare_parameter_packs.  */
-  bool set_packs_to_error;
 };
 
 /* Identifies all of the argument packs that occur in a template
@@ -2452,15 +2448,13 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
     (struct find_parameter_pack_data*)data;
   bool parameter_pack_p = false;
 
-  /* Don't visit nodes twice, except when we're clearing out parameter
-     packs.  */
+  /* Don't visit nodes twice.  */
   if (pointer_set_contains (ppd->visited, *tp))
     {
       *walk_subtrees = 0;
       return NULL_TREE;
     }
 
-recheck:
   /* Identify whether this is a parameter pack or not.  */
   switch (TREE_CODE (t))
     {
@@ -2485,16 +2479,6 @@ recheck:
         }
       break;
 
-    case POINTER_TYPE:
-      if (ppd->set_packs_to_error)
-	/* Pointer types are shared, set in that case the outermost
-	   POINTER_TYPE to error_mark_node rather than the parameter pack.  */
-	{
-	  t = TREE_TYPE (t);
-	  goto recheck;
-	}
-      break;
-
     default:
       /* Not a parameter pack.  */
       break;
@@ -2504,19 +2488,10 @@ recheck:
     {
       /* Add this parameter pack to the list.  */
       *ppd->parameter_packs = tree_cons (NULL_TREE, t, *ppd->parameter_packs);
-
-      if (ppd->set_packs_to_error)
-	/* The caller requested that we set the parameter packs to
-	   ERROR_MARK_NODE so that they will not trip up the compiler
-	   later.  The caller is responsible for emitting an error.  */
-	*tp = error_mark_node;
-      else
-	/* Make sure we do not visit this node again.  */
-	pointer_set_insert (ppd->visited, *tp);
     }
-  else
-    /* Make sure we do not visit this node again.  */
-    pointer_set_insert (ppd->visited, *tp);
+
+  /* Make sure we do not visit this node again.  */
+  pointer_set_insert (ppd->visited, *tp);
 
   if (TYPE_P (t))
     cp_walk_tree (&TYPE_CONTEXT (t), 
@@ -2602,7 +2577,6 @@ uses_parameter_packs (tree t)
   struct find_parameter_pack_data ppd;
   ppd.parameter_packs = &parameter_packs;
   ppd.visited = pointer_set_create ();
-  ppd.set_packs_to_error = false;
   cp_walk_tree (&t, &find_parameter_packs_r, &ppd, NULL);
   pointer_set_destroy (ppd.visited);
   return parameter_packs != NULL_TREE;
@@ -2620,8 +2594,6 @@ make_pack_expansion (tree arg)
   tree parameter_packs = NULL_TREE;
   bool for_types = false;
   struct find_parameter_pack_data ppd;
-
-  ppd.set_packs_to_error = false;
 
   if (!arg || arg == error_mark_node)
     return arg;
@@ -2744,21 +2716,20 @@ make_pack_expansion (tree arg)
    Returns TRUE and emits an error if there were bare parameter packs,
    returns FALSE otherwise.  */
 bool 
-check_for_bare_parameter_packs (tree* t)
+check_for_bare_parameter_packs (tree t)
 {
   tree parameter_packs = NULL_TREE;
   struct find_parameter_pack_data ppd;
 
-  if (!processing_template_decl || !t || !*t || *t == error_mark_node)
+  if (!processing_template_decl || !t || t == error_mark_node)
     return false;
 
-  if (TREE_CODE (*t) == TYPE_DECL)
-    t = &TREE_TYPE (*t);
+  if (TREE_CODE (t) == TYPE_DECL)
+    t = TREE_TYPE (t);
 
   ppd.parameter_packs = &parameter_packs;
   ppd.visited = pointer_set_create ();
-  ppd.set_packs_to_error = false;
-  cp_walk_tree (t, &find_parameter_packs_r, &ppd, NULL);
+  cp_walk_tree (&t, &find_parameter_packs_r, &ppd, NULL);
   pointer_set_destroy (ppd.visited);
 
   if (parameter_packs) 
@@ -2789,8 +2760,7 @@ check_for_bare_parameter_packs (tree* t)
 	 tree.  */
       ppd.parameter_packs = &parameter_packs;
       ppd.visited = pointer_set_create ();
-      ppd.set_packs_to_error = true;
-      cp_walk_tree (t, &find_parameter_packs_r, &ppd, NULL);
+      cp_walk_tree (&t, &find_parameter_packs_r, &ppd, NULL);
       pointer_set_destroy (ppd.visited);
 
       return true;
@@ -3055,7 +3025,7 @@ process_template_parm (tree list, tree parm, bool is_non_type,
 	  {
 	    /* This template parameter is not a parameter pack, but it
 	       should be. Complain about "bare" parameter packs.  */
-	    check_for_bare_parameter_packs (&TREE_TYPE (parm));
+	    check_for_bare_parameter_packs (TREE_TYPE (parm));
 	    
 	    /* Recover by calling this a parameter pack.  */
 	    is_parameter_pack = true;
@@ -3895,7 +3865,7 @@ push_template_decl_real (tree decl, bool is_friend)
       while (arg && argtype)
         {
           if (!FUNCTION_PARAMETER_PACK_P (arg)
-              && check_for_bare_parameter_packs (&TREE_TYPE (arg)))
+              && check_for_bare_parameter_packs (TREE_TYPE (arg)))
             {
             /* This is a PARM_DECL that contains unexpanded parameter
                packs. We have already complained about this in the
@@ -3911,14 +3881,15 @@ push_template_decl_real (tree decl, bool is_friend)
 
       /* Check for bare parameter packs in the return type and the
          exception specifiers.  */
-      if (check_for_bare_parameter_packs (&TREE_TYPE (type)))
+      if (check_for_bare_parameter_packs (TREE_TYPE (type)))
 	/* Errors were already issued, set return type to int
 	   as the frontend doesn't expect error_mark_node as
 	   the return type.  */
 	TREE_TYPE (type) = integer_type_node;
-      check_for_bare_parameter_packs (&TYPE_RAISES_EXCEPTIONS (type));
+      if (check_for_bare_parameter_packs (TYPE_RAISES_EXCEPTIONS (type)))
+	TYPE_RAISES_EXCEPTIONS (type) = NULL_TREE;
     }
-  else if (check_for_bare_parameter_packs (&TREE_TYPE (decl)))
+  else if (check_for_bare_parameter_packs (TREE_TYPE (decl)))
     return error_mark_node;
 
   if (is_partial)

@@ -1,3 +1,29 @@
+2008-01-29  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/34055
+	PR c++/34103
+	PR c++/34219
+	PR c++/34606
+	PR c++/34753
+	PR c++/34754
+	PR c++/34755
+	PR c++/34919
+	PR c++/34961
+	* g++.dg/cpp0x/vt-34219-2.C: New.
+	* g++.dg/cpp0x/pr32126.C: Tweak expected error messages.
+	* g++.dg/cpp0x/vt-34961.C: New.
+	* g++.dg/cpp0x/vt-34055.C: Tweak error messages; add new test
+	cases from the re-opened PR.
+	* g++.dg/cpp0x/vt-34753.C: New.
+	* g++.dg/cpp0x/vt-34919.C: New.
+	* g++.dg/cpp0x/vt-34754.C: New.
+	* g++.dg/cpp0x/vt-34606.C: New.
+	* g++.dg/cpp0x/vt-34219.C: New.
+	* g++.dg/cpp0x/pr32125.C: Tweak expected error messages.
+	* g++.dg/cpp0x/vt-34755.C: New.
+	* g++.dg/cpp0x/pr31438.C: Ditto.
+	* g++.dg/cpp0x/variadic81.C: Ditto.
+
 2008-01-29  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* g++.dg/torture/pr34641.C: Put the dg-do first.
