@@ -5388,6 +5388,12 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 
       type_dependent_p = dependent_type_p (type);
 
+      if (check_for_bare_parameter_packs (init))
+	{
+	  init = NULL_TREE;
+	  DECL_INITIAL (decl) = NULL_TREE;
+	}
+
       if (init && init_const_expr_p)
 	{
 	  DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = 1;

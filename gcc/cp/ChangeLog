@@ -1,3 +1,47 @@
+2008-01-29  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/34055
+	PR c++/34103
+	PR c++/34219
+	PR c++/34606
+	PR c++/34753
+	PR c++/34754
+	PR c++/34755
+	PR c++/34919
+	PR c++/34961
+	* typeck.c (check_return_expr): Tweak call to
+	check_for_bare_parameter_packs.
+	* class.c (add_method): Be careful with error_mark_nodes.
+	* cp-tree.h (check_for_bare_parameter_packs): Remove "*" from
+	signature.
+	* pt.c (struct find_parameter_pack_data): Remove
+	SET_PACKS_TO_ERROR.
+	(find_parameter_packs_r): Don't use SET_PACKS_TO_ERROR.
+	(uses_parameter_packs): Don't set SET_PACKS_TO_ERROR.
+	(make_pack_expansion): Ditto.
+	(check_for_bare_parameter_packs): Parameter is now a tree, not a
+	tree*.
+	(process_template_parm): Tweak call to
+	check_for_bare_parameter_packs.  
+	(push_template_decl_real): Tweak calls to
+	check_for_bare_parameter_packs. If bare parameter packs are found
+	in the list of exceptions, clear out that list after giving an
+	error.
+	* semantics.c (finish_cond): Tweak call to
+	check_for_bare_parameter_packs.
+	(finish_expr_stmt): Ditto.
+	(finish_for_expr): Ditto.
+	(finish_switch_cond): Ditto.
+	(finish_mem_initializers): Ditto.
+	(finish_member_declaration): Ditto.
+	(finish_static_assert): Check for bare parameter packs in the
+	condition.
+	* decl2.c (cplus_decl_attributes): Check for bare parameter packs in the
+	attributes of a declaration.
+	* parser.c (cp_parser_using_declaration): Tweak call to
+	check_for_bare_parameter_packs.
+	(cp_parser_base_clause): Ditto.
+
 2008-01-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35007
