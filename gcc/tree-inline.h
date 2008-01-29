@@ -95,6 +95,9 @@ typedef struct copy_body_data
   /* True if this statement will need to be regimplified.  */
   bool regimplify;
 
+  /* > 0 if we are remapping a type currently.  */
+  int remapping_type_depth;
+
   /* Statements that might be possibly folded.  */
   struct pointer_set_t *statements_to_fold;
 

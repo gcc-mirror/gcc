@@ -1,3 +1,13 @@
+2008-01-29  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/35006
+	* tree-inline.h (struct copy_body_data): Add remapping_type_depth
+	field.
+	* tree-inline.c (remap_type): Increment remapping_type_depth
+	around remapping types.
+	(copy_body_r): Only add referenced variables if they are referenced
+	from code, not types.
+
 2008-01-29  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR c++/34055
