@@ -1,3 +1,10 @@
+2008-01-29  Michael Meissner  <michael.meissner@amd.com>
+
+	PR 35004
+	* cp-tree.h (struct full_lang_decl): Make tree_code bitfield 16
+	bits to allow for expansion of the number of middle end tree
+	codes.
+
 2008-01-29  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR c++/34055
