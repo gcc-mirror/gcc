@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.3-b20071109\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2007-11-08 21:09+0000\n"
-"PO-Revision-Date: 2008-01-17 22:41+0100\n"
+"PO-Revision-Date: 2008-01-29 14:43+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -1257,7 +1257,7 @@ msgid ""
 "For bug reporting instructions, please see:\n"
 msgstr ""
 "\n"
-"Instruktioner för bugrapportering, se:\n"
+"För felrapporteringsinstruktioner se:\n"
 
 #: gcc.c:6505
 #, c-format
@@ -2365,6 +2365,8 @@ msgstr "Den maximala antalet postfält (i byte) vid vilken GCC använder elementvi
 msgid "The threshold ratio between instantiated fields and the total structure size"
 msgstr "Tröskelförhållandet mellan instansierade fält och den totala poststorleken"
 
+# Orginalet är felstavat.
+# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=35002
 #: params.def:93
 msgid "The threshold ratio between current and hotest structure counts"
 msgstr "Tröskelförhållandet mellan aktuell och hetaste posträknare"
@@ -2597,11 +2599,11 @@ msgstr "Den minsta kostnaden av ett dyrt uttryck vid flyttning av slinginvariant
 
 #: params.def:444
 msgid "Bound on number of candidates below that all candidates are considered in iv optimizations"
-msgstr "Gräns på antalet kandidater under vilken alla kandidater övervägs i iv-optimeringar"
+msgstr "Gräns för antalet kandidater under vilken alla kandidater övervägs i iv-optimeringar"
 
 #: params.def:452
 msgid "Bound on number of iv uses in loop optimized in iv optimizations"
-msgstr "Gräns på antal iv-användningar i en slinga optimerad i iv-optimeringar"
+msgstr "Gräns för antal iv-användningar i en slinga optimerad i iv-optimeringar"
 
 #: params.def:460
 msgid "If number of candidates in the set is smaller, we always try to remove unused ivs during its optimization"
@@ -2609,43 +2611,43 @@ msgstr "Om antalet kandidater i mängden är mindre, försöker vi alltid ta bort oa
 
 #: params.def:465
 msgid "Bound on size of expressions used in the scalar evolutions analyzer"
-msgstr "Gräns på storleken av uttryck som används i analyseraren av skalära uttryck"
+msgstr "Gräns för storleken av uttryck som används i analyseraren av skalära uttryck"
 
 #: params.def:470
 msgid "Bound on the number of variables in Omega constraint systems"
-msgstr "Gräns för antalet variabler i Omega begränsningssystem"
+msgstr "Gräns för antalet variabler i Omegasystem av bivillkor"
 
 #: params.def:475
 msgid "Bound on the number of inequalities in Omega constraint systems"
-msgstr "Gräns för antalet olikheter i Omega begränsningssystem"
+msgstr "Gräns för antalet olikheter i Omegasystem av bivillkor"
 
 #: params.def:480
 msgid "Bound on the number of equalities in Omega constraint systems"
-msgstr "Gräns för antalet likheter i Omega begränsningssystem"
+msgstr "Gräns för antalet likheter i Omegasystem av bivillkor"
 
 #: params.def:485
 msgid "Bound on the number of wild cards in Omega constraint systems"
-msgstr "Gräns för antalet jokrar i Omega begränsningssystem"
+msgstr "Gräns för antalet jokrar i Omegasystem av bivillkor"
 
 #: params.def:490
 msgid "Bound on the size of the hash table in Omega constraint systems"
-msgstr "Gräns för storleken på hash-tabellen i Omega begränsningssystem"
+msgstr "Gräns för storleken på hash-tabellen i Omegasystem av bivillkor"
 
 #: params.def:495
 msgid "Bound on the number of keys in Omega constraint systems"
-msgstr "Gräns på antalet nycklar i Omega begränsningssystem"
+msgstr "Gräns för antalet nycklar i Omegasystem av bivillkor"
 
 #: params.def:500
 msgid "When set to 1, use expensive methods to eliminate all redundant constraints"
-msgstr "När satt till 1, använd dyr metod för att eliminera alla överflödiga begränsningar"
+msgstr "När satt till 1, använd dyra metoder för att eliminera alla överflödiga bivillkor"
 
 #: params.def:505
 msgid "Bound on number of runtime checks inserted by the vectorizer's loop versioning for alignment check"
-msgstr "Gräns på antalet körtidskontroller som läggs in av vektoriserarens slingversionering för justeringskontroller"
+msgstr "Gräns för antalet körtidskontroller som läggs in av vektoriserarens slingversionering för justeringskontroller"
 
 #: params.def:510
 msgid "Bound on number of runtime checks inserted by the vectorizer's loop versioning for alias check"
-msgstr "Gräns på antalet körtidskontroller som läggs in av vektoriserarens slingversionering för aliaskontroller"
+msgstr "Gräns för antalet körtidskontroller som läggs in av vektoriserarens slingversionering för aliaskontroller"
 
 #: params.def:515
 msgid "The maximum memory locations recorded by cselib"
@@ -2737,7 +2739,7 @@ msgstr "Antalet instruktioner som körs före förhandshämtning (prefetch) är klar"
 
 #: params.def:676
 msgid "The number of prefetches that can run at the same time"
-msgstr "Antalet förhandshämtningar (prefetches) som kan vara igång samtidigt"
+msgstr "Antalet förhandshämtningar (prefetch) som kan vara igång samtidigt"
 
 #: params.def:683
 msgid "The size of L1 cache"
@@ -3873,7 +3875,7 @@ msgstr "Förväntade uttryck i vektorspecifikation vid %C"
 #: fortran/array.c:386
 #, no-c-format
 msgid "Bad array specification for an explicitly shaped array at %C"
-msgstr "Felaktig vektorspecifikation för en explicit format vektor vid %C"
+msgstr "Felaktig vektorspecifikation för en explicit formad vektor vid %C"
 
 #: fortran/array.c:396
 #, no-c-format
@@ -3883,7 +3885,7 @@ msgstr "Felaktig vektorspecifikation för en förmodat formad vektor vid %C"
 #: fortran/array.c:410
 #, no-c-format
 msgid "Bad specification for deferred shape array at %C"
-msgstr "Felaktig specifikation för en fördröjt format vektor vid %C"
+msgstr "Felaktig specifikation för en fördröjt formad vektor vid %C"
 
 #: fortran/array.c:414
 #, no-c-format
@@ -4136,7 +4138,7 @@ msgstr "\"a1\"-argumentet till inbyggd \"%s\" vid %L måste vara INTEGER, REAL el
 #: fortran/check.c:1734
 #, no-c-format
 msgid "Different shape on dimension 1 for arguments '%s' and '%s' at %L for intrinsic matmul"
-msgstr "Olika form på dimension 1 för argument \"%s\" och \"%s\" vid %L för inbyggd matmul"
+msgstr "Olika form på dimension 1 för argumenten \"%s\" och \"%s\" vid %L för inbyggd matmul"
 
 #: fortran/check.c:1753
 #, no-c-format
@@ -4351,12 +4353,12 @@ msgstr "Variabeln \"%s\" vid %L kan inte ha attributet OPTIONAL eftersom procedu
 #: fortran/decl.c:947
 #, no-c-format
 msgid "Assumed-shape array '%s' at %L cannot be an argument to the procedure '%s' at %L because the procedure is BIND(C)"
-msgstr "Vektorn \"%s\" med förmodat format vid %L kan inte vara ett argument till proceduren \"%s\" vid %L eftersom proceduren är BIND(C)"
+msgstr "Vektorn \"%s\" med förmodad form vid %L kan inte vara ett argument till proceduren \"%s\" vid %L eftersom proceduren är BIND(C)"
 
 #: fortran/decl.c:957
 #, no-c-format
 msgid "Deferred-shape array '%s' at %L cannot be an argument to the procedure '%s' at %L because the procedure is BIND(C)"
-msgstr "Vektorn \"%s\" med fördröjt format vid %L kan inte vara ett argument till proceduren \"%s\" vid %L eftersom proceduren är BIND(C)"
+msgstr "Vektorn \"%s\" med fördröjd form vid %L kan inte vara ett argument till proceduren \"%s\" vid %L eftersom proceduren är BIND(C)"
 
 #: fortran/decl.c:1033
 #, no-c-format
@@ -4401,7 +4403,7 @@ msgstr "Komponent vid %C måste ha attributet POINTER"
 #: fortran/decl.c:1352
 #, no-c-format
 msgid "Array component of structure at %C must have explicit or deferred shape"
-msgstr "Vektorkomponent i post vid %C måste ha fördröjt format"
+msgstr "Vektorkomponent i post vid %C måste ha fördröjd form"
 
 #: fortran/decl.c:1378
 #, no-c-format
@@ -4411,17 +4413,17 @@ msgstr "Allokerbar komponent vid %C måste vara en vektor"
 #: fortran/decl.c:1389
 #, no-c-format
 msgid "Pointer array component of structure at %C must have a deferred shape"
-msgstr "Pekarvektorkomponent i post vid %C måste ha fördröjt format"
+msgstr "Pekarvektorkomponent i post vid %C måste ha fördröjd form"
 
 #: fortran/decl.c:1398
 #, no-c-format
 msgid "Allocatable component of structure at %C must have a deferred shape"
-msgstr "Allokerbar komponent i post vid %C måste ha fördröjt format"
+msgstr "Allokerbar komponent i post vid %C måste ha fördröjd form"
 
 #: fortran/decl.c:1407
 #, no-c-format
 msgid "Array component of structure at %C must have an explicit shape"
-msgstr "Vektorkomponent i post vid %C måste ha uttryckligt format"
+msgstr "Vektorkomponent i post vid %C måste ha uttrycklig form"
 
 #: fortran/decl.c:1433
 #, no-c-format
@@ -4431,7 +4433,7 @@ msgstr "NULL()-initiering vid %C är tvetydig"
 #: fortran/decl.c:1556 fortran/decl.c:5197
 #, no-c-format
 msgid "Duplicate array spec for Cray pointee at %C"
-msgstr "Dubblerad vektorspecifikation för Cray pointee vid vid %C"
+msgstr "Dubblerad vektorspecifikation för Cray-utpekad vid vid %C"
 
 #: fortran/decl.c:1616
 #, no-c-format
@@ -4597,7 +4599,7 @@ msgstr "Dimensionsspecifikation saknas vid %C"
 #: fortran/decl.c:2924
 #, no-c-format
 msgid "Duplicate %s attribute at %L"
-msgstr "Dubblerade %s-attribut vid %L"
+msgstr "Dubblerat %s-attribut vid %L"
 
 #: fortran/decl.c:2943
 #, no-c-format
@@ -4668,7 +4670,7 @@ msgstr "Typdeklaration \"%s\" vid %L är inte C-interoperativ men den är BIND(C)"
 #: fortran/decl.c:3270
 #, no-c-format
 msgid "Variable '%s' at %L may not be a C interoperable kind but it is bind(c)"
-msgstr "Variabeln \"%s\" vid %L får inte ha en C-interoperativ sort man den har bind(c)"
+msgstr "Variabeln \"%s\" vid %L får inte ha en C-interoperativ sort men den är bind(c)"
 
 #: fortran/decl.c:3282
 #, no-c-format
@@ -4678,12 +4680,12 @@ msgstr "Variabeln \"%s\" i common-blocket \"%s\" vid %L får inte deklareras med 
 #: fortran/decl.c:3296
 #, no-c-format
 msgid "Variable '%s' at %L cannot have both the POINTER and BIND(C) attributes"
-msgstr "Variabeln \"%s\" vid %L får inte både ha attributet POINTER och BIND(C)"
+msgstr "Variabeln \"%s\" vid %L får inte ha både attributet POINTER och BIND(C)"
 
 #: fortran/decl.c:3304
 #, no-c-format
 msgid "Variable '%s' at %L cannot have both the ALLOCATABLE and BIND(C) attributes"
-msgstr "Variabeln \"%s\" vid %L får inte både ha attributet ALLOCATABLE och BIND(C)"
+msgstr "Variabeln \"%s\" vid %L får inte ha både attributet ALLOCATABLE och BIND(C)"
 
 #: fortran/decl.c:3314
 #, no-c-format
@@ -5119,7 +5121,7 @@ msgstr "Härledd typdefinition \"%s\" vid %C har redan definierats"
 #: fortran/decl.c:6054
 #, no-c-format
 msgid "Cray Pointee at %C cannot be assumed shape array"
-msgstr "Cray-pekare vid %C kan inte vara förmodat format vektor"
+msgstr "Cray-utpekad vid %C kan inte vara förmodat formad vektor"
 
 #: fortran/decl.c:6074
 #, no-c-format
@@ -6299,7 +6301,7 @@ msgstr "Vektor \"%s\" med förmodad storlek vid %L är inte tillåten i ett initier
 #: fortran/expr.c:2213
 #, no-c-format
 msgid "Assumed shape array '%s' at %L is not permitted in an initialization expression"
-msgstr "Vektor \\\"%s\\\" med förmodad form vid %L är inte tillåten i ett initieringsuttryck"
+msgstr "Vektor \"%s\" med förmodad form vid %L är inte tillåten i ett initieringsuttryck"
 
 #: fortran/expr.c:2219
 #, no-c-format
@@ -6633,7 +6635,7 @@ msgstr "Operatorgränssnitt vid %L står i konflikt med inbyggt gränssnitt"
 #: fortran/interface.c:1044
 #, no-c-format
 msgid "Procedure '%s' in %s at %L has no explicit interface"
-msgstr "Symbolen \"%s\" i %s vid %L har inget explicit gränssnitt"
+msgstr "Proceduren \"%s\" i %s vid %L har inget explicit gränssnitt"
 
 #: fortran/interface.c:1047
 #, no-c-format
@@ -6863,7 +6865,7 @@ msgstr "Kan inte konvertera %s till %s vid %L"
 #: fortran/io.c:156 fortran/primary.c:738
 #, no-c-format
 msgid "Extension: backslash character at %C"
-msgstr "Utökning: bakstreckstecken vid %C"
+msgstr "Utökning: omvänt snedstreck vid %C"
 
 #: fortran/io.c:187 fortran/io.c:190
 #, no-c-format
@@ -7947,7 +7949,7 @@ msgstr "THREADPRIVATE objekt \"%s\" i SHARED fall vid %L"
 #: fortran/openmp.c:807
 #, no-c-format
 msgid "Cray pointee '%s' in SHARED clause at %L"
-msgstr "Cray pointee \"%s\" i SHARED-klausul vid %L"
+msgstr "Cray-utpekad \"%s\" i SHARED-klausul vid %L"
 
 #: fortran/openmp.c:815
 #, no-c-format
@@ -7957,7 +7959,7 @@ msgstr "THREADPRIVATE objekt \"%s\" i %s-fall vid %L"
 #: fortran/openmp.c:818
 #, no-c-format
 msgid "Cray pointee '%s' in %s clause at %L"
-msgstr "Cray pointee \"%s\" i %s-klausul vid %L"
+msgstr "Cray-utpekad \"%s\" i %s-klausul vid %L"
 
 #: fortran/openmp.c:823
 #, no-c-format
@@ -8657,7 +8659,7 @@ msgstr "För många komponenter i postkonstruerare vid %C"
 #: fortran/primary.c:1974
 #, no-c-format
 msgid "Structure constructor for '%s' at %C has PRIVATE components"
-msgstr "Strukturkonstruerare för \"%s\" vid %C har PRIVATE-komponenter"
+msgstr "Postkonstruerare för \"%s\" vid %C har PRIVATE-komponenter"
 
 #: fortran/primary.c:1984
 #, no-c-format
@@ -9106,7 +9108,7 @@ msgstr "Generisk subrutin \"%s\" vid %L är inte konsistent med ett inbyggt subru
 #: fortran/resolve.c:2468
 #, no-c-format
 msgid "Missing SHAPE parameter for call to %s at %L"
-msgstr "SHAPE-parameter saknas i anrop till \"%s\" vid %L"
+msgstr "SHAPE-parameter saknas i anrop till %s vid %L"
 
 #: fortran/resolve.c:2476
 #, no-c-format
@@ -9171,7 +9173,7 @@ msgstr "Operanderna till logiska operatorn \"%s\" vid %%L är %s/%s"
 #: fortran/resolve.c:2871
 #, c-format
 msgid "Operand of .not. operator at %%L is %s"
-msgstr "Operanderna till operatorn .not. vid %%L är %s"
+msgstr "Operand till operatorn .not. vid %%L är %s"
 
 #: fortran/resolve.c:2885
 msgid "COMPLEX quantities cannot be compared at %L"
@@ -9653,7 +9655,7 @@ msgstr "Bindning av etikett \"%s\" för common-block \"%s\" vid %L stämmer inte ö
 #: fortran/resolve.c:6385
 #, no-c-format
 msgid "Binding label '%s' for common block '%s' at %L collides with global entity '%s' at %L"
-msgstr "Bindning av etikett \"%s\" för common-block \"%s\" vid %L kolliderar med den global entiteten \"%s\" vid %L"
+msgstr "Bindning av etikett \"%s\" för common-block \"%s\" vid %L kolliderar med global entitet \"%s\" vid %L"
 
 #. Make sure global procedures don't collide with anything.
 #: fortran/resolve.c:6437
@@ -9670,7 +9672,7 @@ msgstr "Bindning av etikett \"%s\" i gränssnittskropp vid %L kolliderar med den 
 #: fortran/resolve.c:6463
 #, no-c-format
 msgid "Binding label '%s' at %L collides with global entity '%s' at %L"
-msgstr "Bindning av etikett \"%s\" vid %L kolliderar med den globala entiteten \"%s\" vid %L"
+msgstr "Bindning av etikett \"%s\" vid %L kolliderar med global entitet \"%s\" vid %L"
 
 #: fortran/resolve.c:6540
 #, no-c-format
@@ -9700,7 +9702,7 @@ msgstr "Vektor \"%s\" vid %L kan inte ha en fördröjd form"
 #: fortran/resolve.c:6878
 #, no-c-format
 msgid "The type '%s' cannot be host associated at %L because it is blocked by an incompatible object of the same name declared at %L"
-msgstr "Typen %s kan inte vara värdassocierad vid %L för att den blockeras av ett inkompatibelt objekt med samma namn deklarerat vid %L"
+msgstr "Typen \"%s\" kan inte vara värdassocierad vid %L för att den blockeras av ett inkompatibelt objekt med samma namn deklarerat vid %L"
 
 #: fortran/resolve.c:6901
 #, no-c-format
@@ -9717,7 +9719,7 @@ msgstr "Modul- eller huvudprogramvektorn \"%s\" vid %L måste ha konstant form"
 #: fortran/resolve.c:6961
 #, no-c-format
 msgid "Entity with assumed character length at %L must be a dummy argument or a PARAMETER"
-msgstr "Enhet med antagen teckenlängd vid %L måste vara ett attrappargument eller en PARAMETER"
+msgstr "Entitet med antagen teckenlängd vid %L måste vara ett attrappargument eller en PARAMETER"
 
 #: fortran/resolve.c:6980
 #, no-c-format
@@ -9887,7 +9889,7 @@ msgstr "PROCEDURE-attribut i konflikt med NAMELIST-attribut i \"%s\" vid %L"
 #: fortran/resolve.c:7504
 #, no-c-format
 msgid "Parameter array '%s' at %L cannot be automatic or of deferred shape"
-msgstr "Parametervektor \"%s\" vid %L kan inte ha automatisk eller antagen form"
+msgstr "Parametervektor \"%s\" vid %L kan inte ha automatisk eller fördröjd form"
 
 #: fortran/resolve.c:7515
 #, no-c-format
@@ -9897,7 +9899,7 @@ msgstr "Implicit typad PARAMETER \"%s\" vid %L matchar inte en senare IMPLICIT-t
 #: fortran/resolve.c:7526
 #, no-c-format
 msgid "Incompatible derived type in PARAMETER at %L"
-msgstr "Inkompatibla härledda typer i PARAMETER vid %L"
+msgstr "Inkompatibel härledd typ i PARAMETER vid %L"
 
 #: fortran/resolve.c:7597
 #, no-c-format
@@ -10540,7 +10542,7 @@ msgstr "Det går inte att ändra attribut på USE-associerad symbol %s vid %L"
 #: fortran/symbol.c:770
 #, no-c-format
 msgid "Duplicate %s attribute specified at %L"
-msgstr "Dubblerade %s-attribut angivna vid %L"
+msgstr "Dubblerat %s-attribut angivna vid %L"
 
 #: fortran/symbol.c:912
 #, no-c-format
@@ -10595,7 +10597,7 @@ msgstr "ACCESS-specifikation vid %L var redan angiven"
 #: fortran/symbol.c:1405
 #, no-c-format
 msgid "Duplicate BIND attribute specified at %L"
-msgstr "Dubblerade BIND-attribut angivna vid %L"
+msgstr "Dubblerat BIND-attribut angivna vid %L"
 
 #: fortran/symbol.c:1412
 #, no-c-format
@@ -10935,12 +10937,12 @@ msgstr "  -IKAT                   Lägg till katalog till klassökvägen\n"
 #: java/jcf-dump.c:1151
 #, c-format
 msgid "  --bootclasspath PATH    Override built-in class path\n"
-msgstr "  --bootclasspath SÖKVÄG  Åsidosätt inbyggt klasssökväg\n"
+msgstr "  --bootclasspath SÖKVÄG  Åsidosätt inbyggd klassökväg\n"
 
 #: java/jcf-dump.c:1152
 #, c-format
 msgid "  --extdirs PATH          Set extensions directory path\n"
-msgstr "  --extdirs SÖKVÄG        Ange katalogsökväg för ändelser\n"
+msgstr "  --extdirs SÖKVÄG        Ange katalogsökväg för utökningar\n"
 
 #: java/jcf-dump.c:1153
 #, c-format
@@ -10970,7 +10972,7 @@ msgid ""
 msgstr ""
 "För felrapporteringsinstruktioner se:\n"
 "%s.\n"
-"Fel i översättningen rapporteras till <tp-sv@listor.tp-sv.se>\n"
+"Skcka synpunkter på översättningen <tp-sv@listor.tp-sv.se>\n"
 
 #: java/jcf-dump.c:1187 java/jcf-dump.c:1255
 #, c-format
@@ -11113,7 +11115,7 @@ msgstr "-femit-class-file skall användas tillsammans med -fsyntax-only"
 
 #: config/mcore/mcore.h:56
 msgid "the m210 does not have little endian support"
-msgstr "m210 har inte stöd för \"little endian\""
+msgstr "m210 har inte stöd för omvänd byteordning"
 
 #: config/lynx.h:70
 msgid "cannot use mthreads and mlegacy-threads together"
@@ -11125,7 +11127,7 @@ msgstr "mshared och static kan inte användas tillsammans"
 
 #: config/sh/sh.h:461
 msgid "SH2a does not support little-endian"
-msgstr "SH2a stödjer inte omvänd byteordning (\"little endian\")"
+msgstr "SH2a stödjer inte omvänd byteordning"
 
 #: config/mips/mips.h:1042 config/arc/arc.h:61
 msgid "may not use both -EB and -EL"
@@ -11191,7 +11193,7 @@ msgstr "-private_bundle är inte tillåten med -dynamiclib"
 #: config/sparc/netbsd-elf.h:125 config/sparc/netbsd-elf.h:144
 #: config/sparc/sol2-bi.h:217 config/sparc/sol2-bi.h:227
 msgid "may not use both -m32 and -m64"
-msgstr "går inte att använda både -m64 och -m64"
+msgstr "går inte att använda både -m32 och -m64"
 
 #: config/arm/arm.h:147
 msgid "-msoft-float and -mhard_float may not be used together"
@@ -11207,15 +11209,15 @@ msgstr "Varna för en kompilatorfunktion, klass, metod eller fält som bör undvika
 
 #: java/lang.opt:69
 msgid "Warn if deprecated empty statements are found"
-msgstr "Varna för tomma satser som bör undvikas finns"
+msgstr "Varna om tomma satser som bör undvikas finns"
 
 #: java/lang.opt:73
 msgid "Warn if .class files are out of date"
-msgstr "Varna för .class-filer är inaktuella"
+msgstr "Varna om .class-filer är inaktuella"
 
 #: java/lang.opt:77
 msgid "Warn if modifiers are specified when not necessary"
-msgstr "Varna för modifierare anges när de inte behövs"
+msgstr "Varna om modifierare anges när de inte behövs"
 
 #: java/lang.opt:81
 msgid "Deprecated; use --classpath instead"
@@ -11263,7 +11265,7 @@ msgstr "Leta alltid efter klassarkiv ej genererade av gcj"
 
 #: java/lang.opt:155
 msgid "Assume the runtime uses a hash table to map an object to its synchronization structure"
-msgstr "Anta att en hashtabell används vid körning för att översätta ett objekt till dess synkroniseringsstruktur"
+msgstr "Anta att en hash-tabell används vid körning för att översätta ett objekt till dess synkroniseringsstruktur"
 
 #: java/lang.opt:159
 msgid "Generate instances of Class at runtime"
@@ -11323,11 +11325,11 @@ msgstr "Lägg MODULE-filer i \"directory\""
 
 #: fortran/lang.opt:41
 msgid "Warn about possible aliasing of dummy arguments"
-msgstr "Varna för eventuell aliasning av attrappargument"
+msgstr "Varna för eventuella attrappargumentalias"
 
 #: fortran/lang.opt:45
 msgid "Warn about missing ampersand in continued character constants"
-msgstr "Varna för saknade ampersander i fortsatta teckenkonstanter"
+msgstr "Varna för saknade et-tecken i fortsatta teckenkonstanter"
 
 #: fortran/lang.opt:49
 msgid "Warn about truncated character expressions"
@@ -11347,7 +11349,7 @@ msgstr "Varna för avhuggna källkodsrader"
 
 #: fortran/lang.opt:65
 msgid "Warn about usage of non-standard intrinsics"
-msgstr "Varna för användning av inbyggda som inte är standard"
+msgstr "Varna för användning av inbyggda konstruktioner som inte är standard"
 
 #: fortran/lang.opt:69
 msgid "Warn about \"suspicious\" constructs"
@@ -11371,7 +11373,7 @@ msgstr "Behandla inte lokala variabler och COMMON-block som om de vore namngivna
 
 #: fortran/lang.opt:93
 msgid "Specify that backslash in string introduces an escape character"
-msgstr "Ange att backstreck i strängar inleder ett specialtecken"
+msgstr "Ange att omvänt snedstreck i strängar inleder ett specialtecken"
 
 #: fortran/lang.opt:97
 msgid "Produce a backtrace when a runtime error is encountered"
@@ -11383,11 +11385,11 @@ msgstr "-fblas-matmul-limit=<n>        Storlek på den minsta matris för vilken m
 
 #: fortran/lang.opt:105
 msgid "Use big-endian format for unformatted files"
-msgstr "Använd rak byteordning (big endian) för oformaterade filer"
+msgstr "Använd rak byteordning för oformaterade filer"
 
 #: fortran/lang.opt:109
 msgid "Use little-endian format for unformatted files"
-msgstr "Använd omvänd byteordning (little endian) för oformaterade filer"
+msgstr "Använd omvänd byteordning för oformaterade filer"
 
 #: fortran/lang.opt:113
 msgid "Use native format for unformatted files"
@@ -11403,7 +11405,7 @@ msgstr "Använd Cray-pekarutökningen"
 
 #: fortran/lang.opt:125
 msgid "Ignore 'D' in column one in fixed form"
-msgstr "Ignorera \"D\" i kolumn ett i fast format"
+msgstr "Ignorera \"D\" i kolumn ett i fix form"
 
 #: fortran/lang.opt:129
 msgid "Treat lines with 'D' in column one as comments"
@@ -11423,7 +11425,7 @@ msgstr "Ange standard för sorten reell till en 8 byte bred typ"
 
 #: fortran/lang.opt:145
 msgid "Allow dollar signs in entity names"
-msgstr "Tillåt dollartecken i enhetsnamn"
+msgstr "Tillåt dollartecken i entitetsnamn"
 
 #: fortran/lang.opt:149
 msgid "Dump a core file when a runtime error occurs"
@@ -11443,7 +11445,7 @@ msgstr "Använd f2c:s anropskonvention"
 
 #: fortran/lang.opt:165
 msgid "Assume that the source file is fixed form"
-msgstr "Anta att källkodsfilen är i fast format"
+msgstr "Anta att källkodsfilen är i fix form"
 
 #: fortran/lang.opt:169
 msgid "Specify where to find the compiled intrinsic modules"
@@ -11467,11 +11469,11 @@ msgstr "Anta att källkodsfilen är i fritt format"
 
 #: fortran/lang.opt:189
 msgid "Allow arbitrary character line width in free mode"
-msgstr "Tillåt radlängd med godtyckligt antal tecken i fritt läge"
+msgstr "Tillåt radlängd med godtyckligt antal tecken i fri form"
 
 #: fortran/lang.opt:193
 msgid "Use n as character line width in free mode"
-msgstr "Använd radlängd med n tecken i fritt format"
+msgstr "Använd radlängd med n tecken i fri form"
 
 #: fortran/lang.opt:197
 msgid "Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements"
@@ -11515,7 +11517,7 @@ msgstr "Storlek i byte på den största vektorn som läggs på stacken"
 
 #: fortran/lang.opt:237
 msgid "Set default accessibility of module entities to PRIVATE."
-msgstr "Sätt standardtillgänglighet till modulentiteter till PRIVATE."
+msgstr "Sätt modulentiteternas standardtillgänglighet till PRIVATE."
 
 #: fortran/lang.opt:241
 msgid "Enable OpenMP (also sets frecursive)"
@@ -11587,11 +11589,11 @@ msgstr "Acceptera utökningar för att stödja gammal kod"
 
 #: treelang/lang.opt:30
 msgid "Trace lexical analysis"
-msgstr "Följ lexikalanalysen"
+msgstr "Spåra lexikalanalysen"
 
 #: treelang/lang.opt:34
 msgid "Trace the parsing process"
-msgstr "Följ tolkningsprocessen"
+msgstr "Spåra tolkningsprocessen"
 
 #: config/alpha/alpha.opt:23 config/i386/i386.opt:155
 msgid "Do not use hardware fp"
@@ -11722,7 +11724,7 @@ msgstr "Aktivera optimeringar av etikettjustering"
 
 #: config/frv/frv.opt:35
 msgid "Dynamically allocate cc registers"
-msgstr "Allokera dynamiskt cc-register"
+msgstr "Allokera cc-register dynamiskt"
 
 #: config/frv/frv.opt:42
 msgid "Set the cost of branches"
@@ -11730,15 +11732,15 @@ msgstr "Ange kostnaden för grenar"
 
 #: config/frv/frv.opt:46
 msgid "Enable conditional execution other than moves/scc"
-msgstr "Aktivera villkorlig exekvering förutom move/scc"
+msgstr "Aktivera villkorlig exekvering förutom moves/scc"
 
 #: config/frv/frv.opt:50
 msgid "Change the maximum length of conditionally-executed sequences"
-msgstr "Ändra den maximala längden på villkorligt utförda sekvenser"
+msgstr "Ändra den maximala längden på villkorligt exekverade sekvenser"
 
 #: config/frv/frv.opt:54
 msgid "Change the number of temporary registers that are available to conditionally-executed sequences"
-msgstr "Ändra antalet temporära register som är tillgängliga för villkorligt utförda sekvenser"
+msgstr "Ändra antalet temporära register som är tillgängliga för villkorligt exekverade sekvenser"
 
 #: config/frv/frv.opt:58
 msgid "Enable conditional moves"
@@ -11811,7 +11813,7 @@ msgstr "Använd mediainstruktioner"
 
 #: config/frv/frv.opt:144
 msgid "Use multiply add/subtract instructions"
-msgstr "Använd multiplicerande addera-/subtraherafunktioner"
+msgstr "Använd multiplicera-addera-/-subtraherainstruktioner"
 
 #: config/frv/frv.opt:148
 msgid "Enable optimizing &&/|| in conditional execution"
@@ -11919,7 +11921,7 @@ msgstr "ESA/390-arkitektur"
 
 #: config/s390/s390.opt:47
 msgid "Enable fused multiply/add instructions"
-msgstr "Använd sammansmälta multiplicera-/adderainstruktioner"
+msgstr "Använd sammansmälta multiplikations/additions-instruktioner"
 
 #: config/s390/s390.opt:51
 msgid "Enable decimal floating point hardware support"
@@ -11931,11 +11933,11 @@ msgstr "Använd hårdvaruflyttal"
 
 #: config/s390/s390.opt:67
 msgid "Use packed stack layout"
-msgstr "Använd packad stackutläggning"
+msgstr "Använd packad stacklayout"
 
 #: config/s390/s390.opt:71
 msgid "Use bras for executable < 64k"
-msgstr "Använd bras för exekverbara < 64k"
+msgstr "Använd bras för körbara program < 64k"
 
 #: config/s390/s390.opt:75
 msgid "Disable hardware floating point"
@@ -11960,11 +11962,11 @@ msgstr "använd mvcle"
 
 #: config/s390/s390.opt:95
 msgid "Warn if a function uses alloca or creates an array with dynamic size"
-msgstr "Varna för en funktion använder alloca eller skapar en vektor med dynamisk storlek"
+msgstr "Varna om en funktion använder alloca eller skapar en vektor med dynamisk storlek"
 
 #: config/s390/s390.opt:99
 msgid "Warn if a single function's framesize exceeds the given framesize"
-msgstr "Varna för en enskild funktions ramstorlek överskrider den angivna ramstorleken"
+msgstr "Varna om en enskild funktions ramstorlek överskrider den angivna ramstorleken"
 
 #: config/s390/s390.opt:103
 msgid "z/Architecture"
@@ -11980,11 +11982,11 @@ msgstr "Generera LP64-kod"
 
 #: config/ia64/ia64.opt:3
 msgid "Generate big endian code"
-msgstr "Generera \"big endian\"-kod."
+msgstr "Generera kod med rak byteordning"
 
 #: config/ia64/ia64.opt:7
 msgid "Generate little endian code"
-msgstr "Generera \"little endian\"-kod."
+msgstr "Generera kod med omvänd byteordning"
 
 #: config/ia64/ia64.opt:11
 msgid "Generate code for GNU as"
@@ -12064,7 +12066,7 @@ msgstr "Ange intervall av register att fixera"
 
 #: config/ia64/ia64.opt:101
 msgid "Use data speculation before reload"
-msgstr "Använd dataspekulation före före omläsning"
+msgstr "Använd dataspekulation före omläsning"
 
 #: config/ia64/ia64.opt:105
 msgid "Use data speculation after reload"
@@ -12136,11 +12138,11 @@ msgstr "Antal memreg-byte (standard: 16, intervall: 0..16)"
 
 #: config/sparc/little-endian.opt:23
 msgid "Generate code for little-endian"
-msgstr "Generera kod för omvänd byteordning (little endian)"
+msgstr "Generera kod för omvänd byteordning"
 
 #: config/sparc/little-endian.opt:27
 msgid "Generate code for big-endian"
-msgstr "Generera kod för rak byteordning (big endian)"
+msgstr "Generera kod för rak byteordning"
 
 # fixme: fp = flyttal, men hur skall man skriva det. Förkortat eller FPU?
 #: config/sparc/sparc.opt:23 config/sparc/sparc.opt:27
@@ -12365,7 +12367,7 @@ msgstr "Generera kod för en ColdFire v4e"
 
 #: config/m68k/m68k.opt:116
 msgid "Specify the target CPU"
-msgstr "Ange mål-MCU:n"
+msgstr "Ange mål-CPU:n"
 
 #: config/m68k/m68k.opt:120
 msgid "Generate code for a cpu32"
@@ -12482,7 +12484,7 @@ msgstr "Använd angiven assemblerdialekt"
 
 #: config/i386/i386.opt:67
 msgid "Branches are this expensive (1-5, arbitrary units)"
-msgstr "Hopp är dyra (1-5, godtyckliga enheter)"
+msgstr "Hopp är så här dyra (1-5, godtyckliga enheter)"
 
 #: config/i386/i386.opt:71
 msgid "Data greater than given threshold will go into .ldata section in x86-64 medium model"
@@ -12599,19 +12601,19 @@ msgstr "Stöd inbyggda MMX- och SSE-funktioner och -kodgenerering"
 
 #: config/i386/i386.opt:217
 msgid "Support MMX, SSE and SSE2 built-in functions and code generation"
-msgstr "Stöd inbyggda MMX- och SSE- och SSE2-funktioner och -kodgenerering"
+msgstr "Stöd inbyggda MMX-, SSE- och SSE2-funktioner och -kodgenerering"
 
 #: config/i386/i386.opt:221
 msgid "Support MMX, SSE, SSE2 and SSE3 built-in functions and code generation"
-msgstr "Stöd inbyggda MMX- och SSE- och SSE2- och SSE3-funktioner och -kodgenerering"
+msgstr "Stöd inbyggda MMX-, SSE-, SSE2- och SSE3-funktioner och -kodgenerering"
 
 #: config/i386/i386.opt:225
 msgid "Support MMX, SSE, SSE2, SSE3 and SSSE3 built-in functions and code generation"
-msgstr "Stöd inbyggda MMX- och SSE-, SSE2-, SSE3- och SSSE3-funktioner och -kodgenerering"
+msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3- och SSSE3-funktioner och -kodgenerering"
 
 #: config/i386/i386.opt:229
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3 and SSE4.1 built-in functions and code generation"
-msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3, SSSE3 och SSE4.1-funktioner och -kodgenerering"
+msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3- och SSE4.1-funktioner och -kodgenerering"
 
 #: config/i386/i386.opt:233 config/i386/i386.opt:237
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 and SSE4.2 built-in functions and code generation"
@@ -12623,7 +12625,7 @@ msgstr "Stöd inte inbyggda SSE4.1- och SSE4.2-funktioner och -kodgenerering"
 
 #: config/i386/i386.opt:245
 msgid "Support MMX, SSE, SSE2, SSE3 and SSE4A built-in functions and code generation"
-msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, och SSE4A-funktioner och -kodgenerering"
+msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3- och SSE4A-funktioner och -kodgenerering"
 
 #: config/i386/i386.opt:249
 msgid "Support SSE5 built-in functions and code generation"
@@ -12659,7 +12661,7 @@ msgstr "Skapa konsollapplikation"
 
 #: config/i386/cygming.opt:27
 msgid "Use the Cygwin interface"
-msgstr "Använd Cygwin-interfacet"
+msgstr "Använd Cygwin-gränssnittet"
 
 #: config/i386/cygming.opt:31
 msgid "Generate code for a DLL"
@@ -12671,7 +12673,7 @@ msgstr "Ignorera dllimport för funktioner"
 
 #: config/i386/cygming.opt:39
 msgid "Use Mingw-specific thread support"
-msgstr "Använd MIngw-specifikt trådstöd"
+msgstr "Använd Mingw-specifikt trådstöd"
 
 #: config/i386/cygming.opt:43
 msgid "Set Windows defines"
@@ -12803,11 +12805,11 @@ msgstr "Generera load/store-instruktioner med uppdatering"
 
 #: config/rs6000/rs6000.opt:124
 msgid "Do not generate fused multiply/add instructions"
-msgstr "Generera inte sammansmälta multiplicera-/adderainstruktioner"
+msgstr "Generera inte sammansmälta multiplikations/additions-instruktioner"
 
 #: config/rs6000/rs6000.opt:128
 msgid "Generate fused multiply/add instructions"
-msgstr "Generera sammansmälta multiplikations-/additionsinstruktioner"
+msgstr "Generera sammansmälta multiplikations/additions-instruktioner"
 
 #: config/rs6000/rs6000.opt:132
 msgid "Schedule the start and end of the procedure"
@@ -12855,7 +12857,7 @@ msgstr "Generera VRSAVE-instruktioner när AltiVec-kod genereras"
 
 #: config/rs6000/rs6000.opt:190
 msgid "Deprecated option.  Use -mvrsave/-mno-vrsave instead"
-msgstr "Undanbedd flagga.  Använd -mvrsave/-mnovrsave istället"
+msgstr "Undanbedd flagga.  Använd -mvrsave/-mno-vrsave istället"
 
 #: config/rs6000/rs6000.opt:194
 msgid "Generate isel instructions"
@@ -12863,7 +12865,7 @@ msgstr "Generera isel-instruktioner"
 
 #: config/rs6000/rs6000.opt:198
 msgid "Deprecated option.  Use -misel/-mno-isel instead"
-msgstr "Undanbedd flagga.  Använd -misel/-mnoisel istället"
+msgstr "Undanbedd flagga.  Använd -misel/-mno-isel istället"
 
 #: config/rs6000/rs6000.opt:202
 msgid "Generate SPE SIMD instructions on E500"
@@ -12951,11 +12953,11 @@ msgstr "Producera kod som kan omlokaliseras vid körtillfället"
 
 #: config/rs6000/sysv4.opt:53 config/rs6000/sysv4.opt:57
 msgid "Produce little endian code"
-msgstr "Producera kod med omvänd byteordning (little endian)"
+msgstr "Producera kod med omvänd byteordning"
 
 #: config/rs6000/sysv4.opt:61 config/rs6000/sysv4.opt:65
 msgid "Produce big endian code"
-msgstr "Producera kod med rak byteordning (big endian)"
+msgstr "Producera kod med rak byteordning"
 
 #: config/rs6000/sysv4.opt:70 config/rs6000/sysv4.opt:74
 #: config/rs6000/sysv4.opt:83 config/rs6000/sysv4.opt:100
@@ -13069,7 +13071,7 @@ msgstr "Sätt maximal justering till 8"
 
 #: config/mcore/mcore.opt:43 config/score/score.opt:23
 msgid "Generate big-endian code"
-msgstr "Generera kod med rak byteordning (big endian)"
+msgstr "Generera kod med rak byteordning"
 
 #: config/mcore/mcore.opt:47
 msgid "Emit call graph information"
@@ -13085,7 +13087,7 @@ msgstr "Inline:a konstanter om det kan göras på 2 instruktioner eller mindre"
 
 #: config/mcore/mcore.opt:59 config/score/score.opt:27
 msgid "Generate little-endian code"
-msgstr "Generera kod med omvänd byteordning (little endian)"
+msgstr "Generera kod med omvänd byteordning"
 
 #: config/mcore/mcore.opt:67
 msgid "Use arbitrary sized immediates in bit operations"
@@ -13285,7 +13287,7 @@ msgstr "Begränsa utrullning för att undvika att skriva sönder målregister om int
 
 #: config/sh/sh.opt:209
 msgid "Generate code in big endian mode"
-msgstr "Generera kod för rak byteordning (big endian)"
+msgstr "Generera kod för rak byteordning"
 
 #: config/sh/sh.opt:213
 msgid "Generate 32-bit offsets in switch tables"
@@ -13305,7 +13307,7 @@ msgstr "Expandera cbranchdi4-mönster tidigt i separata jämförelser och grenar."
 
 #: config/sh/sh.opt:229
 msgid "Emit cmpeqdi_t pattern even when -mcbranchdi and -mexpand-cbranchdi are in effect."
-msgstr "Mata ut cmpeqdi_t-mönster även när -cbranchdi och -mexpandcbranchdi är aktiva."
+msgstr "Mata ut cmpeqdi_t-mönster även när -mcbranchdi och -mexpand-cbranchdi är aktiva."
 
 #: config/sh/sh.opt:233
 msgid "Enable SH5 cut2 workaround"
@@ -13345,7 +13347,7 @@ msgstr "Aktivera användning av det indexerade adresseringsläget för SHmedia32/SH
 
 #: config/sh/sh.opt:272
 msgid "inline code to invalidate instruction cache entries after setting up nested function trampolines"
-msgstr "inline:a kod för att invalidera instruktionscacheposter efter att sätta upp nästlade funktionstrampoliner"
+msgstr "inline:a kod för att invalidera instruktionscacheposter efter att nästade funktionstrampoliner satts upp"
 
 #: config/sh/sh.opt:276
 msgid "Assume symbols might be invalid"
@@ -13357,7 +13359,7 @@ msgstr "Annotera assemblerinstruktioner med bedömda adresser"
 
 #: config/sh/sh.opt:284
 msgid "Generate code in little endian mode"
-msgstr "Generera kod för omvänd byteordning (little endian)"
+msgstr "Generera kod för omvänd byteordning"
 
 #: config/sh/sh.opt:288
 msgid "Mark MAC register as call-clobbered"
@@ -13425,7 +13427,7 @@ msgstr "Generera återstartbar, PIC-kod"
 
 #: config/arm/arm.opt:56
 msgid "Assume target CPU is configured as big endian"
-msgstr "Antag att mål-CPU:n är konfigurerad som \"big endian\""
+msgstr "Antag att mål-CPU:n är konfigurerad för rak byteordning"
 
 #: config/arm/arm.opt:60
 msgid "Thumb: Assume non-static functions may be called from ARM code"
@@ -13457,7 +13459,7 @@ msgstr "Alias för -mfloat-abi=hard"
 
 #: config/arm/arm.opt:98
 msgid "Assume target CPU is configured as little endian"
-msgstr "Antag att mål-CPU:n är konfigurerad som \"little endian\""
+msgstr "Antag att mål-CPU:n är konfigurerad med omvänd byteordning"
 
 #: config/arm/arm.opt:102
 msgid "Generate call insns as indirect calls, if necessary"
@@ -13485,7 +13487,7 @@ msgstr "Alias för -mfloat-abi=soft"
 
 #: config/arm/arm.opt:126
 msgid "Specify the minimum bit alignment of structures"
-msgstr "Ange den minsta justering i bitar för poster"
+msgstr "Ange den minsta justeringen i bitar för poster"
 
 #: config/arm/arm.opt:130
 msgid "Compile for the Thumb not the ARM"
@@ -13513,7 +13515,7 @@ msgstr "Trimma koden för den angivna processorn"
 
 #: config/arm/arm.opt:154
 msgid "Assume big endian bytes, little endian words"
-msgstr "Antag att bytes är \"big endian\", ord är \"little endian\""
+msgstr "Antag att byte har rak byteordning, ord har omvänd byteordning"
 
 #: config/arm/arm.opt:158
 msgid "Use Neon quad-word (rather than double-word) registers for vectorization"
@@ -13609,7 +13611,7 @@ msgstr "Generera inte tabellhoppinstruktioner"
 
 #: config/avr/avr.opt:52
 msgid "Use rjmp/rcall (limited range) on >8K devices"
-msgstr "Använd rjmp/rcll (begränsat intervall) på enheter >8k"
+msgstr "Använd rjmp/rcall (begränsat intervall) på enheter >8k"
 
 #: config/avr/avr.opt:56
 msgid "Output instruction sizes to the asm file"
@@ -13617,15 +13619,15 @@ msgstr "Mata ut instruktionsstorlekar till asm-filen"
 
 #: config/avr/avr.opt:60
 msgid "Change only the low 8 bits of the stack pointer"
-msgstr "Andra endast de låga 8 bitarna av stackpekaren"
+msgstr "Ändra endast de låga 8 bitarna av stackpekaren"
 
 #: config/crx/crx.opt:23
 msgid "Support multiply accumulate instructions"
-msgstr "Stöd ackumulerande multiplikationsinstruktioner"
+msgstr "Stöd multiplikations-ackumulerings-instruktioner"
 
 #: config/crx/crx.opt:27
 msgid "Do not use push to store function arguments"
-msgstr "Använd inte push för att spara funktionsargument"
+msgstr "Använd inte push för att lagra funktionsargument"
 
 #: config/crx/crx.opt:31
 msgid "Restrict doloop to the given nesting level"
@@ -13689,7 +13691,7 @@ msgstr "Använd snabb men ungefärlig flyttal till heltalskonvertering"
 
 #: config/c4x/c4x.opt:79
 msgid "Force RTL generation to emit valid 3 operand insns"
-msgstr "Tvinga RTL-genereringen att skicka ut 3-operandinstruktioner"
+msgstr "Tvinga RTL-genereringen att mata ut giltiga 3-operandinstruktioner"
 
 #: config/c4x/c4x.opt:83
 msgid "Force constants into registers to improve hoisting"
@@ -13786,7 +13788,7 @@ msgstr "Avaktivera indexerad adressering"
 
 #: config/pa/pa.opt:47
 msgid "Generate fast indirect calls"
-msgstr "Generera snabab indirekta anrop"
+msgstr "Generera snabba indirekta anrop"
 
 #: config/pa/pa.opt:55
 msgid "Assume code will be assembled by GAS"
@@ -13838,7 +13840,7 @@ msgstr "Använd CONST16-instruktioner för att läsa konstanter"
 
 #: config/xtensa/xtensa.opt:27
 msgid "Enable fused multiply/add and multiply/subtract FP instructions"
-msgstr "Aktivera sammanslagna multiplicera/addera- och multiplicera/subtrahera FP-instruktioner"
+msgstr "Aktivera sammanslagna multiplikations/additions- och multiplikations/subtraktions-FP-instruktioner"
 
 #: config/xtensa/xtensa.opt:31
 msgid "Use indirect CALLXn instructions for large programs"
@@ -13918,11 +13920,11 @@ msgstr "Använd MIPS-DSP REV 2-instruktioner"
 
 #: config/mips/mips.opt:89
 msgid "Use big-endian byte order"
-msgstr "Använd \"big endian\" byteordning"
+msgstr "Använd rak byteordning"
 
 #: config/mips/mips.opt:93
 msgid "Use little-endian byte order"
-msgstr "Använd \"little endian\" byteordning"
+msgstr "Använd omvänd byteordning"
 
 #: config/mips/mips.opt:97 config/iq2000/iq2000.opt:31
 msgid "Use ROM instead of RAM"
@@ -15349,7 +15351,7 @@ msgstr "Generera C-huvuden för plattformsspecifika funktioner"
 
 #: c.opt:896
 msgid "Print a checksum of the executable for PCH validity checking, and stop"
-msgstr "Skriv en checksumma a den körbara för PCH-giltighetskontroll, och stanna"
+msgstr "Skriv en checksumma a det körbara programmet för PCH-giltighetskontroll, och stanna"
 
 #: c.opt:900
 msgid "Remap file names when including files"
@@ -16043,7 +16045,7 @@ msgstr "Generera positionsoberoende kod om möjligt (stort läge)"
 
 #: common.opt:767
 msgid "Generate position-independent code for executables if possible (large mode)"
-msgstr "Generera positionsoberoende kod för körbara om möjligt (stort läge)"
+msgstr "Generera positionsoberoende kod för körbara program om möjligt (stort läge)"
 
 #: common.opt:771
 msgid "Generate position-independent code if possible (small mode)"
@@ -16051,7 +16053,7 @@ msgstr "Generera positionsoberoende kod om möjligt (litet läge)"
 
 #: common.opt:775
 msgid "Generate position-independent code for executables if possible (small mode)"
-msgstr "Generera positionsoberoende kod för körbara om möjligt (litet läge)"
+msgstr "Generera positionsoberoende kod för körbara program om möjligt (litet läge)"
 
 #: common.opt:779
 msgid "Run predictive commoning optimization."
@@ -16059,7 +16061,7 @@ msgstr "Kör optimeringar för predikativ gemensamning."
 
 #: common.opt:783
 msgid "Generate prefetch instructions, if available, for arrays in loops"
-msgstr "Generera förhämtningsinstruktioner, om tillgängliga, för vektorer i slingor"
+msgstr "Generera förhandshämtningsinstruktioner (prefetch), om tillgängliga, för vektorer i slingor"
 
 #: common.opt:787
 msgid "Enable basic program profiling code"
@@ -17778,7 +17780,7 @@ msgstr "%Jskuggad deklaration är här"
 #: c-decl.c:2183
 #, gcc-internal-format
 msgid "nested extern declaration of %qD"
-msgstr "nästlad extern-deklaration av %qD"
+msgstr "nästad extern-deklaration av %qD"
 
 #: c-decl.c:2346 c-decl.c:2349
 #, gcc-internal-format
@@ -19722,7 +19724,7 @@ msgstr "%<=%>, %<,%>, %<;%>, %<asm%> eller %<__attribute__%> förväntades"
 #: c-parser.c:1378
 #, gcc-internal-format
 msgid "%HISO C forbids nested functions"
-msgstr "%HISO C förbjuder nästlade funktioner"
+msgstr "%HISO C förbjuder nästade funktioner"
 
 #: c-parser.c:1743 c-parser.c:2553 c-parser.c:3189 c-parser.c:3445
 #: c-parser.c:4308 c-parser.c:4895 c-parser.c:5298 c-parser.c:5318
@@ -20697,12 +20699,12 @@ msgstr "kan inte ta adressen till bitfält %qD"
 #: c-typeck.c:3338
 #, gcc-internal-format
 msgid "global register variable %qD used in nested function"
-msgstr "global registervariabel %qD använd i nästlad funktion"
+msgstr "global registervariabel %qD använd i nästad funktion"
 
 #: c-typeck.c:3341
 #, gcc-internal-format
 msgid "register variable %qD used in nested function"
-msgstr "registervariabel %qD använd i nästlad funktion"
+msgstr "registervariabel %qD använd i nästad funktion"
 
 #: c-typeck.c:3346
 #, gcc-internal-format
@@ -25821,12 +25823,12 @@ msgstr "-m64 kräver PowerPC64-arkitektur, aktiverar"
 #: config/rs6000/rs6000.c:1528
 #, gcc-internal-format
 msgid "-mmultiple is not supported on little endian systems"
-msgstr "-mmultiple stöds inte på \"little endian\"-system"
+msgstr "-mmultiple stöds inte på system med omvänd byteordning"
 
 #: config/rs6000/rs6000.c:1535
 #, gcc-internal-format
 msgid "-mstring is not supported on little endian systems"
-msgstr "-mstring stöds inte på \"little endian\"-system"
+msgstr "-mstring stöds inte på system med omvänd byteordning"
 
 #: config/rs6000/rs6000.c:1549
 #, gcc-internal-format
@@ -26139,7 +26141,7 @@ msgstr "-fPIC och -mcall-%s är inkompatibla"
 #: config/rs6000/sysv4.h:209
 #, gcc-internal-format
 msgid "-mcall-aixdesc must be big endian"
-msgstr "-mcall-aixdesc måste vara \"big endian\""
+msgstr "-mcall-aixdesc måste ha rak byteordning"
 
 #: config/rs6000/sysv4.h:214
 #, gcc-internal-format
@@ -32557,12 +32559,12 @@ msgstr "Kan inte öppna indatafil: %s"
 #: fortran/f95-lang.c:629
 #, gcc-internal-format
 msgid "global register variable %qs used in nested function"
-msgstr "global registervariabel %qs använd i nästlad funktion"
+msgstr "global registervariabel %qs använd i nästad funktion"
 
 #: fortran/f95-lang.c:633
 #, gcc-internal-format
 msgid "register variable %qs used in nested function"
-msgstr "registervariabel %qs använd i nästlad funktion"
+msgstr "registervariabel %qs använd i nästad funktion"
 
 #: fortran/f95-lang.c:640
 #, gcc-internal-format
@@ -32667,7 +32669,7 @@ msgstr "felplacerat attribut ConstantValue (inte i något fält)"
 #: java/class.c:894
 #, gcc-internal-format
 msgid "duplicate ConstantValue attribute for field '%s'"
-msgstr "dubblerade ConstantValue-attribut för fält \"%s\""
+msgstr "dubblerat ConstantValue-attribut för fält \"%s\""
 
 #: java/class.c:905
 #, gcc-internal-format
@@ -33340,12 +33342,12 @@ msgstr "%HDubblerat namn %q.*s."
 #: treelang/treetree.c:796
 #, gcc-internal-format
 msgid "Global register variable %qD used in nested function."
-msgstr "Global registervariabel %qD använd i nästlad funktion."
+msgstr "Global registervariabel %qD använd i nästad funktion."
 
 #: treelang/treetree.c:800
 #, gcc-internal-format
 msgid "Register variable %qD used in nested function."
-msgstr "Registervariabel %qD använd i nästlad funktion."
+msgstr "Registervariabel %qD använd i nästad funktion."
 
 #: treelang/treetree.c:806
 #, gcc-internal-format
