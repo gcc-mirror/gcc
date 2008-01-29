@@ -409,6 +409,7 @@ tree
 remap_type (tree type, copy_body_data *id)
 {
   tree *node;
+  tree tmp;
 
   if (type == NULL)
     return type;
@@ -425,7 +426,11 @@ remap_type (tree type, copy_body_data *id)
       return type;
     }
 
-  return remap_type_1 (type, id);
+  id->remapping_type_depth++;
+  tmp = remap_type_1 (type, id);
+  id->remapping_type_depth--;
+
+  return tmp;
 }
 
 static tree
@@ -723,9 +728,10 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 	 tweak some special cases.  */
       copy_tree_r (tp, walk_subtrees, NULL);
 
-      /* Global variables we didn't seen yet needs to go into referenced
-	 vars.  */
-      if (gimple_in_ssa_p (cfun) && TREE_CODE (*tp) == VAR_DECL)
+      /* Global variables we haven't seen yet needs to go into referenced
+	 vars.  If not referenced from types only.  */
+      if (gimple_in_ssa_p (cfun) && TREE_CODE (*tp) == VAR_DECL
+	  && id->remapping_type_depth == 0)
 	add_referenced_var (*tp);
        
       /* If EXPR has block defined, map it to newly constructed block.
