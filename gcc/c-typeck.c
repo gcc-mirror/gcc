@@ -1,6 +1,6 @@
 /* Build expressions with type checking for C compiler.
    Copyright (C) 1987, 1988, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -2234,7 +2234,8 @@ build_external_ref (tree id, int fun, location_t loc)
 	   && DECL_EXTERNAL (current_function_decl)
 	   && VAR_OR_FUNCTION_DECL_P (ref)
 	   && (TREE_CODE (ref) != VAR_DECL || TREE_STATIC (ref))
-	   && ! TREE_PUBLIC (ref))
+	   && ! TREE_PUBLIC (ref)
+	   && DECL_CONTEXT (ref) != current_function_decl)
     pedwarn ("%H%qD is static but used in inline function %qD "
 	     "which is not static", &loc, ref, current_function_decl);
 
