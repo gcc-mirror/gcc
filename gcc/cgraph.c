@@ -1,5 +1,6 @@
 /* Callgraph handling code.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
+   Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -438,6 +439,51 @@ cgraph_redirect_edge_callee (struct cgraph_edge *e, struct cgraph_node *n)
   e->next_caller = n->callers;
   n->callers = e;
   e->callee = n;
+}
+
+/* Update or remove corresponding cgraph edge if a call OLD_CALL
+   in OLD_STMT changed into NEW_STMT.  */
+
+void
+cgraph_update_edges_for_call_stmt (tree old_stmt, tree old_call,
+				   tree new_stmt)
+{
+  tree new_call = get_call_expr_in (new_stmt);
+  struct cgraph_node *node = cgraph_node (cfun->decl);
+
+  if (old_call != new_call)
+    {
+      struct cgraph_edge *e = cgraph_edge (node, old_stmt);
+      struct cgraph_edge *ne = NULL;
+      tree new_decl;
+
+      if (e)
+	{
+	  gcov_type count = e->count;
+	  int frequency = e->frequency;
+	  int loop_nest = e->loop_nest;
+
+	  cgraph_remove_edge (e);
+	  if (new_call)
+	    {
+	      new_decl = get_callee_fndecl (new_call);
+	      if (new_decl)
+		{
+		  ne = cgraph_create_edge (node, cgraph_node (new_decl),
+					   new_stmt, count, frequency,
+					   loop_nest);
+		  gcc_assert (ne->inline_failed);
+		}
+	    }
+	}
+    }
+  else if (old_stmt != new_stmt)
+    {
+      struct cgraph_edge *e = cgraph_edge (node, old_stmt);
+
+      if (e)
+	cgraph_set_call_stmt (e, new_stmt);
+    }
 }
 
 /* Remove all callees from the node.  */

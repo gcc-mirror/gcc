@@ -2942,11 +2942,17 @@ fold_marked_statements (int first, struct pointer_set_t *statements)
 	  if (pointer_set_contains (statements, bsi_stmt (bsi)))
 	    {
 	      tree old_stmt = bsi_stmt (bsi);
+	      tree old_call = get_call_expr_in (old_stmt);
+
 	      if (fold_stmt (bsi_stmt_ptr (bsi)))
 		{
 		  update_stmt (bsi_stmt (bsi));
-		  if (maybe_clean_or_replace_eh_stmt (old_stmt, bsi_stmt (bsi)))
-		     tree_purge_dead_eh_edges (BASIC_BLOCK (first));
+		  if (old_call)
+		    cgraph_update_edges_for_call_stmt (old_stmt, old_call,
+						       bsi_stmt (bsi));
+		  if (maybe_clean_or_replace_eh_stmt (old_stmt,
+						      bsi_stmt (bsi)))
+		    tree_purge_dead_eh_edges (BASIC_BLOCK (first));
 		}
 	    }
       }
