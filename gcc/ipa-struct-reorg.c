@@ -3638,7 +3638,7 @@ collect_accesses_in_func (struct function *fn)
 /* This function summarizes counts of the fields into the structure count.  */
 
 static void
-sum_counts (d_str str, gcov_type *hotest)
+sum_counts (d_str str, gcov_type *hottest)
 {
   int i;
       
@@ -3662,8 +3662,8 @@ sum_counts (d_str str, gcov_type *hotest)
       fprintf (dump_file, "\" is " HOST_WIDEST_INT_PRINT_DEC, str->count);
     }
 
-  if (str->count > *hotest)
-    *hotest = str->count;
+  if (str->count > *hottest)
+    *hottest = str->count;
 }
 
 /* This function peels the field into separate structure if it's
@@ -3903,18 +3903,18 @@ collect_data_accesses (void)
 static void
 exclude_cold_structs (void)
 {
-  gcov_type hotest = 0;
+  gcov_type hottest = 0;
   unsigned i;
   d_str str;
 
   /* We summarize counts of fields of a structure into the structure count.  */
   for (i = 0; VEC_iterate (structure, structures, i, str); i++)
-    sum_counts (str, &hotest);
+    sum_counts (str, &hottest);
 
   /* Remove cold structures from structures vector.  */
   i = 0;
   while (VEC_iterate (structure, structures, i, str))
-    if (str->count * 100 < (hotest * STRUCT_REORG_COLD_STRUCT_RATIO))
+    if (str->count * 100 < (hottest * STRUCT_REORG_COLD_STRUCT_RATIO))
       {
 	if (dump_file)
 	  {
