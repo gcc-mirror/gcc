@@ -1,3 +1,11 @@
+2008-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/35017
+	* c-decl.c (start_decl): Don't pedwarn about TREE_READONLY
+	static decls.
+	* c-typeck.c (build_external_ref): Don't pedwarn about
+	static vars in current function's scope.
+
 2008-01-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.gcc (i[34567]86-*-nto-qnx*): Remove deprecation.
