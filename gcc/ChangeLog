@@ -1,3 +1,7 @@
+2008-01-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* config.gcc (i[34567]86-*-nto-qnx*): Remove deprecation.
+
 2008-01-29  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	PR c/35002
