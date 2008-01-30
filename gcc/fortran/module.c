@@ -3308,13 +3308,19 @@ load_generic_interfaces (void)
 
 	  if (!sym)
 	    {
-	      /* Make symtree inaccessible by renaming if the symbol has
-		 been added by a USE statement without an ONLY(11.3.2).  */
+	      /* Make the symbol inaccessible if it has been added by a USE
+		 statement without an ONLY(11.3.2).  */
 	      if (st && only_flag
 		     && !st->n.sym->attr.use_only
 		     && !st->n.sym->attr.use_rename
 		     && strcmp (st->n.sym->module, module_name) == 0)
-		st->name = gfc_get_string ("hidden.%s", name);
+		{
+		  sym = st->n.sym;
+		  gfc_delete_symtree (&gfc_current_ns->sym_root, name);
+		  st = gfc_get_unique_symtree (gfc_current_ns);
+		  st->n.sym = sym;
+		  sym = NULL;
+		}
 	      else if (st)
 		{
 		  sym = st->n.sym;
@@ -3733,21 +3739,21 @@ read_module (void)
 	    {
 	      st = gfc_find_symtree (gfc_current_ns->sym_root, name);
 
-	      /* Make symtree inaccessible by renaming if the symbol has
-		 been added by a USE statement without an ONLY(11.3.2).  */
+	      /* Delete the symtree if the symbol has been added by a USE
+		 statement without an ONLY(11.3.2). Remember that the rsym
+		 will be the same as the symbol found in the symtree, for
+		 this case.*/
 	      if (st && (only_flag || info->u.rsym.renamed)
 		     && !st->n.sym->attr.use_only
 		     && !st->n.sym->attr.use_rename
-		     && st->n.sym->module
-		     && strcmp (st->n.sym->module, module_name) == 0)
-		st->name = gfc_get_string ("hidden.%s", name);
+		     && info->u.rsym.sym == st->n.sym)
+		gfc_delete_symtree (&gfc_current_ns->sym_root, name);
 
 	      /* Create a symtree node in the current namespace for this
 		 symbol.  */
 	      st = check_unique_name (p)
 		   ? gfc_get_unique_symtree (gfc_current_ns)
 		   : gfc_new_symtree (&gfc_current_ns->sym_root, p);
-
 	      st->ambiguous = ambiguous;
 
 	      sym = info->u.rsym.sym;
