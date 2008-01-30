@@ -5,6 +5,7 @@ static void something();
 int main()
 {
   something(-1);
+  return 0;
 }
 
 static void something(int i)
