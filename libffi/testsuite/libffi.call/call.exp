@@ -27,6 +27,7 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] "-O0 -W -Wall" ""
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] "-O2" ""
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] "-O3" ""
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] "-Os" ""
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] "-O2 -fomit-frame-pointer" ""
 
 dg-finish
 
