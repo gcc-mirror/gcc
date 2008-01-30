@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -1193,7 +1193,7 @@ _m_psadbw (__m64 __A, __m64 __B)
    processor.  The selector I specifies the type of prefetch operation.  */
 #ifdef __OPTIMIZE__
 static __inline void __attribute__((__always_inline__, __artificial__))
-_mm_prefetch (void *__P, enum _mm_hint __I)
+_mm_prefetch (const void *__P, enum _mm_hint __I)
 {
   __builtin_prefetch (__P, 0, __I);
 }
