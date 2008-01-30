@@ -210,6 +210,8 @@ ffi_closure_SYSV:
 	je	.Lcls_retldouble
 	cmpl	$FFI_TYPE_SINT64, %eax
 	je	.Lcls_retllong
+	cmpl	$FFI_TYPE_STRUCT, %eax
+	je	.Lcls_retstruct
 .Lcls_epilogue:
 	movl	%ebp, %esp
 	popl	%ebp
@@ -230,6 +232,10 @@ ffi_closure_SYSV:
 	movl	(%ecx), %eax
 	movl	4(%ecx), %edx
 	jmp	.Lcls_epilogue
+.Lcls_retstruct:
+	movl	%ebp, %esp
+	popl	%ebp
+	ret	$4
 .LFE2:
 	.size	ffi_closure_SYSV, .-ffi_closure_SYSV
 
