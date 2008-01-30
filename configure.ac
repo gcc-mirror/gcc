@@ -207,6 +207,10 @@ configdirs=`echo ${host_libs} ${host_tools}`
 target_configdirs=`echo ${target_libraries} ${target_tools}`
 build_configdirs=`echo ${build_libs} ${build_tools}`
 
+m4_divert_text([PARSE_ARGS],
+[ac_subdirs_all=`cd $srcdir && echo */configure | sed 's,/configure,,g'`
+])
+
 ################################################################################
 
 srcname="gnu development package"
@@ -1480,7 +1484,8 @@ fi
 # Handle --disable-<component> generically.
 for dir in $configdirs $build_configdirs $target_configdirs ; do
   dirname=`echo $dir | sed -e s/target-//g -e s/build-//g -e s/-/_/g`
-  if eval test x\${enable_${dirname}} "=" xno ; then
+  varname=`echo $dirname | sed -e s/+/_/g`
+  if eval test x\${enable_${varname}} "=" xno ; then
     noconfigdirs="$noconfigdirs $dir"
   fi
 done
