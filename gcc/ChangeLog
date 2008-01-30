@@ -1,3 +1,13 @@
+2008-01-30  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR rtl-optimization/34998
+	* global.c (build_insn_chain): Treat non-subreg_lowpart
+	SUBREGs of pseudos as clobbering all the words covered by the
+	SUBREG, not just all the bytes.
+	* ra-conflict.c (clear_reg_in_live): Likewise.  Take the
+	original df_ref rather than an extract parameter.
+	(global_conflicts): Update call accordingly.
+
 2008-01-30  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/fixdfdi.h (__fixunstfdi, __fixtfdi): Rearrange

@@ -1501,6 +1501,17 @@ build_insn_chain (void)
 						  live_subregs, 
 						  live_subregs_used,
 						  regno, reg);
+
+			    if (!DF_REF_FLAGS_IS_SET
+				(def, DF_REF_STRICT_LOWER_PART))
+			      {
+				/* Expand the range to cover entire words.
+				   Bytes added here are "don't care".  */
+				start = start / UNITS_PER_WORD * UNITS_PER_WORD;
+				last = ((last + UNITS_PER_WORD - 1)
+					/ UNITS_PER_WORD * UNITS_PER_WORD);
+			      }
+
 			    /* Ignore the paradoxical bits.  */
 			    if ((int)last > live_subregs_used[regno])
 			      last = live_subregs_used[regno];
