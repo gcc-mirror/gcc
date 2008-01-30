@@ -1,3 +1,11 @@
+2008-01-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+        PR bootstrap/34922
+        * configure.ac (PARSE_ARGS): Push suitable setting of
+        ac_subdirs_all, for `./configure --help=recursive'.
+        Handle `+' in generic toplevel directory disabling.
+        * configure: Regenerate.
+
 2008-01-28  Nick Clifton  <nickc@redhat.com>
 
 	* MAINTAINERS (xstormy16): Take over maintainership.
