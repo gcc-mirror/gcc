@@ -1,3 +1,24 @@
+2008-01-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34975
+	* symbol.c (gfc_delete_symtree, gfc_undo_symbols): Rename
+	delete_symtree to gfc_delete_symtree.
+	* gfortran.h : Add prototype for gfc_delete_symtree.
+	* module.c (load_generic_interfaces): Transfer symbol to a
+	unique symtree and delete old symtree, instead of renaming.
+	(read_module): The rsym and the found symbol are the same, so
+	the found symtree can be deleted.
+
+	PR fortran/34429
+	* decl.c (match_char_spec): Remove the constraint on deferred
+	matching of functions and free the length expression.
+	delete_symtree to gfc_delete_symtree.
+	(gfc_match_type_spec): Whitespace.
+	(gfc_match_function_decl): Defer characteristic association for
+	all types except BT_UNKNOWN.
+	* parse.c (decode_specification_statement): Only derived type
+	function matching is delayed to the end of specification.
+
 2008-01-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR libfortran/34980

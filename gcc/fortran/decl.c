@@ -2151,13 +2151,10 @@ syntax:
   return m;
 
 done:
-  /* Except in the case of the length being a function, where symbol
-     association looks after itself, deal with character functions
-     after the specification statements.  */
-  if (gfc_matching_function
-	&& !(len && len->expr_type != EXPR_VARIABLE
-		 && len->expr_type != EXPR_OP))
+  /* Deal with character functions after USE and IMPORT statements.  */
+  if (gfc_matching_function)
     {
+      gfc_free_expr (len);
       gfc_undo_symbols ();
       return MATCH_YES;
     }
@@ -2222,8 +2219,8 @@ gfc_match_type_spec (gfc_typespec *ts, int implicit_flag)
   /* A belt and braces check that the typespec is correctly being treated
      as a deferred characteristic association.  */
   seen_deferred_kind = (gfc_current_state () == COMP_FUNCTION)
-					&& (gfc_current_block ()->result->ts.kind == -1)
-					&& (ts->kind == -1);
+			  && (gfc_current_block ()->result->ts.kind == -1)
+			  && (ts->kind == -1);
   gfc_clear_ts (ts);
   if (seen_deferred_kind)
     ts->kind = -1;
@@ -4358,21 +4355,13 @@ gfc_match_function_decl (void)
 	  goto cleanup;
 	}
 
-      /* Except in the case of a function valued character length,
-	 delay matching the function characteristics until after the
+      /* Delay matching the function characteristics until after the
 	 specification block by signalling kind=-1.  */
-      if (!(current_ts.type == BT_CHARACTER
-	      && current_ts.cl
-	      && current_ts.cl->length
-	      && current_ts.cl->length->expr_type != EXPR_OP
-	      && current_ts.cl->length->expr_type != EXPR_VARIABLE))
-	{
-	  sym->declared_at = old_loc;
-	  if (current_ts.type != BT_UNKNOWN)
-	    current_ts.kind = -1;
-	  else
-	    current_ts.kind = 0;
-	}
+      sym->declared_at = old_loc;
+      if (current_ts.type != BT_UNKNOWN)
+	current_ts.kind = -1;
+      else
+	current_ts.kind = 0;
 
       if (result == NULL)
 	{

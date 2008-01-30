@@ -2153,8 +2153,8 @@ gfc_new_symtree (gfc_symtree **root, const char *name)
 
 /* Delete a symbol from the tree.  Does not free the symbol itself!  */
 
-static void
-delete_symtree (gfc_symtree **root, const char *name)
+void
+gfc_delete_symtree (gfc_symtree **root, const char *name)
 {
   gfc_symtree st, *st0;
 
@@ -2609,7 +2609,7 @@ gfc_undo_symbols (void)
 		}
 	    }
 
-	  delete_symtree (&p->ns->sym_root, p->name);
+	  gfc_delete_symtree (&p->ns->sym_root, p->name);
 
 	  p->refs--;
 	  if (p->refs < 0)
