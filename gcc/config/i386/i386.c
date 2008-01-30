@@ -3432,6 +3432,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
 		      rtx libname,	/* SYMBOL_REF of library name or 0 */
 		      tree fndecl)
 {
+  struct cgraph_local_info *i = fndecl ? cgraph_local_info (fndecl) : NULL;
   memset (cum, 0, sizeof (*cum));
 
   /* Set up the number of registers to use for passing arguments.  */
@@ -3442,6 +3443,15 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
     cum->mmx_nregs = MMX_REGPARM_MAX;
   cum->warn_sse = true;
   cum->warn_mmx = true;
+
+  /* Because type might mismatch in between caller and callee, we need to
+     use actual type of function for local calls.
+     FIXME: cgraph_analyze can be told to actually record if function uses
+     va_start so for local functions maybe_vaarg can be made aggressive
+     helping K&R code.
+     FIXME: once typesytem is fixed, we won't need this code anymore.  */
+  if (i && i->local)
+    fntype = TREE_TYPE (fndecl);
   cum->maybe_vaarg = (fntype
 		      ? (!prototype_p (fntype) || stdarg_p (fntype))
 		      : !libname);
