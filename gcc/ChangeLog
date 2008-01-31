@@ -1,3 +1,12 @@
+2008-01-31  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR rtl-optimization/34995
+	* reload.c (alternative_allows_const_pool_ref): Take an rtx
+	parameter and return a bool.  If the rtx parameter is nonnull,
+	check that it satisfies an EXTRA_MEMORY_CONSTRAINT.
+	(find_reloads): Update call accordingly.  Pass the new operand
+	if it needed no address reloads, otherwise pass null.
+
 2008-01-30  Richard Henderson  <rth@redhat.com>
 
 	PR c/34993
