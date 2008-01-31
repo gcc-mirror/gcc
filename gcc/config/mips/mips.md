@@ -4265,9 +4265,9 @@
    (set_attr "mode" "<HALFMODE>")])
 
 ;; Move a constant that satisfies CONST_GP_P into operand 0.
-(define_expand "load_const_gp"
-  [(set (match_operand 0 "register_operand" "=d")
-	(const (unspec [(const_int 0)] UNSPEC_GP)))])
+(define_expand "load_const_gp_<mode>"
+  [(set (match_operand:P 0 "register_operand" "=d")
+	(const:P (unspec:P [(const_int 0)] UNSPEC_GP)))])
 
 ;; Insn to initialize $gp for n32/n64 abicalls.  Operand 0 is the offset
 ;; of _gp from the start of this function.  Operand 1 is the incoming

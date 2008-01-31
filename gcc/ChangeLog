@@ -1,3 +1,12 @@
+2008-01-31  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR target/34900
+	* config/mips/mips.c (gen_load_const_gp): New function, taking a
+	comment from...
+	(mips16_gp_pseudo_reg): ...here.
+	* config/mips/mips.md (load_const_gp): Replace with...
+	(load_const_gp_<mode>): ...this :P-based insn.
+
 2008-01-31  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* doc/invoke.texi (-ansi): Mention explicitly corresponding -std=

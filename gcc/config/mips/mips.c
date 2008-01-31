@@ -2161,6 +2161,18 @@ mips_emit_call_insn (rtx pattern, bool lazy_p)
   return insn;
 }
 
+/* Return an instruction that copies $gp into register REG.  We want
+   GCC to treat the register's value as constant, so that its value
+   can be rematerialized on demand.  */
+
+static rtx
+gen_load_const_gp (rtx reg)
+{
+  return (Pmode == SImode
+	  ? gen_load_const_gp_si (reg)
+	  : gen_load_const_gp_di (reg));
+}
+
 /* Return a pseudo register that contains the value of $gp throughout
    the current function.  Such registers are needed by MIPS16 functions,
    for which $gp itself is not a valid base register or addition operand.  */
@@ -2179,8 +2191,6 @@ mips16_gp_pseudo_reg (void)
     {
       rtx insn, scan, after;
 
-      /* We want GCC to treat the register's value as constant, so that
-	 it can be rematerialized on demand.  */
       insn = gen_load_const_gp (cfun->machine->mips16_gp_pseudo_rtx);
 
       push_topmost_sequence ();
