@@ -1,3 +1,14 @@
+2008-01-31  Douglas Gregor  <doug.gregor@gmail.com>
+           Jakub Jelinek  <jakub@redhat.com>
+
+       PR c++/34935
+       PR c++/34936
+       * typeck.c (structural_comptypes): Handle comparisons of
+       VOID_TYPE, BOOLEAN_TYPE, INTEGER_TYPE, FIXED_POINT_TYPE, and
+       REAL_TYPE nodes.
+       * mangle.c (write_builtin_type): Map down to the canonical type,
+       which will be one of the predefined type nodes.
+
 2008-01-29  Michael Meissner  <michael.meissner@amd.com>
 
 	PR 35004
