@@ -312,7 +312,7 @@ The elements are indexed from zero.
 
 All types have corresponding tree nodes.  However, you should not assume
 that there is exactly one tree node corresponding to each type.  There
-are often several nodes each of which correspond to the same type.
+are often multiple nodes corresponding to the same type.
 
 For the most part, different kinds of types have different tree codes.
 (For example, pointer types use a @code{POINTER_TYPE} code while arrays
@@ -2017,7 +2017,7 @@ mind.  In particular, the expression ``tree'' is actually a directed
 acyclic graph.  (For example there may be many references to the integer
 constant zero throughout the source program; many of these will be
 represented by the same expression node.)  You should not rely on
-certain kinds of node being shared, nor should rely on certain kinds of
+certain kinds of node being shared, nor should you rely on certain kinds of
 nodes being unshared.
 
 The following macros can be used with all expression nodes:

@@ -39,7 +39,7 @@ There is a proposal to call this a @dfn{crossback}.
 
 If build and host are the same, the GCC you are building will also be
 used to build the target libraries (like @code{libstdc++}).  If build and host
-are different, you must have already build and installed a cross
+are different, you must have already built and installed a cross
 compiler that will be used to build the target libraries (if you
 configured with @option{--target=foo-bar}, this compiler will be called
 @command{foo-bar-gcc}).

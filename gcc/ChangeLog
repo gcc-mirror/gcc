@@ -1,3 +1,15 @@
+2008-01-31  Tom Browder <tom.browder@gmail.com>
+
+	* doc/c-tree.texi (Types): Fix grammar.
+	(Expression trees): Ditto.
+	* doc/passes.texi (Tree-SSA passes): Ditto.
+	
+	* doc/configterms.texi (Configure Terms): Fix typo.
+	* doc/cpp.texi (Common Predefined Macros): Ditto.
+	* doc/md.texi (Machine Constraints): Ditto.
+	
+	* doc/makefile.texi (Makefile): Add comma.
+
 2008-01-31  Tom Browder  <tom.browder@gmail.com>
 	    Gerald Pfeifer  <gerald@pfeifer.com>
 	
