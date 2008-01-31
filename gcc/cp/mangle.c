@@ -1768,6 +1768,9 @@ write_CV_qualifiers_for_type (const tree type)
 static void
 write_builtin_type (tree type)
 {
+  if (TYPE_CANONICAL (type))
+    type = TYPE_CANONICAL (type);
+
   switch (TREE_CODE (type))
     {
     case VOID_TYPE:
