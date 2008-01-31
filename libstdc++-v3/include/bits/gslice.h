@@ -79,7 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     gslice(size_t, const valarray<size_t>&, const valarray<size_t>&);
 
     // XXX: the IS says the copy-ctor and copy-assignment operators are
-    //      synthetized by the compiler but they are just unsuitable
+    //      synthesized by the compiler but they are just unsuitable
     //      for a ref-counted semantic
     ///  Copy constructor.
     gslice(const gslice&);

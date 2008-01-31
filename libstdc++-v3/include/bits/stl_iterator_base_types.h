@@ -78,7 +78,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  These are empty types, used to distinguish different iterators.  The
    *  distinction is not made by what they contain, but simply by what they
    *  are.  Different underlying algorithms can then be used based on the
-   *  different operations supporetd by different iterator types.
+   *  different operations supported by different iterator types.
   */
   ///  Marking input iterators.
   struct input_iterator_tag {};

@@ -110,7 +110,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @param  a  Another %auto_ptr of the same type.
        *
        *  This object now @e owns the object previously owned by @a a,
-       *  which has given up ownsership.
+       *  which has given up ownership.
        */
       auto_ptr(auto_ptr& __a) throw() : _M_ptr(__a.release()) { }
 
@@ -122,7 +122,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  pointer-to-Tp/element_type.
        *
        *  This object now @e owns the object previously owned by @a a,
-       *  which has given up ownsership.
+       *  which has given up ownership.
        */
       template<typename _Tp1>
         auto_ptr(auto_ptr<_Tp1>& __a) throw() : _M_ptr(__a.release()) { }
@@ -132,7 +132,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @param  a  Another %auto_ptr of the same type.
        *
        *  This object now @e owns the object previously owned by @a a,
-       *  which has given up ownsership.  The object that this one @e
+       *  which has given up ownership.  The object that this one @e
        *  used to own and track has been deleted.
        */
       auto_ptr&
@@ -149,7 +149,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  A pointer-to-Tp1 must be convertible to a pointer-to-Tp/element_type.
        *
        *  This object now @e owns the object previously owned by @a a,
-       *  which has given up ownsership.  The object that this one @e
+       *  which has given up ownership.  The object that this one @e
        *  used to own and track has been deleted.
        */
       template<typename _Tp1>

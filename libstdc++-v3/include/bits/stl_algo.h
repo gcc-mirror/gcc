@@ -2385,7 +2385,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @param  first   An iterator.
    *  @param  last    Another iterator.
    *  @param  val     The search term.
-   *  @return  True if @a val (or its equivelent) is in [@a first,@a last ].
+   *  @return  True if @a val (or its equivalent) is in [@a first,@a last ].
    *  @ingroup binarysearch
    *
    *  Note that this does not actually return an iterator to @a val.  For
@@ -2415,7 +2415,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @param  last    Another iterator.
    *  @param  val     The search term.
    *  @param  comp    A functor to use for comparisons.
-   *  @return  True if @a val (or its equivelent) is in [@a first,@a last ].
+   *  @return  True if @a val (or its equivalent) is in [@a first,@a last ].
    *  @ingroup binarysearch
    *
    *  Note that this does not actually return an iterator to @a val.  For
@@ -3845,7 +3845,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
    *  @param  last2   End of match candidates.
    *  @return   The first iterator @c i in the range
    *  @p [first1,last1) such that @c *i == @p *(i2) such that i2 is an
-   *  interator in [first2,last2), or @p last1 if no such iterator exists.
+   *  iterator in [first2,last2), or @p last1 if no such iterator exists.
    *
    *  Searches the range @p [first1,last1) for an element that is equal to
    *  some element in the range [first2,last2).  If found, returns an iterator
@@ -3881,7 +3881,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
    *  @param  comp    Predicate to use.
    *  @return   The first iterator @c i in the range
    *  @p [first1,last1) such that @c comp(*i, @p *(i2)) is true and i2 is an
-   *  interator in [first2,last2), or @p last1 if no such iterator exists.
+   *  iterator in [first2,last2), or @p last1 if no such iterator exists.
    *
 
    *  Searches the range @p [first1,last1) for an element that is

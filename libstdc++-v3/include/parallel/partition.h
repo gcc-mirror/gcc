@@ -386,7 +386,7 @@ template<typename RandomAccessIterator, typename Comparator>
 	    || (end - split_pos1) < (n >> 7))
           {
             // Very unequal split, one part smaller than one 128th
-            // elements not stricly larger than the pivot.
+            // elements not strictly larger than the pivot.
             __gnu_parallel::unary_negate<__gnu_parallel::
 	      binder1st<Comparator, value_type, value_type, bool>, value_type>
 	      pred(__gnu_parallel::binder1st<Comparator, value_type,

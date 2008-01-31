@@ -225,7 +225,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       /**
        *  The dtor only erases the elements, and note that if the elements
        *  themselves are pointers, the pointed-to memory is not touched in any
-       *  way.  Managing the pointer is the user's responsibilty.
+       *  way.  Managing the pointer is the user's responsibility.
        */
 
       /**
@@ -496,7 +496,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       { return _M_t._M_insert_unique_(__position, __x); }
 
       /**
-       *  @brief Template function that attemps to insert a range of elements.
+       *  @brief Template function that attempts to insert a range of elements.
        *  @param  first  Iterator pointing to the start of the range to be
        *                 inserted.
        *  @param  last  Iterator pointing to the end of the range.
@@ -516,7 +516,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  iterator, from a %map.  Note that this function only erases
        *  the element, and that if the element is itself a pointer,
        *  the pointed-to memory is not touched in any way.  Managing
-       *  the pointer is the user's responsibilty.
+       *  the pointer is the user's responsibility.
        */
       void
       erase(iterator __position)
@@ -531,7 +531,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  a %map.
        *  Note that this function only erases the element, and that if
        *  the element is itself a pointer, the pointed-to memory is not touched
-       *  in any way.  Managing the pointer is the user's responsibilty.
+       *  in any way.  Managing the pointer is the user's responsibility.
        */
       size_type
       erase(const key_type& __x)
@@ -546,7 +546,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  This function erases a sequence of elements from a %map.
        *  Note that this function only erases the element, and that if
        *  the element is itself a pointer, the pointed-to memory is not touched
-       *  in any way.  Managing the pointer is the user's responsibilty.
+       *  in any way.  Managing the pointer is the user's responsibility.
        */
       void
       erase(iterator __first, iterator __last)
@@ -575,7 +575,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  Erases all elements in a %map.  Note that this function only
        *  erases the elements, and that if the elements themselves are
        *  pointers, the pointed-to memory is not touched in any way.
-       *  Managing the pointer is the user's responsibilty.
+       *  Managing the pointer is the user's responsibility.
        */
       void
       clear()

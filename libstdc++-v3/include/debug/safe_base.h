@@ -197,7 +197,7 @@ namespace __gnu_debug
 
     /** Revalidates all attached singular iterators.  This method may
      *  be used to validate iterators that were invalidated before
-     *  (but for some reasion, such as an exception, need to become
+     *  (but for some reason, such as an exception, need to become
      *  valid again).
      */
     void

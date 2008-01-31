@@ -86,7 +86,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       // In order to avoid fragmenting and minimize the number of
       // new() calls we always request new memory using this
       // value. Based on previous discussions on the libstdc++
-      // mailing list we have choosen the value below.
+      // mailing list we have chosen the value below.
       // See http://gcc.gnu.org/ml/libstdc++/2001-07/msg00077.html
       // NB: At least one order of magnitude > _M_max_bytes. 
       size_t	_M_chunk_size;

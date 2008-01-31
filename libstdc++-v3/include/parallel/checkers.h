@@ -82,7 +82,7 @@ namespace __gnu_parallel
 
   /**
    * @brief Check whether @c [begin, @c end) is sorted according to @c comp.
-   * Prints the position in case an misordered pair is found.
+   * Prints the position in case an unordered pair is found.
    * @param begin Begin iterator of sequence.
    * @param end End iterator of sequence.
    * @param first_failure The first failure is returned in this variable.
@@ -123,7 +123,7 @@ namespace __gnu_parallel
 
   /**
    * @brief Check whether @c [begin, @c end) is sorted according to @c comp.
-   * Prints all misordered pair, including the surrounding two elements.
+   * Prints all unordered pair, including the surrounding two elements.
    * @param begin Begin iterator of sequence.
    * @param end End iterator of sequence.
    * @param comp Comparator.

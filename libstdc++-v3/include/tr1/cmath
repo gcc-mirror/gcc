@@ -135,7 +135,7 @@ namespace tr1
       return __detail::__beta<__type>(__x, __y);
     }
 
-  //  5.2.1.4  Complete elliptic interals of the first kind.
+  //  5.2.1.4  Complete elliptic integrals of the first kind.
   inline float
   comp_ellint_1f(float __k)
   { return __detail::__comp_ellint_1<float>(__k); }
@@ -152,7 +152,7 @@ namespace tr1
       return __detail::__comp_ellint_1<__type>(__k);
     }
 
-  //  5.2.1.5  Complete elliptic interals of the second kind.
+  //  5.2.1.5  Complete elliptic integrals of the second kind.
   inline float
   comp_ellint_2f(float __k)
   { return __detail::__comp_ellint_2<float>(__k); }
@@ -169,7 +169,7 @@ namespace tr1
       return __detail::__comp_ellint_2<__type>(__k);
     }
 
-  //  5.2.1.6  Complete elliptic interals of the third kind.
+  //  5.2.1.6  Complete elliptic integrals of the third kind.
   inline float
   comp_ellint_3f(float __k, float __nu)
   { return __detail::__comp_ellint_3<float>(__k, __nu); }
@@ -271,7 +271,7 @@ namespace tr1
       return __detail::__cyl_neumann_n<__type>(__nu, __x);
     }
 
-  //  5.2.1.12  Incomplete elliptic interals of the first kind.
+  //  5.2.1.12  Incomplete elliptic integrals of the first kind.
   inline float
   ellint_1f(float __k, float __phi)
   { return __detail::__ellint_1<float>(__k, __phi); }
@@ -288,7 +288,7 @@ namespace tr1
       return __detail::__ellint_1<__type>(__k, __phi);
     }
 
-  //  5.2.1.13  Incomplete elliptic interals of the second kind.
+  //  5.2.1.13  Incomplete elliptic integrals of the second kind.
   inline float
   ellint_2f(float __k, float __phi)
   { return __detail::__ellint_2<float>(__k, __phi); }
@@ -305,7 +305,7 @@ namespace tr1
       return __detail::__ellint_2<__type>(__k, __phi);
     }
 
-  //  5.2.1.14  Incomplete elliptic interals of the third kind.
+  //  5.2.1.14  Incomplete elliptic integrals of the third kind.
   inline float
   ellint_3f(float __k, float __nu, float __phi)
   { return __detail::__ellint_3<float>(__k, __nu, __phi); }

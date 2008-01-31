@@ -559,7 +559,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       // [27.5.2.4.2] buffer management and positioning
       /**
-       *  @brief  Maniuplates the buffer.
+       *  @brief  Manipulates the buffer.
        *
        *  Each derived class provides its own appropriate behavior.  See
        *  the next-to-last paragraph of 
@@ -655,7 +655,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  next available character is returned, or @c traits::eof() to
        *  indicate a null pending sequence.
        *
-       *  For a formal definiton of the pending sequence, see a good text
+       *  For a formal definition of the pending sequence, see a good text
        *  such as Langer & Kreft, or [27.5.2.4.3]/7-14.
        *
        *  A functioning input streambuf can be created by overriding only
@@ -736,7 +736,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  sequence verbatim.)  In either case, the character @a c is also
        *  written out, if @a c is not @c eof().
        *
-       *  For a formal definiton of this function, see a good text
+       *  For a formal definition of this function, see a good text
        *  such as Langer & Kreft, or [27.5.2.4.5]/3-7.
        *
        *  A functioning output streambuf can be created by overriding only

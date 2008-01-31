@@ -225,7 +225,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  in the error flags, then an exception of type
        *  std::ios_base::failure is thrown.
        *
-       *  If the error flage is already set when the exceptions mask is
+       *  If the error flag is already set when the exceptions mask is
        *  added, the exception is immediately thrown.  Try running the
        *  following under GCC 3.1 or later:
        *  @code
@@ -355,7 +355,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       copyfmt(const basic_ios& __rhs);
 
       /**
-       *  @brief  Retreives the "empty" character.
+       *  @brief  Retrieves the "empty" character.
        *  @return  The current fill character.
        *
        *  It defaults to a space (' ') in the current locale.

@@ -105,7 +105,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	{
 	  // NB: Start ostringstream buffers at 512 chars.  This is an
 	  // experimental value (pronounced "arbitrary" in some of the
-	  // hipper english-speaking countries), and can be changed to
+	  // hipper English-speaking countries), and can be changed to
 	  // suit particular needs.
 	  //
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS

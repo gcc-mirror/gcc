@@ -100,7 +100,7 @@
 
 /** 
   * @brief The extensible condition on whether the parallel variant of
-  * an algorithm sould be called.
+  * an algorithm should be called.
   * @param c A condition that is overruled by
   * __gnu_parallel::Settings::force_parallel, i. e. usually a decision based on
   * the input size.
@@ -114,7 +114,7 @@ namespace __gnu_parallel
 {
   // NB: Including this file cannot produce (unresolved) symbols from
   // the OpenMP runtime unless the parallel mode is actually invoked
-  // and active, which imples that the OpenMP runtime is actually
+  // and active, which implies that the OpenMP runtime is actually
   // going to be linked in.
   inline int
   get_max_threads() 

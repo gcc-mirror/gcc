@@ -128,7 +128,7 @@ namespace tr1
      *           on @f$ l @f$.
      * 
      *   The associated Legendre function is derived from the Legendre function
-     *   @f$ P_l(x) @f$ by the Rodruigez formula:
+     *   @f$ P_l(x) @f$ by the Rodrigues formula:
      *   @f[
      *     P_l^m(x) = (1 - x^2)^{m/2}\frac{d^m}{dx^m}P_l(x)
      *   @f]

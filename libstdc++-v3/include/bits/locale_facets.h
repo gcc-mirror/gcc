@@ -143,7 +143,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  This template class provides implementations of the public functions
    *  that forward to the protected virtual functions.
    *
-   *  This template also provides abtract stubs for the protected virtual
+   *  This template also provides abstract stubs for the protected virtual
    *  functions.
   */
   template<typename _CharT>
@@ -2021,7 +2021,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
        *  specifier.  Otherwise, parses like %d for signed and %u for unsigned
        *  types.  The matching type length modifier is also used.
        *
-       *  Digit grouping is intrepreted according to numpunct::grouping() and
+       *  Digit grouping is interpreted according to numpunct::grouping() and
        *  numpunct::thousands_sep().  If the pattern of digit groups isn't
        *  consistent, sets err to ios_base::failbit.
        *
@@ -2080,7 +2080,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
        *  matching type length modifier is also used.
        *
        *  The decimal point character used is numpunct::decimal_point().
-       *  Digit grouping is intrepreted according to numpunct::grouping() and
+       *  Digit grouping is interpreted according to numpunct::grouping() and
        *  numpunct::thousands_sep().  If the pattern of digit groups isn't
        *  consistent, sets err to ios_base::failbit.
        *
@@ -2119,7 +2119,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
        *
        *  The input characters are parsed like the scanf %p specifier.
        *
-       *  Digit grouping is intrepreted according to numpunct::grouping() and
+       *  Digit grouping is interpreted according to numpunct::grouping() and
        *  numpunct::thousands_sep().  If the pattern of digit groups isn't
        *  consistent, sets err to ios_base::failbit.
        *

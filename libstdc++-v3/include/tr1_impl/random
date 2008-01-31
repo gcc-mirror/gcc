@@ -149,7 +149,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   } // namespace __detail
 
   /**
-   * Produces random numbers on a given disribution function using a un uniform
+   * Produces random numbers on a given distribution function using a non-uniform
    * random number generation engine.
    *
    * @todo the engine_value_type needs to be studied more carefully.
@@ -260,7 +260,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
    * A number generator is a function object with an operator() that
    * takes zero arguments and returns a number.
    *
-   * A compliant random number generator must satisy the following
+   * A compliant random number generator must satisfy the following
    * requirements.  <table border=1 cellpadding=10 cellspacing=0>
    * <caption align=top>Random Number Generator Requirements</caption>
    * <tr><td>To be documented.</td></tr> </table>
@@ -342,7 +342,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       /**
        * Gets the smallest possible value in the output range.
        *
-       * The minumum depends on the @p __c parameter: if it is zero, the
+       * The minimum depends on the @p __c parameter: if it is zero, the
        * minimum generated must be > 0, otherwise 0 is allowed.
        */
       result_type
@@ -452,7 +452,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   /**
    * A generalized feedback shift register discrete random number generator.
    *
-   * This algorithm avoind multiplication and division and is designed to be
+   * This algorithm avoids multiplication and division and is designed to be
    * friendly to a pipelined architecture.  If the parameters are chosen
    * correctly, this generator will produce numbers with a very long period and
    * fairly good apparent entropy, although still not cryptographically strong.
@@ -1041,7 +1041,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       /**
        * Copy constructs a %discard_block engine.
        *
-       * Copies an existing base class random number geenerator.
+       * Copies an existing base class random number generator.
        * @param rng An existing (base class) engine object.
        */
       explicit
@@ -1229,9 +1229,9 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       //                          result_type, ArithmeticTypeConcept)
 
     public:
-      /** The type of the the first underlying generator engine. */
+      /** The type of the first underlying generator engine. */
       typedef _UniformRandomNumberGenerator1   base1_type;
-      /** The type of the the second underlying generator engine. */
+      /** The type of the second underlying generator engine. */
       typedef _UniformRandomNumberGenerator2   base2_type;
 
     private:
@@ -1585,7 +1585,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 		   const uniform_int<_IntType1>& __x);
 
       /**
-       * Extracts a %unform_int random number distribution
+       * Extracts a %uniform_int random number distribution
        * @p __x from the input stream @p __is.
        *
        * @param __is An input stream.
@@ -1655,7 +1655,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     /**
      * Resets the distribution state.
      *
-     * Does nothing for a bernoulli distribution.
+     * Does nothing for a Bernoulli distribution.
      */
     void
     reset() { }
@@ -1796,7 +1796,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   /**
    * @brief A discrete Poisson random number distribution.
    *
-   * The formula for the poisson probability mass function is 
+   * The formula for the Poisson probability mass function is
    * @f$ p(i) = \frac{mean^i}{i!} e^{-mean} @f$ where @f$ mean @f$ is the
    * parameter of the distribution.
    */
@@ -2050,7 +2050,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 		   const uniform_real<_RealType1>& __x);
 
       /**
-       * Extracts a %unform_real random number distribution
+       * Extracts a %uniform_real random number distribution
        * @p __x from the input stream @p __is.
        *
        * @param __is An input stream.

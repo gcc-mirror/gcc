@@ -96,7 +96,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  respectively.  If the result needed no conversion, from_next and
        *  to_next are not affected.
        *
-       *  The @a state argument should be intialized if the input is at the
+       *  The @a state argument should be initialized if the input is at the
        *  beginning and carried from a previous call if continuing
        *  conversion.  There are no guarantees about how @a state is used.
        *
@@ -176,7 +176,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  respectively.  If the result needed no conversion, from_next and
        *  to_next are not affected.
        *
-       *  The @a state argument should be intialized if the input is at the
+       *  The @a state argument should be initialized if the input is at the
        *  beginning and carried from a previous call if continuing
        *  conversion.  There are no guarantees about how @a state is used.
        *

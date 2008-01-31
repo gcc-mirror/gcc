@@ -63,7 +63,7 @@
 //         double						(1)
 //         long double						(1)
 //
-// GNU C++ undertstands (where supported by the host C-library)
+// GNU C++ understands (where supported by the host C-library)
 //   * integer
 //         long long, unsigned long long			(2)
 //
@@ -79,7 +79,7 @@
 // These values can be overridden in the target configuration file.
 // The default values are appropriate for many 32-bit targets.
 
-// GCC only intrinsicly supports modulo integral types.  The only remaining
+// GCC only intrinsically supports modulo integral types.  The only remaining
 // integral exceptional values is division by zero.  Only targets that do not
 // signal division by zero in some "hard to ignore" way should use false.
 #ifndef __glibcxx_integral_traps
@@ -89,7 +89,7 @@
 // float
 //
 
-// Default values.  Should be overriden in configuration files if necessary.
+// Default values.  Should be overridden in configuration files if necessary.
 
 #ifndef __glibcxx_float_has_denorm_loss
 #  define __glibcxx_float_has_denorm_loss false
@@ -103,7 +103,7 @@
 
 // double
 
-// Default values.  Should be overriden in configuration files if necessary.
+// Default values.  Should be overridden in configuration files if necessary.
 
 #ifndef __glibcxx_double_has_denorm_loss
 #  define __glibcxx_double_has_denorm_loss false
@@ -117,7 +117,7 @@
 
 // long double
 
-// Default values.  Should be overriden in configuration files if necessary.
+// Default values.  Should be overridden in configuration files if necessary.
 
 #ifndef __glibcxx_long_double_has_denorm_loss
 #  define __glibcxx_long_double_has_denorm_loss false
@@ -186,7 +186,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  The @c static @c const members are usable as integral constant
    *  expressions.
    *
-   *  @note This is a seperate class for purposes of efficiency; you
+   *  @note This is a separate class for purposes of efficiency; you
    *        should only access these members as part of an instantiation
    *        of the std::numeric_limits class.
   */
@@ -260,7 +260,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
     /** True if trapping is implemented for this type.  */
     static const bool traps = false;
-    /** True if tinyness is detected before rounding.  (see IEC 559)  */
+    /** True if tininess is detected before rounding.  (see IEC 559)  */
     static const bool tinyness_before = false;
     /** See std::float_round_style for more information.  This is only
         meaningful for floating types; integer types will all be
