@@ -78,12 +78,14 @@ __fixunstfdi (long double a1)
     if ((EXPD(dl1) == 0x7fff) && !FRACD_ZERO_P (dl1))
       return 0x0ULL;
 
-    /* If the upper ll part of the mantissa isn't
-       zeroed out after shifting the number would be to large.  */
-    if (exp >= -HIGH_LL_FRAC_BITS)
-      return 0xFFFFFFFFFFFFFFFFULL;
-
+    /* One extra bit is needed for the unit bit which is appended by
+       MANTD_HIGH_LL on the left of the matissa.  */
     exp += HIGH_LL_FRAC_BITS + 1;
+
+    /* If the result would still need a left shift it will be to large
+       to be represented.  */
+    if (exp > 0)
+      return 0xFFFFFFFFFFFFFFFFULL;
 
     l = MANTD_LOW_LL (dl1) >> (HIGH_LL_FRAC_BITS + 1)
         | MANTD_HIGH_LL (dl1) << (64 - (HIGH_LL_FRAC_BITS + 1));
@@ -118,7 +120,7 @@ union double_long {
   struct {
       SItype_x i[4]; /* 32 bit parts: 0 upper ... 3 lowest */
     } l;
-  DItype_x ll[2];   /* 64 bit parts: 0 upper, 1 lower */
+  UDItype_x ll[2];   /* 64 bit parts: 0 upper, 1 lower */
 };
 
 DItype_x __fixtfdi (long double a1);
@@ -150,16 +152,20 @@ __fixtfdi (long double a1)
     if ((EXPD(dl1) == 0x7fff) && !FRACD_ZERO_P (dl1))
       return 0x8000000000000000ULL;
 
-    /* If the upper ll part of the mantissa isn't
-       zeroed out after shifting the number would be to large.  */
-    if (exp >= -HIGH_LL_FRAC_BITS)
+    /* One extra bit is needed for the unit bit which is appended by
+       MANTD_HIGH_LL on the left of the matissa.  */
+    exp += HIGH_LL_FRAC_BITS + 1;
+
+    /* If the result would still need a left shift it will be to large
+       to be represented.  Compared to the unsigned variant we have to
+       take care that there is still space for the sign bit to be
+       applied.  So we can only go on if there is a right-shift by one
+       or more.  */
+    if (exp >= 0)
       {
-	l = (long long)1 << 63; /* long int min */
+	l = (long long)1 << 63; /* long long int min */
 	return SIGND (dl1) ? l : l - 1;
       }
-
-    /* The extra bit is needed for the sign bit.  */
-    exp += HIGH_LL_FRAC_BITS + 1;
 
     l = MANTD_LOW_LL (dl1) >> (HIGH_LL_FRAC_BITS + 1)
         | MANTD_HIGH_LL (dl1) << (64 - (HIGH_LL_FRAC_BITS + 1));

@@ -1,3 +1,7 @@
+2008-01-31  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* gcc.dg/tf_to_di-1.c: New testcase.
+
 2008-01-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	Backport:

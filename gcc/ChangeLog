@@ -1,3 +1,10 @@
+2008-01-31  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/fixdfdi.h (__fixunstfdi, __fixtfdi): Rearrange
+	the overflow check to make it easier to read.
+	(__fixtfdi): Change the type of the ll member in union
+	long_double to UDItype_x.
+
 2008-01-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	Backport:
