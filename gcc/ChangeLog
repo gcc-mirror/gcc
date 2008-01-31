@@ -793,7 +793,7 @@
 	cold_text_section_used, *cold_text_sections): Move declarations
 	before their uses.
 
-2007-01-17  Bob Wilson  <bob.wilson@acm.org>
+2008-01-17  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/unwind-dw2-xtensa.h (_Unwind_FrameState): Remove pc
 	field and add signal_ra.
@@ -806,7 +806,7 @@
 	* config/xtensa/linux.h (MD_UNWIND_SUPPORT): Define.
 	* config/xtensa/linux-unwind.h: New file.
 
-2007-01-18  Bernhard Fischer  <aldot@gcc.gnu.org>
+2008-01-18  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	* modulo-sched.c (get_sched_window): Fix comment typo.
 
@@ -863,7 +863,7 @@
 	"-pthread" is specified.
 	* pa-hpux11.h (LIB_SPEC): Likewise.
 
-2007-01-16  Janis Johnson  <janis187@us.ibm.com>
+2008-01-16  Janis Johnson  <janis187@us.ibm.com>
 	    Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR rtl-optimization/33796
