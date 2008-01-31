@@ -1,3 +1,9 @@
+2008-01-30  Richard Henderson  <rth@redhat.com>
+
+	PR c/34993
+	* tree.c (build_type_attribute_qual_variant): Skip TYPE_DOMAIN
+	for unbounded arrays.
+
 2008-01-30  Silvius Rus  <rus@google.com>
 
 	* config/i386/xmmintrin.h (_mm_prefetch): Add const to first arg.
