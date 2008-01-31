@@ -114,7 +114,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       /**
        *  @brief  Interface for manipulators.
        *
-       *  Manuipulators such as @c std::ws and @c std::dec use these
+       *  Manipulators such as @c std::ws and @c std::dec use these
        *  functions in constructs like "std::cin >> std::ws".  For more
        *  information, see the iomanip header.
       */

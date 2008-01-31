@@ -178,7 +178,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       // (NB: last two terms for rounding reasons, see _M_create below)
       // Solving for m:
       // m = ((npos - 2 * sizeof(_Rep) + 1) / sizeof(_CharT)) - 1
-      // In addition, this implementation halfs this amount.
+      // In addition, this implementation halves this amount.
       enum { _S_max_size = (((static_cast<size_type>(-1) - 2 * sizeof(_Rep)
 			      + 1) / sizeof(_CharT)) - 1) / 2 };
 

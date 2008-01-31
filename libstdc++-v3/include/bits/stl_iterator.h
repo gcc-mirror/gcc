@@ -750,7 +750,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   // Note: In what follows, the left- and right-hand-side iterators are
   // allowed to vary in types (conceptually in cv-qualification) so that
-  // comparaison between cv-qualified and non-cv-qualified iterators be
+  // comparison between cv-qualified and non-cv-qualified iterators be
   // valid.  However, the greedy and unfriendly operators in std::rel_ops
   // will make overload resolution ambiguous (when in scope) if we don't
   // provide overloads whose operands are of the same type.  Can someone

@@ -65,7 +65,7 @@
 _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
   /**
-   *  Base class, general case.  It is a class inveriant that _Nw will be
+   *  Base class, general case.  It is a class invariant that _Nw will be
    *  nonnegative.
    *
    *  See documentation for bitset.
@@ -999,7 +999,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       //@}
       
       /**
-       *  @brief Retuns a numerical interpretation of the %bitset.
+       *  @brief Returns a numerical interpretation of the %bitset.
        *  @return  The integral equivalent of the bits.
        *  @throw  std::overflow_error  If there are too many bits to be
        *                               represented in an @c unsigned @c long.
@@ -1009,7 +1009,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       { return this->_M_do_to_ulong(); }
 
       /**
-       *  @brief Retuns a character interpretation of the %bitset.
+       *  @brief Returns a character interpretation of the %bitset.
        *  @return  The string equivalent of the bits.
        *
        *  Note the ordering of the bits:  decreasing character positions

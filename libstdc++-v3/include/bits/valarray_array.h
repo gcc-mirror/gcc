@@ -239,7 +239,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	*__a = __t;
     }
 
-  // fill indir   ect array __a[__i[<__n>]] with __i
+  // fill indirect array __a[__i[<__n>]] with __i
   template<typename _Tp>
     inline void
     __valarray_fill(_Tp* __restrict__ __a, const size_t* __restrict__ __i,

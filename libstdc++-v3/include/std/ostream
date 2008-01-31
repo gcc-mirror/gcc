@@ -108,7 +108,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       /**
        *  @brief  Interface for manipulators.
        *
-       *  Manuipulators such as @c std::endl and @c std::hex use these
+       *  Manipulators such as @c std::endl and @c std::hex use these
        *  functions in constructs like "std::cout << std::endl".  For more
        *  information, see the iomanip header.
       */
@@ -510,7 +510,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     basic_ostream<_CharT, _Traits> &
     operator<<(basic_ostream<_CharT, _Traits>& __out, const char* __s);
 
-  // Partial specializationss
+  // Partial specializations
   template<class _Traits>
     inline basic_ostream<char, _Traits>&
     operator<<(basic_ostream<char, _Traits>& __out, const char* __s)

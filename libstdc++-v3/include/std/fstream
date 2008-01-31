@@ -56,7 +56,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *
    *  This class associates both its input and output sequence with an
    *  external disk file, and maintains a joint file position for both
-   *  sequences.  Many of its sematics are described in terms of similar
+   *  sequences.  Many of its semantics are described in terms of similar
    *  behavior in the Standard C Library's @c FILE streams.
   */
   // Requirements on traits_type, specific to this class:
@@ -292,7 +292,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       // Stroustrup, 1998, p. 628
       // underflow() and uflow() functions are called to get the next
-      // charater from the real input source when the buffer is empty.
+      // character from the real input source when the buffer is empty.
       // Buffered input uses underflow()
 
       virtual int_type
@@ -650,7 +650,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // [27.8.1.11] Template class basic_fstream
   /**
-   *  @brief  Controlling intput and output for files.
+   *  @brief  Controlling input and output for files.
    *
    *  This class supports reading from and writing to named files, using
    *  the inherited functions from std::basic_iostream.  To control the

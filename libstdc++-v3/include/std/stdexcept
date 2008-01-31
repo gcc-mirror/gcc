@@ -69,7 +69,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   };
 
   /** Thrown by the library, or by you, to report domain errors (domain in
-   *  the mathmatical sense).  */
+   *  the mathematical sense).  */
   class domain_error : public logic_error 
   {
   public:

@@ -129,7 +129,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   { __c = 0; }
 
   // char_producers are logically functions that generate a section of
-  // a string.  These can be convereted to ropes.  The resulting rope
+  // a string.  These can be converted to ropes.  The resulting rope
   // invokes the char_producer on demand.  This allows, for example,
   // files to be viewed as ropes without reading the entire file.
   template <class _CharT>
@@ -1759,7 +1759,7 @@ protected:
       // definition.
       static _RopeRep* _S_balance(_RopeRep* __r);
 
-      // Add all unbalanced subtrees to the forest of balanceed trees.
+      // Add all unbalanced subtrees to the forest of balanced trees.
       // Used only by balance.
       static void _S_add_to_forest(_RopeRep*__r, _RopeRep** __forest);
 
@@ -1975,7 +1975,7 @@ protected:
       // Embedded 0s in the input do not terminate the copy.
       const _CharT* c_str() const;
 
-      // As above, but lso use the flattened representation as the
+      // As above, but also use the flattened representation as
       // the new rope representation.
       const _CharT* replace_with_c_str();
       
@@ -2040,7 +2040,7 @@ protected:
       max_size() const
       {
 	return _S_min_len[int(__detail::_S_max_rope_depth) - 1] - 1;
-	//  Guarantees that the result can be sufficirntly
+	//  Guarantees that the result can be sufficiently
 	//  balanced.  Longer ropes will probably still work,
 	//  but it's harder to make guarantees.
       }

@@ -61,7 +61,7 @@
   mismatch
   next_permutation
   nth_element
-  parital_sort
+  partial_sort
   partial_sort_copy
   partition
   pop_heap
@@ -82,7 +82,7 @@
   rotate_copy
   search
   search_n
-  set_differernce
+  set_difference
   set_intersection
   set_symmetric_difference
   set_union

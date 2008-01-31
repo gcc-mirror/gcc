@@ -491,7 +491,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 		    break;
 		  case money_base::sign:
 		    // Sign might not exist, or be more than one
-		    // charater long. In that case, add in the rest
+		    // character long. In that case, add in the rest
 		    // below.
 		    if (__sign_size)
 		      __res += __sign[0];

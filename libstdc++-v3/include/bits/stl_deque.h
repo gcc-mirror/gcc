@@ -75,7 +75,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
    *
    *  This function started off as a compiler kludge from SGI, but seems to
    *  be a useful wrapper around a repeated constant expression.  The '512' is
-   *  tuneable (and no other code needs to change), but no investigation has
+   *  tunable (and no other code needs to change), but no investigation has
    *  been done since inheriting the SGI code.
   */
   inline size_t
@@ -681,7 +681,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       using _Base::_M_get_Tp_allocator;
 
       /** 
-       *  A total of four data members accumulated down the heirarchy.
+       *  A total of four data members accumulated down the hierarchy.
        *  May be accessed via _M_impl.*
        */
       using _Base::_M_impl;
@@ -770,7 +770,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       /**
        *  The dtor only erases the elements, and note that if the elements
        *  themselves are pointers, the pointed-to memory is not touched in any
-       *  way.  Managing the pointer is the user's responsibilty.
+       *  way.  Managing the pointer is the user's responsibility.
        */
       ~deque()
       { _M_destroy_data(begin(), end(), _M_get_Tp_allocator()); }
@@ -1312,7 +1312,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  The user is cautioned that
        *  this function only erases the element, and that if the element is
        *  itself a pointer, the pointed-to memory is not touched in any way.
-       *  Managing the pointer is the user's responsibilty.
+       *  Managing the pointer is the user's responsibility.
        */
       iterator
       erase(iterator __position);
@@ -1331,7 +1331,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  The user is cautioned that
        *  this function only erases the elements, and that if the elements
        *  themselves are pointers, the pointed-to memory is not touched in any
-       *  way.  Managing the pointer is the user's responsibilty.
+       *  way.  Managing the pointer is the user's responsibility.
        */
       iterator
       erase(iterator __first, iterator __last);
@@ -1367,7 +1367,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  Erases all the elements.  Note that this function only erases the
        *  elements, and that if the elements themselves are pointers, the
        *  pointed-to memory is not touched in any way.  Managing the pointer is
-       *  the user's responsibilty.
+       *  the user's responsibility.
        */
       void
       clear()

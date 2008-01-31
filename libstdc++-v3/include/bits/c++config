@@ -111,7 +111,7 @@
 // _GLIBCXX_STD_P
 
 //
-// Macros for enclosing namepaces and possibly nested namespaces.
+// Macros for enclosing namespaces and possibly nested namespaces.
 // _GLIBCXX_BEGIN_NAMESPACE
 // _GLIBCXX_END_NAMESPACE
 // _GLIBCXX_BEGIN_NESTED_NAMESPACE
@@ -167,7 +167,7 @@
 # endif
 
 # if __NO_INLINE__ && !__GXX_WEAK__
-#  warning currently using namepace associated mode which may fail \
+#  warning currently using namespace associated mode which may fail \
    without inlining due to lack of weak symbols
 # endif
 

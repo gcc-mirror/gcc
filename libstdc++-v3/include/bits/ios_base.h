@@ -899,7 +899,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      return __base;
   }
 
-  // [27.4.5.2] adjustfield anipulators
+  // [27.4.5.2] adjustfield manipulators
   /// Calls base.setf(ios_base::internal, ios_base::adjustfield).
   inline ios_base&
   internal(ios_base& __base)
@@ -924,7 +924,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     return __base;
   }
 
-  // [27.4.5.3] basefield anipulators
+  // [27.4.5.3] basefield manipulators
   /// Calls base.setf(ios_base::dec, ios_base::basefield).
   inline ios_base&
   dec(ios_base& __base)
@@ -949,7 +949,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     return __base;
   }
 
-  // [27.4.5.4] floatfield anipulators
+  // [27.4.5.4] floatfield manipulators
   /// Calls base.setf(ios_base::fixed, ios_base::floatfield).
   inline ios_base&
   fixed(ios_base& __base)

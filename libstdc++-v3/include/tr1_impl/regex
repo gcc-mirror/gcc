@@ -193,7 +193,7 @@ namespace regex_constants
   /// The expression does not match an empty sequence.
   static const match_flag_type match_not_null    = 1 << _S_not_null;
    
-  /// The expression only matchs a sub-sequence that begins at first .
+  /// The expression only matches a sub-sequence that begins at first .
   static const match_flag_type match_continuous  = 1 << _S_continuous;
    
   /// --first is a valid iterator position.  When this flag is set then the
@@ -213,7 +213,7 @@ namespace regex_constants
   /// Format strings (from ECMA-262 [15.5.4.11]):
   /// $$  $
   /// $&  The matched substring.
-  /// $`  The portion of <em>string</em> that preceeds the matched substring.
+  /// $`  The portion of <em>string</em> that precedes the matched substring.
   /// $'  The portion of <em>string</em> that follows the matched substring.
   /// $n  The nth capture, where n is in [1,9] and $n is not followed by a
   ///     decimal digit.  If n <= m and the nth capture is undefined, use the
@@ -371,7 +371,7 @@ namespace regex_constants
        *
        * @returns the number of characters between @p *__p and the first
        * default-initialized value of type @p char_type.  In other words, uses
-       * the C-string algorithm for determiining the length of a sequence of
+       * the C-string algorithm for determining the length of a sequence of
        * characters.
        */
       static std::size_t
@@ -458,7 +458,7 @@ namespace regex_constants
         { return string_type(); }
 
       /**
-       * @breief Gets a collation element by name.
+       * @brief Gets a collation element by name.
        *
        * @param first beginning of the collation element name.
        * @param last  one-past-the-end of the collation element name.
@@ -687,7 +687,7 @@ namespace regex_constants
       { _M_compile(); }
 
       /**
-       * @brief Copy-contructs a basic regular expression.
+       * @brief Copy-constructs a basic regular expression.
        *
        * @param rhs A @p regex object.
      */
@@ -716,7 +716,7 @@ namespace regex_constants
        * @brief Constructs a basic regular expression from the range
        * [first, last) interpreted according to the flags in @p f.
        *
-       * @param first The start of arange containing a valid regular
+       * @param first The start of a range containing a valid regular
        *              expression.
        * @param last  The end of a range containing a valid regular
        *              expression.
@@ -857,7 +857,7 @@ namespace regex_constants
       // [7.8.4] const operations
       /**
        * @brief Gets the number of marked subexpressions within the regular
-       * expresison.
+       * expression.
        */
       unsigned int
       mark_count() const
@@ -891,7 +891,7 @@ namespace regex_constants
       
       // [7.8.6] swap
       /**
-       * @brief Swaps the contents of two regular expression obects.
+       * @brief Swaps the contents of two regular expression objects.
        *
        * @param rhs Another regular expression object.
        */
@@ -1102,7 +1102,7 @@ namespace regex_constants
    * @brief Tests the ordering of two regular expression submatches.
    * @param lhs First regular expression submatch.
    * @param rhs Second regular expression submatch.
-   * @returns true if @a lhs does not preceed @a rhs, false otherwise.
+   * @returns true if @a lhs does not precede @a rhs, false otherwise.
    */
   template<typename _BiIter>
     inline bool
@@ -1181,7 +1181,7 @@ namespace regex_constants
    * @brief Tests the ordering of a string and a regular expression submatch.
    * @param lhs A string.
    * @param rhs A regular expression submatch.
-   * @returns true if @a lhs does not preceed @a rhs, false otherwise.
+   * @returns true if @a lhs does not precede @a rhs, false otherwise.
    */
   template<typename _Bi_iter, typename _Ch_traits, typename _Ch_alloc>
     inline bool
@@ -1265,7 +1265,7 @@ namespace regex_constants
    * @brief Tests the ordering of a regular expression submatch and a string.
    * @param lhs A regular expression submatch.
    * @param rhs A string.
-   * @returns true if @a lhs does not preceed @a rhs, false otherwise.
+   * @returns true if @a lhs does not precede @a rhs, false otherwise.
    */
   template<typename _Bi_iter, class _Ch_traits, class _Ch_alloc>
     inline bool
@@ -1343,7 +1343,7 @@ namespace regex_constants
    * @brief Tests the ordering of a string and a regular expression submatch.
    * @param lhs A string.
    * @param rhs A regular expression submatch.
-   * @returns true if @a lhs does not preceed @a rhs, false otherwise.
+   * @returns true if @a lhs does not precede @a rhs, false otherwise.
    */
   template<typename _Bi_iter>
     inline bool
@@ -1491,7 +1491,7 @@ namespace regex_constants
    * @brief Tests the ordering of a string and a regular expression submatch.
    * @param lhs A string.
    * @param rhs A regular expression submatch.
-   * @returns true if @a lhs does not preceed @a rhs, false otherwise.
+   * @returns true if @a lhs does not precede @a rhs, false otherwise.
    */
   template<typename _Bi_iter>
     inline bool
@@ -1541,7 +1541,7 @@ namespace regex_constants
    * @brief Tests the ordering of a regular expression submatch and a string.
    * @param lhs A regular expression submatch.
    * @param rhs A const string reference.
-   * @returns true if @a lhs preceeds @a rhs, false otherwise.
+   * @returns true if @a lhs precedes @a rhs, false otherwise.
    */
   template<typename _Bi_iter>
     inline bool
@@ -1565,7 +1565,7 @@ namespace regex_constants
    * @brief Tests the ordering of a regular expression submatch and a string.
    * @param lhs A regular expression submatch.
    * @param rhs A const string reference.
-   * @returns true if @a lhs does not preceed @a rhs, false otherwise.
+   * @returns true if @a lhs does not precede @a rhs, false otherwise.
    */
   template<typename _Bi_iter>
     inline bool
@@ -2021,7 +2021,7 @@ namespace regex_constants
   /**
    * @brief Searches for a regular expression within a C-string.
    * @param s [IN]  A C-string to search for the regex.
-   * @param m [OUT] The set of regex mnatches.
+   * @param m [OUT] The set of regex matches.
    * @param e [IN]  The regex to search for in @p s.
    * @param f [IN]  The search flags.
    * @retval true  A match was found within the string.
@@ -2041,7 +2041,7 @@ namespace regex_constants
   /**
    * @brief Searches for a regular expression within a C-string.
    * @param s [IN]  The C-string to search.
-   * @param e [IN]  The regular expressioon to search for.
+   * @param e [IN]  The regular expression to search for.
    * @param f [IN]  Search policy flags.
    * @retval true  A match was found within the string.
    * @retval false No match was found within the string.
@@ -2058,7 +2058,7 @@ namespace regex_constants
   /**
    * @brief Searches for a regular expression within a string.
    * @param s     [IN]  The string to search.
-   * @param e     [IN]  The regular expressioon to search for.
+   * @param e     [IN]  The regular expression to search for.
    * @param flags [IN]  Search policy flags.
    * @retval true  A match was found within the string.
    * @retval false No match was found within the string.
@@ -2077,7 +2077,7 @@ namespace regex_constants
   /**
    * @brief Searches for a regular expression within a string.
    * @param s [IN]  A C++ string to search for the regex.
-   * @param m [OUT] The set of regex mnatches.
+   * @param m [OUT] The set of regex matches.
    * @param e [IN]  The regex to search for in @p s.
    * @param f [IN]  The search flags.
    * @retval true  A match was found within the string.
@@ -2273,12 +2273,12 @@ namespace regex_constants
       regex_token_iterator();
       
       /**
-       * Constrcts a %regex_token_iterator...
+       * Constructs a %regex_token_iterator...
        * @param a          [IN] The start of the text to search.
-       * @param b          [IN] One-past-the-eend of the text to search.
+       * @param b          [IN] One-past-the-end of the text to search.
        * @param re         [IN] The regular expression to search for.
        * @param submatch   [IN] Which submatch to return.  There are some
-       *                        special values for thsi parameter:
+       *                        special values for this parameter:
        *                        - -1 each enumerated subexpression does NOT
        *                          match the regular expression (aka field
        *                          splitting)
@@ -2298,9 +2298,9 @@ namespace regex_constants
 			   = regex_constants::match_default);
 
       /**
-       * Constrcts a %regex_token_iterator...
+       * Constructs a %regex_token_iterator...
        * @param a          [IN] The start of the text to search.
-       * @param b          [IN] One-past-the-eend of the text to search.
+       * @param b          [IN] One-past-the-end of the text to search.
        * @param re         [IN] The regular expression to search for.
        * @param submatches [IN] A list of subexpressions to return for each
        *                        regular expression match within the text.
@@ -2316,9 +2316,9 @@ namespace regex_constants
 			     = regex_constants::match_default);
 
       /**
-       * Constrcts a %regex_token_iterator...
+       * Constructs a %regex_token_iterator...
        * @param a          [IN] The start of the text to search.
-       * @param b          [IN] One-past-the-eend of the text to search.
+       * @param b          [IN] One-past-the-end of the text to search.
        * @param re         [IN] The regular expression to search for.
        * @param submatches [IN] A list of subexpressions to return for each
        *                        regular expression match within the text.

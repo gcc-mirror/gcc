@@ -1,3 +1,55 @@
+2008-01-31  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+    
+	* include/backward/auto_ptr.h: Fix comment typos.
+	* include/bits/algorithmfwd.h: Likewise.
+	* include/bits/basic_ios.h: Likewise.
+	* include/bits/c++config: Likewise.
+	* include/bits/char_traits.h: Likewise.
+	* include/bits/codecvt.h: Likewise.
+	* include/bits/gslice.h: Likewise.
+	* include/bits/ios_base.h: Likewise.
+	* include/bits/locale_facets.h: Likewise.
+	* include/bits/locale_facets_nonio.tcc: Likewise.
+	* include/bits/postypes.h: Likewise.
+	* include/bits/sstream.tcc: Likewise.
+	* include/bits/stl_algo.h: Likewise.
+	* include/bits/stl_deque.h: Likewise.
+	* include/bits/stl_iterator.h: Likewise.
+	* include/bits/stl_iterator_base_types.h Likewise.
+	* include/bits/stl_list.h: Likewise.
+	* include/bits/stl_map.h: Likewise.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/stl_vector.h: Likewise.
+	* include/bits/valarray_array.h: Likewise.
+	* include/debug/safe_base.h: Likewise.
+	* include/ext/bitmap_allocator.h: Likewise.
+	* include/ext/codecvt_specializations.h Likewise.
+	* include/ext/mt_allocator.h: Likewise.
+	* include/ext/rc_string_base.h: Likewise.
+	* include/ext/rope: Likewise.
+	* include/parallel/checkers.h: Likewise.
+	* include/parallel/find.h: Likewise.
+	* include/parallel/multiseq_selection.h: Likewise.
+	* include/parallel/partition.h: Likewise.
+	* include/parallel/settings.h: Likewise.
+	* include/std/bitset: Likewise.
+	* include/std/complex: Likewise.
+	* include/std/fstream: Likewise.
+	* include/std/istream: Likewise.
+	* include/std/limits: Likewise.
+	* include/std/ostream: Likewise.
+	* include/std/stdexcept: Likewise.
+	* include/std/streambuf: Likewise.
+	* include/tr1/bessel_function.tcc: Likewise.
+	* include/tr1/cmath: Likewise.
+	* include/tr1/ell_integral.tcc: Likewise.
+	* include/tr1/hypergeometric.tcc: Likewise.
+	* include/tr1/legendre_function.tcc: Likewise.
+	* include/tr1_impl/random: Likewise.
+	* include/tr1_impl/regex: Likewise.
+
 2008-01-31  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/27_io/basic_istream/extractors_character/pod/3983-2.cc:

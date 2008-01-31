@@ -294,7 +294,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  The dtor only erases the elements, and note that if the
        *  elements themselves are pointers, the pointed-to memory is
        *  not touched in any way.  Managing the pointer is the user's
-       *  responsibilty.
+       *  responsibility.
        */
       ~vector()
       { std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
@@ -828,7 +828,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  The user is also cautioned that this function only erases
        *  the element, and that if the element is itself a pointer,
        *  the pointed-to memory is not touched in any way.  Managing
-       *  the pointer is the user's responsibilty.
+       *  the pointer is the user's responsibility.
        */
       iterator
       erase(iterator __position);
@@ -849,7 +849,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  The user is also cautioned that this function only erases
        *  the elements, and that if the elements themselves are
        *  pointers, the pointed-to memory is not touched in any way.
-       *  Managing the pointer is the user's responsibilty.
+       *  Managing the pointer is the user's responsibility.
        */
       iterator
       erase(iterator __first, iterator __last);
@@ -885,7 +885,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  Erases all the elements.  Note that this function only erases the
        *  elements, and that if the elements themselves are pointers, the
        *  pointed-to memory is not touched in any way.  Managing the pointer is
-       *  the user's responsibilty.
+       *  the user's responsibility.
        */
       void
       clear()

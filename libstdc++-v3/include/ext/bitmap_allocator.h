@@ -377,7 +377,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  // Set the _rover to the last physical location bitmap,
 	  // which is the bitmap which belongs to the first free
 	  // block. Thus, the bitmaps are in exact reverse order of
-	  // the actual memory layout. So, we count down the bimaps,
+	  // the actual memory layout. So, we count down the bitmaps,
 	  // which is the same as moving up the memory.
 
 	  // If the used count stored at the start of the Bit Map headers
@@ -608,7 +608,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  else
 	    {
 	      // Deallocate the last block in the list of free lists,
-	      // and insert the new one in it's correct position.
+	      // and insert the new one in its correct position.
 	      ::operator delete(static_cast<void*>(__free_list.back()));
 	      __free_list.pop_back();
 	    }

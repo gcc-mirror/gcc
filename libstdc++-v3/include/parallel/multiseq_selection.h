@@ -602,7 +602,7 @@ namespace __gnu_parallel
 
       if (!maxleftset || comp(minright, maxleft))
 	{
-	  // Good luck, everything is split unambigiously.
+	  // Good luck, everything is split unambiguously.
 	  offset = 0;
 	}
       else
