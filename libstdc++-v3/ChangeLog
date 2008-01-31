@@ -1,3 +1,56 @@
+2008-01-31  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/27_io/basic_istream/extractors_character/pod/3983-2.cc:
+	Avoid -Wall warnings.
+	* testsuite/22_locale/global_templates/user_facet_hierarchies.cc:
+	Likewise.
+	* testsuite/22_locale/global_templates/standard_facet_hierarchies.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/hash/operators/size_t.cc: Likewise.
+	* testsuite/tr1/6_containers/tuple/cons/big_tuples.cc: Likewise.
+	* testsuite/tr1/6_containers/tuple/cons/constructor.cc: Likewise.
+	* testsuite/tr1/6_containers/array/cons/aggregate_initialization.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/array/requirements/contiguous.cc: 
+	Likewise.
+	* testsuite/tr1/6_containers/array/requirements/member_swap.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/array/requirements/assign.cc: Likewise.
+	* testsuite/tr1/6_containers/array/specialized_algorithms/swap.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/array/comparison_operators/
+	less_or_equal.cc: Likewise.
+	* testsuite/tr1/6_containers/array/comparison_operators/
+	greater_or_equal.cc: Likewise.
+	* testsuite/tr1/6_containers/array/comparison_operators/less.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/array/comparison_operators/equal.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/array/comparison_operators/not_equal.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/array/comparison_operators/greater.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/array/tuple_interface/get.cc: Likewise.
+	* testsuite/tr1/6_containers/array/element_access/at_out_of_range.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/array/element_access/back.cc: Likewise.
+	* testsuite/tr1/6_containers/array/element_access/front.cc: Likewise.
+	* testsuite/tr1/6_containers/array/element_access/data.cc: Likewise.
+	* testsuite/tr1/6_containers/array/iterators/end_is_one_past.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/array/capacity/empty.cc: Likewise.
+	* testsuite/tr1/6_containers/array/capacity/max_size.cc: Likewise.
+	* testsuite/tr1/6_containers/array/capacity/size.cc: Likewise.
+	* testsuite/thread/guard.cc: Likewise.
+	* testsuite/20_util/tuple/cons/big_tuples.cc: Likewise.
+	* testsuite/20_util/tuple/cons/constructor.cc: Likewise.
+	* testsuite/20_util/shared_ptr/creation/dr402.cc: Likewise.
+	* testsuite/20_util/shared_ptr/creation/make.cc: Likewise.
+	* testsuite/20_util/shared_ptr/creation/alloc.cc: Likewise.
+	* testsuite/20_util/shared_ptr/thread/mutex_weaktoshared.cc: Likewise.
+	* testsuite/20_util/shared_ptr/thread/default_weaktoshared.cc:
+	Likewise.
+
 2008-01-26  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/34794

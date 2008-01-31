@@ -38,7 +38,7 @@ test_constructors()
   const int &z1=x1;
 
   // Test empty constructor
-  tuple<> ta;
+  tuple<> ta __attribute__((unused));
   tuple<int,int> tb;
   // Test construction from values
   tuple<int,int> tc(x1,x2);

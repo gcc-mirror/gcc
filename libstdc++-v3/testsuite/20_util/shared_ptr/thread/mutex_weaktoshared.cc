@@ -1,4 +1,4 @@
-// Copyright (C) 2006, 2007 Free Software Foundation
+// Copyright (C) 2006, 2007, 2008 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -165,7 +165,7 @@ test01()
 #endif
   
   pthread_attr_t tattr;
-  int ret = pthread_attr_init(&tattr);
+  pthread_attr_init(&tattr);
 
   shared_and_weak_pools pools(obj_pool, weak_pool[0]);
   pthread_create(threads, &tattr, thread_hammer_and_kill, static_cast<void*>(&pools));

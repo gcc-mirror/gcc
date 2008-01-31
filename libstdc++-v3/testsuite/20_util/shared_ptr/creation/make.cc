@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2007 Free Software Foundation
+// Copyright (C) 2007, 2008 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,7 +49,7 @@ struct reset_count_struct
 
 // 20.6.6.2.6 shared_ptr creation [util.smartptr.shared.create]
 
-int
+void
 test01()
 {
   bool test __attribute__((unused)) = true;
@@ -64,7 +64,7 @@ test01()
   VERIFY( A::ctor_count == A::dtor_count );
 }
 
-int
+void
 test02()
 {
   bool test __attribute__((unused)) = true;
@@ -88,8 +88,6 @@ test02()
 
   p1 = std::shared_ptr<A>();
   VERIFY( A::ctor_count == A::dtor_count );
-
-  return 0;
 }
 
 int

@@ -37,8 +37,6 @@ int main()
   locale loc_base = loc_c;
   locale loc_derived(loc_c, new derived_facet("C"));
 
-  bool b;
-
   // Standard base facet.
   VERIFY( has_facet<base_facet>(loc_c) );
   VERIFY( has_facet<base_facet>(loc_base) );
