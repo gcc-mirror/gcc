@@ -2895,7 +2895,7 @@ Multiple letter constraint followed by 4 parameter letters.
          value of the other parts (F---all bits set)
 @end table
 The constraint matches if the specified part of a constant
-has a value different from it's other parts.
+has a value different from its other parts.
 
 @item Q
 Memory reference without index register and with short displacement.

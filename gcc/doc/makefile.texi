@@ -100,7 +100,7 @@ rebuilt, and copied to its subdirectory.  This will allow you to, for
 example, continue a bootstrap after fixing a bug which causes the
 stage2 build to crash.  It does not provide as good coverage of the
 compiler as bootstrapping from scratch, but it ensures that the new
-code is syntactically correct (e.g. that you did not use GCC extensions
+code is syntactically correct (e.g., that you did not use GCC extensions
 by mistake), and avoids spurious bootstrap comparison
 failures@footnote{Except if the compiler was buggy and miscompiled
   some of the files that were not modified.  In this case, it's best

@@ -366,7 +366,7 @@ This pass transforms tail recursion into a loop.  It is located in
 
 @item Forward store motion
 
-This pass sinks stores and assignments down the flowgraph closer to it's
+This pass sinks stores and assignments down the flowgraph closer to their
 use point.  The pass is located in @file{tree-ssa-sink.c} and is
 described by @code{pass_sink_code}.
 
@@ -384,7 +384,7 @@ in @file{tree-ssa-math-opts.c} and is described by
 
 @item Full redundancy elimination
 
-This is a simpler form of PRE that only eliminate redundancies that
+This is a simpler form of PRE that only eliminates redundancies that
 occur an all paths.  It is located in @file{tree-ssa-pre.c} and
 described by @code{pass_fre}.
 
