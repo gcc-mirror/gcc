@@ -1131,8 +1131,8 @@ accepts:
 @cindex ISO support
 @item -ansi
 @opindex ansi
-In C mode, support all ISO C90 programs.  In C++ mode,
-remove GNU extensions that conflict with ISO C++.
+In C mode, this is equivalent to @samp{-std=c89}. In C++ mode, it is
+equivalent to @samp{-std=c++98}.
 
 This turns off certain features of GCC that are incompatible with ISO
 C90 (when compiling C code), or of standard C++ (when compiling C++ code),
@@ -1161,17 +1161,19 @@ from declaring certain functions or defining certain macros that the
 ISO standard doesn't call for; this is to avoid interfering with any
 programs that might use these names for other things.
 
-Functions which would normally be built in but do not have semantics
+Functions that would normally be built in but do not have semantics
 defined by ISO C (such as @code{alloca} and @code{ffs}) are not built-in
-functions with @option{-ansi} is used.  @xref{Other Builtins,,Other
+functions when @option{-ansi} is used.  @xref{Other Builtins,,Other
 built-in functions provided by GCC}, for details of the functions
 affected.
 
 @item -std=
 @opindex std
-Determine the language standard.  This option is currently only
-supported when compiling C or C++.  A value for this option must be
-provided; possible values are
+Determine the language standard. @xref{Standards,,Language Standards
+Supported by GCC}, for details of these standard versions.  This option
+is currently only supported when compiling C or C++. 
+
+A value for this option must be provided; possible values are
 
 @table @samp
 @item c89
@@ -1214,9 +1216,6 @@ The @option{-std} options specifying some version of ISO C have the same
 effects as @option{-ansi}, except that features that were not in ISO C90
 but are in the specified version (for example, @samp{//} comments and
 the @code{inline} keyword in ISO C99) are not disabled.
-
-@xref{Standards,,Language Standards Supported by GCC}, for details of
-these standard versions.
 
 @item -fgnu89-inline
 @opindex fgnu89-inline
