@@ -2705,6 +2705,15 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
 	    bad_proc = true;
 	}
 
+      /* (iv) Host associated and not the function symbol or the
+	      parent result.  This picks up sibling references, which
+	      cannot be entries.  */
+      if (!sym->attr.entry
+	    && sym->ns == gfc_current_ns->parent
+	    && sym != gfc_current_ns->proc_name
+	    && sym != gfc_current_ns->parent->proc_name->result)
+	bad_proc = true;
+
       if (bad_proc)
 	{
 	  gfc_error ("'%s' at %L is not a VALUE", sym->name, &lvalue->where);
