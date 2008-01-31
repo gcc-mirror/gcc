@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
-// Copyright (C) 2007 Free Software Foundation
+// Copyright (C) 2007, 2008 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +33,7 @@ struct A
 
 // 20.6.6.2.6 shared_ptr creation [util.smartptr.shared.create]
 
-int
+void
 test01()
 {
   bool test __attribute__((unused)) = true;
@@ -45,4 +45,5 @@ int
 main()
 {
   test01();
+  return 0;
 }

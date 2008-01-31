@@ -1,6 +1,7 @@
 // 2001-06-05 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,10 +51,11 @@ void test03()
   bool test __attribute__((unused)) = true;
 
   // input streams
-  pod_ushort arr[6] = { value_type('a'), value_type('b'), 
-		      value_type('c'), value_type('d'), value_type('e') };
+  pod_ushort arr[6] = { { value_type('a') }, { value_type('b') }, 
+			{ value_type('c') }, { value_type('d') },
+			{ value_type('e') } };
 
-  try 
+  try
     { 
       iss >> arr;
     }

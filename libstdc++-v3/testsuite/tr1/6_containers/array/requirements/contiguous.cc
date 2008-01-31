@@ -1,6 +1,6 @@
 // 2004-10-20  Benjamin Kosnik  <bkoz@redhat.com>
 //
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +29,7 @@ test01()
   const size_t len = 5;
   typedef std::tr1::array<int, len> array_type;
   bool test __attribute__((unused)) = true;
-  array_type a = { 0, 1, 2, 3, 4 };
+  array_type a = { { 0, 1, 2, 3, 4 } };
 
   // &a[n] == &a[0] + n for all 0 <= n < N.
   for (size_t i = 0; i < len; ++i)

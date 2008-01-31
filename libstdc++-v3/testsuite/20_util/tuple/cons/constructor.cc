@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,7 +34,7 @@ main()
   const int &z1=x1;
 
   // Test empty constructor
-  tuple<> ta;
+  tuple<> ta __attribute__((unused));
   tuple<int,int> tb;
   // Test construction from values
   tuple<int,int> tc(x1,x2);

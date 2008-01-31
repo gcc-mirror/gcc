@@ -56,8 +56,6 @@ int main()
   locale loc_base(loc_c, new base_facet);
   locale loc_derived(loc_c, new derived_facet);
 
-  bool b;
-
   // Standard facets.
   VERIFY( has_facet<std::ctype<char> >(loc_c) );
   VERIFY( has_facet<std::ctype<char> >(loc_base) );

@@ -1,6 +1,6 @@
 // 2006-02-24  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2006 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,10 +31,10 @@ test01()
   const size_t len = 5;
   typedef std::tr1::array<int, len> array_type;
 
-  array_type a = { 0, 1, 2, 3, 4 };
+  array_type a = { { 0, 1, 2, 3, 4 } };
   const array_type a_ref = a;
 
-  array_type b = { 4, 3, 2, 1, 0 };
+  array_type b = { { 4, 3, 2, 1, 0 } };
   const array_type b_ref = b;
 
   a.swap(b);
