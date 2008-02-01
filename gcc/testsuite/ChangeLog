@@ -1,3 +1,8 @@
+2008-02-01  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/34773
+	* gcc.target/cris/torture/pr34773.c: New test.
+
 2008-02-01  Nick Clifton  <nickc@redhat.com>
 
 	* lib/target-supports.exp (check_profiling_available): Do not
