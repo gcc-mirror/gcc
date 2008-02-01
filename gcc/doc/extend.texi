@@ -5932,6 +5932,14 @@ if (__builtin_expect (ptr != NULL, 1))
 when testing pointer or floating-point values.
 @end deftypefn
 
+@deftypefn {Built-in Function} void __builtin_trap (void)
+This function causes the program to exit abnormally.  GCC implements
+this function by using a target-dependent mechanism (such as
+intentionally executing an illegal instruction) or by calling
+@code{abort}.  The mechanism used may vary from release to release so
+you should not rely on any particular implementation.
+@end deftypefn
+
 @deftypefn {Built-in Function} void __builtin_prefetch (const void *@var{addr}, ...)
 This function is used to minimize cache-miss latency by moving data into
 a cache before it is accessed.

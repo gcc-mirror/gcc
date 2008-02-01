@@ -1,3 +1,10 @@
+2008-02-01  Andrew Pinski  <pinskia@gmail.com>
+	    Mark Mitchell  <mark@codesourcery.com>
+	    Ben Elliston  <bje@au.ibm.com>
+
+	PR c/29326
+	* doc/extend.texi (Other Builtins): Document.
+
 2008-01-31  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* doc/invoke.texi (-ansi): Mention explicitly corresponding -std=
