@@ -5233,16 +5233,8 @@ Enabled by default.
 @item -finline-limit=@var{n}
 @opindex finline-limit
 By default, GCC limits the size of functions that can be inlined.  This flag
-allows the control of this limit for functions that are explicitly marked as
-inline (i.e., marked with the inline keyword or defined within the class
-definition in c++).  @var{n} is the size of functions that can be inlined in
-number of pseudo instructions (not counting parameter handling).  The default
-value of @var{n} is 600.
-Increasing this value can result in more inlined code at
-the cost of compilation time and memory consumption.  Decreasing usually makes
-the compilation faster and less code will be inlined (which presumably
-means slower programs).  This option is particularly useful for programs that
-use inlining heavily such as those based on recursive templates with C++.
+allows coarse control of this limit.  @var{n} is the size of functions that
+can be inlined in number of pseudo instructions.
 
 Inlining is actually controlled by a number of parameters, which may be
 specified individually by using @option{--param @var{name}=@var{value}}.
@@ -5254,14 +5246,13 @@ as follows:
  is set to @var{n}/2.
 @item max-inline-insns-auto
  is set to @var{n}/2.
-@item min-inline-insns
- is set to 130 or @var{n}/4, whichever is smaller.
-@item max-inline-insns-rtl
- is set to @var{n}.
 @end table
 
 See below for a documentation of the individual
-parameters controlling inlining.
+parameters controlling inlining and for the defaults of these parameters.
+
+@emph{Note:} there may be no value to @option{-finline-limit} that results
+in default behavior.
 
 @emph{Note:} pseudo instruction represents, in this particular context, an
 abstract measurement of function's size.  In no way does it represent a count

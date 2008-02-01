@@ -1,3 +1,9 @@
+2008-02-01  Richard Guenther  <rguenther@suse.de>
+
+	PR other/35042
+	* invoke.texi (-finline-limit): Remove no longer true parts
+	of the documentation.  Note that there is no default value.
+
 2008-02-01  Andrew Pinski  <pinskia@gmail.com>
 	    Mark Mitchell  <mark@codesourcery.com>
 	    Ben Elliston  <bje@au.ibm.com>
