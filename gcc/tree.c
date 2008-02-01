@@ -3288,8 +3288,9 @@ build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
 	  hashcode = type_hash_list (TYPE_ARG_TYPES (ntype), hashcode);
 	  break;
 	case ARRAY_TYPE:
-	  hashcode = iterative_hash_object (TYPE_HASH (TYPE_DOMAIN (ntype)),
-					    hashcode);
+	  if (TYPE_DOMAIN (ntype))
+	    hashcode = iterative_hash_object (TYPE_HASH (TYPE_DOMAIN (ntype)),
+					      hashcode);
 	  break;
 	case INTEGER_TYPE:
 	  hashcode = iterative_hash_object
