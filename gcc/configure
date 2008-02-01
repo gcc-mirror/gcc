@@ -7056,7 +7056,16 @@ else
 
   case $target in
     mips*-*-*)
-      enable_fixed_point=yes
+      case $host in
+        mips*-sgi-irix*)
+	  { echo "$as_me:$LINENO: WARNING: fixed-point support is not available for IRIX" >&5
+echo "$as_me: WARNING: fixed-point support is not available for IRIX" >&2;}
+	  enable_fixed_point=no
+	  ;;
+	*)
+	  enable_fixed_point=yes
+	  ;;
+      esac
       ;;
     *)
       { echo "$as_me:$LINENO: WARNING: fixed-point is not supported for this target" >&5
