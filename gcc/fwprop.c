@@ -729,9 +729,12 @@ try_fwprop_subst (struct df_ref *use, rtx *loc, rtx new, rtx def_insn, bool set_
     {
       cancel_changes (0);
 
-      /* Can also record a simplified value in a REG_EQUAL note, making a
-	 new one if one does not already exist.  */
-      if (set_reg_equal)
+      /* Can also record a simplified value in a REG_EQUAL note,
+	 making a new one if one does not already exist.
+	 Don't do this if the insn has a REG_RETVAL note, because the
+	 combined presence means that the REG_EQUAL note refers to the
+	 (full) contents of the libcall value.  */
+      if (set_reg_equal && !find_reg_note (insn, REG_RETVAL, NULL_RTX))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, " Setting REG_EQUAL note\n");
