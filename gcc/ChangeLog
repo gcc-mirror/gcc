@@ -1,3 +1,10 @@
+2008-02-01  Roger Sayle  <roger@eyesopen.com>
+
+	PR bootstrap/33781
+	* configure.ac (--enable-fixed-point): Disable unless explicitly
+	requested on IRIX.
+	* configure: Regenerate.
+
 2008-02-01  Richard Guenther  <rguenther@suse.de>
 
 	PR other/35042
