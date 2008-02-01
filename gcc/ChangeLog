@@ -1,3 +1,11 @@
+2008-02-01  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/34773
+	* reg-notes.def (EQUAL): Mention significance of combination of
+	REG_EQUAL and REG_RETVAL.
+	* fwprop.c (try_fwprop_subst): Don't add REG_EQUAL to an
+	insn that has a REG_RETVAL.
+
 2008-02-01  Roger Sayle  <roger@eyesopen.com>
 
 	PR bootstrap/33781
