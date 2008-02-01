@@ -875,7 +875,7 @@ case "${target}" in
   vax-*-*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
     ;;
-  xtensa-*-*)
+  xtensa*-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   ip2k-*-*)
@@ -1795,7 +1795,7 @@ case "${target}" in
   v850*-*-*)
     md_exec_prefix=/usr/ccs/bin
     ;;
-  xtensa-*-elf*)
+  xtensa*-*-elf*)
     ;;
 
   *-*-beos* | \
