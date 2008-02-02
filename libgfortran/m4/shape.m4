@@ -46,6 +46,7 @@ shape_'rtype_kind` ('rtype` * const restrict ret,
 {
   int n;
   index_type stride;
+  index_type extent;
 
   stride = ret->dim[0].stride;
 
@@ -54,8 +55,8 @@ shape_'rtype_kind` ('rtype` * const restrict ret,
 
   for (n = 0; n < GFC_DESCRIPTOR_RANK (array); n++)
     {
-      ret->data[n * stride] =
-        array->dim[n].ubound + 1 - array->dim[n].lbound;
+      extent = array->dim[n].ubound + 1 - array->dim[n].lbound;
+      ret->data[n * stride] = extent > 0 ? extent : 0 ;
     }
 }
 
