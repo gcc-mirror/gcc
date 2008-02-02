@@ -1935,6 +1935,19 @@ mips_force_temporary (rtx dest, rtx value)
 }
 
 
+/* Return an instruction that copies $gp into register REG.  We want
+   GCC to treat the register's value as constant, so that its value
+   can be rematerialized on demand.  */
+
+static rtx
+gen_load_const_gp (rtx reg)
+{
+  return (Pmode == SImode
+	  ? gen_load_const_gp_si (reg)
+	  : gen_load_const_gp_di (reg));
+}
+
+
 /* Return a LO_SUM expression for ADDR.  TEMP is as for mips_force_temporary
    and is used to load the high part into a register.  */
 
@@ -1943,10 +1956,15 @@ mips_split_symbol (rtx temp, rtx addr)
 {
   rtx high;
 
-  if (TARGET_MIPS16)
-    high = mips16_gp_pseudo_reg ();
-  else
+  if (!TARGET_MIPS16)
     high = mips_force_temporary (temp, gen_rtx_HIGH (Pmode, copy_rtx (addr)));
+  else if (no_new_pseudos)
+    {
+      emit_insn (gen_load_const_gp (copy_rtx (temp)));
+      high = temp;
+    }
+  else
+    high = mips16_gp_pseudo_reg ();
   return gen_rtx_LO_SUM (Pmode, high, addr);
 }
 
@@ -7882,19 +7900,11 @@ mips16_gp_pseudo_reg (void)
 {
   if (cfun->machine->mips16_gp_pseudo_rtx == NULL_RTX)
     {
-      rtx unspec;
       rtx insn, scan;
 
       cfun->machine->mips16_gp_pseudo_rtx = gen_reg_rtx (Pmode);
 
-      /* We want to initialize this to a value which gcc will believe
-         is constant.  */
-      start_sequence ();
-      unspec = gen_rtx_UNSPEC (VOIDmode, gen_rtvec (1, const0_rtx), UNSPEC_GP);
-      emit_move_insn (cfun->machine->mips16_gp_pseudo_rtx,
-		      gen_rtx_CONST (Pmode, unspec));
-      insn = get_insns ();
-      end_sequence ();
+      insn = gen_load_const_gp (cfun->machine->mips16_gp_pseudo_rtx);
 
       push_topmost_sequence ();
       /* We need to emit the initialization after the FUNCTION_BEG
