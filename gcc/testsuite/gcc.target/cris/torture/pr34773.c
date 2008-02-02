@@ -25,7 +25,7 @@ _vfprintf_r(double da)
 
  if (ffp != 0)
    __sprint_r(value == 0);
- asm ("");
+ __asm__ ("");
 }
 
 
@@ -39,14 +39,14 @@ void _dtoa_r (double d)
 {
   if (d != ff)
     abort ();
-  asm ("");
+  __asm__ ("");
 }
 
 void __sprint_r (int i)
 {
   if (i != 0)
     abort ();
-  asm ("");
+  __asm__ ("");
 }
 
 int clearstack (void) __attribute__ ((__noinline__));
@@ -54,7 +54,7 @@ int clearstack (void)
 {
   char doodle[128];
   memset (doodle, 0, sizeof doodle);
-  asm volatile ("" : : "g" (doodle) : "memory");
+  __asm__ volatile ("" : : "g" (doodle) : "memory");
   return doodle[127];
 }
 
@@ -63,7 +63,7 @@ void doit (void)
 {
   _vfprintf_r (dd);
   _vfprintf_r (ff);
-  asm ("");
+  __asm__ ("");
 }
 
 int main(void)
