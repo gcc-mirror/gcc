@@ -35,6 +35,7 @@
 2008-02-02  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR target/31388
+	PR target/34900
 	* config/mips/mips.md (load_const_gp_<mode>): New insns.
 	* config/mips/mips.c (gen_load_const_gp): New function.
 	(mips_split_symbol): Avoid using or creating the MIPS16 GP
