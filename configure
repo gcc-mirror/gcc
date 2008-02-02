@@ -2298,7 +2298,6 @@ case "${target}" in
 	unsupported_languages="$unsupported_languages fortran"
 	noconfigdirs="$noconfigdirs target-libffi target-boehm-gc";;
       *-*-elf)
-	unsupported_languages="$unsupported_languages fortran"
 	noconfigdirs="$noconfigdirs target-boehm-gc";;
       *-*-linux*)
 	noconfigdirs="$noconfigdirs target-newlib target-libgloss";;
