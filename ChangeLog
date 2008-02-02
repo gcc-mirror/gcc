@@ -1,3 +1,8 @@
+2008-02-02  Hans-Peter Nilsson  <hp@axis.com>
+
+	* configure.ac: Enable fortran for cris-*-elf and crisv32-*-elf.
+	* configure: Regenerate.
+
 2008-01-31  Marc Gauthier  <marc@tensilica.com>
 
 	* configure.ac (xtensa*-*-*): Recognize processor variants.
