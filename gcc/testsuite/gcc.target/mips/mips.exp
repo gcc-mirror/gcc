@@ -33,22 +33,34 @@ load_lib gcc-dg.exp
 #    $mips_mips16:	 true if MIPS16 mode is selected
 #    $mips_mips64:	 true if 64-bit output is selected
 #    $mips_float:	 "hard" or "soft"
+#    $mips_abi:		 the ABI specified by _MIPS_SIM
 #
 #    $mips_forced_isa:	 true if the command line uses -march=* or -mips*
 #    $mips_forced_abi:	 true if the command line uses -mabi=* or -mgp*
 #    $mips_forced_float: true if the command line uses -mhard/soft-float
 #    $mips_forced_le	 true if the command line uses -EL or -mel
+#    $mips_forced_gp	 true if the command line forces a particular GP mode
+#    $mips_forced_no_abicalls
+#			 true if the command line contains -mno-abicalls
+#    $mips_forced_no_shared
+#			 true if the command line contains -mno-shared
+#    $mips_forced_no_er  true if the command line contains -mno-explicit-relocs
 proc setup_mips_tests {} {
     global mips_isa
     global mips_arch
     global mips_mips16
     global mips_mips64
     global mips_float
+    global mips_abi
 
     global mips_forced_isa
     global mips_forced_abi
     global mips_forced_float
     global mips_forced_le
+    global mips_forced_gp
+    global mips_forced_no_abicalls
+    global mips_forced_no_shared
+    global mips_forced_no_er
 
     global compiler_flags
     global tool
@@ -69,6 +81,17 @@ proc setup_mips_tests {} {
 	#else
 	const char *float = "soft";
 	#endif
+	#if !defined _MIPS_SIM
+	const char *abi = "unknown";
+	#elif _MIPS_SIM==_ABIO32
+	const char *abi = "32";
+	#elif _MIPS_SIM==_ABIO64
+	const char *abi = "o64";
+	#elif _MIPS_SIM==_ABIN32
+	const char *abi = "n32";
+	#else
+	const char *abi = "64";
+	#endif
     }
     close $f
     set output [${tool}_target_compile $src "" preprocess ""]
@@ -79,11 +102,16 @@ proc setup_mips_tests {} {
     set mips_mips16 [regexp {mips16 = 1} $output]
     set mips_mips64 [regexp {mips64 = 1} $output]
     regexp {float = "([^"]*)} $output dummy mips_float
+    regexp {abi = "([^"]*)} $output dummy mips_abi
 
     set mips_forced_isa [regexp -- {(-mips|-march)} $compiler_flags]
     set mips_forced_abi [regexp -- {(-mgp|-mabi)} $compiler_flags]
     set mips_forced_float [regexp -- {-m(hard|soft)-float} $compiler_flags]
     set mips_forced_le [regexp -- {-(EL|mel)[[:>:]]} $compiler_flags]
+    set mips_forced_gp [regexp -- {-(G|mabicalls)} $compiler_flags]
+    set mips_forced_no_abicalls [regexp -- {-mno-abicalls} $compiler_flags]
+    set mips_forced_no_shared [regexp -- {-mno-shared} $compiler_flags]
+    set mips_forced_no_er [regexp -- {-mno-explicit-relocs} $compiler_flags]
 }
 
 # Return true if command-line option FLAG forces 32-bit code.
@@ -110,6 +138,12 @@ proc is_gp32_flag {flag} {
 #    -mno-mips16
 #	Skip the test for MIPS16 targets.
 #
+#    -mabi=*
+#	Force a particular ABI.  Skip the test if the multilib flags
+#	force a specific ABI or a different register size.  If testing
+#	MIPS16 multilibs, try to force -msoft-float for ABIs other than
+#	o32 and o64, and skip the test if this is not possible.
+#
 #    -march=*
 #    -mips*
 #	Select the target architecture.  Skip the test for MIPS16 targets
@@ -123,6 +157,20 @@ proc is_gp32_flag {flag} {
 #    -EB
 #	Select big-endian code.  Skip the test if the multilib flags
 #	force a little-endian target.
+#
+#    -G*
+#	Select the small-data mode, and -mno-abcialls.  Skip the test if
+#	the multilib flags already contain such an option, or specify
+#	something that might be incompatible with them.
+#
+#    -mabicalls
+#    -mshared
+#	Select the form of SVR4 PIC.  Skip the test if the multilib flags
+#	conflict with the required setting.
+#
+#    -mexplicit-relocs
+#	Select explicit relocations.  Skip the test if the multilib flags
+#	force -mno-explicit-relocs.
 proc dg-mips-options {args} {
     upvar dg-extra-tool-flags extra_tool_flags
     upvar dg-do-what do_what
@@ -132,16 +180,34 @@ proc dg-mips-options {args} {
     global mips_mips16
     global mips_mips64
     global mips_float
+    global mips_abi
 
     global mips_forced_isa
     global mips_forced_abi
     global mips_forced_float
     global mips_forced_le
+    global mips_forced_gp
+    global mips_forced_no_abicalls
+    global mips_forced_no_shared
+    global mips_forced_no_er
 
     set flags [lindex $args 1]
     set matches 1
 
-    # First handle the -mgp* options.  Add an architecture option if necessary.
+    foreach flag $flags {
+	if {[regexp -- {^-mabi=(.*)} $flag dummy abi]
+	    && $mips_mips16
+	    && $abi != "32"
+	    && $abi != "o64"} {
+	    if {[lsearch $flags -mhard-float] >= 0} {
+		set matches 0
+	    } else {
+		append flags " -msoft-float"
+	    }
+	}
+    }
+
+    # Handle the -mgp* options.  Add an architecture option if necessary.
     foreach flag $flags {
 	if {[is_gp32_flag $flag] && $mips_mips64} {
 	    if {$mips_forced_abi} {
@@ -160,10 +226,33 @@ proc dg-mips-options {args} {
 	    }
 	}
     }
+
+    foreach flag $flags {
+	if {[string match -mabicalls $flag]} {
+	    # EABI has no SVR4-style PIC mode, so if we don't know for
+	    # sure what the default ABI is, try to force an appropriate one.
+	    if {$mips_abi == "unknown" && [lsearch $flags "-mabi=*"] < 0} {
+		if {!$mips_mips64} {
+		    append flags " -mabi=32"
+		} else {
+		    append flags " -mabi=n32"
+		}
+	    }
+	    # Turn off small data, if on by default.  Also turn off
+	    # MIPS16 code generation.  (We don't support -mabicalls
+	    # with either.)
+	    append flags " -G0 -mno-mips16"
+	}
+    }
+
     # Handle the other options.
     foreach flag $flags {
 	if {$flag == "-mno-mips16"} {
 	    if {$mips_mips16} {
+		set matches 0
+	    }
+	} elseif {[regexp -- {^-mabi=(.*)} $flag dummy abi]} {
+	    if {$abi != $mips_abi && $mips_forced_abi} {
 		set matches 0
 	    }
 	} elseif {[regexp -- {^-march=(.*)} $flag dummy arch]} {
@@ -180,6 +269,25 @@ proc dg-mips-options {args} {
 	    }
 	} elseif {[regexp -- {^-(EB|meb)$} $flag]} {
 	    if {$mips_forced_le} {
+		set matches 0
+	    }
+	} elseif {[regexp -- {^-G} $flag]} {
+	    if {$flag != "-G0"} {
+		append flags " -mno-abicalls"
+	    }
+	    if {$mips_forced_gp} {
+		set matches 0
+	    }
+	} elseif {[regexp -- {^-mabicalls$} $flag]} {
+	    if {$mips_forced_no_abicalls} {
+		set matches 0
+	    }
+	} elseif {[regexp -- {^-mshared$} $flag]} {
+	    if {$mips_forced_no_shared} {
+		set matches 0
+	    }
+	} elseif {[regexp -- {^-mexplicit-relocs$} $flag]} {
+	    if {$mips_forced_no_er} {
 		set matches 0
 	    }
 	}

@@ -1,5 +1,39 @@
 2008-02-02  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	PR target/34981
+	* config/mips/mips-protos.h (mips_expand_call): Return an rtx.
+	(build_mips16_call_stub): Likewise.
+	* config/mips/mips.h (FIRST_PSEUDO_REGISTER): Rename FAKE_CALL_REGNO
+	to GOT_VERSION_REGNUM.
+	(CALL_REALLY_USED_REGISTERS): Set the GOT_VERSION_REGNUM entry to 0.
+	(EPILOGUE_USES): Include GOT_VERSION_REGNUM if TARGET_ABICALLS.
+	* config/mips/mips.c (mips_emit_call_insn): New function.
+	(mips_call_tls_get_addr): Call mips_expand_call directly.
+	(mips_expand_call): Update the call to build_mips16_call_stub
+	and remove a redundant condition.  Assert that MIPS16 stubs do not
+	use lazy binding.  Use mips_emit_call_insn and return the call insn.
+	(override_options): Allow SImode for GOT_VERSION_REGNUM.
+	(build_mips16_call_stub): Use mips_emit_call_insn rather than
+	emit_call_insn.  Return the call insn or null.
+	(mips_avoid_hazard): Remove hazard_set handling.
+	(mips_extra_live_on_entry): Include GOT_VERSION_REGNUM if
+	TARGET_ABICALLS.
+	* config/mips/mips.md (UNSPEC_EH_RECEIVER): Rename to...
+	(UNSPEC_RESTORE_GP): ...this.
+	(UNSPEC_SET_GOT_VERSION, UNSPEC_UPDATE_GOT_VERSION): New constants.
+	(FAKE_CALL_REGNO): Rename to...
+	(GOT_VERSION_REGNUM): ...this.
+	(type): Add "ghost" value.  Add an associated insn reservation.
+	(hazard_set): Remove.
+	(exception_receiver): Rename to...
+	(restore_gp): ...this and update the unspec identifier accordingly.
+	(exception_receiver, nonlocal_got_receiver): New expanders.
+	(load_call<mode>): Use GOT_VERSION_REGNUM.  Don't set
+	FAKE_CALL_REGNO.  Remove hazard_set attribute.
+	(set_got_version, update_got_version): New patterns.
+
+2008-02-02  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	PR target/31388
 	* config/mips/mips.md (load_const_gp_<mode>): New insns.
 	* config/mips/mips.c (gen_load_const_gp): New function.

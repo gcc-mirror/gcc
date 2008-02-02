@@ -1,3 +1,16 @@
+2008-02-02  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR target/34981
+	* gcc.target/mips/lazy-binding-1.c: New test.
+	* gcc.target/mips/mips.exp (setup_mips_tests): Set mips_abi,
+	mips_forced_gp, mips_forced_no_abicalls, mips_forced_no_shared
+	and mips_forced_no_er.
+	(dg-mips-options): Avoid using -mips16 -mhard-float for ABIs
+	other than o32 and o64.  Avoid using -mabicalls with an implicit
+	-mabi=eabi.  Avoid using small data with -mabicalls.  Skip
+	-mabi=*, -G*, -mabicalls, -mshared and -mexplicit-relocs tests
+	if the multilib forces the an incompatible option.
+
 2008-02-01  Release Manager
 
 	* GCC 4.2.3 released.

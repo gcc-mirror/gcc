@@ -29,7 +29,7 @@
    (UNSPEC_GET_FNADDR		 3)
    (UNSPEC_BLOCKAGE		 4)
    (UNSPEC_CPRESTORE		 5)
-   (UNSPEC_EH_RECEIVER		 6)
+   (UNSPEC_RESTORE_GP		 6)
    (UNSPEC_EH_RETURN		 7)
    (UNSPEC_CONSTTABLE_INT	 8)
    (UNSPEC_CONSTTABLE_FLOAT	 9)
@@ -46,10 +46,12 @@
    (UNSPEC_MFHILO		26)
    (UNSPEC_TLS_LDM		27)
    (UNSPEC_TLS_GET_TP		28)
+   (UNSPEC_SET_GOT_VERSION	29)
+   (UNSPEC_UPDATE_GOT_VERSION	30)
 
    (UNSPEC_ADDRESS_FIRST	100)
 
-   (FAKE_CALL_REGNO		79)
+   (GOT_VERSION_REGNUM		79)
 
    ;; For MIPS Paired-Singled Floating Point Instructions.
 
@@ -222,8 +224,9 @@
 ;; frsqrt2      floating point reciprocal square root step2
 ;; multi	multiword sequence (or user asm statements)
 ;; nop		no operation
+;; ghost	an instruction that produces no real code
 (define_attr "type"
-  "unknown,branch,jump,call,load,fpload,fpidxload,store,fpstore,fpidxstore,prefetch,prefetchx,condmove,xfer,mthilo,mfhilo,const,arith,shift,slt,clz,trap,imul,imul3,imadd,idiv,fmove,fadd,fmul,fmadd,fdiv,frdiv,frdiv1,frdiv2,fabs,fneg,fcmp,fcvt,fsqrt,frsqrt,frsqrt1,frsqrt2,multi,nop"
+  "unknown,branch,jump,call,load,fpload,fpidxload,store,fpstore,fpidxstore,prefetch,prefetchx,condmove,xfer,mthilo,mfhilo,const,arith,shift,slt,clz,trap,imul,imul3,imadd,idiv,fmove,fadd,fmul,fmadd,fdiv,frdiv,frdiv1,frdiv2,fabs,fneg,fcmp,fcvt,fsqrt,frsqrt,frsqrt1,frsqrt2,multi,nop,ghost"
   (cond [(eq_attr "jal" "!unset") (const_string "call")
 	 (eq_attr "got" "load") (const_string "load")]
 	(const_string "unknown")))
@@ -369,17 +372,6 @@
 	      (eq (symbol_ref "ISA_HAS_HILO_INTERLOCKS") (const_int 0)))
 	 (const_string "hilo")]
 	(const_string "none")))
-
-;; Indicates which SET in an instruction pattern induces a hazard.
-;; Only meaningful when "hazard" is not "none".  SINGLE means that
-;; the pattern has only one set while the other values are indexes
-;; into a PARALLEL vector.
-;;
-;; Hazardous instructions with multiple sets should generally put the
-;; hazardous set first.  The only purpose of this attribute is to force
-;; each multi-set pattern to explicitly assert that this condition holds.
-(define_attr "hazard_set" "single,0"
-  (const_string "single"))
 
 ;; Is it a single instruction?
 (define_attr "single_insn" "no,yes"
@@ -584,6 +576,12 @@
 
 (define_cpu_unit "alu" "alu")
 (define_cpu_unit "imuldiv" "imuldiv")
+
+;; Ghost instructions produce no real code and introduce no hazards.
+;; They exist purely to express an effect on dataflow.
+(define_insn_reservation "ghost" 0
+  (eq_attr "type" "ghost")
+  "nothing")
 
 (include "4k.md")
 (include "5k.md")
@@ -5029,9 +5027,33 @@
   DONE;
 })
 
-(define_insn_and_split "exception_receiver"
+(define_expand "exception_receiver"
+  [(const_int 0)]
+  "TARGET_ABICALLS"
+{
+  /* See the comment above load_call<mode> for details.  */
+  emit_insn (gen_set_got_version ());
+
+  /* If we have a call-clobbered $gp, restore it from its save slot.  */
+  if (HAVE_restore_gp)
+    emit_insn (gen_restore_gp ());
+  DONE;
+})
+
+(define_expand "nonlocal_goto_receiver"
+  [(const_int 0)]
+  "TARGET_ABICALLS"
+{
+  /* See the comment above load_call<mode> for details.  */
+  emit_insn (gen_set_got_version ());
+  DONE;
+})
+
+;; Restore $gp from its .cprestore stack slot.  The instruction remains
+;; volatile until all uses of $28 are exposed.
+(define_insn_and_split "restore_gp"
   [(set (reg:SI 28)
-	(unspec_volatile:SI [(const_int 0)] UNSPEC_EH_RECEIVER))]
+	(unspec_volatile:SI [(const_int 0)] UNSPEC_RESTORE_GP))]
   "TARGET_ABICALLS && TARGET_OLDABI"
   "#"
   "&& reload_completed"
@@ -5060,23 +5082,65 @@
 ;; potentially modify the GOT entry.  And once a stub has been called,
 ;; we must not call it again.
 ;;
-;; We represent this restriction using an imaginary fixed register that
-;; is set by the GOT load and used by the call.  By making this register
-;; call-clobbered, and by making the GOT load the only way of setting
-;; the register, we ensure that the load cannot be moved past a call.
+;; We represent this restriction using an imaginary, fixed, call-saved
+;; register called GOT_VERSION_REGNUM.  The idea is to make the register
+;; live throughout the function and to change its value after every
+;; potential call site.  This stops any rtx value that uses the register
+;; from being computed before an earlier call.  To do this, we:
+;;
+;;    - Ensure that the register is live on entry to the function,
+;;	so that it is never thought to be used uninitalized.
+;;
+;;    - Ensure that the register is live on exit from the function,
+;;	so that it is live throughout.
+;;
+;;    - Make each call (lazily-bound or not) use the current value
+;;	of GOT_VERSION_REGNUM, so that updates of the register are
+;;	not moved across call boundaries.
+;;
+;;    - Add "ghost" definitions of the register to the beginning of
+;;	blocks reached by EH and ABNORMAL_CALL edges, because those
+;;	edges may involve calls that normal paths don't.  (E.g. the
+;;	unwinding code that handles a non-call exception may change
+;;	lazily-bound GOT entries.)  We do this by making the
+;;	exception_receiver and nonlocal_goto_receiver expanders emit
+;;	a set_got_version instruction.
+;;
+;;    - After each call (lazily-bound or not), use a "ghost"
+;;	update_got_version instruction to change the register's value.
+;;	This instruction mimics the _possible_ effect of the dynamic
+;;	resolver during the call and it remains live even if the call
+;;	itself becomes dead.
+;;
+;;    - Leave GOT_VERSION_REGNUM out of all register classes.
+;;	The register is therefore not a valid register_operand
+;;	and cannot be moved to or from other registers.
 (define_insn "load_call<mode>"
   [(set (match_operand:P 0 "register_operand" "=c")
 	(unspec:P [(match_operand:P 1 "register_operand" "r")
-		   (match_operand:P 2 "immediate_operand" "")]
-		  UNSPEC_LOAD_CALL))
-   (set (reg:P FAKE_CALL_REGNO)
-	(unspec:P [(match_dup 2)] UNSPEC_LOAD_CALL))]
+		   (match_operand:P 2 "immediate_operand" "")
+		   (reg:SI GOT_VERSION_REGNUM)] UNSPEC_LOAD_CALL))]
   "TARGET_ABICALLS"
   "<load>\t%0,%R2(%1)"
   [(set_attr "type" "load")
    (set_attr "mode" "<MODE>")
-   (set_attr "hazard_set" "0")
    (set_attr "length" "4")])
+
+(define_insn "set_got_version"
+  [(set (reg:SI GOT_VERSION_REGNUM)
+	(unspec_volatile:SI [(const_int 0)] UNSPEC_SET_GOT_VERSION))]
+  "TARGET_ABICALLS"
+  ""
+  [(set_attr "length" "0")
+   (set_attr "type" "ghost")])
+
+(define_insn "update_got_version"
+  [(set (reg:SI GOT_VERSION_REGNUM)
+	(unspec:SI [(reg:SI GOT_VERSION_REGNUM)] UNSPEC_UPDATE_GOT_VERSION))]
+  "TARGET_ABICALLS"
+  ""
+  [(set_attr "length" "0")
+   (set_attr "type" "ghost")])
 
 ;; Sibling calls.  All these patterns use jump instructions.
 
