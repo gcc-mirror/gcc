@@ -7406,12 +7406,12 @@ integers, these use @code{V4SI}.  Finally, some instructions operate on an
 entire vector register, interpreting it as a 128-bit integer, these use mode
 @code{TI}.
 
-In the 64-bit mode, x86-64 family of processors uses additional built-in
+In 64-bit mode, the x86-64 family of processors uses additional built-in
 functions for efficient use of @code{TF} (@code{__float128}) 128-bit
 floating point and @code{TC} 128-bit complex floating point values.
 
-The following floating point built-in functions are made available in the
-64-bit mode.  All of them implement the function that is part of the name.
+The following floating point built-in functions are available in 64-bit
+mode.  All of them implement the function that is part of the name.
 
 @smallexample
 __float128 __builtin_fabsq (__float128)

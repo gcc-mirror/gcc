@@ -1,3 +1,7 @@
+2008-02-02  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/extend.texi (X86 Built-in Functions): Fix grammar.
+
 2008-02-01  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR rtl-optimization/34773
