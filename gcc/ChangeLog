@@ -1,3 +1,13 @@
+2008-02-02  Michael Matz  <matz@suse.de>
+
+	PR target/35045
+	* postreload-gcse.c (record_last_reg_set_info_regno): Renamed
+	from record_last_reg_set_info.
+	(record_last_reg_set_info): Take an RTX argument, iterate over all
+	constituent hardregs.
+	(record_last_set_info, record_opr_changes): Change calls to
+	new signature or to record_last_reg_set_info_regno.
+
 2008-02-02  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/extend.texi (X86 Built-in Functions): Fix grammar.

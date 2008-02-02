@@ -1,3 +1,8 @@
+2008-02-02  Michael Matz  <matz@suse.de>
+
+	PR target/35045
+	* gcc.dg/pr35045.c: New test.
+
 2008-02-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/35001
