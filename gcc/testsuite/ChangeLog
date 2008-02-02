@@ -1,3 +1,8 @@
+2008-02-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/35001
+	* gfortran.dg/shape_4.f90:  New test.
+
 2008-02-02  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.target/cris/torture/pr34773.c: Use __asm__, not asm.
