@@ -1,3 +1,13 @@
+2008-02-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/32760
+	* resolve.c (resolve_allocate_deallocate): New function.
+	(resolve_code): Call it for allocate and deallocate.
+	* match.c (gfc_match_allocate, gfc_match_deallocate) : Remove
+	the checking of the STAT tag and put in above new function.
+	* primary,c (match_variable): Do not fix flavor of host
+	associated symbols yet if the type is not known.
+
 2008-01-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34910

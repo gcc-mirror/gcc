@@ -2534,6 +2534,14 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
 	if (sym->attr.external || sym->attr.procedure
 	    || sym->attr.function || sym->attr.subroutine)
 	  flavor = FL_PROCEDURE;
+
+	/* If it is not a procedure, is not typed and is host associated,
+	   we cannot give it a flavor yet.  */
+	else if (sym->ns == gfc_current_ns->parent
+		   && sym->ts.type == BT_UNKNOWN)
+	  break;
+
+	/* These are definitive indicators that this is a variable.  */
 	else if (gfc_peek_char () != '(' || sym->ts.type != BT_UNKNOWN
 		 || sym->attr.pointer || sym->as != NULL)
 	  flavor = FL_VARIABLE;

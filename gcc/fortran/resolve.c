@@ -4864,6 +4864,81 @@ check_symbols:
   return SUCCESS;
 }
 
+static void
+resolve_allocate_deallocate (gfc_code *code, const char *fcn)
+{
+  gfc_symbol *s = NULL;
+  gfc_alloc *a;
+  bool is_variable;
+
+  if (code->expr)
+    s = code->expr->symtree->n.sym;
+
+  if (s)
+    {
+      if (s->attr.intent == INTENT_IN)
+	gfc_error ("STAT variable '%s' of %s statement at %C cannot "
+		   "be INTENT(IN)", s->name, fcn);
+
+      if (gfc_pure (NULL) && gfc_impure_variable (s))
+	gfc_error ("Illegal STAT variable in %s statement at %C "
+		   "for a PURE procedure", fcn);
+
+      is_variable = false;
+      if (s->attr.flavor == FL_VARIABLE)
+	is_variable = true;
+      else if (s->attr.function && s->result == s
+		 && (gfc_current_ns->proc_name == s
+			||
+		    (gfc_current_ns->parent
+		       && gfc_current_ns->parent->proc_name == s)))
+	is_variable = true;
+      else if (gfc_current_ns->entries && s->result == s)
+	{
+	  gfc_entry_list *el;
+	  for (el = gfc_current_ns->entries; el; el = el->next)
+	    if (el->sym == s)
+	      {
+		is_variable = true;
+	      }
+	}
+      else if (gfc_current_ns->parent && gfc_current_ns->parent->entries
+	         && s->result == s)
+	{
+	  gfc_entry_list *el;
+	  for (el = gfc_current_ns->parent->entries; el; el = el->next)
+	    if (el->sym == s)
+	      {
+		is_variable = true;
+	      }
+	}
+
+      if (s->attr.flavor == FL_UNKNOWN
+	    && gfc_add_flavor (&s->attr, FL_VARIABLE,
+			       s->name, NULL) == SUCCESS)
+	is_variable = true;
+
+      if (!is_variable)
+	gfc_error ("STAT tag in %s statement at %L must be "
+		   "a variable", fcn, &code->expr->where);
+
+    }
+
+  if (s && code->expr->ts.type != BT_INTEGER)
+	gfc_error ("STAT tag in %s statement at %L must be "
+		       "of type INTEGER", fcn, &code->expr->where);
+
+  if (strcmp (fcn, "ALLOCATE") == 0)
+    {
+      for (a = code->ext.alloc_list; a; a = a->next)
+	resolve_allocate_expr (a->expr, code);
+    }
+  else
+    {
+      for (a = code->ext.alloc_list; a; a = a->next)
+	resolve_deallocate_expr (a->expr);
+    }
+}
 
 /************ SELECT CASE resolution subroutines ************/
 
@@ -6090,7 +6165,6 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
   int omp_workshare_save;
   int forall_save;
   code_stack frame;
-  gfc_alloc *a;
   try t;
 
   frame.prev = cs_base;
@@ -6275,25 +6349,14 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	  break;
 
 	case EXEC_ALLOCATE:
-	  if (t == SUCCESS && code->expr != NULL
-	      && code->expr->ts.type != BT_INTEGER)
-	    gfc_error ("STAT tag in ALLOCATE statement at %L must be "
-		       "of type INTEGER", &code->expr->where);
-
-	  for (a = code->ext.alloc_list; a; a = a->next)
-	    resolve_allocate_expr (a->expr, code);
+	  if (t == SUCCESS)
+	    resolve_allocate_deallocate (code, "ALLOCATE");
 
 	  break;
 
 	case EXEC_DEALLOCATE:
-	  if (t == SUCCESS && code->expr != NULL
-	      && code->expr->ts.type != BT_INTEGER)
-	    gfc_error
-	      ("STAT tag in DEALLOCATE statement at %L must be of type "
-	       "INTEGER", &code->expr->where);
-
-	  for (a = code->ext.alloc_list; a; a = a->next)
-	    resolve_deallocate_expr (a->expr);
+	  if (t == SUCCESS)
+	    resolve_allocate_deallocate (code, "DEALLOCATE");
 
 	  break;
 
