@@ -109,6 +109,23 @@
 	functions from being marked as pure or const.
 	* ipa-utils (searchc): Fixed comment.
 	
+2008-01-24  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/34931
+	Backport:
+	2007-01-25  Steve Ellcey  <sje@cup.hp.com>
+
+	PR other/30182
+	* config/pa/pa.c (pa_init_builtins): Set asm names for finite routines.
+	* config/ia64/ia64.c (ia64_init_builtins):  Ditto.
+
+	2007-01-26  Steve Ellcey  <sje@cup.hp.com>
+
+	PR other/30182
+	* config/pa/pa.h (TARGET_HPUX_11): New.
+	* config/pa/pa-hpux11.h (TARGET_HPUX_11): New.
+	* config/pa/pa.c (pa_init_builtins): Use TARGET_HPUX_11.
+
 2008-01-24  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/34953
