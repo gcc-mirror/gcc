@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target fpic } */
 /* { dg-options "-O2 -fPIC" } */
 typedef unsigned int size_t;
  char *

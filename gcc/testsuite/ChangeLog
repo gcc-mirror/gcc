@@ -1,3 +1,11 @@
+2008-02-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr31628.c: Require effective target fpic.
+	* gcc.target/i386/strinline.c: Ditto.
+	* gcc.dg/sibcall-6.c: Skip if !nonpic for 32bit x86 targets.
+	* gcc.dg/pr35045.c: Ditto.
+	* gcc.dg/20050503-1.c: Ditto.
+
 2008-02-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/32760
@@ -2703,7 +2711,7 @@
 2007-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/33648
-	* gcc.dg/pr33648.c: Require effective targer freorder.
+	* gcc.dg/pr33648.c: Require effective target freorder.
 
 2007-11-05  Revital Eres  <eres@il.ibm.com>
 
