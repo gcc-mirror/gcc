@@ -4571,7 +4571,7 @@ resolve_where (gfc_code *code, gfc_expr *mask)
             case EXEC_ASSIGN_CALL:
               resolve_call (cnext);
               if (!cnext->resolved_sym->attr.elemental)
-                gfc_error("Non-ELEMETAL user-defined assignment in WHERE at %L",
+                gfc_error("Non-ELEMENTAL user-defined assignment in WHERE at %L",
                           &cnext->ext.actual->expr->where);
               break;
 

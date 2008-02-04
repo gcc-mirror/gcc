@@ -1,5 +1,9 @@
 2008-02-04  Daniel Franke  <franke.daniel@gmail.com>
 
+	* resolve.c (resolve_where): Fix Typo in error message.
+
+2008-02-04  Daniel Franke  <franke.daniel@gmail.com>
+
 	Backport from trunk:
 	2008-01-25  Daniel Franke  <franke.daniel@gmail.com>
 	PR fortran/34661
