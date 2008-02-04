@@ -1,3 +1,19 @@
+2008-02-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	* inclhack.def: (glibc_c99_inline_1a): Re-add last change.
+	(glibc_c99_inline_3) <bypass>: Change from __STDC_VERSION__ to
+	__extern_inline|__GNU_STDC_INLINE__.
+	(glibc_c99_inline_4) <files>: Add wchar.h and */wchar.h.
+	<bypass>: Change from __STDC_VERSION__ to
+	__extern_inline|__GNU_STDC_INLINE__.
+	<first c_fix_arg>: Change from #ifdef-wrapping the extern part to
+	appending attribute-gnu_inline.
+	<second c_fix_arg>: Remove.
+	<test_text>: Remove __extern_inline line.
+	* tests/base/features.h: Re-add.
+	* tests/base/sys/sysmacros.h: Adjust.
+	* fixincl.x: Regenerate.
+
 2008-01-06  Hans-Peter Nilsson  <hp@axis.com>
 
 	Revert last change.

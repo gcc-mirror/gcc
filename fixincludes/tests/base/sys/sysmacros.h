@@ -10,15 +10,6 @@
 
 
 #if defined( GLIBC_C99_INLINE_4_CHECK )
-__extension__
-#ifdef __GNUC_GNU_INLINE__
-extern
-#endif
-__inline unsigned int
-__extension__ __extern_inline unsigned int
-
-#ifdef __GNUC_GNU_INLINE__
-extern
-#endif
-__inline unsigned int
+__extension__ extern __inline __attribute__ ((__gnu_inline__)) unsigned int
+extern __inline __attribute__ ((__gnu_inline__)) unsigned int
 #endif  /* GLIBC_C99_INLINE_4_CHECK */

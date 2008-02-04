@@ -1348,6 +1348,24 @@ EOT;
 
 
 /*
+ *  Similar, but a version that didn't have __NO_INLINE__
+ */
+fix = {
+    hackname  = glibc_c99_inline_1a;
+    files     = features.h, '*/features.h';
+    select    = "(\\) && defined __OPTIMIZE__ && !defined __OPTIMIZE_SIZE__)\n"
+		"(#[ \t]*define[ \t]*__USE_EXTERN_INLINES[ \t]*1)";
+    c_fix     = format;
+    c_fix_arg = "%1 && (defined __extern_inline || defined __GNUC_GNU_INLINE__)\n%2";
+    test_text = <<-EOT
+#if __GNUC_PREREQ (2, 7) && defined __OPTIMIZE__ && !defined __OPTIMIZE_SIZE__
+# define __USE_EXTERN_INLINES	1
+#endif
+EOT;
+};
+
+
+/*
  * The glibc_c99_inline_1 fix should have fixed everything.  Unfortunately
  * there are many glibc headers which do not respect __USE_EXTERN_INLINES.
  * The remaining glibc_c99_inline_* fixes deal with some of those headers.
@@ -1378,7 +1396,7 @@ fix = {
     hackname  = glibc_c99_inline_3;
     files     = bits/string2.h, '*/bits/string2.h';
     select    = "extern __inline";
-    bypass    = "__STDC_VERSION__";
+    bypass    = "__extern_inline|__GNU_STDC_INLINE__";
     c_fix     = format;
     c_fix_arg = "# if defined(__cplusplus) || defined(__GNUC_STDC_INLINE__)";
     c_fix_arg = "^# ifdef __cplusplus$";
@@ -1394,15 +1412,13 @@ fix = {
 
 fix = {
     hackname  = glibc_c99_inline_4;
-    files     = sys/sysmacros.h, '*/sys/sysmacros.h';
-    bypass    = "__STDC_VERSION__";
-    select    = "extern __inline";
+    files     = sys/sysmacros.h, '*/sys/sysmacros.h', wchar.h, '*/wchar.h';
+    bypass    = "__extern_inline|__gnu_inline__";
+    select    = "(^| )extern __inline";
     c_fix     = format;
-    c_fix_arg = "\n#ifdef __GNUC_GNU_INLINE__\nextern\n#endif\n";
-    c_fix_arg = '(^| )extern ';
+    c_fix_arg = "%0 __attribute__ ((__gnu_inline__))";
     test_text = <<-EOT
 	__extension__ extern __inline unsigned int
-	__extension__ __extern_inline unsigned int
 	extern __inline unsigned int
 	EOT;
 };
