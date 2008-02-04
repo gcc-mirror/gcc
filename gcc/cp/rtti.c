@@ -1318,7 +1318,6 @@ create_tinfo_types (void)
     ti->name = NULL_TREE;
     finish_builtin_struct (ti->type, "__type_info_pseudo",
 			   fields, NULL_TREE);
-    TYPE_HAS_CONSTRUCTOR (ti->type) = 1;
   }
 
   /* Fundamental type_info */
@@ -1357,7 +1356,6 @@ create_tinfo_types (void)
     ti->name = NULL_TREE;
     finish_builtin_struct (ti->type, "__base_class_type_info_pseudo",
 			   fields, NULL_TREE);
-    TYPE_HAS_CONSTRUCTOR (ti->type) = 1;
   }
 
   /* Pointer type_info. Adds two fields, qualification mask

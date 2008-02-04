@@ -955,7 +955,7 @@ add_method (tree type, tree method, tree using_decl)
       CLASSTYPE_METHOD_VEC (type) = method_vec;
     }
 
-  /* Maintain TYPE_HAS_CONSTRUCTOR, etc.  */
+  /* Maintain TYPE_HAS_USER_CONSTRUCTOR, etc.  */
   grok_special_member_properties (method);
 
   /* Constructors and destructors go in special slots.  */
@@ -1451,7 +1451,7 @@ finish_struct_bits (tree t)
     {
       /* These fields are in the _TYPE part of the node, not in
 	 the TYPE_LANG_SPECIFIC component, so they are not shared.  */
-      TYPE_HAS_CONSTRUCTOR (variants) = TYPE_HAS_CONSTRUCTOR (t);
+      TYPE_HAS_USER_CONSTRUCTOR (variants) = TYPE_HAS_USER_CONSTRUCTOR (t);
       TYPE_NEEDS_CONSTRUCTING (variants) = TYPE_NEEDS_CONSTRUCTING (t);
       TYPE_HAS_NONTRIVIAL_DESTRUCTOR (variants)
 	= TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t);
@@ -1596,7 +1596,8 @@ maybe_warn_about_overly_private_class (tree t)
       return;
     }
 
-  if (TYPE_HAS_CONSTRUCTOR (t)
+  /* Warn about classes that have private constructors and no friends.  */
+  if (TYPE_HAS_USER_CONSTRUCTOR (t)
       /* Implicitly generated constructors are always public.  */
       && (!CLASSTYPE_LAZY_DEFAULT_CTOR (t)
 	  || !CLASSTYPE_LAZY_COPY_CTOR (t)))
@@ -2602,20 +2603,25 @@ add_implicitly_declared_members (tree t,
 	}
     }
 
-  /* Default constructor.  */
-  if (! TYPE_HAS_CONSTRUCTOR (t))
+  /* [class.ctor]
+
+     If there is no user-declared constructor for a class, a default
+     constructor is implicitly declared.  */
+  if (! TYPE_HAS_USER_CONSTRUCTOR (t))
     {
       TYPE_HAS_DEFAULT_CONSTRUCTOR (t) = 1;
       CLASSTYPE_LAZY_DEFAULT_CTOR (t) = 1;
     }
 
-  /* Copy constructor.  */
+  /* [class.ctor]
+
+     If a class definition does not explicitly declare a copy
+     constructor, one is declared implicitly.  */
   if (! TYPE_HAS_INIT_REF (t) && ! TYPE_FOR_JAVA (t))
     {
       TYPE_HAS_INIT_REF (t) = 1;
       TYPE_HAS_CONST_INIT_REF (t) = !cant_have_const_cctor;
       CLASSTYPE_LAZY_COPY_CTOR (t) = 1;
-      TYPE_HAS_CONSTRUCTOR (t) = 1;
     }
 
   /* If there is no assignment operator, one will be created if and
@@ -2937,8 +2943,7 @@ check_field_decls (tree t, tree *access_decls,
       if (TREE_PRIVATE (x) || TREE_PROTECTED (x))
 	CLASSTYPE_NON_AGGREGATE (t) = 1;
 
-      /* If this is of reference type, check if it needs an init.
-	 Also do a little ANSI jig if necessary.  */
+      /* If this is of reference type, check if it needs an init.  */
       if (TREE_CODE (type) == REFERENCE_TYPE)
 	{
 	  CLASSTYPE_NON_POD_P (t) = 1;
@@ -2950,10 +2955,6 @@ check_field_decls (tree t, tree *access_decls,
 	     only way to initialize nonstatic const and reference
 	     members.  */
 	  TYPE_HAS_COMPLEX_ASSIGN_REF (t) = 1;
-
-	  if (! TYPE_HAS_CONSTRUCTOR (t) && CLASSTYPE_NON_AGGREGATE (t)
-	      && extra_warnings)
-	    warning (OPT_Wextra, "non-static reference %q+#D in class without a constructor", x);
 	}
 
       type = strip_array_types (type);
@@ -3028,10 +3029,6 @@ check_field_decls (tree t, tree *access_decls,
 	     only way to initialize nonstatic const and reference
 	     members.  */
 	  TYPE_HAS_COMPLEX_ASSIGN_REF (t) = 1;
-
-	  if (! TYPE_HAS_CONSTRUCTOR (t) && CLASSTYPE_NON_AGGREGATE (t)
-	      && extra_warnings)
-	    warning (OPT_Wextra, "non-static const member %q+#D in class without a constructor", x);
 	}
       /* A field that is pseudo-const makes the structure likewise.  */
       else if (CLASS_TYPE_P (type))
@@ -3045,7 +3042,8 @@ check_field_decls (tree t, tree *access_decls,
       /* Core issue 80: A nonstatic data member is required to have a
 	 different name from the class iff the class has a
 	 user-defined constructor.  */
-      if (constructor_name_p (DECL_NAME (x), t) && TYPE_HAS_CONSTRUCTOR (t))
+      if (constructor_name_p (DECL_NAME (x), t)
+	  && TYPE_HAS_USER_CONSTRUCTOR (t))
 	pedwarn ("field %q+#D with same name as class", x);
 
       /* We set DECL_C_BIT_FIELD in grokbitfield.
@@ -3073,7 +3071,7 @@ check_field_decls (tree t, tree *access_decls,
      This seems enough for practical purposes.  */
   if (warn_ecpp
       && has_pointers
-      && TYPE_HAS_CONSTRUCTOR (t)
+      && TYPE_HAS_USER_CONSTRUCTOR (t)
       && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
       && !(TYPE_HAS_INIT_REF (t) && TYPE_HAS_ASSIGN_REF (t)))
     {
@@ -4158,10 +4156,22 @@ check_bases_and_members (tree t)
      declared member functions.  */
   TYPE_HAS_COMPLEX_INIT_REF (t)
     |= (TYPE_HAS_INIT_REF (t) || TYPE_CONTAINS_VPTR_P (t));
+  /* We need to call a constructor for this class if it has a
+     user-declared constructor, or if the default constructor is going
+     to initialize the vptr.  (This is not an if-and-only-if;
+     TYPE_NEEDS_CONSTRUCTING is set elsewhere if bases or members
+     themselves need constructing.)  */
   TYPE_NEEDS_CONSTRUCTING (t)
-    |= (TYPE_HAS_CONSTRUCTOR (t) || TYPE_CONTAINS_VPTR_P (t));
+    |= (TYPE_HAS_USER_CONSTRUCTOR (t) || TYPE_CONTAINS_VPTR_P (t));
+  /* [dcl.init.aggr]
+
+     An aggregate is an arry or a class with no user-declared
+     constructors ... and no virtual functions.  
+
+     Again, other conditions for being an aggregate are checked
+     elsewhere.  */
   CLASSTYPE_NON_AGGREGATE (t)
-    |= (TYPE_HAS_CONSTRUCTOR (t) || TYPE_POLYMORPHIC_P (t));
+    |= (TYPE_HAS_USER_CONSTRUCTOR (t) || TYPE_POLYMORPHIC_P (t));
   CLASSTYPE_NON_POD_P (t)
     |= (CLASSTYPE_NON_AGGREGATE (t)
 	|| TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
@@ -4170,6 +4180,38 @@ check_bases_and_members (tree t)
     |= TYPE_HAS_ASSIGN_REF (t) || TYPE_CONTAINS_VPTR_P (t);
   TYPE_HAS_COMPLEX_DFLT (t)
     |= (TYPE_HAS_DEFAULT_CONSTRUCTOR (t) || TYPE_CONTAINS_VPTR_P (t));
+
+  /* If the class has no user-declared constructor, but does have
+     non-static const or reference data members that can never be
+     initialized, issue a warning.  */
+  if (extra_warnings
+      /* Classes with user-declared constructors are presumed to
+	 initialize these members.  */
+      && !TYPE_HAS_USER_CONSTRUCTOR (t)
+      /* Aggregates can be initialized with brace-enclosed
+	 initializers.  */
+      && CLASSTYPE_NON_AGGREGATE (t))
+    {
+      tree field;
+
+      for (field = TYPE_FIELDS (t); field; field = TREE_CHAIN (field))
+	{
+	  tree type;
+
+	  if (TREE_CODE (field) != FIELD_DECL)
+	    continue;
+
+	  type = TREE_TYPE (field);
+	  if (TREE_CODE (type) == REFERENCE_TYPE)
+	    warning (OPT_Wextra, "non-static reference %q+#D in class "
+		     "without a constructor", field);
+	  else if (CP_TYPE_CONST_P (type)
+		   && (!CLASS_TYPE_P (type)
+		       || !TYPE_HAS_DEFAULT_CONSTRUCTOR (type)))
+	    warning (OPT_Wextra, "non-static const member %q+#D in class "
+		     "without a constructor", field);
+	}
+    }
 
   /* Synthesize any needed methods.  */
   add_implicitly_declared_members (t,

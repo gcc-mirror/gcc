@@ -1,3 +1,7 @@
+2008-02-03  Jason Merrill  <jason@redhat.com>
+
+	* print-tree.c (print_node) [CONSTRUCTOR]: Print elements.
+
 2008-02-04  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR other/29972

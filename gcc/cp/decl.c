@@ -3689,7 +3689,7 @@ fixup_anonymous_aggr (tree t)
   tree *q;
 
   /* Wipe out memory of synthesized methods.  */
-  TYPE_HAS_CONSTRUCTOR (t) = 0;
+  TYPE_HAS_USER_CONSTRUCTOR (t) = 0;
   TYPE_HAS_DEFAULT_CONSTRUCTOR (t) = 0;
   TYPE_HAS_INIT_REF (t) = 0;
   TYPE_HAS_CONST_INIT_REF (t) = 0;
@@ -4993,11 +4993,11 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
       if (type == error_mark_node)
 	return NULL_TREE;
 
-      if (TYPE_HAS_CONSTRUCTOR (type) || TYPE_NEEDS_CONSTRUCTING (type))
+      if (TREE_CODE (type) == ARRAY_TYPE && TYPE_NEEDS_CONSTRUCTING (type))
+	goto initialize_aggr;
+      else if (CLASS_TYPE_P (type))
 	{
-	  if (TREE_CODE (type) == ARRAY_TYPE)
-	    goto initialize_aggr;
-	  else if (TREE_CODE (init) == CONSTRUCTOR)
+	  if (TREE_CODE (init) == CONSTRUCTOR)
 	    {
 	      if (TYPE_NON_AGGREGATE_CLASS (type))
 		{
@@ -9582,7 +9582,8 @@ move_fn_p (const_tree d)
 
 /* Remember any special properties of member function DECL.  */
 
-void grok_special_member_properties (tree decl)
+void
+grok_special_member_properties (tree decl)
 {
   tree class_type;
 
@@ -9594,7 +9595,8 @@ void grok_special_member_properties (tree decl)
     {
       int ctor = copy_fn_p (decl);
 
-      TYPE_HAS_CONSTRUCTOR (class_type) = 1;
+      if (!DECL_ARTIFICIAL (decl))
+	TYPE_HAS_USER_CONSTRUCTOR (class_type) = 1;
 
       if (ctor > 0)
 	{

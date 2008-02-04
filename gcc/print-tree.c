@@ -851,6 +851,21 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	      }
 	  break;
 
+	case CONSTRUCTOR:
+	  {
+	    unsigned HOST_WIDE_INT cnt;
+	    tree index, value;
+	    len = VEC_length (constructor_elt, CONSTRUCTOR_ELTS (node));
+	    fprintf (file, " lngt %d", len);
+	    FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (node),
+				      cnt, index, value)
+	      {
+		print_node (file, "idx", index, indent + 4);
+		print_node (file, "val", value, indent + 4);
+	      }
+	  }
+	  break;
+
     	case STATEMENT_LIST:
 	  dump_addr (file, " head ", node->stmt_list.head);
 	  dump_addr (file, " tail ", node->stmt_list.tail);
