@@ -1,3 +1,28 @@
+2008-02-02  Jason Merrill  <jason@redhat.com>
+	    Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/33916
+	* init.c (build_value_init_1): New function.
+	(build_value_init): New function.
+	* typeck2.c (build_functional_cast): Call it.
+	* cp-gimplify.c (cp_gimplify_init_expr): Handle its output.
+
+	* cp-tree.h (TYPE_HAS_USER_CONSTRUCTOR): Rename from 
+	TYPE_HAS_CONSTRUCTOR.
+	* class.c (finish_struct_bits, maybe_warn_about_overly_private_class,
+	add_implicitly_declared_members): Adjust.
+	(check_field_decls): Adjust. Remove warnings about reference/const
+	in class without constructor.
+	(check_bases_and_members): Adjust.  Give those warnings here instead.
+	* decl.c (fixup_anonymous_aggr): Adjust.
+	(check_initializer): Adjust, clarify logic slightly.
+	(grok_special_member_properties): Adjust, only set if user-provided.
+	* rtti.c (create_tinfo_types): Don't set.
+	* cvt.c (ocp_convert): Remove exception for vtable_entry_type et al.
+	Use same_type_ignoring_top_level_qualifiers_p.
+	* pt.c (check_explicit_specialization): Adjust.
+	(instantiate_class_template): Adjust.
+
 2008-01-31  Douglas Gregor  <doug.gregor@gmail.com>
            Jakub Jelinek  <jakub@redhat.com>
 

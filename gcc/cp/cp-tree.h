@@ -91,7 +91,7 @@ struct diagnostic_info;
 
    Usage of TYPE_LANG_FLAG_?:
    0: TYPE_DEPENDENT_P
-   1: TYPE_HAS_CONSTRUCTOR.
+   1: TYPE_HAS_USER_CONSTRUCTOR.
    2: Unused
    3: TYPE_FOR_JAVA.
    4: TYPE_HAS_NONTRIVIAL_DESTRUCTOR
@@ -2709,7 +2709,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 
 /* Nonzero for a class type means that the class type has a
    user-declared constructor.  */
-#define TYPE_HAS_CONSTRUCTOR(NODE) (TYPE_LANG_FLAG_1 (NODE))
+#define TYPE_HAS_USER_CONSTRUCTOR(NODE) (TYPE_LANG_FLAG_1 (NODE))
 
 /* When appearing in an INDIRECT_REF, it means that the tree structure
    underneath is actually a call to a constructor.  This is needed
@@ -4346,6 +4346,7 @@ extern tree build_aggr_init			(tree, tree, int);
 extern int is_aggr_type				(tree, int);
 extern tree get_type_value			(tree);
 extern tree build_zero_init			(tree, tree, bool);
+extern tree build_value_init			(tree);
 extern tree build_offset_ref			(tree, tree, bool);
 extern tree build_new				(tree, tree, tree, tree, int);
 extern tree build_vec_init			(tree, tree, tree, bool, int);

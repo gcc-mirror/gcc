@@ -152,7 +152,7 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
 
   /* [dcl.init]
 
-     To zero-initialization storage for an object of type T means:
+     To zero-initialize an object of type T means:
 
      -- if T is a scalar type, the storage is set to the value of zero
 	converted to T.
@@ -209,8 +209,8 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
 	    break;
 	}
 
-	/* Build a constructor to contain the initializations.  */
-	init = build_constructor (type, v);
+      /* Build a constructor to contain the initializations.  */
+      init = build_constructor (type, v);
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     {
@@ -313,6 +313,153 @@ build_default_init (tree type, tree nelts)
   /* At this point, TYPE is either a POD class type, an array of POD
      classes, or something even more innocuous.  */
   return build_zero_init (type, nelts, /*static_storage_p=*/false);
+}
+
+/* Return a suitable initializer for value-initializing an object of type
+   TYPE, as described in [dcl.init].  If HAVE_CTOR is true, the initializer
+   for an enclosing object is already calling the constructor for this
+   object.  */
+
+static tree
+build_value_init_1 (tree type, bool have_ctor)
+{
+  /* [dcl.init]
+
+     To value-initialize an object of type T means:
+
+     - if T is a class type (clause 9) with a user-provided constructor
+       (12.1), then the default constructor for T is called (and the
+       initialization is ill-formed if T has no accessible default
+       constructor);
+
+     - if T is a non-union class type without a user-provided constructor,
+       then every non-static data member and base-class component of T is
+       value-initialized;92)
+
+     - if T is an array type, then each element is value-initialized;
+
+     - otherwise, the object is zero-initialized.
+
+     A program that calls for default-initialization or
+     value-initialization of an entity of reference type is ill-formed.
+
+     92) Value-initialization for such a class object may be implemented by
+     zero-initializing the object and then calling the default
+     constructor.  */
+
+  if (CLASS_TYPE_P (type))
+    {
+      if (TYPE_HAS_USER_CONSTRUCTOR (type) && !have_ctor)
+	return build_cplus_new
+	  (type,
+	   build_special_member_call (NULL_TREE, complete_ctor_identifier,
+				      NULL_TREE, type, LOOKUP_NORMAL));
+      else if (TREE_CODE (type) != UNION_TYPE)
+	{
+	  tree field, init;
+	  VEC(constructor_elt,gc) *v = NULL;
+	  bool call_ctor = !have_ctor && TYPE_NEEDS_CONSTRUCTING (type);
+
+	  /* Iterate over the fields, building initializations.  */
+	  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	    {
+	      tree ftype, value;
+
+	      if (TREE_CODE (field) != FIELD_DECL)
+		continue;
+
+	      ftype = TREE_TYPE (field);
+
+	      if (TREE_CODE (ftype) == REFERENCE_TYPE)
+		error ("value-initialization of reference");
+
+	      /* We could skip vfields and fields of types with
+		 user-defined constructors, but I think that won't improve
+		 performance at all; it should be simpler in general just
+		 to zero out the entire object than try to only zero the
+		 bits that actually need it.  */
+
+	      /* Note that for class types there will be FIELD_DECLs
+		 corresponding to base classes as well.  Thus, iterating
+		 over TYPE_FIELDs will result in correct initialization of
+		 all of the subobjects.  */
+	      value = build_value_init_1 (ftype, have_ctor || call_ctor);
+
+	      if (value)
+		CONSTRUCTOR_APPEND_ELT(v, field, value);
+	    }
+
+	  /* Build a constructor to contain the zero- initializations.  */
+	  init = build_constructor (type, v);
+	  if (call_ctor)
+	    {
+	      /* This is a class that needs constructing, but doesn't have
+		 a user-defined constructor.  So we need to zero-initialize
+		 the object and then call the implicitly defined ctor.
+		 Implement this by sticking the zero-initialization inside
+		 the TARGET_EXPR for the constructor call;
+		 cp_gimplify_init_expr will know how to handle it.  */
+	      tree ctor = build_special_member_call
+		(NULL_TREE, complete_ctor_identifier,
+		 NULL_TREE, type, LOOKUP_NORMAL);
+
+	      ctor = build_cplus_new (type, ctor);
+	      init = build2 (INIT_EXPR, void_type_node,
+			     TARGET_EXPR_SLOT (ctor), init);
+	      init = build2 (COMPOUND_EXPR, void_type_node, init,
+			     TARGET_EXPR_INITIAL (ctor));
+	      TARGET_EXPR_INITIAL (ctor) = init;
+	      return ctor;
+	    }
+	  return init;
+	}
+    }
+  else if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      VEC(constructor_elt,gc) *v = NULL;
+
+      /* Iterate over the array elements, building initializations.  */
+      tree max_index = array_type_nelts (type);
+
+      /* If we have an error_mark here, we should just return error mark
+	 as we don't know the size of the array yet.  */
+      if (max_index == error_mark_node)
+	return error_mark_node;
+      gcc_assert (TREE_CODE (max_index) == INTEGER_CST);
+
+      /* A zero-sized array, which is accepted as an extension, will
+	 have an upper bound of -1.  */
+      if (!tree_int_cst_equal (max_index, integer_minus_one_node))
+	{
+	  constructor_elt *ce;
+
+	  v = VEC_alloc (constructor_elt, gc, 1);
+	  ce = VEC_quick_push (constructor_elt, v, NULL);
+
+	  /* If this is a one element array, we just use a regular init.  */
+	  if (tree_int_cst_equal (size_zero_node, max_index))
+	    ce->index = size_zero_node;
+	  else
+	    ce->index = build2 (RANGE_EXPR, sizetype, size_zero_node,
+				max_index);
+
+	  ce->value = build_value_init_1 (TREE_TYPE (type), have_ctor);
+	}
+
+      /* Build a constructor to contain the initializations.  */
+      return build_constructor (type, v);
+    }
+
+  return build_zero_init (type, NULL_TREE, /*static_storage_p=*/false);
+}
+
+/* Return a suitable initializer for value-initializing an object of type
+   TYPE, as described in [dcl.init].  */
+
+tree
+build_value_init (tree type)
+{
+  return build_value_init_1 (type, false);
 }
 
 /* Initialize MEMBER, a FIELD_DECL, with INIT, a TREE_LIST of
