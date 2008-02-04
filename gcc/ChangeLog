@@ -1,3 +1,11 @@
+2008-02-04  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/29972
+	* doc/invoke.texi (C++ Dialect Options, Optimize Options)
+	(HPPA Options, i386 and x86-64 Options, IA-64 Options)
+	(RS/6000 and PowerPC Options): Fix typos and markup.
+	* doc/passes.texi (Tree-SSA passes): Likewise.
+
 2008-02-02  Michael Matz  <matz@suse.de>
 
 	PR target/35045
