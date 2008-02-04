@@ -1,5 +1,6 @@
 2008-02-04  Hans-Peter Nilsson  <hp@axis.com>
 
+	PR other/31405
 	* inclhack.def: (glibc_c99_inline_1a): Re-add last change.
 	(glibc_c99_inline_3) <bypass>: Change from __STDC_VERSION__ to
 	__extern_inline|__GNU_STDC_INLINE__.
