@@ -1,3 +1,11 @@
+2008-02-04  Daniel Franke  <franke.daniel@gmail.com>
+
+	Backport from trunk:
+	2008-01-25  Daniel Franke  <franke.daniel@gmail.com>
+	PR fortran/34661
+	* resolve.c (resolve_where): Added check if user-defined
+	assignment operator is an elemental subroutine.
+
 2008-02-01  Release Manager
 
 	* GCC 4.2.3 released.

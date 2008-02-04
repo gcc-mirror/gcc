@@ -4568,9 +4568,12 @@ resolve_where (gfc_code *code, gfc_expr *mask)
                           "inconsistent shape", &cnext->expr->where);
               break;
 
-	    case EXEC_ASSIGN_CALL:
-	      resolve_call (cnext);
-	      break;
+            case EXEC_ASSIGN_CALL:
+              resolve_call (cnext);
+              if (!cnext->resolved_sym->attr.elemental)
+                gfc_error("Non-ELEMETAL user-defined assignment in WHERE at %L",
+                          &cnext->ext.actual->expr->where);
+              break;
 
             /* WHERE or WHERE construct is part of a where-body-construct */
             case EXEC_WHERE:
