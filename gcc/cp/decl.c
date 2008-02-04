@@ -3161,7 +3161,13 @@ record_builtin_java_type (const char* name, int size)
     type = make_signed_type (size);
   else if (size == -1)
     { /* "__java_boolean".  */
-      type = build_variant_type_copy (boolean_type_node);
+      if ((TYPE_MODE (boolean_type_node)
+	   == smallest_mode_for_size (1, MODE_INT)))
+        type = build_variant_type_copy (boolean_type_node);
+      else
+	/* ppc-darwin has SImode bool, make jboolean a 1-bit
+	   integer type without boolean semantics there.  */
+	type = make_unsigned_type (1);
     }
   else if (size > -32)
     { /* "__java_char".  */

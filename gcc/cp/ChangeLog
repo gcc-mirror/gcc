@@ -1,3 +1,9 @@
+2008-02-04  Richard Guenther  <rguenther@suse.de>
+
+	PR java/35035
+	* decl.c (record_builtin_java_type): Make jboolean a
+	integer type again where its mode doesn't match that of bool.
+
 2008-02-02  Jason Merrill  <jason@redhat.com>
 	    Mark Mitchell  <mark@codesourcery.com>
 
