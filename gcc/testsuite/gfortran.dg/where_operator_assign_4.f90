@@ -22,9 +22,9 @@ USE M1
 TYPE(T1) :: I(2),J(2)
 I(:)%I=1
 WHERE (I(:)%I>0)
- J=I                       ! { dg-error "Non-ELEMETAL user-defined assignment in WHERE" }
+ J=I                       ! { dg-error "Non-ELEMENTAL user-defined assignment in WHERE" }
 END WHERE
 
-WHERE (I(:)%I>0) J=I       ! { dg-error "Non-ELEMETAL user-defined assignment in WHERE" }
+WHERE (I(:)%I>0) J=I       ! { dg-error "Non-ELEMENTAL user-defined assignment in WHERE" }
 
 END
