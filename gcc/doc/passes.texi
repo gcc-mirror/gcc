@@ -490,7 +490,7 @@ described by @code{pass_vrp}.
 @item Folding built-in functions
 
 This pass simplifies built-in functions, as applicable, with constant
-arguments or with inferrable string lengths.  It is located in
+arguments or with inferable string lengths.  It is located in
 @file{tree-ssa-ccp.c} and is described by @code{pass_fold_builtins}.
 
 @item Split critical edges

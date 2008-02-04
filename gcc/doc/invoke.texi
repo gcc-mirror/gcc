@@ -1782,7 +1782,7 @@ functions for use by the C++ runtime type identification features
 of the language, you can save some space by using this flag.  Note that
 exception handling uses the same information, but it will generate it as
 needed. The @samp{dynamic_cast} operator can still be used for casts that
-do not require runtime type information, i.e. casts to @code{void *} or to
+do not require runtime type information, i.e.@: casts to @code{void *} or to
 unambiguous base classes.
 
 @item -fstats
@@ -6764,7 +6764,7 @@ units larger than this limit is limited by @option{--param inline-unit-growth}.
 For small units this might be too tight (consider unit consisting of function A
 that is inline and B that just calls A three time.  If B is small relative to
 A, the growth of unit is 300\% and yet such inlining is very sane.  For very
-large units consisting of small inlininable functions however the overall unit
+large units consisting of small inlineable functions however the overall unit
 growth limit is needed to avoid exponential explosion of code size.  Thus for
 smaller units, the size is increased to @option{--param large-unit-insns}
 before applying @option{--param inline-unit-growth}.  The default is 10000
@@ -7125,7 +7125,7 @@ is 10000.
 @item integer-share-limit
 Small integer constants can use a shared data structure, reducing the
 compiler's memory usage and increasing its speed.  This sets the maximum
-value of a shared integer constant's.  The default value is 256.
+value of a shared integer constant.  The default value is 256.
 
 @item min-virtual-mappings
 Specifies the minimum number of virtual mappings in the incremental
@@ -7140,7 +7140,7 @@ SSA updater switches to a full update for those symbols.  The default
 ratio is 3.
 
 @item ssp-buffer-size
-The minimum size of buffers (i.e. arrays) that will receive stack smashing
+The minimum size of buffers (i.e.@: arrays) that will receive stack smashing
 protection when @option{-fstack-protection} is used.
 
 @item max-jump-thread-duplication-stmts
@@ -10107,7 +10107,7 @@ are passed to that ld.  The ld that is called is determined by the
 @option{--with-ld} configure option, GCC's program search path, and
 finally by the user's @env{PATH}.  The linker used by GCC can be printed
 using @samp{which `gcc -print-prog-name=ld`}.  This option is only available
-on the 64 bit HP-UX GCC, i.e. configured with @samp{hppa*64*-*-hpux*}.
+on the 64 bit HP-UX GCC, i.e.@: configured with @samp{hppa*64*-*-hpux*}.
 
 @item -mhp-ld
 @opindex hp-ld
@@ -10120,7 +10120,7 @@ ld.  The ld that is called is determined by the @option{--with-ld}
 configure option, GCC's program search path, and finally by the user's
 @env{PATH}.  The linker used by GCC can be printed using @samp{which
 `gcc -print-prog-name=ld`}.  This option is only available on the 64 bit
-HP-UX GCC, i.e. configured with @samp{hppa*64*-*-hpux*}.
+HP-UX GCC, i.e.@: configured with @samp{hppa*64*-*-hpux*}.
 
 @item -mlong-calls
 @opindex mno-long-calls
@@ -10277,16 +10277,16 @@ instruction set support.
 @item k6
 AMD K6 CPU with MMX instruction set support.
 @item k6-2, k6-3
-Improved versions of AMD K6 CPU with MMX and 3dNOW! instruction set support.
+Improved versions of AMD K6 CPU with MMX and 3dNOW!@: instruction set support.
 @item athlon, athlon-tbird
-AMD Athlon CPU with MMX, 3dNOW!, enhanced 3dNOW! and SSE prefetch instructions
+AMD Athlon CPU with MMX, 3dNOW!, enhanced 3dNOW!@: and SSE prefetch instructions
 support.
 @item athlon-4, athlon-xp, athlon-mp
-Improved AMD Athlon CPU with MMX, 3dNOW!, enhanced 3dNOW! and full SSE
+Improved AMD Athlon CPU with MMX, 3dNOW!, enhanced 3dNOW!@: and full SSE
 instruction set support.
 @item k8, opteron, athlon64, athlon-fx
 AMD K8 core based CPUs with x86-64 instruction set support.  (This supersets
-MMX, SSE, SSE2, 3dNOW!, enhanced 3dNOW! and 64-bit instruction set extensions.)
+MMX, SSE, SSE2, 3dNOW!, enhanced 3dNOW!@: and 64-bit instruction set extensions.)
 @item k8-sse3, opteron-sse3, athlon64-sse3
 Improved versions of k8, opteron and athlon64 with SSE3 instruction set support.
 @item amdfam10, barcelona
@@ -10297,10 +10297,10 @@ instruction set extensions.)
 IDT Winchip C6 CPU, dealt in same way as i486 with additional MMX instruction
 set support.
 @item winchip2
-IDT Winchip2 CPU, dealt in same way as i486 with additional MMX and 3dNOW!
+IDT Winchip2 CPU, dealt in same way as i486 with additional MMX and 3dNOW!@:
 instruction set support.
 @item c3
-Via C3 CPU with MMX and 3dNOW! instruction set support.  (No scheduling is
+Via C3 CPU with MMX and 3dNOW!@: instruction set support.  (No scheduling is
 implemented for this chip.)
 @item c3-2
 Via C3-2 CPU with MMX and SSE instruction set support.  (No scheduling is
@@ -10614,7 +10614,7 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @opindex m3dnow
 @opindex mno-3dnow
 These switches enable or disable the use of instructions in the MMX,
-SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4A, SSE5, ABM or 3DNow! extended
+SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4A, SSE5, ABM or 3DNow!@: extended
 instruction sets.
 These extensions are also available as built-in functions: see
 @ref{X86 Built-in Functions}, for details of the functions enabled and
@@ -10973,7 +10973,7 @@ The default is 'enable'.
 @opindex mno-sched-control-spec
 @opindex msched-control-spec
 (Dis/En)able control speculative scheduling.  This feature is
-available only during region scheduling (i.e. before reload).
+available only during region scheduling (i.e.@: before reload).
 This will result in generation of the ld.s instructions and
 the corresponding check instructions chk.s .
 The default is 'disable'.
@@ -13291,7 +13291,7 @@ will set or clear the bit.
 @opindex msim
 On embedded PowerPC systems, assume that the startup module is called
 @file{sim-crt0.o} and that the standard C libraries are @file{libsim.a} and
-@file{libc.a}.  This is the default for @samp{powerpc-*-eabisim}.
+@file{libc.a}.  This is the default for @samp{powerpc-*-eabisim}
 configurations.
 
 @item -mmvme
