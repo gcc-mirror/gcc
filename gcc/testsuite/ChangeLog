@@ -1,3 +1,8 @@
+2008-02-04  Daniel Franke  <franke.daniel@gmail.com>
+
+	* gfortran.dg/where_operator_assign_4.f90: Fix typo in error message
+	to match.
+
 2008-02-04  Hans-Peter Nilsson  <hp@axis.com>
 
 	* lib/target-supports.exp (check_effective_target_hard_float): Only
