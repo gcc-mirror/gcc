@@ -1,3 +1,9 @@
+2008-02-04  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/33631
+	* expr.c (count_type_elements): Give for unions instead of
+	guessing.
+
 2008-02-04  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/fixdfdi.h (__fixunstfdi, __fixtfdi): Rearrange

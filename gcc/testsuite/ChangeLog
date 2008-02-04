@@ -1,3 +1,8 @@
+2008-02-04  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/33631
+	* gcc.c-torture/execute/pr33631.c: New testcase.
+
 2008-02-04  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/34661
