@@ -6,7 +6,7 @@
 2008-02-04  Hans-Peter Nilsson  <hp@axis.com>
 
 	* lib/target-supports.exp (check_effective_target_hard_float): Only
-	use the preprocessor tests for mips*-*-* and xtensa-*-*.  For all
+	use the macro definition tests for mips*-*-* and xtensa-*-*.  For all
 	other targets, grep for a call insn in the rtl expand dump for an
 	add of two doubles.
 	(target_compile): Support generating rtl dumps as output.
