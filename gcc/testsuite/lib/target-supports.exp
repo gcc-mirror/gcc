@@ -44,18 +44,32 @@ proc check_compile {basename type contents args} {
 	"*// C++*" { set src ${basename}[pid].cc }
 	default { set src ${basename}[pid].c }
     }
-    switch $type {
+    set compile_type $type
+    switch -glob $type {
 	assembly { set output ${basename}[pid].s }
 	object { set output ${basename}[pid].o }
 	executable { set output ${basename}[pid].exe }
+	"rtl-*" {
+	    set output ${basename}[pid].s
+	    lappend options "additional_flags=-fdump-$type"
+	    set compile_type assembly
+	}
     }
     set f [open $src "w"]
     puts $f $contents
     close $f
-    set lines [${tool}_target_compile $src $output $type "$options"]
+    set lines [${tool}_target_compile $src $output $compile_type "$options"]
     file delete $src
 
-    return [list $lines $output]
+    set scan_output $output
+    # Don't try folding this into the switch above; calling "glob" before the
+    # file is created won't work.
+    if [regexp "rtl-(.*)" $type dummy rtl_type] {
+	set scan_output "[glob $src.\[0-9\]\[0-9\]\[0-9\]r.$rtl_type]"
+	file delete $output
+    }
+
+    return [list $lines $scan_output]
 }
 
 proc current_target_name { } {
@@ -565,12 +579,19 @@ proc check_effective_target_mpaired_single { } {
 # Return true if the target has access to FPU instructions.
 
 proc check_effective_target_hard_float { } {
-    return [check_no_compiler_messages hard_float assembly {
-	#if ((defined __mips \
-	      && (defined __mips_soft_float || defined __mips16)) \
-	     || (defined __xtensa__ && defined __XTENSA_SOFT_FLOAT__))
-	#error FOO
-	#endif
+    if { [istarget mips*-*-*] || [istarget xtensa-*-*] } {
+	return [check_no_compiler_messages hard_float assembly {
+		#if ((defined __mips \
+		      && (defined __mips_soft_float || defined __mips16)) \
+		 || (defined __xtensa__ && defined __XTENSA_SOFT_FLOAT__))
+		#error FOO
+		#endif
+	}]
+    }
+
+    # The generic test equates hard_float with "no call for adding doubles".
+    return [check_no_messages_and_pattern hard_float "!\\(call" rtl-expand {
+	double a (double b, double c) { return b + c; }
     }]
 }
 
