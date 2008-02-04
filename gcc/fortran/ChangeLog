@@ -1,3 +1,8 @@
+2008-02-04  Daniel Franke  <franke.daniel@gmail.com>
+
+	* resolve.c (resolve_where): Fix typo.
+	(gfc_resolve_where_code_in_forall): Likewise.
+
 2008-02-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/32760
