@@ -8894,9 +8894,9 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 			   /*integral_constant_expression_p=*/false);
 	max = fold_decl_constant_value (max);
 
-	if (TREE_CODE (max) != INTEGER_CST 
-	    && TREE_CODE (max) != TEMPLATE_PARM_INDEX
-	    && !at_function_scope_p ())
+	if (TREE_CODE (max) != INTEGER_CST
+	    && !at_function_scope_p ()
+	    && !value_dependent_expression_p (max))
 	  {
 	    if (complain & tf_error)
 	      error ("array bound is not an integer constant");

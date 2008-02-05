@@ -1,3 +1,8 @@
+2008-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33553
+	* g++.dg/template/array19.C: New test.
+
 2008-02-05  Diego Novillo  <dnovillo@google.com>
 
 	http://gcc.gnu.org/ml/gcc-patches/2008-02/msg00140.html
