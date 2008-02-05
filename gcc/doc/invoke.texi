@@ -1908,6 +1908,7 @@ inlined by default.
 
 @item -Wabi @r{(C++ only)}
 @opindex Wabi
+@opindex Wno-abi
 Warn when G++ generates code that is probably not compatible with the
 vendor-neutral C++ ABI@.  Although an effort has been made to warn about
 all such cases, there are probably some cases that are not warned about,
@@ -2007,12 +2008,14 @@ Instantiations of these templates may be mangled incorrectly.
 
 @item -Wctor-dtor-privacy @r{(C++ only)}
 @opindex Wctor-dtor-privacy
+@opindex Wno-ctor-dtor-privacy
 Warn when a class seems unusable because all the constructors or
 destructors in that class are private, and it has neither friends nor
 public static member functions.
 
 @item -Wnon-virtual-dtor @r{(C++ only)}
 @opindex Wnon-virtual-dtor
+@opindex Wno-non-virtual-dtor
 Warn when a class has virtual functions and accessible non-virtual
 destructor, in which case it would be possible but unsafe to delete
 an instance of a derived class through a pointer to the base class.
@@ -2020,6 +2023,7 @@ This warning is also enabled if -Weffc++ is specified.
 
 @item -Wreorder @r{(C++ only)}
 @opindex Wreorder
+@opindex Wno-reorder
 @cindex reordering, warning
 @cindex warning for reordering of member initializers
 Warn when the order of member initializers given in the code does not
@@ -2043,6 +2047,7 @@ The following @option{-W@dots{}} options are not affected by @option{-Wall}.
 @table @gcctabopt
 @item -Weffc++ @r{(C++ only)}
 @opindex Weffc++
+@opindex Wno-effc++
 Warn about violations of the following style guidelines from Scott Meyers'
 @cite{Effective C++} book:
 
@@ -2084,10 +2089,12 @@ to filter out those warnings.
 
 @item -Wno-deprecated @r{(C++ only)}
 @opindex Wno-deprecated
+@opindex Wdeprecated
 Do not warn about usage of deprecated features.  @xref{Deprecated Features}.
 
 @item -Wstrict-null-sentinel @r{(C++ only)}
 @opindex Wstrict-null-sentinel
+@opindex Wno-strict-null-sentinel
 Warn also about the use of an uncasted @code{NULL} as sentinel.  When
 compiling only with GCC this is a valid sentinel, as @code{NULL} is defined
 to @code{__null}.  Although it is a null pointer constant not a null pointer,
@@ -2096,6 +2103,7 @@ not portable across different compilers.
 
 @item -Wno-non-template-friend @r{(C++ only)}
 @opindex Wno-non-template-friend
+@opindex Wnon-template-friend
 Disable warnings when non-templatized friend functions are declared
 within a template.  Since the advent of explicit template specification
 support in G++, if the name of the friend is an unqualified-id (i.e.,
@@ -2112,6 +2120,7 @@ but disables the helpful warning.
 
 @item -Wold-style-cast @r{(C++ only)}
 @opindex Wold-style-cast
+@opindex Wno-old-style-cast
 Warn if an old-style (C-style) cast to a non-void type is used within
 a C++ program.  The new-style casts (@samp{dynamic_cast},
 @samp{static_cast}, @samp{reinterpret_cast}, and @samp{const_cast}) are
@@ -2119,6 +2128,7 @@ less vulnerable to unintended effects and much easier to search for.
 
 @item -Woverloaded-virtual @r{(C++ only)}
 @opindex Woverloaded-virtual
+@opindex Wno-overloaded-virtual
 @cindex overloaded virtual fn, warning
 @cindex warning for overloaded virtual fn
 Warn when a function declaration hides virtual functions from a
@@ -2146,11 +2156,13 @@ will fail to compile.
 
 @item -Wno-pmf-conversions @r{(C++ only)}
 @opindex Wno-pmf-conversions
+@opindex Wpmf-conversions
 Disable the diagnostic for converting a bound pointer to member function
 to a plain pointer.
 
 @item -Wsign-promo @r{(C++ only)}
 @opindex Wsign-promo
+@opindex Wno-sign-promo
 Warn when overload resolution chooses a promotion from unsigned or
 enumerated type to a signed type, over a conversion to an unsigned type of
 the same size.  Previous versions of G++ would try to preserve
@@ -2390,11 +2402,13 @@ file named @file{@var{sourcename}.decl}.
 
 @item -Wassign-intercept
 @opindex Wassign-intercept
+@opindex Wno-assign-intercept
 Warn whenever an Objective-C assignment is being intercepted by the
 garbage collector.
 
 @item -Wno-protocol
 @opindex Wno-protocol
+@opindex Wprotocol
 If a class is declared to implement a protocol, a warning is issued for
 every method in the protocol that is not implemented by the class.  The
 default behavior is to issue a warning for every method not explicitly
@@ -2405,6 +2419,7 @@ and no warning is issued for them.
 
 @item -Wselector
 @opindex Wselector
+@opindex Wno-selector
 Warn if multiple methods of different types for the same selector are
 found during compilation.  The check is performed on the list of methods
 in the final stage of compilation.  Additionally, a check is performed
@@ -2418,6 +2433,7 @@ being used.
 
 @item -Wstrict-selector-match
 @opindex Wstrict-selector-match
+@opindex Wno-strict-selector-match
 Warn if multiple methods with differing argument and/or return types are
 found for a given selector when attempting to send a message using this
 selector to a receiver of type @code{id} or @code{Class}.  When this flag
@@ -2427,6 +2443,7 @@ and alignment.
 
 @item -Wundeclared-selector
 @opindex Wundeclared-selector
+@opindex Wno-undeclared-selector
 Warn if a @code{@@selector(@dots{})} expression referring to an
 undeclared selector is found.  A selector is considered undeclared if no
 method with that name has been declared before the
@@ -2532,10 +2549,12 @@ Inhibit all warning messages.
 
 @item -Werror
 @opindex Werror
+@opindex Wno-error
 Make all warnings into errors.
 
 @item -Werror=
 @opindex Werror=
+@opindex Wno-error=
 Make the specified warning into an error.  The specifier for a warning
 is appended, for example @option{-Werror=switch} turns the warnings
 controlled by @option{-Wswitch} into errors.  This switch takes a
@@ -2552,6 +2571,7 @@ imply anything.
 
 @item -Wfatal-errors
 @opindex Wfatal-errors
+@opindex Wno-fatal-errors
 This option causes the compiler to abort compilation on the first error
 occurred rather than trying to keep going and printing further error
 messages.
@@ -2616,6 +2636,7 @@ warnings.
 
 @item -Wall
 @opindex Wall
+@opindex Wno-all
 This enables all the warnings about constructions that some users
 consider questionable, and that are easy to avoid (or modify to
 prevent the warning), even in conjunction with macros.  This also
@@ -2664,6 +2685,7 @@ them must be enabled individually.
 @item -Wextra
 @opindex W
 @opindex Wextra
+@opindex Wno-extra
 This enables some extra warning flags that are not enabled by
 @option{-Wall}. (This option used to be called @option{-W}.  The older
 name is still supported, but the newer name is more descriptive.)
@@ -2716,10 +2738,12 @@ constructor.
 
 @item -Wno-import
 @opindex Wno-import
+@opindex Wimport
 Inhibit warning messages about the use of @samp{#import}.
 
 @item -Wchar-subscripts
 @opindex Wchar-subscripts
+@opindex Wno-char-subscripts
 Warn if an array subscript has type @code{char}.  This is a common cause
 of error, as programmers often forget that this type is signed on some
 machines.
@@ -2727,12 +2751,14 @@ This warning is enabled by @option{-Wall}.
 
 @item -Wcomment
 @opindex Wcomment
+@opindex Wno-comment
 Warn whenever a comment-start sequence @samp{/*} appears in a @samp{/*}
 comment, or whenever a Backslash-Newline appears in a @samp{//} comment.
 This warning is enabled by @option{-Wall}.
 
 @item -Wformat
 @opindex Wformat
+@opindex Wno-format
 @opindex ffreestanding
 @opindex fno-builtin
 Check calls to @code{printf} and @code{scanf}, etc., to make sure that
@@ -2769,11 +2795,13 @@ aspects of format checking, the options @option{-Wformat-y2k},
 
 @item -Wformat-y2k
 @opindex Wformat-y2k
+@opindex Wno-format-y2k
 If @option{-Wformat} is specified, also warn about @code{strftime}
 formats which may yield only a two-digit year.
 
 @item -Wno-format-extra-args
 @opindex Wno-format-extra-args
+@opindex Wformat-extra-args
 If @option{-Wformat} is specified, do not warn about excess arguments to a
 @code{printf} or @code{scanf} format function.  The C standard specifies
 that such arguments are ignored.
@@ -2788,17 +2816,20 @@ Unix Specification says that such unused arguments are allowed.
 
 @item -Wno-format-zero-length
 @opindex Wno-format-zero-length
+@opindex Wformat-zero-length
 If @option{-Wformat} is specified, do not warn about zero-length formats.
 The C standard specifies that zero-length formats are allowed.
 
 @item -Wformat-nonliteral
 @opindex Wformat-nonliteral
+@opindex Wno-format-nonliteral
 If @option{-Wformat} is specified, also warn if the format string is not a
 string literal and so cannot be checked, unless the format function
 takes its format arguments as a @code{va_list}.
 
 @item -Wformat-security
 @opindex Wformat-security
+@opindex Wno-format-security
 If @option{-Wformat} is specified, also warn about uses of format
 functions that represent possible security problems.  At present, this
 warns about calls to @code{printf} and @code{scanf} functions where the
@@ -2811,12 +2842,14 @@ included in @option{-Wformat-nonliteral}.)
 
 @item -Wformat=2
 @opindex Wformat=2
+@opindex Wno-format=2
 Enable @option{-Wformat} plus format checks not included in
 @option{-Wformat}.  Currently equivalent to @samp{-Wformat
 -Wformat-nonliteral -Wformat-security -Wformat-y2k}.
 
 @item -Wnonnull
 @opindex Wnonnull
+@opindex Wno-nonnull
 Warn about passing a null pointer for arguments marked as
 requiring a non-null value by the @code{nonnull} function attribute.
 
@@ -2825,6 +2858,7 @@ can be disabled with the @option{-Wno-nonnull} option.
 
 @item -Winit-self @r{(C, C++, Objective-C and Objective-C++ only)}
 @opindex Winit-self
+@opindex Wno-init-self
 Warn about uninitialized variables which are initialized with themselves.
 Note this option can only be used with the @option{-Wuninitialized} option,
 which in turn only works with @option{-O1} and above.
@@ -2843,6 +2877,7 @@ int f()
 
 @item -Wimplicit-int
 @opindex Wimplicit-int
+@opindex Wno-implicit-int
 Warn when a declaration does not specify a type.
 This warning is enabled by @option{-Wall}.
 
@@ -2857,6 +2892,7 @@ enabled by default and it is made into an error by
 
 @item -Wimplicit
 @opindex Wimplicit
+@opindex Wno-implicit
 Same as @option{-Wimplicit-int} and @option{-Wimplicit-function-declaration}.
 This warning is enabled by @option{-Wall}.
 
@@ -2875,6 +2911,7 @@ This warning is also enabled by @option{-Wextra}.
 
 @item -Wmain
 @opindex Wmain
+@opindex Wno-main
 Warn if the type of @samp{main} is suspicious.  @samp{main} should be a
 function with external linkage, returning int, taking either zero
 arguments, two, or three arguments of appropriate types.
@@ -2882,6 +2919,7 @@ This warning is enabled by @option{-Wall}.
 
 @item -Wmissing-braces
 @opindex Wmissing-braces
+@opindex Wno-missing-braces
 Warn if an aggregate or union initializer is not fully bracketed.  In
 the following example, the initializer for @samp{a} is not fully
 bracketed, but that for @samp{b} is fully bracketed.
@@ -2895,10 +2933,12 @@ This warning is enabled by @option{-Wall}.
 
 @item -Wmissing-include-dirs @r{(C, C++, Objective-C and Objective-C++ only)}
 @opindex Wmissing-include-dirs
+@opindex Wno-missing-include-dirs
 Warn if a user-supplied include directory does not exist.
 
 @item -Wparentheses
 @opindex Wparentheses
+@opindex Wno-parentheses
 Warn if parentheses are omitted in certain contexts, such
 as when there is an assignment in a context where a truth value
 is expected, or when operators are nested whose precedence people
@@ -2952,6 +2992,7 @@ This warning is enabled by @option{-Wall}.
 
 @item -Wsequence-point
 @opindex Wsequence-point
+@opindex Wno-sequence-point
 Warn about code that may have undefined semantics because of violations
 of sequence point rules in the C and C++ standards.
 
@@ -3013,6 +3054,7 @@ This warning is enabled by @option{-Wall}.
 
 @item -Wswitch
 @opindex Wswitch
+@opindex Wno-switch
 Warn whenever a @code{switch} statement has an index of enumerated type
 and lacks a @code{case} for one or more of the named codes of that
 enumeration.  (The presence of a @code{default} label prevents this
@@ -3021,12 +3063,14 @@ provoke warnings when this option is used.
 This warning is enabled by @option{-Wall}.
 
 @item -Wswitch-default
-@opindex Wswitch-switch
+@opindex Wswitch-default
+@opindex Wno-switch-default
 Warn whenever a @code{switch} statement does not have a @code{default}
 case.
 
 @item -Wswitch-enum
 @opindex Wswitch-enum
+@opindex Wno-switch-enum
 Warn whenever a @code{switch} statement has an index of enumerated type
 and lacks a @code{case} for one or more of the named codes of that
 enumeration.  @code{case} labels outside the enumeration range also
@@ -3034,18 +3078,21 @@ provoke warnings when this option is used.
 
 @item -Wtrigraphs
 @opindex Wtrigraphs
+@opindex Wno-trigraphs
 Warn if any trigraphs are encountered that might change the meaning of
 the program (trigraphs within comments are not warned about).
 This warning is enabled by @option{-Wall}.
 
 @item -Wunused-function
 @opindex Wunused-function
+@opindex Wno-unused-function
 Warn whenever a static function is declared but not defined or a
 non-inline static function is unused.
 This warning is enabled by @option{-Wall}.
 
 @item -Wunused-label
 @opindex Wunused-label
+@opindex Wno-unused-label
 Warn whenever a label is declared but not used.
 This warning is enabled by @option{-Wall}.
 
@@ -3054,6 +3101,7 @@ To suppress this warning use the @samp{unused} attribute
 
 @item -Wunused-parameter
 @opindex Wunused-parameter
+@opindex Wno-unused-parameter
 Warn whenever a function parameter is unused aside from its declaration.
 
 To suppress this warning use the @samp{unused} attribute
@@ -3061,6 +3109,7 @@ To suppress this warning use the @samp{unused} attribute
 
 @item -Wunused-variable
 @opindex Wunused-variable
+@opindex Wno-unused-variable
 Warn whenever a local variable or non-constant static variable is unused
 aside from its declaration.
 This warning is enabled by @option{-Wall}.
@@ -3070,6 +3119,7 @@ To suppress this warning use the @samp{unused} attribute
 
 @item -Wunused-value
 @opindex Wunused-value
+@opindex Wno-unused-value
 Warn whenever a statement computes a result that is explicitly not
 used. To suppress this warning cast the unused expression to
 @samp{void}. This includes an expression-statement or the left-hand
@@ -3081,6 +3131,7 @@ This warning is enabled by @option{-Wall}.
 
 @item -Wunused
 @opindex Wunused
+@opindex Wno-unused
 All the above @option{-Wunused} options combined.
 
 In order to get a warning about an unused function parameter, you must
@@ -3089,6 +3140,7 @@ either specify @samp{-Wextra -Wunused} (note that @samp{-Wall} implies
 
 @item -Wuninitialized
 @opindex Wuninitialized
+@opindex Wno-uninitialized
 Warn if an automatic variable is used without first being initialized or
 if a variable may be clobbered by a @code{setjmp} call.
 
@@ -3173,6 +3225,7 @@ optimizing compilations (@option{-O1} and above).
 
 @item -Wunknown-pragmas
 @opindex Wunknown-pragmas
+@opindex Wno-unknown-pragmas
 @cindex warning for unknown pragmas
 @cindex unknown pragmas, warning
 @cindex pragmas, warning of unknown
@@ -3190,6 +3243,7 @@ invalid syntax, or conflicts between pragmas.  See also
 
 @item -Wstrict-aliasing
 @opindex Wstrict-aliasing
+@opindex Wno-strict-aliasing
 This option is only active when @option{-fstrict-aliasing} is active.
 It warns about code which might break the strict aliasing rules that the
 compiler is using for optimization.  The warning does not catch all
@@ -3199,6 +3253,7 @@ It is equivalent to @option{-Wstrict-aliasing=3}
 
 @item -Wstrict-aliasing=n
 @opindex Wstrict-aliasing=n
+@opindex Wno-strict-aliasing=n
 This option is only active when @option{-fstrict-aliasing} is active.
 It warns about code which might break the strict aliasing rules that the
 compiler is using for optimization.
@@ -3233,6 +3288,7 @@ Does not warn about incomplete types.
 @item -Wstrict-overflow
 @itemx -Wstrict-overflow=@var{n}
 @opindex Wstrict-overflow
+@opindex Wno-strict-overflow
 This option is only active when @option{-fstrict-overflow} is active.
 It warns about cases where the compiler optimizes based on the
 assumption that signed overflow does not occur.  Note that it does not
@@ -3299,6 +3355,7 @@ obtaining infinities and NaNs.
 
 @item -Wsystem-headers
 @opindex Wsystem-headers
+@opindex Wno-system-headers
 @cindex warnings from system headers
 @cindex system headers, warnings from
 Print warning messages for constructs found in system header files.
@@ -3312,6 +3369,7 @@ headers---for that, @option{-Wunknown-pragmas} must also be used.
 
 @item -Wfloat-equal
 @opindex Wfloat-equal
+@opindex Wno-float-equal
 Warn if floating point values are used in equality comparisons.
 
 The idea behind this is that sometimes it is convenient (for the
@@ -3327,6 +3385,7 @@ probably mistaken.
 
 @item -Wtraditional @r{(C only)}
 @opindex Wtraditional
+@opindex Wno-traditional
 Warn about certain constructs that behave differently in traditional and
 ISO C@.  Also warn about ISO C constructs that have no traditional C
 equivalent, and/or problematic constructs which should be avoided.
@@ -3415,6 +3474,7 @@ traditional C compatibility.
 
 @item -Wtraditional-conversion @r{(C only)}
 @opindex Wtraditional-conversion
+@opindex Wno-traditional-conversion
 Warn if a prototype causes a type conversion that is different from what
 would happen to the same argument in the absence of a prototype.  This
 includes conversions of fixed point to floating and vice versa, and
@@ -3423,6 +3483,7 @@ except when the same as the default promotion.
 
 @item -Wdeclaration-after-statement @r{(C only)}
 @opindex Wdeclaration-after-statement
+@opindex Wno-declaration-after-statement
 Warn when a declaration is found after a statement in a block.  This
 construct, known from C++, was introduced with ISO C99 and is by default
 allowed in GCC@.  It is not supported by ISO C90 and was not supported by
@@ -3430,6 +3491,7 @@ GCC versions before GCC 3.0.  @xref{Mixed Declarations}.
 
 @item -Wundef
 @opindex Wundef
+@opindex Wno-undef
 Warn if an undefined identifier is evaluated in an @samp{#if} directive.
 
 @item -Wno-endif-labels
@@ -3439,15 +3501,17 @@ Do not warn whenever an @samp{#else} or an @samp{#endif} are followed by text.
 
 @item -Wshadow
 @opindex Wshadow
+@opindex Wno-shadow
 Warn whenever a local variable shadows another local variable, parameter or
 global variable or whenever a built-in function is shadowed.
 
 @item -Wlarger-than-@var{len}
-@opindex Wlarger-than
+@opindex Wlarger-than-@var{len}
 Warn whenever an object of larger than @var{len} bytes is defined.
 
 @item -Wunsafe-loop-optimizations
 @opindex Wunsafe-loop-optimizations
+@opindex Wno-unsafe-loop-optimizations
 Warn if the loop cannot be optimized because the compiler could not
 assume anything on the bounds of the loop indices.  With
 @option{-funsafe-loop-optimizations} warn if the compiler made
@@ -3455,6 +3519,7 @@ such assumptions.
 
 @item -Wpointer-arith
 @opindex Wpointer-arith
+@opindex Wno-pointer-arith
 Warn about anything that depends on the ``size of'' a function type or
 of @code{void}.  GNU C assigns these types a size of 1, for
 convenience in calculations with @code{void *} pointers and pointers
@@ -3472,6 +3537,7 @@ example, warn if an unsigned variable is compared against zero with
 
 @item -Wbad-function-cast @r{(C only)}
 @opindex Wbad-function-cast
+@opindex Wno-bad-function-cast
 Warn whenever a function call is cast to a non-matching type.
 For example, warn if @code{int malloc()} is cast to @code{anything *}.
 
@@ -3487,12 +3553,14 @@ in ISO C++ 200x.  This warning is enabled by @option{-Wall}.
 
 @item -Wcast-qual
 @opindex Wcast-qual
+@opindex Wno-cast-qual
 Warn whenever a pointer is cast so as to remove a type qualifier from
 the target type.  For example, warn if a @code{const char *} is cast
 to an ordinary @code{char *}.
 
 @item -Wcast-align
 @opindex Wcast-align
+@opindex Wno-cast-align
 Warn whenever a pointer is cast such that the required alignment of the
 target is increased.  For example, warn if a @code{char *} is cast to
 an @code{int *} on machines where integers can only be accessed at
@@ -3500,6 +3568,7 @@ two- or four-byte boundaries.
 
 @item -Wwrite-strings
 @opindex Wwrite-strings
+@opindex Wno-write-strings
 When compiling C, give string constants the type @code{const
 char[@var{length}]} so that
 copying the address of one into a non-@code{const} @code{char *}
@@ -3514,6 +3583,7 @@ this is why we did not make @option{-Wall} request these warnings.
 
 @item -Wclobbered
 @opindex Wclobbered
+@opindex Wno-clobbered
 Warn for variables that might be changed by @samp{longjmp} or
 @samp{vfork}.  This warning is also enabled by @option{-Wextra}.
 
@@ -3540,6 +3610,7 @@ integers are disabled by default in C++ unless
 
 @item -Wempty-body
 @opindex Wempty-body
+@opindex Wno-empty-body
 Warn if an empty body occurs in an @samp{if}, @samp{else} or @samp{do
 while} statement.  Additionally, in C++, warn when an empty body occurs
 in a @samp{while} or @samp{for} statement with no whitespacing before
@@ -3547,6 +3618,7 @@ the semicolon.  This warning is also enabled by @option{-Wextra}.
 
 @item -Wsign-compare
 @opindex Wsign-compare
+@opindex Wno-sign-compare
 @cindex warning for comparison of signed and unsigned values
 @cindex comparison of signed and unsigned values, warning
 @cindex signed and unsigned values, comparison warning
@@ -3587,6 +3659,7 @@ bit-wise operator is likely to be expected.
 
 @item -Waggregate-return
 @opindex Waggregate-return
+@opindex Wno-aggregate-return
 Warn if any functions that return structures or unions are defined or
 called.  (In languages where you can return an array, this also elicits
 a warning.)
@@ -3601,6 +3674,7 @@ attributes.
 
 @item -Wstrict-prototypes @r{(C only)}
 @opindex Wstrict-prototypes
+@opindex Wno-strict-prototypes
 Warn if a function is declared or defined without specifying the
 argument types.  (An old-style function definition is permitted without
 a warning if preceded by a declaration which specifies the argument
@@ -3608,6 +3682,7 @@ types.)
 
 @item -Wold-style-declaration @r{(C only)}
 @opindex Wold-style-declaration
+@opindex Wno-old-style-declaration
 Warn for obsolescent usages, according to the C Standard, in a
 declaration. For example, warn if storage-class specifiers like
 @code{static} are not the first things in a declaration.  This warning
@@ -3615,11 +3690,13 @@ is also enabled by @option{-Wextra}.
 
 @item -Wold-style-definition @r{(C only)}
 @opindex Wold-style-definition
+@opindex Wno-old-style-definition
 Warn if an old-style function definition is used.  A warning is given
 even if there is a previous prototype.
 
 @item -Wmissing-parameter-type @r{(C only)}
 @opindex Wmissing-parameter-type
+@opindex Wno-missing-parameter-type
 A function parameter is declared without a type specifier in K&R-style
 functions:
 
@@ -3631,6 +3708,7 @@ This warning is also enabled by @option{-Wextra}.
 
 @item -Wmissing-prototypes @r{(C only)}
 @opindex Wmissing-prototypes
+@opindex Wno-missing-prototypes
 Warn if a global function is defined without a previous prototype
 declaration.  This warning is issued even if the definition itself
 provides a prototype.  The aim is to detect global functions that fail
@@ -3638,6 +3716,7 @@ to be declared in header files.
 
 @item -Wmissing-declarations @r{(C and C++ only)}
 @opindex Wmissing-declarations
+@opindex Wno-missing-declarations
 Warn if a global function is defined without a previous declaration.
 Do so even if the definition itself provides a prototype.
 Use this option to detect global functions that are not declared in
@@ -3646,8 +3725,10 @@ or for inline functions, or for functions in anonymous namespaces.
 
 @item -Wmissing-field-initializers
 @opindex Wmissing-field-initializers
+@opindex Wno-missing-field-initializers
 @opindex W
 @opindex Wextra
+@opindex Wno-extra
 Warn if a structure's initializer has some fields missing.  For
 example, the following code would cause such a warning, because
 @code{x.h} is implicitly zero:
@@ -3670,6 +3751,7 @@ warnings without this one, use @samp{-Wextra -Wno-missing-field-initializers}.
 
 @item -Wmissing-noreturn
 @opindex Wmissing-noreturn
+@opindex Wno-missing-noreturn
 Warn about functions which might be candidates for attribute @code{noreturn}.
 Note these are only possible candidates, not absolute ones.  Care should
 be taken to manually verify functions actually do not ever return before
@@ -3679,7 +3761,9 @@ hosted C environments.
 
 @item -Wmissing-format-attribute
 @opindex Wmissing-format-attribute
+@opindex Wno-missing-format-attribute
 @opindex Wformat
+@opindex Wno-format
 Warn about function pointers which might be candidates for @code{format}
 attributes.  Note these are only possible candidates, not absolute ones.
 GCC will guess that function pointers with @code{format} attributes that
@@ -3706,7 +3790,7 @@ Usually they indicate a typo in the user's code, as they have
 implementation-defined values, and should not be used in portable code.
 
 @item -Wnormalized=<none|id|nfc|nfkc>
-@opindex Wnormalized
+@opindex Wnormalized=
 @cindex NFC
 @cindex NFKC
 @cindex character set, input normalization
@@ -3752,6 +3836,7 @@ unable to be fixed to display these characters distinctly.
 
 @item -Wno-deprecated-declarations
 @opindex Wno-deprecated-declarations
+@opindex Wdeprecated-declarations
 Do not warn about uses of functions (@pxref{Function Attributes}),
 variables (@pxref{Variable Attributes}), and types (@pxref{Type
 Attributes}) marked as deprecated by using the @code{deprecated}
@@ -3759,12 +3844,15 @@ attribute.
 
 @item -Wno-overflow
 @opindex Wno-overflow
+@opindex Woverflow
 Do not warn about compile-time overflow in constant expressions.
 
 @item -Woverride-init
 @opindex Woverride-init
+@opindex Wno-override-init
 @opindex W
 @opindex Wextra
+@opindex Wno-extra
 Warn if an initialized field without side effects is overridden when
 using designated initializers (@pxref{Designated Inits, , Designated
 Initializers}).
@@ -3775,6 +3863,7 @@ This warning is included in @option{-Wextra}.  To get other
 
 @item -Wpacked
 @opindex Wpacked
+@opindex Wno-packed
 Warn if a structure is given the packed attribute, but the packed
 attribute has no effect on the layout or size of the structure.
 Such structures may be mis-aligned for little benefit.  For
@@ -3797,6 +3886,7 @@ struct bar @{
 
 @item -Wpadded
 @opindex Wpadded
+@opindex Wno-padded
 Warn if padding is included in a structure, either to align an element
 of the structure or to align the whole structure.  Sometimes when this
 happens it is possible to rearrange the fields of the structure to
@@ -3804,15 +3894,18 @@ reduce the padding and so make the structure smaller.
 
 @item -Wredundant-decls
 @opindex Wredundant-decls
+@opindex Wno-redundant-decls
 Warn if anything is declared more than once in the same scope, even in
 cases where multiple declaration is valid and changes nothing.
 
 @item -Wnested-externs @r{(C only)}
 @opindex Wnested-externs
+@opindex Wno-nested-externs
 Warn if an @code{extern} declaration is encountered within a function.
 
 @item -Wunreachable-code
 @opindex Wunreachable-code
+@opindex Wno-unreachable-code
 Warn if the compiler detects that code will never be executed.
 
 This option is intended to warn when the compiler detects that at
@@ -3835,6 +3928,7 @@ code is to provide behavior which is selectable at compile-time.
 
 @item -Winline
 @opindex Winline
+@opindex Wno-inline
 Warn if a function can not be inlined and it was declared as inline.
 Even with this option, the compiler will not warn about failures to
 inline functions declared in system headers.
@@ -3848,6 +3942,7 @@ warnings produced by @option{-Winline} to appear or disappear.
 
 @item -Wno-invalid-offsetof @r{(C++ only)}
 @opindex Wno-invalid-offsetof
+@opindex Winvalid-offsetof
 Suppress warnings from applying the @samp{offsetof} macro to a non-POD
 type.  According to the 1998 ISO C++ standard, applying @samp{offsetof}
 to a non-POD type is undefined.  In existing C++ implementations,
@@ -3863,16 +3958,19 @@ of the C++ standard.
 
 @item -Wno-int-to-pointer-cast @r{(C only)}
 @opindex Wno-int-to-pointer-cast
+@opindex Wint-to-pointer-cast
 Suppress warnings from casts to pointer type of an integer of a
 different size.
 
 @item -Wno-pointer-to-int-cast @r{(C only)}
 @opindex Wno-pointer-to-int-cast
+@opindex Wpointer-to-int-cast
 Suppress warnings from casts from a pointer to an integer type of a
 different size.
 
 @item -Winvalid-pch
 @opindex Winvalid-pch
+@opindex Wno-invalid-pch
 Warn if a precompiled header (@pxref{Precompiled Headers}) is found in
 the search path but can't be used.
 
@@ -3907,6 +4005,7 @@ and/or writes to register variables.
 
 @item -Wdisabled-optimization
 @opindex Wdisabled-optimization
+@opindex Wno-disabled-optimization
 Warn if a requested optimization pass is disabled.  This warning does
 not generally indicate that there is anything wrong with your code; it
 merely indicates that GCC's optimizers were unable to handle the code
@@ -3924,11 +4023,13 @@ This option is only supported for C and Objective-C@.  It is implied by
 
 @item -Wstack-protector
 @opindex Wstack-protector
+@opindex Wno-stack-protector
 This option is only active when @option{-fstack-protector} is active.  It
 warns about functions that will not be protected against stack smashing.
 
 @item -Woverlength-strings
 @opindex Woverlength-strings
+@opindex Wno-overlength-strings
 Warn about string constants which are longer than the ``minimum
 maximum'' length specified in the C standard.  Modern compilers
 generally allow string constants which are much longer than the
