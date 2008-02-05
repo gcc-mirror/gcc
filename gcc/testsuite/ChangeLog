@@ -1,6 +1,14 @@
 2008-02-05  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
+	2008-01-17  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34825
+	* gcc.dg/pr34825.c: New testcase.
+
+2008-02-05  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
 	2008-01-16  Richard Guenther  <rguenther@suse.de>
 
 	PR c/34768
