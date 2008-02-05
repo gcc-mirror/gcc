@@ -1,3 +1,11 @@
+2008-02-05  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/35074
+	* decl2.c (save_template_attributes): When we're modifying the
+	TYPE_MAIN_VARIANT to add new attributes, be sure to also modify
+	all of the other variants to add those same attributes. Otherwise,
+	the main variant will be inconsistent with those other variants.
+	
 2008-02-04  Richard Guenther  <rguenther@suse.de>
 
 	PR java/35035
