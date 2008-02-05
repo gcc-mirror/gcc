@@ -250,6 +250,21 @@ gfc_resolve_array_spec (gfc_array_spec *as, int check_constant)
       e = as->upper[i];
       if (resolve_array_bound (e, check_constant) == FAILURE)
 	return FAILURE;
+
+      if ((as->lower[i] == NULL) || (as->upper[i] == NULL))
+	continue;
+
+      /* If the size is negative in this dimension, set it to zero.  */
+      if (as->lower[i]->expr_type == EXPR_CONSTANT
+	    && as->upper[i]->expr_type == EXPR_CONSTANT
+	    && mpz_cmp (as->upper[i]->value.integer,
+			as->lower[i]->value.integer) < 0)
+	{
+	  gfc_free_expr (as->upper[i]);
+	  as->upper[i] = gfc_copy_expr (as->lower[i]);
+	  mpz_sub_ui (as->upper[i]->value.integer,
+		      as->upper[i]->value.integer, 1);
+	}
     }
 
   return SUCCESS;
@@ -318,15 +333,6 @@ match_array_element_spec (gfc_array_spec *as)
   if (m == MATCH_NO)
     return AS_ASSUMED_SHAPE;
 
-  /* If the size is negative in this dimension, set it to zero.  */
-  if ((*lower)->expr_type == EXPR_CONSTANT
-      && (*upper)->expr_type == EXPR_CONSTANT
-      && mpz_cmp ((*upper)->value.integer, (*lower)->value.integer) < 0)
-    {
-      gfc_free_expr (*upper);
-      *upper = gfc_copy_expr (*lower);
-      mpz_sub_ui ((*upper)->value.integer, (*upper)->value.integer, 1);
-    }
   return AS_EXPLICIT;
 }
 
