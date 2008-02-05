@@ -171,7 +171,7 @@ void z(int n, ...)
   while (n--)
     {
       int *a = va_arg (list, int *);
-      __builtin_bzero (a, sizeof (l));
+      __builtin_memset (a, 0, sizeof (l));
     }
   va_end (list);
 }

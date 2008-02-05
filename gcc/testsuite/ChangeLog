@@ -1,3 +1,8 @@
+2008-02-05  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR testsuite/33946
+	* gcc.c-torture/execute/multi-ix.c: Call memset instead of bzero.
+
 2008-02-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/35083
