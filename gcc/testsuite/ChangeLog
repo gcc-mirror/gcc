@@ -1,3 +1,8 @@
+2008-02-05  Bob Wilson  <bob.wilson@acm.org>
+
+	* lib/target-supports.exp (check_effective_target_hard_float): Remove
+	special case for xtensa-*-*.
+	
 2008-02-05  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/35037
