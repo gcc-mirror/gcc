@@ -1,10 +1,16 @@
+2008-02-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (floatunssisf2): Use
+	ix86_expand_convert_uns_sisf_sse also for TARGET_SSE.
+	(floatunssi<mode>2): Rename from floatunssisf2 and floatunssidf2.
+	Macroize expander using MODEF mode iterator.
+
 2008-02-05  Diego Novillo  <dnovillo@google.com>
 
 	http://gcc.gnu.org/ml/gcc-patches/2008-02/msg00140.html
 
 	PR 33738
-	* tree-vrp.c (vrp_evaluate_conditional): Revert fix for
-	PR 33738.
+	* tree-vrp.c (vrp_evaluate_conditional): Revert fix for PR 33738.
 
 2008-02-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
