@@ -1,3 +1,12 @@
+2008-02-05  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2008-01-16  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/33819
+	* typeck.c (is_bitfield_expr_with_lowered_type): Recurse
+	for conversions to type variants.
+
 2008-02-01  Release Manager
 
 	* GCC 4.2.3 released.
