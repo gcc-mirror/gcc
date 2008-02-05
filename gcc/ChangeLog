@@ -1,3 +1,7 @@
+2008-02-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/include/texinfo.tex: Update to version 2008-02-04.16.
+
 2008-02-04  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/33631
