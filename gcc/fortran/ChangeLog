@@ -1,3 +1,9 @@
+2008-02-05  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/35093
+	* data.c (gfc_assign_data_value): Only free "size" if
+	it has not already been freed.
+
 2008-02-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34945

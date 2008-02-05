@@ -321,15 +321,17 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
 	  else
 	    {
 	      mpz_t size;
-	      if (spec_size (ref->u.ar.as, &size) == SUCCESS
-		   && mpz_cmp (offset, size) >= 0)
+	      if (spec_size (ref->u.ar.as, &size) == SUCCESS)
 		{
+		  if (mpz_cmp (offset, size) >= 0)
+		  {
+		    mpz_clear (size);
+		    gfc_error ("Data element above array upper bound at %L",
+			       &lvalue->where);
+		    return FAILURE;
+		  }
 		  mpz_clear (size);
-		  gfc_error ("Data element above array upper bound at %L",
-			     &lvalue->where);
-		  return FAILURE;
 		}
-	      mpz_clear (size);
 	    }
 
 	  /* Splay tree containing offset and gfc_constructor.  */
