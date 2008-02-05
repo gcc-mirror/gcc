@@ -1,3 +1,13 @@
+2008-02-06  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR documentation/30330
+	* doc/invoke.texi (C++ Dialect Options)
+	(Objective-C and Objective-C++ Dialect Options, Warning Options):
+	For each warning option -Wfoo that allows -Wno-foo, ensure both
+	-Wfoo and -Wno-foo are listed in the option index.  Fix index
+	entry of -Wswitch-default, index -Wnormalized= including the
+	`=', and -Wlarger-than-@var{len} including @var{len}.
+
 2008-02-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (floatunssisf2): Use
