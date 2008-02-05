@@ -1,3 +1,8 @@
+2008-02-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR other/35070
+	* toplev.c (print_version): Honor `indent' for GMP/MPFR warnings.
+
 2008-02-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/35084
