@@ -3254,7 +3254,7 @@ ix86_function_regparm (const_tree type, const_tree decl)
    indirectly or considering a libcall.  Otherwise return 0.  */
 
 static int
-ix86_function_sseregparm (const_tree type, const_tree decl)
+ix86_function_sseregparm (const_tree type, const_tree decl, bool warn)
 {
   gcc_assert (!TARGET_64BIT);
 
@@ -3265,12 +3265,15 @@ ix86_function_sseregparm (const_tree type, const_tree decl)
     {
       if (!TARGET_SSE)
 	{
-	  if (decl)
-	    error ("Calling %qD with attribute sseregparm without "
-		   "SSE/SSE2 enabled", decl);
-	  else
-	    error ("Calling %qT with attribute sseregparm without "
-		   "SSE/SSE2 enabled", type);
+	  if (warn)
+	    {
+	      if (decl)
+		error ("Calling %qD with attribute sseregparm without "
+		       "SSE/SSE2 enabled", decl);
+	      else
+		error ("Calling %qT with attribute sseregparm without "
+		       "SSE/SSE2 enabled", type);
+	    }
 	  return 0;
 	}
 
@@ -3485,7 +3488,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
 
       /* Set up the number of SSE registers used for passing SFmode
 	 and DFmode arguments.  Warn for mismatching ABI.  */
-      cum->float_in_sse = ix86_function_sseregparm (fntype, fndecl);
+      cum->float_in_sse = ix86_function_sseregparm (fntype, fndecl, true);
     }
 }
 
@@ -4610,7 +4613,7 @@ function_value_32 (enum machine_mode orig_mode, enum machine_mode mode,
      SSE math is enabled or for functions with sseregparm attribute.  */
   if ((fn || fntype) && (mode == SFmode || mode == DFmode))
     {
-      int sse_level = ix86_function_sseregparm (fntype, fn);
+      int sse_level = ix86_function_sseregparm (fntype, fn, false);
       if ((sse_level >= 1 && mode == SFmode)
 	  || (sse_level == 2 && mode == DFmode))
 	regno = FIRST_SSE_REG;
