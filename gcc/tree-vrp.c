@@ -5073,48 +5073,6 @@ vrp_evaluate_conditional (tree cond, tree stmt)
 	}
     }
 
-  if (warn_type_limits
-      && ret
-      && TREE_CODE_CLASS (TREE_CODE (cond)) == tcc_comparison)
-    {
-      /* If the comparison is being folded and the operand on the LHS
-	 is being compared against a constant value that is outside of
-	 the natural range of OP0's type, then the predicate will
-	 always fold regardless of the value of OP0.  If -Wtype-limits
-	 was specified, emit a warning.  */
-      const char *warnmsg = NULL;
-      tree op0 = TREE_OPERAND (cond, 0);
-      tree op1 = TREE_OPERAND (cond, 1);
-      tree type = TREE_TYPE (op0);
-      value_range_t *vr0 = get_value_range (op0);
-
-      if (vr0->type != VR_VARYING
-	  && INTEGRAL_TYPE_P (type)
-	  && vrp_val_is_min (vr0->min)
-	  && vrp_val_is_max (vr0->max)
-	  && is_gimple_min_invariant (op1))
-	{
-	  if (integer_zerop (ret))
-	    warnmsg = G_("comparison always false due to limited range of "
-		         "data type");
-	  else
-	    warnmsg = G_("comparison always true due to limited range of "
-			 "data type");
-	}
-
-      if (warnmsg)
-	{
-	  location_t locus;
-
-	  if (!EXPR_HAS_LOCATION (stmt))
-	    locus = input_location;
-	  else
-	    locus = EXPR_LOCATION (stmt);
-
-	  warning (OPT_Wextra, "%H%s", &locus, warnmsg);
-	}
-    }
-
   return ret;
 }
 

@@ -1,3 +1,10 @@
+2008-02-05  Diego Novillo  <dnovillo@google.com>
+
+	http://gcc.gnu.org/ml/gcc-patches/2008-02/msg00140.html
+
+	PR 33738
+	* g++.dg/warn/pr33738.C: Remove.
+
 2008-02-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34945

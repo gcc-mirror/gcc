@@ -1,3 +1,11 @@
+2008-02-05  Diego Novillo  <dnovillo@google.com>
+
+	http://gcc.gnu.org/ml/gcc-patches/2008-02/msg00140.html
+
+	PR 33738
+	* tree-vrp.c (vrp_evaluate_conditional): Revert fix for
+	PR 33738.
+
 2008-02-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR other/35070
