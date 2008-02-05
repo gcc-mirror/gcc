@@ -1068,6 +1068,7 @@ save_template_attributes (tree *attr_p, tree *decl_p)
 {
   tree late_attrs = splice_template_attributes (attr_p, *decl_p);
   tree *q;
+  tree old_attrs = NULL_TREE;
 
   if (!late_attrs)
     return;
@@ -1090,9 +1091,26 @@ save_template_attributes (tree *attr_p, tree *decl_p)
   else
     q = &TYPE_ATTRIBUTES (*decl_p);
 
-  if (*q)
-    q = &TREE_CHAIN (tree_last (*q));
+  old_attrs = *q;
+
+  /* Place the late attributes at the beginning of the attribute
+     list.  */
+  TREE_CHAIN (tree_last (late_attrs)) = *q;
   *q = late_attrs;
+
+  if (!DECL_P (*decl_p) && *decl_p == TYPE_MAIN_VARIANT (*decl_p))
+    {
+      /* We've added new attributes directly to the main variant, so
+	 now we need to update all of the other variants to include
+	 these new attributes.  */
+      tree variant;
+      for (variant = TYPE_NEXT_VARIANT (*decl_p); variant;
+	   variant = TYPE_NEXT_VARIANT (variant))
+	{
+	  gcc_assert (TYPE_ATTRIBUTES (variant) == old_attrs);
+	  TYPE_ATTRIBUTES (variant) = TYPE_ATTRIBUTES (*decl_p);
+	}
+    }
 }
 
 /* Like decl_attributes, but handle C++ complexity.  */
