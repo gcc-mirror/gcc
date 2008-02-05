@@ -1,3 +1,9 @@
+2008-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33553
+	* pt.c (tsubst) <case INTEGER_TYPE>: Don't issue error if max is
+	value dependent expression.
+
 2008-02-05  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR c++/35074
