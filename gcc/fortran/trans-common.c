@@ -318,6 +318,15 @@ build_field (segment_info *h, tree union_type, record_layout_info rli)
       GFC_DECL_ASSIGN_ADDR (field) = pushdecl_top_level (addr);
     }
 
+  /* If this field is volatile, mark it.  */
+  if (h->sym->attr.volatile_)
+    {
+      tree new;
+      TREE_THIS_VOLATILE (field) = 1;
+      new = build_qualified_type (TREE_TYPE (field), TYPE_QUAL_VOLATILE);
+      TREE_TYPE (field) = new;
+    }
+
   h->field = field;
 }
 

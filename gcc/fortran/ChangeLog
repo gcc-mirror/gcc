@@ -1,3 +1,8 @@
+2008-02-05  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/35037
+	* trans-common.c (build_field): Mark fields as volatile when needed.
+
 2008-02-05  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/35093
