@@ -1,3 +1,9 @@
+2008-02-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/32315
+	* data.c (gfc_assign_data_value): Add bounds check for array
+	references.
+
 2008-02-04  Daniel Franke  <franke.daniel@gmail.com>
 
 	* resolve.c (resolve_where): Fix typo.

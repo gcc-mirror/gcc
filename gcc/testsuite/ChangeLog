@@ -1,3 +1,8 @@
+2008-02-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/32315
+	* gfortran.dg/data_bounds_1.f90: New test.
+
 2008-02-04  Diego Novillo  <dnovillo@google.com>
 
 	http://gcc.gnu.org/ml/gcc-patches/2008-02/msg00110.html
