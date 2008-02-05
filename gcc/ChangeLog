@@ -1,3 +1,9 @@
+2008-02-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/35083
+	* config/i386/i386.md (floatunsisf2): Enable for TARGET_SSE_MATH only.
+	Call ix86_expand_convert_uns_sisf_sse for TARGET_SSE2.
+
 2008-02-04  Diego Novillo  <dnovillo@google.com>
 
 	http://gcc.gnu.org/ml/gcc-patches/2008-02/msg00110.html
