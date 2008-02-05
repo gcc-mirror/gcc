@@ -579,11 +579,9 @@ proc check_effective_target_mpaired_single { } {
 # Return true if the target has access to FPU instructions.
 
 proc check_effective_target_hard_float { } {
-    if { [istarget mips*-*-*] || [istarget xtensa-*-*] } {
+    if { [istarget mips*-*-*] } {
 	return [check_no_compiler_messages hard_float assembly {
-		#if ((defined __mips \
-		      && (defined __mips_soft_float || defined __mips16)) \
-		 || (defined __xtensa__ && defined __XTENSA_SOFT_FLOAT__))
+		#if (defined __mips_soft_float || defined __mips16)
 		#error FOO
 		#endif
 	}]
