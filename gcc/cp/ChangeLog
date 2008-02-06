@@ -1,3 +1,8 @@
+2008-02-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR other/35107
+	* Make-lang.in (cc1plus-dummy, cc1plus): Add $(GMPLIBS).
+
 2008-02-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/35056

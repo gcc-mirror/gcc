@@ -84,7 +84,7 @@ tree1$(exeext): treelang/tree1.o treelang/treetree.o treelang/tree-convert.o \
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
 	treelang/tree1.o treelang/treetree.o treelang/tree-convert.o \
 	treelang/lex.o treelang/parse.o \
-	$(BACKEND) $(LIBS) attribs.o
+	$(BACKEND) $(LIBS) attribs.o $(GMPLIBS)
 
 # Create the compiler driver treelang.
 gtreelang$(exeext): $(GCC_OBJS) version.o prefix.o intl.o $(EXTRA_GCC_OBJS) \

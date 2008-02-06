@@ -873,7 +873,7 @@ BUILD_LIBDEPS= $(BUILD_LIBIBERTY)
 
 # How to link with both our special library facilities
 # and the system's installed libraries.
-LIBS = @LIBS@ $(CPPLIB) $(LIBINTL) $(LIBICONV) $(LIBIBERTY) $(LIBDECNUMBER) $(GMPLIBS)
+LIBS = @LIBS@ $(CPPLIB) $(LIBINTL) $(LIBICONV) $(LIBIBERTY) $(LIBDECNUMBER)
 
 # Any system libraries needed just for GNAT.
 SYSLIBS = @GNAT_LIBEXC@
@@ -1554,7 +1554,7 @@ dummy-checksum.o : dummy-checksum.c
 
 cc1-dummy$(exeext): $(C_OBJS) dummy-checksum.o $(BACKEND) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) dummy-checksum.o \
-	  $(BACKEND) $(LIBS)
+	  $(BACKEND) $(LIBS) $(GMPLIBS)
 
 cc1-checksum.c : cc1-dummy$(exeext) build/genchecksum$(build_exeext)
 	build/genchecksum$(build_exeext) cc1-dummy$(exeext) > $@
@@ -1563,7 +1563,7 @@ cc1-checksum.o : cc1-checksum.c
 
 cc1$(exeext): $(C_OBJS) cc1-checksum.o $(BACKEND) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) cc1-checksum.o \
-	  $(BACKEND) $(LIBS)
+	  $(BACKEND) $(LIBS) $(GMPLIBS)
 
 #
 # Build libgcc.a.
