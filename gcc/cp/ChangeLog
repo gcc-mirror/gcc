@@ -1,3 +1,11 @@
+2008-02-06  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c++/35056
+	* tree.c: Include tree-flow.h.
+	(build_target_expr): Check type compatibility.
+	* Make-lang.in (cp/tree.o): Depend on $(TREE_FLOW_H).
+	* call.c (convert_like_real): Convert bitfield to expected type.
+
 2008-02-06  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR c++/35049

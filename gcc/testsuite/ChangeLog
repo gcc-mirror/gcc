@@ -1,3 +1,8 @@
+2008-02-06  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c++/35056
+	* g++.dg/conversion/bitfield8.C: New.
+
 2008-02-06  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* g++.dg/ext/vector13.C: Fix for compilation under -pedantic.
