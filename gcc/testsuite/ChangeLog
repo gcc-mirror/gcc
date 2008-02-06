@@ -1,3 +1,9 @@
+2008-02-06  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/35049
+	PR c++/35096
+	* g++.dg/ext/vector13.C: New.
+
 2008-02-06  David Daney  <ddaney@avtrex.com>
 
 	* g++.dg/tree-ssa/ivopts-1.C: Remove xfail for mips*-*-*.
