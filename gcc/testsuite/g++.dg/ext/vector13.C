@@ -3,4 +3,4 @@
 
 typedef const int X __attribute((vector_size(8)));
 extern const int x[] __attribute((vector_size(8)));
-X x[] = {};
+X x[] = { 5 };

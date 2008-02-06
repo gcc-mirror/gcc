@@ -1,5 +1,9 @@
 2008-02-06  Douglas Gregor  <doug.gregor@gmail.com>
 
+	* g++.dg/ext/vector13.C: Fix for compilation under -pedantic.
+
+2008-02-06  Douglas Gregor  <doug.gregor@gmail.com>
+
 	PR c++/35049
 	PR c++/35096
 	* g++.dg/ext/vector13.C: New.
