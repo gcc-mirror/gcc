@@ -1,5 +1,9 @@
 2008-02-06  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
+	* config/arm/rtems-elf.h (TARGET_OS_CPP_BUILTINS): Add 
+	builtin_define ("__USE_INIT_FINI__").
+	* config/h8300/t-rtems (MULTILIB_OPTION,MULTILIB_DIRNAMES): Add
+	-msx multilibs.
 	* gthr-rtems.h: Remove __GTHREAD_MUTEX_INIT.
 
 2008-02-05  Richard Guenther  <rguenther@suse.de>
