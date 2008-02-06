@@ -1,3 +1,8 @@
+2008-02-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR other/35107
+	* Make-lang.in (cc1objplus-dummy, cc1objplus): Add $(GMPLIBS).
+
 2007-08-02  Nick Clifton  <nickc@redhat.com>
 
 	* Make-lang.in: Change copyright header to refer to version 3 of

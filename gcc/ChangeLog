@@ -1,3 +1,9 @@
+2008-02-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR other/35107
+	* Makefile.in (LIBS): Remove $(GMPLIBS).
+	(cc1-dummy, cc1): Add $(GMPLIBS).
+
 2008-02-06  Jan Hubicka  <jh@suse.cz>
 
 	PR target/23322

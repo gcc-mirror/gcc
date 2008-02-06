@@ -1,3 +1,8 @@
+2008-02-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR other/35107
+	* Make-lang.in (gnat1): Add $(GMPLIBS).
+
 2008-01-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl.c (components_to_record): Improve comment.
