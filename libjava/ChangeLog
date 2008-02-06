@@ -1,3 +1,9 @@
+2008-02-06  Andreas Tobler  <a.tobler@schweiz.org>
+
+	PR libgcj/30071
+	* Makefile.am (install-exec-hook): Add install-binPROGRAMS.
+	* Makefile.in: Regenerate.
+
 2008-01-24  David Edelsohn  <edelsohn@gnu.org>
 
 	* shlibpath.m4: Add AIX 6 support.
