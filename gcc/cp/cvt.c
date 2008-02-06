@@ -465,8 +465,8 @@ convert_to_reference (tree reftype, tree expr, int convtype,
       /* B* bp; A& ar = (A&)bp; is valid, but it's probably not what they
 	 meant.  */
       if (TREE_CODE (intype) == POINTER_TYPE
-	  && (comptypes (TREE_TYPE (intype), type,
-			 COMPARE_BASE | COMPARE_DERIVED)))
+	  && (cp_comptypes (TREE_TYPE (intype), type,
+                            COMPARE_BASE | COMPARE_DERIVED)))
 	warning (0, "casting %qT to %qT does not dereference pointer",
 		 intype, reftype);
 
@@ -604,7 +604,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 	/* The call to fold will not always remove the NOP_EXPR as
 	   might be expected, since if one of the types is a typedef;
 	   the comparison in fold is just equality of pointers, not a
-	   call to comptypes.  We don't call fold in this case because
+	   call to cp_comptypes.  We don't call fold in this case because
 	   that can result in infinite recursion; fold will call
 	   convert, which will call ocp_convert, etc.  */
 	return e;

@@ -1015,9 +1015,9 @@ decls_match (tree newdecl, tree olddecl)
       else if (TREE_TYPE (newdecl) == NULL_TREE)
 	types_match = 0;
       else
-	types_match = comptypes (TREE_TYPE (newdecl),
-				 TREE_TYPE (olddecl),
-				 COMPARE_REDECLARATION);
+	types_match = cp_comptypes (TREE_TYPE (newdecl),
+                                    TREE_TYPE (olddecl),
+                                    COMPARE_REDECLARATION);
     }
 
   return types_match;
