@@ -1,22 +1,21 @@
-# Translation of gcc-4.1.1.po to Russian
-# Russian messages for GNU CC
+# Translation of gcc messages to Russian
 # Copyright (C) 2006 Free Software Foundation, Inc.
-# This file is distributed under the same license as the GCC package.
-#
+# This file is distributed under the same license as the gcc package.
 # Nadezhda Vyukova <niva@niisi.msk.ru>, 2006.
-# Pavel Maryanov <acid_jack@ukr.net>, 2006.
+# Pavel Maryanov <acid_jack@ukr.net>, 2006, 2008.
+# Nickolay V. Shmyrev <nshmyrev@yandex.ru>, 2008.
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc-4.1.1\n"
+"Project-Id-Version: gcc 4.3-b20071109\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2007-11-08 21:09+0000\n"
-"PO-Revision-Date: 2006-12-07 17:43+0200\n"
+"PO-Revision-Date: 2008-02-06 15:29+0200\n"
 "Last-Translator: Pavel Maryanov <acid_jack@ukr.net>\n"
-"Language-Team: Russian <ru@li.org>\n"
+"Language-Team: Russian <gnu@mx.ru>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.11.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: c-decl.c:3814
@@ -32884,9 +32883,9 @@ msgid "Unexpected type in truthvalue_conversion"
 msgstr ""
 
 #: fortran/f95-lang.c:289
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can't open input file: %s"
-msgstr "ошибка открытия входного файла %qs"
+msgstr "ошибка открытия входного файла: %s"
 
 #: fortran/f95-lang.c:629
 #, gcc-internal-format
@@ -32934,9 +32933,9 @@ msgid "intrinsic variable which isn't a procedure"
 msgstr ""
 
 #: fortran/trans-decl.c:2639
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Function does not return a value"
-msgstr "функция возвращает значение не строкового типа"
+msgstr "функция не возвращает значение"
 
 #: fortran/trans-decl.c:2817
 #, gcc-internal-format
