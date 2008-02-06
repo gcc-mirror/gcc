@@ -1,6 +1,6 @@
 /* Expand the basic unary and binary arithmetic operations, for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -5144,10 +5144,8 @@ expand_float (rtx to, rtx from, int unsignedp)
       }
 
   /* Unsigned integer, and no way to convert directly.  Convert as signed,
-     then unconditionally adjust the result.  For decimal float values we
-     do this only if we have already determined that a signed conversion
-     provides sufficient accuracy.  */
-  if (unsignedp && (can_do_signed || !DECIMAL_FLOAT_MODE_P (GET_MODE (to))))
+     then unconditionally adjust the result.  */
+  if (unsignedp && can_do_signed)
     {
       rtx label = gen_label_rtx ();
       rtx temp;
