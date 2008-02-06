@@ -1,3 +1,10 @@
+2008-02-06  Nick Clifton  <nickc@redhat.com>
+
+	* config/stormy16/stormy16.md (eqbranchsi): Replace a match_dup
+	inside the clobber with a match_operand and duplicated operand
+	number in the constraint.
+	(ineqbranchsi): Delete redundant comment.
+
 2008-02-06  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* config/arm/rtems-elf.h (TARGET_OS_CPP_BUILTINS): Add 
