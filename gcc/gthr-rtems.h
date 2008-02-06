@@ -38,7 +38,6 @@ extern "C" {
 #define __GTHREADS 1
 
 #define __GTHREAD_ONCE_INIT  0
-#define __GTHREAD_MUTEX_INIT 0
 #define __GTHREAD_MUTEX_INIT_FUNCTION  rtems_gxx_mutex_init
 #define __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION  rtems_gxx_recursive_mutex_init
 
