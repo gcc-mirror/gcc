@@ -1,3 +1,9 @@
+2008-02-06  Matthias Klose  <doko@ubuntu.com>
+
+	* tools/Makefile.am ($(TOOLS_ZIP)): Copy over rmic template files.
+	Copy resource files independent of JAVA_MAINTAINER_MODE.
+	* tools/Makefile.in: Regenerate.
+
 2008-01-28  Tom Tromey  <tromey@redhat.com>
 
 	* tools/classes/gnu/classpath/tools/native2ascii/Native2ASCII$3.class:
