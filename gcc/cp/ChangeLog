@@ -1,3 +1,21 @@
+2008-02-06  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/35049
+	PR c++/35096
+	* typeck.c (structural_comptypes): Call cp_comptypes.
+	(comptypes): New; called from the C/C++ common bits to perform
+	strict checks.
+	(cp_comptypes): Renamed from comptypes, which is already used,
+	with a different signature, by the C++ front end.
+	(build_reinterpret_cast_1): Call cp_comptypes.
+	(ptr_reasonably_similar): Ditto.
+	* decl.c (decls_match): Ditto.
+	* cvt.c (convert_to_reference): Ditto.
+	* cp-tree.h (same_type_p): Ditto.
+	(same_or_base_type_p): Ditto.
+	(comptypes): Rename to cp_comptypes.
+	* pt.c (canonical_type_parameter): Call cp_comptypes.
+
 2008-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/33553
