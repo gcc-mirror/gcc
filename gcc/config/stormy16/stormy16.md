@@ -1,5 +1,5 @@
 ;; XSTORMY16 Machine description template
-;; Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003, 2004, 2005, 2007
+;; Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003, 2004, 2005, 2007, 2008
 ;; Free Software Foundation, Inc.
 ;; Contributed by Red Hat, Inc.
 
@@ -880,11 +880,7 @@
 				       (const_int 0)])
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))
-;; Although I would greatly like the 'match_dup' in the following line
-;; to actually be a register constraint, there is (at the time of writing) no
-;; way for reload to insert an output reload on the edges out of a branch.
-;; If reload is fixed to use insert_insn_on_edge, this can be changed.
-   (clobber (match_dup 2))]
+   (clobber (match_operand:SI 3 "register_operand" "=2"))]
   ""
   "*
 {
@@ -902,10 +898,6 @@
 							 "ri")])
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))
-   ;; This clobber is problematic.  Too many gcc optimizations will change
-   ;; operand 2 without changing the clobber.  At the time of writing there
-   ;; is no way around this. :-(  For an example try compiling:
-   ;; gcc.c-torture/compile/20000403-1.c -O3 -fomit-frame-pointer -funroll-loops
    (clobber (match_operand:SI 5 "register_operand" "=2"))
    (clobber (match_operand:BI 4 "" "=&y"))]
   ""
