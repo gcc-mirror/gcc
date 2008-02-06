@@ -1,6 +1,6 @@
 2008-02-06  Jan Hubicka  <jh@suse.cz>
 
-	PR target/5587
+	PR target/23322
 	* i386.md (moddf_integer): Do not produce partial memory stalls for
 	targets where it hurts.
 
