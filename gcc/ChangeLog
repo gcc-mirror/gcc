@@ -1,3 +1,7 @@
+2008-02-06  Ralf Corsepius  <ralf.corsepius@rtems.org>
+
+	* gthr-rtems.h: Remove __GTHREAD_MUTEX_INIT.
+
 2008-02-06  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR documentation/30330
