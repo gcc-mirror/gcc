@@ -1,3 +1,10 @@
+2008-02-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/35085
+	* tree-ssa-reassoc.c (rewrite_expr_tree): Enable destructive update
+	for operand entry oe2 in addition to operand entry oe3 in order to
+	expose more opportunities for vectorizer sum reduction.
+
 2008-02-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR other/35107
