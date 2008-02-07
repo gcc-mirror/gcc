@@ -1,3 +1,11 @@
+2008-02-07  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR other/32754
+	* doc/options.texi (Options): Replace references to opts.sh with
+	optc-gen.awk.
+	* opts-common.c: Likewise.
+	* optc-gen.awk: Likewise.
+	
 2008-02-07  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.h (FUNCTION_ARG_REGNO_P): Fix fprs for 64 bit.
