@@ -1,3 +1,10 @@
+2008-07-07  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/33410
+	* config/alpha/alpha.c (alpha_emit_xfloating_compare): Use an
+	EXPR_LIST for the REG_EQUAL instead of a comparison with a 
+	funny mode.
+
 2008-02-07  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR other/32754
@@ -49,9 +56,9 @@
 
 2008-02-02  Richard Henderson  <rth@redhat.com>
 
-        PR c/34993
-        * tree.c (build_type_attribute_qual_variant): Skip TYPE_DOMAIN
-        for unbounded arrays.
+	PR c/34993
+	* tree.c (build_type_attribute_qual_variant): Skip TYPE_DOMAIN
+	for unbounded arrays.
 
 2008-02-02  Richard Sandiford  <rsandifo@nildram.co.uk>
 
@@ -522,25 +529,25 @@
 
 2007-10-18  Chen liqin  <liqin@sunnorth.com.cn>
 
-        * config.gcc : update score-*-elf(extra_objs).
-        * config/score/mac.md : Remove.
-        * config/score/misc.md : Remove.
-        * config/score/score7.md : Remove.
-        * config/score/score-mdaux.h : Remove.
-        * config/score/score-mdaux.c : Remove.
-        * config/score/score-version.h : Remove.
-        * config/score/score-generic.md : New.
-        * config/score/score3.h : New.
-        * config/score/score3.c : New.
-        * config/score/score7.h : New.
-        * config/score/score7.c : New.
-        * config/score/mul-div.S : add flush_cache score3 support.
-        * config/score/elf.h : Fix some typos.
-        * config/score/score.md : merge score3 and score7 pattern.
-        * config/score/score.c : use to seperate which target it used.
-        * config/score/score.h : use to seperate the target macro.
-        * config/score/score.opt : remove -mmac option , add -mscore3,
-        -mscore3d and -march OPTION support.
+	* config.gcc : update score-*-elf(extra_objs).
+	* config/score/mac.md : Remove.
+	* config/score/misc.md : Remove.
+	* config/score/score7.md : Remove.
+	* config/score/score-mdaux.h : Remove.
+	* config/score/score-mdaux.c : Remove.
+	* config/score/score-version.h : Remove.
+	* config/score/score-generic.md : New.
+	* config/score/score3.h : New.
+	* config/score/score3.c : New.
+	* config/score/score7.h : New.
+	* config/score/score7.c : New.
+	* config/score/mul-div.S : add flush_cache score3 support.
+	* config/score/elf.h : Fix some typos.
+	* config/score/score.md : merge score3 and score7 pattern.
+	* config/score/score.c : use to seperate which target it used.
+	* config/score/score.h : use to seperate the target macro.
+	* config/score/score.opt : remove -mmac option , add -mscore3,
+	-mscore3d and -march OPTION support.
 
 2007-10-12  Zdenek Dvorak <ook@ucw.cz>
 
@@ -1019,12 +1026,12 @@
 
 2007-08-17  Chen liqin  <liqin@sunnorth.com.cn>
 
-        * config/score/score.md : Update pattern tablejump.
-        * config/score/score.c : Update score_initialize_trampoline 
-        function.
-        * config/score/score.h (TRAMPOLINE_TEMPLATE): Added macro.
-        (TRAMPOLINE_INSNS, TRAMPOLINE_SIZE) Update macro.
-        * doc/contrib.texi: Add my entry.
+	* config/score/score.md : Update pattern tablejump.
+	* config/score/score.c : Update score_initialize_trampoline 
+	function.
+	* config/score/score.h (TRAMPOLINE_TEMPLATE): Added macro.
+	(TRAMPOLINE_INSNS, TRAMPOLINE_SIZE) Update macro.
+	* doc/contrib.texi: Add my entry.
 
 2007-08-02  Andreas Krebbel  <krebbel1@de.ibm.com>
 
@@ -1076,15 +1083,15 @@
 	Backport from mainline:
 	2007-03-09  Daniel Berlin  <dberlin@dberlin.org>
 
-        * tree-ssa-structalias.c (shared_bitmap_info_t): New structure.
-        (shared_bitmap_table): New variable.
-        (shared_bitmap_hash): New function.
-        (shared_bitmap_eq): Ditto
-        (shared_bitmap_lookup): Ditto.
-        (shared_bitmap_add): Ditto.
-        (find_what_p_points_to): Rewrite to use shared bitmap hashtable.
-        (init_alias_vars): Init shared bitmap hashtable.
-        (delete_points_to_sets): Delete shared bitmap hashtable.
+	* tree-ssa-structalias.c (shared_bitmap_info_t): New structure.
+	(shared_bitmap_table): New variable.
+	(shared_bitmap_hash): New function.
+	(shared_bitmap_eq): Ditto
+	(shared_bitmap_lookup): Ditto.
+	(shared_bitmap_add): Ditto.
+	(find_what_p_points_to): Rewrite to use shared bitmap hashtable.
+	(init_alias_vars): Init shared bitmap hashtable.
+	(delete_points_to_sets): Delete shared bitmap hashtable.
 
 2007-07-23  Bernd Schmidt  <bernd.schmidt@analog.com>
 
@@ -1607,7 +1614,7 @@
  	* config/avr/avr.h (ASM_OUTPUT_ALIGN): Redefine.
 
 2007-04-24  Andrew Pinski  <andrew_pinski@playstation.sony.com>
-            Roger Sayle  <roger@eyesopen.com>
+	    Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/30222
 	* expmed.c (make_tree): Use the correct type, i.e. the inner
