@@ -636,10 +636,11 @@ CUMULATIVE_ARGS;
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)   \
   s390_function_arg (&CUM, MODE, TYPE, NAMED)
 
-/* Arguments can be placed in general registers 2 to 6,
-   or in floating point registers 0 and 2.  */
+/* Arguments can be placed in general registers 2 to 6, or in floating
+   point registers 0 and 2 for 31 bit and fprs 0, 2, 4 and 6 for 64
+   bit.  */
 #define FUNCTION_ARG_REGNO_P(N) (((N) >=2 && (N) <7) || \
-                                 (N) == 16 || (N) == 17)
+  (N) == 16 || (N) == 17 || (TARGET_64BIT && ((N) == 18 || (N) == 19)))
 
 
 /* Scalar return values.  */
