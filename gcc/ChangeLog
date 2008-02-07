@@ -1,3 +1,13 @@
+2008-02-07  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR other/32754
+	* doc/options.texi (Options): Replace references to opts.sh with
+	optc-gen.awk.
+	* opts-common.c: Likewise.
+	* optc-gen.awk: Likewise.
+	* opth-gen.awk: Replace reference to opts.sh with
+	opth-gen.awk.
+	
 2008-02-07  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* config/m68k/t-rtems (MULTILIB_OPTIONS, MULTILIB_EXCEPTIONS,

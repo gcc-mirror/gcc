@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
    before having tested "-g".  This doesn't match, and as "-gen-decls"
    is less than "-gstabs", it will become the lower bound of the
    binary search range, and "-g" will never be seen.  To resolve this
-   issue, opts.sh makes "-gen-decls" point, via the back_chain member,
+   issue, 'optc-gen.awk' makes "-gen-decls" point, via the back_chain member,
    to "-g" so that failed searches that end between "-gen-decls" and
    the lexicographically subsequent switch know to go back and see if
    "-g" causes a match (which it does in this example).

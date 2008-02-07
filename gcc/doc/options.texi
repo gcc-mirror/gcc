@@ -5,7 +5,7 @@
 @node Options
 @chapter Option specification files
 @cindex option specification files
-@cindex @samp{opts.sh}
+@cindex @samp{optc-gen.awk}
 
 Most GCC command-line options are described by special option
 definition files, the names of which conventionally end in
