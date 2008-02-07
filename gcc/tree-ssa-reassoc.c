@@ -857,6 +857,18 @@ rewrite_expr_tree (tree stmt, unsigned int opindex,
 	  oe1->op = temp.op;
 	  oe1->rank= temp.rank;
 	}
+      else if ((oe1->rank == oe3->rank
+		&& oe2->rank != oe3->rank)
+	       || (is_phi_for_stmt (stmt, oe2->op)
+		   && !is_phi_for_stmt (stmt, oe1->op)
+		   && !is_phi_for_stmt (stmt, oe3->op)))
+	{
+	  struct operand_entry temp = *oe2;
+	  oe2->op = oe1->op;
+	  oe2->rank = oe1->rank;
+	  oe1->op = temp.op;
+	  oe1->rank= temp.rank;
+	}
     }
 
   /* The final recursion case for this function is that you have
