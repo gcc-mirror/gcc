@@ -1,3 +1,10 @@
+2008-07-07  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/33410
+	* config/alpha/alpha.c (alpha_emit_xfloating_compare): Use an
+	EXPR_LIST for the REG_EQUAL instead of a comparison with a 
+	funny mode.
+
 2008-02-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/35085
