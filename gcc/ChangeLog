@@ -1,8 +1,13 @@
+2008-02-07  Ralf Corsepius  <ralf.corsepius@rtems.org>
+
+	* config/m68k/t-rtems (MULTILIB_OPTIONS, MULTILIB_EXCEPTIONS,
+	MULTILIB_MATCHES): Add -m528x, -m5307, -m5407, -mcfv4e multilibs.
+
 2008-02-06  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* config/arm/rtems-elf.h (TARGET_OS_CPP_BUILTINS): Add 
 	builtin_define ("__USE_INIT_FINI__").
-	* config/h8300/t-rtems (MULTILIB_OPTION,MULTILIB_DIRNAMES): Add
+	* config/h8300/t-rtems (MULTILIB_OPTIONS, MULTILIB_DIRNAMES): Add
 	-msx multilibs.
 	* gthr-rtems.h: Remove __GTHREAD_MUTEX_INIT.
 
