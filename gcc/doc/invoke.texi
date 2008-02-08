@@ -261,7 +261,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wvariadic-macros -Wvla @gol
 -Wvolatile-register-var  -Wwrite-strings}
 
-@item C-only Warning Options
+@item C and Objective-C-only Warning Options
 @gccoptlist{-Wbad-function-cast  -Wmissing-declarations @gol
 -Wmissing-parameter-type  -Wmissing-prototypes  -Wnested-externs @gol
 -Wold-style-declaration  -Wold-style-definition @gol
@@ -1906,7 +1906,7 @@ Do not assume @samp{inline} for functions defined inside a class scope.
 functions will have linkage like inline functions; they just won't be
 inlined by default.
 
-@item -Wabi @r{(C++ only)}
+@item -Wabi @r{(C++ and Objective-C++ only)}
 @opindex Wabi
 @opindex Wno-abi
 Warn when G++ generates code that is probably not compatible with the
@@ -2006,14 +2006,14 @@ Instantiations of these templates may be mangled incorrectly.
 
 @end itemize
 
-@item -Wctor-dtor-privacy @r{(C++ only)}
+@item -Wctor-dtor-privacy @r{(C++ and Objective-C++ only)}
 @opindex Wctor-dtor-privacy
 @opindex Wno-ctor-dtor-privacy
 Warn when a class seems unusable because all the constructors or
 destructors in that class are private, and it has neither friends nor
 public static member functions.
 
-@item -Wnon-virtual-dtor @r{(C++ only)}
+@item -Wnon-virtual-dtor @r{(C++ and Objective-C++ only)}
 @opindex Wnon-virtual-dtor
 @opindex Wno-non-virtual-dtor
 Warn when a class has virtual functions and accessible non-virtual
@@ -2021,7 +2021,7 @@ destructor, in which case it would be possible but unsafe to delete
 an instance of a derived class through a pointer to the base class.
 This warning is also enabled if -Weffc++ is specified.
 
-@item -Wreorder @r{(C++ only)}
+@item -Wreorder @r{(C++ and Objective-C++ only)}
 @opindex Wreorder
 @opindex Wno-reorder
 @cindex reordering, warning
@@ -2045,7 +2045,7 @@ a warning to that effect.  This warning is enabled by @option{-Wall}.
 The following @option{-W@dots{}} options are not affected by @option{-Wall}.
 
 @table @gcctabopt
-@item -Weffc++ @r{(C++ only)}
+@item -Weffc++ @r{(C++ and Objective-C++ only)}
 @opindex Weffc++
 @opindex Wno-effc++
 Warn about violations of the following style guidelines from Scott Meyers'
@@ -2087,12 +2087,12 @@ When selecting this option, be aware that the standard library
 headers do not obey all of these guidelines; use @samp{grep -v}
 to filter out those warnings.
 
-@item -Wno-deprecated @r{(C++ only)}
+@item -Wno-deprecated @r{(C++ and Objective-C++ only)}
 @opindex Wno-deprecated
 @opindex Wdeprecated
 Do not warn about usage of deprecated features.  @xref{Deprecated Features}.
 
-@item -Wstrict-null-sentinel @r{(C++ only)}
+@item -Wstrict-null-sentinel @r{(C++ and Objective-C++ only)}
 @opindex Wstrict-null-sentinel
 @opindex Wno-strict-null-sentinel
 Warn also about the use of an uncasted @code{NULL} as sentinel.  When
@@ -2101,7 +2101,7 @@ to @code{__null}.  Although it is a null pointer constant not a null pointer,
 it is guaranteed to of the same size as a pointer.  But this use is
 not portable across different compilers.
 
-@item -Wno-non-template-friend @r{(C++ only)}
+@item -Wno-non-template-friend @r{(C++ and Objective-C++ only)}
 @opindex Wno-non-template-friend
 @opindex Wnon-template-friend
 Disable warnings when non-templatized friend functions are declared
@@ -2118,7 +2118,7 @@ This new compiler behavior can be turned off with
 @option{-Wno-non-template-friend} which keeps the conformant compiler code
 but disables the helpful warning.
 
-@item -Wold-style-cast @r{(C++ only)}
+@item -Wold-style-cast @r{(C++ and Objective-C++ only)}
 @opindex Wold-style-cast
 @opindex Wno-old-style-cast
 Warn if an old-style (C-style) cast to a non-void type is used within
@@ -2126,7 +2126,7 @@ a C++ program.  The new-style casts (@samp{dynamic_cast},
 @samp{static_cast}, @samp{reinterpret_cast}, and @samp{const_cast}) are
 less vulnerable to unintended effects and much easier to search for.
 
-@item -Woverloaded-virtual @r{(C++ only)}
+@item -Woverloaded-virtual @r{(C++ and Objective-C++ only)}
 @opindex Woverloaded-virtual
 @opindex Wno-overloaded-virtual
 @cindex overloaded virtual fn, warning
@@ -2154,13 +2154,13 @@ b->f();
 
 will fail to compile.
 
-@item -Wno-pmf-conversions @r{(C++ only)}
+@item -Wno-pmf-conversions @r{(C++ and Objective-C++ only)}
 @opindex Wno-pmf-conversions
 @opindex Wpmf-conversions
 Disable the diagnostic for converting a bound pointer to member function
 to a plain pointer.
 
-@item -Wsign-promo @r{(C++ only)}
+@item -Wsign-promo @r{(C++ and Objective-C++ only)}
 @opindex Wsign-promo
 @opindex Wno-sign-promo
 Warn when overload resolution chooses a promotion from unsigned or
@@ -2400,13 +2400,13 @@ for individual class implementations to be modified during program execution.
 Dump interface declarations for all classes seen in the source file to a
 file named @file{@var{sourcename}.decl}.
 
-@item -Wassign-intercept
+@item -Wassign-intercept @r{(Objective-C and Objective-C++ only)}
 @opindex Wassign-intercept
 @opindex Wno-assign-intercept
 Warn whenever an Objective-C assignment is being intercepted by the
 garbage collector.
 
-@item -Wno-protocol
+@item -Wno-protocol @r{(Objective-C and Objective-C++ only)}
 @opindex Wno-protocol
 @opindex Wprotocol
 If a class is declared to implement a protocol, a warning is issued for
@@ -2417,7 +2417,7 @@ from the superclass.  If you use the @option{-Wno-protocol} option, then
 methods inherited from the superclass are considered to be implemented,
 and no warning is issued for them.
 
-@item -Wselector
+@item -Wselector @r{(Objective-C and Objective-C++ only)}
 @opindex Wselector
 @opindex Wno-selector
 Warn if multiple methods of different types for the same selector are
@@ -2431,7 +2431,7 @@ stage of compilation is not reached, for example because an error is
 found during compilation, or because the @option{-fsyntax-only} option is
 being used.
 
-@item -Wstrict-selector-match
+@item -Wstrict-selector-match @r{(Objective-C and Objective-C++ only)}
 @opindex Wstrict-selector-match
 @opindex Wno-strict-selector-match
 Warn if multiple methods with differing argument and/or return types are
@@ -2441,7 +2441,7 @@ is off (which is the default behavior), the compiler will omit such warnings
 if any differences found are confined to types which share the same size
 and alignment.
 
-@item -Wundeclared-selector
+@item -Wundeclared-selector @r{(Objective-C and Objective-C++ only)}
 @opindex Wundeclared-selector
 @opindex Wno-undeclared-selector
 Warn if a @code{@@selector(@dots{})} expression referring to an
@@ -2814,7 +2814,7 @@ in the case of @code{scanf} formats, this option will suppress the
 warning if the unused arguments are all pointers, since the Single
 Unix Specification says that such unused arguments are allowed.
 
-@item -Wno-format-zero-length
+@item -Wno-format-zero-length @r{(C and Objective-C only)}
 @opindex Wno-format-zero-length
 @opindex Wformat-zero-length
 If @option{-Wformat} is specified, do not warn about zero-length formats.
@@ -2847,7 +2847,7 @@ Enable @option{-Wformat} plus format checks not included in
 @option{-Wformat}.  Currently equivalent to @samp{-Wformat
 -Wformat-nonliteral -Wformat-security -Wformat-y2k}.
 
-@item -Wnonnull
+@item -Wnonnull @r{(C and Objective-C only)}
 @opindex Wnonnull
 @opindex Wno-nonnull
 Warn about passing a null pointer for arguments marked as
@@ -2875,13 +2875,13 @@ int f()
 @end group
 @end smallexample
 
-@item -Wimplicit-int
+@item -Wimplicit-int @r{(C and Objective-C only)}
 @opindex Wimplicit-int
 @opindex Wno-implicit-int
 Warn when a declaration does not specify a type.
 This warning is enabled by @option{-Wall}.
 
-@item -Wimplicit-function-declaration
+@item -Wimplicit-function-declaration @r{(C and Objective-C only)}
 @opindex Wimplicit-function-declaration
 @opindex Wno-implicit-function-declaration
 Give a warning whenever a function is used before being declared. In
@@ -2896,7 +2896,7 @@ enabled by default and it is made into an error by
 Same as @option{-Wimplicit-int} and @option{-Wimplicit-function-declaration}.
 This warning is enabled by @option{-Wall}.
 
-@item -Wignored-qualifiers
+@item -Wignored-qualifiers @r{(C and C++ only)}
 @opindex Wignored-qualifiers
 @opindex Wno-ignored-qualifiers
 Warn if the return type of a function has a type qualifier
@@ -3383,7 +3383,7 @@ would check to see whether the two values have ranges that overlap; and
 this is done with the relational operators, so equality comparisons are
 probably mistaken.
 
-@item -Wtraditional @r{(C only)}
+@item -Wtraditional @r{(C and Objective-C only)}
 @opindex Wtraditional
 @opindex Wno-traditional
 Warn about certain constructs that behave differently in traditional and
@@ -3472,7 +3472,7 @@ because that feature is already a GCC extension and thus not relevant to
 traditional C compatibility.
 @end itemize
 
-@item -Wtraditional-conversion @r{(C only)}
+@item -Wtraditional-conversion @r{(C and Objective-C only)}
 @opindex Wtraditional-conversion
 @opindex Wno-traditional-conversion
 Warn if a prototype causes a type conversion that is different from what
@@ -3481,7 +3481,7 @@ includes conversions of fixed point to floating and vice versa, and
 conversions changing the width or signedness of a fixed point argument
 except when the same as the default promotion.
 
-@item -Wdeclaration-after-statement @r{(C only)}
+@item -Wdeclaration-after-statement @r{(C and Objective-C only)}
 @opindex Wdeclaration-after-statement
 @opindex Wno-declaration-after-statement
 Warn when a declaration is found after a statement in a block.  This
@@ -3535,13 +3535,13 @@ example, warn if an unsigned variable is compared against zero with
 @samp{<} or @samp{>=}.  This warning is also enabled by
 @option{-Wextra}.
 
-@item -Wbad-function-cast @r{(C only)}
+@item -Wbad-function-cast @r{(C and Objective-C only)}
 @opindex Wbad-function-cast
 @opindex Wno-bad-function-cast
 Warn whenever a function call is cast to a non-matching type.
 For example, warn if @code{int malloc()} is cast to @code{anything *}.
 
-@item -Wc++-compat
+@item -Wc++-compat @r{(C and Objective-C only)}
 Warn about ISO C constructs that are outside of the common subset of
 ISO C and ISO C++, e.g.@: request for implicit conversion from
 @code{void *} to a pointer to non-@code{void} type.
@@ -3672,7 +3672,7 @@ unrecognized attributes, function attributes applied to variables,
 etc.  This will not stop errors for incorrect use of supported
 attributes.
 
-@item -Wstrict-prototypes @r{(C only)}
+@item -Wstrict-prototypes @r{(C and Objective-C only)}
 @opindex Wstrict-prototypes
 @opindex Wno-strict-prototypes
 Warn if a function is declared or defined without specifying the
@@ -3680,7 +3680,7 @@ argument types.  (An old-style function definition is permitted without
 a warning if preceded by a declaration which specifies the argument
 types.)
 
-@item -Wold-style-declaration @r{(C only)}
+@item -Wold-style-declaration @r{(C and Objective-C only)}
 @opindex Wold-style-declaration
 @opindex Wno-old-style-declaration
 Warn for obsolescent usages, according to the C Standard, in a
@@ -3688,13 +3688,13 @@ declaration. For example, warn if storage-class specifiers like
 @code{static} are not the first things in a declaration.  This warning
 is also enabled by @option{-Wextra}.
 
-@item -Wold-style-definition @r{(C only)}
+@item -Wold-style-definition @r{(C and Objective-C only)}
 @opindex Wold-style-definition
 @opindex Wno-old-style-definition
 Warn if an old-style function definition is used.  A warning is given
 even if there is a previous prototype.
 
-@item -Wmissing-parameter-type @r{(C only)}
+@item -Wmissing-parameter-type @r{(C and Objective-C only)}
 @opindex Wmissing-parameter-type
 @opindex Wno-missing-parameter-type
 A function parameter is declared without a type specifier in K&R-style
@@ -3706,7 +3706,7 @@ void foo(bar) @{ @}
 
 This warning is also enabled by @option{-Wextra}.
 
-@item -Wmissing-prototypes @r{(C only)}
+@item -Wmissing-prototypes @r{(C and Objective-C only)}
 @opindex Wmissing-prototypes
 @opindex Wno-missing-prototypes
 Warn if a global function is defined without a previous prototype
@@ -3714,7 +3714,7 @@ declaration.  This warning is issued even if the definition itself
 provides a prototype.  The aim is to detect global functions that fail
 to be declared in header files.
 
-@item -Wmissing-declarations @r{(C and C++ only)}
+@item -Wmissing-declarations
 @opindex Wmissing-declarations
 @opindex Wno-missing-declarations
 Warn if a global function is defined without a previous declaration.
@@ -3847,7 +3847,7 @@ attribute.
 @opindex Woverflow
 Do not warn about compile-time overflow in constant expressions.
 
-@item -Woverride-init
+@item -Woverride-init @r{(C and Objective-C only)}
 @opindex Woverride-init
 @opindex Wno-override-init
 @opindex W
@@ -3898,7 +3898,7 @@ reduce the padding and so make the structure smaller.
 Warn if anything is declared more than once in the same scope, even in
 cases where multiple declaration is valid and changes nothing.
 
-@item -Wnested-externs @r{(C only)}
+@item -Wnested-externs @r{(C and Objective-C only)}
 @opindex Wnested-externs
 @opindex Wno-nested-externs
 Warn if an @code{extern} declaration is encountered within a function.
@@ -3940,7 +3940,7 @@ that has already been done in the current function.  Therefore,
 seemingly insignificant changes in the source program can cause the
 warnings produced by @option{-Winline} to appear or disappear.
 
-@item -Wno-invalid-offsetof @r{(C++ only)}
+@item -Wno-invalid-offsetof @r{(C++ and Objective-C++ only)}
 @opindex Wno-invalid-offsetof
 @opindex Winvalid-offsetof
 Suppress warnings from applying the @samp{offsetof} macro to a non-POD
@@ -3956,13 +3956,13 @@ warning about it.
 The restrictions on @samp{offsetof} may be relaxed in a future version
 of the C++ standard.
 
-@item -Wno-int-to-pointer-cast @r{(C only)}
+@item -Wno-int-to-pointer-cast @r{(C and Objective-C only)}
 @opindex Wno-int-to-pointer-cast
 @opindex Wint-to-pointer-cast
 Suppress warnings from casts to pointer type of an integer of a
 different size.
 
-@item -Wno-pointer-to-int-cast @r{(C only)}
+@item -Wno-pointer-to-int-cast @r{(C and Objective-C only)}
 @opindex Wno-pointer-to-int-cast
 @opindex Wpointer-to-int-cast
 Suppress warnings from casts from a pointer to an integer type of a
@@ -4013,7 +4013,7 @@ effectively.  Often, the problem is that your code is too big or too
 complex; GCC will refuse to optimize programs when the optimization
 itself is likely to take inordinate amounts of time.
 
-@item -Wpointer-sign
+@item -Wpointer-sign @r{(C and Objective-C only)}
 @opindex Wpointer-sign
 @opindex Wno-pointer-sign
 Warn for pointer argument passing or assignment with different signedness.

@@ -1,3 +1,9 @@
+2008-02-08  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/invoke.texi (Option Summary, C++ Dialect Options)
+	(Objective-C and Objective-C++ Dialect Options, Warning Options):
+	Make -Wfoo language annotations match what the compiler outputs.
+
 2008-02-08  Sa Liu  <saliu@de.ibm.com>
 
 	* config/spu/spu-builtins.def: Fixed wrong parameter type in spu 
