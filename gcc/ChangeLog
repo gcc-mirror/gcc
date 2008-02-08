@@ -1,3 +1,8 @@
+2008-02-08  Hans-Peter Nilsson  <hp@axis.com>
+
+	* doc/extend.texi (Function Attributes) <noinline>: Mention
+	asm ("") as method to keep calls.
+
 2008-02-07  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR other/32754
