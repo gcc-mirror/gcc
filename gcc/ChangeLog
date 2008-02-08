@@ -1,3 +1,12 @@
+2008-02-08  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR bootstrap/35051
+	* double-int.h: Don't include gmp.h for GENERATOR_FILEs.
+	(mpz_set_double_int, mpz_get_double_int): Hide from GENERATOR_FILEs.
+	* real.h: Don't include gmp.h or mpfr.h for GENERATOR_FILEs.
+	(real_from_mpfr, mpfr_from_real): Hide from GENERATOR_FILEs.
+	* tree.h (get_type_static_bounds): Likewise.
+
 2008-02-08  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/invoke.texi (Option Summary, C++ Dialect Options)
