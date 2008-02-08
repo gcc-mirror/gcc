@@ -1,3 +1,9 @@
+2008-02-08  Sa Liu  <saliu@de.ibm.com>
+
+	* config/spu/spu-builtins.def: Fixed wrong parameter type in spu 
+	intrinsics spu_convts, spu_convtu, spu_convtf.
+	* testsuite/gcc.target/spu/intrinsics-3.c: New. Test error messages.
+
 2008-02-08  Hans-Peter Nilsson  <hp@axis.com>
 
 	* doc/extend.texi (Function Attributes) <noinline>: Mention
