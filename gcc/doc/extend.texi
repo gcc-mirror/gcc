@@ -2519,6 +2519,17 @@ Functions with this attribute will not be so instrumented.
 @cindex @code{noinline} function attribute
 This function attribute prevents a function from being considered for
 inlining.
+@c Don't enumerate the optimizations by name here; we try to be
+@c future-compatible with this mechanism.
+If the function does not have side-effects, there are optimizations
+other than inlining that causes function calls to be optimized away,
+although the function call is live.  To keep such calls from being
+optimized away, put
+@smallexample
+asm ("");
+@end smallexample
+(@pxref{Extended Asm}) in the called function, to serve as a special
+side-effect.
 
 @item nonnull (@var{arg-index}, @dots{})
 @cindex @code{nonnull} function attribute
