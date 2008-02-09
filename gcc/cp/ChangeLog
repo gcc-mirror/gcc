@@ -1,3 +1,9 @@
+2008-02-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35116
+	* tree.c (build_target_expr_with_type): Handle void initializer.
+	(bot_manip): Remap slot before recursing.
+
 2008-02-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR other/35107
