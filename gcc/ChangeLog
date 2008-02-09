@@ -1,3 +1,10 @@
+2008-02-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle_end/34150
+	* pa.c (legitimize_pic_address): Add REG_EQUAL note on sets with a
+	pic_label_operand source.  Similarly, add a REG_LABEL note and
+	update LABEL_NUSES during and after reload.
+
 2008-02-08  Steven Bosscher  <stevenb.gcc@gmail.com>
 
 	PR middle-end/34627

@@ -607,6 +607,8 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
   /* Labels need special handling.  */
   if (pic_label_operand (orig, mode))
     {
+      rtx insn;
+
       /* We do not want to go through the movXX expanders here since that
 	 would create recursion.
 
@@ -617,7 +619,24 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	 So instead we just emit the raw set, which avoids the movXX
 	 expanders completely.  */
       mark_reg_pointer (reg, BITS_PER_UNIT);
-      emit_insn (gen_rtx_SET (VOIDmode, reg, orig));
+      insn = emit_insn (gen_rtx_SET (VOIDmode, reg, orig));
+
+      /* Put a REG_EQUAL note on this insn, so that it can be optimized.  */
+      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, orig, REG_NOTES (insn));
+
+      /* During and after reload, we need to generate a REG_LABEL note and
+	 update LABEL_NUSES because this is not done automatically.  */
+      if (reload_in_progress || reload_completed)
+	{
+	  /* Extract LABEL_REF.  */
+	  if (GET_CODE (orig) == CONST)
+	    orig = XEXP (XEXP (orig, 0), 0);
+	  /* Extract CODE_LABEL.  */
+	  orig = XEXP (orig, 0);
+	  REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_LABEL, orig,
+						REG_NOTES (insn));
+	  LABEL_NUSES (orig)++;
+	}
       current_function_uses_pic_offset_table = 1;
       return reg;
     }
