@@ -1,7 +1,7 @@
 2008-02-08  Steven Bosscher  <stevenb.gcc@gmail.com>
 
 	PR middle-end/34627
-	combine.c (simplify_if_then_else): Make sure the comparison is
+	* combine.c (simplify_if_then_else): Make sure the comparison is
 	against const0_rtx when simplifying to (abs x) or (neg (abs X)).
 
 2008-07-07  Richard Henderson  <rth@redhat.com>
