@@ -22,7 +22,7 @@
 -(unsigned int) length  { return len; }
 @end
 
-int main(int argc, void **args)
+int main(int argc, const char **args)
 {
   if (strcmp ([@"this is a string" cString], "this is a string"))
     abort ();
