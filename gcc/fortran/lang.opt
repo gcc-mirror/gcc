@@ -25,11 +25,11 @@ Language
 Fortran
 
 I
-Fortran Joined
+Fortran Joined Separate
 -I<directory>	Add a directory for INCLUDE and MODULE searching
 
 J
-Fortran Joined
+Fortran Joined Separate
 -J<directory>	Put MODULE files in 'directory'
 
 Wall
