@@ -1,3 +1,16 @@
+2008-02-10  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/16251
+	* include/std/istream (basic_istream<>::basic_istream()): Call
+	this->init().
+	(basic_iostream<>::basic_iostream(basic_streambuf<>*)): Don't
+	do it here, per 27.6.1.5.1/1.
+	* include/std/ostream (basic_ostream<>::basic_ostream()): Call
+	this->init().
+	* testsuite/27_io/basic_iostream/cons/16251.C: New.
+
+	* testsuite/27_io/basic_iostream/cons/2020.cc: Minor tweaks.
+
 2008-01-31  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
     
 	* include/backward/auto_ptr.h: Fix comment typos.

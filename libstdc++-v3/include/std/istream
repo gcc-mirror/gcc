@@ -1,7 +1,7 @@
 // Input streams -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007
+// 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -91,8 +91,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  derived classes' initialization lists, which pass a pointer to
        *  their own stream buffer.
       */
-      explicit 
-      basic_istream(__streambuf_type* __sb): _M_gcount(streamsize(0))
+      explicit
+      basic_istream(__streambuf_type* __sb)
+      : _M_gcount(streamsize(0))
       { this->init(__sb); }
 
       /**
@@ -581,8 +582,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       //@}
 
     protected:
-      explicit 
-      basic_istream(): _M_gcount(streamsize(0)) { }
+      basic_istream()
+      : _M_gcount(streamsize(0))
+      { this->init(0); }
 
       template<typename _ValueT>
         __istream_type&
@@ -665,7 +667,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  If the stream state is still good, then the sentry state becomes
        *  true ("okay").
       */
-      explicit 
+      explicit
       sentry(basic_istream<_CharT, _Traits>& __is, bool __noskipws = false);
 
       /**
@@ -788,10 +790,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  Both of the parent classes are initialized with the same
        *  streambuf pointer passed to this constructor.
       */
-      explicit 
+      explicit
       basic_iostream(basic_streambuf<_CharT, _Traits>* __sb)
-      : __istream_type(), __ostream_type()
-      { this->init(__sb); }
+      : __istream_type(__sb), __ostream_type(__sb) { }
 
       /**
        *  @brief  Destructor does nothing.
@@ -800,9 +801,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       ~basic_iostream() { }
 
     protected:
-      explicit 
-      basic_iostream() : __istream_type(), __ostream_type()
-      { }
+      basic_iostream()
+      : __istream_type(), __ostream_type() { }
     };
 
   // [27.6.1.4] standard basic_istream manipulators

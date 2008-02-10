@@ -1,8 +1,4 @@
-// 1999-01-17 bkoz test functionality of basic_filebuf for char_type == char
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008
-// Free Software Foundation, Inc.
+// Copyright (C) 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,33 +19,24 @@
 // 27.6.1.5 - Template class basic_iostream 
 
 #include <iostream>
-#include <testsuite_hooks.h>
-#include <testsuite_character.h>
 
-// libstdc++/2020
-// should be able to use custom char_type, custom traits type
-void test07()
+class mystream
+: public std::iostream
 {
-  bool test __attribute__((unused)) = true;
-  typedef std::basic_iostream<__gnu_test::pod_ushort> gnu_iostr;
+public:
+  mystream () { };
+};
 
-  try
-    { 
-      gnu_iostr obj(NULL); 
-    }
-  catch(std::exception& obj)
-    { 
-      test = false; 
-      VERIFY( test );
-    }
+// libstdc++/16251
+void test01()
+{
+  mystream x;
+  x.rdbuf(std::cout.rdbuf());
+  x << std::endl;
 }
 
-int main() 
+int main()
 {
-  test07();
+  test01();
   return 0;
 }
-
-
-
-// more surf!!!
