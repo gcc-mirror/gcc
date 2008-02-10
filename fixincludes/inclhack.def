@@ -1050,8 +1050,8 @@ fix = {
  */
 fix = {
     hackname  = bsd_stdio_attrs_conflict;
-    mach      = *-*-*bsd*;
-    mach      = *-*-*darwin*;
+    mach      = "*-*-*bsd*";
+    mach      = "*-*-*darwin*";
     files     = stdio.h;
     select    = "^#define[ \t]*vfscanf[ \t]*__svfscanf[ \t]*$";
     c_fix     = format;
@@ -1242,7 +1242,7 @@ fix = {
  */
 fix = {
     hackname  = freebsd_gcc3_breakage;
-    mach      = *-*-freebsd*;
+    mach      = "*-*-freebsd*";
     files     = sys/cdefs.h;
     select    = '^#if __GNUC__ == 2 && __GNUC_MINOR__ >= 7$';
     bypass    = '__GNUC__[ \t]*([>=]=[ \t]*[3-9]|>[ \t]*2)';
@@ -1259,7 +1259,7 @@ fix = {
  */
 fix = {
     hackname  = freebsd_gcc4_breakage;
-    mach      = *-*-freebsd*; 
+    mach      = "*-*-freebsd*"; 
     files     = sys/cdefs.h;
     select    = '^#if __GNUC__ == 2 && __GNUC_MINOR__ >= 7 \|\| __GNUC__ == 3$';
     c_fix     = format;
@@ -1534,7 +1534,7 @@ fix = {
  */
 fix = {
     hackname  = hpux11_abs;
-    mach      = ia64-hp-hpux11*;
+    mach      = "ia64-hp-hpux11*";
     files     = stdlib.h;
     select    = "ifndef _MATH_INCLUDED";
     c_fix     = format;
@@ -2450,7 +2450,7 @@ fix = {
  */
 fix = {
     hackname  = netbsd_extra_semicolon;
-    mach      = *-*-netbsd*;
+    mach      = "*-*-netbsd*";
     files     = sys/cdefs.h;
     select    = "#define[ \t]*__END_DECLS[ \t]*};";
 
