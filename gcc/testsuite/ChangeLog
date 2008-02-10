@@ -1,5 +1,10 @@
 2008-02-10  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.target/i386/pr17390.c: Remove ilp32 target requirement.
+	Add -mfpmath=387 to dg-options.
+
+2008-02-10  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR testsuite/35047
 	* gcc.dg/tree-ssa/gen-vect-2.c: Add -mno-sse for x86 targets.
 	* gcc.dg/tree-ssa/gen-vect-11.c: Ditto.
