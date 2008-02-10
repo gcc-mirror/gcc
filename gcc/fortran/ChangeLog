@@ -1,3 +1,9 @@
+2008-02-10  Daniel Franke  <franke.daniel@gmail.com>
+
+	fortran/PR35019
+	* lang.opt: Allow '-J<dir>' next to '-J <dir>', 
+	likewise '-I <dir>' and '-I<dir>'.
+
 2008-02-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR other/35107
