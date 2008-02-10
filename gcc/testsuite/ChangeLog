@@ -1,3 +1,16 @@
+2008-02-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/35047
+	* gcc.dg/tree-ssa/gen-vect-2.c: Add -mno-sse for x86 targets.
+	* gcc.dg/tree-ssa/gen-vect-11.c: Ditto.
+	* gcc.dg/tree-ssa/gen-vect-11a.c: Ditto.
+	* gcc.dg/tree-ssa/gen-vect-11b.c: Ditto.
+	* gcc.dg/tree-ssa/gen-vect-11c.c: Ditto.
+	* gcc.dg/tree-ssa/gen-vect-25.c: Ditto.
+	* gcc.dg/tree-ssa/gen-vect-26.c: Ditto.
+	* gcc.dg/tree-ssa/gen-vect-28.c: Ditto.
+	* gcc.dg/tree-ssa/gen-vect-32.c: Ditto.
+
 2008-02-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR objc++/34193
