@@ -1,3 +1,13 @@
+2008-02-10  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/35063
+	* io/unit.c (destroy_unit_mutex): New function that uses
+	__gthread_mutex_destroy_function or pthread_mutex_destroy after
+	unlocking and before free_mem for final closure of I/O unit.
+	(delete_root): Use new function.
+	(free_internal_unit): Likewise.
+	(close_unit_1): Likewise.
+
 2008-02-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/35001
