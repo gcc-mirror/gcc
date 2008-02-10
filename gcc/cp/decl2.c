@@ -3396,7 +3396,9 @@ cp_write_global_declarations (void)
       /* Static data members are just like namespace-scope globals.  */
       for (i = 0; VEC_iterate (tree, pending_statics, i, decl); ++i)
 	{
-	  if (var_finalized_p (decl) || DECL_REALLY_EXTERN (decl))
+	  if (var_finalized_p (decl) || DECL_REALLY_EXTERN (decl)
+	      /* Don't write it out if we haven't seen a definition.  */
+	      || DECL_IN_AGGR_P (decl))
 	    continue;
 	  import_export_decl (decl);
 	  /* If this static data member is needed, provide it to the
