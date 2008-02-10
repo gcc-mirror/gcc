@@ -359,6 +359,9 @@ typedef struct {
   __gthread_recursive_mutex_init_function
 #define __GTHREAD_RECURSIVE_MUTEX_INIT_DEFAULT {-1, 0, 0, 0}
 
+#define __GTHREAD_MUTEX_DESTROY_FUNCTION \
+  __gthread_mutex_destroy_function
+
 #if __MINGW32_MAJOR_VERSION >= 1 || \
   (__MINGW32_MAJOR_VERSION == 0 && __MINGW32_MINOR_VERSION > 2)
 #define MINGW32_SUPPORTS_MT_EH 1
@@ -613,6 +616,12 @@ __gthread_mutex_init_function (__gthread_mutex_t *mutex)
 {
   mutex->counter = -1;
   mutex->sema = CreateSemaphore (NULL, 0, 65535, NULL);
+}
+
+static inline void
+__gthread_mutex_destroy_function (__gthread_mutex_t *mutex)
+{
+  CloseHandle ((HANDLE) mutex->sema);
 }
 
 static inline int
