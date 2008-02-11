@@ -1,5 +1,11 @@
 2008-02-11  Uros Bizjak  <ubizjak@gmail.com>
-	Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/35047
+	* gcc.dg/compat/vector-2_x.c: Add -mno-mmx for x86 targets.
+	* gcc.dg/compat/vector-2_y.c: Ditto.
+
+2008-02-11  Uros Bizjak  <ubizjak@gmail.com>
+	    Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/33992
 	* gcc.c-torture/execute/pr33992.c: New testcase.

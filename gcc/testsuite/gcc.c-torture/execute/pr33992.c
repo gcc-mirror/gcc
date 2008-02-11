@@ -9,7 +9,6 @@ bar (unsigned long long i)
 
 void __attribute__((always_inline))
 foo (unsigned long long *r)
-
 {
   int i;
 
