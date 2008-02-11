@@ -1,3 +1,9 @@
+2008-02-11  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/cygwin.asm: (__alloca): Correct calling 
+	convention and alignment.
+	(__chkstk): Force 8 byte stack alignment.
+
 2008-02-11  Uros Bizjak  <ubizjak@gmail.com>
 	    Richard Guenther  <rguenther@suse.de>
 
