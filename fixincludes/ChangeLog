@@ -1,3 +1,11 @@
+2008-02-04  Ismail Dönmez  <ismail@pardus.org.tr>
+
+	* inclhack.def: (bsd_stdio_attrs_conflict, freebsd_gcc3_breakage,
+	freebsd_gcc4_breakage, hpux11_abs, netbsd_extra_semicolon):  Add
+	quotes around mach entries.
+	* fixincl.x: Regenerate with latest autogen (5.9.4), updating license
+	to GPLv3.
+
 2008-02-01  Release Manager
 
 	* GCC 4.2.3 released.
