@@ -1,3 +1,10 @@
+2008-02-11  Uros Bizjak  <ubizjak@gmail.com>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/33992
+	* tree-ssa-loop-im.c (rewrite_bittest): Fixup the type of
+	the zero we compare against.
+
 2008-02-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle_end/34150
