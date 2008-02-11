@@ -1,0 +1,125 @@
+<?xml version='1.0'?>
+<!DOCTYPE part PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+[ ]>
+
+<part id="manual.util" xreflabel="Utilities">
+<?dbhtml filename="utilities.html"?>
+ 
+<partinfo>
+  <keywordset>
+    <keyword>
+      ISO C++
+    </keyword>
+    <keyword>
+      library
+    </keyword>
+  </keywordset>
+</partinfo>
+
+<title>Utilities</title>
+
+<!-- Chapter 01 : Functors -->
+<chapter id="manual.util.functors" xreflabel="Functors">
+  <title>Functors</title>
+   <para>If you don't know what functors are, you're not alone.  Many people
+      get slightly the wrong idea.  In the interest of not reinventing
+      the wheel, we will refer you to the introduction to the functor
+      concept written by SGI as part of their STL, in
+      <ulink url="http://www.sgi.com/tech/stl/functors.html">their
+      http://www.sgi.com/tech/stl/functors.html</ulink>.
+   </para>
+</chapter>
+
+<!-- Chapter 02 : Pairs -->
+<chapter id="manual.util.pairs" xreflabel="Pairs">
+  <title>Pairs</title>
+   <para>The <code>pair&lt;T1,T2&gt;</code> is a simple and handy way to
+      carry around a pair of objects.  One is of type T1, and another of
+      type T2; they may be the same type, but you don't get anything
+      extra if they are.  The two members can be accessed directly, as
+      <code>.first</code> and <code>.second</code>.
+   </para>
+   <para>Construction is simple.  The default ctor initializes each member
+      with its respective default ctor.  The other simple ctor,
+   </para>
+   <programlisting>
+    pair (const T1&amp; x, const T2&amp; y);
+   </programlisting>
+   <para>does what you think it does, <code>first</code> getting <code>x</code>
+      and <code>second</code> getting <code>y</code>.
+   </para>
+   <para>There is a copy constructor, but it requires that your compiler
+      handle member function templates:
+   </para>
+   <programlisting>
+    template &lt;class U, class V&gt; pair (const pair&lt;U,V&gt;&amp; p);
+   </programlisting>
+   <para>The compiler will convert as necessary from U to T1 and from
+      V to T2 in order to perform the respective initializations.
+   </para>
+   <para>The comparison operators are done for you.  Equality
+      of two <code>pair&lt;T1,T2&gt;</code>s is defined as both <code>first</code>
+      members comparing equal and both <code>second</code> members comparing
+      equal; this simply delegates responsibility to the respective
+      <code>operator==</code> functions (for types like MyClass) or builtin
+      comparisons (for types like int, char, etc).
+   </para>
+   <para>
+      The less-than operator is a bit odd the first time you see it.  It
+      is defined as evaluating to:
+   </para>
+   <programlisting>
+    x.first  &lt;  y.first  ||
+        ( !(y.first  &lt;  x.first)  &amp;&amp;  x.second  &lt;  y.second )
+   </programlisting>
+   <para>The other operators are not defined using the <code>rel_ops</code>
+      functions above, but their semantics are the same.
+   </para>
+   <para>Finally, there is a template function called <function>make_pair</function>
+      that takes two references-to-const objects and returns an
+      instance of a pair instantiated on their respective types:
+   </para>
+   <programlisting>
+    pair&lt;int,MyClass&gt; p = make_pair(4,myobject);
+   </programlisting>
+
+</chapter>
+
+<!-- Chapter 03 : Memory -->
+<chapter id="manual.util.memory" xreflabel="Memory">
+
+  <title>Memory</title>
+  <para>
+    Memory contains three general areas. First, function and operator
+    calls via <function>new</function> and <function>delete</function>
+    operator or member function calls.  Second, allocation via
+    <classname>allocator</classname>. And finally, smart pointer and
+    intelligent pointer abstractions.
+  </para>
+
+  <!--  Section 01 : allocator -->
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	      parse="xml" href="allocator.xml">
+  </xi:include>
+
+  <!--  Section 02 : auto_ptr -->
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	      parse="xml" href="auto_ptr.xml">
+  </xi:include>
+
+  <!--  Section 03 : shared_ptr -->
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	      parse="xml" href="shared_ptr.xml">
+  </xi:include>
+
+</chapter>
+
+<!-- Chapter 04 : Traits -->
+<chapter id="manual.util.traits" xreflabel="Traits">
+  <title>Traits</title>
+  <para>
+  </para>
+</chapter>
+
+</part>

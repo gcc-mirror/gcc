@@ -1,0 +1,54 @@
+<?xml version='1.0'?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+[ ]>
+
+<chapter id="manual.intro" xreflabel="Introduction">
+ 
+<chapterinfo>
+  <keywordset>
+    <keyword>
+      ISO C++
+    </keyword>
+    <keyword>
+      library
+    </keyword>
+  </keywordset>
+</chapterinfo>
+
+<title>Introduction</title>
+
+<sect1 id="manual.intro.status" xreflabel="Status">
+  <title>Status</title>
+  <para>
+    The GNU C++ ...
+  </para>
+</sect1>
+
+<sect1 id="manual.intro.setup" xreflabel="Setup">
+  <title>Setup</title>
+  <para>
+    The GNU C++ ...
+  </para>
+  <sect2 id="manual.intro.setup.next1" xreflabel="Next1">
+    <title>Next1</title>
+    <para>
+      The GNU C++ ...
+    </para>
+  </sect2>
+  <sect2 id="manual.intro.setup.next2" xreflabel="Next2">
+    <title>Next2</title>
+    <para>
+      The GNU C++ ...
+    </para>
+  </sect2>  
+</sect1>
+
+<sect1 id="manual.intro.using" xreflabel="Using">
+  <title>Using</title>
+  <para>
+    The GNU C++ ...
+  </para>
+</sect1>
+
+</chapter>

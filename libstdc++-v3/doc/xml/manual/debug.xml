@@ -1,0 +1,245 @@
+<sect1 id="manual.intro.using.debug" xreflabel="Debugging Support">
+<?dbhtml filename="debug.html"?>
+ 
+<sect1info>
+  <keywordset>
+    <keyword>
+      C++
+    </keyword>
+    <keyword>
+      debug
+    </keyword>
+  </keywordset>
+</sect1info>
+
+<title>Debugging Support</title>
+
+<para>
+  There are numerous things that can be done to improve the ease with
+  which C++ binaries are debugged when using the GNU tool chain. Here
+  are some of them.
+</para>
+
+<sect2 id="debug.compiler" xreflabel="debug.compiler">
+<title>Using <command>g++</command></title>
+  <para> 
+    Compiler flags determine how debug information is transmitted
+    between compilation and debug or analysis tools.
+  </para>
+  
+  <para>
+    The default optimizations and debug flags for a libstdc++ build
+    are <code>-g -O2</code>. However, both debug and optimization
+    flags can be varied to change debugging characteristics. For
+    instance, turning off all optimization via the <code>-g -O0</code>
+    flag will disable inlining, so that stepping through all
+    functions, including inlined constructors and destructors, is
+    possible. In addition,
+    <code>-fno-eliminate-unused-debug-types</code> can be used when
+    additional debug information, such as nested class info, is
+    desired.
+</para>
+
+<para>
+  Or, the debug format that the compiler and debugger use to
+  communicate information about source constructs can be changed via
+  <code> -gdwarf-2 </code> or <code> -gstabs </code> flags: some
+  debugging formats permit more expressive type and scope information
+  to be shown in gdb.  The default debug information for a particular
+  platform can be identified via the value set by the
+  PREFERRED_DEBUGGING_TYPE macro in the gcc sources.
+</para>
+
+<para>
+  Many other options are available: please see <ulink
+  url="http://gcc.gnu.org/onlinedocs/gcc/Debugging-Options.html#Debugging%20Options">"Options
+  for Debugging Your Program"</ulink> in Using the GNU Compiler
+  Collection (GCC) for a complete list.
+</para>
+</sect2>
+
+<sect2 id="debug.req" xreflabel="debug.req">
+<title>Debug Versions of Library Binary Files</title>
+
+<para>
+  If you would like debug symbols in libstdc++, there are two ways to
+  build libstdc++ with debug flags. The first is to run make from the
+  toplevel in a freshly-configured tree with
+</para>
+<programlisting>
+     --enable-libstdcxx-debug
+</programlisting>
+<para>and perhaps</para>
+<programlisting>
+     --enable-libstdcxx-debug-flags='...'
+</programlisting>
+<para>
+  to create a separate debug build. Both the normal build and the
+  debug build will persist, without having to specify
+  <code>CXXFLAGS</code>, and the debug library will be installed in a
+  separate directory tree, in <code>(prefix)/lib/debug</code>. For
+  more information, look at the <ulink
+  url="configopts.html">configuration options</ulink> document.
+</para>
+
+<para>
+  A second approach is to use the configuration flags 
+</para>
+<programlisting>
+     make CXXFLAGS='-g3 -O0' all
+</programlisting>
+
+<para>
+  This quick and dirty approach is often sufficient for quick
+  debugging tasks, when you cannot or don't want to recompile your
+  application to use the <ulink url="#safe">debug mode</ulink>.</para>
+</sect2>
+ 
+<sect2 id="debug.memory" xreflabel="debug.memory">
+<title>Memory Leak Hunting</title>
+
+<para>
+  There are various third party memory tracing and debug utilities
+  that can be used to provide detailed memory allocation information
+  about C++ code. An exhaustive list of tools is not going to be
+  attempted, but includes <code>mtrace</code>, <code>valgrind</code>,
+  <code>mudflap</code>, and the non-free commercial product
+  <code>purify</code>. In addition, <code>libcwd</code> has a
+  replacement for the global new and delete operators that can track
+  memory allocation and deallocation and provide useful memory
+  statistics.
+</para>
+
+<para>
+  Regardless of the memory debugging tool being used, there is one
+  thing of great importance to keep in mind when debugging C++ code
+  that uses <code>new</code> and <code>delete</code>: there are
+  different kinds of allocation schemes that can be used by <code>
+  std::allocator </code>. For implementation details, see the <ulink
+  url="ext/mt_allocator.html">mt allocator</ulink> documentation and
+  look specifically for <code>GLIBCXX_FORCE_NEW</code>.
+</para>
+
+<para>
+  In a nutshell, the default allocator used by <code>
+  std::allocator</code> is a high-performance pool allocator, and can
+  give the mistaken impression that in a suspect executable, memory is
+  being leaked, when in reality the memory "leak" is a pool being used
+  by the library's allocator and is reclaimed after program
+  termination.
+</para>
+
+<para>
+  For valgrind, there are some specific items to keep in mind. First
+  of all, use a version of valgrind that will work with current GNU
+  C++ tools: the first that can do this is valgrind 1.0.4, but later
+  versions should work at least as well. Second of all, use a
+  completely unoptimized build to avoid confusing valgrind. Third, use
+  GLIBCXX_FORCE_NEW to keep extraneous pool allocation noise from
+  cluttering debug information.
+</para>
+
+<para>
+  Fourth, it may be necessary to force deallocation in other libraries
+  as well, namely the "C" library. On linux, this can be accomplished
+  with the appropriate use of the <code>__cxa_atexit</code> or
+  <code>atexit</code> functions.
+</para>
+
+<programlisting>
+   #include &lt;cstdlib&gt;
+
+   extern "C" void __libc_freeres(void);
+
+   void do_something() { }
+
+   int main()
+   {
+     atexit(__libc_freeres);
+     do_something();
+     return 0;
+   }
+</programlisting>
+
+
+<para>or, using <code>__cxa_atexit</code>:</para>
+
+<programlisting>
+   extern "C" void __libc_freeres(void);
+   extern "C" int __cxa_atexit(void (*func) (void *), void *arg, void *d);
+
+   void do_something() { }
+
+   int main()
+   {
+      extern void* __dso_handle __attribute__ ((__weak__));
+      __cxa_atexit((void (*) (void *)) __libc_freeres, NULL, 
+                   &amp;__dso_handle ? __dso_handle : NULL);
+      do_test();
+      return 0;
+   }
+</programlisting>
+
+<para>
+  Suggested valgrind flags, given the suggestions above about setting
+  up the runtime environment, library, and test file, might be:
+</para>
+<programlisting> 
+   valgrind -v --num-callers=20 --leak-check=yes --leak-resolution=high --show-reachable=yes a.out
+</programlisting>
+
+</sect2>
+
+<sect2 id="debug.gdb" xreflabel="debug.gdb">
+<title>Using <command>gdb</command></title>
+  <para> 
+  </para>
+
+<para>
+  Many options are available for gdb itself: please see <ulink
+  url="http://sources.redhat.com/gdb/current/onlinedocs/gdb_13.html#SEC109">
+  "GDB features for C++" </ulink> in the gdb documentation. Also
+  recommended: the other parts of this manual.
+</para>
+
+<para>
+  These settings can either be switched on in at the gdb command line,
+  or put into a .gdbint file to establish default debugging
+  characteristics, like so:
+</para>
+
+<programlisting>
+   set print pretty on
+   set print object on
+   set print static-members on
+   set print vtbl on
+   set print demangle on
+   set demangle-style gnu-v3
+</programlisting>
+</sect2>
+
+<sect2 id="debug.exceptions" xreflabel="debug.exceptions">
+<title>Tracking uncaught exceptions</title>
+<para>
+  The <link linkend="support.termination.verbose">verbose
+  termination handler</link> gives information about uncaught
+  exceptions which are killing the program.  It is described in the
+  linked-to page.
+</para>
+</sect2>
+
+<sect2 id="debug.debug_mode" xreflabel="debug.debug_mode">
+<title>Debug Mode</title>
+  <para> The <link linkend="manual.ext.debug_mode">Debug Mode</link>
+  has compile and run-time checks for many containers.
+  </para>
+</sect2>
+
+<sect2 id="debug.compile_time_checks" xreflabel="debug.compile_time_checks">
+<title>Compile Time Checking</title>
+  <para> The <link linkend="manual.ext.compile_checks">Compile-Time
+  Checks</link> Extension has compile-time checks for many algorithms.
+  </para>
+</sect2>
+
+</sect1>

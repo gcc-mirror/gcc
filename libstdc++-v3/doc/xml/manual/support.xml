@@ -1,0 +1,448 @@
+<?xml version='1.0'?>
+<!DOCTYPE part PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+[ ]>
+
+<part id="manual.support" xreflabel="Support">
+<?dbhtml filename="support.html"?>
+ 
+<partinfo>
+  <keywordset>
+    <keyword>
+      ISO C++
+    </keyword>
+    <keyword>
+      library
+    </keyword>
+  </keywordset>
+</partinfo>
+
+<title>Support</title>
+
+<preface>
+  <title></title>
+  <para>
+    This part deals with the functions called and objects created
+    automatically during the course of a program's existence.
+  </para>
+
+  <para>
+    While we can't reproduce the contents of the Standard here (you
+    need to get your own copy from your nation's member body; see our
+    homepage for help), we can mention a couple of changes in what
+    kind of support a C++ program gets from the Standard Library.
+  </para>
+</preface>
+
+<chapter id="manual.support.types" xreflabel="Types">
+  <title>Types</title>
+  <sect1 id="manual.support.types.fundamental" xreflabel="Fundamental Types">
+    <title>Fundamental Types</title>
+    <para>
+      C++ has the following builtin types:
+    </para>
+    <itemizedlist>
+      <listitem><para>
+	char
+      </para></listitem>
+      <listitem><para>
+	signed char
+      </para></listitem>
+      <listitem><para>
+	unsigned char
+      </para></listitem>
+      <listitem><para>
+	signed short
+      </para></listitem>
+      <listitem><para>
+	signed int
+      </para></listitem>
+      <listitem><para>
+	signed long
+      </para></listitem>
+      <listitem><para>
+	unsigned short
+      </para></listitem>
+      <listitem><para>
+	unsigned int
+      </para></listitem>
+      <listitem><para>
+	unsigned long
+      </para></listitem>
+      <listitem><para>
+	bool
+      </para></listitem>
+      <listitem><para>
+	wchar_t
+      </para></listitem>
+      <listitem><para>
+	float
+      </para></listitem>
+      <listitem><para>
+	double
+      </para></listitem>
+      <listitem><para>
+	long double
+      </para></listitem>
+    </itemizedlist>
+
+    <para>
+      These fundamental types are always available, without having to
+      include a header file. These types are exactly the same in
+      either C++ or in C.
+    </para>
+
+    <para>
+      Specializing parts of the library on these types is prohibited:
+      instead, use a POD.
+    </para>
+    
+  </sect1>
+  <sect1 id="manual.support.types.numeric_limits" xreflabel="Numeric Properites">
+    <title>Numeric Properties</title>
+
+
+    <para>
+    The header <filename class="headerfile">limits</filename> defines
+    traits classes to give access to various implementation
+    defined-aspects of the fundamental types. The traits classes --
+    fourteen in total -- are all specializations of the template class
+    <classname>numeric_limits</classname>, documented <ulink
+    url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/structstd_1_1numeric__limits.html">here</ulink>
+    and defined as follows:
+    </para>
+
+   <programlisting>
+   template&lt;typename T&gt; 
+     struct class 
+     {
+       static const bool is_specialized;
+       static T max() throw();
+       static T min() throw();
+
+       static const int digits;
+       static const int digits10;
+       static const bool is_signed;
+       static const bool is_integer;
+       static const bool is_exact;
+       static const int radix;
+       static T epsilon() throw();
+       static T round_error() throw();
+
+       static const int min_exponent;
+       static const int min_exponent10;
+       static const int max_exponent;
+       static const int max_exponent10;
+
+       static const bool has_infinity;
+       static const bool has_quiet_NaN;
+       static const bool has_signaling_NaN;
+       static const float_denorm_style has_denorm;
+       static const bool has_denorm_loss;
+       static T infinity() throw();
+       static T quiet_NaN() throw();
+       static T denorm_min() throw();
+
+       static const bool is_iec559;
+       static const bool is_bounded;
+       static const bool is_modulo;
+
+       static const bool traps;
+       static const bool tinyness_before;
+       static const float_round_style round_style;
+     };
+   </programlisting>
+  </sect1>  
+
+  <sect1 id="manual.support.types.null" xreflabel="NULL">
+    <title>NULL</title>
+    <para>
+     The only change that might affect people is the type of
+     <constant>NULL</constant>: while it is required to be a macro,
+     the definition of that macro is <emphasis>not</emphasis> allowed
+     to be <constant>(void*)0</constant>, which is often used in C.
+    </para>
+
+    <para>
+     For <command>g++</command>, <constant>NULL</constant> is
+     <programlisting>#define</programlisting>'d to be
+     <constant>__null</constant>, a magic keyword extension of
+     <command>g++</command>.
+    </para>
+
+    <para>
+     The biggest problem of #defining <constant>NULL</constant> to be
+     something like <quote>0L</quote> is that the compiler will view
+     that as a long integer before it views it as a pointer, so
+     overloading won't do what you expect. (This is why
+     <command>g++</command> has a magic extension, so that
+     <constant>NULL</constant> is always a pointer.)
+    </para>
+
+    <para>In his book <ulink
+    url="http://www.awprofessional.com/titles/0-201-92488-9/"><emphasis>Effective
+    C++</emphasis></ulink>, Scott Meyers points out that the best way
+    to solve this problem is to not overload on pointer-vs-integer
+    types to begin with.  He also offers a way to make your own magic
+    <constant>NULL</constant> that will match pointers before it
+    matches integers.
+    </para>
+    <para>See 
+      <ulink url="http://www.awprofessional.com/titles/0-201-31015-5/">the
+      Effective C++ CD example</ulink>
+    </para>
+  </sect1>  
+
+</chapter>
+
+<chapter id="manual.support.memory" xreflabel="Dynamic Memory">
+  <title>Dynamic Memory</title>
+  <para>
+    There are six flavors each of <function>new</function> and
+    <function>delete</function>, so make certain that you're using the right
+    ones. Here are quickie descriptions of <function>new</function>:
+  </para>
+  <itemizedlist>
+      <listitem><para>
+	single object form, throwing a
+	<classname>bad_alloc</classname> on errors; this is what most
+	people are used to using
+      </para></listitem>
+      <listitem><para>
+	Single object &quot;nothrow&quot; form, returning NULL on errors
+      </para></listitem>
+      <listitem><para>
+	Array <function>new</function>, throwing
+	<classname>bad_alloc</classname> on errors
+      </para></listitem>
+      <listitem><para>
+	Array nothrow <function>new</function>, returning
+	<constant>NULL</constant> on errors
+      </para></listitem>
+      <listitem><para>
+	Placement <function>new</function>, which does nothing (like
+	it's supposed to)
+      </para></listitem>
+      <listitem><para>
+	Placement array <function>new</function>, which also does
+	nothing
+      </para></listitem>
+   </itemizedlist>
+   <para>
+     They are distinguished by the parameters that you pass to them, like
+     any other overloaded function.  The six flavors of <function>delete</function>
+     are distinguished the same way, but none of them are allowed to throw
+     an exception under any circumstances anyhow.  (They match up for
+     completeness' sake.)
+   </para>
+   <para>
+     Remember that it is perfectly okay to call <function>delete</function> on a
+     NULL pointer!  Nothing happens, by definition.  That is not the
+     same thing as deleting a pointer twice.
+   </para>
+   <para>
+     By default, if one of the <quote>throwing <function>new</function>s</quote> can't
+     allocate the memory requested, it tosses an instance of a
+     <classname>bad_alloc</classname> exception (or, technically, some class derived
+     from it).  You can change this by writing your own function (called a
+     new-handler) and then registering it with <function>set_new_handler()</function>:
+   </para>
+   <programlisting>
+   typedef void (*PFV)(void);
+
+   static char*  safety;
+   static PFV    old_handler;
+
+   void my_new_handler ()
+   {
+       delete[] safety;
+       popup_window ("Dude, you are running low on heap memory.  You
+                      should, like, close some windows, or something.
+                      The next time you run out, we're gonna burn!");
+       set_new_handler (old_handler);
+       return;
+   }
+
+   int main ()
+   {
+       safety = new char[500000];
+       old_handler = set_new_handler (&amp;my_new_handler);
+       ...
+   }
+   </programlisting>
+   <para>
+     <classname>bad_alloc</classname> is derived from the base <classname>exception</classname>
+     class defined in Chapter 19.
+   </para>
+</chapter>
+
+<chapter id="manual.support.termination" xreflabel="Termination">
+  <title>Termination</title>
+  <sect1 id="support.termination.handlers" xreflabel="Termination Handlers">
+    <title>Termination Handlers</title>
+    <para>
+      Not many changes here to <filename
+      class="headerfile">cstdlib</filename>.  You should note that the
+      <function>abort()</function> function does not call the
+      destructors of automatic nor static objects, so if you're
+      depending on those to do cleanup, it isn't going to happen.
+      (The functions registered with <function>atexit()</function>
+      don't get called either, so you can forget about that
+      possibility, too.)
+    </para>
+    <para>
+      The good old <function>exit()</function> function can be a bit
+      funky, too, until you look closer.  Basically, three points to
+      remember are:
+    </para>
+    <orderedlist>
+      <listitem>
+	<para>
+	Static objects are destroyed in reverse order of their creation.
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	Functions registered with <function>atexit()</function> are called in
+        reverse order of registration, once per registration call.
+        (This isn't actually new.)
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	The previous two actions are <quote>interleaved,</quote> that is,
+        given this pseudocode:
+	</para>
+<programlisting>
+  extern "C or C++" void  f1 (void);
+  extern "C or C++" void  f2 (void);
+  
+  static Thing obj1;
+  atexit(f1);
+  static Thing obj2;
+  atexit(f2);
+</programlisting>
+	<para>
+        then at a call of <function>exit()</function>,
+        <varname>f2</varname> will be called, then
+        <varname>obj2</varname> will be destroyed, then
+        <varname>f1</varname> will be called, and finally
+        <varname>obj1</varname> will be destroyed. If
+        <varname>f1</varname> or <varname>f2</varname> allow an
+        exception to propagate out of them, Bad Things happen.
+	</para>
+      </listitem>
+    </orderedlist>
+    <para>
+      Note also that <function>atexit()</function> is only required to store 32
+      functions, and the compiler/library might already be using some of
+      those slots.  If you think you may run out, we recommend using
+      the <function>xatexit</function>/<function>xexit</function> combination from <literal>libiberty</literal>, which has no such limit.
+    </para>
+  </sect1>
+
+  <sect1 id="support.termination.verbose" xreflabel="Verbose Terminate Handler">
+    <title>Verbose Terminate Handler</title>
+    <para>
+      If you are having difficulty with uncaught exceptions and want a
+      little bit of help debugging the causes of the core dumps, you can
+      make use of a GNU extension, the verbose terminate handler.
+    </para>
+
+<programlisting>
+#include &lt;exception&gt;
+  
+int main()
+{
+  std::set_terminate(__gnu_cxx::__verbose_terminate_handler);
+  ...
+
+  throw <replaceable>anything</replaceable>;
+}
+</programlisting>
+
+   <para>
+     The <function>__verbose_terminate_handler</function> function
+     obtains the name of the current exception, attempts to demangle
+     it, and prints it to stderr.  If the exception is derived from
+     <classname>exception</classname> then the output from
+     <function>what()</function> will be included.
+   </para>
+
+   <para>
+     Any replacement termination function is required to kill the
+     program without returning; this one calls abort.
+   </para>
+
+   <para>
+     For example:
+   </para>
+
+<programlisting>
+#include &lt;exception&gt;
+#include &lt;stdexcept&gt;
+
+struct argument_error : public std::runtime_error
+{  
+  argument_error(const std::string&amp; s): std::runtime_error(s) { }
+};
+
+int main(int argc)
+{
+  std::set_terminate(__gnu_cxx::__verbose_terminate_handler);
+  if (argc &gt; 5)
+    throw argument_error(<quote>argc is greater than 5!</quote>);
+  else
+    throw argc;
+}
+</programlisting>
+
+   <para>
+     With the verbose terminate handler active, this gives:
+   </para>
+
+   <screen>
+   <computeroutput>
+   % ./a.out
+   terminate called after throwing a `int'
+   Aborted
+   % ./a.out f f f f f f f f f f f
+   terminate called after throwing an instance of `argument_error'
+   what(): argc is greater than 5!
+   Aborted
+   </computeroutput>
+   </screen>
+
+   <para>
+     The 'Aborted' line comes from the call to
+     <function>abort()</function>, of course.
+   </para>
+
+   <para>
+     This is the default termination handler; nothing need be done to
+     use it.  To go back to the previous <quote>silent death</quote>
+     method, simply include <filename>exception</filename> and
+     <filename>cstdlib</filename>, and call
+   </para>
+
+   <programlisting>
+     std::set_terminate(std::abort);
+   </programlisting>
+
+   <para> 
+     After this, all calls to <function>terminate</function> will use
+     <function>abort</function> as the terminate handler.
+   </para>
+
+   <para>
+     Note: the verbose terminate handler will attempt to write to
+     stderr.  If your application closes stderr or redirects it to an
+     inappropriate location,
+     <function>__verbose_terminate_handler</function> will behave in
+     an unspecified manner.
+   </para>
+
+  </sect1>
+</chapter>
+
+</part>

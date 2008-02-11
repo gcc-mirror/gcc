@@ -1,0 +1,259 @@
+<sect1 id="manual.localization.facet.ctype" xreflabel="ctype">
+<?dbhtml filename="ctype.html"?>
+ 
+<sect1info>
+  <keywordset>
+    <keyword>
+      ISO C++
+    </keyword>
+    <keyword>
+      ctype
+    </keyword>
+  </keywordset>
+</sect1info>
+
+<title>ctype</title>
+
+<sect2 id="facet.ctype.impl" xreflabel="facet.ctype.impl">
+<title>Implementation</title>
+
+  <sect3>
+    <title>Specializations</title>
+
+<para>
+For the required specialization codecvt&lt;wchar_t, char, mbstate_t&gt; ,
+conversions are made between the internal character set (always UCS4
+on GNU/Linux) and whatever the currently selected locale for the
+LC_CTYPE category implements.
+</para>
+
+<para>
+The two required specializations are implemented as follows:
+</para>
+
+<para>
+<code>
+ctype&lt;char&gt;
+</code>
+</para>
+<para>
+This is simple specialization. Implementing this was a piece of cake.
+</para>
+
+<para>
+<code>
+ctype&lt;wchar_t&gt;
+</code>
+</para>
+<para>
+This specialization, by specifying all the template parameters, pretty
+much ties the hands of implementors. As such, the implementation is
+straightforward, involving mcsrtombs for the conversions between char
+to wchar_t and wcsrtombs for conversions between wchar_t and char.
+</para>
+
+<para>
+Neither of these two required specializations deals with Unicode
+characters.
+</para>
+
+  </sect3>
+</sect2>
+
+<sect2 id="facet.ctype.future" xreflabel="facet.ctype.future">
+<title>Future</title>
+
+
+<itemizedlist>
+   <listitem>
+   <para>
+   How to deal with the global locale issue? 
+   </para></listitem>
+
+   <listitem>
+   <para> 
+   How to deal with different types than char, wchar_t? </para></listitem>
+
+   <listitem><para>
+   Overlap between codecvt/ctype: narrow/widen 
+   </para></listitem>
+
+   <listitem>
+     <para> 
+       Mask typedef in codecvt_base, argument types in codecvt.  what
+       is know about this type? 
+   </para></listitem>
+
+   <listitem>
+   <para> 
+   Why mask* argument in codecvt?
+   </para></listitem>
+   
+   <listitem>
+     <para>
+       Can this be made (more) generic? is there a simple way to
+       straighten out the configure-time mess that is a by-product of
+       this class?  
+   </para></listitem>
+
+   <listitem>
+     <para> 
+       Get the ctype&lt;wchar_t&gt;::mask stuff under control. Need to
+       make some kind of static table, and not do lookup evertime
+       somebody hits the do_is... functions. Too bad we can't just
+       redefine mask for ctype&lt;wchar_t&gt; 
+   </para></listitem>
+   
+   <listitem>
+     <para> 
+       Rename abstract base class. See if just smash-overriding is a
+       better approach. Clarify, add sanity to naming.
+     </para>
+   </listitem>
+
+</itemizedlist>
+
+
+</sect2>
+
+
+<bibliography id="facet.ctype.biblio" xreflabel="facet.ctype.biblio">
+<title>Bibliography</title>
+
+  <biblioentry>
+    <title>
+      The GNU C Library
+    </title>
+
+    <author>
+      <surname>McGrath</surname>
+      <firstname>Roland</firstname>
+    </author>
+    <author>
+      <surname>Drepper</surname>
+      <firstname>Ulrich</firstname>
+    </author>
+
+    <copyright>
+      <year>2007</year>
+      <holder>FSF</holder>
+    </copyright>
+    <pagenums>Chapters 6  Character Set Handling and 7 Locales and Internationalization</pagenums>
+
+  </biblioentry> 
+
+  <biblioentry>
+    <title>
+      Correspondence
+    </title>
+
+    <author>
+      <surname>Drepper</surname>
+      <firstname>Ulrich</firstname>
+    </author>
+
+    <copyright>
+      <year>2002</year>
+      <holder></holder>
+    </copyright>
+  </biblioentry> 
+
+  <biblioentry>
+    <title>
+      ISO/IEC 14882:1998 Programming languages - C++
+    </title>
+
+    <copyright>
+      <year>1998</year>
+      <holder>ISO</holder>
+    </copyright>
+  </biblioentry> 
+
+  <biblioentry>
+    <title>
+      ISO/IEC 9899:1999 Programming languages - C
+    </title>
+
+    <copyright>
+      <year>1999</year>
+      <holder>ISO</holder>
+    </copyright>
+  </biblioentry> 
+
+  <biblioentry>
+    <title>
+      System Interface Definitions, Issue 6 (IEEE Std. 1003.1-200x)
+    </title>
+
+    <copyright>
+      <year>1999</year>
+      <holder>
+      The Open Group/The Institute of Electrical and Electronics Engineers, Inc.</holder>
+    </copyright>
+
+    <biblioid>
+      <ulink url="http://www.opennc.org/austin/docreg.html">
+      </ulink>
+    </biblioid>
+
+  </biblioentry> 
+
+  <biblioentry>
+    <title>
+      The C++ Programming Language, Special Edition
+    </title>
+    
+    <author>
+      <surname>Stroustrup</surname>
+      <firstname>Bjarne</firstname>
+    </author>
+
+    <copyright>
+      <year>2000</year>
+      <holder>Addison Wesley, Inc.</holder>
+    </copyright>
+    <pagenums>Appendix D</pagenums>
+
+    <publisher>
+      <publishername>
+	Addison Wesley
+      </publishername>
+    </publisher>
+
+  </biblioentry> 
+
+
+  <biblioentry>
+    <title>
+      Standard C++ IOStreams and Locales
+    </title>
+    <subtitle>
+      Advanced Programmer's Guide and Reference
+    </subtitle>
+    
+    <author>
+      <surname>Langer</surname>
+      <firstname>Angelika</firstname>
+    </author>
+
+    <author>
+      <surname>Kreft</surname>
+      <firstname>Klaus</firstname>
+    </author>
+
+    <copyright>
+      <year>2000</year>
+      <holder>Addison Wesley Longman, Inc.</holder>
+    </copyright>
+
+    <publisher>
+      <publishername>
+	Addison Wesley Longman
+      </publishername>
+    </publisher>
+
+  </biblioentry> 
+
+</bibliography>
+
+</sect1>

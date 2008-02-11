@@ -1,0 +1,177 @@
+<?xml version='1.0'?>
+<!DOCTYPE part PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+[ ]>
+
+<part id="manual.iterators" xreflabel="Iterators">
+<?dbhtml filename="iterators.html"?>
+ 
+<partinfo>
+  <keywordset>
+    <keyword>
+      ISO C++
+    </keyword>
+    <keyword>
+      library
+    </keyword>
+  </keywordset>
+</partinfo>
+
+<title>Iterators</title>
+
+<!-- Chapter 01 : Predefined -->
+<chapter id="manual.iterators.predefined" xreflabel="Predefined">
+  <title>Predefined</title>
+
+  <sect1 id="iterators.predefined.vs_pointers" xreflabel="Versus Pointers">
+    <title>Iterators vs. Pointers</title>
+   <para><ulink url="../faq/index.html#5_1">FAQ 5.1</ulink> points out that iterators
+      are not implemented as pointers.  They are a generalization of
+      pointers, but they are implemented in libstdc++ as separate classes.
+   </para>
+   <para>Keeping that simple fact in mind as you design your code will
+      prevent a whole lot of difficult-to-understand bugs.
+   </para>
+   <para>You can think of it the other way 'round, even.  Since iterators
+      are a generalization, that means that <emphasis>pointers</emphasis> are
+      <emphasis>iterators</emphasis>, and that pointers can be used whenever an
+      iterator would be.  All those functions in the Algorithms chapter
+      of the Standard will work just as well on plain arrays and their
+      pointers.
+   </para>
+   <para>That doesn't mean that when you pass in a pointer, it gets wrapped
+      into some special delegating iterator-to-pointer class with a layer
+      of overhead.  (If you think that's the case anywhere, you don't
+      understand templates to begin with...)  Oh, no; if you pass
+      in a pointer, then the compiler will instantiate that template
+      using T* as a type, and good old high-speed pointer arithmetic as
+      its operations, so the resulting code will be doing exactly the same
+      things as it would be doing if you had hand-coded it yourself (for
+      the 273rd time).
+   </para>
+   <para>How much overhead <emphasis>is</emphasis> there when using an iterator class?
+      Very little.  Most of the layering classes contain nothing but
+      typedefs, and typedefs are &quot;meta-information&quot; that simply
+      tell the compiler some nicknames; they don't create code.  That
+      information gets passed down through inheritance, so while the
+      compiler has to do work looking up all the names, your runtime code
+      does not.  (This has been a prime concern from the beginning.)
+   </para>
+ 
+
+  </sect1>
+
+  <sect1 id="iterators.predefined.end" xreflabel="end() Is One Past the End">
+    <title>One Past the End</title>
+
+   <para>This starts off sounding complicated, but is actually very easy,
+      especially towards the end.  Trust me.
+   </para>
+   <para>Beginners usually have a little trouble understand the whole
+      'past-the-end' thing, until they remember their early algebra classes
+      (see, they <emphasis>told</emphasis> you that stuff would come in handy!) and
+      the concept of half-open ranges.
+   </para>
+   <para>First, some history, and a reminder of some of the funkier rules in
+      C and C++ for builtin arrays.  The following rules have always been
+      true for both languages:
+   </para>
+   <orderedlist>
+      <listitem>
+	<para>You can point anywhere in the array, <emphasis>or to the first element
+          past the end of the array</emphasis>.  A pointer that points to one
+          past the end of the array is guaranteed to be as unique as a
+          pointer to somewhere inside the array, so that you can compare
+          such pointers safely.
+	</para>
+      </listitem>
+      <listitem>
+	<para>You can only dereference a pointer that points into an array.
+          If your array pointer points outside the array -- even to just
+          one past the end -- and you dereference it, Bad Things happen.
+	</para>
+      </listitem>
+      <listitem>
+	<para>Strictly speaking, simply pointing anywhere else invokes
+          undefined behavior.  Most programs won't puke until such a
+          pointer is actually dereferenced, but the standards leave that
+          up to the platform.
+	</para>
+      </listitem>
+   </orderedlist>
+   <para>The reason this past-the-end addressing was allowed is to make it
+      easy to write a loop to go over an entire array, e.g.,
+      while (*d++ = *s++);.
+   </para>
+   <para>So, when you think of two pointers delimiting an array, don't think
+      of them as indexing 0 through n-1.  Think of them as <emphasis>boundary
+      markers</emphasis>:
+   </para>
+   <programlisting>
+
+   beginning            end
+     |                   |
+     |                   |               This is bad.  Always having to
+     |                   |               remember to add or subtract one.
+     |                   |               Off-by-one bugs very common here.
+     V                   V
+        array of N elements
+     |---|---|--...--|---|---|
+     | 0 | 1 |  ...  |N-2|N-1|
+     |---|---|--...--|---|---|
+
+     ^                       ^
+     |                       |
+     |                       |           This is good.  This is safe.  This
+     |                       |           is guaranteed to work.  Just don't
+     |                       |           dereference 'end'.
+   beginning                end
+
+   </programlisting>
+   <para>See?  Everything between the boundary markers is part of the array.
+      Simple.
+   </para>
+   <para>Now think back to your junior-high school algebra course, when you
+      were learning how to draw graphs.  Remember that a graph terminating
+      with a solid dot meant, &quot;Everything up through this point,&quot;
+      and a graph terminating with an open dot meant, &quot;Everything up
+      to, but not including, this point,&quot; respectively called closed
+      and open ranges?  Remember how closed ranges were written with
+      brackets, <emphasis>[a,b]</emphasis>, and open ranges were written with parentheses,
+      <emphasis>(a,b)</emphasis>?
+   </para>
+   <para>The boundary markers for arrays describe a <emphasis>half-open range</emphasis>,
+      starting with (and including) the first element, and ending with (but
+      not including) the last element:  <emphasis>[beginning,end)</emphasis>.  See, I
+      told you it would be simple in the end.
+   </para>
+   <para>Iterators, and everything working with iterators, follows this same
+      time-honored tradition.  A container's <code>begin()</code> method returns
+      an iterator referring to the first element, and its <code>end()</code>
+      method returns a past-the-end iterator, which is guaranteed to be
+      unique and comparable against any other iterator pointing into the
+      middle of the container.
+   </para>
+   <para>Container constructors, container methods, and algorithms, all take
+      pairs of iterators describing a range of values on which to operate.
+      All of these ranges are half-open ranges, so you pass the beginning
+      iterator as the starting parameter, and the one-past-the-end iterator
+      as the finishing parameter.
+   </para>
+   <para>This generalizes very well.  You can operate on sub-ranges quite
+      easily this way; functions accepting a <emphasis>[first,last)</emphasis> range
+      don't know or care whether they are the boundaries of an entire {array,
+      sequence, container, whatever}, or whether they only enclose a few
+      elements from the center.  This approach also makes zero-length
+      sequences very simple to recognize:  if the two endpoints compare
+      equal, then the {array, sequence, container, whatever} is empty.
+   </para>
+   <para>Just don't dereference <code>end()</code>.
+   </para>
+
+  </sect1>
+</chapter>
+
+<!-- Chapter 02 : Stream -->
+
+</part>
