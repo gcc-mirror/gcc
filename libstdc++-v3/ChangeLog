@@ -76,7 +76,7 @@
 	* doc/xml/class.txml: Same.
 
 	* doc/doxygen/guide.html: Removed, integrated into other docs.
-	* doc/doxygen/user.cfg.in: Clean up XML generation
+	* doc/doxygen/user.cfg.in: Clean up XML generation.
 	* doc/doxygen/run_doxygen: Move to..	
 	* scripts/run_doxygen: ...here.
 	
