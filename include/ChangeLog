@@ -1,3 +1,8 @@
+2008-02-11  Bob Wilson  <bob.wilson@acm.org>
+
+	* xtensa-config.h (XCHAL_HAVE_THREADPTR): Redefine to zero.
+	(XCHAL_NUM_AREGS, XCHAL_MAX_INSTRUCTION_SIZE): New.
+
 2008-01-26  David Daney  <ddaney@avtrex.com>
 
 	* demangle.h (demangle_component_type):  Add
