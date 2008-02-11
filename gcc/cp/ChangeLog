@@ -1,3 +1,11 @@
+2008-02-11  Douglas Gregor  <doug.gregor@gmail.com>
+
+       PR c++/35113
+       * tree.c (cp_build_qualified_type_real): When building a
+       cv-qualified array type, build it as a unique type with
+       build_cplus_array_type_1 and then adopt the unqualified type's
+       main variant.
+	
 2008-02-11  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/35077

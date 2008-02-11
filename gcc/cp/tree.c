@@ -726,47 +726,33 @@ cp_build_qualified_type_real (tree type,
 	  break;
 
       if (!t)
-	{
-	  tree index_type = TYPE_DOMAIN (type);
-	  void **e;
-	  cplus_array_info cai;
-	  hashval_t hash;
+      {
+	t = build_cplus_array_type_1 (element_type, TYPE_DOMAIN (type));
 
-	  if (cplus_array_htab == NULL)
-	    cplus_array_htab = htab_create_ggc (61, &cplus_array_hash,
-						&cplus_array_compare, 
-						NULL);
+	if (TYPE_MAIN_VARIANT (t) != TYPE_MAIN_VARIANT (type))
+	  {
+	    /* Set the main variant of the newly-created ARRAY_TYPE
+	       (with cv-qualified element type) to the main variant of
+	       the unqualified ARRAY_TYPE we started with.  */
+	    tree last_variant = t;
+	    tree m = TYPE_MAIN_VARIANT (type);
 
-	  hash = (htab_hash_pointer (element_type)
-		  ^ htab_hash_pointer (index_type));
-	  cai.type = element_type;
-	  cai.domain = index_type;
-	  
-	  e = htab_find_slot_with_hash (cplus_array_htab, &cai, hash, INSERT);
-	  if (*e)
-	    /* We have found the type: we're done. */
-	    return (tree) *e;
+	    /* Find the last variant on the new ARRAY_TYPEs list of
+	       variants, setting the main variant of each of the other
+	       types to the main variant of our unqualified
+	       ARRAY_TYPE.  */
+	    while (TYPE_NEXT_VARIANT (last_variant))
+	      {
+		TYPE_MAIN_VARIANT (last_variant) = m;
+		last_variant = TYPE_NEXT_VARIANT (last_variant);
+	      }
 
-	  /* Build a new array type and add it into the table.  */
-	  t = build_variant_type_copy (type);
-	  TREE_TYPE (t) = element_type;
-	  *e = t;
-
-	  /* Set the canonical type for this new node.  */
-	  if (TYPE_STRUCTURAL_EQUALITY_P (element_type)
-	      || (index_type && TYPE_STRUCTURAL_EQUALITY_P (index_type)))
-	    SET_TYPE_STRUCTURAL_EQUALITY (t);
-	  else if (TYPE_CANONICAL (element_type) != element_type
-		   || (index_type 
-		       && TYPE_CANONICAL (index_type) != index_type)
-		   || TYPE_CANONICAL (type) != type)
-	    TYPE_CANONICAL (t)
-	      = build_cplus_array_type
-	         (TYPE_CANONICAL (element_type),
-		  index_type? TYPE_CANONICAL (index_type) : index_type);
-	  else
-	    TYPE_CANONICAL (t) = t;
-	}
+	    /* Splice in the newly-created variants.  */
+	    TYPE_NEXT_VARIANT (last_variant) = TYPE_NEXT_VARIANT (m);
+	    TYPE_NEXT_VARIANT (m) = t;
+	    TYPE_MAIN_VARIANT (last_variant) = m;
+	  }
+      }
 
       /* Even if we already had this variant, we update
 	 TYPE_NEEDS_CONSTRUCTING and TYPE_HAS_NONTRIVIAL_DESTRUCTOR in case
