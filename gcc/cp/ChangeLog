@@ -1,3 +1,8 @@
+2008-02-11  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/35077
+	* decl.c (groktypename): Check grokdeclarator return.
+
 2008-02-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/34094

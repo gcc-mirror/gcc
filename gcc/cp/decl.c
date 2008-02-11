@@ -3914,7 +3914,7 @@ groktypename (cp_decl_specifier_seq *type_specifiers,
   attrs = type_specifiers->attributes;
   type_specifiers->attributes = NULL_TREE;
   type = grokdeclarator (declarator, type_specifiers, TYPENAME, 0, &attrs);
-  if (attrs)
+  if (attrs && type != error_mark_node)
     {
       if (CLASS_TYPE_P (type))
 	warning (OPT_Wattributes, "ignoring attributes applied to class type %qT "
