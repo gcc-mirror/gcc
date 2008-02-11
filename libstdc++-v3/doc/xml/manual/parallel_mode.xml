@@ -1,0 +1,674 @@
+<?xml version='1.0'?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+[ ]>
+
+<chapter id="manual.ext.parallel_mode" xreflabel="Parallel Mode">
+<?dbhtml filename="parallel_mode.html"?>
+ 
+<chapterinfo>
+  <keywordset>
+    <keyword>
+      C++
+    </keyword>
+    <keyword>
+      library
+    </keyword>
+    <keyword>
+      parallel
+    </keyword>
+  </keywordset>
+</chapterinfo>
+
+<title>Parallel Mode</title>
+
+<para> The libstdc++ parallel mode is an experimental parallel
+implementation of many algorithms the C++ Standard Library.
+</para>
+
+<para>
+Several of the standard algorithms, for instance
+<code>std::sort</code>, are made parallel using OpenMP
+annotations. These parallel mode constructs and can be invoked by
+explicit source declaration or by compiling existing sources with a
+specific compiler flag.
+</para>
+
+
+<sect1 id="manual.ext.parallel_mode.intro" xreflabel="Intro">
+  <title>Intro</title>
+
+<para>The following library components in the include
+<code>&lt;numeric&gt;</code> are included in the parallel mode:</para>
+<itemizedlist>
+  <listitem><para><code>std::accumulate</code></para></listitem>
+  <listitem><para><code>std::adjacent_difference</code></para></listitem>
+  <listitem><para><code>std::inner_product</code></para></listitem>
+  <listitem><para><code>std::partial_sum</code></para></listitem>
+</itemizedlist>
+
+<para>The following library components in the include
+<code>&lt;algorithm&gt;</code> are included in the parallel mode:</para>
+<itemizedlist>
+  <listitem><para><code>std::adjacent_find</code></para></listitem>
+  <listitem><para><code>std::count</code></para></listitem>
+  <listitem><para><code>std::count_if</code></para></listitem>
+  <listitem><para><code>std::equal</code></para></listitem>
+  <listitem><para><code>std::find</code></para></listitem>
+  <listitem><para><code>std::find_if</code></para></listitem>
+  <listitem><para><code>std::find_first_of</code></para></listitem>
+  <listitem><para><code>std::for_each</code></para></listitem>
+  <listitem><para><code>std::generate</code></para></listitem>
+  <listitem><para><code>std::generate_n</code></para></listitem>
+  <listitem><para><code>std::lexicographical_compare</code></para></listitem>
+  <listitem><para><code>std::mismatch</code></para></listitem>
+  <listitem><para><code>std::search</code></para></listitem>
+  <listitem><para><code>std::search_n</code></para></listitem>
+  <listitem><para><code>std::transform</code></para></listitem>
+  <listitem><para><code>std::replace</code></para></listitem>
+  <listitem><para><code>std::replace_if</code></para></listitem>
+  <listitem><para><code>std::max_element</code></para></listitem>
+  <listitem><para><code>std::merge</code></para></listitem>
+  <listitem><para><code>std::min_element</code></para></listitem>
+  <listitem><para><code>std::nth_element</code></para></listitem>
+  <listitem><para><code>std::partial_sort</code></para></listitem>
+  <listitem><para><code>std::partition</code></para></listitem>
+  <listitem><para><code>std::random_shuffle</code></para></listitem>
+  <listitem><para><code>std::set_union</code></para></listitem>
+  <listitem><para><code>std::set_intersection</code></para></listitem>
+  <listitem><para><code>std::set_symmetric_difference</code></para></listitem>
+  <listitem><para><code>std::set_difference</code></para></listitem>
+  <listitem><para><code>std::sort</code></para></listitem>
+  <listitem><para><code>std::stable_sort</code></para></listitem>
+  <listitem><para><code>std::unique_copy</code></para></listitem>
+</itemizedlist>
+
+<para>The following library components in the includes
+<code>&lt;set&gt;</code> and <code>&lt;map&gt;</code> are included in the parallel mode:</para>
+<itemizedlist>
+  <listitem><para><code>std::(multi_)map/set&lt;T&gt;::(multi_)map/set(Iterator begin, Iterator end)</code> (bulk construction)</para></listitem>
+  <listitem><para><code>std::(multi_)map/set&lt;T&gt;::insert(Iterator begin, Iterator end)</code> (bulk insertion)</para></listitem>
+</itemizedlist>
+
+</sect1>
+
+<sect1 id="manual.ext.parallel_mode.semantics" xreflabel="Semantics">
+  <title>Semantics</title>
+
+<para> The parallel mode STL algorithms are currently not exception-safe,
+i. e. user-defined functors must not throw exceptions.
+</para>
+
+<para> Since the current GCC OpenMP implementation does not support
+OpenMP parallel regions in concurrent threads,
+it is not possible to call parallel STL algorithm in
+concurrent threads, either.
+It might work with other compilers, though.</para>
+
+</sect1>
+
+<sect1 id="manual.ext.parallel_mode.using" xreflabel="Using">
+  <title>Using</title>
+
+<sect2 id="parallel_mode.using.parallel_mode" xreflabel="using.parallel_mode">
+  <title>Using Parallel Mode</title>
+
+<para>To use the libstdc++ parallel mode, compile your application with
+  the compiler flag <code>-D_GLIBCXX_PARALLEL -fopenmp</code>. This
+  will link in <code>libgomp</code>, the GNU OpenMP <ulink url="http://gcc.gnu.org/onlinedocs/libgomp">implementation</ulink>,
+  whose presence is mandatory. In addition, hardware capable of atomic
+  operations is mandatory. Actually activating these atomic
+  operations may require explicit compiler flags on some targets
+  (like sparc and x86), such as <code>-march=i686</code>,
+  <code>-march=native</code> or <code>-mcpu=v9</code>.
+</para>
+
+<para>Note that the <code>_GLIBCXX_PARALLEL</code> define may change the
+  sizes and behavior of standard class templates such as
+  <code>std::search</code>, and therefore one can only link code
+  compiled with parallel mode and code compiled without parallel mode
+  if no instantiation of a container is passed between the two
+  translation units. Parallel mode functionality has distinct linkage,
+  and cannot be confused with normal mode symbols.</para>
+</sect2>
+
+<sect2 id="manual.ext.parallel_mode.usings" xreflabel="using.specific">
+  <title>Using Specific Parallel Components</title>
+
+<para>When it is not feasible to recompile your entire application, or
+  only specific algorithms need to be parallel-aware, individual
+  parallel algorithms can be made available explicitly. These
+  parallel algorithms are functionally equivalent to the standard
+  drop-in algorithms used in parallel mode, but they are available in
+  a separate namespace as GNU extensions and may be used in programs
+  compiled with either release mode or with parallel mode. The
+  following table provides the names and headers of the parallel
+  algorithms:
+</para>
+
+<table frame='all'>
+<title>Parallel Algorithms</title>
+<tgroup cols='4' align='left' colsep='1' rowsep='1'>
+<colspec colname='c1'></colspec>
+<colspec colname='c2'></colspec>
+<colspec colname='c3'></colspec>
+<colspec colname='c4'></colspec>
+
+<thead>
+  <row>
+    <entry>Algorithm</entry>
+    <entry>Header</entry>
+    <entry>Parallel algorithm</entry>
+    <entry>Parallel header</entry>
+  </row>
+</thead>
+
+<tbody>
+  <row>
+    <entry><function>std::accumulate</function></entry>
+    <entry><filename class="headerfile">numeric</filename></entry>
+    <entry><function>__gnu_parallel::accumulate</function></entry>
+    <entry><filename class="headerfile">parallel/numeric</filename></entry>
+  </row>
+  <row>
+    <entry><function>std::adjacent_difference</function></entry>
+    <entry><filename class="headerfile">numeric</filename></entry>
+    <entry><function>__gnu_parallel::adjacent_difference</function></entry>
+    <entry><filename class="headerfile">parallel/numeric</filename></entry>
+  </row>
+  <row>
+    <entry><function>std::inner_product</function></entry>
+    <entry><filename class="headerfile">numeric</filename></entry>
+    <entry><function>__gnu_parallel::inner_product</function></entry>
+    <entry><filename class="headerfile">parallel/numeric</filename></entry>
+  </row>
+  <row>
+    <entry><function>std::partial_sum</function></entry>
+    <entry><filename class="headerfile">numeric</filename></entry>
+    <entry><function>__gnu_parallel::partial_sum</function></entry>
+    <entry><filename class="headerfile">parallel/numeric</filename></entry>
+  </row>
+  <row>
+    <entry><function>std::adjacent_find</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::adjacent_find</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::count</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::count</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::count_if</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::count_if</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::equal</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::equal</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::find</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::find</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::find_if</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::find_if</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::find_first_of</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::find_first_of</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::for_each</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::for_each</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::generate</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::generate</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::generate_n</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::generate_n</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::lexicographical_compare</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::lexicographical_compare</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::mismatch</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::mismatch</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::search</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::search</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::search_n</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::search_n</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::transform</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::transform</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::replace</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::replace</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::replace_if</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::replace_if</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::max_element</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::max_element</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::merge</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::merge</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::min_element</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::min_element</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::nth_element</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::nth_element</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::partial_sort</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::partial_sort</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::partition</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::partition</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::random_shuffle</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::random_shuffle</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::set_union</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::set_union</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::set_intersection</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::set_intersection</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::set_symmetric_difference</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::set_symmetric_difference</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::set_difference</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::set_difference</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::sort</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::sort</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::stable_sort</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::stable_sort</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+
+  <row>
+    <entry><function>std::unique_copy</function></entry>
+    <entry><filename class="headerfile">algorithm</filename></entry>
+    <entry><function>__gnu_parallel::unique_copy</function></entry>
+    <entry><filename class="headerfile">parallel/algorithm</filename></entry>
+  </row>
+</tbody>
+</tgroup>
+</table>
+
+</sect2>
+
+</sect1>
+
+<sect1 id="manual.ext.parallel_mode.design" xreflabel="Design">
+  <title>Design</title>
+  <para>
+  </para>
+<sect2 id="manual.ext.parallel_mode.design.intro" xreflabel="Intro">
+  <title>Interface Basics</title>
+
+
+<para>All parallel algorithms are intended to have signatures that are
+equivalent to the ISO C++ algorithms replaced. For instance, the
+<code>std::adjacent_find</code> function is declared as:
+</para>
+<programlisting>
+namespace std
+{
+  template&lt;typename _FIter&gt;
+    _FIter
+    adjacent_find(_FIter, _FIter);
+}
+</programlisting>
+
+<para>
+Which means that there should be something equivalent for the parallel
+version. Indeed, this is the case:
+</para>
+
+<programlisting>
+namespace std
+{
+  namespace __parallel
+  {
+    template&lt;typename _FIter&gt;
+      _FIter
+      adjacent_find(_FIter, _FIter);
+
+    ...
+  }
+}
+</programlisting>
+
+<para>But.... why the elipses?
+</para>
+
+<para> The elipses in the example above represent additional overloads
+required for the parallel version of the function. These additional
+overloads are used to dispatch calls from the ISO C++ function
+signature to the appropriate parallel function (or sequential
+function, if no parallel functions are deemed worthy), based on either
+compile-time or run-time conditions.
+</para>
+
+<para> Compile-time conditions are referred to as "embarrassingly
+parallel," and are denoted with the appropriate dispatch object, ie
+one of <code>__gnu_parallel::sequential_tag</code>,
+<code>__gnu_parallel::parallel_tag</code>,
+<code>__gnu_parallel::balanced_tag</code>,
+<code>__gnu_parallel::unbalanced_tag</code>,
+<code>__gnu_parallel::omp_loop_tag</code>, or
+<code>__gnu_parallel::omp_loop_static_tag</code>.
+</para>
+
+<para> Run-time conditions depend on the hardware being used, the number
+of threads available, etc., and are denoted by the use of the enum
+<code>__gnu_parallel::parallelism</code>. Values of this enum include
+<code>__gnu_parallel::sequential</code>,
+<code>__gnu_parallel::parallel_unbalanced</code>,
+<code>__gnu_parallel::parallel_balanced</code>,
+<code>__gnu_parallel::parallel_omp_loop</code>,
+<code>__gnu_parallel::parallel_omp_loop_static</code>, or
+<code>__gnu_parallel::parallel_taskqueue</code>.
+</para>
+
+<para> Putting all this together, the general view of overloads for the
+parallel algorithms look like this:
+</para>
+<itemizedlist>
+   <listitem><para>ISO C++ signature</para></listitem>
+   <listitem><para>ISO C++ signature + sequential_tag argument</para></listitem>
+   <listitem><para>ISO C++ signature + parallelism argument</para></listitem>
+</itemizedlist>
+
+<para> Please note that the implementation may use additional functions
+(designated with the <code>_switch</code> suffix) to dispatch from the
+ISO C++ signature to the correct parallel version. Also, some of the
+algorithms do not have support for run-time conditions, so the last
+overload is therefore missing.
+</para>
+
+
+</sect2>
+
+<sect2 id="manual.ext.parallel_mode.design.tuning" xreflabel="Tuning">
+  <title>Configuration and Tuning</title>
+
+<para> Some algorithm variants can be enabled/disabled/selected at compile-time.
+See <ulink url="latest-doxygen/compiletime__settings_8h.html">
+<code>&lt;compiletime_settings.h&gt;</code></ulink> and
+See <ulink url="latest-doxygen/compiletime__settings_8h.html">
+<code>&lt;features.h&gt;</code></ulink> for details.
+</para>
+
+<para>
+To specify the number of threads to be used for an algorithm,
+use <code>omp_set_num_threads</code>.
+To force a function to execute sequentially,
+even though parallelism is switched on in general,
+add <code>__gnu_parallel::sequential_tag()</code>
+to the end of the argument list.
+</para>
+
+<para>
+Parallelism always incurs some overhead. Thus, it is not
+helpful to parallelize operations on very small sets of data.
+There are measures to avoid parallelizing stuff that is not worth it.
+For each algorithm, a minimum problem size can be stated,
+usually using the variable
+<code>__gnu_parallel::Settings::[algorithm]_minimal_n</code>.
+Please see <ulink url="latest-doxygen/settings_8h.html">
+<code>&lt;settings.h&gt;</code></ulink> for details.</para>
+
+
+</sect2>
+
+<sect2 id="manual.ext.parallel_mode.design.impl" xreflabel="Impl">
+  <title>Implementation Namespaces</title>
+
+<para> One namespace contain versions of code that are explicitly sequential:
+<code>__gnu_serial</code>.
+</para>
+
+<para> Two namespaces contain the parallel mode:
+<code>std::__parallel</code> and <code>__gnu_parallel</code>. 
+</para>
+
+<para> Parallel implementations of standard components, including
+template helpers to select parallelism, are defined in <code>namespace
+std::__parallel</code>. For instance, <code>std::transform</code> from
+&lt;algorithm&gt; has a parallel counterpart in
+<code>std::__parallel::transform</code> from
+&lt;parallel/algorithm&gt;. In addition, these parallel
+implementations are injected into <code>namespace
+__gnu_parallel</code> with using declarations.
+</para>
+
+<para> Support and general infrastructure is in <code>namespace
+__gnu_parallel</code>.
+</para>
+
+<para> More information, and an organized index of types and functions
+related to the parallel mode on a per-namespace basis, can be found in
+the generated source documentation.
+</para>
+
+</sect2>
+
+</sect1>
+
+<sect1 id="manual.ext.parallel_mode.test" xreflabel="Testing">
+  <title>Testing</title>
+
+  <para> 
+    Both the normal conformance and regression tests and the
+    supplemental performance tests work.
+  </para>
+
+  <para> 
+    To run the conformance and regression tests with the parallel mode
+    active,
+  </para>
+
+  <screen>
+  <userinput>make check-parallel</userinput>
+  </screen>
+  
+  <para>
+    The log and summary files for conformance testing are in the
+    <code>testsuite/parallel</code> directory.
+  </para>
+
+  <para> 
+    To run the performance tests with the parallel mode active,
+  </para>
+
+  <screen>
+  <userinput>check-performance-parallel</userinput>
+  </screen>
+
+  <para>
+    The result file for performance testing are in the
+    <code>testsuite</code> directory, in the file
+    <code>libstdc++_performance.sum</code>. In addition, the
+    policy-based containers have their own visualizations, which have
+    additional software dependencies than the usual bare-boned text
+    file, and can be generated by using the <code>make
+    doc-performance</code> rule in the testsuite's Makefile.
+</para>
+</sect1>
+
+<bibliography id="parallel_mode.biblio" xreflabel="parallel_mode.biblio">
+<title>Bibliography</title>
+
+  <biblioentry>
+    <title>
+      Parallelization of Bulk Operations for STL Dictionaries
+    </title>
+
+    <author>
+      <firstname>Johannes</firstname>
+      <surname>Singler</surname>
+    </author>
+    <author>
+      <firstname>Leonor</firstname>
+      <surname>Frias</surname>
+    </author>
+
+    <copyright>
+      <year>2007</year>
+      <holder></holder>
+    </copyright>
+
+    <publisher>
+      <publishername>
+	Workshop on Highly Parallel Processing on a Chip (HPPC) 2007. (LNCS)
+      </publishername>
+    </publisher>
+  </biblioentry> 
+
+  <biblioentry>
+    <title>
+      The Multi-Core Standard Template Library
+    </title>
+
+    <author>
+      <firstname>Johannes</firstname>
+      <surname>Singler</surname>
+    </author>
+    <author>
+      <firstname>Peter</firstname>
+      <surname>Sanders</surname>
+    </author>
+    <author>
+      <firstname>Felix</firstname>
+      <surname>Putze</surname>
+    </author>
+
+    <copyright>
+      <year>2007</year>
+      <holder></holder>
+    </copyright>
+
+    <publisher>
+      <publishername>
+	 Euro-Par 2007: Parallel Processing. (LNCS 4641)
+      </publishername>
+    </publisher>
+  </biblioentry> 
+
+</bibliography>
+
+</chapter>

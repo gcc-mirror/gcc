@@ -1,3 +1,96 @@
+2008-02-10  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Convert documentation to DocBook.
+	* doc/Makefile.am (doc-doxygen-html): Changed to doc-html-doxygen.
+	(doc-doxygen-man): Changed to doc-man-doxygen.
+	(doc-performance): Changed to doc-html-performance.
+	(doc-xml-doxygen): New.
+	(doc-xml-single): New.
+	(doc-xml-validate): New.
+	(doc-html): New.
+	(doc-html-single): New.
+	(doc-fo): New.
+	(doc-pdf): New.
+	(doc-pdf-fop-xml): New.
+	(doc-pdf-fop-fo): New.
+	(doc-pdf-xmlto): New.
+	(doc-pdf-xmlroff): New.
+	(doc-pdf-prince): New.
+	* doc/xml: New directory.
+	* doc/xml/authors.xml: New.
+	* doc/xml/images: New directory.
+	* doc/xml/images/confdeps.png: Add.
+	* doc/xml/images/confdeps.dot: Add.
+	* doc/xml/faq.xml: New.
+	* doc/xml/api.xml: New.
+	* doc/xml/gnu: New directory.
+	* doc/xml/gnu/gpl-3.0.xml: New.
+	* doc/xml/gnu/fdl-1.2.xml: New.
+	* doc/xml/gnu/gpl-2.0.xml: New.
+	* doc/xml/manual: New directory.
+	* doc/xml/manual/mt_allocator.xml: New.
+	* doc/xml/manual/allocator.xml: New.
+	* doc/xml/manual/ctype.xml: New.
+	* doc/xml/manual/numerics.xml: New.
+	* doc/xml/manual/codecvt.xml: New.
+	* doc/xml/manual/concurrency.xml: New.
+	* doc/xml/manual/backwards_compatibility.xml: New.
+	* doc/xml/manual/intro.xml: New.
+	* doc/xml/manual/shared_ptr.xml: New.
+	* doc/xml/manual/abi.xml: New.
+	* doc/xml/manual/status_cxxtr1.xml: New.
+	* doc/xml/manual/auto_ptr.xml: New.
+	* doc/xml/manual/build.xml: New.
+	* doc/xml/manual/internals.xml: New.
+	* doc/xml/manual/parallel_mode.xml: New.
+	* doc/xml/manual/status_cxx1998.xml: New.
+	* doc/xml/manual/containers.xml: New.
+	* doc/xml/manual/io.xml: New.
+	* doc/xml/manual/appendix_porting.xml: New.
+	* doc/xml/manual/utilities.xml: New.
+	* doc/xml/manual/bitmap_allocator.xml: New.
+	* doc/xml/manual/support.xml: New.
+	* doc/xml/manual/configure.xml: New.
+	* doc/xml/manual/build_hacking.xml: New.
+	* doc/xml/manual/evolution.xml: New.
+	* doc/xml/manual/using.xml: New.
+	* doc/xml/manual/debug.xml: New.
+	* doc/xml/manual/localization.xml: New.
+	* doc/xml/manual/strings.xml: New.
+	* doc/xml/manual/debug_mode.xml: New.
+	* doc/xml/manual/locale.xml: New.
+	* doc/xml/manual/extensions.xml: New.
+	* doc/xml/manual/appendix_contributing.xml: New.
+	* doc/xml/manual/messages.xml: New.
+	* doc/xml/manual/diagnostics.xml: New.
+	* doc/xml/manual/appendix_free.xml: New.
+	* doc/xml/manual/algorithms.xml: New.
+	* doc/xml/manual/iterators.xml: New.
+	* doc/xml/manual/spine.xml: New.
+	* doc/xml/manual/test.xml: New.
+	* doc/xml/manual/status_cxx200x.xml: New.
+	* doc/xml/spine.xml: New.
+
+	* doc/xml/book.txml: New. Template file.
+	* doc/xml/chapter.txml: Same.
+	* doc/xml/class.txml: Same.
+
+	* doc/doxygen/guide.html: Removed, integrated into other docs.
+	* doc/doxygen/user.cfg.in: Clean up XML generation
+	* doc/doxygen/run_doxygen: Move to..	
+	* scripts/run_doxygen: ...here.
+	
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* doc/Makefile.in: Regenerate.	
+	* po/Makefile.in: Regenerate.
+	* libmath/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+
 2008-02-10  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/16251

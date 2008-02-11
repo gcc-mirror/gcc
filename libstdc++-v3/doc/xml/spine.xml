@@ -1,0 +1,47 @@
+<?xml version='1.0'?>
+<!DOCTYPE set PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+[
+<!ENTITY authors SYSTEM "authors.xml"> 
+<!ENTITY license SYSTEM "license.xml"> 
+]>
+
+<set id="set-index" xreflabel="set-index">
+<?dbhtml filename="set-index.html"?>
+<title>The GNU C++ Library Documentation</title>
+
+<setinfo>
+  <copyright>
+    <year>2000</year>
+    <year>2001</year>
+    <year>2002</year>
+    <year>2003</year>
+    <year>2004</year>
+    <year>2005</year>
+    <year>2006</year>
+    <year>2007</year>
+    <year>2008</year>
+    <holder>
+      <ulink url="http://fsf.org">FSF</ulink>
+    </holder>
+  </copyright>
+  &authors;
+</setinfo>
+
+
+<!-- User Manual -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	    href="manual/spine.xml" parse="xml">
+</xi:include>
+
+<!-- Source Level Documentation-->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	    href="api.xml" parse="xml">
+</xi:include>
+
+<!-- FAQ -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	    href="faq.xml" parse="xml">
+</xi:include>
+
+</set>

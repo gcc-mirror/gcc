@@ -1,0 +1,104 @@
+<?xml version='1.0'?>
+<!DOCTYPE part PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+[ ]>
+
+<part id="manual.algorithms" xreflabel="Algorithms">
+<?dbhtml filename="algorithms.html"?>
+ 
+<partinfo>
+  <keywordset>
+    <keyword>
+      ISO C++
+    </keyword>
+    <keyword>
+      library
+    </keyword>
+    <keyword>
+      algorithm
+    </keyword>
+  </keywordset>
+</partinfo>
+
+<title>Algorithms</title>
+
+<preface>
+  <title></title>
+<para>
+  The neatest accomplishment of the algorithms chapter is that all the
+  work is done via iterators, not containers directly.  This means two
+  important things:
+</para>
+<orderedlist>
+      <listitem>
+	<para>
+	  Anything that behaves like an iterator can be used in one of
+          these algorithms.  Raw pointers make great candidates, thus
+          built-in arrays are fine containers, as well as your own iterators.
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  The algorithms do not (and cannot) affect the container as a
+          whole; only the things between the two iterator endpoints.  If
+          you pass a range of iterators only enclosing the middle third of
+          a container, then anything outside that range is inviolate.
+	</para>
+      </listitem>
+   </orderedlist>
+   <para>
+     Even strings can be fed through the algorithms here, although the
+     string class has specialized versions of many of these functions
+     (for example, <code>string::find()</code>).  Most of the examples
+     on this page will use simple arrays of integers as a playground
+     for algorithms, just to keep things simple.  The use of
+     <emphasis>N</emphasis> as a size in the examples is to keep
+     things easy to read but probably won't be valid code.  You can
+     use wrappers such as those described in the <ulink
+     url="../23_containers/howto.html">containers chapter</ulink> to
+     keep real code readable.
+   </para>
+   <para>
+     The single thing that trips people up the most is the definition
+     of <emphasis>range</emphasis> used with iterators; the famous
+     &quot;past-the-end&quot; rule that everybody loves to hate.  The
+     <ulink url="../24_iterators/howto.html#2">iterators
+     chapter</ulink> of this document has a complete explanation of
+     this simple rule that seems to cause so much confusion.  Once you
+     get <emphasis>range</emphasis> into your head (it's not that
+     hard, honest!), then the algorithms are a cakewalk.
+   </para>
+</preface>
+
+<!-- Chapter 01 : Non Modifying -->
+
+<!-- Chapter 02 : Mutating -->
+<chapter id="manual.algorithms.mutating" xreflabel="Mutating">
+  <title>Mutating</title>
+
+  <sect1 id="algorithms.mutating.swap" xreflabel="swap">
+    <title><function>swap</function></title>
+
+    <sect2 id="algorithms.swap.specializations" xreflabel="Specializations">
+    <title>Specializations</title>
+
+   <para>If you call <code> std::swap(x,y); </code> where x and y are standard
+      containers, then the call will automatically be replaced by a call to
+      <code> x.swap(y); </code> instead.
+   </para>
+   <para>This allows member functions of each container class to take over, and
+      containers' swap functions should have O(1) complexity according to
+      the standard.  (And while &quot;should&quot; allows implementations to
+      behave otherwise and remain compliant, this implementation does in
+      fact use constant-time swaps.)  This should not be surprising, since
+      for two containers of the same type to swap contents, only some
+      internal pointers to storage need to be exchanged.
+   </para>
+
+    </sect2>
+  </sect1>
+</chapter>
+
+<!-- Chapter 03 : Sorting -->
+
+</part>

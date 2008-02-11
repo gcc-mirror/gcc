@@ -1,0 +1,111 @@
+<?xml version='1.0'?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+[ ]>
+
+<book id="manual-index" xreflabel="manual-index">
+<?dbhtml dir="manual"?>
+<?dbhtml filename="spine.html"?>
+<title>The GNU C++ Library</title>
+
+<bookinfo>
+  <copyright>
+    <year>2008</year>
+    <holder>
+      <ulink url="http://fsf.org">FSF</ulink>
+    </holder>
+  </copyright>
+  <legalnotice>
+    <para>
+      <ulink url="17_intro/license.html">License</ulink>
+    </para>
+  </legalnotice>
+</bookinfo>
+
+<!-- Part 01 : Intro -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	    parse="xml" href="intro.xml">
+</xi:include>
+
+<!-- Part 02 : Support -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	    parse="xml" href="support.xml">
+</xi:include>
+
+<!-- Part 03 : Diagnostics -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	    parse="xml" href="diagnostics.xml">
+</xi:include>
+
+<!-- Part 04 : Utilities -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	    parse="xml" href="utilities.xml">
+</xi:include>
+
+<!-- Part 05 : Strings -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	    parse="xml" href="strings.xml">
+</xi:include>
+
+<!-- Part 06 : Localization -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	    parse="xml" href="localization.xml">
+</xi:include>
+
+<!-- Part 07 : Containers -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	    parse="xml" href="containers.xml">
+</xi:include>
+
+<!-- Part 08 : Iterators -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	    parse="xml" href="iterators.xml">
+</xi:include>
+
+<!-- Part 09 : Algorithms -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	    parse="xml" href="algorithms.xml">
+</xi:include>
+
+<!-- Part 10 : Numerics -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	    parse="xml" href="numerics.xml">
+</xi:include>
+
+<!-- Part 11 : Input Output -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	    parse="xml" href="io.xml">
+</xi:include>
+
+<!-- Part 12 : Extensions -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	    parse="xml" href="extensions.xml">
+</xi:include>
+
+
+<!-- Appendix A -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	    parse="xml" href="appendix_contributing.xml">
+</xi:include>
+
+<!-- Appendix B -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	    parse="xml" href="appendix_porting.xml">
+</xi:include>
+
+<!-- Appendix C -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	    parse="xml" href="appendix_free.xml">
+</xi:include>
+
+<!-- Appendix D -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	    parse="xml" href="../gnu/gpl-2.0.xml">
+</xi:include>
+
+<!-- Appendix E -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	    parse="xml" href="../gnu/fdl-1.2.xml">
+</xi:include>
+
+</book>

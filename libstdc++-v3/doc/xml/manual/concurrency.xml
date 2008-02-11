@@ -1,0 +1,334 @@
+<?xml version='1.0'?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+[ ]>
+
+<chapter id="manual.ext.concurrency" xreflabel="Concurrency Extensions">
+<?dbhtml filename="concurrency.html"?>
+
+<chapterinfo>
+  <keywordset>
+    <keyword>
+      ISO C++
+    </keyword>
+    <keyword>
+      library
+    </keyword>
+  </keywordset>
+</chapterinfo>
+
+<title>Concurrency</title>
+
+<sect1 id="manual.ext.concurrency.design" xreflabel="Design">
+  <title>Design</title>
+
+  <sect2 id="manual.ext.concurrency.design.threads" xreflabel="Threads API">
+    <title>Interface to Locks and Mutexes</title>
+
+<para>The file &lt;ext/concurrence.h&gt; contains all the higher-level
+constructs for playing with threads. In contrast to the atomics layer,
+the concurrence layer consists largely of types. All types are defined within <code>namespace __gnu_cxx</code>.
+</para>
+
+<para>
+These types can be used in a portable manner, regardless of the
+specific environment. They are carefully designed to provide optimum
+efficiency and speed, abstracting out underlying thread calls and
+accesses when compiling for single-threaded situations (even on hosts
+that support multiple threads.)
+</para>
+
+<para>The enumerated type <code>_Lock_policy</code> details the set of
+available locking
+policies: <code>_S_single</code>, <code>_S_mutex</code>,
+and <code>_S_atomic</code>.
+</para>
+
+<itemizedlist>
+<listitem><para><code>_S_single</code></para>
+<para>Indicates single-threaded code that does not need locking.
+</para>
+
+</listitem>
+<listitem><para><code>_S_mutex</code></para>
+<para>Indicates multi-threaded code using thread-layer abstractions.
+</para>
+</listitem>
+<listitem><para><code>_S_atomic</code></para>
+<para>Indicates multi-threaded code using atomic operations.
+</para>
+</listitem>
+</itemizedlist>
+
+<para>The compile-time constant <code>__default_lock_policy</code> is set
+to one of the three values above, depending on characteristics of the
+host environment and the current compilation flags.
+</para>
+
+<para>Two more datatypes make up the rest of the
+interface: <code>__mutex</code>, and <code>__scoped_lock</code>.
+</para>
+
+<para>
+</para>
+
+<para>The scoped lock idiom is well-discussed within the C++
+community. This version takes a <code>__mutex</code> reference, and
+locks it during construction of <code>__scoped_locke</code> and
+unlocks it during destruction. This is an efficient way of locking
+critical sections, while retaining exception-safety.
+</para>
+  </sect2>
+
+  <sect2 id="manual.ext.concurrency.design.atomics" xreflabel="Atomic API">
+    <title>Interface to Atomic Functions</title>
+
+
+<para>
+Two functions and one type form the base of atomic support. 
+</para>
+
+
+<para>The type <code>_Atomic_word</code> is a signed integral type
+supporting atomic operations.
+</para>
+
+<para>
+The two functions functions are:
+</para>
+
+<programlisting>
+_Atomic_word
+__exchange_and_add_dispatch(volatile _Atomic_word*, int);
+
+void
+__atomic_add_dispatch(volatile _Atomic_word*, int);
+</programlisting>
+
+<para>Both of these functions are declared in the header file
+&lt;ext/atomicity.h&gt;, and are in <code>namespace __gnu_cxx</code>.
+</para>
+
+<itemizedlist>
+<listitem><para>
+<code>
+__exchange_and_add_dispatch
+</code>
+</para>
+<para>Adds the second argument's value to the first argument. Returns the old value.
+</para>
+</listitem>
+<listitem><para>
+<code>
+__atomic_add_dispatch
+</code>
+</para>
+<para>Adds the second argument's value to the first argument. Has no return value.
+</para>
+</listitem>
+</itemizedlist>
+
+<para>
+These functions forward to one of several specialized helper
+functions, depending on the circumstances. For instance, 
+</para>
+
+<para>
+<code>
+__exchange_and_add_dispatch
+</code>
+</para>
+
+<para>
+Calls through to either of:
+</para>
+
+<itemizedlist>
+<listitem><para><code>__exchange_and_add</code>
+</para>
+<para>Multi-thread version. Inlined if compiler-generated builtin atomics
+can be used, otherwise resolved at link time to a non-builtin code
+sequence.
+</para>
+</listitem>
+
+<listitem><para><code>__exchange_and_add_single</code> 
+</para>
+<para>Single threaded version. Inlined.</para>
+</listitem>
+</itemizedlist>
+
+<para>However, only <code>__exchange_and_add_dispatch</code>
+and <code>__atomic_add_dispatch</code> should be used. These functions
+can be used in a portable manner, regardless of the specific
+environment. They are carefully designed to provide optimum efficiency
+and speed, abstracting out atomic accesses when they are not required
+(even on hosts that support compiler intrinsics for atomic
+operations.)
+</para>
+
+<para>
+In addition, there are two macros
+</para>
+
+<para>
+<code>
+_GLIBCXX_READ_MEM_BARRIER 
+</code>
+</para>
+<para>
+<code>
+_GLIBCXX_WRITE_MEM_BARRIER 
+</code>
+</para>
+
+<para>
+Which expand to the appropriate write and read barrier required by the
+host hardware and operating system.
+</para>
+  </sect2>
+
+</sect1>
+
+
+<sect1 id="manual.ext.concurrency.impl" xreflabel="Implementation">
+  <title>Implementation</title>
+  <sect2 id="manual.ext.concurrency.impl.atomic_fallbacks" xreflabel="Atomic F">
+    <title>Using Builitin Atomic Functions</title>
+    
+<para>The functions for atomic operations described above are either
+implemented via compiler intrinsics (if the underlying host is
+capable) or by library fallbacks.</para>
+
+<para>Compiler intrinsics (builtins) are always preferred.  However, as
+the compiler builtins for atomics are not universally implemented,
+using them directly is problematic, and can result in undefined
+function calls. (An example of an undefined symbol from the use
+of <code>__sync_fetch_and_add</code> on an unsupported host is a
+missing reference to <code>__sync_fetch_and_add_4</code>.)
+</para>
+
+<para>In addition, on some hosts the compiler intrinsics are enabled
+conditionally, via the <code>-march</code> command line flag. This makes
+usage vary depending on the target hardware and the flags used during
+compile.
+</para>
+
+<para> If builtins are possible, <code>_GLIBCXX_ATOMIC_BUILTINS</code>
+will be defined.
+</para>
+
+
+<para>For the following hosts, intrinsics are enabled by default.
+</para>
+
+<itemizedlist>
+  <listitem><para>alpha</para></listitem>
+  <listitem><para>ia64</para></listitem>
+  <listitem><para>powerpc</para></listitem>
+  <listitem><para>s390</para></listitem>
+</itemizedlist>
+
+<para>For others, some form of <code>-march</code> may work. On
+non-ancient x86 hardware, <code>-march=native</code> usually does the
+trick.</para>
+
+<para> For hosts without compiler intrinsics, but with capable
+hardware, hand-crafted assembly is selected. This is the case for the following hosts:
+</para>
+
+<itemizedlist>
+  <listitem><para>cris</para></listitem>
+  <listitem><para>hppa</para></listitem>
+  <listitem><para>i386</para></listitem>
+  <listitem><para>i486</para></listitem>
+  <listitem><para>m48k</para></listitem>
+  <listitem><para>mips</para></listitem>
+  <listitem><para>sparc</para></listitem>
+</itemizedlist>
+
+<para>And for the rest, a simulated atomic lock via pthreads.
+</para>
+
+<para> Detailed information about compiler intrinsics for atomic operations can be found in the GCC <ulink url="http://gcc.gnu.org/onlinedocs/gcc/Atomic-Builtins.html"> documentation</ulink>.
+</para>
+
+<para> More details on the library fallbacks from the porting <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/17_intro/porting.html#Thread%20safety">section</ulink>.
+</para>
+
+
+  </sect2>
+  <sect2 id="manual.ext.concurrency.impl.thread" xreflabel="Pthread">
+    <title>Thread Abstraction</title>
+
+<para>A thin layer above IEEE 1003.1 (ie pthreads) is used to abstract
+the thread interface for GCC. This layer is called "gthread," and is
+comprised of one header file that wraps the host's default thread layer with
+a POSIX-like interface.
+</para>
+
+<para> The file &lt;gthr-default.h&gt; points to the deduced wrapper for
+the current host. In libstdc++ implementation files,
+&lt;bits/gthr.h&gt; is used to select the proper gthreads file.
+</para>
+
+<para>Within libstdc++ sources, all calls to underlying thread functionality
+use this layer. More detail as to the specific interface can be found in the source <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/gthr_8h-source.html">documentation</ulink>.
+</para>
+
+<para>By design, the gthread layer is interoperable with the types,
+functions, and usage found in the usual &lt;pthread.h&gt; file,
+including <code>pthread_t</code>, <code>pthread_once_t</code>, <code>pthread_create</code>,
+etc.
+</para>
+
+  </sect2>  
+</sect1>
+
+<sect1 id="manual.ext.concurrency.use" xreflabel="Use">
+
+  <title>Use</title>
+
+<para>Typical usage of the last two constructs is demonstrated as follows:
+</para>
+
+<programlisting>
+#include &lt;ext/concurrence.h&gt;
+
+namespace
+{
+  __gnu_cxx::__mutex safe_base_mutex;
+} // anonymous namespace
+
+namespace other
+{
+  void
+  foo()
+  {
+    __gnu_cxx::__scoped_lock sentry(safe_base_mutex);
+    for (int i = 0; i &lt; max;  ++i)
+      {
+	_Safe_iterator_base* __old = __iter;
+	__iter = __iter-&lt;_M_next;
+	__old-&lt;_M_detach_single();
+      }
+}
+</programlisting>
+
+<para>In this sample code, an anonymous namespace is used to keep
+the <code>__mutex</code> private to the compilation unit,
+and <code>__scoped_lock</code> is used to guard access to the critical
+section within the for loop, locking the mutex on creation and freeing
+the mutex as control moves out of this block.
+</para>
+
+<para>Several exception classes are used to keep track of
+concurrence-related errors. These classes
+are: <code>__concurrence_lock_error</code>, <code>__concurrence_unlock_error</code>, <code>__concurrence_wait_error</code>,
+and <code>__concurrence_broadcast_error</code>.
+</para>
+
+
+</sect1>
+
+</chapter>

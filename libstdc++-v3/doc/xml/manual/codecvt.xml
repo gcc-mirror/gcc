@@ -1,0 +1,730 @@
+<sect1 id="manual.localization.facet.codecvt" xreflabel="codecvt">
+<?dbhtml filename="codecvt.html"?>
+ 
+<sect1info>
+  <keywordset>
+    <keyword>
+      ISO C++
+    </keyword>
+    <keyword>
+      codecvt
+    </keyword>
+  </keywordset>
+</sect1info>
+
+<title>codecvt</title>
+
+<para>
+The standard class codecvt attempts to address conversions between
+different character encoding schemes. In particular, the standard
+attempts to detail conversions between the implementation-defined wide
+characters (hereafter referred to as wchar_t) and the standard type
+char that is so beloved in classic <quote>C</quote> (which can now be
+referred to as narrow characters.)  This document attempts to describe
+how the GNU libstdc++ implementation deals with the conversion between
+wide and narrow characters, and also presents a framework for dealing
+with the huge number of other encodings that iconv can convert,
+including Unicode and UTF8. Design issues and requirements are
+addressed, and examples of correct usage for both the required
+specializations for wide and narrow characters and the
+implementation-provided extended functionality are given.
+</para>
+
+<sect2 id="facet.codecvt.req" xreflabel="facet.codecvt.req">
+<title>Requirements</title>
+
+<para>
+Around page 425 of the C++ Standard, this charming heading comes into view:
+</para>
+
+<blockquote>
+<para>
+22.2.1.5 - Template class codecvt
+</para>
+</blockquote>
+
+<para>
+The text around the codecvt definition gives some clues:
+</para>
+
+<blockquote>
+<para>
+<emphasis>
+-1- The class codecvt&lt;internT,externT,stateT&gt; is for use when
+converting from one codeset to another, such as from wide characters
+to multibyte characters, between wide character encodings such as
+Unicode and EUC. 
+</emphasis>
+</para>
+</blockquote>
+
+<para> 
+Hmm. So, in some unspecified way, Unicode encodings and
+translations between other character sets should be handled by this
+class.  
+</para>
+
+<blockquote>
+<para>
+<emphasis>
+-2- The stateT argument selects the pair of codesets being mapped between. 
+</emphasis>
+</para>
+</blockquote>
+
+<para>
+Ah ha! Another clue...
+</para>
+
+<blockquote>
+<para>
+<emphasis>
+-3- The instantiations required in the Table ??
+(lib.locale.category), namely codecvt&lt;wchar_t,char,mbstate_t&gt; and
+codecvt&lt;char,char,mbstate_t&gt;, convert the implementation-defined
+native character set. codecvt&lt;char,char,mbstate_t&gt; implements a
+degenerate conversion; it does not convert at
+all. codecvt&lt;wchar_t,char,mbstate_t&gt; converts between the native
+character sets for tiny and wide characters. Instantiations on
+mbstate_t perform conversion between encodings known to the library
+implementor.  Other encodings can be converted by specializing on a
+user-defined stateT type. The stateT object can contain any state that
+is useful to communicate to or from the specialized do_convert member.
+</emphasis>
+</para>
+</blockquote>
+
+<para>
+At this point, a couple points become clear:
+</para>
+
+<para>
+One: The standard clearly implies that attempts to add non-required
+(yet useful and widely used) conversions need to do so through the
+third template parameter, stateT.</para>
+
+<para>
+Two: The required conversions, by specifying mbstate_t as the third
+template parameter, imply an implementation strategy that is mostly
+(or wholly) based on the underlying C library, and the functions
+mcsrtombs and wcsrtombs in particular.</para>
+</sect2>
+
+<sect2 id="facet.codecvt.design" xreflabel="facet.codecvt.design">
+<title>Design</title>
+
+<sect3 id="codecvt.design.wchar_t_size" xreflabel="codecvt.design.wchar_t_size">
+    <title><type>wchar_t</type> Size</title>
+
+    <para>
+      The simple implementation detail of wchar_t's size seems to
+      repeatedly confound people. Many systems use a two byte,
+      unsigned integral type to represent wide characters, and use an
+      internal encoding of Unicode or UCS2. (See AIX, Microsoft NT,
+      Java, others.) Other systems, use a four byte, unsigned integral
+      type to represent wide characters, and use an internal encoding
+      of UCS4. (GNU/Linux systems using glibc, in particular.) The C
+      programming language (and thus C++) does not specify a specific
+      size for the type wchar_t.
+    </para>
+
+    <para>
+      Thus, portable C++ code cannot assume a byte size (or endianness) either.
+    </para>
+  </sect3>
+
+<sect3 id="codecvt.design.unicode" xreflabel="codecvt.design.unicode">
+  <title>Support for Unicode</title>
+  <para>
+    Probably the most frequently asked question about code conversion
+    is: &quot;So dudes, what's the deal with Unicode strings?&quot;
+    The dude part is optional, but apparently the usefulness of
+    Unicode strings is pretty widely appreciated. Sadly, this specific
+    encoding (And other useful encodings like UTF8, UCS4, ISO 8859-10,
+    etc etc etc) are not mentioned in the C++ standard.
+  </para>
+
+  <para>
+    A couple of comments:
+  </para>
+
+  <para>
+    The thought that all one needs to convert between two arbitrary
+    codesets is two types and some kind of state argument is
+    unfortunate. In particular, encodings may be stateless. The naming
+    of the third parameter as stateT is unfortunate, as what is really
+    needed is some kind of generalized type that accounts for the
+    issues that abstract encodings will need. The minimum information
+    that is required includes:
+  </para>
+
+  <itemizedlist>
+    <listitem>
+      <para>
+	Identifiers for each of the codesets involved in the
+	conversion. For example, using the iconv family of functions
+	from the Single Unix Specification (what used to be called
+	X/Open) hosted on the GNU/Linux operating system allows
+	bi-directional mapping between far more than the following
+	tantalizing possibilities:
+      </para>
+
+      <para>
+	(An edited list taken from <code>`iconv --list`</code> on a
+	Red Hat 6.2/Intel system:
+      </para>
+
+<blockquote>
+<programlisting>
+8859_1, 8859_9, 10646-1:1993, 10646-1:1993/UCS4, ARABIC, ARABIC7,
+ASCII, EUC-CN, EUC-JP, EUC-KR, EUC-TW, GREEK-CCIcode, GREEK, GREEK7-OLD,
+GREEK7, GREEK8, HEBREW, ISO-8859-1, ISO-8859-2, ISO-8859-3,
+ISO-8859-4, ISO-8859-5, ISO-8859-6, ISO-8859-7, ISO-8859-8,
+ISO-8859-9, ISO-8859-10, ISO-8859-11, ISO-8859-13, ISO-8859-14,
+ISO-8859-15, ISO-10646, ISO-10646/UCS2, ISO-10646/UCS4,
+ISO-10646/UTF-8, ISO-10646/UTF8, SHIFT-JIS, SHIFT_JIS, UCS-2, UCS-4,
+UCS2, UCS4, UNICODE, UNICODEBIG, UNICODELIcodeLE, US-ASCII, US, UTF-8,
+UTF-16, UTF8, UTF16).
+</programlisting>
+</blockquote>
+
+<para>
+For iconv-based implementations, string literals for each of the
+encodings (ie. &quot;UCS-2&quot; and &quot;UTF-8&quot;) are necessary,
+although for other,
+non-iconv implementations a table of enumerated values or some other
+mechanism may be required.
+</para>
+</listitem>
+
+<listitem><para>
+ Maximum length of the identifying string literal.
+</para></listitem>
+
+<listitem><para>
+ Some encodings require explicit endian-ness. As such, some kind
+  of endian marker or other byte-order marker will be necessary. See
+  &quot;Footnotes for C/C++ developers&quot; in Haible for more information on
+  UCS-2/Unicode endian issues. (Summary: big endian seems most likely,
+  however implementations, most notably Microsoft, vary.)
+</para></listitem>
+
+<listitem><para>
+ Types representing the conversion state, for conversions involving
+  the machinery in the &quot;C&quot; library, or the conversion descriptor, for
+  conversions using iconv (such as the type iconv_t.)  Note that the
+  conversion descriptor encodes more information than a simple encoding
+  state type.
+</para></listitem>
+
+<listitem><para>
+ Conversion descriptors for both directions of encoding. (ie, both
+  UCS-2 to UTF-8 and UTF-8 to UCS-2.)
+</para></listitem>
+
+<listitem><para>
+ Something to indicate if the conversion requested if valid.
+</para></listitem>
+
+<listitem><para>
+ Something to represent if the conversion descriptors are valid.
+</para></listitem>
+
+<listitem><para>
+ Some way to enforce strict type checking on the internal and
+  external types. As part of this, the size of the internal and
+  external types will need to be known.
+</para></listitem>
+</itemizedlist>
+</sect3>
+
+<sect3 id="codecvt.design.issues" xreflabel="codecvt.design.issues">
+  <title>Other Issues</title>
+<para>
+In addition, multi-threaded and multi-locale environments also impact
+the design and requirements for code conversions. In particular, they
+affect the required specialization codecvt&lt;wchar_t, char, mbstate_t&gt;
+when implemented using standard &quot;C&quot; functions.
+</para>
+
+<para>
+Three problems arise, one big, one of medium importance, and one small. 
+</para>
+
+<para>
+First, the small: mcsrtombs and wcsrtombs may not be multithread-safe
+on all systems required by the GNU tools. For GNU/Linux and glibc,
+this is not an issue.
+</para>
+
+<para>
+Of medium concern, in the grand scope of things, is that the functions
+used to implement this specialization work on null-terminated
+strings. Buffers, especially file buffers, may not be null-terminated,
+thus giving conversions that end prematurely or are otherwise
+incorrect. Yikes!
+</para>
+
+<para>
+The last, and fundamental problem, is the assumption of a global
+locale for all the &quot;C&quot; functions referenced above. For something like
+C++ iostreams (where codecvt is explicitly used) the notion of
+multiple locales is fundamental. In practice, most users may not run
+into this limitation. However, as a quality of implementation issue,
+the GNU C++ library would like to offer a solution that allows
+multiple locales and or simultaneous usage with computationally
+correct results. In short, libstdc++ is trying to offer, as an
+option, a high-quality implementation, damn the additional complexity!
+</para>
+
+<para>
+For the required specialization codecvt&lt;wchar_t, char, mbstate_t&gt; ,
+conversions are made between the internal character set (always UCS4
+on GNU/Linux) and whatever the currently selected locale for the
+LC_CTYPE category implements.
+</para>
+
+</sect3>
+
+</sect2>
+
+<sect2 id="facet.codecvt.impl" xreflabel="facet.codecvt.impl">
+<title>Implementation</title>
+
+<para>
+The two required specializations are implemented as follows:
+</para>
+
+<para>
+<code>
+codecvt&lt;char, char, mbstate_t&gt;
+</code>
+</para>
+<para>
+This is a degenerate (ie, does nothing) specialization. Implementing
+this was a piece of cake.
+</para>
+
+<para>
+<code>
+codecvt&lt;char, wchar_t, mbstate_t&gt;
+</code>
+</para>
+
+<para>
+This specialization, by specifying all the template parameters, pretty
+much ties the hands of implementors. As such, the implementation is
+straightforward, involving mcsrtombs for the conversions between char
+to wchar_t and wcsrtombs for conversions between wchar_t and char.
+</para>
+
+<para>
+Neither of these two required specializations deals with Unicode
+characters. As such, libstdc++ implements a partial specialization
+of the codecvt class with and iconv wrapper class, encoding_state as the
+third template parameter.
+</para>
+
+<para>
+This implementation should be standards conformant. First of all, the
+standard explicitly points out that instantiations on the third
+template parameter, stateT, are the proper way to implement
+non-required conversions. Second of all, the standard says (in Chapter
+17) that partial specializations of required classes are a-ok. Third
+of all, the requirements for the stateT type elsewhere in the standard
+(see 21.1.2 traits typedefs) only indicate that this type be copy
+constructible.
+</para>
+
+<para>
+As such, the type encoding_state is defined as a non-templatized, POD
+type to be used as the third type of a codecvt instantiation. This
+type is just a wrapper class for iconv, and provides an easy interface
+to iconv functionality.
+</para>
+
+<para>
+There are two constructors for encoding_state:
+</para>
+
+<para>
+<code> 
+encoding_state() : __in_desc(0), __out_desc(0)
+</code>
+</para>
+<para>
+This default constructor sets the internal encoding to some default
+(currently UCS4) and the external encoding to whatever is returned by
+nl_langinfo(CODESET).
+</para>
+
+<para>
+<code> 
+encoding_state(const char* __int, const char* __ext)
+</code>
+</para>
+
+<para>
+This constructor takes as parameters string literals that indicate the
+desired internal and external encoding. There are no defaults for
+either argument.
+</para>
+
+<para>
+One of the issues with iconv is that the string literals identifying
+conversions are not standardized. Because of this, the thought of
+mandating and or enforcing some set of pre-determined valid
+identifiers seems iffy: thus, a more practical (and non-migraine
+inducing) strategy was implemented: end-users can specify any string
+(subject to a pre-determined length qualifier, currently 32 bytes) for
+encodings. It is up to the user to make sure that these strings are
+valid on the target system.
+</para>
+  
+<para>
+<code> 
+void
+_M_init()
+</code>
+</para>
+<para>
+Strangely enough, this member function attempts to open conversion
+descriptors for a given encoding_state object. If the conversion
+descriptors are not valid, the conversion descriptors returned will
+not be valid and the resulting calls to the codecvt conversion
+functions will return error.
+</para>
+
+<para>
+<code> 
+bool
+_M_good()
+</code>
+</para>
+
+<para>
+Provides a way to see if the given encoding_state object has been
+properly initialized. If the string literals describing the desired
+internal and external encoding are not valid, initialization will
+fail, and this will return false. If the internal and external
+encodings are valid, but iconv_open could not allocate conversion
+descriptors, this will also return false. Otherwise, the object is
+ready to convert and will return true.
+</para>
+
+<para>
+<code> 
+encoding_state(const encoding_state&amp;)
+</code>
+</para>
+
+<para>
+As iconv allocates memory and sets up conversion descriptors, the copy
+constructor can only copy the member data pertaining to the internal
+and external code conversions, and not the conversion descriptors
+themselves.
+</para>
+
+<para>
+Definitions for all the required codecvt member functions are provided
+for this specialization, and usage of codecvt&lt;internal character type,
+external character type, encoding_state&gt; is consistent with other
+codecvt usage.
+</para>
+
+</sect2>
+
+<sect2 id="facet.codecvt.use" xreflabel="facet.codecvt.use">
+<title>Use</title>
+<para>A conversions involving string literal.</para>
+
+<programlisting>
+  typedef codecvt_base::result                  result;
+  typedef unsigned short                        unicode_t;
+  typedef unicode_t                             int_type;
+  typedef char                                  ext_type;
+  typedef encoding_state                          state_type;
+  typedef codecvt&lt;int_type, ext_type, state_type&gt; unicode_codecvt;
+
+  const ext_type*       e_lit = "black pearl jasmine tea";
+  int                   size = strlen(e_lit);
+  int_type              i_lit_base[24] = 
+  { 25088, 27648, 24832, 25344, 27392, 8192, 28672, 25856, 24832, 29184, 
+    27648, 8192, 27136, 24832, 29440, 27904, 26880, 28160, 25856, 8192, 29696,
+    25856, 24832, 2560
+  };
+  const int_type*       i_lit = i_lit_base;
+  const ext_type*       efrom_next;
+  const int_type*       ifrom_next;
+  ext_type*             e_arr = new ext_type[size + 1];
+  ext_type*             eto_next;
+  int_type*             i_arr = new int_type[size + 1];
+  int_type*             ito_next;
+
+  // construct a locale object with the specialized facet.
+  locale                loc(locale::classic(), new unicode_codecvt);
+  // sanity check the constructed locale has the specialized facet.
+  VERIFY( has_facet&lt;unicode_codecvt&gt;(loc) );
+  const unicode_codecvt&amp; cvt = use_facet&lt;unicode_codecvt&gt;(loc); 
+  // convert between const char* and unicode strings
+  unicode_codecvt::state_type state01("UNICODE", "ISO_8859-1");
+  initialize_state(state01);
+  result r1 = cvt.in(state01, e_lit, e_lit + size, efrom_next, 
+                     i_arr, i_arr + size, ito_next);
+  VERIFY( r1 == codecvt_base::ok );
+  VERIFY( !int_traits::compare(i_arr, i_lit, size) ); 
+  VERIFY( efrom_next == e_lit + size );
+  VERIFY( ito_next == i_arr + size );
+</programlisting>
+
+</sect2>
+
+<sect2 id="facet.codecvt.future" xreflabel="facet.codecvt.future">
+<title>Future</title>
+<itemizedlist>
+<listitem>
+  <para>
+   a. things that are sketchy, or remain unimplemented:
+      do_encoding, max_length and length member functions
+      are only weakly implemented. I have no idea how to do
+      this correctly, and in a generic manner.  Nathan?
+</para>
+</listitem>
+
+<listitem>
+  <para>
+   b. conversions involving std::string
+  </para>
+   <itemizedlist>
+      <listitem><para>
+      how should operators != and == work for string of
+      different/same encoding?
+      </para></listitem>
+
+      <listitem><para>
+      what is equal? A byte by byte comparison or an
+      encoding then byte comparison?
+      </para></listitem>
+      
+      <listitem><para>
+      conversions between narrow, wide, and unicode strings
+      </para></listitem>
+   </itemizedlist>
+</listitem>
+<listitem><para>
+   c. conversions involving std::filebuf and std::ostream
+</para>
+   <itemizedlist>
+      <listitem><para>
+      how to initialize the state object in a
+      standards-conformant manner?
+      </para></listitem>
+
+                <listitem><para>
+      how to synchronize the &quot;C&quot; and &quot;C++&quot;
+      conversion information?
+      </para></listitem>
+
+                <listitem><para>
+      wchar_t/char internal buffers and conversions between
+      internal/external buffers?
+      </para></listitem>
+   </itemizedlist>
+</listitem>
+</itemizedlist>
+</sect2>
+
+
+<bibliography id="facet.codecvt.biblio" xreflabel="facet.codecvt.biblio">
+<title>Bibliography</title>
+
+  <biblioentry>
+    <title>
+      The GNU C Library
+    </title>
+
+    <author>
+      <surname>McGrath</surname>
+      <firstname>Roland</firstname>
+    </author>
+    <author>
+      <surname>Drepper</surname>
+      <firstname>Ulrich</firstname>
+    </author>
+
+    <copyright>
+      <year>2007</year>
+      <holder>FSF</holder>
+    </copyright>
+    <pagenums>Chapters 6 Character Set Handling and 7 Locales and Internationalization</pagenums>
+
+  </biblioentry> 
+
+  <biblioentry>
+    <title>
+      Correspondence
+    </title>
+
+    <author>
+      <surname>Drepper</surname>
+      <firstname>Ulrich</firstname>
+    </author>
+
+    <copyright>
+      <year>2002</year>
+      <holder></holder>
+    </copyright>
+  </biblioentry> 
+
+  <biblioentry>
+    <title>
+      ISO/IEC 14882:1998 Programming languages - C++
+    </title>
+
+    <copyright>
+      <year>1998</year>
+      <holder>ISO</holder>
+    </copyright>
+  </biblioentry> 
+
+  <biblioentry>
+    <title>
+      ISO/IEC 9899:1999 Programming languages - C
+    </title>
+
+    <copyright>
+      <year>1999</year>
+      <holder>ISO</holder>
+    </copyright>
+  </biblioentry> 
+
+  <biblioentry>
+    <title>
+      System Interface Definitions, Issue 6 (IEEE Std. 1003.1-200x)
+    </title>
+
+    <copyright>
+      <year>1999</year>
+      <holder>
+      The Open Group/The Institute of Electrical and Electronics Engineers, Inc.</holder>
+    </copyright>
+
+    <biblioid>
+      <ulink url="http://www.opennc.org/austin/docreg.html">
+      </ulink>
+    </biblioid>
+
+  </biblioentry> 
+
+  <biblioentry>
+    <title>
+      The C++ Programming Language, Special Edition
+    </title>
+    
+    <author>
+      <surname>Stroustrup</surname>
+      <firstname>Bjarne</firstname>
+    </author>
+
+    <copyright>
+      <year>2000</year>
+      <holder>Addison Wesley, Inc.</holder>
+    </copyright>
+    <pagenums>Appendix D</pagenums>
+
+    <publisher>
+      <publishername>
+	Addison Wesley
+      </publishername>
+    </publisher>
+
+  </biblioentry> 
+
+
+  <biblioentry>
+    <title>
+      Standard C++ IOStreams and Locales
+    </title>
+    <subtitle>
+      Advanced Programmer's Guide and Reference
+    </subtitle>
+    
+    <author>
+      <surname>Langer</surname>
+      <firstname>Angelika</firstname>
+    </author>
+
+    <author>
+      <surname>Kreft</surname>
+      <firstname>Klaus</firstname>
+    </author>
+
+    <copyright>
+      <year>2000</year>
+      <holder>Addison Wesley Longman, Inc.</holder>
+    </copyright>
+
+    <publisher>
+      <publishername>
+	Addison Wesley Longman
+      </publishername>
+    </publisher>
+
+  </biblioentry> 
+
+  <biblioentry>
+    <title>
+      A brief description of Normative Addendum 1
+    </title>
+
+    <author>
+      <surname>Feather</surname>
+      <firstname>Clive</firstname>
+    </author>
+
+    <pagenums>Extended Character Sets</pagenums>
+    <biblioid>
+      <ulink url="http://www.lysator.liu.se/c/na1.html">
+      </ulink>
+    </biblioid>
+
+  </biblioentry> 
+
+  <biblioentry>
+    <title>
+      The Unicode HOWTO
+    </title>
+
+    <author>
+      <surname>Haible</surname>
+      <firstname>Bruno</firstname>
+    </author>
+
+    <biblioid>
+      <ulink url="ftp://ftp.ilog.fr/pub/Users/haible/utf8/Unicode-HOWTO.html">
+      </ulink>
+    </biblioid>
+
+  </biblioentry> 
+
+  <biblioentry>
+    <title>
+      UTF-8 and Unicode FAQ for Unix/Linux
+    </title>
+
+    <author>
+      <surname>Khun</surname>
+      <firstname>Markus</firstname>
+    </author>
+
+    <biblioid>
+      <ulink url="http://www.cl.cam.ac.uk/~mgk25/unicode.html">
+      </ulink>
+    </biblioid>
+
+  </biblioentry> 
+
+
+</bibliography>
+
+</sect1>

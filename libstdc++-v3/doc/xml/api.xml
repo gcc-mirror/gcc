@@ -1,0 +1,94 @@
+<?xml version='1.0'?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+[ ]>
+
+<book>
+
+<article id="api" xreflabel="API">
+<?dbhtml filename="api.html"?>
+
+<articleinfo>
+  <title>API and Source Level Documentation</title>
+  <copyright>
+    <year>
+      2008
+    </year>
+    <holder>
+      <ulink url="http://fsf.org">FSF
+      </ulink>
+    </holder>
+  </copyright>
+  <legalnotice>
+    <para>
+      <ulink url="17_intro/license.html">License 
+      </ulink>
+    </para>
+  </legalnotice>
+</articleinfo>
+ 
+<para>
+The GNU C++ library sources have been specially formatted so that with the
+proper invocation of another tool (Doxygen), a set of HTML pages
+are generated from the sources files themselves. The resultant
+documentation is referred to as Source Level Documentation, and is
+useful for examining the signatures of public member functions for
+the library classes, finding out what is in a particular include
+file, looking at inheritance diagrams, etc.
+</para>
+
+<para>
+The source-level documentation for the most recent releases can be
+viewed online:
+</para>
+
+<itemizedlist>
+  <listitem>
+    <para>
+      <ulink url="libstdc++-html-USERS-3.4/index.html">for the 3.4 release
+      </ulink>
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+      <ulink url="libstdc++-html-USERS-4.1/index.html">for the 4.1 release
+      </ulink>
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+      <ulink url="libstdc++-html-USERS-4.2/index.html">for the 4.2 release
+      </ulink>
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+      <ulink url="latest-doxygen/index.html">&quot;the latest collection&quot;
+      </ulink>
+      (For the main development tree; see the date on the first page.)
+    </para>
+  </listitem>
+</itemizedlist>
+
+<para>
+This generated HTML collection, as above, is also available for download in the libstdc++ snapshots directory at
+   <literal>&lt;URL:ftp://gcc.gnu.org/pub/gcc/libstdc++/doxygen/&gt;</literal>.
+   You will almost certainly need to use one of the
+   <ulink url="http://gcc.gnu.org/mirrors.html">mirror sites</ulink> to download
+   the tarball.  After unpacking, simply load libstdc++-html-*/index.html
+   into a browser.
+</para>
+
+<para>
+Documentation for older releases is available for download only, not
+online viewing.
+</para>
+
+<para>
+In addition, an initial set of man pages are also available in the
+same place as the HTML collections.  Start with C++Intro(3).
+</para>
+
+</article>
+
+</book>

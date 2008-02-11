@@ -1108,7 +1108,7 @@ MAN_LINKS              = NO
 # generate an XML file that captures the structure of 
 # the code including all documentation.
 
-GENERATE_XML           = NO
+GENERATE_XML           = @do_xml@
 
 # The XML_OUTPUT tag is used to specify where the XML pages will be put. 
 # If a relative path is entered the value of OUTPUT_DIRECTORY will be 
@@ -1120,6 +1120,7 @@ XML_OUTPUT             = xml
 # which can be used by a validating XML parser to check the 
 # syntax of the XML files.
 
+#XML_SCHEMA             = 
 XML_SCHEMA             = 
 
 # The XML_DTD tag can be used to specify an XML DTD, 
@@ -1127,6 +1128,7 @@ XML_SCHEMA             =
 # syntax of the XML files.
 
 XML_DTD                = 
+#XML_DTD                = http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd
 
 # If the XML_PROGRAMLISTING tag is set to YES Doxygen will 
 # dump the program listings (including syntax highlighting 

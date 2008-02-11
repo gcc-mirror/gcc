@@ -1,0 +1,182 @@
+<sect1 id="manual.intro.setup.build" xreflabel="Building">
+<?dbhtml filename="build.html"?>
+ 
+<sect1info>
+  <keywordset>
+    <keyword>
+      ISO C++
+    </keyword>
+    <keyword>
+      build
+    </keyword>
+  </keywordset>
+</sect1info>
+
+<title>Build</title>
+
+<para>
+  Because libstdc++ is part of GCC, the primary source for
+   installation instructions is
+   <ulink url="http://gcc.gnu.org/install/">the GCC install page</ulink>.
+   Additional data is given here only where it applies to libstdc++.
+</para>
+
+<sect2 id="build.prereq" xreflabel="build.prereq">
+<title>Prerequisites</title>
+  <para>
+    The list of software needed to build the library is kept with the
+    rest of the compiler, at
+      <ulink url="http://gcc.gnu.org/install/prerequisites.html">
+      http://gcc.gnu.org/install/prerequisites.html</ulink>.  The same page
+      also lists the tools you will need if you wish to modify the source.
+  </para>
+
+   <para>As of GCC 4.0.1 the minimum version of binutils required to build
+      libstdc++ is <code>2.15.90.0.1.1</code>. You can get snapshots
+      (as well as releases) of binutils from
+      <ulink url="ftp://sources.redhat.com/pub/binutils">
+      ftp://sources.redhat.com/pub/binutils</ulink>.
+      Older releases of libstdc++ do not require such a recent version,
+      but to take full advantage of useful space-saving features and
+      bug-fixes you should use a recent binutils if possible.
+      The configure process will automatically detect and use these
+      features if the underlying support is present.
+   </para>
+
+   <para>
+   Finally, a few system-specific requirements: 
+   </para>
+
+   <variablelist>
+      <varlistentry>
+	<term>linux</term>
+	
+	<listitem>
+	<para>
+	  If gcc 3.1.0 or later on is being used on linux, an attempt
+	  will be made to use "C" library functionality necessary for
+	  C++ named locale support.  For gcc 3.2.1 and later, this
+	  means that glibc 2.2.5 or later is required and the "C"
+	  library de_DE locale information must be installed.
+	</para>
+
+	<para>
+	  Note however that the sanity checks involving the de_DE
+	  locale are skipped when an explicit --enable-clocale=gnu
+	  configure option is used: only the basic checks are carried
+	  out, defending against misconfigurations.
+	</para>
+
+	<para>
+	  If the 'gnu' locale model is being used, the following
+	  locales are used and tested in the libstdc++ testsuites.
+	  The first column is the name of the locale, the second is
+	  the character set it is expected to use.
+	</para>
+<programlisting>
+de_DE               ISO-8859-1
+de_DE@euro          ISO-8859-15
+en_HK               ISO-8859-1
+en_PH               ISO-8859-1
+en_US               ISO-8859-1
+en_US.ISO-8859-1    ISO-8859-1
+en_US.ISO-8859-15   ISO-8859-15
+en_US.UTF-8         UTF-8
+es_ES               ISO-8859-1
+es_MX               ISO-8859-1
+fr_FR               ISO-8859-1
+fr_FR@euro          ISO-8859-15
+is_IS               UTF-8
+it_IT               ISO-8859-1
+ja_JP.eucjp         EUC-JP
+se_NO.UTF-8         UTF-8
+ta_IN               UTF-8
+zh_TW               BIG5
+</programlisting>
+      <para>Failure to have the underlying "C" library locale
+      information installed will mean that C++ named locales for the
+      above regions will not work: because of this, the libstdc++
+      testsuite will skip the named locale tests. If this isn't an
+      issue, don't worry about it. If named locales are needed, the
+      underlying locale information must be installed. Note that
+      rebuilding libstdc++ after the "C" locales are installed is not
+      necessary.
+      </para>
+
+      <para>
+	To install support for locales, do only one of the following:
+      </para>
+
+      <itemizedlist>
+        <listitem> 
+	  <para>install all locales</para>
+	  <itemizedlist>
+	    <listitem>
+	      <para>with RedHat Linux:
+	      </para>
+	      <para> <code> export LC_ALL=C </code> 
+	      </para>
+	      <para> <code> rpm -e glibc-common --nodeps </code> 
+	      </para>
+	      <para> 
+		<code> rpm -i --define "_install_langs all"
+		 glibc-common-2.2.5-34.i386.rpm 
+		</code> 
+	      </para>
+	    </listitem>
+             <listitem> 
+	     <para>
+	       Instructions for other operating systems solicited.
+	     </para>
+	     </listitem>
+          </itemizedlist>
+        </listitem>
+        <listitem> 
+	  <para>install just the necessary locales</para>
+          <itemizedlist>
+            <listitem>
+	      <para>with Debian Linux:</para>
+	      <para> Add the above list, as shown, to the file
+	      <code>/etc/locale.gen</code> </para>
+	      <para> run <code>/usr/sbin/locale-gen</code> </para>
+	    </listitem>
+            <listitem> 
+	      <para>on most Unix-like operating systems:</para>
+	      <para><code> localedef -i de_DE -f ISO-8859-1 de_DE </code></para>
+	      <para>(repeat for each entry in the above list) </para>
+            </listitem>
+            <listitem> 
+	    <para>
+	       Instructions for other operating systems solicited.
+	    </para>
+	    </listitem>
+          </itemizedlist>
+        </listitem>
+      </itemizedlist>
+      </listitem>
+      </varlistentry>
+   </variablelist>
+
+</sect2>
+
+<sect2 id="build.configure" xreflabel="build.make">
+<title>Make</title>
+   <para>If you have never done this before, you should read the basic
+      <ulink url="http://gcc.gnu.org/install/">GCC Installation
+      Instructions</ulink> first.  Read <emphasis>all of them</emphasis>.
+      <emphasis>Twice.</emphasis>
+   </para>
+   <para>When building libstdc++ you'll have to configure
+      the entire <emphasis>gccsrcdir</emphasis> directory.  The full list of libstdc++
+      specific configuration options, not dependent on the specific compiler
+      release being used, can be found <ulink url="configopts.html">here</ulink>.
+   </para>
+   <para>Consider possibly using --enable-languages=c++ to save time by only
+      building the C++ language parts.
+   </para>
+
+   <programlisting>
+   cd <emphasis>gccbuilddir</emphasis>
+   <emphasis>gccsrcdir</emphasis>/configure --prefix=<emphasis>destdir</emphasis> --other-opts...</programlisting>
+</sect2>
+</sect1>

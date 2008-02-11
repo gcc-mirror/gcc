@@ -1,0 +1,1024 @@
+<?xml version='1.0'?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+[ ]>
+
+<chapter id="manual.intro.using" xreflabel="Using">
+<?dbhtml filename="using.html"?>
+
+<title>Using</title>
+
+  <sect1 id="manual.intro.using.lib" xreflabel="Lib">
+    <title>Linking Library Binary Files</title>
+
+    <para>
+      If you only built a static library (libstdc++.a), or if you
+      specified static linking, you don't have to worry about this.
+      But if you built a shared library (libstdc++.so) and linked
+      against it, then you will need to find that library when you run
+      the executable.
+    </para>
+    <para>
+      Methods vary for different platforms and different styles, but
+      the usual ones are printed to the screen during installation.
+      They include:
+    </para>
+    <itemizedlist>
+      <listitem>
+	<para>
+	  At runtime set LD_LIBRARY_PATH in your environment
+	  correctly, so that the shared library for libstdc++ can be
+	  found and loaded.  Be certain that you understand all of the
+	  other implications and behavior of LD_LIBRARY_PATH first
+	  (few people do, and they get into trouble).
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  Compile the path to find the library at runtime into the
+	  program.  This can be done by passing certain options to
+	  g++, which will in turn pass them on to the linker.  The
+	  exact format of the options is dependent on which linker you
+	  use:
+	</para>
+	<itemizedlist>
+	  <listitem>
+	    <para>
+	      GNU ld (default on Linux):<literal>-Wl,--rpath,<filename class="directory">destdir</filename>/lib</literal>
+	    </para>
+	  </listitem>
+	  <listitem>
+	    <para>
+	      IRIX ld:<literal>
+	      -Wl,-rpath,<filename class="directory">destdir</filename>/lib</literal>
+	    </para>
+	  </listitem>
+	  <listitem>
+	  <para>
+	  Solaris ld:<literal>-Wl,-R<filename class="directory">destdir</filename>/lib</literal>
+	  </para>
+	  </listitem>
+	  <listitem>
+	    <para>
+	      More...?  Let us know!
+	    </para>
+	  </listitem>
+	</itemizedlist>
+      </listitem>
+    </itemizedlist>
+    <para>
+      Use the <command>ldd</command> utility to show which library the
+      system thinks it will get at runtime.
+    </para>
+    <para>
+      A libstdc++.la file is also installed, for use with Libtool.  If
+      you use Libtool to create your executables, these details are
+      taken care of for you.
+    </para>    
+  </sect1>
+
+  <sect1 id="manual.intro.using.headers" xreflabel="Headers">
+    <title>Headers</title>
+
+    <sect2 id="manual.intro.using.headers.all" xreflabel="Header Files">
+      <title>Header Files</title>
+
+   <para>
+     The C++ standard specifies the entire set of header files that
+     must be available to all hosted implementations.  Actually, the
+     word &quot;files&quot; is a misnomer, since the contents of the
+     headers don't necessarily have to be in any kind of external
+     file.  The only rule is that when one <code>#include</code>'s a
+     header, the contents of that header become available, no matter
+     how.
+   </para>
+
+   <para>
+   That said, in practice files are used.
+   </para>
+
+   <para> 
+     There are two main types of include files: header files related
+     to a specific version of the ISO C++ standard (called Standard
+     Headers), and all others (TR1, C++ ABI, and Extensions).
+   </para>
+
+   <para>
+     Two dialects of standard headers are supported, corresponding to
+     the 1998 standard as updated for 2003, and the draft of the
+     upcoming 200x standard.
+   </para>
+
+   <para>
+     C++98/03 include files. These are available in the default compilation mode, ie <code>-std=c++98</code> or <code>-std=gnu++98</code>. 
+   </para>
+
+<table frame='all'>
+<title>C++ 1998 Library Headers</title>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<colspec colname='c1'></colspec>
+<colspec colname='c2'></colspec>
+<colspec colname='c3'></colspec>
+<colspec colname='c4'></colspec>
+<tbody>
+<row><entry><filename class="headerfile">algorithm</filename></entry><entry><filename class="headerfile">iomanip</filename></entry><entry><filename class="headerfile">list</filename></entry><entry><filename class="headerfile">ostream</filename></entry><entry><filename class="headerfile">streambuf</filename></entry></row>
+<row><entry><filename class="headerfile">bitset</filename></entry><entry><filename class="headerfile">ios</filename></entry><entry><filename class="headerfile">locale</filename></entry><entry><filename class="headerfile">queue</filename></entry><entry><filename class="headerfile">string</filename></entry></row>
+<row><entry><filename class="headerfile">complex</filename></entry><entry><filename class="headerfile">iosfwd</filename></entry><entry><filename class="headerfile">map</filename></entry><entry><filename class="headerfile">set</filename></entry><entry><filename class="headerfile">typeinfo</filename></entry></row>
+<row><entry><filename class="headerfile">deque</filename></entry><entry><filename class="headerfile">iostream</filename></entry><entry><filename class="headerfile">memory</filename></entry><entry><filename class="headerfile">sstream</filename></entry><entry><filename class="headerfile">utility</filename></entry></row>
+<row><entry><filename class="headerfile">exception</filename></entry><entry><filename class="headerfile">istream</filename></entry><entry><filename class="headerfile">new</filename></entry><entry><filename class="headerfile">stack</filename></entry><entry><filename class="headerfile">valarray</filename></entry></row>
+<row><entry><filename class="headerfile">fstream</filename></entry><entry><filename class="headerfile">iterator</filename></entry><entry><filename class="headerfile">numeric</filename></entry><entry><filename class="headerfile">stdexcept</filename></entry><entry><filename class="headerfile">vector</filename></entry></row>
+<row><entry><filename class="headerfile">functional</filename></entry><entry><filename class="headerfile">limits</filename></entry></row>
+</tbody>
+</tgroup>
+</table>
+
+<para></para>
+<table frame='all'>
+<title>C++ 1998 Library Headers for C Library Facilities</title>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<colspec colname='c1'></colspec>
+<colspec colname='c2'></colspec>
+<colspec colname='c3'></colspec>
+<colspec colname='c4'></colspec>
+<tbody>
+<row><entry><filename class="headerfile">cassert</filename></entry><entry><filename class="headerfile">ciso646</filename></entry><entry><filename class="headerfile">csetjmp</filename></entry><entry><filename class="headerfile">cstdio</filename></entry><entry><filename class="headerfile">ctime</filename></entry></row>
+<row><entry><filename class="headerfile">cctype</filename></entry><entry><filename class="headerfile">climits</filename></entry><entry><filename class="headerfile">csignal</filename></entry><entry><filename class="headerfile">cstdlib</filename></entry><entry><filename class="headerfile">cwchar</filename></entry></row>
+<row><entry><filename class="headerfile">cerrno</filename></entry><entry><filename class="headerfile">clocale</filename></entry><entry><filename class="headerfile">cstdarg</filename></entry><entry><filename class="headerfile">cstring</filename></entry><entry><filename class="headerfile">cwctype</filename></entry></row>
+<row><entry><filename class="headerfile">cfloat</filename></entry><entry><filename class="headerfile">cmath</filename></entry><entry><filename class="headerfile">cstddef</filename></entry></row>
+</tbody>
+</tgroup>
+</table>
+
+<para>C++0x include files. These are only available in C++0x compilation mode, ie <code>-std=c++0x</code> or <code>-std=gnu++0x</code>. 
+</para>
+
+<para></para>
+<table frame='all'>
+<title>C++ 200x Library Headers</title>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<colspec colname='c1'></colspec>
+<colspec colname='c2'></colspec>
+<colspec colname='c3'></colspec>
+<colspec colname='c4'></colspec>
+<tbody>
+<row><entry><filename class="headerfile">algorithm</filename></entry><entry><filename class="headerfile">iomanip</filename></entry><entry><filename class="headerfile">locale</filename></entry><entry><filename class="headerfile">regex</filename></entry><entry><filename class="headerfile">tuple</filename></entry></row>
+<row><entry><filename class="headerfile">array</filename></entry><entry><filename class="headerfile">ios</filename></entry><entry><filename class="headerfile">map</filename></entry><entry><filename class="headerfile">set</filename></entry><entry><filename class="headerfile">typeinfo</filename></entry></row>
+<row><entry><filename class="headerfile">bitset</filename></entry><entry><filename class="headerfile">iosfwd</filename></entry><entry><filename class="headerfile">memory</filename></entry><entry><filename class="headerfile">sstream</filename></entry><entry><filename class="headerfile">type_traits</filename></entry></row>
+<row><entry><filename class="headerfile">complex</filename></entry><entry><filename class="headerfile">iostream</filename></entry><entry><filename class="headerfile">new</filename></entry><entry><filename class="headerfile">stack</filename></entry><entry><filename class="headerfile">unordered_map</filename></entry></row>
+<row><entry><filename class="headerfile">deque</filename></entry><entry><filename class="headerfile">istream</filename></entry><entry><filename class="headerfile">numeric</filename></entry><entry><filename class="headerfile">stdexcept</filename></entry><entry><filename class="headerfile">unordered_set</filename></entry></row>
+<row><entry><filename class="headerfile">exception</filename></entry><entry><filename class="headerfile">iterator</filename></entry><entry><filename class="headerfile">ostream</filename></entry><entry><filename class="headerfile">streambuf</filename></entry><entry><filename class="headerfile">utility</filename></entry></row>
+<row><entry><filename class="headerfile">fstream</filename></entry><entry><filename class="headerfile">limits</filename></entry><entry><filename class="headerfile">queue</filename></entry><entry><filename class="headerfile">string</filename></entry><entry><filename class="headerfile">valarray</filename></entry></row>
+<row><entry><filename class="headerfile">functional</filename></entry><entry><filename class="headerfile">list</filename></entry><entry><filename class="headerfile">random</filename></entry><entry><filename class="headerfile">system_error</filename></entry><entry><filename class="headerfile">vector</filename></entry></row>
+</tbody>
+</tgroup>
+</table>
+
+<para></para>
+
+<table frame='all'>
+<title>C++ 200x Library Headers for C Library Facilities</title>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<colspec colname='c1'></colspec>
+<colspec colname='c2'></colspec>
+<colspec colname='c3'></colspec>
+<colspec colname='c4'></colspec>
+<colspec colname='c5'></colspec>
+<tbody>
+<row><entry><filename class="headerfile">cassert</filename></entry><entry><filename class="headerfile">cfloat</filename></entry><entry><filename class="headerfile">cmath</filename></entry><entry><filename class="headerfile">cstddef</filename></entry><entry><filename class="headerfile">ctgmath</filename></entry></row>
+<row><entry><filename class="headerfile">ccomplex</filename></entry><entry><filename class="headerfile">cinttypes</filename></entry><entry><filename class="headerfile">csetjmp</filename></entry><entry><filename class="headerfile">cstdint</filename></entry><entry><filename class="headerfile">ctime</filename></entry></row>
+<row><entry><filename class="headerfile">cctype</filename></entry><entry><filename class="headerfile">ciso646</filename></entry><entry><filename class="headerfile">csignal</filename></entry><entry><filename class="headerfile">cstdio</filename></entry><entry><filename class="headerfile">cuchar</filename></entry></row>
+<row><entry><filename class="headerfile">cerrno</filename></entry><entry><filename class="headerfile">climits</filename></entry><entry><filename class="headerfile">cstdarg</filename></entry><entry><filename class="headerfile">cstdlib</filename></entry><entry><filename class="headerfile">cwchar</filename></entry></row>
+<row><entry><filename class="headerfile">cfenv</filename></entry><entry><filename class="headerfile">clocale</filename></entry><entry><filename class="headerfile">cstdbool</filename></entry><entry><filename class="headerfile">cstring</filename></entry><entry><filename class="headerfile">cwctype</filename></entry></row>
+</tbody>
+</tgroup>
+</table>
+
+
+<para>
+  In addition, TR1 includes as:
+</para>
+
+<table frame='all'>
+<title>C++ TR1 Library Headers</title>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<colspec colname='c1'></colspec>
+<colspec colname='c2'></colspec>
+<colspec colname='c3'></colspec>
+<colspec colname='c4'></colspec>
+<colspec colname='c5'></colspec>
+<tbody>
+
+<row><entry><filename class="headerfile">tr1/array</filename></entry><entry><filename class="headerfile">tr1/memory</filename></entry><entry><filename class="headerfile">tr1/regex</filename></entry><entry><filename class="headerfile">tr1/type_traits</filename></entry><entry><filename class="headerfile">tr1/unordered_set</filename></entry></row>
+<row><entry><filename class="headerfile">tr1/complex</filename></entry><entry><filename class="headerfile">tr1/random</filename></entry><entry><filename class="headerfile">tr1/tuple</filename></entry><entry><filename class="headerfile">tr1/unordered_map</filename></entry><entry><filename class="headerfile">tr1/utility</filename></entry></row>
+<row><entry><filename class="headerfile">tr1/functional</filename></entry></row>
+</tbody>
+</tgroup>
+</table>
+
+<para></para>
+
+
+<table frame='all'>
+<title>C++ TR1 Library Headers for C Library Facilities</title>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<colspec colname='c1'></colspec>
+<colspec colname='c2'></colspec>
+<colspec colname='c3'></colspec>
+<colspec colname='c4'></colspec>
+<colspec colname='c5'></colspec>
+<tbody>
+
+<row><entry><filename class="headerfile">tr1/cmath</filename></entry><entry><filename class="headerfile">tr1/cfloat</filename></entry><entry><filename class="headerfile">tr1/cstdarg</filename></entry><entry><filename class="headerfile">tr1/cstdio</filename></entry><entry><filename class="headerfile">tr1/ctime</filename></entry></row>
+<row><entry><filename class="headerfile">tr1/ccomplex</filename></entry><entry><filename class="headerfile">tr1/cinttypes</filename></entry><entry><filename class="headerfile">tr1/cstdbool</filename></entry><entry><filename class="headerfile">tr1/cstdlib</filename></entry><entry><filename class="headerfile">tr1/cwchar</filename></entry></row>
+<row><entry><filename class="headerfile">tr1/cfenv</filename></entry><entry><filename class="headerfile">tr1/climits</filename></entry><entry><filename class="headerfile">tr1/cstdint</filename></entry><entry><filename class="headerfile">tr1/ctgmath</filename></entry><entry><filename class="headerfile">tr1/cwctype</filename></entry></row>
+</tbody>
+</tgroup>
+</table>
+
+<para>
+  Also included are files for the C++ ABI interface:
+</para>
+
+<table frame='all'>
+<title>C++ ABI Headers</title>
+<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+<colspec colname='c1'></colspec>
+<colspec colname='c2'></colspec>
+<tbody>
+<row><entry><filename class="headerfile">cxxabi.h</filename></entry><entry><filename class="headerfile">cxxabi_forced.h</filename></entry></row>
+</tbody>
+</tgroup>
+</table>
+
+<para>
+  And a large variety of extensions.
+</para>
+
+<table frame='all'>
+<title>Extension Headers</title>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<colspec colname='c1'></colspec>
+<colspec colname='c2'></colspec>
+<colspec colname='c3'></colspec>
+<colspec colname='c4'></colspec>
+<colspec colname='c5'></colspec>
+<tbody>
+
+<row><entry><filename class="headerfile">ext/algorithm</filename></entry><entry><filename class="headerfile">ext/debug_allocator.h</filename></entry><entry><filename class="headerfile">ext/mt_allocator.h</filename></entry><entry><filename class="headerfile">ext/pod_char_traits.h</filename></entry><entry><filename class="headerfile">ext/stdio_sync_filebuf.h</filename></entry></row>
+<row><entry><filename class="headerfile">ext/array_allocator.h</filename></entry><entry><filename class="headerfile">ext/enc_filebuf.h</filename></entry><entry><filename class="headerfile">ext/new_allocator.h</filename></entry><entry><filename class="headerfile">ext/pool_allocator.h</filename></entry><entry><filename class="headerfile">ext/throw_allocator.h</filename></entry></row>
+<row><entry><filename class="headerfile">ext/atomicity.h</filename></entry><entry><filename class="headerfile">ext/functional</filename></entry><entry><filename class="headerfile">ext/numeric</filename></entry><entry><filename class="headerfile">ext/rb_tree</filename></entry><entry><filename class="headerfile">ext/typelist.h</filename></entry></row>
+<row><entry><filename class="headerfile">ext/bitmap_allocator.h</filename></entry><entry><filename class="headerfile">ext/iterator</filename></entry><entry><filename class="headerfile">ext/numeric_traits.h</filename></entry><entry><filename class="headerfile">ext/rope</filename></entry><entry><filename class="headerfile">ext/type_traits.h</filename></entry></row>
+<row><entry><filename class="headerfile">ext/codecvt_specializations.h</filename></entry><entry><filename class="headerfile">ext/malloc_allocator.h</filename></entry><entry><filename class="headerfile">ext/pb_ds/assoc_container.h</filename></entry><entry><filename class="headerfile">ext/slist</filename></entry><entry><filename class="headerfile">ext/vstring.h</filename></entry></row>
+<row><entry><filename class="headerfile">ext/concurrence.h</filename></entry><entry><filename class="headerfile">ext/memory</filename></entry><entry><filename class="headerfile">ext/pb_ds/priority_queue.h</filename></entry><entry><filename class="headerfile">ext/stdio_filebuf.h</filename></entry></row>
+</tbody>
+</tgroup>
+</table>
+
+<para></para>
+
+<table frame='all'>
+<title>Extension Debug Headers</title>
+<tgroup cols='5' align='left' colsep='1' rowsep='1'>
+<colspec colname='c1'></colspec>
+<colspec colname='c2'></colspec>
+<colspec colname='c3'></colspec>
+<colspec colname='c4'></colspec>
+<colspec colname='c5'></colspec>
+<tbody>
+
+<row><entry><filename class="headerfile">debug/bitset</filename></entry><entry><filename class="headerfile">debug/list</filename></entry><entry><filename class="headerfile">debug/set</filename></entry><entry><filename class="headerfile">debug/unordered_map</filename></entry><entry><filename class="headerfile">debug/vector</filename></entry></row>
+<row><entry><filename class="headerfile">debug/deque</filename></entry><entry><filename class="headerfile">debug/map</filename></entry><entry><filename class="headerfile">debug/string</filename></entry><entry><filename class="headerfile">debug/unordered_set</filename></entry></row>
+</tbody>
+</tgroup>
+</table>
+
+<para></para>
+
+<table frame='all'>
+<title>Extension Parallel Headers</title>
+<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+<colspec colname='c1'></colspec>
+<colspec colname='c2'></colspec>
+<tbody>
+<row><entry><filename class="headerfile">parallel/algorithm</filename></entry><entry><filename class="headerfile">parallel/numeric</filename></entry></row>
+</tbody>
+</tgroup>
+</table>
+
+    </sect2>
+
+    <sect2 id="manual.intro.using.headers.mixing" xreflabel="Mixing Headers">
+      <title>Mixing Headers</title>
+
+<para> A few simple rules.
+</para>
+
+<para>First, mixing different dialects of the standard headers is not
+possible. It's an all-or-nothing affair. Thus, code like
+</para>
+
+<programlisting>
+#include &lt;array&gt;
+#include &lt;functional&gt;
+</programlisting>
+
+<para>Implies C++0x mode. To use the entities in &lt;array&gt;, the C++0x
+compilation mode must be used, which implies the C++0x functionality
+(and deprecations) in &lt;functional&gt; will be present.
+</para>
+
+<para>Second, the other headers can be included with either dialect of
+the standard headers, although features and types specific to C++0x
+are still only enabled when in C++0x compilation mode. So, to use
+rvalue references with <code>__gnu_cxx::vstring</code>, or to use the
+debug-mode versions of <code>std::unordered_map</code>, one must use
+the <code>std=gnu++0x</code> compiler flag. (Or <code>std=c++0x</code>, of course.)
+</para>
+
+<para>A special case of the second rule is the mixing of TR1 and C++0x
+facilities. It is possible (although not especially prudent) to
+include both the TR1 version and the C++0x version of header in the
+same translation unit:
+</para>
+
+<programlisting>
+#include &lt;tr1/type_traits&gt;
+#include &lt;type_traits&gt;
+</programlisting>
+
+<para> Several parts of C++0x diverge quite substantially from TR1 predecessors.
+</para>
+    </sect2>
+
+    <sect2 id="manual.intro.using.headers.cheaders" xreflabel="C Headers and">
+      <title>The C Headers and <code>namespace std</code></title>
+
+<para>
+	The standard specifies that if one includes the C-style header
+	(&lt;math.h&gt; in this case), the symbols will be available
+	in the global namespace and perhaps in
+	namespace <code>std::</code> (but this is no longer a firm
+	requirement.) One the other hand, including the C++-style
+	header (&lt;cmath&gt;) guarantees that the entities will be
+	found in namespace std and perhaps in the global namespace.
+      </para>
+
+<para>
+Usage of C++-style headers is recommended, as then
+C-linkage names can be disambiguated by explicit qualification, such
+as by <code>std::abort</code>. In addition, the C++-style headers can
+use function overloading to provide a simpler interface to certain
+families of C-functions. For instance in &lt;cmath&gt;, the
+function <code>std::sin</code> has overloads for all the builtin
+floating-point types. This means that <code>std::sin</code> can be
+used uniformly, instead of a combination
+of <code>std::sinf</code>, <code>std::sin</code>,
+and <code>std::sinl</code>.
+</para>
+    </sect2>
+
+    <sect2 id="manual.intro.using.headers.pre" xreflabel="Precompiled Headers">
+      <title>Precompiled Headers</title>
+
+
+<para>There are three base header files that are provided. They can be
+used to precompile the standard headers and extensions into binary
+files that may the be used to speed compiles that use these headers.
+</para>
+
+
+<itemizedlist>
+<listitem>
+  <para>stdc++.h</para>
+<para>Includes all standard headers. Actual content varies depending on
+language dialect.
+</para>
+</listitem>
+
+<listitem>
+  <para>stdtr1c++.h</para>
+<para>Includes all of &lt;stdc++.h&gt;, and adds all the TR1 headers.
+</para>
+</listitem>
+
+<listitem><para>extc++.h</para>
+<para>Includes all of &lt;stdtr1c++.h&gt;, and adds all the Extension headers.
+</para></listitem>
+</itemizedlist>
+
+<para>How to construct a .gch file from one of these base header files.</para>
+
+<para>First, find the include directory for the compiler. One way to do
+this is:</para>
+
+<programlisting>
+g++ -v hello.cc
+
+#include &lt;...&gt; search starts here:
+ /mnt/share/bld/H-x86-gcc.20071201/include/c++/4.3.0
+...
+End of search list.
+</programlisting>
+
+
+<para>Then, create a precompiled header file with the same flags that
+will be used to compile other projects.</para>
+
+<programlisting>
+g++ -Winvalid-pch -x c++-header -g -O2 -o ./stdc++.h.gch /mnt/share/bld/H-x86-gcc.20071201/include/c++/4.3.0/x86_64-unknown-linux-gnu/bits/stdc++.h
+</programlisting>
+
+<para>The resulting file will be quite large: the current size is around
+thirty megabytes. </para>
+
+<para>How to use the resulting file.</para>
+
+<programlisting>
+g++ -I. -include stdc++.h  -H -g -O2 hello.cc 
+</programlisting>
+
+<para>Verification that the PCH file is being used is easy:</para>
+
+<programlisting>
+g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
+! ./stdc++.h.gch
+. /mnt/share/bld/H-x86-gcc.20071201/include/c++/4.3.0/iostream
+. /mnt/share/bld/H-x86-gcc.20071201include/c++/4.3.0/string
+</programlisting>
+
+<para>The exclamation point to the left of the <code>stdc++.h.gch</code> listing means that the generated PCH file was used, and thus the </para>
+<para></para>
+
+<para> Detailed information about creating precompiled header files can be found in the GCC <ulink url="http://gcc.gnu.org/onlinedocs/gcc/Precompiled-Headers.html">documentation</ulink>.
+</para>
+
+
+    </sect2>
+  </sect1>
+
+  <sect1 id="manual.intro.using.namespaces" xreflabel="Namespaces">
+    <title>Namespaces</title>
+
+    <sect2 id="manual.intro.using.namespaces.all" xreflabel="Available Namespaces">
+      <title>Available Namespaces</title>
+
+
+
+<para> There are three main namespaces.
+</para>
+
+<itemizedlist>
+  <listitem><para>std</para>
+<para>The ISO C++ standards specify that "all library entities are defined
+within namespace std." This includes namepaces nested
+within <code>namespace std</code>, such as <code>namespace
+std::tr1</code>.
+</para>
+</listitem>
+<listitem><para>abi</para>
+<para>Specified by the C++ ABI. This ABI specifies a number of type and
+function APIs supplemental to those required by the ISO C++ Standard,
+but necessary for interoperability.
+</para>
+</listitem>
+
+<listitem><para>__gnu_</para>
+<para>Indicating one of several GNU extensions. Choices
+include <code>__gnu_cxx</code>, <code>__gnu_debug</code>, <code>__gnu_parallel</code>,
+and <code>__gnu_pbds</code>.
+</para></listitem>
+</itemizedlist>
+
+<para> A complete list of implementation namespaces (including namespace contents) is available in the generated source <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/namespaces.html">documentation</ulink>. 
+</para>
+
+
+    </sect2>
+
+    <sect2 id="manual.intro.using.namespaces.std" xreflabel="namespace std">
+      <title>namespace std</title>
+
+
+<para>
+      One standard requirement is that the library components are defined
+      in <code>namespace std::</code>. Thus, in order to use these types or
+      functions, one must do one of two things:
+</para>
+
+<itemizedlist>
+  <listitem><para>put a kind of <emphasis>using-declaration</emphasis> in your source
+(either <code>using namespace std;</code> or i.e. <code>using
+std::string;</code>) This approach works well for individual source files, but
+should not be used in a global context, like header files.
+	  </para></listitem> <listitem><para>use a <emphasis>fully
+qualified name</emphasis>for each library symbol
+(i.e. <code>std::string</code>, <code>std::cout</code>) Always can be
+used, and usually enhanced, by strategic use of typedefs. (In the
+cases where the qualified verbiage becomes unwieldy.)
+	  </para>
+	</listitem>
+</itemizedlist>
+
+    </sect2>
+
+    <sect2 id="manual.intro.using.namespaces.comp" xreflabel="Using Namepace Composition">
+      <title>Using Namespace Composition</title>
+
+<para>
+Best practice in programming suggests sequestering new data or
+functionality in a sanely-named, unique namespace whenever
+possible. This is considered an advantage over dumping everything in
+the global namespace, as then name look-up can be explicitly enabled or
+disabled as above, symbols are consistently mangled without repetitive
+naming prefixes or macros, etc.
+</para>
+
+<para>For instance, consider a project that defines most of its classes in <code>namespace gtk</code>. It is possible to
+	adapt <code>namespace gtk</code> to <code>namespace std</code> by using a C++-feature called
+	<emphasis>namespace composition</emphasis>. This is what happens if
+	a <emphasis>using</emphasis>-declaration is put into a
+	namespace-definition: the imported symbol(s) gets imported into the
+	currently active namespace(s). For example:
+</para>
+<programlisting>
+namespace gtk 
+{
+  using std::string;
+  using std::tr1::array;
+
+  class Window { ... };
+}
+</programlisting>
+<para>
+	In this example, <code>std::string</code> gets imported into
+	<code>namespace gtk</code>.  The result is that use of
+	<code>std::string</code> inside namespace gtk can just use <code>string</code>, without the explicit qualification. 
+	As an added bonus, 
+	<code>std::string</code> does not get imported into
+	the global namespace.  Additionally, a more elaborate arrangement can be made for backwards compatibility and portability, whereby the
+	<code>using</code>-declarations can wrapped in macros that
+	are set based on autoconf-tests to either &quot;&quot; or i.e. <code>using
+	  std::string;</code> (depending on whether the system has
+	libstdc++ in <code>std::</code> or not).  (ideas from
+	<email>llewelly@dbritsch.dsl.xmission.com</email>, Karl Nelson <email>kenelson@ece.ucdavis.edu</email>)
+</para>
+
+
+    </sect2>
+  </sect1>
+
+  <sect1 id="manual.intro.using.macros" xreflabel="Macros">
+    <title>Macros</title>
+
+   <para>All pre-processor switches and configurations are all gathered
+      in the file <code>c++config.h</code>, which is generated during
+      the libstdc++ configuration and build process, and included by
+      files part of the public libstdc++ API. Most of these macros
+      should not be used by consumers of libstdc++, and are reserved
+      for internal implementation use. <emphasis>These macros cannot be
+      redefined</emphasis>. However, a select handful of these macro
+      control libstdc++ extensions and extra features, or provide
+      versioning information for the API, and are able to be used.
+   </para>
+
+   <para>All library macros begin with <code>_GLIBCXX_</code> (except for
+   versions 3.1.x to 3.3.x, which use <code>_GLIBCPP_</code>).
+   </para>
+
+   <para>Below is the macro which users may check for library version
+      information. </para>
+
+    <variablelist>
+    <varlistentry>
+      <term><code>__GLIBCXX__</code></term> 
+      <listitem>
+	<para>The current version of
+    libstdc++ in compressed ISO date format, form of an unsigned
+    long. For details on the value of this particular macro for a
+    particular release, please consult this <ulink url="abi.html">
+    document</ulink>.
+    </para>
+    </listitem>
+    </varlistentry> 
+    </variablelist>
+
+   <para>Below are the macros which users may change with #define/#undef or
+      with -D/-U compiler flags.  The default state of the symbol is
+      listed.</para>
+
+   <para><quote>Configurable</quote> (or <quote>Not configurable</quote>) means
+      that the symbol is initially chosen (or not) based on
+      --enable/--disable options at library build and configure time
+      (documented <link linkend="manual.intro.setup.configure">here</link>), with the
+      various --enable/--disable choices being translated to
+      #define/#undef).
+   </para> 
+
+   <para> <acronym>ABI</acronym> means that changing from the default value may
+  mean changing the <acronym>ABI</acronym> of compiled code. In other words, these
+  choices control code which has already been compiled (i.e., in a
+  binary such as libstdc++.a/.so).  If you explicitly #define or
+  #undef these macros, the <emphasis>headers</emphasis> may see different code
+  paths, but the <emphasis>libraries</emphasis> which you link against will not.
+  Experimenting with different values with the expectation of
+  consistent linkage requires changing the config headers before
+  building/installing the library.
+   </para>   
+
+    <variablelist>
+    <varlistentry><term><code>_GLIBCXX_DEPRECATED</code></term>
+    <listitem>
+      <para>
+	Defined by default. Not configurable. ABI-changing. Turning this off
+        removes older ARM-style iostreams code, and other anachronisms
+        from the API.  This macro is dependent on the version of the
+        standard being tracked, and as a result may give different results for
+        <code>-std=c++98</code> and <code>-std=c++0x</code>. This may
+        be useful in updating old C++ code which no longer meet the
+        requirements of the language, or for checking current code
+        against new language standards.  
+    </para>
+    </listitem></varlistentry>
+
+    <varlistentry><term><code>_GLIBCXX_FORCE_NEW</code></term> 
+    <listitem>
+      <para>
+	Undefined by default. When defined, memory allocation and
+	allocators controlled by libstdc++ call operator new/delete
+	without caching and pooling. Configurable via
+	<code>--enable-libstdcxx-allocator</code>. ABI-changing.
+      </para>
+    </listitem></varlistentry>
+
+
+    <varlistentry><term><code>_GLIBCXX_CONCEPT_CHECKS</code></term> 
+    <listitem>
+      <para>
+	Undefined by default.  Configurable via
+	<code>--enable-concept-checks</code>.  When defined, performs
+	compile-time checking on certain template instantiations to
+	detect violations of the requirements of the standard.  This
+	is described in more detail <ulink
+	url="../19_diagnostics/howto.html#3">here</ulink>.
+      </para>
+    </listitem></varlistentry>
+
+    <varlistentry><term><code>_GLIBCXX_DEBUG</code></term>
+    <listitem>
+      <para>
+	Undefined by default. When defined, compiles
+    user code using the <ulink url="../ext/debug.html#safe">libstdc++ debug
+    mode</ulink>.
+      </para>
+    </listitem></varlistentry>
+    <varlistentry><term><code>_GLIBCXX_DEBUG_PEDANTIC</code></term>
+    <listitem>
+      <para>
+	Undefined by default. When defined while
+    compiling with the <ulink url="../ext/debug.html#safe">libstdc++ debug
+    mode</ulink>, makes the debug mode extremely picky by making the use
+    of libstdc++ extensions and libstdc++-specific behavior into
+    errors.
+      </para>
+    </listitem></varlistentry>
+    <varlistentry><term><code>_GLIBCXX_PARALLEL</code></term>
+    <listitem>
+      <para>Undefined by default. When defined, compiles
+    user code using the <ulink url="../ext/parallel_mode.html">libstdc++ parallel
+    mode</ulink>.
+      </para>
+    </listitem></varlistentry>
+    </variablelist>
+
+
+  </sect1>  
+  
+  <sect1 id="manual.intro.using.concurrency" xreflabel="Concurrency">
+    <title>Concurrency</title>
+
+   <para>This section discusses issues surrounding the proper compilation
+      of multithreaded applications which use the Standard C++
+      library.  This information is GCC-specific since the C++
+      standard does not address matters of multithreaded applications.
+   </para>
+
+    <sect2 id="manual.intro.using.concurrency.prereq" xreflabel="Thread Prereq">
+      <title>Prerequisites</title>
+
+   <para>All normal disclaimers aside, multithreaded C++ application are
+      only supported when libstdc++ and all user code was built with
+      compilers which report (via <code> gcc/g++ -v </code>) the same thread
+      model and that model is not <emphasis>single</emphasis>.  As long as your
+      final application is actually single-threaded, then it should be
+      safe to mix user code built with a thread model of
+      <emphasis>single</emphasis> with a libstdc++ and other C++ libraries built
+      with another thread model useful on the platform.  Other mixes
+      may or may not work but are not considered supported.  (Thus, if
+      you distribute a shared C++ library in binary form only, it may
+      be best to compile it with a GCC configured with
+      --enable-threads for maximal interchangeability and usefulness
+      with a user population that may have built GCC with either
+      --enable-threads or --disable-threads.)
+   </para>
+   <para>When you link a multithreaded application, you will probably
+      need to add a library or flag to g++.  This is a very
+      non-standardized area of GCC across ports.  Some ports support a
+      special flag (the spelling isn't even standardized yet) to add
+      all required macros to a compilation (if any such flags are
+      required then you must provide the flag for all compilations not
+      just linking) and link-library additions and/or replacements at
+      link time.  The documentation is weak.  Here is a quick summary
+      to display how ad hoc this is: On Solaris, both -pthreads and
+      -threads (with subtly different meanings) are honored.  On OSF,
+      -pthread and -threads (with subtly different meanings) are
+      honored.  On Linux/i386, -pthread is honored.  On FreeBSD,
+      -pthread is honored.  Some other ports use other switches.
+      AFAIK, none of this is properly documented anywhere other than
+      in ``gcc -dumpspecs'' (look at lib and cpp entries).
+   </para>
+
+    </sect2>
+
+    <sect2 id="manual.intro.using.concurrency.thread_safety" xreflabel="Thread Safety">
+      <title>Thread Safety</title>
+
+
+<para>
+We currently use the <ulink url="http://www.sgi.com/tech/stl/thread_safety.html">SGI STL</ulink> definition of thread safety.
+</para>
+
+
+      <para>The library strives to be thread-safe when all of the following
+         conditions are met:
+      </para>
+      <itemizedlist>
+       <listitem>
+       <para>The system's libc is itself thread-safe,
+       </para>
+       </listitem>
+       <listitem>
+	 <para>
+	   The compiler in use reports a thread model other than
+	   'single'. This can be tested via output from <code>gcc
+	   -v</code>. Multi-thread capable versions of gcc output
+	   something like this:
+	 </para>
+<programlisting>
+%gcc -v
+Using built-in specs.
+...
+Thread model: posix
+gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
+</programlisting>
+
+<para>Look for "Thread model" lines that aren't equal to "single."</para>
+       </listitem>
+       <listitem>
+       <para>
+	 Requisite command-line flags are used for atomic operations
+	 and threading. Examples of this include <code>-pthread</code>
+	 and <code>-march=native</code>, although specifics vary
+	 depending on the host environment. See <ulink
+	 url="http://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html">Machine
+	 Dependent Options</ulink>.
+       </para>
+       </listitem>
+       <listitem>
+	 <para>
+	   An implementation of atomicity.h functions
+           exists for the architecture in question. See the internals documentation for more <ulink url="../ext/concurrence.html">details</ulink>.
+       </para>
+       </listitem>
+
+      </itemizedlist>
+      <para>The user-code must guard against concurrent method calls which may
+         access any particular library object's state.  Typically, the
+         application programmer may infer what object locks must be held
+         based on the objects referenced in a method call.  Without getting
+         into great detail, here is an example which requires user-level
+         locks:
+      </para>
+      <programlisting>
+     library_class_a shared_object_a;
+
+     thread_main () {
+       library_class_b *object_b = new library_class_b;
+       shared_object_a.add_b (object_b);   // must hold lock for shared_object_a
+       shared_object_a.mutate ();          // must hold lock for shared_object_a
+     }
+
+     // Multiple copies of thread_main() are started in independent threads.</programlisting>
+      <para>Under the assumption that object_a and object_b are never exposed to
+         another thread, here is an example that should not require any
+         user-level locks:
+      </para>
+      <programlisting>
+     thread_main () {
+       library_class_a object_a;
+       library_class_b *object_b = new library_class_b;
+       object_a.add_b (object_b);
+       object_a.mutate ();
+     } </programlisting>
+      <para>All library objects are safe to use in a multithreaded program as
+         long as each thread carefully locks out access by any other
+         thread while it uses any object visible to another thread, i.e.,
+         treat library objects like any other shared resource.  In general,
+         this requirement includes both read and write access to objects;
+         unless otherwise documented as safe, do not assume that two threads
+         may access a shared standard library object at the same time.
+      </para>
+      <para>See chapters <ulink url="../17_intro/howto.html#3">17</ulink> (library
+         introduction), <ulink url="../23_containers/howto.html#3">23</ulink>
+         (containers), and <ulink url="../27_io/howto.html#9">27</ulink> (I/O) for
+         more information.
+      </para>
+
+
+  </sect2>
+  <sect2 id="manual.intro.using.concurrency.atomics" xreflabel="Atomics">
+    <title>Atomics</title>
+    <para>
+    </para>
+  </sect2>
+
+    <sect2 id="manual.intro.using.concurrency.io" xreflabel="IO">
+      <title>IO</title>
+   <para>I'll assume that you have already read the
+      <ulink url="../17_intro/howto.html#3">general notes on library threads</ulink>,
+      and the
+      <ulink url="../23_containers/howto.html#3">notes on threaded container
+      access</ulink> (you might not think of an I/O stream as a container, but
+      the points made there also hold here).  If you have not read them,
+      please do so first.
+   </para>
+   <para>This gets a bit tricky.  Please read carefully, and bear with me.
+   </para>
+
+    <sect3 id="concurrency.io.structure" xreflabel="Structure">
+      <title>Structure</title>
+   <para>A wrapper
+      type called <code>__basic_file</code> provides our abstraction layer
+      for the <code>std::filebuf</code> classes.  Nearly all decisions dealing
+      with actual input and output must be made in <code>__basic_file</code>.
+   </para>
+   <para>A generic locking mechanism is somewhat in place at the filebuf layer,
+      but is not used in the current code.  Providing locking at any higher
+      level is akin to providing locking within containers, and is not done
+      for the same reasons (see the links above).
+   </para>
+    </sect3>
+
+    <sect3 id="concurrency.io.defaults" xreflabel="Defaults">
+      <title>Defaults</title>
+   <para>The __basic_file type is simply a collection of small wrappers around
+      the C stdio layer (again, see the link under Structure).  We do no
+      locking ourselves, but simply pass through to calls to <code>fopen</code>,
+      <code>fwrite</code>, and so forth.
+   </para>
+   <para>So, for 3.0, the question of &quot;is multithreading safe for I/O&quot; 
+      must be answered with, &quot;is your platform's C library threadsafe
+      for I/O?&quot;  Some are by default, some are not; many offer multiple
+      implementations of the C library with varying tradeoffs of threadsafety
+      and efficiency.  You, the programmer, are always required to take care
+      with multiple threads.
+   </para>
+   <para>(As an example, the POSIX standard requires that C stdio FILE*
+       operations are atomic.  POSIX-conforming C libraries (e.g, on Solaris
+       and GNU/Linux) have an internal mutex to serialize operations on
+       FILE*s.  However, you still need to not do stupid things like calling
+       <code>fclose(fs)</code> in one thread followed by an access of
+       <code>fs</code> in another.)
+   </para>
+   <para>So, if your platform's C library is threadsafe, then your
+      <code>fstream</code> I/O operations will be threadsafe at the lowest
+      level.  For higher-level operations, such as manipulating the data
+      contained in the stream formatting classes (e.g., setting up callbacks
+      inside an <code>std::ofstream</code>), you need to guard such accesses
+      like any other critical shared resource.
+   </para>
+    </sect3>
+
+    <sect3 id="concurrency.io.future" xreflabel="Future">
+      <title>Future</title>
+   <para> A
+      second choice may be available for I/O implementations:  libio.  This is
+      disabled by default, and in fact will not currently work due to other
+      issues.  It will be revisited, however.
+   </para>
+   <para>The libio code is a subset of the guts of the GNU libc (glibc) I/O
+      implementation.  When libio is in use, the <code>__basic_file</code>
+      type is basically derived from FILE.  (The real situation is more
+      complex than that... it's derived from an internal type used to
+      implement FILE.  See libio/libioP.h to see scary things done with
+      vtbls.)  The result is that there is no &quot;layer&quot; of C stdio
+      to go through; the filebuf makes calls directly into the same
+      functions used to implement <code>fread</code>, <code>fwrite</code>,
+      and so forth, using internal data structures.  (And when I say
+      &quot;makes calls directly,&quot; I mean the function is literally
+      replaced by a jump into an internal function.  Fast but frightening.
+      *grin*)
+   </para>
+   <para>Also, the libio internal locks are used.  This requires pulling in
+      large chunks of glibc, such as a pthreads implementation, and is one
+      of the issues preventing widespread use of libio as the libstdc++
+      cstdio implementation.
+   </para>
+   <para>But we plan to make this work, at least as an option if not a future
+      default.  Platforms running a copy of glibc with a recent-enough
+      version will see calls from libstdc++ directly into the glibc already
+      installed.  For other platforms, a copy of the libio subsection will
+      be built and included in libstdc++.
+   </para>
+    </sect3>
+
+    <sect3 id="concurrency.io.alt" xreflabel="Alt">
+      <title>Alternatives</title>
+   <para>Don't forget that other cstdio implementations are possible.  You could
+      easily write one to perform your own forms of locking, to solve your
+      &quot;interesting&quot; problems.
+   </para>
+    </sect3>
+
+    </sect2>
+
+    <sect2 id="manual.intro.using.concurrency.containers" xreflabel="Containers">
+      <title>Containers</title>
+
+   <para>This section discusses issues surrounding the design of
+      multithreaded applications which use Standard C++ containers.
+      All information in this section is current as of the gcc 3.0
+      release and all later point releases.  Although earlier gcc
+      releases had a different approach to threading configuration and
+      proper compilation, the basic code design rules presented here
+      were similar.  For information on all other aspects of
+      multithreading as it relates to libstdc++, including details on
+      the proper compilation of threaded code (and compatibility between
+      threaded and non-threaded code), see Chapter 17.
+   </para>
+   <para>Two excellent pages to read when working with the Standard C++
+      containers and threads are
+      <ulink url="http://www.sgi.com/tech/stl/thread_safety.html">SGI's
+      http://www.sgi.com/tech/stl/thread_safety.html</ulink> and
+      <ulink url="http://www.sgi.com/tech/stl/Allocators.html">SGI's
+      http://www.sgi.com/tech/stl/Allocators.html</ulink>.
+   </para>
+   <para><emphasis>However, please ignore all discussions about the user-level
+      configuration of the lock implementation inside the STL
+      container-memory allocator on those pages.  For the sake of this
+      discussion, libstdc++ configures the SGI STL implementation,
+      not you.  This is quite different from how gcc pre-3.0 worked.
+      In particular, past advice was for people using g++ to
+      explicitly define _PTHREADS or other macros or port-specific
+      compilation options on the command line to get a thread-safe
+      STL.  This is no longer required for any port and should no
+      longer be done unless you really know what you are doing and
+      assume all responsibility.</emphasis>
+   </para>
+   <para>Since the container implementation of libstdc++ uses the SGI
+      code, we use the same definition of thread safety as SGI when
+      discussing design.  A key point that beginners may miss is the
+      fourth major paragraph of the first page mentioned above
+      (&quot;For most clients,&quot;...), which points out that
+      locking must nearly always be done outside the container, by
+      client code (that'd be you, not us).  There is a notable
+      exceptions to this rule.  Allocators called while a container or
+      element is constructed uses an internal lock obtained and
+      released solely within libstdc++ code (in fact, this is the
+      reason STL requires any knowledge of the thread configuration).
+   </para>
+   <para>For implementing a container which does its own locking, it is
+      trivial to provide a wrapper class which obtains the lock (as
+      SGI suggests), performs the container operation, and then
+      releases the lock.  This could be templatized <emphasis>to a certain
+      extent</emphasis>, on the underlying container and/or a locking
+      mechanism.  Trying to provide a catch-all general template
+      solution would probably be more trouble than it's worth.
+   </para>
+   <para>The STL implementation is currently configured to use the
+      high-speed caching memory allocator.  Some people like to
+      test and/or normally run threaded programs with a different
+      default.  For all details about how to globally override this
+      at application run-time see <ulink url="../ext/howto.html#3">here</ulink>.
+   </para> 
+   <para>There is a better way (not standardized yet):  It is possible to
+      force the malloc-based allocator on a per-case-basis for some
+      application code.  The library team generally believes that this
+      is a better way to tune an application for high-speed using this
+      implementation of the STL.  There is
+      <ulink url="../ext/howto.html#3">more information on allocators here</ulink>.
+   </para>
+
+    </sect2>
+  </sect1>
+
+  <sect1 id="manual.intro.using.exception_safety" xreflabel="Exception Safety">
+    <title>Exception Safety</title>
+    <para></para>
+  </sect1>  
+
+<!-- Section 0x : Debug -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	    parse="xml" href="debug.xml">
+</xi:include>
+
+</chapter>

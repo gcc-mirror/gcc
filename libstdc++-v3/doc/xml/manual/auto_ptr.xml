@@ -1,0 +1,133 @@
+<sect1 id="manual.util.memory.auto_ptr" xreflabel="auto_ptr">
+<?dbhtml filename="auto_ptr.html"?>
+ 
+<sect1info>
+  <keywordset>
+    <keyword>
+      ISO C++
+    </keyword>
+    <keyword>
+      auto_ptr
+    </keyword>
+  </keywordset>
+</sect1info>
+
+<title>auto_ptr</title>
+
+<sect2 id="auto_ptr.limitations" xreflabel="auto_ptr.limitations">
+<title>Limitations</title>
+
+   <para>Explaining all of the fun and delicious things that can
+   happen with misuse of the <classname>auto_ptr</classname> class
+   template (called <acronym>AP</acronym> here) would take some
+   time. Suffice it to say that the use of <acronym>AP</acronym>
+   safely in the presence of copying has some subtleties.
+   </para>
+   <para>
+     The AP class is a really
+      nifty idea for a smart pointer, but it is one of the dumbest of
+      all the smart pointers -- and that's fine.
+   </para>
+   <para>
+     AP is not meant to be a supersmart solution to all resource
+      leaks everywhere.  Neither is it meant to be an effective form
+      of garbage collection (although it can help, a little bit).
+      And it can <emphasis>not</emphasis>be used for arrays!
+   </para>
+   <para>
+     <acronym>AP</acronym> is meant to prevent nasty leaks in the
+     presence of exceptions.  That's <emphasis>all</emphasis>.  This
+     code is AP-friendly:
+   </para>
+   <programlisting>
+    // Not a recommend naming scheme, but good for web-based FAQs.
+    typedef std::auto_ptr&lt;MyClass&gt;  APMC;
+
+    extern function_taking_MyClass_pointer (MyClass*);
+    extern some_throwable_function ();
+
+    void func (int data)
+    {
+        APMC  ap (new MyClass(data));
+
+        some_throwable_function();   // this will throw an exception
+
+        function_taking_MyClass_pointer (ap.get());
+    }
+   </programlisting>
+   <para>When an exception gets thrown, the instance of MyClass that's
+      been created on the heap will be <function>delete</function>'d as the stack is
+      unwound past <function>func()</function>.
+   </para>
+   <para>Changing that code as follows is not <acronym>AP</acronym>-friendly:
+   </para>
+   <programlisting>
+        APMC  ap (new MyClass[22]);
+   </programlisting>
+   <para>You will get the same problems as you would without the use
+      of <acronym>AP</acronym>:
+   </para>
+   <programlisting>
+        char*  array = new char[10];       // array new...
+        ...
+        delete array;                      // ...but single-object delete
+   </programlisting>
+   <para>
+     AP cannot tell whether the pointer you've passed at creation points
+      to one or many things.  If it points to many things, you are about
+      to die.  AP is trivial to write, however, so you could write your
+      own <code>auto_array_ptr</code> for that situation (in fact, this has
+      been done many times; check the mailing lists, Usenet, Boost, etc).
+   </para>
+</sect2>
+ 
+<sect2 id="auto_ptr.using" xreflabel="auto_ptr.using">
+<title>Use in Containers</title>
+
+  <para>
+  </para>
+  <para>All of the <ulink url="../23_containers/howto.html">containers</ulink>
+      described in the standard library require their contained types
+      to have, among other things, a copy constructor like this:
+  </para>
+   <programlisting>
+    struct My_Type
+    {
+        My_Type (My_Type const&amp;);
+    };
+   </programlisting>
+   <para>
+     Note the const keyword; the object being copied shouldn't change.
+     The template class <code>auto_ptr</code> (called AP here) does not
+     meet this requirement.  Creating a new AP by copying an existing
+     one transfers ownership of the pointed-to object, which means that
+     the AP being copied must change, which in turn means that the
+     copy ctors of AP do not take const objects.
+   </para>
+   <para>
+     The resulting rule is simple: <emphasis>Never ever use a
+     container of auto_ptr objects</emphasis>. The standard says that
+     <quote>undefined</quote> behavior is the result, but it is
+     guaranteed to be messy.
+   </para>
+   <para>
+     To prevent you from doing this to yourself, the
+      <ulink url="../19_diagnostics/howto.html#3">concept checks</ulink> built
+      in to this implementation will issue an error if you try to
+      compile code like this:
+   </para>
+   <programlisting>
+    #include &lt;vector&gt;
+    #include &lt;memory&gt;
+    
+    void f()
+    {
+        std::vector&lt; std::auto_ptr&lt;int&gt; &gt;   vec_ap_int;
+    }
+   </programlisting>
+   <para>
+Should you try this with the checks enabled, you will see an error.
+   </para>
+</sect2>
+
+</sect1>

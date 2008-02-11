@@ -1,0 +1,659 @@
+<sect1 id="manual.util.memory.allocator" xreflabel="Allocator">
+<?dbhtml filename="allocator.html"?>
+ 
+<sect1info>
+  <keywordset>
+    <keyword>
+      ISO C++
+    </keyword>
+    <keyword>
+      allocator
+    </keyword>
+  </keywordset>
+</sect1info>
+
+<title>Allocators</title>
+
+<para>
+ Memory management for Standard Library entities is encapsulated in a
+ class template called <classname>allocator</classname>. The
+ <classname>allocator</classname> abstraction is used throughout the
+ library in <classname>string</classname>, container classes,
+ algorithnms, and parts of iostreams. This class, and base classes of
+ it, are the superset of available free store (<quote>heap</quote>)
+ management classes.
+</para>
+
+<sect2 id="allocator.req" xreflabel="allocator.req">
+<title>Requirements</title>
+
+  <para>
+    The C++ standard only gives a few directives in this area:
+  </para>
+   <itemizedlist>
+     <listitem>
+      <para>
+       When you add elements to a container, and the container must
+       allocate more memory to hold them, the container makes the
+       request via its <type>Allocator</type> template
+       parameter, which is usually aliased to
+       <type>allocator_type</type>.  This includes adding chars
+       to the string class, which acts as a regular STL container in
+       this respect.
+      </para>
+     </listitem>
+     <listitem>
+       <para>
+       The default <type>Allocator</type> argument of every
+       container-of-T is <classname>allocator&lt;T&gt;</classname>.
+       </para>
+     </listitem>
+     <listitem>
+       <para>
+       The interface of the <classname>allocator&lt;T&gt;</classname> class is
+         extremely simple.  It has about 20 public declarations (nested
+         typedefs, member functions, etc), but the two which concern us most
+         are:
+       </para>
+       <programlisting>
+	 T*    allocate   (size_type n, const void* hint = 0);
+	 void  deallocate (T* p, size_type n);
+       </programlisting>
+
+       <para>
+	 The <varname>n</varname> arguments in both those
+	 functions is a <emphasis>count</emphasis> of the number of
+	 <type>T</type>'s to allocate space for, <emphasis>not their
+	 total size</emphasis>.
+	 (This is a simplification; the real signatures use nested typedefs.)  
+       </para>
+     </listitem>
+     <listitem>
+       <para>
+	 The storage is obtained by calling <function>::operator
+	 new</function>, but it is unspecified when or how
+	 often this function is called.  The use of the 
+	 <varname>hint</varname> is unspecified, but intended as an
+	 aid to locality if an implementation so
+	 desires. <constant>[20.4.1.1]/6</constant>
+       </para>
+      </listitem>
+   </itemizedlist>
+
+   <para> 
+     Complete details cam be found in the C++ standard, look in
+     <constant>[20.4 Memory]</constant>.
+   </para>
+
+</sect2>
+
+<sect2 id="allocator.design_issues" xreflabel="allocator.design_issues">
+<title>Design Issues</title>
+
+  <para>
+    The easiest way of fulfilling the requirements is to call
+    <function>operator new</function> each time a container needs
+    memory, and to call <function>operator delete</function> each time
+    the container releases memory. This method may be <ulink
+    url="http://gcc.gnu.org/ml/libstdc++/2001-05/msg00105.html">slower</ulink>
+    than caching the allocations and re-using previously-allocated
+    memory, but has the advantage of working correctly across a wide
+    variety of hardware and operating systems, including large
+    clusters. The <classname>__gnu_cxx::new_allocator</classname>
+    implements the simple operator new and operator delete semantics,
+    while <classname>__gnu_cxx::malloc_allocator</classname>
+    implements much the same thing, only with the C language functions
+    <function>std::malloc</function> and <function>free</function>.
+  </para>
+
+  <para> 
+    Another approach is to use intelligence within the allocator
+    class to cache allocations. This extra machinery can take a variety
+    of forms: a bitmap index, an index into an exponentially increasing
+    power-of-two-sized buckets, or simpler fixed-size pooling cache.
+    The cache is shared among all the containers in the program: when
+    your program's <classname>std::vector&lt;int&gt;</classname> gets
+  cut in half and frees a bunch of its storage, that memory can be
+  reused by the private
+  <classname>std::list&lt;WonkyWidget&gt;</classname> brought in from
+  a KDE library that you linked against.  And operators
+  <function>new</function> and <function>delete</function> are not
+  always called to pass the memory on, either, which is a speed
+  bonus. Examples of allocators that use these techniques are
+  <classname>__gnu_cxx::bitmap_allocator</classname>,
+  <classname>__gnu_cxx::pool_allocator</classname>, and
+  <classname>__gnu_cxx::__mt_alloc</classname>.
+  </para>
+
+  <para>
+    Depending on the implementation techniques used, the underlying
+    operating system, and compilation environment, scaling caching
+    allocators can be tricky. In particular, order-of-destruction and
+    order-of-creation for memory pools may be difficult to pin down
+    with certainty, which may create problems when used with plugins
+    or loading and unloading shared objects in memory. As such, using
+    caching allocators on systems that do not support
+    <function>abi::__cxa_atexit</function> is not recommended.
+  </para>
+
+</sect2>
+
+<sect2 id="allocator.impl" xreflabel="allocator.impl">
+<title>Implementation</title>
+
+  <sect3>
+    <title>Interface Design</title>
+
+   <para>
+     The only allocator interface that
+     is support is the standard C++ interface. As such, all STL
+     containers have been adjusted, and all external allocators have
+     been modified to support this change.   
+   </para>
+
+   <para> 
+     The class <classname>allocator</classname> just has typedef,
+   constructor, and rebind members. It inherits from one of the
+   high-speed extension allocators, covered below. Thus, all
+   allocation and deallocation depends on the base class.
+   </para>
+
+   <para> 
+     The base class that <classname>allocator</classname> is derived from
+     may not be user-configurable.
+</para>
+
+  </sect3>
+
+  <sect3>
+    <title>Selecting Default Allocation Policy</title>
+
+   <para> 
+     It's difficult to pick an allocation strategy that will provide
+   maximum utility, without excessively penalizing some behavior. In
+   fact, it's difficult just deciding which typical actions to measure
+   for speed.
+   </para>
+
+   <para> 
+     Three synthetic benchmarks have been created that provide data
+     that is used to compare different C++ allocators. These tests are:
+   </para>
+
+   <orderedlist>
+     <listitem>
+       <para>
+       Insertion. 
+       </para>
+       <para>
+       Over multiple iterations, various STL container
+     objects have elements inserted to some maximum amount. A variety
+     of allocators are tested.  
+     Test source for <ulink url="http://gcc.gnu.org/viewcvs/trunk/libstdc%2B%2B-v3/testsuite/performance/23_containers/insert/sequence.cc?view=markup">sequence</ulink>
+     and <ulink url="http://gcc.gnu.org/viewcvs/trunk/libstdc%2B%2B-v3/testsuite/performance/23_containers/insert/associative.cc?view=markup">associative</ulink>
+     containers.
+       </para>
+
+     </listitem>
+
+     <listitem>
+       <para>
+       Insertion and erasure in a multi-threaded environment.
+       </para>
+       <para>
+       This test shows the ability of the allocator to reclaim memory
+     on a pre-thread basis, as well as measuring thread contention
+     for memory resources. 
+     Test source 
+    <ulink url="http://gcc.gnu.org/viewcvs/trunk/libstdc%2B%2B-v3/testsuite/performance/23_containers/insert_erase/associative.cc?view=markup">here</ulink>.
+       </para>
+     </listitem>
+
+     <listitem>
+       <para>
+	 A threaded producer/consumer model.
+       </para>
+       <para>
+       Test source for
+     <ulink url="http://gcc.gnu.org/viewcvs/trunk/libstdc%2B%2B-v3/testsuite/performance/23_containers/producer_consumer/sequence.cc?view=markup">sequence</ulink>
+     and 
+     <ulink url="http://gcc.gnu.org/viewcvs/trunk/libstdc%2B%2B-v3/testsuite/performance/23_containers/producer_consumer/associative.cc?view=markup">associative</ulink>
+     containers.
+     </para>
+     </listitem>
+   </orderedlist>
+
+   <para>
+     The current default choice for
+     <classname>allocator</classname> is
+     <classname>__gnu_cxx::new_allocator</classname>.
+   </para>
+
+  </sect3>
+
+  <sect3>
+    <title>Disabling Memory Caching</title>
+
+    <para> 
+      In use, <classname>allocator</classname> may allocate and
+      deallocate using implementation-specified strategies and
+      heuristics. Because of this, every call to an allocator object's
+      <function>allocate</function> member function may not actually
+      call the global operator new. This situation is also duplicated
+      for calls to the <function>deallocate</function> member
+      function.
+    </para>
+
+   <para> 
+     This can be confusing. 
+   </para>
+
+   <para> 
+     In particular, this can make debugging memory errors more
+     difficult, especially when using third party tools like valgrind or
+     debug versions of <function>new</function>.
+   </para>
+
+   <para> 
+     There are various ways to solve this problem. One would be to use
+     a custom allocator that just called operators
+     <function>new</function> and <function>delete</function>
+     directly, for every allocation. (See
+     <filename>include/ext/new_allocator.h</filename>, for instance.)
+     However, that option would involve changing source code to use
+     the a non-default allocator. Another option is to force the
+     default allocator to remove caching and pools, and to directly
+     allocate with every call of <function>allocate</function> and
+     directly deallocate with every call of
+     <function>deallocate</function>, regardless of efficiency. As it
+     turns out, this last option is also available.
+   </para>
+
+
+   <para>
+     To globally disable memory caching within the library for the
+     default allocator, merely set
+     <constant>GLIBCXX_FORCE_NEW</constant> (with any value) in the
+     system's environment before running the program. If your program
+     crashes with <constant>GLIBCXX_FORCE_NEW</constant> in the
+     environment, it likely means that you linked against objects
+     built against the older library (objects which might still using the
+     cached allocations...).
+  </para>
+
+  </sect3>
+
+</sect2>
+
+<sect2 id="allocator.using" xreflabel="allocator.using">
+<title>Using a Specific Allocator</title>
+
+   <para>
+     You can specify different memory management schemes on a
+     per-container basis, by overriding the default
+     <type>Allocator</type> template parameter.  For example, an easy
+      (but non-portable) method of specifying that only <function>malloc</function> or <function>free</function>
+      should be used instead of the default node allocator is:
+   </para>
+   <programlisting>
+    std::list &lt;int, __gnu_cxx::malloc_allocator&lt;int&gt; &gt;  malloc_list;</programlisting>
+    <para>
+      Likewise, a debugging form of whichever allocator is currently in use:
+    </para>
+      <programlisting>
+    std::deque &lt;int, __gnu_cxx::debug_allocator&lt;std::allocator&lt;int&gt; &gt; &gt;  debug_deque;
+      </programlisting>
+</sect2>
+
+<sect2 id="allocator.custom" xreflabel="allocator.custom">
+<title>Custom Allocators</title>
+
+  <para> 
+    Writing a portable C++ allocator would dictate that the interface
+    would look much like the one specified for
+    <classname>allocator</classname>. Additional member functions, but
+    not subtractions, would be permissible.
+  </para>
+
+   <para> 
+     Probably the best place to start would be to copy one of the
+   extension allocators: say a simple one like 
+   <classname>new_allocator</classname>.
+   </para>
+
+</sect2>
+
+<sect2 id="allocator.ext" xreflabel="allocator.ext">
+<title>Extension Allocators</title>
+
+  <para> 
+    Several other allocators are provided as part of this
+    implementation.  The location of the extension allocators and their
+    names have changed, but in all cases, functionality is
+    equivalent. Starting with gcc-3.4, all extension allocators are
+    standard style. Before this point, SGI style was the norm. Because of
+    this, the number of template arguments also changed. Here's a simple
+    chart to track the changes.
+  </para>
+
+  <para>
+    More details on each of these extension allocators follows.
+  </para>
+   <orderedlist>
+     <listitem>
+       <para>
+       <classname>new_allocator</classname>
+       </para>
+       <para>
+	 Simply wraps <function>::operator new</function>
+	 and <function>::operator delete</function>.
+       </para>
+     </listitem>
+     <listitem>
+       <para>
+       <classname>malloc_allocator</classname>
+       </para>
+       <para>
+	 Simply wraps <function>malloc</function> and
+	 <function>free</function>. There is also a hook for an
+	 out-of-memory handler (for
+	 <function>new</function>/<function>delete</function> this is
+	 taken care of elsewhere).
+       </para>
+     </listitem>
+     <listitem>
+       <para>
+       <classname>array_allocator</classname>
+       </para>
+       <para>
+	 Allows allocations of known and fixed sizes using existing
+	 global or external storage allocated via construction of
+	 <classname>std::tr1::array</classname> objects. By using this
+	 allocator, fixed size containers (including
+	 <classname>std::string</classname>) can be used without
+	 instances calling <function>::operator new</function> and
+	 <function>::operator delete</function>. This capability
+	 allows the use of STL abstractions without runtime
+	 complications or overhead, even in situations such as program
+	 startup. For usage examples, please consult the testsuite.
+       </para>
+     </listitem>
+     <listitem>
+       <para>
+       <classname>debug_allocator</classname>
+       </para>
+       <para> 
+	 A wrapper around an arbitrary allocator A.  It passes on
+	 slightly increased size requests to A, and uses the extra
+	 memory to store size information.  When a pointer is passed
+	 to <function>deallocate()</function>, the stored size is
+	 checked, and <function>assert()</function> is used to
+	 guarantee they match.
+       </para>
+     </listitem>
+      <listitem>
+	<para>
+	<classname>throw_allocator</classname>
+	</para>
+	<para> 
+	  Includes memory tracking and marking abilities as well as hooks for
+	  throwing exceptinos at configurable intervals (including random,
+	  all, none). 
+	</para>
+      </listitem>
+     <listitem>
+       <para>
+       <classname>__pool_alloc</classname>
+       </para>
+       <para> 
+	 A high-performance, single pool allocator.  The reusable
+	 memory is shared among identical instantiations of this type.
+	 It calls through <function>::operator new</function> to
+	 obtain new memory when its lists run out.  If a client
+	 container requests a block larger than a certain threshold
+	 size, then the pool is bypassed, and the allocate/deallocate
+	 request is passed to <function>::operator new</function>
+	 directly.
+       </para>
+
+       <para> 
+	 Older versions of this class take a boolean template
+	 parameter, called <varname>thr</varname>, and an integer template
+	 parameter, called <varname>inst</varname>.
+       </para>
+
+       <para>
+	 The <varname>inst</varname> number is used to track additional memory
+      pools.  The point of the number is to allow multiple
+      instantiations of the classes without changing the semantics at
+      all.  All three of
+       </para>
+
+   <programlisting>
+    typedef  __pool_alloc&lt;true,0&gt;    normal;
+    typedef  __pool_alloc&lt;true,1&gt;    private;
+    typedef  __pool_alloc&lt;true,42&gt;   also_private;
+   </programlisting>
+   <para>
+     behave exactly the same way.  However, the memory pool for each type
+      (and remember that different instantiations result in different types)
+      remains separate.
+   </para>
+   <para>
+     The library uses <emphasis>0</emphasis> in all its instantiations.  If you
+      wish to keep separate free lists for a particular purpose, use a
+      different number.
+   </para>
+   <para>The <varname>thr</varname> boolean determines whether the
+   pool should be manipulated atomically or not.  When
+   <varname>thr</varname> = <constant>true</constant>, the allocator
+   is is threadsafe, while <varname>thr</varname> =
+   <constant>false</constant>, and is slightly faster but unsafe for
+   multiple threads.
+   </para>
+
+   <para>
+     For thread-enabled configurations, the pool is locked with a
+     single big lock. In some situations, this implementation detail
+     may result in severe performance degredation.
+   </para>
+
+   <para>
+     (Note that the GCC thread abstraction layer allows us to provide
+     safe zero-overhead stubs for the threading routines, if threads
+     were disabled at configuration time.)
+   </para>
+     </listitem>
+
+     <listitem>
+       <para>
+       <classname>__mt_alloc</classname>
+       </para>
+       <para>
+	 A high-performance fixed-size allocator with
+	 exponentially-increasing allocations. It has its own
+	 documentation, found <ulink
+	 url="../ext/mt_allocator.html">here</ulink>.
+       </para>
+     </listitem>
+
+     <listitem>
+       <para>
+       <classname>bitmap_allocator</classname>
+       </para>
+       <para>
+	 A high-performance allocator that uses a bit-map to keep track
+	 of the used and unused memory locations. It has its own
+	 documentation, found <ulink 
+	 url="../ext/ballocator_doc.html">here</ulink>.
+       </para>
+     </listitem>
+   </orderedlist>
+</sect2>
+
+
+<bibliography id="allocator.biblio" xreflabel="allocator.biblio">
+<title>Bibliography</title>
+
+  <biblioentry>
+    <title>
+    ISO/IEC 14882:1998 Programming languages - C++  
+    </title>
+
+    <abbrev>
+      isoc++_1998
+    </abbrev>
+    <pagenums>20.4 Memory</pagenums>
+  </biblioentry> 
+  
+  <biblioentry>
+    <title>The Standard Librarian: What Are Allocators Good
+    </title>
+
+    <abbrev>
+      austernm
+    </abbrev>
+
+    <author>
+      <firstname>Matt</firstname>
+      <surname>Austern</surname>
+    </author>
+
+    <publisher>
+      <publishername>
+	C/C++ Users Journal	
+      </publishername>
+    </publisher>
+
+    <biblioid>
+      <ulink url="http://www.cuj.com/documents/s=8000/cujcexp1812austern/">
+      </ulink>
+    </biblioid>
+  </biblioentry> 
+
+  <biblioentry>
+    <title>The Hoard Memory Allocator</title>
+
+    <abbrev>
+      emeryb
+    </abbrev>
+
+    <author>
+      <firstname>Emery</firstname>
+      <surname>Berger</surname>
+    </author>
+
+    <biblioid>
+      <ulink url="http://www.cs.umass.edu/~emery/hoard/">
+      </ulink>
+    </biblioid>
+  </biblioentry> 
+
+  <biblioentry>
+    <title>Reconsidering Custom Memory Allocation</title>
+
+    <abbrev>
+      bergerzorn
+    </abbrev>
+
+    <author>
+      <firstname>Emery</firstname>
+      <surname>Berger</surname>
+    </author>
+    <author>
+      <firstname>Ben</firstname>
+      <surname>Zorn</surname>
+    </author>
+    <author>
+      <firstname>Kathryn</firstname>
+      <surname>McKinley</surname>
+    </author>
+
+    <copyright>
+      <year>2002</year>
+      <holder>OOPSLA</holder>
+    </copyright>
+
+    <biblioid>
+      <ulink url="http://www.cs.umass.edu/~emery/pubs/berger-oopsla2002.pdf">
+      </ulink>
+    </biblioid>
+  </biblioentry> 
+
+  
+  <biblioentry>
+    <title>Allocator Types</title>
+
+    <abbrev>
+      kreftlanger
+    </abbrev>
+
+    <author>
+      <firstname>Klaus</firstname>
+      <surname>Kreft</surname>
+    </author>
+    <author>
+      <firstname>Angelika</firstname>
+      <surname>Langer</surname>
+    </author>
+
+    <publisher>
+      <publishername>
+	C/C++ Users Journal	
+      </publishername>
+    </publisher>
+
+    <biblioid>
+      <ulink url="http://www.langer.camelot.de/Articles/C++Report/Allocators/Allocators.html">
+      </ulink>
+    </biblioid>
+  </biblioentry> 
+  
+  <biblioentry>
+    <title>The C++ Programming Language</title>
+
+    <abbrev>
+      tcpl
+    </abbrev>
+
+    <author>
+      <firstname>Bjarne</firstname>
+      <surname>Stroustrup</surname>
+    </author>
+    <copyright>
+      <year>2000</year>
+      <holder></holder>
+    </copyright>
+    <pagenums>19.4 Allocators</pagenums>
+
+    <publisher>
+      <publishername>
+	Addison Wesley
+      </publishername>
+    </publisher>
+  </biblioentry> 
+  
+  <biblioentry>
+    <title>Yalloc: A Recycling C++ Allocator</title>
+
+    <abbrev>
+      yenf
+    </abbrev>
+
+    <author>
+      <firstname>Felix</firstname>
+      <surname>Yen</surname>
+    </author>
+    <copyright>
+      <year></year>
+      <holder></holder>
+    </copyright>
+
+    <biblioid>
+      <ulink url="http://home.earthlink.net/~brimar/yalloc/">
+      </ulink>
+    </biblioid>
+  </biblioentry> 
+</bibliography>
+
+</sect1>

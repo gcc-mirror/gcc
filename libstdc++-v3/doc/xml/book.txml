@@ -1,0 +1,33 @@
+<?xml version='1.0'?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+[ ]>
+
+<book id="api" xreflabel="Source Level Documentation">
+<title>Source Level Documentation</title>
+ 
+<bookinfo>
+  <copyright>
+    <year>2007</year>
+    <holder>
+      <ulink url="fsf.org">FSF
+      </ulink>
+    </holder>
+  </copyright>
+  <legalnotice>
+    <para>
+      <ulink url="17_intro/license.html">License 
+      </ulink>
+    </para>
+  </legalnotice>
+</bookinfo>
+
+<part>
+<title></title>
+  <chapter>
+    <title></title>
+    <para></para>
+  </chapter>
+</part>
+
+</book>

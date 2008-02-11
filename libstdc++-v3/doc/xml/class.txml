@@ -1,0 +1,154 @@
+<sect1 id="manual.util.memory.allocator" xreflabel="allocator">
+<?dbhtml filename="allocator.html"?>
+ 
+<sect1info>
+  <keywordset>
+    <keyword>
+      ISO C++
+    </keyword>
+    <keyword>
+      allocator
+    </keyword>
+  </keywordset>
+</sect1info>
+
+<title>allocator</title>
+
+<para>
+</para>
+
+<sect2 id="allocator.req" xreflabel="allocator.req">
+<title>Requirements</title>
+
+  <para>
+  </para>
+  <itemizedlist>
+    <listitem>
+      <para>
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+      </para>
+    </listitem>
+  </itemizedlist>
+
+  <para> 
+  </para>
+</sect2>
+
+<sect2 id="allocator.design_issues" xreflabel="allocator.design_issues">
+<title>Design Issues</title>
+
+  <para>
+  </para>
+
+  <para> 
+  </para>
+</sect2>
+
+<sect2 id="allocator.impl" xreflabel="allocator.impl">
+<title>Implementation</title>
+
+  <sect3>
+    <title>Interface Design</title>
+
+    <para>
+    </para>
+    
+    <para> 
+    </para>
+  </sect3>
+
+  <sect3>
+    <title>Selecting Default Allocation Strategy</title>
+
+    <para> 
+    </para>
+
+   <orderedlist>
+     <listitem>
+     </listitem>
+
+     <listitem>
+     </listitem>
+
+     <listitem>
+     </listitem>
+   </orderedlist>
+  </sect3>
+
+  <sect3>
+    <title>Disabling Memory Caching</title>
+
+    <para> 
+    </para>
+
+   <para> 
+   </para>
+  </sect3>
+</sect2>
+
+<sect2 id="allocator.using" xreflabel="allocator.using">
+<title>Using</title>
+
+   <para>
+   </para>
+</sect2>
+
+<sect2 id="allocator.custom" xreflabel="allocator.custom">
+<title>Custom Allocators</title>
+
+  <para> 
+  </para>
+
+   <para> 
+   </para>
+</sect2>
+
+<bibliography id="allocator.biblio" xreflabel="allocator.biblio">
+<title>Bibliography</title>
+
+<!-- 
+  <biblioentry>
+    <abbrev>
+    </abbrev>
+
+    <title>
+    </title>
+
+    <editor>
+      <firstname></firstname>
+      <surname></surname>
+    </editor>
+
+    <author>
+      <surname></surname>
+      <firstname></firstname>
+    </author>
+
+    <copyright>
+      <year></year>
+      <holder></holder>
+    </copyright>
+    <pagenums></pagenums>
+
+    <publisher>
+      <publishername>
+      </publishername>
+    </publisher>
+
+    <biblioid>
+      <ulink url="">
+      </ulink>
+    </biblioid>
+
+  </biblioentry> 
+-->
+
+  <biblioentry>
+  </biblioentry>
+
+</bibliography>
+
+</sect1>

@@ -3,7 +3,7 @@
 # Runs doxygen and massages the output files.
 # Copyright (C) 2001, 2002, 2003, 2004, 2008 Free Software Foundation, Inc.
 #
-# Synopsis:  run_doxygen --mode=[html|man] --host_alias=<alias> \
+# Synopsis:  run_doxygen --mode=[html|man|xml] --host_alias=<alias> \
 #                        v3srcdir  v3builddir
 #
 # Originally hacked together by Phil Edwards <pme@gcc.gnu.org>
@@ -49,6 +49,7 @@ Usage:  run_doxygen --mode=MODE --host_alias=BUILD_ALIAS [<options>]
       MODE is one of:
           html           Generate user-level HTML library documentation.
           man            Generate user-level man pages.
+          xml            Generate user-level XML pages.
 
       BUILD_ALIAS is the GCC build alias set at configure time.
 
@@ -99,7 +100,8 @@ host_alias=unset
 srcdir=unset
 outdir=unset
 do_html=false
-do_man=false
+do_man=false 
+do_xml=false 
 enabled_sections=
 generate_tagfile=
 DATEtext=`date '+%Y-%m-%d'`
@@ -125,6 +127,10 @@ case x"$mode" in
     xman)
       do_man=true
       ;;
+    xxml)
+      do_xml=true
+      enabled_sections=maint
+      ;;
     *)
       echo run_doxygen error:  $mode is an invalid mode 1>&2
       exit 1 ;;
@@ -139,6 +145,10 @@ if $do_man; then
     chmod -R u+w $outdir/man/man3/ext
 fi
 
+if $do_xml; then
+    mkdir -p $outdir/xml
+fi
+
 (
   set -e
   cd $builddir
@@ -150,6 +160,7 @@ fi
       -e "s=@enabled_sections@=${enabled_sections}=" \
       -e "s=@do_html@=${do_html}=" \
       -e "s=@do_man@=${do_man}=" \
+     -e "s=@do_xml@=${do_xml}=" \
       -e "s=@generate_tagfile@=${generate_tagfile}=" \
       ${srcdir}/doc/doxygen/user.cfg.in > ${outdir}/${mode}.cfg
   echo :: NOTE that this may take some time...
@@ -179,7 +190,8 @@ if $do_html; then
   mv annstrip.html annotated.html
 
   # Work around a bug in doxygen 1.3.
-  for f in class*html struct*html; do
+#  for f in class*html struct*html; do
+  for f in class*html; do
       sed '1,10s!^<title> Template!<title>Template !' $f > TEMP
       mv TEMP $f
   done
