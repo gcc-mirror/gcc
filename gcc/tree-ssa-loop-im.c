@@ -685,7 +685,12 @@ rewrite_bittest (block_stmt_iterator *bsi)
       stmt2 = build_gimple_modify_stmt (var, t);
       name = make_ssa_name (var, stmt2);
       GIMPLE_STMT_OPERAND (stmt2, 0) = name;
+
+      /* Replace the SSA_NAME we compare against zero.  Adjust
+	 the type of zero accordingly.  */
       SET_USE (use, name);
+      TREE_OPERAND (COND_EXPR_COND (use_stmt), 1)
+	= build_int_cst_type (TREE_TYPE (name), 0);
 
       bsi_insert_before (bsi, stmt1, BSI_SAME_STMT);
       bsi_replace (bsi, stmt2, true);
