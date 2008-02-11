@@ -1,10 +1,3 @@
-2008-02-10  Danny Smith  <dannysmith@users.sourceforge.net>
-
-	PR gcc/35063
-	* gthr-win32.h (__gthread_mutex_destroy_function): New function
-	to CloseHandle after unlocking to prevent accumulation of handle
-	count. 
-
 2008-02-02  Hans-Peter Nilsson  <hp@axis.com>
 
 	* configure.ac: Enable fortran for cris-*-elf and crisv32-*-elf.
@@ -17,11 +10,11 @@
 
 2008-01-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
-        PR bootstrap/34922
-        * configure.ac (PARSE_ARGS): Push suitable setting of
-        ac_subdirs_all, for `./configure --help=recursive'.
-        Handle `+' in generic toplevel directory disabling.
-        * configure: Regenerate.
+	PR bootstrap/34922
+	* configure.ac (PARSE_ARGS): Push suitable setting of
+	ac_subdirs_all, for `./configure --help=recursive'.
+	Handle `+' in generic toplevel directory disabling.
+	* configure: Regenerate.
 
 2008-01-28  Nick Clifton  <nickc@redhat.com>
 
@@ -281,13 +274,13 @@
 
 	* config.sub, config.guess: Update from upstream sources.
 
-2007-08-22  Bud Davis   <jmdavis@link.com>
+2007-08-22  Bud Davis  <jmdavis@link.com>
 
 	* MAINTAINERS (Write After Approval): Added myself.
 	* MAINTAINERS (Reviewers): Removed myself.
 
 2007-08-18  Paul Brook  <paul@codesourcery.com>
-            Joseph Myers  <joseph@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
 
 	* Makefile.tpl (DEBUG_PREFIX_CFLAGS_FOR_TARGET): New.
 	(CFLAGS_FOR_TARGET, CXXFLAGS_FOR_TARGET): Include it.
@@ -676,9 +669,9 @@
 	* configure: Rebuilt.
 
 2007-02-17  Mark Mitchell  <mark@codesourcery.com>
-            Nathan Sidwell  <nathan@codesourcery.com>
-            Vladimir Prus  <vladimir@codesourcery.com
-            Joseph Myers  <joseph@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+	    Vladimir Prus  <vladimir@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac (TOPLEVEL_CONFIGURE_ARGUMENTS): Fix quoting.
 	* configure: Regenerate.

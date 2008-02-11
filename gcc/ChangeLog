@@ -1,6 +1,6 @@
 2008-02-11  Kai Tietz  <kai.tietz@onevision.com>
 
-	* config/i386/cygwin.asm: (__alloca): Correct calling 
+	* config/i386/cygwin.asm: (__alloca): Correct calling
 	convention and alignment.
 	(__chkstk): Force 8 byte stack alignment.
 
@@ -10,6 +10,13 @@
 	PR tree-optimization/33992
 	* tree-ssa-loop-im.c (rewrite_bittest): Fixup the type of
 	the zero we compare against.
+
+2008-02-10  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR libfortran/35063
+	* gthr-win32.h (__gthread_mutex_destroy_function): New function
+	to CloseHandle after unlocking to prevent accumulation of handle
+	count.
 
 2008-02-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
