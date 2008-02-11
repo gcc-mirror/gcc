@@ -72,15 +72,44 @@ Ldone:
 	pushl	%eax
 	ret
 #else
-/* __alloca is a normal function call, which uses %rcx as the argument.  */
+/* __alloca is a normal function call, which uses %rcx as the argument.  And stack space
+   for the argument is saved.  */
 __alloca:
-	movq	%rcx, %rax
-	/* FALLTHRU */
+ 	movq	%rcx, %rax
+	addq	$0x7, %rax
+	andq	$0xfffffffffffffff8, %rax
+	popq	%rcx		/* pop return address */
+	popq	%r10		/* Pop the reserved stack space.  */
+	movq	%rsp, %r10	/* get sp */
+	cmpq	$0x1000, %rax	/* > 4k ?*/
+	jb	Ldone_alloca
+
+Lprobe_alloca:
+	subq	$0x1000, %r10  		/* yes, move pointer down 4k*/
+	orq	$0x0, (%r10)   		/* probe there */
+	subq	$0x1000, %rax  	 	/* decrement count */
+	cmpq	$0x1000, %rax
+	ja	Lprobe_alloca         	 	/* and do it again */
+
+Ldone_alloca:
+	subq	%rax, %r10
+	orq	$0x0, (%r10)	/* less than 4k, just peek here */
+	movq	%r10, %rax
+	subq	$0x8, %r10	/* Reserve argument stack space.  */
+	movq	%r10, %rsp	/* decrement stack */
+
+	/* Push the return value back.  Doing this instead of just
+	   jumping to %rcx preserves the cached call-return stack
+	   used by most modern processors.  */
+	pushq	%rcx
+	ret
 
 /* ___chkstk is a *special* function call, which uses %rax as the argument.
    We avoid clobbering the 4 integer argument registers, %rcx, %rdx, 
    %r8 and %r9, which leaves us with %rax, %r10, and %r11 to use.  */
 ___chkstk:
+	addq	$0x7, %rax	/* Make sure stack is on alignment of 8.  */
+	andq	$0xfffffffffffffff8, %rax
 	popq	%r11		/* pop return address */
 	movq	%rsp, %r10	/* get sp */
 	cmpq	$0x1000, %rax	/* > 4k ?*/
