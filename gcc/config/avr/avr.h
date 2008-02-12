@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    for ATMEL AVR at90s8515, ATmega103/103L, ATmega603/603L microcontrollers.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
-   Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 
+   2008 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (denisc@overta.ru)
 
 This file is part of GCC.
@@ -99,6 +99,7 @@ extern GTY(()) section *progmem_section;
 #define AVR_HAVE_MUL (avr_have_mul_p)
 #define AVR_HAVE_MOVW (avr_have_movw_lpmx_p)
 #define AVR_HAVE_LPMX (avr_have_movw_lpmx_p)
+#define AVR_HAVE_RAMPZ (avr_current_arch->have_elpm)
 
 #define AVR_2_BYTE_PC 1
 #define AVR_3_BYTE_PC 0

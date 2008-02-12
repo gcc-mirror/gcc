@@ -586,6 +586,7 @@ void
 expand_prologue (void)
 {
   int live_seq;
+  HARD_REG_SET set;
   int minimize;
   HOST_WIDE_INT size = get_frame_size();
   /* Define templates for push instructions.  */
@@ -609,6 +610,7 @@ expand_prologue (void)
       return;
     }
 
+  avr_regs_to_save (&set);
   live_seq = sequent_regs_live ();
   minimize = (TARGET_CALL_PROLOGUES
 	      && !cfun->machine->is_interrupt
@@ -639,7 +641,18 @@ expand_prologue (void)
       RTX_FRAME_RELATED_P (insn) = 1;
       insn = emit_move_insn (pushbyte, tmp_reg_rtx);
       RTX_FRAME_RELATED_P (insn) = 1;
-      
+
+      /* Push RAMPZ.  */
+      if(AVR_HAVE_RAMPZ 
+         && (TEST_HARD_REG_BIT (set, REG_Z) && TEST_HARD_REG_BIT (set, REG_Z + 1)))
+        {
+          insn = emit_move_insn (tmp_reg_rtx, 
+                                 gen_rtx_MEM (QImode, GEN_INT (RAMPZ_ADDR)));
+          RTX_FRAME_RELATED_P (insn) = 1;
+          insn = emit_move_insn (pushbyte, tmp_reg_rtx);
+          RTX_FRAME_RELATED_P (insn) = 1;
+        }
+	
       /* Clear zero reg.  */
       insn = emit_move_insn (zero_reg_rtx, const0_rtx);
       RTX_FRAME_RELATED_P (insn) = 1;
@@ -660,8 +673,6 @@ expand_prologue (void)
     }
   else
     {
-      HARD_REG_SET set;
-      avr_regs_to_save (&set);
       int reg;
       for (reg = 0; reg < 32; ++reg)
         {
@@ -811,6 +822,7 @@ expand_epilogue (void)
 {
   int reg;
   int live_seq;
+  HARD_REG_SET set;      
   int minimize;
   HOST_WIDE_INT size = get_frame_size();
   
@@ -821,6 +833,7 @@ expand_epilogue (void)
       return;
     }
 
+  avr_regs_to_save (&set);
   live_seq = sequent_regs_live ();
   minimize = (TARGET_CALL_PROLOGUES
 	      && !cfun->machine->is_interrupt
@@ -895,8 +908,6 @@ expand_epilogue (void)
 	    }
 	}
       /* Restore used registers.  */
-      HARD_REG_SET set;      
-      avr_regs_to_save (&set);
       for (reg = 31; reg >= 0; --reg)
         {
           if (TEST_HARD_REG_BIT (set, reg))
@@ -904,6 +915,14 @@ expand_epilogue (void)
         }
       if (cfun->machine->is_interrupt || cfun->machine->is_signal)
         {
+          /* Restore RAMPZ using tmp reg as scratch.  */
+	  if(AVR_HAVE_RAMPZ 
+             && (TEST_HARD_REG_BIT (set, REG_Z) && TEST_HARD_REG_BIT (set, REG_Z + 1)))
+            {
+	      emit_insn (gen_popqi (tmp_reg_rtx));
+	      emit_move_insn (gen_rtx_MEM(QImode, GEN_INT(RAMPZ_ADDR)), 
+			      tmp_reg_rtx);
+	    }
 
           /* Restore SREG using tmp reg as scratch.  */
           emit_insn (gen_popqi (tmp_reg_rtx));
