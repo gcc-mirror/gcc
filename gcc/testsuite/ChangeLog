@@ -1,5 +1,17 @@
 2008-02-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* obj-c++.dg/bitfield-1.mm: Expect failures.
+	* obj-c++.dg/bitfield-4.mm: Likewise.
+	* obj-c++.dg/cxx-ivars-2.mm: Likewise.
+	* obj-c++.dg/encode-8.mm: Likewise.
+	* obj-c++.dg/isa-field-1.mm: Likewise.
+	* obj-c++.dg/layout-1.mm: Likewise.
+	* obj-c++.dg/lookup-2.mm: Likewise.
+	* obj-c++.dg/try-catch-2.mm: Likewise.
+	* obj-c++.dg/try-catch-9.mm: Likewise.
+
+2008-02-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	PR objc++/34193
 	* obj-c++.dg/gnu-runtime-2.mm: Fix signature of function main().
 

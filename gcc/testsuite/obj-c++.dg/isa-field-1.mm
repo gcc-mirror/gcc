@@ -1,5 +1,6 @@
 /* Ensure there are no bizarre difficulties with accessing the 'isa' field of objects.  */
 /* { dg-do compile } */
+/* { dg-xfail-if "PR23613" { "*-*-*" } { "*" } { "" } } */
 
 #include <objc/Object.h>
 

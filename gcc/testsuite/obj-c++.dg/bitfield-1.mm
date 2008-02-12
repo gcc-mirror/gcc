@@ -111,3 +111,13 @@ int main(void)
   
   return 0;
 }
+
+/* { dg-bogus "included from <built-in>" "PR23610" { xfail lp64 } 0 } */
+/* { dg-bogus "padding struct to align" "PR23610" { xfail lp64 } 0 } */
+
+/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 40 } */
+/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 43 } */
+/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 57 } */
+/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 60 } */
+/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 75 } */
+/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 76 } */
