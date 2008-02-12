@@ -1,3 +1,16 @@
+2008-02-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/34094
+	* decl2.c (cp_write_global_declarations): Don't write out static 
+	data members with DECL_IN_AGGR_P set.
+
+	PR c++/33916
+	* Revert:
+	2006-10-17  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/29039
+	* typeck2.c (build_functional_cast): Don't zero-initialize
+	non-PODs; instead, call their constructors.
+
 2008-02-05  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
