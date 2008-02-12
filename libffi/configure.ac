@@ -51,6 +51,10 @@ case "$host" in
 	TARGET=ARM; TARGETDIR=arm
 	;;
 
+  amd64-*-freebsd*)
+	TARGET=X86_64; TARGETDIR=x86
+	;;
+
   cris-*-*)
 	TARGET=LIBFFI_CRIS; TARGETDIR=cris
 	;;

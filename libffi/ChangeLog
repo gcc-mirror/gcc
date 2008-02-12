@@ -1,3 +1,9 @@
+2008-02-12  Bjoern Koenig  <bkoenig@alpha-tierchen.de>
+	    Andreas Tobler  <a.tobler@schweiz.org>
+
+	* configure.ac: Add amd64-*-freebsd* target.
+	* configure: Regenerate.
+
 2008-01-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libffi/34612
