@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-xfail-if "PR23614" { "*-*-*" } { "*" } { "" } } */
 
 #include <objc/Object.h>
 #include <stdlib.h>
