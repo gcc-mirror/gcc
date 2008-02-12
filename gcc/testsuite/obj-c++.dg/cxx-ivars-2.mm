@@ -1,7 +1,7 @@
 // Check if the '- .cxx_construct' and '-.cxx_destruct' methods get called
 // and if they perform their desired function.
 
-// { dg-do run }
+// { dg-do run { xfail { "*-*-*" } } } PR27247/PR23681
 // { dg-options "-fobjc-call-cxx-cdtors" }
 
 #include <objc/Object.h>

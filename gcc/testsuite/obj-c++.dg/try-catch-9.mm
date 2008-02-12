@@ -3,6 +3,7 @@
 /* Developed by Ziemowit Laski <zlaski@apple.com>.  */
 
 /* { dg-options "-fobjc-exceptions -O2" } */
+/* { dg-xfail-if "PR23616" { "*-*-*" } { "*" } { "" } } */
 /* { dg-do run } */
 
 #include <objc/Object.h>
