@@ -246,15 +246,14 @@ vect_recog_dot_prod_pattern (tree last_stmt, tree *type_in, tree *type_out)
 
   prod_type = half_type;
   stmt = SSA_NAME_DEF_STMT (oprnd0);
-  gcc_assert (stmt);
+  /* FORNOW.  Can continue analyzing the def-use chain when this stmt in a phi 
+     inside the loop (in case we are analyzing an outer-loop).  */
+  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
+    return NULL; 
   stmt_vinfo = vinfo_for_stmt (stmt);
   gcc_assert (stmt_vinfo);
   if (STMT_VINFO_DEF_TYPE (stmt_vinfo) != vect_loop_def)
     return NULL;
-  /* FORNOW. Can continue analyzing the def-use chain when this stmt in a phi 
-     inside the loop (in case we are analyzing an outer-loop).  */
-  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
-    return NULL; 
   expr = GIMPLE_STMT_OPERAND (stmt, 1);
   if (TREE_CODE (expr) != MULT_EXPR)
     return NULL;

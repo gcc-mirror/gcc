@@ -1,5 +1,11 @@
 2008-02-12  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/35171
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Deal with
+	default defs.
+
+2008-02-12  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/35163
 	* fold-const.c (fold_widened_comparison): Use get_unwidened in
 	value-preserving mode.  Disallow final truncation.
