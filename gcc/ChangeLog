@@ -1,3 +1,9 @@
+2008-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/35160
+	* function.c (match_asm_constraints_1): Don't replace the same input
+	multiple times.
+
 2008-02-12  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.h (AVR_HAVE_RAMPZ): Define.

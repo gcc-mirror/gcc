@@ -1,6 +1,6 @@
 /* Expands front end tree to back end RTL for GCC.
    Copyright (C) 1987, 1988, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -5683,7 +5683,9 @@ match_asm_constraints_1 (rtx insn, rtx *p_sets, int noutputs)
   rtx op = SET_SRC (p_sets[0]);
   int ninputs = ASM_OPERANDS_INPUT_LENGTH (op);
   rtvec inputs = ASM_OPERANDS_INPUT_VEC (op);
+  bool *output_matched = alloca (noutputs * sizeof (bool));
 
+  memset (output_matched, 0, noutputs * sizeof (bool));
   for (i = 0; i < ninputs; i++)
     {
       rtx input, output, insns;
@@ -5712,6 +5714,20 @@ match_asm_constraints_1 (rtx insn, rtx *p_sets, int noutputs)
 	  break;
       if (j != ninputs)
 	continue;
+
+      /* Avoid changing the same input several times.  For
+	 asm ("" : "=mr" (out1), "=mr" (out2) : "0" (in), "1" (in));
+	 only change in once (to out1), rather than changing it
+	 first to out1 and afterwards to out2.  */
+      if (i > 0)
+	{
+	  for (j = 0; j < noutputs; j++)
+	    if (output_matched[j] && input == SET_DEST (p_sets[j]))
+	      break;
+	  if (j != noutputs)
+	    continue;
+	}
+      output_matched[match] = true;
 
       start_sequence ();
       emit_move_insn (output, input);
