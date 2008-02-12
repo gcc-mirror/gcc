@@ -1,3 +1,10 @@
+2008-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/34862
+	* init.c (build_new_1): Don't create placement_expr before
+	constructing alloc_call.  Verify that the pointer is passed by
+	value to operator new.
+
 2008-02-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35097
