@@ -1,3 +1,7 @@
+2008-02-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/asm-3.c: Fix dg-skip-if for all 32bit PIC targets.
+
 2008-02-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/loop_address.adb: New test.
