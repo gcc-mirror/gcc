@@ -1620,8 +1620,12 @@ finish_qualified_id_expr (tree qualifying_class,
        transformation, as there is no "this" pointer.  */
     ;
   else if (TREE_CODE (expr) == FIELD_DECL)
-    expr = finish_non_static_data_member (expr, current_class_ref,
-					  qualifying_class);
+    {
+      push_deferring_access_checks (dk_no_check);
+      expr = finish_non_static_data_member (expr, current_class_ref,
+					    qualifying_class);
+      pop_deferring_access_checks ();
+    }
   else if (BASELINK_P (expr) && !processing_template_decl)
     {
       tree fns;
