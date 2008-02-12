@@ -1,3 +1,10 @@
+2008-02-12  Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/avr.h (AVR_HAVE_RAMPZ): Define.
+	* config/avr/avr.c (expand_prologue): Save RAMPZ register.
+	(expand_epilogue): Restore RAMPZ register.
+	* config/avr/avr.md (RAMPZ_ADDR): New constant.
+
 2008-02-11  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/cygwin.asm: (__alloca): Correct calling
