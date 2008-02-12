@@ -1,3 +1,10 @@
+2008-02-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/35136
+	* gimplify.c (force_gimple_operand_bsi): Move SSA renaming
+	code from here to...
+	(force_gimple_operand): ...here.
+
 2008-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/35144
