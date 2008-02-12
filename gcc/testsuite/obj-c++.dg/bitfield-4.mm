@@ -48,3 +48,9 @@ int main(void)
 
   return 0;
 }
+
+/* { dg-bogus "included from <built-in>" "PR23610" { xfail lp64 } 0 } */
+/* { dg-bogus "padding struct to align" "PR23610" { xfail lp64 } 0 } */
+
+/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 28 } */
+/* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 34 } */
