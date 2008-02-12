@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Debugging Support</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      debug&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="using.html" title="Chapter 3. Using" /><link rel="prev" href="bk01pt01ch03s06.html" title="Exception Safety" /><link rel="next" href="support.html" title="Part II. Support" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Debugging Support</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt01ch03s06.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td width="20%" align="right"> <a accesskey="n" href="support.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.using.debug"></a>Debugging Support</h2></div></div></div><p>
+  There are numerous things that can be done to improve the ease with
+  which C++ binaries are debugged when using the GNU tool chain. Here
+  are some of them.
+</p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="debug.compiler"></a>Using <span class="command"><strong>g++</strong></span></h3></div></div></div><p> 
+    Compiler flags determine how debug information is transmitted
+    between compilation and debug or analysis tools.
+  </p><p>
+    The default optimizations and debug flags for a libstdc++ build
+    are <code class="code">-g -O2</code>. However, both debug and optimization
+    flags can be varied to change debugging characteristics. For
+    instance, turning off all optimization via the <code class="code">-g -O0</code>
+    flag will disable inlining, so that stepping through all
+    functions, including inlined constructors and destructors, is
+    possible. In addition,
+    <code class="code">-fno-eliminate-unused-debug-types</code> can be used when
+    additional debug information, such as nested class info, is
+    desired.
+</p><p>
+  Or, the debug format that the compiler and debugger use to
+  communicate information about source constructs can be changed via
+  <code class="code"> -gdwarf-2 </code> or <code class="code"> -gstabs </code> flags: some
+  debugging formats permit more expressive type and scope information
+  to be shown in gdb.  The default debug information for a particular
+  platform can be identified via the value set by the
+  PREFERRED_DEBUGGING_TYPE macro in the gcc sources.
+</p><p>
+  Many other options are available: please see <a class="ulink" href="http://gcc.gnu.org/onlinedocs/gcc/Debugging-Options.html#Debugging%20Options" target="_top">"Options
+  for Debugging Your Program"</a> in Using the GNU Compiler
+  Collection (GCC) for a complete list.
+</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="debug.req"></a>Debug Versions of Library Binary Files</h3></div></div></div><p>
+  If you would like debug symbols in libstdc++, there are two ways to
+  build libstdc++ with debug flags. The first is to run make from the
+  toplevel in a freshly-configured tree with
+</p><pre class="programlisting">
+     --enable-libstdcxx-debug
+</pre><p>and perhaps</p><pre class="programlisting">
+     --enable-libstdcxx-debug-flags='...'
+</pre><p>
+  to create a separate debug build. Both the normal build and the
+  debug build will persist, without having to specify
+  <code class="code">CXXFLAGS</code>, and the debug library will be installed in a
+  separate directory tree, in <code class="code">(prefix)/lib/debug</code>. For
+  more information, look at the <a class="ulink" href="configopts.html" target="_top">configuration options</a> document.
+</p><p>
+  A second approach is to use the configuration flags 
+</p><pre class="programlisting">
+     make CXXFLAGS='-g3 -O0' all
+</pre><p>
+  This quick and dirty approach is often sufficient for quick
+  debugging tasks, when you cannot or don't want to recompile your
+  application to use the <a class="ulink" href="#safe" target="_top">debug mode</a>.</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="debug.memory"></a>Memory Leak Hunting</h3></div></div></div><p>
+  There are various third party memory tracing and debug utilities
+  that can be used to provide detailed memory allocation information
+  about C++ code. An exhaustive list of tools is not going to be
+  attempted, but includes <code class="code">mtrace</code>, <code class="code">valgrind</code>,
+  <code class="code">mudflap</code>, and the non-free commercial product
+  <code class="code">purify</code>. In addition, <code class="code">libcwd</code> has a
+  replacement for the global new and delete operators that can track
+  memory allocation and deallocation and provide useful memory
+  statistics.
+</p><p>
+  Regardless of the memory debugging tool being used, there is one
+  thing of great importance to keep in mind when debugging C++ code
+  that uses <code class="code">new</code> and <code class="code">delete</code>: there are
+  different kinds of allocation schemes that can be used by <code class="code">
+  std::allocator </code>. For implementation details, see the <a class="ulink" href="ext/mt_allocator.html" target="_top">mt allocator</a> documentation and
+  look specifically for <code class="code">GLIBCXX_FORCE_NEW</code>.
+</p><p>
+  In a nutshell, the default allocator used by <code class="code">
+  std::allocator</code> is a high-performance pool allocator, and can
+  give the mistaken impression that in a suspect executable, memory is
+  being leaked, when in reality the memory "leak" is a pool being used
+  by the library's allocator and is reclaimed after program
+  termination.
+</p><p>
+  For valgrind, there are some specific items to keep in mind. First
+  of all, use a version of valgrind that will work with current GNU
+  C++ tools: the first that can do this is valgrind 1.0.4, but later
+  versions should work at least as well. Second of all, use a
+  completely unoptimized build to avoid confusing valgrind. Third, use
+  GLIBCXX_FORCE_NEW to keep extraneous pool allocation noise from
+  cluttering debug information.
+</p><p>
+  Fourth, it may be necessary to force deallocation in other libraries
+  as well, namely the "C" library. On linux, this can be accomplished
+  with the appropriate use of the <code class="code">__cxa_atexit</code> or
+  <code class="code">atexit</code> functions.
+</p><pre class="programlisting">
+   #include &lt;cstdlib&gt;
+
+   extern "C" void __libc_freeres(void);
+
+   void do_something() { }
+
+   int main()
+   {
+     atexit(__libc_freeres);
+     do_something();
+     return 0;
+   }
+</pre><p>or, using <code class="code">__cxa_atexit</code>:</p><pre class="programlisting">
+   extern "C" void __libc_freeres(void);
+   extern "C" int __cxa_atexit(void (*func) (void *), void *arg, void *d);
+
+   void do_something() { }
+
+   int main()
+   {
+      extern void* __dso_handle __attribute__ ((__weak__));
+      __cxa_atexit((void (*) (void *)) __libc_freeres, NULL, 
+                   &amp;__dso_handle ? __dso_handle : NULL);
+      do_test();
+      return 0;
+   }
+</pre><p>
+  Suggested valgrind flags, given the suggestions above about setting
+  up the runtime environment, library, and test file, might be:
+</p><pre class="programlisting"> 
+   valgrind -v --num-callers=20 --leak-check=yes --leak-resolution=high --show-reachable=yes a.out
+</pre></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="debug.gdb"></a>Using <span class="command"><strong>gdb</strong></span></h3></div></div></div><p> 
+  </p><p>
+  Many options are available for gdb itself: please see <a class="ulink" href="http://sources.redhat.com/gdb/current/onlinedocs/gdb_13.html#SEC109" target="_top">
+  "GDB features for C++" </a> in the gdb documentation. Also
+  recommended: the other parts of this manual.
+</p><p>
+  These settings can either be switched on in at the gdb command line,
+  or put into a .gdbint file to establish default debugging
+  characteristics, like so:
+</p><pre class="programlisting">
+   set print pretty on
+   set print object on
+   set print static-members on
+   set print vtbl on
+   set print demangle on
+   set demangle-style gnu-v3
+</pre></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="debug.exceptions"></a>Tracking uncaught exceptions</h3></div></div></div><p>
+  The <a class="link" href="bk01pt02ch06s02.html" title="Verbose Terminate Handler">verbose
+  termination handler</a> gives information about uncaught
+  exceptions which are killing the program.  It is described in the
+  linked-to page.
+</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="debug.debug_mode"></a>Debug Mode</h3></div></div></div><p> The <a class="link" href="debug_mode.html" title="Chapter 30. Debug Mode">Debug Mode</a>
+  has compile and run-time checks for many containers.
+  </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="debug.compile_time_checks"></a>Compile Time Checking</h3></div></div></div><p> The <a class="link" href="bk01pt12ch29.html" title="Chapter 29. Compile Time Checks">Compile-Time
+  Checks</a> Extension has compile-time checks for many algorithms.
+  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt01ch03s06.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="using.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="support.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Exception Safety </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Part II. Support</td></tr></table></div></body></html>

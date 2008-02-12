@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Design</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      library&#10;    , &#10;      parallel&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="parallel_mode.html" title="Chapter 31. Parallel Mode" /><link rel="prev" href="bk01pt12ch31s03.html" title="Using" /><link rel="next" href="bk01pt12ch31s05.html" title="Testing" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Design</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt12ch31s03.html">Prev</a> </td><th width="60%" align="center">Chapter 31. Parallel Mode</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt12ch31s05.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.ext.parallel_mode.design"></a>Design</h2></div></div></div><p>
+  </p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.parallel_mode.design.intro"></a>Interface Basics</h3></div></div></div><p>All parallel algorithms are intended to have signatures that are
+equivalent to the ISO C++ algorithms replaced. For instance, the
+<code class="code">std::adjacent_find</code> function is declared as:
+</p><pre class="programlisting">
+namespace std
+{
+  template&lt;typename _FIter&gt;
+    _FIter
+    adjacent_find(_FIter, _FIter);
+}
+</pre><p>
+Which means that there should be something equivalent for the parallel
+version. Indeed, this is the case:
+</p><pre class="programlisting">
+namespace std
+{
+  namespace __parallel
+  {
+    template&lt;typename _FIter&gt;
+      _FIter
+      adjacent_find(_FIter, _FIter);
+
+    ...
+  }
+}
+</pre><p>But.... why the elipses?
+</p><p> The elipses in the example above represent additional overloads
+required for the parallel version of the function. These additional
+overloads are used to dispatch calls from the ISO C++ function
+signature to the appropriate parallel function (or sequential
+function, if no parallel functions are deemed worthy), based on either
+compile-time or run-time conditions.
+</p><p> Compile-time conditions are referred to as "embarrassingly
+parallel," and are denoted with the appropriate dispatch object, ie
+one of <code class="code">__gnu_parallel::sequential_tag</code>,
+<code class="code">__gnu_parallel::parallel_tag</code>,
+<code class="code">__gnu_parallel::balanced_tag</code>,
+<code class="code">__gnu_parallel::unbalanced_tag</code>,
+<code class="code">__gnu_parallel::omp_loop_tag</code>, or
+<code class="code">__gnu_parallel::omp_loop_static_tag</code>.
+</p><p> Run-time conditions depend on the hardware being used, the number
+of threads available, etc., and are denoted by the use of the enum
+<code class="code">__gnu_parallel::parallelism</code>. Values of this enum include
+<code class="code">__gnu_parallel::sequential</code>,
+<code class="code">__gnu_parallel::parallel_unbalanced</code>,
+<code class="code">__gnu_parallel::parallel_balanced</code>,
+<code class="code">__gnu_parallel::parallel_omp_loop</code>,
+<code class="code">__gnu_parallel::parallel_omp_loop_static</code>, or
+<code class="code">__gnu_parallel::parallel_taskqueue</code>.
+</p><p> Putting all this together, the general view of overloads for the
+parallel algorithms look like this:
+</p><div class="itemizedlist"><ul type="disc"><li><p>ISO C++ signature</p></li><li><p>ISO C++ signature + sequential_tag argument</p></li><li><p>ISO C++ signature + parallelism argument</p></li></ul></div><p> Please note that the implementation may use additional functions
+(designated with the <code class="code">_switch</code> suffix) to dispatch from the
+ISO C++ signature to the correct parallel version. Also, some of the
+algorithms do not have support for run-time conditions, so the last
+overload is therefore missing.
+</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.parallel_mode.design.tuning"></a>Configuration and Tuning</h3></div></div></div><p> Some algorithm variants can be enabled/disabled/selected at compile-time.
+See <a class="ulink" href="latest-doxygen/compiletime__settings_8h.html" target="_top">
+<code class="code">&lt;compiletime_settings.h&gt;</code></a> and
+See <a class="ulink" href="latest-doxygen/compiletime__settings_8h.html" target="_top">
+<code class="code">&lt;features.h&gt;</code></a> for details.
+</p><p>
+To specify the number of threads to be used for an algorithm,
+use <code class="code">omp_set_num_threads</code>.
+To force a function to execute sequentially,
+even though parallelism is switched on in general,
+add <code class="code">__gnu_parallel::sequential_tag()</code>
+to the end of the argument list.
+</p><p>
+Parallelism always incurs some overhead. Thus, it is not
+helpful to parallelize operations on very small sets of data.
+There are measures to avoid parallelizing stuff that is not worth it.
+For each algorithm, a minimum problem size can be stated,
+usually using the variable
+<code class="code">__gnu_parallel::Settings::[algorithm]_minimal_n</code>.
+Please see <a class="ulink" href="latest-doxygen/settings_8h.html" target="_top">
+<code class="code">&lt;settings.h&gt;</code></a> for details.</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.parallel_mode.design.impl"></a>Implementation Namespaces</h3></div></div></div><p> One namespace contain versions of code that are explicitly sequential:
+<code class="code">__gnu_serial</code>.
+</p><p> Two namespaces contain the parallel mode:
+<code class="code">std::__parallel</code> and <code class="code">__gnu_parallel</code>. 
+</p><p> Parallel implementations of standard components, including
+template helpers to select parallelism, are defined in <code class="code">namespace
+std::__parallel</code>. For instance, <code class="code">std::transform</code> from
+&lt;algorithm&gt; has a parallel counterpart in
+<code class="code">std::__parallel::transform</code> from
+&lt;parallel/algorithm&gt;. In addition, these parallel
+implementations are injected into <code class="code">namespace
+__gnu_parallel</code> with using declarations.
+</p><p> Support and general infrastructure is in <code class="code">namespace
+__gnu_parallel</code>.
+</p><p> More information, and an organized index of types and functions
+related to the parallel mode on a per-namespace basis, can be found in
+the generated source documentation.
+</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt12ch31s03.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="parallel_mode.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="bk01pt12ch31s05.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Using </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Testing</td></tr></table></div></body></html>

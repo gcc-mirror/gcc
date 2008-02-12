@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>HP/SGI</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="bk01pt12ch33.html" title="Chapter 33. Containers" /><link rel="prev" href="bk01pt12ch33.html" title="Chapter 33. Containers" /><link rel="next" href="bk01pt12ch33s03.html" title="Deprecated HP/SGI" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">HP/SGI</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt12ch33.html">Prev</a> </td><th width="60%" align="center">Chapter 33. Containers</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt12ch33s03.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.ext.containers.sgi"></a>HP/SGI</h2></div></div></div><p>
+    </p><p>A few extensions and nods to backwards-compatibility have been made with
+   containers.  Those dealing with older SGI-style allocators are dealt with
+   elsewhere.  The remaining ones all deal with bits:
+</p><p>The old pre-standard <code class="code">bit_vector</code> class is present for
+   backwards compatibility.  It is simply a typedef for the
+   <code class="code">vector&lt;bool&gt;</code> specialization.
+</p><p>The <code class="code">bitset</code> class has a number of extensions, described in the
+   rest of this item.  First, we'll mention that this implementation of
+   <code class="code">bitset&lt;N&gt;</code> is specialized for cases where N number of
+   bits will fit into a single word of storage.  If your choice of N is
+   within that range (&lt;=32 on i686-pc-linux-gnu, for example), then all
+   of the operations will be faster.
+</p><p>There are
+   versions of single-bit test, set, reset, and flip member functions which
+   do no range-checking.  If we call them member functions of an instantiation
+   of "bitset&lt;N&gt;," then their names and signatures are:
+</p><pre class="programlisting">
+   bitset&lt;N&gt;&amp;   _Unchecked_set   (size_t pos);
+   bitset&lt;N&gt;&amp;   _Unchecked_set   (size_t pos, int val);
+   bitset&lt;N&gt;&amp;   _Unchecked_reset (size_t pos);
+   bitset&lt;N&gt;&amp;   _Unchecked_flip  (size_t pos);
+   bool         _Unchecked_test  (size_t pos);
+   </pre><p>Note that these may in fact be removed in the future, although we have
+   no present plans to do so (and there doesn't seem to be any immediate
+   reason to).
+</p><p>The semantics of member function <code class="code">operator[]</code> are not specified 
+   in the C++ standard.  A long-standing defect report calls for sensible
+   obvious semantics, which are already implemented here:  <code class="code">op[]</code>
+   on a const bitset returns a bool, and for a non-const bitset returns a
+   <code class="code">reference</code> (a nested type).  However, this implementation does
+   no range-checking on the index argument, which is in keeping with other
+   containers' <code class="code">op[]</code> requirements.  The defect report's proposed
+   resolution calls for range-checking to be done.  We'll just wait and see...
+</p><p>Finally, two additional searching functions have been added.  They return
+   the index of the first "on" bit, and the index of the first
+   "on" bit that is after <code class="code">prev</code>, respectively:
+</p><pre class="programlisting">
+   size_t _Find_first() const;
+   size_t _Find_next (size_t prev) const;</pre><p>The same caveat given for the _Unchecked_* functions applies here also.
+</p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt12ch33.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="bk01pt12ch33.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="bk01pt12ch33s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 33. Containers </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Deprecated HP/SGI</td></tr></table></div></body></html>

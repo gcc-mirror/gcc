@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Concurrency</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="using.html" title="Chapter 3. Using" /><link rel="prev" href="bk01pt01ch03s04.html" title="Macros" /><link rel="next" href="bk01pt01ch03s06.html" title="Exception Safety" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Concurrency</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt01ch03s04.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt01ch03s06.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.using.concurrency"></a>Concurrency</h2></div></div></div><p>This section discusses issues surrounding the proper compilation
+      of multithreaded applications which use the Standard C++
+      library.  This information is GCC-specific since the C++
+      standard does not address matters of multithreaded applications.
+   </p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.prereq"></a>Prerequisites</h3></div></div></div><p>All normal disclaimers aside, multithreaded C++ application are
+      only supported when libstdc++ and all user code was built with
+      compilers which report (via <code class="code"> gcc/g++ -v </code>) the same thread
+      model and that model is not <span class="emphasis"><em>single</em></span>.  As long as your
+      final application is actually single-threaded, then it should be
+      safe to mix user code built with a thread model of
+      <span class="emphasis"><em>single</em></span> with a libstdc++ and other C++ libraries built
+      with another thread model useful on the platform.  Other mixes
+      may or may not work but are not considered supported.  (Thus, if
+      you distribute a shared C++ library in binary form only, it may
+      be best to compile it with a GCC configured with
+      --enable-threads for maximal interchangeability and usefulness
+      with a user population that may have built GCC with either
+      --enable-threads or --disable-threads.)
+   </p><p>When you link a multithreaded application, you will probably
+      need to add a library or flag to g++.  This is a very
+      non-standardized area of GCC across ports.  Some ports support a
+      special flag (the spelling isn't even standardized yet) to add
+      all required macros to a compilation (if any such flags are
+      required then you must provide the flag for all compilations not
+      just linking) and link-library additions and/or replacements at
+      link time.  The documentation is weak.  Here is a quick summary
+      to display how ad hoc this is: On Solaris, both -pthreads and
+      -threads (with subtly different meanings) are honored.  On OSF,
+      -pthread and -threads (with subtly different meanings) are
+      honored.  On Linux/i386, -pthread is honored.  On FreeBSD,
+      -pthread is honored.  Some other ports use other switches.
+      AFAIK, none of this is properly documented anywhere other than
+      in ``gcc -dumpspecs'' (look at lib and cpp entries).
+   </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.thread_safety"></a>Thread Safety</h3></div></div></div><p>
+We currently use the <a class="ulink" href="http://www.sgi.com/tech/stl/thread_safety.html" target="_top">SGI STL</a> definition of thread safety.
+</p><p>The library strives to be thread-safe when all of the following
+         conditions are met:
+      </p><div class="itemizedlist"><ul type="disc"><li><p>The system's libc is itself thread-safe,
+       </p></li><li><p>
+	   The compiler in use reports a thread model other than
+	   'single'. This can be tested via output from <code class="code">gcc
+	   -v</code>. Multi-thread capable versions of gcc output
+	   something like this:
+	 </p><pre class="programlisting">
+%gcc -v
+Using built-in specs.
+...
+Thread model: posix
+gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
+</pre><p>Look for "Thread model" lines that aren't equal to "single."</p></li><li><p>
+	 Requisite command-line flags are used for atomic operations
+	 and threading. Examples of this include <code class="code">-pthread</code>
+	 and <code class="code">-march=native</code>, although specifics vary
+	 depending on the host environment. See <a class="ulink" href="http://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html" target="_top">Machine
+	 Dependent Options</a>.
+       </p></li><li><p>
+	   An implementation of atomicity.h functions
+           exists for the architecture in question. See the internals documentation for more <a class="ulink" href="../ext/concurrence.html" target="_top">details</a>.
+       </p></li></ul></div><p>The user-code must guard against concurrent method calls which may
+         access any particular library object's state.  Typically, the
+         application programmer may infer what object locks must be held
+         based on the objects referenced in a method call.  Without getting
+         into great detail, here is an example which requires user-level
+         locks:
+      </p><pre class="programlisting">
+     library_class_a shared_object_a;
+
+     thread_main () {
+       library_class_b *object_b = new library_class_b;
+       shared_object_a.add_b (object_b);   // must hold lock for shared_object_a
+       shared_object_a.mutate ();          // must hold lock for shared_object_a
+     }
+
+     // Multiple copies of thread_main() are started in independent threads.</pre><p>Under the assumption that object_a and object_b are never exposed to
+         another thread, here is an example that should not require any
+         user-level locks:
+      </p><pre class="programlisting">
+     thread_main () {
+       library_class_a object_a;
+       library_class_b *object_b = new library_class_b;
+       object_a.add_b (object_b);
+       object_a.mutate ();
+     } </pre><p>All library objects are safe to use in a multithreaded program as
+         long as each thread carefully locks out access by any other
+         thread while it uses any object visible to another thread, i.e.,
+         treat library objects like any other shared resource.  In general,
+         this requirement includes both read and write access to objects;
+         unless otherwise documented as safe, do not assume that two threads
+         may access a shared standard library object at the same time.
+      </p><p>See chapters <a class="ulink" href="../17_intro/howto.html#3" target="_top">17</a> (library
+         introduction), <a class="ulink" href="../23_containers/howto.html#3" target="_top">23</a>
+         (containers), and <a class="ulink" href="../27_io/howto.html#9" target="_top">27</a> (I/O) for
+         more information.
+      </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.atomics"></a>Atomics</h3></div></div></div><p>
+    </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.io"></a>IO</h3></div></div></div><p>I'll assume that you have already read the
+      <a class="ulink" href="../17_intro/howto.html#3" target="_top">general notes on library threads</a>,
+      and the
+      <a class="ulink" href="../23_containers/howto.html#3" target="_top">notes on threaded container
+      access</a> (you might not think of an I/O stream as a container, but
+      the points made there also hold here).  If you have not read them,
+      please do so first.
+   </p><p>This gets a bit tricky.  Please read carefully, and bear with me.
+   </p><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="concurrency.io.structure"></a>Structure</h4></div></div></div><p>A wrapper
+      type called <code class="code">__basic_file</code> provides our abstraction layer
+      for the <code class="code">std::filebuf</code> classes.  Nearly all decisions dealing
+      with actual input and output must be made in <code class="code">__basic_file</code>.
+   </p><p>A generic locking mechanism is somewhat in place at the filebuf layer,
+      but is not used in the current code.  Providing locking at any higher
+      level is akin to providing locking within containers, and is not done
+      for the same reasons (see the links above).
+   </p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="concurrency.io.defaults"></a>Defaults</h4></div></div></div><p>The __basic_file type is simply a collection of small wrappers around
+      the C stdio layer (again, see the link under Structure).  We do no
+      locking ourselves, but simply pass through to calls to <code class="code">fopen</code>,
+      <code class="code">fwrite</code>, and so forth.
+   </p><p>So, for 3.0, the question of "is multithreading safe for I/O" 
+      must be answered with, "is your platform's C library threadsafe
+      for I/O?"  Some are by default, some are not; many offer multiple
+      implementations of the C library with varying tradeoffs of threadsafety
+      and efficiency.  You, the programmer, are always required to take care
+      with multiple threads.
+   </p><p>(As an example, the POSIX standard requires that C stdio FILE*
+       operations are atomic.  POSIX-conforming C libraries (e.g, on Solaris
+       and GNU/Linux) have an internal mutex to serialize operations on
+       FILE*s.  However, you still need to not do stupid things like calling
+       <code class="code">fclose(fs)</code> in one thread followed by an access of
+       <code class="code">fs</code> in another.)
+   </p><p>So, if your platform's C library is threadsafe, then your
+      <code class="code">fstream</code> I/O operations will be threadsafe at the lowest
+      level.  For higher-level operations, such as manipulating the data
+      contained in the stream formatting classes (e.g., setting up callbacks
+      inside an <code class="code">std::ofstream</code>), you need to guard such accesses
+      like any other critical shared resource.
+   </p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="concurrency.io.future"></a>Future</h4></div></div></div><p> A
+      second choice may be available for I/O implementations:  libio.  This is
+      disabled by default, and in fact will not currently work due to other
+      issues.  It will be revisited, however.
+   </p><p>The libio code is a subset of the guts of the GNU libc (glibc) I/O
+      implementation.  When libio is in use, the <code class="code">__basic_file</code>
+      type is basically derived from FILE.  (The real situation is more
+      complex than that... it's derived from an internal type used to
+      implement FILE.  See libio/libioP.h to see scary things done with
+      vtbls.)  The result is that there is no "layer" of C stdio
+      to go through; the filebuf makes calls directly into the same
+      functions used to implement <code class="code">fread</code>, <code class="code">fwrite</code>,
+      and so forth, using internal data structures.  (And when I say
+      "makes calls directly," I mean the function is literally
+      replaced by a jump into an internal function.  Fast but frightening.
+      *grin*)
+   </p><p>Also, the libio internal locks are used.  This requires pulling in
+      large chunks of glibc, such as a pthreads implementation, and is one
+      of the issues preventing widespread use of libio as the libstdc++
+      cstdio implementation.
+   </p><p>But we plan to make this work, at least as an option if not a future
+      default.  Platforms running a copy of glibc with a recent-enough
+      version will see calls from libstdc++ directly into the glibc already
+      installed.  For other platforms, a copy of the libio subsection will
+      be built and included in libstdc++.
+   </p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="concurrency.io.alt"></a>Alternatives</h4></div></div></div><p>Don't forget that other cstdio implementations are possible.  You could
+      easily write one to perform your own forms of locking, to solve your
+      "interesting" problems.
+   </p></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.containers"></a>Containers</h3></div></div></div><p>This section discusses issues surrounding the design of
+      multithreaded applications which use Standard C++ containers.
+      All information in this section is current as of the gcc 3.0
+      release and all later point releases.  Although earlier gcc
+      releases had a different approach to threading configuration and
+      proper compilation, the basic code design rules presented here
+      were similar.  For information on all other aspects of
+      multithreading as it relates to libstdc++, including details on
+      the proper compilation of threaded code (and compatibility between
+      threaded and non-threaded code), see Chapter 17.
+   </p><p>Two excellent pages to read when working with the Standard C++
+      containers and threads are
+      <a class="ulink" href="http://www.sgi.com/tech/stl/thread_safety.html" target="_top">SGI's
+      http://www.sgi.com/tech/stl/thread_safety.html</a> and
+      <a class="ulink" href="http://www.sgi.com/tech/stl/Allocators.html" target="_top">SGI's
+      http://www.sgi.com/tech/stl/Allocators.html</a>.
+   </p><p><span class="emphasis"><em>However, please ignore all discussions about the user-level
+      configuration of the lock implementation inside the STL
+      container-memory allocator on those pages.  For the sake of this
+      discussion, libstdc++ configures the SGI STL implementation,
+      not you.  This is quite different from how gcc pre-3.0 worked.
+      In particular, past advice was for people using g++ to
+      explicitly define _PTHREADS or other macros or port-specific
+      compilation options on the command line to get a thread-safe
+      STL.  This is no longer required for any port and should no
+      longer be done unless you really know what you are doing and
+      assume all responsibility.</em></span>
+   </p><p>Since the container implementation of libstdc++ uses the SGI
+      code, we use the same definition of thread safety as SGI when
+      discussing design.  A key point that beginners may miss is the
+      fourth major paragraph of the first page mentioned above
+      ("For most clients,"...), which points out that
+      locking must nearly always be done outside the container, by
+      client code (that'd be you, not us).  There is a notable
+      exceptions to this rule.  Allocators called while a container or
+      element is constructed uses an internal lock obtained and
+      released solely within libstdc++ code (in fact, this is the
+      reason STL requires any knowledge of the thread configuration).
+   </p><p>For implementing a container which does its own locking, it is
+      trivial to provide a wrapper class which obtains the lock (as
+      SGI suggests), performs the container operation, and then
+      releases the lock.  This could be templatized <span class="emphasis"><em>to a certain
+      extent</em></span>, on the underlying container and/or a locking
+      mechanism.  Trying to provide a catch-all general template
+      solution would probably be more trouble than it's worth.
+   </p><p>The STL implementation is currently configured to use the
+      high-speed caching memory allocator.  Some people like to
+      test and/or normally run threaded programs with a different
+      default.  For all details about how to globally override this
+      at application run-time see <a class="ulink" href="../ext/howto.html#3" target="_top">here</a>.
+   </p><p>There is a better way (not standardized yet):  It is possible to
+      force the malloc-based allocator on a per-case-basis for some
+      application code.  The library team generally believes that this
+      is a better way to tune an application for high-speed using this
+      implementation of the STL.  There is
+      <a class="ulink" href="../ext/howto.html#3" target="_top">more information on allocators here</a>.
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt01ch03s04.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="using.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="bk01pt01ch03s06.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Macros </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Exception Safety</td></tr></table></div></body></html>

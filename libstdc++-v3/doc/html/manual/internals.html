@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Porting to New Hardware or Operating Systems</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      internals&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="appendix_porting.html" title="Appendix B. Porting and Maintenance" /><link rel="prev" href="appendix_porting.html" title="Appendix B. Porting and Maintenance" /><link rel="next" href="abi.html" title="ABI Policy and Guidelines" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Porting to New Hardware or Operating Systems</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="appendix_porting.html">Prev</a> </td><th width="60%" align="center">Appendix B. Porting and Maintenance</th><td width="20%" align="right"> <a accesskey="n" href="abi.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="appendix.porting.internals"></a>Porting to New Hardware or Operating Systems</h2></div></div></div><p>
+</p><p>This document explains how to port libstdc++ (the GNU C++ library) to
+a new target.
+</p><p>In order to make the GNU C++ library (libstdc++) work with a new
+target, you must edit some configuration files and provide some new
+header files.  Unless this is done, libstdc++ will use generic
+settings which may not be correct for your target; even if they are
+correct, they will likely be inefficient.
+   </p><p>Before you get started, make sure that you have a working C library on
+your target.  The C library need not precisely comply with any
+particular standard, but should generally conform to the requirements
+imposed by the ANSI/ISO standard.
+   </p><p>In addition, you should try to verify that the C++ compiler generally
+works.  It is difficult to test the C++ compiler without a working
+library, but you should at least try some minimal test cases.
+   </p><p>(Note that what we think of as a "target," the library refers to as
+a "host."  The comment at the top of <code class="code">configure.ac</code> explains why.)
+   </p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="internals.os"></a>Operating System</h3></div></div></div><p>If you are porting to a new operating system (as opposed to a new chip
+using an existing operating system), you will need to create a new
+directory in the <code class="code">config/os</code> hierarchy.  For example, the IRIX
+configuration files are all in <code class="code">config/os/irix</code>.  There is no set
+way to organize the OS configuration directory.  For example,
+<code class="code">config/os/solaris/solaris-2.6</code> and
+<code class="code">config/os/solaris/solaris-2.7</code> are used as configuration
+directories for these two versions of Solaris.  On the other hand, both
+Solaris 2.7 and Solaris 2.8 use the <code class="code">config/os/solaris/solaris-2.7</code>
+directory.  The important information is that there needs to be a
+directory under <code class="code">config/os</code> to store the files for your operating
+system.
+</p><p>You might have to change the <code class="code">configure.host</code> file to ensure that
+your new directory is activated.  Look for the switch statement that sets
+<code class="code">os_include_dir</code>, and add a pattern to handle your operating system
+if the default will not suffice.  The switch statement switches on only
+the OS portion of the standard target triplet; e.g., the <code class="code">solaris2.8</code>
+in <code class="code">sparc-sun-solaris2.8</code>.  If the new directory is named after the
+OS portion of the triplet (the default), then nothing needs to be changed.
+   </p><p>The first file to create in this directory, should be called
+<code class="code">os_defines.h</code>.  This file contains basic macro definitions
+that are required to allow the C++ library to work with your C library. 
+   </p><p>Several libstdc++ source files unconditionally define the macro
+<code class="code">_POSIX_SOURCE</code>.  On many systems, defining this macro causes
+large portions of the C library header files to be eliminated
+at preprocessing time.  Therefore, you may have to <code class="code">#undef</code> this
+macro, or define other macros (like <code class="code">_LARGEFILE_SOURCE</code> or
+<code class="code">__EXTENSIONS__</code>).  You won't know what macros to define or
+undefine at this point; you'll have to try compiling the library and
+seeing what goes wrong.  If you see errors about calling functions
+that have not been declared, look in your C library headers to see if
+the functions are declared there, and then figure out what macros you
+need to define.  You will need to add them to the
+<code class="code">CPLUSPLUS_CPP_SPEC</code> macro in the GCC configuration file for your
+target.  It will not work to simply define these macros in
+<code class="code">os_defines.h</code>.
+   </p><p>At this time, there are a few libstdc++-specific macros which may be
+defined:
+   </p><p><code class="code">_GLIBCXX_USE_C99_CHECK</code> may be defined to 1 to check C99
+function declarations (which are not covered by specialization below)
+found in system headers against versions found in the library headers
+derived from the standard.
+   </p><p><code class="code">_GLIBCXX_USE_C99_DYNAMIC</code> may be defined to an expression that
+yields 0 if and only if the system headers are exposing proper support
+for C99 functions (which are not covered by specialization below).  If
+defined, it must be 0 while bootstrapping the compiler/rebuilding the
+library.
+   </p><p><code class="code">_GLIBCXX_USE_C99_LONG_LONG_CHECK</code> may be defined to 1 to check
+the set of C99 long long function declarations found in system headers
+against versions found in the library headers derived from the
+standard.
+
+   </p><p><code class="code">_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC</code> may be defined to an
+expression that yields 0 if and only if the system headers are
+exposing proper support for the set of C99 long long functions.  If
+defined, it must be 0 while bootstrapping the compiler/rebuilding the
+library.
+   </p><p><code class="code">_GLIBCXX_USE_C99_FP_MACROS_DYNAMIC</code> may be defined to an
+expression that yields 0 if and only if the system headers
+are exposing proper support for the related set of macros.  If defined,
+it must be 0 while bootstrapping the compiler/rebuilding the library.
+   </p><p><code class="code">_GLIBCXX_USE_C99_FLOAT_TRANSCENDENTALS_CHECK</code> may be defined
+to 1 to check the related set of function declarations found in system
+headers against versions found in the library headers derived from
+the standard.
+   </p><p><code class="code">_GLIBCXX_USE_C99_FLOAT_TRANSCENDENTALS_DYNAMIC</code> may be defined
+to an expression that yields 0 if and only if the system headers
+are exposing proper support for the related set of functions.  If defined,
+it must be 0 while bootstrapping the compiler/rebuilding the library.
+   </p><p>Finally, you should bracket the entire file in an include-guard, like
+this:
+   </p><pre class="programlisting">     
+
+#ifndef _GLIBCXX_OS_DEFINES
+#define _GLIBCXX_OS_DEFINES
+...
+#endif
+</pre><p>We recommend copying an existing <code class="code">os_defines.h</code> to use as a
+starting point.
+   </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="internals.cpu"></a>CPU</h3></div></div></div><p>If you are porting to a new chip (as opposed to a new operating system
+running on an existing chip), you will need to create a new directory in the
+<code class="code">config/cpu</code> hierarchy.  Much like the <a class="link" href="internals.html#internals.os" title="Operating System">Operating system</a> setup,
+there are no strict rules on how to organize the CPU configuration
+directory, but careful naming choices will allow the configury to find your
+setup files without explicit help.
+</p><p>We recommend that for a target triplet <code class="code">&lt;CPU&gt;-&lt;vendor&gt;-&lt;OS&gt;</code>, you
+name your configuration directory <code class="code">config/cpu/&lt;CPU&gt;</code>.  If you do this,
+the configury will find the directory by itself.  Otherwise you will need to
+edit the <code class="code">configure.host</code> file and, in the switch statement that sets
+<code class="code">cpu_include_dir</code>, add a pattern to handle your chip.
+   </p><p>Note that some chip families share a single configuration directory, for
+example, <code class="code">alpha</code>, <code class="code">alphaev5</code>, and <code class="code">alphaev6</code> all use the
+<code class="code">config/cpu/alpha</code> directory, and there is an entry in the
+<code class="code">configure.host</code> switch statement to handle this.
+   </p><p>The <code class="code">cpu_include_dir</code> sets default locations for the files controlling
+<a class="link" href="internals.html#internals.thread_safety" title="Thread Safety">Thread safety</a> and <a class="link" href="internals.html#internals.numeric_limits" title="Numeric Limits">Numeric limits</a>, if the defaults are not
+appropriate for your chip.
+   </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="internals.char_types"></a>Character Types</h3></div></div></div><p>The library requires that you provide three header files to implement
+character classification, analogous to that provided by the C libraries
+<code class="code">&lt;ctype.h&gt;</code> header.  You can model these on the files provided in
+<code class="code">config/os/generic</code>.  However, these files will almost
+certainly need some modification.
+</p><p>The first file to write is <code class="code">ctype_base.h</code>.  This file provides
+some very basic information about character classification.  The libstdc++
+library assumes that your C library implements <code class="code">&lt;ctype.h&gt;</code> by using
+a table (indexed by character code) containing integers, where each of
+these integers is a bit-mask indicating whether the character is
+upper-case, lower-case, alphabetic, etc.  The <code class="code">ctype_base.h</code>
+file gives the type of the integer, and the values of the various bit
+masks.  You will have to peer at your own <code class="code">&lt;ctype.h&gt;</code> to figure out
+how to define the values required by this file.
+   </p><p>The <code class="code">ctype_base.h</code> header file does not need include guards. 
+It should contain a single <code class="code">struct</code> definition called
+<code class="code">ctype_base</code>.  This <code class="code">struct</code> should contain two type
+declarations, and one enumeration declaration, like this example, taken
+from the IRIX configuration:
+   </p><pre class="programlisting">
+  struct ctype_base
+     {
+       typedef unsigned int 	mask;
+       typedef int* 		__to_type;
+     
+       enum
+       {
+         space = _ISspace,
+         print = _ISprint,
+         cntrl = _IScntrl,
+         upper = _ISupper,
+         lower = _ISlower,
+         alpha = _ISalpha,
+         digit = _ISdigit,
+         punct = _ISpunct,
+         xdigit = _ISxdigit,
+         alnum = _ISalnum,
+         graph = _ISgraph
+       };
+     };
+</pre><p>The <code class="code">mask</code> type is the type of the elements in the table.  If your
+C library uses a table to map lower-case numbers to upper-case numbers,
+and vice versa, you should define <code class="code">__to_type</code> to be the type of the
+elements in that table.  If you don't mind taking a minor performance
+penalty, or if your library doesn't implement <code class="code">toupper</code> and
+<code class="code">tolower</code> in this way, you can pick any pointer-to-integer type,
+but you must still define the type.
+</p><p>The enumeration should give definitions for all the values in the above
+example, using the values from your native <code class="code">&lt;ctype.h&gt;</code>.  They can
+be given symbolically (as above), or numerically, if you prefer.  You do
+not have to include <code class="code">&lt;ctype.h&gt;</code> in this header; it will always be
+included before <code class="code">ctype_base.h</code> is included.
+   </p><p>The next file to write is <code class="code">ctype_noninline.h</code>, which also does
+not require include guards.  This file defines a few member functions
+that will be included in <code class="code">include/bits/locale_facets.h</code>.  The first
+function that must be written is the <code class="code">ctype&lt;char&gt;::ctype</code>
+constructor.  Here is the IRIX example:
+   </p><pre class="programlisting">
+ctype&lt;char&gt;::ctype(const mask* __table = 0, bool __del = false,
+           size_t __refs = 0)
+       : _Ctype_nois&lt;char&gt;(__refs), _M_del(__table != 0 &amp;&amp; __del),
+         _M_toupper(NULL),
+         _M_tolower(NULL),
+         _M_ctable(NULL),
+         _M_table(!__table
+                  ? (const mask*) (__libc_attr._ctype_tbl-&gt;_class + 1)
+                  : __table)
+       { }
+</pre><p>There are two parts of this that you might choose to alter. The first,
+and most important, is the line involving <code class="code">__libc_attr</code>.  That is
+IRIX system-dependent code that gets the base of the table mapping
+character codes to attributes.  You need to substitute code that obtains
+the address of this table on your system.  If you want to use your
+operating system's tables to map upper-case letters to lower-case, and
+vice versa, you should initialize <code class="code">_M_toupper</code> and
+<code class="code">_M_tolower</code> with those tables, in similar fashion.
+</p><p>Now, you have to write two functions to convert from upper-case to
+lower-case, and vice versa.  Here are the IRIX versions:
+   </p><pre class="programlisting">
+     char
+     ctype&lt;char&gt;::do_toupper(char __c) const
+     { return _toupper(__c); }
+     
+     char
+     ctype&lt;char&gt;::do_tolower(char __c) const
+     { return _tolower(__c); }
+</pre><p>Your C library provides equivalents to IRIX's <code class="code">_toupper</code> and
+<code class="code">_tolower</code>.  If you initialized <code class="code">_M_toupper</code> and
+<code class="code">_M_tolower</code> above, then you could use those tables instead.
+</p><p>Finally, you have to provide two utility functions that convert strings
+of characters.  The versions provided here will always work - but you
+could use specialized routines for greater performance if you have
+machinery to do that on your system:
+   </p><pre class="programlisting">
+     const char*
+     ctype&lt;char&gt;::do_toupper(char* __low, const char* __high) const
+     {
+       while (__low &lt; __high)
+         {
+           *__low = do_toupper(*__low);
+           ++__low;
+         }
+       return __high;
+     }
+     
+     const char*
+     ctype&lt;char&gt;::do_tolower(char* __low, const char* __high) const
+     {
+       while (__low &lt; __high)
+         {
+           *__low = do_tolower(*__low);
+           ++__low;
+         }
+       return __high;
+     }
+</pre><p>You must also provide the <code class="code">ctype_inline.h</code> file, which
+contains a few more functions.  On most systems, you can just copy
+<code class="code">config/os/generic/ctype_inline.h</code> and use it on your system.
+   </p><p>In detail, the functions provided test characters for particular
+properties; they are analogous to the functions like <code class="code">isalpha</code> and
+<code class="code">islower</code> provided by the C library.
+   </p><p>The first function is implemented like this on IRIX:
+   </p><pre class="programlisting">
+     bool
+     ctype&lt;char&gt;::
+     is(mask __m, char __c) const throw()
+     { return (_M_table)[(unsigned char)(__c)] &amp; __m; }
+</pre><p>The <code class="code">_M_table</code> is the table passed in above, in the constructor. 
+This is the table that contains the bitmasks for each character.  The
+implementation here should work on all systems.
+</p><p>The next function is:
+   </p><pre class="programlisting">
+     const char*
+     ctype&lt;char&gt;::
+     is(const char* __low, const char* __high, mask* __vec) const throw()
+     {
+       while (__low &lt; __high)
+         *__vec++ = (_M_table)[(unsigned char)(*__low++)];
+       return __high;
+     }
+</pre><p>This function is similar; it copies the masks for all the characters
+from <code class="code">__low</code> up until <code class="code">__high</code> into the vector given by
+<code class="code">__vec</code>.
+</p><p>The last two functions again are entirely generic:
+   </p><pre class="programlisting">
+     const char*
+     ctype&lt;char&gt;::
+     scan_is(mask __m, const char* __low, const char* __high) const throw()
+     {
+       while (__low &lt; __high &amp;&amp; !this-&gt;is(__m, *__low))
+         ++__low;
+       return __low;
+     }
+     
+     const char*
+     ctype&lt;char&gt;::
+     scan_not(mask __m, const char* __low, const char* __high) const throw()
+     {
+       while (__low &lt; __high &amp;&amp; this-&gt;is(__m, *__low))
+         ++__low;
+       return __low;
+     }
+</pre></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="internals.thread_safety"></a>Thread Safety</h3></div></div></div><p>The C++ library string functionality requires a couple of atomic
+operations to provide thread-safety.  If you don't take any special
+action, the library will use stub versions of these functions that are
+not thread-safe.  They will work fine, unless your applications are
+multi-threaded.
+</p><p>If you want to provide custom, safe, versions of these functions, there
+are two distinct approaches.  One is to provide a version for your CPU,
+using assembly language constructs.  The other is to use the
+thread-safety primitives in your operating system.  In either case, you
+make a file called <code class="code">atomicity.h</code>, and the variable
+<code class="code">ATOMICITYH</code> must point to this file.
+   </p><p>If you are using the assembly-language approach, put this code in
+<code class="code">config/cpu/&lt;chip&gt;/atomicity.h</code>, where chip is the name of
+your processor (see <a class="link" href="internals.html#internals.cpu" title="CPU">CPU</a>).  No additional changes are necessary to
+locate the file in this case; <code class="code">ATOMICITYH</code> will be set by default.
+   </p><p>If you are using the operating system thread-safety primitives approach,
+you can also put this code in the same CPU directory, in which case no more
+work is needed to locate the file.  For examples of this approach,
+see the <code class="code">atomicity.h</code> file for IRIX or IA64.
+   </p><p>Alternatively, if the primitives are more closely related to the OS
+than they are to the CPU, you can put the <code class="code">atomicity.h</code> file in
+the <a class="link" href="internals.html#internals.os" title="Operating System">Operating system</a> directory instead.  In this case, you must
+edit <code class="code">configure.host</code>, and in the switch statement that handles
+operating systems, override the <code class="code">ATOMICITYH</code> variable to point to
+the appropriate <code class="code">os_include_dir</code>.  For examples of this approach,
+see the <code class="code">atomicity.h</code> file for AIX.
+   </p><p>With those bits out of the way, you have to actually write
+<code class="code">atomicity.h</code> itself.  This file should be wrapped in an
+include guard named <code class="code">_GLIBCXX_ATOMICITY_H</code>.  It should define one
+type, and two functions.
+   </p><p>The type is <code class="code">_Atomic_word</code>.  Here is the version used on IRIX:
+   </p><pre class="programlisting">
+typedef long _Atomic_word;
+</pre><p>This type must be a signed integral type supporting atomic operations. 
+If you're using the OS approach, use the same type used by your system's
+primitives.  Otherwise, use the type for which your CPU provides atomic
+primitives.
+</p><p>Then, you must provide two functions.  The bodies of these functions
+must be equivalent to those provided here, but using atomic operations:
+   </p><pre class="programlisting">
+     static inline _Atomic_word
+     __attribute__ ((__unused__))
+     __exchange_and_add (_Atomic_word* __mem, int __val)
+     {
+       _Atomic_word __result = *__mem;
+       *__mem += __val;
+       return __result;
+     }
+     
+     static inline void
+     __attribute__ ((__unused__))
+     __atomic_add (_Atomic_word* __mem, int __val)
+     {
+       *__mem += __val;
+     }
+</pre></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="internals.numeric_limits"></a>Numeric Limits</h3></div></div></div><p>The C++ library requires information about the fundamental data types,
+such as the minimum and maximum representable values of each type. 
+You can define each of these values individually, but it is usually
+easiest just to indicate how many bits are used in each of the data
+types and let the library do the rest.  For information about the
+macros to define, see the top of <code class="code">include/bits/std_limits.h</code>.
+</p><p>If you need to define any macros, you can do so in <code class="code">os_defines.h</code>. 
+However, if all operating systems for your CPU are likely to use the
+same values, you can provide a CPU-specific file instead so that you
+do not have to provide the same definitions for each operating system. 
+To take that approach, create a new file called <code class="code">cpu_limits.h</code> in
+your CPU configuration directory (see <a class="link" href="internals.html#internals.cpu" title="CPU">CPU</a>).
+   </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="internals.libtool"></a>Libtool</h3></div></div></div><p>The C++ library is compiled, archived and linked with libtool. 
+Explaining the full workings of libtool is beyond the scope of this
+document, but there are a few, particular bits that are necessary for
+porting.
+</p><p>Some parts of the libstdc++ library are compiled with the libtool
+<code class="code">--tags CXX</code> option (the C++ definitions for libtool).  Therefore,
+<code class="code">ltcf-cxx.sh</code> in the top-level directory needs to have the correct
+logic to compile and archive objects equivalent to the C version of libtool,
+<code class="code">ltcf-c.sh</code>.  Some libtool targets have definitions for C but not
+for C++, or C++ definitions which have not been kept up to date.
+   </p><p>The C++ run-time library contains initialization code that needs to be
+run as the library is loaded.  Often, that requires linking in special
+object files when the C++ library is built as a shared library, or
+taking other system-specific actions.
+   </p><p>The libstdc++ library is linked with the C version of libtool, even
+though it is a C++ library.  Therefore, the C version of libtool needs to
+ensure that the run-time library initializers are run.  The usual way to
+do this is to build the library using <code class="code">gcc -shared</code>.
+   </p><p>If you need to change how the library is linked, look at
+<code class="code">ltcf-c.sh</code> in the top-level directory.  Find the switch statement
+that sets <code class="code">archive_cmds</code>.  Here, adjust the setting for your
+operating system.
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="appendix_porting.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix_porting.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="abi.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Appendix B. Porting and Maintenance </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> ABI Policy and Guidelines</td></tr></table></div></body></html>

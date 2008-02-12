@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CString (MFC)</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="bk01pt05ch13.html" title="Chapter 13. String Classes" /><link rel="prev" href="bk01pt05ch13s05.html" title="Shrink to Fit" /><link rel="next" href="localization.html" title="Part VI. Localization" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">CString (MFC)</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt05ch13s05.html">Prev</a> </td><th width="60%" align="center">Chapter 13. String Classes</th><td width="20%" align="right"> <a accesskey="n" href="localization.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="strings.string.Cstring"></a>CString (MFC)</h2></div></div></div><p>
+    </p><p>A common lament seen in various newsgroups deals with the Standard
+      string class as opposed to the Microsoft Foundation Class called
+      CString.  Often programmers realize that a standard portable
+      answer is better than a proprietary nonportable one, but in porting
+      their application from a Win32 platform, they discover that they
+      are relying on special functions offered by the CString class.
+   </p><p>Things are not as bad as they seem.  In
+      <a class="ulink" href="http://gcc.gnu.org/ml/gcc/1999-04n/msg00236.html" target="_top">this
+      message</a>, Joe Buck points out a few very important things:
+   </p><div class="itemizedlist"><ul type="disc"><li><p>The Standard <code class="code">string</code> supports all the operations
+             that CString does, with three exceptions.
+         </p></li><li><p>Two of those exceptions (whitespace trimming and case 
+             conversion) are trivial to implement.  In fact, we do so
+             on this page.
+         </p></li><li><p>The third is <code class="code">CString::Format</code>, which allows formatting
+             in the style of <code class="code">sprintf</code>.  This deserves some mention:
+         </p></li></ul></div><p>
+      The old libg++ library had a function called form(), which did much
+      the same thing.  But for a Standard solution, you should use the
+      stringstream classes.  These are the bridge between the iostream
+      hierarchy and the string class, and they operate with regular
+      streams seamlessly because they inherit from the iostream
+      hierarchy.  An quick example:
+   </p><pre class="programlisting">
+   #include &lt;iostream&gt;
+   #include &lt;string&gt;
+   #include &lt;sstream&gt;
+
+   string f (string&amp; incoming)     // incoming is "foo  N"
+   {
+       istringstream   incoming_stream(incoming);
+       string          the_word;
+       int             the_number;
+
+       incoming_stream &gt;&gt; the_word        // extract "foo"
+                       &gt;&gt; the_number;     // extract N
+
+       ostringstream   output_stream;
+       output_stream &lt;&lt; "The word was " &lt;&lt; the_word
+                     &lt;&lt; " and 3*N was " &lt;&lt; (3*the_number);
+
+       return output_stream.str();
+   } </pre><p>A serious problem with CString is a design bug in its memory
+      allocation.  Specifically, quoting from that same message:
+   </p><pre class="programlisting">
+   CString suffers from a common programming error that results in
+   poor performance.  Consider the following code:
+   
+   CString n_copies_of (const CString&amp; foo, unsigned n)
+   {
+           CString tmp;
+           for (unsigned i = 0; i &lt; n; i++)
+                   tmp += foo;
+           return tmp;
+   }
+   
+   This function is O(n^2), not O(n).  The reason is that each +=
+   causes a reallocation and copy of the existing string.  Microsoft
+   applications are full of this kind of thing (quadratic performance
+   on tasks that can be done in linear time) -- on the other hand,
+   we should be thankful, as it's created such a big market for high-end
+   ix86 hardware. :-)
+   
+   If you replace CString with string in the above function, the
+   performance is O(n).
+   </pre><p>Joe Buck also pointed out some other things to keep in mind when
+      comparing CString and the Standard string class:
+   </p><div class="itemizedlist"><ul type="disc"><li><p>CString permits access to its internal representation; coders
+             who exploited that may have problems moving to <code class="code">string</code>.
+         </p></li><li><p>Microsoft ships the source to CString (in the files
+             MFC\SRC\Str{core,ex}.cpp), so you could fix the allocation
+             bug and rebuild your MFC libraries.
+             <span class="emphasis"><em><span class="emphasis"><em>Note:</em></span> It looks like the CString shipped
+             with VC++6.0 has fixed this, although it may in fact have been
+             one of the VC++ SPs that did it.</em></span>
+         </p></li><li><p><code class="code">string</code> operations like this have O(n) complexity
+             <span class="emphasis"><em>if the implementors do it correctly</em></span>.  The libstdc++
+             implementors did it correctly.  Other vendors might not.
+         </p></li><li><p>While parts of the SGI STL are used in libstdc++, their
+             string class is not.  The SGI <code class="code">string</code> is essentially
+             <code class="code">vector&lt;char&gt;</code> and does not do any reference
+             counting like libstdc++'s does.  (It is O(n), though.)
+             So if you're thinking about SGI's string or rope classes,
+             you're now looking at four possibilities:  CString, the
+             libstdc++ string, the SGI string, and the SGI rope, and this
+             is all before any allocator or traits customizations!  (More
+             choices than you can shake a stick at -- want fries with that?)
+         </p></li></ul></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt05ch13s05.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="bk01pt05ch13.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="localization.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Shrink to Fit </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Part VI. Localization</td></tr></table></div></body></html>

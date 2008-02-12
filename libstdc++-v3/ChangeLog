@@ -1,5 +1,9 @@
 2008-02-11  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* doc/html/*: Populate with regenerated files.
+
+2008-02-11  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* doc/html/*: Remove all but contents of ext/pb_ds.
 	* doc/html/index.html: New.
 	* doc/html/README: New.

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Numeric Properties</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="bk01pt02ch04.html" title="Chapter 4. Types" /><link rel="prev" href="bk01pt02ch04.html" title="Chapter 4. Types" /><link rel="next" href="bk01pt02ch04s03.html" title="NULL" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Numeric Properties</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt02ch04.html">Prev</a> </td><th width="60%" align="center">Chapter 4. Types</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt02ch04s03.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.support.types.numeric_limits"></a>Numeric Properties</h2></div></div></div><p>
+    The header <code class="filename">limits</code> defines
+    traits classes to give access to various implementation
+    defined-aspects of the fundamental types. The traits classes --
+    fourteen in total -- are all specializations of the template class
+    <code class="classname">numeric_limits</code>, documented <a class="ulink" href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/structstd_1_1numeric__limits.html" target="_top">here</a>
+    and defined as follows:
+    </p><pre class="programlisting">
+   template&lt;typename T&gt; 
+     struct class 
+     {
+       static const bool is_specialized;
+       static T max() throw();
+       static T min() throw();
+
+       static const int digits;
+       static const int digits10;
+       static const bool is_signed;
+       static const bool is_integer;
+       static const bool is_exact;
+       static const int radix;
+       static T epsilon() throw();
+       static T round_error() throw();
+
+       static const int min_exponent;
+       static const int min_exponent10;
+       static const int max_exponent;
+       static const int max_exponent10;
+
+       static const bool has_infinity;
+       static const bool has_quiet_NaN;
+       static const bool has_signaling_NaN;
+       static const float_denorm_style has_denorm;
+       static const bool has_denorm_loss;
+       static T infinity() throw();
+       static T quiet_NaN() throw();
+       static T denorm_min() throw();
+
+       static const bool is_iec559;
+       static const bool is_bounded;
+       static const bool is_modulo;
+
+       static const bool traps;
+       static const bool tinyness_before;
+       static const float_round_style round_style;
+     };
+   </pre></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt02ch04.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="bk01pt02ch04.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="bk01pt02ch04s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 4. Types </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> NULL</td></tr></table></div></body></html>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Macros</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="using.html" title="Chapter 3. Using" /><link rel="prev" href="bk01pt01ch03s03.html" title="Namespaces" /><link rel="next" href="bk01pt01ch03s05.html" title="Concurrency" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Macros</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt01ch03s03.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt01ch03s05.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.using.macros"></a>Macros</h2></div></div></div><p>All pre-processor switches and configurations are all gathered
+      in the file <code class="code">c++config.h</code>, which is generated during
+      the libstdc++ configuration and build process, and included by
+      files part of the public libstdc++ API. Most of these macros
+      should not be used by consumers of libstdc++, and are reserved
+      for internal implementation use. <span class="emphasis"><em>These macros cannot be
+      redefined</em></span>. However, a select handful of these macro
+      control libstdc++ extensions and extra features, or provide
+      versioning information for the API, and are able to be used.
+   </p><p>All library macros begin with <code class="code">_GLIBCXX_</code> (except for
+   versions 3.1.x to 3.3.x, which use <code class="code">_GLIBCPP_</code>).
+   </p><p>Below is the macro which users may check for library version
+      information. </p><div class="variablelist"><dl><dt><span class="term"><code class="code">__GLIBCXX__</code></span></dt><dd><p>The current version of
+    libstdc++ in compressed ISO date format, form of an unsigned
+    long. For details on the value of this particular macro for a
+    particular release, please consult this <a class="ulink" href="abi.html" target="_top">
+    document</a>.
+    </p></dd></dl></div><p>Below are the macros which users may change with #define/#undef or
+      with -D/-U compiler flags.  The default state of the symbol is
+      listed.</p><p>“<span class="quote">Configurable</span>” (or “<span class="quote">Not configurable</span>”) means
+      that the symbol is initially chosen (or not) based on
+      --enable/--disable options at library build and configure time
+      (documented <a class="link" href="bk01pt01ch02.html#manual.intro.setup.configure" title="Configure">here</a>), with the
+      various --enable/--disable choices being translated to
+      #define/#undef).
+   </p><p> <acronym class="acronym">ABI</acronym> means that changing from the default value may
+  mean changing the <acronym class="acronym">ABI</acronym> of compiled code. In other words, these
+  choices control code which has already been compiled (i.e., in a
+  binary such as libstdc++.a/.so).  If you explicitly #define or
+  #undef these macros, the <span class="emphasis"><em>headers</em></span> may see different code
+  paths, but the <span class="emphasis"><em>libraries</em></span> which you link against will not.
+  Experimenting with different values with the expectation of
+  consistent linkage requires changing the config headers before
+  building/installing the library.
+   </p><div class="variablelist"><dl><dt><span class="term"><code class="code">_GLIBCXX_DEPRECATED</code></span></dt><dd><p>
+	Defined by default. Not configurable. ABI-changing. Turning this off
+        removes older ARM-style iostreams code, and other anachronisms
+        from the API.  This macro is dependent on the version of the
+        standard being tracked, and as a result may give different results for
+        <code class="code">-std=c++98</code> and <code class="code">-std=c++0x</code>. This may
+        be useful in updating old C++ code which no longer meet the
+        requirements of the language, or for checking current code
+        against new language standards.  
+    </p></dd><dt><span class="term"><code class="code">_GLIBCXX_FORCE_NEW</code></span></dt><dd><p>
+	Undefined by default. When defined, memory allocation and
+	allocators controlled by libstdc++ call operator new/delete
+	without caching and pooling. Configurable via
+	<code class="code">--enable-libstdcxx-allocator</code>. ABI-changing.
+      </p></dd><dt><span class="term"><code class="code">_GLIBCXX_CONCEPT_CHECKS</code></span></dt><dd><p>
+	Undefined by default.  Configurable via
+	<code class="code">--enable-concept-checks</code>.  When defined, performs
+	compile-time checking on certain template instantiations to
+	detect violations of the requirements of the standard.  This
+	is described in more detail <a class="ulink" href="../19_diagnostics/howto.html#3" target="_top">here</a>.
+      </p></dd><dt><span class="term"><code class="code">_GLIBCXX_DEBUG</code></span></dt><dd><p>
+	Undefined by default. When defined, compiles
+    user code using the <a class="ulink" href="../ext/debug.html#safe" target="_top">libstdc++ debug
+    mode</a>.
+      </p></dd><dt><span class="term"><code class="code">_GLIBCXX_DEBUG_PEDANTIC</code></span></dt><dd><p>
+	Undefined by default. When defined while
+    compiling with the <a class="ulink" href="../ext/debug.html#safe" target="_top">libstdc++ debug
+    mode</a>, makes the debug mode extremely picky by making the use
+    of libstdc++ extensions and libstdc++-specific behavior into
+    errors.
+      </p></dd><dt><span class="term"><code class="code">_GLIBCXX_PARALLEL</code></span></dt><dd><p>Undefined by default. When defined, compiles
+    user code using the <a class="ulink" href="../ext/parallel_mode.html" target="_top">libstdc++ parallel
+    mode</a>.
+      </p></dd></dl></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt01ch03s03.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="using.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="bk01pt01ch03s05.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Namespaces </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Concurrency</td></tr></table></div></body></html>

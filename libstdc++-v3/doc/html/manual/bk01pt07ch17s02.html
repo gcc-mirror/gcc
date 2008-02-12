@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>bitset</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="bk01pt07ch17.html" title="Chapter 17. Associative" /><link rel="prev" href="bk01pt07ch17.html" title="Chapter 17. Associative" /><link rel="next" href="bk01pt07ch18.html" title="Chapter 18. Interacting with C" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">bitset</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt07ch17.html">Prev</a> </td><th width="60%" align="center">Chapter 17. Associative</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt07ch18.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="containers.associative.bitset"></a>bitset</h2></div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="associative.bitset.size_variable"></a>Size Variable</h3></div></div></div><p>
+	No, you cannot write code of the form
+      </p><pre class="programlisting">
+      #include &lt;bitset&gt;
+
+      void foo (size_t n)
+      {
+          std::bitset&lt;n&gt;   bits;
+          ....
+      } 
+   </pre><p>
+     because <code class="code">n</code> must be known at compile time.  Your
+     compiler is correct; it is not a bug.  That's the way templates
+     work.  (Yes, it <span class="emphasis"><em>is</em></span> a feature.)
+   </p><p>
+     There are a couple of ways to handle this kind of thing.  Please
+     consider all of them before passing judgement.  They include, in
+     no particular order:
+   </p><div class="itemizedlist"><ul type="disc"><li><p>A very large N in <code class="code">bitset&lt;N&gt;</code>.</p></li><li><p>A container&lt;bool&gt;.</p></li><li><p>Extremely weird solutions.</p></li></ul></div><p>
+     <span class="emphasis"><em>A very large N in
+     <code class="code">bitset&lt;N&gt;</code>.  </em></span> It has been
+     pointed out a few times in newsgroups that N bits only takes up
+     (N/8) bytes on most systems, and division by a factor of eight is
+     pretty impressive when speaking of memory.  Half a megabyte given
+     over to a bitset (recall that there is zero space overhead for
+     housekeeping info; it is known at compile time exactly how large
+     the set is) will hold over four million bits.  If you're using
+     those bits as status flags (e.g.,
+     “<span class="quote">changed</span>”/“<span class="quote">unchanged</span>” flags), that's a
+     <span class="emphasis"><em>lot</em></span> of state.
+   </p><p>
+     You can then keep track of the “<span class="quote">maximum bit used</span>”
+     during some testing runs on representative data, make note of how
+     many of those bits really need to be there, and then reduce N to
+     a smaller number.  Leave some extra space, of course.  (If you
+     plan to write code like the incorrect example above, where the
+     bitset is a local variable, then you may have to talk your
+     compiler into allowing that much stack space; there may be zero
+     space overhead, but it's all allocated inside the object.)
+   </p><p>
+     <span class="emphasis"><em>A container&lt;bool&gt;.  </em></span> The
+     Committee made provision for the space savings possible with that
+     (N/8) usage previously mentioned, so that you don't have to do
+     wasteful things like <code class="code">Container&lt;char&gt;</code> or
+     <code class="code">Container&lt;short int&gt;</code>.  Specifically,
+     <code class="code">vector&lt;bool&gt;</code> is required to be specialized for
+     that space savings.
+   </p><p>
+     The problem is that <code class="code">vector&lt;bool&gt;</code> doesn't
+     behave like a normal vector anymore.  There have been recent
+     journal articles which discuss the problems (the ones by Herb
+     Sutter in the May and July/August 1999 issues of C++ Report cover
+     it well).  Future revisions of the ISO C++ Standard will change
+     the requirement for <code class="code">vector&lt;bool&gt;</code>
+     specialization.  In the meantime, <code class="code">deque&lt;bool&gt;</code>
+     is recommended (although its behavior is sane, you probably will
+     not get the space savings, but the allocation scheme is different
+     than that of vector).
+   </p><p>
+     <span class="emphasis"><em>Extremely weird solutions.  </em></span> If
+     you have access to the compiler and linker at runtime, you can do
+     something insane, like figuring out just how many bits you need,
+     then writing a temporary source code file.  That file contains an
+     instantiation of <code class="code">bitset</code> for the required number of
+     bits, inside some wrapper functions with unchanging signatures.
+     Have your program then call the compiler on that file using
+     Position Independent Code, then open the newly-created object
+     file and load those wrapper functions.  You'll have an
+     instantiation of <code class="code">bitset&lt;N&gt;</code> for the exact
+     <code class="code">N</code> that you need at the time.  Don't forget to delete
+     the temporary files.  (Yes, this <span class="emphasis"><em>can</em></span> be, and
+     <span class="emphasis"><em>has been</em></span>, done.)
+   </p><p>
+     This would be the approach of either a visionary genius or a
+     raving lunatic, depending on your programming and management
+     style.  Probably the latter.
+   </p><p>
+     Which of the above techniques you use, if any, are up to you and
+     your intended application.  Some time/space profiling is
+     indicated if it really matters (don't just guess).  And, if you
+     manage to do anything along the lines of the third category, the
+     author would love to hear from you...
+   </p><p>
+     Also note that the implementation of bitset used in libstdc++ has
+     <a class="ulink" href="../ext/sgiexts.html#ch23" target="_top">some extensions</a>.
+   </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="associative.bitset.type_string"></a>Type String</h3></div></div></div><p>
+      </p><p>
+     Bitmasks do not take char* nor const char* arguments in their
+     constructors.  This is something of an accident, but you can read
+     about the problem: follow the library's “<span class="quote">Links</span>” from
+     the homepage, and from the C++ information “<span class="quote">defect
+     reflector</span>” link, select the library issues list.  Issue
+     number 116 describes the problem.
+   </p><p>
+     For now you can simply make a temporary string object using the
+     constructor expression:
+   </p><pre class="programlisting">
+      std::bitset&lt;5&gt; b ( std::string(“<span class="quote">10110</span>”) );
+   </pre><p>
+     instead of
+   </p><pre class="programlisting">
+      std::bitset&lt;5&gt; b ( “<span class="quote">10110</span>” );    // invalid
+    </pre></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt07ch17.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="bk01pt07ch17.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="bk01pt07ch18.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 17. Associative </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 18. Interacting with C</td></tr></table></div></body></html>

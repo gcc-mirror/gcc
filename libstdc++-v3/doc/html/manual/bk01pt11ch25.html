@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 25. Stream Buffers</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="io.html" title="Part XI. Input and Output" /><link rel="prev" href="bk01pt11ch24.html" title="Chapter 24. Iostream Objects" /><link rel="next" href="bk01pt11ch25s02.html" title="Buffering" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 25. Stream Buffers</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt11ch24.html">Prev</a> </td><th width="60%" align="center">Part XI. Input and Output</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt11ch25s02.html">Next</a></td></tr></table><hr /></div><div class="chapter" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="manual.io.streambufs"></a>Chapter 25. Stream Buffers</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="bk01pt11ch25.html#io.streambuf.derived">Derived streambuf Classes</a></span></dt><dt><span class="sect1"><a href="bk01pt11ch25s02.html">Buffering</a></span></dt></dl></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="io.streambuf.derived"></a>Derived streambuf Classes</h2></div></div></div><p>
+    </p><p>Creating your own stream buffers for I/O can be remarkably easy.
+      If you are interested in doing so, we highly recommend two very
+      excellent books:
+      <a class="ulink" href="http://www.langer.camelot.de/iostreams.html" target="_top">Standard C++
+      IOStreams and Locales</a> by Langer and Kreft, ISBN 0-201-18395-1, and
+      <a class="ulink" href="http://www.josuttis.com/libbook/" target="_top">The C++ Standard Library</a>
+      by Nicolai Josuttis, ISBN 0-201-37926-0.  Both are published by
+      Addison-Wesley, who isn't paying us a cent for saying that, honest.
+   </p><p>Here is a simple example, io/outbuf1, from the Josuttis text.  It
+      transforms everything sent through it to uppercase.  This version
+      assumes many things about the nature of the character type being
+      used (for more information, read the books or the newsgroups):
+   </p><pre class="programlisting">
+    #include &lt;iostream&gt;
+    #include &lt;streambuf&gt;
+    #include &lt;locale&gt;
+    #include &lt;cstdio&gt;
+
+    class outbuf : public std::streambuf
+    {
+      protected:
+	/* central output function
+	 * - print characters in uppercase mode
+	 */
+	virtual int_type overflow (int_type c) {
+	    if (c != EOF) {
+		// convert lowercase to uppercase
+		c = std::toupper(static_cast&lt;char&gt;(c),getloc());
+
+		// and write the character to the standard output
+		if (putchar(c) == EOF) {
+		    return EOF;
+		}
+	    }
+	    return c;
+	}
+    };
+
+    int main()
+    {
+	// create special output buffer
+	outbuf ob;
+	// initialize output stream with that output buffer
+	std::ostream out(&amp;ob);
+
+	out &lt;&lt; "31 hexadecimal: "
+	    &lt;&lt; std::hex &lt;&lt; 31 &lt;&lt; std::endl;
+	return 0;
+    }
+   </pre><p>Try it yourself!  More examples can be found in 3.1.x code, in
+      <code class="code">include/ext/*_filebuf.h</code>, and on
+      <a class="ulink" href="http://www.informatik.uni-konstanz.de/~kuehl/c++/iostream/" target="_top">Dietmar
+      Kühl's IOStreams page</a>.
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt11ch24.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="io.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="bk01pt11ch25s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 24. Iostream Objects </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Buffering</td></tr></table></div></body></html>

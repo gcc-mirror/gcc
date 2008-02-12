@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Buffering</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="bk01pt11ch25.html" title="Chapter 25. Stream Buffers" /><link rel="prev" href="bk01pt11ch25.html" title="Chapter 25. Stream Buffers" /><link rel="next" href="bk01pt11ch26.html" title="Chapter 26. Memory Based Streams" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Buffering</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt11ch25.html">Prev</a> </td><th width="60%" align="center">Chapter 25. Stream Buffers</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt11ch26.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="io.streambuf.buffering"></a>Buffering</h2></div></div></div><p>First, are you sure that you understand buffering?  Particularly
+      the fact that C++ may not, in fact, have anything to do with it?
+   </p><p>The rules for buffering can be a little odd, but they aren't any
+      different from those of C.  (Maybe that's why they can be a bit
+      odd.)  Many people think that writing a newline to an output
+      stream automatically flushes the output buffer.  This is true only
+      when the output stream is, in fact, a terminal and not a file
+      or some other device -- and <span class="emphasis"><em>that</em></span> may not even be true
+      since C++ says nothing about files nor terminals.  All of that is
+      system-dependent.  (The "newline-buffer-flushing only occurring
+      on terminals" thing is mostly true on Unix systems, though.)
+   </p><p>Some people also believe that sending <code class="code">endl</code> down an
+      output stream only writes a newline.  This is incorrect; after a
+      newline is written, the buffer is also flushed.  Perhaps this
+      is the effect you want when writing to a screen -- get the text
+      out as soon as possible, etc -- but the buffering is largely
+      wasted when doing this to a file:
+   </p><pre class="programlisting">
+   output &lt;&lt; "a line of text" &lt;&lt; endl;
+   output &lt;&lt; some_data_variable &lt;&lt; endl;
+   output &lt;&lt; "another line of text" &lt;&lt; endl; </pre><p>The proper thing to do in this case to just write the data out
+      and let the libraries and the system worry about the buffering.
+      If you need a newline, just write a newline:
+   </p><pre class="programlisting">
+   output &lt;&lt; "a line of text\n"
+          &lt;&lt; some_data_variable &lt;&lt; '\n'
+          &lt;&lt; "another line of text\n"; </pre><p>I have also joined the output statements into a single statement.
+      You could make the code prettier by moving the single newline to
+      the start of the quoted text on the last line, for example.
+   </p><p>If you do need to flush the buffer above, you can send an
+      <code class="code">endl</code> if you also need a newline, or just flush the buffer
+      yourself:
+   </p><pre class="programlisting">
+   output &lt;&lt; ...... &lt;&lt; flush;    // can use std::flush manipulator
+   output.flush();               // or call a member fn </pre><p>On the other hand, there are times when writing to a file should
+      be like writing to standard error; no buffering should be done 
+      because the data needs to appear quickly (a prime example is a
+      log file for security-related information).  The way to do this is
+      just to turn off the buffering <span class="emphasis"><em>before any I/O operations at
+      all</em></span> have been done (note that opening counts as an I/O operation):
+   </p><pre class="programlisting">
+   std::ofstream    os;
+   std::ifstream    is;
+   int   i;
+
+   os.rdbuf()-&gt;pubsetbuf(0,0);
+   is.rdbuf()-&gt;pubsetbuf(0,0);
+
+   os.open("/foo/bar/baz");
+   is.open("/qux/quux/quuux");
+   ...
+   os &lt;&lt; "this data is written immediately\n";
+   is &gt;&gt; i;   // and this will probably cause a disk read </pre><p>Since all aspects of buffering are handled by a streambuf-derived
+      member, it is necessary to get at that member with <code class="code">rdbuf()</code>.
+      Then the public version of <code class="code">setbuf</code> can be called.  The 
+      arguments are the same as those for the Standard C I/O Library
+      function (a buffer area followed by its size).
+   </p><p>A great deal of this is implementation-dependent.  For example,
+      <code class="code">streambuf</code> does not specify any actions for its own 
+      <code class="code">setbuf()</code>-ish functions; the classes derived from
+      <code class="code">streambuf</code> each define behavior that "makes 
+      sense" for that class:  an argument of (0,0) turns off buffering
+      for <code class="code">filebuf</code> but does nothing at all for its siblings
+      <code class="code">stringbuf</code> and <code class="code">strstreambuf</code>, and specifying
+      anything other than (0,0) has varying effects.
+      User-defined classes derived from <code class="code">streambuf</code> can
+      do whatever they want.  (For <code class="code">filebuf</code> and arguments for
+      <code class="code">(p,s)</code> other than zeros, libstdc++ does what you'd expect:
+      the first <code class="code">s</code> bytes of <code class="code">p</code> are used as a buffer,
+      which you must allocate and deallocate.)
+   </p><p>A last reminder:  there are usually more buffers involved than
+      just those at the language/library level.  Kernel buffers, disk
+      buffers, and the like will also have an effect.  Inspecting and
+      changing those are system-dependent.
+   </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt11ch25.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="bk01pt11ch25.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="bk01pt11ch26.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 25. Stream Buffers </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 26. Memory Based Streams</td></tr></table></div></body></html>

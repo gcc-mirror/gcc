@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 18. Interacting with C</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="containers.html" title="Part VII. Containers" /><link rel="prev" href="bk01pt07ch17s02.html" title="bitset" /><link rel="next" href="iterators.html" title="Part VIII. Iterators" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 18. Interacting with C</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt07ch17s02.html">Prev</a> </td><th width="60%" align="center">Part VII. Containers</th><td width="20%" align="right"> <a accesskey="n" href="iterators.html">Next</a></td></tr></table><hr /></div><div class="chapter" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="manual.containers.c"></a>Chapter 18. Interacting with C</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="bk01pt07ch18.html#containers.c.vs_array">Containers vs. Arrays</a></span></dt></dl></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="containers.c.vs_array"></a>Containers vs. Arrays</h2></div></div></div><p>
+     You're writing some code and can't decide whether to use builtin
+     arrays or some kind of container.  There are compelling reasons
+     to use one of the container classes, but you're afraid that
+     you'll eventually run into difficulties, change everything back
+     to arrays, and then have to change all the code that uses those
+     data types to keep up with the change.
+   </p><p>
+     If your code makes use of the standard algorithms, this isn't as
+     scary as it sounds.  The algorithms don't know, nor care, about
+     the kind of “<span class="quote">container</span>” on which they work, since
+     the algorithms are only given endpoints to work with.  For the
+     container classes, these are iterators (usually
+     <code class="code">begin()</code> and <code class="code">end()</code>, but not always).
+     For builtin arrays, these are the address of the first element
+     and the <a class="ulink" href="../24_iterators/howto.html#2" target="_top">past-the-end</a> element.
+   </p><p>
+     Some very simple wrapper functions can hide all of that from the
+     rest of the code.  For example, a pair of functions called
+     <code class="code">beginof</code> can be written, one that takes an array,
+     another that takes a vector.  The first returns a pointer to the
+     first element, and the second returns the vector's
+     <code class="code">begin()</code> iterator.
+   </p><p>
+     The functions should be made template functions, and should also
+     be declared inline.  As pointed out in the comments in the code
+     below, this can lead to <code class="code">beginof</code> being optimized out
+     of existence, so you pay absolutely nothing in terms of increased
+     code size or execution time.
+   </p><p>
+     The result is that if all your algorithm calls look like
+   </p><pre class="programlisting">
+   std::transform(beginof(foo), endof(foo), beginof(foo), SomeFunction);
+   </pre><p>
+     then the type of foo can change from an array of ints to a vector
+     of ints to a deque of ints and back again, without ever changing
+     any client code.
+   </p><p>
+     This author has a collection of such functions, called
+     “<span class="quote">*of</span>” because they all extend the builtin
+     “<span class="quote">sizeof</span>”.  It started with some Usenet discussions
+     on a transparent way to find the length of an array.  A
+     simplified and much-reduced version for easier reading is <a class="ulink" href="wrappers_h.txt" target="_top">given here</a>.
+   </p><p>
+     Astute readers will notice two things at once: first, that the
+     container class is still a <code class="code">vector&lt;T&gt;</code> instead
+     of a more general <code class="code">Container&lt;T&gt;</code>.  This would
+     mean that three functions for <code class="code">deque</code> would have to be
+     added, another three for <code class="code">list</code>, and so on.  This is
+     due to problems with getting template resolution correct; I find
+     it easier just to give the extra three lines and avoid confusion.
+   </p><p>
+     Second, the line
+   </p><pre class="programlisting">
+    inline unsigned int lengthof (T (&amp;)[sz]) { return sz; } 
+   </pre><p>
+     looks just weird!  Hint:  unused parameters can be left nameless.
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt07ch17s02.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="containers.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="iterators.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">bitset </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Part VIII. Iterators</td></tr></table></div></body></html>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Performance</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="bk01pt11ch28.html" title="Chapter 28. Interacting with C" /><link rel="prev" href="bk01pt11ch28.html" title="Chapter 28. Interacting with C" /><link rel="next" href="extensions.html" title="Part XII. Extensions" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Performance</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt11ch28.html">Prev</a> </td><th width="60%" align="center">Chapter 28. Interacting with C</th><td width="20%" align="right"> <a accesskey="n" href="extensions.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.io.c.sync"></a>Performance</h2></div></div></div><p>
+      Pathetic Performance? Ditch C.
+    </p><p>It sounds like a flame on C, but it isn't.  Really.  Calm down.
+      I'm just saying it to get your attention.
+   </p><p>Because the C++ library includes the C library, both C-style and
+      C++-style I/O have to work at the same time.  For example:
+   </p><pre class="programlisting">
+     #include &lt;iostream&gt;
+     #include &lt;cstdio&gt;
+
+     std::cout &lt;&lt; "Hel";
+     std::printf ("lo, worl");
+     std::cout &lt;&lt; "d!\n";
+   </pre><p>This must do what you think it does.
+   </p><p>Alert members of the audience will immediately notice that buffering
+      is going to make a hash of the output unless special steps are taken.
+   </p><p>The special steps taken by libstdc++, at least for version 3.0,
+      involve doing very little buffering for the standard streams, leaving
+      most of the buffering to the underlying C library.  (This kind of
+      thing is tricky to get right.)
+      The upside is that correctness is ensured.  The downside is that
+      writing through <code class="code">cout</code> can quite easily lead to awful
+      performance when the C++ I/O library is layered on top of the C I/O
+      library (as it is for 3.0 by default).  Some patches have been applied
+      which improve the situation for 3.1.
+   </p><p>However, the C and C++ standard streams only need to be kept in sync
+      when both libraries' facilities are in use.  If your program only uses
+      C++ I/O, then there's no need to sync with the C streams.  The right
+      thing to do in this case is to call
+   </p><pre class="programlisting">
+     #include <span class="emphasis"><em>any of the I/O headers such as ios, iostream, etc</em></span>
+
+     std::ios::sync_with_stdio(false);
+   </pre><p>You must do this before performing any I/O via the C++ stream objects.
+      Once you call this, the C++ streams will operate independently of the
+      (unused) C streams.  For GCC 3.x, this means that <code class="code">cout</code> and
+      company will become fully buffered on their own.
+   </p><p>Note, by the way, that the synchronization requirement only applies to
+      the standard streams (<code class="code">cin</code>, <code class="code">cout</code>,
+      <code class="code">cerr</code>,
+      <code class="code">clog</code>, and their wide-character counterparts).  File stream
+      objects that you declare yourself have no such requirement and are fully
+      buffered.
+   </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt11ch28.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="bk01pt11ch28.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="extensions.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 28. Interacting with C </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Part XII. Extensions</td></tr></table></div></body></html>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 29. Compile Time Checks</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="extensions.html" title="Part XII. Extensions" /><link rel="prev" href="bk01pt12pr03.html" title="" /><link rel="next" href="debug_mode.html" title="Chapter 30. Debug Mode" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 29. Compile Time Checks</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt12pr03.html">Prev</a> </td><th width="60%" align="center">Part XII. Extensions</th><td width="20%" align="right"> <a accesskey="n" href="debug_mode.html">Next</a></td></tr></table><hr /></div><div class="chapter" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="manual.ext.compile_checks"></a>Chapter 29. Compile Time Checks</h2></div></div></div><p>
+    Also known as concept checking.
+  </p><p>In 1999, SGI added <span class="emphasis"><em>concept checkers</em></span> to their implementation
+      of the STL:  code which checked the template parameters of
+      instantiated pieces of the STL, in order to insure that the parameters
+      being used met the requirements of the standard.  For example,
+      the Standard requires that types passed as template parameters to
+      <code class="code">vector</code> be “<span class="quote">Assignable</span>” (which means what you think
+      it means).  The checking was done during compilation, and none of
+      the code was executed at runtime.
+   </p><p>Unfortunately, the size of the compiler files grew significantly
+      as a result.  The checking code itself was cumbersome.  And bugs
+      were found in it on more than one occasion.
+   </p><p>The primary author of the checking code, Jeremy Siek, had already
+      started work on a replacement implementation.  The new code has been
+      formally reviewed and accepted into
+      <a class="ulink" href="http://www.boost.org/libs/concept_check/concept_check.htm" target="_top">the
+      Boost libraries</a>, and we are pleased to incorporate it into the
+      GNU C++ library.
+   </p><p>The new version imposes a much smaller space overhead on the generated
+      object file.  The checks are also cleaner and easier to read and
+      understand.
+   </p><p>They are off by default for all versions of GCC from 3.0 to 3.4 (the
+      latest release at the time of writing).
+      They can be enabled at configure time with
+      <a class="ulink" href="../configopts.html" target="_top"><code class="literal">--enable-concept-checks</code></a>.
+      You can enable them on a per-translation-unit basis with
+      <code class="code">#define _GLIBCXX_CONCEPT_CHECKS</code> for GCC 3.4 and higher
+      (or with <code class="code">#define _GLIBCPP_CONCEPT_CHECKS</code> for versions
+      3.1, 3.2 and 3.3).
+   </p><p>Please note that the upcoming C++ standard has first-class
+   support for template parameter constraints based on concepts in the core
+   language. This will obviate the need for the library-simulated concept
+   checking described above.
+   </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt12pr03.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="extensions.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="debug_mode.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 30. Debug Mode</td></tr></table></div></body></html>

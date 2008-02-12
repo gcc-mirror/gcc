@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 17. Associative</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="containers.html" title="Part VII. Containers" /><link rel="prev" href="bk01pt07ch16s02.html" title="vector" /><link rel="next" href="bk01pt07ch17s02.html" title="bitset" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 17. Associative</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt07ch16s02.html">Prev</a> </td><th width="60%" align="center">Part VII. Containers</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt07ch17s02.html">Next</a></td></tr></table><hr /></div><div class="chapter" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="manual.containers.associative"></a>Chapter 17. Associative</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="bk01pt07ch17.html#containers.associative.insert_hints">Insertion Hints</a></span></dt><dt><span class="sect1"><a href="bk01pt07ch17s02.html">bitset</a></span></dt><dd><dl><dt><span class="sect2"><a href="bk01pt07ch17s02.html#associative.bitset.size_variable">Size Variable</a></span></dt><dt><span class="sect2"><a href="bk01pt07ch17s02.html#associative.bitset.type_string">Type String</a></span></dt></dl></dd></dl></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="containers.associative.insert_hints"></a>Insertion Hints</h2></div></div></div><p>
+     Section [23.1.2], Table 69, of the C++ standard lists this
+     function for all of the associative containers (map, set, etc):
+   </p><pre class="programlisting">
+      a.insert(p,t);
+   </pre><p>
+     where 'p' is an iterator into the container 'a', and 't' is the
+     item to insert.  The standard says that “<span class="quote"><code class="code">t</code> is
+     inserted as close as possible to the position just prior to
+     <code class="code">p</code>.</span>” (Library DR #233 addresses this topic,
+     referring to <a class="ulink" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1780.html" target="_top">N1780</a>.
+     Since version 4.2 GCC implements the resolution to DR 233, so
+     that insertions happen as close as possible to the hint. For
+     earlier releases the hint was only used as described below.
+   </p><p>
+     Here we'll describe how the hinting works in the libstdc++
+     implementation, and what you need to do in order to take
+     advantage of it.  (Insertions can change from logarithmic
+     complexity to amortized constant time, if the hint is properly
+     used.)  Also, since the current implementation is based on the
+     SGI STL one, these points may hold true for other library
+     implementations also, since the HP/SGI code is used in a lot of
+     places.
+   </p><p>
+     In the following text, the phrases <span class="emphasis"><em>greater
+     than</em></span> and <span class="emphasis"><em>less than</em></span> refer to the
+     results of the strict weak ordering imposed on the container by
+     its comparison object, which defaults to (basically)
+     “<span class="quote">&lt;</span>”.  Using those phrases is semantically sloppy,
+     but I didn't want to get bogged down in syntax.  I assume that if
+     you are intelligent enough to use your own comparison objects,
+     you are also intelligent enough to assign “<span class="quote">greater</span>”
+     and “<span class="quote">lesser</span>” their new meanings in the next
+     paragraph.  *grin*
+   </p><p>
+     If the <code class="code">hint</code> parameter ('p' above) is equivalent to:
+   </p><div class="itemizedlist"><ul type="disc"><li><p>
+	  <code class="code">begin()</code>, then the item being inserted should
+	  have a key less than all the other keys in the container.
+	  The item will be inserted at the beginning of the container,
+	  becoming the new entry at <code class="code">begin()</code>.
+      </p></li><li><p>
+	  <code class="code">end()</code>, then the item being inserted should have
+	  a key greater than all the other keys in the container.  The
+	  item will be inserted at the end of the container, becoming
+	  the new entry at <code class="code">end()</code>.  
+      </p></li><li><p>
+	  neither <code class="code">begin()</code> nor <code class="code">end()</code>, then:
+	  Let <code class="code">h</code> be the entry in the container pointed to
+	  by <code class="code">hint</code>, that is, <code class="code">h = *hint</code>.  Then
+	  the item being inserted should have a key less than that of
+	  <code class="code">h</code>, and greater than that of the item preceding
+	  <code class="code">h</code>.  The new item will be inserted between
+	  <code class="code">h</code> and <code class="code">h</code>'s predecessor.
+	  </p></li></ul></div><p>
+     For <code class="code">multimap</code> and <code class="code">multiset</code>, the
+     restrictions are slightly looser: “<span class="quote">greater than</span>”
+     should be replaced by “<span class="quote">not less than</span>”and “<span class="quote">less
+     than</span>” should be replaced by “<span class="quote">not greater
+     than.</span>” (Why not replace greater with
+     greater-than-or-equal-to?  You probably could in your head, but
+     the mathematicians will tell you that it isn't the same thing.)
+   </p><p>
+     If the conditions are not met, then the hint is not used, and the
+     insertion proceeds as if you had called <code class="code"> a.insert(t)
+     </code> instead.  (<span class="emphasis"><em>Note </em></span> that GCC releases
+     prior to 3.0.2 had a bug in the case with <code class="code">hint ==
+     begin()</code> for the <code class="code">map</code> and <code class="code">set</code>
+     classes.  You should not use a hint argument in those releases.)
+   </p><p>
+     This behavior goes well with other containers'
+     <code class="code">insert()</code> functions which take an iterator: if used,
+     the new item will be inserted before the iterator passed as an
+     argument, same as the other containers.
+   </p><p>
+     <span class="emphasis"><em>Note </em></span> also that the hint in this
+     implementation is a one-shot.  The older insertion-with-hint
+     routines check the immediately surrounding entries to ensure that
+     the new item would in fact belong there.  If the hint does not
+     point to the correct place, then no further local searching is
+     done; the search begins from scratch in logarithmic time.
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt07ch16s02.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="containers.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="bk01pt07ch17s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">vector </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> bitset</td></tr></table></div></body></html>

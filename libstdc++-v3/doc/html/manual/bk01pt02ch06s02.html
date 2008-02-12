@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Verbose Terminate Handler</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="bk01pt02ch06.html" title="Chapter 6. Termination" /><link rel="prev" href="bk01pt02ch06.html" title="Chapter 6. Termination" /><link rel="next" href="diagnostics.html" title="Part III. Diagnostics" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Verbose Terminate Handler</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt02ch06.html">Prev</a> </td><th width="60%" align="center">Chapter 6. Termination</th><td width="20%" align="right"> <a accesskey="n" href="diagnostics.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="support.termination.verbose"></a>Verbose Terminate Handler</h2></div></div></div><p>
+      If you are having difficulty with uncaught exceptions and want a
+      little bit of help debugging the causes of the core dumps, you can
+      make use of a GNU extension, the verbose terminate handler.
+    </p><pre class="programlisting">
+#include &lt;exception&gt;
+  
+int main()
+{
+  std::set_terminate(__gnu_cxx::__verbose_terminate_handler);
+  ...
+
+  throw <em class="replaceable"><code>anything</code></em>;
+}
+</pre><p>
+     The <code class="function">__verbose_terminate_handler</code> function
+     obtains the name of the current exception, attempts to demangle
+     it, and prints it to stderr.  If the exception is derived from
+     <code class="classname">exception</code> then the output from
+     <code class="function">what()</code> will be included.
+   </p><p>
+     Any replacement termination function is required to kill the
+     program without returning; this one calls abort.
+   </p><p>
+     For example:
+   </p><pre class="programlisting">
+#include &lt;exception&gt;
+#include &lt;stdexcept&gt;
+
+struct argument_error : public std::runtime_error
+{  
+  argument_error(const std::string&amp; s): std::runtime_error(s) { }
+};
+
+int main(int argc)
+{
+  std::set_terminate(__gnu_cxx::__verbose_terminate_handler);
+  if (argc &gt; 5)
+    throw argument_error(“<span class="quote">argc is greater than 5!</span>”);
+  else
+    throw argc;
+}
+</pre><p>
+     With the verbose terminate handler active, this gives:
+   </p><pre class="screen">
+   <code class="computeroutput">
+   % ./a.out
+   terminate called after throwing a `int'
+   Aborted
+   % ./a.out f f f f f f f f f f f
+   terminate called after throwing an instance of `argument_error'
+   what(): argc is greater than 5!
+   Aborted
+   </code>
+   </pre><p>
+     The 'Aborted' line comes from the call to
+     <code class="function">abort()</code>, of course.
+   </p><p>
+     This is the default termination handler; nothing need be done to
+     use it.  To go back to the previous “<span class="quote">silent death</span>”
+     method, simply include <code class="filename">exception</code> and
+     <code class="filename">cstdlib</code>, and call
+   </p><pre class="programlisting">
+     std::set_terminate(std::abort);
+   </pre><p> 
+     After this, all calls to <code class="function">terminate</code> will use
+     <code class="function">abort</code> as the terminate handler.
+   </p><p>
+     Note: the verbose terminate handler will attempt to write to
+     stderr.  If your application closes stderr or redirects it to an
+     inappropriate location,
+     <code class="function">__verbose_terminate_handler</code> will behave in
+     an unspecified manner.
+   </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt02ch06.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="bk01pt02ch06.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="diagnostics.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 6. Termination </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Part III. Diagnostics</td></tr></table></div></body></html>
