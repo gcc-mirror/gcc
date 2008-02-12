@@ -1,5 +1,12 @@
 2008-02-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/35144
+	* tree-sra.c (sra_build_assignment): fold_convert SRC if copying
+	non-compatible pointers.
+	(generate_element_copy): If SRC and DST are RECORD_TYPEs with
+	different FIELD_DECLs, try harder by comparing field offsets, sizes
+	and types.
+
 	PR inline-asm/35160
 	* function.c (match_asm_constraints_1): Don't replace the same input
 	multiple times.

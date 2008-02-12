@@ -1,7 +1,7 @@
 /* Scalar Replacement of Aggregates (SRA) converts some structure
    references into scalar references, exposing them to the scalar
    optimizers.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
      Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
@@ -2270,7 +2270,13 @@ sra_build_assignment (tree dst, tree src)
      Since such accesses under different types require compatibility
      anyway, there's little point in making tests and/or adding
      conversions to ensure the types of src and dst are the same.
-     So we just assume type differences at this point are ok.  */
+     So we just assume type differences at this point are ok.
+     The only exception we make here are pointer types, which can be different
+     in e.g. structurally equal, but non-identical RECORD_TYPEs.  */
+  if (POINTER_TYPE_P (TREE_TYPE (dst))
+      && !useless_type_conversion_p (TREE_TYPE (dst), TREE_TYPE (src)))
+    src = fold_convert (TREE_TYPE (dst), src);
+
   return build_gimple_modify_stmt (dst, src);
 }
 
@@ -2600,7 +2606,33 @@ generate_element_copy (struct sra_elt *dst, struct sra_elt *src, tree *list_p)
 
 	  continue;
 	}
-      gcc_assert (sc);
+
+      /* If DST and SRC are structs with the same elements, but do not have
+	 the same TYPE_MAIN_VARIANT, then lookup of DST FIELD_DECL in SRC
+	 will fail.  Try harder by finding the corresponding FIELD_DECL
+	 in SRC.  */
+      if (!sc)
+	{
+	  tree f;
+
+	  gcc_assert (useless_type_conversion_p (dst->type, src->type));
+	  gcc_assert (TREE_CODE (dc->element) == FIELD_DECL);
+	  for (f = TYPE_FIELDS (src->type); f ; f = TREE_CHAIN (f))
+	    if (simple_cst_equal (DECL_FIELD_OFFSET (f),
+				  DECL_FIELD_OFFSET (dc->element)) > 0
+		&& simple_cst_equal (DECL_FIELD_BIT_OFFSET (f),
+				     DECL_FIELD_BIT_OFFSET (dc->element)) > 0
+		&& simple_cst_equal (DECL_SIZE (f),
+				     DECL_SIZE (dc->element)) > 0
+		&& (useless_type_conversion_p (TREE_TYPE (dc->element),
+					       TREE_TYPE (f))
+		    || (POINTER_TYPE_P (TREE_TYPE (dc->element))
+			&& POINTER_TYPE_P (TREE_TYPE (f)))))
+	      break;
+	  gcc_assert (f != NULL_TREE);
+	  sc = lookup_element (src, f, NULL, NO_INSERT);
+	}
+
       generate_element_copy (dc, sc, list_p);
     }
 
