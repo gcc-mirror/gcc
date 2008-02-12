@@ -1,5 +1,8 @@
 2008-02-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR inline-asm/35160
+	* gcc.target/i386/pr35160.c: New test.
+
 	PR c++/34862
 	* g++.dg/init/new27.C: New test.
 
