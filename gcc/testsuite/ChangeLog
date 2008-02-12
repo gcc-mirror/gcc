@@ -1,3 +1,8 @@
+2008-02-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR objc++/34193
+	* obj-c++.dg/gnu-runtime-2.mm: Fix signature of function main().
+
 2008-02-12  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/init/ctor8.C: Remove.
