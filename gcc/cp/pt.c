@@ -8826,14 +8826,16 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       tree decl = TYPE_NAME (t);
       
       if (DECL_CLASS_SCOPE_P (decl)
-	  && CLASSTYPE_TEMPLATE_INFO (DECL_CONTEXT (decl)))
+	  && CLASSTYPE_TEMPLATE_INFO (DECL_CONTEXT (decl))
+	  && uses_template_parms (DECL_CONTEXT (decl)))
 	{
 	  tree tmpl = most_general_template (DECL_TI_TEMPLATE (decl));
 	  tree gen_args = tsubst (DECL_TI_ARGS (decl), args, complain, in_decl);
 	  r = retrieve_specialization (tmpl, gen_args, false);
 	}
       else if (DECL_FUNCTION_SCOPE_P (decl)
-	       && DECL_TEMPLATE_INFO (DECL_CONTEXT (decl)))
+	       && DECL_TEMPLATE_INFO (DECL_CONTEXT (decl))
+	       && uses_template_parms (DECL_TI_ARGS (DECL_CONTEXT (decl))))
 	r = retrieve_local_specialization (decl);
       else
 	/* The typedef is from a non-template context.  */

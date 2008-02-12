@@ -1,3 +1,9 @@
+2008-02-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35097
+	* pt.c (tsubst): Don't look up a template typedef in an explicit
+	specialization.
+
 2008-02-11  Douglas Gregor  <doug.gregor@gmail.com>
 
        PR c++/35113
