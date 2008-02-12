@@ -6,8 +6,8 @@
 <!ENTITY license SYSTEM "license.xml"> 
 ]>
 
-<set id="set-index" xreflabel="set-index">
-<?dbhtml filename="set-index.html"?>
+<set id="set-index" xreflabel="The GNU C++ Library Documentation">
+<?dbhtml filename="spine.html"?>
 <title>The GNU C++ Library Documentation</title>
 
 <setinfo>

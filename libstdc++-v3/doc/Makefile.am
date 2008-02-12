@@ -73,7 +73,6 @@ xml_srcdir = ${glibcxx_srcdir}/doc/xml
 xml_sources = \
 	${xml_srcdir}/spine.xml \
 	${xml_srcdir}/authors.xml \
-	${xml_srcdir}/manual/spine.xml \
 	${xml_srcdir}/manual/abi.xml \
 	${xml_srcdir}/manual/algorithms.xml \
 	${xml_srcdir}/manual/allocator.xml \
@@ -186,7 +185,7 @@ doc-fo: $(xml_sources) ${glibcxx_builddir}/doc/fo
 
 # PDF
 # Points to current best xml to PDF generation process.
-doc-pdf: doc-pdf-xmlto
+doc-pdf: doc-pdf-prince
 
 # PDF 1
 # fop

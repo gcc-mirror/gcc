@@ -1,3 +1,13 @@
+2008-02-11  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/doxygen/mainpage.html: Add in corrected links.
+	* README: Edit, move most into...
+	* doc/xml/manual/appendix_contributing.xml (Directory Layout): ...here.
+	(Documentation Style): Revise.
+	* doc/xml/spine.xml: Edit file names.
+	* doc/Makefile.am: Edit xml_sources.
+	* doc/Makefile.in: Regenerate.
+	
 2008-02-11  Paolo Carlini  <pcarlini@suse.de>
 
 	* configure: Regenerate with documented autoconf and automake
