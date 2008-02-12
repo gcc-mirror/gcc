@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 10. Pairs</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="utilities.html" title="Part IV. Utilities" /><link rel="prev" href="bk01pt04ch09.html" title="Chapter 9. Functors" /><link rel="next" href="bk01pt04ch11.html" title="Chapter 11. Memory" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 10. Pairs</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt04ch09.html">Prev</a> </td><th width="60%" align="center">Part IV. Utilities</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt04ch11.html">Next</a></td></tr></table><hr /></div><div class="chapter" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="manual.util.pairs"></a>Chapter 10. Pairs</h2></div></div></div><p>The <code class="code">pair&lt;T1,T2&gt;</code> is a simple and handy way to
+      carry around a pair of objects.  One is of type T1, and another of
+      type T2; they may be the same type, but you don't get anything
+      extra if they are.  The two members can be accessed directly, as
+      <code class="code">.first</code> and <code class="code">.second</code>.
+   </p><p>Construction is simple.  The default ctor initializes each member
+      with its respective default ctor.  The other simple ctor,
+   </p><pre class="programlisting">
+    pair (const T1&amp; x, const T2&amp; y);
+   </pre><p>does what you think it does, <code class="code">first</code> getting <code class="code">x</code>
+      and <code class="code">second</code> getting <code class="code">y</code>.
+   </p><p>There is a copy constructor, but it requires that your compiler
+      handle member function templates:
+   </p><pre class="programlisting">
+    template &lt;class U, class V&gt; pair (const pair&lt;U,V&gt;&amp; p);
+   </pre><p>The compiler will convert as necessary from U to T1 and from
+      V to T2 in order to perform the respective initializations.
+   </p><p>The comparison operators are done for you.  Equality
+      of two <code class="code">pair&lt;T1,T2&gt;</code>s is defined as both <code class="code">first</code>
+      members comparing equal and both <code class="code">second</code> members comparing
+      equal; this simply delegates responsibility to the respective
+      <code class="code">operator==</code> functions (for types like MyClass) or builtin
+      comparisons (for types like int, char, etc).
+   </p><p>
+      The less-than operator is a bit odd the first time you see it.  It
+      is defined as evaluating to:
+   </p><pre class="programlisting">
+    x.first  &lt;  y.first  ||
+        ( !(y.first  &lt;  x.first)  &amp;&amp;  x.second  &lt;  y.second )
+   </pre><p>The other operators are not defined using the <code class="code">rel_ops</code>
+      functions above, but their semantics are the same.
+   </p><p>Finally, there is a template function called <code class="function">make_pair</code>
+      that takes two references-to-const objects and returns an
+      instance of a pair instantiated on their respective types:
+   </p><pre class="programlisting">
+    pair&lt;int,MyClass&gt; p = make_pair(4,myobject);
+   </pre></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt04ch09.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="utilities.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="bk01pt04ch11.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 9. Functors </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 11. Memory</td></tr></table></div></body></html>

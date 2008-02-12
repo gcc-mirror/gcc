@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>One Past the End</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="bk01pt08ch19.html" title="Chapter 19. Predefined" /><link rel="prev" href="bk01pt08ch19.html" title="Chapter 19. Predefined" /><link rel="next" href="algorithms.html" title="Part IX. Algorithms" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">One Past the End</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt08ch19.html">Prev</a> </td><th width="60%" align="center">Chapter 19. Predefined</th><td width="20%" align="right"> <a accesskey="n" href="algorithms.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="iterators.predefined.end"></a>One Past the End</h2></div></div></div><p>This starts off sounding complicated, but is actually very easy,
+      especially towards the end.  Trust me.
+   </p><p>Beginners usually have a little trouble understand the whole
+      'past-the-end' thing, until they remember their early algebra classes
+      (see, they <span class="emphasis"><em>told</em></span> you that stuff would come in handy!) and
+      the concept of half-open ranges.
+   </p><p>First, some history, and a reminder of some of the funkier rules in
+      C and C++ for builtin arrays.  The following rules have always been
+      true for both languages:
+   </p><div class="orderedlist"><ol type="1"><li><p>You can point anywhere in the array, <span class="emphasis"><em>or to the first element
+          past the end of the array</em></span>.  A pointer that points to one
+          past the end of the array is guaranteed to be as unique as a
+          pointer to somewhere inside the array, so that you can compare
+          such pointers safely.
+	</p></li><li><p>You can only dereference a pointer that points into an array.
+          If your array pointer points outside the array -- even to just
+          one past the end -- and you dereference it, Bad Things happen.
+	</p></li><li><p>Strictly speaking, simply pointing anywhere else invokes
+          undefined behavior.  Most programs won't puke until such a
+          pointer is actually dereferenced, but the standards leave that
+          up to the platform.
+	</p></li></ol></div><p>The reason this past-the-end addressing was allowed is to make it
+      easy to write a loop to go over an entire array, e.g.,
+      while (*d++ = *s++);.
+   </p><p>So, when you think of two pointers delimiting an array, don't think
+      of them as indexing 0 through n-1.  Think of them as <span class="emphasis"><em>boundary
+      markers</em></span>:
+   </p><pre class="programlisting">
+
+   beginning            end
+     |                   |
+     |                   |               This is bad.  Always having to
+     |                   |               remember to add or subtract one.
+     |                   |               Off-by-one bugs very common here.
+     V                   V
+        array of N elements
+     |---|---|--...--|---|---|
+     | 0 | 1 |  ...  |N-2|N-1|
+     |---|---|--...--|---|---|
+
+     ^                       ^
+     |                       |
+     |                       |           This is good.  This is safe.  This
+     |                       |           is guaranteed to work.  Just don't
+     |                       |           dereference 'end'.
+   beginning                end
+
+   </pre><p>See?  Everything between the boundary markers is part of the array.
+      Simple.
+   </p><p>Now think back to your junior-high school algebra course, when you
+      were learning how to draw graphs.  Remember that a graph terminating
+      with a solid dot meant, "Everything up through this point,"
+      and a graph terminating with an open dot meant, "Everything up
+      to, but not including, this point," respectively called closed
+      and open ranges?  Remember how closed ranges were written with
+      brackets, <span class="emphasis"><em>[a,b]</em></span>, and open ranges were written with parentheses,
+      <span class="emphasis"><em>(a,b)</em></span>?
+   </p><p>The boundary markers for arrays describe a <span class="emphasis"><em>half-open range</em></span>,
+      starting with (and including) the first element, and ending with (but
+      not including) the last element:  <span class="emphasis"><em>[beginning,end)</em></span>.  See, I
+      told you it would be simple in the end.
+   </p><p>Iterators, and everything working with iterators, follows this same
+      time-honored tradition.  A container's <code class="code">begin()</code> method returns
+      an iterator referring to the first element, and its <code class="code">end()</code>
+      method returns a past-the-end iterator, which is guaranteed to be
+      unique and comparable against any other iterator pointing into the
+      middle of the container.
+   </p><p>Container constructors, container methods, and algorithms, all take
+      pairs of iterators describing a range of values on which to operate.
+      All of these ranges are half-open ranges, so you pass the beginning
+      iterator as the starting parameter, and the one-past-the-end iterator
+      as the finishing parameter.
+   </p><p>This generalizes very well.  You can operate on sub-ranges quite
+      easily this way; functions accepting a <span class="emphasis"><em>[first,last)</em></span> range
+      don't know or care whether they are the boundaries of an entire {array,
+      sequence, container, whatever}, or whether they only enclose a few
+      elements from the center.  This approach also makes zero-length
+      sequences very simple to recognize:  if the two endpoints compare
+      equal, then the {array, sequence, container, whatever} is empty.
+   </p><p>Just don't dereference <code class="code">end()</code>.
+   </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt08ch19.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="bk01pt08ch19.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="algorithms.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 19. Predefined </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Part IX. Algorithms</td></tr></table></div></body></html>

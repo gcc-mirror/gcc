@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 3. Using</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="intro.html" title="Part I. Introduction" /><link rel="prev" href="test.html" title="Test" /><link rel="next" href="bk01pt01ch03s02.html" title="Headers" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 3. Using</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="test.html">Prev</a> </td><th width="60%" align="center">Part I. Introduction</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt01ch03s02.html">Next</a></td></tr></table><hr /></div><div class="chapter" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="manual.intro.using"></a>Chapter 3. Using</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="using.html#manual.intro.using.lib">Linking Library Binary Files</a></span></dt><dt><span class="sect1"><a href="bk01pt01ch03s02.html">Headers</a></span></dt><dd><dl><dt><span class="sect2"><a href="bk01pt01ch03s02.html#manual.intro.using.headers.all">Header Files</a></span></dt><dt><span class="sect2"><a href="bk01pt01ch03s02.html#manual.intro.using.headers.mixing">Mixing Headers</a></span></dt><dt><span class="sect2"><a href="bk01pt01ch03s02.html#manual.intro.using.headers.cheaders">The C Headers and <code class="code">namespace std</code></a></span></dt><dt><span class="sect2"><a href="bk01pt01ch03s02.html#manual.intro.using.headers.pre">Precompiled Headers</a></span></dt></dl></dd><dt><span class="sect1"><a href="bk01pt01ch03s03.html">Namespaces</a></span></dt><dd><dl><dt><span class="sect2"><a href="bk01pt01ch03s03.html#manual.intro.using.namespaces.all">Available Namespaces</a></span></dt><dt><span class="sect2"><a href="bk01pt01ch03s03.html#manual.intro.using.namespaces.std">namespace std</a></span></dt><dt><span class="sect2"><a href="bk01pt01ch03s03.html#manual.intro.using.namespaces.comp">Using Namespace Composition</a></span></dt></dl></dd><dt><span class="sect1"><a href="bk01pt01ch03s04.html">Macros</a></span></dt><dt><span class="sect1"><a href="bk01pt01ch03s05.html">Concurrency</a></span></dt><dd><dl><dt><span class="sect2"><a href="bk01pt01ch03s05.html#manual.intro.using.concurrency.prereq">Prerequisites</a></span></dt><dt><span class="sect2"><a href="bk01pt01ch03s05.html#manual.intro.using.concurrency.thread_safety">Thread Safety</a></span></dt><dt><span class="sect2"><a href="bk01pt01ch03s05.html#manual.intro.using.concurrency.atomics">Atomics</a></span></dt><dt><span class="sect2"><a href="bk01pt01ch03s05.html#manual.intro.using.concurrency.io">IO</a></span></dt><dt><span class="sect2"><a href="bk01pt01ch03s05.html#manual.intro.using.concurrency.containers">Containers</a></span></dt></dl></dd><dt><span class="sect1"><a href="bk01pt01ch03s06.html">Exception Safety</a></span></dt><dt><span class="sect1"><a href="debug.html">Debugging Support</a></span></dt><dd><dl><dt><span class="sect2"><a href="debug.html#debug.compiler">Using <span class="command"><strong>g++</strong></span></a></span></dt><dt><span class="sect2"><a href="debug.html#debug.req">Debug Versions of Library Binary Files</a></span></dt><dt><span class="sect2"><a href="debug.html#debug.memory">Memory Leak Hunting</a></span></dt><dt><span class="sect2"><a href="debug.html#debug.gdb">Using <span class="command"><strong>gdb</strong></span></a></span></dt><dt><span class="sect2"><a href="debug.html#debug.exceptions">Tracking uncaught exceptions</a></span></dt><dt><span class="sect2"><a href="debug.html#debug.debug_mode">Debug Mode</a></span></dt><dt><span class="sect2"><a href="debug.html#debug.compile_time_checks">Compile Time Checking</a></span></dt></dl></dd></dl></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.using.lib"></a>Linking Library Binary Files</h2></div></div></div><p>
+      If you only built a static library (libstdc++.a), or if you
+      specified static linking, you don't have to worry about this.
+      But if you built a shared library (libstdc++.so) and linked
+      against it, then you will need to find that library when you run
+      the executable.
+    </p><p>
+      Methods vary for different platforms and different styles, but
+      the usual ones are printed to the screen during installation.
+      They include:
+    </p><div class="itemizedlist"><ul type="disc"><li><p>
+	  At runtime set LD_LIBRARY_PATH in your environment
+	  correctly, so that the shared library for libstdc++ can be
+	  found and loaded.  Be certain that you understand all of the
+	  other implications and behavior of LD_LIBRARY_PATH first
+	  (few people do, and they get into trouble).
+	</p></li><li><p>
+	  Compile the path to find the library at runtime into the
+	  program.  This can be done by passing certain options to
+	  g++, which will in turn pass them on to the linker.  The
+	  exact format of the options is dependent on which linker you
+	  use:
+	</p><div class="itemizedlist"><ul type="circle"><li><p>
+	      GNU ld (default on Linux):<code class="literal">-Wl,--rpath,<code class="filename">destdir</code>/lib</code>
+	    </p></li><li><p>
+	      IRIX ld:<code class="literal">
+	      -Wl,-rpath,<code class="filename">destdir</code>/lib</code>
+	    </p></li><li><p>
+	  Solaris ld:<code class="literal">-Wl,-R<code class="filename">destdir</code>/lib</code>
+	  </p></li><li><p>
+	      More...?  Let us know!
+	    </p></li></ul></div></li></ul></div><p>
+      Use the <span class="command"><strong>ldd</strong></span> utility to show which library the
+      system thinks it will get at runtime.
+    </p><p>
+      A libstdc++.la file is also installed, for use with Libtool.  If
+      you use Libtool to create your executables, these details are
+      taken care of for you.
+    </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="test.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="intro.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="bk01pt01ch03s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Test </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Headers</td></tr></table></div></body></html>

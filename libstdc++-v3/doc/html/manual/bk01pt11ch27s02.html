@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Binary Input and Output</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="bk01pt11ch27.html" title="Chapter 27. File Based Streams" /><link rel="prev" href="bk01pt11ch27.html" title="Chapter 27. File Based Streams" /><link rel="next" href="bk01pt11ch27s03.html" title="More Binary Input and Output" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Binary Input and Output</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt11ch27.html">Prev</a> </td><th width="60%" align="center">Chapter 27. File Based Streams</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt11ch27s03.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.io.filestreams.binary"></a>Binary Input and Output</h2></div></div></div><p>
+    </p><p>The first and most important thing to remember about binary I/O is
+      that opening a file with <code class="code">ios::binary</code> is not, repeat
+      <span class="emphasis"><em>not</em></span>, the only thing you have to do.  It is not a silver
+      bullet, and will not allow you to use the <code class="code">&lt;&lt;/&gt;&gt;</code>
+      operators of the normal fstreams to do binary I/O.
+   </p><p>Sorry.  Them's the breaks.
+   </p><p>This isn't going to try and be a complete tutorial on reading and
+      writing binary files (because "binary"
+      <a class="ulink" href="#7" target="_top">covers a lot of ground)</a>, but we will try and clear
+      up a couple of misconceptions and common errors.
+   </p><p>First, <code class="code">ios::binary</code> has exactly one defined effect, no more
+      and no less.  Normal text mode has to be concerned with the newline
+      characters, and the runtime system will translate between (for
+      example) '\n' and the appropriate end-of-line sequence (LF on Unix,
+      CRLF on DOS, CR on Macintosh, etc).  (There are other things that
+      normal mode does, but that's the most obvious.)  Opening a file in
+      binary mode disables this conversion, so reading a CRLF sequence
+      under Windows won't accidentally get mapped to a '\n' character, etc.
+      Binary mode is not supposed to suddenly give you a bitstream, and
+      if it is doing so in your program then you've discovered a bug in
+      your vendor's compiler (or some other part of the C++ implementation,
+      possibly the runtime system).
+   </p><p>Second, using <code class="code">&lt;&lt;</code> to write and <code class="code">&gt;&gt;</code> to
+      read isn't going to work with the standard file stream classes, even
+      if you use <code class="code">skipws</code> during reading.  Why not?  Because 
+      ifstream and ofstream exist for the purpose of <span class="emphasis"><em>formatting</em></span>,
+      not reading and writing.  Their job is to interpret the data into
+      text characters, and that's exactly what you don't want to happen
+      during binary I/O.
+   </p><p>Third, using the <code class="code">get()</code> and <code class="code">put()/write()</code> member
+      functions still aren't guaranteed to help you.  These are
+      "unformatted" I/O functions, but still character-based.
+      (This may or may not be what you want, see below.)
+   </p><p>Notice how all the problems here are due to the inappropriate use
+      of <span class="emphasis"><em>formatting</em></span> functions and classes to perform something
+      which <span class="emphasis"><em>requires</em></span> that formatting not be done?  There are a
+      seemingly infinite number of solutions, and a few are listed here:
+   </p><div class="itemizedlist"><ul type="disc"><li><p>“<span class="quote">Derive your own fstream-type classes and write your own
+          &lt;&lt;/&gt;&gt; operators to do binary I/O on whatever data
+          types you're using.</span>”
+	</p><p>
+	  This is a Bad Thing, because while
+          the compiler would probably be just fine with it, other humans
+          are going to be confused.  The overloaded bitshift operators
+          have a well-defined meaning (formatting), and this breaks it.
+	</p></li><li><p>
+	  “<span class="quote">Build the file structure in memory, then
+	  <code class="code">mmap()</code> the file and copy the
+	  structure.
+	</span>”
+	</p><p>
+	  Well, this is easy to make work, and easy to break, and is
+	  pretty equivalent to using <code class="code">::read()</code> and
+	  <code class="code">::write()</code> directly, and makes no use of the
+	  iostream library at all...
+	  </p></li><li><p>
+	  “<span class="quote">Use streambufs, that's what they're there for.</span>”
+	</p><p>
+          While not trivial for the beginner, this is the best of all
+          solutions.  The streambuf/filebuf layer is the layer that is
+          responsible for actual I/O.  If you want to use the C++
+          library for binary I/O, this is where you start.
+	</p></li></ul></div><p>How to go about using streambufs is a bit beyond the scope of this
+      document (at least for now), but while streambufs go a long way,
+      they still leave a couple of things up to you, the programmer.
+      As an example, byte ordering is completely between you and the
+      operating system, and you have to handle it yourself.
+   </p><p>Deriving a streambuf or filebuf
+      class from the standard ones, one that is specific to your data
+      types (or an abstraction thereof) is probably a good idea, and
+      lots of examples exist in journals and on Usenet.  Using the
+      standard filebufs directly (either by declaring your own or by
+      using the pointer returned from an fstream's <code class="code">rdbuf()</code>)
+      is certainly feasible as well.
+   </p><p>One area that causes problems is trying to do bit-by-bit operations
+      with filebufs.  C++ is no different from C in this respect:  I/O
+      must be done at the byte level.  If you're trying to read or write
+      a few bits at a time, you're going about it the wrong way.  You
+      must read/write an integral number of bytes and then process the
+      bytes.  (For example, the streambuf functions take and return
+      variables of type <code class="code">int_type</code>.)
+   </p><p>Another area of problems is opening text files in binary mode.
+      Generally, binary mode is intended for binary files, and opening
+      text files in binary mode means that you now have to deal with all of 
+      those end-of-line and end-of-file problems that we mentioned before.
+      An instructive thread from comp.lang.c++.moderated delved off into
+      this topic starting more or less at
+      <a class="ulink" href="http://groups.google.com/groups?oi=djq&amp;selm=an_436187505" target="_top">this</a>
+      article and continuing to the end of the thread.  (You'll have to
+      sort through some flames every couple of paragraphs, but the points
+      made are good ones.)
+   </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt11ch27.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="bk01pt11ch27.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="bk01pt11ch27s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 27. File Based Streams </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> More Binary Input and Output</td></tr></table></div></body></html>

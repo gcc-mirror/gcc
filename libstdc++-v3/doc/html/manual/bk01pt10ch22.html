@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 22. Generalized Operations</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="numerics.html" title="Part X. Numerics" /><link rel="prev" href="bk01pt10ch21.html" title="Chapter 21. Complex" /><link rel="next" href="bk01pt10ch23.html" title="Chapter 23. Interacting with C" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 22. Generalized Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt10ch21.html">Prev</a> </td><th width="60%" align="center">Part X. Numerics</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt10ch23.html">Next</a></td></tr></table><hr /></div><div class="chapter" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="manual.numerics.generalized_ops"></a>Chapter 22. Generalized Operations</h2></div></div></div><p>
+  </p><p>There are four generalized functions in the &lt;numeric&gt; header
+      that follow the same conventions as those in &lt;algorithm&gt;.  Each
+      of them is overloaded:  one signature for common default operations,
+      and a second for fully general operations.  Their names are
+      self-explanatory to anyone who works with numerics on a regular basis:
+   </p><div class="itemizedlist"><ul type="disc"><li><p><code class="code">accumulate</code></p></li><li><p><code class="code">inner_product</code></p></li><li><p><code class="code">partial_sum</code></p></li><li><p><code class="code">adjacent_difference</code></p></li></ul></div><p>Here is a simple example of the two forms of <code class="code">accumulate</code>.
+   </p><pre class="programlisting">
+   int   ar[50];
+   int   someval = somefunction();
+
+   // ...initialize members of ar to something...
+
+   int  sum       = std::accumulate(ar,ar+50,0);
+   int  sum_stuff = std::accumulate(ar,ar+50,someval);
+   int  product   = std::accumulate(ar,ar+50,1,std::multiplies&lt;int&gt;());
+   </pre><p>The first call adds all the members of the array, using zero as an
+      initial value for <code class="code">sum</code>.  The second does the same, but uses
+      <code class="code">someval</code> as the starting value (thus, <code class="code">sum_stuff == sum +
+      someval</code>).  The final call uses the second of the two signatures,
+      and multiplies all the members of the array; here we must obviously
+      use 1 as a starting value instead of 0.
+   </p><p>The other three functions have similar dual-signature forms.
+   </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt10ch21.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="numerics.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="bk01pt10ch23.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 21. Complex </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 23. Interacting with C</td></tr></table></div></body></html>

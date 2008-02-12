@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Tokenizing</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="bk01pt05ch13.html" title="Chapter 13. String Classes" /><link rel="prev" href="bk01pt05ch13s03.html" title="Arbitrary Character Types" /><link rel="next" href="bk01pt05ch13s05.html" title="Shrink to Fit" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Tokenizing</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt05ch13s03.html">Prev</a> </td><th width="60%" align="center">Chapter 13. String Classes</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt05ch13s05.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="strings.string.token"></a>Tokenizing</h2></div></div></div><p>
+    </p><p>The Standard C (and C++) function <code class="code">strtok()</code> leaves a lot to
+      be desired in terms of user-friendliness.  It's unintuitive, it
+      destroys the character string on which it operates, and it requires
+      you to handle all the memory problems.  But it does let the client
+      code decide what to use to break the string into pieces; it allows
+      you to choose the "whitespace," so to speak.
+   </p><p>A C++ implementation lets us keep the good things and fix those
+      annoyances.  The implementation here is more intuitive (you only
+      call it once, not in a loop with varying argument), it does not
+      affect the original string at all, and all the memory allocation
+      is handled for you.
+   </p><p>It's called stringtok, and it's a template function. Sources are
+   as below, in a less-portable form than it could be, to keep this
+   example simple (for example, see the comments on what kind of
+   string it will accept).
+   </p><pre class="programlisting">
+#include &lt;string&gt;
+template &lt;typename Container&gt;
+void
+stringtok(Container &amp;container, string const &amp;in,
+          const char * const delimiters = " \t\n")
+{
+    const string::size_type len = in.length();
+          string::size_type i = 0;
+
+    while (i &lt; len)
+    {
+        // Eat leading whitespace
+        i = in.find_first_not_of(delimiters, i);
+        if (i == string::npos)
+	  return;   // Nothing left but white space
+
+        // Find the end of the token
+        string::size_type j = in.find_first_of(delimiters, i);
+
+        // Push token
+        if (j == string::npos) 
+	{
+	  container.push_back(in.substr(i));
+	  return;
+        } 
+	else
+	  container.push_back(in.substr(i, j-i));
+
+        // Set up for next loop
+        i = j + 1;
+    }
+}
+</pre><p>
+     The author uses a more general (but less readable) form of it for
+     parsing command strings and the like.  If you compiled and ran this
+     code using it:
+   </p><pre class="programlisting">
+   std::list&lt;string&gt;  ls;
+   stringtok (ls, " this  \t is\t\n  a test  ");
+   for (std::list&lt;string&gt;const_iterator i = ls.begin();
+        i != ls.end(); ++i)
+   {
+       std::cerr &lt;&lt; ':' &lt;&lt; (*i) &lt;&lt; ":\n";
+   } </pre><p>You would see this as output:
+   </p><pre class="programlisting">
+   :this:
+   :is:
+   :a:
+   :test: </pre><p>with all the whitespace removed.  The original <code class="code">s</code> is still
+      available for use, <code class="code">ls</code> will clean up after itself, and
+      <code class="code">ls.size()</code> will return how many tokens there were.
+   </p><p>As always, there is a price paid here, in that stringtok is not
+      as fast as strtok.  The other benefits usually outweigh that, however.
+      <a class="ulink" href="stringtok_std_h.txt" target="_top">Another version of stringtok is given
+      here</a>, suggested by Chris King and tweaked by Petr Prikryl,
+      and this one uses the
+      transformation functions mentioned below.  If you are comfortable
+      with reading the new function names, this version is recommended
+      as an example.
+   </p><p><span class="emphasis"><em>Added February 2001:</em></span>  Mark Wilden pointed out that the
+      standard <code class="code">std::getline()</code> function can be used with standard
+      <a class="ulink" href="../27_io/howto.html" target="_top">istringstreams</a> to perform
+      tokenizing as well.  Build an istringstream from the input text,
+      and then use std::getline with varying delimiters (the three-argument
+      signature) to extract tokens into a string.
+   </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt05ch13s03.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="bk01pt05ch13.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="bk01pt05ch13s05.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Arbitrary Character Types </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Shrink to Fit</td></tr></table></div></body></html>
