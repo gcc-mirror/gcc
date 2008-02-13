@@ -2218,7 +2218,7 @@ valid.
 Represents the number of leading 0-bits in @var{x}, represented as an
 integer of mode @var{m}, starting at the most significant bit position.
 If @var{x} is zero, the value is determined by
-@code{CLZ_DEFINED_VALUE_AT_ZERO}.  Note that this is one of
+@code{CLZ_DEFINED_VALUE_AT_ZERO} (@pxref{Misc}).  Note that this is one of
 the few expressions that is not invariant under widening.  The mode of
 @var{x} will usually be an integer mode.
 
@@ -2227,7 +2227,7 @@ the few expressions that is not invariant under widening.  The mode of
 Represents the number of trailing 0-bits in @var{x}, represented as an
 integer of mode @var{m}, starting at the least significant bit position.
 If @var{x} is zero, the value is determined by
-@code{CTZ_DEFINED_VALUE_AT_ZERO}.  Except for this case,
+@code{CTZ_DEFINED_VALUE_AT_ZERO} (@pxref{Misc}).  Except for this case,
 @code{ctz(x)} is equivalent to @code{ffs(@var{x}) - 1}.  The mode of
 @var{x} will usually be an integer mode.
 

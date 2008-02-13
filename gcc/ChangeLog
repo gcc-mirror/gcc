@@ -1,3 +1,8 @@
+2008-02-14  Jesper Nilsson  <jesper.nilsson@axis.com>
+
+	* doc/md.texi (clz, ctz): Add reference.
+	* doc/rtl.texi (clz, ctz): Likewise.
+
 2008-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR other/35148
