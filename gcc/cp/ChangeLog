@@ -1,3 +1,10 @@
+2008-02-13  Jakub Jelinek  <jakub@redhat.com>
+	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/35138
+	* parser.c (cp_parser_pseudo_destructor_name): If next tokens
+	are not identifier :: ~, return before calling cp_parser_type_name.
+
 2008-02-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/34962, c++/34937, c++/34939

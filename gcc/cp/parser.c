@@ -5164,23 +5164,25 @@ cp_parser_pseudo_destructor_name (cp_parser* parser,
      additional qualification.  */
   else if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMPL))
     {
+      /* At this point, we're looking for "type-name :: ~".  The type-name
+	 must not be a class-name, since this is a pseudo-destructor.  So,
+	 it must be either an enum-name, or a typedef-name -- both of which
+	 are just identifiers.  So, we peek ahead to check that the "::"
+	 and "~" tokens are present; if they are not, then we can avoid
+	 calling type_name.  */
+      if (cp_lexer_peek_token (parser->lexer)->type != CPP_NAME
+	  || cp_lexer_peek_nth_token (parser->lexer, 2)->type != CPP_SCOPE
+	  || cp_lexer_peek_nth_token (parser->lexer, 3)->type != CPP_COMPL)
+	{
+	  cp_parser_error (parser, "non-scalar type");
+	  return;
+	}
+
       /* Look for the type-name.  */
       *scope = TREE_TYPE (cp_parser_type_name (parser));
 
       if (*scope == error_mark_node)
 	return;
-
-      /* If we don't have ::~, then something has gone wrong.  Since
-	 the only caller of this function is looking for something
-	 after `.' or `->' after a scalar type, most likely the
-	 program is trying to get a member of a non-aggregate
-	 type.  */
-      if (cp_lexer_next_token_is_not (parser->lexer, CPP_SCOPE)
-	  || cp_lexer_peek_nth_token (parser->lexer, 2)->type != CPP_COMPL)
-	{
-	  cp_parser_error (parser, "request for member of non-aggregate type");
-	  return;
-	}
 
       /* Look for the `::' token.  */
       cp_parser_require (parser, CPP_SCOPE, "`::'");

@@ -1,3 +1,8 @@
+2008-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/35138
+	* g++.dg/template/member8.C: New test.
+
 2008-02-13  Michael Matz  <matz@suse.de>
 
 	* gcc.dg/pr35065.c: Fix testcase warnings.
