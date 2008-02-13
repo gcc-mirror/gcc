@@ -4319,6 +4319,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 {
   tree totype = convs->type;
   diagnostic_fn_t diagnostic_fn;
+  int flags;
 
   if (convs->bad_p
       && convs->kind != ck_user
@@ -4357,6 +4358,12 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       {
 	struct z_candidate *cand = convs->cand;
 	tree convfn = cand->fn;
+	unsigned i;
+
+	/* Set user_conv_p on the argument conversions, so rvalue/base
+	   handling knows not to allow any more UDCs.  */
+	for (i = 0; i < cand->num_convs; ++i)
+	  cand->convs[i]->user_conv_p = true;
 
 	expr = build_over_call (cand, LOOKUP_NORMAL);
 
@@ -4454,8 +4461,12 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       /* Copy-initialization where the cv-unqualified version of the source
 	 type is the same class as, or a derived class of, the class of the
 	 destination [is treated as direct-initialization].  [dcl.init] */
-      expr = build_temp (expr, totype, LOOKUP_NORMAL|LOOKUP_ONLYCONVERTING,
-			 &diagnostic_fn);
+      flags = LOOKUP_NORMAL|LOOKUP_ONLYCONVERTING;
+      if (convs->user_conv_p)
+	/* This conversion is being done in the context of a user-defined
+	   conversion, so don't allow any more.  */
+	flags |= LOOKUP_NO_CONVERSION;
+      expr = build_temp (expr, totype, flags, &diagnostic_fn);
       if (diagnostic_fn && fn)
 	diagnostic_fn ("  initializing argument %P of %qD", argnum, fn);
       return build_cplus_new (totype, expr);
