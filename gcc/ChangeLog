@@ -1,3 +1,9 @@
+2008-02-13  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+        PR 29673
+	* doc/invoke.texi (Debugging Options): Remove -fdump-tree-inlined.
+	Add -fdump-ipa-inline.
+	
 2008-02-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:

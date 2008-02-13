@@ -264,11 +264,10 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
 -fdump-noaddr -fdump-unnumbered  -fdump-translation-unit@r{[}-@var{n}@r{]} @gol
 -fdump-class-hierarchy@r{[}-@var{n}@r{]} @gol
--fdump-ipa-all -fdump-ipa-cgraph @gol
+-fdump-ipa-all -fdump-ipa-cgraph -fdump-ipa-inline @gol
 -fdump-tree-all @gol
 -fdump-tree-original@r{[}-@var{n}@r{]}  @gol
 -fdump-tree-optimized@r{[}-@var{n}@r{]} @gol
--fdump-tree-inlined@r{[}-@var{n}@r{]} @gol
 -fdump-tree-cfg -fdump-tree-vcg -fdump-tree-alias @gol
 -fdump-tree-ch @gol
 -fdump-tree-ssa@r{[}-@var{n}@r{]} -fdump-tree-pre@r{[}-@var{n}@r{]} @gol
@@ -4148,12 +4147,15 @@ specific suffix to the source file name.  The following dumps are possible:
 
 @table @samp
 @item all
-Enables all inter-procedural analysis dumps; currently the only produced
-dump is the @samp{cgraph} dump.
+Enables all inter-procedural analysis dumps.
 
 @item cgraph
 Dumps information about call-graph optimization, unused function removal,
 and inlining decisions.
+
+@item inline
+Dump after function inlining.
+
 @end table
 
 @item -fdump-tree-@var{switch}
@@ -4205,9 +4207,6 @@ Dump before any tree based optimization, to @file{@var{file}.original}.
 
 @item optimized
 Dump after all tree based optimization, to @file{@var{file}.optimized}.
-
-@item inlined
-Dump after function inlining, to @file{@var{file}.inlined}.
 
 @item gimple
 @opindex fdump-tree-gimple
