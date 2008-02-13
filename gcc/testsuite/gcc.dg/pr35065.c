@@ -14,6 +14,7 @@ typedef struct es_format_t es_format_t;
 typedef struct decoder_t decoder_t;
 typedef struct decoder_sys_t decoder_sys_t;
 typedef struct block_t block_t;
+extern void* malloc (size_t);
 enum vlc_module_properties {
   VLC_MODULE_CB_OPEN, VLC_MODULE_CB_CLOSE, VLC_MODULE_NAME, };
 struct es_format_t {
@@ -30,7 +31,7 @@ struct block_t {
   uint8_t *p_buffer;
 };
 static inline block_t *block_Duplicate( block_t *p_block ) {
-  block_t *p_dup = block_New( ((void *)0), p_block->i_buffer );
+  block_t *p_dup = (block_t*)block_New( ((void *)0), p_block->i_buffer );
   p_dup->i_dts = p_block->i_dts;
   p_dup->i_pts = p_block->i_pts;
 }
@@ -89,7 +90,7 @@ static inline uint32_t bs_read1( bs_t *s ) {
   return 0;
 }
 int Open ( vlc_object_t * );
-static void Close( vlc_object_t * );
+void Close( vlc_object_t * );
 __attribute__((visibility("default"))) int vlc_entry__0_9_0f ( module_t *p_module ) {
   {
     module_t *p_submodule = p_module;
@@ -135,7 +136,7 @@ int Open( vlc_object_t *p_this ) {
 	 i < i_sps;
 	 i++ ) {
       int i_length = U16_AT( p );
-      block_t *p_sps = nal_get_annexeb( p_dec, p + 2, i_length );
+      block_t *p_sps = (block_t*)nal_get_annexeb( p_dec, p + 2, i_length );
       ParseNALBlock( p_dec, p_sps );
     }
   }
@@ -182,7 +183,7 @@ block_t *ParseNALBlock( decoder_t *p_dec, block_t *p_frag )
 	      block_ChainAppend( &p_sps, p_pps );
 	      block_ChainAppend( &p_sps, p_sys->p_frame );
 	      p_sys->b_header = 1;
-	      p_pic = block_ChainGather( p_sps );
+	      p_pic = (block_t*)block_ChainGather( p_sps );
 	    }
 	  } while(0);
   }
@@ -211,7 +212,7 @@ block_t *ParseNALBlock( decoder_t *p_dec, block_t *p_frag )
 	    p_sps->i_pts = p_sys->p_frame->i_pts;
 	    block_ChainAppend( &p_sps, p_pps );
 	    block_ChainAppend( &p_sps, p_sys->p_frame );
-	    p_pic = block_ChainGather( p_sps );
+	    p_pic = (block_t*)block_ChainGather( p_sps );
 	  }
 	p_pic->i_flags |= p_sys->slice.i_frame_type;
       } while(0);
