@@ -1,5 +1,5 @@
 # Makefile for GNU Ada Compiler (GNAT).
-#   Copyright (C) 1994-2007 Free Software Foundation, Inc.
+#   Copyright (C) 1994-2008 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -1136,6 +1136,7 @@ endif
 
 ifeq ($(strip $(filter-out rtems%,$(osys))),)
   LIBGNAT_TARGET_PAIRS = \
+  system.ads<system-rtems.ads \
   a-intnam.ads<a-intnam-rtems.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
@@ -1145,9 +1146,9 @@ ifeq ($(strip $(filter-out rtems%,$(osys))),)
   s-parame.adb<s-parame-rtems.adb \
   s-taprop.adb<s-taprop-posix.adb \
   s-taspri.ads<s-taspri-posix.ads \
-  s-auxdec.ads<s-auxdec-empty.ads \
-  s-auxdec.adb<s-auxdec-empty.adb \
-  s-tpopsp.adb<s-tpopsp-rtems.adb
+  s-tpopsp.adb<s-tpopsp-rtems.adb \
+  g-soccon.ads<g-soccon-rtems.ads \
+  s-stchop.adb<s-stchop-rtems.adb
 endif
 
 ifeq ($(strip $(filter-out alpha% dec osf%,$(targ))),)

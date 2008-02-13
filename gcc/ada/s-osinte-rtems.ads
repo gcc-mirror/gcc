@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   S p e c                                --
 --                                                                          --
---          Copyright (C) 1997-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2008 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -194,6 +194,10 @@ package System.OS_Interface is
    SCHED_RR    : constant := 2;
    SCHED_OTHER : constant := 0;
 
+   function To_Target_Priority
+     (Prio : System.Any_Priority) return Interfaces.C.int;
+   --  Maps System.Any_Priority to a POSIX priority
+
    -------------
    -- Process --
    -------------
@@ -222,6 +226,7 @@ package System.OS_Interface is
 
    type Thread_Body is access
      function (arg : System.Address) return System.Address;
+   pragma Convention (C, Thread_Body);
 
    type pthread_t           is private;
    subtype Thread_Id        is pthread_t;
@@ -236,6 +241,9 @@ package System.OS_Interface is
    No_Key : constant pthread_key_t;
 
    PTHREAD_CREATE_DETACHED : constant := 0;
+
+   PTHREAD_SCOPE_PROCESS : constant := 0;
+   PTHREAD_SCOPE_SYSTEM  : constant := 1;
 
    -----------
    -- Stack --
@@ -460,6 +468,7 @@ package System.OS_Interface is
    pragma Import (C, pthread_getspecific, "pthread_getspecific");
 
    type destructor_pointer is access procedure (arg : System.Address);
+   pragma Convention (C, destructor_pointer);
 
    function pthread_key_create
      (key        : access pthread_key_t;

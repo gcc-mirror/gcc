@@ -1,3 +1,16 @@
+2008-02-11  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	PR ada/35143
+	* env.c: Add __rtems__ to if defined.
+	* s-osinte-rtems.adb: Add To_Target_Priority.  Fix formatting.
+	* s-osinte-rtems.ads: Add To_Target_Priority prototype and
+	PTHREAD_SCOPE_PROCESS/PTHREAD_SCOPE_SYSTEM constants.  Add
+	pragma Convention as required.
+	* gsocket.h: Make compile in and out of RTS.
+	* Makefile.in: Add system-rtems.ads.  Build DEC extensions.
+	Use g-soccon-rtems.ads.
+	* g-soccon-rtems.ads, system-rtems.ads: New files.
+
 2008-02-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR other/35107
