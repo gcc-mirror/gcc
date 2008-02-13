@@ -30,8 +30,11 @@ struct block_t {
   size_t i_buffer;
   uint8_t *p_buffer;
 };
+block_t* block_New(void*, size_t);
+block_t *nal_get_annexeb(decoder_t *, uint8_t *, int);
+block_t *block_ChainGather (block_t *);
 static inline block_t *block_Duplicate( block_t *p_block ) {
-  block_t *p_dup = (block_t*)block_New( ((void *)0), p_block->i_buffer );
+  block_t *p_dup = block_New( ((void *)0), p_block->i_buffer );
   p_dup->i_dts = p_block->i_dts;
   p_dup->i_pts = p_block->i_pts;
 }
@@ -136,7 +139,7 @@ int Open( vlc_object_t *p_this ) {
 	 i < i_sps;
 	 i++ ) {
       int i_length = U16_AT( p );
-      block_t *p_sps = (block_t*)nal_get_annexeb( p_dec, p + 2, i_length );
+      block_t *p_sps = nal_get_annexeb( p_dec, p + 2, i_length );
       ParseNALBlock( p_dec, p_sps );
     }
   }
@@ -183,7 +186,7 @@ block_t *ParseNALBlock( decoder_t *p_dec, block_t *p_frag )
 	      block_ChainAppend( &p_sps, p_pps );
 	      block_ChainAppend( &p_sps, p_sys->p_frame );
 	      p_sys->b_header = 1;
-	      p_pic = (block_t*)block_ChainGather( p_sps );
+	      p_pic = block_ChainGather( p_sps );
 	    }
 	  } while(0);
   }
@@ -212,7 +215,7 @@ block_t *ParseNALBlock( decoder_t *p_dec, block_t *p_frag )
 	    p_sps->i_pts = p_sys->p_frame->i_pts;
 	    block_ChainAppend( &p_sps, p_pps );
 	    block_ChainAppend( &p_sps, p_sys->p_frame );
-	    p_pic = (block_t*)block_ChainGather( p_sps );
+	    p_pic = block_ChainGather( p_sps );
 	  }
 	p_pic->i_flags |= p_sys->slice.i_frame_type;
       } while(0);
