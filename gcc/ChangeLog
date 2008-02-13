@@ -1,3 +1,9 @@
+2008-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/35148
+	* Makefile.in (gcc-vers.texi): Use abs_srcdir for the value of
+	srcdir.
+
 2008-02-13  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (struct constant_pool): New field
