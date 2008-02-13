@@ -1,5 +1,9 @@
 2008-02-13  Michael Matz  <matz@suse.de>
 
+	* gcc.dg/pr35065.c: Fix testcase warnings.
+
+2008-02-13  Michael Matz  <matz@suse.de>
+
 	PR debug/35065
 	* gcc.dg/pr35065.c: New testcase.
 
