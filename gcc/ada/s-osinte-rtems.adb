@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---            Copyright (C) 1991-2002 Florida State University              --
+--            Copyright (C) 1991-2008 Florida State University              --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,6 +57,17 @@ package body System.OS_Interface is
       return Duration (TS.tv_sec) + Duration (TS.tv_nsec) / 10#1#E9;
    end To_Duration;
 
+   ------------------------
+   -- To_Target_Priority --
+   ------------------------
+
+   function To_Target_Priority
+     (Prio : System.Any_Priority) return Interfaces.C.int
+   is
+   begin
+      return Interfaces.C.int (Prio);
+   end To_Target_Priority;
+
    -----------------
    -- To_Timespec --
    -----------------
@@ -70,7 +81,10 @@ package body System.OS_Interface is
 
       --  If F has negative value due to round-up, adjust for positive F value
 
-      if F < 0.0 then S := S - 1; F := F + 1.0; end if;
+      if F < 0.0 then
+         S := S - 1;
+         F := F + 1.0;
+      end if;
       return timespec'(tv_sec => S,
                        tv_nsec => long (Long_Long_Integer (F * 10#1#E9)));
    end To_Timespec;
@@ -89,7 +103,10 @@ package body System.OS_Interface is
 
       --  If F has negative value due to a round-up, adjust for positive F
       --  value.
-      if F < 0.0 then S := S - 1; F := F + 1.0; end if;
+      if F < 0.0 then
+         S := S - 1;
+         F := F + 1.0;
+      end if;
       return
         struct_timeval'
           (tv_sec  => S,
