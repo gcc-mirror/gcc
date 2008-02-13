@@ -1,3 +1,9 @@
+2008-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/35148
+	* Makefile.in (gcc-vers.texi): Use abs_srcdir for the value of
+	srcdir.
+
 2008-02-13  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
         PR 29673
