@@ -1,3 +1,9 @@
+2008-02-13  Michael Matz  <matz@suse.de>
+
+	PR debug/35065
+	* var-tracking.c (clobber_variable_part): Correctly traverse the
+	list.
+
 2008-02-13  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 29673

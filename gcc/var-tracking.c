@@ -2595,6 +2595,8 @@ clobber_variable_part (dataflow_set *set, rtx loc, tree decl,
 			      pool_free (attrs_pool, anode);
 			      *anextp = anext;
 			    }
+			  else
+			    anextp = &anode->next;
 			}
 		    }
 
