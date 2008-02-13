@@ -4058,16 +4058,20 @@ corresponds to the C data type @code{int}.
 @cindex @code{clz@var{m}2} instruction pattern
 @item @samp{clz@var{m}2}
 Store into operand 0 the number of leading 0-bits in @var{x}, starting
-at the most significant bit position.  If @var{x} is 0, the result is
-undefined.  @var{m} is the mode of operand 0; operand 1's mode is
+at the most significant bit position.  If @var{x} is 0, the
+@code{CLZ_DEFINED_VALUE_AT_ZERO} (@pxref{Misc}) macro defines if
+the result is undefined or has a useful value.
+@var{m} is the mode of operand 0; operand 1's mode is
 specified by the instruction pattern, and the compiler will convert the
 operand to that mode before generating the instruction.
 
 @cindex @code{ctz@var{m}2} instruction pattern
 @item @samp{ctz@var{m}2}
 Store into operand 0 the number of trailing 0-bits in @var{x}, starting
-at the least significant bit position.  If @var{x} is 0, the result is
-undefined.  @var{m} is the mode of operand 0; operand 1's mode is
+at the least significant bit position.  If @var{x} is 0, the
+@code{CTZ_DEFINED_VALUE_AT_ZERO} (@pxref{Misc}) macro defines if
+the result is undefined or has a useful value.
+@var{m} is the mode of operand 0; operand 1's mode is
 specified by the instruction pattern, and the compiler will convert the
 operand to that mode before generating the instruction.
 
