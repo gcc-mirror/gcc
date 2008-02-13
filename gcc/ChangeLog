@@ -1,3 +1,11 @@
+2008-02-13  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 29673
+	* doc/invoke.texi (Debugging Options): Remove -fdump-tree-inlined.
+	Add -fdump-ipa-inline.
+	* tree-dump.c (dump_files): Remove tree-inlined dump.
+	* tree-pass.h (tree_dump_index): Remove TDI_inlined.
+	
 2008-02-12  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/35171
