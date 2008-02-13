@@ -1,3 +1,14 @@
+2008-02-13  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.c (struct constant_pool): New field
+	emit_pool_after added.
+	(s390_mainpool_start): Set the emit_pool_after flag according
+	to the section switch notes.
+	(s390_mainpool_finish): Consider emit_pool_after when emitting
+	the literal pool at the end of the function.
+	(s390_chunkify_start): Force literal pool splits at section
+	switch notes.
+
 2008-02-13  Michael Matz  <matz@suse.de>
 
 	PR debug/35065

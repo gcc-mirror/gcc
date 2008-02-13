@@ -5325,6 +5325,7 @@ struct constant_pool
   rtx first_insn;
   rtx pool_insn;
   bitmap insns;
+  rtx emit_pool_after;
 
   struct constant *constants[NR_C_MODES];
   struct constant *execute;
@@ -5351,6 +5352,7 @@ s390_alloc_pool (void)
   pool->pool_insn = NULL_RTX;
   pool->insns = BITMAP_ALLOC (NULL);
   pool->size = 0;
+  pool->emit_pool_after = NULL_RTX;
 
   return pool;
 }
@@ -5681,6 +5683,7 @@ s390_mainpool_start (void)
 {
   struct constant_pool *pool;
   rtx insn;
+  bool in_pool_section_p = false;
 
   pool = s390_alloc_pool ();
 
@@ -5693,6 +5696,7 @@ s390_mainpool_start (void)
 	{
 	  gcc_assert (!pool->pool_insn);
 	  pool->pool_insn = insn;
+	  in_pool_section_p = true;
 	}
 
       if (!TARGET_CPU_ZARCH && s390_execute_label (insn))
@@ -5710,6 +5714,20 @@ s390_mainpool_start (void)
 	      s390_add_constant (pool, constant, mode);
 	    }
 	}
+
+      /* If hot/cold partitioning is enabled we have to make sure that
+	 the literal pool is emitted in the same section where the
+	 initialization of the literal pool base pointer takes place.
+	 emit_pool_after is only used in the non-overflow case on non
+	 Z cpus where we can emit the literal pool at the end of the
+	 function body within the text section.  */
+      if (NOTE_P (insn)
+	  && NOTE_KIND (insn) == NOTE_INSN_SWITCH_TEXT_SECTIONS)
+	{
+	  if (in_pool_section_p)
+	    pool->emit_pool_after = PREV_INSN (insn);
+	  in_pool_section_p = !in_pool_section_p;
+	}
     }
 
   gcc_assert (pool->pool_insn || pool->size == 0);
@@ -5723,6 +5741,11 @@ s390_mainpool_start (void)
       s390_free_pool (pool);
       pool = NULL;
     }
+
+  /* If the functions ends with the section where the literal pool
+     should be emitted set the marker to its end.  */
+  if (pool && in_pool_section_p)
+    pool->emit_pool_after = get_last_insn ();
 
   return pool;
 }
@@ -5771,7 +5794,7 @@ s390_mainpool_finish (struct constant_pool *pool)
   /* On S/390, if the total size of the function's code plus literal pool
      does not exceed 4096 bytes, we use BASR to set up a function base
      pointer, and emit the literal pool at the end of the function.  */
-  else if (INSN_ADDRESSES (INSN_UID (get_last_insn ()))
+  else if (INSN_ADDRESSES (INSN_UID (pool->emit_pool_after))
 	   + pool->size + 8 /* alignment slop */ < 4096)
     {
       insn = gen_main_base_31_small (base_reg, pool->label);
@@ -5782,7 +5805,11 @@ s390_mainpool_finish (struct constant_pool *pool)
       insn = emit_label_after (pool->label, insn);
       INSN_ADDRESSES_NEW (insn, -1);
 
-      insn = get_last_insn ();
+      /* emit_pool_after will be set by s390_mainpool_start to the
+	 last insn of the section where the literal pool should be
+	 emitted.  */
+      insn = pool->emit_pool_after;
+
       pool->pool_insn = emit_insn_after (gen_pool (const0_rtx), insn);
       INSN_ADDRESSES_NEW (pool->pool_insn, -1);
 
@@ -5881,6 +5908,8 @@ s390_chunkify_start (void)
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
+      bool section_switch_p = false;
+
       /* Check for pending LTREL_BASE.  */
       if (INSN_P (insn))
 	{
@@ -5935,6 +5964,9 @@ s390_chunkify_start (void)
 	  gcc_assert (!pending_ltrel);
 	}
 
+      if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_SWITCH_TEXT_SECTIONS)
+	section_switch_p = true;
+
       if (!curr_pool
 	  || INSN_ADDRESSES_SIZE () <= (size_t) INSN_UID (insn)
           || INSN_ADDRESSES (INSN_UID (insn)) == -1)
@@ -5962,7 +5994,8 @@ s390_chunkify_start (void)
 	    extra_size += 6;
 
 	  if (chunk_size < S390_POOL_CHUNK_MIN
-	      && curr_pool->size < S390_POOL_CHUNK_MIN)
+	      && curr_pool->size < S390_POOL_CHUNK_MIN
+	      && !section_switch_p)
 	    continue;
 
 	  /* Pool chunks can only be inserted after BARRIERs ...  */
@@ -5974,21 +6007,33 @@ s390_chunkify_start (void)
 	    }
 
 	  /* ... so if we don't find one in time, create one.  */
-          else if ((chunk_size > S390_POOL_CHUNK_MAX
-	           || curr_pool->size > S390_POOL_CHUNK_MAX))
+          else if (chunk_size > S390_POOL_CHUNK_MAX
+	           || curr_pool->size > S390_POOL_CHUNK_MAX
+		   || section_switch_p)
 	    {
               rtx label, jump, barrier;
 
-	      /* We can insert the barrier only after a 'real' insn.  */
-	      if (GET_CODE (insn) != INSN && GET_CODE (insn) != CALL_INSN)
-		continue;
-	      if (get_attr_length (insn) == 0)
-		continue;
-
-	      /* Don't separate LTREL_BASE from the corresponding
+	      if (!section_switch_p)
+		{
+		  /* We can insert the barrier only after a 'real' insn.  */
+		  if (GET_CODE (insn) != INSN && GET_CODE (insn) != CALL_INSN)
+		    continue;
+		  if (get_attr_length (insn) == 0)
+		    continue;
+		  /* Don't separate LTREL_BASE from the corresponding
 		 LTREL_OFFSET load.  */
-	      if (pending_ltrel)
-		continue;
+		  if (pending_ltrel)
+		    continue;
+		}
+	      else
+		{
+		  gcc_assert (!pending_ltrel);
+
+		  /* The old pool has to end before the section switch
+		     note in order to make it part of the current
+		     section.  */
+		  insn = PREV_INSN (insn);
+		}
 
 	      label = gen_label_rtx ();
 	      jump = emit_jump_insn_after (gen_jump (label), insn);
