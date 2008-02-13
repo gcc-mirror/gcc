@@ -1,3 +1,9 @@
+2008-02-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/34774
+	* pt.c (value_dependent_expression_p): Look into DECL_INITIAL
+	of enumerators, too.
+
 2008-02-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/34094
