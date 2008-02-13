@@ -1,3 +1,9 @@
+2008-02-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/34824
+	* call.c (convert_like_real): Pass LOOKUP_ONLYCONVERTING to build_temp
+	if we're doing conversions to call a user-defined conversion function.
+
 2008-02-12  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR c++/29048
