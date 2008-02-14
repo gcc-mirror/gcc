@@ -1,3 +1,9 @@
+2008-02-14  Paolo Carlini  <pcarlini@suse.de>
+
+        PR c++/28743
+	* g++.dg/template/nontype17.C: New.
+        * g++.dg/template/nontype16.C: Add error.
+
 2008-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/35138
