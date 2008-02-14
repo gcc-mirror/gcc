@@ -1,3 +1,14 @@
+2008-02-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/35136
+	* gimplify.c (force_gimple_operand_bsi): Revert 2008-02-12 change.
+	(force_gimple_operand): Likewise.
+	* tree-ssa-loop-ivopts.c (may_be_nonaddressable_p): Add new cases
+	for TARGET_MEM_REF and CONVERT_EXPR/NON_LVALUE_EXPR/NOP_EXPR.
+	Also recurse on the operand for regular VIEW_CONVERT_EXPRs.
+	(find_interesting_uses_address): Check addressability and alignment
+	of the base expression only after substituting bases of IVs into it.
+
 2008-02-14  Michael Matz  <matz@suse.de>
 
 	PR target/34930

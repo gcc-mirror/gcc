@@ -6629,14 +6629,6 @@ force_gimple_operand (tree expr, tree *stmts, bool simple, tree var)
 
   pop_gimplify_context (NULL);
 
-  if (*stmts && gimple_in_ssa_p (cfun))
-    {
-      tree_stmt_iterator tsi;
-
-      for (tsi = tsi_start (*stmts); !tsi_end_p (tsi); tsi_next (&tsi))
-	mark_symbols_for_renaming (tsi_stmt (tsi));
-    }
-
   return expr;
 }
 
@@ -6656,6 +6648,14 @@ force_gimple_operand_bsi (block_stmt_iterator *bsi, tree expr,
   expr = force_gimple_operand (expr, &stmts, simple_p, var);
   if (stmts)
     {
+      if (gimple_in_ssa_p (cfun))
+	{
+	  tree_stmt_iterator tsi;
+
+	  for (tsi = tsi_start (stmts); !tsi_end_p (tsi); tsi_next (&tsi))
+	    mark_symbols_for_renaming (tsi_stmt (tsi));
+	}
+
       if (before)
 	bsi_insert_before (bsi, stmts, m);
       else

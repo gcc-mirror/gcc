@@ -1434,21 +1434,34 @@ may_be_nonaddressable_p (tree expr)
 {
   switch (TREE_CODE (expr))
     {
+    case TARGET_MEM_REF:
+      /* TARGET_MEM_REFs are translated directly to valid MEMs on the
+	 target, thus they are always addressable.  */
+      return false;
+
     case COMPONENT_REF:
       return DECL_NONADDRESSABLE_P (TREE_OPERAND (expr, 1))
 	     || may_be_nonaddressable_p (TREE_OPERAND (expr, 0));
-
-    case ARRAY_REF:
-    case ARRAY_RANGE_REF:
-      return may_be_nonaddressable_p (TREE_OPERAND (expr, 0));
 
     case VIEW_CONVERT_EXPR:
       /* This kind of view-conversions may wrap non-addressable objects
 	 and make them look addressable.  After some processing the
 	 non-addressability may be uncovered again, causing ADDR_EXPRs
 	 of inappropriate objects to be built.  */
-      return AGGREGATE_TYPE_P (TREE_TYPE (expr))
-	     && !AGGREGATE_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 0)));
+      if (AGGREGATE_TYPE_P (TREE_TYPE (expr))
+	  && !AGGREGATE_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 0))))
+	return true;
+
+      /* ... fall through ... */
+
+    case ARRAY_REF:
+    case ARRAY_RANGE_REF:
+      return may_be_nonaddressable_p (TREE_OPERAND (expr, 0));
+
+    case CONVERT_EXPR:
+    case NON_LVALUE_EXPR:
+    case NOP_EXPR:
+      return true;
 
     default:
       break;
@@ -1474,13 +1487,6 @@ find_interesting_uses_address (struct ivopts_data *data, tree stmt, tree *op_p)
   /* Ignore bitfields for now.  Not really something terribly complicated
      to handle.  TODO.  */
   if (TREE_CODE (base) == BIT_FIELD_REF)
-    goto fail;
-
-  if (may_be_nonaddressable_p (base))
-    goto fail;
-
-  if (STRICT_ALIGNMENT
-      && may_be_unaligned_p (base))
     goto fail;
 
   base = unshare_expr (base);
@@ -1535,6 +1541,16 @@ find_interesting_uses_address (struct ivopts_data *data, tree stmt, tree *op_p)
 
       gcc_assert (TREE_CODE (base) != ALIGN_INDIRECT_REF);
       gcc_assert (TREE_CODE (base) != MISALIGNED_INDIRECT_REF);
+
+      /* Check that the base expression is addressable.  This needs
+	 to be done after substituting bases of IVs into it.  */
+      if (may_be_nonaddressable_p (base))
+	goto fail;
+
+      /* Moreover, on strict alignment platforms, check that it is
+	 sufficiently aligned.  */
+      if (STRICT_ALIGNMENT && may_be_unaligned_p (base))
+	goto fail;
 
       base = build_fold_addr_expr (base);
 
