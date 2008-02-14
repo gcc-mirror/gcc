@@ -1,5 +1,27 @@
 2008-02-14 Ralf Wildenhues <Ralf.Wildenhues@gmx.de>
 
+	* doc/bugreport.texi: Update copyright years.
+	* doc/c-tree.texi: Likewise.
+	* doc/cfg.texi: Likewise.
+	* doc/cpp.texi: Likewise.
+	* doc/cppinternals.texi: Likewise.
+	* doc/fragments.texi: Likewise.
+	* doc/frontends.texi: Likewise.
+	* doc/gcc.texi: Likewise.
+	* doc/gty.texi: Likewise.
+	* doc/hostconfig.texi: Likewise.
+	* doc/implement-c.texi: Likewise.
+	* doc/libgcc.texi: Likewise.
+	* doc/loop.texi: Likewise.
+	* doc/makefile.texi: Likewise.
+	* doc/options.texi: Likewise.
+	* doc/passes.texi: Likewise.
+	* doc/rtl.texi: Likewise.
+	* doc/sourcebuild.texi: Likewise.
+	* doc/standards.texi: Likewise.
+	* doc/tree-ssa.texi: Likewise.
+	* doc/trouble.texi: Likewise.
+
 	* doc/extend.texi: Use @: or add comma where appropriate.
 	* doc/invoke.texi: Likewise.
 	* doc/tm.texi: Likewise.
