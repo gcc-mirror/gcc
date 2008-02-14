@@ -1,3 +1,9 @@
+2008-02-14  Michael Matz  <matz@suse.de>
+
+	PR target/34930
+	* function.c (instantiate_virtual_regs_in_insn): Reload address
+	before falling back to reloading the whole operand.
+
 2008-02-14  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (s390_mainpool_start): Emit the pool
