@@ -5483,7 +5483,7 @@ widening multiplication of the even elements of two input vectors of type @var{x
 If this hook is defined, the autovectorizer will use it along with the
 @code{TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD} target hook when vectorizing
 widening multiplication in cases that the order of the results does not have to be
-preserved (e.g. used only by a reduction computation). Otherwise, the
+preserved (e.g.@: used only by a reduction computation). Otherwise, the
 @code{widen_mult_hi/lo} idioms will be used.
 @end deftypefn
 
@@ -5494,7 +5494,7 @@ widening multiplication of the odd elements of two input vectors of type @var{x}
 If this hook is defined, the autovectorizer will use it along with the
 @code{TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN} target hook when vectorizing
 widening multiplication in cases that the order of the results does not have to be
-preserved (e.g. used only by a reduction computation). Otherwise, the
+preserved (e.g.@: used only by a reduction computation). Otherwise, the
 @code{widen_mult_hi/lo} idioms will be used.
 @end deftypefn
 
@@ -6214,14 +6214,14 @@ used to initialize data used by the previous hook.
 @deftypefn {Target Hook} void TARGET_SCHED_DFA_PRE_CYCLE_ADVANCE (void)
 The hook to notify target that the current simulated cycle is about to finish.
 The hook is analogous to @samp{TARGET_SCHED_DFA_PRE_CYCLE_INSN} but used
-to change the state in more complicated situations - e.g. when advancing
+to change the state in more complicated situations - e.g., when advancing
 state on a single insn is not enough.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_SCHED_DFA_POST_CYCLE_ADVANCE (void)
 The hook to notify target that new simulated cycle has just started.
 The hook is analogous to @samp{TARGET_SCHED_DFA_POST_CYCLE_INSN} but used
-to change the state in more complicated situations - e.g. when advancing
+to change the state in more complicated situations - e.g., when advancing
 state on a single insn is not enough.
 @end deftypefn
 

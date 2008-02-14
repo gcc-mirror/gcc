@@ -1181,7 +1181,7 @@ switches supported by the compiler the following can be used:
 
 The sense of a qualifier can be inverted by prefixing it with the
 @var{^} character, so for example to display all binary warning
-options (i.e. ones that are either on or off and that do not take an
+options (i.e., ones that are either on or off and that do not take an
 argument), which have a description the following can be used:
 
 @smallexample
@@ -4920,16 +4920,16 @@ For @var{n}=0 no diagnostic information is reported.
 If @var{n}=1 the vectorizer reports each loop that got vectorized,
 and the total number of loops that got vectorized.
 If @var{n}=2 the vectorizer also reports non-vectorized loops that passed
-the first analysis phase (vect_analyze_loop_form) - i.e. countable,
+the first analysis phase (vect_analyze_loop_form) - i.e.@: countable,
 inner-most, single-bb, single-entry/exit loops.  This is the same verbosity
 level that @option{-fdump-tree-vect-stats} uses.
 Higher verbosity levels mean either more information dumped for each
 reported loop, or same amount of information reported for more loops:
 If @var{n}=3, alignment related information is added to the reports.
-If @var{n}=4, data-references related information (e.g. memory dependences,
+If @var{n}=4, data-references related information (e.g.@: memory dependences,
 memory access-patterns) is added to the reports.
 If @var{n}=5, the vectorizer reports also non-vectorized inner-most loops
-that did not pass the first analysis phase (i.e. may not be countable, or
+that did not pass the first analysis phase (i.e., may not be countable, or
 may have complicated control-flow).
 If @var{n}=6, the vectorizer reports also non-vectorized nested loops.
 For @var{n}=7, all the information the vectorizer generates during its
@@ -5936,7 +5936,7 @@ Parallelize loops, i.e., split their iteration space to run in n threads.
 This is only possible for loops whose iterations are independent
 and can be arbitrarily reordered.  The optimization is only
 profitable on multiprocessor machines, for loops that are CPU-intensive,
-rather than constrained e.g. by memory bandwidth.  This option
+rather than constrained e.g.@: by memory bandwidth.  This option
 implies @option{-pthread}, and thus is only supported on targets
 that have support for @option{-pthread}.
 
