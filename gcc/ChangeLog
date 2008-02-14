@@ -1,3 +1,9 @@
+2008-02-14  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/34393
+	* config/rs6000/rs6000.md (restore_stack_block): Force operands[1]
+	to a reg.
+
 2008-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR other/35148
