@@ -5683,7 +5683,6 @@ s390_mainpool_start (void)
 {
   struct constant_pool *pool;
   rtx insn;
-  bool in_pool_section_p = false;
 
   pool = s390_alloc_pool ();
 
@@ -5696,7 +5695,6 @@ s390_mainpool_start (void)
 	{
 	  gcc_assert (!pool->pool_insn);
 	  pool->pool_insn = insn;
-	  in_pool_section_p = true;
 	}
 
       if (!TARGET_CPU_ZARCH && s390_execute_label (insn))
@@ -5722,12 +5720,9 @@ s390_mainpool_start (void)
 	 Z cpus where we can emit the literal pool at the end of the
 	 function body within the text section.  */
       if (NOTE_P (insn)
-	  && NOTE_KIND (insn) == NOTE_INSN_SWITCH_TEXT_SECTIONS)
-	{
-	  if (in_pool_section_p)
-	    pool->emit_pool_after = PREV_INSN (insn);
-	  in_pool_section_p = !in_pool_section_p;
-	}
+	  && NOTE_KIND (insn) == NOTE_INSN_SWITCH_TEXT_SECTIONS
+	  && !pool->emit_pool_after)
+	pool->emit_pool_after = PREV_INSN (insn);
     }
 
   gcc_assert (pool->pool_insn || pool->size == 0);
@@ -5744,7 +5739,7 @@ s390_mainpool_start (void)
 
   /* If the functions ends with the section where the literal pool
      should be emitted set the marker to its end.  */
-  if (pool && in_pool_section_p)
+  if (pool && !pool->emit_pool_after)
     pool->emit_pool_after = get_last_insn ();
 
   return pool;
