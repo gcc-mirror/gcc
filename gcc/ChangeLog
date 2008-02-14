@@ -1,3 +1,9 @@
+2008-02-14 Ralf Wildenhues <Ralf.Wildenhues@gmx.de>
+
+	* doc/extend.texi: Use @: or add comma where appropriate.
+	* doc/invoke.texi: Likewise.
+	* doc/tm.texi: Likewise.
+
 2008-02-14  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/34393

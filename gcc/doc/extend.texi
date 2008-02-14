@@ -5649,7 +5649,7 @@ assert (__builtin_object_size (q, 1) == sizeof (var.b));
 @end deftypefn
 
 There are built-in functions added for many common string operation
-functions, e.g. for @code{memcpy} @code{__builtin___memcpy_chk}
+functions, e.g., for @code{memcpy} @code{__builtin___memcpy_chk}
 built-in is provided.  This built-in has an additional last argument,
 which is the number of bytes remaining in object the @var{dest}
 argument points to or @code{(size_t) -1} if the size is not known.
@@ -5702,7 +5702,7 @@ int __builtin___vsnprintf_chk (char *s, size_t maxlen, int flag, size_t os,
 @end smallexample
 
 The added @var{flag} argument is passed unchanged to @code{__sprintf_chk}
-etc. functions and can contain implementation specific flags on what
+etc.@: functions and can contain implementation specific flags on what
 additional security measures the checking function might take, such as
 handling @code{%n} differently.
 
@@ -5718,7 +5718,7 @@ In addition to this, there are checking built-in functions
 @code{__builtin___fprintf_chk} and @code{__builtin___vfprintf_chk}.
 These have just one additional argument, @var{flag}, right before
 format string @var{fmt}.  If the compiler is able to optimize them to
-@code{fputc} etc. functions, it will, otherwise the checking function
+@code{fputc} etc.@: functions, it will, otherwise the checking function
 should be called and the @var{flag} argument passed to it.
 
 @node Other Builtins
@@ -11067,7 +11067,7 @@ multiple @code{#pragma pack(@var{n})} instances and finalized by a single
 @code{#pragma pack(pop)}.
 @end enumerate
 
-Some targets, e.g. i386 and powerpc, support the @code{ms_struct}
+Some targets, e.g.@: i386 and powerpc, support the @code{ms_struct}
 @code{#pragma} which lays out a structure as the documented
 @code{__attribute__ ((ms_struct))}.
 @enumerate
