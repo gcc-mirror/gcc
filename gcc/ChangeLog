@@ -1,3 +1,9 @@
+2008-02-14  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR preprocessor/35061
+	* c-pragma.c (handle_pragma_pop_macro): Check that
+	pushed_macro_table has been allocated.
+
 2008-02-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/35136

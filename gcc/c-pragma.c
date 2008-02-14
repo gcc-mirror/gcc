@@ -341,7 +341,7 @@ handle_pragma_pop_macro (cpp_reader *reader)
   enum cpp_ttype token;
   struct def_pragma_macro dummy, *c;
   const char *macroname;
-  void **slot;
+  void **slot = NULL;
 
   if (pragma_lex (&x) != CPP_OPEN_PAREN)
     GCC_BAD ("missing %<(%> after %<#pragma pop_macro%> - ignored");
@@ -367,8 +367,9 @@ handle_pragma_pop_macro (cpp_reader *reader)
 
   dummy.hash = htab_hash_string (macroname);
   dummy.name = macroname;
-  slot = htab_find_slot_with_hash (pushed_macro_table, &dummy,
-				   dummy.hash, NO_INSERT);
+  if (pushed_macro_table)
+    slot = htab_find_slot_with_hash (pushed_macro_table, &dummy,
+				     dummy.hash, NO_INSERT);
   if (slot == NULL)
     return;
   c = *slot;
