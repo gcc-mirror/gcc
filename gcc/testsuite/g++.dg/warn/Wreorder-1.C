@@ -10,5 +10,5 @@ struct T {
 
 struct U : virtual public S, virtual public T {
   U () : T (), S () {}     // { dg-warning "" }
-  U (const U&) : S () {}   // { dg-warning "copy" }
+  U (const U&) : S () {}
 };

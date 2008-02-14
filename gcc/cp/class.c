@@ -4039,6 +4039,28 @@ clone_constructors_and_destructors (tree t)
     clone_function_decl (OVL_CURRENT (fns), /*update_method_vec_p=*/1);
 }
 
+/* Returns true iff class T has a user-defined constructor other than
+   the default constructor.  */
+
+bool
+type_has_user_nondefault_constructor (tree t)
+{
+  tree fns;
+
+  if (!TYPE_HAS_USER_CONSTRUCTOR (t))
+    return false;
+
+  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
+    {
+      tree fn = OVL_CURRENT (fns);
+      if (!DECL_ARTIFICIAL (fn)
+	  && skip_artificial_parms_for (fn, DECL_ARGUMENTS (fn)) != NULL_TREE)
+	return true;
+    }
+
+  return false;
+}
+
 /* Remove all zero-width bit-fields from T.  */
 
 static void

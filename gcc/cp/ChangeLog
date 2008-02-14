@@ -1,3 +1,13 @@
+2008-02-14  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/5645
+	PR c++/11159
+	* class.c (type_has_user_nondefault_constructor): New fn.
+	* cp-tree.h: Declare it.
+	* init.c (emit_mem_initializers): Use it for -W warning about
+	missing base initializer.
+
 2008-02-14  Paolo Carlini  <pcarlini@suse.de>
 
         PR c++/28743
