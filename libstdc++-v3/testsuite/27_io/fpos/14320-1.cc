@@ -20,7 +20,7 @@
 
 // 27.4.3 fpos
 
-// { dg-do run { xfail *-*-* } }
+// { dg-do run }
 
 #include <typeinfo>
 #include <limits>
@@ -36,6 +36,11 @@ void test01()
   typedef istreambuf_iterator<char>::difference_type Distance;
 
   bool found = false;
+  // The C++ standard didn't originally have "long long", however that
+  // type will be in the C++0x standard and testing for it allows
+  // ilp32 targets to pass this test when `Distance' is 64 bits.
+  if (typeid(Distance) == typeid(long long int))
+    found = true;
   if (typeid(Distance) == typeid(long int))
     found = true;
   if (typeid(Distance) == typeid(int))
