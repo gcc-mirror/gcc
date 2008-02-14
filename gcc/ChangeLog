@@ -1,3 +1,8 @@
+2008-02-14  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.c (s390_mainpool_start): Emit the pool
+	before the first section switch note.
+
 2008-02-14 Ralf Wildenhues <Ralf.Wildenhues@gmx.de>
 
 	* doc/bugreport.texi: Update copyright years.
