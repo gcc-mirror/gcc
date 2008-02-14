@@ -829,12 +829,13 @@ emit_mem_initializers (tree mem_inits)
       tree subobject = TREE_PURPOSE (mem_inits);
       tree arguments = TREE_VALUE (mem_inits);
 
-      /* If these initializations are taking place in a copy
-	 constructor, the base class should probably be explicitly
-	 initialized.  */
+      /* If these initializations are taking place in a copy constructor,
+	 the base class should probably be explicitly initialized if there
+	 is a user-defined constructor in the base class (other than the
+	 default constructor, which will be called anyway).  */
       if (extra_warnings && !arguments
 	  && DECL_COPY_CONSTRUCTOR_P (current_function_decl)
-	  && TYPE_NEEDS_CONSTRUCTING (BINFO_TYPE (subobject)))
+	  && type_has_user_nondefault_constructor (BINFO_TYPE (subobject)))
 	warning (OPT_Wextra, "%Jbase class %q#T should be explicitly initialized in the "
 		 "copy constructor",
 		 current_function_decl, BINFO_TYPE (subobject));
