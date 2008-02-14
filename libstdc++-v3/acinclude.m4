@@ -1430,6 +1430,16 @@ AC_DEFUN([GLIBCXX_CHECK_SYSTEM_ERROR], [
   if test x"$ac_system_error_12" = x"yes"; then
     AC_DEFINE(HAVE_EOVERFLOW, 1, [Define if EOVERFLOW exists.])
   fi
+
+  AC_MSG_CHECKING([for ENOTSUP])
+  AC_CACHE_VAL(ac_system_error_13, [
+  AC_TRY_COMPILE([#include <errno.h>], [ int i = ENOTSUP; ],
+             [ac_system_error_13=yes], [ac_system_error_13=no])
+  ])
+  AC_MSG_RESULT($ac_system_error_13)
+  if test x"$ac_system_error_13" = x"yes"; then
+    AC_DEFINE(HAVE_ENOTSUP, 1, [Define if ENOTSUP exists.])
+  fi
 ])
 
 dnl
