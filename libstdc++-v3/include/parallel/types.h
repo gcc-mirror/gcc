@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -29,7 +29,7 @@
 // Public License.
 
 /** @file parallel/types.h
- *  @brief Basic typedefs.
+ *  @brief Basic types and typedefs.
  *  This file is a GNU parallel extension to the Standard C++ Library.
  */
 
@@ -39,51 +39,120 @@
 #define _GLIBCXX_PARALLEL_TYPES_H 1
 
 #include <cstdlib>
+#include <tr1/cstdint>
 
 namespace __gnu_parallel
 {
-  // XXX need to use <cstdint>
-  /** @brief 8-bit signed integer. */
-  typedef char int8;
+  // Enumerated types.
 
-  /** @brief 8-bit unsigned integer. */
-  typedef unsigned char uint8;
+  /// @brief Run-time equivalents for the compile-time tags.
+  enum parallelism
+    {
+      /// Not parallel.
+      sequential,
 
-  /** @brief 16-bit signed integer. */
-  typedef short int16;
+      /// Parallel unbalanced (equal-sized chunks).
+      parallel_unbalanced,
 
-  /** @brief 16-bit unsigned integer. */
-  typedef unsigned short uint16;
+      /// Parallel balanced (work-stealing).
+      parallel_balanced,
 
-  /** @brief 32-bit signed integer. */
-  typedef int int32;
+      /// Parallel with OpenMP dynamic load-balancing.
+      parallel_omp_loop,
 
-  /** @brief 32-bit unsigned integer. */
-  typedef unsigned int uint32;
+      /// Parallel with OpenMP static load-balancing.
+      parallel_omp_loop_static,
 
-  /** @brief 64-bit signed integer. */
-  typedef long long int64;
+      /// Parallel with OpenMP taskqueue construct.
+      parallel_taskqueue
+    };
 
-  /** @brief 64-bit unsigned integer. */
-  typedef unsigned long long uint64;
+  inline bool 
+  is_parallel(const parallelism __p) { return __p != sequential; }
+
+  /// @brief Sorting algorithms: multi-way mergesort, quicksort,
+  /// load-balanced quicksort.
+  enum SortAlgorithm 
+    { 
+      MWMS, 
+      QS, 
+      QS_BALANCED 
+    };
+
+  /// @brief Merging algorithms: bubblesort-alike, loser-tree
+  /// variants, enum sentinel.
+  enum MultiwayMergeAlgorithm
+    { 
+      BUBBLE, 
+      LOSER_TREE_EXPLICIT, 
+      LOSER_TREE, 
+      LOSER_TREE_COMBINED, 
+      LOSER_TREE_SENTINEL, 
+      MWM_ALGORITHM_LAST 
+    };
+  
+  /// @brief Partial sum algorithms: recursive, linear.
+  enum PartialSumAlgorithm 
+    { 
+      RECURSIVE, 
+      LINEAR 
+    };
+
+  /// @brief Splitting strategies for sorting/merging: sampling, exact.
+  enum Splitting 
+    { 
+      SAMPLING, 
+      EXACT 
+    };
+
+  /// @brief Find distribution strategies: growing blocks, equal-sized
+  /// blocks, equal splitting.
+  enum FindDistribution 
+    { 
+      GROWING_BLOCKS, 
+      CONSTANT_SIZE_BLOCKS, 
+      EQUAL_SPLIT 
+    };
+
+  /// @brief Strategies for run-time algorithm selection:
+  /// force_sequential, force_parallel, heuristic.
+  enum AlgorithmSelection
+    {
+      heuristic,
+      force_sequential,
+      force_parallel
+    };
+
+
+  /// Integer Types.
+  using std::tr1::int16_t;
+  using std::tr1::uint16_t;
+
+  using std::tr1::int32_t;
+  using std::tr1::uint32_t;
+
+  using std::tr1::int64_t;
+  using std::tr1::uint64_t;
 
   /**
    * @brief Unsigned integer to index elements.
    * The total number of elements for each algorithm must fit into this type.
    */
-  typedef uint64 sequence_index_t;
+  typedef uint64_t sequence_index_t;
 
   /**
    * @brief Unsigned integer to index a thread number.
    * The maximum thread number (for each processor) must fit into this type.
    */
-  typedef uint16 thread_index_t;
+  typedef uint16_t thread_index_t;
 
+  // XXX atomics interface?
   /**
    * @brief Longest compare-and-swappable integer type on this platform.
    */
-  typedef int64 lcas_t;
+  typedef int64_t lcas_t;
 
+  // XXX numeric_limits::digits?
   /**
    * @brief Number of bits of ::lcas_t.
    */
@@ -92,7 +161,7 @@ namespace __gnu_parallel
   /**
    * @brief ::lcas_t with the right half of bits set to 1.
    */
-  static const lcas_t lcas_t_mask = (((lcas_t)1 << (lcas_t_bits / 2)) - 1);
+  static const lcas_t lcas_t_mask = ((lcas_t(1) << (lcas_t_bits / 2)) - 1);
 }
 
 #endif /* _GLIBCXX_TYPES_H */

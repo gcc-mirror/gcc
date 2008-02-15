@@ -214,11 +214,12 @@ concept-inst.lo: concept-inst.cc
 concept-inst.o: concept-inst.cc
 	$(CXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
 
-# Use special rules for parallel_list.cc compile.
+# Use special rules for parallel mode compilation.
+PARALLEL_FLAGS = -fopenmp -D_GLIBCXX_PARALLEL -I$(glibcxx_builddir)/../libgomp
 parallel_list.lo: parallel_list.cc
-	$(LTCXXCOMPILE) -I$(glibcxx_builddir)/../libgomp -c $<
+	$(LTCXXCOMPILE) $(PARALLEL_FLAGS) -c $<
 parallel_list.o: parallel_list.cc
-	$(CXXCOMPILE) -I$(glibcxx_builddir)/../libgomp -c $<
+	$(CXXCOMPILE) $(PARALLEL_FLAGS) -c $<
 
 # Use special rules for the C++0x sources so that the proper flags are passed.
 system_error.lo: system_error.cc

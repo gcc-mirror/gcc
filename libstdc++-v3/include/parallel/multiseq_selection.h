@@ -67,7 +67,6 @@ namespace __gnu_parallel
     public:
       lexicographic(Comparator& _comp) : comp(_comp) { }
 
-      // XXX const
       bool
       operator()(const std::pair<T1, T2>& p1,
 		 const std::pair<T1, T2>& p2) const
@@ -265,7 +264,7 @@ namespace __gnu_parallel
 	    }
 	  
 	  difference_type skew = static_cast<difference_type>
-	    (static_cast<uint64>(total) * rank / N - leftsize);
+	    (static_cast<uint64_t>(total) * rank / N - leftsize);
 
 	  if (skew > 0)
 	    {

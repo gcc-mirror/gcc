@@ -44,6 +44,37 @@
 #include <parallel/parallel.h>
 #include <cstdio>
 
+
+// Parallel mode namespaces.
+namespace std 
+{ 
+  namespace __parallel { } 
+}
+
+/**
+ * @namespace __gnu_parallel
+ * @brief GNU parallel classes for public use.
+ */
+namespace __gnu_parallel
+{
+  // Import all the parallel versions of components in namespace std.
+  using namespace std::__parallel;
+}
+
+/**
+ * @namespace __gnu_sequential
+ * @brief GNU sequential classes for public use.
+ */
+namespace __gnu_sequential 
+{ 
+#ifdef _GLIBCXX_PARALLEL
+  using namespace std::__norm;
+#else
+  using namespace std;
+#endif   
+}
+
+
 namespace __gnu_parallel
 {
   // XXX remove std::duplicates from here if possible,
@@ -357,8 +388,8 @@ template<typename T, typename _DifferenceTp>
   public:
     typedef _DifferenceTp difference_type;
 
-    // Better case down to uint64, than up to _DifferenceTp.
-    typedef pseudo_sequence_iterator<T, uint64> iterator;
+    // Better case down to uint64_t, than up to _DifferenceTp.
+    typedef pseudo_sequence_iterator<T, uint64_t> iterator;
 
     /** @brief Constructor.
       *  @param val Element of the sequence.
@@ -437,8 +468,8 @@ __replacement_assert(const char* __file, int __line,
 #define _GLIBCXX_PARALLEL_ASSERT(_Condition)                            \
 do 								        \
   {									\
-    if (!(_Condition))						\
-      __gnu_parallel::__replacement_assert(__FILE__, __LINE__,	\
+    if (!(_Condition))						   	\
+      __gnu_parallel::__replacement_assert(__FILE__, __LINE__,		\
                                   __PRETTY_FUNCTION__, #_Condition);	\
   } while (false)
 
