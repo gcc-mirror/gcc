@@ -1,3 +1,7 @@
+2008-02-15  Hans-Peter Nilsson  <hp@axis.com>
+
+	* lib/dejapatches.exp: New file.
+
 2008-02-14  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR c++/34050

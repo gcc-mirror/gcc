@@ -1,0 +1,35 @@
+#   Copyright (C) 2008 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Necessary procs and fallbacks for functionality not present in
+# pristine dejagnu-1.4.4.  Make sure overrides here work with updated
+# dejagnu too.
+
+# The absence of sim_download will cause e.g. the libstdc++ testsuite
+# to expose about 59 more FAILs on simulator targets supporting
+# fileio.
+
+if { [info procs sim_download] == "" } {
+    proc sim_download { dest file args } {
+	return [remote_download host $file $args]
+    }
+}
+
+if { [info procs sim_upload] == "" } {
+    proc sim_upload { dest srcfile args } {
+	return [remote_upload host $srcfile $args]
+    }
+}
