@@ -81,9 +81,8 @@ along with GCC; see the file COPYING3.  If not see
    than 128 bits for Darwin, but it's easier to up the alignment if
    it's below the minimum.  */
 #undef PREFERRED_STACK_BOUNDARY
-#define PREFERRED_STACK_BOUNDARY (ix86_preferred_stack_boundary > 128	\
-				  ? ix86_preferred_stack_boundary	\
-				  : 128)
+#define PREFERRED_STACK_BOUNDARY			\
+  MAX (STACK_BOUNDARY, ix86_preferred_stack_boundary)
 
 /* We want -fPIC by default, unless we're using -static to compile for
    the kernel or some such.  */

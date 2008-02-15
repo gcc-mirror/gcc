@@ -21969,7 +21969,7 @@ ix86_register_move_cost (enum machine_mode mode, enum reg_class class1,
        where integer modes in MMX/SSE registers are not tieable
        because of missing QImode and HImode moves to, from or between
        MMX/SSE registers.  */
-    return MAX (ix86_cost->mmxsse_to_integer, 8);
+    return MAX (8, ix86_cost->mmxsse_to_integer);
 
   if (MAYBE_FLOAT_CLASS_P (class1))
     return ix86_cost->fp_move;
