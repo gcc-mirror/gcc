@@ -1,3 +1,9 @@
+2008-02-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/35150
+	* trans-expr.c (gfc_conv_function_call): Force evaluation of
+	se->expr.
+
 2008-02-10  Daniel Franke  <franke.daniel@gmail.com>
 
 	fortran/PR35019

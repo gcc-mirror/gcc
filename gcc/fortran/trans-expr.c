@@ -2264,6 +2264,13 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	      gfc_conv_array_parameter (se, arg->expr, argss, f);
 	    }
 
+	  /* TODO -- the following two lines shouldn't be necessary, but
+	    they're removed a bug is exposed later in the codepath.
+	    This is workaround was thus introduced, but will have to be
+	    removed; please see PR 35150 for details about the issue.  */
+	  se->expr = convert (pvoid_type_node, se->expr);
+	  se->expr = gfc_evaluate_now (se->expr, &se->pre);
+
 	  return 0;
 	}
       else if (sym->intmod_sym_id == ISOCBINDING_FUNLOC)
