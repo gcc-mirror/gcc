@@ -2782,22 +2782,6 @@ expand_omp_for_generic (struct omp_region *region,
   t = build3 (COND_EXPR, void_type_node, t, NULL_TREE, NULL_TREE);
   bsi_insert_after (&si, t, BSI_SAME_STMT);
 
-  /* V may be used outside of the loop (e.g., to handle lastprivate clause).
-     If this is the case, its value is undefined if the loop is not entered
-     at all.  To handle this case, set its initial value to N1.  */
-  if (gimple_in_ssa_p (cfun))
-    {
-      e = find_edge (entry_bb, l3_bb);
-      for (phi = phi_nodes (l3_bb); phi; phi = PHI_CHAIN (phi))
-	if (PHI_ARG_DEF_FROM_EDGE (phi, e) == fd->v)
-	  SET_USE (PHI_ARG_DEF_PTR_FROM_EDGE (phi, e), fd->n1);
-    }
-  else
-    {
-      t = build_gimple_modify_stmt (fd->v, fd->n1);
-      bsi_insert_before (&si, t, BSI_SAME_STMT);
-    }
-
   /* Remove the OMP_FOR statement.  */
   bsi_remove (&si, true);
 
@@ -2995,16 +2979,6 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   t = fold_build2 (MIN_EXPR, type, t, n);
   e0 = force_gimple_operand_bsi (&si, t, true, NULL_TREE, true, BSI_SAME_STMT);
 
-  t = fold_convert (type, s0);
-  t = fold_build2 (MULT_EXPR, type, t, fd->step);
-  t = fold_build2 (PLUS_EXPR, type, t, fd->n1);
-  t = force_gimple_operand_bsi (&si, t, false, NULL_TREE,
-				true, BSI_SAME_STMT);
-  t = build_gimple_modify_stmt (fd->v, t);
-  bsi_insert_before (&si, t, BSI_SAME_STMT);
-  if (gimple_in_ssa_p (cfun))
-    SSA_NAME_DEF_STMT (fd->v) = t;
-
   t = build2 (GE_EXPR, boolean_type_node, s0, e0);
   t = build3 (COND_EXPR, void_type_node, t, NULL_TREE, NULL_TREE);
   bsi_insert_before (&si, t, BSI_SAME_STMT);
@@ -3014,6 +2988,16 @@ expand_omp_for_static_nochunk (struct omp_region *region,
 
   /* Setup code for sequential iteration goes in SEQ_START_BB.  */
   si = bsi_start (seq_start_bb);
+
+  t = fold_convert (type, s0);
+  t = fold_build2 (MULT_EXPR, type, t, fd->step);
+  t = fold_build2 (PLUS_EXPR, type, t, fd->n1);
+  t = force_gimple_operand_bsi (&si, t, false, NULL_TREE,
+				false, BSI_CONTINUE_LINKING);
+  t = build_gimple_modify_stmt (fd->v, t);
+  bsi_insert_after (&si, t, BSI_CONTINUE_LINKING);
+  if (gimple_in_ssa_p (cfun))
+    SSA_NAME_DEF_STMT (fd->v) = t;
 
   t = fold_convert (type, e0);
   t = fold_build2 (MULT_EXPR, type, t, fd->step);
