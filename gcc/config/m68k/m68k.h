@@ -316,6 +316,8 @@ along with GCC; see the file COPYING3.  If not see
 #define STRICT_ALIGNMENT (TARGET_STRICT_ALIGNMENT)
 #define M68K_HONOR_TARGET_STRICT_ALIGNMENT 1
 
+#define DWARF_CIE_DATA_ALIGNMENT -2
+
 #define INT_TYPE_SIZE (TARGET_SHORT ? 16 : 32)
 
 /* Define these to avoid dependence on meaning of `int'.  */
