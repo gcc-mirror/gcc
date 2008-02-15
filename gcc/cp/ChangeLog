@@ -1,3 +1,9 @@
+2008-02-14  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/34050
+	* pt.c (tsubst_initializer_list): Deal with the use of
+	VOID_TYPE_NODE to indicate value-initialization of the bases.
+
 2008-02-14  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 	    Jason Merrill  <jason@redhat.com>
 
