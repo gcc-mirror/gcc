@@ -192,6 +192,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		    }
 		  cgraph_node_remove_callees (node);
 		  node->analyzed = false;
+		  node->local.inlinable = false;
 		}
 	      else
 		cgraph_remove_node (node);
