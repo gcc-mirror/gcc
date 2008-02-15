@@ -90,7 +90,7 @@ JNIEXPORT void JNICALL Java_getstacktrace_natRunner (JNIEnv *env, jobject obj)
       done = env->GetBooleanField (obj, done_id);
       if (done == false)
         break;
-      usleep (10);
+      usleep (40);
     }
   while (done != false);
 }
