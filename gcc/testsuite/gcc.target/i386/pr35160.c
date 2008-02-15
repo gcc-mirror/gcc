@@ -1,5 +1,6 @@
 /* PR inline-asm/35160 */
 /* { dg-do run } */
+/* { dg-skip-if "" { ilp32 && { ! nonpic } } { "*" } { "" } } */
 /* { dg-options "-O2" } */
 
 extern void abort (void);

@@ -1,3 +1,7 @@
+2008-02-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr35160.c: Skip if !nonpic for 32bit x86 targets.
+
 2008-02-15  Hans-Peter Nilsson  <hp@axis.com>
 
 	* lib/dejapatches.exp: New file.
@@ -14,9 +18,9 @@
 
 2008-02-14  Paolo Carlini  <pcarlini@suse.de>
 
-        PR c++/28743
+	PR c++/28743
 	* g++.dg/template/nontype17.C: New.
-        * g++.dg/template/nontype16.C: Add error.
+	* g++.dg/template/nontype16.C: Add error.
 
 2008-02-13  Jakub Jelinek  <jakub@redhat.com>
 
