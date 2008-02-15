@@ -1,3 +1,10 @@
+2008-02-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (CLEAR_RATIO): Use MIN macro.
+	(WIDEST_HARDWARE_FP_SIZE): Use LONG_DOUBLE_TYPE_SIZE define.
+	* config/i386/darwin.h (PREFERRED_STACK_BOUNDARY): Use MAX macro
+	and STACK_BOUNDARY define.
+
 2008-02-14  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR preprocessor/35061

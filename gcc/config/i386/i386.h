@@ -745,11 +745,6 @@ enum target_cpu_default
   { "cc1_cpu",  CC1_CPU_SPEC },						\
   SUBTARGET_EXTRA_SPECS
 
-/* target machine storage layout */
-
-#define LONG_DOUBLE_TYPE_SIZE 80
-
-#define WIDEST_HARDWARE_FP_SIZE 80
 
 /* Set the value of FLT_EVAL_METHOD in float.h.  When using only the
    FPU, assume that the fpcw is set to extended precision; when using
@@ -759,12 +754,17 @@ enum target_cpu_default
 #define TARGET_FLT_EVAL_METHOD \
   (TARGET_MIX_SSE_I387 ? -1 : TARGET_SSE_MATH ? 0 : 2)
 
+/* target machine storage layout */
+
 #define SHORT_TYPE_SIZE 16
 #define INT_TYPE_SIZE 32
 #define FLOAT_TYPE_SIZE 32
 #define LONG_TYPE_SIZE BITS_PER_WORD
 #define DOUBLE_TYPE_SIZE 64
 #define LONG_LONG_TYPE_SIZE 64
+#define LONG_DOUBLE_TYPE_SIZE 80
+
+#define WIDEST_HARDWARE_FP_SIZE LONG_DOUBLE_TYPE_SIZE
 
 #if defined (TARGET_BI_ARCH) || TARGET_64BIT_DEFAULT
 #define MAX_BITS_PER_WORD 64
@@ -1782,7 +1782,7 @@ typedef struct ix86_args {
    All other eliminations are valid.  */
 
 #define CAN_ELIMINATE(FROM, TO) \
-  ((TO) == STACK_POINTER_REGNUM ? ! frame_pointer_needed : 1)
+  ((TO) == STACK_POINTER_REGNUM ? !frame_pointer_needed : 1)
 
 /* Define the offset between two registers, one to be eliminated, and the other
    its replacement, at the start of a routine.  */
@@ -1985,8 +1985,7 @@ do {									\
 /* If a clear memory operation would take CLEAR_RATIO or more simple
    move-instruction sequences, we will do a clrmem or libcall instead.  */
 
-#define CLEAR_RATIO (optimize_size ? 2 \
-		     : ix86_cost->move_ratio > 6 ? 6 : ix86_cost->move_ratio)
+#define CLEAR_RATIO (optimize_size ? 2 : MIN (6, ix86_cost->move_ratio))
 
 /* Define if shifts truncate the shift count
    which implies one can omit a sign-extension or zero-extension
