@@ -31,3 +31,6 @@ proc ${tool}_target_compile { srcfile destfile compile_type options } {
     v3_target_compile $srcfile $destfile $compile_type $options
 }
 
+# Support for old dejagnu.  Must be loaded here, not in libstdc++.exp, to
+# make sure all existing procs are loaded when their presence is tested.
+load_file $srcdir/../../gcc/testsuite/lib/dejapatches.exp
