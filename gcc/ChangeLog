@@ -1,3 +1,13 @@
+2008-02-15  Richard Guenther  <rguenther@suse.de>
+	Zdenek Dvorak  <ook@ucw.cz>
+
+	PR tree-optimization/35164
+	* tree-flow.h (stmt_references_abnormal_ssa_name): Declare.
+	* tree-dfa.c (stmt_references_abnormal_ssa_name): New function.
+	* tree-ssa-forwprop.c (tree_ssa_forward_propagate_single_use_vars):
+	Only propagate addresses which do not have abnormal SSA_NAMEs
+	in their operands.
+
 2008-02-15  Joseph Myers  <joseph@codesourcery.com>
 
 	PR target/35088

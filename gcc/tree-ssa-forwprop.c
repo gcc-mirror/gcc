@@ -968,7 +968,8 @@ tree_ssa_forward_propagate_single_use_vars (void)
 		      && types_compatible_p (TREE_TYPE (TREE_TYPE (TREE_OPERAND (rhs, 0))),
 					     TREE_TYPE (TREE_TYPE (rhs)))))
 		{
-		  if (forward_propagate_addr_expr (lhs, rhs))
+		  if (!stmt_references_abnormal_ssa_name (stmt)
+		      && forward_propagate_addr_expr (lhs, rhs))
 		    {
 		      release_defs (stmt);
 		      todoflags |= TODO_remove_unused_locals;
