@@ -146,7 +146,7 @@ Some basic guidelines for editing this document:
 * @code{IDATE}:         IDATE,     Current local time (day/month/year)
 * @code{IEOR}:          IEOR,      Bitwise logical exclusive or
 * @code{IERRNO}:        IERRNO,    Function to get the last system error number
-* @code{INDEX}:         INDEX,     Position of a substring within a string
+* @code{INDEX}:         INDEX intrinsic, Position of a substring within a string
 * @code{INT}:           INT,       Convert to integer type
 * @code{INT2}:          INT2,      Convert to 16-bit integer type
 * @code{INT8}:          INT8,      Convert to 64-bit integer type
@@ -5628,7 +5628,7 @@ kind.
 
 
 
-@node INDEX
+@node INDEX intrinsic
 @section @code{INDEX} --- Position of a substring within a string
 @fnindex INDEX
 @cindex substring position
@@ -6715,7 +6715,7 @@ with @code{INTENT(IN)}
 The return value is of @code{INTEGER(kind=4)} type.
 
 @item @emph{See also}:
-@ref{INDEX}, @ref{LEN_TRIM}
+@ref{INDEX intrinsic}, @ref{LEN_TRIM}
 @end table
 
 
@@ -9070,7 +9070,7 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-@ref{INDEX}, @ref{VERIFY}
+@ref{INDEX intrinsic}, @ref{VERIFY}
 @end table
 
 
@@ -10828,7 +10828,7 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-@ref{SCAN}, @ref{INDEX}
+@ref{SCAN}, @ref{INDEX intrinsic}
 @end table
 
 
