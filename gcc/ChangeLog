@@ -1,3 +1,9 @@
+2008-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/35130
+	* tree-nested.c (convert_call_expr): Put FRAME.* vars into
+	OMP_CLAUSE_SHARED rather than OMP_CLAUSE_FIRSTPRIVATE clause.
+
 2008-02-15  Richard Guenther  <rguenther@suse.de>
 	Zdenek Dvorak  <ook@ucw.cz>
 

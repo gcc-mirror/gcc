@@ -1739,7 +1739,8 @@ convert_call_expr (tree *tp, int *walk_subtrees, void *data)
 	      break;
 	  if (c == NULL)
 	    {
-	      c = build_omp_clause (OMP_CLAUSE_FIRSTPRIVATE);
+	      c = build_omp_clause (i ? OMP_CLAUSE_FIRSTPRIVATE
+				      : OMP_CLAUSE_SHARED);
 	      OMP_CLAUSE_DECL (c) = decl;
 	      OMP_CLAUSE_CHAIN (c) = OMP_PARALLEL_CLAUSES (t);
 	      OMP_PARALLEL_CLAUSES (t) = c;
