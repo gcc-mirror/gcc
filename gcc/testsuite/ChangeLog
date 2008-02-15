@@ -1,5 +1,9 @@
 2008-02-15  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.dg/cpp/pragma-pop_macro-1.c: Fix dg-do directive.
+
+2008-02-15  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcc.target/i386/pr35160.c: Skip if !nonpic for 32bit x86 targets.
 
 2008-02-15  Hans-Peter Nilsson  <hp@axis.com>
