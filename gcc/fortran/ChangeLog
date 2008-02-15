@@ -1,5 +1,10 @@
 2008-02-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* intrinsic.texi: Rename INDEX node to avoid clashing with
+	index.html on case-insensitive systems.
+
+2008-02-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/35150
 	* trans-expr.c (gfc_conv_function_call): Force evaluation of
 	se->expr.
