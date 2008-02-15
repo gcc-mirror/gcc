@@ -1,3 +1,8 @@
+2008-02-15  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/35149
+	* ipa.c (cgraph_remove_unreachable_nodes): Clear local.inlinable flag.
+
 2008-02-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/34621
