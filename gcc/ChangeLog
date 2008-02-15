@@ -1,3 +1,11 @@
+2008-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/35196
+	* omp-low.c (expand_omp_for_generic): Don't initialize fd->v
+	in entry_bb.
+	(expand_omp_for_static_nochunk): Initialize fd->v in seq_start_bb
+	rather than in entry_bb.
+
 2008-02-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sfp-machine.h (CMPtype): Define as typedef using
