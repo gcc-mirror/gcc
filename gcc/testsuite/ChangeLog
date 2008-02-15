@@ -1,3 +1,13 @@
+2008-02-15  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/35023
+	PR c++/35024
+	PR c++/35026
+	* g++.dg/cpp0x/vt-35026.C: New.
+	* g++.dg/cpp0x/vt-35023.C: New.
+	* g++.dg/cpp0x/vt-34055.C: Tweak expected error messages.
+	* g++.dg/cpp0x/vt-35024.C: New.
+
 2008-02-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.c-torture/execute/va-arg-25.x: Remove.

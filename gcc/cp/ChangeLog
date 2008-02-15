@@ -1,3 +1,21 @@
+2008-02-15  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/35023
+	PR c++/35024
+	PR c++/35026
+	* pt.c (finish_member_template_decl): If the type in a TYPE_DECL
+	is error_mark_node, return an error early.
+	(find_parameter_packs_r): Pass the pointer set along to recursive
+	calls of cp_walk_subtrees; don't try to manage the pointer set
+	ourselves.
+	(uses_parameter_packs): Pass the pointer set to cp_walk_tree.
+	(make_pack_expansion): Ditto.
+	(check_for_bare_parameter_packs): Ditto. Also, don't bother taking
+	a second pass through the tree with find_parameter_packs_r; that
+	second pass no longer does anything.
+	(push_template_decl_real): If we have an erroneous declaration,
+	set its type to error_mark_node before returning an error.
+
 2008-02-14  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR c++/34050
