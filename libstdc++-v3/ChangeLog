@@ -1,3 +1,8 @@
+2008-02-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* testsuite/27_io/fpos/14320-1.cc: Check for "long long" and
+	remove XFAIL.
+
 2008-02-01  Release Manager
 
 	* GCC 4.2.3 released.
