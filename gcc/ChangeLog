@@ -1,3 +1,8 @@
+2008-02-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sfp-machine.h (CMPtype): Define as typedef using
+	libgcc_cmp_return mode.
+
 2008-02-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/35130
@@ -5,7 +10,7 @@
 	OMP_CLAUSE_SHARED rather than OMP_CLAUSE_FIRSTPRIVATE clause.
 
 2008-02-15  Richard Guenther  <rguenther@suse.de>
-	Zdenek Dvorak  <ook@ucw.cz>
+	    Zdenek Dvorak  <ook@ucw.cz>
 
 	PR tree-optimization/35164
 	* tree-flow.h (stmt_references_abnormal_ssa_name): Declare.

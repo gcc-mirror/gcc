@@ -3,14 +3,15 @@
 #define _FP_WS_TYPE		signed long
 #define _FP_I_TYPE		long
 
-typedef int TItype __attribute__((mode(TI)));
-typedef unsigned int UTItype __attribute__((mode(TI)));
+typedef int TItype __attribute__ ((mode (TI)));
+typedef unsigned int UTItype __attribute__ ((mode (TI)));
 
-#define TI_BITS			(__CHAR_BIT__ * (int)sizeof(TItype))
+#define TI_BITS (__CHAR_BIT__ * (int)sizeof(TItype))
 
-/* The type of the result of a floating point comparison.
-   This must match `word_mode' in GCC for the target.  */
-#define CMPtype			long
+/* The type of the result of a floating point comparison.  This must
+   match `__libgcc_cmp_return__' in GCC for the target.  */
+
+typedef int CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
 
 #define _FP_MUL_MEAT_Q(R,X,Y)                           \
   _FP_MUL_MEAT_2_wide(_FP_WFRACBITS_Q,R,X,Y,umul_ppmm)
@@ -30,8 +31,7 @@ typedef unsigned int UTItype __attribute__((mode(TI)));
 
 /* Here is something Intel misdesigned: the specs don't define
    the case where we have two NaNs with same mantissas, but
-   different sign. Different operations pick up different NaNs.
- */
+   different sign. Different operations pick up different NaNs.  */
 #define _FP_CHOOSENAN(fs, wc, R, X, Y, OP)			\
   do {								\
     if (_FP_FRAC_GT_##wc(X, Y)					\
