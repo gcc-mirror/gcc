@@ -30,7 +30,7 @@
 
 /**
  * @file parallel/tags.h
- * @brief Tags for compile-time options.
+ * @brief Tags for compile-time selection.
  *  This file is a GNU parallel extension to the Standard C++ Library.
  */
 
@@ -39,59 +39,8 @@
 #ifndef _GLIBCXX_PARALLEL_TAGS_H
 #define _GLIBCXX_PARALLEL_TAGS_H 1
 
-// Parallel mode namespaces.
-namespace std 
-{ 
-  namespace __parallel { } 
-}
-
-/**
- * @namespace __gnu_sequential
- * @brief GNU sequential classes for public use.
- */
-namespace __gnu_sequential 
-{ 
-#ifdef _GLIBCXX_PARALLEL
-  using namespace std::__norm;
-#else
-  using namespace std;
-#endif   
-}
-
-/**
- * @namespace __gnu_parallel
- * @brief GNU parallel classes for public use.
- */
 namespace __gnu_parallel
 {
-  // Import all the parallel versions of components in namespace std.
-  using namespace std::__parallel;
-
-  enum parallelism
-    {
-      /// Not parallel.
-      sequential,
-
-      /// Parallel unbalanced (equal-sized chunks).
-      parallel_unbalanced,
-
-      /// Parallel balanced (work-stealing).
-      parallel_balanced,
-
-      /// Parallel with OpenMP dynamic load-balancing.
-      parallel_omp_loop,
-
-      /// Parallel with OpenMP static load-balancing.
-      parallel_omp_loop_static,
-
-      /// Parallel with OpenMP taskqueue construct.
-      parallel_taskqueue
-    };
-
-  inline bool 
-  is_parallel(const parallelism __p) { return __p != sequential; }
-
-
   /** @brief Forces sequential execution at compile time. */
   struct sequential_tag { };
 
@@ -115,6 +64,7 @@ namespace __gnu_parallel
   struct omp_loop_static_tag : public parallel_tag { };
 
 
+  // XXX settings.h Settings::FindDistribution
   /** @brief Selects the growing block size variant for std::find().
       @see _GLIBCXX_FIND_GROWING_BLOCKS */
   struct growing_blocks_tag { };

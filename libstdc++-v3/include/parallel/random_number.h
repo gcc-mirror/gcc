@@ -330,11 +330,11 @@ namespace __gnu_parallel
     }
 
 
-  typedef mersenne_twister<uint32,32,351,175,19,0xccab8ee7,11,
+  typedef mersenne_twister<uint32_t,32,351,175,19,0xccab8ee7,11,
 			   7,0x31b6ab00,15,0xffe50000,17, 0xa37d3c92> mt11213b;
 
   // validation by experiment from mt19937.c
-  typedef mersenne_twister<uint32,32,624,397,31,0x9908b0df,11,
+  typedef mersenne_twister<uint32_t,32,624,397,31,0x9908b0df,11,
 			   7,0x9d2c5680,15,0xefc60000,18, 3346425566U> mt19937;
 
   /** @brief Random number generator, based on the Mersenne twister. */
@@ -342,24 +342,24 @@ namespace __gnu_parallel
   {
   private:
     mt19937 mt;
-    uint64 supremum, RAND_SUP;
+    uint64_t supremum, RAND_SUP;
     double supremum_reciprocal, RAND_SUP_REC;
 
-    uint64 cache;  /* assumed to be twice as long as the usual random number */
+    uint64_t cache;  /* assumed to be twice as long as the usual random number */
     int bits_left; /* bit results */
 
-    static uint32
-    scale_down(uint64 x,
+    static uint32_t
+    scale_down(uint64_t x,
 #if _GLIBCXX_SCALE_DOWN_FPU
-	       uint64 /*supremum*/, double supremum_reciprocal)
+	       uint64_t /*supremum*/, double supremum_reciprocal)
 #else
-               uint64 supremum, double /*supremum_reciprocal*/)
+               uint64_t supremum, double /*supremum_reciprocal*/)
 #endif
 	{
 #if _GLIBCXX_SCALE_DOWN_FPU
-	  return (uint32)(x * supremum_reciprocal);
+	  return (uint32_t)(x * supremum_reciprocal);
 #else
-	  return static_cast<uint32>(x % supremum);
+	  return static_cast<uint32_t>(x % supremum);
 #endif
 	}
 
@@ -367,7 +367,7 @@ namespace __gnu_parallel
     /** @brief Default constructor. Seed with 0. */
     random_number()
     : mt(0), supremum(0x100000000ULL),
-      RAND_SUP(1ULL << (sizeof(uint32) * 8)),
+      RAND_SUP(1ULL << (sizeof(uint32_t) * 8)),
       supremum_reciprocal((double)supremum / (double)RAND_SUP),
       RAND_SUP_REC(1.0 / (double)RAND_SUP),
       cache(0), bits_left(0) { }
@@ -376,22 +376,22 @@ namespace __gnu_parallel
      *  @param seed Random seed.
      *  @param supremum Generate integer random numbers in the
      *                  interval @c [0,supremum). */
-    random_number(uint32 seed, uint64 supremum = 0x100000000ULL)
+    random_number(uint32_t seed, uint64_t supremum = 0x100000000ULL)
     : mt(seed), supremum(supremum),
-      RAND_SUP(1ULL << (sizeof(uint32) * 8)),
+      RAND_SUP(1ULL << (sizeof(uint32_t) * 8)),
       supremum_reciprocal((double)supremum / (double)RAND_SUP),
       RAND_SUP_REC(1.0 / (double)RAND_SUP),
       cache(0), bits_left(0) { }
 
     /** @brief Generate unsigned random 32-bit integer. */
-    uint32
+    uint32_t
     operator()()
     { return scale_down(mt(), supremum, supremum_reciprocal); }
 
     /** @brief Generate unsigned random 32-bit integer in the
 	interval @c [0,local_supremum). */
-    uint32
-    operator()(uint64 local_supremum)
+    uint32_t
+    operator()(uint64_t local_supremum)
     {
       return scale_down(mt(), local_supremum,
 			(double)local_supremum * RAND_SUP_REC);
@@ -400,7 +400,7 @@ namespace __gnu_parallel
     /** @brief Set the random seed.
      *  @param seed to set. */
     void
-    set_seed(uint32 seed)
+    set_seed(uint32_t seed)
     {
       mt.seed(seed);
       cache = mt();
@@ -417,7 +417,7 @@ namespace __gnu_parallel
 	bits_left -= bits;
 	if (bits_left < 32)
 	  {
-	    cache |= (((uint64)mt()) << bits_left);
+	    cache |= (((uint64_t)mt()) << bits_left);
 	    bits_left += 32;
 	  }
 	return res;
@@ -433,7 +433,7 @@ namespace __gnu_parallel
       bits_left -= bits;
       if (bits_left < 32)
 	{
-	  cache |= (((uint64)mt()) << bits_left);
+	  cache |= (((uint64_t)mt()) << bits_left);
 	  bits_left += 32;
 	}
       return res;

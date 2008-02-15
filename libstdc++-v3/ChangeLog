@@ -1,3 +1,18 @@
+2008-02-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/parallel/types.h: Move enum parallelism here.  Use
+	tr1/cstdint's int16_t, uint16_t, int32_t, uint32_t, int64_t,
+	uint64_t. 
+	* include/parallel/multiseq_selection.h: Adjust for cstdint.
+	* include/parallel/compatibility.h: Same.
+	* include/parallel/tags.h: Just compile-time tags.
+	* include/parallel/base.h: Put namespace bits here.
+
+	* src/Makefile.am (PARALLEL_FLAGS): Use it.
+	* src/Makefile.in: Regenerate.
+
+	* testsuite/25_algorithms/nth_element/1.cc: Add test variable.
+
 2008-02-15  Hans-Peter Nilsson  <hp@axis.com>
 
 	* testsuite/config/default.exp: Load gcc dejapatches.exp.
@@ -20,7 +35,7 @@
 2008-02-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/doxygen/mainpage.html: Correct links.
-	
+
 2008-02-11  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/html/*: Populate with regenerated files.
@@ -30,7 +45,7 @@
 	* doc/html/*: Remove all but contents of ext/pb_ds.
 	* doc/html/index.html: New.
 	* doc/html/README: New.
-	
+
 2008-02-11  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/doxygen/mainpage.html: Add in corrected links.
@@ -40,7 +55,7 @@
 	* doc/xml/spine.xml: Edit file names.
 	* doc/Makefile.am: Edit xml_sources.
 	* doc/Makefile.in: Regenerate.
-	
+
 2008-02-11  Paolo Carlini  <pcarlini@suse.de>
 
 	* configure: Regenerate with documented autoconf and automake
@@ -134,13 +149,13 @@
 
 	* doc/doxygen/guide.html: Removed, integrated into other docs.
 	* doc/doxygen/user.cfg.in: Clean up XML generation.
-	* doc/doxygen/run_doxygen: Move to..	
+	* doc/doxygen/run_doxygen: Move to..
 	* scripts/run_doxygen: ...here.
-	
+
 	* configure: Regenerate.
 	* Makefile.in: Regenerate.
 	* src/Makefile.in: Regenerate.
-	* doc/Makefile.in: Regenerate.	
+	* doc/Makefile.in: Regenerate.
 	* po/Makefile.in: Regenerate.
 	* libmath/Makefile.in: Regenerate.
 	* include/Makefile.in: Regenerate.
@@ -162,7 +177,7 @@
 	* testsuite/27_io/basic_iostream/cons/2020.cc: Minor tweaks.
 
 2008-01-31  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
-    
+
 	* include/backward/auto_ptr.h: Fix comment typos.
 	* include/bits/algorithmfwd.h: Likewise.
 	* include/bits/basic_ios.h: Likewise.
@@ -309,7 +324,7 @@
 	* doc/doxygen/run_doxygen: Same, more namespace fixups for man
 	generation.
 	* doc/doxygen/user.cfg.in: Update for doxygen 1.5.4.
-	
+
 	* include/tr1_impl/random: Remove maint from doxygen markup.
 	* include/tr1_impl/functional: Same.
 	* include/std/tuple: Same.
@@ -343,7 +358,7 @@
 	* include/backward/auto_ptr.h: Same.
 
 	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
-	Fixups for line number changes.	
+	Fixups for line number changes.
 	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc: Same.
 	* testsuite/23_containers/vector/requirements/dr438/
 	constructor_1_neg.cc: Same.
@@ -375,7 +390,7 @@
 	* testsuite/Makefile.in: Regenerate.
 
 	* scripts/make_graphs.py: Correct paths for new layout.
-	
+
 2008-01-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4 (AC_LC_MESSAGES): Remove serial.

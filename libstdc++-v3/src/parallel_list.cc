@@ -27,6 +27,4 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#define _GLIBCXX_PARALLEL 
-
 #include "list.cc"
