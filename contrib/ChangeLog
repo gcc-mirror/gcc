@@ -1,3 +1,7 @@
+2008-02-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* check_warning_flags.sh: New file.
+
 2008-01-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* paranoia.cc (main): Remove handling of c4x_single and
