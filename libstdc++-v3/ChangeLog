@@ -1,3 +1,8 @@
+2008-02-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* testsuite/27_io/fpos/14320-1.cc: Check for "long long" and
+	remove XFAIL.
+
 2007-04-23  Matthias Klose  <doko@debian.org>
 
 	Backport from mainline:
