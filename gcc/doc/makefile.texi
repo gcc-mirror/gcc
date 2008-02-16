@@ -152,7 +152,7 @@ with the stage@var{N-1} GCC@footnote{Customarily, the system compiler
   is also termed the @file{stage0} GCC.}.
 
 You will invoke this target if you need to test or debug the
-stage@var{N} GCC.  If you only need to execute GCC (but you need
+stage@var{N} GCC@.  If you only need to execute GCC (but you need
 not run @samp{make} either to rebuild it or to run test suites),
 you should be able to work directly in the @file{stage@var{N}-gcc}
 directory.  This makes it easier to debug multiple stages in

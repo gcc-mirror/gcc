@@ -297,14 +297,14 @@ systems' @command{tar} programs will also work, only try GNU
 
 @item GNU Multiple Precision Library (GMP) version 4.1 (or later)
 
-Necessary to build GCC.  If you do not have it installed in your
+Necessary to build GCC@.  If you do not have it installed in your
 library search path, you will have to configure with the
 @option{--with-gmp} configure option.  See also
 @option{--with-gmp-lib} and @option{--with-gmp-include}.
 
 @item MPFR Library version 2.3.0 (or later)
 
-Necessary to build GCC.  It can be downloaded from
+Necessary to build GCC@.  It can be downloaded from
 @uref{http://www.mpfr.org/}.  The version of MPFR that is bundled with
 GMP 4.1.x contains numerous bugs.  Although GCC may appear to function
 with the buggy versions of MPFR, there are a few bugs that will not be
@@ -2997,7 +2997,7 @@ or @samp{98}.  Another way is to add an appropriate set of predefines
 to @env{CC}.  The description for the @option{munix=} option contains
 a list of the predefines used with each standard.
 
-As of GCC 4.1, @env{DWARF2} exception handling is available on HP-UX. 
+As of GCC 4.1, @env{DWARF2} exception handling is available on HP-UX@.
 It is now the default.  This exposed a bug in the handling of data
 relocations in the GAS assembler.  The handling of 64-bit data relocations
 was seriously broken, affecting debugging and exception support on all
@@ -3635,7 +3635,7 @@ use traps on systems that support them.
 Cross-compilers for the MIPS as target using the MIPS assembler
 currently do not work, because the auxiliary programs
 @file{mips-tdump.c} and @file{mips-tfile.c} can't be compiled on
-anything but a MIPS.  It does work to cross compile for a MIPS
+anything but a MIPS@.  It does work to cross compile for a MIPS
 if you use the GNU assembler and linker.
 
 The assembler from GNU binutils 2.17 and earlier has a bug in the way

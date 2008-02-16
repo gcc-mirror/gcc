@@ -3663,7 +3663,7 @@ The output and input vectors should have the same modes.
 @item @samp{vec_pack_trunc_@var{m}}
 Narrow (demote) and merge the elements of two vectors. Operands 1 and 2
 are vectors of the same mode having N integral or floating point elements
-of size S.  Operand 0 is the resulting vector in which 2*N elements of
+of size S@.  Operand 0 is the resulting vector in which 2*N elements of
 size N/2 are concatenated after narrowing them down using truncation.
 
 @cindex @code{vec_pack_ssat_@var{m}} instruction pattern
@@ -3680,7 +3680,7 @@ saturating arithmetic.
 @item @samp{vec_pack_sfix_trunc_@var{m}}, @samp{vec_pack_ufix_trunc_@var{m}}
 Narrow, convert to signed/unsigned integral type and merge the elements
 of two vectors.  Operands 1 and 2 are vectors of the same mode having N
-floating point elements of size S.  Operand 0 is the resulting vector
+floating point elements of size S@.  Operand 0 is the resulting vector
 in which 2*N elements of size N/2 are concatenated.
 
 @cindex @code{vec_unpacks_hi_@var{m}} instruction pattern
@@ -3688,7 +3688,7 @@ in which 2*N elements of size N/2 are concatenated.
 @item @samp{vec_unpacks_hi_@var{m}}, @samp{vec_unpacks_lo_@var{m}}
 Extract and widen (promote) the high/low part of a vector of signed
 integral or floating point elements.  The input vector (operand 1) has N
-elements of size S.  Widen (promote) the high/low elements of the vector
+elements of size S@.  Widen (promote) the high/low elements of the vector
 using signed or floating point extension and place the resulting N/2
 values of size 2*S in the output vector (operand 0).
 
@@ -3708,7 +3708,7 @@ place the resulting N/2 values of size 2*S in the output vector (operand 0).
 @itemx @samp{vec_unpacku_float_hi_@var{m}}, @samp{vec_unpacku_float_lo_@var{m}}
 Extract, convert to floating point type and widen the high/low part of a
 vector of signed/unsigned integral elements.  The input vector (operand 1)
-has N elements of size S.  Convert the high/low elements of the vector using
+has N elements of size S@.  Convert the high/low elements of the vector using
 floating point conversion and place the resulting N/2 values of size 2*S in
 the output vector (operand 0).
 
@@ -3719,7 +3719,7 @@ the output vector (operand 0).
 @item @samp{vec_widen_umult_hi_@var{m}}, @samp{vec_widen_umult_lo_@var{m}}
 @itemx @samp{vec_widen_smult_hi_@var{m}}, @samp{vec_widen_smult_lo_@var{m}}
 Signed/Unsigned widening multiplication.  The two inputs (operands 1 and 2)
-are vectors with N signed/unsigned elements of size S.  Multiply the high/low
+are vectors with N signed/unsigned elements of size S@.  Multiply the high/low
 elements of the two vectors, and put the N/2 products of size 2*S in the
 output vector (operand 0).
 

@@ -1,3 +1,16 @@
+2008-02-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/c-tree.texi: Use `@.' where appropriate.
+	* doc/extend.texi: Likewise.
+	* doc/install.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/loop.texi: Likewise.
+	* doc/makefile.texi: Likewise.
+	* doc/md.texi: Likewise.
+	* doc/passes.texi: Likewise.
+	* doc/standards.texi: Likewise.
+	* doc/tm.texi: Likewise.
+
 2008-02-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/35196
