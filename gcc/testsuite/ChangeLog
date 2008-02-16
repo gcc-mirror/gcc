@@ -1,3 +1,10 @@
+2008-02-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+        * g++.dg/ext/has_nothrow_assign.C: Skip some tests when __PIC__.
+        * g++.dg/ext/has_nothrow_constructor.C: Likewise.
+        * g++.dg/ext/has_nothrow_copy.C: Likewise.
+
 2008-02-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/fastcall-sseregparm.c: Include sse-check.h.
