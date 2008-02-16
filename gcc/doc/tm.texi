@@ -6350,7 +6350,7 @@ enabled/used.  @var{flags} initially may have either the SCHED_RGN or SCHED_EBB
 bit set.  This denotes the scheduler pass for which the data should be
 provided.  The target backend should modify @var{flags} by modifying
 the bits corresponding to the following features: USE_DEPS_LIST, USE_GLAT,
-DETACH_LIFE_INFO, and DO_SPECULATION.  For the DO_SPECULATION feature
+DETACH_LIFE_INFO, and DO_SPECULATION@.  For the DO_SPECULATION feature
 an additional structure @var{spec_info} should be filled by the target.
 The structure describes speculation types that can be used in the scheduler.
 @end deftypefn
@@ -7151,7 +7151,7 @@ defining this macro.  If unable, use the expression
 before and after that, output the additional assembler syntax for defining
 the name, and a newline.
 
-There are two ways of handling global BSS.  One is to define either
+There are two ways of handling global BSS@.  One is to define either
 this macro or its aligned counterpart, @code{ASM_OUTPUT_ALIGNED_BSS}.
 The other is to have @code{TARGET_ASM_SELECT_SECTION} return a
 switchable BSS section (@pxref{TARGET_HAVE_SWITCHABLE_BSS_SECTIONS}).
@@ -10142,7 +10142,7 @@ may in turn cause a branch offset to overflow.
 @deftypefn {Target Hook} bool TARGET_COMMUTATIVE_P (rtx @var{x}, @var{outer_code})
 This target hook returns @code{true} if @var{x} is considered to be commutative.
 Usually, this is just COMMUTATIVE_P (@var{x}), but the HP PA doesn't consider
-PLUS to be commutative inside a MEM.  @var{outer_code} is the rtx code
+PLUS to be commutative inside a MEM@.  @var{outer_code} is the rtx code
 of the enclosing rtl, if known, otherwise it is UNKNOWN.
 @end deftypefn
 

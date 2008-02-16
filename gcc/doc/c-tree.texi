@@ -2813,7 +2813,7 @@ label the critical section.
 @item OMP_RETURN
 
 This does not represent any OpenMP directive, it is an artificial
-marker to indicate the end of the body of an OpenMP. It is used
+marker to indicate the end of the body of an OpenMP@. It is used
 by the flow graph (@code{tree-cfg.c}) and OpenMP region
 building code (@code{omp-low.c}).
 

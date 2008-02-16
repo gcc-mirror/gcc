@@ -3810,7 +3810,7 @@ recommended form for most uses.
 Unfortunately, there are some characters which ISO C and ISO C++ allow
 in identifiers that when turned into NFC aren't allowable as
 identifiers.  That is, there's no way to use these symbols in portable
-ISO C or C++ and have all your identifiers in NFC.
+ISO C or C++ and have all your identifiers in NFC@.
 @option{-Wnormalized=id} suppresses the warning for these characters.
 It is hoped that future versions of the standards involved will correct
 this, which is why this option is not the default.
@@ -4821,7 +4821,7 @@ Dump each function after CCP@.  The file name is made by appending
 
 @item storeccp
 @opindex fdump-tree-storeccp
-Dump each function after STORE-CCP.  The file name is made by appending
+Dump each function after STORE-CCP@.  The file name is made by appending
 @file{.storeccp} to the source file name.
 
 @item pre
@@ -5253,7 +5253,7 @@ Disabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fforward-propagate
 @opindex fforward-propagate
-Perform a forward propagation pass on RTL.  The pass tries to combine two
+Perform a forward propagation pass on RTL@.  The pass tries to combine two
 instructions and checks if the result can be simplified.  If loop unrolling
 is active, two passes are performed and the second is scheduled after
 loop unrolling.
@@ -5589,12 +5589,12 @@ higher on architectures that support this.
 
 @item -fdce
 @opindex fdce
-Perform dead code elimination (DCE) on RTL.
+Perform dead code elimination (DCE) on RTL@.
 Enabled by default at @option{-O} and higher.
 
 @item -fdse
 @opindex fdse
-Perform dead store elimination (DSE) on RTL.
+Perform dead store elimination (DSE) on RTL@.
 Enabled by default at @option{-O} and higher.
 
 @item -fif-conversion
@@ -11175,7 +11175,7 @@ the M32C/80 series.
 @opindex msim
 Specifies that the program will be run on the simulator.  This causes
 an alternate runtime library to be linked in which supports, for
-example, file I/O.  You must not use this option when generating
+example, file I/O@.  You must not use this option when generating
 programs that will run on real hardware; you must provide your own
 runtime library for whatever I/O functions are needed.
 
@@ -11473,7 +11473,7 @@ CPU32 or CPU32+ core, including the 68330, 68331, 68332, 68333, 68334,
 
 @item -m5200
 @opindex m5200
-Generate output for a 520X ColdFire CPU.  This is the default
+Generate output for a 520X ColdFire CPU@.  This is the default
 when the compiler is configured for 520X-based systems.
 It is equivalent to @option{-mcpu=5206}, and is now deprecated
 in favor of that option.
@@ -11483,7 +11483,7 @@ the MCF5202, MCF5203, MCF5204 and MCF5206.
 
 @item -m5206e
 @opindex m5206e
-Generate output for a 5206e ColdFire CPU.  The option is now
+Generate output for a 5206e ColdFire CPU@.  The option is now
 deprecated in favor of the equivalent @option{-mcpu=5206e}.
 
 @item -m528x
@@ -11494,12 +11494,12 @@ The option is now deprecated in favor of the equivalent
 
 @item -m5307
 @opindex m5307
-Generate output for a ColdFire 5307 CPU.  The option is now deprecated
+Generate output for a ColdFire 5307 CPU@.  The option is now deprecated
 in favor of the equivalent @option{-mcpu=5307}.
 
 @item -m5407
 @opindex m5407
-Generate output for a ColdFire 5407 CPU.  The option is now deprecated
+Generate output for a ColdFire 5407 CPU@.  The option is now deprecated
 in favor of the equivalent @option{-mcpu=5407}.
 
 @item -mcfv4e
@@ -11532,7 +11532,7 @@ The option is equivalent to @option{-march=68020} @option{-mtune=68020-60}.
 @opindex mhard-float
 @opindex m68881
 Generate floating-point instructions.  This is the default for 68020
-and above, and for ColdFire devices that have an FPU.  It defines the
+and above, and for ColdFire devices that have an FPU@.  It defines the
 macro @samp{__HAVE_68881__} on M680x0 targets and @samp{__mcffpu__}
 on ColdFire targets.
 
@@ -12081,7 +12081,7 @@ configurations; see the installation documentation for details.
 @itemx -mno-dsp
 @opindex mdsp
 @opindex mno-dsp
-Use (do not use) revision 1 of the MIPS DSP ASE.
+Use (do not use) revision 1 of the MIPS DSP ASE@.
 @xref{MIPS DSP Built-in Functions}.  This option defines the
 preprocessor macro @samp{__mips_dsp}.  It also defines
 @samp{__mips_dsp_rev} to 1.
@@ -12090,7 +12090,7 @@ preprocessor macro @samp{__mips_dsp}.  It also defines
 @itemx -mno-dspr2
 @opindex mdspr2
 @opindex mno-dspr2
-Use (do not use) revision 2 of the MIPS DSP ASE.
+Use (do not use) revision 2 of the MIPS DSP ASE@.
 @xref{MIPS DSP Built-in Functions}.  This option defines the
 preprocessor macros @samp{__mips_dsp} and @samp{__mips_dspr2}.
 It also defines @samp{__mips_dsp_rev} to 2.
@@ -12168,7 +12168,7 @@ The default @option{-G} option depends on the configuration.
 @opindex mlocal-sdata
 @opindex mno-local-sdata
 Extend (do not extend) the @option{-G} behavior to local data too,
-such as to static variables in C.  @option{-mlocal-sdata} is the
+such as to static variables in C@.  @option{-mlocal-sdata} is the
 default for all configurations.
 
 If the linker complains that an application is using too much small data,
@@ -13089,7 +13089,7 @@ implies @option{-mno-powerpc64}.  GCC defaults to @option{-maix32}.
 @opindex mxl-compat
 @opindex mno-xl-compat
 Produce code that conforms more closely to IBM XL compiler semantics
-when using AIX-compatible ABI.  Pass floating-point arguments to
+when using AIX-compatible ABI@.  Pass floating-point arguments to
 prototyped functions beyond the register save area (RSA) on the stack
 in addition to argument FPRs.  Do not assume that most significant
 double in 128-bit long double value is properly rounded when comparing

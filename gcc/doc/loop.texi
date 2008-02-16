@@ -62,7 +62,7 @@ query membership of blocks to loops and subloop relationships, or
 enumerate and test loop exits, can be expected to work).
 
 Body of the loop is the set of blocks that are dominated by its header,
-and reachable from its latch against the direction of edges in CFG.  The
+and reachable from its latch against the direction of edges in CFG@.  The
 loops are organized in a containment hierarchy (tree) such that all the
 loops immediately contained inside loop L are the children of L in the
 tree.  This tree is represented by the @code{struct loops} structure.
@@ -93,7 +93,7 @@ were ended using break or goto, they would not be released;
 Each basic block contains the reference to the innermost loop it belongs
 to (@code{loop_father}).  For this reason, it is only possible to have
 one @code{struct loops} structure initialized at the same time for each
-CFG.  The global variable @code{current_loops} contains the
+CFG@.  The global variable @code{current_loops} contains the
 @code{struct loops} structure.  Many of the loop manipulation functions
 assume that dominance information is up-to-date.
 
@@ -106,7 +106,7 @@ structures should be calculated/enforced and preserved later:
 @item @code{LOOPS_MAY_HAVE_MULTIPLE_LATCHES}: If this flag is set, no
 changes to CFG will be performed in the loop analysis, in particular,
 loops with multiple latch edges will not be disambiguated.  If a loop
-has multiple latches, its latch block is set to NULL.  Most of
+has multiple latches, its latch block is set to NULL@.  Most of
 the loop manipulation functions will not work for loops in this shape.
 No other flags that require CFG changes can be passed to
 loop_optimizer_init.
@@ -240,7 +240,7 @@ are only reliable for the innermost loops:
 
 @itemize
 @item @code{create_iv}: Creates a new induction variable.  Only works on
-GIMPLE.  @code{standard_iv_increment_position} can be used to find a
+GIMPLE@.  @code{standard_iv_increment_position} can be used to find a
 suitable place for the iv increment.
 @item @code{duplicate_loop_to_header_edge},
 @code{tree_duplicate_loop_to_header_edge}: These functions (on RTL and
@@ -269,7 +269,7 @@ cannot be taken.  Works only on GIMPLE.
 Throughout the loop optimizations on tree level, one extra condition is
 enforced on the SSA form:  No SSA name is used outside of the loop in
 that it is defined.  The SSA form satisfying this condition is called
-``loop-closed SSA form'' -- LCSSA.  To enforce LCSSA, PHI nodes must be
+``loop-closed SSA form'' -- LCSSA@.  To enforce LCSSA, PHI nodes must be
 created at the exits of the loops for the SSA names that are used
 outside of them.  Only the real operands (not virtual SSA names) are
 held in LCSSA, in order to save memory.
@@ -308,7 +308,7 @@ LCSSA is preserved.
 @cindex IV analysis on GIMPLE
 
 Scalar evolutions (SCEV) are used to represent results of induction
-variable analysis on GIMPLE.  They enable us to represent variables with
+variable analysis on GIMPLE@.  They enable us to represent variables with
 complicated behavior in a simple and consistent way (we only use it to
 express values of polynomial induction variables, but it is possible to
 extend it).  The interfaces to SCEV analysis are declared in
@@ -436,7 +436,7 @@ the information is invalid.
 @item @code{noloop_assumptions} on RTL, @code{may_be_zero} on GIMPLE: If
 this condition is true, the loop exits in the first iteration.
 @item @code{infinite}: If this condition is true, the loop is infinite.
-This condition is only available on RTL.  On GIMPLE, conditions for
+This condition is only available on RTL@.  On GIMPLE, conditions for
 finiteness of the loop are included in @code{assumptions}.
 @item @code{niter_expr} on RTL, @code{niter} on GIMPLE: The expression
 that gives number of iterations.  The number of iterations is defined as
@@ -453,7 +453,7 @@ structure.  The corresponding function is named
 @code{check_simple_exit}.  There are also functions that pass through
 all the exits of a loop and try to find one with easy to determine
 number of iterations -- @code{find_loop_niter} on GIMPLE and
-@code{find_simple_exit} on RTL.  Finally, there are functions that
+@code{find_simple_exit} on RTL@.  Finally, there are functions that
 provide the same information, but additionally cache it, so that
 repeated calls to number of iterations are not so costly --
 @code{number_of_latch_executions} on GIMPLE and @code{get_simple_loop_desc}
@@ -499,7 +499,7 @@ and mapping this order to the elements of this array avoids costly
 queries to the loop body representation.
 
 Three types of data references are currently handled: ARRAY_REF, 
-INDIRECT_REF and COMPONENT_REF. The data structure for the data reference 
+INDIRECT_REF and COMPONENT_REF@. The data structure for the data reference 
 is @code{data_reference}, where @code{data_reference_p} is a name of a 
 pointer to the data reference structure. The structure contains the 
 following elements:

@@ -559,7 +559,7 @@ If a function always returns the same local variable, and that local
 variable is an aggregate type, then the variable is replaced with the
 return value for the function (i.e., the function's DECL_RESULT).  This
 is equivalent to the C++ named return value optimization applied to
-GIMPLE.  The pass is located in @file{tree-nrv.c} and is described by
+GIMPLE@.  The pass is located in @file{tree-nrv.c} and is described by
 @code{pass_nrv}.
 
 @item Return slot optimization

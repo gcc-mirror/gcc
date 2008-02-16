@@ -2383,7 +2383,7 @@ from the USP register in the function prologue.
 @item l1_text
 @cindex @code{l1_text} function attribute
 This attribute specifies a function to be placed into L1 Instruction
-SRAM. The function will be put into a specific section named @code{.l1.text}.
+SRAM@. The function will be put into a specific section named @code{.l1.text}.
 With @option{-mfdpic}, function calls with a such function as the callee
 or caller will use inlined PLT.
 
@@ -10961,7 +10961,7 @@ The Solaris target supports @code{#pragma redefine_extname}
 Increase the minimum alignment of each @var{variable} to @var{alignment}.
 This is the same as GCC's @code{aligned} attribute @pxref{Variable
 Attributes}).  Macro expansion occurs on the arguments to this pragma
-when compiling C and Objective-C.  It does not currently occur when
+when compiling C and Objective-C@.  It does not currently occur when
 compiling C++, but this is a bug which may be fixed in a future
 release.
 
@@ -11569,7 +11569,7 @@ causing an access.  However, there is reason to believe that it is,
 because otherwise certain simple expressions become undefined.  However,
 because it would surprise most programmers, G++ treats dereferencing a
 pointer to volatile object of complete type when the value is unused as
-GCC would do for an equivalent type in C.  When the object has incomplete
+GCC would do for an equivalent type in C@.  When the object has incomplete
 type, G++ issues a warning; if you wish to force an error, you must
 force a conversion to rvalue with, for instance, a static cast.
 
