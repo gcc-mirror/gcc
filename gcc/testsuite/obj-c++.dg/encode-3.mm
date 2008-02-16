@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { xfail { "*-*-*" } } } PR32052 */
 
 #include <stdlib.h>
 #include <string.h>
