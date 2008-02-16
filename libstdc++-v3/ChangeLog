@@ -1,3 +1,9 @@
+2008-02-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/parallel/random_number.h: Use TR1's mersenne_twister.
+	(random_number::genrand_bits()): Remove.
+	(random_number::set_seed): Remove.
+	
 2008-02-15  Benjamin Kosnik  <bkoz@redhat.com>
 	
 	* include/parallel/types.h: Remove enum parallelism.
