@@ -1,6 +1,8 @@
 /* { dg-do run } */
 /* { dg-options "-msse" } */
 
+#include "sse-check.h"
+
 extern void abort(void);
 typedef int __attribute__ ((vector_size (16))) foo_t;
 
@@ -25,8 +27,8 @@ check (int x, ...)
     abort ();
 }
 
-int main()
+static void
+sse_test (void)
 {
   check (3, s1, 7);
-  return 0;
 }

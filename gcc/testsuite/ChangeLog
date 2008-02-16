@@ -1,3 +1,13 @@
+2008-02-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/fastcall-sseregparm.c: Include sse-check.h.
+	(main): Change to void and rename to sse_test.
+	* gcc.target/i386/pr24306.c: Ditto.
+	* gcc.target/i386/pr32065-2.c: Ditto.
+	* gcc.target/i386/20060512-1.c: Include sse2-check.h.
+	(main): Change to void and rename to sse2_test.
+	* gcc.target/i386/20060512-3.c: Ditto.
+
 2008-02-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/35150
