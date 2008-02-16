@@ -1,3 +1,10 @@
+2008-02-17  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/35209
+	* config/abi/pre/gnu.ver: Export stdio_sync_filebuf symbols.
+	* testsuite/ext/stdio_sync_filebuf/char/35209.cc: New.
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/35209.cc: Likewise.
+	
 2008-02-16  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/parallel/random_number.h: Use TR1's mersenne_twister.

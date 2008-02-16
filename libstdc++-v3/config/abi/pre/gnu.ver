@@ -1,6 +1,6 @@
 ## Linker script for GNU versioning (GNU ld 2.13.91+ only.)
 ##
-## Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+## Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
 ## Free Software Foundation, Inc.
 ##
 ## This file is part of the GNU ISO C++ Library.  This library is free
@@ -792,6 +792,9 @@ GLIBCXX_3.4.10 {
     
     _ZNSt8__detail12__prime_listE;
     _ZNSt3tr18__detail12__prime_listE;
+
+    _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EE4syncEv;
+    _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EE[5-9CD]*;
 
 } GLIBCXX_3.4.9;
 
