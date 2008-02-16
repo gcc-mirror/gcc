@@ -70,60 +70,6 @@ namespace __gnu_parallel
   inline bool 
   is_parallel(const parallelism __p) { return __p != sequential; }
 
-  /// @brief Sorting algorithms: multi-way mergesort, quicksort,
-  /// load-balanced quicksort.
-  enum SortAlgorithm 
-    { 
-      MWMS, 
-      QS, 
-      QS_BALANCED 
-    };
-
-  /// @brief Merging algorithms: bubblesort-alike, loser-tree
-  /// variants, enum sentinel.
-  enum MultiwayMergeAlgorithm
-    { 
-      BUBBLE, 
-      LOSER_TREE_EXPLICIT, 
-      LOSER_TREE, 
-      LOSER_TREE_COMBINED, 
-      LOSER_TREE_SENTINEL, 
-      MWM_ALGORITHM_LAST 
-    };
-  
-  /// @brief Partial sum algorithms: recursive, linear.
-  enum PartialSumAlgorithm 
-    { 
-      RECURSIVE, 
-      LINEAR 
-    };
-
-  /// @brief Splitting strategies for sorting/merging: sampling, exact.
-  enum Splitting 
-    { 
-      SAMPLING, 
-      EXACT 
-    };
-
-  /// @brief Find distribution strategies: growing blocks, equal-sized
-  /// blocks, equal splitting.
-  enum FindDistribution 
-    { 
-      GROWING_BLOCKS, 
-      CONSTANT_SIZE_BLOCKS, 
-      EQUAL_SPLIT 
-    };
-
-  /// @brief Strategies for run-time algorithm selection:
-  /// force_sequential, force_parallel, heuristic.
-  enum AlgorithmSelection
-    {
-      heuristic,
-      force_sequential,
-      force_parallel
-    };
-
-
   /// Integer Types.
   using std::tr1::int16_t;
   using std::tr1::uint16_t;

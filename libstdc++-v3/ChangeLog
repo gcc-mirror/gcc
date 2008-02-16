@@ -1,4 +1,8 @@
 2008-02-15  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* include/parallel/types.h: Remove enum parallelism.
+	
+2008-02-15  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/parallel/types.h: Move enum parallelism here.  Use
 	tr1/cstdint's int16_t, uint16_t, int32_t, uint32_t, int64_t,
