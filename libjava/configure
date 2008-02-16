@@ -15777,7 +15777,7 @@ echo $ECHO_N "checking for $compiler option to produce PIC... $ECHO_C" >&6
       # built for inclusion in a dll (and should export symbols for example).
       # Although the cygwin gcc ignores -fPIC, still need this for old-style
       # (--disable-auto-import) libraries
-      lt_prog_compiler_pic_GCJ='-DDLL_EXPORT'
+
       ;;
 
     darwin* | rhapsody*)
@@ -15853,7 +15853,7 @@ echo $ECHO_N "checking for $compiler option to produce PIC... $ECHO_C" >&6
     mingw* | cygwin* | pw32* | os2*)
       # This hack is so that the source file can tell whether it is being
       # built for inclusion in a dll (and should export symbols for example).
-      lt_prog_compiler_pic_GCJ='-DDLL_EXPORT'
+
       ;;
 
     hpux9* | hpux10* | hpux11*)

@@ -3419,7 +3419,8 @@ m4_if([$1], [CXX], [
       # built for inclusion in a dll (and should export symbols for example).
       # Although the cygwin gcc ignores -fPIC, still need this for old-style
       # (--disable-auto-import) libraries
-      _LT_TAGVAR(lt_prog_compiler_pic, $1)='-DDLL_EXPORT'
+      m4_if([$1], [GCJ], [],
+	[_LT_TAGVAR(lt_prog_compiler_pic, $1)='-DDLL_EXPORT'])
       ;;
     darwin* | rhapsody*)
       # PIC is the default on this platform
@@ -3715,7 +3716,8 @@ m4_if([$1], [CXX], [
       # built for inclusion in a dll (and should export symbols for example).
       # Although the cygwin gcc ignores -fPIC, still need this for old-style
       # (--disable-auto-import) libraries
-      _LT_TAGVAR(lt_prog_compiler_pic, $1)='-DDLL_EXPORT'
+      m4_if([$1], [GCJ], [],
+	[_LT_TAGVAR(lt_prog_compiler_pic, $1)='-DDLL_EXPORT'])
       ;;
 
     darwin* | rhapsody*)
@@ -3791,7 +3793,8 @@ m4_if([$1], [CXX], [
     mingw* | cygwin* | pw32* | os2*)
       # This hack is so that the source file can tell whether it is being
       # built for inclusion in a dll (and should export symbols for example).
-      _LT_TAGVAR(lt_prog_compiler_pic, $1)='-DDLL_EXPORT'
+      m4_if([$1], [GCJ], [],
+	[_LT_TAGVAR(lt_prog_compiler_pic, $1)='-DDLL_EXPORT'])
       ;;
 
     hpux9* | hpux10* | hpux11*)
