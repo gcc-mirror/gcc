@@ -2,6 +2,8 @@
 /* { dg-options "-mpreferred-stack-boundary=4 -msse" } */
 /* { dg-require-effective-target ilp32 } */
 
+#include "sse-check.h"
+
 extern void abort(void);
 
 void __attribute__((fastcall, sseregparm)) foo(int i, int j, float x)
@@ -14,9 +16,9 @@ void __attribute__((fastcall, sseregparm)) foo(int i, int j, float x)
     abort ();
 }
 
-int main()
+static void
+sse_test (void)
 {
 	foo(0,0,0.0);
 	foo(0,0,0.0);
-	return 0;
 }

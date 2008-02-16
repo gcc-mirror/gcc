@@ -1,7 +1,11 @@
 /* { dg-do run } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-std=gnu99 -msse2" } */
+
+#include "sse2-check.h"
+
 #include <emmintrin.h>
+
 __m128i __attribute__ ((__noinline__))
 vector_using_function ()
 {
@@ -17,8 +21,9 @@ self_aligning_function (int x, int y)
 }
 int g_1 = 20;
 int g_2 = 22;
-int
-main ()
+
+static void
+sse2_test (void)
 {
   int result;
   asm ("pushl %esi");		/* Disalign runtime stack.  */
