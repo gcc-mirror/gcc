@@ -1,3 +1,8 @@
+2008-02-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR libgcj/33085
+	* configure: Regenerate.
+
 2008-02-15  Andreas Tobler  <a.tobler@schweiz.org>
 
 	PR testsuite/35208
