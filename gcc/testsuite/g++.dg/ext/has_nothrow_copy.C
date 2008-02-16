@@ -126,13 +126,19 @@ int main()
   assert (PTEST (C));
   assert (NTEST (C[]));
   assert (PTEST (D));
+#ifndef __PIC__
   assert (PTEST (E));
+#endif
   assert (NTEST (E1));
   assert (PTEST (F));
   assert (PTEST (G));
+#ifndef __PIC__
   assert (PTEST (H));
+#endif
   assert (NTEST (H1));
+#ifndef __PIC__
   assert (PTEST (I));
+#endif
   assert (NTEST (I1));  
   assert (PTEST (J));
 
