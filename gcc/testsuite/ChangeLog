@@ -1,4 +1,9 @@
 2008-02-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* obj-c++.dg/encode-2.mm: XFAIL.
+	* obj-c++.dg/encode-3.mm: Likewise.
+
+2008-02-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	    Paolo Carlini  <pcarlini@suse.de>
 
         * g++.dg/ext/has_nothrow_assign.C: Skip some tests when __PIC__.

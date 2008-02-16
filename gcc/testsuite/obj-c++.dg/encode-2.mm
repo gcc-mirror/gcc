@@ -10,5 +10,5 @@ Vec<double> dd;
 const char *enc = @encode(Vec<float>);
 const char *enc2 = @encode(Vec<double>);
 
-/* { dg-final { scan-assembler "{Vec<float>=ffi}" } } */
-/* { dg-final { scan-assembler "{Vec<double>=ddi}" } } */
+/* { dg-final { scan-assembler "{Vec<float>=ffi}" { xfail "*-*-*" } } } PR32052 */
+/* { dg-final { scan-assembler "{Vec<double>=ddi}" { xfail "*-*-*" } } } PR32052 */
