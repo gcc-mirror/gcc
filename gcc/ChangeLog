@@ -1,3 +1,8 @@
+2008-02-16  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c/28368
+	* doc/invoke.texi (-std): Clarify description of -std= and -ansi.
+
 2008-02-14  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/34393
