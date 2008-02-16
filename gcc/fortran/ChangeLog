@@ -1,3 +1,10 @@
+2008-02-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/34952
+	* gfortran.texi: Create new section for unimplemented extensions.
+	Add "STRUCTURE and RECORD" and "ENCODE and DECODE statements".
+	Remove "smaller projects" list. Fix a few typos.
+
 2008-02-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* intrinsic.texi: Rename INDEX node to avoid clashing with

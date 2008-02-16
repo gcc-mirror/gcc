@@ -613,8 +613,7 @@ the first letter is @samp{n}, @samp{N} or @samp{0}, I/O is buffered.
 This is the default.
 
 @node GFORTRAN_UNBUFFERED_PRECONNECTED
-@section @env{GFORTRAN_UNBUFFERED_PRECONNECTED}---Don't buffer I/O on
-preconnected units
+@section @env{GFORTRAN_UNBUFFERED_PRECONNECTED}---Don't buffer I/O on preconnected units
 
 The environment variable named @env{GFORTRAN_UNBUFFERED_PRECONNECTED} controls
 whether I/O on a preconnected unit (i.e STDOUT or STDERR) is unbuffered.  If 
@@ -877,7 +876,24 @@ BOZ as argument of INT, REAL, DBLE and CMPLX.
 
 @node Extensions
 @chapter Extensions
-@cindex Extension
+@cindex extensions
+
+The two sections below detail the extensions to standard Fortran that are
+implemented in GNU Fortran, as well as some of the popular or
+historically important extensions that are not (or not yet) implemented.
+For the latter case, we explain the alternatives available to GNU Fortran
+users, including replacement by standard-conforming code or GNU
+extensions.
+
+@menu
+* Extensions implemented in GNU Fortran::
+* Extensions not implemented in GNU Fortran::
+@end menu
+
+
+@node Extensions implemented in GNU Fortran
+@section Extensions implemented in GNU Fortran
+@cindex extensions, implemented
 
 GNU Fortran implements a number of extensions over standard
 Fortran. This chapter contains information on their syntax and
@@ -910,7 +926,7 @@ of extensions, and @option{-std=legacy} allows both without warning.
 @end menu
 
 @node Old-style kind specifications
-@section Old-style kind specifications
+@subsection Old-style kind specifications
 @cindex kind, old-style
 
 GNU Fortran allows old-style kind specifications in declarations. These
@@ -934,7 +950,7 @@ where @code{k} is equal to @code{size} for most types, but is equal to
 @code{size/2} for the @code{COMPLEX} type.
 
 @node Old-style variable initialization
-@section Old-style variable initialization
+@subsection Old-style variable initialization
 
 GNU Fortran allows old-style initialization of variables of the
 form:
@@ -968,7 +984,7 @@ or in @code{DATA} statements automatically acquire the @code{SAVE}
 attribute.
 
 @node Extensions to namelist
-@section Extensions to namelist
+@subsection Extensions to namelist
 @cindex Namelist
 
 GNU Fortran fully supports the Fortran 95 standard for namelist I/O
@@ -1037,7 +1053,7 @@ elements will be given the values 1.00 and 2.00.
 @end smallexample
 
 @node X format descriptor without count field
-@section @code{X} format descriptor without count field
+@subsection @code{X} format descriptor without count field
 
 To support legacy codes, GNU Fortran permits the count field of the
 @code{X} edit descriptor in @code{FORMAT} statements to be omitted.
@@ -1049,7 +1065,7 @@ When omitted, the count is implicitly assumed to be one.
 @end smallexample
 
 @node Commas in FORMAT specifications
-@section Commas in @code{FORMAT} specifications
+@subsection Commas in @code{FORMAT} specifications
 
 To support legacy codes, GNU Fortran allows the comma separator
 to be omitted immediately before and after character string edit
@@ -1062,7 +1078,7 @@ descriptors in @code{FORMAT} statements.
 
 
 @node Missing period in FORMAT specifications
-@section Missing period in @code{FORMAT} specifications
+@subsection Missing period in @code{FORMAT} specifications
 
 To support legacy codes, GNU Fortran allows missing periods in format
 specifications if and only if @option{-std=legacy} is given on the
@@ -1076,7 +1092,7 @@ discouraged.
 @end smallexample
 
 @node I/O item lists
-@section I/O item lists
+@subsection I/O item lists
 @cindex I/O item lists
 
 To support legacy codes, GNU Fortran allows the input item list
@@ -1084,7 +1100,7 @@ of the @code{READ} statement, and the output item lists of the
 @code{WRITE} and @code{PRINT} statements, to start with a comma.
 
 @node BOZ literal constants
-@section BOZ literal constants
+@subsection BOZ literal constants
 @cindex BOZ literal constants
 
 Besides decimal constants, Fortran also supports binary (@code{b}),
@@ -1133,14 +1149,14 @@ option can be used as a workaround for legacy code that initializes
 integers in this manner.
 
 @node Real array indices
-@section Real array indices
+@subsection Real array indices
 @cindex array, indices of type real
 
 As an extension, GNU Fortran allows the use of @code{REAL} expressions
 or variables as array indices.
 
 @node Unary operators
-@section Unary operators
+@subsection Unary operators
 @cindex operators, unary
 
 As an extension, GNU Fortran allows unary plus and unary minus operators
@@ -1152,7 +1168,7 @@ the need for parenthesis.
 @end smallexample
 
 @node Implicitly convert LOGICAL and INTEGER values
-@section Implicitly convert @code{LOGICAL} and @code{INTEGER} values
+@subsection Implicitly convert @code{LOGICAL} and @code{INTEGER} values
 @cindex conversion, to integer
 @cindex conversion, to logical
 
@@ -1178,7 +1194,7 @@ However, there is no implicit conversion of @code{INTEGER} values in
 in I/O operations.
 
 @node Hollerith constants support
-@section Hollerith constants support
+@subsection Hollerith constants support
 @cindex Hollerith constants
 
 GNU Fortran supports Hollerith constants in assignments, function
@@ -1220,8 +1236,8 @@ obtained by using the @code{TRANSFER} statement, as in this example.
 
 
 @node Cray pointers
-@section Cray pointers
-@cindex pointer, cray
+@subsection Cray pointers
+@cindex pointer, Cray
 
 Cray pointers are part of a non-standard extension that provides a
 C-like pointer in Fortran.  This is accomplished through a pair of
@@ -1348,8 +1364,8 @@ variables in the invoked function.  Subsequent changes to the pointer
 will not change the base address of the array that was passed.
 
 @node CONVERT specifier
-@section CONVERT specifier
-@cindex CONVERT specifier
+@subsection @code{CONVERT} specifier
+@cindex @code{CONVERT} specifier
 
 GNU Fortran allows the conversion of unformatted data between little-
 and big-endian representation to facilitate moving of data
@@ -1397,7 +1413,7 @@ to you, it is best if you use this only for data that needs to be
 portable.
 
 @node OpenMP
-@section OpenMP
+@subsection OpenMP
 @cindex OpenMP
 
 OpenMP (Open Multi-Processing) is an application programming
@@ -1456,11 +1472,11 @@ thus not recommended.
 @end itemize
 
 @node Argument list functions
-@section Argument list functions %VAL, %REF and %LOC
+@subsection Argument list functions @code{%VAL}, @code{%REF} and @code{%LOC}
 @cindex argument list functions
-@cindex %VAL
-@cindex %REF
-@cindex %LOC
+@cindex @code{%VAL}
+@cindex @code{%REF}
+@cindex @code{%LOC}
 
 GNU Fortran supports argument list functions @code{%VAL}, @code{%REF} 
 and @code{%LOC} statements, for backward compatibility with g77. 
@@ -1495,6 +1511,168 @@ For details refer to the g77 manual
 
 Also, the gfortran testsuite c_by_val.f and its partner c_by_val.c are
 worth a look.
+
+
+
+@node Extensions not implemented in GNU Fortran
+@section Extensions not implemented in GNU Fortran
+@cindex extensions, not implemented
+
+The long history of the Fortran language, its wide use and broad
+userbase, the large number of different compiler vendors and the lack of
+some features crucial to users in the first standards have lead to the
+existence of an important number of extensions to the language. While
+some of the most useful or popular extensions are supported by the GNU
+Fortran compiler, not all existing extensions are supported. This section
+aims at listing these extensions and offering advice on how best make
+code that uses them running with the GNU Fortran compiler.
+
+@c More can be found here:
+@c   -- http://gcc.gnu.org/onlinedocs/gcc-3.4.6/g77/Missing-Features.html
+@c   -- the list of fortran and libgfortran bugs closed as WONTFIX:
+@c      http://tinyurl.com/2u4h5y
+
+@menu
+* STRUCTURE and RECORD::
+@c * UNION and MAP::
+* ENCODE and DECODE statements::
+@c * Expressions in FORMAT statements::
+@c * Q edit descriptor::
+@c * AUTOMATIC statement::
+@c * TYPE and ACCEPT I/O Statements::
+@c * .XOR. operator::
+@c * CARRIAGECONTROL, DEFAULTFILE, DISPOSE and RECORDTYPE I/O specifiers::
+@c * Omitted arguments in procedure call:
+@end menu
+
+
+@node STRUCTURE and RECORD
+@subsection @code{STRUCTURE} and @code{RECORD}
+@cindex @code{STRUCTURE}
+@cindex @code{RECORD}
+
+Structures are user-defined aggregate data types; this functionality was
+standardized in Fortran 90 with an different syntax, under the name of
+``derived types''. Here is an example of code using the non portable
+structure syntax:
+
+@example
+! Declaring a structure named ``item'' and containing three fields:
+! an integer ID, an description string and a floating-point price.
+STRUCTURE /item/
+  INTEGER id
+  CHARACTER(LEN=200) description
+  REAL price
+END STRUCTURE
+
+! Define two variables, an single record of type ``item''
+! named ``pear'', and an array of items named ``store_catalog''
+RECORD /item/ pear, store_catalog(100)
+
+! We can directly access the fields of both variables
+pear.id = 92316
+pear.description = "juicy D'Anjou pear"
+pear.price = 0.15
+store_catalog(7).id = 7831
+store_catalog(7).description = "milk bottle"
+store_catalog(7).price = 1.2
+
+! We can also manipulates the whole structure
+store_catalog(12) = pear
+print *, store_catalog(12)
+@end example
+
+@noindent
+This code can easily be rewritten in the Fortran 90 syntax as following:
+
+@example
+! ``STRUCTURE /name/ ... END STRUCTURE'' becomes
+! ``TYPE name ... END TYPE''
+TYPE item
+  INTEGER id
+  CHARACTER(LEN=200) description
+  REAL price
+END TYPE
+
+! ``RECORD /name/ variable'' becomes ``TYPE(name) variable''
+TYPE(item) pear, store_catalog(100)
+
+! Instead of using a dot (.) to access fields of a record, the
+! standard syntax uses a percent sign (%)
+pear%id = 92316
+pear%description = "juicy D'Anjou pear"
+pear%price = 0.15
+store_catalog(7)%id = 7831
+store_catalog(7)%description = "milk bottle"
+store_catalog(7)%price = 1.2
+
+! Assignments of a whole variable don't change
+store_catalog(12) = pear
+print *, store_catalog(12)
+@end example
+
+
+@c @node UNION and MAP
+@c @subsection @code{UNION} and @code{MAP}
+@c @cindex @code{UNION}
+@c @cindex @code{MAP}
+@c
+@c For help writing this one, see
+@c http://www.eng.umd.edu/~nsw/ench250/fortran1.htm#UNION and
+@c http://www.tacc.utexas.edu/services/userguides/pgi/pgiws_ug/pgi32u06.htm
+
+
+@node ENCODE and DECODE statements
+@subsection @code{ENCODE} and @code{DECODE} statements
+@cindex @code{ENCODE}
+@cindex @code{DECODE}
+
+GNU Fortran doesn't support the @code{ENCODE} and @code{DECODE}
+statements.  These statements are best replaced by @code{READ} and
+@code{WRITE} statements involving internal files (@code{CHARACTER}
+variables and arrays), which have been part of the Fortran standard since
+Fortran 77. For example, replace a code fragment like
+
+@smallexample
+      INTEGER*1 LINE(80)
+      REAL A, B, C
+c     ... Code that sets LINE
+      DECODE (80, 9000, LINE) A, B, C
+ 9000 FORMAT (1X, 3(F10.5))
+@end smallexample
+
+@noindent
+with the following:
+
+@smallexample
+      CHARACTER(LEN=80) LINE
+      REAL A, B, C
+c     ... Code that sets LINE
+      READ (UNIT=LINE, FMT=9000) A, B, C
+ 9000 FORMAT (1X, 3(F10.5))
+@end smallexample
+
+Similarly, replace a code fragment like
+
+@smallexample
+      INTEGER*1 LINE(80)
+      REAL A, B, C
+c     ... Code that sets A, B and C
+      ENCODE (80, 9000, LINE) A, B, C
+ 9000 FORMAT (1X, 'OUTPUT IS ', 3(F10.5))
+@end smallexample
+
+@noindent
+with the following:
+
+@smallexample
+      INTEGER*1 LINE(80)
+      REAL A, B, C
+c     ... Code that sets A, B and C
+      WRITE (UNIT=LINE, FMT=9000) A, B, C
+ 9000 FORMAT (1X, 'OUTPUT IS ', 3(F10.5))
+@end smallexample
+
 
 @c ---------------------------------------------------------------------
 @c Intrinsic Procedures
@@ -1594,7 +1772,7 @@ GNU Fortran project:
 
 @itemize @minus
 @item Bill Clodius
-@item Dominique d'Humieres
+@item Dominique d'Humi@`eres
 @item Kate Hedstrom
 @item Erik Schnetter
 @end itemize
@@ -1613,27 +1791,19 @@ list above, please contact us.
 @table @emph
 
 @item Help build the test suite
-Solicit more code for donation to the test suite.
-We can keep code private on request.
+Solicit more code for donation to the test suite: the more extensive the
+testsuite, the smaller the risk of breaking things in the future! We can
+keep code private on request.
 
 @item Bug hunting/squishing
-Find bugs and write more test cases!
-Test cases are especially very welcome,
-because it allows us to concentrate on fixing bugs
-instead of isolating them.
+Find bugs and write more test cases! Test cases are especially very
+welcome, because it allows us to concentrate on fixing bugs instead of
+isolating them. Going through the bugzilla database at
+@url{http://gcc.gnu.org/bugzilla/} to reduce testcases posted there and
+add more information (for example, for which version does the testcase
+work, for which versions does it fail?) is also very helpful.
 
-@item Smaller projects (``bug'' fixes):
-  @itemize @minus
-  @item Allow init exprs to be numbers raised to integer powers.
-  @item Implement correct rounding.
-  @item Implement F restrictions on Fortran 95 syntax.
-  @item See about making Emacs-parsable error messages.
-  @end itemize
 @end table
-
-If you wish to work on the runtime libraries,
-please contact a project maintainer.
-@c TODO: email!
 
 
 @node Proposed Extensions
