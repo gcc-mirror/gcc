@@ -1,3 +1,8 @@
+2008-02-16  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c/28368
+	* doc/invoke.texi (-std): Clarify description of -std= and -ansi.
+
 2008-02-16  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* config/m68k/t-rtems (M68K_MLIB_CPU): Add 5208, 5307, 5407, 5475
