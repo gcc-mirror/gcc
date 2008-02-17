@@ -1,3 +1,11 @@
+2008-02-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	Revert:
+
+	2008-02-15  Uros Bizjak  <ubizjak@gmail.com>	
+	* config/i386/sfp-machine.h (CMPtype): Define as typedef using
+	libgcc_cmp_return mode.
+
 2008-02-16  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c/28368

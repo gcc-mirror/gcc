@@ -10,8 +10,7 @@ typedef unsigned int UTItype __attribute__ ((mode (TI)));
 
 /* The type of the result of a floating point comparison.  This must
    match `__libgcc_cmp_return__' in GCC for the target.  */
-
-typedef int CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
+#define CMPtype			long
 
 #define _FP_MUL_MEAT_Q(R,X,Y)                           \
   _FP_MUL_MEAT_2_wide(_FP_WFRACBITS_Q,R,X,Y,umul_ppmm)
