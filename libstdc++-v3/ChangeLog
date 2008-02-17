@@ -1,5 +1,15 @@
 2008-02-17  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/35221
+	* include/parallel/types.h: Reinstate integer types typedefs.
+	* include/parallel/multiseq_selection.h: Adjust.
+	* include/parallel/compatibility.h: Likewise.
+	* include/parallel/random_shuffle.h: Likewise.
+	* include/parallel/random_number.h: Likewise.
+	* include/parallel/base.h: Likewise.
+
+2008-02-17  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/35209
 	* config/abi/pre/gnu.ver: Export stdio_sync_filebuf symbols.
 	* testsuite/ext/stdio_sync_filebuf/char/35209.cc: New.

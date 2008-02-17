@@ -388,8 +388,8 @@ template<typename T, typename _DifferenceTp>
   public:
     typedef _DifferenceTp difference_type;
 
-    // Better case down to uint64_t, than up to _DifferenceTp.
-    typedef pseudo_sequence_iterator<T, uint64_t> iterator;
+    // Better case down to uint64, than up to _DifferenceTp.
+    typedef pseudo_sequence_iterator<T, uint64> iterator;
 
     /** @brief Constructor.
       *  @param val Element of the sequence.

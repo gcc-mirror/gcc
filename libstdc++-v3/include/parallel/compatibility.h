@@ -68,7 +68,7 @@ namespace __gnu_parallel
 {
 #if defined(__ICC)
   template<typename must_be_int = int>
-  int32_t faa32(int32_t* x, int32_t inc)
+  int32 faa32(int32* x, int32 inc)
   {
     asm volatile("lock xadd %0,%1"
 		 : "=r" (inc), "=m" (*x)
@@ -78,7 +78,7 @@ namespace __gnu_parallel
   }
 #if defined(__x86_64)
   template<typename must_be_int = int>
-  int64_t faa64(int64_t* x, int64_t inc)
+  int64 faa64(int64* x, int64 inc)
   {
     asm volatile("lock xadd %0,%1"
 		 : "=r" (inc), "=m" (*x)
@@ -97,8 +97,8 @@ namespace __gnu_parallel
    *  @param ptr Pointer to a 32-bit signed integer.
    *  @param addend Value to add.
    */
-  inline int32_t
-  fetch_and_add_32(volatile int32_t* ptr, int32_t addend)
+  inline int32
+  fetch_and_add_32(volatile int32* ptr, int32 addend)
   {
 #if defined(__ICC)	//x86 version
     return _InterlockedExchangeAdd((void*)ptr, addend);
@@ -110,7 +110,7 @@ namespace __gnu_parallel
 #elif defined(__GNUC__)
     return __sync_fetch_and_add(ptr, addend);
 #elif defined(__SUNPRO_CC) && defined(__sparc)
-    volatile int32_t before, after;
+    volatile int32 before, after;
     do
       {
 	before = *ptr;
@@ -120,7 +120,7 @@ namespace __gnu_parallel
     return before;
 #else	//fallback, slow
 #pragma message("slow fetch_and_add_32")
-    int32_t res;
+    int32 res;
 #pragma omp critical
     {
       res = *ptr;
@@ -136,11 +136,11 @@ namespace __gnu_parallel
    *  @param ptr Pointer to a 64-bit signed integer.
    *  @param addend Value to add.
    */
-  inline int64_t
-  fetch_and_add_64(volatile int64_t* ptr, int64_t addend)
+  inline int64
+  fetch_and_add_64(volatile int64* ptr, int64 addend)
   {
 #if defined(__ICC) && defined(__x86_64)	//x86 version
-    return faa64<int>((int64_t*)ptr, addend);
+    return faa64<int>((int64*)ptr, addend);
 #elif defined(__ECC)	//IA-64 version
     return _InterlockedExchangeAdd64((void*)ptr, addend);
 #elif defined(__ICL) || defined(_MSC_VER)
@@ -156,7 +156,7 @@ namespace __gnu_parallel
   (defined(__i686) || defined(__pentium4) || defined(__athlon))
     return __sync_fetch_and_add(ptr, addend);
 #elif defined(__SUNPRO_CC) && defined(__sparc)
-    volatile int64_t before, after;
+    volatile int64 before, after;
     do
       {
 	before = *ptr;
@@ -170,7 +170,7 @@ namespace __gnu_parallel
     //#warning "please compile with -march=i686 or better"
 #endif
 #pragma message("slow fetch_and_add_64")
-    int64_t res;
+    int64 res;
 #pragma omp critical
     {
       res = *ptr;
@@ -190,10 +190,10 @@ namespace __gnu_parallel
   inline T
   fetch_and_add(volatile T* ptr, T addend)
   {
-    if (sizeof(T) == sizeof(int32_t))
-      return (T)fetch_and_add_32((volatile int32_t*) ptr, (int32_t)addend);
-    else if (sizeof(T) == sizeof(int64_t))
-      return (T)fetch_and_add_64((volatile int64_t*) ptr, (int64_t)addend);
+    if (sizeof(T) == sizeof(int32))
+      return (T)fetch_and_add_32((volatile int32*) ptr, (int32)addend);
+    else if (sizeof(T) == sizeof(int64))
+      return (T)fetch_and_add_64((volatile int64*) ptr, (int64)addend);
     else
       _GLIBCXX_PARALLEL_ASSERT(false);
   }
@@ -202,10 +202,10 @@ namespace __gnu_parallel
 #if defined(__ICC)
 
   template<typename must_be_int = int>
-  inline int32_t
-  cas32(volatile int32_t* ptr, int32_t old, int32_t nw)
+  inline int32
+  cas32(volatile int32* ptr, int32 old, int32 nw)
   {
-    int32_t before;
+    int32 before;
     __asm__ __volatile__("lock; cmpxchgl %1,%2"
 			 : "=a"(before)
 			 : "q"(nw), "m"(*(volatile long long*)(ptr)), "0"(old)
@@ -215,10 +215,10 @@ namespace __gnu_parallel
 
 #if defined(__x86_64)
   template<typename must_be_int = int>
-  inline int64_t
-  cas64(volatile int64_t *ptr, int64_t old, int64_t nw)
+  inline int64
+  cas64(volatile int64 *ptr, int64 old, int64 nw)
   {
-    int64_t before;
+    int64 before;
     __asm__ __volatile__("lock; cmpxchgq %1,%2"
 			 : "=a"(before)
 			 : "q"(nw), "m"(*(volatile long long*)(ptr)), "0"(old)
@@ -238,7 +238,7 @@ namespace __gnu_parallel
    *  @param replacement Replacement value.
    */
   inline bool
-  compare_and_swap_32(volatile int32_t* ptr, int32_t comparand, int32_t replacement)
+  compare_and_swap_32(volatile int32* ptr, int32 comparand, int32 replacement)
   {
 #if defined(__ICC)	//x86 version
     return _InterlockedCompareExchange((void*)ptr, replacement,
@@ -278,7 +278,7 @@ namespace __gnu_parallel
    *  @param replacement Replacement value.
    */
   inline bool
-  compare_and_swap_64(volatile int64_t* ptr, int64_t comparand, int64_t replacement)
+  compare_and_swap_64(volatile int64* ptr, int64 comparand, int64 replacement)
   {
 #if defined(__ICC) && defined(__x86_64)	//x86 version
     return cas64<int>(ptr, comparand, replacement) == comparand;
@@ -332,10 +332,10 @@ namespace __gnu_parallel
   inline bool
   compare_and_swap(volatile T* ptr, T comparand, T replacement)
   {
-    if (sizeof(T) == sizeof(int32_t))
-      return compare_and_swap_32((volatile int32_t*) ptr, (int32_t)comparand, (int32_t)replacement);
-    else if (sizeof(T) == sizeof(int64_t))
-      return compare_and_swap_64((volatile int64_t*) ptr, (int64_t)comparand, (int64_t)replacement);
+    if (sizeof(T) == sizeof(int32))
+      return compare_and_swap_32((volatile int32*) ptr, (int32)comparand, (int32)replacement);
+    else if (sizeof(T) == sizeof(int64))
+      return compare_and_swap_64((volatile int64*) ptr, (int64)comparand, (int64)replacement);
     else
       _GLIBCXX_PARALLEL_ASSERT(false);
   }

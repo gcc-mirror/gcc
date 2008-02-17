@@ -106,7 +106,7 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
     bin_index bins_end;
 
     /** @brief Random seed for this thread. */
-    uint32_t seed;
+    uint32 seed;
 
     /** @brief Pointer to global data. */
     DRandomShufflingGlobalData<RandomAccessIterator>* sd;
@@ -368,7 +368,7 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
                 for (; j < bin_cursor; ++j)
                   sd.bin_proc[j] = i;
                 pus[i].num_threads = num_threads;
-                pus[i].seed = rng(std::numeric_limits<uint32_t>::max());
+                pus[i].seed = rng(std::numeric_limits<uint32>::max());
                 pus[i].sd = &sd;
               }
             starts[num_threads] = start;
