@@ -1,5 +1,11 @@
 2008-02-17  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/35227
+	* tree-complex.c (init_parameter_lattice_values): Handle parameters
+	without default definition.
+
+2008-02-17  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/35231
 	* tree-vrp.c (register_edge_assert_for): Do not assume A == 0
 	if A | B != 1.
