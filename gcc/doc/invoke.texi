@@ -5012,7 +5012,7 @@ position in code.  Better debugging information is then generated
 (if the debugging information format supports this information).
 
 It is enabled by default when compiling with optimization (@option{-Os},
-@option{-O}, @option{-O2}, ...), debugging information (@option{-g}) and
+@option{-O}, @option{-O2}, @dots{}), debugging information (@option{-g}) and
 the debug info format supports it.
 
 @item -print-file-name=@var{library}

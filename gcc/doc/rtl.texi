@@ -1904,7 +1904,7 @@ declarations and during RTL generation.  It should not appear in the
 ordinary insn chain.
 
 @findex concatn
-@item (concatn@var{m} [@var{rtx} ...])
+@item (concatn@var{m} [@var{rtx} @dots{}])
 This RTX represents the concatenation of all the @var{rtx} to make a
 single value.  Like @code{concat}, this should only appear in
 declarations, and not in the insn chain.

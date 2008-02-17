@@ -348,7 +348,7 @@ and step must be the same.  A variable has evolution
 loop) equivalent to @code{x_1} in the following example
 
 @smallexample
-while (...)
+while (@dots{})
   @{
     x_1 = phi (base, x_2);
     x_2 = x_1 + step;

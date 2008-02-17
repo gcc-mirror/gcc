@@ -293,13 +293,13 @@ series of jumps,
 
 @smallexample
   goto *x;
-  [ ... ]
+  [ @dots{} ]
 
   goto *x;
-  [ ... ]
+  [ @dots{} ]
 
   goto *x;
-  [ ... ]
+  [ @dots{} ]
 @end smallexample
 
 @noindent
@@ -308,13 +308,13 @@ which has a much simpler flow graph:
 
 @smallexample
   goto y;
-  [ ... ]
+  [ @dots{} ]
 
   goto y;
-  [ ... ]
+  [ @dots{} ]
 
   goto y;
-  [ ... ]
+  [ @dots{} ]
 
 y:
   goto *x;

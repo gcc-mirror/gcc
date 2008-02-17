@@ -1,3 +1,18 @@
+2008-02-17 Ralf Wildenhues <Ralf.Wildenhues@gmx.de>
+
+	* doc/c-tree.texi: Use @dots{} and @enddots{} where appropriate.
+	* doc/cfg.texi: Likewise.
+	* doc/extend.texi: Likewise.
+	* doc/gty.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/loop.texi: Likewise.
+	* doc/md.texi: Likewise.
+	* doc/passes.texi: Likewise.
+	* doc/rtl.texi: Likewise.
+	* doc/sourcebuild.texi: Likewise.
+	* doc/tm.texi: Likewise.
+	* doc/tree-ssa.texi: Likewise.
+
 2008-02-17  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/35227
