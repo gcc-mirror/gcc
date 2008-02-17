@@ -3753,7 +3753,11 @@ register_edge_assert_for (tree name, edge e, block_stmt_iterator si, tree cond)
 
       if (TREE_CODE (def_stmt) == GIMPLE_MODIFY_STMT
 	  && (TREE_CODE (GIMPLE_STMT_OPERAND (def_stmt, 1)) == TRUTH_OR_EXPR
-	      || TREE_CODE (GIMPLE_STMT_OPERAND (def_stmt, 1)) == BIT_IOR_EXPR))
+	      /* For BIT_IOR_EXPR only if NAME == 0 both operands have
+		 necessarily zero value.  */
+	      || (comp_code == EQ_EXPR
+		  && (TREE_CODE (GIMPLE_STMT_OPERAND (def_stmt, 1))
+		        == BIT_IOR_EXPR))))
 	{
 	  tree op0 = TREE_OPERAND (GIMPLE_STMT_OPERAND (def_stmt, 1), 0);
 	  tree op1 = TREE_OPERAND (GIMPLE_STMT_OPERAND (def_stmt, 1), 1);

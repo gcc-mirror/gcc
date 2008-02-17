@@ -1,3 +1,8 @@
+2008-02-17  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/35231
+	* gcc.c-torture/execute/pr35231.c: New testcase.
+
 2008-02-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pr32268.c (test_lt): Add noinline attribute.
