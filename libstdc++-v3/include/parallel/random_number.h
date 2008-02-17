@@ -48,29 +48,29 @@ namespace __gnu_parallel
   {
   private:
     std::tr1::mt19937 	mt;
-    uint64_t 		supremum;
-    uint64_t 		RAND_SUP;
+    uint64 		supremum;
+    uint64 		RAND_SUP;
     double 		supremum_reciprocal;
     double 		RAND_SUP_REC;
 
     // Assumed to be twice as long as the usual random number.
-    uint64_t 		cache;  
+    uint64 		cache;  
 
     // Bit results.
     int bits_left;
     
-    static uint32_t
-    scale_down(uint64_t x,
+    static uint32
+    scale_down(uint64 x,
 #if _GLIBCXX_SCALE_DOWN_FPU
-	       uint64_t /*supremum*/, double supremum_reciprocal)
+	       uint64 /*supremum*/, double supremum_reciprocal)
 #else
-               uint64_t supremum, double /*supremum_reciprocal*/)
+               uint64 supremum, double /*supremum_reciprocal*/)
 #endif
 	{
 #if _GLIBCXX_SCALE_DOWN_FPU
-	  return uint32_t(x * supremum_reciprocal);
+	  return uint32(x * supremum_reciprocal);
 #else
-	  return static_cast<uint32_t>(x % supremum);
+	  return static_cast<uint32>(x % supremum);
 #endif
 	}
 
@@ -78,7 +78,7 @@ namespace __gnu_parallel
     /** @brief Default constructor. Seed with 0. */
     random_number()
     : mt(0), supremum(0x100000000ULL),
-      RAND_SUP(1ULL << (sizeof(uint32_t) * 8)),
+      RAND_SUP(1ULL << (sizeof(uint32) * 8)),
       supremum_reciprocal(double(supremum) / double(RAND_SUP)),
       RAND_SUP_REC(1.0 / double(RAND_SUP)),
       cache(0), bits_left(0) { }
@@ -87,22 +87,22 @@ namespace __gnu_parallel
      *  @param seed Random seed.
      *  @param supremum Generate integer random numbers in the
      *                  interval @c [0,supremum). */
-    random_number(uint32_t seed, uint64_t supremum = 0x100000000ULL)
+    random_number(uint32 seed, uint64 supremum = 0x100000000ULL)
     : mt(seed), supremum(supremum),
-      RAND_SUP(1ULL << (sizeof(uint32_t) * 8)),
+      RAND_SUP(1ULL << (sizeof(uint32) * 8)),
       supremum_reciprocal(double(supremum) / double(RAND_SUP)),
       RAND_SUP_REC(1.0 / double(RAND_SUP)),
       cache(0), bits_left(0) { }
 
     /** @brief Generate unsigned random 32-bit integer. */
-    uint32_t
+    uint32
     operator()()
     { return scale_down(mt(), supremum, supremum_reciprocal); }
 
     /** @brief Generate unsigned random 32-bit integer in the
 	interval @c [0,local_supremum). */
-    uint32_t
-    operator()(uint64_t local_supremum)
+    uint32
+    operator()(uint64 local_supremum)
     {
       return scale_down(mt(), local_supremum,
 			double(local_supremum * RAND_SUP_REC));
@@ -118,7 +118,7 @@ namespace __gnu_parallel
       bits_left -= bits;
       if (bits_left < 32)
 	{
-	  cache |= ((uint64_t(mt())) << bits_left);
+	  cache |= ((uint64(mt())) << bits_left);
 	  bits_left += 32;
 	}
       return res;

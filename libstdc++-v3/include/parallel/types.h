@@ -39,7 +39,6 @@
 #define _GLIBCXX_PARALLEL_TYPES_H 1
 
 #include <cstdlib>
-#include <tr1/cstdint>
 
 namespace __gnu_parallel
 {
@@ -70,33 +69,42 @@ namespace __gnu_parallel
   inline bool 
   is_parallel(const parallelism __p) { return __p != sequential; }
 
-  /// Integer Types.
-  using std::tr1::int16_t;
-  using std::tr1::uint16_t;
+  // XXX need to use <cstdint>
+  /** @brief 16-bit signed integer. */
+  typedef short int16;
 
-  using std::tr1::int32_t;
-  using std::tr1::uint32_t;
+  /** @brief 16-bit unsigned integer. */
+  typedef unsigned short uint16;
 
-  using std::tr1::int64_t;
-  using std::tr1::uint64_t;
+  /** @brief 32-bit signed integer. */
+  typedef int int32;
+
+  /** @brief 32-bit unsigned integer. */
+  typedef unsigned int uint32;
+
+  /** @brief 64-bit signed integer. */
+  typedef long long int64;
+
+  /** @brief 64-bit unsigned integer. */
+  typedef unsigned long long uint64;
 
   /**
    * @brief Unsigned integer to index elements.
    * The total number of elements for each algorithm must fit into this type.
    */
-  typedef uint64_t sequence_index_t;
+  typedef uint64 sequence_index_t;
 
   /**
    * @brief Unsigned integer to index a thread number.
    * The maximum thread number (for each processor) must fit into this type.
    */
-  typedef uint16_t thread_index_t;
+  typedef uint16 thread_index_t;
 
   // XXX atomics interface?
   /**
    * @brief Longest compare-and-swappable integer type on this platform.
    */
-  typedef int64_t lcas_t;
+  typedef int64 lcas_t;
 
   // XXX numeric_limits::digits?
   /**
