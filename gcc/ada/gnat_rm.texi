@@ -34,7 +34,7 @@
 @end direntry
 
 @copying
-Copyright @copyright{} 1995-2007, Free Software Foundation
+Copyright @copyright{} 1995-2007, 2008 Free Software Foundation
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2
@@ -1745,7 +1745,7 @@ region as the function to which they apply.
 pragma applies.  If more than one function name exists of this name in
 the declarative part you must use the @code{Parameter_Types} and
 @code{Result_Type} parameters is mandatory to achieve the required
-unique designation.  @var{subtype_ mark}s in these parameters must
+unique designation.  @var{subtype_mark}s in these parameters must
 exactly match the subtypes in the corresponding function specification,
 using positional notation to match parameters with subtype marks.
 The form with an @code{'Access} attribute can be used to match an
@@ -3151,7 +3151,7 @@ the compiler as indicating that no body is logically present.
 
 This is particularly useful during maintenance when a package is modified in
 such a way that a body needed before is no longer needed. The provision of a
-dummy body with a No_Body pragma ensures that there is no inteference from
+dummy body with a No_Body pragma ensures that there is no interference from
 earlier versions of the package body.
 
 @node Pragma No_Return
@@ -7157,7 +7157,7 @@ See separate section on source representation.
 length.  See 2.2(15).
 @end cartouche
 @noindent
-The maximum line length is 255 characters an the maximum length of a
+The maximum line length is 255 characters and the maximum length of a
 lexical element is also 255 characters.
 
 @sp 1
@@ -7921,7 +7921,7 @@ or by rejecting any construct that would otherwise generate an implicit
 @code{for} loop. If this restriction is active, it is possible to build
 large array aggregates with all static components without generating an
 intermediate temporary, and without generating a loop to initialize individual
-components..Otherwise, a loop is created for arrays larger than about 5000
+components. Otherwise, a loop is created for arrays larger than about 5000
 scalar components.
 
 @item No_Initialize_Scalars
@@ -8355,7 +8355,7 @@ pragma Linker_Options ("-labc" & ASCII.Nul & "-ldef");
 causes two separate arguments @code{-labc} and @code{-ldef} to be passed to the
 linker. The order of linker options is preserved for a given unit. The final
 list of options passed to the linker is in reverse order of the elaboration
-order. For example, linker options fo a body always appear before the options
+order. For example, linker options for a body always appear before the options
 from the corresponding package spec.
 
 @sp 1
@@ -13360,7 +13360,7 @@ for hexadecimal literals.
 @cindex @code{GNAT.Decode_String} (@file{g-decstr.ads})
 @cindex Decoding strings
 @cindex String decoding
-@cindex Wide chararacter encoding
+@cindex Wide character encoding
 @cindex UTF-8
 @cindex Unicode
 
@@ -13370,7 +13370,7 @@ character strings encoded as sequences of 8-bit characters using a specified
 encoding method. Includes validation routines, and also routines for stepping
 to next or previous encoded character in an encoded string.
 Useful in conjunction with Unicode character coding. Note there is a
-preinstiation for UTF-8. See next entry.
+preinstantiation for UTF-8. See next entry.
 
 @node GNAT.Decode_UTF8_String (g-deutst.ads)
 @section @code{GNAT.Decode_UTF8_String} (@file{g-deutst.ads})
@@ -13378,12 +13378,12 @@ preinstiation for UTF-8. See next entry.
 @cindex Decoding strings
 @cindex Decoding UTF-8 strings
 @cindex UTF-8 string decoding
-@cindex Wide chararacter decoding
+@cindex Wide character decoding
 @cindex UTF-8
 @cindex Unicode
 
 @noindent
-A preinstantion of GNAT.Decode_Strings for UTF-8 encoding.
+A preinstantiation of GNAT.Decode_Strings for UTF-8 encoding.
 
 @node GNAT.Directory_Operations (g-dirope.ads)
 @section @code{GNAT.Directory_Operations} (@file{g-dirope.ads})
@@ -13441,7 +13441,7 @@ dynamic instances of the table, while an instantiation of
 @cindex @code{GNAT.Encode_String} (@file{g-encstr.ads})
 @cindex Encoding strings
 @cindex String encoding
-@cindex Wide chararacter encoding
+@cindex Wide character encoding
 @cindex UTF-8
 @cindex Unicode
 
@@ -13449,7 +13449,7 @@ dynamic instances of the table, while an instantiation of
 A generic package providing routines for encoding wide character and wide
 wide character strings as sequences of 8-bit characters using a specified
 encoding method. Useful in conjunction with Unicode character coding.
-Note there is a preinstiation for UTF-8. See next entry.
+Note there is a preinstantiation for UTF-8. See next entry.
 
 @node GNAT.Encode_UTF8_String (g-enutst.ads)
 @section @code{GNAT.Encode_UTF8_String} (@file{g-enutst.ads})
@@ -13457,12 +13457,12 @@ Note there is a preinstiation for UTF-8. See next entry.
 @cindex Encoding strings
 @cindex Encoding UTF-8 strings
 @cindex UTF-8 string encoding
-@cindex Wide chararacter encoding
+@cindex Wide character encoding
 @cindex UTF-8
 @cindex Unicode
 
 @noindent
-A preinstantion of GNAT.Encode_Strings for UTF-8 encoding.
+A preinstantiation of GNAT.Encode_Strings for UTF-8 encoding.
 
 @node GNAT.Exception_Actions (g-excact.ads)
 @section @code{GNAT.Exception_Actions} (@file{g-excact.ads})
@@ -14876,7 +14876,7 @@ generate the equivalent of
        Cr_Var1 (4) := 11;
 
        for I in Cr_Var2'range loop
-          Cr_Var2 (I) := =-1;
+          Cr_Var2 (I) := -1;
        end loop;
 @end smallexample
 
