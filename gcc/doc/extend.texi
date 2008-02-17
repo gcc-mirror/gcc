@@ -11117,7 +11117,7 @@ macros are defined.
 
 Modifies the disposition of a diagnostic.  Note that not all
 diagnostics are modifiable; at the moment only warnings (normally
-controlled by @samp{-W...}) can be controlled, and not all of them.
+controlled by @samp{-W@dots{}}) can be controlled, and not all of them.
 Use @option{-fdiagnostics-show-option} to determine which diagnostics
 are controllable and which option controls them.
 

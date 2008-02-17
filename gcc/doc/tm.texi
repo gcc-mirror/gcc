@@ -3218,11 +3218,11 @@ This target hook allows the backend to emit frame-related insns that
 contain UNSPECs or UNSPEC_VOLATILEs.  The DWARF 2 call frame debugging
 info engine will invoke it on insns of the form
 @smallexample
-(set (reg) (unspec [...] UNSPEC_INDEX))
+(set (reg) (unspec [@dots{}] UNSPEC_INDEX))
 @end smallexample
 and
 @smallexample
-(set (reg) (unspec_volatile [...] UNSPECV_INDEX)).
+(set (reg) (unspec_volatile [@dots{}] UNSPECV_INDEX)).
 @end smallexample
 to let the backend emit the call frame instructions.  @var{label} is
 the CFI label attached to the insn, @var{pattern} is the pattern of

@@ -2537,7 +2537,7 @@ tree call, arg;
 call_expr_arg_iterator iter;
 FOR_EACH_CALL_EXPR_ARG (arg, iter, call)
   /* arg is bound to successive arguments of call.  */
-  ...;
+  @dots{};
 @end smallexample
 
 For non-static
@@ -2704,7 +2704,7 @@ analysis.
 
 @item OMP_PARALLEL
 
-Represents @code{#pragma omp parallel [clause1 ... clauseN]}. It
+Represents @code{#pragma omp parallel [clause1 @dots{} clauseN]}. It
 has four operands:
 
 Operand @code{OMP_PARALLEL_BODY} is valid while in GENERIC and
@@ -2729,7 +2729,7 @@ variables.
 
 @item OMP_FOR
 
-Represents @code{#pragma omp for [clause1 ... clauseN]}.  It
+Represents @code{#pragma omp for [clause1 @dots{} clauseN]}.  It
 has 5 operands:
 
 Operand @code{OMP_FOR_BODY} contains the loop body.
@@ -2762,7 +2762,7 @@ unspecified by the standard.
 
 @item OMP_SECTIONS
 
-Represents @code{#pragma omp sections [clause1 ... clauseN]}.
+Represents @code{#pragma omp sections [clause1 @dots{} clauseN]}.
 
 Operand @code{OMP_SECTIONS_BODY} contains the sections body,
 which in turn contains a set of @code{OMP_SECTION} nodes for

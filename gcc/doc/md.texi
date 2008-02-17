@@ -7756,7 +7756,7 @@ rtx-based construct, such as a @code{define_insn},
 The syntax for defining a mode iterator is:
 
 @smallexample
-(define_mode_iterator @var{name} [(@var{mode1} "@var{cond1}") ... (@var{moden} "@var{condn}")])
+(define_mode_iterator @var{name} [(@var{mode1} "@var{cond1}") @dots{} (@var{moden} "@var{condn}")])
 @end smallexample
 
 This allows subsequent @file{.md} file constructs to use the mode suffix
@@ -7823,7 +7823,7 @@ the mode in lower case, and @code{MODE}, which is the same thing in
 upper case.  You can define other attributes using:
 
 @smallexample
-(define_mode_attr @var{name} [(@var{mode1} "@var{value1}") ... (@var{moden} "@var{valuen}")])
+(define_mode_attr @var{name} [(@var{mode1} "@var{value1}") @dots{} (@var{moden} "@var{valuen}")])
 @end smallexample
 
 where @var{name} is the name of the attribute and @var{valuei}
@@ -7833,7 +7833,7 @@ When GCC replaces some @var{:iterator} with @var{:mode}, it will scan
 each string and mode in the pattern for sequences of the form
 @code{<@var{iterator}:@var{attr}>}, where @var{attr} is the name of a
 mode attribute.  If the attribute is defined for @var{mode}, the whole
-@code{<...>} sequence will be replaced by the appropriate attribute
+@code{<@dots{}>} sequence will be replaced by the appropriate attribute
 value.
 
 For example, suppose an @file{.md} file has:
@@ -7853,8 +7853,8 @@ Here is an example of using an attribute for a mode:
 @smallexample
 (define_mode_iterator LONG [SI DI])
 (define_mode_attr SHORT [(SI "HI") (DI "SI")])
-(define_insn ...
-  (sign_extend:LONG (match_operand:<LONG:SHORT> ...)) ...)
+(define_insn @dots{}
+  (sign_extend:LONG (match_operand:<LONG:SHORT> @dots{})) @dots{})
 @end smallexample
 
 The @code{@var{iterator}:} prefix may be omitted, in which case the
@@ -7918,7 +7918,7 @@ Code iterators operate in a similar way to mode iterators.  @xref{Mode Iterators
 The construct:
 
 @smallexample
-(define_code_iterator @var{name} [(@var{code1} "@var{cond1}") ... (@var{coden} "@var{condn}")])
+(define_code_iterator @var{name} [(@var{code1} "@var{cond1}") @dots{} (@var{coden} "@var{condn}")])
 @end smallexample
 
 defines a pseudo rtx code @var{name} that can be instantiated as
@@ -7936,7 +7936,7 @@ code in lower case, and @code{CODE}, the name of the code in upper case.
 Other attributes are defined using:
 
 @smallexample
-(define_code_attr @var{name} [(@var{code1} "@var{value1}") ... (@var{coden} "@var{valuen}")])
+(define_code_attr @var{name} [(@var{code1} "@var{value1}") @dots{} (@var{coden} "@var{valuen}")])
 @end smallexample
 
 Here's an example of code iterators in action, taken from the MIPS port:
@@ -7985,7 +7985,7 @@ This is equivalent to:
   DONE;
 @})
 
-...
+@dots{}
 @end smallexample
 
 @end ifset

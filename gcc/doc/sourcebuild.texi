@@ -971,7 +971,7 @@ This DejaGnu directive provides a list of compiler options, to be used
 if the target system matches @var{selector}, that replace the default
 options used for this set of tests.
 
-@item @{ dg-add-options @var{feature} ... @}
+@item @{ dg-add-options @var{feature} @dots{} @}
 Add any compiler options that are needed to access certain features.
 This directive does nothing on targets that enable the features by
 default, or that don't provide them at all.  It must come after
@@ -1463,7 +1463,7 @@ These can be overridden by defining the environment variable
 
 @smallexample
 COMPAT_OPTIONS="[list [list @{@var{tst1}@} @{@var{alt1}@}]
-  ...[list @{@var{tstn}@} @{@var{altn}@}]]"
+  @dots{}[list @{@var{tstn}@} @{@var{altn}@}]]"
 @end smallexample
 
 where @var{tsti} and @var{alti} are lists of options, with @var{tsti}

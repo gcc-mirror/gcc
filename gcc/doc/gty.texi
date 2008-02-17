@@ -96,14 +96,14 @@ The structure that immediately contains the current structure.
 @item %0
 The outermost structure that contains the current structure.
 @item %a
-A partial expression of the form @code{[i1][i2]...} that indexes
+A partial expression of the form @code{[i1][i2]@dots{}} that indexes
 the array item currently being marked.
 @end table
 
 For instance, suppose that you have a structure of the form
 @smallexample
 struct A @{
-  ...
+  @dots{}
 @};
 struct B @{
   struct A foo[12];
