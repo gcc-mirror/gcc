@@ -1,5 +1,10 @@
 2008-02-17  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/35227
+	* gcc.dg/torture/pr35227.c: New testcase.
+
+2008-02-17  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/35231
 	* gcc.c-torture/execute/pr35231.c: New testcase.
 
