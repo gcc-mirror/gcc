@@ -1,3 +1,8 @@
+2008-02-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386-modes.def: Use 4 byte alignment on DI for
+	32bit host.
+
 2008-02-18  Joey Ye  <joey.ye@intel.com>
 
 	PR middle-end/34921
