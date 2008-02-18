@@ -1,3 +1,12 @@
+2008-02-18  Pedro Lamarao <pedro.lamarao@mndfck.org>
+
+	* include/std/tuple: Fixes for moveable, non-copyable types.
+	* testsuite/20_util/tuple/moveable2.cc: New.
+
+2008-02-18  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/std/tuple (operator+(tuple<>&&, tuple<>&&): Remove.
+
 2008-02-17  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	* include/tr1/poly_laguerre.tcc: Doxygen fixes.
