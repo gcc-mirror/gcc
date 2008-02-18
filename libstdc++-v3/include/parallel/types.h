@@ -44,8 +44,8 @@ namespace __gnu_parallel
 {
   // Enumerated types.
 
-  /// @brief Run-time equivalents for the compile-time tags.
-  enum parallelism
+  /// Run-time equivalents for the compile-time tags.
+  enum _Parallelism
     {
       /// Not parallel.
       sequential,
@@ -66,9 +66,60 @@ namespace __gnu_parallel
       parallel_taskqueue
     };
 
-  inline bool 
-  is_parallel(const parallelism __p) { return __p != sequential; }
+  /// Strategies for run-time algorithm selection: 
+  // force_sequential, force_parallel, heuristic.
+  enum _AlgorithmStrategy
+    {
+      heuristic,
+      force_sequential,
+      force_parallel
+    };
 
+  /// Sorting algorithms: 
+  // multi-way mergesort, quicksort, load-balanced quicksort.
+  enum _SortAlgorithm 
+    { 
+      MWMS, 
+      QS, 
+      QS_BALANCED 
+    };
+
+  /// Merging algorithms: 
+  // bubblesort-alike, loser-tree variants, enum sentinel.
+  enum _MultiwayMergeAlgorithm
+    { 
+      BUBBLE, 
+      LOSER_TREE_EXPLICIT, 
+      LOSER_TREE, 
+      LOSER_TREE_COMBINED, 
+      LOSER_TREE_SENTINEL, 
+      ENUM_SENTINEL 
+    };
+  
+  /// Partial sum algorithms: recursive, linear.
+  enum _PartialSumAlgorithm 
+    { 
+      RECURSIVE, 
+      LINEAR 
+    };
+
+  /// Sorting/merging algorithms: sampling, exact.
+  enum _SplittingAlgorithm 
+    { 
+      SAMPLING, 
+      EXACT 
+    };
+
+  /// Find algorithms:
+  // growing blocks, equal-sized blocks, equal splitting.
+  enum _FindAlgorithm 
+    { 
+      GROWING_BLOCKS, 
+      CONSTANT_SIZE_BLOCKS, 
+      EQUAL_SPLIT 
+    };
+
+  /// Integer Types.
   // XXX need to use <cstdint>
   /** @brief 16-bit signed integer. */
   typedef short int16;
@@ -101,20 +152,14 @@ namespace __gnu_parallel
   typedef uint16 thread_index_t;
 
   // XXX atomics interface?
-  /**
-   * @brief Longest compare-and-swappable integer type on this platform.
-   */
+  /// Longest compare-and-swappable integer type on this platform.
   typedef int64 lcas_t;
 
   // XXX numeric_limits::digits?
-  /**
-   * @brief Number of bits of ::lcas_t.
-   */
+  /// Number of bits of ::lcas_t.
   static const int lcas_t_bits = sizeof(lcas_t) * 8;
 
-  /**
-   * @brief ::lcas_t with the right half of bits set to 1.
-   */
+  /// ::lcas_t with the right half of bits set to 1.
   static const lcas_t lcas_t_mask = ((lcas_t(1) << (lcas_t_bits / 2)) - 1);
 }
 

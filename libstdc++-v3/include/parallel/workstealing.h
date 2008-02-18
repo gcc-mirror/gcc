@@ -114,17 +114,16 @@ template<typename RandomAccessIterator,
 
     typedef std::iterator_traits<RandomAccessIterator> traits_type;
     typedef typename traits_type::difference_type difference_type;
+    
+    const _Settings& __s = _Settings::get();
 
-
-    difference_type chunk_size =
-        static_cast<difference_type>(Settings::workstealing_chunk_size);
+    difference_type chunk_size = static_cast<difference_type>(__s.workstealing_chunk_size);
 
     // How many jobs?
     difference_type length = (bound < 0) ? (end - begin) : bound;
 
     // To avoid false sharing in a cache line.
-    const int stride =
-        Settings::cache_line_size * 10 / sizeof(Job<difference_type>) + 1;
+    const int stride = __s.cache_line_size * 10 / sizeof(Job<difference_type>) + 1;
 
     // Total number of threads currently working.
     thread_index_t busy = 0;

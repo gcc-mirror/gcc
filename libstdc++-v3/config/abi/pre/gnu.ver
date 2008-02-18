@@ -779,7 +779,15 @@ GLIBCXX_3.4.10 {
     _ZNKSt4hashISt10error_codeEclES0_;
     _ZNKSt4hashI[eg]EclE[eg];
 
+    _ZSt17__verify_grouping*;
+    
+    _ZNSt8__detail12__prime_listE;
+    _ZNSt3tr18__detail12__prime_listE;
+
     # for parallel mode
+    _ZN14__gnu_parallel9_Settings3getEv;
+    _ZN14__gnu_parallel9_Settings3setERS0_;
+
     _ZNSt9__cxx199815_List_node_base4hook*;
     _ZNSt9__cxx199815_List_node_base4swap*;
     _ZNSt9__cxx199815_List_node_base6unhookEv;
@@ -788,10 +796,6 @@ GLIBCXX_3.4.10 {
 
     _ZNSt15basic_streambufI[cw]St11char_traitsI[cw]EE6stosscEv;
 
-    _ZSt17__verify_grouping*;
-    
-    _ZNSt8__detail12__prime_listE;
-    _ZNSt3tr18__detail12__prime_listE;
 
     _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EE4syncEv;
     _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EE[5-9CD]*;

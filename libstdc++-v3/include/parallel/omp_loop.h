@@ -101,7 +101,7 @@ template<typename RandomAccessIterator,
 
         thread_index_t iam = omp_get_thread_num();
 
-#       pragma omp for schedule(dynamic, Settings::workstealing_chunk_size)
+#      pragma omp for schedule(dynamic, _Settings::get().workstealing_chunk_size)
         for (difference_type pos = 0; pos < length; ++pos)
           thread_results[iam] =
               r(thread_results[iam], f(o, begin+pos));

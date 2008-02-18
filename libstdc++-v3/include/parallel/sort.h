@@ -84,16 +84,15 @@ namespace __gnu_parallel
 
 	  if (false) ;
 #if _GLIBCXX_MERGESORT
-	  else if (Settings::sort_algorithm == Settings::MWMS || stable)
+	  else if (stable || _Settings::get().sort_algorithm == MWMS)
 	    parallel_sort_mwms(begin, end, comp, n, get_max_threads(), stable);
 #endif
 #if _GLIBCXX_QUICKSORT
-	  else if (Settings::sort_algorithm == Settings::QS && !stable)
+	  else if (!stable && _Settings::get().sort_algorithm == QS)
 	    parallel_sort_qs(begin, end, comp, n, get_max_threads());
 #endif
 #if _GLIBCXX_BAL_QUICKSORT
-	  else if (Settings::sort_algorithm == Settings::QS_BALANCED
-		   && !stable)
+	  else if (!stable && _Settings::get().sort_algorithm == QS_BALANCED)
 	    parallel_sort_qsb(begin, end, comp, n, get_max_threads());
 #endif
 	  else

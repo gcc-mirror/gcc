@@ -1359,11 +1359,10 @@ template<typename RandomAccessIteratorIterator,
     RandomAccessIterator3 return_target = target;
     int k = static_cast<int>(seqs_end - seqs_begin);
 
-    Settings::MultiwayMergeAlgorithm mwma =
-        Settings::multiway_merge_algorithm;
+    _MultiwayMergeAlgorithm mwma = _Settings::get().multiway_merge_algorithm;
 
-    if (!sentinel && mwma == Settings::LOSER_TREE_SENTINEL)
-      mwma = Settings::LOSER_TREE_COMBINED;
+    if (!sentinel && mwma == LOSER_TREE_SENTINEL)
+      mwma = LOSER_TREE_COMBINED;
 
     switch (k)
       {
@@ -1385,14 +1384,14 @@ template<typename RandomAccessIteratorIterator,
       case 3:
         switch (mwma)
           {
-          case Settings::LOSER_TREE_COMBINED:
+          case LOSER_TREE_COMBINED:
             return_target = multiway_merge_3_combined(seqs_begin,
 						      seqs_end,
 						      target,
 						      comp, length,
 						      stable);
             break;
-          case Settings::LOSER_TREE_SENTINEL:
+          case LOSER_TREE_SENTINEL:
             return_target =
 	      multiway_merge_3_variant<unguarded_iterator>(seqs_begin,
 							   seqs_end,
@@ -1413,13 +1412,13 @@ template<typename RandomAccessIteratorIterator,
       case 4:
         switch (mwma)
           {
-          case Settings::LOSER_TREE_COMBINED:
+          case LOSER_TREE_COMBINED:
             return_target = multiway_merge_4_combined(seqs_begin,
 						      seqs_end,
 						      target,
 						      comp, length, stable);
             break;
-          case Settings::LOSER_TREE_SENTINEL:
+          case LOSER_TREE_SENTINEL:
             return_target = 
 	      multiway_merge_4_variant<unguarded_iterator>(seqs_begin,
 							   seqs_end,
@@ -1440,14 +1439,14 @@ template<typename RandomAccessIteratorIterator,
         {
           switch (mwma)
             {
-            case Settings::BUBBLE:
+            case BUBBLE:
               return_target = multiway_merge_bubble(seqs_begin,
 						    seqs_end,
 						    target,
 						    comp, length, stable);
               break;
 #if _GLIBCXX_LOSER_TREE_EXPLICIT
-            case Settings::LOSER_TREE_EXPLICIT:
+            case LOSER_TREE_EXPLICIT:
               return_target = multiway_merge_loser_tree<
 	      LoserTreeExplicit<value_type, Comparator> >(seqs_begin,
 							  seqs_end,
@@ -1457,7 +1456,7 @@ template<typename RandomAccessIteratorIterator,
               break;
 #endif
 #if _GLIBCXX_LOSER_TREE
-            case Settings::LOSER_TREE:
+            case LOSER_TREE:
               return_target = multiway_merge_loser_tree<
                     LoserTree<value_type, Comparator> >(seqs_begin,
 							seqs_end,
@@ -1467,7 +1466,7 @@ template<typename RandomAccessIteratorIterator,
               break;
 #endif
 #if _GLIBCXX_LOSER_TREE_COMBINED
-            case Settings::LOSER_TREE_COMBINED:
+            case LOSER_TREE_COMBINED:
               return_target = multiway_merge_loser_tree_combined(seqs_begin,
 								 seqs_end,
 								 target,
@@ -1476,7 +1475,7 @@ template<typename RandomAccessIteratorIterator,
               break;
 #endif
 #if _GLIBCXX_LOSER_TREE_SENTINEL
-            case Settings::LOSER_TREE_SENTINEL:
+            case LOSER_TREE_SENTINEL:
               return_target = multiway_merge_loser_tree_sentinel(seqs_begin,
 								 seqs_end,
 								 target,
@@ -1550,6 +1549,7 @@ template<typename RandomAccessIteratorIterator,
 
       thread_index_t num_threads = static_cast<thread_index_t>(
 	std::min<difference_type>(get_max_threads(), total_length));
+      const _Settings& __s = _Settings::get();
 
 #     pragma omp parallel num_threads (num_threads)
         {
@@ -1562,10 +1562,10 @@ template<typename RandomAccessIteratorIterator,
               for (int s = 0; s < num_threads; ++s)
                 pieces[s].resize(k);
 
-              difference_type num_samples =
-                  Settings::merge_oversampling * num_threads;
+              difference_type num_samples = __s.merge_oversampling 
+					    * num_threads;
 
-              if (Settings::multiway_merge_splitting == Settings::SAMPLING)
+              if (__s.multiway_merge_splitting == SAMPLING)
                 {
                   value_type* samples = static_cast<value_type*>(
                     ::operator new(sizeof(value_type) * k * num_samples));
@@ -1623,7 +1623,7 @@ template<typename RandomAccessIteratorIterator,
                 }
               else
                 {
-                  // (Settings::multiway_merge_splitting == Settings::EXACT).
+                  // (_Settings::multiway_merge_splitting == _Settings::EXACT).
                   std::vector<RandomAccessIterator1>* offsets =
                       new std::vector<RandomAccessIterator1>[num_threads];
                   std::vector<
@@ -1768,10 +1768,12 @@ template<typename RandomAccessIteratorPairIterator,
     if (seqs_begin == seqs_end)
       return target;
 
+    const _Settings& __s = _Settings::get();
+
     RandomAccessIterator3 target_end;
     if (_GLIBCXX_PARALLEL_CONDITION(
-        ((seqs_end - seqs_begin) >= Settings::multiway_merge_minimal_k)
-        && ((sequence_index_t)length >= Settings::multiway_merge_minimal_n)))
+        ((seqs_end - seqs_begin) >= __s.multiway_merge_minimal_k)
+        && ((sequence_index_t)length >= __s.multiway_merge_minimal_n)))
       target_end = parallel_multiway_merge(seqs_begin, seqs_end,
 					   target, comp,
 					  static_cast<difference_type>(length),
@@ -1813,15 +1815,14 @@ template<typename RandomAccessIteratorPairIterator,
 
     _GLIBCXX_CALL(seqs_end - seqs_begin)
 
-    if (_GLIBCXX_PARALLEL_CONDITION(
-        ((seqs_end - seqs_begin) >= Settings::multiway_merge_minimal_k)
-        && ((sequence_index_t)length >= Settings::multiway_merge_minimal_n)))
-      return parallel_multiway_merge(
-          seqs_begin, seqs_end,
-          target, comp, static_cast<difference_type>(length), stable, true);
+    const _Settings& __s = _Settings::get();
+    const bool cond1 = seqs_end - seqs_begin >= __s.multiway_merge_minimal_k;
+    const bool cond2 = sequence_index_t(length) >= __s.multiway_merge_minimal_n;
+    if (_GLIBCXX_PARALLEL_CONDITION(cond1 && cond2))
+      return parallel_multiway_merge(seqs_begin, seqs_end, target, comp, 
+				     length, stable, true);
     else
-      return multiway_merge(seqs_begin, seqs_end,
-			    target, comp, length, stable,
+      return multiway_merge(seqs_begin, seqs_end, target, comp, length, stable,
 			    true, sequential_tag());
   }
 }

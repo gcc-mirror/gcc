@@ -134,7 +134,7 @@ namespace __gnu_parallel
 
       difference_type split =
 	parallel_sort_qs_divide(begin, end, comp, pivot_rank,
-				Settings::sort_qs_num_samples_preset,
+				_Settings::get().sort_qs_num_samples_preset,
 				num_threads);
 
 #pragma omp parallel sections
@@ -178,8 +178,6 @@ namespace __gnu_parallel
       // At least one element per processor.
       if (num_threads > n)
 	num_threads = static_cast<thread_index_t>(n);
-
-      Settings::sort_qs_num_samples_preset = 100;
 
       // Hard to avoid.
       omp_set_num_threads(num_threads);

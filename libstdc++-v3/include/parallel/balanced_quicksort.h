@@ -252,7 +252,7 @@ template<typename RandomAccessIterator, typename Comparator>
 
     QSBThreadLocal<RandomAccessIterator>& tl = *tls[iam];
 
-    difference_type base_case_n = Settings::sort_qsb_base_case_maximal_n;
+    difference_type base_case_n = _Settings::get().sort_qsb_base_case_maximal_n;
     if (base_case_n < 2)
       base_case_n = 2;
     thread_index_t num_threads = tl.num_threads;
