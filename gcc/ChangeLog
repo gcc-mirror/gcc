@@ -1,3 +1,9 @@
+2008-02-18  Joey Ye  <joey.ye@intel.com>
+
+	PR middle-end/34921
+	* tree-nested.c (insert_field_into_struct): Set type alignment
+	to field alignment if the former is less than the latter.
+
 2008-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* BASE-VER: Set to 4.4.0.

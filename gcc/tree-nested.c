@@ -183,6 +183,10 @@ insert_field_into_struct (tree type, tree field)
 
   TREE_CHAIN (field) = *p;
   *p = field;
+
+  /* Set correct alignment for frame struct type.  */
+  if (TYPE_ALIGN (type) < DECL_ALIGN (field))
+    TYPE_ALIGN (type) = DECL_ALIGN (field);
 }
 
 /* Build or return the RECORD_TYPE that describes the frame state that is
