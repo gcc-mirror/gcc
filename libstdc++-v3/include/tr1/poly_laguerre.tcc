@@ -286,7 +286,7 @@ namespace tr1
 
     /**
      *   @brief This routine returns the associated Laguerre polynomial
-     *          of order n, degree m: @f$ L_n^m @f$.
+     *          of order n, degree m: @f$ L_n^m(x) @f$.
      *
      *   The associated Laguerre polynomial is defined for integral
      *   @f$ \alpha = m @f$ by:
@@ -314,7 +314,7 @@ namespace tr1
 
 
     /**
-     *   @brief This routine returns the associated Laguerre polynomial
+     *   @brief This routine returns the Laguerre polynomial
      *          of order n: @f$ L_n(x) @f$.
      *
      *   The Laguerre polynomial is defined by:

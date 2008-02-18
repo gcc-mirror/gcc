@@ -509,7 +509,7 @@ namespace tr1
 
 
     /**
-     *   The exponential integral @f$ Ei(x) @f$.
+     *   @brief Return the exponential integral @f$ Ei(x) @f$.
      * 
      *   The exponential integral is given by
      *   \f[
