@@ -17,7 +17,7 @@ Copyright (C) 1998-2002, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 @ifnotplaintext
 @dircategory GNU Libraries
 @direntry
-* VM Integration: (vmintegration).   GNU Classpath VM Integration Guide
+* VM Integration: (cp-vmintegration).  GNU Classpath VM Integration Guide
 @end direntry
 @end ifnotplaintext
 @end ifinfo

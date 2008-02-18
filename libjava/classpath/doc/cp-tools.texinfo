@@ -27,7 +27,7 @@ Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 @ifnotplaintext
 @dircategory GNU Libraries
 @direntry
-* Classpath Tools: (tools).       GNU Classpath Tools Guide
+* Classpath Tools: (cp-tools).  GNU Classpath Tools Guide
 @end direntry
 @end ifnotplaintext
 @end ifinfo
