@@ -1,3 +1,9 @@
+2008-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/cp-tools.texinfo (@direntry): Prefix info name with cp-.
+	* doc/cp-hacking.texinfo (@direntry): Likewise.
+	* doc/cp-vmintegration.texinfo (@direntry): Likewise.
+
 2008-02-06  Matthias Klose  <doko@ubuntu.com>
 
 	* tools/Makefile.am ($(TOOLS_ZIP)): Copy over rmic template files.
