@@ -130,8 +130,7 @@ template<typename RandomAccessIterator, typename _DifferenceTp>
 
     thread_index_t iam = omp_get_thread_num();
 
-    num_samples =
-        Settings::sort_mwms_oversampling * sd->num_threads - 1;
+    num_samples = _Settings::get().sort_mwms_oversampling * sd->num_threads - 1;
 
     difference_type* es = new difference_type[num_samples + 2];
 
@@ -194,8 +193,8 @@ template<typename RandomAccessIterator, typename Comparator>
 
     // Invariant: locally sorted subsequence in sd->sorting_places[iam],
     // sd->sorting_places[iam] + length_local.
-
-    if (Settings::sort_splitting == Settings::SAMPLING)
+    const _Settings& __s = _Settings::get();
+    if (__s.sort_splitting == SAMPLING)
       {
         difference_type num_samples;
         determine_samples(sd, num_samples);
@@ -237,7 +236,7 @@ template<typename RandomAccessIterator, typename Comparator>
               sd->pieces[iam][s].end = sd->starts[s + 1] - sd->starts[s];
             }
       }
-    else if (Settings::sort_splitting == Settings::EXACT)
+    else if (__s.sort_splitting == EXACT)
       {
 #       pragma omp barrier
 
@@ -355,6 +354,7 @@ template<typename RandomAccessIterator, typename Comparator>
     // shared variables
     PMWMSSortingData<RandomAccessIterator> sd;
     difference_type* starts;
+    const _Settings& __s = _Settings::get();
 
 #   pragma omp parallel num_threads(num_threads)
       {
@@ -374,10 +374,10 @@ template<typename RandomAccessIterator, typename Comparator>
             sd.merging_places = new RandomAccessIterator[num_threads];
 #endif
 
-            if (Settings::sort_splitting == Settings::SAMPLING)
+            if (__s.sort_splitting == SAMPLING)
               {
                 unsigned int size = 
-                    (Settings::sort_mwms_oversampling * num_threads - 1)
+                    (__s.sort_mwms_oversampling * num_threads - 1)
                         * num_threads;
                 sd.samples = static_cast<value_type*>(
 		  ::operator new(size * sizeof(value_type)));
@@ -412,7 +412,7 @@ template<typename RandomAccessIterator, typename Comparator>
     delete[] sd.sorting_places;
     delete[] sd.merging_places;
 
-    if (Settings::sort_splitting == Settings::SAMPLING)
+    if (__s.sort_splitting == SAMPLING)
       ::operator delete(sd.samples);
 
     delete[] sd.offsets;

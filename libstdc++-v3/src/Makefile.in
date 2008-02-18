@@ -84,12 +84,13 @@ am__libstdc___la_SOURCES_DIST = bitmap_allocator.cc pool_allocator.cc \
 	codecvt_members.cc collate_members.cc ctype_members.cc \
 	messages_members.cc monetary_members.cc numeric_members.cc \
 	time_members.cc basic_file.cc c++locale.cc \
-	compatibility-ldbl.cc parallel_list.cc
+	compatibility-ldbl.cc parallel_list.cc parallel_settings.cc
 am__objects_1 = atomicity.lo codecvt_members.lo collate_members.lo \
 	ctype_members.lo messages_members.lo monetary_members.lo \
 	numeric_members.lo time_members.lo
 @GLIBCXX_LDBL_COMPAT_TRUE@am__objects_2 = compatibility-ldbl.lo
-@ENABLE_PARALLEL_TRUE@am__objects_3 = parallel_list.lo
+@ENABLE_PARALLEL_TRUE@am__objects_3 = parallel_list.lo \
+@ENABLE_PARALLEL_TRUE@	parallel_settings.lo
 am__objects_4 = basic_file.lo c++locale.lo $(am__objects_2) \
 	$(am__objects_3)
 am__objects_5 = bitmap_allocator.lo pool_allocator.lo mt_allocator.lo \
@@ -359,7 +360,7 @@ host_sources_extra = \
 	basic_file.cc c++locale.cc ${ldbl_compat_sources} ${parallel_sources}
 
 @ENABLE_PARALLEL_FALSE@parallel_sources = 
-@ENABLE_PARALLEL_TRUE@parallel_sources = parallel_list.cc 
+@ENABLE_PARALLEL_TRUE@parallel_sources = parallel_list.cc parallel_settings.cc
 @GLIBCXX_LDBL_COMPAT_FALSE@ldbl_compat_sources = 
 @GLIBCXX_LDBL_COMPAT_TRUE@ldbl_compat_sources = compatibility-ldbl.cc
 
@@ -808,6 +809,11 @@ concept-inst.o: concept-inst.cc
 parallel_list.lo: parallel_list.cc
 	$(LTCXXCOMPILE) $(PARALLEL_FLAGS) -c $<
 parallel_list.o: parallel_list.cc
+	$(CXXCOMPILE) $(PARALLEL_FLAGS) -c $<
+
+parallel_settings.lo: parallel_settings.cc
+	$(LTCXXCOMPILE) $(PARALLEL_FLAGS) -c $<
+parallel_settings.o: parallel_settings.cc
 	$(CXXCOMPILE) $(PARALLEL_FLAGS) -c $<
 
 # Use special rules for the C++0x sources so that the proper flags are passed.

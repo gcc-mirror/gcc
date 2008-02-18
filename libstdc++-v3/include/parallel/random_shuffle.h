@@ -274,6 +274,8 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
 
     _GLIBCXX_CALL(n)
 
+    const _Settings& __s = _Settings::get();
+
     if (num_threads > n)
       num_threads = static_cast<thread_index_t>(n);
 
@@ -284,7 +286,7 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
 
     // Must fit into L1.
     num_bins_cache = std::max<difference_type>(
-        1, n / (Settings::L1_cache_size_lb / sizeof(value_type)));
+        1, n / (__s.L1_cache_size_lb / sizeof(value_type)));
     num_bins_cache = round_up_to_pow2(num_bins_cache);
 
     // No more buckets than TLB entries, power of 2
@@ -293,7 +295,7 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
 
 #if _GLIBCXX_RANDOM_SHUFFLE_CONSIDER_TLB
     // 2 TLB entries needed per bin.
-    num_bins = std::min<difference_type>(Settings::TLB_size / 2, num_bins);
+    num_bins = std::min<difference_type>(__s.TLB_size / 2, num_bins);
 #endif
     num_bins = round_up_to_pow2(num_bins);
 
@@ -303,7 +305,7 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
         // Now try the L2 cache
         // Must fit into L2
         num_bins_cache = static_cast<bin_index>(std::max<difference_type>(
-            1, n / (Settings::L2_cache_size / sizeof(value_type))));
+            1, n / (__s.L2_cache_size / sizeof(value_type))));
         num_bins_cache = round_up_to_pow2(num_bins_cache);
 
         // No more buckets than TLB entries, power of 2.
@@ -313,7 +315,7 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
 #if _GLIBCXX_RANDOM_SHUFFLE_CONSIDER_TLB
         // 2 TLB entries needed per bin.
         num_bins = std::min(
-            static_cast<difference_type>(Settings::TLB_size / 2), num_bins);
+            static_cast<difference_type>(__s.TLB_size / 2), num_bins);
 #endif
           num_bins = round_up_to_pow2(num_bins);
 #if _GLIBCXX_RANDOM_SHUFFLE_CONSIDER_L1
@@ -403,6 +405,7 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
     typedef typename traits_type::difference_type difference_type;
 
     difference_type n = end - begin;
+    const _Settings& __s = _Settings::get();
 
     bin_index num_bins, num_bins_cache;
 
@@ -410,7 +413,7 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
     // Try the L1 cache first, must fit into L1.
     num_bins_cache =
         std::max<difference_type>
-            (1, n / (Settings::L1_cache_size_lb / sizeof(value_type)));
+            (1, n / (__s.L1_cache_size_lb / sizeof(value_type)));
     num_bins_cache = round_up_to_pow2(num_bins_cache);
 
     // No more buckets than TLB entries, power of 2
@@ -418,7 +421,7 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
     num_bins = std::min(n, (difference_type)num_bins_cache);
 #if _GLIBCXX_RANDOM_SHUFFLE_CONSIDER_TLB
     // 2 TLB entries needed per bin
-    num_bins = std::min((difference_type)Settings::TLB_size / 2, num_bins);
+    num_bins = std::min((difference_type)__s.TLB_size / 2, num_bins);
 #endif
     num_bins = round_up_to_pow2(num_bins);
 
@@ -428,7 +431,7 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
         // Now try the L2 cache, must fit into L2.
         num_bins_cache =
             static_cast<bin_index>(std::max<difference_type>(
-                1, n / (Settings::L2_cache_size / sizeof(value_type))));
+                1, n / (__s.L2_cache_size / sizeof(value_type))));
         num_bins_cache = round_up_to_pow2(num_bins_cache);
 
         // No more buckets than TLB entries, power of 2
@@ -439,7 +442,7 @@ template<typename RandomAccessIterator, typename RandomNumberGenerator>
 #if _GLIBCXX_RANDOM_SHUFFLE_CONSIDER_TLB
         // 2 TLB entries needed per bin
         num_bins =
-            std::min<difference_type>(Settings::TLB_size / 2, num_bins);
+            std::min<difference_type>(__s.TLB_size / 2, num_bins);
 #endif
         num_bins = round_up_to_pow2(num_bins);
 #if _GLIBCXX_RANDOM_SHUFFLE_CONSIDER_L1

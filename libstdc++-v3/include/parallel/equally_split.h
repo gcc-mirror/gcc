@@ -51,13 +51,11 @@ namespace __gnu_parallel
  *  @returns End of splitter sequence, i. e. @c s+num_threads+1 */
 template<typename difference_type, typename OutputIterator>
   OutputIterator
-  equally_split(difference_type n,
-                thread_index_t num_threads,
-                OutputIterator s)
+  equally_split(difference_type n, thread_index_t num_threads, OutputIterator s)
   {
-    difference_type chunk_length = n / num_threads,
-                    num_longer_chunks = n % num_threads,
-                    pos = 0;
+    difference_type chunk_length = n / num_threads;
+    difference_type num_longer_chunks = n % num_threads;
+    difference_type pos = 0;
     for (thread_index_t i = 0; i < num_threads; ++i)
       {
         *s++ = pos;
@@ -75,17 +73,16 @@ template<typename difference_type, typename OutputIterator>
  *  thread number thread_no+1 (excluded).
  *  @param n Number of elements
  *  @param num_threads Number of parts
- *  @returns Splitting point */
+ *  @returns _SplittingAlgorithm point */
 template<typename difference_type>
   difference_type
   equally_split_point(difference_type n,
                       thread_index_t num_threads,
                       thread_index_t thread_no)
   {
-    difference_type chunk_length = n / num_threads,
-                    num_longer_chunks = n % num_threads;
-
-    if(thread_no < num_longer_chunks)
+    difference_type chunk_length = n / num_threads;
+    difference_type num_longer_chunks = n % num_threads;
+    if (thread_no < num_longer_chunks)
       return thread_no * (chunk_length + 1);
     else
       return num_longer_chunks * (chunk_length + 1)

@@ -43,21 +43,21 @@
 #ifndef _GLIBCXX_MERGESORT
 /** @def _GLIBCXX_MERGESORT
  *  @brief Include parallel multi-way mergesort.
- *  @see __gnu_parallel::Settings::sort_algorithm */
+ *  @see __gnu_parallel::_Settings::sort_algorithm */
 #define _GLIBCXX_MERGESORT 1
 #endif
 
 #ifndef _GLIBCXX_QUICKSORT
 /** @def _GLIBCXX_QUICKSORT
  *  @brief Include parallel unbalanced quicksort.
- *  @see __gnu_parallel::Settings::sort_algorithm */
+ *  @see __gnu_parallel::_Settings::sort_algorithm */
 #define _GLIBCXX_QUICKSORT 1
 #endif
 
 #ifndef _GLIBCXX_BAL_QUICKSORT
 /** @def _GLIBCXX_BAL_QUICKSORT
  *  @brief Include parallel dynamically load-balanced quicksort.
- *  @see __gnu_parallel::Settings::sort_algorithm */
+ *  @see __gnu_parallel::_Settings::sort_algorithm */
 #define _GLIBCXX_BAL_QUICKSORT 1
 #endif
 
@@ -65,7 +65,7 @@
 /** @def _GLIBCXX_LOSER_TREE
  *  @brief Include guarded (sequences may run empty) loser tree,
  *  moving objects.
- *  @see __gnu_parallel::Settings multiway_merge_algorithm */
+ *  @see __gnu_parallel::_Settings multiway_merge_algorithm */
 #define _GLIBCXX_LOSER_TREE 1
 #endif
 
@@ -73,21 +73,21 @@
 /** @def _GLIBCXX_LOSER_TREE_EXPLICIT
  *  @brief Include standard loser tree, storing two flags for infimum
  *  and supremum.
- *  @see __gnu_parallel::Settings multiway_merge_algorithm */
+ *  @see __gnu_parallel::_Settings multiway_merge_algorithm */
 #define _GLIBCXX_LOSER_TREE_EXPLICIT 0
 #endif
 
 #ifndef _GLIBCXX_LOSER_TREE_REFERENCE
 /** @def _GLIBCXX_LOSER_TREE_REFERENCE
  *  @brief Include some loser tree variant.
- *  @see __gnu_parallel::Settings multiway_merge_algorithm */
+ *  @see __gnu_parallel::_Settings multiway_merge_algorithm */
 #define _GLIBCXX_LOSER_TREE_REFERENCE 0
 #endif
 
 #ifndef _GLIBCXX_LOSER_TREE_POINTER
 /** @def _GLIBCXX_LOSER_TREE_POINTER
  *  @brief Include some loser tree variant.
- *  @see __gnu_parallel::Settings multiway_merge_algorithm */
+ *  @see __gnu_parallel::_Settings multiway_merge_algorithm */
 #define _GLIBCXX_LOSER_TREE_POINTER 1
 #endif
 
@@ -95,48 +95,48 @@
 /** @def _GLIBCXX_LOSER_TREE_UNGUARDED
  *  @brief Include unguarded (sequences must not run empty) loser
  *  tree, moving objects.
- *  @see __gnu_parallel::Settings multiway_merge_algorithm */
+ *  @see __gnu_parallel::_Settings multiway_merge_algorithm */
 #define _GLIBCXX_LOSER_TREE_UNGUARDED 0
 #endif
 
 #ifndef _GLIBCXX_LOSER_TREE_POINTER_UNGUARDED
 /** @def _GLIBCXX_LOSER_TREE_POINTER_UNGUARDED
  *  @brief Include some loser tree variant.
- *  @see __gnu_parallel::Settings multiway_merge_algorithm */
+ *  @see __gnu_parallel::_Settings multiway_merge_algorithm */
 #define _GLIBCXX_LOSER_TREE_POINTER_UNGUARDED 1
 #endif
 
 #ifndef _GLIBCXX_LOSER_TREE_COMBINED
 /** @def _GLIBCXX_LOSER_TREE_COMBINED
  *  @brief Include some loser tree variant.
- *  @see __gnu_parallel::Settings multiway_merge_algorithm */
+ *  @see __gnu_parallel::_Settings multiway_merge_algorithm */
 #define _GLIBCXX_LOSER_TREE_COMBINED 0
 #endif
 
 #ifndef _GLIBCXX_LOSER_TREE_SENTINEL
 /** @def _GLIBCXX_LOSER_TREE_SENTINEL
  *  @brief Include some loser tree variant.
- *  @see __gnu_parallel::Settings multiway_merge_algorithm */
+ *  @see __gnu_parallel::_Settings multiway_merge_algorithm */
 #define _GLIBCXX_LOSER_TREE_SENTINEL 0
 #endif
 
 
 #ifndef _GLIBCXX_FIND_GROWING_BLOCKS
 /** @brief Include the growing blocks variant for std::find.
- *  @see __gnu_parallel::Settings::find_distribution */
+ *  @see __gnu_parallel::_Settings::find_algorithm */
 #define _GLIBCXX_FIND_GROWING_BLOCKS 1
 #endif
 
 #ifndef _GLIBCXX_FIND_CONSTANT_SIZE_BLOCKS
 /** @brief Include the equal-sized blocks variant for std::find.
- *  @see __gnu_parallel::Settings::find_distribution */
+ *  @see __gnu_parallel::_Settings::find_algorithm */
 #define _GLIBCXX_FIND_CONSTANT_SIZE_BLOCKS 1
 #endif
 
 #ifndef _GLIBCXX_FIND_EQUAL_SPLIT
 /** @def _GLIBCXX_FIND_EQUAL_SPLIT
  *  @brief Include the equal splitting variant for std::find.
- *  @see __gnu_parallel::Settings::find_distribution */
+ *  @see __gnu_parallel::_Settings::find_algorithm */
 #define _GLIBCXX_FIND_EQUAL_SPLIT 1
 #endif
 

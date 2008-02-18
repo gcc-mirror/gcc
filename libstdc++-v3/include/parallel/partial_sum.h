@@ -118,6 +118,8 @@ template<typename InputIterator,
     difference_type* borders;
     value_type* sums;
 
+    const _Settings& __s = _Settings::get();
+
 #   pragma omp parallel num_threads(num_threads)
       {
 #       pragma omp single
@@ -126,14 +128,13 @@ template<typename InputIterator,
 
             borders = new difference_type[num_threads + 2];
 
-            if (Settings::partial_sum_dilatation == 1.0f)
+            if (__s.partial_sum_dilation == 1.0f)
               equally_split(n, num_threads + 1, borders);
             else
               {
                 difference_type chunk_length =
                     ((double)n
-		     / ((double)num_threads
-			+ Settings::partial_sum_dilatation)),
+		     / ((double)num_threads + __s.partial_sum_dilation)),
 		  borderstart = n - num_threads * chunk_length;
                 borders[0] = 0;
                 for (int i = 1; i < (num_threads + 1); ++i)
@@ -209,9 +210,9 @@ template<typename InputIterator,
 
     difference_type n = end - begin;
 
-    switch (Settings::partial_sum_algorithm)
+    switch (_Settings::get().partial_sum_algorithm)
       {
-      case Settings::LINEAR:
+      case LINEAR:
         // Need an initial offset.
         return parallel_partial_sum_linear(begin, end, result, bin_op, n);
       default:

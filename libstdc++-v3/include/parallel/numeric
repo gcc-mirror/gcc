@@ -91,12 +91,12 @@ namespace __parallel
     accumulate_switch(_RandomAccessIterator begin, _RandomAccessIterator end, 
 		      T init, BinaryOperation binary_op, 
 		      random_access_iterator_tag, 
-		      __gnu_parallel::parallelism parallelism_tag  
+		      __gnu_parallel::_Parallelism parallelism_tag  
 		      = __gnu_parallel::parallel_unbalanced)
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
 	    static_cast<__gnu_parallel::sequence_index_t>(end - begin)
-	    >= __gnu_parallel::Settings::accumulate_minimal_n
+	    >= __gnu_parallel::_Settings::get().accumulate_minimal_n
 	    && __gnu_parallel::is_parallel(parallelism_tag)))
 	{
 	  T res = init;
@@ -121,7 +121,7 @@ namespace __parallel
   template<typename InputIterator, typename T>
     inline T
     accumulate(InputIterator begin, InputIterator end, T init, 
-	       __gnu_parallel::parallelism parallelism_tag)
+	       __gnu_parallel::_Parallelism parallelism_tag)
     {
       typedef std::iterator_traits<InputIterator> iterator_traits;
       typedef typename iterator_traits::value_type value_type;
@@ -149,7 +149,7 @@ namespace __parallel
     inline T
     accumulate(InputIterator begin, InputIterator end, T init, 
 	       BinaryOperation binary_op, 
-	       __gnu_parallel::parallelism parallelism_tag)
+	       __gnu_parallel::_Parallelism parallelism_tag)
     {
       typedef iterator_traits<InputIterator> iterator_traits;
       typedef typename iterator_traits::iterator_category iterator_category;
@@ -197,11 +197,11 @@ namespace __parallel
 			 BinaryFunction2 binary_op2,
 			 random_access_iterator_tag,
 			 random_access_iterator_tag,
-			 __gnu_parallel::parallelism parallelism_tag
+			 __gnu_parallel::_Parallelism parallelism_tag
 			 = __gnu_parallel::parallel_unbalanced)
     {
       if (_GLIBCXX_PARALLEL_CONDITION((last1 - first1)
-				      >= __gnu_parallel::Settings::
+				      >= __gnu_parallel::_Settings::get().
 				      accumulate_minimal_n
 				      && __gnu_parallel::
 				      is_parallel(parallelism_tag)))
@@ -241,7 +241,7 @@ namespace __parallel
     inner_product(InputIterator1 first1, InputIterator1 last1, 
 		  InputIterator2 first2, T init, BinaryFunction1 binary_op1, 
 		  BinaryFunction2 binary_op2, 
-		  __gnu_parallel::parallelism parallelism_tag)
+		  __gnu_parallel::_Parallelism parallelism_tag)
     {
       typedef iterator_traits<InputIterator1> traits1_type;
       typedef typename traits1_type::iterator_category iterator1_category;
@@ -276,7 +276,7 @@ namespace __parallel
     inline T
     inner_product(InputIterator1 first1, InputIterator1 last1, 
 		  InputIterator2 first2, T init, 
-		  __gnu_parallel::parallelism parallelism_tag)
+		  __gnu_parallel::_Parallelism parallelism_tag)
     {
       typedef iterator_traits<InputIterator1> traits_type1;
       typedef typename traits_type1::value_type value_type1;
@@ -347,7 +347,7 @@ namespace __parallel
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
 	    static_cast<__gnu_parallel::sequence_index_t>(end - begin)
-	    >= __gnu_parallel::Settings::partial_sum_minimal_n))
+	    >= __gnu_parallel::_Settings::get().partial_sum_minimal_n))
 	return __gnu_parallel::parallel_partial_sum(begin, end,
 						    result, bin_op);
       else
@@ -416,12 +416,12 @@ namespace __parallel
 			       OutputIterator result, BinaryOperation bin_op,
 			       random_access_iterator_tag, 
 			       random_access_iterator_tag,
-			       __gnu_parallel::parallelism parallelism_tag
+			       __gnu_parallel::_Parallelism parallelism_tag
 			       = __gnu_parallel::parallel_balanced)
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
 	    static_cast<__gnu_parallel::sequence_index_t>(end - begin)
-	    >= __gnu_parallel::Settings::adjacent_difference_minimal_n
+	    >= __gnu_parallel::_Settings::get().adjacent_difference_minimal_n
 	    && __gnu_parallel::is_parallel(parallelism_tag)))
 	{
 	  bool dummy = true;
@@ -448,7 +448,7 @@ namespace __parallel
     inline OutputIterator
     adjacent_difference(InputIterator begin, InputIterator end,
 			OutputIterator result,
-			__gnu_parallel::parallelism parallelism_tag)
+			__gnu_parallel::_Parallelism parallelism_tag)
     {
       typedef iterator_traits<InputIterator> traits_type;
       typedef typename traits_type::value_type value_type;
@@ -471,7 +471,7 @@ namespace __parallel
     inline OutputIterator
     adjacent_difference(InputIterator begin, InputIterator end,
 			OutputIterator result, BinaryOperation binary_op,
-			__gnu_parallel::parallelism parallelism_tag)
+			__gnu_parallel::_Parallelism parallelism_tag)
     {
       typedef iterator_traits<InputIterator> traitsi_type;
       typedef typename traitsi_type::iterator_category iteratori_category;

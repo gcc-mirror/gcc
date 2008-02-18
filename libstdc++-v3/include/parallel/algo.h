@@ -87,17 +87,16 @@ namespace __parallel
     Function
     for_each_switch(RandomAccessIterator begin, RandomAccessIterator end, 
 		    Function f, random_access_iterator_tag, 
-		    __gnu_parallel::parallelism parallelism_tag
+		    __gnu_parallel::_Parallelism parallelism_tag
 		    = __gnu_parallel::parallel_balanced)
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
 	    static_cast<__gnu_parallel::sequence_index_t>(end - begin)
-	    >= __gnu_parallel::Settings::for_each_minimal_n
+	    >= __gnu_parallel::_Settings::get().for_each_minimal_n
 	    && __gnu_parallel::is_parallel(parallelism_tag)))
 	{
 	  bool dummy;
-	  __gnu_parallel::for_each_selector<RandomAccessIterator>
-	    functionality;
+	  __gnu_parallel::for_each_selector<RandomAccessIterator> functionality;
 
 	  return __gnu_parallel::
 	    for_each_template_random_access(begin, end, f, functionality,
@@ -112,7 +111,7 @@ namespace __parallel
   template<typename Iterator, typename Function>
     inline Function
     for_each(Iterator begin, Iterator end, Function f, 
-	     __gnu_parallel::parallelism parallelism_tag)
+	     __gnu_parallel::_Parallelism parallelism_tag)
     {
       typedef std::iterator_traits<Iterator> iterator_traits;
       typedef typename iterator_traits::iterator_category iterator_category;
@@ -333,7 +332,7 @@ namespace __parallel
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
 	    static_cast<__gnu_parallel::sequence_index_t>(last - begin)
-	    > __gnu_parallel::Settings::unique_copy_minimal_n))
+	    > __gnu_parallel::_Settings::get().unique_copy_minimal_n))
 	return __gnu_parallel::parallel_unique_copy(begin, last, out, pred);
       else
 	return _GLIBCXX_STD_P::unique_copy(begin, last, out, pred);
@@ -413,9 +412,9 @@ namespace __parallel
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
 	    static_cast<__gnu_parallel::sequence_index_t>(end1 - begin1)
-	    >= __gnu_parallel::Settings::set_union_minimal_n
+	    >= __gnu_parallel::_Settings::get().set_union_minimal_n
 	    || static_cast<__gnu_parallel::sequence_index_t>(end2 - begin2)
-	    >= __gnu_parallel::Settings::set_union_minimal_n))
+	    >= __gnu_parallel::_Settings::get().set_union_minimal_n))
 	return __gnu_parallel::parallel_set_union(begin1, end1,
 						  begin2, end2, result, pred);
       else
@@ -519,9 +518,9 @@ namespace __parallel
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
 	    static_cast<__gnu_parallel::sequence_index_t>(end1 - begin1)
-	    >= __gnu_parallel::Settings::set_union_minimal_n
+	    >= __gnu_parallel::_Settings::get().set_union_minimal_n
 	    || static_cast<__gnu_parallel::sequence_index_t>(end2 - begin2)
-	    >= __gnu_parallel::Settings::set_union_minimal_n))
+	    >= __gnu_parallel::_Settings::get().set_union_minimal_n))
 	return __gnu_parallel::parallel_set_intersection(begin1, end1, begin2, 
 							 end2, result, pred);
       else
@@ -632,9 +631,9 @@ namespace __parallel
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
 	    static_cast<__gnu_parallel::sequence_index_t>(end1 - begin1)
-	    >= __gnu_parallel::Settings::set_symmetric_difference_minimal_n
+	    >= __gnu_parallel::_Settings::get().set_symmetric_difference_minimal_n
 	    || static_cast<__gnu_parallel::sequence_index_t>(end2 - begin2)
-	    >= __gnu_parallel::Settings::set_symmetric_difference_minimal_n))
+	    >= __gnu_parallel::_Settings::get().set_symmetric_difference_minimal_n))
 	return __gnu_parallel::parallel_set_symmetric_difference(begin1, end1,
 								 begin2, end2,
 								 result, pred);
@@ -741,9 +740,9 @@ namespace __parallel
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
 	    static_cast<__gnu_parallel::sequence_index_t>(end1 - begin1)
-	    >= __gnu_parallel::Settings::set_difference_minimal_n
+	    >= __gnu_parallel::_Settings::get().set_difference_minimal_n
 	    || static_cast<__gnu_parallel::sequence_index_t>(end2 - begin2)
-	    >= __gnu_parallel::Settings::set_difference_minimal_n))
+	    >= __gnu_parallel::_Settings::get().set_difference_minimal_n))
 	return __gnu_parallel::parallel_set_difference(begin1, end1,
 						       begin2, end2,
 						       result, pred);
@@ -903,7 +902,7 @@ namespace __parallel
     typename iterator_traits<RandomAccessIterator>::difference_type
     count_switch(RandomAccessIterator begin, RandomAccessIterator end, 
 		 const T& value, random_access_iterator_tag, 
-		 __gnu_parallel::parallelism parallelism_tag 
+		 __gnu_parallel::_Parallelism parallelism_tag 
 		 = __gnu_parallel::parallel_unbalanced)
     {
       typedef iterator_traits<RandomAccessIterator> traits_type;
@@ -913,7 +912,7 @@ namespace __parallel
 
       if (_GLIBCXX_PARALLEL_CONDITION(
 	    static_cast<sequence_index_t>(end - begin)
-	    >= __gnu_parallel::Settings::count_minimal_n
+	    >= __gnu_parallel::_Settings::get().count_minimal_n
 	    && __gnu_parallel::is_parallel(parallelism_tag)))
 	{
 	  __gnu_parallel::count_selector<RandomAccessIterator, difference_type>
@@ -941,7 +940,7 @@ namespace __parallel
   template<typename InputIterator, typename T>
     inline typename iterator_traits<InputIterator>::difference_type
     count(InputIterator begin, InputIterator end, const T& value, 
-	  __gnu_parallel::parallelism parallelism_tag)
+	  __gnu_parallel::_Parallelism parallelism_tag)
     {
       typedef iterator_traits<InputIterator> traits_type;
       typedef typename traits_type::iterator_category iterator_category;
@@ -971,7 +970,7 @@ namespace __parallel
     typename iterator_traits<RandomAccessIterator>::difference_type
     count_if_switch(RandomAccessIterator begin, RandomAccessIterator end, 
 		    Predicate pred, random_access_iterator_tag, 
-		    __gnu_parallel::parallelism parallelism_tag
+		    __gnu_parallel::_Parallelism parallelism_tag
 		    = __gnu_parallel::parallel_unbalanced)
     {
       typedef iterator_traits<RandomAccessIterator> traits_type;
@@ -981,7 +980,7 @@ namespace __parallel
 
       if (_GLIBCXX_PARALLEL_CONDITION(
 	    static_cast<sequence_index_t>(end - begin)
-	    >= __gnu_parallel::Settings::count_minimal_n
+	    >= __gnu_parallel::_Settings::get().count_minimal_n
 	    && __gnu_parallel::is_parallel(parallelism_tag)))
 	{
 	  difference_type res = 0;
@@ -1010,7 +1009,7 @@ namespace __parallel
   template<typename InputIterator, typename Predicate>
     inline typename iterator_traits<InputIterator>::difference_type
     count_if(InputIterator begin, InputIterator end, Predicate pred, 
-	     __gnu_parallel::parallelism parallelism_tag)
+	     __gnu_parallel::_Parallelism parallelism_tag)
     {
       typedef iterator_traits<InputIterator> traits_type;
       typedef typename traits_type::iterator_category iterator_category;
@@ -1217,12 +1216,12 @@ namespace __parallel
     transform1_switch(RandomAccessIterator1 begin, RandomAccessIterator1 end,
 		      RandomAccessIterator2 result, UnaryOperation unary_op,
 		      random_access_iterator_tag, random_access_iterator_tag,
-		      __gnu_parallel::parallelism parallelism_tag
+		      __gnu_parallel::_Parallelism parallelism_tag
 		      = __gnu_parallel::parallel_balanced)
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
 	    static_cast<__gnu_parallel::sequence_index_t>(end - begin)
-	    >= __gnu_parallel::Settings::transform_minimal_n
+	    >= __gnu_parallel::_Settings::get().transform_minimal_n
 	    && __gnu_parallel::is_parallel(parallelism_tag)))
 	{
 	  bool dummy = true;
@@ -1259,7 +1258,7 @@ namespace __parallel
     inline OutputIterator
     transform(InputIterator begin, InputIterator end, OutputIterator result,
 	      UnaryOperation unary_op, 
-	      __gnu_parallel::parallelism parallelism_tag)
+	      __gnu_parallel::_Parallelism parallelism_tag)
     {
       typedef std::iterator_traits<InputIterator> iteratori_traits;
       typedef std::iterator_traits<OutputIterator> iteratoro_traits;
@@ -1306,11 +1305,11 @@ namespace __parallel
 		      RandomAccessIterator3 result, BinaryOperation binary_op,
 		      random_access_iterator_tag, random_access_iterator_tag,
 		      random_access_iterator_tag,
-		      __gnu_parallel::parallelism parallelism_tag 
+		      __gnu_parallel::_Parallelism parallelism_tag 
 		      = __gnu_parallel::parallel_balanced)
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
-	    (end1 - begin1) >= __gnu_parallel::Settings::transform_minimal_n
+				      (end1 - begin1) >= __gnu_parallel::_Settings::get().transform_minimal_n
 	    && __gnu_parallel::is_parallel(parallelism_tag)))
 	{
 	  bool dummy = true;
@@ -1352,7 +1351,7 @@ namespace __parallel
     transform(InputIterator1 begin1, InputIterator1 end1,
 	      InputIterator2 begin2, OutputIterator result,
 	      BinaryOperation binary_op, 
-	      __gnu_parallel::parallelism parallelism_tag)
+	      __gnu_parallel::_Parallelism parallelism_tag)
     {
       typedef std::iterator_traits<InputIterator1> iteratori1_traits;
       typedef typename iteratori1_traits::iterator_category
@@ -1410,7 +1409,7 @@ namespace __parallel
     replace_switch(RandomAccessIterator begin, RandomAccessIterator end, 
 		   const T& old_value, const T& new_value, 
 		   random_access_iterator_tag, 
-		   __gnu_parallel::parallelism parallelism_tag
+		   __gnu_parallel::_Parallelism parallelism_tag
 		   = __gnu_parallel::parallel_balanced)
     {
       // XXX parallel version is where?
@@ -1422,7 +1421,7 @@ namespace __parallel
   template<typename ForwardIterator, typename T>
     inline void
     replace(ForwardIterator begin, ForwardIterator end, const T& old_value, 
-	    const T& new_value, __gnu_parallel::parallelism parallelism_tag)
+	    const T& new_value, __gnu_parallel::_Parallelism parallelism_tag)
     {
       typedef iterator_traits<ForwardIterator> traits_type;
       typedef typename traits_type::iterator_category iterator_category;
@@ -1463,12 +1462,12 @@ namespace __parallel
     replace_if_switch(RandomAccessIterator begin, RandomAccessIterator end,
 		      Predicate pred, const T& new_value,
 		      random_access_iterator_tag,
-		      __gnu_parallel::parallelism parallelism_tag
+		      __gnu_parallel::_Parallelism parallelism_tag
 		      = __gnu_parallel::parallel_balanced)
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
 	    static_cast<__gnu_parallel::sequence_index_t>(end - begin)
-	    >= __gnu_parallel::Settings::replace_minimal_n
+	    >= __gnu_parallel::_Settings::get().replace_minimal_n
 	    && __gnu_parallel::is_parallel(parallelism_tag)))
 	{
 	  bool dummy;
@@ -1491,7 +1490,7 @@ namespace __parallel
     inline void
     replace_if(ForwardIterator begin, ForwardIterator end,
 	       Predicate pred, const T& new_value, 
-	       __gnu_parallel::parallelism parallelism_tag)
+	       __gnu_parallel::_Parallelism parallelism_tag)
     {
       typedef std::iterator_traits<ForwardIterator> iterator_traits;
       typedef typename iterator_traits::iterator_category iterator_category;
@@ -1528,12 +1527,12 @@ namespace __parallel
     void
     generate_switch(RandomAccessIterator begin, RandomAccessIterator end,
 		    Generator gen, random_access_iterator_tag, 
-		    __gnu_parallel::parallelism parallelism_tag
+		    __gnu_parallel::_Parallelism parallelism_tag
 		    = __gnu_parallel::parallel_balanced)
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
 	    static_cast<__gnu_parallel::sequence_index_t>(end - begin)
-	    >= __gnu_parallel::Settings::generate_minimal_n
+	    >= __gnu_parallel::_Settings::get().generate_minimal_n
 	    && __gnu_parallel::is_parallel(parallelism_tag)))
 	{
 	  bool dummy;
@@ -1552,7 +1551,7 @@ namespace __parallel
   template<typename ForwardIterator, typename Generator>
     inline void
     generate(ForwardIterator begin, ForwardIterator end,
-	     Generator gen, __gnu_parallel::parallelism parallelism_tag)
+	     Generator gen, __gnu_parallel::_Parallelism parallelism_tag)
     {
       typedef std::iterator_traits<ForwardIterator> iterator_traits;
       typedef typename iterator_traits::iterator_category iterator_category;
@@ -1588,7 +1587,7 @@ namespace __parallel
     inline RandomAccessIterator
     generate_n_switch(RandomAccessIterator begin, Size n, Generator gen, 
 		      random_access_iterator_tag, 
-		      __gnu_parallel::parallelism parallelism_tag
+		      __gnu_parallel::_Parallelism parallelism_tag
 		      = __gnu_parallel::parallel_balanced)
     {
       // XXX parallel version is where?
@@ -1599,7 +1598,7 @@ namespace __parallel
   template<typename OutputIterator, typename Size, typename Generator>
     inline OutputIterator
     generate_n(OutputIterator begin, Size n, Generator gen, 
-	       __gnu_parallel::parallelism parallelism_tag)
+	       __gnu_parallel::_Parallelism parallelism_tag)
     {
       typedef std::iterator_traits<OutputIterator> iterator_traits;
       typedef typename iterator_traits::iterator_category iterator_category;
@@ -1661,7 +1660,7 @@ namespace __parallel
 	return;
       if (_GLIBCXX_PARALLEL_CONDITION(
 	    static_cast<__gnu_parallel::sequence_index_t>(end - begin)
-	    >= __gnu_parallel::Settings::random_shuffle_minimal_n))
+	    >= __gnu_parallel::_Settings::get().random_shuffle_minimal_n))
 	__gnu_parallel::parallel_random_shuffle(begin, end, rand);
       else
 	__gnu_parallel::sequential_random_shuffle(begin, end, rand);
@@ -1689,7 +1688,7 @@ namespace __parallel
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
 	    static_cast<__gnu_parallel::sequence_index_t>(end - begin)
-	    >= __gnu_parallel::Settings::partition_minimal_n))
+	    >= __gnu_parallel::_Settings::get().partition_minimal_n))
 	{
 	  typedef typename std::iterator_traits<RandomAccessIterator>::
 	    difference_type difference_type;
@@ -1748,7 +1747,7 @@ namespace __parallel
 	{
 	  if (_GLIBCXX_PARALLEL_CONDITION(
 		static_cast<__gnu_parallel::sequence_index_t>(end - begin)
-		>= __gnu_parallel::Settings::sort_minimal_n))
+		>= __gnu_parallel::_Settings::get().sort_minimal_n))
 	    __gnu_parallel::parallel_sort(begin, end, comp, false);
 	  else
 	    sort(begin, end, comp, __gnu_parallel::sequential_tag());
@@ -1788,7 +1787,7 @@ namespace __parallel
 	{
 	  if (_GLIBCXX_PARALLEL_CONDITION(
 		static_cast<__gnu_parallel::sequence_index_t>(end - begin)
-		>= __gnu_parallel::Settings::sort_minimal_n))
+		>= __gnu_parallel::_Settings::get().sort_minimal_n))
 	    __gnu_parallel::parallel_sort(begin, end, comp, true);
 	  else
 	    stable_sort(begin, end, comp, __gnu_parallel::sequential_tag());
@@ -1837,9 +1836,9 @@ namespace __parallel
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
 	    (static_cast<__gnu_parallel::sequence_index_t>(end1 - begin1)
-	     >= __gnu_parallel::Settings::merge_minimal_n
+	     >= __gnu_parallel::_Settings::get().merge_minimal_n
 	     || static_cast<__gnu_parallel::sequence_index_t>(end2 - begin2)
-	     >= __gnu_parallel::Settings::merge_minimal_n)))
+	     >= __gnu_parallel::_Settings::get().merge_minimal_n)))
 	return __gnu_parallel::parallel_merge_advance(begin1, end1,
 						      begin2, end2,
 						      result, (end1 - begin1)
@@ -1913,7 +1912,7 @@ namespace __parallel
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
 	    static_cast<__gnu_parallel::sequence_index_t>(end - begin)
-	    >= __gnu_parallel::Settings::nth_element_minimal_n))
+	    >= __gnu_parallel::_Settings::get().nth_element_minimal_n))
 	__gnu_parallel::parallel_nth_element(begin, nth, end, comp);
       else
 	nth_element(begin, nth, end, comp, __gnu_parallel::sequential_tag());
@@ -1953,7 +1952,7 @@ namespace __parallel
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
 	    static_cast<__gnu_parallel::sequence_index_t>(end - begin)
-	    >= __gnu_parallel::Settings::partial_sort_minimal_n))
+	    >= __gnu_parallel::_Settings::get().partial_sort_minimal_n))
 	__gnu_parallel::parallel_partial_sort(begin, middle, end, comp);
       else
 	partial_sort(begin, middle, end, comp,
@@ -1997,12 +1996,12 @@ namespace __parallel
     RandomAccessIterator
     max_element_switch(RandomAccessIterator begin, RandomAccessIterator end, 
 		       Comparator comp, random_access_iterator_tag, 
-		       __gnu_parallel::parallelism parallelism_tag
+		       __gnu_parallel::_Parallelism parallelism_tag
 		       = __gnu_parallel::parallel_balanced)
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
 	    static_cast<__gnu_parallel::sequence_index_t>(end - begin)
-	    >= __gnu_parallel::Settings::max_element_minimal_n
+	    >= __gnu_parallel::_Settings::get().max_element_minimal_n
 	    && __gnu_parallel::is_parallel(parallelism_tag)))
 	{
 	  RandomAccessIterator res(begin);
@@ -2026,7 +2025,7 @@ namespace __parallel
   template<typename ForwardIterator>
     inline ForwardIterator
     max_element(ForwardIterator begin, ForwardIterator end, 
-		__gnu_parallel::parallelism parallelism_tag)
+		__gnu_parallel::_Parallelism parallelism_tag)
     {
       typedef typename iterator_traits<ForwardIterator>::value_type value_type;
       return max_element(begin, end, std::less<value_type>(), parallelism_tag);
@@ -2044,7 +2043,7 @@ namespace __parallel
   template<typename ForwardIterator, typename Comparator>
     inline ForwardIterator
     max_element(ForwardIterator begin, ForwardIterator end, Comparator comp,
-		__gnu_parallel::parallelism parallelism_tag)
+		__gnu_parallel::_Parallelism parallelism_tag)
     {
       typedef iterator_traits<ForwardIterator> traits_type;
       typedef typename traits_type::iterator_category iterator_category;
@@ -2088,12 +2087,12 @@ namespace __parallel
     RandomAccessIterator
     min_element_switch(RandomAccessIterator begin, RandomAccessIterator end, 
 		       Comparator comp, random_access_iterator_tag, 
-		       __gnu_parallel::parallelism parallelism_tag
+		       __gnu_parallel::_Parallelism parallelism_tag
 		       = __gnu_parallel::parallel_balanced)
     {
       if (_GLIBCXX_PARALLEL_CONDITION(
 	    static_cast<__gnu_parallel::sequence_index_t>(end - begin)
-	    >= __gnu_parallel::Settings::min_element_minimal_n
+	    >= __gnu_parallel::_Settings::get().min_element_minimal_n
 	    && __gnu_parallel::is_parallel(parallelism_tag)))
 	{
 	  RandomAccessIterator res(begin);
@@ -2117,7 +2116,7 @@ namespace __parallel
   template<typename ForwardIterator>
     inline ForwardIterator
     min_element(ForwardIterator begin, ForwardIterator end, 
-		__gnu_parallel::parallelism parallelism_tag)
+		__gnu_parallel::_Parallelism parallelism_tag)
     {
       typedef typename iterator_traits<ForwardIterator>::value_type value_type;
       return min_element(begin, end, std::less<value_type>(), parallelism_tag);
@@ -2135,7 +2134,7 @@ namespace __parallel
   template<typename ForwardIterator, typename Comparator>
     inline ForwardIterator
     min_element(ForwardIterator begin, ForwardIterator end, Comparator comp,
-		__gnu_parallel::parallelism parallelism_tag)
+		__gnu_parallel::_Parallelism parallelism_tag)
     {
       typedef iterator_traits<ForwardIterator> traits_type;
       typedef typename traits_type::iterator_category iterator_category;

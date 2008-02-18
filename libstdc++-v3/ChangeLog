@@ -1,3 +1,39 @@
+2008-02-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/34797
+	* include/parallel/settings.h (_Settings): Reconstruct Settings class
+	here, uglify, remove anonymous namespace and static
+	members. Convert to datum.	
+	* include/parallel/types.h: Move Settings:: enumerations here, uglify.
+	* src/parallel_settings.cc: New, definition for _Settings member
+	functions.	
+	* include/parallel/multiway_merge.h: Same.
+	* include/parallel/for_each.h: Same.
+	* include/parallel/workstealing.h: Same.
+	* include/parallel/base.h: Same.
+	* include/parallel/numeric
+	* include/parallel/features.h: Same.
+	* include/parallel/quicksort.h: Same.
+	* include/parallel/equally_split.h: Same.
+	* include/parallel/algorithmfwd.h: Same.
+	* include/parallel/omp_loop_static.h: Same.
+	* include/parallel/random_shuffle.h: Same.
+	* include/parallel/balanced_quicksort.h: Same.
+	* include/parallel/tags.h: Same.
+	* include/parallel/multiway_mergesort.h: Same.
+	* include/parallel/numericfwd.h: Same.
+	* include/parallel/partition.h: Same.
+	* include/parallel/partial_sum.h: Same.
+	* include/parallel/find.h: Same.
+	* include/parallel/algo.h: Same.
+	* include/parallel/omp_loop.h: Same.
+	* include/parallel/sort.h: Same.
+
+	* src/Makefile.am (parallel_sources): Add parallel_settings.cc.
+	* src/Makefile.in: Regenerate.
+	
+	* config/abi/pre/gnu.ver: Export _Settings::get and _Settings::set.
+
 2008-02-17  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/35221

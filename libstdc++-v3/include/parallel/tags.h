@@ -64,18 +64,19 @@ namespace __gnu_parallel
   struct omp_loop_static_tag : public parallel_tag { };
 
 
-  // XXX settings.h Settings::FindDistribution
+  struct find_tag { };
+
   /** @brief Selects the growing block size variant for std::find().
       @see _GLIBCXX_FIND_GROWING_BLOCKS */
-  struct growing_blocks_tag { };
+  struct growing_blocks_tag : public find_tag { };
 
   /** @brief Selects the constant block size variant for std::find().
       @see _GLIBCXX_FIND_CONSTANT_SIZE_BLOCKS */
-  struct constant_size_blocks_tag { };
+  struct constant_size_blocks_tag : public find_tag { };
 
   /** @brief Selects the equal splitting variant for std::find().
       @see _GLIBCXX_FIND_EQUAL_SPLIT */
-  struct equal_split_tag { };
+  struct equal_split_tag : public find_tag { };
 }
 
 #endif /* _GLIBCXX_PARALLEL_TAGS_H */

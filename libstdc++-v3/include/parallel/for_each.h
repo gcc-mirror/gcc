@@ -71,7 +71,7 @@ namespace __gnu_parallel
 				    Result& output, typename
 				    std::iterator_traits<InputIterator>::
 				    difference_type bound,
-				    parallelism parallelism_tag)
+				    _Parallelism parallelism_tag)
     {
       if (parallelism_tag == parallel_unbalanced)
 	return for_each_template_random_access_ed(begin, end, user_op,

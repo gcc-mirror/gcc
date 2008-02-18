@@ -90,7 +90,7 @@ namespace __parallel
 
   template<typename _IIter, typename _Tp>
     typename iterator_traits<_IIter>::difference_type
-    count(_IIter, _IIter, const _Tp&, __gnu_parallel::parallelism);
+    count(_IIter, _IIter, const _Tp&, __gnu_parallel::_Parallelism);
 
   template<typename _IIter, typename _Tp, typename _IterTag>
     typename iterator_traits<_IIter>::difference_type
@@ -99,7 +99,7 @@ namespace __parallel
   template<typename _RAIter, typename _Tp>
     typename iterator_traits<_RAIter>::difference_type
     count_switch(_RAIter, _RAIter, const _Tp&, random_access_iterator_tag,
-		 __gnu_parallel::parallelism);
+		 __gnu_parallel::_Parallelism);
 
 
   template<typename _IIter, typename _Predicate>
@@ -112,7 +112,7 @@ namespace __parallel
 
   template<typename _IIter, typename _Predicate>
     typename iterator_traits<_IIter>::difference_type
-    count_if(_IIter, _IIter, _Predicate, __gnu_parallel::parallelism);
+    count_if(_IIter, _IIter, _Predicate, __gnu_parallel::_Parallelism);
 
   template<typename _IIter, typename _Predicate, typename _IterTag>
     typename iterator_traits<_IIter>::difference_type
@@ -121,7 +121,7 @@ namespace __parallel
   template<typename _RAIter, typename _Predicate>
     typename iterator_traits<_RAIter>::difference_type
     count_if_switch(_RAIter, _RAIter, _Predicate, random_access_iterator_tag,
-		    __gnu_parallel::parallelism);
+		    __gnu_parallel::_Parallelism);
 
   // algobase.h
   template<typename _IIter1, typename _IIter2>
@@ -219,7 +219,7 @@ namespace __parallel
 
   template<typename _Iterator, typename _Function>
     _Function
-    for_each(_Iterator, _Iterator, _Function, __gnu_parallel::parallelism);
+    for_each(_Iterator, _Iterator, _Function, __gnu_parallel::_Parallelism);
 
   template<typename _IIter, typename _Function, typename _IterTag>
     _Function
@@ -228,7 +228,7 @@ namespace __parallel
   template<typename _RAIter, typename _Function>
     _Function
     for_each_switch(_RAIter, _RAIter, _Function, random_access_iterator_tag, 
-		    __gnu_parallel::parallelism);
+		    __gnu_parallel::_Parallelism);
 
 
   template<typename _FIter, typename _Generator>
@@ -241,7 +241,7 @@ namespace __parallel
 
   template<typename _FIter, typename _Generator>
     void
-    generate(_FIter, _FIter, _Generator, __gnu_parallel::parallelism);
+    generate(_FIter, _FIter, _Generator, __gnu_parallel::_Parallelism);
 
   template<typename _FIter, typename _Generator, typename _IterTag>
     void
@@ -250,7 +250,7 @@ namespace __parallel
   template<typename _RAIter, typename _Generator>
     void
     generate_switch(_RAIter, _RAIter, _Generator, random_access_iterator_tag, 
-		    __gnu_parallel::parallelism);
+		    __gnu_parallel::_Parallelism);
 
   template<typename _OIter, typename _Size, typename _Generator>
     _OIter
@@ -262,7 +262,7 @@ namespace __parallel
 
   template<typename _OIter, typename _Size, typename _Generator>
     _OIter
-    generate_n(_OIter, _Size, _Generator, __gnu_parallel::parallelism);
+    generate_n(_OIter, _Size, _Generator, __gnu_parallel::_Parallelism);
 
   template<typename _OIter, typename _Size, typename _Generator,
 	   typename _IterTag>
@@ -272,7 +272,7 @@ namespace __parallel
   template<typename _RAIter, typename _Size, typename _Generator>
     _RAIter
     generate_n_switch(_RAIter, _Size, _Generator, random_access_iterator_tag, 
-		      __gnu_parallel::parallelism);
+		      __gnu_parallel::_Parallelism);
 
   template<typename _IIter1, typename _IIter2>
     bool
@@ -416,7 +416,7 @@ namespace __parallel
   template<typename _IIter, typename _OIter, typename UnaryOperation>
     _OIter
     transform(_IIter, _IIter, _OIter, UnaryOperation, 
-	      __gnu_parallel::parallelism);
+	      __gnu_parallel::_Parallelism);
 
   template<typename _IIter, typename _OIter, typename UnaryOperation,
 	   typename _IterTag1, typename _IterTag2>
@@ -429,7 +429,7 @@ namespace __parallel
     _RAOIter
     transform1_switch(_RAIIter, _RAIIter, _RAOIter, UnaryOperation, 
 		      random_access_iterator_tag, random_access_iterator_tag, 
-		      __gnu_parallel::parallelism);
+		      __gnu_parallel::_Parallelism);
 
 
   template<typename _IIter1, typename _IIter2, typename _OIter,
@@ -447,7 +447,7 @@ namespace __parallel
 	   typename _BiOperation>
     _OIter
     transform(_IIter1, _IIter1, _IIter2, _OIter, _BiOperation, 
-	      __gnu_parallel::parallelism);
+	      __gnu_parallel::_Parallelism);
 
   template<typename _RAIter1, typename _RAIter2, typename _RAIter3,
 	   typename _BiOperation>
@@ -455,7 +455,7 @@ namespace __parallel
     transform2_switch(_RAIter1, _RAIter1, _RAIter2, _RAIter3, _BiOperation, 
 		      random_access_iterator_tag, random_access_iterator_tag, 
 		      random_access_iterator_tag,
-		      __gnu_parallel::parallelism);
+		      __gnu_parallel::_Parallelism);
 
   template<typename _IIter1, typename _IIter2, typename _OIter,
 	   typename _BiOperation, typename _Tag1,
@@ -477,7 +477,7 @@ namespace __parallel
   template<typename _FIter, typename _Tp>
     void
     replace(_FIter, _FIter, const _Tp&, const _Tp&,
-	    __gnu_parallel::parallelism);
+	    __gnu_parallel::_Parallelism);
 
   template<typename _FIter, typename _Tp, typename _IterTag>
     void
@@ -486,7 +486,7 @@ namespace __parallel
   template<typename _RAIter, typename _Tp>
     void
     replace_switch(_RAIter, _RAIter, const _Tp&, const _Tp&, 
-		   random_access_iterator_tag, __gnu_parallel::parallelism);
+		   random_access_iterator_tag, __gnu_parallel::_Parallelism);
 
 
   template<typename _FIter, typename _Predicate, typename _Tp>
@@ -501,7 +501,7 @@ namespace __parallel
   template<typename _FIter, typename _Predicate, typename _Tp>
     void
     replace_if(_FIter, _FIter, _Predicate, const _Tp&,
-	       __gnu_parallel::parallelism);
+	       __gnu_parallel::_Parallelism);
 
   template<typename _FIter, typename _Predicate, typename _Tp,
 	   typename _IterTag>
@@ -512,7 +512,7 @@ namespace __parallel
     void
     replace_if_switch(_RAIter, _RAIter, _Predicate, const _Tp&,
 		      random_access_iterator_tag,
-		      __gnu_parallel::parallelism);
+		      __gnu_parallel::_Parallelism);
 
 
   template<typename _FIter>
@@ -525,7 +525,7 @@ namespace __parallel
 
   template<typename _FIter>
     _FIter
-    max_element(_FIter, _FIter, __gnu_parallel::parallelism);
+    max_element(_FIter, _FIter, __gnu_parallel::_Parallelism);
 
   template<typename _FIter, typename _Compare>
     _FIter
@@ -537,7 +537,7 @@ namespace __parallel
 
   template<typename _FIter, typename _Compare>
     _FIter
-    max_element(_FIter, _FIter, _Compare, __gnu_parallel::parallelism);
+    max_element(_FIter, _FIter, _Compare, __gnu_parallel::_Parallelism);
 
   template<typename _FIter, typename _Compare, typename _IterTag>
     _FIter
@@ -546,7 +546,7 @@ namespace __parallel
   template<typename _RAIter, typename _Compare>
     _RAIter
     max_element_switch(_RAIter, _RAIter, _Compare, random_access_iterator_tag, 
-		       __gnu_parallel::parallelism);
+		       __gnu_parallel::_Parallelism);
 
 
   template<typename _IIter1, typename _IIter2, typename _OIter>
@@ -594,7 +594,7 @@ namespace __parallel
 
   template<typename _FIter>
     _FIter
-    min_element(_FIter, _FIter, __gnu_parallel::parallelism parallelism_tag);
+    min_element(_FIter, _FIter, __gnu_parallel::_Parallelism parallelism_tag);
 
   template<typename _FIter, typename _Compare>
     _FIter
@@ -606,7 +606,7 @@ namespace __parallel
 
   template<typename _FIter, typename _Compare>
     _FIter
-    min_element(_FIter, _FIter, _Compare, __gnu_parallel::parallelism);
+    min_element(_FIter, _FIter, _Compare, __gnu_parallel::_Parallelism);
 
   template<typename _FIter, typename _Compare, typename _IterTag>
     _FIter
@@ -615,7 +615,7 @@ namespace __parallel
   template<typename _RAIter, typename _Compare>
     _RAIter
     min_element_switch(_RAIter, _RAIter, _Compare, random_access_iterator_tag, 
-		       __gnu_parallel::parallelism);
+		       __gnu_parallel::_Parallelism);
 
   template<typename _RAIter>
     void

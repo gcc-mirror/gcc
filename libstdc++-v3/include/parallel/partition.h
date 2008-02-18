@@ -69,6 +69,8 @@ template<typename RandomAccessIterator, typename Predicate>
 
     _GLIBCXX_CALL(n)
 
+    const _Settings& __s = _Settings::get();
+
     // Shared.
     _GLIBCXX_VOLATILE difference_type left = 0, right = n - 1;
     _GLIBCXX_VOLATILE difference_type leftover_left, leftover_right;
@@ -91,14 +93,12 @@ template<typename RandomAccessIterator, typename Predicate>
             reserved_left = new bool[num_threads];
             reserved_right = new bool[num_threads];
 
-            if (Settings::partition_chunk_share > 0.0)
-              chunk_size = std::max<difference_type>(Settings::
-						     partition_chunk_size,
-						     (double)n * Settings::
-						     partition_chunk_share
+            if (__s.partition_chunk_share > 0.0)
+              chunk_size = std::max<difference_type>(__s.partition_chunk_size,
+				    (double)n * __s.partition_chunk_share
 						     / (double)num_threads);
             else
-              chunk_size = Settings::partition_chunk_size;
+              chunk_size = __s.partition_chunk_size;
           }
 
         while (right - left + 1 >= 2 * num_threads * chunk_size)
@@ -346,7 +346,7 @@ template<typename RandomAccessIterator, typename Comparator>
     random_number rng;
 
     difference_type minimum_length =
-      std::max<difference_type>(2, Settings::partition_minimal_n);
+      std::max<difference_type>(2, _Settings::get().partition_minimal_n);
 
     // Break if input range to small.
     while (static_cast<sequence_index_t>(end - begin) >= minimum_length)
@@ -409,7 +409,7 @@ template<typename RandomAccessIterator, typename Comparator>
           break;
       }
 
-    // Only at most Settings::partition_minimal_n elements left.
+    // Only at most _Settings::partition_minimal_n elements left.
     __gnu_sequential::sort(begin, end, comp);
   }
 
