@@ -1,3 +1,7 @@
+2008-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* BASE-VER: Set to 4.4.0.
+
 2008-02-17 Ralf Wildenhues <Ralf.Wildenhues@gmx.de>
 
 	* doc/c-tree.texi: Use @dots{} and @enddots{} where appropriate.
