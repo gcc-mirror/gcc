@@ -383,7 +383,7 @@ namespace tr1
      *   @brief  Return the digamma function for large argument.
      *   The digamma or @f$ \psi(x) @f$ function is defined by
      *   @f[
-     *     \psi(x) = \frac{Gamma'(x)}{\Gamma(x)}
+     *     \psi(x) = \frac{\Gamma'(x)}{\Gamma(x)}
      *   @f]
      *
      *   The asymptotic series is given by:
@@ -416,7 +416,7 @@ namespace tr1
      *   @brief  Return the digamma function.
      *   The digamma or @f$ \psi(x) @f$ function is defined by
      *   @f[
-     *     \psi(x) = \frac{Gamma'(x)}{\Gamma(x)}
+     *     \psi(x) = \frac{\Gamma'(x)}{\Gamma(x)}
      *   @f]
      *   For negative argument the reflection formula is used:
      *   @f[

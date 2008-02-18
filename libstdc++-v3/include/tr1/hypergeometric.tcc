@@ -714,7 +714,7 @@ namespace tr1
     }
 
 
-    /*
+    /**
      *   @brief Return the hypogeometric function @f$ _2F_1(a,b;c;x) @f$.
      *
      *   The hypogeometric function is defined by
