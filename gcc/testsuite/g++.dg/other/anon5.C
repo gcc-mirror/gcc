@@ -1,5 +1,10 @@
 // PR c++/34094
-// { dg-do link }
+// The error is reported for mips*-elf* targets, but as of binutils CVS
+// 2008-02-19, the linker cannot find the associated source line.  The
+// problem is that mips*-elf tests run from KSEG0 (which is in the upper
+// half of the address range), and the linker compares sign-extended
+// addresses from .debug_aranges with unextended addresses.
+// { dg-do link { target { ! mips*-*-elf* } } }
 // { dg-options "-g" }
 
 namespace {

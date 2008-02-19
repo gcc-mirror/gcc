@@ -1,3 +1,7 @@
+2008-02-19  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* g++.dg/other/anon5.C: Skip for MIPS ELF targets.
+
 2008-02-17  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/35227
