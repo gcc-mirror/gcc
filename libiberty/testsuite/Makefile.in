@@ -67,7 +67,7 @@ test-demangle: $(srcdir)/test-demangle.c ../libiberty.a
 test-pexecute: $(srcdir)/test-pexecute.c ../libiberty.a
 	$(TEST_COMPILE) -DHAVE_CONFIG_H -I.. -o test-pexecute \
 		$(srcdir)/test-pexecute.c ../libiberty.a
-		
+
 test-expandargv: $(srcdir)/test-expandargv.c ../libiberty.a
 	$(TEST_COMPILE) -DHAVE_CONFIG_H -I.. -o test-expandargv \
 		$(srcdir)/test-expandargv.c ../libiberty.a
@@ -81,6 +81,7 @@ mostlyclean:
 	rm -f test-demangle
 	rm -f test-pexecute
 	rm -f test-expandargv
+	rm -f core
 clean: mostlyclean
 distclean: clean
 	rm -f Makefile
