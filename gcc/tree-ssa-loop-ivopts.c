@@ -1494,7 +1494,7 @@ may_be_unaligned_p (tree ref, tree step)
 	  || bitpos % BITS_PER_UNIT != 0)
 	return true;
     
-      if (! constant_multiple_of (step, al, &mul))
+      if (!constant_multiple_of (step, al, &mul))
 	return true;
     }
 
