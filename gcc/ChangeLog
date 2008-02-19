@@ -1,3 +1,8 @@
+2008-02-19  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* c-common.c (warn_for_collisions_1): Use appropriate option when
+	warning.
+
 2008-02-19  Nick Clifton  <nickc@redhat.com>
 
 	PR other/31349
