@@ -1,3 +1,8 @@
+2008-02-19  Christian Bruel  <christian.bruel@st.com>
+            Zdenek Dvorak  <ook@ucw.cz>
+	
+        * tree-ssa-loop-ivopts.c (may_be_unaligned_p): Check step alignment.
+	
 2008-02-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/33555

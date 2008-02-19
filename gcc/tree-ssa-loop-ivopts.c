@@ -1391,10 +1391,75 @@ idx_record_use (tree base, tree *idx,
   return true;
 }
 
-/* Returns true if memory reference REF may be unaligned.  */
+/* If we can prove that TOP = cst * BOT for some constant cst,
+   store cst to MUL and return true.  Otherwise return false.
+   The returned value is always sign-extended, regardless of the
+   signedness of TOP and BOT.  */
 
 static bool
-may_be_unaligned_p (tree ref)
+constant_multiple_of (tree top, tree bot, double_int *mul)
+{
+  tree mby;
+  enum tree_code code;
+  double_int res, p0, p1;
+  unsigned precision = TYPE_PRECISION (TREE_TYPE (top));
+
+  STRIP_NOPS (top);
+  STRIP_NOPS (bot);
+
+  if (operand_equal_p (top, bot, 0))
+    {
+      *mul = double_int_one;
+      return true;
+    }
+
+  code = TREE_CODE (top);
+  switch (code)
+    {
+    case MULT_EXPR:
+      mby = TREE_OPERAND (top, 1);
+      if (TREE_CODE (mby) != INTEGER_CST)
+	return false;
+
+      if (!constant_multiple_of (TREE_OPERAND (top, 0), bot, &res))
+	return false;
+
+      *mul = double_int_sext (double_int_mul (res, tree_to_double_int (mby)),
+			      precision);
+      return true;
+
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+      if (!constant_multiple_of (TREE_OPERAND (top, 0), bot, &p0)
+	  || !constant_multiple_of (TREE_OPERAND (top, 1), bot, &p1))
+	return false;
+
+      if (code == MINUS_EXPR)
+	p1 = double_int_neg (p1);
+      *mul = double_int_sext (double_int_add (p0, p1), precision);
+      return true;
+
+    case INTEGER_CST:
+      if (TREE_CODE (bot) != INTEGER_CST)
+	return false;
+
+      p0 = double_int_sext (tree_to_double_int (top), precision);
+      p1 = double_int_sext (tree_to_double_int (bot), precision);
+      if (double_int_zero_p (p1))
+	return false;
+      *mul = double_int_sext (double_int_sdivmod (p0, p1, FLOOR_DIV_EXPR, &res),
+			      precision);
+      return double_int_zero_p (res);
+
+    default:
+      return false;
+    }
+}
+
+/* Returns true if memory reference REF with step STEP may be unaligned.  */
+
+static bool
+may_be_unaligned_p (tree ref, tree step)
 {
   tree base;
   tree base_type;
@@ -1418,11 +1483,20 @@ may_be_unaligned_p (tree ref)
   base_type = TREE_TYPE (base);
   base_align = TYPE_ALIGN (base_type);
 
-  if (mode != BLKmode
-      && (base_align < GET_MODE_ALIGNMENT (mode)
+  if (mode != BLKmode)
+    {
+      double_int mul;
+      tree al = build_int_cst (TREE_TYPE (step),
+			       GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT);
+
+      if (base_align < GET_MODE_ALIGNMENT (mode)
 	  || bitpos % GET_MODE_ALIGNMENT (mode) != 0
-	  || bitpos % BITS_PER_UNIT != 0))
-    return true;
+	  || bitpos % BITS_PER_UNIT != 0)
+	return true;
+    
+      if (! constant_multiple_of (step, al, &mul))
+	return true;
+    }
 
   return false;
 }
@@ -1549,7 +1623,7 @@ find_interesting_uses_address (struct ivopts_data *data, tree stmt, tree *op_p)
 
       /* Moreover, on strict alignment platforms, check that it is
 	 sufficiently aligned.  */
-      if (STRICT_ALIGNMENT && may_be_unaligned_p (base))
+      if (STRICT_ALIGNMENT && may_be_unaligned_p (base, step))
 	goto fail;
 
       base = build_fold_addr_expr (base);
@@ -2583,71 +2657,6 @@ tree_int_cst_sign_bit (const_tree t)
     }
 
   return (w >> bitno) & 1;
-}
-
-/* If we can prove that TOP = cst * BOT for some constant cst,
-   store cst to MUL and return true.  Otherwise return false.
-   The returned value is always sign-extended, regardless of the
-   signedness of TOP and BOT.  */
-
-static bool
-constant_multiple_of (tree top, tree bot, double_int *mul)
-{
-  tree mby;
-  enum tree_code code;
-  double_int res, p0, p1;
-  unsigned precision = TYPE_PRECISION (TREE_TYPE (top));
-
-  STRIP_NOPS (top);
-  STRIP_NOPS (bot);
-
-  if (operand_equal_p (top, bot, 0))
-    {
-      *mul = double_int_one;
-      return true;
-    }
-
-  code = TREE_CODE (top);
-  switch (code)
-    {
-    case MULT_EXPR:
-      mby = TREE_OPERAND (top, 1);
-      if (TREE_CODE (mby) != INTEGER_CST)
-	return false;
-
-      if (!constant_multiple_of (TREE_OPERAND (top, 0), bot, &res))
-	return false;
-
-      *mul = double_int_sext (double_int_mul (res, tree_to_double_int (mby)),
-			      precision);
-      return true;
-
-    case PLUS_EXPR:
-    case MINUS_EXPR:
-      if (!constant_multiple_of (TREE_OPERAND (top, 0), bot, &p0)
-	  || !constant_multiple_of (TREE_OPERAND (top, 1), bot, &p1))
-	return false;
-
-      if (code == MINUS_EXPR)
-	p1 = double_int_neg (p1);
-      *mul = double_int_sext (double_int_add (p0, p1), precision);
-      return true;
-
-    case INTEGER_CST:
-      if (TREE_CODE (bot) != INTEGER_CST)
-	return false;
-
-      p0 = double_int_sext (tree_to_double_int (top), precision);
-      p1 = double_int_sext (tree_to_double_int (bot), precision);
-      if (double_int_zero_p (p1))
-	return false;
-      *mul = double_int_sext (double_int_sdivmod (p0, p1, FLOOR_DIV_EXPR, &res),
-			      precision);
-      return double_int_zero_p (res);
-
-    default:
-      return false;
-    }
 }
 
 /* If A is (TYPE) BA and B is (TYPE) BB, and the types of BA and BB have the
