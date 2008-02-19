@@ -1,3 +1,9 @@
+2008-02-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34989
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Re-structure.
+	Allow propagation to INDIRECT_REF if we can simplify only.
+
 2008-02-19  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* c-common.c (warn_for_collisions_1): Use appropriate option when
