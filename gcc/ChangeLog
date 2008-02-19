@@ -1,3 +1,10 @@
+2008-02-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sfp-machine.h (__gcc_CMPtype): New typedef.
+	(CMPtype): Define as __gcc_CMPtype.
+	* config/rs6000/sfp-machine.h (__gcc_CMPtype): New typedef.
+	(CMPtype): Define as __gcc_CMPtype.
+
 2008-02-19  Hans-Peter Nilsson  <hp@axis.com>
 
 	Support valgrind 3.3 for --enable-checking=valgrind.
