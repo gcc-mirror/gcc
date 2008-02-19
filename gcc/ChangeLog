@@ -1,3 +1,10 @@
+2008-02-19  Revital Eres  <eres@il.ibm.com> 
+
+	* modulo-sched.c (sms_schedule): Change dump message when
+	create_ddg function fails.
+	(try_scheduling_node_in_cycle): Rename row to cycle.
+	(print_partial_schedule): Rename CYCLE to ROW.
+
 2008-02-19  Christian Bruel  <christian.bruel@st.com>
             Zdenek Dvorak  <ook@ucw.cz>
 	
