@@ -1,3 +1,8 @@
+2008-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/35078
+	* g++.dg/gomp/pr35078.C: New test.
+
 2008-02-19  Christian Bruel  <christian.bruel@st.com>
 
 	* gcc.dg/packed-array.c: New testcase. 

@@ -3903,6 +3903,16 @@ finish_omp_for (location_t locus, tree decl, tree init, tree cond,
       return NULL;
     }
 
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (decl)))
+    {
+      location_t elocus = locus;
+
+      if (EXPR_HAS_LOCATION (init))
+	elocus = EXPR_LOCATION (init);
+      error ("%Hinvalid type for iteration variable %qE", &elocus, decl);
+      return NULL;
+    }
+
   if (pre_body == NULL || IS_EMPTY_STMT (pre_body))
     pre_body = NULL;
   else if (! processing_template_decl)
