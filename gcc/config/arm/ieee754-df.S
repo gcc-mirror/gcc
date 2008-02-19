@@ -526,7 +526,7 @@ ARM_FUNC_ALIAS aeabi_l2d floatdidf
 
 	orrs	r2, r0, r1
 #if !defined (__VFP_FP__) && !defined(__SOFTFP__)
-	do_itt	eq
+	do_it	eq, t
 	mvfeqd	f0, #0.0
 #else
 	do_it	eq

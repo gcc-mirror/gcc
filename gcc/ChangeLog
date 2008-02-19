@@ -1,3 +1,9 @@
+2008-02-19  Paul Brook  <paul@codesourcery.com>
+
+	PR target/35071
+	* config/arm/ieee754-df.S: Fix do_it typo.
+	* config/arm/ieee754-sf.S: Fix do_it typo.
+
 2008-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* DEV-PHASE: Mark as prerelease.
