@@ -1264,7 +1264,7 @@ print_specific_help (unsigned int include_flags,
 	  if (i >= cl_lang_count)
 	    break;
 	  if ((exclude_flags & ((1U << cl_lang_count) - 1)) != 0)
-	    description = _("The following options are specific to the just the language ");
+	    description = _("The following options are specific to just the language ");
 	  else
 	    description = _("The following options are supported by the language ");
 	  descrip_extra = lang_names [i];
