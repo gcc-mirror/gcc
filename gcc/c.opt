@@ -978,7 +978,7 @@ C ObjC C++ ObjC++
 Do not predefine system-specific and GCC-specific macros
 
 v
-C ObjC C++ ObjC++
+Common C ObjC C++ ObjC++
 Enable verbose output
 
 w
