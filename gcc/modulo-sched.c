@@ -1045,7 +1045,7 @@ sms_schedule (void)
       if (! (g = create_ddg (bb, 0)))
         {
           if (dump_file)
-	    fprintf (dump_file, "SMS doloop\n");
+	    fprintf (dump_file, "SMS create_ddg failed\n");
 	  continue;
         }
 
@@ -1669,7 +1669,7 @@ calculate_must_precede_follow (ddg_node_ptr u_node, int start, int end,
 
 static bool
 try_scheduling_node_in_cycle (partial_schedule_ptr ps, ddg_node_ptr u_node,
-			      int u, int row, sbitmap sched_nodes,
+			      int u, int cycle, sbitmap sched_nodes,
 			      int *num_splits, sbitmap must_precede,
 			      sbitmap must_follow)
 {
@@ -1677,16 +1677,16 @@ try_scheduling_node_in_cycle (partial_schedule_ptr ps, ddg_node_ptr u_node,
   bool success = 0;
 
   verify_partial_schedule (ps, sched_nodes);
-  psi = ps_add_node_check_conflicts (ps, u_node, row,
+  psi = ps_add_node_check_conflicts (ps, u_node, cycle,
 				     must_precede, must_follow);
   if (psi)
     {
-      SCHED_TIME (u_node) = row;
+      SCHED_TIME (u_node) = cycle;
       SET_BIT (sched_nodes, u);
       success = 1;
       *num_splits = 0;
       if (dump_file)
-	fprintf (dump_file, "Scheduled w/o split in %d\n", row);
+	fprintf (dump_file, "Scheduled w/o split in %d\n", cycle);
 
     }
 
@@ -2472,7 +2472,7 @@ print_partial_schedule (partial_schedule_ptr ps, FILE *dump)
     {
       ps_insn_ptr ps_i = ps->rows[i];
 
-      fprintf (dump, "\n[CYCLE %d ]: ", i);
+      fprintf (dump, "\n[ROW %d ]: ", i);
       while (ps_i)
 	{
 	  fprintf (dump, "%d, ",
