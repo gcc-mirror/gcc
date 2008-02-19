@@ -47,6 +47,7 @@ build_xm_file=
 build_xm_defines=
 build_exeext=
 build_install_headers_dir=install-headers-tar
+build_file_translate=
 
 # System-specific settings.
 case $build in
@@ -79,6 +80,7 @@ case $build in
   i[34567]86-*-mingw32*)
     build_xm_file=i386/xm-mingw32.h
     build_exeext=.exe
+    build_file_translate="CMD //C"
     ;;
   i[34567]86-pc-msdosdjgpp*)
     build_xm_file=i386/xm-djgpp.h

@@ -1,3 +1,12 @@
+2008-02-19  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/35218
+	* Makefile.in (build_file_translate): New.
+	(gcc-vers.texi): Use it for translating $(abs_srcdir).
+	* config.build (build_file_translate): Set to `CMD //c' on MinGW.
+	* configure.ac (build_file_translate): Substitute it.
+	* configure: Regenerate.
+
 2008-02-16  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c/28368
