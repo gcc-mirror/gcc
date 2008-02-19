@@ -1,3 +1,8 @@
+2008-02-19  Ben Elliston  <bje@au.ibm.com>
+
+	PR other/12618
+	* testsuite/Makefile.in (mostlyclean): Remove any core file.
+
 2008-01-26  David Daney  <ddaney@avtrex.com>
 
 	* cp-demangle.c (d_dump): Handle DEMANGLE_COMPONENT_JAVA_RESOURCE,
