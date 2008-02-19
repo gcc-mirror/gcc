@@ -1,3 +1,21 @@
+2008-02-19  Nick Clifton  <nickc@redhat.com>
+
+	PR other/31349
+	* opts.c (undocumented_msg): Leave blank unless checking is
+	enabled.
+	(handle_options): Fix indentation.
+	(print_filtered_help): If no language-specific options were
+	displayed tell the user how to list all the options supported by
+	the language's front-end.
+	(print_specific_help): Fix indentation and remove duplicate line.
+	(common_handle_option): Handle the -v option.
+	For --help enable the display of undocumented options if the -v
+	switch has been included on the command line.
+	For --help= check for overlaps in the arguments between the option
+	classes and the language names and issue a warning when they
+	cannot be disambiguated.
+	* c.opt (v): Pass on to the common option handler.
+
 2008-02-19  Revital Eres  <eres@il.ibm.com> 
 
 	* modulo-sched.c (sms_schedule): Change dump message when
