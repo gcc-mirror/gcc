@@ -1297,7 +1297,7 @@ tree_bb_level_predictions (void)
 	{
 	  tree stmt = bsi_stmt (bsi);
 	  tree decl;
-	  bool next = false;
+
 	  switch (TREE_CODE (stmt))
 	    {
 	      case GIMPLE_MODIFY_STMT:
