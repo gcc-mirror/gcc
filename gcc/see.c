@@ -2508,7 +2508,7 @@ see_def_extension_not_merged (struct see_ref_s *curr_ref_s, rtx def_se)
   d.to = new_pseudo_reg;
   note_uses (&PATTERN (ref_copy), see_replace_src, &d);
   /* Step b: Replace every instance of dest_reg with the subreg.  */
-  ref_copy = replace_rtx (ref_copy, dest_reg, subreg);
+  ref_copy = replace_rtx (ref_copy, dest_reg, copy_rtx (subreg));
 
   /* Step c: Replace every use of the new pseudo register back to
      dest_real_reg.  */

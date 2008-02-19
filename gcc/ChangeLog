@@ -1,5 +1,10 @@
 2008-02-19  Jan Hubicka  <jh@suse.cz>
 
+	PR rtl-optimization/34408
+	* see.c (see_def_extension_not_merged): Copy subreg so we don't have invalid sharing.
+
+2008-02-19  Jan Hubicka  <jh@suse.cz>
+
 	PR middle-end/28779
 	* tree-inline.c (estimate_num_insns_1): Fix counting of cost of call_expr.
 
