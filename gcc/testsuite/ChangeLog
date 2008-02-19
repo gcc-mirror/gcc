@@ -1,3 +1,21 @@
+2008-02-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/35189
+	* gcc.target/i386/isa-1.c: New.
+	* gcc.target/i386/isa-2.c: Likewise.
+	* gcc.target/i386/isa-3.c: Likewise.
+	* gcc.target/i386/isa-4.c: Likewise.
+	* gcc.target/i386/isa-5.c: Likewise.
+	* gcc.target/i386/isa-6.c: Likewise.
+	* gcc.target/i386/isa-7.c: Likewise.
+	* gcc.target/i386/isa-8.c: Likewise.
+	* gcc.target/i386/isa-9.c: Likewise.
+	* gcc.target/i386/isa-10.c: Likewise.
+	* gcc.target/i386/isa-11.c: Likewise.
+	* gcc.target/i386/isa-12.c: Likewise.
+	* gcc.target/i386/isa-13.c: Likewise.
+	* gcc.target/i386/isa-14.c: Likewise.
+
 2008-02-18  Joey Ye  <joey.ye@intel.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
