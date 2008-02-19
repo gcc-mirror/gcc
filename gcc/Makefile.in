@@ -253,6 +253,8 @@ POD2MAN = pod2man --center="GNU" --release="gcc-$(version)"
 # do not correctly set the timestamp due to buggy versions of `utime'
 # in the kernel.  So, we use `echo' instead.
 STAMP = echo timestamp >
+# Translate absolute file names to w32 paths.
+build_file_translate = @build_file_translate@
 
 # Make sure the $(MAKE) variable is defined.
 @SET_MAKE@
@@ -3653,7 +3655,7 @@ gcc-vers.texi: $(BASEVER) $(DEVPHASE)
 	 then echo "@set DEVELOPMENT"; \
 	 else echo "@clear DEVELOPMENT"; \
 	 fi) > $@T
-	echo "@set srcdir $(abs_srcdir)" >> $@T
+	$(build_file_translate) echo @set srcdir $(abs_srcdir) >> $@T
 	if [ -n "$(PKGVERSION)" ]; then \
 	  echo "@set VERSION_PACKAGE $(PKGVERSION)" >> $@T; \
 	fi
