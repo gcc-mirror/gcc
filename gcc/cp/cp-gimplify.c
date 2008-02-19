@@ -844,7 +844,8 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
       if (arg2)
 	argarray[i++] = p2;
       /* Handle default arguments.  */
-      for (parm = defparm; parm != void_list_node; parm = TREE_CHAIN (parm), i++)
+      for (parm = defparm; parm && parm != void_list_node;
+	   parm = TREE_CHAIN (parm), i++)
 	argarray[i] = convert_default_arg (TREE_VALUE (parm),
 					   TREE_PURPOSE (parm), fn, i);
       t = build_call_a (fn, i, argarray);
@@ -875,7 +876,7 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
       if (arg2)
 	argarray[i++] = build_fold_addr_expr (arg2);
       /* Handle default arguments.  */
-      for (parm = defparm; parm != void_list_node;
+      for (parm = defparm; parm && parm != void_list_node;
 	   parm = TREE_CHAIN (parm), i++)
 	argarray[i] = convert_default_arg (TREE_VALUE (parm),
 					   TREE_PURPOSE (parm),
