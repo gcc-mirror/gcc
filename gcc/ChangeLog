@@ -1,5 +1,11 @@
 2008-02-19  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/33555
+	* config/i386/i386.md (*x86_movsicc_0_m1_se): New insn pattern.
+	(*x86_movdicc_0_m1_se): Ditto.
+
+2008-02-19  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/sfp-machine.h (__gcc_CMPtype): New typedef.
 	(CMPtype): Define as __gcc_CMPtype.
 	* config/rs6000/sfp-machine.h (__gcc_CMPtype): New typedef.
