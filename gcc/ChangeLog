@@ -1,3 +1,9 @@
+2008-02-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR Ada/35186
+	* config/i386/i386-modes.def: Revert the last DI alignment
+	change until Ada people can look into it.
+
 2008-02-19  Nick Clifton  <nickc@redhat.com>
 
 	* opts.c (print_specific_help): Fix typo in --help text.
