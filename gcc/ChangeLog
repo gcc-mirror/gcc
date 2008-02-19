@@ -1,3 +1,19 @@
+2008-02-19  Hans-Peter Nilsson  <hp@axis.com>
+
+	Support valgrind 3.3 for --enable-checking=valgrind.
+	* system.h: Consolidate ENABLE_VALGRIND_CHECKING-dependent defines
+	here.
+	[!VALGRIND_MAKE_MEM_NOACCESS]: Define as VALGRIND_MAKE_NOACCESS.
+	[!VALGRIND_MAKE_MEM_DEFINED]: Define as VALGRIND_MAKE_READABLE.
+	[!VALGRIND_MAKE_MEM_UNDEFINED]: Define as VALGRIND_MAKE_WRITABLE.
+	* ggc-common.c: Remove ENABLE_VALGRIND_CHECKING-dependent defines.
+	Replace use of VALGRIND_MAKE_READABLE, VALGRIND_MAKE_WRITABLE, and
+	VALGRIND_MAKE_NOACCESS with VALGRIND_MAKE_MEM_DEFINED,
+	VALGRIND_MAKE_MEM_UNDEFINED, and VALGRIND_MAKE_MEM_NOACCESS
+	respectively.
+	* ggc-zone.c: Similar.
+	* ggc-page.c: Similar.
+
 2008-02-19  Paul Brook  <paul@codesourcery.com>
 
 	PR target/35071

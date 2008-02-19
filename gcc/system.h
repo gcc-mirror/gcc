@@ -804,4 +804,29 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 #endif
 #endif
 
+#ifdef ENABLE_VALGRIND_CHECKING
+# ifdef HAVE_VALGRIND_MEMCHECK_H
+#  include <valgrind/memcheck.h>
+# elif defined HAVE_MEMCHECK_H
+#  include <memcheck.h>
+# else
+#  include <valgrind.h>
+# endif
+/* Compatibility macros to let valgrind 3.1 work.  */
+# ifndef VALGRIND_MAKE_MEM_NOACCESS
+#  define VALGRIND_MAKE_MEM_NOACCESS VALGRIND_MAKE_NOACCESS
+# endif
+# ifndef VALGRIND_MAKE_MEM_DEFINED
+#  define VALGRIND_MAKE_MEM_DEFINED VALGRIND_MAKE_READABLE
+# endif
+# ifndef VALGRIND_MAKE_MEM_UNDEFINED
+#  define VALGRIND_MAKE_MEM_UNDEFINED VALGRIND_MAKE_WRITABLE
+# endif
+#else
+/* Avoid #ifdef:s when we can help it.  */
+#define VALGRIND_DISCARD(x)
+#define VALGRIND_MALLOCLIKE_BLOCK(w,x,y,z)
+#define VALGRIND_FREELIKE_BLOCK(x,y)
+#endif
+
 #endif /* ! GCC_SYSTEM_H */
