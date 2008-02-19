@@ -1,3 +1,11 @@
+2008-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/35078
+	* parser.c (cp_parser_omp_for_loop): If DECL has REFERENCE_TYPE, don't
+	call cp_finish_decl.
+	* semantics.c (finish_omp_for): Fail if DECL doesn't have integral type
+	early.
+
 2008-02-15  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR c++/35023
