@@ -31,18 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "params.h"
 #include "tree-flow.h"
-#ifdef ENABLE_VALGRIND_CHECKING
-# ifdef HAVE_VALGRIND_MEMCHECK_H
-#  include <valgrind/memcheck.h>
-# elif defined HAVE_MEMCHECK_H
-#  include <memcheck.h>
-# else
-#  include <valgrind.h>
-# endif
-#else
-/* Avoid #ifdef:s when we can help it.  */
-#define VALGRIND_DISCARD(x)
-#endif
 
 /* Prefer MAP_ANON(YMOUS) to /dev/zero, since we don't need to keep a
    file open.  Prefer either to valloc.  */
@@ -689,7 +677,7 @@ alloc_anon (char *pref ATTRIBUTE_UNUSED, size_t size)
   /* Pretend we don't have access to the allocated pages.  We'll enable
      access to smaller pieces of the area in ggc_alloc.  Discard the
      handle to avoid handle leak.  */
-  VALGRIND_DISCARD (VALGRIND_MAKE_NOACCESS (page, size));
+  VALGRIND_DISCARD (VALGRIND_MAKE_MEM_NOACCESS (page, size));
 
   return page;
 }
@@ -933,7 +921,7 @@ free_page (page_entry *entry)
 
   /* Mark the page as inaccessible.  Discard the handle to avoid handle
      leak.  */
-  VALGRIND_DISCARD (VALGRIND_MAKE_NOACCESS (entry->page, entry->bytes));
+  VALGRIND_DISCARD (VALGRIND_MAKE_MEM_NOACCESS (entry->page, entry->bytes));
 
   set_page_table_entry (entry->page, NULL);
 
@@ -1208,7 +1196,7 @@ ggc_alloc_stat (size_t size MEM_STAT_DECL)
      exact same semantics in presence of memory bugs, regardless of
      ENABLE_VALGRIND_CHECKING.  We override this request below.  Drop the
      handle to avoid handle leak.  */
-  VALGRIND_DISCARD (VALGRIND_MAKE_WRITABLE (result, object_size));
+  VALGRIND_DISCARD (VALGRIND_MAKE_MEM_UNDEFINED (result, object_size));
 
   /* `Poison' the entire allocated object, including any padding at
      the end.  */
@@ -1216,14 +1204,14 @@ ggc_alloc_stat (size_t size MEM_STAT_DECL)
 
   /* Make the bytes after the end of the object unaccessible.  Discard the
      handle to avoid handle leak.  */
-  VALGRIND_DISCARD (VALGRIND_MAKE_NOACCESS ((char *) result + size,
-					    object_size - size));
+  VALGRIND_DISCARD (VALGRIND_MAKE_MEM_NOACCESS ((char *) result + size,
+						object_size - size));
 #endif
 
   /* Tell Valgrind that the memory is there, but its content isn't
      defined.  The bytes at the end of the object are still marked
      unaccessible.  */
-  VALGRIND_DISCARD (VALGRIND_MAKE_WRITABLE (result, size));
+  VALGRIND_DISCARD (VALGRIND_MAKE_MEM_UNDEFINED (result, size));
 
   /* Keep track of how many bytes are being allocated.  This
      information is used in deciding when to collect.  */
@@ -1358,11 +1346,11 @@ ggc_free (void *p)
 
 #ifdef ENABLE_GC_CHECKING
   /* Poison the data, to indicate the data is garbage.  */
-  VALGRIND_DISCARD (VALGRIND_MAKE_WRITABLE (p, size));
+  VALGRIND_DISCARD (VALGRIND_MAKE_MEM_UNDEFINED (p, size));
   memset (p, 0xa5, size);
 #endif
   /* Let valgrind know the object is free.  */
-  VALGRIND_DISCARD (VALGRIND_MAKE_NOACCESS (p, size));
+  VALGRIND_DISCARD (VALGRIND_MAKE_MEM_NOACCESS (p, size));
 
 #ifdef ENABLE_GC_ALWAYS_COLLECT
   /* In the completely-anal-checking mode, we do *not* immediately free
@@ -1815,11 +1803,12 @@ poison_pages (void)
 		     so the exact same memory semantics is kept, in case
 		     there are memory errors.  We override this request
 		     below.  */
-		  VALGRIND_DISCARD (VALGRIND_MAKE_WRITABLE (object, size));
+		  VALGRIND_DISCARD (VALGRIND_MAKE_MEM_UNDEFINED (object,
+								 size));
 		  memset (object, 0xa5, size);
 
 		  /* Drop the handle to avoid handle leak.  */
-		  VALGRIND_DISCARD (VALGRIND_MAKE_NOACCESS (object, size));
+		  VALGRIND_DISCARD (VALGRIND_MAKE_MEM_NOACCESS (object, size));
 		}
 	    }
 	}

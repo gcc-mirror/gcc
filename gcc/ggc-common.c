@@ -47,19 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 # define MAP_FAILED ((void *)-1)
 #endif
 
-#ifdef ENABLE_VALGRIND_CHECKING
-# ifdef HAVE_VALGRIND_MEMCHECK_H
-#  include <valgrind/memcheck.h>
-# elif defined HAVE_MEMCHECK_H
-#  include <memcheck.h>
-# else
-#  include <valgrind.h>
-# endif
-#else
-/* Avoid #ifdef:s when we can help it.  */
-#define VALGRIND_DISCARD(x)
-#endif
-
 /* When set, ggc_collect will do collection.  */
 bool ggc_force_collect;
 
@@ -163,9 +150,9 @@ ggc_realloc_stat (void *x, size_t size MEM_STAT_DECL)
 	 old_size as reachable, but that would lose tracking of writes
 	 after the end of the object (by small offsets).  Discard the
 	 handle to avoid handle leak.  */
-      VALGRIND_DISCARD (VALGRIND_MAKE_NOACCESS ((char *) x + size,
-						old_size - size));
-      VALGRIND_DISCARD (VALGRIND_MAKE_READABLE (x, size));
+      VALGRIND_DISCARD (VALGRIND_MAKE_MEM_NOACCESS ((char *) x + size,
+						    old_size - size));
+      VALGRIND_DISCARD (VALGRIND_MAKE_MEM_DEFINED (x, size));
       return x;
     }
 
@@ -175,7 +162,7 @@ ggc_realloc_stat (void *x, size_t size MEM_STAT_DECL)
      individually allocated object, we'd access parts of the old object
      that were marked invalid with the memcpy below.  We lose a bit of the
      initialization-tracking since some of it may be uninitialized.  */
-  VALGRIND_DISCARD (VALGRIND_MAKE_READABLE (x, old_size));
+  VALGRIND_DISCARD (VALGRIND_MAKE_MEM_DEFINED (x, old_size));
 
   memcpy (r, x, old_size);
 
