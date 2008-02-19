@@ -2434,6 +2434,11 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case CALL_EXPR:
       {
 	tree decl = get_callee_fndecl (x);
+	tree addr = CALL_EXPR_FN (x);
+	tree funtype = TREE_TYPE (addr);
+
+	gcc_assert (POINTER_TYPE_P (funtype));
+	funtype = TREE_TYPE (funtype);
 
 	if (decl && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_MD)
 	  cost = d->weights->target_builtin_call_cost;
@@ -2456,20 +2461,33 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
 	      break;
 	    }
 
+	if (decl)
+	  funtype = TREE_TYPE (decl);
+
 	/* Our cost must be kept in sync with cgraph_estimate_size_after_inlining
-	   that does use function declaration to figure out the arguments.  */
-	if (!decl)
+	   that does use function declaration to figure out the arguments. 
+
+	   When we deal with function with no body nor prototype, base estimates on
+	   actual parameters of the call expression.  Otherwise use either the actual
+	   arguments types or function declaration for more precise answer.  */
+	if (decl && DECL_ARGUMENTS (decl))
+	  {
+	    tree arg;
+	    for (arg = DECL_ARGUMENTS (decl); arg; arg = TREE_CHAIN (arg))
+	      d->count += estimate_move_cost (TREE_TYPE (arg));
+	  }
+	else if (funtype && prototype_p (funtype))
+	  {
+	    tree t;
+	    for (t = TYPE_ARG_TYPES (funtype); t; t = TREE_CHAIN (t))
+	      d->count += estimate_move_cost (TREE_VALUE (t));
+	  }
+	else
 	  {
 	    tree a;
 	    call_expr_arg_iterator iter;
 	    FOR_EACH_CALL_EXPR_ARG (a, iter, x)
 	      d->count += estimate_move_cost (TREE_TYPE (a));
-	  }
-	else
-	  {
-	    tree arg;
-	    for (arg = DECL_ARGUMENTS (decl); arg; arg = TREE_CHAIN (arg))
-	      d->count += estimate_move_cost (TREE_TYPE (arg));
 	  }
 
 	d->count += cost;
