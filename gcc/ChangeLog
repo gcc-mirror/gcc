@@ -1,3 +1,9 @@
+2008-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/35239
+	* config/i386/cpuid.h (__cpuid, __get_cpuid_max): Use special
+	32-bit inline asm without asm alternatives for host GCC < 3.0.
+
 2008-02-19  Paul Brook  <paul@codesourcery.com>
 
 	PR target/35071
