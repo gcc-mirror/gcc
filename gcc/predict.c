@@ -74,7 +74,7 @@ static sreal real_zero, real_one, real_almost_one, real_br_prob_base,
 
 static void combine_predictions_for_insn (rtx, basic_block);
 static void dump_prediction (FILE *, enum br_predictor, int, basic_block, int);
-static void predict_paths_leading_to (basic_block, int *, enum br_predictor, enum prediction);
+static void predict_paths_leading_to (basic_block, enum br_predictor, enum prediction);
 static void compute_function_frequency (void);
 static void choose_function_section (void);
 static bool can_predict_insn_p (const_rtx);
@@ -1225,7 +1225,7 @@ return_prediction (tree val, enum prediction *prediction)
 /* Find the basic block with return expression and look up for possible
    return value trying to apply RETURN_PREDICTION heuristics.  */
 static void
-apply_return_prediction (int *heads)
+apply_return_prediction (void)
 {
   tree return_stmt = NULL;
   tree return_val;
@@ -1273,7 +1273,7 @@ apply_return_prediction (int *heads)
       {
 	pred = return_prediction (PHI_ARG_DEF (phi, i), &direction);
 	if (pred != PRED_NO_PREDICTION)
-	  predict_paths_leading_to (PHI_ARG_EDGE (phi, i)->src, heads, pred,
+	  predict_paths_leading_to (PHI_ARG_EDGE (phi, i)->src, pred,
 				    direction);
       }
 }
@@ -1286,12 +1286,8 @@ static void
 tree_bb_level_predictions (void)
 {
   basic_block bb;
-  int *heads;
 
-  heads = XCNEWVEC (int, last_basic_block);
-  heads[ENTRY_BLOCK_PTR->next_bb->index] = last_basic_block;
-
-  apply_return_prediction (heads);
+  apply_return_prediction ();
 
   FOR_EACH_BB (bb)
     {
@@ -1301,6 +1297,7 @@ tree_bb_level_predictions (void)
 	{
 	  tree stmt = bsi_stmt (bsi);
 	  tree decl;
+	  bool next = false;
 	  switch (TREE_CODE (stmt))
 	    {
 	      case GIMPLE_MODIFY_STMT:
@@ -1313,13 +1310,13 @@ tree_bb_level_predictions (void)
 	      case CALL_EXPR:
 call_expr:;
 		if (call_expr_flags (stmt) & ECF_NORETURN)
-		  predict_paths_leading_to (bb, heads, PRED_NORETURN,
+		  predict_paths_leading_to (bb, PRED_NORETURN,
 		      			    NOT_TAKEN);
 		decl = get_callee_fndecl (stmt);
 		if (decl
 		    && lookup_attribute ("cold",
 					 DECL_ATTRIBUTES (decl)))
-		  predict_paths_leading_to (bb, heads, PRED_COLD_FUNCTION,
+		  predict_paths_leading_to (bb, PRED_COLD_FUNCTION,
 		      			    NOT_TAKEN);
 		break;
 	      default:
@@ -1327,8 +1324,6 @@ call_expr:;
 	    }
 	}
     }
-
-  free (heads);
 }
 
 #ifdef ENABLE_CHECKING
@@ -1469,58 +1464,41 @@ tree_estimate_probability (void)
   return 0;
 }
 
-/* Sets branch probabilities according to PREDiction and
-   FLAGS. HEADS[bb->index] should be index of basic block in that we
-   need to alter branch predictions (i.e. the first of our dominators
-   such that we do not post-dominate it) (but we fill this information
-   on demand, so -1 may be there in case this was not needed yet).  */
+/* Predict edges to succestors of CUR whose sources are not postdominated by
+   BB by PRED and recurse to all postdominators.  */
 
 static void
-predict_paths_leading_to (basic_block bb, int *heads, enum br_predictor pred,
-			  enum prediction taken)
+predict_paths_for_bb (basic_block cur, basic_block bb,
+		      enum br_predictor pred,
+		      enum prediction taken)
 {
   edge e;
   edge_iterator ei;
-  int y;
+  basic_block son;
 
-  if (heads[bb->index] == ENTRY_BLOCK)
+  /* We are looking for all edges forming edge cut induced by
+     set of all blocks postdominated by BB.  */
+  FOR_EACH_EDGE (e, ei, cur->preds)
+    if (e->src->index >= NUM_FIXED_BLOCKS
+	&& !dominated_by_p (CDI_POST_DOMINATORS, e->src, bb))
     {
-      /* This is first time we need this field in heads array; so
-         find first dominator that we do not post-dominate (we are
-         using already known members of heads array).  */
-      basic_block ai = bb;
-      basic_block next_ai = get_immediate_dominator (CDI_DOMINATORS, bb);
-      int head;
-
-      while (heads[next_ai->index] == ENTRY_BLOCK)
-	{
-	  if (!dominated_by_p (CDI_POST_DOMINATORS, next_ai, bb))
-	    break;
-	  heads[next_ai->index] = ai->index;
-	  ai = next_ai;
-	  next_ai = get_immediate_dominator (CDI_DOMINATORS, next_ai);
-	}
-      if (!dominated_by_p (CDI_POST_DOMINATORS, next_ai, bb))
-	head = next_ai->index;
-      else
-	head = heads[next_ai->index];
-      while (next_ai != bb)
-	{
-	  next_ai = ai;
-	  ai = BASIC_BLOCK (heads[ai->index]);
-	  heads[next_ai->index] = head;
-	}
-    }
-  y = heads[bb->index];
-
-  /* Now find the edge that leads to our branch and aply the prediction.  */
-
-  if (y == last_basic_block)
-    return;
-  FOR_EACH_EDGE (e, ei, BASIC_BLOCK (y)->succs)
-    if (e->dest->index >= NUM_FIXED_BLOCKS
-	&& dominated_by_p (CDI_POST_DOMINATORS, e->dest, bb))
+      gcc_assert (bb == cur || dominated_by_p (CDI_POST_DOMINATORS, cur, bb));
       predict_edge_def (e, pred, taken);
+    }
+  for (son = first_dom_son (CDI_POST_DOMINATORS, cur);
+       son;
+       son = next_dom_son (CDI_POST_DOMINATORS, son))
+    predict_paths_for_bb (son, bb, pred, taken);
+}
+
+/* Sets branch probabilities according to PREDiction and
+   FLAGS.  */
+
+static void
+predict_paths_leading_to (basic_block bb, enum br_predictor pred,
+			  enum prediction taken)
+{
+  predict_paths_for_bb (bb, bb, pred, taken);
 }
 
 /* This is used to carry information about basic blocks.  It is
