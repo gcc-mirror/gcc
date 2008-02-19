@@ -1,3 +1,9 @@
+2008-02-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34989
+	* gcc.dg/pr34989-1.c: New testcase.
+	* gcc.dg/pr34989-2.c: Likewise.
+
 2008-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/35028
