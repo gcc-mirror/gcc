@@ -472,16 +472,18 @@ extern GC_warn_proc GC_current_warn_proc;
 #      if defined(POWERPC)
 #              if CPP_WORDSZ == 32
 #                define GC_THREAD_STATE_T ppc_thread_state_t
-#		  define GC_MACH_THREAD_STATE PPC_THREAD_STATE
-#		  define GC_MACH_THREAD_STATE_COUNT PPC_THREAD_STATE_COUNT
+#		 define GC_MACH_THREAD_STATE PPC_THREAD_STATE
+#		 define GC_MACH_THREAD_STATE_COUNT PPC_THREAD_STATE_COUNT
 #                define GC_MACH_HEADER mach_header
 #                define GC_MACH_SECTION section
+#                define GC_GETSECTBYNAME getsectbynamefromheader
 #              else
 #                define GC_THREAD_STATE_T ppc_thread_state64_t
-#		  define GC_MACH_THREAD_STATE PPC_THREAD_STATE64
-#		  define GC_MACH_THREAD_STATE_COUNT PPC_THREAD_STATE64_COUNT
+#		 define GC_MACH_THREAD_STATE PPC_THREAD_STATE64
+#		 define GC_MACH_THREAD_STATE_COUNT PPC_THREAD_STATE64_COUNT
 #                define GC_MACH_HEADER mach_header_64
 #                define GC_MACH_SECTION section_64
+#                define GC_GETSECTBYNAME getsectbynamefromheader_64
 #              endif
 #      elif defined(I386) || defined(X86_64)
 #              if CPP_WORDSZ == 32
@@ -490,12 +492,14 @@ extern GC_warn_proc GC_current_warn_proc;
 #                define GC_MACH_THREAD_STATE_COUNT x86_THREAD_STATE32_COUNT
 #                define GC_MACH_HEADER mach_header
 #                define GC_MACH_SECTION section
+#                define GC_GETSECTBYNAME getsectbynamefromheader
 #              else
 #                define GC_THREAD_STATE_T x86_thread_state64_t
 #                define GC_MACH_THREAD_STATE x86_THREAD_STATE64
 #                define GC_MACH_THREAD_STATE_COUNT x86_THREAD_STATE64_COUNT
 #                define GC_MACH_HEADER mach_header_64
 #                define GC_MACH_SECTION section_64
+#                define GC_GETSECTBYNAME getsectbynamefromheader_64
 #              endif
 #      else
 #              error define GC_THREAD_STATE_T
