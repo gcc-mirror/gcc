@@ -1,3 +1,10 @@
+2008-02-19  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/35030
+	* expr.c (gfc_check_pointer_assign): Add type and kind information
+	to type-mismatch message.
+	(gfc_check_assign): Unify error messages.
+
 2008-02-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/34952
@@ -18,7 +25,7 @@
 
 2008-02-10  Daniel Franke  <franke.daniel@gmail.com>
 
-	fortran/PR35019
+	PR fortran/35019
 	* lang.opt: Allow '-J<dir>' next to '-J <dir>', 
 	likewise '-I <dir>' and '-I<dir>'.
 
