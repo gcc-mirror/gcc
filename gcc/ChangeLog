@@ -1,3 +1,7 @@
+2008-02-19  Nick Clifton  <nickc@redhat.com>
+
+	* opts.c (print_specific_help): Fix typo in --help text.
+
 2008-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/35239
