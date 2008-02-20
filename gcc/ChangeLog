@@ -1,7 +1,7 @@
 2008-02-19  Jan Hubicka  <jh@suse.cz>
 
-	(tree_bb_level_predictions): Remove variable next mistakely introduced
-	by previous commit.
+	* predict.c (tree_bb_level_predictions): Remove variable next
+	mistakely introduced by previous commit.
 
 2008-02-19  Jan Hubicka  <jh@suse.cz>
 
@@ -60,8 +60,7 @@
 2008-02-19  Nick Clifton  <nickc@redhat.com>
 
 	PR other/31349
-	* opts.c (undocumented_msg): Leave blank unless checking is
-	enabled.
+	* opts.c (undocumented_msg): Leave blank unless checking is enabled.
 	(handle_options): Fix indentation.
 	(print_filtered_help): If no language-specific options were
 	displayed tell the user how to list all the options supported by
@@ -83,10 +82,10 @@
 	(print_partial_schedule): Rename CYCLE to ROW.
 
 2008-02-19  Christian Bruel  <christian.bruel@st.com>
-            Zdenek Dvorak  <ook@ucw.cz>
-	
-        * tree-ssa-loop-ivopts.c (may_be_unaligned_p): Check step alignment.
-	
+	    Zdenek Dvorak  <ook@ucw.cz>
+
+	* tree-ssa-loop-ivopts.c (may_be_unaligned_p): Check step alignment.
+
 2008-02-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/33555
