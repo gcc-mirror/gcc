@@ -1,3 +1,11 @@
+2008-02-20  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/24170:
+	* java/io/natFilePosix.cc (File::performList): Don't use
+	readdir_r.
+	* configure, include/config.h.in: Rebuilt.
+	* configure.ac: Don't check for readdir_r.
+
 2008-02-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR libgcj/33085
