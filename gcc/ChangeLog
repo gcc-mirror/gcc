@@ -1,3 +1,10 @@
+2008-02-20  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (fold_real_zero_addition_p): Declare.
+	* fold-const.c (fold_real_zero_addition_p): Export.
+	* tree-ssa-reassoc.c (eliminate_using_constants): Also handle
+	floating-point operations with zero and one.
+
 2008-02-20  Paolo Bonzini  <bonzini@gnu.org>
 
         * doc/install.texi: Correct references to CFLAGS, replacing them
