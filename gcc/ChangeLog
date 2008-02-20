@@ -1,3 +1,53 @@
+2008-02-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (SSE_VEC_FLOAT_MODE_P): New define.
+	* config/i386/i386.md (*sse_setcc<mode>): Macroize from *sse_setccsf
+	and *sse_setccdf using MODEF mode iterator and SSE_FLOAT_MODE_P as
+	insn constraint.
+	(smin<mode>3): Ditto from similar patterns.
+	(smax<mode>3): Ditto.
+	(*ieee_smin<mode>3): Ditto.
+	(*ieee_smax<mode>3): Ditto.
+	* config/i386/sse.md (sse): New mode attribute.
+	(mov<mode>): Macroize expander from movv4sf and movv2df using
+	SSEMODEF2P mode iterator.
+	(<sse>_movnt<mode>): Ditto from similar patterns. Use
+	SSE_VEC_FLOAT_MODE_P as insn constraint.
+	(storent<mode>): Ditto.
+	(storent<mode>): Macroize expander from storentsf and storentdf using
+	MODEF mode iterator.
+	(neg<mode>2): Macroize from negv4sf2 and negv2df2 using SSEMODEF2P
+	mode iterator and SSE_VEC_FLOAT_MODE_P as insn constraint.
+	(abs<mode>2): Ditto from similar patterns.
+	(add<mode>3, *add<mode>3, <sse>_vmadd<mode>3): Ditto.
+	(sub<mode>3, *sub<mode>3, <sse>_vmsub<mode>3): Ditto.
+	(<sse>_div<mode>3, <sse>_vmdiv<mode>3): Ditto.
+	(<sse>_vmsqrt<mode>2): Ditto.
+	(smin<mode>3, *smin<mode>3_finite, *smin<mode>3)
+	(<sse>_vmsmin<mode>3, *ieee_smin<mode>3): Ditto.
+	(smax<mode>3, *smax<mode>3_finite, *smax<mode>3)
+	(<sse>_vmsmax<mode>3, *ieee_smax<mode>3): Ditto.
+	(<sse>_maskcmp<mode>3): Macroize from sse_maskcmpv4sf3,
+	sse_maskcmpsf3, sse2_maskcmpv2df3 and sse2_maskcmpdf3 using SSEMODEF4
+	mode iterator. Use SSE_FLOAT_MODE_P with SSE_VEC_FLOAT_MODE_P as
+	insn constraint.
+	(<sse>_comi): Macroize from sse_comi and sse2_comi using MODEF mode
+	iterator and SSE_FLOAT_MODE_P as insn constraint.
+	(<sse>_ucomi): Ditto from similar patterns.
+	(<sse>_vmmaskcmp<mode>3): Macroize from sse_vmmaskcmpv4sf3 and
+	sse2_vmmaskcmpv2df3 using SSEMODEF2P mode iterator and
+	SSE_VEC_FLOAT_MODE_P as insn constraint.
+	(vcond<mode>): Ditto from similar patterns.
+	(and<mode>3, *and<mode>3): Ditto.
+	(<sse>_nand<mode>3): Ditto.
+	(ior<mode>3, *ior<mode>3): Ditto.
+	(xor<mode>3, *xor<mode>3): Ditto.
+	(*and<mode>3): Macroize from *andsf3 and *anddf3 using MODEF mode
+	iterator and SSE_FLOAT_MODE_P as insn constraint.
+	(*nand<mode>3): Ditto from similar patterns.
+	(*ior<mode>3): Ditto.
+	(*xor<mode>3): Ditto.
+
 2008-02-20  Ira Rosen  <irar@il.ibm.com>
 
 	* config/spu/spu.md (vec_unpacku_hi_v8hi, vec_unpacku_lo_v8hi,
