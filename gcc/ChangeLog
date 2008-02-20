@@ -1,3 +1,10 @@
+2008-02-20  DJ Delorie  <dj@redhat.com>
+
+	* config/h8300/h8300.md (insv): Force source operand to be a register.
+
+	* config/h8300/h8300.c (h8300_expand_epilogue): Emit return insn
+	as a jump, not as a plain insn.
+	
 2008-02-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/invoke.texi, doc/standards.texi: Refer to
