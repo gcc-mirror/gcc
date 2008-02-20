@@ -1,5 +1,5 @@
 /* CPP Library - lexical analysis.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -538,8 +538,8 @@ lex_identifier (cpp_reader *pfile, const uchar *base, bool starts_ucn,
       len = cur - base;
       hash = HT_HASHFINISH (hash, len);
 
-      result = (cpp_hashnode *)
-	ht_lookup_with_hash (pfile->hash_table, base, len, hash, HT_ALLOC);
+      result = CPP_HASHNODE (ht_lookup_with_hash (pfile->hash_table,
+						  base, len, hash, HT_ALLOC));
     }
 
   /* Rarely, identifiers require diagnostics when lexed.  */

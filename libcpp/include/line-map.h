@@ -172,7 +172,7 @@ extern void linemap_print_containing_files (struct line_maps *,
 /* Set LOC to a source position that is the same line as the most recent
    linemap_line_start, but with the specified TO_COLUMN column number.  */
 
-#define LINEMAP_POSITION_FOR_COLUMN(LOC, SET, TO_COLUMN) { \
+#define LINEMAP_POSITION_FOR_COLUMN(LOC, SET, TO_COLUMN) do { \
   unsigned int to_column = (TO_COLUMN); \
   struct line_maps *set = (SET); \
   if (__builtin_expect (to_column >= set->max_column_hint, 0)) \
@@ -183,7 +183,7 @@ extern void linemap_print_containing_files (struct line_maps *,
     if (r >= set->highest_location) \
       set->highest_location = r; \
     (LOC) = r;			 \
-  }}
+  }} while (0)
     
 
 extern source_location
