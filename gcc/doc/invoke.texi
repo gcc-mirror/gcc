@@ -236,7 +236,8 @@ Objective-C and Objective-C++ Dialects}.
 -Werror  -Werror=* @gol
 -Wfatal-errors  -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wno-format-extra-args -Wformat-nonliteral @gol
--Wformat-security  -Wformat-y2k -Wignored-qualifiers @gol
+-Wformat-security  -Wformat-y2k @gol
+-Wframe-larger-than=@var{len} -Wignored-qualifiers @gol
 -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
 -Wimport  -Wno-import  -Winit-self  -Winline @gol
 -Wno-int-to-pointer-cast -Wno-invalid-offsetof @gol
@@ -3517,6 +3518,10 @@ global variable or whenever a built-in function is shadowed.
 @item -Wlarger-than-@var{len}
 @opindex Wlarger-than-@var{len}
 Warn whenever an object of larger than @var{len} bytes is defined.
+
+@item -Wframe-larger-than=@var{len}
+@opindex Wframe-larger-than
+Warn whenever the size of a function frame is larger than @var{len} bytes.
 
 @item -Wunsafe-loop-optimizations
 @opindex Wunsafe-loop-optimizations

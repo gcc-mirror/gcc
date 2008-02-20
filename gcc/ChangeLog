@@ -1,3 +1,21 @@
+2008-02-20  Seongbae Park <seongbae.park@gmail.com>
+
+	* doc/invoke.texi (Warning Options): Add new option
+	-Wframe-larger-than=.
+	(-Wframe-larger-than): Document.
+
+	* flags.h (warn_frame_larger_than, frame_larger_than_size):
+	Add declarations for new option variables.
+
+	* final.c (final_start_function): Check the frame size
+	before emission and issue a Wframe-larger-than warning.
+
+	* opts.c (warn_frame_larger_than, frame_larger_than_size):
+	Add definitions for new option variables.
+	(common_handle_option): Handle new option OPT_Wframe_larger_than_.
+
+	* common.opt (Wframe-larger-than=): New option.
+
 2008-02-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (<sse>_vmmul<mode>3): Fix typo in asm template.

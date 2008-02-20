@@ -58,6 +58,11 @@ bool extra_warnings;
 bool warn_larger_than;
 HOST_WIDE_INT larger_than_size;
 
+/* True to warn about any function whose frame size is larger
+ * than N bytes. */
+bool warn_frame_larger_than;
+HOST_WIDE_INT frame_larger_than_size;
+
 /* Hack for cooperation between set_Wunused and set_Wextra.  */
 static bool maybe_warn_unused_parameter;
 
@@ -1496,6 +1501,11 @@ common_handle_option (size_t scode, const char *arg, int value,
     case OPT_Wlarger_than_:
       larger_than_size = value;
       warn_larger_than = value != -1;
+      break;
+
+    case OPT_Wframe_larger_than_:
+      frame_larger_than_size = value;
+      warn_frame_larger_than = value != -1;
       break;
 
     case OPT_Wstrict_aliasing:
