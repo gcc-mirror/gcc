@@ -9,7 +9,7 @@ float h ()
 	int i;
 	double E, W, P, d;
 
-	W = 1.;
+	W = 1.1;
 	d = 2.*e;
 	E = 1. - d;
 

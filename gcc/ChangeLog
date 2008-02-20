@@ -1,5 +1,10 @@
 2008-02-20  Richard Guenther  <rguenther@suse.de>
 
+	* fold-const.c (split_tree): Associate floatig-point expressions
+	if flag_associative_math is set.
+
+2008-02-20  Richard Guenther  <rguenther@suse.de>
+
 	* tree.h (fold_real_zero_addition_p): Declare.
 	* fold-const.c (fold_real_zero_addition_p): Export.
 	* tree-ssa-reassoc.c (eliminate_using_constants): Also handle
