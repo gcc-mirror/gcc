@@ -930,7 +930,7 @@ h8300_expand_epilogue (void)
     }
 
   if (!returned_p)
-    emit_insn (gen_rtx_RETURN (VOIDmode));
+    emit_jump_insn (gen_rtx_RETURN (VOIDmode));
 }
 
 /* Return nonzero if the current function is an interrupt
