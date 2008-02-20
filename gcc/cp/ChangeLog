@@ -1,3 +1,9 @@
+2008-02-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/34950
+	* pt.c (resolve_overloaded_unification): Set processing_template_decl
+	while we look for possible bindings.
+
 2008-02-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/34774
