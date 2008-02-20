@@ -1,3 +1,7 @@
+2008-02-20  Seongbae Park <seongbae.park@gmail.com>
+
+	* gcc.dg/Wframe-larger-than.c: New option test.
+
 2008-02-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34997
