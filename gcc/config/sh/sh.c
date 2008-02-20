@@ -3897,6 +3897,7 @@ find_barrier (int num_mova, rtx mova, rtx from)
 
       if (GET_CODE (from) == BARRIER)
 	{
+	  rtx next;
 
 	  found_barrier = from;
 
@@ -3905,6 +3906,14 @@ find_barrier (int num_mova, rtx mova, rtx from)
 	     this kind of barrier.  */
 	  if (barrier_align (from) > 2)
 	    good_barrier = from;
+
+	  /* If we are at the end of a hot/cold block, dump the constants
+	     here.  */
+	  next = NEXT_INSN (from);
+	  if (next
+	      && NOTE_P (next)
+	      && NOTE_KIND (next) == NOTE_INSN_SWITCH_TEXT_SECTIONS)
+	    break;
 	}
 
       if (broken_move (from))
