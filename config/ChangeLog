@@ -1,7 +1,7 @@
 2008-02-20  Paolo Bonzini  <bonzini@gnu.org>
 
-        PR bootstrap/32009
-        * mh-ppc-darwin (BOOT_CFLAGS): Reenable.
+	PR bootstrap/32009
+	* mh-ppc-darwin (BOOT_CFLAGS): Reenable.
 		
 2008-01-08  Jakub Jelinek  <jakub@redhat.com>
 
