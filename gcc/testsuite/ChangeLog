@@ -1,5 +1,10 @@
 2008-02-20  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/35265
+	* gcc.dg/builtins-66.c: New testcase.
+
+2008-02-20  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.dg/fold-reassoc-1.c: New testcase.
 	* gcc.dg/tree-ssa/recip-3.c: Adjust to not compute d/d.
 
