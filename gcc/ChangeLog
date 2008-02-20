@@ -1,3 +1,14 @@
+2008-02-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (<sse>_vmmul<mode>3): Fix typo in asm template.
+	(<sse>_div<mode>3): Ditto.
+	(<sse>_vmdiv<mode>3): Ditto.
+	(<sse>_vmsqrt<mode>2): Ditto.
+	(*smax<mode>3): Ditto.
+	(sse5_frcz<mode>2): Ditto.
+	(sse5_vmfrcz<mode>2): Ditto.  Use TARGET_SSE5 instead of TARGET_ROUND
+	as insn constraint.
+
 2008-02-20  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/35265
