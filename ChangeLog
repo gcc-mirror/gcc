@@ -1,3 +1,27 @@
+2008-02-20  Paolo Bonzini  <bonzini@gnu.org>
+
+        PR bootstrap/32009
+        PR bootstrap/32161
+
+        * configure.ac (CFLAGS_FOR_TARGET, CXXFLAGS_FOR_TARGET): Compute here.
+        * configure: Regenerate.
+
+        * Makefile.def: Define stage_libcflags for all bootstrap stages.
+        * Makefile.tpl (BOOT_LIBCFLAGS, STAGE2_LIBCFLAGS, STAGE3_LIBCFLAGS,
+        STAGE4_LIBCFLAGS): New.
+        (CFLAGS_FOR_TARGET, CXXFLAGS_FOR_TARGET): Subst from autoconf, without
+        $(SYSROOT_CFLAGS_FOR_TARGET) and $(DEBUG_PREFIX_CFLAGS_FOR_TARGET).
+        (BASE_TARGET_EXPORTS): Append them here to C{,XX}FLAGS.
+        (EXTRA_TARGET_FLAGS): Append them here to {LIB,}C{,XX}FLAGS.
+        (configure-stage[+id+]-[+prefix+][+module+]): Pass stage_libcflags
+        for target modules.  Don't export LIBCFLAGS.
+        (all-stage[+id+]-[+prefix+][+module+]): Pass stage_libcflags; pass
+        $(BASE_FLAGS_TO_PASS) where [+args+] was passed, and [+args+] after
+        the overridden CFLAGS_FOR_TARGET and CXXFLAGS_FOR_TARGET.
+        (invocations of `all'): Replace $(TARGET_FLAGS_TO_PASS) with
+        $(EXTRA_TARGET_FLAGS), $(FLAGS_TO_PASS) with $(EXTRA_HOST_FLAGS).
+        * Makefile.in: Regenerate.
+
 2008-02-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR libgcj/33085

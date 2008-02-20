@@ -1762,33 +1762,35 @@ same described above, but object files from the stage1 and
 stage2 of the 3-stage bootstrap of the compiler are deleted as
 soon as they are no longer needed.
 
-If you want to save additional space during the bootstrap and in
-the final installation as well, you can build the compiler binaries
-without debugging information as in the following example.  This will save
-roughly 40% of disk space both for the bootstrap and the final installation.
-(Libraries will still contain debugging information.)
+If you wish to use non-default GCC flags when compiling the stage2
+and stage3 compilers, set @code{BOOT_CFLAGS} on the command line when
+doing @samp{make}.  For example, if you want to save additional space
+during the bootstrap and in the final installation as well, you can
+build the compiler binaries without debugging information as in the
+following example.  This will save roughly 40% of disk space both for
+the bootstrap and the final installation.  (Libraries will still contain
+debugging information.)
 
 @smallexample
-     make CFLAGS='-O' LIBCFLAGS='-g -O2' \
-       LIBCXXFLAGS='-g -O2 -fno-implicit-templates' bootstrap
+     make BOOT_CFLAGS='-O' bootstrap
 @end smallexample
 
-If you wish to use non-default GCC flags when compiling the stage2 and
-stage3 compilers, set @code{BOOT_CFLAGS} on the command line when doing
-@samp{make}.  Non-default optimization flags are less well
-tested here than the default of @samp{-g -O2}, but should still work.
-In a few cases, you may find that you need to specify special flags such
-as @option{-msoft-float} here to complete the bootstrap; or, if the
-native compiler miscompiles the stage1 compiler, you may need to work
-around this, by choosing @code{BOOT_CFLAGS} to avoid the parts of the
-stage1 compiler that were miscompiled, or by using @samp{make
+You can place non-default optimization flags into @code{BOOT_CFLAGS}; they
+are less well tested here than the default of @samp{-g -O2}, but should
+still work.  In a few cases, you may find that you need to specify special
+flags such as @option{-msoft-float} here to complete the bootstrap; or,
+if the native compiler miscompiles the stage1 compiler, you may need
+to work around this, by choosing @code{BOOT_CFLAGS} to avoid the parts
+of the stage1 compiler that were miscompiled, or by using @samp{make
 bootstrap4} to increase the number of stages of bootstrap.
 
-Note that using non-standard @code{CFLAGS} can cause bootstrap to fail
-if these trigger a warning with the new compiler.  For example using
-@samp{-O2 -g -mcpu=i686} on @code{i686-pc-linux-gnu} will cause bootstrap
-failure as @option{-mcpu=} is deprecated in 3.4.0 and above.
-
+@code{BOOT_CFLAGS} does not apply to bootstrapped target libraries.
+Since these are always compiled with the compiler currently being
+bootstrapped, you can use @code{CFLAGS_FOR_TARGET} to modify their
+compilation flags, as for non-bootstrapped target libraries.
+Again, if the native compiler miscompiles the stage1 compiler, you may
+need to work around this by avoiding non-working parts of the stage1
+compiler.  Use @code{STAGE1_LIBCFLAGS} to this end.
 
 If you used the flag @option{--enable-languages=@dots{}} to restrict
 the compilers to be built, only those you've actually enabled will be
@@ -2679,8 +2681,8 @@ cross-compilers on the Alpha for 32-bit machines has only been tested in
 a few cases and may not work properly.
 
 @samp{make compare} may fail on old versions of DEC Unix unless you add
-@option{-save-temps} to @code{CFLAGS}.  On these systems, the name of the
-assembler input file is stored in the object file, and that makes
+@option{-save-temps} to @code{BOOT_CFLAGS}.  On these systems, the name
+of the assembler input file is stored in the object file, and that makes
 comparison fail if it differs between the @code{stage1} and
 @code{stage2} compilations.  The option @option{-save-temps} forces a
 fixed name to be used for the assembler input file, instead of a

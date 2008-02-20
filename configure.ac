@@ -1667,6 +1667,38 @@ AC_ARG_WITH([debug-prefix-map],
   [DEBUG_PREFIX_CFLAGS_FOR_TARGET=])
 AC_SUBST(DEBUG_PREFIX_CFLAGS_FOR_TARGET)
 
+# During gcc bootstrap, if we use some random cc for stage1 then CFLAGS
+# might be empty or "-g".  We don't require a C++ compiler, so CXXFLAGS
+# might also be empty (or "-g", if a non-GCC C++ compiler is in the path).
+# We want to ensure that TARGET libraries (which we know are built with
+# gcc) are built with "-O2 -g", so include those options when setting
+# CFLAGS_FOR_TARGET and CXXFLAGS_FOR_TARGET.
+if test "x$CFLAGS_FOR_TARGET" = x; then
+  CFLAGS_FOR_TARGET=$CFLAGS
+  case " $CFLAGS " in
+    *" -O2 "*) ;;
+    *) CFLAGS_FOR_TARGET="-O2 $CFLAGS" ;;
+  esac
+  case " $CFLAGS " in
+    *" -g "* | *" -g3 "*) ;;
+    *) CFLAGS_FOR_TARGET="-g $CFLAGS" ;;
+  esac
+fi
+AC_SUBST(CFLAGS_FOR_TARGET)
+
+if test "x$CXXFLAGS_FOR_TARGET" = x; then
+  CXXFLAGS_FOR_TARGET=$CXXFLAGS
+  case " $CXXFLAGS " in
+    *" -O2 "*) ;;
+    *) CXXFLAGS_FOR_TARGET="-O2 $CXXFLAGS" ;;
+  esac
+  case " $CXXFLAGS " in
+    *" -g "* | *" -g3 "*) ;;
+    *) CXXFLAGS_FOR_TARGET="-g $CXXFLAGS" ;;
+  esac
+fi
+AC_SUBST(CXXFLAGS_FOR_TARGET)
+
 # Handle --with-headers=XXX.  If the value is not "yes", the contents of
 # the named directory are copied to $(tooldir)/sys-include.
 if test x"${with_headers}" != x && test x"${with_headers}" != xno ; then
