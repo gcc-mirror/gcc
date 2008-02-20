@@ -1,3 +1,8 @@
+2008-02-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/34950
+	* g++.dg/template/explicit-args1.C: New.
+
 2008-02-19  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/34989
