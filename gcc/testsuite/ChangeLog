@@ -1,3 +1,10 @@
+2008-02-20  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR rtl-optimization/35232
+	* gcc.dg/torture/fp-int-convert-float.c: Skip for MIPS16 targets.
+	* gcc.dg/torture/fp-int-convert-double.c: Likewise.
+	* gcc.dg/torture/fp-int-convert-long-double.c: Likewise.
+
 2008-02-19  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* g++.dg/other/anon5.C: Skip for MIPS ELF targets.
