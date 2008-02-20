@@ -1,3 +1,9 @@
+2008-02-20  Ira Rosen  <irar@il.ibm.com>
+
+	* config/spu/spu.md (vec_unpacku_hi_v8hi, vec_unpacku_lo_v8hi,
+	vec_unpacks_hi_v8hi, vec_unpacks_lo_v8hi, vec_unpacku_hi_v16qi,
+	vec_unpacku_lo_v16qi, vec_unpacks_lo_v16qi): Implement.
+
 2008-02-19  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (tree_bb_level_predictions): Remove variable next
