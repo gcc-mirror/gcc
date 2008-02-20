@@ -5192,6 +5192,7 @@ expand_builtin_fabs (tree exp, rtx target, rtx subtarget)
     return NULL_RTX;
 
   arg = CALL_EXPR_ARG (exp, 0);
+  CALL_EXPR_ARG (exp, 0) = arg = builtin_save_expr (arg);
   mode = TYPE_MODE (TREE_TYPE (arg));
   op0 = expand_expr (arg, subtarget, VOIDmode, EXPAND_NORMAL);
   return expand_abs (mode, op0, target, 0, safe_from_p (target, arg, 1));
@@ -10749,6 +10750,8 @@ validate_arg (const_tree arg, enum tree_code code)
     return false;
   else if (code == POINTER_TYPE)
     return POINTER_TYPE_P (TREE_TYPE (arg));
+  else if (code == INTEGER_TYPE)
+    return INTEGRAL_TYPE_P (TREE_TYPE (arg));
   return code == TREE_CODE (TREE_TYPE (arg));
 }
 
