@@ -1,3 +1,16 @@
+2008-02-19  Tom Tromey  <tromey@redhat.com>
+
+	* traditional.c (lex_identifier): Use CPP_HASHNODE.
+	* lex.c (lex_identifier): Use CPP_HASHNODE.
+	* include/line-map.h (LINEMAP_POSITION_FOR_COLUMN): Wrap in
+	do-while.
+	* identifiers.c (alloc_node): Change return type.
+	(_cpp_init_hashtable): Don't cast 'alloc_node'.
+	(proxy_assertion_broken): New declaration.
+	(cpp_forall_identifiers): Move comment.
+	* line-map.c (linemap_add): Comment fix.
+	(linemap_line_start): Indentation fix.
+
 2008-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/34692

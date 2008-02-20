@@ -253,8 +253,8 @@ lex_identifier (cpp_reader *pfile, const uchar *cur)
 
   CUR (pfile->context) = cur;
   len = out - pfile->out.cur;
-  result = (cpp_hashnode *) ht_lookup (pfile->hash_table, pfile->out.cur,
-				       len, HT_ALLOC);
+  result = CPP_HASHNODE (ht_lookup (pfile->hash_table, pfile->out.cur,
+				    len, HT_ALLOC));
   pfile->out.cur = out;
   return result;
 }
