@@ -1,3 +1,9 @@
+2008-02-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/compat/struct-layout-1_generate.c (DG_OPTIONS): New define.
+	(switchfiles): Use DG_OPTIONS. Explicitly name arguments in fprintf
+	templates to reduce number of passed arguments.
+
 2008-02-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/34950

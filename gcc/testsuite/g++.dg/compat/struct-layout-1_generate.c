@@ -1,5 +1,5 @@
 /* Structure layout test generator.
-   Copyright (C) 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
 This file is part of GCC.
@@ -41,6 +41,12 @@ along with GCC; see the file COPYING3.  If not see
 #else 
 #define COMPAT_PRLL "ll"
 #endif
+
+#define DG_OPTIONS "\
+/* { dg-options \"%1$s-I%2$s\" } */\n\
+/* { dg-options \"%1$s-I%2$s -fno-common\" { target hppa*-*-hpux* } } */\n\
+/* { dg-options \"%1$s-I%2$s -mno-base-addresses\" { target mmix-*-* } } */\n\
+\n"
 
 typedef unsigned int hashval_t;
 
@@ -521,20 +527,17 @@ switchfiles (int fields)
       fputs ("failed to create test files\n", stderr);
       exit (1);
     }
-  fprintf (outfile, "\
-/* { dg-options \"-I%s\" } */\n\
-/* { dg-options \"-I%s -fno-common\" { target hppa*-*-hpux* } } */\n\
-/* { dg-options \"-I%s -mno-base-addresses\" { target mmix-*-* } } */\n\
+  fprintf (outfile, DG_OPTIONS "\
 #include \"struct-layout-1.h\"\n\
 \n\
 #define TX(n, type, attrs, fields, ops) extern void test##n (void);\n\
-#include \"t%03d_test.h\"\n\
+#include \"t%3$03d_test.h\"\n\
 #undef TX\n\
 \n\
 int main (void)\n\
 {\n\
 #define TX(n, type, attrs, fields, ops)   test##n ();\n\
-#include \"t%03d_test.h\"\n\
+#include \"t%3$03d_test.h\"\n\
 #undef TX\n\
   if (fails)\n\
     {\n\
@@ -542,33 +545,27 @@ int main (void)\n\
       abort ();\n\
     }\n\
   exit (0);\n\
-}\n", srcdir, srcdir, srcdir, filecnt, filecnt);
+}\n", "", srcdir, filecnt);
   fclose (outfile);
   sprintf (destptr, "t%03d_x.C", filecnt);
   outfile = fopen (destbuf, "w");
   if (outfile == NULL)
     goto fail;
-  fprintf (outfile, "\
-/* { dg-options \"-w -I%s\" } */\n\
-/* { dg-options \"-w -I%s -fno-common\" { target hppa*-*-hpux* } } */\n\
-/* { dg-options \"-w -I%s -mno-base-addresses\" { target mmix-*-* } } */\n\
+  fprintf (outfile, DG_OPTIONS "\
 #include \"struct-layout-1_x1.h\"\n\
-#include \"t%03d_test.h\"\n\
+#include \"t%3$03d_test.h\"\n\
 #include \"struct-layout-1_x2.h\"\n\
-#include \"t%03d_test.h\"\n", srcdir, srcdir, srcdir, filecnt, filecnt);
+#include \"t%3$03d_test.h\"\n", "-w ", srcdir, filecnt);
   fclose (outfile);
   sprintf (destptr, "t%03d_y.C", filecnt);
   outfile = fopen (destbuf, "w");
   if (outfile == NULL)
     goto fail;
-  fprintf (outfile, "\
-/* { dg-options \"-w -I%s\" } */\n\
-/* { dg-options \"-w -I%s -fno-common\" { target hppa*-*-hpux* } } */\n\
-/* { dg-options \"-w -I%s -mno-base-addresses\" { target mmix-*-* } } */\n\
+  fprintf (outfile, DG_OPTIONS "\
 #include \"struct-layout-1_y1.h\"\n\
-#include \"t%03d_test.h\"\n\
+#include \"t%3$03d_test.h\"\n\
 #include \"struct-layout-1_y2.h\"\n\
-#include \"t%03d_test.h\"\n", srcdir, srcdir, srcdir, filecnt, filecnt);
+#include \"t%3$03d_test.h\"\n", "-w ", srcdir, filecnt);
   fclose (outfile);
   sprintf (destptr, "t%03d_test.h", filecnt);
   outfile = fopen (destbuf, "w");
