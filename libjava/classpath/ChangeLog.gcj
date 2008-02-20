@@ -1,3 +1,9 @@
+2008-02-20  Matthias Klose  <doko@ubuntu.com>
+
+	* tools/Makefile.am ($(TOOLS_ZIP)): Revert part of previous change,
+	Do copy resource files in JAVA_MAINTAINER_MODE only.
+	* tools/Makefile.in: Regenerate.
+
 2008-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/cp-tools.texinfo (@direntry): Prefix info name with cp-.
