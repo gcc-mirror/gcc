@@ -455,7 +455,7 @@
 	  (const_int 1)))]
   "SSE_VEC_FLOAT_MODE_P (<MODE>mode)
    && ix86_binary_operator_ok (MULT, <MODE>mode, operands)"
-  "muls<ssemodesuffix2c>\t{%2, %0|%0, %2}"
+  "muls<ssemodesuffixf2c>\t{%2, %0|%0, %2}"
   [(set_attr "type" "ssemul")
    (set_attr "mode" "<ssescalarmode>")])
 
@@ -490,7 +490,7 @@
 	  (match_operand:SSEMODEF2P 1 "register_operand" "0")
 	  (match_operand:SSEMODEF2P 2 "nonimmediate_operand" "xm")))]
   "SSE_VEC_FLOAT_MODE_P (<MODE>mode)"
-  "divp<ssemodesuffix2c>\t{%2, %0|%0, %2}"
+  "divp<ssemodesuffixf2c>\t{%2, %0|%0, %2}"
   [(set_attr "type" "ssediv")
    (set_attr "mode" "<MODE>")])
 
@@ -503,7 +503,7 @@
 	  (match_dup 1)
 	  (const_int 1)))]
   "SSE_VEC_FLOAT_MODE_P (<MODE>mode)"
-  "divs<ssemodesuffix2c>\t{%2, %0|%0, %2}"
+  "divs<ssemodesuffixf2c>\t{%2, %0|%0, %2}"
   [(set_attr "type" "ssediv")
    (set_attr "mode" "<ssescalarmode>")])
 
@@ -566,7 +566,7 @@
 	  (match_operand:SSEMODEF2P 2 "register_operand" "0")
 	  (const_int 1)))]
   "SSE_VEC_FLOAT_MODE_P (<MODE>mode)"
-  "sqrts<ssemodesuffix2c>\t{%1, %0|%0, %1}"
+  "sqrts<ssemodesuffixf2c>\t{%1, %0|%0, %1}"
   [(set_attr "type" "sse")
    (set_attr "mode" "<ssescalarmode>")])
 
@@ -680,7 +680,7 @@
 	  (match_operand:SSEMODEF2P 1 "register_operand" "0")
 	  (match_operand:SSEMODEF2P 2 "nonimmediate_operand" "xm")))]
   "SSE_VEC_FLOAT_MODE_P (<MODE>mode)"
-  "maxp<ssemodesuffix2c>\t{%2, %0|%0, %2}"
+  "maxp<ssemodesuffixf2c>\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseadd")
    (set_attr "mode" "<MODE>")])
 
@@ -693,7 +693,7 @@
 	  (match_dup 1)
 	  (const_int 1)))]
   "SSE_VEC_FLOAT_MODE_P (<MODE>mode)"
-  "maxs<ssemodesuffix2c>\t{%2, %0|%0, %2}"
+  "maxs<ssemodesuffixf2c>\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseadd")
    (set_attr "mode" "<ssescalarmode>")])
 
@@ -7926,10 +7926,11 @@
 ;; SSE5 permute instructions
 (define_insn "sse5_pperm"
   [(set (match_operand:V16QI 0 "register_operand" "=x,x,x,x")
-	(unspec:V16QI [(match_operand:V16QI 1 "nonimmediate_operand" "0,0,x,xm")
-		       (match_operand:V16QI 2 "nonimmediate_operand" "x,xm,xm,x")
-		       (match_operand:V16QI 3 "nonimmediate_operand" "xm,x,0,0")]
-		     UNSPEC_SSE5_PERMUTE))]
+	(unspec:V16QI
+	  [(match_operand:V16QI 1 "nonimmediate_operand" "0,0,x,xm")
+	   (match_operand:V16QI 2 "nonimmediate_operand" "x,xm,xm,x")
+	   (match_operand:V16QI 3 "nonimmediate_operand" "xm,x,0,0")]
+	  UNSPEC_SSE5_PERMUTE))]
   "TARGET_SSE5 && ix86_sse5_valid_op_p (operands, insn, 4, true, 1)"
   "pperm\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "sse4arg")
@@ -8132,7 +8133,7 @@
 	 [(match_operand:SSEMODEF2P 1 "nonimmediate_operand" "xm")]
 	 UNSPEC_FRCZ))]
   "TARGET_SSE5"
-  "frcz<ssesuffixf4>\t{%1, %0|%0, %1}"
+  "frcz<ssemodesuffixf4>\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt1")
    (set_attr "prefix_extra" "1")
    (set_attr "mode" "<MODE>")])
@@ -8146,8 +8147,8 @@
 	   UNSPEC_FRCZ)
 	  (match_operand:SSEMODEF2P 1 "register_operand" "0")
 	  (const_int 1)))]
-  "TARGET_ROUND"
-  "frcz<ssesuffixf2s>\t{%2, %0|%0, %2}"
+  "TARGET_SSE5"
+  "frcz<ssemodesuffixf2s>\t{%2, %0|%0, %2}"
   [(set_attr "type" "ssecvt1")
    (set_attr "prefix_extra" "1")
    (set_attr "mode" "<MODE>")])
@@ -8289,10 +8290,11 @@
 ;; being added here to be complete.
 (define_insn "sse5_pcom_tf<mode>3"
   [(set (match_operand:SSEMODE1248 0 "register_operand" "=x")
-	(unspec:SSEMODE1248 [(match_operand:SSEMODE1248 1 "register_operand" "x")
-			     (match_operand:SSEMODE1248 2 "nonimmediate_operand" "xm")
-			     (match_operand:SI 3 "const_int_operand" "n")]
-			    UNSPEC_SSE5_TRUEFALSE))]
+	(unspec:SSEMODE1248
+	  [(match_operand:SSEMODE1248 1 "register_operand" "x")
+	   (match_operand:SSEMODE1248 2 "nonimmediate_operand" "xm")
+	   (match_operand:SI 3 "const_int_operand" "n")]
+	  UNSPEC_SSE5_TRUEFALSE))]
   "TARGET_SSE5"
 {
   return ((INTVAL (operands[3]) != 0)
