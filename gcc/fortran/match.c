@@ -519,6 +519,13 @@ gfc_match_name (char *buffer)
     }
   while (ISALNUM (c) || c == '_' || (gfc_option.flag_dollar_ok && c == '$'));
 
+  if (c == '$' && !gfc_option.flag_dollar_ok)
+    {
+      gfc_error ("Invalid character '$' at %C. Use -fdollar-ok to allow it as an extension");
+      return MATCH_ERROR;
+    }
+
+
   buffer[i] = '\0';
   gfc_current_locus = old_loc;
 

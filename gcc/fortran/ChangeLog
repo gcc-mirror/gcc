@@ -1,3 +1,8 @@
+2008-02-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34997
+	* match.c (gfc_match_name): Improve error message for '$'.
+
 2008-02-19  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/35030
