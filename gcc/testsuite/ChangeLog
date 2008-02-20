@@ -1,3 +1,7 @@
+2008-02-20  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/reassoc-13.c: New testcase.
+
 2008-02-20  Ira Rosen  <irar@il.ibm.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_unpack):
