@@ -1,5 +1,10 @@
 2008-02-20  Kaz Kojima  <kkojima@gcc.gnu.org>
 
+	PR target/35225
+	* config/sh/sh.c (find_barrier): Don't go past 'from' argument.
+
+2008-02-20  Kaz Kojima  <kkojima@gcc.gnu.org>
+
 	PR target/35190
 	* config/sh/sh.md (jump_compact): Disable for crossing jumps.
 
