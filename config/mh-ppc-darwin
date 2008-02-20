@@ -2,5 +2,4 @@
 # position-independent-code -- the usual default on Darwin. This fix speeds
 # compiles by 3-5%.
 
-# Broken because of PR32009.
-# BOOT_CFLAGS=-g -O2 -mdynamic-no-pic
+BOOT_CFLAGS=-g -O2 -mdynamic-no-pic

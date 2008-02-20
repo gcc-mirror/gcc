@@ -511,43 +511,51 @@ bootstrap_stage = {
 	//   compiler probably has never heard of them.
 	stage_configure_flags='--disable-intermodule $(STAGE1_CHECKING) \
 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)"' ;
-	stage_cflags='$(STAGE1_CFLAGS)' ; };
+	stage_cflags='$(STAGE1_CFLAGS)' ;
+	stage_libcflags='$(STAGE1_LIBCFLAGS)' ; };
 bootstrap_stage = {
 	id=2 ; prev=1 ;
 	bootstrap_target=bootstrap2 ;
 	stage_configure_flags="@stage2_werror_flag@" ;
-	stage_cflags="$(STAGE2_CFLAGS)" ; };
+	stage_cflags="$(STAGE2_CFLAGS)" ;
+	stage_libcflags="$(STAGE2_LIBCFLAGS)" ; };
 bootstrap_stage = {
 	id=b2g0 ; prev=1 ;
 	bootstrap_target=bootstrap2-debug ;
 	stage_configure_flags="@stage2_werror_flag@" ;
-	stage_cflags="$(STAGE2_CFLAGS) -g0" ; };
+	stage_cflags="$(STAGE2_CFLAGS) -g0" ;
+	stage_libcflags="$(STAGE2_LIBCFLAGS) -g0" ; };
 bootstrap_stage = {
 	id=3 ; prev=2 ; lean=1 ;
 	compare_target=compare ;
 	bootstrap_target=bootstrap ;
 	cleanstrap_target=cleanstrap ;
 	stage_configure_flags="@stage2_werror_flag@" ;
-	stage_cflags="$(STAGE3_CFLAGS)" ; };
+	stage_cflags="$(STAGE3_CFLAGS)" ;
+	stage_libcflags="$(STAGE3_LIBCFLAGS)" ; };
 bootstrap_stage = {
 	id=b3g2 ; prev=b2g0 ; lean=1 ;
 	compare_target=compare-debug ;
 	bootstrap_target=bootstrap-debug ;
 	cleanstrap_target=cleanstrap-debug ;
 	stage_configure_flags="@stage2_werror_flag@" ;
-	stage_cflags="$(STAGE3_CFLAGS) -g2" ; };
+	stage_cflags="$(STAGE3_CFLAGS) -g2" ;
+	stage_libcflags="$(STAGE3_LIBCFLAGS) -g2" ; };
 bootstrap_stage = {
 	id=4 ; prev=3 ; lean=2 ;
 	compare_target=compare3 ;
 	bootstrap_target=bootstrap4 ;
 	stage_configure_flags="@stage2_werror_flag@" ;
-	stage_cflags="$(STAGE4_CFLAGS)" ; };
+	stage_cflags="$(STAGE4_CFLAGS)" ;
+	stage_libcflags="$(STAGE4_CFLAGS)" ; };
 bootstrap_stage = {
 	id=profile ; prev=1 ;
 	stage_configure_flags="@stage2_werror_flag@" ;
-	stage_cflags='$(STAGE2_CFLAGS) -fprofile-generate' ; };
+	stage_cflags='$(STAGE2_CFLAGS) -fprofile-generate' ;
+	stage_libcflags='$(STAGE2_LIBCFLAGS) -fprofile-generate' ; };
 bootstrap_stage = {
 	id=feedback ; prev=profile ;
 	bootstrap_target=profiledbootstrap ;
 	stage_configure_flags="@stage2_werror_flag@" ;
-	stage_cflags='$(STAGE3_CFLAGS) -fprofile-use' ; };
+	stage_cflags='$(STAGE3_CFLAGS) -fprofile-use' ;
+	stage_libcflags='$(STAGE3_LIBCFLAGS) -fprofile-use' ; };
