@@ -1,3 +1,11 @@
+2008-02-20  Ira Rosen  <irar@il.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_unpack):
+	Return true for SPU.
+	(check_effective_target_vect_short_mult): Likewise.
+	* gcc.dg/vect/vect-reduc-dot-s16b.c: Expect vectorization of
+	the loop on targets that support vect_unpack.
+
 2008-02-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/compat/struct-layout-1_generate.c (DG_OPTIONS): New define.
