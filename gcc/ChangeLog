@@ -12,9 +12,9 @@
 
 2008-02-20  Paolo Bonzini  <bonzini@gnu.org>
 
-        * doc/install.texi: Correct references to CFLAGS, replacing them
-        with BOOT_CFLAGS.  Document flags used during bootstrap for
-        target libraries.
+	* doc/install.texi: Correct references to CFLAGS, replacing them
+	with BOOT_CFLAGS.  Document flags used during bootstrap for
+	target libraries.
 				
 2008-02-20  Uros Bizjak  <ubizjak@gmail.com>
 
