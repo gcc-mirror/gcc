@@ -111,7 +111,8 @@
 @c %**end of header
 
 @copying
-Copyright @copyright{} 1995-2005, Free Software Foundation
+Copyright @copyright{} 1995-2005, 2008 Free Software
+Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2
@@ -5190,9 +5191,9 @@ overwriting may occur.
 @cindex @option{-gnatVf} (@command{gcc})
 In the absence of this switch, validity checking occurs only for discrete
 values. If @option{-gnatVf} is specified, then validity checking also applies
-for floating-point values, and NaN's and infinities are considered invalid,
+for floating-point values, and NaNs and infinities are considered invalid,
 as well as out of range values for constrained types. Note that this means
-that standard @code{IEEE} infinity mode is not allowed. The exact contexts
+that standard IEEE infinity mode is not allowed. The exact contexts
 in which floating-point values are checked depends on the setting of other
 options. For example,
 @option{^-gnatVif^VALIDITY_CHECKING=(IN_PARAMS,FLOATS)^} or
@@ -6159,7 +6160,7 @@ For full details on the these encoding
 methods see @ref{Wide Character Encodings}.
 Note that brackets coding is always accepted, even if one of the other
 options is specified, so for example @option{-gnatW8} specifies that both
-brackets and @code{UTF-8} encodings will be recognized. The units that are
+brackets and UTF-8 encodings will be recognized. The units that are
 with'ed directly or indirectly will be scanned using the specified
 representation scheme, and so if one of the non-brackets scheme is
 used, it must be used consistently throughout the program. However,
@@ -8787,7 +8788,7 @@ $ gnatmake /SOURCE_SEARCH=@i{[INCLUDE_DIR]}
 @item
 Using @command{gnatmake} along with the
 @option{^-m (minimal recompilation)^/MINIMAL_RECOMPILATION^}
-switch provides a mechanism for avoiding unnecessary rcompilations. Using
+switch provides a mechanism for avoiding unnecessary recompilations. Using
 this switch,
 you can update the comments/format of your
 source files without having to recompile everything. Note, however, that
@@ -11393,7 +11394,7 @@ reserved words currently used in project file syntax are:
 @end itemize
 
 @noindent
-Comments in project files have the same syntax as in Ada, two consecutives
+Comments in project files have the same syntax as in Ada, two consecutive
 hyphens through the end of the line.
 
 @node Packages
@@ -14049,7 +14050,7 @@ the source path. If you specify directories, no result is produced.
 @end table
 
 @noindent
-The switches can be :
+The switches can be:
 @table @option
 @c !sort!
 @item ^-a^/ALL_FILES^
@@ -14418,14 +14419,14 @@ specifies the command used to debug the application
 @noindent
 As specified in the section about @command{gnatfind}, the pattern can be a
 regular expression. Actually, there are to set of regular expressions
-which are recognized by the program :
+which are recognized by the program:
 
 @table @code
 @item globbing patterns
 These are the most usual regular expression. They are the same that you
 generally used in a Unix shell command line, or in a DOS session.
 
-Here is a more formal grammar :
+Here is a more formal grammar:
 @smallexample
 @group
 @iftex
@@ -14436,7 +14437,7 @@ term   ::= elmt            -- matches elmt
 term   ::= elmt elmt       -- concatenation (elmt then elmt)
 term   ::= *               -- any string of 0 or more characters
 term   ::= ?               -- matches any character
-term   ::= [char @{char@}] -- matches any character listed
+term   ::= [char @{char@}]   -- matches any character listed
 term   ::= [char - char]   -- matches any character in range
 @end group
 @end smallexample
@@ -14453,9 +14454,9 @@ reference manual style BNF is as follows
 @leftskip=.5cm
 @end iftex
 @group
-regexp ::= term @{| term@} -- alternation (term or term ...)
+regexp ::= term @{| term@}   -- alternation (term or term ...)
 
-term ::= item @{item@}     -- concatenation (item then item)
+term ::= item @{item@}       -- concatenation (item then item)
 
 item ::= elmt              -- match elmt
 item ::= elmt *            -- zero or more elmt's
@@ -14476,7 +14477,7 @@ nschar ::= any character except ()[].*+?^^^
 @end group
 @end smallexample
 
-Following are a few examples :
+Following are a few examples:
 
 @table @samp
 @item abcde|fghi
@@ -14487,7 +14488,7 @@ will match any string like 'abd', 'abcd', 'abccd', 'abcccd', and so on
 
 @item [a-z]+
 will match any string which has only lowercase characters in it (and at
-least one character
+least one character.
 
 @end table
 @end table
@@ -14498,7 +14499,7 @@ least one character
 @subsection General Usage
 
 @noindent
-For the following examples, we will consider the following units :
+For the following examples, we will consider the following units:
 
 @smallexample @c ada
 @group
@@ -14594,9 +14595,9 @@ of these.
 @subsection Using gnatxref with vi
 
 @code{gnatxref} can generate a tags file output, which can be used
-directly from @file{vi}. Note that the standard version of @file{vi}
+directly from @command{vi}. Note that the standard version of @command{vi}
 will not work properly with overloaded symbols. Consider using another
-free implementation of @file{vi}, such as @file{vim}.
+free implementation of @command{vi}, such as @command{vim}.
 
 @smallexample
 $ gnatxref -v gnatfind.adb > tags
@@ -14606,7 +14607,7 @@ $ gnatxref -v gnatfind.adb > tags
 will generate the tags file for @code{gnatfind} itself (if the sources
 are in the search path!).
 
-From @file{vi}, you can then use the command @samp{:tag @i{entity}}
+From @command{vi}, you can then use the command @samp{:tag @i{entity}}
 (replacing @i{entity} by whatever you are looking for), and vi will
 display a new file with the corresponding declaration of entity.
 @end ifclear
@@ -17880,7 +17881,7 @@ GLIB=...
 
 # The directories for the libraries
 # (This macro expands the list of CSC to the list of shared libraries, you
-# could simply use the expanded form :
+# could simply use the expanded form:
 # LIB_DIR=aa/lib/libaa.so bb/lib/libbb.so cc/lib/libcc.so
 LIB_DIR=$@{foreach dir,$@{CSC_LIST@},$@{dir@}/lib/lib$@{dir@}.so@}
 
@@ -19051,7 +19052,7 @@ You can pass it as many Ada files as you want. @code{gnathtml} will generate
 an html file for every ada file, and a global file called @file{index.htm}.
 This file is an index of every identifier defined in the files.
 
-The available switches are the following ones :
+The available switches are the following ones:
 
 @table @option
 @item -83
@@ -19140,7 +19141,7 @@ Operating System via the Internet.
 
 On Unix systems, you  may want to modify  the  first line of  the script
 @code{gnathtml},  to explicitly  tell  the Operating  system  where Perl
-is. The syntax of this line is :
+is. The syntax of this line is:
 @smallexample
 #!full_path_name_to_perl
 @end smallexample

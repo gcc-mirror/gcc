@@ -1,3 +1,17 @@
+2008-02-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR documentation/15479
+	* gnat_ugn.texi: In non-code, avoid space before colon.
+	(Regular Expressions in gnatfind and gnatxref): Fix indentation.
+	(Examples of gnatxref Usage): Use @command{vi} instead of
+	@file{vi}.
+	(Character Set Control): Do not use @code for UTF-8.
+	(Validity Checking): Fix typo "NaNs" instead of "NaN's".  Do not
+	use @code for IEEE.
+	* gnat_rm.texi (Aggregates with static bounds): Fix typo in code
+	sample.
+	* gnat_rm.texi, gnat_ugn.texi: Fix typos.  Bump copyright years.
+
 2007-02-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/30684

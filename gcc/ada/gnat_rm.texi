@@ -32,7 +32,7 @@
 @end direntry
 
 @copying
-Copyright @copyright{} 1995-2004, Free Software Foundation
+Copyright @copyright{} 1995-2004, 2005, 2008 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2
@@ -1657,7 +1657,7 @@ region as the function to which they apply.
 pragma applies.  If more than one function name exists of this name in
 the declarative part you must use the @code{Parameter_Types} and
 @code{Result_Type} parameters is mandatory to achieve the required
-unique designation.  @var{subtype_ mark}s in these parameters must
+unique designation.  @var{subtype_mark}s in these parameters must
 exactly match the subtypes in the corresponding function specification,
 using positional notation to match parameters with subtype marks.
 The form with an @code{'Access} attribute can be used to match an
@@ -6750,7 +6750,7 @@ See separate section on source representation.
 length.  See 2.2(15).
 @end cartouche
 @noindent
-The maximum line length is 255 characters an the maximum length of a
+The maximum line length is 255 characters and the maximum length of a
 lexical element is also 255 characters.
 
 @sp 1
@@ -7854,7 +7854,7 @@ pragma Linker_Options ("-labc" & ASCII.Nul & "-ldef");
 causes two separate arguments @code{-labc} and @code{-ldef} to be passed to the
 linker. The order of linker options is preserved for a given unit. The final
 list of options passed to the linker is in reverse order of the elaboration
-order. For example, linker options fo a body always appear before the options
+order. For example, linker options for a body always appear before the options
 from the corresponding package spec.
 
 @sp 1
@@ -14068,7 +14068,7 @@ generate the equivalent of
        Cr_Var1 (4) := 11;
 
        for I in Cr_Var2'range loop
-          Cr_Var2 (I) := =-1;
+          Cr_Var2 (I) := -1;
        end loop;
 @end smallexample
 
