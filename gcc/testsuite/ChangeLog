@@ -1,3 +1,8 @@
+2008-02-20  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/35265
+	* gcc.dg/builtins-66.c: New testcase.
+
 2008-02-20  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR rtl-optimization/35232

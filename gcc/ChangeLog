@@ -1,3 +1,9 @@
+2008-02-20  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/35265
+	* builtins.c (validate_arg): If we want an INTEGER_TYPE,
+	be happy with INTEGRAL_TYPE_P.
+
 2008-02-19  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR bootstrap/35218
