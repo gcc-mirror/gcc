@@ -186,7 +186,6 @@ if JAVA_MAINTAINER_MODE
 	AC=`echo $(JCOMPILER) | sed -e 's/UTF-8/ISO-8859-1/g'`; \
 	  $$AC -g -w -d $(srcdir)/asm @asm.lst
 	$(JCOMPILER) -g -w -d $(srcdir)/classes @classes.lst @vm-tools.lst
-endif
 ## Copy over tools resource files.
 	@list=`cd $(top_srcdir)/resource && find gnu/classpath/tools \
 	       com/sun/javadoc com/sun/tools/doclets com/sun/tools/javac \
@@ -197,6 +196,7 @@ endif
 	  echo "  cp $(top_srcdir)/resource/$$p classes/$$p"; \
 	  cp $(top_srcdir)/resource/$$p classes/$$p; \
 	done
+endif
 ## Copy over rmic template files.
 	@list=`cd $(srcdir) && find gnu/classpath/tools -name \*.jav -print`; \
 	for p in $$list; do \
