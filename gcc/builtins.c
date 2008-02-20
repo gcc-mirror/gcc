@@ -9246,6 +9246,11 @@ validate_arglist (tree arglist, ...)
 	      if (! POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (arglist))))
 		goto end;
 	    }
+	  else if (code == INTEGER_TYPE)
+	    {
+	      if (! INTEGRAL_TYPE_P (TREE_TYPE (TREE_VALUE (arglist))))
+		goto end;
+	    }
 	  else if (code != TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))))
 	    goto end;
 	  break;
