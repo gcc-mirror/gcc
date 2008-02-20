@@ -1023,7 +1023,7 @@ if test "x${with_newlib}" = "xyes"; then
    PLATFORMNET=NoNet
 else
    AC_CHECK_FUNCS([strerror_r select fstat open fsync sleep opendir \
-                   localtime_r readdir_r getpwuid_r getcwd \
+                   localtime_r getpwuid_r getcwd \
 		   access stat lstat mkdir rename rmdir unlink utime chmod readlink \
 		   nl_langinfo setlocale \
 		   inet_pton uname inet_ntoa \
