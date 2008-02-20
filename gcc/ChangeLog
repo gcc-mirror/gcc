@@ -1,3 +1,11 @@
+2008-02-20  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/35190
+	* config/sh/sh.md (jump_compact): Disable for crossing jumps.
+
+	* config/sh/sh.c (find_barrier): Don't go past
+	NOTE_INSN_SWITCH_TEXT_SECTIONS note.
+
 2008-02-20  DJ Delorie  <dj@redhat.com>
 
 	* config/h8300/h8300.md (insv): Force source operand to be a register.
