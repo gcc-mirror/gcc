@@ -167,6 +167,19 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
     case FMT_E:
     case FMT_D:
       i = dtp->u.p.scale_factor;
+      if (d <= 0 && i == 0)
+	{
+	  generate_error (&dtp->common, LIBERROR_FORMAT, "Precision not "
+			  "greater than zero in format specifier 'E' or 'D'");
+	  return;
+	}
+      if (i <= -d || i >= d + 2)
+	{
+	  generate_error (&dtp->common, LIBERROR_FORMAT, "Scale factor "
+			  "out of range in format specifier 'E' or 'D'");
+	  return;
+	}
+
       if (!zero_flag)
 	e -= i;
       if (i < 0)
