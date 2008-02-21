@@ -2,8 +2,8 @@
 # Run 'configure' to generate Makefile from Makefile.in
 
 # Copyright (C) 1987, 1988, 1990, 1991, 1992, 1993, 1994, 1995, 1996,
-# 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
-# Free Software Foundation, Inc.
+# 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+# 2008 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -275,7 +275,9 @@ POD2MAN = pod2man --center="GNU" --release="gcc-$(version)"
 # do not correctly set the timestamp due to buggy versions of `utime'
 # in the kernel.  So, we use `echo' instead.
 STAMP = echo timestamp >
-# Translate absolute file names to w32 paths.
+# If necessary (e.g., when using the MSYS shell on Microsoft Windows)
+# translate the shell's notion of absolute pathnames to the native
+# spelling.
 build_file_translate = @build_file_translate@
 
 # Make sure the $(MAKE) variable is defined.
