@@ -92,15 +92,15 @@ DEF_PREDICTOR (PRED_TREE_POINTER, "pointer (on trees)", HITRATE (85), 0)
 DEF_PREDICTOR (PRED_OPCODE_POSITIVE, "opcode values positive", HITRATE (79), 0)
 DEF_PREDICTOR (PRED_OPCODE_NONEQUAL, "opcode values nonequal", HITRATE (71), 0)
 DEF_PREDICTOR (PRED_FPOPCODE, "fp_opcode", HITRATE (90), 0)
-DEF_PREDICTOR (PRED_TREE_OPCODE_POSITIVE, "opcode values positive (on trees)", HITRATE (70), 0)
-DEF_PREDICTOR (PRED_TREE_OPCODE_NONEQUAL, "opcode values nonequal (on trees)", HITRATE (69), 0)
+DEF_PREDICTOR (PRED_TREE_OPCODE_POSITIVE, "opcode values positive (on trees)", HITRATE (73), 0)
+DEF_PREDICTOR (PRED_TREE_OPCODE_NONEQUAL, "opcode values nonequal (on trees)", HITRATE (72), 0)
 DEF_PREDICTOR (PRED_TREE_FPOPCODE, "fp_opcode (on trees)", HITRATE (90), 0)
 
 /* Branch guarding call is probably taken.  */
-DEF_PREDICTOR (PRED_CALL, "call", HITRATE (69), 0)
+DEF_PREDICTOR (PRED_CALL, "call", HITRATE (71), 0)
 
 /* Branch causing function to terminate is probably not taken.  */
-DEF_PREDICTOR (PRED_TREE_EARLY_RETURN, "early return (on trees)", HITRATE (54), 0)
+DEF_PREDICTOR (PRED_TREE_EARLY_RETURN, "early return (on trees)", HITRATE (61), 0)
 
 /* Branch containing goto is probably not taken.  */
 DEF_PREDICTOR (PRED_GOTO, "goto", HITRATE (70), 0)
@@ -112,7 +112,7 @@ DEF_PREDICTOR (PRED_CONST_RETURN, "const return", HITRATE (67), 0)
 DEF_PREDICTOR (PRED_NEGATIVE_RETURN, "negative return", HITRATE (96), 0)
 
 /* Branch ending with return; is probably not taken */
-DEF_PREDICTOR (PRED_NULL_RETURN, "null return", HITRATE (96), 0)
+DEF_PREDICTOR (PRED_NULL_RETURN, "null return", HITRATE (90), 0)
 
 /* Branches to a mudflap bounds check are extremely unlikely.  */
 DEF_PREDICTOR (PRED_MUDFLAP, "mudflap check", PROB_VERY_LIKELY, 0)
