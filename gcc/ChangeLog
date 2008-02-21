@@ -1,3 +1,15 @@
+2008-02-21  Richard Guenther  <rguenther@suse.de>
+
+	* tree.def (PAREN_EXPR): New tree code.
+	* fold-const.c (fold_unary): Remove PAREN_EXPR around constants
+	and PAREN_EXPR.
+	* tree-pretty-print.c (dump_generic_node): Handle PAREN_EXPR.
+	* expr.c (expand_expr_real_1): Likewise.
+	* tree-inline.c (estimate_num_insns_1): Likewise.
+	* tree-complex.c (expand_complex_move): Likewise.
+	* tree-vectorizer.c (vect_is_simple_use): Treat PAREN_EXPR (x)
+	as plain x.
+
 2008-02-20  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/35225

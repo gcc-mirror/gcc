@@ -8027,6 +8027,14 @@ fold_unary (enum tree_code code, tree type, tree op0)
 
   switch (code)
     {
+    case PAREN_EXPR:
+      /* Re-association barriers around constants and other re-association
+	 barriers can be removed.  */
+      if (CONSTANT_CLASS_P (op0)
+	  || TREE_CODE (op0) == PAREN_EXPR)
+	return fold_convert (type, op0);
+      return NULL_TREE;
+
     case NOP_EXPR:
     case FLOAT_EXPR:
     case CONVERT_EXPR:
