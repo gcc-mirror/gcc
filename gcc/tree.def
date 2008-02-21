@@ -733,6 +733,10 @@ DEFTREECODE (LTGT_EXPR, "ltgt_expr", tcc_comparison, 2)
 
 DEFTREECODE (RANGE_EXPR, "range_expr", tcc_binary, 2)
 
+/* Represents a re-association barrier for floating point expressions
+   like explicit parenthesis in fortran.  */
+DEFTREECODE (PAREN_EXPR, "paren_expr", tcc_unary, 1)
+
 /* Represents a conversion of type of a value.
    All conversions, including implicit ones, must be
    represented by CONVERT_EXPR or NOP_EXPR nodes.  */

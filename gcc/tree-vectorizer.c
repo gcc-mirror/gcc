@@ -2002,7 +2002,13 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, tree *def_stmt,
       *dt = vect_invariant_def;
       return true;
    }
-    
+
+  if (TREE_CODE (operand) == PAREN_EXPR)
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "non-associatable copy.");
+      operand = TREE_OPERAND (operand, 0);
+    }
   if (TREE_CODE (operand) != SSA_NAME)
     {
       if (vect_print_dump_info (REPORT_DETAILS))

@@ -8049,6 +8049,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       }
       return expand_call (exp, target, ignore);
 
+    case PAREN_EXPR:
     case NON_LVALUE_EXPR:
     case NOP_EXPR:
     case CONVERT_EXPR:

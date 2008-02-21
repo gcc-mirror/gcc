@@ -1,3 +1,9 @@
+2008-02-21  Richard Guenther  <rguenther@suse.de>
+
+	* trans-expr.c (gfc_conv_expr_op): Expand INTRINSIC_PARENTHESES
+	as unary PAREN_EXPR for real and complex typed expressions.
+	(gfc_conv_unary_op): Fold the built tree.
+
 2008-02-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34997

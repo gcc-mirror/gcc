@@ -607,10 +607,10 @@ gfc_conv_unary_op (enum tree_code code, gfc_se * se, gfc_expr * expr)
      We must convert it to a compare to 0 (e.g. EQ_EXPR (op1, 0)).
      All other unary operators have an equivalent GIMPLE unary operator.  */
   if (code == TRUTH_NOT_EXPR)
-    se->expr = build2 (EQ_EXPR, type, operand.expr,
-		       build_int_cst (type, 0));
+    se->expr = fold_build2 (EQ_EXPR, type, operand.expr,
+			    build_int_cst (type, 0));
   else
-    se->expr = build1 (code, type, operand.expr);
+    se->expr = fold_build1 (code, type, operand.expr);
 
 }
 
@@ -1071,8 +1071,17 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
   lop = 0;
   switch (expr->value.op.operator)
     {
-    case INTRINSIC_UPLUS:
     case INTRINSIC_PARENTHESES:
+      if (expr->ts.type == BT_REAL
+	  || expr->ts.type == BT_COMPLEX)
+	{
+	  gfc_conv_unary_op (PAREN_EXPR, se, expr);
+	  gcc_assert (FLOAT_TYPE_P (TREE_TYPE (se->expr)));
+	  return;
+	}
+
+      /* Fallthrough.  */
+    case INTRINSIC_UPLUS:
       gfc_conv_expr (se, expr->value.op.op1);
       return;
 
