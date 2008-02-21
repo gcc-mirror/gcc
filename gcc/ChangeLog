@@ -1,3 +1,22 @@
+2008-02-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (mov<mode>cc): Macroize expander from movsfcc,
+	movdfcc and movxfcc using X87MODEF mode iterator and SSE_FLOAT_MODE_P
+	as insn constraint.
+	* config/i386/sse.md (<sse>_movup<ssemodesuffixf2c>): Macroize insn
+	from sse_movups adn sse2_movupd using SSEMODEF2P mode iterator and
+	SSE_VEC_FLOAT_MODE_P as insn constraint.
+	(<sse>_movmskp<ssemodesuffixf2c>): Ditto from similar patterns.
+	(sse4a_movnt<mode>): Macroize insn from sse4a_movntsf and
+	sse4a_movntdf using MODEF mode iterator.
+	(sse4a_vmmovnt<mode>): Macroize insn form sse4a_vmmovntv2df and
+	sse4a_vmmovntv4sf using SSEMODEF2P mode iterator.
+	(sse4_1_blendp<ssemodesuffixf2c>): Ditto from similar patterns.
+	(sse4_1_blendvp<ssemodesuffixf2c>): Ditto.
+	(sse4_1_dpp<ssemodesuffixf2c>): Ditto.
+	(sse4_1_roundp<ssemodesuffixf2c>): Ditto.
+	(sse4_1_rounds<ssemodesuffixf2c>): Ditto.
+
 2008-02-21  Richard Guenther  <rguenther@suse.de>
 
 	* tree.def (PAREN_EXPR): New tree code.
