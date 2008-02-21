@@ -916,8 +916,8 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
      the entire field has been read.  The next read field will start right after
      the comma in the stream.  (Set to 0 for character reads).  */
   dtp->u.p.sf_read_comma = 1;
-
   dtp->u.p.line_buffer = scratch;
+
   for (;;)
     {
       /* If reversion has occurred and there is another real data item,
@@ -1273,6 +1273,11 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 		}
 	      else
 		read_x (dtp, dtp->u.p.skips);
+	    }
+	  else
+	    {
+	      if (dtp->u.p.skips < 0)
+		flush (dtp->u.p.current_unit->s);
 	    }
 
 	  break;
@@ -2007,6 +2012,8 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	dtp->u.p.current_unit->strm_pos = dtp->rec;
 
     }
+  else
+    dtp->rec = 0;
 
   /* Overwriting an existing sequential file ?
      it is always safe to truncate the file on the first write */
@@ -2583,7 +2590,8 @@ next_record_w (st_parameter_dt *dtp, int done)
 	  if (max_pos > m)
 	    {
 	      length = (int) (max_pos - m);
-	      p = salloc_w (dtp->u.p.current_unit->s, &length);
+	      sseek (dtp->u.p.current_unit->s,
+		     file_position (dtp->u.p.current_unit->s) + length);
 	    }
 #ifdef HAVE_CRLF
 	  len = 2;
@@ -2594,7 +2602,10 @@ next_record_w (st_parameter_dt *dtp, int done)
 	    goto io_error;
 	  
 	  if (is_stream_io (dtp))
-	    dtp->u.p.current_unit->strm_pos += len;
+	    {
+	      dtp->u.p.current_unit->strm_pos += len;
+	      struncate(dtp->u.p.current_unit->s);
+	    }
 	}
 
       break;

@@ -1,5 +1,19 @@
 2008-02-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR libfortran/35132
+	* io/transfer.c (next_record_w): Truncate after the last record for
+	STREAM I/O.
+
+	PR libfortran/34954
+	* io/transfer.c (data_transfer_init): Initialize dtp->rec if writing.
+
+	PR libfortran/34974
+	* io/transfer.c (formatted_transfer_scalar): Flush the buffer if skips
+	is less than zero. (next_record_w): Use sseek to position the file to
+	the max position reached.
+
+2008-02-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR libfortran/35036
 	* write_float.def (output_float):  Add error checks for zero digits
 	after decimal point in E and D format specifiers.
