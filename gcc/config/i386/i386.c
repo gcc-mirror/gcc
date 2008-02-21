@@ -12148,6 +12148,7 @@ ix86_expand_branch (enum rtx_code code, rtx label)
 		  ix86_expand_branch (code, label);
 		  return;
 		}
+	      break;
 	    case LE: case LEU: case GT: case GTU:
 	      if (lo[1] == constm1_rtx)
 		{
@@ -12156,6 +12157,7 @@ ix86_expand_branch (enum rtx_code code, rtx label)
 		  ix86_expand_branch (code, label);
 		  return;
 		}
+	      break;
 	    default:
 	      break;
 	    }
