@@ -1,5 +1,13 @@
 2008-02-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR libfortran/34974
+	* gfortran.dg/fmt_t_7.f: New test.
+
+	PR libfortran/35132
+	* gfortran.dg/streamio_15.f90: New test.
+	
+2008-02-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR libfortran/35036
 	* gfortran.dg/fmt_zero_digits.f90: Revise test.
 
