@@ -1,3 +1,8 @@
+2008-02-21  Michael Matz  <matz@suse.de>
+
+	PR target/35264
+	* config/i386/i386.c (ix86_expand_branch): Add missing breaks.
+
 2008-02-20  DJ Delorie  <dj@redhat.com>
 
 	* config/h8300/h8300.md (insv): Force source operand to be a register.

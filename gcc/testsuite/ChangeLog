@@ -1,3 +1,8 @@
+2008-02-21  Michael Matz  <matz@suse.de>
+
+	PR target/35264
+	* gcc.dg/pr35264.c: New testcase.
+
 2008-02-20  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/35265
