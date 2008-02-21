@@ -1,5 +1,5 @@
 # GCC build-specific configuration file.
-# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2007
+# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2007, 2008
 # Free Software Foundation, Inc.
 
 #This file is part of GCC.
@@ -80,7 +80,11 @@ case $build in
   i[34567]86-*-mingw32* | x86_64-*-mingw*)
     build_xm_file=i386/xm-mingw32.h
     build_exeext=.exe
-    build_file_translate="CMD //C"
+    t=`(CMD //c echo /c) 2>/dev/null`
+    case $t in ?:*)
+      build_file_translate="CMD //c"
+      ;;
+    esac
     ;;
   i[34567]86-pc-msdosdjgpp*)
     build_xm_file=i386/xm-djgpp.h

@@ -1,3 +1,10 @@
+2008-02-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/35273
+	* config.build (build_file_translate): Set to `CMD //c' only if
+	it works.
+	* Makefile.in (build_file_translate): Improve comment.
+
 2008-02-21  Michael Matz  <matz@suse.de>
 
 	PR target/35264
