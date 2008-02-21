@@ -1,3 +1,8 @@
+2008-02-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/35036
+	* gfortran.dg/fmt_zero_digits.f90: Revise test.
+
 2008-02-20  Seongbae Park <seongbae.park@gmail.com>
 
 	* gcc.dg/Wframe-larger-than.c: New option test.
