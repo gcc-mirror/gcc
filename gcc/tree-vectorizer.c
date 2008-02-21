@@ -2348,7 +2348,7 @@ reduction_code_for_scalar_code (enum tree_code code,
 
 /* Function vect_is_simple_reduction
 
-   Detect a cross-iteration def-use cucle that represents a simple
+   Detect a cross-iteration def-use cycle that represents a simple
    reduction computation. We look for the following pattern:
 
    loop_header:
