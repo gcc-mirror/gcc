@@ -1,3 +1,7 @@
+2008-02-22  Tomas Bily  <tbily@suse.cz>
+
+	* tree-vectorizer.c (vect_is_simple_reduction): Fix comment typo.
+
 2008-02-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR bootstrap/35273
