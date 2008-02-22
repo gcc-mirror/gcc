@@ -1,6 +1,6 @@
 /* Compute register class preferences for pseudo-registers.
    Copyright (C) 1987, 1988, 1991, 1992, 1993, 1994, 1995, 1996
-   1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -2322,8 +2322,6 @@ reg_scan (rtx f, unsigned int nregs ATTRIBUTE_UNUSED)
    NOTE_FLAG is nonzero if X is from INSN's notes rather than its body.
    We should only record information for REGs with numbers
    greater than or equal to MIN_REGNO.  */
-
-extern struct tree_opt_pass *current_pass;
 
 static void
 reg_scan_mark_refs (rtx x, rtx insn)
