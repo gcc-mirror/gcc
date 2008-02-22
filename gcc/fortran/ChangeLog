@@ -1,3 +1,9 @@
+2008-02-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* gfc-internals.texi: Fix typos and markup nits.
+	* gfortran.texi: Likewise.
+	* intrinsic.texi: Likewise.
+
 2008-02-21  Richard Guenther  <rguenther@suse.de>
 
 	* trans-expr.c (gfc_conv_expr_op): Expand INTRINSIC_PARENTHESES

@@ -1855,7 +1855,7 @@ end program test_btest
 
 @table @asis
 @item @emph{Description}:
-@code{C_ASSOICATED(c_prt1[, c_ptr2])} determines the status of the C pointer @var{c_ptr1}
+@code{C_ASSOCIATED(c_prt1[, c_ptr2])} determines the status of the C pointer @var{c_ptr1}
 or if @var{c_ptr1} is associated with the target @var{c_ptr2}.
 
 @item @emph{Standard}:
@@ -1865,7 +1865,7 @@ F2003 and later
 Inquiry function
 
 @item @emph{Syntax}:
-@code{RESULT = C_ASSOICATED(c_prt1[, c_ptr2])}
+@code{RESULT = C_ASSOCIATED(c_prt1[, c_ptr2])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -3332,7 +3332,7 @@ become, negative, or numerically less than previous values, during a single
 run of the compiled program.
 
 Please note, that this implementation is thread safe if used within OpenMP
-directives, i. e. its state will be consistent while called from multiple
+directives, i.e., its state will be consistent while called from multiple
 threads. However, if @code{DTIME} is called from multiple threads, the result
 is still the time since the last invocation. This may not give the intended
 results. If possible, use @code{CPU_TIME} instead.
@@ -6414,7 +6414,7 @@ The return value is of type @code{INTEGER} and of kind @var{KIND}. If
 
 @table @asis
 @item @emph{Description}:
-@code{GAMMA(X)} computes the natural logrithm of the absolute value of the
+@code{GAMMA(X)} computes the natural logarithm of the absolute value of the
 Gamma (@math{\Gamma}) function.
 
 @item @emph{Standard}:
@@ -7720,7 +7720,7 @@ cases, the result is of the same type and kind as @var{ARRAY}.
 
 @table @asis
 @item @emph{Description}:
-@code{MOD(A,P)} computes the remainder of the division of A by P. It is
+@code{MOD(A,P)} computes the remainder of the division of A by P@. It is
 calculated as @code{A - (INT(A/P) * P)}.
 
 @item @emph{Standard}:
@@ -8566,7 +8566,7 @@ with a period of @math{2^{32}},
 The overall period exceeds @math{2^{123}}.
 
 Please note, this RNG is thread safe if used within OpenMP directives,
-i. e. its state will be consistent while called from multiple threads.
+i.e., its state will be consistent while called from multiple threads.
 However, the KISS generator does not create random numbers in parallel 
 from multiple sources, but in sequence from a single source. If an
 OpenMP-enabled application heavily relies on random numbers, one should 
@@ -10519,7 +10519,7 @@ Transformational function
 @end multitable
 
 @item @emph{Return value}:
-The result has the the same type as @var{MATRIX}, and has shape 
+The result has the same type as @var{MATRIX}, and has shape 
 @code{(/ m, n /)} if @var{MATRIX} has shape @code{(/ n, m /)}.
 @end table
 
@@ -10752,7 +10752,7 @@ Transformational function
 @item @var{VECTOR} @tab Shall be an array of any type and rank one. It 
 shall have at least as many elements as @var{MASK} has @code{TRUE} values.
 @item @var{MASK}   @tab Shall be an array of type @code{LOGICAL}.
-@item @var{FIELD}  @tab Shall be of the sam type as @var{VECTOR} and have
+@item @var{FIELD}  @tab Shall be of the same type as @var{VECTOR} and have
 the same shape as @var{MASK}.
 @end multitable
 
@@ -10903,13 +10903,13 @@ named constants:
 Size in bits of the character storage unit.
 
 @item @code{ERROR_UNIT}:
-Indentifies the preconnected unit used for error reporting.
+Identifies the preconnected unit used for error reporting.
 
 @item @code{FILE_STORAGE_SIZE}:
 Size in bits of the file-storage unit.
 
 @item @code{INPUT_UNIT}:
-Indentifies the preconnected unit indentified by the asterisk
+Identifies the preconnected unit identified by the asterisk
 (@code{*}) in @code{READ} statement.
 
 @item @code{IOSTAT_END}:
@@ -10924,7 +10924,7 @@ an input/output statement if an end-of-record condition occurred.
 The size in bits of the numeric storage unit.
 
 @item @code{OUTPUT_UNIT}:
-Indentifies the preconnected unit indentified by the asterisk
+Identifies the preconnected unit identified by the asterisk
 (@code{*}) in @code{WRITE} statement.
 @end table
 
@@ -10950,7 +10950,7 @@ manual.
 The @code{ISO_C_BINDING} module provides the following named constants of the
 type integer, which can be used as KIND type parameter. Note that GNU
 Fortran currently does not support the @code{C_INT_FAST...} KIND type
-parameters (marked by an asterix (@code{*}) in the list below).
+parameters (marked by an asterisk (@code{*}) in the list below).
 The @code{C_INT_FAST...} parameters have therefore the value @math{-2}
 and cannot be used as KIND type parameter of the @code{INTEGER} type.
 
