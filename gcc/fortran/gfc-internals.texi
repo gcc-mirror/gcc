@@ -307,7 +307,7 @@ last in a block, @code{here} points to the statement label of the
 current statement.
 
 If the current statement is one of @code{IF}, @code{DO}, @code{SELECT}
-it starts a block, i.e. a nested level in the program.  In order to
+it starts a block, i.e.@: a nested level in the program.  In order to
 represent this, the @code{block} member is set to point to a
 @code{gfc_code} structure whose @code{block} member points to the
 block in question.  The @code{SELECT} and @code{IF} statements may
@@ -359,13 +359,13 @@ Versioning - Ulrich Depper}
 
 @item
 @uref{http://people.redhat.com/drepper/dsohowto.pdf, How to Write Shared
-Libraries - Ulrich Depper (see Chapter 3)}
+Libraries - Ulrich Drepper (see Chapter 3)}
 
 @end itemize
 
 If one adds a new symbol to a library that should be exported, the new
 symbol should be mentioned in the map file and a new version node
-defined, e.g. if one adds a new symbols @code{foo} and @code{bar} to
+defined, e.g., if one adds a new symbols @code{foo} and @code{bar} to
 libgfortran for the next GCC release, the following should be added to
 the map file: 
 @smallexample
