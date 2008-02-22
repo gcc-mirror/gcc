@@ -1,3 +1,7 @@
+2008-02-22  Tom Tromey  <tromey@redhat.com>
+
+	* regclass.c (current_pass): Remove declaration.
+
 2008-02-22  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/libgcc.S (__RAMPZ__): Define.
