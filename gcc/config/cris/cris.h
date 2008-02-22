@@ -600,6 +600,7 @@ enum reg_class
 #define REG_CLASS_FROM_LETTER(C)		\
   (						\
    (C) == 'a' ? ACR_REGS :			\
+   (C) == 'b' ? GENNONACR_REGS :		\
    (C) == 'h' ? MOF_REGS :			\
    (C) == 'x' ? SPECIAL_REGS :			\
    (C) == 'c' ? CC0_REGS :			\

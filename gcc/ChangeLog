@@ -1,3 +1,8 @@
+2008-02-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.h (REG_CLASS_FROM_LETTER): Recognize 'b' for
+	GENNONACR_REGS.
+
 2008-02-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR c/19999
