@@ -1,3 +1,16 @@
+2008-02-21  Janis Johnson  <janis187@us.ibm.com>
+
+	PR target/34526
+	* config/rs6000/rs6000.c (rs6000_altivec_abi): Clarify comment.
+	(rs6000_explicit_options): Split abi into spe_abi and altivec_abi,
+	add vrsave.
+	(rs6000_override_options): Set altivec_abi as default, not override,
+	for 64-bit GNU/Linux; for 32-bit GNU/Linux default to altivec_abi for
+	TARGET_ALTIVEC; default to TARGET_ALTIVEC_VRSAVE when AltiVec ABI
+	is used; use new member spe_abi.
+	(rs6000_handle_option): Set rs6000_explicit_options.vrsave; use
+	spe_abi and altivec_abi.
+
 2008-02-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR bootstrap/35273
