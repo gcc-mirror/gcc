@@ -1,3 +1,40 @@
+2008-02-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/34907
+	* iresolve.c (resolve_mask_arg): Add gfc_clear_ts to initialize
+	structure.
+	(gfc_resolve_aint): Likewise.
+	(gfc_resolve_anint): Likewise.
+	(gfc_resolve_besn): Likewise.
+	(gfc_resolve_cshift): Likewise.
+	(gfc_resolve_ctime): Likewise.
+	(gfc_resolve_eoshift): Likewise.
+	(gfc_resolve_index_func): Likewise.
+	(gfc_resolve_isatty): Likewise.
+	(gfc_resolve_malloc): Likewise.
+	(gfc_resolve_rrspacing): Likewise.
+	(gfc_resolve_scale): Likewise.
+	(gfc_resolve_set_exponent): Likewise.
+	(gfc_resolve_spacing): Likewise.
+	(gfc_resolve_spacing): Likewise.
+	(gfc_resolve_fgetc): Likewise.
+	(gfc_resolve_fputc): Likewise.
+	(gfc_resolve_ftell): Likewise.
+	(gfc_resolve_ttynam): Likewise.
+	(gfc_resolve_alarm_sub): Likewise.
+	(gfc_resolve_mvbits): Likewise.
+	(gfc_resolve_getarg): Likewise.
+	(gfc_resolve_signal_sub): Likewise.
+	(gfc_resolve_exit): Likewise.
+	(gfc_resolve_flush): Likewise.
+	(gfc_resolve_free): Likewise.
+	(gfc_resolve_ctime_sub): Likewise.
+	(gfc_resolve_fgetc_sub): Likewise.
+	(gfc_resolve_fputc_sub): Likewise.
+	(gfc_resolve_fseek_sub): Likewise.
+	(gfc_resolve_ftell_sub): Likewise.
+	(gfc_resolve_ttynam_sub): Likewise.
+
 2008-02-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* gfc-internals.texi: Fix typos and markup nits.

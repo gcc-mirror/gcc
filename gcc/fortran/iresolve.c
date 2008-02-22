@@ -89,6 +89,7 @@ resolve_mask_arg (gfc_expr *mask)
 {
 
   gfc_typespec ts;
+  gfc_clear_ts (&ts);
 
   if (mask->rank == 0)
     {
@@ -220,6 +221,7 @@ void
 gfc_resolve_aint (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
 {
   gfc_typespec ts;
+  gfc_clear_ts (&ts);
   
   f->ts.type = a->ts.type;
   f->ts.kind = (kind == NULL) ? a->ts.kind : mpz_get_si (kind->value.integer);
@@ -266,6 +268,7 @@ void
 gfc_resolve_anint (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
 {
   gfc_typespec ts;
+  gfc_clear_ts (&ts);
   
   f->ts.type = a->ts.type;
   f->ts.kind = (kind == NULL) ? a->ts.kind : mpz_get_si (kind->value.integer);
@@ -360,6 +363,7 @@ void
 gfc_resolve_besn (gfc_expr *f, gfc_expr *n, gfc_expr *x)
 {
   gfc_typespec ts;
+  gfc_clear_ts (&ts);
   
   f->ts = x->ts;
   if (n->ts.kind != gfc_c_int_kind)
@@ -585,6 +589,7 @@ gfc_resolve_cshift (gfc_expr *f, gfc_expr *array, gfc_expr *shift,
   if (shift->ts.kind < m)
     {
       gfc_typespec ts;
+      gfc_clear_ts (&ts);
       ts.type = BT_INTEGER;
       ts.kind = m;
       gfc_convert_type_warn (shift, &ts, 2, 0);
@@ -616,6 +621,7 @@ void
 gfc_resolve_ctime (gfc_expr *f, gfc_expr *time)
 {
   gfc_typespec ts;
+  gfc_clear_ts (&ts);
   
   f->ts.type = BT_CHARACTER;
   f->ts.kind = gfc_default_character_kind;
@@ -723,6 +729,7 @@ gfc_resolve_eoshift (gfc_expr *f, gfc_expr *array, gfc_expr *shift,
   if (shift->ts.kind < m)
     {
       gfc_typespec ts;
+      gfc_clear_ts (&ts);
       ts.type = BT_INTEGER;
       ts.kind = m;
       gfc_convert_type_warn (shift, &ts, 2, 0);
@@ -1000,6 +1007,7 @@ gfc_resolve_index_func (gfc_expr *f, gfc_expr *str,
 			gfc_expr *kind)
 {
   gfc_typespec ts;
+  gfc_clear_ts (&ts);
 
   f->ts.type = BT_INTEGER;
   if (kind)
@@ -1070,6 +1078,7 @@ void
 gfc_resolve_isatty (gfc_expr *f, gfc_expr *u)
 {
   gfc_typespec ts;
+  gfc_clear_ts (&ts);
   
   f->ts.type = BT_LOGICAL;
   f->ts.kind = gfc_default_integer_kind;
@@ -1251,6 +1260,7 @@ gfc_resolve_malloc (gfc_expr *f, gfc_expr *size)
   if (size->ts.kind < gfc_index_integer_kind)
     {
       gfc_typespec ts;
+      gfc_clear_ts (&ts);
 
       ts.type = BT_INTEGER;
       ts.kind = gfc_index_integer_kind;
@@ -1859,6 +1869,7 @@ gfc_resolve_rrspacing (gfc_expr *f, gfc_expr *x)
   if (prec->expr->ts.kind != gfc_c_int_kind)
     {
       gfc_typespec ts;
+      gfc_clear_ts (&ts);
       ts.type = BT_INTEGER;
       ts.kind = gfc_c_int_kind;
       gfc_convert_type (prec->expr, &ts, 2);
@@ -1877,6 +1888,7 @@ gfc_resolve_scale (gfc_expr *f, gfc_expr *x, gfc_expr *i)
   if (i->ts.kind != gfc_c_int_kind)
     {
       gfc_typespec ts;
+      gfc_clear_ts (&ts);
       ts.type = BT_INTEGER;
       ts.kind = gfc_c_int_kind;
       gfc_convert_type_warn (i, &ts, 2, 0);
@@ -1919,6 +1931,7 @@ gfc_resolve_set_exponent (gfc_expr *f, gfc_expr *x, gfc_expr *i)
   if (i->ts.kind != gfc_c_int_kind)
     {
       gfc_typespec ts;
+      gfc_clear_ts (&ts);
       ts.type = BT_INTEGER;
       ts.kind = gfc_c_int_kind;
       gfc_convert_type_warn (i, &ts, 2, 0);
@@ -2033,6 +2046,7 @@ gfc_resolve_spacing (gfc_expr *f, gfc_expr *x)
   if (emin_1->expr->ts.kind != gfc_c_int_kind)
     {
       gfc_typespec ts;
+      gfc_clear_ts (&ts);
       ts.type = BT_INTEGER;
       ts.kind = gfc_c_int_kind;
       gfc_convert_type (emin_1->expr, &ts, 2);
@@ -2047,6 +2061,7 @@ gfc_resolve_spacing (gfc_expr *f, gfc_expr *x)
   if (prec->expr->ts.kind != gfc_c_int_kind)
     {
       gfc_typespec ts;
+      gfc_clear_ts (&ts);
       ts.type = BT_INTEGER;
       ts.kind = gfc_c_int_kind;
       gfc_convert_type (prec->expr, &ts, 2);
@@ -2146,6 +2161,7 @@ void
 gfc_resolve_fgetc (gfc_expr *f, gfc_expr *u, gfc_expr *c ATTRIBUTE_UNUSED)
 {
   gfc_typespec ts;
+  gfc_clear_ts (&ts);
 
   f->ts.type = BT_INTEGER;
   f->ts.kind = gfc_c_int_kind;
@@ -2175,6 +2191,7 @@ void
 gfc_resolve_fputc (gfc_expr *f, gfc_expr *u, gfc_expr *c ATTRIBUTE_UNUSED)
 {
   gfc_typespec ts;
+  gfc_clear_ts (&ts);
 
   f->ts.type = BT_INTEGER;
   f->ts.kind = gfc_c_int_kind;
@@ -2204,6 +2221,7 @@ void
 gfc_resolve_ftell (gfc_expr *f, gfc_expr *u)
 {
   gfc_typespec ts;
+  gfc_clear_ts (&ts);
 
   f->ts.type = BT_INTEGER;
   f->ts.kind = gfc_index_integer_kind;
@@ -2451,6 +2469,7 @@ void
 gfc_resolve_ttynam (gfc_expr *f, gfc_expr *unit)
 {
   gfc_typespec ts;
+  gfc_clear_ts (&ts);
   
   f->ts.type = BT_CHARACTER;
   f->ts.kind = gfc_default_character_kind;
@@ -2526,6 +2545,7 @@ gfc_resolve_alarm_sub (gfc_code *c)
   const char *name;
   gfc_expr *seconds, *handler, *status;
   gfc_typespec ts;
+  gfc_clear_ts (&ts);
 
   seconds = c->ext.actual->expr;
   handler = c->ext.actual->next->expr;
@@ -2567,6 +2587,7 @@ gfc_resolve_mvbits (gfc_code *c)
 {
   const char *name;
   gfc_typespec ts;
+  gfc_clear_ts (&ts);
 
   /* FROMPOS, LEN and TOPOS are restricted to small values.  As such,
      they will be converted so that they fit into a C int.  */
@@ -2780,6 +2801,7 @@ gfc_resolve_getarg (gfc_code *c)
   if (c->ext.actual->expr->ts.kind != gfc_default_integer_kind)
     {
       gfc_typespec ts;
+      gfc_clear_ts (&ts);
 
       ts.type = BT_INTEGER;
       ts.kind = gfc_default_integer_kind;
@@ -2855,6 +2877,7 @@ gfc_resolve_signal_sub (gfc_code *c)
   const char *name;
   gfc_expr *number, *handler, *status;
   gfc_typespec ts;
+  gfc_clear_ts (&ts);
 
   number = c->ext.actual->expr;
   handler = c->ext.actual->next->expr;
@@ -2922,6 +2945,7 @@ gfc_resolve_exit (gfc_code *c)
   const char *name;
   gfc_typespec ts;
   gfc_expr *n;
+  gfc_clear_ts (&ts);
 
   /* The STATUS argument has to be of default kind.  If it is not,
      we convert it.  */
@@ -2944,6 +2968,7 @@ gfc_resolve_flush (gfc_code *c)
   const char *name;
   gfc_typespec ts;
   gfc_expr *n;
+  gfc_clear_ts (&ts);
 
   ts.type = BT_INTEGER;
   ts.kind = gfc_default_integer_kind;
@@ -2961,6 +2986,7 @@ gfc_resolve_free (gfc_code *c)
 {
   gfc_typespec ts;
   gfc_expr *n;
+  gfc_clear_ts (&ts);
 
   ts.type = BT_INTEGER;
   ts.kind = gfc_index_integer_kind;
@@ -2976,6 +3002,7 @@ void
 gfc_resolve_ctime_sub (gfc_code *c)
 {
   gfc_typespec ts;
+  gfc_clear_ts (&ts);
   
   /* ctime TIME argument is a INTEGER(KIND=8), says the doc */
   if (c->ext.actual->expr->ts.kind != 8)
@@ -3076,6 +3103,7 @@ gfc_resolve_fgetc_sub (gfc_code *c)
   const char *name;
   gfc_typespec ts;
   gfc_expr *u, *st;
+  gfc_clear_ts (&ts);
 
   u = c->ext.actual->expr;
   st = c->ext.actual->next->next->expr;
@@ -3120,6 +3148,7 @@ gfc_resolve_fputc_sub (gfc_code *c)
   const char *name;
   gfc_typespec ts;
   gfc_expr *u, *st;
+  gfc_clear_ts (&ts);
 
   u = c->ext.actual->expr;
   st = c->ext.actual->next->next->expr;
@@ -3166,6 +3195,7 @@ gfc_resolve_fseek_sub (gfc_code *c)
   gfc_expr *whence;
   gfc_expr *status;
   gfc_typespec ts;
+  gfc_clear_ts (&ts);
 
   unit   = c->ext.actual->expr;
   offset = c->ext.actual->next->expr;
@@ -3209,6 +3239,7 @@ gfc_resolve_ftell_sub (gfc_code *c)
   gfc_expr *unit;
   gfc_expr *offset;
   gfc_typespec ts;
+  gfc_clear_ts (&ts);
 
   unit = c->ext.actual->expr;
   offset = c->ext.actual->next->expr;
@@ -3231,6 +3262,7 @@ void
 gfc_resolve_ttynam_sub (gfc_code *c)
 {
   gfc_typespec ts;
+  gfc_clear_ts (&ts);
   
   if (c->ext.actual->expr->ts.kind != gfc_c_int_kind)
     {
