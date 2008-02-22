@@ -1,3 +1,8 @@
+2008-02-22  Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/libgcc.S (__RAMPZ__): Define.
+	(__do_copy_data): Add for devices with 128KB code memory.
+
 2008-02-22  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/rs6000/linuxspe.h (SUBSUBTARGET_OVERRIDE_OPTIONS):
