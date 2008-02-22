@@ -1,3 +1,18 @@
+2008-02-22  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/35282
+	* g++.dg/template/nontype17.C: Add.
+
+2008-02-22  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/35282
+	Revert:
+	2008-02-14  Paolo Carlini  <pcarlini@suse.de>
+
+        PR c++/28743
+	* g++.dg/template/nontype17.C: New.
+        * g++.dg/template/nontype16.C: Add error.
+
 2008-02-21  Michael Matz  <matz@suse.de>
 
 	PR target/35264
