@@ -1,3 +1,7 @@
+2008-02-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/asm-b-1.c: New test.
+
 2008-02-22  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/35282
