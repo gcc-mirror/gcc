@@ -1,8 +1,8 @@
-// PR c++/28743
+// PR c++/35282
 
 template<int> struct A
 {
-    template<typename> void foo();
+    template<int> void foo();
 };
 
-template<int> template<typename> void A<0>::foo() {} // { dg-error "match" }
+template<> template<int> void A<0>::foo() {}
