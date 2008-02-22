@@ -1675,6 +1675,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		= DECL_INTERFACE_KNOWN (new_result);
 	      DECL_DECLARED_INLINE_P (old_result)
 		= DECL_DECLARED_INLINE_P (new_result);
+	      DECL_DISREGARD_INLINE_LIMITS (old_result)
+	        |= DECL_DISREGARD_INLINE_LIMITS (new_result);
+
 	    }
 	  else
 	    {
@@ -1682,6 +1685,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		|= DECL_INLINE (new_result);
 	      DECL_DECLARED_INLINE_P (old_result)
 		|= DECL_DECLARED_INLINE_P (new_result);
+	      DECL_DISREGARD_INLINE_LIMITS (old_result)
+	        |= DECL_DISREGARD_INLINE_LIMITS (new_result);
 	      check_redeclaration_exception_specification (newdecl, olddecl);
 	    }
 	}

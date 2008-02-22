@@ -1,3 +1,11 @@
+2008-02-22  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR C++/34715
+	* g++.dg/ext/always_inline-1.C: New test.
+	* g++.dg/ext/always_inline-2.C: New test.
+	* g++.dg/ext/always_inline-3.C: New test.
+	* g++.dg/ext/always_inline-4.C: New test.
+
 2008-02-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.target/cris/asm-b-1.c: New test.
