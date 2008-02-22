@@ -1563,9 +1563,12 @@ determine_specialization (tree template_id,
 	     no partial specializations of functions.  Therefore, if
 	     the type of DECL does not match FN, there is no
 	     match.  */
-	  if (tsk == tsk_template
-	      && !compparms (fn_arg_types, decl_arg_types))
-	    continue;
+	  if (tsk == tsk_template)
+	    {
+	      if (compparms (fn_arg_types, decl_arg_types))
+		candidates = tree_cons (NULL_TREE, fn, candidates);
+	      continue;
+	    }
 
 	  /* See whether this function might be a specialization of this
 	     template.  */
