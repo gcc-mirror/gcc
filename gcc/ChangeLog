@@ -1,3 +1,9 @@
+2008-02-22  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/rs6000/linuxspe.h (SUBSUBTARGET_OVERRIDE_OPTIONS):
+	Use spe_abi.
+	* config/rs6000/eabispe.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Likewise.
+
 2008-02-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.h (REG_CLASS_FROM_LETTER): Recognize 'b' for
