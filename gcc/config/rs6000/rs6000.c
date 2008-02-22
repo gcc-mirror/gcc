@@ -171,7 +171,7 @@ int rs6000_long_double_type_size;
 /* IEEE quad extended precision long double. */
 int rs6000_ieeequad;
 
-/* Whether -mabi=altivec has appeared.  */
+/* Nonzero to use AltiVec ABI.  */
 int rs6000_altivec_abi;
 
 /* Nonzero if we want SPE ABI extensions.  */
@@ -262,12 +262,14 @@ int rs6000_alignment_flags;
 struct {
   bool aix_struct_ret;		/* True if -maix-struct-ret was used.  */
   bool alignment;		/* True if -malign- was used.  */
-  bool abi;			/* True if -mabi=spe/nospe was used.  */
+  bool spe_abi;			/* True if -mabi=spe/no-spe was used.  */
+  bool altivec_abi;		/* True if -mabi=altivec/no-altivec used.  */
   bool spe;			/* True if -mspe= was used.  */
   bool float_gprs;		/* True if -mfloat-gprs= was used.  */
   bool isel;			/* True if -misel was used. */
   bool long_double;	        /* True if -mlong-double- was used.  */
   bool ieee;			/* True if -mabi=ieee/ibmlongdouble used.  */
+  bool vrsave;			/* True if -mvrsave was used.  */
 } rs6000_explicit_options;
 
 struct builtin_description
@@ -1590,11 +1592,18 @@ rs6000_override_options (const char *default_cpu)
   if (TARGET_XCOFF && TARGET_ALTIVEC)
     rs6000_altivec_abi = 1;
 
-  /* Set Altivec ABI as default for PowerPC64 Linux.  */
-  if (TARGET_ELF && TARGET_64BIT)
+  /* The AltiVec ABI is the default for PowerPC-64 GNU/Linux.  For
+     PowerPC-32 GNU/Linux, -maltivec implies the AltiVec ABI.  It can
+     be explicitly overridden in either case.  */
+  if (TARGET_ELF)
     {
-      rs6000_altivec_abi = 1;
-      TARGET_ALTIVEC_VRSAVE = 1;
+      if (!rs6000_explicit_options.altivec_abi
+	  && (TARGET_64BIT || TARGET_ALTIVEC))
+	rs6000_altivec_abi = 1;
+
+      /* Enable VRSAVE for AltiVec ABI, unless explicitly overridden.  */
+      if (!rs6000_explicit_options.vrsave)
+	TARGET_ALTIVEC_VRSAVE = rs6000_altivec_abi;
     }
 
   /* Set the Darwin64 ABI as default for 64-bit Darwin.  */
@@ -1638,7 +1647,7 @@ rs6000_override_options (const char *default_cpu)
       /* For the powerpc-eabispe configuration, we set all these by
 	 default, so let's unset them if we manually set another
 	 CPU that is not the E500.  */
-      if (!rs6000_explicit_options.abi)
+      if (!rs6000_explicit_options.spe_abi)
 	rs6000_spe_abi = 0;
       if (!rs6000_explicit_options.spe)
 	rs6000_spe = 0;
@@ -2131,6 +2140,7 @@ rs6000_handle_option (size_t code, const char *arg, int value)
       break;
 
     case OPT_mvrsave_:
+      rs6000_explicit_options.vrsave = true;
       rs6000_parse_yes_no_option ("vrsave", arg, &(TARGET_ALTIVEC_VRSAVE));
       break;
 
@@ -2188,19 +2198,20 @@ rs6000_handle_option (size_t code, const char *arg, int value)
     case OPT_mabi_:
       if (!strcmp (arg, "altivec"))
 	{
-	  rs6000_explicit_options.abi = true;
+	  rs6000_explicit_options.altivec_abi = true;
 	  rs6000_altivec_abi = 1;
+
+	  /* Enabling the AltiVec ABI turns off the SPE ABI.  */
 	  rs6000_spe_abi = 0;
 	}
       else if (! strcmp (arg, "no-altivec"))
 	{
-	  /* ??? Don't set rs6000_explicit_options.abi here, to allow
-	     the default for rs6000_spe_abi to be chosen later.  */
+	  rs6000_explicit_options.altivec_abi = true;
 	  rs6000_altivec_abi = 0;
 	}
       else if (! strcmp (arg, "spe"))
 	{
-	  rs6000_explicit_options.abi = true;
+	  rs6000_explicit_options.spe_abi = true;
 	  rs6000_spe_abi = 1;
 	  rs6000_altivec_abi = 0;
 	  if (!TARGET_SPE_ABI)
@@ -2208,7 +2219,7 @@ rs6000_handle_option (size_t code, const char *arg, int value)
 	}
       else if (! strcmp (arg, "no-spe"))
 	{
-	  rs6000_explicit_options.abi = true;
+	  rs6000_explicit_options.spe_abi = true;
 	  rs6000_spe_abi = 0;
 	}
 
