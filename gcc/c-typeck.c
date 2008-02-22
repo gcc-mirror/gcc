@@ -8138,7 +8138,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 
     case EQ_EXPR:
     case NE_EXPR:
-      if (code0 == REAL_TYPE || code1 == REAL_TYPE)
+      if (FLOAT_TYPE_P (type0) || FLOAT_TYPE_P (type1))
 	warning (OPT_Wfloat_equal,
 		 "comparing floating point with == or != is unsafe");
       /* Result of comparison is always int,

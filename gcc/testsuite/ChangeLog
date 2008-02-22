@@ -1,3 +1,9 @@
+2008-02-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR c/19999
+	* gcc.dg/Wfloat-equal-1.c: New.
+	* g++.dg/warn/Wfloat-equal-1.C: New.
+
 2008-02-21  Michael Matz  <matz@suse.de>
 
 	PR target/35264
