@@ -1,3 +1,13 @@
+2008-02-22  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/35282
+	Revert:
+	2008-02-14  Paolo Carlini  <pcarlini@suse.de>
+
+        PR c++/28743
+        * pt.c (determine_specialization): In case of function templates,
+	when the type of DECL does not match FN there is no match.
+
 2008-02-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/34950
