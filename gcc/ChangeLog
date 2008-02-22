@@ -1,3 +1,9 @@
+2008-02-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR c/19999
+	* c-typeck.c (build_binary_op): Warn about floating point
+	comparisons if FLOAT_TYPE_P, not only for REAL_TYPE.
+
 2008-02-21  Janis Johnson  <janis187@us.ibm.com>
 
 	PR target/34526
