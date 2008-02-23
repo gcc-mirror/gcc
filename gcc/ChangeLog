@@ -1,5 +1,11 @@
 2008-02-23  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
+	PR rtl-opt/33512
+	* simplify-rtx.c (simplify_binary_operation_1): Add simplification
+	of (and X (ior (not X) Y) and (and (ior (not X) Y) X).
+
+2008-02-23  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
 	PR pch/35027
 	* c-pch.c (c_common_valid_pch): Make the "too short to be a PCH
 	file" warning condtional on -Winvalid-PCH.
