@@ -63,9 +63,9 @@
 
 (define_insn "*mov<mode>_internal_rex64"
   [(set (match_operand:MMXMODEI 0 "nonimmediate_operand"
-				"=rm,r,*y,*y ,m ,*y,Y2,x,x ,m,r,x")
+				"=rm,r,!y,!y ,m ,!y,Y2,x,x ,m,r,x")
 	(match_operand:MMXMODEI 1 "vector_move_operand"
-				"Cr ,m,C ,*ym,*y,Y2,*y,C,xm,x,x,r"))]
+				"Cr ,m,C ,!ym,!y,Y2,!y,C,xm,x,x,r"))]
   "TARGET_64BIT && TARGET_MMX
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
@@ -87,9 +87,9 @@
 
 (define_insn "*mov<mode>_internal"
   [(set (match_operand:MMXMODEI 0 "nonimmediate_operand"
-			"=*y,*y ,m ,*y ,*Y2,*Y2,*Y2 ,m  ,*x,*x,*x,m ,?r ,?m")
+			"=!y,!y ,m ,!y ,*Y2,*Y2,*Y2 ,m  ,*x,*x,*x,m ,?r ,?m")
 	(match_operand:MMXMODEI 1 "vector_move_operand"
-			"C  ,*ym,*y,*Y2,*y ,C  ,*Y2m,*Y2,C ,*x,m ,*x,irm,r"))]
+			"C  ,!ym,!y,*Y2,!y ,C  ,*Y2m,*Y2,C ,*x,m ,*x,irm,r"))]
   "TARGET_MMX
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
@@ -122,9 +122,9 @@
 
 (define_insn "*movv2sf_internal_rex64"
   [(set (match_operand:V2SF 0 "nonimmediate_operand"
-				"=rm,r,*y ,*y ,m ,*y,Y2,x,x,x,m,r,x")
+				"=rm,r,!y ,!y ,m ,!y,Y2,x,x,x,m,r,x")
         (match_operand:V2SF 1 "vector_move_operand"
-				"Cr ,m ,C ,*ym,*y,Y2,*y,C,x,m,x,x,r"))]
+				"Cr ,m ,C ,!ym,!y,Y2,!y,C,x,m,x,x,r"))]
   "TARGET_64BIT && TARGET_MMX
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
@@ -147,9 +147,9 @@
 
 (define_insn "*movv2sf_internal"
   [(set (match_operand:V2SF 0 "nonimmediate_operand"
-			"=*y,*y ,m,*y ,*Y2,*x,*x,*x,m ,?r ,?m")
+			"=!y,!y ,m,!y ,*Y2,*x,*x,*x,m ,?r ,?m")
         (match_operand:V2SF 1 "vector_move_operand"
-			"C ,*ym,*y,*Y2,*y ,C ,*x,m ,*x,irm,r"))]
+			"C ,!ym,!y,*Y2,!y ,C ,*x,m ,*x,irm,r"))]
   "TARGET_MMX
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@

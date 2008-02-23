@@ -5,3 +5,4 @@
 short a;
 vector short f(void) { return (vector short){ a, a, a, a, a, a, a, a }; }
 /* { dg-final { scan-assembler-not "sall" } } */
+/* { dg-final { scan-assembler-not "%mm" } } */

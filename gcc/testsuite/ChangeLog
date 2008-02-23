@@ -1,3 +1,17 @@
+2008-02-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/22076
+	PR target/34256
+	* gcc.target/i386/pr22076.c: New test.
+	* gcc.target/i386/pr34256.c: New test.
+	* gcc.target/i386/vecinit-5.c: New test.
+	* gcc.target/i386/vecinit-6.c: New test.
+	* gcc.target/i386/vecinit-[1-4].c: Check that no MMX register is used.
+
+	* g++.dg/compat/struct-layout-1.h: Do not include <mmintrin.h> and
+	<xmmintrin.h>, define __m64 and __m128 directly.
+	* g++.dg/compat/struct-layout-1_generate.c: Add -mno-mmx for x86.
+
 2008-02-22  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR C++/34715

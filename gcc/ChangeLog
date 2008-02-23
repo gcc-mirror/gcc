@@ -1,3 +1,13 @@
+2008-02-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/22076
+	PR target/34256	
+	* config/i386/mmx.md (*mov<mode>_internal_rex64): Use "!y" to
+	prevent reload from using MMX registers.
+	(*mov<mode>_internal): Ditto.
+	(*movv2sf_internal_rex64): Ditto.
+	(*movv2sf_internal): Ditto.
+
 2008-02-23  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR documentation/31569

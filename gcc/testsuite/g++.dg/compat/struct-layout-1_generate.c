@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define DG_OPTIONS "\
 /* { dg-options \"%1$s-I%2$s\" } */\n\
+/* { dg-options \"%1$s-I%2$s -mno-mmx\" { target i?86-*-* x86_64-*-* } } */\n\
 /* { dg-options \"%1$s-I%2$s -fno-common\" { target hppa*-*-hpux* } } */\n\
 /* { dg-options \"%1$s-I%2$s -mno-base-addresses\" { target mmix-*-* } } */\n\
 \n"
