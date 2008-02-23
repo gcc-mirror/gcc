@@ -89,3 +89,4 @@ extern void darwin_cpp_builtins (struct cpp_reader *);
 extern void darwin_asm_output_anchor (rtx symbol);
 extern bool darwin_kextabi_p (void);
 extern void darwin_override_options (void);
+extern void darwin_patch_builtins (void);
