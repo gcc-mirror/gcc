@@ -3630,19 +3630,29 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       /* We accept [reg + reg] and [reg + OFFSET].  */
 
       if (GET_CODE (x) == PLUS)
-	{
-	  rtx op1 = XEXP (x, 0);
-	  rtx op2 = XEXP (x, 1);
+       {
+         rtx op1 = XEXP (x, 0);
+         rtx op2 = XEXP (x, 1);
+         rtx y;
 
-	  op1 = force_reg (Pmode, op1);
+         op1 = force_reg (Pmode, op1);
 
-	  if (GET_CODE (op2) != REG
-	      && (GET_CODE (op2) != CONST_INT
-		  || !SPE_CONST_OFFSET_OK (INTVAL (op2))))
-	    op2 = force_reg (Pmode, op2);
+         if (GET_CODE (op2) != REG
+             && (GET_CODE (op2) != CONST_INT
+                 || !SPE_CONST_OFFSET_OK (INTVAL (op2))
+                 || (GET_MODE_SIZE (mode) > 8
+                     && !SPE_CONST_OFFSET_OK (INTVAL (op2) + 8))))
+           op2 = force_reg (Pmode, op2);
 
-	  return gen_rtx_PLUS (Pmode, op1, op2);
-	}
+         /* We can't always do [reg + reg] for these, because [reg +
+            reg + offset] is not a legitimate addressing mode.  */
+         y = gen_rtx_PLUS (Pmode, op1, op2);
+
+         if (GET_MODE_SIZE (mode) > 8 && REG_P (op2))
+           return force_reg (Pmode, y);
+         else
+           return y;
+       }
 
       return force_reg (Pmode, x);
     }
