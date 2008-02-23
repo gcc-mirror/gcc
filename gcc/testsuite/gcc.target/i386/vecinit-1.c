@@ -9,3 +9,4 @@ vector float f3(void) { return (vector float){ 0.0, 0.0, a, 0.0}; }
 vector float f4(void) { return (vector float){ 0.0, 0.0, 0.0, a}; }
 /* { dg-final { scan-assembler-not "movaps" } } */
 /* { dg-final { scan-assembler-not "xor" } } */
+/* { dg-final { scan-assembler-not "%mm" } } */
