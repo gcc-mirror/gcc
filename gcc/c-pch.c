@@ -243,8 +243,9 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
     fatal_error ("can%'t read %s: %m", name);
   else if (sizeread != IDENT_LENGTH + 16)
     {
-      cpp_error (pfile, CPP_DL_WARNING, "%s: too short to be a PCH file",
-		 name);
+      if (cpp_get_options (pfile)->warn_invalid_pch)
+	cpp_error (pfile, CPP_DL_WARNING, "%s: too short to be a PCH file",
+		   name);
       return 2;
     }
 
