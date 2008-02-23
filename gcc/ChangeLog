@@ -1,3 +1,8 @@
+2008-02-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* explow.c (memory_address): Assert that the generated address is
+	valid.
+
 2008-02-23  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR target/25477
