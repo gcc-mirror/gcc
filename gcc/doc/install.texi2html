@@ -5,7 +5,7 @@
 # $SOURCEDIR and $DESTDIR, resp., refer to the directory containing
 # the texinfo source and the directory to put the HTML version in.
 #
-# (C) 2001, 2003, 2006 Free Software Foundation
+# (C) 2001, 2003, 2006, 2008 Free Software Foundation
 # Originally by Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>, June 2001.
 #
 # This script is Free Software, and it can be copied, distributed and
@@ -40,7 +40,7 @@ for x in index.html specific.html prerequisites.html download.html configure.htm
 do
     define=`echo $x | sed -e 's/\.//g'`
     echo "define = $define"
-    $MAKEINFO -I $SOURCEDIR -I $SOURCEDIR/include $SOURCEDIR/install.texi --html --no-split -D$define -o$DESTDIR/$x
+    $MAKEINFO --no-number-sections -I $SOURCEDIR -I $SOURCEDIR/include $SOURCEDIR/install.texi --html --no-split -D$define -o$DESTDIR/$x
 done
 
 rm $SOURCEDIR/include/gcc-vers.texi
