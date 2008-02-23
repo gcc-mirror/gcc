@@ -99,10 +99,6 @@ tree gfor_fndecl_associated;
    trans-intrinsic.c.  */
 
 gfc_powdecl_list gfor_fndecl_math_powi[4][3];
-tree gfor_fndecl_math_cpowf;
-tree gfor_fndecl_math_cpow;
-tree gfor_fndecl_math_cpowl10;
-tree gfor_fndecl_math_cpowl16;
 tree gfor_fndecl_math_ishftc4;
 tree gfor_fndecl_math_ishftc8;
 tree gfor_fndecl_math_ishftc16;
@@ -2024,10 +2020,6 @@ gfc_build_intrinsic_function_decls (void)
   tree gfc_real8_type_node = gfc_get_real_type (8);
   tree gfc_real10_type_node = gfc_get_real_type (10);
   tree gfc_real16_type_node = gfc_get_real_type (16);
-  tree gfc_complex4_type_node = gfc_get_complex_type (4);
-  tree gfc_complex8_type_node = gfc_get_complex_type (8);
-  tree gfc_complex10_type_node = gfc_get_complex_type (10);
-  tree gfc_complex16_type_node = gfc_get_complex_type (16);
 
   /* String functions.  */
   gfor_fndecl_compare_string =
@@ -2194,25 +2186,6 @@ gfc_build_intrinsic_function_decls (void)
 #undef NIKINDS
 #undef NRKINDS
   }
-
-  gfor_fndecl_math_cpowf =
-    gfc_build_library_function_decl (get_identifier ("cpowf"),
-				     gfc_complex4_type_node,
-				     1, gfc_complex4_type_node);
-  gfor_fndecl_math_cpow =
-    gfc_build_library_function_decl (get_identifier ("cpow"),
-				     gfc_complex8_type_node,
-				     1, gfc_complex8_type_node);
-  if (gfc_complex10_type_node)
-    gfor_fndecl_math_cpowl10 =
-      gfc_build_library_function_decl (get_identifier ("cpowl"),
-				       gfc_complex10_type_node, 1,
-				       gfc_complex10_type_node);
-  if (gfc_complex16_type_node)
-    gfor_fndecl_math_cpowl16 =
-      gfc_build_library_function_decl (get_identifier ("cpowl"),
-				       gfc_complex16_type_node, 1,
-				       gfc_complex16_type_node);
 
   gfor_fndecl_math_ishftc4 =
     gfc_build_library_function_decl (get_identifier (PREFIX("ishftc4")),

@@ -432,3 +432,6 @@
 /* When generating kernel code or kexts, we don't use Altivec by
    default, as kernel code doesn't save/restore those registers.  */
 #define OS_MISSING_ALTIVEC (flag_mkernel || flag_apple_kext)
+
+/* Darwin has to rename some of the long double builtins.  */
+#define SUBTARGET_INIT_BUILTINS darwin_patch_builtins ()

@@ -1,3 +1,14 @@
+2008-02-23  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR target/25477
+	* config/darwin-protos.h: Add darwin_patch_builtins prototype.
+	* config/darwin-ppc-ldouble-patch.def: New file.
+	* config/rs6000/darwin.h (SUBTARGET_INIT_BUILTINS): New macro.
+	* config/rs6000/rs6000.c (rs6000_init_builtins): Call
+	SUBTARGET_INIT_BUILTINS if defined.
+	* config/darwin.c (darwin_patch_builtin,
+	darwin_patch_builtins): New functions.
+
 2008-02-23  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR rtl-opt/33512

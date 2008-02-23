@@ -942,6 +942,12 @@ gfc_init_builtin_functions (void)
 		      BUILT_IN_POW, "pow", true);
   gfc_define_builtin ("__builtin_powf", mfunc_float[1], 
 		      BUILT_IN_POWF, "powf", true);
+  gfc_define_builtin ("__builtin_cpowl", mfunc_clongdouble[1], 
+		      BUILT_IN_CPOWL, "cpowl", true);
+  gfc_define_builtin ("__builtin_cpow", mfunc_cdouble[1], 
+		      BUILT_IN_CPOW, "cpow", true);
+  gfc_define_builtin ("__builtin_cpowf", mfunc_cfloat[1], 
+		      BUILT_IN_CPOWF, "cpowf", true);
   gfc_define_builtin ("__builtin_powil", mfunc_longdouble[2], 
 		      BUILT_IN_POWIL, "powil", true);
   gfc_define_builtin ("__builtin_powi", mfunc_double[2], 
