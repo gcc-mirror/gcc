@@ -1,3 +1,9 @@
+2008-02-23  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR pch/35027
+	* c-pch.c (c_common_valid_pch): Make the "too short to be a PCH
+	file" warning condtional on -Winvalid-PCH.
+
 2008-02-23  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* expmed.c (extract_bit_field): Always use adjust_address for MEM.
