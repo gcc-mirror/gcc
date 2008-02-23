@@ -2428,6 +2428,19 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	      return simplify_gen_binary (code, mode, tem, op1);
 	    }
 	}
+
+      /* (and X (ior (not X) Y) -> (and X Y) */
+      if (GET_CODE (op1) == IOR
+	  && GET_CODE (XEXP (op1, 0)) == NOT
+	  && op0 == XEXP (XEXP (op1, 0), 0))
+       return simplify_gen_binary (AND, mode, op0, XEXP (op1, 1));
+
+      /* (and (ior (not X) Y) X) -> (and X Y) */
+      if (GET_CODE (op0) == IOR
+	  && GET_CODE (XEXP (op0, 0)) == NOT
+	  && op1 == XEXP (XEXP (op0, 0), 0))
+	return simplify_gen_binary (AND, mode, op1, XEXP (op0, 1));
+
       tem = simplify_associative_operation (code, mode, op0, op1);
       if (tem)
 	return tem;
