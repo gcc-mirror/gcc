@@ -1,3 +1,12 @@
+2008-02-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/35223
+	* simplify.c (gfc_simplify_ibclr), (gfc_simplify_ibits),
+	(gfc_simplify_ibset): Remove call to range_check.
+	(simplify_cmplx), (gfc_simplify_dble), (gfc_simplify_float)
+	(gfc_simplify_real): Add call gfc_clear_ts to initialize the
+	temporary gfc_typspec variable.
+
 2008-02-23  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR target/25477
@@ -7,7 +16,15 @@
 	gfor_fndecl_math_cpowl10, gfor_fndecl_math_cpowl16): Remove.
 	* trans-decl.c: Likewise.
 
-2008-02-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2008-02-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/35059
+	* expr.c (find_array_element): Modify traversing the constructor to
+	avoid trying to access NULL memory pointed to by next for the
+	last element. (find_array_section): Exit while loop if cons->next is
+	NULL.
+
+2008-02-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/34907
 	* iresolve.c (resolve_mask_arg): Add gfc_clear_ts to initialize
