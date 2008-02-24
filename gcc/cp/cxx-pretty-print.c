@@ -1,5 +1,5 @@
 /* Implementation of subroutines for the GNU C++ pretty-printer.
-   Copyright (C) 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -636,6 +636,8 @@ static void
 pp_cxx_new_expression (cxx_pretty_printer *pp, tree t)
 {
   enum tree_code code = TREE_CODE (t);
+  tree type = TREE_OPERAND (t, 1);
+  tree init = TREE_OPERAND (t, 2);
   switch (code)
     {
     case NEW_EXPR:
@@ -648,18 +650,22 @@ pp_cxx_new_expression (cxx_pretty_printer *pp, tree t)
 	  pp_cxx_call_argument_list (pp, TREE_OPERAND (t, 0));
 	  pp_space (pp);
 	}
-      /* FIXME: array-types are built with one more element.  */
-      pp_cxx_type_id (pp, TREE_OPERAND (t, 1));
-      if (TREE_OPERAND (t, 2))
+      if (TREE_CODE (type) == ARRAY_REF)
+	type = build_cplus_array_type
+	  (TREE_OPERAND (type, 0),
+	   build_index_type (fold_build2 (MINUS_EXPR, integer_type_node,
+					  TREE_OPERAND (type, 1),
+					  integer_one_node)));
+      pp_cxx_type_id (pp, type);
+      if (init)
 	{
 	  pp_left_paren (pp);
-	  t = TREE_OPERAND (t, 2);
-	  if (TREE_CODE (t) == TREE_LIST)
-	    pp_c_expression_list (pp_c_base (pp), t);
-	  else if (t == void_zero_node)
+	  if (TREE_CODE (init) == TREE_LIST)
+	    pp_c_expression_list (pp_c_base (pp), init);
+	  else if (init == void_zero_node)
 	    ;			/* OK, empty initializer list.  */
 	  else
-	    pp_cxx_expression (pp, t);
+	    pp_cxx_expression (pp, init);
 	  pp_right_paren (pp);
 	}
       break;
