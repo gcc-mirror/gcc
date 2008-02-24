@@ -34,7 +34,7 @@
 @end direntry
 
 @copying
-Copyright @copyright{} 1995-2007, 2008 Free Software Foundation
+Copyright @copyright{} 1995-2007, 2008 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2
@@ -962,7 +962,7 @@ Note that, as with the @code{if} statement to which it is equivalent, the
 type of the expression is either @code{Standard.Boolean}, or any type derived
 from this standard type.
 
-If assertions are disabled (switch @code{-gnata} not used), then there
+If assertions are disabled (switch @option{-gnata} not used), then there
 is no run-time effect (and in particular, any side effects from the
 expression will not occur at run time).  (The expression is still
 analyzed at compile time, and may cause types to be frozen if they are
@@ -1468,7 +1468,7 @@ semantics of the pragma is exactly equivalent to the procedure call statement
 corresponding to the argument with a terminating semicolon. Pragmas are
 permitted in sequences of declarations, so you can use pragma @code{Debug} to
 intersperse calls to debug procedures in the middle of declarations. Debug
-pragmas can be enabled either by use of the command line switch @code{-gnata}
+pragmas can be enabled either by use of the command line switch @option{-gnata}
 or by use of the configuration pragma @code{Debug_Policy}.
 
 @node Pragma Debug_Policy
@@ -1484,7 +1484,7 @@ pragma Debug_Policy (CHECK | IGNORE);
 @noindent
 If the argument is @code{CHECK}, then pragma @code{DEBUG} is enabled.
 If the argument is @code{IGNORE}, then pragma @code{DEBUG} is ignored.
-This pragma overrides the effect of the @code{-gnata} switch on the
+This pragma overrides the effect of the @option{-gnata} switch on the
 command line.
 
 @node Pragma Detect_Blocking
@@ -1519,7 +1519,7 @@ elaboration model used by the compilation affected by the
 pragma.  If the parameter is @code{Dynamic},
 then the dynamic elaboration
 model described in the Ada Reference Manual is used, as though
-the @code{-gnatE} switch had been specified on the command
+the @option{-gnatE} switch had been specified on the command
 line.  If the parameter is @code{Static}, then the default GNAT static
 model is used.  This configuration pragma overrides the setting
 of the command line.  For full details on the elaboration models
@@ -2575,7 +2575,7 @@ See the GNAT users guide for details.
 Note that pragma @code{Initialize_Scalars} is particularly useful in
 conjunction with the enhanced validity checking that is now provided
 in GNAT, which checks for invalid values under more conditions.
-Using this feature (see description of the @code{-gnatV} flag in the
+Using this feature (see description of the @option{-gnatV} flag in the
 users guide) in conjunction with pragma @code{Initialize_Scalars}
 provides a powerful new tool to assist in the detection of problems
 caused by uninitialized variables.
@@ -2599,7 +2599,7 @@ pragma Inline_Always (NAME [, NAME]);
 
 @noindent
 Similar to pragma @code{Inline} except that inlining is not subject to
-the use of option @code{-gnatn} and the inlining happens regardless of
+the use of option @option{-gnatn} and the inlining happens regardless of
 whether this option is used.
 
 @node Pragma Inline_Generic
@@ -3458,7 +3458,7 @@ targets that do not normally support the capability.  The version of
 @code{Poll} in this file makes a call to the appropriate runtime routine
 to test for an abort condition.
 
-Note that polling can also be enabled by use of the @code{-gnatP} switch.  See
+Note that polling can also be enabled by use of the @option{-gnatP} switch.  See
 the @cite{GNAT User's Guide} for details.
 
 @node Pragma Profile (Ravenscar)
@@ -3838,7 +3838,7 @@ the pragma line (for use in error messages and debugging
 information).  @var{string_literal} is a static string constant that
 specifies the file name to be used in error messages and debugging
 information.  This is most notably used for the output of @code{gnatchop}
-with the @code{-r} switch, to make sure that the original unchopped
+with the @option{-r} switch, to make sure that the original unchopped
 source file is the one referred to.
 
 The second argument must be a string literal, it cannot be a static
@@ -3942,7 +3942,7 @@ the @file{gnat.adc} file).
 The form with a string literal specifies which style options are to be
 activated.  These are additive, so they apply in addition to any previously
 set style check options.  The codes for the options are the same as those
-used in the @code{-gnaty} switch to @code{gcc} or @code{gnatmake}.
+used in the @option{-gnaty} switch to @command{gcc} or @command{gnatmake}.
 For example the following two methods can be used to enable
 layout checking:
 
@@ -4478,7 +4478,7 @@ The form with a string literal specifies which validity options are to be
 activated.  The validity checks are first set to include only the default
 reference manual settings, and then a string of letters in the string
 specifies the exact set of options required.  The form of this string
-is exactly as described for the @code{-gnatVx} compiler switch (see the
+is exactly as described for the @option{-gnatVx} compiler switch (see the
 GNAT users guide for details).  For example the following two methods
 can be used to enable validity checking for mode @code{in} and
 @code{in out} subprogram parameters:
@@ -7364,7 +7364,7 @@ overlapping storage units.
 @end cartouche
 @noindent
 A compilation is represented by a sequence of files presented to the
-compiler in a single invocation of the @code{gcc} command.
+compiler in a single invocation of the @command{gcc} command.
 
 @sp 1
 @cartouche
@@ -7405,7 +7405,7 @@ mentioned in the context clause of one of the needed Ada units.
 
 If the partition contains no main program, or if the main program is in
 a language other than Ada, then GNAT
-provides the binder options @code{-z} and @code{-n} respectively, and in
+provides the binder options @option{-z} and @option{-n} respectively, and in
 this case a list of units can be explicitly supplied to the binder for
 inclusion in the partition (all units needed by these units will also
 be included automatically).  For full details on the use of these
@@ -8522,7 +8522,7 @@ There are no implementation-defined aspects of @code{Task_Attributes}.
 @noindent
 The metrics information for GNAT depends on the performance of the
 underlying operating system.  The sources of the run-time for tasking
-implementation, together with the output from @code{-gnatG} can be
+implementation, together with the output from @option{-gnatG} can be
 used to determine the exact sequence of operating systems calls made
 to implement various tasking constructs.  Together with appropriate
 information on the performance of the underlying operating system,
@@ -9443,7 +9443,7 @@ Then @code{Default_Stack_Size} can be defined in a global package, and
 modified as required. Any tasks requiring stack sizes different from the
 default can have an appropriate alternative reference in the pragma.
 
-You can also use the @code{-d} binder switch to modify the default stack
+You can also use the @option{-d} binder switch to modify the default stack
 size.
 
 For access types, the @code{Storage_Size} clause specifies the maximum
@@ -10866,7 +10866,7 @@ code. size clause specifying 64-bits must be used to obtain a 64-bit pointer.
 @node Determining the Representations chosen by GNAT
 @section Determining the Representations chosen by GNAT
 @cindex Representation, determination of
-@cindex @code{-gnatR} switch
+@cindex @option{-gnatR} switch
 
 @noindent
 Although the descriptions in this section are intended to be complete, it is
@@ -10884,7 +10884,7 @@ fields placed? The section on pragma @code{Pack} in this chapter can be
 used to answer the second question, but it is often easier to just see
 what the compiler does.
 
-For this purpose, GNAT provides the option @code{-gnatR}.  If you compile
+For this purpose, GNAT provides the option @option{-gnatR}.  If you compile
 with this option, then the compiler will output information on the actual
 representations chosen, in a format similar to source representation
 clauses.  For example, if we compile the package:
@@ -10934,7 +10934,7 @@ end q;
 @end smallexample
 
 @noindent
-using the switch @code{-gnatR} we obtain the following output:
+using the switch @option{-gnatR} we obtain the following output:
 
 @smallexample
 Representation information for unit q

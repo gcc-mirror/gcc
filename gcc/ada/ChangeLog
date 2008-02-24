@@ -1,6 +1,11 @@
 2008-02-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR documentation/15479
+	* gnat_rm.texi, gnat_ugn.texi: Where appropriate, add @command,
+	use @command instead of @code, @option instead of @samp or @code,
+	@code instead of @var, @samp instead of @file.
+
+	PR documentation/15479
 	* gnat_ugn.texi (Using gnatmake in a Makefile): Do not ignore errors
 	in Makefile rules, by using `&&' rather than `;'.
 
