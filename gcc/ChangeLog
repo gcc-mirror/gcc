@@ -1,3 +1,8 @@
+2008-02-23  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.h (CONSTANT_ALIGNMENT): Use STRICT_ALIGNMENT
+	instead of TARGET_STRICT_ALIGN.
+
 2008-02-23  Joseph Myers  <joseph@codesourcery.com>
 
 	* explow.c (memory_address): Assert that the generated address is
