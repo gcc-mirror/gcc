@@ -7,6 +7,65 @@
 	(gfc_simplify_real): Add call gfc_clear_ts to initialize the
 	temporary gfc_typspec variable.
 
+2008-02-24  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	* trans-array.c (gfc_conv_descriptor_data_get,
+	gfc_conv_descriptor_data_set_internal,
+	gfc_conv_descriptor_data_addr, gfc_conv_descriptor_offset,
+	gfc_conv_descriptor_dtype, gfc_conv_descriptor_dimension,
+	gfc_conv_descriptor_stride, gfc_conv_descriptor_lbound,
+	gfc_conv_descriptor_ubound, gfc_trans_create_temp_array,
+	gfc_conv_array_transpose, gfc_grow_array,
+	gfc_trans_array_constructor_subarray,
+	gfc_trans_array_constructor_value, gfc_trans_scalarized_loop_end,
+	gfc_array_init_size, gfc_array_allocate, gfc_array_deallocate,
+	gfc_conv_array_initializer, gfc_trans_array_bounds,
+	gfc_trans_auto_array_allocation, gfc_trans_dummy_array_bias,
+	gfc_get_dataptr_offset, gfc_conv_array_parameter,
+	gfc_trans_dealloc_allocated, get_full_array_size,
+	gfc_duplicate_allocatable, structure_alloc_comps): Use fold_buildN
+	instead of buildN.
+	* trans-expr.c (gfc_conv_expr_present, gfc_conv_missing_dummy,
+	gfc_conv_component_ref, gfc_conv_cst_int_power,
+	gfc_conv_function_call, gfc_trans_structur_assign): Likewise.
+	* trans-common.c (create_common): Likewise.
+	* trans-openmp.c (gfc_trans_omp_atomic, gfc_trans_omp_do):
+	Likewise.
+	* trans-const.c (gfc_conv_constant_to_tree): Likewise.
+	* trans-stmt.c (gfc_trans_goto, gfc_trans_return, gfc_trans_do,
+	gfc_trans_integer_select, gfc_trans_character_select,
+	gfc_trans_forall_loop, compute_overall_iter_number,
+	gfc_trans_forall_1, gfc_evaluate_where_mask, gfc_trans_allocate,
+	gfc_trans_deallocate): Likewise.
+	* trans.c (gfc_build_addr_expr, gfc_trans_runtime_check,
+	gfc_allocate_with_status, gfc_allocate_array_with_status,
+	gfc_deallocate_with_status): Likewise.
+	* f95-lang.c (gfc_truthvalue_conversion): Likewise.
+	* trans-io.c (set_parameter_const, set_parameter_value,
+	set_parameter_ref, set_string, set_internal_unit, io_result,
+	set_error_locus, nml_get_addr_expr, transfer_expr): Likewise.
+	* trans-decl.c (gfc_build_qualified_array, build_entry_thunks,
+	gfc_get_fake_result_decl, gfc_trans_auto_character_variable,
+	gfc_generate_function_code): Likewise.
+	* convert.c (convert): Likewise.
+	* trans-intrinsic.c (gfc_conv_intrinsic_conversion,
+	build_fixbound_expr, build_fix_expr, gfc_conv_intrinsic_aint,
+	gfc_conv_intrinsic_int, gfc_conv_intrinsic_imagpart,
+	gfc_conv_intrinsic_conjg, gfc_conv_intrinsic_abs,
+	gfc_conv_intrinsic_cmplx, gfc_conv_intrinsic_mod,
+	gfc_conv_intrinsic_dim, gfc_conv_intrinsic_dprod,
+	gfc_conv_intrinsic_ctime, gfc_conv_intrinsic_fdate,
+	gfc_conv_intrinsic_ttynam, gfc_conv_intrinsic_minmax,
+	gfc_conv_intrinsic_minmax_char, gfc_conv_intrinsic_count,
+	gfc_conv_intrinsic_arith, gfc_conv_intrinsic_dot_product,
+	gfc_conv_intrinsic_minmaxloc, gfc_conv_intrinsic_minmaxval,
+	gfc_conv_intrinsic_btest, gfc_conv_intrinsic_not,
+	gfc_conv_intrinsic_ibits, gfc_conv_intrinsic_ishft,
+	gfc_conv_intrinsic_ichar, gfc_conv_intrinsic_size,
+	gfc_conv_intrinsic_array_transfer, gfc_conv_intrinsic_transfer,
+	gfc_conv_allocated, gfc_conv_associated, gfc_conv_intrinsic_trim,
+	gfc_conv_intrinsic_repeat): Likewise.
+
 2008-02-23  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR target/25477
