@@ -1,5 +1,5 @@
 /* Declaration statement matcher
-   Copyright (C) 2002, 2004, 2005, 2006, 2007
+   Copyright (C) 2002, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
