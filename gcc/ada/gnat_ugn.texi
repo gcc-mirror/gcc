@@ -18737,8 +18737,8 @@ objects::
 # by a new tool, gnatmlib
 $@{LIB_DIR@}:
     mkdir -p $@{dir $@@ @}
-    cd $@{dir $@@ @}; gcc -shared -o $@{notdir $@@ @} ../*.o -L$@{GLIB@} -lgnat
-    cd $@{dir $@@ @}; cp -f ../*.ali .
+    cd $@{dir $@@ @} && gcc -shared -o $@{notdir $@@ @} ../*.o -L$@{GLIB@} -lgnat
+    cd $@{dir $@@ @} && cp -f ../*.ali .
 
 # The dependencies for the modules
 # Note that we have to force the expansion of *.o, since in some cases
