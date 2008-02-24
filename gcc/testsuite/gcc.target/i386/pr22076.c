@@ -15,4 +15,5 @@ __v8qi test ()
 }
 
 /* { dg-final { scan-assembler-times "movq" 3 } } */
-/* { dg-final { scan-assembler-times "movl" 1 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "movl" 1 { target { ilp32 && nonpic } } } } */
+/* { dg-final { scan-assembler-times "movl" 2 { target { ilp32 && { ! nonpic } } } } } */
