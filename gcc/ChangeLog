@@ -1,4 +1,4 @@
-2008-02-21  Edmar Wienskoski  <edmar@freescale.com>
+2008-02-24  Edmar Wienskoski  <edmar@freescale.com>
 
 	* config.gcc (powerpc*-*-*): Add new cores e300c2 and e300c3.
 	* config/rs6000/e300c2c3.md: New file.
