@@ -1,3 +1,19 @@
+2008-02-21  Edmar Wienskoski  <edmar@freescale.com>
+
+	* config.gcc (powerpc*-*-*): Add new cores e300c2 and e300c3.
+	* config/rs6000/e300c2c3.md: New file.
+	* config/rs6000/rs6000.c (processor_costs): Add new costs for
+	e300c2 and e300c3.
+	(rs6000_override_options): Add e300c2 and e300c3 cases to
+	processor_target_table. Do not allow usage of Altivec or Spe
+	with e300 cores. Initialize rs6000_cost for e300c2 and e300c3.
+	(rs6000_issue_rate): Set issue rate for e300c2 and e300c3.
+	* config/rs6000/rs6000.h (processor_type): Add
+	PROCESSOR_PPCE300C2 and PROCESSOR_PPCE300C3.
+	(ASM_CPU_SPEC): Add e300c2 and e300c3.
+	* config/rs6000/rs6000.md (define_attr "cpu"): Add ppce300c2
+	and ppce300c3. Include e300c2c3.md.
+
 2008-02-23  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.h (CONSTANT_ALIGNMENT): Use STRICT_ALIGNMENT

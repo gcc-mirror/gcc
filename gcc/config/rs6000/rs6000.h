@@ -117,6 +117,8 @@
 %{mcpu=G5: -mpower4 -maltivec} \
 %{mcpu=8540: -me500} \
 %{mcpu=8548: -me500} \
+%{mcpu=e300c2: -me300} \
+%{mcpu=e300c3: -me300} \
 %{maltivec: -maltivec} \
 -many"
 
@@ -262,6 +264,8 @@ enum processor_type
    PROCESSOR_PPC7400,
    PROCESSOR_PPC7450,
    PROCESSOR_PPC8540,
+   PROCESSOR_PPCE300C2,
+   PROCESSOR_PPCE300C3,
    PROCESSOR_POWER4,
    PROCESSOR_POWER5,
    PROCESSOR_POWER6,
