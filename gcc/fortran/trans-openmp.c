@@ -1,5 +1,5 @@
 /* OpenMP directive translation -- generate GCC trees from gfc_code.
-   Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>
 
 This file is part of GCC.
@@ -863,7 +863,7 @@ gfc_trans_omp_atomic (gfc_code *code)
 
   if (TREE_CODE (TREE_TYPE (rhs)) == COMPLEX_TYPE
       && TREE_CODE (type) != COMPLEX_TYPE)
-    x = build1 (REALPART_EXPR, TREE_TYPE (TREE_TYPE (rhs)), x);
+    x = fold_build1 (REALPART_EXPR, TREE_TYPE (TREE_TYPE (rhs)), x);
 
   x = build2_v (OMP_ATOMIC, lhsaddr, convert (type, x));
   gfc_add_expr_to_block (&block, x);
@@ -961,8 +961,8 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
   if (simple)
     {
       init = build2_v (GIMPLE_MODIFY_STMT, dovar, from);
-      cond = build2 (simple > 0 ? LE_EXPR : GE_EXPR, boolean_type_node,
-		     dovar, to);
+      cond = fold_build2 (simple > 0 ? LE_EXPR : GE_EXPR, boolean_type_node,
+			  dovar, to);
       incr = fold_build2 (PLUS_EXPR, type, dovar, step);
       incr = fold_build2 (GIMPLE_MODIFY_STMT, type, dovar, incr);
       if (pblock != &block)
@@ -987,7 +987,7 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
       tmp = gfc_evaluate_now (tmp, pblock);
       count = gfc_create_var (type, "count");
       init = build2_v (GIMPLE_MODIFY_STMT, count, build_int_cst (type, 0));
-      cond = build2 (LT_EXPR, boolean_type_node, count, tmp);
+      cond = fold_build2 (LT_EXPR, boolean_type_node, count, tmp);
       incr = fold_build2 (PLUS_EXPR, type, count, build_int_cst (type, 1));
       incr = fold_build2 (GIMPLE_MODIFY_STMT, type, count, incr);
 
@@ -1000,7 +1000,7 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
 
       /* Initialize DOVAR.  */
       tmp = fold_build2 (MULT_EXPR, type, count, step);
-      tmp = build2 (PLUS_EXPR, type, from, tmp);
+      tmp = fold_build2 (PLUS_EXPR, type, from, tmp);
       gfc_add_modify_stmt (&body, dovar, tmp);
     }
 
