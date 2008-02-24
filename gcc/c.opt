@@ -123,10 +123,6 @@ Wall
 C ObjC C++ ObjC++ Warning
 Enable most warning messages
 
-Wtype-limits
-C ObjC C++ ObjC++ Var(warn_type_limits) Init(-1) Warning
-Warn if a comparison is always true or always false due to the limited range of the data type
-
 Wassign-intercept
 ObjC ObjC++ Var(warn_assign_intercept) Warning
 Warn whenever an Objective-C assignment is being intercepted by the garbage collector

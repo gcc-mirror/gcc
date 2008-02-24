@@ -193,6 +193,10 @@ Wsystem-headers
 Common Var(warn_system_headers) Warning
 Do not suppress warnings from system headers
 
+Wtype-limits
+Common Var(warn_type_limits) Init(-1) Warning
+Warn if a comparison is always true or always false due to the limited range of the data type
+
 Wuninitialized
 Common Var(warn_uninitialized) Warning
 Warn about uninitialized automatic variables

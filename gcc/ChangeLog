@@ -1,3 +1,14 @@
+2008-02-24  Diego Novillo  <dnovillo@google.com>
+
+	http://gcc.gnu.org/ml/gcc-patches/2008-02/msg01094.html
+
+	PR 33738
+	* tree-vrp.c (vrp_evaluate_conditional): With
+	-Wtype-limits, emit a warning when comparing against a
+	constant outside the natural range of OP0's type.
+	* c.opt (Wtype-limits): Move ...
+	* common.opt (Wtype-limits): ... here.
+
 2008-02-24  Edmar Wienskoski  <edmar@freescale.com>
 
 	* config.gcc (powerpc*-*-*): Add new cores e300c2 and e300c3.
