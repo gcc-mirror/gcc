@@ -4650,7 +4650,7 @@ pragmas must appear in sequence:
 
 @smallexample @c ada
 pragma Warnings (Off, Pattern);
-.. code where given warning is to be suppressed
+@dots{} code where given warning is to be suppressed
 pragma Warnings (On, Pattern);
 @end smallexample
 
@@ -11073,7 +11073,7 @@ system-independent manner.
 @item Ada.Decimal (F.2)
 This package provides constants describing the range of decimal numbers
 implemented, and also a decimal divide routine (analogous to the COBOL
-verb DIVIDE .. GIVING .. REMAINDER ..)
+verb DIVIDE @dots{} GIVING @dots{} REMAINDER @dots{})
 
 @item Ada.Direct_IO (A.8.4)
 This package provides input-output using a model of a set of records of
