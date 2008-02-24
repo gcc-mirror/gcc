@@ -117,7 +117,8 @@
 @c %**end of header
 
 @copying
-Copyright @copyright{} 1995-2005, 2006, 2007, 2008 Free Software Foundation
+Copyright @copyright{} 1995-2005, 2006, 2007, 2008 Free Software Foundation,
+Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2
@@ -2097,7 +2098,7 @@ GNAT allows completely arbitrary file names to be specified using the
 source file name pragma. However, if the file name specified has an
 extension other than @file{.ads} or @file{.adb} it is necessary to use
 a special syntax when compiling the file. The name in this case must be
-preceded by the special sequence @code{-x} followed by a space and the name
+preceded by the special sequence @option{-x} followed by a space and the name
 of the language, here @code{ada}, as in:
 
 @smallexample
@@ -2109,7 +2110,8 @@ $ gcc -c -x ada peculiar_file_name.sim
 @command{gnatmake} handles non-standard file names in the usual manner (the
 non-standard file name for the main program is simply used as the
 argument to gnatmake). Note that if the extension is also non-standard,
-then it must be included in the gnatmake command, it may not be omitted.
+then it must be included in the @command{gnatmake} command, it may not
+be omitted.
 
 @node Alternative File Naming Schemes
 @section Alternative File Naming Schemes
@@ -2950,8 +2952,8 @@ Interface ---see http://www.codesourcery.com/archives/cxx-abi).
 
 @noindent
 Interfacing can be done at 3 levels: simple data, subprograms, and
-classes. In the first two cases, GNAT offers a specific @var{Convention
-C_Plus_Plus} (or @var{CPP}) that behaves exactly like @var{Convention C}.
+classes. In the first two cases, GNAT offers a specific @code{Convention
+C_Plus_Plus} (or @code{CPP}) that behaves exactly like @code{Convention C}.
 Usually, C++ mangles the names of subprograms, and currently, GNAT does
 not provide any help to solve the demangling problem. This problem can be
 addressed in two ways:
@@ -3005,9 +3007,9 @@ at the same time and may make one of the two compilers operate
 improperly if set during invocation of the wrong compiler.  It is also
 very important that the linker uses the proper @file{libgcc.a} GCC
 library -- that is, the one from the C++ compiler installation. The
-implicit link command as suggested in the gnatmake command from the
-former example can be replaced by an explicit link command with the
-full-verbosity option in order to verify which library is used:
+implicit link command as suggested in the @command{gnatmake} command
+from the former example can be replaced by an explicit link command with
+the full-verbosity option in order to verify which library is used:
 @smallexample
 $ gnatbind ada_unit
 $ gnatlink -v -v ada_unit file1.o file2.o --LINK=c++
@@ -4397,7 +4399,7 @@ warning messages generated.
 
 @item -^gnatl^OUTPUT_FILE^=file
 @cindex @option{^-gnatl^OUTPUT_FILE^=fname} (@command{gcc})
-This has the same effect as @code{-gnatl} except that the output is
+This has the same effect as @option{-gnatl} except that the output is
 written to a file instead of to standard output. If the given name
 @file{fname} does not start with a period, then it is the full name
 of the file to be written. If @file{fname} is an extension, it is
@@ -6725,7 +6727,7 @@ the @option{-gnatR} switch). For @option{-gnatR1} (which is the default,
 so @option{-gnatR} with no parameter has the same effect), size and alignment
 information is listed for declared array and record types. For
 @option{-gnatR2}, size and alignment information is listed for all
-declared types and objects. Finally @code{-gnatR3} includes symbolic
+declared types and objects. Finally @option{-gnatR3} includes symbolic
 expressions for values that are computed at run time for
 variant records. These symbolic expressions have a mostly obvious
 format with #n being used to represent the value of the n'th
@@ -8333,13 +8335,13 @@ units, or in @code{Import} pragmas in any Ada units.
 
 @var{linker options} is an optional list of linker specific
 switches.
-The default linker called by gnatlink is @var{gcc} which in
+The default linker called by gnatlink is @command{gcc} which in
 turn calls the appropriate system linker.
 Standard options for the linker such as @option{-lmy_lib} or
 @option{-Ldir} can be added as is.
 For options that are not recognized by
-@var{gcc} as linker options, use the @var{gcc} switches @option{-Xlinker} or
-@option{-Wl,}.
+@command{gcc} as linker options, use the @command{gcc} switches
+@option{-Xlinker} or @option{-Wl,}.
 Refer to the GCC documentation for
 details. Here is an example showing how to generate a linker map:
 
@@ -8838,7 +8840,7 @@ stamp differences when the only
 modifications to a source file consist in adding/removing comments,
 empty lines, spaces or tabs. This means that if you have changed the
 comments in a source file or have simply reformatted it, using this
-switch will tell gnatmake not to recompile files that depend on it
+switch will tell @command{gnatmake} not to recompile files that depend on it
 (provided other sources on which these files depend have undergone no
 semantic modifications). Note that the debugging information may be
 out of date with respect to the sources if the @option{-m} switch causes
@@ -9765,15 +9767,15 @@ it actually improves performance.
 @subsection Other Optimization Switches
 @cindex Optimization Switches
 
-Since @code{GNAT} uses the @code{gcc} back end, all the specialized
-@code{gcc} optimization switches are potentially usable. These switches
+Since @code{GNAT} uses the @command{gcc} back end, all the specialized
+@command{gcc} optimization switches are potentially usable. These switches
 have not been extensively tested with GNAT but can generally be expected
 to work. Examples of switches in this category are
 @option{-funroll-loops} and
 the various target-specific @option{-m} options (in particular, it has been
 observed that @option{-march=pentium4} can significantly improve performance
 on appropriate machines). For full details of these switches, see the
-@code{gcc} manual.
+@command{gcc} manual.
 
 @node Optimization and Strict Aliasing
 @subsection Optimization and Strict Aliasing
@@ -9868,8 +9870,8 @@ end;
 @end smallexample
 
 @noindent
-This program prints out 0 in @code{-O0} or @code{-O1}
-mode, but it prints out 1 in @code{-O2} mode. That's
+This program prints out 0 in @option{-O0} or @option{-O1}
+mode, but it prints out 1 in @option{-O2} mode. That's
 because in strict aliasing mode, the compiler can and
 does assume that the assignment to @code{v2.all} could not
 affect the value of @code{v1.all}, since different types
@@ -9907,19 +9909,19 @@ the suspicious @code{Unchecked_Conversion}.
 As implied by the warning message, there are approaches you can use to
 avoid the unwanted strict aliasing optimization in a case like this.
 
-One possibility is to simply avoid the use of @code{-O2}, but
+One possibility is to simply avoid the use of @option{-O2}, but
 that is a bit drastic, since it throws away a number of useful
 optimizations that do not involve strict aliasing assumptions.
 
 A less drastic approach is to compile the program using the
-option @code{-fno-strict-aliasing}. Actually it is only the
+option @option{-fno-strict-aliasing}. Actually it is only the
 unit containing the dereferencing of the suspicious pointer
 that needs to be compiled. So in this case, if we compile
 unit @code{m} with this switch, then we get the expected
 value of zero printed. Analyzing which units might need
 the switch can be painful, so a more reasonable approach
-is to compile the entire program with options @code{-O2}
-and @code{-fno-strict-aliasing}. If the performance is
+is to compile the entire program with options @option{-O2}
+and @option{-fno-strict-aliasing}. If the performance is
 satisfactory with this combination of options, then the
 advantage is that the entire issue of possible "wrong"
 optimization due to strict aliasing is avoided.
@@ -10268,8 +10270,8 @@ function or data in a separate section in the resulting object file.
 Once the objects and static libraries are created with these options, the
 linker can perform the dead code elimination. You can do this by setting
 the @option{-Wl,--gc-sections} option to gcc command or in the
-@option{-largs} section of gnatmake. This will perform a garbage collection of
-code and data never referenced.
+@option{-largs} section of @command{gnatmake}. This will perform a
+garbage collection of code and data never referenced.
 
 If the linker performs a partial link (@option{-r} ld linker option), then you
 will need to provide one or several entry point using the
@@ -12518,7 +12520,7 @@ in the project file.
 @end smallexample
 
 @noindent
-The attribute @var{Object_Dir} has a string value, the path name of the object
+The attribute @code{Object_Dir} has a string value, the path name of the object
 directory. The path name may be absolute or relative to the directory of the
 project file. This directory must already exist, and be readable and writable.
 
@@ -12541,7 +12543,7 @@ in the project file.
 @end smallexample
 
 @noindent
-The attribute @var{Exec_Dir} has a string value, the path name of the exec
+The attribute @code{Exec_Dir} has a string value, the path name of the exec
 directory. The path name may be absolute or relative to the directory of the
 project file. This directory must already exist, and be writable.
 
@@ -13169,14 +13171,14 @@ You can define the following attributes in package @code{Naming}:
 
 @table @code
 
-@item @var{Casing}
+@item @code{Casing}
 This must be a string with one of the three values @code{"lowercase"},
 @code{"uppercase"} or @code{"mixedcase"}; these strings are case insensitive.
 
 @noindent
-If @var{Casing} is not specified, then the default is @code{"lowercase"}.
+If @code{Casing} is not specified, then the default is @code{"lowercase"}.
 
-@item @var{Dot_Replacement}
+@item @code{Dot_Replacement}
 This must be a string whose value satisfies the following conditions:
 
 @itemize @bullet
@@ -13191,7 +13193,7 @@ is @code{"."}
 @noindent
 If @code{Dot_Replacement} is not specified, then the default is @code{"-"}.
 
-@item @var{Spec_Suffix}
+@item @code{Spec_Suffix}
 This is an associative array (indexed by the programming language name, case
 insensitive) whose value is a string that must satisfy the following
 conditions:
@@ -13204,7 +13206,7 @@ conditions:
 If @code{Spec_Suffix ("Ada")} is not specified, then the default is
 @code{"^.ads^.ADS^"}.
 
-@item @var{Body_Suffix}
+@item @code{Body_Suffix}
 This is an associative array (indexed by the programming language name, case
 insensitive) whose value is a string that must satisfy the following
 conditions:
@@ -13223,7 +13225,7 @@ if the longest suffix is @code{Spec_Suffix ("Ada")}.
 If @code{Body_Suffix ("Ada")} is not specified, then the default is
 @code{"^.adb^.ADB^"}.
 
-@item @var{Separate_Suffix}
+@item @code{Separate_Suffix}
 This must be a string whose value satisfies the same conditions as
 @code{Body_Suffix}. The same "longest suffix" rules apply.
 
@@ -13231,7 +13233,7 @@ This must be a string whose value satisfies the same conditions as
 If @code{Separate_Suffix ("Ada")} is not specified, then it defaults to same
 value as @code{Body_Suffix ("Ada")}.
 
-@item @var{Spec}
+@item @code{Spec}
 @noindent
 You can use the associative array attribute @code{Spec}  to define
 the source file name for an individual Ada compilation unit's spec. The array
@@ -13244,7 +13246,7 @@ operating system).
    for Spec ("MyPack.MyChild") use "mypack.mychild.spec";
 @end smallexample
 
-@item @var{Body}
+@item @code{Body}
 
 You can use the associative array attribute @code{Body} to
 define the source file name for an individual Ada compilation unit's body
@@ -14252,7 +14254,7 @@ It is also possible to invoke some of the tools,
 @code{^gnatmetric^gnatmetric^}),
 and @code{^gnatpp^gnatpp^})
 on a set of project units thanks to the combination of the switches
-@code{-P}, @code{-U} and possibly the main unit when one is interested
+@option{-P}, @option{-U} and possibly the main unit when one is interested
 in its closure. For instance,
 @smallexample
 gnat metric -Pproj
@@ -18645,7 +18647,7 @@ documentation), nor does it try to replace the @command{gnatmake} utility
 (@pxref{The GNAT Make Program gnatmake}).
 
 All the examples in this section are specific to the GNU version of
-make. Although @code{make} is a standard utility, and the basic language
+make. Although @command{make} is a standard utility, and the basic language
 is the same, these examples use some advanced features found only in
 @code{GNU make}.
 
@@ -18775,13 +18777,13 @@ automatically.
 
 The example below presents two methods. The first one, although less
 general, gives you more control over the list. It involves wildcard
-characters, that are automatically expanded by @code{make}. Its
+characters, that are automatically expanded by @command{make}. Its
 shortcoming is that you need to explicitly specify some of the
 organization of your project, such as for instance the directory tree
 depth, whether some directories are found in a separate tree,...
 
 The second method is the most general one. It requires an external
-program, called @code{find}, which is standard on all Unix systems. All
+program, called @command{find}, which is standard on all Unix systems. All
 the directories found under a given root directory will be added to the
 list.
 
@@ -19235,7 +19237,7 @@ version of that library that has been compiled with the @option{-g} switch
 
 Gnatmem must be supplied with the @file{gmem.out} file and the executable to
 examine. If the location of @file{gmem.out} file was not explicitly supplied by
-@code{-i} switch, gnatmem will assume that this file can be found in the
+@option{-i} switch, gnatmem will assume that this file can be found in the
 current directory. For example, after you have executed @file{my_program},
 @file{gmem.out} can be analyzed by @code{gnatmem} using the command:
 
@@ -19657,7 +19659,7 @@ With this option, at each task termination, its stack usage is  output on
 It is not always convenient to output the stack usage when the program
 is still running. Hence, it is possible to delay this output until program
 termination. for a given number of tasks specified as the argument of the
-@code{-u} option. For instance:
+@option{-u} option. For instance:
 
 @smallexample
 $ gnatbind -u100 file
@@ -21954,9 +21956,9 @@ separate from the generated code. It makes the object files considerably
 larger, but it does not add to the size of the actual executable that
 will be loaded into memory, and has no impact on run-time performance. The
 generation of debug information is triggered by the use of the
-^-g^/DEBUG^ switch in the gcc or gnatmake command used to carry out
-the compilations. It is important to emphasize that the use of these
-options does not change the generated code.
+^-g^/DEBUG^ switch in the @command{gcc} or @command{gnatmake} command
+used to carry out the compilations. It is important to emphasize that
+the use of these options does not change the generated code.
 
 The debugging information is written in standard system formats that
 are used by many tools, including debuggers and profilers. The format
@@ -22029,7 +22031,7 @@ describes some of the additional commands that can be given to @code{GDB}.
 @end ifset
 includes extensive documentation on the use
 of these commands, together with examples of their use. Furthermore,
-the command @var{help} invoked from within @code{GDB} activates a simple help
+the command @command{help} invoked from within GDB activates a simple help
 facility which summarizes the available commands and their options.
 In this section we summarize a few of the most commonly
 used commands to give an idea of what @code{GDB} is about. You should create
@@ -30471,7 +30473,7 @@ to standard output the list of entry points in the DLL. Note that if
 some routines in the DLL have the @code{Stdcall} convention
 (@pxref{Windows Calling Conventions}) with stripped @code{@@}@i{nn}
 suffix then you'll have to edit @file{api.def} to add it, and specify
-@code{-k} to @code{gnatdll} when creating the import library.
+@option{-k} to @command{gnatdll} when creating the import library.
 
 @noindent
 Here are some hints to find the right @code{@@}@i{nn} suffix.
@@ -30568,7 +30570,7 @@ into the DLL. This is done by using the standard @command{gnatmake} tool.
 
 @item building the DLL
 
-To build the DLL you must use @command{gcc}'s @code{-shared}
+To build the DLL you must use @command{gcc}'s @option{-shared}
 option. It is quite simple to use this method:
 
 @smallexample
@@ -30605,7 +30607,7 @@ $ attrib +R apilib\*.ali
 
 At this point it is possible to use the DLL by directly linking
 against it. Note that you must use the GNAT shared runtime when using
-GNAT shared libraries. This is achieved by using @code{-shared} binder's
+GNAT shared libraries. This is achieved by using @option{-shared} binder's
 option.
 
 @smallexample
@@ -31009,7 +31011,7 @@ advise the reader to build relocatable DLL.
 @item -b @var{address}
 @cindex @option{-b} (@code{gnatdll})
 Set the relocatable DLL base address. By default the address is
-@var{0x11000000}.
+@code{0x11000000}.
 
 @item -bargs @var{opts}
 @cindex @option{-bargs} (@code{gnatdll})
