@@ -1,7 +1,8 @@
 2008-02-24  Uros Bizjak  <ubizjak@gmail.com>
 
-	* gcc.target/i386/pr34256.c: Update number of mov insns
+	* gcc.target/i386/pr22076.c: Update number of mov insns
 	for PIC targets.
+	* gcc.target/i386/pr34256.c: Ditto.
 
 2008-02-24  Diego Novillo  <dnovillo@google.com>
 
