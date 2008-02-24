@@ -413,6 +413,13 @@ do_friend (tree ctype, tree declarator, tree decl,
   /* Every decl that gets here is a friend of something.  */
   DECL_FRIEND_P (decl) = 1;
 
+  /* Unfortunately, we have to handle attributes here.  Normally we would
+     handle them in start_decl_1, but since this is a friend decl start_decl_1
+     never gets to see it.  */
+
+  /* Set attributes here so if duplicate decl, will have proper attributes.  */
+  cplus_decl_attributes (&decl, attrlist, 0);
+
   if (TREE_CODE (declarator) == TEMPLATE_ID_EXPR)
     {
       declarator = TREE_OPERAND (declarator, 0);
@@ -581,13 +588,6 @@ do_friend (tree ctype, tree declarator, tree decl,
 		  /*complain=*/true);
       DECL_FRIEND_P (decl) = 1;
     }
-
-  /* Unfortunately, we have to handle attributes here.  Normally we would
-     handle them in start_decl_1, but since this is a friend decl start_decl_1
-     never gets to see it.  */
-
-  /* Set attributes here so if duplicate decl, will have proper attributes.  */
-  cplus_decl_attributes (&decl, attrlist, 0);
 
   return decl;
 }

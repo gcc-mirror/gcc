@@ -1,3 +1,8 @@
+2008-02-24  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR c++/34749
+	* g++.dg.ext/dllimport13.C: New test.
+
 2008-02-23  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/24685

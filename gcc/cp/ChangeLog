@@ -1,3 +1,8 @@
+2008-02-24  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR c++/34749
+	* friend.c (do_friend): Call cplus_decl_attributes earlier.
+
 2008-02-22  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR C++/34715
