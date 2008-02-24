@@ -1,5 +1,5 @@
 /* gfortran backend interface
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Paul Brook.
 
@@ -220,16 +220,17 @@ gfc_truthvalue_conversion (tree expr)
 	  return expr;
 	}
       else if (TREE_CODE (expr) == NOP_EXPR)
-        return build1 (NOP_EXPR, boolean_type_node, TREE_OPERAND (expr, 0));
+        return fold_build1 (NOP_EXPR,
+			    boolean_type_node, TREE_OPERAND (expr, 0));
       else
-        return build1 (NOP_EXPR, boolean_type_node, expr);
+        return fold_build1 (NOP_EXPR, boolean_type_node, expr);
 
     case INTEGER_TYPE:
       if (TREE_CODE (expr) == INTEGER_CST)
 	return integer_zerop (expr) ? boolean_false_node : boolean_true_node;
       else
-        return build2 (NE_EXPR, boolean_type_node, expr,
-		       build_int_cst (TREE_TYPE (expr), 0));
+        return fold_build2 (NE_EXPR, boolean_type_node, expr,
+			    build_int_cst (TREE_TYPE (expr), 0));
 
     default:
       internal_error ("Unexpected type in truthvalue_conversion");

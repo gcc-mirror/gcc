@@ -1,5 +1,5 @@
 /* Language-level data type conversion for GNU C.
-   Copyright (C) 1987, 1988, 1991, 1998, 2002, 2007
+   Copyright (C) 1987, 1988, 1991, 1998, 2002, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -89,7 +89,7 @@ convert (tree type, tree expr)
       return error_mark_node;
     }
   if (code == VOID_TYPE)
-    return build1 (CONVERT_EXPR, type, e);
+    return fold_build1 (CONVERT_EXPR, type, e);
 #if 0
   /* This is incorrect.  A truncation can't be stripped this way.
      Extensions will be stripped by the use of get_unwidened.  */

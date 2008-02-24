@@ -1,5 +1,5 @@
 /* Backend function setup
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007 Free Software
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software
    Foundation, Inc.
    Contributed by Paul Brook
 
@@ -689,8 +689,8 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
     {
       tree size, range;
 
-      size = build2 (MINUS_EXPR, gfc_array_index_type,
-		     GFC_TYPE_ARRAY_SIZE (type), gfc_index_one_node);
+      size = fold_build2 (MINUS_EXPR, gfc_array_index_type,
+			  GFC_TYPE_ARRAY_SIZE (type), gfc_index_one_node);
       range = build_range_type (gfc_array_index_type, gfc_index_zero_node,
 				size);
       TYPE_DOMAIN (type) = range;
@@ -1729,9 +1729,8 @@ build_entry_thunks (gfc_namespace * ns)
 	  pushdecl (union_decl);
 
 	  DECL_CONTEXT (union_decl) = current_function_decl;
-	  tmp = build2 (MODIFY_EXPR,
-			TREE_TYPE (union_decl),
-			union_decl, tmp);
+	  tmp = fold_build2 (MODIFY_EXPR, TREE_TYPE (union_decl),
+			     union_decl, tmp);
 	  gfc_add_expr_to_block (&body, tmp);
 
 	  for (field = TYPE_FIELDS (TREE_TYPE (union_decl));
@@ -1740,19 +1739,19 @@ build_entry_thunks (gfc_namespace * ns)
 		thunk_sym->result->name) == 0)
 	      break;
 	  gcc_assert (field != NULL_TREE);
-	  tmp = build3 (COMPONENT_REF, TREE_TYPE (field), union_decl, field,
-			NULL_TREE);
-	  tmp = build2 (MODIFY_EXPR,
-			TREE_TYPE (DECL_RESULT (current_function_decl)),
-			DECL_RESULT (current_function_decl), tmp);
+	  tmp = fold_build3 (COMPONENT_REF, TREE_TYPE (field),
+			     union_decl, field, NULL_TREE);
+	  tmp = fold_build2 (MODIFY_EXPR, 
+			     TREE_TYPE (DECL_RESULT (current_function_decl)),
+			     DECL_RESULT (current_function_decl), tmp);
 	  tmp = build1_v (RETURN_EXPR, tmp);
 	}
       else if (TREE_TYPE (DECL_RESULT (current_function_decl))
 	       != void_type_node)
 	{
-	  tmp = build2 (MODIFY_EXPR,
-			TREE_TYPE (DECL_RESULT (current_function_decl)),
-			DECL_RESULT (current_function_decl), tmp);
+	  tmp = fold_build2 (MODIFY_EXPR,
+			     TREE_TYPE (DECL_RESULT (current_function_decl)),
+			     DECL_RESULT (current_function_decl), tmp);
 	  tmp = build1_v (RETURN_EXPR, tmp);
 	}
       gfc_add_expr_to_block (&body, tmp);
@@ -1874,8 +1873,8 @@ gfc_get_fake_result_decl (gfc_symbol * sym, int parent_flag)
 	      break;
 
 	  gcc_assert (field != NULL_TREE);
-	  decl = build3 (COMPONENT_REF, TREE_TYPE (field), decl, field,
-			 NULL_TREE);
+	  decl = fold_build3 (COMPONENT_REF, TREE_TYPE (field),
+			      decl, field, NULL_TREE);
 	}
 
       var = create_tmp_var_raw (TREE_TYPE (decl), sym->name);
@@ -2430,7 +2429,7 @@ gfc_trans_auto_character_variable (gfc_symbol * sym, tree fnbody)
 
   /* Emit a DECL_EXPR for this variable, which will cause the
      gimplifier to allocate storage, and all that good stuff.  */
-  tmp = build1 (DECL_EXPR, TREE_TYPE (decl), decl);
+  tmp = fold_build1 (DECL_EXPR, TREE_TYPE (decl), decl);
   gfc_add_expr_to_block (&body, tmp);
 
   gfc_add_expr_to_block (&body, fnbody);
@@ -3318,8 +3317,8 @@ gfc_generate_function_code (gfc_namespace * ns)
 	     types may be different for scalar default REAL functions
 	     with -ff2c, therefore we have to convert.  */
 	  tmp = convert (TREE_TYPE (DECL_RESULT (fndecl)), result);
-	  tmp = build2 (MODIFY_EXPR, TREE_TYPE (tmp),
-			DECL_RESULT (fndecl), tmp);
+	  tmp = fold_build2 (MODIFY_EXPR, TREE_TYPE (tmp),
+			     DECL_RESULT (fndecl), tmp);
 	  tmp = build1_v (RETURN_EXPR, tmp);
 	  gfc_add_expr_to_block (&block, tmp);
 	}

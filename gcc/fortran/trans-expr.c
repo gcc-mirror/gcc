@@ -1,5 +1,5 @@
 /* Expression translation
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007 Free Software
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software
    Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
@@ -139,8 +139,8 @@ gfc_conv_expr_present (gfc_symbol * sym)
              || GFC_ARRAY_TYPE_P (TREE_TYPE (decl)));
       decl = GFC_DECL_SAVED_DESCRIPTOR (decl);
     }
-  return build2 (NE_EXPR, boolean_type_node, decl,
-		 fold_convert (TREE_TYPE (decl), null_pointer_node));
+  return fold_build2 (NE_EXPR, boolean_type_node, decl,
+		      fold_convert (TREE_TYPE (decl), null_pointer_node));
 }
 
 
@@ -176,8 +176,8 @@ gfc_conv_missing_dummy (gfc_se * se, gfc_expr * arg, gfc_typespec ts, int kind)
   if (ts.type == BT_CHARACTER)
     {
       tmp = build_int_cst (gfc_charlen_type_node, 0);
-      tmp = build3 (COND_EXPR, gfc_charlen_type_node, present,
-		    se->string_length, tmp);
+      tmp = fold_build3 (COND_EXPR, gfc_charlen_type_node,
+			 present, se->string_length, tmp);
       tmp = gfc_evaluate_now (tmp, &se->pre);
       se->string_length = tmp;
     }
@@ -378,7 +378,7 @@ gfc_conv_component_ref (gfc_se * se, gfc_ref * ref)
   field = c->backend_decl;
   gcc_assert (TREE_CODE (field) == FIELD_DECL);
   decl = se->expr;
-  tmp = build3 (COMPONENT_REF, TREE_TYPE (field), decl, field, NULL_TREE);
+  tmp = fold_build3 (COMPONENT_REF, TREE_TYPE (field), decl, field, NULL_TREE);
 
   se->expr = tmp;
 
@@ -748,25 +748,27 @@ gfc_conv_cst_int_power (gfc_se * se, tree lhs, tree rhs)
   /* If rhs < 0 and lhs is an integer, the result is -1, 0 or 1.  */
   if ((sgn == -1) && (TREE_CODE (type) == INTEGER_TYPE))
     {
-      tmp = build2 (EQ_EXPR, boolean_type_node, lhs,
-		    build_int_cst (TREE_TYPE (lhs), -1));
-      cond = build2 (EQ_EXPR, boolean_type_node, lhs,
-		     build_int_cst (TREE_TYPE (lhs), 1));
+      tmp = fold_build2 (EQ_EXPR, boolean_type_node,
+			 lhs, build_int_cst (TREE_TYPE (lhs), -1));
+      cond = fold_build2 (EQ_EXPR, boolean_type_node,
+			  lhs, build_int_cst (TREE_TYPE (lhs), 1));
 
       /* If rhs is even,
 	 result = (lhs == 1 || lhs == -1) ? 1 : 0.  */
       if ((n & 1) == 0)
         {
-	  tmp = build2 (TRUTH_OR_EXPR, boolean_type_node, tmp, cond);
-	  se->expr = build3 (COND_EXPR, type, tmp, build_int_cst (type, 1),
-			     build_int_cst (type, 0));
+	  tmp = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, tmp, cond);
+	  se->expr = fold_build3 (COND_EXPR, type,
+				  tmp, build_int_cst (type, 1),
+				  build_int_cst (type, 0));
 	  return 1;
 	}
       /* If rhs is odd,
 	 result = (lhs == 1) ? 1 : (lhs == -1) ? -1 : 0.  */
-      tmp = build3 (COND_EXPR, type, tmp, build_int_cst (type, -1),
-		    build_int_cst (type, 0));
-      se->expr = build3 (COND_EXPR, type, cond, build_int_cst (type, 1), tmp);
+      tmp = fold_build3 (COND_EXPR, type, tmp, build_int_cst (type, -1),
+			 build_int_cst (type, 0));
+      se->expr = fold_build3 (COND_EXPR, type,
+			      cond, build_int_cst (type, 1), tmp);
       return 1;
     }
 
@@ -775,7 +777,7 @@ gfc_conv_cst_int_power (gfc_se * se, tree lhs, tree rhs)
   if (sgn == -1)
     {
       tmp = gfc_build_const (type, integer_one_node);
-      vartmp[1] = build2 (RDIV_EXPR, type, tmp, vartmp[1]);
+      vartmp[1] = fold_build2 (RDIV_EXPR, type, tmp, vartmp[1]);
     }
 
   se->expr = gfc_conv_powi (se, n, vartmp);
@@ -2306,9 +2308,9 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	  if (arg->next == NULL)
 	    /* Only given one arg so generate a null and do a
 	       not-equal comparison against the first arg.  */
-	    se->expr = build2 (NE_EXPR, boolean_type_node, arg1se.expr,
-			       fold_convert (TREE_TYPE (arg1se.expr),
-					     null_pointer_node));
+	    se->expr = fold_build2 (NE_EXPR, boolean_type_node, arg1se.expr,
+				    fold_convert (TREE_TYPE (arg1se.expr),
+						  null_pointer_node));
 	  else
 	    {
 	      tree eq_expr;
@@ -2321,16 +2323,16 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	      gfc_add_block_to_block (&se->post, &arg2se.post);
 
 	      /* Generate test to compare that the two args are equal.  */
-	      eq_expr = build2 (EQ_EXPR, boolean_type_node, arg1se.expr,
-				arg2se.expr);
+	      eq_expr = fold_build2 (EQ_EXPR, boolean_type_node,
+				     arg1se.expr, arg2se.expr);
 	      /* Generate test to ensure that the first arg is not null.  */
-	      not_null_expr = build2 (NE_EXPR, boolean_type_node, arg1se.expr,
-				      null_pointer_node);
+	      not_null_expr = fold_build2 (NE_EXPR, boolean_type_node,
+					   arg1se.expr, null_pointer_node);
 
 	      /* Finally, the generated test must check that both arg1 is not
 		 NULL and that it is equal to the second arg.  */
-	      se->expr = build2 (TRUTH_AND_EXPR, boolean_type_node,
-				 not_null_expr, eq_expr);
+	      se->expr = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+				      not_null_expr, eq_expr);
 	    }
 
 	  return 0;
@@ -3418,7 +3420,8 @@ gfc_trans_structure_assign (tree dest, gfc_expr * expr)
 	}
       
       field = cm->backend_decl;
-      tmp = build3 (COMPONENT_REF, TREE_TYPE (field), dest, field, NULL_TREE);
+      tmp = fold_build3 (COMPONENT_REF, TREE_TYPE (field),
+			 dest, field, NULL_TREE);
       tmp = gfc_trans_subcomponent_assign (tmp, cm, c->expr);
       gfc_add_expr_to_block (&block, tmp);
     }

@@ -1,5 +1,5 @@
 /* IO Code translation/library interface
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007 Free Software
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software
    Foundation, Inc.
    Contributed by Paul Brook
 
@@ -429,10 +429,10 @@ set_parameter_const (stmtblock_t *block, tree var, enum iofield type,
   gfc_st_parameter_field *p = &st_parameter_field[type];
 
   if (p->param_type == IOPARM_ptype_common)
-    var = build3 (COMPONENT_REF, st_parameter[IOPARM_ptype_common].type,
-		  var, TYPE_FIELDS (TREE_TYPE (var)), NULL_TREE);
-  tmp = build3 (COMPONENT_REF, TREE_TYPE (p->field), var, p->field,
-		NULL_TREE);
+    var = fold_build3 (COMPONENT_REF, st_parameter[IOPARM_ptype_common].type,
+		       var, TYPE_FIELDS (TREE_TYPE (var)), NULL_TREE);
+  tmp = fold_build3 (COMPONENT_REF, TREE_TYPE (p->field), var, p->field,
+		     NULL_TREE);
   gfc_add_modify_expr (block, tmp, build_int_cst (TREE_TYPE (p->field), val));
   return p->mask;
 }
@@ -484,10 +484,10 @@ set_parameter_value (stmtblock_t *block, tree var, enum iofield type,
   gfc_add_block_to_block (block, &se.pre);
 
   if (p->param_type == IOPARM_ptype_common)
-    var = build3 (COMPONENT_REF, st_parameter[IOPARM_ptype_common].type,
-		  var, TYPE_FIELDS (TREE_TYPE (var)), NULL_TREE);
+    var = fold_build3 (COMPONENT_REF, st_parameter[IOPARM_ptype_common].type,
+		       var, TYPE_FIELDS (TREE_TYPE (var)), NULL_TREE);
 
-  tmp = build3 (COMPONENT_REF, dest_type, var, p->field, NULL_TREE);
+  tmp = fold_build3 (COMPONENT_REF, dest_type, var, p->field, NULL_TREE);
   gfc_add_modify_expr (block, tmp, se.expr);
   return p->mask;
 }
@@ -542,10 +542,10 @@ set_parameter_ref (stmtblock_t *block, stmtblock_t *postblock,
      }
 
   if (p->param_type == IOPARM_ptype_common)
-    var = build3 (COMPONENT_REF, st_parameter[IOPARM_ptype_common].type,
-		  var, TYPE_FIELDS (TREE_TYPE (var)), NULL_TREE);
-  tmp = build3 (COMPONENT_REF, TREE_TYPE (p->field), var, p->field,
-		NULL_TREE);
+    var = fold_build3 (COMPONENT_REF, st_parameter[IOPARM_ptype_common].type,
+		       var, TYPE_FIELDS (TREE_TYPE (var)), NULL_TREE);
+  tmp = fold_build3 (COMPONENT_REF, TREE_TYPE (p->field),
+		     var, p->field, NULL_TREE);
   gfc_add_modify_expr (block, tmp, addr);
   return p->mask;
 }
@@ -631,12 +631,12 @@ set_string (stmtblock_t * block, stmtblock_t * postblock, tree var,
   gfc_init_se (&se, NULL);
 
   if (p->param_type == IOPARM_ptype_common)
-    var = build3 (COMPONENT_REF, st_parameter[IOPARM_ptype_common].type,
-		  var, TYPE_FIELDS (TREE_TYPE (var)), NULL_TREE);
-  io = build3 (COMPONENT_REF, TREE_TYPE (p->field), var, p->field,
-	       NULL_TREE);
-  len = build3 (COMPONENT_REF, TREE_TYPE (p->field_len), var, p->field_len,
-		NULL_TREE);
+    var = fold_build3 (COMPONENT_REF, st_parameter[IOPARM_ptype_common].type,
+		       var, TYPE_FIELDS (TREE_TYPE (var)), NULL_TREE);
+  io = fold_build3 (COMPONENT_REF, TREE_TYPE (p->field),
+		    var, p->field, NULL_TREE);
+  len = fold_build3 (COMPONENT_REF, TREE_TYPE (p->field_len),
+		     var, p->field_len, NULL_TREE);
 
   /* Integer variable assigned a format label.  */
   if (e->ts.type == BT_INTEGER && e->symtree->n.sym->attr.assign == 1)
@@ -700,13 +700,13 @@ set_internal_unit (stmtblock_t * block, stmtblock_t * post_block,
 
   p = &st_parameter_field[IOPARM_dt_internal_unit];
   mask = p->mask;
-  io = build3 (COMPONENT_REF, TREE_TYPE (p->field), var, p->field,
-	       NULL_TREE);
-  len = build3 (COMPONENT_REF, TREE_TYPE (p->field_len), var, p->field_len,
-		NULL_TREE);
+  io = fold_build3 (COMPONENT_REF, TREE_TYPE (p->field),
+		    var, p->field, NULL_TREE);
+  len = fold_build3 (COMPONENT_REF, TREE_TYPE (p->field_len),
+		     var, p->field_len,	NULL_TREE);
   p = &st_parameter_field[IOPARM_dt_internal_unit_desc];
-  desc = build3 (COMPONENT_REF, TREE_TYPE (p->field), var, p->field,
-		 NULL_TREE);
+  desc = fold_build3 (COMPONENT_REF, TREE_TYPE (p->field),
+		      var, p->field, NULL_TREE);
 
   gcc_assert (e->ts.type == BT_CHARACTER);
 
@@ -814,12 +814,13 @@ io_result (stmtblock_t * block, tree var, gfc_st_label * err_label,
 
   tmp = gfc_finish_block (&body);
 
-  var = build3 (COMPONENT_REF, st_parameter[IOPARM_ptype_common].type,
-		var, TYPE_FIELDS (TREE_TYPE (var)), NULL_TREE);
-  rc = build3 (COMPONENT_REF, TREE_TYPE (p->field), var, p->field,
-	       NULL_TREE);
-  rc = build2 (BIT_AND_EXPR, TREE_TYPE (rc), rc,
-	       build_int_cst (TREE_TYPE (rc), IOPARM_common_libreturn_mask));
+  var = fold_build3 (COMPONENT_REF, st_parameter[IOPARM_ptype_common].type,
+		     var, TYPE_FIELDS (TREE_TYPE (var)), NULL_TREE);
+  rc = fold_build3 (COMPONENT_REF, TREE_TYPE (p->field),
+		    var, p->field, NULL_TREE);
+  rc = fold_build2 (BIT_AND_EXPR, TREE_TYPE (rc),
+		    rc, build_int_cst (TREE_TYPE (rc),
+				       IOPARM_common_libreturn_mask));
 
   tmp = build3_v (SWITCH_EXPR, rc, tmp, NULL_TREE);
 
@@ -838,10 +839,11 @@ set_error_locus (stmtblock_t * block, tree var, locus * where)
   int line;
   gfc_st_parameter_field *p = &st_parameter_field[IOPARM_common_filename];
 
-  locus_file = build3 (COMPONENT_REF, st_parameter[IOPARM_ptype_common].type,
-		       var, TYPE_FIELDS (TREE_TYPE (var)), NULL_TREE);
-  locus_file = build3 (COMPONENT_REF, TREE_TYPE (p->field), locus_file,
-		       p->field, NULL_TREE);
+  locus_file = fold_build3 (COMPONENT_REF,
+			    st_parameter[IOPARM_ptype_common].type,
+			    var, TYPE_FIELDS (TREE_TYPE (var)), NULL_TREE);
+  locus_file = fold_build3 (COMPONENT_REF, TREE_TYPE (p->field),
+			    locus_file, p->field, NULL_TREE);
   f = where->lb->file;
   str = gfc_build_cstring_const (f->filename);
 
@@ -1357,8 +1359,8 @@ nml_get_addr_expr (gfc_symbol * sym, gfc_component * c,
      the derived type.  */
 
   if (TREE_CODE (decl) == FIELD_DECL)
-    tmp = build3 (COMPONENT_REF, TREE_TYPE (tmp),
-		  base_addr, tmp, NULL_TREE);
+    tmp = fold_build3 (COMPONENT_REF, TREE_TYPE (tmp),
+		       base_addr, tmp, NULL_TREE);
 
   /* If we have a derived type component, a reference to the first
      element of the array is built.  This is done so that base_addr,
@@ -1908,8 +1910,8 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr, gfc_code * code)
 	  field = c->backend_decl;
 	  gcc_assert (field && TREE_CODE (field) == FIELD_DECL);
 
-	  tmp = build3 (COMPONENT_REF, TREE_TYPE (field), expr, field,
-			NULL_TREE);
+	  tmp = fold_build3 (COMPONENT_REF, TREE_TYPE (field),
+			     expr, field, NULL_TREE);
 
           if (c->dimension)
             {
