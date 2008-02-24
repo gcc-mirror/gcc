@@ -1,3 +1,7 @@
+2008-02-24  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* gcc.c-torture/execute/nest-align-1.x: New file.
+
 2008-02-24  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR c++/34749
