@@ -204,9 +204,7 @@ AC_DEFUN([LIBGFOR_CHECK_FOR_BROKEN_ISFINITE], [
   libgfor_check_for_broken_isfinite_save_LIBS=$LIBS
   LIBS="$LIBS -lm"
   AC_TRY_RUN([
-#ifdef HAVE_MATH_H
 #include <math.h>
-#endif
 #include <float.h>
 int main ()
 {
@@ -237,9 +235,7 @@ AC_DEFUN([LIBGFOR_CHECK_FOR_BROKEN_ISNAN], [
   libgfor_check_for_broken_isnan_save_LIBS=$LIBS
   LIBS="$LIBS -lm"
   AC_TRY_RUN([
-#ifdef HAVE_MATH_H
 #include <math.h>
-#endif
 #include <float.h>
 int main ()
 {
@@ -288,9 +284,7 @@ AC_DEFUN([LIBGFOR_CHECK_FOR_BROKEN_FPCLASSIFY], [
   libgfor_check_for_broken_fpclassify_save_LIBS=$LIBS
   LIBS="$LIBS -lm"
   AC_TRY_RUN([
-#ifdef HAVE_MATH_H
 #include <math.h>
-#endif
 #include <float.h>
 int main ()
 {
