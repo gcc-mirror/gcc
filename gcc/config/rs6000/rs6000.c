@@ -669,6 +669,21 @@ struct processor_costs ppc8540_cost = {
   1,			/* prefetch streams /*/
 };
 
+/* Instruction costs on E300C2 and E300C3 cores.  */
+static const
+struct processor_costs ppce300c2c3_cost = {
+  COSTS_N_INSNS (4),    /* mulsi */
+  COSTS_N_INSNS (4),    /* mulsi_const */
+  COSTS_N_INSNS (4),    /* mulsi_const9 */
+  COSTS_N_INSNS (4),    /* muldi */
+  COSTS_N_INSNS (19),   /* divsi */
+  COSTS_N_INSNS (19),   /* divdi */
+  COSTS_N_INSNS (3),    /* fp */
+  COSTS_N_INSNS (4),    /* dmul */
+  COSTS_N_INSNS (18),   /* sdiv */
+  COSTS_N_INSNS (33),   /* ddiv */
+};
+
 /* Instruction costs on POWER4 and POWER5 processors.  */
 static const
 struct processor_costs power4_cost = {
@@ -1420,6 +1435,8 @@ rs6000_override_options (const char *default_cpu)
 	 {"8540", PROCESSOR_PPC8540, POWERPC_BASE_MASK | MASK_STRICT_ALIGN},
 	 /* 8548 has a dummy entry for now.  */
 	 {"8548", PROCESSOR_PPC8540, POWERPC_BASE_MASK | MASK_STRICT_ALIGN},
+	 {"e300c2", PROCESSOR_PPCE300C2, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
+	 {"e300c3", PROCESSOR_PPCE300C3, POWERPC_BASE_MASK},
 	 {"860", PROCESSOR_MPCCORE, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
 	 {"970", PROCESSOR_POWER4,
 	  POWERPC_7400_MASK | MASK_PPC_GPOPT | MASK_MFCRF | MASK_POWERPC64},
@@ -1525,6 +1542,14 @@ rs6000_override_options (const char *default_cpu)
 
   if (TARGET_E500)
     rs6000_isel = 1;
+
+  if (rs6000_cpu == PROCESSOR_PPCE300C2 || rs6000_cpu == PROCESSOR_PPCE300C3)
+    {
+      if (TARGET_ALTIVEC)
+	error ("AltiVec not supported in this target");
+      if (TARGET_SPE)
+	error ("Spe not supported in this target");
+    }
 
   /* If we are optimizing big endian systems for space, use the load/store
      multiple and string instructions.  */
@@ -1843,6 +1868,11 @@ rs6000_override_options (const char *default_cpu)
 
       case PROCESSOR_PPC8540:
 	rs6000_cost = &ppc8540_cost;
+	break;
+
+      case PROCESSOR_PPCE300C2:
+      case PROCESSOR_PPCE300C3:
+	rs6000_cost = &ppce300c2c3_cost;
 	break;
 
       case PROCESSOR_POWER4:
@@ -18527,6 +18557,8 @@ rs6000_issue_rate (void)
   case CPU_PPC7400:
   case CPU_PPC8540:
   case CPU_CELL:
+  case CPU_PPCE300C2:
+  case CPU_PPCE300C3:
     return 2;
   case CPU_RIOS2:
   case CPU_PPC604:
