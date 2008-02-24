@@ -1786,7 +1786,7 @@ of the compiler (@pxref{Character Set Control}).
 @noindent
 The basic character set is Latin-1. This character set is defined by ISO
 standard 8859, part 1. The lower half (character codes @code{16#00#}
-... @code{16#7F#)} is identical to standard ASCII coding, but the upper half
+@dots{} @code{16#7F#)} is identical to standard ASCII coding, but the upper half
 is used to represent additional characters. These include extended letters
 used by European languages, such as French accents, the vowels with umlauts
 used in German, and the extra letter A-ring used in Swedish.
@@ -3398,10 +3398,10 @@ finalizing the Ada run-time system along the way:
 @b{#include} <iostream>
 @b{using namespace} std;
 
-void Check_Carnivore (Carnivore *obj) @{ ... @}
-void Check_Domestic (Domestic *obj)   @{ ... @}
-void Check_Animal (Animal *obj)       @{ ... @}
-void Check_Dog (Dog *obj)             @{ ... @}
+void Check_Carnivore (Carnivore *obj) @{@dots{}@}
+void Check_Domestic (Domestic *obj)   @{@dots{}@}
+void Check_Animal (Animal *obj)       @{@dots{}@}
+void Check_Dog (Dog *obj)             @{@dots{}@}
 
 @b{extern} "C" @{
   void adainit (void);
@@ -4027,7 +4027,7 @@ Verbose mode. Full error output with source lines to @file{stdout}.
 Control level of validity checking. See separate section describing
 this feature.
 
-@item ^-gnatw@var{xxx}^/WARNINGS=(@var{option}[,...])^
+@item ^-gnatw@var{xxx}^/WARNINGS=(@var{option}[,@dots{}])^
 @cindex @option{^-gnatw^/WARNINGS^} (@command{gcc})
 Warning mode where
 ^@var{xxx} is a string of option letters that^the list of options^ denotes
@@ -4048,7 +4048,7 @@ Wide character encoding method
 @cindex @option{-gnatx} (@command{gcc})
 Suppress generation of cross-reference information.
 
-@item ^-gnaty^/STYLE_CHECKS=(option,option..)^
+@item ^-gnaty^/STYLE_CHECKS=(option,option@dots{})^
 @cindex @option{^-gnaty^/STYLE_CHECKS^} (@command{gcc})
 Enable built-in style checks (@pxref{Style Checking}).
 
@@ -4143,7 +4143,7 @@ Equivalent to @option{/OPTIMIZE=NONE}.
 This is the default behavior in the absence of an @option{/OPTIMIZE}
 qualifier.
 
-@item /OPTIMIZE[=(keyword[,...])]
+@item /OPTIMIZE[=(keyword[,@dots{}])]
 @cindex @option{/OPTIMIZE} (@code{GNAT COMPILE})
 Selects the level of optimization for your program. The supported
 keywords are as follows:
@@ -5232,7 +5232,7 @@ an Assert pragma that checks the low bound, for example:
 @smallexample @c ada
    procedure K (S : String) is
       pragma Assert (S'First = 1);
-      ...
+      @dots{}
 @end smallexample
 
 @item -gnatwx
@@ -5553,7 +5553,7 @@ the shift operators defined as intrinsic in package @code{Interfaces}
 and operands for attributes such as @code{Pos}. Checks are also made
 on individual component values for composite comparisons, and on the
 expressions in type conversions and qualified expressions. Checks are
-also made on explicit ranges using .. (e.g. slices, loops etc).
+also made on explicit ranges using @samp{..} (e.g. slices, loops etc).
 
 @item -gnatVp
 @emph{Validity checks for parameters.}
@@ -5639,7 +5639,7 @@ temporary disabling of validity checks.
 @findex Style checking
 
 @noindent
-The @option{-gnaty^x^(option,option,...)^} switch
+The @option{-gnaty^x^(option,option,@dots{})^} switch
 @cindex @option{-gnaty} (@command{gcc})
 causes the compiler to
 enforce specified style rules. A limited set of style rules has been used
@@ -5648,7 +5648,7 @@ to activate all or some of these checks. If the source program fails a
 specified style check, an appropriate warning message is given, preceded by
 the character sequence ``(style)''.
 @ifset vms
-@code{(option,option,...)} is a sequence of keywords
+@code{(option,option,@dots{})} is a sequence of keywords
 @end ifset
 @ifclear vms
 The string @var{x} is a sequence of letters or digits
@@ -5724,7 +5724,7 @@ including @command{gnatprep} (where ``@code{--!}'' is used) and the SPARK
 annotation
 language (where ``@code{--#}'' is used). For the purposes of this rule, a
 special character is defined as being in one of the ASCII ranges
-@code{16#21#..16#2F#} or @code{16#3A#..16#3F#}.
+@code{16#21#@dots{}16#2F#} or @code{16#3A#@dots{}16#3F#}.
 Note that this usage is not permitted
 in GNAT implementation units (i.e. when @option{-gnatg} is used).
 
@@ -6110,7 +6110,7 @@ X2 : Integer range 1 .. 5 := 5;
 X3 : Integer := Integer'Last;
 X4 : Integer range 1 .. 5 := 5;
 F  : Float := 2.0E+20;
-...
+@dots{}
 X1 := X1 + 1;
 X2 := X2 + 1;
 X3 := Integer (F);
@@ -6670,7 +6670,7 @@ An implicit call to a run-time support routine
 (to meet the requirement of H.3.1(9) in a
 convenient manner).
 
-@item @var{expr} && @var{expr} && @var{expr} ... && @var{expr}
+@item @var{expr} && @var{expr} && @var{expr} @dots{} && @var{expr}
 A multiple concatenation (same effect as @var{expr} & @var{expr} &
 @var{expr}, but handled more efficiently).
 
@@ -9413,7 +9413,7 @@ exception handlers are used. The reason is that certain sections of code
 have to be marked as non-abortable.
 
 If you use neither the @code{abort} statement, nor asynchronous transfer
-of control (@code{select .. then abort}), then this distributed overhead
+of control (@code{select @dots{} then abort}), then this distributed overhead
 is removed, which may have a general positive effect in improving
 overall performance.  Especially code involving frequent use of tasking
 constructs and controlled types will show much improved performance.
@@ -9711,13 +9711,13 @@ package R is
    pragma Inline (Q);
 end R;
 package body R is
-   ...
+   @dots{}
 end R;
 
 with R;
 procedure Main is
 begin
-   ...
+   @dots{}
    R.Q;
 end Main;
 @end cartouche
@@ -9798,16 +9798,16 @@ procedure R is
    type Int2A is access Int2;
    Int1V : Int1A;
    Int2V : Int2A;
-   ...
+   @dots{}
 
 begin
-   ...
+   @dots{}
    for J in Data'Range loop
       if Data (J) = Int1V.all then
          Int2V.all := Int2V.all + 1;
       end if;
    end loop;
-   ...
+   @dots{}
 end R;
 @end cartouche
 @end smallexample
@@ -10457,7 +10457,7 @@ in which GNAT processes the ACVC tests.
 The @code{gnatchop} command has the form:
 
 @smallexample
-$ gnatchop switches @var{file name} [@var{file name} @var{file name} ...]
+$ gnatchop switches @var{file name} [@var{file name} @var{file name} @dots{}]
       [@var{directory}]
 @end smallexample
 
@@ -11676,9 +11676,9 @@ Skeletal code for a main procedure might be something like the following:
 @group
 with GUI, Comm;
 procedure App_Main is
-   ...
+   @dots{}
 begin
-   ...
+   @dots{}
 end App_Main;
 @end group
 @end smallexample
@@ -12690,7 +12690,7 @@ source files.
   with "project1", "utilities.gpr";
   with "/namings/apex.gpr";
   project Main is
-    ...
+    @dots{}
 @end group
 @end smallexample
 
@@ -12817,7 +12817,7 @@ modified versions of some of the source files, without changing the original
 sources. This can be achieved through the @emph{project extension} facility.
 
 @smallexample @c projectfile
-   project Modified_Utilities extends "/baseline/utilities.gpr" is ...
+   project Modified_Utilities extends "/baseline/utilities.gpr" is @dots{}
 @end smallexample
 
 @noindent
@@ -12896,7 +12896,7 @@ This project hierarchy will need to be extended as follows:
 Create project A1 that extends A, placing modified P1 there:
 
 @smallexample @c 0projectfile
-project A1 extends "(...)/A" is
+project A1 extends "(@dots{})/A" is
 end A1;
 @end smallexample
 
@@ -12905,8 +12905,8 @@ Create project C1 that "extends all" C and imports A1, placing modified
 P3 there:
 
 @smallexample @c 0projectfile
-with "(...)/A1";
-project C1 extends all "(...)/C" is
+with "(@dots{})/A1";
+project C1 extends all "(@dots{})/C" is
 end C1;
 @end smallexample
 @end enumerate
@@ -12971,7 +12971,7 @@ an attribute declaration.
    Mode : Mode_Type := external ("MODE");
    case Mode is
      when "Debug" =>
-        ...
+        @dots{}
 @end group
 @end smallexample
 
@@ -13031,7 +13031,7 @@ the project file for an imported project.
   with "/global/apex.gpr";
   project Example is
     package Naming renames Apex.Naming;
-    ...
+    @dots{}
   end Example;
 @end group
 @end smallexample
@@ -13801,7 +13801,7 @@ end Proj4;
 -- Ada source file:
 with Pack;
 procedure Foo_Main is
-   ...
+   @dots{}
 end Foo_Main;
 @end group
 @end smallexample
@@ -14598,7 +14598,7 @@ use the @code{gnat} driver (see @ref{The GNAT Driver and Project Files}).
 @noindent
 The command invocation for @code{gnatxref} is:
 @smallexample
-$ gnatxref [switches] sourcefile1 [sourcefile2 ...]
+$ gnatxref [switches] sourcefile1 [sourcefile2 @dots{}]
 @end smallexample
 
 @noindent
@@ -14730,7 +14730,7 @@ The command line for @code{gnatfind} is:
 
 @smallexample
 $ gnatfind [switches] pattern[:sourcefile[:line[:column]]]
-      [file1 file2 ...]
+      [file1 file2 @dots{}]
 @end smallexample
 
 @noindent
@@ -14764,7 +14764,7 @@ is a decimal integer identifying the exact location on the
 line of the first character of the identifier for the
 entity reference. Columns are numbered from 1.
 
-@item file1 file2 ...
+@item file1 file2 @dots{}
 The search will be restricted to these source files. If none are given, then
 the search will be done for every library file in the search path.
 These file must appear only after the pattern or sourcefile.
@@ -14774,11 +14774,11 @@ specifying 'source*.adb' is the same as giving every file in the current
 directory whose name starts with 'source' and whose extension is 'adb'.
 
 The location of the spec of the entity will always be displayed, even if it
-isn't in one of file1, file2,... The occurrences of the entity in the
+isn't in one of file1, file2,@enddots{}  The occurrences of the entity in the
 separate units of the ones given on the command line will also be displayed.
 
 Note that if you specify at least one file in this part, @code{gnatfind} may
-sometimes not be able to find the body of the subprograms...
+sometimes not be able to find the body of the subprograms.
 
 @end table
 
@@ -15042,7 +15042,7 @@ reference manual style BNF is as follows
 @leftskip=.5cm
 @end iftex
 @group
-regexp ::= term @{| term@}   -- alternation (term or term ...)
+regexp ::= term @{| term@}   -- alternation (term or term @dots{})
 
 term ::= item @{item@}       -- concatenation (item then item)
 
@@ -15632,16 +15632,16 @@ These switches allow control over line length and indentation.
 @table @option
 @item ^-M@i{nnn}^/LINE_LENGTH_MAX=@i{nnn}^
 @cindex @option{^-M^/LINE_LENGTH^} (@command{gnatpp})
-Maximum line length, @i{nnn} from 32 ..256, the default value is 79
+Maximum line length, @i{nnn} from 32@dots{}256, the default value is 79
 
 @item ^-i@i{nnn}^/INDENTATION_LEVEL=@i{nnn}^
 @cindex @option{^-i^/INDENTATION_LEVEL^} (@command{gnatpp})
-Indentation level, @i{nnn} from 1 .. 9, the default value is 3
+Indentation level, @i{nnn} from 1@dots{}9, the default value is 3
 
 @item ^-cl@i{nnn}^/CONTINUATION_INDENT=@i{nnn}^
 @cindex @option{^-cl^/CONTINUATION_INDENT^} (@command{gnatpp})
 Indentation level for continuation lines (relative to the line being
-continued), @i{nnn} from 1 .. 9.
+continued), @i{nnn} from 1@dots{}9.
 The default
 value is one less then the (normal) indentation level, unless the
 indentation is set to 1 (in which case the default value for continuation
@@ -17396,7 +17396,7 @@ The preprocessor conditional inclusion commands have the form
    lines
 #elsif @i{expression} [then]
    lines
-...
+@dots{}
 #else
    lines
 #end if;
@@ -18287,7 +18287,7 @@ write:
 @smallexample @c projectfile
 with "my_lib";
 project My_Proj is
-  ...
+  @dots{}
 end My_Proj;
 @end smallexample
 
@@ -18697,7 +18697,7 @@ which might help you in case your project has a lot of subdirectories.
 ##    csc is put in the top level directory (where the Makefile is).
 ##       toplevel_dir __ first_csc  (sources) __ lib (will contain the library)
 ##                    \_ second_csc (sources) __ lib (will contain the library)
-##                    \_ ...
+##                    \_ @dots{}
 ## Although this Makefile is build for shared library, it is easy to modify
 ## to build partial link objects instead (modify the lines with -shared and
 ## gnatlink below)
@@ -18719,7 +18719,7 @@ MAIN=main
 # The following variable should give the directory containing libgnat.so
 # You can get this directory through 'gnatls -v'. This is usually the last
 # directory in the Object_Path.
-GLIB=...
+GLIB=@dots{}
 
 # The directories for the libraries
 # (This macro expands the list of CSC to the list of shared libraries, you
@@ -18769,7 +18769,7 @@ In most makefiles, you will have to specify a list of directories, and
 store it in a variable. For small projects, it is often easier to
 specify each of them by hand, since you then have full control over what
 is the proper order for these directories, which ones should be
-included...
+included.
 
 However, in larger projects, which might involve hundreds of
 subdirectories, it might be more convenient to generate this list
@@ -18780,7 +18780,7 @@ general, gives you more control over the list. It involves wildcard
 characters, that are automatically expanded by @command{make}. Its
 shortcoming is that you need to explicitly specify some of the
 organization of your project, such as for instance the directory tree
-depth, whether some directories are found in a separate tree,...
+depth, whether some directories are found in a separate tree, @enddots{}
 
 The second method is the most general one. It requires an external
 program, called @command{find}, which is standard on all Unix systems. All
@@ -20143,7 +20143,7 @@ flagged (since @code{1..N} is formally a ``range''):
 
 @smallexample @c ada
 for I in 1 .. N loop
-   ...
+   @dots{}
 end loop;
 @end smallexample
 
@@ -20152,9 +20152,9 @@ Declaring an explicit subtype solves the problem:
 
 @smallexample @c ada
 subtype S is Integer range 1..N;
-...
+@dots{}
 for I in S loop
-   ...
+   @dots{}
 end loop;
 @end smallexample
 
@@ -21783,7 +21783,7 @@ If you do not specify an extension, it will default to @file{htm}.
 @item -f
 @cindex @option{-f} (@code{gnathtml})
 By default, gnathtml will generate html links only for global entities
-('with'ed units, global variables and types,...). If you specify
+('with'ed units, global variables and types,@dots{}).  If you specify
 @option{-f} on the command line, then links will be generated for local
 entities too.
 
@@ -22641,8 +22641,8 @@ $ addr2line --exe=stb 0x401373 0x40138b 0x40139c 0x401335 0x4011c4
 0040138B at d:/stb/stb.adb:10
 0040139C at d:/stb/stb.adb:14
 00401335 at d:/stb/b~stb.adb:104
-004011C4 at /build/.../crt1.c:200
-004011F1 at /build/.../crt1.c:222
+004011C4 at /build/@dots{}/crt1.c:200
+004011F1 at /build/@dots{}/crt1.c:222
 77E892A4 in ?? at ??:0
 @end smallexample
 
@@ -22666,8 +22666,8 @@ $ addr2line --exe=stb --functions --demangle=gnat 0x401373 0x40138b
 0040138B in stb.p2 at d:/stb/stb.adb:10
 0040139C in stb at d:/stb/stb.adb:14
 00401335 in main at d:/stb/b~stb.adb:104
-004011C4 in <__mingw_CRTStartup> at /build/.../crt1.c:200
-004011F1 in <mainCRTStartup> at /build/.../crt1.c:222
+004011C4 in <__mingw_CRTStartup> at /build/@dots{}/crt1.c:200
+004011F1 in <mainCRTStartup> at /build/@dots{}/crt1.c:222
 @end smallexample
 
 @noindent
@@ -23312,7 +23312,7 @@ of declarations:
 @cartouche
 X, Y : Integer := Init_Func;
 Q : String (X .. Y) := "abc";
-...
+@dots{}
 for Q'Address use Compute_Address;
 @end cartouche
 @end smallexample
@@ -23327,7 +23327,7 @@ that @code{Q} is declared. To achieve the intended effect, write instead:
 X, Y : Integer := Init_Func;
 Q_Address : constant Address := Compute_Address;
 Q : String (X .. Y) := "abc";
-...
+@dots{}
 for Q'Address use Q_Address;
 @end cartouche
 @end group
@@ -25805,7 +25805,7 @@ of that unit before elaborating the unit doing the @code{with}'ing:
 @group
 @cartouche
 with Unit_1;
-package Unit_2 is ...
+package Unit_2 is @dots{}
 @end cartouche
 @end group
 @end smallexample
@@ -26464,7 +26464,7 @@ end Math;
 package body Math is
    function Sqrt (Arg : Float) return Float is
    begin
-         ...
+         @dots{}
    end Sqrt;
 end Math;
 @end group
@@ -26477,7 +26477,7 @@ end Stuff;
 with Stuff;
 procedure Main is
 begin
-   ...
+   @dots{}
 end Main;
 @end group
 @end cartouche
@@ -26524,15 +26524,15 @@ that is not a general rule that can be followed in all cases. Consider
 @smallexample @c ada
 @group
 @cartouche
-package X is ...
+package X is @dots{}
 
-package Y is ...
+package Y is @dots{}
 
 with X;
-package body Y is ...
+package body Y is @dots{}
 
 with Y;
-package body X is ...
+package body X is @dots{}
 @end cartouche
 @end group
 @end smallexample
@@ -26546,7 +26546,7 @@ the body of @code{X} @code{with}'s @code{Y},
 which means you would have to
 elaborate the body of @code{Y} first, but that @code{with}'s @code{X},
 which means
-you have to elaborate the body of @code{X} first, but ... and we have a
+you have to elaborate the body of @code{X} first, but @dots{} and we have a
 loop that cannot be broken.
 
 It is true that the binder can in many cases guess an order of elaboration
@@ -27658,9 +27658,9 @@ constants to control which code is executed.
 @smallexample @c ada
 @group
 FP_Initialize_Required : constant Boolean := True;
-...
+@dots{}
 if FP_Initialize_Required then
-...
+@dots{}
 end if;
 @end group
 @end smallexample
@@ -27684,7 +27684,7 @@ something like:
 package Config is
    FP_Initialize_Required : constant Boolean := True;
    Reset_Available        : constant Boolean := False;
-   ...
+   @dots{}
 end Config;
 @end group
 @end smallexample
@@ -27803,8 +27803,8 @@ to add a @code{null} statement.
 
 @smallexample @c ada
 @group
-if ... then
-   ... -- some statements
+if @dots{} then
+   @dots{} -- some statements
 else
    pragma Assert (Num_Cases < 10);
    null;
@@ -27830,13 +27830,13 @@ if Small_Machine then
    declare
       X : Bit_String (1 .. 10);
    begin
-      ...
+      @dots{}
    end;
 else
    declare
       X : Large_Bit_String (1 .. 1000);
    begin
-      ...
+      @dots{}
    end;
 end if;
 @end group
@@ -27916,9 +27916,9 @@ to compile with an Ada 95 compiler. Conceptually you want to say:
 @smallexample @c ada
 @group
 if Ada_2005 then
-   ... neat Ada 2005 code
+   @dots{} neat Ada 2005 code
 else
-   ... not quite as neat Ada 95 code
+   @dots{} not quite as neat Ada 95 code
 end if;
 @end group
 @end smallexample
@@ -28844,7 +28844,7 @@ Some uses of character literals are ambiguous.  Since Ada 95 has introduced
 character literals that were legal in Ada 83 are illegal in Ada 95.
 For example:
 @smallexample @c ada
-   for Char in 'A' .. 'Z' loop ... end loop;
+   for Char in 'A' .. 'Z' loop @dots{} end loop;
 @end smallexample
 
 @noindent
@@ -28852,7 +28852,7 @@ The problem is that @code{'A'} and @code{'Z'} could be from either
 @code{Character} or @code{Wide_Character}.  The simplest correction
 is to make the type explicit; e.g.:
 @smallexample @c ada
-   for Char in Character range 'A' .. 'Z' loop ... end loop;
+   for Char in Character range 'A' .. 'Z' loop @dots{} end loop;
 @end smallexample
 
 @item New reserved words
@@ -30413,7 +30413,7 @@ suffix) has the following structure:
 EXPORTS
    @i{symbol1}
    @i{symbol2}
-   ...
+   @dots{}
 @end cartouche
 @end group
 @end smallexample
@@ -30574,7 +30574,7 @@ To build the DLL you must use @command{gcc}'s @option{-shared}
 option. It is quite simple to use this method:
 
 @smallexample
-$ gcc -shared -o api.dll obj1.o obj2.o ...
+$ gcc -shared -o api.dll obj1.o obj2.o @dots{}
 @end smallexample
 
 It is important to note that in this case all symbols found in the
@@ -30583,7 +30583,7 @@ the set of symbols to export by passing to @command{gcc} a definition
 file, @pxref{The Definition File}. For example:
 
 @smallexample
-$ gcc -shared -o api.dll api.def obj1.o obj2.o ...
+$ gcc -shared -o api.dll api.def obj1.o obj2.o @dots{}
 @end smallexample
 
 If you use a definition file you must export the elaboration procedures
@@ -30814,7 +30814,7 @@ package body API is
       return Fact;
    end Factorial;
 
-   ...
+   @dots{}
    --  The remainder of this package body is unchanged.
 end API;
 @end cartouche
@@ -30905,7 +30905,7 @@ example consider a DLL comprising the following package @code{API}:
 @cartouche
 package API is
    Count : Integer := 0;
-   ...
+   @dots{}
    --  Remainder of the package omitted.
 end API;
 @end cartouche
