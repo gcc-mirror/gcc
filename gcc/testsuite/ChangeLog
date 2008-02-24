@@ -1,5 +1,10 @@
 2008-02-24  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/35349
+	* gcc.c-torture/execute/20050604-1.x: New file.
+
+2008-02-24  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcc.target/i386/pr22076.c: Update number of mov insns
 	for PIC targets.
 	* gcc.target/i386/pr34256.c: Ditto.
