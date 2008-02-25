@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for NetWare.
    Contributed by Jan Beulich (jbeulich@novell.com)
-   Copyright (C) 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -32,79 +32,24 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "ggc.h"
 
-
-/* Return string which is the former assembler name modified with an 
-   underscore prefix and a suffix consisting of an atsign (@) followed
-   by the number of bytes of arguments */
+/* Return string which is the function name, identified by ID, modified
+   with PREFIX and a suffix consisting of an atsign (@) followed by the
+   number of bytes of arguments.  If ID is NULL use the DECL_NAME as base.
+   Return NULL if no change required.  */
 
 static tree
-gen_stdcall_or_fastcall_decoration (tree decl, char prefix)
+gen_stdcall_or_fastcall_decoration (tree decl, tree id, char prefix)
 {
-  unsigned total = 0;
-  /* ??? This probably should use XSTR (XEXP (DECL_RTL (decl), 0), 0) instead
-     of DECL_ASSEMBLER_NAME.  */
-  const char *asmname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  char *newsym;
+  unsigned HOST_WIDE_INT total = 0;
+  const char *old_str = IDENTIFIER_POINTER (id != NULL_TREE ? id : DECL_NAME (decl));
+  char *new_str;
   tree type = TREE_TYPE (decl);
-  tree arg;
-  function_args_iterator args_iter;
 
   if (prototype_p (type))
     {
-      /* These attributes are ignored for variadic functions in
-	 i386.c:ix86_return_pops_args. For compatibility with MS
-	 compiler do not add @0 suffix here.  */ 
-      if (stdarg_p (type))
-	return NULL_TREE;
+      tree arg;
+      function_args_iterator args_iter;
 
-      /* Quit if we hit an incomplete type.  Error is reported
-	 by convert_arguments in c-typeck.c or cp/typeck.c.  */
-      FOREACH_FUNCTION_ARGS(type, arg, args_iter)
-	{
-	  unsigned parm_size;
-
-	  if (! COMPLETE_TYPE_P (arg))
-	    break;
-
-	  parm_size = int_size_in_bytes (TYPE_SIZE (arg));
-	  if (parm_size < 0)
-	    break;
-
-	  /* Must round up to include padding.  This is done the same
-	     way as in store_one_arg.  */
-	  parm_size = ((parm_size + PARM_BOUNDARY - 1)
-		       / PARM_BOUNDARY * PARM_BOUNDARY);
-	  total += parm_size;
-	}
-    }
-
-  newsym = alloca (1 + strlen (asmname) + 1 + 10 + 1);
-  return get_identifier_with_length (newsym,
-				     sprintf (newsym,
-					      "%c%s@%u",
-					      prefix,
-					      asmname,
-					      total / BITS_PER_UNIT));
-}
-
-/* Return string which is the former assembler name modified with an 
-   _n@ prefix where n represents the number of arguments passed in
-   registers */
-
-static tree
-gen_regparm_prefix (tree decl, unsigned nregs)
-{
-  unsigned total = 0;
-  /* ??? This probably should use XSTR (XEXP (DECL_RTL (decl), 0), 0) instead
-     of DECL_ASSEMBLER_NAME.  */
-  const char *asmname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  char *newsym;
-  tree type = TREE_TYPE (decl);
-  tree arg;
-  function_args_iterator args_iter;
-
-  if (prototype_p (type))
-    {
       /* This attribute is ignored for variadic functions.  */ 
       if (stdarg_p (type))
 	return NULL_TREE;
@@ -113,7 +58,8 @@ gen_regparm_prefix (tree decl, unsigned nregs)
 	 by convert_arguments in c-typeck.c or cp/typeck.c.  */
       FOREACH_FUNCTION_ARGS(type, arg, args_iter)
 	{
-	  unsigned parm_size;
+	  HOST_WIDE_INT parm_size;
+	  unsigned HOST_WIDE_INT parm_boundary_bytes;
 
 	  if (! COMPLETE_TYPE_P (arg))
 	    break;
@@ -122,21 +68,110 @@ gen_regparm_prefix (tree decl, unsigned nregs)
 	  if (parm_size < 0)
 	    break;
 
-	  parm_size = ((parm_size + PARM_BOUNDARY - 1)
-		       / PARM_BOUNDARY * PARM_BOUNDARY);
-	  total += parm_size;
+	  parm_boundary_bytes = PARM_BOUNDARY / BITS_PER_UNIT;
+
+	  /* Must round up to include padding.  This is done the same
+	     way as in store_one_arg.  */
+	  total += (parm_size + parm_boundary_bytes - 1)
+		   / parm_boundary_bytes * parm_boundary_bytes;
 	}
     }
 
-  if (nregs > total / BITS_PER_WORD)
-    nregs = total / BITS_PER_WORD;
+  new_str = alloca (1 + strlen (old_str) + 1 + 10 + 1);
+  sprintf (new_str, "%c%s@" HOST_WIDE_INT_PRINT_UNSIGNED,
+	   prefix, old_str, total);
+
+  return get_identifier (new_str);
+}
+
+/* Return string which is the function name, identified by ID, modified
+   with an _n@ prefix (where n represents the number of arguments passed in
+   registers).  If ID is NULL use the DECL_NAME as base.
+   Return NULL if no change required.  */
+
+static tree
+gen_regparm_prefix (tree decl, tree id, unsigned int nregs)
+{
+  unsigned HOST_WIDE_INT total = 0;
+  const char *old_str = IDENTIFIER_POINTER (id != NULL_TREE ? id : DECL_NAME (decl));
+  char *new_str;
+  tree type = TREE_TYPE (decl);
+
+  if (prototype_p (type))
+    {
+      tree arg;
+      function_args_iterator args_iter;
+
+      /* This attribute is ignored for variadic functions.  */ 
+      if (stdarg_p (type))
+	return NULL_TREE;
+
+      /* Quit if we hit an incomplete type.  Error is reported
+	 by convert_arguments in c-typeck.c or cp/typeck.c.  */
+      FOREACH_FUNCTION_ARGS(type, arg, args_iter)
+	{
+	  HOST_WIDE_INT parm_size;
+	  unsigned HOST_WIDE_INT parm_boundary_bytes;
+
+	  if (! COMPLETE_TYPE_P (arg))
+	    break;
+
+	  parm_size = int_size_in_bytes (arg);
+	  if (parm_size < 0)
+	    break;
+
+	  parm_boundary_bytes = PARM_BOUNDARY / BITS_PER_UNIT;
+
+	  /* Must round up to include padding.  This is done the same
+	     way as in store_one_arg.  */
+	  total += (parm_size + parm_boundary_bytes - 1)
+		   / parm_boundary_bytes * parm_boundary_bytes;
+	}
+    }
+
+  if (nregs > total / UNITS_PER_WORD)
+    nregs = total / UNITS_PER_WORD;
   gcc_assert (nregs <= 9);
-  newsym = alloca (3 + strlen (asmname) + 1);
-  return get_identifier_with_length (newsym,
-				     sprintf (newsym,
-					      "_%u@%s",
-					      nregs,
-					      asmname));
+  new_str = alloca (3 + strlen (old_str) + 1);
+  sprintf (new_str, "_%u@%s", nregs, old_str);
+
+  return get_identifier (new_str);
+}
+
+/* Maybe decorate and get a new identifier for the DECL of a stdcall or
+   fastcall function. The original identifier is supplied in ID. */
+
+static tree
+i386_nlm_maybe_mangle_decl_assembler_name (tree decl, tree id)
+{
+  tree type_attributes = TYPE_ATTRIBUTES (TREE_TYPE (decl));
+  tree new_id;
+
+  if (lookup_attribute ("stdcall", type_attributes))
+    new_id = gen_stdcall_or_fastcall_decoration (decl, id, '_');
+  else if (lookup_attribute ("fastcall", type_attributes))
+    new_id = gen_stdcall_or_fastcall_decoration (decl, id, FASTCALL_PREFIX);
+  else if ((new_id = lookup_attribute ("regparm", type_attributes)))
+    new_id = gen_regparm_prefix (decl, id,
+		  TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (new_id))));
+  else
+    new_id = NULL_TREE;
+
+  return new_id;
+}
+
+/* This is used as a target hook to modify the DECL_ASSEMBLER_NAME
+   in the language-independent default hook
+   langhooks.c:lhd_set_decl_assembler_name ()
+   and in cp/mangle.c:mangle_decl ().  */
+tree
+i386_nlm_mangle_decl_assembler_name (tree decl, tree id)
+{
+  tree new_id = TREE_CODE (decl) == FUNCTION_DECL
+		? i386_nlm_maybe_mangle_decl_assembler_name (decl, id)
+		: NULL_TREE;
+
+  return (new_id ? new_id : id);
 }
 
 void
@@ -146,31 +181,28 @@ i386_nlm_encode_section_info (tree decl, rtx rtl, int first)
 
   if (first
       && TREE_CODE (decl) == FUNCTION_DECL
+      /* Do not change the identifier if a verbatim asmspec
+	 or if stdcall suffix already added.  */
       && *IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)) != '*'
       && !strchr (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)), '@'))
     {
-      tree type_attributes = TYPE_ATTRIBUTES (TREE_TYPE (decl));
-      tree newid;
+      /* FIXME: In Ada, and perhaps other language frontends,
+	 imported stdcall names may not yet have been modified.
+	 Check and do it know.  */
+      rtx symbol = XEXP (rtl, 0);
+      tree new_id;
+      tree old_id = DECL_ASSEMBLER_NAME (decl);
 
-      if (lookup_attribute ("stdcall", type_attributes))
-	newid = gen_stdcall_or_fastcall_decoration (decl, '_');
-      else if (lookup_attribute ("fastcall", type_attributes))
-	newid = gen_stdcall_or_fastcall_decoration (decl, FASTCALL_PREFIX);
-      else if ((newid = lookup_attribute ("regparm", type_attributes)) != NULL_TREE)
-	newid = gen_regparm_prefix (decl,
-		      TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (newid))));
-      if (newid != NULL_TREE) 	
+      gcc_assert (GET_CODE (symbol) == SYMBOL_REF);
+
+      if ((new_id = i386_nlm_maybe_mangle_decl_assembler_name (decl, old_id)))
 	{
-	  rtx rtlname = XEXP (rtl, 0);
-
-	  if (GET_CODE (rtlname) == MEM)
-	    rtlname = XEXP (rtlname, 0);
-	  XSTR (rtlname, 0) = IDENTIFIER_POINTER (newid);
 	  /* These attributes must be present on first declaration,
 	     change_decl_assembler_name will warn if they are added
 	     later and the decl has been referenced, but duplicate_decls
-	     should catch the mismatch before this is called.  */ 
-	  change_decl_assembler_name (decl, newid);
+	     should catch the mismatch first.  */
+	  change_decl_assembler_name (decl, new_id);
+	  XSTR (symbol, 0) = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 	}
     }
 }
@@ -200,4 +232,25 @@ i386_nlm_strip_name_encoding (const char *str)
 	}
     }
   return name;
+}
+
+/* Sometimes certain combinations of command options do not make
+   sense on a particular target machine.  You can define a macro
+   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
+   defined, is executed once just after all the command options have
+   been parsed.
+
+   Don't use this macro to turn on various extra optimizations for
+   `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.  */
+
+void
+netware_override_options (void)
+{
+  override_options ();
+
+  if (flag_pic)
+    {
+      error ("-fPIC and -fpic are not supported for this target");
+      flag_pic = 0;
+    }
 }

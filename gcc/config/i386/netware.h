@@ -72,6 +72,18 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_SUBTARGET_DEFAULT (MASK_80387 | MASK_IEEE_FP | \
 	MASK_FLOAT_RETURNS | MASK_ALIGN_DOUBLE | MASK_MS_BITFIELD_LAYOUT)
 
+/* Sometimes certain combinations of command options do not make
+   sense on a particular target machine.  You can define a macro
+   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
+   defined, is executed once just after all the command options have
+   been parsed.
+
+   Don't use this macro to turn on various extra optimizations for
+   `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.  */
+#undef  OVERRIDE_OPTIONS
+extern void netware_override_options (void);
+#define OVERRIDE_OPTIONS netware_override_options ()
+
 #undef MATH_LIBRARY
 #define MATH_LIBRARY ""
 
@@ -142,13 +154,15 @@ along with GCC; see the file COPYING3.  If not see
    function named by the symbol (such as what section it is in).
 
    On i386 running NetWare, modify the assembler name with an underscore (_)
-   prefix and a suffix consisting of an atsign (@) followed by a string of
-   digits that represents the number of bytes of arguments passed to the
-   function, if it has the attribute STDCALL. Alternatively, if it has the 
-   REGPARM attribute, prefix it with an underscore (_), a digit representing
-   the number of registers used, and an atsign (@). */
+   or atsign (@) prefix and a suffix consisting of an atsign (@) followed by
+   a string of digits that represents the number of bytes of arguments passed
+   to the function, if it has the attribute STDCALL. Alternatively, if it has
+   the REGPARM attribute, prefix it with an underscore (_), a digit
+   representing the number of registers used, and an atsign (@). */
 void i386_nlm_encode_section_info (tree, rtx, int);
+extern tree i386_nlm_mangle_decl_assembler_name (tree, tree);
 const char *i386_nlm_strip_name_encoding (const char *);
 #define SUBTARGET_ENCODE_SECTION_INFO  i386_nlm_encode_section_info
+#define TARGET_MANGLE_DECL_ASSEMBLER_NAME i386_nlm_mangle_decl_assembler_name
 #undef  TARGET_STRIP_NAME_ENCODING
 #define TARGET_STRIP_NAME_ENCODING  i386_nlm_strip_name_encoding

@@ -1,3 +1,9 @@
+2008-02-25  Jan Beulich  <jbeulich@novell.com>
+
+	* gcc.dg/20020426-2.c: Remove bogus workaround.
+	* g++.old-deja/g++.other/store-expr1.C: Likewise.
+	* gcc.target/i386/movq-2.c: Also permit use of movzbl.
+
 2008-02-25  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* gfortran.dg/large_real_kind_3.F90: Xfail on ppc-darwin.
