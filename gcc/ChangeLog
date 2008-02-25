@@ -1,3 +1,10 @@
+2008-02-25  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	PR target/35258
+	* cse.c (cse_insn): Avoid creation of overlapping MEMs.
+	* alias.c (nonoverlapping_memrefs_p): Export for use in other modules.
+	* alias.h (nonoverlapping_memrefs_p): Likewise.
+
 2008-02-25  Jan Beulich  <jbeulich@novell.com>
 
 	* Makefile.in: Also prefix uses of crt0.o and mcrt0.o with
