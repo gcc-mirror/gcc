@@ -1,3 +1,11 @@
+2008-02-26  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+	
+	PR 28322
+	* gcc.dg/pr28322.c: New.
+	* gcc.dg/pr28322-2.c: New.
+	* lib/prune.exp: Ignore "At top level" even if there is no ':'
+	preceding it.
+
 2008-02-25  Paolo Carlini  <pcarlini@suse.de>
 
         PR c++/35333

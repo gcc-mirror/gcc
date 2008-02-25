@@ -105,4 +105,5 @@ extern bool get_option_state (int, struct cl_option_state *);
 
 extern void enable_warning_as_error (const char *arg, int value,
 				     unsigned int lang_mask);
+extern void print_ignored_options (void);
 #endif
