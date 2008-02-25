@@ -60,6 +60,18 @@
 #define TARGET_PAIRED_FLOAT 0
 #endif
 
+#ifdef HAVE_AS_POPCNTB
+#define ASM_CPU_POWER5_SPEC "-mpower5"
+#else
+#define ASM_CPU_POWER5_SPEC "-mpower4"
+#endif
+
+#ifdef HAVE_AS_DFP
+#define ASM_CPU_POWER6_SPEC "-mpower6 -maltivec"
+#else
+#define ASM_CPU_POWER6_SPEC "-mpower4 -maltivec"
+#endif
+
 /* Common ASM definitions used by ASM_SPEC among the various targets
    for handling -mcpu=xxx switches.  */
 #define ASM_CPU_SPEC \
@@ -76,10 +88,10 @@
 %{mcpu=power2: -mpwrx} \
 %{mcpu=power3: -mppc64} \
 %{mcpu=power4: -mpower4} \
-%{mcpu=power5: -mpower4} \
-%{mcpu=power5+: -mpower4} \
-%{mcpu=power6: -mpower4 -maltivec} \
-%{mcpu=power6x: -mpower4 -maltivec} \
+%{mcpu=power5: %(asm_cpu_power5)} \
+%{mcpu=power5+: %(asm_cpu_power5)} \
+%{mcpu=power6: %(asm_cpu_power6) -maltivec} \
+%{mcpu=power6x: %(asm_cpu_power6) -maltivec} \
 %{mcpu=powerpc: -mppc} \
 %{mcpu=rios: -mpwr} \
 %{mcpu=rios1: -mpwr} \
@@ -143,6 +155,8 @@
   { "asm_cpu",			ASM_CPU_SPEC },				\
   { "asm_default",		ASM_DEFAULT_SPEC },			\
   { "cc1_cpu",			CC1_CPU_SPEC },				\
+  { "asm_cpu_power5",		ASM_CPU_POWER5_SPEC },			\
+  { "asm_cpu_power6",		ASM_CPU_POWER6_SPEC },			\
   SUBTARGET_EXTRA_SPECS
 
 /* -mcpu=native handling only makes sense with compiler running on

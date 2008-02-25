@@ -1,3 +1,11 @@
+2008-02-26  Ben Elliston  <bje@au.ibm.com>
+
+	* config/rs6000/rs6000.h (ASM_CPU_POWER5_SPEC): Define.
+	(ASM_CPU_POWER6_SPEC): Likewise.
+	(ASM_CPU_SPEC): Pass %(asm_cpu_power5) for -mcpu=power5.
+	Likewise, pass %(asm_cpu_power6) for -mcpu=power6.
+	(EXTRA_SPECS): Add asm_cpu_power5, asm_cpu_power6 spec strings.
+
 2008-02-25  Richard Guenther  <rguenther@suse.de>
 
 	* tree-flow.h (uid_decl_map_hash, uid_decl_map_eq): Move ...
