@@ -1,3 +1,13 @@
+2008-02-25  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* gnat_ugn.texi (Conventions): List environment variables and
+	metasyntactic variables.
+	(Compiling Programs): Fix notation of metasyntactic variables.
+	Add @file where appropriate.  Use @file for file extensions,
+	@samp for strings.
+	* gnat_rm.texi, gnat_ugn.texi: Where appropriate, use @samp
+	instead of @file, @env instead of @code.
+
 2008-02-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR documentation/15479

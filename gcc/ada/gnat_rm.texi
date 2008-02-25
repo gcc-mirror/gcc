@@ -597,10 +597,11 @@ and @code{classes}.
 @code{Option flags}
 
 @item
-@file{File Names}, @samp{button names}, and @samp{field names}.
+@file{File names}, @samp{button names}, and @samp{field names}.
 
 @item
-@code{Variables}.
+@code{Variables}, @env{environment variables}, and @var{metasyntactic
+variables}.
 
 @item
 @emph{Emphasis}.
