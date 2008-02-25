@@ -1,3 +1,14 @@
+2008-02-26  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 28322
+	* toplev.c (toplev_main): If there are warnings or error, print
+	errors for ignored options.
+	* opts.c (ignored_options): New static variable.
+	(postpone_unknown_option_error): New.
+	(print_ignored_options): New.
+	(handle_option): Postpone errors for unknown -Wno-* options.
+	* opts.h (print_ignored_options): Declare.
+	
 2008-02-25  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* config/mips/mips.md (loadgp_blockage, blockage): Change type

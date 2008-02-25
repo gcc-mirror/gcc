@@ -2282,6 +2282,9 @@ toplev_main (unsigned int argc, const char **argv)
   if (!exit_after_options)
     do_compile ();
 
+  if (warningcount || errorcount) 
+    print_ignored_options ();
+
   if (errorcount || sorrycount)
     return (FATAL_EXIT_CODE);
 
