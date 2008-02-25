@@ -1,3 +1,8 @@
+2008-02-25  Ben Elliston  <bje@au.ibm.com>
+
+	PR other/32948
+	* fixincl.c (fix_applies): Remove unused variable `name_len'.
+
 2008-02-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* inclhack.def (solaris_math_10): New.

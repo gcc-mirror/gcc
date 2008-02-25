@@ -1046,11 +1046,8 @@ fix_applies (tFixDesc* p_fixd)
 
   if (pz_scan != (char *) NULL)
     {
-      size_t name_len;
-
       while ((pz_fname[0] == '.') && (pz_fname[1] == '/'))
         pz_fname += 2;
-      name_len = strlen (pz_fname);
 
       for (;;)
         {
