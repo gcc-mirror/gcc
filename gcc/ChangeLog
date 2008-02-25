@@ -1,3 +1,64 @@
+2008-02-25  Richard Guenther  <rguenther@suse.de>
+
+	Revert:
+	2008-02-25  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (uid_decl_map_hash, uid_decl_map_eq): Move ...
+	* tree.h (uid_decl_map_hash, uid_decl_map_eq): ... here.
+	(lookup_decl_from_uid): Declare.
+	* tree-ssa.c (uid_decl_map_eq, uid_decl_map_hash): Move ...
+	* tree.c (uid_decl_map_eq, uid_decl_map_hash): ... here.
+	(decl_for_uid_map): New global hashtable mapping DECL_UID
+	to the decl tree.
+	(init_ttree): Allocate it.
+	(insert_decl_to_uid_decl_map): New helper function.
+	(make_node_stat): Insert new decls into the map.
+	(copy_node_stat): Likewise.
+	(lookup_decl_from_uid): New function.
+	(print_decl_for_uid_map_statistics): New helper.
+	(dump_tree_statistics): Call it.
+
+	* tree-flow.h (struct gimple_df): Make referenced_vars a bitmap.
+	(referenced_var_iterator): Adjust.
+	(FOR_EACH_REFERENCED_VAR): Adjust.
+	(FOR_EACH_REFERENCED_VAR_IN_BITMAP): New iterator.
+	(num_referenced_vars): Adjust.
+	* tree-flow-inline.h (gimple_referenced_vars): Adjust.
+	(first_referenced_var): Remove.
+	(end_referenced_vars_p): Likewise.
+	(next_referenced_var): Likewise.
+	(referenced_var_iterator_set): New helper function.
+	* tree-dfa.c (referenced_var_lookup): Adjust.
+	(referenced_var_check_and_insert): Likewise.
+	(remove_referenced_var): Likewise.
+	* tree-ssa.c (verify_flow_insensitive_alias_info): Use
+	FOR_EACH_REFERENCED_VAR_IN_BITMAP.
+	(verify_call_clobbering): Likewise.
+	(verify_memory_partitions): Likewise.
+	(init_tree_ssa): Allocate bitmap instead of hashtable for
+	referenced_vars.
+	(delete_tree_ssa): Adjust.
+	* tree-ssa-alias.c (mark_aliases_call_clobbered): Use
+	FOR_EACH_REFERENCED_VAR_IN_BITMAP.
+	(compute_tag_properties): Likewise.
+	(set_initial_properties): Likewise.
+	(find_partition_for): Likewise.
+	(update_reference_counts): Likewise.
+	(dump_may_aliases_for): Likewise.
+	* tree-ssa-operands.c (add_virtual_operand): Likewise.
+	(add_call_clobber_ops): Likewise.
+	(add_call_read_ops): Likewise.
+	(get_asm_expr_operands): Likewise.
+	* tree-into-ssa.c (dump_decl_set): Likewise.
+	(update_ssa): Likewise.
+	* tree-sra.c (scan_function): Likewise.
+	(decide_instantiations): Likewise.
+	(scalarize_parms): Likewise.
+	* tree-ssa-alias-warnings.c (build_reference_table): Likewise.
+	(dsa_named_for): Likewise.
+	* tree-ssa-structalias.c (update_alias_info): Likewise.
+	(merge_smts_into): Likewise.
+
 2008-02-25  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/29549
