@@ -321,7 +321,8 @@ Objective-C and Objective-C++ Dialects}.
 -fauto-inc-dec -fbranch-probabilities -fbranch-target-load-optimize @gol
 -fbranch-target-load-optimize2 -fbtr-bb-exclusive -fcaller-saves @gol
 -fcheck-data-deps -fcprop-registers -fcrossjumping -fcse-follow-jumps @gol
--fcse-skip-blocks -fcx-limited-range -fdata-sections -fdce -fdce @gol
+-fcse-skip-blocks -fcx-limited-range @gol
+-fdata-sections -fdce -fdce @gol
 -fdelayed-branch -fdelete-null-pointer-checks -fdse -fdse @gol
 -fearly-inlining -fexpensive-optimizations -ffast-math @gol
 -ffinite-math-only -ffloat-store -fforward-propagate @gol
@@ -6546,8 +6547,11 @@ implicitly converting it to double precision constant.
 @item -fcx-limited-range
 @opindex fcx-limited-range
 When enabled, this option states that a range reduction step is not
-needed when performing complex division.  The default is
-@option{-fno-cx-limited-range}, but is enabled by @option{-ffast-math}.
+needed when performing complex division.  Also, there is no checking
+whether the result of a complex multiplication or division is @code{NaN
++ I*NaN}, with an attempt to rescue the situation in that case.  The
+default is @option{-fno-cx-limited-range}, but is enabled by
+@option{-ffast-math}.
 
 This option controls the default setting of the ISO C99
 @code{CX_LIMITED_RANGE} pragma.  Nevertheless, the option applies to
