@@ -1,5 +1,6 @@
 /* { dg-do compile } */ 
 /* { dg-options "-O2 -fno-tree-dominator-opts -fdump-tree-fre-stats" } */
+/* { dg-options "-O2 -fno-tree-dominator-opts -fdump-tree-fre-stats -fno-finite-math-only" { target sh*-*-* } } */
 double cos (double);
 void link_error();
 void f(double a)
