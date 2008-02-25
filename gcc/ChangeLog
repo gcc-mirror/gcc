@@ -1,3 +1,8 @@
+2008-02-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* stor-layout.c (layout_decl): Do not bump the alignment of a
+	bit-field to more than byte alignment if it is packed.
+
 2008-02-24  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (processor_costs): Add cache costs for
