@@ -1,3 +1,18 @@
+2008-02-25  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/34729
+	* trans-const.c (gfc_build_string_const): Don't call gettext.
+	(gfc_build_localized_string_const): New function.
+	* trans-const.h (gfc_build_localized_string_const): New prototype.
+	* trans.c (gfc_trans_runtime_check): Use
+	gfc_build_localized_string_const instead of gfc_build_string_const.
+	(gfc_call_malloc): Likewise.
+	(gfc_allocate_with_status): Likewise.
+	(gfc_allocate_array_with_status): Likewise.
+	(gfc_deallocate_with_status): Likewise.
+	(gfc_call_realloc): Likewise.
+	* trans-io.c (gfc_trans_io_runtime_check): Likewise.
+
 2008-02-24  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	* arith.c: Update copyright years.

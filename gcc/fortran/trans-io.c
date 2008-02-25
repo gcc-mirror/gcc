@@ -240,7 +240,8 @@ gfc_trans_io_runtime_check (tree cond, tree var, int error_code,
   arg2 = build_int_cst (integer_type_node, error_code),
   
   asprintf (&message, "%s", _(msgid));
-  arg3 = gfc_build_addr_expr (pchar_type_node, gfc_build_cstring_const(message));
+  arg3 = gfc_build_addr_expr (pchar_type_node,
+			      gfc_build_localized_cstring_const (message));
   gfc_free(message);
   
   tmp = build_call_expr (gfor_fndecl_generate_error, 3, arg1, arg2, arg3);
