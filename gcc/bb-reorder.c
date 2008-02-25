@@ -1223,7 +1223,6 @@ find_rarely_executed_basic_blocks_and_crossing_edges (edge **crossing_edges,
 						      int *max_idx)
 {
   basic_block bb;
-  bool has_hot_blocks = false;
   edge e;
   int i;
   edge_iterator ei;
@@ -1235,10 +1234,7 @@ find_rarely_executed_basic_blocks_and_crossing_edges (edge **crossing_edges,
       if (probably_never_executed_bb_p (bb))
 	BB_SET_PARTITION (bb, BB_COLD_PARTITION);
       else
-	{
-	  BB_SET_PARTITION (bb, BB_HOT_PARTITION);
-	  has_hot_blocks = true;
-	}
+	BB_SET_PARTITION (bb, BB_HOT_PARTITION);
     }
 
   /* Mark every edge that crosses between sections.  */
@@ -1524,7 +1520,6 @@ fix_crossing_conditional_branches (void)
   basic_block new_bb;
   basic_block last_bb;
   basic_block dest;
-  basic_block prev_bb;
   edge succ1;
   edge succ2;
   edge crossing_edge;
@@ -1605,7 +1600,6 @@ fix_crossing_conditional_branches (void)
 		  new_bb = create_basic_block (NULL, NULL, last_bb);
 		  new_bb->aux = last_bb->aux;
 		  last_bb->aux = new_bb;
-		  prev_bb = last_bb;
 		  last_bb = new_bb;
 		  /* Put appropriate instructions in new bb.  */
 

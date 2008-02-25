@@ -3977,7 +3977,6 @@ grokdeclarator (const struct c_declarator *declarator,
   int volatilep;
   int type_quals = TYPE_UNQUALIFIED;
   const char *name, *orig_name;
-  tree typedef_type = 0;
   bool funcdef_flag = false;
   bool funcdef_syntax = false;
   int size_varies = 0;
@@ -4051,7 +4050,6 @@ grokdeclarator (const struct c_declarator *declarator,
       type = integer_type_node;
     }
 
-  typedef_type = type;
   size_varies = C_TYPE_VARIABLE_SIZE (type);
 
   /* Diagnose defaulting to "int".  */
@@ -4701,7 +4699,6 @@ grokdeclarator (const struct c_declarator *declarator,
 
     if (decl_context == PARM)
       {
-	tree type_as_written;
 	tree promoted_type;
 
 	/* A parameter declared as an array of T is really a pointer to T.
@@ -4736,8 +4733,6 @@ grokdeclarator (const struct c_declarator *declarator,
 	  }
 	else if (type_quals)
 	  type = c_build_qualified_type (type, type_quals);
-
-	type_as_written = type;
 
 	decl = build_decl (PARM_DECL, declarator->u.id, type);
 	DECL_SOURCE_LOCATION (decl) = declarator->id_loc;

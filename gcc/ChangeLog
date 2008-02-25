@@ -1,3 +1,14 @@
+2008-02-25  Ben Elliston  <bje@au.ibm.com>
+
+	PR other/32948
+	* c-decl.c (grokdeclarator): Remove unused local variables
+	`typedef_type' and `type_as_written'.
+	* bb-reorder.c
+	(find_rarely_executed_basic_blocks_and_crossing_edges): Remove
+	unused local variable `has_hot_blocks'.
+	(fix_crossing_conditional_branches): Remove unused local variable
+	`prev_bb'.
+	
 2008-02-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/19984
