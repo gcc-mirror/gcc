@@ -1067,8 +1067,8 @@ and as the prefix of a @code{Check_Name'Enabled} attribute reference. For
 any of these three cases, the check name must be visible. A check
 name is visible if it is in the configuration pragmas applying to
 the current unit, or if it appears at the start of any unit that
-is part of the dependency set of the current unit (e.g. units that
-are mentioned in @code{with} clauses.
+is part of the dependency set of the current unit (e.g., units that
+are mentioned in @code{with} clauses).
 
 @node Pragma Comment
 @unnumberedsec Pragma Comment
@@ -1141,7 +1141,7 @@ expression. The pragma is effective only if the value of this expression
 is known at compile time, and has the value True. The set of expressions
 whose values are known at compile time includes all static boolean
 expressions, and also other values which the compiler can determine
-at compile time (e.g. the size of a record type set by an explicit
+at compile time (e.g., the size of a record type set by an explicit
 size representation clause, or the value of a variable which was
 initialized to a constant and is known not to have been modified).
 If these conditions are met, an error message is generated using
@@ -2917,7 +2917,7 @@ and causes @var{LOCAL_NAME} to be emitted as an alias for the symbol
 is reserved for @var{LOCAL_NAME} by the assembler and it will be resolved
 to the same address as @var{static_string_EXPRESSION} by the linker.
 
-The actual linker name for the target must be used (e.g. the fully
+The actual linker name for the target must be used (e.g.@: the fully
 encoded name with qualification in Ada, or the mangled name in C++),
 or it must be declared using the C convention with @code{pragma Import}
 or @code{pragma Export}.
@@ -3022,7 +3022,7 @@ at the symbolic level with the compiler.
 Some file formats do not support arbitrary sections so not all target
 machines support this pragma. The use of this pragma may cause a program
 execution to be erroneous if it is used to place an entity into an
-inappropriate section (e.g. a modified variable into the @code{.text}
+inappropriate section (e.g.@: a modified variable into the @code{.text}
 section). See also @code{pragma Persistent_BSS}.
 
 @smallexample @c ada
@@ -3325,7 +3325,7 @@ indication of obsolescence applies only when compiling in Ada 2005
 mode. This is primarily intended for dealing with the situations
 in the predefined library where subprograms or packages
 have become defined as obsolescent in Ada 2005
-(e.g. in Ada.Characters.Handling), but may be used anywhere.
+(e.g.@: in Ada.Characters.Handling), but may be used anywhere.
 
 The following examples show typical uses of this pragma:
 
@@ -4730,7 +4730,8 @@ to appear within the same file.
 The argument can be an identifier or a character literal. In the identifier
 case, it is one of @code{HEX}, @code{UPPER}, @code{SHIFT_JIS},
 @code{EUC}, @code{UTF8}, or @code{BRACKETS}. In the character literal
-case it is correspondingly one of the characters h,u,s,e,8,b.
+case it is correspondingly one of the characters @samp{h}, @samp{u},
+@samp{s}, @samp{e}, @samp{8}, or @samp{b}.
 
 Note that when the pragma is used within a file, it affects only the
 encoding within that file, and does not affect withed units, specs,
@@ -8469,7 +8470,7 @@ suffix
 is the hexadecimal representation of the virtual address of the corresponding
 task control block. If the variable is an array of tasks, the image of each
 task will have the form of an indexed component indicating the position of a
-given task in the array, eg.  Group(5)_XXXXXXX. If the task is a
+given task in the array, e.g.@: Group(5)_XXXXXXX. If the task is a
 component of a record, the image of the task will have the form of a selected
 component. These rules are fully recursive, so that the image of a task that
 is a subcomponent of a composite object corresponds to the expression that
@@ -10459,7 +10460,7 @@ including the important case of single bits or boolean values, then
 there are no limitations on placement of such components, and they
 may start and end at arbitrary bit boundaries.
 
-If the component size is not a power of 2 (e.g. 3 or 5), then
+If the component size is not a power of 2 (e.g.@: 3 or 5), then
 an array of this type longer than 64 bits must always be placed on
 on a storage unit (byte) boundary and occupy an integral number
 of storage units (bytes). Any component clause that does not
@@ -11616,7 +11617,7 @@ library routines that support streams. This facilitates shared use of these
 streams by mixed language programs. Note though that system level buffering is
 explicitly enabled at elaboration of the standard I/O packages and that can
 have an impact on mixed language programs, in particular those using I/O before
-calling the Ada elaboration routine (e.g. adainit). It is recommended to call
+calling the Ada elaboration routine (e.g.@: adainit). It is recommended to call
 the Ada elaboration routine before performing any I/O or when impractical,
 flush the common I/O streams and in particular Standard_Output before
 elaborating the Ada code.
@@ -12587,7 +12588,7 @@ package Interfaces.C_Streams is
   -- If text_translation_required is true, then the following
   -- functions may be used to dynamically switch a file from
   -- binary to text mode or vice versa.  These functions have
-  -- no effect if text_translation_required is false (i.e.  in
+  -- no effect if text_translation_required is false (i.e.@: in
   -- normal UNIX mode).  Use fileno to get a stream handle.
   procedure set_binary_mode (handle : int);
   procedure set_text_mode (handle : int);
@@ -14676,7 +14677,7 @@ GNAT fully implements the pragma @code{Shared_Passive} for
 @cindex pragma @code{Shared_Passive}
 the purpose of designating shared passive packages.
 This allows the use of passive partitions in the
-context described in the Ada Reference Manual; i.e. for communication
+context described in the Ada Reference Manual; i.e., for communication
 between separate partitions of a distributed application using the
 features in Annex E.
 @cindex Annex E
@@ -14693,7 +14694,7 @@ partitions, using protected objects for synchronization where
 needed. The only requirement is that the two programs have a
 common shared file system. It is even possible for programs
 running on different machines with different architectures
-(e.g. different endianness) to communicate via the data in
+(e.g.@: different endianness) to communicate via the data in
 a passive partition.
 
 @item Persistence between program runs
@@ -16005,7 +16006,7 @@ on which the program should execute.
 @item Communication_Protocol
 This is a simple string attribute. Its value is the name of the protocol
 to use to communicate with the target in a cross-compilation environment,
-e.g. @code{"wtx"} or @code{"vxworks"}.
+e.g.@: @code{"wtx"} or @code{"vxworks"}.
 
 @item Compiler_Command
 This is an associative array attribute, whose domain is a language name. Its
@@ -16029,7 +16030,7 @@ predefined path; e.g., @code{"gnatls"}, @code{"powerpc-wrs-vxworks-gnatls"}.
 
 @item VCS_Kind
 This is a simple attribute. Its value is a string used to specify the
-Version Control System (VCS) to be used for this project, e.g CVS, RCS
+Version Control System (VCS) to be used for this project, e.g.@: CVS, RCS
 ClearCase or Perforce.
 
 @item VCS_File_Check

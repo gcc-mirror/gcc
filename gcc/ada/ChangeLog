@@ -1,5 +1,12 @@
 2008-02-25  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* gnat_rm.texi, gnat_ugn.texi: Fix spacing after `e.g.' and
+	`i.e.' by adding comma or `@:' as appropriate.
+	* gnat_rm.texi (Pragma Wide_Character_Encoding): Instead of
+	plain characters `C', use `@samp{C}'.
+	* gnat_ugn.texi (File Naming Rules, About gnatkr)
+	(Krunching Method): Likewise.
+
 	* gnat_ugn.texi (Conventions): List environment variables and
 	metasyntactic variables.
 	(Compiling Programs): Fix notation of metasyntactic variables.
