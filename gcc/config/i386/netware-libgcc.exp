@@ -64,6 +64,7 @@
 	_Unwind_GetDataRelBase,
 	_Unwind_GetGR,
 	_Unwind_GetIP,
+	_Unwind_GetIPInfo,
 	_Unwind_GetLanguageSpecificData,
 	_Unwind_GetRegionStart,
 	_Unwind_GetTextRelBase,

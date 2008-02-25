@@ -1,3 +1,7 @@
+2008-02-25  Jan Beulich  <jbeulich@novell.com>
+
+	* config/i386/netware-libgcc.exp: Add _Unwind_GetIPInfo.
+
 2008-02-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR bootstrap/35273
