@@ -7737,6 +7737,10 @@ cp_parser_declaration (cp_parser* parser)
 	       || token2.type == CPP_OPEN_BRACE
 	       || token2.keyword == RID_ATTRIBUTE))
     cp_parser_namespace_definition (parser);
+  /* An inline (associated) namespace definition.  */
+  else if (token1.keyword == RID_INLINE
+	   && token2.keyword == RID_NAMESPACE)
+    cp_parser_namespace_definition (parser);
   /* Objective-C++ declaration/definition.  */
   else if (c_dialect_objc () && OBJC_IS_AT_KEYWORD (token1.keyword))
     cp_parser_objc_declaration (parser);
@@ -11562,6 +11566,15 @@ cp_parser_namespace_definition (cp_parser* parser)
 {
   tree identifier, attribs;
   bool has_visibility;
+  bool is_inline;
+
+  if (cp_lexer_next_token_is_keyword (parser->lexer, RID_INLINE))
+    {
+      is_inline = true;
+      cp_lexer_consume_token (parser->lexer);
+    }
+  else
+    is_inline = false;
 
   /* Look for the `namespace' keyword.  */
   cp_parser_require_keyword (parser, RID_NAMESPACE, "`namespace'");
@@ -11582,6 +11595,21 @@ cp_parser_namespace_definition (cp_parser* parser)
   cp_parser_require (parser, CPP_OPEN_BRACE, "`{'");
   /* Start the namespace.  */
   push_namespace (identifier);
+
+  /* "inline namespace" is equivalent to a stub namespace definition
+     followed by a strong using directive.  */
+  if (is_inline)
+    {
+      tree namespace = current_namespace;
+      /* Set up namespace association.  */
+      DECL_NAMESPACE_ASSOCIATIONS (namespace)
+	= tree_cons (CP_DECL_CONTEXT (namespace), NULL_TREE,
+		     DECL_NAMESPACE_ASSOCIATIONS (namespace));
+      /* Import the contents of the inline namespace.  */
+      pop_namespace ();
+      do_using_directive (namespace);
+      push_namespace (identifier);
+    }
 
   has_visibility = handle_namespace_attrs (current_namespace, attribs);
 

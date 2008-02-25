@@ -3,10 +3,9 @@
 // { dg-do compile }
 
 namespace bar {
-  namespace foo {
+  inline namespace foo {
     template <class T> void f(T, T);
   }
-  using namespace foo __attribute__((strong));
   template <class T> void f(T);
 }
 

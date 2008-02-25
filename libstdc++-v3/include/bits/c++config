@@ -180,11 +180,8 @@
 namespace std
 { 
   namespace __norm { } 
-  namespace __debug { }
-  namespace __cxx1998 { }
-
-  using namespace __debug __attribute__ ((strong)); 
-  using namespace __cxx1998 __attribute__ ((strong)); 
+  inline namespace __debug { }
+  inline namespace __cxx1998 { }
 }
 #endif
 
@@ -193,11 +190,8 @@ namespace std
 namespace std
 { 
   namespace __norm { } 
-  namespace __parallel { }
-  namespace __cxx1998 { }
-
-  using namespace __parallel __attribute__ ((strong));
-  using namespace __cxx1998 __attribute__ ((strong)); 
+  inline namespace __parallel { }
+  inline namespace __cxx1998 { }
 }
 #endif
 
@@ -205,22 +199,19 @@ namespace std
 #if _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION
 namespace std
 {
-  namespace _6 { }
-  using namespace _6 __attribute__ ((strong));
+  inline namespace _6 { }
 }
 
 namespace __gnu_cxx 
 { 
-  namespace _6 { }
-  using namespace _6 __attribute__ ((strong));
+  inline namespace _6 { }
 }
 
 namespace std
 {
   namespace tr1 
   { 
-    namespace _6 { }
-    using namespace _6 __attribute__ ((strong));
+    inline namespace _6 { }
   }
 }
 #endif
@@ -235,8 +226,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 # define _GLIBCXX_LDBL_NAMESPACE __gnu_cxx_ldbl128::
 # define _GLIBCXX_BEGIN_LDBL_NAMESPACE namespace __gnu_cxx_ldbl128 {
 # define _GLIBCXX_END_LDBL_NAMESPACE }
-  namespace __gnu_cxx_ldbl128 { }
-  using namespace __gnu_cxx_ldbl128 __attribute__((__strong__));
+  inline namespace __gnu_cxx_ldbl128 { }
 #else
 # define _GLIBCXX_LDBL_NAMESPACE
 # define _GLIBCXX_BEGIN_LDBL_NAMESPACE
