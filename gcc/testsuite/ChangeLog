@@ -1,3 +1,7 @@
+2008-02-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse-18.c: Pass if CPU has no SSE2 support.
+
 2008-02-20  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/35265
