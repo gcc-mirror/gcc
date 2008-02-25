@@ -321,7 +321,7 @@ Objective-C and Objective-C++ Dialects}.
 -fauto-inc-dec -fbranch-probabilities -fbranch-target-load-optimize @gol
 -fbranch-target-load-optimize2 -fbtr-bb-exclusive -fcaller-saves @gol
 -fcheck-data-deps -fcprop-registers -fcrossjumping -fcse-follow-jumps @gol
--fcse-skip-blocks -fcx-limited-range @gol
+-fcse-skip-blocks -fcx-fortran-rules -fcx-limited-range @gol
 -fdata-sections -fdce -fdce @gol
 -fdelayed-branch -fdelete-null-pointer-checks -fdse -fdse @gol
 -fearly-inlining -fexpensive-optimizations -ffast-math @gol
@@ -6556,6 +6556,15 @@ default is @option{-fno-cx-limited-range}, but is enabled by
 This option controls the default setting of the ISO C99
 @code{CX_LIMITED_RANGE} pragma.  Nevertheless, the option applies to
 all languages.
+
+@item -fcx-fortran-rules
+@opindex fcx-fortran-rules
+Complex multiplication and division follow Fortran rules.  Range
+reduction is done as part of complex division, but there is no checking
+whether the result of a complex multiplication or division is @code{NaN
++ I*NaN}, with an attempt to rescue the situation in that case.
+
+The default is @option{-fno-cx-fortran-rules}.
 
 @end table
 

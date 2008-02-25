@@ -405,6 +405,10 @@ fcx-limited-range
 Common Report Var(flag_cx_limited_range) Optimization
 Omit range reduction step when performing complex division
 
+fcx-fortran-rules
+Common Report Var(flag_cx_fortran_rules) Optimization
+Complex multiplication and division follow Fortran rules
+
 fdata-sections
 Common Report Var(flag_data_sections) Optimization
 Place data items into their own section
