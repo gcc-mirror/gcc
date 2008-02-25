@@ -1,5 +1,12 @@
 2008-02-25  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR middle-end/19984
+	* gcc.dg/pr19984.c: New test.
+	* gcc.dg/dfp/compare-special.h: Use _nan instead of nan as the
+	name of the variable.
+
+2008-02-25  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcc.dg/vect/vect-99.c: Include stdlib.h and tree-vect.h.
 	(main): Call check_vect and foo.  Check array values after
 	the call to foo.

@@ -47,13 +47,13 @@ DTYPE zero  = PASTE(0.0, SUFFIX);
 DTYPE one   = PASTE(1.0, SUFFIX);
 DTYPE two   = PASTE(2.0, SUFFIX);
 
-volatile DTYPE x, y, z, nan, inf, m_inf;
+volatile DTYPE x, y, z, _nan, inf, m_inf;
 
 void
 test_compares (void)
 {
-  nan = PASTE(__builtin_nan, SUFFIX2) ("");
-  inf = PASTE(__builtin_inf, SUFFIX2) ();
+  _nan = PASTE(__builtin_nan, SUFFIX2) ("");
+  inf =  PASTE(__builtin_inf, SUFFIX2) ();
   m_inf = - PASTE(__builtin_inf, SUFFIX2) ();
 
   x = PASTE(__builtin_nan, SUFFIX2) ("");
@@ -65,14 +65,14 @@ test_compares (void)
   if (x <= two)   FAILURE ("<=", "NaN")
   if (x <= zero)  FAILURE ("<=", "NaN")
   if (x <= m_one) FAILURE ("<=", "NaN")
-  if (x <= nan)   FAILURE ("<=", "NaN")
+  if (x <= _nan)  FAILURE ("<=", "NaN")
   if (x <= inf)   FAILURE ("<=", "NaN")
   if (x <= m_inf) FAILURE ("<=", "NaN")
 
   if (two <= x)   FAILURE ("<=", "NaN")
   if (zero <= x)  FAILURE ("<=", "NaN")
   if (m_one <= x) FAILURE ("<=", "NaN")
-  if (nan <= x)   FAILURE ("<=", "NaN")
+  if (_nan <= x)  FAILURE ("<=", "NaN")
   if (inf <= x)   FAILURE ("<=", "NaN")
   if (m_inf <= x) FAILURE ("<=", "NaN")
 
@@ -102,14 +102,14 @@ test_compares (void)
   if (x < two)       FAILURE ("<", "NaN")
   if (x < zero)      FAILURE ("<", "NaN")
   if (x < m_one)     FAILURE ("<", "NaN")
-  if (x < nan)       FAILURE ("<", "NaN")
+  if (x < _nan)      FAILURE ("<", "NaN")
   if (x < inf)       FAILURE ("<", "NaN")
   if (x < m_inf)     FAILURE ("<", "NaN")
 
   if (two < x)       FAILURE ("<", "NaN")
   if (zero < x)      FAILURE ("<", "NaN")
   if (m_one < x)     FAILURE ("<", "NaN")
-  if (nan < x)       FAILURE ("<", "NaN")
+  if (_nan < x)      FAILURE ("<", "NaN")
   if (inf < x)       FAILURE ("<", "NaN")
   if (m_inf < x)     FAILURE ("<", "NaN")
 
@@ -139,14 +139,14 @@ test_compares (void)
   if (x >= two)      FAILURE (">=", "NaN")
   if (x >= zero)     FAILURE (">=", "NaN")
   if (x >= m_one)    FAILURE (">=", "NaN")
-  if (x >= nan)      FAILURE (">=", "NaN")
+  if (x >= _nan)     FAILURE (">=", "NaN")
   if (x >= inf)      FAILURE (">=", "NaN")
   if (x >= m_inf)    FAILURE (">=", "NaN")
 
   if (two >= x)      FAILURE (">=", "NaN")
   if (zero >= x)     FAILURE (">=", "NaN")
   if (m_one >= x)    FAILURE (">=", "NaN")
-  if (nan >= x)      FAILURE (">=", "NaN")
+  if (_nan >= x)     FAILURE (">=", "NaN")
   if (inf >= x)      FAILURE (">=", "NaN")
   if (m_inf >= x)    FAILURE (">=", "NaN")
 
@@ -176,14 +176,14 @@ test_compares (void)
   if (x > two)       FAILURE (">", "NaN")
   if (x > zero)      FAILURE (">", "NaN")
   if (x > m_one)     FAILURE (">", "NaN")
-  if (x > nan)       FAILURE (">", "NaN")
+  if (x > _nan)      FAILURE (">", "NaN")
   if (x > inf)       FAILURE (">", "NaN")
   if (x > m_inf)     FAILURE (">", "NaN")
 
   if (two > x)       FAILURE (">", "NaN")
   if (zero > x)      FAILURE (">", "NaN")
   if (m_one > x)     FAILURE (">", "NaN")
-  if (nan > x)       FAILURE (">", "NaN")
+  if (_nan > x)      FAILURE (">", "NaN")
   if (inf > x)       FAILURE (">", "NaN")
   if (m_inf > x)     FAILURE (">", "NaN")
 
@@ -213,14 +213,14 @@ test_compares (void)
   if (x == two)      FAILURE ("==", "NaN")
   if (x == zero)     FAILURE ("==", "NaN")
   if (x == m_one)    FAILURE ("==", "NaN")
-  if (x == nan)      FAILURE ("==", "NaN")
+  if (x == _nan)     FAILURE ("==", "NaN")
   if (x == inf)      FAILURE ("==", "NaN")
   if (x == m_inf)    FAILURE ("==", "NaN")
 
   if (two == x)      FAILURE ("==", "NaN")
   if (zero == x)     FAILURE ("==", "NaN")
   if (m_one == x)    FAILURE ("==", "NaN")
-  if (nan == x)      FAILURE ("==", "NaN")
+  if (_nan == x)     FAILURE ("==", "NaN")
   if (inf == x)      FAILURE ("==", "NaN")
   if (m_inf == x)    FAILURE ("==", "NaN")
 
@@ -250,14 +250,14 @@ test_compares (void)
   if (!(x != two))   FAILURE ("!=", "NaN")
   if (!(x != zero))  FAILURE ("!=", "NaN")
   if (!(x != m_one)) FAILURE ("!=", "NaN")
-  if (!(x != nan))   FAILURE ("!=", "NaN")
+  if (!(x != _nan))  FAILURE ("!=", "NaN")
   if (!(x != inf))   FAILURE ("!=", "NaN")
   if (!(x != m_inf)) FAILURE ("!=", "NaN")
 
   if (!(two != x))   FAILURE ("!=", "NaN")
   if (!(zero != x))  FAILURE ("!=", "NaN")
   if (!(m_one != x)) FAILURE ("!=", "NaN")
-  if (!(nan != x))   FAILURE ("!=", "NaN")
+  if (!(_nan != x))  FAILURE ("!=", "NaN")
   if (!(inf != x))   FAILURE ("!=", "NaN")
   if (!(m_inf != x)) FAILURE ("!=", "NaN")
 
