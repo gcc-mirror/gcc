@@ -27,7 +27,8 @@ struct multilevel
    char *f;
 };
 
-struct t T0 = { 1 };		/* { dg-warning "(missing|near) init" } */
+struct t T0 = { 1 };		/* { dg-warning "missing init" } */
+/* { dg-warning "near init" "near init" { target *-*-* } 30 } */
 struct t T1 = { .a = 1 };	/* { dg-bogus "(missing|near) init" } */
 
 union u U0 = { 1 };		/* { dg-warning "initialization of union" } */
@@ -36,8 +37,9 @@ union u U1 = { .i = 1 };	/* { dg-bogus "initialization of union" } */
 struct multilevel M =
 {
   12,
-  { .b = 3 },			/* { dg-bogus "(missing|near) init" } */
+  { .b = 3 },			/* { dg-bogus "missing init" } */
   { 4 },			/* { dg-warning "initialization of union" } */
   { .n = 9 },			/* { dg-bogus "initialization of union" } */
   /* "string here" */
-};				/* { dg-warning "(missing|near) init" } */
+};				/* { dg-warning "missing init" } */
+/* { dg-warning "near init" "near init" { target *-*-* } 44 } */

@@ -91,7 +91,7 @@ static void push_string (const char *);
 static void push_member_name (tree);
 static int spelling_length (void);
 static char *print_spelling (char *);
-static void warning_init (const char *);
+static void warning_init (int, const char *);
 static tree digest_init (tree, tree, bool, int);
 static void output_init_element (tree, bool, tree, tree, int);
 static void output_pending_init_elements (int);
@@ -4636,19 +4636,21 @@ pedwarn_init (const char *msgid)
     pedwarn ("(near initialization for %qs)", ofwhat);
 }
 
-/* Issue a warning for a bad initializer component.
-   MSGID identifies the message.
-   The component name is taken from the spelling stack.  */
+/* Issue a warning for a bad initializer component.  
+
+   OPT is the OPT_W* value corresponding to the warning option that
+   controls this warning.  MSGID identifies the message.  The
+   component name is taken from the spelling stack.  */
 
 static void
-warning_init (const char *msgid)
+warning_init (int opt, const char *msgid)
 {
   char *ofwhat;
 
-  warning (0, "%s", _(msgid));
+  warning (opt, "%s", _(msgid));
   ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
   if (*ofwhat)
-    warning (0, "(near initialization for %qs)", ofwhat);
+    warning (opt, "(near initialization for %qs)", ofwhat);
 }
 
 /* If TYPE is an array type and EXPR is a parenthesized string
@@ -5415,7 +5417,7 @@ push_init_level (int implicit)
   if (implicit == 1 && warn_missing_braces && !missing_braces_mentioned)
     {
       missing_braces_mentioned = 1;
-      warning_init ("missing braces around initializer");
+      warning_init (OPT_Wmissing_braces, "missing braces around initializer");
     }
 
   if (TREE_CODE (constructor_type) == RECORD_TYPE
@@ -5476,7 +5478,7 @@ push_init_level (int implicit)
   else
     {
       if (constructor_type != error_mark_node)
-	warning_init ("braces around scalar initializer");
+	warning_init (0, "braces around scalar initializer");
       constructor_fields = constructor_type;
       constructor_unfilled_fields = constructor_type;
     }
@@ -5562,7 +5564,8 @@ pop_init_level (int implicit)
 	if (constructor_unfilled_fields && !constructor_designated)
 	  {
 	    push_member_name (constructor_unfilled_fields);
-	    warning_init ("missing initializer");
+	    warning_init (OPT_Wmissing_field_initializers,
+                          "missing initializer");
 	    RESTORE_SPELLING_DEPTH (constructor_depth);
 	  }
     }
@@ -5846,9 +5849,9 @@ add_pending_init (tree purpose, tree value)
 	  else
 	    {
 	      if (TREE_SIDE_EFFECTS (p->value))
-		warning_init ("initialized field with side-effects overwritten");
+		warning_init (0, "initialized field with side-effects overwritten");
 	      else if (warn_override_init)
-		warning_init ("initialized field overwritten");
+		warning_init (OPT_Woverride_init, "initialized field overwritten");
 	      p->value = value;
 	      return;
 	    }
@@ -5869,9 +5872,9 @@ add_pending_init (tree purpose, tree value)
 	  else
 	    {
 	      if (TREE_SIDE_EFFECTS (p->value))
-		warning_init ("initialized field with side-effects overwritten");
+		warning_init (0, "initialized field with side-effects overwritten");
 	      else if (warn_override_init)
-		warning_init ("initialized field overwritten");
+		warning_init (OPT_Woverride_init, "initialized field overwritten");
 	      p->value = value;
 	      return;
 	    }
@@ -6343,9 +6346,9 @@ output_init_element (tree value, bool strict_string, tree type, tree field,
     {
       if (TREE_SIDE_EFFECTS (VEC_last (constructor_elt,
 				       constructor_elements)->value))
-	warning_init ("initialized field with side-effects overwritten");
+	warning_init (0, "initialized field with side-effects overwritten");
       else if (warn_override_init)
-	warning_init ("initialized field overwritten");
+	warning_init (OPT_Woverride_init, "initialized field overwritten");
 
       /* We can have just one union field set.  */
       constructor_elements = 0;
