@@ -1,3 +1,13 @@
+2008-02-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* typeck.c (check_for_casting_away_constness): Use 1 single
+	argument, the type of cast, to decide what diagnostics generate.
+	(build_static_cast_1): Remove unused code. Update call to
+	check_for_casting_away_constness.
+	(build_reinterpret_cast_1): Update call to
+	check_for_casting_away_constness.
+	(build_const_cast_1): Likewise.
+	
 2008-02-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* error.c (dump_expr): Don't deal directly with NEW_EXPR (and
