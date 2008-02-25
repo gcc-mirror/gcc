@@ -66,7 +66,7 @@ gimple_call_clobbered_vars (const struct function *fun)
 }
 
 /* Array of all variables referenced in the function.  */
-static inline htab_t
+static inline bitmap
 gimple_referenced_vars (const struct function *fun)
 {
   if (!fun->gimple_df)
@@ -145,33 +145,22 @@ next_htab_element (htab_iterator *hti)
   return NULL;
 }
 
-/* Initialize ITER to point to the first referenced variable in the
-   referenced_vars hashtable, and return that variable.  */
-
-static inline tree
-first_referenced_var (referenced_var_iterator *iter)
-{
-  return (tree) first_htab_element (&iter->hti,
-				    gimple_referenced_vars (cfun));
-}
-
-/* Return true if we have hit the end of the referenced variables ITER is
-   iterating through.  */
+/* Helper for FOR_EACH_REFERENCED_VAR.  Needed unless iterator
+   bodies deal with NULL elements.  */
 
 static inline bool
-end_referenced_vars_p (const referenced_var_iterator *iter)
+referenced_var_iterator_set (referenced_var_iterator *ri, tree *var)
 {
-  return end_htab_p (&iter->hti);
+  while (1)
+    {
+      if (!bmp_iter_set (&ri->bi, &ri->i))
+	return false;
+      *var = lookup_decl_from_uid (ri->i);
+      if (*var)
+	return true;
+      bmp_iter_next (&ri->bi, &ri->i);
+    }
 }
-
-/* Make ITER point to the next referenced_var in the referenced_var hashtable,
-   and return that variable.  */
-
-static inline tree
-next_referenced_var (referenced_var_iterator *iter)
-{
-  return (tree) next_htab_element (&iter->hti);
-} 
 
 /* Fill up VEC with the variables in the referenced vars hashtable.  */
 

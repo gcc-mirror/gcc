@@ -1469,7 +1469,9 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
   if (MTAG_P (var))
     aliases = MTAG_ALIASES (var);
 
-  if (aliases == NULL)
+  if (aliases == NULL
+      /* ???  We should not have created an empty aliases bitmap.  */
+      || bitmap_empty_p (aliases))
     {
       if (!gimple_aliases_computed_p (cfun)
 	  && (flags & opf_def))
@@ -1483,18 +1485,16 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
     }
   else
     {
-      bitmap_iterator bi;
-      unsigned int i;
+      referenced_var_iterator ri;
       bool none_added = true;
+      tree al;
       
       /* The variable is aliased.  Add its aliases to the virtual
 	 operands.  */
       gcc_assert (!bitmap_empty_p (aliases));
 
-      EXECUTE_IF_SET_IN_BITMAP (aliases, 0, i, bi)
+      FOR_EACH_REFERENCED_VAR_IN_BITMAP (aliases, al, ri)
 	{
-	  tree al = referenced_var (i);
-
 	  /* For SFTs we have to consider all subvariables of the parent var
 	     if it is a potential points-to location.  */
 	  if (TREE_CODE (al) == STRUCT_FIELD_TAG
@@ -1779,10 +1779,10 @@ get_tmr_operands (tree stmt, tree expr, int flags)
 static void
 add_call_clobber_ops (tree stmt, tree callee)
 {
-  unsigned u;
-  bitmap_iterator bi;
+  referenced_var_iterator ri;
   stmt_ann_t s_ann = stmt_ann (stmt);
   bitmap not_read_b, not_written_b;
+  tree var;
   
   /* If we created .GLOBAL_VAR earlier, just use it.  */
   if (gimple_global_var (cfun))
@@ -1796,17 +1796,18 @@ add_call_clobber_ops (tree stmt, tree callee)
      set for each static if the call being processed does not read
      or write that variable.  */
   not_read_b = callee ? ipa_reference_get_not_read_global (callee) : NULL; 
-  not_written_b = callee ? ipa_reference_get_not_written_global (callee) : NULL; 
+  not_written_b = callee ? ipa_reference_get_not_written_global (callee) : NULL;
 
   /* Add a VDEF operand for every call clobbered variable.  */
-  EXECUTE_IF_SET_IN_BITMAP (gimple_call_clobbered_vars (cfun), 0, u, bi)
+  FOR_EACH_REFERENCED_VAR_IN_BITMAP (gimple_call_clobbered_vars (cfun), var, ri)
     {
-      tree var = referenced_var_lookup (u);
-      unsigned int escape_mask = var_ann (var)->escape_mask;
+      unsigned int escape_mask;
       tree real_var = var;
       bool not_read;
       bool not_written;
-      
+
+      escape_mask = var_ann (var)->escape_mask;
+
       /* Not read and not written are computed on regular vars, not
 	 subvars, so look at the parent var if this is an SFT. */
       if (TREE_CODE (var) == STRUCT_FIELD_TAG)
@@ -1863,10 +1864,10 @@ add_call_clobber_ops (tree stmt, tree callee)
 static void
 add_call_read_ops (tree stmt, tree callee)
 {
-  unsigned u;
-  bitmap_iterator bi;
+  referenced_var_iterator ri;
   stmt_ann_t s_ann = stmt_ann (stmt);
   bitmap not_read_b;
+  tree var;
 
   /* if the function is not pure, it may reference memory.  Add
      a VUSE for .GLOBAL_VAR if it has been created.  See add_referenced_var
@@ -1881,12 +1882,11 @@ add_call_read_ops (tree stmt, tree callee)
   not_read_b = callee ? ipa_reference_get_not_read_global (callee) : NULL; 
 
   /* Add a VUSE for each call-clobbered variable.  */
-  EXECUTE_IF_SET_IN_BITMAP (gimple_call_clobbered_vars (cfun), 0, u, bi)
+  FOR_EACH_REFERENCED_VAR_IN_BITMAP (gimple_call_clobbered_vars (cfun), var, ri)
     {
-      tree var = referenced_var (u);
       tree real_var = var;
       bool not_read;
-      
+
       clobber_stats.readonly_clobbers++;
 
       /* Not read and not written are computed on regular vars, not
@@ -2008,21 +2008,18 @@ get_asm_expr_operands (tree stmt)
   for (link = ASM_CLOBBERS (stmt); link; link = TREE_CHAIN (link))
     if (strcmp (TREE_STRING_POINTER (TREE_VALUE (link)), "memory") == 0)
       {
-	unsigned i;
-	bitmap_iterator bi;
+	referenced_var_iterator ri;
+	tree var;
 
 	s_ann->references_memory = true;
 
-	EXECUTE_IF_SET_IN_BITMAP (gimple_call_clobbered_vars (cfun), 0, i, bi)
-	  {
-	    tree var = referenced_var (i);
-	    add_stmt_operand (&var, s_ann, opf_def | opf_implicit);
-	  }
+	FOR_EACH_REFERENCED_VAR_IN_BITMAP (gimple_call_clobbered_vars (cfun),
+					   var, ri)
+	  add_stmt_operand (&var, s_ann, opf_def | opf_implicit);
 
-	EXECUTE_IF_SET_IN_BITMAP (gimple_addressable_vars (cfun), 0, i, bi)
+	FOR_EACH_REFERENCED_VAR_IN_BITMAP (gimple_addressable_vars (cfun),
+					   var, ri)
 	  {
-	    tree var = referenced_var (i);
-
 	    /* Subvars are explicitly represented in this list, so we
 	       don't need the original to be added to the clobber ops,
 	       but the original *will* be in this list because we keep

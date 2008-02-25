@@ -3313,12 +3313,11 @@ update_alias_info (tree stmt, struct alias_info *ai)
 	 call-clobbered.  */
       if (stmt_escape_type != NO_ESCAPE)
 	{
-	  bitmap_iterator bi;
-	  unsigned i;
+	  referenced_var_iterator ri;
+	  tree rvar;
 
-	  EXECUTE_IF_SET_IN_BITMAP (addr_taken, 0, i, bi)
+	  FOR_EACH_REFERENCED_VAR_IN_BITMAP (addr_taken, rvar, ri)
 	    {
-	      tree rvar = referenced_var (i);
 	      if (!unmodifiable_var_p (rvar))
 		mark_call_clobbered (rvar, stmt_escape_type);
 	    }
@@ -3476,8 +3475,8 @@ update_alias_info (tree stmt, struct alias_info *ai)
      memory reference stats for all memory symbols referenced by STMT.  */
   if (stmt_references_memory_p (stmt))
     {
-      unsigned i;
-      bitmap_iterator bi;
+      referenced_var_iterator ri;
+      tree sym;
 
       mem_ref_stats->num_mem_stmts++;
 
@@ -3504,9 +3503,8 @@ update_alias_info (tree stmt, struct alias_info *ai)
 	 memory symbols in its argument list, but these cases do not
 	 occur so frequently as to constitute a serious problem.  */
       if (STORED_SYMS (stmt))
-	EXECUTE_IF_SET_IN_BITMAP (STORED_SYMS (stmt), 0, i, bi)
+	FOR_EACH_REFERENCED_VAR_IN_BITMAP (STORED_SYMS (stmt), sym, ri)
 	  {
-	    tree sym = referenced_var (i);
 	    pointer_set_insert (ai->written_vars, sym);
 	    if (!stmt_dereferences_ptr_p
 		&& stmt_escape_type != ESCAPE_TO_CALL
@@ -3520,8 +3518,8 @@ update_alias_info (tree stmt, struct alias_info *ai)
 	  && stmt_escape_type != ESCAPE_TO_CALL
 	  && stmt_escape_type != ESCAPE_TO_PURE_CONST
 	  && stmt_escape_type != ESCAPE_TO_ASM)
-	EXECUTE_IF_SET_IN_BITMAP (LOADED_SYMS (stmt), 0, i, bi)
-	  update_mem_sym_stats_from_stmt (referenced_var (i), stmt, 1, 0);
+	FOR_EACH_REFERENCED_VAR_IN_BITMAP (LOADED_SYMS (stmt), sym, ri)
+	  update_mem_sym_stats_from_stmt (sym, stmt, 1, 0);
     }
 }
 
@@ -4881,8 +4879,6 @@ set_used_smts (void)
 static void
 merge_smts_into (tree p, bitmap solution)
 {
-  unsigned int i;
-  bitmap_iterator bi;
   tree smt;
   bitmap aliases;
   tree var = p;
@@ -4894,18 +4890,19 @@ merge_smts_into (tree p, bitmap solution)
   if (smt)
     {
       alias_set_type smtset = get_alias_set (TREE_TYPE (smt));
+      referenced_var_iterator ri;
+      tree newsmt;
 
       /* Need to set the SMT subsets first before this
 	 will work properly.  */
       bitmap_set_bit (solution, DECL_UID (smt));
-      EXECUTE_IF_SET_IN_BITMAP (used_smts, 0, i, bi)
+      FOR_EACH_REFERENCED_VAR_IN_BITMAP (used_smts, newsmt, ri)
 	{
-	  tree newsmt = referenced_var (i);
 	  tree newsmttype = TREE_TYPE (newsmt);
 
 	  if (alias_set_subset_of (get_alias_set (newsmttype),
 				   smtset))
-	    bitmap_set_bit (solution, i);
+	    bitmap_set_bit (solution, DECL_UID (newsmt));
 	}
 
       aliases = MTAG_ALIASES (smt);
