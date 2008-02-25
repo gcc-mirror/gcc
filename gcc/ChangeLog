@@ -1,5 +1,12 @@
 2008-02-25  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	PR fortran/29549
+	* doc/invoke.texi (-fcx-limited-range): Document new option.
+	* toplev.c (process_options): Handle -fcx-fortran-rules.
+        * common.opt: Add documentation for -fcx-fortran-rules.
+
+2008-02-25  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	PR c/35162
 	* doc/invoke.texi (-fcx-limited-range): Correct to be in line with
 	actual behaviour and C99.
