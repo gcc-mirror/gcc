@@ -1697,14 +1697,14 @@ $(T)crtbeginT.o: crtstuff.c $(GCC_PASSES) $(TCONFIG_H) auto-host.h \
 
 # Compile the start modules crt0.o and mcrt0.o that are linked with
 # every program
-crt0.o: s-crt0 ; @true
-mcrt0.o: s-crt0; @true
+$(T)crt0.o: s-crt0 ; @true
+$(T)mcrt0.o: s-crt0; @true
 
 s-crt0:	$(CRT0_S) $(MCRT0_S) $(GCC_PASSES) $(CONFIG_H)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(CRT0STUFF_T_CFLAGS) \
-	  -o crt0.o -c $(CRT0_S)
+	  -o $(T)crt0.o -c $(CRT0_S)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(CRT0STUFF_T_CFLAGS) \
-	  -o mcrt0.o -c $(MCRT0_S)
+	  -o $(T)mcrt0.o -c $(MCRT0_S)
 	$(STAMP) s-crt0
 #
 # Compiling object files from source files.

@@ -1,3 +1,23 @@
+2008-02-25  Jan Beulich  <jbeulich@novell.com>
+
+	* Makefile.in: Also prefix uses of crt0.o and mcrt0.o with
+	$(T).
+	* config/i386/netware-libgcc.exp: Add __bswap?i2,
+	__emultls_get_address, __emultls_register_common,
+	__floatundi?f, and _Unwind_GetIPInfo.
+	* config/i386/netware.c (gen_stdcall_or_fastcall_decoration):
+	Sync with config/i386/winnt.c:gen_stdcall_or_fastcall_suffix().
+	(gen_regparm_prefix): Likewise.
+	(i386_nlm_encode_section_info): Sync with
+	config/i386/winnt.c:i386_pe_encode_section_info().
+	(i386_nlm_maybe_mangle_decl_assembler_name): New.
+	i386_nlm_mangle_decl_assembler_name): New.
+	(netware_override_options): New.
+	* config/i386/netware.h (netware_override_options): Declare.
+	(OVERRIDE_OPTIONS): Re-define to netware_override_options.
+	(i386_nlm_mangle_decl_assembler_name): Declare.
+	(TARGET_MANGLE_DECL_ASSEMBLER_NAME): Define.
+
 2008-02-22  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/rs6000/linuxspe.h (SUBSUBTARGET_OVERRIDE_OPTIONS):
