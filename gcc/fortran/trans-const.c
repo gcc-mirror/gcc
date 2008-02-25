@@ -82,13 +82,21 @@ gfc_build_string_const (int length, const char *s)
 }
 
 /* Build a Fortran character constant from a zero-terminated string.
-   Since this is mainly used for error messages, the string will get
-   translated.  */
+   There a two version of this function, one that translates the string
+   and one that doesn't.  */
 tree
-gfc_build_cstring_const (const char *msgid)
+gfc_build_cstring_const (const char *string)
 {
-  return gfc_build_string_const (strlen (msgid) + 1, _(msgid));
+  return gfc_build_string_const (strlen (string) + 1, string);
 }
+
+tree
+gfc_build_localized_cstring_const (const char *msgid)
+{
+  const char *localized = _(msgid);
+  return gfc_build_string_const (strlen (localized) + 1, localized);
+}
+
 
 /* Return a string constant with the given length.  Used for static
    initializers.  The constant will be padded or truncated to match 
