@@ -1,3 +1,8 @@
+2008-02-20  Jason Merrill  <jason@redhat.com>
+
+	* include/bits/c++config: Use 'inline namespace' instead of 
+	strong using.
+
 2008-02-18  Pedro Lamarao <pedro.lamarao@mndfck.org>
 
 	* include/std/tuple: Fixes for moveable, non-copyable types.

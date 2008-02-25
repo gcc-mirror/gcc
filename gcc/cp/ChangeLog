@@ -1,3 +1,12 @@
+2008-02-24  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_declaration): Handle "inline namespace".
+	(cp_parser_namespace_definition): Likewise.
+
+	PR c++/33486
+	* name-lookup.c (arg_assoc_namespace): Look down into inline 
+	namespaces, too.
+
 2008-02-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* typeck.c (check_for_casting_away_constness): Use 1 single

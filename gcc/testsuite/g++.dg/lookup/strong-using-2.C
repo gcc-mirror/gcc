@@ -3,16 +3,14 @@
 // { dg-do compile }
 
 namespace foo {
-  namespace foo_impl {
+  inline namespace foo_impl {
     class T; // { dg-error "T" "" }
   }
-  using namespace foo_impl __attribute__((strong));
 }
 namespace bar {
-  namespace bar_impl {
+  inline namespace bar_impl {
     class T; // { dg-error "T" "" }
   }
-  using namespace bar_impl __attribute__((strong));
   using namespace foo;
 }
 namespace baz {
