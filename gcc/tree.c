@@ -110,12 +110,6 @@ static GTY(()) int next_decl_uid;
 /* Unique id for next type created.  */
 static GTY(()) int next_type_uid = 1;
 
-/* Mapping from unique DECL_UID to the decl tree node.  */
-static GTY ((if_marked ("ggc_marked_p"), param_is (union tree_node)))
-     htab_t decl_for_uid_map;
-
-static void insert_decl_to_uid_decl_map (tree);
-
 /* Since we cannot rehash a type after it is in the table, we have to
    keep the hash code.  */
 
@@ -236,9 +230,6 @@ init_ttree (void)
 					int_cst_hash_eq, NULL);
   
   int_cst_node = make_node (INTEGER_CST);
-
-  decl_for_uid_map = htab_create_ggc (4093, uid_decl_map_hash,
-				      uid_decl_map_eq, NULL);
 
   tree_contains_struct[FUNCTION_DECL][TS_DECL_NON_COMMON] = 1;
   tree_contains_struct[TRANSLATION_UNIT_DECL][TS_DECL_NON_COMMON] = 1;
@@ -610,7 +601,6 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 	}
       DECL_SOURCE_LOCATION (t) = input_location;
       DECL_UID (t) = next_decl_uid++;
-      insert_decl_to_uid_decl_map (t);
 
       break;
 
@@ -714,7 +704,6 @@ copy_node_stat (tree node MEM_STAT_DECL)
 	  SET_DECL_RESTRICT_BASE (t, DECL_GET_RESTRICT_BASE (node));
 	  DECL_BASED_ON_RESTRICT_P (t) = 1;
 	}
-      insert_decl_to_uid_decl_map (t);
     }
   else if (TREE_CODE_CLASS (code) == tcc_type)
     {
@@ -3336,70 +3325,6 @@ build_nt_call_list (tree fn, tree arglist)
   return t;
 }
 
-/* Return true if the DECL_UID in both trees are equal.  */
-
-int
-uid_decl_map_eq (const void *va, const void *vb)
-{
-  const_tree a = (const_tree) va;
-  const_tree b = (const_tree) vb;
-  return (a->decl_minimal.uid == b->decl_minimal.uid);
-}
-
-/* Hash a tree in a uid_decl_map.  */
-
-unsigned int
-uid_decl_map_hash (const void *item)
-{
-  return ((const_tree)item)->decl_minimal.uid;
-}
-
-/* Insert the declaration NODE into the map mapping its unique uid
-   back to the tree.  */
-
-static void
-insert_decl_to_uid_decl_map (tree node)
-{
-  void **slot;
-  struct tree_decl_minimal key;
-
-  key.uid = DECL_UID (node);
-  slot = htab_find_slot_with_hash (decl_for_uid_map,
-				   &key, DECL_UID (node), INSERT);
-
-  /* We should never try to re-insert a decl with the same uid.
-     ???  The C++ frontend breaks this invariant.  Hopefully in a
-     non-fatal way, so just overwrite the slot in this case.  */
-#if 0
-  gcc_assert (!*slot);
-#endif
-
-  *(tree *)slot = node;
-}
-
-/* Lookup the declaration tree from its unique DECL_UID UID.  Returns
-   the tree node with DECL_UID UID or NULL, if this node was collected.  */
-
-tree
-lookup_decl_from_uid (int uid)
-{
-  struct tree_decl_minimal key;
-
-  key.uid = uid;
-  return (tree) htab_find_with_hash (decl_for_uid_map, &key, uid);
-}
-
-/* Print out the statistics for the decl_for_uid_map hash table.  */
-
-static void
-print_decl_for_uid_map_statistics (void)
-{
-  fprintf (stderr, "DECL_FOR_UID_MAP hash: size %ld, %ld elements, %f collisions\n",
-	   (long) htab_size (decl_for_uid_map),
-	   (long) htab_elements (decl_for_uid_map),
-	   htab_collisions (decl_for_uid_map));
-}
-
 /* Create a DECL_... node of code CODE, name NAME and data type TYPE.
    We do NOT enter this node in any sort of symbol table.
 
@@ -6729,7 +6654,6 @@ dump_tree_statistics (void)
   print_debug_expr_statistics ();
   print_value_expr_statistics ();
   print_restrict_base_statistics ();
-  print_decl_for_uid_map_statistics ();
   lang_hooks.print_statistics ();
 }
 

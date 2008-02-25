@@ -138,8 +138,8 @@ struct mem_ref_stats_d GTY(())
    fields should have gimple_set accessor.  */
 struct gimple_df GTY(())
 {
-  /* Bitmap of all variables referenced in the function.  */
-  bitmap referenced_vars;
+  /* Array of all variables referenced in the function.  */
+  htab_t GTY((param_is (union tree_node))) referenced_vars;
 
   /* A list of all the noreturn calls passed to modify_stmt.
      cleanup_control_flow uses it to detect cases where a mid-block
@@ -569,29 +569,25 @@ struct int_tree_map GTY(())
 extern unsigned int int_tree_map_hash (const void *);
 extern int int_tree_map_eq (const void *, const void *);
 
+extern unsigned int uid_decl_map_hash (const void *);
+extern int uid_decl_map_eq (const void *, const void *);
+
 typedef struct 
 {
-  bitmap_iterator bi;
-  unsigned int i;
+  htab_iterator hti;
 } referenced_var_iterator;
 
+
 /* This macro loops over all the referenced vars, one at a time, putting the
-   current var in VAR.  Note:  It is undefined whether referenced variables
-   you add or remove during the iteration show up or not.  */
+   current var in VAR.  Note:  You are not allowed to add referenced variables
+   to the hashtable while using this macro.  Doing so may cause it to behave
+   erratically.  */
 
 #define FOR_EACH_REFERENCED_VAR(VAR, ITER) \
-  for (bmp_iter_set_init (&(ITER).bi, gimple_referenced_vars (cfun), 0, &(ITER).i); \
-       referenced_var_iterator_set (&(ITER), &(VAR)); \
-       bmp_iter_next (&(ITER).bi, &(ITER).i))
+  for ((VAR) = first_referenced_var (&(ITER)); \
+       !end_referenced_vars_p (&(ITER)); \
+       (VAR) = next_referenced_var (&(ITER))) 
 
-/* Iterate over all variables whose UID is set in the bitmap BM, putting the
-   current var in VAR.  Note: It is undefined whether variables you add or
-   remove during the iteration show up or not.  */
-
-#define FOR_EACH_REFERENCED_VAR_IN_BITMAP(BM, VAR, ITER) \
-  for (bmp_iter_set_init (&(ITER).bi, (BM), 0, &(ITER).i); \
-       referenced_var_iterator_set (&(ITER), &(VAR)); \
-       bmp_iter_next (&(ITER).bi, &(ITER).i))
 
 typedef struct
 {
@@ -613,7 +609,7 @@ typedef struct
 
 extern tree referenced_var_lookup (unsigned int);
 extern bool referenced_var_check_and_insert (tree);
-#define num_referenced_vars bitmap_count_bits (gimple_referenced_vars (cfun))
+#define num_referenced_vars htab_elements (gimple_referenced_vars (cfun))
 #define referenced_var(i) referenced_var_lookup (i)
 
 #define num_ssa_names (VEC_length (tree, cfun->gimple_df->ssa_names))
