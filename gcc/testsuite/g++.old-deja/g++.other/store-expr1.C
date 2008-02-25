@@ -2,7 +2,6 @@
 // { dg-require-effective-target ilp32 }
 // { dg-require-effective-target fpic }
 // { dg-options "-mtune=i686 -O2 -fpic" }
-// { dg-bogus "\[Uu\]nresolved symbol .(_GLOBAL_OFFSET_TABLE_|\[_.A-Za-z\]\[_.0-9A-Za-z\]*@(PLT|GOT|GOTOFF))|\[Bb\]ad fixup at .DATA.:" "PIC unsupported" { xfail *-*-netware* } 0 }
 class G {};
 
 struct N {

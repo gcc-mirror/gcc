@@ -23,4 +23,4 @@ foo (struct S *x)
 
 /* { dg-final { scan-assembler-not "movl\[ \t\]*123" } } */
 /* { dg-final { scan-assembler "movzbl\[ \t\]*123" } } */
-/* { dg-final { scan-assembler "movl\[ \t\]*120" } } */
+/* { dg-final { scan-assembler "mov(zb)?l\[ \t\]*120" } } */
