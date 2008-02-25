@@ -1,3 +1,8 @@
+2008-02-25  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* config/mips/mips.md (loadgp_blockage, blockage): Change type
+	to "ghost".
+
 2008-02-25  Richard Guenther  <rguenther@suse.de>
 
 	Revert:
