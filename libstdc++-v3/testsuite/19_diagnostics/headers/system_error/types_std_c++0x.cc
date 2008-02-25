@@ -57,7 +57,11 @@ namespace gnu
   using std::posix_error::filename_too_long;
   using std::posix_error::function_not_supported; 
   using std::posix_error::host_unreachable; 
+
+#ifdef _GLIBCXX_HAVE_EIDRM
   using std::posix_error::identifier_removed;
+#endif
+
   using std::posix_error::illegal_byte_sequence; 
   using std::posix_error::inappropriate_io_control_operation; 
   using std::posix_error::interrupted; 
@@ -139,7 +143,10 @@ namespace gnu
   using std::posix_error::stream_timeout; 
 #endif
 
+#ifdef _GLIBCXX_HAVE_ETXTBSY
   using std::posix_error::text_file_busy; 
+#endif
+
   using std::posix_error::timed_out; 
   using std::posix_error::too_many_files_open_in_system; 
   using std::posix_error::too_many_files_open; 

@@ -1440,6 +1440,26 @@ AC_DEFUN([GLIBCXX_CHECK_SYSTEM_ERROR], [
   if test x"$ac_system_error_13" = x"yes"; then
     AC_DEFINE(HAVE_ENOTSUP, 1, [Define if ENOTSUP exists.])
   fi
+
+  AC_MSG_CHECKING([for EIDRM])
+  AC_CACHE_VAL(ac_system_error_14, [
+  AC_TRY_COMPILE([#include <errno.h>], [ int i = EIDRM; ],
+             [ac_system_error_14=yes], [ac_system_error_14=no])
+  ])
+  AC_MSG_RESULT($ac_system_error_14)
+  if test x"$ac_system_error_14" = x"yes"; then
+    AC_DEFINE(HAVE_EIDRM, 1, [Define if EIDRM exists.])
+  fi
+
+  AC_MSG_CHECKING([for ETXTBSY])
+  AC_CACHE_VAL(ac_system_error_15, [
+  AC_TRY_COMPILE([#include <errno.h>], [ int i = ETXTBSY; ],
+             [ac_system_error_15=yes], [ac_system_error_15=no])
+  ])
+  AC_MSG_RESULT($ac_system_error_15)
+  if test x"$ac_system_error_15" = x"yes"; then
+    AC_DEFINE(HAVE_ETXTBSY, 1, [Define if ETXTBSY exists.])
+  fi
 ])
 
 dnl

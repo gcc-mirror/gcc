@@ -72,7 +72,11 @@ namespace posix_error
       filename_too_long = 			ENAMETOOLONG,
       function_not_supported = 			ENOSYS,
       host_unreachable = 			EHOSTUNREACH,
+
+#ifdef _GLIBCXX_HAVE_EIDRM
       identifier_removed = 			EIDRM,
+#endif
+
       illegal_byte_sequence = 			EILSEQ,
       inappropriate_io_control_operation = 	ENOTTY,
       interrupted = 				EINTR,
@@ -156,7 +160,10 @@ namespace posix_error
       stream_timeout = 				ETIME,
 #endif
 
+#ifdef _GLIBCXX_HAVE_ETXTBSY
       text_file_busy = 				ETXTBSY,
+#endif
+
       timed_out = 				ETIMEDOUT,
       too_many_files_open_in_system = 		ENFILE,
       too_many_files_open = 			EMFILE,

@@ -1,3 +1,12 @@
+2008-02-25  Jan Beulich  <jbeulich@novell.com>
+
+	* acinclude.m4: Also check for EIDRM and ETXTBSY.
+	* configure: Re-generate.
+	* config/os/generic/error_constants.h (namespace posix_error):
+	Also wrap uses of EIDRM and ETXTBSY in conditionals.
+	* testsuite/19_diagnostics/headers/system_error/types_std_c++0x.cc:
+	Likewise.
+
 2008-02-18  Pedro Lamarao <pedro.lamarao@mndfck.org>
 
 	* include/std/tuple: Fixes for moveable, non-copyable types.
