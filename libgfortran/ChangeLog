@@ -1,3 +1,10 @@
+2008-02-25  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/29549
+        * Makefile.am: Add -fcx-fortran-rules to AM_CFLAGS for all of
+        libgfortran.
+        * Makefile.in: Regenerated.
+
 2008-02-25  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* m4/ifunction_logical.m4: Add casts to get rid of warnings.
