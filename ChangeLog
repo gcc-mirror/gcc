@@ -1,3 +1,7 @@
+2008-02-25  Tomas Bily  <tbily@suse.cz>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2008-02-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* MAINTAINERS (OpenMP): Add myself.
