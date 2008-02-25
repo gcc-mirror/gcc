@@ -4753,6 +4753,23 @@ cse_insn (rtx insn, rtx libcall_insn)
 	      src_elt_cost = MAX_COST;
 	    }
 
+	  /* Avoid creation of overlapping memory moves.  */
+	  if (MEM_P (trial) && MEM_P (SET_DEST (sets[i].rtl)))
+	    {
+	      rtx src, dest;
+
+	      /* BLKmode moves are not handled by cse anyway.  */
+	      if (GET_MODE (trial) == BLKmode)
+		break;
+
+	      src = canon_rtx (trial);
+	      dest = canon_rtx (SET_DEST (sets[i].rtl));
+
+	      if (!MEM_P (src) || !MEM_P (dest)
+		  || !nonoverlapping_memrefs_p (src, dest))
+		break;
+	    }
+
 	  /* We don't normally have an insn matching (set (pc) (pc)), so
 	     check for this separately here.  We will delete such an
 	     insn below.

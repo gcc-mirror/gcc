@@ -164,7 +164,6 @@ static int aliases_everything_p (const_rtx);
 static bool nonoverlapping_component_refs_p (const_tree, const_tree);
 static tree decl_for_component_ref (tree);
 static rtx adjust_offset_for_component_ref (tree, rtx);
-static int nonoverlapping_memrefs_p (const_rtx, const_rtx);
 static int write_dependence_p (const_rtx, const_rtx, int);
 
 static void memory_modified_1 (rtx, const_rtx, void *);
@@ -1976,7 +1975,7 @@ adjust_offset_for_component_ref (tree x, rtx offset)
 /* Return nonzero if we can determine the exprs corresponding to memrefs
    X and Y and they do not overlap.  */
 
-static int
+int
 nonoverlapping_memrefs_p (const_rtx x, const_rtx y)
 {
   tree exprx = MEM_EXPR (x), expry = MEM_EXPR (y);

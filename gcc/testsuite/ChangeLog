@@ -1,3 +1,8 @@
+2008-02-25  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	PR target/35258
+	* gcc.dg/pr35258.c: New testcase.
+
 2008-02-25  Jan Beulich  <jbeulich@novell.com>
 
 	* gcc.dg/20020426-2.c: Remove bogus workaround.
