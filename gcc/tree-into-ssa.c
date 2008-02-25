@@ -1463,14 +1463,14 @@ dump_decl_set (FILE *file, bitmap set)
 {
   if (set)
     {
-      bitmap_iterator bi;
-      unsigned i;
+      referenced_var_iterator ri;
+      tree var;
 
       fprintf (file, "{ ");
 
-      EXECUTE_IF_SET_IN_BITMAP (set, 0, i, bi)
+      FOR_EACH_REFERENCED_VAR_IN_BITMAP (set, var, ri)
 	{
-	  print_generic_expr (file, referenced_var (i), 0);
+	  print_generic_expr (file, var, 0);
 	  fprintf (file, " ");
 	}
 
@@ -3201,12 +3201,11 @@ update_ssa (unsigned update_flags)
      memory symbols into the set MEM_SYMS_TO_RENAME.  */
   if (!bitmap_empty_p (syms_to_rename))
     {
-      unsigned i;
-      bitmap_iterator bi;
+      referenced_var_iterator ri;
+      tree sym;
 
-      EXECUTE_IF_SET_IN_BITMAP (syms_to_rename, 0, i, bi)
+      FOR_EACH_REFERENCED_VAR_IN_BITMAP (syms_to_rename, sym, ri)
 	{
-	  tree sym = referenced_var (i);
 	  if (is_gimple_reg (sym))
 	    bitmap_set_bit (regs_to_rename, i);
 	  else

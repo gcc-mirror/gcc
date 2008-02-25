@@ -390,8 +390,7 @@ mark_aliases_call_clobbered (tree tag, VEC (tree, heap) **worklist,
 			     bitmap on_worklist, bitmap queued)
 {
   bitmap aliases;
-  bitmap_iterator bi;
-  unsigned int i;
+  referenced_var_iterator ri;
   tree entry;
   var_ann_t ta = var_ann (tag);
 
@@ -401,9 +400,8 @@ mark_aliases_call_clobbered (tree tag, VEC (tree, heap) **worklist,
   if (!aliases)
     return;
 
-  EXECUTE_IF_SET_IN_BITMAP (aliases, 0, i, bi)
+  FOR_EACH_REFERENCED_VAR_IN_BITMAP (aliases, entry, ri)
     {
-      entry = referenced_var (i);
       /* If you clobber one part of a structure, you
 	 clobber the entire thing.  While this does not make
 	 the world a particularly nice place, it is necessary
@@ -420,9 +418,9 @@ mark_aliases_call_clobbered (tree tag, VEC (tree, heap) **worklist,
     }
   if (!bitmap_empty_p (queued))
     {
-      EXECUTE_IF_SET_IN_BITMAP (queued, 0, i, bi)
+      FOR_EACH_REFERENCED_VAR_IN_BITMAP (queued, entry, ri)
 	{
-	  subvar_t svars = get_subvars_for_var (referenced_var (i));
+	  subvar_t svars = get_subvars_for_var (entry);
 	  unsigned int i;
 	  tree subvar;
 
@@ -484,8 +482,7 @@ compute_tag_properties (void)
       for (k = 0; VEC_iterate (tree, taglist, k, tag); k++)
 	{
 	  bitmap ma;
-	  bitmap_iterator bi;
-	  unsigned int i;
+	  referenced_var_iterator ri;
 	  tree entry;
 	  bool tagcc = is_call_clobbered (tag);
 	  bool tagglobal = MTAG_GLOBAL (tag);
@@ -497,9 +494,8 @@ compute_tag_properties (void)
 	  if (!ma)
 	    continue;
 
-	  EXECUTE_IF_SET_IN_BITMAP (ma, 0, i, bi)
+	  FOR_EACH_REFERENCED_VAR_IN_BITMAP (ma, entry, ri)
 	    {
-	      entry = referenced_var (i);
 	      /* Call clobbered entries cause the tag to be marked
 		 call clobbered.  */
 	      if (!tagcc && is_call_clobbered (entry))
@@ -581,12 +577,10 @@ set_initial_properties (struct alias_info *ai)
 
 	  if (pi->pt_vars)
 	    {
-	      bitmap_iterator bi;
-	      unsigned int j;	      
-	      EXECUTE_IF_SET_IN_BITMAP (pi->pt_vars, 0, j, bi)
+	      referenced_var_iterator ri;
+	      tree alias;
+	      FOR_EACH_REFERENCED_VAR_IN_BITMAP (pi->pt_vars, alias, ri)
 		{
-		  tree alias = referenced_var (j);
-
 		  /* If you clobber one part of a structure, you
 		     clobber the entire thing.  While this does not make
 		     the world a particularly nice place, it is necessary
@@ -600,9 +594,9 @@ set_initial_properties (struct alias_info *ai)
 	      /* Process variables we need to clobber all parts of.  */
 	      if (!bitmap_empty_p (queued))
 		{
-		  EXECUTE_IF_SET_IN_BITMAP (queued, 0, j, bi)
+		  FOR_EACH_REFERENCED_VAR_IN_BITMAP (queued, alias, ri)
 		    {
-		      subvar_t svars = get_subvars_for_var (referenced_var (j));
+		      subvar_t svars = get_subvars_for_var (alias);
 		      unsigned int i;
 		      tree subvar;
 
@@ -1188,13 +1182,11 @@ find_partition_for (mem_sym_stats_t mp_p)
 static void
 rewrite_alias_set_for (tree tag, bitmap new_aliases)
 {
-  bitmap_iterator bi;
-  unsigned i;
+  referenced_var_iterator ri;
   tree mpt, sym;
 
-  EXECUTE_IF_SET_IN_BITMAP (MTAG_ALIASES (tag), 0, i, bi)
+  FOR_EACH_REFERENCED_VAR_IN_BITMAP (MTAG_ALIASES (tag), sym, ri)
     {
-      sym = referenced_var (i);
       mpt = memory_partition (sym);
       if (mpt)
 	bitmap_set_bit (new_aliases, DECL_UID (mpt));
@@ -1305,9 +1297,10 @@ estimate_vop_reduction (struct mem_ref_stats_d *mem_ref_stats,
 static void
 update_reference_counts (struct mem_ref_stats_d *mem_ref_stats)
 {
-  unsigned i;
-  bitmap_iterator bi;
+  referenced_var_iterator ri;
   mem_sym_stats_t sym_stats;
+  unsigned int i;
+  tree sym;
 
   for (i = 1; i < num_ssa_names; i++)
     {
@@ -1320,9 +1313,7 @@ update_reference_counts (struct mem_ref_stats_d *mem_ref_stats)
 	  && (pi = SSA_NAME_PTR_INFO (ptr)) != NULL
 	  && pi->is_dereferenced)
 	{
-	  unsigned j;
-	  bitmap_iterator bj;
-	  tree tag;
+	  tree tag, alias;
 	  mem_sym_stats_t ptr_stats, tag_stats;
 
 	  /* If PTR has flow-sensitive points-to information, use
@@ -1348,9 +1339,8 @@ update_reference_counts (struct mem_ref_stats_d *mem_ref_stats)
 	     TAG's alias set, add as many indirect references to ALIAS
 	     as direct references there are for TAG.  */
 	  if (MTAG_ALIASES (tag))
-	    EXECUTE_IF_SET_IN_BITMAP (MTAG_ALIASES (tag), 0, j, bj)
+	    FOR_EACH_REFERENCED_VAR_IN_BITMAP (MTAG_ALIASES (tag), alias, ri)
 	      {
-		tree alias = referenced_var (j);
 		sym_stats = get_mem_sym_stats_for (alias);
 
 		/* All the direct references to TAG are indirect references
@@ -1370,9 +1360,8 @@ update_reference_counts (struct mem_ref_stats_d *mem_ref_stats)
 
   /* Call-clobbered symbols are indirectly written at every
      call/asm site.  */
-  EXECUTE_IF_SET_IN_BITMAP (gimple_call_clobbered_vars (cfun), 0, i, bi)
+  FOR_EACH_REFERENCED_VAR_IN_BITMAP (gimple_call_clobbered_vars (cfun), sym, ri)
     {
-      tree sym = referenced_var (i);
       sym_stats = get_mem_sym_stats_for (sym);
       sym_stats->num_indirect_writes += mem_ref_stats->num_call_sites
 	                                + mem_ref_stats->num_asm_sites;
@@ -1381,9 +1370,8 @@ update_reference_counts (struct mem_ref_stats_d *mem_ref_stats)
   /* Addressable symbols are indirectly written at some ASM sites.
      Since only ASM sites that clobber memory actually affect
      addressable symbols, this is an over-estimation.  */
-  EXECUTE_IF_SET_IN_BITMAP (gimple_addressable_vars (cfun), 0, i, bi)
+  FOR_EACH_REFERENCED_VAR_IN_BITMAP (gimple_addressable_vars (cfun), sym, ri)
     {
-      tree sym = referenced_var (i);
       sym_stats = get_mem_sym_stats_for (sym);
       sym_stats->num_indirect_writes += mem_ref_stats->num_asm_sites;
     }
@@ -3482,14 +3470,12 @@ dump_may_aliases_for (FILE *file, tree var)
   aliases = MTAG_ALIASES (var);
   if (aliases)
     {
-      bitmap_iterator bi;
-      unsigned int i;
+      referenced_var_iterator ri;
       tree al;
 
       fprintf (file, "{ ");
-      EXECUTE_IF_SET_IN_BITMAP (aliases, 0, i, bi)
+      FOR_EACH_REFERENCED_VAR_IN_BITMAP (aliases, al, ri)
 	{
-	  al = referenced_var (i);
 	  print_generic_expr (file, al, dump_flags);
 	  fprintf (file, " ");
 	}
