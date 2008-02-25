@@ -2001,6 +2001,10 @@ process_options (void)
   if (flag_cx_limited_range)
     flag_complex_method = 0;
 
+  /* With -fcx-fortran-rules, we do something in-between cheap and C99.  */
+  if (flag_cx_fortran_rules)
+    flag_complex_method = 1;
+
   /* Targets must be able to place spill slots at lower addresses.  If the
      target already uses a soft frame pointer, the transition is trivial.  */
   if (!FRAME_GROWS_DOWNWARD && flag_stack_protect)
