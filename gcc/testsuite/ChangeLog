@@ -1,4 +1,11 @@
 2008-02-26  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* gcc.dg/Wswitch-enum-error.c: New.
+	* gcc.dg/Wswitch-error.c: New.
+	* gcc.dg/20011021-1.c: Use two directives to match two different
+	messages.
+	
+2008-02-26  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 	
 	PR 28322
 	* gcc.dg/pr28322.c: New.

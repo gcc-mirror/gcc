@@ -4329,10 +4329,12 @@ match_case_to_enum_1 (tree key, tree type, tree label)
 	      TREE_INT_CST_HIGH (key), TREE_INT_CST_LOW (key));
 
   if (TYPE_NAME (type) == 0)
-    warning (0, "%Jcase value %qs not in enumerated type",
+    warning (warn_switch ? OPT_Wswitch : OPT_Wswitch_enum,
+	     "%Jcase value %qs not in enumerated type",
 	     CASE_LABEL (label), buf);
   else
-    warning (0, "%Jcase value %qs not in enumerated type %qT",
+    warning (warn_switch ? OPT_Wswitch : OPT_Wswitch_enum,
+	     "%Jcase value %qs not in enumerated type %qT",
 	     CASE_LABEL (label), buf, type);
 }
 
@@ -4384,6 +4386,7 @@ c_do_switch_warnings (splay_tree cases, location_t switch_location,
   splay_tree_node default_node;
   splay_tree_node node;
   tree chain;
+  int saved_warn_switch;
 
   if (!warn_switch && !warn_switch_enum && !warn_switch_default)
     return;
@@ -4453,7 +4456,13 @@ c_do_switch_warnings (splay_tree cases, location_t switch_location,
       if (cond && tree_int_cst_compare (cond, value))
 	continue;
 
-      warning (0, "%Henumeration value %qE not handled in switch",
+      /* If there is a default_node, the only relevant option is
+	 Wswitch-enum. Otherwise, if both are enabled then we prefer
+	 to warn using -Wswitch because -Wswitch is enabled by -Wall
+	 while -Wswitch-enum is explicit.  */
+      warning ((default_node || !warn_switch) 
+	       ? OPT_Wswitch_enum : OPT_Wswitch,
+	       "%Henumeration value %qE not handled in switch",
 	       &switch_location, TREE_PURPOSE (chain));
     }
 
@@ -4465,7 +4474,17 @@ c_do_switch_warnings (splay_tree cases, location_t switch_location,
      we should have marked both the lower bound and upper bound of
      every disjoint case label, with CASE_LOW_SEEN and CASE_HIGH_SEEN
      above.  This scan also resets those fields.  */
+
+  /* If there is a default_node, the only relevant option is
+     Wswitch-enum. Otherwise, if both are enabled then we prefer
+     to warn using -Wswitch because -Wswitch is enabled by -Wall
+     while -Wswitch-enum is explicit.  */
+  saved_warn_switch = warn_switch;
+  if (default_node)
+    warn_switch = 0;
   splay_tree_foreach (cases, match_case_to_enum, type);
+  warn_switch = saved_warn_switch;
+
 }
 
 /* Finish an expression taking the address of LABEL (an

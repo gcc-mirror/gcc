@@ -1,3 +1,15 @@
+2008-02-26  Manuel Lopez-Ibanez <manu@gcc.gnu.org>
+
+	* c-common.c (match_case_to_enum_1): Add appropriate
+	OPT_W* parameter to warning.
+	(c_do_switch_warnings): Likewise.
+	* c-typeck.c (warning_init): Add one more parameter following
+	'warning' function.
+	(push_init_level): Update call to warning_init.
+	(pop_init_level): Likewise.
+	(add_pending_init): Likewise.
+	(output_init_element: Likewise.
+
 2008-02-26  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 28322

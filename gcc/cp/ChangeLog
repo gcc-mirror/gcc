@@ -1,3 +1,10 @@
+2008-02-26  Manuel Lopez-Ibanez <manu@gcc.gnu.org>
+	
+	* typeck.c (build_class_member_access_expr): Add appropriate
+	OPT_W* parameter to warning.
+	(build_reinterpret_cast_1): Likewise.
+	* name-lookup.c (push_overloaded_decl): Likewise.
+	
 2008-02-25  Paolo Carlini  <pcarlini@suse.de>
 
         PR c++/35333
