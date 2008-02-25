@@ -973,17 +973,18 @@ in this guide:
 
 @itemize @bullet
 @item
-@code{Functions}, @code{utility program names}, @code{standard names},
+@code{Functions}, @command{utility program names}, @code{standard names},
 and @code{classes}.
 
 @item
-@samp{Option flags}
+@option{Option flags}
 
 @item
-@file{File Names}, @file{button names}, and @file{field names}.
+@file{File names}, @samp{button names}, and @samp{field names}.
 
 @item
-@var{Variables}.
+@code{Variables}, @env{environment variables}, and @var{metasyntactic
+variables}.
 
 @item
 @emph{Emphasis}.
@@ -3000,9 +3001,10 @@ $ gnatmake ada_unit -largs file1.o file2.o --LINK=c++
 
 @item
 Using GNAT and G++ from two different GCC installations: If both
-compilers are on the PATH, the previous method may be used. It is
-important to note that environment variables such as C_INCLUDE_PATH,
-GCC_EXEC_PREFIX, BINUTILS_ROOT, and GCC_ROOT will affect both compilers
+compilers are on the @env{PATH}, the previous method may be used. It is
+important to note that environment variables such as
+@env{C_INCLUDE_PATH}, @env{GCC_EXEC_PREFIX}, @env{BINUTILS_ROOT}, and
+@env{GCC_ROOT} will affect both compilers
 at the same time and may make one of the two compilers operate
 improperly if set during invocation of the wrong compiler.  It is also
 very important that the linker uses the proper @file{libgcc.a} GCC
@@ -3610,7 +3612,7 @@ compiled.
 
 @cindex cannot generate code
 If you attempt to compile any of these files, you will get one of the
-following error messages (where fff is the name of the file you compiled):
+following error messages (where @var{fff} is the name of the file you compiled):
 
 @smallexample
 cannot generate code for file @var{fff} (package spec)
@@ -3810,7 +3812,7 @@ configuration pragmas @code{Assertion_Policy} and @code{Debug_Policy}.
 
 @item -gnatA
 @cindex @option{-gnatA} (@command{gcc})
-Avoid processing @file{gnat.adc}. If a gnat.adc file is present,
+Avoid processing @file{gnat.adc}. If a @file{gnat.adc} file is present,
 it will be ignored.
 
 @item -gnatb
@@ -7125,20 +7127,20 @@ Each directory named by an @option{^-I^/SOURCE_SEARCH^} switch given on the
 @item
 @findex ADA_PRJ_INCLUDE_FILE
 Each of the directories listed in the text file whose name is given
-by the @code{ADA_PRJ_INCLUDE_FILE} ^environment variable^logical name^.
+by the @env{ADA_PRJ_INCLUDE_FILE} ^environment variable^logical name^.
 
 @noindent
-@code{ADA_PRJ_INCLUDE_FILE} is normally set by gnatmake or by the ^gnat^GNAT^
+@env{ADA_PRJ_INCLUDE_FILE} is normally set by gnatmake or by the ^gnat^GNAT^
 driver when project files are used. It should not normally be set
 by other means.
 
 @item
 @findex ADA_INCLUDE_PATH
 Each of the directories listed in the value of the
-@code{ADA_INCLUDE_PATH} ^environment variable^logical name^.
+@env{ADA_INCLUDE_PATH} ^environment variable^logical name^.
 @ifclear vms
 Construct this value
-exactly as the @code{PATH} environment variable: a list of directory
+exactly as the @env{PATH} environment variable: a list of directory
 names separated by colons (semicolons when working with the NT version).
 @end ifclear
 @ifset vms
@@ -7645,7 +7647,7 @@ value 16#xx# (i.e. xx is a string of two hexadecimal digits).
 In addition, you can specify @option{-Sev} to indicate that the value is
 to be set at run time. In this case, the program will look for an environment
 @cindex GNAT_INIT_SCALARS
-variable of the form @code{GNAT_INIT_SCALARS=xx}, where xx is one
+variable of the form @env{GNAT_INIT_SCALARS=xx}, where xx is one
 of @option{in/lo/hi/xx} with the same meanings as above.
 If no environment variable is found, or if it does not have a valid value,
 then the default is @option{in} (invalid values).
@@ -8131,20 +8133,20 @@ command line, in the order given.
 @item
 @findex ADA_PRJ_OBJECTS_FILE
 Each of the directories listed in the text file whose name is given
-by the @code{ADA_PRJ_OBJECTS_FILE} ^environment variable^logical name^.
+by the @env{ADA_PRJ_OBJECTS_FILE} ^environment variable^logical name^.
 
 @noindent
-@code{ADA_PRJ_OBJECTS_FILE} is normally set by gnatmake or by the ^gnat^GNAT^
+@env{ADA_PRJ_OBJECTS_FILE} is normally set by gnatmake or by the ^gnat^GNAT^
 driver when project files are used. It should not normally be set
 by other means.
 
 @item
 @findex ADA_OBJECTS_PATH
 Each of the directories listed in the value of the
-@code{ADA_OBJECTS_PATH} ^environment variable^logical name^.
+@env{ADA_OBJECTS_PATH} ^environment variable^logical name^.
 @ifset unw
 Construct this value
-exactly as the @code{PATH} environment variable: a list of directory
+exactly as the @env{PATH} environment variable: a list of directory
 names separated by colons (semicolons when working with the NT version
 of GNAT).
 @end ifset
@@ -8364,9 +8366,9 @@ presented to the linker.
 
 @ifset vms
 @command{gnatlink} accepts the following types of extra files on the command
-line: objects (.OBJ), libraries (.OLB), sharable images (.EXE), and
-options files (.OPT). These are recognized and handled according to their
-extension.
+line: objects (@file{.OBJ}), libraries (@file{.OLB}), sharable images
+(@file{.EXE}), and options files (@file{.OPT}). These are recognized and
+handled according to their extension.
 @end ifset
 
 @node Switches for gnatlink
@@ -8592,7 +8594,7 @@ If @code{switches} are present, they can be placed before the first
 If @var{mode_switches} are present, they must always be placed after
 the last @var{file_name} and all @code{switches}.
 
-If you are using standard file extensions (.adb and .ads), then the
+If you are using standard file extensions (@file{.adb} and @file{.ads}), then the
 extension may be omitted from the @var{file_name} arguments. However, if
 you are using non-standard extensions, then it is required that the
 extension be given. A relative or absolute directory path can be
@@ -10977,7 +10979,7 @@ gnatname ^-Pprj -f"*.c"^/PROJECT_FILE=PRJ /FOREIGN_PATTERN=*.C^ "*.ada"
 @noindent
 will look for Ada units in all files with the @file{.ada} extension,
 and will add to the list of file for project @file{prj.gpr} the C files
-with extension ".^c^C^".
+with extension @file{.^c^C^}.
 
 @item ^-h^/HELP^
 @cindex @option{^-h^/HELP^} (@code{gnatname})
@@ -14770,12 +14772,14 @@ the search will be done for every library file in the search path.
 These file must appear only after the pattern or sourcefile.
 
 These file names are considered to be regular expressions, so for instance
-specifying 'source*.adb' is the same as giving every file in the current
-directory whose name starts with 'source' and whose extension is 'adb'.
+specifying @file{source*.adb} is the same as giving every file in the current
+directory whose name starts with @file{source} and whose extension is
+@file{adb}.
 
 The location of the spec of the entity will always be displayed, even if it
-isn't in one of file1, file2,@enddots{}  The occurrences of the entity in the
-separate units of the ones given on the command line will also be displayed.
+isn't in one of @file{file1}, @file{file2},@enddots{}  The occurrences
+of the entity in the separate units of the ones given on the command
+line will also be displayed.
 
 Note that if you specify at least one file in this part, @code{gnatfind} may
 sometimes not be able to find the body of the subprograms.
@@ -15069,10 +15073,11 @@ Following are a few examples:
 
 @table @samp
 @item abcde|fghi
-will match any of the two strings 'abcde' and 'fghi'.
+will match any of the two strings @samp{abcde} and @samp{fghi},
 
 @item abc*d
-will match any string like 'abd', 'abcd', 'abccd', 'abcccd', and so on
+will match any string like @samp{abd}, @samp{abcd}, @samp{abccd},
+@samp{abcccd}, and so on,
 
 @item [a-z]+
 will match any string which has only lowercase characters in it (and at
@@ -18226,7 +18231,7 @@ responsibility of the library provider to install the necessary sources, ALI
 files and libraries in the directories mentioned in the project file. For
 convenience, the user's library project file should be installed in a location
 that will be searched automatically by the GNAT
-builder. These are the directories referenced in the @code{ADA_PROJECT_PATH}
+builder. These are the directories referenced in the @env{ADA_PROJECT_PATH}
 environment variable (@pxref{Importing Projects}), and also the default GNAT
 library location that can be queried with @command{gnatls -v} and is usually of
 the form $gnat_install_root/lib/gnat.
@@ -18338,11 +18343,11 @@ when the following conditions are met:
 @itemize @bullet
 @item
 @file{/dir/my_lib_src} has been added by the user to the environment
-variable @code{ADA_INCLUDE_PATH}, or by the administrator to the file
+variable @env{ADA_INCLUDE_PATH}, or by the administrator to the file
 @file{ada_source_path}
 @item
 @file{/dir/my_lib_obj} has been added by the user to the environment
-variable @code{ADA_OBJECTS_PATH}, or by the administrator to the file
+variable @env{ADA_OBJECTS_PATH}, or by the administrator to the file
 @file{ada_object_path}
 @item
 a pragma @code{Linker_Options} has been added to one of the sources.
@@ -19566,7 +19571,7 @@ size stack is allocated, but this cannot be guaranteed.
 @ifclear vms
 To ensure that a clean exception is signalled for stack
 overflow, set the environment variable
-@code{GNAT_STACK_LIMIT} to indicate the maximum
+@env{GNAT_STACK_LIMIT} to indicate the maximum
 stack area that can be used, as in:
 @cindex GNAT_STACK_LIMIT
 
@@ -24950,8 +24955,8 @@ and can thus execute on multiple processors.
 The user can alternatively specify a processor on which the program should run
 to emulate a single-processor system. The multiprocessor / uniprocessor choice
 is made by
-setting the environment variable @code{GNAT_PROCESSOR}
-@cindex @code{GNAT_PROCESSOR} environment variable (on Sparc Solaris)
+setting the environment variable @env{GNAT_PROCESSOR}
+@cindex @env{GNAT_PROCESSOR} environment variable (on Sparc Solaris)
 to one of the following:
 
 @table @code
@@ -29933,14 +29938,14 @@ $ gnatmake winprog -largs -mwindows
 
 @noindent
 It is possible to control where temporary files gets created by setting
-the TMP environment variable. The file will be created:
+the @env{TMP} environment variable. The file will be created:
 
 @itemize
-@item Under the directory pointed to by the TMP environment variable if
+@item Under the directory pointed to by the @env{TMP} environment variable if
 this directory exists.
 
-@item Under c:\temp, if the TMP environment variable is not set (or not
-pointing to a directory) and if this directory exists.
+@item Under @file{c:\temp}, if the @env{TMP} environment variable is not
+set (or not pointing to a directory) and if this directory exists.
 
 @item Under the current working directory otherwise.
 @end itemize
