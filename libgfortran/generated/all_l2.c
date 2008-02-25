@@ -119,8 +119,9 @@ all_l2 (gfc_array_l2 * const restrict retarray,
     {
       if (rank != GFC_DESCRIPTOR_RANK (retarray))
 	runtime_error ("rank of return array incorrect in"
-		       " ALL intrinsic: is %d, should be %d",
-		       GFC_DESCRIPTOR_RANK (retarray), rank);
+		       " ALL intrinsic: is %ld, should be %ld",
+		       (long int) GFC_DESCRIPTOR_RANK (retarray),
+		       (long int) rank);
 
       if (compile_options.bounds_check)
 	{

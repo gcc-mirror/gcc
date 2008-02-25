@@ -119,8 +119,9 @@ count_16_l (gfc_array_i16 * const restrict retarray,
     {
       if (rank != GFC_DESCRIPTOR_RANK (retarray))
 	runtime_error ("rank of return array incorrect in"
-		       " COUNT intrinsic: is %d, should be %d",
-		       GFC_DESCRIPTOR_RANK (retarray), rank);
+		       " COUNT intrinsic: is %ld, should be %ld",
+		       (long int) GFC_DESCRIPTOR_RANK (retarray),
+		       (long int) rank);
 
       if (compile_options.bounds_check)
 	{

@@ -1,3 +1,22 @@
+2008-02-25  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* m4/ifunction_logical.m4: Add casts to get rid of warnings.
+	* generated/all_l1.c: Regenerate.
+	* generated/all_l2.c: Regenerate.
+	* generated/all_l4.c: Regenerate.
+	* generated/all_l8.c: Regenerate.
+	* generated/all_l16.c: Regenerate.
+	* generated/any_l1.c: Regenerate.
+	* generated/any_l2.c: Regenerate.
+	* generated/any_l4.c: Regenerate.
+	* generated/any_l8.c: Regenerate.
+	* generated/any_l16.c: Regenerate.
+	* generated/count_1_l.c: Regenerate.
+	* generated/count_2_l.c: Regenerate.
+	* generated/count_4_l.c: Regenerate.
+	* generated/count_8_l.c: Regenerate.
+	* generated/count_16_l.c: Regenerate.
+
 2008-02-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/32841

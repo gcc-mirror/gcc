@@ -119,8 +119,9 @@ any_l16 (gfc_array_l16 * const restrict retarray,
     {
       if (rank != GFC_DESCRIPTOR_RANK (retarray))
 	runtime_error ("rank of return array incorrect in"
-		       " ANY intrinsic: is %d, should be %d",
-		       GFC_DESCRIPTOR_RANK (retarray), rank);
+		       " ANY intrinsic: is %ld, should be %ld",
+		       (long int) GFC_DESCRIPTOR_RANK (retarray),
+		       (long int) rank);
 
       if (compile_options.bounds_check)
 	{
