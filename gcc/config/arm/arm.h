@@ -1106,6 +1106,7 @@ enum reg_class
   CC_REG,
   VFPCC_REG,
   GENERAL_REGS,
+  CORE_REGS,
   ALL_REGS,
   LIM_REG_CLASSES
 };
@@ -1131,6 +1132,7 @@ enum reg_class
   "CC_REG",		\
   "VFPCC_REG",		\
   "GENERAL_REGS",	\
+  "CORE_REGS",		\
   "ALL_REGS",		\
 }
 
@@ -1151,10 +1153,11 @@ enum reg_class
   { 0x000000FF, 0x00000000, 0x00000000, 0x00000000 }, /* LO_REGS */	\
   { 0x00002000, 0x00000000, 0x00000000, 0x00000000 }, /* STACK_REG */	\
   { 0x000020FF, 0x00000000, 0x00000000, 0x00000000 }, /* BASE_REGS */	\
-  { 0x0000FF00, 0x00000000, 0x00000000, 0x00000000 }, /* HI_REGS */	\
+  { 0x0000DF00, 0x00000000, 0x00000000, 0x00000000 }, /* HI_REGS */	\
   { 0x01000000, 0x00000000, 0x00000000, 0x00000000 }, /* CC_REG */	\
   { 0x00000000, 0x00000000, 0x00000000, 0x80000000 }, /* VFPCC_REG */	\
-  { 0x0200FFFF, 0x00000000, 0x00000000, 0x00000000 }, /* GENERAL_REGS */ \
+  { 0x0200DFFF, 0x00000000, 0x00000000, 0x00000000 }, /* GENERAL_REGS */ \
+  { 0x0200FFFF, 0x00000000, 0x00000000, 0x00000000 }, /* CORE_REGS */	\
   { 0xFAFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x7FFFFFFF }  /* ALL_REGS */	\
 }
 
@@ -1187,13 +1190,13 @@ enum reg_class
 
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS  (TARGET_THUMB1 ? LO_REGS : GENERAL_REGS)
-#define BASE_REG_CLASS   (TARGET_THUMB1 ? LO_REGS : GENERAL_REGS)
+#define BASE_REG_CLASS   (TARGET_THUMB1 ? LO_REGS : CORE_REGS)
 
 /* For the Thumb the high registers cannot be used as base registers
    when addressing quantities in QI or HI mode; if we don't know the
    mode, then we must be conservative.  */
 #define MODE_BASE_REG_CLASS(MODE)					\
-    (TARGET_32BIT ? GENERAL_REGS :					\
+    (TARGET_32BIT ? CORE_REGS :					\
      (((MODE) == SImode) ? BASE_REGS : LO_REGS))
 
 /* For Thumb we can not support SP+reg addressing, so we return LO_REGS
@@ -1213,7 +1216,8 @@ enum reg_class
 #define PREFERRED_RELOAD_CLASS(X, CLASS)		\
   (TARGET_ARM ? (CLASS) :				\
    ((CLASS) == GENERAL_REGS || (CLASS) == HI_REGS	\
-    || (CLASS) == NO_REGS ? LO_REGS : (CLASS)))
+    || (CLASS) == NO_REGS || (CLASS) == STACK_REG	\
+   ? LO_REGS : (CLASS)))
 
 /* Must leave BASE_REGS reloads alone */
 #define THUMB_SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, X)		\
@@ -1908,12 +1912,13 @@ typedef struct
 /* Nonzero if X can be the base register in a reg+reg addressing mode.
    For Thumb, we can not use SP + reg, so reject SP.  */
 #define REGNO_MODE_OK_FOR_REG_BASE_P(X, MODE)	\
-  REGNO_OK_FOR_INDEX_P (X)
+  REGNO_MODE_OK_FOR_BASE_P (X, QImode)
 
 /* For ARM code, we don't care about the mode, but for Thumb, the index
    must be suitable for use in a QImode load.  */
 #define REGNO_OK_FOR_INDEX_P(REGNO)	\
-  REGNO_MODE_OK_FOR_BASE_P (REGNO, QImode)
+  (REGNO_MODE_OK_FOR_BASE_P (REGNO, QImode) \
+   && !TEST_REGNO (REGNO, ==, STACK_POINTER_REGNUM))
 
 /* Maximum number of registers that can appear in a valid memory address.
    Shifts in addresses can't be by a register.  */
@@ -2051,6 +2056,13 @@ typedef struct
    || REGNO (X) == FRAME_POINTER_REGNUM		\
    || REGNO (X) == ARG_POINTER_REGNUM)
 
+#define ARM_REG_OK_FOR_INDEX_P(X)		\
+  ((REGNO (X) <= LAST_ARM_REGNUM		\
+    && REGNO (X) != STACK_POINTER_REGNUM)	\
+   || REGNO (X) >= FIRST_PSEUDO_REGISTER	\
+   || REGNO (X) == FRAME_POINTER_REGNUM		\
+   || REGNO (X) == ARG_POINTER_REGNUM)
+
 #define THUMB1_REG_MODE_OK_FOR_BASE_P(X, MODE)	\
   (REGNO (X) <= LAST_LO_REGNUM			\
    || REGNO (X) >= FIRST_PSEUDO_REGISTER	\
@@ -2066,6 +2078,9 @@ typedef struct
 #define ARM_REG_OK_FOR_BASE_P(X) 		\
   ARM_REGNO_OK_FOR_BASE_P (REGNO (X))
 
+#define ARM_REG_OK_FOR_INDEX_P(X) 		\
+  ARM_REGNO_OK_FOR_INDEX_P (REGNO (X))
+
 #define THUMB1_REG_MODE_OK_FOR_BASE_P(X, MODE)	\
   THUMB1_REGNO_MODE_OK_FOR_BASE_P (REGNO (X), MODE)
 
@@ -2079,8 +2094,6 @@ typedef struct
   (TARGET_THUMB1				\
    ? THUMB1_REG_MODE_OK_FOR_BASE_P (X, MODE)	\
    : ARM_REG_OK_FOR_BASE_P (X))
-
-#define ARM_REG_OK_FOR_INDEX_P(X) ARM_REG_OK_FOR_BASE_P (X)
 
 /* For 16-bit Thumb, a valid index register is anything that can be used in
    a byte load instruction.  */
@@ -2479,10 +2492,12 @@ extern int making_const_table;
 	rtx base = XEXP (X, 0);						\
 	rtx index = XEXP (X, 1);					\
 	HOST_WIDE_INT offset = 0;					\
-	if (GET_CODE (base) != REG)					\
+	if (GET_CODE (base) != REG					\
+	    || (GET_CODE (index) == REG && REGNO (index) == SP_REGNUM))	\
 	  {								\
 	    /* Ensure that BASE is a register.  */			\
             /* (one of them must be).  */				\
+	    /* Also ensure the SP is not used as in index register.  */ \
 	    rtx temp = base;						\
 	    base = index;						\
 	    index = temp;						\

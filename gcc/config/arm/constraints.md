@@ -20,8 +20,8 @@
 
 ;; The following register constraints have been used:
 ;; - in ARM/Thumb-2 state: f, t, v, w, x, y, z
-;; - in Thumb state: h, k, b
-;; - in both states: l, c
+;; - in Thumb state: h, b
+;; - in both states: l, c, k
 ;; In ARM state, 'l' is an alias for 'r'
 
 ;; The following normal constraints have been used:
@@ -65,9 +65,8 @@
 (define_register_constraint "h" "TARGET_THUMB ? HI_REGS : NO_REGS"
  "In Thumb state the core registers @code{r8}-@code{r15}.")
 
-(define_register_constraint "k" "TARGET_THUMB ? STACK_REG : NO_REGS"
- "@internal
-  Thumb only.  The stack register.")
+(define_register_constraint "k" "STACK_REG"
+ "@internal The stack register.")
 
 (define_register_constraint "b" "TARGET_THUMB ? BASE_REGS : NO_REGS"
  "@internal
