@@ -683,8 +683,8 @@ struct processor_costs ppce300c2c3_cost = {
   COSTS_N_INSNS (18),   /* sdiv */
   COSTS_N_INSNS (33),   /* ddiv */
   32,
-  32,			/* l1 cache */
-  256,			/* l2 cache */
+  16,			/* l1 cache */
+  16,			/* l2 cache */
   1,			/* prefetch streams /*/
 };
 

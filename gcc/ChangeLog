@@ -1,3 +1,9 @@
+2008-02-26  Edmar Wienskoski  <edmar@freescale.com>
+
+	* config/rs6000/rs6000.c (processor_costs): Update e300 cache
+	line sizes.
+	* doc/invoke.texi: Add e300c2 and e300c3 to list of cpus.
+
 2008-02-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35315
