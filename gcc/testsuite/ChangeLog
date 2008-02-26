@@ -1,5 +1,9 @@
 2008-02-25  Joseph Myers  <joseph@codesourcery.com>
 
+	* gcc.dg/debug/dwarf2/aranges-fnsec-1.c: Add -w to dg-options.
+
+2008-02-25  Joseph Myers  <joseph@codesourcery.com>
+
 	* gcc.dg/builtins-config.h: Disable C99 runtime testing for
 	Windows.
 
