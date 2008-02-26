@@ -22,4 +22,4 @@
 
 #pragma pack(push, foo, 3)      /* { dg-warning "small power of two" } */
 
-extern int blah;	/* prevent "ISO C forbids an empty source file" */
+extern int blah;	/* prevent "ISO C forbids an empty translation unit" */
