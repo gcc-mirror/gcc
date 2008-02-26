@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-typedef int aligned __attribute__((aligned(16)));
+typedef int aligned __attribute__((aligned));
 extern void abort (void);
 
 void
