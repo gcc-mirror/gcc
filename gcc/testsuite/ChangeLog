@@ -1,3 +1,9 @@
+2008-02-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_pthread_h): New.
+	* gcc.dg/pthread-init-1.c, gcc.dg/pthread-init-2.c: Use
+	dg-require-effective-target pthread_h.
+
 2008-02-22  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR C++/34715

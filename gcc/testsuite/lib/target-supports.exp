@@ -2212,6 +2212,14 @@ proc check_effective_target_wchar { } {
     }]
 }
 
+# Return 1 if the target has <pthread.h>.
+
+proc check_effective_target_pthread_h { } {
+    return [check_no_compiler_messages pthread_h assembly {
+	#include <pthread.h>
+    }]
+}
+
 # Add to FLAGS all the target-specific flags needed to access the c99 runtime.
 
 proc add_options_for_c99_runtime { flags } {
