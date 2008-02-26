@@ -1,5 +1,5 @@
 /* Basic block reordering routines for the GNU compiler.
-   Copyright (C) 2000, 2001, 2003, 2004, 2005, 2006, 2007
+   Copyright (C) 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -255,13 +255,8 @@ insn_locators_alloc (void)
   locations_locators_locs = VEC_alloc (int, heap, 32);
   locations_locators_vals = VEC_alloc (location_t, heap, 32);
 
-#ifdef USE_MAPPED_LOCATION
   last_location = -1;
   curr_location = -1;
-#else
-  last_location.line = -1;
-  curr_location.line = -1;
-#endif
   curr_block = NULL;
   last_block = NULL;
   curr_rtl_loc = 0;
@@ -284,15 +279,8 @@ set_curr_insn_source_location (location_t location)
      time locators are not initialized.  */
   if (curr_rtl_loc == -1)
     return;
-#ifdef USE_MAPPED_LOCATION
   if (location == last_location)
     return;
-#else
-  if (location.file && last_location.file
-      && !strcmp (location.file, last_location.file)
-      && location.line == last_location.line)
-    return;
-#endif
   curr_location = location;
 }
 
@@ -321,12 +309,7 @@ curr_insn_locator (void)
       VEC_safe_push (tree, gc, block_locators_blocks, curr_block);
       last_block = curr_block;
     }
-#ifdef USE_MAPPED_LOCATION
   if (last_location != curr_location)
-#else
-  if (last_location.file != curr_location.file
-      || last_location.line != curr_location.line)
-#endif
     {
       curr_rtl_loc++;
       VEC_safe_push (int, heap, locations_locators_locs, curr_rtl_loc);

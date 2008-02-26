@@ -1,6 +1,6 @@
 /* Top level of GCC compilers (cc1, cc1plus, etc.)
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -133,10 +133,6 @@ static const char **save_argv;
    If there isn't any there, then this is the cc1 input file name.  */
 
 const char *main_input_filename;
-
-#ifndef USE_MAPPED_LOCATION
-location_t unknown_location = { NULL, 0 };
-#endif
 
 /* Used to enable -fvar-tracking, -fweb and -frename-registers according
    to optimize and default_debug_hooks in process_options ().  */
@@ -962,11 +958,7 @@ warn_deprecated_use (tree node)
    INPUT_LOCATION accordingly.  */
 
 void
-#ifdef USE_MAPPED_LOCATION
 push_srcloc (location_t fline)
-#else
-push_srcloc (const char *file, int line)
-#endif
 {
   struct file_stack *fs;
 
@@ -977,12 +969,7 @@ push_srcloc (const char *file, int line)
   fs = XNEW (struct file_stack);
   fs->location = input_location;
   fs->next = input_file_stack;
-#ifdef USE_MAPPED_LOCATION
   input_location = fline;
-#else
-  input_filename = file;
-  input_line = line;
-#endif
   input_file_stack = fs;
   input_file_stack_tick++;
   VEC_safe_push (fs_p, heap, input_file_stack_history, input_file_stack);
@@ -1732,9 +1719,6 @@ process_options (void)
      sets the original filename if appropriate (e.g. foo.i -> foo.c)
      so we can correctly initialize debug output.  */
   no_backend = lang_hooks.post_options (&main_input_filename);
-#ifndef USE_MAPPED_LOCATION
-  input_filename = main_input_filename;
-#endif
 
 #ifdef OVERRIDE_OPTIONS
   /* Some machines may reject certain combinations of options.  */
@@ -2125,12 +2109,7 @@ lang_dependent_init (const char *name)
     dump_base_name = name && name[0] ? name : "gccdump";
 
   /* Other front-end initialization.  */
-#ifdef USE_MAPPED_LOCATION
   input_location = BUILTINS_LOCATION;
-#else
-  input_filename = "<built-in>";
-  input_line = 0;
-#endif
   if (lang_hooks.init () == 0)
     return 0;
   input_location = save_loc;

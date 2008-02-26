@@ -1,5 +1,5 @@
 /* Transformation Utilities for Loop Vectorization.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -2111,11 +2111,7 @@ vect_finish_stmt_generation (tree stmt, tree vec_stmt,
   /* Make sure bsi points to the stmt that is being vectorized.  */
   gcc_assert (stmt == bsi_stmt (*bsi));
 
-#ifdef USE_MAPPED_LOCATION
   SET_EXPR_LOCATION (vec_stmt, EXPR_LOCATION (stmt));
-#else
-  SET_EXPR_LOCUS (vec_stmt, EXPR_LOCUS (stmt));
-#endif
 }
 
 

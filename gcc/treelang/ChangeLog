@@ -1,3 +1,10 @@
+2008-02-26  Tom Tromey  <tromey@redhat.com>
+
+	* tree1.c (treelang_init): Remove old location code.
+	(treelang_parse_file): Likewise.
+	* lex.l (LINEMAP_POSITION_FOR_COLUMN): Remove.
+	(update_lineno_charno): Remove old location code.
+
 2008-02-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR other/35107

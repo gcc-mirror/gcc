@@ -2,7 +2,7 @@
    Called by GCC's toplev.c
 
    Copyright (C) 1986, 87, 89, 92-96, 1997, 1999, 2000, 2001, 2002, 2003, 2004,
-   2007  Free Software Foundation, Inc.
+   2007, 2008  Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -139,11 +139,7 @@ treelang_handle_option (size_t scode, const char *arg ATTRIBUTE_UNUSED,
 bool
 treelang_init (void)
 {
-#ifndef USE_MAPPED_LOCATION
-  input_filename = main_input_filename;
-#else
   linemap_add (line_table, LC_ENTER, false, main_input_filename, 1);
-#endif
 
   /* This error will not happen from GCC as it will always create a
      fake input file.  */
@@ -165,10 +161,8 @@ treelang_init (void)
       exit (1);
     }
 
-#ifdef USE_MAPPED_LOCATION
   linemap_add (line_table, LC_RENAME, false, "<built-in>", 1);
   linemap_line_start (line_table, 0, 1);
-#endif
 
   /* Init decls, etc.  */
   treelang_init_decl_processing ();
@@ -189,21 +183,15 @@ treelang_finish (void)
 void
 treelang_parse_file (int debug_flag ATTRIBUTE_UNUSED)
 {
-#ifdef USE_MAPPED_LOCATION
   source_location s;
   linemap_add (line_table, LC_RENAME, false, main_input_filename, 1);
   s = linemap_line_start (line_table, 1, 80);
   input_location = s;
-#else
-  input_line = 1;
-#endif
 
   treelang_debug ();
   yyparse ();
   cgraph_finalize_compilation_unit ();
-#ifdef USE_MAPPED_LOCATION
   linemap_add (line_table, LC_LEAVE, false, NULL, 0);
-#endif
   cgraph_optimize ();
 }
 

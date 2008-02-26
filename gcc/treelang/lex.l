@@ -5,7 +5,7 @@
    ---------------------------------------------------------------------
 
    Copyright (C) 1986, 87, 89, 92-96, 1997, 1999, 2000, 2001, 2002, 2003,
-   2004, 2005, 2007 Free Software Foundation, Inc.
+   2004, 2005, 2007, 2008 Free Software Foundation, Inc.
    
    This program is free software; you can redistribute it and/or modify it 
    under the terms of the GNU General Public License as published by the
@@ -59,10 +59,6 @@ static void dump_lex_value (int lexret);
    {fprintf (stderr, "\nlexer returning"); dump_lex_value (a);} return a;}
 #define NOT_RETURN(a) {update_yylval (a); if (option_lexer_trace)\
    {fprintf (stderr, "\nlexer swallowing"); dump_lex_value (a);}}
-#ifndef USE_MAPPED_LOCATION
-#undef LINEMAP_POSITION_FOR_COLUMN
-#define LINEMAP_POSITION_FOR_COLUMN(INPUT, LINETABLE, COL)
-#endif
 %}
 
 %option nostack
@@ -242,13 +238,9 @@ update_lineno_charno (void)
       {
          if ( yytext[yyl] == '\n' ) 
             {
-#ifdef USE_MAPPED_LOCATION
 	      source_location s = linemap_line_start (line_table, ++lineno,
 						      80);
 	      input_location = s;
-#else
-	      input_line = ++lineno;
-#endif
 	      next_tree_charno = 1;
             } 
          else 

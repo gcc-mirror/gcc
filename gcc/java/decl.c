@@ -1,7 +1,7 @@
 /* Process declarations and variables for the GNU compiler for the
    Java(TM) language.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2007,
-   2005, 2006, 2007 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1851,12 +1851,7 @@ finish_method (tree fndecl)
     set_cfun (DECL_STRUCT_FUNCTION (fndecl));
   else
     allocate_struct_function (fndecl, false);
-#ifdef USE_MAPPED_LOCATION
   cfun->function_end_locus = DECL_FUNCTION_LAST_LINE (fndecl);
-#else
-  cfun->function_end_locus.file = DECL_SOURCE_FILE (fndecl);
-  cfun->function_end_locus.line = DECL_FUNCTION_LAST_LINE (fndecl);
-#endif
 
   /* Defer inlining and expansion to the cgraph optimizers.  */
   cgraph_finalize_function (fndecl, false);

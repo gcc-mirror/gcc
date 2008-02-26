@@ -412,11 +412,9 @@ internal_error_function (const char *msgid, va_list *ap)
   fp.Array = buffer;
 
   s = expand_location (input_location);
-#ifdef USE_MAPPED_LOCATION
   if (flag_show_column && s.column != 0)
     asprintf (&loc, "%s:%d:%d", s.file, s.line, s.column);
   else
-#endif
     asprintf (&loc, "%s:%d", s.file, s.line);
   temp_loc.Low_Bound = 1;
   temp_loc.High_Bound = strlen (loc);

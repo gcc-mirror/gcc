@@ -1,6 +1,6 @@
 /* Process expressions for the GNU compiler for the Java(TM) language.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3218,11 +3218,7 @@ expand_byte_code (JCF *jcf, tree method)
 	      if (pc == PC)
 		{
 		  int line = GET_u2 (linenumber_pointer - 2);
-#ifdef USE_MAPPED_LOCATION
 		  input_location = linemap_line_start (line_table, line, 1);
-#else
-		  input_location.line = line;
-#endif
 		  if (!(instruction_bits[PC] & BCODE_HAS_MULTI_LINENUMBERS))
 		    break;
 		}

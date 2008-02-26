@@ -276,10 +276,8 @@ gfc_be_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 static bool
 gfc_init (void)
 {
-#ifdef USE_MAPPED_LOCATION
   linemap_add (line_table, LC_ENTER, false, gfc_source_file, 1);
   linemap_add (line_table, LC_RENAME, false, "<built-in>", 0);
-#endif
 
   /* First initialize the backend.  */
   gfc_init_decl_processing ();

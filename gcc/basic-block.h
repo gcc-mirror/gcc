@@ -1,6 +1,6 @@
 /* Define control and data flow tables, and regsets.
    Copyright (C) 1987, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -130,7 +130,7 @@ struct edge_def GTY(())
   PTR GTY ((skip (""))) aux;
 
   /* Location of any goto implicit in the edge, during tree-ssa.  */
-  source_locus goto_locus;
+  location_t goto_locus;
 
   /* The index number corresponding to this edge in the edge vector
      dest->preds.  */

@@ -1,6 +1,6 @@
 /* Tree lowering pass.  Lowers GIMPLE into unstructured form.
 
-   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -108,11 +108,7 @@ lower_function_body (void)
 	 It now fills in for many such returns.  Failure to remove this
 	 will result in incorrect results for coverage analysis.  */
       x = TREE_VALUE (t);
-#ifdef USE_MAPPED_LOCATION
       SET_EXPR_LOCATION (x, UNKNOWN_LOCATION);
-#else
-      SET_EXPR_LOCUS (x, NULL);
-#endif
       tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
     }
 

@@ -100,11 +100,7 @@ DEF_VEC_ALLOC_P (cp_token_position,heap);
 static cp_token eof_token =
 {
   CPP_EOF, RID_MAX, 0, PRAGMA_NONE, 0, 0, false, 0, { NULL },
-#if USE_MAPPED_LOCATION
   0
-#else
-  {0, 0}
-#endif
 };
 
 /* The cp_lexer structure represents the C++ lexer.  It is responsible
@@ -7206,10 +7202,7 @@ check_empty_body (cp_parser* parser, const char* type)
 
   semi_loc =  expand_location (token->location);
   if (close_loc.line == semi_loc.line
-#ifdef USE_MAPPED_LOCATION
-      && close_loc.column+1 == semi_loc.column
-#endif
-      )
+      && close_loc.column+1 == semi_loc.column)
     warning (OPT_Wempty_body,
 	     "suggest a space before %<;%> or explicit braces around empty "
 	     "body in %<%s%> statement",

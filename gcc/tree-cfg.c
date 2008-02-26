@@ -628,20 +628,10 @@ make_cond_expr_edges (basic_block bb)
   else_bb = label_to_block (else_label);
 
   e = make_edge (bb, then_bb, EDGE_TRUE_VALUE);
-#ifdef USE_MAPPED_LOCATION
   e->goto_locus = EXPR_LOCATION (COND_EXPR_THEN (entry));
-#else
-  e->goto_locus = EXPR_LOCUS (COND_EXPR_THEN (entry));
-#endif
   e = make_edge (bb, else_bb, EDGE_FALSE_VALUE);
   if (e)
-    {
-#ifdef USE_MAPPED_LOCATION
-      e->goto_locus = EXPR_LOCATION (COND_EXPR_ELSE (entry));
-#else
-      e->goto_locus = EXPR_LOCUS (COND_EXPR_ELSE (entry));
-#endif
-    }
+    e->goto_locus = EXPR_LOCATION (COND_EXPR_ELSE (entry));
 
   /* We do not need the gotos anymore.  */
   COND_EXPR_THEN (entry) = NULL_TREE;
@@ -835,11 +825,7 @@ make_goto_expr_edges (basic_block bb)
     {
       tree dest = GOTO_DESTINATION (goto_t);
       edge e = make_edge (bb, label_to_block (dest), EDGE_FALLTHRU);
-#ifdef USE_MAPPED_LOCATION
       e->goto_locus = EXPR_LOCATION (goto_t);
-#else
-      e->goto_locus = EXPR_LOCUS (goto_t);
-#endif
       bsi_remove (&last, true);
       return;
     }
@@ -1993,11 +1979,7 @@ static void
 remove_bb (basic_block bb)
 {
   block_stmt_iterator i;
-#ifdef USE_MAPPED_LOCATION
   source_location loc = UNKNOWN_LOCATION;
-#else
-  source_locus loc = 0;
-#endif
 
   if (dump_file)
     {
@@ -2065,15 +2047,8 @@ remove_bb (basic_block bb)
 	     program that are indeed unreachable.  */
 	  if (TREE_CODE (stmt) != GOTO_EXPR && EXPR_HAS_LOCATION (stmt) && !loc)
 	    {
-#ifdef USE_MAPPED_LOCATION
 	      if (EXPR_HAS_LOCATION (stmt))
 		loc = EXPR_LOCATION (stmt);
-#else
-	      source_locus t;
-	      t = EXPR_LOCUS (stmt);
-	      if (t && LOCATION_LINE (*t) > 0)
-		loc = t;
-#endif
 	    }
 	}
     }
@@ -2082,13 +2057,8 @@ remove_bb (basic_block bb)
      block is unreachable.  We walk statements backwards in the
      loop above, so the last statement we process is the first statement
      in the block.  */
-#ifdef USE_MAPPED_LOCATION
   if (loc > BUILTINS_LOCATION && LOCATION_LINE (loc) > 0)
     warning (OPT_Wunreachable_code, "%Hwill never be executed", &loc);
-#else
-  if (loc)
-    warning (OPT_Wunreachable_code, "%Hwill never be executed", loc);
-#endif
 
   remove_phi_nodes_and_edges_for_unreachable_block (bb);
   bb->il.tree = NULL;
@@ -6990,11 +6960,7 @@ gimplify_build1 (block_stmt_iterator *bsi, enum tree_code code, tree type,
 static unsigned int
 execute_warn_function_return (void)
 {
-#ifdef USE_MAPPED_LOCATION
   source_location location;
-#else
-  location_t *locus;
-#endif
   tree last;
   edge e;
   edge_iterator ei;
@@ -7003,31 +6969,17 @@ execute_warn_function_return (void)
   if (TREE_THIS_VOLATILE (cfun->decl)
       && EDGE_COUNT (EXIT_BLOCK_PTR->preds) > 0)
     {
-#ifdef USE_MAPPED_LOCATION
       location = UNKNOWN_LOCATION;
-#else
-      locus = NULL;
-#endif
       FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
 	{
 	  last = last_stmt (e->src);
 	  if (TREE_CODE (last) == RETURN_EXPR
-#ifdef USE_MAPPED_LOCATION
 	      && (location = EXPR_LOCATION (last)) != UNKNOWN_LOCATION)
-#else
-	      && (locus = EXPR_LOCUS (last)) != NULL)
-#endif
 	    break;
 	}
-#ifdef USE_MAPPED_LOCATION
       if (location == UNKNOWN_LOCATION)
 	location = cfun->function_end_locus;
       warning (0, "%H%<noreturn%> function does return", &location);
-#else
-      if (!locus)
-	locus = &cfun->function_end_locus;
-      warning (0, "%H%<noreturn%> function does return", locus);
-#endif
     }
 
   /* If we see "return;" in some basic block, then we do reach the end
@@ -7044,17 +6996,10 @@ execute_warn_function_return (void)
 	      && TREE_OPERAND (last, 0) == NULL
 	      && !TREE_NO_WARNING (last))
 	    {
-#ifdef USE_MAPPED_LOCATION
 	      location = EXPR_LOCATION (last);
 	      if (location == UNKNOWN_LOCATION)
 		  location = cfun->function_end_locus;
 	      warning (OPT_Wreturn_type, "%Hcontrol reaches end of non-void function", &location);
-#else
-	      locus = EXPR_LOCUS (last);
-	      if (!locus)
-		locus = &cfun->function_end_locus;
-	      warning (OPT_Wreturn_type, "%Hcontrol reaches end of non-void function", locus);
-#endif
 	      TREE_NO_WARNING (cfun->decl) = 1;
 	      break;
 	    }

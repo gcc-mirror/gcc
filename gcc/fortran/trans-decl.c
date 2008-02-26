@@ -224,12 +224,7 @@ gfc_get_return_label (void)
 void
 gfc_set_decl_location (tree decl, locus * loc)
 {
-#ifdef USE_MAPPED_LOCATION
   DECL_SOURCE_LOCATION (decl) = loc->lb->location;
-#else
-  DECL_SOURCE_LINE (decl) = loc->lb->linenum;
-  DECL_SOURCE_FILE (decl) = loc->lb->file->filename;
-#endif
 }
 
 

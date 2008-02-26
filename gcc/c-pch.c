@@ -1,5 +1,5 @@
 /* Precompiled header implementation for the C languages.
-   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -410,16 +410,7 @@ c_common_read_pch (cpp_reader *pfile, const char *name,
     }
 
   /* Save the location and then restore it after reading the PCH.  */
-#ifdef USE_MAPPED_LOCATION
   saved_loc = expand_location (line_table->highest_line);
-#else
-  {
-    const struct line_map *map = linemap_lookup (line_table,
-						 line_table->highest_line);
-    saved_loc.file = map->to_file;
-    saved_loc.line = SOURCE_LINE (map, line_table->highest_line);
-  }
-#endif
 
   cpp_prepare_state (pfile, &smd);
 

@@ -2760,12 +2760,7 @@ c_init_decl_processing (void)
   /* Declarations from c_common_nodes_and_builtins must not be associated
      with this input file, lest we get differences between using and not
      using preprocessed headers.  */
-#ifdef USE_MAPPED_LOCATION
   input_location = BUILTINS_LOCATION;
-#else
-  input_location.file = "<built-in>";
-  input_location.line = 0;
-#endif
 
   build_common_tree_nodes (flag_signed_char, false);
 
@@ -6721,7 +6716,6 @@ finish_function (void)
 	  if (flag_isoc99)
 	    {
 	      tree stmt = c_finish_return (integer_zero_node);
-#ifdef USE_MAPPED_LOCATION
 	      /* Hack.  We don't want the middle-end to warn that this return
 		 is unreachable, so we mark its location as special.  Using
 		 UNKNOWN_LOCATION has the problem that it gets clobbered in
@@ -6729,12 +6723,6 @@ finish_function (void)
 		 ensure ! should_carry_locus_p (stmt), but that needs a flag.
 	      */
 	      SET_EXPR_LOCATION (stmt, BUILTINS_LOCATION);
-#else
-	      /* Hack.  We don't want the middle-end to warn that this
-		 return is unreachable, so put the statement on the
-		 special line 0.  */
-	      annotate_with_file_line (stmt, input_filename, 0);
-#endif
 	    }
 	}
     }

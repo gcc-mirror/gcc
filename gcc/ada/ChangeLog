@@ -1,3 +1,10 @@
+2008-02-26  Tom Tromey  <tromey@redhat.com>
+
+	* misc.c (internal_error_function): Remove test of
+	USE_MAPPED_LOCATION.
+	* trans.c (gigi): Remove test of USE_MAPPED_LOCATION.
+	(Sloc_to_locus): Remove old location code.
+
 2008-02-25  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* gnat_rm.texi, gnat_ugn.texi: Fix spacing after `e.g.' and

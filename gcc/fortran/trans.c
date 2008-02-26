@@ -382,11 +382,7 @@ gfc_trans_runtime_check (tree cond, stmtblock_t * pblock, locus * where,
 
   if (where)
     {
-#ifdef USE_MAPPED_LOCATION
       line = LOCATION_LINE (where->lb->location);
-#else 
-      line = where->lb->linenum;
-#endif
       asprintf (&message, "At line %d of file %s",  line,
 		where->lb->file->filename);
     }
@@ -940,11 +936,7 @@ void
 gfc_get_backend_locus (locus * loc)
 {
   loc->lb = gfc_getmem (sizeof (gfc_linebuf));    
-#ifdef USE_MAPPED_LOCATION
   loc->lb->location = input_location;
-#else
-  loc->lb->linenum = input_line;
-#endif
   loc->lb->file = gfc_current_backend_file;
 }
 
@@ -955,12 +947,7 @@ void
 gfc_set_backend_locus (locus * loc)
 {
   gfc_current_backend_file = loc->lb->file;
-#ifdef USE_MAPPED_LOCATION
   input_location = loc->lb->location;
-#else
-  input_line = loc->lb->linenum;
-  input_filename = loc->lb->file->filename;
-#endif
 }
 
 

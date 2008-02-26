@@ -1,6 +1,6 @@
 /* Mainly the interface between cpplib and the C front ends.
    Copyright (C) 1987, 1988, 1989, 1992, 1994, 1995, 1996, 1997
-   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -190,15 +190,7 @@ cb_line_change (cpp_reader * ARG_UNUSED (pfile), const cpp_token *token,
 		int parsing_args)
 {
   if (token->type != CPP_EOF && !parsing_args)
-#ifdef USE_MAPPED_LOCATION
     input_location = token->src_loc;
-#else
-    {
-      source_location loc = token->src_loc;
-      const struct line_map *map = linemap_lookup (line_table, loc);
-      input_line = SOURCE_LINE (map, loc);
-    }
-#endif
 }
 
 void
@@ -213,17 +205,10 @@ fe_file_change (const struct line_map *new_map)
 	 we already did in compile_file.  */
       if (!MAIN_FILE_P (new_map))
 	{
-#ifdef USE_MAPPED_LOCATION
 	  int included_at = LAST_SOURCE_LINE_LOCATION (new_map - 1);
 
 	  input_location = included_at;
 	  push_srcloc (new_map->start_location);
-#else
-	  int included_at = LAST_SOURCE_LINE (new_map - 1);
-
-	  input_line = included_at;
-	  push_srcloc (new_map->to_file, 1);
-#endif
 	  (*debug_hooks->start_source_file) (included_at, new_map->to_file);
 #ifndef NO_IMPLICIT_EXTERN_C
 	  if (c_header_level)
@@ -253,12 +238,7 @@ fe_file_change (const struct line_map *new_map)
 
   update_header_times (new_map->to_file);
   in_system_header = new_map->sysp != 0;
-#ifdef USE_MAPPED_LOCATION
   input_location = new_map->start_location;
-#else
-  input_filename = new_map->to_file;
-  input_line = new_map->to_line;
-#endif
 }
 
 static void
@@ -271,14 +251,7 @@ cb_def_pragma (cpp_reader *pfile, source_location loc)
     {
       const unsigned char *space, *name;
       const cpp_token *s;
-#ifndef USE_MAPPED_LOCATION
-      location_t fe_loc;
-      const struct line_map *map = linemap_lookup (line_table, loc);
-      fe_loc.file = map->to_file;
-      fe_loc.line = SOURCE_LINE (map, loc);
-#else
       location_t fe_loc = loc;
-#endif
 
       space = name = (const unsigned char *) "";
       s = cpp_get_token (pfile);
@@ -329,12 +302,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 
   timevar_push (TV_CPP);
  retry:
-#ifdef USE_MAPPED_LOCATION
   tok = cpp_get_token_with_location (parse_in, loc);
-#else
-  tok = cpp_get_token (parse_in);
-  *loc = input_location;
-#endif
   type = tok->type;
 
  retry_after_at:
@@ -381,19 +349,11 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
       /* An @ may give the next token special significance in Objective-C.  */
       if (c_dialect_objc ())
 	{
-#ifdef USE_MAPPED_LOCATION
 	  location_t atloc = *loc;
 	  location_t newloc;
-#else
-	  location_t atloc = input_location;
-#endif
 
 	retry_at:
-#ifdef USE_MAPPED_LOCATION
 	  tok = cpp_get_token_with_location (parse_in, &newloc);
-#else
-	  tok = cpp_get_token (parse_in);
-#endif
 	  type = tok->type;
 	  switch (type)
 	    {
@@ -417,9 +377,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 	    default:
 	      /* ... or not.  */
 	      error ("%Hstray %<@%> in program", &atloc);
-#ifdef USE_MAPPED_LOCATION
 	      *loc = newloc;
-#endif
 	      goto retry_after_at;
 	    }
 	  break;

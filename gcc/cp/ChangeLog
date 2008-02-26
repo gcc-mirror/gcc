@@ -1,3 +1,19 @@
+2008-02-26  Tom Tromey  <tromey@redhat.com>
+
+	* parser.c (eof_token): Remove old location code.
+	(check_empty_body): Remove test of USE_MAPPED_LOCATION.
+	* decl2.c (generate_ctor_or_dtor_function): Remove old location
+	code.
+	(cp_write_global_declarations): Likewise.
+	* lex.c (cxx_init): Remove old location code.
+	(handle_pragma_implementation): Remove test of
+	USE_MAPPED_LOCATION.
+	* pt.c (tsubst): Remove old location code.
+	* error.c (cp_print_error_function): Remove test of
+	USE_MAPPED_LOCATION.
+	* decl.c (pop_label): Remove old location code.
+	(finish_function): Likewise.
+
 2008-02-26  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR 26264

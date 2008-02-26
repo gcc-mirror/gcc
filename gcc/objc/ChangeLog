@@ -1,3 +1,7 @@
+2008-02-26  Tom Tromey  <tromey@redhat.com>
+
+	* objc-act.c (objc_init): Remove old location code.
+
 2008-02-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR other/35107

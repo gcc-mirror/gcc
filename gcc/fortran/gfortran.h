@@ -713,11 +713,7 @@ typedef struct gfc_file
 
 typedef struct gfc_linebuf
 {
-#ifdef USE_MAPPED_LOCATION
   source_location location;
-#else
-  int linenum;
-#endif
   struct gfc_file *file;
   struct gfc_linebuf *next;
 
@@ -729,11 +725,7 @@ typedef struct gfc_linebuf
 
 #define gfc_linebuf_header_size (offsetof (gfc_linebuf, line))
 
-#ifdef USE_MAPPED_LOCATION
 #define gfc_linebuf_linenum(LBUF) (LOCATION_LINE ((LBUF)->location))
-#else
-#define gfc_linebuf_linenum(LBUF) ((LBUF)->linenum)
-#endif
 
 typedef struct
 {
