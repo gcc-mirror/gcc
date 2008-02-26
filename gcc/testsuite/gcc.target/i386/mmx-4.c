@@ -184,7 +184,11 @@ dump64_64 (char *buf, char *name, vecInWord x)
   sprintf (p, "%s ", name);
   p += strlen (p);
 
+#if defined(_WIN32) && !defined(__CYGWIN__)
+  sprintf (p, "%16.16I64x\n", x.t);
+#else
   sprintf (p, "%16.16llx\n", x.t);
+#endif
 }
 
 int

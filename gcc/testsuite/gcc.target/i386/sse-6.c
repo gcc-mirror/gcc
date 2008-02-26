@@ -229,7 +229,11 @@ dump128_64 (char *buf, char *name, vecInLong x)
 
   for (i=0; i<2; i++)
     {
+#if defined(_WIN32) && !defined(__CYGWIN__)
+      sprintf (p, "%16.16I64x ", x.u[i]);
+#else
       sprintf (p, "%16.16llx ", x.u[i]);
+#endif
       p += strlen (p);
     }
   strcat (p, "\n");
