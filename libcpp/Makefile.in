@@ -119,7 +119,7 @@ stamp-h1: $(srcdir)/config.in config.status
 	-rm -f stamp-h1
 	$(SHELL) ./config.status config.h
 
-$(srcdir)/config.in: @MAINT@ $(srcdir)/configure
+$(srcdir)/config.in: @MAINT@ $(srcdir)/configure.ac
 	cd $(srcdir) && $(AUTOHEADER)
 	-rm -f stamp-h1
 

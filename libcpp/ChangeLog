@@ -1,3 +1,7 @@
+2008-02-25  Thiemo Seufer <ths@mips.com>
+
+	Makefile.in ($(srcdir)/config.in): Depend on configure.ac.
+
 2008-02-19  Tom Tromey  <tromey@redhat.com>
 
 	* traditional.c (lex_identifier): Use CPP_HASHNODE.
