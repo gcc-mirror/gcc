@@ -1,4 +1,8 @@
 2008-02-26  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+	
+	* gcc.dg/pr34351.c: New.
+	
+2008-02-26  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* gcc.dg/Wlarger-than2.c: New.
 	

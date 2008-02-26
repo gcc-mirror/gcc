@@ -1,5 +1,14 @@
 2008-02-26  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	PR 34351
+	* doc/invoke.texi (-Wall): Add -Wvolatile-register-var.
+	* c-opts.c (c_common_handle_option): Wall enables
+	Wvolatile-register-var.
+	* common.opt: Move Wvolatile-register-var to...
+	* c.opt: ...here.
+	
+2008-02-26  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	* common.opt (Wlarger-than=): New.
 	* doc/invoke.texi (Warning Options): Replace -Wlarger-than- with
 	-Wlarger-than=.
