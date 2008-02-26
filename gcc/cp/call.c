@@ -4826,7 +4826,6 @@ magic_varargs_p (tree fn)
       case BUILT_IN_CLASSIFY_TYPE:
       case BUILT_IN_CONSTANT_P:
       case BUILT_IN_NEXT_ARG:
-      case BUILT_IN_STDARG_START:
       case BUILT_IN_VA_START:
 	return true;
 

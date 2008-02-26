@@ -6702,7 +6702,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       return expand_builtin_extend_pointer (CALL_EXPR_ARG (exp, 0));
 
     case BUILT_IN_VA_START:
-    case BUILT_IN_STDARG_START:
       return expand_builtin_va_start (exp);
     case BUILT_IN_VA_END:
       return expand_builtin_va_end (exp);

@@ -17,7 +17,7 @@ bar (void *a, float b, const char *c, ...)
   va_list args;
   unsigned int d;
 
-  __builtin_stdarg_start (args, c);
+  __builtin_va_start (args, c);
   d = foo (a, b, c, args, a);
   __builtin_va_end (args);
   return d;

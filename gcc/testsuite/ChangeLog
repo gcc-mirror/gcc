@@ -1,4 +1,12 @@
 2008-02-26  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 26264
+	* 20021023-1.c: Use __builtin_va_start instead of
+	__builtin_stdarg_start.
+	* pr17301-1.c: Likewise.
+	* pr17301-2.c: Likewise.
+		
+2008-02-26  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 	
 	* gcc.dg/pr34351.c: New.
 	
