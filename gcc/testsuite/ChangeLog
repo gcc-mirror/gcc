@@ -1,3 +1,13 @@
+2008-02-26  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR c/28800
+	* gcc.dg/empty-source-2.c: Adjust for warning message.
+	* gcc.dg/empty-source-3.c: Likewise.
+	* gcc.dg/pack-test-2.c: Adjust comment.
+	* gcc.dg/pragma-ep-2.c: Likewise.
+	* gcc.dg/pragma-re-2.c: Likewise.
+	* gcc.dg/va-arg-2.c: Likewise.
+
 2008-02-26  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/35033

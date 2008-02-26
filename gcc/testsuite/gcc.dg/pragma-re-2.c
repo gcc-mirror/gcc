@@ -5,4 +5,4 @@
 #pragma redefine_extname foo 1		/* { dg-warning "malformed" } */
 #pragma redefine_extname foo bar 2	/* { dg-warning "junk" } */
 
-int bar; /* silence `ISO C forbids an empty source file' warning */
+int bar; /* silence `ISO C forbids an empty translation unit' warning */

@@ -1,3 +1,9 @@
+2008-02-26  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR c/28800
+	* c-parser.c (c_parser_translation_unit): Warn for empty
+	translation unit, not empty source file.
+
 2008-02-26  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (thumb_set_frame_pointer): Ensure SP is first

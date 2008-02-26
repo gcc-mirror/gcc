@@ -1069,7 +1069,7 @@ c_parser_translation_unit (c_parser *parser)
   if (c_parser_next_token_is (parser, CPP_EOF))
     {
       if (pedantic)
-	pedwarn ("%HISO C forbids an empty source file",
+	pedwarn ("%HISO C forbids an empty translation unit",
 		 &c_parser_peek_token (parser)->location);
     }
   else
