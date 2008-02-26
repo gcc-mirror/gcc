@@ -1,6 +1,6 @@
 /* Java(TM) language-specific utility routines.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -655,10 +655,8 @@ java_post_options (const char **pfilename)
 	    }
 	}
     }
-#ifdef USE_MAPPED_LOCATION
   linemap_add (line_table, LC_ENTER, false, filename, 0);
   linemap_add (line_table, LC_RENAME, false, "<built-in>", 0);
-#endif
 
   /* Initialize the compiler back end.  */
   return false;

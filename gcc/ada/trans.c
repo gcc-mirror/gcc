@@ -244,7 +244,6 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
 
   type_annotate_only = (gigi_operating_mode == 1);
 
-#ifdef USE_MAPPED_LOCATION
   for (i = 0; i < number_files; i++)
     {
       /* Use the identifier table to make a permanent copy of the filename as
@@ -268,7 +267,6 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
       linemap_position_for_column (line_table, 252 - 1);
       linemap_add (line_table, LC_LEAVE, 0, NULL, 0);
     }
-#endif
 
   /* Initialize ourselves.  */
   init_code_table ();
@@ -6650,7 +6648,6 @@ Sloc_to_locus (Source_Ptr Sloc, location_t *locus)
     return false;
 
   if (Sloc <= Standard_Location)
-#ifdef USE_MAPPED_LOCATION
     {
       *locus = BUILTINS_LOCATION;
       return false;
@@ -6667,22 +6664,6 @@ Sloc_to_locus (Source_Ptr Sloc, location_t *locus)
 		+ ((line - map->to_line) << map->column_bits)
 		+ (column & ((1 << map->column_bits) - 1));
     }
-#else
-  return false;
-
-  /* Use the identifier table to make a hashed, permanent copy of the filename,
-     since the name table gets reallocated after Gigi returns but before all
-     the debugging information is output. The __gnat_to_canonical_file_spec
-     call translates filenames from pragmas Source_Reference that contain host
-     style syntax not understood by gdb. */
-  locus->file
-    = IDENTIFIER_POINTER
-      (get_identifier
-       (__gnat_to_canonical_file_spec
-	(Get_Name_String (Full_Debug_Name (Get_Source_File_Index (Sloc))))));
-
-  locus->line = Get_Logical_Line_Number (Sloc);
-#endif
 
   ref_filename
     = IDENTIFIER_POINTER

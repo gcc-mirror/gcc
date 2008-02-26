@@ -1,5 +1,5 @@
 /* Mudflap: narrow-pointer bounds-checking by tree rewriting.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Frank Ch. Eigler <fche@redhat.com>
    and Graydon Hoare <graydon@redhat.com>
@@ -121,9 +121,7 @@ mf_varname_tree (tree decl)
     const char *sourcefile;
     unsigned sourceline = xloc.line;
     unsigned sourcecolumn = 0;
-#ifdef USE_MAPPED_LOCATION
     sourcecolumn = xloc.column;
-#endif
     sourcefile = xloc.file;
     if (sourcefile == NULL && current_function_decl != NULL_TREE)
       sourcefile = DECL_SOURCE_FILE (current_function_decl);
@@ -214,11 +212,9 @@ mf_file_function_line_tree (location_t location)
 
   if (xloc.line > 0)
     {
-#ifdef USE_MAPPED_LOCATION
       if (xloc.column > 0)
         sprintf (linecolbuf, "%d:%d", xloc.line, xloc.column);
       else
-#endif
         sprintf (linecolbuf, "%d", xloc.line);
       colon = ":";
       line = linecolbuf;

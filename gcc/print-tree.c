@@ -1,6 +1,6 @@
 /* Prints out tree in human readable form - GCC
    Copyright (C) 1990, 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -442,10 +442,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 
 
       xloc = expand_location (DECL_SOURCE_LOCATION (node));
-      fprintf (file, " file %s line %d", xloc.file, xloc.line);
-#ifdef USE_MAPPED_LOCATION
-      fprintf (file, " col %d", xloc.column);
-#endif
+      fprintf (file, " file %s line %d col %d", xloc.file, xloc.line,
+	       xloc.column);
 
       if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
 	{	  
@@ -949,10 +947,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
     {
       expanded_location xloc = expand_location (EXPR_LOCATION (node));
       indent_to (file, indent+4);
-      fprintf (file, "%s:%d", xloc.file, xloc.line);
-#ifdef USE_MAPPED_LOCATION
-      fprintf (file, ":%d", xloc.column);
-#endif
+      fprintf (file, "%s:%d:%d", xloc.file, xloc.line, xloc.column);
     }
 
   fprintf (file, ">");

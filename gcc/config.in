@@ -1448,12 +1448,6 @@
 #endif
 
 
-/* Define if location_t is fileline integer cookie. */
-#ifndef USED_FOR_TARGET
-#undef USE_MAPPED_LOCATION
-#endif
-
-
 /* Define to be the last component of the Windows registry key under which to
    look for installation paths. The full key used will be
    HKEY_LOCAL_MACHINE/SOFTWARE/Free Software Foundation/{WIN32_REGISTRY_KEY}.

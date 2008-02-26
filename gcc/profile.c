@@ -1,6 +1,6 @@
 /* Calculate branch probabilities, and basic block execution counts.
    Copyright (C) 1990, 1991, 1992, 1993, 1994, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2007
+   2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
@@ -814,15 +814,10 @@ branch_prob (void)
 	  if (last && EXPR_LOCUS (last)
 	      && e->goto_locus
 	      && !single_succ_p (bb)
-#ifdef USE_MAPPED_LOCATION
 	      && (LOCATION_FILE (e->goto_locus)
 	          != LOCATION_FILE (EXPR_LOCATION  (last))
 		  || (LOCATION_LINE (e->goto_locus)
 		      != LOCATION_LINE (EXPR_LOCATION  (last)))))
-#else
-	      && (e->goto_locus->file != EXPR_LOCUS (last)->file
-		  || (e->goto_locus->line != EXPR_LOCUS (last)->line)))
-#endif
 	    {
 	      basic_block new = split_edge (e);
 	      single_succ_edge (new)->goto_locus = e->goto_locus;
@@ -1020,16 +1015,10 @@ branch_prob (void)
 	     CFG.  */
 	  if (single_succ_p (bb) && single_succ_edge (bb)->goto_locus)
 	    {
-	      /* ??? source_locus type is marked deprecated in input.h.  */
-	      source_locus curr_location = single_succ_edge (bb)->goto_locus;
+	      location_t curr_location = single_succ_edge (bb)->goto_locus;
 	      /* ??? The FILE/LINE API is inconsistent for these cases.  */
-#ifdef USE_MAPPED_LOCATION 
 	      output_location (LOCATION_FILE (curr_location),
 			       LOCATION_LINE (curr_location), &offset, bb);
-#else
-	      output_location (curr_location->file, curr_location->line,
-			       &offset, bb);
-#endif
 	    }
 
 	  if (offset)

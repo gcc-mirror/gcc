@@ -1,3 +1,16 @@
+2008-02-26  Tom Tromey  <tromey@redhat.com>
+
+	* lang.c (java_post_options): Remove conditional.
+	* expr.c (expand_byte_code): Remove old location code.
+	* jcf-parse.c (set_source_filename): Remove old location code.
+	(give_name_to_class): Likewise.
+	(jcf_parse): Likewise.
+	(duplicate_class_warning): Likewise.
+	(parse_class_file): Likewise.
+	(java_parse_file): Likewise.
+	* decl.c (finish_method): Remove old location code.
+	* class.c (push_class): Remove old location code.
+
 2008-02-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR other/35107

@@ -1,6 +1,6 @@
 /* Implement classes and message passing for Objective C.
    Copyright (C) 1992, 1993, 1994, 1995, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Steve Naroff.
 
 This file is part of GCC.
@@ -483,13 +483,6 @@ objc_init (void)
   if (c_objc_common_init () == false)
 #endif
     return false;
-
-#ifndef USE_MAPPED_LOCATION
-  /* Force the line number back to 0; check_newline will have
-     raised it to 1, which will make the builtin functions appear
-     not to be built in.  */
-  input_line = 0;
-#endif
 
   /* If gen_declaration desired, open the output file.  */
   if (flag_gen_declaration)

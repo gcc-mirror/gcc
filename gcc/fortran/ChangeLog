@@ -1,3 +1,21 @@
+2008-02-26  Tom Tromey  <tromey@redhat.com>
+
+	* trans-io.c (set_error_locus): Remove old location code.
+	* trans-decl.c (gfc_set_decl_location): Remove old location code.
+	* f95-lang.c (gfc_init): Remove test of USE_MAPPED_LOCATION.
+	* scanner.c (gfc_gobble_whitespace): Remove old location code.
+	(get_file): Likewise.
+	(preprocessor_line): Likewise.
+	(load_file): Likewise.
+	(gfc_new_file): Likewise.
+	* trans.c (gfc_trans_runtime_check): Remove old location code.
+	(gfc_get_backend_locus): Likewise.
+	(gfc_set_backend_locus): Likewise.
+	* data.c (gfc_assign_data_value): Remove old location code.
+	* error.c (show_locus): Remove old location code.
+	* gfortran.h (gfc_linebuf): Remove old location code.
+	(gfc_linebuf_linenum): Remove old-location variant.
+
 2008-02-25  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/34729

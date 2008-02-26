@@ -1,6 +1,6 @@
 /* Get common system includes and various definitions and declarations based
    on autoconf macros.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -743,6 +743,9 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 	LANG_HOOKS_PUSHLEVEL LANG_HOOKS_SET_BLOCK \
 	LANG_HOOKS_MAYBE_BUILD_CLEANUP LANG_HOOKS_UPDATE_DECL_AFTER_SAVING \
 	LANG_HOOKS_POPLEVEL LANG_HOOKS_TRUTHVALUE_CONVERSION
+
+/* Miscellaneous macros that are no longer used.  */
+ #pragma GCC poison USE_MAPPED_LOCATION
 
 /* Libiberty macros that are no longer used in GCC.  */
 #undef ANSI_PROTOTYPES

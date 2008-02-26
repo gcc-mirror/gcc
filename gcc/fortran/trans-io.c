@@ -851,11 +851,7 @@ set_error_locus (stmtblock_t * block, tree var, locus * where)
   str = gfc_build_addr_expr (pchar_type_node, str);
   gfc_add_modify_expr (block, locus_file, str);
 
-#ifdef USE_MAPPED_LOCATION
   line = LOCATION_LINE (where->lb->location);
-#else
-  line = where->lb->linenum;
-#endif
   set_parameter_const (block, var, IOPARM_common_line, line);
 }
 

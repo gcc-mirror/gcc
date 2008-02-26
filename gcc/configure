@@ -869,7 +869,6 @@ Optional Features:
 			  Categories are: yes,no,all,none,release.
 			  Flags are: assert,df,fold,gc,gcac,misc,
 			  rtlflag,rtl,runtime,tree,valgrind,types.
-  --enable-mapped-location   location_t is fileline integer cookie
   --enable-coverage=LEVEL
 			  enable compiler's code coverage collection.
 			  Use to measure compiler performance and locate
@@ -6894,22 +6893,6 @@ _ACEOF
 fi
 
 
-
-# Check whether --enable-mapped-location or --disable-mapped-location was given.
-if test "${enable_mapped_location+set}" = set; then
-  enableval="$enable_mapped_location"
-
-else
-  enable_mapped_location=yes
-fi;
-
-if test "$enable_mapped_location" = yes ; then
-
-cat >>confdefs.h <<\_ACEOF
-#define USE_MAPPED_LOCATION 1
-_ACEOF
-
-fi
 
 # Enable code coverage collection
 # Check whether --enable-coverage or --disable-coverage was given.

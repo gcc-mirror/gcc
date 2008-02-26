@@ -417,7 +417,7 @@ struct tree_common GTY(())
 struct gimple_stmt GTY(())
 {
   struct tree_base base;
-  source_locus locus;
+  location_t locus;
   tree block;
   /* FIXME tuples: Eventually this should be of type ``struct gimple_expr''.  */
   tree GTY ((length ("TREE_CODE_LENGTH (TREE_CODE (&%h))"))) operands[1];
@@ -1841,7 +1841,7 @@ enum omp_clause_default_kind
 struct tree_exp GTY(())
 {
   struct tree_common common;
-  source_locus locus;
+  location_t locus;
   tree block;
   tree GTY ((special ("tree_exp"),
 	     desc ("TREE_CODE ((tree) &%0)")))
@@ -2515,12 +2515,8 @@ struct function;
 #define DECL_SOURCE_LOCATION(NODE) (DECL_MINIMAL_CHECK (NODE)->decl_minimal.locus)
 #define DECL_SOURCE_FILE(NODE) LOCATION_FILE (DECL_SOURCE_LOCATION (NODE))
 #define DECL_SOURCE_LINE(NODE) LOCATION_LINE (DECL_SOURCE_LOCATION (NODE))
-#ifdef USE_MAPPED_LOCATION
 #define DECL_IS_BUILTIN(DECL) \
   (DECL_SOURCE_LOCATION (DECL) <= BUILTINS_LOCATION)
-#else
-#define DECL_IS_BUILTIN(DECL) (DECL_SOURCE_LINE(DECL) == 0)
-#endif
 
 /*  For FIELD_DECLs, this is the RECORD_TYPE, UNION_TYPE, or
     QUAL_UNION_TYPE node that the field is a member of.  For VAR_DECL,
@@ -3999,10 +3995,6 @@ extern tree build_decl_stat (enum tree_code, tree, tree MEM_STAT_DECL);
 extern tree build_fn_decl (const char *, tree);
 #define build_decl(c,t,q) build_decl_stat (c,t,q MEM_STAT_INFO)
 extern tree build_block (tree, tree, tree, tree);
-#ifndef USE_MAPPED_LOCATION
-extern void annotate_with_file_line (tree, const char *, int);
-extern void annotate_with_locus (tree, location_t);
-#endif
 extern tree build_empty_stmt (void);
 extern tree build_omp_clause (enum omp_clause_code);
 
@@ -4935,13 +4927,8 @@ extern location_t expr_location (const_tree);
 extern void set_expr_location (tree, location_t);
 extern bool expr_has_location (const_tree);
 
-#ifdef USE_MAPPED_LOCATION
-extern source_locus *expr_locus (const_tree);
+extern location_t *expr_locus (const_tree);
 extern void set_expr_locus (tree, source_location *);
-#else
-extern source_locus expr_locus (const_tree);
-extern void set_expr_locus (tree, source_locus loc);
-#endif
 extern const char *expr_filename (const_tree);
 extern int expr_lineno (const_tree);
 

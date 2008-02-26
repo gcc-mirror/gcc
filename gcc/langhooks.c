@@ -1,5 +1,5 @@
 /* Default language-specific hooks.
-   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
@@ -455,14 +455,12 @@ lhd_print_error_function (diagnostic_context *context, const char *file,
 		  pp_newline (context->printer);
 		  if (s.file != NULL)
 		    {
-#ifdef USE_MAPPED_LOCATION
 		      if (flag_show_column && s.column != 0)
 			pp_printf (context->printer,
 				   _("    inlined from %qs at %s:%d:%d"),
 				   lang_hooks.decl_printable_name (fndecl, 2),
 				   s.file, s.line, s.column);
 		      else
-#endif
 			pp_printf (context->printer,
 				   _("    inlined from %qs at %s:%d"),
 				   lang_hooks.decl_printable_name (fndecl, 2),

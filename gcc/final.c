@@ -1,6 +1,6 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -2192,12 +2192,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 		    fputs (ASM_APP_ON, file);
 		    app_on = 1;
 		  }
-#ifdef USE_MAPPED_LOCATION
 		loc = expand_location (ASM_INPUT_SOURCE_LOCATION (body));
-#else
-		loc.file = ASM_INPUT_SOURCE_FILE (body);
-		loc.line = ASM_INPUT_SOURCE_LINE (body);
-#endif
 		if (*loc.file && loc.line)
 		  fprintf (asm_out_file, "%s %i \"%s\" 1\n",
 			   ASM_COMMENT_START, loc.line, loc.file);

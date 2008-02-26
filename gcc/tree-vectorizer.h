@@ -1,5 +1,5 @@
 /* Loop Vectorization
-   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -21,19 +21,11 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_VECTORIZER_H
 #define GCC_TREE_VECTORIZER_H
 
-#ifdef USE_MAPPED_LOCATION
-  typedef source_location LOC;
-  #define UNKNOWN_LOC UNKNOWN_LOCATION
-  #define EXPR_LOC(e) EXPR_LOCATION(e)
-  #define LOC_FILE(l) LOCATION_FILE (l)
-  #define LOC_LINE(l) LOCATION_LINE (l)
-#else
-  typedef source_locus LOC;
-  #define UNKNOWN_LOC NULL
-  #define EXPR_LOC(e) EXPR_LOCUS(e)
-  #define LOC_FILE(l) (l)->file
-  #define LOC_LINE(l) (l)->line
-#endif
+typedef source_location LOC;
+#define UNKNOWN_LOC UNKNOWN_LOCATION
+#define EXPR_LOC(e) EXPR_LOCATION(e)
+#define LOC_FILE(l) LOCATION_FILE (l)
+#define LOC_LINE(l) LOCATION_LINE (l)
 
 /* Used for naming of new temporaries.  */
 enum vect_var_kind {

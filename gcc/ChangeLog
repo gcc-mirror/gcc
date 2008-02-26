@@ -1,3 +1,87 @@
+2008-02-26  Tom Tromey  <tromey@redhat.com>
+
+	* system.h (USE_MAPPED_LOCATION): Poison.
+	* Makefile.in (GTFILES): Put CPP_ID_DATA_H first.
+	* tree-cfg.c (make_cond_expr_edges): Remove old location code.
+	(make_goto_expr_edges): Likewise.
+	(remove_bb): Likewise.
+	(execute_warn_function_return): Likewise.
+	* basic-block.h (struct edge_def) <goto_locus>: Change type to
+	location_t.
+	* c-common.c (fname_decl): Remove old location code.
+	* tree-vect-transform.c (vect_finish_stmt_generation): Remove old
+	location code.
+	* rtl.h (ASM_OPERANDS_SOURCE_LOCATION): Remove old-location
+	variant.
+	(ASM_INPUT_SOURCE_LOCATION): Likewise.
+	(gen_rtx_ASM_INPUT): Likewise.
+	(gen_rtx_ASM_INPUT_loc): Likewise.
+	(get_rtx_asm_OPERANDS): Remove.
+	* cfglayout.c (insn_locators_alloc): Remove old location code.
+	(set_curr_insn_source_location): Likewise.
+	(curr_insn_locator): Likewise.
+	* print-tree.c (print_node): Remove old location code.
+	* tree-mudflap.c (mf_varname_tree): Remove old location code.
+	(mf_file_function_line_tree): Remove test of USE_MAPPED_LOCATION.
+	* cfgexpand.c (expand_gimple_cond_expr): Don't use
+	location_from_locus.
+	(construct_exit_block): Remove old location code.
+	* emit-rtl.c (force_next_line_note): Remove old location code.
+	* profile.c (branch_prob): Remove old location code.
+	* tree-vectorizer.h (LOC, UNKNOWN_LOC, EXPR_LOC, LOC_FILE,
+	LOC_LINE): Remove old-location variants.
+	* langhooks.c (lhd_print_error_function): Remove old location
+	code.
+	* configure, config.in: Rebuilt.
+	* configure.ac (--enable-mapped-location): Remove.
+	* c-decl.c (c_init_decl_processing): Remove old location code.
+	(finish_function): Likewise.
+	* recog.c (decode_asm_operands): Remove old location code.
+	* c-pch.c (c_common_read_pch): Remove old location code.
+	* rtl.def (ASM_INPUT, ASM_OPERANDS): Remove old location
+	variants.
+	* gimple-low.c (lower_function_body): Remove old location code.
+	* toplev.c (unknown_location): Remove.
+	(push_srcloc): Remove old-location variant.
+	(process_options): Remove old location code.
+	(lang_dependent_init): Likewise.
+	* input.h (UNKNOWN_LOCATION): Move definition.
+	(location_t): Undeprecate.
+	(source_locus): Remove.
+	(location_from_locus): Remove.
+	(struct location_s): Remove.
+	Remove all old-location code.
+	(input_line, input_filename): Remove.
+	* final.c (final_scan_insn): Remove old location code.
+	* diagnostic.c (diagnostic_build_prefix): Remove
+	USE_MAPPED_LOCATION test.
+	* tree.h (gimple_stmt) <locus>: Now a location_t.
+	(tree_exp) <locus>: Likewise.
+	(DECL_IS_BUILTIN): Remove old-location variant.
+	(annotate_with_file_line, annotate_with_locus): Likewise.
+	(expr_locus, set_expr_locus): Update.
+	* tree.c (build1_stat): Remove old location code.
+	(last_annotated_node): Remove.
+	(annotate_with_file_line): Remove old-location variant.
+	(annotate_with_locus): Likewise.
+	(expr_location): Remove old location code.
+	(set_expr_location): Likewise.
+	(expr_has_location): Likewise.
+	(expr_locus): Likewise.
+	(set_expr_locus): Likewise.
+	(expr_filename): Don't use location_from_locus.
+	(expr_lineno): Likewise.
+	* rtl-error.c (location_for_asm): Remove old location code.
+	* c-lex.c (cb_line_change): Remove old location code.
+	(fe_file_change): Likewise.
+	(cb_def_pragma): Likewise.
+	(c_lex_with_flags): Likewise.
+	* gengtype.c (do_typedef): Don't special-case location types.
+	(define_location_structures): Remove.
+	(main): Don't call define_location_structures.
+	* tree-pretty-print.c (dump_implicit_edges): Remove old location
+	code.
+
 2008-02-26  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
         PR 26264

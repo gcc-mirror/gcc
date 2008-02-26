@@ -1,5 +1,5 @@
 /* Process source files and output type information.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -521,16 +521,11 @@ do_typedef (const char *s, type_p t, struct fileloc *pos)
 {
   pair_p p;
 
-  /* temporary kludge - gengtype doesn't handle conditionals or macros.
-     Ignore any attempt to typedef CUMULATIVE_ARGS, location_t,
-     expanded_location, or source_locus, unless it is coming from
-     this file (main() sets them up with safe dummy definitions).  */
-  if ((!strcmp (s, "CUMULATIVE_ARGS")
-       || !strcmp (s, "location_t")
-       || !strcmp (s, "source_locus")
-       || !strcmp (s, "source_location")
-       || !strcmp (s, "expanded_location"))
-      && pos->file != this_file)
+  /* temporary kludge - gengtype doesn't handle conditionals or
+     macros.  Ignore any attempt to typedef CUMULATIVE_ARGS, unless it
+     is coming from this file (main() sets them up with safe dummy
+     definitions).  */
+  if (!strcmp (s, "CUMULATIVE_ARGS") && pos->file != this_file)
     return;
 
   for (p = typedefs; p != NULL; p = p->next)
@@ -3478,36 +3473,6 @@ note_def_vec_alloc (const char *type, const char *astrat, struct fileloc *pos)
   do_typedef (astratname, new_structure (astratname, 0, pos, field, 0), pos);
 }
 
-/* Yet more temporary kludge since gengtype doesn't understand conditionals.
-   This must be kept in sync with input.h.  */
-static void
-define_location_structures (void)
-{
-  pair_p fields;
-  type_p locs;
-  static struct fileloc pos = { this_file, __LINE__ };
-  do_scalar_typedef ("source_location", &pos);
-
-#ifdef USE_MAPPED_LOCATION
-    fields = create_field (0, &scalar_nonchar, "column");
-    fields = create_field (fields, &scalar_nonchar, "line");
-    fields = create_field (fields, &string_type, "file");
-    locs = new_structure ("anon:expanded_location", 0, &pos, fields, 0);
-
-    do_typedef ("expanded_location", locs, &pos);
-    do_scalar_typedef ("location_t", &pos);
-    do_scalar_typedef ("source_locus", &pos);
-#else
-    fields = create_field (0, &scalar_nonchar, "line");
-    fields = create_field (fields, &string_type, "file");
-    locs = new_structure ("location_s", 0, &pos, fields, 0);
-
-    do_typedef ("expanded_location", locs, &pos);
-    do_typedef ("location_t", locs, &pos);
-    do_typedef ("source_locus", create_pointer (locs), &pos);
-#endif
-}
-
 
 int
 main (int argc, char **argv)
@@ -3544,7 +3509,6 @@ main (int argc, char **argv)
   do_scalar_typedef ("JCF_u2", &pos); pos.line++;
   do_scalar_typedef ("void", &pos); pos.line++;
   do_typedef ("PTR", create_pointer (resolve_typedef ("void", &pos)), &pos);
-  define_location_structures ();
 
   for (i = 0; i < num_gt_files; i++)
     parse_file (gt_files[i]);

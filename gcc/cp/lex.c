@@ -1,6 +1,6 @@
 /* Separate lexical analyzer for GNU C++.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
    Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
@@ -385,14 +385,7 @@ cxx_init (void)
   for (i = 0; i < ARRAY_SIZE (stmt_codes); i++)
     statement_code_p[stmt_codes[i]] = true;
 
-  /* We cannot just assign to input_filename because it has already
-     been initialized and will be used later as an N_BINCL for stabs+
-     debugging.  */
-#ifdef USE_MAPPED_LOCATION
   push_srcloc (BUILTINS_LOCATION);
-#else
-  push_srcloc ("<built-in>", 0);
-#endif
 
   init_reswords ();
   init_tree ();
@@ -572,17 +565,9 @@ handle_pragma_implementation (cpp_reader* dfile ATTRIBUTE_UNUSED )
   else
     {
       filename = ggc_strdup (TREE_STRING_POINTER (fname));
-#ifdef USE_MAPPED_LOCATION
-      /* We currently cannot give this diagnostic, as we reach this point
-	 only after cpplib has scanned the entire translation unit, so
-	 cpp_included always returns true.  A plausible fix is to compare
-	 the current source-location cookie with the first source-location
-	 cookie (if any) of the filename, but this requires completing the
-	 --enable-mapped-location project first.  See PR 17577.  */
       if (cpp_included_before (parse_in, filename, input_location))
 	warning (0, "#pragma implementation for %qs appears after "
 		 "file is included", filename);
-#endif
     }
 
   for (; ifiles; ifiles = ifiles->next)
