@@ -1,3 +1,8 @@
+2008-02-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35315
+	* g++.dg/ext/attrib32.C: New.
+
 2008-02-26  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* gcc.c-torture/execute/nest-align-1.x: Delete.
@@ -20,8 +25,8 @@
 	
 2008-02-26  Paolo Carlini  <pcarlini@suse.de>
 
-        PR c++/35323
-        * g++.dg/lookup/crash7.C: New.
+	PR c++/35323
+	* g++.dg/lookup/crash7.C: New.
 
 2008-02-26  Kaz Kojima  <kkojima@gcc.gnu.org>
 
@@ -68,13 +73,13 @@
 
 2008-02-25  Paolo Carlini  <pcarlini@suse.de>
 
-        PR c++/35333
-        * g++.dg/other/error26.C: New.
+	PR c++/35333
+	* g++.dg/other/error26.C: New.
 
 2008-02-25  Paolo Carlini  <pcarlini@suse.de>
 
-        PR c++/35338
-        * g++.dg/other/error25.C: New.
+	PR c++/35338
+	* g++.dg/other/error25.C: New.
 
 2008-02-25  Andreas Krebbel  <krebbel1@de.ibm.com>
 
@@ -105,6 +110,11 @@
 	the call to foo.
 	* gcc.dg/vect/vect-117.c: Call check_vect.
 	* gcc.dg/vect/no-vfa-pr29145.c: Ditto.
+
+2008-02-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/33486
+	* g++.dg/lookup/strong-using-5.C: New.
 
 2008-02-25  Kaz Kojima  <kkojima@gcc.gnu.org>
 
@@ -196,9 +206,9 @@
 	Revert:
 	2008-02-14  Paolo Carlini  <pcarlini@suse.de>
 
-        PR c++/28743
+	PR c++/28743
 	* g++.dg/template/nontype17.C: New.
-        * g++.dg/template/nontype16.C: Add error.
+	* g++.dg/template/nontype16.C: Add error.
 
 2008-02-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
@@ -413,6 +423,13 @@
 	PR c++/34050
 	* g++.dg/cpp0x/vt-34050.C: New.
 
+2008-02-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/5645
+	PR c++/11159
+	* g++.dg/warn/pr11159.C: New.
+	* g++.dg/warn/pr5645.C: Likewise.
+
 2008-02-14  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR preprocessor/35061
@@ -432,6 +449,11 @@
 2008-02-13  Michael Matz  <matz@suse.de>
 
 	* gcc.dg/pr35065.c: Fix testcase warnings.
+
+2008-02-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/34962, c++/34937, c++/34939
+	* g++.dg/ext/tmplattr9.C: New.
 
 2008-02-13  Michael Matz  <matz@suse.de>
 
