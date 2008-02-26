@@ -224,22 +224,23 @@
 )
 
 (define_insn "*thumb2_movsi_insn"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r, m")
-	(match_operand:SI 1 "general_operand"	   "rI,K,N,mi,r"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rk,r,r,r,rk,m")
+	(match_operand:SI 1 "general_operand"	   "rk ,I,K,N,mi,rk"))]
   "TARGET_THUMB2 && ! TARGET_IWMMXT
    && !(TARGET_HARD_FLOAT && TARGET_VFP)
    && (   register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
   "@
    mov%?\\t%0, %1
+   mov%?\\t%0, %1
    mvn%?\\t%0, #%B1
    movw%?\\t%0, %1
    ldr%?\\t%0, %1
    str%?\\t%1, %0"
-  [(set_attr "type" "*,*,*,load1,store1")
+  [(set_attr "type" "*,*,*,*,load1,store1")
    (set_attr "predicable" "yes")
-   (set_attr "pool_range" "*,*,*,4096,*")
-   (set_attr "neg_pool_range" "*,*,*,0,*")]
+   (set_attr "pool_range" "*,*,*,*,4096,*")
+   (set_attr "neg_pool_range" "*,*,*,*,0,*")]
 )
 
 ;; ??? We can probably do better with thumb2

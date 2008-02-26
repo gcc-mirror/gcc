@@ -105,8 +105,8 @@
 )
 
 (define_insn "*iwmmxt_movsi_insn"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r, m,z,r,?z,Uy,z")
-	(match_operand:SI 1 "general_operand"      "rI,K,mi,r,r,z,Uy,z,z"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rk,r,r,rk, m,z,r,?z,Uy,z")
+	(match_operand:SI 1 "general_operand"      "rk, I,K,mi,rk,r,z,Uy,z, z"))]
   "TARGET_REALLY_IWMMXT
    && (   register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
@@ -114,19 +114,20 @@
    switch (which_alternative)
    {
    case 0: return \"mov\\t%0, %1\";
-   case 1: return \"mvn\\t%0, #%B1\";
-   case 2: return \"ldr\\t%0, %1\";
-   case 3: return \"str\\t%1, %0\";
-   case 4: return \"tmcr\\t%0, %1\";
-   case 5: return \"tmrc\\t%0, %1\";
-   case 6: return arm_output_load_gr (operands);
-   case 7: return \"wstrw\\t%1, %0\";
+   case 1: return \"mov\\t%0, %1\";
+   case 2: return \"mvn\\t%0, #%B1\";
+   case 3: return \"ldr\\t%0, %1\";
+   case 4: return \"str\\t%1, %0\";
+   case 5: return \"tmcr\\t%0, %1\";
+   case 6: return \"tmrc\\t%0, %1\";
+   case 7: return arm_output_load_gr (operands);
+   case 8: return \"wstrw\\t%1, %0\";
    default:return \"wstrw\\t%1, [sp, #-4]!\;wldrw\\t%0, [sp], #4\\t@move CG reg\";
   }"
-  [(set_attr "type"           "*,*,load1,store1,*,*,load1,store1,*")
-   (set_attr "length"         "*,*,*,        *,*,*,  16,     *,8")
-   (set_attr "pool_range"     "*,*,4096,     *,*,*,1024,     *,*")
-   (set_attr "neg_pool_range" "*,*,4084,     *,*,*,   *,  1012,*")
+  [(set_attr "type"           "*,*,*,load1,store1,*,*,load1,store1,*")
+   (set_attr "length"         "*,*,*,*,        *,*,*,  16,     *,8")
+   (set_attr "pool_range"     "*,*,*,4096,     *,*,*,1024,     *,*")
+   (set_attr "neg_pool_range" "*,*,*,4084,     *,*,*,   *,  1012,*")
    ;; Note - the "predicable" attribute is not allowed to have alternatives.
    ;; Since the wSTRw wCx instruction is not predicable, we cannot support
    ;; predicating any of the alternatives in this template.  Instead,

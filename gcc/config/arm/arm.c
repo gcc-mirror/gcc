@@ -12229,9 +12229,20 @@ thumb_set_frame_pointer (arm_stack_offsets *offsets)
   else
     {
       emit_insn (gen_movsi (hard_frame_pointer_rtx, GEN_INT (amount)));
-      insn = emit_insn (gen_addsi3 (hard_frame_pointer_rtx,
-				    hard_frame_pointer_rtx,
-				    stack_pointer_rtx));
+      /* Thumb-2 RTL patterns expect sp as the first input.  Thumb-1
+         expects the first two operands to be the same.  */
+      if (TARGET_THUMB2)
+	{
+	  insn = emit_insn (gen_addsi3 (hard_frame_pointer_rtx,
+					stack_pointer_rtx,
+					hard_frame_pointer_rtx));
+	}
+      else
+	{
+	  insn = emit_insn (gen_addsi3 (hard_frame_pointer_rtx,
+					hard_frame_pointer_rtx,
+					stack_pointer_rtx));
+	}
       dwarf = gen_rtx_SET (VOIDmode, hard_frame_pointer_rtx,
 			   plus_constant (stack_pointer_rtx, amount));
       RTX_FRAME_RELATED_P (dwarf) = 1;

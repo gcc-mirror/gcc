@@ -1,3 +1,24 @@
+2008-02-26  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (thumb_set_frame_pointer): Ensure SP is first
+	operand for Thumb-2.
+	* config/arm/arm.h (reg_class): Add CORE_REGS.
+	(REG_CLASS_NAMES, REG_CLASS_CONTENTS): Ditto.
+	(BASE_REG_CLASS): Use CORE_REGS.
+	(PREFERRED_RELOAD_CLASS): Add STACK_REG.
+	(REGNO_MODE_OK_FOR_REG_BASE_P): Use REGNO_MODE_OK_FOR_BASE_P.
+	(REGNO_OK_FOR_INDEX_P): Exclude SP.
+	(ARM_REG_OK_FOR_INDEX_P): Always define.  Use
+	ARM_REGNO_OK_FOR_INDEX_P.
+	(ARM_PRINT_OPERAND_ADDRESS): Swap operands for [reg, sp].
+	* config/arm/arm.md (arm_addsi3, thumb1_addsi3, arm_subsi3_insn,
+	arm_movsi_insn, thumb1_movsi_insni, stack_tie): Add "k" alternatives.
+	(ldm/stm peepholes): Ditto.
+	* config/arm/thumb2.md (thumb2_movdi): Add "k" alternatives.
+	* config/arm/vfp.md (arm_movsi_vfp, thumb2_movsi_vfp): Ditto.
+	* config/arm/iwmmxt.md (iwmmxt_movsi_insn): Ditto.
+	* config/arm/constraints.md: Enable "k" constraint on ARM.
+
 2008-02-27  Ben Elliston  <bje@au.ibm.com>
 
 	* config/rs6000/rs6000.c: Annotate cache line size field in all

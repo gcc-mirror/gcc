@@ -120,77 +120,77 @@
 ;; ??? For now do not allow loading constants into vfp regs.  This causes
 ;; problems because small constants get converted into adds.
 (define_insn "*arm_movsi_vfp"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r ,m,*t,r,*t,*t, *Uv")
-      (match_operand:SI 1 "general_operand"	   "rI,K,N,mi,r,r,*t,*t,*Uvi,*t"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rk,r,r,r,rk,m ,*t,r,*t,*t, *Uv")
+      (match_operand:SI 1 "general_operand"	   "rk, I,K,N,mi,rk,r,*t,*t,*Uvi,*t"))]
   "TARGET_ARM && TARGET_VFP && TARGET_HARD_FLOAT
    && (   s_register_operand (operands[0], SImode)
        || s_register_operand (operands[1], SImode))"
   "*
   switch (which_alternative)
     {
-    case 0:
+    case 0: case 1:
       return \"mov%?\\t%0, %1\";
-    case 1:
-      return \"mvn%?\\t%0, #%B1\";
     case 2:
-      return \"movw%?\\t%0, %1\";
+      return \"mvn%?\\t%0, #%B1\";
     case 3:
-      return \"ldr%?\\t%0, %1\";
+      return \"movw%?\\t%0, %1\";
     case 4:
-      return \"str%?\\t%1, %0\";
+      return \"ldr%?\\t%0, %1\";
     case 5:
-      return \"fmsr%?\\t%0, %1\\t%@ int\";
+      return \"str%?\\t%1, %0\";
     case 6:
-      return \"fmrs%?\\t%0, %1\\t%@ int\";
+      return \"fmsr%?\\t%0, %1\\t%@ int\";
     case 7:
+      return \"fmrs%?\\t%0, %1\\t%@ int\";
+    case 8:
       return \"fcpys%?\\t%0, %1\\t%@ int\";
-    case 8: case 9:
+    case 9: case 10:
       return output_move_vfp (operands);
     default:
       gcc_unreachable ();
     }
   "
   [(set_attr "predicable" "yes")
-   (set_attr "type" "*,*,*,load1,store1,r_2_f,f_2_r,ffarith,f_loads,f_stores")
-   (set_attr "pool_range"     "*,*,*,4096,*,*,*,*,1020,*")
-   (set_attr "neg_pool_range" "*,*,*,4084,*,*,*,*,1008,*")]
+   (set_attr "type" "*,*,*,*,load1,store1,r_2_f,f_2_r,ffarith,f_loads,f_stores")
+   (set_attr "pool_range"     "*,*,*,*,4096,*,*,*,*,1020,*")
+   (set_attr "neg_pool_range" "*,*,*,*,4084,*,*,*,*,1008,*")]
 )
 
 (define_insn "*thumb2_movsi_vfp"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,m,*t,r,*t,*t, *Uv")
-      (match_operand:SI 1 "general_operand"	   "rI,K,N,mi,r,r,*t,*t,*Uvi,*t"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rk,r,r,r,rk,m,*t,r, *t,*t, *Uv")
+      (match_operand:SI 1 "general_operand"	   "rk, I,K,N,mi,rk,r,*t,*t,*Uvi,*t"))]
   "TARGET_THUMB2 && TARGET_VFP && TARGET_HARD_FLOAT
    && (   s_register_operand (operands[0], SImode)
        || s_register_operand (operands[1], SImode))"
   "*
   switch (which_alternative)
     {
-    case 0:
+    case 0: case 1:
       return \"mov%?\\t%0, %1\";
-    case 1:
-      return \"mvn%?\\t%0, #%B1\";
     case 2:
-      return \"movw%?\\t%0, %1\";
+      return \"mvn%?\\t%0, #%B1\";
     case 3:
-      return \"ldr%?\\t%0, %1\";
+      return \"movw%?\\t%0, %1\";
     case 4:
-      return \"str%?\\t%1, %0\";
+      return \"ldr%?\\t%0, %1\";
     case 5:
-      return \"fmsr%?\\t%0, %1\\t%@ int\";
+      return \"str%?\\t%1, %0\";
     case 6:
-      return \"fmrs%?\\t%0, %1\\t%@ int\";
+      return \"fmsr%?\\t%0, %1\\t%@ int\";
     case 7:
+      return \"fmrs%?\\t%0, %1\\t%@ int\";
+    case 8:
       return \"fcpys%?\\t%0, %1\\t%@ int\";
-    case 8: case 9:
+    case 9: case 10:
       return output_move_vfp (operands);
     default:
       gcc_unreachable ();
     }
   "
   [(set_attr "predicable" "yes")
-   (set_attr "type" "*,*,*,load1,store1,r_2_f,f_2_r,ffarith,f_load,f_store")
-   (set_attr "pool_range"     "*,*,*,4096,*,*,*,*,1020,*")
-   (set_attr "neg_pool_range" "*,*,*,   0,*,*,*,*,1008,*")]
+   (set_attr "type" "*,*,*,*,load1,store1,r_2_f,f_2_r,ffarith,f_load,f_store")
+   (set_attr "pool_range"     "*,*,*,*,4096,*,*,*,*,1020,*")
+   (set_attr "neg_pool_range" "*,*,*,*,   0,*,*,*,*,1008,*")]
 )
 
 
