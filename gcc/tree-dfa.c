@@ -641,12 +641,16 @@ find_vars_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 tree 
 referenced_var_lookup (unsigned int uid)
 {
-  tree h;
-  struct tree_decl_minimal in;
-  in.uid = uid;
-  h = (tree) htab_find_with_hash (gimple_referenced_vars (cfun), &in, uid);
-  gcc_assert (h || uid == 0);
-  return h;
+  tree var;
+
+  gcc_assert (bitmap_bit_p (gimple_referenced_vars (cfun), uid));
+
+  /* For now also assert that the variable is really referenced.
+     Otherwise callers need to deal with the result from this function
+     being NULL.  */
+  var = lookup_decl_from_uid (uid);
+  gcc_assert (var);
+  return var;
 }
 
 /* Check if TO is in the referenced_vars hash table and insert it if not.  
@@ -655,23 +659,13 @@ referenced_var_lookup (unsigned int uid)
 bool
 referenced_var_check_and_insert (tree to)
 { 
-  tree h, *loc;
-  struct tree_decl_minimal in;
   unsigned int uid = DECL_UID (to);
 
-  in.uid = uid;
-  h = (tree) htab_find_with_hash (gimple_referenced_vars (cfun), &in, uid);
-  if (h)
-    {
-      /* DECL_UID has already been entered in the table.  Verify that it is
-	 the same entry as TO.  See PR 27793.  */
-      gcc_assert (h == to);
-      return false;
-    }
+  if (bitmap_bit_p (gimple_referenced_vars (cfun), uid))
+    return false;
 
-  loc = (tree *) htab_find_slot_with_hash (gimple_referenced_vars (cfun),
-					   &in, uid, INSERT);
-  *loc = to;
+  bitmap_set_bit (gimple_referenced_vars (cfun), uid);
+
   return true;
 }
 
@@ -761,8 +755,6 @@ void
 remove_referenced_var (tree var)
 {
   var_ann_t v_ann;
-  struct tree_decl_minimal in;
-  void **loc;
   unsigned int uid = DECL_UID (var);
   subvar_t sv;
 
@@ -782,10 +774,7 @@ remove_referenced_var (tree var)
     ggc_free (v_ann);
   var->base.ann = NULL;
   gcc_assert (DECL_P (var));
-  in.uid = uid;
-  loc = htab_find_slot_with_hash (gimple_referenced_vars (cfun), &in, uid,
-				  NO_INSERT);
-  htab_clear_slot (gimple_referenced_vars (cfun), loc);
+  bitmap_clear_bit (gimple_referenced_vars (cfun), uid);
 }
 
 
