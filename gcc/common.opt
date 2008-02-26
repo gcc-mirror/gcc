@@ -232,10 +232,6 @@ Wunused-variable
 Common Var(warn_unused_variable) Warning
 Warn when a variable is unused
 
-Wvolatile-register-var
-Common Var(warn_register_var) Warning
-Warn when a register variable is declared volatile
-
 Wcoverage-mismatch
 Common RejectNegative Var(warn_coverage_mismatch) Warning
 Warn instead of error in case profiles in -fprofile-use do not match

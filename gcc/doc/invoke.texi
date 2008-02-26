@@ -2683,6 +2683,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wunused-label     @gol
 -Wunused-value     @gol
 -Wunused-variable  @gol
+-Wvolatile-register-var @gol
 }
 
 Note that some warning flags are not implied by @option{-Wall}.  Some of
@@ -4017,7 +4018,8 @@ the variable length array.
 @opindex Wno-volatile-register-var
 Warn if a register variable is declared volatile.  The volatile
 modifier does not inhibit all optimizations that may eliminate reads
-and/or writes to register variables.
+and/or writes to register variables.  This warning is enabled by
+@option{-Wall}.
 
 @item -Wdisabled-optimization
 @opindex Wdisabled-optimization

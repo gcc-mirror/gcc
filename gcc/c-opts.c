@@ -407,6 +407,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       if (warn_strict_overflow == -1)
 	warn_strict_overflow = value;
       warn_array_bounds = value;
+      warn_volatile_register_var = value;
 
       /* Only warn about unknown pragmas that are not in system
 	 headers.  */
