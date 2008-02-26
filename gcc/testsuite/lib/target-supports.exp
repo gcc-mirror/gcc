@@ -410,6 +410,11 @@ proc check_profiling_available { test_what } {
 	return 0
     }
 
+    # MinGW does not support -p.
+    if { [istarget *-*-mingw*] && [lindex $test_what 1] == "-p" } {
+	return 0
+    }
+
     # At present, there is no profiling support on NetWare.
     if { [istarget *-*-netware*] } {
 	return 0
