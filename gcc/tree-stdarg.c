@@ -648,7 +648,6 @@ execute_optimize_stdarg (void)
 	      break;
 	      /* If old style builtins are used, don't optimize anything.  */
 	    case BUILT_IN_SAVEREGS:
-	    case BUILT_IN_STDARG_START:
 	    case BUILT_IN_ARGS_INFO:
 	    case BUILT_IN_NEXT_ARG:
 	      va_list_escapes = true;

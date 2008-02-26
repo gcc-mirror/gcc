@@ -1,3 +1,11 @@
+2008-02-26  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+        PR 26264
+	* builtins.def (BUILT_IN_STDARG_START): Remove.
+	* builtins.c (expand_builtin): Remove BUILT_IN_STDARG_START.
+	* tree-stdarg.c (execute_optimize_stdarg): Likewise.
+	* tree-inline.c (inline_forbidden_p_1): Likewise.
+	
 2008-02-26  Richard Guenther  <rguenther@suse.de>
 
 	* tree-flow.h (uid_decl_map_hash, uid_decl_map_eq): Move ...
