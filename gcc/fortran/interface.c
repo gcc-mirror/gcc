@@ -561,7 +561,7 @@ check_operator_interface (gfc_interface *intr, gfc_intrinsic_op operator)
       if (sym == NULL)
 	{
 	  gfc_error ("Alternate return cannot appear in operator "
-		     "interface at %L", &intr->where);
+		     "interface at %L", &intr->sym->declared_at);
 	  return;
 	}
       if (args == 0)
@@ -591,7 +591,7 @@ check_operator_interface (gfc_interface *intr, gfc_intrinsic_op operator)
       || (args == 2 && operator == INTRINSIC_NOT))
     {
       gfc_error ("Operator interface at %L has the wrong number of arguments",
-		 &intr->where);
+		 &intr->sym->declared_at);
       return;
     }
 
@@ -602,23 +602,28 @@ check_operator_interface (gfc_interface *intr, gfc_intrinsic_op operator)
       if (!sym->attr.subroutine)
 	{
 	  gfc_error ("Assignment operator interface at %L must be "
-		     "a SUBROUTINE", &intr->where);
+		     "a SUBROUTINE", &intr->sym->declared_at);
 	  return;
 	}
       if (args != 2)
 	{
 	  gfc_error ("Assignment operator interface at %L must have "
-		     "two arguments", &intr->where);
+		     "two arguments", &intr->sym->declared_at);
 	  return;
 	}
+
+      /* Allowed are (per F2003, 12.3.2.1.2 Defined assignments):
+         - First argument an array with different rank than second,
+         - Types and kinds do not conform, and
+         - First argument is of derived type.  */
       if (sym->formal->sym->ts.type != BT_DERIVED
-	  && sym->formal->next->sym->ts.type != BT_DERIVED
+	  && (r1 == 0 || r1 == r2)
 	  && (sym->formal->sym->ts.type == sym->formal->next->sym->ts.type
 	      || (gfc_numeric_ts (&sym->formal->sym->ts)
 		  && gfc_numeric_ts (&sym->formal->next->sym->ts))))
 	{
 	  gfc_error ("Assignment operator interface at %L must not redefine "
-		     "an INTRINSIC type assignment", &intr->where);
+		     "an INTRINSIC type assignment", &intr->sym->declared_at);
 	  return;
 	}
     }
@@ -627,7 +632,7 @@ check_operator_interface (gfc_interface *intr, gfc_intrinsic_op operator)
       if (!sym->attr.function)
 	{
 	  gfc_error ("Intrinsic operator interface at %L must be a FUNCTION",
-		     &intr->where);
+		     &intr->sym->declared_at);
 	  return;
 	}
     }
@@ -637,21 +642,21 @@ check_operator_interface (gfc_interface *intr, gfc_intrinsic_op operator)
     {
       if (i1 != INTENT_OUT && i1 != INTENT_INOUT)
 	gfc_error ("First argument of defined assignment at %L must be "
-		   "INTENT(IN) or INTENT(INOUT)", &intr->where);
+		   "INTENT(OUT) or INTENT(INOUT)", &intr->sym->declared_at);
 
       if (i2 != INTENT_IN)
 	gfc_error ("Second argument of defined assignment at %L must be "
-		   "INTENT(IN)", &intr->where);
+		   "INTENT(IN)", &intr->sym->declared_at);
     }
   else
     {
       if (i1 != INTENT_IN)
 	gfc_error ("First argument of operator interface at %L must be "
-		   "INTENT(IN)", &intr->where);
+		   "INTENT(IN)", &intr->sym->declared_at);
 
       if (args == 2 && i2 != INTENT_IN)
 	gfc_error ("Second argument of operator interface at %L must be "
-		   "INTENT(IN)", &intr->where);
+		   "INTENT(IN)", &intr->sym->declared_at);
     }
 
   /* From now on, all we have to do is check that the operator definition
@@ -2654,7 +2659,8 @@ gfc_extend_assign (gfc_code *c, gfc_namespace *ns)
   rhs = c->expr2;
 
   /* Don't allow an intrinsic assignment to be replaced.  */
-  if (lhs->ts.type != BT_DERIVED && rhs->ts.type != BT_DERIVED
+  if (lhs->ts.type != BT_DERIVED
+      && (rhs->rank == 0 || rhs->rank == lhs->rank)
       && (lhs->ts.type == rhs->ts.type
 	  || (gfc_numeric_ts (&lhs->ts) && gfc_numeric_ts (&rhs->ts))))
     return FAILURE;

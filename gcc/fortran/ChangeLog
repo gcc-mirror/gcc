@@ -1,3 +1,11 @@
+2008-02-26  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/35033
+	* interface.c (check_operator_interface): Show better line for error
+	messages; fix constrains for user-defined assignment operators.
+	(gfc_extend_assign): Fix constrains for user-defined assignment
+	operators.
+
 2008-02-26  Tom Tromey  <tromey@redhat.com>
 
 	* trans-io.c (set_error_locus): Remove old location code.
