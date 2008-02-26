@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "df.h"
 #include "dce.h"
+#include "dbgcnt.h"
 
 #define FORWARDER_BLOCK_P(BB) ((BB)->flags & BB_FORWARDER_BLOCK)
 
@@ -2249,6 +2250,9 @@ cleanup_cfg (int mode)
      cleanups.  */
   if (mode & CLEANUP_CROSSJUMP)
     add_noreturn_fake_exit_edges ();
+
+  if (!dbg_cnt (cfg_cleanup))
+    return changed;
 
   while (try_optimize_cfg (mode))
     {

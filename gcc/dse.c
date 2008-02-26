@@ -540,6 +540,8 @@ static unsigned int current_position;
 
 
 static bool gate_dse (void);
+static bool gate_dse1 (void);
+static bool gate_dse2 (void);
 
 
 /*----------------------------------------------------------------------------
@@ -3284,13 +3286,27 @@ rest_of_handle_dse (void)
 static bool
 gate_dse (void)
 {
-  return optimize > 0 && flag_dse;
+  return gate_dse1 () || gate_dse2 ();
+}
+
+static bool
+gate_dse1 (void)
+{
+  return optimize > 0 && flag_dse
+    && dbg_cnt (dse1);
+}
+
+static bool
+gate_dse2 (void)
+{
+  return optimize > 0 && flag_dse
+    && dbg_cnt (dse2);
 }
 
 struct tree_opt_pass pass_rtl_dse1 =
 {
   "dse1",                               /* name */
-  gate_dse,                             /* gate */
+  gate_dse1,                            /* gate */
   rest_of_handle_dse,                   /* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
@@ -3309,7 +3325,7 @@ struct tree_opt_pass pass_rtl_dse1 =
 struct tree_opt_pass pass_rtl_dse2 =
 {
   "dse2",                               /* name */
-  gate_dse,                             /* gate */
+  gate_dse2,                            /* gate */
   rest_of_handle_dse,                   /* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */

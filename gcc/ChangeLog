@@ -1,3 +1,22 @@
+2008-02-26  David Edelsohn  <edelsohn@gnu.org>
+
+	* dbgcnt.def (cfg_cleanup, cprop1, cprop2, dce_fast, dce_ud, dse1,
+	dse2, gcse, if_conversion, if_after_combine, if_after_reload,
+	jump_bypass): New counters.
+	* cfgcleanup.c (cleanup_cfg): Add dbg_cnt.
+	* dce.c (gate_ud_dce): Same.
+	(gate_fast_dce): Same.
+	* dse.c (gate_dse1): New function.
+	(gate_dse2): New function.
+	(gate_dse): Merge results of new gate functions.
+	* gcse.c (gcse_main): Bracket cprop1 and cprop2 with dbg_cnt.
+	(gate_handle_jump_bypass): Add dbg_cnt.
+	(gate_handle_gcse): Add dbg_cnt.
+	* ifcvt.c (gate_handle_if_conversion): Same.
+	(gate_handle_if_after_combine): Same.
+	(gate_handle_if_after_reload): Same.
+	* Makefile.in: Add DBGCNT_H to cfgcleanup.o and ifcvt.o.
+
 2008-02-26  Edmar Wienskoski  <edmar@freescale.com>
 
 	* config/rs6000/rs6000.c (processor_costs): Update e300 cache
