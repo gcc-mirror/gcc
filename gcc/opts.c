@@ -1540,6 +1540,11 @@ common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_Wlarger_than_:
+      /* This form corresponds to -Wlarger-than-.  
+	 Kept for backward compatibility. 
+	 Don't use it as the first argument of warning().  */
+
+    case OPT_Wlarger_than_eq:
       larger_than_size = value;
       warn_larger_than = value != -1;
       break;

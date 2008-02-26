@@ -1,3 +1,7 @@
+2008-02-26  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* gcc.dg/Wlarger-than2.c: New.
+	
 2008-02-26  Paolo Carlini  <pcarlini@suse.de>
 
         PR c++/35323

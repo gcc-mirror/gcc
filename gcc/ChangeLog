@@ -1,3 +1,14 @@
+2008-02-26  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* common.opt (Wlarger-than=): New.
+	* doc/invoke.texi (Warning Options): Replace -Wlarger-than- with
+	-Wlarger-than=.
+	* opts.c (common_handle_option): Handle -Wlarger-than=.
+	* optc-gen.awk: Likewise.
+	* opth-gen.awk: Likewise.
+	* stor-layout.c (layout_decl): Use -Wlarger-than= for warning.
+	* tree-optimize.c (tree_rest_of_compilation): Likewise.
+	
 2008-02-26  Manuel Lopez-Ibanez <manu@gcc.gnu.org>
 
 	* c-common.c (match_case_to_enum_1): Add appropriate

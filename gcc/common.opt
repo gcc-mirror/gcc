@@ -127,7 +127,10 @@ Warn when an inlined function cannot be inlined
 
 Wlarger-than-
 Common RejectNegative Joined UInteger Warning
--Wlarger-than-<number>	Warn if an object is larger than <number> bytes
+
+Wlarger-than=
+Common RejectNegative Joined UInteger Warning
+-Wlarger-than=<number>	Warn if an object is larger than <number> bytes
 
 Wlogical-op
 Common Warning Var(warn_logical_op)
