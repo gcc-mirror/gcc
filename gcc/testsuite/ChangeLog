@@ -1,3 +1,8 @@
+2008-02-26  Paolo Carlini  <pcarlini@suse.de>
+
+        PR c++/35323
+        * g++.dg/lookup/crash7.C: New.
+
 2008-02-26  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* gcc.c-torture/execute/nest-align-1.c: Use the largest alignment.
