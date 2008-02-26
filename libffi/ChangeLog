@@ -1,3 +1,13 @@
+2008-02-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	Backport:
+	2007-03-24  Uros Bizjak  <ubizjak@gmail.com>
+	
+	* testsuite/libffi.call/return_fl2.c (return_fl): Mark as static.
+	Use 'volatile float sum' to create sum of floats to avoid false
+	negative due to excess precision on ix86 targets.
+	(main): Ditto. 
+
 2008-02-01  Release Manager
 
 	* GCC 4.2.3 released.

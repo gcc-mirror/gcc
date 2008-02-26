@@ -7,12 +7,13 @@
 /* { dg-do run } */
 #include "ffitest.h"
 
-/* To avoid a false negative on ix86 do not declare the return_fl static.
-   See PR323.
-*/
-float return_fl(float fl1, float fl2, float fl3, float fl4)
+/* Use volatile float to avoid false negative on ix86.  See PR target/323.  */
+static float return_fl(float fl1, float fl2, float fl3, float fl4)
 {
-  return fl1 + fl2 + fl3 + fl4;
+  volatile float sum;
+
+  sum = fl1 + fl2 + fl3 + fl4;
+  return sum;
 }
 int main (void)
 {
@@ -20,6 +21,7 @@ int main (void)
   ffi_type *args[MAX_ARGS];
   void *values[MAX_ARGS];
   float fl1, fl2, fl3, fl4, rfl;
+  volatile float sum;
 
   args[0] = &ffi_type_float;
   args[1] = &ffi_type_float;
@@ -40,6 +42,8 @@ int main (void)
 
   ffi_call(&cif, FFI_FN(return_fl), &rfl, values);
   printf ("%f vs %f\n", rfl, return_fl(fl1, fl2, fl3, fl4));
-  CHECK(rfl ==  fl1 + fl2 + fl3 + fl4);
+
+  sum = fl1 + fl2 + fl3 + fl4;
+  CHECK(rfl == sum);
   exit(0);
 }
