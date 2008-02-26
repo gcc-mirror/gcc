@@ -36,4 +36,5 @@ main()
 	abort();
     if (sizeof(struct one_gcc) != 8)
 	abort();
+    return 0;
   }
