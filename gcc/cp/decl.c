@@ -3957,6 +3957,7 @@ start_decl (const cp_declarator *declarator,
   tree type;
   tree context;
   bool was_public;
+  int flags;
 
   *pushed_scope_p = NULL_TREE;
 
@@ -4018,8 +4019,17 @@ start_decl (const cp_declarator *declarator,
 	TREE_STATIC (decl) = 1;
     }
 
+  /* If this is a typedef that names the class for linkage purposes
+     (7.1.3p8), apply any attributes directly to the type.  */
+  if (TREE_CODE (decl) == TYPE_DECL
+      && TAGGED_TYPE_P (TREE_TYPE (decl))
+      && decl == TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (decl))))
+    flags = ATTR_FLAG_TYPE_IN_PLACE;
+  else
+    flags = 0;
+
   /* Set attributes here so if duplicate decl, will have proper attributes.  */
-  cplus_decl_attributes (&decl, attributes, 0);
+  cplus_decl_attributes (&decl, attributes, flags);
 
   /* Dllimported symbols cannot be defined.  Static data members (which
      can be initialized in-class and dllimported) go through grokfield,
@@ -8556,8 +8566,6 @@ grokdeclarator (const cp_declarator *declarator,
 	  && TYPE_NAME (type)
 	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 	  && TYPE_ANONYMOUS_P (type)
-	  /* Don't do this if there are attributes.  */
-	  && (!attrlist || !*attrlist)
 	  && cp_type_quals (type) == TYPE_UNQUALIFIED)
 	{
 	  tree oldname = TYPE_NAME (type);
