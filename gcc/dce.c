@@ -563,7 +563,8 @@ rest_of_handle_ud_dce (void)
 static bool
 gate_ud_dce (void)
 {
-  return optimize > 1 && flag_dce;
+  return optimize > 1 && flag_dce
+    && dbg_cnt (dce_ud);
 }
 
 struct tree_opt_pass pass_ud_rtl_dce =
@@ -848,7 +849,8 @@ run_fast_dce (void)
 static bool
 gate_fast_dce (void)
 {
-  return optimize > 0 && flag_dce;
+  return optimize > 0 && flag_dce
+    && dbg_cnt (dce_fast);
 }
 
 struct tree_opt_pass pass_fast_rtl_dce =

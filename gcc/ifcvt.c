@@ -45,6 +45,7 @@
 #include "df.h"
 #include "vec.h"
 #include "vecprim.h"
+#include "dbgcnt.h"
 
 #ifndef HAVE_conditional_execution
 #define HAVE_conditional_execution 0
@@ -4109,7 +4110,8 @@ if_convert (void)
 static bool
 gate_handle_if_conversion (void)
 {
-  return (optimize > 0);
+  return (optimize > 0)
+    && dbg_cnt (if_conversion);
 }
 
 /* If-conversion and CFG cleanup.  */
@@ -4149,7 +4151,8 @@ struct tree_opt_pass pass_rtl_ifcvt =
 static bool
 gate_handle_if_after_combine (void)
 {
-  return (optimize > 0 && flag_if_conversion);
+  return optimize > 0 && flag_if_conversion
+    && dbg_cnt (if_after_combine);
 }
 
 
@@ -4185,7 +4188,8 @@ struct tree_opt_pass pass_if_after_combine =
 static bool
 gate_handle_if_after_reload (void)
 {
-  return (optimize > 0 && flag_if_conversion2);
+  return optimize > 0 && flag_if_conversion2
+    && dbg_cnt (if_after_reload);
 }
 
 static unsigned int
