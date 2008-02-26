@@ -1,3 +1,10 @@
+2008-02-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35315
+	* decl.c (grokdeclarator): Allow a typedef of an unnamed struct
+	to name the struct for linkage purposes even if it has attributes.
+	(start_decl): In that case, set ATTR_FLAG_TYPE_IN_PLACE.
+
 2008-02-26  Tom Tromey  <tromey@redhat.com>
 
 	* parser.c (eof_token): Remove old location code.
@@ -181,7 +188,7 @@
 2008-02-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/34824
-	* call.c (convert_like_real): Pass LOOKUP_ONLYCONVERTING to build_temp
+	* call.c (convert_like_real): Pass LOOKUP_NO_CONVERSION to build_temp
 	if we're doing conversions to call a user-defined conversion function.
 
 2008-02-12  Steven Bosscher  <steven@gcc.gnu.org>

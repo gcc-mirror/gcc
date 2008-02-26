@@ -1,3 +1,9 @@
+2008-02-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35315
+	* attribs.c (decl_attributes): Leave ATTR_FLAG_TYPE_IN_PLACE 
+	alone if it's the naming decl for the type's main variant.
+
 2008-02-26  Tom Tromey  <tromey@redhat.com>
 
 	* system.h (USE_MAPPED_LOCATION): Poison.
