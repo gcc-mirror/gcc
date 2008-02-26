@@ -1,3 +1,8 @@
+2008-02-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.target/i386/mmx-4.c (dump64_64): Use printf %I64 on MinGW.
+	* gcc.target/i386/sse-6.c (dump128_64): Likewise.
+
 2008-02-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.target/i386/pr25993.c: Skip on *-*-mingw*.
