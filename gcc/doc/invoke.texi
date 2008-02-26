@@ -241,7 +241,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
 -Wimport  -Wno-import  -Winit-self  -Winline @gol
 -Wno-int-to-pointer-cast -Wno-invalid-offsetof @gol
--Winvalid-pch -Wlarger-than-@var{len}  -Wunsafe-loop-optimizations @gol
+-Winvalid-pch -Wlarger-than=@var{len}  -Wunsafe-loop-optimizations @gol
 -Wlogical-op -Wlong-long @gol
 -Wmain  -Wmissing-braces  -Wmissing-field-initializers @gol
 -Wmissing-format-attribute  -Wmissing-include-dirs @gol
@@ -3516,7 +3516,8 @@ Do not warn whenever an @samp{#else} or an @samp{#endif} are followed by text.
 Warn whenever a local variable shadows another local variable, parameter or
 global variable or whenever a built-in function is shadowed.
 
-@item -Wlarger-than-@var{len}
+@item -Wlarger-than=@var{len}
+@opindex Wlarger-than=@var{len}
 @opindex Wlarger-than-@var{len}
 Warn whenever an object of larger than @var{len} bytes is defined.
 
