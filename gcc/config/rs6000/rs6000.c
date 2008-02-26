@@ -358,7 +358,7 @@ struct processor_costs rios1_cost = {
   COSTS_N_INSNS (2),    /* dmul */
   COSTS_N_INSNS (19),   /* sdiv */
   COSTS_N_INSNS (19),   /* ddiv */
-  128,
+  128,			/* cache line size */
   64,			/* l1 cache */
   512,			/* l2 cache */
   0,			/* streams */
@@ -377,7 +377,7 @@ struct processor_costs rios2_cost = {
   COSTS_N_INSNS (2),    /* dmul */
   COSTS_N_INSNS (17),   /* sdiv */
   COSTS_N_INSNS (17),   /* ddiv */
-  256,
+  256,			/* cache line size */
   256,			/* l1 cache */
   1024,			/* l2 cache */
   0,			/* streams */
@@ -396,7 +396,7 @@ struct processor_costs rs64a_cost = {
   COSTS_N_INSNS (4),    /* dmul */
   COSTS_N_INSNS (31),   /* sdiv */
   COSTS_N_INSNS (31),   /* ddiv */
-  128,
+  128,			/* cache line size */
   128,			/* l1 cache */
   2048,			/* l2 cache */
   1,			/* streams */
@@ -415,7 +415,7 @@ struct processor_costs mpccore_cost = {
   COSTS_N_INSNS (5),    /* dmul */
   COSTS_N_INSNS (10),   /* sdiv */
   COSTS_N_INSNS (17),   /* ddiv */
-  32,
+  32,			/* cache line size */
   4,			/* l1 cache */
   16,			/* l2 cache */
   1,			/* streams */
@@ -434,7 +434,7 @@ struct processor_costs ppc403_cost = {
   COSTS_N_INSNS (11),   /* dmul */
   COSTS_N_INSNS (11),   /* sdiv */
   COSTS_N_INSNS (11),   /* ddiv */
-  32,
+  32,			/* cache line size */
   4,			/* l1 cache */
   16,			/* l2 cache */
   1,			/* streams */
@@ -453,7 +453,7 @@ struct processor_costs ppc405_cost = {
   COSTS_N_INSNS (11),   /* dmul */
   COSTS_N_INSNS (11),   /* sdiv */
   COSTS_N_INSNS (11),   /* ddiv */
-  32,
+  32,			/* cache line size */
   16,			/* l1 cache */
   128,			/* l2 cache */
   1,			/* streams */
@@ -472,7 +472,7 @@ struct processor_costs ppc440_cost = {
   COSTS_N_INSNS (5),    /* dmul */
   COSTS_N_INSNS (19),   /* sdiv */
   COSTS_N_INSNS (33),   /* ddiv */
-  32,
+  32,			/* cache line size */
   32,			/* l1 cache */
   256,			/* l2 cache */
   1,			/* streams */
@@ -491,7 +491,7 @@ struct processor_costs ppc601_cost = {
   COSTS_N_INSNS (5),    /* dmul */
   COSTS_N_INSNS (17),   /* sdiv */
   COSTS_N_INSNS (31),   /* ddiv */
-  32,
+  32,			/* cache line size */
   32,			/* l1 cache */
   256,			/* l2 cache */
   1,			/* streams */
@@ -510,7 +510,7 @@ struct processor_costs ppc603_cost = {
   COSTS_N_INSNS (4),    /* dmul */
   COSTS_N_INSNS (18),   /* sdiv */
   COSTS_N_INSNS (33),   /* ddiv */
-  32,
+  32,			/* cache line size */
   8,			/* l1 cache */
   64,			/* l2 cache */
   1,			/* streams */
@@ -529,7 +529,7 @@ struct processor_costs ppc604_cost = {
   COSTS_N_INSNS (3),    /* dmul */
   COSTS_N_INSNS (18),   /* sdiv */
   COSTS_N_INSNS (32),   /* ddiv */
-  32,
+  32,			/* cache line size */
   16,			/* l1 cache */
   512,			/* l2 cache */
   1,			/* streams */
@@ -548,7 +548,7 @@ struct processor_costs ppc604e_cost = {
   COSTS_N_INSNS (3),    /* dmul */
   COSTS_N_INSNS (18),   /* sdiv */
   COSTS_N_INSNS (32),   /* ddiv */
-  32,
+  32,			/* cache line size */
   32,			/* l1 cache */
   1024,			/* l2 cache */
   1,			/* streams */
@@ -567,7 +567,7 @@ struct processor_costs ppc620_cost = {
   COSTS_N_INSNS (3),    /* dmul */
   COSTS_N_INSNS (18),   /* sdiv */
   COSTS_N_INSNS (32),   /* ddiv */
-  128,
+  128,			/* cache line size */
   32,			/* l1 cache */
   1024,			/* l2 cache */
   1,			/* streams */
@@ -586,7 +586,7 @@ struct processor_costs ppc630_cost = {
   COSTS_N_INSNS (3),    /* dmul */
   COSTS_N_INSNS (17),   /* sdiv */
   COSTS_N_INSNS (21),   /* ddiv */
-  128,
+  128,			/* cache line size */
   64,			/* l1 cache */
   1024,			/* l2 cache */
   1,			/* streams */
@@ -606,7 +606,7 @@ struct processor_costs ppccell_cost = {
   COSTS_N_INSNS (10/2),   /* dmul */
   COSTS_N_INSNS (74/2),   /* sdiv */
   COSTS_N_INSNS (74/2),   /* ddiv */
-  128,
+  128,			/* cache line size */
   32,			/* l1 cache */
   512,			/* l2 cache */
   6,			/* streams */
@@ -625,7 +625,7 @@ struct processor_costs ppc750_cost = {
   COSTS_N_INSNS (3),    /* dmul */
   COSTS_N_INSNS (17),   /* sdiv */
   COSTS_N_INSNS (31),   /* ddiv */
-  32,
+  32,			/* cache line size */
   32,			/* l1 cache */
   512,			/* l2 cache */
   1,			/* streams */
@@ -644,7 +644,7 @@ struct processor_costs ppc7450_cost = {
   COSTS_N_INSNS (5),    /* dmul */
   COSTS_N_INSNS (21),   /* sdiv */
   COSTS_N_INSNS (35),   /* ddiv */
-  32,
+  32,			/* cache line size */
   32,			/* l1 cache */
   1024,			/* l2 cache */
   1,			/* streams */
@@ -663,7 +663,7 @@ struct processor_costs ppc8540_cost = {
   COSTS_N_INSNS (4),    /* dmul */
   COSTS_N_INSNS (29),   /* sdiv */
   COSTS_N_INSNS (29),   /* ddiv */
-  32,
+  32,			/* cache line size */
   32,			/* l1 cache */
   256,			/* l2 cache */
   1,			/* prefetch streams /*/
@@ -701,7 +701,7 @@ struct processor_costs power4_cost = {
   COSTS_N_INSNS (3),    /* dmul */
   COSTS_N_INSNS (17),   /* sdiv */
   COSTS_N_INSNS (17),   /* ddiv */
-  128,
+  128,			/* cache line size */
   32,			/* l1 cache */
   1024,			/* l2 cache */
   8,			/* prefetch streams /*/
@@ -720,7 +720,7 @@ struct processor_costs power6_cost = {
   COSTS_N_INSNS (3),    /* dmul */
   COSTS_N_INSNS (13),   /* sdiv */
   COSTS_N_INSNS (16),   /* ddiv */
-  128,
+  128,			/* cache line size */
   64,			/* l1 cache */
   2048,			/* l2 cache */
   16,			/* prefetch streams */

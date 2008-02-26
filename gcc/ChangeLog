@@ -1,3 +1,8 @@
+2008-02-27  Ben Elliston  <bje@au.ibm.com>
+
+	* config/rs6000/rs6000.c: Annotate cache line size field in all
+	instances of struct processor_costs.
+
 2008-02-26  David Edelsohn  <edelsohn@gnu.org>
 
 	* dbgcnt.def (cfg_cleanup, cprop1, cprop2, dce_fast, dce_ud, dse1,
