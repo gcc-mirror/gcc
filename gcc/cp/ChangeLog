@@ -1,3 +1,8 @@
+2008-02-26  Richard Guenther  <rguenther@suse.de>
+
+	* decl.c (duplicate_decls): Remove decl from global mapping
+	before ggc_freeing it.
+
 2008-02-26  Paolo Carlini  <pcarlini@suse.de>
 
         PR c++/35323

@@ -378,28 +378,23 @@ verify_flow_insensitive_alias_info (void)
 
   FOR_EACH_REFERENCED_VAR (var, rvi)
     {
-      unsigned int j;
       bitmap aliases;
       tree alias;
-      bitmap_iterator bi;
+      referenced_var_iterator ri;
 
       if (!MTAG_P (var) || !MTAG_ALIASES (var))
 	continue;
       
       aliases = MTAG_ALIASES (var);
 
-      EXECUTE_IF_SET_IN_BITMAP (aliases, 0, j, bi)
-	{
-	  alias = referenced_var (j);
-
-	  if (TREE_CODE (alias) != MEMORY_PARTITION_TAG
-	      && !may_be_aliased (alias))
-	    {
-	      error ("non-addressable variable inside an alias set");
-	      debug_variable (alias);
-	      goto err;
-	    }
-	}
+      FOR_EACH_REFERENCED_VAR_IN_BITMAP (aliases, alias, ri)
+	if (TREE_CODE (alias) != MEMORY_PARTITION_TAG
+	    && !may_be_aliased (alias))
+	  {
+	    error ("non-addressable variable inside an alias set");
+	    debug_variable (alias);
+	    goto err;
+	  }
     }
 
   return;
@@ -486,20 +481,17 @@ err:
 static void
 verify_call_clobbering (void)
 {
-  unsigned int i;
-  bitmap_iterator bi;
-  tree var;
   referenced_var_iterator rvi;
+  tree var;
 
   /* At all times, the result of the call_clobbered flag should
      match the result of the call_clobbered_vars bitmap.  Verify both
      that everything in call_clobbered_vars is marked
      call_clobbered, and that everything marked
      call_clobbered is in call_clobbered_vars.  */
-  EXECUTE_IF_SET_IN_BITMAP (gimple_call_clobbered_vars (cfun), 0, i, bi)
+  FOR_EACH_REFERENCED_VAR_IN_BITMAP (gimple_call_clobbered_vars (cfun),
+				     var, rvi)
     {
-      var = referenced_var (i);
-
       if (memory_partition (var))
 	var = memory_partition (var);
 
@@ -550,8 +542,8 @@ verify_memory_partitions (void)
 
   for (i = 0; VEC_iterate (tree, mpt_table, i, mpt); i++)
     {
-      unsigned j;
-      bitmap_iterator bj;
+      referenced_var_iterator ri;
+      tree var;
 
       if (MPT_SYMBOLS (mpt) == NULL)
 	{
@@ -560,17 +552,14 @@ verify_memory_partitions (void)
 	  goto err;
 	}
 
-      EXECUTE_IF_SET_IN_BITMAP (MPT_SYMBOLS (mpt), 0, j, bj)
-	{
-	  tree var = referenced_var (j);
-	  if (pointer_set_insert (partitioned_syms, var))
-	    {
-	      error ("Partitioned symbols should belong to exactly one "
-		     "partition");
-	      debug_variable (var);
-	      goto err;
-	    }
-	}
+      FOR_EACH_REFERENCED_VAR_IN_BITMAP (MPT_SYMBOLS (mpt), var, ri)
+	if (pointer_set_insert (partitioned_syms, var))
+	  {
+	    error ("Partitioned symbols should belong to exactly one "
+		   "partition");
+	    debug_variable (var);
+	    goto err;
+	  }
     }
 
   pointer_set_destroy (partitioned_syms);
@@ -774,24 +763,6 @@ int_tree_map_hash (const void *item)
   return ((const struct int_tree_map *)item)->uid;
 }
 
-/* Return true if the DECL_UID in both trees are equal.  */
-
-int
-uid_decl_map_eq (const void *va, const void *vb)
-{
-  const_tree a = (const_tree) va;
-  const_tree b = (const_tree) vb;
-  return (a->decl_minimal.uid == b->decl_minimal.uid);
-}
-
-/* Hash a tree in a uid_decl_map.  */
-
-unsigned int
-uid_decl_map_hash (const void *item)
-{
-  return ((const_tree)item)->decl_minimal.uid;
-}
-
 /* Return true if the uid in both int tree maps are equal.  */
 
 static int
@@ -835,8 +806,7 @@ void
 init_tree_ssa (void)
 {
   cfun->gimple_df = GGC_CNEW (struct gimple_df);
-  cfun->gimple_df->referenced_vars = htab_create_ggc (20, uid_decl_map_hash, 
-				     		      uid_decl_map_eq, NULL);
+  cfun->gimple_df->referenced_vars = BITMAP_GGC_ALLOC ();
   cfun->gimple_df->default_defs = htab_create_ggc (20, uid_ssaname_map_hash, 
 				                   uid_ssaname_map_eq, NULL);
   cfun->gimple_df->var_anns = htab_create_ggc (20, var_ann_hash, 
@@ -893,7 +863,6 @@ delete_tree_ssa (void)
         ggc_free (var->base.ann);
       var->base.ann = NULL;
     }
-  htab_delete (gimple_referenced_vars (cfun));
   cfun->gimple_df->referenced_vars = NULL;
 
   fini_ssanames ();
