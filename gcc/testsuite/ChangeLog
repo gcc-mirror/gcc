@@ -1,5 +1,10 @@
 2008-02-25  Joseph Myers  <joseph@codesourcery.com>
 
+	* gcc.dg/builtins-config.h: Disable C99 runtime testing for
+	Windows.
+
+2008-02-25  Joseph Myers  <joseph@codesourcery.com>
+
 	* lib/target-supports.exp (check_profiling_available): Report -p
 	unavailable on *-*-mingw*.
 
