@@ -1,3 +1,8 @@
+2008-02-26  Paolo Carlini  <pcarlini@suse.de>
+
+        PR c++/35323
+        * name-lookup.c (arg_assoc_type): Handle FIXED_POINT_TYPE.
+
 2008-02-26  Manuel Lopez-Ibanez <manu@gcc.gnu.org>
 	
 	* typeck.c (build_class_member_access_expr): Add appropriate
