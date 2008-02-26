@@ -5,6 +5,7 @@
  */
 
 /* { dg-do compile } */
+/* { dg-require-effective-target pthread_h } */
 /* { dg-options "-Wextra -Wall" } */
 
 #include "pthread-init-common.h"
