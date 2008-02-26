@@ -1,5 +1,10 @@
 2008-02-25  Joseph Myers  <joseph@codesourcery.com>
 
+	* lib/target-supports.exp (check_profiling_available): Report -p
+	unavailable on *-*-mingw*.
+
+2008-02-25  Joseph Myers  <joseph@codesourcery.com>
+
 	* lib/target-supports.exp (check_effective_target_pthread_h): New.
 	* gcc.dg/pthread-init-1.c, gcc.dg/pthread-init-2.c: Use
 	dg-require-effective-target pthread_h.
