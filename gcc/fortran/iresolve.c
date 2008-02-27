@@ -1853,47 +1853,15 @@ gfc_resolve_reshape (gfc_expr *f, gfc_expr *source, gfc_expr *shape,
 void
 gfc_resolve_rrspacing (gfc_expr *f, gfc_expr *x)
 {
-  int k;
-  gfc_actual_arglist *prec;
-
   f->ts = x->ts;
   f->value.function.name = gfc_get_string ("__rrspacing_%d", x->ts.kind);
-
-  /* Create a hidden argument to the library routines for rrspacing.  This
-     hidden argument is the precision of x.  */
-  k = gfc_validate_kind (BT_REAL, x->ts.kind, false);
-  prec = gfc_get_actual_arglist ();
-  prec->name = "p";
-  prec->expr = gfc_int_expr (gfc_real_kinds[k].digits);
-  /* The library routine expects INTEGER(4).  */
-  if (prec->expr->ts.kind != gfc_c_int_kind)
-    {
-      gfc_typespec ts;
-      gfc_clear_ts (&ts);
-      ts.type = BT_INTEGER;
-      ts.kind = gfc_c_int_kind;
-      gfc_convert_type (prec->expr, &ts, 2);
-    }
-  f->value.function.actual->next = prec;
 }
 
 
 void
-gfc_resolve_scale (gfc_expr *f, gfc_expr *x, gfc_expr *i)
+gfc_resolve_scale (gfc_expr *f, gfc_expr *x, gfc_expr *i ATTRIBUTE_UNUSED)
 {
   f->ts = x->ts;
-
-  /* The implementation calls scalbn which takes an int as the
-     second argument.  */
-  if (i->ts.kind != gfc_c_int_kind)
-    {
-      gfc_typespec ts;
-      gfc_clear_ts (&ts);
-      ts.type = BT_INTEGER;
-      ts.kind = gfc_c_int_kind;
-      gfc_convert_type_warn (i, &ts, 2, 0);
-    }
-
   f->value.function.name = gfc_get_string ("__scale_%d", x->ts.kind);
 }
 
@@ -1921,22 +1889,10 @@ gfc_resolve_secnds (gfc_expr *t1, gfc_expr *t0)
 
 
 void
-gfc_resolve_set_exponent (gfc_expr *f, gfc_expr *x, gfc_expr *i)
+gfc_resolve_set_exponent (gfc_expr *f, gfc_expr *x,
+			  gfc_expr *i ATTRIBUTE_UNUSED)
 {
   f->ts = x->ts;
-
-  /* The library implementation uses GFC_INTEGER_4 unconditionally,
-     convert type so we don't have to implement all possible
-     permutations.  */
-  if (i->ts.kind != gfc_c_int_kind)
-    {
-      gfc_typespec ts;
-      gfc_clear_ts (&ts);
-      ts.type = BT_INTEGER;
-      ts.kind = gfc_c_int_kind;
-      gfc_convert_type_warn (i, &ts, 2, 0);
-    }
-
   f->value.function.name = gfc_get_string ("__set_exponent_%d", x->ts.kind);
 }
 
@@ -2016,59 +1972,8 @@ gfc_resolve_size (gfc_expr *f, gfc_expr *array ATTRIBUTE_UNUSED,
 void
 gfc_resolve_spacing (gfc_expr *f, gfc_expr *x)
 {
-  int k; 
-  gfc_actual_arglist *prec, *tiny, *emin_1;
- 
   f->ts = x->ts;
   f->value.function.name = gfc_get_string ("__spacing_%d", x->ts.kind);
-
-  /* Create hidden arguments to the library routine for spacing.  These
-     hidden arguments are tiny(x), min_exponent - 1,  and the precision
-     of x.  */
-
-  k = gfc_validate_kind (BT_REAL, x->ts.kind, false);
-
-  tiny = gfc_get_actual_arglist ();
-  tiny->name = "tiny";
-  tiny->expr = gfc_get_expr ();
-  tiny->expr->expr_type = EXPR_CONSTANT;
-  tiny->expr->where = gfc_current_locus;
-  tiny->expr->ts.type = x->ts.type;
-  tiny->expr->ts.kind = x->ts.kind;
-  mpfr_init (tiny->expr->value.real);
-  mpfr_set (tiny->expr->value.real, gfc_real_kinds[k].tiny, GFC_RND_MODE);
-
-  emin_1 = gfc_get_actual_arglist ();
-  emin_1->name = "emin";
-  emin_1->expr = gfc_int_expr (gfc_real_kinds[k].min_exponent - 1);
-
-  /* The library routine expects INTEGER(4).  */
-  if (emin_1->expr->ts.kind != gfc_c_int_kind)
-    {
-      gfc_typespec ts;
-      gfc_clear_ts (&ts);
-      ts.type = BT_INTEGER;
-      ts.kind = gfc_c_int_kind;
-      gfc_convert_type (emin_1->expr, &ts, 2);
-    }
-  emin_1->next = tiny;
-
-  prec = gfc_get_actual_arglist ();
-  prec->name = "prec";
-  prec->expr = gfc_int_expr (gfc_real_kinds[k].digits);
-
-  /* The library routine expects INTEGER(4).  */
-  if (prec->expr->ts.kind != gfc_c_int_kind)
-    {
-      gfc_typespec ts;
-      gfc_clear_ts (&ts);
-      ts.type = BT_INTEGER;
-      ts.kind = gfc_c_int_kind;
-      gfc_convert_type (prec->expr, &ts, 2);
-    }
-  prec->next = emin_1;
-
-  f->value.function.actual->next = prec;
 }
 
 

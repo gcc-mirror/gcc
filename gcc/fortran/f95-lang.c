@@ -756,6 +756,16 @@ build_builtin_fntypes (tree *fntype, tree type)
   tmp = tree_cons (NULL_TREE, integer_type_node, void_list_node);
   tmp = tree_cons (NULL_TREE, type, tmp);
   fntype[2] = build_function_type (type, tmp);
+  /* type (*) (void) */
+  fntype[3] = build_function_type (type, void_list_node);
+  /* type (*) (type, &int) */
+  tmp = tree_cons (NULL_TREE, type, void_list_node);
+  tmp = tree_cons (NULL_TREE, build_pointer_type (integer_type_node), tmp);
+  fntype[4] = build_function_type (type, tmp);
+  /* type (*) (type, int) */
+  tmp = tree_cons (NULL_TREE, type, void_list_node);
+  tmp = tree_cons (NULL_TREE, integer_type_node, tmp);
+  fntype[5] = build_function_type (type, tmp);
 }
 
 
@@ -806,12 +816,12 @@ gfc_init_builtin_functions (void)
     ATTR_CONST_NOTHROW_LIST
   };
 
-  tree mfunc_float[3];
-  tree mfunc_double[3];
-  tree mfunc_longdouble[3];
-  tree mfunc_cfloat[3];
-  tree mfunc_cdouble[3];
-  tree mfunc_clongdouble[3];
+  tree mfunc_float[6];
+  tree mfunc_double[6];
+  tree mfunc_longdouble[6];
+  tree mfunc_cfloat[6];
+  tree mfunc_cdouble[6];
+  tree mfunc_clongdouble[6];
   tree func_cfloat_float, func_float_cfloat;
   tree func_cdouble_double, func_double_cdouble;
   tree func_clongdouble_longdouble, func_longdouble_clongdouble;
@@ -902,12 +912,47 @@ gfc_init_builtin_functions (void)
   gfc_define_builtin ("__builtin_copysignf", mfunc_float[1], 
 		      BUILT_IN_COPYSIGNF, "copysignf", true);
  
+  gfc_define_builtin ("__builtin_nextafterl", mfunc_longdouble[1], 
+		      BUILT_IN_NEXTAFTERL, "nextafterl", true);
+  gfc_define_builtin ("__builtin_nextafter", mfunc_double[1], 
+		      BUILT_IN_NEXTAFTER, "nextafter", true);
+  gfc_define_builtin ("__builtin_nextafterf", mfunc_float[1], 
+		      BUILT_IN_NEXTAFTERF, "nextafterf", true);
+ 
+  gfc_define_builtin ("__builtin_frexpl", mfunc_longdouble[4], 
+		      BUILT_IN_FREXPL, "frexpl", false);
+  gfc_define_builtin ("__builtin_frexp", mfunc_double[4], 
+		      BUILT_IN_FREXP, "frexp", false);
+  gfc_define_builtin ("__builtin_frexpf", mfunc_float[4], 
+		      BUILT_IN_FREXPF, "frexpf", false);
+ 
+  gfc_define_builtin ("__builtin_fabsl", mfunc_longdouble[0], 
+		      BUILT_IN_FABSL, "fabsl", true);
+  gfc_define_builtin ("__builtin_fabs", mfunc_double[0], 
+		      BUILT_IN_FABS, "fabs", true);
+  gfc_define_builtin ("__builtin_fabsf", mfunc_float[0], 
+		      BUILT_IN_FABSF, "fabsf", true);
+ 
+  gfc_define_builtin ("__builtin_scalbnl", mfunc_longdouble[5], 
+		      BUILT_IN_SCALBNL, "scalbnl", true);
+  gfc_define_builtin ("__builtin_scalbn", mfunc_double[5], 
+		      BUILT_IN_SCALBN, "scalbn", true);
+  gfc_define_builtin ("__builtin_scalbnf", mfunc_float[5], 
+		      BUILT_IN_SCALBNF, "scalbnf", true);
+ 
   gfc_define_builtin ("__builtin_fmodl", mfunc_longdouble[1], 
 		      BUILT_IN_FMODL, "fmodl", true);
   gfc_define_builtin ("__builtin_fmod", mfunc_double[1], 
 		      BUILT_IN_FMOD, "fmod", true);
   gfc_define_builtin ("__builtin_fmodf", mfunc_float[1], 
 		      BUILT_IN_FMODF, "fmodf", true);
+
+  gfc_define_builtin ("__builtin_infl", mfunc_longdouble[3], 
+		      BUILT_IN_INFL, "__builtin_infl", true);
+  gfc_define_builtin ("__builtin_inf", mfunc_double[3], 
+		      BUILT_IN_INF, "__builtin_inf", true);
+  gfc_define_builtin ("__builtin_inff", mfunc_float[3], 
+		      BUILT_IN_INFF, "__builtin_inff", true);
 
   /* lround{f,,l} and llround{f,,l} */
   type = tree_cons (NULL_TREE, float_type_node, void_list_node);
