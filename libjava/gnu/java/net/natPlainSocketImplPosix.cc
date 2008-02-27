@@ -99,12 +99,7 @@ gnu::java::net::PlainSocketImpl::bind (::java::net::InetAddress *host, jint lpor
   if (len == 4)
     {
       u.address.sin_family = AF_INET;
-
-      if (host != NULL)
-        memcpy (&u.address.sin_addr, bytes, len);
-      else
-        u.address.sin_addr.s_addr = htonl (INADDR_ANY);
-
+      memcpy (&u.address.sin_addr, bytes, len);
       len = sizeof (struct sockaddr_in);
       u.address.sin_port = htons (lport);
     }
