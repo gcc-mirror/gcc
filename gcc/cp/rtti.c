@@ -1,6 +1,6 @@
 /* RunTime Type Identification
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007
+   2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Mostly written by Jason Merrill (jason@cygnus.com).
 
@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "convert.h"
 #include "target.h"
+#include "c-pragma.h"
 
 /* C++ returns type information to the user in struct type_info
    objects. We also use type information to implement dynamic_cast and
@@ -124,6 +125,19 @@ static bool typeinfo_in_lib_p (tree);
 
 static int doing_runtime = 0;
 
+static void
+push_abi_namespace (void)
+{
+  push_nested_namespace (abi_node);
+  push_visibility ("default");
+}
+
+static void
+pop_abi_namespace (void)
+{
+  pop_visibility ();
+  pop_nested_namespace (abi_node);
+}
 
 /* Declare language defined type_info type and a pointer to const
    type_info.  This is incomplete here, and will be completed when
@@ -669,10 +683,9 @@ build_dynamic_cast_1 (tree type, tree expr)
 	    {
 	      tree tmp;
 	      tree tinfo_ptr;
-	      tree ns = abi_node;
 	      const char *name;
 
-	      push_nested_namespace (ns);
+	      push_abi_namespace ();
 	      tinfo_ptr = xref_tag (class_type,
 				    get_identifier ("__class_type_info"),
 				    /*tag_scope=*/ts_current, false);
@@ -689,7 +702,7 @@ build_dynamic_cast_1 (tree type, tree expr)
 	      tmp = build_function_type (ptr_type_node, tmp);
 	      dcast_fn = build_library_fn_ptr (name, tmp);
 	      DECL_IS_PURE (dcast_fn) = 1;
-	      pop_nested_namespace (ns);
+	      pop_abi_namespace ();
 	      dynamic_cast_node = dcast_fn;
 	    }
 	  result = build_cxx_call (dcast_fn, 4, elems);
@@ -848,10 +861,10 @@ tinfo_base_init (tinfo_s *ti, tree target)
   if (!vtable_ptr)
     {
       tree real_type;
-      push_nested_namespace (abi_node);
+      push_abi_namespace ();
       real_type = xref_tag (class_type, ti->name,
 			    /*tag_scope=*/ts_current, false);
-      pop_nested_namespace (abi_node);
+      pop_abi_namespace ();
 
       if (!COMPLETE_TYPE_P (real_type))
 	{
@@ -1268,14 +1281,14 @@ get_pseudo_ti_index (tree type)
 					     TK_BASE_TYPE)->type,
 				  array_domain);
 
-	      push_nested_namespace (abi_node);
+	      push_abi_namespace ();
 	      create_pseudo_type_info
 		(ix, "__vmi_class_type_info",
 		 build_decl (FIELD_DECL, NULL_TREE, integer_type_node),
 		 build_decl (FIELD_DECL, NULL_TREE, integer_type_node),
 		 build_decl (FIELD_DECL, NULL_TREE, base_array),
 		 NULL);
-	      pop_nested_namespace (abi_node);
+	      pop_abi_namespace ();
 	      break;
 	    }
 	}
@@ -1298,7 +1311,7 @@ create_tinfo_types (void)
 
   VEC_safe_grow (tinfo_s, gc, tinfo_descs, TK_FIXED);
 
-  push_nested_namespace (abi_node);
+  push_abi_namespace ();
 
   /* Create the internal type_info structure. This is used as a base for
      the other structures.  */
@@ -1376,7 +1389,7 @@ create_tinfo_types (void)
 	build_decl (FIELD_DECL, NULL_TREE, type_info_ptr_type),
 	NULL);
 
-  pop_nested_namespace (abi_node);
+  pop_abi_namespace ();
 }
 
 /* Emit the type_info descriptors which are guaranteed to be in the runtime
@@ -1404,11 +1417,11 @@ emit_support_tinfos (void)
   int ix;
   tree bltn_type, dtor;
 
-  push_nested_namespace (abi_node);
+  push_abi_namespace ();
   bltn_type = xref_tag (class_type,
 			get_identifier ("__fundamental_type_info"),
 			/*tag_scope=*/ts_current, false);
-  pop_nested_namespace (abi_node);
+  pop_abi_namespace ();
   if (!COMPLETE_TYPE_P (bltn_type))
     return;
   dtor = CLASSTYPE_DESTRUCTORS (bltn_type);
