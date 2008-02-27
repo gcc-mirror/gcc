@@ -1,3 +1,12 @@
+2008-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/35368
+	* rtti.c: Include c-pragma.h.
+	(push_abi_namespace, pop_abi_namespace): New functions.
+	(build_dynamic_cast_1, tinfo_base_init, get_pseudo_ti_index,
+	create_tinfo_types, emit_support_tinfos): Use them.
+	* Make-lang.in (cp/rtti.o): Depend on $(C_PRAGMA_H).
+
 2008-02-22  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR C++/34715

@@ -1,3 +1,9 @@
+2008-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/35368
+	* g++.dg/ext/visibility/typeinfo2.C: New test.
+	* g++.dg/ext/visibility/typeinfo3.C: New test.
+
 2008-02-26  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/bf-ms-attrib.c (main): Return 0.
