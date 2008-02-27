@@ -1,5 +1,11 @@
 2008-02-27  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/25290
+	* fold-const.c (fold_unary): Return the correct argument,
+	converted to the result type.
+
+2008-02-27  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/34971
 	* expr.c (expand_expr_real_1): Assert on rotates that operate
 	on partial modes.
