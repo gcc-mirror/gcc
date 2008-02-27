@@ -102,10 +102,6 @@ gfc_powdecl_list gfor_fndecl_math_powi[4][3];
 tree gfor_fndecl_math_ishftc4;
 tree gfor_fndecl_math_ishftc8;
 tree gfor_fndecl_math_ishftc16;
-tree gfor_fndecl_math_exponent4;
-tree gfor_fndecl_math_exponent8;
-tree gfor_fndecl_math_exponent10;
-tree gfor_fndecl_math_exponent16;
 
 
 /* String functions.  */
@@ -2010,10 +2006,6 @@ gfc_build_intrinsic_function_decls (void)
   tree gfc_int8_type_node = gfc_get_int_type (8);
   tree gfc_int16_type_node = gfc_get_int_type (16);
   tree gfc_logical4_type_node = gfc_get_logical_type (4);
-  tree gfc_real4_type_node = gfc_get_real_type (4);
-  tree gfc_real8_type_node = gfc_get_real_type (8);
-  tree gfc_real10_type_node = gfc_get_real_type (10);
-  tree gfc_real16_type_node = gfc_get_real_type (16);
 
   /* String functions.  */
   gfor_fndecl_compare_string =
@@ -2198,25 +2190,6 @@ gfc_build_intrinsic_function_decls (void)
 				       gfc_int16_type_node,
 				       gfc_int4_type_node,
 				       gfc_int4_type_node);
-
-  gfor_fndecl_math_exponent4 =
-    gfc_build_library_function_decl (get_identifier (PREFIX("exponent_r4")),
-				     gfc_int4_type_node,
-				     1, gfc_real4_type_node);
-  gfor_fndecl_math_exponent8 =
-    gfc_build_library_function_decl (get_identifier (PREFIX("exponent_r8")),
-				     gfc_int4_type_node,
-				     1, gfc_real8_type_node);
-  if (gfc_real10_type_node)
-    gfor_fndecl_math_exponent10 =
-      gfc_build_library_function_decl (get_identifier (PREFIX("exponent_r10")),
-				       gfc_int4_type_node, 1,
-				       gfc_real10_type_node);
-  if (gfc_real16_type_node)
-    gfor_fndecl_math_exponent16 =
-      gfc_build_library_function_decl (get_identifier (PREFIX("exponent_r16")),
-				       gfc_int4_type_node, 1,
-				       gfc_real16_type_node);
 
   /* BLAS functions.  */
   {

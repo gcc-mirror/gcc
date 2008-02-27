@@ -104,43 +104,19 @@ gfc_intrinsic_map_t;
     true, true, NAME, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, \
     NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE},
 
-#define LIBM_FUNCTION(ID, NAME, HAVE_COMPLEX) \
-  { GFC_ISYM_ ## ID, END_BUILTINS, END_BUILTINS, END_BUILTINS, END_BUILTINS, \
-    END_BUILTINS, END_BUILTINS, END_BUILTINS, END_BUILTINS, \
-    true, HAVE_COMPLEX, true, NAME, NULL_TREE, NULL_TREE, NULL_TREE, \
-    NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE }
-
-#define LIBF_FUNCTION(ID, NAME, HAVE_COMPLEX) \
-  { GFC_ISYM_ ## ID, END_BUILTINS, END_BUILTINS, END_BUILTINS, END_BUILTINS, \
-    END_BUILTINS, END_BUILTINS, END_BUILTINS, END_BUILTINS, \
-    false, HAVE_COMPLEX, true, NAME, NULL_TREE, NULL_TREE, NULL_TREE, \
-    NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE }
-
 static GTY(()) gfc_intrinsic_map_t gfc_intrinsic_map[] =
 {
   /* Functions built into gcc itself.  */
 #include "mathbuiltins.def"
 
-  /* Functions in libm.  */
-  /* ??? This does exist as BUILT_IN_SCALBN, but doesn't quite fit the
-     pattern for other mathbuiltins.def entries.  At present we have no
-     optimizations for this in the common sources.  */
-  LIBM_FUNCTION (SCALE, "scalbn", false),
-
-  /* Functions in libgfortran.  */
-  LIBF_FUNCTION (FRACTION, "fraction", false),
-  LIBF_FUNCTION (NEAREST, "nearest", false),
-  LIBF_FUNCTION (RRSPACING, "rrspacing", false),
-  LIBF_FUNCTION (SET_EXPONENT, "set_exponent", false),
-  LIBF_FUNCTION (SPACING, "spacing", false),
-
   /* End the list.  */
-  LIBF_FUNCTION (NONE, NULL, false)
+  { GFC_ISYM_NONE, END_BUILTINS, END_BUILTINS, END_BUILTINS, END_BUILTINS,
+    END_BUILTINS, END_BUILTINS, END_BUILTINS, END_BUILTINS,
+    true, false, true, NULL, NULL_TREE, NULL_TREE, NULL_TREE,
+    NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE }
 };
 #undef DEFINE_MATH_BUILTIN
 #undef DEFINE_MATH_BUILTIN_C
-#undef LIBM_FUNCTION
-#undef LIBF_FUNCTION
 
 /* Structure for storing components of a floating number to be used by
    elemental functions to manipulate reals.  */
@@ -727,38 +703,43 @@ gfc_conv_intrinsic_lib_function (gfc_se * se, gfc_expr * expr)
   se->expr = build_call_array (rettype, fndecl, num_args, args);
 }
 
-/* Generate code for EXPONENT(X) intrinsic function.  */
+/* The EXPONENT(s) intrinsic function is translated into
+       int ret;
+       frexp (s, &ret);
+       return ret;
+ */
 
 static void
 gfc_conv_intrinsic_exponent (gfc_se *se, gfc_expr *expr)
 {
-  tree arg, fndecl, type;
-  gfc_expr *a1;
+  tree arg, type, res, tmp;
+  int frexp;
 
-  gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
-
-  a1 = expr->value.function.actual->expr;
-  switch (a1->ts.kind)
+  switch (expr->value.function.actual->expr->ts.kind)
     {
     case 4:
-      fndecl = gfor_fndecl_math_exponent4;
+      frexp = BUILT_IN_FREXPF;
       break;
     case 8:
-      fndecl = gfor_fndecl_math_exponent8;
+      frexp = BUILT_IN_FREXP;
       break;
     case 10:
-      fndecl = gfor_fndecl_math_exponent10;
-      break;
     case 16:
-      fndecl = gfor_fndecl_math_exponent16;
+      frexp = BUILT_IN_FREXPL;
       break;
     default:
       gcc_unreachable ();
     }
 
-  /* Convert it to the required type.  */
+  gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
+
+  res = gfc_create_var (integer_type_node, NULL);
+  tmp = build_call_expr (built_in_decls[frexp], 2, arg,
+			 build_fold_addr_expr (res));
+  gfc_add_expr_to_block (&se->pre, tmp);
+
   type = gfc_typenode_for_spec (&expr->ts);
-  se->expr = fold_convert (type, build_call_expr (fndecl, 1, arg));
+  se->expr = fold_convert (type, res);
 }
 
 /* Evaluate a single upper or lower bound.  */
@@ -2823,6 +2804,310 @@ gfc_conv_intrinsic_merge (gfc_se * se, gfc_expr * expr)
 }
 
 
+/* FRACTION (s) is translated into frexp (s, &dummy_int).  */
+static void
+gfc_conv_intrinsic_fraction (gfc_se * se, gfc_expr * expr)
+{
+  tree arg, type, tmp;
+  int frexp;
+
+  switch (expr->ts.kind)
+    {
+      case 4:
+	frexp = BUILT_IN_FREXPF;
+	break;
+      case 8:
+	frexp = BUILT_IN_FREXP;
+	break;
+      case 10:
+      case 16:
+	frexp = BUILT_IN_FREXPL;
+	break;
+      default:
+	gcc_unreachable ();
+    }
+
+  type = gfc_typenode_for_spec (&expr->ts);
+  gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
+  tmp = gfc_create_var (integer_type_node, NULL);
+  se->expr = build_call_expr (built_in_decls[frexp], 2,
+			      fold_convert (type, arg),
+			      build_fold_addr_expr (tmp));
+  se->expr = fold_convert (type, se->expr);
+}
+
+
+/* NEAREST (s, dir) is translated into
+     tmp = copysign (INF, dir);
+     return nextafter (s, tmp);
+ */
+static void
+gfc_conv_intrinsic_nearest (gfc_se * se, gfc_expr * expr)
+{
+  tree args[2], type, tmp;
+  int nextafter, copysign, inf;
+
+  switch (expr->ts.kind)
+    {
+      case 4:
+	nextafter = BUILT_IN_NEXTAFTERF;
+	copysign = BUILT_IN_COPYSIGNF;
+	inf = BUILT_IN_INFF;
+	break;
+      case 8:
+	nextafter = BUILT_IN_NEXTAFTER;
+	copysign = BUILT_IN_COPYSIGN;
+	inf = BUILT_IN_INF;
+	break;
+      case 10:
+      case 16:
+	nextafter = BUILT_IN_NEXTAFTERL;
+	copysign = BUILT_IN_COPYSIGNL;
+	inf = BUILT_IN_INFL;
+	break;
+      default:
+	gcc_unreachable ();
+    }
+
+  type = gfc_typenode_for_spec (&expr->ts);
+  gfc_conv_intrinsic_function_args (se, expr, args, 2);
+  tmp = build_call_expr (built_in_decls[copysign], 2,
+			 build_call_expr (built_in_decls[inf], 0),
+			 fold_convert (type, args[1]));
+  se->expr = build_call_expr (built_in_decls[nextafter], 2,
+			      fold_convert (type, args[0]), tmp);
+  se->expr = fold_convert (type, se->expr);
+}
+
+
+/* SPACING (s) is translated into
+    int e;
+    if (s == 0)
+      res = tiny;
+    else
+    {
+      frexp (s, &e);
+      e = e - prec;
+      e = MAX_EXPR (e, emin);
+      res = scalbn (1., e);
+    }
+    return res;
+
+ where prec is the precision of s, gfc_real_kinds[k].digits,
+       emin is min_exponent - 1, gfc_real_kinds[k].min_exponent - 1,
+   and tiny is tiny(s), gfc_real_kinds[k].tiny.  */
+
+static void
+gfc_conv_intrinsic_spacing (gfc_se * se, gfc_expr * expr)
+{
+  tree arg, type, prec, emin, tiny, res, e;
+  tree cond, tmp;
+  int frexp, scalbn, k;
+  stmtblock_t block;
+
+  k = gfc_validate_kind (BT_REAL, expr->ts.kind, false);
+  prec = build_int_cst (NULL_TREE, gfc_real_kinds[k].digits);
+  emin = build_int_cst (NULL_TREE, gfc_real_kinds[k].min_exponent - 1);
+  tiny = gfc_conv_mpfr_to_tree (gfc_real_kinds[k].tiny, expr->ts.kind);
+
+  switch (expr->ts.kind)
+    {
+      case 4:
+	frexp = BUILT_IN_FREXPF;
+	scalbn = BUILT_IN_SCALBNF;
+	break;
+      case 8:
+	frexp = BUILT_IN_FREXP;
+	scalbn = BUILT_IN_SCALBN;
+	break;
+      case 10:
+      case 16:
+	frexp = BUILT_IN_FREXPL;
+	scalbn = BUILT_IN_SCALBNL;
+	break;
+      default:
+	gcc_unreachable ();
+    }
+
+  gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
+  arg = gfc_evaluate_now (arg, &se->pre);
+
+  type = gfc_typenode_for_spec (&expr->ts);
+  e = gfc_create_var (integer_type_node, NULL);
+  res = gfc_create_var (type, NULL);
+
+
+  /* Build the block for s /= 0.  */
+  gfc_start_block (&block);
+  tmp = build_call_expr (built_in_decls[frexp], 2, arg,
+			 build_fold_addr_expr (e));
+  gfc_add_expr_to_block (&block, tmp);
+
+  tmp = fold_build2 (MINUS_EXPR, integer_type_node, e, prec);
+  gfc_add_modify_expr (&block, e, fold_build2 (MAX_EXPR, integer_type_node,
+					       tmp, emin));
+
+  tmp = build_call_expr (built_in_decls[scalbn], 2,
+			 build_real_from_int_cst (type, integer_one_node), e);
+  gfc_add_modify_expr (&block, res, tmp);
+
+  /* Finish by building the IF statement.  */
+  cond = fold_build2 (EQ_EXPR, boolean_type_node, arg,
+		      build_real_from_int_cst (type, integer_zero_node));
+  tmp = build3_v (COND_EXPR, cond, build2_v (MODIFY_EXPR, res, tiny),
+		  gfc_finish_block (&block));
+
+  gfc_add_expr_to_block (&se->pre, tmp);
+  se->expr = res;
+}
+
+
+/* RRSPACING (s) is translated into
+      int e;
+      real x;
+      x = fabs (s);
+      if (x != 0)
+      {
+	frexp (s, &e);
+	x = scalbn (x, precision - e);
+      }
+      return x;
+
+ where precision is gfc_real_kinds[k].digits.  */
+
+static void
+gfc_conv_intrinsic_rrspacing (gfc_se * se, gfc_expr * expr)
+{
+  tree arg, type, e, x, cond, stmt, tmp;
+  int frexp, scalbn, fabs, prec, k;
+  stmtblock_t block;
+
+  k = gfc_validate_kind (BT_REAL, expr->ts.kind, false);
+  prec = gfc_real_kinds[k].digits;
+  switch (expr->ts.kind)
+    {
+      case 4:
+	frexp = BUILT_IN_FREXPF;
+	scalbn = BUILT_IN_SCALBNF;
+	fabs = BUILT_IN_FABSF;
+	break;
+      case 8:
+	frexp = BUILT_IN_FREXP;
+	scalbn = BUILT_IN_SCALBN;
+	fabs = BUILT_IN_FABS;
+	break;
+      case 10:
+      case 16:
+	frexp = BUILT_IN_FREXPL;
+	scalbn = BUILT_IN_SCALBNL;
+	fabs = BUILT_IN_FABSL;
+	break;
+      default:
+	gcc_unreachable ();
+    }
+
+  type = gfc_typenode_for_spec (&expr->ts);
+  gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
+  arg = gfc_evaluate_now (arg, &se->pre);
+
+  e = gfc_create_var (integer_type_node, NULL);
+  x = gfc_create_var (type, NULL);
+  gfc_add_modify_expr (&se->pre, x,
+		       build_call_expr (built_in_decls[fabs], 1, arg));
+
+
+  gfc_start_block (&block);
+  tmp = build_call_expr (built_in_decls[frexp], 2, arg,
+			 build_fold_addr_expr (e));
+  gfc_add_expr_to_block (&block, tmp);
+
+  tmp = fold_build2 (MINUS_EXPR, integer_type_node,
+		     build_int_cst (NULL_TREE, prec), e);
+  tmp = build_call_expr (built_in_decls[scalbn], 2, x, tmp);
+  gfc_add_modify_expr (&block, x, tmp);
+  stmt = gfc_finish_block (&block);
+
+  cond = fold_build2 (NE_EXPR, boolean_type_node, x,
+		      build_real_from_int_cst (type, integer_zero_node));
+  tmp = build3_v (COND_EXPR, cond, stmt, build_empty_stmt ());
+  gfc_add_expr_to_block (&se->pre, tmp);
+
+  se->expr = fold_convert (type, x);
+}
+
+
+/* SCALE (s, i) is translated into scalbn (s, i).  */
+static void
+gfc_conv_intrinsic_scale (gfc_se * se, gfc_expr * expr)
+{
+  tree args[2], type;
+  int scalbn;
+
+  switch (expr->ts.kind)
+    {
+      case 4:
+	scalbn = BUILT_IN_SCALBNF;
+	break;
+      case 8:
+	scalbn = BUILT_IN_SCALBN;
+	break;
+      case 10:
+      case 16:
+	scalbn = BUILT_IN_SCALBNL;
+	break;
+      default:
+	gcc_unreachable ();
+    }
+
+  type = gfc_typenode_for_spec (&expr->ts);
+  gfc_conv_intrinsic_function_args (se, expr, args, 2);
+  se->expr = build_call_expr (built_in_decls[scalbn], 2,
+			      fold_convert (type, args[0]),
+			      fold_convert (integer_type_node, args[1]));
+  se->expr = fold_convert (type, se->expr);
+}
+
+
+/* SET_EXPONENT (s, i) is translated into
+   scalbn (frexp (s, &dummy_int), i).  */
+static void
+gfc_conv_intrinsic_set_exponent (gfc_se * se, gfc_expr * expr)
+{
+  tree args[2], type, tmp;
+  int frexp, scalbn;
+
+  switch (expr->ts.kind)
+    {
+      case 4:
+	frexp = BUILT_IN_FREXPF;
+	scalbn = BUILT_IN_SCALBNF;
+	break;
+      case 8:
+	frexp = BUILT_IN_FREXP;
+	scalbn = BUILT_IN_SCALBN;
+	break;
+      case 10:
+      case 16:
+	frexp = BUILT_IN_FREXPL;
+	scalbn = BUILT_IN_SCALBNL;
+	break;
+      default:
+	gcc_unreachable ();
+    }
+
+  type = gfc_typenode_for_spec (&expr->ts);
+  gfc_conv_intrinsic_function_args (se, expr, args, 2);
+
+  tmp = gfc_create_var (integer_type_node, NULL);
+  tmp = build_call_expr (built_in_decls[frexp], 2,
+			 fold_convert (type, args[0]),
+			 build_fold_addr_expr (tmp));
+  se->expr = build_call_expr (built_in_decls[scalbn], 2, tmp,
+			      fold_convert (integer_type_node, args[1]));
+  se->expr = fold_convert (type, se->expr);
+}
+
+
 static void
 gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
 {
@@ -3899,6 +4184,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       gfc_conv_intrinsic_fdate (se, expr);
       break;
 
+    case GFC_ISYM_FRACTION:
+      gfc_conv_intrinsic_fraction (se, expr);
+      break;
+
     case GFC_ISYM_IAND:
       gfc_conv_intrinsic_bitop (se, expr, BIT_AND_EXPR);
       break;
@@ -4037,6 +4326,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       gfc_conv_intrinsic_minmaxval (se, expr, LT_EXPR);
       break;
 
+    case GFC_ISYM_NEAREST:
+      gfc_conv_intrinsic_nearest (se, expr);
+      break;
+
     case GFC_ISYM_NOT:
       gfc_conv_intrinsic_not (se, expr);
       break;
@@ -4053,6 +4346,18 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       gfc_conv_intrinsic_arith (se, expr, MULT_EXPR);
       break;
 
+    case GFC_ISYM_RRSPACING:
+      gfc_conv_intrinsic_rrspacing (se, expr);
+      break;
+
+    case GFC_ISYM_SET_EXPONENT:
+      gfc_conv_intrinsic_set_exponent (se, expr);
+      break;
+
+    case GFC_ISYM_SCALE:
+      gfc_conv_intrinsic_scale (se, expr);
+      break;
+
     case GFC_ISYM_SIGN:
       gfc_conv_intrinsic_sign (se, expr);
       break;
@@ -4063,6 +4368,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
     case GFC_ISYM_SIZEOF:
       gfc_conv_intrinsic_sizeof (se, expr);
+      break;
+
+    case GFC_ISYM_SPACING:
+      gfc_conv_intrinsic_spacing (se, expr);
       break;
 
     case GFC_ISYM_SUM:

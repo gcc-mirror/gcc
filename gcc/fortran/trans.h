@@ -529,10 +529,6 @@ extern GTY(()) gfc_powdecl_list gfor_fndecl_math_powi[4][3];
 extern GTY(()) tree gfor_fndecl_math_ishftc4;
 extern GTY(()) tree gfor_fndecl_math_ishftc8;
 extern GTY(()) tree gfor_fndecl_math_ishftc16;
-extern GTY(()) tree gfor_fndecl_math_exponent4;
-extern GTY(()) tree gfor_fndecl_math_exponent8;
-extern GTY(()) tree gfor_fndecl_math_exponent10;
-extern GTY(()) tree gfor_fndecl_math_exponent16;
 
 /* BLAS functions.  */
 extern GTY(()) tree gfor_fndecl_sgemm;

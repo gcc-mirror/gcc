@@ -1,3 +1,29 @@
+2008-02-27  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/33387
+	* trans.h: Remove prototypes for gfor_fndecl_math_exponent4,
+	gfor_fndecl_math_exponent8, gfor_fndecl_math_exponent10 and
+	gfor_fndecl_math_exponent16.
+	* f95-lang.c (build_builtin_fntypes): Add new function types.
+	(gfc_init_builtin_functions): Add new builtins for nextafter,
+	frexp, ldexp, fabs, scalbn and inf.
+	* iresolve.c (gfc_resolve_rrspacing): Don't add hidden arguments.
+	(gfc_resolve_scale): Don't convert type of second argument.
+	(gfc_resolve_set_exponent): Likewise.
+	(gfc_resolve_size): Don't add hidden arguments.
+	* trans-decl.c: Remove gfor_fndecl_math_exponent4,
+	gfor_fndecl_math_exponent8, gfor_fndecl_math_exponent10 and
+	gfor_fndecl_math_exponent16.
+	* trans-intrinsic.c (gfc_intrinsic_map): Remove intrinsics
+	for scalbn, fraction, nearest, rrspacing, set_exponent and
+	spacing.
+	(gfc_conv_intrinsic_exponent): Directly call frexp.
+	(gfc_conv_intrinsic_fraction, gfc_conv_intrinsic_nearest,
+	gfc_conv_intrinsic_spacing, gfc_conv_intrinsic_rrspacing,
+	gfc_conv_intrinsic_scale, gfc_conv_intrinsic_set_exponent): New
+	functions.
+	(gfc_conv_intrinsic_function): Use the new functions above.
+
 2008-02-26  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/35033
