@@ -1,5 +1,5 @@
 /* Dependency generator for Makefile fragments.
-   Copyright (C) 2000, 2001, 2003, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2003, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Zack Weinberg, Mar 2000
 
 This program is free software; you can redistribute it and/or modify it
@@ -298,22 +298,24 @@ deps_write (const struct deps *d, FILE *fp, unsigned int colmax)
     {
       size = strlen (d->targetv[i]);
       column += size;
-      if (colmax && column > colmax)
-	{
-	  fputs (" \\\n ", fp);
-	  column = 1 + size;
-	}
       if (i)
 	{
-	  putc (' ', fp);
-	  column++;
+	  if (colmax && column > colmax)
+	    {
+	      fputs (" \\\n ", fp);
+	      column = 1 + size;
+	    }
+	  else
+	    {
+	      putc (' ', fp);
+	      column++;
+	    }
 	}
       fputs (d->targetv[i], fp);
     }
 
   putc (':', fp);
-  putc (' ', fp);
-  column += 2;
+  column++;
 
   for (i = 0; i < d->ndeps; i++)
     {
@@ -324,7 +326,7 @@ deps_write (const struct deps *d, FILE *fp, unsigned int colmax)
 	  fputs (" \\\n ", fp);
 	  column = 1 + size;
 	}
-      if (i)
+      else
 	{
 	  putc (' ', fp);
 	  column++;
