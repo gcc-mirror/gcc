@@ -8898,10 +8898,16 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case BIT_XOR_EXPR:
       goto binop;
 
-    case LSHIFT_EXPR:
-    case RSHIFT_EXPR:
     case LROTATE_EXPR:
     case RROTATE_EXPR:
+      /* The expansion code only handles expansion of mode precision
+	 rotates.  */
+      gcc_assert (GET_MODE_PRECISION (TYPE_MODE (type))
+		  == TYPE_PRECISION (type));
+
+      /* Falltrough.  */
+    case LSHIFT_EXPR:
+    case RSHIFT_EXPR:
       /* If this is a fixed-point operation, then we cannot use the code
 	 below because "expand_shift" doesn't support sat/no-sat fixed-point
          shifts.   */

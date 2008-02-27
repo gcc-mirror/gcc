@@ -1,3 +1,12 @@
+2008-02-27  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34971
+	* expr.c (expand_expr_real_1): Assert on rotates that operate
+	on partial modes.
+	* fold-const.c (fold_binary): Use the types precision, not the
+	bitsize of the mode if folding rotate expressions.  Build rotates
+	only for full modes.
+
 2008-02-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-ppoutput.c (scan_translation_unit): Handle CPP_PRAGMA
