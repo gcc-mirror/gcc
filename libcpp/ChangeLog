@@ -1,6 +1,13 @@
+2008-02-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR preprocessor/35379
+	* mkdeps.c (deps_write): Ensure the first target always appears
+	in the first column, without leading backslash newline.  Avoid
+	some more extra whitespace.
+
 2008-02-25  Thiemo Seufer <ths@mips.com>
 
-	Makefile.in ($(srcdir)/config.in): Depend on configure.ac.
+	* Makefile.in ($(srcdir)/config.in): Depend on configure.ac.
 
 2008-02-19  Tom Tromey  <tromey@redhat.com>
 
