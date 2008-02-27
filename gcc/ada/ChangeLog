@@ -1,3 +1,9 @@
+2008-02-27  Samuel Tardieu  <sam@rfc1149.net>
+
+	PR ada/34799
+	* sem_ch13.adb (Analyze_Record_Representation_Clause): Check
+	that underlying type is present.
+
 2008-02-26  Tom Tromey  <tromey@redhat.com>
 
 	* misc.c (internal_error_function): Remove test of
