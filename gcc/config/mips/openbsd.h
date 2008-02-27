@@ -95,3 +95,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Switch into a generic section.  */
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION  default_elf_asm_named_section
+
+/* MIPS specific debugging info */
+#define MIPS_DEBUGGING_INFO 1

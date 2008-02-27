@@ -79,9 +79,6 @@ VXWORKS_LINK_SPEC
 #undef MIPS_DEFAULT_GVALUE
 #define MIPS_DEFAULT_GVALUE 0
 
-/* Other formats are already disabled in config/vxworks.h.  */
-#undef MIPS_DEBUGGING_INFO
-
 /* No _mcount profiling on VxWorks.  */
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER VXWORKS_FUNCTION_PROFILER
