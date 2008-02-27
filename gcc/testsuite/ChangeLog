@@ -1,3 +1,7 @@
+2008-02-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* gfortran.dg/large_real_kind_3.F90: Reverse previous commit.
+
 2008-02-27  Jan Beulich  <jbeulich@novell.com>
 
 	* gcc.target/i386/mmx-1.c: Add
