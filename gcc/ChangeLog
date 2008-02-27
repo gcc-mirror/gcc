@@ -1,3 +1,12 @@
+2008-02-27  David Daney  <ddaney@avtrex.com>
+
+	PR target/34409
+	* config/mips/iris.h (MIPS_DEBUGGING_INFO): Define.
+	* config/mips/openbsd.h (MIPS_DEBUGGING_INFO): Same.
+	* config/mips/sde.h (MIPS_DEBUGGING_INFO): Remove undef.
+	* config/mips/vxworks.h (MIPS_DEBUGGING_INFO): Same.
+	* config/mips/mips.h (MIPS_DEBUGGING_INFO): Remove define.
+
 2008-02-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/25477

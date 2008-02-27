@@ -72,9 +72,8 @@ along with GCC; see the file COPYING3.  If not see
 #undef DEFAULT_SIGNED_CHAR
 #define DEFAULT_SIGNED_CHAR 0
 
-/* SDE-MIPS won't ever support SDB or MIPS debugging info.  */
+/* SDE-MIPS won't ever support SDB debugging info.  */
 #undef SDB_DEBUGGING_INFO
-#undef MIPS_DEBUGGING_INFO
 
 /* Describe how we implement __builtin_eh_return.  */
 

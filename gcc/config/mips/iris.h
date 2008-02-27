@@ -22,6 +22,9 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_IRIX
 #define TARGET_IRIX 1
 
+/* MIPS specific debugging info */
+#define MIPS_DEBUGGING_INFO 1
+
 /* The size in bytes of a DWARF field indicating an offset or length
    relative to a debug info section, specified to be 4 bytes in the DWARF-2
    specification.  The SGI/MIPS ABI defines it to be the same as PTR_SIZE.  */
