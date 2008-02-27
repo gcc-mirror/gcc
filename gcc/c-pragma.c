@@ -1,6 +1,6 @@
 /* Handle #pragma, system V.4 style.  Supports #pragma weak and #pragma pack.
    Copyright (C) 1992, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006, 2007 Free Software Foundation, Inc.
+   2006, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -872,6 +872,61 @@ DEF_VEC_ALLOC_O (pragma_handler, heap);
 
 static VEC(pragma_handler, heap) *registered_pragmas;
 
+typedef struct
+{
+  const char *space;
+  const char *name;
+} pragma_ns_name;
+
+DEF_VEC_O (pragma_ns_name);
+DEF_VEC_ALLOC_O (pragma_ns_name, heap);
+
+static VEC(pragma_ns_name, heap) *registered_pp_pragmas;
+
+struct omp_pragma_def { const char *name; unsigned int id; };
+static const struct omp_pragma_def omp_pragmas[] = {
+  { "atomic", PRAGMA_OMP_ATOMIC },
+  { "barrier", PRAGMA_OMP_BARRIER },
+  { "critical", PRAGMA_OMP_CRITICAL },
+  { "flush", PRAGMA_OMP_FLUSH },
+  { "for", PRAGMA_OMP_FOR },
+  { "master", PRAGMA_OMP_MASTER },
+  { "ordered", PRAGMA_OMP_ORDERED },
+  { "parallel", PRAGMA_OMP_PARALLEL },
+  { "section", PRAGMA_OMP_SECTION },
+  { "sections", PRAGMA_OMP_SECTIONS },
+  { "single", PRAGMA_OMP_SINGLE },
+  { "threadprivate", PRAGMA_OMP_THREADPRIVATE }
+};
+
+void
+c_pp_lookup_pragma (unsigned int id, const char **space, const char **name)
+{
+  const int n_omp_pragmas = sizeof (omp_pragmas) / sizeof (*omp_pragmas);
+  int i;
+
+  for (i = 0; i < n_omp_pragmas; ++i)
+    if (omp_pragmas[i].id == id)
+      {
+	*space = "omp";
+	*name = omp_pragmas[i].name;
+	return;
+      }
+
+  if (id >= PRAGMA_FIRST_EXTERNAL
+      && (id < PRAGMA_FIRST_EXTERNAL
+	  + VEC_length (pragma_ns_name, registered_pp_pragmas)))
+    {
+      *space = VEC_index (pragma_ns_name, registered_pp_pragmas,
+			  id - PRAGMA_FIRST_EXTERNAL)->space;
+      *name = VEC_index (pragma_ns_name, registered_pp_pragmas,
+			 id - PRAGMA_FIRST_EXTERNAL)->name;
+      return;
+    }
+
+  gcc_unreachable ();
+}
+
 /* Front-end wrappers for pragma registration to avoid dragging
    cpplib.h in almost everywhere.  */
 
@@ -881,13 +936,29 @@ c_register_pragma_1 (const char *space, const char *name,
 {
   unsigned id;
 
-  VEC_safe_push (pragma_handler, heap, registered_pragmas, &handler);
-  id = VEC_length (pragma_handler, registered_pragmas);
-  id += PRAGMA_FIRST_EXTERNAL - 1;
+  if (flag_preprocess_only)
+    {
+      pragma_ns_name ns_name;
 
-  /* The C++ front end allocates 6 bits in cp_token; the C front end
-     allocates 7 bits in c_token.  At present this is sufficient.  */
-  gcc_assert (id < 64);
+      if (!allow_expansion)
+	return;
+
+      ns_name.space = space;
+      ns_name.name = name;
+      VEC_safe_push (pragma_ns_name, heap, registered_pp_pragmas, &ns_name);
+      id = VEC_length (pragma_ns_name, registered_pp_pragmas);
+      id += PRAGMA_FIRST_EXTERNAL - 1;
+    }
+  else
+    {
+      VEC_safe_push (pragma_handler, heap, registered_pragmas, &handler);
+      id = VEC_length (pragma_handler, registered_pragmas);
+      id += PRAGMA_FIRST_EXTERNAL - 1;
+
+      /* The C++ front end allocates 6 bits in cp_token; the C front end
+	 allocates 7 bits in c_token.  At present this is sufficient.  */
+      gcc_assert (id < 64);
+    }
 
   cpp_register_deferred_pragma (parse_in, space, name, id,
 				allow_expansion, false);
@@ -921,24 +992,8 @@ c_invoke_pragma_handler (unsigned int id)
 void
 init_pragma (void)
 {
-  if (flag_openmp && !flag_preprocess_only)
+  if (flag_openmp)
     {
-      struct omp_pragma_def { const char *name; unsigned int id; };
-      static const struct omp_pragma_def omp_pragmas[] = {
-	{ "atomic", PRAGMA_OMP_ATOMIC },
-	{ "barrier", PRAGMA_OMP_BARRIER },
-	{ "critical", PRAGMA_OMP_CRITICAL },
-	{ "flush", PRAGMA_OMP_FLUSH },
-	{ "for", PRAGMA_OMP_FOR },
-	{ "master", PRAGMA_OMP_MASTER },
-	{ "ordered", PRAGMA_OMP_ORDERED },
-	{ "parallel", PRAGMA_OMP_PARALLEL },
-	{ "section", PRAGMA_OMP_SECTION },
-	{ "sections", PRAGMA_OMP_SECTIONS },
-	{ "single", PRAGMA_OMP_SINGLE },
-	{ "threadprivate", PRAGMA_OMP_THREADPRIVATE }
-      };
-
       const int n_omp_pragmas = sizeof (omp_pragmas) / sizeof (*omp_pragmas);
       int i;
 
@@ -947,8 +1002,9 @@ init_pragma (void)
 				      omp_pragmas[i].id, true, true);
     }
 
-  cpp_register_deferred_pragma (parse_in, "GCC", "pch_preprocess",
-				PRAGMA_GCC_PCH_PREPROCESS, false, false);
+  if (!flag_preprocess_only)
+    cpp_register_deferred_pragma (parse_in, "GCC", "pch_preprocess",
+				  PRAGMA_GCC_PCH_PREPROCESS, false, false);
 
 #ifdef HANDLE_PRAGMA_PACK
 #ifdef HANDLE_PRAGMA_PACK_WITH_EXPANSION

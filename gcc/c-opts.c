@@ -1,5 +1,5 @@
 /* C/ObjC/C++ command line option handling.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
@@ -1239,15 +1239,15 @@ c_common_init (void)
   if (version_flag)
     c_common_print_pch_checksum (stderr);
 
+  /* Has to wait until now so that cpplib has its hash table.  */
+  init_pragma ();
+
   if (flag_preprocess_only)
     {
       finish_options ();
       preprocess_file (parse_in);
       return false;
     }
-
-  /* Has to wait until now so that cpplib has its hash table.  */
-  init_pragma ();
 
   return true;
 }
