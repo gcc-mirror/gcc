@@ -1,3 +1,12 @@
+2008-02-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/25477
+	* config/darwin-ppc-ldouble-patch.def (BUILT_IN_NANL): Add.
+	(BUILT_IN_NEXTTOWARD): Remove.
+	(BUILT_IN_NEXTTOWARDF): Ditto.
+	* config/darwin.c (darwin_patch_builtin): Use ACONCAT instead of
+	alloca/strcpy/strcat.  Remove commented-out code.  Fix whitespace.
+
 2008-02-27  Tom Tromey  <tromey@redhat.com>
 
 	* tree-dump.c (dequeue_and_dump) <FUNCTION_DECL>: Check
@@ -463,8 +472,7 @@
 
 2008-02-25  Jan Beulich  <jbeulich@novell.com>
 
-	* Makefile.in: Also prefix uses of crt0.o and mcrt0.o with
-	$(T).
+	* Makefile.in: Also prefix uses of crt0.o and mcrt0.o with $(T).
 	* config/i386/netware-libgcc.exp: Add __bswap?i2,
 	__emultls_get_address, __emultls_register_common,
 	__floatundi?f, and _Unwind_GetIPInfo.
