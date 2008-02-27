@@ -2747,7 +2747,10 @@ package body Sem_Ch13 is
             --  We are only interested in the case where there is at least one
             --  unrepped component, and at least half the components have rep
             --  clauses. We figure that if less than half have them, then the
-            --  partial rep clause is really intentional.
+            --  partial rep clause is really intentional. If the component
+            --  type has no underlying type set at this point (as for a generic
+            --  formal type), we don't know enough to give a warning on the
+            --  component.
 
             if Num_Unrepped_Components > 0
               and then Num_Unrepped_Components < Num_Repped_Components
@@ -2756,6 +2759,7 @@ package body Sem_Ch13 is
                while Present (Comp) loop
                   if No (Component_Clause (Comp))
                     and then Comes_From_Source (Comp)
+                    and then Present (Underlying_Type (Etype (Comp)))
                     and then (Is_Scalar_Type (Underlying_Type (Etype (Comp)))
                                 or else Size_Known_At_Compile_Time
                                              (Underlying_Type (Etype (Comp))))
