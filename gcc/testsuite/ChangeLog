@@ -1,3 +1,8 @@
+2008-02-27  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/34971
+	* gcc.c-torture/execute/pr34971.c: New testcase.
+
 2008-02-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/gomp/preprocess-1.c: New test.
