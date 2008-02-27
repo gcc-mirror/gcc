@@ -1,3 +1,8 @@
+2008-02-27  David Daney  <ddaney@avtrex.com>
+
+	* gnu/java/net/natPlainSocketImplPosix.cc (bind): Remove check for
+	null host.
+
 2008-02-20  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/24170:
