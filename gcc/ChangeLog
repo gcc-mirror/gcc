@@ -1,3 +1,17 @@
+2008-02-27  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2008-02-27  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/35390
+	* fold-const.c (fold_unary): Return the correct argument,
+	converted to the result type.
+
+	PR middle-end/34971
+	* fold-const.c (fold_binary): Use the types precision, not the
+	bitsize of the mode if folding rotate expressions.  Build rotates
+	only for full modes.
+
 2008-02-25  Jan Beulich  <jbeulich@novell.com>
 
 	* Makefile.in: Also prefix uses of crt0.o and mcrt0.o with

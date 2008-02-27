@@ -1,3 +1,14 @@
+2008-02-27  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2008-02-27  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/35390
+	* gcc.c-torture/execute/pr35390.c: New testcase.
+
+	PR middle-end/34971
+	* gcc.c-torture/execute/pr34971.c: New testcase.
+
 2008-02-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/35368

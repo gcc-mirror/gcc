@@ -8333,7 +8333,7 @@ fold_unary (enum tree_code code, tree type, tree op0)
       if (TREE_CODE (arg0) == INTEGER_CST)
         return fold_not_const (arg0, type);
       else if (TREE_CODE (arg0) == BIT_NOT_EXPR)
-	return TREE_OPERAND (op0, 0);
+	return fold_convert (type, TREE_OPERAND (arg0, 0));
       /* Convert ~ (-A) to A - 1.  */
       else if (INTEGRAL_TYPE_P (type) && TREE_CODE (arg0) == NEGATE_EXPR)
 	return fold_build2 (MINUS_EXPR, type,
@@ -9879,13 +9879,18 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	 is a rotate of A by B bits.  */
       {
 	enum tree_code code0, code1;
+	tree rtype;
 	code0 = TREE_CODE (arg0);
 	code1 = TREE_CODE (arg1);
 	if (((code0 == RSHIFT_EXPR && code1 == LSHIFT_EXPR)
 	     || (code1 == RSHIFT_EXPR && code0 == LSHIFT_EXPR))
 	    && operand_equal_p (TREE_OPERAND (arg0, 0),
 			        TREE_OPERAND (arg1, 0), 0)
-	    && TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (arg0, 0))))
+	    && (rtype = TREE_TYPE (TREE_OPERAND (arg0, 0)),
+	        TYPE_UNSIGNED (rtype))
+	    /* Only create rotates in complete modes.  Other cases are not
+	       expanded properly.  */
+	    && TYPE_PRECISION (rtype) == GET_MODE_PRECISION (TYPE_MODE (rtype)))
 	  {
 	    tree tree01, tree11;
 	    enum tree_code code01, code11;
@@ -11629,7 +11634,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       if (code == LROTATE_EXPR && TREE_CODE (arg1) == INTEGER_CST)
 	{
 	  tree tem = build_int_cst (TREE_TYPE (arg1),
-				    GET_MODE_BITSIZE (TYPE_MODE (type)));
+				    TYPE_PRECISION (type));
 	  tem = const_binop (MINUS_EXPR, tem, arg1, 0);
 	  return fold_build2 (RROTATE_EXPR, type, op0, tem);
 	}
@@ -11648,8 +11653,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 			    fold_build2 (code, type,
 					 TREE_OPERAND (arg0, 1), arg1));
 
-      /* Two consecutive rotates adding up to the width of the mode can
-	 be ignored.  */
+      /* Two consecutive rotates adding up to the precision of the
+	 type can be ignored.  */
       if (code == RROTATE_EXPR && TREE_CODE (arg1) == INTEGER_CST
 	  && TREE_CODE (arg0) == RROTATE_EXPR
 	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
@@ -11657,7 +11662,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  && TREE_INT_CST_HIGH (TREE_OPERAND (arg0, 1)) == 0
 	  && ((TREE_INT_CST_LOW (arg1)
 	       + TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1)))
-	      == (unsigned int) GET_MODE_BITSIZE (TYPE_MODE (type))))
+	      == (unsigned int) TYPE_PRECISION (type)))
 	return TREE_OPERAND (arg0, 0);
 
       /* Fold (X & C2) << C1 into (X << C1) & (C2 << C1)
