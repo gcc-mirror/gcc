@@ -1080,9 +1080,9 @@ package body System.File_IO is
 
       if Mode /= File.Mode
         and then (File.Shared_Status = Yes
-                    or else File.Name'Length <= 1
-                    or else File.Is_System_File
-                    or else not File.Is_Regular_File)
+                   or else File.Name'Length <= 1
+                   or else File.Is_System_File
+                   or else not File.Is_Regular_File)
       then
          raise Use_Error;
 
