@@ -1,5 +1,10 @@
 2008-02-27  Samuel Tardieu  <sam@rfc1149.net>
 
+	PR ada/22255
+	* gnat.dg/test_direct_io.adb: New file.
+
+2008-02-27  Samuel Tardieu  <sam@rfc1149.net>
+
 	PR ada/34799
 	* gnat.dg/specs/pr34799.ads: New test.
 

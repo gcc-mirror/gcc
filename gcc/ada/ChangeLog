@@ -1,5 +1,10 @@
 2008-02-27  Samuel Tardieu  <sam@rfc1149.net>
 
+	PR ada/22255
+	* s-fileio.adb (Reset): Do not raise Use_Error if mode isn't changed.
+
+2008-02-27  Samuel Tardieu  <sam@rfc1149.net>
+
 	PR ada/34799
 	* sem_ch13.adb (Analyze_Record_Representation_Clause): Check
 	that underlying type is present.
