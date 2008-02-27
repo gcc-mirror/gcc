@@ -1667,7 +1667,7 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
       if (DECL_ALIGN (olddecl) > DECL_ALIGN (newdecl))
 	{
 	  DECL_ALIGN (newdecl) = DECL_ALIGN (olddecl);
-	  DECL_USER_ALIGN (newdecl) |= DECL_ALIGN (olddecl);
+	  DECL_USER_ALIGN (newdecl) |= DECL_USER_ALIGN (olddecl);
 	}
     }
 

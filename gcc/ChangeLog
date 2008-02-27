@@ -1,3 +1,8 @@
+2008-02-27  Jan Beulich  <jbeulich@novell.com>
+
+	* c-decl.c (merge_decls): Use DECL_USER_ALIGN() on olddecl to
+	update the respective field on newdecl.
+
 2008-02-27  Revital Eres  <eres@il.ibm.com>
 
 	PR rtl-optimization/34999
