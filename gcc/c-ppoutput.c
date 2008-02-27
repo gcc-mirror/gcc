@@ -1,6 +1,6 @@
 /* Preprocess only, using cpplib.
-   Copyright (C) 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2007
-   Free Software Foundation, Inc.
+   Copyright (C) 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2007,
+   2008 Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
    This program is free software; you can redistribute it and/or modify it
@@ -177,7 +177,24 @@ scan_translation_unit (cpp_reader *pfile)
       avoid_paste = false;
       print.source = NULL;
       print.prev = token;
-      cpp_output_token (token, print.outf);
+      if (token->type == CPP_PRAGMA)
+	{
+	  const char *space;
+	  const char *name;
+
+	  maybe_print_line (token->src_loc);
+	  fputs ("#pragma ", print.outf);
+	  c_pp_lookup_pragma (token->val.pragma, &space, &name);
+	  if (space)
+	    fprintf (print.outf, "%s %s", space, name);
+	  else
+	    fprintf (print.outf, "%s", name);
+	  print.printed = 1;
+	}
+      else if (token->type == CPP_PRAGMA_EOL)
+	maybe_print_line (token->src_loc);
+      else
+	cpp_output_token (token, print.outf);
 
       if (token->type == CPP_COMMENT)
 	account_for_newlines (token->val.str.text, token->val.str.len);

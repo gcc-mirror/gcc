@@ -1,6 +1,6 @@
 /* Pragma related interfaces.
    Copyright (C) 1995, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2007  Free Software Foundation, Inc.
+   2007, 2008  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -123,5 +123,7 @@ extern enum cpp_ttype pragma_lex (tree *);
    having enum cpp_ttype declared.  */
 extern enum cpp_ttype c_lex_with_flags (tree *, location_t *, unsigned char *,
 					int);
+
+extern void c_pp_lookup_pragma (unsigned int, const char **, const char **);
 
 #endif /* GCC_C_PRAGMA_H */

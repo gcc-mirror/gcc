@@ -1,3 +1,22 @@
+2008-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-ppoutput.c (scan_translation_unit): Handle CPP_PRAGMA
+	and CPP_PRAGMA_EOL.
+	* c-pragma.c (pragma_ns_name): New typedef.
+	(registered_pp_pragmas): New variable.
+	(c_pp_lookup_pragma): New function.
+	(c_register_pragma_1): If flag_preprocess_only, do nothing
+	for non-expanded pragmas, for expanded ones push pragma's
+	namespace and name into registered_pp_pragmas vector.
+	(c_invoke_pragma_handler): Register OpenMP pragmas even when
+	flag_preprocess_only, don't register GCC pch_preprocess
+	pragma if flag_preprocess_only.
+	* c-opts.c (c_common_init): Call init_pragma even if
+	flag_preprocess_only.
+	* c-pragma.c (c_pp_lookup_pragma): New prototype.
+	* config/darwin.h (DARWIN_REGISTER_TARGET_PRAGMAS): Don't call
+	cpp_register_pragma if flag_preprocess_only.
+
 2008-02-26  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR c/28800
