@@ -1,3 +1,11 @@
+2008-02-27  Jan Beulich  <jbeulich@novell.com>
+
+	* gcc.target/i386/mmx-1.c: Add
+	-Werror-implicit-function-declaration to dg-options.
+	* gcc.target/i386/mmx-2.c: Likewise.
+	* gcc.target/i386/sse-13.c: Likewise.
+	* gcc.target/i386/sse-14.c: Likewise.
+
 2008-02-27  Revital Eres  <eres@il.ibm.com>
 
 	PR rtl-optimization/34999

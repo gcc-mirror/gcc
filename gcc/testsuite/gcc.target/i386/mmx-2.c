@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O0 -mmmx" } */
+/* { dg-options "-O0 -Werror-implicit-function-declaration -mmmx" } */
 
 /* Test that the intrinsics compile without optimization.  All of them are
    defined as inline functions in mmintrin.h that reference the proper
