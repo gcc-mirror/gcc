@@ -1748,18 +1748,13 @@ darwin_patch_builtin (int fncode)
     return;
 
   sym = DECL_ASSEMBLER_NAME (fn);
-  newname = alloca (IDENTIFIER_LENGTH (sym) + 10);
-  strcpy (newname, "_");
-  strcat (newname, IDENTIFIER_POINTER (sym));
-  strcat (newname, "$LDBL128");
+  newname = ACONCAT (("_", IDENTIFIER_POINTER (sym), "$LDBL128", NULL));
+
   set_user_assembler_name (fn, newname);
-  /*sym = get_identifier (newname);
-  SET_DECL_ASSEMBLER_NAME (fn, sym);*/
 
   fn = implicit_built_in_decls[fncode];
   if (fn)
     set_user_assembler_name (fn, newname);
-    /*SET_DECL_ASSEMBLER_NAME (fn, sym);*/
 }
 
 void
@@ -1769,11 +1764,11 @@ darwin_patch_builtins (void)
     return;
 
 #define PATCH_BUILTIN(fncode) darwin_patch_builtin (fncode);
-#define PATCH_BUILTIN_NO64(fncode) \
-  if (!TARGET_64BIT) \
+#define PATCH_BUILTIN_NO64(fncode)		\
+  if (!TARGET_64BIT)				\
     darwin_patch_builtin (fncode);
-#define PATCH_BUILTIN_VARIADIC(fncode) \
-  if (!TARGET_64BIT \
+#define PATCH_BUILTIN_VARIADIC(fncode)				  \
+  if (!TARGET_64BIT						  \
       && (strverscmp (darwin_macosx_version_min, "10.3.9") >= 0)) \
     darwin_patch_builtin (fncode);
 #include "darwin-ppc-ldouble-patch.def"
