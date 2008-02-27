@@ -1,3 +1,8 @@
+2008-02-27  Tom Tromey  <tromey@redhat.com>
+
+	* tree-dump.c (dequeue_and_dump) <FUNCTION_DECL>: Check
+	DECL_SAVED_TREE, not DECL_LANG_SPECIFIC, when dumping body.
+
 2008-02-27  Jan Beulich  <jbeulich@novell.com>
 
 	* c-decl.c (merge_decls): Use DECL_USER_ALIGN() on olddecl to
