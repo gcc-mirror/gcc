@@ -1074,13 +1074,15 @@ package body System.File_IO is
    begin
       Check_File_Open (File);
 
-      --  Change of mode not allowed for shared file or file with no name
-      --  or file that is not a regular file, or for a system file.
+      --  Change of mode not allowed for shared file or file with no name or
+      --  file that is not a regular file, or for a system file. Note that we
+      --  allow the "change" of mode if it is not in fact doing a change.
 
-      if File.Shared_Status = Yes
-        or else File.Name'Length <= 1
-        or else File.Is_System_File
-        or else not File.Is_Regular_File
+      if Mode /= File.Mode
+        and then (File.Shared_Status = Yes
+                    or else File.Name'Length <= 1
+                    or else File.Is_System_File
+                    or else not File.Is_Regular_File)
       then
          raise Use_Error;
 
