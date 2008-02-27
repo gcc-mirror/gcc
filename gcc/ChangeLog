@@ -1,3 +1,12 @@
+2008-02-27  Revital Eres  <eres@il.ibm.com>
+
+	PR rtl-optimization/34999
+	* bb-reorder.c (add_labels_and_missing_jumps): Do not handle
+	crossing edges that ends with a call insn.
+	(fix_up_fall_thru_edges): Handle crossing edges that ends with a
+	call insn and clear the EDGE_CROSSING flag of the crossing edge
+	when fixing fallthru edges.
+
 2008-02-27  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/25290

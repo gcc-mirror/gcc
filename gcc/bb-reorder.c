@@ -1289,11 +1289,14 @@ add_labels_and_missing_jumps (edge *crossing_edges, int n_crossing_edges)
 	    {
 	      label = block_label (dest);
 
-	      /* Make sure source block ends with a jump.  */
+	      /* Make sure source block ends with a jump.  If the
+	         source block does not end with a jump it might end
+	         with a call_insn;  this case will be handled in
+	         fix_up_fall_thru_edges function.  */
 
 	      if (src && (src != ENTRY_BLOCK_PTR))
 		{
-		  if (!JUMP_P (BB_END (src)))
+		  if (!JUMP_P (BB_END (src)) && !block_ends_with_call_p (src))
 		    /* bb just falls through.  */
 		    {
 		      /* make sure there's only one successor */
@@ -1318,13 +1321,13 @@ add_labels_and_missing_jumps (edge *crossing_edges, int n_crossing_edges)
 }
 
 /* Find any bb's where the fall-through edge is a crossing edge (note that
-   these bb's must also contain a conditional jump; we've already
-   dealt with fall-through edges for blocks that didn't have a
-   conditional jump in the call to add_labels_and_missing_jumps).
-   Convert the fall-through edge to non-crossing edge by inserting a
-   new bb to fall-through into.  The new bb will contain an
-   unconditional jump (crossing edge) to the original fall through
-   destination.  */
+   these bb's must also contain a conditional jump or end with a call
+   instruction; we've already dealt with fall-through edges for blocks
+   that didn't have a conditional jump or didn't end with call instruction
+   in the call to add_labels_and_missing_jumps).  Convert the fall-through
+   edge to non-crossing edge by inserting a new bb to fall-through into.
+   The new bb will contain an unconditional jump (crossing edge) to the
+   original fall through destination.  */
 
 static void
 fix_up_fall_thru_edges (void)
@@ -1369,6 +1372,19 @@ fix_up_fall_thru_edges (void)
 	  fall_thru = succ2;
 	  cond_jump = succ1;
 	}
+      else if (!fall_thru && succ1 && block_ends_with_call_p (cur_bb))
+      {
+        edge e;
+        edge_iterator ei;
+
+        /* Find EDGE_CAN_FALLTHRU edge.  */
+        FOR_EACH_EDGE (e, ei, cur_bb->succs) 
+          if (e->flags & EDGE_CAN_FALLTHRU)
+          {
+            fall_thru = e;
+            break;
+          }
+      }
 
       if (fall_thru && (fall_thru->dest != EXIT_BLOCK_PTR))
 	{
@@ -1426,8 +1442,14 @@ fix_up_fall_thru_edges (void)
 		  /* This is the case where both edges out of the basic
 		     block are crossing edges. Here we will fix up the
 		     fall through edge. The jump edge will be taken care
-		     of later.  */
+		     of later.  The EDGE_CROSSING flag of fall_thru edge 
+                     is unset before the call to force_nonfallthru
+                     function because if a new basic-block is created
+                     this edge remains in the current section boundary
+                     while the edge between new_bb and the fall_thru->dest
+                     becomes EDGE_CROSSING.  */
 
+                  fall_thru->flags &= ~EDGE_CROSSING;
 		  new_bb = force_nonfallthru (fall_thru);
 
 		  if (new_bb)
@@ -1441,6 +1463,12 @@ fix_up_fall_thru_edges (void)
 		      BB_COPY_PARTITION (new_bb, cur_bb);
 		      single_succ_edge (new_bb)->flags |= EDGE_CROSSING;
 		    }
+                  else
+                    {
+                      /* If a new basic-block was not created; restore
+                         the EDGE_CROSSING flag.  */
+                      fall_thru->flags |= EDGE_CROSSING;
+                    }
 
 		  /* Add barrier after new jump */
 
