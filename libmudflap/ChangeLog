@@ -1,3 +1,9 @@
+2008-02-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* testsuite/libmudflap.c/fail8-frag.c: Adjust scan pattern for
+	mudflap dead object.
+	* testsuite/libmudflap.c/fail9-frag.c: Ditto.
+
 2008-01-24  David Edelsohn  <edelsohn@gnu.org>
 
 	* configure: Regenerate.

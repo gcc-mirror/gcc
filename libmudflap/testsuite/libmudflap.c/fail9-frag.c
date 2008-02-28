@@ -17,5 +17,5 @@ return 0;
 
 /* { dg-output "mudflap violation 1.*memcpy dest.*" } */
 /* { dg-output "Nearby object.*" } */
-/* { dg-output "mudflap object.*malloc region.*alloc time.*dealloc time.*" } */
+/* { dg-output "mudflap dead object.*malloc region.*alloc time.*dealloc time.*" } */
 /* { dg-do run { xfail *-*-* } } */
