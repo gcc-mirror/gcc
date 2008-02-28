@@ -1,3 +1,7 @@
+2008-02-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/pr34351.c: Compile for x86 targets only.  Use %ebx register.
+
 2008-02-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* gfortran.dg/large_real_kind_3.F90: Reverse previous commit.
