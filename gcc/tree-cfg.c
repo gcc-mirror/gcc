@@ -5646,22 +5646,30 @@ move_stmt_r (tree *tp, int *walk_subtrees, void *data)
 /* Marks virtual operands of all statements in basic blocks BBS for
    renaming.  */
 
-static void
-mark_virtual_ops_in_region (VEC (basic_block,heap) *bbs)
+void
+mark_virtual_ops_in_bb (basic_block bb)
 {
   tree phi;
   block_stmt_iterator bsi;
+
+  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+    mark_virtual_ops_for_renaming (phi);
+
+  for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+    mark_virtual_ops_for_renaming (bsi_stmt (bsi));
+}
+
+/* Marks virtual operands of all statements in basic blocks BBS for
+   renaming.  */
+
+static void
+mark_virtual_ops_in_region (VEC (basic_block,heap) *bbs)
+{
   basic_block bb;
   unsigned i;
 
   for (i = 0; VEC_iterate (basic_block, bbs, i, bb); i++)
-    {
-      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-	mark_virtual_ops_for_renaming (phi);
-
-      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-	mark_virtual_ops_for_renaming (bsi_stmt (bsi));
-    }
+    mark_virtual_ops_in_bb (bb);
 }
 
 /* Move basic block BB from function CFUN to function DEST_FN.  The
