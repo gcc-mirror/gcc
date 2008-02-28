@@ -1162,17 +1162,18 @@ scan_function (void)
   static const struct sra_walk_fns fns = {
     scan_use, scan_copy, scan_init, scan_ldst, true
   };
+  bitmap_iterator bi;
 
   sra_walk_function (&fns);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      referenced_var_iterator ri;
-      tree var;
+      unsigned i;
 
       fputs ("\nScan results:\n", dump_file);
-      FOR_EACH_REFERENCED_VAR_IN_BITMAP (sra_candidates, var, ri)
+      EXECUTE_IF_SET_IN_BITMAP (sra_candidates, 0, i, bi)
 	{
+	  tree var = referenced_var (i);
 	  struct sra_elt *elt = lookup_element (NULL, var, NULL, NO_INSERT);
 	  if (elt)
 	    scan_dump (elt);
@@ -1949,18 +1950,19 @@ decide_block_copy (struct sra_elt *elt)
 static void
 decide_instantiations (void)
 {
+  unsigned int i;
   bool cleared_any;
   bitmap_head done_head;
-  referenced_var_iterator ri;
-  tree var;
+  bitmap_iterator bi;
 
   /* We cannot clear bits from a bitmap we're iterating over,
      so save up all the bits to clear until the end.  */
   bitmap_initialize (&done_head, &bitmap_default_obstack);
   cleared_any = false;
 
-  FOR_EACH_REFERENCED_VAR_IN_BITMAP (sra_candidates, var, ri)
+  EXECUTE_IF_SET_IN_BITMAP (sra_candidates, 0, i, bi)
     {
+      tree var = referenced_var (i);
       struct sra_elt *elt = lookup_element (NULL, var, NULL, NO_INSERT);
       if (elt)
 	{
@@ -1970,7 +1972,7 @@ decide_instantiations (void)
 	}
       if (!elt)
 	{
-	  bitmap_set_bit (&done_head, DECL_UID (var));
+	  bitmap_set_bit (&done_head, i);
 	  cleared_any = true;
 	}
     }
@@ -3530,11 +3532,12 @@ static void
 scalarize_parms (void)
 {
   tree list = NULL;
-  referenced_var_iterator ri;
-  tree var;
+  unsigned i;
+  bitmap_iterator bi;
 
-  FOR_EACH_REFERENCED_VAR_IN_BITMAP (needs_copy_in, var, ri)
+  EXECUTE_IF_SET_IN_BITMAP (needs_copy_in, 0, i, bi)
     {
+      tree var = referenced_var (i);
       struct sra_elt *elt = lookup_element (NULL, var, NULL, NO_INSERT);
       generate_copy_inout (elt, true, var, &list);
     }

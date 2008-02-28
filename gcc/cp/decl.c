@@ -2149,7 +2149,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
   /* The NEWDECL will no longer be needed.  Because every out-of-class
      declaration of a member results in a call to duplicate_decls,
      freeing these nodes represents in a significant savings.  */
-  remove_decl_from_map (newdecl);
   ggc_free (newdecl);
 
   return olddecl;
