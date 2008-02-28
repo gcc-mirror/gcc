@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-std=gnu" }
+! { dg-options "-std=gnu -Wreturn-type" }
 ! PR fortran/34248
 !
 ! There was an ICE for assumed-length functions
@@ -10,6 +10,6 @@ character(*) FUNCTION test() RESULT(ctab)
   ctab = "Hello"
 END function test
 
-FUNCTION test2() RESULT(res)
+FUNCTION test2() RESULT(res)      ! { dg-warning "not set" }
   character(*) :: res
 END function test2

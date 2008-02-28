@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "-Wreturn-type" }
 ! Tests the fix of PR34545, in which the 'numclusters' that determines the size
 ! of fnres was not properly associated.
 !
@@ -10,7 +11,7 @@ end module m1
 
 module m2
   contains
-    function get_nfirst( ) result(fnres)
+    function get_nfirst( ) result(fnres)  ! { dg-warning "not set" }
       use m1, only: numclusters
       real :: fnres(numclusters)   ! change to REAL and it works!!  
     end function get_nfirst

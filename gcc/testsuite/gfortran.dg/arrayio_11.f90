@@ -21,7 +21,7 @@ program gfcbug51
   FILE%date = (/'200612231200', '200712231200', &
                 '200812231200'/)
 
-  time = date_to_year (FILE)
+  call date_to_year (FILE)
   if (any (time%year .ne. (/2006, 2007, 2008/))) call abort ()
 
   call month_to_date ((/8, 9, 10/), FILE)
@@ -30,11 +30,10 @@ program gfcbug51
 
 contains
 
-  function date_to_year (d) result (y)
+  subroutine date_to_year (d)
     type(date_t) :: d(3)
-    type(year_t) :: y(size (d, 1))
-    read (d%date(1:4),'(i4)')  time% year
-  end function date_to_year
+    read (d%date(1:4),'(i4)')  time%year
+  end subroutine
 
   subroutine month_to_date (m, d)
     type(date_t) :: d(3)

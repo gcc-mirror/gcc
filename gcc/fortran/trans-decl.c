@@ -2607,8 +2607,10 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 		if (el->sym != el->sym->result)
 		  break;
 	    }
-	  if (el == NULL)
-	    warning (0, "Function does not return a value");
+	  /* TODO: move to the appropriate place in resolve.c.  */
+	  if (warn_return_type && el == NULL)
+	    gfc_warning ("Return value of function '%s' at %L not set",
+			 proc_sym->name, &proc_sym->declared_at);
 	}
       else if (proc_sym->as)
 	{
@@ -2952,7 +2954,7 @@ generate_local_decl (gfc_symbol * sym)
       /* Warn for unused variables, but not if they're inside a common
 	 block or are use-associated.  */
       else if (warn_unused_variable
-	       && !(sym->attr.in_common || sym->attr.use_assoc))
+	       && !(sym->attr.in_common || sym->attr.use_assoc || sym->mark))
 	gfc_warning ("Unused variable '%s' declared at %L", sym->name,
 		     &sym->declared_at);
       /* For variable length CHARACTER parameters, the PARM_DECL already
@@ -2981,6 +2983,25 @@ generate_local_decl (gfc_symbol * sym)
            && !sym->attr.use_assoc)
 	gfc_warning ("Unused parameter '%s' declared at %L", sym->name,
 		     &sym->declared_at);
+    }
+  else if (sym->attr.flavor == FL_PROCEDURE)
+    {
+      /* TODO: move to the appropriate place in resolve.c.  */
+      if (warn_return_type
+	  && sym->attr.function
+	  && sym->result
+	  && sym != sym->result
+	  && !sym->result->attr.referenced
+	  && !sym->attr.use_assoc
+	  && sym->attr.if_source != IFSRC_IFBODY)
+	{
+	  gfc_warning ("Return value '%s' of function '%s' declared at "
+		       "%L not set", sym->result->name, sym->name,
+		        &sym->result->declared_at);
+
+	  /* Prevents "Unused variable" warning for RESULT variables.  */
+	  sym->mark = sym->result->mark = 1;
+	}
     }
 
   if (sym->attr.dummy == 1)
@@ -3275,10 +3296,17 @@ gfc_generate_function_code (gfc_namespace * ns)
 	  gfc_add_expr_to_block (&block, tmp2);
 	}
 
-     gfc_add_expr_to_block (&block, tmp);
+      gfc_add_expr_to_block (&block, tmp);
 
-     if (result == NULL_TREE)
-	warning (0, "Function return value not set");
+      if (result == NULL_TREE)
+	{
+	  /* TODO: move to the appropriate place in resolve.c.  */
+	  if (warn_return_type && !sym->attr.referenced && sym == sym->result)
+	    gfc_warning ("Return value of function '%s' at %L not set",
+			 sym->name, &sym->declared_at);
+
+	  TREE_NO_WARNING(sym->backend_decl) = 1;
+	}
       else
 	{
 	  /* Set the return value to the dummy result variable.  The

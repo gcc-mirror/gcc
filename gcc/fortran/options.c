@@ -492,6 +492,10 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       gfc_option.warn_line_truncation = value;
       break;
 
+    case OPT_Wreturn_type:
+      warn_return_type = value;
+      break;
+
     case OPT_Wsurprising:
       gfc_option.warn_surprising = value;
       break;

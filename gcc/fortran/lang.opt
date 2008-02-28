@@ -65,6 +65,10 @@ Wnonstd-intrinsics
 Fortran Warning
 Warn about usage of non-standard intrinsics
 
+Wreturn-type
+Fortran Warning
+; Documented in C
+
 Wsurprising
 Fortran Warning
 Warn about \"suspicious\" constructs

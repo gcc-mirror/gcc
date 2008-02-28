@@ -1,3 +1,16 @@
+2008-02-28  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/31463
+	PR fortran/33950
+	PR fortran/34296
+	* lang.opt: Added -Wreturn-type.
+	* options.c (gfc_handle_option): Recognize -Wreturn-type.
+	* trans-decl.c (gfc_trans_deferred_vars): Emit warnings for funtions
+	where the result value is not set.
+	(gfc_generate_function_code): Likewise.
+	(generate_local_decl): Emit warnings for funtions whose RESULT
+	variable is not set.
+
 2008-02-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/34868
