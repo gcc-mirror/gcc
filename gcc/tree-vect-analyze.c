@@ -41,28 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "recog.h"
 
-/* Main analysis functions.  */
-static bool vect_analyze_data_refs (loop_vec_info);
-static bool vect_mark_stmts_to_be_vectorized (loop_vec_info);
-static void vect_analyze_scalar_cycles (loop_vec_info);
-static bool vect_analyze_data_ref_accesses (loop_vec_info);
-static bool vect_analyze_data_ref_dependences (loop_vec_info);
-static bool vect_analyze_data_refs_alignment (loop_vec_info);
-static bool vect_compute_data_refs_alignment (loop_vec_info);
-static bool vect_enhance_data_refs_alignment (loop_vec_info);
-static bool vect_analyze_operations (loop_vec_info);
-static bool vect_determine_vectorization_factor (loop_vec_info);
-
-/* Utility functions for the analyses.  */
-static bool exist_non_indexing_operands_for_use_p (tree, tree);
-static tree vect_get_loop_niters (struct loop *, tree *);
-static bool vect_analyze_data_ref_dependence
-  (struct data_dependence_relation *, loop_vec_info);
-static bool vect_compute_data_ref_alignment (struct data_reference *); 
-static bool vect_analyze_data_ref_access (struct data_reference *);
 static bool vect_can_advance_ivs_p (loop_vec_info);
-static void vect_update_misalignment_for_peel
-  (struct data_reference *, struct data_reference *, int npeel);
 
 /* Function vect_determine_vectorization_factor
 

@@ -469,5 +469,22 @@ build_linear_expr (tree type, lambda_vector coefs, VEC (tree, heap) *ivs)
   return expr;
 }
 
+/* Returns the dependence level for a vector DIST of size LENGTH.
+   LEVEL = 0 means a lexicographic dependence, i.e. a dependence due
+   to the sequence of statements, not carried by any loop.  */
+
+
+static inline unsigned
+dependence_level (lambda_vector dist_vect, int length)
+{
+  int i;
+
+  for (i = 0; i < length; i++)
+    if (dist_vect[i] != 0)
+      return i + 1;
+
+  return 0;
+}
+
 #endif /* LAMBDA_H  */
 

@@ -354,6 +354,7 @@ Objective-C and Objective-C++ Dialects}.
 -fstrict-aliasing -fstrict-overflow -fthread-jumps -ftracer -ftree-ccp @gol
 -ftree-ch -ftree-copy-prop -ftree-copyrename -ftree-dce @gol
 -ftree-dominator-opts -ftree-dse -ftree-fre -ftree-loop-im @gol
+-ftree-loop-distribution @gol
 -ftree-loop-ivcanon -ftree-loop-linear -ftree-loop-optimize @gol
 -ftree-parallelize-loops=@var{n} -ftree-pre -ftree-reassoc -ftree-salias @gol
 -ftree-sink -ftree-sra -ftree-store-ccp -ftree-ter @gol
@@ -5927,6 +5928,11 @@ performance and allow further loop optimizations to take place.
 @opindex fcheck-data-deps
 Compare the results of several data dependence analyzers.  This option
 is used for debugging the data dependence analyzers.
+
+@item -ftree-loop-distribution
+Perform loop distribution.  This flag can improve cache performance on
+big loop bodies and allow further loop optimizations, like
+parallelization or vectorization, to take place.
 
 @item -ftree-loop-im
 @opindex ftree-loop-im

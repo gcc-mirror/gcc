@@ -1,3 +1,57 @@
+2008-02-28  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* doc/invoke.texi: Document -ftree-loop-distribution.
+	* tree-loop-distribution.c: New.
+	* tree-pass.h (pass_loop_distribution): New.
+	* graphds.h (struct graph): Add htab_t indices.
+	* timevar.def (TV_TREE_LOOP_DISTRIBUTION): New.
+	* tree-vectorizer.c (rename_variables_in_loop): Extern.
+	(slpeel_tree_duplicate_loop_to_edge_cfg): Init PENDING_STMT to NULL.
+	* tree-vectorizer.h (tree_duplicate_loop_on_edge): Declared.
+	* tree-data-ref.c (debug_data_dependence_relations): New.
+	(dump_data_dependence_relation): Also print data references.
+	(free_data_ref): Extern.
+	(same_access_functions): Moved...
+	(find_vertex_for_stmt): Renamed rdg_vertex_for_stmt.
+	(dump_rdg_vertex, debug_rdg_vertex, dump_rdg_component,
+	debug_rdg_component, dump_rdg, debug_rdg, dot_rdg_1, dot_rdg,
+	struct rdg_vertex_info, rdg_vertex_for_stmt): New.
+	(create_rdg_edge_for_ddr, create_rdg_vertices): Cleaned up.
+	(stmts_from_loop): Skip LABEL_EXPR.
+	(hash_stmt_vertex_info, eq_stmt_vertex_info, hash_stmt_vertex_del): New.
+	(build_rdg): Initialize rdg->indices htab.
+	(free_rdg, stores_from_loop, ref_base_address,
+	rdg_defs_used_in_other_loops_p, have_similar_memory_accesses,
+	have_similar_memory_accesses_1, ref_base_address_1,
+	remove_similar_memory_refs): New.
+	* tree-data-ref.h: Depend on tree-chrec.h.
+	(debug_data_dependence_relations, free_data_ref): Declared.
+	(same_access_functions): ... here.
+	(ddr_is_anti_dependent, ddrs_have_anti_deps, ddr_dependence_level): New.
+	(struct rdg_vertex): Add has_mem_write and has_mem_reads.
+	(RDGV_HAS_MEM_WRITE, RDGV_HAS_MEM_READS, RDG_STMT,
+	RDG_MEM_WRITE_STMT, RDG_MEM_READS_STMT): New.
+	(dump_rdg_vertex, debug_rdg_vertex, dump_rdg_component,
+	debug_rdg_component, dump_rdg, debug_rdg, dot_rdg,
+	rdg_vertex_for_stmt): Declared.
+	(struct rdg_edge): Add level.
+	(RDGE_LEVEL): New.
+	(free_rdg, stores_from_loop, remove_similar_memory_refs,
+	rdg_defs_used_in_other_loops_p, have_similar_memory_accesses): Declared.
+	(rdg_has_similar_memory_accesses): New.
+	* tree-vect-analyze.c: Remove unused static decls.
+	* lambda.h (dependence_level): New.
+	* common.opt (ftree-loop-distribution): New.
+	* tree-flow.h (mark_virtual_ops_in_bb, 
+	slpeel_tree_duplicate_loop_to_edge_cfg,
+	rename_variables_in_loop): Declared.
+	* Makefile.in (TREE_DATA_REF_H): Depend on tree-chrec.h.
+	(OBJS-common): Add tree-loop-distribution.o.
+	(tree-loop-distribution.o): New rule.
+	* tree-cfg.c (mark_virtual_ops_in_bb): New.
+	(mark_virtual_ops_in_region): Use mark_virtual_ops_in_bb.
+	* passes.c (init_optimization_passes): Schedule pass_loop_distribution.
+
 2008-02-28  Joseph Myers  <joseph@codesourcery.com>
 
 	PR target/33963

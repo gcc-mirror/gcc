@@ -630,6 +630,7 @@ extern struct loop *slpeel_tree_peel_loop_to_edge
   (struct loop *, edge, tree, tree, bool, unsigned int, bool);
 extern void set_prologue_iterations (basic_block, tree,
 				     struct loop *, unsigned int);
+struct loop *tree_duplicate_loop_on_edge (struct loop *, edge);
 extern void slpeel_make_loop_iterate_ntimes (struct loop *, tree);
 extern bool slpeel_can_duplicate_loop_p (const struct loop *, const_edge);
 #ifdef ENABLE_CHECKING

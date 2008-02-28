@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphds.h"
 #include "lambda.h"
 #include "omega.h"
+#include "tree-chrec.h"
 
 /*
   innermost_loop_behavior describes the evolution of the address of the memory
@@ -38,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
                        Example 1                      Example 2
       data-ref         a[j].b[i][j]                   *(p + x + 16B + 4B * j)
       
+
   innermost_loop_behavior
       base_address     &a                             p
       offset           i * D_i			      x
@@ -319,26 +321,107 @@ extern void debug_data_dependence_relation (struct data_dependence_relation *);
 extern void dump_data_dependence_relation (FILE *, 
 					   struct data_dependence_relation *);
 extern void dump_data_dependence_relations (FILE *, VEC (ddr_p, heap) *);
+extern void debug_data_dependence_relations (VEC (ddr_p, heap) *);
 extern void dump_data_dependence_direction (FILE *, 
 					    enum data_dependence_direction);
 extern void free_dependence_relation (struct data_dependence_relation *);
 extern void free_dependence_relations (VEC (ddr_p, heap) *);
+extern void free_data_ref (data_reference_p);
 extern void free_data_refs (VEC (data_reference_p, heap) *);
 struct data_reference *create_data_ref (struct loop *, tree, tree, bool);
 bool find_loop_nest (struct loop *, VEC (loop_p, heap) **);
 void compute_all_dependences (VEC (data_reference_p, heap) *,
 			      VEC (ddr_p, heap) **, VEC (loop_p, heap) *, bool);
 
+/* Return true when the DDR contains two data references that have the
+   same access functions.  */
+
+static inline bool
+same_access_functions (const struct data_dependence_relation *ddr)
+{
+  unsigned i;
+
+  for (i = 0; i < DDR_NUM_SUBSCRIPTS (ddr); i++)
+    if (!eq_evolutions_p (DR_ACCESS_FN (DDR_A (ddr), i),
+			  DR_ACCESS_FN (DDR_B (ddr), i)))
+      return false;
+
+  return true;
+}
+
+/* Return true when DDR is an anti-dependence relation.  */
+
+static inline bool
+ddr_is_anti_dependent (ddr_p ddr)
+{
+  return (DDR_ARE_DEPENDENT (ddr) == NULL_TREE
+	  && DR_IS_READ (DDR_A (ddr))
+	  && !DR_IS_READ (DDR_B (ddr))
+	  && !same_access_functions (ddr));
+}
+
+/* Return true when DEPENDENCE_RELATIONS contains an anti-dependence.  */
+
+static inline bool
+ddrs_have_anti_deps (VEC (ddr_p, heap) *dependence_relations)
+{
+  unsigned i;
+  ddr_p ddr;
+
+  for (i = 0; VEC_iterate (ddr_p, dependence_relations, i, ddr); i++)
+    if (ddr_is_anti_dependent (ddr))
+      return true;
+
+  return false;
+}
+
+/* Return the dependence level for the DDR relation.  */
+
+static inline unsigned
+ddr_dependence_level (ddr_p ddr)
+{
+  unsigned vector;
+  unsigned level = 0;
+
+  if (DDR_DIST_VECTS (ddr))
+    level = dependence_level (DDR_DIST_VECT (ddr, 0), DDR_NB_LOOPS (ddr));
+
+  for (vector = 1; vector < DDR_NUM_DIST_VECTS (ddr); vector++)
+    level = MIN (level, dependence_level (DDR_DIST_VECT (ddr, vector),
+					  DDR_NB_LOOPS (ddr)));
+  return level;
+}
+
 
 
-/* A RDG vertex representing a statement.  */
+/* A Reduced Dependence Graph (RDG) vertex representing a statement.  */
 typedef struct rdg_vertex
 {
   /* The statement represented by this vertex.  */
   tree stmt;
+
+  /* True when the statement contains a write to memory.  */
+  bool has_mem_write;
+
+  /* True when the statement contains a read from memory.  */
+  bool has_mem_reads;
 } *rdg_vertex_p;
 
-#define RDGV_STMT(V)       ((struct rdg_vertex *) ((V)->data))->stmt
+#define RDGV_STMT(V)     ((struct rdg_vertex *) ((V)->data))->stmt
+#define RDGV_HAS_MEM_WRITE(V) ((struct rdg_vertex *) ((V)->data))->has_mem_write
+#define RDGV_HAS_MEM_READS(V) ((struct rdg_vertex *) ((V)->data))->has_mem_reads
+#define RDG_STMT(RDG, I) RDGV_STMT (&(RDG->vertices[I]))
+#define RDG_MEM_WRITE_STMT(RDG, I) RDGV_HAS_MEM_WRITE (&(RDG->vertices[I]))
+#define RDG_MEM_READS_STMT(RDG, I) RDGV_HAS_MEM_READS (&(RDG->vertices[I]))
+
+void dump_rdg_vertex (FILE *, struct graph *, int);
+void debug_rdg_vertex (struct graph *, int);
+void dump_rdg_component (FILE *, struct graph *, int, bitmap);
+void debug_rdg_component (struct graph *, int);
+void dump_rdg (FILE *, struct graph *);
+void debug_rdg (struct graph *);
+void dot_rdg (struct graph *);
+int rdg_vertex_for_stmt (struct graph *, tree);
 
 /* Data dependence type.  */
 
@@ -363,11 +446,17 @@ typedef struct rdg_edge
 {
   /* Type of the dependence.  */
   enum rdg_dep_type type;
+
+  /* Levels of the dependence: the depth of the loops that
+    carry the dependence.  */
+  unsigned level;
 } *rdg_edge_p;
 
 #define RDGE_TYPE(E)        ((struct rdg_edge *) ((E)->data))->type
+#define RDGE_LEVEL(E)       ((struct rdg_edge *) ((E)->data))->level
 
 struct graph *build_rdg (struct loop *);
+void free_rdg (struct graph *);
 
 /* Return the index of the variable VAR in the LOOP_NEST array.  */
 
@@ -383,6 +472,21 @@ index_in_loop_nest (int var, VEC (loop_p, heap) *loop_nest)
       break;
 
   return var_index;
+}
+
+void stores_from_loop (struct loop *, VEC (tree, heap) **);
+void remove_similar_memory_refs (VEC (tree, heap) **);
+bool rdg_defs_used_in_other_loops_p (struct graph *, int);
+bool have_similar_memory_accesses (tree, tree);
+
+/* Determines whether RDG vertices V1 and V2 access to similar memory
+   locations, in which case they have to be in the same partition.  */
+
+static inline bool
+rdg_has_similar_memory_accesses (struct graph *rdg, int v1, int v2)
+{
+  return have_similar_memory_accesses (RDG_STMT (rdg, v1),
+				       RDG_STMT (rdg, v2));
 }
 
 /* In lambda-code.c  */
