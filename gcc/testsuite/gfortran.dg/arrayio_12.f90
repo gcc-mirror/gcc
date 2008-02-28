@@ -18,7 +18,7 @@ program gfcbug51
   cdate = (/'200612231200', '200712231200', &
             '200812231200'/)
 
-  time = date_to_year (cdate)
+  call date_to_year (cdate)
   if (any (time%year .ne. (/2006, 2007, 2008/))) call abort ()
 
   call month_to_date ((/8, 9, 10/), cdate)
@@ -27,11 +27,10 @@ program gfcbug51
 
 contains
 
-  function date_to_year (d) result (y)
+  subroutine date_to_year (d)
     character(len=12) :: d(3)
-    type(year_t) :: y(size (d, 1))
-    read (cdate(:)(1:4),'(i4)')  time% year
-  end function date_to_year
+    read (cdate(:)(1:4),'(i4)')  time%year
+  end subroutine
 
   subroutine month_to_date (m, d)
     character(len=12) :: d(3)

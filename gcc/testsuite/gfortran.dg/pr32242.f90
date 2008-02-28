@@ -1,5 +1,6 @@
 !PR fortran/32242
 ! { dg-do compile }
+! { dg-options "-Wreturn-type" }
 ! { dg-final { cleanup-modules "kahan_sum" } }
 
 MODULE kahan_sum
@@ -16,13 +17,13 @@ MODULE kahan_sum
      TYPE ( pw_grid_type ), POINTER :: pw_grid
   END TYPE pw_type
 CONTAINS
- FUNCTION kahan_sum_d1(array,mask) RESULT(ks)
+ FUNCTION kahan_sum_d1(array,mask) RESULT(ks)         ! { dg-warning "not set" }
    REAL(KIND=dp), DIMENSION(:), INTENT(IN)  :: array
    LOGICAL, DIMENSION(:), INTENT(IN), &
      OPTIONAL                               :: mask
    REAL(KIND=dp)                            :: ks
  END FUNCTION kahan_sum_d1
-  FUNCTION kahan_sum_z1(array,mask) RESULT(ks)
+  FUNCTION kahan_sum_z1(array,mask) RESULT(ks)        ! { dg-warning "not set" }
     COMPLEX(KIND=dp), DIMENSION(:), &
       INTENT(IN)                             :: array
     LOGICAL, DIMENSION(:), INTENT(IN), &
@@ -34,6 +35,6 @@ FUNCTION pw_integral_a2b ( pw1, pw2 ) RESULT ( integral_value )
     TYPE(pw_type), INTENT(IN)                :: pw1, pw2
     REAL(KIND=dp)                            :: integral_value
      integral_value = accurate_sum ( REAL ( CONJG ( pw1 % cc ( : ) ) &
-          *  pw2 % cc ( : ) ,KIND=dp) * pw1 % pw_grid % gsq ( : ) )  ! { dg-warning "Function return value not set" }
+          *  pw2 % cc ( : ) ,KIND=dp) * pw1 % pw_grid % gsq ( : ) )
 END FUNCTION pw_integral_a2b
 END MODULE

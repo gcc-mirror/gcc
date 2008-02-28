@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-Wreturn-type" }
 ! PR fortran/33941
 ! The problem was that the intrinsic operators
 ! were written to the module file as '/=' etc.
@@ -9,11 +10,11 @@
 
 module foo
 contains
-  function pop(n) result(item)
+  function pop(n) result(item)          ! { dg-warning "not set" }
     integer :: n
     character(len=merge(1, 0, n > 0)) :: item
   end function pop
-  function push(n) result(item)
+  function push(n) result(item)         ! { dg-warning "not set" }
     integer :: n
     character(len=merge(1, 0, n /= 0)) :: item
   end function push
