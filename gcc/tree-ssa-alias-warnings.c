@@ -452,11 +452,14 @@ build_reference_table (void)
 	  /* Add all aliased names to the interesting reference list.  */
 	  if (pi->pt_vars)
 	    {
-	      referenced_var_iterator ri;
-	      tree alias;
+	      unsigned ix;
+	      bitmap_iterator bi;
 
-	      FOR_EACH_REFERENCED_VAR_IN_BITMAP (pi->pt_vars, alias, ri)
-		add_key (ref_table->objs, alias, references_pool);
+	      EXECUTE_IF_SET_IN_BITMAP (pi->pt_vars, 0, ix, bi)
+		{
+		  tree alias = referenced_var (ix);
+		  add_key (ref_table->objs, alias, references_pool);
+		}
 	    }
 	}
     }
@@ -911,13 +914,17 @@ dsa_named_for (tree ptr)
       /* For all the variables it could be aliased to.  */
       if (pi->pt_vars)
 	{
-	  referenced_var_iterator ri;
-	  tree alias;
+	  unsigned ix;
+	  bitmap_iterator bi;
 
-	  FOR_EACH_REFERENCED_VAR_IN_BITMAP (pi->pt_vars, alias, ri)
-	    if (nonstandard_alias_p (ptr, alias, false))
-	      strict_aliasing_warn (SSA_NAME_DEF_STMT (ptr),
-				    ptr, true, alias, false, true);
+	  EXECUTE_IF_SET_IN_BITMAP (pi->pt_vars, 0, ix, bi)
+	    {
+	      tree alias = referenced_var (ix);
+
+	      if (nonstandard_alias_p (ptr, alias, false))
+		strict_aliasing_warn (SSA_NAME_DEF_STMT (ptr),
+				      ptr, true, alias, false, true);
+	    }
 	}
     }
 }
