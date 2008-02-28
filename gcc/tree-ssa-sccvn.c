@@ -241,9 +241,12 @@ static VEC (tree, heap) *sccstack;
 DEF_VEC_P(vn_ssa_aux_t);
 DEF_VEC_ALLOC_P(vn_ssa_aux_t, heap);
 
-/* Table of vn_ssa_aux_t's, one per ssa_name.  */
+/* Table of vn_ssa_aux_t's, one per ssa_name.  The vn_ssa_aux_t objects
+   are allocated on an obstack for locality reasons, and to free them
+   without looping over the VEC.  */
 
 static VEC (vn_ssa_aux_t, heap) *vn_ssa_aux_table;
+static struct obstack vn_ssa_aux_obstack;
 
 /* Return the value numbering information for a given SSA name.  */
 
@@ -264,13 +267,16 @@ VN_INFO_SET (tree name, vn_ssa_aux_t value)
 	       SSA_NAME_VERSION (name), value);
 }
 
-/* Get the value numbering info for a given SSA name, creating it if
-   it does not exist.  */
+/* Initialize the value numbering info for a given SSA name.
+   This should be called just once for every SSA name.  */
 
 vn_ssa_aux_t
 VN_INFO_GET (tree name)
 {
-  vn_ssa_aux_t newinfo = XCNEW (struct vn_ssa_aux);
+  vn_ssa_aux_t newinfo;
+
+  newinfo = obstack_alloc (&vn_ssa_aux_obstack, sizeof (struct vn_ssa_aux));
+  memset (newinfo, 0, sizeof (struct vn_ssa_aux));
   if (SSA_NAME_VERSION (name) >= VEC_length (vn_ssa_aux_t, vn_ssa_aux_table))
     VEC_safe_grow (vn_ssa_aux_t, heap, vn_ssa_aux_table,
 		   SSA_NAME_VERSION (name) + 1);
@@ -2007,6 +2013,8 @@ init_scc_vn (void)
   /* VEC_alloc doesn't actually grow it to the right size, it just
      preallocates the space to do so.  */
   VEC_safe_grow (vn_ssa_aux_t, heap, vn_ssa_aux_table, num_ssa_names + 1);
+  gcc_obstack_init (&vn_ssa_aux_obstack);
+
   shared_lookup_phiargs = NULL;
   shared_lookup_vops = NULL;
   shared_lookup_references = NULL;
@@ -2020,7 +2028,7 @@ init_scc_vn (void)
   for (j = 0; j < n_basic_blocks - NUM_FIXED_BLOCKS; j++)
     rpo_numbers[rpo_numbers_temp[j]] = j;
 
-  free (rpo_numbers_temp);
+  XDELETE (rpo_numbers_temp);
 
   VN_TOP = create_tmp_var_raw (void_type_node, "vn_top");
 
@@ -2071,19 +2079,18 @@ free_scc_vn (void)
   VEC_free (tree, gc, shared_lookup_vops);
   VEC_free (vn_reference_op_s, heap, shared_lookup_references);
   XDELETEVEC (rpo_numbers);
+
   for (i = 0; i < num_ssa_names; i++)
     {
       tree name = ssa_name (i);
-      if (name)
-	{
-	  XDELETE (VN_INFO (name));
-	  if (SSA_NAME_VALUE (name) &&
-	      TREE_CODE (SSA_NAME_VALUE (name)) == VALUE_HANDLE)
-	    SSA_NAME_VALUE (name) = NULL;
-	}
+      if (name
+	  && SSA_NAME_VALUE (name)
+	  && TREE_CODE (SSA_NAME_VALUE (name)) == VALUE_HANDLE)
+	SSA_NAME_VALUE (name) = NULL;
     }
-
+  obstack_free (&vn_ssa_aux_obstack, NULL);
   VEC_free (vn_ssa_aux_t, heap, vn_ssa_aux_table);
+
   VEC_free (tree, heap, sccstack);
   free_vn_table (valid_info);
   XDELETE (valid_info);

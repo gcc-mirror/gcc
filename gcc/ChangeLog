@@ -1,3 +1,11 @@
+2008-02-28  Steven Bosscher  <stevenb.gcc@gmail.com>
+
+	* tree-ssa-sccvn (vn_ssa_aux_obstack): New obstack.
+	(VN_INFO_GET): Allocate new objects on the obstack.
+	(init_scc_vn): Initialize the obstack.  Use XDELETE instead of free
+	for rpo_numbers_temp, for consistency.
+	(free_scc_vn): Free the obstack.
+
 2008-02-28  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* doc/invoke.texi: Document -ftree-loop-distribution.
