@@ -1,3 +1,11 @@
+2008-02-28  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* simplify-rtx.c (simplify_unary_operation_1): Extend the handling
+	of SUBREG_PROMOTED_VAR_P to cope with cases where the extended value
+	is smaller than the original promoted value.
+	(simplify_subreg): If OP is a SUBREG, try to preserve its
+	SUBREG_PROMOTED_VAR_P information.
+
 2008-02-28  Steven Bosscher  <stevenb.gcc@gmail.com>
 
 	* tree-ssa-sccvn (vn_ssa_aux_obstack): New obstack.
