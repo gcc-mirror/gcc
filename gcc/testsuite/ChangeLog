@@ -1,3 +1,8 @@
+2008-02-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/34868
+	* gfortran.dg/f2c_9.f90: New test.
+
 2008-02-28  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* testsuite/gcc.dg/tree-ssa/ldist-1.c: New.

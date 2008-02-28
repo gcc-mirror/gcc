@@ -513,7 +513,8 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
           /* Dereference scalar hidden result.  */
 	  if (gfc_option.flag_f2c && sym->ts.type == BT_COMPLEX
 	      && (sym->attr.function || sym->attr.result)
-	      && !sym->attr.dimension && !sym->attr.pointer)
+	      && !sym->attr.dimension && !sym->attr.pointer
+	      && !sym->attr.always_explicit)
 	    se->expr = build_fold_indirect_ref (se->expr);
 
           /* Dereference non-character pointer variables. 

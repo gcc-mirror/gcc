@@ -1,3 +1,11 @@
+2008-02-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/34868
+	* trans-expr.c (gfc_conv_variable): Don't build indirect
+	references when explicit interface is mandated.
+	* resolve.c (resolve_formal_arglist): Set attr.always_explicit
+	on the result symbol as well as the procedure symbol.
+
 2008-02-27  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/33387
