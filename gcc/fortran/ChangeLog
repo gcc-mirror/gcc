@@ -1,3 +1,15 @@
+2008-02-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2008-02-25  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR target/25477
+	* trans-expr.c (gfc_conv_power_op): Use BUILT_IN_CPOW{F,,L}.
+	* f95-lang.c (gfc_init_builtin_functions): Define BUILT_IN_CPOW{F,,L}.
+	* trans.h (gfor_fndecl_math_cpow, gfor_fndecl_math_cpowf,
+	gfor_fndecl_math_cpowl10, gfor_fndecl_math_cpowl16): Remove.
+	* trans-decl.c: Likewise.
+
 2008-02-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/34952

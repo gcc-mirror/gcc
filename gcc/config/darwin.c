@@ -1735,4 +1735,47 @@ darwin_override_options (void)
     flag_var_tracking_uninit = 1;
 }
 
+/* Add $LDBL128 suffix to long double builtins.  */
+
+static void
+darwin_patch_builtin (int fncode)
+{
+  tree fn = built_in_decls[fncode];
+  tree sym;
+  char *newname;
+
+  if (!fn)
+    return;
+
+  sym = DECL_ASSEMBLER_NAME (fn);
+  newname = ACONCAT (("_", IDENTIFIER_POINTER (sym), "$LDBL128", NULL));
+
+  set_user_assembler_name (fn, newname);
+
+  fn = implicit_built_in_decls[fncode];
+  if (fn)
+    set_user_assembler_name (fn, newname);
+}
+
+void
+darwin_patch_builtins (void)
+{
+  if (LONG_DOUBLE_TYPE_SIZE != 128)
+    return;
+
+#define PATCH_BUILTIN(fncode) darwin_patch_builtin (fncode);
+#define PATCH_BUILTIN_NO64(fncode)             \
+  if (!TARGET_64BIT)                           \
+    darwin_patch_builtin (fncode);
+#define PATCH_BUILTIN_VARIADIC(fncode)                            \
+  if (!TARGET_64BIT                                               \
+      && (strverscmp (darwin_macosx_version_min, "10.3.9") >= 0)) \
+    darwin_patch_builtin (fncode);
+#include "darwin-ppc-ldouble-patch.def"
+#undef PATCH_BUILTIN
+#undef PATCH_BUILTIN_NO64
+#undef PATCH_BUILTIN_VARIADIC
+}
+
+
 #include "gt-darwin.h"

@@ -1,3 +1,18 @@
+2008-02-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2008-02-25  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+		    Uros Bizjak <ubizjak@gmail.com>
+
+	PR target/25477
+	* gcc/config/darwin-protos.h: Add darwin_patch_builtins prototype.
+	* gcc/config/darwin-ppc-ldouble-patch.def: New file.
+	* gcc/config/rs6000/darwin.h (SUBTARGET_INIT_BUILTINS): New macro.
+	* gcc/config/rs6000/rs6000.c (rs6000_init_builtins): Call
+	SUBTARGET_INIT_BUILTINS if defined.
+	* gcc/config/darwin.c (darwin_patch_builtin,
+	darwin_patch_builtins): New functions. 
+
 2008-02-27  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
@@ -14,8 +29,7 @@
 
 2008-02-25  Jan Beulich  <jbeulich@novell.com>
 
-	* Makefile.in: Also prefix uses of crt0.o and mcrt0.o with
-	$(T).
+	* Makefile.in: Also prefix uses of crt0.o and mcrt0.o with $(T).
 	* config/i386/netware-libgcc.exp: Add __bswap?i2,
 	__emultls_get_address, __emultls_register_common,
 	__floatundi?f, and _Unwind_GetIPInfo.

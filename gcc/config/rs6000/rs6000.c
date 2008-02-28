@@ -9177,6 +9177,10 @@ rs6000_init_builtins (void)
   if (built_in_decls [BUILT_IN_CLOG])
     set_user_assembler_name (built_in_decls [BUILT_IN_CLOG], "__clog");
 #endif
+
+#ifdef SUBTARGET_INIT_BUILTINS
+  SUBTARGET_INIT_BUILTINS;
+#endif
 }
 
 /* Search through a set of builtins and enable the mask bits.
