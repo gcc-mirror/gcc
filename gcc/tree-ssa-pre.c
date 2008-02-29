@@ -3256,7 +3256,9 @@ get_sccvn_value (tree name)
 		!ZERO_SSA_OPERANDS (defstmt2, SSA_OP_ALL_VIRTUALS))
 	      gcc_assert (defstmt);
 	  }
-	  valvh = vn_lookup_or_add_with_stmt (val, defstmt);
+	  /* We lookup with the LHS, so do not use vn_lookup_or_add_with_stmt
+	     here, as that will result in useless reference lookups.  */
+	  valvh = vn_lookup_or_add (val);
 	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
