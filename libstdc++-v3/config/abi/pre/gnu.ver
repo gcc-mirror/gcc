@@ -753,19 +753,6 @@ GLIBCXX_3.4.10 {
 
     _ZNK11__gnu_debug16_Error_formatter17_M_get_max_lengthEv;
 
-    # system_error
-    _ZSt15system_category;
-
-    _ZTISt14error_category;
-    _ZTSSt14error_category;
-    _ZTVSt14error_category;
-
-    _ZTSSt12system_error;
-    _ZTISt12system_error;
-    _ZTVSt12system_error;
-    _ZNSt12system_errorD*Ev;
-    _ZNSt12system_errorC*;
-
     _ZNKSt3tr14hashIRKSbIwSt11char_traitsIwESaIwEEEclES6_;
     _ZNKSt3tr14hashIRKSsEclES2_;
     _ZNKSt3tr14hashISbIwSt11char_traitsIwESaIwEEEclES4_;

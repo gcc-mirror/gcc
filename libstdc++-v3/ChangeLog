@@ -1,3 +1,60 @@
+2008-02-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/Makefile.am: Remove <system_error> support.
+	* include/Makefile.am: Same.
+	* acinclude.m4: Same.
+	* configure.ac: Same.
+	* configure: Regenerate.
+	* src/Makefile.in: Same.
+	* include/Makefile.in: Same.
+	* config.h.in: Same.
+
+	* include/std/system_error: Remove.
+	* include/std/ostream: Remove <system_error> support.
+	* include/precompiled/stdc++.h: Same.
+	* src/system_error.cc: Remove.
+	* src/hash_c++0x.cc: Remove.	
+	* config/os/mingw32/error_constants.h: Same.
+	* config/os/generic/error_constants.h: Same.
+	* config/abi/pre/gnu.ver: Adjust exports.
+
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/error_code.cc:
+	Remove support for <system_error>.
+	* testsuite/27_io/basic_ostream/inserters_other/char/
+	error_code.cc: Same.
+	* testsuite/19_diagnostics/error_code: Same.
+	* testsuite/19_diagnostics/error_code/cons: Same.
+	* testsuite/19_diagnostics/error_code/cons/1.cc: Same.
+	* testsuite/19_diagnostics/error_code/operators: Same.
+	* testsuite/19_diagnostics/error_code/operators/bool.cc: Same.
+	* testsuite/19_diagnostics/error_code/operators/bool_neg.cc: Same.
+	* testsuite/19_diagnostics/error_code/operators/equal.cc: Same.
+	* testsuite/19_diagnostics/error_code/operators/not_equal.cc: Same.
+	* testsuite/19_diagnostics/error_category: Same.
+	* testsuite/19_diagnostics/error_category/cons: Same.
+	* testsuite/19_diagnostics/error_category/cons/copy_neg.cc: Same.
+	* testsuite/19_diagnostics/error_category/cons/default.cc: Same.
+	* testsuite/19_diagnostics/error_category/operators: Same.
+	* testsuite/19_diagnostics/error_category/operators/equal.cc: Same.
+	* testsuite/19_diagnostics/error_category/operators/not_equal.cc: Same.
+	* testsuite/19_diagnostics/headers/system_error: Same.
+	* testsuite/19_diagnostics/headers/system_error/
+	types_std_c++0x.cc: Same.
+	* testsuite/19_diagnostics/headers/system_error/std_c++0x_neg.cc: Same.
+	* testsuite/19_diagnostics/headers/system_error/34538.cc: Same.
+	* testsuite/19_diagnostics/system_error: Same.
+	* testsuite/19_diagnostics/system_error/
+	cons_virtual_derivation.cc: Same.
+	* testsuite/19_diagnostics/system_error/cons-1.cc: Same.
+	* testsuite/19_diagnostics/system_error/what-1.cc: Same.
+	* testsuite/19_diagnostics/system_error/what-2.cc: Same.
+	* testsuite/19_diagnostics/system_error/what-big.cc: Same.
+	* testsuite/19_diagnostics/system_error/what-3.cc: Same.
+	* testsuite/19_diagnostics/system_error/what-4.cc: Same.
+	* testsuite/17_intro/headers/c++200x/all.cc: Same.
+	* testsuite/20_util/hash/requirements/explicit_instantiation.cc: Same.
+	* testsuite/20_util/hash/operators/size_t.cc: Same.
+	
 2008-02-25  Jan Beulich  <jbeulich@novell.com>
 
 	* acinclude.m4: Also check for EIDRM and ETXTBSY.

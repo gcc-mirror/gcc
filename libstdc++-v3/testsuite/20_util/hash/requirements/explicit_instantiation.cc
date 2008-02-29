@@ -21,7 +21,6 @@
 
 #include <functional>
 #include <string>
-#include <system_error>
 
 // Verify that we can instantiate hash for every required type.
 template class std::hash<bool>;
@@ -39,7 +38,6 @@ template class std::hash<double>;
 template class std::hash<long double>;
 template class std::hash<void*>;
 template class std::hash<std::string>;
-template class std::hash<std::error_code>;
 
 #ifdef _GLIBCXX_USE_WCHAR_T
 template class std::hash<wchar_t>;

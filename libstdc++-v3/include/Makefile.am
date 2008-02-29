@@ -58,7 +58,6 @@ std_headers = \
 	${std_srcdir}/stdexcept \
 	${std_srcdir}/streambuf \
 	${std_srcdir}/string \
-	${std_srcdir}/system_error \
 	${std_srcdir}/tuple \
 	${std_srcdir}/type_traits \
 	${std_srcdir}/unordered_map \
@@ -776,7 +775,6 @@ host_headers = \
 	${glibcxx_srcdir}/$(ATOMIC_WORD_SRCDIR)/atomic_word.h \
 	${glibcxx_srcdir}/$(ABI_TWEAKS_SRCDIR)/cxxabi_tweaks.h \
 	${glibcxx_srcdir}/$(CPU_DEFINES_SRCDIR)/cpu_defines.h \
-	${glibcxx_srcdir}/$(ERROR_CONSTANTS_SRCDIR)/error_constants.h \
 	${glibcxx_srcdir}/include/precompiled/stdc++.h \
 	${glibcxx_srcdir}/include/precompiled/stdtr1c++.h \
 	${glibcxx_srcdir}/include/precompiled/extc++.h 

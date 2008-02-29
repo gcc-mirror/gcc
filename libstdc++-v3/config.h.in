@@ -60,44 +60,8 @@
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
-/* Define if EBADMSG exists. */
-#undef HAVE_EBADMSG
-
-/* Define if ECANCELED exists. */
-#undef HAVE_ECANCELED
-
 /* Define to 1 if you have the <endian.h> header file. */
 #undef HAVE_ENDIAN_H
-
-/* Define if ENODATA exists. */
-#undef HAVE_ENODATA
-
-/* Define if ENOLINK exists. */
-#undef HAVE_ENOLINK
-
-/* Define if ENOSR exists. */
-#undef HAVE_ENOSR
-
-/* Define if ENOSTR exists. */
-#undef HAVE_ENOSTR
-
-/* Define if ENOTRECOVERABLE exists. */
-#undef HAVE_ENOTRECOVERABLE
-
-/* Define if ENOTSUP exists. */
-#undef HAVE_ENOTSUP
-
-/* Define if EOVERFLOW exists. */
-#undef HAVE_EOVERFLOW
-
-/* Define if EOWNERDEAD exists. */
-#undef HAVE_EOWNERDEAD
-
-/* Define if EPROTO exists. */
-#undef HAVE_EPROTO
-
-/* Define if ETIME exists. */
-#undef HAVE_ETIME
 
 /* Define to 1 if you have the `expf' function. */
 #undef HAVE_EXPF
@@ -372,9 +336,6 @@
 
 /* Define to 1 if you have the <sys/machine.h> header file. */
 #undef HAVE_SYS_MACHINE_H
-
-/* Define if sys_nerr exists. */
-#undef HAVE_SYS_NERR
 
 /* Define to 1 if you have the <sys/param.h> header file. */
 #undef HAVE_SYS_PARAM_H

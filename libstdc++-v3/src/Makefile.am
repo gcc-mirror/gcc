@@ -144,7 +144,6 @@ sources = \
 	debug.cc \
 	functexcept.cc \
 	hash.cc \
-	hash_c++0x.cc \
 	globals_io.cc \
 	hashtable.cc \
 	hashtable_c++0x.cc \
@@ -161,7 +160,6 @@ sources = \
 	localename.cc \
 	stdexcept.cc \
 	strstream.cc \
-	system_error.cc \
 	tree.cc \
 	allocator-inst.cc \
 	concept-inst.cc \
@@ -225,17 +223,6 @@ parallel_settings.lo: parallel_settings.cc
 	$(LTCXXCOMPILE) $(PARALLEL_FLAGS) -c $<
 parallel_settings.o: parallel_settings.cc
 	$(CXXCOMPILE) $(PARALLEL_FLAGS) -c $<
-
-# Use special rules for the C++0x sources so that the proper flags are passed.
-system_error.lo: system_error.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-system_error.o: system_error.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-hash_c++0x.lo: hash_c++0x.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-hash_c++0x.o: hash_c++0x.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 hashtable_c++0x.lo: hashtable_c++0x.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<

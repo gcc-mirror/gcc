@@ -112,7 +112,6 @@ GLIBCXX_ENABLE_CXX_FLAGS
 GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING([no])
 
 # Checks for operating systems support that don't require linking.
-GLIBCXX_CHECK_SYSTEM_ERROR
 
 # No surprises, no surprises...
 GLIBCXX_ENABLE_THREADS
