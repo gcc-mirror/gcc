@@ -1275,6 +1275,7 @@ gfc_conv_scalar_char_value (gfc_symbol *sym, gfc_se *se, gfc_expr **expr)
       if ((*expr)->expr_type == EXPR_CONSTANT)
         {
 	  gfc_typespec ts;
+          gfc_clear_ts (&ts);
 
 	  *expr = gfc_int_expr ((int)(*expr)->value.character.string[0]);
 	  if ((*expr)->ts.kind != gfc_c_int_kind)
@@ -2250,6 +2251,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
   stringargs = NULL_TREE;
   var = NULL_TREE;
   len = NULL_TREE;
+  gfc_clear_ts (&ts);
 
   if (sym->from_intmod == INTMOD_ISO_C_BINDING)
     {
