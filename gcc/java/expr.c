@@ -3132,6 +3132,7 @@ expand_byte_code (JCF *jcf, tree method)
   int dead_code_index = -1;
   unsigned char* byte_ops;
   long length = DECL_CODE_LENGTH (method);
+  location_t max_location = input_location;
 
   stack_pointer = 0;
   JCF_SEEK (jcf, DECL_CODE_OFFSET (method));
@@ -3219,6 +3220,8 @@ expand_byte_code (JCF *jcf, tree method)
 		{
 		  int line = GET_u2 (linenumber_pointer - 2);
 		  input_location = linemap_line_start (line_table, line, 1);
+		  if (input_location > max_location)
+		    max_location = input_location;
 		  if (!(instruction_bits[PC] & BCODE_HAS_MULTI_LINENUMBERS))
 		    break;
 		}
@@ -3238,6 +3241,8 @@ expand_byte_code (JCF *jcf, tree method)
 	warning (0, "unreachable bytecode from %d to the end of the method", 
 		 dead_code_index);
     }
+
+  DECL_FUNCTION_LAST_LINE (method) = max_location;
 }
 
 static void
