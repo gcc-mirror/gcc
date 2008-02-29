@@ -372,6 +372,7 @@ bool statement_code_p[MAX_TREE_CODES];
 bool
 cxx_init (void)
 {
+  location_t saved_loc;
   unsigned int i;
   static const enum tree_code stmt_codes[] = {
    CTOR_INITIALIZER,	TRY_BLOCK,	HANDLER,
@@ -385,7 +386,8 @@ cxx_init (void)
   for (i = 0; i < ARRAY_SIZE (stmt_codes); i++)
     statement_code_p[stmt_codes[i]] = true;
 
-  push_srcloc (BUILTINS_LOCATION);
+  saved_loc = input_location;
+  input_location = BUILTINS_LOCATION;
 
   init_reswords ();
   init_tree ();
@@ -413,7 +415,7 @@ cxx_init (void)
 
   if (c_common_init () == false)
     {
-      pop_srcloc();
+      input_location = saved_loc;
       return false;
     }
 
@@ -421,7 +423,7 @@ cxx_init (void)
 
   init_repo ();
 
-  pop_srcloc();
+  input_location = saved_loc;
   return true;
 }
 

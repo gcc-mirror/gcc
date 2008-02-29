@@ -49,34 +49,15 @@ extern expanded_location expand_location (source_location);
    This could be removed but it hardly seems worth the effort.  */
 typedef source_location location_t;
 
-struct file_stack
-{
-  struct file_stack *next;
-  location_t location;
-};
-
 /* Top-level source file.  */
 extern const char *main_input_filename;
 
 extern location_t input_location;
-extern void push_srcloc (location_t);
-extern void pop_srcloc (void);
-extern void restore_input_file_stack (int);
 
 #define LOCATION_FILE(LOC) ((expand_location (LOC)).file)
 #define LOCATION_LINE(LOC) ((expand_location (LOC)).line)
 
 #define input_line LOCATION_LINE (input_location)
 #define input_filename LOCATION_FILE (input_location)
-
-/* Stack of currently pending input files.
-   The line member is not accurate for the innermost file on the stack.  */
-extern struct file_stack *input_file_stack;
-
-/* Incremented on each change to input_file_stack.  */
-extern int input_file_stack_tick;
-
-/* The number of bits available for input_file_stack_tick.  */
-#define INPUT_FILE_STACK_BITS	31
 
 #endif

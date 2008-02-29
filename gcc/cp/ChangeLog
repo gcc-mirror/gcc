@@ -1,3 +1,11 @@
+2008-02-29  Tom Tromey  <tromey@redhat.com>
+
+	* parser.c (struct cp_token) <input_file_stack_index>: Remove.
+	(cp_lexer_get_preprocessor_token): Update.
+	(cp_lexer_set_source_position_from_token): Don't call
+	restore_input_file_stack.
+	* lex.c (cxx_init): Don't use push_srcloc or pop_srcloc.
+
 2008-02-28  Richard Guenther  <rguenther@suse.de>
 
 	Revert:

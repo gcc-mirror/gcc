@@ -3,6 +3,7 @@
 
 #include "pragma-system_header2.h"
 
+
 void f()
 {
   g<int>();
@@ -11,3 +12,6 @@ void f()
 
 // { dg-warning "conversion" "" { target *-*-* } 2 }
 // { dg-warning "conversion" "" { target *-*-* } 5 }
+
+// I couldn't find another way to make this work.
+// { dg-prune-output "In file included from" }

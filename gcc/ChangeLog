@@ -1,3 +1,20 @@
+2008-02-29  Tom Tromey  <tromey@redhat.com>
+
+	* toplev.c (input_file_stack, input_file_stack_tick, fs_p,
+	input_file_stack_history, input_file_stack_restored): Remove.
+	(push_srcloc, pop_srcloc, restore_input_file_stack): Likewise.
+	* input.h (struct file_stack): Remove.
+	(push_srcloc, pop_srcloc, restore_input_file_stack): Likewise.
+	(input_file_stack, input_file_stack_tick, INPUT_FILE_STACK_BITS):
+	Likewise.
+	* diagnostic.h (struct diagnostic_context) <last_module>: Change
+	type.
+	(diagnostic_last_module_changed): Add 'map' argument.
+	(diagnostic_set_last_function): Likewise.
+	* diagnostic.c (undiagnostic_report_current_module): Iterate using
+	line map, not input_file_stack.
+	* c-lex.c (fe_file_change): Don't use push_srcloc or pop_srcloc.
+
 2008-02-29  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.md (arm_addsi3): Add r/k/n alternative.
