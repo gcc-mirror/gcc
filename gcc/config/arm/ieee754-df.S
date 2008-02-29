@@ -840,7 +840,7 @@ LSYM(Lml_d):
 	orr	xh, xh, r6
 	teq	r5, #0
 	do_it	ne
-	movne	pc, lr
+	RETc(ne)
 2:	and	r6, yh, #0x80000000
 3:	movs	yl, yl, lsl #1
 	adc	yh, yh, yh
@@ -849,7 +849,7 @@ LSYM(Lml_d):
 	subeq	r5, r5, #1
 	beq	3b
 	orr	yh, yh, r6
-	mov	pc, lr
+	RET
 
 LSYM(Lml_s):
 	@ Isolate the INF and NAN cases away
