@@ -1,3 +1,18 @@
+2008-02-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2008-02-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/19984
+	* gcc.dg/pr19984.c: New test.
+	* gcc.dg/dfp/compare-special.h: Use _nan instead of nan as the
+	name of the variable.
+
+	2008-02-27 Uros Bizjak <ubizjak@gmail.com>
+
+	PR target/25477
+	* config/darwin-ppc-ldouble-patch.def (BUILT_IN_NANL): Add.
+
 2008-02-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:

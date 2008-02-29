@@ -1,3 +1,14 @@
+2008-02-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2008-02-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/19984
+	* builtins.def (BUILT_IN_NAN): Define as c99 builtin
+	using DEF_C99_BUILTIN.
+	(BUILT_IN_NANF): Ditto.
+	(BUILT_IN_NANL): Ditto.
+
 2008-02-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
