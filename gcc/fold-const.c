@@ -2475,8 +2475,15 @@ fold_convertible_p (const_tree type, const_tree arg)
       return (TREE_CODE (orig) == VECTOR_TYPE
 	      && tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (orig)));
 
-    default:
+    case REAL_TYPE:
+    case FIXED_POINT_TYPE:
+    case COMPLEX_TYPE:
+    case VECTOR_TYPE:
+    case VOID_TYPE:
       return TREE_CODE (type) == TREE_CODE (orig);
+
+    default:
+      return false;
     }
 }
 
