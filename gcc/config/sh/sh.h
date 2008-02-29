@@ -623,12 +623,6 @@ do {									\
 	    }								\
 	  TARGET_CBRANCHDI4 = 0;					\
 	}								\
-      /* -fprofile-arcs needs a working libgcov .  In unified tree	\
-	 configurations with newlib, this requires to configure with	\
-	 --with-newlib --with-headers.  But there is no way to check	\
-	 here we have a working libgcov, so just assume that we have.  */\
-      if (profile_flag)							\
-	warning (0, "profiling is still experimental for this target");\
     }									\
   else									\
     {									\
