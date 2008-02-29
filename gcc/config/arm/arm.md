@@ -518,7 +518,7 @@
 
 (define_insn_and_split "*arm_addsi3"
   [(set (match_operand:SI          0 "s_register_operand" "=r, !k,r, !k,r")
-	(plus:SI (match_operand:SI 1 "s_register_operand" "%rk,!k,rk,!k,r")
+	(plus:SI (match_operand:SI 1 "s_register_operand" "%rk,!k,rk,!k,rk")
 		 (match_operand:SI 2 "reg_or_int_operand" "rI, rI,L, L,?n")))]
   "TARGET_32BIT"
   "@
