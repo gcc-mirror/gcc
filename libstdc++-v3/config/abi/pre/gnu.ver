@@ -763,7 +763,6 @@ GLIBCXX_3.4.10 {
     _ZNKSt4hashIRKSsEclES1_;
     _ZNKSt4hashISbIwSt11char_traitsIwESaIwEEEclES3_;
     _ZNKSt4hashISsEclESs;
-    _ZNKSt4hashISt10error_codeEclES0_;
     _ZNKSt4hashI[eg]EclE[eg];
 
     _ZSt17__verify_grouping*;

@@ -144,6 +144,7 @@ sources = \
 	debug.cc \
 	functexcept.cc \
 	hash.cc \
+	hash_c++0x.cc \
 	globals_io.cc \
 	hashtable.cc \
 	hashtable_c++0x.cc \
@@ -223,6 +224,11 @@ parallel_settings.lo: parallel_settings.cc
 	$(LTCXXCOMPILE) $(PARALLEL_FLAGS) -c $<
 parallel_settings.o: parallel_settings.cc
 	$(CXXCOMPILE) $(PARALLEL_FLAGS) -c $<
+
+hash_c++0x.lo: hash_c++0x.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+hash_c++0x.o: hash_c++0x.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 hashtable_c++0x.lo: hashtable_c++0x.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<

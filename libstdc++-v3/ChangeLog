@@ -1,3 +1,12 @@
+2008-02-29  Jakub Jelinek  <jakub@redhat.com>
+            Benjamin Kosnik  <bkoz@redhat.com>
+            
+        * src/hash_c++0x.cc: Add just C++0x version of TR1 hash.
+        * include/bits/functional_hash.h: Remove error_code bits.
+        * src/Makefile.am: Add hash_c++0x.cc.
+        * src/Makefile.in: Regenerate.  
+        * config/abi/pre/gnu.ver: Remove hash<error_code> export.
+
 2008-02-28  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/Makefile.am: Remove <system_error> support.

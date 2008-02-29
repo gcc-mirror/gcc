@@ -1,6 +1,6 @@
 // functional_hash.h header -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007,2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -58,16 +58,6 @@
 #  undef _GLIBCXX_BEGIN_NAMESPACE_TR1
 #  undef _GLIBCXX_INCLUDE_AS_CXX0X
 #endif
-
-
-namespace std
-{
-  struct error_code;
-
-  template<>
-    size_t
-    hash<error_code>::operator()(error_code) const;
-}
 
 #endif // _FUNCTIONAL_HASH_H
 
