@@ -1,3 +1,8 @@
+2008-02-29  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* testsuite/gcc.dg/tree-ssa/ltrans-8.c: Increase the size of strides
+	to make the interchange profitable.
+
 2008-02-28  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/31463
