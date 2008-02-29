@@ -1,3 +1,8 @@
+2008-02-29  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_secondary_reload): Handle loading a float
+	constant to fpul.
+
 2008-02-28  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* simplify-rtx.c (simplify_unary_operation_1): Extend the handling

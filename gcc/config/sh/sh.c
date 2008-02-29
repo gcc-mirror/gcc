@@ -10875,8 +10875,10 @@ sh_secondary_reload (bool in_p, rtx x, enum reg_class class,
         return GENERAL_REGS;
       if (class == FPUL_REGS && immediate_operand (x, mode))
 	{
-	  if (satisfies_constraint_I08 (x))
+	  if (satisfies_constraint_I08 (x) || fp_zero_operand (x))
 	    return GENERAL_REGS;
+	  else if (mode == SFmode)
+	    return FP_REGS;
 	  sri->icode = CODE_FOR_reload_insi__i_fpul;
 	  return NO_REGS;
 	}
