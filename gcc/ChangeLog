@@ -1,3 +1,10 @@
+2008-02-29  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_scalar_mode_supported_p): New function.
+	(TARGET_SCALAR_MODE_SUPPORTED_P): Define.
+
+	* config/sh/sh.h (OVERRIDE_OPTIONS): Don't warn for profiling.
+
 2008-02-29  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* tree-loop-linear.c (try_interchange_loops): Compare memory access
