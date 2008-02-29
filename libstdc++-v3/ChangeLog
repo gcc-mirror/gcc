@@ -1,4 +1,20 @@
 2008-02-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/pre/gnu.ver: Remove
+	_ZNKSt3tr14hashIgEclEg@@GLIBCXX_3.4.10 and
+	_ZNKSt4hashIgEclEg@@GLIBCXX_3.4.10 export.
+	* config/os/gnu-linux/ldbl-extra.ver: Export
+	_ZNKSt3tr14hashIgEclEg@@GLIBCXX_LDBL_3.4.10
+	and _ZNKSt4hashIgEclEg@@GLIBCXX_LDBL_3.4.10.
+	* src/hash.cc: Only define long double hash specialization if
+	_GLIBCXX_LONG_DOUBLE_COMPAT_IMPL is defined.
+	* src/compatibility-ldbl.cc: Include "hash.cc".
+	(_GLIBCXX_LONG_DOUBLE_COMPAT_IMPL): Define.
+	(_ZNKSt4hashIeEclEe): New alias.
+	* testsuite/util/testsuite_abi.cc (check_version): Support
+	GLIBCXX_LDBL_3.4.10. 
+
+2008-02-29  Jakub Jelinek  <jakub@redhat.com>
             Benjamin Kosnik  <bkoz@redhat.com>
             
         * src/hash_c++0x.cc: Add just C++0x version of TR1 hash.

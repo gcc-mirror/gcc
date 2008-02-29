@@ -1,6 +1,6 @@
 //  std::hash and std::tr1::hash definitions -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -74,6 +74,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       return __result;
     };
 
+#ifndef _GLIBCXX_LONG_DOUBLE_COMPAT_IMPL
   template<>
     size_t
     hash<string>::operator()(string __s) const
@@ -100,6 +101,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       const char* __p = reinterpret_cast<const char*>(__s.data());
       return _Fnv_hash<>::hash(__p, __s.length() * sizeof(wchar_t));
     }
+#endif
 #endif
 
 _GLIBCXX_END_NAMESPACE_TR1

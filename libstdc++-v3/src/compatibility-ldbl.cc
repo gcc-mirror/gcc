@@ -1,6 +1,6 @@
 // Compatibility symbols for -mlong-double-64 compatibility -*- C++ -*-
 
-// Copyright (C) 2006
+// Copyright (C) 2006, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -36,6 +36,8 @@
 #error "compatibility-ldbl.cc must be compiled with -mlong-double-64"
 #endif
 
+#define _GLIBCXX_LONG_DOUBLE_COMPAT_IMPL
+
 namespace std
 {
 #define C char
@@ -69,5 +71,14 @@ namespace std
 #undef C
 #endif
 }
+
+// For std::tr1::hash<long double>::operator ()
+#include "hash.cc"
+
+// std::tr1::hash<long double>::operator ()
+// and std::hash<long double>::operator ()
+// are the same, no need to duplicate them.
+extern "C" void _ZNKSt4hashIeEclEe (void)
+  __attribute__((alias ("_ZNKSt3tr14hashIeEclEe")));
 
 #endif

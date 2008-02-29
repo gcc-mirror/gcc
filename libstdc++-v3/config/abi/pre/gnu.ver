@@ -757,13 +757,13 @@ GLIBCXX_3.4.10 {
     _ZNKSt3tr14hashIRKSsEclES2_;
     _ZNKSt3tr14hashISbIwSt11char_traitsIwESaIwEEEclES4_;
     _ZNKSt3tr14hashISsEclESs;
-    _ZNKSt3tr14hashI[eg]EclE[eg];
+    _ZNKSt3tr14hashIeEclEe;
 
     _ZNKSt4hashIRKSbIwSt11char_traitsIwESaIwEEEclES5_;
     _ZNKSt4hashIRKSsEclES1_;
     _ZNKSt4hashISbIwSt11char_traitsIwESaIwEEEclES3_;
     _ZNKSt4hashISsEclESs;
-    _ZNKSt4hashI[eg]EclE[eg];
+    _ZNKSt4hashIeEclEe;
 
     _ZSt17__verify_grouping*;
     
