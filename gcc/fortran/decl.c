@@ -2506,6 +2506,8 @@ gfc_match_implicit (void)
   int c;
   match m;
 
+  gfc_clear_ts (&ts);
+
   /* We don't allow empty implicit statements.  */
   if (gfc_match_eos () == MATCH_YES)
     {

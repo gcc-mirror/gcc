@@ -3764,6 +3764,8 @@ gfc_conv_intrinsic_sr_kind (gfc_se *se, gfc_expr *expr)
       else
 	{
 	  gfc_typespec ts;
+          gfc_clear_ts (&ts);
+
 	  if (actual->expr->ts.kind != gfc_c_int_kind)
 	    {
   	      /* The arguments to SELECTED_REAL_KIND are INTEGER(4).  */

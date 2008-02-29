@@ -1,3 +1,15 @@
+2008-02-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/35059
+	* expr.c (find_array_element): Modify traversing the constructor to
+	avoid trying to access NULL memory pointed to by next for the
+	last element. (find_array_section): Exit while loop if cons->next is
+	NULL.
+	* trans-expr.c (gfc_conv_scalar_char_value): Initialize gfc_typespec.
+	(gfc_conv_function_call): Same.
+	* decl.c (gfc_match_implicit): Same.
+	* trans-intrinsic.c (gfc_conv_intrinsic_sr_kind): Same.
+
 2008-02-28  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/31463
