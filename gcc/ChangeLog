@@ -1,5 +1,9 @@
 2008-02-29  Paul Brook  <paul@codesourcery.com>
 
+	* config/arm/arm.md (arm_addsi3): Add r/k/n alternative.
+
+2008-02-29  Paul Brook  <paul@codesourcery.com>
+
 	* config/arm/ieee754-df.S (muldf3): Use RET macros.
 
 2008-02-29  Richard Guenther  <rguenther@suse.de>
