@@ -1,5 +1,5 @@
 /* Various declarations for language-independent diagnostics subroutines.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
@@ -110,8 +110,9 @@ struct diagnostic_context
      function name.  */
   tree last_function;
 
-  /* Used to detect when input_file_stack has changed since last described.  */
-  int last_module;
+  /* Used to detect when the input file stack has changed since last
+     described.  */
+  const struct line_map *last_module;
 
   int lock;
 };
@@ -152,13 +153,13 @@ struct diagnostic_context
 
 /* True if the last module or file in which a diagnostic was reported is
    different from the current one.  */
-#define diagnostic_last_module_changed(DC) \
-  ((DC)->last_module != input_file_stack_tick)
+#define diagnostic_last_module_changed(DC, MAP)	\
+  ((DC)->last_module != MAP)
 
 /* Remember the current module or file as being the last one in which we
    report a diagnostic.  */
-#define diagnostic_set_last_module(DC) \
-  (DC)->last_module = input_file_stack_tick
+#define diagnostic_set_last_module(DC, MAP)	\
+  (DC)->last_module = MAP
 
 /* Raise SIGABRT on any diagnostic of severity DK_ERROR or higher.  */
 #define diagnostic_abort_on_error(DC) \

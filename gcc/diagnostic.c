@@ -269,7 +269,7 @@ diagnostic_report_current_function (diagnostic_context *context,
 void
 diagnostic_report_current_module (diagnostic_context *context)
 {
-  struct file_stack *p;
+  const struct line_map *map;
 
   if (pp_needs_newline (context->printer))
     {
@@ -277,23 +277,29 @@ diagnostic_report_current_module (diagnostic_context *context)
       pp_needs_newline (context->printer) = false;
     }
 
-  p = input_file_stack;
-  if (p && diagnostic_last_module_changed (context))
+  if (input_location <= BUILTINS_LOCATION)
+    return;
+
+  map = linemap_lookup (line_table, input_location);
+  if (map && diagnostic_last_module_changed (context, map))
     {
-      expanded_location xloc = expand_location (p->location);
-      pp_verbatim (context->printer,
-                   "In file included from %s:%d",
-		   xloc.file, xloc.line);
-      while ((p = p->next) != NULL)
+      diagnostic_set_last_module (context, map);
+      if (! MAIN_FILE_P (map))
 	{
-	  xloc = expand_location (p->location);
+	  map = INCLUDED_FROM (line_table, map);
 	  pp_verbatim (context->printer,
-		       ",\n                 from %s:%d",
-		       xloc.file, xloc.line);
+		       "In file included from %s:%d",
+		       map->to_file, LAST_SOURCE_LINE (map));
+	  while (! MAIN_FILE_P (map))
+	    {
+	      map = INCLUDED_FROM (line_table, map);
+	      pp_verbatim (context->printer,
+			   ",\n                 from %s:%d",
+			   map->to_file, LAST_SOURCE_LINE (map));
+	    }
+	  pp_verbatim (context->printer, ":");
+	  pp_newline (context->printer);
 	}
-      pp_verbatim (context->printer, ":");
-      diagnostic_set_last_module (context);
-      pp_newline (context->printer);
     }
 }
 

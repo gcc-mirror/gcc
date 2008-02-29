@@ -207,8 +207,7 @@ fe_file_change (const struct line_map *new_map)
 	{
 	  int included_at = LAST_SOURCE_LINE_LOCATION (new_map - 1);
 
-	  input_location = included_at;
-	  push_srcloc (new_map->start_location);
+	  input_location = new_map->start_location;
 	  (*debug_hooks->start_source_file) (included_at, new_map->to_file);
 #ifndef NO_IMPLICIT_EXTERN_C
 	  if (c_header_level)
@@ -231,7 +230,7 @@ fe_file_change (const struct line_map *new_map)
 	  --pending_lang_change;
 	}
 #endif
-      pop_srcloc ();
+      input_location = new_map->start_location;
 
       (*debug_hooks->end_source_file) (new_map->to_line);
     }
