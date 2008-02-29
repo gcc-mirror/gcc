@@ -1672,6 +1672,8 @@ static tree cp_parser_simple_type_specifier
   (cp_parser *, cp_decl_specifier_seq *, cp_parser_flags);
 static tree cp_parser_type_name
   (cp_parser *);
+static tree cp_parser_nonclass_name 
+  (cp_parser* parser);
 static tree cp_parser_elaborated_type_specifier
   (cp_parser *, bool, bool);
 static tree cp_parser_enum_specifier
@@ -5171,8 +5173,7 @@ cp_parser_pseudo_destructor_name (cp_parser* parser,
 	}
 
       /* Look for the type-name.  */
-      *scope = TREE_TYPE (cp_parser_type_name (parser));
-
+      *scope = TREE_TYPE (cp_parser_nonclass_name (parser));
       if (*scope == error_mark_node)
 	return;
 
@@ -5186,7 +5187,7 @@ cp_parser_pseudo_destructor_name (cp_parser* parser,
   cp_parser_require (parser, CPP_COMPL, "`~'");
   /* Look for the type-name again.  We are not responsible for
      checking that it matches the first type-name.  */
-  *type = cp_parser_type_name (parser);
+  *type = cp_parser_nonclass_name (parser);
 }
 
 /* Parse a unary-expression.
@@ -10947,7 +10948,6 @@ static tree
 cp_parser_type_name (cp_parser* parser)
 {
   tree type_decl;
-  tree identifier;
 
   /* We can't know yet whether it is a class-name or not.  */
   cp_parser_parse_tentatively (parser);
@@ -10963,43 +10963,63 @@ cp_parser_type_name (cp_parser* parser)
   if (!cp_parser_parse_definitely (parser))
     {
       /* It must be a typedef-name or an enum-name.  */
-      identifier = cp_parser_identifier (parser);
-      if (identifier == error_mark_node)
-	return error_mark_node;
-
-      /* Look up the type-name.  */
-      type_decl = cp_parser_lookup_name_simple (parser, identifier);
-
-      if (TREE_CODE (type_decl) != TYPE_DECL
-	  && (objc_is_id (identifier) || objc_is_class_name (identifier)))
-	{
-	  /* See if this is an Objective-C type.  */
-	  tree protos = cp_parser_objc_protocol_refs_opt (parser);
-	  tree type = objc_get_protocol_qualified_type (identifier, protos);
-	  if (type)
-	    type_decl = TYPE_NAME (type);
-	}
-
-      /* Issue an error if we did not find a type-name.  */
-      if (TREE_CODE (type_decl) != TYPE_DECL)
-	{
-	  if (!cp_parser_simulate_error (parser))
-	    cp_parser_name_lookup_error (parser, identifier, type_decl,
-					 "is not a type");
-	  type_decl = error_mark_node;
-	}
-      /* Remember that the name was used in the definition of the
-	 current class so that we can check later to see if the
-	 meaning would have been different after the class was
-	 entirely defined.  */
-      else if (type_decl != error_mark_node
-	       && !parser->scope)
-	maybe_note_name_used_in_class (identifier, type_decl);
+      return cp_parser_nonclass_name (parser);
     }
 
   return type_decl;
 }
 
+/* Parse a non-class type-name, that is, either an enum-name or a typedef-name.
+
+   enum-name:
+     identifier
+
+   typedef-name:
+     identifier
+
+   Returns a TYPE_DECL for the type.  */
+
+static tree
+cp_parser_nonclass_name (cp_parser* parser)
+{
+  tree type_decl;
+  tree identifier;
+
+  identifier = cp_parser_identifier (parser);
+  if (identifier == error_mark_node)
+    return error_mark_node;
+
+  /* Look up the type-name.  */
+  type_decl = cp_parser_lookup_name_simple (parser, identifier);
+
+  if (TREE_CODE (type_decl) != TYPE_DECL
+      && (objc_is_id (identifier) || objc_is_class_name (identifier)))
+    {
+      /* See if this is an Objective-C type.  */
+      tree protos = cp_parser_objc_protocol_refs_opt (parser);
+      tree type = objc_get_protocol_qualified_type (identifier, protos);
+      if (type)
+	type_decl = TYPE_NAME (type);
+    }
+  
+  /* Issue an error if we did not find a type-name.  */
+  if (TREE_CODE (type_decl) != TYPE_DECL)
+    {
+      if (!cp_parser_simulate_error (parser))
+	cp_parser_name_lookup_error (parser, identifier, type_decl,
+				     "is not a type");
+      return error_mark_node;
+    }
+  /* Remember that the name was used in the definition of the
+     current class so that we can check later to see if the
+     meaning would have been different after the class was
+     entirely defined.  */
+  else if (type_decl != error_mark_node
+	   && !parser->scope)
+    maybe_note_name_used_in_class (identifier, type_decl);
+  
+  return type_decl;
+}
 
 /* Parse an elaborated-type-specifier.  Note that the grammar given
    here incorporates the resolution to DR68.

@@ -1,3 +1,10 @@
+2008-02-29  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* parser.c (cp_parser_nonclass_name): New.
+	(cp_parser_pseudo_destructor_name): Use it instead of
+	cp_parser_type_name.
+	(cp_parser_type_name): Move code to cp_parser_nonclass_name.
+
 2008-02-29  Tom Tromey  <tromey@redhat.com>
 
 	* parser.c (struct cp_token) <input_file_stack_index>: Remove.
