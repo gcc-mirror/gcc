@@ -1,3 +1,12 @@
+2008-02-29  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (get_sccvn_value): Create missing VNs via
+	vn_lookup_or_add.
+	* tree-ssa-sccnv.c (visit_reference_op_store): Use the rhs
+	value for comparing for a store match.
+	(simplify_unary_expression): Do nothing for SSA_NAMEs.
+	(try_to_simplify): Do not do a full-blown reference lookup.
+
 2008-02-29  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (sh_scalar_mode_supported_p): New function.
