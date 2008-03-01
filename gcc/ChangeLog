@@ -1,3 +1,8 @@
+2008-03-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	* tree-flow-inline.h (next_readonly_imm_use): Return
+	NULL_USE_OPERAND_P after the end.
+
 2008-03-01  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/35411
