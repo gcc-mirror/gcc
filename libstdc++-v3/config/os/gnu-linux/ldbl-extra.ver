@@ -12,12 +12,18 @@ GLIBCXX_LDBL_3.4 {
   *__gnu_cxx_ldbl128*;
 };
 
+# Corresponding to exports in GLIBCXX_3.4.9, not GLIBCXX_3.4.7
 GLIBCXX_LDBL_3.4.7 {
   _ZNSi10_M_extractIgEERSiRT_;
   _ZNSt13basic_istreamIwSt11char_traitsIwEE10_M_extractIgEERS2_RT_;
   _ZNSo9_M_insertIgEERSoT_;
   _ZNSt13basic_ostreamIwSt11char_traitsIwEE9_M_insertIgEERS2_T_;
 } GLIBCXX_LDBL_3.4;
+
+GLIBCXX_LDBL_3.4.10 {
+  _ZNKSt3tr14hashIgEclEg;
+  _ZNKSt4hashIgEclEg;
+} GLIBCXX_LDBL_3.4.7;
 
 CXXABI_LDBL_1.3 {
   _ZT[IS]g;
