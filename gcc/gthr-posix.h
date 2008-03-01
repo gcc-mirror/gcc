@@ -126,14 +126,12 @@ __gthrw3(pthread_cond_destroy)
 __gthrw3(pthread_cond_init)
 __gthrw3(pthread_cond_signal)
 __gthrw3(pthread_exit)
-__gthrw3(pthread_mutex_destroy)
 __gthrw3(pthread_self)
 #else
 __gthrw(pthread_cond_destroy)
 __gthrw(pthread_cond_init)
 __gthrw(pthread_cond_signal)
 __gthrw(pthread_exit)
-__gthrw(pthread_mutex_destroy)
 __gthrw(pthread_self)
 #endif /* __osf__ && _PTHREAD_USE_MANGLED_NAMES_ */
 #ifdef _POSIX_PRIORITY_SCHEDULING
