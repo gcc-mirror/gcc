@@ -73,6 +73,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
      void *__gthread_getspecific (__gthread_key_t key)
      int __gthread_setspecific (__gthread_key_t key, const void *ptr)
 
+     int __gthread_mutex_destroy (__gthread_mutex_t *mutex);
+
      int __gthread_mutex_lock (__gthread_mutex_t *mutex);
      int __gthread_mutex_trylock (__gthread_mutex_t *mutex);
      int __gthread_mutex_unlock (__gthread_mutex_t *mutex);

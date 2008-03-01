@@ -342,6 +342,12 @@ __gthread_mutex_init_function (__gthread_mutex_t *mutex)
 }
 
 static inline int
+__gthread_mutex_destroy (__gthread_mutex_t * UNUSED(mutex))
+{
+  return 0;
+}
+
+static inline int
 __gthread_mutex_lock (__gthread_mutex_t *mutex)
 {
   return NXLock (*mutex);

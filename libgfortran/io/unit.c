@@ -209,13 +209,7 @@ insert_unit (int n)
 static void
 destroy_unit_mutex (gfc_unit * u)
 {
-#ifdef __GTHREAD_MUTEX_DESTROY_FUNCTION
-  __GTHREAD_MUTEX_DESTROY_FUNCTION (&u->lock);
-#else
-#ifdef __CYGWIN__
-  pthread_mutex_destroy (&u->lock);
-#endif
-#endif
+  __gthread_mutex_destroy (&u->lock);
   free_mem (u);
 }
 

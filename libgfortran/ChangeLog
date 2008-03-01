@@ -1,3 +1,9 @@
+2008-03-01  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/35063
+	* io/unit.c (destroy_unit_mutex): Call __gthread_mutex_destroy
+	instead of macro kludge.
+	
 2008-02-25  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/29549

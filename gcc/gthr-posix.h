@@ -94,6 +94,7 @@ __gthrw3(pthread_mutex_lock)
 __gthrw3(pthread_mutex_trylock)
 __gthrw3(pthread_mutex_unlock)
 __gthrw3(pthread_mutex_init)
+__gthrw3(pthread_mutex_destroy)
 __gthrw3(pthread_cond_broadcast)
 __gthrw3(pthread_cond_wait)
 #else
@@ -106,6 +107,7 @@ __gthrw(pthread_mutex_lock)
 __gthrw(pthread_mutex_trylock)
 __gthrw(pthread_mutex_unlock)
 __gthrw(pthread_mutex_init)
+__gthrw(pthread_mutex_destroy)
 __gthrw(pthread_cond_broadcast)
 __gthrw(pthread_cond_wait)
 #endif
@@ -674,6 +676,15 @@ static inline int
 __gthread_setspecific (__gthread_key_t key, const void *ptr)
 {
   return __gthrw_(pthread_setspecific) (key, ptr);
+}
+
+static inline int
+__gthread_mutex_destroy (__gthread_mutex_t *mutex)
+{
+  if (__gthread_active_p ())
+    return __gthrw_(pthread_mutex_destroy) (mutex);
+  else
+    return 0;
 }
 
 static inline int
