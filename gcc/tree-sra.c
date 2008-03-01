@@ -2139,7 +2139,7 @@ sra_build_assignment (tree dst, tree src)
   if (scalar_bitfield_p (src))
     {
       tree var, shift, width;
-      tree utype, stype, stmp, utmp;
+      tree utype, stype, stmp, utmp, dtmp;
       tree list, stmt;
       bool unsignedp = BIT_FIELD_REF_UNSIGNED (src);
 
@@ -2256,6 +2256,16 @@ sra_build_assignment (tree dst, tree src)
 	    var = fold_convert (TREE_TYPE (dst), var);
 	  else
 	    var = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (dst), var);
+
+	  /* If the destination is not a register the conversion needs
+	     to be a separate statement.  */
+	  if (!is_gimple_reg (dst))
+	    {
+	      dtmp = make_rename_temp (TREE_TYPE (dst), "SR");
+	      stmt = build_gimple_modify_stmt (dtmp, var);
+	      append_to_statement_list (stmt, &list);
+	      var = dtmp;
+	    }
 	}
       stmt = build_gimple_modify_stmt (dst, var);
       append_to_statement_list (stmt, &list);
