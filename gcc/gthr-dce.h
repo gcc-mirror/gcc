@@ -71,6 +71,7 @@ __gthrw(pthread_getspecific)
 __gthrw(pthread_setspecific)
 __gthrw(pthread_create)
 __gthrw(pthread_mutex_init)
+__gthrw(pthread_mutex_destroy)
 __gthrw(pthread_mutex_lock)
 __gthrw(pthread_mutex_trylock)
 __gthrw(pthread_mutex_unlock)
@@ -472,6 +473,15 @@ __gthread_mutex_init_function (__gthread_mutex_t *mutex)
 {
   if (__gthread_active_p ())
     __gthrw_(pthread_mutex_init) (mutex, pthread_mutexattr_default);
+}
+
+static inline int
+__gthread_mutx_destroy (__gthread_mutex_t *mutex)
+{
+  if (__gthread_active_p ())
+    return __gthrw_(pthread_mutex_destroy) (mutex);
+  else
+    return 0;
 }
 
 static inline int

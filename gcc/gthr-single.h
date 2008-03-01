@@ -216,6 +216,12 @@ __gthread_active_p (void)
 }
 
 static inline int
+__gthread_mutex_destroy (__gthread_mutex_t * UNUSED(mutex))
+{
+  return 0;
+}
+
+static inline int
 __gthread_mutex_lock (__gthread_mutex_t * UNUSED(mutex))
 {
   return 0;

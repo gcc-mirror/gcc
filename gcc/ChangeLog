@@ -1,3 +1,23 @@
+2008-03-01  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR gcc/35063
+	* gthr.h: Add __gthread_mutex_destroy as a function that must be
+	implemented.
+	* gthr-vxworks.h (__gthread_mutex_destroy): Null implementation.
+	* gthr-single.h (__gthread_mutex_destroy): Likewise.
+	* gthr-rtems.h (__gthread_mutex_destroy): Likewise.
+	* gthr-mipssde.h (__gthread_mutex_destroy): Likewise.
+	* gthr-nks.h (__gthread_mutex_destroy): Likewise.
+	* gthr-solaris.h (__gthread_mutex_destroy): Call mutex_destroy.
+	* gthr-win32.h (__GTHREAD_MUTEX_DESTROY_FUNCTION): Remove.
+	(__gthread_mutex_destroy_function): Rename to
+	__gthread_mutex_destroy.
+	* gthr-dce.h (__gthread_mutex_destroy): Call
+	pthread_mutex_destroy.
+	* gthr-tpf.h (__gthread_mutex_destroy): Likewise.
+	* gthr-posix.h (__gthread_mutex_destroy): Likewise.
+	* gthr-posix95.h (__gthread_mutex_destroy): Likewise.
+
 2008-03-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* df-scan.c (df_ref_chain_change_bb): Simplify.
