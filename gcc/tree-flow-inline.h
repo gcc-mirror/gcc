@@ -512,7 +512,7 @@ next_readonly_imm_use (imm_use_iterator *imm)
 
   imm->imm_use = old->next;
   if (end_readonly_imm_use_p (imm))
-    return old;
+    return NULL_USE_OPERAND_P;
   return imm->imm_use;
 }
 
