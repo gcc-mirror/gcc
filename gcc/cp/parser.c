@@ -539,8 +539,10 @@ cp_lexer_next_token_is_decl_specifier_keyword (cp_lexer *lexer)
   token = cp_lexer_peek_token (lexer);
   switch (token->keyword) 
     {
-      /* Storage classes.  */
+      /* auto specifier: storage-class-specifier in C++,
+         simple-type-specifier in C++0x.  */
     case RID_AUTO:
+      /* Storage classes.  */
     case RID_REGISTER:
     case RID_STATIC:
     case RID_EXTERN:
@@ -8134,13 +8136,33 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	     GNU Extension:
 	       thread  */
 	case RID_AUTO:
+          /* Consume the token.  */
+          cp_lexer_consume_token (parser->lexer);
+
+          if (cxx_dialect == cxx98) 
+            {
+              /* Complain about `auto' as a storage specifier, if
+                 we're complaining about C++0x compatibility.  */
+              warning 
+                (OPT_Wc__0x_compat, 
+                 "%<auto%> will change meaning in C++0x; please remove it");
+
+              /* Set the storage class anyway.  */
+              cp_parser_set_storage_class (parser, decl_specs, RID_AUTO);
+            }
+          else 
+            /* We do not yet support the use of `auto' as a
+               type-specifier.  */
+            error ("C++0x %<auto%> specifier not supported");
+          break;
+
 	case RID_REGISTER:
 	case RID_STATIC:
 	case RID_EXTERN:
 	case RID_MUTABLE:
 	  /* Consume the token.  */
 	  cp_lexer_consume_token (parser->lexer);
-	  cp_parser_set_storage_class (parser, decl_specs, token->keyword);
+          cp_parser_set_storage_class (parser, decl_specs, token->keyword);
 	  break;
 	case RID_THREAD:
 	  /* Consume the token.  */
@@ -8266,6 +8288,10 @@ cp_parser_storage_class_specifier_opt (cp_parser* parser)
   switch (cp_lexer_peek_token (parser->lexer)->keyword)
     {
     case RID_AUTO:
+      if (cxx_dialect != cxx98)
+        return NULL_TREE;
+      /* Fall through for C++98.  */
+
     case RID_REGISTER:
     case RID_STATIC:
     case RID_EXTERN:
@@ -10705,6 +10731,7 @@ cp_parser_type_specifier (cp_parser* parser,
    C++0x Extension:
 
    simple-type-specifier:
+     auto
      decltype ( expression )   
 
    GNU Extension:
@@ -10774,6 +10801,17 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       break;
     case RID_VOID:
       type = void_type_node;
+      break;
+      
+    case RID_AUTO:
+      if (cxx_dialect != cxx98)
+        {
+          /* Consume the token.  */
+          cp_lexer_consume_token (parser->lexer);
+          /* We do not yet support the use of `auto' as a
+             type-specifier.  */
+          error ("C++0x %<auto%> specifier not supported");
+        }
       break;
 
     case RID_DECLTYPE:

@@ -1,3 +1,16 @@
+2008-03-01  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* parser.c (cp_lexer_next_token_is_decl_specifier_keyword): Note
+	that auto is either a storage class or a simple type specifier,
+	depending on the dialect.
+	(cp_parser_decl_specifier_seq): Complain about `auto' as a storage
+	specifier in C++98 mode, error in C++0x mode (since we don't
+	support auto as a type specifier, yet).
+	(cp_parser_storage_class_specifier_opt): Don't treat `auto' as a
+	storage specifier in C++0x mode.
+	(cp_parser_simple_type_specifier): Parse `auto' as a
+	simple-type-specifier, but error because we don't support it yet.
+
 2008-02-29  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* parser.c (cp_parser_nonclass_name): New.
