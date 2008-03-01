@@ -1,6 +1,6 @@
 /* Control flow graph manipulation code for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -477,13 +477,8 @@ update_bb_for_insn_chain (rtx begin, rtx end, basic_block bb)
 
   end = NEXT_INSN (end);
   for (insn = begin; insn != end; insn = NEXT_INSN (insn))
-    {
-      if (!BARRIER_P (insn))
-	{
-	  set_block_for_insn (insn, bb);
-	  df_insn_change_bb (insn);
-	}
-    }
+    if (!BARRIER_P (insn))
+      df_insn_change_bb (insn, bb);
 }
 
 /* Update BLOCK_FOR_INSN of insns in BB to BB,
