@@ -2245,6 +2245,7 @@ noce_process_if_block (struct noce_if_info *if_info)
 	  || !NONJUMP_INSN_P (insn_b)
 	  || (set_b = single_set (insn_b)) == NULL_RTX
 	  || ! rtx_equal_p (x, SET_DEST (set_b))
+	  || ! noce_operand_ok (SET_SRC (set_b))
 	  || reg_overlap_mentioned_p (x, SET_SRC (set_b))
 	  || modified_between_p (SET_SRC (set_b),
 				 PREV_INSN (if_info->cond_earliest), jump)
@@ -2290,6 +2291,7 @@ noce_process_if_block (struct noce_if_info *if_info)
   if (! noce_operand_ok (a) || ! noce_operand_ok (b))
     return FALSE;
 
+ retry:
   /* Set up the info block for our subroutines.  */
   if_info->insn_a = insn_a;
   if_info->insn_b = insn_b;
@@ -2385,6 +2387,13 @@ noce_process_if_block (struct noce_if_info *if_info)
 	goto success;
       if (noce_try_sign_mask (if_info))
 	goto success;
+    }
+
+  if (!else_bb && set_b)
+    {
+      insn_b = set_b = NULL_RTX;
+      b = orig_x;
+      goto retry;
     }
 
   return FALSE;
