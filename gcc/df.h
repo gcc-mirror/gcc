@@ -1,6 +1,6 @@
 /* Form lists of pseudo register references for autoinc optimization
    for GNU compiler.  This is part of flow optimization.
-   Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007
+   Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Originally contributed by Michael P. Hayes 
              (m.hayes@elec.canterbury.ac.nz, mhayes@redhat.com)
@@ -871,7 +871,7 @@ extern bool df_insn_rescan (rtx);
 extern void df_insn_rescan_all (void);
 extern void df_process_deferred_rescans (void);
 extern void df_recompute_luids (basic_block);
-extern void df_insn_change_bb (rtx);
+extern void df_insn_change_bb (rtx, basic_block);
 extern void df_maybe_reorganize_use_refs (enum df_ref_order);
 extern void df_maybe_reorganize_def_refs (enum df_ref_order);
 extern void df_ref_change_reg_with_loc (int, int, rtx);

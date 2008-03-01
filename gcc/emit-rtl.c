@@ -3737,10 +3737,7 @@ reorder_insns (rtx from, rtx to, rtx after)
 
       for (x = from; x != NEXT_INSN (to); x = NEXT_INSN (x))
 	if (!BARRIER_P (x))
-	  {
-	    set_block_for_insn (x, bb);
-	    df_insn_change_bb (x);
-	  }
+	  df_insn_change_bb (x, bb);
     }
 }
 

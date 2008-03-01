@@ -1,6 +1,6 @@
 /* Scanning of rtl for dataflow analysis.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
-   Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+   2008  Free Software Foundation, Inc.
    Originally contributed by Michael P. Hayes 
              (m.hayes@elec.canterbury.ac.nz, mhayes@redhat.com)
    Major rewrite contributed by Danny Berlin (dberlin@dberlin.org)
@@ -1753,14 +1753,10 @@ df_maybe_reorganize_def_refs (enum df_ref_order order)
 }
 
 
-/* Change the BB of all refs in the ref chain to NEW_BB.
-   Assumes that all refs in the chain have the same BB.
-   If changed, return the original bb the chain belonged to
-   (or .
-   If no change, return NEW_BB. 
-   If something's wrong, it will return NULL. */
+/* Change the BB of all refs in the ref chain from OLD_BB to NEW_BB.
+   Assumes that all refs in the chain have the same BB.  */
 
-static basic_block
+static void
 df_ref_chain_change_bb (struct df_ref **ref_rec, 
                         basic_block old_bb,
                         basic_block new_bb)
@@ -1769,18 +1765,10 @@ df_ref_chain_change_bb (struct df_ref **ref_rec,
     {
       struct df_ref *ref = *ref_rec;
 
-      if (DF_REF_BB (ref) == new_bb)
-	return new_bb;
-      else
-	{
-	  gcc_assert (old_bb == NULL || DF_REF_BB (ref) == old_bb);
-	  old_bb = DF_REF_BB (ref);
-	  DF_REF_BB (ref) = new_bb;
-	}
+      gcc_assert (DF_REF_BB (ref) == old_bb);
+      DF_REF_BB (ref) = new_bb;
       ref_rec++;
     }
-
-  return old_bb;
 }
 
 
@@ -1789,12 +1777,16 @@ df_ref_chain_change_bb (struct df_ref **ref_rec,
    instructions from one block to another.  */  
 
 void
-df_insn_change_bb (rtx insn)
+df_insn_change_bb (rtx insn, basic_block new_bb)
 {
-  basic_block new_bb = BLOCK_FOR_INSN (insn);
-  basic_block old_bb = NULL;
+  basic_block old_bb = BLOCK_FOR_INSN (insn);
   struct df_insn_info *insn_info;
   unsigned int uid = INSN_UID (insn);
+
+  if (old_bb == new_bb)
+    return;
+
+  set_block_for_insn (insn, new_bb);
 
   if (!df)
     return;
@@ -1814,17 +1806,9 @@ df_insn_change_bb (rtx insn)
   if (!INSN_P (insn))
     return;
 
-  old_bb = df_ref_chain_change_bb (insn_info->defs, old_bb, new_bb);
-  if (old_bb == new_bb) 
-    return;
-
-  old_bb = df_ref_chain_change_bb (insn_info->uses, old_bb, new_bb);
-  if (old_bb == new_bb) 
-    return;
-
-  old_bb = df_ref_chain_change_bb (insn_info->eq_uses, old_bb, new_bb);
-  if (old_bb == new_bb) 
-    return;
+  df_ref_chain_change_bb (insn_info->defs, old_bb, new_bb);
+  df_ref_chain_change_bb (insn_info->uses, old_bb, new_bb);
+  df_ref_chain_change_bb (insn_info->eq_uses, old_bb, new_bb);
 
   df_set_bb_dirty (new_bb);
   if (old_bb)
