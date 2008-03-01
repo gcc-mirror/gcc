@@ -1,3 +1,8 @@
+2008-03-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	* ifcvt.c (noce_process_if_block): Try to handle only the then
+	block if the else block exists but isn't suitable.
+
 2008-03-01  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR gcc/35063
