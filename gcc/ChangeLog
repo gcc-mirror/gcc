@@ -1,3 +1,10 @@
+2008-03-01  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/35411
+	* tree-sra.c (sra_build_assignment): Split conversion to
+	final type to a separate statement if we are not assigning
+	to a register.
+
 2008-02-29  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* fold-const.c (fold_convertible_p): Correct the logic to follow
