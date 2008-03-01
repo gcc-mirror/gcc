@@ -1,3 +1,9 @@
+2008-02-29  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/35315
+	* tree-inline.c (build_duplicate_type): When we make a
+	duplicate type, make it unique in the canonical types system.
+
 2008-02-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:

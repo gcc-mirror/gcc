@@ -1,3 +1,8 @@
+2008-02-29  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/35315
+	* g++.dg/ext/attrib32.C: New.
+
 2008-02-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:

@@ -3705,5 +3705,7 @@ build_duplicate_type (tree type)
 
   pointer_map_destroy (id.decl_map);
 
+  TYPE_CANONICAL (type) = type;
+
   return type;
 }

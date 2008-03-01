@@ -1,0 +1,22 @@
+// PR c++/35315
+
+typedef union { int i; } U __attribute__((transparent_union));
+
+static void foo(U) {}
+static void foo(int) {}
+
+void bar()
+{
+  foo(0);
+}
+
+typedef union U1 { int i; } U2 __attribute__((transparent_union));
+
+static void foo2(U1) {}
+static void foo2(U2) {}
+
+void bar2(U1 u1, U2 u2)
+{
+  foo2(u1);
+  foo2(u2);
+}
