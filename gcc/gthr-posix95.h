@@ -97,7 +97,6 @@ __gthrw(pthread_cond_destroy)
 __gthrw(pthread_cond_init)
 __gthrw(pthread_cond_signal)
 __gthrw(pthread_exit)
-__gthrw(pthread_mutex_destroy)
 #ifdef _POSIX_PRIORITY_SCHEDULING
 #ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
 __gthrw(sched_get_priority_max)

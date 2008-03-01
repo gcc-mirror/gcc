@@ -1,6 +1,13 @@
 2008-03-01  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR gcc/35063
+	* gthr-posix.h (__gthread_mutex_destroy): Remove extra declarations.
+	* gthr-posix95.h (__gthread_mutex_destroy): Likewise. Note this fixes
+	regression from previous patch.
+
+2008-03-01  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR gcc/35063
 	* gthr.h: Add __gthread_mutex_destroy as a function that must be
 	implemented.
 	* gthr-vxworks.h (__gthread_mutex_destroy): Null implementation.
