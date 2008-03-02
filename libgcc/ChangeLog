@@ -1,3 +1,9 @@
+2008-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/35401
+	* config/t-slibgcc-darwin: Make install-leaf dependent on
+	install-darwin-libgcc-stubs instead of install.
+
 2008-01-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.host (tic4x-*-*, c4x-*-rtems*, tic4x-*-rtems*, c4x-*,

@@ -38,7 +38,7 @@ SHLIB_INSTALL = \
 
 ifeq ($(enable_shared),yes)
 all: $(INSTALL_FILES)
-install: install-darwin-libgcc-stubs
+install-leaf: install-darwin-libgcc-stubs
 endif
 
 # In order to support -mmacosx-version-min, you need to have multiple
