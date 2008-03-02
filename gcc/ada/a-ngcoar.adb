@@ -1194,7 +1194,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Info     => Info'Access);
 
          if Info /= 0 then
-            raise Constraint_Error with "inverting non-Hermetian matrix";
+            raise Constraint_Error with "inverting non-Hermitian matrix";
          end if;
 
          for J in Values'Range loop

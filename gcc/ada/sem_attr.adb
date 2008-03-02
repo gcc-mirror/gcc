@@ -2191,7 +2191,7 @@ package body Sem_Attr is
            and then Warn_On_Redundant_Constructs
          then
                Error_Msg_NE
-                 ("?redudant attribute, & is its own base type", N, Typ);
+                 ("?redundant attribute, & is its own base type", N, Typ);
          end if;
 
          Set_Etype (N, Base_Type (Entity (P)));

@@ -1388,7 +1388,7 @@ package body GNAT.Debug_Pools is
 
       if Pool.Marked_Blocks_Deallocated then
          Put_Line ("Marked blocks were physically deallocated. This is");
-         Put_Line ("potentially dangereous, and you might want to run");
+         Put_Line ("potentially dangerous, and you might want to run");
          Put_Line ("again with a lower value of Minimum_To_Free");
       end if;
 

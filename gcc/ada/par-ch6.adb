@@ -280,7 +280,7 @@ package body Ch6 is
 
          if Token = Tok_New then
             if not Pf_Flags.Gins then
-               Error_Msg_SC ("generic instantation not allowed here!");
+               Error_Msg_SC ("generic instantiation not allowed here!");
             end if;
 
             Scan; -- past NEW
@@ -1289,7 +1289,7 @@ package body Ch6 is
       end if;
 
       if Token = Tok_In then
-         Error_Msg_SC ("IN must preceed OUT in parameter mode");
+         Error_Msg_SC ("IN must precede OUT in parameter mode");
          Scan; -- past IN
          Set_In_Present (Node, True);
       end if;

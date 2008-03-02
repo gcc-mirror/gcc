@@ -1,5 +1,16 @@
 2008-03-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	* gnatfind.adb, gnatxref.adb: Fix argument parsing typos.
+	* s-auxdec-empty.adb, s-auxdec.adb: Fix typos in copyright
+	statement.
+	* a-ngcoar.adb, a-ngrear.adb, g-awk.adb, g-debpoo.adb,
+	gprep.adb, make.adb, makegpr.adb, par-ch6.adb, prj-nmsc.adb,
+	sem_attr.adb, sem_ch4.adb, sem_ch8.adb: Fix typos in ada source
+	code output strings.
+	* sem_type.adb, system-vms-ia64.ads, system-vms.ads,
+	system-vms_64.ads: Fix typos in ada source code comments.
+	* sinfo-cn.adb: Remove incomplete sentence.
+
 	PR documentation/15479
 	* gnat_rm.texi, gnat_ugn.texi: Avoid standalone `non' word.
 

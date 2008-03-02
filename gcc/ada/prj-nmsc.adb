@@ -5171,7 +5171,7 @@ package body Prj.Nmsc is
                   Error_Msg
                     (Project, In_Tree,
                      "symbol file name { is illegal. " &
-                     "Name canot include directory info.",
+                     "Name cannot include directory info.",
                      Lib_Symbol_File.Location);
                end if;
             end if;

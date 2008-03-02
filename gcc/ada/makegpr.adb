@@ -3030,7 +3030,7 @@ package body Makegpr is
 
             else
                Osint.Fail
-                 ("unknow compiler name for language """,
+                 ("unknown compiler name for language """,
                   Get_Name_String (Language_Names.Table (For_Language)),
                   """");
             end if;
