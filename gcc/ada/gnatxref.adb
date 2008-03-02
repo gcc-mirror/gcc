@@ -114,7 +114,7 @@ procedure Gnatxref is
             when 'n' =>
                if GNAT.Command_Line.Full_Switch = "nostdinc" then
                   Opt.No_Stdinc := True;
-               elsif GNAT.Command_Line.Full_Switch = "nostlib" then
+               elsif GNAT.Command_Line.Full_Switch = "nostdlib" then
                   Opt.No_Stdlib := True;
                end if;
 

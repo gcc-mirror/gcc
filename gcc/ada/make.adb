@@ -6716,7 +6716,7 @@ package body Make is
       --  Test for simultaneity of -i and -D
 
       if Object_Directory_Path /= null and then In_Place_Mode then
-         Make_Failed ("-i and -D cannot be used simutaneously");
+         Make_Failed ("-i and -D cannot be used simultaneously");
       end if;
 
       --  Deal with -C= switch

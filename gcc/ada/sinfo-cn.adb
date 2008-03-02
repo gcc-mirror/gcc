@@ -29,7 +29,6 @@
 --  record discriminant part, such alterations cannot be permitted in a
 --  general manner, but in some specific cases, the fields of related nodes
 --  have been deliberately layed out in a manner that permits such alteration.
---  that determin
 
 with Atree; use Atree;
 

@@ -1515,7 +1515,7 @@ package body Sem_Type is
       end if;
 
       --  Check for overloaded CIL convention stuff because the CIL libraries
-      --  do sick things like Console.WriteLine where it matches
+      --  do sick things like Console.Write_Line where it matches
       --  two different overloads, so just pick the first ???
 
       if Convention (Nam1) = Convention_CIL

@@ -778,7 +778,7 @@ package body GPrep is
             elsif Deffile_Name = No_Name then
                Deffile_Name := Name_Find;
             else
-               Fail ("too many arguments specifed");
+               Fail ("too many arguments specified");
             end if;
          end;
       end loop;

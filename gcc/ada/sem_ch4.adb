@@ -1781,7 +1781,7 @@ package body Sem_Ch4 is
          end loop;
 
          if Etype (N) = Any_Type then
-            Error_Msg_N ("no legal interpetation for indexed component", N);
+            Error_Msg_N ("no legal interpretation for indexed component", N);
             Set_Is_Overloaded (N, False);
          end if;
 

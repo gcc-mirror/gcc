@@ -5257,7 +5257,7 @@ package body Sem_Ch8 is
                     and then False
                   then
                      Error_Msg_N
-                       ("applying 'Class to an untagged imcomplete type"
+                       ("applying 'Class to an untagged incomplete type"
                          & " is an obsolescent feature  (RM J.11)", N);
                   end if;
 
@@ -5347,7 +5347,7 @@ package body Sem_Ch8 is
                  and then Warn_On_Redundant_Constructs
                then
                   Error_Msg_NE
-                    ("?redudant attribute, & is its own base type", N, Typ);
+                    ("?redundant attribute, & is its own base type", N, Typ);
                end if;
 
                T := Base_Type (Typ);

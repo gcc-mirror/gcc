@@ -368,7 +368,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
    begin
       if Left'Length (2) /= Right'Length (1) then
          raise Constraint_Error with
-            "incompatible dimensions in matrix-matrix multipication";
+            "incompatible dimensions in matrix-matrix multiplication";
       end if;
 
       gemm (Trans_A => No_Trans'Access,

@@ -644,7 +644,7 @@ package body GNAT.AWK is
       when others =>
          Raise_With_Info
            (File_Error'Identity,
-            "Error scaning directory " & Directory
+            "Error scanning directory " & Directory
             & " for files " & Filenames & '.',
             Session);
    end Add_Files;
