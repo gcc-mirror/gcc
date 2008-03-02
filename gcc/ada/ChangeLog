@@ -1,3 +1,8 @@
+2008-03-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR documentation/15479
+	* gnat_rm.texi, gnat_ugn.texi: Avoid standalone `non' word.
+
 2008-02-27  Samuel Tardieu  <sam@rfc1149.net>
 
 	PR ada/22255
