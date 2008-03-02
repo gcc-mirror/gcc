@@ -1,3 +1,9 @@
+2008-03-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* libgcc2.c (__addvSI3, __addvsi3, __addvDI3, __subvSI3,
+	__subvsi3, __subvDI3, __negvSI2, __negvsi2, __negvDI2, __absvSI2,
+	__absvsi2, __absvDI2): Use unsigned arithmetic.
+
 2008-03-02  Andi Kleen  <ak@suse.de>
 	Richard Guenther  <rguenther@suse.de>
 
