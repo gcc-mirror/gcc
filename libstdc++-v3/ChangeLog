@@ -1,3 +1,10 @@
+2008-03-02  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/20_util/shared_ptr/assign/shared_ptr_neg.cc,
+	testsuite/tr1/2_general_utilities/shared_ptr/assign/shared_ptr_neg.cc:
+	Mark changed error message prelude, adding "in file included from",
+	using dg-excess-errors.
+
 2008-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Update.

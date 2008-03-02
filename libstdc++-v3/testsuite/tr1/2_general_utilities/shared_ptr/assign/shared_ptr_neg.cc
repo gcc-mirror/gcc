@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// Copyright (C) 2005 Free Software Foundation
+// Copyright (C) 2005, 2008 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,7 +20,7 @@
 
 // TR1 2.2.2 Template class shared_ptr [tr.util.smartptr.shared]
 
-#include <tr1/memory>
+#include <tr1/memory>  // { dg-excess-errors "In file included from" }
 #include <testsuite_hooks.h>
 
 struct A { };
