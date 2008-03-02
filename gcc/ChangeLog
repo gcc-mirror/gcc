@@ -1,3 +1,14 @@
+2008-03-02  Andi Kleen  <ak@suse.de>
+	Richard Guenther  <rguenther@suse.de>
+
+	* struct-equiv.c: Remove file.
+	* cfg_cleanup.c (condjump_equiv_p): Remove.
+	* Makefile.in (OBJS-common): Remove struct-equiv.o.
+	(struct-equiv.o): Remove rule.
+	* basic-block.h (struct_equiv_checkpoint, STRUCT_EQUIV_*,
+	insns_match_p, struct_equiv_block_eq, struct_equiv_init, 
+	rtx_equiv_p, condjump_equiv_p): Remove prototypes.
+
 2008-03-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* ifcvt.c (noce_process_if_block): Try to handle only the then
