@@ -379,7 +379,7 @@ warn_ref_binding (tree reftype, tree intype, tree decl)
 	  msg = "conversion to non-const reference type %q#T from"
 	    " rvalue of type %qT";
 
-      pedwarn (msg, reftype, intype);
+      permerror (msg, reftype, intype);
     }
 }
 
@@ -449,8 +449,8 @@ convert_to_reference (tree reftype, tree expr, int convtype,
 
 	  if (! (convtype & CONV_CONST)
 		   && !at_least_as_qualified_p (ttl, ttr))
-	    pedwarn ("conversion from %qT to %qT discards qualifiers",
-		     ttr, reftype);
+	    permerror ("conversion from %qT to %qT discards qualifiers",
+		       ttr, reftype);
 	}
 
       return build_up_reference (reftype, expr, flags, decl);
@@ -646,9 +646,9 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 	      || TREE_CODE (intype) == POINTER_TYPE))
 	{
 	  if (flags & LOOKUP_COMPLAIN)
-	    pedwarn ("conversion from %q#T to %q#T", intype, type);
+	    permerror ("conversion from %q#T to %q#T", intype, type);
 
-	  if (flag_pedantic_errors)
+	  if (!flag_permissive)
 	    return error_mark_node;
 	}
       if (IS_AGGR_TYPE (intype))
@@ -892,8 +892,8 @@ convert_to_void (tree expr, const char *implicit)
       {
 	/* [over.over] enumerates the places where we can take the address
 	   of an overloaded function, and this is not one of them.  */
-	pedwarn ("%s cannot resolve address of overloaded function",
-		    implicit ? implicit : "void cast");
+	error ("%s cannot resolve address of overloaded function",
+	       implicit ? implicit : "void cast");
 	expr = void_zero_node;
       }
     else if (implicit && probe == expr && is_overloaded_fn (probe))

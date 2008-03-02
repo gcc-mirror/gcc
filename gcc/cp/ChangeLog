@@ -1,3 +1,21 @@
+2008-03-02  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 24924
+	* class.c (finish_struct_anon): Use permerror instead of pedwarn.
+	(check_field_decls): Likewise.
+	(note_name_declared_in_class): Likewise.
+	* call.c (build_new_op): Likewise.
+	(convert_like_real): Likewise.
+	(build_over_call): Likewise.
+	* lex.c (unqualified_fn_lookup_error): Likewise.
+	* parser.c (cp_parser_template_id): Likewise.
+	* cvt.c (warn_ref_binding): Likewise.
+	(convert_to_reference): Likewise.
+	(ocp_convert): Likewise.
+	(convert_to_void): Use error instead of pedwarn.
+	* error.c (cp_cpp_error): Use pedantic_warning_kind.
+	* decl.c (compute_array_index_type): Use constant_expression_error.
+	
 2008-03-01  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* parser.c (cp_lexer_next_token_is_decl_specifier_keyword): Note

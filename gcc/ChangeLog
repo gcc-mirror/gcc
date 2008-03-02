@@ -1,3 +1,23 @@
+2008-03-02  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 24924
+	* c-common.c (flag_permissive): Delete.
+	(constant_expression_warnings): Check flags first.
+	(constant_expression_error): New.
+	* c-common.h (flag_permissive): Delete.
+	(constant_expression_error): Declare.
+	* flags.h (flag_permissive): Declare. Update description.
+	* diagnostic.c (pedwarn): Update.
+	(permerror): New.
+	* diagnostic.h: (pedantic_error_kind): Rename as pedantic_warning_kind.
+	(permissive_error_kind): New.
+	* toplev.c (flag_permissive): Define. Update description.
+	* toplev.h (permissive_error_kind): Declare.
+	* c-errors.c (pedwarn_c99): Use pedantic_warning_kind.
+	(pedwarn_c90): Use pedantic_warning_kind.
+	* c-opts.c (c_common_post_options): flag_permissive does not affect
+	flag_pedantic_errors.
+
 2008-03-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* libgcc2.c (__addvSI3, __addvsi3, __addvDI3, __subvSI3,

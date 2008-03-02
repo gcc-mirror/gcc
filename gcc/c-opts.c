@@ -1107,18 +1107,6 @@ c_common_post_options (const char **pfilename)
   /* Adjust various flags for C++ based on command-line settings.  */
   if (c_dialect_cxx ())
     {
-      if (!flag_permissive)
-	{
-	  flag_pedantic_errors = 1;
-	  /* FIXME: For consistency pedantic_errors should have the
-	     same value in the front-end and in CPP. However, this
-	     will break existing applications. The right fix is
-	     disentagle flag_permissive from flag_pedantic_errors,
-	     create a new diagnostic function permerror that is
-	     controlled by flag_permissive and convert most C++
-	     pedwarns to this new function.
-	  cpp_opts->pedantic_errors = 1;  */
-	}
       if (!flag_no_inline)
 	{
 	  flag_inline_trees = 1;

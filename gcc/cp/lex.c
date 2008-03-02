@@ -647,16 +647,16 @@ unqualified_fn_lookup_error (tree name)
 	 Note that we have the exact wording of the following message in
 	 the manual (trouble.texi, node "Name lookup"), so they need to
 	 be kept in synch.  */
-      pedwarn ("there are no arguments to %qD that depend on a template "
-	       "parameter, so a declaration of %qD must be available",
-	       name, name);
+      permerror ("there are no arguments to %qD that depend on a template "
+		 "parameter, so a declaration of %qD must be available",
+		 name, name);
 
       if (!flag_permissive)
 	{
 	  static bool hint;
 	  if (!hint)
 	    {
-	      error ("(if you use %<-fpermissive%>, G++ will accept your "
+	      inform ("(if you use %<-fpermissive%>, G++ will accept your "
 		     "code, but allowing the use of an undeclared name is "
 		     "deprecated)");
 	      hint = true;

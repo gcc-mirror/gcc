@@ -281,6 +281,10 @@ enum tls_model flag_tls_default = TLS_MODEL_GLOBAL_DYNAMIC;
 
 int flag_pedantic_errors = 0;
 
+/* Nonzero means make permerror produce warnings instead of errors.  */
+
+int flag_permissive = 0;
+
 /* -dA causes debug commentary information to be produced in
    the generated assembly code (to make it more readable).  This option
    is generally only of use to those who actually need to read the

@@ -2493,27 +2493,27 @@ finish_struct_anon (tree t)
 	      if (TREE_CODE (elt) != FIELD_DECL)
 		{
 		  if (is_union)
-		    pedwarn ("%q+#D invalid; an anonymous union can "
-			     "only have non-static data members", elt);
+		    permerror ("%q+#D invalid; an anonymous union can "
+			       "only have non-static data members", elt);
 		  else
-		    pedwarn ("%q+#D invalid; an anonymous struct can "
-			     "only have non-static data members", elt);
+		    permerror ("%q+#D invalid; an anonymous struct can "
+			       "only have non-static data members", elt);
 		  continue;
 		}
 
 	      if (TREE_PRIVATE (elt))
 		{
 		  if (is_union)
-		    pedwarn ("private member %q+#D in anonymous union", elt);
+		    permerror ("private member %q+#D in anonymous union", elt);
 		  else
-		    pedwarn ("private member %q+#D in anonymous struct", elt);
+		    permerror ("private member %q+#D in anonymous struct", elt);
 		}
 	      else if (TREE_PROTECTED (elt))
 		{
 		  if (is_union)
-		    pedwarn ("protected member %q+#D in anonymous union", elt);
+		    permerror ("protected member %q+#D in anonymous union", elt);
 		  else
-		    pedwarn ("protected member %q+#D in anonymous struct", elt);
+		    permerror ("protected member %q+#D in anonymous struct", elt);
 		}
 
 	      TREE_PRIVATE (elt) = TREE_PRIVATE (field);
@@ -3044,7 +3044,7 @@ check_field_decls (tree t, tree *access_decls,
 	 user-defined constructor.  */
       if (constructor_name_p (DECL_NAME (x), t)
 	  && TYPE_HAS_USER_CONSTRUCTOR (t))
-	pedwarn ("field %q+#D with same name as class", x);
+	permerror ("field %q+#D with same name as class", x);
 
       /* We set DECL_C_BIT_FIELD in grokbitfield.
 	 If the type and width are valid, we'll also set DECL_BIT_FIELD.  */
@@ -6072,10 +6072,10 @@ resolve_address_of_overloaded_function (tree target_type,
       if (!(flags & tf_error))
 	return error_mark_node;
 
-      pedwarn ("assuming pointer to member %qD", fn);
+      permerror ("assuming pointer to member %qD", fn);
       if (!explained)
 	{
-	  pedwarn ("(a pointer to member can only be formed with %<&%E%>)", fn);
+	  inform ("(a pointer to member can only be formed with %<&%E%>)", fn);
 	  explained = 1;
 	}
     }
@@ -6435,8 +6435,8 @@ note_name_declared_in_class (tree name, tree decl)
 	 A name N used in a class S shall refer to the same declaration
 	 in its context and when re-evaluated in the completed scope of
 	 S.  */
-      pedwarn ("declaration of %q#D", decl);
-      pedwarn ("changes meaning of %qD from %q+#D",
+      permerror ("declaration of %q#D", decl);
+      permerror ("changes meaning of %qD from %q+#D",
 	       DECL_NAME (OVL_CURRENT (decl)), (tree) n->value);
     }
 }
