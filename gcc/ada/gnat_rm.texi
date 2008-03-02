@@ -7350,7 +7350,7 @@ There are no such limits.
 @sp 1
 @cartouche
 @noindent
-@strong{27}.  Whether or not two non overlapping parts of a composite
+@strong{27}.  Whether or not two non-overlapping parts of a composite
 object are independently addressable, in the case where packing, record
 layout, or @code{Component_Size} is specified for the object.  See
 9.10(1).
@@ -10520,7 +10520,7 @@ representation values are negative, all values must be in the range:
 @end smallexample
 
 @noindent
-For the unsigned case, where all values are non negative, the values must
+For the unsigned case, where all values are nonnegative, the values must
 be in the range:
 
 @smallexample @c ada
@@ -15195,7 +15195,7 @@ available after the assignment symbol.
 A typed_variable can only be declare once.
 
 @noindent
-a non typed variable can be declared multiple times.
+a non-typed variable can be declared multiple times.
 
 @noindent
 Before the completion of its first declaration, the value of variable
@@ -15780,7 +15780,7 @@ The following attributes apply to package @code{Gnatls}:
 
 @table @code
 @item Switches
-This is a single attribute with a string list value. Each non empty string
+This is a single attribute with a string list value. Each nonempty string
 in the list is an option when invoking @code{gnatls}.
 @end table
 

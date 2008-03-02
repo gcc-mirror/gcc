@@ -2884,7 +2884,7 @@ This is relevant only to Windows XP/2000/NT implementations of GNAT,
 and specifies that the @code{Stdcall} calling sequence will be used,
 as defined by the NT API. Nevertheless, to ease building
 cross-platform bindings this convention will be handled as a @code{C} calling
-convention on non Windows platforms.
+convention on non-Windows platforms.
 
 @findex DLL
 @cindex Convention DLL
@@ -6894,8 +6894,8 @@ Example:
 
 When the switch @option{-gnatem} is specified, the compiler will create
 in memory the two mappings from the specified file. If there is any problem
-(non existent file, truncated file or duplicate entries), no mapping
-will be created.
+(nonexistent file, truncated file or duplicate entries), no mapping will
+be created.
 
 Several @option{-gnatem} switches may be specified; however, only the last
 one on the command line will be taken into account.
@@ -6952,7 +6952,7 @@ should be found in the source directories.
 @noindent
 A preprocessing data file is a text file with significant lines indicating
 how should be preprocessed either a specific source or all sources not
-mentioned in other lines. A significant line is a non empty, non comment line.
+mentioned in other lines. A significant line is a nonempty, non-comment line.
 Comments are similar to Ada comments.
 
 @noindent
@@ -10846,7 +10846,7 @@ When the source file names do not follow the standard GNAT default file naming
 conventions, the GNAT compiler must be given additional information through
 a configuration pragmas file (@pxref{Configuration Pragmas})
 or a project file.
-When the non standard file naming conventions are well-defined,
+When the non-standard file naming conventions are well-defined,
 a small number of pragmas @code{Source_File_Name} specifying a naming pattern
 (@pxref{Alternative File Naming Schemes}) may be sufficient. However,
 if the file naming conventions are irregular or arbitrary, a number
@@ -10962,9 +10962,9 @@ Look for source files in all directories listed in text file @file{file}.
 There may be zero, one or more spaces between @option{^-D^/DIRS_FILE=^}
 and @file{file}.
 @file{file} must be an existing, readable text file.
-Each non empty line in @file{file} must be a directory.
+Each nonempty line in @file{file} must be a directory.
 Specifying switch @option{^-D^/DIRS_FILE^} is equivalent to specifying as many
-switches @option{^-d^/SOURCE_DIRS^} as there are non empty lines in
+switches @option{^-d^/SOURCE_DIRS^} as there are nonempty lines in
 @file{file}.
 
 @item ^-f^/FOREIGN_PATTERN=^@file{pattern}
@@ -11484,7 +11484,7 @@ Attribute @code{Executable_Suffix}, when specified, may change the suffix
 of the executable files, when no attribute @code{Executable} applies:
 its value replace the platform-specific executable suffix.
 Attributes @code{Executable} and @code{Executable_Suffix} are the only ways to
-specify a non default executable file name when several mains are built at once
+specify a non-default executable file name when several mains are built at once
 in a single @command{gnatmake} command.
 
 @node Source File Naming Conventions
@@ -13418,7 +13418,7 @@ that make a project a Library Project (@code{Library_Name} and
 @end group
 @end smallexample
 
-Attribute @code{Library_Interface} has a non empty string list value,
+Attribute @code{Library_Interface} has a nonempty string list value,
 each string in the list designating a unit contained in an immediate source
 of the project file.
 
@@ -13441,7 +13441,7 @@ two possible values: "false" or "true" (case-insensitive). Specifying
 "false" for attribute @code{Library_Auto_Init} will prevent automatic
 initialization of dynamic or relocatable libraries.
 
-When a non automatically initialized Stand-alone Library is used
+When a non-automatically initialized Stand-alone Library is used
 in an executable, its initialization procedure must be called before
 any service of the library is used.
 When the main subprogram is in Ada, it may mean that the initialization
@@ -14032,7 +14032,7 @@ XREF to invoke @command{^gnatxref^gnatxref^}
 @command{^gnatmake -f -u -c^gnatmake -f -u -c^}).
 
 @noindent
-On non VMS platforms, between @command{gnat} and the command, two
+On non-VMS platforms, between @command{gnat} and the command, two
 special switches may be used:
 
 @itemize @bullet
@@ -17705,7 +17705,7 @@ Only output information about compilation units.
 @cindex @option{^-files^/FILES^} (@code{gnatls})
 Take as arguments the files listed in text file @var{file}.
 Text file @var{file} may contain empty lines that are ignored.
-Each non empty line should contain the name of an existing file.
+Each nonempty line should contain the name of an existing file.
 Several such switches may be specified simultaneously.
 
 @item ^-aO^/OBJECT_SEARCH=^@var{dir}
@@ -19445,7 +19445,7 @@ Allocation Root # 3
 Note that the GNAT run time contains itself a certain number of
 allocations that have no  corresponding deallocation,
 as shown here for root #2 and root
-#3. This is a normal behavior when the number of non freed allocations
+#3. This is a normal behavior when the number of non-freed allocations
 is one, it allocates dynamic data structures that the run time needs for
 the complete lifetime of the program. Note also that there is only one
 allocation root in the user program with a single line back trace:
@@ -23272,7 +23272,7 @@ fixed-point types are truncated.
 @subsection Record and Array Component Alignment
 
 @noindent
-On HP Ada for OpenVMS Alpha, all non composite components
+On HP Ada for OpenVMS Alpha, all non-composite components
 are aligned on natural boundaries. For example, 1-byte
 components are aligned on byte boundaries, 2-byte
 components on 2-byte boundaries, 4-byte components on 4-byte
@@ -29996,7 +29996,7 @@ of the above limitations, you have two choices:
 
 @enumerate
 @item
-Encapsulate your non Ada code in a DLL to be linked with your Ada
+Encapsulate your non-Ada code in a DLL to be linked with your Ada
 application. In this case, use the Microsoft or whatever environment to
 build the DLL and use GNAT to build your executable
 (@pxref{Using DLLs with GNAT}).
@@ -30177,7 +30177,7 @@ pragma Import (Stdcall, My_Var);
 
 @noindent
 Note that to ease building cross-platform bindings this convention
-will be handled as a @code{C} calling convention on non Windows platforms.
+will be handled as a @code{C} calling convention on non-Windows platforms.
 
 @node Win32 Calling Convention
 @subsection @code{Win32} Calling Convention
