@@ -1,3 +1,7 @@
+2008-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* mf-runtime.c (__mf_usage): Update copyright notice dates.
+
 2008-02-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* testsuite/libmudflap.c/fail8-frag.c: Adjust scan pattern for
