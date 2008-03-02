@@ -84,7 +84,7 @@ __negdi2 (DWtype u)
 Wtype
 __addvSI3 (Wtype a, Wtype b)
 {
-  const Wtype w = a + b;
+  const Wtype w = (UWtype) a + (UWtype) b;
 
   if (b >= 0 ? w < a : w > a)
     abort ();
@@ -95,7 +95,7 @@ __addvSI3 (Wtype a, Wtype b)
 SItype
 __addvsi3 (SItype a, SItype b)
 {
-  const SItype w = a + b;
+  const SItype w = (USItype) a + (USItype) b;
 
   if (b >= 0 ? w < a : w > a)
     abort ();
@@ -109,7 +109,7 @@ __addvsi3 (SItype a, SItype b)
 DWtype
 __addvDI3 (DWtype a, DWtype b)
 {
-  const DWtype w = a + b;
+  const DWtype w = (UDWtype) a + (UDWtype) b;
 
   if (b >= 0 ? w < a : w > a)
     abort ();
@@ -122,7 +122,7 @@ __addvDI3 (DWtype a, DWtype b)
 Wtype
 __subvSI3 (Wtype a, Wtype b)
 {
-  const Wtype w = a - b;
+  const Wtype w = (UWtype) a - (UWtype) b;
 
   if (b >= 0 ? w > a : w < a)
     abort ();
@@ -133,7 +133,7 @@ __subvSI3 (Wtype a, Wtype b)
 SItype
 __subvsi3 (SItype a, SItype b)
 {
-  const SItype w = a - b;
+  const SItype w = (USItype) a - (USItype) b;
 
   if (b >= 0 ? w > a : w < a)
     abort ();
@@ -147,7 +147,7 @@ __subvsi3 (SItype a, SItype b)
 DWtype
 __subvDI3 (DWtype a, DWtype b)
 {
-  const DWtype w = a - b;
+  const DWtype w = (UDWtype) a - (UDWtype) b;
 
   if (b >= 0 ? w > a : w < a)
     abort ();
@@ -187,7 +187,7 @@ __mulvsi3 (SItype a, SItype b)
 Wtype
 __negvSI2 (Wtype a)
 {
-  const Wtype w = -a;
+  const Wtype w = -(UWtype) a;
 
   if (a >= 0 ? w > 0 : w < 0)
     abort ();
@@ -198,7 +198,7 @@ __negvSI2 (Wtype a)
 SItype
 __negvsi2 (SItype a)
 {
-  const SItype w = -a;
+  const SItype w = -(USItype) a;
 
   if (a >= 0 ? w > 0 : w < 0)
     abort ();
@@ -212,7 +212,7 @@ __negvsi2 (SItype a)
 DWtype
 __negvDI2 (DWtype a)
 {
-  const DWtype w = -a;
+  const DWtype w = -(UDWtype) a;
 
   if (a >= 0 ? w > 0 : w < 0)
     abort ();
@@ -231,7 +231,7 @@ __absvSI2 (Wtype a)
 #ifdef L_negvsi2
     w = __negvSI2 (a);
 #else
-    w = -a;
+    w = -(UWtype) a;
 
   if (w < 0)
     abort ();
@@ -249,7 +249,7 @@ __absvsi2 (SItype a)
 #ifdef L_negvsi2
     w = __negvsi2 (a);
 #else
-    w = -a;
+    w = -(USItype) a;
 
   if (w < 0)
     abort ();
@@ -270,7 +270,7 @@ __absvDI2 (DWtype a)
 #ifdef L_negvdi2
     w = __negvDI2 (a);
 #else
-    w = -a;
+    w = -(UDWtype) a;
 
   if (w < 0)
     abort ();
