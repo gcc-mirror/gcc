@@ -197,6 +197,10 @@ extern int flag_dump_unnumbered;
 
 extern int flag_pedantic_errors;
 
+/* Nonzero means make permerror produce warnings instead of errors.  */
+
+extern int flag_permissive;
+
 /* Nonzero if we are compiling code for a shared library, zero for
    executable.  */
 

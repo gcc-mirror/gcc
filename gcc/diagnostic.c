@@ -544,10 +544,30 @@ pedwarn (const char *gmsgid, ...)
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location,
-		       pedantic_error_kind ());
+		       pedantic_warning_kind ());
   report_diagnostic (&diagnostic);
   va_end (ap);
 }
+
+/* A "permissive" error: issues an error unless -fpermissive was given
+   on the command line, in which case it issues a warning.  Use this
+   for things that really should be errors but we want to support
+   legacy code.  */
+
+void
+permerror (const char *gmsgid, ...)
+{
+  diagnostic_info diagnostic;
+  va_list ap;
+
+  va_start (ap, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location,
+		       permissive_error_kind ());
+  diagnostic.option_index = OPT_fpermissive;
+  report_diagnostic (&diagnostic);
+  va_end (ap);
+}
+
 
 /* A hard error: the code is definitely ill-formed, and an object file
    will not be produced.  */

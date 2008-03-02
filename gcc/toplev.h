@@ -62,6 +62,7 @@ extern void error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 extern void fatal_error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2)
      ATTRIBUTE_NORETURN;
 extern void pedwarn (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
+extern void permerror (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 extern void sorry (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 extern void inform (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 extern void verbatim (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);

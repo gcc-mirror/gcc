@@ -1,3 +1,10 @@
+2008-03-02  Manuel Lopez-Ibanez  <manu@gcc.gnu.org> 
+
+	PR 24924
+	* g++.dg/cpp/string-2.C: This is a warning now.
+	* g++.dg/cpp/pedantic-errors.C: -pedantic-errors is not enabled by
+	default, so add it.
+	
 2008-03-01  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* g++.dg/cpp0x/auto1.C: New.

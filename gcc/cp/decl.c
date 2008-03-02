@@ -7028,12 +7028,7 @@ compute_array_index_type (tree name, tree size)
     {
       /* Check to see if the array bound overflowed.  Make that an
 	 error, no matter how generous we're being.  */
-      int old_flag_pedantic_errors = flag_pedantic_errors;
-      int old_pedantic = pedantic;
-      pedantic = flag_pedantic_errors = 1;
-      constant_expression_warning (size);
-      pedantic = old_pedantic;
-      flag_pedantic_errors = old_flag_pedantic_errors;
+      constant_expression_error (size);
 
       /* An array must have a positive number of elements.  */
       if (INT_CST_LT (size, integer_zero_node))

@@ -50,7 +50,8 @@ typedef struct diagnostic_info
   int option_index;
 } diagnostic_info;
 
-#define pedantic_error_kind() (flag_pedantic_errors ? DK_ERROR : DK_WARNING)
+#define pedantic_warning_kind() (flag_pedantic_errors ? DK_ERROR : DK_WARNING)
+#define permissive_error_kind() (flag_permissive ? DK_WARNING : DK_ERROR)
 
 
 /*  Forward declarations.  */

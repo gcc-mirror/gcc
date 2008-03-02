@@ -3857,10 +3857,10 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
 	  /* Look for an `operator++ (int)'.  If they didn't have
 	     one, then we fall back to the old way of doing things.  */
 	  if (flags & LOOKUP_COMPLAIN)
-	    pedwarn ("no %<%D(int)%> declared for postfix %qs, "
-		     "trying prefix operator instead",
-		     fnname,
-		     operator_name_info[code].name);
+	    permerror ("no %<%D(int)%> declared for postfix %qs, "
+		       "trying prefix operator instead",
+		       fnname,
+		       operator_name_info[code].name);
 	  if (code == POSTINCREMENT_EXPR)
 	    code = PREINCREMENT_EXPR;
 	  else
@@ -4343,9 +4343,9 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  else if (t->kind == ck_identity)
 	    break;
 	}
-      pedwarn ("invalid conversion from %qT to %qT", TREE_TYPE (expr), totype);
+      permerror ("invalid conversion from %qT to %qT", TREE_TYPE (expr), totype);
       if (fn)
-	pedwarn ("  initializing argument %P of %qD", argnum, fn);
+	permerror ("  initializing argument %P of %qD", argnum, fn);
       return cp_convert (totype, expr);
     }
 
@@ -4955,7 +4955,7 @@ build_over_call (struct z_candidate *cand, int flags)
       tree base_binfo;
 
       if (convs[i]->bad_p)
-	pedwarn ("passing %qT as %<this%> argument of %q#D discards qualifiers",
+	permerror ("passing %qT as %<this%> argument of %q#D discards qualifiers",
 		 TREE_TYPE (argtype), fn);
 
       /* [class.mfct.nonstatic]: If a nonstatic member function of a class

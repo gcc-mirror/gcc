@@ -2651,7 +2651,7 @@ cp_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level,
       dlevel = DK_WARNING;
       break;
     case CPP_DL_PEDWARN:
-      dlevel = pedantic_error_kind ();
+      dlevel = pedantic_warning_kind ();
       break;
     case CPP_DL_ERROR:
       dlevel = DK_ERROR;

@@ -443,11 +443,6 @@ int flag_use_cxa_atexit = DEFAULT_USE_CXA_ATEXIT;
 
 int flag_use_cxa_get_exception_ptr = 2;
 
-/* Nonzero means make the default pedwarns warnings instead of errors.
-   The value of this flag is ignored if -pedantic is specified.  */
-
-int flag_permissive;
-
 /* Nonzero means to implement standard semantics for exception
    specifications, calling unexpected if an exception is thrown that
    doesn't match the specification.  Zero means to treat them as
@@ -927,14 +922,25 @@ fix_string_type (tree value)
 void
 constant_expression_warning (tree value)
 {
+  if (warn_overflow && pedantic 
+      && (TREE_CODE (value) == INTEGER_CST || TREE_CODE (value) == REAL_CST
+	  || TREE_CODE (value) == FIXED_CST
+	  || TREE_CODE (value) == VECTOR_CST
+	  || TREE_CODE (value) == COMPLEX_CST)
+      && TREE_OVERFLOW (value))
+    pedwarn ("overflow in constant expression");
+}
+
+/* The same as above but print an unconditional error.  */
+void
+constant_expression_error (tree value)
+{
   if ((TREE_CODE (value) == INTEGER_CST || TREE_CODE (value) == REAL_CST
        || TREE_CODE (value) == FIXED_CST
        || TREE_CODE (value) == VECTOR_CST
        || TREE_CODE (value) == COMPLEX_CST)
-      && TREE_OVERFLOW (value)
-      && warn_overflow
-      && pedantic)
-    pedwarn ("overflow in constant expression");
+      && TREE_OVERFLOW (value))
+    error ("overflow in constant expression");
 }
 
 /* Print a warning if an expression had overflow in folding and its
