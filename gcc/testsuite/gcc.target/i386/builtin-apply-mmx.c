@@ -9,7 +9,7 @@
 
 /* This test case is adapted from gcc.dg/builtin-apply4.c.  */
  
-/* { dg-do run { xfail "*-*-*" } } */
+/* { dg-do run { xfail { ! *-*-darwin* } } } */
 /* { dg-options "-O2 -mmmx" } */
 /* { dg-require-effective-target ilp32 } */
 
