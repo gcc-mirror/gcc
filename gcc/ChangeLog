@@ -1,3 +1,11 @@
+2008-03-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* tree-scalar-evolution.c (instantiate_parameters_1): An SSA_NAME
+	defined in a loop at depth 0 is invariant.
+	* tree-chrec.c (evolution_function_is_invariant_rec_p): Ditto.
+	* tree-ssa-loop-ivopts.c (expr_invariant_in_loop_p): Should never
+	be called at loop depth 0.
+
 2008-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR driver/35420

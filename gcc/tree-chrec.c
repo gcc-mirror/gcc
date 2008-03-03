@@ -948,8 +948,9 @@ evolution_function_is_invariant_rec_p (tree chrec, int loopnum)
   if (evolution_function_is_constant_p (chrec))
     return true;
 
-  if (TREE_CODE (chrec) == SSA_NAME 
-      && expr_invariant_in_loop_p (get_loop (loopnum), chrec))
+  if (TREE_CODE (chrec) == SSA_NAME
+      && (loopnum == 0
+	  || expr_invariant_in_loop_p (get_loop (loopnum), chrec)))
     return true;
 
   if (TREE_CODE (chrec) == POLYNOMIAL_CHREC)
