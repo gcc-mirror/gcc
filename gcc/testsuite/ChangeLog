@@ -1,3 +1,7 @@
+2007-03-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/builtin-apply-mmx.c: Do not XFAIL on Darwin.
+
 2008-03-02  Manuel Lopez-Ibanez  <manu@gcc.gnu.org> 
 
 	PR 24924
