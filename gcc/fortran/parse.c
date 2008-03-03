@@ -3197,8 +3197,7 @@ parse_contained (int module)
 
   pop_state ();
   if (!contains_statements)
-    /* This is valid in Fortran 2008.  */
-    gfc_notify_std (GFC_STD_GNU, "Extension: CONTAINS statement without "
+    gfc_notify_std (GFC_STD_F2008, "Fortran 2008: CONTAINS statement without "
 		    "FUNCTION or SUBROUTINE statement at %C");
 }
 

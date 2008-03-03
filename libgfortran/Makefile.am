@@ -67,6 +67,7 @@ intrinsics/dtime.c \
 intrinsics/env.c \
 intrinsics/eoshift0.c \
 intrinsics/eoshift2.c \
+intrinsics/erfc_scaled.c \
 intrinsics/etime.c \
 intrinsics/exit.c \
 intrinsics/fnum.c \

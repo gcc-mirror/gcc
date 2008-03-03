@@ -361,10 +361,11 @@ am__libgfortran_la_SOURCES_DIST = runtime/backtrace.c \
 	intrinsics/chmod.c intrinsics/clock.c intrinsics/cpu_time.c \
 	intrinsics/cshift0.c intrinsics/ctime.c \
 	intrinsics/date_and_time.c intrinsics/dtime.c intrinsics/env.c \
-	intrinsics/eoshift0.c intrinsics/eoshift2.c intrinsics/etime.c \
-	intrinsics/exit.c intrinsics/fnum.c intrinsics/gerror.c \
-	intrinsics/getcwd.c intrinsics/getlog.c intrinsics/getXid.c \
-	intrinsics/hostnm.c intrinsics/ierrno.c intrinsics/ishftc.c \
+	intrinsics/eoshift0.c intrinsics/eoshift2.c \
+	intrinsics/erfc_scaled.c intrinsics/etime.c intrinsics/exit.c \
+	intrinsics/fnum.c intrinsics/gerror.c intrinsics/getcwd.c \
+	intrinsics/getlog.c intrinsics/getXid.c intrinsics/hostnm.c \
+	intrinsics/ierrno.c intrinsics/ishftc.c \
 	intrinsics/iso_c_generated_procs.c intrinsics/iso_c_binding.c \
 	intrinsics/kill.c intrinsics/link.c intrinsics/malloc.c \
 	intrinsics/mvbits.c intrinsics/move_alloc.c \
@@ -631,16 +632,17 @@ am__objects_31 = close.lo file_pos.lo format.lo inquire.lo \
 am__objects_32 = associated.lo abort.lo access.lo args.lo \
 	c99_functions.lo chdir.lo chmod.lo clock.lo cpu_time.lo \
 	cshift0.lo ctime.lo date_and_time.lo dtime.lo env.lo \
-	eoshift0.lo eoshift2.lo etime.lo exit.lo fnum.lo gerror.lo \
-	getcwd.lo getlog.lo getXid.lo hostnm.lo ierrno.lo ishftc.lo \
-	iso_c_generated_procs.lo iso_c_binding.lo kill.lo link.lo \
-	malloc.lo mvbits.lo move_alloc.lo pack_generic.lo perror.lo \
-	signal.lo size.lo sleep.lo spread_generic.lo \
-	string_intrinsics.lo system.lo rand.lo random.lo rename.lo \
-	reshape_generic.lo reshape_packed.lo selected_int_kind.lo \
-	selected_real_kind.lo stat.lo symlnk.lo system_clock.lo \
-	time.lo transpose_generic.lo umask.lo unlink.lo \
-	unpack_generic.lo in_pack_generic.lo in_unpack_generic.lo
+	eoshift0.lo eoshift2.lo erfc_scaled.lo etime.lo exit.lo \
+	fnum.lo gerror.lo getcwd.lo getlog.lo getXid.lo hostnm.lo \
+	ierrno.lo ishftc.lo iso_c_generated_procs.lo iso_c_binding.lo \
+	kill.lo link.lo malloc.lo mvbits.lo move_alloc.lo \
+	pack_generic.lo perror.lo signal.lo size.lo sleep.lo \
+	spread_generic.lo string_intrinsics.lo system.lo rand.lo \
+	random.lo rename.lo reshape_generic.lo reshape_packed.lo \
+	selected_int_kind.lo selected_real_kind.lo stat.lo symlnk.lo \
+	system_clock.lo time.lo transpose_generic.lo umask.lo \
+	unlink.lo unpack_generic.lo in_pack_generic.lo \
+	in_unpack_generic.lo
 am__objects_33 =
 am__objects_34 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_abs_i4.lo _abs_i8.lo _abs_i16.lo _abs_r4.lo _abs_r8.lo \
@@ -905,6 +907,7 @@ intrinsics/dtime.c \
 intrinsics/env.c \
 intrinsics/eoshift0.c \
 intrinsics/eoshift2.c \
+intrinsics/erfc_scaled.c \
 intrinsics/etime.c \
 intrinsics/exit.c \
 intrinsics/fnum.c \
@@ -1660,6 +1663,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eoshift3_16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eoshift3_4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eoshift3_8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/erfc_scaled.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/error.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/etime.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/exit.Plo@am__quote@
@@ -4702,6 +4706,13 @@ eoshift2.lo: intrinsics/eoshift2.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/eoshift2.c' object='eoshift2.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o eoshift2.lo `test -f 'intrinsics/eoshift2.c' || echo '$(srcdir)/'`intrinsics/eoshift2.c
+
+erfc_scaled.lo: intrinsics/erfc_scaled.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT erfc_scaled.lo -MD -MP -MF "$(DEPDIR)/erfc_scaled.Tpo" -c -o erfc_scaled.lo `test -f 'intrinsics/erfc_scaled.c' || echo '$(srcdir)/'`intrinsics/erfc_scaled.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/erfc_scaled.Tpo" "$(DEPDIR)/erfc_scaled.Plo"; else rm -f "$(DEPDIR)/erfc_scaled.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/erfc_scaled.c' object='erfc_scaled.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o erfc_scaled.lo `test -f 'intrinsics/erfc_scaled.c' || echo '$(srcdir)/'`intrinsics/erfc_scaled.c
 
 etime.lo: intrinsics/etime.c
 @am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT etime.lo -MD -MP -MF "$(DEPDIR)/etime.Tpo" -c -o etime.lo `test -f 'intrinsics/etime.c' || echo '$(srcdir)/'`intrinsics/etime.c; \

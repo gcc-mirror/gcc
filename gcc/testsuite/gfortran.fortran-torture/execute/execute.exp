@@ -50,6 +50,13 @@ foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.f90]] {
     fortran-torture-execute $testcase
 }
 
+foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.F90]] {
+    if ![runtest_file_p $runtests $testcase] then {
+	continue
+    }
+    fortran-torture-execute $testcase
+}
+
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.f95]] {
     if ![runtest_file_p $runtests $testcase] then {
 	continue
@@ -57,7 +64,35 @@ foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.f95]] {
     fortran-torture-execute $testcase
 }
 
+foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.F95]] {
+    if ![runtest_file_p $runtests $testcase] then {
+	continue
+    }
+    fortran-torture-execute $testcase
+}
+
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.f03]] {
+    if ![runtest_file_p $runtests $testcase] then {
+	continue
+    }
+    fortran-torture-execute $testcase
+}
+
+foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.F03]] {
+    if ![runtest_file_p $runtests $testcase] then {
+	continue
+    }
+    fortran-torture-execute $testcase
+}
+
+foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.f08]] {
+    if ![runtest_file_p $runtests $testcase] then {
+	continue
+    }
+    fortran-torture-execute $testcase
+}
+
+foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.F08]] {
     if ![runtest_file_p $runtests $testcase] then {
 	continue
     }

@@ -104,17 +104,25 @@ gfc_intrinsic_map_t;
     true, true, NAME, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, \
     NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE},
 
+#define LIB_FUNCTION(ID, NAME, HAVE_COMPLEX) \
+  { GFC_ISYM_ ## ID, END_BUILTINS, END_BUILTINS, END_BUILTINS, END_BUILTINS, \
+    END_BUILTINS, END_BUILTINS, END_BUILTINS, END_BUILTINS, \
+    false, HAVE_COMPLEX, true, NAME, NULL_TREE, NULL_TREE, NULL_TREE, \
+    NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE }
+
 static GTY(()) gfc_intrinsic_map_t gfc_intrinsic_map[] =
 {
   /* Functions built into gcc itself.  */
 #include "mathbuiltins.def"
 
+  /* Functions in libgfortran.  */
+  LIB_FUNCTION (ERFC_SCALED, "erfc_scaled", false),
+
   /* End the list.  */
-  { GFC_ISYM_NONE, END_BUILTINS, END_BUILTINS, END_BUILTINS, END_BUILTINS,
-    END_BUILTINS, END_BUILTINS, END_BUILTINS, END_BUILTINS,
-    true, false, true, NULL, NULL_TREE, NULL_TREE, NULL_TREE,
-    NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE }
+  LIB_FUNCTION (NONE, NULL, false)
+
 };
+#undef LIB_FUNCTION
 #undef DEFINE_MATH_BUILTIN
 #undef DEFINE_MATH_BUILTIN_C
 

@@ -6,4 +6,4 @@ contains
     integer :: i ! { dg-error "data declaration statement" }
     character(len=selected_int_kind(i)) :: c ! { dg-error "data declaration statement" }
   end subroutine ! { dg-error "Expecting END PROGRAM statement" }
-end program foo ! { dg-warning "CONTAINS statement without FUNCTION" }
+end program foo

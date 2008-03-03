@@ -1111,6 +1111,18 @@ gfc_check_huge (gfc_expr *x)
 }
 
 
+try
+gfc_check_hypot (gfc_expr *x, gfc_expr *y)
+{
+  if (type_check (x, 0, BT_REAL) == FAILURE)
+    return FAILURE;
+  if (same_type_check (x, 0, y, 1) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
 /* Check that the single argument is an integer.  */
 
 try

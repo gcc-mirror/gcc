@@ -62,12 +62,12 @@ Some basic guidelines for editing this document:
 * @code{ATAN}:          ATAN,      Arctangent function
 * @code{ATAN2}:         ATAN2,     Arctangent function
 * @code{ATANH}:         ATANH,     Hyperbolic arctangent function
-* @code{BESJ0}:         BESJ0,     Bessel function of the first kind of order 0
-* @code{BESJ1}:         BESJ1,     Bessel function of the first kind of order 1
-* @code{BESJN}:         BESJN,     Bessel function of the first kind
-* @code{BESY0}:         BESY0,     Bessel function of the second kind of order 0
-* @code{BESY1}:         BESY1,     Bessel function of the second kind of order 1
-* @code{BESYN}:         BESYN,     Bessel function of the second kind
+* @code{BESSEL_J0}:     BESSEL_J0, Bessel function of the first kind of order 0
+* @code{BESSEL_J1}:     BESSEL_J1, Bessel function of the first kind of order 1
+* @code{BESSEL_JN}:     BESSEL_JN, Bessel function of the first kind
+* @code{BESSEL_Y0}:     BESSEL_Y0, Bessel function of the second kind of order 0
+* @code{BESSEL_Y1}:     BESSEL_Y1, Bessel function of the second kind of order 1
+* @code{BESSEL_YN}:     BESSEL_YN, Bessel function of the second kind
 * @code{BIT_SIZE}:      BIT_SIZE,  Bit size inquiry function
 * @code{BTEST}:         BTEST,     Bit test function
 * @code{C_ASSOCIATED}:  C_ASSOCIATED, Status of a C pointer
@@ -103,6 +103,7 @@ Some basic guidelines for editing this document:
 * @code{EPSILON}:       EPSILON,   Epsilon function
 * @code{ERF}:           ERF,       Error function
 * @code{ERFC}:          ERFC,      Complementary error function
+* @code{ERFC_SCALED}:   ERFC_SCALED, Exponentially-scaled complementary error function
 * @code{ETIME}:         ETIME,     Execution time subroutine (or function)
 * @code{EXIT}:          EXIT,      Exit the program with status.
 * @code{EXP}:           EXP,       Exponential function
@@ -136,6 +137,7 @@ Some basic guidelines for editing this document:
 * @code{GMTIME}:        GMTIME,    Convert time to GMT info
 * @code{HOSTNM}:        HOSTNM,    Get system host name
 * @code{HUGE}:          HUGE,      Largest number of a kind
+* @code{HYPOT}:         HYPOT,     Euclidian distance function
 * @code{IACHAR}:        IACHAR,    Code in @acronym{ASCII} collating sequence
 * @code{IAND}:          IAND,      Bitwise logical and
 * @code{IARGC}:         IARGC,     Get the number of command line arguments
@@ -164,7 +166,7 @@ Some basic guidelines for editing this document:
 * @code{LBOUND}:        LBOUND,    Lower dimension bounds of an array
 * @code{LEN}:           LEN,       Length of a character entity
 * @code{LEN_TRIM}:      LEN_TRIM,  Length of a character entity without trailing blank characters
-* @code{LGAMMA}:        LGAMMA,    Logarithm of the Gamma function
+* @code{LOG_GAMMA}:     LOG_GAMMA, Logarithm of the Gamma function
 * @code{LGE}:           LGE,       Lexical greater than or equal
 * @code{LGT}:           LGT,       Lexical greater than
 * @code{LINK}:          LINK,      Create a hard link
@@ -266,11 +268,12 @@ Some basic guidelines for editing this document:
 
 The intrinsic procedures provided by GNU Fortran include all of the
 intrinsic procedures required by the Fortran 95 standard, a set of
-intrinsic procedures for backwards compatibility with G77, and a small
-selection of intrinsic procedures from the Fortran 2003 standard.  Any
-conflict between a description here and a description in either the
-Fortran 95 standard or the Fortran 2003 standard is unintentional, and
-the standard(s) should be considered authoritative.
+intrinsic procedures for backwards compatibility with G77, and a
+selection of intrinsic procedures from the Fortran 2003 and Fortran 2008
+standards.  Any conflict between a description here and a description in
+either the Fortran 95 standard, the Fortran 2003 standard or the Fortran
+2008 standard is unintentional, and the standard(s) should be considered
+authoritative.
 
 The enumeration of the @code{KIND} type parameter is processor defined in
 the Fortran 95 standard.  GNU Fortran defines the default integer type and
@@ -574,7 +577,7 @@ Inverse function: @ref{COS}
 @code{COSH(X)}).
 
 @item @emph{Standard}:
-GNU extension
+Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
@@ -584,13 +587,11 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)} with a magnitude that is
-greater or equal to one.
+@item @var{X} @tab The type shall be @code{REAL} or @code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)} and it lies in the
-range @math{0 \leq \acosh (x) \leq \infty}.
+The return value has the same type and kind as @var{X}
 
 @item @emph{Example}:
 @smallexample
@@ -1213,7 +1214,7 @@ Inverse function: @ref{SIN}
 @code{ASINH(X)} computes the hyperbolic arcsine of @var{X} (inverse of @code{SINH(X)}).
 
 @item @emph{Standard}:
-GNU extension
+Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
@@ -1223,12 +1224,11 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)}, with @var{X} a real number.
+@item @var{X} @tab The type shall be @code{REAL} or @code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)} and it lies in the
-range @math{-\infty \leq \asinh (x) \leq \infty}.
+The return value is of the same type and kind as  @var{X}.
 
 @item @emph{Example}:
 @smallexample
@@ -1445,7 +1445,7 @@ end program test_atan2
 of @code{TANH(X)}).
 
 @item @emph{Standard}:
-GNU extension
+Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
@@ -1455,13 +1455,11 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)} with a magnitude
-that is less than or equal to one.
+@item @var{X} @tab The type shall be @code{REAL} or @code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{REAL(*)} and it lies in the
-range @math{-\infty \leq \atanh(x) \leq \infty}.
+The return value has same type and kind as @var{X}.
 
 @item @emph{Example}:
 @smallexample
@@ -1483,25 +1481,27 @@ Inverse function: @ref{TANH}
 
 
 
-@node BESJ0
-@section @code{BESJ0} --- Bessel function of the first kind of order 0
+@node BESSEL_J0
+@section @code{BESSEL_J0} --- Bessel function of the first kind of order 0
+@fnindex BESSEL_J0
 @fnindex BESJ0
 @fnindex DBESJ0
 @cindex Bessel function, first kind
 
 @table @asis
 @item @emph{Description}:
-@code{BESJ0(X)} computes the Bessel function of the first kind of order 0
-of @var{X}.
+@code{BESSEL_J0(X)} computes the Bessel function of the first kind of
+order 0 of @var{X}. This function is available under the name
+@code{BESJ0} as a GNU extension.
 
 @item @emph{Standard}:
-GNU extension
+Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = BESJ0(X)}
+@code{RESULT = BESSEL_J0(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1516,7 +1516,7 @@ range @math{ - 0.4027... \leq Bessel (0,x) \leq 1}.
 @smallexample
 program test_besj0
   real(8) :: x = 0.0_8
-  x = besj0(x)
+  x = bessel_j0(x)
 end program test_besj0
 @end smallexample
 
@@ -1529,25 +1529,27 @@ end program test_besj0
 
 
 
-@node BESJ1
-@section @code{BESJ1} --- Bessel function of the first kind of order 1
+@node BESSEL_J1
+@section @code{BESEL_J1} --- Bessel function of the first kind of order 1
+@fnindex BESSEL_J1
 @fnindex BESJ1
 @fnindex DBESJ1
 @cindex Bessel function, first kind
 
 @table @asis
 @item @emph{Description}:
-@code{BESJ1(X)} computes the Bessel function of the first kind of order 1
-of @var{X}.
+@code{BESSEL_J1(X)} computes the Bessel function of the first kind of
+order 1 of @var{X}. This function is available under the name
+@code{BESJ1} as a GNU extension.
 
 @item @emph{Standard}:
-GNU extension
+Fortran 2008
 
 @item @emph{Class}:
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = BESJ1(X)}
+@code{RESULT = BESSEL_J1(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1562,7 +1564,7 @@ range @math{ - 0.5818... \leq Bessel (0,x) \leq 0.5818 }.
 @smallexample
 program test_besj1
   real(8) :: x = 1.0_8
-  x = besj1(x)
+  x = bessel_j1(x)
 end program test_besj1
 @end smallexample
 
@@ -1575,27 +1577,29 @@ end program test_besj1
 
 
 
-@node BESJN
-@section @code{BESJN} --- Bessel function of the first kind
+@node BESSEL_JN
+@section @code{BESSEL_JN} --- Bessel function of the first kind
+@fnindex BESSEL_JN
 @fnindex BESJN
 @fnindex DBESJN
 @cindex Bessel function, first kind
 
 @table @asis
 @item @emph{Description}:
-@code{BESJN(N, X)} computes the Bessel function of the first kind of order
-@var{N} of @var{X}.
+@code{BESSEL_JN(N, X)} computes the Bessel function of the first kind of
+order @var{N} of @var{X}. This function is available under the name
+@code{BESJN} as a GNU extension.
 
 If both arguments are arrays, their ranks and shapes shall conform.
 
 @item @emph{Standard}:
-GNU extension
+Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = BESJN(N, X)}
+@code{RESULT = BESSEL_JN(N, X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1610,7 +1614,7 @@ The return value is a scalar of type @code{REAL(*)}.
 @smallexample
 program test_besjn
   real(8) :: x = 1.0_8
-  x = besjn(5,x)
+  x = bessel_jn(5,x)
 end program test_besjn
 @end smallexample
 
@@ -1624,25 +1628,27 @@ end program test_besjn
 
 
 
-@node BESY0
-@section @code{BESY0} --- Bessel function of the second kind of order 0
+@node BESSEL_Y0
+@section @code{BESSEL_Y0} --- Bessel function of the second kind of order 0
+@fnindex BESSEL_Y0
 @fnindex BESY0
 @fnindex DBESY0
 @cindex Bessel function, second kind
 
 @table @asis
 @item @emph{Description}:
-@code{BESY0(X)} computes the Bessel function of the second kind of order 0
-of @var{X}.
+@code{BESSEL_Y0(X)} computes the Bessel function of the second kind of
+order 0 of @var{X}. This function is available under the name
+@code{BESY0} as a GNU extension.
 
 @item @emph{Standard}:
-GNU extension
+Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = BESY0(X)}
+@code{RESULT = BESSEL_Y0(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1656,7 +1662,7 @@ The return value is a scalar of type @code{REAL(*)}.
 @smallexample
 program test_besy0
   real(8) :: x = 0.0_8
-  x = besy0(x)
+  x = bessel_y0(x)
 end program test_besy0
 @end smallexample
 
@@ -1669,25 +1675,27 @@ end program test_besy0
 
 
 
-@node BESY1
-@section @code{BESY1} --- Bessel function of the second kind of order 1
+@node BESSEL_Y1
+@section @code{BESSEL_Y1} --- Bessel function of the second kind of order 1
+@fnindex BESSEL_Y1
 @fnindex BESY1
 @fnindex DBESY1
 @cindex Bessel function, second kind
 
 @table @asis
 @item @emph{Description}:
-@code{BESY1(X)} computes the Bessel function of the second kind of order 1
-of @var{X}.
+@code{BESSEL_Y1(X)} computes the Bessel function of the second kind of
+order 1 of @var{X}. This function is available under the name
+@code{BESY1} as a GNU extension.
 
 @item @emph{Standard}:
-GNU extension
+Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = BESY1(X)}
+@code{RESULT = BESSEL_Y1(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1701,7 +1709,7 @@ The return value is a scalar of type @code{REAL(*)}.
 @smallexample
 program test_besy1
   real(8) :: x = 1.0_8
-  x = besy1(x)
+  x = bessel_y1(x)
 end program test_besy1
 @end smallexample
 
@@ -1714,27 +1722,29 @@ end program test_besy1
 
 
 
-@node BESYN
-@section @code{BESYN} --- Bessel function of the second kind
+@node BESSEL_YN
+@section @code{BESSEL_YN} --- Bessel function of the second kind
+@fnindex BESSEL_YN
 @fnindex BESYN
 @fnindex DBESYN
 @cindex Bessel function, second kind
 
 @table @asis
 @item @emph{Description}:
-@code{BESYN(N, X)} computes the Bessel function of the second kind of order
-@var{N} of @var{X}.
+@code{BESSEL_YN(N, X)} computes the Bessel function of the second kind of
+order @var{N} of @var{X}. This function is available under the name
+@code{BESYN} as a GNU extension.
 
 If both arguments are arrays, their ranks and shapes shall conform.
 
 @item @emph{Standard}:
-GNU extension
+Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = BESYN(N, X)}
+@code{RESULT = BESSEL_YN(N, X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1749,7 +1759,7 @@ The return value is a scalar of type @code{REAL(*)}.
 @smallexample
 program test_besyn
   real(8) :: x = 1.0_8
-  x = besyn(5,x)
+  x = bessel_yn(5,x)
 end program test_besyn
 @end smallexample
 
@@ -1859,7 +1869,7 @@ end program test_btest
 or if @var{c_ptr1} is associated with the target @var{c_ptr2}.
 
 @item @emph{Standard}:
-F2003 and later
+Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -1905,7 +1915,7 @@ end subroutine association_test
 @code{C_FUNLOC(x)} determines the C address of the argument.
 
 @item @emph{Standard}:
-F2003 and later
+Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -1966,7 +1976,7 @@ Note: Due to the currently lacking support of procedure pointers in GNU Fortran
 this function is not fully operable.
 
 @item @emph{Standard}:
-F2003 and later
+Fortran 2003 and later
 
 @item @emph{Class}:
 Subroutine
@@ -2024,7 +2034,7 @@ end program main
 shape.
 
 @item @emph{Standard}:
-F2003 and later
+Fortran 2003 and later
 
 @item @emph{Class}:
 Subroutine
@@ -2077,7 +2087,7 @@ end program main
 @code{C_LOC(x)} determines the C address of the argument.
 
 @item @emph{Standard}:
-F2003 and later
+Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -2399,7 +2409,7 @@ end program test_cmplx
 command line when the containing program was invoked.
 
 @item @emph{Standard}:
-F2003
+Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -3511,7 +3521,7 @@ end program test_epsilon
 @code{ERF(X)} computes the error function of @var{X}.
 
 @item @emph{Standard}:
-GNU Extension
+Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
@@ -3521,12 +3531,12 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)}, and it shall be scalar.
+@item @var{X} @tab The type shall be @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is a scalar of type @code{REAL(*)} and it is positive
-(@math{ - 1 \leq erf (x) \leq 1 }.
+The return value is of type @code{REAL}, of the same kind as
+@var{X} and lies in the range @math{-1 \leq erf (x) \leq 1 }.
 
 @item @emph{Example}:
 @smallexample
@@ -3555,7 +3565,7 @@ end program test_erf
 @code{ERFC(X)} computes the complementary error function of @var{X}.
 
 @item @emph{Standard}:
-GNU extension
+Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
@@ -3565,12 +3575,12 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL(*)}, and it shall be scalar.
+@item @var{X} @tab The type shall be @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
-The return value is a scalar of type @code{REAL(*)} and it is positive
-(@math{ 0 \leq erfc (x) \leq 2 }.
+The return value is of type @code{REAL} and of the same kind as @var{X}.
+It lies in the range @math{ 0 \leq erfc (x) \leq 2 }.
 
 @item @emph{Example}:
 @smallexample
@@ -3585,6 +3595,44 @@ end program test_erfc
 @item Name            @tab Argument          @tab Return type       @tab Standard
 @item @code{DERFC(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
+@end table
+
+
+
+@node ERFC_SCALED
+@section @code{ERFC_SCALED} --- Error function 
+@fnindex ERFC_SCALED
+@cindex error function, complementary, exponentially-scaled
+
+@table @asis
+@item @emph{Description}:
+@code{ERFC_SCALED(X)} computes the exponentially-scaled complementary
+error function of @var{X}.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = ERFC_SCALED(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab The type shall be @code{REAL}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{REAL} and of the same kind as @var{X}.
+
+@item @emph{Example}:
+@smallexample
+program test_erfc_scaled
+  real(8) :: x = 0.17_8
+  x = erfc_scaled(x)
+end program test_erfc_scaled
+@end smallexample
 @end table
 
 
@@ -4529,7 +4577,7 @@ $$
 @end tex
 
 @item @emph{Standard}:
-GNU Extension
+Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
@@ -4562,7 +4610,7 @@ end program test_gamma
 @end multitable
 
 @item @emph{See also}:
-Logarithm of the Gamma function: @ref{LGAMMA}
+Logarithm of the Gamma function: @ref{LOG_GAMMA}
 
 @end table
 
@@ -4663,8 +4711,8 @@ END PROGRAM
 @item @emph{See also}:
 GNU Fortran 77 compatibility function: @ref{IARGC}
 
-F2003 functions and subroutines: @ref{GET_COMMAND}, @ref{GET_COMMAND_ARGUMENT},
-@ref{COMMAND_ARGUMENT_COUNT}
+Fortran 2003 functions and subroutines: @ref{GET_COMMAND},
+@ref{GET_COMMAND_ARGUMENT}, @ref{COMMAND_ARGUMENT_COUNT}
 @end table
 
 
@@ -4680,7 +4728,7 @@ F2003 functions and subroutines: @ref{GET_COMMAND}, @ref{GET_COMMAND_ARGUMENT},
 Retrieve the entire command line that was used to invoke the program.
 
 @item @emph{Standard}:
-F2003
+Fortran 2003 and later
 
 @item @emph{Class}:
 Subroutine
@@ -4724,7 +4772,7 @@ Retrieve the @var{N}th argument that was passed on the
 command line when the containing program was invoked.
 
 @item @emph{Standard}:
-F2003
+Fortran 2003 and later
 
 @item @emph{Class}:
 Subroutine
@@ -4871,7 +4919,7 @@ END PROGRAM
 Get the @var{VALUE} of the environmental variable @var{ENVVAR}.
 
 @item @emph{Standard}:
-F2003
+Fortran 2003 and later
 
 @item @emph{Class}:
 Subroutine
@@ -5184,6 +5232,46 @@ end program test_huge_tiny
 
 
 
+@node HYPOT
+@section @code{HYPOT} --- Euclidean distance function
+@fnindex HYPOT
+@cindex Euclidean distance
+
+@table @asis
+@item @emph{Description}:
+@code{HYPOT(X,Y)} is the Euclidean distance function. It is equal to
+@math{\sqrt{X^2 + Y^2}}, without undue underflow or overflow.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = HYPOT(X,Y)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab The type shall be @code{REAL}.
+@item @var{Y} @tab The type and kind type parameter shall be the same as
+@var{X}.
+@end multitable
+
+@item @emph{Return value}:
+The return value has the same type and kind type parameter as @var{X}.
+
+@item @emph{Example}:
+@smallexample
+program test_hypot
+  real(4) :: x = 1.e0_4, y = 0.5e0_4
+  x = hypot(x,y)
+end program test_hypot
+@end smallexample
+@end table
+
+
+
 @node IACHAR
 @section @code{IACHAR} --- Code in @acronym{ASCII} collating sequence 
 @fnindex IACHAR
@@ -5322,8 +5410,8 @@ See @ref{GETARG}
 @item @emph{See also}:
 GNU Fortran 77 compatibility subroutine: @ref{GETARG}
 
-F2003 functions and subroutines: @ref{GET_COMMAND}, @ref{GET_COMMAND_ARGUMENT},
-@ref{COMMAND_ARGUMENT_COUNT}
+Fortran 2003 functions and subroutines: @ref{GET_COMMAND},
+@ref{GET_COMMAND_ARGUMENT}, @ref{COMMAND_ARGUMENT_COUNT}
 @end table
 
 
@@ -5915,7 +6003,7 @@ with the @code{IOSTAT_END} parameter of the intrinsic module
 @code{ISO_FORTRAN_ENV}.
 
 @item @emph{Standard}:
-Fortran 2003.
+Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
@@ -5960,7 +6048,7 @@ variable with the @code{IOSTAT_EOR} parameter of the intrinsic module
 @code{ISO_FORTRAN_ENV}.
 
 @item @emph{Standard}:
-Fortran 2003.
+Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
@@ -6405,26 +6493,27 @@ The return value is of type @code{INTEGER} and of kind @var{KIND}. If
 
 
 
-@node LGAMMA
-@section @code{LGAMMA} --- Logarithm of the Gamma function
-@fnindex GAMMA
+@node LOG_GAMMA
+@section @code{LOG_GAMMA} --- Logarithm of the Gamma function
+@fnindex LOG_GAMMA
+@fnindex LGAMMA
 @fnindex ALGAMA
 @fnindex DLGAMA
 @cindex Gamma function, logarithm of
 
 @table @asis
 @item @emph{Description}:
-@code{GAMMA(X)} computes the natural logarithm of the absolute value of the
-Gamma (@math{\Gamma}) function.
+@code{LOG_GAMMA(X)} computes the natural logarithm of the absolute value
+of the Gamma (@math{\Gamma}) function.
 
 @item @emph{Standard}:
-GNU Extension
+Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = LGAMMA(X)}
+@code{X = LOG_GAMMA(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -7840,7 +7929,7 @@ end program
 @var{DEST}.  @var{SRC} will become deallocated in the process.
 
 @item @emph{Standard}:
-F2003 and later
+Fortran 2003 and later
 
 @item @emph{Class}:
 Subroutine
@@ -7972,7 +8061,7 @@ end program test_nearest
 @code{NEW_LINE(C)} returns the new-line character.
 
 @item @emph{Standard}:
-F2003 and later
+Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -8103,8 +8192,8 @@ Returns a disassociated pointer.
 If @var{MOLD} is present, a dissassociated pointer of the same type is
 returned, otherwise the type is determined by context.
 
-In Fortran 95, @var{MOLD} is optional. Please note that F2003 includes
-cases where it is required.
+In Fortran 95, @var{MOLD} is optional. Please note that Fortran 2003
+includes cases where it is required.
 
 @item @emph{Standard}:
 F95 and later
@@ -10892,7 +10981,7 @@ F95 elemental function: @ref{IEOR}
 @section @code{ISO_FORTRAN_ENV}
 @table @asis
 @item @emph{Standard}:
-Fortran 2003
+Fortran 2003 and later
 @end table
 
 The @code{ISO_FORTRAN_ENV} module provides the following scalar default-integer
@@ -10932,7 +11021,7 @@ Identifies the preconnected unit identified by the asterisk
 @section @code{ISO_C_BINDING}
 @table @asis
 @item @emph{Standard}:
-Fortran 2003
+Fortran 2003 and later
 @end table
 
 The following intrinsic procedures are provided by the module; their

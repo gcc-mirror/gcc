@@ -1,3 +1,29 @@
+2008-03-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/33197
+	* gfortran.dg/gomp/gomp.exp: Add .f08 and .F08 file suffixes.
+	* gfortran.dg/dg.exp: Likewise.
+	* gfortran.dg/vect/vect.exp: Likewise.
+	* gfortran.fortran-torture/execute/execute.exp: Likewise.
+	* gfortran.fortran-torture/compile/compile.exp: Likewise.
+	* gfortran.dg/gamma_1.f90: Also check log_gamma.
+	* gfortran.dg/invalid_contains_1.f90: Remove warning about
+	empty CONTAINS.
+	* gfortran.dg/gamma_2.f90: Add a few error messages.
+	* gfortran.dg/invalid_contains_2.f90: Remove warning about
+	empty CONTAINS.
+	* gfortran.dg/gamma_3.f90: Adjust error message.
+	* gfortran.dg/gamma_4.f90: Test for log_gamma instead of lgamma.
+	* gfortran.dg/bind_c_usage_9.f03: Adjust error messages.
+	* gfortran.dg/bessel_1.f90: New test.
+	* gfortran.dg/recursive_check_3.f90: Remove warnings.
+	* gfortran.dg/besxy.f90: Also check for new F2008 intrinsics.
+	* gfortran.dg/derived_function_interface_1.f90: Remove warning.
+	* gfortran.dg/contains_empty_1.f03: New test.
+	* gfortran.dg/erfc_scaled_1.f90: New test.
+	* gfortran.dg/hypot_1.f90: New test.
+	* gfortran.dg/contains_empty_2.f03: New test.
+
 2007-03-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/builtin-apply-mmx.c: Do not XFAIL on Darwin.
