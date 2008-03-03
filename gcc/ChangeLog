@@ -1,3 +1,15 @@
+2008-03-03  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (visit_reference_op_store): Do not insert
+	struct copies into the expression table.
+	(simplify_unary_expression): Handle VIEW_CONVERT_EXPR.
+	(try_to_simplify): Likewise.
+	* fold-const.c (fold_unary): Fold VIEW_CONVERT_EXPR of
+	integral and pointer arguments which do not change the
+	precision to NOP_EXPRs.
+	* tree-ssa-loop-ivopts.c (may_be_nonaddressable_p): Adjust
+	VIEW_CONVERT_EXPR case.
+
 2008-03-02  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* tree-scalar-evolution.c (instantiate_parameters_1): An SSA_NAME

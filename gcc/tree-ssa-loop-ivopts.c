@@ -1525,8 +1525,8 @@ may_be_nonaddressable_p (tree expr)
 	 and make them look addressable.  After some processing the
 	 non-addressability may be uncovered again, causing ADDR_EXPRs
 	 of inappropriate objects to be built.  */
-      if (AGGREGATE_TYPE_P (TREE_TYPE (expr))
-	  && !AGGREGATE_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 0))))
+      if (is_gimple_reg (TREE_OPERAND (expr, 0))
+	  || is_gimple_min_invariant (TREE_OPERAND (expr, 0)))
 	return true;
 
       /* ... fall through ... */
