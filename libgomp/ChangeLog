@@ -1,3 +1,14 @@
+2008-03-03  Peter O'Gorman  <pogma@thewrittenword.com>
+
+	PR libgomp/33131
+	* configure.ac: Add ACX_HEADER_STRING.
+	* env.c: Include strings.h.
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2008-02-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/35196
