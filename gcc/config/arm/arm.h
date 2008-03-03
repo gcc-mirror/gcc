@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler, for ARM.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -207,6 +208,8 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define TARGET_32BIT			(TARGET_ARM || arm_arch_thumb2)
 /* 32-bit Thumb-2 code.  */
 #define TARGET_THUMB2			(TARGET_THUMB && arm_arch_thumb2)
+/* Thumb-1 only.  */
+#define TARGET_THUMB1_ONLY		(TARGET_THUMB1 && !arm_arch_notm)
 
 /* The following two macros concern the ability to execute coprocessor
    instructions for VFPv3 or NEON.  TARGET_VFP3 is currently only ever
@@ -2397,7 +2400,8 @@ extern int making_const_table;
       if (TARGET_THUMB) 				\
         {						\
           if (is_called_in_ARM_mode (DECL)		\
-	      || (TARGET_THUMB1 && current_function_is_thunk))	\
+	      || (TARGET_THUMB1 && !TARGET_THUMB1_ONLY	\
+		  && current_function_is_thunk))	\
             fprintf (STREAM, "\t.code 32\n") ;		\
           else if (TARGET_THUMB1)			\
            fprintf (STREAM, "\t.code\t16\n\t.thumb_func\n") ;	\

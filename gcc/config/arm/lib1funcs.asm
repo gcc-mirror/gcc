@@ -1,7 +1,7 @@
 @ libgcc routines for ARM cpu.
 @ Division routines, written by Richard Earnshaw, (rearnsha@armltd.co.uk)
 
-/* Copyright 1995, 1996, 1998, 1999, 2000, 2003, 2004, 2005, 2007
+/* Copyright 1995, 1996, 1998, 1999, 2000, 2003, 2004, 2005, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
@@ -94,7 +94,8 @@ Boston, MA 02110-1301, USA.  */
 
 #if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) \
 	|| defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) \
-	|| defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_6T2__)
+	|| defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_6T2__) \
+	|| defined(__ARM_ARCH_6M__)
 # define __ARM_ARCH__ 6
 #endif
 
@@ -367,6 +368,9 @@ _L__\name:
 
 #else /* !(__INTERWORKING_STUBS__ || __thumb2__) */
 
+#ifdef __ARM_ARCH_6M__
+#define EQUIV .thumb_set
+#else
 .macro	ARM_FUNC_START name
 	.text
 	.globl SYM (__\name)
@@ -379,6 +383,7 @@ SYM (__\name):
 .macro  ARM_CALL name
 	bl	__\name
 .endm
+#endif
 
 #endif
 
@@ -391,6 +396,7 @@ SYM (__\name):
 #endif
 .endm
 
+#ifndef __ARM_ARCH_6M__
 .macro	ARM_FUNC_ALIAS new old
 	.globl	SYM (__\new)
 	EQUIV	SYM (__\new), SYM (__\old)
@@ -398,6 +404,7 @@ SYM (__\name):
 	.set	SYM (_L__\new), SYM (_L__\old)
 #endif
 .endm
+#endif
 
 #ifdef __thumb__
 /* Register aliases.  */
@@ -1256,8 +1263,8 @@ LSYM(Lover12):
 #endif /* L_call_via_rX */
 
 /* Don't bother with the old interworking routines for Thumb-2.  */
-/* ??? Maybe only omit these on v7m.  */
-#ifndef __thumb2__
+/* ??? Maybe only omit these on "m" variants.  */
+#if !defined(__thumb2__) && !defined(__ARM_ARCH_6M__)
 
 #if defined L_interwork_call_via_rX
 
@@ -1387,7 +1394,11 @@ LSYM(Lchange_\register):
 #endif /* Arch supports thumb.  */
 
 #ifndef __symbian__
+#ifndef __ARM_ARCH_6M__
 #include "ieee754-df.S"
 #include "ieee754-sf.S"
 #include "bpabi.S"
-#endif /* __symbian__ */
+#else /* __ARM_ARCH_6M__ */
+#include "bpabi-v6m.S"
+#endif /* __ARM_ARCH_6M__ */
+#endif /* !__symbian__ */

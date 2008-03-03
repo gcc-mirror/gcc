@@ -1,5 +1,5 @@
 /* Configuration file for ARM BPABI targets.
-   Copyright (C) 2004, 2005, 2007
+   Copyright (C) 2004, 2005, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC   
 
@@ -97,6 +97,21 @@
 #endif
 #ifdef L_floatdisf
 #define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (floatdisf, l2f)
+#endif
+
+/* These renames are needed on ARMv6M.  Other targets get them from
+   assembly routines.  */
+#ifdef L_fixunsdfsi
+#define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (fixunsdfsi, d2uiz)
+#endif
+#ifdef L_fixunssfsi
+#define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (fixunssfsi, f2uiz)
+#endif
+#ifdef L_floatundidf
+#define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (floatundidf, ul2d)
+#endif
+#ifdef L_floatundisf
+#define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (floatundisf, ul2f)
 #endif
 
 /* The BPABI requires that we always use an out-of-line implementation
