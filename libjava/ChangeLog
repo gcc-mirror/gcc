@@ -1,3 +1,11 @@
+2008-03-03  Matthias Klose  <doko@ubuntu.com>
+
+	* classpath/tools/classes/gnu/classpath/tools/orbd/Main.class,
+	classpath/lib/gnu/java/locale/LocaleData.class
+	classpath/lib/gnu/java/rmi/registry/RegistryImpl.class
+	classpath/lib/gnu/gcj/convert/Convert.class
+	classpath/lib/gnu/gcj/tools/gcj_dbtool/Main.class: Regenerate.
+
 2008-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* gnu/gcj/convert/Convert.java (version): Update copyright notice
