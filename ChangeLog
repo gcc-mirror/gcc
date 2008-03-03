@@ -1,7 +1,6 @@
 2008-03-03  Stan Shebs  <stanshebs@earthlink.net>
 
-	* MAINTAINERS (Write After Approval): Add myself back.
-	(darwin port): Add myself as a maintainer.
+	* MAINTAINERS (darwin port): Add myself as a maintainer.
 	(objective-c/c++): Add myself as a maintainer.
 
 2008-03-03  Volker Reichelt  <v.reichelt@netcologne.de>
