@@ -1971,6 +1971,7 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
       /* A parameter (or loop invariant and we do not want to include
 	 evolutions in outer loops), nothing to do.  */
       if (!def_bb
+	  || loop_depth (def_bb->loop_father) == 0
 	  || (!(flags & INSERT_SUPERLOOP_CHRECS)
 	      && !flow_bb_inside_loop_p (loop, def_bb)))
 	return chrec;
