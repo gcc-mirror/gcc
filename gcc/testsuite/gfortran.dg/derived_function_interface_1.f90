@@ -41,5 +41,5 @@ contains
   type(foo) function fun() ! { dg-error "already has an explicit interface" }
   end function fun  ! { dg-error "Expecting END PROGRAM" }
 
-end ! { dg-warning "CONTAINS statement without FUNCTION or SUBROUTINE statement" }
+end
 ! { dg-final { cleanup-modules "kinds" } }

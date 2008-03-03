@@ -21,4 +21,21 @@ PROGRAM test_erf
   ra = BESY0(ra)
   ra = BESY1(ra)
   ra = BESYN(0, ra)
+
+  r  = BESSEL_J0(r)
+  r  = BESSEL_J1(r)
+  r  = BESSEL_JN(0, r)
+
+  r  = BESSEL_Y0(r)
+  r  = BESSEL_Y1(r)
+  r  = BESSEL_YN(0, r)
+
+  ra = BESSEL_J0(ra)
+  ra = BESSEL_J1(ra)
+  ra = BESSEL_JN(0, ra)
+
+  ra = BESSEL_Y0(ra)
+  ra = BESSEL_Y1(ra)
+  ra = BESSEL_YN(0, ra)
+
 END PROGRAM

@@ -1280,6 +1280,21 @@ gfc_simplify_huge (gfc_expr *e)
   return result;
 }
 
+
+gfc_expr *
+gfc_simplify_hypot (gfc_expr *x, gfc_expr *y)
+{
+  gfc_expr *result;
+
+  if (x->expr_type != EXPR_CONSTANT || y->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
+  mpfr_hypot (result->value.real, x->value.real, y->value.real, GFC_RND_MODE);
+  return range_check (result, "HYPOT");
+}
+
+
 /* We use the processor's collating sequence, because all
    systems that gfortran currently works on are ASCII.  */
 

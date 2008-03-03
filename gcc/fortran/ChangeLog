@@ -1,3 +1,31 @@
+2008-03-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/33197
+	* intrinsic.c (add_functions): Modify intrinsics ACOSH, ASINH,
+	ATANH, ERF, ERFC and GAMMA. Add intrinsics BESSEL_{J,Y}{0,1,N},
+	ERFC_SCALED, LOG_GAMMA and HYPOT.
+	* intrinsic.h (gfc_check_hypot, gfc_simplify_hypot,
+	gfc_resolve_hypot): New prototypes.
+	* mathbuiltins.def: Add HYPOT builtin. Make complex versions of
+	ACOSH, ASINH and ATANH available.
+	* gfortran.h (GFC_ISYM_ERFC_SCALED, GFC_ISYM_HYPOT): New values.
+	* lang.opt: Add -std=f2008 option.
+	* libgfortran.h: Define GFC_STD_F2008.
+	* lang-specs.h: Add .f08 and .F08 file suffixes.
+	* iresolve.c (gfc_resolve_hypot): New function.
+	* parse.c (parse_contained): Allow empty CONTAINS for Fortran 2008.
+	* check.c (gfc_check_hypot): New function.
+	* trans-intrinsic.c (gfc_intrinsic_map): Define ERFC_SCALE builtin.
+	* options.c (set_default_std_flags): Allow Fortran 2008 by default.
+	(form_from_filename): Add .f08 suffix.
+	(gfc_handle_option): Handle -std=f2008 option.
+	* simplify.c (gfc_simplify_hypot): New function.
+	* gfortran.texi: Document Fortran 2008 status and file extensions.
+	* intrinsic.texi: Document new BESSEL_{J,Y}{0,1,N} intrinsics,
+	as well as HYPOT and ERFC_SCALED. Update documentation of ERF,
+	ERFC, GAMMA, LGAMMA, ASINH, ACOSH and ATANH.
+	* invoke.texi: Document the new -std=f2008 option.
+
 2008-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortranspec.c (lang_specific_driver): Update copyright notice

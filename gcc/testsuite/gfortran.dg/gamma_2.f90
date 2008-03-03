@@ -20,12 +20,12 @@ integer, parameter :: dp = kind(1.0d0)
 real(sp) :: rsp = 1.0_sp
 real(dp) :: rdp = 1.0_dp
 
-rsp = gamma(rsp)  ! FIXME:  "is not included in the selected standard"
-rdp = gamma(rdp)  ! FIXME:  "is not included in the selected standard"
+rsp = gamma(rsp)  ! FIXME "is not included in the selected standard"
+rdp = gamma(rdp)  ! FIXME "is not included in the selected standard"
 rdp = dgamma(rdp) ! { dg-error "is not included in the selected standard" }
 
-rsp = lgamma(rsp) ! FIXME:  "is not included in the selected standard"
-rdp = lgamma(rdp) ! FIXME:  "is not included in the selected standard"
+rsp = lgamma(rsp) ! { dg-error "is not included in the selected standard" }
+rdp = lgamma(rdp) ! { dg-error "is not included in the selected standard" }
 rsp = algama(rsp) ! { dg-error "is not included in the selected standard" }
 rdp = dlgama(rdp) ! { dg-error "is not included in the selected standard" }
 end subroutine foo

@@ -181,7 +181,7 @@ Part I: Invoking GNU Fortran
 * Runtime::              Influencing runtime behavior with environment variables.
 
 Part II: Language Reference
-* Fortran 2003 status::  Fortran 2003 features supported by GNU Fortran.
+* Fortran 2003 and 2008 status::  Fortran 2003 and 2008 features supported by GNU Fortran.
 * Extensions::           Language extensions implemented by GNU Fortran.
 * Intrinsic Procedures:: Intrinsic procedures supported by GNU Fortran.
 * Intrinsic Modules::    Intrinsic modules supported by GNU Fortran.
@@ -251,7 +251,7 @@ it will do everything you expect from any decent compiler:
 @item
 Read a user's program,
 stored in a file and containing instructions written
-in Fortran 77, Fortran 90, Fortran 95 or Fortran 2003.
+in Fortran 77, Fortran 90, Fortran 95, Fortran 2003 or Fortran 2008.
 This file contains @dfn{source code}.
 
 @item
@@ -369,17 +369,19 @@ Fortran) for each file in the source code, and then calls the assembler
 and linker as appropriate to produce the compiled output. In a copy of
 GCC which has been compiled with Fortran language support enabled,
 @command{gcc} will recognize files with @file{.f}, @file{.for}, @file{.ftn},
-@file{.f90}, @file{.f95}, and @file{.f03} extensions as Fortran source code,
-and compile it accordingly. A @command{gfortran} driver program is also
-provided, which is identical to @command{gcc} except that it automatically
-links the Fortran runtime libraries into the compiled program.
+@file{.f90}, @file{.f95}, @file{.f03} and @file{.f08} extensions as
+Fortran source code, and compile it accordingly. A @command{gfortran}
+driver program is also provided, which is identical to @command{gcc}
+except that it automatically links the Fortran runtime libraries into the
+compiled program.
 
 Source files with @file{.f}, @file{.for}, @file{.fpp}, @file{.ftn}, @file{.F},
 @file{.FOR}, @file{.FPP}, and @file{.FTN} extensions are treated as fixed form.
-Source files with @file{.f90}, @file{.f95}, @file{.f03}, @file{.F90}, 
-@file{.F95}, and @file{.F03} extensions are treated as free form.  The
-capitalized versions of either form are run through preprocessing. Source files
-with the lower case @file{.fpp} extension are also run through preprocessing.
+Source files with @file{.f90}, @file{.f95}, @file{.f03}, @file{.f08},
+@file{.F90}, @file{.F95}, @file{.F03} and @file{.F08} extensions are
+treated as free form.  The capitalized versions of either form are run
+through preprocessing. Source files with the lower case @file{.fpp}
+extension are also run through preprocessing.
 
 This manual specifically documents the Fortran front end, which handles
 the programming language's syntax and semantics.  The aspects of GCC
@@ -407,10 +409,10 @@ FPP) to allow for conditional compilation. In the case of GNU Fortran,
 this is the GNU C Preprocessor in the traditional mode. On systems with
 case-preserving file names, the preprocessor is automatically invoked if the
 file extension is @code{.F}, @code{.FOR}, @code{.FTN}, @code{.F90},
-@code{.F95} or @code{.F03}; otherwise use for fixed-format code the option
-@code{-x f77-cpp-input} and for free-format code @code{-x f95-cpp-input}.
-Invocation of the preprocessor can be suppressed using @code{-x f77} or
-@code{-x f95}.
+@code{.F95}, @code{.F03} or @code{.F08}; otherwise use for fixed-format
+code the option @code{-x f77-cpp-input} and for free-format code @code{-x
+f95-cpp-input}. Invocation of the preprocessor can be suppressed using
+@code{-x f77} or @code{-x f95}.
 
 If the GNU Fortran invoked the preprocessor, @code{__GFORTRAN__}
 is defined and @code{__GNUC__}, @code{__GNUC_MINOR__} and
@@ -468,10 +470,10 @@ The GNU Fortran compiler is able to compile nearly all
 standard-compliant Fortran 95, Fortran 90, and Fortran 77 programs,
 including a number of standard and non-standard extensions, and can be
 used on real-world programs.  In particular, the supported extensions
-include OpenMP, Cray-style pointers, and several Fortran 2003 features
-such as enumeration, stream I/O, and some of the enhancements to
-allocatable array support from TR 15581.  However, it is still under
-development and has a few remaining rough edges.
+include OpenMP, Cray-style pointers, and several Fortran 2003 and Fortran
+2008 features such as enumeration, stream I/O, and some of the
+enhancements to allocatable array support from TR 15581.  However, it is
+still under development and has a few remaining rough edges.
 
 At present, the GNU Fortran compiler passes the
 @uref{http://www.fortran-2000.com/ArnaudRecipes/fcvs21_f95.html, 
@@ -516,9 +518,18 @@ the ISO/IEC TR-15581 enhancements to allocatable arrays, and
 the @uref{http://www.openmp.org/drupal/mp-documents/spec25.pdf,
 OpenMP Application Program Interface v2.5} specification.
 
-In the future, the GNU Fortran compiler may also support other standard 
-variants of and extensions to the Fortran language.  These include
-ISO/IEC 1539-1:2004 (Fortran 2003).
+In the future, the GNU Fortran compiler will also support ISO/IEC
+1539-1:2004 (Fortran 2003) and future Fortran standards. Partial support
+of that standard is already provided; the current status of Fortran 2003
+support is reported in the @ref{Fortran 2003 status} section of the
+documentation.
+
+The next version of the Fortran standard after Fortran 2003 is currently
+being developped and the GNU Fortran compiler supports some of its new
+features. This support is based on the latest draft of the standard
+(available from @url{http://www.nag.co.uk/sc22wg5/}) and no guarantee of
+future compatibility is made, as the final standard might differ from the
+draft. For more information, see the @ref{Fortran 2008 status} section.
 
 
 @c =====================================================================
@@ -758,11 +769,19 @@ was used.
 @end tex
 
 @c ---------------------------------------------------------------------
-@c Fortran 2003 Status
+@c Fortran 2003 and 2008 Status
 @c ---------------------------------------------------------------------
 
+@node Fortran 2003 and 2008 status
+@chapter Fortran 2003 and 2008 Status
+
+@menu
+* Fortran 2003 status::
+* Fortran 2008 status::
+@end menu
+
 @node Fortran 2003 status
-@chapter Fortran 2003 Status
+@section Fortran 2003 status
 
 Although GNU Fortran focuses on implementing the Fortran 95
 standard for the time being, a few Fortran 2003 features are currently
@@ -867,6 +886,22 @@ BOZ as argument of INT, REAL, DBLE and CMPLX.
 @end itemize
 
 
+@node Fortran 2008 status
+@section Fortran 2008 status
+
+The next version of the Fortran standard after Fortran 2003 is currently
+being worked on by the Working Group 5 of Sub-Committee 22 of the Joint
+Technical Committee 1 of the International Organization for
+Standardization (ISO) and the International Electrotechnical Commission
+(IEC). This group is known at @uref{http://www.nag.co.uk/sc22wg5/, WG5}.
+The next revision of the Fortran standard is informally referred to as
+Fortran 2008, reflecting its planned release year. The GNU Fortran
+compiler has support for some of the new features in Fortran 2008. This
+support is based on the latest draft, available from
+@url{http://www.nag.co.uk/sc22wg5/}. However, as the final standard may
+differ from the drafts, no guarantee of backward compatibility can be
+made and you should only use it for experimental purposes.
+
 @c ---------------------------------------------------------------------
 @c Extensions
 @c ---------------------------------------------------------------------
@@ -903,8 +938,9 @@ by any standard, and those that are supported by GNU Fortran
 purely for backward compatibility with legacy compilers.  By default,
 @option{-std=gnu} allows the compiler to accept both types of
 extensions, but to warn about the use of the latter.  Specifying
-either @option{-std=f95} or @option{-std=f2003} disables both types
-of extensions, and @option{-std=legacy} allows both without warning.
+either @option{-std=f95}, @option{-std=f2003} or @option{-std=f2008}
+disables both types of extensions, and @option{-std=legacy} allows both
+without warning.
 
 @menu
 * Old-style kind specifications::
