@@ -1,3 +1,9 @@
+2008-03-03  Jan Hubicka  <jh@suse.cz>
+
+	PR c++/35262
+	* ipa-inline.c (cgraph_decide_inlining_of_small_function): Be more
+	aggressive on inlining cold calls.
+
 2008-03-03  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (visit_reference_op_store): Do not insert
