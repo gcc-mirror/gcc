@@ -1,6 +1,6 @@
 /* ieee754-sf.S single-precision floating point support for ARM
 
-   Copyright (C) 2003, 2004, 2005, 2007  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2007, 2008  Free Software Foundation, Inc.
    Contributed by Nicolas Pitre (nico@cam.org)
 
    This file is free software; you can redistribute it and/or modify it
@@ -38,7 +38,7 @@
  * if necessary without impacting performances.
  */
 
-#ifdef L_negsf2
+#ifdef L_arm_negsf2
 	
 ARM_FUNC_START negsf2
 ARM_FUNC_ALIAS aeabi_fneg negsf2
@@ -51,7 +51,7 @@ ARM_FUNC_ALIAS aeabi_fneg negsf2
 
 #endif
 
-#ifdef L_addsubsf3
+#ifdef L_arm_addsubsf3
 
 ARM_FUNC_START aeabi_frsub
 
@@ -448,7 +448,7 @@ LSYM(f0_ret):
 
 #endif /* L_addsubsf3 */
 
-#ifdef L_muldivsf3
+#ifdef L_arm_muldivsf3
 
 ARM_FUNC_START mulsf3
 ARM_FUNC_ALIAS aeabi_fmul mulsf3
@@ -795,7 +795,7 @@ LSYM(Ldv_s):
 
 #endif /* L_muldivsf3 */
 
-#ifdef L_cmpsf2
+#ifdef L_arm_cmpsf2
 
 	@ The return value in r0 is
 	@
@@ -958,7 +958,7 @@ ARM_FUNC_START	aeabi_fcmpgt
 
 #endif /* L_cmpsf2 */
 
-#ifdef L_unordsf2
+#ifdef L_arm_unordsf2
 
 ARM_FUNC_START unordsf2
 ARM_FUNC_ALIAS aeabi_fcmpun unordsf2
@@ -983,7 +983,7 @@ ARM_FUNC_ALIAS aeabi_fcmpun unordsf2
 
 #endif /* L_unordsf2 */
 
-#ifdef L_fixsfsi
+#ifdef L_arm_fixsfsi
 
 ARM_FUNC_START fixsfsi
 ARM_FUNC_ALIAS aeabi_f2iz fixsfsi
@@ -1025,7 +1025,7 @@ ARM_FUNC_ALIAS aeabi_f2iz fixsfsi
 
 #endif /* L_fixsfsi */
 
-#ifdef L_fixunssfsi
+#ifdef L_arm_fixunssfsi
 
 ARM_FUNC_START fixunssfsi
 ARM_FUNC_ALIAS aeabi_f2uiz fixunssfsi

@@ -1,5 +1,5 @@
 /* Support functions for the unwinder.
-   Copyright (C) 2003, 2004, 2005, 2007  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2007, 2008  Free Software Foundation, Inc.
    Contributed by Paul Brook
 
    This file is free software; you can redistribute it and/or modify it
@@ -52,6 +52,119 @@
 .object_arch armv4
 #endif
 #endif
+
+#ifdef __ARM_ARCH_6M__
+
+/* r0 points to a 16-word block.  Upload these values to the actual core
+   state.  */
+FUNC_START restore_core_regs
+	mov r1, r0
+	add r1, r1, #52
+	ldmia r1!, {r3, r4, r5}
+	sub r3, r3, #4
+	mov ip, r3
+	str r5, [r3]
+	mov lr, r4
+	/* Restore r8-r11.  */
+	mov r1, r0
+	add r1, r1, #32
+	ldmia r1!, {r2, r3, r4, r5}
+	mov r8, r2
+	mov r9, r3
+	mov sl, r4
+	mov fp, r5
+	mov r1, r0
+	add r1, r1, #8
+	ldmia r1!, {r2, r3, r4, r5, r6, r7}
+	ldr r1, [r0, #4]
+	ldr r0, [r0]
+	mov sp, ip
+	pop {pc}
+	FUNC_END restore_core_regs
+	UNPREFIX restore_core_regs
+
+/* ARMV6M does not have coprocessors, so these should never be used.  */
+FUNC_START gnu_Unwind_Restore_VFP
+	RET
+
+/* Store VFR regsters d0-d15 to the address in r0.  */
+FUNC_START gnu_Unwind_Save_VFP
+	RET
+
+/* Load VFP registers d0-d15 from the address in r0.
+   Use this to load from FSTMD format.  */
+FUNC_START gnu_Unwind_Restore_VFP_D
+	RET
+
+/* Store VFP registers d0-d15 to the address in r0.
+   Use this to store in FLDMD format.  */
+FUNC_START gnu_Unwind_Save_VFP_D
+	RET
+
+/* Load VFP registers d16-d31 from the address in r0.
+   Use this to load from FSTMD (=VSTM) format.  Needs VFPv3.  */
+FUNC_START gnu_Unwind_Restore_VFP_D_16_to_31
+	RET
+
+/* Store VFP registers d16-d31 to the address in r0.
+   Use this to store in FLDMD (=VLDM) format.  Needs VFPv3.  */
+FUNC_START gnu_Unwind_Save_VFP_D_16_to_31
+	RET
+
+FUNC_START gnu_Unwind_Restore_WMMXD
+	RET
+
+FUNC_START gnu_Unwind_Save_WMMXD
+	RET
+
+FUNC_START gnu_Unwind_Restore_WMMXC
+	RET
+
+FUNC_START gnu_Unwind_Save_WMMXC
+	RET
+
+.macro  UNWIND_WRAPPER name nargs
+	FUNC_START \name
+	/* Create a phase2_vrs structure.  */
+	/* Save r0 in the PC slot so we can use it as a scratch register.  */
+	push {r0}
+	add r0, sp, #4
+	push {r0, lr} /* Push original SP and LR.  */
+	/* Make space for r8-r12.  */
+	sub sp, sp, #20
+	/* Save low registers.  */
+	push {r0, r1, r2, r3, r4, r5, r6, r7}
+	/* Save high registers.  */
+	add r0, sp, #32
+	mov r1, r8
+	mov r2, r9
+	mov r3, sl
+	mov r4, fp
+	mov r5, ip
+	stmia r0!, {r1, r2, r3, r4, r5}
+	/* Restore original low register values.  */
+	add r0, sp, #4
+	ldmia r0!, {r1, r2, r3, r4, r5}
+	/* Restore orginial r0.  */
+	ldr r0, [sp, #60]
+	str r0, [sp]
+	/* Demand-save flags, plus an extra word for alignment.  */
+	mov r3, #0
+	push {r2, r3}
+	/* Point r1 at the block.  Pass r[0..nargs) unchanged.  */
+	add r\nargs, sp, #4
+
+	bl SYM (__gnu\name)
+
+	ldr r3, [sp, #64]
+	add sp, sp, #72
+	bx r3
+
+	FUNC_END \name
+	UNPREFIX \name
+.endm
+
+#else /* !__ARM_ARCH_6M__ */
 
 /* r0 points to a 16-word block.  Upload these values to the actual core
    state.  */
@@ -232,6 +345,8 @@ ARM_FUNC_START gnu_Unwind_Save_WMMXC
 	FUNC_END \name
 	UNPREFIX \name
 .endm
+
+#endif /* !__ARM_ARCH_6M__ */
 
 UNWIND_WRAPPER _Unwind_RaiseException 1
 UNWIND_WRAPPER _Unwind_Resume 1

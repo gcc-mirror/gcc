@@ -1,10 +1,16 @@
 LIB1ASMSRC = arm/lib1funcs.asm
+# For most CPUs we have an assembly soft-float implementations.
+# However this is not true for ARMv6M.  Here we want to use the soft-fp C
+# implementation.  The soft-fp code is only build for ARMv6M.  This pulls
+# in the asm implementation for other CPUs.
 LIB1ASMFUNCS = _udivsi3 _divsi3 _umodsi3 _modsi3 _dvmd_tls _bb_init_func \
 	_call_via_rX _interwork_call_via_rX \
 	_lshrdi3 _ashrdi3 _ashldi3 \
-	_negdf2 _addsubdf3 _muldivdf3 _cmpdf2 _unorddf2 _fixdfsi _fixunsdfsi \
-	_truncdfsf2 _negsf2 _addsubsf3 _muldivsf3 _cmpsf2 _unordsf2 \
-	_fixsfsi _fixunssfsi _floatdidf _floatdisf _floatundidf _floatundisf
+	_arm_negdf2 _arm_addsubdf3 _arm_muldivdf3 _arm_cmpdf2 _arm_unorddf2 \
+	_arm_fixdfsi _arm_fixunsdfsi \
+	_arm_truncdfsf2 _arm_negsf2 _arm_addsubsf3 _arm_muldivsf3 \
+	_arm_cmpsf2 _arm_unordsf2 _arm_fixsfsi _arm_fixunssfsi \
+	_arm_floatdidf _arm_floatdisf _arm_floatundidf _arm_floatundisf
 
 MULTILIB_OPTIONS     = marm/mthumb
 MULTILIB_DIRNAMES    = arm thumb

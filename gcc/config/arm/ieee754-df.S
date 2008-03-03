@@ -1,6 +1,6 @@
 /* ieee754-df.S double-precision floating point support for ARM
 
-   Copyright (C) 2003, 2004, 2005, 2007  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2007, 2008  Free Software Foundation, Inc.
    Contributed by Nicolas Pitre (nico@cam.org)
 
    This file is free software; you can redistribute it and/or modify it
@@ -56,7 +56,7 @@
 #endif
 
 
-#ifdef L_negdf2
+#ifdef L_arm_negdf2
 
 ARM_FUNC_START negdf2
 ARM_FUNC_ALIAS aeabi_dneg negdf2
@@ -70,7 +70,7 @@ ARM_FUNC_ALIAS aeabi_dneg negdf2
 
 #endif
 
-#ifdef L_addsubdf3
+#ifdef L_arm_addsubdf3
 
 ARM_FUNC_START aeabi_drsub
 
@@ -603,7 +603,7 @@ LSYM(f0_ret):
 
 #endif /* L_addsubdf3 */
 
-#ifdef L_muldivdf3
+#ifdef L_arm_muldivdf3
 
 ARM_FUNC_START muldf3
 ARM_FUNC_ALIAS aeabi_dmul muldf3
@@ -1103,7 +1103,7 @@ LSYM(Ldv_s):
 
 #endif /* L_muldivdf3 */
 
-#ifdef L_cmpdf2
+#ifdef L_arm_cmpdf2
 
 @ Note: only r0 (return value) and ip are clobbered here.
 
@@ -1271,7 +1271,7 @@ ARM_FUNC_START	aeabi_dcmpgt
 
 #endif /* L_cmpdf2 */
 
-#ifdef L_unorddf2
+#ifdef L_arm_unorddf2
 
 ARM_FUNC_START unorddf2
 ARM_FUNC_ALIAS aeabi_dcmpun unorddf2
@@ -1297,7 +1297,7 @@ ARM_FUNC_ALIAS aeabi_dcmpun unorddf2
 
 #endif /* L_unorddf2 */
 
-#ifdef L_fixdfsi
+#ifdef L_arm_fixdfsi
 
 ARM_FUNC_START fixdfsi
 ARM_FUNC_ALIAS aeabi_d2iz fixdfsi
@@ -1339,7 +1339,7 @@ ARM_FUNC_ALIAS aeabi_d2iz fixdfsi
 
 #endif /* L_fixdfsi */
 
-#ifdef L_fixunsdfsi
+#ifdef L_arm_fixunsdfsi
 
 ARM_FUNC_START fixunsdfsi
 ARM_FUNC_ALIAS aeabi_d2uiz fixunsdfsi
@@ -1377,7 +1377,7 @@ ARM_FUNC_ALIAS aeabi_d2uiz fixunsdfsi
 
 #endif /* L_fixunsdfsi */
 
-#ifdef L_truncdfsf2
+#ifdef L_arm_truncdfsf2
 
 ARM_FUNC_START truncdfsf2
 ARM_FUNC_ALIAS aeabi_d2f truncdfsf2
