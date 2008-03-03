@@ -31,6 +31,8 @@ int main(void)
   int a[1002];
   int b[1002];
 
+  check_vect ();
+
   for (i = 0; i < 1002; ++i) {
     a[i] = b[i] = i;
   }

@@ -1,3 +1,14 @@
+2008-03-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2008-02-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/vect/vect-99.c: Include stdlib.h and tree-vect.h.
+	(main): Call check_vect and foo.  Check array values after
+	the call to foo.
+	* gcc.dg/vect/vect-117.c: Call check_vect.
+	* gcc.dg/vect/no-vfa-pr29145.c: Ditto.
+
 2008-02-29  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR c++/35315

@@ -42,6 +42,8 @@ int main (void)
 { 
   int i,j;
 
+  check_vect ();
+
   foo = 0;
   main1 (a, N);
 
