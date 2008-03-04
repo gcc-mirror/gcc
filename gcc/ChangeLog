@@ -6,6 +6,11 @@
 
 2008-03-04  Danny Smith  <dannysmith@users.sourceforge.net>
 
+	* config/i386/i386.md (allocate_stack_worker_32): Use  __chkstk
+        label to probe the stack.
+
+2008-03-04  Danny Smith  <dannysmith@users.sourceforge.net>
+
 	* gthr-win32.h [__GTHREAD_HIDE_WIN32API]
 	(__gthr_win32_mutex_destroy): Declare.
 	[__GTHREAD_HIDE_WIN32API] (__gthread_mutex_destroy): Use
