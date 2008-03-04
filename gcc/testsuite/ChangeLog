@@ -1,3 +1,9 @@
+2008-03-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gfortran.dg/reassoc_1.f90: Cleanup dump files.
+	* gfortran.dg/reassoc_2.f90: Ditto.
+	* gfortran.dg/reassoc_3.f90: Ditto.
+
 2008-03-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/33197

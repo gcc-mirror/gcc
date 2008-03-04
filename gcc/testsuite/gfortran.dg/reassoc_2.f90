@@ -13,3 +13,4 @@ function test(a)
 end
 
 ! { dg-final { scan-tree-dump "- 5" "optimized" } }
+! { dg-final { cleanup-tree-dump "optimized" } }

@@ -8,3 +8,4 @@ function test(b)
 end
 
 ! { dg-final { scan-tree-dump "\\\+ 5.*\\\)\\\) - 5" "optimized" } }
+! { dg-final { cleanup-tree-dump "optimized" } }
