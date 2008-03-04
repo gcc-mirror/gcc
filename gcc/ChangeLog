@@ -1,3 +1,11 @@
+2008-03-04  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* gthr-win32.h [__GTHREAD_HIDE_WIN32API]
+	(__gthr_win32_mutex_destroy): Declare.
+	[__GTHREAD_HIDE_WIN32API] (__gthread_mutex_destroy): Use
+	__gthr_win32_mutex_destroy.
+	* config/i386/gthr-win32.c  (__gthr_win32_mutex_destroy): Define.
+
 2008-03-03  Jan Hubicka  <jh@suse.cz>
 
 	PR c++/35262

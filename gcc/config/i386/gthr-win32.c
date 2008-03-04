@@ -151,6 +151,12 @@ __gthr_win32_mutex_init_function (__gthread_mutex_t *mutex)
   mutex->sema = CreateSemaphore (NULL, 0, 65535, NULL);
 }
 
+void
+__gthr_win32_mutex_destroy (__gthread_mutex_t *mutex)
+{
+  CloseHandle ((HANDLE) mutex->sema);
+}
+
 int
 __gthr_win32_mutex_lock (__gthread_mutex_t *mutex)
 {
