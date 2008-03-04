@@ -1,3 +1,20 @@
+2008-03-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2008-03-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/35453
+	* gcc.target/i386/sse4_2-pcmpestri-1.c: Replace SIDD_XXX with
+	_SIDD_XXX.
+	* gcc.target/i386/sse4_2-pcmpestri-2.c: Likewise.
+	* gcc.target/i386/sse4_2-pcmpestrm-1.c: Likewise.
+	* gcc.target/i386/sse4_2-pcmpestrm-2.c: Likewise.
+	* gcc.target/i386/sse4_2-pcmpistri-1.c: Likewise.
+	* gcc.target/i386/sse4_2-pcmpistri-2.c: Likewise.
+	* gcc.target/i386/sse4_2-pcmpistrm-1.c: Likewise.
+	* gcc.target/i386/sse4_2-pcmpistrm-2.c: Likewise.
+	* gcc.target/i386/sse4_2-pcmpstr.h: Likewise.
+
 2008-03-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:

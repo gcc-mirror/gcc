@@ -42,14 +42,14 @@ override_invalid (unsigned char res[16][16], int la, int lb,
       else if (i >= la)
 	switch ((mode & 0x0C))
 	  {
-	  case SIDD_CMP_EQUAL_ANY:
-	  case SIDD_CMP_RANGES:
+	  case _SIDD_CMP_EQUAL_ANY:
+	  case _SIDD_CMP_RANGES:
 	    res[j][i] = 0;
 	    break;
-	  case SIDD_CMP_EQUAL_EACH:
+	  case _SIDD_CMP_EQUAL_EACH:
 	    res[j][i] = (j >= lb) ? 1: 0;
 	    break;
-	  case SIDD_CMP_EQUAL_ORDERED:
+	  case _SIDD_CMP_EQUAL_ORDERED:
 	    res[j][i] = 1;
 	    break;
           }
@@ -73,8 +73,8 @@ calc_matrix (__m128i a, int la, __m128i b, int lb, const int mode,
 
   switch ((mode & 3))
     {
-    case SIDD_UBYTE_OPS:
-      if ((mode & 0x0C) == SIDD_CMP_RANGES)
+    case _SIDD_UBYTE_OPS:
+      if ((mode & 0x0C) == _SIDD_CMP_RANGES)
 	{
 	  PCMPSTR_RNG (d.uc, s.uc, res);
 	}
@@ -83,8 +83,8 @@ calc_matrix (__m128i a, int la, __m128i b, int lb, const int mode,
 	  PCMPSTR_EQ (d.uc, s.uc, res);
 	}
       break;
-    case SIDD_UWORD_OPS:
-      if ((mode & 0x0C) == SIDD_CMP_RANGES)
+    case _SIDD_UWORD_OPS:
+      if ((mode & 0x0C) == _SIDD_CMP_RANGES)
 	{
 	  PCMPSTR_RNG (d.us, s.us, res);
 	}
@@ -93,8 +93,8 @@ calc_matrix (__m128i a, int la, __m128i b, int lb, const int mode,
 	  PCMPSTR_EQ (d.us, s.us, res);
 	}
       break;
-    case SIDD_SBYTE_OPS:
-      if ((mode & 0x0C) == SIDD_CMP_RANGES)
+    case _SIDD_SBYTE_OPS:
+      if ((mode & 0x0C) == _SIDD_CMP_RANGES)
 	{
 	  PCMPSTR_RNG (d.sc, s.sc, res);
 	}
@@ -103,8 +103,8 @@ calc_matrix (__m128i a, int la, __m128i b, int lb, const int mode,
 	  PCMPSTR_EQ (d.sc, s.sc, res);
 	}
       break;
-    case SIDD_SWORD_OPS:
-      if ((mode & 0x0C) == SIDD_CMP_RANGES)
+    case _SIDD_SWORD_OPS:
+      if ((mode & 0x0C) == _SIDD_CMP_RANGES)
 	{
 	  PCMPSTR_RNG (d.ss, s.ss, res);
 	}
@@ -144,27 +144,27 @@ calc_res (__m128i a, int la, __m128i b, int lb, const int mode)
 
   switch ((mode & 0x0C))
     {
-    case SIDD_CMP_EQUAL_ANY:
+    case _SIDD_CMP_EQUAL_ANY:
       for (i = 0; i < dim; i++)
 	for (j = 0; j < dim; j++)
 	  if (mtx[i][j])
 	    res |= (1 << i);
       break;
 
-     case SIDD_CMP_RANGES:
+     case _SIDD_CMP_RANGES:
       for (i = 0; i < dim; i += 2)
 	for(j = 0; j < dim; j++)
 	  if (mtx[j][i] && mtx[j][i+1])
 	    res |= (1 << j);
       break;
 
-     case SIDD_CMP_EQUAL_EACH:
+     case _SIDD_CMP_EQUAL_EACH:
       for(i = 0; i < dim; i++)
 	if (mtx[i][i])
 	  res |= (1 << i);
       break;
 
-     case SIDD_CMP_EQUAL_ORDERED:
+     case _SIDD_CMP_EQUAL_ORDERED:
       for(i = 0; i < dim; i++)
 	{
 	  unsigned char val = 1;
@@ -182,15 +182,15 @@ calc_res (__m128i a, int la, __m128i b, int lb, const int mode)
 
   switch ((mode & 0x30))
     {
-    case SIDD_POSITIVE_POLARITY:
-    case SIDD_MASKED_POSITIVE_POLARITY:
+    case _SIDD_POSITIVE_POLARITY:
+    case _SIDD_MASKED_POSITIVE_POLARITY:
       break;
 
-    case SIDD_NEGATIVE_POLARITY:
+    case _SIDD_NEGATIVE_POLARITY:
       res ^= -1;
       break;
 
-    case SIDD_MASKED_NEGATIVE_POLARITY:
+    case _SIDD_MASKED_NEGATIVE_POLARITY:
       for (i = 0; i < lb; i++)
 	if (res & (1 << i))
 	  res &= ~(1 << i);

@@ -1,3 +1,12 @@
+2008-03-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2008-03-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/35453
+	* config/i386/smmintrin.h (SIDD_XXX): Renamed to ...
+	(_SIDD_XXX): This.
+
 2008-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR driver/35420
