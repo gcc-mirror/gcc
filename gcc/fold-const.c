@@ -14043,106 +14043,161 @@ multiple_of_p (tree type, const_tree top, const_tree bottom)
     }
 }
 
-/* Return true if `t' is known to be non-negative.  If the return
+/* Return true if CODE or TYPE is known to be non-negative. */
+
+static bool
+tree_simple_nonnegative_warnv_p (enum tree_code code, tree type)
+{
+  if ((TYPE_PRECISION (type) != 1 || TYPE_UNSIGNED (type))
+      && truth_value_p (code))
+    /* Truth values evaluate to 0 or 1, which is nonnegative unless we
+       have a signed:1 type (where the value is -1 and 0).  */
+    return true;
+  return false;
+}
+
+/* Return true if (CODE OP0) is known to be non-negative.  If the return
    value is based on the assumption that signed overflow is undefined,
    set *STRICT_OVERFLOW_P to true; otherwise, don't change
    *STRICT_OVERFLOW_P.  */
 
-bool
-tree_expr_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
+static bool
+tree_unary_nonnegative_warnv_p (enum tree_code code, tree type, tree op0,
+				bool *strict_overflow_p)
 {
-  if (t == error_mark_node)
-    return false;
-
-  if (TYPE_UNSIGNED (TREE_TYPE (t)))
+  if (TYPE_UNSIGNED (type))
     return true;
 
-  switch (TREE_CODE (t))
+  switch (code)
     {
-    case SSA_NAME:
-      /* Query VRP to see if it has recorded any information about
-	 the range of this object.  */
-      return ssa_name_nonnegative_p (t);
-
     case ABS_EXPR:
       /* We can't return 1 if flag_wrapv is set because
 	 ABS_EXPR<INT_MIN> = INT_MIN.  */
-      if (!INTEGRAL_TYPE_P (TREE_TYPE (t)))
+      if (!INTEGRAL_TYPE_P (type))
 	return true;
-      if (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (t)))
+      if (TYPE_OVERFLOW_UNDEFINED (type))
 	{
 	  *strict_overflow_p = true;
 	  return true;
 	}
       break;
 
-    case INTEGER_CST:
-      return tree_int_cst_sgn (t) >= 0;
+    case NON_LVALUE_EXPR:
+    case FLOAT_EXPR:
+    case FIX_TRUNC_EXPR:
+      return tree_expr_nonnegative_warnv_p (op0,
+					    strict_overflow_p);
 
-    case REAL_CST:
-      return ! REAL_VALUE_NEGATIVE (TREE_REAL_CST (t));
+    case NOP_EXPR:
+      {
+	tree inner_type = TREE_TYPE (op0);
+	tree outer_type = type;
 
-    case FIXED_CST:
-      return ! FIXED_VALUE_NEGATIVE (TREE_FIXED_CST (t));
+	if (TREE_CODE (outer_type) == REAL_TYPE)
+	  {
+	    if (TREE_CODE (inner_type) == REAL_TYPE)
+	      return tree_expr_nonnegative_warnv_p (op0,
+						    strict_overflow_p);
+	    if (TREE_CODE (inner_type) == INTEGER_TYPE)
+	      {
+		if (TYPE_UNSIGNED (inner_type))
+		  return true;
+		return tree_expr_nonnegative_warnv_p (op0,
+						      strict_overflow_p);
+	      }
+	  }
+	else if (TREE_CODE (outer_type) == INTEGER_TYPE)
+	  {
+	    if (TREE_CODE (inner_type) == REAL_TYPE)
+	      return tree_expr_nonnegative_warnv_p (op0,
+						    strict_overflow_p);
+	    if (TREE_CODE (inner_type) == INTEGER_TYPE)
+	      return TYPE_PRECISION (inner_type) < TYPE_PRECISION (outer_type)
+		      && TYPE_UNSIGNED (inner_type);
+	  }
+      }
+      break;
 
+    default:
+      return tree_simple_nonnegative_warnv_p (code, type);
+    }
+
+  /* We don't know sign of `t', so be conservative and return false.  */
+  return false;
+}
+
+/* Return true if (CODE OP0 OP1) is known to be non-negative.  If the return
+   value is based on the assumption that signed overflow is undefined,
+   set *STRICT_OVERFLOW_P to true; otherwise, don't change
+   *STRICT_OVERFLOW_P.  */
+
+static bool
+tree_binary_nonnegative_warnv_p (enum tree_code code, tree type, tree op0,
+				      tree op1, bool *strict_overflow_p)
+{
+  if (TYPE_UNSIGNED (type))
+    return true;
+
+  switch (code)
+    {
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
-      if (FLOAT_TYPE_P (TREE_TYPE (t)))
-	return (tree_expr_nonnegative_warnv_p (TREE_OPERAND (t, 0),
+      if (FLOAT_TYPE_P (type))
+	return (tree_expr_nonnegative_warnv_p (op0,
 					       strict_overflow_p)
-		&& tree_expr_nonnegative_warnv_p (TREE_OPERAND (t, 1),
+		&& tree_expr_nonnegative_warnv_p (op1,
 						  strict_overflow_p));
 
       /* zero_extend(x) + zero_extend(y) is non-negative if x and y are
 	 both unsigned and at least 2 bits shorter than the result.  */
-      if (TREE_CODE (TREE_TYPE (t)) == INTEGER_TYPE
-	  && TREE_CODE (TREE_OPERAND (t, 0)) == NOP_EXPR
-	  && TREE_CODE (TREE_OPERAND (t, 1)) == NOP_EXPR)
+      if (TREE_CODE (type) == INTEGER_TYPE
+	  && TREE_CODE (op0) == NOP_EXPR
+	  && TREE_CODE (op1) == NOP_EXPR)
 	{
-	  tree inner1 = TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 0), 0));
-	  tree inner2 = TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 1), 0));
+	  tree inner1 = TREE_TYPE (TREE_OPERAND (op0, 0));
+	  tree inner2 = TREE_TYPE (TREE_OPERAND (op1, 0));
 	  if (TREE_CODE (inner1) == INTEGER_TYPE && TYPE_UNSIGNED (inner1)
 	      && TREE_CODE (inner2) == INTEGER_TYPE && TYPE_UNSIGNED (inner2))
 	    {
 	      unsigned int prec = MAX (TYPE_PRECISION (inner1),
 				       TYPE_PRECISION (inner2)) + 1;
-	      return prec < TYPE_PRECISION (TREE_TYPE (t));
+	      return prec < TYPE_PRECISION (type);
 	    }
 	}
       break;
 
     case MULT_EXPR:
-      if (FLOAT_TYPE_P (TREE_TYPE (t)))
+      if (FLOAT_TYPE_P (type))
 	{
 	  /* x * x for floating point x is always non-negative.  */
-	  if (operand_equal_p (TREE_OPERAND (t, 0), TREE_OPERAND (t, 1), 0))
+	  if (operand_equal_p (op0, op1, 0))
 	    return true;
-	  return (tree_expr_nonnegative_warnv_p (TREE_OPERAND (t, 0),
+	  return (tree_expr_nonnegative_warnv_p (op0,
 						 strict_overflow_p)
-		  && tree_expr_nonnegative_warnv_p (TREE_OPERAND (t, 1),
+		  && tree_expr_nonnegative_warnv_p (op1,
 						    strict_overflow_p));
 	}
 
       /* zero_extend(x) * zero_extend(y) is non-negative if x and y are
 	 both unsigned and their total bits is shorter than the result.  */
-      if (TREE_CODE (TREE_TYPE (t)) == INTEGER_TYPE
-	  && TREE_CODE (TREE_OPERAND (t, 0)) == NOP_EXPR
-	  && TREE_CODE (TREE_OPERAND (t, 1)) == NOP_EXPR)
+      if (TREE_CODE (type) == INTEGER_TYPE
+	  && TREE_CODE (op0) == NOP_EXPR
+	  && TREE_CODE (op1) == NOP_EXPR)
 	{
-	  tree inner1 = TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 0), 0));
-	  tree inner2 = TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 1), 0));
+	  tree inner1 = TREE_TYPE (TREE_OPERAND (op0, 0));
+	  tree inner2 = TREE_TYPE (TREE_OPERAND (op1, 0));
 	  if (TREE_CODE (inner1) == INTEGER_TYPE && TYPE_UNSIGNED (inner1)
 	      && TREE_CODE (inner2) == INTEGER_TYPE && TYPE_UNSIGNED (inner2))
 	    return TYPE_PRECISION (inner1) + TYPE_PRECISION (inner2)
-		   < TYPE_PRECISION (TREE_TYPE (t));
+		   < TYPE_PRECISION (type);
 	}
       return false;
 
     case BIT_AND_EXPR:
     case MAX_EXPR:
-      return (tree_expr_nonnegative_warnv_p (TREE_OPERAND (t, 0),
+      return (tree_expr_nonnegative_warnv_p (op0,
 					     strict_overflow_p)
-	      || tree_expr_nonnegative_warnv_p (TREE_OPERAND (t, 1),
+	      || tree_expr_nonnegative_warnv_p (op1,
 						strict_overflow_p));
 
     case BIT_IOR_EXPR:
@@ -14153,68 +14208,80 @@ tree_expr_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
     case CEIL_DIV_EXPR:
     case FLOOR_DIV_EXPR:
     case ROUND_DIV_EXPR:
-      return (tree_expr_nonnegative_warnv_p (TREE_OPERAND (t, 0),
+      return (tree_expr_nonnegative_warnv_p (op0,
 					     strict_overflow_p)
-	      && tree_expr_nonnegative_warnv_p (TREE_OPERAND (t, 1),
+	      && tree_expr_nonnegative_warnv_p (op1,
 						strict_overflow_p));
 
     case TRUNC_MOD_EXPR:
     case CEIL_MOD_EXPR:
     case FLOOR_MOD_EXPR:
     case ROUND_MOD_EXPR:
-    case SAVE_EXPR:
-    case NON_LVALUE_EXPR:
-    case FLOAT_EXPR:
-    case FIX_TRUNC_EXPR:
-      return tree_expr_nonnegative_warnv_p (TREE_OPERAND (t, 0),
+      return tree_expr_nonnegative_warnv_p (op0,
 					    strict_overflow_p);
+    default:
+      return tree_simple_nonnegative_warnv_p (code, type);
+    }
 
-    case COMPOUND_EXPR:
-    case MODIFY_EXPR:
-    case GIMPLE_MODIFY_STMT:
-      return tree_expr_nonnegative_warnv_p (GENERIC_TREE_OPERAND (t, 1),
-					    strict_overflow_p);
+  /* We don't know sign of `t', so be conservative and return false.  */
+  return false;
+}
 
-    case BIND_EXPR:
-      return tree_expr_nonnegative_warnv_p (expr_last (TREE_OPERAND (t, 1)),
-					    strict_overflow_p);
+/* Return true if T is known to be non-negative.  If the return
+   value is based on the assumption that signed overflow is undefined,
+   set *STRICT_OVERFLOW_P to true; otherwise, don't change
+   *STRICT_OVERFLOW_P.  */
+
+static bool
+tree_single_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
+{
+  if (TYPE_UNSIGNED (TREE_TYPE (t)))
+    return true;
+
+  enum tree_code code = TREE_CODE (t);
+  switch (code)
+    {
+    case SSA_NAME:
+      /* Query VRP to see if it has recorded any information about
+	 the range of this object.  */
+      return ssa_name_nonnegative_p (t);
+
+    case INTEGER_CST:
+      return tree_int_cst_sgn (t) >= 0;
+
+    case REAL_CST:
+      return ! REAL_VALUE_NEGATIVE (TREE_REAL_CST (t));
+
+    case FIXED_CST:
+      return ! FIXED_VALUE_NEGATIVE (TREE_FIXED_CST (t));
 
     case COND_EXPR:
       return (tree_expr_nonnegative_warnv_p (TREE_OPERAND (t, 1),
 					     strict_overflow_p)
 	      && tree_expr_nonnegative_warnv_p (TREE_OPERAND (t, 2),
 						strict_overflow_p));
+    default:
+      return tree_simple_nonnegative_warnv_p (TREE_CODE (t),
+						   TREE_TYPE (t));
+    }
+  /* We don't know sign of `t', so be conservative and return false.  */
+  return false;
+}
 
-    case NOP_EXPR:
-      {
-	tree inner_type = TREE_TYPE (TREE_OPERAND (t, 0));
-	tree outer_type = TREE_TYPE (t);
+/* Return true if T is known to be non-negative.  If the return
+   value is based on the assumption that signed overflow is undefined,
+   set *STRICT_OVERFLOW_P to true; otherwise, don't change
+   *STRICT_OVERFLOW_P.  */
 
-	if (TREE_CODE (outer_type) == REAL_TYPE)
-	  {
-	    if (TREE_CODE (inner_type) == REAL_TYPE)
-	      return tree_expr_nonnegative_warnv_p (TREE_OPERAND (t, 0),
-						    strict_overflow_p);
-	    if (TREE_CODE (inner_type) == INTEGER_TYPE)
-	      {
-		if (TYPE_UNSIGNED (inner_type))
-		  return true;
-		return tree_expr_nonnegative_warnv_p (TREE_OPERAND (t, 0),
-						      strict_overflow_p);
-	      }
-	  }
-	else if (TREE_CODE (outer_type) == INTEGER_TYPE)
-	  {
-	    if (TREE_CODE (inner_type) == REAL_TYPE)
-	      return tree_expr_nonnegative_warnv_p (TREE_OPERAND (t,0),
-						    strict_overflow_p);
-	    if (TREE_CODE (inner_type) == INTEGER_TYPE)
-	      return TYPE_PRECISION (inner_type) < TYPE_PRECISION (outer_type)
-		      && TYPE_UNSIGNED (inner_type);
-	  }
-      }
-      break;
+static bool
+tree_invalid_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
+{
+  if (TYPE_UNSIGNED (TREE_TYPE (t)))
+    return true;
 
+  enum tree_code code = TREE_CODE (t);
+  switch (code)
+    {
     case TARGET_EXPR:
       {
 	tree temp = TARGET_EXPR_SLOT (t);
@@ -14372,23 +14439,100 @@ tree_expr_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
 	    default:
 	      break;
 	    }
+	return tree_simple_nonnegative_warnv_p (TREE_CODE (t),
+						     TREE_TYPE (t));
       }
+      break;
 
-      /* ... fall through ...  */
+    case COMPOUND_EXPR:
+    case MODIFY_EXPR:
+    case GIMPLE_MODIFY_STMT:
+      return tree_expr_nonnegative_warnv_p (GENERIC_TREE_OPERAND (t, 1),
+					    strict_overflow_p);
+    case BIND_EXPR:
+      return tree_expr_nonnegative_warnv_p (expr_last (TREE_OPERAND (t, 1)),
+					    strict_overflow_p);
+    case SAVE_EXPR:
+      return tree_expr_nonnegative_warnv_p (TREE_OPERAND (t, 0),
+					    strict_overflow_p);
 
     default:
-      {
-	tree type = TREE_TYPE (t);
-	if ((TYPE_PRECISION (type) != 1 || TYPE_UNSIGNED (type))
-	    && truth_value_p (TREE_CODE (t)))
-	  /* Truth values evaluate to 0 or 1, which is nonnegative unless we
-             have a signed:1 type (where the value is -1 and 0).  */
-	  return true;
-      }
+      return tree_simple_nonnegative_warnv_p (TREE_CODE (t),
+						   TREE_TYPE (t));
     }
 
   /* We don't know sign of `t', so be conservative and return false.  */
   return false;
+}
+
+/* Return true if T is known to be non-negative.  If the return
+   value is based on the assumption that signed overflow is undefined,
+   set *STRICT_OVERFLOW_P to true; otherwise, don't change
+   *STRICT_OVERFLOW_P.  */
+
+bool
+tree_expr_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
+{
+  enum tree_code code;
+  if (t == error_mark_node)
+    return false;
+
+  code = TREE_CODE (t);
+  switch (TREE_CODE_CLASS (code))
+    {
+    case tcc_binary:
+    case tcc_comparison:
+      return tree_binary_nonnegative_warnv_p (TREE_CODE (t),
+					      TREE_TYPE (t),
+					      TREE_OPERAND (t, 0),
+					      TREE_OPERAND (t, 1),
+					      strict_overflow_p);
+
+    case tcc_unary:
+      return tree_unary_nonnegative_warnv_p (TREE_CODE (t),
+					     TREE_TYPE (t),
+					     TREE_OPERAND (t, 0),
+					     strict_overflow_p);
+
+    case tcc_constant:
+    case tcc_declaration:
+    case tcc_reference:
+      return tree_single_nonnegative_warnv_p (t, strict_overflow_p);
+
+    default:
+      break;
+    }
+
+  switch (code)
+    {
+    case TRUTH_AND_EXPR:
+    case TRUTH_OR_EXPR:
+    case TRUTH_XOR_EXPR:
+      return tree_binary_nonnegative_warnv_p (TREE_CODE (t),
+					      TREE_TYPE (t),
+					      TREE_OPERAND (t, 0),
+					      TREE_OPERAND (t, 1),
+					      strict_overflow_p);
+    case TRUTH_NOT_EXPR:
+      return tree_unary_nonnegative_warnv_p (TREE_CODE (t),
+					     TREE_TYPE (t),
+					     TREE_OPERAND (t, 0),
+					     strict_overflow_p);
+
+    case COND_EXPR:
+    case CONSTRUCTOR:
+    case OBJ_TYPE_REF:
+    case ASSERT_EXPR:
+    case ADDR_EXPR:
+    case WITH_SIZE_EXPR:
+    case EXC_PTR_EXPR:
+    case SSA_NAME:
+    case FILTER_EXPR:
+      return tree_single_nonnegative_warnv_p (t, strict_overflow_p);
+
+    default:
+      return tree_invalid_nonnegative_warnv_p (t, strict_overflow_p);
+    }
 }
 
 /* Return true if `t' is known to be non-negative.  Handle warnings
