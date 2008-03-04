@@ -470,30 +470,30 @@ _mm_stream_load_si128 (__m128i *__X)
 #ifdef __SSE4_2__
 
 /* These macros specify the source data format.  */
-#define SIDD_UBYTE_OPS			0x00
-#define SIDD_UWORD_OPS			0x01
-#define SIDD_SBYTE_OPS			0x02
-#define SIDD_SWORD_OPS			0x03
+#define _SIDD_UBYTE_OPS			0x00
+#define _SIDD_UWORD_OPS			0x01
+#define _SIDD_SBYTE_OPS			0x02
+#define _SIDD_SWORD_OPS			0x03
 
 /* These macros specify the comparison operation.  */
-#define SIDD_CMP_EQUAL_ANY		0x00
-#define SIDD_CMP_RANGES			0x04
-#define SIDD_CMP_EQUAL_EACH		0x08
-#define SIDD_CMP_EQUAL_ORDERED		0x0c
+#define _SIDD_CMP_EQUAL_ANY		0x00
+#define _SIDD_CMP_RANGES		0x04
+#define _SIDD_CMP_EQUAL_EACH		0x08
+#define _SIDD_CMP_EQUAL_ORDERED		0x0c
 
 /* These macros specify the the polarity.  */
-#define SIDD_POSITIVE_POLARITY		0x00
-#define SIDD_NEGATIVE_POLARITY		0x10
-#define SIDD_MASKED_POSITIVE_POLARITY	0x20
-#define SIDD_MASKED_NEGATIVE_POLARITY	0x30
+#define _SIDD_POSITIVE_POLARITY		0x00
+#define _SIDD_NEGATIVE_POLARITY		0x10
+#define _SIDD_MASKED_POSITIVE_POLARITY	0x20
+#define _SIDD_MASKED_NEGATIVE_POLARITY	0x30
 
 /* These macros specify the output selection in _mm_cmpXstri ().  */
-#define SIDD_LEAST_SIGNIFICANT		0x00
-#define SIDD_MOST_SIGNIFICANT		0x40
+#define _SIDD_LEAST_SIGNIFICANT		0x00
+#define _SIDD_MOST_SIGNIFICANT		0x40
 
 /* These macros specify the output selection in _mm_cmpXstrm ().  */
-#define SIDD_BIT_MASK			0x00
-#define SIDD_UNIT_MASK			0x40
+#define _SIDD_BIT_MASK			0x00
+#define _SIDD_UNIT_MASK			0x40
 
 /* Intrinsics for text/string processing.  */
 

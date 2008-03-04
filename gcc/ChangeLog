@@ -1,3 +1,9 @@
+2008-03-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/35453
+	* config/i386/smmintrin.h (SIDD_XXX): Renamed to ...
+	(_SIDD_XXX): This.
+
 2008-03-04  Rafael Espindola  <espindola@google.com>
 
 	* fold-const.c (tree_unary_nonzero_warnv_p): New.
