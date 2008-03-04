@@ -1,3 +1,9 @@
+2008-03-04  Jan Hubicka  <jh@suse.cz>
+
+	PR c++/35262
+	* ipa-inline.c (cgraph_decide_inlining_of_small_function): Fix typo
+	in last commit.
+
 2008-03-04  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* gthr-win32.h [__GTHREAD_HIDE_WIN32API]

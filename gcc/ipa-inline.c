@@ -925,7 +925,7 @@ cgraph_decide_inlining_of_small_functions (void)
  	not_good = N_("function not declared inline and code size would grow");
       if (optimize_size)
  	not_good = N_("optimizing for size and code size would grow");
-      if (not_good && growth > 0 && cgraph_estimate_growth (edge->callee))
+      if (not_good && growth > 0 && cgraph_estimate_growth (edge->callee) > 0)
 	{
           if (!cgraph_recursive_inlining_p (edge->caller, edge->callee,
 				            &edge->inline_failed))
