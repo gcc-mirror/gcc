@@ -17976,7 +17976,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
   # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 17851 "configure"
+#line 17979 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -110018,6 +110018,14 @@ _ACEOF
 fi
 
 done
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_STRTOF 1
+_ACEOF
+
+    cat >>confdefs.h <<\_ACEOF
+#define HAVE_STRTOLD 1
+_ACEOF
 
 
   # If we're not using GNU ld, then there's no point in even trying these
