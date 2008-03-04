@@ -1,3 +1,10 @@
+2008-03-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/35456
+	* fold-const.c (fold_cond_expr_with_comparison): Prevent
+	transformations for modes that have signed zeros.
+	* ifcvt.c (noce_try_abs): Ditto.
+
 2008-03-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/i386.c (override_options): Force
@@ -251,7 +258,8 @@
 	struct rdg_vertex_info, rdg_vertex_for_stmt): New.
 	(create_rdg_edge_for_ddr, create_rdg_vertices): Cleaned up.
 	(stmts_from_loop): Skip LABEL_EXPR.
-	(hash_stmt_vertex_info, eq_stmt_vertex_info, hash_stmt_vertex_del): New.
+	(hash_stmt_vertex_info, eq_stmt_vertex_info, hash_stmt_vertex_del):
+	New.
 	(build_rdg): Initialize rdg->indices htab.
 	(free_rdg, stores_from_loop, ref_base_address,
 	rdg_defs_used_in_other_loops_p, have_similar_memory_accesses,
@@ -260,7 +268,8 @@
 	* tree-data-ref.h: Depend on tree-chrec.h.
 	(debug_data_dependence_relations, free_data_ref): Declared.
 	(same_access_functions): ... here.
-	(ddr_is_anti_dependent, ddrs_have_anti_deps, ddr_dependence_level): New.
+	(ddr_is_anti_dependent, ddrs_have_anti_deps, ddr_dependence_level):
+	New.
 	(struct rdg_vertex): Add has_mem_write and has_mem_reads.
 	(RDGV_HAS_MEM_WRITE, RDGV_HAS_MEM_READS, RDG_STMT,
 	RDG_MEM_WRITE_STMT, RDG_MEM_READS_STMT): New.
@@ -270,7 +279,8 @@
 	(struct rdg_edge): Add level.
 	(RDGE_LEVEL): New.
 	(free_rdg, stores_from_loop, remove_similar_memory_refs,
-	rdg_defs_used_in_other_loops_p, have_similar_memory_accesses): Declared.
+	rdg_defs_used_in_other_loops_p, have_similar_memory_accesses):
+	Declared.
 	(rdg_has_similar_memory_accesses): New.
 	* tree-vect-analyze.c: Remove unused static decls.
 	* lambda.h (dependence_level): New.
