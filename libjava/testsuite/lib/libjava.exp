@@ -380,7 +380,7 @@ proc libjava_arguments {{mode compile}} {
 	global wrapper_file wrap_compile_flags
 	lappend args "additional_flags=$wrap_compile_flags"
 
-	if { [string match "linux" $target_triplet] } {
+	if { [regexp "linux" $target_triplet] } {
 	    lappend args "additional_flags=-specs=libgcj-test.spec"
 	}
 
