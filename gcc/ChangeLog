@@ -1,3 +1,9 @@
+2008-03-04  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 28322
+	* opts.c (handle_option): Postpone 'unknown option' errors only for
+	warning options.
+
 2008-03-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/35453
