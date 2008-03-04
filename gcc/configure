@@ -12217,13 +12217,35 @@ objext='.o'
 # Check whether --enable-sjlj-exceptions or --disable-sjlj-exceptions was given.
 if test "${enable_sjlj_exceptions+set}" = set; then
   enableval="$enable_sjlj_exceptions"
+  case $target in
+  *-*-hpux10*)
+    if test $enableval != yes; then
+      { echo "$as_me:$LINENO: WARNING: dwarf2 exceptions not supported, sjlj exceptions forced" >&5
+echo "$as_me: WARNING: dwarf2 exceptions not supported, sjlj exceptions forced" >&2;}
+      enableval=yes
+    fi
+    ;;
+esac
+force_sjlj_exceptions=yes
+else
+  case $target in
+  *-*-hpux10*)
+    force_sjlj_exceptions=yes
+    enableval=yes
+    ;;
+  *)
+    force_sjlj_exceptions=no
+    ;;
+esac
+fi;
+if test $force_sjlj_exceptions = yes; then
   sjlj=`if test $enableval = yes; then echo 1; else echo 0; fi`
 
 cat >>confdefs.h <<_ACEOF
 #define CONFIG_SJLJ_EXCEPTIONS $sjlj
 _ACEOF
 
-fi;
+fi
 
 # For platforms with the unwind ABI which includes an unwind library,
 # libunwind, we can choose to use the system libunwind.

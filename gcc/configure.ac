@@ -1172,9 +1172,29 @@ AC_SUBST(objext)
 AC_ARG_ENABLE(sjlj-exceptions,
 [  --enable-sjlj-exceptions
                           arrange to use setjmp/longjmp exception handling],
-[sjlj=`if test $enableval = yes; then echo 1; else echo 0; fi`
-AC_DEFINE_UNQUOTED(CONFIG_SJLJ_EXCEPTIONS, $sjlj,
-  [Define 0/1 to force the choice for exception handling model.])])
+[case $target in
+  *-*-hpux10*)
+    if test $enableval != yes; then
+      AC_MSG_WARN([dwarf2 exceptions not supported, sjlj exceptions forced])
+      enableval=yes
+    fi
+    ;;
+esac
+force_sjlj_exceptions=yes],
+[case $target in
+  *-*-hpux10*)
+    force_sjlj_exceptions=yes
+    enableval=yes
+    ;;
+  *)
+    force_sjlj_exceptions=no
+    ;;
+esac])
+if test $force_sjlj_exceptions = yes; then
+  sjlj=`if test $enableval = yes; then echo 1; else echo 0; fi`
+  AC_DEFINE_UNQUOTED(CONFIG_SJLJ_EXCEPTIONS, $sjlj,
+    [Define 0/1 to force the choice for exception handling model.])
+fi
 
 # For platforms with the unwind ABI which includes an unwind library,
 # libunwind, we can choose to use the system libunwind.
