@@ -1,3 +1,8 @@
+2008-03-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/i386/i386.c (override_options): Force
+	-maccumulate-outgoing-args on if TARGET_STACK_PROBE.
+
 2008-03-04  Jan Hubicka  <jh@suse.cz>
 
 	PR c++/35262

@@ -1,3 +1,8 @@
+2008-03-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.target/i386/sse-10.c: Don't use
+	-mno-accumulate-outgoing-args on *-*-mingw* *-*-cygwin*.
+
 2008-03-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gfortran.dg/reassoc_1.f90: Cleanup dump files.

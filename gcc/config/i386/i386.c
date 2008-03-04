@@ -2700,6 +2700,18 @@ override_options (void)
       target_flags |= MASK_ACCUMULATE_OUTGOING_ARGS;
     }
 
+  /* If stack probes are required, the space used for large function
+     arguments on the stack must also be probed, so enable
+     -maccumulate-outgoing-args so this happens in the prologue.  */
+  if (TARGET_STACK_PROBE
+      && !(target_flags & MASK_ACCUMULATE_OUTGOING_ARGS))
+    {
+      if (target_flags_explicit & MASK_ACCUMULATE_OUTGOING_ARGS)
+	warning (0, "stack probing requires -maccumulate-outgoing-args "
+		 "for correctness");
+      target_flags |= MASK_ACCUMULATE_OUTGOING_ARGS;
+    }
+
   /* For sane SSE instruction set generation we need fcomi instruction.
      It is safe to enable all CMOVE instructions.  */
   if (TARGET_SSE)
