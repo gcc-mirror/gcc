@@ -15,3 +15,5 @@ end
 
 ! { dg-final { scan-tree-dump "b = 5" "original" } }
 ! { dg-final { scan-tree-dump "return .a" "optimized" } }
+! { dg-final { cleanup-tree-dump "original" } }
+! { dg-final { cleanup-tree-dump "optimized" } }
