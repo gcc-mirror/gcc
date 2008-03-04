@@ -22,49 +22,49 @@ class java::text::DecimalFormatSymbols : public ::java::lang::Object
 {
 
 public:
-  ::java::lang::Object * clone();
+  virtual ::java::lang::Object * clone();
   DecimalFormatSymbols();
 private:
   ::java::lang::String * safeGetString(::java::util::ResourceBundle *, ::java::lang::String *, ::java::lang::String *);
   jchar safeGetChar(::java::util::ResourceBundle *, ::java::lang::String *, jchar);
 public:
   DecimalFormatSymbols(::java::util::Locale *);
-  jboolean equals(::java::lang::Object *);
-  ::java::util::Currency * getCurrency();
-  ::java::lang::String * getCurrencySymbol();
-  jchar getDecimalSeparator();
-  jchar getDigit();
+  virtual jboolean equals(::java::lang::Object *);
+  virtual ::java::util::Currency * getCurrency();
+  virtual ::java::lang::String * getCurrencySymbol();
+  virtual jchar getDecimalSeparator();
+  virtual jchar getDigit();
 public: // actually package-private
-  jchar getExponential();
+  virtual jchar getExponential();
 public:
-  jchar getGroupingSeparator();
-  ::java::lang::String * getInfinity();
-  ::java::lang::String * getInternationalCurrencySymbol();
-  jchar getMinusSign();
-  jchar getMonetaryDecimalSeparator();
-  ::java::lang::String * getNaN();
-  jchar getPatternSeparator();
-  jchar getPercent();
-  jchar getPerMill();
-  jchar getZeroDigit();
-  jint hashCode();
-  void setCurrency(::java::util::Currency *);
-  void setCurrencySymbol(::java::lang::String *);
-  void setDecimalSeparator(jchar);
-  void setDigit(jchar);
+  virtual jchar getGroupingSeparator();
+  virtual ::java::lang::String * getInfinity();
+  virtual ::java::lang::String * getInternationalCurrencySymbol();
+  virtual jchar getMinusSign();
+  virtual jchar getMonetaryDecimalSeparator();
+  virtual ::java::lang::String * getNaN();
+  virtual jchar getPatternSeparator();
+  virtual jchar getPercent();
+  virtual jchar getPerMill();
+  virtual jchar getZeroDigit();
+  virtual jint hashCode();
+  virtual void setCurrency(::java::util::Currency *);
+  virtual void setCurrencySymbol(::java::lang::String *);
+  virtual void setDecimalSeparator(jchar);
+  virtual void setDigit(jchar);
 public: // actually package-private
-  void setExponential(jchar);
+  virtual void setExponential(jchar);
 public:
-  void setGroupingSeparator(jchar);
-  void setInfinity(::java::lang::String *);
-  void setInternationalCurrencySymbol(::java::lang::String *);
-  void setMinusSign(jchar);
-  void setMonetaryDecimalSeparator(jchar);
-  void setNaN(::java::lang::String *);
-  void setPatternSeparator(jchar);
-  void setPercent(jchar);
-  void setPerMill(jchar);
-  void setZeroDigit(jchar);
+  virtual void setGroupingSeparator(jchar);
+  virtual void setInfinity(::java::lang::String *);
+  virtual void setInternationalCurrencySymbol(::java::lang::String *);
+  virtual void setMinusSign(jchar);
+  virtual void setMonetaryDecimalSeparator(jchar);
+  virtual void setNaN(::java::lang::String *);
+  virtual void setPatternSeparator(jchar);
+  virtual void setPercent(jchar);
+  virtual void setPerMill(jchar);
+  virtual void setZeroDigit(jchar);
 private:
   void readObject(::java::io::ObjectInputStream *);
 public:
