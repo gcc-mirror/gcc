@@ -14409,7 +14409,8 @@ tree_expr_nonnegative_p (tree t)
   return ret;
 }
 
-/* Return true when T is an address and is known to be nonzero.
+
+/* Return true when (CODE OP0) is an address and is known to be nonzero.
    For floating point we further ensure that T is not denormal.
    Similar logic is present in nonzero_address in rtlanal.h.
 
@@ -14417,30 +14418,55 @@ tree_expr_nonnegative_p (tree t)
    is undefined, set *STRICT_OVERFLOW_P to true; otherwise, don't
    change *STRICT_OVERFLOW_P.  */
 
-bool
-tree_expr_nonzero_warnv_p (tree t, bool *strict_overflow_p)
+static bool
+tree_unary_nonzero_warnv_p (enum tree_code code, tree type, tree op0,
+				 bool *strict_overflow_p)
 {
-  tree type = TREE_TYPE (t);
-  bool sub_strict_overflow_p;
-
-  /* Doing something useful for floating point would need more work.  */
-  if (!INTEGRAL_TYPE_P (type) && !POINTER_TYPE_P (type))
-    return false;
-
-  switch (TREE_CODE (t))
+  switch (code)
     {
-    case SSA_NAME:
-      /* Query VRP to see if it has recorded any information about
-	 the range of this object.  */
-      return ssa_name_nonzero_p (t);
-
     case ABS_EXPR:
-      return tree_expr_nonzero_warnv_p (TREE_OPERAND (t, 0),
+      return tree_expr_nonzero_warnv_p (op0,
 					strict_overflow_p);
 
-    case INTEGER_CST:
-      return !integer_zerop (t);
+    case NOP_EXPR:
+      {
+	tree inner_type = TREE_TYPE (op0);
+	tree outer_type = type;
 
+	return (TYPE_PRECISION (outer_type) >= TYPE_PRECISION (inner_type)
+		&& tree_expr_nonzero_warnv_p (op0,
+					      strict_overflow_p));
+      }
+      break;
+
+    case NON_LVALUE_EXPR:
+      return tree_expr_nonzero_warnv_p (op0,
+					strict_overflow_p);
+
+    default:
+      break;
+  }
+
+  return false;
+}
+
+/* Return true when (CODE OP0 OP1) is an address and is known to be nonzero.
+   For floating point we further ensure that T is not denormal.
+   Similar logic is present in nonzero_address in rtlanal.h.
+
+   If the return value is based on the assumption that signed overflow
+   is undefined, set *STRICT_OVERFLOW_P to true; otherwise, don't
+   change *STRICT_OVERFLOW_P.  */
+
+static bool
+tree_binary_nonzero_warnv_p (enum tree_code code,
+			     tree type,
+			     tree op0,
+			     tree op1, bool *strict_overflow_p)
+{
+  bool sub_strict_overflow_p;
+  switch (code)
+    {
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
       if (TYPE_OVERFLOW_UNDEFINED (type))
@@ -14448,18 +14474,18 @@ tree_expr_nonzero_warnv_p (tree t, bool *strict_overflow_p)
 	  /* With the presence of negative values it is hard
 	     to say something.  */
 	  sub_strict_overflow_p = false;
-	  if (!tree_expr_nonnegative_warnv_p (TREE_OPERAND (t, 0),
+	  if (!tree_expr_nonnegative_warnv_p (op0,
 					      &sub_strict_overflow_p)
-	      || !tree_expr_nonnegative_warnv_p (TREE_OPERAND (t, 1),
+	      || !tree_expr_nonnegative_warnv_p (op1,
 						 &sub_strict_overflow_p))
 	    return false;
 	  /* One of operands must be positive and the other non-negative.  */
 	  /* We don't set *STRICT_OVERFLOW_P here: even if this value
 	     overflows, on a twos-complement machine the sum of two
 	     nonnegative numbers can never be zero.  */
-	  return (tree_expr_nonzero_warnv_p (TREE_OPERAND (t, 0),
+	  return (tree_expr_nonzero_warnv_p (op0,
 					     strict_overflow_p)
-	          || tree_expr_nonzero_warnv_p (TREE_OPERAND (t, 1),
+		  || tree_expr_nonzero_warnv_p (op1,
 						strict_overflow_p));
 	}
       break;
@@ -14467,9 +14493,9 @@ tree_expr_nonzero_warnv_p (tree t, bool *strict_overflow_p)
     case MULT_EXPR:
       if (TYPE_OVERFLOW_UNDEFINED (type))
 	{
-	  if (tree_expr_nonzero_warnv_p (TREE_OPERAND (t, 0),
+	  if (tree_expr_nonzero_warnv_p (op0,
 					 strict_overflow_p)
-	      && tree_expr_nonzero_warnv_p (TREE_OPERAND (t, 1),
+	      && tree_expr_nonzero_warnv_p (op1,
 					    strict_overflow_p))
 	    {
 	      *strict_overflow_p = true;
@@ -14478,18 +14504,83 @@ tree_expr_nonzero_warnv_p (tree t, bool *strict_overflow_p)
 	}
       break;
 
-    case NOP_EXPR:
-      {
-	tree inner_type = TREE_TYPE (TREE_OPERAND (t, 0));
-	tree outer_type = TREE_TYPE (t);
-
-	return (TYPE_PRECISION (outer_type) >= TYPE_PRECISION (inner_type)
-		&& tree_expr_nonzero_warnv_p (TREE_OPERAND (t, 0),
-					      strict_overflow_p));
-      }
+    case MIN_EXPR:
+      sub_strict_overflow_p = false;
+      if (tree_expr_nonzero_warnv_p (op0,
+				     &sub_strict_overflow_p)
+	  && tree_expr_nonzero_warnv_p (op1,
+					&sub_strict_overflow_p))
+	{
+	  if (sub_strict_overflow_p)
+	    *strict_overflow_p = true;
+	}
       break;
 
-   case ADDR_EXPR:
+    case MAX_EXPR:
+      sub_strict_overflow_p = false;
+      if (tree_expr_nonzero_warnv_p (op0,
+				     &sub_strict_overflow_p))
+	{
+	  if (sub_strict_overflow_p)
+	    *strict_overflow_p = true;
+
+	  /* When both operands are nonzero, then MAX must be too.  */
+	  if (tree_expr_nonzero_warnv_p (op1,
+					 strict_overflow_p))
+	    return true;
+
+	  /* MAX where operand 0 is positive is positive.  */
+	  return tree_expr_nonnegative_warnv_p (op0,
+					       strict_overflow_p);
+	}
+      /* MAX where operand 1 is positive is positive.  */
+      else if (tree_expr_nonzero_warnv_p (op1,
+					  &sub_strict_overflow_p)
+	       && tree_expr_nonnegative_warnv_p (op1,
+						 &sub_strict_overflow_p))
+	{
+	  if (sub_strict_overflow_p)
+	    *strict_overflow_p = true;
+	  return true;
+	}
+      break;
+
+    case BIT_IOR_EXPR:
+      return (tree_expr_nonzero_warnv_p (op1,
+					 strict_overflow_p)
+	      || tree_expr_nonzero_warnv_p (op0,
+					    strict_overflow_p));
+
+    default:
+      break;
+  }
+
+  return false;
+}
+
+/* Return true when T is an address and is known to be nonzero.
+   For floating point we further ensure that T is not denormal.
+   Similar logic is present in nonzero_address in rtlanal.h.
+
+   If the return value is based on the assumption that signed overflow
+   is undefined, set *STRICT_OVERFLOW_P to true; otherwise, don't
+   change *STRICT_OVERFLOW_P.  */
+
+static bool
+tree_single_nonzero_warnv_p (tree t, bool *strict_overflow_p)
+{
+  bool sub_strict_overflow_p;
+  switch (TREE_CODE (t))
+    {
+    case SSA_NAME:
+      /* Query VRP to see if it has recorded any information about
+	 the range of this object.  */
+      return ssa_name_nonzero_p (t);
+
+    case INTEGER_CST:
+      return !integer_zerop (t);
+
+    case ADDR_EXPR:
       {
 	tree base = get_base_address (TREE_OPERAND (t, 0));
 
@@ -14520,46 +14611,75 @@ tree_expr_nonzero_warnv_p (tree t, bool *strict_overflow_p)
 	}
       break;
 
-    case MIN_EXPR:
-      sub_strict_overflow_p = false;
-      if (tree_expr_nonzero_warnv_p (TREE_OPERAND (t, 0),
-				     &sub_strict_overflow_p)
-	  && tree_expr_nonzero_warnv_p (TREE_OPERAND (t, 1),
-					&sub_strict_overflow_p))
-	{
-	  if (sub_strict_overflow_p)
-	    *strict_overflow_p = true;
-	}
+    default:
       break;
+    }
+  return false;
+}
 
-    case MAX_EXPR:
-      sub_strict_overflow_p = false;
-      if (tree_expr_nonzero_warnv_p (TREE_OPERAND (t, 0),
-				     &sub_strict_overflow_p))
-	{
-	  if (sub_strict_overflow_p)
-	    *strict_overflow_p = true;
+/* Return true when T is an address and is known to be nonzero.
+   For floating point we further ensure that T is not denormal.
+   Similar logic is present in nonzero_address in rtlanal.h.
 
-	  /* When both operands are nonzero, then MAX must be too.  */
-	  if (tree_expr_nonzero_warnv_p (TREE_OPERAND (t, 1),
-					 strict_overflow_p))
-	    return true;
+   If the return value is based on the assumption that signed overflow
+   is undefined, set *STRICT_OVERFLOW_P to true; otherwise, don't
+   change *STRICT_OVERFLOW_P.  */
 
-	  /* MAX where operand 0 is positive is positive.  */
-	  return tree_expr_nonnegative_warnv_p (TREE_OPERAND (t, 0),
+bool
+tree_expr_nonzero_warnv_p (tree t, bool *strict_overflow_p)
+{
+  tree type = TREE_TYPE (t);
+  enum tree_code code;
+
+  /* Doing something useful for floating point would need more work.  */
+  if (!INTEGRAL_TYPE_P (type) && !POINTER_TYPE_P (type))
+    return false;
+
+  code = TREE_CODE (t);
+  switch (TREE_CODE_CLASS (code))
+    {
+    case tcc_unary:
+      return tree_unary_nonzero_warnv_p (code, type, TREE_OPERAND (t, 0),
+					      strict_overflow_p);
+    case tcc_binary:
+    case tcc_comparison:
+      return tree_binary_nonzero_warnv_p (code, type,
+					       TREE_OPERAND (t, 0),
+					       TREE_OPERAND (t, 1),
 					       strict_overflow_p);
-	}
-      /* MAX where operand 1 is positive is positive.  */
-      else if (tree_expr_nonzero_warnv_p (TREE_OPERAND (t, 1),
-					  &sub_strict_overflow_p)
-	       && tree_expr_nonnegative_warnv_p (TREE_OPERAND (t, 1),
-						 &sub_strict_overflow_p))
-	{
-	  if (sub_strict_overflow_p)
-	    *strict_overflow_p = true;
-	  return true;
-	}
+    case tcc_constant:
+    case tcc_declaration:
+    case tcc_reference:
+      return tree_single_nonzero_warnv_p (t, strict_overflow_p);
+
+    default:
       break;
+    }
+
+  switch (code)
+    {
+    case TRUTH_NOT_EXPR:
+      return tree_unary_nonzero_warnv_p (code, type, TREE_OPERAND (t, 0),
+					      strict_overflow_p);
+
+    case TRUTH_AND_EXPR:
+    case TRUTH_OR_EXPR:
+    case TRUTH_XOR_EXPR:
+      return tree_binary_nonzero_warnv_p (code, type,
+					       TREE_OPERAND (t, 0),
+					       TREE_OPERAND (t, 1),
+					       strict_overflow_p);
+
+    case COND_EXPR:
+    case CONSTRUCTOR:
+    case OBJ_TYPE_REF:
+    case ASSERT_EXPR:
+    case ADDR_EXPR:
+    case WITH_SIZE_EXPR:
+    case EXC_PTR_EXPR:
+    case SSA_NAME:
+    case FILTER_EXPR:
+      return tree_single_nonzero_warnv_p (t, strict_overflow_p);
 
     case COMPOUND_EXPR:
     case MODIFY_EXPR:
@@ -14569,15 +14689,8 @@ tree_expr_nonzero_warnv_p (tree t, bool *strict_overflow_p)
 					strict_overflow_p);
 
     case SAVE_EXPR:
-    case NON_LVALUE_EXPR:
       return tree_expr_nonzero_warnv_p (TREE_OPERAND (t, 0),
 					strict_overflow_p);
-
-    case BIT_IOR_EXPR:
-      return (tree_expr_nonzero_warnv_p (TREE_OPERAND (t, 1),
-					strict_overflow_p)
-	      || tree_expr_nonzero_warnv_p (TREE_OPERAND (t, 0),
-					    strict_overflow_p));
 
     case CALL_EXPR:
       return alloca_call_p (t);
