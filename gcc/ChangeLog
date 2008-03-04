@@ -1,3 +1,10 @@
+2008-03-04  Rafael Espindola  <espindola@google.com>
+
+	* fold-const.c (tree_unary_nonzero_warnv_p): New.
+	(tree_binary_nonzero_warnv_p): New.
+	(tree_single_nonzero_warnv_p): New.
+	(tree_expr_nonzero_warnv_p): Redefine using the new functions.
+
 2008-03-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/35456
