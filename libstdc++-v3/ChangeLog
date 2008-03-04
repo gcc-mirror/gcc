@@ -1,3 +1,9 @@
+2008-03-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* crossconfig.m4 (*-mingw32*): Define HAVE_STRTOF and
+	HAVE_STRTOLD.
+	* configure: Regenerate.
+
 2008-03-02  Hans-Peter Nilsson  <hp@axis.com>
 
 	* testsuite/20_util/shared_ptr/assign/shared_ptr_neg.cc,

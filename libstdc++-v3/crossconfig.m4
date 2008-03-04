@@ -234,6 +234,8 @@ case "${host}" in
     ;;
   *-mingw32*)
     AC_CHECK_HEADERS([sys/types.h locale.h float.h])
+    AC_DEFINE(HAVE_STRTOF)
+    AC_DEFINE(HAVE_STRTOLD)
     GLIBCXX_CHECK_LINKER_FEATURES
     GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
     ;;
