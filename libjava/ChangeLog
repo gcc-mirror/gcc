@@ -1,3 +1,8 @@
+2008-03-04  Andrew Haley  <aph@redhat.com>
+
+	* testsuite/lib/libjava.exp (libjava_arguments): Use regexp
+	instead of string match when checking for linux targets.
+
 2008-03-03  Matthias Klose  <doko@ubuntu.com>
 
 	* classpath/tools/classes/gnu/classpath/tools/orbd/Main.class,
