@@ -505,7 +505,7 @@ handle_option (const char **argv, unsigned int lang_mask)
       opt = dup;
       value = 0;
       opt_index = find_opt (opt + 1, lang_mask | CL_COMMON | CL_TARGET);
-      if (opt_index == cl_options_count)
+      if (opt_index == cl_options_count && opt[1] == 'W')
 	{
 	  /* We don't generate errors for unknown -Wno-* options
              unless we issue diagnostics.  */

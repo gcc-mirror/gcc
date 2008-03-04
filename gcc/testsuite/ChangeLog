@@ -1,3 +1,8 @@
+2008-03-04  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR 28322
+	* gcc.dg/pr28322-3.c: New.
+
 2008-03-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/35453
