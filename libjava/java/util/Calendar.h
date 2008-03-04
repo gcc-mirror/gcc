@@ -128,6 +128,7 @@ public: // actually protected
   jboolean areFieldsSet;
 private:
   ::java::util::TimeZone * zone;
+  static ::java::lang::String * calendarClassName;
   jboolean lenient;
   jint firstDayOfWeek;
   jint minimalDaysInFirstWeek;

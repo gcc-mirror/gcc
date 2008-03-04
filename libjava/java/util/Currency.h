@@ -27,11 +27,10 @@ private:
 public: // actually package-private
   static const jlong serialVersionUID = -158308464356906721LL;
 private:
-  ::java::util::Locale * __attribute__((aligned(__alignof__( ::java::lang::Object)))) locale;
-  ::java::util::ResourceBundle * res;
   static ::java::util::Properties * properties;
-  ::java::lang::String * currencyCode;
+  ::java::lang::String * __attribute__((aligned(__alignof__( ::java::lang::Object)))) currencyCode;
   jint fractionDigits;
+  static ::java::util::Map * countryMap;
   static ::java::util::Map * cache;
 public:
   static ::java::lang::Class class$;

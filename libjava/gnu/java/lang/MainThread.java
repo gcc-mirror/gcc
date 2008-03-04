@@ -1,6 +1,6 @@
 /* gnu.java.lang.MainThread
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
-   Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+   2006, 2008 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -59,8 +59,6 @@ final class MainThread extends Thread
   static final Class Kfile     = gnu.java.net.protocol.file.Handler.class;
   static final Class Khttp     = gnu.java.net.protocol.http.Handler.class;
   static final Class Kjar      = gnu.java.net.protocol.jar.Handler.class;
-  static final Class Klocale   = gnu.java.locale.LocaleInformation.class;
-  static final Class Kcalendar = gnu.java.locale.Calendar.class;
 
   // Private data.
   private Class klass;

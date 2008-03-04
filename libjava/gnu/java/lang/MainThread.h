@@ -38,8 +38,6 @@ public: // actually package-private
   static ::java::lang::Class * Kfile;
   static ::java::lang::Class * Khttp;
   static ::java::lang::Class * Kjar;
-  static ::java::lang::Class * Klocale;
-  static ::java::lang::Class * Kcalendar;
 private:
   ::java::lang::Class * __attribute__((aligned(__alignof__( ::java::lang::Thread)))) klass;
   ::java::lang::String * klass_name;

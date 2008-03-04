@@ -139,8 +139,6 @@ makearray properties_map
 
 # logging.properties is installed and is editable.
 set properties_map(java/util/logging) _
-# We haven't merged locale resources yet.
-set properties_map(gnu/java/locale) _
 
 # We want to be able to load xerces if it is on the class path.  So,
 # we have to avoid compiling in the XML-related service files.

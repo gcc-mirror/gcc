@@ -1,5 +1,6 @@
 /* Collator.java -- Perform locale dependent String comparisons.
-   Copyright (C) 1998, 1999, 2000, 2001, 2004, 2005, 2007  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2004, 2005, 2007,
+   2008  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,6 +38,8 @@ exception statement from your version. */
 
 
 package java.text;
+
+import gnu.java.locale.LocaleHelper;
 
 import java.text.spi.CollatorProvider;
 
@@ -243,10 +246,7 @@ public abstract class Collator implements Comparator<Object>, Cloneable
    */
   public static synchronized Locale[] getAvailableLocales ()
   {
-    // FIXME
-    Locale[] l = new Locale[1];
-    l[0] = Locale.US;
-    return l;
+    return LocaleHelper.getCollatorLocales();
   }
 
   /**
@@ -342,8 +342,7 @@ public abstract class Collator implements Comparator<Object>, Cloneable
 	    throw (InternalError)new InternalError().initCause(x);
 	  }
       }
-    // FIXME
-    return getInstance(Locale.US);
+    return getInstance(LocaleHelper.getFallbackLocale(loc));
   }
 
   /**
