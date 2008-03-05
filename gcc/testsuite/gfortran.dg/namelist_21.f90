@@ -1,4 +1,4 @@
-!{ dg-do run }
+!{ dg-do run { target fd_truncate } }
 ! Tests filling arrays from a namelist read when object list is not complete.
 ! Developed from a test case provided by Christoph Jacob.
 ! Contributed by Jerry DeLisle  <jvdelisle@gcc.gnu.org>.

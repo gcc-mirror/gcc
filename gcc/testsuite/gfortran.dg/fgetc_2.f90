@@ -1,5 +1,5 @@
 ! Testcase for the FGETC and FPUTC intrinsics
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
   character(len=5) s
   integer st
 

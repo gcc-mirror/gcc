@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
       character(len=4) a
       open (10, status='scratch')
       write (10,'(A)') '1\n2'

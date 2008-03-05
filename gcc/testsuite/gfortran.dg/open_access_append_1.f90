@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! Testcase for the GNU extension OPEN(...,ACCESS="APPEND")
   open (10,file="foo")
   close (10,status="delete")

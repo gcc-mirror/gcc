@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! { dg-options "-frecord-marker=4" }
 ! This file is all about BACKSPACE
 ! Adapted from gfortran.dg/backspace.f

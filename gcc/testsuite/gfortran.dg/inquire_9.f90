@@ -1,5 +1,5 @@
 ! PR fortran/24774
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
   logical :: l
   l = .true.
   inquire (file='inquire_9 file that should not exist', exist=l)

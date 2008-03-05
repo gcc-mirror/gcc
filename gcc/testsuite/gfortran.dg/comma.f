@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR25419 Default input with commas.
 ! Derived from example given in PR.
 ! Contributed by Jerry DeLisle  <jvdelisle@gcc.gnu.org> 

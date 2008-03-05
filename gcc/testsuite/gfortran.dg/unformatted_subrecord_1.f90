@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! { dg-options "-fmax-subrecord-length=16" }
 ! Test Intel record markers with 16-byte subrecord sizes.
 ! PR 32770:  Use explicit kinds for all integers and constants,

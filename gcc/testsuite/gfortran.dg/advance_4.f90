@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR31207 Last record truncated for read after short write
 program main
   character(10) :: answer

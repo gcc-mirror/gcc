@@ -1,4 +1,4 @@
-!{ dg-do run }
+!{ dg-do run { target fd_truncate } }
 ! PR26136 Filling logical variables from namelist read when object list is not
 ! complete.  Test case derived from PR.
 ! Contributed by Jerry DeLisle  <jvdelisle@gcc.gnu.org>

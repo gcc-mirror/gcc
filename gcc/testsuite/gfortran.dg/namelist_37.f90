@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR33039 Read NAMELIST:  reads wrong namelist name
 ! Test case from PR modified by Jerry DeLisle <jvdelisle@gcc.gnu.org>
 PROGRAM namelist

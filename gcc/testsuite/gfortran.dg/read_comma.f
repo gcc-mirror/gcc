@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR25039 This test checks that commas in input fields for formatted sequential
 ! reads are interpreted as the read completion.  If no comma is encountered the
 ! normal field width determines the end of the read.  The test case also checks

@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR 26499 : Positioning of EOF after backspaces and write.
 ! This test verifies that the last write truncates the file.
 ! Submitted by Jerry DeLisle <jvdelisle@verizon.net>.

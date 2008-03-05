@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! Test correct operation for pad='no'.
 program main
   character(len=1) line(2)

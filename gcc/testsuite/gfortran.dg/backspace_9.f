@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR32235 incorrectly position text file after backspace
 ! Test case from PR, prepared by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
       program main

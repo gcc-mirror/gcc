@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR35132 Formatted stream I/O write should truncate.
 ! Test case adapted from PR by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 program main

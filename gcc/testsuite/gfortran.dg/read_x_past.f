@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! { dg-options -w }
 ! PR 26661 : Test reading X's past file end with no LF or CR.
 ! PR 26880 : Tests that rewind clears the gfc_unit read_bad flag.

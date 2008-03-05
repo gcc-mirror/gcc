@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR31052 Bad IOSTAT values when readings NAMELISTs past EOF.
 ! Patch derived from PR, submitted by Jerry DeLisle <jvdelisle@gcc.gnu.org>
 program gfcbug61

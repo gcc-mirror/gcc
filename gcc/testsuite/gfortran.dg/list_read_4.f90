@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! Test of gfortran list directed read> check delimiters are correctly
 ! treated.  Written in f77 so that g77 will run for comparison.
 !

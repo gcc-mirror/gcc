@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR26890 Test for use of SIZE variable in IO list.
 ! Test case from Paul Thomas.
 ! Submitted by Jerry DeLisle <jvdelisle@gcc.gnu.org>

@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! { dg-options "-fbackslash" }
       integer :: i, e
       open (10, status='scratch')

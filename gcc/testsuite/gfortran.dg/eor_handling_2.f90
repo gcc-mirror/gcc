@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR 19568:  Don't read across end of line when the format is longer
 !            than the line length and pad='yes' (default)
 program main

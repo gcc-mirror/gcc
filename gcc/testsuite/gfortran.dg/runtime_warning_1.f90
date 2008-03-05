@@ -3,7 +3,7 @@
 ! Contributor Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 !
 ! { dg-options "-pedantic" }
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 !
      character*5 c
      open (42,status='scratch')

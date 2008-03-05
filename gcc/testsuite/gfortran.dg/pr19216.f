@@ -1,5 +1,5 @@
 ! PR libfortran/19216
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
        integer dat(3), i, j
        data dat / 3,2,1 /
 

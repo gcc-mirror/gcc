@@ -1,5 +1,5 @@
 ! PR libfortran/19678 and PR libfortran/19679
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
       integer i, j
       
       open (10,status='scratch')

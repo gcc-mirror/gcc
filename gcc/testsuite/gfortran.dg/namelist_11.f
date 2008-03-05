@@ -1,4 +1,4 @@
-c { dg-do run }
+c { dg-do run { target fd_truncate } }
 c This program tests: namelist comment, a blank line before the nameilist name, the namelist name,
 c a scalar qualifier, various combinations of space, comma and lf delimiters, f-formats, e-formats
 c a blank line within the data read, nulls, a range qualifier, a new object name before end of data

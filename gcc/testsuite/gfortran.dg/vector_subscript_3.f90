@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 !
 ! Test the fix for PR34875, in which the read with a vector index
 ! used to do nothing.

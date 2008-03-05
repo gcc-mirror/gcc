@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR 17992:  Reading an empty file should yield zero with pad='YES'
 ! (which is the default).
 ! Test case supplied by milan@cmm.ki.si.

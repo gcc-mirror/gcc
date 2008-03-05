@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR 29627 - partial reads of unformatted records
 program main
   character a(3)

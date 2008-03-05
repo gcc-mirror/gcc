@@ -2227,6 +2227,45 @@ proc check_effective_target_pthread_h { } {
     }]
 }
 
+# Return 1 if the target can truncate a file from a file-descriptor,
+# as used by libgfortran/io/unix.c:fd_truncate; i.e. ftruncate or
+# chsize.  We test for a trivially functional truncation; no stubs.
+# As libgfortran uses _FILE_OFFSET_BITS 64, we do too; it'll cause a
+# different function to be used.
+
+proc check_effective_target_fd_truncate { } {
+    set prog {
+	#define _FILE_OFFSET_BITS 64
+	#include <unistd.h>
+	#include <stdio.h>
+	#include <stdlib.h>
+	int main ()
+	{
+	  FILE *f = fopen ("tst.tmp", "wb");
+	  int fd;
+	  const char t[] = "test writing more than ten characters";
+	  char s[11];
+	  fd =  fileno (f);
+	  write (fd, t, sizeof (t) - 1);
+	  lseek (fd, 0, 0);
+	  if (ftruncate (fd, 10) != 0)
+	    exit (1);
+	  close (fd);
+	  f = fopen ("tst.tmp", "rb");
+	  if (fread (s, 1, sizeof (s), f) != 10 || strncmp (s, t, 10) != 0)
+	    exit (1);
+	  exit (0);
+	}
+    }
+
+    if { [check_runtime ftruncate $prog] } {
+      return 1;
+    }
+
+    regsub "ftruncate" $prog "chsize" prog
+    return [check_runtime chsize $prog]
+}
+
 # Add to FLAGS all the target-specific flags needed to access the c99 runtime.
 
 proc add_options_for_c99_runtime { flags } {
