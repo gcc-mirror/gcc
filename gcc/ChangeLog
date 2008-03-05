@@ -1,3 +1,10 @@
+2008-03-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/35472
+	* tree-ssa-dse.c (dse_optimize_stmt): Do not delete a store
+	whose single use_stmt has a overlapping set of loaded and
+	stored symbols as that use_stmt might be a noop assignment then.
+
 2008-03-05  Joel Sherrill <joel.sherrill@oarcorp.com>
 
 	* gthr-rtems.h: Implement __gthread_mutex_destroy.
