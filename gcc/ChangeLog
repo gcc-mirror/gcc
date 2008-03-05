@@ -1,3 +1,29 @@
+2008-03-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* cfg.c: Include tree-flow.h.
+	(remove_edge_raw): Call redirect_edge_var_map_clear.
+	(redirect_edge_succ_nodup): Call redirect_edge_var_map_dup.
+	* tree-flow-inline.h (redirect_edge_var_map_def): New.
+	(redirect_edge_var_map_result): New.
+	* tree-cfgcleanup.c (remove_forwarder_block_with_phi): Replace
+	PENDING_STMT use with redirect_edge_var_map_*.
+	* tree-ssa.c (edge_var_maps): New definition.
+	(redirect_edge_var_map_add): New.
+	(redirect_edge_var_map_clear): New.
+	(redirect_edge_var_map_dup): New.
+	(redirect_edge_var_map_vector): New.
+	(redirect_edge_var_map_destroy): New.
+	(ssa_redirect_edge): Replace PENDING_STMT use with
+	redirect_edge_var_map_*.
+	(flush_pending_stmts): Same.
+	(delete_tree_ssa): Destroy edge var map.
+	* tree-flow.h (struct _edge_var_map): New.
+	Define edge_var_map vector type.
+	Declare redirect_edge_var_map_* prototypes.
+	* Makefile.in (cfg.o): Depend on TREE_FLOW_H.
+	* tree-cfg.c (reinstall_phi_args): Replace
+	PENDING_STMT use with redirect_edge_var_map_*.
+
 2008-03-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/35472

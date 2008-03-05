@@ -879,7 +879,30 @@ typedef bool (*walk_use_def_chains_fn) (tree, tree, void *);
 /* In tree-ssa-alias-warnings.c  */
 extern void strict_aliasing_warning_backend (void);
 
+
 /* In tree-ssa.c  */
+
+/* Mapping for redirected edges.  */
+struct _edge_var_map GTY(())
+{
+  tree result;			/* PHI result.  */
+  tree def;			/* PHI arg definition.  */
+};
+typedef struct _edge_var_map edge_var_map;
+
+DEF_VEC_O(edge_var_map);
+DEF_VEC_ALLOC_O(edge_var_map, heap);
+
+/* A vector of var maps.  */
+typedef VEC(edge_var_map, heap) *edge_var_map_vector;
+
+extern void redirect_edge_var_map_add (edge, tree, tree);
+extern void redirect_edge_var_map_clear (edge);
+extern void redirect_edge_var_map_dup (edge, edge);
+extern edge_var_map_vector redirect_edge_var_map_vector (edge);
+extern void redirect_edge_var_map_destroy (void);
+
+
 extern void init_tree_ssa (void);
 extern edge ssa_redirect_edge (edge, basic_block);
 extern void flush_pending_stmts (edge);
@@ -891,6 +914,7 @@ extern void delete_tree_ssa (void);
 extern void walk_use_def_chains (tree, walk_use_def_chains_fn, void *, bool);
 extern bool stmt_references_memory_p (tree);
 extern bool ssa_undefined_value_p (tree);
+
 
 /* In tree-into-ssa.c  */
 void update_ssa (unsigned);

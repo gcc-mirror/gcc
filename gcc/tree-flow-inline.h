@@ -1842,4 +1842,20 @@ gimple_mem_ref_stats (const struct function *fn)
 {
   return &fn->gimple_df->mem_ref_stats;
 }
+
+/* Given an edge_var_map V, return the PHI arg definition.  */
+
+static inline tree
+redirect_edge_var_map_def (edge_var_map *v)
+{
+  return v->def;
+}
+
+/* Given an edge_var_map V, return the PHI result.  */
+
+static inline tree
+redirect_edge_var_map_result (edge_var_map *v)
+{
+  return v->result;
+}
 #endif /* _TREE_FLOW_INLINE_H  */
