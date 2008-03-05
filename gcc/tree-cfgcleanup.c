@@ -748,7 +748,7 @@ remove_forwarder_block_with_phi (basic_block bb)
 	  if (phi_alternatives_equal (dest, s, succ))
 	    {
 	      e = redirect_edge_and_branch (e, dest);
-	      PENDING_STMT (e) = NULL_TREE;
+	      redirect_edge_var_map_clear (e);
 	      continue;
 	    }
 
@@ -771,15 +771,18 @@ remove_forwarder_block_with_phi (basic_block bb)
 
 	  if (TREE_CODE (def) == SSA_NAME)
 	    {
-	      tree var;
+	      edge_var_map_vector head;
+	      edge_var_map *vm;
+	      size_t i;
 
 	      /* If DEF is one of the results of PHI nodes removed during
 		 redirection, replace it with the PHI argument that used
 		 to be on E.  */
-	      for (var = PENDING_STMT (e); var; var = TREE_CHAIN (var))
+	      head = redirect_edge_var_map_vector (e);
+	      for (i = 0; VEC_iterate (edge_var_map, head, i, vm); ++i)
 		{
-		  tree old_arg = TREE_PURPOSE (var);
-		  tree new_arg = TREE_VALUE (var);
+		  tree old_arg = redirect_edge_var_map_result (vm);
+		  tree new_arg = redirect_edge_var_map_def (vm);
 
 		  if (def == old_arg)
 		    {
@@ -792,7 +795,7 @@ remove_forwarder_block_with_phi (basic_block bb)
 	  add_phi_arg (phi, def, s);
 	}
 
-      PENDING_STMT (e) = NULL;
+      redirect_edge_var_map_clear (e);
     }
 
   /* Update the dominators.  */
