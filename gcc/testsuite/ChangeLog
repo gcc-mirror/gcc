@@ -1,3 +1,8 @@
+2008-03-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/35472
+	* gcc.c-torture/execute/pr35472.c: New testcase.
+
 2007-03-05  Gabor Loki  <loki@gcc.gnu.org>
 
 	PR 33009
