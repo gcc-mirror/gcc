@@ -1,3 +1,8 @@
+2008-03-05  Serge Belyshev  <belyshev@depni.sinp.msu.ru>
+
+	* doc/install.texi (Testing): Correct quoting for the RUNTESTFLAGS
+	examples.  Truncate option-names then causing overfull hbox.
+
 2008-03-04  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/35222
