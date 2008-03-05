@@ -1,3 +1,12 @@
+2008-03-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR libfortran/35293
+	* io/unix.c (fd_truncate): Fold s->special_file case into
+	success case of ftruncate/chsize call instead of the failure case.
+	Make failure case actually return failure.  Properly update stream
+	pointers on failure.  Call runtime_error for targets without
+	neither ftruncate nor chsize where such a call would be needed.
+
 2008-03-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/33197
