@@ -1,3 +1,18 @@
+2008-03-05  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/35336
+	* tree.def (BIT_FIELD_REF): Document that operands 1 and 2
+	should be constants.
+	* tree-cfg.c (verify_expr): Verify it.
+	* fold-const.c (fold_truthop): Remove code generating
+	BIT_FIELD_REFs of structure bases.
+	(fold_binary): Likewise.
+	(fold_ternary): Position and size of BIT_FIELD_REFs are
+	always host integers.
+	(make_bit_field_ref): Remove.
+	(optimize_bit_field_compare): Remove.
+	(all_ones_mask_p): Remove.
+
 2008-03-05  Gabor Loki  <loki@gcc.gnu.org>
 
 	PR gcc/33009
