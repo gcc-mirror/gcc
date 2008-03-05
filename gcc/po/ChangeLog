@@ -1,3 +1,7 @@
+2008-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.pot: Regenerate.
+
 2008-02-08  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* ru.po: Update.
