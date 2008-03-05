@@ -1,3 +1,7 @@
+2008-03-05  Release Manager
+
+	* GCC 4.3.0 released.
+
 2008-01-26  David Daney  <ddaney@avtrex.com>
 
 	* cp-demangle.c (d_dump): Handle DEMANGLE_COMPONENT_JAVA_RESOURCE,
