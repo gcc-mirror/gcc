@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR 34980 - we got a segfault for calling shape
 !            with a scalar.
 program main

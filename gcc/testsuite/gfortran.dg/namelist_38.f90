@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR33253 namelist: reading back a string, also fixed writing with delimiters.
 ! Test case modified from that of the PR by
 ! Jerry DeLisle  <jvdelisle@gcc.gnu.org>

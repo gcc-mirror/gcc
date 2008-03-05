@@ -1,4 +1,4 @@
-! { dg-do run }     
+! { dg-do run { target fd_truncate } }     
 ! Test of fix to bug triggered by NIST fm908.for.
 ! Left tabbing, followed by X or T-tabbing to the right would
 ! cause spaces to be overwritten on output data.

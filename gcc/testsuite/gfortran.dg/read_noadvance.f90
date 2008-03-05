@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! pr24719, non-advancing read should read more than one line
 ! test contributed by jerry delisle <jvdelisle@gcc.gnu.org>
       implicit none

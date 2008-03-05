@@ -1,5 +1,5 @@
 ! This file is all about BACKSPACE
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 
       integer i, n, nr
       real x(10), y(10)

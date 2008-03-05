@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! pr19314 inquire(..position=..) segfaults
 ! test by Thomas.Koenig@online.de
 !         bdavis9659@comcast.net

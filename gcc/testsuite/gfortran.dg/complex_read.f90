@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! Test of the fix to the bug in NIST fm906.for.
 ! Contributed by Paul Thomas  <pault@gcc.gnu.org>
 !

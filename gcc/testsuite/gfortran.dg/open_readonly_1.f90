@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR19451
 ! Writing to a non-empty readonly file caused a segfault.
 ! We were still trying to write the EOR after an error ocurred

@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR 20661: Handle non-advancing I/O with iostat
 ! Test case by Walt Brainerd, The Fortran Company
 

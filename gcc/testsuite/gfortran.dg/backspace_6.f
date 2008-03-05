@@ -1,4 +1,4 @@
-!{ dg-do run }
+!{ dg-do run { target fd_truncate } }
 ! PR26464 File I/O error related to buffering and BACKSPACE
 ! Test case derived from case by Dale Ranta.
 ! Submitted  by Jerry DeLisle  <jvdelisle@gcc.gnu.org>

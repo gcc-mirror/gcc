@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! { dg-options "-w" }
 ! PR libfortran/20006
       character*5 c

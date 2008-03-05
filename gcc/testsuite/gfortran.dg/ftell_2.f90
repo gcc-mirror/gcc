@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
   integer(kind=8) o
   open (10, status="scratch")
   if (ftell(10) /= 0) call abort

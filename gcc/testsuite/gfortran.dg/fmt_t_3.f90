@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR31051 bug with x and t format descriptors.
 ! Test case prepared by Jerry DeLisle  <jvdelisle@gcc.gnu.org> from PR.
 program t

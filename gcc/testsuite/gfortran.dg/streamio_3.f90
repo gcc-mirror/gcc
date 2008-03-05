@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR25828 Stream IO test 3, tests read_x and inquire.
 ! Contributed by Jerry DeLisle <jvdelisle@verizon.net>.
 program streamio_3

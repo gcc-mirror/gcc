@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR 19451: The test for advance='NO' with eor used to be reversed.
 program main
   character*2 c

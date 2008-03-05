@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR 34370 - file positioning after non-advancing I/O didn't add
 ! a record marker.
 

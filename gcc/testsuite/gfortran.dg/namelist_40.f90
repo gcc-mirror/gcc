@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR33672 Additional runtime checks needed for namelist reads
 ! Submitted by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 

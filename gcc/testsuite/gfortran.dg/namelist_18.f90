@@ -1,4 +1,4 @@
-!{ dg-do run }
+!{ dg-do run { target fd_truncate } }
 ! Tests character delimiters for namelist write 
 ! provided by Paul Thomas - pault@gcc.gnu.org
 

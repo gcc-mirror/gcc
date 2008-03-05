@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! { dg-options "-std=gnu" }
   character(len=*), parameter :: f = "testfile"
   integer :: s1(13), r1, s2(13), r2, s3(13), r3

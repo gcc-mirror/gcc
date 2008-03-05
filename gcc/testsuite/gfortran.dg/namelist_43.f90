@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! { dg-options "-mieee" { target sh*-*-* } }
 !
 ! PR fortran/34427

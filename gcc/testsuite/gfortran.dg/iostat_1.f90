@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR 23598 - The iostat variable wasn't reset if the previous
 ! I/O library call had an error.
 program main

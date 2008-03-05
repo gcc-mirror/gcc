@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR31199, test case from PR report.
        program write_write
        character(len=20) :: a,b,c

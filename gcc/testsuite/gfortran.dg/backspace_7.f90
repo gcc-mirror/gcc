@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 !pr18284 BACKSPACE broken
        open(unit=10,access='SEQUENTIAL',status='SCRATCH')
        do I = 1,200

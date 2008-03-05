@@ -1,4 +1,4 @@
-! { dg-do run } 
+! { dg-do run { target fd_truncate } } 
 ! PR 19872 - closed and re-opened file not overwriten
       implicit none
       integer i(4)

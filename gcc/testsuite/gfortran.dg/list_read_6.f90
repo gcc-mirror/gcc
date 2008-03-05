@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR30435 Slash at end of input not recognized according to standard.
 ! Test case from PR by Steve Kargl.
 

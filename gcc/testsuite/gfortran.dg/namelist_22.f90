@@ -1,4 +1,4 @@
-!{ dg-do run }
+!{ dg-do run { target fd_truncate } }
 ! Tests filling arrays from a namelist read when object list is not complete.
 ! This is the same as namelist_21.f90 except using spaces as seperators instead
 ! of commas. Developed from a test case provided by Christoph Jacob.

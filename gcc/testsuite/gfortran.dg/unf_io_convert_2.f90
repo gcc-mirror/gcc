@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 program main
   complex(kind=4) :: c
   real(kind=4) :: a(2)

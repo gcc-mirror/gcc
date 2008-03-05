@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR29936 Missed constraint on RECL=specifier in unformatted sequential WRITE
 ! Submitted by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 program us_recl

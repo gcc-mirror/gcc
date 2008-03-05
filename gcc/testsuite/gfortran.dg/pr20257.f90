@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
   integer,parameter :: n = 10000
   real(8) array(10000)
 

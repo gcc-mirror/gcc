@@ -1,5 +1,5 @@
 ! PR libfortran/22170
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
   integer i
   open (10,status='scratch')
   write (10,'(A,2/,A)') '12', '17'

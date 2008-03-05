@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! Check that rewind doesn't delete a file.
 ! Writing to the file truncates it at the end of the current record.  Out
 ! IO library was defering the actual truncation until the file was rewound.

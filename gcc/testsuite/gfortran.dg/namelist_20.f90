@@ -1,4 +1,4 @@
-!{ dg-do run }
+!{ dg-do run { target fd_truncate } }
 ! Tests namelist io for an explicit shape array with negative bounds
 ! provided by Paul Thomas - pault@gcc.gnu.org
 

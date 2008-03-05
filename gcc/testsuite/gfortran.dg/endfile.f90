@@ -1,4 +1,4 @@
-! { dg-do run } 
+! { dg-do run { target fd_truncate } } 
 ! pr18364 endfile does not truncate file.
 !   write out 20 records
 !   rewind

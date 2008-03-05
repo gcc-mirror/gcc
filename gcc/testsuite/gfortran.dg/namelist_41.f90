@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR34291 Segfault on &end in namelist expanded read of character
   implicit none
   character(len=10), dimension(2)  :: var
