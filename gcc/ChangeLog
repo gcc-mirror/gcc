@@ -1,3 +1,9 @@
+2008-03-04  Geoff Keating  <geoffk@apple.com>
+
+	* fold-const.c (tree_single_nonnegative_warnv_p): Fix mixed
+	declaration and code.
+	(tree_invalid_nonnegative_warnv_p): Likewise.
+
 2008-03-05  Serge Belyshev  <belyshev@depni.sinp.msu.ru>
 
 	* doc/install.texi (Testing): Correct quoting for the RUNTESTFLAGS

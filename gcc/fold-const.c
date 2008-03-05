@@ -14238,8 +14238,7 @@ tree_single_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
   if (TYPE_UNSIGNED (TREE_TYPE (t)))
     return true;
 
-  enum tree_code code = TREE_CODE (t);
-  switch (code)
+  switch (TREE_CODE (t))
     {
     case SSA_NAME:
       /* Query VRP to see if it has recorded any information about
@@ -14276,10 +14275,10 @@ tree_single_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
 static bool
 tree_invalid_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
 {
+  enum tree_code code = TREE_CODE (t);
   if (TYPE_UNSIGNED (TREE_TYPE (t)))
     return true;
 
-  enum tree_code code = TREE_CODE (t);
   switch (code)
     {
     case TARGET_EXPR:
