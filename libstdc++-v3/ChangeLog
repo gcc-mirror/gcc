@@ -1,3 +1,7 @@
+2008-03-05  Release Manager
+
+	* GCC 4.3.0 released.
+
 2008-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Update.
