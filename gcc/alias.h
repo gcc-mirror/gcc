@@ -20,14 +20,21 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ALIAS_H
 #define GCC_ALIAS_H
 
+#include "coretypes.h"
+
 /* The type of an alias set.  */
 typedef HOST_WIDE_INT alias_set_type;
 
 extern alias_set_type new_alias_set (void);
+extern alias_set_type get_alias_set (tree);
 extern alias_set_type get_varargs_alias_set (void);
 extern alias_set_type get_frame_alias_set (void);
 extern bool component_uses_parent_alias_set (const_tree);
 extern bool alias_set_subset_of (alias_set_type, alias_set_type);
+extern void record_component_aliases (tree);
+extern int alias_sets_conflict_p (alias_set_type, alias_set_type);
+extern int alias_sets_must_conflict_p (alias_set_type, alias_set_type);
+extern int objects_must_conflict_p (tree, tree);
 extern int nonoverlapping_memrefs_p (const_rtx, const_rtx);
 
 /* This alias set can be used to force a memory to conflict with all

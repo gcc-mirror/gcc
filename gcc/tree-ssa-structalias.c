@@ -2630,25 +2630,6 @@ bitpos_of_field (const tree fdecl)
 }
 
 
-/* Return true if an access to [ACCESSPOS, ACCESSSIZE]
-   overlaps with a field at [FIELDPOS, FIELDSIZE] */
-
-static bool
-offset_overlaps_with_access (const unsigned HOST_WIDE_INT fieldpos,
-			     const unsigned HOST_WIDE_INT fieldsize,
-			     const unsigned HOST_WIDE_INT accesspos,
-			     const unsigned HOST_WIDE_INT accesssize)
-{
-  if (fieldpos == accesspos && fieldsize == accesssize)
-    return true;
-  if (accesspos >= fieldpos && accesspos < (fieldpos + fieldsize))
-    return true;
-  if (accesspos < fieldpos && (accesspos + accesssize > fieldpos))
-    return true;
-
-  return false;
-}
-
 /* Given a COMPONENT_REF T, return the constraint_expr for it.  */
 
 static void
@@ -2713,8 +2694,8 @@ get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results)
 	  varinfo_t curr;
 	  for (curr = get_varinfo (result->var); curr; curr = curr->next)
 	    {
-	      if (offset_overlaps_with_access (curr->offset, curr->size,
-					       result->offset, bitmaxsize))
+	      if (ranges_overlap_p (curr->offset, curr->size,
+				    result->offset, bitmaxsize))
 		{
 		  result->var = curr->id;
 		  break;

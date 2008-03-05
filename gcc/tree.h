@@ -4564,9 +4564,13 @@ extern tree get_unwidened (tree, tree);
 
 extern tree get_narrower (tree, int *);
 
-/* Given an expression EXP that may be a COMPONENT_REF or an ARRAY_REF,
-   look for nested component-refs or array-refs at constant positions
-   and find the ultimate containing object, which is returned.  */
+/* Return true if T is an expression that get_inner_reference handles.  */
+
+extern int handled_component_p (const_tree);
+
+/* Given an expression EXP that is a handled_component_p,
+   look for the ultimate containing object, which is returned and specify
+   the access position and size.  */
 
 extern tree get_inner_reference (tree, HOST_WIDE_INT *, HOST_WIDE_INT *,
 				 tree *, enum machine_mode *, int *, int *,
@@ -4577,10 +4581,6 @@ extern tree get_inner_reference (tree, HOST_WIDE_INT *, HOST_WIDE_INT *,
    as PACKED.  */
 
 extern bool contains_packed_reference (const_tree exp);
-
-/* Return 1 if T is an expression that get_inner_reference handles.  */
-
-extern int handled_component_p (const_tree);
 
 /* Return a tree of sizetype representing the size, in bytes, of the element
    of EXP, an ARRAY_REF.  */
@@ -4874,13 +4874,6 @@ extern int get_pointer_alignment (tree, unsigned int);
 
 /* In convert.c */
 extern tree strip_float_extensions (tree);
-
-/* In alias.c */
-extern void record_component_aliases (tree);
-extern alias_set_type get_alias_set (tree);
-extern int alias_sets_conflict_p (alias_set_type, alias_set_type);
-extern int alias_sets_must_conflict_p (alias_set_type, alias_set_type);
-extern int objects_must_conflict_p (tree, tree);
 
 /* In tree.c */
 extern int really_constant_p (const_tree);
