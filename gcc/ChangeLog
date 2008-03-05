@@ -1,3 +1,15 @@
+2008-03-05  Gabor Loki  <loki@gcc.gnu.org>
+
+	PR gcc/33009
+	* rtl-factoring.c (clear_regs_live_in_seq): Fix backward steps.
+	(split_block_and_df_analyze): New. Split basic block and rebuild
+	dataflow.
+	(block_label_after): Use SPLIT_BLOCK_AND_DF_ANALYZE instead of
+	SPLIT_BLOCK.
+	(split_pattern_seq): Likewise.
+	(erase_matching_seqs): Likewise.
+	(split_pattern_seq): Skip return insn in case of REG_NORETURN note.
+
 2008-03-04  Geoff Keating  <geoffk@apple.com>
 
 	* fold-const.c (tree_single_nonnegative_warnv_p): Fix mixed
