@@ -1,5 +1,5 @@
 /* RTL factoring (sequence abstraction).
-   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -551,8 +551,8 @@ clear_regs_live_in_seq (HARD_REG_SET * regs, rtx insn, int length)
   df_simulate_artificial_refs_at_end (bb, &live);
 
   /* Propagate until INSN if found.  */
-  for (x = BB_END (bb); x != insn;)
-    df_simulate_one_insn_backwards (bb, insn, &live);
+  for (x = BB_END (bb); x != insn; x = PREV_INSN (x))
+    df_simulate_one_insn_backwards (bb, x, &live);
 
   /* Clear registers live after INSN.  */
   renumbered_reg_set_to_hard_reg_set (&hlive, &live);
@@ -562,7 +562,7 @@ clear_regs_live_in_seq (HARD_REG_SET * regs, rtx insn, int length)
   for (i = 0; i < length;)
     {
       rtx prev = PREV_INSN (x);
-      df_simulate_one_insn_backwards (bb, insn, &live);
+      df_simulate_one_insn_backwards (bb, x, &live);
 
       if (INSN_P (x))
         {
@@ -949,6 +949,17 @@ gen_symbol_ref_rtx_for_label (const_rtx label)
   return sym;
 }
 
+/* Splits basic block at the requested insn and rebuilds dataflow.  */
+
+static basic_block
+split_block_and_df_analyze (basic_block bb, rtx insn)
+{
+  basic_block next;
+  next = split_block (bb, insn)->dest;
+  df_analyze ();
+  return next;
+}
+
 /* Ensures that INSN is the last insn in its block and returns the block label
    of the next block.  */
 
@@ -959,7 +970,7 @@ block_label_after (rtx insn)
   if ((insn == BB_END (bb)) && (bb->next_bb != EXIT_BLOCK_PTR))
     return block_label (bb->next_bb);
   else
-    return block_label (split_block (bb, insn)->dest);
+    return block_label (split_block_and_df_analyze (bb, insn));
 }
 
 /* Ensures that the last insns of the best pattern and its matching sequences
@@ -1008,8 +1019,9 @@ split_pattern_seq (void)
 
   /* Emit an indirect jump via the link register after the sequence acting
      as the return insn.  Also emit a barrier and update the basic block.  */
-  retjmp = emit_jump_insn_after (gen_indirect_jump (pattern_seqs->link_reg),
-                                 BB_END (bb));
+  if (!find_reg_note (BB_END (bb), REG_NORETURN, NULL))
+    retjmp = emit_jump_insn_after (gen_indirect_jump (pattern_seqs->link_reg),
+                                   BB_END (bb));
   emit_barrier_after (BB_END (bb));
 
   /* Replace all outgoing edges with a new one to the block of RETLABEL.  */
@@ -1025,7 +1037,7 @@ split_pattern_seq (void)
       for (; i < sb->length; i++)
         insn = prev_insn_in_block (insn);
 
-      sb->label = block_label (split_block (bb, insn)->dest);
+      sb->label = block_label (split_block_and_df_analyze (bb, insn));
     }
 
   /* Emit an insn saving the return address to the link register before the
@@ -1067,7 +1079,7 @@ erase_matching_seqs (void)
           /* Delete the insns of the sequence.  */
           for (i = 0; i < sb->length; i++)
             insn = prev_insn_in_block (insn);
-          delete_basic_block (split_block (bb, insn)->dest);
+          delete_basic_block (split_block_and_df_analyze (bb, insn));
 
           /* Emit an insn saving the return address to the link register
              before the deleted sequence.  */
