@@ -62,6 +62,7 @@ extern int rtems_gxx_setspecific (__gthread_key_t key, const void *ptr);
 
 /* mutex support */
 extern void rtems_gxx_mutex_init (__gthread_mutex_t *mutex);
+extern int rtems_gxx_mutex_destroy (__gthread_mutex_t *mutex);
 extern int rtems_gxx_mutex_lock (__gthread_mutex_t *mutex);
 extern int rtems_gxx_mutex_trylock (__gthread_mutex_t *mutex);
 extern int rtems_gxx_mutex_unlock (__gthread_mutex_t *mutex);
@@ -111,9 +112,9 @@ __gthread_setspecific (__gthread_key_t key, const void *ptr)
 }
 
 static inline int
-__gthread_mutex_destroy (__gthread_mutex_t * UNUSED(mutex))
+__gthread_mutex_destroy (__gthread_mutex_t *mutex)
 {
-  return 0;
+  return rtems_gxx_mutex_destroy (mutex);
 }
 
 static inline int
