@@ -23,6 +23,7 @@
 
 website=http://gcc.gnu.org/
 files="
+    gcc-4.3/index.html gcc-4.3/changes.html
     gcc-4.2/index.html gcc-4.2/changes.html
     gcc-4.1/index.html gcc-4.1/changes.html
     gcc-4.0/index.html gcc-4.0/changes.html

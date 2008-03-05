@@ -1,3 +1,7 @@
+2008-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gennews (files): Reference GCC 4.3 web pages.
+
 2008-02-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* check_warning_flags.sh: New file.
