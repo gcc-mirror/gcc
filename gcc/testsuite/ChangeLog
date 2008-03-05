@@ -1,5 +1,6 @@
 2008-03-05  Hans-Peter Nilsson  <hp@axis.com>
 
+	PR libfortran/35293
 	* lib/lib/target-supports.exp (check_effective_target_fd_truncate):
 	New.
 	* gfortran.fortran-torture/execute/list_read_1.x,
