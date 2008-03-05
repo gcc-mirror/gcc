@@ -706,16 +706,28 @@ fd_truncate (unix_stream * s)
 
   /* Using ftruncate on a seekable special file (like /dev/null)
      is undefined, so we treat it as if the ftruncate succeeded.  */
+  if (!s->special_file
+      && (
 #ifdef HAVE_FTRUNCATE
-  if (s->special_file || ftruncate (s->fd, s->logical_offset))
+	  ftruncate (s->fd, s->logical_offset) != 0
+#elif defined HAVE_CHSIZE
+	  chsize (s->fd, s->logical_offset) != 0
 #else
-#ifdef HAVE_CHSIZE
-  if (s->special_file || chsize (s->fd, s->logical_offset))
+	  /* If we have neither, always fail and exit, noisily.  */
+	  runtime_error ("required ftruncate or chsize support not present"), 1
 #endif
-#endif
+	  ))
     {
-      s->physical_offset = s->file_length = 0;
-      return SUCCESS;
+      /* The truncation failed and we need to handle this gracefully.
+	 The file length remains the same, but the file-descriptor
+	 offset needs adjustment per the successful lseek above.
+	 (Similarly, the contents of the buffer isn't valid anymore.)
+	 A ftruncate call does not affect the physical (file-descriptor)
+	 offset, according to the ftruncate manual, so neither should a
+	 failed call.  */
+      s->physical_offset = s->logical_offset;
+      s->active = 0;
+      return FAILURE;
     }
 
   s->physical_offset = s->file_length = s->logical_offset;
