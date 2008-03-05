@@ -1,3 +1,23 @@
+2008-03-05  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (get_constraint_for_component_ref):
+	Use ranges_overlap_p.
+	(offset_overlaps_with_access): Rename
+	to ranges_overlap_p and move ...
+	* tree-flow-inline.h (ranges_overlap_p): ... here.
+
+	* tree.h (get_inner_reference, handled_component_p): Update
+	comments.
+
+	* tree.h (record_component_aliases, get_alias_set,
+	alias_sets_conflict_p, alias_sets_must_conflict_p,
+	objects_must_conflict_p): Move declarations ...
+	* alias.h (record_component_aliases, get_alias_set,
+	alias_sets_conflict_p, alias_sets_must_conflict_p,
+	objects_must_conflict_p): ... here.
+	Include coretypes.h.
+	* Makefile.in (ALIAS_H): Add coretypes.h dependency.
+
 2008-03-05  Aldy Hernandez  <aldyh@redhat.com>
 
 	* cfg.c: Include tree-flow.h.
