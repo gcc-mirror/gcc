@@ -3267,8 +3267,12 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	    }
 	  else if (TREE_CODE (t) == BIT_FIELD_REF)
 	    {
-	      CHECK_OP (1, "invalid operand to BIT_FIELD_REF");
-	      CHECK_OP (2, "invalid operand to BIT_FIELD_REF");
+	      if (!host_integerp (TREE_OPERAND (t, 1), 1)
+		  || !host_integerp (TREE_OPERAND (t, 2), 1))
+		{
+		  error ("invalid position or size operand to BIT_FIELD_REF");
+		  return t;
+		}
 	    }
 
 	  t = TREE_OPERAND (t, 0);

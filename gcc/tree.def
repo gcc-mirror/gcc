@@ -389,8 +389,8 @@ DEFTREECODE (COMPONENT_REF, "component_ref", tcc_reference, 3)
 /* Reference to a group of bits within an object.  Similar to COMPONENT_REF
    except the position is given explicitly rather than via a FIELD_DECL.
    Operand 0 is the structure or union expression;
-   operand 1 is a tree giving the number of bits being referenced;
-   operand 2 is a tree giving the position of the first referenced bit.
+   operand 1 is a tree giving the constant number of bits being referenced;
+   operand 2 is a tree giving the constant position of the first referenced bit.
    The field can be either a signed or unsigned field;
    BIT_FIELD_REF_UNSIGNED says which.  */
 DEFTREECODE (BIT_FIELD_REF, "bit_field_ref", tcc_reference, 3)
