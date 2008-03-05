@@ -1,3 +1,7 @@
+2008-03-05  Release Manager
+
+	* GCC 4.3.0 released.
+
 2008-01-26  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* include/private/gcconfig.h (HBLKSIZE): Define for MIPS.
