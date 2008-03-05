@@ -1,3 +1,7 @@
+2008-03-05  Release Manager
+
+	* GCC 4.3.0 released.
+
 2008-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/34692
