@@ -1,3 +1,7 @@
+2008-03-05  Release Manager
+
+	* GCC 4.3.0 released.
+
 2007-12-24  Geoff Keating  <geoffk@geoffk.org>
 
 	* objs-gcc.sh: Revert previous change.
