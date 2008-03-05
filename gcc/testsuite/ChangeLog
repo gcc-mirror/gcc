@@ -1,3 +1,8 @@
+2008-03-05  Victor Kaplansky  <victork@gcc.gnu.org>
+
+	PR 31341
+	* gcc.dg/vect/pr31041.c: Fix.
+
 2008-03-05  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR libfortran/35293

@@ -4,16 +4,15 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-typedef int int32_t;
 struct UNewTrie
 {
-  int32_t index[(0x110000 >> 1)];
+  int index[(0x110000 >> 1)];
 };
 typedef struct UNewTrie UNewTrie;
 utrie_open_3_4 ()
 {
   UNewTrie *trie;
-  int32_t i, j;
+  int i, j;
     {
       i = 0;
       do
