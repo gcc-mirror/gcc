@@ -79,6 +79,11 @@ munge (const char *filename)
 	  /* '$' is quoted by doubling it.  */
 	  len++;
 	  break;
+
+	case '#':
+	  /* '#' is quoted with a backslash.  */
+	  len++;
+	  break;
 	}
     }
 
@@ -98,6 +103,10 @@ munge (const char *filename)
 
 	case '$':
 	  *dst++ = '$';
+	  break;
+
+	case '#':
+	  *dst++ = '\\';
 	  break;
 
 	default:
