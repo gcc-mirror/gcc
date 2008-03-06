@@ -1,3 +1,7 @@
+2008-03-06  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* HACKING: Fix grep patterns.
+
 2008-03-04  David Daney  <ddaney@avtrex.com>
 
 	* scripts/makemake.tcl (properties_map): Don't exclude
