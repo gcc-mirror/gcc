@@ -1208,7 +1208,7 @@ give_name_to_class (JCF *jcf, int i)
 #ifdef USE_MAPPED_LOCATION
       {
       tree source_name = identifier_subst (class_name, "", '.', '/', ".java");
-      const char *sfname = IDENTIFIER_POINTER (source_name);
+      const char *sfname = find_sourcefile (IDENTIFIER_POINTER (source_name));
       linemap_add (line_table, LC_ENTER, false, sfname, 0);
       input_location = linemap_line_start (line_table, 0, 1);
       file_start_location = input_location;
