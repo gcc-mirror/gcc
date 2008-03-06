@@ -1,3 +1,22 @@
+2008-03-06  Richard Guenther  <rguenther@suse.de>
+
+	* tree.def (BIT_FIELD_REF): Constrain result type and its precision.
+	* tree-cfg.c (verify_expr): Verify BIT_FIELD_REF constraints on
+	result type and precision.
+	* expr.c (get_inner_reference): Set unsignedp based on the result
+	type of BIT_FIELD_REF.
+	* tree.h (BIT_FIELD_REF_UNSIGNED): Remove.
+	* tree-sra.c (instantiate_element): Do not set BIT_FIELD_REF_UNSIGNED.
+	(try_instantiate_multiple_fields): Likewise.  Use the correct type
+	for BIT_FIELD_REF.
+	(sra_build_assignment): Likewise.
+	(sra_build_elt_assignment): Likewise.
+	(sra_explode_bitfield_assignment): Likewise.
+	* print-tree.c (print_node): Do not check BIT_FIELD_REF_UNSIGNED.
+	* tree-vect-transform.c (vect_create_epilog_for_reduction): Do not
+	set BIT_FIELD_REF_UNSIGNED.
+	(vectorizable_load): Likewise.
+
 2008-03-06  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* cse.c (cse_extended_basic_block): Invalidate artificial defs

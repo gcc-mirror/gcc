@@ -676,8 +676,6 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
     case tcc_reference:
     case tcc_statement:
     case tcc_vl_exp:
-      if (TREE_CODE (node) == BIT_FIELD_REF && BIT_FIELD_REF_UNSIGNED (node))
-	fputs (" unsigned", file);
       if (TREE_CODE (node) == BIND_EXPR)
 	{
 	  print_node (file, "vars", TREE_OPERAND (node, 0), indent + 4);
