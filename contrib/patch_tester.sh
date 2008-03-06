@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Tests a set of patches from a directory.
-# Copyright (C) 2007  Free Software Foundation, Inc.
+# Copyright (C) 2007, 2008  Free Software Foundation, Inc.
 # Contributed by Sebastian Pop <sebastian.pop@amd.com>
 
 # This program is free software; you can redistribute it and/or modify
@@ -48,8 +48,7 @@ patch_tester.sh [-j<N>] [-standby N] [-watermark N] [-savecompilers] [-nogpg]
     PATCHES_DIR.  Default is ${default_standby} minutes.
 
     WATERMARK is the 5 minute average system charge under which a new
-    compile can start.  Default is ${default_watermark}.  Note that the comparison 
-    is done in lexicographical order, so don't forget the leading 0.
+    compile can start.  Default is ${default_watermark}.
 
     SAVECOMPILERS copies the compilers in the same directory as the
     test results for the non patched version.  Default is not copy.
@@ -132,6 +131,12 @@ fi
     svn -q co svn://gcc.gnu.org/svn/gcc/trunk .
 }
 
+# This can contain required local settings:
+#  default_config  configure options, always passed
+#  default_make    make bootstrap options, always passed
+#  default_check   make check options, always passed
+[ -f $STATE/defaults ] && . $STATE/defaults
+
 VERSION=`svn info $SOURCE | grep "^Revision:" | sed -e "s/^Revision://g" -e "s/ //g"`
 
 exec >> $STATE/tester.log 2>&1 || exit 1
@@ -182,7 +187,7 @@ cleanup () {
 }
 
 selfexec () {
-    exec ${CONFIG_SHELL-/bin/sh} $SOURCE/contrib/patch_tester.sh $args
+    exec ${CONFIG_SHELL-/bin/sh} $0 $args
 }
 
 update () {
@@ -263,6 +268,17 @@ apply_patch () {
 	    return 1
 	fi
     fi
+
+    # Just assume indexes for now -- not really great, but svn always
+    # makes them.
+    grep "^Index: " $PATCH | sed -e 's/Index: //' | while read file; do
+	# If the patch resulted in an empty file, delete it.
+	# This is how svn reports deletions.
+	if [ ! -s $file ]; then
+	    rm -f $file
+	    report "Deleting empty file $file"
+	fi
+    done
 }
 
 save_compilers () {
@@ -279,13 +295,16 @@ bootntest () {
     cd $BUILD
 
     CONFIG_OPTIONS=`grep "^configure:" $PATCH | sed -e "s/^configure://g"`
+    CONFIG_OPTIONS="$default_config $CONFIG_OPTIONS"
     if ! $SOURCE/configure $CONFIG_OPTIONS &> $1/configure ; then
 	report "configure failed with:"
 	freport $1/configure
 	return 1
     fi
 
-    if ! make $dashj `grep "^make:" $PATCH | sed -e "s/^make://g"` bootstrap &> $1/bootstrap ; then
+    MAKE_ARGS=`grep "^make:" $PATCH | sed -e "s/^make://g"`
+    MAKE_ARGS="$default_make $MAKE_ARGS"
+    if ! make $dashj $MAKE_ARGS bootstrap &> $1/bootstrap ; then
 	report "bootstrap failed with last lines:"
 	tail -30 $1/bootstrap > $1/last_bootstrap
 	freport $1/last_bootstrap
@@ -296,6 +315,7 @@ bootntest () {
     fi
 
     CHECK_OPTIONS=`grep "^check:" $PATCH | sed -e "s/^check://g"`
+    CHECK_OPTIONS="$default_check $CHECK_OPTIONS"
     make $dashj $CHECK_OPTIONS -k check &> $1/check
 
     for LOG in $TESTLOGS ; do
