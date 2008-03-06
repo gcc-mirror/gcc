@@ -1,3 +1,7 @@
+2008-03-06  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* gcc.c-torture/execute/20080222-1.c: New test.
+
 2008-03-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/vect/vect-99.c: Include stdlib.h and tree-vect.h.

@@ -1,3 +1,7 @@
+2008-03-06  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* expmed.c (extract_bit_field): Always use adjust_address for MEM.
+
 2008-03-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	Backport:
