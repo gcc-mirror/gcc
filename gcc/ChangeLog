@@ -1,3 +1,11 @@
+2008-03-06  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* dwarf2out.c (dwarf2out_frame_debug_expr): Consult the
+	dwarf_register_span hook when emitting unwind information for
+	register-to-memory saves.
+	* config/rs6000/rs6000.c (spe_synthesize_frame): Delete.
+	(rs6000_frame_related): Remove call to spe_synthesize_frame.
+
 2008-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (goa_lhs_expr_p): Allow different ADDR_EXPR nodes

@@ -1534,7 +1534,7 @@ static dw_cfa_location cfa_temp;
 static void
 dwarf2out_frame_debug_expr (rtx expr, const char *label)
 {
-  rtx src, dest;
+  rtx src, dest, span;
   HOST_WIDE_INT offset;
 
   /* If RTX_FRAME_RELATED_P is set on a PARALLEL, process each member of
@@ -1884,7 +1884,32 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	}
 
       def_cfa_1 (label, &cfa);
-      queue_reg_save (label, src, NULL_RTX, offset);
+      {
+	span = targetm.dwarf_register_span (src);
+
+	if (!span)
+	  queue_reg_save (label, src, NULL_RTX, offset);
+	else
+	  {
+	    /* We have a PARALLEL describing where the contents of SRC
+	       live.  Queue register saves for each piece of the
+	       PARALLEL.  */
+	    int par_index;
+	    int limit;
+	    HOST_WIDE_INT span_offset = offset;
+
+	    gcc_assert (GET_CODE (span) == PARALLEL);
+
+	    limit = XVECLEN (span, 0);
+	    for (par_index = 0; par_index < limit; par_index++)
+	      {
+		rtx elem = XVECEXP (span, 0, par_index);
+
+		queue_reg_save (label, elem, NULL_RTX, span_offset);
+		span_offset += GET_MODE_SIZE (GET_MODE (elem));
+	      }
+	  }
+      }
       break;
 
     default:
