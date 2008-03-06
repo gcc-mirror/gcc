@@ -1001,7 +1001,6 @@ assembler  assembler-with-cpp
 ada
 f95  f95-cpp-input
 java
-treelang
 @end smallexample
 
 @item -x none

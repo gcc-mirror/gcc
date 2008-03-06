@@ -1,9 +1,0 @@
-// { dg-do compile }
-external_reference void exit(int); // { dg-error "(parse|syntax) error" }
-
-static int foo (int a);
-
-foo
-{
-  return a;
-}

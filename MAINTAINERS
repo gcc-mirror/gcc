@@ -130,8 +130,6 @@ java			Andrew Haley		aph@redhat.com
 java			Tom Tromey		tromey@redhat.com
 objective-c/c++		Mike Stump		mrs@apple.com
 objective-c/c++		Stan Shebs		stanshebs@earthlink.net
-treelang                Tim Josling             tej@melbpc.org.au
-treelang                James A. Morrison	phython@gcc.gnu.org
 
 			Various Maintainers
 
@@ -338,6 +336,7 @@ Andreas Jaeger					aj@suse.de
 Harsha Jagasia					harsha.jagasia@amd.com
 Fariborz Jahanian				fjahanian@apple.com
 Phillip Jordan					phillip.m.jordan@gmail.com
+Tim Josling					tej@melbpc.org.au
 Klaus Kaempf					kkaempf@progis.de
 Victor Kaplansky				victork@il.ibm.com
 Brendan Kehoe					brendan@zen.org
@@ -385,6 +384,7 @@ Lee Millward					lee.millward@gmail.com
 Alan Modra					amodra@bigpond.net.au
 Alexander Monakov				amonakov@ispras.ru
 Catherine Moore					clm@redhat.com
+James A. Morrison				phython@gcc.gnu.org
 Dirk Mueller					dmueller@suse.de
 Adam Nemet					anemet@caviumnetworks.com
 Thomas Neumann					tneumann@users.sourceforge.net

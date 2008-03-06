@@ -372,16 +372,6 @@ Necessary to run @samp{make check} for @file{fixinc}.
 Necessary to regenerate the top level @file{Makefile.in} file from
 @file{Makefile.tpl} and @file{Makefile.def}.
 
-@item GNU Bison version 1.28 (or later)
-
-Necessary when modifying @file{*.y} files.  Necessary to build the
-@code{treelang} front end (which is not enabled by default) from a
-checkout of the SVN repository; the generated files are not in the
-repository.  They are included in releases.
-
-Berkeley @command{yacc} (@command{byacc}) has been reported to work
-as well.
-
 @item Flex version 2.5.4 (or later)
 
 Necessary when modifying @file{*.l} files.
@@ -1161,11 +1151,11 @@ grep language= */config-lang.in
 @end smallexample
 Currently, you can use any of the following:
 @code{all}, @code{ada}, @code{c}, @code{c++}, @code{fortran}, @code{java},
-@code{objc}, @code{obj-c++}, @code{treelang}.
+@code{objc}, @code{obj-c++}.
 Building the Ada compiler has special requirements, see below.
 If you do not pass this flag, or specify the option @code{all}, then all
 default languages available in the @file{gcc} sub-tree will be configured.
-Ada, Objective-C++, and treelang are not default languages; the rest are.
+Ada and Objective-C++ are not default languages; the rest are.
 Re-defining @code{LANGUAGES} when calling @samp{make} @strong{does not}
 work anymore, as those language sub-directories might not have been
 configured!
@@ -1707,18 +1697,13 @@ that type mismatches occur, this could be the cause.
 
 The solution is not to use such a directory for building GCC@.
 
-When building from SVN or snapshots and enabling the @code{treelang}
-front end, or if you modify @file{*.y} files, you need the Bison parser
-generator installed.  If you do not modify @file{*.y} files, releases
-contain the Bison-generated files and you do not need Bison installed
-to build them.  Note that most front ends now use hand-written parsers,
-which can be modified with no need for Bison.
-
 Similarly, when building from SVN or snapshots, or if you modify
-@file{*.l} files, you need the Flex lexical analyzer generator installed.
-There is still one Flex-based lexical analyzer (part of the build
-machinery, not of GCC itself) that is used even if you only build the
-C front end.
+@file{*.l} files, you need the Flex lexical analyzer generator
+installed.  If you do not modify @file{*.l} files, releases contain
+the Flex-generated files and you do not need Flex installed to build
+them.  There is still one Flex-based lexical analyzer (part of the
+build machinery, not of GCC itself) that is used even if you only
+build the C front end.
 
 When building from SVN or snapshots, or if you modify Texinfo
 documentation, you need version 4.4 or later of Texinfo installed if you

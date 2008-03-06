@@ -1,3 +1,8 @@
+2008-03-06  Tom Tromey  <tromey@redhat.com>
+
+	* lib/treelang-dg.exp, lib/treelang.exp: Delete.
+	* treelang: Delete.
+
 2008-03-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/pack33.ads: New test.

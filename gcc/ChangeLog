@@ -1,3 +1,14 @@
+2008-03-06  Tom Tromey  <tromey@redhat.com>
+
+	* treelang: Delete.
+	* doc/standards.texi (Standards): Don't mention treelang.
+	* doc/invoke.texi (Overall Options): Don't mention treelang.
+	* doc/install.texi (Prerequisites): Don't mention bison or
+	treelang.
+	(Configuration): Don't mention treelang.
+	(Building): Likewise.
+	* doc/frontends.texi (G++ and GCC): Don't mention treelang.
+
 2008-03-06  Paolo Bonzini  <bonzini@gnu.org>
 
 	* simplify-rtx.c (simplify_subreg): Remove useless shifts from
