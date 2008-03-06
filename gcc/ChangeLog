@@ -1,3 +1,7 @@
+2008-03-05  Ian Lance Taylor  <iant@google.com>
+
+	* alias.h (alias_set_type): Change from HOST_WIDE_INT to int.
+
 2008-03-05  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* fwprop.c (update_df): Support width and offset parameters of
