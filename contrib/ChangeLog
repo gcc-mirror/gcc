@@ -1,3 +1,11 @@
+2008-03-06  Tom Tromey  <tromey@redhat.com>
+
+	* patch_tester.sh (usage): Watermark is not lexicographic.
+	Load $STATE/defaults if it exists.
+	(selfexec): Use $0.
+	(apply_patch): Handle deletions.
+	(bootntest): Handle default settings.
+
 2008-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* gennews (files): Reference GCC 4.3 web pages.
