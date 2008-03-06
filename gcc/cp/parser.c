@@ -20074,8 +20074,11 @@ cp_parser_omp_for_loop (cp_parser *parser)
 
 	      init = cp_parser_assignment_expression (parser, false);
 
-	      cp_finish_decl (decl, NULL_TREE, /*init_const_expr_p=*/false,
-			      asm_specification, LOOKUP_ONLYCONVERTING);
+	      if (TREE_CODE (TREE_TYPE (decl)) == REFERENCE_TYPE)
+		init = error_mark_node;
+	      else
+		cp_finish_decl (decl, NULL_TREE, /*init_const_expr_p=*/false,
+				asm_specification, LOOKUP_ONLYCONVERTING);
 
 	      if (pushed_scope)
 		pop_scope (pushed_scope);

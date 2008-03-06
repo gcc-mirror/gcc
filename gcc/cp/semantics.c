@@ -3742,9 +3742,14 @@ finish_omp_threadprivate (tree vars)
     {
       tree v = TREE_PURPOSE (t);
 
+      if (error_operand_p (v))
+	;
+      else if (TREE_CODE (v) != VAR_DECL)
+	error ("%<threadprivate%> %qD is not file, namespace "
+	       "or block scope variable", v);
       /* If V had already been marked threadprivate, it doesn't matter
 	 whether it had been used prior to this point.  */
-      if (TREE_USED (v)
+      else if (TREE_USED (v)
 	  && (DECL_LANG_SPECIFIC (v) == NULL
 	      || !CP_DECL_THREADPRIVATE_P (v)))
 	error ("%qE declared %<threadprivate%> after first use", v);
@@ -3900,6 +3905,16 @@ finish_omp_for (location_t locus, tree decl, tree init, tree cond,
   if (!DECL_P (decl))
     {
       error ("expected iteration declaration or initialization");
+      return NULL;
+    }
+
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (decl)))
+    {
+      location_t elocus = locus;
+
+      if (EXPR_HAS_LOCATION (init))
+	elocus = EXPR_LOCATION (init);
+      error ("%Hinvalid type for iteration variable %qE", &elocus, decl);
       return NULL;
     }
 

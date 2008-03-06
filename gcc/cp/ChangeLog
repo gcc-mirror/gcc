@@ -1,3 +1,19 @@
+2008-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/35028
+	* cp-gimplify.c (cxx_omp_clause_apply_fn): Handle vararg copy ctors.
+
+	PR c++/34964
+	PR c++/35244
+	* semantics.c (finish_omp_threadprivate): Do nothing for error_operand_p
+	vars.  Afterwards ensure v is VAR_DECL.
+
+	PR c++/35078
+	* parser.c (cp_parser_omp_for_loop): If DECL has REFERENCE_TYPE, don't
+	call cp_finish_decl.
+	* semantics.c (finish_omp_for): Fail if DECL doesn't have integral type
+	early.
+
 2008-03-06  Paolo Carlini  <pcarlini@suse.de>
 
         PR c++/35323

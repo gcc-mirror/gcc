@@ -5464,7 +5464,11 @@ goa_lhs_expr_p (tree expr, tree addr)
 	  expr = TREE_OPERAND (expr, 0);
 	  addr = TREE_OPERAND (addr, 0);
 	}
-      return expr == addr;
+      if (expr == addr)
+	return true;
+      return (TREE_CODE (addr) == ADDR_EXPR
+	      && TREE_CODE (expr) == ADDR_EXPR
+	      && TREE_OPERAND (addr, 0) == TREE_OPERAND (expr, 0));
     }
   if (TREE_CODE (addr) == ADDR_EXPR && expr == TREE_OPERAND (addr, 0))
     return true;

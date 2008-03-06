@@ -1,3 +1,18 @@
+2008-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/35028
+	* g++.dg/gomp/pr35028.C: New test.
+
+	PR c++/34964
+	PR c++/35244
+	* gcc.dg/gomp/pr34964.c: New test.
+	* g++.dg/gomp/pr34964.C: New test.
+	* gcc.dg/gomp/pr35244.c: New test.
+	* g++.dg/gomp/pr35244.C: New test.
+
+	PR c++/35078
+	* g++.dg/gomp/pr35078.C: New test.
+
 2008-03-06  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* gcc.c-torture/execute/20080222-1.c: New test.
