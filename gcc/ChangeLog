@@ -1,3 +1,8 @@
+2008-03-06  Richard Guenther  <rguenther@suse.de>
+
+	* alias.c (struct alias_set_entry): Move has_zero_child field
+	to pack with alias_set.
+
 2008-03-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386-modes.def: Use 4 byte alignment on DI for
