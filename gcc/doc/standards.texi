@@ -1,4 +1,4 @@
-@c Copyright (C) 2000, 2001, 2002, 2004, 2006, 2007 Free Software Foundation,
+@c Copyright (C) 2000, 2001, 2002, 2004, 2006, 2007, 2008 Free Software Foundation,
 @c Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -218,14 +218,6 @@ and
 @uref{http://gcc.gnu.org/readings.html}
 have additional useful information.
 @end itemize
-
-@section Treelang language
-@cindex treelang
-There is no standard for treelang, which is a sample language front end
-for GCC@.  Its only purpose is as a sample for people wishing to write a
-new language for GCC@.  The language is documented in
-@file{gcc/treelang/treelang.texi} which can be turned into info or
-HTML format.
 
 @xref{Top, GNAT Reference Manual, About This Guide, gnat_rm,
 GNAT Reference Manual}, for information on standard

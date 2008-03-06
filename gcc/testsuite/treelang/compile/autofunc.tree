@@ -1,6 +1,0 @@
-// { dg-do compile }
-automatic int bar ();  // { dg-error "automatic" }
-
-bar () {
-	return -12;
-}
