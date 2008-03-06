@@ -5239,6 +5239,22 @@ simplify_subreg (enum machine_mode outermode, rtx op,
     return simplify_gen_binary (ASHIFT, outermode,
 				XEXP (XEXP (op, 0), 0), XEXP (op, 1));
 
+  /* Recognize a word extraction from a multi-word subreg.  */
+  if ((GET_CODE (op) == LSHIFTRT
+       || GET_CODE (op) == ASHIFTRT)
+      && SCALAR_INT_MODE_P (outermode)
+      && GET_MODE_BITSIZE (outermode) >= BITS_PER_WORD
+      && GET_MODE_BITSIZE (innermode) >= (2 * GET_MODE_BITSIZE (outermode))
+      && GET_CODE (XEXP (op, 1)) == CONST_INT
+      && (INTVAL (XEXP (op, 1)) & (GET_MODE_BITSIZE (outermode) - 1)) == 0
+      && byte == subreg_lowpart_offset (outermode, innermode))
+    {
+      int shifted_bytes = INTVAL (XEXP (op, 1)) / BITS_PER_UNIT;
+      return simplify_gen_subreg (outermode, XEXP (op, 0), innermode,
+				  (WORDS_BIG_ENDIAN
+				   ? byte - shifted_bytes : byte + shifted_bytes));
+    }
+
   return NULL_RTX;
 }
 
