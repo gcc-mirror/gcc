@@ -1,3 +1,14 @@
+2008-03-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/33197
+	* intrinsic.c (add_functions): Add simplification routines for
+	ERF, DERF, ERFC and DERFC.
+	* decl.c (gfc_match_suffix, gfc_match_subroutine): Change GNU
+	extensions into Fortran 2008 features.
+	* intrinsic.h (gfc_simplify_erf, gfc_simplify_erfc): New
+	prototypes.
+	* simplify.c (gfc_simplify_erf, gfc_simplify_erfc): New functions.
+
 2008-03-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/33197

@@ -222,6 +222,8 @@ gfc_expr *gfc_simplify_digits (gfc_expr *);
 gfc_expr *gfc_simplify_dim (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_dprod (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_epsilon (gfc_expr *);
+gfc_expr *gfc_simplify_erf (gfc_expr *);
+gfc_expr *gfc_simplify_erfc (gfc_expr *);
 gfc_expr *gfc_simplify_exp (gfc_expr *);
 gfc_expr *gfc_simplify_exponent (gfc_expr *);
 gfc_expr *gfc_simplify_float (gfc_expr *);
