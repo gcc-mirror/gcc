@@ -1061,6 +1061,38 @@ gfc_simplify_dprod (gfc_expr *x, gfc_expr *y)
 
 
 gfc_expr *
+gfc_simplify_erf (gfc_expr *x)
+{
+  gfc_expr *result;
+
+  if (x->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
+
+  mpfr_erf (result->value.real, x->value.real, GFC_RND_MODE);
+
+  return range_check (result, "ERF");
+}
+
+
+gfc_expr *
+gfc_simplify_erfc (gfc_expr *x)
+{
+  gfc_expr *result;
+
+  if (x->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
+
+  mpfr_erfc (result->value.real, x->value.real, GFC_RND_MODE);
+
+  return range_check (result, "ERFC");
+}
+
+
+gfc_expr *
 gfc_simplify_epsilon (gfc_expr *e)
 {
   gfc_expr *result;
