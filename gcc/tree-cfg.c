@@ -3277,6 +3277,22 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 		  error ("invalid position or size operand to BIT_FIELD_REF");
 		  return t;
 		}
+	      else if (INTEGRAL_TYPE_P (TREE_TYPE (t))
+		       && (TYPE_PRECISION (TREE_TYPE (t))
+			   != TREE_INT_CST_LOW (TREE_OPERAND (t, 1))))
+		{
+		  error ("integral result type precision does not match "
+			 "field size of BIT_FIELD_REF");
+		  return t;
+		}
+	      if (!INTEGRAL_TYPE_P (TREE_TYPE (t))
+		  && (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (t)))
+		      != TREE_INT_CST_LOW (TREE_OPERAND (t, 1))))
+		{
+		  error ("mode precision of non-integral result does not "
+			 "match field size of BIT_FIELD_REF");
+		  return t;
+		}
 	    }
 
 	  t = TREE_OPERAND (t, 0);

@@ -1280,9 +1280,6 @@ instantiate_element (struct sra_elt *elt)
 					       TYPE_SIZE (elt->type),
 					       DECL_SIZE (var))
 				 : bitsize_int (0));
-      if (!INTEGRAL_TYPE_P (elt->type)
-	  || TYPE_UNSIGNED (elt->type))
-	BIT_FIELD_REF_UNSIGNED (elt->replacement) = 1;
     }
 
   /* For vectors, if used on the left hand side with BIT_FIELD_REF,
@@ -1677,12 +1674,17 @@ try_instantiate_multiple_fields (struct sra_elt *elt, tree f)
 
   /* Create the field group as a single variable.  */
 
-  type = lang_hooks.types.type_for_mode (mode, 1);
+  /* We used to create a type for the mode above, but size turns
+     to be out not of mode-size.  As we need a matching type
+     to build a BIT_FIELD_REF, use a nonstandard integer type as
+     fallback.  */
+  type = lang_hooks.types.type_for_size (size, 1);
+  if (!type || TYPE_PRECISION (type) != size)
+    type = build_nonstandard_integer_type (size, 1);
   gcc_assert (type);
   var = build3 (BIT_FIELD_REF, type, NULL_TREE,
 		bitsize_int (size),
 		bitsize_int (bit));
-  BIT_FIELD_REF_UNSIGNED (var) = 1;
 
   block = instantiate_missing_elements_1 (elt, var, type);
   gcc_assert (block && block->is_scalar);
@@ -1696,7 +1698,6 @@ try_instantiate_multiple_fields (struct sra_elt *elt, tree f)
 				   TREE_TYPE (block->element), var,
 				   bitsize_int (size),
 				   bitsize_int (bit & ~alchk));
-      BIT_FIELD_REF_UNSIGNED (block->replacement) = 1;
     }
 
   block->in_bitfld_block = 2;
@@ -1719,7 +1720,6 @@ try_instantiate_multiple_fields (struct sra_elt *elt, tree f)
 				   + (TREE_INT_CST_LOW
 				      (DECL_FIELD_BIT_OFFSET (f))))
 				  & ~alchk));
-      BIT_FIELD_REF_UNSIGNED (fld->replacement) = TYPE_UNSIGNED (field_type);
       fld->in_bitfld_block = 1;
     }
 
@@ -2141,7 +2141,8 @@ sra_build_assignment (tree dst, tree src)
       tree var, shift, width;
       tree utype, stype, stmp, utmp, dtmp;
       tree list, stmt;
-      bool unsignedp = BIT_FIELD_REF_UNSIGNED (src);
+      bool unsignedp = (INTEGRAL_TYPE_P (TREE_TYPE (src))
+		        ? TYPE_UNSIGNED (TREE_TYPE (src)) : true);
 
       var = TREE_OPERAND (src, 0);
       width = TREE_OPERAND (src, 1);
@@ -2491,6 +2492,7 @@ sra_build_elt_assignment (struct sra_elt *elt, tree src)
   if (elt->in_bitfld_block == 2
       && TREE_CODE (src) == BIT_FIELD_REF)
     {
+      tmp = src;
       cst = TYPE_SIZE (TREE_TYPE (var));
       cst2 = size_binop (MINUS_EXPR, TREE_OPERAND (src, 2),
 			 TREE_OPERAND (dst, 2));
@@ -2536,8 +2538,7 @@ sra_build_elt_assignment (struct sra_elt *elt, tree src)
 	}
       else
 	{
-	  src = fold_build3 (BIT_FIELD_REF, TREE_TYPE (var), src, cst, cst2);
-	  BIT_FIELD_REF_UNSIGNED (src) = 1;
+	  src = fold_convert (TREE_TYPE (var), tmp);
 	}
 
       return sra_build_assignment (var, src);
@@ -3014,6 +3015,8 @@ sra_explode_bitfield_assignment (tree var, tree vpos, bool to_var,
 	  type = TREE_TYPE (infld);
 	  if (TYPE_PRECISION (type) != TREE_INT_CST_LOW (flen))
 	    type = lang_hooks.types.type_for_size (TREE_INT_CST_LOW (flen), 1);
+	  else
+	    type = unsigned_type_for (type);
 
 	  if (TREE_CODE (infld) == BIT_FIELD_REF)
 	    {
@@ -3031,7 +3034,6 @@ sra_explode_bitfield_assignment (tree var, tree vpos, bool to_var,
 	    }
 
 	  infld = fold_build3 (BIT_FIELD_REF, type, infld, flen, fpos);
-	  BIT_FIELD_REF_UNSIGNED (infld) = 1;
 
 	  invar = size_binop (MINUS_EXPR, flp.field_pos, bpos);
 	  if (flp.overlap_pos)
@@ -3039,7 +3041,6 @@ sra_explode_bitfield_assignment (tree var, tree vpos, bool to_var,
 	  invar = size_binop (PLUS_EXPR, invar, vpos);
 
 	  invar = fold_build3 (BIT_FIELD_REF, type, var, flen, invar);
-	  BIT_FIELD_REF_UNSIGNED (invar) = 1;
 
 	  if (to_var)
 	    st = sra_build_bf_assignment (invar, infld);

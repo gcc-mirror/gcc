@@ -2517,7 +2517,6 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt,
 	  vec_size_in_bits = tree_low_cst (TYPE_SIZE (vectype), 1);
 	  rhs = build3 (BIT_FIELD_REF, scalar_type, vec_temp, bitsize,
 			 bitsize_zero_node);
-	  BIT_FIELD_REF_UNSIGNED (rhs) = TYPE_UNSIGNED (scalar_type);
 	  epilog_stmt = build_gimple_modify_stmt (new_scalar_dest, rhs);
 	  new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
 	  GIMPLE_STMT_OPERAND (epilog_stmt, 0) = new_temp;
@@ -2532,7 +2531,6 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt,
 	      tree rhs = build3 (BIT_FIELD_REF, scalar_type, vec_temp, bitsize,
 				 bitpos);
 		
-	      BIT_FIELD_REF_UNSIGNED (rhs) = TYPE_UNSIGNED (scalar_type);
 	      epilog_stmt = build_gimple_modify_stmt (new_scalar_dest, rhs);
 	      new_name = make_ssa_name (new_scalar_dest, epilog_stmt);
 	      GIMPLE_STMT_OPERAND (epilog_stmt, 0) = new_name;
@@ -2568,7 +2566,6 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt,
 	bitpos = bitsize_zero_node;
 
       rhs = build3 (BIT_FIELD_REF, scalar_type, new_temp, bitsize, bitpos);
-      BIT_FIELD_REF_UNSIGNED (rhs) = TYPE_UNSIGNED (scalar_type);
       epilog_stmt = build_gimple_modify_stmt (new_scalar_dest, rhs);
       new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
       GIMPLE_STMT_OPERAND (epilog_stmt, 0) = new_temp; 
@@ -5877,8 +5874,6 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt,
 		  bitpos = bitsize_zero_node;
 		  vec_inv = build3 (BIT_FIELD_REF, scalar_type, new_temp, 
 							    bitsize, bitpos);
-		  BIT_FIELD_REF_UNSIGNED (vec_inv) = 
-						 TYPE_UNSIGNED (scalar_type);
 		  vec_dest = 
 			vect_create_destination_var (scalar_dest, NULL_TREE);
 		  new_stmt = build_gimple_modify_stmt (vec_dest, vec_inv);

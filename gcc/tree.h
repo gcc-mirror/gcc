@@ -542,8 +542,6 @@ struct gimple_stmt GTY(())
            all types
        DECL_UNSIGNED in
            all decls
-       BIT_FIELD_REF_UNSIGNED in
-           BIT_FIELD_REF
 
    asm_written_flag:
 
@@ -1300,10 +1298,6 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 /* In a decl (most significantly a FIELD_DECL), means an unsigned field.  */
 #define DECL_UNSIGNED(NODE) \
   (DECL_COMMON_CHECK (NODE)->base.unsigned_flag)
-
-/* In a BIT_FIELD_REF, means the bitfield is to be interpreted as unsigned.  */
-#define BIT_FIELD_REF_UNSIGNED(NODE) \
-  (BIT_FIELD_REF_CHECK (NODE)->base.unsigned_flag)
 
 /* In integral and pointer types, means an unsigned type.  */
 #define TYPE_UNSIGNED(NODE) (TYPE_CHECK (NODE)->base.unsigned_flag)

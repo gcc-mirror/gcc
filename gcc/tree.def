@@ -391,8 +391,9 @@ DEFTREECODE (COMPONENT_REF, "component_ref", tcc_reference, 3)
    Operand 0 is the structure or union expression;
    operand 1 is a tree giving the constant number of bits being referenced;
    operand 2 is a tree giving the constant position of the first referenced bit.
-   The field can be either a signed or unsigned field;
-   BIT_FIELD_REF_UNSIGNED says which.  */
+   The result type width has to match the number of bits referenced.
+   If the result type is integral, its signedness specifies how it is extended
+   to its mode width.  */
 DEFTREECODE (BIT_FIELD_REF, "bit_field_ref", tcc_reference, 3)
 
 /* The ordering of the following codes is optimized for the checking
