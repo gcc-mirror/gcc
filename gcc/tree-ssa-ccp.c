@@ -306,6 +306,12 @@ get_symbol_constant_value (tree sym)
       if (val
 	  && ccp_decl_initial_min_invariant (val))
 	return val;
+      /* Variables declared 'const' without an initializer
+	 have zero as the intializer.  */
+      if (!val
+          && (INTEGRAL_TYPE_P (TREE_TYPE (sym))
+	       || SCALAR_FLOAT_TYPE_P (TREE_TYPE (sym))))
+        return fold_convert (TREE_TYPE (sym), integer_zero_node);
     }
 
   return NULL_TREE;
