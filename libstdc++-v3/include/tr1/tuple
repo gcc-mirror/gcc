@@ -329,7 +329,7 @@ namespace tr1
     {
       typedef tuple<_TElements...> _Tp;
       typedef tuple<_UElements...> _Up;
-      return (__tuple_compare<tuple_size<_Tp>::value - tuple_size<_Tp>::value,
+      return (__tuple_compare<tuple_size<_Tp>::value - tuple_size<_Up>::value,
 	      0, tuple_size<_Tp>::value, _Tp, _Up>::__eq(__t, __u));
     }
 
@@ -340,7 +340,7 @@ namespace tr1
     {
       typedef tuple<_TElements...> _Tp;
       typedef tuple<_UElements...> _Up;
-      return (__tuple_compare<tuple_size<_Tp>::value - tuple_size<_Tp>::value,
+      return (__tuple_compare<tuple_size<_Tp>::value - tuple_size<_Up>::value,
 	      0, tuple_size<_Tp>::value, _Tp, _Up>::__less(__t, __u));
     }
 
