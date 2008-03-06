@@ -1,7 +1,11 @@
+2008-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/atomic-3.c: New test.
+
 2008-03-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/33197
-	* libgomp/testsuite/libgomp.fortran/fortran.exp: Add .f08 and
+	* testsuite/libgomp.fortran/fortran.exp: Add .f08 and
 	.F08 file suffixes.
 
 2008-03-03  Peter O'Gorman  <pogma@thewrittenword.com>
