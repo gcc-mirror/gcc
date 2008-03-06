@@ -1,3 +1,7 @@
+2008-03-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/pack33.ads: New test.
+
 2008-03-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/35472

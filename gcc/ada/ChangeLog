@@ -1,3 +1,9 @@
+2008-03-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/35186
+	* decl.c (maybe_pad_type): Avoid padding an integral type when
+	bumping its alignment is sufficient.
+
 2008-03-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* gnatfind.adb, gnatxref.adb: Fix argument parsing typos.
