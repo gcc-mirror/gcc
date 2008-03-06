@@ -1,3 +1,8 @@
+2008-03-06  Markus Milleder  <markus.milleder@generali.at>
+
+	PR preprocessor/35458
+	* mkdeps.c (munge): Quote '#' with a '\'.
+
 2008-02-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR preprocessor/35379

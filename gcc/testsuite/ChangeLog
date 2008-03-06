@@ -1,3 +1,10 @@
+2008-03-06  Markus Milleder  <markus.milleder@generali.at>
+
+	PR preprocessor/35458
+	* gcc.dg/cpp/cmdlne-M-2.c: New file.
+	* gcc.dg/cpp/cmdlne-M-2#.h: New file.
+	* gcc.dg/cpp/#cmdlne-M-2.h: New file.
+
 2008-03-06  Tom Tromey  <tromey@redhat.com>
 
 	* lib/treelang-dg.exp, lib/treelang.exp: Delete.
