@@ -5301,7 +5301,6 @@ maybe_pad_type (tree type, tree size, unsigned int align,
      off the padding, since we will either be returning the inner type
      or repadding it.  If no size or alignment is specified, use that of
      the original padded type.  */
-
   if (TREE_CODE (type) == RECORD_TYPE && TYPE_IS_PADDING_P (type))
     {
       if ((!size
@@ -5326,7 +5325,6 @@ maybe_pad_type (tree type, tree size, unsigned int align,
      is not done here (and is only valid for bitfields anyway), show the size
      isn't changing.  Likewise, clear the alignment if it isn't being
      changed.  Then return if we aren't doing anything.  */
-
   if (size
       && (operand_equal_p (size, orig_size, 0)
 	  || (TREE_CODE (orig_size) == INTEGER_CST
@@ -5338,6 +5336,19 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 
   if (align == 0 && !size)
     return type;
+
+  /* If no size is specified and we have an integral type, and changing
+     the alignment won't change its size, return a copy of the type
+     with the specified alignment.  */
+  if (!size
+      && INTEGRAL_TYPE_P (type)
+      && host_integerp (orig_size, 1)
+      && (TREE_INT_CST_LOW (orig_size) % align) == 0)
+    {
+      type = copy_type (type);
+      TYPE_ALIGN (type) = align;
+      return type;
+    }
 
   /* We used to modify the record in place in some cases, but that could
      generate incorrect debugging information.  So make a new record
