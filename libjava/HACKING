@@ -67,7 +67,7 @@ To import a new release:
   svn+ssh://gcc.gnu.org/svn/gcc/branches/CLASSPATH/libjava/classpath
   this contains "pure" GNU Classpath inside the GCC tree.
 - Clean it up and get the files from a new version:
-  - find classpath -type f | grep -v /\.svn | grep -v /\.cvs | xargs rm
+  - find classpath -type f | grep -v '/\.svn' | grep -v '/\.cvs' | xargs rm
   - tar zxf classpath-x.tar.gz
   - cp -r classpath-x/* classpath
 - Add/Remove files:
@@ -121,10 +121,10 @@ To import a new release:
   will need to update the .class files and generated CNI header files in
   your working tree
 - Add/Remove newly generated files:
-  - svn status classpath | grep '^\!.*\.class$' | cut -c8- | xargs svn remove
-  - svn status classpath | grep '^\?' | cut -c8- | xargs svn add
-  - svn status gnu java javax org sun | grep '^\!.*\.h$' | cut -c8- | xargs svn remove
-  - svn status gnu java javax org sun | grep '^\?' | cut -c8- | xargs svn add
+  - svn status classpath | grep '^!.*\.class$' | cut -c8- | xargs svn remove
+  - svn status classpath | grep '^?' | cut -c8- | xargs svn add
+  - svn status gnu java javax org sun | grep '^!.*\.h$' | cut -c8- | xargs svn remove
+  - svn status gnu java javax org sun | grep '^?' | cut -c8- | xargs svn add
 
 Over time we plan to remove as many of the remaining divergences as
 possible.
