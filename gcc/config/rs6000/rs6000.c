@@ -732,7 +732,6 @@ static const char *rs6000_invalid_within_doloop (const_rtx);
 static rtx rs6000_generate_compare (enum rtx_code);
 static void rs6000_emit_stack_tie (void);
 static void rs6000_frame_related (rtx, rtx, HOST_WIDE_INT, rtx, rtx);
-static rtx spe_synthesize_frame_save (rtx);
 static bool spe_func_has_64bit_regs_p (void);
 static void emit_frame_save (rtx, rtx, enum machine_mode, unsigned int,
 			     int, HOST_WIDE_INT);
@@ -15386,75 +15385,10 @@ rs6000_frame_related (rtx insn, rtx reg, HOST_WIDE_INT val,
 	  }
     }
 
-  if (TARGET_SPE)
-    real = spe_synthesize_frame_save (real);
-
   RTX_FRAME_RELATED_P (insn) = 1;
   REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
 					real,
 					REG_NOTES (insn));
-}
-
-/* Given an SPE frame note, return a PARALLEL of SETs with the
-   original note, plus a synthetic register save.  */
-
-static rtx
-spe_synthesize_frame_save (rtx real)
-{
-  rtx synth, offset, reg, real2;
-
-  if (GET_CODE (real) != SET
-      || GET_MODE (SET_SRC (real)) != V2SImode)
-    return real;
-
-  /* For the SPE, registers saved in 64-bits, get a PARALLEL for their
-     frame related note.  The parallel contains a set of the register
-     being saved, and another set to a synthetic register (n+1200).
-     This is so we can differentiate between 64-bit and 32-bit saves.
-     Words cannot describe this nastiness.  */
-
-  gcc_assert (GET_CODE (SET_DEST (real)) == MEM
-	      && GET_CODE (XEXP (SET_DEST (real), 0)) == PLUS
-	      && GET_CODE (SET_SRC (real)) == REG);
-
-  /* Transform:
-       (set (mem (plus (reg x) (const y)))
-            (reg z))
-     into:
-       (set (mem (plus (reg x) (const y+4)))
-            (reg z+1200))
-  */
-
-  real2 = copy_rtx (real);
-  PUT_MODE (SET_DEST (real2), SImode);
-  reg = SET_SRC (real2);
-  real2 = replace_rtx (real2, reg, gen_rtx_REG (SImode, REGNO (reg)));
-  synth = copy_rtx (real2);
-
-  if (BYTES_BIG_ENDIAN)
-    {
-      offset = XEXP (XEXP (SET_DEST (real2), 0), 1);
-      real2 = replace_rtx (real2, offset, GEN_INT (INTVAL (offset) + 4));
-    }
-
-  reg = SET_SRC (synth);
-
-  synth = replace_rtx (synth, reg,
-		       gen_rtx_REG (SImode, REGNO (reg) + 1200));
-
-  offset = XEXP (XEXP (SET_DEST (synth), 0), 1);
-  synth = replace_rtx (synth, offset,
-		       GEN_INT (INTVAL (offset)
-				+ (BYTES_BIG_ENDIAN ? 0 : 4)));
-
-  RTX_FRAME_RELATED_P (synth) = 1;
-  RTX_FRAME_RELATED_P (real2) = 1;
-  if (BYTES_BIG_ENDIAN)
-    real = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, synth, real2));
-  else
-    real = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, real2, synth));
-
-  return real;
 }
 
 /* Returns an insn that has a vrsave set operation with the
