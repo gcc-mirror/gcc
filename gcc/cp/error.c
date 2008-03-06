@@ -326,6 +326,7 @@ dump_type (tree t, int flags)
     case BOOLEAN_TYPE:
     case COMPLEX_TYPE:
     case VECTOR_TYPE:
+    case FIXED_POINT_TYPE:
       pp_type_specifier_seq (cxx_pp, t);
       break;
 
@@ -2079,7 +2080,9 @@ dump_expr (tree t, int flags)
     case VEC_DELETE_EXPR:
     case MODOP_EXPR:
     case ABS_EXPR:
+    case CONJ_EXPR:
     case VECTOR_CST:
+    case FIXED_CST:
       pp_expression (cxx_pp, t);
       break;
 

@@ -1,3 +1,18 @@
+2008-03-06  Paolo Carlini  <pcarlini@suse.de>
+
+        PR c++/35323
+        * g++.dg/lookup/crash7.C: New.
+
+2008-03-06  Paolo Carlini  <pcarlini@suse.de>
+
+        PR c++/35333
+        * g++.dg/other/error26.C: New.
+
+2008-03-06  Paolo Carlini  <pcarlini@suse.de>
+
+        PR c++/35338
+        * g++.dg/other/error25.C: New.
+	
 2008-03-05  Release Manager
 
 	* GCC 4.3.0 released.

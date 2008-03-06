@@ -1,3 +1,19 @@
+2008-03-06  Paolo Carlini  <pcarlini@suse.de>
+
+        PR c++/35323
+        * name-lookup.c (arg_assoc_type): Handle FIXED_POINT_TYPE.
+
+2008-03-06  Paolo Carlini  <pcarlini@suse.de>
+
+        PR c++/35333
+        * error.c (dump_expr): Handle CONJ_EXPR.
+
+2008-03-06  Paolo Carlini  <pcarlini@suse.de>
+
+        PR c++/35338
+        * error.c (dump_type): Handle FIXED_POINT_TYPE.
+	(dump_expr): Handle FIXED_CST.
+	
 2008-03-05  Release Manager
 
 	* GCC 4.3.0 released.
