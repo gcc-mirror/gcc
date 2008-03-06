@@ -1,3 +1,9 @@
+2008-03-06  Joseph Myers  <joseph@codesourcery.com>
+
+	PR target/33963
+	* tree.c (handle_dll_attribute): Disallow TYPE_DECLs for types
+	other than structures and unions.
+
 2008-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* BASE-VER: Set to 4.3.1.
