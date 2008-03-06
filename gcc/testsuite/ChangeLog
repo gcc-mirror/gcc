@@ -1,3 +1,7 @@
+2008-03-06  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* gcc.c-torture/execute/20080222-1.c: New test.
+
 2008-03-06  Paolo Carlini  <pcarlini@suse.de>
 
         PR c++/35323
