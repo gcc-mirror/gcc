@@ -1,3 +1,37 @@
+2008-03-05  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* fwprop.c (update_df): Support width and offset parameters of
+	df_ref_create.
+	* ra-conflict.c (mark_reg_store, clear_reg_in_live,
+	global_conflicts): Change DF_REF_EXTRACT to either
+	DF_REF_ZERO_EXTRACT or DF_REF_SIGN_EXTRACT.  Change
+	DF_REF_STRICT_LOWER_PART to DF_REF_STRICT_LOW_PART.
+	* df-scan.c (df_ref_record, df_defs_record,
+	df_ref_create_structure, df_def_record_1, df_uses_record,
+	df_get_conditional_uses, df_get_call_refs, df_insn_refs_collect,
+	df_bb_refs_collect, df_entry_block_defs_collect,
+	df_exit_block_uses_collect): Support new width and offset fields.
+	(ref_extract_pool): New storage pool.
+	(df_free_ref): New function.
+	(df_reg_chain_unlink, df_free_collection_rec,
+	df_sort_and_compress_refs): Call df_free_ref.
+	(df_ref_equal_p, df_ref_compare): Compare offset and width fields
+	of df_ref_extract.
+	(df_ref_create_structure): Allocate df_ref_extract if offset and
+	width fields are used.
+	(df_def_record_1): Get offset and width from ZERO_EXTRACT.
+	(df_uses_record): Get offset and width from ZERO_EXTRACT 
+	and SIGN_EXTRACT.
+	* global.c (build_insn_chain): Change DF_REF_EXTRACT to either
+	DF_REF_ZERO_EXTRACT or DF_REF_SIGN_EXTRACT.  Change
+	DF_REF_STRICT_LOWER_PART to DF_REF_STRICT_LOW_PART.
+	* df.h (df_ref_flags): Change DF_REF_EXTRACT to either
+	DF_REF_ZERO_EXTRACT or DF_REF_SIGN_EXTRACT.  Change
+	DF_REF_STRICT_LOWER_PART to DF_REF_STRICT_LOW_PART.
+	(df_ref_extract): New structure.
+	(DF_REF_WIDTH, DF_REF_OFFSET): New macros.
+	(df_ref_create): Add width and offset parameters.
+	
 2008-03-05  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (get_constraint_for_component_ref):
@@ -135,6 +169,7 @@
 	transformations for modes that have signed zeros.
 	* ifcvt.c (noce_try_abs): Ditto.
 
+>>>>>>> .r132956
 2008-03-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/i386.c (override_options): Force

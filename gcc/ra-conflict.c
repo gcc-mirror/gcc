@@ -297,7 +297,7 @@ mark_reg_store (sparseset allocnos_live,
     {
       unsigned int start = regno;
       unsigned int last = end_hard_regno (mode, regno);
-      if ((GET_CODE (reg) == SUBREG) && !DF_REF_FLAGS_IS_SET (ref, DF_REF_EXTRACT))
+      if ((GET_CODE (reg) == SUBREG) && !DF_REF_FLAGS_IS_SET (ref, DF_REF_ZERO_EXTRACT))
 	{
 	  start += subreg_regno_offset (regno, GET_MODE (SUBREG_REG (reg)),
 					SUBREG_BYTE (reg), GET_MODE (reg));
@@ -457,7 +457,7 @@ clear_reg_in_live (sparseset allocnos_live,
   if (allocnum >= 0)
     {
       if (GET_CODE (reg) == SUBREG
-	  && !DF_REF_FLAGS_IS_SET (def, DF_REF_EXTRACT))
+	  && !DF_REF_FLAGS_IS_SET (def, DF_REF_ZERO_EXTRACT))
 	{
 	  unsigned int start = SUBREG_BYTE (reg);
 	  unsigned int last = start + GET_MODE_SIZE (GET_MODE (reg));
@@ -465,7 +465,7 @@ clear_reg_in_live (sparseset allocnos_live,
 	  ra_init_live_subregs (sparseset_bit_p (allocnos_live, allocnum), 
 				live_subregs, live_subregs_used, allocnum, reg);
 
-	  if (!DF_REF_FLAGS_IS_SET (def, DF_REF_STRICT_LOWER_PART))
+	  if (!DF_REF_FLAGS_IS_SET (def, DF_REF_STRICT_LOW_PART))
 	    {
 	      /* Expand the range to cover entire words.
 		 Bytes added here are "don't care".  */
@@ -511,7 +511,7 @@ clear_reg_in_live (sparseset allocnos_live,
     {
       unsigned int start = regno;
       if (GET_CODE (reg) == SUBREG
-	  && !DF_REF_FLAGS_IS_SET (def, DF_REF_EXTRACT))
+	  && !DF_REF_FLAGS_IS_SET (def, DF_REF_ZERO_EXTRACT))
 	{
 	  unsigned int last;
 	  start += SUBREG_BYTE (reg);
@@ -864,7 +864,7 @@ global_conflicts (void)
 		  rtx reg = DF_REF_REG (def);
 		  set_reg_in_live (allocnos_live, live_subregs, live_subregs_used, 
 				   &hard_regs_live, reg, 
-				   DF_REF_FLAGS_IS_SET (def, DF_REF_EXTRACT));
+				   DF_REF_FLAGS_IS_SET (def, DF_REF_ZERO_EXTRACT));
 		  if (dump_file)
 		    dump_ref (dump_file, "  adding def", "\n",
 			      reg, DF_REF_REGNO (def), live_subregs, live_subregs_used);
@@ -946,7 +946,7 @@ global_conflicts (void)
 		 use unless that set also happens to wrapped in a
 		 ZERO_EXTRACT. */
 	      if (DF_REF_FLAGS_IS_SET (use, DF_REF_READ_WRITE) 
-		  && (!DF_REF_FLAGS_IS_SET (use, DF_REF_EXTRACT)) 
+		  && (!DF_REF_FLAGS_IS_SET (use, DF_REF_ZERO_EXTRACT)) 
 		  && DF_REF_FLAGS_IS_SET (use, DF_REF_SUBREG))
 		continue;
 	      
@@ -957,7 +957,7 @@ global_conflicts (void)
 	      if (allocnum >= 0)
 		{
 		  if (GET_CODE (reg) == SUBREG
-		      && !DF_REF_FLAGS_IS_SET (use, DF_REF_EXTRACT)) 
+		      && !DF_REF_FLAGS_IS_SET (use, DF_REF_ZERO_EXTRACT)) 
 		    {
 		      unsigned int start = SUBREG_BYTE (reg);
 		      unsigned int last = start + GET_MODE_SIZE (GET_MODE (reg));

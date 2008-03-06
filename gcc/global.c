@@ -1490,7 +1490,7 @@ build_insn_chain (void)
 			/* We can model subregs, but not if they are
 			   wrapped in ZERO_EXTRACTS.  */
 			if (GET_CODE (reg) == SUBREG
-			    && !DF_REF_FLAGS_IS_SET (def, DF_REF_EXTRACT))
+			    && !DF_REF_FLAGS_IS_SET (def, DF_REF_ZERO_EXTRACT))
 			  {
 			    unsigned int start = SUBREG_BYTE (reg);
 			    unsigned int last = start 
@@ -1503,7 +1503,7 @@ build_insn_chain (void)
 						  regno, reg);
 
 			    if (!DF_REF_FLAGS_IS_SET
-				(def, DF_REF_STRICT_LOWER_PART))
+				(def, DF_REF_STRICT_LOW_PART))
 			      {
 				/* Expand the range to cover entire words.
 				   Bytes added here are "don't care".  */
@@ -1566,7 +1566,7 @@ build_insn_chain (void)
 		       precisely so we do not need to look at the
 		       fabricated use. */
 		    if (DF_REF_FLAGS_IS_SET (use, DF_REF_READ_WRITE) 
-			&& !DF_REF_FLAGS_IS_SET (use, DF_REF_EXTRACT) 
+			&& !DF_REF_FLAGS_IS_SET (use, DF_REF_ZERO_EXTRACT) 
 			&& DF_REF_FLAGS_IS_SET (use, DF_REF_SUBREG))
 		      continue;
 		    
@@ -1585,7 +1585,8 @@ build_insn_chain (void)
 		    if (regno < FIRST_PSEUDO_REGISTER || reg_renumber[regno] >= 0)
 		      {
 			if (GET_CODE (reg) == SUBREG
-			    && !DF_REF_FLAGS_IS_SET (use, DF_REF_EXTRACT)) 
+			    && !DF_REF_FLAGS_IS_SET (use,
+						     DF_REF_SIGN_EXTRACT | DF_REF_ZERO_EXTRACT)) 
 			  {
 			    unsigned int start = SUBREG_BYTE (reg);
 			    unsigned int last = start 
