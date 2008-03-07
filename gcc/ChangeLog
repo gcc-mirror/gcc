@@ -1,3 +1,37 @@
+2008-03-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2008-02-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/35189
+	* config/i386/i386.c (OPTION_MASK_ISA_MMX_SET): New.
+	(OPTION_MASK_ISA_3DNOW_SET): Likewise.
+	(OPTION_MASK_ISA_SSE_SET): Likewise.
+	(OPTION_MASK_ISA_SSE2_SET): Likewise.
+	(OPTION_MASK_ISA_SSE3_SET): Likewise.
+	(OPTION_MASK_ISA_SSSE3_SET): Likewise.
+	(OPTION_MASK_ISA_SSE4_1_SET): Likewise.
+	(OPTION_MASK_ISA_SSE4_2_SET): Likewise.
+	(OPTION_MASK_ISA_SSE4_SET): Likewise.
+	(OPTION_MASK_ISA_SSE4A_SET): Likewise.
+	(OPTION_MASK_ISA_SSE5_SET): Likewise.
+	(OPTION_MASK_ISA_3DNOW_A_UNSET): Likewise.
+	(OPTION_MASK_ISA_MMX_UNSET): Updated.
+	(OPTION_MASK_ISA_3DNOW_UNSET): Updated.
+	(OPTION_MASK_ISA_SSE_UNSET): Likewise.
+	(OPTION_MASK_ISA_SSE3_UNSET): Likewise.
+	(OPTION_MASK_ISA_SSSE3_UNSET): Likewise.
+	(OPTION_MASK_ISA_SSE4_1_UNSET): Likewise.
+	(OPTION_MASK_ISA_SSE4_2_UNSET): Likewise.
+	(OPTION_MASK_ISA_SSE4A_UNSET): Likewise.
+	(OPTION_MASK_ISA_SSE5_UNSET): Likewise.
+	(OPTION_MASK_ISA_SSE4): Removed.
+	(ix86_handle_option): Turn on bits in ix86_isa_flags and
+	ix86_isa_flags_explicit with OPTION_MASK_ISA_XXX_SET for
+	-mXXX.
+	(override_options): Don't turn on implied SSE/MMX bits in
+	ix86_isa_flags.
+
 2008-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (goa_lhs_expr_p): Allow different ADDR_EXPR nodes

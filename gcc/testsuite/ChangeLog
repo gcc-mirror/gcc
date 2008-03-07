@@ -1,3 +1,24 @@
+2008-03-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2008-02-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/35189
+	* gcc.target/i386/isa-1.c: New.
+	* gcc.target/i386/isa-2.c: Likewise.
+	* gcc.target/i386/isa-3.c: Likewise.
+	* gcc.target/i386/isa-4.c: Likewise.
+	* gcc.target/i386/isa-5.c: Likewise.
+	* gcc.target/i386/isa-6.c: Likewise.
+	* gcc.target/i386/isa-7.c: Likewise.
+	* gcc.target/i386/isa-8.c: Likewise.
+	* gcc.target/i386/isa-9.c: Likewise.
+	* gcc.target/i386/isa-10.c: Likewise.
+	* gcc.target/i386/isa-11.c: Likewise.
+	* gcc.target/i386/isa-12.c: Likewise.
+	* gcc.target/i386/isa-13.c: Likewise.
+	* gcc.target/i386/isa-14.c: Likewise.
+
 2008-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/35028
@@ -19,18 +40,18 @@
 
 2008-03-06  Paolo Carlini  <pcarlini@suse.de>
 
-        PR c++/35323
-        * g++.dg/lookup/crash7.C: New.
+	PR c++/35323
+	* g++.dg/lookup/crash7.C: New.
 
 2008-03-06  Paolo Carlini  <pcarlini@suse.de>
 
-        PR c++/35333
-        * g++.dg/other/error26.C: New.
+	PR c++/35333
+	* g++.dg/other/error26.C: New.
 
 2008-03-06  Paolo Carlini  <pcarlini@suse.de>
 
-        PR c++/35338
-        * g++.dg/other/error25.C: New.
+	PR c++/35338
+	* g++.dg/other/error25.C: New.
 	
 2008-03-05  Release Manager
 
