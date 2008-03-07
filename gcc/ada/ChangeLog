@@ -1,5 +1,12 @@
 2008-03-07  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* decl.c (gnat_to_gnu_entity) <E_Modular_Integer_Subtype>: Add
+	comment for the packed array type case.
+	* utils.c (build_template): Use a loop to strip padding or
+	containing records for justified modular types.
+
+2008-03-07  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* decl.c (gnat_to_gnu_entity): Issue a warning on suspiciously
 	large alignments specified for types.
 	(validate_alignment): Minor cleanup.
