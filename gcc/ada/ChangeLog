@@ -1,5 +1,11 @@
 2008-03-07  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* decl.c (gnat_to_gnu_entity): Issue a warning on suspiciously
+	large alignments specified for types.
+	(validate_alignment): Minor cleanup.
+
+2008-03-07  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* decl.c (MAX_FIXED_MODE_SIZE): Define if not already defined.
 	(gnat_to_gnu_entity) <E_Record_Type>: Try to get a smaller form of
 	the component for packing, if possible, as well as if a component

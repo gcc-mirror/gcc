@@ -1,5 +1,9 @@
 2008-03-07  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/specs/alignment2.ads: New test.
+
+2008-03-07  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/pack3.adb: New test.
 
 2008-03-07  Peter O'Gorman  <pogma@thewrittenword.com>
