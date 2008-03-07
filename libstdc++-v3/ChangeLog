@@ -1,3 +1,10 @@
+2008-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/pre/gnu.ver: Move <system_error> related
+	symbols to GLIBCXX_3.4.11 symbol version.
+	* testsuite/util/testsuite_abi.cc (check_version): Allow
+	GLIBCXX_3.4.11.
+
 2008-03-06  Chris Jefferson  <chris@bubblescope.net>
 	    Paolo Carlini  <pcarlini@suse.de>
 
