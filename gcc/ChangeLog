@@ -1,3 +1,13 @@
+2008-03-07  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2008-03-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/35472
+	* tree-ssa-dse.c (dse_optimize_stmt): Do not delete a store
+	whose single use_stmt has a overlapping set of loaded and
+	stored symbols as that use_stmt might be a noop assignment then.
+
 2008-03-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:

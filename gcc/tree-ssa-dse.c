@@ -470,24 +470,23 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
 	  vuse_vec_p vv;
 	  tree stmt_lhs;
 
-	  if (LOADED_SYMS (use_stmt))
+	  /* If use_stmt is or might be a nop assignment, e.g. for
+	     struct { ... } S a, b, *p; ...
+	     b = a; b = b;
+	     or
+	     b = a; b = *p; where p might be &b,
+	     or
+	     *p = a; *p = b; where p might be &b,
+	     or
+	     *p = *u; *p = *v; where p might be v, then USE_STMT
+	     acts as a use as well as definition, so store in STMT
+	     is not dead.  */
+	  if (LOADED_SYMS (use_stmt)
+	      && bitmap_intersect_p (LOADED_SYMS (use_stmt),
+				     STORED_SYMS (use_stmt)))
 	    {
-	      tree use_base
-		= get_base_address (GIMPLE_STMT_OPERAND (use_stmt, 0));
-	      /* If use_stmt is or might be a nop assignment, e.g. for
-		 struct { ... } S a, b, *p; ...
-		 b = a; b = b;
-		 or
-		 b = a; b = *p; where p might be &b, then USE_STMT
-		 acts as a use as well as definition, so store in STMT
-		 is not dead.  */
-	      if (TREE_CODE (use_base) == VAR_DECL
-		  && bitmap_bit_p (LOADED_SYMS (use_stmt),
-				   DECL_UID (use_base)))
-		{
-		  record_voperand_set (dse_gd->stores, &bd->stores, ann->uid);
-		  return;
-		}
+	      record_voperand_set (dse_gd->stores, &bd->stores, ann->uid);
+	      return;
 	    }
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
