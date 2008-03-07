@@ -3,7 +3,7 @@
 % Load plain if necessary, i.e., if running under initex.
 \expandafter\ifx\csname fmtname\endcsname\relax\input plain\fi
 %
-\def\texinfoversion{2008-02-04.16}
+\def\texinfoversion{2008-03-07.10}
 %
 % Copyright (C) 1985, 1986, 1988, 1990, 1991, 1992, 1993, 1994, 1995,
 % 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
@@ -917,16 +917,21 @@ where each line of input produces a line of output.}
   \temp
 }
 
-% @include file    insert text of that file as input.
+% @include FILE -- \input text of FILE.
 %
 \def\include{\parseargusing\filenamecatcodes\includezzz}
 \def\includezzz#1{%
   \pushthisfilestack
   \def\thisfile{#1}%
   {%
-    \makevalueexpandable
-    \input #1
-  }%
+    \makevalueexpandable  % we want to expand any @value in FILE.  
+    \turnoffactive        % and allow special characters in the expansion
+    \edef\temp{\noexpand\input #1 }%
+    %
+    % This trickery is to read FILE outside of a group, in case it makes
+    % definitions, etc.
+    \expandafter
+  }\temp
   \popthisfilestack
 }
 \def\filenamecatcodes{%
@@ -5725,7 +5730,7 @@ end
   \let\/=\ptexslash
   \let\*=\ptexstar
   \let\t=\ptext
-  \expandafter \let\csname top \endcsname=\ptextop  % outer
+  \expandafter \let\csname top\endcsname=\ptextop  % outer
   \let\frenchspacing=\plainfrenchspacing
   %
   \def\endldots{\mathinner{\ldots\ldots\ldots\ldots}}%

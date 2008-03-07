@@ -1,3 +1,7 @@
+2008-03-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/include/texinfo.tex: Update to version 2008-03-07.10.
+
 2008-03-07  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
