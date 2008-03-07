@@ -750,7 +750,6 @@ finish_record_type (tree record_type, tree fieldlist, int rep_level,
   tree name = TYPE_NAME (record_type);
   tree ada_size = bitsize_zero_node;
   tree size = bitsize_zero_node;
-  bool var_size = false;
   bool had_size = TYPE_SIZE (record_type) != 0;
   bool had_size_unit = TYPE_SIZE_UNIT (record_type) != 0;
   tree field;
@@ -810,15 +809,6 @@ finish_record_type (tree record_type, tree fieldlist, int rep_level,
       tree type = TREE_TYPE (field);
       tree this_size = DECL_SIZE (field);
       tree this_ada_size = DECL_SIZE (field);
-
-      /* We need to make an XVE/XVU record if any field has variable size,
-	 whether or not the record does.  For example, if we have a union,
-	 it may be that all fields, rounded up to the alignment, have the
-	 same size, in which case we'll use that size.  But the debug
-	 output routines (except Dwarf2) won't be able to output the fields,
-	 so we need to make the special record.  */
-      if (TREE_CODE (this_size) != INTEGER_CST)
-	var_size = true;
 
       if ((TREE_CODE (type) == RECORD_TYPE || TREE_CODE (type) == UNION_TYPE
 	  || TREE_CODE (type) == QUAL_UNION_TYPE)
