@@ -95,7 +95,7 @@ objcp_xref_tag (enum tree_code code ATTRIBUTE_UNUSED, tree name)
 int
 objcp_comptypes (tree type1, tree type2)
 {     
-  return cp_comptypes (type1, type2, COMPARE_STRICT);
+  return comptypes (type1, type2, COMPARE_STRICT);
 }
 
 tree

@@ -281,7 +281,7 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 /* Returns nonzero iff TYPE1 and TYPE2 are the same type, in the usual
    sense of `same'.  */
 #define same_type_p(TYPE1, TYPE2) \
-  cp_comptypes ((TYPE1), (TYPE2), COMPARE_STRICT)
+  comptypes ((TYPE1), (TYPE2), COMPARE_STRICT)
 
 /* Returns nonzero iff TYPE1 and TYPE2 are the same type, ignoring
    top-level qualifiers.  */
@@ -3744,7 +3744,7 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 #define WANT_VECTOR    32 /* vector types */
 #define WANT_ARITH	(WANT_INT | WANT_FLOAT | WANT_VECTOR)
 
-/* Used with cp_comptypes, and related functions, to guide type
+/* Used with comptypes, and related functions, to guide type
    comparison.  */
 
 #define COMPARE_STRICT	      0 /* Just check if the types are the
@@ -3780,7 +3780,7 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
    is derived from TYPE1, or if TYPE2 is a pointer (reference) to a
    class derived from the type pointed to (referred to) by TYPE1.  */
 #define same_or_base_type_p(TYPE1, TYPE2) \
-  cp_comptypes ((TYPE1), (TYPE2), COMPARE_BASE)
+  comptypes ((TYPE1), (TYPE2), COMPARE_BASE)
 
 /* These macros are used to access a TEMPLATE_PARM_INDEX.  */
 #define TEMPLATE_PARM_INDEX_CAST(NODE) \
@@ -4765,7 +4765,7 @@ extern tree complete_type			(tree);
 extern tree complete_type_or_else		(tree, tree);
 extern int type_unknown_p			(const_tree);
 extern bool comp_except_specs			(const_tree, const_tree, bool);
-extern bool cp_comptypes			(tree, tree, int);
+extern bool comptypes				(tree, tree, int);
 extern bool compparms				(const_tree, const_tree);
 extern int comp_cv_qualification		(const_tree, const_tree);
 extern int comp_cv_qual_signature		(tree, tree);
