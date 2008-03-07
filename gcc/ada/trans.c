@@ -202,7 +202,8 @@ static tree emit_range_check (tree, Node_Id);
 static tree emit_index_check (tree, tree, tree, tree);
 static tree emit_check (tree, tree, int);
 static tree convert_with_check (Entity_Id, tree, bool, bool, bool);
-static bool addressable_p (tree);
+static bool larger_record_type_p (tree, tree);
+static bool addressable_p (tree, tree);
 static tree assoc_to_constructor (Entity_Id, Node_Id, tree);
 static tree extract_values (tree, tree);
 static tree pos_to_constructor (Node_Id, tree, Entity_Id);
@@ -2089,8 +2090,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	       && Is_Composite_Type (Underlying_Type (Etype (gnat_formal)))));
       Node_Id gnat_name = (suppress_type_conversion
 			   ? Expression (gnat_actual) : gnat_actual);
-      tree gnu_name = gnat_to_gnu (gnat_name);
-      tree gnu_name_type = gnat_to_gnu_type (Etype (gnat_name));
+      tree gnu_name = gnat_to_gnu (gnat_name), gnu_name_type;
       tree gnu_actual;
 
       /* If it's possible we may need to use this expression twice, make sure
@@ -2109,7 +2109,8 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	      || (TREE_CODE (gnu_formal) == PARM_DECL
 		  && (DECL_BY_COMPONENT_PTR_P (gnu_formal)
 		      || (DECL_BY_DESCRIPTOR_P (gnu_formal)))))
-	  && !addressable_p (gnu_name))
+	  && (gnu_name_type = gnat_to_gnu_type (Etype (gnat_name)))
+	  && !addressable_p (gnu_name, gnu_name_type))
 	{
 	  tree gnu_copy = gnu_name, gnu_temp;
 
@@ -2136,8 +2137,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 			     gnat_formal);
 	    }
 
-	  /* Remove any unpadding and make a copy.  But if it's a justified
-	     modular type, just convert to it.  */
+	  /* Remove any unpadding from the object and reset the copy.  */
 	  if (TREE_CODE (gnu_name) == COMPONENT_REF
 	      && ((TREE_CODE (TREE_TYPE (TREE_OPERAND (gnu_name, 0)))
 		   == RECORD_TYPE)
@@ -2145,14 +2145,23 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 		      (TREE_TYPE (TREE_OPERAND (gnu_name, 0))))))
 	    gnu_name = gnu_copy = TREE_OPERAND (gnu_name, 0);
 
+	  /* Otherwise convert to the nominal type of the object if it's
+	     a record type.  There are several cases in which we need to
+	     make the temporary using this type instead of the actual type
+	     of the object if they are distinct, because the expectations
+	     of the callee would otherwise not be met:
+	       - if it's a justified modular type,
+	       - if the actual type is a packed version of it.  */
 	  else if (TREE_CODE (gnu_name_type) == RECORD_TYPE
-		   && (TYPE_JUSTIFIED_MODULAR_P (gnu_name_type)))
+		   && (TYPE_JUSTIFIED_MODULAR_P (gnu_name_type)
+		       || larger_record_type_p (gnu_name_type,
+						TREE_TYPE (gnu_name))))
 	    gnu_name = convert (gnu_name_type, gnu_name);
 
 	  /* Make a SAVE_EXPR to both properly account for potential side
 	     effects and handle the creation of a temporary copy.  Special
 	     code in gnat_gimplify_expr ensures that the same temporary is
-	     used as the actual and copied back after the call if needed.  */
+	     used as the object and copied back after the call if needed.  */
 	  gnu_name = build1 (SAVE_EXPR, TREE_TYPE (gnu_name), gnu_name);
 	  TREE_SIDE_EFFECTS (gnu_name) = 1;
 	  TREE_INVARIANT (gnu_name) = 1;
@@ -4837,15 +4846,13 @@ gnat_to_gnu (Node_Id gnat_node)
      statement or a parameter of a procedure call, return what we have since
      the RHS has to be converted to our type there in that case, unless
      GNU_RESULT_TYPE has a simpler size.  Similarly, if the two types are
-     record types with the same name, the expression type has integral mode,
-     and GNU_RESULT_TYPE BLKmode, don't convert.  This will be the case when
-     we are converting from a packable type to its actual type and we need
-     those conversions to be NOPs in order for assignments into these types to
-     work properly if the inner object is a bitfield and hence can't have
-     its address taken.  Finally, don't convert integral types that are the
-     operand of an unchecked conversion since we need to ignore those
-     conversions (for 'Valid).  Otherwise, convert the result to the proper
-     type.  */
+     record types with the same name and GNU_RESULT_TYPE has BLKmode, don't
+     convert.  This will be the case when we are converting from a packable
+     type to its actual type and we need those conversions to be NOPs in
+     order for assignments into these types to work properly.  Finally,
+     don't convert integral types that are the operand of an unchecked
+     conversion since we need to ignore those conversions (for 'Valid).
+     Otherwise, convert the result to the proper type.  */
 
   if (Present (Parent (gnat_node))
       && ((Nkind (Parent (gnat_node)) == N_Assignment_Statement
@@ -4895,9 +4902,7 @@ gnat_to_gnu (Node_Id gnat_node)
 		== TYPE_NAME (TREE_TYPE (gnu_result)))
 	       && TREE_CODE (gnu_result_type) == RECORD_TYPE
 	       && TREE_CODE (TREE_TYPE (gnu_result)) == RECORD_TYPE
-	       && TYPE_MODE (gnu_result_type) == BLKmode
-	       && (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (gnu_result)))
-		   == MODE_INT)))
+	       && TYPE_MODE (gnu_result_type) == BLKmode))
     {
       /* Remove any padding record, but do nothing more in this case.  */
       if (TREE_CODE (TREE_TYPE (gnu_result)) == RECORD_TYPE
@@ -6047,13 +6052,44 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
   return convert (gnu_type, gnu_result);
 }
 
-/* Return 1 if GNU_EXPR can be directly addressed.  This is the case unless
-   it is an expression involving computation or if it involves a reference
-   to a bitfield or to a field not sufficiently aligned for its type.  */
+/* Return true if RECORD_TYPE, a record type, is larger than TYPE.  */
 
 static bool
-addressable_p (tree gnu_expr)
+larger_record_type_p (tree record_type, tree type)
 {
+  tree rsize, size;
+
+  /* Padding types are not considered larger on their own.  */
+  if (TYPE_IS_PADDING_P (record_type))
+    return false;
+
+  rsize = TYPE_SIZE (record_type);
+  size = TYPE_SIZE (type);
+
+  if (!(TREE_CODE (rsize) == INTEGER_CST && TREE_CODE (size) == INTEGER_CST))
+    return false;
+
+  return tree_int_cst_lt (size, rsize) != 0;
+}
+
+/* Return true if GNU_EXPR can be directly addressed.  This is the case
+   unless it is an expression involving computation or if it involves a
+   reference to a bitfield or to an object not sufficiently aligned for
+   its type.  If GNU_TYPE is non null, return true only if GNU_EXPR can
+   be directly addressed as an object of this type.  */
+
+static bool
+addressable_p (tree gnu_expr, tree gnu_type)
+{
+  /* The size of the real type of the object must not be smaller than
+     that of the expected type, otherwise an indirect access in the
+     latter type would be larger than the object.  Only records need
+     to be considered in practice.  */
+  if (gnu_type
+      && TREE_CODE (gnu_type) == RECORD_TYPE
+      && larger_record_type_p (gnu_type, TREE_TYPE (gnu_expr)))
+    return false;
+
   switch (TREE_CODE (gnu_expr))
     {
     case VAR_DECL:
@@ -6085,23 +6121,22 @@ addressable_p (tree gnu_expr)
 		     aligned field that is not a bit-field.  */
 		  || DECL_ALIGN (TREE_OPERAND (gnu_expr, 1))
 		       >= TYPE_ALIGN (TREE_TYPE (gnu_expr)))
-	      && addressable_p (TREE_OPERAND (gnu_expr, 0)));
+	      && addressable_p (TREE_OPERAND (gnu_expr, 0), NULL_TREE));
 
     case ARRAY_REF:  case ARRAY_RANGE_REF:
     case REALPART_EXPR:  case IMAGPART_EXPR:
     case NOP_EXPR:
-      return addressable_p (TREE_OPERAND (gnu_expr, 0));
+      return addressable_p (TREE_OPERAND (gnu_expr, 0), NULL_TREE);
 
     case CONVERT_EXPR:
       return (AGGREGATE_TYPE_P (TREE_TYPE (gnu_expr))
-	      && addressable_p (TREE_OPERAND (gnu_expr, 0)));
+	      && addressable_p (TREE_OPERAND (gnu_expr, 0), NULL_TREE));
 
     case VIEW_CONVERT_EXPR:
       {
 	/* This is addressable if we can avoid a copy.  */
 	tree type = TREE_TYPE (gnu_expr);
 	tree inner_type = TREE_TYPE (TREE_OPERAND (gnu_expr, 0));
-
 	return (((TYPE_MODE (type) == TYPE_MODE (inner_type)
 		  && (!STRICT_ALIGNMENT
 		      || TYPE_ALIGN (type) <= TYPE_ALIGN (inner_type)
@@ -6113,7 +6148,7 @@ addressable_p (tree gnu_expr)
 			 || TYPE_ALIGN (inner_type) >= BIGGEST_ALIGNMENT
 			 || TYPE_ALIGN_OK (type)
 			 || TYPE_ALIGN_OK (inner_type))))
-		&& addressable_p (TREE_OPERAND (gnu_expr, 0)));
+		&& addressable_p (TREE_OPERAND (gnu_expr, 0), NULL_TREE));
       }
 
     default:

@@ -1,3 +1,37 @@
+2008-03-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (MAX_FIXED_MODE_SIZE): Define if not already defined.
+	(gnat_to_gnu_entity) <E_Record_Type>: Try to get a smaller form of
+	the component for packing, if possible, as well as if a component
+	size clause is specified.
+	<E_Record_Subtype>: For an array type used to implement a packed
+	array, get the component type from the original array type.
+	Try to get a smaller form of the component for packing, if possible,
+	as well as if a component size clause is specified.
+	(round_up_to_align): New function.
+	(make_packable_type): Add in_record parameter.
+	For a padding record, preserve the size.  If not in_record and the
+	size is too large for an integral mode, attempt to shrink the size
+	by lowering the alignment.
+	Ditch the padding bits of the last component.
+	Compute sizes and mode manually, and propagate the RM size.
+	Return a BLKmode record type if its size has shrunk.
+	(maybe_pad_type): Use MAX_FIXED_MODE_SIZE instead of BIGGEST_ALIGNMENT.
+	Use Original_Array_Type to retrieve the type in case of an error.
+	Adjust call to make_packable_type.
+	(gnat_to_gnu_field): Likewise.
+	(concat_id_with_name): Minor tweak.
+	* trans.c (larger_record_type_p): New predicate.
+	(call_to_gnu): Compute the nominal type of the object only if the
+	parameter is by-reference.  Do the conversion actual type -> nominal
+	type if the nominal type is a larger record.
+	(gnat_to_gnu): Do not require integral modes on the source type to
+	avoid the conversion for types with identical names.
+	(addressable_p): Add gnu_type parameter.  If it is specified, do not
+	return true if the expression is not addressable in gnu_type.
+	Adjust recursive calls.
+	* utils.c (finish_record_type): Remove dead code.
+
 2008-03-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/35186
