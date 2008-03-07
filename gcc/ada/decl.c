@@ -4086,8 +4086,38 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       if (align != 0 || TREE_CODE (gnu_type) == UNCONSTRAINED_ARRAY_TYPE)
 	;
       else if (Known_Alignment (gnat_entity))
-	align = validate_alignment (Alignment (gnat_entity), gnat_entity,
-				    TYPE_ALIGN (gnu_type));
+	{
+	  align = validate_alignment (Alignment (gnat_entity), gnat_entity,
+				      TYPE_ALIGN (gnu_type));
+
+	  /* Warn on suspiciously large alignments.  This should catch
+	     errors about the (alignment,byte)/(size,bit) discrepancy.  */
+	  if (align > BIGGEST_ALIGNMENT && Has_Alignment_Clause (gnat_entity))
+	    {
+	      tree size;
+
+	      /* If a size was specified, take it into account.  Otherwise
+		 use the RM size for records as the type size has already
+		 been adjusted to the alignment.  */
+	      if (gnu_size)
+		size = gnu_size;
+	      else if ((TREE_CODE (gnu_type) == RECORD_TYPE
+			|| TREE_CODE (gnu_type) == UNION_TYPE
+			|| TREE_CODE (gnu_type) == QUAL_UNION_TYPE)
+		       && !TYPE_IS_FAT_POINTER_P (gnu_type))
+		size = rm_size (gnu_type);
+	      else
+	        size = TYPE_SIZE (gnu_type);
+
+	      /* Consider an alignment as suspicious if the alignment/size
+		 ratio is greater or equal to the byte/bit ratio.  */
+	      if (host_integerp (size, 1)
+		  && align >= TREE_INT_CST_LOW (size) * BITS_PER_UNIT)
+		post_error_ne ("?suspiciously large alignment specified for&",
+			       Expression (Alignment_Clause (gnat_entity)),
+			       gnat_entity);
+	    }
+	}
       else if (Is_Atomic (gnat_entity) && !gnu_size
 	       && host_integerp (TYPE_SIZE (gnu_type), 1)
 	       && integer_pow2p (TYPE_SIZE (gnu_type)))
@@ -6904,25 +6934,25 @@ make_type_from_size (tree type, tree size_tree, bool biased_p)
 static unsigned int
 validate_alignment (Uint alignment, Entity_Id gnat_entity, unsigned int align)
 {
-  Node_Id gnat_error_node = gnat_entity;
-  unsigned int new_align;
-
   unsigned int max_allowed_alignment = get_target_maximum_allowed_alignment ();
-
-  if (Present (Alignment_Clause (gnat_entity)))
-    gnat_error_node = Expression (Alignment_Clause (gnat_entity));
+  unsigned int new_align;
+  Node_Id gnat_error_node;
 
   /* Don't worry about checking alignment if alignment was not specified
      by the source program and we already posted an error for this entity.  */
-
   if (Error_Posted (gnat_entity) && !Has_Alignment_Clause (gnat_entity))
     return align;
+
+  /* Post the error on the alignment clause if any.  */
+  if (Present (Alignment_Clause (gnat_entity)))
+    gnat_error_node = Expression (Alignment_Clause (gnat_entity));
+  else
+    gnat_error_node = gnat_entity;
 
   /* Within GCC, an alignment is an integer, so we must make sure a value is
      specified that fits in that range.  Also, there is an upper bound to
      alignments we can support/allow.  */
-
-  if (! UI_Is_In_Int_Range (alignment)
+  if (!UI_Is_In_Int_Range (alignment)
       || ((new_align = UI_To_Int (alignment)) > max_allowed_alignment))
     post_error_ne_num ("largest supported alignment for& is ^",
 		       gnat_error_node, gnat_entity, max_allowed_alignment);
@@ -6933,7 +6963,11 @@ validate_alignment (Uint alignment, Entity_Id gnat_entity, unsigned int align)
 		       gnat_error_node, gnat_entity,
 		       align / BITS_PER_UNIT);
   else
-    align = MAX (align, new_align == 0 ? 1 : new_align * BITS_PER_UNIT);
+    {
+      new_align = (new_align > 0 ? new_align * BITS_PER_UNIT : 1);
+      if (new_align > align)
+	align = new_align;
+    }
 
   return align;
 }
