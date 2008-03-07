@@ -1493,6 +1493,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    = UI_To_gnu (RM_Size (gnat_entity), bitsizetype);
 	  gnu_type = make_node (RECORD_TYPE);
 	  TYPE_NAME (gnu_type) = create_concat_name (gnat_entity, "JM");
+
+	  /* Propagate the alignment of the modular type to the record.
+	     This means that bitpacked arrays have "ceil" alignment for
+	     their size, which may seem counter-intuitive but makes it
+	     possible to easily overlay them on modular types.  */
 	  TYPE_ALIGN (gnu_type) = TYPE_ALIGN (gnu_field_type);
 	  TYPE_USER_ALIGN (gnu_type) = TYPE_USER_ALIGN (gnu_field_type);
 	  TYPE_PACKED (gnu_type) = 1;

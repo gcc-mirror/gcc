@@ -2486,9 +2486,9 @@ build_template (tree template_type, tree array_type, tree expr)
   tree bound_list = NULL_TREE;
   tree field;
 
-  if (TREE_CODE (array_type) == RECORD_TYPE
-      && (TYPE_IS_PADDING_P (array_type)
-	  || TYPE_JUSTIFIED_MODULAR_P (array_type)))
+  while (TREE_CODE (array_type) == RECORD_TYPE
+	 && (TYPE_IS_PADDING_P (array_type)
+	     || TYPE_JUSTIFIED_MODULAR_P (array_type)))
     array_type = TREE_TYPE (TYPE_FIELDS (array_type));
 
   if (TREE_CODE (array_type) == ARRAY_TYPE
