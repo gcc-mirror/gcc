@@ -20,6 +20,47 @@ autogen definitions fixincl;
 FIXINC_DEBUG = yes;
 #endif
 
+/* On AIX when _LARGE_FILES is defined stdio.h defines fopen to
+ * fopen64 etc. and this causes problems when building with g++
+ * because cstdio udefs everything from stdio.h, leaving us with
+ * ::fopen has not been declared errors. This fixes stdio.h to
+ * undef those defines and use __asm__ to alias the symbols if
+ * building with g++ and -D_LARGE_FILES
+ */
+fix = {
+	hackname  = AAB_aix_stdio;
+	files     = stdio.h;
+	select    = "define fopen fopen64";
+	mach      = "*-*-aix*";
+
+	c_fix	  = wrap;
+
+	c_fix_arg = "";
+
+	c_fix_arg = "\n" 
+	"#if defined __GNUG__ && defined _LARGE_FILES && defined __cplusplus\n"
+	"#define __need__aix_stdio_h_fix\n"
+	"#ifdef __need__aix_stdio_h_fix\n"
+	"#undef fseeko\n"
+	"#undef ftello\n"
+	"#undef fgetpos\n"
+	"#undef fsetpos\n"
+	"#undef fopen\n"
+	"#undef freopen\n"
+	"/* Alias the symbols using asm */\n"
+	"extern \"C\" {\n"
+	"extern int fgetpos(FILE *, fpos64_t *) __asm__(\"fgetpos64\");\n"
+	"extern FILE *fopen(const char *, const char *) __asm__(\"fopen64\");\n"
+	"extern FILE *freopen(const char *, const char *, FILE *) __asm__(\"freopen64\");\n"
+	"extern int fseeko(FILE *, off64_t, int) __asm__(\"fseeko64\");\n"
+	"extern int fsetpos(FILE *, const fpos64_t *) __asm__(\"fsetpos64\");\n"
+	"extern off64_t ftello(FILE *) __asm__(\"ftello64\");\n"
+	"}\n"
+	"#endif\n"
+	"#endif\n";
+	test_text = "";
+};
+
 
 /*
  *  On Mac OS 10.3.9, the 'long double' functions are available in
