@@ -1,3 +1,10 @@
+2008-03-07  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/35373
+	* config/rs6000/rs6000.c (rs6000_legitimize_address): Don't generate
+	reg+const addressing for Altivec modes.  Don't generate reg+reg
+	addressing for TFmode or TDmode quantities.
+
 2008-03-07  Paolo Bonzini  <bonzini@gnu.org>
 
 	* c-common.c (vector_types_convertible_p): Call langhook
