@@ -1,3 +1,5 @@
+-- { dg-do compile }
+
 with Interfaces; use Interfaces;
 
 package Alignment2 is
