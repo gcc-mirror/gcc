@@ -185,19 +185,7 @@ cxx_initialize_diagnostics (diagnostic_context *context)
 int
 cxx_types_compatible_p (tree x, tree y)
 {
-  if (same_type_ignoring_top_level_qualifiers_p (x, y))
-    return 1;
-
-  /* Once we get to the middle-end, references and pointers are
-     interchangeable.  FIXME should we try to replace all references with
-     pointers?  */
-  if (POINTER_TYPE_P (x) && POINTER_TYPE_P (y)
-      && TYPE_MODE (x) == TYPE_MODE (y)
-      && TYPE_REF_CAN_ALIAS_ALL (x) == TYPE_REF_CAN_ALIAS_ALL (y)
-      && same_type_p (TREE_TYPE (x), TREE_TYPE (y)))
-    return 1;
-
-  return 0;
+  return same_type_ignoring_top_level_qualifiers_p (x, y);
 }
 
 tree

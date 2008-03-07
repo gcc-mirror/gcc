@@ -1196,7 +1196,7 @@ vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note)
     return convertible_lax;
 
   if (TYPE_VECTOR_SUBPARTS (t1) == TYPE_VECTOR_SUBPARTS (t2)
-      && comptypes (TREE_TYPE (t1), TREE_TYPE (t2)))
+      && lang_hooks.types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2)))
     return true;
 
   if (emit_lax_note && !emitted_lax_note)
