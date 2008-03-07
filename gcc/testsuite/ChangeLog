@@ -1,3 +1,8 @@
+2008-03-07  Peter O'Gorman  <pogma@thewrittenword.com>
+
+	PR c++/20366
+	* g++.dg/other/pr20366.C: New test.
+
 2008-03-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/35402

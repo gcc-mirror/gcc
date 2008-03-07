@@ -14,6 +14,11 @@
 #include <stdarg.h>
 
 
+#if defined( AAB_AIX_STDIO_CHECK )
+
+#endif  /* AAB_AIX_STDIO_CHECK */
+
+
 #if defined( ALPHA_GETOPT_CHECK )
 extern int getopt(int, char *const[], const char *);
 #endif  /* ALPHA_GETOPT_CHECK */
