@@ -2891,7 +2891,7 @@ canonical_type_parameter (tree type)
     VEC_safe_push (tree, gc, canonical_template_parms, NULL_TREE);
 
   list = VEC_index (tree, canonical_template_parms, idx);
-  while (list && !cp_comptypes (type, TREE_VALUE (list), COMPARE_STRUCTURAL))
+  while (list && !comptypes (type, TREE_VALUE (list), COMPARE_STRUCTURAL))
     list = TREE_CHAIN (list);
 
   if (list)
