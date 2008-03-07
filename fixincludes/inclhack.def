@@ -3223,6 +3223,30 @@ fix = {
 };
 
 /*
+ * On Solaris 11, if you do isinf(NaN) you'll get a floating point
+ * exception.  Provide an alternative using GCC's builtin.
+ */
+
+fix = {
+    hackname  = solaris_math_10;
+    select    = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    files     = iso/math_c99.h;
+    c_fix     = format;
+    c_fix_arg = "#define\tisinf(x) __builtin_isinf(x)";
+    c_fix_arg = "^#define[ \t]+isinf\\(x\\)[ \t]+__extension__\\([ \t]*\\\\\n"
+                "[ \t]*\\{[ \t]*__typeof\\(x\\)[ \t]*__x_i[ \t]*=[ \t]*\\(x\\);[ \t]*\\\\\n"
+                "[ \t]*__x_i[ \t]*==[ \t]*\\(__typeof\\(__x_i\\)\\)[ \t]*INFINITY[ \t]*\\|\\|[ \t]*\\\\\n"
+                "[ \t]*__x_i[ \t]*==[ \t]*\\(__typeof\\(__x_i\\)\\)[ \t]*\\(-INFINITY\\);[ \t]*\\}\\)";
+    test_text =
+    '#pragma ident	"@(#)math_c99.h	1.12	07/01/21 SMI"'"\n"
+    "#undef	isinf\n"
+    "#define	isinf(x)	__extension__( \\\\\n"
+    "			{ __typeof(x) __x_i = (x); \\\\\n"
+    "			__x_i == (__typeof(__x_i)) INFINITY || \\\\\n"
+    "			__x_i == (__typeof(__x_i)) (-INFINITY); })";
+};
+
+/*
  *  Sun Solaris 2.5.1, 2.6 defines PTHREAD_{MUTEX|COND}_INITIALIZER
  *  incorrectly, so we replace them with versions that correspond to
  *  the definition.  We also explicitly name this fix "1" and the next

@@ -1,3 +1,10 @@
+2008-03-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* inclhack.def (solaris_math_10): New.
+	* tests/base/iso/math_c99.h: Update.
+
+	* fixincl.x: Regenerate.
+
 2008-03-05  Release Manager
 
 	* GCC 4.3.0 released.
