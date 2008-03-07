@@ -3615,6 +3615,7 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       && GET_CODE (XEXP (x, 1)) == CONST_INT
       && (unsigned HOST_WIDE_INT) (INTVAL (XEXP (x, 1)) + 0x8000) >= 0x10000
       && !(SPE_VECTOR_MODE (mode)
+	   || ALTIVEC_VECTOR_MODE (mode)
 	   || (TARGET_E500_DOUBLE && (mode == DFmode || mode == TFmode
 				      || mode == DImode))))
     {
@@ -3632,11 +3633,12 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	   && GET_MODE_NUNITS (mode) == 1
 	   && ((TARGET_HARD_FLOAT && TARGET_FPRS)
 	       || TARGET_POWERPC64
-	       || (((mode != DImode && mode != DFmode && mode != DDmode)
-		    || TARGET_E500_DOUBLE)
-		   && mode != TFmode && mode != TDmode))
+	       || ((mode != DImode && mode != DFmode && mode != DDmode)
+		   || TARGET_E500_DOUBLE))
 	   && (TARGET_POWERPC64 || mode != DImode)
-	   && mode != TImode)
+	   && mode != TImode
+	   && mode != TFmode
+	   && mode != TDmode)
     {
       return gen_rtx_PLUS (Pmode, XEXP (x, 0),
 			   force_reg (Pmode, force_operand (XEXP (x, 1), 0)));
