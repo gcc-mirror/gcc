@@ -1,3 +1,9 @@
+2008-03-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/22152
+	* gcc.target/i386/pr22152.c: New test.
+	* gcc.target/i386/sse2-mmx.c: Ditto.
+
 2008-03-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/uninit_func.adb: New test.
