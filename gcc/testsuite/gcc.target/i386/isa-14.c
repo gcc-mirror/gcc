@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-msse5 -mno-sse" } */
+/* { dg-options "-march=x86-64 -msse5 -mno-sse" } */
 
 extern void abort (void);
 
