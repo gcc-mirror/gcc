@@ -1584,6 +1584,8 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
   TREE_SIDE_EFFECTS (gnu_loop_stmt) = 1;
   LOOP_STMT_LABEL (gnu_loop_stmt) = create_artificial_label ();
   set_expr_location_from_node (gnu_loop_stmt, gnat_node);
+  Sloc_to_locus (Sloc (End_Label (gnat_node)),
+		 &DECL_SOURCE_LOCATION (LOOP_STMT_LABEL (gnu_loop_stmt)));
 
   /* Save the end label of this LOOP_STMT in a stack so that the corresponding
      N_Exit_Statement can find it.  */
@@ -5334,6 +5336,7 @@ gnat_gimplify_stmt (tree *stmt_p)
       {
 	tree gnu_start_label = create_artificial_label ();
 	tree gnu_end_label = LOOP_STMT_LABEL (stmt);
+	tree t;
 
 	/* Set to emit the statements of the loop.  */
 	*stmt_p = NULL_TREE;
@@ -5370,9 +5373,10 @@ gnat_gimplify_stmt (tree *stmt_p)
 	if (LOOP_STMT_UPDATE (stmt))
 	  append_to_statement_list (LOOP_STMT_UPDATE (stmt), stmt_p);
 
-	append_to_statement_list (build1 (GOTO_EXPR, void_type_node,
-					  gnu_start_label),
-				  stmt_p);
+	t = build1 (GOTO_EXPR, void_type_node, gnu_start_label);
+	set_expr_location (t, DECL_SOURCE_LOCATION (gnu_end_label));
+	append_to_statement_list (t, stmt_p);
+
 	append_to_statement_list (build1 (LABEL_EXPR, void_type_node,
 					  gnu_end_label),
 				  stmt_p);
