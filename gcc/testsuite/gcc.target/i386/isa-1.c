@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-msse4" } */
+/* { dg-options "-march=x86-64 -msse4" } */
 
 extern void abort (void);
 
