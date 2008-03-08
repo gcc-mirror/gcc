@@ -249,7 +249,7 @@ gnat_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
    from ARGV that it successfully decoded; 0 indicates failure.  */
 
 static int
-gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
+gnat_handle_option (size_t scode, const char *arg, int value)
 {
   const struct cl_option *option = &cl_options[scode];
   enum opt_code code = (enum opt_code) scode;
@@ -271,8 +271,16 @@ gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
       gnat_argc++;
       break;
 
-      /* All front ends are expected to accept this.  */
     case OPT_Wall:
+      set_Wunused (value);
+
+      /* We save the value of warn_uninitialized, since if they put
+	 -Wuninitialized on the command line, we need to generate a
+	 warning about not using it without also specifying -O.  */
+      if (warn_uninitialized != 1)
+	warn_uninitialized = (value ? 2 : 0);
+      break;
+
       /* These are used in the GCC Makefile.  */
     case OPT_Wmissing_prototypes:
     case OPT_Wstrict_prototypes:
@@ -357,6 +365,9 @@ gnat_init_options (unsigned int argc, const char **argv)
 bool
 gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
 {
+  /* ??? The warning machinery is outsmarted by Ada.  */
+  warn_unused_parameter = 0;
+
   flag_inline_trees = 1;
 
   if (!flag_no_inline)

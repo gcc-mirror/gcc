@@ -1,5 +1,12 @@
 2008-03-08  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* lang-specs.h: Pass -gnatwa if -Wall is passed.
+	* misc.c (gnat_handle_option) <OPT_Wall>: Expand into -Wunused
+	and -Wuninitialized.
+	(gnat_post_options): Clear warn_unused_parameter.
+
+2008-03-08  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* utils.c (finish_record_type): Clear DECL_BIT_FIELD on sufficiently
 	aligned bit-fields, bumping the alignment of the record type if deemed
 	profitable.
