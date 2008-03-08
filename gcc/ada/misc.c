@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *          Copyright (C) 1992-2007, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2008, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -126,7 +126,7 @@ static tree gnat_type_max_size		(const_tree);
 #undef  LANG_HOOKS_PUSHDECL
 #define LANG_HOOKS_PUSHDECL		gnat_return_tree
 #undef  LANG_HOOKS_WRITE_GLOBALS
-#define LANG_HOOKS_WRITE_GLOBALS      gnat_write_global_declarations
+#define LANG_HOOKS_WRITE_GLOBALS	gnat_write_global_declarations
 #undef  LANG_HOOKS_FINISH_INCOMPLETE_DECL
 #define LANG_HOOKS_FINISH_INCOMPLETE_DECL gnat_finish_incomplete_decl
 #undef	LANG_HOOKS_REDUCE_BIT_FIELD_OPERATIONS
@@ -303,9 +303,9 @@ gnat_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_feliminate_unused_debug_types:
       /* We arrange for post_option to be able to only set the corresponding
-         flag to 1 when explicitely requested by the user.  We expect the
-         default flag value to be either 0 or positive, and expose a positive
-         -f as a negative value to post_option.  */
+	 flag to 1 when explicitely requested by the user.  We expect the
+	 default flag value to be either 0 or positive, and expose a positive
+	 -f as a negative value to post_option.  */
       flag_eliminate_unused_debug_types = -value;
       break;
 
@@ -527,7 +527,6 @@ gnat_init_gcc_eh (void)
      marked as "cannot trap" if the flag is not set (see emit_libcall_block).
      We should not let this be since it is possible for such calls to actually
      raise in Ada.  */
-
   flag_exceptions = 1;
   flag_non_call_exceptions = 1;
 
@@ -615,6 +614,14 @@ gnat_print_type (FILE *file, tree node, int indent)
 }
 
 static const char *
+gnat_dwarf_name (tree t, int verbosity ATTRIBUTE_UNUSED)
+{
+  gcc_assert (DECL_P (t));
+
+  return (const char *) IDENTIFIER_POINTER (DECL_NAME (t));
+}
+
+static const char *
 gnat_printable_name (tree decl, int verbosity)
 {
   const char *coded_name = IDENTIFIER_POINTER (DECL_NAME (decl));
@@ -629,14 +636,6 @@ gnat_printable_name (tree decl, int verbosity)
     }
 
   return (const char *) ada_name;
-}
-
-static const char *
-gnat_dwarf_name (tree t, int verbosity ATTRIBUTE_UNUSED)
-{
-  gcc_assert (DECL_P (t));
-
-  return (const char *) IDENTIFIER_POINTER (DECL_NAME (t));
 }
 
 /* Expands GNAT-specific GCC tree nodes.  The only ones we support

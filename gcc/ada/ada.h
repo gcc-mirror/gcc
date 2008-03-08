@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2008, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -37,7 +37,7 @@
 #define GCC_ADA_H
 
 /* Inlined functions in header are preceded by INLINE, which is normally set
-   to extern inline for GCC, but may be set to static for use in standard 
+   to extern inline for GCC, but may be set to static for use in standard
    ANSI-C.  */
 
 #ifndef INLINE
@@ -58,10 +58,10 @@
 #define CAT(A,B) ECHO(A)B
 #endif
 
-/* The following macro definition simulates the effect of a declaration of 
+/* The following macro definition simulates the effect of a declaration of
    a subtype, where the first two parameters give the name of the type and
    subtype, and the third and fourth parameters give the subtype range. The
-   effect is to compile a typedef defining the subtype as a synonym for the 
+   effect is to compile a typedef defining the subtype as a synonym for the
    type, together with two constants defining the end points.  */
 
 #define SUBTYPE(SUBTYPE,TYPE,FIRST,LAST)	\
@@ -70,7 +70,7 @@
          CAT (SUBTYPE,__Last) = LAST };
 
 /* The following definitions provide the equivalent of the Ada IN and NOT IN
-   operators, assuming that the subtype involved has been defined using the 
+   operators, assuming that the subtype involved has been defined using the
    SUBTYPE macro defined above.  */
 
 #define IN(VALUE,SUBTYPE) \

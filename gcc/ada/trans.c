@@ -1527,33 +1527,31 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 	      gcc_unreachable ();
 	    }
 
-         /* If the case value is a subtype that raises Constraint_Error at
-             run-time because of a wrong bound, then gnu_low or gnu_high
-             is not translated into an INTEGER_CST.  In such a case, we need
-             to ensure that the when statement is not added in the tree,
-             otherwise it will crash the gimplifier.  */
-         if ((!gnu_low || TREE_CODE (gnu_low) == INTEGER_CST)
-              && (!gnu_high || TREE_CODE (gnu_high) == INTEGER_CST))
-          {
-
-             add_stmt_with_node (build3 (CASE_LABEL_EXPR, void_type_node,
-                                         gnu_low, gnu_high,
-                                         create_artificial_label ()),
-                                 gnat_choice);
-             choices_added++;
-          }
+	  /* If the case value is a subtype that raises Constraint_Error at
+	     run-time because of a wrong bound, then gnu_low or gnu_high is
+	     not transtaleted into an INTEGER_CST.  In such a case, we need
+	     to ensure that the when statement is not added in the tree,
+	     otherwise it will crash the gimplifier.  */
+	  if ((!gnu_low || TREE_CODE (gnu_low) == INTEGER_CST)
+	      && (!gnu_high || TREE_CODE (gnu_high) == INTEGER_CST))
+	    {
+	      add_stmt_with_node (build3 (CASE_LABEL_EXPR, void_type_node,
+					  gnu_low, gnu_high,
+					  create_artificial_label ()),
+				  gnat_choice);
+	      choices_added++;
+	    }
 	}
 
-      /* Push a binding level here in case variables are declared since we want
-         them to be local to this set of statements instead of the block
-         containing the Case statement.  */
-
-       if (choices_added > 0)
-       {
-         add_stmt (build_stmt_group (Statements (gnat_when), true));
-         add_stmt (build1 (GOTO_EXPR, void_type_node,
-                           TREE_VALUE (gnu_switch_label_stack)));
-       }
+      /* Push a binding level here in case variables are declared as we want
+	 them to be local to this set of statements instead of to the block
+	 containing the Case statement.  */
+      if (choices_added > 0)
+	{
+	  add_stmt (build_stmt_group (Statements (gnat_when), true));
+	  add_stmt (build1 (GOTO_EXPR, void_type_node,
+			    TREE_VALUE (gnu_switch_label_stack)));
+	}
     }
 
   /* Now emit a definition of the label all the cases branched to. */
@@ -4244,7 +4242,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
       for (gnat_temp
 	   = First_Formal_With_Extras
-	       (Defining_Entity (Specification (gnat_node)));
+	      (Defining_Entity (Specification (gnat_node)));
 	   Present (gnat_temp);
 	   gnat_temp = Next_Formal_With_Extras (gnat_temp))
 	if (Is_Itype (Etype (gnat_temp))
@@ -6299,7 +6297,7 @@ assoc_to_constructor (Entity_Id gnat_entity, Node_Id gnat_assoc, tree gnu_type)
   {
     tree gnu_field;
 
-    /* Verify every enty in GNU_LIST was used.  */
+    /* Verify every entry in GNU_LIST was used.  */
     for (gnu_field = gnu_list; gnu_field; gnu_field = TREE_CHAIN (gnu_field))
       gcc_assert (TREE_ADDRESSABLE (gnu_field));
   }
