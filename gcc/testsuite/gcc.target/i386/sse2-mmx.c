@@ -23,10 +23,10 @@ unsigned_add3 (const __m64 * a, const __m64 * b,
 
   unsigned int i;
 
-  one = _mm_cmpeq_pi8 (_a, _a);
-  one = _mm_sub_si64 (_mm_xor_si64 (one, one), one);
+  carry = _mm_setzero_si64 ();
 
-  carry = _mm_xor_si64 (one, one);
+  one = _mm_cmpeq_pi8 (carry, carry);
+  one = _mm_sub_si64 (carry, one);
 
   for (i = 0; i < count; i++)
     {
@@ -49,7 +49,6 @@ unsigned_add3 (const __m64 * a, const __m64 * b,
       carry = _mm_srli_si64 (carry, 63);
     }
 
-  _mm_empty ();
   return carry;
 }
 
@@ -65,6 +64,8 @@ sse2_test (void)
 
   carry = (unsigned long long) unsigned_add3
     ((__m64 *)a, (__m64 *)b, (__m64 *)result, N);
+
+  _mm_empty ();
 
   if (carry != 1)
     abort ();
