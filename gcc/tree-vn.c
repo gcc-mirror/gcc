@@ -173,10 +173,10 @@ vn_add (tree expr, tree val)
     {
     case tcc_comparison:
     case tcc_binary:
-      vn_binary_op_insert (expr, val);
+      vn_nary_op_insert (expr, val);
       break;
     case tcc_unary:
-      vn_unary_op_insert (expr, val);
+      vn_nary_op_insert (expr, val);
       break;
       /* In the case of array-refs of constants, for example, we can
 	 end up with no vuses.  */
@@ -201,7 +201,7 @@ vn_add (tree expr, tree val)
 	}
       else if (TREE_CODE (expr) == ADDR_EXPR)
 	{
-	  vn_unary_op_insert (expr, val);
+	  vn_nary_op_insert (expr, val);
 	  break;
 	}
       /* FALLTHROUGH */
@@ -248,9 +248,9 @@ vn_lookup (tree expr)
     {
     case tcc_comparison:
     case tcc_binary:
-      return vn_binary_op_lookup (expr);
+      return vn_nary_op_lookup (expr);
     case tcc_unary:
-      return vn_unary_op_lookup (expr);
+      return vn_nary_op_lookup (expr);
       break;
       /* In the case of array-refs of constants, for example, we can
 	 end up with no vuses.  */
@@ -268,7 +268,7 @@ vn_lookup (tree expr)
       else if (TREE_CODE (expr) == SSA_NAME)
 	return SSA_NAME_VALUE (expr);
       else if (TREE_CODE (expr) == ADDR_EXPR)
-	return vn_unary_op_lookup (expr);
+	return vn_nary_op_lookup (expr);
       /* FALLTHROUGH */
     default:
       gcc_unreachable ();
