@@ -442,6 +442,23 @@ tree_coverage_counter_ref (unsigned counter, unsigned no)
   return build4 (ARRAY_REF, gcov_type_node, tree_ctr_tables[counter],
 		 build_int_cst (NULL_TREE, no), NULL, NULL);
 }
+
+/* Generate a tree to access the address of COUNTER NO.  */
+
+tree
+tree_coverage_counter_addr (unsigned counter, unsigned no)
+{
+  tree gcov_type_node = get_gcov_type ();
+
+  gcc_assert (no < fn_n_ctrs[counter] - fn_b_ctrs[counter]);
+  no += prg_n_ctrs[counter] + fn_b_ctrs[counter];
+
+  /* "no" here is an array index, scaled to bytes later.  */
+  return build_fold_addr_expr (build4 (ARRAY_REF, gcov_type_node,
+				       tree_ctr_tables[counter],
+				       build_int_cst (NULL_TREE, no),
+				       NULL, NULL));
+}
 
 /* Generate a checksum for a string.  CHKSUM is the current
    checksum.  */
