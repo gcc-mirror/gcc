@@ -1484,7 +1484,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	 such values), we only get the good bits, since the unused bits
 	 are uninitialized.  Both goals are accomplished by wrapping the
 	 modular value in an enclosing struct.  */
-	if (Is_Packed_Array_Type (gnat_entity))
+      if (Is_Packed_Array_Type (gnat_entity))
 	{
 	  tree gnu_field_type = gnu_type;
 	  tree gnu_field;
@@ -1499,7 +1499,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	     their size, which may seem counter-intuitive but makes it
 	     possible to easily overlay them on modular types.  */
 	  TYPE_ALIGN (gnu_type) = TYPE_ALIGN (gnu_field_type);
-	  TYPE_USER_ALIGN (gnu_type) = TYPE_USER_ALIGN (gnu_field_type);
 	  TYPE_PACKED (gnu_type) = 1;
 
 	  /* Create a stripped-down declaration of the original type, mainly
