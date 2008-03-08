@@ -1520,6 +1520,45 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  copy_alias_set (gnu_type, gnu_field_type);
 	}
 
+      /* If the type we are dealing with has got a smaller alignment than the
+	 natural one, we need to wrap it up in a record type and under-align
+	 the latter.  We reuse the padding machinery for this purpose.  */
+      else if (Known_Alignment (gnat_entity)
+	       && UI_Is_In_Int_Range (Alignment (gnat_entity))
+	       && (align = UI_To_Int (Alignment (gnat_entity)) * BITS_PER_UNIT)
+	       && align < TYPE_ALIGN (gnu_type))
+	{
+	  tree gnu_field_type = gnu_type;
+	  tree gnu_field;
+
+	  gnu_type = make_node (RECORD_TYPE);
+	  TYPE_NAME (gnu_type) = create_concat_name (gnat_entity, "PAD");
+
+	  TYPE_ALIGN (gnu_type) = align;
+	  TYPE_PACKED (gnu_type) = 1;
+
+	  /* Create a stripped-down declaration of the original type, mainly
+	     for debugging.  */
+	  create_type_decl (get_entity_name (gnat_entity), gnu_field_type,
+			    NULL, true, debug_info_p, gnat_entity);
+
+	  /* Don't notify the field as "addressable", since we won't be taking
+	     it's address and it would prevent create_field_decl from making a
+	     bitfield.  */
+	  gnu_field = create_field_decl (get_identifier ("OBJECT"),
+					 gnu_field_type, gnu_type, 1, 0, 0, 0);
+
+	  finish_record_type (gnu_type, gnu_field, 0, false);
+	  TYPE_IS_PADDING_P (gnu_type) = 1;
+	  SET_TYPE_ADA_SIZE (gnu_type, bitsize_int (esize));
+
+	  copy_alias_set (gnu_type, gnu_field_type);
+	}
+
+      /* Otherwise reset the alignment lest we computed it above.  */
+      else
+	align = 0;
+
       break;
 
     case E_Floating_Point_Type:
