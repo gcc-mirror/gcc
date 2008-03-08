@@ -1,5 +1,15 @@
 2008-03-08  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* lang.opt (nostdlib): Move around.
+	* misc.c (gnat_handle_option): Fix formatting.
+	(gnat_dwarf_name): Move around.
+	* trans.c (Case_Statement_to_gnu): Fix formatting.
+	(gnat_to_gnu): Likewise.
+	* utils.c (aggregate_type_contains_array_p): Likewise.
+	(create_subprog_decl): Likewise.
+
+2008-03-08  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* decl.c (gnat_to_gnu_entity) <E_Signed_Integer_Subtype>: Do not
 	bother propagating the TYPE_USER_ALIGN flag when creating a JM type.
 

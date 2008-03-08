@@ -1554,7 +1554,7 @@ aggregate_type_contains_array_p (tree type)
 
     case ARRAY_TYPE:
       return true;
-    
+
     default:
       gcc_unreachable ();
     }
@@ -1932,18 +1932,18 @@ create_subprog_decl (tree subprog_name, tree asm_name,
   DECL_ARTIFICIAL (DECL_RESULT (subprog_decl)) = 1;
   DECL_IGNORED_P (DECL_RESULT (subprog_decl)) = 1;
 
-   /* TREE_ADDRESSABLE is set on the result type to request the use of the
-      target by-reference return mechanism.  This is not supported all the
-      way down to RTL expansion with GCC 4, which ICEs on temporary creation
-      attempts with such a type and expects DECL_BY_REFERENCE to be set on
-      the RESULT_DECL instead - see gnat_genericize for more details.  */
-   if (TREE_ADDRESSABLE (TREE_TYPE (DECL_RESULT (subprog_decl))))
-     {
-       tree result_decl = DECL_RESULT (subprog_decl);
+  /* TREE_ADDRESSABLE is set on the result type to request the use of the
+     target by-reference return mechanism.  This is not supported all the
+     way down to RTL expansion with GCC 4, which ICEs on temporary creation
+     attempts with such a type and expects DECL_BY_REFERENCE to be set on
+     the RESULT_DECL instead - see gnat_genericize for more details.  */
+  if (TREE_ADDRESSABLE (TREE_TYPE (DECL_RESULT (subprog_decl))))
+    {
+      tree result_decl = DECL_RESULT (subprog_decl);
 
-       TREE_ADDRESSABLE (TREE_TYPE (result_decl)) = 0;
-       DECL_BY_REFERENCE (result_decl) = 1;
-     }
+      TREE_ADDRESSABLE (TREE_TYPE (result_decl)) = 0;
+      DECL_BY_REFERENCE (result_decl) = 1;
+    }
 
   if (inline_flag)
     DECL_DECLARED_INLINE_P (subprog_decl) = 1;
