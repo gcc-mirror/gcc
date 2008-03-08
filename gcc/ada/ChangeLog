@@ -178,7 +178,7 @@
 	sample.
 	* gnat_rm.texi, gnat_ugn.texi: Fix typos.  Bump copyright years.
 
-2008-02-11  Joel Sherrill <joel.sherrill@oarcorp.com>
+2008-02-11  Joel Sherrill  <joel.sherrill@oarcorp.com>
 
 	PR ada/35143
 	* env.c: Add __rtems__ to if defined.
@@ -225,7 +225,7 @@
 
 2008-01-13  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* trans.c (call_to_gnu):Invoke the addressable_p predicate only
+	* trans.c (call_to_gnu): Invoke the addressable_p predicate only
 	when necessary.  Merge some conditional statements.  Update comments.
 	Rename unchecked_convert_p local variable to suppress_type_conversion.
 	Do not suppress conversions in the In case.
@@ -254,7 +254,7 @@
 	for the C macro for setting individual bit.
 	(pthread_setaffinity_np): New imported routine.
 
-2008-01-03  Tero Koskinen <tero.koskinen@iki.fi>
+2008-01-03  Tero Koskinen  <tero.koskinen@iki.fi>
 
 	PR ada/34647
 	* adaint.c (__gnat_open_new_temp, __gnat_tmp_name): Use mkstemp()
@@ -1721,7 +1721,7 @@
 	* exp_ch9.adb (Build_Simple_Entry_Call): Initialize OUT access type
 	parameters of an entry call.
 
-2007-12-03  Robert Dewar <dewar@adacore.com>
+2007-12-03  Robert Dewar  <dewar@adacore.com>
             Samuel Tardieu  <sam@rfc1149.net>
 
     	PR ada/34287
@@ -1821,7 +1821,7 @@
 	* trans.c (gnat_to_gnu) <case N_Free_Statement>: Reformat lines
 	to fit in 80 columns.
 
-2007-11-21  Aurelien Jarno <aurelien@aurel32.net>
+2007-11-21  Aurelien Jarno  <aurelien@aurel32.net>
 
 	* s-osinte-kfreebsd-gnu.ads (To_Target_Priority): New function.
 	* Makefile.in: Add EH_MECHANISM=-gcc to kfreebsd-gnu. Remove SYMLIB.
@@ -1930,7 +1930,7 @@
 	PR bootstrap/33608
 	* tracebak.c: #undef abort after including system.h.
 
-2007-10-20  Danny Smith <dannysmith@users.sourceforge.net>
+2007-10-20  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* Makefile.in (LIBGNAT_TARGET_PAIRS) Add s-tasinf-mingw.adb,
 	s-tasinf-mingw.ads, a-exetim-mingw.adb, a-exetim-mingw.ads
@@ -2815,7 +2815,7 @@
  	Also return inner allocator node, when present, so that we do not have
  	to look for that node again in the caller.
 
-2007-09-11  Jan Hubicka <jh@suse.cz>
+2007-09-11  Jan Hubicka  <jh@suse.cz>
 
 	* misc.c (gnat_expand_body): Kill.
 	(LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION): Kill.
@@ -4864,7 +4864,7 @@
 	anonymous access type.
 	(pthread_sigmask): Now take an access sigset_t.
 
-2007-07-05  Joel Sherrill <joel.sherrill@oarcorp.com>
+2007-07-05  Joel Sherrill  <joel.sherrill@oarcorp.com>
 
         * s-osinte-rtems.ads: Correct prototype of pthread_sigmask.
 	
@@ -8054,7 +8054,7 @@
 	run-time check.
 
 2007-04-06  Arnaud Charlet  <charlet@adacore.com>
-	    Eric Botcazou <botcazou@adacore.com>
+	    Eric Botcazou  <botcazou@adacore.com>
 
 	* gnatvsn.ads, comperr.adb (Get_Gnat_build_Type): Renamed Build_Type
 	and made constant.
@@ -8081,7 +8081,7 @@
 	'/' should be inserted between the path and the filename.
 
 2007-04-06  Olivier Hainque  <hainque@adacore.com>
-	    Eric Botcazou <botcazou@adacore.com>
+	    Eric Botcazou  <botcazou@adacore.com>
 
 	* decl.c (gnat_to_gnu_entity) <E_Constant>: Associate an external
 	VAR_DECL to a CONST_DECL we make for a public constant when we know the
@@ -8519,7 +8519,7 @@
 	Remove all code for DSP option
 	(CW_Or_Controlled_Type): new subprogram.
 
-2007-04-06  Eric Botcazou <botcazou@adacore.com>
+2007-04-06  Eric Botcazou  <botcazou@adacore.com>
 	    Ed Schonberg  <schonberg@adacore.com>
 	    Gary Dismukes  <dismukes@adacore.com>
 
@@ -8816,7 +8816,7 @@
 
 	* a-fzteio.ads, a-izteio.ads: New Ada 2005 run-time units.
 
-2007-04-06  Eric Botcazou <botcazou@adacore.com>
+2007-04-06  Eric Botcazou  <botcazou@adacore.com>
 	    Arnaud Charlet  <charlet@adacore.com>
 
 	* init.c: Reuse PA/HP-UX code for IA-64/HP-UX, except
@@ -8829,7 +8829,7 @@
 	member in struct sigaction, so as to avoid warning for incompatible
 	pointer types.
 
-2007-04-06 Serguei Rybin <rybin@adacore.com>
+2007-04-06 Serguei Rybin  <rybin@adacore.com>
 
 	* lib.ads, lib.adb (Tree_Read): Release the memory occupied by the
 	switches from previously loaded tree
@@ -9276,7 +9276,7 @@
 	an address always within the call instruction from a return address.
 
 2007-04-06  Olivier Hainque  <hainque@adacore.com>
-	    Eric Botcazou <botcazou@adacore.com>
+	    Eric Botcazou  <botcazou@adacore.com>
 
 	* trans.c (call_to_gnu) <TYPE_RETURNS_BY_TARGET_PTR_P>: Return an
 	expression with a COMPOUND_EXPR including the call instead of emitting
@@ -9315,7 +9315,7 @@
 	BIT_AND_EXPR. Handle also VIEW_CONVERT_EXPR, as the other conversion
 	opcodes.
 
-2007-04-06  Eric Botcazou <botcazou@adacore.com>
+2007-04-06  Eric Botcazou  <botcazou@adacore.com>
 	    Olivier Hainque  <hainque@adacore.com>
 
 	* utils.c (update_pointer_to): Make a copy of the couple of FIELD_DECLs
@@ -9333,7 +9333,7 @@
 	function declaration node.
 	(builtin_decl_for): Search the builtin_decls list.
 
-2007-04-06  Eric Botcazou <botcazou@adacore.com>
+2007-04-06  Eric Botcazou  <botcazou@adacore.com>
 
 	* s-stchop-vxworks.adb: 
 	(Stack_Check): Raise Storage_Error if the argument has wrapped around.
@@ -12096,7 +12096,7 @@
 	of Get_Jmpbuf_Address_Soft and Get_GNAT_Exception.
 	* utils2.c (build_call_0_expr): Do not set TREE_SIDE_EFFECTS.
 
-2006-08-20  Laurent GUERBY  <laurent@guerby.net>
+2006-08-20  Laurent Guerby  <laurent@guerby.net>
 
 	PR ada/28716
 	g-socket.adb (Bind_Socket): Call Set_Address.
@@ -12169,7 +12169,7 @@
 	PR ada/27944
 	* s-taprop-hpux-dce.adb: Delete redundant 'with System.Parameters'.
 
-2006-06-06  Laurent GUERBY  <laurent@guerby.net>
+2006-06-06  Laurent Guerby  <laurent@guerby.net>
 
 	PR ada/27769
 	mlib-utl.adb: Use Program_Name.
@@ -12218,7 +12218,7 @@
 	* utils.c (create_var_decl): Use have_global_bss_p when deciding
 	whether to make the decl common.
 
-2006-02-20  Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+2006-02-20  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
 
 	* Make-lang.in (Ada): Remove.
 	(.PHONY): Remove Ada
@@ -14702,11 +14702,11 @@
 	* utils.c (max_size): Only test for TREE_OVERFLOW on INTEGER_CST
 	nodes.
 
-2005-11-23  Laurent GUERBY  <laurent@guerby.net>
+2005-11-23  Laurent Guerby  <laurent@guerby.net>
 
 	* mlib-prj.adb (Build_Library): Initialize Delete.
 
-2005-11-21  Joel Sherrill <joel.sherrill@oarcorp.com>
+2005-11-21  Joel Sherrill  <joel.sherrill@oarcorp.com>
 
 	* socket.c: Add extern int h_errno for rtems since networking header
 	files are not available at this point in a tool bootstrap. Newlib
@@ -14720,7 +14720,7 @@
 	the error message text, instead use pp_format_text and the new
 	pretty printer APIs.  This allows handling of %qs, %w, etc.
 
-2005-11-18  Laurent GUERBY  <laurent@guerby.net>
+2005-11-18  Laurent Guerby  <laurent@guerby.net>
 
 	PR ada/24857
 	* Makefile.in: Use s-auxdec-empty for RTEMS.
@@ -14733,7 +14733,7 @@
 	reference, declaration, or constant, since the gimplifier
 	can't handle that case.
 
-2005-11-17  Laurent GUERBY  <laurent@guerby.net>
+2005-11-17  Laurent Guerby  <laurent@guerby.net>
 
 	PR ada/24857
 	* s-auxdec-empty.ads, s-auxdec-empty.adb: New files.
@@ -14742,7 +14742,7 @@
 
 	* Makefile.in: Add EH_MECHANISM=-gcc to s390(x) linux.
 
-2005-11-16  Joel Sherrill <joel.sherrill@oarcorp.com>
+2005-11-16  Joel Sherrill  <joel.sherrill@oarcorp.com>
 
 	PR ada/24855
 	* raise-gcc.c: Add missing stdarg.h include.
@@ -16122,7 +16122,7 @@
 	build_binary_op for the "target pointer" case.  Use build_return_expr
 	instead of manually building the RETURN_EXPR tree.
 
-2005-09-16  Laurent GUERBY  <laurent@guerby.net>
+2005-09-16  Laurent Guerby  <laurent@guerby.net>
 
 	PR ada/23788
 	* s-tpinop.ads: Make this unit Preelaborate.
@@ -19347,7 +19347,7 @@
 	comment typos.
 	* gnat_rm.texi, gnat_ugn.texi: Fix typos.
 
-2005-05-16  Nathanael Nerode <neroden@gcc.gnu.org>
+2005-05-16  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	PR ada/20270
 	* Makefile.in: Make TGT_LIB behave correctly.
@@ -19356,7 +19356,7 @@
 
 	* misc.c: Adjust warning() callers.
 
-2005-04-16  Laurent GUERBY  <laurent@guerby.net>
+2005-04-16  Laurent Guerby  <laurent@guerby.net>
 
 	PR ada/18847
 	* a-nudira.adb (Value): Check for valid string.
@@ -19371,7 +19371,7 @@
 	* adaint.c, init.c, tracebak.c: Fix comment typos.
 	* gnat-style.texi, gnat_rm.texi, gnat_ugn.texi: Fix typos.
 
-2005-04-07  Laurent GUERBY  <laurent@guerby.net>
+2005-04-07  Laurent Guerby  <laurent@guerby.net>
 	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* Makefile.in: Add make ifeq define for hppa linux tasking support.
@@ -20723,17 +20723,17 @@
 	relaxed rules about placement of large packed bit array components.
 	Add documentation of GNAT.UTF_32
 
-2005-03-12  Daniel Berlin <dberlin@dberlin.org>
+2005-03-12  Daniel Berlin  <dberlin@dberlin.org>
 
 	* misc.c (gnat_post_options): Turn off structural
 	aliasing for now.
 
-2005-03-08  Laurent Guerby <laurent@guerby.net>
+2005-03-08  Laurent Guerby  <laurent@guerby.net>
 
 	* system-linux-sparc.ads: Fix typo in previous commit.
 
-2005-03-07  James A. Morrison <phython@gcc.gnu.org>
-	    Laurent Guerby <laurent@guerby.net>
+2005-03-07  James A. Morrison  <phython@gcc.gnu.org>
+	    Laurent Guerby  <laurent@guerby.net>
 
 	PR ada/20035
 	* system-linux-sparc.ads: New.
@@ -21291,7 +21291,7 @@
 	[VMS] (#define exit hack): Remove.
 
 2005-02-09  Pascal Obry  <obry@adacore.com>
-	    Arnaud Charlet <charlet@adacore.com>
+	    Arnaud Charlet  <charlet@adacore.com>
 
 	* init.c (__gnat_initialize): Add a new parameter eh which contains the
 	address of the exception registration. The Win32 version of this
@@ -21538,14 +21538,14 @@
 	a-zttest.ads, a-zzunio.ads: New files. Part of new Ada 2005
 	library.
 
-2005-01-27  Laurent GUERBY <laurent@guerby.net>
+2005-01-27  Laurent Guerby  <laurent@guerby.net>
 
 	* Makefile.in: Fix a-intnam.ads from previous commit,
 	add 2005 to copyright.
 	* a-intman-rtems.ads: Renamed to...
 	* a-intnam-rtems.ads:
 
-2005-01-27  Laurent GUERBY <laurent@guerby.net>
+2005-01-27  Laurent Guerby  <laurent@guerby.net>
 
 	* Makefile.in: Rename GNAT RTEMS specific files.
 	* 5rtpopsp.adb, 4rintnam.ads, 5rosinte.adb,
@@ -21553,15 +21553,15 @@
 	* s-tpopsp-rtems.adb, a-intman-rtems.ads, s-osinte-rtems.adb,
 	s-osinte-rtems.ads, s-parame-rtems.adb: Replace files above.
 
-2005-01-27  Joel Sherrill <joel.sherrill@oarcorp.com>
-	    Laurent GUERBY <laurent@guerby.net>
+2005-01-27  Joel Sherrill  <joel.sherrill@oarcorp.com>
+	    Laurent Guerby  <laurent@guerby.net>
 
 	PR ada/19488
 	* 5rosinte.ads: Add No_Key constant.
 	* 5rtpopsp.adb: Initialize ATCB_Key with No_Key and fix style.
 	* gsocket.h: Do not include <sys/socket.h> with RTEMS either.
 
-2005-01-26  Laurent GUERBY <laurent@guerby.net>
+2005-01-26  Laurent Guerby  <laurent@guerby.net>
 
 	PR ada/19414
 	* i-cobol.adb (Valid_Numeric): Handle zero length case.
@@ -21948,7 +21948,7 @@
 	whether the ancestor type is private, as may be the case with nested
 	instantiations.
 
-2004-12-30  Sohail Somani <sohail@sohailsomani.com>
+2004-12-30  Sohail Somani  <sohail@sohailsomani.com>
 
 	PR ada/19128
 	* trans.c (gnat_to_gnu): Fix typo: Use correct return variable.
@@ -23113,7 +23113,7 @@
 
 	* mlib-tgt.ads: (Build_Dynamic_Library): New parameter Options_2
 
-2004-10-04  Laurent GUERBY <laurent@guerby.net>
+2004-10-04  Laurent Guerby  <laurent@guerby.net>
 
 	PR ada/15156
 	* Makefile.in: Define and use RANLIB_FLAGS.
@@ -27219,7 +27219,7 @@
 	* sem_elim.adb: Some minor code reorganization from code reading. Fix
 	misprint in the function name (File_Name_Match).
 
-2004-04-23  Laurent GUERBY <laurent@guerby.net>
+2004-04-23  Laurent Guerby  <laurent@guerby.net>
 
 	* Makefile.in: Remove RANLIB_TEST, use -$(RANLIB) including after
 	install.
@@ -27304,7 +27304,7 @@
 	* snames.ads, snames.adb: Remove Name_Homonym_Number (Homonym_Number is
 	no longer used as a parameter name for Eliminate pragma).
 
-2004-04-22  Laurent GUERBY <laurent@guerby.net>
+2004-04-22  Laurent Guerby  <laurent@guerby.net>
 
 	PR optimization/14984
 	PR optimization/14985
@@ -27780,7 +27780,7 @@
 
 	* mdll-utl.adb (Locate): New version is idempotent.
 
-2004-04-17  Laurent Guerby <laurent@guerby.net>
+2004-04-17  Laurent Guerby  <laurent@guerby.net>
 
 	PR ada/14988 (partial)
 	* impunit.adb: Fix typo.
@@ -28474,7 +28474,7 @@
 	(gnat_to_gnu_entity, case E_Array_Type): Don't set and clear it.
 	* misc.c (LANG_HOOK_HASH_TYPE): Redefine.
 
-2004-03-19  Laurent Guerby <laurent@guerby.net>
+2004-03-19  Laurent Guerby  <laurent@guerby.net>
 
 	* sem_prag.adb (Suppress_Unsuppress_Echeck): use loop instead of
 	aggregate, allows bootstrap from 3.3 on powerpc-darwin.
@@ -30857,7 +30857,7 @@
 
 	* s-rident.ads: Add new restriction No_Direct_Boolean_Operators
 
-2003-11-24  Arnaud Charlet <charlet@act-europe.fr>
+2003-11-24  Arnaud Charlet  <charlet@act-europe.fr>
 
 	PR ada/13142
 	* utils.c (init_gigi_decls): Change name of built-in setjmp to
@@ -32633,7 +32633,7 @@
 
 	* misc.c (gnat_handle_option): Don't handle filenames.
 
-2003-07-04  H.J. Lu <hongjiu.lu@intel.com>
+2003-07-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Make-lang.in: Replace PWD with PWD_COMMAND.
 	* Makefile.adalib: Likewise.
@@ -32773,7 +32773,7 @@
 	* utils.c (finish_record_type): Remove usages of ROUND_TYPE_SIZE
 	and ROUND_TYPE_SIZE_UNIT.
 
-2003-05-22   Geert Bosch <bosch@gnat.com>
+2003-05-22   Geert Bosch  <bosch@gnat.com>
 
 	* gnat_rm.texi : Remove reference to Ada Core Technologies.
 
@@ -32792,7 +32792,7 @@
 	end_subprog_body): Likewise.
 	* utils2.c (build_call_raise): Likewise.
 
-2003-05-01  Laurent Guerby <guerby@acm.org>
+2003-05-01  Laurent Guerby  <guerby@acm.org>
 
 	PR ada/10546
 	* 5iosinte.ads: Increase pthread_cond_t size to match recent
@@ -32802,7 +32802,7 @@
 
 	* utils.c (convert): No need to clear TREE_CST_RTL.
 
-2003-04-23   Geert Bosch <bosch@gnat.com>
+2003-04-23   Geert Bosch  <bosch@gnat.com>
 
 	* 1aexcept.adb, 1aexcept.ads, 1ic.ads, 1ssecsta.adb,
 	1ssecsta.ads, 31soccon.ads, 31soliop.ads, 3asoccon.ads,
@@ -33161,7 +33161,7 @@
 
 	* misc.c (gnat_adjust_rli): #if 0.
 
-2003-03-31   Geert Bosch <bosch@gnat.com>
+2003-03-31   Geert Bosch  <bosch@gnat.com>
 
 	PR ada/10020
 	* link.c : Fix misspelled "const" keyword
@@ -33204,7 +33204,7 @@
 	* gnat_ug_unx.texi, gnat_ug_vms.texi, gnat_ug_vxw.texi,
 	gnat_ug_wnt.texi: Regenerate.
 
-2003-03-02  Laurent Guerby <guerby@acm.org>
+2003-03-02  Laurent Guerby  <guerby@acm.org>
 
 	* Makefile.in (install-gnatlib): Match previous change there
 	so it works.
@@ -33230,7 +33230,7 @@
 	* gnat_ug_unx.texi, gnat_ug_vms.texi, gnat_ug_vxw.texi,
 	gnat_ug_wnt.texi: Regenerate.
 
-2003-02-03  Christian Cornelssen <ccorn@cs.tu-berlin.de>
+2003-02-03  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
 
 	* Make-lang.in (ada.install-info): Let $(DESTDIR)$(infodir)
 	be created if necessary.
@@ -33247,14 +33247,14 @@
 	* gnat_ug.texi: Remove -fvolatile from example.
 	* gnat_ug_vxw.texi: Likewise.
 
-2003-01-29  Laurent Guerby <guerby@acm.org>
+2003-01-29  Laurent Guerby  <guerby@acm.org>
 
 	PR ada/8344
 	* final.c: rename to adafinal.c to avoid file name conflicts with gcc file.
 	* Makefile.in: match previous change.
 	* Make-lang.in: match previous change.
 
-2003-01-29	Joel Sherrill <joel@OARcorp.com>
+2003-01-29  Joel Sherrill  <joel@OARcorp.com>
 
 	* 5rosinte.ads: Add SIGXCPU.
 	* 5rtpopsp.adb: New file.
@@ -33319,11 +33319,11 @@
 	ada/gnat_ug_wnt.dvi, ada/gnat_rm.dvi): Depend on
 	$(srcdir)/doc/include/gcc-common.texi.
 
-2002-12-15   Geert Bosch <bosch@gnat.com>
+2002-12-15   Geert Bosch  <bosch@gnat.com>
 
 	* sem_ch6.adb (Analyze_Subprogram_Body): Fix typo and formatting
 
-2002-12-14   Geert Bosch <bosch@gnat.com>
+2002-12-14   Geert Bosch  <bosch@gnat.com>
 
 	PR ada/5690
 	* sem_ch6.adb (Analyze_Subprogram_Body): Recognize additional
@@ -33367,14 +33367,14 @@
 	* trans.c (gnu_pending_elaboration_lists): New GC root.
 	(build_unit_elab): Use..
 
-2002-10-30   Geert Bosch <bosch@gnat.com>
+2002-10-30   Geert Bosch  <bosch@gnat.com>
 
 	PR ada/6558
 	* misc.c : Include optabs.h
 
 	* Make-lang.in (misc.o): Add dependency on optabs.h
 
-2002-10-29   Geert Bosch <bosch@gnat.com>
+2002-10-29   Geert Bosch  <bosch@gnat.com>
 
 	PR ada/6558
 	* Make-lang.in (gnatbind): Depend on CONFIG_H
@@ -33678,8 +33678,8 @@
 	* doc/tm.texi (REAL_VALUE_LDEXP): Remove.
 	(REAL_VALUE_RNDZINT, REAL_VALUE_UNSIGNED_RNDZINT): Remove.
 
-2002-08-25  Andre Leis <a.leis@gmx.net>
-	    David Billinghurst (David.Billinghurst@riotinto.com>
+2002-08-25  Andre Leis  <a.leis@gmx.net>
+	    David Billinghurst  <David.Billinghurst@riotinto.com>
 
 	* sysdep.c (__gnat_ttyname): include <termios.h> on cygwin
 
@@ -34007,7 +34007,7 @@
 	* Makefile.in: Pass VPATH=$(fsrcdir) when calling make in rts
 	directory.
 
-2001-03-28  Robert Dewar <dewar@gnat.com>
+2001-03-28  Robert Dewar  <dewar@gnat.com>
 
 	* checks.ads:
 	(Remove_Checks): New procedure
@@ -34042,7 +34042,7 @@
 	(Constant_Array_Ref): Deal with string literals (patch
 	suggested by Zack Weinberg on the gcc list)
 
-2001-03-28  Ed Schonberg <schonber@gnat.com>
+2001-03-28  Ed Schonberg  <schonber@gnat.com>
 
 	* exp_util.adb: Duplicate_Subexpr_No_Checks_Orig =>
 	Duplicate_Subexpr_Move_Checks.
@@ -34054,7 +34054,7 @@
 	value of array exists before retrieving it (it may a private
 	protected component in a function).
 
-2002-03-28   Geert Bosch <bosch@gnat.com>
+2002-03-28   Geert Bosch  <bosch@gnat.com>
 
 	* prj-pp.adb : New file.
 
@@ -34101,8 +34101,8 @@
 
 2002-03-23  Florian Weimer  <fw@deneb.enyo.de>
 
+	From Ben Brosgol  <brosgol@gnat.com>
 	* gnat_rm.texi: Sync with ACT version.
-	  (From Ben Brosgol <brosgol@gnat.com>)
 
 2002-03-20  Neil Booth  <neil@daikokuya.demon.co.uk>
 
@@ -34320,7 +34320,7 @@
 	function call could reallocate the table which was being indexed
 	using its result). Fixes ada/4851.
 
-2001-12-19  Robert Dewar <dewar@gnat.com>
+2001-12-19  Robert Dewar  <dewar@gnat.com>
 
 	* bindgen.adb: Minor reformatting
 
@@ -34354,7 +34354,7 @@
 	error found (there were odd exceptions to this general rule in
 	-gnatec/-gnatem processing)
 
-2001-12-19  Olivier Hainque <hainque@gnat.com>
+2001-12-19  Olivier Hainque  <hainque@gnat.com>
 
 	* raise.c (__gnat_eh_personality): Exception handling personality
 	routine for Ada.  Still in rough state, inspired from the C++ version
@@ -34365,7 +34365,7 @@
 	* raise.c (eh_personality): Add comments. Part of work for the GCC 3
 	exception handling integration.
 
-2001-12-19  Arnaud Charlet <charlet@gnat.com>
+2001-12-19  Arnaud Charlet  <charlet@gnat.com>
 
 	* Makefile.in: Remove use of 5smastop.adb which is obsolete.
 	(HIE_SOURCES): Add s-secsta.ad{s,b}.
@@ -34374,7 +34374,7 @@
 	interrupt handling files.
 	(RAVEN_MOD): Removed, no longer needed.
 
-2001-12-19  Robert Dewar <dewar@gnat.com>
+2001-12-19  Robert Dewar  <dewar@gnat.com>
 
 	* a-ngelfu.adb: Remove ??? comment for inappropriate Inline_Always
 	Add 2001 to copyright date
@@ -34382,7 +34382,7 @@
 	* g-regpat.adb: Change pragma Inline_Always to Inline. There is no
 	need to force universal inlining for these cases.
 
-2001-12-19  Arnaud Charlet <charlet@gnat.com>
+2001-12-19  Arnaud Charlet  <charlet@gnat.com>
 
 	* s-taprob.adb: Minor clean ups so that this unit can be used in
 	Ravenscar HI.
@@ -34390,16 +34390,16 @@
 	* exp_ch7.adb: Allow use of secondary stack in HI mode.
 	Disallow it when pragma Restrictions (No_Secondary_Stack) is specified.
 
-2001-12-19  Vincent Celier <celier@gnat.com>
+2001-12-19  Vincent Celier  <celier@gnat.com>
 
 	* prj-tree.ads (Project_Node_Record): Add comments for components
 	Pkg_Id and Case_Insensitive.
 
-2001-12-19  Pascal Obry <obry@gnat.com>
+2001-12-19  Pascal Obry  <obry@gnat.com>
 
 	* g-socket.adb: Minor reformatting. Found while reading code.
 
-2001-12-19  Robert Dewar <dewar@gnat.com>
+2001-12-19  Robert Dewar  <dewar@gnat.com>
 
 	* prj-tree.ads: Minor reformatting
 
@@ -34407,7 +34407,7 @@
 
 	* config-lang.in (diff_excludes): Remove.
 
-2001-12-17  Ed Schonberg <schonber@gnat.com>
+2001-12-17  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_res.adb (Resolve_Selected_Component): do not generate a
 	discriminant check if the selected component is a component of
@@ -34417,7 +34417,7 @@
 	type is private, the gnu_type is the base type of the full view,
 	given that the full view itself may be a subtype.
 
-2001-12-17  Robert Dewar <dewar@gnat.com>
+2001-12-17  Robert Dewar  <dewar@gnat.com>
 
 	* sem_res.adb: Minor reformatting
 
@@ -34428,16 +34428,16 @@
 	* urealp.h: Add definition of Round_Even for call to Machine
 	Add third parameter for Machine
 
-2001-12-17  Ed Schonberg <schonber@gnat.com>
+2001-12-17  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_warn.adb (Check_One_Unit): Suppress warnings completely on
 	predefined units in No_Run_Time mode.
 
-2001-12-17  Richard Kenner <kenner@gnat.com>
+2001-12-17  Richard Kenner  <kenner@gnat.com>
 
 	* misc.c (insn-codes.h): Now include.
 
-2001-12-17  Olivier Hainque <hainque@gnat.com>
+2001-12-17  Olivier Hainque  <hainque@gnat.com>
 
 	* a-except.adb: Preparation work for future integration of the GCC 3
 	exception handling mechanism
@@ -34447,11 +34447,11 @@
 	(Propagate_Exception, Raise_Current_Excep, Raise_From_Signal_Handler):
 	Use the new notification routines.
 
-2001-12-17  Emmanuel Briot <briot@gnat.com>
+2001-12-17  Emmanuel Briot  <briot@gnat.com>
 
 	* prj-tree.ads (First_Choice_Of): Document the when others case
 
-2001-12-17  Arnaud Charlet <charlet@gnat.com>
+2001-12-17  Arnaud Charlet  <charlet@gnat.com>
 
 	* bindgen.adb (Gen_Ada_Init_*): Set priority of environment task in
 	HI-E mode, in order to support Ravenscar profile properly.
@@ -34459,7 +34459,7 @@
 	* cstand.adb (Create_Standard): Duration is a 32 bit type in HI-E
 	mode on 32 bits targets.
 
-2001-12-17  Vincent Celier <celier@gnat.com>
+2001-12-17  Vincent Celier  <celier@gnat.com>
 
 	* fmap.adb: Initial version.
 
@@ -34490,13 +34490,13 @@
 
 	* Makefile.in: Add dependencies for fmap.o.
 
-2001-12-17  Ed Schonberg <schonber@gnat.com>
+2001-12-17  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_ch10.adb (Analyze_With_Clause): Retrieve proper entity when unit
 	is a package instantiation rewritten as a package body.
 	(Install_Withed_Unit): Undo previous change, now redundant.
 
-2001-12-17  Gary Dismukes <dismukes@gnat.com>
+2001-12-17  Gary Dismuke  <dismukes@gnat.com>
 
 	* layout.adb:
 	(Compute_Length): Move conversion to Unsigned to callers.
@@ -34508,7 +34508,7 @@
 	where Max (Len, 0) wasn't getting applied due to the Unsigned
 	conversion used by Compute_Length.
 
-2001-12-17  Arnaud Charlet <charlet@gnat.com>
+2001-12-17  Arnaud Charlet  <charlet@gnat.com>
 
 	* rtsfind.ads:
 	(OK_To_Use_In_No_Run_Time_Mode): Allow Ada.Exceptions and
@@ -34521,61 +34521,61 @@
 
 	* rident.ads (No_Secondary_Stack): New restriction.
 
-2001-12-17  Joel Brobecker <brobecke@gnat.com>
+2001-12-17  Joel Brobecker  <brobecke@gnat.com>
 
 	* gnat_rm.texi: Fix minor typos. Found while reading the section
 	regarding "Bit_Order Clauses" that was sent to a customer.
 	Very interesting documentation!
 
-2001-12-17  Robert Dewar <dewar@gnat.com>
+2001-12-17  Robert Dewar  <dewar@gnat.com>
 
 	* sem_case.adb (Choice_Image): Avoid creating improper character
 	literal names by using the routine Set_Character_Literal_Name. This
 	fixes bombs in certain error message cases.
 
-2001-12-17  Arnaud Charlet <charlet@gnat.com>
+2001-12-17  Arnaud Charlet  <charlet@gnat.com>
 
 	* a-reatim.adb: Minor reformatting.
 
-2001-12-17  Ed Schonberg <schonber@gnat.com>
+2001-12-17  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_ch12.adb (Validate_Derived_Type_Instance): Handle properly the
 	case where the formal is an extension of another formal in the current
 	unit or in a parent generic unit.
 
-2001-12-17  Arnaud Charlet <charlet@gnat.com>
+2001-12-17  Arnaud Charlet  <charlet@gnat.com>
 
 	* s-tposen.adb: Update comments.  Minor reformatting.
 	Minor code clean up.
 
 	* s-tarest.adb: Update comments.  Minor code reorganization.
 
-2001-12-17  Gary Dismukes <dismukes@gnat.com>
+2001-12-17  Gary Dismukes  <dismukes@gnat.com>
 
 	* exp_attr.adb (Attribute_Tag): Suppress expansion of <type_name>'Tag
 	when Java_VM.
 
-2001-12-17  Robert Dewar <dewar@gnat.com>
+2001-12-17  Robert Dewa  <dewar@gnat.com>
 
 	* exp_attr.adb: Minor reformatting
 
-2001-12-17  Ed Schonberg <schonber@gnat.com>
+2001-12-17  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_ch3.adb (Build_Derived_Private_Type): Refine check to handle
 	derivations nested within a child unit: verify that the parent
 	type is declared in an outer scope.
 
-2001-12-17  Robert Dewar <dewar@gnat.com>
+2001-12-17  Robert Dewar  <dewar@gnat.com>
 
 	* sem_ch12.adb: Minor reformatting
 
-2001-12-17  Ed Schonberg <schonber@gnat.com>
+2001-12-17  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_warn.adb (Check_One_Unit): In No_Run_Time mode, do not post
 	warning if current unit is a predefined one, from which bodies may
 	have been deleted.
 
-2001-12-17  Robert Dewar <dewar@gnat.com>
+2001-12-17  Robert Dewar  <dewar@gnat.com>
 
 	* eval_fat.ads: Add comment that Round_Even is referenced in Ada code
 	Fix header format. Add 2001 to copyright date.
@@ -34583,7 +34583,7 @@
 	* exp_dbug.adb (Get_Encoded_Name): Fix out of bounds reference,
 	which caused CE during compilation if checks were enabled.
 
-2001-12-17  Vincent Celier <celier@gnat.com>
+2001-12-17  Vincent Celier  <celier@gnat.com>
 
 	* make.adb:
 	(Switches_Of): New function
@@ -34621,7 +34621,7 @@
 
 	* snames.ads: Added Exec_Dir
 
-2001-12-17  Robert Dewar <dewar@gnat.com>
+2001-12-17  Robert Dewar  <dewar@gnat.com>
 
 	* make.adb: Minor reformatting
 
@@ -34631,29 +34631,29 @@
 
 	* snames.ads: Alphebetize entries for project file
 
-2001-12-17  Ed Schonberg <schonber@gnat.com>
+2001-12-17  Ed Schonberg  <schonber@gnat.com>
 
 	* trans.c (process_freeze_entity): Do nothing if the entity is a
 	subprogram that was already elaborated.
 
-2001-12-17  Richard Kenner <kenner@gnat.com>
+2001-12-17  Richard Kenner  <kenner@gnat.com>
 
 	* decl.c (gnat_to_gnu_entity, object): Do not back-annotate Alignment
 	and Esize if object is referenced via pointer.
 
-2001-12-17  Ed Schonberg <schonber@gnat.com>
+2001-12-17  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_ch3.adb (Analyze_Variant_Part): check that type of discriminant
 	is discrete before analyzing choices.
 
-2001-12-17  Joel Brobecker <brobecke@gnat.com>
+2001-12-17  Joel Brobecker  <brobecke@gnat.com>
 
 	* bindgen.adb (Gen_Output_File_Ada): Generate a new C-like string
 	containing the name of the Ada Main Program. This string is mainly
 	intended for the debugger.
 	(Gen_Output_File_C): Do the equivalent change when generating a C file.
 
-2001-12-17  Robert Dewar <dewar@gnat.com>
+2001-12-17  Robert Dewar  <dewar@gnat.com>
 
 	* ali.adb: Set new Dummy_Entry field in dependency entry
 
@@ -34667,7 +34667,7 @@
 
 	* types.ads: (Dummy_Time_Stamp): New value for non-existant files
 
-2001-12-17  Robert Dewar <dewar@gnat.com>
+2001-12-17  Robert Dewar  <dewar@gnat.com>
 
 	* ali.adb: Type reference does not reset current file.
 
@@ -34685,7 +34685,7 @@
 	 there could be a real problem here with an uninitialized reference
 	 to Hbound, but no actual example of failure has been found.
 
-2001-12-17  Laurent Pautet <pautet@gnat.com>
+2001-12-17  Laurent Pautet  <pautet@gnat.com>
 
 	* g-socket.ads:
 	Fix comment of Shutdown_Socket and Close_Socket. These functions
@@ -34695,7 +34695,7 @@
 	When an error occurs, an exception is raised with the error message
 	as exception message.
 
-2001-12-17  Robert Dewar <dewar@gnat.com>
+2001-12-17  Robert Dewar  <dewar@gnat.com>
 
 	* frontend.adb: Move call to Check_Unused_Withs from Frontend, so
 	that it happens before modification of Sloc values for -gnatD.
@@ -34737,12 +34737,12 @@
 	sprint.adb, tbuild.ads, types.ads, utils.c, xeinfo.adb: Fix
 	spelling errors.
 
-2001-12-14  Vincent Celier <celier@gnat.com>
+2001-12-14  Vincent Celier  <celier@gnat.com>
 
 	* osint.adb(Create_Debug_File): When an object file is specified,
 	put the .dg file in the same directory as the object file.
 
-2001-12-14  Robert Dewar <dewar@gnat.com>
+2001-12-14  Robert Dewar  <dewar@gnat.com>
 
 	* osint.adb: Minor reformatting
 
@@ -34771,28 +34771,28 @@
 	Add 2001 to copyright date
 	Add entry for Latin-5 (Cyrillic ISO-8859-5)
 
-2001-12-14  Matt Gingell <gingell@gnat.com>
+2001-12-14  Matt Gingell  <gingell@gnat.com>
 
 	* adaint.c: mktemp is a macro on Lynx and can not be used as an
 	expression.
 
-2001-12-14  Richard Kenner <kenner@gnat.com>
+2001-12-14  Richard Kenner  <kenner@gnat.com>
 
 	* misc.c (gnat_expand_constant): Do not strip UNCHECKED_CONVERT_EXPR
 	if operand is CONSTRUCTOR.
 
-2001-12-14  Ed Schonberg <schonber@gnat.com>
+2001-12-14  Ed Schonberg  <schonber@gnat.com>
 
 	* trans.c (tree_transform, case N_Assignment_Statement): Set lineno
 	before emiting check on right-hand side, so that exception information
 	is correct.
 
-2001-12-14  Richard Kenner <kenner@gnat.com>
+2001-12-14  Richard Kenner  <kenner@gnat.com>
 
 	* utils.c (create_var_decl): Throw away initializing expression
 	if just annotating types and non-constant.
 
-2001-12-14  Vincent Celier <celier@gnat.com>
+2001-12-14  Vincent Celier  <celier@gnat.com>
 
 	* prj-nmsc.adb: (Ada_Check): Migrate drom Ada_Default_... to
 	Default_Ada_...
@@ -34809,7 +34809,7 @@
 
 	* ChangeLog: Remove piece of diff output.
 
-2001-12-14  Geert Bosch <bosch@gnat.com>
+2001-12-14  Geert Bosch  <bosch@gnat.com>
 
 	* config-lang.in: Update copyright notice
 
@@ -34821,7 +34821,7 @@
 
 	* sem_ch3.adb: Minor reformatting.
 
-2001-12-12  Geert Bosch <bosch@gnat.com>
+2001-12-12  Geert Bosch  <bosch@gnat.com>
 
 	* freeze.ads: Update copyright date.
 
@@ -34829,16 +34829,16 @@
 
 	* gnat-style.texi: Fix typo.
 
-2001-12-12  Geert Bosch <bosch@gnat.com>
+2001-12-12  Geert Bosch  <bosch@gnat.com>
 
 	*  einfo.h: Regenerate.
 
-2001-12-12  Ed Schonberg <schonber@gnat.com>
+2001-12-12  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_ch12.adb (Save_Entity_Descendant): Use syntactic field names
 	on known node types, rather than untyped fields. Further cleanups.
 
-2001-12-12  Robert Dewar <dewar@gnat.com>
+2001-12-12  Robert Dewar  <dewar@gnat.com>
 
 	* sem_ch12.adb:
 	(Save_Entity_Descendant): Minor comment update.
@@ -34850,7 +34850,7 @@
 
 	* sem_ch12.adb (Associated_Node): Minor documentation cleanup.
 
-2001-12-12  Robert Dewar <dewar@gnat.com>
+2001-12-12  Robert Dewar  <dewar@gnat.com>
 
 	* s-stalib.adb: Add more comments on with statements being needed
 
@@ -34863,13 +34863,13 @@
 
 	* s-fatgen.ads: Minor comment improvement
 
-2001-12-12  Ed Schonberg <schonber@gnat.com>
+2001-12-12  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_ch4.adb (Analyze_Selected_Component): If the prefix is of a
 	formal derived type, look for an inherited component from the full
 	view of the parent, if any.
 
-2001-12-12  Robert Dewar <dewar@gnat.com>
+2001-12-12  Robert Dewar  <dewar@gnat.com>
 
 	* checks.ads (Apply_Alignment_Check): New procedure.
 
@@ -34884,44 +34884,44 @@
 
 	* mlib-fil.ads: Minor reformatting
 
-2001-12-12  Ed Schonberg <schonber@gnat.com>
+2001-12-12  Ed Schonberg  <schonber@gnat.com>
 
 	* exp_ch8.adb (Expand_N_Object_Renaming_Declaration): Extend previous
 	fix to any component reference if enclosing record has non-standard
 	representation.
 
-2001-12-12  Vincent Celier <celier@gnat.com>
+2001-12-12  Vincent Celier  <celier@gnat.com>
 
 	* g-dirope.ads (Find, Wildcard_Iterator): Moved to child package
 	Iteration
 
-2001-12-12  Ed Schonberg <schonber@gnat.com>
+2001-12-12  Ed Schonberg  <schonber@gnat.com>
 
 	* freeze.ads: Make Freeze_Fixed_Point_Type visible, for use in
 	sem_attr.
 
-2001-12-12  Robert Dewar <dewar@gnat.com>
+2001-12-12  Robert Dewar  <dewar@gnat.com>
 
 	* impunit.adb: Add entry for GNAT.Directory_Operations.Iteration
 
-2001-12-12  Emmanuel Briot <briot@gnat.com>
+2001-12-12  Emmanuel Briot  <briot@gnat.com>
 
 	* g-regexp.adb: Remove all debug code, since it isn't required anymore,
 	and it adds dependencies to system.io.
 
-2001-12-12  Pascal Obry <obry@gnat.com>
+2001-12-12  Pascal Obry  <obry@gnat.com>
 
 	* g-dirope.adb (Expand_Path.Var): Correctly detect end of
 	variable name.
 
-2001-12-11  Ed Schonberg <schonber@gnat.com>
+2001-12-11  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_ch10.adb (Install_Withed_Unit): If the unit is a generic instance
 	that is the parent of other generics, the instance body replaces the
 	instance node.  Retrieve the instance of the spec, which is the one
 	that is visible in clients and within the body.
 
-2001-12-11  Vincent Celier <celier@gnat.com>
+2001-12-11  Vincent Celier  <celier@gnat.com>
 
 	* gnatmain.adb: Initial version.
 
@@ -34933,32 +34933,32 @@
 
 	* snames.ads: Added Gnatstub.
 
-2001-12-11  Vincent Celier <celier@gnat.com>
+2001-12-11  Vincent Celier  <celier@gnat.com>
 
 	* prj-attr.adb (Initialization_Data): Change name from
 	Initialisation_Data.
 
-2001-12-11  Emmanuel Briot <briot@gnat.com>
+2001-12-11  Emmanuel Briot  <briot@gnat.com>
 
 	* g-regpat.adb (Parse_Literal): Properly handle simple operators ?,
 	+ and * applied to backslashed expressions like \r.
 
-2001-12-11  Vasiliy Fofanov <fofanov@gnat.com>
+2001-12-11  Vasiliy Fofanov  <fofanov@gnat.com>
 
 	* g-os_lib.ads: String_List type added, Argument_List type is now
 	subtype of String_List.
 
-2001-12-11  Robert Dewar <dewar@gnat.com>
+2001-12-11  Robert Dewar  <dewar@gnat.com>
 
 	* g-os_lib.ads: Change copyright to FSF
 	Add comments for String_List type
 
-2001-12-11  Vincent Celier <celier@gnat.com>
+2001-12-11  Vincent Celier  <celier@gnat.com>
 
 	* g-dirope.adb (Expand_Path): Fix bug. (wrong length when adding a
 	string to the buffer).
 
-2001-12-11  Ed Schonberg <schonber@gnat.com>
+2001-12-11  Ed Schonberg  <schonber@gnat.com>
 
 	* freeze.adb: Make Freeze_Fixed_Point_Type visible, for use in
 	sem_attr.
@@ -34968,26 +34968,26 @@
 	to avoid anomalies where the bound of the type appears to raise
 	constraint error.
 
-2001-12-11  Robert Dewar <dewar@gnat.com>
+2001-12-11  Robert Dewar  <dewar@gnat.com>
 
 	* lib-xref.adb (Output_Refs): Make sure pointers are always properly
 	handled.
 
-2001-12-11  Ed Schonberg <schonber@gnat.com>
+2001-12-11  Ed Schonber   <schonber@gnat.com>
 
 	* sem_ch12.adb (Analyze_Subprogram_Instantiation): Check for a
 	renamed unit before checking for recursive instantiations.
 
-2001-12-11  Emmanuel Briot <briot@gnat.com>
+2001-12-11  Emmanuel Briot  <briot@gnat.com>
 
 	* prj.ads: Add comments for some of the fields.
 
-2001-12-11  Robert Dewar <dewar@gnat.com>
+2001-12-11  Robert Dewar  <dewar@gnat.com>
 
 	* lib-xref.adb (Output_Refs): Don't output type references outside
 	the main unit if they are not otherwise referenced.
 
-2001-12-11  Ed Schonberg <schonber@gnat.com>
+2001-12-11  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_attr.adb (Analyze_attribute, case Address and Size): Simplify
 	code and diagnose additional illegal uses
@@ -34995,7 +34995,7 @@
 	* sem_util.adb (Is_Object_Reference): An indexed component is an
 	object only if the prefix is.
 
-2001-12-11  Vincent Celier <celier@gnat.com>
+2001-12-11  Vincent Celier  <celier@gnat.com>
 
 	* g-diopit.adb: Initial version.
 
@@ -35007,15 +35007,15 @@
 
 	* Makefile.in: Added g-diopit.o to GNATRTL_NONTASKING_OBJS
 
-2001-12-11  Robert Dewar <dewar@gnat.com>
+2001-12-11  Robert Dewar  <dewar@gnat.com>
 
 	* sem_attr.adb: Minor reformatting
 
-2001-12-11  Ed Schonberg <schonber@gnat.com>
+2001-12-11  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_ch3.adb: Clarify some ???.
 
-2001-12-11  Robert Dewar <dewar@gnat.com>
+2001-12-11  Robert Dewar  <dewar@gnat.com>
 
 	* exp_util.adb (Must_Be_Aligned): Removed, replaced by
 	Exp_Pakd.Known_Aligned_Enough
@@ -35023,7 +35023,7 @@
 	* sem_ch13.adb (Check_Address_Alignment): Removed, extended
 	version is moved to Exp_Ch13.
 
-2001-12-11  Robert Dewar <dewar@gnat.com>
+2001-12-11  Robert Dewar  <dewar@gnat.com>
 
 	* einfo.ads: Minor reformatting
 
@@ -35053,7 +35053,7 @@
 	* exp_pakd.adb: Minor reformatting.  Note that prevous RH should say:
 	(Known_Aligned_Enough): Replaces Must_Be_Aligned.
 
-2001-12-11  Vincent Celier <celier@gnat.com>
+2001-12-11  Vincent Celier  <celier@gnat.com>
 
 	* gnatcmd.adb:
 	Changed /COMPILE_ONLY to /ACTIONS=COMPILE
@@ -35072,19 +35072,19 @@
 	is enabled, do not kill the code for the condition, to preserve
 	warning.
 
-2001-12-11  Robert Dewar <dewar@gnat.com>
+2001-12-11  Robert Dewar  <dewar@gnat.com>
 
 	* checks.adb (Insert_Valid_Check): Apply validity check to expression
 	of conversion, not to result of conversion.
 
-2001-12-11  Ed Schonberg <schonber@gnat.com>
+2001-12-11  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_ch3.adb (Build_Derived_Record_Type): set Controlled flag
 	before freezing parent. If the declarations are mutually recursive,
 	an access to the current record type may be frozen before the
 	derivation is complete.
 
-2001-12-05  Vincent Celier <celier@gnat.com>
+2001-12-05  Vincent Celier  <celier@gnat.com>
 
 	* gnatcmd.adb: (MAKE): Add new translations: -b /BIND_ONLY,
 	-c /COMPILE_ONLY, -l /LINK_ONLY
@@ -35105,7 +35105,7 @@
 	(Scan_Make_Arg): Reset the bind and link step flags when -u
 	or -gnatc has been specified.
 
-2001-12-05  Ed Schonberg <schonber@gnat.com>
+2001-12-05  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_eval.adb (Eval_Concatenation): If left operand is a null string,
 	get bounds from right operand.
@@ -35118,25 +35118,25 @@
 	* exp_util.adb: Undo earlier change, fixes ACVC regressions C48009B
 	and C48009J
 
-2001-12-05  Vincent Celier <celier@gnat.com>
+2001-12-05  Vincent Celier  <celier@gnat.com>
 
 	* prj-nmsc.adb Minor reformatting
 
 	* prj-nmsc.adb (Language_Independent_Check): Reset Library flag if
 	set and libraries are not supported.
 
-2001-12-05  Ed Schonberg <schonber@gnat.com>
+2001-12-05  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_ch3.adb (Build_Derived_Private_Type): set Public status of
 	private view explicitly, so the back-end can treat as a global
 	when appropriate.
 
-2001-12-05  Ed Schonberg <schonber@gnat.com>
+2001-12-05  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_ch12.adb (Instantiate_Package_Body): if instance is a compilation
 	 unit, always replace instance node with new body, for ASIS use.
 
-2001-12-05  Vincent Celier <celier@gnat.com>
+2001-12-05  Vincent Celier  <celier@gnat.com>
 
 	* prj-nmsc.adb (Language_Independent_Check): Issue a warning if
 	libraries are not supported and both attributes Library_Name and
@@ -35150,18 +35150,18 @@
 
 	* prj-proc.adb: Put the change indicated above that was forgotten.
 
-2001-12-05  Robert Dewar <dewar@gnat.com>
+2001-12-05  Robert Dewar  <dewar@gnat.com>
 
 	* Makefile.in: Add dependencies for System.IO for GNAT.Regexp
 
-2001-12-05  Ed Schonberg <schonber@gnat.com>
+2001-12-05  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_ch3.adb (Build_Derived_Concurrent_Type): If derivation imposes a
 	constraint, introduce explicit subtype declaration and derive from it.
 
 	* sem_ch3.adb: Minor reformatting
 
-2001-12-05  Robert Dewar <dewar@gnat.com>
+2001-12-05  Robert Dewar  <dewar@gnat.com>
 
 	* checks.adb (Determine_Range): Increase cache size for checks.
 	Minor reformatting
@@ -35177,25 +35177,25 @@
 
 	* g-regexp.adb: Use System.IO instead of Ada.Text_IO.
 
-2001-12-05  Ed Schonberg <schonber@gnat.com>
+2001-12-05  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_ch3.adb (Analyze_Object_Declaration): If expression is an
 	aggregate with static wrong size, attach generated Raise node to
 	declaration.
 
-2001-12-05  Robert Dewar <dewar@gnat.com>
+2001-12-05  Robert Dewar  <dewar@gnat.com>
 
 	* sem_attr.adb (Analyze_Attribute): Defend against bad Val attribute.
 	Fixes compilation abandoned bomb in B24009B.
 
-2001-12-05  Ed Schonberg <schonber@gnat.com>
+2001-12-05  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_ch12.adb:
 	Document use of Associated_Node on Selected_Components.
 	(Save_Global_Operand_Descendants): Change to Save_Entity_Descendants,
 	to clarify use of untyped descendant fields.
 
-2001-12-05  Robert Dewar <dewar@gnat.com>
+2001-12-05  Robert Dewar  <dewar@gnat.com>
 
 	* prj-dect.ads: Add ??? comment
 	Add 2001 to copyright notice (was not done in after all)
@@ -35206,11 +35206,11 @@
 
 	* snames.ads: Minor reformatting
 
-2001-12-05  Geert Bosch <bosch@gnat.com>
+2001-12-05  Geert Bosch  <bosch@gnat.com>
 
 	* snames.adb: Autoupdate
 
-2001-12-05  Vincent Celier <celier@gnat.com>
+2001-12-05  Vincent Celier  <celier@gnat.com>
 
 	* prj-dect.adb (Parse): Rename parameter Modifying to Extends.
 
@@ -35231,7 +35231,7 @@
 
 	* snames.ads: Change modifying to extends.
 
-2001-12-05  Robert Dewar <dewar@gnat.com>
+2001-12-05  Robert Dewar  <dewar@gnat.com>
 
 	* sem_warn.adb: Remove stuff for conditionals, we are not going to
 	do this after all.
@@ -35239,11 +35239,11 @@
 	* sem_warn.ads: Remove stuff for conditionals, we are not going to
 	do this after all.  Add 2001 to copyright notice
 
-2001-12-04  Geert Bosch <bosch@gnat.com>
+2001-12-04  Geert Bosch  <bosch@gnat.com>
 
 	*  einfo.h, sinfo.h, treeprs.ads: Regenerate.
 
-2001-12-04  Robert Dewar <dewar@gnat.com>
+2001-12-04  Robert Dewar  <dewar@gnat.com>
 
 	* errout.adb (Error_Msg): Ignore attempt to put error msg at junk
 	location if we already have errors. Stops some cases of cascaded
@@ -35251,7 +35251,7 @@
 
 	* errout.adb: Improve comment.
 
-2001-12-04  Robert Dewar <dewar@gnat.com>
+2001-12-04  Robert Dewar  <dewar@gnat.com>
 
 	* sem_ch12.adb:
 	(Analyze_Formal_Type_Definition): Defend against Error.
@@ -35260,7 +35260,7 @@
 	* par-ch12.adb (F_Formal_Type_Declaration): In case of error,
 	remove following semicolon if present. Removes cascaded error.
 
-2001-12-04  Douglas B. Rupp <rupp@gnat.com>
+2001-12-04  Douglas B. Rupp  <rupp@gnat.com>
 
 	* bindgen.adb:
 	(Gen_Exception_Table_Ada): Write "begin" and then return if Num
@@ -35268,11 +35268,11 @@
 	(Gen_Exception_Table_C): Return if Num exceptions equals 0.
 	Fixes PIWG E tests (which have to be run with -gnatL).
 
-2001-12-04  Robert Dewar <dewar@gnat.com>
+2001-12-04  Robert Dewar  <dewar@gnat.com>
 
 	* einfo.ads: Minor reformatting
 
-2001-12-04  Ed Schonberg <schonber@gnat.com>
+2001-12-04  Ed Schonberg  <schonber@gnat.com>
 
 	* einfo.ads: Block_Node points to the identifier of the block, not to
 	the block node itself, to preserve the link when the block is
@@ -35284,7 +35284,7 @@
 	* sem_ch5.adb (Analyze_Block_Statement): set Block_Node to point to
 	identifier of block node, rather than to node itself.
 
-2001-12-04  Gary Dismukes <dismukes@gnat.com>
+2001-12-04  Gary Dismukes  <dismukes@gnat.com>
 
 	* layout.adb:
 	(Get_Max_Size): Fix "start of processing" comment to say Get_Max_Size.
@@ -35293,29 +35293,29 @@
 	fail name resolution. Also set Analyzed.
 	Remove with and use of Sem_Res.
 
-2001-12-04  Arnaud Charlet <charlet@gnat.com>
+2001-12-04  Arnaud Charlet  <charlet@gnat.com>
 
 	* Makefile.in: (HIE_SOURCES): add s-fat*.
 
-2001-12-04  Robert Dewar <dewar@gnat.com>
+2001-12-04  Robert Dewar  <dewar@gnat.com>
 
 	* sem_attr.adb:
 	(Compile_Time_Known_Attribute): New procedure.
 	(Eval_Attribute, case Size): Use Compile_Time_Known_Attribute to ensure
 	 proper range check.
 
-2001-12-04  Ed Schonberg <schonber@gnat.com>
+2001-12-04  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_ch7.adb (New_Private_Type): Set Is_Tagged_Type flag before
 	processing discriminants to diagnose illegal default values.
 
-2001-12-04  Ed Schonberg <schonber@gnat.com>
+2001-12-04  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_attr.adb (Resolve_Attribute): Handle properly an non-classwide
 	access discriminant within a type extension that constrains its
 	parent discriminants.
 
-2001-12-04  Ed Schonberg <schonber@gnat.com>
+2001-12-04  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_ch3.adb (Find_Type_Of_Subtype_Indic): If subtype indication
 	is malformed, use instance of Any_Id to allow analysis to proceed.
@@ -35325,16 +35325,16 @@
 	(P_Formal_Derived_Type_Definition): Better recovery when TAGGED is
 	misplaced.
 
-2001-12-04  Ed Schonberg <schonber@gnat.com>
+2001-12-04  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_warn.adb (Output_Unreferenced_Messages): Extend previous fix to
 	constants.
 
-2001-12-04  Robert Dewar <dewar@gnat.com>
+2001-12-04  Robert Dewar  <dewar@gnat.com>
 
 	* errout.adb: Minor reformatting
 
-2001-12-04  Robert Dewar <dewar@gnat.com>
+2001-12-04  Robert Dewar  <dewar@gnat.com>
 
 	* exp_util.adb: Minor reformatting from last change
 
@@ -35342,25 +35342,25 @@
 	which is a rewriting of an expression, traverse the original
 	expression to remove warnings that may have been posted on it.
 
-2001-12-04  Ed Schonberg <schonber@gnat.com>
+2001-12-04  Ed Schonberg  <schonber@gnat.com>
 
 	* exp_util.adb (Must_Be_Aligned): Return false for a component of a
 	record that has other packed components.
 
-2001-12-04  Douglass B. Rupp <rupp@gnat.com>
+2001-12-04  Douglass B. Rupp  <rupp@gnat.com>
 
 	* adaint.c: Minor cleanups.
 
-2001-12-04  Douglass B. Rupp <rupp@gnat.com>
+2001-12-04  Douglass B. Rupp  <rupp@gnat.com>
 
 	* adaint.c: Do not use utime.h on vxworks.
 
-2001-12-04  Arnaud Charlet <charlet@gnat.com>
+2001-12-04  Arnaud Charlet  <charlet@gnat.com>
 
 	* Makefile.adalib: Clarify step 3 (use of gnat.adc) as it causes
 	more confusion than it solves.
 
-2001-12-04  Geert bosch <bosch@gnat.com>
+2001-12-04  Geert bosch  <bosch@gnat.com>
 
 	* einfo.h, nmake.adb, nmake.ads, sinfo.h treeprs.ads: Regenerate.
 
@@ -35369,7 +35369,7 @@
 	* Makefile.in (update-sources): New target.
 	For use by gcc_release script.
 
-2001-12-04  Ed Schonberg <schonber@gnat.com>
+2001-12-04  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_prag.adb (Analyze_Pragma, case Validity_Checks): do not treat as
 	a configuration pragma, it is now legal wherever a pragma can appear.
@@ -35380,7 +35380,7 @@
 	@cross_overrides@, @build_overrides@ stanzas.  INTERNAL_CFLAGS
 	is now @CROSS@ -DIN_GCC; update comment.
 
-2001-12-04  Robert Dewar <dewar@gnat.com>
+2001-12-04  Robert Dewar  <dewar@gnat.com>
 
 	* einfo.adb (Has_Pragma_Pure_Function): New flag.
 	Fix problem that stopped ceinfo from working
@@ -35389,7 +35389,7 @@
 
 	* sem_prag.adb (Pure_Function): Set new flag Has_Pragma_Pure_Function.
 
-2001-12-04  Douglas B. Rupp <rupp@gnat.com>
+2001-12-04  Douglas B. Rupp  <rupp@gnat.com>
 
 	* gnatchop.adb:
 	(File_Time_Stamp): New procedure.
@@ -35407,18 +35407,18 @@
 
 	* adaint.h: Fix typo
 
-2001-12-03  Robert Dewar <dewar@gnat.com>
+2001-12-03  Robert Dewar  <dewar@gnat.com>
 
 	* sinfo.ads: Minor reformatting. N_Freeze_Entity node does not
 	have Associated_Node.
 
-2001-12-03  Robert Dewar <dewar@gnat.com>
+2001-12-03  Robert Dewar  <dewar@gnat.com>
 
 	* prj-proc.adb: Minor reformatting
 
 	* make.adb: Minor reformatting
 
-2001-12-03  Geert Bosch <bosch@gnat.com>
+2001-12-03  Geert Bosch  <bosch@gnat.com>
 
 	* make.adb: Minor reformatting.
 
@@ -35426,7 +35426,7 @@
 
 	* sem_ch12.adb: Minor reformatting
 
-2001-12-03  Ed Schonberg <schonber@gnat.com>
+2001-12-03  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_ch12.adb (Inline_Instance_Body): Use Save_Scope_Stack and
 	push Standard on the stack before analyzing the instance body,
@@ -35434,12 +35434,12 @@
 
 	* sem_ch12.adb (Inline_Instance_Body): Remove redundant code.
 
-2001-12-03  Ed Schonberg <schonber@gnat.com>
+2001-12-03  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_ch12.adb (Instantiate_Package_Body): Protect against double
 	instantiation of a body that contains an inlined body.
 
-2001-12-03  Ed Schonberg <schonber@gnat.com>
+2001-12-03  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_ch12.adb:
 	(Analyze_generic_subprogram_Declaration): Set outer_generic_scope,
@@ -35469,17 +35469,17 @@
 
 	* Make-lang.in (ada.generated-manpages): New dummy target.
 
-2001-11-29  Ed Schonberg <schonber@gnat.com>
+2001-11-29  Ed Schonberg  <schonber@gnat.com>
 
 	* g-os_lib.adb (Add_To_Command): use explicit loop to move string
 	into Command, an array conversion is illegal here. Uncovered by
 	ACATS B460005.
 
-2001-11-28  Geert Bosch <bosch@gnat.com>
+2001-11-28  Geert Bosch  <bosch@gnat.com>
 
 	* init.c: Minor whitespace changes.
 
-2001-11-28  Doug Rupp <rupp@gnat.com>
+2001-11-28  Doug Rupp  <rupp@gnat.com>
 
 	* init.c: (__gnat_install_handler,VMS): Increase size of alternate
 	signal stack.
@@ -35568,28 +35568,28 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* misc.c: Include langhooks-def.h.
 	* Makefile.in: Update.
 
-2001-10-30  Robert Dewar <dewar@gnat.com>
+2001-10-30  Robert Dewar  <dewar@gnat.com>
 
 	* style.adb:
 	(Check_Identifier): Rewrite circuit to be compatible with use of letters
 	in the upper half of ASCII.
 	(Check_Identifier): Minor reformatting
 
-2001-10-30  Geert Bosch <bosch@gnat.com>
+2001-10-30  Geert Bosch  <bosch@gnat.com>
 
 	* (Associated_Node, Set_Associated_Node): Do not check for
 	Freeze_Entity.
 
-2001-10-30  Robert Dewar <dewar@gnat.com>
+2001-10-30  Robert Dewar  <dewar@gnat.com>
 
 	* a-reatim.ads: Minor reformatting
 
-2001-10-30  Robert Dewar <dewar@gnat.com>
+2001-10-30  Robert Dewar  <dewar@gnat.com>
 
 	* gnatdll.adb: Minor reformatting throughout. Many ??? added for
 	undocumented declarations.
 
-2001-10-30  Pascal Obry <obry@gnat.com>
+2001-10-30  Pascal Obry  <obry@gnat.com>
 
 	* gnatdll.adb (Parse_Command_Line): handle -g option to be passed
 	to the binder and linker.
@@ -35599,11 +35599,11 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* mdll.adb: Fix layout.  Update copyright notice.
 
-2001-10-30  Robert Dewar <dewar@gnat.com>
+2001-10-30  Robert Dewar  <dewar@gnat.com>
 
 	* usage.adb: Minor fix to output for -gnaty.
 
-2001-10-30  Ed Schonberg <schonber@gnat.com>
+2001-10-30  Ed Schonberg  <schonber@gnat.com>
 
 	* a-reatim.ads: Makes Seconds_Count into a 64-bit integer,
 	to accommodate all its possible values.
@@ -35611,18 +35611,18 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* a-reatim.adb (Split): Special-case handling of Time_Span_First
 	and of small absolute values of T.
 
-2001-10-30  Richard Kenner <kenner@gnat.com>
+2001-10-30  Richard Kenner  <kenner@gnat.com>
 
 	* misc.c (gnat_expand_expr, case NULL_EXPR): Remove call to
 	set_mem_attributes since not needed and wrong if RESULT if a REG;
 	fixes ACATS failures.
 
-2001-10-30  Geert Bosch <bosch@gnat.com>
+2001-10-30  Geert Bosch  <bosch@gnat.com>
 
 	* 86numaux.adb, a-tigeau.ads, a-wtgeau.ads, fname-sf.ads, g-traceb.ads,
 	s-tasdeb.ads, sem_maps.ads: Add 2001 to copyright notice.
 
-2001-10-30  Robert Dewar <dewar@gnat.com>
+2001-10-30  Robert Dewar  <dewar@gnat.com>
 
 	* bindusg.adb: Undocument -f switch.
 
@@ -35635,22 +35635,22 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gnatbind.adb: Minor update of warning msg.
 
-2001-10-30  Vincent Celier <celier@gnat.com>
+2001-10-30  Vincent Celier  <celier@gnat.com>
 
 	* gnatcmd.adb (MAKE, BIND, LINK, LIST, FIND, XREF): Add translations
 	for project file switches (-P (/PROJECT_FILE=),
 	 -X (/EXTERNAL_REFERENCE=) and -vPx (/PROJECT_FILE_VERBOSITY=DEFAULT
 	or MEDIUM or HIGH)
 
-2001-10-30  Geert Bosch <bosch@gnat.com>
+2001-10-30  Geert Bosch  <bosch@gnat.com>
 
 	* decl.c: Minor whitespace fixes.
 
-2001-10-30  Richard Kenner <kenner@gnat.com>
+2001-10-30  Richard Kenner  <kenner@gnat.com>
 
 	* utils2.c (build_allocator): Test for SIZE overflow in array case too
 
-2001-10-30  Geert Bosch <bosch@gnat.com>
+2001-10-30  Geert Bosch  <bosch@gnat.com>
 
 	* ali-util.adb (Initialize_Checksum): Use out-mode instead of in out.
 	Found due to GCC 3.0 warning of using uninitialized value.
@@ -35661,7 +35661,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(Layout_Array_Type): Use variant record for tracking value/expression.
 	 Makes logic clearer and prevents warnings for uninitialized variables.
 
-2001-10-30  Robert Dewar <dewar@gnat.com>
+2001-10-30  Robert Dewar  <dewar@gnat.com>
 
 	* lib.adb: Minor reformatting
 
@@ -35674,7 +35674,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	const.
 	(_gnat_error_handler): Make MSG const.
 
-2001-10-29  Richard Kenner <kenner@gnat.com>
+2001-10-29  Richard Kenner  <kenner@gnat.com>
 
 	* sysdep.c: Fix localtime_r problem on LynxOS.
 	Also remove #elif to avoid warnings.
@@ -35697,7 +35697,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	sem_util.ads, sinfo.ads, sinput.ads, table.adb, table.ads,
 	types.ads, urealp.adb: Fix spelling errors.
 
-2001-10-27  Laurent Guerby <guerby@acm.org>
+2001-10-27  Laurent Guerby  <guerby@acm.org>
 
 	* trans.c (gigi): Fix non determinism leading to bootstrap
 	comparison failures for debugging information.
@@ -35706,24 +35706,24 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gnat_rm.texi: Use @./@: where appropriate.
 
-2001-10-26  Robert Dewar <dewar@gnat.com>
+2001-10-26  Robert Dewar  <dewar@gnat.com>
 
 	* sinfo.adb: Define Associated_Node to overlap Entity field. Cleanup.
 
-2001-10-26  Richard Kenner <kenner@gnat.com>
+2001-10-26  Richard Kenner  <kenner@gnat.com>
 
 	* gmem.c (__gnat_gmem_read_next): Properly check for EOF
 
-2001-10-26  Richard Kenner <kenner@gnat.com>
+2001-10-26  Richard Kenner  <kenner@gnat.com>
 
 	* decl.c (validate_size): Modify message for bad size to avoid
 	implication that compiler is modifying the size.
 
-2001-10-26  Robert Dewar <dewar@gnat.com>
+2001-10-26  Robert Dewar  <dewar@gnat.com>
 
 	* prj-util.adb: Minor reformatting. Fix bad header format.
 
-2001-10-26  Robert Dewar <dewar@gnat.com>
+2001-10-26  Robert Dewar  <dewar@gnat.com>
 
 	* sinfo.ads: Define Associated_Node to overlap Entity field. Cleanup.
 
@@ -35733,7 +35733,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	Associated_Node to Get_Associated_Node. Put use of Unchecked_Access
 	much more narrowly in places where needed. These are cleanups.
 
-2001-10-26  Joel Brobecker <brobecke@gnat.com>
+2001-10-26  Joel Brobecker  <brobecke@gnat.com>
 
 	* 5zosinte.ads (null_pthread): new constant.
 
@@ -35748,7 +35748,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(Resume_All_Tasks): Lock the tasks list before using it.
 	(Suspend_All_Tasks): ditto.
 
-2001-10-26  Richard Kenner <kenner@gnat.com>
+2001-10-26  Richard Kenner  <kenner@gnat.com>
 
 	* decl.c (gnat_to_gnu_entity, case E_General_Access_Type):
 	Make constant variant of designated type for Is_Access_Constant.
@@ -35763,78 +35763,78 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* utils2.c (build_unary_op, case INDIRECT_REF): No longer set
 	TREE_STATIC.
 
-2001-10-26  Robert Dewar <dewar@gnat.com>
+2001-10-26  Robert Dewar  <dewar@gnat.com>
 
 	* prj-util.adb: Minor reformatting
 
-2001-10-26  Robert Dewar <dewar@gnat.com>
+2001-10-26  Robert Dewar  <dewar@gnat.com>
 
 	* prj-util.adb: Minor reformatting
 
-2001-10-26  Robert Dewar <dewar@gnat.com>
+2001-10-26  Robert Dewar  <dewar@gnat.com>
 
 	* prj-attr.adb: Minor reformatting throughout
 
-2001-10-26  Robert Dewar <dewar@gnat.com>
+2001-10-26  Robert Dewar  <dewar@gnat.com>
 
 	* prj-attr.ads: Minor reformatting
 	Add ??? comment (this whole spec has almost no comments)
 
-2001-10-26  Vincent Celier <celier@gnat.com>
+2001-10-26  Vincent Celier  <celier@gnat.com>
 
 	* g-os_lib.adb (Normalize_Pathname): Preserve the double slash
 	("//") that precede the drive letter on Interix.
 
-2001-10-26  Geert Bosch <bosch@gnat.com>
+2001-10-26  Geert Bosch  <bosch@gnat.com>
 
 	* gnat_rm.texi: Add GNAT Reference Manual.
 
-2001-10-25  Robert Dewar <dewar@gnat.com>
+2001-10-25  Robert Dewar  <dewar@gnat.com>
 
 	* sem_ch8.adb (Analyze_Package_Renaming): Skip analysis if Name
 	is Error. Similar change for other renaming cases.
 
-2001-10-25  Robert Dewar <dewar@gnat.com>
+2001-10-25  Robert Dewar  <dewar@gnat.com>
 
 	* s-atacco.ads: Add pragma Inline_Always for functions.
 	Fix header format. Add copyright 2001
 
-2001-10-25  Ed Schonberg <schonber@gnat.com>
+2001-10-25  Ed Schonberg  <schonber@gnat.com>
 
 	* par-ch3.adb (P_Subtype_Mark_Resync): for an anonymous array
 	return Error rather than Empty so that analysis can proceed.
 
-2001-10-25  Ed Schonberg <schonber@gnat.com>
+2001-10-25  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_util.adb (Enter_Name): better handling of cascaded error
 	messages when a unit appears in its own context.
 
-2001-10-25  Ed Schonberg <schonber@gnat.com>
+2001-10-25  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_util.adb (Defining_Entity): in case of error, attach created
 	entity to specification, so that semantic analysis can proceed.
 
-2001-10-25  Robert Dewar <dewar@gnat.com>
+2001-10-25  Robert Dewar  <dewar@gnat.com>
 
 	* sem_util.adb
 	(Defining_Entity): Deal with Error.
 	(Process_End_Label): Deal with bad end label for.
 
-2001-10-25  Ed Schonberg <schonber@gnat.com>
+2001-10-25  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_elab.adb (Check_A_Call): refine message when call is in an
 	instance but callee is not declared in the generic unit.
 
-2001-10-25  Ed Schonberg <schonber@gnat.com>
+2001-10-25  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_elab.adb (Check_A_Call): check for renaming before finding the
 	enclosing unit, which may already be different from the calling unit.
 
-2001-10-25  Geert Bosch <bosch@gnat.com>
+2001-10-25  Geert Bosch  <bosch@gnat.com>
 
 	* 4gintnam.ads: fix header format.
 
-2001-10-25  Ed Schonberg <schonber@gnat.com>
+2001-10-25  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_res.adb (Resolve_Call): if the call is actually an indexing
 	operation on the result of a parameterless call, perform elaboration
@@ -35844,7 +35844,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	inlined within the generic tree, the defining identifier is not a
 	compilation_unit.
 
-2001-10-25  Ed Schonberg <schonber@gnat.com>
+2001-10-25  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_res.adb (Resolve): special-case resolution of Null in an
 	 instance or an inlined body to avoid view conflicts.
@@ -35852,7 +35852,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* sem_ch12.adb (Copy_Generic_Node): for allocators, check for view
 	 compatibility by retrieving the access type of the generic copy.
 
-2001-10-25  Robert Dewar <dewar@gnat.com>
+2001-10-25  Robert Dewar  <dewar@gnat.com>
 
 	* sem_ch3.adb:
 	(Analyze_Number_Declaration): Handle error expression.
@@ -35861,12 +35861,12 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* sem_util.adb (Get_Index_Bounds): Check for Error.
 
-2001-10-25  Robert Dewar <dewar@gnat.com>
+2001-10-25  Robert Dewar  <dewar@gnat.com>
 
 	* restrict.adb (Set_No_Run_Time_Mode): Set Discard_Names as default
 	in no run time mode.
 
-2001-10-25  Pascal Obry <obry@gnat.com>
+2001-10-25  Pascal Obry  <obry@gnat.com>
 
 	* gnatmem.adb (Read_Next): fix Curs2 value to properly handle quiet
 	mode case for ALLOC case.
@@ -35874,7 +35874,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* gnatmem.adb (Read_Next): correctly fix parsing in Quiet mode on
 	all platforms. Improvement of last change.
 
-2001-10-25  Robert Dewar <dewar@gnat.com>
+2001-10-25  Robert Dewar  <dewar@gnat.com>
 
 	* exp_ch4.adb (Expand_N_Allocator): Minor reformatting.
 
@@ -35882,7 +35882,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* osint.adb (Is_Relative): Remove duplicate.
 
-2001-10-25  Pascal Obry <obry@gnat.com>
+2001-10-25  Pascal Obry  <obry@gnat.com>
 
 	* osint.adb (Read_Default_Search_Dirs): correctly detect relative
 	pathnames in UNIX and DOS style with drive letter.
@@ -35893,14 +35893,14 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* osint.adb (Is_Relative): implementation using
 	GNAT.OS_Lib.Is_Absolute_Path. Better fix.
 
-2001-10-25  Pascal Obry <obry@gnat.com>
+2001-10-25  Pascal Obry  <obry@gnat.com>
 
 	* g-dirope.adb (Basename): correctly compute offset between the
 	original Path and the translated one.
 
 	* g-dirope.adb: (Base_Name): add some comments.
 
-2001-10-25  Robert Dewar <dewar@gnat.com>
+2001-10-25  Robert Dewar  <dewar@gnat.com>
 
 	* exp_imgv.adb (Expand_Image_Attribute): Defend against bad use
 	in HIE mode, avoids compilation abandoned message
@@ -35909,11 +35909,11 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* exp_imgv.adb: Correct typo in previous change (not my day!)
 
-2001-10-25  Robert Dewar <dewar@gnat.com>
+2001-10-25  Robert Dewar  <dewar@gnat.com>
 
 	* s-tpinop.ads: Add 2001 to copyright notice. Fix header format.
 
-2001-10-25  Pascal Obry <obry@gnat.com>
+2001-10-25  Pascal Obry  <obry@gnat.com>
 
 	* g-awk.ads: Move all pragma inlines next to the routine
 	 declarations. This is more uniform with other GNAT spec.
@@ -35948,29 +35948,29 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* validsw.adb: Properly save -gnatVn status.
 
-2001-10-11  Robert Dewar <dewar@gnat.com>
+2001-10-11  Robert Dewar  <dewar@gnat.com>
 
 	* usage.adb: Add lines for V switch.
 
 	* gnatcmd.adb (COMPILE): Revise translations for -gnatV
 	(/VALIDITY_CHECKING).
 
-2001-10-11  Ed Schonberg <schonber@gnat.com>
+2001-10-11  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_type.adb (Add_One_Interp): an operator for a type declared in
 	an extension of System is known to be visible.
 
-2001-10-11  Ed Schonberg <schonber@gnat.com>
+2001-10-11  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_eval.adb (Compare_Fixup): get the bounds of a String_Literal
 	properly. Fixes regression on ACATS C34005G.
 
-2001-10-11  Robert Dewar <dewar@gnat.com>
+2001-10-11  Robert Dewar  <dewar@gnat.com>
 
 	* sem_ch5.adb (Analyze_Iteration_Scheme): Suppress warning on null
 	loop in generic instance, since this is likely not very useful.
 
-2001-10-11  Robert Dewar <dewar@gnat.com>
+2001-10-11  Robert Dewar  <dewar@gnat.com>
 
 	* restrict.adb (Disallow in No_Run_Time_Mode): Properly specialize
 	the error message for high integrity mode.
@@ -35995,28 +35995,28 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* rtsfind.adb (RTE): Make sure we do not try to load unit after
 	giving message for entity not available in high integrity mode.
 
-2001-10-11  Pascal Obry <obry@gnat.com>
+2001-10-11  Pascal Obry  <obry@gnat.com>
 
 	* impunit.adb: Add GNAT.CRC32.
 
-2001-10-11  Ed Schonberg <schonber@gnat.com>
+2001-10-11  Ed Schonberg  <schonber@gnat.com>
 
 	* exp_fixd.adb (Expand_Multiply_Fixed_By_Fixed_Giving_Fixed): handle
 	properly the case where one universal operand in a non-static
 	exponentiation of a real literal.
 
-2001-10-11  Ed Schonberg <schonber@gnat.com>
+2001-10-11  Ed Schonberg  <schonber@gnat.com>
 
 	* exp_ch7.adb (Find_Final_List): for a type appearing in a with_type
 	clause, return the gobal finalization list, for lack of anthing else.
 
-2001-10-11  Ed Schonberg <schonber@gnat.com>
+2001-10-11  Ed Schonberg  <schonber@gnat.com>
 
 	* exp_ch7.adb (Make_Transient_Block): if statement is within
 	exception handler, always use new transient scope to place Clean
 	procedure.
 
-2001-10-11  Pascal Obry <obry@gnat.com>
+2001-10-11  Pascal Obry  <obry@gnat.com>
 
 	* Makefile.in:
 	(GNAT_ADA_OBJS): add g-crc32.o, a-tags.o, a-stream.o
@@ -36181,7 +36181,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gnat-style.texi: New file describing coding guidelines for Ada.
 
-2001-10-10  Ed Schonberg <schonber@gnat.com>
+2001-10-10  Ed Schonberg  <schonber@gnat.com>
 
 	* einfo.adb (Write_Entity_Flags): Elaboration_Entity_Required
 	is Flag174.
@@ -36194,7 +36194,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* snames.h: Update to reflect snames.ads changes.
 
-2001-10-10  Vincent Celier <celier@gnat.com>
+2001-10-10  Vincent Celier  <celier@gnat.com>
 
 	* make.adb:
 	(Add_Switches): reflect the changes for the switches attributes
@@ -36280,13 +36280,13 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* prj.ads: Add ??? for uncommented declarations
 
-2001-10-10  Ed Schonberg <schonber@gnat.com>
+2001-10-10  Ed Schonberg  <schonber@gnat.com>
 
 	* sem_prag.adb: (Analyze_Pragma, case External): If entity is a
 	constant, do not indicate possible modification, so that gigi can
 	treat it as a bona fide constant.
 
-2001-10-10  Robert Dewar <dewar@gnat.com>
+2001-10-10  Robert Dewar  <dewar@gnat.com>
 
 	* sem_prag.adb: Add processing for pragma External.
 
@@ -36296,7 +36296,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* snames.adb: Updated to match snames.ads.
 
-2001-10-10  Ed Schonberg <schonber@gnat.com>
+2001-10-10  Ed Schonberg  <schonber@gnat.com>
 
 	* exp_ch4.adb (Expand_N_Allocator): Generate meaningful names for
 	a dynamic task if the allocator appears in an indexed assignment
@@ -36306,7 +36306,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	For a dynamic task in an assignment statement, use target of
 	assignment to generate meaningful name.
 
-2001-10-10  Ed Schonberg <schonber@gnat.com>
+2001-10-10  Ed Schonberg  <schonber@gnat.com>
 
 	* einfo.adb (Write_Field19_Name): Body_Entity is also defined for
 	a generic package.
@@ -36329,18 +36329,18 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(typically the discriminal in an init_proc) denote the same value.
 	Two useful optimization uncovered by bugfixes above.
 
-2001-10-10  Robert Dewar <dewar@gnat.com>
+2001-10-10  Robert Dewar  <dewar@gnat.com>
 
 	* xeinfo.adb: Change int to char in translation of enumeration types.
 	This fixes a problem in the C representation of component alignment.
 	Add 2001 to copyright notice
 
-2001-10-10  Richard Kenner <kenner@gnat.com>
+2001-10-10  Richard Kenner  <kenner@gnat.com>
 
 	* decl.c: (validate_size): Do check size of object of integral type
 	if it is a packed array type.
 
-2001-10-10  Richard Kenner <kenner@gnat.com>
+2001-10-10  Richard Kenner  <kenner@gnat.com>
 
 	* decl.c: (gnat_to_gnu_entity, case object): Also materialize
 	VAR_DECL for constant if not Is_Public but -O0.
@@ -36396,7 +36396,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* comperr.adb (Abort_In_Progress): New.
 	(Compiler_Abort): Use it to prevent recursion.
 
-2001-10-08  Robert Dewar <dewar@gnat.com>
+2001-10-08  Robert Dewar  <dewar@gnat.com>
 
 	* atree.adb: Set Error_Posted in Error node, helps error recovery.
 
@@ -36415,17 +36415,17 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* sinfo.ads (N_Error): Now has Etype field (which will be set
 	to Any_Type to help error recovery).
 
-2001-10-08  Richard Kenner (kenner@gnat.com)
+2001-10-08  Richard Kenner  <kenner@gnat.com>
 
 	* misc.c (gnat_expand_expr, case UNCHECKED_CONVERT_EXPR):
 	Consistently set MEM attributes from expression; fixes
 	bootstrap failure on x86.
 
-2001-10-08  Geert Bosch  (bosch@gnat.com)
+2001-10-08  Geert Bosch  <bosch@gnat.com>
 
 	* 5oosinte.adb: Add 2001 to copyright notice.
 
-2001-10-08  Geert Bosch  (bosch@gnat.com)
+2001-10-08  Geert Bosch  <bosch@gnat.com>
 
 	* ceinfo.adb: Add utility for consistency checking of einfo.ad[bs].
 
@@ -36435,7 +36435,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* 5oosinte.adb: Fix spelling error of "separate" as "seperate".
 
-2001-10-05  Geert Bosch  (bosch@gnat.com)
+2001-10-05  Geert Bosch  <bosch@gnat.com>
 
 	* adaint.h: Small formatting fix.
 
