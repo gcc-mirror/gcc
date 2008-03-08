@@ -7476,6 +7476,24 @@ v2si __builtin_ia32_punpckldq (v2si, v2si)
 v8qi __builtin_ia32_packsswb (v4hi, v4hi)
 v4hi __builtin_ia32_packssdw (v2si, v2si)
 v8qi __builtin_ia32_packuswb (v4hi, v4hi)
+
+v8hi __builtin_ia32_psllw (v4hi, v4hi)
+v4si __builtin_ia32_pslld (v2si, v2si)
+v2di __builtin_ia32_psllq (v1di, v1di)
+v8hi __builtin_ia32_psrlw (v8hi, v2si)
+v4si __builtin_ia32_psrld (v4si, v2si)
+v2di __builtin_ia32_psrlq (v1di, v1di)
+v8hi __builtin_ia32_psraw (v4hi, v4hi)
+v4si __builtin_ia32_psrad (v2si, v2si)
+v8hi __builtin_ia32_psllwi (v4hi, int)
+v4si __builtin_ia32_pslldi (v2si, int)
+v2di __builtin_ia32_psllqi (v1di, int)
+v8hi __builtin_ia32_psrlwi (v4hi, int)
+v4si __builtin_ia32_psrldi (v2si, int)
+v2di __builtin_ia32_psrlqi (v1di, int)
+v8hi __builtin_ia32_psrawi (v4hi, int)
+v4si __builtin_ia32_psradi (v2si, int)
+
 @end smallexample
 
 The following built-in functions are made available either with

@@ -1120,8 +1120,9 @@ do {									\
   ((MODE) == V2SFmode || (MODE) == SFmode)
 
 #define VALID_MMX_REG_MODE(MODE)					\
-    ((MODE) == DImode || (MODE) == V8QImode || (MODE) == V4HImode	\
-     || (MODE) == V2SImode || (MODE) == SImode)
+  ((MODE == V1DImode) || (MODE) == DImode				\
+   || (MODE) == V2SImode || (MODE) == SImode				\
+   || (MODE) == V4HImode || (MODE) == V8QImode)
 
 /* ??? No autovectorization into MMX or 3DNOW until we can reliably
    place emms and femms instructions.  */

@@ -32,16 +32,18 @@
 
 ;; 8 byte integral modes handled by MMX (and by extension, SSE)
 (define_mode_iterator MMXMODEI [V8QI V4HI V2SI])
+(define_mode_iterator MMXMODEI8 [V8QI V4HI V2SI V1DI])
 
 ;; All 8-byte vector modes handled by MMX
-(define_mode_iterator MMXMODE [V8QI V4HI V2SI V2SF])
+(define_mode_iterator MMXMODE [V8QI V4HI V2SI V1DI V2SF])
 
 ;; Mix-n-match
 (define_mode_iterator MMXMODE12 [V8QI V4HI])
 (define_mode_iterator MMXMODE24 [V4HI V2SI])
+(define_mode_iterator MMXMODE248 [V4HI V2SI V1DI])
 
 ;; Mapping from integer vector mode to mnemonic suffix
-(define_mode_attr mmxvecsize [(V8QI "b") (V4HI "w") (V2SI "d") (DI "q")])
+(define_mode_attr mmxvecsize [(V8QI "b") (V4HI "w") (V2SI "d") (V1DI "q")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -53,8 +55,8 @@
 ;; This is essential for maintaining stable calling conventions.
 
 (define_expand "mov<mode>"
-  [(set (match_operand:MMXMODEI 0 "nonimmediate_operand" "")
-	(match_operand:MMXMODEI 1 "nonimmediate_operand" ""))]
+  [(set (match_operand:MMXMODEI8 0 "nonimmediate_operand" "")
+	(match_operand:MMXMODEI8 1 "nonimmediate_operand" ""))]
   "TARGET_MMX"
 {
   ix86_expand_vector_move (<MODE>mode, operands);
@@ -62,9 +64,9 @@
 })
 
 (define_insn "*mov<mode>_internal_rex64"
-  [(set (match_operand:MMXMODEI 0 "nonimmediate_operand"
+  [(set (match_operand:MMXMODEI8 0 "nonimmediate_operand"
 				"=rm,r,!y,!y ,m ,!y,Y2,x,x ,m,r,x")
-	(match_operand:MMXMODEI 1 "vector_move_operand"
+	(match_operand:MMXMODEI8 1 "vector_move_operand"
 				"Cr ,m,C ,!ym,!y,Y2,!y,C,xm,x,x,r"))]
   "TARGET_64BIT && TARGET_MMX
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
@@ -86,9 +88,9 @@
    (set_attr "mode" "DI")])
 
 (define_insn "*mov<mode>_internal"
-  [(set (match_operand:MMXMODEI 0 "nonimmediate_operand"
+  [(set (match_operand:MMXMODEI8 0 "nonimmediate_operand"
 			"=!y,!y ,m ,!y ,*Y2,*Y2,*Y2 ,m  ,*x,*x,*x,m ,?r ,?m")
-	(match_operand:MMXMODEI 1 "vector_move_operand"
+	(match_operand:MMXMODEI8 1 "vector_move_operand"
 			"C  ,!ym,!y,*Y2,!y ,C  ,*Y2m,*Y2,C ,*x,m ,*x,irm,r"))]
   "TARGET_MMX
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
@@ -557,23 +559,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define_insn "mmx_add<mode>3"
-  [(set (match_operand:MMXMODEI 0 "register_operand" "=y")
-        (plus:MMXMODEI
-	  (match_operand:MMXMODEI 1 "nonimmediate_operand" "%0")
-	  (match_operand:MMXMODEI 2 "nonimmediate_operand" "ym")))]
-  "TARGET_MMX && ix86_binary_operator_ok (PLUS, <MODE>mode, operands)"
+  [(set (match_operand:MMXMODEI8 0 "register_operand" "=y")
+        (plus:MMXMODEI8
+	  (match_operand:MMXMODEI8 1 "nonimmediate_operand" "%0")
+	  (match_operand:MMXMODEI8 2 "nonimmediate_operand" "ym")))]
+  "(TARGET_MMX || (TARGET_SSE2 && <MODE>mode == V1DImode))
+   && ix86_binary_operator_ok (PLUS, <MODE>mode, operands)"
   "padd<mmxvecsize>\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxadd")
-   (set_attr "mode" "DI")])
-
-(define_insn "mmx_adddi3"
-  [(set (match_operand:DI 0 "register_operand" "=y")
-        (unspec:DI
-	 [(plus:DI (match_operand:DI 1 "nonimmediate_operand" "%0")
-		   (match_operand:DI 2 "nonimmediate_operand" "ym"))]
-	 UNSPEC_NOP))]
-  "TARGET_SSE2 && ix86_binary_operator_ok (PLUS, DImode, operands)"
-  "paddq\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxadd")
    (set_attr "mode" "DI")])
 
@@ -598,23 +590,12 @@
    (set_attr "mode" "DI")])
 
 (define_insn "mmx_sub<mode>3"
-  [(set (match_operand:MMXMODEI 0 "register_operand" "=y")
-        (minus:MMXMODEI
-	  (match_operand:MMXMODEI 1 "register_operand" "0")
-	  (match_operand:MMXMODEI 2 "nonimmediate_operand" "ym")))]
-  "TARGET_MMX"
+  [(set (match_operand:MMXMODEI8 0 "register_operand" "=y")
+        (minus:MMXMODEI8
+	  (match_operand:MMXMODEI8 1 "register_operand" "0")
+	  (match_operand:MMXMODEI8 2 "nonimmediate_operand" "ym")))]
+  "(TARGET_MMX || (TARGET_SSE2 && <MODE>mode == V1DImode))"
   "psub<mmxvecsize>\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxadd")
-   (set_attr "mode" "DI")])
-
-(define_insn "mmx_subdi3"
-  [(set (match_operand:DI 0 "register_operand" "=y")
-        (unspec:DI
-	 [(minus:DI (match_operand:DI 1 "register_operand" "0")
-		    (match_operand:DI 2 "nonimmediate_operand" "ym"))]
-	 UNSPEC_NOP))]
-  "TARGET_SSE2"
-  "psubq\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxadd")
    (set_attr "mode" "DI")])
 
@@ -778,51 +759,29 @@
   [(set (match_operand:MMXMODE24 0 "register_operand" "=y")
         (ashiftrt:MMXMODE24
 	  (match_operand:MMXMODE24 1 "register_operand" "0")
-	  (match_operand:DI 2 "nonmemory_operand" "yi")))]
+	  (match_operand:SI 2 "nonmemory_operand" "yN")))]
   "TARGET_MMX"
   "psra<mmxvecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxshft")
    (set_attr "mode" "DI")])
 
 (define_insn "mmx_lshr<mode>3"
-  [(set (match_operand:MMXMODE24 0 "register_operand" "=y")
-        (lshiftrt:MMXMODE24
-	  (match_operand:MMXMODE24 1 "register_operand" "0")
-	  (match_operand:DI 2 "nonmemory_operand" "yi")))]
+  [(set (match_operand:MMXMODE248 0 "register_operand" "=y")
+        (lshiftrt:MMXMODE248
+	  (match_operand:MMXMODE248 1 "register_operand" "0")
+	  (match_operand:SI 2 "nonmemory_operand" "yN")))]
   "TARGET_MMX"
   "psrl<mmxvecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxshft")
    (set_attr "mode" "DI")])
 
-(define_insn "mmx_lshrdi3"
-  [(set (match_operand:DI 0 "register_operand" "=y")
-        (unspec:DI
-	  [(lshiftrt:DI (match_operand:DI 1 "register_operand" "0")
-		       (match_operand:DI 2 "nonmemory_operand" "yi"))]
-	  UNSPEC_NOP))]
-  "TARGET_MMX"
-  "psrlq\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxshft")
-   (set_attr "mode" "DI")])
-
 (define_insn "mmx_ashl<mode>3"
-  [(set (match_operand:MMXMODE24 0 "register_operand" "=y")
-        (ashift:MMXMODE24
-	  (match_operand:MMXMODE24 1 "register_operand" "0")
-	  (match_operand:DI 2 "nonmemory_operand" "yi")))]
+  [(set (match_operand:MMXMODE248 0 "register_operand" "=y")
+        (ashift:MMXMODE248
+	  (match_operand:MMXMODE248 1 "register_operand" "0")
+	  (match_operand:SI 2 "nonmemory_operand" "yN")))]
   "TARGET_MMX"
   "psll<mmxvecsize>\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxshft")
-   (set_attr "mode" "DI")])
-
-(define_insn "mmx_ashldi3"
-  [(set (match_operand:DI 0 "register_operand" "=y")
-        (unspec:DI
-	 [(ashift:DI (match_operand:DI 1 "register_operand" "0")
-		     (match_operand:DI 2 "nonmemory_operand" "yi"))]
-	 UNSPEC_NOP))]
-  "TARGET_MMX"
-  "psllq\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxshft")
    (set_attr "mode" "DI")])
 
