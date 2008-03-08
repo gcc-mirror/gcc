@@ -1,3 +1,72 @@
+2008-03-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/22152
+	* config/i386/i386-modes.def (V1DI): New vector mode.
+	* config/i386/i386.h (VALID_MMX_REG_MODE): Add V1DImode.
+	* config/i386/mmx.md (MMXMODEI8): New mode iterator.
+	(MMXMODE248): Ditto.
+	(MMXMODE): Add V1DI mode.
+	(mmxvecsize): Change DI mode to V1DI mode.
+	("mov<mode>): Use MMXMODEI8 mode iterator.
+	("*mov<mode>_internal_rex64"): Ditto.
+	("*mov<mode>_internal"): Ditto.
+	("mmx_add<mode>3"): Ditto.  Handle V1DImode for TARGET_SSE2.
+	("mmx_sub<mode>3"): Ditto.
+	("mmx_adddi3"): Remove insn pattern.
+	("mmx_subdi3"): Ditto.
+	("mmx_ashr<mode>3"): Use SImode and "yN" constraint for operand 2.
+	("mmx_lshr<mode>3"): Ditto. Use MMXMODE248 mode iterator.
+	("mmx_ashl<mode>3"): Ditto.
+	("mmx_lshrdi3"): Remove insn pattern.
+	("mmx_ashldi3"): Ditto.
+	* config/i386/i386.c (classify_argument): Handle V1DImode.
+	(function_arg_advance_32): Ditto.
+	(function_arg_32): Ditto.
+	(struct builtin_description) [IX86_BUILTIN_PADDQ]: Use
+	mmx_addv1di3 insn pattern.
+	[IX86_BUILTIN_PSUBQ]: Use mmx_subv1di3 insn pattern.
+	[IX86_BUILTIN_PSLL?, IX86_BUILTIN_PSRL?, IX86_BUILTIN_PSRA?,
+	IX86_BUILTIN_PSLL?I, IX86_BUILTIN_PSRL?I, IX86_BUILTIN_PSRA?I,
+	IX86_BUILTIN_PSLL?I128, IX86_BUILTIN_PSRL?I128, IX86_BUILTIN_PSRA?I128]:
+	Remove definitions of built-in functions.
+	(V1DI_type_node): New node.
+	(v1di_ftype_v1di_int): Ditto.
+	(v1di_ftype_v1di_v1di): Ditto.
+	(v2si_ftype_v2si_si): Ditto.
+	(v4hi_ftype_v4hi_di): Remove node.
+	(v2si_ftype_v2si_di): Ditto.
+	(ix86_init_mmx_sse_builtins): Handle V1DImode.
+	(__builtin_ia32_psll?, __builtin_ia32_psrl?, __builtin_ia32_psra?):
+	Redefine builtins using def_builtin_const with *_ftype_*_int node.
+	(__builtin_ia32_psll?i, __builtin_ia32_psrl?i, __builtin_ia32_psra?i):
+	Add new builtins using def_builtin_const.
+	(ix86_expand_builtin) [IX86_BUILTIN_PSLL?, IX86_BUILTIN_PSRL?,
+	IX86_BUILTIN_PSRA?, IX86_BUILTIN_PSLL?I, IX86_BUILTIN_PSRL?I,
+	IX86_BUILTIN_PSRA?I]: Handle builtin definitions.
+	* config/i386/mmintrin.h (__v1di): New typedef.
+	(_mm_add_si64): Cast arguments to __v1di type.
+	(_mm_sub_si64): Ditto.
+	(_mm_sll_pi16): Cast __count to __v4hi type.
+	(_mm_sll_pi32): Cast __count to __v2si type.
+	(_mm_sll_si64): Cast arguments to __v1di type.
+	(_mm_srl_pi16): Cast __count to __v4hi type.
+	(_mm_srl_pi32): Cast __count to __v2si type.
+	(_mm_srl_si64): Cast arguments to __v1di type.
+	(_mm_sra_pi16): Cast __count to __v4hi type.
+	(_mm_sra_pi32): Cast __count to __v2si type.
+	(_mm_slli_pi16): Use __builtin_ia32_psllwi.
+	(_mm_slli_pi32): Use __builtin_ia32_pslldi.
+	(_mm_slli_si64): Use __builtin_ia32_psllqi. Cast __m to __v1di type.
+	(_mm_srli_pi16): Use __builtin_ia32_psrlwi.
+	(_mm_srli_pi32): Use __builtin_ia32_psrldi.
+	(_mm_srli_si64): Use __builtin_ia32_psrlqi. Cast __m to __v1di type.
+	(_mm_srai_pi16): Use __builtin_ia32_psrawi.
+	(_mm_srai_pi32): Use __builtin_ia32_psradi.
+	* config/i386/i386.md (UNSPEC_NOP): Remove unspec definition.
+	* doc/extend.texi (X86 Built-in Functions) [__builtin_ia32_psll?,
+	__builtin_ia32_psrl?, __builtin_ia32_psra?, __builtin_ia32_psll?i,
+	__builtin_ia32_psrl?i, __builtin_ia32_psra?i]: Add new builtins.
+
 2008-03-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/include/texinfo.tex: Update to version 2008-03-07.10.
