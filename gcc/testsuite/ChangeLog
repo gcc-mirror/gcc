@@ -1,5 +1,9 @@
 2008-03-08  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/pack4.adb: New test.
+
+2008-03-08  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/small_alignment.adb: New test.
 
 2008-03-07  Eric Botcazou  <ebotcazou@adacore.com>
