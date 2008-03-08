@@ -2575,8 +2575,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		 && Known_Static_Esize (gnat_entity))
 	  {
 	    unsigned int raw_size = UI_To_Int (Esize (gnat_entity));
-	    TYPE_ALIGN (gnu_type)
-	      = MIN (BIGGEST_ALIGNMENT, raw_size & -raw_size);
+	    unsigned int raw_align = raw_size & -raw_size;
+	    if (raw_align < BIGGEST_ALIGNMENT)
+	      TYPE_ALIGN (gnu_type) = raw_align;
 	  }
 	else
 	  TYPE_ALIGN (gnu_type) = 0;

@@ -1,5 +1,11 @@
 2008-03-08  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* decl.c (gnat_to_gnu_entity) <E_Record_Type>: Do not force
+	BIGGEST_ALIGNMENT when capping the alignment of records with
+	strict alignment and size clause.
+
+2008-03-08  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* lang-specs.h: Pass -gnatwa if -Wall is passed.
 	* misc.c (gnat_handle_option) <OPT_Wall>: Expand into -Wunused
 	and -Wuninitialized.
