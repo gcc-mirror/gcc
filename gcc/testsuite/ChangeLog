@@ -1,3 +1,18 @@
+2008-03-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2008-03-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/35350
+	* gcc.target/i386/isa-1.c: Add -march=x86-64.
+	* gcc.target/i386/isa-2.c: Likewise.
+	* gcc.target/i386/isa-3.c: Likewise.
+	* gcc.target/i386/isa-10.c: Likewise.
+	* gcc.target/i386/isa-11.c: Likewise.
+	* gcc.target/i386/isa-12.c: Likewise.
+	* gcc.target/i386/isa-13.c: Likewise.
+	* gcc.target/i386/isa-14.c: Likewise.
+
 2008-03-07  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
