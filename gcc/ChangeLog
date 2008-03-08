@@ -1,5 +1,17 @@
 2008-03-08  Richard Guenther  <rguenther@suse.de>
 
+	* coverage.h (tree_coverage_counter_addr): Declare.
+	* coverage.c (tree_coverage_counter_addr): New function.
+	* tree-profile.c (tree_gen_edge_profiler): Unshare counter
+	before using again.
+	(tree_gen_pow2_profiler): Use tree_coverage_counter_addr.
+	(tree_gen_one_value_profiler): Likewise.
+	(tree_gen_ic_profiler): Likewise.
+	(tree_gen_average_profiler): Likewise.
+	(tree_gen_ior_profiler): Likewise.
+
+2008-03-08  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-sccvn.h (vn_binary_op_lookup): Remove.
 	(vn_binary_op_insert): Likewise.
 	(vn_unary_op_lookup): Likewise.
