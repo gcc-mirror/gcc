@@ -1,5 +1,12 @@
 2008-03-08  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* utils.c (finish_record_type): Clear DECL_BIT_FIELD on sufficiently
+	aligned bit-fields, bumping the alignment of the record type if deemed
+	profitable.
+	(value_factor_p): Return false instead of 0.
+
+2008-03-08  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* decl.c (gnat_to_gnu_entity) <E_Signed_Integer_Subtype>: Add support
 	for scalar types with small alignment.
 

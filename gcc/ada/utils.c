@@ -752,6 +752,7 @@ finish_record_type (tree record_type, tree fieldlist, int rep_level,
   tree size = bitsize_zero_node;
   bool had_size = TYPE_SIZE (record_type) != 0;
   bool had_size_unit = TYPE_SIZE_UNIT (record_type) != 0;
+  bool had_align = TYPE_ALIGN (record_type) != 0;
   tree field;
 
   if (name && TREE_CODE (name) == TYPE_DECL)
@@ -804,24 +805,55 @@ finish_record_type (tree record_type, tree fieldlist, int rep_level,
 
   for (field = fieldlist; field; field = TREE_CHAIN (field))
     {
-      tree pos = bit_position (field);
-
       tree type = TREE_TYPE (field);
+      tree pos = bit_position (field);
       tree this_size = DECL_SIZE (field);
-      tree this_ada_size = DECL_SIZE (field);
+      tree this_ada_size;
 
-      if ((TREE_CODE (type) == RECORD_TYPE || TREE_CODE (type) == UNION_TYPE
-	  || TREE_CODE (type) == QUAL_UNION_TYPE)
+      if ((TREE_CODE (type) == RECORD_TYPE
+	   || TREE_CODE (type) == UNION_TYPE
+	   || TREE_CODE (type) == QUAL_UNION_TYPE)
 	  && !TYPE_IS_FAT_POINTER_P (type)
 	  && !TYPE_CONTAINS_TEMPLATE_P (type)
 	  && TYPE_ADA_SIZE (type))
 	this_ada_size = TYPE_ADA_SIZE (type);
+      else
+	this_ada_size = this_size;
 
       /* Clear DECL_BIT_FIELD for the cases layout_decl does not handle.  */
-      if (DECL_BIT_FIELD (field) && !STRICT_ALIGNMENT
-	  && value_factor_p (pos, BITS_PER_UNIT)
+      if (DECL_BIT_FIELD (field)
 	  && operand_equal_p (this_size, TYPE_SIZE (type), 0))
-	DECL_BIT_FIELD (field) = 0;
+	{
+	  unsigned int align = TYPE_ALIGN (type);
+
+	  /* In the general case, type alignment is required.  */
+	  if (value_factor_p (pos, align))
+	    {
+	      /* The enclosing record type must be sufficiently aligned.
+		 Otherwise, if no alignment was specified for it and it
+		 has been laid out already, bump its alignment to the
+		 desired one if this is compatible with its size.  */
+	      if (TYPE_ALIGN (record_type) >= align)
+		{
+		  DECL_ALIGN (field) = MAX (DECL_ALIGN (field), align);
+		  DECL_BIT_FIELD (field) = 0;
+		}
+	      else if (!had_align
+		       && rep_level == 0
+		       && value_factor_p (TYPE_SIZE (record_type), align))
+		{
+		  TYPE_ALIGN (record_type) = align;
+		  DECL_ALIGN (field) = MAX (DECL_ALIGN (field), align);
+		  DECL_BIT_FIELD (field) = 0;
+		}
+	    }
+
+	  /* In the non-strict alignment case, only byte alignment is.  */
+	  if (!STRICT_ALIGNMENT
+	      && DECL_BIT_FIELD (field)
+	      && value_factor_p (pos, BITS_PER_UNIT))
+	    DECL_BIT_FIELD (field) = 0;
+	}
 
       /* If we still have DECL_BIT_FIELD set at this point, we know the field
 	 is technically not addressable.  Except that it can actually be
@@ -830,7 +862,9 @@ finish_record_type (tree record_type, tree fieldlist, int rep_level,
       DECL_NONADDRESSABLE_P (field)
 	|= DECL_BIT_FIELD (field) && DECL_MODE (field) != BLKmode;
 
-      if ((rep_level > 0) && !DECL_BIT_FIELD (field))
+      /* A type must be as aligned as its most aligned field that is not
+	 a bit-field.  But this is already enforced by layout_type.  */
+      if (rep_level > 0 && !DECL_BIT_FIELD (field))
 	TYPE_ALIGN (record_type)
 	  = MAX (TYPE_ALIGN (record_type), DECL_ALIGN (field));
 
@@ -1800,7 +1834,7 @@ value_factor_p (tree value, HOST_WIDE_INT factor)
     return (value_factor_p (TREE_OPERAND (value, 0), factor)
             || value_factor_p (TREE_OPERAND (value, 1), factor));
 
-  return 0;
+  return false;
 }
 
 /* Given 2 consecutive field decls PREV_FIELD and CURR_FIELD, return true
