@@ -2924,8 +2924,12 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 
       for (ss = loop->ss; ss != gfc_ss_terminator; ss = ss->loop_chain)
 	{
+	  stmtblock_t inner;
+
 	  if (ss->type != GFC_SS_SECTION)
 	    continue;
+
+	  gfc_start_block (&inner);
 
 	  /* TODO: range checking for mapped dimensions.  */
 	  info = &ss->data.info;
@@ -2953,7 +2957,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	      asprintf (&msg, "Zero stride is not allowed, for dimension %d "
 			"of array '%s'", info->dim[n]+1,
 			ss->expr->symtree->name);
-	      gfc_trans_runtime_check (tmp, &block, &ss->expr->where, msg);
+	      gfc_trans_runtime_check (tmp, &inner, &ss->expr->where, msg);
 	      gfc_free (msg);
 
 	      desc = ss->data.info.descriptor;
@@ -2995,7 +2999,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	      asprintf (&msg, "%s, lower bound of dimension %d of array '%s'"
 			" exceeded (%%ld < %%ld)", gfc_msg_fault,
 			info->dim[n]+1, ss->expr->symtree->name);
-	      gfc_trans_runtime_check (tmp, &block, &ss->expr->where, msg,
+	      gfc_trans_runtime_check (tmp, &inner, &ss->expr->where, msg,
 				       fold_convert (long_integer_type_node,
 						     info->start[n]),
 				       fold_convert (long_integer_type_node,
@@ -3011,7 +3015,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	          asprintf (&msg, "%s, upper bound of dimension %d of array "
 			    "'%s' exceeded (%%ld > %%ld)", gfc_msg_fault,
 			    info->dim[n]+1, ss->expr->symtree->name);
-		  gfc_trans_runtime_check (tmp, &block, &ss->expr->where, msg,
+		  gfc_trans_runtime_check (tmp, &inner, &ss->expr->where, msg,
 			fold_convert (long_integer_type_node, info->start[n]),
 			fold_convert (long_integer_type_node, ubound));
 		  gfc_free (msg);
@@ -3033,7 +3037,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	      asprintf (&msg, "%s, lower bound of dimension %d of array '%s'"
 			" exceeded (%%ld < %%ld)", gfc_msg_fault,
 			info->dim[n]+1, ss->expr->symtree->name);
-	      gfc_trans_runtime_check (tmp, &block, &ss->expr->where, msg,
+	      gfc_trans_runtime_check (tmp, &inner, &ss->expr->where, msg,
 				       fold_convert (long_integer_type_node,
 						     tmp2),
 				       fold_convert (long_integer_type_node,
@@ -3048,7 +3052,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 		  asprintf (&msg, "%s, upper bound of dimension %d of array "
 			    "'%s' exceeded (%%ld > %%ld)", gfc_msg_fault,
 			    info->dim[n]+1, ss->expr->symtree->name);
-		  gfc_trans_runtime_check (tmp, &block, &ss->expr->where, msg,
+		  gfc_trans_runtime_check (tmp, &inner, &ss->expr->where, msg,
 			fold_convert (long_integer_type_node, tmp2),
 			fold_convert (long_integer_type_node, ubound));
 		  gfc_free (msg);
@@ -3066,30 +3070,30 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 		  tree tmp3;
 
 		  tmp3 = fold_build2 (NE_EXPR, boolean_type_node, tmp, size[n]);
-
-		  /* For optional arguments, only check bounds if the
-		     argument is present.  */
-		  if (ss->expr->symtree->n.sym->attr.optional
-		      || ss->expr->symtree->n.sym->attr.not_always_present)
-		    {
-		      tree cond;
-
-		      cond = gfc_conv_expr_present (ss->expr->symtree->n.sym);
-		      tmp3 = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
-					  cond, tmp3);
-		    }
-
 		  asprintf (&msg, "%s, size mismatch for dimension %d "
 			    "of array '%s' (%%ld/%%ld)", gfc_msg_bounds,
 			    info->dim[n]+1, ss->expr->symtree->name);
-		  gfc_trans_runtime_check (tmp3, &block, &ss->expr->where, msg,
+		  gfc_trans_runtime_check (tmp3, &inner, &ss->expr->where, msg,
 			fold_convert (long_integer_type_node, tmp),
 			fold_convert (long_integer_type_node, size[n]));
 		  gfc_free (msg);
 		}
 	      else
-		size[n] = gfc_evaluate_now (tmp, &block);
+		size[n] = gfc_evaluate_now (tmp, &inner);
 	    }
+
+	  tmp = gfc_finish_block (&inner);
+
+	  /* For optional arguments, only check bounds if the argument is
+	     present.  */
+	  if (ss->expr->symtree->n.sym->attr.optional
+	      || ss->expr->symtree->n.sym->attr.not_always_present)
+	    tmp = build3_v (COND_EXPR,
+			    gfc_conv_expr_present (ss->expr->symtree->n.sym),
+			    tmp, build_empty_stmt ());
+
+	  gfc_add_expr_to_block (&block, tmp);
+
 	}
 
       tmp = gfc_finish_block (&block);
