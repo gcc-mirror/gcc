@@ -1,5 +1,9 @@
 2008-03-08  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* decl.c (maybe_pad_type): Use value_factor_p.
+
+2008-03-08  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* lang.opt (nostdlib): Move around.
 	* misc.c (gnat_handle_option): Fix formatting.
 	(gnat_dwarf_name): Move around.

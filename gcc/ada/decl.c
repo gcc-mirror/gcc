@@ -5534,8 +5534,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
      with the specified alignment.  */
   if (!size
       && INTEGRAL_TYPE_P (type)
-      && host_integerp (orig_size, 1)
-      && (TREE_INT_CST_LOW (orig_size) % align) == 0)
+      && value_factor_p (orig_size, align))
     {
       type = copy_type (type);
       TYPE_ALIGN (type) = align;
@@ -5570,12 +5569,12 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   if (align != 0
       && TREE_CODE (type) == RECORD_TYPE
       && TYPE_MODE (type) == BLKmode
-      && host_integerp (orig_size, 1)
+      && TREE_CODE (orig_size) == INTEGER_CST
       && compare_tree_int (orig_size, MAX_FIXED_MODE_SIZE) <= 0
       && (!size
 	  || (TREE_CODE (size) == INTEGER_CST
 	      && compare_tree_int (size, MAX_FIXED_MODE_SIZE) <= 0))
-      && tree_low_cst (orig_size, 1) % align == 0)
+      && value_factor_p (orig_size, align))
     type = make_packable_type (type, true);
 
   field  = create_field_decl (get_identifier ("F"), type, record, 0,
