@@ -1,3 +1,36 @@
+2008-03-08  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.h (vn_binary_op_lookup): Remove.
+	(vn_binary_op_insert): Likewise.
+	(vn_unary_op_lookup): Likewise.
+	(vn_unary_op_insert): Likewise.
+	(vn_nary_op_lookup): Declare.
+	(vn_nary_op_insert): Likewise.
+	* tree-ssa-sccvn.c (struct vn_tables_s): Merge unary
+	and binary hashes, use a single obstack for unary_op_pool
+	and binary_op_pool.
+	(struct vn_binary_op_s, struct vn_unary_op_s): Replace with
+	a single struct vn_nary_op_s.  Store tree code length and
+	a variable number of operands.
+	(struct vn_reference_op_struct): Remove unused op2.
+	(vn_reference_op_eq): Do not compare op2.
+	(vn_reference_op_compute_hash): Do not compute hash of op2.
+	(vn_unary_op_hash, vn_binary_op_hash): Replace with vn_nary_op_hash.
+	(vn_unary_op_compute_hash, vn_binary_op_compute_hash): Replace
+	with vn_nary_op_compute_hash.
+	(vn_unary_op_eq, vn_binary_op_eq): Replace with vn_nary_op_eq.
+	(vn_unary_op_lookup, vn_binary_op_lookup): Replace with
+	vn_nary_op_lookup.
+	(vn_unary_op_insert, vn_binary_op_insert): Replace with
+	vn_nary_op_insert.
+	(visit_unary_op): Call nary functions.
+	(visit_binary_op): Likewise.
+	(process_scc): Adjust for struct vn_tables_s changes.
+	(allocate_vn_table): Likewise.
+	(free_vn_table): Likewise.
+	* tree-vn.c (vn_add): Call nary functions.
+	(vn_lookup): Likewise.
+
 2008-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/35498
