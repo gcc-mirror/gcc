@@ -13858,6 +13858,9 @@ rs6000_expand_compare_and_swapqhi (rtx dst, rtx mem, rtx oldval, rtx newval)
   emit_insn (gen_sync_compare_and_swapqhi_internal (wdst, mask,
 						    oldval, newval, mem));
 
+  /* Shift the result back.  */
+  emit_insn (gen_lshrsi3 (wdst, wdst, shift));
+
   emit_move_insn (dst, gen_lowpart (mode, wdst));
 }
 

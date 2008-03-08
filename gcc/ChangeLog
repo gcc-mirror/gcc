@@ -1,3 +1,9 @@
+2008-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/35498
+	* config/rs6000/rs6000.c (rs6000_expand_compare_and_swapqhi): Shift
+	wdst back after sync_compare_and_swapqhi_internal.
+
 2008-03-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/include/texinfo.tex: Update to version 2008-03-07.10.
