@@ -423,7 +423,7 @@ Warn if type signatures of candidate methods do not match exactly
 
 Wsynth
 C++ ObjC++ Var(warn_synth) Warning
-Warn when synthesis behavior differs from Cfront
+Deprecated.  This switch has no effect
 
 Wsystem-headers
 C ObjC C++ ObjC++ Warning

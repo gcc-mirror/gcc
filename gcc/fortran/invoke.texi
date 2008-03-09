@@ -456,6 +456,11 @@ that initiated the continuation.
 @cindex warnings, character truncation
 Warn when a character assignment will truncate the assigned string.
 
+@item -Wline-truncation
+@opindex @code{Wline-truncation}
+@cindex warnings, line truncation
+Warn when a source code line will be truncated.
+
 @item -Wconversion
 @opindex @code{Wconversion}
 @cindex warnings, conversion

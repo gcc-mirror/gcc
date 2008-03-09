@@ -18,7 +18,7 @@
 progname=`echo "$0" | sed 's,.*/,,'`
 usage ()
 {
-  echo "usage: $progname path/to/invoke.texi"
+  echo "usage: $progname path/to/gcc/doc"
   echo "set \$CC to the compiler to be checked"
   exit 1
 }
@@ -28,7 +28,8 @@ LC_ALL=C
 export LC_ALL
 : ${CC=gcc}
 test $# = 1 || usage
-invoke_texi=$1
+gcc_docdir=$1
+invoke_texi=$gcc_docdir/invoke.texi
 test -r "$invoke_texi" || {
   echo "$progname: error: cannot read '$invoke_texi'" >&2
   usage
@@ -133,4 +134,44 @@ for lang in c c++ objc obj-c++; do
   }
   rm -f $file $filebase.o $filebase.obj $stderr
 done
+
+
+remove_problematic_help_flags='
+  /^W$/d
+  /^W[alp]$/d
+  /^Werror-implicit-function-declaration$/d
+  /^Wsynth$/d
+  /-$/d
+  /=/d'
+help_flags=`
+  $CC --help -v 2>/dev/null | tr ' ' '\n' |
+    sed -n '
+      b a
+      :a
+      s/^-\(W[^<,]*\).*/\1/
+      t x
+      d
+      :x
+      '"$remove_problematic_help_flags"'
+      p' | sort -u`
+: >$filebase.c
+for flag in $help_flags; do
+  $CC -c $filebase.c -$flag 2>/dev/null || {
+    echo "warning -$flag not supported" >&2
+    ret=1
+  }
+  grep "@item.*$flag" $gcc_docdir/../*/*.texi >/dev/null || {
+    # For @item, we are satisfied with either -Wfoo or -Wno-foo.
+    inverted_flag=`echo "$flag" | sed '
+      s/^Wno-/W/
+      t
+      s/^W/Wno-/'`
+    grep "@item.*$inverted_flag" $gcc_docdir/../*/*.texi >/dev/null || {
+      echo "warning -$flag not documented in $gcc_docdir/../*/*.texi" >&2
+      ret=1
+    }
+  }
+done
+rm -f $filebase.c $filebase.o
+
 exit $ret
