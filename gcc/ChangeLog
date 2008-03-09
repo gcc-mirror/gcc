@@ -1,3 +1,9 @@
+2008-03-09  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backport from mainline:
+	PR target/35225
+	* config/sh/sh.c (find_barrier): Don't go past 'from' argument.
+
 2008-03-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/include/texinfo.tex: Update to version 2008-03-07.10.
