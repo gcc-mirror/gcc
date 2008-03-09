@@ -7378,7 +7378,7 @@ label:
 (define_insn "jump_compact"
   [(set (pc)
 	(label_ref (match_operand 0 "" "")))]
-  "TARGET_SH1"
+  "TARGET_SH1 && !find_reg_note (insn, REG_CROSSING_JUMP, NULL_RTX)"
   "*
 {
   /* The length is 16 if the delay slot is unfilled.  */

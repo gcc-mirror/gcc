@@ -1,3 +1,12 @@
+2008-03-09  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backport from mainline:
+	PR target/35190
+	* config/sh/sh.md (jump_compact): Disable for crossing jumps.
+
+	* config/sh/sh.c (find_barrier): Don't go past
+	NOTE_INSN_SWITCH_TEXT_SECTIONS note.
+
 2008-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/35498
