@@ -64,7 +64,6 @@
    (UNSPEC_VPKUWUS      102)
    (UNSPEC_VPKSWUS      103)
    (UNSPEC_VRL          104)
-   (UNSPEC_VSL          107)
    (UNSPEC_VSLV4SI      110)
    (UNSPEC_VSLO         111)
    (UNSPEC_VSR          118)
@@ -576,7 +575,7 @@
   /* Generate [-0.0, -0.0, -0.0, -0.0].  */
   neg0 = gen_reg_rtx (V4SImode);
   emit_insn (gen_altivec_vspltisw (neg0, constm1_rtx));
-  emit_insn (gen_altivec_vslw (neg0, neg0, neg0));
+  emit_insn (gen_ashlv4si3 (neg0, neg0, neg0));
 
   /* Use the multiply-add.  */
   emit_insn (gen_altivec_vmaddfp (operands[0], operands[1], operands[2],
@@ -635,7 +634,7 @@
    high_product = gen_reg_rtx (V4SImode);
    emit_insn (gen_altivec_vmsumuhm (high_product, one, small_swap, zero));
  
-   emit_insn (gen_altivec_vslw (high_product, high_product, sixteen));
+   emit_insn (gen_ashlv4si3 (high_product, high_product, sixteen));
  
    emit_insn (gen_addv4si3 (operands[0], high_product, low_product));
    
@@ -1221,15 +1220,6 @@
   "vrl<VI_char> %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
-(define_insn "altivec_vsl<VI_char>"
-  [(set (match_operand:VI 0 "register_operand" "=v")
-        (unspec:VI [(match_operand:VI 1 "register_operand" "v")
-                    (match_operand:VI 2 "register_operand" "v")]
-		   UNSPEC_VSL))]
-  "TARGET_ALTIVEC"
-  "vsl<VI_char> %0,%1,%2"
-  [(set_attr "type" "vecsimple")])
-
 (define_insn "altivec_vsl"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
         (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "v")
@@ -1247,6 +1237,14 @@
   "TARGET_ALTIVEC"
   "vslo %0,%1,%2"
   [(set_attr "type" "vecperm")])
+
+(define_insn "ashl<mode>3"
+  [(set (match_operand:VI 0 "register_operand" "=v")
+        (ashift:VI (match_operand:VI 1 "register_operand" "v")
+                   (match_operand:VI 2 "register_operand" "v") ))]
+  "TARGET_ALTIVEC"
+  "vsl<VI_char> %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
 
 (define_insn "lshr<mode>3"
   [(set (match_operand:VI 0 "register_operand" "=v")
@@ -2039,7 +2037,7 @@
   [(set (match_dup 2)
 	(vec_duplicate:V4SI (const_int -1)))
    (set (match_dup 3)
-        (unspec:V4SI [(match_dup 2) (match_dup 2)] UNSPEC_VSL))
+        (ashift:V4SI (match_dup 2) (match_dup 2)))
    (set (match_operand:V4SF 0 "register_operand" "=v")
         (and:V4SF (not:V4SF (subreg:V4SF (match_dup 3) 0))
                   (match_operand:V4SF 1 "register_operand" "v")))]
@@ -2642,7 +2640,7 @@
   /* Generate [-0.0, -0.0, -0.0, -0.0].  */
   neg0 = gen_reg_rtx (V4SImode);
   emit_insn (gen_altivec_vspltisw (neg0, constm1_rtx));
-  emit_insn (gen_altivec_vslw (neg0, neg0, neg0));
+  emit_insn (gen_ashlv4si3 (neg0, neg0, neg0));
 
   /* XOR */
   emit_insn (gen_xorv4sf3 (operands[0],

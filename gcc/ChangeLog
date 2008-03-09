@@ -1,3 +1,14 @@
+2008-03-09  Ira Rosen  <irar@il.ibm.com>
+
+	* config/rs6000/rs6000.c (builtin_description): Rename vector
+	left shift operations.
+	* config/rs6000/altivec.md (UNSPEC_VSL): Remove.
+	(altivec_vsl<VI_char>): Rename to ...
+	(ashl<mode>3): ... new name.
+	(mulv4sf3, mulv4si3, negv4sf2): Replace gen_altivec_vslw with
+	gen_ashlv4si3.
+	(absv4sf2): Convert to use ashift:V4SI instead of UNSPEC_VSL.
+
 2008-03-08  Richard Guenther  <rguenther@suse.de>
 
 	* coverage.h (tree_coverage_counter_addr): Declare.
