@@ -1,3 +1,9 @@
+2008-03-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/35496
+	* config/i386/i386.c (ix86_constant_algnment): Compute alignment using
+	ALIGN_MODE_128 for VECTOR_CST and INTEGER_CST in addition to REAL_CST.
+
 2008-03-09  Ira Rosen  <irar@il.ibm.com>
 
 	* config/rs6000/rs6000.c (builtin_description): Rename vector
