@@ -1,3 +1,7 @@
+2008-03-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/frame_overflow.adb: Improve portability.
+
 2008-03-06  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* gcc.c-torture/execute/20080222-1.c: New test.
