@@ -419,7 +419,7 @@ The method should return a map converting package names to boolean status
 values.  The stub implementation provides an empty map.
 @item @code{classAssertionStatus()} -- Same as the last, but for classes.
 @item @code{getSystemClassLoader()} -- The default calls @code{ClassLoader}
-to create a new auxillary class loader with a system and extension class
+to create a new auxiliary class loader with a system and extension class
 loader.  The VM may wish to replace it if it wishes to supply its own custom
 system class loader.
 @end itemize
@@ -701,7 +701,7 @@ throw an appropriate exception.
 @item @code{suspend()} -- The thread should be suspended until resumed.
 @item @code{resume()} -- The thread should be resumed from its suspended state.
 This pair of methods are deprecated, due to the possibility of a deadlock
-occuring when a thread with locks is suspended.
+occurring when a thread with locks is suspended.
 @item @code{nativeSetPriority(int)} -- Called by @code{setPriority}
 to allow the setting to flow down to the native thread.
 @item @code{nativeStop(Throwable)} -- The VM should stop the thread abnormally
@@ -736,7 +736,7 @@ The @code{VMMath} class provides a series of native methods
 for some of the mathematical functions present in @code{java.lang.Math}.
 Classpath provides a default implementation of these which maps the
 functions to those provided by @code{fdlibm}.  VM implementors are welcome
-to replace this with more efficent implementations, as long as the accuracy
+to replace this with more efficient implementations, as long as the accuracy
 contract of these methods, specified in @code{java.lang.Math}, is maintained.
 
 @itemize @bullet
@@ -1540,7 +1540,7 @@ interface, and is supported by VM functionality in the form of
 @code{gnu.java.lang.management.VMMemoryPoolMXBeanImpl}.  Providing
 this interface requires implementing a number of methods for each supported
 pool.  These return statistics on memory usage, and, optionally, allows
-monitoring of when memory usage exceedes a preset threshold.
+monitoring of when memory usage exceeds a preset threshold.
 
 Optional support is determined by the following properties:
 
@@ -1913,7 +1913,7 @@ mechanism.
 @i{Green threads 1}: Green threads are threads scheduled by the VM,
 typically by switching swapping registers. In early VMs green threads
 were seen as advantageous as they didn't require the operating system
-to resechedule, save and swap all of a threads registers. The green
+to reschedule, save and swap all of a threads registers. The green
 thread 1 model switches thread on an externally created event, such as
 a timer interrupt. An example of a VM using this approach is Kaffe
 configured with its jthreads model.
@@ -1937,7 +1937,7 @@ model.
 An example of the problem of mixing threading models is:
 @itemize @bullet
 @item
-A Java thread calls a native method. The native method aquires a lock.
+A Java thread calls a native method. The native method acquires a lock.
 @item
 The native method calls back into the VM.
 @item
@@ -1946,7 +1946,7 @@ An event triggers the VM to reschedule the currently running thread.
 A new VM thread, executing on the same underlying native thread, calls
 a native method.
 @item
-The native method tries to aquire the lock already aquired earlier. As
+The native method tries to acquire the lock already acquired earlier. As
 the lock is busy the thread waits and allows the operating system to
 reschedule native threads.
 @item
@@ -1976,7 +1976,7 @@ and swap Java threads off of that native thread. The VM can't,
 however, swap two blocked native threads that are potentially
 deadlocking each other on a lock. The lock will be associated with the
 native thread. To prevent this from happening the VM must hijack
-functions that operate on locks. This is done by redifining the lock
+functions that operate on locks. This is done by redefining the lock
 functions inside the VM and configuring the linker so that it uses the
 VMs symbol in preference to that of the external thread support
 library. The VM's lock function can then reschedule Java threads if it

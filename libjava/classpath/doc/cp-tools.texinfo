@@ -1792,7 +1792,7 @@ java(1), @dots{}
 @comment node-name, next, previous, up
 @chapter I18N Issues
 
-Some tools --@pxref{Security Tools}-- allow using other than the English language when prompting the User for input, and outputing messages. This chapter describes the elements used to offer this support and how they can be adapted for use with specific languages.
+Some tools --@pxref{Security Tools}-- allow using other than the English language when prompting the User for input, and outputting messages. This chapter describes the elements used to offer this support and how they can be adapted for use with specific languages.
 
 @menu
 * Language Resources::         Where resources are located
@@ -1807,7 +1807,7 @@ Some tools --@pxref{Security Tools}-- allow using other than the English languag
 
 The Tools use Java @code{ResourceBundle}s to store messages, and message templates they use at runtime to generate the message text itself, depending on the locale in use at the time.
 
-The @i{Resource Bundles} these tools use are essentially Java @i{Properties} files consisting of a set of @i{Name/Value} pairs. The @i{Name} is the @i{Propery Name} and the @i{Value} is a substitution string that is used when the code references the associated @i{Name}. For example the following is a line in a @i{Resource Bundle} used by the @code{keytool} Tool:
+The @i{Resource Bundles} these tools use are essentially Java @i{Properties} files consisting of a set of @i{Name/Value} pairs. The @i{Name} is the @i{Property Name} and the @i{Value} is a substitution string that is used when the code references the associated @i{Name}. For example the following is a line in a @i{Resource Bundle} used by the @code{keytool} Tool:
 
 @example
 Command.23=A correct key password MUST be provided
@@ -1847,7 +1847,7 @@ The collection of @i{Resource Bundles} in a location act as an inverted tree wit
 
 In the above example, bundle #1 will act as the parent of bundle #2, which in turn will act as the parent for bundle #3. This ordering is used by the Java runtime to choose which file to load based on the set Locale. For example if the Locale is @code{fr_CH}, @code{messages_fr.properties} will be used because (a) @code{messages_fr_CH.properties} does not exist, but (b) @code{messages_fr.properties} is the parent for the required bundle, and it exists. As another example, suppose the Locale was set to @code{en_AU}; then the tool will end up using @code{messages.properties} because (a) @code{messages_en_AU.properties} does not exist, (b) @code{messages_en.properties} which is the parent for the required bundle does not exist, but (c) @code{messages.properties} exists and is the root of the hierarchy.
 
-You can see from the examples above that @file{messages.properties} is the safety net that the Java runtime falls back to when failing to find a specific bunlde and its parent(s). This file is always provided with the Tool. In time, more localized versions will be included to cater for other languages.
+You can see from the examples above that @file{messages.properties} is the safety net that the Java runtime falls back to when failing to find a specific bundle and its parent(s). This file is always provided with the Tool. In time, more localized versions will be included to cater for other languages.
 
 In the meantime, if you are willing to contribute localized versions of these resources, grab the @file{messages.properties} for a specific tool; translate it; save it with the appropriate language and region suffix and mail it to @code{classpath@@gnu.org}.
 
