@@ -1,15 +1,17 @@
 -- { dg-do compile }
 
+with System;
+
 procedure frame_overflow is
 
-   type Bitpos_Range_T is new Positive;
+   type Bitpos_Range_T is range 1..2**(System.Word_Size-1)-1;
    type Bitmap_Array_T is array (Bitpos_Range_T) of Boolean;
 
    type Bitmap_T is record
       Bits : Bitmap_Array_T := (others => False);
    end record;
    
-   function -- { dg-error "too large" "" }
+   function -- { dg-error "too large" }
      Set_In (Bitmap : Bitmap_T; Bitpos : Bitpos_Range_T)  return Bitmap_T
    is
       Result: Bitmap_T := Bitmap;
@@ -18,7 +20,7 @@ procedure frame_overflow is
       return Result;
    end;
 
-   function -- { dg-error "too large" "" }
+   function -- { dg-error "too large" }
      Negate (Bitmap : Bitmap_T) return Bitmap_T is
       Result: Bitmap_T;
    begin
