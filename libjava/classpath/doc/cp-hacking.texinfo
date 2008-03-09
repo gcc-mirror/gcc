@@ -484,7 +484,7 @@ specify @option{--enable-qt-peer} and need the following library:
 @table @b
 @item Qt
 @uref{http://www.trolltech.com/products/qt,Qt} version 4.0.1 or higher.
-The Qt library is a cros-platform graphics toolkit.
+The Qt library is a cross-platform graphics toolkit.
 
 @end table
 
@@ -558,7 +558,7 @@ library headers:
 @table @b
 @item GConf
 @uref{http://www.gnome.org/projects/gconf/,GConf} version 2.11.2
-(or higher). GConf is used for storing dektop and application
+(or higher). GConf is used for storing desktop and application
 configuration settings in GNOME.
 
 @end table
@@ -853,7 +853,7 @@ for ``^method_def'' is mostly gone already. Since it is customary for
 almost everybody who writes java source code to put modifiers, return
 value and method name on the same line, we do too.
 
-@c fixme Another rational for always indenting the method definition is that itmakes it a bit easier to distinguish methods in inner and anonymousclasses from code in their enclosing context. NEED EXAMPLE.
+@c fixme Another rational for always indenting the method definition is that it makes it a bit easier to distinguish methods in inner and anonymous classes from code in their enclosing context. NEED EXAMPLE.
 
 @item
 Implements and extends on separate lines, throws too.  Indent extends,
@@ -1252,7 +1252,7 @@ Just as with the normal code style guide, don't make lines longer then
 
 @item
 Just as with comments in the code. The ChangeLog entry should be a
-full sentence, starting with a captital and ending with a period.
+full sentence, starting with a capital and ending with a period.
 
 @item
 Be precise in what changed, not the effect of the change (which should
@@ -1742,7 +1742,7 @@ Unicode characters and vice versa.
 
 In Classpath, @code{InputStreamReader} and @code{OutputStreamWriter}
 rely on an internal class called @code{gnu.java.io.EncodingManager} to load
-translaters that perform the actual conversion.  There are two types of
+translators that perform the actual conversion.  There are two types of
 converters, encoders and decoders.  Encoders are subclasses of
 @code{gnu.java.io.encoder.Encoder}.  This type of converter takes a Java
 (Unicode) character stream or buffer and converts it to bytes using
@@ -1974,7 +1974,7 @@ that this functional area is supported.
 @item weekdays - A @code{String} array of weekday names.
 @item shortWeekdays - A @code{String} array of abbreviated weekday names.
 @item ampms - A @code{String} array containing AM/PM names.
-@item eras - A @code{String} array containing era (ie, BC/AD) names.
+@item eras - A @code{String} array containing era (i.e., BC/AD) names.
 @item zoneStrings - An array of information about valid timezones for this 
 locale.
 @item localPatternChars - A @code{String} defining date/time pattern symbols.

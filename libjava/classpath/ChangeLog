@@ -1,3 +1,9 @@
+2008-03-09  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/cp-hacking.texinfo: Fix some typos.
+	* doc/cp-tools.texinfo: Likewise.
+	* doc/cp-vmintegration.texinfo: Likewise.
+
 2008-01-27  Bernhard Fischer  <rep.dot.nop@gmail.com>
 
 	* java/util/SimpleTimeZone.java (SimpleTimeZone): Fix typo in comment.
