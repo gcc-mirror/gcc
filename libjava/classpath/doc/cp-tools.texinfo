@@ -338,7 +338,7 @@ jarsigner @option{-verify} [@var{OPTION}]@dots{} @var{FILE}
 @c man begin DESCRIPTION gjarsigner
 When the first form is used, the tool signs the designated JAR file. The second form, on the other hand, is used to verify a previously signed JAR file.
 
-@var{FILE} is the .JAR file to process; i.e. to sign if the first syntax form is used, or to verify if the second syntax form is used instead.
+@var{FILE} is the .JAR file to process; i.e., to sign if the first syntax form is used, or to verify if the second syntax form is used instead.
 
 @var{ALIAS} must be a known @i{Alias} of a @i{Key Entry} in the designated @i{Key Store}. The private key material associated with this @i{Alias} is then used for signing the designated .JAR file.
 @c man end
@@ -369,7 +369,7 @@ When present, the tool will include --which otherwise it does not-- the @code{.S
 When present, the tool will include in the @code{.SF} generated file --which otherwise it does not-- a header containing a hash of the whole manifest file.  When that header is included, the tool can quickly check, during verification, if the hash (in the header) matches or not the manifest file.
 
 @item -provider PROVIDER_CLASS_NAME
-A fully qualified class name of a @i{Security Provider} to add to the current list of @i{Security Providers} already installed in the JVM in-use. If a provider class is specified with this option, and was successfully added to the runtime --i.e. it was not already installed-- then the tool will attempt to remove this @i{Security Provider} before exiting.
+A fully qualified class name of a @i{Security Provider} to add to the current list of @i{Security Providers} already installed in the JVM in-use. If a provider class is specified with this option, and was successfully added to the runtime --i.e.@: it was not already installed-- then the tool will attempt to remove this @i{Security Provider} before exiting.
 
 @item -help
 Prints a help text similar to this one.
@@ -390,7 +390,7 @@ The following options may be specified when using the tool for signing purposes.
 @item -keystore @var{URL}
 Use this option to specify the location of the key store to use. The default value is a file URL referencing the file named @file{.keystore} located in the path returned by the call to @code{java.lang.System#getProperty(String)} using @code{user.home} as argument.
 
-If a URL was specified, but was found to be malformed --e.g. missing protocol element-- the tool will attempt to use the URL value as a file-name (with absolute or relative path-name) of a key store --as if the protocol was @code{file:}.
+If a URL was specified, but was found to be malformed --e.g.@: missing protocol element-- the tool will attempt to use the URL value as a file-name (with absolute or relative path-name) of a key store --as if the protocol was @code{file:}.
 
 @item -storetype @var{STORE_TYPE}
 Use this option to specify the type of the key store to use. The default value, if this option is omitted, is that of the property @code{keystore.type} in the security properties file, which is obtained by invoking the static method call @code{getDefaultType()} in @code{java.security.KeyStore}.
@@ -404,12 +404,12 @@ Use this option to specify the password which the tool will use to unlock the @i
 If this option is omitted, the tool will first attempt to unlock the @i{Key Entry} using the same password protecting the key store. If this fails, you will then be prompted to provide a password.
 
 @item -sigfile @var{NAME}
-Use this option to designate a literal that will be used to construct file names for both the @code{.SF} and @code{.DSA} signature files. These files  will be generated, by the tool, and placed in the @file{META-INF} directory of the signed JAR.  Permissible characters for @var{NAME} must be in the range "a-zA-Z0-9_-".  All characters will be converted to upper-case ones.
+Use this option to designate a literal that will be used to construct file names for both the @code{.SF} and @code{.DSA} signature files. These files  will be generated, by the tool, and placed in the @file{META-INF} directory of the signed JAR@.  Permissible characters for @var{NAME} must be in the range "a-zA-Z0-9_-".  All characters will be converted to upper-case ones.
 
 If this option is missing, the first eight characters of the @var{ALIAS} argument will be used. When this is the case, any character in @var{ALIAS} that is outside the permissible range of characters will be replaced by an underscore.
 
 @item -signedjar @var{FILE}
-Use this option to specify the file name of the signed JAR. If this option is omitted, then the signed JAR will be named the same as @var{FILE}; i.e. the input JAR file will be replaced with the signed copy.
+Use this option to specify the file name of the signed JAR@. If this option is omitted, then the signed JAR will be named the same as @var{FILE}; i.e., the input JAR file will be replaced with the signed copy.
 
 @end table
 @c man end
@@ -449,7 +449,7 @@ keytool [@var{COMMAND}] @dots{}
 @c man begin DESCRIPTION gkeytool
 Cryptographic credentials, in a Java environment, are usually stored in a @i{Key Store}. The Java SDK specifies a @i{Key Store} as a persistent container of two types of objects: @i{Key Entries} and @i{Trusted Certificates}. The security tool @command{keytool} is a Java-based application for managing those types of objects.
 
-A @i{Key Entry} represents the private key part of a key-pair used in Public-Key Cryptography, and a signed X.509 certificate which authenticates the public key part for a known entity; i.e. the owner of the key-pair. The X.509 certificate itself contains the public key part of the key-pair.
+A @i{Key Entry} represents the private key part of a key-pair used in Public-Key Cryptography, and a signed X.509 certificate which authenticates the public key part for a known entity; i.e.@: the owner of the key-pair. The X.509 certificate itself contains the public key part of the key-pair.
 
 A @i{Trusted Certificate} is a signed X.509 certificate issued by a trusted entity. The @i{Trust} in this context is relative to the User of the @command{keytool}. In other words, the existence of a @i{Trusted Certificate} in the @i{Key Store} processed by a @command{keytool} command implies that the User trusts the @i{Issuer} of that @i{Trusted Certificate} to also sign, and hence authenticates, other @i{Subjects} the tool may process.
 
@@ -596,11 +596,11 @@ Use this option to specify the password protecting the key store. If this option
 @item -keystore @var{URL}
 Use this option to specify the location of the key store to use. The default value is a file URL referencing the file named @file{.keystore} located in the path returned by the call to @code{java.lang.System#getProperty(String)} using @code{user.home} as argument.
 
-If a URL was specified, but was found to be malformed --e.g. missing protocol element-- the tool will attempt to use the URL value as a file-name (with absolute or relative path-name) of a key store --as if the protocol was @code{file:}.
+If a URL was specified, but was found to be malformed --e.g.@: missing protocol element-- the tool will attempt to use the URL value as a file-name (with absolute or relative path-name) of a key store --as if the protocol was @code{file:}.
 
 @anchor{provider}
 @item -provider @var{PROVIDER_CLASS_NAME}
-A fully qualified class name of a @i{Security Provider} to add to the current list of @i{Security Providers} already installed in the JVM in-use. If a provider class is specified with this option, and was successfully added to the runtime --i.e. it was not already installed-- then the tool will attempt to removed this @i{Security Provider} before exiting.
+A fully qualified class name of a @i{Security Provider} to add to the current list of @i{Security Providers} already installed in the JVM in-use. If a provider class is specified with this option, and was successfully added to the runtime --i.e.@: it was not already installed-- then the tool will attempt to removed this @i{Security Provider} before exiting.
 
 @anchor{file}
 @item -file @var{FILE}
@@ -624,17 +624,17 @@ A @i{Distinguished Name} (or DN) MUST be supplied with some of the @code{COMMAND
 
 @ftable @var
 @item CN
-The Common Name; e.g. @kbd{host.domain.com}
+The Common Name; e.g.@: @kbd{host.domain.com}
 @item OU
-The Organizational Unit; e.g. @kbd{IT Department}
+The Organizational Unit; e.g.@: @kbd{IT Department}
 @item O
-The Organization Name; e.g. @kbd{The Sample Company}
+The Organization Name; e.g.@: @kbd{The Sample Company}
 @item L
-The Locality Name; e.g. @kbd{Sydney}
+The Locality Name; e.g.@: @kbd{Sydney}
 @item ST
-The State Name; e.g. @kbd{New South Wales}
+The State Name; e.g.@: @kbd{New South Wales}
 @item C
-The 2-letter Country identifier; e.g. @kbd{AU}
+The 2-letter Country identifier; e.g.@: @kbd{AU}
 @end ftable
 
 When specified with a @code{-dname} option, each pair of component/value will be separated from the other with a comma. Each component and value pair MUST be separated by an equal sign. For example, the following is a valid DN value:@*
@@ -683,10 +683,10 @@ For more details @pxref{keyalg,, ALGORITHM}.
 For more details @pxref{keysize,, KEY_SIZE}.
 
 @item -sigalg @var{ALGORITHM}
-The canonical name of the digital signature algorithm to use for signing certificates. If this option is omitted, a default value will be chosen based on the type of the key-pair; i.e. the algorithm that ends up being used by the -keyalg option. If the key-pair generation algorithm is @code{DSA}, the value for the signature algorithm will be @code{SHA1withDSA}. If on the other hand the key-pair generation algorithm is @code{RSA}, then the tool will use @code{MD5withRSA} as the signature algorithm.
+The canonical name of the digital signature algorithm to use for signing certificates. If this option is omitted, a default value will be chosen based on the type of the key-pair; i.e., the algorithm that ends up being used by the -keyalg option. If the key-pair generation algorithm is @code{DSA}, the value for the signature algorithm will be @code{SHA1withDSA}. If on the other hand the key-pair generation algorithm is @code{RSA}, then the tool will use @code{MD5withRSA} as the signature algorithm.
 
 @item -dname @var{NAME}
-This a mandatory value for the command. If no value is specified --i.e. the @option{-dname} option is omitted-- the tool will prompt you to enter a @i{Distinguished Name} to use as both the @i{Owner} and @i{Issuer} of the generated self-signed certificate.
+This a mandatory value for the command. If no value is specified --i.e.@: the @option{-dname} option is omitted-- the tool will prompt you to enter a @i{Distinguished Name} to use as both the @i{Owner} and @i{Issuer} of the generated self-signed certificate.
 
 For more details @pxref{dn,, X.500 DISTINGUISHED NAME}.
 
@@ -909,7 +909,7 @@ FC...IVwNVOfQLRX+O5kAhQ/a4RTZme2L8PnpvgRwrf7Eg8D6w==
 -----END NEW CERTIFICATE REQUEST-----
 @end example
 
-@b{IMPORTANT}: Some documentation (e.g. RSA examples) claims that the @code{Attributes} field, in the CSR is @code{OPTIONAL} while RFC-2986 implies the opposite. This implementation considers this field, by default, as @code{OPTIONAL}, unless the option @option{-attributes} is specified on the command line.
+@b{IMPORTANT}: Some documentation (e.g.@: RSA examples) claims that the @code{Attributes} field, in the CSR is @code{OPTIONAL} while RFC-2986 implies the opposite. This implementation considers this field, by default, as @code{OPTIONAL}, unless the option @option{-attributes} is specified on the command line.
 
 @table @gcctabopt
 @item -alias @var{ALIAS}

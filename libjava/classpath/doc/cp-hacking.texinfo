@@ -303,7 +303,7 @@ Classpath stories page}.
 
 As with OS platform support, this priority list could change if a
 volunteer comes forward to port, maintain, and test releases for a
-particular JVM.  Since gcj is part of the GNU Compiler Collective it
+particular JVM@.  Since gcj is part of the GNU Compiler Collective it
 is one of the most important targets.  But since it doesn't currently
 work out of the box with GNU Classpath it is currently not the easiest
 target.  When hacking on GNU Classpath the easiest is to use
@@ -952,7 +952,7 @@ use @code{+Predundant-modifiers} on the command line.
 
 @item
 Modifiers should be listed in the standard order recommended by the
-JLS.  Jikes will warn for this when given @code{+Pmodifier-order}.
+JLS@.  Jikes will warn for this when given @code{+Pmodifier-order}.
 
 @item
 Because the output of different compilers differs, we have
@@ -1002,7 +1002,7 @@ words which have been added in later versions.  Notable examples are
 @code{assert} (added in 1.4) and @code{enum} (added in 1.5).  Jikes will warn
 of the use of the word @code{enum}, but, as it doesn't yet support the 1.5
 version of the language, it will still allow this usage through.  A
-compiler which supports 1.5 (e.g. the Eclipse compiler, ecj) will simply
+compiler which supports 1.5 (e.g.@: the Eclipse compiler, ecj) will simply
 fail to compile the offending source code.
 
 @c fixme Describe Anonymous classes (example).
@@ -1073,7 +1073,7 @@ You can find instructions on getting a CVS checkout for classpath at
 
 You don't have to get CVS commit write access to contribute, but it is
 sometimes more convenient to be able to add your changes directly to
-the project CVS. Please contact the GNU Classpath savannah admins to
+the project CVS@. Please contact the GNU Classpath savannah admins to
 arrange CVS access if you would like to have it.
 
 Make sure to be subscribed to the commit-classpath mailinglist while
