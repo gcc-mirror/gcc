@@ -235,7 +235,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wempty-body  -Wno-endif-labels @gol
 -Werror  -Werror=* @gol
 -Wfatal-errors  -Wfloat-equal  -Wformat  -Wformat=2 @gol
--Wno-format-extra-args -Wformat-nonliteral @gol
+-Wno-format-contains-nul -Wno-format-extra-args -Wformat-nonliteral @gol
 -Wformat-security  -Wformat-y2k @gol
 -Wframe-larger-than=@var{len} -Wignored-qualifiers @gol
 -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
@@ -2810,6 +2810,12 @@ aspects of format checking, the options @option{-Wformat-y2k},
 @opindex Wno-format-y2k
 If @option{-Wformat} is specified, also warn about @code{strftime}
 formats which may yield only a two-digit year.
+
+@item -Wno-format-contains-nul
+@opindex Wno-format-contains-nul
+@opindex Wformat-contains-nul
+If @option{-Wformat} is specified, do not warn about format strings that
+contain NUL bytes.
 
 @item -Wno-format-extra-args
 @opindex Wno-format-extra-args

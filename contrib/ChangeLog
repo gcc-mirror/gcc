@@ -1,3 +1,10 @@
+2008-03-09  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* check_warning_flags.sh: Instead of invoke.texi, take the path
+	to the doc directory as argument.  Check that warnings listed in
+	'gcc --help' are accepted by the compiler, and listed in the
+	manuals.
+
 2008-03-06  Tom Tromey  <tromey@redhat.com>
 
 	* patch_tester.sh (usage): Watermark is not lexicographic.
