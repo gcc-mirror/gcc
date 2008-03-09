@@ -281,7 +281,7 @@ which is responsible for the specified class.
 @item @code{forName(String, boolean, ClassLoader)} -- The VM should create a
 @code{Class} instance corresponding to the named class.  As noted in
 @ref{VM Hooks}, the internal content of the instance is the
-responsibility of the VM.  The supplied class loader is recorded as that
+responsibility of the VM@.  The supplied class loader is recorded as that
 which loaded the class, and the boolean specifies whether or not to
 run the class initializer.
 @item @code{isArray(Class)} -- Another property test, corresponding to a
@@ -393,7 +393,7 @@ supplied class.
 loader.
 @item @code{getPrimitiveClass(char)} -- The VM should provide a @code{Class}
 implementation for one of the primitive classes.  The supplied character
-matches the JNI code for the primitive class e.g. `B' for byte and
+matches the JNI code for the primitive class e.g.@: `B' for byte and
 `Z' for boolean.
 @end itemize
 @item Java Methods
@@ -485,7 +485,7 @@ making a VM implementation optional.
 @subsection @code{java.lang.VMThrowable}
 @code{VMThrowable} is used to hold the VM state of a throwable, created either
 when a @code{Throwable} is created or the @code{fillInStackTrace()} method is
-called (i.e. when the actual stack trace is needed, as a lot of exceptions are
+called (i.e., when the actual stack trace is needed, as a lot of exceptions are
 never actually used).  The actual class has two @code{native} methods,
 one (@code{fillInStackTrace()}) being a method of the class used to obtain
 instances, and the other an instance method, @code{getStackTrace()}.
@@ -633,7 +633,7 @@ running the finalization process at exit.
 returning an integer which is non-zero for success.  Nothing happens if the
 file has already been loaded.
 @item @code{mapLibraryName(String)} -- The VM should map the system-independent
-library name supplied to the platform-dependent equivalent (e.g. a @code{.so}
+library name supplied to the platform-dependent equivalent (e.g.@: a @code{.so}
 or @code{.dll} file)
 @end itemize
 
@@ -962,7 +962,7 @@ a directory.
 @itemize @bullet
 @item @code{canWriteDirectory(File)} -- Checks that the directory can be
 written to, by trying to create a temporary file in it.
-@item @code{listRoots()} -- Returns the root of a GNU filesystem i.e. `/'
+@item @code{listRoots()} -- Returns the root of a GNU filesystem, i.e.@: `/'
 in an array.
 @item @code{isHidden(String)} -- Checks whether the file starts with `.',
 which is how files are hidden on UNIX-style systems.
@@ -1247,7 +1247,7 @@ by a specific class loader.
 @end itemize
 
 Instrumentation allows to modify the bytecode of a class before it gets read
-by the VM. In GNU Classpath, the @code{ClassLoader.defineClass} method calls
+by the VM@. In GNU Classpath, the @code{ClassLoader.defineClass} method calls
 the @code{VMClassLoader.defineClassWithTransformers} method which first checks
 if @code{VMClassLoader.instrumenter} is @code{null}. If it's the case, it
 directly calls @code{VMClassLoader.defineClass}. If it's not the case, the
@@ -1257,11 +1257,11 @@ object and returns a new bytecode array. Then, it calls the
 @code{VMClassLoader.defineClass} method with this new bytecode array.
 
 The second use of instrumentation is to redefine a class after it has been
-loaded by the VM. This is done in the Java application by calling the
+loaded by the VM@. This is done in the Java application by calling the
 @code{Instrumentation.redefineClasses} method of the standard interface on
 a @code{Instrumentation} object. The @code{InstrumentationImpl.redefineClasses}
 method calls the @code{VMInstrumentationImpl.redefineClasses} native method
-which must be implemented by the VM. The implementation should call the
+which must be implemented by the VM@. The implementation should call the
 @code{InstrumentationImpl.callTransformers} method.
 
 @node gnu.java.lang.management, java.lang.management, gnu.java.lang, Classpath Hooks
@@ -1304,7 +1304,7 @@ arguments, excluding those that are directed at the
 this to be a native method.
 @item @code{(getName())} -- The VM developer should choose
 an appropriate name for the virtual machine.  This name can
-be instance-specific e.g. it can include things like the
+be instance-specific e.g.@: it can include things like the
 process identifier or host name of the machine, which only
 apply to the current running instance.  Thus, the intention is
 that this name refers to the entity that the other information
@@ -1611,7 +1611,7 @@ memory pools that the manager maintains.  A default implementation
 which scans the results of @code{getMemoryManagerNames()} for each
 pool is provided.
 @item @code{(isValid(String))} -- Returns true if the specified
-manager is still valid i.e. it is still in use by the virtual machine.
+manager is still valid, i.e., it is still in use by the virtual machine.
 @end itemize
 
 @node gnu.java.lang.management.VMGarbageCollectorMXBeanImpl,,gnu.java.lang.management.VMMemoryManagerMXBeanImpl,gnu.java.lang.management
@@ -1739,7 +1739,7 @@ The following issues are of note;
 The GNU Classpath implementation of @code{java.lang.Class} provides an
 object for storing the internal state of the class maintained by the VM.
 This is the only known place where this matters.  The class is
-constructed with this data by the VM.  Some VMs do not create the
+constructed with this data by the VM@.  Some VMs do not create the
 @code{Class} object at the point where the class is defined; instead,
 they wait until a @code{Class} object is actually used.
 
@@ -1920,7 +1920,7 @@ configured with its jthreads model.
 @item
 @i{Green threads 2}: The essential difference with this model is to
 not switch threads on an event, but at fixed points in the code being
-executed by the VM. Points chosen could be backward branches (loops)
+executed by the VM@. Points chosen could be backward branches (loops)
 or method calls. This approach can be advantageous to nonconservative
 garbage collectors, as non-running threads would be at known points
 and can have fixed register maps. It can also reduce the number of
@@ -1989,7 +1989,7 @@ must wait for the lock.
 As of GNU Classpath 0.15 a system property named @code{gnu.classpath.boot.library.path}
 can be set by the VM to specify the directories which contain GNU Classpath's native
 libraries. Usually this value is given at configuration time and is then hardcoded
-in the VM. However for development purposes it is handy to switch to another installation
+in the VM@. However for development purposes it is handy to switch to another installation
 by overriding the properties' value on the command line.
 
 A VM that does not support this feature can simply ignore the property.
