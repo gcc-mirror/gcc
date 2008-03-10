@@ -3243,19 +3243,6 @@ get_sccvn_value (tree name)
 	 it.  */
       if (!valvh && !is_invariant)
 	{
-	  tree defstmt = SSA_NAME_DEF_STMT (val);
-
-	  gcc_assert (VN_INFO (val)->valnum == val);
-	  /* PHI nodes can't have vuses and attempts to iterate over
-	     their VUSE operands will crash.  */
-	  if (TREE_CODE (defstmt) == PHI_NODE || IS_EMPTY_STMT (defstmt))
-	    defstmt = NULL;
-	  {
-	    tree defstmt2 = SSA_NAME_DEF_STMT (name);
-	    if (TREE_CODE (defstmt2) != PHI_NODE &&
-		!ZERO_SSA_OPERANDS (defstmt2, SSA_OP_ALL_VIRTUALS))
-	      gcc_assert (defstmt);
-	  }
 	  /* We lookup with the LHS, so do not use vn_lookup_or_add_with_stmt
 	     here, as that will result in useless reference lookups.  */
 	  valvh = vn_lookup_or_add (val);
@@ -3562,7 +3549,6 @@ compute_avail (void)
 	    {
 	      if (make_values_for_stmt (stmt, block))
 		continue;
-
 	    }
 
 	  /* For any other statement that we don't recognize, simply
@@ -3571,12 +3557,9 @@ compute_avail (void)
 	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_DEF)
 	    add_to_sets (op, op, NULL, TMP_GEN (block), AVAIL_OUT (block));
 
+	  /* Also add all referenced SSA_NAMEs to EXP_GEN.  */
 	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
-	    {
-	      add_to_sets (op, op, NULL, NULL , AVAIL_OUT (block));
-	      if (TREE_CODE (op) == SSA_NAME || can_PRE_operation (op))
-		add_to_exp_gen (block, op);
-	    }
+	    add_to_exp_gen (block, op);
 	}
 
       /* Put the dominator children of BLOCK on the worklist of blocks
