@@ -1,5 +1,5 @@
 ;; ARM Thumb-2 Machine Description
-;; Copyright (C) 2007 Free Software Foundation, Inc.
+;; Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 ;; Written by CodeSourcery, LLC.
 ;;
 ;; This file is part of GCC.
@@ -1131,7 +1131,8 @@
 		(match_operand:SI 2 "s_register_operand"  "r")))]
   "TARGET_THUMB2 && arm_arch_hwdiv"
   "sdiv%?\t%0, %1, %2"
-  [(set_attr "predicable" "yes")]
+  [(set_attr "predicable" "yes")
+   (set_attr "insn" "sdiv")]
 )
 
 (define_insn "udivsi3"
@@ -1140,7 +1141,8 @@
 		 (match_operand:SI 2 "s_register_operand"  "r")))]
   "TARGET_THUMB2 && arm_arch_hwdiv"
   "udiv%?\t%0, %1, %2"
-  [(set_attr "predicable" "yes")]
+  [(set_attr "predicable" "yes")
+   (set_attr "insn" "udiv")]
 )
 
 (define_insn "*thumb2_cbz"

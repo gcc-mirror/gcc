@@ -188,6 +188,7 @@ static void arm_target_help (void);
 static unsigned HOST_WIDE_INT arm_shift_truncation_mask (enum machine_mode);
 static bool arm_cannot_copy_insn_p (rtx);
 static bool arm_tls_symbol_p (rtx x);
+static int arm_issue_rate (void);
 static void arm_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 
 
@@ -357,6 +358,9 @@ static void arm_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM arm_cannot_force_const_mem
+
+#undef TARGET_SCHED_ISSUE_RATE
+#define TARGET_SCHED_ISSUE_RATE arm_issue_rate
 
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE arm_mangle_type
@@ -18707,6 +18711,22 @@ thumb2_output_casesi (rtx *operands)
 	}
     default:
       gcc_unreachable ();
+    }
+}
+
+/* Most ARM cores are single issue, but some newer ones can dual issue.
+   The scheduler descriptions rely on this being correct.  */
+static int
+arm_issue_rate (void)
+{
+  switch (arm_tune)
+    {
+    case cortexr4:
+    case cortexa8:
+      return 2;
+
+    default:
+      return 1;
     }
 }
 
