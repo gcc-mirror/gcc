@@ -1,6 +1,7 @@
 /* Parser for C and Objective-C.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   Free Software Foundation, Inc.
 
    Parser actions based on the old Bison parser; structure somewhat
    influenced by and fragments based on the C++ parser.
@@ -7964,10 +7965,14 @@ c_parser_omp_threadprivate (c_parser *parser)
 
       /* If V had already been marked threadprivate, it doesn't matter
 	 whether it had been used prior to this point.  */
-      if (TREE_USED (v) && !C_DECL_THREADPRIVATE_P (v))
+      if (TREE_CODE (v) != VAR_DECL)
+	error ("%qD is not a variable", v);
+      else if (TREE_USED (v) && !C_DECL_THREADPRIVATE_P (v))
 	error ("%qE declared %<threadprivate%> after first use", v);
       else if (! TREE_STATIC (v) && ! DECL_EXTERNAL (v))
 	error ("automatic variable %qE cannot be %<threadprivate%>", v);
+      else if (TREE_TYPE (v) == error_mark_node)
+	;
       else if (! COMPLETE_TYPE_P (TREE_TYPE (v)))
 	error ("%<threadprivate%> %qE has incomplete type", v);
       else
