@@ -1,3 +1,17 @@
+2008-03-10  Janis Johnson  <janis187@us.ibm.com>
+
+	* patch_tester.sh (initialization): Initialize svnpatch and stop.
+	(usage): Add -svnpath and -stop.	
+	(makedir): New.
+	(argument handling): Process -stop and -svnpath.
+	(setup code): Use makedir, error out if initial svn checkout fails.
+	(update): Use svnpath.  Invoke contrib/gcc_update.
+	(apply_patch): Require that patch was created at top level.  Use eval
+	with option variables.  Don't use bootstrap target for make.  Verify
+	that some tests were run.
+	(bootntest_patched): Use snvpath.
+	(main loop): For -stop, exit when there are no more patches to test.
+
 2008-03-09  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* check_warning_flags.sh: Instead of invoke.texi, take the path
