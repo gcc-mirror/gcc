@@ -1,3 +1,9 @@
+2008-03-10  Jim Meyering  <meyering@redhat.com>
+
+	Don't leak upon failed realloc.
+	* native/jni/classpath/jcl.c (JCL_realloc): Upon failed realloc,
+	free the original buffer before throwing the exception.
+
 2008-03-09  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/cp-hacking.texinfo: Fix spacing after periods.

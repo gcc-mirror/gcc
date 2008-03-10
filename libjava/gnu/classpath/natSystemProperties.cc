@@ -270,7 +270,10 @@ gnu::classpath::SystemProperties::insertSystemProperties (::java::util::Properti
       if (errno != ERANGE)
 	break;
       buflen = 2 * buflen;
+      char *orig_buf = buffer;
       buffer = (char *) realloc (buffer, buflen);
+      if (buffer == NULL)
+	free (orig_buf);
     }
   if (buffer != NULL)
     free (buffer);

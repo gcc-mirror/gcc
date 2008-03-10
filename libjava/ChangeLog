@@ -1,3 +1,9 @@
+2008-03-10  Jim Meyering  <meyering@redhat.com>
+
+	Don't leak upon failed realloc.
+	* gnu/classpath/natSystemProperties.cc
+	(SystemProperties::insertSystemProperties):
+
 2008-03-06  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* HACKING: Fix grep patterns.

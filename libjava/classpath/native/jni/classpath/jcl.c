@@ -1,5 +1,5 @@
 /* jcl.c
-   Copyright (C) 1998, 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2005, 2006, 2008 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -152,9 +152,11 @@ JCL_malloc (JNIEnv * env, size_t size)
 JNIEXPORT void *JNICALL
 JCL_realloc (JNIEnv * env, void *ptr, size_t size)
 {
+  void *orig_ptr = ptr;
   ptr = realloc (ptr, size);
   if (ptr == 0)
     {
+      free (orig_ptr);
       JCL_ThrowException (env, "java/lang/OutOfMemoryError",
 			  "malloc() failed.");
       return NULL;
