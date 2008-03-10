@@ -16774,7 +16774,8 @@ ia32_multipass_dfa_lookahead (void)
 int
 ix86_constant_alignment (tree exp, int align)
 {
-  if (TREE_CODE (exp) == REAL_CST)
+  if (TREE_CODE (exp) == REAL_CST || TREE_CODE (exp) == VECTOR_CST
+      || TREE_CODE (exp) == INTEGER_CST)
     {
       if (TYPE_MODE (TREE_TYPE (exp)) == DFmode && align < 64)
 	return 64;

@@ -5066,9 +5066,10 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
 
      Note that all these transformations are correct if A is
      NaN, since the two alternatives (A and -A) are also NaNs.  */
-  if ((FLOAT_TYPE_P (TREE_TYPE (arg01))
-       ? real_zerop (arg01)
-       : integer_zerop (arg01))
+  if (!HONOR_SIGNED_ZEROS (TYPE_MODE (type))
+      && (FLOAT_TYPE_P (TREE_TYPE (arg01))
+	  ? real_zerop (arg01)
+	  : integer_zerop (arg01))
       && ((TREE_CODE (arg2) == NEGATE_EXPR
 	   && operand_equal_p (TREE_OPERAND (arg2, 0), arg1, 0))
 	     /* In the case that A is of the form X-Y, '-A' (arg2) may
@@ -5121,7 +5122,8 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
      both transformations are correct when A is NaN: A != 0
      is then true, and A == 0 is false.  */
 
-  if (integer_zerop (arg01) && integer_zerop (arg2))
+  if (!HONOR_SIGNED_ZEROS (TYPE_MODE (type))
+      && integer_zerop (arg01) && integer_zerop (arg2))
     {
       if (comp_code == NE_EXPR)
 	return pedantic_non_lvalue (fold_convert (type, arg1));
@@ -5155,7 +5157,8 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
      a number and A is not.  The conditions in the original
      expressions will be false, so all four give B.  The min()
      and max() versions would give a NaN instead.  */
-  if (operand_equal_for_comparison_p (arg01, arg2, arg00)
+  if (!HONOR_SIGNED_ZEROS (TYPE_MODE (type))
+      && operand_equal_for_comparison_p (arg01, arg2, arg00)
       /* Avoid these transformations if the COND_EXPR may be used
 	 as an lvalue in the C++ front-end.  PR c++/19199.  */
       && (in_gimple_form

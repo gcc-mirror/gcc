@@ -1,3 +1,11 @@
+2008-03-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2008-03-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/35456
+	* gcc.c-torture/execute/pr35456.c: New test.
+
 2008-03-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/frame_overflow.adb: Improve portability.

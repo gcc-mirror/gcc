@@ -1,3 +1,19 @@
+2008-03-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2008-03-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/35496
+	* config/i386/i386.c (ix86_constant_alignment): Compute alignment using
+	ALIGN_MODE_128 for VECTOR_CST and INTEGER_CST in addition to REAL_CST.
+
+	2008-03-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/35456
+	* fold-const.c (fold_cond_expr_with_comparison): Prevent
+	transformations for modes that have signed zeros.
+	* ifcvt.c (noce_try_abs): Ditto.
+
 2008-03-09  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	Backport from mainline:
@@ -62,8 +78,7 @@
 	(OPTION_MASK_ISA_SSE5_UNSET): Likewise.
 	(OPTION_MASK_ISA_SSE4): Removed.
 	(ix86_handle_option): Turn on bits in ix86_isa_flags and
-	ix86_isa_flags_explicit with OPTION_MASK_ISA_XXX_SET for
-	-mXXX.
+	ix86_isa_flags_explicit with OPTION_MASK_ISA_XXX_SET for -mXXX.
 	(override_options): Don't turn on implied SSE/MMX bits in
 	ix86_isa_flags.
 
