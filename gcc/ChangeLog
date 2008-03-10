@@ -1,3 +1,8 @@
+2008-03-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* config/i386/sse.md (ssse3_pmaddubswv8hi3, ssse3_pmaddubswv4hi3):
+	Remove commutativity hint.
+
 2008-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/35438
