@@ -394,7 +394,6 @@ static alloc_pool binary_node_pool;
 static alloc_pool unary_node_pool;
 static alloc_pool reference_node_pool;
 static alloc_pool comparison_node_pool;
-static alloc_pool modify_expr_node_pool;
 static bitmap_obstack grand_bitmap_obstack;
 
 /* We can't use allocation pools to hold temporary CALL_EXPR objects, since
@@ -3046,64 +3045,6 @@ create_value_expr_from (tree expr, basic_block block, VEC (tree, gc) *vuses)
   return vexpr;
 }
 
-/* Return a copy of NODE that is stored in the temporary alloc_pool's.
-   This is made recursively true, so that the operands are stored in
-   the pool as well.  */
-
-static tree
-poolify_tree (tree node)
-{
-  switch  (TREE_CODE (node))
-    {
-    case INDIRECT_REF:
-      {
-	tree temp = (tree) pool_alloc (reference_node_pool);
-	memcpy (temp, node, tree_size (node));
-	TREE_OPERAND (temp, 0) = poolify_tree (TREE_OPERAND (temp, 0));
-	return temp;
-      }
-      break;
-    case GIMPLE_MODIFY_STMT:
-      {
-	tree temp = (tree) pool_alloc (modify_expr_node_pool);
-	memcpy (temp, node, tree_size (node));
-	GIMPLE_STMT_OPERAND (temp, 0) =
-	  poolify_tree (GIMPLE_STMT_OPERAND (temp, 0));
-	GIMPLE_STMT_OPERAND (temp, 1) =
-	  poolify_tree (GIMPLE_STMT_OPERAND (temp, 1));
-	return temp;
-      }
-      break;
-    case SSA_NAME:
-    case INTEGER_CST:
-    case STRING_CST:
-    case REAL_CST:
-    case FIXED_CST:
-    case PARM_DECL:
-    case VAR_DECL:
-    case RESULT_DECL:
-      return node;
-    default:
-      gcc_unreachable ();
-    }
-}
-
-static tree modify_expr_template;
-
-/* Allocate a GIMPLE_MODIFY_STMT with TYPE, and operands OP1, OP2 in the
-   alloc pools and return it.  */
-static tree
-poolify_modify_stmt (tree op1, tree op2)
-{
-  if (modify_expr_template == NULL)
-    modify_expr_template = build_gimple_modify_stmt (op1, op2);
-
-  GIMPLE_STMT_OPERAND (modify_expr_template, 0) = op1;
-  GIMPLE_STMT_OPERAND (modify_expr_template, 1) = op2;
-
-  return poolify_tree (modify_expr_template);
-}
-
 
 /* For each real store operation of the form
    *a = <value> that we see, create a corresponding fake store of the
@@ -3134,16 +3075,15 @@ insert_fake_stores (void)
 	     virtual uses occur in abnormal phis.  */
 
 	  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
-	      && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == INDIRECT_REF
-	      && !AGGREGATE_TYPE_P (TREE_TYPE (GIMPLE_STMT_OPERAND (stmt, 0)))
-	      && TREE_CODE (TREE_TYPE (GIMPLE_STMT_OPERAND
-					(stmt, 0))) != COMPLEX_TYPE)
+	      && (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == INDIRECT_REF
+		  || handled_component_p (GIMPLE_STMT_OPERAND (stmt, 0)))
+	      && !AGGREGATE_TYPE_P (TREE_TYPE (GIMPLE_STMT_OPERAND (stmt, 0))))
 	    {
 	      ssa_op_iter iter;
 	      def_operand_p defp;
 	      tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
 	      tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
-	      tree new_tree;
+	      tree new_tree, new_lhs;
 	      bool notokay = false;
 
 	      FOR_EACH_SSA_DEF_OPERAND (defp, stmt, iter, SSA_OP_VIRTUAL_DEFS)
@@ -3162,15 +3102,16 @@ insert_fake_stores (void)
 	      if (!storetemp || TREE_TYPE (rhs) != TREE_TYPE (storetemp))
 		{
 		  storetemp = create_tmp_var (TREE_TYPE (rhs), "storetmp");
-		  if (TREE_CODE (TREE_TYPE (storetemp)) == VECTOR_TYPE)
+		  if (TREE_CODE (TREE_TYPE (storetemp)) == VECTOR_TYPE
+		      || TREE_CODE (TREE_TYPE (storetemp)) == COMPLEX_TYPE)
 		    DECL_GIMPLE_REG_P (storetemp) = 1;
 		  get_var_ann (storetemp);
 		}
 
-	      new_tree = poolify_modify_stmt (storetemp, lhs);
+	      new_tree = build_gimple_modify_stmt (NULL_TREE, lhs);
+	      new_lhs = make_ssa_name (storetemp, new_tree);
+	      GIMPLE_STMT_OPERAND (new_tree, 0) = new_lhs;
 
-	      lhs = make_ssa_name (storetemp, new_tree);
-	      GIMPLE_STMT_OPERAND (new_tree, 0) = lhs;
 	      create_ssa_artificial_load_stmt (new_tree, stmt, false);
 
 	      NECESSARY (new_tree) = 0;
@@ -3196,25 +3137,21 @@ realify_fake_stores (void)
     {
       if (NECESSARY (stmt))
 	{
-	  block_stmt_iterator bsi;
-	  tree newstmt, tmp;
+	  block_stmt_iterator bsi, bsi2;
+	  tree rhs;
 
 	  /* Mark the temp variable as referenced */
 	  add_referenced_var (SSA_NAME_VAR (GIMPLE_STMT_OPERAND (stmt, 0)));
 
-	  /* Put the new statement in GC memory, fix up the
-	     SSA_NAME_DEF_STMT on it, and then put it in place of
-	     the old statement before the store in the IR stream
+	  /* Put the statement before the store in the IR stream
 	     as a plain ssa name copy.  */
 	  bsi = bsi_for_stmt (stmt);
 	  bsi_prev (&bsi);
-	  tmp = GIMPLE_STMT_OPERAND (bsi_stmt (bsi), 1);
-	  newstmt = build_gimple_modify_stmt (GIMPLE_STMT_OPERAND (stmt, 0),
-					      tmp);
-	  SSA_NAME_DEF_STMT (GIMPLE_STMT_OPERAND (newstmt, 0)) = newstmt;
-	  bsi_insert_before (&bsi, newstmt, BSI_SAME_STMT);
-	  bsi = bsi_for_stmt (stmt);
-	  bsi_remove (&bsi, true);
+	  rhs = GIMPLE_STMT_OPERAND (bsi_stmt (bsi), 1);
+	  GIMPLE_STMT_OPERAND (stmt, 1) = rhs;
+	  bsi2 = bsi_for_stmt (stmt);
+	  bsi_remove (&bsi2, true);
+	  bsi_insert_before (&bsi, stmt, BSI_SAME_STMT);
 	}
       else
 	release_defs (stmt);
@@ -3818,11 +3755,7 @@ init_pre (bool do_fre)
 					   tree_code_size (ARRAY_REF), 30);
   comparison_node_pool = create_alloc_pool ("Comparison tree nodes",
 					    tree_code_size (EQ_EXPR), 30);
-  modify_expr_node_pool = create_alloc_pool ("GIMPLE_MODIFY_STMT nodes",
-					     tree_code_size (GIMPLE_MODIFY_STMT),
-					     30);
   obstack_init (&temp_call_expr_obstack);
-  modify_expr_template = NULL;
 
   FOR_ALL_BB (bb)
     {
@@ -3854,7 +3787,6 @@ fini_pre (void)
   free_alloc_pool (reference_node_pool);
   free_alloc_pool (unary_node_pool);
   free_alloc_pool (comparison_node_pool);
-  free_alloc_pool (modify_expr_node_pool);
   htab_delete (phi_translate_table);
   remove_fake_exit_edges ();
 
