@@ -94,9 +94,9 @@
    (UNSPEC_TLS      20) ; A symbol that has been treated properly for TLS usage.
    (UNSPEC_PIC_LABEL 21) ; A label used for PIC access that does not appear in the
                          ; instruction stream.
-   (UNSPEC_STACK_ALIGN 20) ; Doubleword aligned stack pointer.  Used to
+   (UNSPEC_STACK_ALIGN 22) ; Doubleword aligned stack pointer.  Used to
 			   ; generate correct unwind information.
-   (UNSPEC_PIC_OFFSET 22) ; A symbolic 12-bit OFFSET that has been treated
+   (UNSPEC_PIC_OFFSET 23) ; A symbolic 12-bit OFFSET that has been treated
 			  ; correctly for PIC usage.
   ]
 )
