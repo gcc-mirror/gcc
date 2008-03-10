@@ -1,3 +1,8 @@
+2008-03-10  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (get_sccvn_value): Simplify.
+	(compute_avail): Do not add stmt uses to AVAIL_OUT.
+
 2008-03-10  Paolo Bonzini  <bonzini@gnu.org>
 
 	* langhooks-def.h (LANG_HOOKS_REDUCE_BIT_FIELD_OPERATIONS):
