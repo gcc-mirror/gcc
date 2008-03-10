@@ -1,5 +1,10 @@
 2008-03-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/35438
+	PR c/35439
+	* c-parser.c (c_parser_omp_threadprivate): Don't add vars with
+	errorneous type.  Check that v is a VAR_DECL.
+
 	PR middle-end/35099
 	* tree-cfg.c (new_label_mapper): Update cfun->last_label_uid.
 
