@@ -3667,7 +3667,7 @@ finish_omp_clauses (tree clauses)
 					     complete_ctor_identifier,
 					     t, inner_type, LOOKUP_NORMAL);
 
-	      if (targetm.cxx.cdtor_returns_this ())
+	      if (targetm.cxx.cdtor_returns_this () || errorcount)
 		/* Because constructors and destructors return this,
 		   the call will have been cast to "void".  Remove the
 		   cast here.  We would like to use STRIP_NOPS, but it
@@ -3689,7 +3689,7 @@ finish_omp_clauses (tree clauses)
 	      t = build_special_member_call (t, complete_dtor_identifier,
 					     NULL, inner_type, LOOKUP_NORMAL);
 
-	      if (targetm.cxx.cdtor_returns_this ())
+	      if (targetm.cxx.cdtor_returns_this () || errorcount)
 		/* Because constructors and destructors return this,
 		   the call will have been cast to "void".  Remove the
 		   cast here.  We would like to use STRIP_NOPS, but it
