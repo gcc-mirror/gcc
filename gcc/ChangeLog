@@ -1,3 +1,19 @@
+2008-03-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34677
+	* tree-ssa-pre.c (modify_expr_node_pool): Remove.
+	(poolify_tree): Likewise.
+	(modify_expr_template): Likewise.
+	(poolify_modify_stmt): Likewise.
+	(insert_fake_stores): Handle all component-ref style stores
+	in addition to INDIRECT_REF.  Also handle complex types.
+	Do not poolify the inserted load.
+	(realify_fake_stores): Do not rebuild the tree but only
+	make it a SSA_NAME copy.
+	(init_pre): Remove initialzation of modify_expr_template.
+	Do not allocate modify_expr_node_pool.
+	(fini_pre): Do not free modify_expr_node_pool.
+
 2008-03-10  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.md (UNSPEC_STACK_ALIGN, UNSPEC_PIC_OFFSET): Renumber
