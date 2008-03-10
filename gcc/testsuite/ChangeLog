@@ -1,19 +1,14 @@
+2008-03-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR tree-optimization/35494
+	* g++.dg/tree-ssa/ssa-store-ccp-1.C: New.
+	* gcc.dg/tree-ssa/ssa-store-ccp-2.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-store-ccp-3.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-store-ccp-4.c: Likewise.
+
 2008-03-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/34677
-	* tree-ssa-pre.c (modify_expr_node_pool): Remove.
-	(poolify_tree): Likewise.
-	(modify_expr_template): Likewise.
-	(poolify_modify_stmt): Likewise.
-	(insert_fake_stores): Handle all component-ref style stores
-	in addition to INDIRECT_REF.  Also handle complex types.
-	Do not poolify the inserted load.
-	(realify_fake_stores): Do not rebuild the tree but only
-	make it a SSA_NAME copy.
-	(init_pre): Remove initialzation of modify_expr_template.
-	Do not allocate modify_expr_node_pool.
-	(fini_pre): Do not free modify_expr_node_pool.
-
 	* gcc.dg/tree-ssa/loadpre23.c: New testcase.
 	* gcc.dg/tree-ssa/loadpre24.c: Likewise.
 	* gcc.dg/tree-ssa/loadpre25.c: Likewise.

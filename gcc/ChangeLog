@@ -1,3 +1,9 @@
+2008-03-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR tree-optimization/35494
+	* tree-ssa-ccp.c (get_symbol_constant_value): Check if value
+	may be overriden at link and run time.
+
 2008-03-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/34677
