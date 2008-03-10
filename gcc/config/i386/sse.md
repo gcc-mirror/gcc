@@ -6402,7 +6402,7 @@
 	  (mult:V8HI
 	    (zero_extend:V8HI
 	      (vec_select:V4QI
-		(match_operand:V16QI 1 "nonimmediate_operand" "%0")
+		(match_operand:V16QI 1 "nonimmediate_operand" "0")
 		(parallel [(const_int 0)
 			   (const_int 2)
 			   (const_int 4)
@@ -6456,7 +6456,7 @@
 	  (mult:V4HI
 	    (zero_extend:V4HI
 	      (vec_select:V4QI
-		(match_operand:V8QI 1 "nonimmediate_operand" "%0")
+		(match_operand:V8QI 1 "nonimmediate_operand" "0")
 		(parallel [(const_int 0)
 			   (const_int 2)
 			   (const_int 4)
