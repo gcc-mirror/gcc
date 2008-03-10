@@ -1,5 +1,8 @@
 2008-03-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/35337
+	* g++.dg/gomp/pr35337.C: New test.
+
 	PR c/35438
 	PR c/35439
 	* gcc.dg/gomp/pr35438.c: New test.
