@@ -3400,13 +3400,16 @@ finish_omp_clauses (tree clauses)
 	    {
 	      if (processing_template_decl)
 		break;
-	      error ("%qE is not a variable in clause %<firstprivate%>", t);
+	      if (DECL_P (t))
+		error ("%qD is not a variable in clause %<firstprivate%>", t);
+	      else
+		error ("%qE is not a variable in clause %<firstprivate%>", t);
 	      remove = true;
 	    }
 	  else if (bitmap_bit_p (&generic_head, DECL_UID (t))
 		   || bitmap_bit_p (&firstprivate_head, DECL_UID (t)))
 	    {
-	      error ("%qE appears more than once in data clauses", t);
+	      error ("%qD appears more than once in data clauses", t);
 	      remove = true;
 	    }
 	  else
@@ -3419,13 +3422,16 @@ finish_omp_clauses (tree clauses)
 	    {
 	      if (processing_template_decl)
 		break;
-	      error ("%qE is not a variable in clause %<lastprivate%>", t);
+	      if (DECL_P (t))
+		error ("%qD is not a variable in clause %<lastprivate%>", t);
+	      else
+		error ("%qE is not a variable in clause %<lastprivate%>", t);
 	      remove = true;
 	    }
 	  else if (bitmap_bit_p (&generic_head, DECL_UID (t))
 		   || bitmap_bit_p (&lastprivate_head, DECL_UID (t)))
 	    {
-	      error ("%qE appears more than once in data clauses", t);
+	      error ("%qD appears more than once in data clauses", t);
 	      remove = true;
 	    }
 	  else
