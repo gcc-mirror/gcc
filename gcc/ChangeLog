@@ -1,7 +1,11 @@
 2008-03-10  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.md (UNSPEC_STACK_ALIGN, UNSPEC_PIC_OFFSET): Renumber
+	to avoid conflicts.
+
+2008-03-10  Paul Brook  <paul@codesourcery.com>
 	Mark Shinwell  <shinwell@codesourcery.com>
 
-	gcc/
 	* config/arm/cortex-r4.md: New.
 	* config/arm/thumb2.md (divsi3, udivsi3): Annotate with
 	insn attributes.
