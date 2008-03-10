@@ -5757,6 +5757,11 @@ emit_range_check (tree gnu_expr, Entity_Id gnat_range_type)
   tree gnu_high = TYPE_MAX_VALUE (gnu_range_type);
   tree gnu_compare_type = get_base_type (TREE_TYPE (gnu_expr));
 
+  /* If GNU_EXPR has GNAT_RANGE_TYPE as its base type, no check is needed.
+     This can for example happen when translating 'Val or 'Value.  */
+  if (gnu_compare_type == gnu_range_type)
+    return gnu_expr;
+
   /* If GNU_EXPR has an integral type that is narrower than GNU_RANGE_TYPE,
      we can't do anything since we might be truncating the bounds.  No
      check is needed in this case.  */
