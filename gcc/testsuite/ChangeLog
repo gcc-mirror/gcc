@@ -1,3 +1,7 @@
+2008-03-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/range_check2.adb: New test.
+
 2008-03-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR tree-optimization/35494
