@@ -300,7 +300,10 @@ get_symbol_constant_value (tree sym)
 {
   if (TREE_STATIC (sym)
       && TREE_READONLY (sym)
-      && !MTAG_P (sym))
+      && !MTAG_P (sym)
+      /* Check if a read-only definition may be overridden at
+	 link and run time.  */
+      && targetm.binds_local_p (sym))
     {
       tree val = DECL_INITIAL (sym);
       if (val
