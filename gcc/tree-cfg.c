@@ -5893,6 +5893,8 @@ new_label_mapper (tree decl, void *data)
   m->base.from = decl;
   m->to = create_artificial_label ();
   LABEL_DECL_UID (m->to) = LABEL_DECL_UID (decl);
+  if (LABEL_DECL_UID (m->to) >= cfun->last_label_uid)
+    cfun->last_label_uid = LABEL_DECL_UID (m->to) + 1;
 
   slot = htab_find_slot_with_hash (hash, m, m->hash, INSERT);
   gcc_assert (*slot == NULL);

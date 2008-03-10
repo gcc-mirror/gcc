@@ -1,3 +1,8 @@
+2008-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/35099
+	* tree-cfg.c (new_label_mapper): Update cfun->last_label_uid.
+
 2008-03-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
