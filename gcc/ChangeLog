@@ -1,5 +1,11 @@
+2008-03-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/35526
+	* expr.c (store_expr): Call emit_block_move if the mode
+	of "temp" RTX is BLKmode.
+
 2008-03-11  Andrew Pinski  <andrew_pinski@playstation.sony.com>
-	Richard Guenther  <rguenther@suse.de>
+	    Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/31358
 	* tree-ssa-loop-manip.c (create_iv): Call force_gimple_operand for
@@ -63,7 +69,7 @@
 	to avoid conflicts.
 
 2008-03-10  Paul Brook  <paul@codesourcery.com>
-	Mark Shinwell  <shinwell@codesourcery.com>
+	    Mark Shinwell  <shinwell@codesourcery.com>
 
 	* config/arm/cortex-r4.md: New.
 	* config/arm/thumb2.md (divsi3, udivsi3): Annotate with
@@ -578,7 +584,7 @@
 	__absvsi2, __absvDI2): Use unsigned arithmetic.
 
 2008-03-02  Andi Kleen  <ak@suse.de>
-	Richard Guenther  <rguenther@suse.de>
+	    Richard Guenther  <rguenther@suse.de>
 
 	* struct-equiv.c: Remove file.
 	* cfg_cleanup.c (condjump_equiv_p): Remove.
