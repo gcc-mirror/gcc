@@ -1,5 +1,9 @@
 2008-03-11  Uros Bizjak  <ubizjak@gmail.com>
 
+	* g++.dg/inherit/override-attribs.C: Require ilp32 x86 target.
+
+2008-03-11  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR middle-end/35526
 	* g++.dg/torture/pr35526.C: New test.
 
