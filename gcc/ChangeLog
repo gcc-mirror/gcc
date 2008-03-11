@@ -1,3 +1,12 @@
+2008-03-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.h (TARGET_LONG_PIC_SDIFF_CALL): Conditionalize define on
+	TARGET_HPUX.  Revise comment.
+	(TARGET_LONG_PIC_PCREL_CALL): Revise comment.
+	* pa.c (output_call): Update for revised TARGET_LONG_PIC_SDIFF_CALL.
+	Use sr4 variant of `be' instruction when not generating PIC code.
+	(attr_length_call): Adjust for above change.
+
 2008-03-11  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* ipa-reference.c (static_execute): Remove module_statics_const and
