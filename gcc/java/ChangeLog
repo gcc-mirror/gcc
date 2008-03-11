@@ -1,3 +1,10 @@
+2008-03-11  Paolo Bonzini  <bonzini@gnu.org>
+
+        * jcf-parse.c (java_parse_file): Assert binding levels are
+        left in order.
+        * lang.c (LANG_HOOKS_CLEAR_BINDING_STACK, java_clear_binding_stack):
+        Delete.
+
 2008-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* jcf-dump.c (version): Update copyright notice dates.

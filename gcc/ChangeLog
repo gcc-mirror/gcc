@@ -1,3 +1,9 @@
+2008-03-11  Paolo Bonzini  <bonzini@gnu.org>
+
+        * langhooks-def.h (LANG_HOOKS_CLEAR_BINDING_STACK): Delete.
+        * langhooks.h (struct lang_hooks): Delete clear_binding_stack member.
+        * toplev.c (compile_file): Don't call it.
+
 2008-03-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/35526
