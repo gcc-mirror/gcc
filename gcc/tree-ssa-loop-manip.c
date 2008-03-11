@@ -104,7 +104,7 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
     }
   /* Gimplify the step if necessary.  We put the computations in front of the
      loop (i.e. the step should be loop invariant).  */
-  step = force_gimple_operand (step, &stmts, true, var);
+  step = force_gimple_operand (step, &stmts, true, NULL_TREE);
   if (stmts)
     bsi_insert_on_edge_immediate (pe, stmts);
 
