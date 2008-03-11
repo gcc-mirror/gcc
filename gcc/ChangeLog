@@ -1,3 +1,19 @@
+2008-03-11  Paul Brook  <paul@codesourcery.com>
+	Vladimir Prus  <vladimir@codesourcery.com>
+
+	* config/arm/arm.c (use_return_insn): Check TARGET_APCS_FRAME.
+	(arm_compute_save_reg0_reg12_mask): Always
+	check if register 11 must be saved.  Always safe hard frame pointer
+	when frame_pointer_needeed.
+	(arm_compute_save_reg_mask): Save IP and PC
+	only with apcs frames.
+	(arm_output_epilogue): Adjust Thumb2 codepath to
+	be also invoked and work for ARM non-apcs frames.
+	(arm_expand_prologue): Don't bother saving IP
+	for non-apcs frame, since it's not clobbered by
+	prologue code.  Implement non-apcs frame
+	layout.
+
 2008-03-11  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR rtl-optimization/35281
@@ -6,9 +22,9 @@
 
 2008-03-11  Paolo Bonzini  <bonzini@gnu.org>
 
-        * langhooks-def.h (LANG_HOOKS_CLEAR_BINDING_STACK): Delete.
-        * langhooks.h (struct lang_hooks): Delete clear_binding_stack member.
-        * toplev.c (compile_file): Don't call it.
+	* langhooks-def.h (LANG_HOOKS_CLEAR_BINDING_STACK): Delete.
+	* langhooks.h (struct lang_hooks): Delete clear_binding_stack member.
+	* toplev.c (compile_file): Don't call it.
 
 2008-03-11  Uros Bizjak  <ubizjak@gmail.com>
 
