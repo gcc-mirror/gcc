@@ -101,17 +101,18 @@ extern int flag_pa_unix;
    calls.  They are used only in non-pic code.  */
 #define TARGET_LONG_ABS_CALL (TARGET_SOM && !TARGET_GAS)
 
-/* Define to a C expression evaluating to true to use long pic symbol
-   difference calls.  This is a call variant similar to the long pic
-   pc-relative call.  Long pic symbol difference calls are only used with
-   the HP SOM linker.  Currently, only the HP assembler supports these
-   calls.  GAS doesn't allow an arbitrary difference of two symbols.  */
-#define TARGET_LONG_PIC_SDIFF_CALL (!TARGET_GAS)
+/* Define to a C expression evaluating to true to use long PIC symbol
+   difference calls.  Long PIC symbol difference calls are only used with
+   the HP assembler and linker.  The HP assembler detects this instruction
+   sequence and treats it as long pc-relative call.  Currently, GAS only
+   allows a difference of two symbols in the same subspace, and it doesn't
+   detect the sequence as a pc-relative call.  */
+#define TARGET_LONG_PIC_SDIFF_CALL (!TARGET_GAS && TARGET_HPUX)
 
-/* Define to a C expression evaluating to true to use long pic
-   pc-relative calls.  Long pic pc-relative calls are only used with
-   GAS.  Currently, they are usable for calls within a module but
-   not for external calls.  */
+/* Define to a C expression evaluating to true to use long PIC
+   pc-relative calls.  Long PIC pc-relative calls are only used with
+   GAS.  Currently, they are usable for calls which bind local to a
+   module but not for external calls.  */
 #define TARGET_LONG_PIC_PCREL_CALL 0
 
 /* Define to a C expression evaluating to true to use SOM secondary

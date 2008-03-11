@@ -7417,14 +7417,13 @@ attr_length_call (rtx insn, int sibcall)
     length += 12;
 
   /* long pc-relative branch sequence.  */
-  else if ((TARGET_SOM && TARGET_LONG_PIC_SDIFF_CALL)
-	   || (TARGET_64BIT && !TARGET_GAS)
+  else if (TARGET_LONG_PIC_SDIFF_CALL
 	   || (TARGET_GAS && !TARGET_SOM
 	       && (TARGET_LONG_PIC_PCREL_CALL || local_call)))
     {
       length += 20;
 
-      if (!TARGET_PA_20 && !TARGET_NO_SPACE_REGS)
+      if (!TARGET_PA_20 && !TARGET_NO_SPACE_REGS && flag_pic)
 	length += 8;
     }
 
@@ -7444,7 +7443,7 @@ attr_length_call (rtx insn, int sibcall)
 	  if (!sibcall)
 	    length += 8;
 
-	  if (!TARGET_NO_SPACE_REGS)
+	  if (!TARGET_NO_SPACE_REGS && flag_pic)
 	    length += 8;
 	}
     }
@@ -7528,7 +7527,7 @@ output_call (rtx insn, rtx call_dest, int sibcall)
 	     of increasing length and complexity.  In most cases,
              they don't allow an instruction in the delay slot.  */
 	  if (!((TARGET_LONG_ABS_CALL || local_call) && !flag_pic)
-	      && !(TARGET_SOM && TARGET_LONG_PIC_SDIFF_CALL)
+	      && !TARGET_LONG_PIC_SDIFF_CALL
 	      && !(TARGET_GAS && !TARGET_SOM
 		   && (TARGET_LONG_PIC_PCREL_CALL || local_call))
 	      && !TARGET_64BIT)
@@ -7574,13 +7573,12 @@ output_call (rtx insn, rtx call_dest, int sibcall)
 	    }
 	  else
 	    {
-	      if ((TARGET_SOM && TARGET_LONG_PIC_SDIFF_CALL)
-		  || (TARGET_64BIT && !TARGET_GAS))
+	      if (TARGET_LONG_PIC_SDIFF_CALL)
 		{
 		  /* The HP assembler and linker can handle relocations
-		     for the difference of two symbols.  GAS and the HP
-		     linker can't do this when one of the symbols is
-		     external.  */
+		     for the difference of two symbols.  The HP assembler
+		     recognizes the sequence as a pc-relative call and
+		     the linker provides stubs when needed.  */
 		  xoperands[1] = gen_label_rtx ();
 		  output_asm_insn ("{bl|b,l} .+8,%%r1", xoperands);
 		  output_asm_insn ("addil L'%0-%l1,%%r1", xoperands);
@@ -7665,20 +7663,20 @@ output_call (rtx insn, rtx call_dest, int sibcall)
 		}
 	      else
 		{
-		  if (!TARGET_NO_SPACE_REGS)
+		  if (!TARGET_NO_SPACE_REGS && flag_pic)
 		    output_asm_insn ("ldsid (%%r1),%%r31\n\tmtsp %%r31,%%sr0",
 				     xoperands);
 
 		  if (sibcall)
 		    {
-		      if (TARGET_NO_SPACE_REGS)
+		      if (TARGET_NO_SPACE_REGS || !flag_pic)
 			output_asm_insn ("be 0(%%sr4,%%r1)", xoperands);
 		      else
 			output_asm_insn ("be 0(%%sr0,%%r1)", xoperands);
 		    }
 		  else
 		    {
-		      if (TARGET_NO_SPACE_REGS)
+		      if (TARGET_NO_SPACE_REGS || !flag_pic)
 			output_asm_insn ("ble 0(%%sr4,%%r1)", xoperands);
 		      else
 			output_asm_insn ("ble 0(%%sr0,%%r1)", xoperands);
