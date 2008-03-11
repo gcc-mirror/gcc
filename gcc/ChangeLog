@@ -1,5 +1,11 @@
 2008-03-11  Paolo Bonzini  <bonzini@gnu.org>
 
+	PR rtl-optimization/35281
+	* expr.c (convert_move): Use a new pseudo for the intermediate
+	from_mode->word_mode result.
+
+2008-03-11  Paolo Bonzini  <bonzini@gnu.org>
+
         * langhooks-def.h (LANG_HOOKS_CLEAR_BINDING_STACK): Delete.
         * langhooks.h (struct lang_hooks): Delete clear_binding_stack member.
         * toplev.c (compile_file): Don't call it.
