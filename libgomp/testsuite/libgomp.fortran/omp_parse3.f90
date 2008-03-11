@@ -55,7 +55,7 @@ contains
   subroutine test_threadprivate
     common /tlsblock/ x, y
 !$omp threadprivate (/tlsblock/)
-    integer :: i, j
+    integer :: i, j, x, y
     logical :: m, n
     call omp_set_num_threads (4)
     call omp_set_dynamic (.false.)
@@ -83,7 +83,8 @@ contains
 !$omp end parallel
     m = m .or. n
     n = .false.
-!$omp parallel num_threads (4), copyin (z) reduction (.or. : n)
+!$omp parallel num_threads (4), copyin (z) reduction (.or. : n) &
+!$omp&private (j)
     if (z .ne. 4096) n = .true.
     if (omp_get_num_threads () .eq. i) then
       j = omp_get_thread_num ()

@@ -10,3 +10,5 @@
             N = MAX(N,I)
         END DO
         END PROGRAM A31_4
+
+! { dg-final { cleanup-modules "m" } }

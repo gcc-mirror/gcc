@@ -104,3 +104,5 @@ end module threadprivate3
 
   if (l) call abort
 end
+
+! { dg-final { cleanup-modules "threadprivate3" } }

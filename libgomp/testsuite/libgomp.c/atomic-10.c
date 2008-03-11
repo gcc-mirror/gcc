@@ -1,5 +1,4 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -fopenmp" } */
 
 extern void abort (void);
 int x1, x2, x3, x4, x5;

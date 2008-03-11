@@ -1,5 +1,5 @@
 /* PR libgomp/29947 */
-/* { dg-options "-O2 -fopenmp" } */
+
 /* { dg-do run } */
 
 extern void abort (void);
