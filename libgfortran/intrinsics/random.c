@@ -639,6 +639,29 @@ arandom_r16 (gfc_array_r16 *x)
 
 #endif
 
+
+
+static void
+scramble_seed (unsigned char *dest, unsigned char *src, int size)
+{
+  int i;
+
+  for (i = 0; i < size; i++)
+    dest[(i % 2) * (size / 2) + i / 2] = src[i];
+}
+
+
+static void
+unscramble_seed (unsigned char *dest, unsigned char *src, int size)
+{
+  int i;
+
+  for (i = 0; i < size; i++)
+    dest[i] = src[(i % 2) * (size / 2) + i / 2];
+}
+
+
+
 /* random_seed is used to seed the PRNG with either a default
    set of seeds or user specified set of seeds.  random_seed
    must be called with no argument or exactly one argument.  */
@@ -647,6 +670,7 @@ void
 random_seed_i4 (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
 {
   int i;
+  unsigned char seed[4*kiss_size];
 
   __gthread_mutex_lock (&random_lock);
 
@@ -673,9 +697,15 @@ random_seed_i4 (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
       if (((put->dim[0].ubound + 1 - put->dim[0].lbound)) < kiss_size)
         runtime_error ("Array size of PUT is too small.");
 
-      /*  This code now should do correct strides.  */
+      /*  We copy the seed given by the user.  */
       for (i = 0; i < kiss_size; i++)
-	kiss_seed[i] = (GFC_UINTEGER_4) put->data[i * put->dim[0].stride];
+	memcpy (seed + i * sizeof(GFC_UINTEGER_4),
+		&(put->data[(kiss_size - 1 - i) * put->dim[0].stride]),
+		sizeof(GFC_UINTEGER_4));
+
+      /* We put it after scrambling the bytes, to paper around users who
+	 provide seeds with quality only in the lower or upper part.  */
+      scramble_seed ((unsigned char *) kiss_seed, seed, 4*kiss_size);
     }
 
   /* Return the seed to GET data.  */
@@ -689,9 +719,14 @@ random_seed_i4 (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
       if (((get->dim[0].ubound + 1 - get->dim[0].lbound)) < kiss_size)
 	runtime_error ("Array size of GET is too small.");
 
-      /*  This code now should do correct strides.  */
+      /* Unscramble the seed.  */
+      unscramble_seed (seed, (unsigned char *) kiss_seed, 4*kiss_size);
+
+      /*  Then copy it back to the user variable.  */
       for (i = 0; i < kiss_size; i++)
-        get->data[i * get->dim[0].stride] = (GFC_INTEGER_4) kiss_seed[i];
+       memcpy (&(get->data[(kiss_size - 1 - i) * get->dim[0].stride]),
+               seed + i * sizeof(GFC_UINTEGER_4),
+               sizeof(GFC_UINTEGER_4));
     }
 
   __gthread_mutex_unlock (&random_lock);
