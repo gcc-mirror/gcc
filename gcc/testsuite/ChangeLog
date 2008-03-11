@@ -1,3 +1,8 @@
+2008-03-11  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/35403
+	* gcc.dg/tree-ssa/ipa-reference-1.c: New testcase.
+
 2008-03-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/35540

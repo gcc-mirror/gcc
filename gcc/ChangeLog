@@ -1,3 +1,8 @@
+2008-03-11  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* ipa-reference.c (static_execute): Remove module_statics_const and
+	associated setting code.
+
 2008-03-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/35540
