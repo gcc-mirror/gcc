@@ -96,7 +96,7 @@ static bool gfc_mark_addressable (tree);
 void do_function_end (void);
 int global_bindings_p (void);
 void insert_block (tree);
-static void gfc_clear_binding_stack (void);
+static void clear_binding_stack (void);
 static void gfc_be_parse_file (int);
 static alias_set_type gfc_get_alias_set (tree);
 
@@ -111,7 +111,6 @@ static alias_set_type gfc_get_alias_set (tree);
 #undef LANG_HOOKS_MARK_ADDRESSABLE
 #undef LANG_HOOKS_TYPE_FOR_MODE
 #undef LANG_HOOKS_TYPE_FOR_SIZE
-#undef LANG_HOOKS_CLEAR_BINDING_STACK
 #undef LANG_HOOKS_GET_ALIAS_SET
 #undef LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE
 #undef LANG_HOOKS_OMP_PREDETERMINED_SHARING
@@ -134,7 +133,6 @@ static alias_set_type gfc_get_alias_set (tree);
 #define LANG_HOOKS_MARK_ADDRESSABLE        gfc_mark_addressable
 #define LANG_HOOKS_TYPE_FOR_MODE           gfc_type_for_mode
 #define LANG_HOOKS_TYPE_FOR_SIZE           gfc_type_for_size
-#define LANG_HOOKS_CLEAR_BINDING_STACK     gfc_clear_binding_stack
 #define LANG_HOOKS_GET_ALIAS_SET	   gfc_get_alias_set
 #define LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE	gfc_omp_privatize_by_reference
 #define LANG_HOOKS_OMP_PREDETERMINED_SHARING	gfc_omp_predetermined_sharing
@@ -268,6 +266,8 @@ gfc_be_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
   gfc_get_errors (&warnings, &errors);
   errorcount += errors;
   warningcount += warnings;
+
+  clear_binding_stack ();
 }
 
 
@@ -536,7 +536,7 @@ pushdecl_top_level (tree x)
 
 /* Clear the binding stack.  */
 static void
-gfc_clear_binding_stack (void)
+clear_binding_stack (void)
 {
   while (!global_bindings_p ())
     poplevel (0, 0, 0);

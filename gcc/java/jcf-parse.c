@@ -1702,6 +1702,7 @@ java_emit_static_constructor (void)
     cgraph_build_static_cdtor ('I', body, DEFAULT_INIT_PRIORITY);
 }
 
+
 void
 java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 {
@@ -1952,6 +1953,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
  finish:
   /* Arrange for any necessary initialization to happen.  */
   java_emit_static_constructor ();
+  gcc_assert (global_bindings_p ());
 
   /* Only finalize the compilation unit after we've told cgraph which
      functions have their addresses stored.  */

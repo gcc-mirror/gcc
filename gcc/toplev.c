@@ -958,10 +958,6 @@ compile_file (void)
      rest_of_compilation for each function).  */
   lang_hooks.parse_file (set_yydebug);
 
-  /* In case there were missing block closers,
-     get us back to the global binding level.  */
-  lang_hooks.clear_binding_stack ();
-
   /* Compilation is now finished except for writing
      what's left of the symbol table output.  */
   timevar_pop (TV_PARSE);
