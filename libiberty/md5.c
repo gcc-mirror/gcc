@@ -234,7 +234,8 @@ md5_process_bytes (const void *buffer, size_t len, struct md5_ctx *ctx)
       if (UNALIGNED_P (buffer))
         while (len > 64)
           {
-            md5_process_block (memcpy (ctx->buffer, buffer, 64), 64, ctx);
+	    memcpy (ctx->buffer, buffer, 64);
+            md5_process_block (ctx->buffer, 64, ctx);
             buffer = (const char *) buffer + 64;
             len -= 64;
           }

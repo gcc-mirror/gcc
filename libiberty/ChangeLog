@@ -1,3 +1,8 @@
+2008-03-11  Nick Clifton  <nickc@redhat.com>
+
+	* md5.c (md5_process_bytes): Do not assume that memcpy will
+	provide a return value.
+
 2008-02-19  Ben Elliston  <bje@au.ibm.com>
 
 	PR other/12618
