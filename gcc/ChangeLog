@@ -1,3 +1,25 @@
+2008-03-11  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/31358
+	* tree-ssa-loop-manip.c (create_iv): Call force_gimple_operand for
+	the step with a NULL_TREE.
+	* tree-ssa-loop-ivopts.c (find_bivs): Convert the step
+	to sizetype if type is a pointer type.
+	(add_candidate_1): Don't convert the base and step to
+	the generic type if the orginal type is a pointer type.
+	(add_iv_value_candidates): Use sizetype for the step
+	if type is a pointer type.
+	(cand_value_at): Likewise.
+	* tree-ssa-address.c (add_to_parts): Use POINTER_PLUS_EXPR
+	for pointer types.
+	* tree-affine.c (tree_to_aff_combination <POINTER_PLUS_EXPR>):
+	Don't convert the tem affine to the type.
+	(add_elt_to_tree): Use sizetype for the step if a pointer.
+	Use POINTER_PLUS_EXPR for pointers.
+	(aff_combination_to_tree): Use sizetype for the step if a
+	pointer.
+
 2008-03-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* config/i386/sse.md (ssse3_pmaddubswv8hi3, ssse3_pmaddubswv4hi3):

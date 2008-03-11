@@ -279,7 +279,6 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
     case POINTER_PLUS_EXPR:
       tree_to_aff_combination (TREE_OPERAND (expr, 0), type, comb);
       tree_to_aff_combination (TREE_OPERAND (expr, 1), sizetype, &tmp);
-      aff_combination_convert (&tmp, type);
       aff_combination_add (comb, &tmp);
       return;
 
@@ -350,29 +349,40 @@ add_elt_to_tree (tree expr, tree type, tree elt, double_int scale,
 		 aff_tree *comb)
 {
   enum tree_code code;
+  tree type1 = type;
+  if (POINTER_TYPE_P (type))
+    type1 = sizetype;
 
   scale = double_int_ext_for_comb (scale, comb);
-  elt = fold_convert (type, elt);
+  elt = fold_convert (type1, elt);
 
   if (double_int_one_p (scale))
     {
       if (!expr)
-	return elt;
+	return fold_convert (type, elt);
 
+      if (POINTER_TYPE_P (type))
+        return fold_build2 (POINTER_PLUS_EXPR, type, expr, elt);
       return fold_build2 (PLUS_EXPR, type, expr, elt);
     }
 
   if (double_int_minus_one_p (scale))
     {
       if (!expr)
-	return fold_build1 (NEGATE_EXPR, type, elt);
+	return fold_convert (type, fold_build1 (NEGATE_EXPR, type1, elt));
 
+      if (POINTER_TYPE_P (type))
+	{
+	  elt = fold_build1 (NEGATE_EXPR, type1, elt);
+	  return fold_build2 (POINTER_PLUS_EXPR, type, expr, elt);
+	}
       return fold_build2 (MINUS_EXPR, type, expr, elt);
     }
 
   if (!expr)
-    return fold_build2 (MULT_EXPR, type, elt,
-			double_int_to_tree (type, scale));
+    return fold_convert (type,
+			 fold_build2 (MULT_EXPR, type1, elt,
+				      double_int_to_tree (type1, scale)));
 
   if (double_int_negative_p (scale))
     {
@@ -382,8 +392,14 @@ add_elt_to_tree (tree expr, tree type, tree elt, double_int scale,
   else
     code = PLUS_EXPR;
 
-  elt = fold_build2 (MULT_EXPR, type, elt,
-		     double_int_to_tree (type, scale));
+  elt = fold_build2 (MULT_EXPR, type1, elt,
+		     double_int_to_tree (type1, scale));
+  if (POINTER_TYPE_P (type))
+    {
+      if (code == MINUS_EXPR)
+        elt = fold_build1 (NEGATE_EXPR, type1, elt);
+      return fold_build2 (POINTER_PLUS_EXPR, type, expr, elt);
+    }
   return fold_build2 (code, type, expr, elt);
 }
 
@@ -396,6 +412,9 @@ aff_combination_to_tree (aff_tree *comb)
   tree expr = comb->rest;
   unsigned i;
   double_int off, sgn;
+  tree type1 = type;
+  if (POINTER_TYPE_P (type))
+    type1 = sizetype;
 
   gcc_assert (comb->n == MAX_AFF_ELTS || comb->rest == NULL_TREE);
 
@@ -415,7 +434,7 @@ aff_combination_to_tree (aff_tree *comb)
       off = comb->offset;
       sgn = double_int_one;
     }
-  return add_elt_to_tree (expr, type, double_int_to_tree (type, off), sgn,
+  return add_elt_to_tree (expr, type, double_int_to_tree (type1, off), sgn,
 			  comb);
 }
 
