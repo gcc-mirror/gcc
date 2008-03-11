@@ -1,3 +1,11 @@
+2008-03-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/32812
+	* intrinsics/random.c (scramble_seed, unscramble_seed): New
+	functions.
+	(random_seed_i4): Scramble the seed the user gives us before
+	storing it, and unscramble it when we return it back later.
+
 2008-03-05  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR libfortran/35293
