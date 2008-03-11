@@ -1737,6 +1737,10 @@ noce_try_abs (struct noce_if_info *if_info)
   rtx cond, earliest, target, seq, a, b, c;
   int negate;
 
+  /* Reject modes with signed zeros.  */
+  if (HONOR_SIGNED_ZEROS (GET_MODE (if_info->x)))
+    return FALSE;
+
   /* Recognize A and B as constituting an ABS or NABS.  The canonical
      form is a branch around the negation, taken when the object is the
      first operand of a comparison against 0 that evaluates to true.  */

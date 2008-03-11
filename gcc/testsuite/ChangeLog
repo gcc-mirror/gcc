@@ -1,3 +1,8 @@
+2008-03-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/35526
+	* g++.dg/torture/pr35526.C: New test.
+
 2008-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/35328

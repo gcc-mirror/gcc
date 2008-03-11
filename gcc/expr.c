@@ -4654,7 +4654,8 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
 	      temp = convert_to_mode (GET_MODE (target), temp, unsignedp);
 	      emit_move_insn (target, temp);
 	    }
-	  else if (GET_MODE (target) == BLKmode)
+	  else if (GET_MODE (target) == BLKmode
+		   || GET_MODE (temp) == BLKmode)
 	    emit_block_move (target, temp, expr_size (exp),
 			     (call_param_p
 			      ? BLOCK_OP_CALL_PARM

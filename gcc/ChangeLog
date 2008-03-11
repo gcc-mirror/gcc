@@ -1,3 +1,9 @@
+2008-03-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/35526
+	* expr.c (store_expr): Call emit_block_move if the mode
+	of "temp" RTX is BLKmode.
+
 2008-03-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* config/i386/sse.md (ssse3_pmaddubswv8hi3, ssse3_pmaddubswv4hi3):
