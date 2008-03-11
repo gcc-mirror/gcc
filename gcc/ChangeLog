@@ -1,5 +1,17 @@
+2008-03-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/35540
+	* config/i386/i386.md (paritysi2, paritydi2): Use register_operand
+	constraint for operand 1.
+	(paritysi2_cmp): Use register_operand constraint for operand 2.
+	Use earlyclobber modifier for operand 1.  Remove support for
+	memory operands.
+	(paritydi2_cmp): Use register_operand constraint for operand 3.
+	Use earlyclobber modifier for operand 1.  Remove support for
+	memory operands.
+
 2008-03-11  Paul Brook  <paul@codesourcery.com>
-	Vladimir Prus  <vladimir@codesourcery.com>
+	    Vladimir Prus  <vladimir@codesourcery.com>
 
 	* config/arm/arm.c (use_return_insn): Check TARGET_APCS_FRAME.
 	(arm_compute_save_reg0_reg12_mask): Always
