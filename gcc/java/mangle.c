@@ -239,9 +239,6 @@ cxx_keyword_p (const char *name, int length)
 void
 java_mangle_decl (tree decl)
 {
-  if (TREE_CODE (decl) == RECORD_TYPE)
-    mangle_type (decl);
-
   /* A copy of the check from the beginning of lhd_set_decl_assembler_name.
      Only FUNCTION_DECLs and VAR_DECLs for variables with static storage
      duration need a real DECL_ASSEMBLER_NAME.  */

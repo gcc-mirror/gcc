@@ -1,3 +1,7 @@
+2008-03-12  Paolo Bonzini  <bonzini@gnu.org>
+
+	* mangle.c (java_mangle_decl): Remove dead check.
+
 2008-03-11  Paolo Bonzini  <bonzini@gnu.org>
 
         * jcf-parse.c (java_parse_file): Assert binding levels are
