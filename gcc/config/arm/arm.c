@@ -74,7 +74,6 @@ static int thumb1_base_register_rtx_p (rtx, enum machine_mode, int);
 inline static int thumb1_index_register_rtx_p (rtx, int);
 static int thumb_far_jump_used_p (void);
 static bool thumb_force_lr_save (void);
-static unsigned long thumb1_compute_save_reg_mask (void);
 static int const_ok_for_op (HOST_WIDE_INT, enum rtx_code);
 static rtx emit_sfm (int, int);
 static unsigned arm_size_return_regs (void);
@@ -1666,7 +1665,7 @@ use_return_insn (int iscond, rtx sibling)
 				 && stack_adjust == 4)))
     return 0;
 
-  saved_int_regs = arm_compute_save_reg_mask ();
+  saved_int_regs = offsets->saved_regs_mask;
 
   /* Unfortunately, the insn
 
@@ -10750,7 +10749,8 @@ arm_compute_save_reg0_reg12_mask (void)
 
 
 /* Compute a bit mask of which registers need to be
-   saved on the stack for the current function.  */
+   saved on the stack for the current function.
+   This is used by arm_get_frame_offsets, which may add extra registers.  */
 
 static unsigned long
 arm_compute_save_reg_mask (void)
@@ -10878,7 +10878,7 @@ thumb1_compute_save_reg_mask (void)
       reg = thumb_find_work_register (1 << LAST_LO_REGNUM);
       /* Make sure the register returned by thumb_find_work_register is
 	 not part of the return value.  */
-      if (reg * UNITS_PER_WORD <= arm_size_return_regs ())
+      if (reg * UNITS_PER_WORD <= (unsigned) arm_size_return_regs ())
 	reg = LAST_LO_REGNUM;
 
       if (! call_used_regs[reg])
@@ -10975,7 +10975,8 @@ output_return_instruction (rtx operand, int really_return, int reverse)
 
   return_used_this_function = 1;
 
-  live_regs_mask = arm_compute_save_reg_mask ();
+  offsets = arm_get_frame_offsets ();
+  live_regs_mask = offsets->saved_regs_mask;
 
   if (live_regs_mask)
     {
@@ -11037,7 +11038,6 @@ output_return_instruction (rtx operand, int really_return, int reverse)
 	    {
 	      unsigned HOST_WIDE_INT stack_adjust;
 
-	      offsets = arm_get_frame_offsets ();
 	      stack_adjust = offsets->outgoing_args - offsets->saved_regs;
 	      gcc_assert (stack_adjust == 0 || stack_adjust == 4);
 
@@ -11285,7 +11285,7 @@ arm_output_epilogue (rtx sibling)
   gcc_assert (!current_function_calls_eh_return || really_return);
 
   offsets = arm_get_frame_offsets ();
-  saved_regs_mask = arm_compute_save_reg_mask ();
+  saved_regs_mask = offsets->saved_regs_mask;
 
   if (TARGET_IWMMXT)
     lrm_count = bit_count (saved_regs_mask);
@@ -11482,8 +11482,35 @@ arm_output_epilogue (rtx sibling)
 	    }
 	  else
 	    {
+	      unsigned long count;
 	      operands[0] = stack_pointer_rtx;
 	      amount = offsets->outgoing_args - offsets->saved_regs;
+	      /* pop call clobbered registers if it avoids a
+	         separate stack adjustment.  */
+	      count = offsets->saved_regs - offsets->saved_args;
+	      if (optimize_size
+		  && count != 0
+		  && !current_function_calls_eh_return
+		  && bit_count(saved_regs_mask) * 4 == count
+		  && !IS_INTERRUPT (func_type)
+		  && !cfun->tail_call_emit)
+		{
+		  unsigned long mask;
+		  mask = (1 << (arm_size_return_regs() / 4)) - 1;
+		  mask ^= 0xf;
+		  mask &= ~saved_regs_mask;
+		  reg = 0;
+		  while (bit_count (mask) * 4 > amount)
+		    {
+		      while ((mask & (1 << reg)) == 0)
+			reg++;
+		      mask &= ~(1 << reg);
+		    }
+		  if (bit_count (mask) * 4 == amount) {
+		      amount = 0;
+		      saved_regs_mask |= mask;
+		  }
+		}
 	    }
 	  
 	  if (amount)
@@ -11954,7 +11981,8 @@ thumb_force_lr_save (void)
 
 
 /* Calculate stack offsets.  These are used to calculate register elimination
-   offsets and in prologue/epilogue code.  */
+   offsets and in prologue/epilogue code.  Also calculates which registers
+   should be saved.  */
 
 static arm_stack_offsets *
 arm_get_frame_offsets (void)
@@ -11963,7 +11991,9 @@ arm_get_frame_offsets (void)
   unsigned long func_type;
   int leaf;
   int saved;
+  int core_saved;
   HOST_WIDE_INT frame_size;
+  int i;
 
   offsets = &cfun->machine->stack_offsets;
 
@@ -11996,7 +12026,9 @@ arm_get_frame_offsets (void)
     {
       unsigned int regno;
 
-      saved = bit_count (arm_compute_save_reg_mask ()) * 4;
+      offsets->saved_regs_mask = arm_compute_save_reg_mask ();
+      core_saved = bit_count (offsets->saved_regs_mask) * 4;
+      saved = core_saved;
 
       /* We know that SP will be doubleword aligned on entry, and we must
 	 preserve that condition at any subroutine call.  We also require the
@@ -12027,7 +12059,9 @@ arm_get_frame_offsets (void)
     }
   else /* TARGET_THUMB1 */
     {
-      saved = bit_count (thumb1_compute_save_reg_mask ()) * 4;
+      offsets->saved_regs_mask = thumb1_compute_save_reg_mask ();
+      core_saved = bit_count (offsets->saved_regs_mask) * 4;
+      saved = core_saved;
       if (TARGET_BACKTRACE)
 	saved += 16;
     }
@@ -12047,7 +12081,39 @@ arm_get_frame_offsets (void)
   /* Ensure SFP has the correct alignment.  */
   if (ARM_DOUBLEWORD_ALIGN
       && (offsets->soft_frame & 7))
-    offsets->soft_frame += 4;
+    {
+      offsets->soft_frame += 4;
+      /* Try to align stack by pushing an extra reg.  Don't bother doing this
+         when there is a stack frame as the alignment will be rolled into
+	 the normal stack adjustment.  */
+      if (frame_size + current_function_outgoing_args_size == 0)
+	{
+	  int reg = -1;
+
+	  for (i = 4; i <= (TARGET_THUMB1 ? LAST_LO_REGNUM : 11); i++)
+	    {
+	      if ((offsets->saved_regs_mask & (1 << i)) == 0)
+		{
+		  reg = i;
+		  break;
+		}
+	    }
+
+	  if (reg == -1 && arm_size_return_regs () <= 12
+	      && !cfun->tail_call_emit)
+	    {
+	      /* Push/pop an argument register (r3) if all callee saved
+	         registers are already being pushed.  */
+	      reg = 3;
+	    }
+
+	  if (reg != -1)
+	    {
+	      offsets->saved_regs += 4;
+	      offsets->saved_regs_mask |= (1 << reg);
+	    }
+	}
+    }
 
   offsets->locals_base = offsets->soft_frame + frame_size;
   offsets->outgoing_args = (offsets->locals_base
@@ -12303,7 +12369,8 @@ arm_expand_prologue (void)
   args_to_push = current_function_pretend_args_size;
 
   /* Compute which register we will have to save onto the stack.  */
-  live_regs_mask = arm_compute_save_reg_mask ();
+  offsets = arm_get_frame_offsets ();
+  live_regs_mask = offsets->saved_regs_mask;
 
   ip_rtx = gen_rtx_REG (SImode, IP_REGNUM);
 
@@ -12456,8 +12523,28 @@ arm_expand_prologue (void)
 
   if (live_regs_mask)
     {
-      insn = emit_multi_reg_push (live_regs_mask);
       saved_regs += bit_count (live_regs_mask) * 4;
+      if (optimize_size && !frame_pointer_needed
+	  && saved_regs == offsets->saved_regs - offsets->saved_args)
+	{
+	  /* If no coprocessor registers are being pushed and we don't have
+	     to worry about a frame pointer then push extra registers to
+	     create the stack frame.  This is done is a way that does not
+	     alter the frame layout, so is independent of the epilogue.  */
+	  int n;
+	  int frame;
+	  n = 0;
+	  while (n < 8 && (live_regs_mask & (1 << n)) == 0)
+	    n++;
+	  frame = offsets->outgoing_args - (offsets->saved_args + saved_regs);
+	  if (frame && n * 4 >= frame)
+	    {
+	      n = frame / 4;
+	      live_regs_mask |= (1 << n) - 1;
+	      saved_regs += frame;
+	    }
+	}
+      insn = emit_multi_reg_push (live_regs_mask);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
@@ -12498,7 +12585,6 @@ arm_expand_prologue (void)
 	}
     }
 
-  offsets = arm_get_frame_offsets ();
   if (offsets->outgoing_args != offsets->saved_args + saved_regs)
     {
       /* This add can produce multiple insns for a large constant, so we
@@ -16494,6 +16580,7 @@ is_called_in_ARM_mode (tree func)
 const char *
 thumb_unexpanded_epilogue (void)
 {
+  arm_stack_offsets *offsets;
   int regno;
   unsigned long live_regs_mask = 0;
   int high_regs_pushed = 0;
@@ -16506,7 +16593,8 @@ thumb_unexpanded_epilogue (void)
   if (IS_NAKED (arm_current_func_type ()))
     return "";
 
-  live_regs_mask = thumb1_compute_save_reg_mask ();
+  offsets = arm_get_frame_offsets ();
+  live_regs_mask = offsets->saved_regs_mask;
   high_regs_pushed = bit_count (live_regs_mask & 0x0f00);
 
   /* If we can deduce the registers used from the function's return value.
@@ -16768,7 +16856,8 @@ thumb1_expand_prologue (void)
       return;
     }
 
-  live_regs_mask = thumb1_compute_save_reg_mask ();
+  offsets = arm_get_frame_offsets ();
+  live_regs_mask = offsets->saved_regs_mask;
   /* Load the pic register before setting the frame pointer,
      so we can use r7 as a temporary work register.  */
   if (flag_pic && arm_pic_register != INVALID_REGNUM)
@@ -16778,7 +16867,6 @@ thumb1_expand_prologue (void)
     emit_move_insn (gen_rtx_REG (Pmode, ARM_HARD_FRAME_POINTER_REGNUM),
 		    stack_pointer_rtx);
 
-  offsets = arm_get_frame_offsets ();
   amount = offsets->outgoing_args - offsets->saved_regs;
   if (amount)
     {
@@ -16940,6 +17028,7 @@ thumb1_expand_epilogue (void)
 static void
 thumb1_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 {
+  arm_stack_offsets *offsets;
   unsigned long live_regs_mask = 0;
   unsigned long l_mask;
   unsigned high_regs_pushed = 0;
@@ -17024,7 +17113,8 @@ thumb1_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
     }
 
   /* Get the registers we are going to push.  */
-  live_regs_mask = thumb1_compute_save_reg_mask ();
+  offsets = arm_get_frame_offsets ();
+  live_regs_mask = offsets->saved_regs_mask;
   /* Extract a mask of the ones we can give to the Thumb's push instruction.  */
   l_mask = live_regs_mask & 0x40ff;
   /* Then count how many other high registers will need to be pushed.  */
@@ -18152,7 +18242,8 @@ arm_set_return_address (rtx source, rtx scratch)
   rtx addr;
   unsigned long saved_regs;
 
-  saved_regs = arm_compute_save_reg_mask ();
+  offsets = arm_get_frame_offsets ();
+  saved_regs = offsets->saved_regs_mask;
 
   if ((saved_regs & (1 << LR_REGNUM)) == 0)
     emit_move_insn (gen_rtx_REG (Pmode, LR_REGNUM), source);
@@ -18163,7 +18254,6 @@ arm_set_return_address (rtx source, rtx scratch)
       else
 	{
 	  /* LR will be the first saved register.  */
-	  offsets = arm_get_frame_offsets ();
 	  delta = offsets->outgoing_args - (offsets->frame + 4);
 
 
@@ -18196,11 +18286,10 @@ thumb_set_return_address (rtx source, rtx scratch)
 
   emit_insn (gen_rtx_USE (VOIDmode, source));
 
-  mask = thumb1_compute_save_reg_mask ();
+  offsets = arm_get_frame_offsets ();
+  mask = offsets->saved_regs_mask;
   if (mask & (1 << LR_REGNUM))
     {
-      offsets = arm_get_frame_offsets ();
-
       limit = 1024;
       /* Find the saved regs.  */
       if (frame_pointer_needed)

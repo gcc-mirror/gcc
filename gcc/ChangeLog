@@ -1,3 +1,22 @@
+2008-03-12  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (use_return_insn): Use offsets->saved_regs_mask
+	instead of {arm,thumb}_compute_save_reg_mask.
+	(output_return_instruction): Ditto.
+	(thumb_unexpanded_epilogue): Ditto.
+	(thumb1_expand_prologue): Ditto.
+	(thumb1_output_function_prologue): Ditto.
+	(arm_set_return_address): Ditto.
+	(thumb_set_return_address): Ditto.
+	(arm_get_frame_offsets): Set offsets->saved_regs_mask.  Push extra
+	regs to achieve stack alignment.
+	(thumb1_compute_save_reg_mask): Fix compiler warning.
+	(arm_output_epilogue): Use offsets->saved_regs_mask.
+	Adjust stack pointer by poping call clobered registers.
+	(arm_expand_prologue): Use offsets->saved_regs_mask.
+	Adjust stack pointer by pushing extra registers.
+	* gcc/config/arm.h (arm_stack_offsets): Add saved_regs_mask.
+
 2008-03-12  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-opt/35422
