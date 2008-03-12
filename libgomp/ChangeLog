@@ -1,3 +1,8 @@
+2008-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/35549
+	* testsuite/libgomp.c/pr35549.c: New test.
+
 2008-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/atomic-3.c: New test.

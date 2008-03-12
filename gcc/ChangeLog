@@ -1,3 +1,14 @@
+2008-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/35549
+	* omp-low.c (maybe_lookup_decl): Constify first argument.
+	(use_pointer_for_field): Change last argument from bool to
+	omp_context *.  Disallow shared copy-in/out in nested
+	parallel if decl is shared in outer parallel too.
+	(build_outer_var_ref, scan_sharing_clauses,
+	lower_rec_input_clauses, lower_copyprivate_clauses,
+	lower_send_clauses, lower_send_shared_vars): Adjust callers.
+
 2008-03-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/35540
