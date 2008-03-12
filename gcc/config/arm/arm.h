@@ -1538,6 +1538,7 @@ typedef struct arm_stack_offsets GTY(())
   int soft_frame;	/* FRAME_POINTER_REGNUM.  */
   int locals_base;	/* THUMB_HARD_FRAME_POINTER_REGNUM.  */
   int outgoing_args;	/* STACK_POINTER_REGNUM.  */
+  unsigned int saved_regs_mask;
 }
 arm_stack_offsets;
 
