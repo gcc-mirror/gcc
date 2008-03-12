@@ -35,15 +35,27 @@ Boston, MA 02110-1301, USA.  */
 #define KIND_SUFFIX(x,y) CONCAT(x,y)
 
 #if (KIND == 4)
+
 # define EXP(x) expf(x)
 # define TRUNC(x) truncf(x)
+
 #elif (KIND == 8)
+
 # define EXP(x) exp(x)
 # define TRUNC(x) trunc(x)
+
 #else
-# define EXP(x) expl(x)
-# define TRUNC(x) truncl(x)
+
+# ifdef HAVE_EXPL
+#  define EXP(x) expl(x)
+# endif
+# ifdef HAVE_TRUNCL
+#  define TRUNC(x) truncl(x)
+# endif
+
 #endif
+
+#if defined(EXP) && defined(TRUNC)
 
 extern TYPE KIND_SUFFIX(erfc_scaled_r,KIND) (TYPE);
 export_proto(KIND_SUFFIX(erfc_scaled_r,KIND));
@@ -166,6 +178,8 @@ finish:
     }
   return res;
 }
+
+#endif
 
 #undef EXP
 #undef TRUNC
