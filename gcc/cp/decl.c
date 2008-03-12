@@ -3164,19 +3164,10 @@ record_builtin_java_type (const char* name, int size)
   tree type, decl;
   if (size > 0)
     type = make_signed_type (size);
-  else if (size == -1)
-    { /* "__java_boolean".  */
-      if ((TYPE_MODE (boolean_type_node)
-	   == smallest_mode_for_size (1, MODE_INT)))
-        type = build_variant_type_copy (boolean_type_node);
-      else
-	/* ppc-darwin has SImode bool, make jboolean a 1-bit
-	   integer type without boolean semantics there.  */
-	type = make_unsigned_type (1);
-    }
   else if (size > -32)
-    { /* "__java_char".  */
+    { /* "__java_char" or ""__java_boolean".  */
       type = make_unsigned_type (-size);
+      /*if (size == -1)	TREE_SET_CODE (type, BOOLEAN_TYPE);*/
     }
   else
     { /* "__java_float" or ""__java_double".  */
