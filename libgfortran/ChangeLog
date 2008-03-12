@@ -1,3 +1,9 @@
+2008-03-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/35524
+	* intrinsics/erfc_scaled_inc.c: Only define the long double
+	variant of erfc_scaled if expl is available.
+
 2008-03-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/32812
