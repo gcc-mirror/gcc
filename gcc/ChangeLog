@@ -1,3 +1,10 @@
+2008-03-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/35222
+	* configure.ac (CONFIG_SJLJ_EXCEPTIONS): Force SJLJ exceptions
+	on hpux10.
+	* configure: Rebuilt.
+
 2008-03-09  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	Backport from mainline:
