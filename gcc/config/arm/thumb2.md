@@ -1002,7 +1002,10 @@
         (match_operator:SI 3 "thumb_16bit_operator"
 	 [(match_operand:SI 1  "low_register_operand" "")
 	  (match_operand:SI 2 "low_register_operand" "")]))]
-  "TARGET_THUMB2 && rtx_equal_p(operands[0], operands[1])
+  "TARGET_THUMB2
+   && (rtx_equal_p(operands[0], operands[1])
+       || GET_CODE(operands[3]) == PLUS
+       || GET_CODE(operands[3]) == MINUS)
    && peep2_regno_dead_p(0, CC_REGNUM)"
   [(parallel
     [(set (match_dup 0)
@@ -1019,7 +1022,9 @@
 	 [(match_operand:SI 1 "s_register_operand" "0")
 	  (match_operand:SI 2 "s_register_operand" "l")]))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_THUMB2 && reload_completed"
+  "TARGET_THUMB2 && reload_completed
+   && GET_CODE(operands[3]) != PLUS
+   && GET_CODE(operands[3]) != MINUS"
   "%I3%!\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "length" "2")]
@@ -1105,16 +1110,20 @@
   ""
 )
 
-(define_insn "*thumb2_addsi_shortim"
+(define_insn "*thumb2_addsi_short"
   [(set (match_operand:SI 0 "low_register_operand" "=l")
 	(plus:SI (match_operand:SI 1 "low_register_operand" "l")
-		 (match_operand:SI 2 "const_int_operand" "IL")))
+		 (match_operand:SI 2 "low_reg_or_int_operand" "lIL")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_THUMB2 && reload_completed"
   "*
     HOST_WIDE_INT val;
 
-    val = INTVAL(operands[2]);
+    if (GET_CODE (operands[2]) == CONST_INT)
+      val = INTVAL(operands[2]);
+    else
+      val = 0;
+
     /* We prefer eg. subs rn, rn, #1 over adds rn, rn, #0xffffffff.  */
     if (val < 0 && const_ok_for_arm(ARM_SIGN_EXTEND (-val)))
       return \"sub%!\\t%0, %1, #%n2\";
@@ -1143,6 +1152,17 @@
   "udiv%?\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "insn" "udiv")]
+)
+
+(define_insn "*thumb2_subsi_short"
+  [(set (match_operand:SI 0 "low_register_operand" "=l")
+	(minus:SI (match_operand:SI 1 "low_register_operand" "l")
+		  (match_operand:SI 2 "low_register_operand" "l")))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_THUMB2 && reload_completed"
+  "sub%!\\t%0, %1, %2"
+  [(set_attr "predicable" "yes")
+   (set_attr "length" "2")]
 )
 
 (define_insn "*thumb2_cbz"
@@ -1188,3 +1208,50 @@
 	    (const_int 2)
 	    (const_int 8)))]
 )
+
+;; 16-bit complement
+(define_peephole2
+  [(set (match_operand:SI 0 "low_register_operand" "")
+	(not:SI (match_operand:SI 1 "low_register_operand" "")))]
+  "TARGET_THUMB2
+   && peep2_regno_dead_p(0, CC_REGNUM)"
+  [(parallel
+    [(set (match_dup 0)
+	  (not:SI (match_dup 1)))
+     (clobber (reg:CC CC_REGNUM))])]
+  ""
+)
+
+(define_insn "*thumb2_one_cmplsi2_short"
+  [(set (match_operand:SI 0 "low_register_operand" "=l")
+	(not:SI (match_operand:SI 1 "low_register_operand" "l")))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_THUMB2 && reload_completed"
+  "mvn%!\t%0, %1"
+  [(set_attr "predicable" "yes")
+   (set_attr "length" "2")]
+)
+
+;; 16-bit negate
+(define_peephole2
+  [(set (match_operand:SI 0 "low_register_operand" "")
+	(neg:SI (match_operand:SI 1 "low_register_operand" "")))]
+  "TARGET_THUMB2
+   && peep2_regno_dead_p(0, CC_REGNUM)"
+  [(parallel
+    [(set (match_dup 0)
+	  (neg:SI (match_dup 1)))
+     (clobber (reg:CC CC_REGNUM))])]
+  ""
+)
+
+(define_insn "*thumb2_negsi2_short"
+  [(set (match_operand:SI 0 "low_register_operand" "=l")
+	(neg:SI (match_operand:SI 1 "low_register_operand" "l")))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_THUMB2 && reload_completed"
+  "neg%!\t%0, %1"
+  [(set_attr "predicable" "yes")
+   (set_attr "length" "2")]
+)
+
