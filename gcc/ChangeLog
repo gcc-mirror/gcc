@@ -1,3 +1,16 @@
+2008-03-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (int_cond): New code iterator.
+	(fp_cond): Ditto.
+	("s<code>"): Macroize expander from seq, sne, sgt, sgtu, slt, sltu,
+	sge, sgeu, sle and sleu expanders usign int_cond code iterator.
+	("s<code>"): Macroize expander from sunordered, sordered, suneq, sunge,
+	sungt, sunle, sunlt and sltgt expanders usign fp_cond code iterator.
+	("b<code>"): Macroize expander from beq, bne, bgt, bgtu, blt, bltu,
+	bge, bgeu, ble and bleu expanders usign int_cond code iterator.
+	("b<code>"): Macroize expander from bunordered, bordered, buneq, bunge,
+	bungt, bunle, bunlt and bltgt expanders usign fp_cond code iterator.
+
 2008-03-12  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (use_return_insn): Use offsets->saved_regs_mask
