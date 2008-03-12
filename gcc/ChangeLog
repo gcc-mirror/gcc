@@ -1,3 +1,9 @@
+2008-03-12  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-opt/35422
+	* fold-const.c (fold_unary) <NOP_EXPR>: Distribute a narrowing
+	conversion to the operands of a multiplication.
+
 2008-03-12  Richard Guenther  <rguenther@suse.de>
 
 	* Makefile.in (OBJS-common): Add tree-ssa-phiprop.o
