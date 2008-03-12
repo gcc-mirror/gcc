@@ -1,3 +1,12 @@
+2008-03-12  Richard Guenther  <rguenther@suse.de>
+
+	* Makefile.in (OBJS-common): Add tree-ssa-phiprop.o
+	(tree-ssa-phiprop.o): Copy dependencies from tree-ssa-forwprop.o.
+	* timevar.def (TV_TREE_PHIPROP): Add.
+	* tree-ssa-phiprop.c: Split from tree-ssa-forwprop.c, added
+	pass description.  Use TV_TREE_PHIPROP.
+	* tree-ssa-forwprop.c: Remove phiprop code.
+
 2008-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/35549
