@@ -1,3 +1,21 @@
+2008-03-12  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/35469
+	Revert:
+	2008-02-04  Richard Guenther  <rguenther@suse.de>
+
+        PR java/35035
+        * decl.c (record_builtin_java_type): Make jboolean a
+        integer type again where its mode doesn't match that of bool.
+
+	2008-01-25  Richard Guenther  <rguenther@suse.de>
+
+        PR c++/33887
+        * decl.c (record_builtin_java_type): Make __java_boolean
+        a variant of bool.
+        * typeck.c (structural_comptypes): Move TYPE_FOR_JAVA check
+        after TYPE_MAIN_VARIANT check.
+
 2008-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/35328
