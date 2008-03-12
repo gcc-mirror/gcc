@@ -5070,13 +5070,14 @@ arm_size_rtx_costs (rtx x, int code, int outer_code, int *total)
 {
   enum machine_mode mode = GET_MODE (x);
 
-  if (TARGET_THUMB)
+  if (TARGET_THUMB1)
     {
       /* XXX TBD.  For now, use the standard costs.  */
       *total = thumb1_rtx_costs (x, code, outer_code);
       return true;
     }
 
+  /* FIXME: This makes no attempt to prefer narrow Thumb-2 instructions.  */
   switch (code)
     {
     case MEM:
