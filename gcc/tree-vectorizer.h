@@ -660,6 +660,7 @@ extern bool supportable_narrowing_operation (enum tree_code, const_tree,
 extern loop_vec_info new_loop_vec_info (struct loop *loop);
 extern void destroy_loop_vec_info (loop_vec_info, bool);
 extern stmt_vec_info new_stmt_vec_info (tree stmt, loop_vec_info);
+extern void free_stmt_vec_info (tree stmt);
 
 
 /** In tree-vect-analyze.c  **/
