@@ -1,5 +1,15 @@
 2008-03-12  Paul Brook  <paul@codesourcery.com>
 
+	* config/arm/thumb2.md: Extend peephole to cover 3-arg subs.
+	(thumb2_alusi3_short): Exclude PLUS and MINUS.
+	(thumb2_addsi_shortim): Rename ...
+	(thumb2_addsi_short): ... to this.  Allow register operands.
+	(thumb2_subsi_short): New pattern.
+	(thumb2_one_cmplsi2_short,
+	thumb2_negsi2_short): New patterns and peepholes.
+
+2008-03-12  Paul Brook  <paul@codesourcery.com>
+
 	gcc/
 	* config/arm/arm.c (arm_size_rtx_costs): Use ARM costs for Thumb-2.
 
