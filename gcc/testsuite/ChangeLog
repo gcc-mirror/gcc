@@ -1,3 +1,10 @@
+2008-03-12  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-opt/35422
+	* gcc.dg/vect/slp-7.c: Change target keywords required for vectorizing
+	third loop.
+	* gcc.target/i386/pr35422.c: New.
+
 2008-03-11  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/35403

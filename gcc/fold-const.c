@@ -7926,6 +7926,26 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	    return fold_build1 (BIT_NOT_EXPR, type, fold_convert (type, tem));
 	}
 
+      /* Convert (T1)(X * Y) into (T1)X * (T1)Y if T1 is narrower than the
+	 type of X and Y (integer types only).  */
+      if (INTEGRAL_TYPE_P (type)
+	  && TREE_CODE (op0) == MULT_EXPR
+	  && INTEGRAL_TYPE_P (TREE_TYPE (op0))
+	  && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (op0)))
+	{
+	  /* Be careful not to introduce new overflows.  */
+	  tree mult_type;
+          if (TYPE_OVERFLOW_WRAPS (type))
+	    mult_type = type;
+	  else
+	    mult_type = unsigned_type_for (type);
+	  
+	  tem = fold_build2 (MULT_EXPR, mult_type,
+			     fold_convert (mult_type, TREE_OPERAND (op0, 0)),
+			     fold_convert (mult_type, TREE_OPERAND (op0, 1)));
+	  return fold_convert (type, tem);
+	}
+
       tem = fold_convert_const (code, type, op0);
       return tem ? tem : NULL_TREE;
 
