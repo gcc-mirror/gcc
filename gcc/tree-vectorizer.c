@@ -1545,6 +1545,22 @@ new_stmt_vec_info (tree stmt, loop_vec_info loop_vinfo)
 }
 
 
+/* Free stmt vectorization related info.  */
+
+void
+free_stmt_vec_info (tree stmt)
+{
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+
+  if (!stmt_info)
+    return;
+
+  VEC_free (dr_p, heap, STMT_VINFO_SAME_ALIGN_REFS (stmt_info));
+  free (stmt_info);
+  set_stmt_info (stmt_ann (stmt), NULL);
+}
+
+
 /* Function bb_in_loop_p
 
    Used as predicate for dfs order traversal of the loop bbs.  */
@@ -1701,21 +1717,13 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
     {
       basic_block bb = bbs[j];
       tree phi;
-      stmt_vec_info stmt_info;
 
       for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-        {
-          stmt_ann_t ann = stmt_ann (phi);
-
-          stmt_info = vinfo_for_stmt (phi);
-          free (stmt_info);
-          set_stmt_info (ann, NULL);
-        }
+        free_stmt_vec_info (phi);
 
       for (si = bsi_start (bb); !bsi_end_p (si); )
 	{
 	  tree stmt = bsi_stmt (si);
-	  stmt_ann_t ann = stmt_ann (stmt);
 	  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
 
 	  if (stmt_info)
@@ -1733,9 +1741,7 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
 		}
 			
 	      /* Free stmt_vec_info.  */
-	      VEC_free (dr_p, heap, STMT_VINFO_SAME_ALIGN_REFS (stmt_info));
-	      free (stmt_info);
-	      set_stmt_info (ann, NULL);
+	      free_stmt_vec_info (stmt);
 
 	      /* Remove dead "pattern stmts".  */
 	      if (remove_stmt_p)
@@ -1754,6 +1760,7 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
   for (j = 0; VEC_iterate (slp_instance, slp_instances, j, instance); j++)
     vect_free_slp_tree (SLP_INSTANCE_TREE (instance));
   VEC_free (slp_instance, heap, LOOP_VINFO_SLP_INSTANCES (loop_vinfo));
+  VEC_free (tree, heap, LOOP_VINFO_STRIDED_STORES (loop_vinfo));
 
   free (loop_vinfo);
   loop->aux = NULL;

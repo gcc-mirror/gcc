@@ -1,3 +1,20 @@
+2008-03-12  Victor Kaplansky  <victork@il.ibm.com>
+	    Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vectorizer.c (free_stmt_vec_info): New function.
+	(destroy_loop_vec_info): Move code to free_stmt_vec_info().
+	Call free_stmt_vec_info(). Free LOOP_VINFO_STRIDED_STORES..
+	* tree-vectorizer.h (free_stmt_vec_info): Declare.
+	* tree-vect-transform.c (vectorizable_conversion): Free
+	vec_oprnds0 if it was allocated.
+	(vect_permute_store_chain): Remove unused VECs.
+	(vectorizable_store): Free VECs that are allocated in the..
+	function.
+	(vect_transform_strided_load, vectorizable_load): Likewise.
+	(vect_remove_stores): Simplify the code.
+	(vect_transform_loop): Move code to vect_remove_stores().
+	Call vect_remove_stores() and free_stmt_vec_info().
+
 2008-03-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.h (TARGET_LONG_PIC_SDIFF_CALL): Conditionalize define on
