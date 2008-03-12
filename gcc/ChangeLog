@@ -1,3 +1,15 @@
+2008-03-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/35540
+	* config/i386/i386.md (paritysi2, paritydi2): Use register_operand
+	constraint for operand 1.
+	(paritysi2_cmp): Use register_operand constraint for operand 2.
+	Use earlyclobber modifier for operand 1.  Remove support for
+	memory operands.
+	(paritydi2_cmp): Use register_operand constraint for operand 3.
+	Use earlyclobber modifier for operand 1.  Remove support for
+	memory operands.
+
 2008-03-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/35526

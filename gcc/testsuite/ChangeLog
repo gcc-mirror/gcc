@@ -1,3 +1,8 @@
+2008-03-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/35540
+	* gcc.target/i386/pr35540.c: New test.
+
 2008-03-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/inherit/override-attribs.C: Require ilp32 x86 target.
