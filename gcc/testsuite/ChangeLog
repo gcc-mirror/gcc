@@ -1,3 +1,9 @@
+2008-02-19  Alon Dayan  <alond@il.ibm.com>
+            Olga Golovanevsky  <olga@il.ibm.com>
+	
+	PR tree-optimization/35041
+	* gcc.dg/struct/wo_prof_double_malloc.c: New test.
+
 2008-03-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/34000

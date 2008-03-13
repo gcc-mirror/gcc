@@ -887,7 +887,7 @@ find_pos_in_stmt_1 (tree *tp, int *walk_subtrees, void * data)
   tree ref = r_pos->ref;
   tree t = *tp;
 
-  if (t == ref)
+  if (t == ref || (TREE_CODE (t) == SSA_NAME && SSA_NAME_VAR (t) == ref))
     {
       r_pos->pos = tp;
       return t;
