@@ -92,7 +92,7 @@ _mm_testnzc_si128 (__m128i __M, __m128i __V)
 
 /* Packed/scalar double precision floating point rounding.  */
 
-#ifdef __SSE_USE_INLINED_FUNC__
+#ifdef __OPTIMIZE__
 static __inline __m128d __attribute__((__always_inline__, __artificial__))
 _mm_round_pd (__m128d __V, const int __M)
 {
@@ -117,7 +117,7 @@ _mm_round_sd(__m128d __D, __m128d __V, const int __M)
 
 /* Packed/scalar single precision floating point rounding.  */
 
-#ifdef __SSE_USE_INLINED_FUNC__
+#ifdef __OPTIMIZE__
 static __inline __m128 __attribute__((__always_inline__, __artificial__))
 _mm_round_ps (__m128 __V, const int __M)
 {

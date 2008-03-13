@@ -44,7 +44,7 @@
 /* Integer blend instructions - select data from 2 sources using
    constant/variable mask.  */
 
-#ifdef __SSE_USE_INLINED_FUNC__
+#ifdef __OPTIMIZE__
 static __inline __m128i __attribute__((__always_inline__, __artificial__))
 _mm_blend_epi16 (__m128i __X, __m128i __Y, const int __M)
 {
@@ -69,7 +69,7 @@ _mm_blendv_epi8 (__m128i __X, __m128i __Y, __m128i __M)
 /* Single precision floating point blend instructions - select data
    from 2 sources using constant/variable mask.  */
 
-#ifdef __SSE_USE_INLINED_FUNC__
+#ifdef __OPTIMIZE__
 static __inline __m128 __attribute__((__always_inline__, __artificial__))
 _mm_blend_ps (__m128 __X, __m128 __Y, const int __M)
 {
@@ -94,7 +94,7 @@ _mm_blendv_ps (__m128 __X, __m128 __Y, __m128 __M)
 /* Double precision floating point blend instructions - select data
    from 2 sources using constant/variable mask.  */
 
-#ifdef __SSE_USE_INLINED_FUNC__
+#ifdef __OPTIMIZE__
 static __inline __m128d __attribute__((__always_inline__, __artificial__))
 _mm_blend_pd (__m128d __X, __m128d __Y, const int __M)
 {
@@ -119,7 +119,7 @@ _mm_blendv_pd (__m128d __X, __m128d __Y, __m128d __M)
 /* Dot product instructions with mask-defined summing and zeroing parts
    of result.  */
 
-#ifdef __SSE_USE_INLINED_FUNC__
+#ifdef __OPTIMIZE__
 static __inline __m128 __attribute__((__always_inline__, __artificial__))
 _mm_dp_ps (__m128 __X, __m128 __Y, const int __M)
 {
@@ -224,7 +224,7 @@ _mm_mul_epi32 (__m128i __X, __m128i __Y)
    index, the bits [5-4] define D index, and bits [3-0] define
    zeroing mask for D.  */
 
-#ifdef __SSE_USE_INLINED_FUNC__
+#ifdef __OPTIMIZE__
 static __inline __m128 __attribute__((__always_inline__, __artificial__))
 _mm_insert_ps (__m128 __D, __m128 __S, const int __N)
 {
@@ -244,7 +244,7 @@ _mm_insert_ps (__m128 __D, __m128 __S, const int __N)
 /* Extract binary representation of single precision float from packed
    single precision array element of X selected by index N.  */
 
-#ifdef __SSE_USE_INLINED_FUNC__
+#ifdef __OPTIMIZE__
 static __inline int __attribute__((__always_inline__, __artificial__))
 _mm_extract_ps (__m128 __X, const int __N)
 {
@@ -277,7 +277,7 @@ _mm_extract_ps (__m128 __X, const int __N)
 /* Insert integer, S, into packed integer array element of D
    selected by index N.  */
 
-#ifdef __SSE_USE_INLINED_FUNC__
+#ifdef __OPTIMIZE__
 static __inline __m128i __attribute__((__always_inline__, __artificial__))
 _mm_insert_epi8 (__m128i __D, int __S, const int __N)
 {
@@ -319,7 +319,7 @@ _mm_insert_epi64 (__m128i __D, long long __S, const int __N)
 /* Extract integer from packed integer array element of X selected by
    index N.  */
 
-#ifdef __SSE_USE_INLINED_FUNC__
+#ifdef __OPTIMIZE__
 static __inline int __attribute__((__always_inline__, __artificial__))
 _mm_extract_epi8 (__m128i __X, const int __N)
 {
@@ -447,7 +447,7 @@ _mm_packus_epi32 (__m128i __X, __m128i __Y)
    byte integers in the first 2 operands.  Starting offsets within
    operands are determined by the 3rd mask operand.  */
 
-#ifdef __SSE_USE_INLINED_FUNC__
+#ifdef __OPTIMIZE__
 static __inline __m128i __attribute__((__always_inline__, __artificial__))
 _mm_mpsadbw_epu8 (__m128i __X, __m128i __Y, const int __M)
 {
@@ -497,7 +497,7 @@ _mm_stream_load_si128 (__m128i *__X)
 
 /* Intrinsics for text/string processing.  */
 
-#ifdef __SSE_USE_INLINED_FUNC__
+#ifdef __OPTIMIZE__
 static __inline __m128i __attribute__((__always_inline__, __artificial__))
 _mm_cmpistrm (__m128i __X, __m128i __Y, const int __M)
 {
@@ -550,7 +550,7 @@ _mm_cmpestri (__m128i __X, int __LX, __m128i __Y, int __LY, const int __M)
 /* Intrinsics for text/string processing and reading values of
    EFlags.  */
 
-#ifdef __SSE_USE_INLINED_FUNC__
+#ifdef __OPTIMIZE__
 static __inline int __attribute__((__always_inline__, __artificial__))
 _mm_cmpistra (__m128i __X, __m128i __Y, const int __M)
 {

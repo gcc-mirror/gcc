@@ -181,7 +181,7 @@ _mm_sign_pi32 (__m64 __X, __m64 __Y)
   return (__m64) __builtin_ia32_psignd ((__v2si)__X, (__v2si)__Y);
 }
 
-#ifdef __SSE_USE_INLINED_FUNC__
+#ifdef __OPTIMIZE__
 static __inline __m128i __attribute__((__always_inline__, __artificial__))
 _mm_alignr_epi8(__m128i __X, __m128i __Y, const int __N)
 {

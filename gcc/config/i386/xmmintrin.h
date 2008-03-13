@@ -716,7 +716,7 @@ _mm_cvtps_pi8(__m128 __A)
 }
 
 /* Selects four specific SPFP values from A and B based on MASK.  */
-#ifdef __SSE_USE_INLINED_FUNC__
+#ifdef __OPTIMIZE__
 static __inline __m128 __attribute__((__always_inline__, __artificial__))
 _mm_shuffle_ps (__m128 __A, __m128 __B, int const __mask)
 {
@@ -992,7 +992,7 @@ _mm_move_ss (__m128 __A, __m128 __B)
 }
 
 /* Extracts one of the four words of A.  The selector N must be immediate.  */
-#ifdef __SSE_USE_INLINED_FUNC__
+#ifdef __OPTIMIZE__
 static __inline int __attribute__((__always_inline__, __artificial__))
 _mm_extract_pi16 (__m64 const __A, int const __N)
 {
@@ -1013,7 +1013,7 @@ _m_pextrw (__m64 const __A, int const __N)
 
 /* Inserts word D into one of four words of A.  The selector N must be
    immediate.  */
-#ifdef __SSE_USE_INLINED_FUNC__
+#ifdef __OPTIMIZE__
 static __inline __m64 __attribute__((__always_inline__, __artificial__))
 _mm_insert_pi16 (__m64 const __A, int const __D, int const __N)
 {
@@ -1114,7 +1114,7 @@ _m_pmulhuw (__m64 __A, __m64 __B)
 
 /* Return a combination of the four 16-bit values in A.  The selector
    must be an immediate.  */
-#ifdef __SSE_USE_INLINED_FUNC__
+#ifdef __OPTIMIZE__
 static __inline __m64 __attribute__((__always_inline__, __artificial__))
 _mm_shuffle_pi16 (__m64 __A, int const __N)
 {
@@ -1191,7 +1191,7 @@ _m_psadbw (__m64 __A, __m64 __B)
 
 /* Loads one cache line from address P to a location "closer" to the
    processor.  The selector I specifies the type of prefetch operation.  */
-#ifdef __SSE_USE_INLINED_FUNC__
+#ifdef __OPTIMIZE__
 static __inline void __attribute__((__always_inline__, __artificial__))
 _mm_prefetch (const void *__P, enum _mm_hint __I)
 {
