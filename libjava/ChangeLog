@@ -1,3 +1,11 @@
+2008-03-13  David Edelsohn  <edelsohn@gnu.org>
+
+	Backport from mainline:
+	2008-01-24  David Edelsohn  <edelsohn@gnu.org>
+
+	* shlibpath.m4: Add AIX 6 support.
+	* configure: Regenerate.
+
 2008-02-01  Release Manager
 
 	* GCC 4.2.3 released.
