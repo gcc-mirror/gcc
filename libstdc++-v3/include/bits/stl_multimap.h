@@ -197,7 +197,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       template<typename _InputIterator>
         multimap(_InputIterator __first, _InputIterator __last)
 	: _M_t()
-        { _M_t._M_insert_unique(__first, __last); }
+        { _M_t._M_insert_equal(__first, __last); }
 
       /**
        *  @brief  Builds a %multimap from a range.
