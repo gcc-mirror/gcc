@@ -268,35 +268,31 @@ namespace __gnu_debug
       return __check_sorted_aux(__first, __last, __pred, _Category());
     }
 
-  template<typename _InputIterator1, typename _InputIterator2>
+  template<typename _InputIterator>
     inline bool
-    __check_sorted_set_aux(const _InputIterator1& __first,
-			   const _InputIterator1& __last,
-			   const _InputIterator2&, std::__true_type)
+    __check_sorted_set_aux(const _InputIterator& __first,
+			   const _InputIterator& __last,
+			   std::__true_type)
     { return __check_sorted(__first, __last); }
 
-  template<typename _InputIterator1, typename _InputIterator2>
+  template<typename _InputIterator>
     inline bool
-    __check_sorted_set_aux(const _InputIterator1&,
-			   const _InputIterator1&,
-			   const _InputIterator2&, std::__false_type)
+    __check_sorted_set_aux(const _InputIterator&,
+			   const _InputIterator&,
+			   std::__false_type)
     { return true; }
 
-  template<typename _InputIterator1, typename _InputIterator2,
-	   typename _Predicate>
+  template<typename _InputIterator, typename _Predicate>
     inline bool
-    __check_sorted_set_aux(const _InputIterator1& __first,
-			   const _InputIterator1& __last,
-			   const _InputIterator2&, _Predicate __pred,
-			   std::__true_type)
+    __check_sorted_set_aux(const _InputIterator& __first,
+			   const _InputIterator& __last,
+			   _Predicate __pred, std::__true_type)
     { return __check_sorted(__first, __last, __pred); }
 
-  template<typename _InputIterator1, typename _InputIterator2,
-	   typename _Predicate>
+  template<typename _InputIterator, typename _Predicate>
     inline bool
-    __check_sorted_set_aux(const _InputIterator1&,
-			   const _InputIterator1&,
-			   const _InputIterator2&, _Predicate,
+    __check_sorted_set_aux(const _InputIterator&,
+			   const _InputIterator&, _Predicate,
 			   std::__false_type)
     { return true; }
 
