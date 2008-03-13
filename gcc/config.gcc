@@ -1931,8 +1931,16 @@ rs6000-ibm-aix5.1.* | powerpc-ibm-aix5.1.*)
 	thread_file='aix'
 	extra_headers=
 	;;
-rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
+rs6000-ibm-aix5.[23].* | powerpc-ibm-aix5.[23].*)
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix52.h rs6000/xcoff.h"
+	tmake_file=rs6000/t-aix52
+	extra_options="${extra_options} rs6000/aix64.opt"
+	use_collect2=yes
+	thread_file='aix'
+	extra_headers=
+	;;
+rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
+	tm_file="${tm_file} rs6000/aix.h rs6000/aix61.h rs6000/xcoff.h"
 	tmake_file=rs6000/t-aix52
 	extra_options="${extra_options} rs6000/aix64.opt"
 	use_collect2=yes
