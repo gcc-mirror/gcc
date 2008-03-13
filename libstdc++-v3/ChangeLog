@@ -1,3 +1,9 @@
+2008-03-13  Dennis Czeremin  <dennis.czeremin@smiths-heimann.com>
+
+	PR libstdc++/35566
+	* include/bits/stl_multimap.h (multimap<>::multimap(_InputIterator,
+	_InputIterator)): Forward to _M_insert_equal, not _M_insert_unique.
+
 2008-03-13  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/35541
