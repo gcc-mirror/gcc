@@ -1,3 +1,8 @@
+2008-03-13  Tom Tromey  <tromey@redhat.com>
+
+	PR libcpp/35322:
+	* gcc.dg/cpp/pr35322.c: New file.
+
 2008-03-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/vect/vect-align-2.c: Remove dg-do run directive.
