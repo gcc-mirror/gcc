@@ -246,13 +246,9 @@ _Jv_Linker::find_field (jclass klass, jclass owner,
   if (_Jv_CheckAccess (klass, *found_class, the_field->flags))
     {
       // Note that the field returned by find_field_helper is always
-      // resolved.  There's no point checking class loaders here,
-      // since we already did the work to look up all the types.
-      // FIXME: being lazy here would be nice.
-      if (the_field->type != field_type)
-	throw new java::lang::LinkageError
-	  (JvNewStringLatin1 
-	   ("field type mismatch with different loaders"));
+      // resolved.  However, we still use the constraint mechanism
+      // because this may affect other lookups.
+      _Jv_CheckOrCreateLoadingConstraint (klass, (*found_class)->loader);
     }
   else
     {
@@ -267,6 +263,23 @@ _Jv_Linker::find_field (jclass klass, jclass owner,
     }
 
   return the_field;
+}
+
+// Check loading constraints for method.
+void
+_Jv_Linker::check_loading_constraints (_Jv_Method *method, jclass self_class,
+				       jclass other_class)
+{
+  JArray<jclass> *klass_args;
+  jclass klass_return;
+
+  _Jv_GetTypesFromSignature (method, self_class, &klass_args, &klass_return);
+  jclass *klass_arg = elements (klass_args);
+  java::lang::ClassLoader *found_loader = other_class->loader;
+
+  _Jv_CheckOrCreateLoadingConstraint (klass_return, found_loader);
+  for (int i = 0; i < klass_args->length; i++)
+    _Jv_CheckOrCreateLoadingConstraint (*(klass_arg++), found_loader);
 }
 
 _Jv_Method *
@@ -359,39 +372,10 @@ _Jv_Linker::resolve_method_entry (jclass klass, jclass &found_class,
       throw new java::lang::NoSuchMethodError (sb->toString());
     }
 
-  // if (found_class->loader != klass->loader), then we
-  // must actually check that the types of arguments
-  // correspond.  That is, for each argument type, and
-  // the return type, doing _Jv_FindClassFromSignature
-  // with either loader should produce the same result,
-  // i.e., exactly the same jclass object. JVMS 5.4.3.3
+  // if (found_class->loader != klass->loader), then we must actually
+  // check that the types of arguments correspond.  JVMS 5.4.3.3.
   if (found_class->loader != klass->loader)
-    {
-      JArray<jclass> *found_args, *klass_args;
-      jclass found_return, klass_return;
-
-      _Jv_GetTypesFromSignature (the_method,
-				 found_class,
-				 &found_args,
-				 &found_return);
-      _Jv_GetTypesFromSignature (the_method,
-				 klass,
-				 &klass_args,
-				 &klass_return);
-
-      jclass *found_arg = elements (found_args);
-      jclass *klass_arg = elements (klass_args);
-
-      for (int i = 0; i < found_args->length; i++)
-	{
-	  if (*(found_arg++) != *(klass_arg++))
-	    throw new java::lang::LinkageError (JvNewStringLatin1 
-	      ("argument type mismatch with different loaders"));
-	}
-      if (found_return != klass_return)
-	throw new java::lang::LinkageError (JvNewStringLatin1
-	  ("return type mismatch with different loaders"));
-    }
+    check_loading_constraints (the_method, klass, found_class);
   
   return the_method;
 }
@@ -925,7 +909,8 @@ _Jv_Linker::append_partial_itable (jclass klass, jclass iface,
 	continue;
 
       meth = NULL;
-      for (jclass cl = klass; cl; cl = cl->getSuperclass())
+      jclass cl;
+      for (cl = klass; cl; cl = cl->getSuperclass())
         {
 	  meth = _Jv_GetMethodLocal (cl, iface->methods[j].name,
 				     iface->methods[j].signature);
@@ -947,6 +932,9 @@ _Jv_Linker::append_partial_itable (jclass klass, jclass iface,
 	    itable[pos] = (void *) &_Jv_ThrowAbstractMethodError;
 	  else
 	    itable[pos] = meth->ncode;
+
+	  if (cl->loader != iface->loader)
+	    check_loading_constraints (meth, cl, iface);
 	}
       else
         {
@@ -1500,6 +1488,11 @@ _Jv_Linker::layout_vtable_methods (jclass klass)
 		  sb->append(JvNewStringLatin1(" overrides final method "));
 		  sb->append(_Jv_GetMethodString(declarer, super_meth));
 		  throw new VerifyError(sb->toString());
+		}
+	      else if (declarer->loader != klass->loader)
+		{
+		  // JVMS 5.4.2.
+		  check_loading_constraints (meth, klass, declarer);
 		}
 	    }
 	}

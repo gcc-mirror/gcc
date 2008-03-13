@@ -86,6 +86,7 @@ private:
   void checkInitialized();
 public: // actually package-private
   ::java::util::HashMap * __attribute__((aligned(__alignof__( ::java::lang::Object)))) loadedClasses;
+  ::java::util::HashMap * loadingConstraints;
   ::java::util::HashMap * definedPackages;
 private:
   ::java::lang::ClassLoader * parent;
