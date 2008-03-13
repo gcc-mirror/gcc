@@ -10,4 +10,4 @@ int test(long long a, long long b)
 /* Check that we did not spill anything.  This is all that is needed
    to qualify the generated code as "decent"...  */
 
-/* { dg-final { scan-assembler-not "%e[sd]i" } } */
+/* { dg-final { scan-assembler-not "%e\[sd\]i" } } */
