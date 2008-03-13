@@ -1,3 +1,7 @@
+2008-03-13  David Edelsohn  <edelsohn@gnu.org>
+
+	* config.rpath: Add AIX 6 support.
+
 2008-03-13  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.def (stageprofile).  Remove -fprofile-generate
