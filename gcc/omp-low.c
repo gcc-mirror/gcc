@@ -4880,184 +4880,177 @@ lower_omp_parallel (tree *stmt_p, omp_context *ctx)
   pop_gimplify_context (NULL_TREE);
 }
 
+/* Callback for lower_omp_1.  Return non-NULL if *tp needs to be
+   regimplified.  */
 
-/* Pass *TP back through the gimplifier within the context determined by WI.
-   This handles replacement of DECL_VALUE_EXPR, as well as adjusting the 
-   flags on ADDR_EXPR.  */
+static tree
+lower_omp_2 (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
+{
+  tree t = *tp;
+
+  /* Any variable with DECL_VALUE_EXPR needs to be regimplified.  */
+  if (TREE_CODE (t) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (t))
+    return t;
+
+  /* If a global variable has been privatized, TREE_CONSTANT on
+     ADDR_EXPR might be wrong.  */
+  if (TREE_CODE (t) == ADDR_EXPR)
+    recompute_tree_invariant_for_addr_expr (t);
+
+  *walk_subtrees = !TYPE_P (t) && !DECL_P (t);
+  return NULL_TREE;
+}
 
 static void
-lower_regimplify (tree *tp, struct walk_stmt_info *wi)
+lower_omp_1 (tree *tp, omp_context *ctx, tree_stmt_iterator *tsi)
 {
-  enum gimplify_status gs;
-  tree pre = NULL;
-
-  if (wi->is_lhs)
-    gs = gimplify_expr (tp, &pre, NULL, is_gimple_lvalue, fb_lvalue);
-  else if (wi->val_only)
-    gs = gimplify_expr (tp, &pre, NULL, is_gimple_val, fb_rvalue);
-  else
-    gs = gimplify_expr (tp, &pre, NULL, is_gimple_formal_tmp_var, fb_rvalue);
-  gcc_assert (gs == GS_ALL_DONE);
-
-  if (pre)
-    tsi_link_before (&wi->tsi, pre, TSI_SAME_STMT);
-}
-
-/* Copy EXP into a temporary.  Insert the initialization statement before TSI.  */
-
-static tree
-init_tmp_var (tree exp, tree_stmt_iterator *tsi)
-{
-  tree t, stmt;
-
-  t = create_tmp_var (TREE_TYPE (exp), NULL);
-  DECL_GIMPLE_REG_P (t) = 1;
-  stmt = build_gimple_modify_stmt (t, exp);
-  SET_EXPR_LOCUS (stmt, EXPR_LOCUS (tsi_stmt (*tsi)));
-  tsi_link_before (tsi, stmt, TSI_SAME_STMT);
-
-  return t;
-}
-
-/* Similarly, but copy from the temporary and insert the statement
-   after the iterator.  */
-
-static tree
-save_tmp_var (tree exp, tree_stmt_iterator *tsi)
-{
-  tree t, stmt;
-
-  t = create_tmp_var (TREE_TYPE (exp), NULL);
-  DECL_GIMPLE_REG_P (t) = 1;
-  stmt = build_gimple_modify_stmt (exp, t);
-  SET_EXPR_LOCUS (stmt, EXPR_LOCUS (tsi_stmt (*tsi)));
-  tsi_link_after (tsi, stmt, TSI_SAME_STMT);
-
-  return t;
-}
-
-/* Callback for walk_stmts.  Lower the OpenMP directive pointed by TP.  */
-
-static tree
-lower_omp_1 (tree *tp, int *walk_subtrees, void *data)
-{
-  struct walk_stmt_info *wi = data;
-  omp_context *ctx = wi->info;
   tree t = *tp;
+
+  if (!t)
+    return;
+
+  if (EXPR_HAS_LOCATION (t))
+    input_location = EXPR_LOCATION (t);
 
   /* If we have issued syntax errors, avoid doing any heavy lifting.
      Just replace the OpenMP directives with a NOP to avoid
      confusing RTL expansion.  */
-  if (errorcount && OMP_DIRECTIVE_P (*tp))
+  if (errorcount && OMP_DIRECTIVE_P (t))
     {
       *tp = build_empty_stmt ();
-      return NULL_TREE;
+      return;
     }
 
-  *walk_subtrees = 0;
-  switch (TREE_CODE (*tp))
+  switch (TREE_CODE (t))
     {
+    case STATEMENT_LIST:
+      {
+	tree_stmt_iterator i;
+	for (i = tsi_start (t); !tsi_end_p (i); tsi_next (&i))
+	  lower_omp_1 (tsi_stmt_ptr (i), ctx, &i);
+      }
+      break;
+
+    case COND_EXPR:
+      lower_omp_1 (&COND_EXPR_THEN (t), ctx, NULL);
+      lower_omp_1 (&COND_EXPR_ELSE (t), ctx, NULL);
+      if (ctx
+	  && walk_tree (&COND_EXPR_COND (t), lower_omp_2, ctx, NULL))
+	{
+	  tree pre = NULL;
+	  gimplify_expr (&COND_EXPR_COND (t), &pre, NULL,
+			 is_gimple_condexpr, fb_rvalue);
+	  if (pre)
+	    {
+	      if (tsi)
+		tsi_link_before (tsi, pre, TSI_SAME_STMT);
+	      else
+		{
+		  append_to_statement_list (t, &pre);
+		  *tp = pre;
+		}
+	    }
+	}
+      break;
+    case CATCH_EXPR:
+      lower_omp_1 (&CATCH_BODY (t), ctx, NULL);
+      break;
+    case EH_FILTER_EXPR:
+      lower_omp_1 (&EH_FILTER_FAILURE (t), ctx, NULL);
+      break;
+    case TRY_CATCH_EXPR:
+    case TRY_FINALLY_EXPR:
+      lower_omp_1 (&TREE_OPERAND (t, 0), ctx, NULL);
+      lower_omp_1 (&TREE_OPERAND (t, 1), ctx, NULL);
+      break;
+    case BIND_EXPR:
+      lower_omp_1 (&BIND_EXPR_BODY (t), ctx, NULL);
+      break;
+    case RETURN_EXPR:
+      lower_omp_1 (&TREE_OPERAND (t, 0), ctx, NULL);
+      break;
+
     case OMP_PARALLEL:
       ctx = maybe_lookup_ctx (t);
       lower_omp_parallel (tp, ctx);
       break;
-
     case OMP_FOR:
       ctx = maybe_lookup_ctx (t);
       gcc_assert (ctx);
       lower_omp_for (tp, ctx);
       break;
-
     case OMP_SECTIONS:
       ctx = maybe_lookup_ctx (t);
       gcc_assert (ctx);
       lower_omp_sections (tp, ctx);
       break;
-
     case OMP_SINGLE:
       ctx = maybe_lookup_ctx (t);
       gcc_assert (ctx);
       lower_omp_single (tp, ctx);
       break;
-
     case OMP_MASTER:
       ctx = maybe_lookup_ctx (t);
       gcc_assert (ctx);
       lower_omp_master (tp, ctx);
       break;
-
     case OMP_ORDERED:
       ctx = maybe_lookup_ctx (t);
       gcc_assert (ctx);
       lower_omp_ordered (tp, ctx);
       break;
-
     case OMP_CRITICAL:
       ctx = maybe_lookup_ctx (t);
       gcc_assert (ctx);
       lower_omp_critical (tp, ctx);
       break;
 
-    case VAR_DECL:
-      if (ctx && DECL_HAS_VALUE_EXPR_P (t))
-	{
-	  lower_regimplify (&t, wi);
-	  if (wi->val_only)
-	    {
-	      if (wi->is_lhs)
-		t = save_tmp_var (t, &wi->tsi);
-	      else
-		t = init_tmp_var (t, &wi->tsi);
-	    }
-	  *tp = t;
-	}
-      break;
-
-    case ADDR_EXPR:
-      if (ctx)
-	lower_regimplify (tp, wi);
-      break;
-
-    case ARRAY_REF:
-    case ARRAY_RANGE_REF:
-    case REALPART_EXPR:
-    case IMAGPART_EXPR:
-    case COMPONENT_REF:
-    case VIEW_CONVERT_EXPR:
-      if (ctx)
-	lower_regimplify (tp, wi);
-      break;
-
-    case INDIRECT_REF:
-      if (ctx)
-	{
-	  wi->is_lhs = false;
-	  wi->val_only = true;
-	  lower_regimplify (&TREE_OPERAND (t, 0), wi);
-	}
-      break;
-
     default:
-      if (!TYPE_P (t) && !DECL_P (t))
-	*walk_subtrees = 1;
+      if (ctx && walk_tree (tp, lower_omp_2, ctx, NULL))
+	{
+	  /* The gimplifier doesn't gimplify CALL_EXPR_STATIC_CHAIN.
+	     Handle that here.  */
+	  tree call = get_call_expr_in (t);
+	  if (call
+	      && CALL_EXPR_STATIC_CHAIN (call)
+	      && walk_tree (&CALL_EXPR_STATIC_CHAIN (call), lower_omp_2,
+			    ctx, NULL))
+	    {
+	      tree pre = NULL;
+	      gimplify_expr (&CALL_EXPR_STATIC_CHAIN (call), &pre, NULL,
+			     is_gimple_val, fb_rvalue);
+	      if (pre)
+		{
+		  if (tsi)
+		    tsi_link_before (tsi, pre, TSI_SAME_STMT);
+		  else
+		    {
+		      append_to_statement_list (t, &pre);
+		      lower_omp_1 (&pre, ctx, NULL);
+		      *tp = pre;
+		      return;
+		    }
+		}
+	    }
+
+	  if (tsi == NULL)
+	    gimplify_stmt (tp);
+	  else
+	    {
+	      tree pre = NULL;
+	      gimplify_expr (tp, &pre, NULL, is_gimple_stmt, fb_none);
+	      if (pre)
+		tsi_link_before (tsi, pre, TSI_SAME_STMT);
+	    }
+	}
       break;
     }
-
-  return NULL_TREE;
 }
 
 static void
 lower_omp (tree *stmt_p, omp_context *ctx)
 {
-  struct walk_stmt_info wi;
-
-  memset (&wi, 0, sizeof (wi));
-  wi.callback = lower_omp_1;
-  wi.info = ctx;
-  wi.val_only = true;
-  wi.want_locations = true;
-
-  walk_stmts (&wi, stmt_p);
+  lower_omp_1 (stmt_p, ctx, NULL);
 }
 
 /* Main entry point.  */
