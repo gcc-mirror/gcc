@@ -123,7 +123,7 @@ case $host_os in
     # FIXME: insert proper C++ library support
     ld_shlibs=no
     ;;
-  aix4* | aix5*)
+  aix[4-9]*)
     archive_cmds=''
     hardcode_direct=yes
     hardcode_libdir_separator=':'
@@ -778,7 +778,7 @@ if test "$with_gcc" = yes; then
   esac
 else
   case $host_os in
-    aix4* | aix5*)
+    aix[4-9]*)
       # All AIX code is PIC.
       if test "$host_cpu" = ia64; then
         # AIX 5 now supports IA64 processor

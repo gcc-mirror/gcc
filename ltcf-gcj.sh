@@ -60,7 +60,7 @@ if test "$with_gnu_ld" = yes; then
 
   # See if GNU ld supports shared libraries.
   case $host_os in
-  aix3* | aix4* | aix5*)
+  aix[3-9]*)
     # On AIX/PPC, the GNU linker is very broken
     if test "$host_cpu" != ia64; then
       ld_shlibs=no
@@ -262,7 +262,7 @@ else
     fi
     ;;
 
-  aix4* | aix5*)
+  aix[4-9]*)
     hardcode_direct=yes
     hardcode_libdir_separator=':'
     link_all_deplibs=yes

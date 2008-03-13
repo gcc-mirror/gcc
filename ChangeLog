@@ -1,3 +1,10 @@
+2008-03-13  David Edelsohn  <edelsohn@gnu.org>
+
+	* ltcf-c.sh: Add AIX 6 support.
+	* ltcf-cxx.sh: Add AIX 6 support.
+	* ltcf-gcj.sh: Add AIX 6 support.
+	* ltconfig: Add AIX 6 support.
+
 2008-02-01  Release Manager
 
 	* GCC 4.2.3 released.
@@ -2383,7 +2390,7 @@
 	of libf2c.
 	* configure, Makefile.in: Regenerate.
 
-2004-05-13  Tobias SchlÃƒÂƒÃ‚Â¼ter  <tobi@gcc.gnu.org>
+2004-05-13  Tobias SchlÃÂÃÂ¼ter  <tobi@gcc.gnu.org>
 
 	* MAINTAINERS (Write After Approval): Add myself.
 

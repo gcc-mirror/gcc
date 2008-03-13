@@ -989,7 +989,7 @@ aix3*)
   soname_spec='${libname}${release}.so$major'
   ;;
 
-aix4* | aix5*)
+aix[4-9]*)
   version_type=linux
   if test "$host_cpu" = ia64; then
     # AIX 5 supports IA64
@@ -1616,7 +1616,7 @@ aix3*)
   fi
   ;;
 
-aix4* | aix5*)
+aix[4-9]*)
   test "$enable_shared" = yes && enable_static=no
   ;;
 esac
