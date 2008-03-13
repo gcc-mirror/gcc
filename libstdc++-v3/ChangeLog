@@ -1,3 +1,11 @@
+2008-03-13  David Edelsohn  <edelsohn@gnu.org>
+
+	Backport from mainline:
+	2008-01-26  David Edelsohn  <edelsohn@gnu.org>
+
+        PR target/34794
+        * config/os/aix/os_defines.h: Define __COMPATMATH__.
+
 2008-02-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* testsuite/27_io/fpos/14320-1.cc: Check for "long long" and
