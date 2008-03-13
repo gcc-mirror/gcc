@@ -52,8 +52,8 @@ Boston, MA 02110-1301, USA.  */
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #else
-char * malloc ();
-char * realloc ();
+void * malloc ();
+void * realloc ();
 #endif
 
 #include <demangle.h>
