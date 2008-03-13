@@ -1,6 +1,6 @@
 // jvm.h - Header file for private implementation information. -*- c++ -*-
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -265,6 +265,7 @@ private:
 				      jclass, jclass *);
   static _Jv_Field *find_field(jclass, jclass, jclass *, _Jv_Utf8Const *,
 			       _Jv_Utf8Const *);
+  static void check_loading_constraints (_Jv_Method *, jclass, jclass);
   static void prepare_constant_time_tables(jclass);
   static jshort get_interfaces(jclass, _Jv_ifaces *);
   static void link_symbol_table(jclass);
@@ -556,6 +557,9 @@ extern void _Jv_CallAnyMethodA (jobject obj,
 				jvalue *result,
 				jboolean is_jni_call = true,
 				jclass iface = NULL);
+
+extern void _Jv_CheckOrCreateLoadingConstraint (jclass,
+						java::lang::ClassLoader *);
 
 extern jobject _Jv_NewMultiArray (jclass, jint ndims, jint* dims)
   __attribute__((__malloc__));

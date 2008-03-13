@@ -1,5 +1,5 @@
 /* ClassLoader.java -- responsible for loading classes into the VM
-   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,6 +45,7 @@ import gnu.java.util.EmptyEnumeration;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.security.CodeSource;
@@ -128,6 +129,15 @@ public abstract class ClassLoader
    * access to this field.
    */
   final HashMap loadedClasses = new HashMap();
+
+  /**
+   * Loading constraints registered with this classloader.  This maps
+   * a class name to a weak reference to a class.  When the reference
+   * is non-null, it means that a reference to the name must resolve
+   * to the indicated class.
+   */
+  final HashMap<String, WeakReference<Class>> loadingConstraints
+    = new HashMap<String, WeakReference<Class>>();
 
   /**
    * All packages defined by this classloader. It is not private in order to

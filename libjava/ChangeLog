@@ -1,3 +1,19 @@
+2008-03-13  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natClassLoader.cc (_Jv_RegisterInitiatingLoader):
+	Check loading constraints.
+	(_Jv_CheckOrCreateLoadingConstraint): New function.
+	* java/lang/ClassLoader.java (loadingConstraints): New field.
+	* link.cc (_Jv_Linker::find_field): Use
+	_Jv_CheckOrCreateLoadingConstraint.
+	(_Jv_Linker::check_loading_constraints): New function.
+	(_Jv_Linker::resolve_method_entry): Use
+	check_loading_constraints.
+	(_Jv_Linker::append_partial_itable): Likewise.
+	(_Jv_Linker::layout_vtable_methods): Likewise.
+	* include/jvm.h (_Jv_Linker::check_loading_constraints): Declare.
+	(_Jv_CheckOrCreateLoadingConstraint): Declare.
+
 2008-03-10  Jim Meyering  <meyering@redhat.com>
 
 	Don't leak upon failed realloc.
