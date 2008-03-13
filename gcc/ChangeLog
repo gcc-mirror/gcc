@@ -4,7 +4,8 @@
 	__builtin_ia32_psrl?, __builtin_ia32_psra?, __builtin_ia32_psll?i,
 	__builtin_ia32_psrl?i, __builtin_ia32_psra?i, __builtin_ia32_psll?128,
 	__builtin_ia32_psrl?128, __builtin_ia32_psra?128]: Fix the mode of
-	input arguments and the mode of return value.
+	input arguments and the mode of return value.  Built-in functions
+	that operate on whole 64-bit MMX register now use V1DI mode.
 
 2008-03-13  Alon Dayan  <alond@il.ibm.com>
 	    Olga Golovanevsky  <olga@il.ibm.com>
