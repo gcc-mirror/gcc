@@ -1,3 +1,10 @@
+2008-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/35185
+	* omp-low.c (lower_regimplify, init_tmp_var, save_tmp_var): Removed.
+	(lower_omp_2): New function.
+	(lower_omp_1, lower_omp): Rewritten.
+
 2008-03-13  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR 35054
@@ -22,7 +29,6 @@
 
 2008-03-12  Paul Brook  <paul@codesourcery.com>
 
-	gcc/
 	* config/arm/arm.c (arm_size_rtx_costs): Use ARM costs for Thumb-2.
 
 2008-03-12  Uros Bizjak  <ubizjak@gmail.com>
@@ -55,7 +61,7 @@
 	Adjust stack pointer by poping call clobered registers.
 	(arm_expand_prologue): Use offsets->saved_regs_mask.
 	Adjust stack pointer by pushing extra registers.
-	* gcc/config/arm.h (arm_stack_offsets): Add saved_regs_mask.
+	* config/arm.h (arm_stack_offsets): Add saved_regs_mask.
 
 2008-03-12  Paolo Bonzini  <bonzini@gnu.org>
 
@@ -3974,7 +3980,7 @@
 2008-01-02  Arthur Norman <acn1@cam.ac.uk>
 
 	PR target/34013
-	* gcc/config/i386/i386.c (ix86_expand_prologue): Save red-zone
+	* config/i386/i386.c (ix86_expand_prologue): Save red-zone
 	while stack probing.
 
 2008-01-01  Douglas Gregor  <doug.gregor@gmail.com>
