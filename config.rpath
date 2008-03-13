@@ -125,7 +125,7 @@ esac
 ld_shlibs=yes
 if test "$with_gnu_ld" = yes; then
   case "$host_os" in
-    aix3* | aix4* | aix5*)
+    aix[3-9]*)
       # On AIX/PPC, the GNU linker is very broken
       if test "$host_cpu" != ia64; then
         ld_shlibs=no
@@ -198,7 +198,7 @@ else
         hardcode_direct=unsupported
       fi
       ;;
-    aix4* | aix5*)
+    aix[4-9]*)
       if test "$host_cpu" = ia64; then
         # On IA64, the linker does run time linking by default, so we don't
         # have to do anything special.
@@ -208,7 +208,7 @@ else
         # Test if we are trying to use run time linking or normal
         # AIX style linking. If -brtl is somewhere in LDFLAGS, we
         # need to do runtime linking.
-        case $host_os in aix4.[23]|aix4.[23].*|aix5*)
+        case $host_os in aix4.[23]|aix4.[23].*|aix[5-9]*)
           for ld_flag in $LDFLAGS; do
             if (test $ld_flag = "-brtl" || test $ld_flag = "-Wl,-brtl"); then
               aix_use_runtimelinking=yes
@@ -432,7 +432,7 @@ libname_spec='lib$name'
 case "$host_os" in
   aix3*)
     ;;
-  aix4* | aix5*)
+  aix[4-9]*)
     ;;
   amigaos*)
     ;;
