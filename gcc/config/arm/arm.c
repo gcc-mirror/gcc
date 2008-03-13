@@ -9869,7 +9869,10 @@ output_move_double (rtx *operands)
       switch (GET_CODE (XEXP (operands[1], 0)))
 	{
 	case REG:
-	  output_asm_insn ("ldm%(ia%)\t%m1, %M0", operands);
+	  if (TARGET_LDRD)
+	    output_asm_insn ("ldr%(d%)\t%0, [%m1]", operands);
+	  else
+	    output_asm_insn ("ldm%(ia%)\t%m1, %M0", operands);
 	  break;
 
 	case PRE_INC:
@@ -9885,7 +9888,10 @@ output_move_double (rtx *operands)
 	  break;
 
 	case POST_INC:
-	  output_asm_insn ("ldm%(ia%)\t%m1!, %M0", operands);
+	  if (TARGET_LDRD)
+	    output_asm_insn ("ldr%(d%)\t%0, [%m1], #8", operands);
+	  else
+	    output_asm_insn ("ldm%(ia%)\t%m1!, %M0", operands);
 	  break;
 
 	case POST_DEC:
@@ -9944,8 +9950,14 @@ output_move_double (rtx *operands)
 
 	case LABEL_REF:
 	case CONST:
+	  /* We might be able to use ldrd %0, %1 here.  However the range is
+	     different to ldr/adr, and it is broken on some ARMv7-M
+	     implementations.  */
 	  output_asm_insn ("adr%?\t%0, %1", operands);
-	  output_asm_insn ("ldm%(ia%)\t%0, %M0", operands);
+	  if (TARGET_LDRD)
+	    output_asm_insn ("ldr%(d%)\t%0, [%0]", operands);
+	  else
+	    output_asm_insn ("ldm%(ia%)\t%0, %M0", operands);
 	  break;
 
 	  /* ??? This needs checking for thumb2.  */
@@ -9959,7 +9971,7 @@ output_move_double (rtx *operands)
 
 	      if (GET_CODE (XEXP (operands[1], 0)) == PLUS)
 		{
-		  if (GET_CODE (otherops[2]) == CONST_INT)
+		  if (GET_CODE (otherops[2]) == CONST_INT && !TARGET_LDRD)
 		    {
 		      switch ((int) INTVAL (otherops[2]))
 			{
@@ -10018,6 +10030,9 @@ output_move_double (rtx *operands)
 	      else
 		output_asm_insn ("sub%?\t%0, %1, %2", otherops);
 
+	      if (TARGET_LDRD)
+		return "ldr%(d%)\t%0, [%0]";
+
 	      return "ldm%(ia%)\t%0, %M0";
 	    }
 	  else
@@ -10046,7 +10061,10 @@ output_move_double (rtx *operands)
       switch (GET_CODE (XEXP (operands[0], 0)))
         {
 	case REG:
-	  output_asm_insn ("stm%(ia%)\t%m0, %M1", operands);
+	  if (TARGET_LDRD)
+	    output_asm_insn ("str%(d%)\t%1, [%m0]", operands);
+	  else
+	    output_asm_insn ("stm%(ia%)\t%m0, %M1", operands);
 	  break;
 
         case PRE_INC:
@@ -10062,7 +10080,10 @@ output_move_double (rtx *operands)
 	  break;
 
         case POST_INC:
-	  output_asm_insn ("stm%(ia%)\t%m0!, %M1", operands);
+	  if (TARGET_LDRD)
+	    output_asm_insn ("str%(d%)\t%1, [%m0], #8", operands);
+	  else
+	    output_asm_insn ("stm%(ia%)\t%m0!, %M1", operands);
 	  break;
 
         case POST_DEC:
@@ -10106,7 +10127,7 @@ output_move_double (rtx *operands)
 
 	case PLUS:
 	  otherops[2] = XEXP (XEXP (operands[0], 0), 1);
-	  if (GET_CODE (otherops[2]) == CONST_INT)
+	  if (GET_CODE (otherops[2]) == CONST_INT && !TARGET_LDRD)
 	    {
 	      switch ((int) INTVAL (XEXP (XEXP (operands[0], 0), 1)))
 		{
