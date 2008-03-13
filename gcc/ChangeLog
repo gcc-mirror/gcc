@@ -1,3 +1,11 @@
+2008-03-13  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR 35054
+	* doc/extend.texi (Structure-Packing Pragmas): Replace "Win32"
+	with the phrase "Microsoft Windows compilers".
+	(Push/Pop Macro Pragmas): New subsection. Document
+	#pragma push_macro and pragma pop_macro.
+
 2008-03-12  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (output_move_double): Prefer LDRD to LDM.
