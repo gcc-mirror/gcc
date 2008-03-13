@@ -1,3 +1,10 @@
+2008-03-13  Alon Dayan  <alond@il.ibm.com>
+	    Olga Golovanevsky  <olga@il.ibm.com>
+
+	PR tree-optimization/35041
+	* ipa-struct-reorg.c (find_pos_in_stmt_1): Add another option
+	to locate the right position in a statement.
+
 2008-03-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/34000
