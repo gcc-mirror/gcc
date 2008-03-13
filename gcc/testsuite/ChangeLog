@@ -1,3 +1,8 @@
+2008-03-13  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-opt/35422
+	* gcc.target/i386/pr35422.c: Escape brackets.
+
 2008-03-12  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-opt/35422
