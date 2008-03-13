@@ -1,3 +1,9 @@
+2008-03-13  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/35541
+	* include/debug/functions.h (__check_sorted_set_aux): Fix signature.
+	* testsuite/25_algorithms/set_difference/35541.cc: New.
+
 2008-03-06  Chris Jefferson  <chris@bubblescope.net>
 	    Paolo Carlini  <pcarlini@suse.de>
 
