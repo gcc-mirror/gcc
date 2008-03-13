@@ -1,5 +1,9 @@
 2008-03-12  Paul Brook  <paul@codesourcery.com>
 
+	* config/arm/arm.c (output_move_double): Prefer LDRD to LDM.
+
+2008-03-12  Paul Brook  <paul@codesourcery.com>
+
 	* config/arm/thumb2.md: Extend peephole to cover 3-arg subs.
 	(thumb2_alusi3_short): Exclude PLUS and MINUS.
 	(thumb2_addsi_shortim): Rename ...
