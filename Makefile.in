@@ -335,7 +335,7 @@ STAGE2_CFLAGS=$(BOOT_CFLAGS)
 STAGE3_CFLAGS=$(BOOT_CFLAGS)
 STAGE4_CFLAGS=$(BOOT_CFLAGS)
 
-STAGE1_LIBCFLAGS=@stage1_cflags@
+STAGE1_LIBCFLAGS=$(CFLAGS_FOR_TARGET)
 STAGE2_LIBCFLAGS=$(CFLAGS_FOR_TARGET)
 STAGE3_LIBCFLAGS=$(CFLAGS_FOR_TARGET)
 STAGE4_LIBCFLAGS=$(CFLAGS_FOR_TARGET)
@@ -5328,9 +5328,9 @@ all-stageprofile-bfd: configure-stageprofile-bfd
 	cd $(HOST_SUBDIR)/bfd && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" CXXFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" \
-		LIBCFLAGS="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		LIBCFLAGS="$(STAGE2_LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" \
+		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stageprofile-bfd)
 
 maybe-clean-stageprofile-bfd: clean-stageprofile-bfd
@@ -6291,9 +6291,9 @@ all-stageprofile-opcodes: configure-stageprofile-opcodes
 	cd $(HOST_SUBDIR)/opcodes && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" CXXFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" \
-		LIBCFLAGS="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		LIBCFLAGS="$(STAGE2_LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" \
+		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stageprofile-opcodes)
 
 maybe-clean-stageprofile-opcodes: clean-stageprofile-opcodes
@@ -7254,9 +7254,9 @@ all-stageprofile-binutils: configure-stageprofile-binutils
 	cd $(HOST_SUBDIR)/binutils && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" CXXFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" \
-		LIBCFLAGS="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		LIBCFLAGS="$(STAGE2_LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" \
+		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stageprofile-binutils)
 
 maybe-clean-stageprofile-binutils: clean-stageprofile-binutils
@@ -13732,9 +13732,9 @@ all-stageprofile-gas: configure-stageprofile-gas
 	cd $(HOST_SUBDIR)/gas && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" CXXFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" \
-		LIBCFLAGS="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		LIBCFLAGS="$(STAGE2_LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" \
+		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stageprofile-gas)
 
 maybe-clean-stageprofile-gas: clean-stageprofile-gas
@@ -14695,9 +14695,9 @@ all-stageprofile-gcc: configure-stageprofile-gcc
 	cd $(HOST_SUBDIR)/gcc && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" CXXFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" \
-		LIBCFLAGS="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) \
+		LIBCFLAGS="$(STAGE2_LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" \
+		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) \
 		$(TARGET-stageprofile-gcc)
 
 maybe-clean-stageprofile-gcc: clean-stageprofile-gcc
@@ -16508,9 +16508,9 @@ all-stageprofile-gmp: configure-stageprofile-gmp
 	cd $(HOST_SUBDIR)/gmp && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" CXXFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" \
-		LIBCFLAGS="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		LIBCFLAGS="$(STAGE2_LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" \
+		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stageprofile-gmp)
 
 maybe-clean-stageprofile-gmp: clean-stageprofile-gmp
@@ -17465,9 +17465,9 @@ all-stageprofile-mpfr: configure-stageprofile-mpfr
 	cd $(HOST_SUBDIR)/mpfr && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" CXXFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" \
-		LIBCFLAGS="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		LIBCFLAGS="$(STAGE2_LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" \
+		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stageprofile-mpfr)
 
 maybe-clean-stageprofile-mpfr: clean-stageprofile-mpfr
@@ -20547,9 +20547,9 @@ all-stageprofile-intl: configure-stageprofile-intl
 	cd $(HOST_SUBDIR)/intl && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" CXXFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" \
-		LIBCFLAGS="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		LIBCFLAGS="$(STAGE2_LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" \
+		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stageprofile-intl)
 
 maybe-clean-stageprofile-intl: clean-stageprofile-intl
@@ -22345,9 +22345,9 @@ all-stageprofile-ld: configure-stageprofile-ld
 	cd $(HOST_SUBDIR)/ld && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" CXXFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" \
-		LIBCFLAGS="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		LIBCFLAGS="$(STAGE2_LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" \
+		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stageprofile-ld)
 
 maybe-clean-stageprofile-ld: clean-stageprofile-ld
@@ -23308,9 +23308,9 @@ all-stageprofile-libcpp: configure-stageprofile-libcpp
 	cd $(HOST_SUBDIR)/libcpp && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" CXXFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" \
-		LIBCFLAGS="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		LIBCFLAGS="$(STAGE2_LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" \
+		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stageprofile-libcpp)
 
 maybe-clean-stageprofile-libcpp: clean-stageprofile-libcpp
@@ -24271,9 +24271,9 @@ all-stageprofile-libdecnumber: configure-stageprofile-libdecnumber
 	cd $(HOST_SUBDIR)/libdecnumber && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" CXXFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" \
-		LIBCFLAGS="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		LIBCFLAGS="$(STAGE2_LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" \
+		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stageprofile-libdecnumber)
 
 maybe-clean-stageprofile-libdecnumber: clean-stageprofile-libdecnumber
@@ -25659,9 +25659,9 @@ all-stageprofile-libiberty: configure-stageprofile-libiberty
 	cd $(HOST_SUBDIR)/libiberty && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" CXXFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" \
-		LIBCFLAGS="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		LIBCFLAGS="$(STAGE2_LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" \
+		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stageprofile-libiberty)
 
 maybe-clean-stageprofile-libiberty: clean-stageprofile-libiberty
@@ -36376,9 +36376,9 @@ all-stageprofile-zlib: configure-stageprofile-zlib
 	cd $(HOST_SUBDIR)/zlib && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" CXXFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" \
-		LIBCFLAGS="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		LIBCFLAGS="$(STAGE2_LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" \
+		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stageprofile-zlib)
 
 maybe-clean-stageprofile-zlib: clean-stageprofile-zlib
@@ -41787,8 +41787,8 @@ configure-stageprofile-target-libgcc:
 	test ! -f $(TARGET_SUBDIR)/libgcc/Makefile || exit 0; \
 	$(NORMAL_TARGET_EXPORTS) \
 	  \
-	CFLAGS="$(STAGE2_LIBCFLAGS) -fprofile-generate $(SYSROOT_CFLAGS_FOR_TARGET) $(DEBUG_PREFIX_CFLAGS_FOR_TARGET)"; export CFLAGS; \
-	CXXFLAGS="$(STAGE2_LIBCFLAGS) -fprofile-generate $(SYSROOT_CFLAGS_FOR_TARGET) $(DEBUG_PREFIX_CFLAGS_FOR_TARGET)"; export CXXFLAGS;  \
+	CFLAGS="$(STAGE2_LIBCFLAGS) $(SYSROOT_CFLAGS_FOR_TARGET) $(DEBUG_PREFIX_CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE2_LIBCFLAGS) $(SYSROOT_CFLAGS_FOR_TARGET) $(DEBUG_PREFIX_CFLAGS_FOR_TARGET)"; export CXXFLAGS;  \
 	echo Configuring stage profile in $(TARGET_SUBDIR)/libgcc ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgcc ; \
 	cd $(TARGET_SUBDIR)/libgcc || exit 1; \
@@ -42115,9 +42115,9 @@ all-stageprofile-target-libgcc: configure-stageprofile-target-libgcc
 	cd $(TARGET_SUBDIR)/libgcc && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" CXXFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" \
-		LIBCFLAGS="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" \
-		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -fprofile-generate" $(EXTRA_TARGET_FLAGS)   \
+		LIBCFLAGS="$(STAGE2_LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" \
+		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" $(EXTRA_TARGET_FLAGS)   \
 		$(TARGET-stageprofile-target-libgcc)
 
 maybe-clean-stageprofile-target-libgcc: clean-stageprofile-target-libgcc

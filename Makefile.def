@@ -552,7 +552,7 @@ bootstrap_stage = {
 	id=profile ; prev=1 ;
 	stage_configure_flags="@stage2_werror_flag@" ;
 	stage_cflags='$(STAGE2_CFLAGS) -fprofile-generate' ;
-	stage_libcflags='$(STAGE2_LIBCFLAGS) -fprofile-generate' ; };
+	stage_libcflags='$(STAGE2_LIBCFLAGS)' ; };
 bootstrap_stage = {
 	id=feedback ; prev=profile ;
 	bootstrap_target=profiledbootstrap ;

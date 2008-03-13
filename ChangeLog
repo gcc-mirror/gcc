@@ -1,3 +1,9 @@
+2008-03-13  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.def (stageprofile).  Remove -fprofile-generate
+	from stage_libcflags.
+	* Makefile.in: Regenerate.
+
 2008-03-13  Ben Elliston  <bje@au.ibm.com>
 
 	* config.sub, config.guess: Update from upstream sources.
