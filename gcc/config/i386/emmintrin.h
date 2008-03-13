@@ -880,7 +880,7 @@ _mm_cvtss_sd (__m128d __A, __m128 __B)
   return (__m128d)__builtin_ia32_cvtss2sd ((__v2df) __A, (__v4sf)__B);
 }
 
-#ifdef __OPTIMIZE__
+#ifdef __SSE_USE_INLINED_FUNC__
 static __inline __m128d __attribute__((__always_inline__, __artificial__))
 _mm_shuffle_pd(__m128d __A, __m128d __B, const int __mask)
 {
@@ -1144,7 +1144,7 @@ _mm_srai_epi32 (__m128i __A, int __B)
   return (__m128i)__builtin_ia32_psradi128 ((__v4si)__A, __B);
 }
 
-#ifdef __OPTIMIZE__
+#ifdef __SSE_USE_INLINED_FUNC__
 static __inline __m128i __attribute__((__always_inline__, __artificial__))
 _mm_srli_si128 (__m128i __A, const int __N)
 {
@@ -1307,7 +1307,7 @@ _mm_cmpgt_epi32 (__m128i __A, __m128i __B)
   return (__m128i)__builtin_ia32_pcmpgtd128 ((__v4si)__A, (__v4si)__B);
 }
 
-#ifdef __OPTIMIZE__
+#ifdef __SSE_USE_INLINED_FUNC__
 static __inline int __attribute__((__always_inline__, __artificial__))
 _mm_extract_epi16 (__m128i const __A, int const __N)
 {
@@ -1363,7 +1363,7 @@ _mm_mulhi_epu16 (__m128i __A, __m128i __B)
   return (__m128i)__builtin_ia32_pmulhuw128 ((__v8hi)__A, (__v8hi)__B);
 }
 
-#ifdef __OPTIMIZE__
+#ifdef __SSE_USE_INLINED_FUNC__
 static __inline __m128i __attribute__((__always_inline__, __artificial__))
 _mm_shufflehi_epi16 (__m128i __A, const int __mask)
 {

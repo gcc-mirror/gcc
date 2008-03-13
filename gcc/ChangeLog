@@ -1,3 +1,19 @@
+2008-03-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/35553
+	* config/i386/i386.h (TARGET_CPU_CPP_BUILTINS): Define
+	__SSE_USE_INLINED_FUNC__ when using -flag-keep-inline-functions
+	together with optimization.
+	* config/i386/xmmintrin.h: Use __SSE_USE_INLINED_FUNC__ instead of
+	__OPTIMIZE__ to choose between inlined intrinsic SSE function having
+	immediate arguments and its equivalent macro definition.
+	* config/i386/bmintrin.h: Ditto.
+	* config/i386/smmintrin.h: Ditto.
+	* config/i386/tmmintrin.h: Ditto.
+	* config/i386/mmintrin-common.h: Ditto.
+	* config/i386/ammintrin.h: Ditto.
+	* config/i386/emmintrin.h: Ditto.
+
 2008-03-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/35185

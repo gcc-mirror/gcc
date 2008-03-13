@@ -55,7 +55,7 @@ _mm_extract_si64 (__m128i __X, __m128i __Y)
   return (__m128i) __builtin_ia32_extrq ((__v2di) __X, (__v16qi) __Y);
 }
 
-#ifdef __OPTIMIZE__
+#ifdef __SSE_USE_INLINED_FUNC__
 static __inline __m128i __attribute__((__always_inline__, __artificial__))
 _mm_extracti_si64 (__m128i __X, unsigned const int __I, unsigned const int __L)
 {
@@ -73,7 +73,7 @@ _mm_insert_si64 (__m128i __X,__m128i __Y)
   return (__m128i) __builtin_ia32_insertq ((__v2di)__X, (__v2di)__Y);
 }
 
-#ifdef __OPTIMIZE__
+#ifdef __SSE_USE_INLINED_FUNC__
 static __inline __m128i __attribute__((__always_inline__, __artificial__))
 _mm_inserti_si64(__m128i __X, __m128i __Y, unsigned const int __I, unsigned const int __L)
 {
