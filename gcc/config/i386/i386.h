@@ -691,11 +691,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 	builtin_define ("__SSE_MATH__");			\
       if (TARGET_SSE_MATH && TARGET_SSE2)			\
 	builtin_define ("__SSE2_MATH__");			\
-								\
-      /* Use inlined intrinsic SSE function having immediate	\
-	 arguments instead of a macro definition.  */		\
-      if (optimize && !flag_keep_inline_functions)		\
-	builtin_define ("__SSE_USE_INLINED_FUNC__");		\
     }								\
   while (0)
 

@@ -350,7 +350,7 @@ _mm_rot_epi64(__m128i __A,  __m128i __B)
 
 
 /* Rotates - Immediate form */
-#ifdef __SSE_USE_INLINED_FUNC__
+#ifdef __OPTIMIZE__
 static __inline __m128i __attribute__((__always_inline__, __artificial__))
 _mm_roti_epi8(__m128i __A, const int __B)
 {

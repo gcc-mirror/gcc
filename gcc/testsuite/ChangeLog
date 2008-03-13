@@ -1,8 +1,3 @@
-2008-03-13  Uros Bizjak  <ubizjak@gmail.com>
-
-	PR target/35553
-	* g++.dg/other/i386-3.C: New test.
-
 2008-03-13  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-opt/35422
