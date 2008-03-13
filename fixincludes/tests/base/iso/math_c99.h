@@ -117,3 +117,17 @@
 #undef	isunordered
 #define	isunordered(x, y)	__builtin_isunordered(x, y)
 #endif  /* SOLARIS_MATH_9_CHECK */
+
+
+#if defined( SOLARIS_MATH_10_CHECK )
+#pragma ident	"@(#)math_c99.h	1.12	07/01/21 SMI"
+#undef	isinf
+#define isinf(x)	__extension__ ( {				\
+			const __typeof(x) __x_i = (x);			\
+			__builtin_expect(sizeof(__x_i) == sizeof(float)	\
+			? isgreater(__builtin_fabsf(__x_i),__FLT_MAX__) \
+			: sizeof(__x_i) == sizeof(long double)		\
+			? isgreater(__builtin_fabsl(__x_i),__LDBL_MAX__)\
+			: isgreater(__builtin_fabs(__x_i),__DBL_MAX__), 0);\
+	})
+#endif  /* SOLARIS_MATH_10_CHECK */

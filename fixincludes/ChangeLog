@@ -1,3 +1,10 @@
+2008-03-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+	    Andreas Tobler  <a.tobler@schweiz.org>
+
+	* inclhack.def (solaris_math_10): New.
+	* tests/base/iso/math_c99.h: Update.
+	* fixincl.x: Regenerate.
+
 2008-02-04  Ismail Dönmez  <ismail@pardus.org.tr>
 
 	* inclhack.def: (bsd_stdio_attrs_conflict, freebsd_gcc3_breakage,
