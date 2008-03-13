@@ -1,3 +1,8 @@
+2008-03-13  Tom Tromey  <tromey@redhat.com>
+
+	PR libcpp/35322:
+	* directives.c (destringize_and_run): Set pfile->directive.
+
 2008-03-06  Markus Milleder  <markus.milleder@generali.at>
 
 	PR preprocessor/35458

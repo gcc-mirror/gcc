@@ -1507,6 +1507,7 @@ destringize_and_run (cpp_reader *pfile, const cpp_string *in)
   tokenrun *saved_cur_run;
   cpp_token *toks;
   int count;
+  const struct directive *save_directive;
 
   dest = result = (char *) alloca (in->len - 1);
   src = in->text + 1 + (in->text[0] == 'L');
@@ -1547,8 +1548,11 @@ destringize_and_run (cpp_reader *pfile, const cpp_string *in)
 
   start_directive (pfile);
   _cpp_clean_line (pfile);
+  save_directive = pfile->directive;
+  pfile->directive = &dtable[T_PRAGMA];
   do_pragma (pfile);
   end_directive (pfile, 1);
+  pfile->directive = save_directive;
 
   /* We always insert at least one token, the directive result.  It'll
      either be a CPP_PADDING or a CPP_PRAGMA.  In the later case, we 
