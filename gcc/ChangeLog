@@ -1,3 +1,12 @@
+2008-03-14  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2008-02-19  Richard Guenther  <rguenther@suse.de>
+
+        PR tree-optimization/34989
+        * tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Re-structure.
+        Allow propagation to INDIRECT_REF if we can simplify only.
+
 2008-03-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/34000

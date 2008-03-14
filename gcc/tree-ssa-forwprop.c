@@ -546,67 +546,98 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs, tree use_stmt,
 			       bool single_use_p)
 {
   tree lhs, rhs, array_ref;
+  tree *rhsp, *lhsp;
 
-  /* Strip away any outer COMPONENT_REF/ARRAY_REF nodes from the LHS. 
-     ADDR_EXPR will not appear on the LHS.  */
+  gcc_assert (TREE_CODE (def_rhs) == ADDR_EXPR);
+
   lhs = GIMPLE_STMT_OPERAND (use_stmt, 0);
-  while (handled_component_p (lhs))
-    lhs = TREE_OPERAND (lhs, 0);
-
   rhs = GIMPLE_STMT_OPERAND (use_stmt, 1);
-
-  /* Now see if the LHS node is an INDIRECT_REF using NAME.  If so, 
-     propagate the ADDR_EXPR into the use of NAME and fold the result.  */
-  if (TREE_CODE (lhs) == INDIRECT_REF && TREE_OPERAND (lhs, 0) == name)
-    {
-      /* This should always succeed in creating gimple, so there is
-	 no need to save enough state to undo this propagation.  */
-      TREE_OPERAND (lhs, 0) = unshare_expr (def_rhs);
-      fold_stmt_inplace (use_stmt);
-      tidy_after_forward_propagate_addr (use_stmt);
-
-      /* Continue propagating into the RHS.  */
-    }
 
   /* Trivial cases.  The use statement could be a trivial copy or a
      useless conversion.  Recurse to the uses of the lhs as copyprop does
-     not copy through differen variant pointers and FRE does not catch
+     not copy through different variant pointers and FRE does not catch
      all useless conversions.  Treat the case of a single-use name and
      a conversion to def_rhs type separate, though.  */
-  else if (TREE_CODE (lhs) == SSA_NAME
-	   && (TREE_CODE (rhs) == NOP_EXPR
-	       || TREE_CODE (rhs) == CONVERT_EXPR)
-	   && TREE_TYPE (rhs) == TREE_TYPE (def_rhs)
-	   && single_use_p)
+  if (TREE_CODE (lhs) == SSA_NAME
+      && (rhs == name
+	  || TREE_CODE (rhs) == NOP_EXPR
+	  || TREE_CODE (rhs) == CONVERT_EXPR)
+      && useless_type_conversion_p (TREE_TYPE (rhs), TREE_TYPE (def_rhs)))
     {
+      /* Only recurse if we don't deal with a single use.  */
+      if (!single_use_p)
+	return forward_propagate_addr_expr (lhs, def_rhs);
+
       GIMPLE_STMT_OPERAND (use_stmt, 1) = unshare_expr (def_rhs);
       return true;
     }
-  else if ((TREE_CODE (lhs) == SSA_NAME
-      	    && rhs == name)
-	   || ((TREE_CODE (rhs) == NOP_EXPR
-		|| TREE_CODE (rhs) == CONVERT_EXPR)
-	       && useless_type_conversion_p (TREE_TYPE (rhs),
-					    TREE_TYPE (def_rhs))))
-    return forward_propagate_addr_expr (lhs, def_rhs);
+
+  /* Now strip away any outer COMPONENT_REF/ARRAY_REF nodes from the LHS. 
+     ADDR_EXPR will not appear on the LHS.  */
+  lhsp = &GIMPLE_STMT_OPERAND (use_stmt, 0);
+  while (handled_component_p (*lhsp))
+    lhsp = &TREE_OPERAND (*lhsp, 0);
+  lhs = *lhsp;
+
+  /* Now see if the LHS node is an INDIRECT_REF using NAME.  If so, 
+     propagate the ADDR_EXPR into the use of NAME and fold the result.  */
+  if (TREE_CODE (lhs) == INDIRECT_REF
+      && TREE_OPERAND (lhs, 0) == name
+      /* This will not allow stripping const qualification from
+	 pointers which we want to allow specifically here to clean up
+	 the IL for initialization of constant objects.   */
+      && (useless_type_conversion_p (TREE_TYPE (TREE_OPERAND (lhs, 0)),
+				     TREE_TYPE (def_rhs))
+	  /* So explicitly check for this here.  */
+	  || (TYPE_QUALS (TREE_TYPE (TREE_TYPE (TREE_OPERAND (lhs, 0))))
+	      ^ TYPE_QUALS (TREE_TYPE (TREE_TYPE (def_rhs)))) == TYPE_QUAL_CONST)
+      /* ???  This looks redundant, but is required for bogus types
+	 that can sometimes occur.  */
+      && useless_type_conversion_p (TREE_TYPE (lhs),
+				    TREE_TYPE (TREE_OPERAND (def_rhs, 0))))
+    {
+      *lhsp = unshare_expr (TREE_OPERAND (def_rhs, 0));
+      fold_stmt_inplace (use_stmt);
+      tidy_after_forward_propagate_addr (use_stmt);
+
+      /* Continue propagating into the RHS if this was not the only use.  */
+      if (single_use_p)
+	return true;
+    }
 
   /* Strip away any outer COMPONENT_REF, ARRAY_REF or ADDR_EXPR
      nodes from the RHS.  */
-  while (handled_component_p (rhs)
-	 || TREE_CODE (rhs) == ADDR_EXPR)
-    rhs = TREE_OPERAND (rhs, 0);
+  rhsp = &GIMPLE_STMT_OPERAND (use_stmt, 1);
+  while (handled_component_p (*rhsp)
+	 || TREE_CODE (*rhsp) == ADDR_EXPR)
+    rhsp = &TREE_OPERAND (*rhsp, 0);
+  rhs = *rhsp;
 
   /* Now see if the RHS node is an INDIRECT_REF using NAME.  If so, 
      propagate the ADDR_EXPR into the use of NAME and fold the result.  */
-  if (TREE_CODE (rhs) == INDIRECT_REF && TREE_OPERAND (rhs, 0) == name)
+  if (TREE_CODE (rhs) == INDIRECT_REF
+      && TREE_OPERAND (rhs, 0) == name
+      /* ???  This doesn't allow stripping const qualification to
+	 streamline the IL for reads from non-constant objects.  */
+      && (useless_type_conversion_p (TREE_TYPE (TREE_OPERAND (rhs, 0)),
+				     TREE_TYPE (def_rhs))
+	  /* So explicitly check for this here.  */
+	  || (TYPE_QUALS (TREE_TYPE (TREE_TYPE (TREE_OPERAND (rhs, 0))))
+	      ^ TYPE_QUALS (TREE_TYPE (TREE_TYPE (def_rhs)))) == TYPE_QUAL_CONST)
+      && useless_type_conversion_p (TREE_TYPE (rhs),
+				    TREE_TYPE (TREE_OPERAND (def_rhs, 0))))
     {
-      /* This should always succeed in creating gimple, so there is
-         no need to save enough state to undo this propagation.  */
-      TREE_OPERAND (rhs, 0) = unshare_expr (def_rhs);
+      *rhsp = unshare_expr (TREE_OPERAND (def_rhs, 0));
       fold_stmt_inplace (use_stmt);
       tidy_after_forward_propagate_addr (use_stmt);
       return true;
     }
+
+  /* If the use of the ADDR_EXPR is not a POINTER_PLUS_EXPR, there
+     is nothing to do. */
+  if (TREE_CODE (rhs) != POINTER_PLUS_EXPR
+      || TREE_OPERAND (rhs, 0) != name)
+    return false;
 
   /* The remaining cases are all for turning pointer arithmetic into
      array indexing.  They only apply when we have the address of
@@ -618,15 +649,9 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs, tree use_stmt,
       || !integer_zerop (TREE_OPERAND (array_ref, 1)))
     return false;
 
-  /* If the use of the ADDR_EXPR is not a POINTER_PLUS_EXPR, there
-     is nothing to do. */
-  if (TREE_CODE (rhs) != POINTER_PLUS_EXPR)
-    return false;
-
   /* Try to optimize &x[0] p+ C where C is a multiple of the size
      of the elements in X into &x[C/element size].  */
-  if (TREE_OPERAND (rhs, 0) == name
-      && TREE_CODE (TREE_OPERAND (rhs, 1)) == INTEGER_CST)
+  if (TREE_CODE (TREE_OPERAND (rhs, 1)) == INTEGER_CST)
     {
       tree orig = unshare_expr (rhs);
       TREE_OPERAND (rhs, 0) = unshare_expr (def_rhs);
@@ -651,8 +676,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs, tree use_stmt,
      converting a multiplication of an index by the size of the
      array elements, then the result is converted into the proper
      type for the arithmetic.  */
-  if (TREE_OPERAND (rhs, 0) == name
-      && TREE_CODE (TREE_OPERAND (rhs, 1)) == SSA_NAME
+  if (TREE_CODE (TREE_OPERAND (rhs, 1)) == SSA_NAME
       /* Avoid problems with IVopts creating PLUS_EXPRs with a
 	 different type than their operands.  */
       && useless_type_conversion_p (TREE_TYPE (rhs), TREE_TYPE (name)))
@@ -956,18 +980,14 @@ tree_ssa_forward_propagate_single_use_vars (void)
 		}
 
 	      if (TREE_CODE (rhs) == ADDR_EXPR
-		  /* We can also disregard changes in const qualifiers for
-		     the dereferenced value.  */
+		  /* Handle pointer conversions on invariant addresses
+		     as well, as this is valid gimple.  */
 		  || ((TREE_CODE (rhs) == NOP_EXPR
 		       || TREE_CODE (rhs) == CONVERT_EXPR)
 		      && TREE_CODE (TREE_OPERAND (rhs, 0)) == ADDR_EXPR
-		      && POINTER_TYPE_P (TREE_TYPE (rhs))
-		      /* But do not propagate changes in volatileness.  */
-		      && (TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (rhs)))
-			  == TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (rhs, 0)))))
-		      && types_compatible_p (TREE_TYPE (TREE_TYPE (TREE_OPERAND (rhs, 0))),
-					     TREE_TYPE (TREE_TYPE (rhs)))))
+		      && POINTER_TYPE_P (TREE_TYPE (rhs))))
 		{
+		  STRIP_NOPS (rhs);
 		  if (!stmt_references_abnormal_ssa_name (stmt)
 		      && forward_propagate_addr_expr (lhs, rhs))
 		    {
