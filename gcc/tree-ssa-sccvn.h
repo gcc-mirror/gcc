@@ -44,12 +44,17 @@ typedef struct vn_ssa_aux
      once.  It cannot be used to avoid visitation for SSA_NAME's
      involved in non-singleton SCC's.  */
   unsigned use_processed : 1;
+
+  /* Whether the SSA_NAME has no defining statement and thus an
+     insertion of such with EXPR as definition is required before
+     a use can be created of it.  */
+  unsigned needs_insertion : 1;
 } *vn_ssa_aux_t;
 
 /* Return the value numbering info for an SSA_NAME.  */
 extern vn_ssa_aux_t VN_INFO (tree);
 extern vn_ssa_aux_t VN_INFO_GET (tree);
-bool run_scc_vn (void);
+bool run_scc_vn (bool);
 void free_scc_vn (void);
 void switch_to_PRE_table (void);
 tree vn_nary_op_lookup (tree);

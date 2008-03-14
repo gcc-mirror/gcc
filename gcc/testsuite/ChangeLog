@@ -1,3 +1,13 @@
+2008-03-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34043
+	PR tree-optimization/33989
+	* gcc.dg/tree-ssa/ssa-fre-7.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-8.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-9.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-10.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-17.c: Likewise.
+
 2008-03-14  H.J. Lu  <hongjiu.lu@intel.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
