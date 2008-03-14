@@ -8,10 +8,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.3-b20071109\n"
+"Project-Id-Version: cpplib 4.3.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2008-02-01 16:21+0000\n"
-"PO-Revision-Date: 2008-01-20 15:24+0100\n"
+"PO-Revision-Date: 2008-03-14 20:31+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -241,7 +241,7 @@ msgstr "ogiltigt flagga \"%s\" i line-direktiv"
 
 #: directives.c:868
 msgid "unexpected end of file after #line"
-msgstr ""
+msgstr "oväntat filslut efter #line"
 
 #: directives.c:871
 #, c-format
