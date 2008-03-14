@@ -1,3 +1,17 @@
+2008-03-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/34000
+	PR target/35553
+	* g++.dg/other/i386-3.C: New test.
+	* gcc.target/i386/sse-13.c: Redefine extern instead of static.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/mmx-1.c: Ditto.
+	* gcc.target/i386/mmx-2.c: Ditto.
+	* gcc.target/i386/3dnow-1.c: Ditto.
+	* gcc.target/i386/3dnow-2.c: Ditto.
+	* gcc.target/i386/3dnowA-1.c: Ditto.
+	* gcc.target/i386/3dnowA-2.c: Ditto.
+
 2008-03-14  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/35474
