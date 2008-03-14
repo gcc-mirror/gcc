@@ -2356,7 +2356,10 @@ AIX:
 @uref{http://www.bullfreeware.com,,Bull's Freeware and Shareware Archive for AIX};
 
 @item
-@uref{http://aixpdslib.seas.ucla.edu,,UCLA Software Library for AIX}.
+@uref{http://pware.hvcc.edu,,Hudson Valley Community College Open Source Softeware for IBM System p};
+
+@item
+@uref{http://www.perzl.org/aix,,AIX 5L and 6 Open Source Packages}.
 @end itemize
 
 @item
@@ -2402,12 +2405,12 @@ The @uref{http://www.mingw.org/,,MinGW} project.
 @item
 @uref{ftp://ftp.thewrittenword.com/packages/by-name/,,The
 Written Word} offers binaries for
-AIX 4.3.2.
+AIX 4.3.3, 5.1 and 5.2,
 IRIX 6.5,
-Digital UNIX 4.0D and 5.1,
+Tru64 UNIX 4.0D and 5.1,
 GNU/Linux (i386),
 HP-UX 10.20, 11.00, and 11.11, and
-Solaris/SPARC 2.5.1, 2.6, 7, 8, and 9.
+Solaris/SPARC 2.5.1, 2.6, 7, 8, 9 and 10.
 
 @item
 @uref{http://www.openpkg.org/,,OpenPKG} offers binaries for quite a
