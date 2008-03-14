@@ -662,6 +662,74 @@ valueize_vuses (VEC (tree, gc) *orig)
   return orig;
 }
 
+/* Return the single reference statement defining all virtual uses
+   in VUSES or NULL_TREE, if there are multiple defining statements.
+   Take into account only definitions that alias REF if following
+   back-edges.  */
+
+static tree
+get_def_ref_stmt_vuses (tree ref, VEC (tree, gc) *vuses)
+{
+  tree def_stmt, vuse;
+  unsigned int i;
+
+  gcc_assert (VEC_length (tree, vuses) >= 1);
+
+  def_stmt = SSA_NAME_DEF_STMT (VEC_index (tree, vuses, 0));
+  if (TREE_CODE (def_stmt) == PHI_NODE)
+    {
+      /* We can only handle lookups over PHI nodes for a single
+	 virtual operand.  */
+      if (VEC_length (tree, vuses) == 1)
+	{
+	  def_stmt = get_single_def_stmt_from_phi (ref, def_stmt);
+	  goto cont;
+	}
+      else
+	return NULL_TREE;
+    }
+
+  /* Verify each VUSE reaches the same defining stmt.  */
+  for (i = 1; VEC_iterate (tree, vuses, i, vuse); ++i)
+    {
+      tree tmp = SSA_NAME_DEF_STMT (vuse);
+      if (tmp != def_stmt)
+	return NULL_TREE;
+    }
+
+  /* Now see if the definition aliases ref, and loop until it does.  */
+cont:
+  while (def_stmt
+	 && TREE_CODE (def_stmt) == GIMPLE_MODIFY_STMT
+	 && !get_call_expr_in (def_stmt)
+	 && !refs_may_alias_p (ref, GIMPLE_STMT_OPERAND (def_stmt, 0)))
+    def_stmt = get_single_def_stmt_with_phi (ref, def_stmt);
+
+  return def_stmt;
+}
+
+/* Lookup a SCCVN reference operation VR in the current hash table.
+   Returns the resulting value number if it exists in the hash table,
+   NULL_TREE otherwise.  */
+
+static tree
+vn_reference_lookup_1 (vn_reference_t vr)
+{
+  void **slot;
+  hashval_t hash;
+
+  hash = vr->hashcode;
+  slot = htab_find_slot_with_hash (current_info->references, vr,
+				   hash, NO_INSERT);
+  if (!slot && current_info == optimistic_info)
+    slot = htab_find_slot_with_hash (valid_info->references, vr,
+				     hash, NO_INSERT);
+  if (slot)
+    return ((vn_reference_t)*slot)->result;
+
+  return NULL_TREE;
+}
+
 /* Lookup OP in the current hash table, and return the resulting
    value number if it exists in the hash table.  Return NULL_TREE if
    it does not exist in the hash table. */
@@ -669,21 +737,35 @@ valueize_vuses (VEC (tree, gc) *orig)
 tree
 vn_reference_lookup (tree op, VEC (tree, gc) *vuses)
 {
-  void **slot;
   struct vn_reference_s vr1;
+  tree result, def_stmt;
 
   vr1.vuses = valueize_vuses (vuses);
   vr1.operands = valueize_refs (shared_reference_ops_from_ref (op));
   vr1.hashcode = vn_reference_compute_hash (&vr1);
-  slot = htab_find_slot_with_hash (current_info->references, &vr1, vr1.hashcode,
-				   NO_INSERT);
-  if (!slot && current_info == optimistic_info)
-    slot = htab_find_slot_with_hash (valid_info->references, &vr1, vr1.hashcode,
-				     NO_INSERT);
-  if (!slot)
-    return NULL_TREE;
+  result = vn_reference_lookup_1 (&vr1);
 
-  return ((vn_reference_t)*slot)->result;
+  /* If there is a single defining statement for all virtual uses, we can
+     use that, following virtual use-def chains.  */
+  if (!result
+      && vr1.vuses
+      && VEC_length (tree, vr1.vuses) >= 1
+      && !get_call_expr_in (op)
+      && (def_stmt = get_def_ref_stmt_vuses (op, vr1.vuses))
+      && TREE_CODE (def_stmt) == GIMPLE_MODIFY_STMT
+      /* If there is a call involved, op must be assumed to
+	 be clobbered.  */
+      && !get_call_expr_in (def_stmt))
+    {
+      /* We are now at an aliasing definition for the vuses we want to
+	 look up.  Re-do the lookup with the vdefs for this stmt.  */
+      vdefs_to_vec (def_stmt, &vuses);
+      vr1.vuses = valueize_vuses (vuses);
+      vr1.hashcode = vn_reference_compute_hash (&vr1);
+      result = vn_reference_lookup_1 (&vr1);
+    }
+
+  return result;
 }
 
 /* Insert OP into the current hash table with a value number of
@@ -1632,10 +1714,9 @@ visit_use (tree use)
 		  print_generic_expr (dump_file, simplified, 0);
 		  if (TREE_CODE (lhs) == SSA_NAME)
 		    fprintf (dump_file, " has constants %d\n",
-			     VN_INFO (lhs)->has_constants);
+			     expr_has_constants (simplified));
 		  else
 		    fprintf (dump_file, "\n");
-
 		}
 	    }
 	  /* Setting value numbers to constants will occasionally

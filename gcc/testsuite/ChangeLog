@@ -1,3 +1,13 @@
+2008-03-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34172
+	* gcc.dg/tree-ssa/ssa-fre-11.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-12.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-13.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-14.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-15.c: Likewise.
+	* gcc.dg/tree-ssa/20031106-4.c: Remove XFAIL.
+
 2008-03-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR libcpp/35322:

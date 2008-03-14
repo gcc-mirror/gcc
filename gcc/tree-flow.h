@@ -824,6 +824,10 @@ extern tree make_rename_temp (tree, const char *);
 extern void set_default_def (tree, tree);
 extern tree gimple_default_def (struct function *, tree);
 extern bool stmt_references_abnormal_ssa_name (tree);
+extern bool refs_may_alias_p (tree, tree);
+extern tree get_single_def_stmt (tree);
+extern tree get_single_def_stmt_from_phi (tree, tree);
+extern tree get_single_def_stmt_with_phi (tree, tree);
 
 /* In tree-phinodes.c  */
 extern void reserve_phi_args_for_new_edge (basic_block);

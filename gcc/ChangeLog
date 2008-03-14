@@ -1,3 +1,20 @@
+2008-03-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34172
+	* tree-flow.h (refs_may_alias_p): Declare.
+	(get_single_def_stmt): Likewise.
+	(get_single_def_stmt_from_phi): Likewise.
+	(get_single_def_stmt_with_phi): Likewise.
+	* tree-dfa.c (refs_may_alias_p): New function.
+	(get_single_def_stmt): Likewise.
+	(get_single_def_stmt_from_phi): Likewise.
+	(get_single_def_stmt_with_phi): Likewise.
+	* tree-ssa-sccvn.c (get_def_ref_stmt_vuses): New function.
+	(vn_reference_lookup_1): New helper function.
+	(vn_reference_lookup): Walk the virtual use-def chain to
+	continue searching for a match if the def does not alias the
+	reference we are looking for.
+
 2008-03-14  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/install.texi (Binaries): Remove UCLA archive.  Add HVCC
