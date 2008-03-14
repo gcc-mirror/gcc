@@ -7,16 +7,13 @@
 	* gcc.dg/tree-ssa/ssa-store-ccp-4.c: Skip *-*-darwin*.
 
 2008-03-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Uros Bizjak  <ubizjak@gmail.com>
 
 	PR testsuite/35406
 	* gcc.dg/tree-ssa/ldist-4.c: Update expected scan match
-	count from 0 to 1.
-	
-2008-03-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
-
-	PR testsuite/35406
+	count from 0 to 1 for lp64 targets.
 	* gfortran.dg/ldist-1.f90: Update test to check
-	for 5 loops distributed instead of 4.
+	for 5 loops distributed instead of 4 for lp64 targets.
 
 2008-03-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 

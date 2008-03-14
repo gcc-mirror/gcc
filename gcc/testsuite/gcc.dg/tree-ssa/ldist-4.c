@@ -24,5 +24,6 @@ int loop1 (int k)
    too much code in the outer loop, degrading performance of scalar
    code.  So this test was XFAILed because the cost model of the stand
    alone distribution pass has evolved.  Now it passes.  */
-/* { dg-final { scan-tree-dump-times "distributed: split to 2 loops" 1 "ldist" } } */
+/* { dg-final { scan-tree-dump-times "distributed: split to 2 loops" 0 "ldist" { target ilp32 } } } */
+/* { dg-final { scan-tree-dump-times "distributed: split to 2 loops" 1 "ldist" { target lp64 } } } */
 /* { dg-final { cleanup-tree-dump "ldist" } } */
