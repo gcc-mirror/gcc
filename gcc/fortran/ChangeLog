@@ -1,3 +1,9 @@
+2008-03-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/35474
+	* module.c (mio_symtree_ref): After providing a symbol for a
+	missing equivalence member, resolve and NULL the fixups.
+
 2008-03-05  Release Manager
 
 	* GCC 4.3.0 released.
