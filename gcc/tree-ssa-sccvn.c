@@ -221,6 +221,9 @@ tree VN_TOP;
 static unsigned int next_dfs_num;
 static VEC (tree, heap) *sccstack;
 
+static bool may_insert;
+
+
 DEF_VEC_P(vn_ssa_aux_t);
 DEF_VEC_ALLOC_P(vn_ssa_aux_t, heap);
 
@@ -525,8 +528,21 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 	  temp.op1 = TREE_OPERAND (ref, 2);
 	  break;
 	case COMPONENT_REF:
-	  /* Record field as operand.  */
-	  temp.op0 = TREE_OPERAND (ref, 1);
+	  /* If this is a reference to a union member, record the union
+	     member size as operand.  Do so only if we are doing
+	     expression insertion (during FRE), as PRE currently gets
+	     confused with this.  */
+	  if (may_insert
+	      && TREE_CODE (DECL_CONTEXT (TREE_OPERAND (ref, 1))) == UNION_TYPE
+	      && integer_zerop (DECL_FIELD_OFFSET (TREE_OPERAND (ref, 1)))
+	      && integer_zerop (DECL_FIELD_BIT_OFFSET (TREE_OPERAND (ref, 1))))
+	    {
+	      temp.type = NULL_TREE;
+	      temp.op0 = TYPE_SIZE (TREE_TYPE (TREE_OPERAND (ref, 1)));
+	    }
+	  else
+	    /* Record field as operand.  */
+	    temp.op0 = TREE_OPERAND (ref, 1);
 	  break;
 	case ARRAY_RANGE_REF:
 	case ARRAY_REF:
@@ -1017,6 +1033,9 @@ defs_to_varying (tree stmt)
   return changed;
 }
 
+static tree
+try_to_simplify (tree stmt, tree rhs);
+
 /* Visit a copy between LHS and RHS, return true if the value number
    changed.  */
 
@@ -1088,6 +1107,64 @@ visit_reference_op_load (tree lhs, tree op, tree stmt)
 {
   bool changed = false;
   tree result = vn_reference_lookup (op, shared_vuses_from_stmt (stmt));
+
+  /* We handle type-punning through unions by value-numbering based
+     on offset and size of the access.  Be prepared to handle a
+     type-mismatch here via creating a VIEW_CONVERT_EXPR.  */
+  if (result
+      && !useless_type_conversion_p (TREE_TYPE (result), TREE_TYPE (op)))
+    {
+      /* We will be setting the value number of lhs to the value number
+	 of VIEW_CONVERT_EXPR <TREE_TYPE (result)> (result).
+	 So first simplify and lookup this expression to see if it
+	 is already available.  */
+      tree val = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (op), result);
+      if (stmt
+	  && !is_gimple_min_invariant (val)
+	  && TREE_CODE (val) != SSA_NAME)
+        {
+	  tree tem = try_to_simplify (stmt, val);
+	  if (tem)
+	    val = tem;
+	}
+      result = val;
+      if (!is_gimple_min_invariant (val)
+	  && TREE_CODE (val) != SSA_NAME)
+	result = vn_nary_op_lookup (val);
+      /* If the expression is not yet available, value-number lhs to
+	 a new SSA_NAME we create.  */
+      if (!result && may_insert)
+        {
+	  result = make_ssa_name (SSA_NAME_VAR (lhs), NULL_TREE);
+	  /* Initialize value-number information properly.  */
+	  VN_INFO_GET (result)->valnum = result;
+	  VN_INFO (result)->expr = val;
+	  VN_INFO (result)->needs_insertion = true;
+	  /* As all "inserted" statements are singleton SCCs, insert
+	     to the valid table.  This is strictly needed to
+	     avoid re-generating new value SSA_NAMEs for the same
+	     expression during SCC iteration over and over (the
+	     optimistic table gets cleared after each iteration).
+	     We do not need to insert into the optimistic table, as
+	     lookups there will fall back to the valid table.  */
+	  if (current_info == optimistic_info)
+	    {
+	      current_info = valid_info;
+	      vn_nary_op_insert (val, result);
+	      current_info = optimistic_info;
+	    }
+	  else
+	    vn_nary_op_insert (val, result);
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Inserting name ");
+	      print_generic_expr (dump_file, result, 0);
+	      fprintf (dump_file, " for expression ");
+	      print_generic_expr (dump_file, val, 0);
+	      fprintf (dump_file, "\n");
+	    }
+	}
+    }
 
   if (result)
     {
@@ -1496,7 +1573,8 @@ visit_use (tree use)
   VN_INFO (use)->use_processed = true;
 
   gcc_assert (!SSA_NAME_IN_FREE_LIST (use));
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_file && (dump_flags & TDF_DETAILS)
+      && !IS_EMPTY_STMT (stmt))
     {
       fprintf (dump_file, "Value numbering ");
       print_generic_expr (dump_file, use, 0);
@@ -1607,6 +1685,9 @@ visit_use (tree use)
 	    }
 
 	  if (TREE_CODE (lhs) == SSA_NAME
+	      /* We can substitute SSA_NAMEs that are live over
+		 abnormal edges with their constant value.  */
+	      && !is_gimple_min_invariant (rhs)
 	      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
 	    changed = defs_to_varying (stmt);
 	  else if (REFERENCE_CLASS_P (lhs) || DECL_P (lhs))
@@ -1985,6 +2066,9 @@ free_scc_vn (void)
 	  && SSA_NAME_VALUE (name)
 	  && TREE_CODE (SSA_NAME_VALUE (name)) == VALUE_HANDLE)
 	SSA_NAME_VALUE (name) = NULL;
+      if (name
+	  && VN_INFO (name)->needs_insertion)
+	release_ssa_name (name);
     }
   obstack_free (&vn_ssa_aux_obstack, NULL);
   VEC_free (vn_ssa_aux_t, heap, vn_ssa_aux_table);
@@ -2005,10 +2089,12 @@ free_scc_vn (void)
    due to ressource constraints.  */
 
 bool
-run_scc_vn (void)
+run_scc_vn (bool may_insert_arg)
 {
   size_t i;
   tree param;
+
+  may_insert = may_insert_arg;
 
   init_scc_vn ();
   current_info = valid_info;
@@ -2024,7 +2110,7 @@ run_scc_vn (void)
 	}
     }
 
-  for (i = num_ssa_names - 1; i > 0; i--)
+  for (i = 1; i < num_ssa_names; ++i)
     {
       tree name = ssa_name (i);
       if (name
@@ -2033,6 +2119,7 @@ run_scc_vn (void)
 	if (!DFS (name))
 	  {
 	    free_scc_vn ();
+	    may_insert = false;
 	    return false;
 	  }
     }
@@ -2058,5 +2145,6 @@ run_scc_vn (void)
 	}
     }
 
+  may_insert = false;
   return true;
 }

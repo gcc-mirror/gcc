@@ -208,6 +208,10 @@ for_each_index (tree *addr_p, bool (*cbck) (tree, tree *, void *), void *data)
 	case CONSTRUCTOR:
 	  return true;
 
+	case ADDR_EXPR:
+	  gcc_assert (is_gimple_min_invariant (*addr_p));
+	  return true;
+
 	case TARGET_MEM_REF:
 	  idx = &TMR_BASE (*addr_p);
 	  if (*idx

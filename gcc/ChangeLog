@@ -1,3 +1,45 @@
+2008-03-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/34043
+	PR tree-optimization/33989
+	* tree-ssa-pre.c (execute_pre): Allow SCCVN to do insertion
+	when doing FRE.
+	(bitmap_find_leader): Use extra argument to verify dominance
+	relationship inside a basic-block.
+	(can_PRE_operation): Add VIEW_CONVERT_EXPR.
+	(find_leader_in_sets): Adjust.
+	(create_component_ref_by_pieces): Take extra argument for
+	dominance check, handle lookup failures.
+	(find_or_generate_expression): Likewise.
+	(create_expression_by_pieces): Likewise.
+	(insert_into_preds_of_block): Adjust.
+	(create_value_expr_from): If asked for, verify all operands
+	are in the blocks AVAIL_OUT set.
+	(make_values_for_stmt): Check for SSA_NAMEs that are life
+	over an abnormal edge.
+	(compute_avail): Remove such check.
+	(do_SCCVN_insertion): New function.
+	(eliminate): If we do not find a leader suitable for replacement
+	insert a replacement expression from SCCVN if available.
+	* tree-ssa-sccvn.h (run_scc_vn): Update prototype.
+	(struct vn_ssa_aux): Add needs_insertion flag.
+	* tree-ssa-sccvn.c (may_insert): New global flag.
+	(copy_reference_ops_from_ref): Value-number union member access
+	based on its size, not type and member if insertion is allowed.
+	(visit_reference_op_load): For a weak match from union type
+	punning lookup a view-converted value and insert a SSA_NAME
+	for that value if that is not found.
+	(visit_use): Make dumps shorter.  Do not disallow value numbering
+	SSA_NAMEs that are life over an abnormal edge to constants.
+	(free_scc_vn): Release inserted SSA_NAMEs.
+	(run_scc_vn): New flag to specify whether insertion is allowed.
+	Process SSA_NAMEs in forward order.
+	* tree-ssa-loop-im.c (for_each_index): Handle invariant
+	ADDR_EXPRs inside VIEW_CONVERT_EXPR.
+	* fold-const.c (fold_unary): Fold VIEW_CONVERT_EXPRs from/to
+	pointer type to/from integral types that do not change the
+	precision to regular conversions.
+
 2008-03-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* doc/extend.texi (X86 Built-in Functions) [__builtin_ia32_psll?,
