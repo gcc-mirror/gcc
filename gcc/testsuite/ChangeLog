@@ -1,3 +1,10 @@
+2008-03-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/35558
+	* g++.dg/tls/static-1.C: Move dg-additional-sources after
+	dg-require-effective-target.
+	* g++.dg/tls/static-1a.cc: Likewise.
+
 2008-03-13  Tom Tromey  <tromey@redhat.com>
 
 	PR libcpp/35322:
@@ -9,7 +16,7 @@
 	(main): Call check_vect.
 
 2008-03-13  Alon Dayan  <alond@il.ibm.com>
-            Olga Golovanevsky  <olga@il.ibm.com>
+	    Olga Golovanevsky  <olga@il.ibm.com>
 	
 	PR tree-optimization/35041
 	* gcc.dg/struct/wo_prof_double_malloc.c: New test.
