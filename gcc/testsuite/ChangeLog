@@ -1,5 +1,11 @@
 2008-03-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR fortran/35406
+	* gfortran.dg/ldist-1.f90: Update test to check for 5 loops distributed
+	instead of 4.
+
+2008-03-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR fortran/35475
 	* gfortran.dg/derived_sub.f90: New test.
 
