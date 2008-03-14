@@ -1,14 +1,22 @@
+2008-03-14  H.J. Lu  <hongjiu.lu@intel.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/35538 
+	* gcc.dg/tree-ssa/ssa-store-ccp-3.c: Support PIC targets.
+	Skip *-*-darwin*.
+	* gcc.dg/tree-ssa/ssa-store-ccp-4.c: Skip *-*-darwin*.
+
 2008-03-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR testsuite/35406
-	* gcc.dg/tree-ssa/ldist-4.c: Update expected scan match count from 0
-	to 1.
+	* gcc.dg/tree-ssa/ldist-4.c: Update expected scan match
+	count from 0 to 1.
 	
 2008-03-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR testsuite/35406
-	* gfortran.dg/ldist-1.f90: Update test to check for 5 loops distributed
-	instead of 4.
+	* gfortran.dg/ldist-1.f90: Update test to check
+	for 5 loops distributed instead of 4.
 
 2008-03-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
