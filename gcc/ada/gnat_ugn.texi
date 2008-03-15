@@ -1932,14 +1932,14 @@ is a one, two, or three byte sequence:
 @iftex
 @leftskip=.7cm
 @end iftex
-16#0000#-16#007f#: 2#0xxxxxxx#
-16#0080#-16#07ff#: 2#110xxxxx# 2#10xxxxxx#
-16#0800#-16#ffff#: 2#1110xxxx# 2#10xxxxxx# 2#10xxxxxx#
+16#0000#-16#007f#: 2#0@var{xxxxxxx}#
+16#0080#-16#07ff#: 2#110@var{xxxxx}# 2#10@var{xxxxxx}#
+16#0800#-16#ffff#: 2#1110@var{xxxx}# 2#10@var{xxxxxx}# 2#10@var{xxxxxx}#
 
 @end smallexample
 
 @noindent
-where the xxx bits correspond to the left-padded bits of the
+where the @var{xxx} bits correspond to the left-padded bits of the
 16-bit character value. Note that all lower half ASCII characters
 are represented as ASCII bytes and all upper half characters and
 other wide characters are represented as sequences of upper-half
@@ -7560,12 +7560,12 @@ ALI file named in the @code{gnatbind} command line.
 @cindex @option{^-l^/ORDER_OF_ELABORATION^} (@command{gnatbind})
 Output chosen elaboration order.
 
-@item ^-Lxxx^/BUILD_LIBRARY=xxx^
+@item ^-L@var{xxx}^/BUILD_LIBRARY=@var{xxx}^
 @cindex @option{^-L^/BUILD_LIBRARY^} (@command{gnatbind})
 Bind the units for library building. In this case the adainit and
 adafinal procedures (@pxref{Binding with Non-Ada Main Programs})
-are renamed to ^xxxinit^XXXINIT^ and
-^xxxfinal^XXXFINAL^.
+are renamed to ^@var{xxx}init^@var{XXX}INIT^ and
+^@var{xxx}final^@var{XXX}FINAL^.
 Implies ^-n^/NOCOMPILE^.
 @ifclear vms
 (@xref{GNAT and Libraries}, for more details.)
@@ -7640,15 +7640,15 @@ The @var{xxx} ^string specified with the switch^option^ may be either
 @item ``@option{^in^INVALID^}'' requesting an invalid value where possible
 @item ``@option{^lo^LOW^}'' for the lowest possible value
 @item ``@option{^hi^HIGH^}'' for the highest possible value
-@item ``@option{xx}'' for a value consisting of repeated bytes with the
-value 16#xx# (i.e., xx is a string of two hexadecimal digits).
+@item ``@option{@var{xx}}'' for a value consisting of repeated bytes with the
+value @code{16#@var{xx}#} (i.e., @var{xx} is a string of two hexadecimal digits).
 @end itemize
 
 In addition, you can specify @option{-Sev} to indicate that the value is
 to be set at run time. In this case, the program will look for an environment
 @cindex GNAT_INIT_SCALARS
-variable of the form @env{GNAT_INIT_SCALARS=xx}, where xx is one
-of @option{in/lo/hi/xx} with the same meanings as above.
+variable of the form @env{GNAT_INIT_SCALARS=@var{xx}}, where @var{xx} is one
+of @option{in/lo/hi/@var{xx}} with the same meanings as above.
 If no environment variable is found, or if it does not have a valid value,
 then the default is @option{in} (invalid values).
 
@@ -10564,9 +10564,9 @@ configuration pragmas are handled according to strict RM rules. See
 previous section for a full description of this mode.
 
 @ifclear vms
-@item -gnatxxx
-This passes the given @option{-gnatxxx} switch to @code{gnat} which is
-used to parse the given file. Not all @code{xxx} options make sense,
+@item -gnat@var{xxx}
+This passes the given @option{-gnat@var{xxx}} switch to @code{gnat} which is
+used to parse the given file. Not all @var{xxx} options make sense,
 but for example, the use of @option{-gnati2} allows @code{gnatchop} to
 process a source file that uses Latin-2 coding for identifiers.
 @end ifclear
@@ -10650,7 +10650,7 @@ check, and causes all but the last instance of such duplicated
 units to be skipped.
 
 @ifclear vms
-@item --GCC=xxxx
+@item --GCC=@var{xxxx}
 @cindex @option{--GCC=} (@code{gnatchop})
 Specify the path of the GNAT parser to be used. When this switch is used,
 no attempt is made to add the prefix to the GNAT parser executable.
@@ -18187,9 +18187,9 @@ $ chmod -w *.ali
 @end smallexample
 
 @noindent
-Please note that the library must have a name of the form @file{libxxx.a} or
-@file{libxxx.so} (or @file{libxxx.dll} on Windows) in order to be accessed by
-the directive @option{-lxxx} at link time.
+Please note that the library must have a name of the form @file{lib@var{xxx}.a}
+or @file{lib@var{xxx}.so} (or @file{lib@var{xxx}.dll} on Windows) in order to
+be accessed by the directive @option{-l@var{xxx}} at link time.
 
 @node Installing a library
 @subsection Installing a library

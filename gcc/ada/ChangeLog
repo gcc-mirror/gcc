@@ -1,3 +1,11 @@
+2008-03-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* gnat_rm.texi (Implementation Defined Characteristics)
+	(Wide_Text_IO, Wide_Wide_Text_IO): Add @var annotations where
+	appropriate.
+	* gnat_ugn.texi (Wide Character Encodings, Switches for gnatbind)
+	(Switches for gnatchop, Installing a library): Likewise.
+
 2008-03-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* trans.c (emit_range_check): Do not emit the check if the base type

@@ -8464,13 +8464,13 @@ attribute.  See C.7.1(7).
 @end cartouche
 @noindent
 The result of this attribute is a string that identifies
-the object or component that denotes a given task. If a variable Var has a task
-type, the image for this task will have the form Var_XXXXXXXX, where the
-suffix
+the object or component that denotes a given task. If a variable @code{Var}
+has a task type, the image for this task will have the form @code{Var_@var{XXXXXXXX}},
+where the suffix
 is the hexadecimal representation of the virtual address of the corresponding
 task control block. If the variable is an array of tasks, the image of each
 task will have the form of an indexed component indicating the position of a
-given task in the array, e.g.@: Group(5)_XXXXXXX. If the task is a
+given task in the array, e.g.@: @code{Group(5)_@var{XXXXXXX}}. If the task is a
 component of a record, the image of the task will have the form of a selected
 component. These rules are fully recursive, so that the image of a task that
 is a subcomponent of a composite object corresponds to the expression that
@@ -12063,7 +12063,7 @@ is a one, two, or three byte sequence:
 @end smallexample
 
 @noindent
-where the xxx bits correspond to the left-padded bits of the
+where the @var{xxx} bits correspond to the left-padded bits of the
 16-bit character value.  Note that all lower half ASCII characters
 are represented as ASCII bytes and all upper half characters and
 other wide characters are represented as sequences of upper-half
@@ -12238,7 +12238,7 @@ is a one, two, three, or four byte sequence:
 @end smallexample
 
 @noindent
-where the xxx bits correspond to the left-padded bits of the
+where the @var{xxx} bits correspond to the left-padded bits of the
 21-bit character value.  Note that all lower half ASCII characters
 are represented as ASCII bytes and all upper half characters and
 other wide characters are represented as sequences of upper-half
