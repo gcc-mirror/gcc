@@ -6,10 +6,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.3-b20071109\n"
+"Project-Id-Version: gcc 4.3.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2008-03-05 17:23+0100\n"
-"PO-Revision-Date: 2008-01-21 10:15+0100\n"
+"PO-Revision-Date: 2008-03-15 11:15+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -2288,9 +2288,9 @@ msgid "GMP version %s, MPFR version %s.\n"
 msgstr "GMP-Version %s, MPFR-Version %s.\n"
 
 #: toplev.c:1188
-#, fuzzy, c-format
+#, c-format
 msgid "%s%swarning: %s header version %s differs from library version %s.\n"
-msgstr "Warnung: %s-Header-Version %s unterscheidet sich von Bibliotheksversion %s.\n"
+msgstr "%s%sWarnung: %s-Header-Version %s unterscheidet sich von Bibliotheksversion %s.\n"
 
 #: toplev.c:1190
 #, c-format
@@ -2380,7 +2380,6 @@ msgid "The threshold ratio between instantiated fields and the total structure s
 msgstr "Der Anteil-Schwellwert zwischen instanzierten Feldern und der Gesamt-Strukturgröße"
 
 #: params.def:93
-#, fuzzy
 msgid "The threshold ratio between current and hottest structure counts"
 msgstr "Der Anteil-Schwellwert zwischen aktuellen und heißesten Strukturzahlen"
 
@@ -2774,11 +2773,11 @@ msgstr "Maximalgröße der partiellen Aufwandsmenge, wenn Baumvoroptimierung aus
 
 #: params.def:723
 msgid "Maximum size of a SCC before SCCVN stops processing a function"
-msgstr ""
+msgstr "Maximalgröße eines SCC bevor SCCVN zur Bearbeitung einer Funktion anhält"
 
 #: params.def:729
 msgid "Multiplier used for determining the double-queueing threshold"
-msgstr ""
+msgstr "Verwendeter Multiplikator zur Bestimmung des Schwellwertes zum Double-Queuing"
 
 #: config/alpha/alpha.c:5023
 #, c-format
@@ -4191,12 +4190,12 @@ msgstr "»%s« bei %L wurde bereits bei %L initialisiert"
 #: fortran/data.c:317
 #, no-c-format
 msgid "Data element below array lower bound at %L"
-msgstr ""
+msgstr "Datenelement unterhalb der unteren Feldgrenze bei %L"
 
 #: fortran/data.c:329
 #, no-c-format
 msgid "Data element above array upper bound at %L"
-msgstr ""
+msgstr "Datenelement oberhalb der oberen Feldgrenze bei %L"
 
 #: fortran/data.c:435
 #, no-c-format
@@ -4219,9 +4218,9 @@ msgid "Symbol '%s' must be a PARAMETER in DATA statement at %C"
 msgstr "Symbol »%s« muss ein PARAMETER in DATA-Anweisung bei %C sein"
 
 #: fortran/decl.c:390
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Invalid initializer %s in Data statement at %C"
-msgstr "ungültige Initialisierung für virtuelle Methode »%D«"
+msgstr "Ungültige Initialisierung %s in Data-Anweisung bei %C"
 
 #: fortran/decl.c:493
 #, no-c-format
@@ -4459,9 +4458,9 @@ msgid "Kind %d not supported for type %s at %C"
 msgstr "Die Art %d wird für Typ %s bei %C nicht unterstützt"
 
 #: fortran/decl.c:1946
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing right parenthesis or comma at %C"
-msgstr "Fehlende rechte Klammer bei %C"
+msgstr "Fehlende rechte Klammer oder Komma bei %C"
 
 #: fortran/decl.c:2019
 #, no-c-format
@@ -4700,9 +4699,9 @@ msgid "Unexpected junk after function declaration at %C"
 msgstr "Unerwartete Angaben hinter Funktionsdeklaration bei %C"
 
 #: fortran/decl.c:4000 fortran/decl.c:4734
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Extension: BIND(C) attribute at %L may not be specified for an internal procedure"
-msgstr "SAVE-Attribut bei %L kann nicht in einer PURE-Prozedur angegeben werden"
+msgstr "Erweiterung: BIND(C)-Attribut bei %L kann nicht für eine interne Prozedur angegeben werden"
 
 #: fortran/decl.c:4066
 #, no-c-format
@@ -4857,14 +4856,14 @@ msgid "Missing closing paren for binding label at %C"
 msgstr "Schließende Klammer für Bindungsmarke bei %C fehlt"
 
 #: fortran/decl.c:4857
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "No binding name is allowed in BIND(C) at %C"
-msgstr "Funktionsname »%s« nicht erlaubt bei %C"
+msgstr "In BIND(C) bei %C ist kein bindender Name erlaubt"
 
 #: fortran/decl.c:4863
 #, no-c-format
 msgid "For dummy procedure %s, no binding name is allowed in BIND(C) at %C"
-msgstr ""
+msgstr "For Schein-Prozedur %s in BIND(C) bei %C ist kein bindender Name erlaubt"
 
 #: fortran/decl.c:4894
 #, no-c-format
@@ -4910,7 +4909,7 @@ msgstr "Fehlende Feldspezifikation bei %L in DIMENSION-Anweisung"
 #: fortran/decl.c:5189
 #, no-c-format
 msgid "Dimensions specified for %s at %L after its initialisation"
-msgstr ""
+msgstr "Für %s bei %L wurden Dimensionen nach dessen Initialisierung angegeben"
 
 #: fortran/decl.c:5198
 #, no-c-format
@@ -5008,9 +5007,9 @@ msgid "Expected expression at %C in PARAMETER statement"
 msgstr "Ausdruck bei %C in PARAMETER-Anweisung erwartet"
 
 #: fortran/decl.c:5799
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Initializing already initialized variable at %C"
-msgstr "Initialisierung für COMMON-Variable »%s« bei %C nicht erlaubt"
+msgstr "Initialisierung einer bereits initialisierten Variablen bei %C"
 
 #: fortran/decl.c:5844
 #, no-c-format
@@ -5467,7 +5466,7 @@ msgstr " EINTRAG"
 #: fortran/dump-parse-tree.c:595
 #, c-format
 msgid " BIND(C)"
-msgstr ""
+msgstr " BIND(C)"
 
 #: fortran/dump-parse-tree.c:598
 #, c-format
@@ -6188,7 +6187,7 @@ msgid "Integer value too large in expression at %C"
 msgstr "Ganzzahlwert zu groß in Ausdruck bei %C"
 
 #: fortran/expr.c:1037
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Index in dimension %d is out of bounds at %L"
 msgstr "Index in Dimension %d ist außerhalb der Grenzen bei %L"
 
@@ -6270,7 +6269,7 @@ msgstr "Intrinsische Funktion »%s« bei %L ist nicht in einem Initialisierungs-
 #: fortran/expr.c:2214
 #, no-c-format
 msgid "PARAMETER '%s' is used at %L before its definition is complete"
-msgstr ""
+msgstr "PARAMETER »%s« wird bei %L verwendet, bevor dessen Definition vollständig ist"
 
 #: fortran/expr.c:2234
 #, no-c-format
@@ -6288,9 +6287,9 @@ msgid "Deferred array '%s' at %L is not permitted in an initialization expressio
 msgstr "Aufgeschobenes Feld »%s bei %L ist nicht in einem Initialisierungs-Ausdruck erlaubt«"
 
 #: fortran/expr.c:2252
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Array '%s' at %L is a variable, which does not reduce to a constant expression"
-msgstr "Parameter »%s« bei %L wurde nicht deklariert oder ist eine Variable, die nicht zu konstantem Ausdruck reduziert"
+msgstr "Feld »%s« bei %L ist eine Variable, die nicht zu konstantem Ausdruck reduziert"
 
 #: fortran/expr.c:2262
 #, no-c-format
@@ -6409,32 +6408,32 @@ msgstr "Feld-Zuweisung"
 #: fortran/expr.c:2775
 #, no-c-format
 msgid "Extension: BOZ literal at %L used to initialize non-integer variable '%s'"
-msgstr ""
+msgstr "Erweiterung: BOZ-Literal bei %L verwendet, um Nicht-Ganzzahlvariable »%s« zu initialisieren"
 
 #: fortran/expr.c:2781 fortran/resolve.c:6058
 #, no-c-format
 msgid "Extension: BOZ literal at %L outside a DATA statement and outside INT/REAL/DBLE/CMPLX"
-msgstr ""
+msgstr "Erweiterung: BOZ-Literal bei %L außerhalb einer DATA-Anweisung und außerhalb von INT/REAL/DBLE/CMPLX"
 
 #: fortran/expr.c:2791 fortran/resolve.c:6068
 #, no-c-format
 msgid "BOZ literal at %L is bitwise transferred non-integer symbol '%s'"
-msgstr ""
+msgstr "BOZ-Literal bei %L ist bitweise übertragenes Nicht-Ganzzahlsymbol »%s«"
 
 #: fortran/expr.c:2799 fortran/resolve.c:6077
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Arithmetic underflow of bit-wise transferred BOZ at %L. This check can be disabled with the option -fno-range-check"
-msgstr "Arithmetischer Überlauf bei Umwandlung von %s in %s bei %L. Diese Überprüfung kann mit der Option -fno-range-check ausgeschaltet werden"
+msgstr "Arithmetischer Unterlauf des bitweise übertragenen BOZ bei %L. Diese Überprüfung kann mit der Option -fno-range-check ausgeschaltet werden"
 
 #: fortran/expr.c:2803 fortran/resolve.c:6081
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Arithmetic overflow of bit-wise transferred BOZ at %L. This check can be disabled with the option -fno-range-check"
-msgstr "Arithmetischer Überlauf bei Umwandlung von %s in %s bei %L. Diese Überprüfung kann mit der Option -fno-range-check ausgeschaltet werden"
+msgstr "Arithmetischer Überlauf des bitweise übertragenen BOZ bei %L. Diese Überprüfung kann mit der Option -fno-range-check ausgeschaltet werden"
 
 #: fortran/expr.c:2807 fortran/resolve.c:6085
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Arithmetic NaN of bit-wise transferred BOZ at %L. This check can be disabled with the option -fno-range-check"
-msgstr "Arithmetischer Überlauf bei Umwandlung von %s in %s bei %L. Diese Überprüfung kann mit der Option -fno-range-check ausgeschaltet werden"
+msgstr "Arithmetisches NaN des bitweise übertragenen BOZ bei %L. Diese Überprüfung kann mit der Option -fno-range-check ausgeschaltet werden"
 
 #: fortran/expr.c:2828
 #, no-c-format
@@ -6671,14 +6670,14 @@ msgid "Type/rank mismatch in argument '%s' at %L"
 msgstr "Unpassender Typ/Rang in Argument »%s« bei %L"
 
 #: fortran/interface.c:1474
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Type mismatch in argument '%s' at %L; passed %s to %s"
-msgstr "Unpassender Typ/Rang in Argument »%s« bei %L"
+msgstr "Unpassender Typ in Argument »%s« bei %L; übergab %s an %s"
 
 #: fortran/interface.c:1492 fortran/interface.c:1532
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Rank mismatch in argument '%s' at %L (%d and %d)"
-msgstr "Unpassender Typ/Rang in Argument »%s« bei %L"
+msgstr "Unpassender Rang in Argument »%s« bei %L (%d und %d)"
 
 #: fortran/interface.c:1519
 #, no-c-format
@@ -6686,9 +6685,9 @@ msgid "Fortran 2003: Scalar CHARACTER actual argument with array dummy argument 
 msgstr "Fortran 2003: Skalares effektives CHARACTER-Argument mit Feld-Scheinargument »%s« bei %L"
 
 #: fortran/interface.c:1544
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Element of assumed-shaped array passed to dummy argument '%s' at %L"
-msgstr "Feld mit vermuteter Form bei %L muss ein Scheinargument sein"
+msgstr "Element eines Feldes mit vermuteter Form an Scheinargument »%s« bei %L übergeben"
 
 #: fortran/interface.c:1861
 #, no-c-format
@@ -6716,14 +6715,14 @@ msgid "Unexpected alternate return spec in subroutine call at %L"
 msgstr "Unerwartete alternative Rückgabespezifikation in Unterprogrammaufruf bei %L"
 
 #: fortran/interface.c:1922
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Character length mismatch (%ld/%ld) between actual argument and pointer or allocatable dummy argument '%s' at %L"
-msgstr "Zeichenlänge passt nicht zwischen effektivem Argument und Zeiger oder reservierbarem Scheinargument »%s« bei %L"
+msgstr "Zeichenlänge passt nicht (%ld/%ld) zwischen effektivem Argument und Zeiger oder reservierbarem Scheinargument »%s« bei %L"
 
 #: fortran/interface.c:1929
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Character length mismatch (%ld/%ld) between actual argument and assumed-shape dummy argument '%s' at %L"
-msgstr "Zeichenlänge passt nicht zwischen effektivem Argument und Zeiger oder reservierbarem Scheinargument »%s« bei %L"
+msgstr "Zeichenlänge passt nicht (%ld/%ld) zwischen effektivem Argument und Scheinargument »%s« mit vermuteter Form bei %L"
 
 #: fortran/interface.c:1943
 #, no-c-format
@@ -6761,9 +6760,9 @@ msgid "Actual argument for '%s' must be ALLOCATABLE at %L"
 msgstr "Effektives Argument für »%s« muss ALLOCATABLE bei %L sein"
 
 #: fortran/interface.c:2017
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Actual argument at %L must be definable as the dummy argument '%s' is INTENT = OUT/INOUT"
-msgstr "Das effektive Argument bei %L muss definierbar sein, zu (Schein) INTENT = OUT/INOUT zu passen"
+msgstr "Das effektive Argument bei %L muss definierbar sein, denn das Scheinargument »%s« ist INTENT = OUT/INOUT"
 
 #: fortran/interface.c:2026
 #, no-c-format
@@ -6771,9 +6770,9 @@ msgid "Actual argument at %L is use-associated with PROTECTED attribute and dumm
 msgstr "Das effektive Argument bei %L ist benutzungs-verbunden mit PROTECTED-Attribut und Scheinargument »%s« ist INTENT = OUT/INOUT"
 
 #: fortran/interface.c:2039
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Array-section actual argument with vector subscripts at %L is incompatible with INTENT(OUT), INTENT(INOUT) or VOLATILE attribute of the dummy argument '%s'"
-msgstr "Feldbereich mit Vektorindex als effektives Argument bei %L ist unverträglich mit INTENT(IN), INTENT(INOUT) und VOLATILE-Attribut des Scheinarguments »%s«"
+msgstr "Feldbereich mit Vektorindex als effektives Argument bei %L ist unverträglich mit INTENT(OUT), INTENT(INOUT) und VOLATILE-Attribut des Scheinarguments »%s«"
 
 #: fortran/interface.c:2056
 #, no-c-format
@@ -6871,9 +6870,9 @@ msgid "Intrinsic '%s' at %L is not included in the selected standard"
 msgstr "Intrinsisches »%s« bei %L ist nicht im gewählten Standard vorhanden"
 
 #: fortran/intrinsic.c:3398
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: Function '%s' as initialization expression at %L"
-msgstr "Fortran 2003: Nichtganzzahliger Exponent in einem Initialisierungsausdruck bei %L"
+msgstr "Fortran 2003: Funktion »%s« als Initialisierungsausdruck bei %L"
 
 #: fortran/intrinsic.c:3463
 #, no-c-format
@@ -7260,14 +7259,14 @@ msgid "INQUIRE statement at %L requires either FILE or UNIT specifier"
 msgstr "INQUIRE-Anweisung bei %L erfordert entweder FILE- oder UNIT-Spezifikationssymbol"
 
 #: fortran/match.c:156
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing ')' in statement before %L"
-msgstr "Fehlende Rückgabeanweisung"
+msgstr "Fehlendes »)« in Anweisung vor %L"
 
 #: fortran/match.c:161
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing '(' in statement before %L"
-msgstr "Fehlende Rückgabeanweisung"
+msgstr "Fehlendes »(« in Anweisung vor %L"
 
 #: fortran/match.c:332
 #, no-c-format
@@ -7365,9 +7364,9 @@ msgid "Block label not appropriate for arithmetic IF statement at %C"
 msgstr "Blockmarke passt nicht zu arithmetischer IF-Anweisung bei %C"
 
 #: fortran/match.c:1459
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Block label is not appropriate for IF statement at %C"
-msgstr "Blockmarke ist keine geeignete IF-Anweisung bei %C"
+msgstr "Blockmarke ist ungeeignet für IF-Anweisung bei %C"
 
 #: fortran/match.c:1538 fortran/primary.c:2559
 #, no-c-format
@@ -7505,7 +7504,7 @@ msgstr "Symbol »%s« bei %C ist bereits in einem COMMON-Block"
 #: fortran/match.c:2777
 #, no-c-format
 msgid "Initialized symbol '%s' at %C can only be COMMON in BLOCK DATA"
-msgstr ""
+msgstr "Initialisiertes Symbol »%s« bei %C kann nur COMMON in BLOCK DATA sein"
 
 #: fortran/match.c:2804
 #, no-c-format
@@ -8536,9 +8535,9 @@ msgid "Invalid Hollerith constant: Integer kind at %L should be default"
 msgstr "Ungültige Hollerithkonstante: Ganzzahlart bei %L sollte Standard sein"
 
 #: fortran/primary.c:353
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Extension: Hexadecimal constant at %C uses non-standard syntax"
-msgstr "Erweiterung: Hexadezimalkonstante bei %C verwendet Nicht-Standard-Syntax."
+msgstr "Erweiterung: Hexadezimalkonstante bei %C verwendet Nicht-Standard-Syntax"
 
 #: fortran/primary.c:363
 #, no-c-format
@@ -8551,9 +8550,9 @@ msgid "Illegal character in BOZ constant at %C"
 msgstr "Unzulässiges Zeichen in BOZ-Konstante bei %C"
 
 #: fortran/primary.c:392
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Extension: BOZ constant at %C uses non-standard postfix syntax"
-msgstr "Erweiterung: BOZ-Konstante bei %C verwendet Nicht-Standard-Postfix-Syntax."
+msgstr "Erweiterung: BOZ-Konstante bei %C verwendet Nicht-Standard-Postfix-Syntax"
 
 #: fortran/primary.c:423
 #, no-c-format
@@ -8561,9 +8560,9 @@ msgid "Integer too big for integer kind %i at %C"
 msgstr "Ganzzahl zu groß für Ganzzahlart %i bei %C"
 
 #: fortran/primary.c:429
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: BOZ used outside a DATA statement at %C"
-msgstr "Fortran 2003: VOLATILE-Anweisung bei %C"
+msgstr "Fortran 2003: BOZ außerhalb einer DATA-Anweisung bei %C verwendet"
 
 #: fortran/primary.c:529
 #, no-c-format
@@ -8736,9 +8735,9 @@ msgid "Named constant at %C in an EQUIVALENCE"
 msgstr "Benannte Konstante bei %C in EQUIVALENCE"
 
 #: fortran/primary.c:2579
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' at %C is not a variable"
-msgstr "Argument von »%s« bei %L ist keine Variable"
+msgstr "»%s« bei %C ist keine Variable"
 
 #: fortran/resolve.c:121
 #, no-c-format
@@ -8786,9 +8785,9 @@ msgid "Argument '%s' of elemental procedure at %L cannot have the POINTER attrib
 msgstr "Argument »%s« der elementaren Prozedur bei %L kann kein POINTER-Attribut haben"
 
 #: fortran/resolve.c:231
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Dummy procedure '%s' not allowed in elemental procedure '%s' at %L"
-msgstr "Scheinprozedur bei %L nicht in ELEMENTAL-Prozedur erlaubt"
+msgstr "Scheinprozedur »%s« nicht in elementarer Prozedur »%s« bei %L erlaubt"
 
 #: fortran/resolve.c:243
 #, no-c-format
@@ -8816,14 +8815,14 @@ msgid "Character-valued internal function '%s' at %L must not be assumed length"
 msgstr "Interne zeichenwertige Funktion »%s« bei %L darf keine vermutete Länge haben"
 
 #: fortran/resolve.c:501
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Function %s at %L has entries with mismatched array specifications"
-msgstr "Prozedur %s bei %L hat Einträge mit unpassenden Feldspezifikationen"
+msgstr "Funktion %s bei %L hat Einträge mit unpassenden Feldspezifikationen"
 
 #: fortran/resolve.c:518
 #, no-c-format
 msgid "Extension: Function %s at %L with entries returning variables of different string lengths"
-msgstr ""
+msgstr "Erweiterung: Funktion %s bei %L mit Einträgen, die Variablen mit verschiedenen Zeichenkettenlängen zurückgeben"
 
 #: fortran/resolve.c:545
 #, no-c-format
@@ -8858,12 +8857,12 @@ msgstr "ENTRY-Ergebnis %s kann nicht vom Typ %s in FUNCTION %s bei %L sein"
 #: fortran/resolve.c:661
 #, no-c-format
 msgid "Variable '%s' at %L is in COMMON but only in BLOCK DATA initialization is allowed"
-msgstr ""
+msgstr "Variable »%s« bei %L ist in COMMON, aber Initialisierung ist nur in BLOCK DATA erlaubt"
 
 #: fortran/resolve.c:665
 #, no-c-format
 msgid "Initialized variable '%s' at %L is in a blank COMMON but initialization is only allowed in named common blocks"
-msgstr ""
+msgstr "Initialisierte Variable »%s« bei %L ist in leerem COMMON, aber Initialisierung ist nur in in benannten Common-Blocks erlaubt"
 
 #: fortran/resolve.c:676
 #, no-c-format
@@ -9474,24 +9473,24 @@ msgid "'%s' must not appear an the array specification at %L in the same ALLOCAT
 msgstr "»%s« darf nicht bei %L in einer Feldspezifikation in der gleichen ALLOCATE-Anweisung auftreten, wo es selbst alloziert wird"
 
 #: fortran/resolve.c:4880
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "STAT variable '%s' of %s statement at %C cannot be INTENT(IN)"
-msgstr "STAT-Variable »%s« der ALLOCATE-Anweisung bei %C kann nicht INTENT(IN) sein"
+msgstr "STAT-Variable »%s« der %s-Anweisung bei %C kann nicht INTENT(IN) sein"
 
 #: fortran/resolve.c:4884
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Illegal STAT variable in %s statement at %C for a PURE procedure"
-msgstr "Illegale STAT-Variable in ALLOCATE-Anweisung bei %C für eine PURE-Prozedur"
+msgstr "Illegale STAT-Variable in %s-Anweisung bei %C für eine PURE-Prozedur"
 
 #: fortran/resolve.c:4922
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "STAT tag in %s statement at %L must be a variable"
-msgstr "STAT-Ausdruck bei %C muss eine Variable sein"
+msgstr "STAT-Marke in %s-Anweisung bei %L muss eine Variable sein"
 
 #: fortran/resolve.c:4928
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "STAT tag in %s statement at %L must be of type INTEGER"
-msgstr "STAT-Marke in ALLOCATE-Anweisung bei %L muss Typ INTEGER haben"
+msgstr "STAT-Marke in %s-Anweisung bei %L muss Typ INTEGER haben"
 
 #. The cases overlap, or they are the same
 #. element in the list.  Either way, we must
@@ -9613,7 +9612,7 @@ msgstr "WHERE-Zuweisungsziel bei %L hat ungültige Form"
 #: fortran/resolve.c:5735 fortran/resolve.c:5820
 #, no-c-format
 msgid "Non-ELEMENTAL user-defined assignment in WHERE at %L"
-msgstr ""
+msgstr "Benutzerdefinierte Nicht-ELEMENTAL-Zuweisung in WHERE bei %L"
 
 #: fortran/resolve.c:5745 fortran/resolve.c:5830
 #, no-c-format
@@ -9956,9 +9955,9 @@ msgid "Incompatible derived type in PARAMETER at %L"
 msgstr "Unverträglicher abgeleiteter Typ in PARAMETER bei %L"
 
 #: fortran/resolve.c:7758
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Interface '%s', used by procedure '%s' at %L, is declared in a later PROCEDURE statement"
-msgstr "Intrinsische Prozedur »%s« ist in PROCEDURE-Anweisung bei %C nicht erlaubt"
+msgstr "Schnittstelle »%s«, von Prozedur »%s« bei %L verwendet, ist in späterer PROCEDURE-Anweisung deklariert"
 
 #: fortran/resolve.c:7772
 #, no-c-format
@@ -10043,7 +10042,7 @@ msgstr "BLOCK DATA Element »%s« bei %L muss in COMMON sein"
 #: fortran/resolve.c:8149
 #, no-c-format
 msgid "DATA array '%s' at %L must be specified in a previous declaration"
-msgstr ""
+msgstr "DATA-Feld »%s« bei %L muss in vorheriger Deklaration angegeben werden"
 
 #: fortran/resolve.c:8194
 #, no-c-format
@@ -10096,9 +10095,9 @@ msgid "Derived type variable '%s' at %L cannot have ALLOCATABLE components to be
 msgstr "Variable »%s« abgeleiteten Typs bei %L kann keine ALLOCATABLE-Komponenten haben, um EQUIVALENCE-Objekt zu sein"
 
 #: fortran/resolve.c:8639
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Derived type variable '%s' at %L with default initialization cannot be in EQUIVALENCE with a variable in COMMON"
-msgstr "Variable »%s« abgeleiteten Typs bei %L mit Standardinitialisierung kann kein EQUIVALENCE-Objekt sein."
+msgstr "Variable »%s« abgeleiteten Typs bei %L mit Standardinitialisierung kann nicht in EQUIVALENCE mit einer Variablen in COMMON sein"
 
 #: fortran/resolve.c:8656
 #, no-c-format
@@ -10211,9 +10210,9 @@ msgid "'&' not allowed by itself in line %d"
 msgstr "»&« ist in Zeile %d selbst nicht erlaubt"
 
 #: fortran/scanner.c:1207
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Nonconforming tab character in column %d of line %d"
-msgstr "Unpassendes Tab-Zeichen in Spalte 1 der Zeile %d"
+msgstr "Unpassendes Tab-Zeichen in Spalte %d der Zeile %d"
 
 #: fortran/scanner.c:1405
 #, no-c-format
@@ -10456,9 +10455,9 @@ msgid "Second argument of NEAREST at %L shall not be zero"
 msgstr "Zweites Argument von NEAREST bei %L sollte nicht Null sein"
 
 #: fortran/simplify.c:2787
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Result of NEAREST is NaN at %L"
-msgstr "Ergebnis von %s ist NaN bei %L"
+msgstr "Ergebnis von NEAREST ist NaN bei %L"
 
 #: fortran/simplify.c:3062
 #, no-c-format
@@ -10807,7 +10806,7 @@ msgstr "Überlappende ungleiche Initialisierungen in EQUIVALENCE bei %L"
 #: fortran/target-memory.c:635
 #, no-c-format
 msgid "BOZ constant at %L is too large (%ld vs %ld bits)"
-msgstr ""
+msgstr "BOZ-konstante bei %L ist zu groß (%ld vs %ld Bits)"
 
 #: fortran/trans-common.c:399
 #, no-c-format
@@ -11275,9 +11274,8 @@ msgid "-femit-class-file should used along with -fsyntax-only"
 msgstr "-femit-class-file sollte zusammen mit -fsyntax-only verwendet werden"
 
 #: config/cris/cris.h:207
-#, fuzzy
 msgid "Do not specify both -march=... and -mcpu=..."
-msgstr "-C und -o können nicht zusammen angegeben werden"
+msgstr " -march=... und -mcpu=... können nicht zusammen angegeben werden"
 
 #: config/lynx.h:70
 msgid "cannot use mthreads and mlegacy-threads together"
@@ -12656,13 +12654,12 @@ msgid "Change only the low 8 bits of the stack pointer"
 msgstr "Nur die unteren 8 Bit des Stapelzeigers verändern"
 
 #: config/avr/avr.opt:64
-#, fuzzy
 msgid "Relax branches"
-msgstr "Keine Zweige\n"
+msgstr "Zweige entspannen"
 
 #: config/avr/avr.opt:68
 msgid "Make the linker relaxation machine assume that a program counter wrap-around occures."
-msgstr ""
+msgstr "Maschine zur Binder-Entspannung soll annehmen, dass ein Befehlszählerübersprung auftritt."
 
 #: config/linux.opt:24
 msgid "Use uClibc instead of GNU libc"
@@ -15100,9 +15097,8 @@ msgid "Attempt to merge identical constants across compilation units"
 msgstr "Versuchen, identische Konstanten über Übersetzungseinheiten hinweg zu verschmelzen"
 
 #: common.opt:670
-#, fuzzy
 msgid "Attempt to merge identical debug strings across compilation units"
-msgstr "Versuchen, identische Konstanten über Übersetzungseinheiten hinweg zu verschmelzen"
+msgstr "Versuchen, identische Zeichenketten zur Fehlersuche über Übersetzungseinheiten hinweg zu verschmelzen"
 
 #: common.opt:674
 msgid "Limit diagnostics to <number> characters per line.  0 suppresses line-wrapping"
@@ -15882,7 +15878,7 @@ msgstr "Bei Formaten der Länge null warnen"
 
 #: c.opt:247
 msgid "Warn whenever type qualifiers are ignored."
-msgstr ""
+msgstr "Warnen, wenn Typqualifizierer ignoriert werden."
 
 #: c.opt:251
 msgid "Warn about variables which are initialized to themselves"
@@ -16666,14 +16662,14 @@ msgid "non-floating-point argument to function %qs"
 msgstr "Nicht-Gleitkomma-Argument für Funktion %qs"
 
 #: builtins.c:10446 builtins.c:10466
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too few arguments to function %qs"
-msgstr "Zu wenige Argumente für Funktion %qE"
+msgstr "Zu wenige Argumente für Funktion %qs"
 
 #: builtins.c:10452 builtins.c:10472
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too many arguments to function %qs"
-msgstr "zu viele Argumente für Funktion %qE"
+msgstr "zu viele Argumente für Funktion %qs"
 
 #: builtins.c:11377
 #, gcc-internal-format
@@ -19845,14 +19841,14 @@ msgid "%HISO C90 forbids mixed declarations and code"
 msgstr "%HISO-C90 verbietet gemischte Deklarationen und Code"
 
 #: c-parser.c:3550
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Hexpected %<}%> before %<else%>"
-msgstr "%<,%> oder %<;%> erwartet"
+msgstr "%H%<}%> vor %<else%> erwartet"
 
 #: c-parser.c:3555
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%H%<else%> without a previous %<if%>"
-msgstr "%<else%> ohne vorheriges %<if%>"
+msgstr "%H%<else%> ohne vorheriges %<if%>"
 
 #: c-parser.c:3571
 #, gcc-internal-format
@@ -22414,7 +22410,7 @@ msgstr "-Wuninitialized wird nicht ohne -O unterstützt"
 #: opts.c:951
 #, gcc-internal-format
 msgid "-funit-at-a-time is required for inlining of functions that are only called once"
-msgstr ""
+msgstr "-funit-at-a-time wird für Inlining von Funktionen benötigt, die nur einmal aufgerufen werden"
 
 #: opts.c:964
 #, gcc-internal-format
@@ -23059,7 +23055,7 @@ msgstr "-ffunction-sections kann für verschiedene Ziele die Fehlersuche beeintr
 #: toplev.c:1996
 #, gcc-internal-format
 msgid "-fassociative-math disabled; other options take precedence"
-msgstr ""
+msgstr "-fassociative-math abgeschaltet; andere Optionen haben Vorrang"
 
 #: toplev.c:2008
 #, gcc-internal-format
@@ -23067,7 +23063,7 @@ msgid "-fstack-protector not supported for this target"
 msgstr "-fstack-protector wird für dieses Ziel nicht unterstützt"
 
 #: toplev.c:2021
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unwind tables currently require a frame pointer for correctness"
 msgstr "Abwicklungstabellen erfordern derzeit einen Rahmenzeiger für Korrektheit"
 
@@ -23583,9 +23579,9 @@ msgid "function %q+F can never be inlined because it uses variable sized variabl
 msgstr "die Funktion %q+F kann nie »inline« sein, da sie Variablen variabler Größe verwendet"
 
 #: tree-inline.c:2015
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "function %q+F can never be inlined because it saves address of local label in a static variable"
-msgstr "die Funktion %q+F kann nie »inline« sein, da sie Variablen variabler Größe verwendet"
+msgstr "die Funktion %q+F kann nie »inline« sein, da sie die Adresse einer lokalen Marke in statischer Variablen speichert"
 
 #: tree-inline.c:2091
 #, gcc-internal-format
@@ -23896,9 +23892,9 @@ msgid "assuming signed overflow does not occur when simplifying conditional"
 msgstr "Annahme, dass vorzeichenbehafteter Überlauf bei Vereinfachung der Bedingung nicht auftritt"
 
 #: tree.c:3682
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ignoring attributes applied to %qT after definition"
-msgstr "auf Klassentyp angewandte Attribute außerhalb einer Definition werden ignoriert"
+msgstr "auf %qT nach einer Definition angewandte Attribute werden ignoriert"
 
 #: tree.c:3966
 #, gcc-internal-format
@@ -25287,9 +25283,9 @@ msgid "%qs incompatible attribute ignored"
 msgstr "%qs-inkompatibles Attribut wird ignoriert"
 
 #: config/i386/netware.c:253
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-fPIC and -fpic are not supported for this target"
-msgstr "-fPIC und -fpic werden in dieser Konfiguration nicht unterstützt"
+msgstr "-fPIC und -fpic werden für dieses Ziel nicht unterstützt"
 
 #: config/i386/winnt-cxx.c:71 config/sh/symbian.c:172
 #, gcc-internal-format
@@ -27742,15 +27738,15 @@ msgid "attribute for %q+#T must follow the %qs keyword"
 msgstr "Attribut für %q+#T muss dem Schlüsselwort %qs folgen"
 
 #: cp/decl.c:3925
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ignoring attributes applied to class type %qT outside of definition"
-msgstr "auf Klassentyp angewandte Attribute außerhalb einer Definition werden ignoriert"
+msgstr "auf Klassentyp %qT angewandte Attribute außerhalb einer Definition werden ignoriert"
 
 #. A template type parameter or other dependent type.
 #: cp/decl.c:3929
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ignoring attributes applied to dependent type %qT without an associated declaration"
-msgstr "auf Klassentyp angewandte Attribute außerhalb einer Definition werden ignoriert"
+msgstr "auf abhängigen Typ %qT angewandte Attribute ohne zugehörige Deklaration werden ignoriert"
 
 #: cp/decl.c:4007
 #, gcc-internal-format
@@ -27960,7 +27956,7 @@ msgstr "%qD kann nicht Thread-lokal sein, weil es Nicht-POD-Typen %qT hat"
 #: cp/decl.c:5522
 #, gcc-internal-format
 msgid "Java object %qD not allocated with %<new%>"
-msgstr ""
+msgstr "Java-Objekt %qD nicht mit %<new%> reserviert"
 
 #: cp/decl.c:5539
 #, gcc-internal-format
@@ -27973,9 +27969,9 @@ msgid "%qD cannot be initialized by a non-constant expression when being declare
 msgstr "%qD kann bei der Deklaration nicht von nicht konstantem Ausdruck initialisiert werden"
 
 #: cp/decl.c:5597
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-static data member %qD has Java class type"
-msgstr "%qD ist kein statisches Datenelement eines Klassentemplates"
+msgstr "nicht-statisches Datenelement %qD hat Java-Klassentyp"
 
 #: cp/decl.c:6232
 #, gcc-internal-format
@@ -28622,9 +28618,9 @@ msgid "declaration of %qD as member of %qT"
 msgstr "Deklaration von %qD als Element %qT"
 
 #: cp/decl.c:8863
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected qualified name in friend declaration for constructor %qD"
-msgstr "Qualifizierten Namen in Friend-Deklaration für Destruktor %qD erwartet"
+msgstr "Qualifizierten Namen in Friend-Deklaration für Konstruktor %qD erwartet"
 
 #: cp/decl.c:8939
 #, gcc-internal-format
@@ -28740,9 +28736,9 @@ msgid "default argument %qE uses local variable %qD"
 msgstr "Standardargument %qE verwendet lokale Variable %qD"
 
 #: cp/decl.c:9399
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "parameter %qD has Java class type"
-msgstr "Parameter %q+D hat unvollständigen Typen"
+msgstr "Parameter %qD hat Java-Klassentyp"
 
 #: cp/decl.c:9412
 #, gcc-internal-format
@@ -29018,9 +29014,9 @@ msgid "return type %q#T is incomplete"
 msgstr "Rückgabetyp %q#T ist unvollständig"
 
 #: cp/decl.c:11004
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "return type has Java class type %q#T"
-msgstr "Rückgabetyp ist unvollständig"
+msgstr "Rückgabetyp hat Java-Klassentyp %q#T"
 
 #: cp/decl.c:11129 cp/typeck.c:6739
 #, gcc-internal-format
@@ -29376,9 +29372,9 @@ msgid "member %qD declared as friend before type %qT defined"
 msgstr "Element %qD als »friend« deklariert, bevor Typ %qT definiert wurde"
 
 #: cp/friend.c:543
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "friend declaration %qD in local class without prior declaration"
-msgstr "Using-Deklaration %q+D in Konflikt mit vorheriger using-Deklaration"
+msgstr "Friend-Deklaration %qD in lokaler Klasse ohne vorherige Deklaration"
 
 #: cp/friend.c:564
 #, gcc-internal-format
@@ -29391,9 +29387,9 @@ msgid "(if this is not what you intended, make sure the function template has al
 msgstr "(wenn das nicht beabsichtigt war, sollte sicher gestellt werden, dass das Funktions-Template bereits deklariert wurde, und <> hier hinter Funktionsnamen eingefügt wurde) "
 
 #: cp/init.c:374
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "value-initialization of reference"
-msgstr "%JStandardinitialisierung von %q#D, das Referenztyp hat"
+msgstr "Wert-Initialisierung von Referenz"
 
 #: cp/init.c:481
 #, gcc-internal-format
@@ -29546,9 +29542,9 @@ msgid "call to Java constructor with %qs undefined"
 msgstr "Aufruf von Java-Konstruktor mit %qs ist nicht definiert"
 
 #: cp/init.c:1926
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Java class %q#T object allocated using placement new"
-msgstr "Java-Klasse %qT kann nicht mehrere Basen haben"
+msgstr "Objekt der Java-Klasse %q#T mit Platzierung new reserviert"
 
 #: cp/init.c:1955
 #, gcc-internal-format
@@ -30028,9 +30024,9 @@ msgid "%qE %s"
 msgstr "%qE %s"
 
 #: cp/parser.c:2155
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C++ 1998 does not support %<long long%>"
-msgstr "ISO-C++ unterstützt nicht %<long long%>"
+msgstr "ISO-C++ 1998 unterstützt nicht %<long long%>"
 
 #: cp/parser.c:2175
 #, gcc-internal-format
@@ -30266,9 +30262,9 @@ msgid "template parameter pack %qD cannot have a default argument"
 msgstr "Templateparameterpack %qD kann kein Standardargument haben"
 
 #: cp/parser.c:9422
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "template parameter pack cannot have a default argument"
-msgstr "Templateparameterpack %qD kann kein Standardargument haben"
+msgstr "Templateparameterpack kann kein Standardargument haben"
 
 #: cp/parser.c:9520 cp/parser.c:9621
 #, gcc-internal-format
@@ -30427,14 +30423,14 @@ msgid "default arguments are only permitted for function parameters"
 msgstr "Standardargumente sind nur für Funktionsparameter zugelassen"
 
 #: cp/parser.c:13702
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%sparameter pack %qD cannot have a default argument"
-msgstr "Templateparameterpack %qD kann kein Standardargument haben"
+msgstr "%sParameterpack %qD kann kein Standardargument haben"
 
 #: cp/parser.c:13705
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%sparameter pack cannot have a default argument"
-msgstr "Templateparameterpack %qD kann kein Standardargument haben"
+msgstr "%sParameterpack kann kein Standardargument haben"
 
 #: cp/parser.c:13947
 #, gcc-internal-format
@@ -30467,9 +30463,9 @@ msgid "an explicit specialization must be preceded by %<template <>%>"
 msgstr "einer expliziten Spezialisierung muss %<template <>%> vorausgehen"
 
 #: cp/parser.c:14613
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "function template %qD redeclared as a class template"
-msgstr "Nicht-Template %qD als Template verwendet"
+msgstr "Funktions-Template %qD als Klassentemplate redeklariert"
 
 #: cp/parser.c:14689
 #, gcc-internal-format
@@ -30933,14 +30929,14 @@ msgid "template specifiers not specified in declaration of %qD"
 msgstr "keine Templatespezifizierer in Deklaration von %qD angegeben"
 
 #: cp/pt.c:4140
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "redeclared with %d template parameter(s)"
-msgstr "%qD ohne Template-Parameter verwendet"
+msgstr "mit %d Template-Parameter(n) redeklariert"
 
 #: cp/pt.c:4142
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previous declaration %q+D used %d template parameter(s)"
-msgstr "vorherige Deklaration %q+#D hier"
+msgstr "vorherige Deklaration %q+D verwendete %d Template-Parameter"
 
 #: cp/pt.c:4176
 #, gcc-internal-format
@@ -30962,9 +30958,9 @@ msgid "redefinition of default argument for %q#D"
 msgstr "Redefinition des Standardarguments für %q#D"
 
 #: cp/pt.c:4188
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Joriginal definition appeared here"
-msgstr "%J  ursprüngliche Definition trat hier auf"
+msgstr "%Jursprüngliche Definition trat hier auf"
 
 #: cp/pt.c:4292
 #, gcc-internal-format
