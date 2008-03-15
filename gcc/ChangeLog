@@ -1,3 +1,39 @@
+2008-03-15  Bjoern Haase  <bjoern.m.haase@web.de>
+            Anatoly Sokolov <aesok@post.ru>
+
+	* gcc/gcc/config/avr/avr.c (avr_arch_types): Add avr6 entry.
+	(avr_arch): Add ARCH_AVR6.
+	(avr_mcu_types): Add 'atmega2560' and 'atmega2561' entry.
+ 	(initial_elimination_offset): Initialize and use 'avr_pc_size' 
+	instead of fixed value 2.
+	(print_operand_address): Use gs() asm specifier instead of pm().
+	(avr_assemble_integer): (Ditto.).
+	(avr_output_addr_vec_elt): (Ditto.).
+	(print_operand): Handle "!" code.
+	* gcc/gcc/config/avr/avr.h (TARGET_CPU_CPP_BUILTINS): Add 
+	__AVR_3_BYTE_PC__, __AVR_2_BYTE_PC__ and __AVR_HAVE_JMP_CALL__.
+	(AVR_HAVE_EIJMP_EICALL): Define.
+	(AVR_3_BYTE_PC): Redefine.
+	(AVR_2_BYTE_PC): (Ditto.).
+	(PRINT_OPERAND_PUNCT_VALID_P): Add '!' code.
+	(LINK_SPEC): Add atmega2560 and atmega2561.
+	(CRT_BINUTILS_SPEC): Add atmega2560 (crtm2560.o) and atmega2561 
+	(crtm2561.o).
+	* gcc/gcc/config/avr/avr.md (call_insn): Use eicall instead of icall 
+	for 3 byte PC devices.
+	(call_value_insn): (Ditto.).
+	(*tablejump_enh): Use eijmp instead of ijmp for 3 byte PC devices.
+	(indirect_jump): Use only for for 2 byte PC devices.
+	(*tablejump): (Ditto.).
+	(*indirect_jump_avr6): Add insn.
+	(*tablejump_rjmp): Don't use for 3 byte PC devices.
+	* gcc/gcc/config/avr/libgcc.S (__prologue_saves__): Use eijmp 
+	instead of ijmp for 3 byte PC devices.
+	(__tablejump2__): (Ditto.).
+	* gcc/gcc/config/avr/t-avr (MULITLIB_OPTIONS): Add avr6 architecture.
+	(MULITLIB_DIRNAMES): (Ditto.). 
+	(MULTILIB_MATCHES): Add atmega2560 and atmega2561 to list.
+
 2008-03-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/mmx.md ("sse2_umulv1siv2di3"): Rename from

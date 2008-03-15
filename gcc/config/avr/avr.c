@@ -127,7 +127,8 @@ static const struct base_arch_s avr_arch_types[] = {
   { 0, 0, 1, 1, 0, 0, 0, 0, "__AVR_ARCH__=35"  },
   { 0, 1, 0, 1, 0, 0, 0, 0, "__AVR_ARCH__=4"   },
   { 0, 1, 1, 1, 0, 0, 0, 0, "__AVR_ARCH__=5"   },
-  { 0, 1, 1, 1, 1, 1, 0, 0, "__AVR_ARCH__=51"  }
+  { 0, 1, 1, 1, 1, 1, 0, 0, "__AVR_ARCH__=51"  },
+  { 0, 1, 1, 1, 1, 1, 1, 0, "__AVR_ARCH__=6"   }
 };
 
 /* These names are used as the index into the avr_arch_types[] table 
@@ -144,7 +145,8 @@ enum avr_arch
   ARCH_AVR35,
   ARCH_AVR4,
   ARCH_AVR5,
-  ARCH_AVR51
+  ARCH_AVR51,
+  ARCH_AVR6
 };
 
 struct mcu_type_s {
@@ -273,6 +275,10 @@ static const struct mcu_type_s avr_mcu_types[] = {
   { "at90can128",   ARCH_AVR51, "__AVR_AT90CAN128__" },
   { "at90usb1286",  ARCH_AVR51, "__AVR_AT90USB1286__" },
   { "at90usb1287",  ARCH_AVR51, "__AVR_AT90USB1287__" },
+    /* 3-Byte PC.  */
+  { "avr6",         ARCH_AVR6, NULL },
+  { "atmega2560",   ARCH_AVR6, "__AVR_ATmega2560__" },
+  { "atmega2561",   ARCH_AVR6, "__AVR_ATmega2561__" },
     /* Assembler only.  */
   { "avr1",         ARCH_AVR1, NULL },
   { "at90s1200",    ARCH_AVR1, "__AVR_AT90S1200__" },
@@ -511,9 +517,10 @@ initial_elimination_offset (int from, int to)
   else
     {
       int offset = frame_pointer_needed ? 2 : 0;
+      int avr_pc_size = AVR_HAVE_EIJMP_EICALL ? 3 : 2;
 
       offset += avr_regs_to_save (NULL);
-      return get_frame_size () + 2 + 1 + offset;
+      return get_frame_size () + (avr_pc_size) + 1 + offset;
     }
 }
 
@@ -1119,7 +1126,7 @@ print_operand_address (FILE *file, rtx addr)
 	  && ((GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_FUNCTION_P (addr))
 	      || GET_CODE (addr) == LABEL_REF))
 	{
-	  fprintf (file, "pm(");
+	  fprintf (file, "gs(");
 	  output_addr_const (file,addr);
 	  fprintf (file ,")");
 	}
@@ -1143,6 +1150,11 @@ print_operand (FILE *file, rtx x, int code)
     {
       if (!AVR_MEGA)
 	fputc ('r', file);
+    }
+  else if (code == '!')
+    {
+      if (AVR_HAVE_EIJMP_EICALL)
+	fputc ('e', file);
     }
   else if (REG_P (x))
     {
@@ -4468,7 +4480,7 @@ avr_assemble_integer (rtx x, unsigned int size, int aligned_p)
       && ((GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_FUNCTION_P (x))
 	  || GET_CODE (x) == LABEL_REF))
     {
-      fputs ("\t.word\tpm(", asm_out_file);
+      fputs ("\t.word\tgs(", asm_out_file);
       output_addr_const (asm_out_file, x);
       fputs (")\n", asm_out_file);
       return true;
@@ -5814,8 +5826,8 @@ void
 avr_output_addr_vec_elt (FILE *stream, int value)
 {
   switch_to_section (progmem_section);
-  if (AVR_MEGA)
-    fprintf (stream, "\t.word pm(.L%d)\n", value);
+  if (AVR_HAVE_JMP_CALL)
+    fprintf (stream, "\t.word gs(.L%d)\n", value);
   else
     fprintf (stream, "\trjmp .L%d\n", value);
 }
