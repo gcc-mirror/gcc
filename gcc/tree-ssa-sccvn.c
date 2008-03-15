@@ -1597,48 +1597,46 @@ simplify_unary_expression (tree rhs)
 static tree
 try_to_simplify (tree stmt, tree rhs)
 {
+  tree tem;
+
   /* For stores we can end up simplifying a SSA_NAME rhs.  Just return
      in this case, there is no point in doing extra work.  */
   if (TREE_CODE (rhs) == SSA_NAME)
     return rhs;
-  else
+
+  switch (TREE_CODE_CLASS (TREE_CODE (rhs)))
     {
-      switch (TREE_CODE_CLASS (TREE_CODE (rhs)))
-	{
-	  /* For references, see if we find a result for the lookup,
-	     and use it if we do.  */
-	case tcc_declaration:
-	  /* Pull out any truly constant values.  */
-	  if (TREE_READONLY (rhs)
-	      && TREE_STATIC (rhs)
-	      && DECL_INITIAL (rhs)
-	      && valid_gimple_expression_p (DECL_INITIAL (rhs)))
-	    return DECL_INITIAL (rhs);
+    case tcc_declaration:
+      tem = get_symbol_constant_value (rhs);
+      if (tem)
+	return tem;
+      break;
 
-	    /* Fallthrough. */
-	case tcc_reference:
-	  /* Do not do full-blown reference lookup here.
-	     ???  But like for tcc_declaration, we should simplify
-		  from constant initializers.  */
+    case tcc_reference:
+      /* Do not do full-blown reference lookup here, but simplify
+	 reads from constant aggregates.  */
+      tem = fold_const_aggregate_ref (rhs);
+      if (tem)
+	return tem;
 
-	  /* Fallthrough for some codes that can operate on registers.  */
-	  if (!(TREE_CODE (rhs) == REALPART_EXPR
-	        || TREE_CODE (rhs) == IMAGPART_EXPR
-		|| TREE_CODE (rhs) == VIEW_CONVERT_EXPR))
-	    break;
-	  /* We could do a little more with unary ops, if they expand
-	     into binary ops, but it's debatable whether it is worth it. */
-	case tcc_unary:
-	  return simplify_unary_expression (rhs);
-	  break;
-	case tcc_comparison:
-	case tcc_binary:
-	  return simplify_binary_expression (stmt, rhs);
-	  break;
-	default:
-	  break;
-	}
+      /* Fallthrough for some codes that can operate on registers.  */
+      if (!(TREE_CODE (rhs) == REALPART_EXPR
+	    || TREE_CODE (rhs) == IMAGPART_EXPR
+	    || TREE_CODE (rhs) == VIEW_CONVERT_EXPR))
+	break;
+      /* We could do a little more with unary ops, if they expand
+	 into binary ops, but it's debatable whether it is worth it. */
+    case tcc_unary:
+      return simplify_unary_expression (rhs);
+      break;
+    case tcc_comparison:
+    case tcc_binary:
+      return simplify_binary_expression (stmt, rhs);
+      break;
+    default:
+      break;
     }
+
   return rhs;
 }
 

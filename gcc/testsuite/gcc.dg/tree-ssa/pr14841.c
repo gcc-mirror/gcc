@@ -2,8 +2,8 @@
    Make sure that we can fold a possible nested reference into a
    constant aggregate.  */
 
-/* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-store_ccp-details" } */
+/* { dg-do link } */
+/* { dg-options "-O" } */
 
 struct car {
   int speed;
@@ -25,5 +25,5 @@ foo (void)
     link_error ();
 }
 
-/* { dg-final { scan-tree-dump-times "Folded statement: if " 1 "store_ccp"} } */
-/* { dg-final { cleanup-tree-dump "store_ccp" } } */
+int main () { return 0; }
+

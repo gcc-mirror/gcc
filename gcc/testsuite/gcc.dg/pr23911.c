@@ -1,7 +1,7 @@
 /* This was a missed optimization in tree constant propagation
    that CSE would catch later on.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-store_ccp" } */
+/* { dg-options "-O -fdump-tree-dce2" } */
 
 double _Complex *a; 
 static const double _Complex b[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}; 
@@ -14,9 +14,8 @@ test (void)
   return; 
 } 
 
-/* After store_ccp, there should not be any assignments from real or
-   imaginary parts anymore.  The constants should be loaded from b and
-   propagated into the elements of a.  */
-/* { dg-final { scan-tree-dump-times "= CR" 0 "store_ccp" } } */
-/* { dg-final { scan-tree-dump-times "= CI" 0 "store_ccp" } } */
-/* { dg-final { cleanup-tree-dump "store_ccp" } } */
+/* After DCE2 which runs after FRE, the expressions should be fully
+   constant folded.  There should be no loads from b left.  */
+/* { dg-final { scan-tree-dump-times "__complex__ \\\(1.0e\\\+0, 0.0\\\)" 2 "dce2" } } */
+/* { dg-final { scan-tree-dump-times "= b" 0 "dce2" } } */
+/* { dg-final { cleanup-tree-dump "dce2" } } */

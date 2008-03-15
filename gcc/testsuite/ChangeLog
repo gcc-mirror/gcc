@@ -1,5 +1,11 @@
 2008-03-15  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/pr23911.c: Adjust testcase.
+	* gcc.dg/tree-ssa/pr14841.c: Likewise.
+	* gcc.dg/tree-ssa/20030922-2.c: Likewise.
+
+2008-03-15  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/35593
 	* g++.dg/warn/Warray-bounds-3.C: New testcase.
 
