@@ -1,5 +1,15 @@
 2008-03-15  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-ccp.c (get_symbol_constant_value): Export.
+	(fold_const_aggregate_ref): Likewise.
+	(get_value): Return NULL if we don't have any values.
+	(ccp_finalize): Set const_val to NULL after freeing it.
+	* tree-flow.h (get_symbol_constant_value): Declare.
+	(fold_const_aggregate_ref): Likewise.
+	* tree-ssa-sccvn.c (try_to_simplify): Use them.
+
+2008-03-15  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/35593
 	* tree-ssa-ccp.c (maybe_fold_offset_to_array_ref): Make sure
 	to not produce negative array indices if not allowed.  Add

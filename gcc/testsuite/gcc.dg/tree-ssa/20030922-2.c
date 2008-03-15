@@ -7,8 +7,8 @@ struct rtx_def
 {
   int bb;
 };
-static int *block_to_bb;
-static int target_bb;
+int *block_to_bb;
+int target_bb;
 
 int
 rgn_rank (rtx insn1, rtx insn2)
