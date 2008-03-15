@@ -1,3 +1,9 @@
+2008-03-15  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.md (insv): Use gen_insv_t2 and gen_insv_zero.
+	(extzv): Use gen_extzv_t2.
+	(insv_t2, insv_zero, extv, extzv_t2): New patterns.
+
 2008-03-15  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-ccp.c (get_symbol_constant_value): Export.

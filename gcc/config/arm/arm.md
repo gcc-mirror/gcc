@@ -2145,19 +2145,49 @@
 ;;; the value before we insert.  This loses some of the advantage of having
 ;;; this insv pattern, so this pattern needs to be reevalutated.
 
-; ??? Use Thumb-2 bitfield insert/extract instructions
 (define_expand "insv"
   [(set (zero_extract:SI (match_operand:SI 0 "s_register_operand" "")
                          (match_operand:SI 1 "general_operand" "")
                          (match_operand:SI 2 "general_operand" ""))
         (match_operand:SI 3 "reg_or_int_operand" ""))]
-  "TARGET_ARM"
+  "TARGET_ARM || arm_arch_thumb2"
   "
   {
     int start_bit = INTVAL (operands[2]);
     int width = INTVAL (operands[1]);
     HOST_WIDE_INT mask = (((HOST_WIDE_INT)1) << width) - 1;
     rtx target, subtarget;
+
+    if (arm_arch_thumb2)
+      {
+	bool use_bfi = TRUE;
+
+	if (GET_CODE (operands[3]) == CONST_INT)
+	  {
+	    HOST_WIDE_INT val = INTVAL (operands[3]) & mask;
+
+	    if (val == 0)
+	      {
+		emit_insn (gen_insv_zero (operands[0], operands[1],
+					  operands[2]));
+		DONE;
+	      }
+
+	    /* See if the set can be done with a single orr instruction.  */
+	    if (val == mask && const_ok_for_arm (val << start_bit))
+	      use_bfi = FALSE;
+	  }
+	  
+	if (use_bfi)
+	  {
+	    if (GET_CODE (operands[3]) != REG)
+	      operands[3] = force_reg (SImode, operands[3]);
+
+	    emit_insn (gen_insv_t2 (operands[0], operands[1], operands[2],
+				    operands[3]));
+	    DONE;
+	  }
+      }
 
     target = operands[0];
     /* Avoid using a subreg as a subtarget, and avoid writing a paradoxical 
@@ -2280,6 +2310,28 @@
 
     DONE;
   }"
+)
+
+(define_insn "insv_zero"
+  [(set (zero_extract:SI (match_operand:SI 0 "s_register_operand" "+r")
+                         (match_operand:SI 1 "const_int_operand" "M")
+                         (match_operand:SI 2 "const_int_operand" "M"))
+        (const_int 0))]
+  "arm_arch_thumb2"
+  "bfc%?\t%0, %2, %1"
+  [(set_attr "length" "4")
+   (set_attr "predicable" "yes")]
+)
+
+(define_insn "insv_t2"
+  [(set (zero_extract:SI (match_operand:SI 0 "s_register_operand" "+r")
+                         (match_operand:SI 1 "const_int_operand" "M")
+                         (match_operand:SI 2 "const_int_operand" "M"))
+        (match_operand:SI 3 "s_register_operand" "r"))]
+  "arm_arch_thumb2"
+  "bfi%?\t%0, %3, %2, %1"
+  [(set_attr "length" "4")
+   (set_attr "predicable" "yes")]
 )
 
 ; constants for op 2 will never be given to these patterns.
@@ -3287,12 +3339,19 @@
    (set (match_operand:SI              0 "register_operand" "")
 	(lshiftrt:SI (match_dup 4)
 		     (match_operand:SI 3 "const_int_operand" "")))]
-  "TARGET_THUMB1"
+  "TARGET_THUMB1 || arm_arch_thumb2"
   "
   {
     HOST_WIDE_INT lshift = 32 - INTVAL (operands[2]) - INTVAL (operands[3]);
     HOST_WIDE_INT rshift = 32 - INTVAL (operands[2]);
     
+    if (arm_arch_thumb2)
+      {
+	emit_insn (gen_extzv_t2 (operands[0], operands[1], operands[2],
+				 operands[3]));
+	DONE;
+      }
+
     operands[3] = GEN_INT (rshift);
     
     if (lshift == 0)
@@ -3304,6 +3363,28 @@
     operands[2] = GEN_INT (lshift);
     operands[4] = gen_reg_rtx (SImode);
   }"
+)
+
+(define_insn "extv"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(sign_extract:SI (match_operand:SI 1 "s_register_operand" "r")
+                         (match_operand:SI 2 "const_int_operand" "M")
+                         (match_operand:SI 3 "const_int_operand" "M")))]
+  "arm_arch_thumb2"
+  "sbfx%?\t%0, %1, %3, %2"
+  [(set_attr "length" "4")
+   (set_attr "predicable" "yes")]
+)
+
+(define_insn "extzv_t2"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(zero_extract:SI (match_operand:SI 1 "s_register_operand" "r")
+                         (match_operand:SI 2 "const_int_operand" "M")
+                         (match_operand:SI 3 "const_int_operand" "M")))]
+  "arm_arch_thumb2"
+  "ubfx%?\t%0, %1, %3, %2"
+  [(set_attr "length" "4")
+   (set_attr "predicable" "yes")]
 )
 
 
