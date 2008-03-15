@@ -1,3 +1,9 @@
+2008-03-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/35184
+	* trans-array.c (gfc_conv_array_index_offset): Remove unnecessary
+	assert.
+
 2008-03-15  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/35584
