@@ -1,3 +1,20 @@
+2008-03-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md ("sse2_umulv1siv2di3"): Rename from
+	"sse2_umulsidi3".  Use V1DI mode for operand 0.
+	("mmx_psadbw"): Use V1DI mode for operand 0.
+	* config/i386/i386-modes.def (V1SI): New vector mode.
+	* config/i386/i386.c (struct builtin_description)
+	[IX86_BUILTIN_PMULUDQ]: Use CODE_FOR_sse2_umulv1siv1di3.
+	(v1di_ftype_v8qi_v8qi): Rename from di_ftype_v8qi_v8qi.
+	(v1di_ftype_v2si_v2si): Rename from di_ftype_v2si_v2si.
+	(ix86_init_mmx_sse_builtins) [__builtin_ia32_psadbw]: Use
+	v1di_ftype_v8qi_v8qi type.
+	[__builtin_ia32_pmuludq]: Use v1di_ftype_v2si_v2si type.
+
+	* doc/extend.texi (X86 Built-in Functions) [__builtin_ia32_psadbw,
+	__builtin_ia32_pmuludq]: Fix the mode of return value.
+
 2008-03-15  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/35595
