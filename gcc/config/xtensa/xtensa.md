@@ -1,5 +1,5 @@
 ;; GCC machine description for Tensilica's Xtensa architecture.
-;; Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+;; Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 ;; Free Software Foundation, Inc.
 ;; Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
@@ -928,7 +928,7 @@
 	(plus:SI (match_dup 1) (match_dup 2)))]
   "TARGET_HARD_FLOAT"
 {
-  if (volatile_refs_p (PATTERN (insn)))
+  if (TARGET_SERIALIZE_VOLATILE && volatile_refs_p (PATTERN (insn)))
     output_asm_insn ("memw", operands);
   return "lsiu\t%0, %1, %2";
 }
@@ -944,7 +944,7 @@
 	(plus:SI (match_dup 0) (match_dup 1)))]
   "TARGET_HARD_FLOAT"
 {
-  if (volatile_refs_p (PATTERN (insn)))
+  if (TARGET_SERIALIZE_VOLATILE && volatile_refs_p (PATTERN (insn)))
     output_asm_insn ("memw", operands);
   return "ssiu\t%2, %0, %1";
 }

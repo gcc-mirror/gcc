@@ -1,5 +1,5 @@
 /* Definitions of Tensilica's Xtensa target machine for GNU compiler.
-   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
@@ -74,8 +74,9 @@ extern unsigned xtensa_current_frame_size;
 #define TARGET_S32C1I		XCHAL_HAVE_S32C1I
 #define TARGET_ABSOLUTE_LITERALS XSHAL_USE_ABSOLUTE_LITERALS
 
-#define TARGET_DEFAULT (						\
-  (XCHAL_HAVE_L32R	? 0 : MASK_CONST16))
+#define TARGET_DEFAULT \
+  ((XCHAL_HAVE_L32R	? 0 : MASK_CONST16) |				\
+   MASK_SERIALIZE_VOLATILE)
 
 #define OVERRIDE_OPTIONS override_options ()
 
