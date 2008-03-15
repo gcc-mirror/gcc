@@ -984,6 +984,12 @@ ccp_fold (tree stmt)
       return fold_binary (code, TREE_TYPE (rhs), op0, op1);
     }
 
+  else if (kind == tcc_declaration)
+    return get_symbol_constant_value (rhs);
+
+  else if (kind == tcc_reference)
+    return fold_const_aggregate_ref (rhs);
+
   /* We may be able to fold away calls to builtin functions if their
      arguments are constants.  */
   else if (code == CALL_EXPR
@@ -1060,6 +1066,11 @@ fold_const_aggregate_ref (tree t)
 	case ARRAY_REF:
 	case COMPONENT_REF:
 	  ctor = fold_const_aggregate_ref (base);
+	  break;
+
+	case STRING_CST:
+	case CONSTRUCTOR:
+	  ctor = base;
 	  break;
 
 	default:
@@ -1162,7 +1173,18 @@ fold_const_aggregate_ref (tree t)
 	  return fold_build1 (TREE_CODE (t), TREE_TYPE (t), c);
 	break;
       }
-    
+
+    case INDIRECT_REF:
+      {
+	tree base = TREE_OPERAND (t, 0);
+	if (TREE_CODE (base) == SSA_NAME
+	    && (value = get_value (base))
+	    && value->lattice_val == CONSTANT
+	    && TREE_CODE (value->value) == ADDR_EXPR)
+	  return fold_const_aggregate_ref (TREE_OPERAND (value->value, 0));
+	break;
+      }
+
     default:
       break;
     }
@@ -1190,15 +1212,8 @@ evaluate_stmt (tree stmt)
     simplified = ccp_fold (stmt);
   /* If the statement is likely to have a VARYING result, then do not
      bother folding the statement.  */
-  if (likelyvalue == VARYING)
+  else if (likelyvalue == VARYING)
     simplified = get_rhs (stmt);
-  /* If the statement is an ARRAY_REF or COMPONENT_REF into constant
-     aggregates, extract the referenced constant.  Otherwise the
-     statement is likely to have an UNDEFINED value, and there will be
-     nothing to do.  Note that fold_const_aggregate_ref returns
-     NULL_TREE if the first case does not match.  */
-  else if (!simplified)
-    simplified = fold_const_aggregate_ref (get_rhs (stmt));
 
   is_constant = simplified && is_gimple_min_invariant (simplified);
 
@@ -1265,7 +1280,7 @@ visit_assignment (tree stmt, tree *output_p)
     }
   else
     /* Evaluate the statement.  */
-      val = evaluate_stmt (stmt);
+    val = evaluate_stmt (stmt);
 
   /* If the original LHS was a VIEW_CONVERT_EXPR, modify the constant
      value to be a VIEW_CONVERT_EXPR of the old constant value.

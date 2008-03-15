@@ -1,3 +1,12 @@
+2008-03-15  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-ccp.c (ccp_fold): Also read from constant values
+	and fold constant aggregate refs.
+	(fold_const_aggregate_ref): Handle string constants
+	and constructors in ARRAY_REFs.  Handle INDIRECT_REF.
+	(evaluate_stmt): Simplify now that ccp_fold folds constant
+	aggregate refs.
+
 2008-03-15  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.md (insv): Use gen_insv_t2 and gen_insv_zero.
