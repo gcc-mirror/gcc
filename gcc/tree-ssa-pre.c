@@ -1431,7 +1431,8 @@ bitmap_find_leader (bitmap_set_t set, tree val, tree stmt)
 	  if (stmt)
 	    {
 	      tree def_stmt = SSA_NAME_DEF_STMT (val);
-	      if (bb_for_stmt (def_stmt) == bb_for_stmt (stmt)
+	      if (TREE_CODE (def_stmt) != PHI_NODE
+		  && bb_for_stmt (def_stmt) == bb_for_stmt (stmt)
 		  && stmt_ann (def_stmt)->uid >= stmt_ann (stmt)->uid)
 		continue;
 	    }

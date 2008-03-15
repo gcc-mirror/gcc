@@ -1,3 +1,9 @@
+2008-03-15  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/35595
+	* tree-ssa-pre.c (bitmap_find_leader): Handle expression
+	being a PHI_NODE.
+
 2008-03-14  Bob Wilson  <bob.wilson@acm.org>
 	
 	* doc/invoke.texi (Option Summary, Xtensa Options): Document
