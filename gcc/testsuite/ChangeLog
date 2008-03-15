@@ -1,3 +1,8 @@
+2008-03-15  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/35593
+	* g++.dg/warn/Warray-bounds-3.C: New testcase.
+
 2008-03-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR testsuite/35478
