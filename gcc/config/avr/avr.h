@@ -80,6 +80,15 @@ extern const struct base_arch_s *avr_current_arch;
 	builtin_define ("__AVR_MEGA__");	\
       if (avr_current_arch->have_jmp_call)	\
 	builtin_define ("__AVR_HAVE_JMP_CALL__"); \
+      if (avr_current_arch->have_eijmp_eicall)	\
+        {					\
+	  builtin_define ("__AVR_HAVE_JMP_CALL__");	\
+	  builtin_define ("__AVR_3_BYTE_PC__");	\
+	}					\
+      else					\
+        {					\
+	  builtin_define ("__AVR_2_BYTE_PC__");	\
+	}					\
       if (TARGET_NO_INTERRUPTS)			\
 	builtin_define ("__NO_INTERRUPTS__");	\
     }						\
@@ -96,13 +105,15 @@ extern GTY(()) section *progmem_section;
 #endif
 
 #define AVR_MEGA (avr_mega_p && !TARGET_SHORT_CALLS)
+#define AVR_HAVE_JMP_CALL (avr_current_arch->have_jmp_call && !TARGET_SHORT_CALLS)
 #define AVR_HAVE_MUL (avr_have_mul_p)
 #define AVR_HAVE_MOVW (avr_have_movw_lpmx_p)
 #define AVR_HAVE_LPMX (avr_have_movw_lpmx_p)
 #define AVR_HAVE_RAMPZ (avr_current_arch->have_elpm)
+#define AVR_HAVE_EIJMP_EICALL (avr_current_arch->have_eijmp_eicall)
 
-#define AVR_2_BYTE_PC 1
-#define AVR_3_BYTE_PC 0
+#define AVR_2_BYTE_PC (!AVR_HAVE_EIJMP_EICALL)
+#define AVR_3_BYTE_PC (AVR_HAVE_EIJMP_EICALL)
 
 #define TARGET_VERSION fprintf (stderr, " (GNU assembler syntax)");
 
@@ -671,7 +682,7 @@ sprintf (STRING, "*.%s%lu", PREFIX, (unsigned long)(NUM))
 
 #define PRINT_OPERAND(STREAM, X, CODE) print_operand (STREAM, X, CODE)
 
-#define PRINT_OPERAND_PUNCT_VALID_P(CODE) ((CODE) == '~')
+#define PRINT_OPERAND_PUNCT_VALID_P(CODE) ((CODE) == '~' || (CODE) == '!')
 
 #define PRINT_OPERAND_ADDRESS(STREAM, X) print_operand_address(STREAM, X)
 
@@ -828,6 +839,7 @@ mmcu=*:-mmcu=%*}"
   mmcu=at90usb64*|\
   mmcu=at90usb128*|\
   mmcu=at94k: -m avr5}\
+%{mmcu=atmega256*:-m avr6}\
 %{mmcu=atmega324*|\
   mmcu=atmega325*|\
   mmcu=atmega328p|\
@@ -856,7 +868,8 @@ mmcu=*:-mmcu=%*}"
   mmcu=at90usb*: -Tdata 0x800100}\
 %{mmcu=atmega640|\
   mmcu=atmega1280|\
-  mmcu=atmega1281: -Tdata 0x800200} "
+  mmcu=atmega1281|\
+  mmcu=atmega256*: -Tdata 0x800200} "
 
 #define LIB_SPEC \
   "%{!mmcu=at90s1*:%{!mmcu=attiny11:%{!mmcu=attiny12:%{!mmcu=attiny15:%{!mmcu=attiny28: -lc }}}}}"
@@ -968,6 +981,8 @@ mmcu=*:-mmcu=%*}"
 %{mmcu=atmega1280:crtm1280.o%s} \
 %{mmcu=atmega1281:crtm1281.o%s} \
 %{mmcu=atmega1284p:crtm1284p.o%s} \
+%{mmcu=atmega2560:crtm2560.o%s} \
+%{mmcu=atmega2561:crtm2561.o%s} \
 %{mmcu=at90can128:crtcan128.o%s} \
 %{mmcu=at90usb1286:crtusb1286.o%s} \
 %{mmcu=at90usb1287:crtusb1287.o%s}"
