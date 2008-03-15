@@ -1,7 +1,13 @@
+2008-03-15  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/35584
+	* resolve.c (resolve_branch): Less strict and pessimistic warning
+	message.
+
 2008-03-11  Paolo Bonzini  <bonzini@gnu.org>
 
-        * f95-lang.c (LANG_HOOKS_CLEAR_BINDING_STACK): Delete.
-        (gfc_be_parse_file): Call clear_binding_stack from here.
+	* f95-lang.c (LANG_HOOKS_CLEAR_BINDING_STACK): Delete.
+	(gfc_be_parse_file): Call clear_binding_stack from here.
 	(gfc_clear_binding_stack): Rename to clear_binding_stack.
 		
 2008-03-09  Paul Thomas  <pault@gcc.gnu.org>

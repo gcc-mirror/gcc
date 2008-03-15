@@ -5596,7 +5596,7 @@ resolve_branch (gfc_st_label *label, gfc_code *code)
 
   if (code->here == label)
     {
-      gfc_warning ("Branch at %L causes an infinite loop", &code->loc);
+      gfc_warning ("Branch at %L may result in an infinite loop", &code->loc);
       return;
     }
 
