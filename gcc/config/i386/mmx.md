@@ -699,15 +699,15 @@
   [(set_attr "type" "mmxmul")
    (set_attr "mode" "DI")])
 
-(define_insn "sse2_umulsidi3"
-  [(set (match_operand:DI 0 "register_operand" "=y")
-        (mult:DI
-	  (zero_extend:DI
-	    (vec_select:SI
+(define_insn "sse2_umulv1siv1di3"
+  [(set (match_operand:V1DI 0 "register_operand" "=y")
+        (mult:V1DI
+	  (zero_extend:V1DI
+	    (vec_select:V1SI
 	      (match_operand:V2SI 1 "nonimmediate_operand" "%0")
 	      (parallel [(const_int 0)])))
-	  (zero_extend:DI
-	    (vec_select:SI
+	  (zero_extend:V1DI
+	    (vec_select:V1SI
 	      (match_operand:V2SI 2 "nonimmediate_operand" "ym")
 	      (parallel [(const_int 0)])))))]
   "TARGET_SSE2 && ix86_binary_operator_ok (MULT, V2SImode, operands)"
@@ -1293,10 +1293,10 @@
    (set_attr "mode" "DI")])
 
 (define_insn "mmx_psadbw"
-  [(set (match_operand:DI 0 "register_operand" "=y")
-        (unspec:DI [(match_operand:V8QI 1 "register_operand" "0")
-		    (match_operand:V8QI 2 "nonimmediate_operand" "ym")]
-		   UNSPEC_PSADBW))]
+  [(set (match_operand:V1DI 0 "register_operand" "=y")
+        (unspec:V1DI [(match_operand:V8QI 1 "register_operand" "0")
+		      (match_operand:V8QI 2 "nonimmediate_operand" "ym")]
+		     UNSPEC_PSADBW))]
   "TARGET_SSE || TARGET_3DNOW_A"
   "psadbw\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxshft")
