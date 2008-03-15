@@ -1,3 +1,13 @@
+2008-03-14  Bob Wilson  <bob.wilson@acm.org>
+	
+	* doc/invoke.texi (Option Summary, Xtensa Options): Document
+	-mserialize-volatile and -mno-serialize-volatile Xtensa options.
+	* config/xtensa/xtensa.c (print_operand): Do not emit MEMW instructions
+	unless TARGET_SERIALIZE_VOLATILE is enabled.
+	* config/xtensa/xtensa.md (*lsiu, *ssiu): Likewise.
+	* config/xtensa/xtensa.h (TARGET_DEFAULT): Add MASK_SERIALIZE_VOLATILE.
+	* config/xtensa/xtensa.opt (mserialize_volatile): New option.
+
 2008-03-14  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/34172

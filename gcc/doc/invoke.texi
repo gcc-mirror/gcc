@@ -800,6 +800,7 @@ See i386 and x86-64 Options.
 @emph{Xtensa Options}
 @gccoptlist{-mconst16 -mno-const16 @gol
 -mfused-madd  -mno-fused-madd @gol
+-mserialize-volatile  -mno-serialize-volatile @gol
 -mtext-section-literals  -mno-text-section-literals @gol
 -mtarget-align  -mno-target-align @gol
 -mlongcalls  -mno-longcalls}
@@ -14693,6 +14694,15 @@ precision than specified by the IEEE standard.  Disabling fused multiply
 add/subtract instructions also ensures that the program output is not
 sensitive to the compiler's ability to combine multiply and add/subtract
 operations.
+
+@item -mserialize-volatile
+@itemx -mno-serialize-volatile
+@opindex mserialize-volatile
+@opindex mno-serialize-volatile
+When this option is enabled, GCC inserts @code{MEMW} instructions before
+@code{volatile} memory references to guarantee sequential consistency.
+The default is @option{-mserialize-volatile}.  Use
+@option{-mno-serialize-volatile} to omit the @code{MEMW} instructions.
 
 @item -mtext-section-literals
 @itemx -mno-text-section-literals

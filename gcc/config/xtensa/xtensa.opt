@@ -1,6 +1,6 @@
 ; Options for the Tensilica Xtensa port of the compiler.
 
-; Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -37,3 +37,7 @@ Automatically align branch targets to reduce branch penalties
 mtext-section-literals
 Target
 Intersperse literal pools with code in the text section
+
+mserialize-volatile
+Target Report Mask(SERIALIZE_VOLATILE)
+-mno-serialize-volatile	Do not serialize volatile memory references with MEMW instructions
