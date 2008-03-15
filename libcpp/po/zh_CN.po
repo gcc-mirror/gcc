@@ -1,14 +1,14 @@
 # Simplified Chinese translation for cpplib.
 # Copyright (C) 2005 Free Software Foundation, Inc.
 # This file is distributed under the same license as the cpplib package.
-# Meng Jie <zuxyhere@eastday.com>, 2005.
+# Meng Jie <zuxy.meng@gmail.com>, 2005-2008.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.3-b20071109\n"
+"Project-Id-Version: cpplib 4.3.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2008-02-01 16:21+0000\n"
-"PO-Revision-Date: 2007-11-11 17:29+0800\n"
+"PO-Revision-Date: 2008-03-16 01:29+0800\n"
 "Last-Translator: Meng Jie <zuxy.meng@gmail.com>\n"
 "Language-Team: Chinese (simplified) <translation-team-zh-cn@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -238,7 +238,7 @@ msgstr "line 指示中有无效的标记“%s”"
 
 #: directives.c:868
 msgid "unexpected end of file after #line"
-msgstr ""
+msgstr "#line 后未预期的文件结束"
 
 #: directives.c:871
 #, c-format
