@@ -1,15 +1,15 @@
 # German translation of gcc messages.
 # Copyright © 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 # Karl Eichwalder <ke@suse.de>, 2002, 2003.
-# Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005, 2006, 2007.
+# Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005, 2006, 2007, 2008.
 # This file is distributed under the same license as the gcc package.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.3-b20071109\n"
+"Project-Id-Version: cpplib 4.3.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2008-02-01 16:21+0000\n"
-"PO-Revision-Date: 2007-11-11 11:11+0100\n"
+"PO-Revision-Date: 2008-03-15 11:11+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -239,7 +239,7 @@ msgstr "ungültiges Kennzeichen »%s« in line-Direktive"
 
 #: directives.c:868
 msgid "unexpected end of file after #line"
-msgstr ""
+msgstr "unerwartetes Dateiende nach #line"
 
 #: directives.c:871
 #, c-format
