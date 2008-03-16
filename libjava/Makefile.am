@@ -13,13 +13,20 @@ SUBDIRS += testsuite
 endif
 
 # write_entries_to_file - writes each entry in a list
-# to the specified file. Each entry is written individually
-# to accomodate systems with severe command-line-length
-# limitations.
+# to the specified file.  Entries are written in chunks of
+# $(write_entries_to_file_split) to accomodate systems with
+# severe command-line-length limitations.
 # Parameters:
 # $(1): variable containing entries to iterate over
 # $(2): output file
-write_entries_to_file = $(shell rm -f $(2) || :) $(shell touch $(2)) $(foreach object,$(1),$(shell echo $(object) >> $(2)))
+write_entries_to_file_split = 50
+write_entries_to_file = $(shell rm -f $(2) || :) $(shell touch $(2)) \
+	$(foreach range, \
+	  $(shell i=1; while test $$i -le $(words $(1)); do \
+	     echo $$i; i=`expr $$i + $(write_entries_to_file_split)`; done), \
+	  $(shell echo $(wordlist $(range), \
+			  $(shell expr $(range) + $(write_entries_to_file_split) - 1), $(1)) \
+	     | tr ' ' '\n' >> $(2)))
 
 ## ################################################################
 
