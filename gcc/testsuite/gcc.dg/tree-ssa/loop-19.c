@@ -6,7 +6,7 @@
 
 /* { dg-do compile { target i?86-*-* x86_64-*-* powerpc*-*-*} } */
 /* { dg-require-effective-target nonpic } */
-/* { dg-options "-O3 -fdump-tree-final_cleanup" } */
+/* { dg-options "-O2 -fdump-tree-final_cleanup" } */
 
 # define N      2000000
 static double   a[N],c[N];

@@ -1,3 +1,9 @@
+2008-03-16  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/35607
+	* gcc.c-torture/compile/pr35607.c: New testcase.
+	* gcc.dg/tree-ssa/loop-19.c: Use -O2 to avoid vectorization.
+
 2008-03-16  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/35582
