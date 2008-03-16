@@ -94,6 +94,7 @@ am__aclocal_m4_deps = $(top_srcdir)/libltdl/acinclude.m4 \
 	$(top_srcdir)/../config/lib-prefix.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
+	$(top_srcdir)/../config/proginstall.m4 \
 	$(top_srcdir)/../config/tls.m4 \
 	$(top_srcdir)/../config/unwind_ipinfo.m4 \
 	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltgcc.m4 \
@@ -8081,6 +8082,7 @@ nat_headers = $(ordinary_header_files) $(inner_nat_headers)
 nat_headers_install = $(ordinary_header_files)
 xlib_nat_headers = $(gnu_awt_xlib_header_files) $(gnu_gcj_xlib_header_files)
 extra_headers = java/lang/Object.h java/lang/Class.h
+install_data_local_split = 50
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@gen_from_JIS_SOURCES = \
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@	gnu/gcj/convert/gen-from-JIS.c \
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@	gnu/gcj/convert/make-trie.c
@@ -12019,7 +12021,6 @@ install-exec-hook: install-binPROGRAMS install-toolexeclibLTLIBRARIES \
 @USE_LIBGCJ_BC_TRUE@	$(LN_S) libgcj_bc.so.1.0.0 $(DESTDIR)$(toolexeclibdir)/libgcj_bc.so.1; \
 @USE_LIBGCJ_BC_TRUE@	rm $(DESTDIR)$(toolexeclibdir)/libgcj_bc.la;
 @BUILD_ECJ1_TRUE@	mv $(DESTDIR)$(libexecsubdir)/`echo ecjx | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` $(DESTDIR)$(libexecsubdir)/ecj1$(host_exeext)
-
 install-data-local:
 	$(PRE_INSTALL)
 	@pc_version=`echo $(GCJVERSION) | sed -e 's/[.][^.]*$$//'`; \
@@ -12029,12 +12030,23 @@ install-data-local:
 	$(INSTALL_DATA) libgcj.pc $(DESTDIR)$(pkgconfigdir)/$$file
 	@echo Creating list of headers to install...
 	@: $(call write_entries_to_file,$(nat_headers_install) $(extra_headers),tmp-ilist)
-	@cat tmp-ilist | while read f; do \
-	  d="`echo $$f | sed -e 's,/[^/]*$$,,'`"; \
-	  $(mkinstalldirs) $(DESTDIR)$(gxx_include_dir)/$$d; \
-	  if test -f $(srcdir)/$$f; then p=$(srcdir)/$$f; else p=$$f; fi; \
-	  echo " $(INSTALL_DATA) $$p $(DESTDIR)$(gxx_include_dir)/$$f"; \
-	  $(INSTALL_DATA) $$p $(DESTDIR)$(gxx_include_dir)/$$f; \
+	@srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
+	while read file; do echo "$$file $$file"; done < tmp-ilist | \
+	sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
+	$(AWK) 'BEGIN { files["."] = "" } \
+	  { files[$$2] = files[$$2] " " $$1; \
+	    if (++n[$$2] == $(install_data_local_split)) { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
+	     END { for (dir in files) print dir, files[dir] }' | \
+	while read dir files; do \
+	  xfiles=; for file in $$files; do \
+	    if test -f "$$file"; then xfiles="$$xfiles $$file"; \
+	    else xfiles="$$xfiles $(srcdir)/$$file"; fi; done; \
+	  test -z "$$xfiles" || { \
+	    test "x$$dir" = x. || { \
+	      echo "$(mkinstalldirs) $(DESTDIR)$(gxx_include_dir)/$$dir"; \
+	      $(mkinstalldirs) $(DESTDIR)$(gxx_include_dir)/$$dir; }; \
+	    echo " $(INSTALL_DATA) $$xfiles $(DESTDIR)$(gxx_include_dir)/$$dir"; \
+	    $(INSTALL_DATA) $$xfiles $(DESTDIR)$(gxx_include_dir)/$$dir; }; \
 	done
 	-@rm -f tmp-ilist
 	$(INSTALL_DATA) $(srcdir)/'java/io/ObjectOutputStream$$PutField.h' $(DESTDIR)$(gxx_include_dir)/java/io/

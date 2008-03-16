@@ -51,6 +51,7 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/multi.m4 \
+	$(top_srcdir)/../config/proginstall.m4 \
 	$(top_srcdir)/../config/stdint.m4 \
 	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
 	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
@@ -793,9 +794,13 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+ac_ct_AR = @ac_ct_AR@
+ac_ct_AS = @ac_ct_AS@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_ct_FC = @ac_ct_FC@
+ac_ct_RANLIB = @ac_ct_RANLIB@
+ac_ct_STRIP = @ac_ct_STRIP@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
 am__fastdepCC_TRUE = @am__fastdepCC_TRUE@
 am__include = @am__include@
@@ -812,9 +817,6 @@ build_os = @build_os@
 build_subdir = @build_subdir@
 build_vendor = @build_vendor@
 datadir = @datadir@
-datarootdir = @datarootdir@
-docdir = @docdir@
-dvidir = @dvidir@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 exec_prefix = @exec_prefix@
@@ -825,13 +827,11 @@ host_cpu = @host_cpu@
 host_os = @host_os@
 host_subdir = @host_subdir@
 host_vendor = @host_vendor@
-htmldir = @htmldir@
 includedir = @includedir@
 infodir = @infodir@
 install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
-localedir = @localedir@
 localstatedir = @localstatedir@
 lt_ECHO = @lt_ECHO@
 mandir = @mandir@
@@ -841,10 +841,8 @@ oldincludedir = @oldincludedir@
 onestep = @onestep@
 onestep_FALSE = @onestep_FALSE@
 onestep_TRUE = @onestep_TRUE@
-pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
-psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@

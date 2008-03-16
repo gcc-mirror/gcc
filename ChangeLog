@@ -1,4 +1,7 @@
-2008-03-16  Ralf Wildenhues <Ralf.Wildenhues@gmx.de>
+2008-03-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure.ac: m4_include config/proginstall.m4.
+	* configure: Regenerate.
 
 	Backport from upstream Libtool:
 	
