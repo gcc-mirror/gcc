@@ -1,5 +1,11 @@
 2008-03-15  Paul Brook  <paul@codesourcery.com>
 
+	* config/arm/arm.c (arm_unwind_emit): Suppress unused unwinding
+	annotations.
+	(arm_output_fn_unwind): Mark functions that can not be unwound.
+
+2008-03-15  Paul Brook  <paul@codesourcery.com>
+
 	* config/arm/arm.c (arm_rtx_costs_1): Add costs for ARMv6 value
 	extension instructions.
 
