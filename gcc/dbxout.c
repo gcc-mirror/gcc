@@ -2332,6 +2332,15 @@ dbxout_expand_expr (tree expr)
   switch (TREE_CODE (expr))
     {
     case VAR_DECL:
+      /* We can't handle emulated tls variables, because the address is an
+	 offset to the return value of __emutls_get_address, and there is no
+	 way to express that in stabs.  Also, there are name mangling issues
+	 here.  We end up with references to undefined symbols if we don't
+	 disable debug info for these variables.  */
+      if (!targetm.have_tls && DECL_THREAD_LOCAL_P (expr))
+	return NULL;
+      /* FALLTHRU */
+
     case PARM_DECL:
       if (DECL_HAS_VALUE_EXPR_P (expr))
 	return dbxout_expand_expr (DECL_VALUE_EXPR (expr));
