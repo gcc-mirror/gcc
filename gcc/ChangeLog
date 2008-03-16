@@ -1,3 +1,9 @@
+2008-03-16  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/35607
+	* tree-ssa-loop-niter.c (expand_simple_operations): Do not
+	expand TREE_INVARIANT operations that are not gimple invariant.
+
 2008-03-16  Hans-Peter Nilsson  <hp@axis.com>
 
 	* doc/extend.texi (Alignment): Say that the ABI controls
