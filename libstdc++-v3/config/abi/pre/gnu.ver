@@ -60,7 +60,9 @@ GLIBCXX_3.4 {
 #     std::c[i-z]*;
       std::c[i-s]*;
       std::c[u-z]*;
-      std::[d-g]*;
+#     std::[d-g]*;
+      std::[d-e]*;
+      std::gslice*;
       std::h[^a]*;
       std::i[a-n]*;
       std::ios_base::[A-Ha-z]*;
@@ -95,7 +97,8 @@ GLIBCXX_3.4 {
       std::locale::_[T-Za-z]*;
 #     std::[A-Zm-r]*;
       std::[A-Zm]*;
-      std::n[^u]*;
+#     std::n[^u]*;
+      std::n[^au]*;
       std::nu[^m]*;
       std::num[^e]*;
       std::[p-r]*;
@@ -803,6 +806,17 @@ GLIBCXX_3.4.11 {
     _ZNSt12system_errorC*;
 
     _ZNKSt4hashISt10error_codeEclES0_;
+
+    # date_time
+    _ZSt15get_system_timev;
+ 
+    _ZNSt11nanoseconds16seconds_per_tickE;
+    _ZNSt11nanoseconds16ticks_per_secondE;
+    _ZNSt11nanoseconds12is_subsecondE;
+
+    _ZNSt11system_time16seconds_per_tickE;
+    _ZNSt11system_time16ticks_per_secondE;
+    _ZNSt11system_time12is_subsecondE;
 
 } GLIBCXX_3.4.10;
 

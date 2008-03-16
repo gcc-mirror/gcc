@@ -98,6 +98,7 @@
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 #include <array>
+#include <date_time>
 #include <random>
 #include <regex>
 #include <system_error>
