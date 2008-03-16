@@ -1,3 +1,9 @@
+2008-03-16  Hans-Peter Nilsson  <hp@axis.com>
+
+	* doc/extend.texi (Alignment): Say that the ABI controls
+	the __alignof__ for non-strict-alignment targets rather
+	than being a recommendation.
+
 2008-03-14  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
