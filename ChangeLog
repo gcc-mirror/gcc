@@ -1,3 +1,17 @@
+2008-03-16  Ralf Wildenhues <Ralf.Wildenhues@gmx.de>
+
+	Backport from upstream Libtool:
+	
+	2007-10-12  Eric Blake  <ebb9@byu.net>
+	
+	Deal with Autoconf 2.62's semantic change in m4_append.
+	* ltsugar.m4 (lt_append): Replace broken versions of
+	m4_append.
+	(lt_if_append_uniq): Don't require separator to be overquoted,
+	and avoid broken m4_append.
+	(lt_dict_add): Fix typo.
+	* libtool.m4 (_LT_DECL): Don't overquote separator.
+
 2008-03-13  David Edelsohn  <edelsohn@gnu.org>
 
 	* config.rpath: Add AIX 6 support.

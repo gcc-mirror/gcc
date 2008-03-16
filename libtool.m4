@@ -319,7 +319,7 @@ m4_bpatsubst([m4_bpatsubst([$1], [^ *], [# ])],
 # VALUE may be 0, 1 or 2 for a computed quote escaped value based on
 # VARNAME.  Any other value will be used directly.
 m4_define([_LT_DECL],
-[lt_if_append_uniq([lt_decl_varnames], [$2], [[, ]],
+[lt_if_append_uniq([lt_decl_varnames], [$2], [, ],
     [lt_dict_add_subkey([lt_decl_dict], [$2], [libtool_name],
 	[m4_ifval([$1], [$1], [$2])])
     lt_dict_add_subkey([lt_decl_dict], [$2], [value], [$3])
