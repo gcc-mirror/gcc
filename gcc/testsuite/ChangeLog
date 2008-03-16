@@ -1,3 +1,8 @@
+2008-03-16  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/35582
+	* gfortran.dg/write_invalid_format.f90: New test.
+
 2008-03-15  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ssa-ccp-16.c: New testcase.
@@ -5,7 +10,7 @@
 2008-03-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR testsuite/35184
-	gfortran.dg/elemental_subroutine_6.f90: New test.
+	* gfortran.dg/elemental_subroutine_6.f90: New test.
 
 2008-03-15  Richard Guenther  <rguenther@suse.de>
 
@@ -21,7 +26,7 @@
 2008-03-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR testsuite/35478
-	gfortran.dg/generic_16.f90: New test.
+	* gfortran.dg/generic_16.f90: New test.
 
 2008-03-15  Hans-Peter Nilsson  <hp@axis.com>
 
@@ -31,7 +36,7 @@
 2008-03-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR testsuite/33296
-	gfortran.dg/nearest_4.f90: New test.
+	* gfortran.dg/nearest_4.f90: New test.
 
 2008-03-14  Richard Guenther  <rguenther@suse.de>
 
