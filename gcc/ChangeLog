@@ -1,3 +1,9 @@
+2008-03-16  James E. Wilson  <wilson@tuliptree.org>
+
+	PR debug/31510
+	* dbxout.c (dbxout_expand_expr, case VAR_DECL): Return NULL for
+	emulated thread local variables.
+
 2008-03-16  Hans-Peter Nilsson  <hp@axis.com>
 
 	* doc/extend.texi (Alignment): Say that the ABI controls
