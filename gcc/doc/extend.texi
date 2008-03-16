@@ -3380,7 +3380,8 @@ designs, @code{__alignof__ (double)} is 4 or even 2.
 
 Some machines never actually require alignment; they allow reference to any
 data type even at an odd address.  For these machines, @code{__alignof__}
-reports the @emph{recommended} alignment of a type.
+reports the smallest alignment that GCC will give the data type, usually as
+mandated by the target ABI.
 
 If the operand of @code{__alignof__} is an lvalue rather than a type,
 its value is the required alignment for its type, taking into account
