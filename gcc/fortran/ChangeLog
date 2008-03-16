@@ -1,3 +1,9 @@
+2008-03-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/35470
+	* resolve.c (check_assumed_size_reference):  Only visit the
+	first reference and look directly at the highest dimension.
+
 2008-03-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/35184

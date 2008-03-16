@@ -954,20 +954,12 @@ static int need_full_assumed_size = 0;
 static bool
 check_assumed_size_reference (gfc_symbol *sym, gfc_expr *e)
 {
-  gfc_ref *ref;
-  int dim;
-  int last = 1;
-
   if (need_full_assumed_size || !(sym->as && sym->as->type == AS_ASSUMED_SIZE))
       return false;
 
-  for (ref = e->ref; ref; ref = ref->next)
-    if (ref->type == REF_ARRAY)
-      for (dim = 0; dim < ref->u.ar.as->rank; dim++)
-	last = (ref->u.ar.end[dim] == NULL)
-	       && (ref->u.ar.type == DIMEN_ELEMENT);
-
-  if (last)
+  if ((e->ref->u.ar.end[e->ref->u.ar.as->rank - 1] == NULL)
+	  && (e->ref->u.ar.as->type == AS_ASSUMED_SIZE)
+	       && (e->ref->u.ar.type == DIMEN_ELEMENT))
     {
       gfc_error ("The upper bound in the last dimension must "
 		 "appear in the reference to the assumed size "
