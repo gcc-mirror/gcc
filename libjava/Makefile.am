@@ -484,6 +484,7 @@ endif BUILD_ECJ1
 
 ## Install the headers.  It is fairly ugly that we have to do this by
 ## hand.
+install_data_local_split = 50
 install-data-local:
 	$(PRE_INSTALL)
 ## Install the .pc file.
@@ -496,12 +497,23 @@ install-data-local:
 ## length limit of some shells.
 	@echo Creating list of headers to install...
 	@: $(call write_entries_to_file,$(nat_headers_install) $(extra_headers),tmp-ilist)
-	@cat tmp-ilist | while read f; do \
-	  d="`echo $$f | sed -e 's,/[^/]*$$,,'`"; \
-	  $(mkinstalldirs) $(DESTDIR)$(gxx_include_dir)/$$d; \
-	  if test -f $(srcdir)/$$f; then p=$(srcdir)/$$f; else p=$$f; fi; \
-	  echo " $(INSTALL_DATA) $$p $(DESTDIR)$(gxx_include_dir)/$$f"; \
-	  $(INSTALL_DATA) $$p $(DESTDIR)$(gxx_include_dir)/$$f; \
+	@srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
+	while read file; do echo "$$file $$file"; done < tmp-ilist | \
+	sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
+	$(AWK) 'BEGIN { files["."] = "" } \
+	  { files[$$2] = files[$$2] " " $$1; \
+	    if (++n[$$2] == $(install_data_local_split)) { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
+	     END { for (dir in files) print dir, files[dir] }' | \
+	while read dir files; do \
+	  xfiles=; for file in $$files; do \
+	    if test -f "$$file"; then xfiles="$$xfiles $$file"; \
+	    else xfiles="$$xfiles $(srcdir)/$$file"; fi; done; \
+	  test -z "$$xfiles" || { \
+	    test "x$$dir" = x. || { \
+	      echo "$(mkinstalldirs) $(DESTDIR)$(gxx_include_dir)/$$dir"; \
+	      $(mkinstalldirs) $(DESTDIR)$(gxx_include_dir)/$$dir; }; \
+	    echo " $(INSTALL_DATA) $$xfiles $(DESTDIR)$(gxx_include_dir)/$$dir"; \
+	    $(INSTALL_DATA) $$xfiles $(DESTDIR)$(gxx_include_dir)/$$dir; }; \
 	done
 	-@rm -f tmp-ilist
 ## Install inner class headers.

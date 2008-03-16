@@ -19,6 +19,7 @@
 ### WARNING: this file contains embedded tabs.  Do not run untabify on this file.
 
 sinclude(config/acx.m4)
+m4_include(config/proginstall.m4)
 
 AC_INIT(move-if-change)
 AC_PREREQ(2.59)

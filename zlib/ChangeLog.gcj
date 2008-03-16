@@ -1,3 +1,9 @@
+2008-03-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* aclocal.m4: Regenerate.
+	* configure: Likewise.
+	* Makefile.in: Likewise.
+
 2008-01-24  David Edelsohn  <edelsohn@gnu.org>
 
 	* configure: Regenerate.

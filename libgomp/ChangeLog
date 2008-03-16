@@ -1,3 +1,10 @@
+2008-03-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* aclocal.m4: Regenerate.
+	* configure: Likewise.
+	* Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
 2008-03-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/35185
