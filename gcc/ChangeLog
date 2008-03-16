@@ -1,3 +1,9 @@
+2008-03-16  James E. Wilson  <wilson@tuliptree.org>
+
+	PR debug/31510
+	* dbxout.c (dbxout_expand_expr, case VAR_DECL): Return NULL for
+	emulated thread local variables.
+
 2008-03-16  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/35607
