@@ -141,6 +141,7 @@ sources = \
 	compatibility.cc \
 	complex_io.cc \
 	ctype.cc \
+	date_time.cc \
 	debug.cc \
 	functexcept.cc \
 	hash.cc \
@@ -240,6 +241,11 @@ hash_c++0x.o: hash_c++0x.cc
 hashtable_c++0x.lo: hashtable_c++0x.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 hashtable_c++0x.o: hashtable_c++0x.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
+date_time.lo: date_time.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+date_time.o: date_time.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 if GLIBCXX_LDBL_COMPAT

@@ -66,6 +66,9 @@
 /* Define if ECANCELED exists. */
 #undef HAVE_ECANCELED
 
+/* Define if EIDRM exists. */
+#undef HAVE_EIDRM
+
 /* Define to 1 if you have the <endian.h> header file. */
 #undef HAVE_ENDIAN_H
 
@@ -98,6 +101,9 @@
 
 /* Define if ETIME exists. */
 #undef HAVE_ETIME
+
+/* Define if ETXTBSY exists. */
+#undef HAVE_ETXTBSY
 
 /* Define to 1 if you have the `expf' function. */
 #undef HAVE_EXPF

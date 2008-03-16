@@ -1,3 +1,37 @@
+2008-03-16  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/17_intro/headers/c++200x/all_multiple_inclusion.cc:
+	Update.
+	* testsuite/17_intro/headers/c++200x/all.cc: Likewise.
+	* include/precompiled/stdc++.h: Likewise.
+
+2008-03-16  Pedro Lamarão  <pedro.lamarao@gmail.com>
+
+	* include/std/date_time: New file.
+	* src/date_time.cc: New file.
+ 	* config/abi/pre/gnu.ver: Added <date_time> symbols in version
+ 	GLIBCXX_3.4.11 and changed two patterns in version GLIBCXX_3.4
+	that matched new symbols.
+	* include/Makefile.am: Add date_time in std headers.
+	* src/Makefile.am: Add date_time.cc to source files.
+	* include/Makefile.in: Regenerate.
+	* src/Makefile.in: Likewise.
+
+2008-03-16  Pedro Lamarão  <pedro.lamarao@gmail.com>
+
+      * testsuite/31_date_time/headers/date_time/types_std.cc: New.
+      * testsuite/31_date_time/headers/date_time/std_c++0x_neg.cc: Likewise.
+      * testsuite/31_date_time/headers/date_time/functions_std.cc: Likewise.
+      * testsuite/31_date_time/headers/date_time/synopsis.cc: Likewise.
+      * testsuite/31_date_time/nanoseconds/requirements/traits.cc: Likewise.
+      * testsuite/31_date_time/nanoseconds/requirements/duration.cc: Likewise.
+      * testsuite/31_date_time/system_time/requirements: Likewise.
+      * testsuite/31_date_time/system_time/requirements/traits.cc: Likewise. 	
+
+2008-03-16  Paolo Carlini  <pcarlini@suse.de>
+
+	* config.h.in: Regenerate.
+
 2008-03-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* aclocal.m4: Regenerate.
