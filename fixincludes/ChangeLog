@@ -1,3 +1,7 @@
+2008-03-17  Dave Korn  <dave.korn@artimi.com>
+
+	* fixincl.x: Revert last change, restoring GPLv2 status.
+
 2008-02-04  Ismail Dönmez  <ismail@pardus.org.tr>
 
 	* inclhack.def: (bsd_stdio_attrs_conflict, freebsd_gcc3_breakage,
