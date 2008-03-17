@@ -1,3 +1,8 @@
+2008-03-17  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/19637
+	* g++.dg/tree-ssa/pr19637.C: New testcase.
+
 2008-03-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/35470

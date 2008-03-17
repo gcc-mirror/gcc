@@ -7784,9 +7784,7 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	     - the initial type is a pointer type and the precisions of the
 	       intermediate and final types differ, or
 	     - the final type is a pointer type and the precisions of the
-	       initial and intermediate types differ.
-	     - the initial type is a pointer to an array and the final type
-	       not.  */
+	       initial and intermediate types differ.  */
 	  if (! inside_float && ! inter_float && ! final_float
 	      && ! inside_vec && ! inter_vec && ! final_vec
 	      && (inter_prec >= inside_prec || inter_prec >= final_prec)
@@ -7798,10 +7796,7 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	      && ! (inside_ptr && inter_prec != final_prec)
 	      && ! (final_ptr && inside_prec != inter_prec)
 	      && ! (final_prec != GET_MODE_BITSIZE (TYPE_MODE (type))
-		    && TYPE_MODE (type) == TYPE_MODE (inter_type))
-	      && ! (inside_ptr && final_ptr
-		    && TREE_CODE (TREE_TYPE (inside_type)) == ARRAY_TYPE
-		    && TREE_CODE (TREE_TYPE (type)) != ARRAY_TYPE))
+		    && TYPE_MODE (type) == TYPE_MODE (inter_type)))
 	    return fold_build1 (code, type, TREE_OPERAND (op0, 0));
 	}
 
