@@ -1,3 +1,12 @@
+2008-03-17  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/19637
+	* fold-const.c (fold_unary): Remove restrictions of removing
+	intermediate pointer-conversions (P2)(P1)P0.
+	* tree-ssa-ccp.c (maybe_fold_stmt_addition): Recover from
+	conversion to void pointer.
+	(get_maxval_strlen): Handle addresses of the form &(*p)[0].
+
 2008-03-16  James E. Wilson  <wilson@tuliptree.org>
 
 	PR debug/31510
