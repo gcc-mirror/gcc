@@ -329,10 +329,6 @@ struct lang_hooks
      assembler does not talk about it.  */
   void (*set_decl_assembler_name) (tree);
 
-  /* Nonzero if operations on types narrower than their mode should
-     have their results reduced to the precision of the type.  */
-  bool reduce_bit_field_operations;
-
   /* Nonzero if this front end does not generate a dummy BLOCK between
      the outermost scope of the function and the FUNCTION_DECL.  See
      is_body_block in stmt.c, and its callers.  */

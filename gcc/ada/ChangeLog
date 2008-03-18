@@ -1,3 +1,7 @@
+2008-03-18  Paolo Bonzini  <bonzini@gnu.org>
+
+        * misc.c (LANG_HOOKS_REDUCE_BIT_FIELD_OPERATIONS): Delete.
+	
 2008-03-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* gnat_rm.texi (Implementation Defined Characteristics)
