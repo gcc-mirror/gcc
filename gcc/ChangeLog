@@ -1,3 +1,7 @@
+2008-03-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/include/texinfo.tex: Update to version 2008-03-17.10.
+
 2008-03-18  Paolo Bonzini  <bonzini@gnu.org>
 
         * expr.c (store_expr): Assume lang_hooks.reduce_bit_field_operations
