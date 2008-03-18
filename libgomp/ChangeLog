@@ -1,5 +1,8 @@
 2008-03-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/35611
+	* testsuite/libgomp.c/atomic-4.c: New test.
+
 	PR libgomp/35625
 	* iter.c (gomp_iter_guided_next_locked): If q > n, set end to ws->end.
 	(gomp_iter_guided_next): Likewise.

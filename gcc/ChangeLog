@@ -1,3 +1,9 @@
+2008-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/35611
+	* gimplify.c (gimplify_expr): Gimplify second operand of
+	OMP_ATOMIC_LOAD.
+
 2008-03-16  James E. Wilson  <wilson@tuliptree.org>
 
 	PR debug/31510
