@@ -242,16 +242,16 @@ gomp_iter_guided_next_locked (long *pstart, long *pend)
   if (ws->next == ws->end)
     return false;
 
-  n = (ws->end - ws->next) / ws->incr;
+  start = ws->next;
+  n = (ws->end - start) / ws->incr;
   q = (n + nthreads - 1) / nthreads;
 
   if (q < ws->chunk_size)
     q = ws->chunk_size;
-  if (q > n)
-    q = n;
-
-  start = ws->next;
-  end = start + q * ws->incr;
+  if (q <= n)
+    end = start + q * ws->incr;
+  else
+    end = ws->end;
 
   ws->next = end;
   *pstart = start;
@@ -286,15 +286,15 @@ gomp_iter_guided_next (long *pstart, long *pend)
       if (start == end)
 	return false;
 
-      n = (end - start) / ws->incr;
+      n = (end - start) / incr;
       q = (n + nthreads - 1) / nthreads;
 
       if (q < chunk_size)
 	q = chunk_size;
-      if (q > n)
-	q = n;
-
-      nend = start + q * incr;
+      if (__builtin_expect (q <= n, 1))
+	nend = start + q * incr;
+      else
+	nend = end;
 
       tmp = __sync_val_compare_and_swap (&ws->next, start, nend);
       if (__builtin_expect (tmp == start, 1))
