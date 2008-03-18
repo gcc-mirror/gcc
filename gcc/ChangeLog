@@ -1,3 +1,7 @@
+2008-03-18  Michael Matz  <matz@suse.de>
+
+	* gcov-io.h (__gcov_merge_ior, __gcov_fork): Mark hidden.
+
 2008-03-18  Richard Guenther  <rguenther@suse.de>
 
 	* tree-gimple.h (is_gimple_invariant_address): Declare.
