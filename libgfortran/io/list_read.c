@@ -356,6 +356,11 @@ eat_separator (st_parameter_dt *dtp)
 		{
 		  eat_line (dtp);
 		  c = next_char (dtp);
+		  if (c == '!')
+		    {
+		      eat_line (dtp);
+		      c = next_char (dtp);
+		    }
 		}
 	    }
 	  while (c == '\n' || c == '\r' || c == ' ');
