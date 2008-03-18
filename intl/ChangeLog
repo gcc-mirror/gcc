@@ -1,3 +1,8 @@
+2008-03-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* aclocal.m4: Regenerate.
+	* configure: Likewise.
+
 2006-09-27  Alan Modra  <amodra@bigpond.net.au>
 
 	* Makefile.in (distclean): Delete config files.
