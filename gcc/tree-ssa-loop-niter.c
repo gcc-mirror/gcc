@@ -1436,10 +1436,6 @@ expand_simple_operations (tree expr)
     return expr;
 
   e = GIMPLE_STMT_OPERAND (stmt, 1);
-  /* Do not expand random invariants.  */
-  if (TREE_INVARIANT (e)
-      && !is_gimple_min_invariant (e))
-    return expr;
   if (/* Casts are simple.  */
       TREE_CODE (e) != NOP_EXPR
       && TREE_CODE (e) != CONVERT_EXPR

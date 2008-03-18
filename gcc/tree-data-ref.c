@@ -3965,11 +3965,14 @@ get_references_in_stmt (tree stmt, VEC (data_ref_loc, heap) **references)
 
   if (TREE_CODE (stmt) ==  GIMPLE_MODIFY_STMT)
     {
+      tree base;
       op0 = &GIMPLE_STMT_OPERAND (stmt, 0);
       op1 = &GIMPLE_STMT_OPERAND (stmt, 1);
 		
       if (DECL_P (*op1)
-	  || (REFERENCE_CLASS_P (*op1) && get_base_address (*op1)))
+	  || (REFERENCE_CLASS_P (*op1)
+	      && (base = get_base_address (*op1))
+	      && TREE_CODE (base) != SSA_NAME))
 	{
 	  ref = VEC_safe_push (data_ref_loc, heap, *references, NULL);
 	  ref->pos = op1;

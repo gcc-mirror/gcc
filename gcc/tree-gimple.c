@@ -167,17 +167,13 @@ is_gimple_addressable (tree t)
 	  || INDIRECT_REF_P (t));
 }
 
-/* Return true if T is a GIMPLE minimal invariant.  It's a restricted
-   form of function invariant.  */
+/* Return true if T is a valid gimple constant.  */
 
 bool
-is_gimple_min_invariant (const_tree t)
+is_gimple_constant (const_tree t)
 {
   switch (TREE_CODE (t))
     {
-    case ADDR_EXPR:
-      return TREE_INVARIANT (t);
-
     case INTEGER_CST:
     case REAL_CST:
     case FIXED_CST:
@@ -196,6 +192,87 @@ is_gimple_min_invariant (const_tree t)
     default:
       return false;
     }
+}
+
+/* Return true if T is a gimple invariant address.  */
+
+bool
+is_gimple_invariant_address (const_tree t)
+{
+  tree op;
+
+  if (TREE_CODE (t) != ADDR_EXPR)
+    return false;
+
+  op = TREE_OPERAND (t, 0);
+  while (handled_component_p (op))
+    {
+      switch (TREE_CODE (op))
+	{
+	case ARRAY_REF:
+	case ARRAY_RANGE_REF:
+	  if (!is_gimple_constant (TREE_OPERAND (op, 1))
+	      || TREE_OPERAND (op, 2) != NULL_TREE
+	      || TREE_OPERAND (op, 3) != NULL_TREE)
+	    return false;
+	  break;
+
+	case COMPONENT_REF:
+	  if (TREE_OPERAND (op, 2) != NULL_TREE)
+	    return false;
+	  break;
+
+	default:;
+	}
+      op = TREE_OPERAND (op, 0);
+    }
+
+  if (CONSTANT_CLASS_P (op))
+    return true;
+
+  if (INDIRECT_REF_P (op))
+    return false;
+
+  switch (TREE_CODE (op))
+    {
+    case PARM_DECL:
+    case RESULT_DECL:
+    case LABEL_DECL:
+    case FUNCTION_DECL:
+      return true;
+
+    case VAR_DECL:
+      if (((TREE_STATIC (op) || DECL_EXTERNAL (op))
+	   && ! DECL_DLLIMPORT_P (op))
+	  || DECL_THREAD_LOCAL_P (op)
+	  || DECL_CONTEXT (op) == current_function_decl
+	  || decl_function_context (op) == current_function_decl)
+	return true;
+      break;
+
+    case CONST_DECL:
+      if ((TREE_STATIC (op) || DECL_EXTERNAL (op))
+	  || decl_function_context (op) == current_function_decl)
+	return true;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return false;
+}
+
+/* Return true if T is a GIMPLE minimal invariant.  It's a restricted
+   form of function invariant.  */
+
+bool
+is_gimple_min_invariant (const_tree t)
+{
+  if (TREE_CODE (t) == ADDR_EXPR)
+    return is_gimple_invariant_address (t);
+
+  return is_gimple_constant (t);
 }
 
 /* Return true if T looks like a valid GIMPLE statement.  */
