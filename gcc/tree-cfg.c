@@ -4059,6 +4059,7 @@ verify_gimple_stmt (tree stmt)
     case NOP_EXPR:
     case CHANGE_DYNAMIC_TYPE_EXPR:
     case ASM_EXPR:
+    case PREDICT_EXPR:
       return false;
 
     default:

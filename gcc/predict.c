@@ -1293,10 +1293,11 @@ tree_bb_level_predictions (void)
     {
       block_stmt_iterator bsi = bsi_last (bb);
 
-      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+      for (bsi = bsi_start (bb); !bsi_end_p (bsi);)
 	{
 	  tree stmt = bsi_stmt (bsi);
 	  tree decl;
+	  bool next = false;
 
 	  switch (TREE_CODE (stmt))
 	    {
@@ -1319,9 +1320,17 @@ call_expr:;
 		  predict_paths_leading_to (bb, PRED_COLD_FUNCTION,
 		      			    NOT_TAKEN);
 		break;
+	      case PREDICT_EXPR:
+		predict_paths_leading_to (bb, PREDICT_EXPR_PREDICTOR (stmt),
+		      			  PREDICT_EXPR_OUTCOME (stmt));
+		bsi_remove (&bsi, true);
+		next = true;
+		break;
 	      default:
 		break;
 	    }
+	  if (!next)
+	    bsi_next (&bsi);
 	}
     }
 }
@@ -1913,6 +1922,21 @@ static bool
 gate_estimate_probability (void)
 {
   return flag_guess_branch_prob;
+}
+
+/* Build PREDICT_EXPR.  */
+tree
+build_predict_expr (enum br_predictor predictor, enum prediction taken)
+{
+  tree t = build1 (PREDICT_EXPR, NULL_TREE, build_int_cst (NULL, predictor));
+  PREDICT_EXPR_OUTCOME (t) = taken;
+  return t;
+}
+
+const char *
+predictor_name (enum br_predictor predictor)
+{
+  return predictor_info[predictor].name;
 }
 
 struct tree_opt_pass pass_profile = 

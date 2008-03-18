@@ -277,7 +277,7 @@ mark_stmt_if_obviously_necessary (tree stmt, bool aggressive)
      can then remove the block and labels.  */
   switch (TREE_CODE (stmt))
     {
-    case BIND_EXPR:
+    case PREDICT_EXPR:
     case LABEL_EXPR:
     case CASE_LABEL_EXPR:
       mark_stmt_necessary (stmt, false);

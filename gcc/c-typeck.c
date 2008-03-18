@@ -7503,6 +7503,9 @@ c_finish_bc_stmt (tree *label_p, bool is_break)
   if (skip)
     return NULL_TREE;
 
+  if (!is_break)
+    add_stmt (build_predict_expr (PRED_CONTINUE, NOT_TAKEN));
+
   return add_stmt (build1 (GOTO_EXPR, void_type_node, label));
 }
 

@@ -2265,6 +2265,7 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case COMPLEX_CST:
     case VECTOR_CST:
     case STRING_CST:
+    case PREDICT_EXPR:
       *walk_subtrees = 0;
       return NULL;
 

@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "fixed-value.h"
 #include "value-prof.h"
+#include "predict.h"
 
 /* Local functions, macros and variables.  */
 static int op_prio (const_tree);
@@ -1590,6 +1591,16 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	  pp_character (buffer, '}');
 	}
       is_expr = false;
+      break;
+
+    case PREDICT_EXPR:
+      pp_string (buffer, "// predicted ");
+      if (PREDICT_EXPR_OUTCOME (node))
+        pp_string (buffer, "likely by ");
+      else
+        pp_string (buffer, "unlikely by ");
+      pp_string (buffer, predictor_name (PREDICT_EXPR_PREDICTOR (node)));
+      pp_string (buffer, " predictor.");
       break;
 
     case RETURN_EXPR:

@@ -2376,6 +2376,7 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
     case OMP_RETURN:
     case OMP_SECTION:
     case OMP_SECTIONS_SWITCH:
+    case PREDICT_EXPR:
       /* Expressions that make no memory references.  */
       return;
 

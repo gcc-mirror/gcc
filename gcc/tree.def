@@ -1170,6 +1170,12 @@ DEFTREECODE (VEC_EXTRACT_ODD_EXPR, "vec_extractodd_expr", tcc_binary, 2)
 DEFTREECODE (VEC_INTERLEAVE_HIGH_EXPR, "vec_interleavehigh_expr", tcc_binary, 2)
 DEFTREECODE (VEC_INTERLEAVE_LOW_EXPR, "vec_interleavelow_expr", tcc_binary, 2)
 
+/* PREDICT_EXPR.  Specify hint for branch prediction.  The
+   PREDICT_EXPR_PREDICTOR specify predictor and PREDICT_EXPR_OUTCOME the
+   outcome (0 for not taken and 1 for taken).  Once the profile is guessed
+   all conditional branches leading to execution paths executing the
+   PREDICT_EXPR will get predicted by the specified predictor.  */
+DEFTREECODE (PREDICT_EXPR, "predict_expr", tcc_unary, 1)
 /*
 Local variables:
 mode:c
