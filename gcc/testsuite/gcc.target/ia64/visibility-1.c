@@ -19,9 +19,11 @@ static struct A variable_l __attribute__((section (".sbss")));
 struct A variable_m __attribute__((visibility ("hidden"), section(".sbss")));
 struct A variable_n __attribute__((section (".sbss")));
 
-int foo (void)
+void foo (void)
 {
-  return variable_i + variable_j + variable_k;
+  variable_i = 0;
+  variable_j = 0;
+  variable_k = 0;
 }
 
 void bar (void)
