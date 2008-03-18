@@ -1,3 +1,16 @@
+2008-03-18  Richard Guenther  <rguenther@suse.de>
+
+	* tree-gimple.h (is_gimple_invariant_address): Declare.
+	(is_gimple_constant): Likewise.
+	* tree-gimple.c (is_gimple_constant): New function.
+	(is_gimple_invariant_address): Likewise.
+	(is_gimple_min_invariant): Implement in terms of is_gimple_constant
+	and is_gimple_invariant_address.
+	* tree-ssa-loop-niter.c (expand_simple_operations): Revert
+	previous change.
+	* tree-data-ref.c (get_references_in_stmt): A SSA_NAME is not
+	an addressable base.
+
 2008-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/35611
