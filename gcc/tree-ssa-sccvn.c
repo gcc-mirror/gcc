@@ -1251,6 +1251,12 @@ visit_reference_op_load (tree lhs, tree op, tree stmt)
   if (result)
     {
       changed = set_ssa_val_to (lhs, result);
+      if (TREE_CODE (result) == SSA_NAME
+	  && VN_INFO (result)->has_constants)
+	{
+	  VN_INFO (lhs)->expr = VN_INFO (result)->expr;
+	  VN_INFO (lhs)->has_constants = true;
+	}
     }
   else
     {

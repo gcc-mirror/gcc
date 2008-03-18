@@ -1,3 +1,16 @@
+2008-03-18  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (visit_reference_op_load): If the lookup
+	found an expression with constants, note that in the VN for the lhs.
+	* tree-ssa-pre.c (eliminate): Visit COND_EXPR statements and
+	fold them to constants if possible.  Run cleanup_cfg if done so.
+	(execute_pre): Return todo.
+	(do_pre): Likewise.
+	(execute_fre): Likewise.
+	* tree-ssa-forwprop.c (can_propagate_from): Allow propagation
+	of constants.
+	(get_prop_source_stmt): Look through pointer conversions.
+
 2008-03-18  Jan Hubicka  <jh@suse.cz>
 
 	* tree-pretty-print.c: Include predict.h.
