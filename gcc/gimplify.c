@@ -6022,10 +6022,16 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 
 	case OMP_RETURN:
 	case OMP_CONTINUE:
-        case OMP_ATOMIC_LOAD:
-        case OMP_ATOMIC_STORE:
-
+	case OMP_ATOMIC_STORE:
 	  ret = GS_ALL_DONE;
+	  break;
+
+	case OMP_ATOMIC_LOAD:
+	  if (gimplify_expr (&TREE_OPERAND (*expr_p, 1), pre_p, NULL,
+	      is_gimple_val, fb_rvalue) != GS_ALL_DONE)
+	    ret = GS_ERROR;
+	  else
+	    ret = GS_ALL_DONE;
 	  break;
 
 	case POINTER_PLUS_EXPR:
