@@ -1,3 +1,17 @@
+2008-03-18  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2008-03-15  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/35593
+	* tree-ssa-ccp.c (maybe_fold_offset_to_array_ref): Make sure
+	to not produce negative array indices if not allowed.  Add
+	parameter to indicate that.
+	(maybe_fold_offset_to_component_ref): Allow negative array
+	indices only for the first member of a structure.
+	(maybe_fold_offset_to_reference): Allow negative array indices.
+	(maybe_fold_stmt_addition): Likewise.
+
 2008-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/35611
