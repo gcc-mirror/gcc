@@ -1,3 +1,8 @@
+2008-03-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35548
+	* g++.dg/init/ref16.C: New testcase.
+
 2008-03-14  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
