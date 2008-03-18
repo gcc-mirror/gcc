@@ -235,6 +235,7 @@ lower_stmt (tree_stmt_iterator *tsi, struct lower_data *data)
     case NOP_EXPR:
     case ASM_EXPR:
     case GOTO_EXPR:
+    case PREDICT_EXPR:
     case LABEL_EXPR:
     case SWITCH_EXPR:
     case CHANGE_DYNAMIC_TYPE_EXPR:

@@ -436,6 +436,7 @@ struct gimple_stmt GTY(())
 	   expression.
        CALL_EXPR_TAILCALL in CALL_EXPR
        CASE_LOW_SEEN in CASE_LABEL_EXPR
+       RETURN_EXPR_OUTCOME in RETURN_EXPR
 
    static_flag:
 
@@ -1157,6 +1158,11 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    CASE_LOW operand has been processed.  */
 #define CASE_LOW_SEEN(NODE) \
   (CASE_LABEL_EXPR_CHECK (NODE)->base.addressable_flag)
+
+#define PREDICT_EXPR_OUTCOME(NODE) \
+  (PREDICT_EXPR_CHECK(NODE)->base.addressable_flag)
+#define PREDICT_EXPR_PREDICTOR(NODE) \
+  ((enum br_predictor)tree_low_cst (TREE_OPERAND (PREDICT_EXPR_CHECK (NODE), 0), 0))
 
 /* In a VAR_DECL, nonzero means allocate static storage.
    In a FUNCTION_DECL, nonzero if function has been defined.

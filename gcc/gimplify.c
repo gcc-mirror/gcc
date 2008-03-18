@@ -5837,6 +5837,10 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 				 NULL, is_gimple_val, fb_rvalue);
 	  break;
 
+	  /* Predictions are always gimplified.  */
+	case PREDICT_EXPR:
+	  goto out;
+
 	case LABEL_EXPR:
 	  ret = GS_ALL_DONE;
 	  gcc_assert (decl_function_context (LABEL_EXPR_LABEL (*expr_p))

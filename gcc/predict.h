@@ -38,5 +38,7 @@ enum prediction
 extern void predict_insn_def (rtx, enum br_predictor, enum prediction);
 extern int counts_to_freqs (void);
 extern void estimate_bb_frequencies (void);
+extern const char *predictor_name (enum br_predictor);
+extern tree build_predict_expr (enum br_predictor, enum prediction);
 
 #endif  /* GCC_PREDICT_H */

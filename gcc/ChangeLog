@@ -1,3 +1,26 @@
+2008-03-18  Jan Hubicka  <jh@suse.cz>
+
+	* tree-pretty-print.c: Include predict.h.
+	(dump_generic_node): Dump predictor.
+	* tree.h (PREDICT_EXPR_OUTCOME, PREDICT_EXPR_PREDICTION): Update.
+	* tree-gimple.c (is_gimple_stmt): Add PREDICT_EXPR.
+	* gimple-low.c (lower_stmt): Likewise.
+	* expr.c (expand_expr_real): Likewise.
+	* predict.c (tree_bb_level_predictions): Use PREDICT_EXPRs and remove
+	them.
+	(build_predict_expr, build_predict_expr): New.
+	* predict.h (predictor_name, build_predict_expr): Update.
+	* c-typeck.c (c_finish_bc_stmt): Add prediction.
+	* gimplify.c (gimplify_expr): Add PREDICT_EXPR.
+	* predict.def (PRED_CONTINUE): Update hitrate.
+	* tree.def (PREDICT_EXPR): Define.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Mark PREDICT_EXPR;
+	do not handle BIND_EXPR.
+	* tree-inline.c (estimate_num_insns_1): PREDICT_EXPR is free.
+	* tree-cfg.c (verify_gimple_stmt): PREDICT_EXPR is valid.
+	* tree-ssa-operands.c (get_expr_operands): PREDICT_EXPR takes no
+	operands.
+
 2008-03-18  Michael Matz  <matz@suse.de>
 
 	* gcov-io.h (__gcov_merge_ior, __gcov_fork): Mark hidden.
@@ -20,6 +43,29 @@
 	PR middle-end/35611
 	* gimplify.c (gimplify_expr): Gimplify second operand of
 	OMP_ATOMIC_LOAD.
+
+2008-03-17  Richard Guenther  <rguenther@suse.de>
+
+	* tree-pretty-print.c: Include predict.h.
+	(dump_generic_node): Dump predictor.
+	* tree.h (PREDICT_EXPR_OUTCOME, PREDICT_EXPR_PREDICTION): Update.
+	* tree-gimple.c (is_gimple_stmt): Add PREDICT_EXPR.
+	* gimple-low.c (lower_stmt): Likewise.
+	* expr.c (expand_expr_real): Likewise.
+	* predict.c (tree_bb_level_predictions): Use PREDICT_EXPRs and remove
+	them.
+	(build_predict_expr, build_predict_expr): New.
+	* predict.h (predictor_name, build_predict_expr): Update.
+	* c-typeck.c (c_finish_bc_stmt): Add prediction.
+	* gimplify.c (gimplify_expr): Add PREDICT_EXPR.
+	* predict.def (PRED_CONTINUE): Update hitrate.
+	* tree.def (PREDICT_EXPR): Define.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Mark PREDICT_EXPR;
+	do not handle BIND_EXPR.
+	* tree-inline.c (estimate_num_insns_1): PREDICT_EXPR is free.
+	* tree-cfg.c (verify_gimple_stmt): PREDICT_EXPR is valid.
+	* tree-ssa-operands.c (get_expr_operands): PREDICT_EXPR takes no
+	operands.
 
 2008-03-17  Richard Guenther  <rguenther@suse.de>
 
