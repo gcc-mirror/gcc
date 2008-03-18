@@ -1,19 +1,25 @@
+2008-03-18  Mikulas Patocka  <mikulas@artax.karlin.mff.cuni.cz>
+
+	PR target/35504
+	* config/i386/i386.c (x86_this_parameter): Calculate correct location
+	of "this" pointer when "regparm = N" or "fastcall" is in effect.
+
 2008-03-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/include/texinfo.tex: Update to version 2008-03-17.10.
 
 2008-03-18  Paolo Bonzini  <bonzini@gnu.org>
 
-        * expr.c (store_expr): Assume lang_hooks.reduce_bit_field_operations
-        is true.
-        (expand_expr_real_1) <REDUCE_BIT_FIELD>: Don't look at ignore.
-        (expand_expr_real_1): Assume lang_hooks.reduce_bit_field_operations
-        is true.  Add "&& !ignore" condition to reduce_bit_field.  Modify
-        target after ignore has been set, and move there also the commputation
-        of subtarget and original_target.
-        * langhooks-def.h (LANG_HOOKS_REDUCE_BIT_FIELD_OPERATIONS): Delete.
-        (LANG_HOOKS_INITIALIZER): Remove it.
-        * langhooks.h (struct lang_hooks): Remove reduce_bit_field_operations.
+	* expr.c (store_expr): Assume lang_hooks.reduce_bit_field_operations
+	is true.
+	(expand_expr_real_1) <REDUCE_BIT_FIELD>: Don't look at ignore.
+	(expand_expr_real_1): Assume lang_hooks.reduce_bit_field_operations
+	is true.  Add "&& !ignore" condition to reduce_bit_field.  Modify
+	target after ignore has been set, and move there also the commputation
+	of subtarget and original_target.
+	* langhooks-def.h (LANG_HOOKS_REDUCE_BIT_FIELD_OPERATIONS): Delete.
+	(LANG_HOOKS_INITIALIZER): Remove it.
+	* langhooks.h (struct lang_hooks): Remove reduce_bit_field_operations.
 
 2008-03-18  Richard Guenther  <rguenther@suse.de>
 
