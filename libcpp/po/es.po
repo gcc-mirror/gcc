@@ -1,13 +1,14 @@
-# Mensajes en español para cpplib-4.3-b20071109
-# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
-# Cristian Othón Martínez Vera <cfuga@itam.mx>, 2001, 2002, 2003, 2004, 2005, 2006, 2007.
+# Mensajes en español para cpplib-4.3.0
+# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+# This file is distributed under the same license as the gcc package.
+# Cristian Othón Martínez Vera <cfuga@itam.mx>, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib-4.3-b20071109\n"
+"Project-Id-Version: cpplib-4.3.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2008-02-01 16:21+0000\n"
-"PO-Revision-Date: 2007-11-13 19:48-0600\n"
+"PO-Revision-Date: 2008-03-18 12:01-0600\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@itam.mx>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -237,7 +238,7 @@ msgstr "indicador \"%s\" inválido en la línea de la directiva"
 
 #: directives.c:868
 msgid "unexpected end of file after #line"
-msgstr ""
+msgstr "fin de fichero inesperado después de #line"
 
 #: directives.c:871
 #, c-format

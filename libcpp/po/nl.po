@@ -1,13 +1,14 @@
 # Dutch messages for cpplib.
-# Copyright (C) 1999, 2000, 2002, 2003, 2005, 2007 Free Software Foundation, Inc.
-# Tim Van Holder <tim.van.holder@telenet.be>, 2007.
+# Copyright (C) 1999, 2000, 2002, 2003, 2005, 2007, 2008 Free Software Foundation, Inc.
+# This file is distributed under the same license as the gcc package.
+# Tim Van Holder <tim.van.holder@telenet.be>, 2008.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.3-b20071109\n"
+"Project-Id-Version: cpplib 4.3.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2008-02-01 16:21+0000\n"
-"PO-Revision-Date: 2007-11-10 17:28+0100\n"
+"PO-Revision-Date: 2008-03-18 20:16+0100\n"
 "Last-Translator: Tim Van Holder <tim.van.holder@telenet.be>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
 "MIME-Version: 1.0\n"
@@ -243,7 +244,7 @@ msgstr "ongeldige vlag \"%s\" in #line commando"
 
 #: directives.c:868
 msgid "unexpected end of file after #line"
-msgstr ""
+msgstr "onverwacht einde van bestand na #line"
 
 #: directives.c:871
 #, c-format
