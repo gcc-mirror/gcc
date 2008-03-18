@@ -1145,7 +1145,8 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
      const and rvalue references to rvalues of compatible class type. */
   if (compatible_p
       && (lvalue_p
-	  || ((CP_TYPE_CONST_NON_VOLATILE_P(to) || TYPE_REF_IS_RVALUE (rto))
+	  || (!(flags & LOOKUP_NO_TEMP_BIND)
+	      && (CP_TYPE_CONST_NON_VOLATILE_P(to) || TYPE_REF_IS_RVALUE (rto))
 	      && CLASS_TYPE_P (from))))
     {
       /* [dcl.init.ref]
