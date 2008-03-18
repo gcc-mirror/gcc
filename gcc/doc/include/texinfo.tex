@@ -3,7 +3,7 @@
 % Load plain if necessary, i.e., if running under initex.
 \expandafter\ifx\csname fmtname\endcsname\relax\input plain\fi
 %
-\def\texinfoversion{2008-03-07.10}
+\def\texinfoversion{2008-03-17.10}
 %
 % Copyright (C) 1985, 1986, 1988, 1990, 1991, 1992, 1993, 1994, 1995,
 % 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
@@ -6967,20 +6967,22 @@ end
   %
   % Make link in pdf output.
   \ifpdf
-    \leavevmode
-    \getfilename{#4}%
     {\indexnofonts
      \turnoffactive
+     % This expands tokens, so do it after making catcode changes, so _
+     % etc. don't get their TeX definitions.
+     \getfilename{#4}%
+     %
      % See comments at \activebackslashdouble.
      {\activebackslashdouble \xdef\pdfxrefdest{#1}%
       \backslashparens\pdfxrefdest}%
      %
+     \leavevmode
+     \startlink attr{/Border [0 0 0]}%
      \ifnum\filenamelength>0
-       \startlink attr{/Border [0 0 0]}%
-         goto file{\the\filename.pdf} name{\pdfxrefdest}%
+       goto file{\the\filename.pdf} name{\pdfxrefdest}%
      \else
-       \startlink attr{/Border [0 0 0]}%
-         goto name{\pdfmkpgn{\pdfxrefdest}}%
+       goto name{\pdfmkpgn{\pdfxrefdest}}%
      \fi
     }%
     \setcolor{\linkcolor}%
