@@ -1,3 +1,9 @@
+2008-03-19  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/35152
+	* interface.c (gfc_procedure_use): Check for keyworded arguments in
+	procedures without explicit interfaces.
+
 2008-03-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/35470
