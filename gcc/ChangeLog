@@ -1,3 +1,9 @@
+2008-03-18  Mikulas Patocka  <mikulas@artax.karlin.mff.cuni.cz>
+
+	PR target/35504
+	* config/i386/i386.c (x86_this_parameter): Calculate correct location
+	of "this" pointer when "regparm = N" or "fastcall" is in effect.
+
 2008-03-18  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:

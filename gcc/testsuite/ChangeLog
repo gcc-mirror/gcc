@@ -1,3 +1,8 @@
+2008-03-18  Mikulas Patocka  <mikulas@artax.karlin.mff.cuni.cz>
+
+	PR target/35504
+	* g++.dg/other/pr35504.C: New test.
+
 2008-03-18  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:

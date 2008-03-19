@@ -22669,6 +22669,7 @@ x86_this_parameter (tree function)
 {
   tree type = TREE_TYPE (function);
   bool aggr = aggregate_value_p (TREE_TYPE (type), type) != 0;
+  int nregs;
 
   if (TARGET_64BIT)
     {
@@ -22681,11 +22682,25 @@ x86_this_parameter (tree function)
       return gen_rtx_REG (DImode, parm_regs[aggr]);
     }
 
-  if (ix86_function_regparm (type, function) > 0 && !stdarg_p (type))
+  nregs = ix86_function_regparm (type, function);
+
+  if (nregs > 0 && !stdarg_p (type))
     {
-      int regno = AX_REG;
+      int regno;
+
       if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (type)))
-	regno = CX_REG;
+	regno = aggr ? DX_REG : CX_REG;
+      else
+        {
+	  regno = AX_REG;
+	  if (aggr)
+	    {
+	      regno = DX_REG;
+	      if (nregs == 1)
+		return gen_rtx_MEM (SImode,
+				    plus_constant (stack_pointer_rtx, 4));
+	    }
+	}
       return gen_rtx_REG (SImode, regno);
     }
 
