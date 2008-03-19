@@ -1,3 +1,11 @@
+2008-03-19  Michael Matz  <matz@suse.de>
+
+	Backport from mainline:
+	2008-03-19  Michael Matz  <matz@suse.de>
+
+	PR middle-end/35616
+	* gcc.dg/pr35616.c: New test.
+
 2008-03-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* gcc.dg/pr35258.c: New testcase.

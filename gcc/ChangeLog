@@ -1,5 +1,14 @@
 2008-03-19  Michael Matz  <matz@suse.de>
 
+	Backport from mainline:
+	2008-03-19  Michael Matz  <matz@suse.de>
+
+	PR middle-end/35616
+	* calls.c (expand_call): Check overlap of arguments with call
+	address for sibcalls.
+
+2008-03-19  Michael Matz  <matz@suse.de>
+
 	* gcov-io.h (__gcov_merge_ior, __gcov_fork): Mark hidden.
 
 2008-03-19  Andreas Krebbel  <krebbel1@de.ibm.com>
