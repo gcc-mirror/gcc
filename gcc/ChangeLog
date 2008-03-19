@@ -1,3 +1,7 @@
+2008-03-19  Michael Matz  <matz@suse.de>
+
+	* gcov-io.h (__gcov_merge_ior, __gcov_fork): Mark hidden.
+
 2008-03-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* cse.c (cse_insn): Avoid creation of overlapping MEMs.

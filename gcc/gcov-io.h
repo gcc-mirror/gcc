@@ -467,6 +467,9 @@ extern void __gcov_merge_single (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
    consecutive values.  */
 extern void __gcov_merge_delta (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
 
+/* The merge function that just ors the counters together.  */
+extern void __gcov_merge_ior (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
+
 /* The profiler functions.  */
 extern void __gcov_interval_profiler (gcov_type *, gcov_type, int, unsigned); 
 extern void __gcov_pow2_profiler (gcov_type *, gcov_type);
@@ -474,11 +477,10 @@ extern void __gcov_one_value_profiler (gcov_type *, gcov_type);
 extern void __gcov_indirect_call_profiler (gcov_type *, gcov_type, void *, void *);
 extern void __gcov_average_profiler (gcov_type *, gcov_type);
 extern void __gcov_ior_profiler (gcov_type *, gcov_type);
-extern void __gcov_merge_ior (gcov_type *, unsigned);
 
 #ifndef inhibit_libc
 /* The wrappers around some library functions..  */
-extern pid_t __gcov_fork (void);
+extern pid_t __gcov_fork (void) ATTRIBUTE_HIDDEN;
 extern int __gcov_execl (const char *, const char *, ...) ATTRIBUTE_HIDDEN;
 extern int __gcov_execlp (const char *, const char *, ...) ATTRIBUTE_HIDDEN;
 extern int __gcov_execle (const char *,  const char *, ...) ATTRIBUTE_HIDDEN;
