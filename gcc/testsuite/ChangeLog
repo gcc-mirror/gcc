@@ -1,3 +1,10 @@
+2008-03-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/32972
+	* gfortran.dg/internal_pack_1.f90:  New test case.
+	* gfortran.dg/internal_pack_2.f90:  New test case.
+	* gfortran.dg/internal_pack_3.f90:  New test case.
+
 2008-03-19  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/20050811-2.c: Update dumping flags.

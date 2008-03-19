@@ -1,3 +1,45 @@
+2008-03-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/32972
+	* Makefile.am (in_pack_c): Add in_pack_i1.c, in_pack_i2.c,
+	in_pack_r4.c, in_pack_r8.c, in_pack_r10.c and in_pack_r16.c.
+	(in_unpack_c): Add in_unpack_i1.c, in_unpack_i2.c,
+	in_unpack_r4.c, in_unpack_r8.c, in_unpack_r10.c and
+	in_unpack_r16.c.
+	* Makefile.in: Regenerate.
+	* libgfortran.h:  Add prototypes for internal_pack_1,
+	internal_pack_2, internal_pack_16, internal_pack_r4,
+	internal_pack_r8, internal_pack_r10, internal_pack_r16,
+	internal_pack_c10 and internal_pack_c16.  Add prototypes for
+	internal_unpack_1, internal_unpack_2, internal_unpack_16,
+	internal_unpack_r4, internal_unpack_r8, internal_unpack_r10,
+	internal_unpack_r16, internal_unpack_c10 and
+	internal_unpack_c16.
+	* runtime/in_pack_generic.c (internal_pack): Use sizeof instead
+	of hardwired sizes.
+	Add calls to internal_pack_1, internal_pack_2,
+	internal_pack_16, internal_pack_r4, internal_pack_r8,
+	internal_pack_r10, internal_pack_r16, internal_pack_c10 and
+	internal_pack_c16.
+	* runtime/in_unpack_generic.c (internal_unpack):  Use sizeof
+	instead of hardwired sizes.
+	Add calls to internal_unpack_1, internal_unpack_2,
+	internal_unpack_16, internal_unpack_r4, internal_unpack_r8,
+	internal_unpack_r10, internal_unpack_r16, internal_unpack_c10
+	and internal_unpack_c16.
+	* generated/in_pack_r4.c:  New file.
+	* generated/in_pack_i2.c:  New file.
+	* generated/in_unpack_i1.c:  New file.
+	* generated/in_pack_r10.c:  New file.
+	* generated/in_unpack_r4.c:  New file.
+	* generated/in_unpack_i2.c:  New file.
+	* generated/in_unpack_r16.c:  New file.
+	* generated/in_pack_r8.c:  New file.
+	* generated/in_unpack_r10.c:  New file.
+	* generated/in_unpack_r8.c:  New file.
+	* generated/in_pack_r16.c:  New file.
+	* generated/in_pack_i1.c:  New file.
+
 2008-03-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/35617
