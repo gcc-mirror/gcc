@@ -1062,6 +1062,8 @@ decode_d_option (const char *arg)
 	break;
       case 'D':	/* These are handled by the preprocessor.  */
       case 'I':
+      case 'M':
+      case 'N':
 	break;
       case 'H':
 	setup_core_dumping();

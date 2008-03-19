@@ -605,7 +605,10 @@ gate_ifcombine (void)
   return 1;
 }
 
-struct tree_opt_pass pass_tree_ifcombine = {
+struct gimple_opt_pass pass_tree_ifcombine = 
+{
+ {
+  GIMPLE_PASS,
   "ifcombine",			/* name */
   gate_ifcombine,		/* gate */
   tree_ssa_ifcombine,		/* execute */
@@ -620,6 +623,6 @@ struct tree_opt_pass pass_tree_ifcombine = {
   TODO_dump_func
   | TODO_ggc_collect
   | TODO_update_ssa
-  | TODO_verify_ssa,		/* todo_flags_finish */
-  0				/* letter */
+  | TODO_verify_ssa		/* todo_flags_finish */
+ }
 };

@@ -555,8 +555,10 @@ execute_cse_reciprocals (void)
   return 0;
 }
 
-struct tree_opt_pass pass_cse_reciprocals =
+struct gimple_opt_pass pass_cse_reciprocals =
 {
+ {
+  GIMPLE_PASS,
   "recip",				/* name */
   gate_cse_reciprocals,			/* gate */
   execute_cse_reciprocals,		/* execute */
@@ -569,8 +571,8 @@ struct tree_opt_pass pass_cse_reciprocals =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_dump_func | TODO_update_ssa | TODO_verify_ssa
-    | TODO_verify_stmts,                /* todo_flags_finish */
-  0				        /* letter */
+    | TODO_verify_stmts                /* todo_flags_finish */
+ }
 };
 
 /* Records an occurrence at statement USE_STMT in the vector of trees
@@ -761,8 +763,10 @@ gate_cse_sincos (void)
 	 && optimize;
 }
 
-struct tree_opt_pass pass_cse_sincos =
+struct gimple_opt_pass pass_cse_sincos =
 {
+ {
+  GIMPLE_PASS,
   "sincos",				/* name */
   gate_cse_sincos,			/* gate */
   execute_cse_sincos,			/* execute */
@@ -775,8 +779,8 @@ struct tree_opt_pass pass_cse_sincos =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_dump_func | TODO_update_ssa | TODO_verify_ssa
-    | TODO_verify_stmts,                /* todo_flags_finish */
-  0				        /* letter */
+    | TODO_verify_stmts                 /* todo_flags_finish */
+ }
 };
 
 /* Find all expressions in the form of sqrt(a/b) and
@@ -853,8 +857,10 @@ gate_convert_to_rsqrt (void)
   return flag_unsafe_math_optimizations && optimize;
 }
 
-struct tree_opt_pass pass_convert_to_rsqrt =
+struct gimple_opt_pass pass_convert_to_rsqrt =
 {
+ {
+  GIMPLE_PASS,
   "rsqrt",				/* name */
   gate_convert_to_rsqrt,		/* gate */
   execute_convert_to_rsqrt,		/* execute */
@@ -867,6 +873,6 @@ struct tree_opt_pass pass_convert_to_rsqrt =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_dump_func | TODO_update_ssa | TODO_verify_ssa
-    | TODO_verify_stmts,                /* todo_flags_finish */
-  0				        /* letter */
+    | TODO_verify_stmts                 /* todo_flags_finish */
+ }
 };

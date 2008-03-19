@@ -6,7 +6,7 @@
    they can not co-exist; also under -funsafe-math-optimizations, so we
    expect it to fail.  */
 /* { dg-require-effective-target hard_float } */
-/* { dg-options "-O2 -funroll-loops -funsafe-math-optimizations -fvariable-expansion-in-unroller -dL" } */
+/* { dg-options "-O2 -funroll-loops -funsafe-math-optimizations -fvariable-expansion-in-unroller -fdump-rtl-loop2_unroll" } */
 
 extern void abort (void);
 extern void exit (int);

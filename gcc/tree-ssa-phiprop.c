@@ -368,7 +368,10 @@ gate_phiprop (void)
   return 1;
 }
 
-struct tree_opt_pass pass_phiprop = {
+struct gimple_opt_pass pass_phiprop = 
+{
+ {
+  GIMPLE_PASS,
   "phiprop",			/* name */
   gate_phiprop,			/* gate */
   tree_ssa_phiprop,		/* execute */
@@ -383,6 +386,6 @@ struct tree_opt_pass pass_phiprop = {
   TODO_dump_func
   | TODO_ggc_collect
   | TODO_update_ssa
-  | TODO_verify_ssa,		/* todo_flags_finish */
-  0				/* letter */
+  | TODO_verify_ssa		/* todo_flags_finish */
+ }
 };

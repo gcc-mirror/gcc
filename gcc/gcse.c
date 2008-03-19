@@ -6691,8 +6691,10 @@ rest_of_handle_jump_bypass (void)
   return 0;
 }
 
-struct tree_opt_pass pass_jump_bypass =
+struct rtl_opt_pass pass_jump_bypass =
 {
+ {
+  RTL_PASS,
   "bypass",                             /* name */
   gate_handle_jump_bypass,              /* gate */   
   rest_of_handle_jump_bypass,           /* execute */       
@@ -6705,8 +6707,8 @@ struct tree_opt_pass pass_jump_bypass =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_dump_func |
-  TODO_ggc_collect | TODO_verify_flow,  /* todo_flags_finish */
-  'G'                                   /* letter */
+  TODO_ggc_collect | TODO_verify_flow   /* todo_flags_finish */
+ }
 };
 
 
@@ -6760,8 +6762,10 @@ rest_of_handle_gcse (void)
   return 0;
 }
 
-struct tree_opt_pass pass_gcse =
+struct rtl_opt_pass pass_gcse =
 {
+ {
+  RTL_PASS,
   "gcse1",                              /* name */
   gate_handle_gcse,                     /* gate */   
   rest_of_handle_gcse,			/* execute */       
@@ -6775,8 +6779,8 @@ struct tree_opt_pass pass_gcse =
   0,                                    /* todo_flags_start */
   TODO_df_finish | TODO_verify_rtl_sharing |
   TODO_dump_func |
-  TODO_verify_flow | TODO_ggc_collect,  /* todo_flags_finish */
-  'G'                                   /* letter */
+  TODO_verify_flow | TODO_ggc_collect   /* todo_flags_finish */
+ }
 };
 
 

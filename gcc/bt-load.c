@@ -1505,8 +1505,10 @@ rest_of_handle_branch_target_load_optimize1 (void)
   return 0;
 }
 
-struct tree_opt_pass pass_branch_target_load_optimize1 =
+struct rtl_opt_pass pass_branch_target_load_optimize1 =
 {
+ {
+  RTL_PASS,
   "btl1",                               /* name */
   gate_handle_branch_target_load_optimize1,      /* gate */
   rest_of_handle_branch_target_load_optimize1,   /* execute */
@@ -1521,7 +1523,7 @@ struct tree_opt_pass pass_branch_target_load_optimize1 =
   TODO_dump_func |
   TODO_verify_rtl_sharing |
   TODO_ggc_collect,                     /* todo_flags_finish */
-  'd'                                   /* letter */
+ }
 };
 
 static bool
@@ -1553,8 +1555,10 @@ rest_of_handle_branch_target_load_optimize2 (void)
   return 0;
 }
 
-struct tree_opt_pass pass_branch_target_load_optimize2 =
+struct rtl_opt_pass pass_branch_target_load_optimize2 =
 {
+ {
+  RTL_PASS,
   "btl2",                               /* name */
   gate_handle_branch_target_load_optimize2,      /* gate */
   rest_of_handle_branch_target_load_optimize2,   /* execute */
@@ -1568,6 +1572,6 @@ struct tree_opt_pass pass_branch_target_load_optimize2 =
   0,                                    /* todo_flags_start */
   TODO_dump_func |
   TODO_ggc_collect,                     /* todo_flags_finish */
-  'd'                                   /* letter */
+ }
 };
 

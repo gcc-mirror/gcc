@@ -2196,8 +2196,10 @@ gate_type_escape_vars (void)
 	  && !(errorcount || sorrycount));
 }
 
-struct tree_opt_pass pass_ipa_type_escape =
+struct simple_ipa_opt_pass pass_ipa_type_escape =
 {
+ {
+  SIMPLE_IPA_PASS,
   "type-escape-var",			/* name */
   gate_type_escape_vars,		/* gate */
   type_escape_execute,			/* execute */
@@ -2209,7 +2211,7 @@ struct tree_opt_pass pass_ipa_type_escape =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  0,                                    /* todo_flags_finish */
-  0					/* letter */
+  0                                     /* todo_flags_finish */
+ }
 };
 

@@ -1939,8 +1939,10 @@ predictor_name (enum br_predictor predictor)
   return predictor_info[predictor].name;
 }
 
-struct tree_opt_pass pass_profile = 
+struct gimple_opt_pass pass_profile = 
 {
+ {
+  GIMPLE_PASS,
   "profile",				/* name */
   gate_estimate_probability,		/* gate */
   tree_estimate_probability,		/* execute */
@@ -1952,6 +1954,6 @@ struct tree_opt_pass pass_profile =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_ggc_collect | TODO_verify_ssa,			/* todo_flags_finish */
-  0					/* letter */
+  TODO_ggc_collect | TODO_verify_ssa			/* todo_flags_finish */
+ }
 };

@@ -2767,8 +2767,10 @@ gate_increase_alignment (void)
   return flag_section_anchors && flag_tree_vectorize;
 }
 
-struct tree_opt_pass pass_ipa_increase_alignment = 
+struct simple_ipa_opt_pass pass_ipa_increase_alignment = 
 {
+ {
+  SIMPLE_IPA_PASS,
   "increase_alignment",			/* name */
   gate_increase_alignment,		/* gate */
   increase_alignment,			/* execute */
@@ -2780,6 +2782,6 @@ struct tree_opt_pass pass_ipa_increase_alignment =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  0, 					/* todo_flags_finish */
-  0					/* letter */
+  0 					/* todo_flags_finish */
+ }
 };

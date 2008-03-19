@@ -901,8 +901,10 @@ gate_dce (void)
   return flag_tree_dce != 0;
 }
 
-struct tree_opt_pass pass_dce =
+struct gimple_opt_pass pass_dce =
 {
+ {
+  GIMPLE_PASS,
   "dce",				/* name */
   gate_dce,				/* gate */
   tree_ssa_dce,				/* execute */
@@ -914,12 +916,14 @@ struct tree_opt_pass pass_dce =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func | TODO_verify_ssa,	/* todo_flags_finish */
-  0					/* letter */
+  TODO_dump_func | TODO_verify_ssa	/* todo_flags_finish */
+ }
 };
 
-struct tree_opt_pass pass_dce_loop =
+struct gimple_opt_pass pass_dce_loop =
 {
+ {
+  GIMPLE_PASS,
   "dceloop",				/* name */
   gate_dce,				/* gate */
   tree_ssa_dce_loop,			/* execute */
@@ -931,12 +935,14 @@ struct tree_opt_pass pass_dce_loop =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func | TODO_verify_ssa,	/* todo_flags_finish */
-  0					/* letter */
+  TODO_dump_func | TODO_verify_ssa	/* todo_flags_finish */
+ }
 };
 
-struct tree_opt_pass pass_cd_dce =
+struct gimple_opt_pass pass_cd_dce =
 {
+ {
+  GIMPLE_PASS,
   "cddce",				/* name */
   gate_dce,				/* gate */
   tree_ssa_cd_dce,			/* execute */
@@ -949,6 +955,6 @@ struct tree_opt_pass pass_cd_dce =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_dump_func | TODO_verify_ssa
-  | TODO_verify_flow,			/* todo_flags_finish */
-  0					/* letter */
+  | TODO_verify_flow			/* todo_flags_finish */
+ }
 };

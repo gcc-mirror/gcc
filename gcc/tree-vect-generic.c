@@ -527,8 +527,10 @@ expand_vector_operations (void)
   return 0;
 }
 
-struct tree_opt_pass pass_lower_vector = 
+struct gimple_opt_pass pass_lower_vector = 
 {
+ {
+  GIMPLE_PASS,
   "veclower",				/* name */
   0,					/* gate */
   expand_vector_operations,		/* execute */
@@ -541,12 +543,14 @@ struct tree_opt_pass pass_lower_vector =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_dump_func | TODO_ggc_collect
-    | TODO_verify_stmts,		/* todo_flags_finish */
-  0					/* letter */
+    | TODO_verify_stmts			/* todo_flags_finish */
+ }
 };
 
-struct tree_opt_pass pass_lower_vector_ssa = 
+struct gimple_opt_pass pass_lower_vector_ssa = 
 {
+ {
+  GIMPLE_PASS,
   "veclower2",				/* name */
   gate_expand_vector_operations,	/* gate */
   expand_vector_operations,		/* execute */
@@ -560,8 +564,8 @@ struct tree_opt_pass pass_lower_vector_ssa =
   0,					/* todo_flags_start */
   TODO_dump_func | TODO_update_ssa	/* todo_flags_finish */
     | TODO_verify_ssa
-    | TODO_verify_stmts | TODO_verify_flow,
-  0					/* letter */
+    | TODO_verify_stmts | TODO_verify_flow
+ }
 };
 
 #include "gt-tree-vect-generic.h"

@@ -1059,8 +1059,10 @@ regclass_init (void)
   return 1;
 }
 
-struct tree_opt_pass pass_regclass_init =
+struct rtl_opt_pass pass_regclass_init =
 {
+ {
+  RTL_PASS,
   "regclass",                           /* name */
   NULL,                                 /* gate */
   regclass_init,                        /* execute */
@@ -1072,8 +1074,8 @@ struct tree_opt_pass pass_regclass_init =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
-  'k'                                   /* letter */
+  0                                     /* todo_flags_finish */
+ }
 };
 
 
@@ -2670,8 +2672,10 @@ gate_subregs_of_mode_init (void)
 #endif
 }
 
-struct tree_opt_pass pass_subregs_of_mode_init =
+struct rtl_opt_pass pass_subregs_of_mode_init =
 {
+ {
+  RTL_PASS,
   "subregs_of_mode_init",               /* name */
   gate_subregs_of_mode_init,            /* gate */
   init_subregs_of_mode,                 /* execute */
@@ -2683,12 +2687,14 @@ struct tree_opt_pass pass_subregs_of_mode_init =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
-  0                                     /* letter */
+  0                                     /* todo_flags_finish */
+ }
 };
 
-struct tree_opt_pass pass_subregs_of_mode_finish =
+struct rtl_opt_pass pass_subregs_of_mode_finish =
 {
+ {
+  RTL_PASS,
   "subregs_of_mode_finish",               /* name */
   gate_subregs_of_mode_init,            /* gate */
   finish_subregs_of_mode,               /* execute */
@@ -2700,8 +2706,8 @@ struct tree_opt_pass pass_subregs_of_mode_finish =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
-  0                                     /* letter */
+  0                                     /* todo_flags_finish */
+ }
 };
 
 

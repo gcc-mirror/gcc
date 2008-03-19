@@ -753,8 +753,10 @@ gate_opt (void)
 }
 
 
-struct tree_opt_pass pass_df_initialize_opt =
+struct rtl_opt_pass pass_df_initialize_opt =
 {
+ {
+  RTL_PASS,
   "dfinit",                             /* name */
   gate_opt,                             /* gate */
   rest_of_handle_df_initialize,         /* execute */
@@ -766,8 +768,8 @@ struct tree_opt_pass pass_df_initialize_opt =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
-  'z'                                   /* letter */
+  0                                     /* todo_flags_finish */
+ }
 };
 
 
@@ -778,8 +780,10 @@ gate_no_opt (void)
 }
 
 
-struct tree_opt_pass pass_df_initialize_no_opt =
+struct rtl_opt_pass pass_df_initialize_no_opt =
 {
+ {
+  RTL_PASS,
   "dfinit",                             /* name */
   gate_no_opt,                          /* gate */
   rest_of_handle_df_initialize,         /* execute */
@@ -791,8 +795,8 @@ struct tree_opt_pass pass_df_initialize_no_opt =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
-  'z'                                   /* letter */
+  0                                     /* todo_flags_finish */
+ }
 };
 
 
@@ -825,8 +829,10 @@ rest_of_handle_df_finish (void)
 }
 
 
-struct tree_opt_pass pass_df_finish =
+struct rtl_opt_pass pass_df_finish =
 {
+ {
+  RTL_PASS,
   "dfinish",                            /* name */
   NULL,					/* gate */
   rest_of_handle_df_finish,             /* execute */
@@ -838,8 +844,8 @@ struct tree_opt_pass pass_df_finish =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
-  'z'                                   /* letter */
+  0                                     /* todo_flags_finish */
+ }
 };
 
 

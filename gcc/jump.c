@@ -122,8 +122,10 @@ cleanup_barriers (void)
   return 0;
 }
 
-struct tree_opt_pass pass_cleanup_barriers =
+struct rtl_opt_pass pass_cleanup_barriers =
 {
+ {
+  RTL_PASS,
   "barriers",                           /* name */
   NULL,                                 /* gate */
   cleanup_barriers,                     /* execute */
@@ -135,8 +137,8 @@ struct tree_opt_pass pass_cleanup_barriers =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func,                       /* todo_flags_finish */
-  0                                     /* letter */
+  TODO_dump_func                        /* todo_flags_finish */
+ }
 };
 
 

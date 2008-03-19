@@ -91,8 +91,10 @@ rest_of_handle_stack_ptr_mod (void)
   return 0;
 }
 
-struct tree_opt_pass pass_stack_ptr_mod =
+struct rtl_opt_pass pass_stack_ptr_mod =
 {
+ {
+  RTL_PASS,
   NULL,		                        /* name */
   NULL,                                 /* gate */
   rest_of_handle_stack_ptr_mod,         /* execute */
@@ -104,6 +106,6 @@ struct tree_opt_pass pass_stack_ptr_mod =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
-  0                                     /* letter */
+  0                                     /* todo_flags_finish */
+ }
 };

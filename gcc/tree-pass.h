@@ -88,9 +88,16 @@ extern const char *dump_file_name;
 /* Return the dump_file_info for the given phase.  */
 extern struct dump_file_info *get_dump_file_info (enum tree_dump_index);
 
-/* Describe one pass.  */
-struct tree_opt_pass
+/* Describe one pass; this is the common part shared across different pass
+   types.  */
+struct opt_pass
 {
+  /* Optimization pass type.  */
+  enum opt_pass_type {
+    GIMPLE_PASS,
+    RTL_PASS,
+    SIMPLE_IPA_PASS
+  } type;
   /* Terse name of the pass used as a fragment of the dump file name.  */
   const char *name;
 
@@ -104,10 +111,10 @@ struct tree_opt_pass
   unsigned int (*execute) (void);
 
   /* A list of sub-passes to run, dependent on gate predicate.  */
-  struct tree_opt_pass *sub;
+  struct opt_pass *sub;
 
   /* Next in the list of passes to run, independent of gate predicate.  */
-  struct tree_opt_pass *next;
+  struct opt_pass *next;
 
   /* Static pass number, used as a fragment of the dump file name.  */
   int static_pass_number;
@@ -124,9 +131,25 @@ struct tree_opt_pass
   /* Flags indicating common sets things to do before and after.  */
   unsigned int todo_flags_start;
   unsigned int todo_flags_finish;
+};
 
-  /* Letter for RTL dumps.  */
-  char letter;
+/* Description or GIMPLE pass.  */
+struct gimple_opt_pass
+{
+  struct opt_pass pass;
+};
+
+/* Decription of RTL pass.  */
+struct rtl_opt_pass
+{
+  struct opt_pass pass;
+};
+
+/* Description if simple IPA pass.  Simple IPA passes have just one execute
+   hook.  */
+struct simple_ipa_opt_pass
+{
+  struct opt_pass pass;
 };
 
 /* Define a tree dump switch.  */
@@ -240,222 +263,222 @@ struct dump_file_info
 
 extern void tree_lowering_passes (tree decl);
 
-extern struct tree_opt_pass pass_mudflap_1;
-extern struct tree_opt_pass pass_mudflap_2;
-extern struct tree_opt_pass pass_remove_useless_stmts;
-extern struct tree_opt_pass pass_lower_cf;
-extern struct tree_opt_pass pass_refactor_eh;
-extern struct tree_opt_pass pass_lower_eh;
-extern struct tree_opt_pass pass_build_cfg;
-extern struct tree_opt_pass pass_tree_profile;
-extern struct tree_opt_pass pass_early_tree_profile;
-extern struct tree_opt_pass pass_cleanup_cfg;
-extern struct tree_opt_pass pass_referenced_vars;
-extern struct tree_opt_pass pass_sra;
-extern struct tree_opt_pass pass_sra_early;
-extern struct tree_opt_pass pass_tail_recursion;
-extern struct tree_opt_pass pass_tail_calls;
-extern struct tree_opt_pass pass_tree_loop;
-extern struct tree_opt_pass pass_tree_loop_init;
-extern struct tree_opt_pass pass_lim;
-extern struct tree_opt_pass pass_tree_unswitch;
-extern struct tree_opt_pass pass_predcom;
-extern struct tree_opt_pass pass_iv_canon;
-extern struct tree_opt_pass pass_scev_cprop;
-extern struct tree_opt_pass pass_empty_loop;
-extern struct tree_opt_pass pass_record_bounds;
-extern struct tree_opt_pass pass_if_conversion;
-extern struct tree_opt_pass pass_loop_distribution;
-extern struct tree_opt_pass pass_vectorize;
-extern struct tree_opt_pass pass_complete_unroll;
-extern struct tree_opt_pass pass_parallelize_loops;
-extern struct tree_opt_pass pass_loop_prefetch;
-extern struct tree_opt_pass pass_iv_optimize;
-extern struct tree_opt_pass pass_tree_loop_done;
-extern struct tree_opt_pass pass_ch;
-extern struct tree_opt_pass pass_ccp;
-extern struct tree_opt_pass pass_phi_only_cprop;
-extern struct tree_opt_pass pass_build_ssa;
-extern struct tree_opt_pass pass_del_ssa;
-extern struct tree_opt_pass pass_build_alias;
-extern struct tree_opt_pass pass_dominator;
-extern struct tree_opt_pass pass_dce;
-extern struct tree_opt_pass pass_dce_loop;
-extern struct tree_opt_pass pass_cd_dce;
-extern struct tree_opt_pass pass_merge_phi;
-extern struct tree_opt_pass pass_split_crit_edges;
-extern struct tree_opt_pass pass_pre;
-extern struct tree_opt_pass pass_profile;
-extern struct tree_opt_pass pass_lower_complex_O0;
-extern struct tree_opt_pass pass_lower_complex;
-extern struct tree_opt_pass pass_lower_vector;
-extern struct tree_opt_pass pass_lower_vector_ssa;
-extern struct tree_opt_pass pass_lower_omp;
-extern struct tree_opt_pass pass_expand_omp;
-extern struct tree_opt_pass pass_expand_omp_ssa;
-extern struct tree_opt_pass pass_object_sizes;
-extern struct tree_opt_pass pass_fold_builtins;
-extern struct tree_opt_pass pass_stdarg;
-extern struct tree_opt_pass pass_early_warn_uninitialized;
-extern struct tree_opt_pass pass_late_warn_uninitialized;
-extern struct tree_opt_pass pass_cse_reciprocals;
-extern struct tree_opt_pass pass_cse_sincos;
-extern struct tree_opt_pass pass_convert_to_rsqrt;
-extern struct tree_opt_pass pass_warn_function_return;
-extern struct tree_opt_pass pass_warn_function_noreturn;
-extern struct tree_opt_pass pass_cselim;
-extern struct tree_opt_pass pass_phiopt;
-extern struct tree_opt_pass pass_forwprop;
-extern struct tree_opt_pass pass_phiprop;
-extern struct tree_opt_pass pass_tree_ifcombine;
-extern struct tree_opt_pass pass_dse;
-extern struct tree_opt_pass pass_simple_dse;
-extern struct tree_opt_pass pass_nrv;
-extern struct tree_opt_pass pass_mark_used_blocks;
-extern struct tree_opt_pass pass_rename_ssa_copies;
-extern struct tree_opt_pass pass_expand;
-extern struct tree_opt_pass pass_rest_of_compilation;
-extern struct tree_opt_pass pass_sink_code;
-extern struct tree_opt_pass pass_fre;
-extern struct tree_opt_pass pass_linear_transform;
-extern struct tree_opt_pass pass_check_data_deps;
-extern struct tree_opt_pass pass_copy_prop;
-extern struct tree_opt_pass pass_store_ccp;
-extern struct tree_opt_pass pass_vrp;
-extern struct tree_opt_pass pass_create_structure_vars;
-extern struct tree_opt_pass pass_uncprop;
-extern struct tree_opt_pass pass_return_slot;
-extern struct tree_opt_pass pass_reassoc;
-extern struct tree_opt_pass pass_rebuild_cgraph_edges;
-extern struct tree_opt_pass pass_build_cgraph_edges;
-extern struct tree_opt_pass pass_reset_cc_flags;
+extern struct gimple_opt_pass pass_mudflap_1;
+extern struct gimple_opt_pass pass_mudflap_2;
+extern struct gimple_opt_pass pass_remove_useless_stmts;
+extern struct gimple_opt_pass pass_lower_cf;
+extern struct gimple_opt_pass pass_refactor_eh;
+extern struct gimple_opt_pass pass_lower_eh;
+extern struct gimple_opt_pass pass_build_cfg;
+extern struct gimple_opt_pass pass_tree_profile;
+extern struct gimple_opt_pass pass_early_tree_profile;
+extern struct gimple_opt_pass pass_cleanup_cfg;
+extern struct gimple_opt_pass pass_referenced_vars;
+extern struct gimple_opt_pass pass_sra;
+extern struct gimple_opt_pass pass_sra_early;
+extern struct gimple_opt_pass pass_tail_recursion;
+extern struct gimple_opt_pass pass_tail_calls;
+extern struct gimple_opt_pass pass_tree_loop;
+extern struct gimple_opt_pass pass_tree_loop_init;
+extern struct gimple_opt_pass pass_lim;
+extern struct gimple_opt_pass pass_tree_unswitch;
+extern struct gimple_opt_pass pass_predcom;
+extern struct gimple_opt_pass pass_iv_canon;
+extern struct gimple_opt_pass pass_scev_cprop;
+extern struct gimple_opt_pass pass_empty_loop;
+extern struct gimple_opt_pass pass_record_bounds;
+extern struct gimple_opt_pass pass_if_conversion;
+extern struct gimple_opt_pass pass_loop_distribution;
+extern struct gimple_opt_pass pass_vectorize;
+extern struct gimple_opt_pass pass_complete_unroll;
+extern struct gimple_opt_pass pass_parallelize_loops;
+extern struct gimple_opt_pass pass_loop_prefetch;
+extern struct gimple_opt_pass pass_iv_optimize;
+extern struct gimple_opt_pass pass_tree_loop_done;
+extern struct gimple_opt_pass pass_ch;
+extern struct gimple_opt_pass pass_ccp;
+extern struct gimple_opt_pass pass_phi_only_cprop;
+extern struct gimple_opt_pass pass_build_ssa;
+extern struct gimple_opt_pass pass_del_ssa;
+extern struct gimple_opt_pass pass_build_alias;
+extern struct gimple_opt_pass pass_dominator;
+extern struct gimple_opt_pass pass_dce;
+extern struct gimple_opt_pass pass_dce_loop;
+extern struct gimple_opt_pass pass_cd_dce;
+extern struct gimple_opt_pass pass_merge_phi;
+extern struct gimple_opt_pass pass_split_crit_edges;
+extern struct gimple_opt_pass pass_pre;
+extern struct gimple_opt_pass pass_profile;
+extern struct gimple_opt_pass pass_lower_complex_O0;
+extern struct gimple_opt_pass pass_lower_complex;
+extern struct gimple_opt_pass pass_lower_vector;
+extern struct gimple_opt_pass pass_lower_vector_ssa;
+extern struct gimple_opt_pass pass_lower_omp;
+extern struct gimple_opt_pass pass_expand_omp;
+extern struct gimple_opt_pass pass_expand_omp_ssa;
+extern struct gimple_opt_pass pass_object_sizes;
+extern struct gimple_opt_pass pass_fold_builtins;
+extern struct gimple_opt_pass pass_stdarg;
+extern struct gimple_opt_pass pass_early_warn_uninitialized;
+extern struct gimple_opt_pass pass_late_warn_uninitialized;
+extern struct gimple_opt_pass pass_cse_reciprocals;
+extern struct gimple_opt_pass pass_cse_sincos;
+extern struct gimple_opt_pass pass_convert_to_rsqrt;
+extern struct gimple_opt_pass pass_warn_function_return;
+extern struct gimple_opt_pass pass_warn_function_noreturn;
+extern struct gimple_opt_pass pass_cselim;
+extern struct gimple_opt_pass pass_phiopt;
+extern struct gimple_opt_pass pass_forwprop;
+extern struct gimple_opt_pass pass_phiprop;
+extern struct gimple_opt_pass pass_tree_ifcombine;
+extern struct gimple_opt_pass pass_dse;
+extern struct gimple_opt_pass pass_simple_dse;
+extern struct gimple_opt_pass pass_nrv;
+extern struct gimple_opt_pass pass_mark_used_blocks;
+extern struct gimple_opt_pass pass_rename_ssa_copies;
+extern struct gimple_opt_pass pass_expand;
+extern struct gimple_opt_pass pass_rest_of_compilation;
+extern struct gimple_opt_pass pass_sink_code;
+extern struct gimple_opt_pass pass_fre;
+extern struct gimple_opt_pass pass_linear_transform;
+extern struct gimple_opt_pass pass_check_data_deps;
+extern struct gimple_opt_pass pass_copy_prop;
+extern struct gimple_opt_pass pass_store_ccp;
+extern struct gimple_opt_pass pass_vrp;
+extern struct gimple_opt_pass pass_create_structure_vars;
+extern struct gimple_opt_pass pass_uncprop;
+extern struct gimple_opt_pass pass_return_slot;
+extern struct gimple_opt_pass pass_reassoc;
+extern struct gimple_opt_pass pass_rebuild_cgraph_edges;
+extern struct gimple_opt_pass pass_build_cgraph_edges;
+extern struct gimple_opt_pass pass_reset_cc_flags;
 
 /* IPA Passes */
-extern struct tree_opt_pass pass_ipa_matrix_reorg;
-extern struct tree_opt_pass pass_ipa_cp;
-extern struct tree_opt_pass pass_ipa_inline;
-extern struct tree_opt_pass pass_ipa_early_inline;
-extern struct tree_opt_pass pass_ipa_reference;
-extern struct tree_opt_pass pass_ipa_pure_const;
-extern struct tree_opt_pass pass_ipa_type_escape;
-extern struct tree_opt_pass pass_ipa_pta;
-extern struct tree_opt_pass pass_ipa_struct_reorg;
-extern struct tree_opt_pass pass_early_local_passes;
-extern struct tree_opt_pass pass_ipa_increase_alignment;
-extern struct tree_opt_pass pass_ipa_function_and_variable_visibility;
+extern struct simple_ipa_opt_pass pass_ipa_matrix_reorg;
+extern struct simple_ipa_opt_pass pass_ipa_cp;
+extern struct simple_ipa_opt_pass pass_ipa_inline;
+extern struct simple_ipa_opt_pass pass_ipa_early_inline;
+extern struct simple_ipa_opt_pass pass_ipa_reference;
+extern struct simple_ipa_opt_pass pass_ipa_pure_const;
+extern struct simple_ipa_opt_pass pass_ipa_type_escape;
+extern struct simple_ipa_opt_pass pass_ipa_pta;
+extern struct simple_ipa_opt_pass pass_ipa_struct_reorg;
+extern struct simple_ipa_opt_pass pass_early_local_passes;
+extern struct simple_ipa_opt_pass pass_ipa_increase_alignment;
+extern struct simple_ipa_opt_pass pass_ipa_function_and_variable_visibility;
 
-extern struct tree_opt_pass pass_all_optimizations;
-extern struct tree_opt_pass pass_cleanup_cfg_post_optimizing;
-extern struct tree_opt_pass pass_free_cfg_annotations;
-extern struct tree_opt_pass pass_free_datastructures;
-extern struct tree_opt_pass pass_init_datastructures;
-extern struct tree_opt_pass pass_fixup_cfg;
+extern struct gimple_opt_pass pass_all_optimizations;
+extern struct gimple_opt_pass pass_cleanup_cfg_post_optimizing;
+extern struct gimple_opt_pass pass_free_cfg_annotations;
+extern struct gimple_opt_pass pass_free_datastructures;
+extern struct gimple_opt_pass pass_init_datastructures;
+extern struct gimple_opt_pass pass_fixup_cfg;
 
-extern struct tree_opt_pass pass_init_function;
-extern struct tree_opt_pass pass_jump;
-extern struct tree_opt_pass pass_rtl_eh;
-extern struct tree_opt_pass pass_initial_value_sets;
-extern struct tree_opt_pass pass_unshare_all_rtl;
-extern struct tree_opt_pass pass_instantiate_virtual_regs;
-extern struct tree_opt_pass pass_rtl_fwprop;
-extern struct tree_opt_pass pass_rtl_fwprop_addr;
-extern struct tree_opt_pass pass_jump2;
-extern struct tree_opt_pass pass_lower_subreg;
-extern struct tree_opt_pass pass_cse;
-extern struct tree_opt_pass pass_fast_rtl_dce;
-extern struct tree_opt_pass pass_ud_rtl_dce;
-extern struct tree_opt_pass pass_rtl_dce;
-extern struct tree_opt_pass pass_rtl_dse1;
-extern struct tree_opt_pass pass_rtl_dse2;
-extern struct tree_opt_pass pass_rtl_dse3;
-extern struct tree_opt_pass pass_gcse;
-extern struct tree_opt_pass pass_jump_bypass;
-extern struct tree_opt_pass pass_profiling;
-extern struct tree_opt_pass pass_rtl_ifcvt;
-extern struct tree_opt_pass pass_tracer;
+extern struct rtl_opt_pass pass_init_function;
+extern struct rtl_opt_pass pass_jump;
+extern struct rtl_opt_pass pass_rtl_eh;
+extern struct rtl_opt_pass pass_initial_value_sets;
+extern struct rtl_opt_pass pass_unshare_all_rtl;
+extern struct rtl_opt_pass pass_instantiate_virtual_regs;
+extern struct rtl_opt_pass pass_rtl_fwprop;
+extern struct rtl_opt_pass pass_rtl_fwprop_addr;
+extern struct rtl_opt_pass pass_jump2;
+extern struct rtl_opt_pass pass_lower_subreg;
+extern struct rtl_opt_pass pass_cse;
+extern struct rtl_opt_pass pass_fast_rtl_dce;
+extern struct rtl_opt_pass pass_ud_rtl_dce;
+extern struct rtl_opt_pass pass_rtl_dce;
+extern struct rtl_opt_pass pass_rtl_dse1;
+extern struct rtl_opt_pass pass_rtl_dse2;
+extern struct rtl_opt_pass pass_rtl_dse3;
+extern struct rtl_opt_pass pass_gcse;
+extern struct rtl_opt_pass pass_jump_bypass;
+extern struct rtl_opt_pass pass_profiling;
+extern struct rtl_opt_pass pass_rtl_ifcvt;
+extern struct gimple_opt_pass pass_tracer;
 
-extern struct tree_opt_pass pass_into_cfg_layout_mode;
-extern struct tree_opt_pass pass_outof_cfg_layout_mode;
+extern struct rtl_opt_pass pass_into_cfg_layout_mode;
+extern struct rtl_opt_pass pass_outof_cfg_layout_mode;
 
-extern struct tree_opt_pass pass_loop2;
-extern struct tree_opt_pass pass_rtl_loop_init;
-extern struct tree_opt_pass pass_rtl_move_loop_invariants;
-extern struct tree_opt_pass pass_rtl_unswitch;
-extern struct tree_opt_pass pass_rtl_unroll_and_peel_loops;
-extern struct tree_opt_pass pass_rtl_doloop;
-extern struct tree_opt_pass pass_rtl_loop_done;
+extern struct rtl_opt_pass pass_loop2;
+extern struct rtl_opt_pass pass_rtl_loop_init;
+extern struct rtl_opt_pass pass_rtl_move_loop_invariants;
+extern struct rtl_opt_pass pass_rtl_unswitch;
+extern struct rtl_opt_pass pass_rtl_unroll_and_peel_loops;
+extern struct rtl_opt_pass pass_rtl_doloop;
+extern struct rtl_opt_pass pass_rtl_loop_done;
 
-extern struct tree_opt_pass pass_web;
-extern struct tree_opt_pass pass_cse2;
-extern struct tree_opt_pass pass_df_initialize_opt;
-extern struct tree_opt_pass pass_df_initialize_no_opt;
-extern struct tree_opt_pass pass_regclass_init;
-extern struct tree_opt_pass pass_subregs_of_mode_init;
-extern struct tree_opt_pass pass_subregs_of_mode_finish;
-extern struct tree_opt_pass pass_inc_dec;
-extern struct tree_opt_pass pass_stack_ptr_mod;
-extern struct tree_opt_pass pass_initialize_regs;
-extern struct tree_opt_pass pass_combine;
-extern struct tree_opt_pass pass_if_after_combine;
-extern struct tree_opt_pass pass_partition_blocks;
-extern struct tree_opt_pass pass_match_asm_constraints;
-extern struct tree_opt_pass pass_regmove;
-extern struct tree_opt_pass pass_split_all_insns;
-extern struct tree_opt_pass pass_lower_subreg2;
-extern struct tree_opt_pass pass_mode_switching;
-extern struct tree_opt_pass pass_see;
-extern struct tree_opt_pass pass_sms;
-extern struct tree_opt_pass pass_sched;
-extern struct tree_opt_pass pass_local_alloc;
-extern struct tree_opt_pass pass_global_alloc;
-extern struct tree_opt_pass pass_postreload;
-extern struct tree_opt_pass pass_clean_state;
-extern struct tree_opt_pass pass_branch_prob;
-extern struct tree_opt_pass pass_value_profile_transformations;
-extern struct tree_opt_pass pass_postreload_cse;
-extern struct tree_opt_pass pass_gcse2;
-extern struct tree_opt_pass pass_split_after_reload;
-extern struct tree_opt_pass pass_branch_target_load_optimize1;
-extern struct tree_opt_pass pass_thread_prologue_and_epilogue;
-extern struct tree_opt_pass pass_stack_adjustments;
-extern struct tree_opt_pass pass_peephole2;
-extern struct tree_opt_pass pass_if_after_reload;
-extern struct tree_opt_pass pass_regrename;
-extern struct tree_opt_pass pass_cprop_hardreg;
-extern struct tree_opt_pass pass_reorder_blocks;
-extern struct tree_opt_pass pass_branch_target_load_optimize2;
-extern struct tree_opt_pass pass_leaf_regs;
-extern struct tree_opt_pass pass_split_before_sched2;
-extern struct tree_opt_pass pass_sched2;
-extern struct tree_opt_pass pass_stack_regs;
-extern struct tree_opt_pass pass_stack_regs_run;
-extern struct tree_opt_pass pass_df_finish;
-extern struct tree_opt_pass pass_compute_alignments;
-extern struct tree_opt_pass pass_duplicate_computed_gotos;
-extern struct tree_opt_pass pass_variable_tracking;
-extern struct tree_opt_pass pass_free_cfg;
-extern struct tree_opt_pass pass_machine_reorg;
-extern struct tree_opt_pass pass_cleanup_barriers;
-extern struct tree_opt_pass pass_delay_slots;
-extern struct tree_opt_pass pass_split_for_shorten_branches;
-extern struct tree_opt_pass pass_split_before_regstack;
-extern struct tree_opt_pass pass_convert_to_eh_region_ranges;
-extern struct tree_opt_pass pass_shorten_branches;
-extern struct tree_opt_pass pass_set_nothrow_function_flags;
-extern struct tree_opt_pass pass_final;
-extern struct tree_opt_pass pass_rtl_seqabstr;
-extern struct tree_opt_pass pass_release_ssa_names;
-extern struct tree_opt_pass pass_early_inline;
-extern struct tree_opt_pass pass_inline_parameters;
-extern struct tree_opt_pass pass_apply_inline;
-extern struct tree_opt_pass pass_all_early_optimizations;
-extern struct tree_opt_pass pass_update_address_taken;
+extern struct rtl_opt_pass pass_web;
+extern struct rtl_opt_pass pass_cse2;
+extern struct rtl_opt_pass pass_df_initialize_opt;
+extern struct rtl_opt_pass pass_df_initialize_no_opt;
+extern struct rtl_opt_pass pass_regclass_init;
+extern struct rtl_opt_pass pass_subregs_of_mode_init;
+extern struct rtl_opt_pass pass_subregs_of_mode_finish;
+extern struct rtl_opt_pass pass_inc_dec;
+extern struct rtl_opt_pass pass_stack_ptr_mod;
+extern struct rtl_opt_pass pass_initialize_regs;
+extern struct rtl_opt_pass pass_combine;
+extern struct rtl_opt_pass pass_if_after_combine;
+extern struct rtl_opt_pass pass_partition_blocks;
+extern struct rtl_opt_pass pass_match_asm_constraints;
+extern struct rtl_opt_pass pass_regmove;
+extern struct rtl_opt_pass pass_split_all_insns;
+extern struct rtl_opt_pass pass_lower_subreg2;
+extern struct rtl_opt_pass pass_mode_switching;
+extern struct rtl_opt_pass pass_see;
+extern struct rtl_opt_pass pass_sms;
+extern struct rtl_opt_pass pass_sched;
+extern struct rtl_opt_pass pass_local_alloc;
+extern struct rtl_opt_pass pass_global_alloc;
+extern struct rtl_opt_pass pass_postreload;
+extern struct rtl_opt_pass pass_clean_state;
+extern struct rtl_opt_pass pass_branch_prob;
+extern struct rtl_opt_pass pass_value_profile_transformations;
+extern struct rtl_opt_pass pass_postreload_cse;
+extern struct rtl_opt_pass pass_gcse2;
+extern struct rtl_opt_pass pass_split_after_reload;
+extern struct rtl_opt_pass pass_branch_target_load_optimize1;
+extern struct rtl_opt_pass pass_thread_prologue_and_epilogue;
+extern struct rtl_opt_pass pass_stack_adjustments;
+extern struct rtl_opt_pass pass_peephole2;
+extern struct rtl_opt_pass pass_if_after_reload;
+extern struct rtl_opt_pass pass_regrename;
+extern struct rtl_opt_pass pass_cprop_hardreg;
+extern struct rtl_opt_pass pass_reorder_blocks;
+extern struct rtl_opt_pass pass_branch_target_load_optimize2;
+extern struct rtl_opt_pass pass_leaf_regs;
+extern struct rtl_opt_pass pass_split_before_sched2;
+extern struct rtl_opt_pass pass_sched2;
+extern struct rtl_opt_pass pass_stack_regs;
+extern struct rtl_opt_pass pass_stack_regs_run;
+extern struct rtl_opt_pass pass_df_finish;
+extern struct rtl_opt_pass pass_compute_alignments;
+extern struct rtl_opt_pass pass_duplicate_computed_gotos;
+extern struct rtl_opt_pass pass_variable_tracking;
+extern struct rtl_opt_pass pass_free_cfg;
+extern struct rtl_opt_pass pass_machine_reorg;
+extern struct rtl_opt_pass pass_cleanup_barriers;
+extern struct rtl_opt_pass pass_delay_slots;
+extern struct rtl_opt_pass pass_split_for_shorten_branches;
+extern struct rtl_opt_pass pass_split_before_regstack;
+extern struct rtl_opt_pass pass_convert_to_eh_region_ranges;
+extern struct rtl_opt_pass pass_shorten_branches;
+extern struct rtl_opt_pass pass_set_nothrow_function_flags;
+extern struct rtl_opt_pass pass_final;
+extern struct rtl_opt_pass pass_rtl_seqabstr;
+extern struct gimple_opt_pass pass_release_ssa_names;
+extern struct gimple_opt_pass pass_early_inline;
+extern struct gimple_opt_pass pass_inline_parameters;
+extern struct gimple_opt_pass pass_apply_inline;
+extern struct gimple_opt_pass pass_all_early_optimizations;
+extern struct gimple_opt_pass pass_update_address_taken;
 
 /* The root of the compilation pass tree, once constructed.  */
-extern struct tree_opt_pass *all_passes, *all_ipa_passes, *all_lowering_passes;
+extern struct opt_pass *all_passes, *all_ipa_passes, *all_lowering_passes;
 
-extern void execute_pass_list (struct tree_opt_pass *);
-extern void execute_ipa_pass_list (struct tree_opt_pass *);
+extern void execute_pass_list (struct opt_pass *);
+extern void execute_ipa_pass_list (struct opt_pass *);
 extern void print_current_pass (FILE *);
 extern void debug_pass (void);
 

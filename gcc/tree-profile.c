@@ -443,8 +443,10 @@ tree_profiling (void)
   return 0;
 }
 
-struct tree_opt_pass pass_tree_profile = 
+struct gimple_opt_pass pass_tree_profile = 
 {
+ {
+  GIMPLE_PASS,
   "tree_profile",			/* name */
   do_tree_profiling,			/* gate */
   tree_profiling,			/* execute */
@@ -456,8 +458,8 @@ struct tree_opt_pass pass_tree_profile =
   PROP_gimple_leh | PROP_cfg,		/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_verify_stmts | TODO_dump_func,	/* todo_flags_finish */
-  0					/* letter */
+  TODO_verify_stmts | TODO_dump_func	/* todo_flags_finish */
+ }
 };
 
 struct profile_hooks tree_profile_hooks =

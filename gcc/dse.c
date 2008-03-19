@@ -3303,8 +3303,10 @@ gate_dse2 (void)
     && dbg_cnt (dse2);
 }
 
-struct tree_opt_pass pass_rtl_dse1 =
+struct rtl_opt_pass pass_rtl_dse1 =
 {
+ {
+  RTL_PASS,
   "dse1",                               /* name */
   gate_dse1,                            /* gate */
   rest_of_handle_dse,                   /* execute */
@@ -3318,12 +3320,14 @@ struct tree_opt_pass pass_rtl_dse1 =
   0,                                    /* todo_flags_start */
   TODO_dump_func |
   TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_ggc_collect,                     /* todo_flags_finish */
-  'w'                                   /* letter */
+  TODO_ggc_collect                      /* todo_flags_finish */
+ }
 };
 
-struct tree_opt_pass pass_rtl_dse2 =
+struct rtl_opt_pass pass_rtl_dse2 =
 {
+ {
+  RTL_PASS,
   "dse2",                               /* name */
   gate_dse2,                            /* gate */
   rest_of_handle_dse,                   /* execute */
@@ -3337,6 +3341,6 @@ struct tree_opt_pass pass_rtl_dse2 =
   0,                                    /* todo_flags_start */
   TODO_dump_func |
   TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_ggc_collect,                     /* todo_flags_finish */
-  'w'                                   /* letter */
+  TODO_ggc_collect                      /* todo_flags_finish */
+ }
 };

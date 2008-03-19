@@ -4038,8 +4038,10 @@ struct_reorg_gate (void)
     && (optimize > 0);
 }
 
-struct tree_opt_pass pass_ipa_struct_reorg = 
+struct simple_ipa_opt_pass pass_ipa_struct_reorg = 
 {
+ {
+  SIMPLE_IPA_PASS,
   "ipa_struct_reorg",	 	  /* name */
   struct_reorg_gate,		  /* gate */
   reorg_structs_drive,		  /* execute */
@@ -4051,6 +4053,6 @@ struct tree_opt_pass pass_ipa_struct_reorg =
   0,				  /* properties_provided */
   0,				  /* properties_destroyed */
   TODO_verify_ssa,		  /* todo_flags_start */
-  TODO_dump_func | TODO_verify_ssa,	/* todo_flags_finish */
-  0					/* letter */
+  TODO_dump_func | TODO_verify_ssa	/* todo_flags_finish */
+ }
 };

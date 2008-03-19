@@ -3406,8 +3406,10 @@ gate_handle_var_tracking (void)
 
 
 
-struct tree_opt_pass pass_variable_tracking =
+struct rtl_opt_pass pass_variable_tracking =
 {
+ {
+  RTL_PASS,
   "vartrack",                           /* name */
   gate_handle_var_tracking,             /* gate */
   variable_tracking_main,               /* execute */
@@ -3419,7 +3421,7 @@ struct tree_opt_pass pass_variable_tracking =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func | TODO_verify_rtl_sharing,/* todo_flags_finish */
-  'V'                                   /* letter */
+  TODO_dump_func | TODO_verify_rtl_sharing/* todo_flags_finish */
+ }
 };
 

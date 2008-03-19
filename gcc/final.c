@@ -794,8 +794,10 @@ compute_alignments (void)
   return 0;
 }
 
-struct tree_opt_pass pass_compute_alignments =
+struct rtl_opt_pass pass_compute_alignments =
 {
+ {
+  RTL_PASS,
   "alignments",                         /* name */
   NULL,                                 /* gate */
   compute_alignments,                   /* execute */
@@ -808,8 +810,8 @@ struct tree_opt_pass pass_compute_alignments =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_dump_func | TODO_verify_rtl_sharing
-  | TODO_ggc_collect,                   /* todo_flags_finish */
-  0                                     /* letter */
+  | TODO_ggc_collect                    /* todo_flags_finish */
+ }
 };
 
 
@@ -4169,8 +4171,10 @@ rest_of_handle_final (void)
   return 0;
 }
 
-struct tree_opt_pass pass_final =
+struct rtl_opt_pass pass_final =
 {
+ {
+  RTL_PASS,
   NULL,                                 /* name */
   NULL,                                 /* gate */
   rest_of_handle_final,                 /* execute */
@@ -4182,8 +4186,8 @@ struct tree_opt_pass pass_final =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_ggc_collect,                     /* todo_flags_finish */
-  0                                     /* letter */
+  TODO_ggc_collect                      /* todo_flags_finish */
+ }
 };
 
 
@@ -4195,8 +4199,10 @@ rest_of_handle_shorten_branches (void)
   return 0;
 }
 
-struct tree_opt_pass pass_shorten_branches =
+struct rtl_opt_pass pass_shorten_branches =
 {
+ {
+  RTL_PASS,
   "shorten",                            /* name */
   NULL,                                 /* gate */
   rest_of_handle_shorten_branches,      /* execute */
@@ -4208,8 +4214,8 @@ struct tree_opt_pass pass_shorten_branches =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func,                       /* todo_flags_finish */
-  0                                     /* letter */
+  TODO_dump_func                        /* todo_flags_finish */
+ }
 };
 
 
@@ -4277,8 +4283,10 @@ rest_of_clean_state (void)
   return 0;
 }
 
-struct tree_opt_pass pass_clean_state =
+struct rtl_opt_pass pass_clean_state =
 {
+ {
+  RTL_PASS,
   NULL,                                 /* name */
   NULL,                                 /* gate */
   rest_of_clean_state,                  /* execute */
@@ -4290,7 +4298,7 @@ struct tree_opt_pass pass_clean_state =
   0,                                    /* properties_provided */
   PROP_rtl,                             /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
-  0                                     /* letter */
+  0                                     /* todo_flags_finish */
+ }
 };
 

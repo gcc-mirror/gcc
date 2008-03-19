@@ -371,8 +371,10 @@ web_main (void)
   return 0;
 }
 
-struct tree_opt_pass pass_web =
+struct rtl_opt_pass pass_web =
 {
+ {
+  RTL_PASS,
   "web",                                /* name */
   gate_handle_web,                      /* gate */
   web_main,		                /* execute */
@@ -385,7 +387,7 @@ struct tree_opt_pass pass_web =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_df_finish | TODO_verify_rtl_sharing | 
-  TODO_dump_func,                       /* todo_flags_finish */
-  'Z'                                   /* letter */
+  TODO_dump_func                        /* todo_flags_finish */
+ }
 };
 

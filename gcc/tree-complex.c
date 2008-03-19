@@ -1534,8 +1534,10 @@ tree_lower_complex (void)
   return 0;
 }
 
-struct tree_opt_pass pass_lower_complex = 
+struct gimple_opt_pass pass_lower_complex = 
 {
+ {
+  GIMPLE_PASS,
   "cplxlower",				/* name */
   0,					/* gate */
   tree_lower_complex,			/* execute */
@@ -1550,8 +1552,8 @@ struct tree_opt_pass pass_lower_complex =
   TODO_dump_func
     | TODO_ggc_collect
     | TODO_update_ssa
-    | TODO_verify_stmts,		/* todo_flags_finish */
-  0					/* letter */
+    | TODO_verify_stmts	 		/* todo_flags_finish */
+ }
 };
 
 
@@ -1582,8 +1584,10 @@ gate_no_optimization (void)
   return optimize == 0 || sorrycount || errorcount;
 }
 
-struct tree_opt_pass pass_lower_complex_O0 = 
+struct gimple_opt_pass pass_lower_complex_O0 = 
 {
+ {
+  GIMPLE_PASS,
   "cplxlower0",				/* name */
   gate_no_optimization,			/* gate */
   tree_lower_complex_O0,		/* execute */
@@ -1597,5 +1601,5 @@ struct tree_opt_pass pass_lower_complex_O0 =
   0,					/* todo_flags_start */
   TODO_dump_func | TODO_ggc_collect
     | TODO_verify_stmts,		/* todo_flags_finish */
-  0					/* letter */
+ }
 };

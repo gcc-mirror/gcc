@@ -1021,8 +1021,10 @@ fwprop (void)
   return 0;
 }
 
-struct tree_opt_pass pass_rtl_fwprop =
+struct rtl_opt_pass pass_rtl_fwprop =
 {
+ {
+  RTL_PASS,
   "fwprop1",                            /* name */
   gate_fwprop,				/* gate */
   fwprop,				/* execute */
@@ -1035,8 +1037,8 @@ struct tree_opt_pass pass_rtl_fwprop =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_dump_func,                       /* todo_flags_finish */
-  0                                     /* letter */
+  TODO_dump_func                        /* todo_flags_finish */
+ }
 };
 
 static unsigned int
@@ -1063,8 +1065,10 @@ fwprop_addr (void)
   return 0;
 }
 
-struct tree_opt_pass pass_rtl_fwprop_addr =
+struct rtl_opt_pass pass_rtl_fwprop_addr =
 {
+ {
+  RTL_PASS,
   "fwprop2",                            /* name */
   gate_fwprop,				/* gate */
   fwprop_addr,				/* execute */
@@ -1077,6 +1081,6 @@ struct tree_opt_pass pass_rtl_fwprop_addr =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_dump_func,                       /* todo_flags_finish */
-  0                                     /* letter */
+  TODO_dump_func                        /* todo_flags_finish */
+ }
 };

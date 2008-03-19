@@ -930,7 +930,10 @@ gate_merge_phi (void)
   return 1;
 }
 
-struct tree_opt_pass pass_merge_phi = {
+struct gimple_opt_pass pass_merge_phi = 
+{
+ {
+  GIMPLE_PASS,
   "mergephi",			/* name */
   gate_merge_phi,		/* gate */
   merge_phi_nodes,		/* execute */
@@ -943,6 +946,6 @@ struct tree_opt_pass pass_merge_phi = {
   0,				/* properties_destroyed */
   0,				/* todo_flags_start */
   TODO_dump_func | TODO_ggc_collect	/* todo_flags_finish */
-  | TODO_verify_ssa,
-  0				/* letter */
+  | TODO_verify_ssa
+ }
 };

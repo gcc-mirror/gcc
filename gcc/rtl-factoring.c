@@ -1428,7 +1428,10 @@ rest_of_rtl_seqabstr (void)
   return 0;
 }
 
-struct tree_opt_pass pass_rtl_seqabstr = {
+struct rtl_opt_pass pass_rtl_seqabstr = 
+{
+ {
+  RTL_PASS,
   "seqabstr",                           /* name */
   gate_rtl_seqabstr,                    /* gate */
   rest_of_rtl_seqabstr,                 /* execute */
@@ -1442,6 +1445,6 @@ struct tree_opt_pass pass_rtl_seqabstr = {
   0,                                    /* todo_flags_start */
   TODO_df_finish | TODO_verify_rtl_sharing |
   TODO_dump_func |
-  TODO_ggc_collect,                     /* todo_flags_finish */
-  'Q'                                   /* letter */
+  TODO_ggc_collect                      /* todo_flags_finish */
+ }
 };

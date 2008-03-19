@@ -378,8 +378,10 @@ gate_tracer (void)
   return (optimize > 0 && flag_tracer && flag_reorder_blocks);
 }
 
-struct tree_opt_pass pass_tracer =
+struct gimple_opt_pass pass_tracer =
 {
+ {
+  GIMPLE_PASS,
   "tracer",                             /* name */
   gate_tracer,                          /* gate */
   tracer,                               /* execute */
@@ -393,6 +395,6 @@ struct tree_opt_pass pass_tracer =
   0,                                    /* todo_flags_start */
   TODO_dump_func
     | TODO_update_ssa
-    | TODO_verify_ssa,                  /* todo_flags_finish */
-  'T'                                   /* letter */
+    | TODO_verify_ssa                   /* todo_flags_finish */
+ }
 };

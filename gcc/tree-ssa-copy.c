@@ -1062,8 +1062,10 @@ gate_copy_prop (void)
   return flag_tree_copy_prop != 0;
 }
 
-struct tree_opt_pass pass_copy_prop =
+struct gimple_opt_pass pass_copy_prop =
 {
+ {
+  GIMPLE_PASS,
   "copyprop",				/* name */
   gate_copy_prop,			/* gate */
   execute_copy_prop,			/* execute */
@@ -1079,7 +1081,7 @@ struct tree_opt_pass pass_copy_prop =
     | TODO_dump_func
     | TODO_ggc_collect
     | TODO_verify_ssa
-    | TODO_update_ssa,			/* todo_flags_finish */
-  0					/* letter */
+    | TODO_update_ssa			/* todo_flags_finish */
+ }
 };
 

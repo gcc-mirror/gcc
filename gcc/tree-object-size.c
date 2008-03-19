@@ -1063,8 +1063,10 @@ compute_object_sizes (void)
   return 0;
 }
 
-struct tree_opt_pass pass_object_sizes =
+struct gimple_opt_pass pass_object_sizes =
 {
+ {
+  GIMPLE_PASS,
   "objsz",				/* name */
   NULL,					/* gate */
   compute_object_sizes,			/* execute */
@@ -1076,6 +1078,6 @@ struct tree_opt_pass pass_object_sizes =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func | TODO_verify_ssa,	/* todo_flags_finish */
-  0					/* letter */
+  TODO_dump_func | TODO_verify_ssa	/* todo_flags_finish */
+ }
 };

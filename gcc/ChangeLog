@@ -1,3 +1,122 @@
+2008-03-19  Jan Hubicka  <jh@suse.cz>
+
+	PR other/35094
+	* toplev.c (decode_d_option): Handle all CPP flags.
+	* tree-vrp.c: Update tree_pass descriptors.
+	* regrename.c: Update tree_pass descriptors.
+	* fwprop.c: Update tree_pass descriptors.
+	* doc/invoke.texi: Remove documentation of dropped -d? flags.
+	* tree-into-ssa.c: Update tree_pass descriptors.
+	* tree-dump.c: Update tree_pass descriptors.
+	* tree-complex.c: Update tree_pass descriptors.
+	* tree-dump.h: Update tree_pass descriptors.
+	* see.c: Update tree_pass descriptors.
+	* cgraphbuild.c: Update tree_pass descriptors.
+	* tracer.c: Update tree_pass descriptors.
+	* tree-loop-distribution.c: Update tree_pass descriptors.
+	* cgraph.c: Update tree_pass descriptors.
+	* postreload-gcse.c: Update tree_pass descriptors.
+	* postreload.c: Update tree_pass descriptors.
+	* tree-ssa-loop-ch.c: Update tree_pass descriptors.
+	* tree-tailcall.c: Update tree_pass descriptors.
+	* tree-pass.h (tree_opt_pass): Rename to ...
+	(opt_pass) ... this one; add "type" field and remove letter field.
+	(gimple_opt_pass, rtl_opt_pass, simple_ipa_opt_pass): New.
+	(execute_pass_list, execute_ipa_pass_list, all_passes, all_ipa_passes,
+	all_lowering_passes): Update declaration.
+	* ipa-cp.c: Update tree_pass descriptors.
+	* final.c: Update tree_pass descriptors.
+	* omp-low.c: Update tree_pass descriptors.
+	* tree-ssa-dse.c: Update tree_pass descriptors.
+	* ipa-reference.c: Update tree_pass descriptors.
+	* tree-ssa-uncprop.c: Update tree_pass descriptors.
+	* auto-inc-dec.c: Update tree_pass descriptors.
+	* reorg.c: Update tree_pass descriptors.
+	* cgraphunit.c: Update tree_pass descriptors.
+	* tree-ssa-copyrename.c: Update tree_pass descriptors.
+	* tree-ssa-ccp.c: Update tree_pass descriptors.
+	* df-core.c: Update tree_pass descriptors.
+	* mode-switching.c: Update tree_pass descriptors.
+	* tree-nomudflap.c: Update tree_pass descriptors.
+	* modulo-sched.c: Update tree_pass descriptors.
+	* ipa-pure-const.c: Update tree_pass descriptors.
+	* cse.c: Update tree_pass descriptors.
+	* web.c: Update tree_pass descriptors.
+	* tree-stdarg.c: Update tree_pass descriptors.
+	* tree-ssa-math-opts.c: Update tree_pass descriptors.
+	* tree-ssa-dom.c: Update tree_pass descriptors.
+	* tree-nrv.c: Update tree_pass descriptors.
+	* tree-ssa-alias.c: Update tree_pass descriptors.
+	* loop-init.c: Update tree_pass descriptors.
+	* gimple-low.c: Update tree_pass descriptors.
+	* ipa-inline.c: Update tree_pass descriptors.
+	* tree-ssa-sink.c: Update tree_pass descriptors.
+	* global.c: Update tree_pass descriptors.
+	* ifcvt.c: Update tree_pass descriptors.
+	* jump.c: Update tree_pass descriptors.
+	* predict.c: Update tree_pass descriptors.
+	* tree-ssa-loop.c: Update tree_pass descriptors.
+	* recog.c: Update tree_pass descriptors.
+	* dse.c: Update tree_pass descriptors.
+	* tree-ssa-ifcombine.c: Update tree_pass descriptors.
+	* tree-eh.c: Update tree_pass descriptors.
+	* regmove.c: Update tree_pass descriptors.
+	* local-alloc.c
+	* function.c: Update tree_pass descriptors.
+	* tree-vectorizer.c: Update tree_pass descriptors.
+	* gcse.c: Update tree_pass descriptors.
+	* ipa-type-escape.c: Update tree_pass descriptors.
+	* tree-if-conv.c: Update tree_pass descriptors.
+	* init-regs.c: Update tree_pass descriptors.
+	* ipa.c: Update tree_pass descriptors.
+	* tree-ssa-phiopt.c: Update tree_pass descriptors.
+	* rtl-factoring.c: Update tree_pass descriptors.
+	* lower-subreg.c: Update tree_pass descriptors.
+	* bt-load.c: Update tree_pass descriptors.
+	* tree-dfa.c: Update tree_pass descriptors.
+	* except.c: Update tree_pass descriptors.
+	* emit-rtl.c: Update tree_pass descriptors.
+	* cfgexpand.c: Update tree_pass descriptors.
+	* tree-cfgcleanup.c: Update tree_pass descriptors.
+	* cfgcleanup.c: Update tree_pass descriptors.
+	* tree-ssa-pre.c: Update tree_pass descriptors.
+	* tree-sra.c: Update tree_pass descriptors.
+	* tree-mudflap.c: Update tree_pass descriptors.
+	* tree-ssa-copy.c: Update tree_pass descriptors.
+	* cfglayout.c: Update tree_pass descriptors.
+	* tree-ssa-forwprop.c: Update tree_pass descriptors.
+	* tree-ssa-dce.c: Update tree_pass descriptors.
+	* tree-ssa.c: Update tree_pass descriptors.
+	* regclass.c: Update tree_pass descriptors.
+	* integrate.c: Update tree_pass descriptors.
+	* tree-optimize.c: Update tree_pass descriptors.
+	* tree-ssa-phiprop.c: Update tree_pass descriptors.
+	* tree-object-size.c: Update tree_pass descriptors.
+	* combine.c: Update tree_pass descriptors.
+	* tree-outof-ssa.c: Update tree_pass descriptors.
+	* bb-reorder.c: Update tree_pass descriptors.
+	* stack-ptr-mod.c: Update tree_pass descriptors.
+	* var-tracking.c: Update tree_pass descriptors.
+	* tree-profile.c: Update tree_pass descriptors.
+	* tree-vect-generic.c: Update tree_pass descriptors.
+	* reg-stack.c: Update tree_pass descriptors.
+	* sched-rgn.c: Update tree_pass descriptors.
+	* tree-ssa-structalias.c: Update tree_pass descriptors.
+	* tree-cfg.c: Update tree_pass descriptors.
+	* passes.c (current_pass): Update declaration.
+	(finish_optimization_passes): Update.
+	(all_passes, all_ipa_passes, all_lowering_passes): Update declaration.
+	(register_one_dump_file, register_dump_files_1, next_pass_1):
+ 	Update arguments.
+	(init_optimization_passes): Update handling of new types.
+	(execute_one_pass, execute_pass_list, execute_ipa_pass_list): Update.
+	* ipa-struct-reorg.c: Update tree_pass descriptors.
+	* tree-ssa-reassoc.c: Update tree_pass descriptors.
+	* combine-stack-adj.c: Update tree_pass descriptors.
+	* cfgrtl.c: Update tree_pass descriptors.
+	* dce.c: Update tree_pass descriptors.
+	* tree-ssanames.c: Update tree_pass descriptors.
+
 2008-03-19  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/35609
@@ -88,29 +207,6 @@
 	PR middle-end/35611
 	* gimplify.c (gimplify_expr): Gimplify second operand of
 	OMP_ATOMIC_LOAD.
-
-2008-03-17  Richard Guenther  <rguenther@suse.de>
-
-	* tree-pretty-print.c: Include predict.h.
-	(dump_generic_node): Dump predictor.
-	* tree.h (PREDICT_EXPR_OUTCOME, PREDICT_EXPR_PREDICTION): Update.
-	* tree-gimple.c (is_gimple_stmt): Add PREDICT_EXPR.
-	* gimple-low.c (lower_stmt): Likewise.
-	* expr.c (expand_expr_real): Likewise.
-	* predict.c (tree_bb_level_predictions): Use PREDICT_EXPRs and remove
-	them.
-	(build_predict_expr, build_predict_expr): New.
-	* predict.h (predictor_name, build_predict_expr): Update.
-	* c-typeck.c (c_finish_bc_stmt): Add prediction.
-	* gimplify.c (gimplify_expr): Add PREDICT_EXPR.
-	* predict.def (PRED_CONTINUE): Update hitrate.
-	* tree.def (PREDICT_EXPR): Define.
-	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Mark PREDICT_EXPR;
-	do not handle BIND_EXPR.
-	* tree-inline.c (estimate_num_insns_1): PREDICT_EXPR is free.
-	* tree-cfg.c (verify_gimple_stmt): PREDICT_EXPR is valid.
-	* tree-ssa-operands.c (get_expr_operands): PREDICT_EXPR takes no
-	operands.
 
 2008-03-17  Richard Guenther  <rguenther@suse.de>
 

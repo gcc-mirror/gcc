@@ -1495,8 +1495,10 @@ gate_ccp (void)
 }
 
 
-struct tree_opt_pass pass_ccp = 
+struct gimple_opt_pass pass_ccp = 
 {
+ {
+  GIMPLE_PASS,
   "ccp",				/* name */
   gate_ccp,				/* gate */
   do_ssa_ccp,				/* execute */
@@ -1509,8 +1511,8 @@ struct tree_opt_pass pass_ccp =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_dump_func | TODO_verify_ssa
-  | TODO_verify_stmts | TODO_ggc_collect,/* todo_flags_finish */
-  0					/* letter */
+  | TODO_verify_stmts | TODO_ggc_collect/* todo_flags_finish */
+ }
 };
 
 
@@ -1531,8 +1533,10 @@ gate_store_ccp (void)
 }
 
 
-struct tree_opt_pass pass_store_ccp = 
+struct gimple_opt_pass pass_store_ccp = 
 {
+ {
+  GIMPLE_PASS,
   "store_ccp",				/* name */
   gate_store_ccp,			/* gate */
   do_ssa_store_ccp,			/* execute */
@@ -1545,8 +1549,8 @@ struct tree_opt_pass pass_store_ccp =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_dump_func | TODO_verify_ssa
-  | TODO_verify_stmts | TODO_ggc_collect,/* todo_flags_finish */
-  0					/* letter */
+  | TODO_verify_stmts | TODO_ggc_collect/* todo_flags_finish */
+ }
 };
 
 /* Given a constant value VAL for bitfield FIELD, and a destination
@@ -3026,8 +3030,10 @@ execute_fold_all_builtins (void)
 }
 
 
-struct tree_opt_pass pass_fold_builtins = 
+struct gimple_opt_pass pass_fold_builtins = 
 {
+ {
+  GIMPLE_PASS,
   "fab",				/* name */
   NULL,					/* gate */
   execute_fold_all_builtins,		/* execute */
@@ -3041,6 +3047,6 @@ struct tree_opt_pass pass_fold_builtins =
   0,					/* todo_flags_start */
   TODO_dump_func
     | TODO_verify_ssa
-    | TODO_update_ssa,			/* todo_flags_finish */
-  0					/* letter */
+    | TODO_update_ssa			/* todo_flags_finish */
+ }
 };

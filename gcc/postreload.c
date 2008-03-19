@@ -1585,8 +1585,10 @@ rest_of_handle_postreload (void)
   return 0;
 }
 
-struct tree_opt_pass pass_postreload_cse =
+struct rtl_opt_pass pass_postreload_cse =
 {
+ {
+  RTL_PASS,
   "postreload",                         /* name */
   gate_handle_postreload,               /* gate */
   rest_of_handle_postreload,            /* execute */
@@ -1599,7 +1601,7 @@ struct tree_opt_pass pass_postreload_cse =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_dump_func,                       /* todo_flags_finish */
-  'o'                                   /* letter */
+  TODO_dump_func                        /* todo_flags_finish */
+ }
 };
 
