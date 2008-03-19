@@ -380,18 +380,30 @@ $(srcdir)/generated/cshift1_8.c \
 $(srcdir)/generated/cshift1_16.c
 
 in_pack_c = \
+$(srcdir)/generated/in_pack_i1.c \
+$(srcdir)/generated/in_pack_i2.c \
 $(srcdir)/generated/in_pack_i4.c \
 $(srcdir)/generated/in_pack_i8.c \
 $(srcdir)/generated/in_pack_i16.c \
+$(srcdir)/generated/in_pack_r4.c \
+$(srcdir)/generated/in_pack_r8.c \
+$(srcdir)/generated/in_pack_r10.c \
+$(srcdir)/generated/in_pack_r16.c \
 $(srcdir)/generated/in_pack_c4.c \
 $(srcdir)/generated/in_pack_c8.c \
 $(srcdir)/generated/in_pack_c10.c \
 $(srcdir)/generated/in_pack_c16.c
 
 in_unpack_c = \
+$(srcdir)/generated/in_unpack_i1.c \
+$(srcdir)/generated/in_unpack_i2.c \
 $(srcdir)/generated/in_unpack_i4.c \
 $(srcdir)/generated/in_unpack_i8.c \
 $(srcdir)/generated/in_unpack_i16.c \
+$(srcdir)/generated/in_unpack_r4.c \
+$(srcdir)/generated/in_unpack_r8.c \
+$(srcdir)/generated/in_unpack_r10.c \
+$(srcdir)/generated/in_unpack_r16.c \
 $(srcdir)/generated/in_unpack_c4.c \
 $(srcdir)/generated/in_unpack_c8.c \
 $(srcdir)/generated/in_unpack_c10.c \

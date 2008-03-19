@@ -285,16 +285,28 @@ am__libgfortran_la_SOURCES_DIST = runtime/backtrace.c \
 	$(srcdir)/generated/reshape_c8.c \
 	$(srcdir)/generated/reshape_c10.c \
 	$(srcdir)/generated/reshape_c16.c \
+	$(srcdir)/generated/in_pack_i1.c \
+	$(srcdir)/generated/in_pack_i2.c \
 	$(srcdir)/generated/in_pack_i4.c \
 	$(srcdir)/generated/in_pack_i8.c \
 	$(srcdir)/generated/in_pack_i16.c \
+	$(srcdir)/generated/in_pack_r4.c \
+	$(srcdir)/generated/in_pack_r8.c \
+	$(srcdir)/generated/in_pack_r10.c \
+	$(srcdir)/generated/in_pack_r16.c \
 	$(srcdir)/generated/in_pack_c4.c \
 	$(srcdir)/generated/in_pack_c8.c \
 	$(srcdir)/generated/in_pack_c10.c \
 	$(srcdir)/generated/in_pack_c16.c \
+	$(srcdir)/generated/in_unpack_i1.c \
+	$(srcdir)/generated/in_unpack_i2.c \
 	$(srcdir)/generated/in_unpack_i4.c \
 	$(srcdir)/generated/in_unpack_i8.c \
 	$(srcdir)/generated/in_unpack_i16.c \
+	$(srcdir)/generated/in_unpack_r4.c \
+	$(srcdir)/generated/in_unpack_r8.c \
+	$(srcdir)/generated/in_unpack_r10.c \
+	$(srcdir)/generated/in_unpack_r16.c \
 	$(srcdir)/generated/in_unpack_c4.c \
 	$(srcdir)/generated/in_unpack_c8.c \
 	$(srcdir)/generated/in_unpack_c10.c \
@@ -592,9 +604,13 @@ am__objects_19 = cshift1_4.lo cshift1_8.lo cshift1_16.lo
 am__objects_20 = reshape_i4.lo reshape_i8.lo reshape_i16.lo \
 	reshape_r4.lo reshape_r8.lo reshape_r10.lo reshape_r16.lo \
 	reshape_c4.lo reshape_c8.lo reshape_c10.lo reshape_c16.lo
-am__objects_21 = in_pack_i4.lo in_pack_i8.lo in_pack_i16.lo \
-	in_pack_c4.lo in_pack_c8.lo in_pack_c10.lo in_pack_c16.lo
-am__objects_22 = in_unpack_i4.lo in_unpack_i8.lo in_unpack_i16.lo \
+am__objects_21 = in_pack_i1.lo in_pack_i2.lo in_pack_i4.lo \
+	in_pack_i8.lo in_pack_i16.lo in_pack_r4.lo in_pack_r8.lo \
+	in_pack_r10.lo in_pack_r16.lo in_pack_c4.lo in_pack_c8.lo \
+	in_pack_c10.lo in_pack_c16.lo
+am__objects_22 = in_unpack_i1.lo in_unpack_i2.lo in_unpack_i4.lo \
+	in_unpack_i8.lo in_unpack_i16.lo in_unpack_r4.lo \
+	in_unpack_r8.lo in_unpack_r10.lo in_unpack_r16.lo \
 	in_unpack_c4.lo in_unpack_c8.lo in_unpack_c10.lo \
 	in_unpack_c16.lo
 am__objects_23 = exponent_r4.lo exponent_r8.lo exponent_r10.lo \
@@ -1218,18 +1234,30 @@ $(srcdir)/generated/cshift1_8.c \
 $(srcdir)/generated/cshift1_16.c
 
 in_pack_c = \
+$(srcdir)/generated/in_pack_i1.c \
+$(srcdir)/generated/in_pack_i2.c \
 $(srcdir)/generated/in_pack_i4.c \
 $(srcdir)/generated/in_pack_i8.c \
 $(srcdir)/generated/in_pack_i16.c \
+$(srcdir)/generated/in_pack_r4.c \
+$(srcdir)/generated/in_pack_r8.c \
+$(srcdir)/generated/in_pack_r10.c \
+$(srcdir)/generated/in_pack_r16.c \
 $(srcdir)/generated/in_pack_c4.c \
 $(srcdir)/generated/in_pack_c8.c \
 $(srcdir)/generated/in_pack_c10.c \
 $(srcdir)/generated/in_pack_c16.c
 
 in_unpack_c = \
+$(srcdir)/generated/in_unpack_i1.c \
+$(srcdir)/generated/in_unpack_i2.c \
 $(srcdir)/generated/in_unpack_i4.c \
 $(srcdir)/generated/in_unpack_i8.c \
 $(srcdir)/generated/in_unpack_i16.c \
+$(srcdir)/generated/in_unpack_r4.c \
+$(srcdir)/generated/in_unpack_r8.c \
+$(srcdir)/generated/in_unpack_r10.c \
+$(srcdir)/generated/in_unpack_r16.c \
 $(srcdir)/generated/in_unpack_c4.c \
 $(srcdir)/generated/in_unpack_c8.c \
 $(srcdir)/generated/in_unpack_c10.c \
@@ -1689,17 +1717,29 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_pack_c4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_pack_c8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_pack_generic.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_pack_i1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_pack_i16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_pack_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_pack_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_pack_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_pack_r10.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_pack_r16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_pack_r4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_pack_r8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_unpack_c10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_unpack_c16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_unpack_c4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_unpack_c8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_unpack_generic.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_unpack_i1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_unpack_i16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_unpack_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_unpack_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_unpack_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_unpack_r10.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_unpack_r16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_unpack_r4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/in_unpack_r8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/inquire.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/intrinsics.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ishftc.Plo@am__quote@
@@ -4026,6 +4066,20 @@ reshape_c16.lo: $(srcdir)/generated/reshape_c16.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reshape_c16.lo `test -f '$(srcdir)/generated/reshape_c16.c' || echo '$(srcdir)/'`$(srcdir)/generated/reshape_c16.c
 
+in_pack_i1.lo: $(srcdir)/generated/in_pack_i1.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT in_pack_i1.lo -MD -MP -MF "$(DEPDIR)/in_pack_i1.Tpo" -c -o in_pack_i1.lo `test -f '$(srcdir)/generated/in_pack_i1.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_pack_i1.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/in_pack_i1.Tpo" "$(DEPDIR)/in_pack_i1.Plo"; else rm -f "$(DEPDIR)/in_pack_i1.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/in_pack_i1.c' object='in_pack_i1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_pack_i1.lo `test -f '$(srcdir)/generated/in_pack_i1.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_pack_i1.c
+
+in_pack_i2.lo: $(srcdir)/generated/in_pack_i2.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT in_pack_i2.lo -MD -MP -MF "$(DEPDIR)/in_pack_i2.Tpo" -c -o in_pack_i2.lo `test -f '$(srcdir)/generated/in_pack_i2.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_pack_i2.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/in_pack_i2.Tpo" "$(DEPDIR)/in_pack_i2.Plo"; else rm -f "$(DEPDIR)/in_pack_i2.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/in_pack_i2.c' object='in_pack_i2.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_pack_i2.lo `test -f '$(srcdir)/generated/in_pack_i2.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_pack_i2.c
+
 in_pack_i4.lo: $(srcdir)/generated/in_pack_i4.c
 @am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT in_pack_i4.lo -MD -MP -MF "$(DEPDIR)/in_pack_i4.Tpo" -c -o in_pack_i4.lo `test -f '$(srcdir)/generated/in_pack_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_pack_i4.c; \
 @am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/in_pack_i4.Tpo" "$(DEPDIR)/in_pack_i4.Plo"; else rm -f "$(DEPDIR)/in_pack_i4.Tpo"; exit 1; fi
@@ -4046,6 +4100,34 @@ in_pack_i16.lo: $(srcdir)/generated/in_pack_i16.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/in_pack_i16.c' object='in_pack_i16.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_pack_i16.lo `test -f '$(srcdir)/generated/in_pack_i16.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_pack_i16.c
+
+in_pack_r4.lo: $(srcdir)/generated/in_pack_r4.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT in_pack_r4.lo -MD -MP -MF "$(DEPDIR)/in_pack_r4.Tpo" -c -o in_pack_r4.lo `test -f '$(srcdir)/generated/in_pack_r4.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_pack_r4.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/in_pack_r4.Tpo" "$(DEPDIR)/in_pack_r4.Plo"; else rm -f "$(DEPDIR)/in_pack_r4.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/in_pack_r4.c' object='in_pack_r4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_pack_r4.lo `test -f '$(srcdir)/generated/in_pack_r4.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_pack_r4.c
+
+in_pack_r8.lo: $(srcdir)/generated/in_pack_r8.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT in_pack_r8.lo -MD -MP -MF "$(DEPDIR)/in_pack_r8.Tpo" -c -o in_pack_r8.lo `test -f '$(srcdir)/generated/in_pack_r8.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_pack_r8.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/in_pack_r8.Tpo" "$(DEPDIR)/in_pack_r8.Plo"; else rm -f "$(DEPDIR)/in_pack_r8.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/in_pack_r8.c' object='in_pack_r8.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_pack_r8.lo `test -f '$(srcdir)/generated/in_pack_r8.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_pack_r8.c
+
+in_pack_r10.lo: $(srcdir)/generated/in_pack_r10.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT in_pack_r10.lo -MD -MP -MF "$(DEPDIR)/in_pack_r10.Tpo" -c -o in_pack_r10.lo `test -f '$(srcdir)/generated/in_pack_r10.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_pack_r10.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/in_pack_r10.Tpo" "$(DEPDIR)/in_pack_r10.Plo"; else rm -f "$(DEPDIR)/in_pack_r10.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/in_pack_r10.c' object='in_pack_r10.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_pack_r10.lo `test -f '$(srcdir)/generated/in_pack_r10.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_pack_r10.c
+
+in_pack_r16.lo: $(srcdir)/generated/in_pack_r16.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT in_pack_r16.lo -MD -MP -MF "$(DEPDIR)/in_pack_r16.Tpo" -c -o in_pack_r16.lo `test -f '$(srcdir)/generated/in_pack_r16.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_pack_r16.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/in_pack_r16.Tpo" "$(DEPDIR)/in_pack_r16.Plo"; else rm -f "$(DEPDIR)/in_pack_r16.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/in_pack_r16.c' object='in_pack_r16.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_pack_r16.lo `test -f '$(srcdir)/generated/in_pack_r16.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_pack_r16.c
 
 in_pack_c4.lo: $(srcdir)/generated/in_pack_c4.c
 @am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT in_pack_c4.lo -MD -MP -MF "$(DEPDIR)/in_pack_c4.Tpo" -c -o in_pack_c4.lo `test -f '$(srcdir)/generated/in_pack_c4.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_pack_c4.c; \
@@ -4075,6 +4157,20 @@ in_pack_c16.lo: $(srcdir)/generated/in_pack_c16.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_pack_c16.lo `test -f '$(srcdir)/generated/in_pack_c16.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_pack_c16.c
 
+in_unpack_i1.lo: $(srcdir)/generated/in_unpack_i1.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT in_unpack_i1.lo -MD -MP -MF "$(DEPDIR)/in_unpack_i1.Tpo" -c -o in_unpack_i1.lo `test -f '$(srcdir)/generated/in_unpack_i1.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_unpack_i1.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/in_unpack_i1.Tpo" "$(DEPDIR)/in_unpack_i1.Plo"; else rm -f "$(DEPDIR)/in_unpack_i1.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/in_unpack_i1.c' object='in_unpack_i1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_unpack_i1.lo `test -f '$(srcdir)/generated/in_unpack_i1.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_unpack_i1.c
+
+in_unpack_i2.lo: $(srcdir)/generated/in_unpack_i2.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT in_unpack_i2.lo -MD -MP -MF "$(DEPDIR)/in_unpack_i2.Tpo" -c -o in_unpack_i2.lo `test -f '$(srcdir)/generated/in_unpack_i2.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_unpack_i2.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/in_unpack_i2.Tpo" "$(DEPDIR)/in_unpack_i2.Plo"; else rm -f "$(DEPDIR)/in_unpack_i2.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/in_unpack_i2.c' object='in_unpack_i2.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_unpack_i2.lo `test -f '$(srcdir)/generated/in_unpack_i2.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_unpack_i2.c
+
 in_unpack_i4.lo: $(srcdir)/generated/in_unpack_i4.c
 @am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT in_unpack_i4.lo -MD -MP -MF "$(DEPDIR)/in_unpack_i4.Tpo" -c -o in_unpack_i4.lo `test -f '$(srcdir)/generated/in_unpack_i4.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_unpack_i4.c; \
 @am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/in_unpack_i4.Tpo" "$(DEPDIR)/in_unpack_i4.Plo"; else rm -f "$(DEPDIR)/in_unpack_i4.Tpo"; exit 1; fi
@@ -4095,6 +4191,34 @@ in_unpack_i16.lo: $(srcdir)/generated/in_unpack_i16.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/in_unpack_i16.c' object='in_unpack_i16.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_unpack_i16.lo `test -f '$(srcdir)/generated/in_unpack_i16.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_unpack_i16.c
+
+in_unpack_r4.lo: $(srcdir)/generated/in_unpack_r4.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT in_unpack_r4.lo -MD -MP -MF "$(DEPDIR)/in_unpack_r4.Tpo" -c -o in_unpack_r4.lo `test -f '$(srcdir)/generated/in_unpack_r4.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_unpack_r4.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/in_unpack_r4.Tpo" "$(DEPDIR)/in_unpack_r4.Plo"; else rm -f "$(DEPDIR)/in_unpack_r4.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/in_unpack_r4.c' object='in_unpack_r4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_unpack_r4.lo `test -f '$(srcdir)/generated/in_unpack_r4.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_unpack_r4.c
+
+in_unpack_r8.lo: $(srcdir)/generated/in_unpack_r8.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT in_unpack_r8.lo -MD -MP -MF "$(DEPDIR)/in_unpack_r8.Tpo" -c -o in_unpack_r8.lo `test -f '$(srcdir)/generated/in_unpack_r8.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_unpack_r8.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/in_unpack_r8.Tpo" "$(DEPDIR)/in_unpack_r8.Plo"; else rm -f "$(DEPDIR)/in_unpack_r8.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/in_unpack_r8.c' object='in_unpack_r8.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_unpack_r8.lo `test -f '$(srcdir)/generated/in_unpack_r8.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_unpack_r8.c
+
+in_unpack_r10.lo: $(srcdir)/generated/in_unpack_r10.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT in_unpack_r10.lo -MD -MP -MF "$(DEPDIR)/in_unpack_r10.Tpo" -c -o in_unpack_r10.lo `test -f '$(srcdir)/generated/in_unpack_r10.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_unpack_r10.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/in_unpack_r10.Tpo" "$(DEPDIR)/in_unpack_r10.Plo"; else rm -f "$(DEPDIR)/in_unpack_r10.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/in_unpack_r10.c' object='in_unpack_r10.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_unpack_r10.lo `test -f '$(srcdir)/generated/in_unpack_r10.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_unpack_r10.c
+
+in_unpack_r16.lo: $(srcdir)/generated/in_unpack_r16.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT in_unpack_r16.lo -MD -MP -MF "$(DEPDIR)/in_unpack_r16.Tpo" -c -o in_unpack_r16.lo `test -f '$(srcdir)/generated/in_unpack_r16.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_unpack_r16.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/in_unpack_r16.Tpo" "$(DEPDIR)/in_unpack_r16.Plo"; else rm -f "$(DEPDIR)/in_unpack_r16.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/in_unpack_r16.c' object='in_unpack_r16.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_unpack_r16.lo `test -f '$(srcdir)/generated/in_unpack_r16.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_unpack_r16.c
 
 in_unpack_c4.lo: $(srcdir)/generated/in_unpack_c4.c
 @am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT in_unpack_c4.lo -MD -MP -MF "$(DEPDIR)/in_unpack_c4.Tpo" -c -o in_unpack_c4.lo `test -f '$(srcdir)/generated/in_unpack_c4.c' || echo '$(srcdir)/'`$(srcdir)/generated/in_unpack_c4.c; \
