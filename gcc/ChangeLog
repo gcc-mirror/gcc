@@ -1,5 +1,11 @@
 2008-03-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	* cse.c (cse_insn): Avoid creation of overlapping MEMs.
+	* alias.c (nonoverlapping_memrefs_p): Export for use in other modules.
+	* alias.h (nonoverlapping_memrefs_p): Likewise.
+
+2008-03-19  Andreas Krebbel  <krebbel1@de.ibm.com>
+
 	* cse.c (cse_extended_basic_block): Invalidate artificial defs
 	at bb start.
 
