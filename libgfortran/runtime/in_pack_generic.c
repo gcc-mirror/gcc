@@ -81,7 +81,7 @@ internal_pack (gfc_array_char * source)
 
 #if defined(HAVE_GFC_INTEGER_16)
 	case sizeof (GFC_INTEGER_16):
-	  return internal_pack_16 (gfc_array_i16 *) source);
+	  return internal_pack_16 ((gfc_array_i16 *) source);
 #endif
 	}
       break;
