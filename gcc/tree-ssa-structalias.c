@@ -5630,8 +5630,10 @@ ipa_pta_execute (void)
   return 0;
 }
 
-struct tree_opt_pass pass_ipa_pta =
+struct simple_ipa_opt_pass pass_ipa_pta =
 {
+ {
+  SIMPLE_IPA_PASS,
   "pta",		                /* name */
   gate_ipa_pta,			/* gate */
   ipa_pta_execute,			/* execute */
@@ -5643,8 +5645,8 @@ struct tree_opt_pass pass_ipa_pta =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_update_ssa,                      /* todo_flags_finish */
-  0					/* letter */
+  TODO_update_ssa                       /* todo_flags_finish */
+ }
 };
 
 /* Initialize the heapvar for statement mapping.  */

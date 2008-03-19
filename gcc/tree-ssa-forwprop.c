@@ -1081,7 +1081,10 @@ gate_forwprop (void)
   return 1;
 }
 
-struct tree_opt_pass pass_forwprop = {
+struct gimple_opt_pass pass_forwprop = 
+{
+ {
+  GIMPLE_PASS,
   "forwprop",			/* name */
   gate_forwprop,		/* gate */
   tree_ssa_forward_propagate_single_use_vars,	/* execute */
@@ -1096,7 +1099,7 @@ struct tree_opt_pass pass_forwprop = {
   TODO_dump_func
   | TODO_ggc_collect
   | TODO_update_ssa
-  | TODO_verify_ssa,		/* todo_flags_finish */
-  0				/* letter */
+  | TODO_verify_ssa		/* todo_flags_finish */
+ }
 };
 

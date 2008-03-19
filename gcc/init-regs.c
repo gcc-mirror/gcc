@@ -139,8 +139,10 @@ rest_of_handle_initialize_regs (void)
   return 0;
 }
 
-struct tree_opt_pass pass_initialize_regs =
+struct rtl_opt_pass pass_initialize_regs =
 {
+ {
+  RTL_PASS,
   "init-regs",                          /* name */
   gate_initialize_regs,                 /* gate */
   rest_of_handle_initialize_regs,       /* execute */
@@ -153,6 +155,6 @@ struct tree_opt_pass pass_initialize_regs =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_dump_func |
-  TODO_df_finish,                       /* todo_flags_finish */
-  0                                     /* letter */
+  TODO_df_finish                        /* todo_flags_finish */
+ }
 };

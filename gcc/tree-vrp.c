@@ -6207,8 +6207,10 @@ gate_vrp (void)
   return flag_tree_vrp != 0;
 }
 
-struct tree_opt_pass pass_vrp =
+struct gimple_opt_pass pass_vrp =
 {
+ {
+  GIMPLE_PASS,
   "vrp",				/* name */
   gate_vrp,				/* gate */
   execute_vrp,				/* execute */
@@ -6224,6 +6226,6 @@ struct tree_opt_pass pass_vrp =
     | TODO_ggc_collect
     | TODO_verify_ssa
     | TODO_dump_func
-    | TODO_update_ssa,			/* todo_flags_finish */
-  0					/* letter */
+    | TODO_update_ssa			/* todo_flags_finish */
+ }
 };

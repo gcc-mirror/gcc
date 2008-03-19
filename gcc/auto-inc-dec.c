@@ -1540,8 +1540,10 @@ gate_auto_inc_dec (void)
 }
 
 
-struct tree_opt_pass pass_inc_dec =
+struct rtl_opt_pass pass_inc_dec =
 {
+ {
+  RTL_PASS,
   "auto-inc-dec",                       /* name */
   gate_auto_inc_dec,                    /* gate */
   rest_of_handle_auto_inc_dec,          /* execute */
@@ -1555,6 +1557,6 @@ struct tree_opt_pass pass_inc_dec =
   0,                                    /* todo_flags_start */
   TODO_dump_func | 
   TODO_df_finish,                       /* todo_flags_finish */
-  0                                     /* letter */
+ }
 };
 

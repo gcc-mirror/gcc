@@ -90,8 +90,10 @@ gate_mudflap (void)
   return flag_mudflap != 0;
 }
 
-struct tree_opt_pass pass_mudflap_1 = 
+struct gimple_opt_pass pass_mudflap_1 = 
 {
+ {
+  GIMPLE_PASS,
   "mudflap1",				/* name */
   gate_mudflap,                         /* gate */
   NULL,					/* execute */
@@ -103,12 +105,14 @@ struct tree_opt_pass pass_mudflap_1 =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  0,                                    /* todo_flags_finish */
-  0				        /* letter */
+  0                                     /* todo_flags_finish */
+ }
 };
 
-struct tree_opt_pass pass_mudflap_2 = 
+struct gimple_opt_pass pass_mudflap_2 = 
 {
+ {
+  GIMPLE_PASS,
   "mudflap2",				/* name */
   gate_mudflap,                         /* gate */
   NULL,					/* execute */
@@ -120,8 +124,8 @@ struct tree_opt_pass pass_mudflap_2 =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  0,                                    /* todo_flags_finish */
-  0				        /* letter */
+  0                                     /* todo_flags_finish */
+ }
 };
 
 /* Instead of:

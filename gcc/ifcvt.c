@@ -4143,8 +4143,10 @@ rest_of_handle_if_conversion (void)
   return 0;
 }
 
-struct tree_opt_pass pass_rtl_ifcvt =
+struct rtl_opt_pass pass_rtl_ifcvt =
 {
+ {
+  RTL_PASS,
   "ce1",                                /* name */
   gate_handle_if_conversion,            /* gate */
   rest_of_handle_if_conversion,         /* execute */
@@ -4157,8 +4159,8 @@ struct tree_opt_pass pass_rtl_ifcvt =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_dump_func,                       /* todo_flags_finish */
-  'C'                                   /* letter */
+  TODO_dump_func                        /* todo_flags_finish */
+ }
 };
 
 static bool
@@ -4178,8 +4180,10 @@ rest_of_handle_if_after_combine (void)
   return 0;
 }
 
-struct tree_opt_pass pass_if_after_combine =
+struct rtl_opt_pass pass_if_after_combine =
 {
+ {
+  RTL_PASS,
   "ce2",                                /* name */
   gate_handle_if_after_combine,         /* gate */
   rest_of_handle_if_after_combine,      /* execute */
@@ -4193,8 +4197,8 @@ struct tree_opt_pass pass_if_after_combine =
   0,                                    /* todo_flags_start */
   TODO_df_finish | TODO_verify_rtl_sharing |
   TODO_dump_func |
-  TODO_ggc_collect,                     /* todo_flags_finish */
-  'C'                                   /* letter */
+  TODO_ggc_collect                      /* todo_flags_finish */
+ }
 };
 
 
@@ -4213,8 +4217,10 @@ rest_of_handle_if_after_reload (void)
 }
 
 
-struct tree_opt_pass pass_if_after_reload =
+struct rtl_opt_pass pass_if_after_reload =
 {
+ {
+  RTL_PASS,
   "ce3",                                /* name */
   gate_handle_if_after_reload,          /* gate */
   rest_of_handle_if_after_reload,       /* execute */
@@ -4228,6 +4234,6 @@ struct tree_opt_pass pass_if_after_reload =
   0,                                    /* todo_flags_start */
   TODO_df_finish | TODO_verify_rtl_sharing |
   TODO_dump_func |
-  TODO_ggc_collect,                     /* todo_flags_finish */
-  'E'                                   /* letter */
+  TODO_ggc_collect                      /* todo_flags_finish */
+ }
 };

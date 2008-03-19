@@ -4195,8 +4195,10 @@ gate_expand_omp_ssa (void)
   return flag_openmp_ssa && flag_openmp != 0 && errorcount == 0;
 }
 
-struct tree_opt_pass pass_expand_omp_ssa = 
+struct gimple_opt_pass pass_expand_omp_ssa = 
 {
+ {
+  GIMPLE_PASS,
   "ompexpssa",				/* name */
   gate_expand_omp_ssa,			/* gate */
   execute_expand_omp,			/* execute */
@@ -4208,8 +4210,8 @@ struct tree_opt_pass pass_expand_omp_ssa =
   PROP_gimple_lomp,			/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func,			/* todo_flags_finish */
-  0					/* letter */
+  TODO_dump_func			/* todo_flags_finish */
+ }
 };
 
 /* OMP expansion -- the default pass, run before creation of SSA form.  */
@@ -4221,8 +4223,10 @@ gate_expand_omp (void)
 	  && flag_openmp != 0 && errorcount == 0);
 }
 
-struct tree_opt_pass pass_expand_omp = 
+struct gimple_opt_pass pass_expand_omp = 
 {
+ {
+  GIMPLE_PASS,
   "ompexp",				/* name */
   gate_expand_omp,			/* gate */
   execute_expand_omp,			/* execute */
@@ -4234,8 +4238,8 @@ struct tree_opt_pass pass_expand_omp =
   PROP_gimple_lomp,			/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func,			/* todo_flags_finish */
-  0					/* letter */
+  TODO_dump_func			/* todo_flags_finish */
+ }
 };
 
 /* Routines to lower OpenMP directives into OMP-GIMPLE.  */
@@ -5081,8 +5085,10 @@ gate_lower_omp (void)
   return flag_openmp != 0;
 }
 
-struct tree_opt_pass pass_lower_omp = 
+struct gimple_opt_pass pass_lower_omp = 
 {
+ {
+  GIMPLE_PASS,
   "omplower",				/* name */
   gate_lower_omp,			/* gate */
   execute_lower_omp,			/* execute */
@@ -5094,8 +5100,8 @@ struct tree_opt_pass pass_lower_omp =
   PROP_gimple_lomp,			/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func,			/* todo_flags_finish */
-  0					/* letter */
+  TODO_dump_func			/* todo_flags_finish */
+ }
 };
 
 /* The following is a utility to diagnose OpenMP structured block violations.

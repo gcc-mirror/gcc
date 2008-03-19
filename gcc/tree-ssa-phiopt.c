@@ -1352,8 +1352,10 @@ gate_phiopt (void)
   return 1;
 }
 
-struct tree_opt_pass pass_phiopt =
+struct gimple_opt_pass pass_phiopt =
 {
+ {
+  GIMPLE_PASS,
   "phiopt",				/* name */
   gate_phiopt,				/* gate */
   tree_ssa_phiopt,			/* execute */
@@ -1369,8 +1371,8 @@ struct tree_opt_pass pass_phiopt =
     | TODO_ggc_collect
     | TODO_verify_ssa
     | TODO_verify_flow
-    | TODO_verify_stmts,		/* todo_flags_finish */
-  0					/* letter */
+    | TODO_verify_stmts	 		/* todo_flags_finish */
+ }
 };
 
 static bool
@@ -1379,8 +1381,10 @@ gate_cselim (void)
   return flag_tree_cselim;
 }
 
-struct tree_opt_pass pass_cselim =
+struct gimple_opt_pass pass_cselim =
 {
+ {
+  GIMPLE_PASS,
   "cselim",				/* name */
   gate_cselim,				/* gate */
   tree_ssa_cs_elim,			/* execute */
@@ -1396,6 +1400,6 @@ struct tree_opt_pass pass_cselim =
     | TODO_ggc_collect
     | TODO_verify_ssa
     | TODO_verify_flow
-    | TODO_verify_stmts,		/* todo_flags_finish */
-  0					/* letter */
+    | TODO_verify_stmts	 		/* todo_flags_finish */
+ }
 };

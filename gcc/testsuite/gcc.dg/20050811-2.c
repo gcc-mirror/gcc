@@ -1,6 +1,6 @@
 /* Test whether -dov doesn't crash.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -dov" } */
+/* { dg-options "-O2 -dv -fdump-rtl-postreload" } */
 
 int foo (void)
 {

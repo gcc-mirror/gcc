@@ -1,3 +1,14 @@
+2008-03-19  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/20050811-2.c: Update dumping flags.
+	* gcc.dg/sms-2.c: Update dumping flags.
+	* gcc.dg/var-expand1.c: Update dumping flags.
+	* gcc.dg/var-expand3.c: Update dumping flags.
+	* gcc.dg/pr30957-1.c: Update dumping flags.
+	* gcc.dg/20050811-1.c: Update dumping flags.
+	* gcc.dg/cpp/cmdlne-dI-M.C: Do not xfail.
+	* gcc.dg/cpp/cmdlne-dM-M.C: Do not xfail.
+
 2008-03-19  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/35609

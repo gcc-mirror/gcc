@@ -2871,8 +2871,10 @@ rest_of_handle_sms (void)
   return 0;
 }
 
-struct tree_opt_pass pass_sms =
+struct rtl_opt_pass pass_sms =
 {
+ {
+  RTL_PASS,
   "sms",                                /* name */
   gate_handle_sms,                      /* gate */
   rest_of_handle_sms,                   /* execute */
@@ -2886,7 +2888,7 @@ struct tree_opt_pass pass_sms =
   TODO_dump_func,                       /* todo_flags_start */
   TODO_df_finish | TODO_verify_rtl_sharing |
   TODO_dump_func |
-  TODO_ggc_collect,                     /* todo_flags_finish */
-  'm'                                   /* letter */
+  TODO_ggc_collect                      /* todo_flags_finish */
+ }
 };
 

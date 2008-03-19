@@ -94,7 +94,7 @@ extern void debug_function (tree, int);
 extern int dump_flag (dump_info_p, int, const_tree);
 
 extern unsigned int dump_register (const char *, const char *, const char *, 
-				   int, int);
+				   int);
 
 
 #endif /* ! GCC_TREE_DUMP_H */

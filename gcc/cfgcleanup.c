@@ -2181,8 +2181,10 @@ rest_of_handle_jump (void)
   return 0;
 }
 
-struct tree_opt_pass pass_jump =
+struct rtl_opt_pass pass_jump =
 {
+ {
+  RTL_PASS,
   "sibling",                            /* name */
   NULL,                                 /* gate */
   rest_of_handle_jump,			/* execute */
@@ -2195,7 +2197,7 @@ struct tree_opt_pass pass_jump =
   0,                                    /* properties_destroyed */
   TODO_ggc_collect,                     /* todo_flags_start */
   TODO_verify_flow,                     /* todo_flags_finish */
-  'i'                                   /* letter */
+ }
 };
 
 
@@ -2211,8 +2213,10 @@ rest_of_handle_jump2 (void)
 }
 
 
-struct tree_opt_pass pass_jump2 =
+struct rtl_opt_pass pass_jump2 =
 {
+ {
+  RTL_PASS,
   "jump",                               /* name */
   NULL,                                 /* gate */
   rest_of_handle_jump2,			/* execute */
@@ -2225,7 +2229,7 @@ struct tree_opt_pass pass_jump2 =
   0,                                    /* properties_destroyed */
   TODO_ggc_collect,                     /* todo_flags_start */
   TODO_dump_func | TODO_verify_rtl_sharing,/* todo_flags_finish */
-  'j'                                   /* letter */
+ }
 };
 
 

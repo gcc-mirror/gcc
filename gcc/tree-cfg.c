@@ -212,8 +212,10 @@ execute_build_cfg (void)
   return 0;
 }
 
-struct tree_opt_pass pass_build_cfg =
+struct gimple_opt_pass pass_build_cfg =
 {
+ {
+  GIMPLE_PASS,
   "cfg",				/* name */
   NULL,					/* gate */
   execute_build_cfg,			/* execute */
@@ -225,8 +227,8 @@ struct tree_opt_pass pass_build_cfg =
   PROP_cfg,				/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_verify_stmts | TODO_cleanup_cfg,	/* todo_flags_finish */
-  0					/* letter */
+  TODO_verify_stmts | TODO_cleanup_cfg	/* todo_flags_finish */
+ }
 };
 
 /* Search the CFG for any computed gotos.  If found, factor them to a
@@ -1933,8 +1935,10 @@ remove_useless_stmts (void)
 }
 
 
-struct tree_opt_pass pass_remove_useless_stmts =
+struct gimple_opt_pass pass_remove_useless_stmts =
 {
+ {
+  GIMPLE_PASS,
   "useless",				/* name */
   NULL,					/* gate */
   remove_useless_stmts,			/* execute */
@@ -1946,8 +1950,8 @@ struct tree_opt_pass pass_remove_useless_stmts =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func,			/* todo_flags_finish */
-  0					/* letter */
+  TODO_dump_func			/* todo_flags_finish */
+ }
 };
 
 /* Remove PHI nodes associated with basic block BB and all edges out of BB.  */
@@ -6898,8 +6902,10 @@ split_critical_edges (void)
   return 0;
 }
 
-struct tree_opt_pass pass_split_crit_edges =
+struct gimple_opt_pass pass_split_crit_edges =
 {
+ {
+  GIMPLE_PASS,
   "crited",                          /* name */
   NULL,                          /* gate */
   split_critical_edges,          /* execute */
@@ -6911,8 +6917,8 @@ struct tree_opt_pass pass_split_crit_edges =
   PROP_no_crit_edges,            /* properties_provided */
   0,                             /* properties_destroyed */
   0,                             /* todo_flags_start */
-  TODO_dump_func,                /* todo_flags_finish */
-  0                              /* letter */
+  TODO_dump_func                 /* todo_flags_finish */
+ }
 };
 
 
@@ -7068,8 +7074,10 @@ extract_true_false_edges_from_block (basic_block b,
     }
 }
 
-struct tree_opt_pass pass_warn_function_return =
+struct gimple_opt_pass pass_warn_function_return =
 {
+ {
+  GIMPLE_PASS,
   NULL,					/* name */
   NULL,					/* gate */
   execute_warn_function_return,		/* execute */
@@ -7081,8 +7089,8 @@ struct tree_opt_pass pass_warn_function_return =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  0,					/* todo_flags_finish */
-  0					/* letter */
+  0					/* todo_flags_finish */
+ }
 };
 
 /* Emit noreturn warnings.  */
@@ -7100,8 +7108,10 @@ execute_warn_function_noreturn (void)
   return 0;
 }
 
-struct tree_opt_pass pass_warn_function_noreturn =
+struct gimple_opt_pass pass_warn_function_noreturn =
 {
+ {
+  GIMPLE_PASS,
   NULL,					/* name */
   NULL,					/* gate */
   execute_warn_function_noreturn,	/* execute */
@@ -7113,6 +7123,6 @@ struct tree_opt_pass pass_warn_function_noreturn =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  0,					/* todo_flags_finish */
-  0					/* letter */
+  0					/* todo_flags_finish */
+ }
 };

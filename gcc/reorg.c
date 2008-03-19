@@ -4066,8 +4066,10 @@ rest_of_handle_delay_slots (void)
   return 0;
 }
 
-struct tree_opt_pass pass_delay_slots =
+struct rtl_opt_pass pass_delay_slots =
 {
+ {
+  RTL_PASS,
   "dbr",                                /* name */
   gate_handle_delay_slots,              /* gate */
   rest_of_handle_delay_slots,           /* execute */
@@ -4080,8 +4082,8 @@ struct tree_opt_pass pass_delay_slots =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_dump_func |
-  TODO_ggc_collect,                     /* todo_flags_finish */
-  'd'                                   /* letter */
+  TODO_ggc_collect                      /* todo_flags_finish */
+ }
 };
 
 /* Machine dependent reorg pass.  */
@@ -4099,8 +4101,10 @@ rest_of_handle_machine_reorg (void)
   return 0;
 }
 
-struct tree_opt_pass pass_machine_reorg =
+struct rtl_opt_pass pass_machine_reorg =
 {
+ {
+  RTL_PASS,
   "mach",                               /* name */
   gate_handle_machine_reorg,            /* gate */
   rest_of_handle_machine_reorg,         /* execute */
@@ -4113,6 +4117,6 @@ struct tree_opt_pass pass_machine_reorg =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_dump_func |
-  TODO_ggc_collect,                     /* todo_flags_finish */
-  'M'                                   /* letter */
+  TODO_ggc_collect                      /* todo_flags_finish */
+ }
 };

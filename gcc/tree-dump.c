@@ -831,7 +831,7 @@ static const struct dump_option_value_info dump_options[] =
 
 unsigned int
 dump_register (const char *suffix, const char *swtch, const char *glob,
-	       int flags, int letter)
+	       int flags)
 {
   static int next_dump = FIRST_AUTO_NUMBERED_DUMP;
   int num = next_dump++;
@@ -855,7 +855,6 @@ dump_register (const char *suffix, const char *swtch, const char *glob,
   extra_dump_files[this].glob = glob;
   extra_dump_files[this].flags = flags;
   extra_dump_files[this].num = num;
-  extra_dump_files[this].letter = letter;
 
   return this + TDI_end;
 }

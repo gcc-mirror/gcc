@@ -389,8 +389,10 @@ gate_copyrename (void)
   return flag_tree_copyrename != 0;
 }
 
-struct tree_opt_pass pass_rename_ssa_copies = 
-{  
+struct gimple_opt_pass pass_rename_ssa_copies = 
+{
+ {
+  GIMPLE_PASS,
   "copyrename",				/* name */
   gate_copyrename,			/* gate */
   rename_ssa_copies,			/* execute */
@@ -402,7 +404,7 @@ struct tree_opt_pass pass_rename_ssa_copies =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */ 
-  TODO_dump_func | TODO_verify_ssa,     /* todo_flags_finish */
-  0					/* letter */
+  TODO_dump_func | TODO_verify_ssa      /* todo_flags_finish */
+ }
 }; 
 

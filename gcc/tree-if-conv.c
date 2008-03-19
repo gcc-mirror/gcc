@@ -1160,8 +1160,10 @@ gate_tree_if_conversion (void)
   return flag_tree_vectorize != 0;
 }
 
-struct tree_opt_pass pass_if_conversion =
+struct gimple_opt_pass pass_if_conversion =
 {
+ {
+  GIMPLE_PASS,
   "ifcvt",				/* name */
   gate_tree_if_conversion,		/* gate */
   main_tree_if_conversion,		/* execute */
@@ -1173,7 +1175,7 @@ struct tree_opt_pass pass_if_conversion =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func | TODO_verify_loops | TODO_verify_stmts | TODO_verify_flow,	
+  TODO_dump_func | TODO_verify_loops | TODO_verify_stmts | TODO_verify_flow
                                         /* todo_flags_finish */
-  0					/* letter */
+ }
 };

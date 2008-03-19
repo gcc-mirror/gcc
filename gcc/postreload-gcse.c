@@ -1318,8 +1318,10 @@ rest_of_handle_gcse2 (void)
   return 0;
 }
 
-struct tree_opt_pass pass_gcse2 =
+struct rtl_opt_pass pass_gcse2 =
 {
+ {
+  RTL_PASS,
   "gcse2",                              /* name */
   gate_handle_gcse2,                    /* gate */
   rest_of_handle_gcse2,                 /* execute */
@@ -1332,7 +1334,7 @@ struct tree_opt_pass pass_gcse2 =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_dump_func | TODO_verify_rtl_sharing
-  | TODO_verify_flow | TODO_ggc_collect,/* todo_flags_finish */
-  'J'                                   /* letter */
+  | TODO_verify_flow | TODO_ggc_collect /* todo_flags_finish */
+ }
 };
 

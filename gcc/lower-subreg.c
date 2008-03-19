@@ -1425,8 +1425,10 @@ rest_of_handle_lower_subreg2 (void)
   return 0;
 }
 
-struct tree_opt_pass pass_lower_subreg =
+struct rtl_opt_pass pass_lower_subreg =
 {
+ {
+  RTL_PASS,
   "subreg",	                        /* name */
   gate_handle_lower_subreg,             /* gate */
   rest_of_handle_lower_subreg,          /* execute */
@@ -1440,12 +1442,14 @@ struct tree_opt_pass pass_lower_subreg =
   0,                                    /* todo_flags_start */
   TODO_dump_func |
   TODO_ggc_collect |
-  TODO_verify_flow,                     /* todo_flags_finish */
-  'u'                                   /* letter */
+  TODO_verify_flow                      /* todo_flags_finish */
+ }
 };
 
-struct tree_opt_pass pass_lower_subreg2 =
+struct rtl_opt_pass pass_lower_subreg2 =
 {
+ {
+  RTL_PASS,
   "subreg2",	                        /* name */
   gate_handle_lower_subreg,             /* gate */
   rest_of_handle_lower_subreg2,          /* execute */
@@ -1460,6 +1464,6 @@ struct tree_opt_pass pass_lower_subreg2 =
   TODO_df_finish | TODO_verify_rtl_sharing |
   TODO_dump_func |
   TODO_ggc_collect |
-  TODO_verify_flow,                     /* todo_flags_finish */
-  'U'                                   /* letter */
+  TODO_verify_flow                      /* todo_flags_finish */
+ }
 };

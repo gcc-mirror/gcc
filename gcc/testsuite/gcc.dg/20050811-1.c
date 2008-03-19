@@ -1,6 +1,6 @@
-/* Test whether -dav doesn't crash.  */
+/* Test whether -dv -fdump-rtl-all doesn't crash.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -dav" } */
+/* { dg-options "-O2 -dv -fdump-rtl-all" } */
 
 int foo (void)
 {

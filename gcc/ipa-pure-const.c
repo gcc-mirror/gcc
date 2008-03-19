@@ -769,8 +769,10 @@ gate_pure_const (void)
 	  && !(errorcount || sorrycount));
 }
 
-struct tree_opt_pass pass_ipa_pure_const =
+struct simple_ipa_opt_pass pass_ipa_pure_const =
 {
+ {
+  SIMPLE_IPA_PASS,
   "pure-const",		                /* name */
   gate_pure_const,			/* gate */
   static_execute,			/* execute */
@@ -782,8 +784,8 @@ struct tree_opt_pass pass_ipa_pure_const =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  0,                                    /* todo_flags_finish */
-  0					/* letter */
+  0                                     /* todo_flags_finish */
+ }
 };
 
 

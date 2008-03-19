@@ -3859,8 +3859,10 @@ rest_of_handle_see (void)
   return 0;
 }
 
-struct tree_opt_pass pass_see =
+struct rtl_opt_pass pass_see =
 {
+ {
+  RTL_PASS,
   "see",				/* name */
   gate_handle_see,			/* gate */
   rest_of_handle_see,			/* execute */
@@ -3874,7 +3876,7 @@ struct tree_opt_pass pass_see =
   0,					/* todo_flags_start */
   TODO_df_verify |
   TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_dump_func,			/* todo_flags_finish */
-  'u'					/* letter */
+  TODO_dump_func			/* todo_flags_finish */
+ }
 };
 

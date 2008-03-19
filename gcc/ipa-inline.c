@@ -1426,8 +1426,10 @@ cgraph_gate_inlining (void)
   return flag_inline_trees;
 }
 
-struct tree_opt_pass pass_ipa_inline = 
+struct simple_ipa_opt_pass pass_ipa_inline = 
 {
+ {
+  SIMPLE_IPA_PASS,
   "inline",				/* name */
   cgraph_gate_inlining,			/* gate */
   cgraph_decide_inlining,		/* execute */
@@ -1440,8 +1442,8 @@ struct tree_opt_pass pass_ipa_inline =
   0,					/* properties_destroyed */
   TODO_remove_functions,		/* todo_flags_finish */
   TODO_dump_cgraph | TODO_dump_func
-  | TODO_remove_functions,		/* todo_flags_finish */
-  0					/* letter */
+  | TODO_remove_functions		/* todo_flags_finish */
+ }
 };
 
 /* Because inlining might remove no-longer reachable nodes, we need to
@@ -1479,8 +1481,10 @@ cgraph_gate_early_inlining (void)
   return flag_inline_trees && flag_early_inlining;
 }
 
-struct tree_opt_pass pass_early_inline = 
+struct gimple_opt_pass pass_early_inline = 
 {
+ {
+  GIMPLE_PASS,
   "einline",	 			/* name */
   cgraph_gate_early_inlining,		/* gate */
   cgraph_early_inlining,		/* execute */
@@ -1492,8 +1496,8 @@ struct tree_opt_pass pass_early_inline =
   PROP_cfg,				/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func,    			/* todo_flags_finish */
-  0					/* letter */
+  TODO_dump_func    			/* todo_flags_finish */
+ }
 };
 
 /* When inlining shall be performed.  */
@@ -1507,8 +1511,10 @@ cgraph_gate_ipa_early_inlining (void)
 
 /* IPA pass wrapper for early inlining pass.  We need to run early inlining
    before tree profiling so we have stand alone IPA pass for doing so.  */
-struct tree_opt_pass pass_ipa_early_inline = 
+struct simple_ipa_opt_pass pass_ipa_early_inline = 
 {
+ {
+  SIMPLE_IPA_PASS,
   "einline_ipa",			/* name */
   cgraph_gate_ipa_early_inlining,	/* gate */
   NULL,					/* execute */
@@ -1520,8 +1526,8 @@ struct tree_opt_pass pass_ipa_early_inline =
   PROP_cfg,				/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_cgraph, 		        /* todo_flags_finish */
-  0					/* letter */
+  TODO_dump_cgraph 		        /* todo_flags_finish */
+ }
 };
 
 /* Compute parameters of functions used by inliner.  */
@@ -1554,8 +1560,10 @@ gate_inline_passes (void)
   return flag_inline_trees;
 }
 
-struct tree_opt_pass pass_inline_parameters = 
+struct gimple_opt_pass pass_inline_parameters = 
 {
+ {
+  GIMPLE_PASS,
   NULL,	 				/* name */
   gate_inline_passes,			/* gate */
   compute_inline_parameters,		/* execute */
@@ -1567,8 +1575,8 @@ struct tree_opt_pass pass_inline_parameters =
   PROP_cfg,				/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  0,					/* todo_flags_finish */
-  0					/* letter */
+  0					/* todo_flags_finish */
+ }
 };
 
 /* Apply inline plan to the function.  */
@@ -1609,8 +1617,10 @@ apply_inline (void)
   return todo | execute_fixup_cfg ();
 }
 
-struct tree_opt_pass pass_apply_inline = 
+struct gimple_opt_pass pass_apply_inline = 
 {
+ {
+  GIMPLE_PASS,
   "apply_inline",			/* name */
   NULL,					/* gate */
   apply_inline,				/* execute */
@@ -1623,8 +1633,8 @@ struct tree_opt_pass pass_apply_inline =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_dump_func | TODO_verify_flow
-  | TODO_verify_stmts,			/* todo_flags_finish */
-  0					/* letter */
+  | TODO_verify_stmts			/* todo_flags_finish */
+ }
 };
 
 #include "gt-ipa-inline.h"

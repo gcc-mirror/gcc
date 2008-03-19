@@ -427,8 +427,10 @@ free_bb_for_insn (void)
   return 0;
 }
 
-struct tree_opt_pass pass_free_cfg =
+struct rtl_opt_pass pass_free_cfg =
 {
+ {
+  RTL_PASS,
   NULL,                                 /* name */
   NULL,                                 /* gate */
   free_bb_for_insn,                     /* execute */
@@ -441,7 +443,7 @@ struct tree_opt_pass pass_free_cfg =
   PROP_cfg,                             /* properties_destroyed */
   0,                                    /* todo_flags_start */
   0,                                    /* todo_flags_finish */
-  0                                     /* letter */
+ }
 };
 
 /* Return RTX to emit after when we want to emit code on the entry of function.  */

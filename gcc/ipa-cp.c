@@ -1136,7 +1136,10 @@ cgraph_gate_cp (void)
   return flag_ipa_cp;
 }
 
-struct tree_opt_pass pass_ipa_cp = {
+struct simple_ipa_opt_pass pass_ipa_cp = 
+{
+ {
+  SIMPLE_IPA_PASS,
   "cp",				/* name */
   cgraph_gate_cp,		/* gate */
   ipcp_driver,			/* execute */
@@ -1148,6 +1151,6 @@ struct tree_opt_pass pass_ipa_cp = {
   PROP_trees,			/* properties_provided */
   0,				/* properties_destroyed */
   0,				/* todo_flags_start */
-  TODO_dump_cgraph | TODO_dump_func,	/* todo_flags_finish */
-  0				/* letter */
+  TODO_dump_cgraph | TODO_dump_func	/* todo_flags_finish */
+ }
 };

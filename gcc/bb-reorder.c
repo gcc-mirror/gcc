@@ -2096,8 +2096,10 @@ done:
   return 0;
 }
 
-struct tree_opt_pass pass_duplicate_computed_gotos =
+struct rtl_opt_pass pass_duplicate_computed_gotos =
 {
+ {
+  RTL_PASS,
   "compgotos",                          /* name */
   gate_duplicate_computed_gotos,        /* gate */
   duplicate_computed_gotos,             /* execute */
@@ -2110,7 +2112,7 @@ struct tree_opt_pass pass_duplicate_computed_gotos =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_dump_func | TODO_verify_rtl_sharing,/* todo_flags_finish */
-  0                                     /* letter */
+ }
 };
 
 
@@ -2239,8 +2241,10 @@ rest_of_handle_reorder_blocks (void)
   return 0;
 }
 
-struct tree_opt_pass pass_reorder_blocks =
+struct rtl_opt_pass pass_reorder_blocks =
 {
+ {
+  RTL_PASS,
   "bbro",                               /* name */
   gate_handle_reorder_blocks,           /* gate */
   rest_of_handle_reorder_blocks,        /* execute */
@@ -2253,7 +2257,7 @@ struct tree_opt_pass pass_reorder_blocks =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_dump_func | TODO_verify_rtl_sharing,/* todo_flags_finish */
-  'B'                                   /* letter */
+ }
 };
 
 static bool
@@ -2277,8 +2281,10 @@ rest_of_handle_partition_blocks (void)
   return 0;
 }
 
-struct tree_opt_pass pass_partition_blocks =
+struct rtl_opt_pass pass_partition_blocks =
 {
+ {
+  RTL_PASS,
   "bbpart",                             /* name */
   gate_handle_partition_blocks,         /* gate */
   rest_of_handle_partition_blocks,      /* execute */
@@ -2290,8 +2296,8 @@ struct tree_opt_pass pass_partition_blocks =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func | TODO_verify_rtl_sharing,/* todo_flags_finish */
-  0                                     /* letter */
+  TODO_dump_func | TODO_verify_rtl_sharing/* todo_flags_finish */
+ }
 };
 
 

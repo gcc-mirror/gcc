@@ -1530,8 +1530,10 @@ gate_warn_uninitialized (void)
   return warn_uninitialized != 0;
 }
 
-struct tree_opt_pass pass_early_warn_uninitialized =
+struct gimple_opt_pass pass_early_warn_uninitialized =
 {
+ {
+  GIMPLE_PASS,
   NULL,					/* name */
   gate_warn_uninitialized,		/* gate */
   execute_early_warn_uninitialized,	/* execute */
@@ -1543,12 +1545,14 @@ struct tree_opt_pass pass_early_warn_uninitialized =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  0,                                    /* todo_flags_finish */
-  0				        /* letter */
+  0                                     /* todo_flags_finish */
+ }
 };
 
-struct tree_opt_pass pass_late_warn_uninitialized =
+struct gimple_opt_pass pass_late_warn_uninitialized =
 {
+ {
+  GIMPLE_PASS,
   NULL,					/* name */
   gate_warn_uninitialized,		/* gate */
   execute_late_warn_uninitialized,	/* execute */
@@ -1560,8 +1564,8 @@ struct tree_opt_pass pass_late_warn_uninitialized =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  0,                                    /* todo_flags_finish */
-  0				        /* letter */
+  0                                     /* todo_flags_finish */
+ }
 };
 
 /* Compute TREE_ADDRESSABLE for local variables.  */
@@ -1643,8 +1647,10 @@ execute_update_addresses_taken (void)
   return 0;
 }
 
-struct tree_opt_pass pass_update_address_taken =
+struct gimple_opt_pass pass_update_address_taken =
 {
+ {
+  GIMPLE_PASS,
   "addressables",			/* name */
   NULL,					/* gate */
   execute_update_addresses_taken,	/* execute */
@@ -1656,6 +1662,6 @@ struct tree_opt_pass pass_update_address_taken =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_update_ssa,                      /* todo_flags_finish */
-  0				        /* letter */
+  TODO_update_ssa                       /* todo_flags_finish */
+ }
 };

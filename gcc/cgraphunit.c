@@ -475,7 +475,7 @@ cgraph_process_new_functions (void)
 	      /* When not optimizing, be sure we run early local passes anyway
 		 to expand OMP.  */
 	      || !optimize)
-	    execute_pass_list (pass_early_local_passes.sub);
+	    execute_pass_list (pass_early_local_passes.pass.sub);
 	  free_dominance_info (CDI_POST_DOMINATORS);
 	  free_dominance_info (CDI_DOMINATORS);
 	  pop_cfun ();
@@ -858,7 +858,7 @@ cgraph_analyze_function (struct cgraph_node *node)
     {
       bitmap_obstack_initialize (NULL);
       tree_register_cfg_hooks ();
-      execute_pass_list (pass_early_local_passes.sub);
+      execute_pass_list (pass_early_local_passes.pass.sub);
       free_dominance_info (CDI_POST_DOMINATORS);
       free_dominance_info (CDI_DOMINATORS);
       bitmap_obstack_release (NULL);

@@ -3202,8 +3202,10 @@ gate_handle_stack_regs (void)
 #endif
 }
 
-struct tree_opt_pass pass_stack_regs =
+struct rtl_opt_pass pass_stack_regs =
 {
+ {
+  RTL_PASS,
   NULL,                                 /* name */
   gate_handle_stack_regs,               /* gate */
   NULL,					/* execute */
@@ -3215,8 +3217,8 @@ struct tree_opt_pass pass_stack_regs =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
-  0                                     /* letter */
+  0                                     /* todo_flags_finish */
+ }
 };
 
 /* Convert register usage from flat register file usage to a stack
@@ -3231,8 +3233,10 @@ rest_of_handle_stack_regs (void)
   return 0;
 }
 
-struct tree_opt_pass pass_stack_regs_run =
+struct rtl_opt_pass pass_stack_regs_run =
 {
+ {
+  RTL_PASS,
   "stack",                              /* name */
   NULL,                                 /* gate */
   rest_of_handle_stack_regs,            /* execute */
@@ -3246,6 +3250,6 @@ struct tree_opt_pass pass_stack_regs_run =
   0,                                    /* todo_flags_start */
   TODO_df_finish | TODO_verify_rtl_sharing |
   TODO_dump_func |
-  TODO_ggc_collect,                     /* todo_flags_finish */
-  'k'                                   /* letter */
+  TODO_ggc_collect                      /* todo_flags_finish */
+ }
 };

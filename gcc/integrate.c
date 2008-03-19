@@ -298,8 +298,10 @@ emit_initial_value_sets (void)
   return 0;
 }
 
-struct tree_opt_pass pass_initial_value_sets =
+struct rtl_opt_pass pass_initial_value_sets =
 {
+ {
+  RTL_PASS,
   "initvals",                           /* name */
   NULL,                                 /* gate */
   emit_initial_value_sets,              /* execute */
@@ -311,8 +313,8 @@ struct tree_opt_pass pass_initial_value_sets =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func,                       /* todo_flags_finish */
-  0                                     /* letter */
+  TODO_dump_func                        /* todo_flags_finish */
+ }
 };
 
 /* If the backend knows where to allocate pseudos for hard

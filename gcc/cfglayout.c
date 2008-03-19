@@ -340,8 +340,10 @@ outof_cfg_layout_mode (void)
   return 0;
 }
 
-struct tree_opt_pass pass_into_cfg_layout_mode =
+struct rtl_opt_pass pass_into_cfg_layout_mode =
 {
+ {
+  RTL_PASS,
   "into_cfglayout",                     /* name */
   NULL,                                 /* gate */
   into_cfg_layout_mode,                 /* execute */
@@ -354,11 +356,13 @@ struct tree_opt_pass pass_into_cfg_layout_mode =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_dump_func,                       /* todo_flags_finish */
-  0                                     /* letter */
+ }
 };
 
-struct tree_opt_pass pass_outof_cfg_layout_mode =
+struct rtl_opt_pass pass_outof_cfg_layout_mode =
 {
+ {
+  RTL_PASS,
   "outof_cfglayout",                    /* name */
   NULL,                                 /* gate */
   outof_cfg_layout_mode,                /* execute */
@@ -371,7 +375,7 @@ struct tree_opt_pass pass_outof_cfg_layout_mode =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_dump_func,                       /* todo_flags_finish */
-  0                                     /* letter */
+ }
 };
 
 /* Return sope resulting from combination of S1 and S2.  */

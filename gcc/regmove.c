@@ -2135,8 +2135,10 @@ rest_of_handle_regmove (void)
   return 0;
 }
 
-struct tree_opt_pass pass_regmove =
+struct rtl_opt_pass pass_regmove =
 {
+ {
+  RTL_PASS,
   "regmove",                            /* name */
   gate_handle_regmove,                  /* gate */
   rest_of_handle_regmove,               /* execute */
@@ -2150,7 +2152,7 @@ struct tree_opt_pass pass_regmove =
   0,                                    /* todo_flags_start */
   TODO_df_finish | TODO_verify_rtl_sharing |
   TODO_dump_func |
-  TODO_ggc_collect,                     /* todo_flags_finish */
-  'N'                                   /* letter */
+  TODO_ggc_collect                      /* todo_flags_finish */
+ }
 };
 

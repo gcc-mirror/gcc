@@ -148,8 +148,10 @@ lower_function_body (void)
   return 0;
 }
 
-struct tree_opt_pass pass_lower_cf = 
+struct gimple_opt_pass pass_lower_cf = 
 {
+ {
+  GIMPLE_PASS,
   "lower",				/* name */
   NULL,					/* gate */
   lower_function_body,			/* execute */
@@ -161,8 +163,8 @@ struct tree_opt_pass pass_lower_cf =
   PROP_gimple_lcf,			/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func,			/* todo_flags_finish */
-  0					/* letter */
+  TODO_dump_func			/* todo_flags_finish */
+ }
 };
 
 
@@ -790,8 +792,10 @@ mark_used_blocks (void)
 }
 
 
-struct tree_opt_pass pass_mark_used_blocks = 
+struct gimple_opt_pass pass_mark_used_blocks = 
 {
+ {
+  GIMPLE_PASS,
   "blocks",				/* name */
   NULL,					/* gate */
   mark_used_blocks,			/* execute */
@@ -803,6 +807,6 @@ struct tree_opt_pass pass_mark_used_blocks =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func,			/* todo_flags_finish */
-  0					/* letter */
+  TODO_dump_func			/* todo_flags_finish */
+ }
 };

@@ -253,8 +253,10 @@ gate_ch (void)
   return flag_tree_ch != 0;
 }
 
-struct tree_opt_pass pass_ch = 
+struct gimple_opt_pass pass_ch = 
 {
+ {
+  GIMPLE_PASS,
   "ch",					/* name */
   gate_ch,				/* gate */
   copy_loop_headers,			/* execute */
@@ -267,6 +269,6 @@ struct tree_opt_pass pass_ch =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_cleanup_cfg | TODO_dump_func 
-  | TODO_verify_ssa,			/* todo_flags_finish */
-  0					/* letter */
+  | TODO_verify_ssa			/* todo_flags_finish */
+ }
 };
