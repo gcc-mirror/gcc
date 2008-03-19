@@ -1,3 +1,9 @@
+2008-03-19  Michael Matz  <matz@suse.de>
+
+	PR middle-end/35616
+	* calls.c (expand_call): Check overlap of arguments with call
+	address for sibcalls.
+
 2008-03-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/35496

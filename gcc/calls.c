@@ -2326,7 +2326,7 @@ expand_call (tree exp, rtx target, int ignore)
       int save_pending_stack_adjust = 0;
       int save_stack_pointer_delta = 0;
       rtx insns;
-      rtx before_call, next_arg_reg;
+      rtx before_call, next_arg_reg, after_args;
 
       if (pass == 0)
 	{
@@ -2756,6 +2756,7 @@ expand_call (tree exp, rtx target, int ignore)
 	    use_reg (&call_fusage, struct_value);
 	}
 
+      after_args = get_last_insn ();
       funexp = prepare_call_address (funexp, static_chain_value,
 				     &call_fusage, reg_parm_seen, pass == 0);
 
@@ -2789,6 +2790,13 @@ expand_call (tree exp, rtx target, int ignore)
 		   adjusted_args_size.constant, struct_value_size,
 		   next_arg_reg, valreg, old_inhibit_defer_pop, call_fusage,
 		   flags, & args_so_far);
+
+      /* If the call setup or the call itself overlaps with anything
+	 of the argument setup we probably clobbered our call address.
+	 In that case we can't do sibcalls.  */
+      if (pass == 0
+	  && check_sibcall_argument_overlap (after_args, 0, 0))
+	sibcall_failure = 1;
 
       /* If a non-BLKmode value is returned at the most significant end
 	 of a register, shift the register right by the appropriate amount
