@@ -2419,9 +2419,26 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 	}
     }
 
-  if (sym->attr.if_source == IFSRC_UNKNOWN
-      || !compare_actual_formal (ap, sym->formal, 0,
-				 sym->attr.elemental, where))
+  if (sym->attr.external
+      || sym->attr.if_source == IFSRC_UNKNOWN)
+    {
+      gfc_actual_arglist *a;
+      for (a = *ap; a; a = a->next)
+	{
+	  /* Skip g77 keyword extensions like %VAL, %REF, %LOC.  */
+	  if (a->name != NULL && a->name[0] != '%')
+	    {
+	      gfc_error("Keyword argument requires explicit interface "
+			"for procedure '%s' at %L", sym->name, &a->expr->where);
+	      break;
+	    }
+	}
+
+      return;
+    }
+
+  if (!compare_actual_formal (ap, sym->formal, 0,
+			      sym->attr.elemental, where))
     return;
 
   check_intents (sym->formal, *ap);

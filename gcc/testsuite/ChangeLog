@@ -1,3 +1,8 @@
+2008-03-19  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/35152
+	* gfortran.dg/argument_checking_16.f90: New test.
+
 2008-03-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/32972
