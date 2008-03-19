@@ -1,3 +1,10 @@
+2008-03-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/35496
+	* stor-layout.c (update_alignment_for_field): Set minimum alignment
+	of the underlying type of a MS bitfield layout to the natural
+	alignment of the type.
+
 2008-03-19  Jan Hubicka  <jh@suse.cz>
 
 	PR other/35094
@@ -283,7 +290,7 @@
 	(maybe_fold_stmt_addition): Likewise.
 
 2008-03-15  Bjoern Haase  <bjoern.m.haase@web.de>
-            Anatoly Sokolov <aesok@post.ru>
+	    Anatoly Sokolov <aesok@post.ru>
 
 	* gcc/gcc/config/avr/avr.c (avr_arch_types): Add avr6 entry.
 	(avr_arch): Add ARCH_AVR6.
@@ -1123,7 +1130,7 @@
 2008-03-04  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/i386/i386.md (allocate_stack_worker_32): Use  __chkstk
-        label to probe the stack.
+	label to probe the stack.
 
 2008-03-04  Danny Smith  <dannysmith@users.sourceforge.net>
 
@@ -1688,7 +1695,7 @@
 
 2008-02-26  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
-        PR 26264
+	PR 26264
 	* builtins.def (BUILT_IN_STDARG_START): Remove.
 	* builtins.c (expand_builtin): Remove BUILT_IN_STDARG_START.
 	* tree-stdarg.c (execute_optimize_stdarg): Likewise.
@@ -1868,7 +1875,7 @@
 	PR fortran/29549
 	* doc/invoke.texi (-fcx-limited-range): Document new option.
 	* toplev.c (process_options): Handle -fcx-fortran-rules.
-        * common.opt: Add documentation for -fcx-fortran-rules.
+	* common.opt: Add documentation for -fcx-fortran-rules.
 
 2008-02-25  Janne Blomqvist  <jb@gcc.gnu.org>
 
