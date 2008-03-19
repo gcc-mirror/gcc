@@ -1,3 +1,8 @@
+2008-03-19  Michael Matz  <matz@suse.de>
+
+	PR middle-end/35616
+	* gcc.dg/pr35616.c: New test.
+
 2008-03-19  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/35152
