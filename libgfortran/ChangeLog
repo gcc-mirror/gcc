@@ -1,6 +1,12 @@
 2008-03-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/32972
+	* runtime/in_pack_generic.c (internal_pack):  Fix typo in
+	last commit.
+
+2008-03-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/32972
 	* Makefile.am (in_pack_c): Add in_pack_i1.c, in_pack_i2.c,
 	in_pack_r4.c, in_pack_r8.c, in_pack_r10.c and in_pack_r16.c.
 	(in_unpack_c): Add in_unpack_i1.c, in_unpack_i2.c,
