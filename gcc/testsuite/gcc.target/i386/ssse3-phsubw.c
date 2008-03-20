@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target ssse3 } */
-/* { dg-options "-O2 -mssse3" } */
+/* { dg-options "-O2 -fno-strict-aliasing -mssse3" } */
 
 #include "ssse3-check.h"
 #include "ssse3-vals.h"
