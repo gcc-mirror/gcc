@@ -1,6 +1,6 @@
 // TR1 type_traits -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -163,25 +163,29 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     : public integral_constant<bool, __is_class(_Tp)>
     { };
 
-  template<typename>
-    struct __is_function_helper
-    : public false_type { };
-
-  template<typename _Res, typename... _ArgTypes>
-    struct __is_function_helper<_Res(_ArgTypes...)>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes>
-    struct __is_function_helper<_Res(_ArgTypes......)>
-    : public true_type { };
+  template<typename _Tp>
+    struct __in_array
+    : public __sfinae_types
+    {
+    private:
+      template<typename _Up>
+        static __one __test(_Up(*)[1]);
+      template<typename>
+        static __two __test(...);
+    
+    public:
+      static const bool __value = sizeof(__test<_Tp>(0)) == 1;
+    };
 
   template<typename _Tp>
-    struct remove_cv;
+    struct is_abstract;
 
   template<typename _Tp>
     struct is_function
-    : public integral_constant<bool, (__is_function_helper<typename
-				      remove_cv<_Tp>::type>::value)>
+    : public integral_constant<bool, !(__in_array<_Tp>::__value
+				       || is_abstract<_Tp>::value
+				       || is_reference<_Tp>::value
+				       || is_void<_Tp>::value)>
     { };
 
   /// @brief  composite type traits [4.5.2].
