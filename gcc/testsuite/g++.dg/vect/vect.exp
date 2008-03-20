@@ -45,7 +45,14 @@ lappend DEFAULT_VECTCFLAGS "-O2" "-ftree-vectorize" "-fno-vect-cost-model" \
 # Skip these tests for targets that do not support generating vector
 # code.  Set additional target-dependent vector flags, which can be
 # overridden by using dg-options in individual tests.
-if [istarget "powerpc*-*-*"] {
+if  [istarget "powerpc-*paired*"]  {
+   lappend DEFAULT_VECTCFLAGS "-mpaired"
+    if [check_750cl_hw_available] {
+        set dg-do-what-default run 
+    } else {
+        set dg-do-what-default compile
+    }
+} elseif [istarget "powerpc*-*-*"] {
     # Skip targets not supporting -maltivec.
     if ![is-effective-target powerpc_altivec_ok] {
 	return
@@ -53,19 +60,23 @@ if [istarget "powerpc*-*-*"] {
 
     lappend DEFAULT_VECTCFLAGS "-maltivec"
     if [check_vmx_hw_available] {
-        set dg-do-what-default run
+	set dg-do-what-default run
     } else {
-        if [is-effective-target ilp32] {
-            # Specify a cpu that supports VMX for compile-only tests.
-            lappend DEFAULT_VECTCFLAGS "-mcpu=7400"
-        }
-        set dg-do-what-default compile
+	if [is-effective-target ilp32] {
+	    # Specify a cpu that supports VMX for compile-only tests.
+	    lappend DEFAULT_VECTCFLAGS "-mcpu=970"
+	}
+	set dg-do-what-default compile
     }
 } elseif { [istarget  "spu-*-*"] } {
    set dg-do-what-default run
 } elseif { [istarget "i?86-*-*"] || [istarget "x86_64-*-*"] } {
     lappend DEFAULT_VECTCFLAGS "-msse2"
-    set dg-do-what-default run
+    if [check_sse2_hw_available] {
+	set dg-do-what-default run
+    } else {
+	set dg-do-what-default compile
+    }
 } elseif { [istarget "mips*-*-*"]
 	   && [check_effective_target_mpaired_single]
 	   && [check_effective_target_nomips16] } {
@@ -73,20 +84,36 @@ if [istarget "powerpc*-*-*"] {
     set dg-do-what-default run
 } elseif [istarget "sparc*-*-*"] {
     lappend DEFAULT_VECTCFLAGS "-mcpu=ultrasparc" "-mvis"
-    set dg-do-what-default run
+    if [check_effective_target_ultrasparc_hw] {
+	set dg-do-what-default run
+    } else {
+	set dg-do-what-default compile
+    }
 } elseif [istarget "alpha*-*-*"] {
+    # Alpha's vectorization capabilities are extremely limited.
+    # It's more effort than its worth disabling all of the tests
+    # that it cannot pass.  But if you actually want to see what
+    # does work, command out the return.
+    return
+
     lappend DEFAULT_VECTCFLAGS "-mmax"
     if [check_alpha_max_hw_available] {
-        set dg-do-what-default run
+	set dg-do-what-default run
     } else {
-        set dg-do-what-default compile
+	set dg-do-what-default compile
     }
 } elseif [istarget "ia64-*-*"] {
     set dg-do-what-default run
+} elseif [is-effective-target arm_neon_ok] {
+    lappend DEFAULT_VECTCFLAGS "-mfpu=neon" "-mfloat-abi=softfp"
+    if [is-effective-target arm_neon_hw] {
+      set dg-do-what-default run
+    } else {
+      set dg-do-what-default compile
+    }
 } else {
     return
 }
-
 
 # Initialize `dg'.
 dg-init
