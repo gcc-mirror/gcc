@@ -947,8 +947,15 @@ ccp_fold (tree stmt)
 	    op0 = get_value (op0)->value;
 	}
 
+      /* Conversions are useless for CCP purposes if they are
+	 value-preserving.  Thus the restrictions that
+	 useless_type_conversion_p places for pointer type conversions do
+	 not apply here.  Substitution later will only substitute to
+	 allowed places.  */
       if ((code == NOP_EXPR || code == CONVERT_EXPR)
-	  && useless_type_conversion_p (TREE_TYPE (rhs), TREE_TYPE (op0)))
+	  && ((POINTER_TYPE_P (TREE_TYPE (rhs))
+	       && POINTER_TYPE_P (TREE_TYPE (op0)))
+	      || useless_type_conversion_p (TREE_TYPE (rhs), TREE_TYPE (op0))))
 	return op0;
       return fold_unary (code, TREE_TYPE (rhs), op0);
     }
@@ -2160,6 +2167,11 @@ fold_stmt_r (tree *expr_p, int *walk_subtrees, void *data)
 
       t = maybe_fold_stmt_indirect (expr, TREE_OPERAND (expr, 0),
 				    integer_zero_node);
+      if (!t
+	  && TREE_CODE (TREE_OPERAND (expr, 0)) == ADDR_EXPR)
+	/* If we had a good reason for propagating the address here,
+	   make sure we end up with valid gimple.  See PR34989.  */
+	t = TREE_OPERAND (TREE_OPERAND (expr, 0), 0);
       break;
 
     case NOP_EXPR:

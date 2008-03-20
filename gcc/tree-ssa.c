@@ -1117,12 +1117,8 @@ useless_type_conversion_p_1 (tree outer_type, tree inner_type)
 	      != get_alias_set (TREE_TYPE (outer_type))))
 	return false;
 
-      /* Do not lose casts from const qualified to non-const
-	 qualified.  */
-      if ((TYPE_READONLY (TREE_TYPE (outer_type))
-	   != TYPE_READONLY (TREE_TYPE (inner_type)))
-	  && TYPE_READONLY (TREE_TYPE (inner_type)))
-	return false;
+      /* We do not care for const qualification of the pointed-to types
+	 as const qualification has no semantic value to the middle-end.  */
 
       /* Do not lose casts to restrict qualified pointers.  */
       if ((TYPE_RESTRICT (outer_type)
