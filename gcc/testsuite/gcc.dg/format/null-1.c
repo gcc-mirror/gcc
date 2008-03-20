@@ -3,9 +3,10 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99 -Wformat" } */
 
+#define DONT_GNU_PROTOTYPE
 #include "format.h"
 
-extern void my_printf (const char *, ...) __attribute__((format(printf,1,2)));
+extern void my_printf (const char *, ...) __attribute__((format(gnu_attr_printf,1,2)));
 extern const char *my_format (const char *, const char *)
   __attribute__((format_arg(2)));
 
