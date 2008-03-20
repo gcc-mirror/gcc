@@ -1,3 +1,8 @@
+2008-03-20  Andreas Schwab  <schwab@suse.de>
+
+	* gcc.dg/cpp/cmdlne-dD-M.c: Fix test for makefile rule and remove
+	xfail.
+
 2008-03-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/gomp/pr34692.c: Cleanup gimple dump file.
