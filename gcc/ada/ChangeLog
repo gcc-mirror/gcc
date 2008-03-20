@@ -4580,6 +4580,7 @@
 	valid value.
 
 2007-08-14  Thomas Quinot  <quinot@adacore.com>
+	    Pablo Oliveira  <oliveira@adacore.com>
 
 	* exp_dist.adb (PolyORB_Support.Build_TypeCode_Function): When creating
 	typecode parameters for a union (in a variant record), remove
@@ -8576,6 +8577,7 @@
 	formals.
 
 2007-04-06  Thomas Quinot  <quinot@adacore.com>
+	    Pablo Oliveira  <oliveira@adacore.com>
 
 	* exp_dist.ads, exp_dist.adb (Build_To_Any_Call, Build_From_Any_Call):
 	Do an Unchecked_Conversion to handle the passage from the Underlying
@@ -8716,6 +8718,7 @@
 	(Set_Valid): Move to local package Validity
 
 2007-04-06  Arnaud Charlet  <charlet@adacore.com>
+	    Pablo Oliveira  <oliveira@adacore.com>
 
 	* g-expect.adb (Get_Command_Output): When expanding the output buffer
 	we must ensure that there is enough place for the new data we are going
