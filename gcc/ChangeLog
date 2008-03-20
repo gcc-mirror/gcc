@@ -1,3 +1,9 @@
+2008-03-20  Ira Rosen  <irar@il.ibm.com>
+
+	* doc/invoke.texi (-O3): Add -ftree-vectorize to the list of
+	optimizations turned on under -O3.
+	(ftree-vectorize): Add that the flag is turned on with -O3.	
+
 2008-03-19  Michael Matz  <matz@suse.de>
 
 	Backport from mainline:
