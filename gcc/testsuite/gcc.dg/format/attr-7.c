@@ -3,12 +3,13 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99 -Wformat" } */
 
+#define DONT_GNU_PROTOTYPE
 #include "format.h"
 
-__attribute__((format(printf, 1, 2))) void (*tformatprintf0) (const char *, ...);
-void (*tformatprintf1) (const char *, ...) __attribute__((format(printf, 1, 2)));
-void (__attribute__((format(printf, 1, 2))) *tformatprintf2) (const char *, ...);
-void (__attribute__((format(printf, 1, 2))) ****tformatprintf3) (const char *, ...);
+__attribute__((format(gnu_attr_printf, 1, 2))) void (*tformatprintf0) (const char *, ...);
+void (*tformatprintf1) (const char *, ...) __attribute__((format(gnu_attr_printf, 1, 2)));
+void (__attribute__((format(gnu_attr_printf, 1, 2))) *tformatprintf2) (const char *, ...);
+void (__attribute__((format(gnu_attr_printf, 1, 2))) ****tformatprintf3) (const char *, ...);
 
 char * (__attribute__((format_arg(1))) *tformat_arg) (const char *);
 

@@ -2,7 +2,7 @@
    attributes in strict C99 mode, but the gettext functions do not.
 */
 /* Origin: Joseph Myers <jsm28@cam.ac.uk> */
-/* { dg-do compile } */
+/* { dg-do compile { target { ! *-*-mingw* } } } */
 /* { dg-options "-std=iso9899:1999 -pedantic -Wformat" } */
 
 #include "format.h"

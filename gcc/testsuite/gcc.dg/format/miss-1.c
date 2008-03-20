@@ -23,7 +23,7 @@ bar (const char *fmt, ...)
   va_end (ap);
 }
 
-__attribute__((__format__(__printf__, 1, 2))) void
+__attribute__((__format__(gnu_attr___printf__, 1, 2))) void
 foo2 (const char *fmt, ...)
 {
   va_list ap;

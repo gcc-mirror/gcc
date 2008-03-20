@@ -62,8 +62,7 @@ enum format_type { printf_format_type, asm_fprintf_format_type,
 		   gcc_diag_format_type, gcc_tdiag_format_type,
 		   gcc_cdiag_format_type,
 		   gcc_cxxdiag_format_type, gcc_gfc_format_type,
-		   scanf_format_type, strftime_format_type,
-		   strfmon_format_type, format_type_error = -1};
+		   format_type_error = -1};
 
 typedef struct function_format_info
 {
@@ -80,7 +79,8 @@ static bool check_format_string (tree argument,
 				 int flags, bool *no_add_attrs);
 static bool get_constant (tree expr, unsigned HOST_WIDE_INT *value,
 			  int validated_p);
-
+static const char *convert_format_name_to_system_name (const char *attr_name);
+static bool cmp_attribs (const char *tattr_name, const char *attr_name);
 
 /* Handle a "format_arg" attribute; arguments as in
    struct attribute_spec.handler.  */
@@ -190,6 +190,8 @@ decode_format_attr (tree args, function_format_info *info, int validated_p)
   else
     {
       const char *p = IDENTIFIER_POINTER (format_type_id);
+
+      p = convert_format_name_to_system_name (p);
 
       info->format_type = decode_format_type (p);
 
@@ -715,7 +717,7 @@ static const format_char_info monetary_char_table[] =
 /* This must be in the same order as enum format_type.  */
 static const format_kind_info format_types_orig[] =
 {
-  { "printf",   printf_length_specs,  print_char_table, " +#0-'I", NULL,
+  { "gnu_printf",   printf_length_specs,  print_char_table, " +#0-'I", NULL,
     printf_flag_specs, printf_flag_pairs,
     FMT_FLAG_ARG_CONVERT|FMT_FLAG_DOLLAR_MULTIPLE|FMT_FLAG_USE_DOLLAR|FMT_FLAG_EMPTY_PREC_OK,
     'w', 0, 'p', 0, 'L', 0,
@@ -757,18 +759,18 @@ static const format_kind_info format_types_orig[] =
     0, 0, 0, 0, 0, 0,
     NULL, NULL
   },
-  { "scanf",    scanf_length_specs,   scan_char_table,  "*'I", NULL,
+  { "gnu_scanf",    scanf_length_specs,   scan_char_table,  "*'I", NULL,
     scanf_flag_specs, scanf_flag_pairs,
     FMT_FLAG_ARG_CONVERT|FMT_FLAG_SCANF_A_KLUDGE|FMT_FLAG_USE_DOLLAR|FMT_FLAG_ZERO_WIDTH_BAD|FMT_FLAG_DOLLAR_GAP_POINTER_OK,
     'w', 0, 0, '*', 'L', 'm',
     NULL, NULL
   },
-  { "strftime", NULL,                 time_char_table,  "_-0^#", "EO",
+  { "gnu_strftime", NULL,                 time_char_table,  "_-0^#", "EO",
     strftime_flag_specs, strftime_flag_pairs,
     FMT_FLAG_FANCY_PERCENT_OK, 'w', 0, 0, 0, 0, 0,
     NULL, NULL
   },
-  { "strfmon",  strfmon_length_specs, monetary_char_table, "=^+(!-", NULL,
+  { "gnu_strfmon",  strfmon_length_specs, monetary_char_table, "=^+(!-", NULL,
     strfmon_flag_specs, strfmon_flag_pairs,
     FMT_FLAG_ARG_CONVERT, 'w', '#', 'p', 0, 'L', 0,
     NULL, NULL
@@ -847,6 +849,8 @@ decode_format_type (const char *s)
 {
   int i;
   int slen;
+
+  s = convert_format_name_to_system_name (s);
   slen = strlen (s);
   for (i = 0; i < n_format_types; i++)
     {
@@ -1776,7 +1780,22 @@ check_format_info_main (format_check_results *res,
       if (fli)
 	{
 	  while (fli->name != 0 && fli->name[0] != *format_chars)
-	    fli++;
+	    {
+	      if (fli->name[0] == '\0')
+		{
+		  int si  = strlen (fli->name + 1) + 1;
+		  int i = 1;
+		  while (fli->name[i] != 0 && fli->name[i] == format_chars [i - 1])
+		    ++i;
+		 if (si == i)
+		   {
+		     if (si > 2)
+		       format_chars += si - 2;
+		     break;
+		   }
+	       }
+	      fli++;
+	    }
 	  if (fli->name != 0)
 	    {
 	      format_chars++;
@@ -2703,6 +2722,84 @@ init_dynamic_diag_info (void)
 extern const format_kind_info TARGET_FORMAT_TYPES[];
 #endif
 
+#ifdef TARGET_OVERRIDES_FORMAT_ATTRIBUTES
+extern const target_ovr_attr TARGET_OVERRIDES_FORMAT_ATTRIBUTES[];
+#endif
+
+/* Attributes such as "printf" are equivalent to those such as
+   "gnu_printf" unless this is overridden by a target.  */
+static const target_ovr_attr gnu_target_overrides_format_attributes[] =
+{
+  { "gnu_printf",   "printf" },
+  { "gnu_scanf",    "scanf" },
+  { "gnu_strftime", "strftime" },
+  { "gnu_strfmon",  "strfmon" },
+  { NULL,           NULL }
+};
+
+/* Translate to unified attribute name. This is used in decode_format_type and
+   decode_format_attr. In attr_name the user specified argument is passed. It
+   returns the unified format name from TARGET_OVERRIDES_FORMAT_ATTRIBUTES
+   or the attr_name passed to this function, if there is no matching entry.  */
+static const char *
+convert_format_name_to_system_name (const char *attr_name)
+{
+  int i;
+
+  if (attr_name == NULL || *attr_name == 0
+      || strncmp (attr_name, "gcc_", 4) == 0)
+    return attr_name;
+
+#ifdef TARGET_OVERRIDES_FORMAT_ATTRIBUTES
+  /* Check if format attribute is overridden by target.  */
+  if (TARGET_OVERRIDES_FORMAT_ATTRIBUTES != NULL
+      && TARGET_OVERRIDES_FORMAT_ATTRIBUTES_COUNT > 0)
+    {
+      for (i = 0; i < TARGET_OVERRIDES_FORMAT_ATTRIBUTES_COUNT; ++i)
+        {
+          if (cmp_attribs (TARGET_OVERRIDES_FORMAT_ATTRIBUTES[i].named_attr_src,
+			   attr_name))
+            return attr_name;
+          if (cmp_attribs (TARGET_OVERRIDES_FORMAT_ATTRIBUTES[i].named_attr_dst,
+			   attr_name))
+            return TARGET_OVERRIDES_FORMAT_ATTRIBUTES[i].named_attr_src;
+        }
+    }
+#endif
+  /* Otherwise default to gnu format.  */
+  for (i = 0;
+       gnu_target_overrides_format_attributes[i].named_attr_src != NULL;
+       ++i)
+    {
+      if (cmp_attribs (gnu_target_overrides_format_attributes[i].named_attr_src,
+		       attr_name))
+        return attr_name;
+      if (cmp_attribs (gnu_target_overrides_format_attributes[i].named_attr_dst,
+		       attr_name))
+        return gnu_target_overrides_format_attributes[i].named_attr_src;
+    }
+
+  return attr_name;
+}
+
+/* Return true if TATTR_NAME and ATTR_NAME are the same format attribute,
+   counting "name" and "__name__" as the same, false otherwise.  */
+static bool
+cmp_attribs (const char *tattr_name, const char *attr_name)
+{
+  int alen = strlen (attr_name);
+  int slen = (tattr_name ? strlen (tattr_name) : 0);
+  if (alen > 4 && attr_name[0] == '_' && attr_name[1] == '_'
+      && attr_name[alen - 1] == '_' && attr_name[alen - 2] == '_')
+    {
+      attr_name += 2;
+      alen -= 4;
+    }
+  if (alen != slen || strncmp (tattr_name, attr_name, alen) != 0)
+    return false;
+  return true;
+}
+
 /* Handle a "format" attribute; arguments as in
    struct attribute_spec.handler.  */
 tree
@@ -2762,7 +2859,10 @@ handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 	}
     }
 
-  if (info.format_type == strftime_format_type && info.first_arg_num != 0)
+  /* Check if this is a strftime variant. Just for this variant
+     FMT_FLAG_ARG_CONVERT is not set.  */
+  if ((format_types[info.format_type].flags & (int) FMT_FLAG_ARG_CONVERT) == 0
+      && info.first_arg_num != 0)
     {
       error ("strftime formats cannot format arguments");
       *no_add_attrs = true;

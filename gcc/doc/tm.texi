@@ -10319,6 +10319,18 @@ If defined, this macro is the number of entries in
 @code{TARGET_FORMAT_TYPES}.
 @end defmac
 
+@defmac TARGET_OVERRIDES_FORMAT_ATTRIBUTES
+If defined, this macro is the name of a global variable containing
+target-specific format overrides for the @option{-Wformat} option. The
+default is to have no target-specific format overrides. If defined,
+@code{TARGET_FORMAT_TYPES} must be defined, too.
+@end defmac
+
+@defmac TARGET_OVERRIDES_FORMAT_ATTRIBUTES_COUNT
+If defined, this macro specifies the number of entries in
+@code{TARGET_OVERRIDES_FORMAT_ATTRIBUTES}.
+@end defmac
+
 @deftypefn {Target Hook} bool TARGET_RELAXED_ORDERING
 If set to @code{true}, means that the target's memory model does not
 guarantee that loads which do not depend on one another will access

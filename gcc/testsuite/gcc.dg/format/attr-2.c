@@ -3,22 +3,23 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99 -Wformat" } */
 
+#define DONT_GNU_PROTOTYPE
 #include "format.h"
 
-extern void tformatprintf (const char *, ...) __attribute__((format(printf, 1, 2)));
-extern void tformat__printf__ (const char *, ...) __attribute__((format(__printf__, 1, 2)));
-extern void tformatscanf (const char *, ...) __attribute__((format(scanf, 1, 2)));
-extern void tformat__scanf__ (const char *, ...) __attribute__((format(__scanf__, 1, 2)));
-extern void tformatstrftime (const char *) __attribute__((format(strftime, 1, 0)));
-extern void tformat__strftime__ (const char *) __attribute__((format(__strftime__, 1, 0)));
+extern void tformatprintf (const char *, ...) __attribute__((format(gnu_attr_printf, 1, 2)));
+extern void tformat__printf__ (const char *, ...) __attribute__((format(gnu_attr___printf__, 1, 2)));
+extern void tformatscanf (const char *, ...) __attribute__((format(gnu_attr_scanf, 1, 2)));
+extern void tformat__scanf__ (const char *, ...) __attribute__((format(gnu_attr___scanf__, 1, 2)));
+extern void tformatstrftime (const char *) __attribute__((format(gnu_attr_strftime, 1, 0)));
+extern void tformat__strftime__ (const char *) __attribute__((format(gnu_attr___strftime__, 1, 0)));
 extern void tformatstrfmon (const char *, ...) __attribute__((format(strfmon, 1, 2)));
 extern void tformat__strfmon__ (const char *, ...) __attribute__((format(__strfmon__, 1, 2)));
-extern void t__format__printf (const char *, ...) __attribute__((__format__(printf, 1, 2)));
-extern void t__format____printf__ (const char *, ...) __attribute__((__format__(__printf__, 1, 2)));
-extern void t__format__scanf (const char *, ...) __attribute__((__format__(scanf, 1, 2)));
-extern void t__format____scanf__ (const char *, ...) __attribute__((__format__(__scanf__, 1, 2)));
-extern void t__format__strftime (const char *) __attribute__((__format__(strftime, 1, 0)));
-extern void t__format____strftime__ (const char *) __attribute__((__format__(__strftime__, 1, 0)));
+extern void t__format__printf (const char *, ...) __attribute__((__format__(gnu_attr_printf, 1, 2)));
+extern void t__format____printf__ (const char *, ...) __attribute__((__format__(gnu_attr___printf__, 1, 2)));
+extern void t__format__scanf (const char *, ...) __attribute__((__format__(gnu_attr_scanf, 1, 2)));
+extern void t__format____scanf__ (const char *, ...) __attribute__((__format__(gnu_attr___scanf__, 1, 2)));
+extern void t__format__strftime (const char *) __attribute__((__format__(gnu_attr_strftime, 1, 0)));
+extern void t__format____strftime__ (const char *) __attribute__((__format__(gnu_attr___strftime__, 1, 0)));
 extern void t__format__strfmon (const char *, ...) __attribute__((__format__(strfmon, 1, 2)));
 extern void t__format____strfmon__ (const char *, ...) __attribute__((__format__(__strfmon__, 1, 2)));
 

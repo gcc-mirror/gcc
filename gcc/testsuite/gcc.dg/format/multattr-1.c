@@ -4,6 +4,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99 -Wformat" } */
 
+#define DONT_GNU_PROTOTYPE
 #include "format.h"
 
 /* If we specify multiple attributes for a single function, they should
@@ -11,22 +12,22 @@
    or on different declarations.  */
 
 extern void my_vprintf_scanf (const char *, va_list, const char *, ...)
-     __attribute__((__format__(__printf__, 1, 0)))
-     __attribute__((__format__(__scanf__, 3, 4)));
+     __attribute__((__format__(gnu_attr___printf__, 1, 0)))
+     __attribute__((__format__(gnu_attr___scanf__, 3, 4)));
 
 extern void my_vprintf_scanf2 (const char *, va_list, const char *, ...)
-     __attribute__((__format__(__scanf__, 3, 4)))
-     __attribute__((__format__(__printf__, 1, 0)));
+     __attribute__((__format__(gnu_attr___scanf__, 3, 4)))
+     __attribute__((__format__(gnu_attr___printf__, 1, 0)));
 
 extern void my_vprintf_scanf3 (const char *, va_list, const char *, ...)
-     __attribute__((__format__(__printf__, 1, 0)));
+     __attribute__((__format__(gnu_attr___printf__, 1, 0)));
 extern void my_vprintf_scanf3 (const char *, va_list, const char *, ...)
-     __attribute__((__format__(__scanf__, 3, 4)));
+     __attribute__((__format__(gnu_attr___scanf__, 3, 4)));
 
 extern void my_vprintf_scanf4 (const char *, va_list, const char *, ...)
-     __attribute__((__format__(__scanf__, 3, 4)));
+     __attribute__((__format__(gnu_attr___scanf__, 3, 4)));
 extern void my_vprintf_scanf4 (const char *, va_list, const char *, ...)
-     __attribute__((__format__(__printf__, 1, 0)));
+     __attribute__((__format__(gnu_attr___printf__, 1, 0)));
 
 void
 foo (va_list ap, int *ip, long *lp)

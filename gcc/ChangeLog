@@ -1,3 +1,27 @@
+2008-03-20	Kai Tietz  <kai.tietz@onevision.com>
+
+	* c-format.c (replace_format_name_to_system_name): New.
+	(cmp_attribs): New.
+	(convert_format_name_to_system_name): New.
+	(decode_format_attr): Add use of convert_format_name_to_system_name.
+	(format_types_orig): Add gnu_ prefix to names.
+	(check_format_info_main): Special treating of \0 escaped names for
+	supporting multi-character format specifiers as I32, I64.
+	(TARGET_OVERRIDES_FORMAT_ATTRIBUTES): Use of user defined attributes.
+	(gnu_target_overrides_format_attributes): New.
+	* c-format.h: Add structure target_ovr_attr to hold
+	system specific formatter names.
+	* config.gcc: Add for x86&x86_64 cygwin and mingw32 targets the
+	msformat-c.o file to c_target_objs and cxx_target_objs.
+	* config/i386/mingw32.h (TARGET_OVERRIDES_FORMAT_ATTRIBUTES): New.
+	(TARGET_OVERRIDES_FORMAT_ATTRIBUTES_COUNT): New.
+	(TARGET_N_FORMAT_TYPES): New.
+	* config/i386/msformat-c.c: New.
+	* config/i386/t-cygming: Add build rule for msformat-c.o.
+	* doc/extend.texi: Add new format names gnu_* and ms_* and
+	further details.
+	* doc/tm.texi: (TARGET_OVERRIDES_FORMAT_ATTRIBUTES): New.
+
 2008-03-20  Ira Rosen  <irar@il.ibm.com>
 
 	* doc/invoke.texi (-O3): Add -ftree-vectorize to the list of

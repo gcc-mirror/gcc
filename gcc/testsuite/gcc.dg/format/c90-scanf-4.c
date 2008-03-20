@@ -3,7 +3,7 @@
    do not.
 */
 /* Origin: Joseph Myers <jsm28@cam.ac.uk> */
-/* { dg-do compile } */
+/* { dg-do compile { target { ! *-*-mingw* } } } */
 /* { dg-options "-std=iso9899:1990 -pedantic -Wformat" } */
 
 #include "format.h"
