@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003 Free Software Foundation, Inc.  */
+/* Copyright (C) 2002, 2003, 2008 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
 /* { dg-options "-dI -M" } */
@@ -13,4 +13,4 @@ int variable;
 
 /* { dg-final { scan-file-not cmdlne-dI-M.i "(^|\\n)#define foo bar($|\\n)" } }
    { dg-final { scan-file-not cmdlne-dI-M.i "variable" } }
-   { dg-final { scan-file cmdlne-dI-M.i "(^|\\n)cmdlne-dI-M.*:\[^\\n\]*cmdlne-dI-M.c" } } */
+   { dg-final { scan-file cmdlne-dI-M.i "(^|\\n)cmdlne-dI-M\[^\\n\]*:( *\\\\\\n)?\[^\\n\]*cmdlne-dI-M.c" } } */
