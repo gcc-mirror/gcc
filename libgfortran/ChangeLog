@@ -1,3 +1,14 @@
+2008-03-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/35627
+	* io/list_read.c (free_line): Clear the line buffer enable flag and
+	reset the index into line_buffer, aka item_count.
+	(next_char): Cleanup whitespace.
+	(read_logical): Use unget_char to assure that the first character of the
+	bad logical is saved in case it is part of an object name. Remove the
+	clearing of index and flag that is now in free_line.
+	(read_real): Likewise.
+
 2008-03-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/32972
