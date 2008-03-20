@@ -1,3 +1,13 @@
+2008-03-20  Paul Brook  <paul@codesourcery.com>
+
+	* config.gcc (arm*-*-uclinux*): Remove duplicate arm/uclinux-elf.h.
+	* config/arm/uclinux-eabi.h (SUBTARGET_EXTRA_LINK_SPEC): Add extra
+	linker flags.
+	* config/arm/bpabi.h (SUBTARGET_EXTRA_LINK_SPEC): Provide default
+	definition.
+	(LINK_SPEC): Use SUBTARGET_EXTRA_LINK_SPEC.
+	* config/arm/unwind-arm.h (_Unwind_decode_target2): Add uClinux.
+
 2008-03-20  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* common.opt (Wmudflap): New option.

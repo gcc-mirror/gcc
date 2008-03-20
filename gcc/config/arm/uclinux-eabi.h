@@ -42,7 +42,8 @@
   while (false)
 
 #undef SUBTARGET_EXTRA_LINK_SPEC
-#define SUBTARGET_EXTRA_LINK_SPEC " -m armelf_linux_eabi"
+#define SUBTARGET_EXTRA_LINK_SPEC " -m armelf_linux_eabi -elf2flt" \
+  " --pic-veneer --target2=abs"
 
 /* We default to the "aapcs-linux" ABI so that enums are int-sized by
    default.  */
