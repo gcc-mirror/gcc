@@ -1,3 +1,8 @@
+2008-03-20  Johannes Singler  <singler@ira.uka.de>
+
+        * include/parallel/set_operations.h: Removed superfluous
+        set_intersection.
+
 2008-03-19  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/35256
