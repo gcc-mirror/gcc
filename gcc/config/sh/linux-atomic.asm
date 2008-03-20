@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 Free Software Foundation, Inc.
+/* Copyright (C) 2006, 2008 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -35,7 +35,7 @@
 
 #if ! __SH5__
 
-#define ATOMIC_TEST_AND_SET(N,T) \
+#define ATOMIC_TEST_AND_SET(N,T,EXT) \
 	.global	__sync_lock_test_and_set_##N; \
 	HIDDEN_FUNC(__sync_lock_test_and_set_##N); \
 	.align	2; \
@@ -48,20 +48,20 @@ __sync_lock_test_and_set_##N:; \
 	mov.##T	r5, @r4; \
 1:	mov	r1, r15; \
 	rts; \
-	 mov	r2, r0; \
+	 EXT	r2, r0; \
 	ENDFUNC(__sync_lock_test_and_set_##N)
 
-ATOMIC_TEST_AND_SET (1,b)
-ATOMIC_TEST_AND_SET (2,w)
-ATOMIC_TEST_AND_SET (4,l)
+ATOMIC_TEST_AND_SET (1,b,extu.b)
+ATOMIC_TEST_AND_SET (2,w,extu.w)
+ATOMIC_TEST_AND_SET (4,l,mov)
 
-#define ATOMIC_COMPARE_AND_SWAP(N,T) \
+#define ATOMIC_COMPARE_AND_SWAP(N,T,EXTS,EXT) \
 	.global	__sync_compare_and_swap_##N; \
 	HIDDEN_FUNC(__sync_compare_and_swap_##N); \
 	.align	2; \
 __sync_compare_and_swap_##N:; \
 	mova	1f, r0; \
-	nop; \
+	EXTS	r5, r5; \
 	mov	r15, r1; \
 	mov	#(0f-1f), r15; \
 0:	mov.##T	@r4, r2; \
@@ -70,46 +70,14 @@ __sync_compare_and_swap_##N:; \
 	mov.##T	r6, @r4; \
 1:	mov	r1, r15; \
 	rts; \
-	 mov	r2, r0; \
+	 EXT	r2, r0; \
 	ENDFUNC(__sync_compare_and_swap_##N)
 
-ATOMIC_COMPARE_AND_SWAP (1,b)
-ATOMIC_COMPARE_AND_SWAP (2,w)
-ATOMIC_COMPARE_AND_SWAP (4,l)
+ATOMIC_COMPARE_AND_SWAP (1,b,exts.b,extu.b)
+ATOMIC_COMPARE_AND_SWAP (2,w,exts.w,extu.w)
+ATOMIC_COMPARE_AND_SWAP (4,l,mov,mov)
 
-#define ATOMIC_FETCH_AND_OP(OP,N,T) \
-	.global	__sync_fetch_and_##OP##_##N; \
-	HIDDEN_FUNC(__sync_fetch_and_##OP##_##N); \
-	.align	2; \
-__sync_fetch_and_##OP##_##N:; \
-	mova	1f, r0; \
-	mov	r15, r1; \
-	mov	#(0f-1f), r15; \
-0:	mov.##T	@r4, r2; \
-	OP	r2, r5; \
-	mov.##T	r5, @r4; \
-1:	mov	r1, r15; \
-	rts; \
-	 mov	r2, r0; \
-	ENDFUNC(__sync_fetch_and_##OP##_##N)
-
-ATOMIC_FETCH_AND_OP(add,1,b)
-ATOMIC_FETCH_AND_OP(add,2,w)
-ATOMIC_FETCH_AND_OP(add,4,l)
-
-ATOMIC_FETCH_AND_OP(or,1,b)
-ATOMIC_FETCH_AND_OP(or,2,w)
-ATOMIC_FETCH_AND_OP(or,4,l)
-
-ATOMIC_FETCH_AND_OP(and,1,b)
-ATOMIC_FETCH_AND_OP(and,2,w)
-ATOMIC_FETCH_AND_OP(and,4,l)
-
-ATOMIC_FETCH_AND_OP(xor,1,b)
-ATOMIC_FETCH_AND_OP(xor,2,w)
-ATOMIC_FETCH_AND_OP(xor,4,l)
-
-#define ATOMIC_FETCH_AND_COMBOP(OP,OP0,OP1,N,T) \
+#define ATOMIC_FETCH_AND_OP(OP,N,T,EXT) \
 	.global	__sync_fetch_and_##OP##_##N; \
 	HIDDEN_FUNC(__sync_fetch_and_##OP##_##N); \
 	.align	2; \
@@ -119,20 +87,54 @@ __sync_fetch_and_##OP##_##N:; \
 	mov	r15, r1; \
 	mov	#(0f-1f), r15; \
 0:	mov.##T	@r4, r2; \
-	OP0	r2, r5; \
-	OP1	r5, r5; \
-	mov.##T	r5, @r4; \
+	mov	r5, r3; \
+	OP	r2, r3; \
+	mov.##T	r3, @r4; \
 1:	mov	r1, r15; \
 	rts; \
-	 mov	r2, r0; \
+	 EXT	r2, r0; \
 	ENDFUNC(__sync_fetch_and_##OP##_##N)
 
-ATOMIC_FETCH_AND_COMBOP(sub,sub,neg,1,b)
-ATOMIC_FETCH_AND_COMBOP(sub,sub,neg,2,w)
-ATOMIC_FETCH_AND_COMBOP(sub,sub,neg,4,l)
+ATOMIC_FETCH_AND_OP(add,1,b,extu.b)
+ATOMIC_FETCH_AND_OP(add,2,w,extu.w)
+ATOMIC_FETCH_AND_OP(add,4,l,mov)
 
-ATOMIC_FETCH_AND_COMBOP(nand,and,not,1,b)
-ATOMIC_FETCH_AND_COMBOP(nand,and,not,2,w)
-ATOMIC_FETCH_AND_COMBOP(nand,and,not,4,l)
+ATOMIC_FETCH_AND_OP(or,1,b,extu.b)
+ATOMIC_FETCH_AND_OP(or,2,w,extu.w)
+ATOMIC_FETCH_AND_OP(or,4,l,mov)
+
+ATOMIC_FETCH_AND_OP(and,1,b,extu.b)
+ATOMIC_FETCH_AND_OP(and,2,w,extu.w)
+ATOMIC_FETCH_AND_OP(and,4,l,mov)
+
+ATOMIC_FETCH_AND_OP(xor,1,b,extu.b)
+ATOMIC_FETCH_AND_OP(xor,2,w,extu.w)
+ATOMIC_FETCH_AND_OP(xor,4,l,mov)
+
+#define ATOMIC_FETCH_AND_COMBOP(OP,OP0,OP1,N,T,EXT) \
+	.global	__sync_fetch_and_##OP##_##N; \
+	HIDDEN_FUNC(__sync_fetch_and_##OP##_##N); \
+	.align	2; \
+__sync_fetch_and_##OP##_##N:; \
+	mova	1f, r0; \
+	mov	r15, r1; \
+	mov	#(0f-1f), r15; \
+0:	mov.##T	@r4, r2; \
+	mov	r5, r3; \
+	OP0	r2, r3; \
+	OP1	r3, r3; \
+	mov.##T	r3, @r4; \
+1:	mov	r1, r15; \
+	rts; \
+	 EXT	r2, r0; \
+	ENDFUNC(__sync_fetch_and_##OP##_##N)
+
+ATOMIC_FETCH_AND_COMBOP(sub,sub,neg,1,b,extu.b)
+ATOMIC_FETCH_AND_COMBOP(sub,sub,neg,2,w,extu.w)
+ATOMIC_FETCH_AND_COMBOP(sub,sub,neg,4,l,mov)
+
+ATOMIC_FETCH_AND_COMBOP(nand,and,not,1,b,extu.b)
+ATOMIC_FETCH_AND_COMBOP(nand,and,not,2,w,extu.w)
+ATOMIC_FETCH_AND_COMBOP(nand,and,not,4,l,mov)
 
 #endif /* ! __SH5__ */
