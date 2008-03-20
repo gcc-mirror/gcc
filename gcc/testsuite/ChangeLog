@@ -1,3 +1,9 @@
+2008-03-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/gomp/pr34692.c: Cleanup gimple dump file.
+	* gcc.dg/tree-ssa/ssa-lim-3.c: Remove -fdump-tree-optimized
+	from dg-options.
+
 2008-03-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/35621
