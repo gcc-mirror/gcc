@@ -1,3 +1,7 @@
+2008-03-20  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* testsuite/libmudflap.c/pass63-frag.c: New test.
+
 2008-03-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* aclocal.m4: Regenerate.

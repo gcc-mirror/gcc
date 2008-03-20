@@ -245,7 +245,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wlogical-op -Wlong-long @gol
 -Wmain  -Wmissing-braces  -Wmissing-field-initializers @gol
 -Wmissing-format-attribute  -Wmissing-include-dirs @gol
--Wmissing-noreturn @gol
+-Wmissing-noreturn  -Wno-mudflap @gol
 -Wno-multichar  -Wnonnull  -Wno-overflow @gol
 -Woverlength-strings  -Wpacked  -Wpadded @gol
 -Wparentheses  -Wpointer-arith  -Wno-pointer-to-int-cast @gol
@@ -4051,6 +4051,11 @@ This option is only supported for C and Objective-C@.  It is implied by
 @opindex Wno-stack-protector
 This option is only active when @option{-fstack-protector} is active.  It
 warns about functions that will not be protected against stack smashing.
+
+@item -Wno-mudflap
+@opindex Wno-mudflap
+Suppress warnings about constructs that cannot be instrumented by
+@option{-fmudflap}.
 
 @item -Woverlength-strings
 @opindex Woverlength-strings
