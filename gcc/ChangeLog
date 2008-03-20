@@ -1,3 +1,11 @@
+2008-03-20  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/linux-atomic.asm (ATOMIC_TEST_AND_SET): Take
+	unsigned extension into account.
+	(ATOMIC_COMPARE_AND_SWAP): Likewise.
+	(ATOMIC_FETCH_AND_OP, ATOMIC_FETCH_AND_COMBOP): Likewise.
+	Do computations on a scratch register.
+
 2008-03-21  Richard Guenther  <rguenther@suse.de>
 
 	* tree-scalar-evolution.c (chrec_contains_symbols_defined_in_loop):
