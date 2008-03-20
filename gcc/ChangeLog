@@ -1,3 +1,13 @@
+2008-03-20  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Remove
+	special casing of constant qualifiers.
+	* tree-ssa.c (useless_type_conversion_p_1): Instead do not
+	care about them in general.
+	* tree-ssa-ccp.c (ccp_fold): Addresses are constant or not
+	regardless of their type.
+	(fold_stmt_r): Forcefully fold *& if we end up with that.
+
 2008-03-20  Paul Brook  <paul@codesourcery.com>
 
 	* config.gcc (arm*-*-uclinux*): Remove duplicate arm/uclinux-elf.h.

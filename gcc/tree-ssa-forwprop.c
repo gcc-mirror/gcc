@@ -601,14 +601,8 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs, tree use_stmt,
      propagate the ADDR_EXPR into the use of NAME and fold the result.  */
   if (TREE_CODE (lhs) == INDIRECT_REF
       && TREE_OPERAND (lhs, 0) == name
-      /* This will not allow stripping const qualification from
-	 pointers which we want to allow specifically here to clean up
-	 the IL for initialization of constant objects.   */
-      && (useless_type_conversion_p (TREE_TYPE (TREE_OPERAND (lhs, 0)),
-				     TREE_TYPE (def_rhs))
-	  /* So explicitly check for this here.  */
-	  || (TYPE_QUALS (TREE_TYPE (TREE_TYPE (TREE_OPERAND (lhs, 0))))
-	      ^ TYPE_QUALS (TREE_TYPE (TREE_TYPE (def_rhs)))) == TYPE_QUAL_CONST)
+      && useless_type_conversion_p (TREE_TYPE (TREE_OPERAND (lhs, 0)),
+				    TREE_TYPE (def_rhs))
       /* ???  This looks redundant, but is required for bogus types
 	 that can sometimes occur.  */
       && useless_type_conversion_p (TREE_TYPE (lhs),
@@ -635,13 +629,10 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs, tree use_stmt,
      propagate the ADDR_EXPR into the use of NAME and fold the result.  */
   if (TREE_CODE (rhs) == INDIRECT_REF
       && TREE_OPERAND (rhs, 0) == name
-      /* ???  This doesn't allow stripping const qualification to
-	 streamline the IL for reads from non-constant objects.  */
-      && (useless_type_conversion_p (TREE_TYPE (TREE_OPERAND (rhs, 0)),
-				     TREE_TYPE (def_rhs))
-	  /* So explicitly check for this here.  */
-	  || (TYPE_QUALS (TREE_TYPE (TREE_TYPE (TREE_OPERAND (rhs, 0))))
-	      ^ TYPE_QUALS (TREE_TYPE (TREE_TYPE (def_rhs)))) == TYPE_QUAL_CONST)
+      && useless_type_conversion_p (TREE_TYPE (TREE_OPERAND (rhs, 0)),
+				    TREE_TYPE (def_rhs))
+      /* ???  This looks redundant, but is required for bogus types
+	 that can sometimes occur.  */
       && useless_type_conversion_p (TREE_TYPE (rhs),
 				    TREE_TYPE (TREE_OPERAND (def_rhs, 0))))
     {

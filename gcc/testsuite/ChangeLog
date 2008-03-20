@@ -1,3 +1,7 @@
+2008-03-20  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-ccp-17.c: New testcase.
+
 2008-03-20 Victor Kaplansky  <victork@gcc.gnu.org>
 	   Uros Bizjak  <ubizjak@gmail.com>
 
