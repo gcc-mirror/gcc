@@ -2221,7 +2221,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 
 	    /* Get out the operand values.  */
 	    string = decode_asm_operands (body, ops, NULL, NULL, NULL, &loc);
-	    /* Inhibit dieing on what would otherwise be compiler bugs.  */
+	    /* Inhibit dying on what would otherwise be compiler bugs.  */
 	    insn_noperands = noperands;
 	    this_is_asm_operands = insn;
 	    expanded = expand_location (loc);
