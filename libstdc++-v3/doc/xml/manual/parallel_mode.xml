@@ -28,7 +28,7 @@ implementation of many algorithms the C++ Standard Library.
 
 <para>
 Several of the standard algorithms, for instance
-<code>std::sort</code>, are made parallel using OpenMP
+<function>std::sort</function>, are made parallel using OpenMP
 annotations. These parallel mode constructs and can be invoked by
 explicit source declaration or by compiling existing sources with a
 specific compiler flag.
@@ -39,52 +39,52 @@ specific compiler flag.
   <title>Intro</title>
 
 <para>The following library components in the include
-<code>&lt;numeric&gt;</code> are included in the parallel mode:</para>
+<filename class="headerfile">numeric</filename> are included in the parallel mode:</para>
 <itemizedlist>
-  <listitem><para><code>std::accumulate</code></para></listitem>
-  <listitem><para><code>std::adjacent_difference</code></para></listitem>
-  <listitem><para><code>std::inner_product</code></para></listitem>
-  <listitem><para><code>std::partial_sum</code></para></listitem>
+  <listitem><para><function>std::accumulate</function></para></listitem>
+  <listitem><para><function>std::adjacent_difference</function></para></listitem>
+  <listitem><para><function>std::inner_product</function></para></listitem>
+  <listitem><para><function>std::partial_sum</function></para></listitem>
 </itemizedlist>
 
 <para>The following library components in the include
-<code>&lt;algorithm&gt;</code> are included in the parallel mode:</para>
+<filename class="headerfile">algorithm</filename> are included in the parallel mode:</para>
 <itemizedlist>
-  <listitem><para><code>std::adjacent_find</code></para></listitem>
-  <listitem><para><code>std::count</code></para></listitem>
-  <listitem><para><code>std::count_if</code></para></listitem>
-  <listitem><para><code>std::equal</code></para></listitem>
-  <listitem><para><code>std::find</code></para></listitem>
-  <listitem><para><code>std::find_if</code></para></listitem>
-  <listitem><para><code>std::find_first_of</code></para></listitem>
-  <listitem><para><code>std::for_each</code></para></listitem>
-  <listitem><para><code>std::generate</code></para></listitem>
-  <listitem><para><code>std::generate_n</code></para></listitem>
-  <listitem><para><code>std::lexicographical_compare</code></para></listitem>
-  <listitem><para><code>std::mismatch</code></para></listitem>
-  <listitem><para><code>std::search</code></para></listitem>
-  <listitem><para><code>std::search_n</code></para></listitem>
-  <listitem><para><code>std::transform</code></para></listitem>
-  <listitem><para><code>std::replace</code></para></listitem>
-  <listitem><para><code>std::replace_if</code></para></listitem>
-  <listitem><para><code>std::max_element</code></para></listitem>
-  <listitem><para><code>std::merge</code></para></listitem>
-  <listitem><para><code>std::min_element</code></para></listitem>
-  <listitem><para><code>std::nth_element</code></para></listitem>
-  <listitem><para><code>std::partial_sort</code></para></listitem>
-  <listitem><para><code>std::partition</code></para></listitem>
-  <listitem><para><code>std::random_shuffle</code></para></listitem>
-  <listitem><para><code>std::set_union</code></para></listitem>
-  <listitem><para><code>std::set_intersection</code></para></listitem>
-  <listitem><para><code>std::set_symmetric_difference</code></para></listitem>
-  <listitem><para><code>std::set_difference</code></para></listitem>
-  <listitem><para><code>std::sort</code></para></listitem>
-  <listitem><para><code>std::stable_sort</code></para></listitem>
-  <listitem><para><code>std::unique_copy</code></para></listitem>
+  <listitem><para><function>std::adjacent_find</function></para></listitem>
+  <listitem><para><function>std::count</function></para></listitem>
+  <listitem><para><function>std::count_if</function></para></listitem>
+  <listitem><para><function>std::equal</function></para></listitem>
+  <listitem><para><function>std::find</function></para></listitem>
+  <listitem><para><function>std::find_if</function></para></listitem>
+  <listitem><para><function>std::find_first_of</function></para></listitem>
+  <listitem><para><function>std::for_each</function></para></listitem>
+  <listitem><para><function>std::generate</function></para></listitem>
+  <listitem><para><function>std::generate_n</function></para></listitem>
+  <listitem><para><function>std::lexicographical_compare</function></para></listitem>
+  <listitem><para><function>std::mismatch</function></para></listitem>
+  <listitem><para><function>std::search</function></para></listitem>
+  <listitem><para><function>std::search_n</function></para></listitem>
+  <listitem><para><function>std::transform</function></para></listitem>
+  <listitem><para><function>std::replace</function></para></listitem>
+  <listitem><para><function>std::replace_if</function></para></listitem>
+  <listitem><para><function>std::max_element</function></para></listitem>
+  <listitem><para><function>std::merge</function></para></listitem>
+  <listitem><para><function>std::min_element</function></para></listitem>
+  <listitem><para><function>std::nth_element</function></para></listitem>
+  <listitem><para><function>std::partial_sort</function></para></listitem>
+  <listitem><para><function>std::partition</function></para></listitem>
+  <listitem><para><function>std::random_shuffle</function></para></listitem>
+  <listitem><para><function>std::set_union</function></para></listitem>
+  <listitem><para><function>std::set_intersection</function></para></listitem>
+  <listitem><para><function>std::set_symmetric_difference</function></para></listitem>
+  <listitem><para><function>std::set_difference</function></para></listitem>
+  <listitem><para><function>std::sort</function></para></listitem>
+  <listitem><para><function>std::stable_sort</function></para></listitem>
+  <listitem><para><function>std::unique_copy</function></para></listitem>
 </itemizedlist>
 
 <para>The following library components in the includes
-<code>&lt;set&gt;</code> and <code>&lt;map&gt;</code> are included in the parallel mode:</para>
+<filename class="headerfile">set</filename> and <filename class="headerfile">map</filename> are included in the parallel mode:</para>
 <itemizedlist>
   <listitem><para><code>std::(multi_)map/set&lt;T&gt;::(multi_)map/set(Iterator begin, Iterator end)</code> (bulk construction)</para></listitem>
   <listitem><para><code>std::(multi_)map/set&lt;T&gt;::insert(Iterator begin, Iterator end)</code> (bulk insertion)</para></listitem>
@@ -113,23 +113,25 @@ It might work with other compilers, though.</para>
 <sect2 id="parallel_mode.using.parallel_mode" xreflabel="using.parallel_mode">
   <title>Using Parallel Mode</title>
 
-<para>To use the libstdc++ parallel mode, compile your application with
-  the compiler flag <code>-D_GLIBCXX_PARALLEL -fopenmp</code>. This
+<para>
+  To use the libstdc++ parallel mode, compile your application with
+  the compiler flag <constant>-D_GLIBCXX_PARALLEL -fopenmp</constant>. This
   will link in <code>libgomp</code>, the GNU OpenMP <ulink url="http://gcc.gnu.org/onlinedocs/libgomp">implementation</ulink>,
   whose presence is mandatory. In addition, hardware capable of atomic
   operations is mandatory. Actually activating these atomic
   operations may require explicit compiler flags on some targets
-  (like sparc and x86), such as <code>-march=i686</code>,
-  <code>-march=native</code> or <code>-mcpu=v9</code>.
+  (like sparc and x86), such as <literal>-march=i686</literal>,
+  <literal>-march=native</literal> or <literal>-mcpu=v9</literal>.
 </para>
 
-<para>Note that the <code>_GLIBCXX_PARALLEL</code> define may change the
+<para>Note that the <constant>_GLIBCXX_PARALLEL</constant> define may change the
   sizes and behavior of standard class templates such as
-  <code>std::search</code>, and therefore one can only link code
+  <function>std::search</function>, and therefore one can only link code
   compiled with parallel mode and code compiled without parallel mode
   if no instantiation of a container is passed between the two
   translation units. Parallel mode functionality has distinct linkage,
-  and cannot be confused with normal mode symbols.</para>
+  and cannot be confused with normal mode symbols.
+</para>
 </sect2>
 
 <sect2 id="manual.ext.parallel_mode.usings" xreflabel="using.specific">
@@ -420,9 +422,10 @@ It might work with other compilers, though.</para>
   <title>Interface Basics</title>
 
 
-<para>All parallel algorithms are intended to have signatures that are
+<para>
+All parallel algorithms are intended to have signatures that are
 equivalent to the ISO C++ algorithms replaced. For instance, the
-<code>std::adjacent_find</code> function is declared as:
+<function>std::adjacent_find</function> function is declared as:
 </para>
 <programlisting>
 namespace std
@@ -506,39 +509,176 @@ overload is therefore missing.
 <sect2 id="manual.ext.parallel_mode.design.tuning" xreflabel="Tuning">
   <title>Configuration and Tuning</title>
 
-<para> Some algorithm variants can be enabled/disabled/selected at compile-time.
-See <ulink url="latest-doxygen/compiletime__settings_8h.html">
-<code>&lt;compiletime_settings.h&gt;</code></ulink> and
-See <ulink url="latest-doxygen/compiletime__settings_8h.html">
-<code>&lt;features.h&gt;</code></ulink> for details.
+
+<sect3 id="parallel_mode.design.tuning.omp" xreflabel="OpenMP Environment">
+  <title>Setting up the OpenMP Environment</title>
+
+<para>
+Several aspects of the overall runtime environment can be manipulated
+by standard OpenMP function calls.
 </para>
 
 <para>
-To specify the number of threads to be used for an algorithm,
-use <code>omp_set_num_threads</code>.
-To force a function to execute sequentially,
-even though parallelism is switched on in general,
-add <code>__gnu_parallel::sequential_tag()</code>
-to the end of the argument list.
+To specify the number of threads to be used for an algorithm, use the
+function <function>omp_set_num_threads</function>. An example:
+</para>
+
+<programlisting>
+#include &lt;stdlib.h&gt;
+#include &lt;omp.h&gt;
+
+int main()
+{
+  // Explicitly set number of threads.
+  const int threads_wanted = 20;
+  omp_set_dynamic(false);
+  omp_set_num_threads(threads_wanted);
+  if (omp_get_num_threads() != threads_wanted)
+    abort();
+
+  // Do work.
+
+  return 0;
+}
+</programlisting>
+
+<para>
+Other parts of the runtime environment able to be manipulated include
+nested parallelism (<function>omp_set_nested</function>), schedule kind
+(<function>omp_set_schedule</function>), and others. See the OpenMP
+documentation for more information.
+</para>
+
+</sect3>
+
+<sect3 id="parallel_mode.design.tuning.compile" xreflabel="Compile Switches">
+  <title>Compile Time Switches</title>
+
+<para>
+To force an algorithm to execute sequentially, even though parallelism
+is switched on in general via the macro <constant>_GLIBCXX_PARALLEL</constant>,
+add <classname>__gnu_parallel::sequential_tag()</classname> to the end
+of the algorithm's argument list, or explicitly qualify the algorithm
+with the <code>__gnu_parallel::</code> namespace.
 </para>
 
 <para>
-Parallelism always incurs some overhead. Thus, it is not
-helpful to parallelize operations on very small sets of data.
-There are measures to avoid parallelizing stuff that is not worth it.
-For each algorithm, a minimum problem size can be stated,
-usually using the variable
-<code>__gnu_parallel::Settings::[algorithm]_minimal_n</code>.
-Please see <ulink url="latest-doxygen/settings_8h.html">
-<code>&lt;settings.h&gt;</code></ulink> for details.</para>
+Like so:
+</para>
 
+<programlisting>
+std::sort(v.begin(), v.end(), __gnu_parallel::sequential_tag());
+</programlisting>
+
+<para>
+or
+</para>
+
+<programlisting>
+__gnu_serial::sort(v.begin(), v.end());
+</programlisting>
+
+<para> 
+In addition, some parallel algorithm variants can be enabled/disabled/selected 
+at compile-time.
+</para>
+
+<para>
+See <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00446.html"><filename class="headerfile">compiletime_settings.h</filename></ulink> and
+See <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00505.html"><filename class="headerfile">features.h</filename></ulink> for details.
+</para>
+</sect3>
+
+<sect3 id="parallel_mode.design.tuning.settings" xreflabel="_Settings">
+  <title>Run Time Settings and Defaults</title>
+
+<para>
+The default parallization strategy, the choice of specific algorithm
+strategy, the minimum threshold limits for individual parallel
+algorithms, and aspects of the underlying hardware can be specified as
+desired via manipulation
+of <classname>__gnu_parallel::_Settings</classname> member data.
+</para>
+
+<para>
+First off, the choice of parallelization strategy: serial, parallel,
+or implementation-deduced. This corresponds
+to <code>__gnu_parallel::_Settings::algorithm_strategy</code> and is a
+value of enum <type>__gnu_parallel::_AlgorithmStrategy</type>
+type. Choices
+include: <type>heuristic</type>, <type>force_sequential</type>,
+and <type>force_parallel</type>. The default is
+implementation-deduced, ie <type>heuristic</type>.
+</para>
+
+
+<para>
+Next, the sub-choices for algorithm implementation. Specific
+algorithms like <function>find</function> or <function>sort</function>
+can be implemented in multiple ways: when this is the case,
+a <classname>__gnu_parallel::_Settings</classname> member exists to
+pick the default strategy. For
+example, <code>__gnu_parallel::_Settings::sort_algorithm</code> can
+have any values of
+enum <type>__gnu_parallel::_SortAlgorithm</type>: <type>MWMS</type>, <type>QS</type>,
+or <type>QS_BALANCED</type>.
+</para>
+
+<para>
+Likewise for setting the minimal threshold for algorithm
+paralleization.  Parallelism always incurs some overhead. Thus, it is
+not helpful to parallelize operations on very small sets of
+data. Because of this, measures are taken to avoid parallelizing below
+a certain, pre-determined threshold. For each algorithm, a minimum
+problem size is encoded as a variable in the
+active <classname>__gnu_parallel::_Settings</classname> object.  This
+threshold variable follows the following naming scheme:
+<code>__gnu_parallel::_Settings::[algorithm]_minimal_n</code>.  So,
+for <function>fill</function>, the threshold variable
+is <code>__gnu_parallel::_Settings::fill_minimal_n</code>
+</para>
+
+<para>
+Finally, hardware details like L1/L2 cache size can be hardwired
+via <code>__gnu_parallel::_Settings::L1_cache_size</code> and friends.
+</para>
+
+<para>
+All these configuration variables can be changed by the user, if
+desired.  Please
+see <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00640.html"><filename class="headerfile">settings.h</filename></ulink>
+for complete details.
+</para>
+
+<para>
+A small example of tuning the default:
+</para>
+
+<programlisting>
+#include &lt;parallel/algorithm&gt;
+#include &lt;parallel/settings.h&gt;
+
+int main()
+{
+  __gnu_parallel::_Settings s;
+  s.algorithm_strategy = __gnu_parallel::force_parallel;
+  __gnu_parallel::_Settings::set(s);
+
+  // Do work... all algorithms will be parallelized, always.
+
+  return 0;
+}
+</programlisting>
+
+</sect3>
 
 </sect2>
 
 <sect2 id="manual.ext.parallel_mode.design.impl" xreflabel="Impl">
   <title>Implementation Namespaces</title>
 
-<para> One namespace contain versions of code that are explicitly sequential:
+<para> One namespace contain versions of code that are always
+explicitly sequential:
 <code>__gnu_serial</code>.
 </para>
 
@@ -548,10 +688,8 @@ Please see <ulink url="latest-doxygen/settings_8h.html">
 
 <para> Parallel implementations of standard components, including
 template helpers to select parallelism, are defined in <code>namespace
-std::__parallel</code>. For instance, <code>std::transform</code> from
-&lt;algorithm&gt; has a parallel counterpart in
-<code>std::__parallel::transform</code> from
-&lt;parallel/algorithm&gt;. In addition, these parallel
+std::__parallel</code>. For instance, <function>std::transform</function> from <filename class="headerfile">algorithm</filename> has a parallel counterpart in
+<function>std::__parallel::transform</function> from <filename class="headerfile">parallel/algorithm</filename>. In addition, these parallel
 implementations are injected into <code>namespace
 __gnu_parallel</code> with using declarations.
 </para>
@@ -588,7 +726,7 @@ the generated source documentation.
   
   <para>
     The log and summary files for conformance testing are in the
-    <code>testsuite/parallel</code> directory.
+    <filename class="directory">testsuite/parallel</filename> directory.
   </para>
 
   <para> 
@@ -596,13 +734,13 @@ the generated source documentation.
   </para>
 
   <screen>
-  <userinput>check-performance-parallel</userinput>
+  <userinput>make check-performance-parallel</userinput>
   </screen>
 
   <para>
     The result file for performance testing are in the
-    <code>testsuite</code> directory, in the file
-    <code>libstdc++_performance.sum</code>. In addition, the
+    <filename class="directory">testsuite</filename> directory, in the file
+    <filename>libstdc++_performance.sum</filename>. In addition, the
     policy-based containers have their own visualizations, which have
     additional software dependencies than the usual bare-boned text
     file, and can be generated by using the <code>make

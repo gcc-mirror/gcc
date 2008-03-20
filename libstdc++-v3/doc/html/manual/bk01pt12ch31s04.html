@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Design</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      library&#10;    , &#10;      parallel&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="parallel_mode.html" title="Chapter 31. Parallel Mode" /><link rel="prev" href="bk01pt12ch31s03.html" title="Using" /><link rel="next" href="bk01pt12ch31s05.html" title="Testing" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Design</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt12ch31s03.html">Prev</a> </td><th width="60%" align="center">Chapter 31. Parallel Mode</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt12ch31s05.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.ext.parallel_mode.design"></a>Design</h2></div></div></div><p>
-  </p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.parallel_mode.design.intro"></a>Interface Basics</h3></div></div></div><p>All parallel algorithms are intended to have signatures that are
+  </p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.parallel_mode.design.intro"></a>Interface Basics</h3></div></div></div><p>
+All parallel algorithms are intended to have signatures that are
 equivalent to the ISO C++ algorithms replaced. For instance, the
-<code class="code">std::adjacent_find</code> function is declared as:
+<code class="function">std::adjacent_find</code> function is declared as:
 </p><pre class="programlisting">
 namespace std
 {
@@ -57,36 +58,124 @@ parallel algorithms look like this:
 ISO C++ signature to the correct parallel version. Also, some of the
 algorithms do not have support for run-time conditions, so the last
 overload is therefore missing.
-</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.parallel_mode.design.tuning"></a>Configuration and Tuning</h3></div></div></div><p> Some algorithm variants can be enabled/disabled/selected at compile-time.
-See <a class="ulink" href="latest-doxygen/compiletime__settings_8h.html" target="_top">
-<code class="code">&lt;compiletime_settings.h&gt;</code></a> and
-See <a class="ulink" href="latest-doxygen/compiletime__settings_8h.html" target="_top">
-<code class="code">&lt;features.h&gt;</code></a> for details.
+</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.parallel_mode.design.tuning"></a>Configuration and Tuning</h3></div></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="parallel_mode.design.tuning.omp"></a>Setting up the OpenMP Environment</h4></div></div></div><p>
+Several aspects of the overall runtime environment can be manipulated
+by standard OpenMP function calls.
 </p><p>
-To specify the number of threads to be used for an algorithm,
-use <code class="code">omp_set_num_threads</code>.
-To force a function to execute sequentially,
-even though parallelism is switched on in general,
-add <code class="code">__gnu_parallel::sequential_tag()</code>
-to the end of the argument list.
+To specify the number of threads to be used for an algorithm, use the
+function <code class="function">omp_set_num_threads</code>. An example:
+</p><pre class="programlisting">
+#include &lt;stdlib.h&gt;
+#include &lt;omp.h&gt;
+
+int main()
+{
+  // Explicitly set number of threads.
+  const int threads_wanted = 20;
+  omp_set_dynamic(false);
+  omp_set_num_threads(threads_wanted);
+  if (omp_get_num_threads() != threads_wanted)
+    abort();
+
+  // Do work.
+
+  return 0;
+}
+</pre><p>
+Other parts of the runtime environment able to be manipulated include
+nested parallelism (<code class="function">omp_set_nested</code>), schedule kind
+(<code class="function">omp_set_schedule</code>), and others. See the OpenMP
+documentation for more information.
+</p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="parallel_mode.design.tuning.compile"></a>Compile Time Switches</h4></div></div></div><p>
+To force an algorithm to execute sequentially, even though parallelism
+is switched on in general via the macro <code class="constant">_GLIBCXX_PARALLEL</code>,
+add <code class="classname">__gnu_parallel::sequential_tag()</code> to the end
+of the algorithm's argument list, or explicitly qualify the algorithm
+with the <code class="code">__gnu_parallel::</code> namespace.
 </p><p>
-Parallelism always incurs some overhead. Thus, it is not
-helpful to parallelize operations on very small sets of data.
-There are measures to avoid parallelizing stuff that is not worth it.
-For each algorithm, a minimum problem size can be stated,
-usually using the variable
-<code class="code">__gnu_parallel::Settings::[algorithm]_minimal_n</code>.
-Please see <a class="ulink" href="latest-doxygen/settings_8h.html" target="_top">
-<code class="code">&lt;settings.h&gt;</code></a> for details.</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.parallel_mode.design.impl"></a>Implementation Namespaces</h3></div></div></div><p> One namespace contain versions of code that are explicitly sequential:
+Like so:
+</p><pre class="programlisting">
+std::sort(v.begin(), v.end(), __gnu_parallel::sequential_tag());
+</pre><p>
+or
+</p><pre class="programlisting">
+__gnu_serial::sort(v.begin(), v.end());
+</pre><p> 
+In addition, some parallel algorithm variants can be enabled/disabled/selected 
+at compile-time.
+</p><p>
+See <a class="ulink" href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00446.html" target="_top"><code class="filename">compiletime_settings.h</code></a> and
+See <a class="ulink" href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00505.html" target="_top"><code class="filename">features.h</code></a> for details.
+</p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="parallel_mode.design.tuning.settings"></a>Run Time Settings and Defaults</h4></div></div></div><p>
+The default parallization strategy, the choice of specific algorithm
+strategy, the minimum threshold limits for individual parallel
+algorithms, and aspects of the underlying hardware can be specified as
+desired via manipulation
+of <code class="classname">__gnu_parallel::_Settings</code> member data.
+</p><p>
+First off, the choice of parallelization strategy: serial, parallel,
+or implementation-deduced. This corresponds
+to <code class="code">__gnu_parallel::_Settings::algorithm_strategy</code> and is a
+value of enum <span class="type">__gnu_parallel::_AlgorithmStrategy</span>
+type. Choices
+include: <span class="type">heuristic</span>, <span class="type">force_sequential</span>,
+and <span class="type">force_parallel</span>. The default is
+implementation-deduced, ie <span class="type">heuristic</span>.
+</p><p>
+Next, the sub-choices for algorithm implementation. Specific
+algorithms like <code class="function">find</code> or <code class="function">sort</code>
+can be implemented in multiple ways: when this is the case,
+a <code class="classname">__gnu_parallel::_Settings</code> member exists to
+pick the default strategy. For
+example, <code class="code">__gnu_parallel::_Settings::sort_algorithm</code> can
+have any values of
+enum <span class="type">__gnu_parallel::_SortAlgorithm</span>: <span class="type">MWMS</span>, <span class="type">QS</span>,
+or <span class="type">QS_BALANCED</span>.
+</p><p>
+Likewise for setting the minimal threshold for algorithm
+paralleization.  Parallelism always incurs some overhead. Thus, it is
+not helpful to parallelize operations on very small sets of
+data. Because of this, measures are taken to avoid parallelizing below
+a certain, pre-determined threshold. For each algorithm, a minimum
+problem size is encoded as a variable in the
+active <code class="classname">__gnu_parallel::_Settings</code> object.  This
+threshold variable follows the following naming scheme:
+<code class="code">__gnu_parallel::_Settings::[algorithm]_minimal_n</code>.  So,
+for <code class="function">fill</code>, the threshold variable
+is <code class="code">__gnu_parallel::_Settings::fill_minimal_n</code>
+</p><p>
+Finally, hardware details like L1/L2 cache size can be hardwired
+via <code class="code">__gnu_parallel::_Settings::L1_cache_size</code> and friends.
+</p><p>
+All these configuration variables can be changed by the user, if
+desired.  Please
+see <a class="ulink" href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00640.html" target="_top"><code class="filename">settings.h</code></a>
+for complete details.
+</p><p>
+A small example of tuning the default:
+</p><pre class="programlisting">
+#include &lt;parallel/algorithm&gt;
+#include &lt;parallel/settings.h&gt;
+
+int main()
+{
+  __gnu_parallel::_Settings s;
+  s.algorithm_strategy = __gnu_parallel::force_parallel;
+  __gnu_parallel::_Settings::set(s);
+
+  // Do work... all algorithms will be parallelized, always.
+
+  return 0;
+}
+</pre></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.parallel_mode.design.impl"></a>Implementation Namespaces</h3></div></div></div><p> One namespace contain versions of code that are always
+explicitly sequential:
 <code class="code">__gnu_serial</code>.
 </p><p> Two namespaces contain the parallel mode:
 <code class="code">std::__parallel</code> and <code class="code">__gnu_parallel</code>. 
 </p><p> Parallel implementations of standard components, including
 template helpers to select parallelism, are defined in <code class="code">namespace
-std::__parallel</code>. For instance, <code class="code">std::transform</code> from
-&lt;algorithm&gt; has a parallel counterpart in
-<code class="code">std::__parallel::transform</code> from
-&lt;parallel/algorithm&gt;. In addition, these parallel
+std::__parallel</code>. For instance, <code class="function">std::transform</code> from <code class="filename">algorithm</code> has a parallel counterpart in
+<code class="function">std::__parallel::transform</code> from <code class="filename">parallel/algorithm</code>. In addition, these parallel
 implementations are injected into <code class="code">namespace
 __gnu_parallel</code> with using declarations.
 </p><p> Support and general infrastructure is in <code class="code">namespace
