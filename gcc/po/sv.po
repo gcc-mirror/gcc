@@ -8,10 +8,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.3-b20071109\n"
+"Project-Id-Version: gcc 4.3.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2008-03-05 17:23+0100\n"
-"PO-Revision-Date: 2008-01-29 14:43+0100\n"
+"PO-Revision-Date: 2008-03-19 22:15+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -2272,11 +2272,11 @@ msgstr "%s%s%s %sversion %s (%s) kompilerad med CC, "
 msgid "GMP version %s, MPFR version %s.\n"
 msgstr "GMP version %s, MPFR version %s.\n"
 
-# Första %s blir en förkortning typ GMP
+# Tredje %s blir en förkortning typ GMP
 #: toplev.c:1188
-#, fuzzy, c-format
+#, c-format
 msgid "%s%swarning: %s header version %s differs from library version %s.\n"
-msgstr "varning: %s-huvud version %s skiljer från biblioteksversion %s.\n"
+msgstr "%s%svarning: %s-huvud version %s skiljer från biblioteksversion %s.\n"
 
 #: toplev.c:1190
 #, c-format
@@ -2365,10 +2365,7 @@ msgstr "Den maximala antalet postfält (i byte) vid vilken GCC använder elementvi
 msgid "The threshold ratio between instantiated fields and the total structure size"
 msgstr "Tröskelförhållandet mellan instansierade fält och den totala poststorleken"
 
-# Orginalet är felstavat.
-# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=35002
 #: params.def:93
-#, fuzzy
 msgid "The threshold ratio between current and hottest structure counts"
 msgstr "Tröskelförhållandet mellan aktuell och hetaste posträknare"
 
@@ -2764,11 +2761,11 @@ msgstr "Maximal längd på partial förväntansmängd när föroptimeringar på träd gör
 
 #: params.def:723
 msgid "Maximum size of a SCC before SCCVN stops processing a function"
-msgstr ""
+msgstr "Maximal storlek på en SCC före SCCVN slutar bearbeta en funktion"
 
 #: params.def:729
 msgid "Multiplier used for determining the double-queueing threshold"
-msgstr ""
+msgstr "Faktor som används för att avgöra tröskeln för dubbelköande"
 
 #: config/alpha/alpha.c:5023
 #, c-format
@@ -4181,12 +4178,12 @@ msgstr "\"%s\" vid %L är redan initierad vid %L"
 #: fortran/data.c:317
 #, no-c-format
 msgid "Data element below array lower bound at %L"
-msgstr ""
+msgstr "Dataelement under undre vektorgräns vid %L"
 
 #: fortran/data.c:329
 #, no-c-format
 msgid "Data element above array upper bound at %L"
-msgstr ""
+msgstr "Dataelement ovanför övre vektorgräns vid %L"
 
 #: fortran/data.c:435
 #, no-c-format
@@ -4209,9 +4206,9 @@ msgid "Symbol '%s' must be a PARAMETER in DATA statement at %C"
 msgstr "Symbolen \"%s\" måste vara en PARAMETER i DATA-sats vid %C"
 
 #: fortran/decl.c:390
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Invalid initializer %s in Data statement at %C"
-msgstr "Ogiltig form på PROGRAM-sats vid %C"
+msgstr "Ogiltig initierare %s på DATA-sats vid %C"
 
 #: fortran/decl.c:493
 #, no-c-format
@@ -4449,9 +4446,9 @@ msgid "Kind %d not supported for type %s at %C"
 msgstr "Sorten %d stöds inte för typen %s vid %C"
 
 #: fortran/decl.c:1946
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing right parenthesis or comma at %C"
-msgstr "Saknad högerparentes vid %C"
+msgstr "PROGRAM"
 
 #: fortran/decl.c:2019
 #, no-c-format
@@ -4690,9 +4687,9 @@ msgid "Unexpected junk after function declaration at %C"
 msgstr "Oväntat skräp efter funktionsdeklaration vid %C"
 
 #: fortran/decl.c:4000 fortran/decl.c:4734
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Extension: BIND(C) attribute at %L may not be specified for an internal procedure"
-msgstr "SAVE-attribut vid %L kan inte anges i en PURE-procedur"
+msgstr "Utvidgning: BIND(C)-attribut vid %L kan inte anges i en intern procedur"
 
 #: fortran/decl.c:4066
 #, no-c-format
@@ -4847,14 +4844,14 @@ msgid "Missing closing paren for binding label at %C"
 msgstr "Slutparentes saknas för att binda etikett vid %C"
 
 #: fortran/decl.c:4857
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "No binding name is allowed in BIND(C) at %C"
-msgstr "Funktionsnamnet \"%s\" är inte tillåtet vid %C"
+msgstr "Inget bindningsnamn är tillåtet i BIND(C) vid %C"
 
 #: fortran/decl.c:4863
 #, no-c-format
 msgid "For dummy procedure %s, no binding name is allowed in BIND(C) at %C"
-msgstr ""
+msgstr "För attrapprocedur %s är inget bindningsnamn tillåtet i BIND(C) vid %C"
 
 #: fortran/decl.c:4894
 #, no-c-format
@@ -4900,7 +4897,7 @@ msgstr "Vektorspecifikation saknas vid %L i DIMENSION-sats"
 #: fortran/decl.c:5189
 #, no-c-format
 msgid "Dimensions specified for %s at %L after its initialisation"
-msgstr ""
+msgstr "Dimensioner angivna för %s vid %L efter dess initiering"
 
 #: fortran/decl.c:5198
 #, no-c-format
@@ -4998,9 +4995,9 @@ msgid "Expected expression at %C in PARAMETER statement"
 msgstr "Uttryck förväntades vid %C i PARAMETER-sats"
 
 #: fortran/decl.c:5799
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Initializing already initialized variable at %C"
-msgstr "Initierare är inte tillåten för COMMON-variabel \"%s\" vid %C"
+msgstr "Initierar redan initierad variabel vid %C"
 
 #: fortran/decl.c:5844
 #, no-c-format
@@ -5457,7 +5454,7 @@ msgstr " ENTRY"
 #: fortran/dump-parse-tree.c:595
 #, c-format
 msgid " BIND(C)"
-msgstr ""
+msgstr " BIND(C)"
 
 #: fortran/dump-parse-tree.c:598
 #, c-format
@@ -6178,9 +6175,9 @@ msgid "Integer value too large in expression at %C"
 msgstr "För stort heltalsvärde i uttryck vid %C"
 
 #: fortran/expr.c:1037
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Index in dimension %d is out of bounds at %L"
-msgstr "index i dimension %d är utanför gränsen vid %L"
+msgstr "Index i dimension %d är utanför gränsen vid %L"
 
 #: fortran/expr.c:1208 fortran/expr.c:1259
 #, no-c-format
@@ -6260,7 +6257,7 @@ msgstr "Inbyggd funktion \"%s\" vid %L är inte tillåten i ett initieringsuttryck
 #: fortran/expr.c:2214
 #, no-c-format
 msgid "PARAMETER '%s' is used at %L before its definition is complete"
-msgstr ""
+msgstr "PARAMETER \"%s\" används vid %L före dess definition är komplett"
 
 #: fortran/expr.c:2234
 #, no-c-format
@@ -6278,9 +6275,9 @@ msgid "Deferred array '%s' at %L is not permitted in an initialization expressio
 msgstr "Fördröjd vektor \"%s\" vid %L är inte tillåten i ett initieringsuttryck"
 
 #: fortran/expr.c:2252
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Array '%s' at %L is a variable, which does not reduce to a constant expression"
-msgstr "Parameter \"%s\" vid %L har inte deklarerats eller är en variabel, som inte reduceras till ett konstant uttryck"
+msgstr "Vektor \"%s\" vid %L är en variabel, som inte reduceras till ett konstant uttryck"
 
 #: fortran/expr.c:2262
 #, no-c-format
@@ -6399,32 +6396,32 @@ msgstr "vektortilldelning"
 #: fortran/expr.c:2775
 #, no-c-format
 msgid "Extension: BOZ literal at %L used to initialize non-integer variable '%s'"
-msgstr ""
+msgstr "Utökning: BOZ-literal vid %L används för att initiera icke-heltalsvariabeln \"%s\""
 
 #: fortran/expr.c:2781 fortran/resolve.c:6058
 #, no-c-format
 msgid "Extension: BOZ literal at %L outside a DATA statement and outside INT/REAL/DBLE/CMPLX"
-msgstr ""
+msgstr "Utökning: BOZ-literal vid %L utanför en DATA-sats och utanför INT/REAL/DBLE/CMPLX"
 
 #: fortran/expr.c:2791 fortran/resolve.c:6068
 #, no-c-format
 msgid "BOZ literal at %L is bitwise transferred non-integer symbol '%s'"
-msgstr ""
+msgstr "BOZ-literal vid %L är bitvis överförd icke-heltalssymbol \"%s\""
 
 #: fortran/expr.c:2799 fortran/resolve.c:6077
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Arithmetic underflow of bit-wise transferred BOZ at %L. This check can be disabled with the option -fno-range-check"
-msgstr "Aritmetiskt spill vid konvertering av %s till %s vid %L.  Denna kontroll kan avaktiveras med flaggan -fno-range-check"
+msgstr "Aritmetiskt underspill av bitvis överförd BOZ vid %L.  Denna kontroll kan avaktiveras med flaggan -fno-range-check"
 
 #: fortran/expr.c:2803 fortran/resolve.c:6081
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Arithmetic overflow of bit-wise transferred BOZ at %L. This check can be disabled with the option -fno-range-check"
-msgstr "Aritmetiskt spill vid konvertering av %s till %s vid %L.  Denna kontroll kan avaktiveras med flaggan -fno-range-check"
+msgstr "Aritmetiskt överspill vid bitvis överförd BOZ vid %L.  Denna kontroll kan avaktiveras med flaggan -fno-range-check"
 
 #: fortran/expr.c:2807 fortran/resolve.c:6085
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Arithmetic NaN of bit-wise transferred BOZ at %L. This check can be disabled with the option -fno-range-check"
-msgstr "Aritmetiskt spill vid konvertering av %s till %s vid %L.  Denna kontroll kan avaktiveras med flaggan -fno-range-check"
+msgstr "Aritmetisk NaN vid bitvis överförd BOZ vid %L.  Denna kontroll kan avaktiveras med flaggan -fno-range-check"
 
 #: fortran/expr.c:2828
 #, no-c-format
@@ -6662,14 +6659,14 @@ msgid "Type/rank mismatch in argument '%s' at %L"
 msgstr "Typ/ordning stämmer inte i argument \"%s\" vid %L"
 
 #: fortran/interface.c:1474
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Type mismatch in argument '%s' at %L; passed %s to %s"
-msgstr "Typ/ordning stämmer inte i argument \"%s\" vid %L"
+msgstr "Typ stämmer inte i argument \"%s\" vid %L; skickade %s till %s"
 
 #: fortran/interface.c:1492 fortran/interface.c:1532
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Rank mismatch in argument '%s' at %L (%d and %d)"
-msgstr "Typ/ordning stämmer inte i argument \"%s\" vid %L"
+msgstr "Ordning stämmer inte i argument \"%s\" vid %L (%d och %d)"
 
 #: fortran/interface.c:1519
 #, no-c-format
@@ -6677,9 +6674,9 @@ msgid "Fortran 2003: Scalar CHARACTER actual argument with array dummy argument 
 msgstr "Fortran 2003: Aktuellt skalärt CHARACTER-argument med attrappargument som är vektor \"%s\" vid %L"
 
 #: fortran/interface.c:1544
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Element of assumed-shaped array passed to dummy argument '%s' at %L"
-msgstr "Vektor med underförstådd form vid %L måste vara ett attrappargument"
+msgstr "Element av vektor med antagen form skickat till attrappargument \"%s\" vid %L"
 
 #: fortran/interface.c:1861
 #, no-c-format
@@ -6707,14 +6704,14 @@ msgid "Unexpected alternate return spec in subroutine call at %L"
 msgstr "Oväntad alternativ returspecifikation i subrutinanrop vid %L"
 
 #: fortran/interface.c:1922
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Character length mismatch (%ld/%ld) between actual argument and pointer or allocatable dummy argument '%s' at %L"
-msgstr "Teckenlängd stämmer inte mellan aktuellt argument och pekare eller allokerbart attrappargument \"%s\" vid %L"
+msgstr "Teckenlängd stämmer inte (%ld/%ld) mellan aktuellt argument och pekare eller allokerbart attrappargument \"%s\" vid %L"
 
 #: fortran/interface.c:1929
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Character length mismatch (%ld/%ld) between actual argument and assumed-shape dummy argument '%s' at %L"
-msgstr "Teckenlängd stämmer inte mellan aktuellt argument och pekare eller allokerbart attrappargument \"%s\" vid %L"
+msgstr "Teckenlängd stämmer inte (%ld/%ld) mellan aktuellt argument och attrappargument med antagen form \"%s\" vid %L"
 
 #: fortran/interface.c:1943
 #, no-c-format
@@ -6752,9 +6749,9 @@ msgid "Actual argument for '%s' must be ALLOCATABLE at %L"
 msgstr "Aktuellt argument till \"%s\" skall vara en ALLOCATABLE vid %L"
 
 #: fortran/interface.c:2017
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Actual argument at %L must be definable as the dummy argument '%s' is INTENT = OUT/INOUT"
-msgstr "Aktuellt argument vid %L måste gå att definiera för att stämma attrapp INTENT = OUT/INOUT"
+msgstr "Aktuellt argument vid %L måste gå att definiera som attrappargument \"%s\" är INTENT = OUT/INOUT"
 
 #: fortran/interface.c:2026
 #, no-c-format
@@ -6762,9 +6759,9 @@ msgid "Actual argument at %L is use-associated with PROTECTED attribute and dumm
 msgstr "Aktuellt argument vid %L är användningsassocierat med attributet PROTECTED och attrappargument \"%s\" är INTENT = OUT/INOUT"
 
 #: fortran/interface.c:2039
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Array-section actual argument with vector subscripts at %L is incompatible with INTENT(OUT), INTENT(INOUT) or VOLATILE attribute of the dummy argument '%s'"
-msgstr "Vektorsektion som aktuellt argument med vektorindex vid %L är inte kompatibelt med attributet INTENT(IN), INTENT(INOUT) eller VOLATILE på attrappargument \"%s\""
+msgstr "Vektorsektion som aktuellt argument med vektorindex vid %L är inte kompatibelt med attributet INTENT(OUT), INTENT(INOUT) eller VOLATILE på attrappargument \"%s\""
 
 #: fortran/interface.c:2056
 #, no-c-format
@@ -6862,9 +6859,9 @@ msgid "Intrinsic '%s' at %L is not included in the selected standard"
 msgstr "Inbyggd \"%s\" vid %L är inte med i den valda standarden"
 
 #: fortran/intrinsic.c:3398
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: Function '%s' as initialization expression at %L"
-msgstr "Fortran 2003: Exponent som inte är heltal i ett initieringsuttryck vid %L"
+msgstr "Fortran 2003: Funktion \"%s\" som initieringsuttryck vid %L"
 
 #: fortran/intrinsic.c:3463
 #, no-c-format
@@ -7251,14 +7248,14 @@ msgid "INQUIRE statement at %L requires either FILE or UNIT specifier"
 msgstr "INQUIRE-sats vid %L kräver antingen FILE- eller UNIT-specificerare"
 
 #: fortran/match.c:156
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing ')' in statement before %L"
-msgstr "ENUM-definitionssats förväntades före %C"
+msgstr "\")\" saknas i sats före %L"
 
 #: fortran/match.c:161
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing '(' in statement before %L"
-msgstr "ENUM-definitionssats förväntades före %C"
+msgstr "\"(\" saknas i sats före %L"
 
 #: fortran/match.c:332
 #, no-c-format
@@ -7356,9 +7353,9 @@ msgid "Block label not appropriate for arithmetic IF statement at %C"
 msgstr "Blocketikett är inte tillämplig för aritmetisk IF-sats vid %C"
 
 #: fortran/match.c:1459
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Block label is not appropriate for IF statement at %C"
-msgstr "Blocketikett är inte tillämplig IF-sats vid %C"
+msgstr "Blocketikett är inte tillämplig för IF-sats vid %C"
 
 #: fortran/match.c:1538 fortran/primary.c:2559
 #, no-c-format
@@ -7496,7 +7493,7 @@ msgstr "Symbolen \"%s\" vid %C är redan i ett COMMON-block"
 #: fortran/match.c:2777
 #, no-c-format
 msgid "Initialized symbol '%s' at %C can only be COMMON in BLOCK DATA"
-msgstr ""
+msgstr "Initierad symbol \"%s\" vid %C kan endast vara COMMON i BLOCK DATA"
 
 #: fortran/match.c:2804
 #, no-c-format
@@ -8527,9 +8524,9 @@ msgid "Invalid Hollerith constant: Integer kind at %L should be default"
 msgstr "Ogiltig Hollerithkonstant: Heltalssort vid %L borde vara standard"
 
 #: fortran/primary.c:353
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Extension: Hexadecimal constant at %C uses non-standard syntax"
-msgstr "Utökning: Hexadecimal konstant vid %C använder icke-standardsyntax."
+msgstr "Utökning: Hexadecimal konstant vid %C använder icke-standardsyntax"
 
 #: fortran/primary.c:363
 #, no-c-format
@@ -8542,9 +8539,9 @@ msgid "Illegal character in BOZ constant at %C"
 msgstr "Otillåtet tecken i BOZ-konstant vid %C"
 
 #: fortran/primary.c:392
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Extension: BOZ constant at %C uses non-standard postfix syntax"
-msgstr "Utökning: BOZ-konstant vid %C använder icke-standard postfixsyntax."
+msgstr "Utökning: BOZ-konstant vid %C använder icke-standard postfixsyntax"
 
 #: fortran/primary.c:423
 #, no-c-format
@@ -8552,9 +8549,9 @@ msgid "Integer too big for integer kind %i at %C"
 msgstr "För stort heltal för heltalssort %i vid %C"
 
 #: fortran/primary.c:429
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: BOZ used outside a DATA statement at %C"
-msgstr "Fortran 2003: VOLATILE-sats vid %C"
+msgstr "Fortran 2003: BOZ använd utanför en DATA-sats vid %C"
 
 #: fortran/primary.c:529
 #, no-c-format
@@ -8727,9 +8724,9 @@ msgid "Named constant at %C in an EQUIVALENCE"
 msgstr "Namngiven konstant vid %C är en EQUIVALENCE"
 
 #: fortran/primary.c:2579
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' at %C is not a variable"
-msgstr "Argument till \"%s\" vid %L är inte en variabel"
+msgstr "\"%s\" vid %C är inte en variabel"
 
 #: fortran/resolve.c:121
 #, no-c-format
@@ -8777,9 +8774,9 @@ msgid "Argument '%s' of elemental procedure at %L cannot have the POINTER attrib
 msgstr "Argumentet \"%s\" av elementär procedur vid %L får inte ha attributet POINTER"
 
 #: fortran/resolve.c:231
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Dummy procedure '%s' not allowed in elemental procedure '%s' at %L"
-msgstr "Attrapprocedur vid %L är inte tillåten i ELEMENTAL-procedur"
+msgstr "Attrapprocedur \"%s\" är inte tillåten i elementär procedur \"%s\" vid %L"
 
 #: fortran/resolve.c:243
 #, no-c-format
@@ -8807,14 +8804,14 @@ msgid "Character-valued internal function '%s' at %L must not be assumed length"
 msgstr "Teckenvärd intern funktion \"%s\" vid %L får inte ha antagen längd"
 
 #: fortran/resolve.c:501
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Function %s at %L has entries with mismatched array specifications"
-msgstr "Procedur %s vid %L har ingångar med vektorspecifikationer som ej stämmer överens"
+msgstr "Funktion %s vid %L har ingångar med vektorspecifikationer som ej stämmer överens"
 
 #: fortran/resolve.c:518
 #, no-c-format
 msgid "Extension: Function %s at %L with entries returning variables of different string lengths"
-msgstr ""
+msgstr "Utökning: Funktion \"%s\" vid %L med ingångar som returnerar variabler av olika stränglängder"
 
 #: fortran/resolve.c:545
 #, no-c-format
@@ -8849,12 +8846,12 @@ msgstr "ENTRY-resultat %s får inte vara av typen %s i FUNCTION %s vid %L"
 #: fortran/resolve.c:661
 #, no-c-format
 msgid "Variable '%s' at %L is in COMMON but only in BLOCK DATA initialization is allowed"
-msgstr ""
+msgstr "Variabel \"%s\" vid %L är i COMMON men endast i BLOCK DATA är initiering tillåten"
 
 #: fortran/resolve.c:665
 #, no-c-format
 msgid "Initialized variable '%s' at %L is in a blank COMMON but initialization is only allowed in named common blocks"
-msgstr ""
+msgstr "Initierad variabel \"%s\" vid %L är i en blank COMMON men initiering ir endast tillåten i namngivna common-block"
 
 #: fortran/resolve.c:676
 #, no-c-format
@@ -9465,24 +9462,24 @@ msgid "'%s' must not appear an the array specification at %L in the same ALLOCAT
 msgstr "\"%s\" får inte förekomma i vektorspecifikationen vid %L i samma ALLOCATE-sats där den själv allokeras"
 
 #: fortran/resolve.c:4880
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "STAT variable '%s' of %s statement at %C cannot be INTENT(IN)"
-msgstr "ALLOCATE-satsens STAT-variabel \"%s\" vid %C får inte vara INTENT(IN)"
+msgstr "STAT-variabel \"%s\" i %s-sats vid %C får inte vara INTENT(IN)"
 
 #: fortran/resolve.c:4884
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Illegal STAT variable in %s statement at %C for a PURE procedure"
-msgstr "Otillåten STAT-variabel i ALLOCATE-sats vid %C för en PURE-procedur"
+msgstr "Otillåten STAT-variabel i %s-sats vid %C för en PURE-procedur"
 
 #: fortran/resolve.c:4922
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "STAT tag in %s statement at %L must be a variable"
-msgstr "STAT-uttryck vid %C måste vara en variabel"
+msgstr "STAT-tagg i %s-sats vid %L måste vara en variabel"
 
 #: fortran/resolve.c:4928
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "STAT tag in %s statement at %L must be of type INTEGER"
-msgstr "STAT-tagg i ALLOCATE-sats vid %L måste vara av typ INTEGER"
+msgstr "STAT-tagg i %s-sats vid %L måste ha typen INTEGER"
 
 #. The cases overlap, or they are the same
 #. element in the list.  Either way, we must
@@ -9604,7 +9601,7 @@ msgstr "WHERE-tilldelningsmål vid %L har inkonsistent form"
 #: fortran/resolve.c:5735 fortran/resolve.c:5820
 #, no-c-format
 msgid "Non-ELEMENTAL user-defined assignment in WHERE at %L"
-msgstr ""
+msgstr "Ej ELEMENTAL användardefinierad tilldelning i WHERE vid %L"
 
 #: fortran/resolve.c:5745 fortran/resolve.c:5830
 #, no-c-format
@@ -9947,9 +9944,9 @@ msgid "Incompatible derived type in PARAMETER at %L"
 msgstr "Inkompatibel härledd typ i PARAMETER vid %L"
 
 #: fortran/resolve.c:7758
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Interface '%s', used by procedure '%s' at %L, is declared in a later PROCEDURE statement"
-msgstr "Den inbyggda proceduren \"%s\" är inte tillåten i PROCEDURE-sats vid %C"
+msgstr "Gränssnitt \"%s\", använd av proceduren \"%s\" vid %L, är deklarerad i en senare PROCEDURE-sats"
 
 #: fortran/resolve.c:7772
 #, no-c-format
@@ -10034,7 +10031,7 @@ msgstr "BLOCK DATA-element \"%s\" vid %L måste vara i COMMON"
 #: fortran/resolve.c:8149
 #, no-c-format
 msgid "DATA array '%s' at %L must be specified in a previous declaration"
-msgstr ""
+msgstr "DATA-vektor \"%s\" vid %L måste anges i en tidigare deklaration"
 
 #: fortran/resolve.c:8194
 #, no-c-format
@@ -10087,9 +10084,9 @@ msgid "Derived type variable '%s' at %L cannot have ALLOCATABLE components to be
 msgstr "Härledd typvariabel \"%s\" vid %L kan inte ha ALLOCATABLE-komponenter för att vara ett EQUIVALENCE-objekt"
 
 #: fortran/resolve.c:8639
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Derived type variable '%s' at %L with default initialization cannot be in EQUIVALENCE with a variable in COMMON"
-msgstr "Härledd typvariabel \"%s\" vid %L med pekarkomponent(er) kan inte vara ett EQUIVALENCE-objekt"
+msgstr "Härledd typvariabel \"%s\" vid %L med standardinitiering kan inte vara i EQUIVALENCE med en variabel i COMMON"
 
 #: fortran/resolve.c:8656
 #, no-c-format
@@ -10202,9 +10199,9 @@ msgid "'&' not allowed by itself in line %d"
 msgstr "\"&\" är inte tillåtet ensamt på rad %d"
 
 #: fortran/scanner.c:1207
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Nonconforming tab character in column %d of line %d"
-msgstr "Ej konformt tabulatortecken i kolumn 1 på rad %d"
+msgstr "Ej konformt tabulatortecken i kolumn %d på rad %d"
 
 #: fortran/scanner.c:1405
 #, no-c-format
@@ -10447,9 +10444,9 @@ msgid "Second argument of NEAREST at %L shall not be zero"
 msgstr "Andra argumentet till NEAREST vid %L får inte vara noll"
 
 #: fortran/simplify.c:2787
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Result of NEAREST is NaN at %L"
-msgstr "Resultatet av %s är NaN vid %L"
+msgstr "Resultatet av NEAREST är NaN vid %L"
 
 #: fortran/simplify.c:3062
 #, no-c-format
@@ -10799,7 +10796,7 @@ msgstr "Överlappande olika initierare i EQUIVALENCE vid %L"
 #: fortran/target-memory.c:635
 #, no-c-format
 msgid "BOZ constant at %L is too large (%ld vs %ld bits)"
-msgstr ""
+msgstr "BOZ-konstant vid %L är för stor (%ld jämfört med %ld bitar)"
 
 #: fortran/trans-common.c:399
 #, no-c-format
@@ -11266,9 +11263,8 @@ msgid "-femit-class-file should used along with -fsyntax-only"
 msgstr "-femit-class-file skall användas tillsammans med -fsyntax-only"
 
 #: config/cris/cris.h:207
-#, fuzzy
 msgid "Do not specify both -march=... and -mcpu=..."
-msgstr "kan inte ange både -C och -o"
+msgstr "Ange inte både -march=... och -mcpu=..."
 
 #: config/lynx.h:70
 msgid "cannot use mthreads and mlegacy-threads together"
@@ -12648,13 +12644,12 @@ msgid "Change only the low 8 bits of the stack pointer"
 msgstr "Ändra endast de låga 8 bitarna av stackpekaren"
 
 #: config/avr/avr.opt:64
-#, fuzzy
 msgid "Relax branches"
-msgstr "Inga grenar\n"
+msgstr "Lätta på grenar"
 
 #: config/avr/avr.opt:68
 msgid "Make the linker relaxation machine assume that a program counter wrap-around occures."
-msgstr ""
+msgstr "Gör så att länkarens lättningsmaskin antar att programräknaren slår runt."
 
 #: config/linux.opt:24
 msgid "Use uClibc instead of GNU libc"
@@ -15097,9 +15092,8 @@ msgid "Attempt to merge identical constants across compilation units"
 msgstr "Försök slå samman identiska konstanter mellan kompileringsenheter"
 
 #: common.opt:670
-#, fuzzy
 msgid "Attempt to merge identical debug strings across compilation units"
-msgstr "Försök slå samman identiska konstanter mellan kompileringsenheter"
+msgstr "Försök slå samman identiska felsökningssträngar mellan kompileringsenheter"
 
 #: common.opt:674
 msgid "Limit diagnostics to <number> characters per line.  0 suppresses line-wrapping"
@@ -15881,7 +15875,7 @@ msgstr "Varna för format med längden noll"
 
 #: c.opt:247
 msgid "Warn whenever type qualifiers are ignored."
-msgstr ""
+msgstr "Varna när typkvalificerare ignoreras."
 
 #: c.opt:251
 msgid "Warn about variables which are initialized to themselves"
@@ -16665,14 +16659,14 @@ msgid "non-floating-point argument to function %qs"
 msgstr "argument som inte är flyttal till funktionen %qs"
 
 #: builtins.c:10446 builtins.c:10466
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too few arguments to function %qs"
-msgstr "för få argument till funktionen %qE"
+msgstr "för få argument till funktionen %qs"
 
 #: builtins.c:10452 builtins.c:10472
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too many arguments to function %qs"
-msgstr "för många argument till funktionen %qE"
+msgstr "för många argument till funktionen %qs"
 
 #: builtins.c:11377
 #, gcc-internal-format
@@ -19848,14 +19842,14 @@ msgid "%HISO C90 forbids mixed declarations and code"
 msgstr "%HISO C90 förbjuder blandade deklarationer och kod"
 
 #: c-parser.c:3550
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Hexpected %<}%> before %<else%>"
-msgstr "%<,%> eller %<;%> förväntades"
+msgstr "%H%<}%> förväntades före %<else%>"
 
 #: c-parser.c:3555
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%H%<else%> without a previous %<if%>"
-msgstr "%<else%> utan ett föregående %<if%>"
+msgstr "%H%<else%> utan ett föregående %<if%>"
 
 #: c-parser.c:3571
 #, gcc-internal-format
@@ -22417,7 +22411,7 @@ msgstr "-Wuninitialized stöds inte utan -O"
 #: opts.c:951
 #, gcc-internal-format
 msgid "-funit-at-a-time is required for inlining of functions that are only called once"
-msgstr ""
+msgstr "-funit-at-a-time krävs för inline:ing av funktioner som bara anropas en gång"
 
 #: opts.c:964
 #, gcc-internal-format
@@ -23062,7 +23056,7 @@ msgstr "-ffunction-sections kan påverka felsökning på vissa målarkitekturer"
 #: toplev.c:1996
 #, gcc-internal-format
 msgid "-fassociative-math disabled; other options take precedence"
-msgstr ""
+msgstr "-fassociative-math avslagen, andra flaggor går före"
 
 #: toplev.c:2008
 #, gcc-internal-format
@@ -23070,9 +23064,9 @@ msgid "-fstack-protector not supported for this target"
 msgstr "-fstack-protector stöds inte av denna målarkitektur"
 
 #: toplev.c:2021
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unwind tables currently require a frame pointer for correctness"
-msgstr "utrullning av tabeller kräver för närvarande en rampekare för att bli rätt"
+msgstr "at rulla ut tabeller kräver för närvarande en rampekare för att bli rätt"
 
 #: toplev.c:2207
 #, gcc-internal-format
@@ -23588,9 +23582,9 @@ msgid "function %q+F can never be inlined because it uses variable sized variabl
 msgstr "funktion %q+F kan aldrig inline:as eftersom den använder varialer med variabel storlek"
 
 #: tree-inline.c:2015
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "function %q+F can never be inlined because it saves address of local label in a static variable"
-msgstr "funktion %q+F kan aldrig inline:as eftersom den använder varialer med variabel storlek"
+msgstr "funktion %q+F kan aldrig inline:as eftersom den sparar adressen av en lokal etikett i en statisk variabel"
 
 #: tree-inline.c:2091
 #, gcc-internal-format
@@ -23901,9 +23895,9 @@ msgid "assuming signed overflow does not occur when simplifying conditional"
 msgstr "antar att teckenspill inte förekommer vid förenkling av villkor"
 
 #: tree.c:3682
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ignoring attributes applied to %qT after definition"
-msgstr "ignorerar attribut använda på en klasstyp utanför dess definition"
+msgstr "ignorerar attribut använda på %qT efter dess definition"
 
 #: tree.c:3966
 #, gcc-internal-format
@@ -25293,9 +25287,9 @@ msgid "%qs incompatible attribute ignored"
 msgstr "%qs-inkompatibelt attribut ignorerat"
 
 #: config/i386/netware.c:253
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-fPIC and -fpic are not supported for this target"
-msgstr "-fPIC och -fpic stöds inte i denna konfiguration"
+msgstr "-fPIC och -fpic stöds inte för detta mål"
 
 #: config/i386/winnt-cxx.c:71 config/sh/symbian.c:172
 #, gcc-internal-format
@@ -27766,15 +27760,15 @@ msgid "attribute for %q+#T must follow the %qs keyword"
 msgstr "attribut för %q#T måste komma efter nyckelordet %qs"
 
 #: cp/decl.c:3925
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ignoring attributes applied to class type %qT outside of definition"
-msgstr "ignorerar attribut använda på en klasstyp utanför dess definition"
+msgstr "ignorerar attribut använda på klasstypen %qT utanför dess definition"
 
 #. A template type parameter or other dependent type.
 #: cp/decl.c:3929
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ignoring attributes applied to dependent type %qT without an associated declaration"
-msgstr "ignorerar attribut använda på en klasstyp utanför dess definition"
+msgstr "ignorerar attribut använda på beroende typ %qT utan en associerad deklaration"
 
 #: cp/decl.c:4007
 #, gcc-internal-format
@@ -27984,7 +27978,7 @@ msgstr "%qD kan inte vara trådlokal för den har icke-POD-typ %qT"
 #: cp/decl.c:5522
 #, gcc-internal-format
 msgid "Java object %qD not allocated with %<new%>"
-msgstr ""
+msgstr "Javaobjekt %qD är inte allokerat med %<new%>"
 
 #: cp/decl.c:5539
 #, gcc-internal-format
@@ -27997,9 +27991,9 @@ msgid "%qD cannot be initialized by a non-constant expression when being declare
 msgstr "%qD kan inte initieras från ett icke-konstant uttryck vid deklarationen"
 
 #: cp/decl.c:5597
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-static data member %qD has Java class type"
-msgstr "%qD är inte en statisk datamedlem i en klassmall"
+msgstr "icke-statisk datamedlem %qD har Javaklasstyp"
 
 #: cp/decl.c:6232
 #, gcc-internal-format
@@ -28646,9 +28640,9 @@ msgid "declaration of %qD as member of %qT"
 msgstr "deklaration av %qD som medlem av %qT"
 
 #: cp/decl.c:8863
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected qualified name in friend declaration for constructor %qD"
-msgstr "kvalificerat namn förväntades i vändeklaration för destruerare %qD"
+msgstr "kvalificerat namn förväntades i vändeklaration för konstruerare %qD"
 
 #: cp/decl.c:8939
 #, gcc-internal-format
@@ -28764,9 +28758,9 @@ msgid "default argument %qE uses local variable %qD"
 msgstr "standardargument %qE använder lokal variabel %qD"
 
 #: cp/decl.c:9399
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "parameter %qD has Java class type"
-msgstr "parametern %q+D har ofullständig typ"
+msgstr "parametern %qD har Javaklasstyp"
 
 #: cp/decl.c:9412
 #, gcc-internal-format
@@ -29042,9 +29036,9 @@ msgid "return type %q#T is incomplete"
 msgstr "returtypen %q#T är ofullständig"
 
 #: cp/decl.c:11004
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "return type has Java class type %q#T"
-msgstr "returtypen är en ofullständig typ"
+msgstr "returtypen har Javaklasstyp %q#T"
 
 #: cp/decl.c:11129 cp/typeck.c:6739
 #, gcc-internal-format
@@ -29400,9 +29394,9 @@ msgid "member %qD declared as friend before type %qT defined"
 msgstr "medlem %qD deklarerad som vän före typ %qT definieras"
 
 #: cp/friend.c:543
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "friend declaration %qD in local class without prior declaration"
-msgstr "using-deklaration %q+D står i konflikt med en tidigare using-deklaration"
+msgstr "vändeklaration %qD i lokal klass utan en tidigare deklaration"
 
 #: cp/friend.c:564
 #, gcc-internal-format
@@ -29415,9 +29409,9 @@ msgid "(if this is not what you intended, make sure the function template has al
 msgstr "(om detta inte är vad du avsåg, se till att funktionsmallen redan har deklarerats och lägg till <> efter funktionsnamnet här) "
 
 #: cp/init.c:374
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "value-initialization of reference"
-msgstr "%Jstandardinitiering av %q#D, som har referenstyp"
+msgstr "värdeinitiering av referens"
 
 #: cp/init.c:481
 #, gcc-internal-format
@@ -29570,9 +29564,9 @@ msgid "call to Java constructor with %qs undefined"
 msgstr "anrop av Javakonstruerare med %qs odefinierad"
 
 #: cp/init.c:1926
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Java class %q#T object allocated using placement new"
-msgstr "Javaklass %qT kan inte ha flera baser"
+msgstr "objekt med Javaklass %q#T allokerat med placerande new"
 
 #: cp/init.c:1955
 #, gcc-internal-format
@@ -30054,9 +30048,9 @@ msgid "%qE %s"
 msgstr "%qE %s"
 
 #: cp/parser.c:2155
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C++ 1998 does not support %<long long%>"
-msgstr "ISO C++ stödjer inte %<long long%>"
+msgstr "ISO C++ 1998 stödjer inte %<long long%>"
 
 #: cp/parser.c:2175
 #, gcc-internal-format
@@ -30292,9 +30286,9 @@ msgid "template parameter pack %qD cannot have a default argument"
 msgstr "mallparameterpaket %qD kan inte ha ett standardargument"
 
 #: cp/parser.c:9422
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "template parameter pack cannot have a default argument"
-msgstr "mallparameterpaket %qD kan inte ha ett standardargument"
+msgstr "mallparameterpaket kan inte ha ett standardargument"
 
 #: cp/parser.c:9520 cp/parser.c:9621
 #, gcc-internal-format
@@ -30453,14 +30447,14 @@ msgid "default arguments are only permitted for function parameters"
 msgstr "standardargument är endast tillåtna för funktionsparametrar"
 
 #: cp/parser.c:13702
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%sparameter pack %qD cannot have a default argument"
-msgstr "mallparameterpaket %qD kan inte ha ett standardargument"
+msgstr "%spameterpaket %qD kan inte ha ett standardargument"
 
 #: cp/parser.c:13705
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%sparameter pack cannot have a default argument"
-msgstr "mallparameterpaket %qD kan inte ha ett standardargument"
+msgstr "%sparameterpaket kan inte ha ett standardargument"
 
 #: cp/parser.c:13947
 #, gcc-internal-format
@@ -30493,9 +30487,9 @@ msgid "an explicit specialization must be preceded by %<template <>%>"
 msgstr "en explicit specialisering måste föregås av %<template <>%>"
 
 #: cp/parser.c:14613
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "function template %qD redeclared as a class template"
-msgstr "icke-mall %qD använd som mall"
+msgstr "funktionsmall %qD omdeklarerad som en klassmall"
 
 #: cp/parser.c:14689
 #, gcc-internal-format
@@ -30959,14 +30953,14 @@ msgid "template specifiers not specified in declaration of %qD"
 msgstr "mallspecificerare inte angivna i deklarationen av %qD"
 
 #: cp/pt.c:4140
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "redeclared with %d template parameter(s)"
-msgstr "%qD använd utan mallparametrar"
+msgstr "omdeklarerad utan %d mallparametrar"
 
 #: cp/pt.c:4142
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previous declaration %q+D used %d template parameter(s)"
-msgstr "tidigare deklaration av %q+#D här"
+msgstr "tidigare deklaration av %q+D använde %d mallparametrar"
 
 #: cp/pt.c:4176
 #, gcc-internal-format
@@ -30988,9 +30982,9 @@ msgid "redefinition of default argument for %q#D"
 msgstr "omdefinition av standardargument till %q#D"
 
 #: cp/pt.c:4188
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Joriginal definition appeared here"
-msgstr "%J  ursprunglig definition fanns här"
+msgstr "%Jursprunglig definition fanns här"
 
 #: cp/pt.c:4292
 #, gcc-internal-format
@@ -33399,216 +33393,3 @@ msgstr "Adress till registervariabeln %qD efterfrågad."
 #, gcc-internal-format
 msgid "%qD attribute ignored"
 msgstr "attributet %qD ignorerat"
-
-#~ msgid "using CONST_DOUBLE for address"
-#~ msgstr "använder CONST_DOUBLE som adress"
-
-#~ msgid "c4x_address_cost: Invalid addressing mode"
-#~ msgstr "c4x_address_cost: Ogiltigt adresseringssätt"
-
-#~ msgid "c4x_print_operand: %%L inconsistency"
-#~ msgstr "c4x_print_operand: %%L-inkonsekvens"
-
-#~ msgid "c4x_print_operand: %%N inconsistency"
-#~ msgstr "c4x_print_operand: %%N-inkonsekvens"
-
-#~ msgid "c4x_print_operand: %%O inconsistency"
-#~ msgstr "c4x_print_operand: %%O-inkonsekvens"
-
-#~ msgid "c4x_print_operand: Bad operand case"
-#~ msgstr "c4x_print_operand: Fel sorts operand"
-
-#~ msgid "c4x_print_operand_address: Bad post_modify"
-#~ msgstr "c4x_print_operand_address: Felaktig post_modify"
-
-#~ msgid "c4x_print_operand_address: Bad pre_modify"
-#~ msgstr "c4x_print_operand_address: Felaktig pre_modify"
-
-#~ msgid "c4x_print_operand_address: Bad operand case"
-#~ msgstr "c4x_print_operand_address: Fel sorts operand"
-
-#~ msgid "c4x_rptb_insert: Cannot find start label"
-#~ msgstr "c4x_rptb_insert: Hittar inte startetikett"
-
-#~ msgid "invalid indirect memory address"
-#~ msgstr "ogiltig indirekt minnesadress"
-
-#~ msgid "invalid indirect (S) memory address"
-#~ msgstr "ogiltig indirekt (S-)minnesadress"
-
-#~ msgid "c4x_valid_operands: Internal error"
-#~ msgstr "c4x_valid_operands: Internt fel"
-
-#~ msgid "c4x_operand_subword: invalid mode"
-#~ msgstr "c4x_operand_subword: ogiltigt läge"
-
-#~ msgid "c4x_operand_subword: invalid operand"
-#~ msgstr "c4x_operand_subword: ogiltig operand"
-
-#~ msgid "c4x_operand_subword: invalid autoincrement"
-#~ msgstr "c4x_operand_subword: ogiltigt autoinkrement"
-
-#~ msgid "c4x_operand_subword: invalid address"
-#~ msgstr "c4x_operand_subword: ogiltig adress"
-
-#~ msgid "c4x_operand_subword: address not offsettable"
-#~ msgstr "c4x_operand_subword: adress kan inte ha avstånd"
-
-#~ msgid "c4x_rptb_rpts_p: Repeat block top label moved"
-#~ msgstr "c4x_rptb_rpts_p: Repeteringsblocks toppetikett flyttad"
-
-#~ msgid "Missing DIM parameter in intrinsic '%s' at %L"
-#~ msgstr "Saknad DIM-parameter till inbyggd \"%s\" vid %L"
-
-#~ msgid "Fortran 2003: Support for intrinsic procedure '%s' in PROCEDURE statement at %C not yet implemented in gfortran"
-#~ msgstr "Fortran 2003: Stöd för inbyggd procedur \"%s\" i PROCEDURE-sats vid %C är inte implementerat i gfortran ännu"
-
-#~ msgid "Inquiry function '%s' at %L is not permitted in an initialization expression"
-#~ msgstr "Frågefunktionen \"%s\" vid %L är inte tillåten i ett initieringsuttryck"
-
-#~ msgid "STAT variable '%s' of DEALLOCATE statement at %C cannot be INTENT(IN)"
-#~ msgstr "STAT-variabeln \"%s\" till DEALLOCATE-satsen vid %C får inte vara INTENT(IN)"
-
-#~ msgid "Illegal STAT variable in DEALLOCATE statement at %C for a PURE procedure"
-#~ msgstr "Otillåten STAT-variabel i DEALLOCATE-sats vid %C för en PURE-procedur"
-
-#~ msgid "BLOCK DATA unit cannot contain blank COMMON at %C"
-#~ msgstr "En BLOCK DATA-enhet får inte innehålla tom COMMON vid %C"
-
-#~ msgid "Previously initialized symbol '%s' in blank COMMON block at %C"
-#~ msgstr "Tidigare initierad symbol \"%s\" i blankt COMMON-block vid %C"
-
-#~ msgid "Previously initialized symbol '%s' in COMMON block '%s' at %C"
-#~ msgstr "Tidigare initierad symbol \"%s\" i COMMON-block \"%s\" vid %C"
-
-#~ msgid "Expected VARIABLE at %C"
-#~ msgstr "VARIABLE förväntades vid %C"
-
-#~ msgid "STAT tag in DEALLOCATE statement at %L must be of type INTEGER"
-#~ msgstr "STAT-tagg DEALLOCATE-sats vid %L måste vara av typ INTEGER"
-
-#~ msgid "Generate code for C30 CPU"
-#~ msgstr "Generera kod för CPU C30"
-
-#~ msgid "Generate code for C31 CPU"
-#~ msgstr "Generera kod för CPU C31"
-
-#~ msgid "Generate code for C32 CPU"
-#~ msgstr "Generera kod för CPU C32"
-
-#~ msgid "Generate code for C33 CPU"
-#~ msgstr "Generera kod för CPU C33"
-
-#~ msgid "Generate code for C40 CPU"
-#~ msgstr "Generera kod för CPU C40"
-
-#~ msgid "Generate code for C44 CPU"
-#~ msgstr "Generera kod för CPU C44"
-
-#~ msgid "Assume that pointers may be aliased"
-#~ msgstr "Anta att pekare kan ha alias"
-
-#~ msgid "Big memory model"
-#~ msgstr "Stor minnesmodell"
-
-#~ msgid "Use the BK register as a general purpose register"
-#~ msgstr "Använd BK-registret som ett allmänt register"
-
-#~ msgid "Generate code for CPU"
-#~ msgstr "Generera kod för CPU"
-
-#~ msgid "Enable use of DB instruction"
-#~ msgstr "Aktivera användning av DB-instruktion"
-
-#~ msgid "Enable debugging"
-#~ msgstr "Aktivera felsökning"
-
-#~ msgid "Enable new features under development"
-#~ msgstr "Aktivera nya funktioner under utveckling"
-
-#~ msgid "Use fast but approximate float to integer conversion"
-#~ msgstr "Använd snabb men ungefärlig flyttal till heltalskonvertering"
-
-#~ msgid "Force RTL generation to emit valid 3 operand insns"
-#~ msgstr "Tvinga RTL-genereringen att mata ut giltiga 3-operandinstruktioner"
-
-#~ msgid "Force constants into registers to improve hoisting"
-#~ msgstr "Tvinga in konstanter i register för att förbättra upphissning"
-
-#~ msgid "Save DP across ISR in small memory model"
-#~ msgstr "Spara DP över ISR i liten minnesmodell"
-
-#~ msgid "Allow unsigned iteration counts for RPTB/DB"
-#~ msgstr "Tillåt iterationsräknare utan tecken för RPTB/DB"
-
-#~ msgid "Pass arguments on the stack"
-#~ msgstr "Skicka argument på stacken"
-
-#~ msgid "Use MPYI instruction for C3x"
-#~ msgstr "Använd MPYI-instruktion för C3x"
-
-#~ msgid "Enable parallel instructions"
-#~ msgstr "Aktivera parallella instruktioner"
-
-#~ msgid "Enable MPY||ADD and MPY||SUB instructions"
-#~ msgstr "Aktivera MPY||ADD- och MPY||SUB-instruktioner"
-
-#~ msgid "Preserve all 40 bits of FP reg across call"
-#~ msgstr "Bevara alla 40 bitarna av FP-register över anrop"
-
-#~ msgid "Pass arguments in registers"
-#~ msgstr "Skicka argument i register"
-
-#~ msgid "Enable use of RTPB instruction"
-#~ msgstr "Aktivera användning av RTPB-instruktion"
-
-#~ msgid "Enable use of RTPS instruction"
-#~ msgstr "Aktivera användning av RTPS-instruktion"
-
-#~ msgid "Set the maximum number of iterations for RPTS to N"
-#~ msgstr "Sätt maximalt antal iterationer för RPTS till N"
-
-#~ msgid "Small memory model"
-#~ msgstr "Liten minnesmodell"
-
-#~ msgid "Emit code compatible with TI tools"
-#~ msgstr "Mata ut kod kompatibel med TI-verktyg"
-
-#~ msgid "Copy memory address constants into registers before use"
-#~ msgstr "Kopiera minnesadresskonstanter till register före de används"
-
-#~ msgid "This switch is obsolete"
-#~ msgstr "Denna flagga är föråldrad"
-
-#~ msgid "static or type qualifiers in abstract declarator"
-#~ msgstr "statisk eller typkvalificerare i abstrakt deklarerare"
-
-#~ msgid "missing '(' after '#pragma %s' - ignored"
-#~ msgstr "\"(\" saknas efter \"pragma %s\" - ignoreras"
-
-#~ msgid "missing function name in '#pragma %s' - ignored"
-#~ msgstr "funktionsnamn saknas i \"pragma %s\" - ignoreras"
-
-#~ msgid "malformed '#pragma %s' - ignored"
-#~ msgstr "felformaterat \"#pragma %s\" - ignoreras"
-
-#~ msgid "missing section name in '#pragma %s' - ignored"
-#~ msgstr "sektionsnamn saknas i \"pragma %s\" - ignoreras"
-
-#~ msgid "missing ')' for '#pragma %s' - ignored"
-#~ msgstr "\")\" saknas till \"pragma %s\" - ignoreras"
-
-#~ msgid "junk at end of '#pragma %s'"
-#~ msgstr "skräp vid slutet av \"#pragma %s\""
-
-#~ msgid "ISR %s requires %d words of local vars, max is 32767"
-#~ msgstr "ISR %s kräver %d ord av lokala variabler, max är 32767"
-
-#~ msgid "constant halfword load operand out of range"
-#~ msgstr "konstant halvords load-operand utanför sitt intervall"
-
-#~ msgid "constant arithmetic operand out of range"
-#~ msgstr "konstant aritmetisk operand utanför sitt intervall"
-
-#~ msgid "used %d template parameter(s) instead of %d"
-#~ msgstr "använde %d mallparametrar istället för %d"
