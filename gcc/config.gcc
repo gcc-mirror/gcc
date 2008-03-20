@@ -753,7 +753,7 @@ arm*-*-linux*)			# ARM GNU/Linux with ELF
 	tmake_file="${tmake_file} arm/t-arm-softfp soft-fp/t-softfp"
 	;;
 arm*-*-uclinux*)		# ARM ucLinux
-	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/linux-gas.h arm/uclinux-elf.h arm/uclinux-elf.h"
+	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/linux-gas.h arm/uclinux-elf.h"
 	tmake_file="arm/t-arm arm/t-arm-elf"
 	case ${target} in
 	arm*-*-uclinux-*eabi)
