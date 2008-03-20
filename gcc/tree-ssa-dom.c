@@ -1146,11 +1146,12 @@ record_equality (tree x, tree y)
      (by depth), then use that.
      Otherwise it doesn't matter which value we choose, just so
      long as we canonicalize on one value.  */
-  if (TREE_INVARIANT (y))
+  if (is_gimple_min_invariant (y))
     ;
-  else if (TREE_INVARIANT (x) || (loop_depth_of_name (x) <= loop_depth_of_name (y)))
+  else if (is_gimple_min_invariant (x)
+	   || (loop_depth_of_name (x) <= loop_depth_of_name (y)))
     prev_x = x, x = y, y = prev_x, prev_x = prev_y;
-  else if (prev_x && TREE_INVARIANT (prev_x))
+  else if (prev_x && is_gimple_min_invariant (prev_x))
     x = y, y = prev_x, prev_x = prev_y;
   else if (prev_y && TREE_CODE (prev_y) != VALUE_HANDLE)
     y = prev_y;

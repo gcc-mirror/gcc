@@ -360,7 +360,7 @@ chrec_contains_symbols_defined_in_loop (const_tree chrec, unsigned loop_nb)
   if (chrec == NULL_TREE)
     return false;
 
-  if (TREE_INVARIANT (chrec))
+  if (is_gimple_min_invariant (chrec))
     return false;
 
   if (TREE_CODE (chrec) == VAR_DECL

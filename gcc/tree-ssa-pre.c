@@ -3369,7 +3369,6 @@ make_values_for_stmt (tree stmt, basic_block block)
 	    && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs))
 	   || is_gimple_min_invariant (rhs)
 	   || TREE_CODE (rhs) == ADDR_EXPR
-	   || TREE_INVARIANT (rhs)
 	   || DECL_P (rhs))
     {
 
