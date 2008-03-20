@@ -1,3 +1,13 @@
+2008-03-21  Richard Guenther  <rguenther@suse.de>
+
+	* tree-scalar-evolution.c (chrec_contains_symbols_defined_in_loop):
+	Use is_gimple_min_invariant instead of TREE_INVARIANT.
+	* tree-ssa-loop-ivopts.c (force_expr_to_var_cost): Likewise.
+	* tree-ssa-dom.c (record_equality): Likewise.
+	* tree-inline.c (copy_body_r): Likewise.
+	* tree-ssa-pre.c (make_values_for_stmt): Remove test for
+	TREE_INVARIANT.
+
 2008-03-20  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (split_branches): Pass zero to	redirect_jump

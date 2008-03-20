@@ -773,7 +773,7 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 	 and friends are up-to-date.  */
       else if (TREE_CODE (*tp) == ADDR_EXPR)
 	{
-	  int invariant = TREE_INVARIANT (*tp);
+	  int invariant = is_gimple_min_invariant (*tp);
 	  walk_tree (&TREE_OPERAND (*tp, 0), copy_body_r, id, NULL);
 	  /* Handle the case where we substituted an INDIRECT_REF
 	     into the operand of the ADDR_EXPR.  */
@@ -783,7 +783,7 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 	    recompute_tree_invariant_for_addr_expr (*tp);
 	  /* If this used to be invariant, but is not any longer,
 	     then regimplification is probably needed.  */
-	  if (invariant && !TREE_INVARIANT (*tp))
+	  if (invariant && !is_gimple_min_invariant (*tp))
 	    id->regimplify = true;
 	  *walk_subtrees = 0;
 	}

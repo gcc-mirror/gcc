@@ -3222,7 +3222,7 @@ force_expr_to_var_cost (tree expr)
   if (SSA_VAR_P (expr))
     return zero_cost;
 
-  if (TREE_INVARIANT (expr))
+  if (is_gimple_min_invariant (expr))
     {
       if (TREE_CODE (expr) == INTEGER_CST)
 	return new_cost (integer_cost, 0);
