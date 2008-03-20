@@ -1,3 +1,26 @@
+2008-03-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2008-03-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/35621
+	* gcc.target/i386/ssse3-pabsb.c: Add -fno-strict-aliasing.
+	* gcc.target/i386/ssse3-pabsd.c: Likewise.
+	* gcc.target/i386/ssse3-pabsw.c: Likewise.
+	* gcc.target/i386/ssse3-palignr.c: Likewise.
+	* gcc.target/i386/ssse3-phaddd.c: Likewise.
+	* gcc.target/i386/ssse3-phaddsw.c: Likewise.
+	* gcc.target/i386/ssse3-phaddw.c: Likewise.
+	* gcc.target/i386/ssse3-phsubd.c: Likewise.
+	* gcc.target/i386/ssse3-phsubsw.c: Likewise.
+	* gcc.target/i386/ssse3-phsubw.c: Likewise.
+	* gcc.target/i386/ssse3-pmaddubsw.c: Likewise.
+	* gcc.target/i386/ssse3-pmulhrsw.c: Likewise.
+	* gcc.target/i386/ssse3-pshufb.c: Likewise.
+	* gcc.target/i386/ssse3-psignb.c: Likewise.
+	* gcc.target/i386/ssse3-psignd.c: Likewise.
+	* gcc.target/i386/ssse3-psignw.c: Likewise.
+
 2008-03-19  Michael Matz  <matz@suse.de>
 
 	Backport from mainline:
@@ -33,9 +56,9 @@
 	Backport from mainline:
 	2008-02-19  Richard Guenther  <rguenther@suse.de>
 
-        PR tree-optimization/34989
-        * gcc.dg/pr34989-1.c: New testcase.
-        * gcc.dg/pr34989-2.c: Likewise.
+	PR tree-optimization/34989
+	* gcc.dg/pr34989-1.c: New testcase.
+	* gcc.dg/pr34989-2.c: Likewise.
 
 2008-03-14  Uros Bizjak  <ubizjak@gmail.com>
 
