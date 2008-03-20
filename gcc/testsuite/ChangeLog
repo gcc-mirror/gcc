@@ -1,3 +1,11 @@
+2008-03-20  Andreas Schwab  <schwab@suse.de>
+
+	PR testsuite/35647
+	* gcc.dg/cpp/cmdlne-dI-M.c: Match optional continuation.
+	* gcc.dg/cpp/cmdlne-dM-M.c: Likewise.
+	* gcc.dg/cpp/cmdlne-dN-M.c: Match correct file name and optional
+	continuation and remove xfail.
+
 2008-03-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/32972
