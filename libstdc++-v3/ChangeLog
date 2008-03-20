@@ -1,3 +1,10 @@
+2008-03-20  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/35637
+	* include/tr1_impl/type_traits (struct __in_array): Add back.
+	(is_function): Use it.
+	* testsuite/tr1/4_metaprogramming/is_function/35637.cc: New.
+
 2008-03-19  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/35256
