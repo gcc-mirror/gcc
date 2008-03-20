@@ -1,3 +1,9 @@
+2008-03-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/32972
+	* gfortran.dg/internal_pack_3.f90:  Add missing parameter
+	in subroutine.
+
 2008-03-20  Kai Tietz  <kai.tietz@onevision.com>
 
 	* gcc.dg/format/ms_array-1.c: New.

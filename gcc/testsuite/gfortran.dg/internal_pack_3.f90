@@ -13,6 +13,7 @@ program main
 end program main
 
 subroutine sub_ik(i)
+  integer,parameter :: k = selected_int_kind (range (0_8) + 1)
   integer(kind=k), dimension(2) :: i
   if (i(1) /= -1) call abort
   if (i(2) /= -3) call abort
