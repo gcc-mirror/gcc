@@ -1,4 +1,12 @@
-2008-03-20	Kai Tietz  <kai.tietz@onevision.com>
+2008-03-20  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* common.opt (Wmudflap): New option.
+	* tree-mudflap.c (mf_xform_derefs_1): Guard warning by OPT_Wmudflap.
+	(mx_register_decls): Likewise.
+	(mudflap_finish_file): Likewise.
+	* doc/invoke.texi: Document -Wno-mudflap.
+
+2008-03-20  Kai Tietz  <kai.tietz@onevision.com>
 
 	* c-format.c (replace_format_name_to_system_name): New.
 	(cmp_attribs): New.
