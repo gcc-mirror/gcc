@@ -1,3 +1,8 @@
+2008-03-20  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (split_branches): Pass zero to	redirect_jump
+	as 'delete_unused' argument.
+
 2008-03-20  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Remove
