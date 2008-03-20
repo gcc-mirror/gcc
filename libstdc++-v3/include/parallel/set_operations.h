@@ -500,20 +500,6 @@ template<typename InputIterator,
         intersection_func<InputIterator, OutputIterator, Comparator>(comp));
   }
 
-
-template<typename InputIterator, typename OutputIterator>
-  inline OutputIterator
-  set_intersection(InputIterator begin1, InputIterator end1,
-                   InputIterator begin2, InputIterator end2,
-                   OutputIterator result)
-  {
-    typedef std::iterator_traits<InputIterator> traits_type;
-    typedef typename traits_type::value_type value_type;
-
-    return set_intersection(begin1, end1, begin2, end2, result,
-			    std::less<value_type>());
-  }
-
 template<typename InputIterator,
 	 typename OutputIterator,
 	 typename Comparator>
