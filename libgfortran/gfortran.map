@@ -88,10 +88,6 @@ GFORTRAN_1.0 {
     _gfortran_eoshift3_4_char;
     _gfortran_eoshift3_8;
     _gfortran_eoshift3_8_char;
-    _gfortran_erfc_scaled_r4;
-    _gfortran_erfc_scaled_r8;
-    _gfortran_erfc_scaled_r10;
-    _gfortran_erfc_scaled_r16;
     _gfortran_etime;
     _gfortran_etime_sub;
     _gfortran_exit_i4;
@@ -1034,6 +1030,14 @@ GFORTRAN_1.0 {
   local:
     *;
 };
+
+GFORTRAN_1.1 {
+  global:
+    _gfortran_erfc_scaled_r4;
+    _gfortran_erfc_scaled_r8;
+    _gfortran_erfc_scaled_r10;
+    _gfortran_erfc_scaled_r16;
+} GFORTRAN_1.0; 
 
 F2C_1.0 {
   global:
