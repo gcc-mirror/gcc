@@ -1,3 +1,8 @@
+2008-03-21  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* gfortran.map: Move erfc_scaled symbols to new symbol node
+	GFORTRAN_1.1, thereby fixing ABI bug introduced in r132846.
+
 2008-03-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/32972
