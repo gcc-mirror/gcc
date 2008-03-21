@@ -1,3 +1,9 @@
+2008-03-20  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/util/testsuite_abi.cc: Add support for not counting
+	GLIBCXX_LDBL_* compat symbols missing if no long double compat
+	symbols under test.
+	
 2008-03-20  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/35637
