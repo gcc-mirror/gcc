@@ -1,3 +1,20 @@
+2008-03-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/35627
+	Backport from trunk.
+	* io/list_read.c (free_line): Clear the line buffer enable flag and
+	reset the index into line_buffer, aka item_count.
+	(next_char): Cleanup whitespace.
+	(read_logical): Use unget_char to assure that the first character of the
+	bad logical is saved in case it is part of an object name. Remove the
+	clearing of index and flag that is now in free_line.
+	(read_real): Likewise.
+
+	PR libfortran/35617
+	Backport from trunk.
+	* io/list_read.c (eat_separator): If next character after eatline is '!'
+	then eatline again. 
+
 2008-03-05  Release Manager
 
 	* GCC 4.3.0 released.

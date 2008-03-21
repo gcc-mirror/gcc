@@ -120,6 +120,9 @@ free_saved (st_parameter_dt *dtp)
 static void
 free_line (st_parameter_dt *dtp)
 {
+  dtp->u.p.item_count = 0;
+  dtp->u.p.line_buffer_enabled = 0;
+
   if (dtp->u.p.line_buffer == NULL)
     return;
 
@@ -157,8 +160,8 @@ next_char (st_parameter_dt *dtp)
 	  goto done;
 	}
 
-        dtp->u.p.item_count = 0;
-	dtp->u.p.line_buffer_enabled = 0;
+      dtp->u.p.item_count = 0;
+      dtp->u.p.line_buffer_enabled = 0;
     }    
 
   /* Handle the end-of-record and end-of-file conditions for
@@ -356,6 +359,11 @@ eat_separator (st_parameter_dt *dtp)
 		{
 		  eat_line (dtp);
 		  c = next_char (dtp);
+		  if (c == '!')
+		    {
+		      eat_line (dtp);
+		      c = next_char (dtp);
+		    }
 		}
 	    }
 	  while (c == '\n' || c == '\r' || c == ' ');
@@ -680,6 +688,9 @@ read_logical (st_parameter_dt *dtp, int length)
       return;			/* Null value.  */
 
     default:
+      /* Save the character in case it is the beginning
+	 of the next object name. */
+      unget_char (dtp, c);
       goto bad_logical;
     }
 
@@ -695,8 +706,6 @@ read_logical (st_parameter_dt *dtp, int length)
 
   unget_char (dtp, c);
   eat_separator (dtp);
-  dtp->u.p.item_count = 0;
-  dtp->u.p.line_buffer_enabled = 0;
   set_integer ((int *) dtp->u.p.value, v, length);
   free_line (dtp);
 
@@ -750,8 +759,6 @@ read_logical (st_parameter_dt *dtp, int length)
 
  logical_done:
 
-  dtp->u.p.item_count = 0;
-  dtp->u.p.line_buffer_enabled = 0;
   dtp->u.p.saved_type = BT_LOGICAL;
   dtp->u.p.saved_length = length;
   set_integer ((int *) dtp->u.p.value, v, length);
@@ -1635,8 +1642,6 @@ read_real (st_parameter_dt *dtp, int length)
       push_char (dtp, 'n');
     }
 
-  dtp->u.p.item_count = 0;
-  dtp->u.p.line_buffer_enabled = 0;
   free_line (dtp);
   goto done;
 
