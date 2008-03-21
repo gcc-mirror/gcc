@@ -656,6 +656,7 @@ configure-host:  \
     maybe-configure-gmp \
     maybe-configure-mpfr \
     maybe-configure-gnuserv \
+    maybe-configure-gold \
     maybe-configure-gprof \
     maybe-configure-gzip \
     maybe-configure-hello \
@@ -794,6 +795,9 @@ all-host: maybe-all-gmp
 all-host: maybe-all-mpfr
 @endif mpfr-no-bootstrap
 all-host: maybe-all-gnuserv
+@if gold-no-bootstrap
+all-host: maybe-all-gold
+@endif gold-no-bootstrap
 all-host: maybe-all-gprof
 all-host: maybe-all-gzip
 all-host: maybe-all-hello
@@ -919,6 +923,7 @@ info-host: maybe-info-gettext
 info-host: maybe-info-gmp
 info-host: maybe-info-mpfr
 info-host: maybe-info-gnuserv
+info-host: maybe-info-gold
 info-host: maybe-info-gprof
 info-host: maybe-info-gzip
 info-host: maybe-info-hello
@@ -1025,6 +1030,7 @@ dvi-host: maybe-dvi-gettext
 dvi-host: maybe-dvi-gmp
 dvi-host: maybe-dvi-mpfr
 dvi-host: maybe-dvi-gnuserv
+dvi-host: maybe-dvi-gold
 dvi-host: maybe-dvi-gprof
 dvi-host: maybe-dvi-gzip
 dvi-host: maybe-dvi-hello
@@ -1131,6 +1137,7 @@ pdf-host: maybe-pdf-gettext
 pdf-host: maybe-pdf-gmp
 pdf-host: maybe-pdf-mpfr
 pdf-host: maybe-pdf-gnuserv
+pdf-host: maybe-pdf-gold
 pdf-host: maybe-pdf-gprof
 pdf-host: maybe-pdf-gzip
 pdf-host: maybe-pdf-hello
@@ -1237,6 +1244,7 @@ html-host: maybe-html-gettext
 html-host: maybe-html-gmp
 html-host: maybe-html-mpfr
 html-host: maybe-html-gnuserv
+html-host: maybe-html-gold
 html-host: maybe-html-gprof
 html-host: maybe-html-gzip
 html-host: maybe-html-hello
@@ -1343,6 +1351,7 @@ TAGS-host: maybe-TAGS-gettext
 TAGS-host: maybe-TAGS-gmp
 TAGS-host: maybe-TAGS-mpfr
 TAGS-host: maybe-TAGS-gnuserv
+TAGS-host: maybe-TAGS-gold
 TAGS-host: maybe-TAGS-gprof
 TAGS-host: maybe-TAGS-gzip
 TAGS-host: maybe-TAGS-hello
@@ -1449,6 +1458,7 @@ install-info-host: maybe-install-info-gettext
 install-info-host: maybe-install-info-gmp
 install-info-host: maybe-install-info-mpfr
 install-info-host: maybe-install-info-gnuserv
+install-info-host: maybe-install-info-gold
 install-info-host: maybe-install-info-gprof
 install-info-host: maybe-install-info-gzip
 install-info-host: maybe-install-info-hello
@@ -1555,6 +1565,7 @@ install-pdf-host: maybe-install-pdf-gettext
 install-pdf-host: maybe-install-pdf-gmp
 install-pdf-host: maybe-install-pdf-mpfr
 install-pdf-host: maybe-install-pdf-gnuserv
+install-pdf-host: maybe-install-pdf-gold
 install-pdf-host: maybe-install-pdf-gprof
 install-pdf-host: maybe-install-pdf-gzip
 install-pdf-host: maybe-install-pdf-hello
@@ -1661,6 +1672,7 @@ install-html-host: maybe-install-html-gettext
 install-html-host: maybe-install-html-gmp
 install-html-host: maybe-install-html-mpfr
 install-html-host: maybe-install-html-gnuserv
+install-html-host: maybe-install-html-gold
 install-html-host: maybe-install-html-gprof
 install-html-host: maybe-install-html-gzip
 install-html-host: maybe-install-html-hello
@@ -1767,6 +1779,7 @@ installcheck-host: maybe-installcheck-gettext
 installcheck-host: maybe-installcheck-gmp
 installcheck-host: maybe-installcheck-mpfr
 installcheck-host: maybe-installcheck-gnuserv
+installcheck-host: maybe-installcheck-gold
 installcheck-host: maybe-installcheck-gprof
 installcheck-host: maybe-installcheck-gzip
 installcheck-host: maybe-installcheck-hello
@@ -1873,6 +1886,7 @@ mostlyclean-host: maybe-mostlyclean-gettext
 mostlyclean-host: maybe-mostlyclean-gmp
 mostlyclean-host: maybe-mostlyclean-mpfr
 mostlyclean-host: maybe-mostlyclean-gnuserv
+mostlyclean-host: maybe-mostlyclean-gold
 mostlyclean-host: maybe-mostlyclean-gprof
 mostlyclean-host: maybe-mostlyclean-gzip
 mostlyclean-host: maybe-mostlyclean-hello
@@ -1979,6 +1993,7 @@ clean-host: maybe-clean-gettext
 clean-host: maybe-clean-gmp
 clean-host: maybe-clean-mpfr
 clean-host: maybe-clean-gnuserv
+clean-host: maybe-clean-gold
 clean-host: maybe-clean-gprof
 clean-host: maybe-clean-gzip
 clean-host: maybe-clean-hello
@@ -2085,6 +2100,7 @@ distclean-host: maybe-distclean-gettext
 distclean-host: maybe-distclean-gmp
 distclean-host: maybe-distclean-mpfr
 distclean-host: maybe-distclean-gnuserv
+distclean-host: maybe-distclean-gold
 distclean-host: maybe-distclean-gprof
 distclean-host: maybe-distclean-gzip
 distclean-host: maybe-distclean-hello
@@ -2191,6 +2207,7 @@ maintainer-clean-host: maybe-maintainer-clean-gettext
 maintainer-clean-host: maybe-maintainer-clean-gmp
 maintainer-clean-host: maybe-maintainer-clean-mpfr
 maintainer-clean-host: maybe-maintainer-clean-gnuserv
+maintainer-clean-host: maybe-maintainer-clean-gold
 maintainer-clean-host: maybe-maintainer-clean-gprof
 maintainer-clean-host: maybe-maintainer-clean-gzip
 maintainer-clean-host: maybe-maintainer-clean-hello
@@ -2351,6 +2368,7 @@ check-host:  \
     maybe-check-gmp \
     maybe-check-mpfr \
     maybe-check-gnuserv \
+    maybe-check-gold \
     maybe-check-gprof \
     maybe-check-gzip \
     maybe-check-hello \
@@ -2483,6 +2501,7 @@ install-host-nogcc:  \
     maybe-install-gmp \
     maybe-install-mpfr \
     maybe-install-gnuserv \
+    maybe-install-gold \
     maybe-install-gprof \
     maybe-install-gzip \
     maybe-install-hello \
@@ -2556,6 +2575,7 @@ install-host:  \
     maybe-install-gmp \
     maybe-install-mpfr \
     maybe-install-gnuserv \
+    maybe-install-gold \
     maybe-install-gprof \
     maybe-install-gzip \
     maybe-install-hello \
@@ -18301,6 +18321,969 @@ maintainer-clean-gnuserv:
 	  || exit 1
 
 @endif gnuserv
+
+
+
+.PHONY: configure-gold maybe-configure-gold
+maybe-configure-gold:
+@if gcc-bootstrap
+configure-gold: stage_current
+@endif gcc-bootstrap
+@if gold
+maybe-configure-gold: configure-gold
+configure-gold: 
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gold/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gold ; \
+	$(HOST_EXPORTS) \
+	echo Configuring in $(HOST_SUBDIR)/gold; \
+	cd "$(HOST_SUBDIR)/gold" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gold/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/gold"; \
+	libsrcdir="$$s/gold"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
+	  || exit 1
+@endif gold
+
+
+
+.PHONY: configure-stage1-gold maybe-configure-stage1-gold
+maybe-configure-stage1-gold:
+@if gold-bootstrap
+maybe-configure-stage1-gold: configure-stage1-gold
+configure-stage1-gold:
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gold
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gold/Makefile || exit 0; \
+	$(HOST_EXPORTS)  \
+	CFLAGS="$(STAGE1_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE1_CFLAGS)"; export CXXFLAGS;  \
+	echo Configuring stage 1 in $(HOST_SUBDIR)/gold ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gold ; \
+	cd $(HOST_SUBDIR)/gold || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gold/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/gold"; \
+	libsrcdir="$$s/gold"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	   \
+	  --disable-intermodule $(STAGE1_CHECKING) 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
+@endif gold-bootstrap
+
+.PHONY: configure-stage2-gold maybe-configure-stage2-gold
+maybe-configure-stage2-gold:
+@if gold-bootstrap
+maybe-configure-stage2-gold: configure-stage2-gold
+configure-stage2-gold:
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gold
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gold/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE2_CFLAGS)"; export CXXFLAGS;  \
+	echo Configuring stage 2 in $(HOST_SUBDIR)/gold ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gold ; \
+	cd $(HOST_SUBDIR)/gold || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gold/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/gold"; \
+	libsrcdir="$$s/gold"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif gold-bootstrap
+
+.PHONY: configure-stageb2g0-gold maybe-configure-stageb2g0-gold
+maybe-configure-stageb2g0-gold:
+@if gold-bootstrap
+maybe-configure-stageb2g0-gold: configure-stageb2g0-gold
+configure-stageb2g0-gold:
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gold
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gold/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	CFLAGS="$(STAGE2_CFLAGS) -g0"; export CFLAGS; \
+	CXXFLAGS="$(STAGE2_CFLAGS) -g0"; export CXXFLAGS;  \
+	echo Configuring stage b2g0 in $(HOST_SUBDIR)/gold ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gold ; \
+	cd $(HOST_SUBDIR)/gold || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gold/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/gold"; \
+	libsrcdir="$$s/gold"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif gold-bootstrap
+
+.PHONY: configure-stage3-gold maybe-configure-stage3-gold
+maybe-configure-stage3-gold:
+@if gold-bootstrap
+maybe-configure-stage3-gold: configure-stage3-gold
+configure-stage3-gold:
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gold
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gold/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE3_CFLAGS)"; export CXXFLAGS;  \
+	echo Configuring stage 3 in $(HOST_SUBDIR)/gold ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gold ; \
+	cd $(HOST_SUBDIR)/gold || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gold/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/gold"; \
+	libsrcdir="$$s/gold"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif gold-bootstrap
+
+.PHONY: configure-stageb3g2-gold maybe-configure-stageb3g2-gold
+maybe-configure-stageb3g2-gold:
+@if gold-bootstrap
+maybe-configure-stageb3g2-gold: configure-stageb3g2-gold
+configure-stageb3g2-gold:
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gold
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gold/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	CFLAGS="$(STAGE3_CFLAGS) -g2"; export CFLAGS; \
+	CXXFLAGS="$(STAGE3_CFLAGS) -g2"; export CXXFLAGS;  \
+	echo Configuring stage b3g2 in $(HOST_SUBDIR)/gold ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gold ; \
+	cd $(HOST_SUBDIR)/gold || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gold/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/gold"; \
+	libsrcdir="$$s/gold"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif gold-bootstrap
+
+.PHONY: configure-stage4-gold maybe-configure-stage4-gold
+maybe-configure-stage4-gold:
+@if gold-bootstrap
+maybe-configure-stage4-gold: configure-stage4-gold
+configure-stage4-gold:
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gold
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gold/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE4_CFLAGS)"; export CXXFLAGS;  \
+	echo Configuring stage 4 in $(HOST_SUBDIR)/gold ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gold ; \
+	cd $(HOST_SUBDIR)/gold || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gold/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/gold"; \
+	libsrcdir="$$s/gold"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif gold-bootstrap
+
+.PHONY: configure-stageprofile-gold maybe-configure-stageprofile-gold
+maybe-configure-stageprofile-gold:
+@if gold-bootstrap
+maybe-configure-stageprofile-gold: configure-stageprofile-gold
+configure-stageprofile-gold:
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gold
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gold/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export CFLAGS; \
+	CXXFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export CXXFLAGS;  \
+	echo Configuring stage profile in $(HOST_SUBDIR)/gold ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gold ; \
+	cd $(HOST_SUBDIR)/gold || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gold/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/gold"; \
+	libsrcdir="$$s/gold"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif gold-bootstrap
+
+.PHONY: configure-stagefeedback-gold maybe-configure-stagefeedback-gold
+maybe-configure-stagefeedback-gold:
+@if gold-bootstrap
+maybe-configure-stagefeedback-gold: configure-stagefeedback-gold
+configure-stagefeedback-gold:
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gold
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gold/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	CFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export CFLAGS; \
+	CXXFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export CXXFLAGS;  \
+	echo Configuring stage feedback in $(HOST_SUBDIR)/gold ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gold ; \
+	cd $(HOST_SUBDIR)/gold || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gold/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/gold"; \
+	libsrcdir="$$s/gold"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif gold-bootstrap
+
+
+
+
+
+.PHONY: all-gold maybe-all-gold
+maybe-all-gold:
+@if gcc-bootstrap
+all-gold: stage_current
+@endif gcc-bootstrap
+@if gold
+TARGET-gold=all
+maybe-all-gold: all-gold
+all-gold: configure-gold
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gold && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+		$(TARGET-gold))
+@endif gold
+
+
+
+.PHONY: all-stage1-gold maybe-all-stage1-gold
+.PHONY: clean-stage1-gold maybe-clean-stage1-gold
+maybe-all-stage1-gold:
+maybe-clean-stage1-gold:
+@if gold-bootstrap
+maybe-all-stage1-gold: all-stage1-gold
+all-stage1: all-stage1-gold
+TARGET-stage1-gold = $(TARGET-gold)
+all-stage1-gold: configure-stage1-gold
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/gold && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE1_CFLAGS)" CXXFLAGS="$(STAGE1_CFLAGS)" \
+		LIBCFLAGS="$(STAGE1_LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(STAGE1_LIBCFLAGS)" \
+		CXXFLAGS_FOR_TARGET="$(STAGE1_LIBCFLAGS)" $(EXTRA_HOST_FLAGS)   \
+		$(TARGET-stage1-gold)
+
+maybe-clean-stage1-gold: clean-stage1-gold
+clean-stage1: clean-stage1-gold
+clean-stage1-gold:
+	@if [ $(current_stage) = stage1 ]; then \
+	  [ -f $(HOST_SUBDIR)/gold/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage1-gold/Makefile ] || exit 0; \
+	  $(MAKE) stage1-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/gold && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+		 clean
+@endif gold-bootstrap
+
+
+.PHONY: all-stage2-gold maybe-all-stage2-gold
+.PHONY: clean-stage2-gold maybe-clean-stage2-gold
+maybe-all-stage2-gold:
+maybe-clean-stage2-gold:
+@if gold-bootstrap
+maybe-all-stage2-gold: all-stage2-gold
+all-stage2: all-stage2-gold
+TARGET-stage2-gold = $(TARGET-gold)
+all-stage2-gold: configure-stage2-gold
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/gold && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE2_CFLAGS)" CXXFLAGS="$(STAGE2_CFLAGS)" \
+		LIBCFLAGS="$(STAGE2_LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" \
+		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stage2-gold)
+
+maybe-clean-stage2-gold: clean-stage2-gold
+clean-stage2: clean-stage2-gold
+clean-stage2-gold:
+	@if [ $(current_stage) = stage2 ]; then \
+	  [ -f $(HOST_SUBDIR)/gold/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage2-gold/Makefile ] || exit 0; \
+	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/gold && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif gold-bootstrap
+
+
+.PHONY: all-stageb2g0-gold maybe-all-stageb2g0-gold
+.PHONY: clean-stageb2g0-gold maybe-clean-stageb2g0-gold
+maybe-all-stageb2g0-gold:
+maybe-clean-stageb2g0-gold:
+@if gold-bootstrap
+maybe-all-stageb2g0-gold: all-stageb2g0-gold
+all-stageb2g0: all-stageb2g0-gold
+TARGET-stageb2g0-gold = $(TARGET-gold)
+all-stageb2g0-gold: configure-stageb2g0-gold
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/gold && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE2_CFLAGS) -g0" CXXFLAGS="$(STAGE2_CFLAGS) -g0" \
+		LIBCFLAGS="$(STAGE2_LIBCFLAGS) -g0" \
+		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -g0" \
+		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS) -g0" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb2g0-gold)
+
+maybe-clean-stageb2g0-gold: clean-stageb2g0-gold
+clean-stageb2g0: clean-stageb2g0-gold
+clean-stageb2g0-gold:
+	@if [ $(current_stage) = stageb2g0 ]; then \
+	  [ -f $(HOST_SUBDIR)/gold/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb2g0-gold/Makefile ] || exit 0; \
+	  $(MAKE) stageb2g0-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/gold && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif gold-bootstrap
+
+
+.PHONY: all-stage3-gold maybe-all-stage3-gold
+.PHONY: clean-stage3-gold maybe-clean-stage3-gold
+maybe-all-stage3-gold:
+maybe-clean-stage3-gold:
+@if gold-bootstrap
+maybe-all-stage3-gold: all-stage3-gold
+all-stage3: all-stage3-gold
+TARGET-stage3-gold = $(TARGET-gold)
+all-stage3-gold: configure-stage3-gold
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/gold && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE3_CFLAGS)" CXXFLAGS="$(STAGE3_CFLAGS)" \
+		LIBCFLAGS="$(STAGE3_LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(STAGE3_LIBCFLAGS)" \
+		CXXFLAGS_FOR_TARGET="$(STAGE3_LIBCFLAGS)" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stage3-gold)
+
+maybe-clean-stage3-gold: clean-stage3-gold
+clean-stage3: clean-stage3-gold
+clean-stage3-gold:
+	@if [ $(current_stage) = stage3 ]; then \
+	  [ -f $(HOST_SUBDIR)/gold/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage3-gold/Makefile ] || exit 0; \
+	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/gold && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif gold-bootstrap
+
+
+.PHONY: all-stageb3g2-gold maybe-all-stageb3g2-gold
+.PHONY: clean-stageb3g2-gold maybe-clean-stageb3g2-gold
+maybe-all-stageb3g2-gold:
+maybe-clean-stageb3g2-gold:
+@if gold-bootstrap
+maybe-all-stageb3g2-gold: all-stageb3g2-gold
+all-stageb3g2: all-stageb3g2-gold
+TARGET-stageb3g2-gold = $(TARGET-gold)
+all-stageb3g2-gold: configure-stageb3g2-gold
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/gold && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE3_CFLAGS) -g2" CXXFLAGS="$(STAGE3_CFLAGS) -g2" \
+		LIBCFLAGS="$(STAGE3_LIBCFLAGS) -g2" \
+		CFLAGS_FOR_TARGET="$(STAGE3_LIBCFLAGS) -g2" \
+		CXXFLAGS_FOR_TARGET="$(STAGE3_LIBCFLAGS) -g2" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb3g2-gold)
+
+maybe-clean-stageb3g2-gold: clean-stageb3g2-gold
+clean-stageb3g2: clean-stageb3g2-gold
+clean-stageb3g2-gold:
+	@if [ $(current_stage) = stageb3g2 ]; then \
+	  [ -f $(HOST_SUBDIR)/gold/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb3g2-gold/Makefile ] || exit 0; \
+	  $(MAKE) stageb3g2-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/gold && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif gold-bootstrap
+
+
+.PHONY: all-stage4-gold maybe-all-stage4-gold
+.PHONY: clean-stage4-gold maybe-clean-stage4-gold
+maybe-all-stage4-gold:
+maybe-clean-stage4-gold:
+@if gold-bootstrap
+maybe-all-stage4-gold: all-stage4-gold
+all-stage4: all-stage4-gold
+TARGET-stage4-gold = $(TARGET-gold)
+all-stage4-gold: configure-stage4-gold
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/gold && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE4_CFLAGS)" CXXFLAGS="$(STAGE4_CFLAGS)" \
+		LIBCFLAGS="$(STAGE4_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(STAGE4_CFLAGS)" \
+		CXXFLAGS_FOR_TARGET="$(STAGE4_CFLAGS)" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stage4-gold)
+
+maybe-clean-stage4-gold: clean-stage4-gold
+clean-stage4: clean-stage4-gold
+clean-stage4-gold:
+	@if [ $(current_stage) = stage4 ]; then \
+	  [ -f $(HOST_SUBDIR)/gold/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage4-gold/Makefile ] || exit 0; \
+	  $(MAKE) stage4-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/gold && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif gold-bootstrap
+
+
+.PHONY: all-stageprofile-gold maybe-all-stageprofile-gold
+.PHONY: clean-stageprofile-gold maybe-clean-stageprofile-gold
+maybe-all-stageprofile-gold:
+maybe-clean-stageprofile-gold:
+@if gold-bootstrap
+maybe-all-stageprofile-gold: all-stageprofile-gold
+all-stageprofile: all-stageprofile-gold
+TARGET-stageprofile-gold = $(TARGET-gold)
+all-stageprofile-gold: configure-stageprofile-gold
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/gold && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" CXXFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" \
+		LIBCFLAGS="$(STAGE2_LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" \
+		CXXFLAGS_FOR_TARGET="$(STAGE2_LIBCFLAGS)" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageprofile-gold)
+
+maybe-clean-stageprofile-gold: clean-stageprofile-gold
+clean-stageprofile: clean-stageprofile-gold
+clean-stageprofile-gold:
+	@if [ $(current_stage) = stageprofile ]; then \
+	  [ -f $(HOST_SUBDIR)/gold/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageprofile-gold/Makefile ] || exit 0; \
+	  $(MAKE) stageprofile-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/gold && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif gold-bootstrap
+
+
+.PHONY: all-stagefeedback-gold maybe-all-stagefeedback-gold
+.PHONY: clean-stagefeedback-gold maybe-clean-stagefeedback-gold
+maybe-all-stagefeedback-gold:
+maybe-clean-stagefeedback-gold:
+@if gold-bootstrap
+maybe-all-stagefeedback-gold: all-stagefeedback-gold
+all-stagefeedback: all-stagefeedback-gold
+TARGET-stagefeedback-gold = $(TARGET-gold)
+all-stagefeedback-gold: configure-stagefeedback-gold
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/gold && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE3_CFLAGS) -fprofile-use" CXXFLAGS="$(STAGE3_CFLAGS) -fprofile-use" \
+		LIBCFLAGS="$(STAGE3_LIBCFLAGS) -fprofile-use" \
+		CFLAGS_FOR_TARGET="$(STAGE3_LIBCFLAGS) -fprofile-use" \
+		CXXFLAGS_FOR_TARGET="$(STAGE3_LIBCFLAGS) -fprofile-use" $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stagefeedback-gold)
+
+maybe-clean-stagefeedback-gold: clean-stagefeedback-gold
+clean-stagefeedback: clean-stagefeedback-gold
+clean-stagefeedback-gold:
+	@if [ $(current_stage) = stagefeedback ]; then \
+	  [ -f $(HOST_SUBDIR)/gold/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stagefeedback-gold/Makefile ] || exit 0; \
+	  $(MAKE) stagefeedback-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/gold && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif gold-bootstrap
+
+
+
+
+
+.PHONY: check-gold maybe-check-gold
+maybe-check-gold:
+@if gold
+maybe-check-gold: check-gold
+
+check-gold:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gold && \
+	  $(MAKE) $(FLAGS_TO_PASS)  check)
+
+@endif gold
+
+.PHONY: install-gold maybe-install-gold
+maybe-install-gold:
+@if gold
+maybe-install-gold: install-gold
+
+install-gold: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gold && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif gold
+
+# Other targets (info, dvi, pdf, etc.)
+
+.PHONY: maybe-info-gold info-gold
+maybe-info-gold:
+@if gold
+maybe-info-gold: info-gold
+
+info-gold: \
+    configure-gold 
+	@[ -f ./gold/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in gold" ; \
+	(cd $(HOST_SUBDIR)/gold && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          info) \
+	  || exit 1
+
+@endif gold
+
+.PHONY: maybe-dvi-gold dvi-gold
+maybe-dvi-gold:
+@if gold
+maybe-dvi-gold: dvi-gold
+
+dvi-gold: \
+    configure-gold 
+	@[ -f ./gold/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in gold" ; \
+	(cd $(HOST_SUBDIR)/gold && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          dvi) \
+	  || exit 1
+
+@endif gold
+
+.PHONY: maybe-pdf-gold pdf-gold
+maybe-pdf-gold:
+@if gold
+maybe-pdf-gold: pdf-gold
+
+pdf-gold: \
+    configure-gold 
+	@[ -f ./gold/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing pdf in gold" ; \
+	(cd $(HOST_SUBDIR)/gold && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          pdf) \
+	  || exit 1
+
+@endif gold
+
+.PHONY: maybe-html-gold html-gold
+maybe-html-gold:
+@if gold
+maybe-html-gold: html-gold
+
+html-gold: \
+    configure-gold 
+	@[ -f ./gold/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in gold" ; \
+	(cd $(HOST_SUBDIR)/gold && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          html) \
+	  || exit 1
+
+@endif gold
+
+.PHONY: maybe-TAGS-gold TAGS-gold
+maybe-TAGS-gold:
+@if gold
+maybe-TAGS-gold: TAGS-gold
+
+TAGS-gold: \
+    configure-gold 
+	@[ -f ./gold/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in gold" ; \
+	(cd $(HOST_SUBDIR)/gold && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          TAGS) \
+	  || exit 1
+
+@endif gold
+
+.PHONY: maybe-install-info-gold install-info-gold
+maybe-install-info-gold:
+@if gold
+maybe-install-info-gold: install-info-gold
+
+install-info-gold: \
+    configure-gold \
+    info-gold 
+	@[ -f ./gold/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in gold" ; \
+	(cd $(HOST_SUBDIR)/gold && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-info) \
+	  || exit 1
+
+@endif gold
+
+.PHONY: maybe-install-pdf-gold install-pdf-gold
+maybe-install-pdf-gold:
+@if gold
+maybe-install-pdf-gold: install-pdf-gold
+
+install-pdf-gold: \
+    configure-gold \
+    pdf-gold 
+	@[ -f ./gold/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in gold" ; \
+	(cd $(HOST_SUBDIR)/gold && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif gold
+
+.PHONY: maybe-install-html-gold install-html-gold
+maybe-install-html-gold:
+@if gold
+maybe-install-html-gold: install-html-gold
+
+install-html-gold: \
+    configure-gold \
+    html-gold 
+	@[ -f ./gold/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-html in gold" ; \
+	(cd $(HOST_SUBDIR)/gold && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-html) \
+	  || exit 1
+
+@endif gold
+
+.PHONY: maybe-installcheck-gold installcheck-gold
+maybe-installcheck-gold:
+@if gold
+maybe-installcheck-gold: installcheck-gold
+
+installcheck-gold: \
+    configure-gold 
+	@[ -f ./gold/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in gold" ; \
+	(cd $(HOST_SUBDIR)/gold && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          installcheck) \
+	  || exit 1
+
+@endif gold
+
+.PHONY: maybe-mostlyclean-gold mostlyclean-gold
+maybe-mostlyclean-gold:
+@if gold
+maybe-mostlyclean-gold: mostlyclean-gold
+
+mostlyclean-gold: 
+	@[ -f ./gold/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in gold" ; \
+	(cd $(HOST_SUBDIR)/gold && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          mostlyclean) \
+	  || exit 1
+
+@endif gold
+
+.PHONY: maybe-clean-gold clean-gold
+maybe-clean-gold:
+@if gold
+maybe-clean-gold: clean-gold
+
+clean-gold: 
+	@[ -f ./gold/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in gold" ; \
+	(cd $(HOST_SUBDIR)/gold && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          clean) \
+	  || exit 1
+
+@endif gold
+
+.PHONY: maybe-distclean-gold distclean-gold
+maybe-distclean-gold:
+@if gold
+maybe-distclean-gold: distclean-gold
+
+distclean-gold: 
+	@[ -f ./gold/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in gold" ; \
+	(cd $(HOST_SUBDIR)/gold && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          distclean) \
+	  || exit 1
+
+@endif gold
+
+.PHONY: maybe-maintainer-clean-gold maintainer-clean-gold
+maybe-maintainer-clean-gold:
+@if gold
+maybe-maintainer-clean-gold: maintainer-clean-gold
+
+maintainer-clean-gold: 
+	@[ -f ./gold/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in gold" ; \
+	(cd $(HOST_SUBDIR)/gold && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          maintainer-clean) \
+	  || exit 1
+
+@endif gold
 
 
 
@@ -49684,6 +50667,11 @@ stage1-start::
 	  mkdir stage1-mpfr; \
 	mv stage1-mpfr mpfr 
 @endif mpfr
+@if gold
+	@cd $(HOST_SUBDIR); [ -d stage1-gold ] || \
+	  mkdir stage1-gold; \
+	mv stage1-gold gold 
+@endif gold
 @if intl
 	@cd $(HOST_SUBDIR); [ -d stage1-intl ] || \
 	  mkdir stage1-intl; \
@@ -49754,6 +50742,11 @@ stage1-end::
 	  cd $(HOST_SUBDIR); mv mpfr stage1-mpfr  ; \
 	fi
 @endif mpfr
+@if gold
+	@if test -d $(HOST_SUBDIR)/gold ; then \
+	  cd $(HOST_SUBDIR); mv gold stage1-gold  ; \
+	fi
+@endif gold
 @if intl
 	@if test -d $(HOST_SUBDIR)/intl ; then \
 	  cd $(HOST_SUBDIR); mv intl stage1-intl  ; \
@@ -49874,6 +50867,12 @@ stage2-start::
 	mv stage2-mpfr mpfr  ; \
 	mv stage1-mpfr prev-mpfr || test -f stage1-lean 
 @endif mpfr
+@if gold
+	@cd $(HOST_SUBDIR); [ -d stage2-gold ] || \
+	  mkdir stage2-gold; \
+	mv stage2-gold gold  ; \
+	mv stage1-gold prev-gold || test -f stage1-lean 
+@endif gold
 @if intl
 	@cd $(HOST_SUBDIR); [ -d stage2-intl ] || \
 	  mkdir stage2-intl; \
@@ -49958,6 +50957,12 @@ stage2-end::
 	  mv prev-mpfr stage1-mpfr ; :  ; \
 	fi
 @endif mpfr
+@if gold
+	@if test -d $(HOST_SUBDIR)/gold ; then \
+	  cd $(HOST_SUBDIR); mv gold stage2-gold ; \
+	  mv prev-gold stage1-gold ; :  ; \
+	fi
+@endif gold
 @if intl
 	@if test -d $(HOST_SUBDIR)/intl ; then \
 	  cd $(HOST_SUBDIR); mv intl stage2-intl ; \
@@ -50106,6 +51111,12 @@ stageb2g0-start::
 	mv stageb2g0-mpfr mpfr  ; \
 	mv stage1-mpfr prev-mpfr || test -f stage1-lean 
 @endif mpfr
+@if gold
+	@cd $(HOST_SUBDIR); [ -d stageb2g0-gold ] || \
+	  mkdir stageb2g0-gold; \
+	mv stageb2g0-gold gold  ; \
+	mv stage1-gold prev-gold || test -f stage1-lean 
+@endif gold
 @if intl
 	@cd $(HOST_SUBDIR); [ -d stageb2g0-intl ] || \
 	  mkdir stageb2g0-intl; \
@@ -50190,6 +51201,12 @@ stageb2g0-end::
 	  mv prev-mpfr stage1-mpfr ; :  ; \
 	fi
 @endif mpfr
+@if gold
+	@if test -d $(HOST_SUBDIR)/gold ; then \
+	  cd $(HOST_SUBDIR); mv gold stageb2g0-gold ; \
+	  mv prev-gold stage1-gold ; :  ; \
+	fi
+@endif gold
 @if intl
 	@if test -d $(HOST_SUBDIR)/intl ; then \
 	  cd $(HOST_SUBDIR); mv intl stageb2g0-intl ; \
@@ -50338,6 +51355,12 @@ stage3-start::
 	mv stage3-mpfr mpfr  ; \
 	mv stage2-mpfr prev-mpfr || test -f stage2-lean 
 @endif mpfr
+@if gold
+	@cd $(HOST_SUBDIR); [ -d stage3-gold ] || \
+	  mkdir stage3-gold; \
+	mv stage3-gold gold  ; \
+	mv stage2-gold prev-gold || test -f stage2-lean 
+@endif gold
 @if intl
 	@cd $(HOST_SUBDIR); [ -d stage3-intl ] || \
 	  mkdir stage3-intl; \
@@ -50422,6 +51445,12 @@ stage3-end::
 	  mv prev-mpfr stage2-mpfr ; :  ; \
 	fi
 @endif mpfr
+@if gold
+	@if test -d $(HOST_SUBDIR)/gold ; then \
+	  cd $(HOST_SUBDIR); mv gold stage3-gold ; \
+	  mv prev-gold stage2-gold ; :  ; \
+	fi
+@endif gold
 @if intl
 	@if test -d $(HOST_SUBDIR)/intl ; then \
 	  cd $(HOST_SUBDIR); mv intl stage3-intl ; \
@@ -50624,6 +51653,12 @@ stageb3g2-start::
 	mv stageb3g2-mpfr mpfr  ; \
 	mv stageb2g0-mpfr prev-mpfr || test -f stageb2g0-lean 
 @endif mpfr
+@if gold
+	@cd $(HOST_SUBDIR); [ -d stageb3g2-gold ] || \
+	  mkdir stageb3g2-gold; \
+	mv stageb3g2-gold gold  ; \
+	mv stageb2g0-gold prev-gold || test -f stageb2g0-lean 
+@endif gold
 @if intl
 	@cd $(HOST_SUBDIR); [ -d stageb3g2-intl ] || \
 	  mkdir stageb3g2-intl; \
@@ -50708,6 +51743,12 @@ stageb3g2-end::
 	  mv prev-mpfr stageb2g0-mpfr ; :  ; \
 	fi
 @endif mpfr
+@if gold
+	@if test -d $(HOST_SUBDIR)/gold ; then \
+	  cd $(HOST_SUBDIR); mv gold stageb3g2-gold ; \
+	  mv prev-gold stageb2g0-gold ; :  ; \
+	fi
+@endif gold
 @if intl
 	@if test -d $(HOST_SUBDIR)/intl ; then \
 	  cd $(HOST_SUBDIR); mv intl stageb3g2-intl ; \
@@ -50910,6 +51951,12 @@ stage4-start::
 	mv stage4-mpfr mpfr  ; \
 	mv stage3-mpfr prev-mpfr || test -f stage3-lean 
 @endif mpfr
+@if gold
+	@cd $(HOST_SUBDIR); [ -d stage4-gold ] || \
+	  mkdir stage4-gold; \
+	mv stage4-gold gold  ; \
+	mv stage3-gold prev-gold || test -f stage3-lean 
+@endif gold
 @if intl
 	@cd $(HOST_SUBDIR); [ -d stage4-intl ] || \
 	  mkdir stage4-intl; \
@@ -50994,6 +52041,12 @@ stage4-end::
 	  mv prev-mpfr stage3-mpfr ; :  ; \
 	fi
 @endif mpfr
+@if gold
+	@if test -d $(HOST_SUBDIR)/gold ; then \
+	  cd $(HOST_SUBDIR); mv gold stage4-gold ; \
+	  mv prev-gold stage3-gold ; :  ; \
+	fi
+@endif gold
 @if intl
 	@if test -d $(HOST_SUBDIR)/intl ; then \
 	  cd $(HOST_SUBDIR); mv intl stage4-intl ; \
@@ -51185,6 +52238,12 @@ stageprofile-start::
 	mv stageprofile-mpfr mpfr  ; \
 	mv stage1-mpfr prev-mpfr || test -f stage1-lean 
 @endif mpfr
+@if gold
+	@cd $(HOST_SUBDIR); [ -d stageprofile-gold ] || \
+	  mkdir stageprofile-gold; \
+	mv stageprofile-gold gold  ; \
+	mv stage1-gold prev-gold || test -f stage1-lean 
+@endif gold
 @if intl
 	@cd $(HOST_SUBDIR); [ -d stageprofile-intl ] || \
 	  mkdir stageprofile-intl; \
@@ -51269,6 +52328,12 @@ stageprofile-end::
 	  mv prev-mpfr stage1-mpfr ; :  ; \
 	fi
 @endif mpfr
+@if gold
+	@if test -d $(HOST_SUBDIR)/gold ; then \
+	  cd $(HOST_SUBDIR); mv gold stageprofile-gold ; \
+	  mv prev-gold stage1-gold ; :  ; \
+	fi
+@endif gold
 @if intl
 	@if test -d $(HOST_SUBDIR)/intl ; then \
 	  cd $(HOST_SUBDIR); mv intl stageprofile-intl ; \
@@ -51396,6 +52461,12 @@ stagefeedback-start::
 	mv stagefeedback-mpfr mpfr  ; \
 	mv stageprofile-mpfr prev-mpfr || test -f stageprofile-lean 
 @endif mpfr
+@if gold
+	@cd $(HOST_SUBDIR); [ -d stagefeedback-gold ] || \
+	  mkdir stagefeedback-gold; \
+	mv stagefeedback-gold gold  ; \
+	mv stageprofile-gold prev-gold || test -f stageprofile-lean 
+@endif gold
 @if intl
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-intl ] || \
 	  mkdir stagefeedback-intl; \
@@ -51480,6 +52551,12 @@ stagefeedback-end::
 	  mv prev-mpfr stageprofile-mpfr ; :  ; \
 	fi
 @endif mpfr
+@if gold
+	@if test -d $(HOST_SUBDIR)/gold ; then \
+	  cd $(HOST_SUBDIR); mv gold stagefeedback-gold ; \
+	  mv prev-gold stageprofile-gold ; :  ; \
+	fi
+@endif gold
 @if intl
 	@if test -d $(HOST_SUBDIR)/intl ; then \
 	  cd $(HOST_SUBDIR); mv intl stagefeedback-intl ; \
@@ -51740,6 +52817,16 @@ configure-stageb3g2-gcc: maybe-all-stageb3g2-ld
 configure-stage4-gcc: maybe-all-stage4-ld
 configure-stageprofile-gcc: maybe-all-stageprofile-ld
 configure-stagefeedback-gcc: maybe-all-stagefeedback-ld
+configure-gcc: maybe-all-gold
+
+configure-stage1-gcc: maybe-all-stage1-gold
+configure-stage2-gcc: maybe-all-stage2-gold
+configure-stageb2g0-gcc: maybe-all-stageb2g0-gold
+configure-stage3-gcc: maybe-all-stage3-gold
+configure-stageb3g2-gcc: maybe-all-stageb3g2-gold
+configure-stage4-gcc: maybe-all-stage4-gold
+configure-stageprofile-gcc: maybe-all-stageprofile-gold
+configure-stagefeedback-gcc: maybe-all-stagefeedback-gold
 all-gcc: all-libiberty
 
 all-stage1-gcc: all-stage1-libiberty
@@ -52206,6 +53293,66 @@ all-stageb3g2-ld: maybe-all-stageb3g2-intl
 all-stage4-ld: maybe-all-stage4-intl
 all-stageprofile-ld: maybe-all-stageprofile-intl
 all-stagefeedback-ld: maybe-all-stagefeedback-intl
+configure-gold: maybe-configure-intl
+
+configure-stage1-gold: maybe-configure-stage1-intl
+configure-stage2-gold: maybe-configure-stage2-intl
+configure-stageb2g0-gold: maybe-configure-stageb2g0-intl
+configure-stage3-gold: maybe-configure-stage3-intl
+configure-stageb3g2-gold: maybe-configure-stageb3g2-intl
+configure-stage4-gold: maybe-configure-stage4-intl
+configure-stageprofile-gold: maybe-configure-stageprofile-intl
+configure-stagefeedback-gold: maybe-configure-stagefeedback-intl
+all-gold: maybe-all-libiberty
+
+all-stage1-gold: maybe-all-stage1-libiberty
+all-stage2-gold: maybe-all-stage2-libiberty
+all-stageb2g0-gold: maybe-all-stageb2g0-libiberty
+all-stage3-gold: maybe-all-stage3-libiberty
+all-stageb3g2-gold: maybe-all-stageb3g2-libiberty
+all-stage4-gold: maybe-all-stage4-libiberty
+all-stageprofile-gold: maybe-all-stageprofile-libiberty
+all-stagefeedback-gold: maybe-all-stagefeedback-libiberty
+all-gold: maybe-all-intl
+
+all-stage1-gold: maybe-all-stage1-intl
+all-stage2-gold: maybe-all-stage2-intl
+all-stageb2g0-gold: maybe-all-stageb2g0-intl
+all-stage3-gold: maybe-all-stage3-intl
+all-stageb3g2-gold: maybe-all-stageb3g2-intl
+all-stage4-gold: maybe-all-stage4-intl
+all-stageprofile-gold: maybe-all-stageprofile-intl
+all-stagefeedback-gold: maybe-all-stagefeedback-intl
+all-gold: maybe-all-bfd
+
+all-stage1-gold: maybe-all-stage1-bfd
+all-stage2-gold: maybe-all-stage2-bfd
+all-stageb2g0-gold: maybe-all-stageb2g0-bfd
+all-stage3-gold: maybe-all-stage3-bfd
+all-stageb3g2-gold: maybe-all-stageb3g2-bfd
+all-stage4-gold: maybe-all-stage4-bfd
+all-stageprofile-gold: maybe-all-stageprofile-bfd
+all-stagefeedback-gold: maybe-all-stagefeedback-bfd
+all-gold: maybe-all-build-bison
+
+all-stage1-gold: maybe-all-build-bison
+all-stage2-gold: maybe-all-build-bison
+all-stageb2g0-gold: maybe-all-build-bison
+all-stage3-gold: maybe-all-build-bison
+all-stageb3g2-gold: maybe-all-build-bison
+all-stage4-gold: maybe-all-build-bison
+all-stageprofile-gold: maybe-all-build-bison
+all-stagefeedback-gold: maybe-all-build-bison
+all-gold: maybe-all-build-byacc
+
+all-stage1-gold: maybe-all-build-byacc
+all-stage2-gold: maybe-all-build-byacc
+all-stageb2g0-gold: maybe-all-build-byacc
+all-stage3-gold: maybe-all-build-byacc
+all-stageb3g2-gold: maybe-all-build-byacc
+all-stage4-gold: maybe-all-build-byacc
+all-stageprofile-gold: maybe-all-build-byacc
+all-stagefeedback-gold: maybe-all-build-byacc
 configure-opcodes: maybe-configure-intl
 
 configure-stage1-opcodes: maybe-configure-stage1-intl

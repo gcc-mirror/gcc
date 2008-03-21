@@ -163,6 +163,7 @@ host_libs="intl mmalloc libiberty opcodes bfd readline tcl tk itcl libgui zlib l
 # know that we are building the simulator.
 # binutils, gas and ld appear in that order because it makes sense to run
 # "make check" in that particular order.
+# If --enable-gold is used, "gold" will replace "ld".
 host_tools="texinfo byacc flex bison binutils gas ld fixincludes gcc sid sim gdb make patch prms send-pr gprof etc expect dejagnu ash bash bzip2 m4 autoconf automake libtool diff rcs fileutils shellutils time textutils wdiff find uudecode hello tar gzip indent recode release sed utils guile perl gawk findutils gettext zip fastjar gnattools"
 
 # libgcj represents the runtime libraries only used by gcj.
@@ -239,7 +240,7 @@ use_gnu_ld=
 # Make sure we don't let GNU ld be added if we didn't want it.
 if test x$with_gnu_ld = xno ; then
   use_gnu_ld=no
-  noconfigdirs="$noconfigdirs ld"
+  noconfigdirs="$noconfigdirs ld gold"
 fi
 
 use_gnu_as=
@@ -289,6 +290,38 @@ case ${with_newlib} in
   no) skipdirs="${skipdirs} target-newlib" ;;
   yes) skipdirs=`echo " ${skipdirs} " | sed -e 's/ target-newlib / /'` ;;
 esac
+
+# Handle --enable-gold.
+
+AC_ARG_ENABLE(gold,
+[  --enable-gold           use gold instead of ld],
+ENABLE_GOLD=$enableval,
+ENABLE_GOLD=no)
+if test "${ENABLE_GOLD}" = "yes"; then
+  # Check for ELF target.
+  is_elf=no
+  case "${target}" in
+    *-*-elf* | *-*-sysv4* | *-*-unixware* | *-*-eabi* | hppa*64*-*-hpux* \
+    | *-*-linux* | frv-*-uclinux* | *-*-irix5* | *-*-irix6* \
+    | *-*-netbsd* | *-*-openbsd* | *-*-freebsd* | *-*-solaris2*)
+      case "${target}" in
+        *-*-linux*aout* | *-*-linux*oldld*)
+          ;;
+        *)
+          is_elf=yes
+          ;;
+      esac
+  esac
+
+  if test "$is_elf" = "yes"; then
+    # Check for target supported by gold.
+    case "${target}" in
+      i?86-*-* | x86_64-*-*)
+        configdirs="`echo " ${configdirs} " | sed -e 's/ ld / gold /'`"
+        ;;
+    esac
+  fi
+fi
 
 # Configure extra directories which are host specific
 
@@ -1751,7 +1784,7 @@ if test x${use_gnu_as} = x &&
 fi
 
 if test x${use_gnu_ld} = x &&
-   echo " ${configdirs} " | grep " ld " > /dev/null 2>&1 ; then
+   echo " ${configdirs} " | egrep " (go)?ld " > /dev/null 2>&1 ; then
   with_gnu_ld=yes
   extra_host_args="$extra_host_args --with-gnu-ld"
 fi
