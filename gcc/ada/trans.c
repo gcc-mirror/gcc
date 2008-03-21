@@ -1181,33 +1181,42 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 
 	else /* attribute == Attr_Range_Length || attribute == Attr_Length  */
 	  {
-	    tree gnu_compute_type;
-
 	    if (pa && pa->length)
 	      {
 		gnu_result = pa->length;
 		break;
 	      }
+	    else
+	      {
+		tree gnu_compute_type
+		  = signed_or_unsigned_type_for
+		      (0, get_base_type (gnu_result_type));
 
-	    gnu_compute_type
-	      = signed_or_unsigned_type_for (0,
-					     get_base_type (gnu_result_type));
+		tree index_type
+		  = TYPE_INDEX_TYPE (TYPE_DOMAIN (gnu_type));
+		tree lb
+		  = convert (gnu_compute_type, TYPE_MIN_VALUE (index_type));
+		tree hb
+		  = convert (gnu_compute_type, TYPE_MAX_VALUE (index_type));
+		
+		/* We used to compute the length as max (hb - lb + 1, 0),
+		   which could overflow for some cases of empty arrays, e.g.
+		   when lb == index_type'first.
 
-	    gnu_result
-	      = build_binary_op
-		(MAX_EXPR, gnu_compute_type,
-		 build_binary_op
-		 (PLUS_EXPR, gnu_compute_type,
-		  build_binary_op
-		  (MINUS_EXPR, gnu_compute_type,
-		   convert (gnu_compute_type,
-			    TYPE_MAX_VALUE
-			    (TYPE_INDEX_TYPE (TYPE_DOMAIN (gnu_type)))),
-		   convert (gnu_compute_type,
-			    TYPE_MIN_VALUE
-			    (TYPE_INDEX_TYPE (TYPE_DOMAIN (gnu_type))))),
-		  convert (gnu_compute_type, integer_one_node)),
-		 convert (gnu_compute_type, integer_zero_node));
+		   We now compute it as (hb < lb) ? 0 : hb - lb + 1, which
+		   could overflow as well, but only for extremely large arrays
+		   which we expect never to encounter in practice.  */
+
+		gnu_result
+		  = build3
+		    (COND_EXPR, gnu_compute_type,
+		     build_binary_op (LT_EXPR, gnu_compute_type, hb, lb),
+		     convert (gnu_compute_type, integer_zero_node),
+		     build_binary_op
+		     (PLUS_EXPR, gnu_compute_type,
+		      build_binary_op (MINUS_EXPR, gnu_compute_type, hb, lb),
+		      convert (gnu_compute_type, integer_one_node)));
+	      }
 	  }
 
 	/* If this has a PLACEHOLDER_EXPR, qualify it by the object we are

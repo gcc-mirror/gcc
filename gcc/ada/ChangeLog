@@ -1,3 +1,8 @@
+2008-03-21  Olivier Hainque  <hainque@adacore.com>
+
+	* trans.c (Attribute_to_gnu) <'length>: Compute as (hb < lb)
+	? 0 : hb - lb + 1 instead of max (hb - lb + 1, 0).
+
 2008-03-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* trans.c (addressable_p): Add notes on addressability issues.
