@@ -1,7 +1,8 @@
 /* Breadth-first and depth-first routines for
    searching multiple-inheritance lattice for GNU C++.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   1999, 2000, 2002, 2003, 2004, 2005, 2007, 2008
+   Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -1212,7 +1213,7 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type)
     }
   else
     {
-      if (!IS_AGGR_TYPE_CODE (TREE_CODE (xbasetype)))
+      if (!RECORD_OR_UNION_CODE_P (TREE_CODE (xbasetype)))
 	return NULL_TREE;
       type = xbasetype;
       xbasetype = NULL_TREE;

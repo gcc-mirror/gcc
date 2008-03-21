@@ -2891,7 +2891,7 @@ build_typename_type (tree context, tree name, tree fullname,
   else
     {
       /* Build the TYPENAME_TYPE.  */
-      t = make_aggr_type (TYPENAME_TYPE);
+      t = cxx_make_type (TYPENAME_TYPE);
       TYPE_CONTEXT (t) = ti.scope;
       TYPENAME_TYPE_FULLNAME (t) = ti.template_id;
       TYPENAME_IS_ENUM_P (t) = ti.enum_p;
@@ -2979,7 +2979,7 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
   if (dependent_type_p (context))
     return build_typename_type (context, name, fullname, tag_type);
 
-  if (!IS_AGGR_TYPE (context))
+  if (!MAYBE_CLASS_TYPE_P (context))
     {
       if (complain & tf_error)
 	error ("%q#T is not a class", context);
@@ -3056,7 +3056,7 @@ make_unbound_class_template (tree context, tree name, tree parm_list,
     {
       tree tmpl = NULL_TREE;
 
-      if (IS_AGGR_TYPE (context))
+      if (MAYBE_CLASS_TYPE_P (context))
 	tmpl = lookup_field (context, name, 0, false);
 
       if (!tmpl || !DECL_CLASS_TEMPLATE_P (tmpl))
@@ -3084,7 +3084,7 @@ make_unbound_class_template (tree context, tree name, tree parm_list,
     }
 
   /* Build the UNBOUND_CLASS_TEMPLATE.  */
-  t = make_aggr_type (UNBOUND_CLASS_TEMPLATE);
+  t = cxx_make_type (UNBOUND_CLASS_TEMPLATE);
   TYPE_CONTEXT (t) = FROB_CONTEXT (context);
   TREE_TYPE (t) = NULL_TREE;
   SET_TYPE_STRUCTURAL_EQUALITY (t);
@@ -3382,7 +3382,7 @@ cxx_init_decl_processing (void)
 
     push_namespace (std_identifier);
     bad_alloc_id = get_identifier ("bad_alloc");
-    bad_alloc_type_node = make_aggr_type (RECORD_TYPE);
+    bad_alloc_type_node = make_class_type (RECORD_TYPE);
     TYPE_CONTEXT (bad_alloc_type_node) = current_namespace;
     bad_alloc_decl
       = create_implicit_typedef (bad_alloc_id, bad_alloc_type_node);
@@ -3773,7 +3773,7 @@ check_tag_decl (cp_decl_specifier_seq *declspecs)
   if (declspecs->type
       && TYPE_P (declspecs->type)
       && ((TREE_CODE (declspecs->type) != TYPENAME_TYPE
-	   && IS_AGGR_TYPE (declspecs->type))
+	   && MAYBE_CLASS_TYPE_P (declspecs->type))
 	  || TREE_CODE (declspecs->type) == ENUMERAL_TYPE))
     declared_type = declspecs->type;
   else if (declspecs->type == error_mark_node)
@@ -3781,7 +3781,7 @@ check_tag_decl (cp_decl_specifier_seq *declspecs)
   if (declared_type == NULL_TREE && ! saw_friend && !error_p)
     pedwarn ("declaration does not declare anything");
   /* Check for an anonymous union.  */
-  else if (declared_type && IS_AGGR_TYPE_CODE (TREE_CODE (declared_type))
+  else if (declared_type && RECORD_OR_UNION_CODE_P (TREE_CODE (declared_type))
 	   && TYPE_ANONYMOUS_P (declared_type))
     {
       /* 7/3 In a simple-declaration, the optional init-declarator-list
@@ -3910,7 +3910,7 @@ groktypename (cp_decl_specifier_seq *type_specifiers,
       if (CLASS_TYPE_P (type))
 	warning (OPT_Wattributes, "ignoring attributes applied to class type %qT "
 		 "outside of definition", type);
-      else if (IS_AGGR_TYPE (type))
+      else if (MAYBE_CLASS_TYPE_P (type))
 	/* A template type parameter or other dependent type.  */
 	warning (OPT_Wattributes, "ignoring attributes applied to dependent "
 		 "type %qT without an associated declaration", type);
@@ -4174,7 +4174,7 @@ start_decl_1 (tree decl, bool initialized)
 
   type = TREE_TYPE (decl);
   complete_p = COMPLETE_TYPE_P (type);
-  aggregate_definition_p = IS_AGGR_TYPE (type) && !DECL_EXTERNAL (decl);
+  aggregate_definition_p = MAYBE_CLASS_TYPE_P (type) && !DECL_EXTERNAL (decl);
 
   /* If an explicit initializer is present, or if this is a definition
      of an aggregate, then we need a complete type at this point.
@@ -4427,7 +4427,7 @@ layout_var_decl (tree decl)
   /* Keep this code around in case we later want to control debug info
      based on whether a type is "used".  (jason 1999-11-11) */
 
-  else if (!DECL_EXTERNAL (decl) && IS_AGGR_TYPE (ttype))
+  else if (!DECL_EXTERNAL (decl) && MAYBE_CLASS_TYPE_P (ttype))
     /* Let debugger know it should output info for this type.  */
     note_debug_info_needed (ttype);
 
@@ -5054,7 +5054,7 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
     ;
   else if (TYPE_P (type) && TYPE_NEEDS_CONSTRUCTING (type))
     goto initialize_aggr;
-  else if (IS_AGGR_TYPE (type))
+  else if (MAYBE_CLASS_TYPE_P (type))
     {
       tree core_type = strip_array_types (type);
 
@@ -5450,7 +5450,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
   if (TREE_CODE (decl) == TYPE_DECL)
     {
       if (type != error_mark_node
-	  && IS_AGGR_TYPE (type) && DECL_NAME (decl))
+	  && MAYBE_CLASS_TYPE_P (type) && DECL_NAME (decl))
 	{
 	  if (TREE_TYPE (DECL_NAME (decl)) && TREE_TYPE (decl) != type)
 	    warning (0, "shadowing previous type declaration of %q#D", decl);
@@ -5504,7 +5504,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	     is *not* defined.  */
 	  && (!DECL_EXTERNAL (decl) || init))
 	{
-	  if (TYPE_FOR_JAVA (type) && IS_AGGR_TYPE (type))
+	  if (TYPE_FOR_JAVA (type) && MAYBE_CLASS_TYPE_P (type))
 	    {
 	      tree jclass
 		= IDENTIFIER_GLOBAL_VALUE (get_identifier ("jclass"));
@@ -5589,7 +5589,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	layout_type (type);
     }
   else if (TREE_CODE (decl) == FIELD_DECL
-	   && TYPE_FOR_JAVA (type) && IS_AGGR_TYPE (type))
+	   && TYPE_FOR_JAVA (type) && MAYBE_CLASS_TYPE_P (type))
     error ("non-static data member %qD has Java class type", decl);
 
   /* Add this declaration to the statement-tree.  This needs to happen
@@ -6854,13 +6854,13 @@ build_ptrmemfunc_type (tree type)
     unqualified_variant
       = build_ptrmemfunc_type (TYPE_MAIN_VARIANT (type));
 
-  t = make_aggr_type (RECORD_TYPE);
+  t = make_class_type (RECORD_TYPE);
   xref_basetypes (t, NULL_TREE);
 
   /* Let the front end know this is a pointer to member function...  */
   TYPE_PTRMEMFUNC_FLAG (t) = 1;
-  /* ... and not really an aggregate.  */
-  SET_IS_AGGR_TYPE (t, 0);
+  /* ... and not really a class type.  */
+  SET_CLASS_TYPE_P (t, 0);
 
   field = build_decl (FIELD_DECL, pfn_identifier, type);
   fields = field;
@@ -9383,7 +9383,7 @@ grokparms (cp_parameter_declarator *first_parm, tree *parms)
 
       if (type != error_mark_node
 	  && TYPE_FOR_JAVA (type)
-	  && IS_AGGR_TYPE (type))
+	  && MAYBE_CLASS_TYPE_P (type))
 	{
 	  error ("parameter %qD has Java class type", decl);
 	  type = error_mark_node;
@@ -9831,10 +9831,11 @@ grok_op_properties (tree decl, bool complain)
 		  if (arg == error_mark_node)
 		    return false;
 
-		  /* IS_AGGR_TYPE, rather than CLASS_TYPE_P, is used
+		  /* MAYBE_CLASS_TYPE_P, rather than CLASS_TYPE_P, is used
 		     because these checks are performed even on
 		     template functions.  */
-		  if (IS_AGGR_TYPE (arg) || TREE_CODE (arg) == ENUMERAL_TYPE)
+		  if (MAYBE_CLASS_TYPE_P (arg)
+		      || TREE_CODE (arg) == ENUMERAL_TYPE)
 		    break;
 		}
 
@@ -9875,7 +9876,7 @@ grok_op_properties (tree decl, bool complain)
 	      if (t == class_type)
 		what = "the same type";
 	      /* Don't force t to be complete here.  */
-	      else if (IS_AGGR_TYPE (t)
+	      else if (MAYBE_CLASS_TYPE_P (t)
 		       && COMPLETE_TYPE_P (t)
 		       && DERIVED_FROM_P (t, class_type))
 		what = "a base class";
@@ -10349,14 +10350,14 @@ xref_tag (enum tag_types tag_code, tree name,
 	}
       else
 	{
-	  t = make_aggr_type (code);
+	  t = make_class_type (code);
 	  TYPE_CONTEXT (t) = context;
 	  t = pushtag (name, t, scope);
 	}
     }
   else
     {
-      if (template_header_p && IS_AGGR_TYPE (t))
+      if (template_header_p && MAYBE_CLASS_TYPE_P (t))
         {
 	  if (!redeclare_class_template (t, current_template_parms))
             POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
@@ -10983,7 +10984,7 @@ check_function_type (tree decl, tree current_function_parms)
   if (dependent_type_p (return_type))
     return;
   if (!COMPLETE_OR_VOID_TYPE_P (return_type)
-      || (TYPE_FOR_JAVA (return_type) && IS_AGGR_TYPE (return_type)))
+      || (TYPE_FOR_JAVA (return_type) && MAYBE_CLASS_TYPE_P (return_type)))
     {
       tree args = TYPE_ARG_TYPES (fntype);
 
