@@ -358,17 +358,20 @@ dump_data_dependence_relation (FILE *outf,
 {
   struct data_reference *dra, *drb;
 
-  dra = DDR_A (ddr);
-  drb = DDR_B (ddr);
   fprintf (outf, "(Data Dep: \n");
 
+  if (!ddr || DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
+    {
+      fprintf (outf, "    (don't know)\n)\n");
+      return;
+    }
+
+  dra = DDR_A (ddr);
+  drb = DDR_B (ddr);
   dump_data_reference (outf, dra);
   dump_data_reference (outf, drb);
 
-  if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
-    fprintf (outf, "    (don't know)\n");
-  
-  else if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
+  if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
     fprintf (outf, "    (no dependence)\n");
   
   else if (DDR_ARE_DEPENDENT (ddr) == NULL_TREE)
