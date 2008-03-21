@@ -1,3 +1,22 @@
+2008-03-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2008-03-20  Victor Kaplansky  <victork@gcc.gnu.org>
+		    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/34168
+	* lib/target-supports.exp (check_sse2_hw_available): New procedure.
+	* gcc.dg/vect/vect.exp: Set dg-do-what-default to "compile"
+	if SSE2 hardware is not available.
+	* g++.dg/vect/vect.exp: Update target-dependent overrides to match
+	gcc.dg/vect/vect.exp.
+	* gfortran.dg/vect/vect.exp: Ditto.
+	(check_effective_target_lp64_or_vect_no_align): Remove procedure.
+
+	2008-03-20  Uros Bizjak  <ubizjak@gmail.com>
+
+        * gcc.dg/gomp/pr34692.c: Cleanup gimple dump file.
+
 2008-03-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from trunk:

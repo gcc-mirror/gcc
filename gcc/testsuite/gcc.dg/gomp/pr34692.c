@@ -24,3 +24,5 @@ b
 cde f g h);
   }
 }
+
+/* { dg-final { cleanup-tree-dump "gimple" } } */

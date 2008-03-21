@@ -764,6 +764,29 @@ proc check_750cl_hw_available { } {
     }]
 }
 
+# Return 1 if the target supports executing SSE2 instructions, 0
+# otherwise.  Cache the result.
+
+proc check_sse2_hw_available { } {
+    return [check_cached_effective_target sse2_hw_available {
+	# If this is not the right target then we can skip the test.
+	if { !([istarget x86_64-*-*] || [istarget i?86-*-*]) } {
+	    expr 0
+	} else {
+	    check_runtime_nocache sse2_hw_available {
+		#include "cpuid.h"
+		int main ()
+		{
+		  unsigned int eax, ebx, ecx, edx = 0;
+		  if (__get_cpuid (1, &eax, &ebx, &ecx, &edx))
+		    return !(edx & bit_SSE2);
+		  return 1;
+		}
+	    } ""
+	}
+    }]
+}
+
 # Return 1 if the target supports executing AltiVec instructions, 0
 # otherwise.  Cache the result.
 
