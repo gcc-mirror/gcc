@@ -4482,7 +4482,7 @@ objc_generate_cxx_ctor_or_dtor (bool dtor)
 	  /* Call the ivar's default constructor or destructor.  Do not
 	     call the destructor unless a corresponding constructor call
 	     has also been made (or is not needed).  */
-	  if (IS_AGGR_TYPE (type)
+	  if (MAYBE_CLASS_TYPE_P (type)
 	      && (dtor
 		  ? (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
 		     && (!TYPE_NEEDS_CONSTRUCTING (type)
@@ -4535,7 +4535,7 @@ objc_generate_cxx_cdtors (void)
 	{
 	  tree type = TREE_TYPE (ivar);
 
-	  if (IS_AGGR_TYPE (type))
+	  if (MAYBE_CLASS_TYPE_P (type))
 	    {
 	      if (TYPE_NEEDS_CONSTRUCTING (type)
 		  && TYPE_HAS_DEFAULT_CONSTRUCTOR (type))
@@ -7056,7 +7056,7 @@ add_instance_variable (tree class, int public, tree field_decl)
      need to either (1) warn the user about it or (2) generate suitable
      constructor/destructor call from '- .cxx_construct' or '- .cxx_destruct'
      methods (if '-fobjc-call-cxx-cdtors' was specified).  */
-  if (IS_AGGR_TYPE (field_type)
+  if (MAYBE_CLASS_TYPE_P (field_type)
       && (TYPE_NEEDS_CONSTRUCTING (field_type)
 	  || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (field_type)
 	  || TYPE_POLYMORPHIC_P (field_type)))
