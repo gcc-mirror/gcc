@@ -1,3 +1,15 @@
+2008-03-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/13958
+	* config/i386/i386.md ("*floatunssi<mode2>_1"): New pattern with
+	corresponding post-reload splitters.
+	("floatunssi<mode>2"): Expand to unsigned_float x87 insn pattern
+	when x87 FP math is selected.
+	* config/i386/i386-protos.h (ix86_expand_convert_uns_sixf_sse):
+	New function prototype.
+	* config/i386/i386.c (ix86_expand_convert_uns_sixf_sse): New
+	unreachable function to ease macroization of insn patterns.
+
 2008-03-21  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-data-ref.c (dump_data_dependence_relation): Avoid data

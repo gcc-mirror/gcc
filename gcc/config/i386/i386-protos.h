@@ -91,6 +91,7 @@ extern void ix86_expand_unary_operator (enum rtx_code, enum machine_mode,
 extern rtx ix86_build_const_vector (enum machine_mode, bool, rtx);
 extern void ix86_split_convert_uns_si_sse (rtx[]);
 extern void ix86_expand_convert_uns_didf_sse (rtx, rtx);
+extern void ix86_expand_convert_uns_sixf_sse (rtx, rtx);
 extern void ix86_expand_convert_uns_sidf_sse (rtx, rtx);
 extern void ix86_expand_convert_uns_sisf_sse (rtx, rtx);
 extern void ix86_expand_convert_sign_didf_sse (rtx, rtx);
