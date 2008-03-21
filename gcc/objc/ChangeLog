@@ -1,3 +1,11 @@
+2008-03-21  Andreas Tobler  <a.tobler@schweiz.org>
+
+	PR bootstrap/35660
+	* objc-act.c (objc_generate_cxx_ctor_or_dtor): Rename IS_AGGR_TYPE to
+	MAYBE_CLASS_TYPE_P.
+	(objc_generate_cxx_cdtors): Likewise.
+	(add_instance_variable): Likewise.
+
 2008-02-26  Tom Tromey  <tromey@redhat.com>
 
 	* objc-act.c (objc_init): Remove old location code.
