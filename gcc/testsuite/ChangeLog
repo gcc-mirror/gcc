@@ -1,3 +1,12 @@
+2008-03-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk:
+	PR libfortran/35627
+	* gfortran.dg/namelist_46.f90: New test.
+
+	PR libfortran/35617
+	* gfortran.dg/namelist_45.f90: New test.
+
 2008-03-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:
