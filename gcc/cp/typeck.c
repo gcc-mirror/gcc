@@ -1,6 +1,6 @@
 /* Build expressions with type checking for C++ compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
@@ -4630,7 +4630,7 @@ unary_complex_lvalue (enum tree_code code, tree arg)
     if (TREE_CODE (targ) == SAVE_EXPR)
       targ = TREE_OPERAND (targ, 0);
 
-    if (TREE_CODE (targ) == CALL_EXPR && IS_AGGR_TYPE (TREE_TYPE (targ)))
+    if (TREE_CODE (targ) == CALL_EXPR && MAYBE_CLASS_TYPE_P (TREE_TYPE (targ)))
       {
 	if (TREE_CODE (arg) == SAVE_EXPR)
 	  targ = arg;
@@ -5751,7 +5751,7 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 	  TREE_SIDE_EFFECTS (result) = 1;
 	  return result;
 	}
-      else if (! IS_AGGR_TYPE (lhstype))
+      else if (! MAYBE_CLASS_TYPE_P (lhstype))
 	/* Do the default thing.  */;
       else
 	{
@@ -5772,7 +5772,7 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
       if (modifycode == NOP_EXPR)
 	{
 	  /* `operator=' is not an inheritable operator.  */
-	  if (! IS_AGGR_TYPE (lhstype))
+	  if (! MAYBE_CLASS_TYPE_P (lhstype))
 	    /* Do the default thing.  */;
 	  else
 	    {
@@ -5790,8 +5790,10 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 	  /* A binary op has been requested.  Combine the old LHS
 	     value with the RHS producing the value we should actually
 	     store into the LHS.  */
+	  gcc_assert (!((TREE_CODE (lhstype) == REFERENCE_TYPE
+			 && MAYBE_CLASS_TYPE_P (TREE_TYPE (lhstype)))
+			|| MAYBE_CLASS_TYPE_P (lhstype)));
 
-	  gcc_assert (!PROMOTES_TO_AGGR_TYPE (lhstype, REFERENCE_TYPE));
 	  lhs = stabilize_reference (lhs);
 	  newrhs = cp_build_binary_op (modifycode, lhs, rhs);
 	  if (newrhs == error_mark_node)
@@ -6512,7 +6514,7 @@ convert_for_initialization (tree exp, tree type, tree rhs, int flags,
 
   type = complete_type (type);
 
-  if (IS_AGGR_TYPE (type))
+  if (MAYBE_CLASS_TYPE_P (type))
     return ocp_convert (type, rhs, CONV_IMPLICIT|CONV_FORCE_TEMP, flags);
 
   return convert_for_assignment (type, rhs, errtype, fndecl, parmnum);

@@ -1,5 +1,5 @@
 /* Tree-dumping functionality for intermediate representation.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
    Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>
 
@@ -257,7 +257,7 @@ cp_dump_tree (void* dump_info, tree t)
 	  return true;
 	}
 
-      if (! IS_AGGR_TYPE (t))
+      if (! MAYBE_CLASS_TYPE_P (t))
 	break;
 
       dump_child ("vfld", TYPE_VFIELD (t));

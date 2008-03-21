@@ -503,7 +503,7 @@ build_dynamic_cast_1 (tree type, tree expr)
 	break;
       /* Fall through.  */
     case REFERENCE_TYPE:
-      if (! IS_AGGR_TYPE (TREE_TYPE (type)))
+      if (! MAYBE_CLASS_TYPE_P (TREE_TYPE (type)))
 	{
 	  errstr = "target is not pointer or reference to class";
 	  goto fail;
@@ -530,7 +530,7 @@ build_dynamic_cast_1 (tree type, tree expr)
 	  errstr = "source is not a pointer";
 	  goto fail;
 	}
-      if (! IS_AGGR_TYPE (TREE_TYPE (exprtype)))
+      if (! MAYBE_CLASS_TYPE_P (TREE_TYPE (exprtype)))
 	{
 	  errstr = "source is not a pointer to class";
 	  goto fail;
@@ -548,7 +548,7 @@ build_dynamic_cast_1 (tree type, tree expr)
       /* T is a reference type, v shall be an lvalue of a complete class
 	 type, and the result is an lvalue of the type referred to by T.  */
 
-      if (! IS_AGGR_TYPE (TREE_TYPE (exprtype)))
+      if (! MAYBE_CLASS_TYPE_P (TREE_TYPE (exprtype)))
 	{
 	  errstr = "source is not of class type";
 	  goto fail;
@@ -1167,7 +1167,7 @@ create_pseudo_type_info (int tk, const char *real_name, ...)
     }
 
   /* Create the pseudo type.  */
-  pseudo_type = make_aggr_type (RECORD_TYPE);
+  pseudo_type = make_class_type (RECORD_TYPE);
   finish_builtin_struct (pseudo_type, pseudo_name, fields, NULL_TREE);
   CLASSTYPE_AS_BASE (pseudo_type) = pseudo_type;
 
@@ -1326,7 +1326,7 @@ create_tinfo_types (void)
     fields = field;
 
     ti = VEC_index (tinfo_s, tinfo_descs, TK_TYPE_INFO_TYPE);
-    ti->type = make_aggr_type (RECORD_TYPE);
+    ti->type = make_class_type (RECORD_TYPE);
     ti->vtable = NULL_TREE;
     ti->name = NULL_TREE;
     finish_builtin_struct (ti->type, "__type_info_pseudo",
@@ -1364,7 +1364,7 @@ create_tinfo_types (void)
 
     ti = VEC_index (tinfo_s, tinfo_descs, TK_BASE_TYPE);
 
-    ti->type = make_aggr_type (RECORD_TYPE);
+    ti->type = make_class_type (RECORD_TYPE);
     ti->vtable = NULL_TREE;
     ti->name = NULL_TREE;
     finish_builtin_struct (ti->type, "__base_class_type_info_pseudo",

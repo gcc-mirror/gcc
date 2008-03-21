@@ -1,6 +1,6 @@
 /* Functions related to building classes and their related objects.
    Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
@@ -4926,7 +4926,7 @@ layout_class_type (tree t, tree *virtuals_p)
   remove_zero_width_bit_fields (t);
 
   /* Create the version of T used for virtual bases.  We do not use
-     make_aggr_type for this version; this is an artificial type.  For
+     make_class_type for this version; this is an artificial type.  For
      a POD type, we just reuse T.  */
   if (CLASSTYPE_NON_POD_P (t) || CLASSTYPE_EMPTY_P (t))
     {
@@ -5086,7 +5086,7 @@ finish_struct_1 (tree t)
 
   if (COMPLETE_TYPE_P (t))
     {
-      gcc_assert (IS_AGGR_TYPE (t));
+      gcc_assert (MAYBE_CLASS_TYPE_P (t));
       error ("redefinition of %q#T", t);
       popclass ();
       return;
@@ -5432,7 +5432,7 @@ fixed_type_or_null (tree instance, int *nonnull, int *cdtorp)
     case VAR_DECL:
     case FIELD_DECL:
       if (TREE_CODE (TREE_TYPE (instance)) == ARRAY_TYPE
-	  && IS_AGGR_TYPE (TREE_TYPE (TREE_TYPE (instance))))
+	  && MAYBE_CLASS_TYPE_P (TREE_TYPE (TREE_TYPE (instance))))
 	{
 	  if (nonnull)
 	    *nonnull = 1;
@@ -5442,7 +5442,7 @@ fixed_type_or_null (tree instance, int *nonnull, int *cdtorp)
     case TARGET_EXPR:
     case PARM_DECL:
     case RESULT_DECL:
-      if (IS_AGGR_TYPE (TREE_TYPE (instance)))
+      if (MAYBE_CLASS_TYPE_P (TREE_TYPE (instance)))
 	{
 	  if (nonnull)
 	    *nonnull = 1;
@@ -6343,7 +6343,7 @@ is_empty_class (tree type)
   if (type == error_mark_node)
     return 0;
 
-  if (! IS_AGGR_TYPE (type))
+  if (! MAYBE_CLASS_TYPE_P (type))
     return 0;
 
   /* In G++ 3.2, whether or not a class was empty was determined by

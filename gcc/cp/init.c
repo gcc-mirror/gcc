@@ -1420,19 +1420,19 @@ expand_aggr_init_1 (tree binfo, tree true_exp, tree exp, tree init, int flags)
   expand_default_init (binfo, true_exp, exp, init, flags);
 }
 
-/* Report an error if TYPE is not a user-defined, aggregate type.  If
+/* Report an error if TYPE is not a user-defined, class type.  If
    OR_ELSE is nonzero, give an error message.  */
 
 int
-is_aggr_type (tree type, int or_else)
+is_class_type (tree type, int or_else)
 {
   if (type == error_mark_node)
     return 0;
 
-  if (! IS_AGGR_TYPE (type))
+  if (! CLASS_TYPE_P (type))
     {
       if (or_else)
-	error ("%qT is not an aggregate type", type);
+	error ("%qT is not a class type", type);
       return 0;
     }
   return 1;
@@ -1476,7 +1476,7 @@ build_offset_ref (tree type, tree member, bool address_p)
 				 /*template_p=*/false);
 
   gcc_assert (TYPE_P (type));
-  if (! is_aggr_type (type, 1))
+  if (! is_class_type (type, 1))
     return error_mark_node;
 
   gcc_assert (DECL_P (member) || BASELINK_P (member));
@@ -1921,7 +1921,7 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
 		    (alloc_fn,
 		     build_tree_list (NULL_TREE, class_addr)));
     }
-  else if (TYPE_FOR_JAVA (elt_type) && IS_AGGR_TYPE (elt_type))
+  else if (TYPE_FOR_JAVA (elt_type) && MAYBE_CLASS_TYPE_P (elt_type))
     {
       error ("Java class %q#T object allocated using placement new", elt_type);
       return error_mark_node;
@@ -2456,7 +2456,7 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
   /* We should only have 1-D arrays here.  */
   gcc_assert (TREE_CODE (type) != ARRAY_TYPE);
 
-  if (! IS_AGGR_TYPE (type) || TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
+  if (! MAYBE_CLASS_TYPE_P (type) || TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
     goto no_destructor;
 
   /* The below is short by the cookie size.  */
@@ -2736,7 +2736,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 	  num_initialized_elts++;
 
 	  current_stmt_tree ()->stmts_are_full_exprs_p = 1;
-	  if (IS_AGGR_TYPE (type) || TREE_CODE (type) == ARRAY_TYPE)
+	  if (MAYBE_CLASS_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE)
 	    finish_expr_stmt (build_aggr_init (baseref, elt, 0));
 	  else
 	    finish_expr_stmt (build_modify_expr (baseref, NOP_EXPR,
@@ -2967,7 +2967,7 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
 	      complete_p = false;
 	    }
 	}
-      if (VOID_TYPE_P (type) || !complete_p || !IS_AGGR_TYPE (type))
+      if (VOID_TYPE_P (type) || !complete_p || !MAYBE_CLASS_TYPE_P (type))
 	/* Call the builtin operator delete.  */
 	return build_builtin_delete_call (addr);
       if (TREE_SIDE_EFFECTS (addr))
@@ -3000,7 +3000,7 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
       addr = convert_force (build_pointer_type (type), addr, 0);
     }
 
-  gcc_assert (IS_AGGR_TYPE (type));
+  gcc_assert (MAYBE_CLASS_TYPE_P (type));
 
   if (TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
     {

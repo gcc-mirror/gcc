@@ -1,6 +1,6 @@
 /* Help friends in C++.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2007  Free Software Foundation, Inc.
+   2007, 2008  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -227,7 +227,7 @@ make_friend_class (tree type, tree friend_type, bool complain)
   int class_template_depth = template_class_depth (type);
   int friend_depth = processing_template_decl - class_template_depth;
 
-  if (! IS_AGGR_TYPE (friend_type))
+  if (! MAYBE_CLASS_TYPE_P (friend_type))
     {
       error ("invalid type %qT declared %<friend%>", friend_type);
       return;
@@ -408,7 +408,7 @@ do_friend (tree ctype, tree declarator, tree decl,
 	   bool funcdef_flag)
 {
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
-  gcc_assert (!ctype || IS_AGGR_TYPE (ctype));
+  gcc_assert (!ctype || MAYBE_CLASS_TYPE_P (ctype));
 
   /* Every decl that gets here is a friend of something.  */
   DECL_FRIEND_P (decl) = 1;

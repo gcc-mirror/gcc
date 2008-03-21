@@ -801,7 +801,7 @@ cxx_make_type (enum tree_code code)
   tree t = make_node (code);
 
   /* Create lang_type structure.  */
-  if (IS_AGGR_TYPE_CODE (code)
+  if (RECORD_OR_UNION_CODE_P (code)
       || code == BOUND_TEMPLATE_TEMPLATE_PARM)
     {
       struct lang_type *pi = GGC_CNEW (struct lang_type);
@@ -816,7 +816,7 @@ cxx_make_type (enum tree_code code)
     }
 
   /* Set up some flags that give proper default behavior.  */
-  if (IS_AGGR_TYPE_CODE (code))
+  if (RECORD_OR_UNION_CODE_P (code))
     {
       struct c_fileinfo *finfo = get_fileinfo (input_filename);
       SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, finfo->interface_unknown);
@@ -827,13 +827,10 @@ cxx_make_type (enum tree_code code)
 }
 
 tree
-make_aggr_type (enum tree_code code)
+make_class_type (enum tree_code code)
 {
   tree t = cxx_make_type (code);
-
-  if (IS_AGGR_TYPE_CODE (code))
-    SET_IS_AGGR_TYPE (t, 1);
-
+  SET_CLASS_TYPE_P (t, 1);
   return t;
 }
 

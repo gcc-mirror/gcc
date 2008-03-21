@@ -1737,7 +1737,7 @@ constructor_name_p (tree name, tree type)
 {
   tree ctor_name;
 
-  gcc_assert (IS_AGGR_TYPE (type));
+  gcc_assert (MAYBE_CLASS_TYPE_P (type));
 
   if (!name)
     return false;
@@ -1916,7 +1916,7 @@ push_overloaded_decl (tree decl, int flags, bool is_friend)
       if (TREE_CODE (old) == TYPE_DECL && DECL_ARTIFICIAL (old))
 	{
 	  tree t = TREE_TYPE (old);
-	  if (IS_AGGR_TYPE (t) && warn_shadow
+	  if (MAYBE_CLASS_TYPE_P (t) && warn_shadow
 	      && (! DECL_IN_SYSTEM_HEADER (decl)
 		  || ! DECL_IN_SYSTEM_HEADER (old)))
 	    warning (OPT_Wshadow, "%q#D hides constructor for %q#T", decl, t);
@@ -2826,7 +2826,7 @@ do_class_using_decl (tree scope, tree name)
       error ("%<%T::%D%> names destructor", scope, name);
       return NULL_TREE;
     }
-  if (IS_AGGR_TYPE (scope) && constructor_name_p (name, scope))
+  if (MAYBE_CLASS_TYPE_P (scope) && constructor_name_p (name, scope))
     {
       error ("%<%T::%D%> names constructor", scope, name);
       return NULL_TREE;
@@ -3765,7 +3765,7 @@ lookup_qualified_name (tree scope, tree name, bool is_type_p, bool complain)
       if (qualified_lookup_using_namespace (name, scope, &binding, flags))
 	t = binding.value;
     }
-  else if (is_aggr_type (scope, complain))
+  else if (is_class_type (scope, complain))
     t = lookup_member (scope, name, 2, is_type_p);
 
   if (!t)
@@ -4826,7 +4826,8 @@ maybe_process_template_type_declaration (tree type, int is_friend,
     ;
   else
     {
-      gcc_assert (IS_AGGR_TYPE (type) || TREE_CODE (type) == ENUMERAL_TYPE);
+      gcc_assert (MAYBE_CLASS_TYPE_P (type)
+		  || TREE_CODE (type) == ENUMERAL_TYPE);
 
       if (processing_template_decl)
 	{

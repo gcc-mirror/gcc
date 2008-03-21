@@ -238,7 +238,7 @@ finish_member_template_decl (tree decl)
       type = TREE_TYPE (decl);
       if (type == error_mark_node)
 	return error_mark_node;
-      if (IS_AGGR_TYPE (type)
+      if (MAYBE_CLASS_TYPE_P (type)
 	  && CLASSTYPE_TEMPLATE_INFO (type)
 	  && !CLASSTYPE_TEMPLATE_SPECIALIZATION (type))
 	{
@@ -3041,7 +3041,7 @@ process_template_parm (tree list, tree parm, bool is_non_type,
 
       if (parm && TREE_CODE (parm) == TEMPLATE_DECL)
 	{
-	  t = make_aggr_type (TEMPLATE_TEMPLATE_PARM);
+	  t = cxx_make_type (TEMPLATE_TEMPLATE_PARM);
 	  /* This is for distinguishing between real templates and template
 	     template parameters */
 	  TREE_TYPE (parm) = t;
@@ -3050,7 +3050,7 @@ process_template_parm (tree list, tree parm, bool is_non_type,
 	}
       else
 	{
-	  t = make_aggr_type (TEMPLATE_TYPE_PARM);
+	  t = cxx_make_type (TEMPLATE_TYPE_PARM);
 	  /* parm is either IDENTIFIER_NODE or NULL_TREE.  */
 	  decl = build_decl (TYPE_DECL, parm, t);
 	}
@@ -5473,7 +5473,7 @@ lookup_template_class (tree d1,
       if (template)
 	context = DECL_CONTEXT (template);
     }
-  else if (TREE_CODE (d1) == TYPE_DECL && IS_AGGR_TYPE (TREE_TYPE (d1)))
+  else if (TREE_CODE (d1) == TYPE_DECL && MAYBE_CLASS_TYPE_P (TREE_TYPE (d1)))
     {
       tree type = TREE_TYPE (d1);
 
@@ -5489,7 +5489,7 @@ lookup_template_class (tree d1,
 	}
     }
   else if (TREE_CODE (d1) == ENUMERAL_TYPE
-	   || (TYPE_P (d1) && IS_AGGR_TYPE (d1)))
+	   || (TYPE_P (d1) && MAYBE_CLASS_TYPE_P (d1)))
     {
       template = TYPE_TI_TEMPLATE (d1);
       d1 = DECL_NAME (template);
@@ -5762,7 +5762,7 @@ lookup_template_class (tree d1,
 	}
       else
 	{
-	  t = make_aggr_type (TREE_CODE (template_type));
+	  t = make_class_type (TREE_CODE (template_type));
 	  CLASSTYPE_DECLARED_CLASS (t)
 	    = CLASSTYPE_DECLARED_CLASS (template_type);
 	  SET_CLASSTYPE_IMPLICIT_INSTANTIATION (t);
@@ -8673,7 +8673,7 @@ tsubst_function_type (tree t,
   else
     {
       tree r = TREE_TYPE (TREE_VALUE (arg_types));
-      if (! IS_AGGR_TYPE (r))
+      if (! MAYBE_CLASS_TYPE_P (r))
 	{
 	  /* [temp.deduct]
 
@@ -9202,7 +9202,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case OFFSET_TYPE:
       {
 	r = tsubst (TYPE_OFFSET_BASETYPE (t), args, complain, in_decl);
-	if (r == error_mark_node || !IS_AGGR_TYPE (r))
+	if (r == error_mark_node || !MAYBE_CLASS_TYPE_P (r))
 	  {
 	    /* [temp.deduct]
 
@@ -9345,7 +9345,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (ctx == error_mark_node || f == error_mark_node)
 	  return error_mark_node;
 
-	if (!IS_AGGR_TYPE (ctx))
+	if (!MAYBE_CLASS_TYPE_P (ctx))
 	  {
 	    if (complain & tf_error)
 	      error ("%qT is not a class, struct, or union type", ctx);
@@ -11211,7 +11211,7 @@ tsubst_copy_and_build (tree t,
 	/* We do not want to process the index of aggregate
 	   initializers as they are identifier nodes which will be
 	   looked up by digest_init.  */
-	process_index_p = !(type && IS_AGGR_TYPE (type));
+	process_index_p = !(type && MAYBE_CLASS_TYPE_P (type));
 
 	n = VEC_copy (constructor_elt, gc, CONSTRUCTOR_ELTS (t));
         newlen = VEC_length (constructor_elt, n);
@@ -12325,7 +12325,7 @@ get_template_base (tree tparms, tree targs, tree parm, tree arg)
   tree rval = NULL_TREE;
   tree binfo;
 
-  gcc_assert (IS_AGGR_TYPE_CODE (TREE_CODE (arg)));
+  gcc_assert (RECORD_OR_UNION_CODE_P (TREE_CODE (arg)));
 
   binfo = TYPE_BINFO (complete_type (arg));
   if (!binfo)
@@ -14317,7 +14317,7 @@ bt_instantiate_type_proc (binding_entry entry, void *data)
 {
   tree storage = *(tree *) data;
 
-  if (IS_AGGR_TYPE (entry->type)
+  if (MAYBE_CLASS_TYPE_P (entry->type)
       && !uses_template_parms (CLASSTYPE_TI_ARGS (entry->type)))
     do_type_instantiation (TYPE_MAIN_DECL (entry->type), storage, 0);
 }

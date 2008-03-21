@@ -308,7 +308,7 @@ grok_array_decl (tree array_expr, tree index_exp)
   type = non_reference (type);
 
   /* If they have an `operator[]', use that.  */
-  if (IS_AGGR_TYPE (type) || IS_AGGR_TYPE (TREE_TYPE (index_exp)))
+  if (MAYBE_CLASS_TYPE_P (type) || MAYBE_CLASS_TYPE_P (TREE_TYPE (index_exp)))
     expr = build_new_op (ARRAY_REF, LOOKUP_NORMAL,
 			 array_expr, index_exp, NULL_TREE,
 			 /*overloaded_p=*/NULL);
@@ -443,7 +443,7 @@ check_member_template (tree tmpl)
 
   if (TREE_CODE (decl) == FUNCTION_DECL
       || (TREE_CODE (decl) == TYPE_DECL
-	  && IS_AGGR_TYPE (TREE_TYPE (decl))))
+	  && MAYBE_CLASS_TYPE_P (TREE_TYPE (decl))))
     {
       /* The parser rejects template declarations in local classes.  */
       gcc_assert (!current_function_decl);
@@ -2029,7 +2029,7 @@ constrain_class_visibility (tree type)
 %qT has a field %qD whose type uses the anonymous namespace",
 		       type, t);
 	  }
-	else if (IS_AGGR_TYPE (ftype)
+	else if (MAYBE_CLASS_TYPE_P (ftype)
 		 && vis < VISIBILITY_HIDDEN
 		 && subvis >= VISIBILITY_HIDDEN)
 	  warning (OPT_Wattributes, "\

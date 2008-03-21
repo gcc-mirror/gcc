@@ -214,7 +214,8 @@ check_dtor_name (tree basetype, tree name)
     /* OK */;
   else if (TREE_CODE (name) == IDENTIFIER_NODE)
     {
-      if ((IS_AGGR_TYPE (basetype) && name == constructor_name (basetype))
+      if ((MAYBE_CLASS_TYPE_P (basetype)
+	   && name == constructor_name (basetype))
 	  || (TREE_CODE (basetype) == ENUMERAL_TYPE
 	      && name == TYPE_IDENTIFIER (basetype)))
 	return true;
@@ -732,8 +733,8 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	  else if (!same_type_p (fbase, tbase))
 	    return NULL;
 	}
-      else if (IS_AGGR_TYPE (TREE_TYPE (from))
-	       && IS_AGGR_TYPE (TREE_TYPE (to))
+      else if (MAYBE_CLASS_TYPE_P (TREE_TYPE (from))
+	       && MAYBE_CLASS_TYPE_P (TREE_TYPE (to))
 	       /* [conv.ptr]
 
 		  An rvalue of type "pointer to cv D," where D is a
@@ -849,7 +850,7 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
   else if (fcode == VECTOR_TYPE && tcode == VECTOR_TYPE
 	   && vector_types_convertible_p (from, to, false))
     return build_conv (ck_std, to, conv);
-  else if (IS_AGGR_TYPE (to) && IS_AGGR_TYPE (from)
+  else if (MAYBE_CLASS_TYPE_P (to) && MAYBE_CLASS_TYPE_P (from)
 	   && is_properly_derived_from (from, to))
     {
       if (conv->kind == ck_rvalue)
@@ -1296,8 +1297,8 @@ implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
     return conv;
 
   if (expr != NULL_TREE
-      && (IS_AGGR_TYPE (from)
-	  || IS_AGGR_TYPE (to))
+      && (MAYBE_CLASS_TYPE_P (from)
+	  || MAYBE_CLASS_TYPE_P (to))
       && (flags & LOOKUP_NO_CONVERSION) == 0)
     {
       struct z_candidate *cand;
@@ -1753,7 +1754,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	  tree c1 = TREE_TYPE (type1);
 	  tree c2 = TYPE_PTRMEM_CLASS_TYPE (type2);
 
-	  if (IS_AGGR_TYPE (c1) && DERIVED_FROM_P (c2, c1)
+	  if (MAYBE_CLASS_TYPE_P (c1) && DERIVED_FROM_P (c2, c1)
 	      && (TYPE_PTRMEMFUNC_P (type2)
 		  || is_complete (TYPE_PTRMEM_POINTED_TO_TYPE (type2))))
 	    break;
@@ -2024,7 +2025,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	  || (TYPE_PTR_P (type1) && TYPE_PTR_P (type2))
 	  || (TYPE_PTRMEM_P (type1) && TYPE_PTRMEM_P (type2))
 	  || TYPE_PTRMEMFUNC_P (type1)
-	  || IS_AGGR_TYPE (type1)
+	  || MAYBE_CLASS_TYPE_P (type1)
 	  || TREE_CODE (type1) == ENUMERAL_TYPE))
     {
       build_builtin_candidate
@@ -2141,7 +2142,7 @@ add_builtin_candidates (struct z_candidate **candidates, enum tree_code code,
     {
       if (! args[i])
 	;
-      else if (IS_AGGR_TYPE (argtypes[i]))
+      else if (MAYBE_CLASS_TYPE_P (argtypes[i]))
 	{
 	  tree convs;
 
@@ -2568,13 +2569,13 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
   /* We represent conversion within a hierarchy using RVALUE_CONV and
      BASE_CONV, as specified by [over.best.ics]; these become plain
      constructor calls, as specified in [dcl.init].  */
-  gcc_assert (!IS_AGGR_TYPE (fromtype) || !IS_AGGR_TYPE (totype)
+  gcc_assert (!MAYBE_CLASS_TYPE_P (fromtype) || !MAYBE_CLASS_TYPE_P (totype)
 	      || !DERIVED_FROM_P (totype, fromtype));
 
-  if (IS_AGGR_TYPE (totype))
+  if (MAYBE_CLASS_TYPE_P (totype))
     ctors = lookup_fnfields (totype, complete_ctor_identifier, 0);
 
-  if (IS_AGGR_TYPE (fromtype))
+  if (MAYBE_CLASS_TYPE_P (fromtype))
     {
       tree to_nonref = non_reference (totype);
       if (same_type_ignoring_top_level_qualifiers_p (to_nonref, fromtype) ||
@@ -4381,7 +4382,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	   conversion, but is not considered during overload resolution.
 
 	   If the target is a class, that means call a ctor.  */
-	if (IS_AGGR_TYPE (totype)
+	if (MAYBE_CLASS_TYPE_P (totype)
 	    && (inner >= 0 || !lvalue_p (expr)))
 	  {
 	    expr = (build_temp
@@ -4443,7 +4444,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
     {
     case ck_rvalue:
       expr = convert_bitfield_to_declared_type (expr);
-      if (! IS_AGGR_TYPE (totype))
+      if (! MAYBE_CLASS_TYPE_P (totype))
 	return expr;
       /* Else fall through.  */
     case ck_base:
@@ -5193,7 +5194,7 @@ build_cxx_call (tree fn, int nargs, tree *argarray)
   if (fn == error_mark_node)
     return error_mark_node;
 
-  if (IS_AGGR_TYPE (TREE_TYPE (fn)))
+  if (MAYBE_CLASS_TYPE_P (TREE_TYPE (fn)))
     fn = build_cplus_new (TREE_TYPE (fn), fn);
   return convert_from_reference (fn);
 }
@@ -5742,8 +5743,7 @@ is_subseq (conversion *ics1, conversion *ics2)
 bool
 is_properly_derived_from (tree derived, tree base)
 {
-  if (!IS_AGGR_TYPE_CODE (TREE_CODE (derived))
-      || !IS_AGGR_TYPE_CODE (TREE_CODE (base)))
+  if (!CLASS_TYPE_P (derived) || !CLASS_TYPE_P (base))
     return false;
 
   /* We only allow proper derivation here.  The DERIVED_FROM_P macro
@@ -6021,8 +6021,8 @@ compare_ics (conversion *ics1, conversion *ics2)
     }
 
   if (deref_from_type1 != NULL_TREE
-      && IS_AGGR_TYPE_CODE (TREE_CODE (deref_from_type1))
-      && IS_AGGR_TYPE_CODE (TREE_CODE (deref_from_type2)))
+      && RECORD_OR_UNION_CODE_P (TREE_CODE (deref_from_type1))
+      && RECORD_OR_UNION_CODE_P (TREE_CODE (deref_from_type2)))
     {
       /* This was one of the pointer or pointer-like conversions.
 
@@ -6059,8 +6059,8 @@ compare_ics (conversion *ics1, conversion *ics2)
 		return -1;
 	    }
 	}
-      else if (IS_AGGR_TYPE_CODE (TREE_CODE (deref_to_type1))
-	       && IS_AGGR_TYPE_CODE (TREE_CODE (deref_to_type2)))
+      else if (RECORD_OR_UNION_CODE_P (TREE_CODE (deref_to_type1))
+	       && RECORD_OR_UNION_CODE_P (TREE_CODE (deref_to_type2)))
 	{
 	  /* [over.ics.rank]
 

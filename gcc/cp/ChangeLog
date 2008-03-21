@@ -1,3 +1,57 @@
+2008-03-21  Paolo Carlini  <pcarlini@suse.de>
+
+	* cp-tree.h (IS_AGGR_TYPE): Rename to MAYBE_CLASS_TYPE_P.
+	(SET_IS_AGGR_TYPE): Rename to SET_CLASS_TYPE_P.
+	(IS_AGGR_TYPE_CODE): Rename to RECORD_OR_UNION_CODE_P.
+	(PROMOTES_TO_AGGR_TYPE): Remove.
+	(CLASS_TYPE_P, TYPE_NON_AGGREGATE_CLASS): Adjust.
+	* typeck.c (unary_complex_lvalue, build_modify_expr,
+	convert_for_initialization): Adjust.
+	* init.c (is_aggr_type): Remove.
+	(is_class_type): Add.
+	(build_offset_ref, build_new_1, build_vec_delete_1, build_vec_init,
+	build_delete): Adjust.
+	* lex.c (make_aggr_type): Remove.
+	(make_class_type): Add.
+	(cxx_make_type): Adjust.
+	* class.c (finish_struct_1, fixed_type_or_null, is_empty_class):
+	Adjust.
+	* decl.c (build_typename_type, make_typename_type,
+	make_unbound_class_template, cxx_init_decl_processing,
+	check_tag_decl, groktypename, start_decl_1, layout_var_decl,
+	check_initializer, cp_finish_decl, build_ptrmemfunc_type, grokparms,
+	grok_op_properties, xref_tag, check_function_type): Adjust.
+	* call.c (check_dtor_name, standard_conversion, implicit_conversion,
+	add_builtin_candidate, add_builtin_candidates,
+	build_user_type_conversion_1, convert_like_real, build_cxx_call,
+	is_subseq, compare_ics): Adjust.
+	* method.c (use_thunk): Adjust.
+	* rtti.c (build_dynamic_cast_1, create_pseudo_type_info,
+	create_tinfo_types): Adjust.
+	* cvt.c (cp_convert_to_pointer, convert_to_pointer_force,
+	build_up_reference, convert_to_reference, convert_from_reference,
+	ocp_convert, build_expr_type_conversion): Adjust.
+	* tree.c (bind_template_template_parm, error_type): Adjust.
+	* dump.c (cp_dump_tree): Adjust.
+	* search.c (lookup_member): Adjust.
+	* friend.c (make_friend_class, do_friend): Adjust.
+	* typeck2.c (store_init_value, process_init_constructor_array,
+	process_init_constructor_record, build_x_arrow, build_m_component_ref,
+	build_functional_cast): Adjust.
+	* pt.c (finish_member_template_decl, process_template_parm,
+	lookup_template_class, tsubst_function_type, tsubst,
+	tsubst_copy_and_build, get_template_base, bt_instantiate_type_proc):
+	Adjust.
+	* semantics.c (begin_class_definition, finish_base_specifier,
+	finish_typeof, cxx_omp_predetermined_sharing, finish_decltype_type):
+	Adjust.
+	* name-lookup.c (constructor_name_p, push_overloaded_decl,
+	do_class_using_decl, lookup_qualified_name,
+	maybe_process_template_type_declaration): Adjust.
+	* decl2.c (grok_array_decl, check_member_template,
+	constrain_class_visibility): Adjust.
+	* parser.c (cp_parser_class_name): Adjust.
+
 2008-03-18  Paolo Bonzini  <bonzini@gnu.org>
 
         * cp-lang.c (LANG_HOOKS_REDUCE_BIT_FIELD_OPERATIONS): Delete.

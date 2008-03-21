@@ -2254,9 +2254,9 @@ begin_class_definition (tree t, tree attributes)
       t = error_mark_node;
     }
 
-  if (t == error_mark_node || ! IS_AGGR_TYPE (t))
+  if (t == error_mark_node || ! MAYBE_CLASS_TYPE_P (t))
     {
-      t = make_aggr_type (RECORD_TYPE);
+      t = make_class_type (RECORD_TYPE);
       pushtag (make_anon_name (), t, /*tag_scope=*/ts_current);
     }
 
@@ -2265,7 +2265,7 @@ begin_class_definition (tree t, tree attributes)
 
   if (TYPE_BEING_DEFINED (t))
     {
-      t = make_aggr_type (TREE_CODE (t));
+      t = make_class_type (TREE_CODE (t));
       pushtag (TYPE_IDENTIFIER (t), t, /*tag_scope=*/ts_current);
     }
   maybe_process_partial_specialization (t);
@@ -2469,8 +2469,11 @@ finish_base_specifier (tree base, tree access, bool virtual_p)
       error ("invalid base-class specification");
       result = NULL_TREE;
     }
-  else if (! is_aggr_type (base, 1))
-    result = NULL_TREE;
+  else if (! MAYBE_CLASS_TYPE_P (base))
+    {
+      error ("%qT is not a class type", base);
+      result = NULL_TREE;
+    }
   else
     {
       if (cp_type_quals (base) != 0)
@@ -2988,7 +2991,7 @@ finish_typeof (tree expr)
 
   if (type_dependent_expression_p (expr))
     {
-      type = make_aggr_type (TYPEOF_TYPE);
+      type = cxx_make_type (TYPEOF_TYPE);
       TYPEOF_TYPE_EXPR (type) = expr;
       SET_TYPE_STRUCTURAL_EQUALITY (type);
 
@@ -4030,7 +4033,7 @@ cxx_omp_predetermined_sharing (tree decl)
   if (TREE_STATIC (decl))
     {
       tree ctx = CP_DECL_CONTEXT (decl);
-      if (TYPE_P (ctx) && IS_AGGR_TYPE (ctx))
+      if (TYPE_P (ctx) && MAYBE_CLASS_TYPE_P (ctx))
 	return OMP_CLAUSE_DEFAULT_SHARED;
     }
 
@@ -4123,7 +4126,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
 
   if (type_dependent_expression_p (expr))
     {
-      type = make_aggr_type (DECLTYPE_TYPE);
+      type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
       DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (type)
         = id_expression_or_member_access_p;

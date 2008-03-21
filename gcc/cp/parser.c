@@ -14224,7 +14224,7 @@ cp_parser_class_name (cp_parser *parser,
     }
   else if (TREE_CODE (decl) != TYPE_DECL
 	   || TREE_TYPE (decl) == error_mark_node
-	   || !IS_AGGR_TYPE (TREE_TYPE (decl)))
+	   || !MAYBE_CLASS_TYPE_P (TREE_TYPE (decl)))
     decl = error_mark_node;
 
   if (decl == error_mark_node)
