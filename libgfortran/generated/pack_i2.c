@@ -1,5 +1,5 @@
-/* Generic implementation of the PACK intrinsic
-   Copyright (C) 2002, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+/* Specific implementation of the PACK intrinsic
+   Copyright (C) 2002, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -32,6 +32,9 @@ Boston, MA 02110-1301, USA.  */
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+
+
+#if defined (HAVE_GFC_INTEGER_2)
 
 /* PACK is specified as follows:
 
@@ -73,18 +76,17 @@ Boston, MA 02110-1301, USA.  */
 There are two variants of the PACK intrinsic: one, where MASK is
 array valued, and the other one where MASK is scalar.  */
 
-static void
-pack_internal (gfc_array_char *ret, const gfc_array_char *array,
-	       const gfc_array_l1 *mask, const gfc_array_char *vector,
-	       index_type size)
+void
+pack_i2 (gfc_array_i2 *ret, const gfc_array_i2 *array,
+	       const gfc_array_l1 *mask, const gfc_array_i2 *vector)
 {
   /* r.* indicates the return array.  */
   index_type rstride0;
-  char *rptr;
+  GFC_INTEGER_2 *rptr;
   /* s.* indicates the source array.  */
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type sstride0;
-  const char *sptr;
+  const GFC_INTEGER_2 *sptr;
   /* m.* indicates the mask array.  */
   index_type mstride[GFC_MAX_DIMENSIONS];
   index_type mstride0;
@@ -115,7 +117,7 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
 #endif
       )
     {
-      /*  Don't convert a NULL pointer as we use test for NULL below.  */
+      /*  Do not convert a NULL pointer as we use test for NULL below.  */
       if (mptr)
 	mptr = GFOR_POINTER_TO_L1 (mptr, mask_kind);
     }
@@ -129,11 +131,11 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
       extent[n] = array->dim[n].ubound + 1 - array->dim[n].lbound;
       if (extent[n] <= 0)
        zero_sized = 1;
-      sstride[n] = array->dim[n].stride * size;
+      sstride[n] = array->dim[n].stride;
       mstride[n] = mask->dim[n].stride * mask_kind;
     }
   if (sstride[0] == 0)
-    sstride[0] = size;
+    sstride[0] = 1;
   if (mstride[0] == 0)
     mstride[0] = mask_kind;
 
@@ -221,7 +223,7 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
 	      return;
 	    }
 	  else
-	    ret->data = internal_malloc_size (size * total);
+	    ret->data = internal_malloc_size (sizeof (GFC_INTEGER_2) * total);
 	}
       else 
 	{
@@ -236,9 +238,9 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
 	}
     }
 
-  rstride0 = ret->dim[0].stride * size;
+  rstride0 = ret->dim[0].stride;
   if (rstride0 == 0)
-    rstride0 = size;
+    rstride0 = 1;
   sstride0 = sstride[0];
   mstride0 = mstride[0];
   rptr = ret->data;
@@ -249,7 +251,7 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
       if (*mptr)
         {
           /* Add it.  */
-          memcpy (rptr, sptr, size);
+	  *rptr = *sptr;
           rptr += rstride0;
         }
       /* Advance to the next element.  */
@@ -289,15 +291,15 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
       nelem = ((rptr - ret->data) / rstride0);
       if (n > nelem)
         {
-          sstride0 = vector->dim[0].stride * size;
+          sstride0 = vector->dim[0].stride;
           if (sstride0 == 0)
-            sstride0 = size;
+            sstride0 = 1;
 
           sptr = vector->data + sstride0 * nelem;
           n -= nelem;
           while (n--)
             {
-              memcpy (rptr, sptr, size);
+	      *rptr = *sptr;
               rptr += rstride0;
               sptr += sstride0;
             }
@@ -305,296 +307,4 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
     }
 }
 
-extern void pack (gfc_array_char *, const gfc_array_char *,
-		  const gfc_array_l1 *, const gfc_array_char *);
-export_proto(pack);
-
-void
-pack (gfc_array_char *ret, const gfc_array_char *array,
-      const gfc_array_l1 *mask, const gfc_array_char *vector)
-{
-  int type;
-  index_type size;
-
-  type = GFC_DESCRIPTOR_TYPE (array);
-  size = GFC_DESCRIPTOR_SIZE (array);
-
-  switch(type)
-    {
-    case GFC_DTYPE_INTEGER:
-    case GFC_DTYPE_LOGICAL:
-      switch(size)
-	{
-	case sizeof (GFC_INTEGER_1):
-	  pack_i1 ((gfc_array_i1 *) ret, (gfc_array_i1 *) array,
-		   (gfc_array_l1 *) mask, (gfc_array_i1 *) vector);
-	  return;
-
-	case sizeof (GFC_INTEGER_2):
-	  pack_i2 ((gfc_array_i2 *) ret, (gfc_array_i2 *) array,
-		   (gfc_array_l1 *) mask, (gfc_array_i2 *) vector);
-	  return;
-
-	case sizeof (GFC_INTEGER_4):
-	  pack_i4 ((gfc_array_i4 *) ret, (gfc_array_i4 *) array,
-		   (gfc_array_l1 *) mask, (gfc_array_i4 *) vector);
-	  return;
-
-	case sizeof (GFC_INTEGER_8):
-	  pack_i8 ((gfc_array_i8 *) ret, (gfc_array_i8 *) array,
-		   (gfc_array_l1 *) mask, (gfc_array_i8 *) vector);
-	  return;
-
-#ifdef HAVE_GFC_INTEGER_16
-	case sizeof (GFC_INTEGER_16):
-	  pack_i1 ((gfc_array_i16 *) ret, (gfc_array_i16 *) array,
-		   (gfc_array_l1 *) mask, (gfc_array_i16 *) vector);
-	  return;
 #endif
-	}
-    case GFC_DTYPE_REAL:
-      switch(size)
-	{
-	case sizeof (GFC_REAL_4):
-	  pack_r4 ((gfc_array_r4 *) ret, (gfc_array_r4 *) array,
-		   (gfc_array_l1 *) mask, (gfc_array_r4 *) vector);
-	  return;
-
-	case sizeof (GFC_REAL_8):
-	  pack_r8 ((gfc_array_r8 *) ret, (gfc_array_r8 *) array,
-		   (gfc_array_l1 *) mask, (gfc_array_r8 *) vector);
-	  return;
-
-#ifdef HAVE_GFC_REAL_10
-	case sizeof (GFC_REAL_10):
-	  pack_r10 ((gfc_array_r10 *) ret, (gfc_array_r10 *) array,
-		    (gfc_array_l1 *) mask, (gfc_array_r10 *) vector);
-	  return;
-#endif
-
-#ifdef HAVE_GFC_REAL_16
-	case sizeof (GFC_REAL_16):
-	  pack_r16 ((gfc_array_r16 *) ret, (gfc_array_r16 *) array,
-		    (gfc_array_l1 *) mask, (gfc_array_r16 *) vector);
-	  return;
-#endif
-	}
-    case GFC_DTYPE_COMPLEX:
-      switch(size)
-	{
-	case sizeof (GFC_COMPLEX_4):
-	  pack_c4 ((gfc_array_c4 *) ret, (gfc_array_c4 *) array,
-		   (gfc_array_l1 *) mask, (gfc_array_c4 *) vector);
-	  return;
-
-	case sizeof (GFC_COMPLEX_8):
-	  pack_c8 ((gfc_array_c8 *) ret, (gfc_array_c8 *) array,
-		   (gfc_array_l1 *) mask, (gfc_array_c8 *) vector);
-	  return;
-
-#ifdef HAVE_GFC_COMPLEX_10
-	case sizeof (GFC_COMPLEX_10):
-	  pack_c10 ((gfc_array_c10 *) ret, (gfc_array_c10 *) array,
-		    (gfc_array_l1 *) mask, (gfc_array_c10 *) vector);
-	  return;
-#endif
-
-#ifdef HAVE_GFC_COMPLEX_16
-	case sizeof (GFC_REAL_16):
-	  pack_c16 ((gfc_array_c16 *) ret, (gfc_array_c16 *) array,
-		    (gfc_array_l1 *) mask, (gfc_array_c16 *) vector);
-	  return;
-#endif
-
-	}
-    }
-  pack_internal (ret, array, mask, vector, size);
-}
-
-extern void pack_char (gfc_array_char *, GFC_INTEGER_4, const gfc_array_char *,
-		       const gfc_array_l1 *, const gfc_array_char *,
-		       GFC_INTEGER_4, GFC_INTEGER_4);
-export_proto(pack_char);
-
-void
-pack_char (gfc_array_char *ret,
-	   GFC_INTEGER_4 ret_length __attribute__((unused)),
-	   const gfc_array_char *array, const gfc_array_l1 *mask,
-	   const gfc_array_char *vector, GFC_INTEGER_4 array_length,
-	   GFC_INTEGER_4 vector_length __attribute__((unused)))
-{
-  pack_internal (ret, array, mask, vector, array_length);
-}
-
-static void
-pack_s_internal (gfc_array_char *ret, const gfc_array_char *array,
-		 const GFC_LOGICAL_4 *mask, const gfc_array_char *vector,
-		 index_type size)
-{
-  /* r.* indicates the return array.  */
-  index_type rstride0;
-  char *rptr;
-  /* s.* indicates the source array.  */
-  index_type sstride[GFC_MAX_DIMENSIONS];
-  index_type sstride0;
-  const char *sptr;
-
-  index_type count[GFC_MAX_DIMENSIONS];
-  index_type extent[GFC_MAX_DIMENSIONS];
-  index_type n;
-  index_type dim;
-  index_type ssize;
-  index_type nelem;
-
-  dim = GFC_DESCRIPTOR_RANK (array);
-  ssize = 1;
-  for (n = 0; n < dim; n++)
-    {
-      count[n] = 0;
-      extent[n] = array->dim[n].ubound + 1 - array->dim[n].lbound;
-      sstride[n] = array->dim[n].stride * size;
-      ssize *= extent[n];
-    }
-  if (sstride[0] == 0)
-    sstride[0] = size;
-
-  sstride0 = sstride[0];
-  sptr = array->data;
-
-  if (ret->data == NULL)
-    {
-      /* Allocate the memory for the result.  */
-      int total;
-
-      if (vector != NULL)
-	{
-	  /* The return array will have as many elements as there are
-	     in vector.  */
-	  total = vector->dim[0].ubound + 1 - vector->dim[0].lbound;
-	}
-      else
-	{
-	  if (*mask)
-	    {
-	      /* The result array will have as many elements as the input
-		 array.  */
-	      total = extent[0];
-	      for (n = 1; n < dim; n++)
-		total *= extent[n];
-	    }
-	  else
-	    /* The result array will be empty.  */
-	    total = 0;
-	}
-
-      /* Setup the array descriptor.  */
-      ret->dim[0].lbound = 0;
-      ret->dim[0].ubound = total - 1;
-      ret->dim[0].stride = 1;
-      ret->offset = 0;
-
-      if (total == 0)
-	{
-	  ret->data = internal_malloc_size (1);
-	  return;
-	}
-      else
-	ret->data = internal_malloc_size (size * total);
-    }
-
-  rstride0 = ret->dim[0].stride * size;
-  if (rstride0 == 0)
-    rstride0 = size;
-  rptr = ret->data;
-
-  /* The remaining possibilities are now:
-       If MASK is .TRUE., we have to copy the source array into the
-     result array. We then have to fill it up with elements from VECTOR.
-       If MASK is .FALSE., we have to copy VECTOR into the result
-     array. If VECTOR were not present we would have already returned.  */
-
-  if (*mask && ssize != 0)
-    {
-      while (sptr)
-	{
-	  /* Add this element.  */
-	  memcpy (rptr, sptr, size);
-	  rptr += rstride0;
-
-	  /* Advance to the next element.  */
-	  sptr += sstride0;
-	  count[0]++;
-	  n = 0;
-	  while (count[n] == extent[n])
-	    {
-	      /* When we get to the end of a dimension, reset it and
-		 increment the next dimension.  */
-	      count[n] = 0;
-	      /* We could precalculate these products, but this is a
-		 less frequently used path so probably not worth it.  */
-	      sptr -= sstride[n] * extent[n];
-	      n++;
-	      if (n >= dim)
-		{
-		  /* Break out of the loop.  */
-		  sptr = NULL;
-		  break;
-		}
-	      else
-		{
-		  count[n]++;
-		  sptr += sstride[n];
-		}
-	    }
-	}
-    }
-
-  /* Add any remaining elements from VECTOR.  */
-  if (vector)
-    {
-      n = vector->dim[0].ubound + 1 - vector->dim[0].lbound;
-      nelem = ((rptr - ret->data) / rstride0);
-      if (n > nelem)
-        {
-          sstride0 = vector->dim[0].stride * size;
-          if (sstride0 == 0)
-            sstride0 = size;
-
-          sptr = vector->data + sstride0 * nelem;
-          n -= nelem;
-          while (n--)
-            {
-              memcpy (rptr, sptr, size);
-              rptr += rstride0;
-              sptr += sstride0;
-            }
-        }
-    }
-}
-
-extern void pack_s (gfc_array_char *ret, const gfc_array_char *array,
-		    const GFC_LOGICAL_4 *, const gfc_array_char *);
-export_proto(pack_s);
-
-void
-pack_s (gfc_array_char *ret, const gfc_array_char *array,
-	const GFC_LOGICAL_4 *mask, const gfc_array_char *vector)
-{
-  pack_s_internal (ret, array, mask, vector, GFC_DESCRIPTOR_SIZE (array));
-}
-
-extern void pack_s_char (gfc_array_char *ret, GFC_INTEGER_4,
-			 const gfc_array_char *array, const GFC_LOGICAL_4 *,
-			 const gfc_array_char *, GFC_INTEGER_4,
-			 GFC_INTEGER_4);
-export_proto(pack_s_char);
-
-void
-pack_s_char (gfc_array_char *ret,
-	     GFC_INTEGER_4 ret_length __attribute__((unused)),
-	     const gfc_array_char *array, const GFC_LOGICAL_4 *mask,
-	     const gfc_array_char *vector, GFC_INTEGER_4 array_length,
-	     GFC_INTEGER_4 vector_length __attribute__((unused)))
-{
-  pack_s_internal (ret, array, mask, vector, array_length);
-}

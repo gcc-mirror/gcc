@@ -1,3 +1,34 @@
+2008-03-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/32972
+	* Makefile.am:  Add new variable, i_pack_c, containing
+	pack_i1.c, pack_i2.c, pack_i4.c, pack_i8.c, pack_i16.c,
+	pack_r4.c, pack_r8.c, pack_r10.c, pack_r16.c, pack_c4.c,
+	pack_c8.c, pack_c10.c, pack_c16.c.
+	Add m4/pack.m4 to m4_files.
+	Add i_pack_c to gfor_built_src.
+	Add rule to generate i_pack_c from m4/pack.m4.
+	* Makefile.in:  Regenerated.
+	* libgfortran.h: Add prototypes for pack_i1, pack_i2, pack_i4,
+	pack_i8, pack_i16, pack_r4, pack_r8, pack_c4, pack_c8,
+	pack_c10, pack_c16.
+	* intrinsics/pack_generic.c:  Add calls to specific
+	pack functions.
+	* m4/pack.m4:  New file.
+	* generated/pack_i1.c:  New file.
+	* generated/pack_i2.c:  New file.
+	* generated/pack_i4.c:  New file.
+	* generated/pack_i8.c:  New file.
+	* generated/pack_i16.c:  New file.
+	* generated/pack_r4.c:  New file.
+	* generated/pack_r8.c:  New file.
+	* generated/pack_r10.c:  New file.
+	* generated/pack_r16.c:  New file.
+	* generated/pack_c4.c:  New file.
+	* generated/pack_c8.c:  New file.
+	* generated/pack_c10.c:  New file.
+	* generated/pack_c16.c:  New file.
+
 2008-03-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/35627
