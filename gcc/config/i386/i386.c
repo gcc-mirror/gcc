@@ -10903,6 +10903,14 @@ ix86_expand_convert_uns_didf_sse (rtx target, rtx input)
   ix86_expand_vector_extract (false, target, fp_xmm, 0);
 }
 
+/* Not used, but eases macroization of patterns.  */
+void
+ix86_expand_convert_uns_sixf_sse (rtx target ATTRIBUTE_UNUSED,
+				  rtx input ATTRIBUTE_UNUSED)
+{
+  gcc_unreachable ();
+}
+
 /* Convert an unsigned SImode value into a DFmode.  Only currently used
    for SSE, but applicable anywhere.  */
 
