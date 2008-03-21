@@ -2117,7 +2117,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	  /* If the type is by_reference, a copy is not allowed.  */
 	  if (Is_By_Reference_Type (Etype (gnat_formal)))
 	    post_error
-	      ("misaligned & cannot be passed by reference", gnat_actual);
+	      ("misaligned actual cannot be passed by reference", gnat_actual);
 
 	  /* For users of Starlet we issue a warning because the
 	     interface apparently assumes that by-ref parameters
@@ -5286,6 +5286,13 @@ gnat_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p ATTRIBUTE_UNUSED)
 	  TREE_READONLY (op) = 0;
 	}
 
+      /* We let the gimplifier process &COND_EXPR and expect it to yield the
+	 address of the selected operand when it is addressable.  Besides, we
+	 also expect addressable_p to only let COND_EXPRs where both arms are
+	 addressable reach here.  */
+      else if (TREE_CODE (op) == COND_EXPR)
+	;
+
       /* Otherwise, if we are taking the address of something that is neither
 	 reference, declaration, or constant, make a variable for the operand
 	 here and then take its address.  If we don't do it this way, we may
@@ -6116,6 +6123,12 @@ addressable_p (tree gnu_expr, tree gnu_type)
     case SAVE_EXPR:
     case CALL_EXPR:
       return true;
+
+    case COND_EXPR:
+      /* We accept &COND_EXPR as soon as both operands are addressable and
+	 expect the outcome to be the address of the selected operand.  */
+      return (addressable_p (TREE_OPERAND (gnu_expr, 1), NULL_TREE)
+	      && addressable_p (TREE_OPERAND (gnu_expr, 2), NULL_TREE));
 
     case COMPONENT_REF:
       return (!DECL_BIT_FIELD (TREE_OPERAND (gnu_expr, 1))
