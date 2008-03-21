@@ -1,3 +1,7 @@
+2008-03-21  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/empty_vector_length.adb: New testcase.
+
 2008-03-20  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ssa-ccp-17.c: New testcase.
