@@ -1,3 +1,8 @@
+2008-03-21  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-data-ref.c (dump_data_dependence_relation): Avoid data
+	reference dumps if ddr is NULL or dependence is unknown.
+
 2008-03-20  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/linux-atomic.asm (ATOMIC_TEST_AND_SET): Take
