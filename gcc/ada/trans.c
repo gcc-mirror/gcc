@@ -6089,8 +6089,61 @@ larger_record_type_p (tree record_type, tree type)
 /* Return true if GNU_EXPR can be directly addressed.  This is the case
    unless it is an expression involving computation or if it involves a
    reference to a bitfield or to an object not sufficiently aligned for
-   its type.  If GNU_TYPE is non null, return true only if GNU_EXPR can
-   be directly addressed as an object of this type.  */
+   its type.  If GNU_TYPE is non-null, return true only if GNU_EXPR can
+   be directly addressed as an object of this type.
+
+   *** Notes on addressability issues in the Ada compiler ***
+
+   This predicate is necessary in order to bridge the gap between Gigi
+   and the middle-end about addressability of GENERIC trees.  A tree
+   is said to be addressable if it can be directly addressed, i.e. if
+   its address can be taken, is a multiple of the type's alignment on
+   strict-alignment architectures and returns the first storage unit
+   assigned to the object represented by the tree.
+
+   In the C family of languages, everything is in practice addressable
+   at the language level, except for bit-fields.  This means that these
+   compilers will take the address of any tree that doesn't represent
+   a bit-field reference and expect the result to be the first storage
+   unit assigned to the object.  Even in cases where this will result
+   in unaligned accesses at run time, nothing is supposed to be done
+   and the program is considered as erroneous instead (see PR c/18287).
+
+   The implicit assumptions made in the middle-end are in keeping with
+   the C viewpoint described above:
+     - the address of a bit-field reference is supposed to be never
+       taken; the compiler (generally) will stop on such a construct,
+     - any other tree is addressable if it is formally addressable,
+       i.e. if it is formally allowed to be the operand of ADDR_EXPR.
+
+   In Ada, the viewpoint is the opposite one: nothing is addressable
+   at the language level unless explicitly declared so.  This means
+   that the compiler will both make sure that the trees representing
+   references to addressable ("aliased" in Ada parlance) objects are
+   addressable and make no real attempts at ensuring that the trees
+   representing references to non-addressable objects are addressable.
+
+   In the first case, Ada is effectively equivalent to C and handing
+   down the direct result of applying ADDR_EXPR to these trees to the
+   middle-end works flawlessly.  In the second case, Ada cannot afford
+   to consider the program as erroneous if the address of trees that
+   are not addressable is requested for technical reasons, unlike C;
+   as a consequence, the Ada compiler must arrange for either making
+   sure that this address is not requested in the middle-end or for
+   compensating by inserting temporaries if it is requested in Gigi.
+
+   The first goal can be achieved because the middle-end should not
+   request the address of non-addressable trees on its own; the only
+   exception is for the invocation of low-level block operations like
+   memcpy, for which the addressability requirements are lower since
+   the type's alignment can be disregarded.  In practice, this means
+   that Gigi must make sure that such operations cannot be applied to
+   non-BLKmode bit-fields.
+
+   The second goal is achieved by means of the addressable_p predicate
+   and by inserting SAVE_EXPRs around trees deemed non-addressable.
+   They will be turned during gimplification into proper temporaries
+   whose address will be used in lieu of that of the original tree.  */
 
 static bool
 addressable_p (tree gnu_expr, tree gnu_type)
