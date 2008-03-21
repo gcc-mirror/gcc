@@ -1,3 +1,13 @@
+2008-03-21  Olivier Hainque  <hainque@adacore.com>
+            Ed Schonberg  <schonberg@adacore.com>
+
+	* trans.c (addressable_p): Accept COND_EXPR when both arms
+	are addressable.
+	(gnat_gimplify_expr): Let the gimplifier handle &COND_EXPR.
+	(call_to_gnu): Do not use name reference in the error message
+	for a misaligned by_reference_parameter. The actual may be a
+	general expression.
+
 2008-03-18  Paolo Bonzini  <bonzini@gnu.org>
 
         * misc.c (LANG_HOOKS_REDUCE_BIT_FIELD_OPERATIONS): Delete.
