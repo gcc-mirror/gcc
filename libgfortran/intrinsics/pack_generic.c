@@ -400,7 +400,7 @@ pack (gfc_array_char *ret, const gfc_array_char *array,
 #endif
 
 #ifdef HAVE_GFC_COMPLEX_16
-	case sizeof (GFC_REAL_16):
+	case sizeof (GFC_COMPLEX_16):
 	  pack_c16 ((gfc_array_c16 *) ret, (gfc_array_c16 *) array,
 		    (gfc_array_l1 *) mask, (gfc_array_c16 *) vector);
 	  return;
