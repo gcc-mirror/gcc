@@ -1,6 +1,12 @@
 2008-03-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/32972
+	* runtime/in_pack_generic.c (internal_pack):  Call correct
+	function, pack_i16, for GFC_INTEGER_16.
+
+2008-03-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/32972
 	* Makefile.am:  Add new variable, i_pack_c, containing
 	pack_i1.c, pack_i2.c, pack_i4.c, pack_i8.c, pack_i16.c,
 	pack_r4.c, pack_r8.c, pack_r10.c, pack_r16.c, pack_c4.c,
