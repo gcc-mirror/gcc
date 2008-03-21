@@ -1,6 +1,6 @@
 2008-03-21  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
-	PR target/27947
+	PR target/27946
 	* config/rs6000/rs6000.md (floatdidf2): Discouraging fprs and
 	encouraging but not allowing gprs for input;
 	change the input constraint to !f#r.

@@ -1,6 +1,6 @@
 2008-03-21  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
-	PR target/27947
+	PR target/27946
 	* gcc.target/powerpc/ppc64-double-1.c: New testcase.
 
 2008-03-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
