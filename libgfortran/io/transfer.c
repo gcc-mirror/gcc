@@ -1985,12 +1985,12 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
       if (dtp->u.p.mode == READING
 	  && dtp->u.p.current_unit->mode == WRITING
 	  && !is_internal_unit (dtp))
-	 flush(dtp->u.p.current_unit->s);
+	flush(dtp->u.p.current_unit->s);
 
       /* Check whether the record exists to be read.  Only
 	 a partial record needs to exist.  */
 
-      if (dtp->u.p.mode == READING && (dtp->rec -1)
+      if (dtp->u.p.mode == READING && (dtp->rec - 1)
 	  * dtp->u.p.current_unit->recl >= file_length (dtp->u.p.current_unit->s))
 	{
 	  generate_error (&dtp->common, LIBERROR_BAD_OPTION,
@@ -2604,7 +2604,9 @@ next_record_w (st_parameter_dt *dtp, int done)
 	  if (is_stream_io (dtp))
 	    {
 	      dtp->u.p.current_unit->strm_pos += len;
-	      struncate(dtp->u.p.current_unit->s);
+	      if (dtp->u.p.current_unit->strm_pos
+		  < file_length (dtp->u.p.current_unit->s))
+		struncate (dtp->u.p.current_unit->s);
 	    }
 	}
 
