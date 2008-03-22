@@ -1,3 +1,7 @@
+2008-03-22  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* gcc.target/mips/dse-1.c: Add checks for zeros.
+
 2008-03-21  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR target/27946
