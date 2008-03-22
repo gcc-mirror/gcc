@@ -3172,7 +3172,14 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	   we may be missing "valid" checks, but what can you do?
 	   This was PR19217.  */
         if (in_phi)
-	  break;
+	  {
+	    if (!is_gimple_min_invariant (t))
+	      {
+		error ("non-invariant address expression in PHI argument");
+		return t;
+	      }
+	    break;
+	  }
 
 	old_invariant = TREE_INVARIANT (t);
 	old_constant = TREE_CONSTANT (t);
@@ -3216,10 +3223,6 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	    return x;
 	  }
 
-	/* Stop recursing and verifying invariant ADDR_EXPRs, they tend
-	   to become arbitrary complicated.  */
-	if (is_gimple_min_invariant (t))
-	  *walk_subtrees = 0;
 	break;
       }
 

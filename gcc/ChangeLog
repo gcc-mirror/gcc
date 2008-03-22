@@ -1,3 +1,11 @@
+2008-03-22  Richard Guenther  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_expr): Recurse again for invariant addresses.
+	For PHI nodes verify the address is invariant.
+	* tree-ssa-ccp.c (ccp_decl_initial_min_invariant): Remove.
+	(get_symbol_constant_value): Use is_gimple_min_invariant.
+	(maybe_fold_stmt_indirect): Likewise.
+
 2008-03-22  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR rtl-optimization/33927
