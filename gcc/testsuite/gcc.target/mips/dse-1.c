@@ -1,7 +1,4 @@
-/* ??? Further to the subreg comment below, we can't rely on any of the
-   tests passing unless we handle subregs, and the patch to do so has
-   been rejected for the time being.  */
-/* { dg-do compile { target { ! *-*-* } } } */
+/* { dg-do compile } */
 /* { dg-mips-options "-mgp64 -O" } */
 
 #define TEST(ID, TYPE1, TYPE2)					\
@@ -18,6 +15,13 @@
     u->m2 = x;							\
     return (u->m1[0]						\
 	    + u->m1[sizeof (TYPE2) / sizeof (TYPE1) - 1]);	\
+  }								\
+								\
+  TYPE1 __attribute__((nomips16))				\
+  g##ID (union u##ID *u)					\
+  {								\
+    u->m2 = 0;							\
+    return (u->m1[0] | u->m1[1]);				\
   }
 
 TEST (1, unsigned int, unsigned long long);
@@ -32,8 +36,8 @@ TEST (8, short, int);
 TEST (9, unsigned char, unsigned int);
 TEST (10, signed char, int);
 
-/* DSE isn't yet read to consider stores of subregs, so the corresponding
-   (char, short) tests won't pass.  */
+TEST (11, unsigned char, unsigned short);
+TEST (12, signed char, short);
 
 /* { dg-final { scan-assembler-not "\tlh\t" } } */
 /* { dg-final { scan-assembler-not "\tlhu\t" } } */

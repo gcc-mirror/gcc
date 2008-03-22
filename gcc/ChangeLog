@@ -1,3 +1,22 @@
+2008-03-22  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR rtl-optimization/33927
+	* Makefile.in (dse.o): Depend on $(TM_P_H).
+	* expr.h (extract_low_bits): Declare.
+	* expmed.c (extract_low_bits): New function.
+	* rtlhooks.c (gen_lowpart_general): Generalize SUBREG handling.
+	* dse.c: Include tm_p.h.
+	(find_shift_sequence): Remove the read_reg argument and return the
+	read value.  Emit the instructions instead of returning them.
+	Iterate on new_mode rather than calculating it each time.
+	Check MODES_TIEABLE_P.  Use simplify_gen_subreg to convert the
+	source to NEW_MODE and extract_low_bits to convert the shifted
+	value to READ_MODE.
+	(replace_read): Allow the load and store to have different mode
+	classes.  Use extract_low_bits when SHIFT == 0.  Create the shift
+	or extraction instructions before trying the replacement.  Update
+	dump-file code accordingly, avoiding use of REGNO (store_info->rhs).
+
 2008-03-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (assign_386_stack_local): Align DImode slots
