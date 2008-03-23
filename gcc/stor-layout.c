@@ -699,9 +699,6 @@ update_alignment_for_field (record_layout_info rli, tree field,
 		 && ! integer_zerop (DECL_SIZE (rli->prev_field)))))
 	{
 	  unsigned int type_align = TYPE_ALIGN (type);
-	  unsigned int type_size
-	    = tree_low_cst (TYPE_SIZE (type), 1);
-	  type_align = MAX (type_align, type_size);
 	  type_align = MAX (type_align, desired_align);
 	  if (maximum_field_alignment != 0)
 	    type_align = MIN (type_align, maximum_field_alignment);
