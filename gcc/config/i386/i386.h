@@ -1234,7 +1234,7 @@ do {									\
 /* Register in which static-chain is passed to a function.
    We do use ECX as static chain register for 32 bit ABI.  On the
    64bit ABI, ECX is an argument register, so we use R10 instead.  */
-#define STATIC_CHAIN_REGNUM (TARGET_64BIT ? FIRST_REX_INT_REG + 10 - 8 : 2)
+#define STATIC_CHAIN_REGNUM (TARGET_64BIT ? R10_REG : CX_REG)
 
 /* Register to hold the addressing base for position independent
    code access to data items.  We don't use PIC pointer for 64bit
