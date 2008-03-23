@@ -1,3 +1,8 @@
+2008-03-23  Zuxy Meng <zuxy.meng@gmail.com>
+
+	* doc/extend.texi (Function Attributes): Add missing comma in the
+	example of the "alloc_size" attribute.
+	
 2008-03-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	Revert:
