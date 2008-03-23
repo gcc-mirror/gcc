@@ -16315,7 +16315,6 @@ rtx
 assign_386_stack_local (enum machine_mode mode, enum ix86_stack_slot n)
 {
   struct stack_local_entry *s;
-  int align;
 
   gcc_assert (n < MAX_386_STACK_LOCALS);
 
@@ -16326,19 +16325,11 @@ assign_386_stack_local (enum machine_mode mode, enum ix86_stack_slot n)
     if (s->mode == mode && s->n == n)
       return copy_rtx (s->rtl);
 
-  /* Align DImode slots to their natural alignment
-     to avoid store forwarding stalls.  */
-  if (mode == DImode
-      && (GET_MODE_BITSIZE (mode) > GET_MODE_ALIGNMENT (mode)))
-    align = GET_MODE_BITSIZE (mode);
-  else
-    align = 0;
-
   s = (struct stack_local_entry *)
     ggc_alloc (sizeof (struct stack_local_entry));
   s->n = n;
   s->mode = mode;
-  s->rtl = assign_stack_local (mode, GET_MODE_SIZE (mode), align);
+  s->rtl = assign_stack_local (mode, GET_MODE_SIZE (mode), 0);
 
   s->next = ix86_stack_locals;
   ix86_stack_locals = s;

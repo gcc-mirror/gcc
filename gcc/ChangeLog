@@ -1,3 +1,23 @@
+2008-03-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	Revert:
+	2008-03-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386-modes.def: Use 4 byte alignment on DI for
+	32bit host.
+
+	2008-03-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/35496
+	* stor-layout.c (update_alignment_for_field): Set minimum alignment
+	of the underlying type of a MS bitfield layout to the natural
+	alignment of the type.
+
+	2008-03-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (assign_386_stack_local): Align DImode slots
+	to their natural alignment to avoid store forwarding stalls.
+
 2008-03-22  Richard Guenther  <rguenther@suse.de>
 
 	* tree-cfg.c (verify_expr): Recurse again for invariant addresses.
@@ -2680,7 +2700,6 @@
 2008-02-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	Revert:
-
 	2008-02-15  Uros Bizjak  <ubizjak@gmail.com>	
 	* config/i386/sfp-machine.h (CMPtype): Define as typedef using
 	libgcc_cmp_return mode.
