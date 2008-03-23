@@ -1,3 +1,10 @@
+2008-03-23  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	* trans.h: Use fold_build in build1_v, build2_v and build3_v
+	macros.
+	* trans-openmp.c (gfc_trans_omp_critical, gfc_trans_omp_single):
+	Don't use build2_v macro.
+
 2008-03-19  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/35152

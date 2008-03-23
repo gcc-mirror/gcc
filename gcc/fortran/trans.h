@@ -637,11 +637,11 @@ struct lang_decl		GTY(())
   (TYPE_LANG_SPECIFIC(node)->dataptr_type)
 
 /* Build an expression with void type.  */
-#define build1_v(code, arg) build1(code, void_type_node, arg)
-#define build2_v(code, arg1, arg2) build2(code, void_type_node, \
-                                          arg1, arg2)
-#define build3_v(code, arg1, arg2, arg3) build3(code, void_type_node, \
-                                                arg1, arg2, arg3)
+#define build1_v(code, arg) fold_build1(code, void_type_node, arg)
+#define build2_v(code, arg1, arg2) fold_build2(code, void_type_node, \
+                                               arg1, arg2)
+#define build3_v(code, arg1, arg2, arg3) fold_build3(code, void_type_node, \
+                                                     arg1, arg2, arg3)
 #define build4_v(code, arg1, arg2, arg3, arg4) build4(code, void_type_node, \
 						      arg1, arg2, arg3, arg4)
 
