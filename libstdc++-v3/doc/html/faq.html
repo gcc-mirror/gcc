@@ -164,7 +164,7 @@
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.how"></a><a id="q-how"></a><p><b>1.5.</b></p></td><td align="left" valign="top"><p>
       How do I contribute to the effort?
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-how"></a></td><td align="left" valign="top"><p>
-    Here is <a class="ulink" href="../17_intro/contribute.html" target="_top">a page devoted to
+    Here is <a class="link" href="manual/appendix_contributing.html" title="Appendix A. Contributing">a page devoted to
     this topic</a>. Subscribing to the mailing list (see above, or
     the homepage) is a very good idea if you have something to
     contribute, or if you have spare time and want to
@@ -320,7 +320,7 @@
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-what_is_libsupcxx"></a></td><td align="left" valign="top"><p>
       If the only functions from <code class="filename">libstdc++.a</code>
       which you need are language support functions (those listed in
-      <a class="ulink" href="../18_support/howto.html" target="_top">clause 18</a> of the
+      <a class="link" href="manual/support.html" title="Part II. Support">clause 18</a> of the
       standard, e.g., <code class="function">new</code> and
       <code class="function">delete</code>), then try linking against
       <code class="filename">libsupc++.a</code>, which is a subset of
@@ -578,13 +578,13 @@
     reason is that the state flags are <span class="emphasis"><em>not</em></span> cleared
     on a successful call to open().  The standard unfortunately did
     not specify behavior in this case, and to everybody's great sorrow,
-    the <a class="ulink" href="../ext/howto.html#5" target="_top">proposed LWG resolution in
+    the <a class="link" href="manual/bk01pt01ch01s03.html" title="Bugs">proposed LWG resolution in
       DR #22</a> is to leave the flags unchanged.  You must insert a call
     to <code class="function">fs.clear()</code> between the calls to close() and open(),
     and then everything will work like we all expect it to work.
     <span class="emphasis"><em>Update:</em></span> for GCC 4.0 we implemented the resolution
-    of <a class="ulink" href="../ext/howto.html#5" target="_top">DR #409</a> and open() now calls
-    <code class="function">clear()</code> on success!
+    of <a class="link" href="manual/bk01pt01ch01s03.html" title="Bugs">DR #409</a> and open() 
+    now calls <code class="function">clear()</code> on success!
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.wefcxx_verbose"></a><a id="q-wefcxx_verbose"></a><p><b>6.2.</b></p></td><td align="left" valign="top"><p>
       -Weffc++ complains too much
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-wefcxx_verbose"></a></td><td align="left" valign="top"><p>
@@ -647,7 +647,7 @@
     </p><p>
     More information, including how to optionally enable/disable the
     checks, is available
-    <a class="ulink" href="../19_diagnostics/howto.html#3" target="_top">here</a>.
+    <a class="link" href="manual/bk01pt03ch08.html" title="Chapter 8. Concept Checking">here</a>.
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.dlopen_crash"></a><a id="q-dlopen_crash"></a><p><b>6.6.</b></p></td><td align="left" valign="top"><p>
       Program crashes when using library code in a
       dynamically-loaded library
@@ -672,19 +672,19 @@
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-memory_leaks"></a></td><td align="left" valign="top"><p>
     A few people have reported that the standard containers appear
     to leak memory when tested with memory checkers such as
-    <a class="ulink" href="http://developer.kde.org/~sewardj/" target="_top">valgrind</a>.
+    <a class="ulink" href="http://valgrind.org/" target="_top">valgrind</a>.
     The library's default allocators keep free memory in a pool
     for later reuse, rather than returning it to the OS.  Although
     this memory is always reachable by the library and is never
     lost, memory debugging tools can report it as a leak.  If you
     want to test the library for memory leaks please read
-    <a class="ulink" href="../debug.html#mem" target="_top">Tips for memory leak hunting</a>
+    <a class="link" href="manual/debug.html#debug.memory" title="Memory Leak Hunting">Tips for memory leak hunting</a>
     first.
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.list_size_on"></a><a id="q-list_size_on"></a><p><b>6.8.</b></p></td><td align="left" valign="top"><p>
       list::size() is O(n)!
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-list_size_on"></a></td><td align="left" valign="top"><p>
     See
-    the <a class="ulink" href="../23_containers/howto.html#6" target="_top">Containers</a>
+    the <a class="link" href="manual/containers.html" title="Part VII. Containers">Containers</a>
     chapter.
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.easy_to_fix"></a><a id="q-easy_to_fix"></a><p><b>6.9.</b></p></td><td align="left" valign="top"><p>
       Aw, that's easy to fix!
@@ -695,7 +695,7 @@
     patches</a> that covers the procedure, but for libstdc++ you
     should also send the patch to our mailing list in addition to
     the GCC patches mailing list.  The libstdc++
-    <a class="ulink" href="../17_intro/contribute.html" target="_top">contributors' page</a>
+    <a class="link" href="manual/appendix_contributing.html" title="Appendix A. Contributing">contributors' page</a>
     also talks about how to submit patches.
     </p><p>
     In addition to the description, the patch, and the ChangeLog
@@ -868,6 +868,6 @@
     </p></div><p>
     The copy will take O(n) time and the swap is constant time.
     </p><p>
-    See <a class="ulink" href="../21_strings/howto.html#6" target="_top">Shrink-to-fit
+    See <a class="link" href="manual/bk01pt05ch13s05.html" title="Shrink to Fit">Shrink-to-fit
     strings</a> for a similar solution for strings.
     </p></td></tr></tbody></table></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk03.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="bk03.html">Up</a></td><td width="40%" align="right"> </td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="spine.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>
