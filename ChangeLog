@@ -1,3 +1,7 @@
+2008-03-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* MAINTAINERS:  Update e-mail address.
+
 2008-03-20  Ian Lance Taylor  <iant@google.com>
 
 	* configure.ac: Add support for --enable-gold.
