@@ -1,3 +1,38 @@
+2007-03-23  Thomas Koenig  <tkoenig@gcc.gnu.org
+
+	PR libfortran/32972
+	* Makefile.am:  Add new variable, i_unpack_c, containing
+	unpack_i1.c, unpack_i2.c, unpack_i4.c, unpack_i8.c,
+	unpack_i16.c, unpack_r4.c, unpack_r8.c, unpack_r10.c,
+	unpack_r16.c, unpack_c4.c, unpack_c8.c, unpack_c10.c
+	and unpack_c16.c
+	Add i_unpack_c to gfor_built_src.
+	Add rule to generate i_unpack_c from m4/unpack.m4.
+	* Makefile.in:  Regenerated.
+	* libgfortran.h: Add prototypes for unpack0_i1, unpack0_i2,
+	unpack0_i4, unpack0_i8, unpack0_i16, unpack0_r4, unpack0_r8,
+	unpack0_r10, unpack0_r16, unpack0_c4, unpack0_c8, unpack0_c10,
+	unpack0_c16, unpack1_i1, unpack1_i2, unpack1_i4, unpack1_i8,
+	unpack1_i16, unpack1_r4, unpack1_r8, unpack1_r10, unpack1_r16,
+	unpack1_c4, unpack1_c8, unpack1_c10 and unpack1_c16.
+	* intrinsics/pack_generic.c (unpack1):  Add calls to specific
+	unpack1 functions.
+	(unpack0):  Add calls to specific unpack0 functions.
+	* m4/unpack.m4:  New file.
+	* generated/unpack_i1.c:  New file.
+	* generated/unpack_i2.c:  New file.
+	* generated/unpack_i4.c:  New file.
+	* generated/unpack_i8.c:  New file.
+	* generated/unpack_i16.c:  New file.
+	* generated/unpack_r4.c:  New file.
+	* generated/unpack_r8.c:  New file.
+	* generated/unpack_r10.c:  New file.
+	* generated/unpack_r16.c:  New file.
+	* generated/unpack_c4.c:  New file.
+	* generated/unpack_c8.c:  New file.
+	* generated/unpack_c10.c:  New file.
+	* generated/unpack_c16.c:  New file.
+
 2008-03-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/35632
