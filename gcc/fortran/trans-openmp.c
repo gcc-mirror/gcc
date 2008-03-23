@@ -888,7 +888,7 @@ gfc_trans_omp_critical (gfc_code *code)
   if (code->ext.omp_name != NULL)
     name = get_identifier (code->ext.omp_name);
   stmt = gfc_trans_code (code->block->next);
-  return build2_v (OMP_CRITICAL, stmt, name);
+  return build2 (OMP_CRITICAL, void_type_node, stmt, name);
 }
 
 static tree
@@ -1216,7 +1216,7 @@ gfc_trans_omp_single (gfc_code *code, gfc_omp_clauses *clauses)
 {
   tree omp_clauses = gfc_trans_omp_clauses (NULL, clauses, code->loc);
   tree stmt = gfc_trans_omp_code (code->block->next, true);
-  stmt = build2_v (OMP_SINGLE, stmt, omp_clauses);
+  stmt = build2 (OMP_SINGLE, void_type_node, stmt, omp_clauses);
   return stmt;
 }
 
