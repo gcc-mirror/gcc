@@ -462,8 +462,8 @@ Ada 83 compatibility mode.
 By default, @value{EDITION} assumes @value{DEFAULTLANGUAGEVERSION},
 but you can override with a compiler switch
 to explicitly specify the language version.
-(Please refer to the section ``Compiling Different Versions of Ada'', in
-@cite{@value{EDITION} User's Guide}, for details on these switches.)
+(Please refer to @ref{Compiling Different Versions of Ada,,, gnat_ugn,
+@value{EDITION} User's Guide}, for details on these switches.)
 Throughout this manual, references to ``Ada'' without a year suffix
 apply to both the Ada 95 and Ada 2005 versions of the language.
 
@@ -630,8 +630,9 @@ See the following documents for further information on GNAT:
 
 @itemize @bullet
 @item
-@cite{GNAT User's Guide}, which provides information on how to use
-the GNAT compiler system.
+@xref{Top, @value{EDITION} User's Guide, About This Guide, gnat_ugn,
+@value{EDITION} User's Guide}, which provides information on how to use the
+GNAT compiler system.
 
 @item
 @cite{Ada 95 Reference Manual}, which contains all reference
@@ -1524,8 +1525,8 @@ the @option{-gnatE} switch had been specified on the command
 line.  If the parameter is @code{Static}, then the default GNAT static
 model is used.  This configuration pragma overrides the setting
 of the command line.  For full details on the elaboration models
-used by the GNAT compiler, see section ``Elaboration Order
-Handling in GNAT'' in the @cite{GNAT User's Guide}.
+used by the GNAT compiler, see @ref{Elaboration Order Handling in GNAT,,,
+gnat_ugn, @value{EDITION} User's Guide}.
 
 @node Pragma Eliminate
 @unnumberedsec Pragma Eliminate
@@ -1980,7 +1981,8 @@ you can construct your own extension unit following the above
 definition.  Note that such a package is a child of @code{System}
 and thus is considered part of the implementation.  To compile
 it you will have to use the appropriate switch for compiling
-system units.  See the GNAT User's Guide for details.
+system units.  @xref{Top, @value{EDITION} User's Guide, About This
+Guide,, gnat_ugn, @value{EDITION} User's Guide}, for details.
 
 @node Pragma External
 @unnumberedsec Pragma External
@@ -2170,9 +2172,9 @@ floating point types declared in the packages @code{Standard} and
 be @code{IEEE_Float} and the pragma has no effect. On OpenVMS, the
 argument may be @code{VAX_Float} to specify the use of the VAX float
 format for the floating-point types in Standard. This requires that
-the standard runtime libraries be recompiled. See the
-description of the @code{GNAT LIBRARY} command in the OpenVMS version
-of the GNAT Users Guide for details on the use of this command.
+the standard runtime libraries be recompiled.  @xref{The GNAT Run-Time
+Library Builder gnatlbr,,, gnat_ugn, @value{EDITION} User's Guide
+OpenVMS}, for a description of the @code{GNAT LIBRARY} command.
 
 The two argument form specifies the representation to be used for
 the specified floating-point type. On all systems other than OpenVMS,
@@ -3059,9 +3061,10 @@ type @code{Long_Float} and for floating point type representations with
 @code{digits} specified in the range 7 through 15.
 For further details on this pragma, see the
 @cite{DEC Ada Language Reference Manual}, section 3.5.7b.  Note that to use
-this pragma, the standard runtime libraries must be recompiled.  See the
-description of the @code{GNAT LIBRARY} command in the OpenVMS version
-of the GNAT User's Guide for details on the use of this command.
+this pragma, the standard runtime libraries must be recompiled.
+@xref{The GNAT Run-Time Library Builder gnatlbr,,, gnat_ugn,
+@value{EDITION} User's Guide OpenVMS}, for a description of the
+@code{GNAT LIBRARY} command.
 
 @node Pragma Machine_Attribute
 @unnumberedsec Pragma Machine_Attribute
@@ -3085,8 +3088,10 @@ in GNU C, where @code{@var{attribute_name}} is recognized by the
 target macro @code{TARGET_ATTRIBUTE_TABLE} which is defined for each
 machine.  The optional parameter @var{info} is transformed into an
 identifier, which may make this pragma unusable for some attributes
-(parameter of some attributes must be a number or a string). See the
-GCC manual for further information.  It is not possible to specify
+(parameter of some attributes must be a number or a string).
+@xref{Target Attributes,, Defining target-specific uses of
+@code{__attribute__}, gccint, GNU Compiler Colletion (GCC) Internals},
+further information.  It is not possible to specify
 attributes defined by other languages, only attributes defined by the
 machine the code is intended to run on.
 
@@ -3198,8 +3203,8 @@ strict aliasing optimization for the given type.  The form with no
 arguments is a configuration pragma which applies to all access types
 declared in units to which the pragma applies. For a detailed
 description of the strict aliasing optimization, and the situations
-in which it must be suppressed, see section
-``Optimization and Strict Aliasing'' in the @value{EDITION} User's Guide.
+in which it must be suppressed, see @ref{Optimization and Strict
+Aliasing,,, gnat_ugn, @value{EDITION} User's Guide}.
 
 @node Pragma Normalize_Scalars
 @unnumberedsec Pragma Normalize_Scalars
@@ -3459,8 +3464,9 @@ targets that do not normally support the capability.  The version of
 @code{Poll} in this file makes a call to the appropriate runtime routine
 to test for an abort condition.
 
-Note that polling can also be enabled by use of the @option{-gnatP} switch.  See
-the @cite{GNAT User's Guide} for details.
+Note that polling can also be enabled by use of the @option{-gnatP} switch.
+@xref{Switches for gcc,,, gnat_ugn, @value{EDITION} User's Guide}, for
+details.
 
 @node Pragma Profile (Ravenscar)
 @unnumberedsec Pragma Profile (Ravenscar)
@@ -3802,8 +3808,9 @@ A pragma Source_File_Name cannot appear after a
 @ref{Pragma Source_File_Name_Project}.
 
 For more details on the use of the @code{Source_File_Name} pragma,
-see the sections ``Using Other File Names'' and
-``Alternative File Naming Schemes'' in the @cite{GNAT User's Guide}.
+@xref{Using Other File Names,,, gnat_ugn, @value{EDITION} User's Guide},
+and @ref{Alternative File Naming Schemes,,, gnat_ugn, @value{EDITION}
+User's Guide}.
 
 @node Pragma Source_File_Name_Project
 @unnumberedsec Pragma Source_File_Name_Project
@@ -3961,8 +3968,9 @@ gcc -c -gnatyl @dots{}
 
 @noindent
 The form ALL_CHECKS activates all standard checks (its use is equivalent
-to the use of the @code{gnaty} switch with no options.  See GNAT User's
-Guide for details.
+to the use of the @code{gnaty} switch with no options.  @xref{Top,
+@value{EDITION} User's Guide, About This Guide, gnat_ugn,
+@value{EDITION} User's Guide}, for details.
 
 The forms with @code{Off} and @code{On}
 can be used to temporarily disable style checks
@@ -4278,8 +4286,8 @@ declarative part.  The effect is to inhibit strict type-based aliasing
 optimization for the given type.  In other words, the effect is as though
 access types designating this type were subject to pragma No_Strict_Aliasing.
 For a detailed description of the strict aliasing optimization, and the
-situations in which it must be suppressed, see section
-``Optimization and Strict Aliasing'' in the @value{EDITION} User's Guide.
+situations in which it must be suppressed, @xref{Optimization and Strict
+Aliasing,,, gnat_ugn, @value{EDITION} User's Guide}.
 
 @node Pragma Universal_Data
 @unnumberedsec Pragma Universal_Data
@@ -4566,7 +4574,8 @@ control over which warnings are active. The string is a list of letters
 specifying which warnings are to be activated and which deactivated. The
 code for these letters is the same as the string used in the command
 line switch controlling warnings. The following is a brief summary. For
-full details see the GNAT Users Guide:
+full details see @ref{Warning Message Control,,, gnat_ugn, @value{EDITION}
+User's Guide}.
 
 @smallexample
 a   turn on all optional warnings (except d,h,l)
@@ -6383,8 +6392,8 @@ $ mv s-strxdr.adb s-stratt.adb
 @end smallexample
 
 @item
-Rebuild the GNAT run-time library as documented in the
-@cite{GNAT User's Guide}
+Rebuild the GNAT run-time library as documented in
+@ref{GNAT and Libraries,,, gnat_ugn, @value{EDITION} User's Guide}.
 @end enumerate
 
 @unnumberedsec A.1(52): Names of Predefined Numeric Types
@@ -7411,8 +7420,8 @@ provides the binder options @option{-z} and @option{-n} respectively, and in
 this case a list of units can be explicitly supplied to the binder for
 inclusion in the partition (all units needed by these units will also
 be included automatically).  For full details on the use of these
-options, refer to the @cite{GNAT User's Guide} sections on Binding
-and Linking.
+options, refer to @ref{The GNAT Make Program gnatmake,,, gnat_ugn,
+@value{EDITION} User's Guide}.
 
 @sp 1
 @cartouche
@@ -13344,8 +13353,8 @@ obtaining information about exceptions provided by Ada 83 compilers.
 
 @noindent
 Provide a debugging storage pools that helps tracking memory corruption
-problems.  See section ``Finding memory problems with GNAT Debug Pool'' in
-the @cite{GNAT User's Guide}.
+problems.  @xref{The GNAT Debug Pool Facility,,, gnat_ugn,
+@value{EDITION} User's Guide}.
 
 @node GNAT.Debug_Utilities (g-debuti.ads)
 @section @code{GNAT.Debug_Utilities} (@file{g-debuti.ads})
@@ -14405,10 +14414,8 @@ including machine instructions in a subprogram.
 The two features are similar, and both are closely related to the mechanism
 provided by the asm instruction in the GNU C compiler.  Full understanding
 and use of the facilities in this package requires understanding the asm
-instruction as described in @cite{Using the GNU Compiler Collection (GCC)}
-by Richard Stallman. The relevant section is titled ``Extensions to the C
-Language Family'' @result{} ``Assembler Instructions with C Expression
-Operands''.
+instruction, see @ref{Extended Asm,, Assembler Instructions with C Expression
+Operands, gcc, Using the GNU Compiler Collection (GCC)}.
 
 Calls to the function @code{Asm} and the procedure @code{Asm} have identical
 semantic restrictions and effects as described below.  Both are provided so
@@ -14482,7 +14489,8 @@ the literal value @code{True} to indicate to the code generator that all
 optimizations with respect to the instruction specified should be
 suppressed, and that in particular, for an instruction that has outputs,
 the instruction will still be generated, even if none of the outputs are
-used.  See the full description in the GCC manual for further details.
+used.  @xref{Extended Asm,, Assembler Instructions with C Expression Operands,
+gcc, Using the GNU Compiler Collection (GCC)}, for the full description.
 Generally it is strongly advisable to use Volatile for any ASM statement
 that is missing either input or output operands, or when two or more ASM
 statements appear in sequence, to avoid unwanted optimizations. A warning
@@ -15059,7 +15067,8 @@ This chapter describes the syntax and semantics of project files.
 Project files specify the options to be used when building a system.
 Project files can specify global settings for all tools,
 as well as tool-specific settings.
-See the chapter on project files in the GNAT Users guide for examples of use.
+@xref{Examples of Project Files,,, gnat_ugn, @value{EDITION} User's Guide},
+for examples of use.
 
 @menu
 * Reserved Words::

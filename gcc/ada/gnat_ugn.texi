@@ -89,19 +89,14 @@
 @set EDITION GNAT
 @set DEFAULTLANGUAGEVERSION Ada 2005
 @set NONDEFAULTLANGUAGEVERSION Ada 95
-
-@ifset unw
-@setfilename gnat_ugn_unw.info
-@end ifset
+@set FILE gnat_ugn
 
 @ifset unw
 @set PLATFORM
-@set FILE gnat_ugn_unw
 @end ifset
 
 @ifset vms
 @set PLATFORM OpenVMS
-@set FILE gnat_ugn_vms
 @end ifset
 
 @settitle @value{EDITION} User's Guide @value{PLATFORM}
@@ -923,8 +918,9 @@ documents:
 
 @itemize @bullet
 @item
-@cite{GNAT Reference Manual}, which contains all reference
-material for the GNAT implementation of Ada.
+@xref{Top, GNAT Reference Manual, About This Guide, gnat_rm, GNAT
+Reference Manual}, which contains all reference material for the GNAT
+implementation of Ada.
 
 @ifset unw
 @item
@@ -945,18 +941,19 @@ material for the Ada 95 programming language.
 material for the Ada 2005 programming language.
 
 @item
-@cite{Debugging with GDB}
+@xref{Top,, Debugging with GDB, gdb, Debugging with GDB},
 @ifset vms
-, located in the GNU:[DOCS] directory,
+in the GNU:[DOCS] directory,
 @end ifset
-contains all details on the use of the GNU source-level debugger.
+for all details on the use of the GNU source-level debugger.
 
 @item
-@cite{GNU Emacs Manual}
+@xref{Top,, The extensible self-documenting text editor, emacs,
+GNU Emacs Manual},
 @ifset vms
-, located in the GNU:[DOCS] directory if the EMACS kit is installed,
+located in the GNU:[DOCS] directory if the EMACS kit is installed,
 @end ifset
-contains full information on the extensible editor and programming
+for full information on the extensible editor and programming
 environment Emacs.
 
 @end itemize
@@ -2970,8 +2967,8 @@ the pragma import.
 
 @noindent
 Interfacing at the class level can be achieved by using the GNAT specific
-pragmas such as @code{CPP_Constructor}. See the GNAT Reference Manual for
-additional information.
+pragmas such as @code{CPP_Constructor}.  @xref{Interfacing to C++,,,
+gnat_rm, GNAT Reference Manual}, for additional information.
 
 @node Linking a Mixed C++ & Ada Program
 @subsection Linking a Mixed C++ & Ada Program
@@ -3737,9 +3734,10 @@ system configuration. You must have a GNAT cross-compiler built if
 @cindex @option{-B} (@command{gcc})
 Load compiler executables (for example, @code{gnat1}, the Ada compiler)
 from @var{dir} instead of the default location. Only use this switch
-when multiple versions of the GNAT compiler are available. See the
-@command{gcc} manual page for further details. You would normally use the
-@option{-b} or @option{-V} switch instead.
+when multiple versions of the GNAT compiler are available.
+@xref{Directory Options,, Options for Directory Search, gcc, Using the
+GNU Compiler Collection (GCC)}, for further details. You would normally
+use the @option{-b} or @option{-V} switch instead.
 
 @item -c
 @cindex @option{-c} (@command{gcc})
@@ -3981,8 +3979,8 @@ Suppress all checks.
 @cindex @option{-gnatP} (@command{gcc})
 Enable polling. This is required on some systems (notably Windows NT) to
 obtain asynchronous abort and asynchronous transfer of control capability.
-See the description of pragma Polling in the GNAT Reference Manual for
-full details.
+@xref{Pragma Polling,,, gnat_rm, GNAT Reference Manual}, for full
+details.
 
 @item -gnatq
 @cindex @option{-gnatq} (@command{gcc})
@@ -4718,8 +4716,8 @@ A range in a @code{for} loop that is known to be null or might be null
 The following section lists compiler switches that are available
 to control the handling of warning messages. It is also possible
 to exercise much finer control over what warnings are issued and
-suppressed using the GNAT pragma Warnings, which is documented
-in the GNAT Reference manual.
+suppressed using the GNAT pragma Warnings, @xref{Pragma Warnings,,,
+gnat_rm, GNAT Reference manual}.
 
 @table @option
 @c !sort!
@@ -7207,8 +7205,8 @@ the built-in defaults cause these files to be found.
 In addition to the language-defined hierarchies (@code{System}, @code{Ada} and
 @code{Interfaces}), the GNAT distribution provides a fourth hierarchy,
 consisting of child units of @code{GNAT}. This is a collection of generally
-useful types, subprograms, etc. See the @cite{GNAT Reference Manual} for
-further details.
+useful types, subprograms, etc. @xref{Top, GNAT Reference Manual, About
+This Guid, gnat_rm, GNAT Reference Manual}, for further details.
 
 Besides simplifying access to the RTL, a major use of search paths is
 in compiling sources from multiple directories. This can make
@@ -8459,9 +8457,10 @@ system configuration. You must have a GNAT cross-compiler built if
 @cindex @option{-B} (@command{gnatlink})
 Load compiler executables (for example, @code{gnat1}, the Ada compiler)
 from @var{dir} instead of the default location. Only use this switch
-when multiple versions of the GNAT compiler are available. See the
-@command{gcc} manual page for further details. You would normally use the
-@option{-b} or @option{-V} switch instead.
+when multiple versions of the GNAT compiler are available.
+@xref{Directory Options,,, gcc, The GNU Compiler Collection},
+for further details. You would normally use the @option{-b} or
+@option{-V} switch instead.
 
 @item --GCC=@var{compiler_name}
 @cindex @option{--GCC=compiler_name} (@command{gnatlink})
@@ -9500,7 +9499,8 @@ and a time optimization on the same compile command.
 Since the precise set of optimizations done at each level will vary from
 release to release (and sometime from target to target), it is best to think
 of the optimization settings in general terms.
-The @cite{Using GNU GCC} manual contains details about
+@xref{Optimize Options,, Options That Control Optimization, gcc, Using
+the GNU Compiler Collection (GCC)}, for details about
 ^the @option{-O} settings and a number of @option{-f} options that^how to^
 individually enable or disable specific optimizations.
 
@@ -9776,8 +9776,9 @@ to work. Examples of switches in this category are
 @option{-funroll-loops} and
 the various target-specific @option{-m} options (in particular, it has been
 observed that @option{-march=pentium4} can significantly improve performance
-on appropriate machines). For full details of these switches, see the
-@command{gcc} manual.
+on appropriate machines). For full details of these switches, see
+@ref{Submodel Options,, Hardware Models and Configurations, gcc, Using
+the GNU Compiler Collection (GCC)}.
 
 @node Optimization and Strict Aliasing
 @subsection Optimization and Strict Aliasing
@@ -10036,7 +10037,8 @@ subprograms that are declared but never called. By placing the list of
 @code{Eliminate} pragmas in the GNAT configuration file @file{gnat.adc} and
 recompiling your program, you may decrease the size of its executable,
 because the compiler will not generate the code for 'eliminated' subprograms.
-See GNAT Reference Manual for more information about this pragma.
+@xref{Pragma Eliminate,,, gnat_rm, GNAT Reference Manual}, for more
+information about this pragma.
 
 @code{gnatelim} needs as its input data the name of the main subprogram
 and a bind file for a main subprogram.
@@ -10703,10 +10705,10 @@ unit will be skipped.
 @noindent
 Configuration pragmas include those pragmas described as
 such in the Ada Reference Manual, as well as
-implementation-dependent pragmas that are configuration pragmas. See the
-individual descriptions of pragmas in the @cite{GNAT Reference Manual} for
-details on these additional GNAT-specific configuration pragmas. Most
-notably, the pragma @code{Source_File_Name}, which allows
+implementation-dependent pragmas that are configuration pragmas.
+@xref{Implementation Defined Pragmas,,, gnat_rm, GNAT Reference Manual},
+for details on these additional GNAT-specific configuration pragmas.
+Most notably, the pragma @code{Source_File_Name}, which allows
 specifying non-default names for source files, is a configuration
 pragma. The following is a complete list of configuration pragmas
 recognized by GNAT:
@@ -11214,7 +11216,8 @@ that might be used by the developers.
 The next section introduces the main features of GNAT's project facility
 through a sequence of examples; subsequent sections will present the syntax
 and semantics in more detail. A more formal description of the project
-facility appears in the GNAT Reference Manual.
+facility appears in @ref{Project File Reference,,, gnat_rm, GNAT
+Reference Manual}.
 
 @c *****************************
 @c * Examples of Project Files *
@@ -18649,9 +18652,9 @@ to use it.
 
 @noindent
 This chapter offers some examples of makefiles that solve specific
-problems. It does not explain how to write a makefile (see the GNU make
-documentation), nor does it try to replace the @command{gnatmake} utility
-(@pxref{The GNAT Make Program gnatmake}).
+problems. It does not explain how to write a makefile (@pxref{Top,, GNU
+make, make, GNU @code{make}}), nor does it try to replace the
+@command{gnatmake} utility (@pxref{The GNAT Make Program gnatmake}).
 
 All the examples in this section are specific to the GNU version of
 make. Although @command{make} is a standard utility, and the basic language
@@ -19962,15 +19965,15 @@ To record compiler style checks, use the rule named
 @code{Style_Checks}. A parameter of this rule can be either @code{All_Checks},
 which enables all the style checks, or a string that has exactly the same
 structure and semantics as the @code{string_LITERAL} parameter of GNAT pragma
-@code{Style_Checks} (for further information about this pragma, please
-refer to the @cite{@value{EDITION} Reference Manual}).
+@code{Style_Checks} (for further information about this pragma,
+@pxref{Pragma Style_Checks,,, gnat_rm, GNAT Reference Manual}).
 
 @item Warnings
 To record compiler warnings (@pxref{Warning Message Control}), use the rule
 named @code{Warnings} with a parameter that is a valid
 @i{static_string_expression} argument of GNAT pragma @code{Warnings}
-(for further information about this pragma, please
-refer to the @cite{@value{EDITION} Reference Manual}).
+(for further information about this pragma, @pxref{Pragma Warnings,,,
+gnat_rm, GNAT Reference Manual}).
 
 @end table
 
@@ -20380,8 +20383,8 @@ checked and sets the checks for all the specified pragmas
 ON. @emph{Pragma_Name} is treated as a name of a pragma. If it
 does not correspond to any pragma name defined in the Ada
 standard or to the name of a GNAT-specific pragma defined
-in the GNAT Reference Manual, it is treated as the name of
-unknown pragma.
+in @ref{Implementation Defined Pragmas,,, gnat_rm, GNAT Reference
+Manual}, it is treated as the name of unknown pragma.
 
 @item @code{GNAT}
 All the GNAT-specific pragmas are detected; this sets
@@ -20398,10 +20401,9 @@ Removes the specified pragma from the set of pragmas to be
 checked without affecting checks for
 other pragmas. @emph{Pragma_Name} is treated as a name
 of a pragma. If it does not correspond to any pragma
-defined in the Ada standard or to any name defined in the
-GNAT Reference Manual,
-this option is treated as turning OFF detection of all
-unknown pragmas.
+defined in the Ada standard or to any name defined in
+@ref{Implementation Defined Pragmas,,, gnat_rm, GNAT Reference Manual},
+this option is treated as turning OFF detection of all unknown pragmas.
 
 @item GNAT
 Turn OFF detection of all GNAT-specific pragmas
@@ -21947,11 +21949,11 @@ and in particular is capable of debugging Ada programs compiled with
 GNAT. The latest versions of @code{GDB} are Ada-aware and can handle
 complex Ada data structures.
 
-The manual @cite{Debugging with GDB}
+@xref{Top,, Debugging with GDB, gdb, Debugging with GDB},
 @ifset vms
-, located in the GNU:[DOCS] directory,
+located in the GNU:[DOCS] directory,
 @end ifset
-contains full details on the usage of @code{GDB}, including a section on
+for full details on the usage of @code{GDB}, including a section on
 its usage on programs. This manual should be consulted for full
 details. The section that follows is a brief introduction to the
 philosophy and use of @code{GDB}.
@@ -22031,12 +22033,12 @@ describes some of the additional commands that can be given to @code{GDB}.
 @section Introduction to GDB Commands
 
 @noindent
-@code{GDB} contains a large repertoire of commands. The manual
-@cite{Debugging with GDB}
+@code{GDB} contains a large repertoire of commands.  @xref{Top,,
+Debugging with GDB, gdb, Debugging with GDB},
 @ifset vms
-(located in the GNU:[DOCS] directory)
+located in the GNU:[DOCS] directory,
 @end ifset
-includes extensive documentation on the use
+for extensive documentation on the use
 of these commands, together with examples of their use. Furthermore,
 the command @command{help} invoked from within GDB activates a simple help
 facility which summarizes the available commands and their options.
@@ -22131,8 +22133,8 @@ The above list is a very short introduction to the commands that
 @code{GDB} provides. Important additional capabilities, including conditional
 breakpoints, the ability to execute command sequences on a breakpoint,
 the ability to debug at the machine instruction level and many other
-features are described in detail in @cite{Debugging with GDB}.
-Note that most commands can be abbreviated
+features are described in detail in @ref{Top,, Debugging with GDB, gdb,
+Debugging with GDB}.  Note that most commands can be abbreviated
 (for example, c for continue, bt for backtrace).
 
 @node Using Ada Expressions
@@ -22165,7 +22167,8 @@ packages, thus making it unnecessary to fully qualify most names with
 their packages, regardless of context. Where this causes ambiguity,
 @code{GDB} asks the user's intent.
 
-For details on the supported Ada syntax, see @cite{Debugging with GDB}.
+For details on the supported Ada syntax, see @ref{Top,, Debugging with
+GDB, gdb, Debugging with GDB}.
 
 @node Calling User-Defined Subprograms
 @section Calling User-Defined Subprograms
@@ -22325,7 +22328,7 @@ perturbed.
 
 @noindent
 For more detailed information on the tasking support,
-see @cite{Debugging with GDB}.
+see @ref{Top,, Debugging with GDB, gdb, Debugging with GDB}.
 
 @node Debugging Generic Units
 @section Debugging Generic Units
@@ -22984,9 +22987,9 @@ GNAT always follows the Alpha implementation.
 
 For GNAT running on other than VMS systems, all the HP Ada 83 pragmas and
 attributes are recognized, although only a subset of them can sensibly
-be implemented.  The description of pragmas in the
-@cite{GNAT Reference Manual} indicates whether or not they are applicable
-to non-VMS systems.
+be implemented.  The description of pragmas in
+@xref{Implementation Defined Pragmas,,, gnat_rm, GNAT Reference Manual}
+indicates whether or not they are applicable to non-VMS systems.
 
 @menu
 * Ada Language Compatibility::
@@ -23343,7 +23346,8 @@ for Q'Address use Q_Address;
 @noindent
 which will be accepted by GNAT (and other Ada compilers), and is also
 compatible with Ada 83. A fuller description of the restrictions
-on address specifications is found in the @cite{GNAT Reference Manual}.
+on address specifications is found in @ref{Top, GNAT Reference Manual,
+About This Guide, gnat_rm, GNAT Reference Manual}.
 
 @node Other Representation Clauses
 @subsection Other Representation Clauses
@@ -23430,8 +23434,8 @@ pragma Extend_System (Aux_DEC);
 
 @noindent
 The pragma @code{Extend_System} is a configuration pragma that
-is most conveniently placed in the @file{gnat.adc} file. See the
-@cite{GNAT Reference Manual} for further details.
+is most conveniently placed in the @file{gnat.adc} file. @xref{Pragma
+Extend_System,,, gnat_rm, GNAT Reference Manual} for further details.
 
 HP Ada does not allow the recompilation of the package
 @code{SYSTEM}. Instead HP Ada provides several pragmas
@@ -23462,8 +23466,8 @@ are virtually identical to those provided by the HP Ada 83 package
 @code{TO_ADDRESS}
 function for type @code{UNSIGNED_LONGWORD} is changed to
 @code{TO_ADDRESS_LONG}.
-See the @cite{GNAT Reference Manual} for a discussion of why this change was
-necessary.
+@xref{Address Clauses,,, gnat_rm, GNAT Reference Manual} for a
+discussion of why this change was necessary.
 
 @noindent
 The version of @code{TO_ADDRESS} taking a @i{universal_integer} argument
@@ -23792,8 +23796,9 @@ GNAT also supplies a number of implementation-defined pragmas as follows:
 @end itemize
 
 @noindent
-For full details on these GNAT implementation-defined pragmas, see
-the GNAT Reference Manual.
+For full details on these GNAT implementation-defined pragmas,
+see @ref{Implementation Defined Pragmas,,, gnat_rm, GNAT Reference
+Manual}.
 
 @menu
 * Restrictions on the Pragma INLINE::
@@ -24035,8 +24040,7 @@ Interfacing to C with GNAT, you can use the above approach
 described for HP Ada or the facilities of Annex B of
 the @cite{Ada Reference Manual} (packages @code{INTERFACES.C},
 @code{INTERFACES.C.STRINGS} and @code{INTERFACES.C.POINTERS}). For more
-information, see the section ``Interfacing to C'' in the
-@cite{GNAT Reference Manual}.
+information, see @ref{Interfacing to C,,, gnat_rm, GNAT Reference Manual}.
 
 The @option{-gnatF} qualifier forces default and explicit
 @code{External_Name} parameters in pragmas @code{Import} and @code{Export}
@@ -24407,8 +24411,8 @@ by the @cite{Ada Reference Manual}.
 
 For further information on how GNAT interfaces to the file
 system or how I/O is implemented in programs written in
-mixed languages, see the chapter ``Implementation of the
-Standard I/O'' in the @cite{GNAT Reference Manual}.
+mixed languages, see @ref{Implementation of the Standard I/O,,,
+gnat_rm, GNAT Reference Manual}.
 This chapter covers the following:
 @itemize @bullet
 @item  Standard I/O packages
@@ -27739,8 +27743,9 @@ a pragma @code{Assert} that can be used for such tests. This pragma is modeled
 @cindex pragma @code{Assert}
 on the @code{Assert} pragma that has always been available in GNAT, so this
 feature may be used with GNAT even if you are not using Ada 2005 features.
-The use of pragma @code{Assert} is described in the
-@cite{GNAT Reference Manual}, but as an example, the last test could be written:
+The use of pragma @code{Assert} is described in
+@ref{Pragma Assert,,, gnat_rm, GNAT Reference Manual}, but as an
+example, the last test could be written:
 
 @smallexample @c ada
 pragma Assert (Temperature <= 999.0, "Temperature Crazy");
@@ -28206,7 +28211,8 @@ from which it generates a sequence of assembly language instructions.
 
 The examples in this chapter will illustrate several of the forms
 for invoking @code{Asm}; a complete specification of the syntax
-is found in the @cite{GNAT Reference Manual}.
+is found in @ref{Machine Code Insertions,,, gnat_rm, GNAT Reference
+Manual}.
 
 Under the standard GNAT conventions, the @code{Nothing} procedure
 should be in a file named @file{nothing.adb}.
@@ -29086,11 +29092,11 @@ transition from certain Ada 83 compilers.
 @noindent
 Ada compilers are allowed to supplement the language-defined pragmas, and
 these are a potential source of non-portability.  All GNAT-defined pragmas
-are described in the GNAT Reference Manual, and these include several that
-are specifically intended to correspond to other vendors' Ada 83 pragmas.
+are described in @ref{Implementation Defined Pragmas,,, gnat_rm, GNAT
+Reference Manual}, and these include several that are specifically
+intended to correspond to other vendors' Ada 83 pragmas.
 For migrating from VADS, the pragma @code{Use_VADS_Size} may be useful.
-For
-compatibility with HP Ada 83, GNAT supplies the pragmas
+For compatibility with HP Ada 83, GNAT supplies the pragmas
 @code{Extend_System}, @code{Ident}, @code{Inline_Generic},
 @code{Interface_Name}, @code{Passive}, @code{Suppress_All},
 and @code{Volatile}.
@@ -29105,9 +29111,9 @@ relevant in a GNAT context and hence are not otherwise implemented.
 @subsection Implementation-defined attributes
 
 Analogous to pragmas, the set of attributes may be extended by an
-implementation.  All GNAT-defined attributes are described in the
-@cite{GNAT Reference Manual}, and these include several that are specifically
-intended
+implementation.  All GNAT-defined attributes are described in
+@ref{Implementation Defined Attributes,,, gnat_rm, GNAT Reference
+Manual}, and these include several that are specifically intended
 to correspond to other vendors' Ada 83 attributes.  For migrating from VADS,
 the attribute @code{VADS_Size} may be useful.  For compatibility with HP
 Ada 83, GNAT supplies the attributes @code{Bit}, @code{Machine_Size} and
@@ -29383,8 +29389,8 @@ Overview and Comparison on HP Platforms}.
 
 For GNAT running on other than VMS systems, all the HP Ada 83 pragmas and
 attributes are recognized, although only a subset of them can sensibly
-be implemented.  The description of pragmas in the
-@cite{GNAT Reference Manual}
+be implemented.  The description of pragmas in @ref{Implementation
+Defined Pragmas,,, gnat_rm, GNAT Reference Manual}
 indicates whether or not they are applicable to non-VMS systems.
 @end ifclear
 
