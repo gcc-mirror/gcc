@@ -130,8 +130,8 @@
   </question>
   <answer id="a-how">
     <para>
-    Here is <ulink url="../17_intro/contribute.html">a page devoted to
-    this topic</ulink>. Subscribing to the mailing list (see above, or
+    Here is <link linkend="appendix.contrib">a page devoted to
+    this topic</link>. Subscribing to the mailing list (see above, or
     the homepage) is a very good idea if you have something to
     contribute, or if you have spare time and want to
     help. Contributions don't have to be in the form of source code;
@@ -400,7 +400,7 @@
     <para>
       If the only functions from <filename>libstdc++.a</filename>
       which you need are language support functions (those listed in
-      <ulink url="../18_support/howto.html">clause 18</ulink> of the
+      <link linkend="manual.support">clause 18</link> of the
       standard, e.g., <function>new</function> and
       <function>delete</function>), then try linking against
       <filename>libsupc++.a</filename>, which is a subset of
@@ -785,13 +785,13 @@
     reason is that the state flags are <emphasis>not</emphasis> cleared
     on a successful call to open().  The standard unfortunately did
     not specify behavior in this case, and to everybody's great sorrow,
-    the <ulink url="../ext/howto.html#5">proposed LWG resolution in
-      DR #22</ulink> is to leave the flags unchanged.  You must insert a call
+    the <link linkend="manual.intro.status.bugs">proposed LWG resolution in
+      DR #22</link> is to leave the flags unchanged.  You must insert a call
     to <function>fs.clear()</function> between the calls to close() and open(),
     and then everything will work like we all expect it to work.
     <emphasis>Update:</emphasis> for GCC 4.0 we implemented the resolution
-    of <ulink url="../ext/howto.html#5">DR #409</ulink> and open() now calls
-    <function>clear()</function> on success!
+    of <link linkend="manual.intro.status.bugs">DR #409</link> and open() 
+    now calls <function>clear()</function> on success!
     </para> 
   </answer>
 </qandaentry>
@@ -895,7 +895,7 @@
     <para>
     More information, including how to optionally enable/disable the
     checks, is available
-    <ulink url="../19_diagnostics/howto.html#3">here</ulink>.
+    <link linkend="manual.diagnostics.concept_checking">here</link>.
     </para> 
   </answer>
 </qandaentry>
@@ -940,13 +940,13 @@
     <para>
     A few people have reported that the standard containers appear
     to leak memory when tested with memory checkers such as
-    <ulink url="http://developer.kde.org/~sewardj/">valgrind</ulink>.
+    <ulink url="http://valgrind.org/">valgrind</ulink>.
     The library's default allocators keep free memory in a pool
     for later reuse, rather than returning it to the OS.  Although
     this memory is always reachable by the library and is never
     lost, memory debugging tools can report it as a leak.  If you
     want to test the library for memory leaks please read
-    <ulink url="../debug.html#mem">Tips for memory leak hunting</ulink>
+    <link linkend="debug.memory">Tips for memory leak hunting</link>
     first.
     </para> 
   </answer>
@@ -961,7 +961,7 @@
   <answer id="a-list_size_on">
     <para>
     See
-    the <ulink url="../23_containers/howto.html#6">Containers</ulink>
+    the <link linkend="manual.containers">Containers</link>
     chapter.
     </para> 
   </answer>
@@ -981,7 +981,7 @@
     patches</ulink> that covers the procedure, but for libstdc++ you
     should also send the patch to our mailing list in addition to
     the GCC patches mailing list.  The libstdc++
-    <ulink url="../17_intro/contribute.html">contributors' page</ulink>
+    <link linkend="appendix.contrib">contributors' page</link>
     also talks about how to submit patches.
     </para>
     <para>
@@ -1237,8 +1237,8 @@
     The copy will take O(n) time and the swap is constant time.
     </para>
     <para>
-    See <ulink url="../21_strings/howto.html#6">Shrink-to-fit
-    strings</ulink> for a similar solution for strings.
+    See <link linkend="strings.string.shrink">Shrink-to-fit
+    strings</link> for a similar solution for strings.
     </para> 
   </answer>
 </qandaentry>
