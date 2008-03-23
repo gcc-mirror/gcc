@@ -394,16 +394,16 @@ ada/doctools/xgnatugn$(build_exeext): ada/xgnatugn.adb
 	$(CP) $^ ada/doctools
 	cd ada/doctools && $(GNATMAKE) -q xgnatugn
 
-# Note that gnat_ugn_unw.texi does not depend on xgnatugn 
-# being built so we can distribute a pregenerated gnat_ugn_unw.info
+# Note that doc/gnat_ugn.texi does not depend on xgnatugn
+# being built so we can distribute a pregenerated doc/gnat_ugn.info
 
-doc/gnat_ugn_unw.texi: $(srcdir)/ada/gnat_ugn.texi $(srcdir)/ada/ug_words \
+doc/gnat_ugn.texi: $(srcdir)/ada/gnat_ugn.texi $(srcdir)/ada/ug_words \
    $(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
 	$(MAKE) ada/doctools/xgnatugn$(build_exeext)
 	ada/doctools/xgnatugn unw $(srcdir)/ada/gnat_ugn.texi \
-	   $(srcdir)/ada/ug_words doc/gnat_ugn_unw.texi
+	   $(srcdir)/ada/ug_words doc/gnat_ugn.texi
 
-doc/gnat_ugn_unw.info: doc/gnat_ugn_unw.texi			\
+doc/gnat_ugn.info: doc/gnat_ugn.texi			\
    $(gcc_docdir)/include/fdl.texi $(gcc_docdir)/include/gcc-common.texi	\
    gcc-vers.texi
 	if [ x$(BUILD_INFO) = xinfo ]; then \
@@ -428,7 +428,7 @@ doc/gnat-style.info: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi	\
             -I$(srcdir)/ada -o $@ $<; \
 	else true; fi
 
-ADA_INFOFILES = doc/gnat_ugn_unw.info doc/gnat_ugn_unw.texi \
+ADA_INFOFILES = doc/gnat_ugn.info doc/gnat_ugn.texi \
                 doc/gnat_rm.info doc/gnat-style.info
 
 ada.info: $(ADA_INFOFILES)
@@ -436,14 +436,14 @@ ada.info: $(ADA_INFOFILES)
 ada.srcinfo: $(ADA_INFOFILES)
 	-$(CP) $^ $(srcdir)/doc
 
-ada.install-info: $(DESTDIR)$(infodir)/gnat_ugn_unw.info \
+ada.install-info: $(DESTDIR)$(infodir)/gnat_ugn.info \
 	$(DESTDIR)$(infodir)/gnat_rm.info \
 	$(DESTDIR)$(infodir)/gnat-style.info
 
-ada.dvi: doc/gnat_ugn_unw.dvi \
+ada.dvi: doc/gnat_ugn.dvi \
       doc/gnat_rm.dvi doc/gnat-style.dvi
 
-ADA_PDFFILES = doc/gnat_ugn_unw.pdf \
+ADA_PDFFILES = doc/gnat_ugn.pdf \
                doc/gnat_rm.pdf doc/gnat-style.pdf
 
 ada.pdf: $(ADA_PDFFILES)
@@ -460,7 +460,7 @@ ada.install-pdf: $(ADA_PDFFILES)
 
 ada.html:
 
-doc/gnat_ugn_unw.dvi: doc/gnat_ugn_unw.texi $(gcc_docdir)/include/fdl.texi	\
+doc/gnat_ugn.dvi: doc/gnat_ugn.texi $(gcc_docdir)/include/fdl.texi	\
 	$(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
 	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
 
@@ -471,7 +471,7 @@ doc/gnat_rm.dvi: ada/gnat_rm.texi $(gcc_docdir)/include/fdl.texi	\
 doc/gnat-style.dvi: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi
 	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
 
-doc/gnat_ugn_unw.pdf: doc/gnat_ugn_unw.texi $(gcc_docdir)/include/fdl.texi	\
+doc/gnat_ugn.pdf: doc/gnat_ugn.texi $(gcc_docdir)/include/fdl.texi	\
 	$(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
 	$(TEXI2PDF) -c -I $(abs_docdir)/include -o $@ $<
 

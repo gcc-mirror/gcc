@@ -1,3 +1,22 @@
+2008-03-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR documentation/15479
+	* Make-lang.in (doc/gnat_ugn.texi) Renamed from ...
+	(doc/gnat_ugn_unw.texi): ... this, and adjusted.
+	(doc/gnat_ugn.info): Renamed from ...
+	(doc/gnat_ugn_unw.info): ... this.
+	(doc/gnat_ugn.dvi): Renamed from ...
+	(doc/gnat_ugn_unw.dvi): ... this.
+	(doc/gnat_ugn.pdf): Renamed from ...
+	(doc/gnat_ugn_unw.pdf): ... this.
+	(ADA_INFOFILES, ADA_PDFFILES, ada.install-info, ada.dvi):
+	Adjusted.
+	* gnat_ugn.texi (FILE): Hard-code gnat_ugn; set filename
+	unconditionally to gnat_ugn.info.  Fix cross references to the
+	GNAT Reference Manual.  Convert links to the GCC, GDB, Emacs,
+	and GNU make manuals to be proper texinfo links.
+	* gnat_rm.texi: Fix cross references to the GNAT User's Guide.
+
 2008-03-21  Olivier Hainque  <hainque@adacore.com>
 
 	* trans.c (Attribute_to_gnu) <'length>: Compute as (hb < lb)
