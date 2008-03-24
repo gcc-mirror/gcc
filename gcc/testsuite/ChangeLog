@@ -1,3 +1,11 @@
+2008-03-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34813
+	* gfortran.dg/null_3.f90 : New test
+
+	PR fortran/33295
+	* gfortran.dg/module_function_type_1.f90 : New test
+
 2008-03-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:

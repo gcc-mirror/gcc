@@ -1,3 +1,15 @@
+2008-03-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34813
+	* resolve.c (resolve_structure_cons): It is an error to assign
+	NULL to anything other than a pointer or allocatable component.
+
+	PR fortran/33295
+	* resolve.c (resolve_symbol): If the symbol is a derived type,
+	resolve the derived type.  If the symbol is a derived type
+	function, ensure that the derived type is visible in the same
+	namespace as the function.
+
 2008-03-14  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/35474
