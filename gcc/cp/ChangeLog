@@ -1,3 +1,8 @@
+2008-03-24  Tom Tromey  <tromey@redhat.com>
+
+	* lex.c (handle_pragma_interface): Don't copy the filename.
+	(handle_pragma_implementation): Copy filename using xstrdup.
+
 2008-03-21  Paolo Carlini  <pcarlini@suse.de>
 
 	* cp-tree.h (IS_AGGR_TYPE): Rename to MAYBE_CLASS_TYPE_P.
