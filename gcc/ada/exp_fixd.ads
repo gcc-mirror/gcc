@@ -32,7 +32,7 @@ package Exp_Fixd is
    --  General note on universal fixed. In the routines below, a fixed-point
    --  type is always a specific fixed-point type or universal real, never
    --  universal fixed. Universal fixed only appears as the result type of a
-   --  division or multplication and in all such cases, the parent node, which
+   --  division or multiplication and in all such cases, the parent node, which
    --  must be either a conversion node or a 'Round attribute reference node,
    --  has the specific type information. In both cases, the parent node is
    --  removed from the tree, and the appropriate routine in this package is

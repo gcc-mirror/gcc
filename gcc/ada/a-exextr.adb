@@ -208,7 +208,7 @@ package body Exception_Traces is
    --  the termination routine. Avoiding the second output is possible but so
    --  far has been considered undesirable. It would mean changing the order
    --  of outputs between the two runs with or without exception traces, while
-   --  it seems preferrable to only have additional outputs in the former
+   --  it seems preferable to only have additional outputs in the former
    --  case.
 
 end Exception_Traces;

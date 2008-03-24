@@ -32,7 +32,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  File a-numaux.adb <- a-numaux-d arwin.adb
+--  File a-numaux.adb <- a-numaux-darwin.adb
 
 package body Ada.Numerics.Aux is
 
@@ -45,7 +45,7 @@ package body Ada.Numerics.Aux is
    --  result in the range 0 .. 3. The absolute value of X is at most Pi/4.
 
    --  The following three functions implement Chebishev approximations
-   --  of the trigoniometric functions in their reduced domain.
+   --  of the trigonometric functions in their reduced domain.
    --  These approximations have been computed using Maple.
 
    function Sine_Approx (X : Double) return Double;

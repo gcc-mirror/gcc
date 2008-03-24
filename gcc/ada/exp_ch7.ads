@@ -77,7 +77,7 @@ package Exp_Ch7 is
    --  creating this final list if necessary.
 
    function Has_New_Controlled_Component (E : Entity_Id) return Boolean;
-   --  E is a type entity. Give the same resul as Has_Controlled_Component
+   --  E is a type entity. Give the same result as Has_Controlled_Component
    --  except for tagged extensions where the result is True only if the
    --  latest extension contains a controlled component.
 
@@ -87,8 +87,8 @@ package Exp_Ch7 is
       With_Attach : Node_Id) return Node_Id;
    --  Attach the referenced object to the referenced Final Chain 'Flist_Ref'
    --  With_Attach is an expression of type Short_Short_Integer which can be
-   --  either '0' to signify no attachment, '1' for attachement to a simply
-   --  linked list or '2' for attachement to a doubly linked list.
+   --  either '0' to signify no attachment, '1' for attachment to a simply
+   --  linked list or '2' for attachment to a doubly linked list.
 
    function Make_Init_Call
      (Ref         : Node_Id;
@@ -99,7 +99,7 @@ package Exp_Ch7 is
    --  been previously analyzed) that references the object to be initialized.
    --  Typ is the expected type of Ref, which is either a controlled type
    --  (Is_Controlled) or a type with controlled components (Has_Controlled).
-   --  With_Attach is an integer expression which is the attchment level,
+   --  With_Attach is an integer expression which is the attachment level,
    --  see System.Finalization_Implementation.Attach_To_Final_List for the
    --  documentation of Nb_Link.
    --
@@ -232,7 +232,7 @@ package Exp_Ch7 is
 
    procedure Wrap_Transient_Declaration (N : Node_Id);
    --  N is an object declaration. Expand the finalization calls after the
-   --  declaration and make the outer scope beeing the transient one.
+   --  declaration and make the outer scope being the transient one.
 
    procedure Wrap_Transient_Expression (N : Node_Id);
    --  N is a sub-expression. Expand a transient block around an expression

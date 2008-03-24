@@ -90,7 +90,7 @@ begin
    --  Set up the Timed_Delay soft link to the non tasking version if it has
    --  not been already set.
    --  If tasking is present, Timed_Delay has already set this soft link, or
-   --  this will be overriden during the elaboration of
+   --  this will be overridden during the elaboration of
    --  System.Tasking.Initialization
 
    if TSL.Timed_Delay = null then

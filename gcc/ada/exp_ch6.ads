@@ -41,7 +41,7 @@ package Exp_Ch6 is
 
    procedure Freeze_Subprogram (N : Node_Id);
    --  generate the appropriate expansions related to Subprogram freeze
-   --  nodes (e. g. the filling of the corresponding Dispatch Table for
+   --  nodes (e.g. the filling of the corresponding Dispatch Table for
    --  Primitive Operations)
 
    --  The following type defines the various forms of allocation used for the

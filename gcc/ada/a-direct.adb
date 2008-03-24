@@ -827,7 +827,7 @@ package body Ada.Directories is
          raise Status_Error;
 
       else
-         --  Reset Entry_Fatched and return the entry
+         --  Reset Entry_Fetched and return the entry
 
          Search.Value.Entry_Fetched := False;
          Directory_Entry := Search.Value.Dir_Entry;

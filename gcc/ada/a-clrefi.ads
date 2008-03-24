@@ -82,7 +82,7 @@ package Ada.Command_Line.Response_File is
    --  response file.
    --
    --  Each non empty line of the response file contains one or several
-   --  arguments sparated by white space. Empty lines or lines containing only
+   --  arguments separated by white space. Empty lines or lines containing only
    --  white space are ignored. Arguments containing white space or a double
    --  quote ('"')must be quoted. A double quote inside a quote string is
    --  indicated by two consecutive double quotes. Example: "-Idir with quote

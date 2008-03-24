@@ -81,7 +81,7 @@ package Ada.Containers.Indefinite_Hashed_Maps is
    procedure Reserve_Capacity (Container : in out Map; Capacity : Count_Type);
    --  Adjusts the current capacity, by allocating a new buckets array. If the
    --  requested capacity is less than the current capacity, then the capacity
-   --  is contracted (to a value not less than the curent length). If the
+   --  is contracted (to a value not less than the current length). If the
    --  requested capacity is greater than the current capacity, then the
    --  capacity is expanded (to a value not less than what is requested). In
    --  either case, the nodes are rehashed from the old buckets array onto the
@@ -191,7 +191,7 @@ package Ada.Containers.Indefinite_Hashed_Maps is
    procedure Delete (Container : in out Map; Key : Key_Type);
    --  Searches for Key in the map (which involves calling both Hash and
    --  Equivalent_Keys). If the search fails, then the operation raises
-   --  Constraint_Eror. Otherwise it removes the node from the map and then
+   --  Constraint_Error. Otherwise it removes the node from the map and then
    --  deallocates it. (This is the deletion analog of non-conditional
    --  Insert. It is intended for use when you want to assert that the item is
    --  already in the map.)

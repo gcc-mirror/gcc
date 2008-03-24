@@ -189,7 +189,7 @@ package Ada.Interrupts.Names is
      System.OS_Interface.SIGGRANT;    -- monitor mode granted
 
    SIGRETRACT : constant Interrupt_ID :=
-     System.OS_Interface.SIGRETRACT;  -- monitor mode should be relinguished
+     System.OS_Interface.SIGRETRACT;  -- monitor mode should be relinquished
 
    SIGSOUND : constant Interrupt_ID :=
      System.OS_Interface.SIGSOUND;    -- sound control has completed

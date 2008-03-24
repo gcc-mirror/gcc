@@ -47,7 +47,7 @@ package body Ada.Calendar.Formatting is
 
    procedure Check_Char (S : String; C : Character; Index : Integer);
    --  Subsidiary to the two versions of Value. Determine whether the
-   --  input strint S has character C at position Index. Raise
+   --  input string S has character C at position Index. Raise
    --  Constraint_Error if there is a mismatch.
 
    procedure Check_Digit (S : String; Index : Integer);

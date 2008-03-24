@@ -36,7 +36,7 @@
 --  of Is_In, so that we are not dependent on inlining. Note that the search
 --  function implementations are to be found in the auxiliary package
 --  Ada.Strings.Search. Also the Move procedure is directly incorporated (ADAR
---  used a subunit for this procedure). number of errors having to do with
+--  used a subunit for this procedure). The number of errors having to do with
 --  bounds of function return results were also fixed, and use of & removed for
 --  efficiency reasons.
 

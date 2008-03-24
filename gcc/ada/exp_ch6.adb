@@ -2559,7 +2559,7 @@ package body Exp_Ch6 is
       --  Similarly, expand calls to RCI subprograms on which pragma
       --  All_Calls_Remote applies. The rewriting will be reanalyzed
       --  later. Do this only when the call comes from source since we do
-      --  not want such a rewritting to occur in expanded code.
+      --  not want such a rewriting to occur in expanded code.
 
       elsif Is_All_Remote_Call (N) then
          Expand_All_Calls_Remote_Subprogram_Call (N);
@@ -3344,7 +3344,7 @@ package body Exp_Ch6 is
                --  Because of the presence of private types, the views of the
                --  expression and the context may be different, so place an
                --  unchecked conversion to the context type to avoid spurious
-               --  errors, eg. when the expression is a numeric literal and
+               --  errors, e.g. when the expression is a numeric literal and
                --  the context is private. If the expression is an aggregate,
                --  use a qualified expression, because an aggregate is not a
                --  legal argument of a conversion.
@@ -4823,7 +4823,7 @@ package body Exp_Ch6 is
             Typ : constant Entity_Id := Scope (DTC_Entity (Subp));
 
          begin
-            --  Handle private overriden primitives
+            --  Handle private overridden primitives
 
             if not Is_CPP_Class (Typ) then
                Check_Overriding_Operation (Subp);
@@ -5553,7 +5553,7 @@ package body Exp_Ch6 is
 
       --  If the object entity has a class-wide Etype, then we need to change
       --  it to the result subtype of the function call, because otherwise the
-      --  object will be class-wide without an explicit intialization and won't
+      --  object will be class-wide without an explicit initialization and won't
       --  be allocated properly by the back end. It seems unclean to make such
       --  a revision to the type at this point, and we should try to improve
       --  this treatment when build-in-place functions with class-wide results

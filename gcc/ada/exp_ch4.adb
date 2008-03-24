@@ -134,7 +134,7 @@ package body Exp_Ch4 is
    --  Local recursive function used to expand equality for nested
    --  composite types. Used by Expand_Record/Array_Equality, Bodies
    --  is a list on which to attach bodies of local functions that are
-   --  created in the process. This is the responsability of the caller
+   --  created in the process. This is the responsibility of the caller
    --  to insert those bodies at the right place. Nod provides the Sloc
    --  value for generated code. Lhs and Rhs are the left and right sides
    --  for the comparison, and Typ is the type of the arrays to compare.
@@ -147,7 +147,7 @@ package body Exp_Ch4 is
 
    procedure Expand_Concatenate_String (Cnode : Node_Id; Opnds : List_Id);
    --  Routine to expand concatenation of 2-5 operands (in the list Operands)
-   --  and replace node Cnode with the result of the contatenation. If there
+   --  and replace node Cnode with the result of the concatenation. If there
    --  are two operands, they can be string or character. If there are more
    --  than two operands, then are always of type string (i.e. the caller has
    --  already converted character operands to strings in this case).
@@ -440,7 +440,7 @@ package body Exp_Ch4 is
          --  implement the target interface. This case corresponds with the
          --  following example:
 
-         --   function Op (Obj : Iface_1'Class) return access Ifac_2e'Class is
+         --   function Op (Obj : Iface_1'Class) return access Iface_2'Class is
          --   begin
          --      return new Iface_2'Class'(Obj);
          --   end Op;
@@ -581,7 +581,7 @@ package body Exp_Ch4 is
          --  call to a build-in-place function, then access to the allocated
          --  object must be passed to the function. Currently we limit such
          --  functions to those with constrained limited result subtypes,
-         --  but eventually we plan to expand the allowed forms of funtions
+         --  but eventually we plan to expand the allowed forms of functions
          --  that are treated as build-in-place.
 
          if Ada_Version >= Ada_05
@@ -762,7 +762,7 @@ package body Exp_Ch4 is
 
                --  Generate an additional object containing the address of the
                --  returned object. The type of this second object declaration
-               --  is the correct type required for the common proceessing
+               --  is the correct type required for the common processing
                --  that is still performed by this subprogram. The displacement
                --  of this pointer to reference the component associated with
                --  the interface type will be done at the end of the common
@@ -1025,7 +1025,7 @@ package body Exp_Ch4 is
          --  call to a build-in-place function, then access to the allocated
          --  object must be passed to the function. Currently we limit such
          --  functions to those with constrained limited result subtypes,
-         --  but eventually we plan to expand the allowed forms of funtions
+         --  but eventually we plan to expand the allowed forms of functions
          --  that are treated as build-in-place.
 
          if Ada_Version >= Ada_05
@@ -2143,7 +2143,7 @@ package body Exp_Ch4 is
 
    --  Let n be the number of array operands to be concatenated, Base_Typ
    --  their base type, Ind_Typ their index type, and Arr_Typ the original
-   --  array type to which the concatenantion operator applies, then the
+   --  array type to which the concatenation operator applies, then the
    --  following subprogram is constructed:
 
    --  [function Cnn (S1 : Base_Typ; ...; Sn : Base_Typ) return Base_Typ is
@@ -2676,7 +2676,7 @@ package body Exp_Ch4 is
 
       --  Note that this does *not* fix the array concatenation bug when the
       --  low bound is Integer'first sibce that bug comes from the pointer
-      --  dereferencing an unconstrained array. An there we need a constraint
+      --  dereferencing an unconstrained array. And there we need a constraint
       --  check to make sure the length of the concatenated array is ok. ???
 
       Insert_Action (Cnode, Func_Body, Suppress => All_Checks);
@@ -2794,7 +2794,7 @@ package body Exp_Ch4 is
 
       procedure Rewrite_Coextension (N : Node_Id);
       --  Static coextensions have the same lifetime as the entity they
-      --  constrain. Such occurences can be rewritten as aliased objects
+      --  constrain. Such occurrences can be rewritten as aliased objects
       --  and their unrestricted access used instead of the coextension.
 
       ---------------------------------------
@@ -3081,7 +3081,7 @@ package body Exp_Ch4 is
          Desig := Subtype_Mark (Expression (N));
 
          --  If context is constrained, use constrained subtype directly,
-         --  so that the constant is not labelled as having a nomimally
+         --  so that the constant is not labelled as having a nominally
          --  unconstrained subtype.
 
          if Entity (Desig) = Base_Type (Dtyp) then
@@ -3136,7 +3136,7 @@ package body Exp_Ch4 is
 
       --  If the allocator is for a type which requires initialization, and
       --  there is no initial value (i.e. operand is a subtype indication
-      --  rather than a qualifed expression), then we must generate a call
+      --  rather than a qualified expression), then we must generate a call
       --  to the initialization routine. This is done using an expression
       --  actions node:
 
@@ -4136,7 +4136,7 @@ package body Exp_Ch4 is
       end if;
 
       --  For packed arrays that are not bit-packed (i.e. the case of an array
-      --  with one or more index types with a non-coniguous enumeration type),
+      --  with one or more index types with a non-contiguous enumeration type),
       --  we can always use the normal packed element get circuit.
 
       if not Is_Bit_Packed_Array (Etype (Prefix (N))) then
@@ -4254,12 +4254,12 @@ package body Exp_Ch4 is
               Right_Opnd => Right_Opnd (N))));
 
       --  We want this to appear as coming from source if original does (see
-      --  tranformations in Expand_N_In).
+      --  transformations in Expand_N_In).
 
       Set_Comes_From_Source (N, Cfs);
       Set_Comes_From_Source (Right_Opnd (N), Cfs);
 
-      --  Now analyze tranformed node
+      --  Now analyze transformed node
 
       Analyze_And_Resolve (N, Typ);
    end Expand_N_Not_In;
@@ -4750,7 +4750,7 @@ package body Exp_Ch4 is
       --  inherited.
 
       function Has_Unconstrained_UU_Component (Typ : Node_Id) return Boolean;
-      --  Determines whether a type has a subcompoment of an unconstrained
+      --  Determines whether a type has a subcomponent of an unconstrained
       --  Unchecked_Union subtype. Typ is a record type.
 
       -------------------------
@@ -5041,7 +5041,7 @@ package body Exp_Ch4 is
             begin
                while Present (Comp) loop
 
-                  --  One component is sufficent
+                  --  One component is sufficient
 
                   if Component_Is_Unconstrained_UU (Comp) then
                      return True;
@@ -5061,7 +5061,7 @@ package body Exp_Ch4 is
             begin
                while Present (Variant) loop
 
-                  --  One component within a variant is sufficent
+                  --  One component within a variant is sufficient
 
                   if Variant_Is_Unconstrained_UU (Variant) then
                      return True;
@@ -5302,7 +5302,7 @@ package body Exp_Ch4 is
               (TSS (Root_Type (Typl), TSS_Composite_Equality));
 
          --  Otherwise expand the component by component equality. Note that
-         --  we never use block-bit coparisons for records, because of the
+         --  we never use block-bit comparisons for records, because of the
          --  problems with gaps. The backend will often be able to recombine
          --  the separate comparisons that we generate here.
 
@@ -6538,7 +6538,7 @@ package body Exp_Ch4 is
          return;
       end if;
 
-      --  Arithemtic overflow checks for signed integer/fixed point types
+      --  Arithmetic overflow checks for signed integer/fixed point types
 
       if Is_Signed_Integer_Type (Typ)
         or else Is_Fixed_Point_Type (Typ)
@@ -6755,7 +6755,7 @@ package body Exp_Ch4 is
 
       if Do_Discriminant_Check (N) then
 
-         --  Present the discrminant checking function to the backend,
+         --  Present the discriminant checking function to the backend,
          --  so that it can inline the call to the function.
 
          Add_Inlined_Body
@@ -7078,7 +7078,7 @@ package body Exp_Ch4 is
       --       call itself.
 
       --    5. Prefix of an address attribute (this is an error which
-      --       is caught elsewhere, and the expansion would intefere
+      --       is caught elsewhere, and the expansion would interfere
       --       with generating the error message).
 
       if not Is_Packed (Typ) then
@@ -7545,7 +7545,7 @@ package body Exp_Ch4 is
          --  Do not do any expansion in the access type case if the
          --  parent is a renaming, since this is an error situation
          --  which will be caught by Sem_Ch8, and the expansion can
-         --  intefere with this error check.
+         --  interfere with this error check.
 
          if Is_Access_Type (Target_Type)
            and then Is_Renamed_Object (N)
@@ -8280,7 +8280,7 @@ package body Exp_Ch4 is
    --  Start of processing for Has_Inferable_Discriminants
 
    begin
-      --  For identifiers and indexed components, it is sufficent to have a
+      --  For identifiers and indexed components, it is sufficient to have a
       --  constrained Unchecked_Union nominal subtype.
 
       if Nkind_In (N, N_Identifier, N_Indexed_Component) then

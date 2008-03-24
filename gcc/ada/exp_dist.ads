@@ -53,7 +53,7 @@ package Exp_Dist is
       Insertion_Node  : Node_Id;
       Body_Decls      : List_Id);
    --  Add primitive for the stub type, and the RPC receiver. The declarations
-   --  are inserted after insertion_Node, while the bodies are appened at the
+   --  are inserted after insertion_Node, while the bodies are appended at the
    --  end of Decls.
 
    procedure Remote_Types_Tagged_Full_View_Encountered

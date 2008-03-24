@@ -4733,7 +4733,7 @@ package body Exp_Ch3 is
                    or else Is_Tag (Defining_Identifier (First_Comp))
 
                --  Ada 2005 (AI-251): The following condition covers secondary
-               --  tags but also the adjacent component contanining the offset
+               --  tags but also the adjacent component containing the offset
                --  to the base of the object (component generated if the parent
                --  has discriminants --- see Add_Interface_Tag_Components).
                --  This is required to avoid the addition of the controller
@@ -6431,7 +6431,7 @@ package body Exp_Ch3 is
                   Warning_Needed := True;
 
                else
-                  --  Verify that at least one component has an initializtion
+                  --  Verify that at least one component has an initialization
                   --  expression. No need for a warning on a type if all its
                   --  components have no initialization.
 

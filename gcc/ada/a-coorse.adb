@@ -47,7 +47,7 @@ package body Ada.Containers.Ordered_Sets is
    ------------------------------
 
    --  These subprograms provide functional notation for access to fields
-   --  of a node, and procedural notation for modifiying these fields.
+   --  of a node, and procedural notation for modifying these fields.
 
    function Color (Node : Node_Access) return Color_Type;
    pragma Inline (Color);
@@ -1103,7 +1103,7 @@ package body Ada.Containers.Ordered_Sets is
       T : Tree_Type renames Container.Tree'Unrestricted_Access.all;
       B : Natural renames T.Busy;
 
-   --  Start of prccessing for Iterate
+   --  Start of processing for Iterate
 
    begin
       B := B + 1;

@@ -2744,7 +2744,7 @@ package body Checks is
 
       --  Check that a null-excluding component, formal or object is not
       --  being assigned a null value. Otherwise generate a warning message
-      --  and replace Expression (N) by a N_Contraint_Error node.
+      --  and replace Expression (N) by a N_Constraint_Error node.
 
       if K /= N_Function_Specification then
          Expr := Expression (N);

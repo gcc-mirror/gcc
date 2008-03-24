@@ -629,7 +629,7 @@ package body Exp_Fixd is
          --  happen?) and both were equal to the power of 2, then we would
          --  be one bit off in this test, so for the left operand, we only
          --  go up to the power of 2 - 1. This ensures that we do not get
-         --  this anomolous case, and in practice the right operand is by
+         --  this anomalous case, and in practice the right operand is by
          --  far the more likely one to be the constant.
 
          Left_Size := UI_To_Int (RM_Size (Left_Type));
@@ -663,7 +663,7 @@ package body Exp_Fixd is
          end if;
 
          --  Now the result size must be at least twice the longer of
-         --  the two sizes, to accomodate all possible results.
+         --  the two sizes, to accommodate all possible results.
 
          Rsize := 2 * Int'Max (Left_Size, Right_Size);
 

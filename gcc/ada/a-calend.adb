@@ -85,12 +85,12 @@ package body Ada.Calendar is
       End_Date      : Time_Rep;
       Elapsed_Leaps : out Natural;
       Next_Leap     : out Time_Rep);
-   --  Elapsed_Leaps is the sum of the leap seconds that have occured on or
+   --  Elapsed_Leaps is the sum of the leap seconds that have occurred on or
    --  after Start_Date and before (strictly before) End_Date. Next_Leap_Sec
-   --  represents the next leap second occurence on or after End_Date. If
+   --  represents the next leap second occurrence on or after End_Date. If
    --  there are no leaps seconds after End_Date, End_Of_Time is returned.
    --  End_Of_Time can be used as End_Date to count all the leap seconds that
-   --  have occured on or after Start_Date.
+   --  have occurred on or after Start_Date.
    --
    --  Note: Any sub seconds of Start_Date and End_Date are discarded before
    --  the calculations are done. For instance: if 113 seconds is a leap
@@ -154,7 +154,7 @@ package body Ada.Calendar is
 
    --  Lower and upper bound of Ada time. The zero (0) value of type Time is
    --  positioned at year 2150. Note that the lower and upper bound account
-   --  for the non-leap centenial years.
+   --  for the non-leap centennial years.
 
    Ada_Low  : constant Time_Rep := -(61 * 366 + 188 * 365) * Nanos_In_Day;
    Ada_High : constant Time_Rep :=  (60 * 366 + 190 * 365) * Nanos_In_Day;
@@ -391,7 +391,7 @@ package body Ada.Calendar is
 
       Next_Leap := End_Of_Time;
 
-      --  Make sure that the end date does not excede the upper bound
+      --  Make sure that the end date does not exceed the upper bound
       --  of Ada time.
 
       if End_Date > Ada_High then
@@ -420,7 +420,7 @@ package body Ada.Calendar is
       end if;
 
       --  Perform the calculations only if the start date is within the leap
-      --  second occurences table.
+      --  second occurrences table.
 
       if Start_T <= Leap_Second_Times (Leap_Seconds_Count) then
 
@@ -483,12 +483,12 @@ package body Ada.Calendar is
 
    function Is_Leap (Year : Year_Number) return Boolean is
    begin
-      --  Leap centenial years
+      --  Leap centennial years
 
       if Year mod 400 = 0 then
          return True;
 
-      --  Non-leap centenial years
+      --  Non-leap centennial years
 
       elsif Year mod 100 = 0 then
          return False;
@@ -724,7 +724,7 @@ package body Ada.Calendar is
 
          --  Difference processing. This operation should be able to calculate
          --  the difference between opposite values which are close to the end
-         --  and start of Ada time. To accomodate the large range, we convert
+         --  and start of Ada time. To accommodate the large range, we convert
          --  to seconds. This action may potentially round the two values and
          --  either add or drop a second. We compensate for this issue in the
          --  previous step.
@@ -780,13 +780,13 @@ package body Ada.Calendar is
          Res_N := Time_Rep (Date);
 
          --  If the target supports leap seconds, remove any leap seconds
-         --  elapsed upto the input date.
+         --  elapsed up to the input date.
 
          if Leap_Support then
             Cumulative_Leap_Seconds
               (Start_Of_Time, Res_N, Elapsed_Leaps, Next_Leap_N);
 
-            --  The input time value may fall on a leap second occurence
+            --  The input time value may fall on a leap second occurrence
 
             if Res_N >= Next_Leap_N then
                Elapsed_Leaps := Elapsed_Leaps + 1;
@@ -899,7 +899,7 @@ package body Ada.Calendar is
       is
          --  The following constants represent the number of nanoseconds
          --  elapsed since the start of Ada time to and including the non
-         --  leap centenial years.
+         --  leap centennial years.
 
          Year_2101 : constant Time_Rep := Ada_Low +
                        Time_Rep (49 * 366 + 151 * 365) * Nanos_In_Day;
@@ -963,11 +963,11 @@ package body Ada.Calendar is
             end;
          end if;
 
-         --  Step 3: Non-leap centenial year adjustment in local time zone
+         --  Step 3: Non-leap centennial year adjustment in local time zone
 
          --  In order for all divisions to work properly and to avoid more
-         --  complicated arithmetic, we add fake Febriary 29s to dates which
-         --  occur after a non-leap centenial year.
+         --  complicated arithmetic, we add fake February 29s to dates which
+         --  occur after a non-leap centennial year.
 
          if Date_N >= Year_2301 then
             Date_N := Date_N + Time_Rep (3) * Nanos_In_Day;
@@ -1096,14 +1096,14 @@ package body Ada.Calendar is
 
          Res_N := Ada_Low;
 
-         --  Step 2: Year processing and centenial year adjustment. Determine
+         --  Step 2: Year processing and centennial year adjustment. Determine
          --  the number of four year segments since the start of Ada time and
          --  the input date.
 
          Count := (Year - Year_Number'First) / 4;
          Res_N := Res_N + Time_Rep (Count) * Secs_In_Four_Years * Nano;
 
-         --  Note that non-leap centenial years are automatically considered
+         --  Note that non-leap centennial years are automatically considered
          --  leap in the operation above. An adjustment of several days is
          --  required to compensate for this.
 
@@ -1236,7 +1236,7 @@ package body Ada.Calendar is
                    Time_Rep (Leap_Seconds_Count) * Nano;
 
       --  The following constants denote February 28 during non-leap
-      --  centenial years, the units are nanoseconds.
+      --  centennial years, the units are nanoseconds.
 
       T_2100_2_28 : constant Time_Rep := Ada_Low +
                       (Time_Rep (49 * 366 + 150 * 365 + 59) * Secs_In_Day +
@@ -1307,8 +1307,8 @@ package body Ada.Calendar is
       begin
          Date_N := Time_Rep (Date);
 
-         --  Dates which are 56 years appart fall on the same day, day light
-         --  saving and so on. Non-leap centenial years violate this rule by
+         --  Dates which are 56 years apart fall on the same day, day light
+         --  saving and so on. Non-leap centennial years violate this rule by
          --  one day and as a consequence, special adjustment is needed.
 
          if Date_N > T_2100_2_28 then

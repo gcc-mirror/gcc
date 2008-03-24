@@ -1,3 +1,24 @@
+2008-03-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* 9drpc.adb, a-caldel-vms.adb, a-caldel.adb,
+	a-calend-vms.adb, a-calend.adb, a-calend.ads,
+	a-calfor.adb, a-chahan.ads, a-chtgke.adb,
+	a-cihama.ads, a-ciorse.adb, a-clrefi.ads,
+	a-cohama.ads, a-comlin.ads, a-coorse.adb,
+	a-crbtgk.adb, a-direct.adb, a-except-2005.adb,
+	a-except-2005.ads, a-except.adb, a-except.ads,
+	a-exexda.adb, a-exexpr-gcc.adb, a-exexpr.adb,
+	a-exextr.adb, a-filico.ads, a-finali.ads,
+	a-intnam-aix.ads, a-intnam-solaris.ads, a-ngcefu.adb,
+	a-ngelfu.adb, a-numaux-darwin.adb, a-numeri.ads,
+	a-sequio.ads, a-strbou.ads, a-strfix.adb,
+	checks.adb, exp_ch3.adb, exp_ch4.adb,
+	exp_ch4.ads, exp_ch5.adb, exp_ch6.adb,
+	exp_ch6.ads, exp_ch7.adb, exp_ch7.ads,
+	exp_ch9.adb, exp_ch9.ads, exp_dbug.adb,
+	exp_dbug.ads, exp_disp.adb, exp_dist.adb,
+	exp_dist.ads, exp_fixd.adb, exp_fixd.ads: Fix comment typos.
+
 2008-03-24  Robert Dewar  <dewar@adacore.com>
 
 	* s-tpopsp-posix.adb, s-tpopsp-solaris.adb, s-tpopsp-posix-foreign.adb,
