@@ -2,8 +2,7 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---        A D A . S T R I N G S . W I D E _ W I D E _ B O U N D E D .       --
---                      W I D E _ W I D E _ H A S H                         --
+--              ADA.STRINGS.WIDE_WIDE_BOUNDED.WIDE_WIDE_HASH                --
 --                                                                          --
 --                                S p e c                                   --
 --                                                                          --
@@ -13,6 +12,8 @@
 -- modified version,  any changes that you have made are clearly indicated. --
 --                                                                          --
 ------------------------------------------------------------------------------
+
+--  Is this really an RM unit? doc needed ???
 
 with Ada.Containers;
 

@@ -2,8 +2,7 @@
 --                                                                          --
 --                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
---    S Y S T E M . T A S K _ P R I M I T I V E S . O P E R A T I O N S .   --
---                                   D E C                                  --
+--                  SYSTEM.TASK_PRIMITIVES.OPERATIONS.DEC                   --
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --

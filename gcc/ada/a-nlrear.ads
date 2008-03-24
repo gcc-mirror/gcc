@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                       ADA.NUMERICS.LONG_REAL_ARRAYS                      --
+--        A D A . N U M E R I C S . L O N G _ R E A L _ A R R A Y S         --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --

@@ -2,12 +2,11 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                       A D A . C O N T A I N E R S .                      --
---       H A S H _ T A B L E S . G E N E R I C _ O P E R A T I O N S        --
+--              ADA.CONTAINERS.HASH_TABLES.GENERIC_OPERATIONS               --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,9 +37,8 @@ with System;  use type System.Address;
 package body Ada.Containers.Hash_Tables.Generic_Operations is
 
    type Buckets_Allocation is access all Buckets_Type;
-   --  Used for allocation and deallocation (see New_Buckets and
-   --  Free_Buckets). This is necessary because Buckets_Access has an empty
-   --  storage pool.
+   --  Used for allocation and deallocation (see New_Buckets and Free_Buckets).
+   --  This is necessary because Buckets_Access has an empty storage pool.
 
    ------------
    -- Adjust --

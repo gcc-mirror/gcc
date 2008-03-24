@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                          G N A T . R E G E X P                           --
+--                        S Y S T E M . R E G E X P                         --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -32,7 +32,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Unchecked_Deallocation;
-with Ada.Exceptions;
+--  with Ada.Exceptions;
 
 with System.Case_Util;
 
@@ -177,9 +177,7 @@ package body System.Regexp is
       --  add a third pass to reduce the number of states in the machine, with
       --  no speed improvement...
 
-      procedure Raise_Exception
-        (M     : String;
-         Index : Integer);
+      procedure Raise_Exception (M : String; Index : Integer);
       pragma No_Return (Raise_Exception);
       --  Raise an exception, indicating an error at character Index in S
 
@@ -1223,13 +1221,9 @@ package body System.Regexp is
       -- Raise_Exception --
       ---------------------
 
-      procedure Raise_Exception
-        (M     : String;
-         Index : Integer)
-      is
+      procedure Raise_Exception (M : String; Index : Integer) is
       begin
-         Ada.Exceptions.Raise_Exception
-           (Error_In_Regexp'Identity, M & " at offset " & Index'Img);
+         raise Error_In_Regexp with M & " at offset " & Index'Img;
       end Raise_Exception;
 
    --  Start of processing for Compile

@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                     SYSTEM.GENERIC_ARRAY_OPERATIONS                      --
+--       S Y S T E M . G E N E R I C _ A R R A Y _ O P E R A T I O N S      --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --

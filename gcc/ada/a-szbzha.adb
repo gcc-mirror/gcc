@@ -2,12 +2,11 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---        A D A . S T R I N G S . W I D E _ W I D E _ B O U N D E D .       --
---                      W I D E _ W I D E _ H A S H                         --
+--              ADA.STRINGS.WIDE_WIDE_BOUNDED.WIDE_WIDE_HASH                --
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --

@@ -2,8 +2,7 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                      A D A . C O N T A I N E R S .                       --
---             H A S H _ T A B L E S . G E N E R I C _ K E Y S              --
+--                 ADA.CONTAINERS.HASH_TABLES.GENERIC_KEYS                  --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --

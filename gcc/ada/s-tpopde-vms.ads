@@ -2,8 +2,7 @@
 --                                                                          --
 --                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
---    S Y S T E M . T A S K _ P R I M I T I V E S . O P E R A T I O N S .   --
---                                   D E C                                  --
+--                  SYSTEM.TASK_PRIMITIVES.OPERATIONS.DEC                   --
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
@@ -39,18 +38,18 @@ package System.Task_Primitives.Operations.DEC is
 
    procedure Interrupt_AST_Handler (ID : Address);
    pragma Convention (C, Interrupt_AST_Handler);
-   --  Handles the AST for Ada95 Interrupts.
+   --  Handles the AST for Ada95 Interrupts
 
    procedure RMS_AST_Handler (ID : Address);
-   --  Handles the AST for RMS_Asynch_Operations.
+   --  Handles the AST for RMS_Asynch_Operations
 
    function Self return System.Aux_DEC.Unsigned_Longword;
-   --  Returns the task identification for the AST.
+   --  Returns the task identification for the AST
 
    procedure Starlet_AST_Handler (ID : Address);
-   --  Handles the AST for Starlet Tasking_Services.
+   --  Handles the AST for Starlet Tasking_Services
 
    procedure Task_Synch;
-   --  Synchronizes the task after the system service completes.
+   --  Synchronizes the task after the system service completes
 
 end System.Task_Primitives.Operations.DEC;

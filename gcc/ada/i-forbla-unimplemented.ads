@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                         INTERFACES.FORTRAN.BLAS                          --
+--               I N T E R F A C E S . F O R T R A N . B L A S              --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --

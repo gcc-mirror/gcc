@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                       ADA.NUMERICS.COMPLEX_ARRAYS                        --
+--          A D A . N U M E R I C S . C O M P L E X _ A R R A Y S           --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --

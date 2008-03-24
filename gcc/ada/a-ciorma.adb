@@ -2,8 +2,7 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                      A D A . C O N T A I N E R S .                       --
---             I N D E F I N I T E _ O R D E R E D _ M A P S                --
+--                 ADA.CONTAINERS.INDEFINITE_ORDERED_MAPS                   --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --

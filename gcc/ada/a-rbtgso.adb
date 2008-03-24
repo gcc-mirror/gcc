@@ -2,8 +2,7 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---       A D A . C O N T A I N E R S . R E D _ B L A C K _ T R E E S .      --
---               G E N E R I C _ S E T _ O P E R A T I O N S                --
+--           ADA.CONTAINERS.RED_BLACK_TREES.GENERIC_SET_OPERATIONS          --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --

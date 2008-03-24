@@ -2,8 +2,7 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                      A D A . C O N T A I N E R S .                       --
---               I N D E F I N I T E _ H A S H E D _ S E T S                --
+--                  ADA.CONTAINERS.INDEFINITE_HASHED_SETS                   --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
