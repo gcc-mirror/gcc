@@ -36,6 +36,11 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "gthr-posix.h"
 
 #else
+#ifdef __cplusplus
+#define UNUSED(x)
+#else
+#define UNUSED(x) x __attribute__((unused))
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -140,6 +145,8 @@ extern int __gthread_key_delete (__gthread_key_t key);
 
 extern void *__gthread_getspecific (__gthread_key_t key);
 extern int __gthread_setspecific (__gthread_key_t key, void *ptr);
+
+#undef UNUSED
 
 #ifdef __cplusplus
 }
