@@ -51,8 +51,7 @@ static void default_diagnostic_finalizer (diagnostic_context *,
 					  diagnostic_info *);
 
 static void error_recursion (diagnostic_context *) ATTRIBUTE_NORETURN;
-static bool diagnostic_count_diagnostic (diagnostic_context *,
-					 diagnostic_info *);
+
 static void diagnostic_action_after_output (diagnostic_context *,
 					    diagnostic_info *);
 static void real_abort (void) ATTRIBUTE_NORETURN;
@@ -160,54 +159,6 @@ diagnostic_build_prefix (diagnostic_info *diagnostic)
      : flag_show_column && s.column != 0
      ? build_message_string ("%s:%d:%d: %s", s.file, s.line, s.column, text)
      : build_message_string ("%s:%d: %s", s.file, s.line, text));
-}
-
-/* Count a diagnostic.  Return true if the message should be printed.  */
-static bool
-diagnostic_count_diagnostic (diagnostic_context *context,
-			     diagnostic_info *diagnostic)
-{
-  diagnostic_t kind = diagnostic->kind;
-  switch (kind)
-    {
-    default:
-      gcc_unreachable ();
-
-    case DK_ICE:
-#ifndef ENABLE_CHECKING
-      /* When not checking, ICEs are converted to fatal errors when an
-	 error has already occurred.  This is counteracted by
-	 abort_on_error.  */
-      if ((diagnostic_kind_count (context, DK_ERROR) > 0
-	   || diagnostic_kind_count (context, DK_SORRY) > 0)
-	  && !context->abort_on_error)
-	{
-	  expanded_location s = expand_location (diagnostic->location);
-	  fnotice (stderr, "%s:%d: confused by earlier errors, bailing out\n",
-		   s.file, s.line);
-	  exit (ICE_EXIT_CODE);
-	}
-#endif
-      if (context->internal_error)
-	(*context->internal_error) (diagnostic->message.format_spec,
-				    diagnostic->message.args_ptr);
-      /* Fall through.  */
-
-    case DK_FATAL: case DK_SORRY:
-    case DK_ANACHRONISM: case DK_NOTE:
-      ++diagnostic_kind_count (context, kind);
-      break;
-
-    case DK_WARNING:
-      ++diagnostic_kind_count (context, DK_WARNING);
-      break;
-
-    case DK_ERROR:
-      ++diagnostic_kind_count (context, DK_ERROR);
-      break;
-    }
-
-  return true;
 }
 
 /* Take any action which is expected to happen after the diagnostic
@@ -349,6 +300,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 			      diagnostic_info *diagnostic)
 {
   bool maybe_print_warnings_as_errors_message = false;
+  const char *saved_format_spec;
 
   /* Give preference to being able to inhibit warnings, before they
      get reclassified to something else.  */
@@ -409,27 +361,45 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 
   context->lock++;
 
-  if (diagnostic_count_diagnostic (context, diagnostic))
+  if (diagnostic->kind == DK_ICE) 
     {
-      const char *saved_format_spec = diagnostic->message.format_spec;
-
-      if (context->show_option_requested && diagnostic->option_index)
-	diagnostic->message.format_spec
-	  = ACONCAT ((diagnostic->message.format_spec,
-		      " [", cl_options[diagnostic->option_index].opt_text, "]", NULL));
-
-      diagnostic->message.locus = &diagnostic->location;
-      diagnostic->message.abstract_origin = &diagnostic->abstract_origin;
-      diagnostic->abstract_origin = NULL;
-      pp_format (context->printer, &diagnostic->message);
-      (*diagnostic_starter (context)) (context, diagnostic);
-      pp_output_formatted_text (context->printer);
-      (*diagnostic_finalizer (context)) (context, diagnostic);
-      pp_flush (context->printer);
-      diagnostic_action_after_output (context, diagnostic);
-      diagnostic->message.format_spec = saved_format_spec;
-      diagnostic->abstract_origin = NULL;
+#ifndef ENABLE_CHECKING
+      /* When not checking, ICEs are converted to fatal errors when an
+	 error has already occurred.  This is counteracted by
+	 abort_on_error.  */
+      if ((diagnostic_kind_count (context, DK_ERROR) > 0
+	   || diagnostic_kind_count (context, DK_SORRY) > 0)
+	  && !context->abort_on_error)
+	{
+	  expanded_location s = expand_location (diagnostic->location);
+	  fnotice (stderr, "%s:%d: confused by earlier errors, bailing out\n",
+		   s.file, s.line);
+	  exit (ICE_EXIT_CODE);
+	}
+#endif
+      if (context->internal_error)
+	(*context->internal_error) (diagnostic->message.format_spec,
+				    diagnostic->message.args_ptr);
     }
+  ++diagnostic_kind_count (context, diagnostic->kind);
+  
+  saved_format_spec = diagnostic->message.format_spec;
+  if (context->show_option_requested && diagnostic->option_index)
+    diagnostic->message.format_spec
+      = ACONCAT ((diagnostic->message.format_spec,
+                  " [", cl_options[diagnostic->option_index].opt_text, "]", NULL));
+  
+  diagnostic->message.locus = &diagnostic->location;
+  diagnostic->message.abstract_origin = &diagnostic->abstract_origin;
+  diagnostic->abstract_origin = NULL;
+  pp_format (context->printer, &diagnostic->message);
+  (*diagnostic_starter (context)) (context, diagnostic);
+  pp_output_formatted_text (context->printer);
+  (*diagnostic_finalizer (context)) (context, diagnostic);
+  pp_flush (context->printer);
+  diagnostic_action_after_output (context, diagnostic);
+  diagnostic->message.format_spec = saved_format_spec;
+  diagnostic->abstract_origin = NULL;
 
   context->lock--;
 }
