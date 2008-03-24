@@ -1,3 +1,8 @@
+2008-03-24  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/26222
+	* gcc.dg/torture/pr26222.c: New testcase.
+
 2008-03-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34813
