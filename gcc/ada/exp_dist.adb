@@ -494,7 +494,7 @@ package body Exp_Dist is
 
          when others           =>
             Partition : Entity_Id;
-            --  A variable containing the Partition_ID of the target parition
+            --  A variable containing the Partition_ID of the target partition
 
             RPC_Receiver : Node_Id;
             --  An expression whose value is the address of the target RPC
@@ -756,7 +756,7 @@ package body Exp_Dist is
 
       package Helpers is
 
-         --  Routines to build distribtion helper subprograms for user-defined
+         --  Routines to build distribution helper subprograms for user-defined
          --  types. For implementation of the Distributed systems annex (DSA)
          --  over the PolyORB generic middleware components, it is necessary to
          --  generate several supporting subprograms for each application data
@@ -2005,7 +2005,7 @@ package body Exp_Dist is
                --  We have an unconstrained Etyp: build the actual constrained
                --  subtype for the value we just read from the stream.
 
-               --  suubtype S is <actual subtype of Constant_Object>;
+               --  subtype S is <actual subtype of Constant_Object>;
 
                Append_To (Decls,
                  Build_Actual_Subtype (Etyp,

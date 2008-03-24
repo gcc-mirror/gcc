@@ -219,7 +219,7 @@ package Exp_Ch9 is
 
    procedure Establish_Task_Master (N : Node_Id);
    --  Given a subprogram body, or a block statement, or a task body, this
-   --  proccedure makes the necessary transformations required of a task
+   --  procedure makes the necessary transformations required of a task
    --  master (add Enter_Master call at start, and establish a cleanup
    --  routine to make sure Complete_Master is called on exit).
 
@@ -237,7 +237,7 @@ package Exp_Ch9 is
    --  Expand the entry barrier into a function. This is called directly
    --  from Analyze_Entry_Body so that the discriminals and privals of the
    --  barrier can be attached to the function declaration list, and a new
-   --  set prepared for the entry body procedure, bedore the entry body
+   --  set prepared for the entry body procedure, before the entry body
    --  statement sequence can be expanded. The resulting function is analyzed
    --  now, within the context of the protected object, to resolve calls to
    --  other protected functions.
@@ -308,7 +308,7 @@ package Exp_Ch9 is
    procedure Set_Discriminals (Dec : Node_Id);
    --  Replace discriminals in a protected type for use by the
    --  next protected operation on the type. Each operation needs a
-   --  new set of discirminals, since it needs a unique renaming of
+   --  new set of discriminals, since it needs a unique renaming of
    --  the discriminant fields in the record used to implement the
    --  protected type.
 

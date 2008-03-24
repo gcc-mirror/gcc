@@ -76,7 +76,7 @@ package body Exp_Disp is
 
    function Is_Predefined_Dispatching_Alias (Prim : Entity_Id) return Boolean;
    --  Returns true if Prim is not a predefined dispatching primitive but it is
-   --  an alias of a predefined dispatching primitive (ie. through a renaming)
+   --  an alias of a predefined dispatching primitive (i.e. through a renaming)
 
    function Original_View_In_Visible_Part (Typ : Entity_Id) return Boolean;
    --  Check if the type has a private view or if the public view appears
@@ -719,7 +719,7 @@ package body Exp_Disp is
       Rewrite (Call_Node, New_Call);
 
       --  Suppress all checks during the analysis of the expanded code
-      --  to avoid the generation of spureous warnings under ZFP run-time.
+      --  to avoid the generation of spurious warnings under ZFP run-time.
 
       Analyze_And_Resolve (Call_Node, Call_Typ, Suppress => All_Checks);
    end Expand_Dispatching_Call;
@@ -1135,7 +1135,7 @@ package body Exp_Disp is
 
                   --  If the type of the actual parameter comes from a limited
                   --  with-clause and the non-limited view is already available
-                  --  we replace the anonymous access type by a duplicate decla
+                  --  we replace the anonymous access type by a duplicate decla-
                   --  ration whose designated type is the non-limited view
 
                   if Ekind (Actual_DDT) = E_Incomplete_Type
@@ -3703,7 +3703,7 @@ package body Exp_Disp is
               Result          => Result);
             Next_Elmt (AI_Tag_Elmt);
 
-            --  Build the secondary table contaning pointers to primitives
+            --  Build the secondary table containing pointers to primitives
             --  (used to give support to Generic Dispatching Constructors).
 
             Make_Secondary_DT
@@ -3749,7 +3749,7 @@ package body Exp_Disp is
            Expression          => New_Reference_To (Standard_True, Loc)));
 
       --  In case of locally defined tagged type we declare the object
-      --  contanining the dispatch table by means of a variable. Its
+      --  containing the dispatch table by means of a variable. Its
       --  initialization is done later by means of an assignment. This is
       --  required to generate its External_Tag.
 
@@ -5836,7 +5836,7 @@ package body Exp_Disp is
    procedure Set_All_DT_Position (Typ : Entity_Id) is
 
       procedure Validate_Position (Prim : Entity_Id);
-      --  Check that the position assignated to Prim is completely safe
+      --  Check that the position assigned to Prim is completely safe
       --  (it has not been assigned to a previously defined primitive
       --   operation of Typ)
 
@@ -5948,7 +5948,7 @@ package body Exp_Disp is
 
    begin
       --  Set the DT_Position for each primitive operation. Perform some
-      --  sanity checks to avoid to build completely inconsistant dispatch
+      --  sanity checks to avoid to build completely inconsistent dispatch
       --  tables.
 
       --  First stage: Set the DTC entity of all the primitive operations
@@ -5972,7 +5972,7 @@ package body Exp_Disp is
 
          --  Clear any previous value of the DT_Position attribute. In this
          --  way we ensure that the final position of all the primitives is
-         --  stablished by the following stages of this algorithm.
+         --  established by the following stages of this algorithm.
 
          Set_DT_Position (Prim, No_Uint);
 
@@ -6121,7 +6121,7 @@ package body Exp_Disp is
                Set_Fixed_Prim (UI_To_Int (DT_Position (Prim)));
 
             --  Overriding primitives must use the same entry as the
-            --  overriden primitive.
+            --  overridden primitive.
 
             elsif not Present (Abstract_Interface_Alias (Prim))
               and then Present (Alias (Prim))
@@ -6246,7 +6246,7 @@ package body Exp_Disp is
             DT_Length := UI_To_Int (DT_Position (Prim));
          end if;
 
-         --  Ensure that the asignated position to non-predefined
+         --  Ensure that the assigned position to non-predefined
          --  dispatching operations in the dispatch table is correct.
 
          if not (Is_Predefined_Dispatching_Operation (Prim)

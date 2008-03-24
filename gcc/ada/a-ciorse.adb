@@ -1176,7 +1176,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       T : Tree_Type renames Container.Tree'Unrestricted_Access.all;
       B : Natural renames T.Busy;
 
-   --  Start of prccessing for Iterate
+   --  Start of processing for Iterate
 
    begin
       B := B + 1;

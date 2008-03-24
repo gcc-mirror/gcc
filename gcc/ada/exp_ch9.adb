@@ -138,7 +138,7 @@ package body Exp_Ch9 is
       Formals : List_Id;
       Decls   : List_Id) return Entity_Id;
    --  Generate an access type for each actual parameter in the list Actuals.
-   --  Cleate an encapsulating record that contains all the actuals and return
+   --  Create an encapsulating record that contains all the actuals and return
    --  its type. Generate:
    --    type Ann1 is access all <actual1-type>
    --    ...
@@ -311,7 +311,7 @@ package body Exp_Ch9 is
       Formals  : out List_Id);
    --  Given a dispatching call, extract the entity of the name of the call,
    --  its object parameter, its actual parameters and the formal parameters
-   --  of the overriden interface-level version.
+   --  of the overridden interface-level version.
 
    procedure Extract_Entry
      (N       : Node_Id;
@@ -763,7 +763,7 @@ package body Exp_Ch9 is
                Pdef := Defining_Identifier (P);
 
                --  The privals are declared before the current body is
-               --  analyzed. for visibility reasons. Set their Sloc so
+               --  analyzed, for visibility reasons. Set their Sloc so
                --  that it is consistent with their renaming declaration,
                --  to prevent anomalies in gdb.
 
@@ -979,7 +979,7 @@ package body Exp_Ch9 is
          --  but it does have an activation chain on which to store the tasks
          --  temporarily. On successful return, the tasks on this chain are
          --  moved to the chain passed in by the caller. We do not build an
-         --  Activatation_Chain_Entity for an N_Extended_Return_Statement,
+         --  Activation_Chain_Entity for an N_Extended_Return_Statement,
          --  because we do not want to build a call to Activate_Tasks. Task
          --  activation is the responsibility of the caller.
 
@@ -1491,7 +1491,7 @@ package body Exp_Ch9 is
       function Overriding_Possible
         (Iface_Prim_Op : Entity_Id;
          Proc_Nam      : Entity_Id) return Boolean;
-      --  Determine whether a primitive operation can be overriden by the
+      --  Determine whether a primitive operation can be overridden by the
       --  wrapper. Iface_Prim_Op is the candidate primitive operation of an
       --  abstract interface type, Proc_Nam is the generated entry wrapper.
 
@@ -1666,7 +1666,7 @@ package body Exp_Ch9 is
                      Iface_Prim_Op := Alias (Iface_Prim_Op);
                   end loop;
 
-                  --  The current primitive operation can be overriden by the
+                  --  The current primitive operation can be overridden by the
                   --  generated entry wrapper.
 
                   if Overriding_Possible (Iface_Prim_Op, Proc_Nam) then
@@ -1707,7 +1707,7 @@ package body Exp_Ch9 is
                         Iface_Prim_Op := Alias (Iface_Prim_Op);
                      end loop;
 
-                     --  The current primitive operation can be overriden by
+                     --  The current primitive operation can be overridden by
                      --  the generated entry wrapper.
 
                      if Overriding_Possible (Iface_Prim_Op, Proc_Nam) then
@@ -1726,7 +1726,7 @@ package body Exp_Ch9 is
          end loop Examine_Interfaces;
       end if;
 
-      --  Return if no interface primitive can be overriden
+      --  Return if no interface primitive can be overridden
 
       return Empty;
 
@@ -4595,7 +4595,7 @@ package body Exp_Ch9 is
 
    --  The first three declarations were already inserted ahead of the accept
    --  statement by the Expand_Accept_Declarations procedure, which was called
-   --  directly from the semantics during analysis of the accept. statement,
+   --  directly from the semantics during analysis of the accept statement,
    --  before analyzing its contained statements.
 
    --  The declarations from the N_Accept_Statement, as noted in Sinfo, come
@@ -7534,7 +7534,7 @@ package body Exp_Ch9 is
             Current_Node := Sub;
 
             --  Generate an overriding primitive operation specification for
-            --  this subprogram if the protected type implements an inerface.
+            --  this subprogram if the protected type implements an interface.
 
             if Ada_Version >= Ada_05
               and then
@@ -10115,7 +10115,7 @@ package body Exp_Ch9 is
           Expression =>
             D_Disc));
 
-      --  Do the assignement at this stage only because the evaluation of the
+      --  Do the assignment at this stage only because the evaluation of the
       --  expression must not occur before (see ACVC C97302A).
 
       Append_To (Stmts,
@@ -10315,7 +10315,7 @@ package body Exp_Ch9 is
             Next (Stmt);
          end loop;
 
-         --  Do the assignement at this stage only because the evaluation
+         --  Do the assignment at this stage only because the evaluation
          --  of the expression must not occur before (see ACVC C97302A).
 
          Insert_Before (Stmt,

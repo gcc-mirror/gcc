@@ -39,7 +39,7 @@
 --  builds may be done with bootstrap compilers that cannot handle these
 --  additions. The full version of Ada.Exceptions can be found in the files
 --  a-except-2005.ads/adb, and is used for all other builds where full Ada
---  2005 functionality is required. in particular, it is used for building
+--  2005 functionality is required. In particular, it is used for building
 --  run times on all targets.
 
 pragma Warnings (Off);
@@ -353,7 +353,7 @@ package body Ada.Exceptions is
    --  is deferred before the reraise operation.
 
    --  Save_Occurrence variations: As the management of the private data
-   --  attached to occurrences is delicate, wether or not pointers to such
+   --  attached to occurrences is delicate, whether or not pointers to such
    --  data has to be copied in various situations is better made explicit.
    --  The following procedures provide an internal interface to help making
    --  this explicit.

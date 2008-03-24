@@ -456,7 +456,7 @@ package Ada.Strings.Bounded is
       --  is at least one Bounded_String argument from which the maximum
       --  length can be obtained. For all such routines, the implementation
       --  in this private part is simply a renaming of the corresponding
-      --  routine in the super bouded package.
+      --  routine in the superbounded package.
 
       --  The five exceptions are the * and Replicate routines operating on
       --  character values. For these cases, we have a routine in the body

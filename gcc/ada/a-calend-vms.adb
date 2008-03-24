@@ -48,7 +48,7 @@ package body Ada.Calendar is
 
    --  Because time is measured in different units and from different origins
    --  on various targets, a system independent model is incorporated into
-   --  Ada.Calendar. The idea behing the design is to encapsulate all target
+   --  Ada.Calendar. The idea behind the design is to encapsulate all target
    --  dependent machinery in a single package, thus providing a uniform
    --  interface to all existing and any potential children.
 
@@ -86,12 +86,12 @@ package body Ada.Calendar is
       End_Date      : Time;
       Elapsed_Leaps : out Natural;
       Next_Leap_Sec : out Time);
-   --  Elapsed_Leaps is the sum of the leap seconds that have occured on or
+   --  Elapsed_Leaps is the sum of the leap seconds that have occurred on or
    --  after Start_Date and before (strictly before) End_Date. Next_Leap_Sec
-   --  represents the next leap second occurence on or after End_Date. If
+   --  represents the next leap second occurrence on or after End_Date. If
    --  there are no leaps seconds after End_Date, End_Of_Time is returned.
    --  End_Of_Time can be used as End_Date to count all the leap seconds that
-   --  have occured on or after Start_Date.
+   --  have occurred on or after Start_Date.
    --
    --  Note: Any sub seconds of Start_Date and End_Date are discarded before
    --  the calculations are done. For instance: if 113 seconds is a leap
@@ -358,7 +358,7 @@ package body Ada.Calendar is
 
       Next_Leap_Sec := End_Of_Time;
 
-      --  Make sure that the end date does not excede the upper bound
+      --  Make sure that the end date does not exceed the upper bound
       --  of Ada time.
 
       if End_Date > Ada_High then
@@ -387,7 +387,7 @@ package body Ada.Calendar is
       end if;
 
       --  Perform the calculations only if the start date is within the leap
-      --  second occurences table.
+      --  second occurrences table.
 
       if Start_T <= Leap_Second_Times (Leap_Seconds_Count) then
 
@@ -449,12 +449,12 @@ package body Ada.Calendar is
 
    function Is_Leap (Year : Year_Number) return Boolean is
    begin
-      --  Leap centenial years
+      --  Leap centennial years
 
       if Year mod 400 = 0 then
          return True;
 
-      --  Non-leap centenial years
+      --  Non-leap centennial years
 
       elsif Year mod 100 = 0 then
          return False;

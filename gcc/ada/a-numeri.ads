@@ -22,7 +22,7 @@ package Ada.Numerics is
           3.14159_26535_89793_23846_26433_83279_50288_41971_69399_37511;
 
    ["03C0"] : constant := Pi;
-   --  This is the greek letter Pi (for Ada 2005 AI-388). Note that it is
+   --  This is the Greek letter Pi (for Ada 2005 AI-388). Note that it is
    --  conforming to have this constant present even in Ada 95 mode, as there
    --  is no way for a normal mode Ada 95 program to reference this identifier.
 

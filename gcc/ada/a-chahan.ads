@@ -94,7 +94,7 @@ package Ada.Characters.Handling is
    --  Ada 2005 AI 395: these functions are moved to Ada.Characters.Conversions
    --  and are considered obsolete in Ada.Characters.Handling. However we do
    --  not complain about this obsolescence, since in practice it is necessary
-   --  to use these routines when creating code that is intended ro run in
+   --  to use these routines when creating code that is intended to run in
    --  either Ada 95 or Ada 2005 mode.
 
    function Is_Character (Item : Wide_Character) return Boolean;
@@ -107,7 +107,7 @@ package Ada.Characters.Handling is
    --  Ada 2005 AI 395: these functions are moved to Ada.Characters.Conversions
    --  and are considered obsolete in Ada.Characters.Handling. However we do
    --  not complain about this obsolescence, since in practice it is necessary
-   --  to use these routines when creating code that is intended ro run in
+   --  to use these routines when creating code that is intended to run in
    --  either Ada 95 or Ada 2005 mode.
 
    function To_Character

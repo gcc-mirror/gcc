@@ -115,7 +115,7 @@ package body Exp_Ch5 is
 
    function Make_Tag_Ctrl_Assignment (N : Node_Id) return List_Id;
    --  Generate the necessary code for controlled and tagged assignment,
-   --  that is to say, finalization of the target before, adjustement of
+   --  that is to say, finalization of the target before, adjustment of
    --  the target after and save and restore of the tag and finalization
    --  pointers which are not 'part of the value' and must not be changed
    --  upon assignment. N is the original Assignment node.
@@ -805,7 +805,7 @@ package body Exp_Ch5 is
             Ensure_Defined (R_Type, N);
 
             --  We normally compare addresses to find out which way round to
-            --  do the loop, since this is realiable, and handles the cases of
+            --  do the loop, since this is reliable, and handles the cases of
             --  parameters, conversions etc. But we can't do that in the bit
             --  packed case or the VM case, because addresses don't work there.
 
@@ -869,7 +869,7 @@ package body Exp_Ch5 is
               and then not No_Ctrl_Actions (N)
             then
 
-               --  Call TSS procedure for array assignment, passing the the
+               --  Call TSS procedure for array assignment, passing the
                --  explicit bounds of right and left hand sides.
 
                declare
@@ -1789,9 +1789,9 @@ package body Exp_Ch5 is
                --  discriminant checks are locally suppressed (as in extension
                --  aggregate expansions) because otherwise the discriminant
                --  check will be performed within the _assign call. It is also
-               --  suppressed for assignmments created by the expander that
+               --  suppressed for assignments created by the expander that
                --  correspond to initializations, where we do want to copy the
-               --  tag (No_Ctrl_Actions flag set True). by the expander and we
+               --  tag (No_Ctrl_Actions flag set True) by the expander and we
                --  do not need to mess with tags ever (Expand_Ctrl_Actions flag
                --  is set True in this case).
 
@@ -1802,7 +1802,7 @@ package body Exp_Ch5 is
                           and then not Discriminant_Checks_Suppressed (Empty))
             then
                --  Fetch the primitive op _assign and proper type to call it.
-               --  Because of possible conflits between private and full view
+               --  Because of possible conflicts between private and full view
                --  the proper type is fetched directly from the operation
                --  profile.
 
@@ -1915,7 +1915,7 @@ package body Exp_Ch5 is
                 Handled_Statement_Sequence =>
                   Make_Handled_Sequence_Of_Statements (Loc, Statements => L)));
 
-            --  If no restrictions on aborts, protect the whole assignement
+            --  If no restrictions on aborts, protect the whole assignment
             --  for controlled objects as per 9.8(11).
 
             if Controlled_Type (Typ)
@@ -2201,7 +2201,7 @@ package body Exp_Ch5 is
 
          --  An optimization. If there are only two alternatives, and only
          --  a single choice, then rewrite the whole case statement as an
-         --  if statement, since this can result in susbequent optimizations.
+         --  if statement, since this can result in subsequent optimizations.
          --  This helps not only with case statements in the source of a
          --  simple form, but also with generated code (discriminant check
          --  functions in particular)
@@ -2887,7 +2887,7 @@ package body Exp_Ch5 is
                      --  implicit access formal to the access object, to ensure
                      --  that the return object is initialized in that case.
                      --  In this situation, the target of the assignment must
-                     --  be rewritten to denote a derference of the access to
+                     --  be rewritten to denote a dereference of the access to
                      --  the return object passed in by the caller.
 
                      if Present (Init_Assignment) then
@@ -3262,7 +3262,7 @@ package body Exp_Ch5 is
          return;
       end if;
 
-      --  Note: we do not have to worry about validity chekcing of the for loop
+      --  Note: we do not have to worry about validity checking of the for loop
       --  range bounds here, since they were frozen with constant declarations
       --  and it is during that process that the validity checking is done.
 

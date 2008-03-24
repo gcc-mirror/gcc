@@ -239,7 +239,7 @@ private
    procedure Raise_From_Controlled_Operation
      (X : Ada.Exceptions.Exception_Occurrence);
    pragma No_Return (Raise_From_Controlled_Operation);
-   --  Raise Program_Error, proviving information about X (an exception
+   --  Raise Program_Error, providing information about X (an exception
    --  raised during a controlled operation) in the exception message.
 
    procedure Reraise_Occurrence_Always (X : Exception_Occurrence);
@@ -270,7 +270,7 @@ private
    --  purposes (e.g. implementing watchpoints in software or in the debugger).
 
    --  In the GNAT technology itself, this interface is used to implement
-   --  immediate aynschronous transfer of control and immediate abort on
+   --  immediate asynchronous transfer of control and immediate abort on
    --  targets which do not provide for one thread interrupting another.
 
    --  Note: this used to be in a separate unit called System.Poll, but that

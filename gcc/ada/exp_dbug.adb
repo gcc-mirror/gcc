@@ -1242,7 +1242,7 @@ package body Exp_Dbug is
                Add_Str_To_Name_Buffer ("__");
             end if;
 
-            --  Otherwise get name and note if it is a NPBE
+            --  Otherwise get name and note if it is a BNPE
 
             Get_Name_String_And_Append (Chars (E));
 

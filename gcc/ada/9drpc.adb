@@ -81,7 +81,7 @@ package body System.RPC is
    --  or when a write procedure is executed on a full stream
 
    Partition_RPC_Receiver : RPC_Receiver;
-   --  Cache the RPC_Recevier passed by Establish_RPC_Receiver
+   --  Cache the RPC_Receiver passed by Establish_RPC_Receiver
 
    type Anonymous_Task_Node;
 
@@ -155,7 +155,7 @@ package body System.RPC is
       entry Wake_Up
         (Request : Request_Id_Type;
          Length  : Ada.Streams.Stream_Element_Count);
-      --  To wake up the calling stub when the environnement task has
+      --  To wake up the calling stub when the environment task has
       --  received a reply for this request
 
    end Dispatcher;
@@ -544,7 +544,7 @@ package body System.RPC is
             New_Result : aliased Params_Stream_Type (R_Length);
          begin
             --  Adjust the Result stream size right now to be able to load
-            --  the stream in one receive call. Create a temporary resutl
+            --  the stream in one receive call. Create a temporary result
             --  that will be substituted to Do_RPC one
 
             Streams.Allocate (New_Result);
@@ -728,7 +728,7 @@ package body System.RPC is
                Request := Last_Request;
 
                --  << TODO >>
-               --  ??? Avaibility check
+               --  ??? Availability check
 
                if Last_Request = Request_Id_Type'Last then
                   Last_Request := Request_Id_Type'First;
@@ -867,7 +867,7 @@ package body System.RPC is
                  (Header'Access,
                   Streams.Get_Stream_Size (Result'Access));
 
-               --  Get a protocol method to comunicate with the remote
+               --  Get a protocol method to communicate with the remote
                --  partition and give the message size
 
                D (D_Communication,
@@ -1010,7 +1010,7 @@ package body System.RPC is
             Garbage_Collector.Allocate (Anonymous);
 
             --  We subtracted the size of the header from the size of the
-            --  global message in order to provide immediatly Params size
+            --  global message in order to provide immediately Params size
 
             Anonymous.Element.Start
               (Message_Id,

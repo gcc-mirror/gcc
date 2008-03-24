@@ -58,7 +58,7 @@ package Ada.Finalization.List_Controller is
    -- List_Controller --
    ---------------------
 
-   --  Management of a bidirectional linked heterogenous list of
+   --  Management of a bidirectional linked heterogeneous list of
    --  dynamically Allocated objects. To simplify the management of the
    --  linked list, the First and Last elements are statically part of the
    --  original List controller:

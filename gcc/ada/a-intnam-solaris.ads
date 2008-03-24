@@ -41,7 +41,7 @@
 --  The following signals are reserved by the run time (FSU threads):
 
 --  SIGFPE, SIGILL, SIGSEGV, SIGBUS, SIGTRAP, SIGTERM, SIGABRT, SIGINT,
---  SIGLWP, SIGALRM, SIGVTALRM, SIGAITING, SIGSTOP, SIGKILL
+--  SIGLWP, SIGALRM, SIGVTALRM, SIGWAITING, SIGSTOP, SIGKILL
 
 --  The pragma Unreserve_All_Interrupts affects the following signal(s):
 

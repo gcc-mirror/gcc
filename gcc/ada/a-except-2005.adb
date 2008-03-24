@@ -398,7 +398,7 @@ package body Ada.Exceptions is
    --  is deferred before the reraise operation.
 
    --  Save_Occurrence variations: As the management of the private data
-   --  attached to occurrences is delicate, wether or not pointers to such
+   --  attached to occurrences is delicate, whether or not pointers to such
    --  data has to be copied in various situations is better made explicit.
    --  The following procedures provide an internal interface to help making
    --  this explicit.

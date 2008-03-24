@@ -247,7 +247,7 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
    end Arccot;
 
    --------------
-   -- Arctcoth --
+   -- Arccoth --
    --------------
 
    function Arccoth (X : Complex) return Complex is
