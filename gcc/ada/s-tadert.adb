@@ -2,12 +2,11 @@
 --                                                                          --
 --                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
---           S Y S T E M . T A S K I N G . A S Y N C _ D E L A Y S .        --
---                          E N Q U E U E _ R T                             --
+--                  SYSTEM.TASKING.ASYNC_DELAYS.ENQUEUE_RT                  --
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1998-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --

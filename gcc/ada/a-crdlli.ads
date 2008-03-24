@@ -2,12 +2,11 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                       A D A . C O N T A I N E R S .                      --
---        R E S R I C T E D  _ D O U B L Y _ L I N K E D _ L I S T S        --
+--              ADA.CONTAINERS.RESTRICTED_DOUBLY_LINKED_LISTS               --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -33,6 +32,8 @@
 --                                                                          --
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
+
+--  Documentation required for this unit ???
 
 generic
    type Element_Type is private;

@@ -2,12 +2,11 @@
 --                                                                          --
 --                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
---                S Y S T E M . T A S K _ P R I M I T I V E S .             --
---                   I N T E R R U P T _ O P E R A T I O N S                --
+--               SYSTEM.TASK_PRIMITIVES.INTERRUPT_OPERATIONS                --
 --                                                                          --
---                                  B o d y                                 --
+--                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --

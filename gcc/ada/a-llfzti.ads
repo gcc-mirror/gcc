@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---A D A . L O N G _ L O N G _ F L O A T _ W I D E _ W I D E _ T E X T _ I O --
+--                  ADA.LONG_LONG_FLOAT_WIDE_WIDE_TEXT_IO                   --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --

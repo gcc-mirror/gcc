@@ -1,3 +1,22 @@
+2008-03-24  Robert Dewar  <dewar@adacore.com>
+
+	* s-tpopsp-posix.adb, s-tpopsp-solaris.adb, s-tpopsp-posix-foreign.adb,
+	s-tpopsp-lynxos.adb, s-tpopde-vms.ads, s-tpopde-vms.adb,
+	s-tpopsp-vxworks.adb, s-casi16.adb, s-caun16.adb, s-inmaop.ads,
+	s-tadeca.adb, s-tadeca.ads, s-tadert.adb, s-tadert.ads, s-tpinop.adb,
+	s-tpinop.ads, s-tporft.adb, a-rbtgso.adb, a-crbtgo.ads, a-crbtgo.adb,
+	a-crbtgk.ads, a-crbtgk.adb, a-ciorse.adb, a-cihama.ads, a-cihama.adb,
+	a-cidlli.ads, a-cidlli.adb, a-chtgop.ads, a-chtgop.adb, a-cgcaso.ads,
+	a-cgcaso.adb, a-cgaaso.adb, a-ciormu.adb, a-cihase.adb, a-swuwha.ads,
+	a-rbtgso.ads, a-cgaaso.ads, a-cgaaso.ads, a-ciorma.adb, a-chtgke.ads,
+	a-chtgke.adb, a-llfzti.ads, a-ztenau.adb, a-ztenau.ads, a-stzhas.ads,
+	a-szbzha.ads, a-szbzha.adb, a-crdlli.ads, a-crdlli.ads, a-crdlli.adb,
+	i-forbla-darwin.adb, i-forbla.ads, s-regexp.adb, a-nllrar.ads,
+	a-nlrear.ads, a-nucoar.ads, a-nurear.ads, i-forlap.ads, s-gearop.adb,
+	s-gearop.ads, s-gecobl.adb, s-gecobl.ads, s-gecola.adb, s-gecola.ads,
+	s-gerebl.adb, s-gerela.ads, a-swuwha.adb, i-forbla-unimplemented.ads,
+	double spaced if it fits on one line and otherwise single spaced.
+
 2008-03-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR documentation/15479

@@ -13,6 +13,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  Is this really an RM unit? Doc needed ???
+
 with Ada.Containers;
 
 function Ada.Strings.Wide_Unbounded.Wide_Hash

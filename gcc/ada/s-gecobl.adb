@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                       SYSTEM.GENERIC_COMPLEX_BLAS                        --
+--           S Y S T E M . G E N E R I C _ C O M P L E X _ B L A S          --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --

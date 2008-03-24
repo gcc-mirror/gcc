@@ -2,7 +2,7 @@
 --                                                                          --
 --                    GNAT RUN-TIME LIBRARY COMPONENTS                      --
 --                                                                          --
---        S Y S T E M . C O M P A R E _ A R R A Y _ S I G N E D _ 16        --
+--       S Y S T E M . C O M P A R E _ A R R A Y _ S I G N E D _ 1 6        --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --

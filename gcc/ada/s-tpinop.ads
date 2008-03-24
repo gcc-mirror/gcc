@@ -2,12 +2,11 @@
 --                                                                          --
 --                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
---               S Y S T E M . T A S K _ P R I M I T I V E S .              --
---                  I N T E R R U P T _ O P E R A T I O N S                 --
+--               SYSTEM.TASK_PRIMITIVES.INTERRUPT_OPERATIONS                --
 --                                                                          --
---                                  S p e c                                 --
+--                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1998-2005 Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,12 +41,12 @@ package System.Task_Primitives.Interrupt_Operations is
    package ST renames System.Tasking;
 
    procedure Set_Interrupt_ID (Interrupt : IM.Interrupt_ID; T : ST.Task_Id);
-   --  Associate an Interrupt_ID with a task.
+   --  Associate an Interrupt_ID with a task
 
    function Get_Interrupt_ID (T : ST.Task_Id) return IM.Interrupt_ID;
-   --  Return the Interrupt_ID associated with a task.
+   --  Return the Interrupt_ID associated with a task
 
    function Get_Task_Id (Interrupt : IM.Interrupt_ID) return ST.Task_Id;
-   --  Return the Task_Id associated with an Interrupt.
+   --  Return the Task_Id associated with an Interrupt
 
 end System.Task_Primitives.Interrupt_Operations;

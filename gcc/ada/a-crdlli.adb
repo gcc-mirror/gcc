@@ -2,8 +2,7 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                       A D A . C O N T A I N E R S .                      --
---        R E S R I C T E D  _ D O U B L Y _ L I N K E D _ L I S T S        --
+--              ADA.CONTAINERS.RESTRICTED_DOUBLY_LINKED_LISTS               --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
