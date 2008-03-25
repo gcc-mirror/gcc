@@ -12801,7 +12801,7 @@ else
 	CFLAGS="${saved_CFLAGS}"
 
 	# Extract this setting from the temporary Makefile.
-	BUILD_DEPMODE=`grep '^BUILD_DEPMODE = ' Makefile | sed -e 's,.* = ,,'`
+	BUILD_DEPMODE=`grep '^CCDEPMODE = ' Makefile | sed -e 's,.* = ,,'`
 
 	# We just finished tests for the build machine, so rename
 	# the file auto-build.h in the gcc directory.

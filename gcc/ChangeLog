@@ -1,5 +1,11 @@
 2008-03-25  Tom Tromey  <tromey@redhat.com>
 
+	* configure: Rebuilt.
+	* configure.ac (BUILD_DEPMODE): Extract CCDEPMODE from temporary
+	Makefile.
+
+2008-03-25  Tom Tromey  <tromey@redhat.com>
+
 	* config/x-solaris (host-solaris.o): Update.
 	* config/x-linux (host-linux.o): Update.
 	* config/x-hpux (host-hpux.o): Update.
