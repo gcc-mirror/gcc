@@ -1,3 +1,8 @@
+2008-03-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch6.adb, exp_disp.adb: Update copyright notice.
+	Fix wrong formatting (lines too long)
+
 2008-03-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* 9drpc.adb, a-caldel-vms.adb, a-caldel.adb,

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -5553,11 +5553,11 @@ package body Exp_Ch6 is
 
       --  If the object entity has a class-wide Etype, then we need to change
       --  it to the result subtype of the function call, because otherwise the
-      --  object will be class-wide without an explicit initialization and won't
-      --  be allocated properly by the back end. It seems unclean to make such
-      --  a revision to the type at this point, and we should try to improve
-      --  this treatment when build-in-place functions with class-wide results
-      --  are implemented. ???
+      --  object will be class-wide without an explicit initialization and
+      --  won't be allocated properly by the back end. It seems unclean to make
+      --  such a revision to the type at this point, and we should try to
+      --  improve this treatment when build-in-place functions with class-wide
+      --  results are implemented. ???
 
       if Is_Class_Wide_Type (Etype (Defining_Identifier (Object_Decl))) then
          Set_Etype (Defining_Identifier (Object_Decl), Result_Subt);

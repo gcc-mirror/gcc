@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1135,8 +1135,8 @@ package body Exp_Disp is
 
                   --  If the type of the actual parameter comes from a limited
                   --  with-clause and the non-limited view is already available
-                  --  we replace the anonymous access type by a duplicate decla-
-                  --  ration whose designated type is the non-limited view
+                  --  we replace the anonymous access type by a duplicate
+                  --  declaration whose designated type is the non-limited view
 
                   if Ekind (Actual_DDT) = E_Incomplete_Type
                     and then Present (Non_Limited_View (Actual_DDT))
