@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -msse2" } */
+#include "sse2-check.h"
 #include <xmmintrin.h>
 extern void abort();
 int untrue = 0;
@@ -18,7 +19,8 @@ __v4sf setupa () __attribute((noinline));
 __v4sf setupa () { __v4sf t = { 1.0, 2.0, 3.0, 4.0 }; return t; }
 __v4sf setupb () __attribute((noinline));
 __v4sf setupb () { __v4sf t = { 5.0, 6.0, 7.0, 8.0 }; return t; }
-main() {
+void __attribute__((noinline))
+sse2_test(void) {
   u a, b;
   a.v = setupa ();
   b.v = setupb ();
@@ -26,5 +28,4 @@ main() {
     bar(a.v, b.v);
   b.v = (__v4sf) _mm_movehl_ps ((__m128)a.v, (__m128)b.v);
   foo (a, b);
-  return 0;
 }

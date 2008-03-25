@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "../../tree-vect.h"
 
-__attribute__ ((noinline)) void 
+__attribute__ ((noinline)) void
 interp_pitch(float *exc, float *interp, int pitch, int len)
 {
    int i,k;
