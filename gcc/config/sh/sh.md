@@ -3326,6 +3326,15 @@ label:
 	xori	%1, %2, %0"
   [(set_attr "type" "arith_media")])
 
+;; Store the complements of the T bit in a register.
+(define_insn "xorsi3_movrt"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(xor:SI (reg:SI T_REG)
+		(const_int 1)))]
+  "TARGET_SH2A"
+  "movrt\\t%0"
+  [(set_attr "type" "arith")])
+
 (define_insn "xordi3"
   [(set (match_operand:DI 0 "arith_reg_dest" "=r,r")
 	(xor:DI (match_operand:DI 1 "arith_reg_operand" "%r,r")
@@ -9544,6 +9553,16 @@ mov.l\\t1f,r0\\n\\
   "TARGET_SH1"
   "movt	%0"
   [(set_attr "type" "arith")])
+
+;; complements the T bit and stores the result in a register
+(define_insn "movrt"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+        (if_then_else (eq:SI (reg:SI T_REG) (const_int 0))
+        (const_int 1)
+        (const_int 0)))]
+  "TARGET_SH2A"
+  "movrt\\t%0"
+   [(set_attr "type" "arith")])
 
 (define_expand "seq"
   [(set (match_operand:SI 0 "arith_reg_dest" "")

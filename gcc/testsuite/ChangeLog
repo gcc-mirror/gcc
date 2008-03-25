@@ -1,5 +1,9 @@
 2008-03-25  Naveen.H.S  <naveen.hs@kpitcummins.com>
 
+	* gcc.target/sh/sh2a-movrt.c: New test.
+
+2008-03-25  Naveen.H.S  <naveen.hs@kpitcummins.com>
+
 	* gcc.target/sh/sh2a-prefetch.c: New test.
 
 2008-03-25  Jayant Sonar  <Jayant.sonar@kpitcummins.com>

@@ -10605,6 +10605,9 @@ sh_expand_t_scc (enum rtx_code code, rtx target)
   val = INTVAL (sh_compare_op1);
   if ((code == EQ && val == 1) || (code == NE && val == 0))
     emit_insn (gen_movt (result));
+  else if (TARGET_SH2A && ((code == EQ && val == 0)
+			    || (code == NE && val == 1)))
+    emit_insn (gen_movrt (result));
   else if ((code == EQ && val == 0) || (code == NE && val == 1))
     {
       emit_insn (gen_rtx_CLOBBER (VOIDmode, result));
