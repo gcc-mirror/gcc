@@ -69,6 +69,14 @@ int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
 #define GEN_ADD3 (*(TARGET_SHMEDIA64 ? gen_adddi3 : gen_addsi3))
 #define GEN_SUB3 (*(TARGET_SHMEDIA64 ? gen_subdi3 : gen_subsi3))
 
+/* Used to simplify the logic below.  Find the attributes wherever
+   they may be.  */
+#define SH_ATTRIBUTES(decl) \
+  (TYPE_P (decl)) ? TYPE_ATTRIBUTES (decl) \
+		  : DECL_ATTRIBUTES (decl) \
+		  ? (DECL_ATTRIBUTES (decl)) \
+		  : TYPE_ATTRIBUTES (TREE_TYPE (decl))
+
 /* Set to 1 by expand_prologue() when the function is an interrupt handler.  */
 int current_function_interrupt;
 
@@ -185,6 +193,10 @@ static HOST_WIDE_INT rounded_frame_size (int);
 static rtx mark_constant_pool_use (rtx);
 const struct attribute_spec sh_attribute_table[];
 static tree sh_handle_interrupt_handler_attribute (tree *, tree, tree, int, bool *);
+static tree sh_handle_resbank_handler_attribute (tree *, tree,
+						 tree, int, bool *);
+static tree sh2a_handle_function_vector_handler_attribute (tree *, tree,
+							   tree, int, bool *);
 static tree sh_handle_sp_switch_attribute (tree *, tree, tree, int, bool *);
 static tree sh_handle_trap_exit_attribute (tree *, tree, tree, int, bool *);
 static tree sh_handle_renesas_attribute (tree *, tree, tree, int, bool *);
@@ -258,6 +270,8 @@ static int sh_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 			         tree, bool);
 static bool sh_scalar_mode_supported_p (enum machine_mode);
 static int sh_dwarf_calling_convention (const_tree);
+static void sh_encode_section_info (tree, rtx, int);
+static int sh2a_function_vector_p (tree);
 
 
 /* Initialize the GCC target structure.  */
@@ -449,6 +463,9 @@ static int sh_dwarf_calling_convention (const_tree);
 /* Return current register pressure for regmode.  */
 #define CURR_REGMODE_PRESSURE(MODE) 	curr_regmode_pressure[((MODE) == SImode) ? 0 : 1]
 
+#undef  TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO	sh_encode_section_info
+
 #ifdef SYMBIAN
 
 #undef  TARGET_ENCODE_SECTION_INFO
@@ -462,6 +479,9 @@ static int sh_dwarf_calling_convention (const_tree);
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD sh_secondary_reload
+
+/* Machine-specific symbol_ref flags.  */
+#define SYMBOL_FLAG_FUNCVEC_FUNCTION    (SYMBOL_FLAG_MACH_DEP << 0)
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -690,7 +710,11 @@ print_operand (FILE *stream, rtx x, int code)
 	fprintf (stream, "trapa #%ld",
 		 (long) TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (trapa_attr))));
       else if (sh_cfun_interrupt_handler_p ())
-	fprintf (stream, "rte");
+	{
+	  if (sh_cfun_resbank_handler_p ())
+	    fprintf (stream, "resbank\n");
+	  fprintf (stream, "rte");
+	}
       else
 	fprintf (stream, "rts");
       break;
@@ -1022,6 +1046,19 @@ print_operand (FILE *stream, rtx x, int code)
     }
 }
 
+
+/* Encode symbol attributes of a SYMBOL_REF into its
+   SYMBOL_REF_FLAGS.  */
+static void
+sh_encode_section_info (tree decl, rtx rtl, int first)
+{
+  default_encode_section_info (decl, rtl, first);
+
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && sh2a_function_vector_p (decl) && TARGET_SH2A)
+    SYMBOL_REF_FLAGS (XEXP (rtl, 0)) |= SYMBOL_FLAG_FUNCVEC_FUNCTION;
+}
+
 /* Like force_operand, but guarantees that VALUE ends up in TARGET.  */
 static void
 force_into (rtx value, rtx target)
@@ -5767,7 +5804,16 @@ push_regs (HARD_REG_SET *mask, int interrupt_handler)
       if (i != PR_REG
 	  && (i != FPSCR_REG || ! skip_fpscr)
 	  && TEST_HARD_REG_BIT (*mask, i))
-	push (i);
+           {
+  	/* If the ISR has RESBANK attribute assigned, don't push any of
+   	   the following registers - R0-R14, MACH, MACL and GBR.  */
+      if (! (sh_cfun_resbank_handler_p ()
+	     && ((i >= FIRST_GENERAL_REG && i < LAST_GENERAL_REG)
+		 || i == MACH_REG
+		 || i == MACL_REG
+		 || i == GBR_REG)))
+	  push (i);
+  	}
     }
 
   /* Push banked registers last to improve delay slot opportunities.  */
@@ -5776,7 +5822,8 @@ push_regs (HARD_REG_SET *mask, int interrupt_handler)
       if (TEST_HARD_REG_BIT (*mask, i))
 	push (i);
 
-  if (TEST_HARD_REG_BIT (*mask, PR_REG))
+  /* Don't push PR register for an ISR with RESBANK attribute assigned.  */
+  if (TEST_HARD_REG_BIT (*mask, PR_REG) && !sh_cfun_resbank_handler_p ())
     push (PR_REG);
 }
 
@@ -6705,7 +6752,10 @@ sh_expand_epilogue (bool sibcall_p)
       int last_reg;
 
       save_size = 0;
-      if (TEST_HARD_REG_BIT (live_regs_mask, PR_REG))
+	/* For an ISR with RESBANK attribute assigned, don't pop PR
+	   register.  */
+      if (TEST_HARD_REG_BIT (live_regs_mask, PR_REG)
+	  && !sh_cfun_resbank_handler_p ())	
 	{
 	  if (!frame_pointer_needed)
 	    emit_insn (gen_blockage ());
@@ -6733,7 +6783,15 @@ sh_expand_epilogue (bool sibcall_p)
 	      && hard_reg_set_intersect_p (live_regs_mask,
 					  reg_class_contents[DF_REGS]))
 	    fpscr_deferred = 1;
-	  else if (j != PR_REG && TEST_HARD_REG_BIT (live_regs_mask, j))
+	  /* For an ISR with RESBANK attribute assigned, don't pop
+	     following registers, R0-R14, MACH, MACL and GBR.  */
+	  else if (j != PR_REG && TEST_HARD_REG_BIT (live_regs_mask, j) 
+		   && ! (sh_cfun_resbank_handler_p ()
+			 && ((j >= FIRST_GENERAL_REG
+			      && j < LAST_GENERAL_REG)
+			      || j == MACH_REG
+			      || j == MACL_REG
+			      || j == GBR_REG)))
 	    pop (j);
 
 	  if (j == FIRST_FP_REG && fpscr_deferred)
@@ -7904,11 +7962,13 @@ sh_insert_attributes (tree node, tree *attributes)
 	   java frontend.  */
 	attrs
 	  = tree_cons (get_identifier("interrupt_handler"), NULL_TREE, attrs);
-      /* However, for sp_switch, trap_exit and nosave_low_regs, if the
-	 interrupt attribute is missing, we ignore the attribute and warn.  */
+      /* However, for sp_switch, trap_exit, nosave_low_regs and resbank,
+	 if the interrupt attribute is missing, we ignore the attribute
+	 and warn.  */
       else if (lookup_attribute ("sp_switch", attrs)
 	       || lookup_attribute ("trap_exit", attrs)
-	       || lookup_attribute ("nosave_low_regs", attrs))
+	       || lookup_attribute ("nosave_low_regs", attrs)
+	       || lookup_attribute ("resbank", attrs))
 	{
 	  tree *tail;
 
@@ -7916,7 +7976,8 @@ sh_insert_attributes (tree node, tree *attributes)
 	    {
 	      if (is_attribute_p ("sp_switch", TREE_PURPOSE (attrs))
 		  || is_attribute_p ("trap_exit", TREE_PURPOSE (attrs))
-		  || is_attribute_p ("nosave_low_regs", TREE_PURPOSE (attrs)))
+		  || is_attribute_p ("nosave_low_regs", TREE_PURPOSE (attrs))
+		  || is_attribute_p ("resbank", TREE_PURPOSE (attrs)))
 		warning (OPT_Wattributes,
 			 "%qs attribute only applies to interrupt functions",
 			 IDENTIFIER_POINTER (TREE_PURPOSE (attrs)));
@@ -7963,6 +8024,8 @@ sh_insert_attributes (tree node, tree *attributes)
    renesas -- use Renesas calling/layout conventions (functions and
    structures).
 
+   resbank -- In case of an ISR, use a register bank to save registers
+   R0-R14, MACH, MACL, GBR and PR.  This is useful only on SH2A targets.
 */
 
 const struct attribute_spec sh_attribute_table[] =
@@ -7974,6 +8037,8 @@ const struct attribute_spec sh_attribute_table[] =
   { "renesas",           0, 0, false, true, false, sh_handle_renesas_attribute },
   { "trapa_handler",     0, 0, true,  false, false, sh_handle_interrupt_handler_attribute },
   { "nosave_low_regs",   0, 0, true,  false, false, sh_handle_interrupt_handler_attribute },
+  { "resbank",           0, 0, true,  false, false, sh_handle_resbank_handler_attribute },
+  { "function_vector",   1, 1, true,  false, false, sh2a_handle_function_vector_handler_attribute },
 #ifdef SYMBIAN
   /* Symbian support adds three new attributes:
      dllexport - for exporting a function/variable that will live in a dll
@@ -7988,18 +8053,41 @@ const struct attribute_spec sh_attribute_table[] =
   { NULL,                0, 0, false, false, false, NULL }
 };
 
+/* Handle a 'resbank' attribute.  */
+static tree
+sh_handle_resbank_handler_attribute (tree * node, tree name,
+                                     tree args ATTRIBUTE_UNUSED,
+                                     int flags ATTRIBUTE_UNUSED,
+                                     bool * no_add_attrs)
+{
+  if (!TARGET_SH2A)
+    {
+      warning (OPT_Wattributes, "%qs attribute is supported only for SH2A",
+               IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qs attribute only applies to functions",
+               IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 /* Handle an "interrupt_handler" attribute; arguments as in
    struct attribute_spec.handler.  */
 static tree
 sh_handle_interrupt_handler_attribute (tree *node, tree name,
-				       tree args ATTRIBUTE_UNUSED,
-				       int flags ATTRIBUTE_UNUSED,
-				       bool *no_add_attrs)
+                                       tree args ATTRIBUTE_UNUSED,
+                                       int flags ATTRIBUTE_UNUSED,
+                                       bool *no_add_attrs)
 {
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
       warning (OPT_Wattributes, "%qs attribute only applies to functions",
-	       IDENTIFIER_POINTER (name));
+               IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
   else if (TARGET_SHCOMPACT)
@@ -8009,6 +8097,96 @@ sh_handle_interrupt_handler_attribute (tree *node, tree name,
     }
 
   return NULL_TREE;
+}
+
+/* Handle an 'function_vector' attribute; arguments as in
+   struct attribute_spec.handler.  */
+static tree
+sh2a_handle_function_vector_handler_attribute (tree * node, tree name,
+                                               tree args ATTRIBUTE_UNUSED,
+                                               int flags ATTRIBUTE_UNUSED,
+                                               bool * no_add_attrs)
+{
+  if (!TARGET_SH2A)
+    {
+      warning (OPT_Wattributes, "%qs attribute only applies to SH2A",
+               IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+  else if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qs attribute only applies to functions",
+               IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+  else if (TREE_CODE (TREE_VALUE (args)) != INTEGER_CST)
+    {
+      /* The argument must be a constant integer.  */
+      warning (OPT_Wattributes,
+               "`%s' attribute argument not an integer constant",
+               IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+  else if (TREE_INT_CST_LOW (TREE_VALUE (args)) > 255)
+    {
+      /* The argument value must be between 0 to 255.  */
+      warning (OPT_Wattributes,
+               "`%s' attribute argument should be between 0 to 255",
+               IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+  return NULL_TREE;
+}
+
+/* Returns 1 if current function has been assigned the attribute
+   'function_vector'.  */
+int
+sh2a_is_function_vector_call (rtx x)
+{
+  if (GET_CODE (x) == SYMBOL_REF
+      && (SYMBOL_REF_FLAGS (x) & SYMBOL_FLAG_FUNCVEC_FUNCTION))
+    {
+      tree tr = SYMBOL_REF_DECL (x);
+
+      if (sh2a_function_vector_p (tr))
+        return 1;
+    }
+
+  return 0;
+}
+
+/* Returns the function vector number, if the the attribute
+   'function_vector' is assigned, otherwise returns zero.  */
+int
+sh2a_get_function_vector_number (rtx x)
+{
+  int num;
+  tree list, t;
+
+  if ((GET_CODE (x) == SYMBOL_REF)
+      && (SYMBOL_REF_FLAGS (x) & SYMBOL_FLAG_FUNCVEC_FUNCTION))
+    {
+      t = SYMBOL_REF_DECL (x);
+
+      if (TREE_CODE (t) != FUNCTION_DECL)
+        return 0;
+
+      list = SH_ATTRIBUTES (t);
+      while (list)
+        {
+          if (is_attribute_p ("function_vector", TREE_PURPOSE (list)))
+            {
+              num = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (list)));
+              return num;
+            }
+
+          list = TREE_CHAIN (list);
+        }
+
+      return 0;
+    }
+  else
+    return 0;
 }
 
 /* Handle an "sp_switch" attribute; arguments as in
@@ -8099,6 +8277,39 @@ sh_cfun_interrupt_handler_p (void)
   return (lookup_attribute ("interrupt_handler",
 			    DECL_ATTRIBUTES (current_function_decl))
 	  != NULL_TREE);
+}
+
+/* Returns 1 if FUNC has been assigned the attribute
+   "function_vector".  */
+int
+sh2a_function_vector_p (tree func)
+{
+  tree list;
+  if (TREE_CODE (func) != FUNCTION_DECL)
+    return 0;
+
+  list = SH_ATTRIBUTES (func);
+  while (list)
+    {
+      if (is_attribute_p ("function_vector", TREE_PURPOSE (list)))
+        return 1;
+
+      list = TREE_CHAIN (list);
+    }
+  return 0;
+}
+
+/* Returns TRUE if given tree has the "resbank" attribute.  */
+
+int
+sh_cfun_resbank_handler_p (void)
+{
+  return ((lookup_attribute ("resbank",
+                             DECL_ATTRIBUTES (current_function_decl))
+           != NULL_TREE)
+          && (lookup_attribute ("interrupt_handler",
+                                DECL_ATTRIBUTES (current_function_decl))
+              != NULL_TREE) && TARGET_SH2A);
 }
 
 /* Implement TARGET_CHECK_PCH_TARGET_FLAGS.  */
