@@ -1,3 +1,11 @@
+2008-03-25  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2008-02-12  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/35163
+	* gcc.c-torture/execute/pr35163.c: New testcase.
+
 2008-03-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/frame_overflow.adb: Improve portability.
