@@ -1,21 +1,13 @@
-darwin.o: $(srcdir)/config/darwin.c $(CONFIG_H) $(SYSTEM_H) coretypes.h     \
-  $(TM_H) $(RTL_H) $(REGS_H) hard-reg-set.h $(REAL_H) insn-config.h         \
-  conditions.h insn-flags.h output.h insn-attr.h flags.h $(TREE_H) expr.h   \
-  reload.h function.h $(GGC_H) langhooks.h $(TARGET_H) $(TM_P_H) gt-darwin.h \
-  config/darwin-sections.def
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/darwin.c
+darwin.o: $(srcdir)/config/darwin.c
+	$(COMPILE) $<
 
-darwin-c.o: $(srcdir)/config/darwin-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  $(TM_H) $(CPPLIB_H) $(TREE_H) c-pragma.h $(C_TREE_H) toplev.h $(TM_P_H) \
-  c-incpath.h flags.h $(C_COMMON_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/darwin-c.c $(PREPROCESSOR_DEFINES)
+darwin-c.o: $(srcdir)/config/darwin-c.c
+	$(COMPILE) $(PREPROCESSOR_DEFINES) $<
 
 gt-darwin.h : s-gtype ; @true
 
-darwin-driver.o: $(srcdir)/config/darwin-driver.c \
-  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	  $(srcdir)/config/darwin-driver.c
+darwin-driver.o: $(srcdir)/config/darwin-driver.c
+	$(COMPILE) $<
 
 # How to build crt3.o
 EXTRA_MULTILIB_PARTS=crt3.o

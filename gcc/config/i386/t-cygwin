@@ -4,13 +4,8 @@
 LIBGCC2_INCLUDES += -I$(srcdir)/../winsup/include \
 	-I$(srcdir)/../winsup/cygwin/include
 
-cygwin1.o: $(srcdir)/config/i386/cygwin1.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  $(TM_H) $(TM_P_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	$(srcdir)/config/i386/cygwin1.c
+cygwin1.o: $(srcdir)/config/i386/cygwin1.c
+	$(COMPILE) $<
 
-cygwin2.o: $(srcdir)/config/i386/cygwin2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  $(TM_H) $(TM_P_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	$(srcdir)/config/i386/cygwin2.c
-
+cygwin2.o: $(srcdir)/config/i386/cygwin2.c
+	$(COMPILE) $<

@@ -1,3 +1,100 @@
+2008-03-25  Tom Tromey  <tromey@redhat.com>
+
+	* config/x-solaris (host-solaris.o): Update.
+	* config/x-linux (host-linux.o): Update.
+	* config/x-hpux (host-hpux.o): Update.
+	* config/x-darwin (host-darwin.o): Update.
+	* config/v850/t-v850e (v850-c.o): Update.
+	* config/v850/t-v850 (v850-c.o): Update.
+	* config/t-vxworks (vxworks.o): Update.
+	* config/t-sol2 (sol2-c.o, sol2.o): Update.
+	* config/t-darwin (darwin.o, darwin-c.o, darwin-driver.o):
+	Update.
+	* config/spu/t-spu-elf (spu-c.o): Update.
+	(spu.o): Remove.
+	* config/sh/t-symbian (sh-c.o): Update.
+	(symbian.o): Update.
+	* config/sh/t-sh (sh-c.o): Update.
+	* config/score/t-score-elf (score7.o, score3.o): Update.
+	* config/rs6000/x-rs6000 (driver-rs6000.o): Update.
+	* config/rs6000/x-darwin64 (host-ppc64-darwin.o): Update.
+	* config/rs6000/x-darwin (host-ppc-darwin.o): Update.
+	* config/rs6000/t-rs6000 (rs6000-c.o): Update.
+	(rs6000.o): Remove.
+	* config/m68k/t-uclinux (generated_files): Add sysroot-suffix.h.
+	* config/m32c/t-m32c (m32c-pragma.o): Update.
+	* config/ia64/t-ia64 (ia64-c.o): Update.
+	* config/i386/x-mingw32 (host-mingw32.o): Update.
+	* config/i386/x-i386 (driver-i386.o): Update.
+	* config/i386/x-darwin (host-i386-darwin.o): Update.
+	* config/i386/x-cygwin (host-cygwin.o): Update.
+	* config/i386/t-nwld (nwld.o): Update.
+	* config/i386/t-netware (netware.o): Update.
+	* config/i386/t-interix (winnt.o): Update.
+	* config/i386/t-cygwin (cygwin1.o, cygwin2.o): Update.
+	* config/i386/t-cygming (winnt.o, winnt-cxx.o, winnt-stubs.o,
+	msformat-c.o): Update.
+	* config/bfin/t-bfin-linux (generated_files): Add
+	linux-sysroot-suffix.h.
+	* config/arm/t-wince-pe (pe.o): Update.
+	* config/arm/t-strongarm-pe (pe.o): Update.
+	* config/arm/t-pe (pe.o): Update.
+	* config/arm/t-arm (arm-c.o): Update.
+	* doc/install.texi (Prerequisites): Require make 3.80.
+	* Makefile.in: Remove .o targets.
+	(CCDEPMODE, DEPDIR, depcomp, BUILD_DEPMODE): New variables.
+	(OBSTACK_H, FIBHEAP_H, PARTITION_H, MD5_H, BCONFIG_H): Remove.
+	(simple_generated_h, simple_generated_c): Move earlier.
+	(generated_files): New variable.
+	(TARGET_H, MACHMODE_H, HOOKS_H, HOSTHOOKS_DEF_H, LANGHOOKS_DEF_H,
+	TARGET_DEF_H, RTL_BASE_H, RTL_H, PARAMS_H, BUILTINS_DEF, TREE_H,
+	BASIC_BLOCK_H, GCOV_IO_H, COVERAGE_H, DEMANGLE_H, RECOG_H,
+	ALIAS_H, EMIT_RTL_H, FLAGS_H, FUNCTION_H, EXPR_H, OPTABS_H,
+	REGS_H, RA_H, RESOURCE_H, SCHED_INT_H, INTEGRATE_H, CFGLAYOUT_H,
+	CFGLOOP_H, IPA_UTILS_H, IPA_REFERENCE_H, IPA_TYPE_ESCAPE_H,
+	CGRAPH_H, DF_H, RESOURCE_H, DDG_H, GCC_H, GGC_H, TIMEVAR_H,
+	INSN_ATTR_H, C_COMMON_H, C_PRAGMA_H, C_TREE_H, SYSTEM_H,
+	PREDICT_H, DECNUM_H, MKDEPS_H, SYMTAB_H, TREE_DUMP_H,
+	TREE_GIMPLE_H, TREE_FLOW_H, TREE_SSA_LIVE_H, PRETTY_PRINT_H,
+	DIAGNOSTIC_H, C_PRETTY_PRINT_H, SCEV_H, LAMBDA_H, TREE_DATA_REF_H,
+	VARRAY_H, TREE_INLINE_H, REAL_H, DBGCNT_H, EBIMAP_H): Remove.
+	(.c.o): Remove.
+	(COMPILE.base, COMPILE): New variables.
+	(%.o): New pattern rule.
+	(ALL_HOST_OBJS): New variable.
+	(xgcc$(exeext), cpp$(exeext)): Remove extra version.o.
+	(dummy-checksum.o, cc1-checksum.o): Remove.
+	(DRIVER_SHLIB): New variable.
+	(DRIVER_DEFINES): Use it.
+	(gencondmd.c): Move out of build/.
+	(s-conditions): Update.
+	(BUILDCOMPILE.base, BUILDCOMPILE): New variables.
+	(ALL_BUILD_OBJS): Likewise.
+	(build/%.o): Use BUILDCOMPILE.
+	(build/ggc-none.o, build/ggc-none.o, build/min-insn-modes.o,
+	build/print-rtl.o, build/read-rtl.o, build/rtl.o, build/vec.o,
+	build/gencondmd.o, build/genattrtab.o, build/genautomata.o,
+	build/gencheck.o, build/gencodes.o, build/genconditions.o,
+	build/genconfig.o, build/genconstants.o, build/genemit.o,
+	build/genextract.o, build/genflags.o, build/genmddeps.o,
+	build/genopinit.o, build/genoutput.o, build/genpeep.o,
+	build/genpreds.o, build/genrecog.o, build/gcov-iov.o,
+	build/gen-protos.o, build/scan.o, build/fix-header.o,
+	build/scan-decls.o): Simplify.
+	(collect2.o, c-opts.o, gcc.o, gccspec.o, gcc-options.o,
+	cppdefault.o, protoize.o, unprotoize.o, intl.o, version.o,
+	prefix.o, toplev.o): Reduce to variable setting.
+	(libbackend.o): Use COMPILE.  Remove most dependencies.  Move
+	later.
+	($(out_object_file), gcc-options.o): New targets.
+	($(ALL_HOST_OBJS)): New target.
+	Include dependency files.
+	* configure: Rebuilt.
+	* configure.ac: Call ZW_CREATE_DEPDIR,
+	ZW_PROG_COMPILER_DEPENDENCIES.
+	* doc/sourcebuild.texi (Front End Directory): Document new
+	variable.
+
 2008-03-25  Douglas Gregor  <doug.gregor@gmail.com>
 
        * c-common.c (c_sizeof_or_alignof_type): If we're not allowed to

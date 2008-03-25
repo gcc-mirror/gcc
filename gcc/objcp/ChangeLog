@@ -1,3 +1,9 @@
+2008-03-25  Tom Tromey  <tromey@redhat.com>
+
+	* Make-lang.in (objcp_OBJS): New variable.
+	(cc1objplus-checksum.o, objcp/objcp-lang.o, objcp/objcp-decl.o,
+	objcp/objcp-act.o): Remove.
+
 2008-03-07  Paolo Bonzini  <bonzini@gnu.org>
 
 	Revert:

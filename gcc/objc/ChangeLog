@@ -1,3 +1,8 @@
+2008-03-25  Tom Tromey  <tromey@redhat.com>
+
+	* Make-lang.in (objc_OBJS): New variable.
+	(cc1obj-checksum.o, objc/objc-lang.o, objc/objc-act.o): Remove.
+
 2008-03-21  Andreas Tobler  <a.tobler@schweiz.org>
 
 	PR bootstrap/35660
