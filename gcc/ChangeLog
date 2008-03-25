@@ -1,5 +1,11 @@
 2008-03-25  Naveen.H.S  <naveen.hs@kpitcummins.com>
 
+	* config/sh/constraints.md (Pso, Psz): New constraints.
+	* config/sh/sh.c (print_operand): Add %V and %W operand codes.
+	* config/sh/sh.md (*andsi3_bclr, *iorsi3_bset): New insns.
+
+2008-03-25  Naveen.H.S  <naveen.hs@kpitcummins.com>
+
 	* config/sh/sh.c (sh_expand_t_scc): Emit movrt for SH2A if
 	possible.
 	* config/sh/sh.md (xorsi3_movrt, movrt): New insns.
