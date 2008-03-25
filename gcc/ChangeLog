@@ -1,3 +1,10 @@
+2008-03-25  Bob Wilson  <bob.wilson@acm.org>
+	
+	* config/xtensa/xtensa.c (xtensa_va_start): Use build_int_cst
+	instead of size_int for integer types.
+	(xtensa_gimplify_va_arg_expr): Likewise.  Convert index to sizetype
+	to match type of MINUS_EXPR.
+	
 2008-03-25  Tom Tromey  <tromey@redhat.com>
 
 	* configure: Rebuilt.
