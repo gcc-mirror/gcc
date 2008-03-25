@@ -3170,6 +3170,14 @@ label:
 	andi	%1, %2, %0"
   [(set_attr "type" "arith_media")])
 
+(define_insn "*andsi3_bclr"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(and:SI (match_operand:SI 1 "arith_reg_operand" "%0")
+		(match_operand:SI 2 "const_int_operand" "Psz")))]
+  "TARGET_SH2A && satisfies_constraint_Psz (operands[2])"
+  "bclr\\t%W2,%0"
+  [(set_attr "type" "arith")])
+
 ;; If the constant is 255, then emit an extu.b instruction instead of an
 ;; and, since that will give better code.
 
@@ -3251,6 +3259,14 @@ label:
 	or	%1, %2, %0
 	ori	%1, %2, %0"
   [(set_attr "type" "arith_media")])
+
+(define_insn "*iorsi3_bset"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(ior:SI (match_operand:SI 1 "arith_reg_operand" "%0")
+	(match_operand:SI 2 "const_int_operand" "Pso")))]
+  "TARGET_SH2A && satisfies_constraint_Pso (operands[2])"
+  "bset\\t%V2,%0"
+  [(set_attr "type" "arith")])
 
 (define_insn "iordi3"
   [(set (match_operand:DI 0 "arith_reg_dest" "=r,r")

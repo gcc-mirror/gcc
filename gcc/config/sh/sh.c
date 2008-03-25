@@ -681,6 +681,8 @@ print_operand_address (FILE *stream, rtx x)
    'd'  print a V2SF reg as dN instead of fpN.
    'm'  print a pair `base,offset' or `base,index', for LD and ST.
    'U'  Likewise for {LD,ST}{HI,LO}.
+   'V'  print the position of a single bit set.
+   'W'  print the position of a single bit cleared.
    'u'  prints the lowest 16 bits of CONST_INT, as an unsigned value.
    'o'  output an operator.  */
 
@@ -885,6 +887,22 @@ print_operand (FILE *stream, rtx x, int code)
 	default:
 	  gcc_unreachable ();
 	}
+      break;
+
+    case 'V':
+      {
+	int num = exact_log2 (INTVAL (x));
+	gcc_assert (num >= 0);
+	fprintf (stream, "#%d", num);
+      }
+      break;
+
+    case 'W':
+      {
+	int num = exact_log2 (~INTVAL (x));
+	gcc_assert (num >= 0);
+	fprintf (stream, "#%d", num);
+      }
       break;
 
     case 'd':
