@@ -1,3 +1,17 @@
+2008-03-25  Tom Tromey  <tromey@redhat.com>
+
+	* Make-lang.in: Removed most explicit .o targets.
+	(java/jvspec.o): Reduce to variable setting.  Moved to java/.
+	($(GCJ)$(exeext)): Update.
+	(JAVA_OBJS): New variable.
+	(JCFDUMP_OBJS): Reformat.
+	(java_OBJS): New variable.
+	(java/jvspec.o-warn): Update.
+	(java/parse.o-warn): Remove.
+	(JAVA_TREE_H): Remove.
+	(java/jcf-io.o): Reduce to variable setting.
+	(ALL_CPPFLAGS): Likewise.
+
 2008-03-12  Paolo Bonzini  <bonzini@gnu.org>
 
 	* mangle.c (java_mangle_decl): Remove dead check.

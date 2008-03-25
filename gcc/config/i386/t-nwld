@@ -20,8 +20,8 @@ $(T)posixpre.def: $(srcdir)/config/i386/t-nwld
 	echo "exit POSIX_Stop" >>$@
 	echo "check POSIX_CheckUnload" >>$@
 
-nwld.o: $(srcdir)/config/i386/nwld.c $(RTL_H) $(TREE_H) $(CONFIG_H) $(TM_P_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/i386/nwld.c
+nwld.o: $(srcdir)/config/i386/nwld.c
+	$(COMPILE) $<
 
 
 s-crt0: $(srcdir)/unwind-dw2-fde.h

@@ -1,3 +1,12 @@
+2008-03-25  Tom Tromey  <tromey@redhat.com>
+
+	* Make-lang.in: Remove .o targets.
+	(fortran_OBJS): New variable.
+	(fortran/gfortranspec.o): Move to fortran/.  Reduce to variable
+	setting.
+	(GFORTRAN_D_OBJS): Update.
+	(GFORTRAN_TRANS_DEPS): Remove.
+
 2008-03-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34813

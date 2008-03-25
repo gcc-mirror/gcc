@@ -1,3 +1,11 @@
+2008-03-25  Tom Tromey  <tromey@redhat.com>
+
+	* Make-lang.in: Remove .o targets.
+	(cp/g++spec.o): Moved to cp/.  Reduce to variable setting.
+	(GXX_OBJS): Update.
+	(c++_OBJS): New variable.
+	(CXX_TREE_H, CXX_PRETTY_PRINT_H): Remove.
+
 2008-03-25  Douglas Gregor  <doug.gregor@gmail.com>
 
        * typeck.c (composite_pointer_type_r): Add SFINAE support.

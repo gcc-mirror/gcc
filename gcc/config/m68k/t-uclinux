@@ -14,3 +14,5 @@ sysroot-suffix.h: $(srcdir)/config/m68k/print-sysroot-suffix.sh
 	$(SHELL) $(srcdir)/config/m68k/print-sysroot-suffix.sh \
 	  "$(SYSTEM_HEADER_DIR)/../.." "$(MULTILIB_MATCHES)" \
 	  "$(MULTILIB_OPTIONS)" > $@
+
+generated_files += sysroot-suffix.h
