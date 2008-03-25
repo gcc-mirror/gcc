@@ -134,6 +134,7 @@ extern int initial_elimination_offset (int, int);
 extern int fldi_ok (void);
 extern int sh_hard_regno_rename_ok (unsigned int, unsigned int);
 extern int sh_cfun_interrupt_handler_p (void);
+extern int sh_cfun_resbank_handler_p (void);
 extern int sh_attr_renesas_p (const_tree);
 extern int sh_cfun_attr_renesas_p (void);
 extern void sh_initialize_trampoline (rtx, rtx, rtx);
@@ -170,6 +171,8 @@ struct secondary_reload_info;
 extern enum reg_class sh_secondary_reload (bool, rtx, enum reg_class,
 					   enum machine_mode,
 					   struct secondary_reload_info *);
+extern int sh2a_get_function_vector_number (rtx);
+extern int sh2a_is_function_vector_call (rtx);
 
 #endif /* ! GCC_SH_PROTOS_H */
 

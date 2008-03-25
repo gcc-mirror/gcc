@@ -1,3 +1,34 @@
+2008-03-25  Anil Paranjape  <anil.paranjape@kpitcummins.com>
+	    Jayant Sonar  <Jayant.sonar@kpitcummins.com>
+	    Naveen.H.S  <naveen.hs@kpitcummins.com>
+
+	* config/sh/sh.c (SH_ATTRIBUTES): Define.
+	(SYMBOL_FLAG_FUNCVEC_FUNCTION): Define.
+	(print_operand): Handle resbank in %@ operand code.
+	(sh_encode_section_info): New.
+	(push_regs): Add conditions for resbank.
+	(sh_expand_epilogue): Likewise.
+	(sh_insert_attributes): Likewise.
+	(sh_attribute_table): Likewise.
+	(sh_handle_resbank_handler_attribute): New.
+	(sh2a_handle_function_vector_handler_attribute): New.
+	(sh2a_is_function_vector_call): New.
+	(sh2a_get_function_vector_number): New.
+	(sh2a_function_vector_p): New.
+	(sh_cfun_resbank_handler_p): New.
+	* config/sh/sh.md (calli): Emit jsr/n if possible.
+	(calli_tbr_rel): New.
+	(calli_pcrel): Emit jsr/n if possible.
+	(return_i): Emit rts/n if possible.
+	(call_valuei_tbr_rel): New.
+	(call_valuei_pcrel): Add condition for SH2A target.
+	(call_value): Likewise.
+	* config/sh/sh-protos.h (sh_cfun_resbank_handler_p): Declare.
+	(sh2a_get_function_vector_number): Likewise.
+	(sh2a_is_function_vector_call): Likewise.
+	* doc/extend.texi: Document TBR relative addressing of SH2A.
+	(resbank): Add description for SH2A.
+
 2008-03-24  Richard Guenther  <rguenther@suse.de>
 
 	PR c/22371

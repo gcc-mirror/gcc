@@ -2299,15 +2299,32 @@ is used.  @xref{C Dialect Options,,Options
 Controlling C Dialect}.
 
 @item function_vector
-@cindex calling functions through the function vector on H8/300, M16C, and M32C processors
+@cindex calling functions through the function vector on H8/300, M16C, M32C and SH2A processors
 Use this attribute on the H8/300, H8/300H, and H8S to indicate that the specified
 function should be called through the function vector.  Calling a
 function through the function vector will reduce code size, however;
 the function vector has a limited size (maximum 128 entries on the H8/300
 and 64 entries on the H8/300H and H8S) and shares space with the interrupt vector.
 
+In SH2A target, this attribute declares a function to be called using the
+TBR relative addressing mode.  The argument to this attribute is the entry
+number of the same function in a vector table containing all the TBR
+relative addressable functions.  For the successful jump, register TBR
+should contain the start address of this TBR relative vector table.
+In the startup routine of the user application, user needs to care of this
+TBR register initialization.  The TBR relative vector table can have at
+max 256 function entries.  The jumps to these functions will be generated
+using a SH2A specific, non delayed branch instruction JSR/N @@(disp8,TBR).
 You must use GAS and GLD from GNU binutils version 2.7 or later for
 this attribute to work correctly.
+
+Please refer the example of M16C target, to see the use of this
+attribute while declaring a function,
+
+In an application, for a function being called once, this attribute will
+save at least 8 bytes of code; and if other successive calls are being
+made to the same function, it will save 2 bytes of code per each of these
+calls.
 
 On M16C/M32C targets, the @code{function_vector} attribute declares a
 special page subroutine call function. Use of this attribute reduces
@@ -2721,6 +2738,19 @@ number of registers available if used in conjunction with the
 @code{regparm} attribute.  The @code{force_align_arg_pointer}
 attribute is incompatible with nested functions; this is considered a
 hard error.
+
+@item resbank
+@cindex @code{resbank} attribute
+On the SH2A target, this attribute enables the high-speed register
+saving and restoration using a register bank for @code{interrupt_handler}
+routines.  Saving to the bank is performed automatcially after the CPU
+accepts an interrupt that uses a register bank.
+
+The nineteen 32-bit registers comprising general register R0 to R14,
+control register GBR, and system registers MACH, MACL, and PR and the
+vector table address offset are saved into a register bank.  Register
+banks are stacked in first-in last-out (FILO) sequence.  Restoration
+from the bank is executed by issuing a RESBANK instruction.
 
 @item returns_twice
 @cindex @code{returns_twice} attribute

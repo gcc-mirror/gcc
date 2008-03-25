@@ -7443,12 +7443,44 @@ label:
    (use (reg:PSI FPSCR_REG))
    (clobber (reg:SI PR_REG))]
   "TARGET_SH1"
-  "jsr	@%0%#"
+  "*
+   {
+     if (TARGET_SH2A && (dbr_sequence_length () == 0))
+	return \"jsr/n\\t@%0\";
+     else
+	return \"jsr\\t@%0%#\";
+   }"
+
   [(set_attr "type" "call")
    (set (attr "fp_mode")
 	(if_then_else (eq_attr "fpu_single" "yes")
 		      (const_string "single") (const_string "double")))
    (set_attr "needs_delay_slot" "yes")
+   (set_attr "fp_set" "unknown")])
+
+;; This is TBR relative jump instruction for SH2A architecture.
+;; Its use is enabled assigning an attribute "function_vector"
+;; and the vector number to a function during its declaration.
+
+(define_insn "calli_tbr_rel"
+  [(call (mem (match_operand:SI 0 "symbol_ref_operand" ""))
+	 (match_operand 1 "" ""))
+   (use (reg:PSI FPSCR_REG))
+   (clobber (reg:SI PR_REG))]
+  "TARGET_SH2A && sh2a_is_function_vector_call (operands[0])"
+  "*
+{
+  unsigned HOST_WIDE_INT vect_num;
+  vect_num = sh2a_get_function_vector_number (operands[0]);
+  operands[2] = GEN_INT (vect_num * 4);
+
+  return \"jsr/n\\t@@(%O2,tbr)\";
+}"
+  [(set_attr "type" "call")
+   (set (attr "fp_mode")
+	(if_then_else (eq_attr "fpu_single" "yes")
+		      (const_string "single") (const_string "double")))
+   (set_attr "needs_delay_slot" "no")
    (set_attr "fp_set" "unknown")])
 
 ;; This is a pc-rel call, using bsrf, for use with PIC.
@@ -7546,12 +7578,44 @@ label:
    (use (reg:PSI FPSCR_REG))
    (clobber (reg:SI PR_REG))]
   "TARGET_SH1"
-  "jsr	@%1%#"
+  "*
+   {
+     if (TARGET_SH2A && (dbr_sequence_length () == 0))
+	return \"jsr/n\\t@%1\";
+     else
+	return \"jsr\\t@%1%#\";
+   }"
   [(set_attr "type" "call")
    (set (attr "fp_mode")
 	(if_then_else (eq_attr "fpu_single" "yes")
 		      (const_string "single") (const_string "double")))
    (set_attr "needs_delay_slot" "yes")
+   (set_attr "fp_set" "unknown")])
+
+;; This is TBR relative jump instruction for SH2A architecture.
+;; Its use is enabled assigning an attribute "function_vector"
+;; and the vector number to a function during its declaration.
+
+(define_insn "call_valuei_tbr_rel"
+  [(set (match_operand 0 "" "=rf")
+	(call (mem:SI (match_operand:SI 1 "symbol_ref_operand" ""))
+	      (match_operand 2 "" "")))
+   (use (reg:PSI FPSCR_REG))
+   (clobber (reg:SI PR_REG))]
+  "TARGET_SH2A && sh2a_is_function_vector_call (operands[1])"
+  "*
+{
+  unsigned HOST_WIDE_INT vect_num;
+  vect_num = sh2a_get_function_vector_number (operands[1]);
+  operands[3] = GEN_INT (vect_num * 4);
+
+  return \"jsr/n\\t@@(%O3,tbr)\";
+}"
+  [(set_attr "type" "call")
+   (set (attr "fp_mode")
+	(if_then_else (eq_attr "fpu_single" "yes")
+		      (const_string "single") (const_string "double")))
+   (set_attr "needs_delay_slot" "no")
    (set_attr "fp_set" "unknown")])
 
 (define_insn "call_valuei_pcrel"
@@ -7714,6 +7778,17 @@ label:
 
       emit_insn (gen_symGOTPLT2reg (reg, XEXP (operands[0], 0)));
       XEXP (operands[0], 0) = reg;
+    }
+  if (!flag_pic && TARGET_SH2A
+      && GET_CODE (operands[0]) == MEM
+      && GET_CODE (XEXP (operands[0], 0)) == SYMBOL_REF)
+    {
+      if (sh2a_is_function_vector_call (XEXP (operands[0], 0)))
+	{
+	  emit_call_insn (gen_calli_tbr_rel (XEXP (operands[0], 0),
+					     operands[1]));
+	  DONE;
+	}
     }
   if (flag_pic && TARGET_SH2
       && GET_CODE (operands[0]) == MEM
@@ -7897,6 +7972,17 @@ label:
 
       emit_insn (gen_symGOTPLT2reg (reg, XEXP (operands[1], 0)));
       XEXP (operands[1], 0) = reg;
+    }
+  if (!flag_pic && TARGET_SH2A
+      && GET_CODE (operands[1]) == MEM
+      && GET_CODE (XEXP (operands[1], 0)) == SYMBOL_REF)
+    {
+      if (sh2a_is_function_vector_call (XEXP (operands[1], 0)))
+	{
+	  emit_call_insn (gen_call_valuei_tbr_rel (operands[0],
+				 XEXP (operands[1], 0), operands[2]));
+	  DONE;
+	}
     }
   if (flag_pic && TARGET_SH2
       && GET_CODE (operands[1]) == MEM
@@ -9262,7 +9348,14 @@ mov.l\\t1f,r0\\n\\
    && reload_completed
    && lookup_attribute (\"trap_exit\",
 			DECL_ATTRIBUTES (current_function_decl)) == NULL_TREE"
-  "%@	%#"
+  "*
+  {
+    if (TARGET_SH2A && (dbr_sequence_length () == 0)
+			&& !current_function_interrupt)
+       return \"rts/n\";
+    else
+       return \"%@	%#\";
+  }"
   [(set_attr "type" "return")
    (set_attr "needs_delay_slot" "yes")])
 
