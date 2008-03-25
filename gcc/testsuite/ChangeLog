@@ -1,3 +1,13 @@
+2008-03-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse-17.c: Include sse2-check.h.
+	(main): Change to void and rename to sse2_test.
+	* gcc.dg/vect/costmodel/i386/i386-costmodel-vect.exp: Set
+	dg-do-what-default to "compile" if SSE2 hardware is not available.
+	* gcc.dg/vect/costmodel/i386/x86_64-costmodel-vect.exp: Ditto.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-reduc-1char.c: Remove
+	xfail vect_no_int_max from "vectorization not profitable" check.
+
 2008-03-24  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/26222
