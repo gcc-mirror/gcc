@@ -1,3 +1,8 @@
+2008-03-25  Naveen.H.S  <naveen.hs@kpitcummins.com>
+
+	* config/sh/sh.md (prefetch): Add condition for SH2A target.
+	(prefetch_sh2a): New.	
+
 2008-03-25  Jayant Sonar  <Jayant.sonar@kpitcummins.com>
 	    Naveen.H.S  <naveen.hs@kpitcummins.com>
 
