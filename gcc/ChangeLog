@@ -1,3 +1,42 @@
+2008-03-25  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR rtl-optimization/35232
+	* reload1.c (reg_reloaded_call_part_clobbered): Clarify comment.
+	(forget_old_reloads_1, forget_marked_reloads): Don't clear
+	reg_reloaded_call_part_clobbered here.
+	(reload_regs_reach_end_p): New function.
+	(reload_reg_rtx_for_input): New variable.
+	(reload_reg_rtx_for_output): Likewise.
+	(emit_input_reload_insns): Use reloadreg rather than rl->reg_rtx
+	when reassigning a pseudo register.  Load reloadreg from 
+	reload_reg_rtx_for_input, moving the mode and register
+	calculation to...
+	(do_input_reload): ...here.  Use the mode-adjusted reg_rtx
+	instead of the original when deciding whether an input reload
+	would be a no-op or whether an output reload can be deleted.
+	(emit_output_reload_insns): Use the mode-adjusted reg_rtx
+	when setting up new_spill_reg_store.  Load it from
+	reload_reg_rtx_for_output, moving the mode and register
+	calculation to...
+	(do_output_reload): ...here.  Use the mode-adjusted reg_rtx
+	instead of the original when deciding whether an output reload
+	would be a no-op.  Do the same when modifying insn notes.
+	Use rtx_equal_p instead of == to compare the registers.
+	(inherit_piecemeal_p): Take a mode and two register numbers
+	as argument.
+	(emit_reload_insns): Clear new_spill_reg_store for every hard
+	register in the reload register.  Remove spill registers
+	from reg_reloaded_valid before considering whether to record
+	inheritance information for them.  Use reload_reg_rtx_for_output
+	instead of reg_rtx when recording output reloads.  Use
+	reload_reg_rtx_for_input instead of reg_rtx when recording
+	input reloads.  Set or clear reg_reloaded_call_part_clobbered
+	at the same time as setting reg_reloaded_valid.
+	(delete_output_reload): Add a new_reload_reg parameter and use it
+	instead of rld[j].reg_rtx.
+	(emit_input_reload_insns, do_input_reload, do_output_reload): Adjust
+	calls accordingly.
+
 2008-03-25  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in (build/gensupport.o): Depend on insn-modes.h.
