@@ -5027,7 +5027,7 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
 		  saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
 		  current_stmt_tree ()->stmts_are_full_exprs_p = 1;
 		}
-	      init = build_aggr_init (decl, init, flags);
+	      init = build_aggr_init (decl, init, flags, tf_warning_or_error);
 	      if (building_stmt_tree ())
 		current_stmt_tree ()->stmts_are_full_exprs_p =
 		  saved_stmts_are_full_exprs_p;
@@ -5978,7 +5978,7 @@ register_dtor_fn (tree decl)
 	  addr = build_address (decl);
 	  /* The declared type of the parameter to "__cxa_atexit" is
 	     "void *".  For plain "T*", we could just let the
-	     machinery in build_function_call convert it -- but if the
+	     machinery in cp_build_function_call convert it -- but if the
 	     type is "cv-qualified T *", then we need to convert it
 	     before passing it in, to avoid spurious errors.  */
 	  addr = build_nop (ptr_type_node, addr);
@@ -5990,7 +5990,8 @@ register_dtor_fn (tree decl)
 	   other value.  */
 	addr = null_pointer_node;
       args = tree_cons (NULL_TREE,
-			build_unary_op (ADDR_EXPR, get_dso_handle_node (), 0),
+			cp_build_unary_op (ADDR_EXPR, get_dso_handle_node (), 0,
+                                        tf_warning_or_error),
 			NULL_TREE);
       if (targetm.cxx.use_aeabi_atexit ())
 	{
@@ -6005,7 +6006,8 @@ register_dtor_fn (tree decl)
     }
   else
     args = tree_cons (NULL_TREE, cleanup, NULL_TREE);
-  return build_function_call (get_atexit_node (), args);
+  return cp_build_function_call (get_atexit_node (), args, 
+				 tf_warning_or_error);
 }
 
 /* DECL is a VAR_DECL with static storage duration.  INIT, if present,
@@ -7082,7 +7084,8 @@ compute_array_index_type (tree name, tree size)
       processing_template_decl = 0;
       itype = cp_build_binary_op (MINUS_EXPR,
 				  cp_convert (ssizetype, size),
-				  cp_convert (ssizetype, integer_one_node));
+				  cp_convert (ssizetype, integer_one_node),
+				  tf_warning_or_error);
       itype = fold (itype);
       processing_template_decl = saved_processing_template_decl;
 
@@ -10820,7 +10823,8 @@ finish_enum (tree enumtype)
       saved_location = input_location;
       input_location = DECL_SOURCE_LOCATION (decl);
       value = perform_implicit_conversion (underlying_type,
-					   DECL_INITIAL (decl));
+					   DECL_INITIAL (decl),
+					   tf_warning_or_error);
       input_location = saved_location;
 
       /* Do not clobber shared ints.  */
@@ -11282,7 +11286,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
       gcc_assert (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE);
 
       cp_function_chain->x_current_class_ref
-	= build_indirect_ref (t, NULL);
+	= cp_build_indirect_ref (t, NULL, tf_warning_or_error);
       cp_function_chain->x_current_class_ptr = t;
 
       /* Constructors and destructors need to know whether they're "in
@@ -12199,8 +12203,9 @@ cxx_maybe_build_cleanup (tree decl)
       fn = lookup_name (id);
       arg = build_address (decl);
       mark_used (decl);
-      cleanup = build_function_call (fn, build_tree_list (NULL_TREE,
-							  arg));
+      cleanup = cp_build_function_call (fn, build_tree_list (NULL_TREE,
+							     arg),
+					tf_warning_or_error);
     }
   /* Handle ordinary C++ destructors.  */
   type = TREE_TYPE (decl);
@@ -12224,7 +12229,7 @@ cxx_maybe_build_cleanup (tree decl)
       call = build_delete (TREE_TYPE (addr), addr,
 			   sfk_complete_destructor, flags, 0);
       if (cleanup)
-	cleanup = build_compound_expr (cleanup, call);
+	cleanup = build_compound_expr (cleanup, call, tf_warning_or_error);
       else
 	cleanup = call;
     }

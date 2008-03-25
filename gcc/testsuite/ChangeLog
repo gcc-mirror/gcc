@@ -1,3 +1,18 @@
+2008-03-25  Douglas Gregor  <doug.gregor@gmail.com>
+
+       * g++.dg/template/sfinae4.C: New.
+       * g++.dg/template/sfinae5.C: New.
+       * g++.dg/template/sfinae6.C: New.
+       * g++.dg/template/sfinae6_neg.C: New.
+       * g++.dg/template/sfinae7.C: New.
+       * g++.dg/template/sfinae8.C: New.
+       * g++.dg/template/sfinae9.C: New.
+       * g++.dg/template/sfinae10.C: New.
+       * g++.dg/template/sfinae11.C: New.
+       * g++.dg/template/sfinae12.C: New.
+       * g++.dg/template/sfinae13.C: New.
+       * g++.dg/template/sfinae14C: New.
+
 2008-03-25  Naveen.H.S  <naveen.hs@kpitcummins.com>
 
 	* gcc.target/sh/sh2a-bclr.c: New test.

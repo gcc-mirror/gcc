@@ -1,3 +1,8 @@
+2008-03-25  Douglas Gregor  <doug.gregor@gmail.com>
+
+       * c-common.c (c_sizeof_or_alignof_type): If we're not allowed to
+       complain when we hit an error, return ERROR_MARK_NODE.
+
 2008-03-25  Naveen.H.S  <naveen.hs@kpitcummins.com>
 
 	* config/sh/constraints.md (Pso, Psz): New constraints.

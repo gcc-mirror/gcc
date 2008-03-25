@@ -311,7 +311,7 @@ grok_array_decl (tree array_expr, tree index_exp)
   if (MAYBE_CLASS_TYPE_P (type) || MAYBE_CLASS_TYPE_P (TREE_TYPE (index_exp)))
     expr = build_new_op (ARRAY_REF, LOOKUP_NORMAL,
 			 array_expr, index_exp, NULL_TREE,
-			 /*overloaded_p=*/NULL);
+			 /*overloaded_p=*/NULL, tf_warning_or_error);
   else
     {
       tree p1, p2, i1, i2;
@@ -1190,7 +1190,7 @@ build_anon_union_vars (tree type, tree object)
 			    DECL_NAME (field), NULL_TREE);
       else
 	ref = build_class_member_access_expr (object, field, NULL_TREE,
-					      false);
+					      false, tf_warning_or_error);
 
       if (DECL_NAME (field))
 	{
@@ -2436,13 +2436,15 @@ get_guard_cond (tree guard)
       guard_value = integer_one_node;
       if (!same_type_p (TREE_TYPE (guard_value), TREE_TYPE (guard)))
 	guard_value = convert (TREE_TYPE (guard), guard_value);
-	guard = cp_build_binary_op (BIT_AND_EXPR, guard, guard_value);
+      guard = cp_build_binary_op (BIT_AND_EXPR, guard, guard_value,
+				  tf_warning_or_error);
     }
 
   guard_value = integer_zero_node;
   if (!same_type_p (TREE_TYPE (guard_value), TREE_TYPE (guard)))
     guard_value = convert (TREE_TYPE (guard), guard_value);
-  return cp_build_binary_op (EQ_EXPR, guard, guard_value);
+  return cp_build_binary_op (EQ_EXPR, guard, guard_value,
+			     tf_warning_or_error);
 }
 
 /* Return an expression which sets the GUARD variable, indicating that
@@ -2458,7 +2460,8 @@ set_guard (tree guard)
   guard_init = integer_one_node;
   if (!same_type_p (TREE_TYPE (guard_init), TREE_TYPE (guard)))
     guard_init = convert (TREE_TYPE (guard), guard_init);
-  return build_modify_expr (guard, NOP_EXPR, guard_init);
+  return cp_build_modify_expr (guard, NOP_EXPR, guard_init, 
+			       tf_warning_or_error);
 }
 
 /* Start the process of running a particular set of global constructors
@@ -2787,17 +2790,21 @@ one_static_initialization_or_destruction (tree decl, tree init, bool initp)
       else if (initp)
 	guard_cond
 	  = cp_build_binary_op (EQ_EXPR,
-				build_unary_op (PREINCREMENT_EXPR,
+				cp_build_unary_op (PREINCREMENT_EXPR,
 						guard,
-						/*noconvert=*/1),
-				integer_one_node);
+						/*noconvert=*/1,
+                                                tf_warning_or_error),
+				integer_one_node,
+				tf_warning_or_error);
       else
 	guard_cond
 	  = cp_build_binary_op (EQ_EXPR,
-				build_unary_op (PREDECREMENT_EXPR,
+				cp_build_unary_op (PREDECREMENT_EXPR,
 						guard,
-						/*noconvert=*/1),
-				integer_zero_node);
+						/*noconvert=*/1,
+                                                tf_warning_or_error),
+				integer_zero_node,
+				tf_warning_or_error);
 
       guard_if_stmt = begin_if_stmt ();
       finish_if_stmt_cond (guard_cond, guard_if_stmt);
@@ -2849,8 +2856,9 @@ do_static_initialization_or_destruction (tree vars, bool initp)
   init_if_stmt = begin_if_stmt ();
   cond = initp ? integer_one_node : integer_zero_node;
   cond = cp_build_binary_op (EQ_EXPR,
-				  initialize_p_decl,
-				  cond);
+			     initialize_p_decl,
+			     cond,
+			     tf_warning_or_error);
   finish_if_stmt_cond (cond, init_if_stmt);
 
   node = vars;
@@ -2882,7 +2890,8 @@ do_static_initialization_or_destruction (tree vars, bool initp)
     priority_if_stmt = begin_if_stmt ();
     cond = cp_build_binary_op (EQ_EXPR,
 			       priority_decl,
-			       build_int_cst (NULL_TREE, priority));
+			       build_int_cst (NULL_TREE, priority),
+			       tf_warning_or_error);
     finish_if_stmt_cond (cond, priority_if_stmt);
 
     /* Process initializers with same priority.  */
@@ -3031,7 +3040,8 @@ generate_ctor_or_dtor_function (bool constructor_p, int priority,
 	  arguments = tree_cons (NULL_TREE,
 				 build_int_cst (NULL_TREE, constructor_p),
 				 arguments);
-	  finish_expr_stmt (build_function_call (fndecl, arguments));
+	  finish_expr_stmt (cp_build_function_call (fndecl, arguments,
+						    tf_warning_or_error));
 	}
     }
 
@@ -3534,7 +3544,7 @@ build_offset_ref_call_from_tree (tree fn, tree args)
       args = build_non_dependent_args (args);
       object = build_non_dependent_expr (object);
       if (TREE_CODE (fn) == DOTSTAR_EXPR)
-	object = build_unary_op (ADDR_EXPR, object, 0);
+	object = cp_build_unary_op (ADDR_EXPR, object, 0, tf_warning_or_error);
       args = tree_cons (NULL_TREE, object, args);
       /* Now that the arguments are done, transform FN.  */
       fn = build_non_dependent_expr (fn);
@@ -3548,13 +3558,14 @@ build_offset_ref_call_from_tree (tree fn, tree args)
 	void B::g() { (this->*p)(); }  */
   if (TREE_CODE (fn) == OFFSET_REF)
     {
-      tree object_addr = build_unary_op (ADDR_EXPR, object, 0);
+      tree object_addr = cp_build_unary_op (ADDR_EXPR, object, 0,
+                                         tf_warning_or_error);
       fn = TREE_OPERAND (fn, 1);
       fn = get_member_function_from_ptrfunc (&object_addr, fn);
       args = tree_cons (NULL_TREE, object_addr, args);
     }
 
-  expr = build_function_call (fn, args);
+  expr = cp_build_function_call (fn, args, tf_warning_or_error);
   if (processing_template_decl && expr != error_mark_node)
     return build_min_non_dep_call_list (expr, orig_fn, orig_args);
   return expr;

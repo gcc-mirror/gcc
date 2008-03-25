@@ -4061,7 +4061,8 @@ extern cp_parameter_declarator *no_parameters;
 extern bool check_dtor_name			(tree, tree);
 
 extern tree build_vfield_ref			(tree, tree);
-extern tree build_conditional_expr		(tree, tree, tree);
+extern tree build_conditional_expr		(tree, tree, tree, 
+                                                 tsubst_flags_t);
 extern tree build_addr_func			(tree);
 extern tree build_call_a			(tree, int, tree*);
 extern tree build_call_n			(tree, int, ...);
@@ -4069,13 +4070,17 @@ extern bool null_ptr_cst_p			(tree);
 extern bool sufficient_parms_p			(const_tree);
 extern tree type_decays_to			(tree);
 extern tree build_user_type_conversion		(tree, tree, int);
-extern tree build_new_function_call		(tree, tree, bool);
+extern tree build_new_function_call		(tree, tree, bool, 
+						 tsubst_flags_t);
 extern tree build_operator_new_call		(tree, tree, tree *, tree *,
 						 tree *);
 extern tree build_new_method_call		(tree, tree, tree, tree, int,
-						 tree *);
-extern tree build_special_member_call		(tree, tree, tree, tree, int);
-extern tree build_new_op			(enum tree_code, int, tree, tree, tree, bool *);
+						 tree *, tsubst_flags_t);
+extern tree build_special_member_call		(tree, tree, tree, tree, int,
+                                                 tsubst_flags_t);
+extern tree build_new_op			(enum tree_code, int, tree, 
+						 tree, tree, bool *,
+						 tsubst_flags_t);
 extern tree build_op_delete_call		(enum tree_code, tree, tree, bool, tree, tree);
 extern bool can_convert				(tree, tree);
 extern bool can_convert_arg			(tree, tree, tree, int);
@@ -4091,8 +4096,9 @@ extern bool is_properly_derived_from		(tree, tree);
 extern tree initialize_reference		(tree, tree, tree, tree *);
 extern tree make_temporary_var_for_ref_to_temp	(tree, tree);
 extern tree strip_top_quals			(tree);
-extern tree perform_implicit_conversion		(tree, tree);
-extern tree perform_direct_initialization_if_possible (tree, tree, bool);
+extern tree perform_implicit_conversion		(tree, tree, tsubst_flags_t);
+extern tree perform_direct_initialization_if_possible (tree, tree, bool,
+                                                       tsubst_flags_t);
 extern tree in_charge_arg_for_name		(tree);
 extern tree build_cxx_call			(tree, int, tree *);
 #ifdef ENABLE_CHECKING
@@ -4159,7 +4165,8 @@ extern tree force_rvalue			(tree);
 extern tree ocp_convert				(tree, tree, int, int);
 extern tree cp_convert				(tree, tree);
 extern tree cp_convert_and_check                (tree, tree);
-extern tree convert_to_void	(tree, const char */*implicit context*/);
+extern tree convert_to_void	(tree, const char */*implicit context*/,
+                                 tsubst_flags_t);
 extern tree convert_force			(tree, tree, int);
 extern tree build_expr_type_conversion		(int, tree, bool);
 extern tree type_promotes_to			(tree);
@@ -4336,14 +4343,17 @@ extern tree do_friend				(tree, tree, tree, tree, enum overload_flags, bool);
 /* in init.c */
 extern tree expand_member_init			(tree);
 extern void emit_mem_initializers		(tree);
-extern tree build_aggr_init			(tree, tree, int);
+extern tree build_aggr_init			(tree, tree, int,
+                                                 tsubst_flags_t);
 extern int is_class_type			(tree, int);
 extern tree get_type_value			(tree);
 extern tree build_zero_init			(tree, tree, bool);
 extern tree build_value_init			(tree);
 extern tree build_offset_ref			(tree, tree, bool);
-extern tree build_new				(tree, tree, tree, tree, int);
-extern tree build_vec_init			(tree, tree, tree, bool, int);
+extern tree build_new				(tree, tree, tree, tree, int,
+                                                 tsubst_flags_t);
+extern tree build_vec_init			(tree, tree, tree, bool, int,
+                                                 tsubst_flags_t);
 extern tree build_default_init                  (tree, tree);
 extern tree build_delete			(tree, tree,
 						 special_function_kind,
@@ -4482,7 +4492,7 @@ extern tree build_typeid			(tree);
 extern tree get_tinfo_decl			(tree);
 extern tree get_typeid				(tree);
 extern tree build_headof			(tree);
-extern tree build_dynamic_cast			(tree, tree);
+extern tree build_dynamic_cast			(tree, tree, tsubst_flags_t);
 extern void emit_support_tinfos			(void);
 extern bool emit_tinfo_decl			(tree);
 
@@ -4613,7 +4623,8 @@ extern tree finish_stmt_expr_expr		(tree, tree);
 extern tree finish_stmt_expr			(tree, bool);
 extern tree stmt_expr_value_expr		(tree);
 extern tree perform_koenig_lookup		(tree, tree);
-extern tree finish_call_expr			(tree, tree, bool, bool);
+extern tree finish_call_expr			(tree, tree, bool, bool, 
+						 tsubst_flags_t);
 extern tree finish_increment_expr		(tree, enum tree_code);
 extern tree finish_this_expr			(void);
 extern tree finish_pseudo_destructor_expr       (tree, tree, tree);
@@ -4762,36 +4773,49 @@ extern bool comptypes				(tree, tree, int);
 extern bool compparms				(const_tree, const_tree);
 extern int comp_cv_qualification		(const_tree, const_tree);
 extern int comp_cv_qual_signature		(tree, tree);
-extern tree cxx_sizeof_or_alignof_expr		(tree, enum tree_code);
+extern tree cxx_sizeof_or_alignof_expr		(tree, enum tree_code, bool);
 extern tree cxx_sizeof_or_alignof_type		(tree, enum tree_code, bool);
-#define cxx_sizeof_nowarn(T) cxx_sizeof_or_alignof_type (T, SIZEOF_EXPR, false)
+extern tree cxx_sizeof_nowarn                   (tree);
 extern tree inline_conversion			(tree);
 extern tree is_bitfield_expr_with_lowered_type  (const_tree);
 extern tree unlowered_expr_type                 (const_tree);
 extern tree decay_conversion			(tree);
-extern tree build_class_member_access_expr      (tree, tree, tree, bool);
-extern tree finish_class_member_access_expr     (tree, tree, bool);
-extern tree build_x_indirect_ref		(tree, const char *);
-extern tree build_indirect_ref			(tree, const char *);
+extern tree build_class_member_access_expr      (tree, tree, tree, bool,
+						 tsubst_flags_t);
+extern tree finish_class_member_access_expr     (tree, tree, bool, 
+						 tsubst_flags_t);
+extern tree build_x_indirect_ref		(tree, const char *, 
+                                                 tsubst_flags_t);
+extern tree cp_build_indirect_ref		(tree, const char *,
+                                                 tsubst_flags_t);
 extern tree build_array_ref			(tree, tree);
 extern tree get_member_function_from_ptrfunc	(tree *, tree);
+extern tree cp_build_function_call              (tree, tree, tsubst_flags_t);
 extern tree build_x_binary_op			(enum tree_code, tree,
 						 enum tree_code, tree,
-						 enum tree_code, bool *);
-extern tree build_x_unary_op			(enum tree_code, tree);
+						 enum tree_code, bool *,
+						 tsubst_flags_t);
+extern tree build_x_unary_op			(enum tree_code, tree,
+                                                 tsubst_flags_t);
+extern tree cp_build_unary_op                   (enum tree_code, tree, int, 
+                                                 tsubst_flags_t);
 extern tree unary_complex_lvalue		(enum tree_code, tree);
-extern tree build_x_conditional_expr		(tree, tree, tree);
+extern tree build_x_conditional_expr		(tree, tree, tree, 
+                                                 tsubst_flags_t);
 extern tree build_x_compound_expr_from_list	(tree, const char *);
-extern tree build_x_compound_expr		(tree, tree);
-extern tree build_compound_expr			(tree, tree);
-extern tree build_static_cast			(tree, tree);
-extern tree build_reinterpret_cast		(tree, tree);
-extern tree build_const_cast			(tree, tree);
-extern tree build_c_cast			(tree, tree);
-extern tree build_x_modify_expr			(tree, enum tree_code, tree);
-extern tree build_modify_expr			(tree, enum tree_code, tree);
+extern tree build_x_compound_expr		(tree, tree, tsubst_flags_t);
+extern tree build_compound_expr			(tree, tree, tsubst_flags_t);
+extern tree build_static_cast			(tree, tree, tsubst_flags_t);
+extern tree build_reinterpret_cast		(tree, tree, tsubst_flags_t);
+extern tree build_const_cast			(tree, tree, tsubst_flags_t);
+extern tree build_c_cast			(tree, tree, tsubst_flags_t);
+extern tree build_x_modify_expr			(tree, enum tree_code, tree,
+						 tsubst_flags_t);
+extern tree cp_build_modify_expr		(tree, enum tree_code, tree,
+						 tsubst_flags_t);
 extern tree convert_for_initialization		(tree, tree, tree, int,
-						 const char *, tree, int);
+						 const char *, tree, int,
+                                                 tsubst_flags_t);
 extern int comp_ptr_ttypes			(tree, tree);
 extern bool comp_ptr_ttypes_const		(tree, tree);
 extern int ptr_reasonably_similar		(const_tree, const_tree);
@@ -4805,21 +4829,22 @@ extern tree build_ptrmemfunc1			(tree, tree, tree);
 extern void expand_ptrmemfunc_cst		(tree, tree *, tree *);
 extern tree type_after_usual_arithmetic_conversions (tree, tree);
 extern tree composite_pointer_type		(tree, tree, tree, tree,
-						 const char*);
+						 const char*, tsubst_flags_t);
 extern tree merge_types				(tree, tree);
 extern tree check_return_expr			(tree, bool *);
-#define cp_build_binary_op(code, arg1, arg2) \
-  build_binary_op(code, arg1, arg2, 1)
+extern tree cp_build_binary_op                  (enum tree_code, tree, tree,
+						 tsubst_flags_t);
 #define cxx_sizeof(T)  cxx_sizeof_or_alignof_type (T, SIZEOF_EXPR, true)
 extern tree build_ptrmemfunc_access_expr	(tree, tree);
 extern tree build_address			(tree);
 extern tree build_nop				(tree, tree);
 extern tree non_reference			(tree);
 extern tree lookup_anon_field			(tree, tree);
-extern bool invalid_nonstatic_memfn_p		(const_tree);
+extern bool invalid_nonstatic_memfn_p		(const_tree, tsubst_flags_t);
 extern tree convert_member_func_to_ptr		(tree, tree);
 extern tree convert_ptrmem			(tree, tree, bool, bool);
-extern int lvalue_or_else			(const_tree, enum lvalue_use);
+extern int lvalue_or_else			(const_tree, enum lvalue_use,
+                                                 tsubst_flags_t);
 extern int lvalue_p				(const_tree);
 
 /* in typeck2.c */
@@ -4840,7 +4865,7 @@ extern tree digest_init				(tree, tree);
 extern tree build_scoped_ref			(tree, tree, tree *);
 extern tree build_x_arrow			(tree);
 extern tree build_m_component_ref		(tree, tree);
-extern tree build_functional_cast		(tree, tree);
+extern tree build_functional_cast		(tree, tree, tsubst_flags_t);
 extern tree add_exception_specifier		(tree, tree, int);
 extern tree merge_exception_specifiers		(tree, tree);
 
