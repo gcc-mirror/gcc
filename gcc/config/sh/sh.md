@@ -13716,7 +13716,8 @@ mov.l\\t1f,r0\\n\\
   [(prefetch (match_operand 0 "address_operand" "p")
              (match_operand:SI 1 "const_int_operand" "n")
              (match_operand:SI 2 "const_int_operand" "n"))]
-  "(TARGET_HARD_SH4 || TARGET_SH5) && (TARGET_SHMEDIA || !TARGET_VXWORKS_RTP)"
+  "TARGET_SH2A || ((TARGET_HARD_SH4 || TARGET_SH5)
+   && (TARGET_SHMEDIA || !TARGET_VXWORKS_RTP))"
   "
 {
   if (GET_MODE (operands[0]) != Pmode
@@ -13726,6 +13727,14 @@ mov.l\\t1f,r0\\n\\
   if (! TARGET_SHMEDIA)
     operands[0] = force_reg (Pmode, operands[0]);
 }")
+
+(define_insn "prefetch_m2a"
+  [(prefetch (match_operand:SI 0 "register_operand" "r")
+	     (match_operand:SI 1 "const_int_operand" "n")
+	     (match_operand:SI 2 "const_int_operand" "n"))]
+  "TARGET_SH2A"
+  "pref\\t@%0"
+  [(set_attr "type" "other")])
 
 (define_insn "alloco_i"
   [(set (mem:BLK (match_operand:QI 0 "cache_address_operand" "p"))
