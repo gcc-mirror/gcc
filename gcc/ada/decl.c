@@ -5529,18 +5529,6 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   if (align == 0 && !size)
     return type;
 
-  /* If no size is specified and we have an integral type, and changing
-     the alignment won't change its size, return a copy of the type
-     with the specified alignment.  */
-  if (!size
-      && INTEGRAL_TYPE_P (type)
-      && value_factor_p (orig_size, align))
-    {
-      type = copy_type (type);
-      TYPE_ALIGN (type) = align;
-      return type;
-    }
-
   /* We used to modify the record in place in some cases, but that could
      generate incorrect debugging information.  So make a new record
      type and name.  */

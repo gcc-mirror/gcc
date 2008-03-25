@@ -1,3 +1,11 @@
+2008-03-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Revert
+	2008-03-05  Eric Botcazou  <ebotcazou@adacore.com>
+	PR ada/35186
+	* decl.c (maybe_pad_type): Avoid padding an integral type when
+	bumping its alignment is sufficient.
+
 2008-03-25  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_ch6.adb, exp_disp.adb: Update copyright notice.
