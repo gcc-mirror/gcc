@@ -2542,7 +2542,7 @@ xtensa_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
   if (arg_words >= MAX_ARGS_IN_REGISTERS)
     arg_words += 2;
   t = build2 (GIMPLE_MODIFY_STMT, integer_type_node, ndx,
-	      size_int (arg_words * UNITS_PER_WORD));
+	      build_int_cst (integer_type_node, arg_words * UNITS_PER_WORD));
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 }
@@ -2607,8 +2607,10 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
     {
       int align = MIN (TYPE_ALIGN (type), STACK_BOUNDARY) / BITS_PER_UNIT;
 
-      t = build2 (PLUS_EXPR, integer_type_node, orig_ndx, size_int (align - 1));
-      t = build2 (BIT_AND_EXPR, integer_type_node, t, size_int (-align));
+      t = build2 (PLUS_EXPR, integer_type_node, orig_ndx,
+		  build_int_cst (integer_type_node, align - 1));
+      t = build2 (BIT_AND_EXPR, integer_type_node, t,
+		  build_int_cst (integer_type_node, -align));
       t = build2 (GIMPLE_MODIFY_STMT, integer_type_node, orig_ndx, t);
       gimplify_and_add (t, pre_p);
     }
@@ -2639,7 +2641,8 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
       lab_over = create_artificial_label ();
 
       t = build2 (GT_EXPR, boolean_type_node, ndx,
-		  size_int (MAX_ARGS_IN_REGISTERS * UNITS_PER_WORD));
+		  build_int_cst (integer_type_node,
+				 MAX_ARGS_IN_REGISTERS * UNITS_PER_WORD));
       t = build3 (COND_EXPR, void_type_node, t,
 		  build1 (GOTO_EXPR, void_type_node, lab_false),
 		  NULL_TREE);
@@ -2669,7 +2672,8 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
   lab_false2 = create_artificial_label ();
 
   t = build2 (GT_EXPR, boolean_type_node, orig_ndx,
-	      size_int (MAX_ARGS_IN_REGISTERS * UNITS_PER_WORD));
+	      build_int_cst (integer_type_node,
+			     MAX_ARGS_IN_REGISTERS * UNITS_PER_WORD));
   t = build3 (COND_EXPR, void_type_node, t,
 	      build1 (GOTO_EXPR, void_type_node, lab_false2),
 	      NULL_TREE);
@@ -2714,7 +2718,8 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
   else
     size = va_size;
 
-  t = build2 (MINUS_EXPR, sizetype, ndx, size);
+  t = fold_convert (sizetype, ndx);
+  t = build2 (MINUS_EXPR, sizetype, t, size);
   addr = build2 (POINTER_PLUS_EXPR, ptr_type_node, array, t);
 
   addr = fold_convert (build_pointer_type (type), addr);
