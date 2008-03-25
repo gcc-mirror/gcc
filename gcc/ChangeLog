@@ -1,3 +1,15 @@
+2008-03-25  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in (build/gensupport.o): Depend on insn-modes.h.
+	(build/genattr.o): Likewise.
+	(build/genattrtab.o): Likewise.
+	(build/gencodes.o): Likewise.
+	(build/genconfig.o): Likewise.
+	(build/genconstants.o): Likewise.
+	(build/genemit.o): Likewise.
+	(build/genextract.o): Likewise.
+	(build/genflags.o): Likewise.
+
 2008-03-25  Bob Wilson  <bob.wilson@acm.org>
 	
 	* config/xtensa/xtensa.c (xtensa_va_start): Use build_int_cst

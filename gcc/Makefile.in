@@ -1971,7 +1971,7 @@ build/%.o : %.c bconfig.h
 	$(BUILDCOMPILE) $<
 
 # Dependencies on generated headers for various build/ objects.
-build/gensupport.o: $(GTM_H)
+build/gensupport.o: $(GTM_H) insn-modes.h
 build/ggc-none.o: gtype-desc.h
 build/min-insn-modes.o: insn-modes.h
 build/print-rtl.o: $(GTM_H) insn-modes.h
@@ -1980,17 +1980,17 @@ build/rtl.o: $(GTM_H) insn-modes.h gtype-desc.h
 build/vec.o: gtype-desc.h
 build/gencondmd.o: gencondmd.c $(GTM_H) insn-constants.h $(TM_P_H) \
 	tm-constrs.h options.h gtype-desc.h genrtl.h tree-check.h
-build/genattr.o: $(GTM_H)
-build/genattrtab.o: $(GTM_H) gtype-desc.h
+build/genattr.o: $(GTM_H) insn-modes.h
+build/genattrtab.o: $(GTM_H) gtype-desc.h insn-modes.h
 build/genautomata.o: insn-modes.h $(GTM_H)
 build/gencheck.o: $(GTM_H) gencheck.h
-build/gencodes.o: $(GTM_H)
+build/gencodes.o: $(GTM_H) insn-modes.h
 build/genconditions.o: insn-modes.h
-build/genconfig.o: $(GTM_H)
-build/genconstants.o: $(GTM_H)
-build/genemit.o: $(GTM_H)
-build/genextract.o: $(GTM_H)
-build/genflags.o: $(GTM_H)
+build/genconfig.o: $(GTM_H) insn-modes.h
+build/genconstants.o: $(GTM_H) insn-modes.h
+build/genemit.o: $(GTM_H) insn-modes.h
+build/genextract.o: $(GTM_H) insn-modes.h
+build/genflags.o: $(GTM_H) insn-modes.h
 build/genmddeps.o: $(GTM_H) insn-modes.h
 build/genopinit.o: insn-modes.h $(GTM_H)
 build/genoutput.o: insn-modes.h $(GTM_H)
