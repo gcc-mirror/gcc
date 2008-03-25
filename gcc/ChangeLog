@@ -1,3 +1,15 @@
+2008-03-25  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2008-03-19  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/35609
+	* tree-ssa.c (walk_data): New structure.
+	(warn_uninitialized_var): If not always_executed warn with "maybe"
+	instead of "is".
+	(execute_early_warn_uninitialized): Compute post-dominators.
+	Initialize always_executed before processing each basic block.
+
 2008-03-20  Ira Rosen  <irar@il.ibm.com>
 
 	* doc/invoke.texi (-O3): Add -ftree-vectorize to the list of

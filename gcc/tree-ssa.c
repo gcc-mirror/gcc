@@ -1294,13 +1294,19 @@ warn_uninit (tree t, const char *gmsgid, void *data)
 
   TREE_NO_WARNING (var) = 1;
 }
-   
+
+struct walk_data {
+  tree stmt;
+  bool always_executed;
+};
+
 /* Called via walk_tree, look for SSA_NAMEs that have empty definitions
    and warn about them.  */
 
 static tree
-warn_uninitialized_var (tree *tp, int *walk_subtrees, void *data)
+warn_uninitialized_var (tree *tp, int *walk_subtrees, void *data_)
 {
+  struct walk_data *data = (struct walk_data *)data_;
   tree t = *tp;
 
   switch (TREE_CODE (t))
@@ -1308,7 +1314,12 @@ warn_uninitialized_var (tree *tp, int *walk_subtrees, void *data)
     case SSA_NAME:
       /* We only do data flow with SSA_NAMEs, so that's all we
 	 can warn about.  */
-      warn_uninit (t, "%H%qD is used uninitialized in this function", data);
+      if (data->always_executed)
+        warn_uninit (t, "%H%qD is used uninitialized in this function",
+		     data->stmt);
+      else
+        warn_uninit (t, "%H%qD may be used uninitialized in this function",
+		     data->stmt);
       *walk_subtrees = 0;
       break;
 
@@ -1356,14 +1367,21 @@ execute_early_warn_uninitialized (void)
 {
   block_stmt_iterator bsi;
   basic_block bb;
+  struct walk_data data;
+
+  calculate_dominance_info (CDI_POST_DOMINATORS);
 
   FOR_EACH_BB (bb)
-    for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-      {
-	tree context = bsi_stmt (bsi);
-	walk_tree (bsi_stmt_ptr (bsi), warn_uninitialized_var,
-		   context, NULL);
-      }
+    {
+      data.always_executed = dominated_by_p (CDI_POST_DOMINATORS,
+					     single_succ (ENTRY_BLOCK_PTR), bb);
+      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+        {
+	  data.stmt = bsi_stmt (bsi);
+	  walk_tree (bsi_stmt_ptr (bsi), warn_uninitialized_var,
+		     &data, NULL);
+        }
+    }
   return 0;
 }
 

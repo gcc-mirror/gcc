@@ -1,3 +1,12 @@
+2008-03-25  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2008-03-19  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/35609
+	* gcc.dg/testsuite/uninit-15.c: New testcase.
+	* gcc.dg/testsuite/uninit-16.c: Likewise.
+
 2008-03-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34813
