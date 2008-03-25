@@ -112,6 +112,12 @@
        (match_test "ival >= -524288 && ival <= 524287")
        (match_test "TARGET_SH2A")))
 
+(define_constraint "I28"
+  "A signed 28-bit constant, as used in SH2A movi20s."
+  (and (match_code "const_int")
+       (match_test "ival >=  -134217728 && ival <= 134217727")
+       (match_test "(ival & 255) == 0")
+       (match_test "TARGET_SH2A")))
 (define_constraint "J16"
   "0xffffffff00000000 or 0x00000000ffffffff."
   (and (match_code "const_int")

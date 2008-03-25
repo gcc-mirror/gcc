@@ -3753,7 +3753,8 @@ broken_move (rtx insn)
 		&& FP_REGISTER_P (REGNO (SET_DEST (pat))))
 	  && ! (TARGET_SH2A
 		&& GET_MODE (SET_DEST (pat)) == SImode
-		&& satisfies_constraint_I20 (SET_SRC (pat)))
+		&& (satisfies_constraint_I20 (SET_SRC (pat))
+		   || satisfies_constraint_I28 (SET_SRC (pat))))
 	  && ! satisfies_constraint_I08 (SET_SRC (pat)))
 	return 1;
     }
