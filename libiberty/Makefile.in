@@ -143,10 +143,11 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	 pex-unix.c pex-win32.c						\
          physmem.c putenv.c						\
 	random.c regex.c rename.c rindex.c				\
-	safe-ctype.c setenv.c sigsetmask.c snprintf.c sort.c spaces.c	\
-	 splay-tree.c stpcpy.c stpncpy.c strcasecmp.c strchr.c strdup.c	\
-	 strerror.c strncasecmp.c strncmp.c strrchr.c strsignal.c	\
-	 strstr.c strtod.c strtol.c strtoul.c strndup.c	strverscmp.c	\
+	safe-ctype.c setenv.c sha1.c sigsetmask.c snprintf.c sort.c	\
+	 spaces.c splay-tree.c stpcpy.c stpncpy.c strcasecmp.c		\
+	 strchr.c strdup.c strerror.c strncasecmp.c strncmp.c		\
+	 strrchr.c strsignal.c strstr.c strtod.c strtol.c strtoul.c	\
+	 strndup.c strverscmp.c						\
 	tmpnam.c							\
 	unlink-if-ordinary.c						\
 	vasprintf.c vfork.c vfprintf.c vprintf.c vsnprintf.c vsprintf.c	\
@@ -156,7 +157,8 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 
 # These are always included in the library.  The first four are listed
 # first and by compile time to optimize parallel builds.
-REQUIRED_OFILES = ./regex.o ./cplus-dem.o ./cp-demangle.o ./md5.o	\
+REQUIRED_OFILES =							\
+	./regex.o ./cplus-dem.o ./cp-demangle.o ./md5.o ./sha1.o	\
 	./alloca.o ./argv.o						\
 	./choose-temp.o ./concat.o ./cp-demint.o			\
 	./dyn-string.o							\
@@ -943,6 +945,12 @@ $(CONFIGURED_OFILES): stamp-picdir
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/setenv.c -o pic/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/setenv.c $(OUTPUT_OPTION)
+
+./sha1.o: $(srcdir)/sha1.c stamp-h $(INCDIR)/sha1.h
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/sha1.c -o pic/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/sha1.c $(OUTPUT_OPTION)
 
 ./sigsetmask.o: $(srcdir)/sigsetmask.c $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \

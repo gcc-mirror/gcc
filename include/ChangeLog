@@ -1,5 +1,7 @@
 2008-03-24  Ian Lance Taylor  <iant@google.com>
 
+	* sha1.h: New file, from gnulib.
+
 	* md5.h: Add extern "C" when compiled with C++.
 
 2008-03-21  Ian Lance Taylor  <iant@google.com>

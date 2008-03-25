@@ -1,3 +1,10 @@
+2008-03-24  Ian Lance Taylor  <iant@google.com>
+
+	* sha1.c: New file, from gnulib.
+	* Makefile.in: Rebuild dependencies.
+	(CFILES): Add sha1.c.
+	(REQUIRED_OFILES): Add sha1.o.
+
 2008-03-24  Doug Evans  <dje@google.com>
 
 	* make-relative-prefix.c (make_relative_prefix_1): Handle NULL
