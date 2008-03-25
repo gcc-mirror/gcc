@@ -4937,9 +4937,9 @@ label:
 ;; TARGET_FMOVD is in effect, and mode switching is done before reload.
 (define_insn "movsi_ie"
   [(set (match_operand:SI 0 "general_movdst_operand"
-	    "=r,r,r,r,t,r,r,r,r,m,<,<,x,l,x,l,y,<,r,y,r,*f,y,*f,y")
+	    "=r,r,r,r,r,t,r,r,r,r,m,<,<,x,l,x,l,y,<,r,y,r,*f,y,*f,y")
 	(match_operand:SI 1 "general_movsrc_operand"
-	 "Q,r,I08,I20,r,mr,x,l,t,r,x,l,r,r,>,>,>,y,i,r,y,y,*f,*f,y"))]
+	 "Q,r,I08,I20,I28,r,mr,x,l,t,r,x,l,r,r,>,>,>,y,i,r,y,y,*f,*f,y"))]
   "(TARGET_SH2E || TARGET_SH2A)
    && (register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
@@ -4948,6 +4948,7 @@ label:
 	mov	%1,%0
 	mov	%1,%0
 	movi20	%1,%0
+	movi20s	%1,%0
 	cmp/pl	%1
 	mov.l	%1,%0
 	sts	%1,%0
@@ -4969,12 +4970,13 @@ label:
 	flds	%1,fpul
 	fmov	%1,%0
 	! move optimized away"
-  [(set_attr "type" "pcload_si,move,movi8,move,*,load_si,mac_gp,prget,arith,store,mac_mem,pstore,gp_mac,prset,mem_mac,pload,load,fstore,pcload_si,gp_fpul,fpul_gp,fmove,fmove,fmove,nil")
-   (set_attr "late_fp_use" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,yes,*,*,yes,*,*,*,*")
+  [(set_attr "type" "pcload_si,move,movi8,move,move,*,load_si,mac_gp,prget,arith,store,mac_mem,pstore,gp_mac,prset,mem_mac,pload,load,fstore,pcload_si,gp_fpul,fpul_gp,fmove,fmove,fmove,nil")
+   (set_attr "late_fp_use" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,yes,*,*,yes,*,*,*,*")
    (set_attr_alternative "length"
      [(const_int 2)
       (const_int 2)
       (const_int 2)
+      (const_int 4)
       (const_int 4)
       (const_int 2)
       (if_then_else

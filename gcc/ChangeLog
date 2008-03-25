@@ -1,3 +1,11 @@
+2008-03-25  Jayant Sonar  <Jayant.sonar@kpitcummins.com>
+	    Naveen.H.S  <naveen.hs@kpitcummins.com>
+
+	* config/sh/constraints.md (I28): New constraint.
+	* config/sh/sh.c (broken_move): Add support for movi20s.
+	* config/sh/sh.md (movsi_ie): Add the alternative for
+	movi20s.
+
 2008-03-25  Anil Paranjape  <anil.paranjape@kpitcummins.com>
 	    Jayant Sonar  <Jayant.sonar@kpitcummins.com>
 	    Naveen.H.S  <naveen.hs@kpitcummins.com>

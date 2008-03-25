@@ -1,3 +1,8 @@
+2008-03-25  Jayant Sonar  <Jayant.sonar@kpitcummins.com>
+	    Naveen.H.S  <naveen.hs@kpitcummins.com>
+
+	* gcc.target/sh/sh2a-movi20s.c: New test.
+
 2008-03-25  Anil Paranjape  <anil.paranjape@kpitcummins.com>
 	    Jayant Sonar  <Jayant.sonar@kpitcummins.com>
 	    Naveen.H.S  <naveen.hs@kpitcummins.com>
