@@ -21,10 +21,6 @@
 #ifndef _MD5_H
 #define _MD5_H 1
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdio.h>
 
 #if defined HAVE_LIMITS_H || _LIBC
@@ -74,6 +70,10 @@ typedef uintptr_t md5_uintptr;
 /* We have to make a guess about the integer type equivalent in size
    to pointers which should always be correct.  */
 typedef unsigned long int md5_uintptr;
+#endif
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 /* Structure to save state of computation between the single steps.  */
