@@ -326,7 +326,7 @@ build_up_reference (tree type, tree arg, int flags, tree decl)
   /* If we had a way to wrap this up, and say, if we ever needed its
      address, transform all occurrences of the register, into a memory
      reference we could win better.  */
-  rval = build_unary_op (ADDR_EXPR, arg, 1);
+  rval = cp_build_unary_op (ADDR_EXPR, arg, 1, tf_warning_or_error);
   if (rval == error_mark_node)
     return error_mark_node;
 
@@ -470,7 +470,7 @@ convert_to_reference (tree reftype, tree expr, int convtype,
 	warning (0, "casting %qT to %qT does not dereference pointer",
 		 intype, reftype);
 
-      rval = build_unary_op (ADDR_EXPR, expr, 0);
+      rval = cp_build_unary_op (ADDR_EXPR, expr, 0, tf_warning_or_error);
       if (rval != error_mark_node)
 	rval = convert_force (build_pointer_type (TREE_TYPE (reftype)),
 			      rval, 0);
@@ -480,7 +480,8 @@ convert_to_reference (tree reftype, tree expr, int convtype,
   else
     {
       rval = convert_for_initialization (NULL_TREE, type, expr, flags,
-					 "converting", 0, 0);
+					 "converting", 0, 0,
+                                         tf_warning_or_error);
       if (rval == NULL_TREE || rval == error_mark_node)
 	return rval;
       warn_ref_binding (reftype, intype, decl);
@@ -630,7 +631,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 
   if (code == VOID_TYPE && (convtype & CONV_STATIC))
     {
-      e = convert_to_void (e, /*implicit=*/NULL);
+      e = convert_to_void (e, /*implicit=*/NULL, tf_warning_or_error);
       return e;
     }
 
@@ -734,7 +735,8 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 	ctor = build_special_member_call (NULL_TREE,
 					  complete_ctor_identifier,
 					  build_tree_list (NULL_TREE, ctor),
-					  type, flags);
+					  type, flags,
+                                          tf_warning_or_error);
       if (ctor)
 	return build_cplus_new (type, ctor);
     }
@@ -763,18 +765,19 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
    IMPLICIT is tells us the context of an implicit void conversion.  */
 
 tree
-convert_to_void (tree expr, const char *implicit)
+convert_to_void (tree expr, const char *implicit, tsubst_flags_t complain)
 {
   if (expr == error_mark_node
       || TREE_TYPE (expr) == error_mark_node)
     return error_mark_node;
   if (!TREE_TYPE (expr))
     return expr;
-  if (invalid_nonstatic_memfn_p (expr))
+  if (invalid_nonstatic_memfn_p (expr, complain))
     return error_mark_node;
   if (TREE_CODE (expr) == PSEUDO_DTOR_EXPR)
     {
-      error ("pseudo-destructor is not called");
+      if (complain & tf_error)
+        error ("pseudo-destructor is not called");
       return error_mark_node;
     }
   if (VOID_TYPE_P (TREE_TYPE (expr)))
@@ -788,10 +791,10 @@ convert_to_void (tree expr, const char *implicit)
 	tree op2 = TREE_OPERAND (expr,2);
 	tree new_op1 = convert_to_void
 	  (op1, (implicit && !TREE_SIDE_EFFECTS (op2)
-		 ? "second operand of conditional" : NULL));
+		 ? "second operand of conditional" : NULL), complain);
 	tree new_op2 = convert_to_void
 	  (op2, (implicit && !TREE_SIDE_EFFECTS (op1)
-		 ? "third operand of conditional" : NULL));
+		 ? "third operand of conditional" : NULL), complain);
 
 	expr = build3 (COND_EXPR, TREE_TYPE (new_op1),
 		       TREE_OPERAND (expr, 0), new_op1, new_op2);
@@ -804,7 +807,7 @@ convert_to_void (tree expr, const char *implicit)
 	tree op1 = TREE_OPERAND (expr,1);
 	tree new_op1 = convert_to_void
 	  (op1, (implicit && !TREE_NO_WARNING (expr)
-		 ? "right-hand operand of comma" : NULL));
+		 ? "right-hand operand of comma" : NULL), complain);
 
 	if (new_op1 != op1)
 	  {
@@ -834,14 +837,20 @@ convert_to_void (tree expr, const char *implicit)
 
 	/* Can't load the value if we don't know the type.  */
 	if (is_volatile && !is_complete)
-	  warning (0, "object of incomplete type %qT will not be accessed in %s",
-		   type, implicit ? implicit : "void context");
+          {
+            if (complain & tf_warning)
+              warning (0, "object of incomplete type %qT will not be accessed in %s",
+                       type, implicit ? implicit : "void context");
+          }
 	/* Don't load the value if this is an implicit dereference, or if
 	   the type needs to be handled by ctors/dtors.  */
 	else if (is_volatile && (is_reference || TREE_ADDRESSABLE (type)))
-	  warning (0, "object of type %qT will not be accessed in %s",
-		   TREE_TYPE (TREE_OPERAND (expr, 0)),
-		   implicit ? implicit : "void context");
+          {
+            if (complain & tf_warning)
+              warning (0, "object of type %qT will not be accessed in %s",
+                       TREE_TYPE (TREE_OPERAND (expr, 0)),
+                       implicit ? implicit : "void context");
+          }
 	if (is_reference || !is_volatile || !is_complete || TREE_ADDRESSABLE (type))
 	  expr = TREE_OPERAND (expr, 0);
 
@@ -854,7 +863,7 @@ convert_to_void (tree expr, const char *implicit)
 	tree type = TREE_TYPE (expr);
 	int is_complete = COMPLETE_TYPE_P (complete_type (type));
 
-	if (TYPE_VOLATILE (type) && !is_complete)
+	if (TYPE_VOLATILE (type) && !is_complete && (complain & tf_warning))
 	  warning (0, "object %qE of incomplete type %qT will not be accessed in %s",
 		   expr, type, implicit ? implicit : "void context");
 	break;
@@ -892,15 +901,19 @@ convert_to_void (tree expr, const char *implicit)
       {
 	/* [over.over] enumerates the places where we can take the address
 	   of an overloaded function, and this is not one of them.  */
-	error ("%s cannot resolve address of overloaded function",
-	       implicit ? implicit : "void cast");
+	if (complain & tf_error)
+	  error ("%s cannot resolve address of overloaded function",
+		 implicit ? implicit : "void cast");
+	else
+	  return error_mark_node;
 	expr = void_zero_node;
       }
     else if (implicit && probe == expr && is_overloaded_fn (probe))
       {
 	/* Only warn when there is no &.  */
-	warning (OPT_Waddress, "%s is a reference, not call, to function %qE",
-		 implicit, expr);
+	if (complain & tf_warning)
+	  warning (OPT_Waddress, "%s is a reference, not call, to function %qE",
+		   implicit, expr);
 	if (TREE_CODE (expr) == COMPONENT_REF)
 	  expr = TREE_OPERAND (expr, 0);
       }
@@ -915,8 +928,10 @@ convert_to_void (tree expr, const char *implicit)
 	{
 	  /* The middle end does not warn about expressions that have
 	     been explicitly cast to void, so we must do so here.  */
-	  if (!TREE_SIDE_EFFECTS (expr))
-	    warning (OPT_Wunused_value, "%s has no effect", implicit);
+	  if (!TREE_SIDE_EFFECTS (expr)) {
+            if (complain & tf_warning)
+              warning (OPT_Wunused_value, "%s has no effect", implicit);
+          }
 	  else
 	    {
 	      tree e;
@@ -939,7 +954,7 @@ convert_to_void (tree expr, const char *implicit)
 
 	      code = TREE_CODE (e);
 	      class = TREE_CODE_CLASS (code);
-	      if (class == tcc_comparison
+	      if ((class == tcc_comparison
 		   || class == tcc_unary
 		   || (class == tcc_binary
 		       && !(code == MODIFY_EXPR
@@ -948,6 +963,7 @@ convert_to_void (tree expr, const char *implicit)
 			    || code == PREINCREMENT_EXPR
 			    || code == POSTDECREMENT_EXPR
 			    || code == POSTINCREMENT_EXPR)))
+                  && (complain & tf_warning))
 		warning (OPT_Wunused_value, "value computed is not used");
 	    }
 	}

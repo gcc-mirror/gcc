@@ -4333,19 +4333,20 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	  {
 	  case RID_DYNCAST:
 	    postfix_expression
-	      = build_dynamic_cast (type, expression);
+	      = build_dynamic_cast (type, expression, tf_warning_or_error);
 	    break;
 	  case RID_STATCAST:
 	    postfix_expression
-	      = build_static_cast (type, expression);
+	      = build_static_cast (type, expression, tf_warning_or_error);
 	    break;
 	  case RID_REINTCAST:
 	    postfix_expression
-	      = build_reinterpret_cast (type, expression);
+	      = build_reinterpret_cast (type, expression, 
+                                        tf_warning_or_error);
 	    break;
 	  case RID_CONSTCAST:
 	    postfix_expression
-	      = build_const_cast (type, expression);
+	      = build_const_cast (type, expression, tf_warning_or_error);
 	    break;
 	  default:
 	    gcc_unreachable ();
@@ -4644,12 +4645,14 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		       (instance, fn, args, NULL_TREE,
 			(idk == CP_ID_KIND_QUALIFIED
 			 ? LOOKUP_NONVIRTUAL : LOOKUP_NORMAL),
-			/*fn_p=*/NULL));
+			/*fn_p=*/NULL,
+			tf_warning_or_error));
 		else
 		  postfix_expression
 		    = finish_call_expr (postfix_expression, args,
 					/*disallow_virtual=*/false,
-					/*koenig_p=*/false);
+					/*koenig_p=*/false,
+					tf_warning_or_error);
 	      }
 	    else if (TREE_CODE (postfix_expression) == OFFSET_REF
 		     || TREE_CODE (postfix_expression) == MEMBER_REF
@@ -4662,13 +4665,15 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	      postfix_expression
 		= finish_call_expr (postfix_expression, args,
 				    /*disallow_virtual=*/true,
-				    koenig_p);
+				    koenig_p,
+				    tf_warning_or_error);
 	    else
 	      /* All other function calls.  */
 	      postfix_expression
 		= finish_call_expr (postfix_expression, args,
 				    /*disallow_virtual=*/false,
-				    koenig_p);
+				    koenig_p,
+				    tf_warning_or_error);
 
 	    /* The POSTFIX_EXPRESSION is certainly no longer an id.  */
 	    idk = CP_ID_KIND_NONE;
@@ -4937,7 +4942,8 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
 	      (name, BINFO_TYPE (BASELINK_ACCESS_BINFO (name)), scope);
 	  postfix_expression
 	    = finish_class_member_access_expr (postfix_expression, name,
-					       template_p);
+					       template_p, 
+					       tf_warning_or_error);
 	}
     }
 
@@ -5250,7 +5256,7 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p)
 	    if (TYPE_P (operand))
 	      return cxx_sizeof_or_alignof_type (operand, op, true);
 	    else
-	      return cxx_sizeof_or_alignof_expr (operand, op);
+	      return cxx_sizeof_or_alignof_expr (operand, op, true);
 	  }
 
 	case RID_NEW:
@@ -5287,7 +5293,8 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p)
 	    /* Create the complete representation.  */
 	    return build_x_unary_op ((keyword == RID_REALPART
 				      ? REALPART_EXPR : IMAGPART_EXPR),
-				     expression);
+				     expression,
+                                     tf_warning_or_error);
 	  }
 	  break;
 
@@ -5362,14 +5369,16 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p)
 	{
 	case INDIRECT_REF:
 	  non_constant_p = "`*'";
-	  expression = build_x_indirect_ref (cast_expression, "unary *");
+	  expression = build_x_indirect_ref (cast_expression, "unary *",
+                                             tf_warning_or_error);
 	  break;
 
 	case ADDR_EXPR:
 	  non_constant_p = "`&'";
 	  /* Fall through.  */
 	case BIT_NOT_EXPR:
-	  expression = build_x_unary_op (unary_operator, cast_expression);
+	  expression = build_x_unary_op (unary_operator, cast_expression,
+                                         tf_warning_or_error);
 	  break;
 
 	case PREINCREMENT_EXPR:
@@ -5500,7 +5509,8 @@ cp_parser_new_expression (cp_parser* parser)
     return error_mark_node;
 
   /* Create a representation of the new-expression.  */
-  return build_new (placement, type, nelts, initializer, global_scope_p);
+  return build_new (placement, type, nelts, initializer, global_scope_p,
+                    tf_warning_or_error);
 }
 
 /* Parse a new-placement.
@@ -5870,7 +5880,7 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p)
 	    return error_mark_node;
 
 	  /* Perform the cast.  */
-	  expr = build_c_cast (type, expr);
+	  expr = build_c_cast (type, expr, tf_warning_or_error);
 	  return expr;
 	}
     }
@@ -6059,7 +6069,7 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p)
 
       overloaded_p = false;
       lhs = build_x_binary_op (tree_type, lhs, lhs_type, rhs, rhs_type,
-			       &overloaded_p);
+			       &overloaded_p, tf_warning_or_error);
       lhs_type = tree_type;
 
       /* If the binary operator required the use of an overloaded operator,
@@ -6115,7 +6125,8 @@ cp_parser_question_colon_clause (cp_parser* parser, tree logical_or_expr)
   /* Build the conditional-expression.  */
   return build_x_conditional_expr (logical_or_expr,
 				   expr,
-				   assignment_expr);
+				   assignment_expr,
+                                   tf_warning_or_error);
 }
 
 /* Parse an assignment-expression.
@@ -6170,7 +6181,8 @@ cp_parser_assignment_expression (cp_parser* parser, bool cast_p)
 	      /* Build the assignment expression.  */
 	      expr = build_x_modify_expr (expr,
 					  assignment_operator,
-					  rhs);
+					  rhs,
+					  tf_warning_or_error);
 	    }
 	}
     }
@@ -6290,7 +6302,8 @@ cp_parser_expression (cp_parser* parser, bool cast_p)
 	expression = assignment_expression;
       else
 	expression = build_x_compound_expr (expression,
-					    assignment_expression);
+					    assignment_expression,
+                                            tf_warning_or_error);
       /* If the next token is not a comma, then we are done with the
 	 expression.  */
       if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA))
@@ -6410,7 +6423,8 @@ cp_parser_builtin_offsetof (cp_parser *parser)
   cp_parser_require (parser, CPP_COMMA, "`,'");
 
   /* Build the (type *)null that begins the traditional offsetof macro.  */
-  expr = build_static_cast (build_pointer_type (type), null_pointer_node);
+  expr = build_static_cast (build_pointer_type (type), null_pointer_node,
+                            tf_warning_or_error);
 
   /* Parse the offsetof-member-designator.  We begin as if we saw "expr->".  */
   expr = cp_parser_postfix_dot_deref_expression (parser, CPP_DEREF, expr,
@@ -10320,7 +10334,8 @@ cp_parser_template_argument (cp_parser* parser)
 	  if (cp_parser_parse_definitely (parser))
 	    {
 	      if (address_p)
-		argument = build_x_unary_op (ADDR_EXPR, argument);
+		argument = build_x_unary_op (ADDR_EXPR, argument,
+                                             tf_warning_or_error);
 	      return argument;
 	    }
 	}
@@ -17181,7 +17196,8 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
                                                /*allow_expansion_p=*/true,
 					       /*non_constant_p=*/NULL);
 
-  cast = build_functional_cast (type, expression_list);
+  cast = build_functional_cast (type, expression_list,
+                                tf_warning_or_error);
   /* [expr.const]/1: In an integral constant expression "only type
      conversions to integral or enumeration type can be used".  */
   if (TREE_CODE (type) == TYPE_DECL)

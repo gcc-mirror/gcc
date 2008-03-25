@@ -104,7 +104,7 @@ static GTY (()) VEC(tinfo_s,gc) *tinfo_descs;
 
 static tree ifnonnull (tree, tree);
 static tree tinfo_name (tree);
-static tree build_dynamic_cast_1 (tree, tree);
+static tree build_dynamic_cast_1 (tree, tree, tsubst_flags_t);
 static tree throw_bad_cast (void);
 static tree throw_bad_typeid (void);
 static tree get_tinfo_decl_dynamic (tree);
@@ -188,7 +188,9 @@ build_headof (tree exp)
   index = build_int_cst (NULL_TREE,
 			 -2 * TARGET_VTABLE_DATA_ENTRY_DISTANCE);
 
-  offset = build_vtbl_ref (build_indirect_ref (exp, NULL), index);
+  offset = build_vtbl_ref (cp_build_indirect_ref (exp, NULL, 
+                                                  tf_warning_or_error), 
+                           index);
 
   type = build_qualified_type (ptr_type_node,
 			       cp_type_quals (TREE_TYPE (exp)));
@@ -272,7 +274,7 @@ get_tinfo_decl_dynamic (tree exp)
     /* Otherwise return the type_info for the static type of the expr.  */
     t = get_tinfo_ptr (TYPE_MAIN_VARIANT (type));
 
-  return build_indirect_ref (t, NULL);
+  return cp_build_indirect_ref (t, NULL, tf_warning_or_error);
 }
 
 static bool
@@ -463,7 +465,8 @@ get_typeid (tree type)
   if (!type)
     return error_mark_node;
 
-  return build_indirect_ref (get_tinfo_ptr (type), NULL);
+  return cp_build_indirect_ref (get_tinfo_ptr (type), NULL, 
+                                tf_warning_or_error);
 }
 
 /* Check whether TEST is null before returning RESULT.  If TEST is used in
@@ -483,7 +486,7 @@ ifnonnull (tree test, tree result)
    paper.  */
 
 static tree
-build_dynamic_cast_1 (tree type, tree expr)
+build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 {
   enum tree_code tc = TREE_CODE (type);
   tree exprtype = TREE_TYPE (expr);
@@ -626,8 +629,9 @@ build_dynamic_cast_1 (tree type, tree expr)
 		  && TREE_CODE (TREE_TYPE (old_expr)) == RECORD_TYPE)
 		{
 		  tree expr = throw_bad_cast ();
-		  warning (0, "dynamic_cast of %q#D to %q#T can never succeed",
-			   old_expr, type);
+                  if (complain & tf_warning)
+                    warning (0, "dynamic_cast of %q#D to %q#T can never succeed",
+                             old_expr, type);
 		  /* Bash it to the expected type.  */
 		  TREE_TYPE (expr) = type;
 		  return expr;
@@ -640,8 +644,9 @@ build_dynamic_cast_1 (tree type, tree expr)
 	      if (TREE_CODE (op) == VAR_DECL
 		  && TREE_CODE (TREE_TYPE (op)) == RECORD_TYPE)
 		{
-		  warning (0, "dynamic_cast of %q#D to %q#T can never succeed",
-			   op, type);
+                  if (complain & tf_warning)
+                    warning (0, "dynamic_cast of %q#D to %q#T can never succeed",
+                             op, type);
 		  retval = build_int_cst (type, 0);
 		  return retval;
 		}
@@ -650,7 +655,8 @@ build_dynamic_cast_1 (tree type, tree expr)
 	  /* Use of dynamic_cast when -fno-rtti is prohibited.  */
 	  if (!flag_rtti)
 	    {
-	      error ("%<dynamic_cast%> not permitted with -fno-rtti");
+              if (complain & tf_error)
+                error ("%<dynamic_cast%> not permitted with -fno-rtti");
 	      return error_mark_node;
 	    }
 
@@ -658,10 +664,10 @@ build_dynamic_cast_1 (tree type, tree expr)
 	  static_type = TYPE_MAIN_VARIANT (TREE_TYPE (exprtype));
 	  td2 = get_tinfo_decl (target_type);
 	  mark_used (td2);
-	  td2 = build_unary_op (ADDR_EXPR, td2, 0);
+	  td2 = cp_build_unary_op (ADDR_EXPR, td2, 0, complain);
 	  td3 = get_tinfo_decl (static_type);
 	  mark_used (td3);
-	  td3 = build_unary_op (ADDR_EXPR, td3, 0);
+	  td3 = cp_build_unary_op (ADDR_EXPR, td3, 0, complain);
 
 	  /* Determine how T and V are related.  */
 	  boff = dcast_base_hint (static_type, target_type);
@@ -671,7 +677,7 @@ build_dynamic_cast_1 (tree type, tree expr)
 
 	  expr1 = expr;
 	  if (tc == REFERENCE_TYPE)
-	    expr1 = build_unary_op (ADDR_EXPR, expr1, 0);
+	    expr1 = cp_build_unary_op (ADDR_EXPR, expr1, 0, complain);
 
 	  elems[0] = expr1;
 	  elems[1] = td3;
@@ -726,13 +732,14 @@ build_dynamic_cast_1 (tree type, tree expr)
     errstr = "source type is not polymorphic";
 
  fail:
-  error ("cannot dynamic_cast %qE (of type %q#T) to type %q#T (%s)",
-	 expr, exprtype, type, errstr);
+  if (complain & tf_error)
+    error ("cannot dynamic_cast %qE (of type %q#T) to type %q#T (%s)",
+           expr, exprtype, type, errstr);
   return error_mark_node;
 }
 
 tree
-build_dynamic_cast (tree type, tree expr)
+build_dynamic_cast (tree type, tree expr, tsubst_flags_t complain)
 {
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
@@ -744,7 +751,7 @@ build_dynamic_cast (tree type, tree expr)
       return convert_from_reference (expr);
     }
 
-  return convert_from_reference (build_dynamic_cast_1 (type, expr));
+  return convert_from_reference (build_dynamic_cast_1 (type, expr, complain));
 }
 
 /* Return the runtime bit mask encoding the qualifiers of TYPE.  */
@@ -876,7 +883,8 @@ tinfo_base_init (tinfo_s *ti, tree target)
 	}
 
       vtable_ptr = get_vtable_decl (real_type, /*complete=*/1);
-      vtable_ptr = build_unary_op (ADDR_EXPR, vtable_ptr, 0);
+      vtable_ptr = cp_build_unary_op (ADDR_EXPR, vtable_ptr, 0, 
+                                   tf_warning_or_error);
 
       /* We need to point into the middle of the vtable.  */
       vtable_ptr = build2

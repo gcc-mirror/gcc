@@ -1,3 +1,208 @@
+2008-03-25  Douglas Gregor  <doug.gregor@gmail.com>
+
+       * typeck.c (composite_pointer_type_r): Add SFINAE support.
+       (composite_pointer_type): Ditto.
+       (common_type): Fix call to composite_pointer_type.
+       (cxx_sizeof_nowarn): New; used to be a macro.
+       (cxx_sizeof_expr): Add SFINAE support.
+       (cxx_alignof_expr): Ditto.
+       (decay_conversion): Fix calls for SFINAE support.
+       (rationalize_conditional_expr): Add SFINAE support.
+       (build_class_member_access_expr): Ditto.
+       (finish_class_member_access_expr): Ditto.
+       (build_x_indirect_ref): Ditto.
+       (build_indirect_ref): Original version renamed to
+       cp_build_indirect_ref; new version provides a bridge from
+       c-common.
+       (cp_build_indirect_ref): Was build_indirect_ref; added SFINAE
+       support.
+       (get_member_function_from_ptrfunc): Fix calls for SFINAE support.
+       (build_function_call): Original version renamed to
+       cp_build_function_call; new version provides a bridge from
+       c-common.
+       (cp_build_function_call): Was build_function_call; added SFINAE
+       support.
+       (convert_arguments): Add SFINAE support.
+       (build_x_binary_op): Ditto.
+       (build_binary_op): Original version renamed to cp_build_binary_op;
+       new version provides a bridge from c-common.
+       (cp_build_binary_op): Was build_binary_op; added SFINAE support.
+       (pointer_diff): Fix calls for SFINAE.
+       (build_x_unary_op): Add SFINAE support.
+       (condition_conversion): Fix calls for SFINAE.
+       (build_unary_op): Original version renamed to cp_build_unary_op;
+       new version provides a bridge from c-common.
+       (cp_build_unary_op): Was build_unary_op; added SFINAE support.
+       (unary_complex_lvalue): Fix calls for SFINAE.
+       (build_x_conditional_expr): Add SFINAE support.
+       (build_x_compound_expr_from_list): Fix calls for SFINAE.
+       (build_x_compound_expr): Add SFINAE support.
+       (convert_ptrmem): Fix calls for SFINAE.
+       (build_static_cast_1): Add SFINAE support.
+       (build_static_cast): Ditto.
+       (build_reinterpret_cast_1): Ditto.
+       (build_reinterpret_cast): Ditto.
+       (build_const_cast_1): Ditto.
+       (build_const_cast): Ditto.
+       (build_c_cast): Ditto.
+       (build_modify_expr): Original version renamed to
+       cp_build_modify_expr; new version provides a bridge from c-common.
+       (cp_build_modify_expr): Was build_modify_expr; added SFINAE
+       support.
+       (build_x_modify_expr): Add SFINAE support.
+       (build_ptrmemfunc): Fix calls for SFINAE.
+       (convert_for_assignment): Add SFINAE support.
+       (convert_for_initialization): Ditto.
+       (check_return_expr): Fix calls for SFINAE.
+       (lvalue_or_else): Add SFINAE support.
+       * init.c (perform_member_init): Fix calls for SFINAE.
+       (emit_mem_initializers): Ditto.
+       (expand_virtual_init): Ditto.
+       (expand_cleanup_for_base): Ditto.
+       (build_aggr_init): Add SFINAE support.
+       (expand_default_init): Ditto.
+       (expand_aggr_init_1): Fix calls for SFINAE.
+       (build_offset_ref): Ditto.
+       (build_new_1): Add SFINAE support.
+       (build_new): Ditto.
+       (build_vec_delete_1): Fix calls for SFINAE.
+       (get_temp_regvar): Ditto.
+       (build_vec_init): Add SFINAE support.
+       (build_dtor_call): Fix calls for SFINAE.
+       (build_delete): Ditto.
+       (push_base_cleanups): Ditto.
+       (build_vec_delete_1): Ditto.
+       * class.c (build_base_path): Fix calls for SFINAE.
+       (build_simple_base_path): Ditto.
+       (convert_to_base_statically): Ditto.
+       (build_vfn_ref): Ditto.
+       (resolve_address_of_overloaded_function): Ditto.
+       * decl.c (check_initializer): Fix calls for SFINAE.
+       (register_dtor_fn): Ditto.
+       (compute_array_index_type): Ditto.
+       (finish_enum): Ditto.
+       (start_preparsed_function): Ditto.
+       (cxx_maybe_build_cleanup): Ditto.
+       * call.c (convert_like): Add COMPLAIN argument.
+       (convert_like_with_context): Ditto.
+       (build_this): Fix calls for SFINAE.
+       (build_user_type_conversion): Ditto.
+       (resolve_args): Ditto.
+       (build_new_function_call): Add SFINAE support.
+       (build_operator_new_call): Fix calls for SFINAE.
+       (build_object_call): Add SFINAE support.
+       (build_conditional_expr): Ditto.
+       (build_new_op): Ditto.
+       (build_op_delete_call): Fix calls for SFINAE.
+       (build_temp): Ditto.
+       (convert_like_real): Add SFINAE support.
+       (build_x_va_arg): Fix calls for SFINAE.
+       (convert_default_arg): Ditto.
+       (build_over_call): Add SFINAE support.
+       (build_java_interface_fn_ref): Fix calls for SFINAE.
+       (build_special_member_call): Add SFINAE support.
+       (build_new_method_call): Ditto.
+       (perform_implicit_conversion): Ditto.
+       (perform_direct_initialization_if_possible): Ditto.
+       (initialize_reference): Fix calls for SFINAE.
+       * method.c (do_build_assign_ref): Fix calls for SFINAE.
+       * rtti.c (build_headof): Fix calls for SFINAE.
+       (get_tinfo_decl_dynamic): Ditto.
+       (get_typeid): Ditto.
+       (build_dynamic_cast_1): Add SFINAE support.
+       (build_dynamic_cast): Ditto.
+       (tinfo_base_init): Fix calls for SFINAE.
+       * except.c (do_get_exception_ptr): Fix calls for SFINAE.
+       (do_end_catch): Ditto.
+       (initialize_handler_parm): Ditto.
+       (expand_start_catch_block): Ditto.
+       (do_allocate_exception): Ditto.
+       (do_free_exception): Ditto.
+       (build_throw): Ditto.
+       * cvt.c (build_up_reference): Fix calls for SFINAE.
+       (convert_to_reference): Ditto.
+       (ocp_convert): Ditto.
+       (convert_to_void): Add SFINAE support.
+       * tree.c (build_dummy_object): Fix calls for SFINAE.
+       (stabilize_expr): Ditto.
+       * cp-tree.h (build_conditional_expr): Add tsubst_flags_t
+       parameter.
+       (build_new_method_call): Ditto.
+       (build_special_member_call): Ditto.
+       (build_new_op): Ditto.
+       (perform_implicit_conversion): Ditto.
+       (perform_direct_initialization_if_possible): Ditto.
+       (convert_to_void): Ditto.
+       (build_aggr_init): Ditto.
+       (build_new): Ditto.
+       (build_vec_init): Ditto.
+       (build_dynamic_cast): Ditto.
+       (finish_call_expr): Ditto
+       (cxx_sizeof_or_alignof_expr): Add COMPLAIN parameter.
+       (cxx_sizeof_nowarn): Remove macro; add function declaration.
+       (build_class_member_access_expr): Add tsubst_flags_t parameter.
+       (finish_class_member_access_expr): Ditto.
+       (build_x_indirect_ref): Ditto.
+       (cp_build_indirect_ref): New.
+       (cp_build_function_call): Add tsubst_flags_t parameter.
+       (build_x_unary_op): Ditto.
+       (cp_build_unary_op): New.
+       (build_x_conditional_expr): Add tsubst_flags_t parameter.
+       (build_x_compound_expr): Ditto.
+       (build_compound_expr): Ditto.
+       (build_static_cast): Ditto.
+       (build_reinterpret_cast): Ditto.
+       (build_const_cast): Ditto.
+       (build_c_cast): Ditto.
+       (build_x_modify_expr): Ditto.
+       (cp_build_modify_expr): New.
+       (convert_for_initialization): Add tsubst_flags_t parameter.
+       (cp_build_binary_op): Remove macro; add function declaration.
+       (invalid_nonstatic_memfn_p): Add tsubst_flags_t parameter.
+       (lvalue_or_else): Ditto.
+       (build_functional_cast): Ditto.
+       * typeck2.c (digest_init): Fix calls for SFINAE.
+       (process_init_constructor_array): Ditto.
+       (process_init_constructor_record): Ditto.
+       (build_x_arrow): Ditto.
+       (build_m_component_ref): Ditto.
+       (build_functional_cast): Add SFINAE support.
+       * pt.c (tsubst_copy_and_build): Add (more) SFINAE support.
+       * semantics.c (simplify_loop_decl_cond): Fix calls for SFINAE.
+       (finish_expr_stmt): Ditto.
+       (finish_for_expr): Ditto.
+       (finish_asm_stmt): Ditto.
+       (finish_non_static_data_member): Ditto.
+       (finish_qualified_id_expr): Ditto.
+       (finish_call_expr): Add SFINAE support.
+       (finish_increment_expr): Fix calls for SFINAE.
+       (finish_unary_op_expr): Ditto.
+       (simplify_aggr_init_expr): Ditto.
+       (finish_omp_clauses): Ditto.
+       (finish_omp_for): Ditto.
+       (finish_omp_barrier): Ditto.
+       (finish_omo_flush): Ditto.
+       * decl2.c (grok_array_decl): Fix calls or SFINAE.
+       (build_anon_union_vars): Ditto.
+       (get_guard_cond): Ditto.
+       (set_guard): Ditto.
+       (one_static_initialization_or_destruction): Ditto.
+       (do_static_initialization_or_destruction): Ditto.
+       (generate_ctor_or_dtor_function): Ditto.
+       (build_offset_ref_call_from_tree): Ditto.
+       * parser.c (cp_parser_postfix_expression): Fix calls for SFINAE.
+       (cp_parser_postfix_dot_deref_expression): Ditto.
+       (cp_parser_unary_expression): Ditto.
+       (cp_parser_new_expression): Ditto.
+       (cp_parser_cast_expression): Ditto.
+       (cp_parser_binary_expression): Ditto.
+       (cp_parser_question_colon_clause): Ditto.
+       (cp_parser_assignment_expression): Ditto.
+       (cp_parser_expression): Ditto.
+       (cp_parser_builtin_offsetof): Ditto.
+       (cp_parser_template_argument): Ditto.
+       (cp_parser_functional_cast): Ditto.
+
 2008-03-24  Tom Tromey  <tromey@redhat.com>
 
 	* lex.c (handle_pragma_interface): Don't copy the filename.

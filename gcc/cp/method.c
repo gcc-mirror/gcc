@@ -674,7 +674,8 @@ do_build_assign_ref (tree fndecl)
 					build_tree_list (NULL_TREE,
 							 converted_parm),
 					base_binfo,
-					LOOKUP_NORMAL | LOOKUP_NONVIRTUAL));
+					LOOKUP_NORMAL | LOOKUP_NONVIRTUAL,
+                                        tf_warning_or_error));
 	}
 
       /* Assign to each of the non-static data members.  */
@@ -729,7 +730,8 @@ do_build_assign_ref (tree fndecl)
 	  init = build3 (COMPONENT_REF, expr_type, init, field, NULL_TREE);
 
 	  if (DECL_NAME (field))
-	    init = build_modify_expr (comp, NOP_EXPR, init);
+	    init = cp_build_modify_expr (comp, NOP_EXPR, init, 
+					 tf_warning_or_error);
 	  else
 	    init = build2 (MODIFY_EXPR, TREE_TYPE (comp), comp, init);
 	  finish_expr_stmt (init);

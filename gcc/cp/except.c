@@ -176,8 +176,9 @@ do_get_exception_ptr (void)
       fn = push_library_fn (fn, build_function_type (ptr_type_node, tmp));
     }
 
-  return build_function_call (fn, tree_cons (NULL_TREE, build_exc_ptr (),
-					     NULL_TREE));
+  return cp_build_function_call (fn, tree_cons (NULL_TREE, build_exc_ptr (),
+						NULL_TREE),
+				 tf_warning_or_error);
 }
 
 /* Build up a call to __cxa_begin_catch, to tell the runtime that the
@@ -196,8 +197,9 @@ do_begin_catch (void)
       fn = push_library_fn (fn, build_function_type (ptr_type_node, tmp));
     }
 
-  return build_function_call (fn, tree_cons (NULL_TREE, build_exc_ptr (),
-					     NULL_TREE));
+  return cp_build_function_call (fn, tree_cons (NULL_TREE, build_exc_ptr (),
+						NULL_TREE),
+				 tf_warning_or_error);
 }
 
 /* Returns nonzero if cleaning up an exception of type TYPE (which can be
@@ -235,7 +237,7 @@ do_end_catch (tree type)
       TREE_NOTHROW (fn) = 0;
     }
 
-  cleanup = build_function_call (fn, NULL_TREE);
+  cleanup = cp_build_function_call (fn, NULL_TREE, tf_warning_or_error);
   TREE_NOTHROW (cleanup) = dtor_nothrow (type);
 
   return cleanup;
@@ -377,7 +379,7 @@ initialize_handler_parm (tree decl, tree exp)
      pointer catch parm with the address of the temporary.  */
   if (TREE_CODE (init_type) == REFERENCE_TYPE
       && TYPE_PTR_P (TREE_TYPE (init_type)))
-    exp = build_unary_op (ADDR_EXPR, exp, 1);
+    exp = cp_build_unary_op (ADDR_EXPR, exp, 1, tf_warning_or_error);
 
   exp = ocp_convert (init_type, exp, CONV_IMPLICIT|CONV_FORCE_TEMP, 0);
 
@@ -434,7 +436,7 @@ expand_start_catch_block (tree decl)
       exp = build2 (POINTER_PLUS_EXPR, TREE_TYPE (exp), exp,
 		    fold_build1 (NEGATE_EXPR, sizetype,
 			 	 TYPE_SIZE_UNIT (TREE_TYPE (exp))));
-      exp = build_indirect_ref (exp, NULL);
+      exp = cp_build_indirect_ref (exp, NULL, tf_warning_or_error);
       initialize_handler_parm (decl, exp);
       return type;
     }
@@ -546,8 +548,10 @@ do_allocate_exception (tree type)
       fn = push_library_fn (fn, build_function_type (ptr_type_node, tmp));
     }
 
-  return build_function_call (fn, tree_cons (NULL_TREE, size_in_bytes (type),
-					     NULL_TREE));
+  return cp_build_function_call (fn, 
+				 tree_cons (NULL_TREE, size_in_bytes (type),
+					    NULL_TREE),
+				 tf_warning_or_error);
 }
 
 /* Call __cxa_free_exception from a cleanup.  This is never invoked
@@ -566,7 +570,8 @@ do_free_exception (tree ptr)
 						void_list_node));
     }
 
-  return build_function_call (fn, tree_cons (NULL_TREE, ptr, NULL_TREE));
+  return cp_build_function_call (fn, tree_cons (NULL_TREE, ptr, NULL_TREE),
+				 tf_warning_or_error);
 }
 
 /* Wrap all cleanups for TARGET_EXPRs in MUST_NOT_THROW_EXPR.
@@ -644,7 +649,8 @@ build_throw (tree exp)
 	  return error_mark_node;
 	}
       fn = OVL_CURRENT (fn);
-      exp = build_function_call (fn, tree_cons (NULL_TREE, exp, NULL_TREE));
+      exp = cp_build_function_call (fn, tree_cons (NULL_TREE, exp, NULL_TREE),
+				    tf_warning_or_error);
     }
   else if (exp)
     {
@@ -708,7 +714,7 @@ build_throw (tree exp)
       allocate_expr = get_target_expr (allocate_expr);
       ptr = TARGET_EXPR_SLOT (allocate_expr);
       object = build_nop (build_pointer_type (temp_type), ptr);
-      object = build_indirect_ref (object, NULL);
+      object = cp_build_indirect_ref (object, NULL, tf_warning_or_error);
 
       elided = (TREE_CODE (exp) == TARGET_EXPR);
 
@@ -733,7 +739,7 @@ build_throw (tree exp)
 		 (object, complete_ctor_identifier,
 		  build_tree_list (NULL_TREE, exp),
 		  TREE_TYPE (object),
-		  flags));
+		  flags, tf_warning_or_error));
 	  if (exp == error_mark_node)
 	    {
 	      error ("  in thrown expression");
@@ -812,7 +818,7 @@ build_throw (tree exp)
       tmp = tree_cons (NULL_TREE, throw_type, tmp);
       tmp = tree_cons (NULL_TREE, ptr, tmp);
       /* ??? Indicate that this function call throws throw_type.  */
-      tmp = build_function_call (fn, tmp);
+      tmp = cp_build_function_call (fn, tmp, tf_warning_or_error);
 
       /* Tack on the initialization stuff.  */
       exp = build2 (COMPOUND_EXPR, TREE_TYPE (tmp), exp, tmp);
@@ -831,7 +837,7 @@ build_throw (tree exp)
 
       /* ??? Indicate that this function call allows exceptions of the type
 	 of the enclosing catch block (if known).  */
-      exp = build_function_call (fn, NULL_TREE);
+      exp = cp_build_function_call (fn, NULL_TREE, tf_warning_or_error);
     }
 
   exp = build1 (THROW_EXPR, void_type_node, exp);
