@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -55,7 +55,7 @@ package Ada.Text_IO.Editing is
    Picture_Error : exception;
 
    Default_Currency   : constant String    := "$";
-   Default_Fill       : constant Character := ' ';
+   Default_Fill       : constant Character := '*';
    Default_Separator  : constant Character := ',';
    Default_Radix_Mark : constant Character := '.';
 

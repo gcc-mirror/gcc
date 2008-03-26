@@ -417,7 +417,7 @@ package body Ada.Text_IO.Editing is
                Answer (J) := Separator_Character;
 
             elsif Answer (J) = 'b' then
-               Answer (J) := '*';
+               Answer (J) := Fill_Character;
             end if;
          end loop;
 
@@ -426,7 +426,7 @@ package body Ada.Text_IO.Editing is
          end if;
 
          for J in Pic.Start_Float .. Position loop
-            Answer (J) := '*';
+            Answer (J) := Fill_Character;
          end loop;
 
       else
