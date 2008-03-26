@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,7 +51,9 @@ package body Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO is
       Str1 := new Wide_Wide_String'(Buffer (1 .. Last));
       while Last = Buffer'Last loop
          Get_Line (Buffer, Last);
-         Str2 := new Wide_Wide_String'(Str1.all & Buffer (1 .. Last));
+         Str2 := new Wide_Wide_String (1 .. Str1'Last + Last);
+         Str2 (Str1'Range) := Str1.all;
+         Str2 (Str1'Last + 1 .. Str2'Last) := Buffer (1 .. Last);
          Free (Str1);
          Str1 := Str2;
       end loop;
@@ -76,7 +78,9 @@ package body Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO is
 
       while Last = Buffer'Last loop
          Get_Line (File, Buffer, Last);
-         Str2 := new Wide_Wide_String'(Str1.all & Buffer (1 .. Last));
+         Str2 := new Wide_Wide_String (1 .. Str1'Last + Last);
+         Str2 (Str1'Range) := Str1.all;
+         Str2 (Str1'Last + 1 .. Str2'Last) := Buffer (1 .. Last);
          Free (Str1);
          Str1 := Str2;
       end loop;
