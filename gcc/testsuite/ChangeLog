@@ -1,3 +1,7 @@
+2008-03-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/uninit-16.c (decode_reloc): Mark static.
+
 2008-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/35546
