@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -766,6 +766,11 @@ package body Errout is
          elsif Debug_Flag_GG then
             null;
 
+         --  Keep warning if message text ends in !!
+
+         elsif Msg (Msg'Last) = '!' and then Msg (Msg'Last - 1) = '!' then
+            null;
+
          --  Here is where we delete a warning from a with'ed unit
 
          else
@@ -1364,12 +1369,12 @@ package body Errout is
       if Error_Posted (N) then
          return True;
 
-      elsif Nkind (N) in N_Entity and then Warnings_Off (N) then
+      elsif Nkind (N) in N_Entity and then Has_Warnings_Off (N) then
          return True;
 
       elsif Is_Entity_Name (N)
         and then Present (Entity (N))
-        and then Warnings_Off (Entity (N))
+        and then Has_Warnings_Off (Entity (N))
       then
          return True;
 
@@ -2392,14 +2397,17 @@ package body Errout is
       end if;
 
       --  The only remaining possibilities are identifiers, defining
-      --  identifiers, pragmas, and pragma argument associations, i.e.
-      --  nodes that have a Chars field.
+      --  identifiers, pragmas, and pragma argument associations.
 
-      --  Internal names generally represent something gone wrong. An exception
-      --  is the case of internal type names, where we try to find a reasonable
-      --  external representation for the external name
+      if Nkind (Node) = N_Pragma then
+         Nam := Pragma_Name (Node);
 
-      if Is_Internal_Name (Chars (Node))
+      --  The other cases have Chars fields, and we want to test for possible
+      --  internal names, which generally represent something gone wrong. An
+      --  exception is the case of internal type names, where we try to find a
+      --  reasonable external representation for the external name
+
+      elsif Is_Internal_Name (Chars (Node))
         and then
           ((Is_Entity_Name (Node)
                           and then Present (Entity (Node))
@@ -2422,6 +2430,8 @@ package body Errout is
             Unwind_Internal_Type (Ent);
             Nam := Chars (Ent);
          end if;
+
+      --  If not internal name, just use name in Chars field
 
       else
          Nam := Chars (Node);

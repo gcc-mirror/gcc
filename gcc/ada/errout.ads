@@ -120,7 +120,8 @@ package Errout is
    --        reference to the Any_Type node, then the message is suppressed.
 
    --    6.  Note that cases 2-5 only apply to error messages, not warning
-   --        messages. Warning messages are only suppressed for case 1.
+   --        messages. Warning messages are only suppressed for case 1, and
+   --        when they come from other than the main extended unit.
 
    --  This normal suppression action may be overridden in cases 2-5 (but not
    --  in case 1) by setting All_Errors mode, or by setting the special
@@ -263,6 +264,13 @@ package Errout is
    --      to put ! in continuation messages, and the usual style is to include
    --      it, since it makes it clear that the continuation is part of an
    --      unconditional message.
+
+   --    Insertion character !! (unconditional warning)
+
+   --      Normally warning messages issued in other than the main unit are
+   --      suppressed. If the message ends with !! then this suppression is
+   --      avoided. This is currently only used by the Compile_Time_Warning
+   --      pragma to ensure the message for a with'ed unit is output.
 
    --    Insertion character ? (Question: warning message)
    --      The character ? appearing anywhere in a message makes the message
