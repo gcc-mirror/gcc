@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,11 +33,7 @@
 
 --  This is the dummy version used on non-VMS systems
 
-with Ada.Exceptions;
-
 package body System.AST_Handling is
-
-   pragma Warnings (Off); -- kill warnings on unreferenced formals
 
    ------------------------
    -- Create_AST_Handler --
@@ -48,10 +44,7 @@ package body System.AST_Handling is
       Entryno : Natural) return System.Aux_DEC.AST_Handler
    is
    begin
-      Ada.Exceptions.Raise_Exception
-        (E       => Program_Error'Identity,
-         Message => "AST is implemented only on VMS systems");
-
+      raise Program_Error with "AST is implemented only on VMS systems";
       return System.Aux_DEC.No_AST_Handler;
    end Create_AST_Handler;
 
@@ -61,12 +54,7 @@ package body System.AST_Handling is
       Total_Number      : out Natural)
    is
    begin
-      Ada.Exceptions.Raise_Exception
-        (E       => Program_Error'Identity,
-         Message => "AST is implemented only on VMS systems");
-
-      Actual_Number := 0;
-      Total_Number := 0;
+      raise Program_Error with "AST is implemented only on VMS systems";
    end Expand_AST_Packet_Pool;
 
 end System.AST_Handling;

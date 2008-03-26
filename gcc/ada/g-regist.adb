@@ -30,14 +30,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Exceptions;
 with Interfaces.C;
 with System;
 with GNAT.Directory_Operations;
 
 package body GNAT.Registry is
 
-   use Ada;
    use System;
 
    ------------------------------
@@ -156,9 +154,8 @@ package body GNAT.Registry is
       use type LONG;
    begin
       if Result /= ERROR_SUCCESS then
-         Exceptions.Raise_Exception
-           (Registry_Error'Identity,
-            Message & " (" & LONG'Image (Result) & ')');
+         raise Registry_Error with
+           Message & " (" & LONG'Image (Result) & ')';
       end if;
    end Check_Result;
 

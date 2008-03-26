@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,8 +39,6 @@
 
 --  The GLADE distribution package includes a replacement for this file
 
-with Ada.Exceptions; use Ada.Exceptions;
-
 package body System.RPC is
 
    CRLF : constant String := ASCII.CR & ASCII.LF;
@@ -48,9 +46,6 @@ package body System.RPC is
    Msg : constant String :=
            CRLF & "Distribution support not installed in your environment" &
            CRLF & "For information on GLADE, contact Ada Core Technologies";
-
-   pragma Warnings (Off);
-   --  Kill messages about out parameters not set
 
    ----------
    -- Read --
@@ -62,7 +57,7 @@ package body System.RPC is
       Last   : out Ada.Streams.Stream_Element_Offset)
    is
    begin
-      Raise_Exception (Program_Error'Identity, Msg);
+      raise Program_Error with Msg;
    end Read;
 
    -----------
@@ -74,7 +69,7 @@ package body System.RPC is
       Item   : Ada.Streams.Stream_Element_Array)
    is
    begin
-      Raise_Exception (Program_Error'Identity, Msg);
+      raise Program_Error with Msg;
    end Write;
 
    ------------
@@ -87,7 +82,7 @@ package body System.RPC is
       Result    : access Params_Stream_Type)
    is
    begin
-      Raise_Exception (Program_Error'Identity, Msg);
+      raise Program_Error with Msg;
    end Do_RPC;
 
    ------------
@@ -99,7 +94,7 @@ package body System.RPC is
       Params    : access Params_Stream_Type)
    is
    begin
-      Raise_Exception (Program_Error'Identity, Msg);
+      raise Program_Error with Msg;
    end Do_APC;
 
    ----------------------------
@@ -110,6 +105,7 @@ package body System.RPC is
      (Partition : Partition_ID;
       Receiver  : RPC_Receiver)
    is
+      pragma Unreferenced (Partition, Receiver);
    begin
       null;
    end Establish_RPC_Receiver;

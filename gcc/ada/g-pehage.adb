@@ -31,7 +31,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Exceptions;    use Ada.Exceptions;
 with Ada.IO_Exceptions; use Ada.IO_Exceptions;
 
 with GNAT.Heap_Sort_G;
@@ -1218,8 +1217,7 @@ package body GNAT.Perfect_Hash_Generators is
          end if;
 
          if C not in '0' .. '9' then
-            Raise_Exception
-              (Program_Error'Identity, "cannot read position argument");
+            raise Program_Error with "cannot read position argument";
          end if;
 
          while C in '0' .. '9' loop
@@ -1271,8 +1269,7 @@ package body GNAT.Perfect_Hash_Generators is
             exit when L < N;
 
             if Argument (N) /= ',' then
-               Raise_Exception
-                 (Program_Error'Identity, "cannot read position argument");
+               raise Program_Error with "cannot read position argument";
             end if;
 
             N := N + 1;
@@ -2184,8 +2181,7 @@ package body GNAT.Perfect_Hash_Generators is
             end loop;
 
             if Old_Differences = Max_Differences then
-               Raise_Exception
-                 (Program_Error'Identity, "some keys are identical");
+               raise Program_Error with "some keys are identical";
             end if;
 
             --  Insert selected position and sort Sel_Position table

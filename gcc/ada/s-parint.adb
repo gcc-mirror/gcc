@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                   (Dummy body for non-distributed case)                  --
 --                                                                          --
---          Copyright (C) 1995-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -215,8 +215,7 @@ package body System.Partition_Interface is
      (E : Ada.Exceptions.Exception_Occurrence)
    is
    begin
-      Ada.Exceptions.Raise_Exception
-        (Program_Error'Identity, Ada.Exceptions.Exception_Message (E));
+      raise Program_Error with Ada.Exceptions.Exception_Message (E);
    end Raise_Program_Error_Unknown_Tag;
 
    -----------------
