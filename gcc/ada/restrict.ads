@@ -249,6 +249,10 @@ package Restrict is
    --  set. In the latter case, the source may contain handlers but they either
    --  get converted using the local goto transformation or deleted.
 
+   function No_Exception_Propagation_Active return Boolean;
+   --  Test to see if current restrictions settings specify that no
+   --  exception propagation is activated.
+
    function Process_Restriction_Synonyms (N : Node_Id) return Name_Id;
    --  Id is a node whose Chars field contains the name of a restriction.
    --  If it is one of synonyms that we allow for historical purposes (for

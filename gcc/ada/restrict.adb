@@ -26,6 +26,7 @@
 with Atree;    use Atree;
 with Casing;   use Casing;
 with Errout;   use Errout;
+with Debug;    use Debug;
 with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Lib;      use Lib;
@@ -429,6 +430,18 @@ package body Restrict is
                     or else
                   Restrictions.Set (No_Exception_Propagation));
    end No_Exception_Handlers_Set;
+
+   -------------------------------------
+   -- No_Exception_Propagation_Active --
+   -------------------------------------
+
+   function No_Exception_Propagation_Active return Boolean is
+   begin
+      return (No_Run_Time_Mode
+               or else Configurable_Run_Time_Mode
+               or else Debug_Flag_Dot_G)
+        and then Restriction_Active (No_Exception_Propagation);
+   end No_Exception_Propagation_Active;
 
    ----------------------------------
    -- Process_Restriction_Synonyms --
