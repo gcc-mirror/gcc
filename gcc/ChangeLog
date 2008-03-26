@@ -1,3 +1,7 @@
+2008-03-26  Andreas Schwab  <schwab@suse.de>
+
+	* doc/invoke.texi: Fix use of @item vs. @itemx.
+
 2008-03-26  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in (build/gensupport.o, build/print-rtl.o,
