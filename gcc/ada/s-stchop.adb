@@ -39,8 +39,6 @@ pragma Restrictions (No_Elaboration_Code);
 --  We want to guarantee the absence of elaboration code because the
 --  binder does not handle references to this package.
 
-with Ada.Exceptions;
-
 with System.Storage_Elements; use System.Storage_Elements;
 with System.Parameters; use System.Parameters;
 with System.Soft_Links;
@@ -216,9 +214,7 @@ package body System.Stack_Checking.Operations is
          (not Stack_Grows_Down and then
             Stack_Address < Frame_Address)
       then
-         Ada.Exceptions.Raise_Exception
-           (E       => Storage_Error'Identity,
-            Message => "stack overflow detected");
+         raise Storage_Error with "stack overflow detected";
       end if;
 
       --  This function first does a "cheap" check which is correct
@@ -270,9 +266,7 @@ package body System.Stack_Checking.Operations is
             (not Stack_Grows_Down and then
                   Stack_Address > My_Stack.Limit)
          then
-            Ada.Exceptions.Raise_Exception
-              (E       => Storage_Error'Identity,
-               Message => "stack overflow detected");
+            raise Storage_Error with "stack overflow detected";
          end if;
 
          return My_Stack;

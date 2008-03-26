@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1997-2006, AdaCore                     --
+--                     Copyright (C) 1997-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -692,6 +692,12 @@ package GNAT.Spitbol.Patterns is
    --  actuals which must be variables, and with a bit of trickery in the
    --  body, manage to interprete them properly as though they were indeed
    --  in out parameters.
+
+   pragma Warnings (Off, VString_Var);
+   pragma Warnings (Off, Pattern_Var);
+   --  We turn off warnings for these two types so that when variables are used
+   --  as arguments in this context, warnings about them not being assigned in
+   --  the source program will be suppressed.
 
    --------------------------------
    -- Basic Pattern Construction --

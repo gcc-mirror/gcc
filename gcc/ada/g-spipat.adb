@@ -36,7 +36,6 @@
 --  a direct translation, but the approach is followed closely. In particular,
 --  we use the one stack approach developed in the SPITBOL implementation.
 
-with Ada.Exceptions;            use Ada.Exceptions;
 with Ada.Strings.Unbounded.Aux; use Ada.Strings.Unbounded.Aux;
 
 with GNAT.Debug_Utilities;      use GNAT.Debug_Utilities;
@@ -2782,9 +2781,8 @@ package body GNAT.Spitbol.Patterns is
 
    procedure Logic_Error is
    begin
-      Raise_Exception
-        (Program_Error'Identity,
-         "Internal logic error in GNAT.Spitbol.Patterns");
+      raise Program_Error with
+         "Internal logic error in GNAT.Spitbol.Patterns";
    end Logic_Error;
 
    -----------
@@ -3644,9 +3642,8 @@ package body GNAT.Spitbol.Patterns is
 
    procedure Uninitialized_Pattern is
    begin
-      Raise_Exception
-        (Program_Error'Identity,
-         "uninitialized value of type GNAT.Spitbol.Patterns.Pattern");
+      raise Program_Error with
+         "uninitialized value of type GNAT.Spitbol.Patterns.Pattern";
    end Uninitialized_Pattern;
 
    ------------
