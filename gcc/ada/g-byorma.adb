@@ -44,27 +44,13 @@ package body GNAT.Byte_Order_Mark is
       XML_Support : Boolean := False)
    is
    begin
-      --  UTF-16 (big-endian)
-
-      if Str'Length >= 2
-        and then Str (Str'First) = Character'Val (16#FE#)
-        and then Str (Str'First + 1) = Character'Val (16#FF#)
-      then
-         Len := 2;
-         BOM := UTF16_BE;
-
-      --  UTF-16 (little-endian)
-
-      elsif Str'Length >= 2
-        and then Str (Str'First) = Character'Val (16#FF#)
-        and then Str (Str'First + 1) = Character'Val (16#FE#)
-      then
-         Len := 2;
-         BOM := UTF16_LE;
+      --  Note: the order of these tests is important, because in some cases
+      --  one sequence is a prefix of a longer sequence, and we must test for
+      --  the longer sequence first
 
       --  UTF-32 (big-endian)
 
-      elsif Str'Length >= 4
+      if Str'Length >= 4
         and then Str (Str'First)     = Character'Val (16#00#)
         and then Str (Str'First + 1) = Character'Val (16#00#)
         and then Str (Str'First + 2) = Character'Val (16#FE#)
@@ -84,6 +70,23 @@ package body GNAT.Byte_Order_Mark is
          Len := 4;
          BOM := UTF32_LE;
 
+      --  UTF-16 (big-endian)
+
+      elsif Str'Length >= 2
+        and then Str (Str'First) = Character'Val (16#FE#)
+        and then Str (Str'First + 1) = Character'Val (16#FF#)
+      then
+         Len := 2;
+         BOM := UTF16_BE;
+
+      --  UTF-16 (little-endian)
+
+      elsif Str'Length >= 2
+        and then Str (Str'First) = Character'Val (16#FF#)
+        and then Str (Str'First + 1) = Character'Val (16#FE#)
+      then
+         Len := 2;
+         BOM := UTF16_LE;
       --  UTF-8 (endian-independent)
 
       elsif Str'Length >= 3
