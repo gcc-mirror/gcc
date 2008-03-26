@@ -40,7 +40,7 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
-  /// @brief  class enc_filebuf.
+  /// class enc_filebuf.
   template<typename _CharT>
     class enc_filebuf
     : public std::basic_filebuf<_CharT, encoding_char_traits<_CharT> >

@@ -149,8 +149,8 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   } // namespace __detail
 
   /**
-   * Produces random numbers on a given distribution function using a non-uniform
-   * random number generation engine.
+   * Produces random numbers on a given distribution function using a
+   * non-uniform random number generation engine.
    *
    * @todo the engine_value_type needs to be studied more carefully.
    */

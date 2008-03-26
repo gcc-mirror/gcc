@@ -195,7 +195,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 #endif
 
   /**
-   *  @class shared_ptr <tr1/memory>
+   *  @class __shared_ptr 
    *
    *  A smart pointer with reference-counted copy semantics.
    *  The object pointed to is deleted when the last shared_ptr pointing to
@@ -230,7 +230,8 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	}
 
       //
-      // Requirements: _Deleter's copy constructor and destructor must not throw
+      // Requirements: _Deleter's copy constructor and destructor must
+      // not throw
       //
       // __shared_ptr will release __p by calling __d(__p)
       //
@@ -252,8 +253,9 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       
 #ifdef _GLIBCXX_INCLUDE_AS_CXX0X
       //
-      // Requirements: _Deleter's copy constructor and destructor must not throw
-      // _Alloc's copy constructor and destructor must not throw.
+      // Requirements: _Deleter's copy constructor and destructor must
+      // not throw _Alloc's copy constructor and destructor must not
+      // throw.
       //
       // __shared_ptr will release __p by calling __d(__p)
       //
@@ -811,7 +813,8 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     };
 
 
-  // The actual TR1 shared_ptr, with forwarding constructors and
+  /// shared_ptr
+  // The actual shared_ptr, with forwarding constructors and
   // assignment operators.
   template<typename _Tp>
     class shared_ptr
@@ -965,7 +968,8 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     }
 
 
-  // The actual TR1 weak_ptr, with forwarding constructors and
+  /// weak_ptr
+  // The actual weak_ptr, with forwarding constructors and
   // assignment operators.
   template<typename _Tp>
     class weak_ptr
@@ -1021,7 +1025,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       }
     };
 
-
+  /// enable_shared_from_this
   template<typename _Tp>
     class enable_shared_from_this
     {

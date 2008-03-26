@@ -183,7 +183,7 @@ namespace tr1
   template<typename _From, typename _To,
 	   bool = (is_void<_From>::value || is_void<_To>::value
 		   || is_function<_To>::value || is_array<_To>::value
-		   // This special case is here only to avoid warnings.		   
+		   // This special case is here only to avoid warnings.	
 		   || (is_floating_point<typename
 		       remove_reference<_From>::type>::value
 		       && __is_int_or_cref<_To>::__value))>
@@ -206,7 +206,7 @@ namespace tr1
 			       __is_convertible_helper<_From, _To>::__value>
     { };
 
-  /// @brief  reference modifications [4.7.2].
+  // reference modifications [4.7.2].
   template<typename _Tp>
     struct remove_reference
     { typedef _Tp     type; };
@@ -230,7 +230,7 @@ namespace tr1
     : public __add_reference_helper<_Tp>
     { };
 
-  /// @brief  other transformations [4.8].
+  // other transformations [4.8].
   template<std::size_t _Len, std::size_t _Align>
     struct aligned_storage
     { 

@@ -42,7 +42,6 @@
 #ifndef _GLIBCXX_TR1_SPECIAL_FUNCTION_UTIL_H
 #define _GLIBCXX_TR1_SPECIAL_FUNCTION_UTIL_H 1
 
-// namespace std::tr1
 namespace std
 {
 namespace tr1
@@ -51,21 +50,17 @@ namespace tr1
   namespace __detail
   {
 
-    ///
-    ///  @brief  A class to encapsulate type dependent floating point
-    ///          constants.  Not everything will be able to be expressed
-    ///          as type logic.
-    ///
-    template <typename _Tp>
+    /// A class to encapsulate type dependent floating point
+    /// constants.  Not everything will be able to be expressed as
+    /// type logic.
+    template<typename _Tp>
     struct __floating_point_constant
     {
       static const _Tp __value;
     };
 
 
-    ///
-    ///  @brief  A structure for numeric constants.
-    ///
+    /// A structure for numeric constants.
     template<typename _Tp>
       struct __numeric_constants
       {
@@ -111,15 +106,13 @@ namespace tr1
       };
 
 
-    ///
-    ///  @brief  This is a wrapper for the isnan function.
-    ///          Otherwise, for NaN, all comparisons result in false.
-    ///          If/when we build a std::isnan out of intrinsics, this
-    ///          will disappear completely in favor of std::isnan.
-    ///
 #if _GLIBCXX_USE_C99_MATH && !_GLIBCXX_USE_C99_FP_MACROS_DYNAMIC
 
-    template <typename _Tp>
+    /// This is a wrapper for the isnan function. Otherwise, for NaN,
+    /// all comparisons result in false. If/when we build a std::isnan
+    /// out of intrinsics, this will disappear completely in favor of
+    /// std::isnan.
+    template<typename _Tp>
     inline bool __isnan(const _Tp __x)
     {
       return std::isnan(__x);
@@ -127,19 +120,19 @@ namespace tr1
 
 #else
 
-    template <typename _Tp>
+    template<typename _Tp>
     inline bool __isnan(const _Tp __x)
     {
       return __builtin_isnan(__x);
     }
 
-    template <>
+    template<>
     inline bool __isnan<float>(const float __x)
     {
       return __builtin_isnanf(__x);
     }
 
-    template <>
+    template<>
     inline bool __isnan<long double>(const long double __x)
     {
       return __builtin_isnanl(__x);

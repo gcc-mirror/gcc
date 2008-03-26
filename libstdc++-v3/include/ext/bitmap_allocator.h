@@ -706,6 +706,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	};
     };
 
+  /// Primary template
   template<typename _Tp>
     class bitmap_allocator : private free_list
     {

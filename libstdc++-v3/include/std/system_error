@@ -53,6 +53,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   extern const error_category& system_category;
 
+  /// error_category
   struct error_category
   {
     error_category() { }
@@ -78,6 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     operator=(const error_category&);
   };
 
+  /// error_code
   struct error_code
   {
     error_code() throw()
@@ -133,6 +135,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     const error_category* 	_M_cat;
   };
 
+  /// Thrown to indicate error code of underlying system.
   class system_error : public std::runtime_error
   {
   private:

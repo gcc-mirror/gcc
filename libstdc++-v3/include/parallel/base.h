@@ -47,6 +47,11 @@
 
 
 // Parallel mode namespaces.
+
+/**
+ * @namespace std::__parallel
+ * @brief GNU parallel code, replaces standard behavior with parallel behavior.
+ */
 namespace std 
 { 
   namespace __parallel { } 
@@ -54,7 +59,7 @@ namespace std
 
 /**
  * @namespace __gnu_parallel
- * @brief GNU parallel classes for public use.
+ * @brief GNU parallel code for public use.
  */
 namespace __gnu_parallel
 {
