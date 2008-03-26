@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -150,7 +150,7 @@ package body Ch10 is
          Item := P_Pragma;
 
          if Item = Error
-           or else Chars (Item) /= Name_Source_Reference
+           or else Pragma_Name (Item) /= Name_Source_Reference
          then
             Restore_Scan_State (Scan_State);
 
@@ -180,7 +180,8 @@ package body Ch10 is
          Item := P_Pragma;
 
          if Item = Error
-           or else not Is_Configuration_Pragma_Name (Chars (Item))
+           or else not
+             Is_Configuration_Pragma_Name (Pragma_Name (Item))
          then
             Restore_Scan_State (Scan_State);
             exit;
@@ -1024,10 +1025,7 @@ package body Ch10 is
       Set_Name (Subunit_Node, P_Qualified_Simple_Name);
       U_Right_Paren;
 
-      if Token = Tok_Semicolon then
-         Error_Msg_SC ("unexpected semicolon ignored");
-         Scan;
-      end if;
+      Ignore (Tok_Semicolon);
 
       if Token = Tok_Function or else Token = Tok_Procedure then
          Body_Node := P_Subprogram (Pf_Pbod);

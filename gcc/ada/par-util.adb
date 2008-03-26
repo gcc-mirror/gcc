@@ -109,7 +109,7 @@ package body Util is
         and then S = Name_Buffer (1 .. SL)
       then
          Scan_Ptr := Token_Ptr + S'Length;
-         Error_Msg_S ("missing space");
+         Error_Msg_S ("|missing space");
          Token := T;
          return True;
       end if;
@@ -175,18 +175,6 @@ package body Util is
          null;
       end if;
    end Check_Misspelling_Of;
-
-   --------------------------
-   -- Check_No_Right_Paren --
-   --------------------------
-
-   procedure Check_No_Right_Paren is
-   begin
-      if Token = Tok_Right_Paren then
-         Error_Msg_SC ("unexpected right parenthesis");
-         Scan; -- past unexpected right paren
-      end if;
-   end Check_No_Right_Paren;
 
    -----------------------------
    -- Check_Simple_Expression --
@@ -343,7 +331,7 @@ package body Util is
 
          <<Assume_Comma>>
             Restore_Scan_State (Scan_State);
-            Error_Msg_SC (""";"" illegal here, replaced by "",""");
+            Error_Msg_SC ("|"";"" should be "",""");
             Scan; -- past the semicolon
             return True;
 
@@ -391,38 +379,33 @@ package body Util is
 
    procedure Ignore (T : Token_Type) is
    begin
-      if Token = T then
+      while Token = T loop
          if T = Tok_Comma then
-            Error_Msg_SC ("unexpected "","" ignored");
+            Error_Msg_SC ("|extra "","" ignored");
 
          elsif T = Tok_Left_Paren then
-            Error_Msg_SC ("unexpected ""("" ignored");
+            Error_Msg_SC ("|extra ""("" ignored");
 
          elsif T = Tok_Right_Paren then
-            Error_Msg_SC ("unexpected "")"" ignored");
+            Error_Msg_SC ("|extra "")"" ignored");
 
          elsif T = Tok_Semicolon then
-            Error_Msg_SC ("unexpected "";"" ignored");
+            Error_Msg_SC ("|extra "";"" ignored");
+
+         elsif T = Tok_Colon then
+            Error_Msg_SC ("|extra "":"" ignored");
 
          else
             declare
                Tname : constant String := Token_Type'Image (Token);
-               Msg   : String := "unexpected keyword ????????????????????????";
-
             begin
-               --  Loop to copy characters of keyword name (ignoring Tok_)
-
-               for J in 5 .. Tname'Last loop
-                  Msg (J + 14) := Fold_Upper (Tname (J));
-               end loop;
-
-               Msg (Tname'Last + 15 .. Tname'Last + 22) := " ignored";
-               Error_Msg_SC (Msg (1 .. Tname'Last + 22));
+               Error_Msg_SC
+                 ("|extra " & Tname (5 .. Tname'Last) & "ignored");
             end;
          end if;
 
          Scan; -- Scan past ignored token
-      end if;
+      end loop;
    end Ignore;
 
    ----------------------------
@@ -438,7 +421,6 @@ package body Util is
          declare
             Ident_Casing : constant Casing_Type :=
                              Identifier_Casing (Current_Source_File);
-
             Key_Casing   : constant Casing_Type :=
                              Keyword_Casing (Current_Source_File);
 

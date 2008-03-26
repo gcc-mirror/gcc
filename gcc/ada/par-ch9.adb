@@ -154,7 +154,7 @@ package body Ch9 is
             Scan; -- past semicolon
 
             if Token = Tok_Entry then
-               Error_Msg_SP (""";"" should be IS");
+               Error_Msg_SP ("|"";"" should be IS");
                Set_Task_Definition (Task_Node, P_Task_Definition);
             else
                Pop_Scope_Stack; -- Remove unused entry
@@ -371,6 +371,7 @@ package body Ch9 is
       Name_Node      : Node_Id;
       Protected_Node : Node_Id;
       Protected_Sloc : Source_Ptr;
+      Scan_State     : Saved_Scan_State;
 
    begin
       Push_Scope_Stack;
@@ -437,6 +438,35 @@ package body Ch9 is
             end if;
 
             Scope.Table (Scope.Last).Labl := Name_Node;
+         end if;
+
+         --  Check for semicolon not followed by IS, this is something like
+
+         --    protected type r;
+
+         --  where we want
+
+         --    protected type r IS END;
+
+         if Token = Tok_Semicolon then
+            Save_Scan_State (Scan_State); -- at semicolon
+            Scan; -- past semicolon
+
+            if Token /= Tok_Is then
+               Restore_Scan_State (Scan_State);
+               Error_Msg_SC ("missing IS");
+               Set_Protected_Definition (Protected_Node,
+                 Make_Protected_Definition (Token_Ptr,
+                   Visible_Declarations => Empty_List,
+                   End_Label           => Empty));
+
+               SIS_Entry_Active := False;
+               End_Statements (Protected_Definition (Protected_Node));
+               Scan; -- past semicolon
+               return Protected_Node;
+            end if;
+
+            Error_Msg_SP ("|extra ""("" ignored");
          end if;
 
          T_Is;
@@ -1081,7 +1111,7 @@ package body Ch9 is
          Bnode := P_Expression_No_Right_Paren;
 
          if Token = Tok_Colon_Equal then
-            Error_Msg_SC (""":="" should be ""=""");
+            Error_Msg_SC ("|"":="" should be ""=""");
             Scan;
             Bnode := P_Expression_No_Right_Paren;
          end if;
