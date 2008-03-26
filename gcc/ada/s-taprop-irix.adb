@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2007, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2008, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,43 +33,29 @@
 
 --  This is a IRIX (pthread library) version of this package
 
---  This package contains all the GNULL primitives that interface directly
---  with the underlying OS.
+--  This package contains all the GNULL primitives that interface directly with
+--  the underlying OS.
 
 pragma Polling (Off);
---  Turn off polling, we do not want ATC polling to take place during
---  tasking operations. It causes infinite loops and other problems.
+--  Turn off polling, we do not want ATC polling to take place during tasking
+--  operations. It causes infinite loops and other problems.
+
+with Ada.Unchecked_Conversion;
+with Ada.Unchecked_Deallocation;
 
 with Interfaces.C;
---  used for int
---           size_t
 
 with System.Task_Info;
-
 with System.Tasking.Debug;
---  used for Known_Tasks
-
 with System.Interrupt_Management;
---  used for Keep_Unmasked
---           Abort_Task_Interrupt
---           Interrupt_ID
-
 with System.OS_Primitives;
---  used for Delay_Modes
-
 with System.IO;
---  used for Put_Line
 
 with System.Soft_Links;
---  used for Abort_Defer/Undefer
-
 --  We use System.Soft_Links instead of System.Tasking.Initialization
 --  because the later is a higher level package that we shouldn't depend on.
 --  For example when using the restricted run time, it is replaced by
 --  System.Tasking.Restricted.Stages.
-
-with Ada.Unchecked_Conversion;
-with Ada.Unchecked_Deallocation;
 
 package body System.Task_Primitives.Operations is
 
@@ -920,13 +906,16 @@ package body System.Task_Primitives.Operations is
 
       Succeeded := Result = 0;
 
-      --  The following needs significant commenting ???
+      if Succeeded then
 
-      if T.Common.Task_Info /= null then
-         T.Common.Base_Priority := T.Common.Task_Info.Priority;
-         Set_Priority (T, T.Common.Task_Info.Priority);
-      else
-         Set_Priority (T, Priority);
+         --  The following needs significant commenting ???
+
+         if T.Common.Task_Info /= null then
+            T.Common.Base_Priority := T.Common.Task_Info.Priority;
+            Set_Priority (T, T.Common.Task_Info.Priority);
+         else
+            Set_Priority (T, Priority);
+         end if;
       end if;
 
       Result := pthread_attr_destroy (Attributes'Access);
