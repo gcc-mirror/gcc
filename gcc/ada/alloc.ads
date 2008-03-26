@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -140,6 +140,9 @@ package Alloc is
 
    Unreferenced_Entities_Initial    : constant := 1_000;   -- Sem_Warn
    Unreferenced_Entities_Increment  : constant := 100;
+
+   Warnings_Off_Pragmas_Initial     : constant := 500;     -- Sem_Warn
+   Warnings_Off_Pragmas_Increment   : constant := 100;
 
    With_List_Initial                : constant := 10;      -- Features
    With_List_Increment              : constant := 300;

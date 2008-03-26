@@ -1395,7 +1395,11 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 #else
 	exception = &constraint_error;
 	msg = "arithmetic error";
+#ifndef __alpha__
+	/* No need to adjust pc on alpha: the pc is already on the instruction
+	   after the trapping one.  */
 	__gnat_adjust_context_for_raise (0, (void *)mechargs);
+#endif
 #endif
 	break;
 
