@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4451,18 +4451,10 @@ package body Exp_Ch4 is
 
       if Max_Available_String_Operands < 1 then
 
-         --  In No_Run_Time mode, consider that no entities are available
+         --  See what routines are available and set max operand count
+         --  according to the highest count available in the run-time.
 
-         --  This seems wrong, RTE_Available should return False for any entity
-         --  that is not in the special No_Run_Time list of allowed entities???
-
-         if No_Run_Time_Mode then
-            Max_Available_String_Operands := 0;
-
-         --  Otherwise see what routines are available and set max operand
-         --  count according to the highest count available in the run-time.
-
-         elsif not RTE_Available (RE_Str_Concat) then
+         if not RTE_Available (RE_Str_Concat) then
             Max_Available_String_Operands := 0;
 
          elsif not RTE_Available (RE_Str_Concat_3) then
@@ -4479,8 +4471,6 @@ package body Exp_Ch4 is
          end if;
 
          Char_Concat_Available :=
-           not No_Run_Time_Mode
-             and then
            RTE_Available (RE_Str_Concat_CC)
              and then
            RTE_Available (RE_Str_Concat_CS)
@@ -8850,8 +8840,8 @@ package body Exp_Ch4 is
                  and then Comes_From_Source (Original_Node (N))
                  and then Nkind (Original_Node (N)) = N_Op_Ge
                  and then not In_Instance
-                 and then not Warnings_Off (Etype (Left_Opnd (N)))
                  and then Is_Integer_Type (Etype (Left_Opnd (N)))
+                 and then not Has_Warnings_Off (Etype (Left_Opnd (N)))
                then
                   Error_Msg_N
                     ("can never be greater than, could replace by ""'=""?", N);
@@ -8874,8 +8864,8 @@ package body Exp_Ch4 is
                  and then Comes_From_Source (Original_Node (N))
                  and then Nkind (Original_Node (N)) = N_Op_Le
                  and then not In_Instance
-                 and then not Warnings_Off (Etype (Left_Opnd (N)))
                  and then Is_Integer_Type (Etype (Left_Opnd (N)))
+                 and then not Has_Warnings_Off (Etype (Left_Opnd (N)))
                then
                   Error_Msg_N
                     ("can never be less than, could replace by ""'=""?", N);
