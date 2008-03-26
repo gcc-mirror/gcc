@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2007, AdaCore                     --
+--                     Copyright (C) 1995-2008, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,10 +35,8 @@
 --  This package provides support for the body of Ada.Task_Attributes
 
 with Ada.Finalization;
---  Used for Limited_Controlled
 
 with System.Storage_Elements;
---  Used for Integer_Address
 
 package System.Tasking.Task_Attributes is
 

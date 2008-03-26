@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2007, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2008, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,32 +33,22 @@
 
 --  This is a OpenVMS/Alpha version of this package
 
---  This package contains all the GNULL primitives that interface directly
---  with the underlying OS.
+--  This package contains all the GNULL primitives that interface directly with
+--  the underlying OS.
 
 pragma Polling (Off);
---  Turn off polling, we do not want ATC polling to take place during
---  tasking operations. It causes infinite loops and other problems.
-
-with System.Tasking.Debug;
---  used for Known_Tasks
-
-with System.OS_Primitives;
---  used for Delay_Modes
-
-with Interfaces.C;
---  used for int
---           size_t
-
-with System.Soft_Links;
---  used for Get_Exc_Stack_Addr
---           Abort_Defer/Undefer
-
-with System.Aux_DEC;
---  used for Short_Address
+--  Turn off polling, we do not want ATC polling to take place during tasking
+--  operations. It causes infinite loops and other problems.
 
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
+
+with Interfaces.C;
+
+with System.Tasking.Debug;
+with System.OS_Primitives;
+with System.Soft_Links;
+with System.Aux_DEC;
 
 package body System.Task_Primitives.Operations is
 

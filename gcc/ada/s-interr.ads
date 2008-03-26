@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,24 +35,19 @@
 --  Any changes to this interface may require corresponding compiler changes.
 
 --  This package encapsulates the implementation of interrupt or signal
---  handlers.  It is logically an extension of the body of Ada.Interrupts.
---  It is made a child of System to allow visibility of various
---  runtime system internal data and operations.
+--  handlers. It is logically an extension of the body of Ada.Interrupts. It
+--  is made a child of System to allow visibility of various runtime system
+--  internal data and operations.
 
 --  See System.Interrupt_Management for core interrupt/signal interfaces
 
---  These two packages are separated in order to allow
---  System.Interrupt_Management to be used without requiring the whole
---  tasking implementation to be linked and elaborated.
+--  These two packages are separated to allow System.Interrupt_Management to be
+--  used without requiring the whole tasking implementation to be linked and
+--  elaborated.
 
 with System.Tasking;
---  used for Task_Id
-
 with System.Tasking.Protected_Objects.Entries;
---  used for Protection_Entries
-
 with System.OS_Interface;
---  used for Max_Interrupt
 
 package System.Interrupts is
 
@@ -73,11 +68,9 @@ package System.Interrupts is
 
    type Interrupt_ID is range 0 .. System.OS_Interface.Max_Interrupt;
 
-   --  The following renaming is introduced so that the type is accessible
-   --  through rtsfind, otherwise the name clashes with its homonym in
-   --  ada.interrupts.
-
    subtype System_Interrupt_Id is Interrupt_ID;
+   --  This synonym is introduced so that the type is accessible through
+   --  rtsfind, otherwise the name clashes with its homonym in Ada.Interrupts.
 
    type Parameterless_Handler is access protected procedure;
 
@@ -97,10 +90,10 @@ package System.Interrupts is
    function Current_Handler
      (Interrupt : Interrupt_ID) return Parameterless_Handler;
 
-   --  Calling the following procedures with New_Handler = null
-   --  and Static = true means that we want to modify the current handler
-   --  regardless of the previous handler's binding status.
-   --  (i.e. we do not care whether it is a dynamic or static handler)
+   --  Calling the following procedures with New_Handler = null and Static =
+   --  true means that we want to modify the current handler regardless of the
+   --  previous handler's binding status. (i.e. we do not care whether it is a
+   --  dynamic or static handler)
 
    procedure Attach_Handler
      (New_Handler : Parameterless_Handler;
@@ -150,8 +143,8 @@ package System.Interrupts is
    function Unblocked_By
      (Interrupt : Interrupt_ID) return System.Tasking.Task_Id;
    --  It returns the ID of the last Task which Unblocked this Interrupt.
-   --  It returns Null_Task if no tasks have ever requested the
-   --  Unblocking operation or the Interrupt is currently Blocked.
+   --  It returns Null_Task if no tasks have ever requested the Unblocking
+   --  operation or the Interrupt is currently Blocked.
 
    function Is_Blocked (Interrupt : Interrupt_ID) return Boolean;
    --  Comment needed ???
@@ -169,9 +162,9 @@ package System.Interrupts is
    --  other low-level interface that changes the signal action or signal mask
    --  needs a careful thought.
 
-   --  One may acheive the effect of system calls first making RTS blocked
-   --  (by calling Block_Interrupt) for the signal under consideration.
-   --  This will make all the tasks in RTS blocked for the Interrupt.
+   --  One may acheive the effect of system calls first making RTS blocked (by
+   --  calling Block_Interrupt) for the signal under consideration. This will
+   --  make all the tasks in RTS blocked for the Interrupt.
 
    ----------------------
    -- Protection Types --

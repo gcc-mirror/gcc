@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---          Copyright (C) 1995-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,13 +35,15 @@
 --  This is a NT (native) version of this package
 
 --  This package encapsulates all direct interfaces to OS services
---  that are needed by children of System.
+--  that are needed by the tasking run-time (libgnarl).
 
 --  PLEASE DO NOT add any with-clauses to this package or remove the pragma
 --  Preelaborate. This package is designed to be a bottom-level (leaf) package.
 
 with Interfaces.C;
+
 with Interfaces.C.Strings;
+
 with Ada.Unchecked_Conversion;
 
 package System.OS_Interface is
@@ -75,6 +77,8 @@ package System.OS_Interface is
 
    type PLONG  is access all Interfaces.C.long;
    type PDWORD is access all DWORD;
+   type BYTE is new Interfaces.C.unsigned_char;
+   subtype CHAR is Interfaces.C.char;
 
    type BOOL is new Boolean;
    for BOOL'Size use Interfaces.C.unsigned_long'Size;
@@ -94,6 +98,19 @@ package System.OS_Interface is
 
    NO_ERROR : constant := 0;
    FUNC_ERR : constant := -1;
+
+   -----------
+   -- Files --
+   -----------
+
+   type SECURITY_ATTRIBUTES is record
+      nLength             : DWORD;
+      pSecurityDescriptor : PVOID;
+      bInheritHandle      : BOOL;
+   end record;
+
+   function CloseHandle (hObject : HANDLE) return BOOL;
+   pragma Import (Stdcall, CloseHandle, "CloseHandle");
 
    ------------------------
    -- System Information --
@@ -259,30 +276,22 @@ package System.OS_Interface is
    function To_PTHREAD_START_ROUTINE is new
      Ada.Unchecked_Conversion (System.Address, PTHREAD_START_ROUTINE);
 
-   type SECURITY_ATTRIBUTES is record
-      nLength              : DWORD;
-      pSecurityDescriptor  : PVOID;
-      bInheritHandle       : BOOL;
-   end record;
-
-   type PSECURITY_ATTRIBUTES is access all SECURITY_ATTRIBUTES;
-
    function CreateThread
-     (pThreadAttributes    : PSECURITY_ATTRIBUTES;
-      dwStackSize          : DWORD;
-      pStartAddress        : PTHREAD_START_ROUTINE;
-      pParameter           : PVOID;
-      dwCreationFlags      : DWORD;
-      pThreadId            : PDWORD) return HANDLE;
+     (pThreadAttributes : access SECURITY_ATTRIBUTES;
+      dwStackSize       : DWORD;
+      pStartAddress     : PTHREAD_START_ROUTINE;
+      pParameter        : PVOID;
+      dwCreationFlags   : DWORD;
+      pThreadId         : PDWORD) return HANDLE;
    pragma Import (Stdcall, CreateThread, "CreateThread");
 
    function BeginThreadEx
-     (pThreadAttributes    : PSECURITY_ATTRIBUTES;
-      dwStackSize          : DWORD;
-      pStartAddress        : PTHREAD_START_ROUTINE;
-      pParameter           : PVOID;
-      dwCreationFlags      : DWORD;
-      pThreadId            : PDWORD) return HANDLE;
+     (pThreadAttributes : access SECURITY_ATTRIBUTES;
+      dwStackSize       : DWORD;
+      pStartAddress     : PTHREAD_START_ROUTINE;
+      pParameter        : PVOID;
+      dwCreationFlags   : DWORD;
+      pThreadId         : PDWORD) return HANDLE;
    pragma Import (C, BeginThreadEx, "_beginthreadex");
 
    Debug_Process                     : constant := 16#00000001#;
@@ -373,11 +382,8 @@ package System.OS_Interface is
    -- Semaphores, Events and Mutexes --
    ------------------------------------
 
-   function CloseHandle (hObject : HANDLE) return BOOL;
-   pragma Import (Stdcall, CloseHandle, "CloseHandle");
-
    function CreateSemaphore
-     (pSemaphoreAttributes : PSECURITY_ATTRIBUTES;
+     (pSemaphoreAttributes : access SECURITY_ATTRIBUTES;
       lInitialCount        : Interfaces.C.long;
       lMaximumCount        : Interfaces.C.long;
       pName                : PSZ) return HANDLE;
@@ -396,7 +402,7 @@ package System.OS_Interface is
    pragma Import (Stdcall, ReleaseSemaphore, "ReleaseSemaphore");
 
    function CreateEvent
-     (pEventAttributes : PSECURITY_ATTRIBUTES;
+     (pEventAttributes : access SECURITY_ATTRIBUTES;
       bManualReset     : BOOL;
       bInitialState    : BOOL;
       pName            : PSZ) return HANDLE;
@@ -418,7 +424,7 @@ package System.OS_Interface is
    pragma Import (Stdcall, PulseEvent, "PulseEvent");
 
    function CreateMutex
-     (pMutexAttributes : PSECURITY_ATTRIBUTES;
+     (pMutexAttributes : access SECURITY_ATTRIBUTES;
       bInitialOwner    : BOOL;
       pName            : PSZ) return HANDLE;
    pragma Import (Stdcall, CreateMutex, "CreateMutexA");

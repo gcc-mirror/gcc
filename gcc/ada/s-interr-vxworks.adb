@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2007, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2008, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,54 +56,31 @@
 --  any time.
 
 --  Within this package, the lock L is used to protect the various status
---  tables. If there is a Server_Task associated with a signal or interrupt,
---  we use the per-task lock of the Server_Task instead so that we protect the
---  status between Interrupt_Manager and Server_Task. Protection among
---  service requests are ensured via user calls to the Interrupt_Manager
---  entries.
+--  tables. If there is a Server_Task associated with a signal or interrupt, we
+--  use the per-task lock of the Server_Task instead so that we protect the
+--  status between Interrupt_Manager and Server_Task. Protection among service
+--  requests are ensured via user calls to the Interrupt_Manager entries.
 
 --  This is the VxWorks version of this package, supporting vectored hardware
 --  interrupts.
 
 with Ada.Unchecked_Conversion;
-
-with System.OS_Interface; use System.OS_Interface;
+with Ada.Task_Identification;
 
 with Interfaces.VxWorks;
 
-with Ada.Task_Identification;
---  used for Task_Id type
-
-with Ada.Exceptions;
---  used for Raise_Exception
-
+with System.OS_Interface; use System.OS_Interface;
 with System.Interrupt_Management;
---  used for Reserve
-
 with System.Task_Primitives.Operations;
---  used for Write_Lock
---           Unlock
---           Abort
---           Wakeup_Task
---           Sleep
---           Initialize_Lock
-
 with System.Storage_Elements;
---  used for To_Address
---           To_Integer
---           Integer_Address
-
 with System.Tasking.Utilities;
---  used for Make_Independent
 
 with System.Tasking.Rendezvous;
---  used for Call_Simple
 pragma Elaborate_All (System.Tasking.Rendezvous);
 
 package body System.Interrupts is
 
    use Tasking;
-   use Ada.Exceptions;
 
    package POP renames System.Task_Primitives.Operations;
 
@@ -310,9 +287,8 @@ package body System.Interrupts is
    procedure Check_Reserved_Interrupt (Interrupt : Interrupt_ID) is
    begin
       if Is_Reserved (Interrupt) then
-         Raise_Exception
-           (Program_Error'Identity,
-            "Interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved");
+         raise Program_Error with
+           "Interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
       else
          return;
       end if;
@@ -744,9 +720,7 @@ package body System.Interrupts is
 
    procedure Unimplemented (Feature : String) is
    begin
-      Raise_Exception
-        (Program_Error'Identity,
-         Feature & " not implemented on VxWorks");
+      raise Program_Error with Feature & " not implemented on VxWorks";
    end Unimplemented;
 
    -----------------------
@@ -823,8 +797,8 @@ package body System.Interrupts is
             --  If an interrupt entry is installed raise
             --  Program_Error. (propagate it to the caller).
 
-            Raise_Exception (Program_Error'Identity,
-              "An interrupt entry is already installed");
+            raise Program_Error with
+              "An interrupt entry is already installed";
          end if;
 
          --  Note : Static = True will pass the following check. This is the
@@ -836,8 +810,8 @@ package body System.Interrupts is
             --  Trying to detach a static Interrupt Handler. raise
             --  Program_Error.
 
-            Raise_Exception (Program_Error'Identity,
-              "Trying to detach a static Interrupt Handler");
+            raise Program_Error with
+              "Trying to detach a static Interrupt Handler";
          end if;
 
          Old_Handler := User_Handler (Interrupt).H;
@@ -869,9 +843,7 @@ package body System.Interrupts is
             --  If an interrupt entry is already installed, raise
             --  Program_Error. (propagate it to the caller).
 
-            Raise_Exception
-              (Program_Error'Identity,
-               "An interrupt is already installed");
+            raise Program_Error with "An interrupt is already installed";
          end if;
 
          --  Note : A null handler with Static = True will
@@ -892,10 +864,9 @@ package body System.Interrupts is
 
            or else not Is_Registered (New_Handler))
          then
-            Raise_Exception
-              (Program_Error'Identity,
+            raise Program_Error with
                "Trying to overwrite a static Interrupt Handler with a " &
-               "dynamic Handler");
+               "dynamic Handler";
          end if;
 
          --  Save the old handler
@@ -1003,9 +974,8 @@ package body System.Interrupts is
                   if User_Handler (Interrupt).H /= null
                     or else User_Entry (Interrupt).T /= Null_Task
                   then
-                     Raise_Exception
-                       (Program_Error'Identity,
-                        "A binding for this interrupt is already present");
+                     raise Program_Error with
+                       "A binding for this interrupt is already present";
                   end if;
 
                   User_Entry (Interrupt) := Entry_Assoc'(T => T, E => E);

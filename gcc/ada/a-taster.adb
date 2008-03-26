@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2005-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2005-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,21 +32,9 @@
 ------------------------------------------------------------------------------
 
 with System.Tasking;
---  used for Task_Id
-
 with System.Task_Primitives.Operations;
---  used for Self
---           Write_Lock
---           Unlock
---           Lock_RTS
---           Unlock_RTS
-
 with System.Parameters;
---  used for Single_Lock
-
 with System.Soft_Links;
---  use for Abort_Defer
---          Abort_Undefer
 
 with Ada.Unchecked_Conversion;
 

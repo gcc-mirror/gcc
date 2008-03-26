@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,31 +32,20 @@
 ------------------------------------------------------------------------------
 
 pragma Style_Checks (All_Checks);
---  Turn off subprogram alpha ordering check, since we group soft link
---  bodies and dummy soft link bodies together separately in this unit.
+--  Turn off subprogram alpha ordering check, since we group soft link bodies
+--  and dummy soft link bodies together separately in this unit.
 
 pragma Polling (Off);
---  Turn polling off for this package. We don't need polling during any
---  of the routines in this package, and more to the point, if we try
---  to poll it can cause infinite loops.
-
-with System.Task_Primitives.Operations;
---  Used for Self
---           Timed_Delay
-
-with System.Tasking;
---  Used for Task_Id
---           Cause_Of_Termination
-
-with System.Stack_Checking;
---  Used for Stack_Access
+--  Turn polling off for this package. We don't need polling during any of the
+--  routines in this package, and more to the point, if we try to poll it can
+--  cause infinite loops.
 
 with Ada.Exceptions;
---  Used for Exception_Id
---           Exception_Occurrence
---           Save_Occurrence
-
 with Ada.Exceptions.Is_Null_Occurrence;
+
+with System.Task_Primitives.Operations;
+with System.Tasking;
+with System.Stack_Checking;
 
 package body System.Soft_Links.Tasking is
 

@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2006, AdaCore                     --
+--                     Copyright (C) 1995-2008, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,17 +33,9 @@
 ------------------------------------------------------------------------------
 
 with System.OS_Primitives;
---  Used for Delay_Modes
---           Max_Sensible_Delay
-
 with System.Soft_Links;
---  Used for Timed_Delay
-
 with System.Traces;
---  Used for Send_Trace_Info
-
 with System.Parameters;
---  used for Runtime_Traces
 
 package body Ada.Calendar.Delays is
 

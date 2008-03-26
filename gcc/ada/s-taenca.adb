@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2007, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2008, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,36 +32,13 @@
 ------------------------------------------------------------------------------
 
 with System.Task_Primitives.Operations;
---  used for STPO.Write_Lock
---           Unlock
---           STPO.Get_Priority
---           Sleep
---           Timed_Sleep
-
 with System.Tasking.Initialization;
---  used for Change_Base_Priority
---           Defer_Abort/Undefer_Abort
-
 with System.Tasking.Protected_Objects.Entries;
---  used for To_Protection
-
 with System.Tasking.Protected_Objects.Operations;
---  used for PO_Service_Entries
-
 with System.Tasking.Queuing;
---  used for Requeue_Call_With_New_Prio
---           Onqueue
---           Dequeue_Call
-
 with System.Tasking.Utilities;
---  used for Exit_One_ATC_Level
-
 with System.Parameters;
---  used for Single_Lock
---           Runtime_Traces
-
 with System.Traces;
---  used for Send_Trace_Info
 
 package body System.Tasking.Entry_Calls is
 

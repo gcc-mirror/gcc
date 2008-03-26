@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---          Copyright (C) 1995-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,13 +35,15 @@
 --  This is a OpenVMS/Alpha version of this package
 
 --  This package encapsulates all direct interfaces to OS services
---  that are needed by children of System.
+--  that are needed by the tasking run-time (libgnarl).
 
 --  PLEASE DO NOT add any with-clauses to this package or remove the pragma
 --  Preelaborate. This package is designed to be a bottom-level (leaf) package.
 
 with Interfaces.C;
+
 with Ada.Unchecked_Conversion;
+
 with System.Aux_DEC;
 
 package System.OS_Interface is

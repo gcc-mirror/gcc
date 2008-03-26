@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -35,17 +35,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This version is used for all Ada 2005 builds. It differs from a-except.ads
---  only with respect to the addition of Wide_[Wide]Exception_Name functions.
---  The additional entities are marked with pragma Ada_05, so this extended
---  unit is also perfectly suitable for use in Ada 95 or Ada 83 mode.
+--  This version of Ada.Exceptions fully supports both Ada 95 and Ada 2005.
+--  It is used in all situations except for the build of the compiler and
+--  other basic tools. For these latter builds, we use an Ada 95-only version.
 
 --  The reason for this splitting off of a separate version is that bootstrap
 --  compilers often will be used that do not support Ada 2005 features, and
 --  Ada.Exceptions is part of the compiler sources.
-
---  The base version of this unit Ada.Exceptions omits the Wide version of
---  Exception_Name and is used to build the compiler and other basic tools.
 
 pragma Polling (Off);
 --  We must turn polling off for this unit, because otherwise we get

@@ -2,12 +2,11 @@
 --                                                                          --
 --                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
---     S Y S T E M . T A S K I N G . P R O T E C T E D _ O B J E C T S .    --
---                             O P E R A T I O N S                          --
+--               SYSTEM.TASKING.PROTECTED_OBJECTS.OPERATIONS                --
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1998-2007, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2008, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,8 +31,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains all the extended primitives related to
---  Protected_Objects with entries.
+--  This package contains all extended primitives related to Protected_Objects
+--  with entries.
 
 --  The handling of protected objects with no entries is done in
 --  System.Tasking.Protected_Objects, the simple routines for protected
@@ -46,51 +45,18 @@
 --  Note: the compiler generates direct calls to this interface, via Rtsfind.
 
 with System.Task_Primitives.Operations;
---  used for Initialize_Lock
---           Write_Lock
---           Unlock
---           Get_Priority
---           Wakeup
-
 with System.Tasking.Entry_Calls;
---  used for Wait_For_Completion
---           Wait_Until_Abortable
---           Wait_For_Completion_With_Timeout
+with System.Tasking.Queuing;
+with System.Tasking.Rendezvous;
+with System.Tasking.Utilities;
+with System.Tasking.Debug;
+with System.Parameters;
+with System.Traces.Tasking;
+with System.Restrictions;
 
 with System.Tasking.Initialization;
---  Used for Defer_Abort,
---           Undefer_Abort,
---           Change_Base_Priority
-
 pragma Elaborate_All (System.Tasking.Initialization);
---  This insures that tasking is initialized if any protected objects are
---  created.
-
-with System.Tasking.Queuing;
---  used for Enqueue
---           Broadcast_Program_Error
---           Select_Protected_Entry_Call
---           Onqueue
---           Count_Waiting
-
-with System.Tasking.Rendezvous;
---  used for Task_Do_Or_Queue
-
-with System.Tasking.Utilities;
---  used for Exit_One_ATC_Level
-
-with System.Tasking.Debug;
---  used for Trace
-
-with System.Parameters;
---  used for Single_Lock
---           Runtime_Traces
-
-with System.Traces.Tasking;
---  used for Send_Trace_Info
-
-with System.Restrictions;
---  used for Run_Time_Restrictions
+--  Insures that tasking is initialized if any protected objects are created
 
 package body System.Tasking.Protected_Objects.Operations is
 
@@ -580,8 +546,7 @@ package body System.Tasking.Protected_Objects.Operations is
       end if;
 
       if Self_ID.ATC_Nesting_Level = ATC_Level'Last then
-         Raise_Exception
-           (Storage_Error'Identity, "not enough ATC nesting levels");
+         raise Storage_Error with "not enough ATC nesting levels";
       end if;
 
       --  If pragma Detect_Blocking is active then Program_Error must be
@@ -591,8 +556,7 @@ package body System.Tasking.Protected_Objects.Operations is
       if Detect_Blocking
         and then Self_ID.Common.Protected_Action_Nesting > 0
       then
-         Ada.Exceptions.Raise_Exception
-           (Program_Error'Identity, "potentially blocking operation");
+         raise Program_Error with "potentially blocking operation";
       end if;
 
       --  Self_ID.Deferral_Level should be 0, except when called from Finalize,
@@ -981,8 +945,7 @@ package body System.Tasking.Protected_Objects.Operations is
 
    begin
       if Self_Id.ATC_Nesting_Level = ATC_Level'Last then
-         Raise_Exception (Storage_Error'Identity,
-           "not enough ATC nesting levels");
+         raise Storage_Error with "not enough ATC nesting levels";
       end if;
 
       --  If pragma Detect_Blocking is active then Program_Error must be
@@ -992,8 +955,7 @@ package body System.Tasking.Protected_Objects.Operations is
       if Detect_Blocking
         and then Self_Id.Common.Protected_Action_Nesting > 0
       then
-         Ada.Exceptions.Raise_Exception
-           (Program_Error'Identity, "potentially blocking operation");
+         raise Program_Error with "potentially blocking operation";
       end if;
 
       if Runtime_Traces then

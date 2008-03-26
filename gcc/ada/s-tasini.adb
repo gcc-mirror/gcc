@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2007, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2008, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,38 +32,22 @@
 ------------------------------------------------------------------------------
 
 pragma Style_Checks (All_Checks);
---  Turn off subprogram alpha ordering check, since we group soft link
---  bodies and dummy soft link bodies together separately in this unit.
+--  Turn off subprogram alpha ordering check, since we group soft link bodies
+--  and dummy soft link bodies together separately in this unit.
 
 pragma Polling (Off);
---  Turn polling off for this package. We don't need polling during any
---  of the routines in this package, and more to the point, if we try
---  to poll it can cause infinite loops.
+--  Turn polling off for this package. We don't need polling during any of the
+--  routines in this package, and more to the point, if we try to poll it can
+--  cause infinite loops.
 
 with Ada.Exceptions;
---  Used for Exception_Occurrence_Access
 
 with System.Task_Primitives;
---  Used for Lock
-
 with System.Task_Primitives.Operations;
---  Used for Set_Priority
---           Write_Lock
---           Unlock
---           Initialize_Lock
-
 with System.Soft_Links;
---  Used for the non-tasking routines (*_NT) that refer to global data.
---  They are needed here before the tasking run time has been elaborated.
-
 with System.Soft_Links.Tasking;
---  Used for Init_Tasking_Soft_Links
-
 with System.Tasking.Debug;
---  Used for Trace
-
 with System.Parameters;
---  used for Single_Lock
 
 package body System.Tasking.Initialization is
 

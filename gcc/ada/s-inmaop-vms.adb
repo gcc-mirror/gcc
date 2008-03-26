@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,19 +34,11 @@
 --  This is a OpenVMS/Alpha version of this package
 
 with System.OS_Interface;
---  used for various type, constant, and operations
-
 with System.Aux_DEC;
---  used for Short_Address
-
 with System.Parameters;
-
 with System.Tasking;
-
 with System.Tasking.Initialization;
-
 with System.Task_Primitives.Operations;
-
 with System.Task_Primitives.Operations.DEC;
 
 with Ada.Unchecked_Conversion;

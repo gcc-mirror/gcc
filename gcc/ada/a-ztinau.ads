@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,10 +32,10 @@
 ------------------------------------------------------------------------------
 
 --  This package contains the routines for Ada.Wide_Wide_Text_IO.Integer_IO
---  that are shared among separate instantiations of this package. The
---  routines in this package are identical semantically to those in Integer_IO
---  itself, except that the generic parameter Num has been replaced by Integer
---  or Long_Long_Integer, and the default parameters have been removed because
+--  that are shared among separate instantiations of this package. The routines
+--  in this package are identical semantically to those in Integer_IO itself,
+--  except that the generic parameter Num has been replaced by Integer or
+--  Long_Long_Integer, and the default parameters have been removed because
 --  they are supplied explicitly by the calls from within the generic template.
 
 private package Ada.Wide_Wide_Text_IO.Integer_Aux is

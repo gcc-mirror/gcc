@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2007, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2008, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,39 +31,20 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides RTS Internal Declarations.
+--  This package provides RTS Internal Declarations
+
 --  These declarations are not part of the GNARLI
 
 pragma Polling (Off);
---  Turn off polling, we do not want ATC polling to take place during
---  tasking operations. It causes infinite loops and other problems.
+--  Turn off polling, we do not want ATC polling to take place during tasking
+--  operations. It causes infinite loops and other problems.
 
 with System.Tasking.Debug;
---  used for Known_Tasks
-
 with System.Task_Primitives.Operations;
---  used for Write_Lock
---           Wakeup
---           Unlock
---           Sleep
---           Abort_Task
---           Lock/Unlock_RTS
-
 with System.Tasking.Initialization;
---  Used for Defer_Abort
---           Undefer_Abort
---           Locked_Abort_To_Level
-
 with System.Tasking.Queuing;
---  used for Dequeue_Call
---           Dequeue_Head
-
 with System.Parameters;
---  used for Single_Lock
---           Runtime_Traces
-
 with System.Traces.Tasking;
---  used for Send_Trace_Info
 
 package body System.Tasking.Utilities is
 
@@ -129,8 +110,7 @@ package body System.Tasking.Utilities is
       if System.Tasking.Detect_Blocking
         and then Self_Id.Common.Protected_Action_Nesting > 0
       then
-         Ada.Exceptions.Raise_Exception
-           (Program_Error'Identity, "potentially blocking operation");
+         raise Program_Error with "potentially blocking operation";
       end if;
 
       Initialization.Defer_Abort_Nestable (Self_Id);

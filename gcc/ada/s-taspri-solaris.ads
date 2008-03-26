@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,15 +36,12 @@
 --  This package provides low-level support for most tasking features
 
 pragma Polling (Off);
---  Turn off polling, we do not want ATC polling to take place during
---  tasking operations. It causes infinite loops and other problems.
-
-with System.OS_Interface;
---  used for mutex_t
---           cond_t
---           thread_t
+--  Turn off polling, we do not want ATC polling to take place during tasking
+--  operations. It causes infinite loops and other problems.
 
 with Ada.Unchecked_Conversion;
+
+with System.OS_Interface;
 
 package System.Task_Primitives is
    pragma Preelaborate;

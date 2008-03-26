@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,25 +37,13 @@
 --  Any changes to this interface may require corresponding compiler changes.
 
 with Ada.Exceptions;
---  Used for Exception_Id
---           Exception_Occurrence
+with Ada.Unchecked_Conversion;
 
 with System.Parameters;
---  used for Size_Type
-
 with System.Task_Info;
---  used for Task_Info_Type
-
 with System.Soft_Links;
---  used for TSD
-
 with System.Task_Primitives;
---  used for Private_Data
-
 with System.Stack_Usage;
---  used for Stack_Analyzer
-
-with Ada.Unchecked_Conversion;
 
 package System.Tasking is
    pragma Preelaborate;

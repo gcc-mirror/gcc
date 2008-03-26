@@ -2,13 +2,12 @@
 --                                                                          --
 --                  GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                --
 --                                                                          --
---          S Y S T E M . I N T E R R U P T _ M A N A G E M E N T .         --
---                            O P E R A T I O N S                           --
+--                  SYSTEM.INTERRUPT_MANAGEMENT.OPERATIONS                  --
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2007, AdaCore                     --
+--                     Copyright (C) 1995-2008, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,20 +32,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a POSIX-like version of this package.
---  Note: this file can only be used for POSIX compliant systems.
+--  This is a POSIX-like version of this package
+
+--  Note: this file can only be used for POSIX compliant systems
 
 with Interfaces.C;
---  used for int
---           size_t
---           unsigned
 
 with System.OS_Interface;
---  used for various type, constant, and operations
-
 with System.Storage_Elements;
---  used for To_Address
---           Integer_Address
 
 package body System.Interrupt_Management.Operations is
 

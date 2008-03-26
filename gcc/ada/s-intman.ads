@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,10 +46,8 @@
 --  rather than functions.
 
 with System.OS_Interface;
---  used for sigset_t
 
 with Interfaces.C;
---  used for int
 
 package System.Interrupt_Management is
    pragma Preelaborate;

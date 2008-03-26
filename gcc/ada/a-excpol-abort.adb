@@ -7,7 +7,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,7 +45,6 @@ pragma Warnings (Off);
 --  It is safe in the context of the run-time to violate the rules!
 
 with System.Soft_Links;
---  used for Check_Abort_Status
 
 pragma Warnings (On);
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1998-2007, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2008, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,46 +35,17 @@ pragma Polling (Off);
 --  Turn off polling, we do not want ATC polling to take place during
 --  tasking operations. It causes infinite loops and other problems.
 
-with Ada.Exceptions;
---  Used for Raise_Exception
+with Ada.Unchecked_Conversion;
+with Ada.Task_Identification;
 
 with System.Task_Primitives.Operations;
---  Used for Write_Lock,
---           Unlock,
---           Self,
---           Monotonic_Clock,
---           Self,
---           Timed_Sleep,
---           Wakeup,
---           Yield
-
 with System.Tasking.Utilities;
---  Used for Make_Independent
-
 with System.Tasking.Initialization;
---  Used for Defer_Abort
---           Undefer_Abort
-
 with System.Tasking.Debug;
---  Used for Trace
-
 with System.OS_Primitives;
---  used for Max_Sensible_Delay
-
-with Ada.Task_Identification;
---  used for Task_Id type
-
 with System.Interrupt_Management.Operations;
---  used for Setup_Interrupt_Mask
-
 with System.Parameters;
---  used for Single_Lock
---           Runtime_Traces
-
 with System.Traces.Tasking;
---  used for Send_Trace_Info
-
-with Ada.Unchecked_Conversion;
 
 package body System.Tasking.Async_Delays is
 
@@ -228,8 +199,7 @@ package body System.Tasking.Async_Delays is
         "async delay from within abort-deferred region");
 
       if Self_Id.ATC_Nesting_Level = ATC_Level'Last then
-         Ada.Exceptions.Raise_Exception (Storage_Error'Identity,
-           "not enough ATC nesting levels");
+         raise Storage_Error with "not enough ATC nesting levels";
       end if;
 
       Self_Id.ATC_Nesting_Level := Self_Id.ATC_Nesting_Level + 1;

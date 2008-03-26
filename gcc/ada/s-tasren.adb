@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1992-2007, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2008, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,53 +32,15 @@
 ------------------------------------------------------------------------------
 
 with System.Task_Primitives.Operations;
---  used for Get_Priority
---           Set_Priority
---           Write_Lock
---           Unlock
---           Sleep
---           Wakeup
---           Timed_Sleep
-
 with System.Tasking.Entry_Calls;
---  Used for Wait_For_Completion
---           Wait_For_Completion_With_Timeout
---           Wait_Until_Abortable
-
 with System.Tasking.Initialization;
---  used for Defer_Abort
---           Undefer_Abort
---           Do_Pending_Action
-
 with System.Tasking.Queuing;
---  used for Enqueue
---           Dequeue_Head
---           Select_Task_Entry_Call
---           Count_Waiting
-
 with System.Tasking.Utilities;
---  used for Check_Exception
---           Make_Passive
---           Wakeup_Entry_Caller
---           Exit_One_ATC_Level
-
 with System.Tasking.Protected_Objects.Operations;
---  used for PO_Do_Or_Queue
---           PO_Service_Entries
---           Lock_Entries
-
 with System.Tasking.Debug;
---  used for Trace
-
 with System.Restrictions;
---  used for Abort_Allowed
-
 with System.Parameters;
---  used for Single_Lock
---           Runtime_Traces
-
 with System.Traces.Tasking;
---  used for Send_Trace_Info
 
 package body System.Tasking.Rendezvous is
 
@@ -402,8 +364,7 @@ package body System.Tasking.Rendezvous is
       if System.Tasking.Detect_Blocking
         and then STPO.Self.Common.Protected_Action_Nesting > 0
       then
-         Ada.Exceptions.Raise_Exception
-           (Program_Error'Identity, "potentially blocking operation");
+         raise Program_Error with "potentially blocking operation";
       end if;
 
       Call_Synchronous
@@ -1037,8 +998,7 @@ package body System.Tasking.Rendezvous is
                end if;
 
                Initialization.Undefer_Abort (Self_Id);
-               Ada.Exceptions.Raise_Exception
-                 (Program_Error'Identity, "Entry call not a delay mode");
+               raise Program_Error with "Entry call not a delay mode";
             end if;
       end case;
 
@@ -1351,8 +1311,7 @@ package body System.Tasking.Rendezvous is
       if System.Tasking.Detect_Blocking
         and then Self_Id.Common.Protected_Action_Nesting > 0
       then
-         Ada.Exceptions.Raise_Exception
-           (Program_Error'Identity, "potentially blocking operation");
+         raise Program_Error with "potentially blocking operation";
       end if;
 
       if Parameters.Runtime_Traces then
@@ -1719,8 +1678,7 @@ package body System.Tasking.Rendezvous is
       if System.Tasking.Detect_Blocking
         and then Self_Id.Common.Protected_Action_Nesting > 0
       then
-         Ada.Exceptions.Raise_Exception
-           (Program_Error'Identity, "potentially blocking operation");
+         raise Program_Error with "potentially blocking operation";
       end if;
 
       Initialization.Defer_Abort (Self_Id);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,10 +46,7 @@
 --  System.Protected_Objects.Single_Entry
 
 with System.Task_Info;
---  used for Task_Info_Type
-
 with System.Parameters;
---  used for Size_Type
 
 package System.Tasking.Restricted.Stages is
    pragma Elaborate_Body;

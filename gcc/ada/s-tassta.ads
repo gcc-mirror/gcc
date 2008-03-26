@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,14 +37,12 @@
 
 --  Note: Only the compiler is allowed to use this interface, by generating
 --  direct calls to it, via Rtsfind.
+
 --  Any changes to this interface may require corresponding compiler changes
 --  in exp_ch9.adb and possibly exp_ch7.adb
 
 with System.Task_Info;
---  used for Task_Info_Type
-
 with System.Parameters;
---  used for Size_Type
 
 package System.Tasking.Stages is
    pragma Elaborate_Body;

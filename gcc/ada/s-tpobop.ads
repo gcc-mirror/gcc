@@ -2,12 +2,11 @@
 --                                                                          --
 --                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
---     S Y S T E M . T A S K I N G . P R O T E C T E D _ O B J E C T S .    --
---                             O P E R A T I O N S                          --
+--               SYSTEM.TASKING.PROTECTED_OBJECTS.OPERATIONS                --
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,7 +44,6 @@
 --  Any changes to this interface may require corresponding compiler changes.
 
 with Ada.Exceptions;
---  Used for Exception_Id
 
 with System.Tasking.Protected_Objects.Entries;
 
