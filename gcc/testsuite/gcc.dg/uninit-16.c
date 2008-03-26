@@ -3,6 +3,7 @@
 
 int foo, bar;
 
+static
 void decode_reloc(int reloc, int *is_alt)
 {
   if (reloc >= 20)
