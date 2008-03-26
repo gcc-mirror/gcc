@@ -118,25 +118,31 @@ procedure GNATCmd is
    --  tool. We allocate objects because we cannot declare aliased objects
    --  as we are in a procedure, not a library level package.
 
-   Naming_String    : constant String_Access := new String'("naming");
-   Binder_String    : constant String_Access := new String'("binder");
-   Compiler_String  : constant String_Access := new String'("compiler");
-   Check_String     : constant String_Access := new String'("check");
-   Eliminate_String : constant String_Access := new String'("eliminate");
-   Finder_String    : constant String_Access := new String'("finder");
-   Linker_String    : constant String_Access := new String'("linker");
-   Gnatls_String    : constant String_Access := new String'("gnatls");
-   Pretty_String    : constant String_Access := new String'("pretty_printer");
-   Stack_String     : constant String_Access := new String'("stack");
-   Gnatstub_String  : constant String_Access := new String'("gnatstub");
-   Metric_String    : constant String_Access := new String'("metrics");
-   Xref_String      : constant String_Access := new String'("cross_reference");
+   subtype SA is String_Access;
+
+   Naming_String      : constant SA := new String'("naming");
+   Binder_String      : constant SA := new String'("binder");
+   Compiler_String    : constant SA := new String'("compiler");
+   Check_String       : constant SA := new String'("check");
+   Synchronize_String : constant SA := new String'("synchronize");
+   Eliminate_String   : constant SA := new String'("eliminate");
+   Finder_String      : constant SA := new String'("finder");
+   Linker_String      : constant SA := new String'("linker");
+   Gnatls_String      : constant SA := new String'("gnatls");
+   Pretty_String      : constant SA := new String'("pretty_printer");
+   Stack_String       : constant SA := new String'("stack");
+   Gnatstub_String    : constant SA := new String'("gnatstub");
+   Metric_String      : constant SA := new String'("metrics");
+   Xref_String        : constant SA := new String'("cross_reference");
 
    Packages_To_Check_By_Binder   : constant String_List_Access :=
      new String_List'((Naming_String, Binder_String));
 
    Packages_To_Check_By_Check : constant String_List_Access :=
      new String_List'((Naming_String, Check_String, Compiler_String));
+
+   Packages_To_Check_By_Sync : constant String_List_Access :=
+     new String_List'((Naming_String, Synchronize_String, Compiler_String));
 
    Packages_To_Check_By_Eliminate : constant String_List_Access :=
      new String_List'((Naming_String, Eliminate_String, Compiler_String));
@@ -549,8 +555,9 @@ procedure GNATCmd is
                   end if;
 
                else
-                  --  For gnatcheck, gnatpp and gnatmetric, put all sources
-                  --  of the project, or of all projects if -U was specified.
+                  --  For gnatcheck, gnatsync, gnatpp and gnatmetric, put all
+                  --  sources of the project, or of all projects if -U was
+                  --  specified.
 
                   for Kind in Spec_Or_Body loop
                      if Check_Project
@@ -1561,6 +1568,7 @@ begin
 
       if The_Command = Bind
         or else The_Command = Check
+        or else The_Command = Sync
         or else The_Command = Elim
         or else The_Command = Find
         or else The_Command = Link
@@ -1578,6 +1586,9 @@ begin
             when Check =>
                Tool_Package_Name := Name_Check;
                Packages_To_Check := Packages_To_Check_By_Check;
+            when Sync =>
+               Tool_Package_Name := Name_Synchronize;
+               Packages_To_Check := Packages_To_Check_By_Sync;
             when Elim =>
                Tool_Package_Name := Name_Eliminate;
                Packages_To_Check := Packages_To_Check_By_Eliminate;
@@ -1761,6 +1772,7 @@ begin
 
                   elsif
                     (The_Command = Check  or else
+                     The_Command = Sync   or else
                      The_Command = Pretty or else
                      The_Command = Metric or else
                      The_Command = Stack  or else
@@ -1776,6 +1788,7 @@ begin
                   end if;
 
                elsif ((The_Command = Check and then Argv (Argv'First) /= '+')
+                        or else The_Command = Sync
                         or else The_Command = Metric
                         or else The_Command = Pretty)
                  and then Project_File /= null
@@ -1938,6 +1951,7 @@ begin
            or else The_Command = Stub
            or else The_Command = Elim
            or else The_Command = Check
+           or else The_Command = Sync
          then
             --  If there are switches in package Compiler, put them in the
             --  Carg_Switches table.
@@ -2295,8 +2309,8 @@ begin
             end;
          end if;
 
-         --  For gnat check, metric or pretty with -U + a main, get the list
-         --  of sources from the closure and add them to the arguments.
+         --  For gnat check, sync, metric or pretty with -U + a main, get the
+         --  list of sources from the closure and add them to the arguments.
 
          if ASIS_Main /= null then
             Get_Closure;
@@ -2315,11 +2329,12 @@ begin
                  (Project, Project_Tree, Including_Libraries => False);
             end if;
 
-         --  For gnat check, gnat pretty, gnat metric, gnat list, and gnat
-         --  stack, if no file has been put on the command line, call tool
-         --  with all the sources of the main project.
+         --  For gnat check, gnat sync, gnat pretty, gnat metric, gnat list,
+         --  and gnat stack, if no file has been put on the command line, call
+         --  tool with all the sources of the main project.
 
          elsif The_Command = Check  or else
+               The_Command = Sync   or else
                The_Command = Pretty or else
                The_Command = Metric or else
                The_Command = List   or else

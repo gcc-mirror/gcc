@@ -98,6 +98,7 @@ package VMS_Conv is
       Clean,
       Compile,
       Check,
+      Sync,
       Elim,
       Find,
       Krunch,
