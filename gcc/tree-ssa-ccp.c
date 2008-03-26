@@ -1264,50 +1264,6 @@ visit_assignment (tree stmt, tree *output_p)
     /* Evaluate the statement.  */
     val = evaluate_stmt (stmt);
 
-  /* If the original LHS was a VIEW_CONVERT_EXPR, modify the constant
-     value to be a VIEW_CONVERT_EXPR of the old constant value.
-
-     ??? Also, if this was a definition of a bitfield, we need to widen
-     the constant value into the type of the destination variable.  This
-     should not be necessary if GCC represented bitfields properly.  */
-  {
-    tree orig_lhs = GIMPLE_STMT_OPERAND (stmt, 0);
-
-    if (TREE_CODE (orig_lhs) == VIEW_CONVERT_EXPR
-	&& val.lattice_val == CONSTANT)
-      {
-	tree w = fold_unary (VIEW_CONVERT_EXPR,
-			     TREE_TYPE (TREE_OPERAND (orig_lhs, 0)),
-			     val.value);
-
-	orig_lhs = TREE_OPERAND (orig_lhs, 0);
-	if (w && is_gimple_min_invariant (w))
-	  val.value = w;
-	else
-	  {
-	    val.lattice_val = VARYING;
-	    val.value = NULL;
-	  }
-      }
-
-    if (val.lattice_val == CONSTANT
-	&& TREE_CODE (orig_lhs) == COMPONENT_REF
-	&& DECL_BIT_FIELD (TREE_OPERAND (orig_lhs, 1)))
-      {
-	tree w = widen_bitfield (val.value, TREE_OPERAND (orig_lhs, 1),
-				 orig_lhs);
-
-	if (w && is_gimple_min_invariant (w))
-	  val.value = w;
-	else
-	  {
-	    val.lattice_val = VARYING;
-	    val.value = NULL_TREE;
-	    val.mem_ref = NULL_TREE;
-	  }
-      }
-  }
-
   retval = SSA_PROP_NOT_INTERESTING;
 
   /* Set the lattice value of the statement's output.  */
@@ -1534,64 +1490,6 @@ struct gimple_opt_pass pass_store_ccp =
   | TODO_verify_stmts | TODO_ggc_collect/* todo_flags_finish */
  }
 };
-
-/* Given a constant value VAL for bitfield FIELD, and a destination
-   variable VAR, return VAL appropriately widened to fit into VAR.  If
-   FIELD is wider than HOST_WIDE_INT, NULL is returned.  */
-
-tree
-widen_bitfield (tree val, tree field, tree var)
-{
-  unsigned HOST_WIDE_INT var_size, field_size;
-  tree wide_val;
-  unsigned HOST_WIDE_INT mask;
-  unsigned int i;
-
-  /* We can only do this if the size of the type and field and VAL are
-     all constants representable in HOST_WIDE_INT.  */
-  if (!host_integerp (TYPE_SIZE (TREE_TYPE (var)), 1)
-      || !host_integerp (DECL_SIZE (field), 1)
-      || !host_integerp (val, 0))
-    return NULL_TREE;
-
-  var_size = tree_low_cst (TYPE_SIZE (TREE_TYPE (var)), 1);
-  field_size = tree_low_cst (DECL_SIZE (field), 1);
-
-  /* Give up if either the bitfield or the variable are too wide.  */
-  if (field_size > HOST_BITS_PER_WIDE_INT || var_size > HOST_BITS_PER_WIDE_INT)
-    return NULL_TREE;
-
-  gcc_assert (var_size >= field_size);
-
-  /* If the sign bit of the value is not set or the field's type is unsigned,
-     just mask off the high order bits of the value.  */
-  if (DECL_UNSIGNED (field)
-      || !(tree_low_cst (val, 0) & (((HOST_WIDE_INT)1) << (field_size - 1))))
-    {
-      /* Zero extension.  Build a mask with the lower 'field_size' bits
-	 set and a BIT_AND_EXPR node to clear the high order bits of
-	 the value.  */
-      for (i = 0, mask = 0; i < field_size; i++)
-	mask |= ((HOST_WIDE_INT) 1) << i;
-
-      wide_val = fold_build2 (BIT_AND_EXPR, TREE_TYPE (var), val, 
-			      build_int_cst (TREE_TYPE (var), mask));
-    }
-  else
-    {
-      /* Sign extension.  Create a mask with the upper 'field_size'
-	 bits set and a BIT_IOR_EXPR to set the high order bits of the
-	 value.  */
-      for (i = 0, mask = 0; i < (var_size - field_size); i++)
-	mask |= ((HOST_WIDE_INT) 1) << (var_size - i - 1);
-
-      wide_val = fold_build2 (BIT_IOR_EXPR, TREE_TYPE (var), val,
-			      build_int_cst (TREE_TYPE (var), mask));
-    }
-
-  return wide_val;
-}
-
 
 /* A subroutine of fold_stmt_r.  Attempts to fold *(A+O) to A[X].
    BASE is an array type.  OFFSET is a byte displacement.  ORIG_TYPE
