@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,6 +49,7 @@ with Restrict; use Restrict;
 with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
+with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch7;  use Sem_Ch7;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Eval; use Sem_Eval;
@@ -611,6 +612,121 @@ package body Exp_Attr is
             Ref_Object : constant Node_Id := Get_Referenced_Object (Pref);
 
          begin
+            --  In order to improve the text of error messages, the designated
+            --  type of access-to-subprogram itypes is set by the semantics as
+            --  the associated subprogram entity (see sem_attr). Now we replace
+            --  such node with the proper E_Subprogram_Type itype.
+
+            if Id = Attribute_Unrestricted_Access
+              and then Is_Subprogram (Directly_Designated_Type (Typ))
+            then
+               --  The following assertion ensures that this special management
+               --  is done only for "Address!(Prim'Unrestricted_Access)" nodes.
+               --  At this stage other cases in which the designated type is
+               --  still a subprogram (instead of an E_Subprogram_Type) are
+               --  wrong because the semantics must have overriden the type of
+               --  the node with the type imposed by the context.
+
+               pragma Assert (Nkind (Parent (N)) = N_Unchecked_Type_Conversion
+                 and then Etype (Parent (N)) = RTE (RE_Address));
+
+               declare
+                  Subp : constant Entity_Id := Directly_Designated_Type (Typ);
+
+                  Extra      : Entity_Id := Empty;
+                  New_Formal : Entity_Id;
+                  Old_Formal : Entity_Id := First_Formal (Subp);
+                  Subp_Typ   : Entity_Id;
+
+               begin
+                  Subp_Typ := Create_Itype (E_Subprogram_Type, N);
+                  Set_Etype (Subp_Typ, Etype (Subp));
+                  Set_Returns_By_Ref (Subp_Typ, Returns_By_Ref (Subp));
+
+                  if Present (Old_Formal) then
+                     New_Formal := New_Copy (Old_Formal);
+                     Set_First_Entity (Subp_Typ, New_Formal);
+
+                     loop
+                        Set_Scope (New_Formal, Subp_Typ);
+
+                        --  Handle itypes
+
+                        if Is_Itype (Etype (New_Formal)) then
+                           Extra := New_Copy (Etype (New_Formal));
+
+                           if Ekind (Extra) = E_Record_Subtype
+                             or else Ekind (Extra) = E_Class_Wide_Subtype
+                           then
+                              Set_Cloned_Subtype (Extra,
+                                Etype (New_Formal));
+                           end if;
+
+                           Set_Etype (New_Formal, Extra);
+                           Set_Scope (Etype (New_Formal), Subp_Typ);
+                        end if;
+
+                        Extra := New_Formal;
+                        Next_Formal (Old_Formal);
+                        exit when No (Old_Formal);
+
+                        Set_Next_Entity (New_Formal,
+                          New_Copy (Old_Formal));
+                        Next_Entity (New_Formal);
+                     end loop;
+
+                     Set_Next_Entity (New_Formal, Empty);
+                     Set_Last_Entity (Subp_Typ, Extra);
+                  end if;
+
+                  --  Now that the explicit formals have been duplicated,
+                  --  any extra formals needed by the subprogram must be
+                  --  created.
+
+                  if Present (Extra) then
+                     Set_Extra_Formal (Extra, Empty);
+                  end if;
+
+                  Create_Extra_Formals (Subp_Typ);
+                  Set_Directly_Designated_Type (Typ, Subp_Typ);
+
+                  --  Complete decoration of access-to-subprogram itype to
+                  --  indicate to the backend that this itype corresponds to
+                  --  a statically allocated dispatch table.
+
+                  --  ??? more comments on structure here, three level parent
+                  --  references are worrisome!
+
+                  if Nkind (Ref_Object) in N_Has_Entity
+                    and then Is_Dispatching_Operation (Entity (Ref_Object))
+                    and then Present (Parent (Parent (N)))
+                    and then Nkind (Parent (Parent (N))) = N_Aggregate
+                    and then Present (Parent (Parent (Parent (N))))
+                  then
+                     declare
+                        P    : constant Node_Id :=
+                                 Parent (Parent (Parent (N)));
+                        Prim : constant Entity_Id := Entity (Ref_Object);
+
+                     begin
+                        Set_Is_Static_Dispatch_Table_Entity (Typ,
+                           (Is_Predefined_Dispatching_Operation (Prim)
+                              and then Nkind (P) = N_Object_Declaration
+                              and then Is_Static_Dispatch_Table_Entity
+                                         (Defining_Identifier (P)))
+                          or else
+                           (not Is_Predefined_Dispatching_Operation (Prim)
+                              and then Nkind (P) = N_Aggregate
+                              and then Present (Parent (P))
+                              and then Nkind (Parent (P))
+                                         = N_Object_Declaration
+                              and then Is_Static_Dispatch_Table_Entity
+                                         (Defining_Identifier (Parent (P)))));
+                     end;
+                  end if;
+               end;
+            end if;
+
             if Is_Access_Protected_Subprogram_Type (Btyp) then
                Expand_Access_To_Protected_Op (N, Pref, Typ);
 
@@ -1208,18 +1324,20 @@ package body Exp_Attr is
          --  Protected case
 
          if Is_Protected_Type (Conctype) then
-            if Abort_Allowed
-              or else Restriction_Active (No_Entry_Queue) = False
-              or else Number_Entries (Conctype) > 1
-            then
-               Name :=
-                 New_Reference_To
-                   (RTE (RE_Protected_Entry_Caller), Loc);
-            else
-               Name :=
-                 New_Reference_To
-                   (RTE (RE_Protected_Single_Entry_Caller), Loc);
-            end if;
+            case Corresponding_Runtime_Package (Conctype) is
+               when System_Tasking_Protected_Objects_Entries =>
+                  Name :=
+                    New_Reference_To
+                      (RTE (RE_Protected_Entry_Caller), Loc);
+
+               when System_Tasking_Protected_Objects_Single_Entry =>
+                  Name :=
+                    New_Reference_To
+                      (RTE (RE_Protected_Single_Entry_Caller), Loc);
+
+               when others =>
+                  raise Program_Error;
+            end case;
 
             Rewrite (N,
               Unchecked_Convert_To (Id_Kind,
@@ -1488,31 +1606,35 @@ package body Exp_Attr is
 
          if Is_Protected_Type (Conctyp) then
 
-            if Abort_Allowed
-              or else Restriction_Active (No_Entry_Queue) = False
-              or else Number_Entries (Conctyp) > 1
-            then
-               Name := New_Reference_To (RTE (RE_Protected_Count), Loc);
+            case Corresponding_Runtime_Package (Conctyp) is
+               when System_Tasking_Protected_Objects_Entries =>
+                  Name := New_Reference_To (RTE (RE_Protected_Count), Loc);
 
-               Call :=
-                 Make_Function_Call (Loc,
-                   Name => Name,
-                   Parameter_Associations => New_List (
-                     New_Reference_To (
-                       Object_Ref (
-                         Corresponding_Body (Parent (Conctyp))), Loc),
-                     Entry_Index_Expression (
-                       Loc, Entity (Entnam), Index, Scope (Entity (Entnam)))));
-            else
-               Name := New_Reference_To (RTE (RE_Protected_Count_Entry), Loc);
+                  Call :=
+                    Make_Function_Call (Loc,
+                      Name => Name,
+                      Parameter_Associations => New_List (
+                        New_Reference_To (
+                          Object_Ref (
+                            Corresponding_Body (Parent (Conctyp))), Loc),
+                        Entry_Index_Expression (Loc,
+                          Entity (Entnam), Index, Scope (Entity (Entnam)))));
 
-               Call := Make_Function_Call (Loc,
-                   Name => Name,
-                   Parameter_Associations => New_List (
-                     New_Reference_To (
-                       Object_Ref (
-                         Corresponding_Body (Parent (Conctyp))), Loc)));
-            end if;
+               when System_Tasking_Protected_Objects_Single_Entry =>
+                  Name := New_Reference_To
+                           (RTE (RE_Protected_Count_Entry), Loc);
+
+                  Call :=
+                    Make_Function_Call (Loc,
+                      Name => Name,
+                      Parameter_Associations => New_List (
+                        New_Reference_To (
+                          Object_Ref (
+                            Corresponding_Body (Parent (Conctyp))), Loc)));
+               when others =>
+                  raise Program_Error;
+
+            end case;
 
          --  Task case
 
@@ -2725,6 +2847,41 @@ package body Exp_Attr is
       -----------------
 
       --  The processing for Object_Size shares the processing for Size
+
+      ---------
+      -- Old --
+      ---------
+
+      when Attribute_Old => Old : declare
+         Tnn     : constant Entity_Id :=
+                     Make_Defining_Identifier (Loc,
+                       Chars => New_Internal_Name ('T'));
+         Subp    : Node_Id;
+         Asn_Stm : Node_Id;
+
+      begin
+         Subp := N;
+         loop
+            Subp := Parent (Subp);
+            exit when Nkind (Subp) = N_Subprogram_Body;
+         end loop;
+
+         Asn_Stm :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Tnn,
+             Constant_Present    => True,
+             Object_Definition   => New_Occurrence_Of (Etype (N), Loc),
+             Expression          => Pref);
+
+         if Is_Empty_List (Declarations (Subp)) then
+            Set_Declarations (Subp, New_List (Asn_Stm));
+            Analyze (Asn_Stm);
+         else
+            Insert_Action (First (Declarations (Subp)), Asn_Stm);
+         end if;
+
+         Rewrite (N, New_Occurrence_Of (Tnn, Loc));
+      end Old;
 
       ------------
       -- Output --
@@ -5177,8 +5334,9 @@ package body Exp_Attr is
 
       N := First_Rep_Item (Implementation_Base_Type (T));
       while Present (N) loop
-         if Nkind (N) = N_Pragma and then Chars (N) = Name_Stream_Convert then
-
+         if Nkind (N) = N_Pragma
+           and then Pragma_Name (N) = Name_Stream_Convert
+         then
             --  For tagged types this pragma is not inherited, so we
             --  must verify that it is defined for the given type and
             --  not an ancestor.
