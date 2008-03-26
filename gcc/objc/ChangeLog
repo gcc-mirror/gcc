@@ -1,3 +1,9 @@
+2008-03-25  Andrew Pinski  <pinskia@gmail.com>
+
+	PR objc/29197
+	* objc-act.c (encode_type): Handle when type is error_mark_node.
+	(objc_push_parm): Handle when the type of parm is error_mark_node.
+
 2008-03-25  Tom Tromey  <tromey@redhat.com>
 
 	* Make-lang.in (objc_OBJS): New variable.
