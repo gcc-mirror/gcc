@@ -1,3 +1,13 @@
+2008-03-26  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/20030731-2.c: Scan dce1 dump.
+	* gcc.dg/tree-ssa/20030917-1.c: Scan optimized dump.
+	* gcc.dg/tree-ssa/20030917-3.c: Scan ccp1 dump.
+	* gcc.dg/tree-ssa/20040721-1.c: Test linking, do not disable DOM.
+	* gcc.dg/tree-ssa/pr21574.c: Scan the fre dump.
+	* gcc.dg/tree-ssa/ssa-ccp-1.c: Scan ccp1 dump.
+	* gcc.dg/tree-ssa/ssa-ccp-3.c: Scan ccp2 dump.
+
 2008-03-26  Douglas Gregor  <doug.gregor@gmail.com>
 
        * g++.dg/cpp0x/variadic84.C: Update to reflect the change in

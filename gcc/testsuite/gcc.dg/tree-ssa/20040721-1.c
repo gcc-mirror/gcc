@@ -1,11 +1,14 @@
-/* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-dominator-opts -fdump-tree-store_ccp-vops" } */
+/* { dg-do link } */
+/* { dg-options "-O2" } */
 
 /* Test to check whether global variables are being
    constant propagated. */
 
+extern void link_error (void);
+
 int G;
 
+void
 foo (int i)
 {
    if (i > 0)
@@ -17,12 +20,10 @@ foo (int i)
      link_error ();
 }
 
+int
 main ()
 {
    foo (0);
    return 0;
 }
 
-/* There should be no G on the RHS of an assignment. */
-/* { dg-final { scan-tree-dump-times "= G;" 0 "store_ccp"} } */
-/* { dg-final { cleanup-tree-dump "store_ccp" } } */

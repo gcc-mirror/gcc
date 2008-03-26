@@ -1,10 +1,12 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-store_ccp" } */
+/* { dg-options "-O -fdump-tree-ccp2" } */
 
 extern void link_error (void);
 
-/* some addresses clearly cannot be equal, check that some address
-    expressions can be evaluated as constants */
+/* Some addresses clearly cannot be equal, check that some address
+   expressions can be evaluated as constants.
+   Most of the tests are folding tests, but at least some require
+   points-to analysis, so we scan the first CCP dump after PTA.  */
 
 char g1, g2;
 void test6 (char p1, char p2)
@@ -131,5 +133,5 @@ int* test666 (int * __restrict__ rp1, int * __restrict__ rp2, int *p1)
    optimization has failed */
 /* ??? While we indeed don't handle some of these, a couple of the
    restrict tests are incorrect.  */
-/* { dg-final { scan-tree-dump-times "link_error" 0 "store_ccp" { xfail *-*-* } } } */
-/* { dg-final { cleanup-tree-dump "store_ccp" } } */
+/* { dg-final { scan-tree-dump-times "link_error" 0 "ccp2" { xfail *-*-* } } } */
+/* { dg-final { cleanup-tree-dump "ccp2" } } */

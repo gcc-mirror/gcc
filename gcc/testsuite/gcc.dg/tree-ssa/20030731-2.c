@@ -1,7 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-store_ccp" } */
-  
+/* { dg-options "-O2 -fdump-tree-dce1" } */
 
+void
 bar (int i, int partial, int args_addr)
 {
   int offset = 0;
@@ -13,5 +13,5 @@ bar (int i, int partial, int args_addr)
 
 /* There should be only one IF conditional since the first does nothing
    useful.  */
-/* { dg-final { scan-tree-dump-times "if " 1 "store_ccp"} } */
-/* { dg-final { cleanup-tree-dump "store_ccp" } } */
+/* { dg-final { scan-tree-dump-times "if " 1 "dce1"} } */
+/* { dg-final { cleanup-tree-dump "dce1" } } */
