@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -619,7 +619,7 @@ package body Checks is
             if Obj_Size /= No_Uint
               and then Exp_Size /= No_Uint
               and then Obj_Size > Exp_Size
-              and then not Warnings_Off (E)
+              and then not Has_Warnings_Off (E)
             then
                if Address_Clause_Overlay_Warnings then
                   Error_Msg_FE
@@ -3890,6 +3890,12 @@ package body Checks is
       --  If we fall through, a validity check is required
 
       Insert_Valid_Check (Expr);
+
+      if Is_Entity_Name (Expr)
+        and then Safe_To_Capture_Value (Expr, Entity (Expr))
+      then
+         Set_Is_Known_Valid (Entity (Expr));
+      end if;
    end Ensure_Valid;
 
    ----------------------
