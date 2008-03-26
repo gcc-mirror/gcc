@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -666,7 +666,7 @@ package body Exp_Ch9 is
           Expression =>
             Unchecked_Convert_To (Obj_Ptr,
               Make_Identifier (Loc, Name_uO)));
-      Set_Needs_Debug_Info (Defining_Identifier (Decl));
+      Set_Debug_Info_Needed (Defining_Identifier (Decl));
       Prepend_To (Decls, Decl);
 
       Prepend_To (Decls,
@@ -703,10 +703,16 @@ package body Exp_Ch9 is
       while Present (Formal) loop
          Comp   := Entry_Component (Formal);
          New_F  :=
-           Make_Defining_Identifier (Sloc (Formal), Chars (Formal));
+           Make_Defining_Identifier (Sloc (Formal),
+             Chars => Chars (Formal));
          Set_Etype (New_F, Etype (Formal));
          Set_Scope (New_F, Ent);
-         Set_Needs_Debug_Info (New_F);   --  That's the whole point.
+
+         --  Now we set debug info needed on New_F even though it does not
+         --  come from source, so that the debugger will get the right
+         --  information for these generated names.
+
+         Set_Debug_Info_Needed (New_F);
 
          if Ekind (Formal) = E_In_Parameter then
             Set_Ekind (New_F, E_Constant);
@@ -779,7 +785,7 @@ package body Exp_Ch9 is
                      Make_Selected_Component (Loc,
                        Prefix        => Make_Identifier (Loc, Name),
                        Selector_Name => Make_Identifier (Loc, Chars (Pdef))));
-               Set_Needs_Debug_Info (Defining_Identifier (Decl));
+               Set_Debug_Info_Needed (Defining_Identifier (Decl));
                Prepend_To (Decls, Decl);
             end if;
 
@@ -793,6 +799,8 @@ package body Exp_Ch9 is
          Protection_Type : RE_Id;
 
       begin
+         --  Could this be simplified using Corresponding_Runtime_Package???
+
          if Has_Attach_Handler (Typ) then
             if Restricted_Profile then
                if Has_Entries (Typ) then
@@ -814,14 +822,16 @@ package body Exp_Ch9 is
             or else (Ada_Version >= Ada_05
                        and then Present (Interface_List (Parent (Typ))))
          then
-            if Abort_Allowed
-              or else Restriction_Active (No_Entry_Queue) = False
-              or else Number_Entries (Typ) > 1
-            then
-               Protection_Type := RE_Protection_Entries;
-            else
-               Protection_Type := RE_Protection_Entry;
-            end if;
+            case Corresponding_Runtime_Package (Typ) is
+               when System_Tasking_Protected_Objects_Entries =>
+                  Protection_Type := RE_Protection_Entries;
+
+               when System_Tasking_Protected_Objects_Single_Entry =>
+                  Protection_Type := RE_Protection_Entry;
+
+               when others =>
+                  raise Program_Error;
+            end case;
 
          else
             Protection_Type := RE_Protection;
@@ -839,7 +849,7 @@ package body Exp_Ch9 is
                Make_Selected_Component (Loc,
                  Prefix        => Make_Identifier (Loc, Name),
                  Selector_Name => Make_Identifier (Loc, Name_uObject)));
-         Set_Needs_Debug_Info (Defining_Identifier (Decl));
+         Set_Debug_Info_Needed (Defining_Identifier (Decl));
          Prepend_To (Decls, Decl);
       end;
    end Add_Private_Declarations;
@@ -1080,7 +1090,7 @@ package body Exp_Ch9 is
       Loc    : Source_Ptr) return Node_Id
    is
    begin
-      Set_Needs_Debug_Info (Def_Id);
+      Set_Debug_Info_Needed (Def_Id);
       return Make_Function_Specification (Loc,
         Defining_Unit_Name => Def_Id,
         Parameter_Specifications => New_List (
@@ -2147,16 +2157,18 @@ package body Exp_Ch9 is
 
       Add_Formal_Renamings (Espec, Op_Decls, Ent, Loc);
 
-      if Abort_Allowed
-        or else Restriction_Active (No_Entry_Queue) = False
-        or else Number_Entries (Pid) > 1
-        or else (Has_Attach_Handler (Pid) and then not Restricted_Profile)
-      then
-         Complete := New_Reference_To (RTE (RE_Complete_Entry_Body), Loc);
-      else
-         Complete :=
-           New_Reference_To (RTE (RE_Complete_Single_Entry_Body), Loc);
-      end if;
+      case Corresponding_Runtime_Package (Pid) is
+         when System_Tasking_Protected_Objects_Entries =>
+            Complete :=
+              New_Reference_To (RTE (RE_Complete_Entry_Body), Loc);
+
+         when System_Tasking_Protected_Objects_Single_Entry =>
+            Complete :=
+              New_Reference_To (RTE (RE_Complete_Single_Entry_Body), Loc);
+
+         when others =>
+            raise Program_Error;
+      end case;
 
       Op_Stats := New_List (
          Make_Block_Statement (Loc,
@@ -2194,18 +2206,20 @@ package body Exp_Ch9 is
          Ohandle := Make_Others_Choice (Loc);
          Set_All_Others (Ohandle);
 
-         if Abort_Allowed
-           or else Restriction_Active (No_Entry_Queue) = False
-           or else Number_Entries (Pid) > 1
-           or else (Has_Attach_Handler (Pid) and then not Restricted_Profile)
-         then
-            Complete :=
-              New_Reference_To (RTE (RE_Exceptional_Complete_Entry_Body), Loc);
+         case Corresponding_Runtime_Package (Pid) is
+            when System_Tasking_Protected_Objects_Entries =>
+               Complete :=
+                 New_Reference_To
+                   (RTE (RE_Exceptional_Complete_Entry_Body), Loc);
 
-         else
-            Complete := New_Reference_To (
-              RTE (RE_Exceptional_Complete_Single_Entry_Body), Loc);
-         end if;
+            when System_Tasking_Protected_Objects_Single_Entry =>
+               Complete :=
+                 New_Reference_To
+                   (RTE (RE_Exceptional_Complete_Single_Entry_Body), Loc);
+
+            when others =>
+               raise Program_Error;
+         end case;
 
          --  Create body of entry procedure. The renaming declarations are
          --  placed ahead of the block that contains the actual entry body.
@@ -2253,7 +2267,7 @@ package body Exp_Ch9 is
       P : Entity_Id;
 
    begin
-      Set_Needs_Debug_Info (Def_Id);
+      Set_Debug_Info_Needed (Def_Id);
       P := Make_Defining_Identifier (Loc, Name_uP);
 
       if Present (Ent_Id) then
@@ -2329,7 +2343,7 @@ package body Exp_Ch9 is
            (Etype (Ident) = Standard_Void_Type
               and then not Is_RTE (Obj_Type, RE_Address)),
           Parameter_Type => New_Reference_To (Obj_Type, Loc));
-      Set_Needs_Debug_Info (Defining_Identifier (Decl));
+      Set_Debug_Info_Needed (Defining_Identifier (Decl));
       Prepend_To (New_Plist, Decl);
 
       return New_Plist;
@@ -2382,7 +2396,7 @@ package body Exp_Ch9 is
       --  into the protected operation, even though it only contains lock/
       --  unlock calls.
 
-      Set_Needs_Debug_Info (New_Id);
+      Set_Debug_Info_Needed (New_Id);
 
       if Nkind (Specification (Decl)) = N_Procedure_Specification then
          return
@@ -2596,36 +2610,22 @@ package body Exp_Ch9 is
       --  Make the protected subprogram body. This locks the protected
       --  object and calls the unprotected version of the subprogram.
 
-      --  If the protected object is controlled (i.e it has entries or
-      --  needs finalization for interrupt handling), call Lock_Entries,
-      --  except if the protected object follows the Ravenscar profile, in
-      --  which case call Lock_Entry, otherwise call the simplified version,
-      --  Lock.
-
-      if Has_Entries (Pid)
-        or else Has_Interrupt_Handler (Pid)
-        or else (Has_Attach_Handler (Pid)
-                  and then not Restricted_Profile)
-        or else (Ada_Version >= Ada_05
-                  and then Present (Interface_List (Parent (Pid))))
-      then
-         if Abort_Allowed
-           or else Restriction_Active (No_Entry_Queue) = False
-           or else Number_Entries (Pid) > 1
-           or else (Has_Attach_Handler (Pid) and then not Restricted_Profile)
-         then
+      case Corresponding_Runtime_Package (Pid) is
+         when System_Tasking_Protected_Objects_Entries =>
             Lock_Name := New_Reference_To (RTE (RE_Lock_Entries), Loc);
             Service_Name := New_Reference_To (RTE (RE_Service_Entries), Loc);
 
-         else
+         when System_Tasking_Protected_Objects_Single_Entry =>
             Lock_Name := New_Reference_To (RTE (RE_Lock_Entry), Loc);
             Service_Name := New_Reference_To (RTE (RE_Service_Entry), Loc);
-         end if;
 
-      else
-         Lock_Name := New_Reference_To (RTE (RE_Lock), Loc);
-         Service_Name := New_Reference_To (RTE (RE_Unlock), Loc);
-      end if;
+         when System_Tasking_Protected_Objects =>
+            Lock_Name := New_Reference_To (RTE (RE_Lock), Loc);
+            Service_Name := New_Reference_To (RTE (RE_Unlock), Loc);
+
+         when others =>
+            raise Program_Error;
+      end case;
 
       Object_Parm :=
         Make_Attribute_Reference (Loc,
@@ -3101,75 +3101,75 @@ package body Exp_Ch9 is
          --  Now we can create the call, case of protected type
 
          if Is_Protected_Type (Conctyp) then
-            if Abort_Allowed
-              or else Restriction_Active (No_Entry_Queue) = False
-              or else Number_Entries (Conctyp) > 1
-              or else (Has_Attach_Handler (Conctyp)
-                        and then not Restricted_Profile)
-            then
-               --  Change the type of the index declaration
+            case Corresponding_Runtime_Package (Conctyp) is
+               when System_Tasking_Protected_Objects_Entries =>
 
-               Set_Object_Definition (Xdecl,
-                 New_Reference_To (RTE (RE_Protected_Entry_Index), Loc));
+                  --  Change the type of the index declaration
 
-               --  Some additional declarations for protected entry calls
+                  Set_Object_Definition (Xdecl,
+                    New_Reference_To (RTE (RE_Protected_Entry_Index), Loc));
 
-               if No (Decls) then
-                  Decls := New_List;
-               end if;
+                  --  Some additional declarations for protected entry calls
 
-               --  Bnn : Communications_Block;
+                  if No (Decls) then
+                     Decls := New_List;
+                  end if;
 
-               Comm_Name :=
-                 Make_Defining_Identifier (Loc, New_Internal_Name ('B'));
+                  --  Bnn : Communications_Block;
 
-               Append_To (Decls,
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Comm_Name,
-                   Object_Definition =>
-                     New_Reference_To (RTE (RE_Communication_Block), Loc)));
+                  Comm_Name :=
+                    Make_Defining_Identifier (Loc, New_Internal_Name ('B'));
 
-               --  Some additional statements for protected entry calls
+                  Append_To (Decls,
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Comm_Name,
+                      Object_Definition =>
+                        New_Reference_To (RTE (RE_Communication_Block), Loc)));
 
-               --     Protected_Entry_Call (
-               --       Object => po._object'Access,
-               --       E => <entry index>;
-               --       Uninterpreted_Data => P'Address;
-               --       Mode => Simple_Call;
-               --       Block => Bnn);
+                  --  Some additional statements for protected entry calls
 
-               Call :=
-                 Make_Procedure_Call_Statement (Loc,
-                   Name =>
-                     New_Reference_To (RTE (RE_Protected_Entry_Call), Loc),
+                  --     Protected_Entry_Call (
+                  --       Object => po._object'Access,
+                  --       E => <entry index>;
+                  --       Uninterpreted_Data => P'Address;
+                  --       Mode => Simple_Call;
+                  --       Block => Bnn);
 
-                   Parameter_Associations => New_List (
-                     Make_Attribute_Reference (Loc,
-                       Attribute_Name => Name_Unchecked_Access,
-                       Prefix         => Parm1),
-                     Parm2,
-                     Parm3,
-                     New_Reference_To (RTE (RE_Simple_Call), Loc),
-                     New_Occurrence_Of (Comm_Name, Loc)));
+                  Call :=
+                    Make_Procedure_Call_Statement (Loc,
+                      Name =>
+                        New_Reference_To (RTE (RE_Protected_Entry_Call), Loc),
 
-            else
-               --     Protected_Single_Entry_Call (
-               --       Object => po._object'Access,
-               --       Uninterpreted_Data => P'Address;
-               --       Mode => Simple_Call);
+                      Parameter_Associations => New_List (
+                        Make_Attribute_Reference (Loc,
+                          Attribute_Name => Name_Unchecked_Access,
+                          Prefix         => Parm1),
+                        Parm2,
+                        Parm3,
+                        New_Reference_To (RTE (RE_Simple_Call), Loc),
+                        New_Occurrence_Of (Comm_Name, Loc)));
 
-               Call :=
-                 Make_Procedure_Call_Statement (Loc,
-                   Name => New_Reference_To (
-                     RTE (RE_Protected_Single_Entry_Call), Loc),
+               when System_Tasking_Protected_Objects_Single_Entry =>
+                  --     Protected_Single_Entry_Call (
+                  --       Object => po._object'Access,
+                  --       Uninterpreted_Data => P'Address;
+                  --       Mode => Simple_Call);
 
-                   Parameter_Associations => New_List (
-                     Make_Attribute_Reference (Loc,
-                       Attribute_Name => Name_Unchecked_Access,
-                       Prefix         => Parm1),
-                     Parm3,
-                     New_Reference_To (RTE (RE_Simple_Call), Loc)));
-            end if;
+                  Call :=
+                    Make_Procedure_Call_Statement (Loc,
+                      Name => New_Reference_To (
+                        RTE (RE_Protected_Single_Entry_Call), Loc),
+
+                      Parameter_Associations => New_List (
+                        Make_Attribute_Reference (Loc,
+                          Attribute_Name => Name_Unchecked_Access,
+                          Prefix         => Parm1),
+                        Parm3,
+                        New_Reference_To (RTE (RE_Simple_Call), Loc)));
+
+               when others =>
+                  raise Program_Error;
+            end case;
 
          --  Case of task type
 
@@ -4185,7 +4185,7 @@ package body Exp_Ch9 is
 
          if Present (Ann) then
             Append_Elmt (Ann, Accept_Address (Ent));
-            Set_Needs_Debug_Info (Ann);
+            Set_Debug_Info_Needed (Ann);
          end if;
 
          --  Create renaming declarations for the entry formals. Each reference
@@ -4215,7 +4215,12 @@ package body Exp_Ch9 is
 
                   Set_Etype (New_F, Etype (Formal));
                   Set_Scope (New_F, Ent);
-                  Set_Needs_Debug_Info (New_F);   --  That's the whole point.
+
+               --  Now we set debug info needed on New_F even though it does
+               --  not come from source, so that the debugger will get the
+               --  right information for these generated names.
+
+                  Set_Debug_Info_Needed (New_F);
 
                   if Ekind (Formal) = E_In_Parameter then
                      Set_Ekind (New_F, E_Constant);
@@ -6683,7 +6688,6 @@ package body Exp_Ch9 is
    procedure Expand_N_Protected_Body (N : Node_Id) is
       Loc          : constant Source_Ptr := Sloc (N);
       Pid          : constant Entity_Id  := Corresponding_Spec (N);
-      Has_Entries  : Boolean := False;
       Op_Body      : Node_Id;
       Op_Decl      : Node_Id;
       Op_Id        : Entity_Id;
@@ -6893,7 +6897,6 @@ package body Exp_Ch9 is
 
             when N_Entry_Body =>
                Op_Id := Defining_Identifier (Op_Body);
-               Has_Entries := True;
                Num_Entries := Num_Entries + 1;
 
                New_Op_Body := Build_Protected_Entry (Op_Body, Op_Id, Pid);
@@ -6946,14 +6949,10 @@ package body Exp_Ch9 is
 
       --  Finally, create the body of the function that maps an entry index
       --  into the corresponding body index, except when there is no entry,
-      --  or in a ravenscar-like profile (no abort, no entry queue, 1 entry)
+      --  or in a ravenscar-like profile.
 
-      if Has_Entries
-        and then (Abort_Allowed
-                  or else Restriction_Active (No_Entry_Queue) = False
-                  or else Num_Entries > 1
-                  or else (Has_Attach_Handler (Pid)
-                            and then not Restricted_Profile))
+      if Corresponding_Runtime_Package (Pid) =
+           System_Tasking_Protected_Objects_Entries
       then
          New_Op_Body := Build_Find_Body_Index (Pid);
          Insert_After (Current_Node, New_Op_Body);
@@ -6970,12 +6969,12 @@ package body Exp_Ch9 is
       if Ada_Version >= Ada_05
         and then Present (Protected_Definition (Parent (Pid)))
         and then Present (Abstract_Interfaces
-                          (Corresponding_Record_Type (Pid)))
+                           (Corresponding_Record_Type (Pid)))
       then
          declare
             Vis_Decl  : Node_Id :=
                           First (Visible_Declarations
-                                 (Protected_Definition (Parent (Pid))));
+                                  (Protected_Definition (Parent (Pid))));
             Wrap_Body : Node_Id;
 
          begin
@@ -7219,11 +7218,13 @@ package body Exp_Ch9 is
                                   (Prottyp, Cdecls, Loc);
 
       begin
+         --  Could this be simplified using Corresponding_Runtime_Package???
+
          if Has_Attach_Handler (Prottyp) then
             Ritem := First_Rep_Item (Prottyp);
             while Present (Ritem) loop
                if Nkind (Ritem) = N_Pragma
-                 and then Chars (Ritem) = Name_Attach_Handler
+                 and then Pragma_Name (Ritem) = Name_Attach_Handler
                then
                   Num_Attach_Handler := Num_Attach_Handler + 1;
                end if;
@@ -7271,24 +7272,24 @@ package body Exp_Ch9 is
            or else (Ada_Version >= Ada_05
                       and then Present (Interface_List (N)))
          then
-            if Abort_Allowed
-              or else Restriction_Active (No_Entry_Queue) = False
-              or else Number_Entries (Prottyp) > 1
-            then
-               Protection_Subtype :=
-                  Make_Subtype_Indication (
-                    Sloc => Loc,
-                    Subtype_Mark =>
-                      New_Reference_To (RTE (RE_Protection_Entries), Loc),
-                    Constraint =>
-                      Make_Index_Or_Discriminant_Constraint (
-                        Sloc => Loc,
-                        Constraints => New_List (Entry_Count_Expr)));
+            case Corresponding_Runtime_Package (Prottyp) is
+               when System_Tasking_Protected_Objects_Entries =>
+                  Protection_Subtype :=
+                     Make_Subtype_Indication (Loc,
+                       Subtype_Mark =>
+                         New_Reference_To (RTE (RE_Protection_Entries), Loc),
+                       Constraint =>
+                         Make_Index_Or_Discriminant_Constraint (
+                           Sloc => Loc,
+                           Constraints => New_List (Entry_Count_Expr)));
 
-            else
-               Protection_Subtype :=
-                 New_Reference_To (RTE (RE_Protection_Entry), Loc);
-            end if;
+               when System_Tasking_Protected_Objects_Single_Entry =>
+                  Protection_Subtype :=
+                    New_Reference_To (RTE (RE_Protection_Entry), Loc);
+
+               when others =>
+                  raise Program_Error;
+            end case;
 
          else
             Protection_Subtype := New_Reference_To (RTE (RE_Protection), Loc);
@@ -7692,42 +7693,42 @@ package body Exp_Ch9 is
          Body_Id := Make_Defining_Identifier (Sloc (Prottyp),
            New_External_Name (Chars (Prottyp), 'A'));
 
-         if Abort_Allowed
-           or else Restriction_Active (No_Entry_Queue) = False
-           or else E_Count > 1
-           or else (Has_Attach_Handler (Prottyp)
-                     and then not Restricted_Profile)
-         then
-            Body_Arr := Make_Object_Declaration (Loc,
-              Defining_Identifier => Body_Id,
-              Aliased_Present => True,
-              Object_Definition =>
-                Make_Subtype_Indication (Loc,
-                  Subtype_Mark => New_Reference_To (
-                    RTE (RE_Protected_Entry_Body_Array), Loc),
-                  Constraint =>
-                    Make_Index_Or_Discriminant_Constraint (Loc,
-                      Constraints => New_List (
-                         Make_Range (Loc,
-                           Make_Integer_Literal (Loc, 1),
-                           Make_Integer_Literal (Loc, E_Count))))),
-              Expression => Entries_Aggr);
+         case Corresponding_Runtime_Package (Prottyp) is
+            when System_Tasking_Protected_Objects_Entries =>
+               Body_Arr := Make_Object_Declaration (Loc,
+                 Defining_Identifier => Body_Id,
+                 Aliased_Present => True,
+                 Object_Definition =>
+                   Make_Subtype_Indication (Loc,
+                     Subtype_Mark => New_Reference_To (
+                       RTE (RE_Protected_Entry_Body_Array), Loc),
+                     Constraint =>
+                       Make_Index_Or_Discriminant_Constraint (Loc,
+                         Constraints => New_List (
+                            Make_Range (Loc,
+                              Make_Integer_Literal (Loc, 1),
+                              Make_Integer_Literal (Loc, E_Count))))),
+                 Expression => Entries_Aggr);
 
-         else
-            Body_Arr := Make_Object_Declaration (Loc,
-              Defining_Identifier => Body_Id,
-              Aliased_Present => True,
-              Object_Definition => New_Reference_To (RTE (RE_Entry_Body), Loc),
-              Expression =>
-                Make_Aggregate (Loc,
-                  Expressions => New_List (
-                    Make_Attribute_Reference (Loc,
-                      Prefix => New_Reference_To (Bdef, Loc),
-                      Attribute_Name => Name_Unrestricted_Access),
-                    Make_Attribute_Reference (Loc,
-                      Prefix => New_Reference_To (Edef, Loc),
-                      Attribute_Name => Name_Unrestricted_Access))));
-         end if;
+            when System_Tasking_Protected_Objects_Single_Entry =>
+               Body_Arr := Make_Object_Declaration (Loc,
+                 Defining_Identifier => Body_Id,
+                 Aliased_Present => True,
+                 Object_Definition => New_Reference_To
+                                        (RTE (RE_Entry_Body), Loc),
+                 Expression =>
+                   Make_Aggregate (Loc,
+                     Expressions => New_List (
+                       Make_Attribute_Reference (Loc,
+                         Prefix => New_Reference_To (Bdef, Loc),
+                         Attribute_Name => Name_Unrestricted_Access),
+                       Make_Attribute_Reference (Loc,
+                         Prefix => New_Reference_To (Edef, Loc),
+                         Attribute_Name => Name_Unrestricted_Access))));
+
+            when others =>
+               raise Program_Error;
+         end case;
 
          --  A pointer to this array will be placed in the corresponding record
          --  by its initialization procedure so this needs to be analyzed here.
@@ -7743,11 +7744,8 @@ package body Exp_Ch9 is
          --  object of the type. Except for a ravenscar-like profile (no abort,
          --  no entry queue, 1 entry)
 
-         if Abort_Allowed
-           or else Restriction_Active (No_Entry_Queue) = False
-           or else E_Count > 1
-           or else (Has_Attach_Handler (Prottyp)
-                     and then not Restricted_Profile)
+         if Corresponding_Runtime_Package (Prottyp)
+           = System_Tasking_Protected_Objects_Entries
          then
             Sub :=
               Make_Subprogram_Declaration (Loc,
@@ -8341,7 +8339,9 @@ package body Exp_Ch9 is
               Make_Defining_Identifier (Sloc (Ename),
                 New_External_Name (Chars (Ename), 'A', Num_Accept));
 
-            Set_Needs_Debug_Info (PB_Ent, Comes_From_Source (Alt));
+            if Comes_From_Source (Alt) then
+               Set_Debug_Info_Needed (PB_Ent);
+            end if;
 
             Proc_Body :=
               Make_Subprogram_Body (Loc,
@@ -9685,7 +9685,7 @@ package body Exp_Ch9 is
             --  the benefit of some versions of System.Interrupts which use
             --  a special server task with maximum interrupt priority.
 
-            if Chars (Prag) = Name_Priority
+            if Pragma_Name (Prag) = Name_Priority
               and then not GNAT_Mode
             then
                Rewrite (Expr, Convert_To (RTE (RE_Priority), Expr));
@@ -9772,8 +9772,9 @@ package body Exp_Ch9 is
       --  The subprogram does not comes from source, so we have to indicate the
       --  need for debugging information explicitly.
 
-      Set_Needs_Debug_Info
-        (Defining_Entity (Proc_Spec), Comes_From_Source (Original_Node (N)));
+      if Comes_From_Source (Original_Node (N)) then
+         Set_Debug_Info_Needed (Defining_Entity (Proc_Spec));
+      end if;
 
       --  Ada 2005 (AI-345): Construct the primitive entry wrapper specs before
       --  the corresponding record has been frozen.
@@ -10358,32 +10359,35 @@ package body Exp_Ch9 is
 
             Append_To (Params, New_Reference_To (B, Loc));
 
-            if Abort_Allowed
-              or else Restriction_Active (No_Entry_Queue) = False
-              or else Number_Entries (Etype (Concval)) > 1
-            then
-               Rewrite (Call,
-                 Make_Procedure_Call_Statement (Loc,
-                   Name =>
-                     New_Reference_To (RTE (
-                       RE_Timed_Protected_Entry_Call), Loc),
-                   Parameter_Associations => Params));
-            else
-               Param := First (Params);
-               while Present (Param)
-                 and then not Is_RTE (Etype (Param), RE_Protected_Entry_Index)
-               loop
-                  Next (Param);
-               end loop;
+            case Corresponding_Runtime_Package (Etype (Concval)) is
+               when System_Tasking_Protected_Objects_Entries =>
+                  Rewrite (Call,
+                    Make_Procedure_Call_Statement (Loc,
+                      Name =>
+                        New_Reference_To
+                          (RTE (RE_Timed_Protected_Entry_Call), Loc),
+                      Parameter_Associations => Params));
 
-               Remove (Param);
+               when System_Tasking_Protected_Objects_Single_Entry =>
+                  Param := First (Params);
+                  while Present (Param)
+                    and then not
+                      Is_RTE (Etype (Param), RE_Protected_Entry_Index)
+                  loop
+                     Next (Param);
+                  end loop;
 
-               Rewrite (Call,
-                 Make_Procedure_Call_Statement (Loc,
-                   Name => New_Reference_To (
-                     RTE (RE_Timed_Protected_Single_Entry_Call), Loc),
-                   Parameter_Associations => Params));
-            end if;
+                  Remove (Param);
+
+                  Rewrite (Call,
+                    Make_Procedure_Call_Statement (Loc,
+                      Name => New_Reference_To (
+                        RTE (RE_Timed_Protected_Single_Entry_Call), Loc),
+                      Parameter_Associations => Params));
+
+               when others =>
+                  raise Program_Error;
+            end case;
 
          --  For the task case, build a Timed_Task_Entry_Call
 
@@ -10749,11 +10753,11 @@ package body Exp_Ch9 is
       N := First (Visible_Declarations (T));
       while Present (N) loop
          if Nkind (N) = N_Pragma then
-            if Chars (N) = P then
+            if Pragma_Name (N) = P then
                return N;
 
             elsif P = Name_Priority
-              and then Chars (N) = Name_Interrupt_Priority
+              and then Pragma_Name (N) = Name_Interrupt_Priority
             then
                return N;
 
@@ -10769,11 +10773,11 @@ package body Exp_Ch9 is
       N := First (Private_Declarations (T));
       while Present (N) loop
          if Nkind (N) = N_Pragma then
-            if  Chars (N) = P then
+            if Pragma_Name (N) = P then
                return N;
 
             elsif P = Name_Priority
-              and then Chars (N) = Name_Interrupt_Priority
+              and then Pragma_Name (N) = Name_Interrupt_Priority
             then
                return N;
 
@@ -11071,79 +11075,76 @@ package body Exp_Ch9 is
       if Has_Entry
         or else Has_Interrupt_Handler (Ptyp)
         or else Has_Attach_Handler (Ptyp)
-        or else (Ada_Version >= Ada_05
-                   and then Present (Interface_List (Parent (Ptyp))))
+        or else Has_Abstract_Interfaces (Protect_Rec)
       then
-         if Has_Entry or else not Restricted then
-            Append_To (Args,
-               Make_Attribute_Reference (Loc,
-                 Prefix => Make_Identifier (Loc, Name_uInit),
-                 Attribute_Name => Name_Address));
-         end if;
+         declare
+            Pkg_Id : constant RTU_Id := Corresponding_Runtime_Package (Ptyp);
 
-         --  Entry_Bodies parameter. This is a pointer to an array of pointers
-         --  to the entry body procedures and barrier functions of the object.
-         --  If the protected type has no entries this object will not exist;
-         --  in this case, pass a null.
+            Called_Subp : RE_Id;
 
-         if Has_Entry then
-            P_Arr := Entry_Bodies_Array (Ptyp);
+         begin
+            case Pkg_Id is
+               when System_Tasking_Protected_Objects_Entries =>
+                  Called_Subp := RE_Initialize_Protection_Entries;
 
-            Append_To (Args,
-              Make_Attribute_Reference (Loc,
-                Prefix => New_Reference_To (P_Arr, Loc),
-                Attribute_Name => Name_Unrestricted_Access));
+               when System_Tasking_Protected_Objects =>
+                  Called_Subp := RE_Initialize_Protection;
 
-            if Abort_Allowed
-              or else Restriction_Active (No_Entry_Queue) = False
-              or else Number_Entries (Ptyp) > 1
-              or else (Has_Attach_Handler (Ptyp) and then not Restricted)
-            then
-               --  Find index mapping function (clumsy but ok for now)
+               when System_Tasking_Protected_Objects_Single_Entry =>
+                  Called_Subp := RE_Initialize_Protection_Entry;
 
-               while Ekind (P_Arr) /= E_Function loop
-                  Next_Entity (P_Arr);
-               end loop;
+               when others =>
+                  raise Program_Error;
+            end case;
 
+            if Has_Entry or else not Restricted then
                Append_To (Args,
-                  Make_Attribute_Reference (Loc,
-                    Prefix =>
-                      New_Reference_To (P_Arr, Loc),
-                    Attribute_Name => Name_Unrestricted_Access));
+                 Make_Attribute_Reference (Loc,
+                   Prefix => Make_Identifier (Loc, Name_uInit),
+                   Attribute_Name => Name_Address));
             end if;
 
-         elsif not Restricted then
-            Append_To (Args, Make_Null (Loc));
-            Append_To (Args, Make_Null (Loc));
-         end if;
+            --  Entry_Bodies parameter. This is a pointer to an array of
+            --  pointers to the entry body procedures and barrier functions of
+            --  the object. If the protected type has no entries this object
+            --  will not exist, in this case, pass a null.
 
-         if Abort_Allowed
-           or else Restriction_Active (No_Entry_Queue) = False
-           or else Number_Entries (Ptyp) > 1
-           or else (Has_Attach_Handler (Ptyp)
-                     and then not Restricted)
-         then
+            if Has_Entry then
+               P_Arr := Entry_Bodies_Array (Ptyp);
+
+               Append_To (Args,
+                 Make_Attribute_Reference (Loc,
+                   Prefix => New_Reference_To (P_Arr, Loc),
+                   Attribute_Name => Name_Unrestricted_Access));
+
+               if Pkg_Id = System_Tasking_Protected_Objects_Entries then
+
+                  --  Find index mapping function (clumsy but ok for now)
+
+                  while Ekind (P_Arr) /= E_Function loop
+                     Next_Entity (P_Arr);
+                  end loop;
+
+                  Append_To (Args,
+                    Make_Attribute_Reference (Loc,
+                      Prefix =>
+                        New_Reference_To (P_Arr, Loc),
+                      Attribute_Name => Name_Unrestricted_Access));
+               end if;
+
+            elsif Pkg_Id = System_Tasking_Protected_Objects_Single_Entry then
+               Append_To (Args, Make_Null (Loc));
+
+            elsif Pkg_Id = System_Tasking_Protected_Objects_Entries then
+               Append_To (Args, Make_Null (Loc));
+               Append_To (Args, Make_Null (Loc));
+            end if;
+
             Append_To (L,
               Make_Procedure_Call_Statement (Loc,
-                Name => New_Reference_To (
-                  RTE (RE_Initialize_Protection_Entries), Loc),
+                Name => New_Reference_To (RTE (Called_Subp), Loc),
                 Parameter_Associations => Args));
-
-         elsif not Has_Entry and then Restricted then
-            Append_To (L,
-              Make_Procedure_Call_Statement (Loc,
-                Name => New_Reference_To (
-                  RTE (RE_Initialize_Protection), Loc),
-                Parameter_Associations => Args));
-
-         else
-            Append_To (L,
-              Make_Procedure_Call_Statement (Loc,
-                Name => New_Reference_To (
-                  RTE (RE_Initialize_Protection_Entry), Loc),
-                Parameter_Associations => Args));
-         end if;
-
+         end;
       else
          Append_To (L,
            Make_Procedure_Call_Statement (Loc,
@@ -11167,7 +11168,7 @@ package body Exp_Ch9 is
          declare
             Args  : constant List_Id := New_List;
             Table : constant List_Id := New_List;
-            Ritem : Node_Id := First_Rep_Item (Ptyp);
+            Ritem : Node_Id          := First_Rep_Item (Ptyp);
 
          begin
             if not Restricted then
@@ -11187,14 +11188,14 @@ package body Exp_Ch9 is
 
             while Present (Ritem) loop
                if Nkind (Ritem) = N_Pragma
-                 and then Chars (Ritem) = Name_Attach_Handler
+                 and then Pragma_Name (Ritem) = Name_Attach_Handler
                then
                   declare
                      Handler : constant Node_Id :=
                                  First (Pragma_Argument_Associations (Ritem));
 
-                     Interrupt : constant Node_Id  := Next (Handler);
-                     Expr      : constant  Node_Id := Expression (Interrupt);
+                     Interrupt : constant Node_Id := Next (Handler);
+                     Expr      : constant Node_Id := Expression (Interrupt);
 
                   begin
                      Append_To (Table,
@@ -11473,9 +11474,11 @@ package body Exp_Ch9 is
         and then (Nkind_In (Stmt, N_Null_Statement, N_Label)
                     or else
                       (Nkind (Stmt) = N_Pragma
-                         and then (Chars (Stmt) = Name_Unreferenced
+                         and then (Pragma_Name (Stmt) = Name_Unreferenced
                                      or else
-                                   Chars (Stmt) = Name_Warnings)))
+                                   Pragma_Name (Stmt) = Name_Unmodified
+                                     or else
+                                   Pragma_Name (Stmt) = Name_Warnings)))
       loop
          Next (Stmt);
       end loop;
