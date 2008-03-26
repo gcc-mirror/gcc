@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2301,14 +2301,16 @@ package body Exp_Ch7 is
          if Nkind (Specification (N)) = N_Procedure_Specification
            and then Has_Entries (Pid)
          then
-            if Abort_Allowed
-              or else Restriction_Active (No_Entry_Queue) = False
-              or else Number_Entries (Pid) > 1
-            then
-               Name := New_Reference_To (RTE (RE_Service_Entries), Loc);
-            else
-               Name := New_Reference_To (RTE (RE_Service_Entry), Loc);
-            end if;
+            case Corresponding_Runtime_Package (Pid) is
+               when System_Tasking_Protected_Objects_Entries =>
+                  Name := New_Reference_To (RTE (RE_Service_Entries), Loc);
+
+               when System_Tasking_Protected_Objects_Single_Entry =>
+                  Name := New_Reference_To (RTE (RE_Service_Entry), Loc);
+
+               when others =>
+                  raise Program_Error;
+            end case;
 
             Append_To (Stmt,
               Make_Procedure_Call_Statement (Loc,
@@ -2329,31 +2331,19 @@ package body Exp_Ch7 is
             --  object is the record used to implement the protected object.
             --  It is a parameter to the protected subprogram.
 
-            --  If the protected object is controlled (i.e it has entries or
-            --  needs finalization for interrupt handling), call
-            --  Unlock_Entries, except if the protected object follows the
-            --  ravenscar profile, in which case call Unlock_Entry, otherwise
-            --  call the simplified version, Unlock.
-
-            if Has_Entries (Pid)
-              or else Has_Interrupt_Handler (Pid)
-              or else (Has_Attach_Handler (Pid)
-                         and then not Restricted_Profile)
-              or else (Ada_Version >= Ada_05
-                         and then Present (Interface_List (Parent (Pid))))
-            then
-               if Abort_Allowed
-                 or else Restriction_Active (No_Entry_Queue) = False
-                 or else Number_Entries (Pid) > 1
-               then
+            case Corresponding_Runtime_Package (Pid) is
+               when System_Tasking_Protected_Objects_Entries =>
                   Name := New_Reference_To (RTE (RE_Unlock_Entries), Loc);
-               else
-                  Name := New_Reference_To (RTE (RE_Unlock_Entry), Loc);
-               end if;
 
-            else
-               Name := New_Reference_To (RTE (RE_Unlock), Loc);
-            end if;
+               when System_Tasking_Protected_Objects_Single_Entry =>
+                  Name := New_Reference_To (RTE (RE_Unlock_Entry), Loc);
+
+               when System_Tasking_Protected_Objects =>
+                  Name := New_Reference_To (RTE (RE_Unlock), Loc);
+
+               when others =>
+                  raise Program_Error;
+            end case;
 
             Append_To (Stmt,
               Make_Procedure_Call_Statement (Loc,
