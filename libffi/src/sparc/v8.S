@@ -265,3 +265,7 @@ done2:
 	.byte	0x1f	! uleb128 0x1f
 	.align	WS
 .LLEFDE2:
+
+#if defined __ELF__ && defined __linux__
+	.section	.note.GNU-stack,"",@progbits
+#endif
