@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -334,10 +334,17 @@ package Einfo is
 
 --    Access_Disp_Table (Elist16) [implementation base type only]
 --       Present in record type entities. For a tagged type, points to the
---       dispatch tables associated with the tagged type; the last entity of
---       this list is an access type declaration used to expand dispatching
---       calls through the primary dispatch table. For a non-tagged record,
---       contains Empty.
+--       dispatch tables associated with the tagged type. The first two
+--       entities correspond with the primary dispatch table: 1) primary
+--       dispatch table with user-defined primitives, 2) primary dispatch table
+--       with predefined primitives. For each interface type covered by the
+--       tagged type we also have: 3) secondary dispatch table with thunks of
+--       primitives covering user-defined interface primitives, 4) secondary
+--       dispatch table with thunks of predefined primitives, 5) secondary
+--       dispatch table with user-defined primitives, and 6) secondary dispatch
+--       table with predefined primitives. The last entity of this list is an
+--       access type declaration used to expand dispatching calls through the
+--       primary dispatch table. For a non-tagged record, contains Empty.
 
 --    Address_Clause (synthesized)
 --       Applies to entries, objects and subprograms. Set if an address clause
@@ -1072,11 +1079,11 @@ package Einfo is
 --       being computed.
 
 --    Can_Use_Internal_Rep (Flag229)
---       Present in Access_Subprogram_Type_Kind nodes. This flag is set by
---       the front end and used by the back end. False means that the back end
+--       Present in Access_Subprogram_Kind nodes. This flag is set by the
+--       front end and used by the back end. False means that the back end
 --       must represent the type in the same way as Convention-C types (and
---       other foreign-convention types). On many targets, this means that the
---       back end will use dynamically generated trampolines for nested
+--       other foreign-convention types). On many targets, this means that
+--       the back end will use dynamically generated trampolines for nested
 --       subprograms. True means that the back end can represent the type in
 --       some internal way. On the aforementioned targets, this means that the
 --       back end will not use dynamically generated trampolines. This flag
@@ -1625,14 +1632,17 @@ package Einfo is
 --       Present in all entities. Can only be set for variables (E_Variable,
 --       E_Out_Parameter, E_In_Out_Parameter). Set if a valid pragma Unmodified
 --       applies to the variable, indicating that no warning should be given
---       if the entity is never modified.
+--       if the entity is never modified. Note that clients should generally
+--       not test this flag directly, but instead use function Has_Unmodified.
 
 --    Has_Pragma_Unreferenced (Flag180)
 --       Present in all entities. Set if a valid pragma Unreferenced applies
 --       to the entity, indicating that no warning should be given if the
 --       entity has no references, but a warning should be given if it is
 --       in fact referenced. For private types, this flag is set in both the
---       private entity and full entity if the pragma applies to either.
+--       private entity and full entity if the pragma applies to either. Note
+--       that clients should generally not test this flag directly, but instead
+--       use function Has_Unreferenced.
 
 --    Has_Pragma_Unreferenced_Objects (Flag212)
 --       Present in type and subtype entities. Set if a valid pragma
@@ -2613,9 +2623,13 @@ package Einfo is
 --       flag set (since to allocate the oject statically, its type must
 --       also be elaborated globally).
 
+--    Is_Static_Dispatch_Table_Entity (Flag234)
+--       Applies to all entities. Set to indicate to the backend that this
+--       entity is associated with an statically allocated dispatch table.
+
 --    Is_Subprogram (synthesized)
---       Applies to all entities, true for bodies of functions, procedures
---       and operators.
+--       Applies to all entities, true for function, procedure and operator
+--       entities.
 
 --    Is_String_Type (synthesized)
 --       Applies to all type entities. Determines if the given type is a
@@ -2649,13 +2663,20 @@ package Einfo is
 --       Applies to all entities. True for task types and subtypes
 
 --    Is_Thunk (Flag225)
---       True for subprograms that are thunks. Thunks are small subprograms
---       built by the expander for tagged types that cover interface types;
---       at run-time thunks displace the pointer to the object (pointer named
---       "this" in the C++ terminology) from a secondary dispatch table to the
---       primary dispatch table associated with a given tagged type. Set by
---       Expand_Interface Thunk and used by Expand_Call to handle extra actuals
---       associated with accessibility level.
+--       Present in all entities for subprograms (functions, procedures, and
+--       operators). True for subprograms that are thunks, that is small
+--       subprograms built by the expander for tagged types that cover
+--       interface types. At run-time thunks displace the pointer to the object
+--       (pointer named "this" in the C++ terminology) from a secondary
+--       dispatch table to the primary dispatch table associated with a given
+--       tagged type. Set by Expand_Interface Thunk and used by Expand_Call to
+--       handle extra actuals associated with accessibility level.
+
+--    Is_Trivial_Subprogram (Flag235)
+--       Present in all entities. Set in subprograms where either the body
+--       consists of a single null statement, or the first or only statement
+--       of the body raises an exception. This is used for suppressing certain
+--       warnings, see Sem_Ch6.Analyze_Subprogram_Body discussion for details.
 
 --    Is_True_Constant (Flag163)
 --       Present in all entities for constants and variables. Set in constants
@@ -2869,13 +2890,15 @@ package Einfo is
 --       to the freeze point because of the rule about overriding Initialize).
 
 --    Needs_Debug_Info (Flag147)
---       Present in all entities. Set if the entity requires debugging
---       information to be generated. This is true of all entities that
---       have Comes_From_Source set, and also transitively for entities
---       associated with such components (e.g. their types). It is true
---       for all entities in Debug_Generated_Code mode (-gnatD switch).
---       This is the flag that the back end should check to determine
---       whether or not to generate debugging information for an entity.
+--       Present in all entities. Set if the entity requires normal debugging
+--       information to be generated. This is true of all entities that have
+--       Comes_From_Source set, and also transitively for entities associated
+--       with such components (e.g. their types). It is true for all entities
+--       in Debug_Generated_Code mode (-gnatD switch). This is the flag that
+--       the back end should check to determine whether or not to generate
+--       debugging information for an entity. Note that callers should always
+--       use Sem_Util.Set_Debug_Info_Needed, rather than Set_Needs_Debug_Info,
+--       so that the flag is set properly on subsidiary entities.
 
 --    Needs_No_Actuals (Flag22)
 --       Present in callable entities (subprograms, entries, access to
@@ -3088,6 +3111,12 @@ package Einfo is
 --       Present in protected bodies. This is an implicit prival for the
 --       Protection object associated with a protected object. See Prival
 --       for further details on the use of privals.
+
+--    OK_To_Reorder_Components (Flag239) [base type only]
+--       Present in record types. Set if the back end is permitted to reorder
+--       the components. If not set, the record must be layed out in the order
+--       in which the components are declared textually. Currently this flag
+--       can only be set by debug switches.
 
 --    Original_Record_Component (Node22)
 --       Present in components, including discriminants. The usage depends
@@ -3639,7 +3668,26 @@ package Einfo is
 --    Warnings_Off (Flag96)
 --       Present in all entities. Set if a pragma Warnings (Off, entity-name)
 --       is used to suppress warnings for a given entity. It is also used by
---       the compiler in some situations to kill spurious warnings.
+--       the compiler in some situations to kill spurious warnings. Note that
+--       clients should generally not test this flag directly, but instead
+--       use function Has_Warnings_Off.
+
+--    Warnings_Off_Used (Flag236)
+--       Present in all entities. Can only be set if Warnings_Off is set. If
+--       set indicates that a warning was suppressed by the Warnings_Off flag,
+--       and Unmodified/Unreferenced would not have suppressed the warning.
+
+--    Warnings_Off_Used_Unmodified (Flag237)
+--       Present in all entities. Can only be set if Warnings_Off is set and
+--       Has_Pragma_Unmodified is not set. If set indicates that a warning was
+--       suppressed by the Warnings_Off status but that pragma Unmodified
+--       would also have suppressed the warning.
+
+--    Warnings_Off_Used_Unreferenced (Flag238)
+--       Present in all entities. Can only be set if Warnings_Off is set and
+--       Has_Pragma_Unreferenced is not set. If set indicates that a warning
+--       was suppressed by the Warnings_Off status but that pragma Unreferenced
+--       would also have suppressed the warning.
 
 --    Was_Hidden (Flag196)
 --       Present in all entities. Used to save the value of the Is_Hidden
@@ -4121,7 +4169,7 @@ package Einfo is
    --  E_Anonymous_Access_Protected_Subprogram_Type
        E_Anonymous_Access_Type;
 
-   subtype Access_Subprogram_Type_Kind is Entity_Kind range
+   subtype Access_Subprogram_Kind is Entity_Kind range
        E_Access_Subprogram_Type ..
    --  E_Anonymous_Access_Subprogram_Type
    --  E_Access_Protected_Subprogram_Type
@@ -4526,8 +4574,10 @@ package Einfo is
    --    Is_Remote_Types                     (Flag61)
    --    Is_Renaming_Of_Object               (Flag112)
    --    Is_Shared_Passive                   (Flag60)
+   --    Is_Static_Dispatch_Table_Entity     (Flag234)
    --    Is_Statically_Allocated             (Flag28)
    --    Is_Tagged_Type                      (Flag55)
+   --    Is_Trivial_Subprogram               (Flag235)
    --    Is_Unchecked_Union                  (Flag117)
    --    Is_Visible_Formal                   (Flag206)
    --    Is_VMS_Exception                    (Flag133)
@@ -4547,6 +4597,9 @@ package Einfo is
    --    Suppress_Value_Tracking_On_Call     (Flag217)
    --    Used_As_Generic_Actual              (Flag222)
    --    Warnings_Off                        (Flag96)
+   --    Warnings_Off_Used                   (Flag236)
+   --    Warnings_Off_Used_Unmodified        (Flag237)
+   --    Warnings_Off_Used_Unreferenced      (Flag238)
    --    Was_Hidden                          (Flag196)
 
    --    Declaration_Node                    (synth)
@@ -5280,6 +5333,7 @@ package Einfo is
    --    Is_Controlled                       (Flag42)   (base type only)
    --    Is_Interface                        (Flag186)
    --    Is_Limited_Interface                (Flag197)
+   --    OK_To_Reorder_Components            (Flag239)  (base type only)
    --    Reverse_Bit_Order                   (Flag164)  (base type only)
    --    First_Component                     (synth)
    --    First_Component_Or_Discriminant     (synth)
@@ -5309,6 +5363,7 @@ package Einfo is
    --    Is_Controlled                       (Flag42)   (base type only)
    --    Is_Interface                        (Flag186)
    --    Is_Limited_Interface                (Flag197)
+   --    OK_To_Reorder_Components            (Flag239)  (base type only)
    --    Reverse_Bit_Order                   (Flag164)  (base type only)
    --    First_Component                     (synth)
    --    First_Component_Or_Discriminant     (synth)
@@ -5896,12 +5951,14 @@ package Einfo is
    function Is_Renaming_Of_Object               (Id : E) return B;
    function Is_Return_Object                    (Id : E) return B;
    function Is_Shared_Passive                   (Id : E) return B;
+   function Is_Static_Dispatch_Table_Entity     (Id : E) return B;
    function Is_Statically_Allocated             (Id : E) return B;
    function Is_Synchronized_Interface           (Id : E) return B;
    function Is_Tag                              (Id : E) return B;
    function Is_Tagged_Type                      (Id : E) return B;
    function Is_Task_Interface                   (Id : E) return B;
    function Is_Thunk                            (Id : E) return B;
+   function Is_Trivial_Subprogram               (Id : E) return B;
    function Is_True_Constant                    (Id : E) return B;
    function Is_Unchecked_Union                  (Id : E) return B;
    function Is_Unsigned_Type                    (Id : E) return B;
@@ -5943,6 +6000,7 @@ package Einfo is
    function Normalized_Position_Max             (Id : E) return U;
    function Object_Ref                          (Id : E) return E;
    function Obsolescent_Warning                 (Id : E) return N;
+   function OK_To_Reorder_Components            (Id : E) return B;
    function Original_Array_Type                 (Id : E) return E;
    function Original_Record_Component           (Id : E) return E;
    function Overridden_Operation                (Id : E) return E;
@@ -6008,6 +6066,9 @@ package Einfo is
    function Uses_Sec_Stack                      (Id : E) return B;
    function Vax_Float                           (Id : E) return B;
    function Warnings_Off                        (Id : E) return B;
+   function Warnings_Off_Used                   (Id : E) return B;
+   function Warnings_Off_Used_Unmodified        (Id : E) return B;
+   function Warnings_Off_Used_Unreferenced      (Id : E) return B;
    function Was_Hidden                          (Id : E) return B;
    function Wrapped_Entity                      (Id : E) return E;
 
@@ -6023,6 +6084,7 @@ package Einfo is
 
    function Is_Access_Type                      (Id : E) return B;
    function Is_Access_Protected_Subprogram_Type (Id : E) return B;
+   function Is_Access_Subprogram_Type           (Id : E) return B;
    function Is_Array_Type                       (Id : E) return B;
    function Is_Assignable                       (Id : E) return B;
    function Is_Class_Wide_Type                  (Id : E) return B;
@@ -6446,12 +6508,14 @@ package Einfo is
    procedure Set_Is_Renaming_Of_Object           (Id : E; V : B := True);
    procedure Set_Is_Return_Object                (Id : E; V : B := True);
    procedure Set_Is_Shared_Passive               (Id : E; V : B := True);
+   procedure Set_Is_Static_Dispatch_Table_Entity (Id : E; V : B := True);
    procedure Set_Is_Statically_Allocated         (Id : E; V : B := True);
    procedure Set_Is_Synchronized_Interface       (Id : E; V : B := True);
    procedure Set_Is_Tag                          (Id : E; V : B := True);
    procedure Set_Is_Tagged_Type                  (Id : E; V : B := True);
    procedure Set_Is_Task_Interface               (Id : E; V : B := True);
    procedure Set_Is_Thunk                        (Id : E; V : B := True);
+   procedure Set_Is_Trivial_Subprogram           (Id : E; V : B := True);
    procedure Set_Is_True_Constant                (Id : E; V : B := True);
    procedure Set_Is_Unchecked_Union              (Id : E; V : B := True);
    procedure Set_Is_Unsigned_Type                (Id : E; V : B := True);
@@ -6493,6 +6557,7 @@ package Einfo is
    procedure Set_Normalized_Position_Max         (Id : E; V : U);
    procedure Set_Object_Ref                      (Id : E; V : E);
    procedure Set_Obsolescent_Warning             (Id : E; V : N);
+   procedure Set_OK_To_Reorder_Components        (Id : E; V : B := True);
    procedure Set_Original_Array_Type             (Id : E; V : E);
    procedure Set_Original_Record_Component       (Id : E; V : E);
    procedure Set_Overridden_Operation            (Id : E; V : E);
@@ -6558,6 +6623,9 @@ package Einfo is
    procedure Set_Uses_Sec_Stack                  (Id : E; V : B := True);
    procedure Set_Vax_Float                       (Id : E; V : B := True);
    procedure Set_Warnings_Off                    (Id : E; V : B := True);
+   procedure Set_Warnings_Off_Used               (Id : E; V : B := True);
+   procedure Set_Warnings_Off_Used_Unmodified    (Id : E; V : B := True);
+   procedure Set_Warnings_Off_Used_Unreferenced  (Id : E; V : B := True);
    procedure Set_Was_Hidden                      (Id : E; V : B := True);
    procedure Set_Wrapped_Entity                  (Id : E; V : E);
 
@@ -6677,6 +6745,33 @@ package Einfo is
 
    procedure Next_Stored_Discriminant       (N : in out Node_Id)
      renames Proc_Next_Stored_Discriminant;
+
+   ---------------------------
+   -- Testing Warning Flags --
+   ---------------------------
+
+   --  These routines are to be used rather than testing flags Warnings_Off,
+   --  Has_Pragma_Unmodified, Has_Pragma_Unreferenced. They deal with setting
+   --  the flags Warnings_Off_Used[_Unmodified|Unreferenced] for later access.
+
+   function Has_Warnings_Off (E : Entity_Id) return Boolean;
+   --  If Warnings_Off is set on E, then returns True and also sets the flag
+   --  Warnings_Off_Used on E. If Warnings_Off is not set on E, returns False
+   --  and has no side effect.
+
+   function Has_Unmodified (E : Entity_Id) return Boolean;
+   --  If flag Has_Pragma_Unmodified is set on E, returns True with no side
+   --  effects. Otherwise if Warnings_Off is set on E, returns True and also
+   --  sets the flag Warnings_Off_Used_Unmodified on E. If neither of the flags
+   --  Warnings_Off nor Has_Pragma_Unmodified is set, returns False with no
+   --  side effects.
+
+   function Has_Unreferenced (E : Entity_Id) return Boolean;
+   --  If flag Has_Pragma_Unreferenced is set on E, returns True with no side
+   --  effects. Otherwise if Warnings_Off is set on E, returns True and also
+   --  sets the flag Warnings_Off_Used_Unreferenced on E. If neither of the
+   --  flags Warnings_Off nor Has_Pragma_Unreferenced is set, returns False
+   --  with no side effects.
 
    ----------------------------------------------
    -- Subprograms for Accessing Rep Item Chain --
@@ -6984,6 +7079,7 @@ package Einfo is
    pragma Inline (Is_Ada_2005_Only);
    pragma Inline (Is_Access_Type);
    pragma Inline (Is_Access_Protected_Subprogram_Type);
+   pragma Inline (Is_Access_Subprogram_Type);
    pragma Inline (Is_Aliased);
    pragma Inline (Is_Array_Type);
    pragma Inline (Is_Assignable);
@@ -7093,6 +7189,7 @@ package Einfo is
    pragma Inline (Is_Scalar_Type);
    pragma Inline (Is_Shared_Passive);
    pragma Inline (Is_Signed_Integer_Type);
+   pragma Inline (Is_Static_Dispatch_Table_Entity);
    pragma Inline (Is_Statically_Allocated);
    pragma Inline (Is_Subprogram);
    pragma Inline (Is_Synchronized_Interface);
@@ -7102,6 +7199,7 @@ package Einfo is
    pragma Inline (Is_True_Constant);
    pragma Inline (Is_Task_Type);
    pragma Inline (Is_Thunk);
+   pragma Inline (Is_Trivial_Subprogram);
    pragma Inline (Is_Type);
    pragma Inline (Is_Unchecked_Union);
    pragma Inline (Is_Unsigned_Type);
@@ -7144,6 +7242,7 @@ package Einfo is
    pragma Inline (Normalized_Position_Max);
    pragma Inline (Object_Ref);
    pragma Inline (Obsolescent_Warning);
+   pragma Inline (OK_To_Reorder_Components);
    pragma Inline (Original_Array_Type);
    pragma Inline (Original_Record_Component);
    pragma Inline (Overridden_Operation);
@@ -7210,6 +7309,9 @@ package Einfo is
    pragma Inline (Uses_Sec_Stack);
    pragma Inline (Vax_Float);
    pragma Inline (Warnings_Off);
+   pragma Inline (Warnings_Off_Used);
+   pragma Inline (Warnings_Off_Used_Unmodified);
+   pragma Inline (Warnings_Off_Used_Unreferenced);
    pragma Inline (Was_Hidden);
    pragma Inline (Wrapped_Entity);
 
@@ -7470,12 +7572,14 @@ package Einfo is
    pragma Inline (Set_Is_Renaming_Of_Object);
    pragma Inline (Set_Is_Return_Object);
    pragma Inline (Set_Is_Shared_Passive);
+   pragma Inline (Set_Is_Static_Dispatch_Table_Entity);
    pragma Inline (Set_Is_Statically_Allocated);
    pragma Inline (Set_Is_Synchronized_Interface);
    pragma Inline (Set_Is_Tag);
    pragma Inline (Set_Is_Tagged_Type);
    pragma Inline (Set_Is_Task_Interface);
    pragma Inline (Set_Is_Thunk);
+   pragma Inline (Set_Is_Trivial_Subprogram);
    pragma Inline (Set_Is_True_Constant);
    pragma Inline (Set_Is_Unchecked_Union);
    pragma Inline (Set_Is_Unsigned_Type);
@@ -7517,6 +7621,7 @@ package Einfo is
    pragma Inline (Set_Normalized_Position_Max);
    pragma Inline (Set_Object_Ref);
    pragma Inline (Set_Obsolescent_Warning);
+   pragma Inline (Set_OK_To_Reorder_Components);
    pragma Inline (Set_Original_Array_Type);
    pragma Inline (Set_Original_Record_Component);
    pragma Inline (Set_Overridden_Operation);
@@ -7582,6 +7687,9 @@ package Einfo is
    pragma Inline (Set_Uses_Sec_Stack);
    pragma Inline (Set_Vax_Float);
    pragma Inline (Set_Warnings_Off);
+   pragma Inline (Set_Warnings_Off_Used);
+   pragma Inline (Set_Warnings_Off_Used_Unmodified);
+   pragma Inline (Set_Warnings_Off_Used_Unreferenced);
    pragma Inline (Set_Was_Hidden);
    pragma Inline (Set_Wrapped_Entity);
 

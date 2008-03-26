@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -495,13 +495,12 @@ package body Einfo is
    --    Renamed_In_Spec                 Flag231
    --    Implemented_By_Entry            Flag232
    --    Has_Pragma_Unmodified           Flag233
-
-   --    (unused)                        Flag234
-   --    (unused)                        Flag235
-   --    (unused)                        Flag236
-   --    (unused)                        Flag237
-   --    (unused)                        Flag238
-   --    (unused)                        Flag239
+   --    Is_Static_Dispatch_Table_Entity Flag234
+   --    Is_Trivial_Subprogram           Flag235
+   --    Warnings_Off_Used               Flag236
+   --    Warnings_Off_Used_Unmodified    Flag237
+   --    Warnings_Off_Used_Unreferenced  Flag238
+   --    OK_To_Reorder_Components        Flag239
 
    --    (unused)                        Flag240
    --    (unused)                        Flag241
@@ -1044,7 +1043,7 @@ package body Einfo is
 
    function Can_Use_Internal_Rep (Id : E) return B is
    begin
-      pragma Assert (Ekind (Id) in Access_Subprogram_Type_Kind);
+      pragma Assert (Is_Access_Subprogram_Type (Id));
       return Flag229 (Id);
    end Can_Use_Internal_Rep;
 
@@ -2001,6 +2000,11 @@ package body Einfo is
       return Flag28 (Id);
    end Is_Statically_Allocated;
 
+   function Is_Static_Dispatch_Table_Entity (Id : E) return B is
+   begin
+      return Flag234 (Id);
+   end Is_Static_Dispatch_Table_Entity;
+
    function Is_Synchronized_Interface (Id : E) return B is
    begin
       pragma Assert (Is_Interface (Id));
@@ -2029,6 +2033,11 @@ package body Einfo is
       pragma Assert (Is_Subprogram (Id));
       return Flag225 (Id);
    end Is_Thunk;
+
+   function Is_Trivial_Subprogram (Id : E) return B is
+   begin
+      return Flag235 (Id);
+   end Is_Trivial_Subprogram;
 
    function Is_True_Constant (Id : E) return B is
    begin
@@ -2271,6 +2280,12 @@ package body Einfo is
    begin
       return Node24 (Id);
    end Obsolescent_Warning;
+
+   function OK_To_Reorder_Components (Id : E) return B is
+   begin
+      pragma Assert (Is_Record_Type (Id));
+      return Flag239 (Base_Type (Id));
+   end OK_To_Reorder_Components;
 
    function Original_Array_Type (Id : E) return E is
    begin
@@ -2645,6 +2660,21 @@ package body Einfo is
       return Flag96 (Id);
    end Warnings_Off;
 
+   function Warnings_Off_Used (Id : E) return B is
+   begin
+      return Flag236 (Id);
+   end Warnings_Off_Used;
+
+   function Warnings_Off_Used_Unmodified (Id : E) return B is
+   begin
+      return Flag237 (Id);
+   end Warnings_Off_Used_Unmodified;
+
+   function Warnings_Off_Used_Unreferenced (Id : E) return B is
+   begin
+      return Flag238 (Id);
+   end Warnings_Off_Used_Unreferenced;
+
    function Wrapped_Entity (Id : E) return E is
    begin
       pragma Assert (Ekind (Id) = E_Procedure
@@ -2670,6 +2700,11 @@ package body Einfo is
    begin
       return Ekind (Id) in Access_Protected_Kind;
    end Is_Access_Protected_Subprogram_Type;
+
+   function Is_Access_Subprogram_Type           (Id : E) return B is
+   begin
+      return Ekind (Id) in Access_Subprogram_Kind;
+   end Is_Access_Subprogram_Type;
 
    function Is_Array_Type                       (Id : E) return B is
    begin
@@ -3380,7 +3415,7 @@ package body Einfo is
 
    procedure Set_Can_Use_Internal_Rep (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind (Id) in Access_Subprogram_Type_Kind);
+      pragma Assert (Is_Access_Subprogram_Type (Id));
       Set_Flag229 (Id, V);
    end Set_Can_Use_Internal_Rep;
 
@@ -4385,6 +4420,11 @@ package body Einfo is
       Set_Flag28 (Id, V);
    end Set_Is_Statically_Allocated;
 
+   procedure Set_Is_Static_Dispatch_Table_Entity (Id : E; V : B := True) is
+   begin
+      Set_Flag234 (Id, V);
+   end Set_Is_Static_Dispatch_Table_Entity;
+
    procedure Set_Is_Synchronized_Interface (Id : E; V : B := True) is
    begin
       pragma Assert (Is_Interface (Id));
@@ -4414,6 +4454,11 @@ package body Einfo is
    begin
       Set_Flag225 (Id, V);
    end Set_Is_Thunk;
+
+   procedure Set_Is_Trivial_Subprogram (Id : E; V : B := True) is
+   begin
+      Set_Flag235 (Id, V);
+   end Set_Is_Trivial_Subprogram;
 
    procedure Set_Is_True_Constant (Id : E; V : B := True) is
    begin
@@ -4660,6 +4705,13 @@ package body Einfo is
    begin
       Set_Node24 (Id, V);
    end Set_Obsolescent_Warning;
+
+   procedure Set_OK_To_Reorder_Components (Id : E; V : B := True) is
+   begin
+      pragma Assert
+        (Is_Record_Type (Id) and then Id = Base_Type (Id));
+      Set_Flag239 (Id, V);
+   end Set_OK_To_Reorder_Components;
 
    procedure Set_Original_Array_Type (Id : E; V : E) is
    begin
@@ -5039,6 +5091,21 @@ package body Einfo is
    begin
       Set_Flag96 (Id, V);
    end Set_Warnings_Off;
+
+   procedure Set_Warnings_Off_Used (Id : E; V : B := True) is
+   begin
+      Set_Flag236 (Id, V);
+   end Set_Warnings_Off_Used;
+
+   procedure Set_Warnings_Off_Used_Unmodified (Id : E; V : B := True) is
+   begin
+      Set_Flag237 (Id, V);
+   end Set_Warnings_Off_Used_Unmodified;
+
+   procedure Set_Warnings_Off_Used_Unreferenced (Id : E; V : B := True) is
+   begin
+      Set_Flag238 (Id, V);
+   end Set_Warnings_Off_Used_Unreferenced;
 
    procedure Set_Was_Hidden (Id : E; V : B := True) is
    begin
@@ -5969,7 +6036,7 @@ package body Einfo is
    begin
       N := First_Rep_Item (E);
       while Present (N) loop
-         if Nkind (N) = N_Pragma and then Chars (N) = Nam then
+         if Nkind (N) = N_Pragma and then Pragma_Name (N) = Nam then
             return N;
          end if;
 
@@ -5992,7 +6059,7 @@ package body Einfo is
       Ritem := First_Rep_Item (Id);
       while Present (Ritem) loop
          if Nkind (Ritem) = N_Pragma
-           and then Chars (Ritem) = Name_Attach_Handler
+           and then Pragma_Name (Ritem) = Name_Attach_Handler
          then
             return True;
          else
@@ -6020,8 +6087,7 @@ package body Einfo is
    -----------------
 
    function Has_Entries (Id : E) return B is
-      Result : Boolean := False;
-      Ent    : Entity_Id;
+      Ent : Entity_Id;
 
    begin
       pragma Assert (Is_Concurrent_Type (Id));
@@ -6029,14 +6095,13 @@ package body Einfo is
       Ent := First_Entity (Id);
       while Present (Ent) loop
          if Is_Entry (Ent) then
-            Result := True;
-            exit;
+            return True;
          end if;
 
          Ent := Next_Entity (Ent);
       end loop;
 
-      return Result;
+      return False;
    end Has_Entries;
 
    ----------------------------
@@ -6061,7 +6126,7 @@ package body Einfo is
       Ritem := First_Rep_Item (Id);
       while Present (Ritem) loop
          if Nkind (Ritem) = N_Pragma
-           and then Chars (Ritem) = Name_Interrupt_Handler
+           and then Pragma_Name (Ritem) = Name_Interrupt_Handler
          then
             return True;
          else
@@ -6079,15 +6144,12 @@ package body Einfo is
    function Has_Private_Ancestor (Id : E) return B is
       R  : constant Entity_Id := Root_Type (Id);
       T1 : Entity_Id := Id;
-
    begin
       loop
          if Is_Private_Type (T1) then
             return True;
-
          elsif T1 = R then
             return False;
-
          else
             T1 := Etype (T1);
          end if;
@@ -6102,6 +6164,52 @@ package body Einfo is
    begin
       return Present (Get_Rep_Pragma (E, Nam));
    end Has_Rep_Pragma;
+
+   --------------------
+   -- Has_Unmodified --
+   --------------------
+
+   function Has_Unmodified (E : Entity_Id) return Boolean is
+   begin
+      if Has_Pragma_Unmodified (E) then
+         return True;
+      elsif Warnings_Off (E) then
+         Set_Warnings_Off_Used_Unmodified (E);
+         return True;
+      else
+         return False;
+      end if;
+   end Has_Unmodified;
+
+   ---------------------
+   -- Has_Unreferenced --
+   ---------------------
+
+   function Has_Unreferenced (E : Entity_Id) return Boolean is
+   begin
+      if Has_Pragma_Unreferenced (E) then
+         return True;
+      elsif Warnings_Off (E) then
+         Set_Warnings_Off_Used_Unreferenced (E);
+         return True;
+      else
+         return False;
+      end if;
+   end Has_Unreferenced;
+
+   ----------------------
+   -- Has_Warnings_Off --
+   ----------------------
+
+   function Has_Warnings_Off (E : Entity_Id) return Boolean is
+   begin
+      if Warnings_Off (E) then
+         Set_Warnings_Off_Used (E);
+         return True;
+      else
+         return False;
+      end if;
+   end Has_Warnings_Off;
 
    ------------------------------
    -- Implementation_Base_Type --
@@ -7396,11 +7504,13 @@ package body Einfo is
       W ("Is_Return_Object",                Flag209 (Id));
       W ("Is_Shared_Passive",               Flag60  (Id));
       W ("Is_Synchronized_Interface",       Flag199 (Id));
+      W ("Is_Static_Dispatch_Table_Entity", Flag234 (Id));
       W ("Is_Statically_Allocated",         Flag28  (Id));
       W ("Is_Tag",                          Flag78  (Id));
       W ("Is_Tagged_Type",                  Flag55  (Id));
       W ("Is_Task_Interface",               Flag200 (Id));
       W ("Is_Thunk",                        Flag225 (Id));
+      W ("Is_Trivial_Subprogram",           Flag235 (Id));
       W ("Is_True_Constant",                Flag163 (Id));
       W ("Is_Unchecked_Union",              Flag117 (Id));
       W ("Is_Unsigned_Type",                Flag144 (Id));
@@ -7427,6 +7537,7 @@ package body Einfo is
       W ("No_Strict_Aliasing",              Flag136 (Id));
       W ("Non_Binary_Modulus",              Flag58  (Id));
       W ("Nonzero_Is_True",                 Flag162 (Id));
+      W ("OK_To_Reorder_Components",        Flag239 (Id));
       W ("Reachable",                       Flag49  (Id));
       W ("Referenced",                      Flag156 (Id));
       W ("Referenced_As_LHS",               Flag36  (Id));
@@ -7452,6 +7563,9 @@ package body Einfo is
       W ("Uses_Sec_Stack",                  Flag95  (Id));
       W ("Vax_Float",                       Flag151 (Id));
       W ("Warnings_Off",                    Flag96  (Id));
+      W ("Warnings_Off_Used",               Flag236 (Id));
+      W ("Warnings_Off_Used_Unmodified",    Flag237 (Id));
+      W ("Warnings_Off_Used_Unreferenced",  Flag238 (Id));
       W ("Was_Hidden",                      Flag196 (Id));
    end Write_Entity_Flags;
 
