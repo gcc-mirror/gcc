@@ -1,3 +1,14 @@
+2008-03-26  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in (build/gensupport.o, build/print-rtl.o,
+	build/read-rtl.o, build/rtl.o, build/gencondmd.o, build/genattr.o,
+	build/genattrtab.o, build/genautomata.o, build/gencheck.o,
+	build/gencodes.o, build/genconditions.o, build/genconfig.o,
+	build/genconstants.o, build/genemit.o, build/genextract.o,
+	build/genflags.o, build/genmddeps.o, build/genopinit.o,
+	build/genoutput.o, build/genpeep.o, build/genrecog.o): Depend on
+	options.h.
+
 2008-03-26  Richard Guenther  <rguenther@suse.de>
 
 	Revert
