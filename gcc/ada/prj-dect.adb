@@ -25,7 +25,8 @@
 
 with Err_Vars; use Err_Vars;
 
-with GNAT.Case_Util; use GNAT.Case_Util;
+with GNAT.Case_Util;        use GNAT.Case_Util;
+with GNAT.Spelling_Checker; use GNAT.Spelling_Checker;
 
 with Opt;         use Opt;
 with Prj.Attr;    use Prj.Attr;
@@ -36,7 +37,11 @@ with Prj.Tree;    use Prj.Tree;
 with Snames;
 with Uintp;       use Uintp;
 
+with System.Strings;
+
 package body Prj.Dect is
+
+   use System;
 
    type Zone is (In_Project, In_Package, In_Case_Construction);
    --  Used to indicate if we are parsing a package (In_Package),
@@ -983,11 +988,44 @@ package body Prj.Dect is
 
          if Current_Package = Empty_Package then
             if not Quiet_Output then
-               Error_Msg ("?""" &
-                          Get_Name_String
-                            (Name_Of (Package_Declaration, In_Tree)) &
-                          """ is not a known package name",
-                          Token_Ptr);
+               declare
+                  List  : constant Strings.String_List := Package_Name_List;
+                  Index : Natural;
+                  Name  : constant String := Get_Name_String (Token_Name);
+
+               begin
+                  --  Check for possible misspelling of a known package name
+
+                  Index := 0;
+                  loop
+                     if Index >= List'Last then
+                        Index := 0;
+                        exit;
+                     end if;
+
+                     Index := Index + 1;
+                     exit when
+                       GNAT.Spelling_Checker.Is_Bad_Spelling_Of
+                         (Name, List (Index).all);
+                  end loop;
+
+                  --  Issue warning(s) in verbose mode or when a possible
+                  --  misspelling has been found.
+
+                  if Verbose_Mode or else Index /= 0 then
+                     Error_Msg ("?""" &
+                                Get_Name_String
+                                 (Name_Of (Package_Declaration, In_Tree)) &
+                                """ is not a known package name",
+                                Token_Ptr);
+                  end if;
+
+                  if Index /= 0 then
+                     Error_Msg ("\?possible misspelling of """ &
+                                List (Index).all & """",
+                                Token_Ptr);
+                  end if;
+               end;
             end if;
 
             --  Set the package declaration to "ignored" so that it is not

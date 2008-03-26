@@ -72,13 +72,16 @@ package body Prj.Part is
       Table_Increment      => 100,
       Table_Name           => "Prj.Part.Withs");
    --  Table used to store temporarily paths and locations of imported
-   --  projects. These imported projects will be effectively parsed after the
-   --  name of the current project has been extablished.
+   --  projects. These imported projects will be effectively parsed later: just
+   --  before parsing the current project for the non limited withed projects,
+   --  after getting its name; after complete parsing of the current project
+   --  for the limited withed projects.
 
    type Names_And_Id is record
       Path_Name           : Path_Name_Type;
       Canonical_Path_Name : Path_Name_Type;
       Id                  : Project_Node_Id;
+      Limited_With        : Boolean;
    end record;
 
    package Project_Stack is new Table.Table
@@ -147,25 +150,28 @@ package body Prj.Part is
    procedure Pre_Parse_Context_Clause
      (In_Tree        : Project_Node_Tree_Ref;
       Context_Clause : out With_Id);
-   --  Parse the context clause of a project.
-   --  Store the paths and locations of the imported projects in table Withs.
-   --  Does nothing if there is no context clause (if the current
-   --  token is not "with" or "limited" followed by "with").
+   --  Parse the context clause of a project. Store the paths and locations of
+   --  the imported projects in table Withs. Does nothing if there is no
+   --  context clause (if the current token is not "with" or "limited" followed
+   --  by "with").
 
    procedure Post_Parse_Context_Clause
      (Context_Clause    : With_Id;
       In_Tree           : Project_Node_Tree_Ref;
-      Imported_Projects : out Project_Node_Id;
+      Limited_Withs     : Boolean;
+      Imported_Projects : in out Project_Node_Id;
       Project_Directory : Path_Name_Type;
       From_Extended     : Extension_Origin;
       In_Limited        : Boolean;
       Packages_To_Check : String_List_Access;
       Depth             : Natural;
       Current_Dir       : String);
-   --  Parse the imported projects that have been stored in table Withs,
-   --  if any. From_Extended is used for the call to Parse_Single_Project
-   --  below. When In_Limited is True, the importing path includes at least
-   --  one "limited with".
+   --  Parse the imported projects that have been stored in table Withs, if
+   --  any. From_Extended is used for the call to Parse_Single_Project below.
+   --  When In_Limited is True, the importing path includes at least one
+   --  "limited with". When Limited_Withs is False, only non limited withed
+   --  projects are parsed. When Limited_Withs is True, only limited withed
+   --  projects are parsed.
 
    function Project_Path_Name_Of
      (Project_File_Name : String;
@@ -645,7 +651,7 @@ package body Prj.Part is
 
          Comma_Loop :
          loop
-            Scan (In_Tree); -- scan past WITH or ","
+            Scan (In_Tree); -- past WITH or ","
 
             Expect (Tok_String_Literal, "literal string");
 
@@ -682,7 +688,7 @@ package body Prj.Part is
 
                --  End of (possibly multiple) with clause;
 
-               Scan (In_Tree); -- scan past the semicolon.
+               Scan (In_Tree); -- past the semicolon
                exit Comma_Loop;
 
             elsif Token = Tok_Comma then
@@ -707,7 +713,8 @@ package body Prj.Part is
    procedure Post_Parse_Context_Clause
      (Context_Clause    : With_Id;
       In_Tree           : Project_Node_Tree_Ref;
-      Imported_Projects : out Project_Node_Id;
+      Limited_Withs     : Boolean;
+      Imported_Projects : in out Project_Node_Id;
       Project_Directory : Path_Name_Type;
       From_Extended     : Extension_Origin;
       In_Limited        : Boolean;
@@ -717,7 +724,7 @@ package body Prj.Part is
    is
       Current_With_Clause : With_Id := Context_Clause;
 
-      Current_Project  : Project_Node_Id := Empty_Node;
+      Current_Project  : Project_Node_Id := Imported_Projects;
       Previous_Project : Project_Node_Id := Empty_Node;
       Next_Project     : Project_Node_Id := Empty_Node;
 
@@ -725,163 +732,177 @@ package body Prj.Part is
                                  Get_Name_String (Project_Directory);
 
       Current_With : With_Record;
-      Limited_With : Boolean := False;
       Extends_All  : Boolean := False;
 
    begin
-      Imported_Projects := Empty_Node;
+      --  Set Current_Project to the last project in the current list, if the
+      --  list is not empty.
+
+      if Current_Project /= Empty_Node then
+         while
+           Next_With_Clause_Of (Current_Project, In_Tree) /= Empty_Node
+         loop
+            Current_Project := Next_With_Clause_Of (Current_Project, In_Tree);
+         end loop;
+      end if;
 
       while Current_With_Clause /= No_With loop
          Current_With := Withs.Table (Current_With_Clause);
          Current_With_Clause := Current_With.Next;
 
-         Limited_With := In_Limited or Current_With.Limited_With;
+         if Limited_Withs = Current_With.Limited_With then
+            declare
+               Original_Path : constant String :=
+                                 Get_Name_String (Current_With.Path);
 
-         declare
-            Original_Path : constant String :=
-                              Get_Name_String (Current_With.Path);
+               Imported_Path_Name : constant String :=
+                                      Project_Path_Name_Of
+                                        (Original_Path,
+                                         Project_Directory_Path);
 
-            Imported_Path_Name : constant String :=
-                                   Project_Path_Name_Of
-                                     (Original_Path, Project_Directory_Path);
+               Resolved_Path : constant String :=
+                                 Normalize_Pathname
+                                   (Imported_Path_Name,
+                                    Directory      => Current_Dir,
+                                    Resolve_Links  =>
+                                      Opt.Follow_Links_For_Files,
+                                    Case_Sensitive => True);
 
-            Resolved_Path : constant String :=
-                              Normalize_Pathname
-                                (Imported_Path_Name,
-                                 Directory     => Current_Dir,
-                                 Resolve_Links => Opt.Follow_Links_For_Files,
-                                 Case_Sensitive => True);
+               Withed_Project : Project_Node_Id := Empty_Node;
 
-            Withed_Project : Project_Node_Id := Empty_Node;
+            begin
+               if Imported_Path_Name = "" then
 
-         begin
-            if Imported_Path_Name = "" then
+                  --  The project file cannot be found
 
-               --  The project file cannot be found
+                  Error_Msg_File_1 := File_Name_Type (Current_With.Path);
+                  Error_Msg
+                    ("unknown project file: {", Current_With.Location);
 
-               Error_Msg_File_1 := File_Name_Type (Current_With.Path);
+                  --  If this is not imported by the main project file, display
+                  --  the import path.
 
-               Error_Msg ("unknown project file: {", Current_With.Location);
-
-               --  If this is not imported by the main project file,
-               --  display the import path.
-
-               if Project_Stack.Last > 1 then
-                  for Index in reverse 1 .. Project_Stack.Last loop
-                     Error_Msg_File_1 :=
-                       File_Name_Type (Project_Stack.Table (Index).Path_Name);
-                     Error_Msg ("\imported by {", Current_With.Location);
-                  end loop;
-               end if;
-
-            else
-               --  New with clause
-
-               Previous_Project := Current_Project;
-
-               if Current_Project = Empty_Node then
-
-                  --  First with clause of the context clause
-
-                  Current_Project := Current_With.Node;
-                  Imported_Projects := Current_Project;
-
-               else
-                  Next_Project := Current_With.Node;
-                  Set_Next_With_Clause_Of
-                    (Current_Project, In_Tree, Next_Project);
-                  Current_Project := Next_Project;
-               end if;
-
-               Set_String_Value_Of
-                 (Current_Project, In_Tree, Name_Id (Current_With.Path));
-               Set_Location_Of
-                 (Current_Project, In_Tree, Current_With.Location);
-
-               --  If this is a "limited with", check if we have a circularity.
-               --  If we have one, get the project id of the limited imported
-               --  project file, and do not parse it.
-
-               if Limited_With and then Project_Stack.Last > 1 then
-                  declare
-                     Canonical_Path_Name : Path_Name_Type;
-
-                  begin
-                     Name_Len := Resolved_Path'Length;
-                     Name_Buffer (1 .. Name_Len) := Resolved_Path;
-                     Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
-                     Canonical_Path_Name := Name_Find;
-
-                     for Index in 1 .. Project_Stack.Last loop
-                        if Project_Stack.Table (Index).Canonical_Path_Name =
-                             Canonical_Path_Name
-                        then
-                           --  We have found the limited imported project,
-                           --  get its project id, and do not parse it.
-
-                           Withed_Project := Project_Stack.Table (Index).Id;
-                           exit;
-                        end if;
+                  if Project_Stack.Last > 1 then
+                     for Index in reverse 1 .. Project_Stack.Last loop
+                        Error_Msg_File_1 :=
+                          File_Name_Type
+                            (Project_Stack.Table (Index).Path_Name);
+                        Error_Msg
+                          ("\imported by {", Current_With.Location);
                      end loop;
-                  end;
-               end if;
-
-               --  Parse the imported project, if its project id is unknown
-
-               if Withed_Project = Empty_Node then
-                  Parse_Single_Project
-                    (In_Tree           => In_Tree,
-                     Project           => Withed_Project,
-                     Extends_All       => Extends_All,
-                     Path_Name         => Imported_Path_Name,
-                     Extended          => False,
-                     From_Extended     => From_Extended,
-                     In_Limited        => Limited_With,
-                     Packages_To_Check => Packages_To_Check,
-                     Depth             => Depth,
-                     Current_Dir       => Current_Dir);
+                  end if;
 
                else
-                  Extends_All := Is_Extending_All (Withed_Project, In_Tree);
-               end if;
+                  --  New with clause
 
-               if Withed_Project = Empty_Node then
-                  --  If parsing was not successful, remove the
-                  --  context clause.
-
-                  Current_Project := Previous_Project;
+                  Previous_Project := Current_Project;
 
                   if Current_Project = Empty_Node then
-                     Imported_Projects := Empty_Node;
+
+                     --  First with clause of the context clause
+
+                     Current_Project := Current_With.Node;
+                     Imported_Projects := Current_Project;
 
                   else
+                     Next_Project := Current_With.Node;
                      Set_Next_With_Clause_Of
-                       (Current_Project, In_Tree, Empty_Node);
+                       (Current_Project, In_Tree, Next_Project);
+                     Current_Project := Next_Project;
                   end if;
-               else
-                  --  If parsing was successful, record project name
-                  --  and path name in with clause
 
-                  Set_Project_Node_Of
-                    (Node         => Current_Project,
-                     In_Tree      => In_Tree,
-                     To           => Withed_Project,
-                     Limited_With => Current_With.Limited_With);
-                  Set_Name_Of
+                  Set_String_Value_Of
                     (Current_Project,
                      In_Tree,
-                     Name_Of (Withed_Project, In_Tree));
+                     Name_Id (Current_With.Path));
+                  Set_Location_Of
+                    (Current_Project, In_Tree, Current_With.Location);
 
-                  Name_Len := Resolved_Path'Length;
-                  Name_Buffer (1 .. Name_Len) := Resolved_Path;
-                  Set_Path_Name_Of (Current_Project, In_Tree, Name_Find);
+                  --  If it is a limited with, check if we have a circularity.
+                  --  If we have one, get the project id of the limited
+                  --  imported project file, and do not parse it.
 
-                  if Extends_All then
-                     Set_Is_Extending_All (Current_Project, In_Tree);
+                  if Limited_Withs and then Project_Stack.Last > 1 then
+                     declare
+                        Canonical_Path_Name : Path_Name_Type;
+
+                     begin
+                        Name_Len := Resolved_Path'Length;
+                        Name_Buffer (1 .. Name_Len) := Resolved_Path;
+                        Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
+                        Canonical_Path_Name := Name_Find;
+
+                        for Index in 1 .. Project_Stack.Last loop
+                           if Project_Stack.Table (Index).Canonical_Path_Name =
+                             Canonical_Path_Name
+                           then
+                              --  We have found the limited imported project,
+                              --  get its project id, and do not parse it.
+
+                              Withed_Project := Project_Stack.Table (Index).Id;
+                              exit;
+                           end if;
+                        end loop;
+                     end;
+                  end if;
+
+                  --  Parse the imported project, if its project id is unknown
+
+                  if Withed_Project = Empty_Node then
+                     Parse_Single_Project
+                       (In_Tree           => In_Tree,
+                        Project           => Withed_Project,
+                        Extends_All       => Extends_All,
+                        Path_Name         => Imported_Path_Name,
+                        Extended          => False,
+                        From_Extended     => From_Extended,
+                        In_Limited        => Limited_Withs,
+                        Packages_To_Check => Packages_To_Check,
+                        Depth             => Depth,
+                        Current_Dir       => Current_Dir);
+
+                  else
+                     Extends_All := Is_Extending_All (Withed_Project, In_Tree);
+                  end if;
+
+                  if Withed_Project = Empty_Node then
+
+                     --  If parsing unsuccessful, remove the context clause
+
+                     Current_Project := Previous_Project;
+
+                     if Current_Project = Empty_Node then
+                        Imported_Projects := Empty_Node;
+
+                     else
+                        Set_Next_With_Clause_Of
+                          (Current_Project, In_Tree, Empty_Node);
+                     end if;
+                  else
+                     --  If parsing was successful, record project name and
+                     --  path name in with clause
+
+                     Set_Project_Node_Of
+                       (Node         => Current_Project,
+                        In_Tree      => In_Tree,
+                        To           => Withed_Project,
+                        Limited_With => Current_With.Limited_With);
+                     Set_Name_Of
+                       (Current_Project,
+                        In_Tree,
+                        Name_Of (Withed_Project, In_Tree));
+
+                     Name_Len := Resolved_Path'Length;
+                     Name_Buffer (1 .. Name_Len) := Resolved_Path;
+                     Set_Path_Name_Of (Current_Project, In_Tree, Name_Find);
+
+                     if Extends_All then
+                        Set_Is_Extending_All (Current_Project, In_Tree);
+                     end if;
                   end if;
                end if;
-            end if;
-         end;
+            end;
+         end if;
       end loop;
    end Post_Parse_Context_Clause;
 
@@ -909,17 +930,16 @@ package body Prj.Part is
 
       Extending : Boolean := False;
 
-      Extended_Project    : Project_Node_Id := Empty_Node;
+      Extended_Project : Project_Node_Id := Empty_Node;
 
       A_Project_Name_And_Node : Tree_Private_Part.Project_Name_And_Node :=
                                   Tree_Private_Part.Projects_Htable.Get_First
                                     (In_Tree.Projects_HT);
 
-      Name_From_Path      : constant Name_Id := Project_Name_From (Path_Name);
-
-      Name_Of_Project : Name_Id := No_Name;
-
-      First_With : With_Id;
+      Name_From_Path    : constant Name_Id := Project_Name_From (Path_Name);
+      Name_Of_Project   : Name_Id := No_Name;
+      First_With        : With_Id;
+      Imported_Projects : Project_Node_Id := Empty_Node;
 
       use Tree_Private_Part;
 
@@ -939,7 +959,6 @@ package body Prj.Part is
                              Directory      => Current_Dir,
                              Resolve_Links  => Opt.Follow_Links_For_Files,
                              Case_Sensitive => False);
-
       begin
          Name_Len := Normed_Path'Length;
          Name_Buffer (1 .. Name_Len) := Normed_Path;
@@ -951,7 +970,9 @@ package body Prj.Part is
 
       --  Check for a circular dependency
 
-      for Index in 1 .. Project_Stack.Last loop
+      for Index in reverse 1 .. Project_Stack.Last loop
+         exit when Project_Stack.Table (Index).Limited_With;
+
          if Canonical_Path_Name =
               Project_Stack.Table (Index).Canonical_Path_Name
          then
@@ -982,10 +1003,11 @@ package body Prj.Part is
 
       --  Put the new path name on the stack
 
-      Project_Stack.Increment_Last;
-      Project_Stack.Table (Project_Stack.Last).Path_Name := Normed_Path_Name;
-      Project_Stack.Table (Project_Stack.Last).Canonical_Path_Name :=
-        Canonical_Path_Name;
+      Project_Stack.Append
+        ((Path_Name           => Normed_Path_Name,
+          Canonical_Path_Name => Canonical_Path_Name,
+          Id                  => Empty_Node,
+          Limited_With        => In_Limited));
 
       --  Check if the project file has already been parsed
 
@@ -1009,9 +1031,9 @@ package body Prj.Part is
                Extends_All :=
                  Is_Extending_All (A_Project_Name_And_Node.Node, In_Tree);
 
-               --  If the imported project is an extended project A,
-               --  and we are in an extended project, replace A with the
-               --  ultimate project extending A.
+               --  If the imported project is an extended project A, and we are
+               --  in an extended project, replace A with the ultimate project
+               --  extending A.
 
                if From_Extended /= None then
                   declare
@@ -1048,8 +1070,8 @@ package body Prj.Part is
            Tree_Private_Part.Projects_Htable.Get_Next (In_Tree.Projects_HT);
       end loop;
 
-      --  We never encountered this project file
-      --  Save the scan state, load the project file and start to scan it.
+      --  We never encountered this project file. Save the scan state, load the
+      --  project file and start to scan it.
 
       Save_Project_Scan_State (Project_Scan_State);
       Source_Index := Load_Project_File (Path_Name);
@@ -1069,8 +1091,8 @@ package body Prj.Part is
 
       if (not In_Configuration) and then (Name_From_Path = No_Name) then
 
-         --  The project file name is not correct (no or bad extension,
-         --  or not following Ada identifier's syntax).
+         --  The project file name is not correct (no or bad extension, or not
+         --  following Ada identifier's syntax).
 
          Error_Msg_File_1 := File_Name_Type (Canonical_Path_Name);
          Error_Msg ("?{ is not a valid path name for a project file",
@@ -1084,24 +1106,27 @@ package body Prj.Part is
          Write_Eol;
       end if;
 
+      Project_Directory := Immediate_Directory_Of (Normed_Path_Name);
+
       --  Is there any imported project?
 
-      Pre_Parse_Context_Clause (In_Tree, First_With);
+      Pre_Parse_Context_Clause
+        (In_Tree        => In_Tree,
+         Context_Clause => First_With);
 
-      Project_Directory := Immediate_Directory_Of (Normed_Path_Name);
       Project := Default_Project_Node
                    (Of_Kind => N_Project, In_Tree => In_Tree);
       Project_Stack.Table (Project_Stack.Last).Id := Project;
       Set_Directory_Of (Project, In_Tree, Project_Directory);
       Set_Path_Name_Of (Project, In_Tree,  Normed_Path_Name);
       Set_Location_Of (Project, In_Tree, Token_Ptr);
-
+      Set_First_With_Clause_Of (Project, In_Tree, Imported_Projects);
       Expect (Tok_Project, "PROJECT");
 
       --  Mark location of PROJECT token if present
 
       if Token = Tok_Project then
-         Scan (In_Tree); -- scan past PROJECT
+         Scan (In_Tree); -- past PROJECT
          Set_Location_Of (Project, In_Tree, Token_Ptr);
       end if;
 
@@ -1156,7 +1181,7 @@ package body Prj.Part is
 
          Extending := True;
 
-         Scan (In_Tree); -- scan past EXTENDS
+         Scan (In_Tree); -- past EXTENDS
 
          if Token = Tok_All then
             Extends_All := True;
@@ -1216,7 +1241,6 @@ package body Prj.Part is
          end;
 
          declare
-            Imported_Projects : Project_Node_Id := Empty_Node;
             From_Ext : Extension_Origin := None;
 
          begin
@@ -1235,6 +1259,7 @@ package body Prj.Part is
             Post_Parse_Context_Clause
               (In_Tree           => In_Tree,
                Context_Clause    => First_With,
+               Limited_Withs     => False,
                Imported_Projects => Imported_Projects,
                Project_Directory => Project_Directory,
                From_Extended     => From_Ext,
@@ -1372,7 +1397,7 @@ package body Prj.Part is
                end if;
             end;
 
-            Scan (In_Tree); -- scan past the extended project path
+            Scan (In_Tree); -- past the extended project path
          end if;
       end if;
 
@@ -1552,6 +1577,36 @@ package body Prj.Part is
               ("unexpected text following end of project", Token_Ptr);
          end if;
       end if;
+
+      declare
+         From_Ext : Extension_Origin := None;
+
+      begin
+         --  Extending_All is always propagated
+
+         if From_Extended = Extending_All or else Extends_All then
+            From_Ext := Extending_All;
+
+            --  Otherwise, From_Extended is set to Extending_Single if the
+            --  current project is an extending project.
+
+         elsif Extended then
+            From_Ext := Extending_Simple;
+         end if;
+
+         Post_Parse_Context_Clause
+           (In_Tree           => In_Tree,
+            Context_Clause    => First_With,
+            Limited_Withs     => True,
+            Imported_Projects => Imported_Projects,
+            Project_Directory => Project_Directory,
+            From_Extended     => From_Ext,
+            In_Limited        => In_Limited,
+            Packages_To_Check => Packages_To_Check,
+            Depth             => Depth + 1,
+            Current_Dir       => Current_Dir);
+         Set_First_With_Clause_Of (Project, In_Tree, Imported_Projects);
+      end;
 
       --  Restore the scan state, in case we are not the main project
 
