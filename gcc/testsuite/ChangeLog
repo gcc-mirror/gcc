@@ -1,5 +1,9 @@
 2008-03-26  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/fold-addr-1.c: New testcase.
+
+2008-03-26  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.dg/tree-ssa/20030731-2.c: Scan dce1 dump.
 	* gcc.dg/tree-ssa/20030917-1.c: Scan optimized dump.
 	* gcc.dg/tree-ssa/20030917-3.c: Scan ccp1 dump.
