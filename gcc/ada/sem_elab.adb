@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1654,12 +1654,6 @@ package body Sem_Elab is
             return;
          end if;
 
-         --  All OK if warnings suppressed on the entity
-
-         if Warnings_Off (Ent) then
-            return;
-         end if;
-
          --  All OK if all warnings suppressed
 
          if Warning_Mode = Suppress then
@@ -1691,16 +1685,20 @@ package body Sem_Elab is
 
          --  Here is where we give the warning
 
-         Error_Msg_Sloc := Sloc (Ent);
+                  --  All OK if warnings suppressed on the entity
 
-         Error_Msg_NE
-           ("?elaboration code may access& before it is initialized",
-            N, Ent);
-         Error_Msg_NE
-           ("\?suggest adding pragma Elaborate_Body to spec of &",
-            N, Scop);
-         Error_Msg_N
-           ("\?or an explicit initialization could be added #", N);
+         if not Has_Warnings_Off (Ent) then
+            Error_Msg_Sloc := Sloc (Ent);
+
+            Error_Msg_NE
+              ("?elaboration code may access& before it is initialized",
+               N, Ent);
+            Error_Msg_NE
+              ("\?suggest adding pragma Elaborate_Body to spec of &",
+               N, Scop);
+            Error_Msg_N
+              ("\?or an explicit initialization could be added #", N);
+         end if;
 
          if not All_Errors_Mode then
             Set_Suppress_Elaboration_Warnings (Ent);
@@ -3109,7 +3107,7 @@ package body Sem_Elab is
       Item := First (Context_Items (Cunit (Current_Sem_Unit)));
       while Present (Item) loop
          if Nkind (Item) = N_Pragma
-           and then Get_Pragma_Id (Chars (Item)) = Pragma_Elaborate_All
+           and then Pragma_Name (Item) = Name_Elaborate_All
          then
             --  Return if some previous error on the pragma itself
 

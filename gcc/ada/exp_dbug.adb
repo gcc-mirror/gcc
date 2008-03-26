@@ -464,7 +464,7 @@ package body Exp_Dbug is
 
       Set_Debug_Renaming_Link (Obj, Entity (Ren));
 
-      Set_Needs_Debug_Info (Obj);
+      Set_Debug_Info_Needed (Obj);
 
       --  Mark the object as internal so that it won't be initialized when
       --  pragma Initialize_Scalars or Normalize_Scalars is in use.

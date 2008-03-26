@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -360,7 +360,6 @@ package body Tbuild is
    begin
       return
         Make_Pragma (Sloc,
-          Chars                        => Chars,
           Pragma_Argument_Associations => Pragma_Argument_Associations,
           Debug_Statement              => Debug_Statement,
           Pragma_Identifier            => Make_Identifier (Sloc, Chars));

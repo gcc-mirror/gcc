@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2387,7 +2387,7 @@ package body Sprint is
 
          when N_Pragma =>
             Write_Indent_Str_Sloc ("pragma ");
-            Write_Name_With_Col_Check (Chars (Node));
+            Write_Name_With_Col_Check (Pragma_Name (Node));
 
             if Present (Pragma_Argument_Associations (Node)) then
                Sprint_Opt_Paren_Comma_List

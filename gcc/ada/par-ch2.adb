@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -241,8 +241,8 @@ package body Ch2 is
       --  Set True if an identifier is encountered for a pragma argument. Used
       --  to check that there are no more arguments without identifiers.
 
-      Pragma_Node   : Node_Id;
-      Pragma_Name   : Name_Id;
+      Prag_Node     : Node_Id;
+      Prag_Name     : Name_Id;
       Semicolon_Loc : Source_Ptr;
       Ident_Node    : Node_Id;
       Assoc_Node    : Node_Id;
@@ -280,9 +280,9 @@ package body Ch2 is
    --  Start of processing for P_Pragma
 
    begin
-      Pragma_Node := New_Node (N_Pragma, Token_Ptr);
+      Prag_Node := New_Node (N_Pragma, Token_Ptr);
       Scan; -- past PRAGMA
-      Pragma_Name := Token_Name;
+      Prag_Name := Token_Name;
 
       if Style_Check then
          Style.Check_Pragma_Name;
@@ -294,21 +294,20 @@ package body Ch2 is
       if Ada_Version >= Ada_05
         and then Token = Tok_Interface
       then
-         Pragma_Name := Name_Interface;
+         Prag_Name := Name_Interface;
          Ident_Node  := Make_Identifier (Token_Ptr, Name_Interface);
          Scan; -- past INTERFACE
       else
          Ident_Node := P_Identifier;
       end if;
 
-      Set_Chars (Pragma_Node, Pragma_Name);
-      Set_Pragma_Identifier (Pragma_Node, Ident_Node);
+      Set_Pragma_Identifier (Prag_Node, Ident_Node);
 
       --  See if special INTERFACE/IMPORT check is required
 
       if SIS_Entry_Active then
-         Interface_Check_Required := (Pragma_Name = Name_Interface);
-         Import_Check_Required    := (Pragma_Name = Name_Import);
+         Interface_Check_Required := (Prag_Name = Name_Interface);
+         Import_Check_Required    := (Prag_Name = Name_Import);
       else
          Interface_Check_Required := False;
          Import_Check_Required    := False;
@@ -322,7 +321,7 @@ package body Ch2 is
         or else (Token /= Tok_Semicolon
                    and then not Token_Is_At_Start_Of_Line)
       then
-         Set_Pragma_Argument_Associations (Pragma_Node, New_List);
+         Set_Pragma_Argument_Associations (Prag_Node, New_List);
          T_Left_Paren;
 
          loop
@@ -342,7 +341,7 @@ package body Ch2 is
                end if;
             end if;
 
-            Append (Assoc_Node, Pragma_Argument_Associations (Pragma_Node));
+            Append (Assoc_Node, Pragma_Argument_Associations (Prag_Node));
             exit when Token /= Tok_Comma;
             Scan; -- past comma
          end loop;
@@ -352,7 +351,7 @@ package body Ch2 is
          --  statement, and an assignment statement is the most likely
          --  candidate for this error)
 
-         if Token = Tok_Colon_Equal and then Pragma_Name = Name_Debug then
+         if Token = Tok_Colon_Equal and then Prag_Name = Name_Debug then
             Error_Msg_SC ("argument for pragma Debug must be procedure call");
             Resync_To_Semicolon;
 
@@ -378,13 +377,13 @@ package body Ch2 is
       --  case of pragma Source_File_Name, which assume the semicolon
       --  is already scanned out.
 
-      if Chars (Pragma_Node) = Name_Style_Checks then
-         Result := Par.Prag (Pragma_Node, Semicolon_Loc);
+      if Prag_Name = Name_Style_Checks then
+         Result := Par.Prag (Prag_Node, Semicolon_Loc);
          Skip_Pragma_Semicolon;
          return Result;
       else
          Skip_Pragma_Semicolon;
-         return Par.Prag (Pragma_Node, Semicolon_Loc);
+         return Par.Prag (Prag_Node, Semicolon_Loc);
       end if;
 
    exception
@@ -434,14 +433,18 @@ package body Ch2 is
    --  Error recovery: Cannot raise Error_Resync
 
    procedure P_Pragmas_Opt (List : List_Id) is
-      P : Node_Id;
+      P     : Node_Id;
 
    begin
       while Token = Tok_Pragma loop
          P := P_Pragma;
 
-         if Chars (P) = Name_Assert or else Chars (P) = Name_Debug then
-            Error_Msg_Name_1 := Chars (P);
+         if Nkind (P) /= N_Error
+          and then (Pragma_Name (P) = Name_Assert
+                      or else
+                    Pragma_Name (P) = Name_Debug)
+         then
+            Error_Msg_Name_1 := Pragma_Name (P);
             Error_Msg_N
               ("pragma% must be in declaration/statement context", P);
          else

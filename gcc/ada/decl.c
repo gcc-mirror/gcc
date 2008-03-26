@@ -5035,7 +5035,7 @@ prepend_attributes (Entity_Id gnat_entity, struct attrib ** attr_list)
 						  (First (gnat_assoc)))))));
 	  }
 
-	switch (Get_Pragma_Id (Chars (gnat_temp)))
+	switch (Get_Pragma_Id (Pragma_Identifier (Chars (gnat_temp))))
 	  {
 	  case Pragma_Machine_Attribute:
 	    etype = ATTR_MACHINE_ATTRIBUTE;
@@ -7068,10 +7068,11 @@ check_ok_for_atomic (tree object, Entity_Id gnat_entity, bool comp_p)
        gnat_node = Next_Rep_Item (gnat_node))
     {
       if (!comp_p && Nkind (gnat_node) == N_Pragma
-	  && Get_Pragma_Id (Chars (gnat_node)) == Pragma_Atomic)
+	  && (Get_Pragma_Id (Chars (Pragma_Identifier (gnat_node)))
+              == Pragma_Atomic))
 	gnat_error_point = First (Pragma_Argument_Associations (gnat_node));
       else if (comp_p && Nkind (gnat_node) == N_Pragma
-	       && (Get_Pragma_Id (Chars (gnat_node))
+	       && (Get_Pragma_Id (Chars (Pragma_Identifier (gnat_node)))
 		   == Pragma_Atomic_Components))
 	gnat_error_point = First (Pragma_Argument_Associations (gnat_node));
     }
