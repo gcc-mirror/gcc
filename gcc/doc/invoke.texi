@@ -961,7 +961,7 @@ instantiation), or a library unit renaming declaration (a package,
 generic, or subprogram renaming declaration).  Such files are also
 called @dfn{specs}.
 
-@itemx @var{file}.adb
+@item @var{file}.adb
 Ada source code file containing a library unit body (a subprogram or
 package body).  Such files are also called @dfn{bodies}.
 
@@ -4431,7 +4431,7 @@ dbg_cnt(dce) will return true only for first 10 invocations
 and dbg_cnt(tail_call) will return false always.
 
 @item -d@var{letters}
-@item -fdump-rtl-@var{pass}
+@itemx -fdump-rtl-@var{pass}
 @opindex d
 Says to make debugging dumps during compilation at times specified by
 @var{letters}.    This is used for debugging the RTL-based passes of the
@@ -4451,16 +4451,16 @@ letters for use in @var{letters} and @var{pass}, and their meanings:
 @opindex dA
 Annotate the assembler output with miscellaneous debugging information.
 
-@itemx -fdump-rtl-bbro
+@item -fdump-rtl-bbro
 @opindex fdump-rtl-bbro
 Dump after block reordering, to @file{@var{file}.148r.bbro}.
 
-@itemx -fdump-rtl-combine
+@item -fdump-rtl-combine
 @opindex fdump-rtl-combine
 Dump after the RTL instruction combination pass, to the file
 @file{@var{file}.129r.combine}.
 
-@itemx -fdump-rtl-ce1
+@item -fdump-rtl-ce1
 @itemx -fdump-rtl-ce2
 @opindex fdump-rtl-ce1
 @opindex fdump-rtl-ce2
@@ -4469,7 +4469,7 @@ first if conversion, to the file @file{@var{file}.117r.ce1}.
 @option{-fdump-rtl-ce2} enable dumping after the second if
 conversion, to the file @file{@var{file}.130r.ce2}.
 
-@itemx -fdump-rtl-btl
+@item -fdump-rtl-btl
 @itemx -fdump-rtl-dbr
 @opindex fdump-rtl-btl
 @opindex fdump-rtl-dbr
@@ -4483,11 +4483,11 @@ scheduling, to @file{@var{file}.36.dbr}.
 Dump all macro definitions, at the end of preprocessing, in addition to
 normal output.
 
-@itemx -fdump-rtl-ce3
+@item -fdump-rtl-ce3
 @opindex fdump-rtl-ce3
 Dump after the third if conversion, to @file{@var{file}.146r.ce3}.
 
-@itemx -fdump-rtl-cfg
+@item -fdump-rtl-cfg
 @itemx -fdump-rtl-life
 @opindex fdump-rtl-cfg
 @opindex fdump-rtl-life
@@ -4496,11 +4496,11 @@ and data flow analysis, to @file{@var{file}.116r.cfg}.
 @option{-fdump-rtl-cfg} enable dumping dump after life analysis,
 to @file{@var{file}.128r.life1} and @file{@var{file}.135r.life2}.
 
-@itemx -fdump-rtl-greg
+@item -fdump-rtl-greg
 @opindex fdump-rtl-greg
 Dump after global register allocation, to @file{@var{file}.139r.greg}.
 
-@itemx -fdump-rtl-gcse
+@item -fdump-rtl-gcse
 @itemx -fdump-rtl-bypass
 @opindex fdump-rtl-gcse
 @opindex fdump-rtl-bypass
@@ -4509,28 +4509,28 @@ Dump after global register allocation, to @file{@var{file}.139r.greg}.
 enable dumping after jump bypassing and control flow optimizations, to
 @file{@var{file}.115r.bypass}.
 
-@itemx -fdump-rtl-eh
+@item -fdump-rtl-eh
 @opindex fdump-rtl-eh
 Dump after finalization of EH handling code, to @file{@var{file}.02.eh}.
 
-@itemx -fdump-rtl-sibling
+@item -fdump-rtl-sibling
 @opindex fdump-rtl-sibling
 Dump after sibling call optimizations, to @file{@var{file}.106r.sibling}.
 
-@itemx -fdump-rtl-jump
+@item -fdump-rtl-jump
 @opindex fdump-rtl-jump
 Dump after the first jump optimization, to @file{@var{file}.112r.jump}.
 
-@itemx -fdump-rtl-stack
+@item -fdump-rtl-stack
 @opindex fdump-rtl-stack
 Dump after conversion from GCC's "flat register file" registers to the
 x87's stack-like registers, to @file{@var{file}.152r.stack}.
 
-@itemx -fdump-rtl-lreg
+@item -fdump-rtl-lreg
 @opindex fdump-rtl-lreg
 Dump after local register allocation, to @file{@var{file}.138r.lreg}.
 
-@itemx -fdump-rtl-loop2
+@item -fdump-rtl-loop2
 @opindex fdump-rtl-loop2
 @option{-dL} and @option{-fdump-rtl-loop2} enable dumping after the
 loop optimization pass, to @file{@var{file}.119r.loop2},
@@ -4538,54 +4538,54 @@ loop optimization pass, to @file{@var{file}.119r.loop2},
 @file{@var{file}.121r.loop2_invariant}, and
 @file{@var{file}.125r.loop2_done}.
 
-@itemx -fdump-rtl-sms
+@item -fdump-rtl-sms
 @opindex fdump-rtl-sms
 Dump after modulo scheduling, to @file{@var{file}.136r.sms}.
 
-@itemx -fdump-rtl-mach
+@item -fdump-rtl-mach
 @opindex fdump-rtl-mach
 Dump after performing the machine dependent reorganization pass, to
 @file{@var{file}.155r.mach} if that pass exists.
 
-@itemx -fdump-rtl-rnreg
+@item -fdump-rtl-rnreg
 @opindex fdump-rtl-rnreg
 Dump after register renumbering, to @file{@var{file}.147r.rnreg}.
 
-@itemx -fdump-rtl-regmove
+@item -fdump-rtl-regmove
 @opindex fdump-rtl-regmove
 Dump after the register move pass, to @file{@var{file}.132r.regmove}.
 
-@itemx -fdump-rtl-postreload
+@item -fdump-rtl-postreload
 @opindex fdump-rtl-postreload
 Dump after post-reload optimizations, to @file{@var{file}.24.postreload}.
 
-@itemx -fdump-rtl-expand
+@item -fdump-rtl-expand
 @opindex fdump-rtl-expand
 Dump after RTL generation, to @file{@var{file}.104r.expand}.
 
-@itemx -fdump-rtl-sched2
+@item -fdump-rtl-sched2
 @opindex fdump-rtl-sched2
 Dump after the second scheduling pass, to @file{@var{file}.149r.sched2}.
 
-@itemx -fdump-rtl-cse
+@item -fdump-rtl-cse
 @opindex fdump-rtl-cse
 Dump after CSE (including the jump optimization that sometimes follows
 CSE), to @file{@var{file}.113r.cse}.
 
-@itemx -fdump-rtl-sched1
+@item -fdump-rtl-sched1
 @opindex fdump-rtl-sched1
 Dump after the first scheduling pass, to @file{@var{file}.136r.sched1}.
 
-@itemx -fdump-rtl-cse2
+@item -fdump-rtl-cse2
 @opindex fdump-rtl-cse2
 Dump after the second CSE pass (including the jump optimization that
 sometimes follows CSE), to @file{@var{file}.127r.cse2}.
 
-@itemx -fdump-rtl-tracer
+@item -fdump-rtl-tracer
 @opindex fdump-rtl-tracer
 Dump after running tracer, to @file{@var{file}.118r.tracer}.
 
-@itemx -fdump-rtl-vpt
+@item -fdump-rtl-vpt
 @itemx -fdump-rtl-vartrack
 @opindex fdump-rtl-vpt
 @opindex fdump-rtl-vartrack
@@ -4594,19 +4594,19 @@ profile transformations, to @file{@var{file}.10.vpt}.
 @option{-fdump-rtl-vartrack} enable dumping after variable tracking,
 to @file{@var{file}.154r.vartrack}.
 
-@itemx -fdump-rtl-flow2
+@item -fdump-rtl-flow2
 @opindex fdump-rtl-flow2
 Dump after the second flow pass, to @file{@var{file}.142r.flow2}.
 
-@itemx -fdump-rtl-peephole2
+@item -fdump-rtl-peephole2
 @opindex fdump-rtl-peephole2
 Dump after the peephole pass, to @file{@var{file}.145r.peephole2}.
 
-@itemx -fdump-rtl-web
+@item -fdump-rtl-web
 @opindex fdump-rtl-web
 Dump after live range splitting, to @file{@var{file}.126r.web}.
 
-@itemx -fdump-rtl-all
+@item -fdump-rtl-all
 @opindex fdump-rtl-all
 Produce all the dumps listed above.
 
@@ -8539,7 +8539,7 @@ assembly code.  Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{cortex-a8}, @samp{cortex-r4}, @samp{cortex-m3}, @samp{cortex-m1},
 @samp{xscale}, @samp{iwmmxt}, @samp{ep9312}.
 
-@itemx -mtune=@var{name}
+@item -mtune=@var{name}
 @opindex mtune
 This option is very similar to the @option{-mcpu=} option, except that
 instead of specifying the actual target processor type, and hence
@@ -9317,7 +9317,6 @@ one controlled by the @option{-mcpu} or @option{-march} option.
 @itemx -unexported_symbols_list
 @itemx -weak_reference_mismatches
 @itemx -whatsloaded
-
 @opindex allowable_client
 @opindex client_name
 @opindex compatibility_version
@@ -9376,7 +9375,6 @@ one controlled by the @option{-mcpu} or @option{-march} option.
 @opindex unexported_symbols_list
 @opindex weak_reference_mismatches
 @opindex whatsloaded
-
 These options are passed to the Darwin linker.  The Darwin linker man page
 describes them in detail.
 @end table
@@ -10688,29 +10686,29 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 
 @item -mmmx
 @itemx -mno-mmx
-@item -msse
+@itemx -msse
 @itemx -mno-sse
-@item -msse2
+@itemx -msse2
 @itemx -mno-sse2
-@item -msse3
+@itemx -msse3
 @itemx -mno-sse3
-@item -mssse3
+@itemx -mssse3
 @itemx -mno-ssse3
-@item -msse4.1
+@itemx -msse4.1
 @itemx -mno-sse4.1
-@item -msse4.2
+@itemx -msse4.2
 @itemx -mno-sse4.2
-@item -msse4
+@itemx -msse4
 @itemx -mno-sse4
-@item -msse4a
-@item -mno-sse4a
-@item -msse5
+@itemx -msse4a
+@itemx -mno-sse4a
+@itemx -msse5
 @itemx -mno-sse5
-@item -m3dnow
+@itemx -m3dnow
 @itemx -mno-3dnow
-@item -mpopcnt
+@itemx -mpopcnt
 @itemx -mno-popcnt
-@item -mabm
+@itemx -mabm
 @itemx -mno-abm
 @opindex mmmx
 @opindex mno-mmx
@@ -12974,7 +12972,7 @@ the AltiVec instruction set.  You may also need to set
 enhancements.
 
 @item -mvrsave
-@item -mno-vrsave
+@itemx -mno-vrsave
 @opindex mvrsave
 @opindex mno-vrsave
 Generate VRSAVE instructions when generating AltiVec code.
@@ -13601,7 +13599,7 @@ to build a linux kernel use @option{-msoft-float}.
 The default is to not maintain the backchain.
 
 @item -mpacked-stack
-@item -mno-packed-stack
+@itemx -mno-packed-stack
 @opindex mpacked-stack
 @opindex mno-packed-stack
 Use (do not use) the packed stack layout.  When @option{-mno-packed-stack} is
@@ -13722,7 +13720,7 @@ Emit a warning if the function calls alloca or uses dynamically
 sized arrays.  This is generally a bad idea with a limited stack size.
 
 @item -mstack-guard=@var{stack-guard}
-@item -mstack-size=@var{stack-size}
+@itemx -mstack-size=@var{stack-size}
 @opindex mstack-guard
 @opindex mstack-size
 If these options are provided the s390 back end emits additional instructions in
