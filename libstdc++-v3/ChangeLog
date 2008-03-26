@@ -1,3 +1,10 @@
+2008-03-26  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/util/testsuite_abi.h: Remove symbol_objects,
+	symbol_names typedefs.	
+	* testsuite/util/testsuite_abi.cc (compare_symbols): Correct check
+	for long double compatiblity symbols, simplify data structures used.
+
 2008-03-25  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* scripts/run_doxygen: Remove html_output_dir. Downgrade to
