@@ -1,3 +1,9 @@
+2008-03-26  Richard Guenther  <rguenther@suse.de>
+
+	* fold-const.c (target.h): Include.
+	(fold_comparison): Fold comparison of addresses of two decls
+	that bind locally.  Consolidate address folding code.
+
 2008-03-26  Nick Clifton  <nickc@redhat.com>
 
 	PR target/31232
@@ -577,8 +583,8 @@
 2008-03-19  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/35609
-	* tree-ssa.c (always_executed): New global flag.
-	(warn_uninitialized_var): If !always_executed warn with "maybe"
+	* tree-ssa.c (walk_data): New structure.
+	(warn_uninitialized_var): If not always_executed warn with "maybe"
 	instead of "is".
 	(execute_early_warn_uninitialized): Compute post-dominators.
 	Initialize always_executed before processing each basic block.
