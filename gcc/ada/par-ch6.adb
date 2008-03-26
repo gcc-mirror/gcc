@@ -64,9 +64,8 @@ package body Ch6 is
 
          if Token = Tok_Return then
             Restore_Scan_State (Scan_State);
-            Error_Msg_SC ("unexpected semicolon ignored");
+            Error_Msg_SC ("|extra "";"" ignored");
             Scan; -- rescan past junk semicolon
-
          else
             Restore_Scan_State (Scan_State);
          end if;
@@ -265,11 +264,7 @@ package body Ch6 is
       end if;
 
       Scope.Table (Scope.Last).Labl := Name_Node;
-
-      if Token = Tok_Colon then
-         Error_Msg_SC ("redundant colon ignored");
-         Scan; -- past colon
-      end if;
+      Ignore (Tok_Colon);
 
       --  Deal with generic instantiation, the one case in which we do not
       --  have a subprogram specification as part of whatever we are parsing
@@ -411,6 +406,19 @@ package body Ch6 is
          Discard_Junk_Node (P_Expression);
       end if;
 
+      --  Deal with semicolon followed by IS. We want to treat this as IS
+
+      if Token = Tok_Semicolon then
+         Save_Scan_State (Scan_State);
+         Scan; -- past semicolon
+
+         if Token = Tok_Is then
+            Error_Msg_SP ("extra "";"" ignored");
+         else
+            Restore_Scan_State (Scan_State);
+         end if;
+      end if;
+
       --  Deal with case of semicolon ending a subprogram declaration
 
       if Token = Tok_Semicolon then
@@ -424,8 +432,8 @@ package body Ch6 is
          --  semicolon, and go process the body.
 
          if Token = Tok_Is then
-            Error_Msg_SP ("unexpected semicolon ignored");
-            T_Is; -- ignroe redundant IS's
+            Error_Msg_SP ("|extra "";"" ignored");
+            T_Is; -- scan past IS
             goto Subprogram_Body;
 
          --  If BEGIN follows in an appropriate column, we immediately
@@ -436,7 +444,7 @@ package body Ch6 is
          elsif Token = Tok_Begin
             and then Start_Column >= Scope.Table (Scope.Last).Ecol
          then
-            Error_Msg_SP (""";"" should be IS!");
+            Error_Msg_SP ("|"";"" should be IS!");
             goto Subprogram_Body;
 
          else
@@ -540,7 +548,7 @@ package body Ch6 is
          --  semicolon which should really be an IS
 
          else
-            Error_Msg_AP ("missing "";""");
+            Error_Msg_AP ("|missing "";""");
             SIS_Missing_Semicolon_Message := Get_Msg_Id;
             goto Subprogram_Declaration;
          end if;
@@ -1203,7 +1211,7 @@ package body Ch6 is
             --  that semicolon should have been a right parenthesis and exit
 
             if Token = Tok_Is or else Token = Tok_Return then
-               Error_Msg_SP ("expected "")"" in place of "";""");
+               Error_Msg_SP ("|"";"" should be "")""");
                exit Specification_Loop;
             end if;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1050,10 +1050,6 @@ is
       --  it is returned unchanged. Otherwise an error message is issued
       --  and Error is returned.
 
-      procedure Check_No_Right_Paren;
-      --  Called to check that the current token is not a right paren. If it
-      --  is, then an error is given, and the right parenthesis is scanned out.
-
       function Comma_Present return Boolean;
       --  Used in comma delimited lists to determine if a comma is present, or
       --  can reasonably be assumed to have been present (an error message is
@@ -1256,10 +1252,10 @@ begin
 
                   --  Give error if bad pragma
 
-                  if not Is_Configuration_Pragma_Name (Chars (P_Node))
-                    and then Chars (P_Node) /= Name_Source_Reference
+                  if not Is_Configuration_Pragma_Name (Pragma_Name (P_Node))
+                    and then Pragma_Name (P_Node) /= Name_Source_Reference
                   then
-                     if Is_Pragma_Name (Chars (P_Node)) then
+                     if Is_Pragma_Name (Pragma_Name (P_Node)) then
                         Error_Msg_N
                           ("only configuration pragmas allowed " &
                            "in configuration file", P_Node);

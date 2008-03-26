@@ -1201,7 +1201,11 @@ package body Erroutc is
 
       Is_Style_Msg :=
         (Msg'Length > 7
-           and then Msg (Msg'First .. Msg'First + 6) = "(style)");
+         and then Msg (Msg'First .. Msg'First + 6) = "(style)");
+
+      if Is_Style_Msg then
+         Is_Serious_Error := False;
+      end if;
 
       for J in Msg'Range loop
          if Msg (J) = '?'

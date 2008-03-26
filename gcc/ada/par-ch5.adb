@@ -203,10 +203,7 @@ package body Ch5 is
       Statement_Required := SS_Flags.Sreq;
 
       loop
-         while Token = Tok_Semicolon loop
-            Error_Msg_SC ("unexpected semicolon ignored");
-            Scan; -- past junk semicolon
-         end loop;
+         Ignore (Tok_Semicolon);
 
          begin
             if Style_Check then
@@ -565,10 +562,7 @@ package body Ch5 is
 
                      --  Skip junk right parens in this context
 
-                     while Token = Tok_Right_Paren loop
-                        Error_Msg_SC ("extra right paren");
-                        Scan; -- past )
-                     end loop;
+                     Ignore (Tok_Right_Paren);
 
                      --  Check context following call
 
@@ -2200,7 +2194,7 @@ package body Ch5 is
       --  What we are interested in is whether it was a case of a bad IS.
 
       if Scope.Table (Scope.Last + 1).Etyp = E_Bad_Is then
-         Error_Msg ("IS should be "";""", Scope.Table (Scope.Last + 1).S_Is);
+         Error_Msg ("|IS should be "";""", Scope.Table (Scope.Last + 1).S_Is);
          Set_Bad_Is_Detected (Parent, True);
       end if;
 
@@ -2235,7 +2229,7 @@ package body Ch5 is
 
       if Token = Tok_And or else Token = Tok_Or then
          Error_Msg_SC ("unexpected logical operator");
-         Scan;
+         Scan; -- past logical operator
 
          if (Prev_Token = Tok_And and then Token = Tok_Then)
               or else

@@ -1316,7 +1316,7 @@ package body Ch3 is
             Check_Misspelling_Of (Tok_Renames);
 
             if Token = Tok_Renames then
-               Error_Msg_SP ("extra "":"" ignored");
+               Error_Msg_SP ("|extra "":"" ignored");
                Scan; -- past RENAMES
                return True;
             else
@@ -2290,7 +2290,7 @@ package body Ch3 is
       --  Handle decimal fixed-point defn with DIGITS/DELTA in wrong order
 
       if Token = Tok_Delta then
-         Error_Msg_SC ("DELTA must come before DIGITS");
+         Error_Msg_SC ("|DELTA must come before DIGITS");
          Def_Node := New_Node (N_Decimal_Fixed_Point_Definition, Digits_Loc);
          Scan; -- past DELTA
          Set_Delta_Expression (Def_Node, P_Expression_No_Right_Paren);
@@ -3542,7 +3542,7 @@ package body Ch3 is
          else
             begin
                Expr_Node := P_Expression_Or_Range_Attribute;
-               Check_No_Right_Paren;
+               Ignore (Tok_Right_Paren);
 
                if Token = Tok_Colon
                  and then Nkind (Expr_Node) = N_Identifier
@@ -4176,7 +4176,7 @@ package body Ch3 is
                   --  Otherwise we saved the semicolon position, so complain
 
                   else
-                     Error_Msg (""";"" should be IS", SIS_Semicolon_Sloc);
+                     Error_Msg ("|"";"" should be IS", SIS_Semicolon_Sloc);
                   end if;
 
                   --  The next job is to fix up any declarations that occurred

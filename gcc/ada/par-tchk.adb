@@ -83,11 +83,11 @@ package body Tchk is
       --  A little recovery helper, accept then in place of =>
 
       elsif Token = Tok_Then then
-         Error_Msg_BC ("missing ""='>""");
+         Error_Msg_BC ("|THEN should be ""='>""");
          Scan; -- past THEN used in place of =>
 
       elsif Token = Tok_Colon_Equal then
-         Error_Msg_SC (""":="" should be ""='>""");
+         Error_Msg_SC ("|"":="" should be ""='>""");
          Scan; -- past := used in place of =>
 
       else
@@ -149,15 +149,15 @@ package body Tchk is
          Scan;
 
       elsif Token = Tok_Equal then
-         Error_Msg_SC ("""="" should be "":=""");
+         Error_Msg_SC ("|""="" should be "":=""");
          Scan;
 
       elsif Token = Tok_Colon then
-         Error_Msg_SC (""":"" should be "":=""");
+         Error_Msg_SC ("|"":"" should be "":=""");
          Scan;
 
       elsif Token = Tok_Is then
-         Error_Msg_SC ("IS should be "":=""");
+         Error_Msg_SC ("|IS should be "":=""");
          Scan;
 
       else
@@ -257,25 +257,39 @@ package body Tchk is
 
    procedure T_Is is
    begin
+      Ignore (Tok_Semicolon);
+
+      --  If we have IS scan past it
+
       if Token = Tok_Is then
          Scan;
+
+         --  And ignore any following semicolons
 
          Ignore (Tok_Semicolon);
 
       --  Allow OF, => or = to substitute for IS with complaint
 
-      elsif Token = Tok_Arrow
-        or else Token = Tok_Of
-        or else Token = Tok_Equal
-      then
-         Error_Msg_SC ("missing IS");
-         Scan; -- token used in place of IS
+      elsif Token = Tok_Arrow then
+         Error_Msg_SC ("|""=>"" should be IS");
+         Scan; -- past =>
+
+      elsif Token = Tok_Of then
+         Error_Msg_SC ("|OF should be IS");
+         Scan; -- past OF
+
+      elsif Token = Tok_Equal then
+         Error_Msg_SC ("|""="" should be IS");
+         Scan; -- past =
+
       else
          Wrong_Token (Tok_Is, AP);
       end if;
 
+      --  Ignore extra IS keywords
+
       while Token = Tok_Is loop
-         Error_Msg_SC ("extra IS ignored");
+         Error_Msg_SC ("|extra IS ignored");
          Scan;
       end loop;
    end T_Is;
@@ -379,7 +393,7 @@ package body Tchk is
       if Token = Tok_Right_Paren then
          Scan;
       else
-         Error_Msg_AP ("missing "")""");
+         Error_Msg_AP ("|missing "")""");
       end if;
    end T_Right_Paren;
 
@@ -394,24 +408,24 @@ package body Tchk is
          Scan;
 
          if Token = Tok_Semicolon then
-            Error_Msg_SC ("extra "";"" ignored");
+            Error_Msg_SC ("|extra "";"" ignored");
             Scan;
          end if;
 
          return;
 
       elsif Token = Tok_Colon then
-         Error_Msg_SC (""":"" should be "";""");
+         Error_Msg_SC ("|"":"" should be "";""");
          Scan;
          return;
 
       elsif Token = Tok_Comma then
-         Error_Msg_SC (""","" should be "";""");
+         Error_Msg_SC ("|"","" should be "";""");
          Scan;
          return;
 
       elsif Token = Tok_Dot then
-         Error_Msg_SC ("""."" should be "";""");
+         Error_Msg_SC ("|""."" should be "";""");
          Scan;
          return;
 
@@ -434,7 +448,7 @@ package body Tchk is
          return;
 
       --  Deal with pragma. If pragma is not at start of line, it is considered
-      --  misplaced otherwise we treat it as a normal missing semicolong case.
+      --  misplaced otherwise we treat it as a normal missing semicolon case.
 
       elsif Token = Tok_Pragma
         and then not Token_Is_At_Start_Of_Line
@@ -812,7 +826,7 @@ package body Tchk is
       if Token = Tok_Right_Paren then
          Scan;
       else
-         Error_Msg_AP ("missing "")""!");
+         Error_Msg_AP ("|missing "")""!");
       end if;
    end U_Right_Paren;
 
@@ -831,7 +845,7 @@ package body Tchk is
          Scan;
 
          if Token = T then
-            Error_Msg_SP ("extra "";"" ignored");
+            Error_Msg_SP ("|extra "";"" ignored");
             Scan;
          else
             Error_Msg_SP (M);
@@ -841,7 +855,7 @@ package body Tchk is
          Scan;
 
          if Token = T then
-            Error_Msg_SP ("extra "","" ignored");
+            Error_Msg_SP ("|extra "","" ignored");
             Scan;
 
          else
