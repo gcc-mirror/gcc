@@ -1,3 +1,15 @@
+2008-03-26  Douglas Gregor  <doug.gregor@gmail.com>
+
+       * g++.dg/cpp0x/variadic84.C: Update to reflect the change in
+       variadic template template parameter binding semantics.
+       * g++.dg/cpp0x/variadic85.C: Ditto.
+       * g++.dg/cpp0x/variadic88.C: New.
+       * g++.dg/cpp0x/variadic89.C: New.
+       * g++.dg/cpp0x/variadic90.C: New.
+       * g++.dg/cpp0x/variadic-ex14.C: Update to reflect the change in
+       variadic template template parameter binding semantics.
+       * g++.dg/cpp0x/variadic-lambda.C: New.
+
 2008-03-25  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR target/31558

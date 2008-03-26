@@ -14,10 +14,6 @@ X<B> xB; // { dg-error "mismatch" }
 X<C> xC; // { dg-error "mismatch" }
 // { dg-error "expected a template" "" { target *-*-* } 14 }
 // { dg-error "invalid type" "" { target *-*-* } 14 }
-Y<A> yA; // { dg-error "mismatch" }
-// { dg-error "expected a template" "" { target *-*-* } 17 }
-// { dg-error "invalid type" "" { target *-*-* } 17 }
-Y<B> yB; // { dg-error "mismatch" }
-// { dg-error "expected a template" "" { target *-*-* } 20 }
-// { dg-error "invalid type" "" { target *-*-* } 20 }
+Y<A> yA;
+Y<B> yB;
 Y<C> yC; // okay

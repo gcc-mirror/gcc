@@ -1,3 +1,17 @@
+2008-03-26  Douglas Gregor  <doug.gregor@gmail.com>
+
+       * pt.c (coerce_template_template_parm): Moved the body of the loop
+       of coerce_template_template_parms here, to make iteration over a
+       template argument pack simpler.
+       Also, allow matching of a template parameter pack in the template
+       template parameter to a template parameter in the template
+       template argument.
+       (coerce_template_template_parms): Deal with variadic template
+       template parameters. Use coerce_template_template_parm.
+       (unify): Make sure we coerce the template template argument's
+       template arguments to the template template parameter's template
+       parameters, not the other way around.
+
 2008-03-25  Tom Tromey  <tromey@redhat.com>
 
 	* Make-lang.in: Remove .o targets.

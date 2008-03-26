@@ -4630,6 +4630,77 @@ convert_nontype_argument (tree type, tree expr)
   return expr;
 }
 
+/* Subroutine of coerce_template_template_parms, which returns 1 if
+   PARM_PARM and ARG_PARM match using the rule for the template
+   parameters of template template parameters. Both PARM and ARG are
+   template parameters; the rest of the arguments are the same as for
+   coerce_template_template_parms.
+ */
+static int
+coerce_template_template_parm (tree parm,
+                              tree arg,
+                              tsubst_flags_t complain,
+                              tree in_decl,
+                              tree outer_args)
+{
+  if (arg == NULL_TREE || arg == error_mark_node
+      || parm == NULL_TREE || parm == error_mark_node)
+    return 0;
+  
+  if (TREE_CODE (arg) != TREE_CODE (parm))
+    return 0;
+  
+  switch (TREE_CODE (parm))
+    {
+    case TEMPLATE_DECL:
+      /* We encounter instantiations of templates like
+	 template <template <template <class> class> class TT>
+	 class C;  */
+      {
+	tree parmparm = DECL_INNERMOST_TEMPLATE_PARMS (parm);
+	tree argparm = DECL_INNERMOST_TEMPLATE_PARMS (arg);
+	
+	if (!coerce_template_template_parms
+	    (parmparm, argparm, complain, in_decl, outer_args))
+	  return 0;
+      }
+      /* Fall through.  */
+      
+    case TYPE_DECL:
+      if (TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (arg))
+	  && !TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (parm)))
+	/* Argument is a parameter pack but parameter is not.  */
+	return 0;
+      break;
+      
+    case PARM_DECL:
+      /* The tsubst call is used to handle cases such as
+	 
+           template <int> class C {};
+	   template <class T, template <T> class TT> class D {};
+	   D<int, C> d;
+
+	 i.e. the parameter list of TT depends on earlier parameters.  */
+      if (!dependent_type_p (TREE_TYPE (arg))
+	  && !same_type_p
+	        (tsubst (TREE_TYPE (parm), outer_args, complain, in_decl),
+		 TREE_TYPE (arg)))
+	return 0;
+      
+      if (TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (arg))
+	  && !TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm)))
+	/* Argument is a parameter pack but parameter is not.  */
+	return 0;
+      
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return 1;
+}
+
 
 /* Return 1 if PARM_PARMS and ARG_PARMS matches using rule for
    template template parameters.  Both PARM_PARMS and ARG_PARMS are
@@ -4652,6 +4723,7 @@ coerce_template_template_parms (tree parm_parms,
 {
   int nparms, nargs, i;
   tree parm, arg;
+  int variadic_p = 0;
 
   gcc_assert (TREE_CODE (parm_parms) == TREE_VEC);
   gcc_assert (TREE_CODE (arg_parms) == TREE_VEC);
@@ -4659,10 +4731,37 @@ coerce_template_template_parms (tree parm_parms,
   nparms = TREE_VEC_LENGTH (parm_parms);
   nargs = TREE_VEC_LENGTH (arg_parms);
 
-  if (nargs != nparms)
+  /* Determine whether we have a parameter pack at the end of the
+     template template parameter's template parameter list.  */
+  if (TREE_VEC_ELT (parm_parms, nparms - 1) != error_mark_node)
+    {
+      parm = TREE_VALUE (TREE_VEC_ELT (parm_parms, nparms - 1));
+      
+      switch (TREE_CODE (parm))
+        {
+        case TEMPLATE_DECL:
+        case TYPE_DECL:
+          if (TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (parm)))
+            variadic_p = 1;
+          break;
+	  
+        case PARM_DECL:
+          if (TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm)))
+            variadic_p = 1;
+          break;
+	  
+        default:
+          gcc_unreachable ();
+        }
+    }
+ 
+  if (nargs != nparms
+      && !(variadic_p && nargs >= nparms - 1))
     return 0;
 
-  for (i = 0; i < nparms; ++i)
+  /* Check all of the template parameters except the parameter pack at
+     the end (if any).  */
+  for (i = 0; i < nparms - variadic_p; ++i)
     {
       if (TREE_VEC_ELT (parm_parms, i) == error_mark_node
           || TREE_VEC_ELT (arg_parms, i) == error_mark_node)
@@ -4671,60 +4770,35 @@ coerce_template_template_parms (tree parm_parms,
       parm = TREE_VALUE (TREE_VEC_ELT (parm_parms, i));
       arg = TREE_VALUE (TREE_VEC_ELT (arg_parms, i));
 
-      if (arg == NULL_TREE || arg == error_mark_node
-	  || parm == NULL_TREE || parm == error_mark_node)
+      if (!coerce_template_template_parm (parm, arg, complain, in_decl,
+                                          outer_args))
 	return 0;
 
-      if (TREE_CODE (arg) != TREE_CODE (parm))
-	return 0;
-
-      switch (TREE_CODE (parm))
-	{
-	case TEMPLATE_DECL:
-	  /* We encounter instantiations of templates like
-	       template <template <template <class> class> class TT>
-	       class C;  */
-	  {
-	    tree parmparm = DECL_INNERMOST_TEMPLATE_PARMS (parm);
-	    tree argparm = DECL_INNERMOST_TEMPLATE_PARMS (arg);
-
-	    if (!coerce_template_template_parms
-		(parmparm, argparm, complain, in_decl, outer_args))
-	      return 0;
-	  }
-	  /* Fall through.  */
-
-	case TYPE_DECL:
-	  if (TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (parm))
-	      != TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (arg)))
-	    /* One is a parameter pack, the other is not.  */
-	    return 0;
-	  break;
-
-	case PARM_DECL:
-	  /* The tsubst call is used to handle cases such as
-
-	       template <int> class C {};
-	       template <class T, template <T> class TT> class D {};
-	       D<int, C> d;
-
-	     i.e. the parameter list of TT depends on earlier parameters.  */
-	  if (!dependent_type_p (TREE_TYPE (arg))
-	      && !same_type_p
-		    (tsubst (TREE_TYPE (parm), outer_args, complain, in_decl),
-			     TREE_TYPE (arg)))
-	    return 0;
-
-	  if (TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm))
-	      != TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (arg)))
-	    /* One is a parameter pack, the other is not.  */
-	    return 0;
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
     }
+
+  if (variadic_p)
+    {
+      /* Check each of the template parameters in the template
+	 argument against the template parameter pack at the end of
+	 the template template parameter.  */
+      if (TREE_VEC_ELT (parm_parms, i) == error_mark_node)
+	return 0;
+
+      parm = TREE_VALUE (TREE_VEC_ELT (parm_parms, i));
+
+      for (; i < nargs; ++i)
+        {
+          if (TREE_VEC_ELT (arg_parms, i) == error_mark_node)
+            continue;
+ 
+          arg = TREE_VALUE (TREE_VEC_ELT (arg_parms, i));
+ 
+          if (!coerce_template_template_parm (parm, arg, complain, in_decl,
+                                              outer_args))
+            return 0;
+        }
+    }
+
   return 1;
 }
 
@@ -12825,8 +12899,9 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	  {
 	    tree parmvec = TYPE_TI_ARGS (parm);
 	    tree argvec = INNERMOST_TEMPLATE_ARGS (TYPE_TI_ARGS (arg));
-	    tree argtmplvec
-	      = DECL_INNERMOST_TEMPLATE_PARMS (TYPE_TI_TEMPLATE (arg));
+	    tree parm_parms 
+	      = DECL_INNERMOST_TEMPLATE_PARMS 
+	          (TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL (parm));
 	    int i, len;
             int parm_variadic_p = 0;
 
@@ -12857,7 +12932,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	      Here, if Lvalue_proxy is permitted to bind to View, then
 	      the global operator+ will be used; if they are not, the
 	      Lvalue_proxy will be converted to float.  */
-	    if (coerce_template_parms (argtmplvec, parmvec,
+	    if (coerce_template_parms (parm_parms,
+                                       argvec,
 				       TYPE_TI_TEMPLATE (parm),
 				       tf_none,
 				       /*require_all_args=*/true,
