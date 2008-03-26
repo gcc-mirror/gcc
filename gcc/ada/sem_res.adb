@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -720,8 +720,34 @@ package body Sem_Res is
    --  Start of processing for Check_Infinite_Recursion
 
    begin
-      --  Loop moving up tree, quitting if something tells us we are
-      --  definitely not in an infinite recursion situation.
+      --  Special case, if this is a procedure call and is a call to the
+      --  current procedure with the same argument list, then this is for
+      --  sure an infinite recursion and we insert a call to raise SE.
+
+      if Is_List_Member (N)
+        and then List_Length (List_Containing (N)) = 1
+        and then Same_Argument_List
+      then
+         declare
+            P : constant Node_Id := Parent (N);
+         begin
+            if Nkind (P) = N_Handled_Sequence_Of_Statements
+              and then Nkind (Parent (P)) = N_Subprogram_Body
+              and then Is_Empty_List (Declarations (Parent (P)))
+            then
+               Error_Msg_N ("!?infinite recursion", N);
+               Error_Msg_N ("\!?Storage_Error will be raised at run time", N);
+               Insert_Action (N,
+                 Make_Raise_Storage_Error (Sloc (N),
+                   Reason => SE_Infinite_Recursion));
+               return True;
+            end if;
+         end;
+      end if;
+
+      --  If not that special case, search up tree, quitting if we reach a
+      --  construct (e.g. a conditional) that tells us that this is not a
+      --  case for an infinite recursion warning.
 
       C := N;
       loop
@@ -738,10 +764,10 @@ package body Sem_Res is
          elsif Nkind (P) = N_Handled_Sequence_Of_Statements
            and then C /= First (Statements (P))
          then
-            --  If the call is the expression of a return statement and
-            --  the actuals are identical to the formals, it's worth a
-            --  warning. However, we skip this if there is an immediately
-            --  preceding raise statement, since the call is never executed.
+            --  If the call is the expression of a return statement and the
+            --  actuals are identical to the formals, it's worth a warning.
+            --  However, we skip this if there is an immediately preceding
+            --  raise statement, since the call is never executed.
 
             --  Furthermore, this corresponds to a common idiom:
 
@@ -3045,6 +3071,21 @@ package body Sem_Res is
             A_Typ := Etype (A);
             F_Typ := Etype (F);
 
+            --  For mode IN, if actual is an entity, and the type of the formal
+            --  has warnings suppressed, then we reset Never_Set_In_Source for
+            --  the calling entity. The reason for this is to catch cases like
+            --  GNAT.Spitbol.Patterns.Vstring_Var where the called subprogram
+            --  uses trickery to modify an IN parameter.
+
+            if Ekind (F) = E_In_Parameter
+              and then Is_Entity_Name (A)
+              and then Present (Entity (A))
+              and then Ekind (Entity (A)) = E_Variable
+              and then Has_Warnings_Off (F_Typ)
+            then
+               Set_Never_Set_In_Source (Entity (A), False);
+            end if;
+
             --  Perform error checks for IN and IN OUT parameters
 
             if Ekind (F) /= E_Out_Parameter then
@@ -4625,17 +4666,23 @@ package body Sem_Res is
       if Comes_From_Source (N) then
          Scop := Current_Scope;
 
+         --  Issue warning for possible infinite recursion in the absence
+         --  of the No_Recursion restriction.
+
          if Nam = Scop
            and then not Restriction_Active (No_Recursion)
            and then Check_Infinite_Recursion (N)
          then
             --  Here we detected and flagged an infinite recursion, so we do
-            --  not need to test the case below for further warnings.
+            --  not need to test the case below for further warnings. Also if
+            --  we now have a raise SE node, we are all done.
 
-            null;
+            if Nkind (N) = N_Raise_Storage_Error then
+               return;
+            end if;
 
-            --  If call is to immediately containing subprogram, then check for
-            --  the case of a possible run-time detectable infinite recursion.
+         --  If call is to immediately containing subprogram, then check for
+         --  the case of a possible run-time detectable infinite recursion.
 
          else
             Scope_Loop : while Scop /= Standard_Standard loop
@@ -4761,7 +4808,7 @@ package body Sem_Res is
       if Is_Inlined (Nam)
         and then Present (First_Rep_Item (Nam))
         and then Nkind (First_Rep_Item (Nam)) = N_Pragma
-        and then Chars (First_Rep_Item (Nam)) = Name_Inline_Always
+        and then Pragma_Name (First_Rep_Item (Nam)) = Name_Inline_Always
       then
          null;
 
@@ -7196,7 +7243,7 @@ package body Sem_Res is
             Orig : constant Node_Id := Original_Node (Parent (N));
          begin
             if Nkind (Orig) = N_Pragma
-              and then Chars (Orig) = Name_Assert
+              and then Pragma_Name (Orig) = Name_Assert
             then
                --  Don't want to warn if original condition is explicit False
 
