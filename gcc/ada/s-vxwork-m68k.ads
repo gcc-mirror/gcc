@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   S p e c                                --
 --                                                                          --
---            Copyright (C) 1998-2005 Free Software Foundation, Inc.        --
+--          Copyright (C) 1998-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the M68K VxWorks version of this package.
+--  This is the M68K VxWorks version of this package
 
 with Interfaces.C;
 

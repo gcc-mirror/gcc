@@ -61,7 +61,7 @@ package System.Tasking.Debug is
    --  task specific state.
 
    function Get_User_State return Long_Integer;
-   --  Return the user state for the current task.
+   --  Return the user state for the current task
 
    -------------------------
    -- General GDB support --
