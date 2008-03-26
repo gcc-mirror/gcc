@@ -1,5 +1,10 @@
 2008-03-26  Arnaud Charlet  <charlet@adacore.com>
 
+	* a-witeio.adb: Fix problem with Current_Output (introduce Self).
+	Fix problem of status check for null file
+
+2008-03-26  Arnaud Charlet  <charlet@adacore.com>
+
 	* s-proinf-irix-athread.ads, s-vxwork-mips.ads,
 	s-traces.ads, s-vxwork-arm.ads, s-vxwork-ppc.ads, s-vxwork-sparcv9.ads,
 	s-tasinf-mingw.ads, s-tasinf-linux.ads, s-tasdeb.ads, mlib-tgt.ads,
