@@ -292,11 +292,15 @@ package body Scn is
                Upper_Half_Encoding := True;
 
             when UTF16_LE | UTF16_BE =>
+               Set_Standard_Error;
                Write_Line ("UTF-16 encoding format not recognized");
+               Set_Standard_Output;
                raise Unrecoverable_Error;
 
             when UTF32_LE | UTF32_BE =>
+               Set_Standard_Error;
                Write_Line ("UTF-32 encoding format not recognized");
+               Set_Standard_Output;
                raise Unrecoverable_Error;
 
             when Unknown =>
