@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -440,6 +440,15 @@ package Sem_Util is
    --  which is the innermost visible entity with the given name. See the
    --  body of Sem_Ch8 for further details on handling of entity visibility.
 
+   function Get_Pragma_Id (N : Node_Id) return Pragma_Id;
+   pragma Inline (Get_Pragma_Id);
+   --  Obtains the Pragma_Id from the Chars field of Pragma_Identifier (N)
+
+   function Get_Referenced_Object (N : Node_Id) return Node_Id;
+   --  Given a node, return the renamed object if the node represents a renamed
+   --  object, otherwise return the node unchanged. The node may represent an
+   --  arbitrary expression.
+
    function Get_Renamed_Entity (E : Entity_Id) return Entity_Id;
    --  Given an entity for an exception, package, subprogram or generic unit,
    --  returns the ultimately renamed entity if this is a renaming. If this is
@@ -451,11 +460,6 @@ package Sem_Util is
    --  an accept statement node. This procedure finds the Entity_Id of the
    --  related subprogram or entry and returns it, or if no subprogram can
    --  be found, returns Empty.
-
-   function Get_Referenced_Object (N : Node_Id) return Node_Id;
-   --  Given a node, return the renamed object if the node represents
-   --  a renamed object, otherwise return the node unchanged. The node
-   --  may represent an arbitrary expression.
 
    function Get_Subprogram_Body (E : Entity_Id) return Node_Id;
    --  Given the entity for a subprogram (E_Function or E_Procedure),
@@ -476,16 +480,17 @@ package Sem_Util is
    --  T contains access values (happens for generic formals in some
    --  cases), then False is returned.
 
+   function Has_Abstract_Interfaces
+     (T             : Entity_Id;
+      Use_Full_View : Boolean := True) return Boolean;
+   --  Where T is a concurrent type or a record type, returns true if T covers
+   --  any abstract interface types. In case of private types the argument
+   --  Use_Full_View controls if the check is done using its full view (if
+   --  available).
+
    type Alignment_Result is (Known_Compatible, Unknown, Known_Incompatible);
    --  Result of Has_Compatible_Alignment test, description found below. Note
    --  that the values are arranged in increasing order of problematicness.
-
-   function Has_Abstract_Interfaces
-     (Tagged_Type   : Entity_Id;
-      Use_Full_View : Boolean := True) return Boolean;
-   --  Returns true if Tagged_Type implements some abstract interface. In case
-   --  private types the argument Use_Full_View controls if the check is done
-   --  using its full view (if available).
 
    function Has_Compatible_Alignment
      (Obj  : Entity_Id;
@@ -1027,6 +1032,14 @@ package Sem_Util is
    procedure Set_Current_Entity (E : Entity_Id);
    --  Establish the entity E as the currently visible definition of its
    --  associated name (i.e. the Node_Id associated with its name)
+
+   procedure Set_Debug_Info_Needed (T : Entity_Id);
+   --  Sets the Debug_Info_Needed flag on entity T , and also on any entities
+   --  that are needed by T (for an object, the type of the object is needed,
+   --  and for a type, various subsidiary types are needed -- see body for
+   --  details). Never has any effect on T if the Debug_Info_Off flag is set.
+   --  This routine should always be used instead of Set_Needs_Debug_Info to
+   --  ensure that subsidiary entities are properly handled.
 
    procedure Set_Entity_With_Style_Check (N : Node_Id; Val : Entity_Id);
    --  This procedure has the same calling sequence as Set_Entity, but

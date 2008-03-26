@@ -687,10 +687,11 @@ Pragma_to_gnu (Node_Id gnat_node)
 
   /* Check for (and ignore) unrecognized pragma and do nothing if we are just
      annotating types.  */
-  if (type_annotate_only || !Is_Pragma_Name (Chars (gnat_node)))
+  if (type_annotate_only
+      || !Is_Pragma_Name (Chars (Pragma_Identifier (gnat_node))))
     return gnu_result;
 
-  switch (Get_Pragma_Id (Chars (gnat_node)))
+  switch (Get_Pragma_Id (Pragma_Identifier (Chars (gnat_node))))
     {
     case Pragma_Inspection_Point:
       /* Do nothing at top level: all such variables are already viewable.  */

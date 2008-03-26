@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -116,12 +116,14 @@ package body Exp_Prag is
    ---------------------
 
    procedure Expand_N_Pragma (N : Node_Id) is
+      Pname : constant Name_Id := Pragma_Name (N);
+
    begin
-      --  Note: we may have a pragma whose chars field is not a
+      --  Note: we may have a pragma whose Pragma_Identifier field is not a
       --  recognized pragma, and we must ignore it at this stage.
 
-      if Is_Pragma_Name (Chars (N)) then
-         case Get_Pragma_Id (Chars (N)) is
+      if Is_Pragma_Name (Pname) then
+         case Get_Pragma_Id (Pname) is
 
             --  Pragmas requiring special expander action
 
@@ -350,6 +352,8 @@ package body Exp_Prag is
 
    --  For now we do nothing with the size attribute ???
 
+   --  Note: Psect_Object shares this processing
+
    procedure Expand_Pragma_Common_Object (N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (N);
 
@@ -392,7 +396,6 @@ package body Exp_Prag is
       --  Insert the pragma
 
       Insert_After_And_Analyze (N,
-
          Make_Pragma (Loc,
            Chars => Name_Machine_Attribute,
            Pragma_Argument_Associations => New_List (
@@ -731,10 +734,7 @@ package body Exp_Prag is
 
    --  Convert to Common_Object, and expand the resulting pragma
 
-   procedure Expand_Pragma_Psect_Object (N : Node_Id) is
-   begin
-      Set_Chars (N, Name_Common_Object);
-      Expand_Pragma_Common_Object (N);
-   end Expand_Pragma_Psect_Object;
+   procedure Expand_Pragma_Psect_Object (N : Node_Id)
+     renames Expand_Pragma_Common_Object;
 
 end Exp_Prag;
