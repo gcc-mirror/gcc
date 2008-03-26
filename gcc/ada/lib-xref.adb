@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -235,6 +235,11 @@ package body Lib.Xref is
       --
       --   Out param   Same as above cases, but OUT parameter
 
+      function OK_To_Set_Referenced return Boolean;
+      --  Returns True if the Referenced flag can be set. There are a few
+      --  exceptions where we do not want to set this flag, see body for
+      --  details of these exceptional cases.
+
       ---------------
       -- Is_On_LHS --
       ---------------
@@ -309,6 +314,41 @@ package body Lib.Xref is
 
          return Name (Parent (N)) = N;
       end Is_On_LHS;
+
+      ---------------------------
+      -- OK_To_Set_Referenced --
+      ---------------------------
+
+      function OK_To_Set_Referenced return Boolean is
+         P : Node_Id;
+
+      begin
+         --  A reference from a pragma Unreferenced or pragma Unmodified or
+         --  pragma Warnings does not cause the Referenced flag to be set.
+         --  This avoids silly warnings about things being referenced and
+         --  not assigned when the only reference is from the pragma.
+
+         if Nkind (N) = N_Identifier then
+            P := Parent (N);
+
+            if Nkind (P) = N_Pragma_Argument_Association then
+               P := Parent (P);
+
+               if Nkind (P) = N_Pragma then
+                  if Pragma_Name (P) = Name_Warnings
+                       or else
+                     Pragma_Name (P) = Name_Unmodified
+                       or else
+                     Pragma_Name (P) = Name_Unreferenced
+                  then
+                     return False;
+                  end if;
+               end if;
+            end if;
+         end if;
+
+         return True;
+      end OK_To_Set_Referenced;
 
    --  Start of processing for Generate_Reference
 
@@ -527,9 +567,9 @@ package body Lib.Xref is
                   Set_Referenced_As_LHS (E, False);
                end if;
 
-               --  Any other occurrence counts as referencing the entity
+            --  Any other occurrence counts as referencing the entity
 
-            else
+            elsif OK_To_Set_Referenced then
                Set_Referenced (E);
 
                --  If variable, this is an OK reference after an assignment
