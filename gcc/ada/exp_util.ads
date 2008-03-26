@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -212,42 +212,50 @@ package Exp_Util is
    --  function itself must do its own cleanups.
 
    function Component_May_Be_Bit_Aligned (Comp : Entity_Id) return Boolean;
-   --  This function is in charge of detecting record components that may cause
-   --  trouble in the back end if an attempt is made to assign the component.
-   --  The back end can handle such assignments with no problem if the
-   --  components involved are small (64-bits or less) records or scalar items
-   --  (including bit-packed arrays represented with modular types) or are both
-   --  aligned on a byte boundary (starting on a byte boundary, and occupying
-   --  an integral number of bytes).
+   --  This function is in charge of detecting record components that may
+   --  cause trouble in the back end if an attempt is made to assign the
+   --  component. The back end can handle such assignments with no problem if
+   --  the components involved are small (64-bits or less) records or scalar
+   --  items (including bit-packed arrays represented with modular types) or
+   --  are both aligned on a byte boundary (starting on a byte boundary, and
+   --  occupying an integral number of bytes).
    --
    --  However, problems arise for records larger than 64 bits, or for arrays
    --  (other than bit-packed arrays represented with a modular type) if the
    --  component starts on a non-byte boundary, or does not occupy an integral
-   --  number of bytes (i.e. there are some bits possibly shared with fields at
-   --  the start or beginning of the component). The back end cannot handle
+   --  number of bytes (i.e. there are some bits possibly shared with fields
+   --  at the start or beginning of the component). The back end cannot handle
    --  loading and storing such components in a single operation.
    --
    --  This function is used to detect the troublesome situation. it is
-   --  conservative in the sense that it produces True unless it knows for sure
-   --  that the component is safe (as outlined in the first paragraph above).
-   --  The code generation for record and array assignment checks for trouble
-   --  using this function, and if so the assignment is generated
+   --  conservative in the sense that it produces True unless it knows for
+   --  sure that the component is safe (as outlined in the first paragraph
+   --  above). The code generation for record and array assignment checks for
+   --  trouble using this function, and if so the assignment is generated
    --  component-wise, which the back end is required to handle correctly.
    --
-   --  Note that in GNAT 3, the back end will reject such components anyway, so
-   --  the hard work in checking for this case is wasted in GNAT 3, but it's
-   --  harmless, so it is easier to do it in all cases, rather than
+   --  Note that in GNAT 3, the back end will reject such components anyway,
+   --  so the hard work in checking for this case is wasted in GNAT 3, but
+   --  it is harmless, so it is easier to do it in all cases, rather than
    --  conditionalize it in GNAT 5 or beyond.
 
    procedure Convert_To_Actual_Subtype (Exp : Node_Id);
-   --  The Etype of an expression is the nominal type of the expression, not
-   --  the actual subtype. Often these are the same, but not always. For
-   --  example, a reference to a formal of unconstrained type has the
+   --  The Etype of an expression is the nominal type of the expression,
+   --  not the actual subtype. Often these are the same, but not always.
+   --  For example, a reference to a formal of unconstrained type has the
    --  unconstrained type as its Etype, but the actual subtype is obtained by
    --  applying the actual bounds. This routine is given an expression, Exp,
-   --  and (if necessary), replaces it using Rewrite, with a conversion to the
-   --  actual subtype, building the actual subtype if necessary. If the
+   --  and (if necessary), replaces it using Rewrite, with a conversion to
+   --  the actual subtype, building the actual subtype if necessary. If the
    --  expression is already of the requested type, then it is unchanged.
+
+   function Corresponding_Runtime_Package (Typ : Entity_Id) return RTU_Id;
+   --  Return the id of the runtime package that will provide support for
+   --  concurrent type Typ. Currently only protected types are supported,
+   --  and the returned value is one of the following:
+   --    System_Tasking_Protected_Objects
+   --    System_Tasking_Protected_Objects_Entries
+   --    System_Tasking_Protected_Objects_Single_Entry
 
    function Current_Sem_Unit_Declarations return List_Id;
    --  Return the a place where it is fine to insert declarations for the

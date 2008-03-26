@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -948,6 +948,43 @@ package body Exp_Util is
       end if;
    end Component_May_Be_Bit_Aligned;
 
+   -----------------------------------
+   -- Corresponding_Runtime_Package --
+   -----------------------------------
+
+   function Corresponding_Runtime_Package (Typ : Entity_Id) return RTU_Id is
+      Pkg_Id : RTU_Id := RTU_Null;
+
+   begin
+      pragma Assert (Is_Concurrent_Type (Typ));
+
+      if Ekind (Typ) in Protected_Kind then
+         if Has_Entries (Typ)
+           or else Has_Interrupt_Handler (Typ)
+           or else (Has_Attach_Handler (Typ)
+                     and then not Restricted_Profile)
+           or else (Ada_Version >= Ada_05
+                     and then Present (Interface_List (Parent (Typ))))
+         then
+            if Abort_Allowed
+              or else Restriction_Active (No_Entry_Queue) = False
+              or else Number_Entries (Typ) > 1
+              or else (Has_Attach_Handler (Typ)
+                         and then not Restricted_Profile)
+            then
+               Pkg_Id := System_Tasking_Protected_Objects_Entries;
+            else
+               Pkg_Id := System_Tasking_Protected_Objects_Single_Entry;
+            end if;
+
+         else
+            Pkg_Id := System_Tasking_Protected_Objects;
+         end if;
+      end if;
+
+      return Pkg_Id;
+   end Corresponding_Runtime_Package;
+
    -------------------------------
    -- Convert_To_Actual_Subtype --
    -------------------------------
@@ -1384,6 +1421,10 @@ package body Exp_Util is
                   return;
                end if;
 
+               --  Document what is going on here, why four Next's???
+
+               Next_Elmt (ADT);
+               Next_Elmt (ADT);
                Next_Elmt (ADT);
                Next_Elmt (ADT);
                Next_Elmt (AI_Elmt);
@@ -1420,7 +1461,7 @@ package body Exp_Util is
         (not Is_Class_Wide_Type (Typ)
           and then Ekind (Typ) /= E_Incomplete_Type);
 
-      ADT := Next_Elmt (First_Elmt (Access_Disp_Table (Typ)));
+      ADT := Next_Elmt (Next_Elmt (First_Elmt (Access_Disp_Table (Typ))));
       pragma Assert (Present (Node (ADT)));
       Find_Secondary_Table (Typ);
       pragma Assert (Found);
