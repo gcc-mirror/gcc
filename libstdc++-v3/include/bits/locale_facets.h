@@ -1511,7 +1511,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     use_facet<ctype<wchar_t> >(const locale& __loc);
 #endif //_GLIBCXX_USE_WCHAR_T
 
-  /// @brief  class ctype_byname [22.2.1.2].
+  /// class ctype_byname [22.2.1.2].
   template<typename _CharT>
     class ctype_byname : public ctype<_CharT>
     {
@@ -1912,7 +1912,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     numpunct<wchar_t>::_M_initialize_numpunct(__c_locale __cloc);
 #endif
 
-  /// @brief  class numpunct_byname [22.2.3.2].
+  /// class numpunct_byname [22.2.3.2].
   template<typename _CharT>
     class numpunct_byname : public numpunct<_CharT>
     {

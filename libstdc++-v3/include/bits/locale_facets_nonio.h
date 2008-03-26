@@ -674,7 +674,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _CharT, typename _InIter>
     locale::id time_get<_CharT, _InIter>::id;
 
-  /// @brief  class time_get_byname [22.2.5.2].
+  /// class time_get_byname [22.2.5.2].
   template<typename _CharT, typename _InIter>
     class time_get_byname : public time_get<_CharT, _InIter>
     {
@@ -798,7 +798,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _CharT, typename _OutIter>
     locale::id time_put<_CharT, _OutIter>::id;
 
-  /// @brief  class time_put_byname [22.2.5.4].
+  /// class time_put_byname [22.2.5.4].
   template<typename _CharT, typename _OutIter>
     class time_put_byname : public time_put<_CharT, _OutIter>
     {
@@ -1306,7 +1306,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 							 const char*);
 #endif
 
-  /// @brief  class moneypunct_byname [22.2.6.4].
+  /// class moneypunct_byname [22.2.6.4].
   template<typename _CharT, bool _Intl>
     class moneypunct_byname : public moneypunct<_CharT, _Intl>
     {
@@ -1887,7 +1887,7 @@ _GLIBCXX_END_LDBL_NAMESPACE
     messages<wchar_t>::do_get(catalog, int, int, const wstring&) const;
 #endif
 
-   /// @brief class messages_byname [22.2.7.2].
+   /// class messages_byname [22.2.7.2].
    template<typename _CharT>
     class messages_byname : public messages<_CharT>
     {

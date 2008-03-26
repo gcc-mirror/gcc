@@ -1,6 +1,6 @@
 // <type_traits> -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -63,6 +63,8 @@
 namespace std
 {
   // Primary classification traits.
+
+  /// is_lvalue_reference
   template<typename>
     struct is_lvalue_reference
     : public false_type { };
@@ -71,6 +73,7 @@ namespace std
     struct is_lvalue_reference<_Tp&>
     : public true_type { };
 
+  /// is_rvalue_reference
   template<typename>
     struct is_rvalue_reference
     : public false_type { };
@@ -80,6 +83,8 @@ namespace std
     : public true_type { };
 
   // Secondary classification traits.
+
+  /// is_reference
   template<typename _Tp>
     struct is_reference
     : public integral_constant<bool, (is_lvalue_reference<_Tp>::value
@@ -87,6 +92,8 @@ namespace std
     { };
 
   // Reference transformations.
+
+  /// remove_reference
   template<typename _Tp>
     struct remove_reference
     { typedef _Tp   type; };
@@ -113,6 +120,7 @@ namespace std
     struct __add_lvalue_reference_helper<_Tp, false, true>
     { typedef typename remove_reference<_Tp>::type&   type; };
 
+  /// add_lvalue_reference
   template<typename _Tp>
     struct add_lvalue_reference
     : public __add_lvalue_reference_helper<_Tp>
@@ -127,12 +135,14 @@ namespace std
     struct __add_rvalue_reference_helper<_Tp, true>
     { typedef _Tp&&   type; };
 
+  /// add_rvalue_reference
   template<typename _Tp>
     struct add_rvalue_reference
     : public __add_rvalue_reference_helper<_Tp>
     { };
 
   // Scalar properties and transformations.
+
   template<typename _Tp,
 	   bool = is_integral<_Tp>::value,
 	   bool = is_floating_point<_Tp>::value>
@@ -148,11 +158,13 @@ namespace std
     : public integral_constant<bool, _Tp(-1) < _Tp(0)>
     { };
 
+  /// is_signed
   template<typename _Tp>
     struct is_signed
     : public integral_constant<bool, __is_signed_helper<_Tp>::value>
     { };
 
+  /// is_unsigned
   template<typename _Tp>
     struct is_unsigned
     : public integral_constant<bool, (is_arithmetic<_Tp>::value
@@ -160,46 +172,56 @@ namespace std
     { };
 
   // Member introspection.
+
+  /// is_pod
   template<typename _Tp>
     struct is_pod
     : public integral_constant<bool, __is_pod(_Tp)>
     { };
 
+  /// has_trivial_default_constructor
   template<typename _Tp>
     struct has_trivial_default_constructor
     : public integral_constant<bool, __has_trivial_constructor(_Tp)>
     { };
 
+  /// has_trivial_copy_constructor
   template<typename _Tp>
     struct has_trivial_copy_constructor
     : public integral_constant<bool, __has_trivial_copy(_Tp)>
     { };
 
+  /// has_trivial_assign
   template<typename _Tp>
     struct has_trivial_assign
     : public integral_constant<bool, __has_trivial_assign(_Tp)>
     { };
 
+  /// has_trivial_destructor
   template<typename _Tp>
     struct has_trivial_destructor
     : public integral_constant<bool, __has_trivial_destructor(_Tp)>
     { };
 
+  /// has_nothrow_default_destructor
   template<typename _Tp>
     struct has_nothrow_default_constructor
     : public integral_constant<bool, __has_nothrow_constructor(_Tp)>
     { };
 
+  /// has_nothrow_copy_destructor
   template<typename _Tp>
     struct has_nothrow_copy_constructor
     : public integral_constant<bool, __has_nothrow_copy(_Tp)>
     { };
 
+  /// has_nothrow_assign
   template<typename _Tp>
     struct has_nothrow_assign
     : public integral_constant<bool, __has_nothrow_assign(_Tp)>
     { };
 
+  /// is_base_of
   template<typename _Base, typename _Derived>
     struct is_base_of
     : public integral_constant<bool, __is_base_of(_Base, _Derived)>
@@ -232,7 +254,7 @@ namespace std
   template<typename _From, typename _To,
 	   bool = (is_void<_From>::value || is_void<_To>::value
 		   || is_function<_To>::value || is_array<_To>::value
-		   // This special case is here only to avoid warnings.		   
+		   // This special case is here only to avoid warnings.
 		   || (is_floating_point<typename
 		       remove_reference<_From>::type>::value
 		       && __is_int_or_cref<_To>::__value))>
@@ -252,6 +274,7 @@ namespace std
 
   // XXX FIXME
   // The C++0x specifications are different, see N2255.
+  /// is_convertible
   template<typename _From, typename _To>
     struct is_convertible
     : public integral_constant<bool,
@@ -268,6 +291,16 @@ namespace std
       };
     };
 
+  /**
+   *  @brief Alignment type.
+   *
+   *  The value of _Align is a default-alignment which shall be the
+   *  most stringent alignment requirement for any C++ object type
+   *  whose size is no greater than _Len (3.9). The member typedef
+   *  type shall be a POD type suitable for use as uninitialized
+   *  storage for any object whose size is at most _Len and whose
+   *  alignment is a divisor of _Align.
+  */
   template<std::size_t _Len, std::size_t _Align =
 	   __alignof__(typename __aligned_storage_msa<_Len>::__type)>
     struct aligned_storage
@@ -281,21 +314,25 @@ namespace std
 
 
   // Define a nested type if some predicate holds.
+  /// Primary template.
   template<bool, typename _Tp = void>
     struct enable_if 
     { };
 
+  /// Partial specialization for true.
   template<typename _Tp>
     struct enable_if<true, _Tp>
     { typedef _Tp type; };
 
 
-  // Like a conditional expression, but for types. If true, first, if
-  // false, second.
+  // A conditional expression, but for types. 
+  // If true, first, if false, second.
+  /// Primary template.
   template<bool _Cond, typename _Iftrue, typename _Iffalse>
     struct conditional
     { typedef _Iftrue type; };
 
+  /// Partial specialization for false.
   template<typename _Iftrue, typename _Iffalse>
     struct conditional<false, _Iftrue, _Iffalse>
     { typedef _Iffalse type; };
@@ -321,6 +358,7 @@ namespace std
     struct __decay_selector<_Up, false, true>
     { typedef typename add_pointer<_Up>::type __type; };
 
+  /// decay
   template<typename _Tp> 
     struct decay 
     { 
@@ -428,9 +466,9 @@ namespace std
       typedef typename conditional<__b1, __smallest, __cond_type>::type __type;
     };
 
-  // Primary class template.
   // Given an integral/enum type, return the corresponding unsigned
   // integer type.
+  /// Primary template.
   template<typename _Tp>
     struct make_unsigned 
     { typedef typename __make_unsigned_selector<_Tp>::__type type; };
@@ -503,9 +541,9 @@ namespace std
       typedef typename conditional<__b1, __smallest, __cond_type>::type __type;
     };
 
-  // Primary class template.
   // Given an integral/enum type, return the corresponding signed
   // integer type.
+  /// Primary template.
   template<typename _Tp>
     struct make_signed 
     { typedef typename __make_signed_selector<_Tp>::__type type; };

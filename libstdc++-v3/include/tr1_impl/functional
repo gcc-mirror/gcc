@@ -426,6 +426,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     : binary_function<const volatile _T1*, _T2, _Res>
     { };
 
+  /// reference_wrapper
   template<typename _Tp>
     class reference_wrapper
     : public _Reference_wrapper_base<typename remove_cv<_Tp>::type>
@@ -1336,6 +1337,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   template<typename _Result, typename _Signature>
     const bool is_bind_expression<_Bind_result<_Result, _Signature> >::value;
 
+  /// bind
   template<typename _Functor, typename... _ArgTypes>
     inline
     _Bind<typename _Maybe_wrap_member_pointer<_Functor>::type(_ArgTypes...)>
@@ -1751,6 +1753,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       }
     };
 
+  /// class function
   template<typename _Res, typename... _ArgTypes>
     class function<_Res(_ArgTypes...)>
     : public _Maybe_unary_or_binary_function<_Res, _ArgTypes...>,

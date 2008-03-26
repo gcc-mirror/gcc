@@ -1,3 +1,78 @@
+2008-03-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* scripts/run_doxygen: Remove html_output_dir. Downgrade to
+	Doxygen 1.5.1.
+	* doc/doxygen/style.css: Delete.
+	* doc/doxygen/user.cfg.in: Regenerate with Doxygen 1.5.1.
+	(INPUT): Update.
+	(PREDEFINED): Update.
+	(HTML_OUTPUT): Remove html_output_dir, use html.
+	(HTML_STYLESHEET): Remove style.css.
+	* doc/doxygen/tables.html: Remove style.css use.
+	* doc/doxygen/mainpage.html: Nested lists for Namespaces and Classes.
+	* doc/doxygen/doxygroups.cc: Namespace edits.
+	* doc/doxygen/Intro.3: Correct typo.
+
+	* doc/xml/api.xml: Add gcc-4.3 links.
+	* doc/html/api.html: Regenerate.	
+	
+	* include/debug/debug.h: Document namepaces here.
+	* include/parallel/base.h: Same.
+	* include/ext/typelist.h: Same.
+	* include/ext/pb_ds/tag_and_trait.hpp: Same.
+	
+	* include/tr1_impl/random: Adjust line break.
+	* include/tr1_impl/unordered_map: Correct and or add markup.
+	* include/tr1_impl/boost_shared_ptr.h: Correct and or add markup.
+	* include/tr1_impl/functional_hash.h: Same.
+	* include/tr1_impl/cmath: Same.
+	* include/tr1_impl/functional: Same.
+	* include/tr1_impl/unordered_set: Same.
+	* include/tr1_impl/complex: Same.
+	* include/tr1_impl/type_traits: Same.
+	* include/tr1_impl/regex: Same.
+	* include/tr1_impl/array: Same.
+	* include/std/tuple: Same.
+	* include/std/date_time: Same.
+	* include/std/system_error: Same.
+	* include/std/type_traits: Same.
+	* include/ext/enc_filebuf.h: Same.
+	* include/ext/throw_allocator.h: Same.
+	* include/ext/pool_allocator.h: Same.
+	* include/ext/bitmap_allocator.h: Same.
+	* include/ext/concurrence.h: Same.
+	* include/ext/codecvt_specializations.h: Same.
+	* include/ext/stdio_sync_filebuf.h: Same.
+	* include/ext/array_allocator.h: Same.
+	* include/ext/mt_allocator.h: Same.
+	* include/bits/locale_classes.h: Same.
+	* include/bits/locale_facets.h: Same.
+	* include/bits/codecvt.h: Same.
+	* include/bits/char_traits.h: Same.
+	* include/bits/allocator.h: Same.
+	* include/bits/locale_facets_nonio.h: Same.
+	* include/tr1/poly_laguerre.tcc: Same.
+	* include/tr1/riemann_zeta.tcc: Same.
+	* include/tr1/beta_function.tcc: Same.
+	* include/tr1/tuple: Same.
+	* include/tr1/exp_integral.tcc: Same.
+	* include/tr1/gamma.tcc: Same.
+	* include/tr1/hypergeometric.tcc: Same.
+	* include/tr1/modified_bessel_func.tcc: Same.
+	* include/tr1/legendre_function.tcc: Same.
+	* include/tr1/type_traits: Same.
+	* include/tr1/special_function_util.h: Same.
+	* include/tr1/bessel_function.tcc: Same.
+	* include/tr1/cmath: Same.
+	* include/tr1/poly_hermite.tcc: Same.
+	* include/tr1/ell_integral.tcc: Same.
+	* config/abi/compatibility.h: Adjust file name.
+
+	* testsuite/19_diagnostics/error_category/cons/copy_neg.cc: Adjust
+	line numbers.	
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Same.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc: Same.
+
 2008-03-23  Paolo Carlini  <pcarlini@suse.de>
 
 	* doc/xml/faq.xml: Fix various links.

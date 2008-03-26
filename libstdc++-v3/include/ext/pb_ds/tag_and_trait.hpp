@@ -52,9 +52,8 @@
 
 /**
  * @namespace __gnu_pbds
- * @brief GNU extension policy-based data structures for public use.
+ * @brief GNU extensions for policy-based data structures for public use.
  */
-
 namespace __gnu_pbds
 {
   // A trivial iterator tag. Signifies that the iterators has none of

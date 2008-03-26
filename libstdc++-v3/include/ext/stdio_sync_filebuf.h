@@ -47,7 +47,7 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
-  /// @brief  class stdio_sync_filebuf.
+  /// class stdio_sync_filebuf.
   template<typename _CharT, typename _Traits = std::char_traits<_CharT> >
     class stdio_sync_filebuf : public std::basic_streambuf<_CharT, _Traits>
     {

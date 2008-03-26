@@ -1,6 +1,6 @@
 // Special functions -*- C++ -*-
 
-// Copyright (C) 2006-2007
+// Copyright (C) 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -59,14 +59,7 @@ namespace tr1
 
   // [5.2] Special functions
 
-  /**
-   * @ingroup tr1_math_spec_func
-   * @{
-   */
-
-  //
   // Implementation-space details.
-  //
   namespace __detail
   {
 
@@ -203,9 +196,6 @@ namespace tr1
     }
 
   } // namespace std::tr1::__detail
-
-  /* @} */ // group tr1_math_spec_func
-
 }
 }
 

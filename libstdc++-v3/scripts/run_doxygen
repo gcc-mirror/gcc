@@ -10,7 +10,7 @@
 
 
 # We can check now that the version of doxygen is >= this variable.
-DOXYVER=1.5.4
+DOXYVER=1.5.1
 
 find_doxygen() {
     local -r v_required=`echo $DOXYVER |  \
@@ -156,7 +156,6 @@ fi
       -e "s=@srcdir@=${srcdir}=g" \
       -e "s=@builddir@=${builddir}=g" \
       -e "s=@host_alias@=${host_alias}=g" \
-      -e "s=@html_output_dir@=html=" \
       -e "s=@enabled_sections@=${enabled_sections}=" \
       -e "s=@do_html@=${do_html}=" \
       -e "s=@do_man@=${do_man}=" \

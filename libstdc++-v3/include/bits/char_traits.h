@@ -231,7 +231,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     { };
 
 
-  /// @brief  21.1.3.1  char_traits specializations
+  /// 21.1.3.1  char_traits specializations
   template<>
     struct char_traits<char>
     {
@@ -301,7 +301,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-  /// @brief  21.1.3.2  char_traits specializations
+  /// 21.1.3.2  char_traits specializations
   template<>
     struct char_traits<wchar_t>
     {

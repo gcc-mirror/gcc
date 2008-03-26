@@ -80,6 +80,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     std::tr1::mt19937 _M_generator;
   };
 
+  /// Thown by throw_allocator.
   struct forced_exception_error : public std::exception
   { };
 
@@ -94,6 +95,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #endif
   }
 
+  /// Base class.
   class throw_allocator_base
   {
   public:
@@ -184,7 +186,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     static size_t 		_S_label;
   };
 
-
+  /// Allocator class with logging and exception control.
   template<typename T>
     class throw_allocator : public throw_allocator_base
     {
@@ -309,7 +311,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   twister_rand_gen throw_allocator_base::_S_g;
 
-  throw_allocator_base::map_type
+  throw_allocator_base::map_type 
   throw_allocator_base::_S_map;
 
   double throw_allocator_base::_S_throw_prob;

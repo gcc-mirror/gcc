@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2001, 2002, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2005, 2008 Free Software Foundation, Inc.
    See license.html for license.
 
    This just provides documentation for stuff that doesn't need to be in the
@@ -17,35 +17,33 @@
 
 // // // // // // // // // // // // // // // // // // // // // // // //
 /** @namespace std
- *  @brief Everything defined by the ISO C++ Standard is within
- *  namespace <a class="el" href="namespacestd.html">std</a>.
+ *  @brief ISO C++ entities toplevel namespace is std.
 */
 /** @namespace std::__detail
- *  @brief Implementation details not part of the namespace <a class="el"
- *  href="namespacestd.html">std</a> interface.
+ *  @brief Implementation details not part of the namespace std interface.
 */
 /** @namespace std::tr1
- *  @brief Everything defined by the ISO C++ TR1 is within namespace std::tr1.
+ *  @brief ISO C++ TR1 entities toplevel namespace is std::tr1.
 */
 /** @namespace std::tr1::__detail
  *  @brief Implementation details not part of the namespace std::tr1 interface.
+*/
+/** @namespace std::regex_constants
+ *  @brief ISO C++ 0x entities sub namespace for regex.
+*/
+/** @namespace std::placeholders
+ *  @brief ISO C++ 0x entities sub namespace for functional.
 */
 /** @namespace __gnu_cxx
  *  @brief GNU extensions for public use.
 */
 /** @namespace __gnu_cxx::__detail
- *  @brief Implementation details not part of the namespace __gnu_cxx
+ *  @brief Implementation details not part of the namespace __gnu_cxx 
  *  interface.
-*/
-/** @namespace __gnu_cxx::typelist
- *  @brief GNU typelist extensions for public compile-time use.
 */
 /** @namespace __gnu_internal
  *  @brief GNU implemenation details, not for public use or
  *  export. Used only when anonymous namespaces cannot be substituted.
-*/
-/** @namespace __gnu_debug
- *  @brief GNU debug classes for public use.
 */
 // // // // // // // // // // // // // // // // // // // // // // // //
 /** @addtogroup SGIextensions STL extensions from SGI
