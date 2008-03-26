@@ -6,7 +6,7 @@
 @c                                                                            o
 @c                             G N A T _ U G N                                o
 @c                                                                            o
-@c                     Copyright (C) 1992-2007, AdaCore                       o
+@c                     Copyright (C) 1992-2008, AdaCore                       o
 @c                                                                            o
 @c  GNAT is free software;  you can  redistribute it  and/or modify it under  o
 @c  terms of the  GNU General Public License as published  by the Free Soft-  o
@@ -89,7 +89,6 @@
 @set EDITION GNAT
 @set DEFAULTLANGUAGEVERSION Ada 2005
 @set NONDEFAULTLANGUAGEVERSION Ada 95
-@set FILE gnat_ugn
 
 @ifset unw
 @set PLATFORM
@@ -102,7 +101,7 @@
 @settitle @value{EDITION} User's Guide @value{PLATFORM}
 @dircategory GNU Ada tools
 @direntry
-* @value{EDITION} User's Guide (@value{FILE}) @value{PLATFORM}
+* @value{EDITION} User's Guide (gnat_ugn) @value{PLATFORM}
 @end direntry
 
 @include gcc-common.texi
@@ -195,6 +194,9 @@ AdaCore@*
 * Creating Sample Bodies Using gnatstub::
 * Other Utility Programs::
 * Running and Debugging Ada Programs::
+@ifclear vms
+* Code Coverage and Profiling::
+@end ifclear
 @ifset vms
 * Compatibility with HP Ada::
 @end ifset
@@ -503,6 +505,13 @@ Other Utility Programs
 * The External Symbol Naming Scheme of GNAT::
 * Converting Ada Files to html with gnathtml::
 
+@ifclear vms
+Code Coverage and Profiling
+
+* Code Coverage of Ada Programs using gcov::
+* Profiling an Ada Program using gprof::
+@end ifclear
+
 Running and Debugging Ada Programs
 
 * The GNAT Debugger GDB::
@@ -587,6 +596,7 @@ Platform-Specific Information for the Run-Time Libraries
 * Solaris-Specific Considerations::
 * Linux-Specific Considerations::
 * AIX-Specific Considerations::
+* Irix-Specific Considerations::
 
 Example of Binder Output File
 
@@ -841,6 +851,12 @@ a utility that generates empty but compilable bodies for library units.
 @item
 @ref{Other Utility Programs}, discusses several other GNAT utilities,
 including @code{gnathtml}.
+
+@ifclear vms
+@item
+@ref{Code Coverage and Profiling}, describes how to perform a structural
+coverage and profile the execution of Ada programs.
+@end ifclear
 
 @item
 @ref{Running and Debugging Ada Programs}, describes how to run and debug
@@ -5225,15 +5241,33 @@ This warning can also be turned on using @option{-gnatwa}.
 @item -gnatwW
 @emph{Suppress warnings on wrong low bound assumption.}
 @cindex @option{-gnatwW} (@command{gcc})
-This switch activates warnings for indexing an unconstrained string parameter
-with a literal or S'Length. This warning can also be suppressed by providing
-an Assert pragma that checks the low bound, for example:
+This switch suppresses warnings for indexing an unconstrained string parameter
+with a literal or S'Length. Note that this warning can also be suppressed
+in a particular case by adding an
+assertion that the lower bound is 1,
+as shown in the following example.
 
 @smallexample @c ada
    procedure K (S : String) is
       pragma Assert (S'First = 1);
       @dots{}
 @end smallexample
+
+@item -gnatw.w
+@emph{Activate warnings on unnecessary Warnings Off pragmas}
+@cindex @option{-gnatw.w} (@command{gcc})
+@cindex Warnings Off control
+This switch activates warnings for use of @code{pragma Warnings (Off, entity}
+where either the pragma is entirely useless (because it suppresses no
+warnings), or it could be replaced by @code{pragma Unreferenced} or
+@code{pragma Unmodified}.The default is that these warnings are not given.
+Note that this warning is not included in -gnatwa, it must be
+activated explicitly.
+
+@item -gnatw.W
+@emph{Suppress warnings on unnecessary Warnings Off pragmas}
+@cindex @option{-gnatw.W} (@command{gcc})
+This switch suppresses warnings for use of @code{pragma Warnings (Off, entity}.
 
 @item -gnatwx
 @emph{Activate warnings on Export/Import pragmas.}
@@ -5297,7 +5331,9 @@ incompatibilities between Ada 95 and Ada 2005.
 This switch activates warnings for unchecked conversions
 where the types are known at compile time to have different
 sizes. The default
-is that such warnings are generated.
+is that such warnings are generated. Warnings are also
+generated for subprogram pointers with different conventions,
+and, on VMS only, for data pointers with different conventions.
 This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwZ
@@ -5305,7 +5341,7 @@ This warning can also be turned on using @option{-gnatwa}.
 @cindex @option{-gnatwZ} (@command{gcc})
 This switch suppresses warnings for unchecked conversions
 where the types are known at compile time to have different
-sizes.
+sizes or conventions.
 
 @item ^-Wuninitialized^WARNINGS=UNINITIALIZED^
 @cindex @option{-Wuninitialized}
@@ -21535,6 +21571,10 @@ into the body stub.
 @cindex @option{^-hg^/HEADER=GENERAL^} (@command{gnatstub})
 Put a sample comment header into the body stub.
 
+@item ^--header-file=@var{filename}^/FROM_HEADER_FILE=@var{filename}^
+@cindex @option{^--header-file^/FROM_HEADER_FILE=^} (@command{gnatstub})
+Use the content of the file as the comment header for a generated body stub.
+
 @ifclear vms
 @item -IDIR
 @cindex @option{-IDIR} (@command{gnatstub})
@@ -21888,6 +21928,291 @@ $ RUN/DEBUG <PROGRAM_NAME>
 @noindent
 @end ifset
 
+@ifclear vms
+@c ******************************
+@node Code Coverage and Profiling
+@chapter Code Coverage and Profiling
+@cindex Code Coverage
+@cindex Profiling
+
+@noindent
+This chapter describes how to use @code{gcov} - coverage testing tool - and
+@code{gprof} - profiler tool - on your Ada programs.
+
+@menu
+* Code Coverage of Ada Programs using gcov::
+* Profiling an Ada Program using gprof::
+@end menu
+
+@node Code Coverage of Ada Programs using gcov
+@section Code Coverage of Ada Programs using gcov
+@cindex gcov
+@cindex -fprofile-arcs
+@cindex -ftest-coverage
+@cindex -coverage
+@cindex Code Coverage
+
+@noindent
+@code{gcov} is a test coverage program: it analyzes the execution of a given
+program on selected tests, to help you determine the portions of the program
+that are still untested.
+
+@code{gcov} is part of the GCC suite, and is described in detail in the GCC
+User's Guide. You can refer to this documentation for a more complete
+description.
+
+This chapter provides a quick startup guide, and
+details some Gnat-specific features.
+
+@menu
+* Quick startup guide::
+* Gnat specifics::
+@end menu
+
+@node Quick startup guide
+@subsection Quick startup guide
+
+In order to perform coverage analysis of a program using @code{gcov}, 3
+steps are needed:
+
+@itemize @bullet
+@item
+Code instrumentation during the compilation process
+@item
+Execution of the instrumented program
+@item
+Execution of the @code{gcov} tool to generate the result.
+@end itemize
+
+The code instrumentation needed by gcov is created at the object level:
+The source code is not modified in any way, because the instrumentation code is
+inserted by gcc during the compilation process. To compile your code with code
+coverage activated, you need to recompile your whole project using the
+switches
+@code{-fprofile-arcs} and @code{-ftest-coverage}, and link it using
+@code{-fprofile-arcs}.
+
+@smallexample
+$ gnatmake -P my_project.gpr -f -cargs -fprofile-arcs -ftest-coverage \
+   -largs -fprofile-arcs
+@end smallexample
+
+This compilation process will create @file{.gcno} files together with
+the usual object files.
+
+Once the program is compiled with coverage instrumentation, you can
+run it as many times as needed - on portions of a test suite for
+example. The first execution will produce @file{.gcda} files at the
+same location as the @file{.gcno} files.  The following executions
+will update those files, so that a cumulative result of the covered
+portions of the program is generated.
+
+Finaly, you need to call the @code{gcov} tool. The different options of
+@code{gcov} are available in the GCC User's Guide, section 'Invoking gcov'.
+
+This will create anotated source files with a @file{.gcov} extension:
+@file{my_main.adb} file will be analysed in @file{my_main.adb.gcov}.
+
+@node Gnat specifics
+@subsection Gnat specifics
+
+Because Ada semantics, portions of the source code may be shared among
+several object files. This is the case for example when generics are
+involved, when inlining is active  or when declarations generate  initialisation
+calls. In order to take
+into account this shared code, you need to call @code{gcov} on all
+source files of the tested program at once.
+
+The list of source files might exceed the system's maximum command line
+length. In order to bypass this limitation, a new mechanism has been
+implemented in @code{gcov}: you can now list all your project's files into a
+text file, and provide this file to gcov as a parameter,  preceded by a @@
+(e.g. @samp{gcov @@mysrclist.txt}).
+
+@node Profiling an Ada Program using gprof
+@section Profiling an Ada Program using gprof
+@cindex gprof
+@cindex -pg
+@cindex Profiling
+
+@noindent
+This section is not meant to be an exhaustive documentation of @code{gprof}.
+Full documentation for it can be found in the GNU Profiler User's Guide
+documentation that is part of this GNAT distribution.
+
+Profiling a program helps determine the parts of a program that are executed
+most often, and are therefore the most time-consuming.
+
+@code{gprof} is the standard GNU profiling tool; it has been enhanced to
+better handle Ada programs and multitasking.
+It is currently supported on the following platoforms
+@itemize @bullet
+@item
+linux x86/x86_64
+@item
+solaris sparc/sparc64/x86
+@item
+windows x86
+@end itemize
+
+@noindent
+In order to profile a program using @code{gprof}, 3 steps are needed:
+
+@itemize @bullet
+@item
+Code instrumentation, requiring a full recompilation of the project with the
+proper switches.
+@item
+Execution of the program under the analysis conditions, i.e. with the desired
+input.
+@item
+Analysis of the results using the @code{gprof} tool.
+@end itemize
+
+@noindent
+The following sections detail the different steps, and indicate how
+to interpret the results:
+@menu
+* Compilation for profiling::
+* Program execution::
+* Running gprof::
+* Interpretation of profiling results::
+@end menu
+
+@node Compilation for profiling
+@subsection Compilation for profiling
+@cindex -pg
+@cindex Profiling
+
+In order to profile a program the first step is to tell the compiler
+to generate the necessary profiling information. The compiler switch to be used
+is @code{-pg}, which must be added to other compilation switches. This
+switch needs to be specified both during compilation and link stages, and can
+be specified once when using gnatmake:
+
+@smallexample
+gnatmake -f -pg -P my_project
+@end smallexample
+
+@noindent
+Note that only the objects that were compiled with the @samp{-pg} switch will be
+profiled; if you need to profile your whole project, use the
+@samp{-f} gnatmake switch to force full recompilation.
+
+@node Program execution
+@subsection Program execution
+
+@noindent
+Once the program has been compiled for profiling, you can run it as usual.
+
+The only constraint imposed by profiling is that the program must terminate
+normally. An interrupted program (via a Ctrl-C, kill, etc.) will not be
+properly analyzed.
+
+Once the program completes execution, a data file called @file{gmon.out} is
+generated in the directory where the program was launched from. If this file
+already exists, it will be overwritten.
+
+@node Running gprof
+@subsection Running gprof
+
+@noindent
+The @code{gprof} tool is called as follow:
+
+@smallexample
+gprof my_prog gmon.out
+@end smallexample
+
+@noindent
+or simpler:
+
+@smallexample
+gprof my_prog
+@end smallexample
+
+@noindent
+The complete form of the gprof command line is the following:
+
+@smallexample
+gprof [^switches^options^] [executable [data-file]]
+@end smallexample
+
+@noindent
+@code{gprof} supports numerous ^switch^options^. The order of these
+^switch^options^ does not matter. The full list of options can be found in
+the GNU Profiler User's Guide documentation that comes with this documentation.
+
+The following is the subset of those switches that is most relevant:
+
+@table @option
+
+@item --demangle[=@var{style}]
+@itemx --no-demangle
+@cindex @option{--demangle} (@code{gprof})
+These options control whether symbol names should be demangled when
+printing output.  The default is to demangle C++ symbols.  The
+@code{--no-demangle} option may be used to turn off demangling. Different
+compilers have different mangling styles.  The optional demangling style
+argument can be used to choose an appropriate demangling style for your
+compiler, in particular Ada symbols generated by GNAT can be demangled using
+@code{--demangle=gnat}.
+
+@item -e @var{function_name}
+@cindex @option{-e} (@code{gprof})
+The @samp{-e @var{function}} option tells @code{gprof} not to print
+information about the function @var{function_name} (and its
+children@dots{}) in the call graph.  The function will still be listed
+as a child of any functions that call it, but its index number will be
+shown as @samp{[not printed]}.  More than one @samp{-e} option may be
+given; only one @var{function_name} may be indicated with each @samp{-e}
+option.
+
+@item -E @var{function_name}
+@cindex @option{-E} (@code{gprof})
+The @code{-E @var{function}} option works like the @code{-e} option, but
+execution time spent in the function (and children who were not called from
+anywhere else), will not be used to compute the percentages-of-time for
+the call graph.  More than one @samp{-E} option may be given; only one
+@var{function_name} may be indicated with each @samp{-E} option.
+
+@item -f @var{function_name}
+@cindex @option{-f} (@code{gprof})
+The @samp{-f @var{function}} option causes @code{gprof} to limit the
+call graph to the function @var{function_name} and its children (and
+their children@dots{}).  More than one @samp{-f} option may be given;
+only one @var{function_name} may be indicated with each @samp{-f}
+option.
+
+@item -F @var{function_name}
+@cindex @option{-F} (@code{gprof})
+The @samp{-F @var{function}} option works like the @code{-f} option, but
+only time spent in the function and its children (and their
+children@dots{}) will be used to determine total-time and
+percentages-of-time for the call graph.  More than one @samp{-F} option
+may be given; only one @var{function_name} may be indicated with each
+@samp{-F} option.  The @samp{-F} option overrides the @samp{-E} option.
+
+@end table
+
+@node Interpretation of profiling results
+@subsection Interpretation of profiling results
+
+@noindent
+
+The results of the profiling analysis are represented by two arrays: the
+'flat profile' and the 'call graph'. Full documentation of those outputs
+can be found in the GNU Profiler User's Guide.
+
+The flat profile shows the time spent in each function of the program, and how
+many time it has been called. This allows you to locate easily the most
+time-consuming functions.
+
+The call graph shows, for each subprogram, the subprograms that call it,
+and the subprograms that it calls. It also provides an estimate of the time
+spent in each of those callers/called subprograms.
+@end ifclear
+
+@c ******************************
 @node Running and Debugging Ada Programs
 @chapter Running and Debugging Ada Programs
 @cindex Debugging
@@ -24694,6 +25019,7 @@ information about several specific platforms.
 * Solaris-Specific Considerations::
 * Linux-Specific Considerations::
 * AIX-Specific Considerations::
+* Irix-Specific Considerations::
 @end menu
 
 @node Summary of Run-Time Configurations
@@ -25009,6 +25335,24 @@ to @code{GNAT.Sockets.Get_Host_By_Name} or
 occurs in the environment task, or use @code{pragma Storage_Size} to
 specify a sufficiently large size for the stack of the task that contains
 this call.
+
+@node Irix-Specific Considerations
+@section Irix-Specific Considerations
+@cindex Irix libraries
+
+@noindent
+The GCC support libraries coming with the Irix compiler have moved to
+their canonical place with respect to the general Irix ABI related
+conventions. Running applications built with the default shared GNAT
+run-time now requires the LD_LIBRARY_PATH environment variable to
+include this location. A possible way to achieve this is to issue the
+following command line on a bash prompt:
+
+@smallexample
+@group
+$  LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`dirname \`gcc --print-file-name=libgcc_s.so\``
+@end group
+@end smallexample
 
 @c *******************************
 @node Example of Binder Output File
