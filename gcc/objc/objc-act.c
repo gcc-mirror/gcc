@@ -8075,6 +8075,9 @@ encode_type (tree type, int curtype, int format)
   enum tree_code code = TREE_CODE (type);
   char c;
 
+  if (type == error_mark_node)
+    return;
+
   if (TYPE_READONLY (type))
     obstack_1grow (&util_obstack, 'r');
 
@@ -8231,6 +8234,13 @@ static void
 objc_push_parm (tree parm)
 {
   bool relayout_needed = false;
+
+  if (TREE_TYPE (parm) == error_mark_node)
+    {
+      objc_parmlist = chainon (objc_parmlist, parm);
+      return;
+    }
+
   /* Decay arrays and functions into pointers.  */
   if (TREE_CODE (TREE_TYPE (parm)) == ARRAY_TYPE)
     {
