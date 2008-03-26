@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -362,7 +362,7 @@ begin
 
    Write_Switch_Char ("wxx");
    Write_Line ("Enable selected warning modes, xx = list of parameters:");
-   Write_Line ("        a    turn on all optional warnings (except d h l .o)");
+   Write_Line ("        a    turn on all optional warnings (except dhl.o.w)");
    Write_Line ("        A    turn off all optional warnings");
    Write_Line ("        .a*  turn on warnings for failing assertions");
    Write_Line ("        .A   turn off warnings for failing assertions");
@@ -428,6 +428,8 @@ begin
    Write_Line ("        w*   turn on warnings for wrong low bound assumption");
    Write_Line ("        W    turn off warnings for wrong low bound " &
                                                   "assumption");
+   Write_Line ("        .w   turn on warnings on pragma Warnings Off");
+   Write_Line ("        .w*  turn off warnings on pragma Warnings Off");
    Write_Line ("        x*   turn on warnings for export/import");
    Write_Line ("        X    turn off warnings for export/import");
    Write_Line ("        .x   turn on warnings for non-local exceptions");
