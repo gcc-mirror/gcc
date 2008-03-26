@@ -350,6 +350,12 @@ private
       Line_Length : Count := 0;
       Page_Length : Count := 0;
 
+      Self : aliased File_Type;
+      --  Set to point to the containing Text_AFCB block. This is used to
+      --  implement the Current_{Error,Input,Ouput} functions which return
+      --  a File_Access, the file access value returned is a pointer to
+      --  the Self field of the corresponding file.
+
       Before_LM : Boolean := False;
       --  This flag is used to deal with the anomolies introduced by the
       --  peculiar definition of End_Of_File and End_Of_Page in Ada. These

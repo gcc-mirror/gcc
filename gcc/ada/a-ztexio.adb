@@ -180,6 +180,8 @@ package body Ada.Wide_Wide_Text_IO is
                 Amethod   => 'W',
                 Creat     => True,
                 Text      => True);
+
+      File.Self := File;
       Set_WCEM (File);
    end Create;
 
@@ -194,7 +196,7 @@ package body Ada.Wide_Wide_Text_IO is
 
    function Current_Error return File_Access is
    begin
-      return Current_Err'Access;
+      return Current_Err.Self'Access;
    end Current_Error;
 
    -------------------
@@ -208,7 +210,7 @@ package body Ada.Wide_Wide_Text_IO is
 
    function Current_Input return File_Access is
    begin
-      return Current_In'Access;
+      return Current_In.Self'Access;
    end Current_Input;
 
    --------------------
@@ -222,7 +224,7 @@ package body Ada.Wide_Wide_Text_IO is
 
    function Current_Output return File_Access is
    begin
-      return Current_Out'Access;
+      return Current_Out.Self'Access;
    end Current_Output;
 
    ------------
@@ -754,6 +756,7 @@ package body Ada.Wide_Wide_Text_IO is
    --  Start of processing for Get_Wide_Wide_Char
 
    begin
+      FIO.Check_Read_Status (AP (File));
       return Wide_Wide_Character'Val (WC_In (C, File.WC_Method));
    end Get_Wide_Wide_Char;
 
@@ -788,6 +791,7 @@ package body Ada.Wide_Wide_Text_IO is
    --  Start of processing for Get_Wide_Wide_Char_Immed
 
    begin
+      FIO.Check_Read_Status (AP (File));
       return Wide_Wide_Character'Val (WC_In (C, File.WC_Method));
    end Get_Wide_Wide_Char_Immed;
 
@@ -1089,6 +1093,8 @@ package body Ada.Wide_Wide_Text_IO is
                 Amethod   => 'W',
                 Creat     => False,
                 Text      => True);
+
+      File.Self := File;
       Set_WCEM (File);
    end Open;
 
@@ -1151,6 +1157,7 @@ package body Ada.Wide_Wide_Text_IO is
    --  Start of processing for Put
 
    begin
+      FIO.Check_Write_Status (AP (File));
       WC_Out (Wide_Wide_Character'Pos (Item), File.WC_Method);
       File.Col := File.Col + 1;
    end Put;
@@ -1869,18 +1876,20 @@ begin
    Standard_Err.Is_System_File    := True;
    Standard_Err.Is_Text_File      := True;
    Standard_Err.Access_Method     := 'T';
+   Standard_Err.Self              := Standard_Err;
    Standard_Err.WC_Method         := Default_WCEM;
 
-   Standard_In.Stream            := stdin;
-   Standard_In.Name              := In_Name'Access;
-   Standard_In.Form              := Null_Str'Unrestricted_Access;
-   Standard_In.Mode              := FCB.In_File;
-   Standard_In.Is_Regular_File   := is_regular_file (fileno (stdin)) /= 0;
-   Standard_In.Is_Temporary_File := False;
-   Standard_In.Is_System_File    := True;
-   Standard_In.Is_Text_File      := True;
-   Standard_In.Access_Method     := 'T';
-   Standard_In.WC_Method         := Default_WCEM;
+   Standard_In.Stream             := stdin;
+   Standard_In.Name               := In_Name'Access;
+   Standard_In.Form               := Null_Str'Unrestricted_Access;
+   Standard_In.Mode               := FCB.In_File;
+   Standard_In.Is_Regular_File    := is_regular_file (fileno (stdin)) /= 0;
+   Standard_In.Is_Temporary_File  := False;
+   Standard_In.Is_System_File     := True;
+   Standard_In.Is_Text_File       := True;
+   Standard_In.Access_Method      := 'T';
+   Standard_In.Self               := Standard_In;
+   Standard_In.WC_Method          := Default_WCEM;
 
    Standard_Out.Stream            := stdout;
    Standard_Out.Name              := Out_Name'Access;
@@ -1891,6 +1900,7 @@ begin
    Standard_Out.Is_System_File    := True;
    Standard_Out.Is_Text_File      := True;
    Standard_Out.Access_Method     := 'T';
+   Standard_Out.Self              := Standard_Out;
    Standard_Out.WC_Method         := Default_WCEM;
 
    FIO.Chain_File (AP (Standard_In));
