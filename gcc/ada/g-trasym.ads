@@ -84,10 +84,6 @@ with Ada.Exceptions; use Ada.Exceptions;
 package GNAT.Traceback.Symbolic is
    pragma Elaborate_Body;
 
-   ------------------------
-   -- Symbolic_Traceback --
-   ------------------------
-
    function Symbolic_Traceback (Traceback : Tracebacks_Array) return String;
    --  Build a string containing a symbolic traceback of the given call chain
 

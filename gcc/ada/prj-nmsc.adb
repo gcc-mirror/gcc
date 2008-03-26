@@ -174,14 +174,13 @@ package body Prj.Nmsc is
       Hash       => Hash,
       Equal      => "=");
    --  A hash table to store the excluded files, if any. This is filled by
-   --  Find_Excluded_Sources below
+   --  Find_Excluded_Sources below.
 
    procedure Find_Excluded_Sources
      (In_Tree : Project_Tree_Ref;
       Data    : Project_Data);
    --  Find the list of files that should not be considered as source files
-   --  for this project.
-   --  Sets the list in the Excluded_Sources_Htable
+   --  for this project. Sets the list in the Excluded_Sources_Htable.
 
    function Hash (Unit : Unit_Info) return Header_Num;
 
@@ -199,8 +198,8 @@ package body Prj.Nmsc is
       Key        => Unit_Info,
       Hash       => Hash,
       Equal      => "=");
-   --  A table to check if a unit with an exceptional name will hide
-   --  a source with a file name following the naming convention.
+   --  A table to check if a unit with an exceptional name will hide a source
+   --  with a file name following the naming convention.
 
    procedure Add_Source
      (Id                  : out Source_Id;
@@ -274,14 +273,14 @@ package body Prj.Nmsc is
    --  In_Tree and modify its data Data if it has the value "true".
 
    procedure Check_Library_Attributes
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref;
+     (Project     : Project_Id;
+      In_Tree     : Project_Tree_Ref;
       Current_Dir : String;
-      Data    : in out Project_Data);
+      Data        : in out Project_Data);
    --  Check the library attributes of project Project in project tree In_Tree
    --  and modify its data Data accordingly.
    --  Current_Dir should represent the current directory, and is passed for
-   --  efficiency to avoid system calls to recompute it
+   --  efficiency to avoid system calls to recompute it.
 
    procedure Check_Package_Naming
      (Project : Project_Id;
@@ -315,7 +314,7 @@ package body Prj.Nmsc is
    --  Check if project Project in project tree In_Tree is a Stand-Alone
    --  Library project, and modify its data Data accordingly if it is one.
    --  Current_Dir should represent the current directory, and is passed for
-   --  efficiency to avoid system calls to recompute it
+   --  efficiency to avoid system calls to recompute it.
 
    procedure Get_Path_Names_And_Record_Ada_Sources
      (Project      : Project_Id;
@@ -327,7 +326,7 @@ package body Prj.Nmsc is
 
    function Compute_Directory_Last (Dir : String) return Natural;
    --  Return the index of the last significant character in Dir. This is used
-   --  to avoid duplicates '/' at the end of directory names
+   --  to avoid duplicate '/' (slash) characters at the end of directory names.
 
    procedure Error_Msg
      (Project       : Project_Id;
@@ -345,7 +344,7 @@ package body Prj.Nmsc is
       Current_Dir  : String);
    --  Find all the Ada sources in all of the source directories of a project
    --  Current_Dir should represent the current directory, and is passed for
-   --  efficiency to avoid system calls to recompute it
+   --  efficiency to avoid system calls to recompute it.
 
    procedure Find_Sources
      (Project      : Project_Id;
@@ -362,9 +361,9 @@ package body Prj.Nmsc is
       Data              : in out Project_Data;
       For_All_Sources   : Boolean);
    --  Search the source directories to find the sources.
-   --  If For_All_Sources is True, check each regular file name against
-   --  the naming schemes of the different languages. Otherwise consider
-   --  only the file names in the hash table Source_Names.
+   --  If For_All_Sources is True, check each regular file name against the
+   --  naming schemes of the different languages. Otherwise consider only the
+   --  file names in the hash table Source_Names.
 
    procedure Check_File
      (Project           : Project_Id;
@@ -424,7 +423,7 @@ package body Prj.Nmsc is
    --  Get the object directory, the exec directory and the source directories
    --  of a project.
    --  Current_Dir should represent the current directory, and is passed for
-   --  efficiency to avoid system calls to recompute it
+   --  efficiency to avoid system calls to recompute it.
 
    procedure Get_Mains
      (Project : Project_Id;
@@ -449,8 +448,8 @@ package body Prj.Nmsc is
       Data        : in out Project_Data);
    --  Process the Source_Files and Source_List_File attributes, and store
    --  the list of source files into the Source_Names htable.
-   --  Lang indicates which language is being processed when in Ada_Only
-   --  mode (all languages are processed anyway when in Multi_Language mode)
+   --  Lang indicates which language is being processed when in Ada_Only mode
+   --  (all languages are processed anyway when in Multi_Language mode).
 
    procedure Get_Unit
      (In_Tree             : Project_Tree_Ref;
@@ -461,16 +460,16 @@ package body Prj.Nmsc is
       Unit_Kind           : out Spec_Or_Body;
       Needs_Pragma        : out Boolean);
    --  Find out, from a file name, the unit name, the unit kind and if a
-   --  specific SFN pragma is needed. If the file name corresponds to no
-   --  unit, then Unit_Name will be No_Name. If the file is a multi-unit source
-   --  or an exception to the naming scheme, then Exception_Id is set to
-   --  the unit or units that the source contains.
+   --  specific SFN pragma is needed. If the file name corresponds to no unit,
+   --  then Unit_Name will be No_Name. If the file is a multi-unit source or an
+   --  exception to the naming scheme, then Exception_Id is set to the unit or
+   --  units that the source contains.
 
    function Is_Illegal_Suffix
      (Suffix                          : String;
       Dot_Replacement_Is_A_Single_Dot : Boolean) return Boolean;
-   --  Returns True if the string Suffix cannot be used as
-   --  a spec suffix, a body suffix or a separate suffix.
+   --  Returns True if the string Suffix cannot be used as a spec suffix, a
+   --  body suffix or a separate suffix.
 
    procedure Locate_Directory
      (Project  : Project_Id;
@@ -490,7 +489,7 @@ package body Prj.Nmsc is
    --  the directory. If the directory does not exist and Project_Setup is
    --  false, then Dir and Display are set to No_Name.
    --  Current_Dir should represent the current directory, and is passed for
-   --  efficiency to avoid system calls to recompute it
+   --  efficiency to avoid system calls to recompute it.
 
    procedure Look_For_Sources
      (Project      : Project_Id;
@@ -500,7 +499,7 @@ package body Prj.Nmsc is
    --  Find all the sources of project Project in project tree In_Tree and
    --  update its Data accordingly.
    --  Current_Dir should represent the current directory, and is passed for
-   --  efficiency to avoid system calls to recompute it
+   --  efficiency to avoid system calls to recompute it.
 
    function Path_Name_Of
      (File_Name : File_Name_Type;
@@ -535,7 +534,7 @@ package body Prj.Nmsc is
    --  Put a unit in the list of units of a project, if the file name
    --  corresponds to a valid unit name.
    --  Current_Dir should represent the current directory, and is passed for
-   --  efficiency to avoid system calls to recompute it
+   --  efficiency to avoid system calls to recompute it.
 
    procedure Record_Other_Sources
      (Project           : Project_Id;
@@ -553,6 +552,7 @@ package body Prj.Nmsc is
       Project     : Project_Id;
       Data        : in out Project_Data;
       In_Tree     : Project_Tree_Ref);
+   --  ??? needs comment
 
    procedure Report_No_Sources
      (Project   : Project_Id;
@@ -579,8 +579,8 @@ package body Prj.Nmsc is
       Conventions : Array_Element_Id;
       Specs       : Boolean;
       Extending   : Boolean);
-   --  Check that individual naming conventions apply to immediate
-   --  sources of the project; if not, issue a warning.
+   --  Check that individual naming conventions apply to immediate sources of
+   --  the project. If not, issue a warning.
 
    ----------------
    -- Add_Source --
@@ -642,7 +642,8 @@ package body Prj.Nmsc is
       Src_Data.Display_File        := Display_File;
       Src_Data.Dependency          :=
         In_Tree.Languages_Data.Table (Lang_Id).Config.Dependency_Kind;
-      Src_Data.Dep_Name    := Dependency_Name (File_Name, Src_Data.Dependency);
+      Src_Data.Dep_Name            :=
+        Dependency_Name (File_Name, Src_Data.Dependency);
       Src_Data.Switches            := Switches_Name (File_Name);
       Src_Data.Naming_Exception    := Naming_Exception;
 

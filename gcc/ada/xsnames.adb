@@ -47,9 +47,6 @@ procedure XSnames is
    InH  : File_Type;
    OutH : File_Type;
 
-   pragma Warnings (Off);
-   --  Variables below are modifed by * operator
-
    A, B  : VString := Nul;
    Line  : VString := Nul;
    Name  : VString := Nul;
@@ -57,8 +54,6 @@ procedure XSnames is
    Oname : VString := Nul;
    Oval  : VString := Nul;
    Restl : VString := Nul;
-
-   pragma Warnings (On);
 
    Tdigs : constant Pattern := Any (Decimal_Digit_Set) &
                                Any (Decimal_Digit_Set) &

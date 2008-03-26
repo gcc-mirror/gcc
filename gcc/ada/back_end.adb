@@ -59,8 +59,8 @@ package body Back_End is
 
       File_Info_Array : array (1 .. Last_Source_File) of File_Info_Type;
 
-      procedure gigi (
-         gnat_root                     : Int;
+      procedure gigi
+        (gnat_root                     : Int;
          max_gnat_node                 : Int;
          number_name                   : Nat;
          nodes_ptr                     : Address;
@@ -90,13 +90,13 @@ package body Back_End is
          return;
       end if;
 
-      for I in 1 .. Last_Source_File loop
-         File_Info_Array (I).File_Name        := Full_Debug_Name (I);
-         File_Info_Array (I).Num_Source_Lines := Num_Source_Lines (I);
+      for J in 1 .. Last_Source_File loop
+         File_Info_Array (J).File_Name        := Full_Debug_Name (J);
+         File_Info_Array (J).Num_Source_Lines := Num_Source_Lines (J);
       end loop;
 
-      gigi (
-         gnat_root          => Int (Cunit (Main_Unit)),
+      gigi
+        (gnat_root          => Int (Cunit (Main_Unit)),
          max_gnat_node      => Int (Last_Node_Id - First_Node_Id + 1),
          number_name        => Name_Entries_Count,
          nodes_ptr          => Nodes_Address,
@@ -131,26 +131,26 @@ package body Back_End is
       type Arg_Array is array (Nat) of BSP;
       type Arg_Array_Ptr is access Arg_Array;
 
-      --  Import flag_stack_check from toplev.c
-
       flag_stack_check : Int;
-      pragma Import (C, flag_stack_check); -- Import from toplev.c
+      pragma Import (C, flag_stack_check);
+      --  Import from toplev.c
 
       save_argc : Nat;
-      pragma Import (C, save_argc); -- Import from toplev.c
+      pragma Import (C, save_argc);
+      --  Import from toplev.c
 
       save_argv : Arg_Array_Ptr;
-      pragma Import (C, save_argv); -- Import from toplev.c
+      pragma Import (C, save_argv);
+      --  Import from toplev.c
 
       Output_File_Name_Seen : Boolean := False;
-      --  Set to True after having scanned the file_name for
-      --  switch "-gnatO file_name"
+      --  Set to True after having scanned file_name for switch "-gnatO file"
 
       --  Local functions
 
       function Len_Arg (Arg : Pos) return Nat;
-      --  Determine length of argument number Arg on the original
-      --  command line from gnat1
+      --  Determine length of argument number Arg on the original command line
+      --  from gnat1.
 
       procedure Scan_Back_End_Switches (Switch_Chars : String);
       --  Procedure to scan out switches stored in Switch_Chars. The first
@@ -196,13 +196,12 @@ package body Back_End is
             Last := Last - 1;
          end if;
 
-         --  For these switches, skip following argument and do not
-         --  store either the switch or the following argument
+         --  For switches -o, -dumpbase, --param, skip following argument and
+         --  do not store either the switch or the following argument.
 
-         if Switch_Chars (First .. Last) = "o"
-            or else Switch_Chars (First .. Last) = "dumpbase"
-            or else Switch_Chars (First .. Last) = "-param"
-
+         if Switch_Chars (First .. Last) = "o"        or else
+            Switch_Chars (First .. Last) = "dumpbase" or else
+            Switch_Chars (First .. Last) = "-param"
          then
             Next_Arg := Next_Arg + 1;
 
@@ -211,9 +210,9 @@ package body Back_End is
          elsif Switch_Chars (First .. Last) = "quiet" then
             null;
 
-         else
-            --  Store any other GCC switches
+         --  Store any other GCC switches
 
+         else
             Store_Compilation_Switch (Switch_Chars);
 
             --  Special check, the back end switch -fno-inline also sets the
@@ -256,9 +255,9 @@ package body Back_End is
                   Output_File_Name_Seen := True;
                end if;
 
-               --  If the previous switch has set the Search_Directory_Present
-               --  flag (that is if we have just seen -I), then the next
-               --  argument is a search directory path.
+            --  If the previous switch has set the Search_Directory_Present
+            --  flag (that is if we have just seen -I), then the next argument
+            --  is a search directory path.
 
             elsif Search_Directory_Present then
                if Is_Switch (Argv) then

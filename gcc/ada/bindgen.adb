@@ -607,7 +607,7 @@ package body Bindgen is
               """__gnat_handler_installed"");");
 
          --  Initialize stack limit variable of the environment task if the
-         --  stack check method is stack limit and if stack check is enabled.
+         --  stack check method is stack limit and stack check is enabled.
 
          if Stack_Check_Limits_On_Target
            and then (Stack_Check_Default_On_Target or Stack_Check_Switch_Set)
@@ -619,6 +619,7 @@ package body Bindgen is
          end if;
 
          if VM_Target = CLI_Target
+           and then Bind_Main_Program
            and then not No_Main_Subprogram
          then
             WBI ("");
@@ -782,7 +783,7 @@ package body Bindgen is
       end if;
 
       --  Initialize stack limit variable of the environment task if the
-      --  stack check method is stack limit and if stack check is enabled.
+      --  stack check method is stack limit and stack check is enabled.
 
       if Stack_Check_Limits_On_Target
         and then (Stack_Check_Default_On_Target or Stack_Check_Switch_Set)
@@ -797,6 +798,7 @@ package body Bindgen is
       Gen_Elab_Calls_Ada;
 
       if VM_Target = CLI_Target
+        and then Bind_Main_Program
         and then not No_Main_Subprogram
       then
          if ALIs.Table (ALIs.First).Main_Program = Func then
@@ -1033,7 +1035,7 @@ package body Bindgen is
       end if;
 
       --  Initialize stack limit for the environment task if the stack
-      --  check method is stack limit and if stack check is enabled.
+      --  check method is stack limit and stack check is enabled.
 
       if Stack_Check_Limits_On_Target
         and then (Stack_Check_Default_On_Target or Stack_Check_Switch_Set)
@@ -2566,7 +2568,7 @@ package body Bindgen is
       end if;
 
       --  Initialize stack limit for the environment task if the stack
-      --  check method is stack limit and if stack check is enabled.
+      --  check method is stack limit and stack check is enabled.
 
       if Stack_Check_Limits_On_Target
         and then (Stack_Check_Default_On_Target or Stack_Check_Switch_Set)

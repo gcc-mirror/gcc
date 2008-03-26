@@ -63,9 +63,6 @@ procedure XNmake is
    Err : exception;
    --  Raised to terminate execution
 
-   pragma Warnings (Off);
-   --  The following are modified by * operator
-
    A        : VString := Nul;
    Arg      : VString := Nul;
    Arg_List : VString := Nul;

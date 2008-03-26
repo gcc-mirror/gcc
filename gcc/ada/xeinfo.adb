@@ -63,9 +63,6 @@ procedure XEinfo is
 
    Err : exception;
 
-   pragma Warnings (Off);
-   --  These seem not to be referenced, but they are (by * operator)
-
    A         : VString := Nul;
    B         : VString := Nul;
    C         : VString := Nul;
@@ -87,8 +84,6 @@ procedure XEinfo is
    OldS      : VString := Nul;
    Rtn       : VString := Nul;
    Term      : VString := Nul;
-
-   pragma Warnings (On);
 
    InB : File_Type;
    --  Used to read initial header from body

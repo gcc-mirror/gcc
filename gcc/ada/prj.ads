@@ -68,9 +68,9 @@ package Prj is
    --  Ada. Calling Set_Mode will reset this variable, default is for Ada_Only.
 
    Must_Check_Configuration : Boolean := False;
-   --  Whether the contents of the configuration file must be checked. This is
-   --  in general only needed by gprbuild itself, since other applications can
-   --  ignore such errors when they don't need to build directly. Calling
+   --  True when the contents of the configuration file must be checked. This
+   --  is in general only needed by gprbuild itself, since other applications
+   --  can ignore such errors when they don't need to build directly. Calling
    --  Set_Mode will reset this variable, default is for Ada_Only.
 
    function In_Configuration return Boolean;
@@ -1066,18 +1066,18 @@ package Prj is
          --  for libraries.
 
          Executable_Suffix        : Name_Id         := No_Name;
-         --  The suffix of executables, when specified in the configuration or
-         --  in package Builder of the main project. When this is not
+         --  The suffix of executables, when specified in the configuration
+         --  or in package Builder of the main project. When this is not
          --  specified, the executable suffix is the default for the platform.
 
          --  Linking
 
          Linker                   : Path_Name_Type  := No_Path;
-         --  Path name of the linker driver; specified in the configuration
+         --  Path name of the linker driver. Specified in the configuration
          --  or in the package Builder of the main project.
 
          Minimum_Linker_Options   : Name_List_Index := No_Name_List;
-         --  The minimum options for the linker driver; specified in the
+         --  The minimum options for the linker driver. Specified in the
          --  configuration.
 
          Linker_Executable_Option : Name_List_Index := No_Name_List;
@@ -1091,14 +1091,13 @@ package Prj is
          --  "-L".
 
          Linker_Lib_Name_Option   : Name_Id         := No_Name;
-         --  The option to specify the name of a library for linking.
-         --  Specified in the configuration. When not specified, defaults to
-         --  "-l".
+         --  The option to specify the name of a library for linking. Specified
+         --  in the configuration. When not specified, defaults to "-l".
 
          --  Libraries
 
          Library_Builder          : Path_Name_Type  := No_Path;
-         --  The executable to build library. Specified in the configuration.
+         --  The executable to build library (specified in the configuration)
 
          Lib_Support              : Library_Support := None;
          --  The level of library support. Specified in the configuration.
@@ -1134,19 +1133,19 @@ package Prj is
          --  default to ".so".
 
          Shared_Lib_Min_Options   : Name_List_Index := No_Name_List;
-         --
+         --  Comment ???
 
          Lib_Version_Options      : Name_List_Index := No_Name_List;
-         --
+         --  Comment ???
 
          Symbolic_Link_Supported  : Boolean         := False;
-         --
+         --  Comment ???
 
          Lib_Maj_Min_Id_Supported : Boolean         := False;
-         --
+         --  Comment ???
 
          Auto_Init_Supported      : Boolean         := False;
-         --
+         --  Comment ???
    end record;
 
    Default_Project_Config : constant Project_Configuration :=
@@ -1287,10 +1286,10 @@ package Prj is
       --  Symbol file name, reference symbol file name, symbol policy
 
       Ada_Sources : String_List_Id := Nil_String;
-      --  The list of all the Ada source file names (gnatmake only).
+      --  The list of all the Ada source file names (gnatmake only)
 
       Sources : String_List_Id := Nil_String;
-      --  Identical to Ada_Sources. For upward compatibility of GPS.
+      --  Identical to Ada_Sources (for upward compatibility with GPS)
 
       First_Source : Source_Id := No_Source;
       Last_Source  : Source_Id := No_Source;
@@ -1465,17 +1464,20 @@ package Prj is
      (Extending : Project_Id;
       Extended  : Project_Id;
       In_Tree   : Project_Tree_Ref) return Boolean;
+   --  ??? needs comment
 
    function Is_A_Language
      (Tree          : Project_Tree_Ref;
       Data          : Project_Data;
       Language_Name : Name_Id) return Boolean;
-   --  Whether Language_Name is one of the languages used for the project.
-   --  Language_Name must be lower cased.
+   --  Return True when Language_Name (which must be lower case) is one of the
+   --  languages used for the project.
 
    function There_Are_Ada_Sources
      (In_Tree : Project_Tree_Ref;
       Project : Project_Id) return Boolean;
+   --  ??? needs comment
+   --  ??? Name sounds strange, suggested replacement: Ada_Sources_Present
 
    Project_Error : exception;
    --  Raised by some subprograms in Prj.Attr
@@ -1488,8 +1490,7 @@ package Prj is
      Table_Increment      => 100);
    --  The set of all project files
 
-   type Spec_Or_Body is
-     (Specification, Body_Part);
+   type Spec_Or_Body is (Specification, Body_Part);
 
    type File_Name_Data is record
       Name         : File_Name_Type := No_File;
@@ -1597,8 +1598,8 @@ package Prj is
    --  Use to customize error reporting in Prj.Proc and Prj.Nmsc
 
    procedure Expect (The_Token : Token_Type; Token_Image : String);
-   --  Check that the current token is The_Token. If it is not, then
-   --  output an error message.
+   --  Check that the current token is The_Token. If it is not, then output
+   --  an error message.
 
    procedure Initialize (Tree : Project_Tree_Ref);
    --  This procedure must be called before using any services from the Prj

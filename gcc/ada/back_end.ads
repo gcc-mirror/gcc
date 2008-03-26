@@ -52,15 +52,13 @@ package Back_End is
 
    procedure Scan_Compiler_Arguments;
    --  Acquires command-line parameters passed to the compiler and processes
-   --  them. Calls Scan_Front_End_Switches for any front-end switches
-   --  encountered.
+   --  them. Calls Scan_Front_End_Switches for any front-end switches found.
    --
-   --  The processing of arguments is private to the back end, since
-   --  the way of acquiring the arguments as well as the set of allowable
-   --  back end switches is different depending on the particular back end
-   --  being used.
+   --  The processing of arguments is private to the back end, since the way
+   --  of acquiring the arguments as well as the set of allowable back end
+   --  switches is different depending on the particular back end being used.
    --
-   --  Any processed switches that influence the result of a compilation
-   --  must be added to the Compilation_Arguments table.
+   --  Any processed switches that influence the result of a compilation must
+   --  be added to the Compilation_Arguments table.
 
 end Back_End;
