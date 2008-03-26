@@ -1,3 +1,19 @@
+2008-03-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (expand_builtin_pow, fold_builtin_cabs,
+	fold_builtin_sqrt, fold_builtin_cbrt, fold_builtin_logarithm,
+	fold_builtin_hypot, fold_builtin_pow): Remove uses of dconst3,
+	dconstsqrt2, dconstthird, dconste and/or dconst10.
+	* config/i386/i386.c (ix86_emit_swsqrtsf): Likewise.
+	* emit-rtl.c (dconst3, dconst10, dconstm2, dconstthird,
+	dconstsqrt2, dconste): Delete.
+	(init_emit_once): Likewise.  Simplify initializing dconstm1.
+	Constify variable.
+	* real.c (get_real_const): New.
+	* real.h (dconst3, dconst10, dconstm2, dconstthird,
+	dconstsqrt2, dconste): Delete.
+	(real_value_const, get_real_const): New.
+
 2008-03-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/cygming.h (BIGGEST_ALIGNMENT): Removed.
