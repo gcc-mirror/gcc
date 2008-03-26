@@ -300,3 +300,7 @@ longdouble1:
 	.align 8
 .LLEFDE2:
 #endif
+
+#ifdef __linux__
+	.section	.note.GNU-stack,"",@progbits
+#endif

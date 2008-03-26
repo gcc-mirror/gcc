@@ -1,3 +1,20 @@
+2008-03-26  Daniel Jacobowitz  <dan@debian.org>
+
+	* src/arm/sysv.S: Fix ARM comment marker.
+
+2008-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* src/alpha/osf.S: Add .note.GNU-stack on Linux.
+	* src/s390/sysv.S: Likewise.
+	* src/powerpc/ppc_closure.S: Likewise.
+	* src/powerpc/sysv.S: Likewise.
+	* src/x86/unix64.S: Likewise.
+	* src/x86/sysv.S: Likewise.
+	* src/sparc/v8.S: Likewise.
+	* src/sparc/v9.S: Likewise.
+	* src/m68k/sysv.S: Likewise.
+	* src/arm/sysv.S: Likewise.
+
 2008-03-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* aclocal.m4: Regenerate.

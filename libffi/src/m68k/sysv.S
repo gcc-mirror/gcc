@@ -207,3 +207,7 @@ ffi_closure_struct_SYSV:
 	rts
 	CFI_ENDPROC()
 	.size	ffi_closure_struct_SYSV,.-ffi_closure_struct_SYSV
+
+#if defined __ELF__ && defined __linux__
+	.section	.note.GNU-stack,"",@progbits
+#endif

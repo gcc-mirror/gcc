@@ -293,3 +293,6 @@ ARM_FUNC_START ffi_closure_SYSV
 	UNWIND .fnend
         .size    CNAME(ffi_closure_SYSV),.ffi_closure_SYSV_end-CNAME(ffi_closure_SYSV)
 
+#if defined __ELF__ && defined __linux__
+	.section	.note.GNU-stack,"",%progbits
+#endif
