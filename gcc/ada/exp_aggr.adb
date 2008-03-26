@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1990,12 +1990,11 @@ package body Exp_Aggr is
              Selector_Name => Make_Identifier (Loc, Name_uController));
          Set_Assignment_OK (Ref);
 
-         --  Ada 2005 (AI-287): Give support to aggregates of limited
-         --  types. If the type is intrinsically_limited the controller
-         --  is limited as well. If it is tagged and limited then so is
-         --  the controller. Otherwise an untagged type may have limited
-         --  components without its full view being limited, so the
-         --  controller is not limited.
+         --  Ada 2005 (AI-287): Give support to aggregates of limited types.
+         --  If the type is intrinsically limited the controller is limited as
+         --  well. If it is tagged and limited then so is the controller.
+         --  Otherwise an untagged type may have limited components without its
+         --  full view being limited, so the controller is not limited.
 
          if Nkind (Target) = N_Identifier then
             Target_Type := Etype (Target);
@@ -2016,8 +2015,8 @@ package body Exp_Aggr is
          end if;
 
          --  If the target has not been analyzed yet, as will happen with
-         --  delayed expansion, use the given type (either the aggregate
-         --  type or an ancestor) to determine limitedness.
+         --  delayed expansion, use the given type (either the aggregate type
+         --  or an ancestor) to determine limitedness.
 
          if No (Target_Type) then
             Target_Type := Typ;
@@ -2214,8 +2213,8 @@ package body Exp_Aggr is
                   Outer_Typ := Etype (Outer_Typ);
                end loop;
 
-               --  Attach it to the outer record controller to the
-               --  external final list
+               --  Attach it to the outer record controller to the external
+               --  final list.
 
                if Outer_Typ = Init_Typ then
                   Append_List_To (L,
@@ -2322,9 +2321,9 @@ package body Exp_Aggr is
       end Gen_Ctrl_Actions_For_Aggr;
 
       function Replace_Type (Expr : Node_Id) return Traverse_Result;
-      --  If the aggregate contains a self-reference, traverse each
-      --  expression to replace a possible self-reference with a reference
-      --  to the proper component of the target of the assignment.
+      --  If the aggregate contains a self-reference, traverse each expression
+      --  to replace a possible self-reference with a reference to the proper
+      --  component of the target of the assignment.
 
       ------------------
       -- Replace_Type --
@@ -2332,9 +2331,19 @@ package body Exp_Aggr is
 
       function Replace_Type (Expr : Node_Id) return Traverse_Result is
       begin
+         --  Note regarding the Root_Type test below: Aggregate components for
+         --  self-referential types include attribute references to the current
+         --  instance, of the form: Typ'access, etc.. These references are
+         --  rewritten as references to the target of the aggregate: the
+         --  left-hand side of an assignment, the entity in a declaration,
+         --  or a temporary. Without this test, we would improperly extended
+         --  this rewriting to attribute references whose prefix was not the
+         --  type of the aggregate.
+
          if Nkind (Expr) = N_Attribute_Reference
-           and  then Is_Entity_Name (Prefix (Expr))
+           and then Is_Entity_Name (Prefix (Expr))
            and then Is_Type (Entity (Prefix (Expr)))
+           and then Root_Type (Etype (N)) = Root_Type (Entity (Prefix (Expr)))
          then
             if Is_Entity_Name (Lhs) then
                Rewrite (Prefix (Expr),
@@ -2394,7 +2403,7 @@ package body Exp_Aggr is
 
             --     init-proc (T(tmp));  if T is constrained and
             --     init-proc (S(tmp));  where S applies an appropriate
-            --                           constraint if T is unconstrained
+            --                          constraint if T is unconstrained
 
             if Is_Entity_Name (A) and then Is_Type (Entity (A)) then
                Ancestor_Is_Subtype_Mark := True;
@@ -2533,7 +2542,7 @@ package body Exp_Aggr is
 
                --  Make the assignment without usual controlled actions since
                --  we only want the post adjust but not the pre finalize here
-               --  Add manual adjust when necessary
+               --  Add manual adjust when necessary.
 
                Assign := New_List (
                  Make_OK_Assignment_Statement (Loc,
