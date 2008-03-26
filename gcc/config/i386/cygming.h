@@ -327,10 +327,6 @@ do {						\
 #undef MS_AGGREGATE_RETURN
 #define MS_AGGREGATE_RETURN 1
 
-/* No data type wants to be aligned rounder than this.  */
-#undef	BIGGEST_ALIGNMENT
-#define BIGGEST_ALIGNMENT 128
-
 /* Biggest alignment supported by the object file format of this
    machine.  Use this macro to limit the alignment which can be
    specified using the `__attribute__ ((aligned (N)))' construct.  If
