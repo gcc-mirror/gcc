@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -33,8 +33,8 @@
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
-with Ada.Finalization;
-with Ada.Streams;
+private with Ada.Finalization;
+private with Ada.Streams;
 
 generic
    type Element_Type is private;
@@ -230,8 +230,10 @@ private
         Lock   : Natural := 0;
      end record;
 
+   overriding
    procedure Adjust (Container : in out List);
 
+   overriding
    procedure Finalize (Container : in out List) renames Clear;
 
    use Ada.Streams;

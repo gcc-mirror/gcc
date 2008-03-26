@@ -2,12 +2,11 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                      A D A . C O N T A I N E R S .                       --
---             I N D E F I N I T E _ O R D E R E D _ M A P S                --
+--                 ADA.CONTAINERS.INDEFINITE_ORDERED_MAPS                   --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -34,9 +33,9 @@
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
-with Ada.Containers.Red_Black_Trees;
-with Ada.Finalization;
-with Ada.Streams;
+private with Ada.Containers.Red_Black_Trees;
+private with Ada.Finalization;
+private with Ada.Streams;
 
 generic
    type Key_Type (<>) is private;
@@ -203,8 +202,10 @@ private
       Tree : Tree_Types.Tree_Type;
    end record;
 
+   overriding
    procedure Adjust (Container : in out Map);
 
+   overriding
    procedure Finalize (Container : in out Map) renames Clear;
 
    use Red_Black_Trees;
