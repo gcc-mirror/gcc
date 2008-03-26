@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2007, AdaCore                     --
+--                     Copyright (C) 2001-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -87,21 +87,24 @@ package body GNAT.Sockets is
                  N_Bytes_To_Read => Constants.FIONREAD);
 
    Options : constant array (Option_Name) of C.int :=
-               (Keep_Alive      => Constants.SO_KEEPALIVE,
-                Reuse_Address   => Constants.SO_REUSEADDR,
-                Broadcast       => Constants.SO_BROADCAST,
-                Send_Buffer     => Constants.SO_SNDBUF,
-                Receive_Buffer  => Constants.SO_RCVBUF,
-                Linger          => Constants.SO_LINGER,
-                Error           => Constants.SO_ERROR,
-                No_Delay        => Constants.TCP_NODELAY,
-                Add_Membership  => Constants.IP_ADD_MEMBERSHIP,
-                Drop_Membership => Constants.IP_DROP_MEMBERSHIP,
-                Multicast_If    => Constants.IP_MULTICAST_IF,
-                Multicast_TTL   => Constants.IP_MULTICAST_TTL,
-                Multicast_Loop  => Constants.IP_MULTICAST_LOOP,
-                Send_Timeout    => Constants.SO_SNDTIMEO,
-                Receive_Timeout => Constants.SO_RCVTIMEO);
+               (Keep_Alive          => Constants.SO_KEEPALIVE,
+                Reuse_Address       => Constants.SO_REUSEADDR,
+                Broadcast           => Constants.SO_BROADCAST,
+                Send_Buffer         => Constants.SO_SNDBUF,
+                Receive_Buffer      => Constants.SO_RCVBUF,
+                Linger              => Constants.SO_LINGER,
+                Error               => Constants.SO_ERROR,
+                No_Delay            => Constants.TCP_NODELAY,
+                Add_Membership      => Constants.IP_ADD_MEMBERSHIP,
+                Drop_Membership     => Constants.IP_DROP_MEMBERSHIP,
+                Multicast_If        => Constants.IP_MULTICAST_IF,
+                Multicast_TTL       => Constants.IP_MULTICAST_TTL,
+                Multicast_Loop      => Constants.IP_MULTICAST_LOOP,
+                Receive_Packet_Info => Constants.IP_PKTINFO,
+                Send_Timeout        => Constants.SO_SNDTIMEO,
+                Receive_Timeout     => Constants.SO_RCVTIMEO);
+   --  ??? Note: for OpenSolaris, Receive_Packet_Info should be IP_RECVPKTINFO,
+   --  but for Linux compatibility this constant is the same as IP_PKTINFO.
 
    Flags : constant array (0 .. 3) of C.int :=
              (0 => Constants.MSG_OOB,     --  Process_Out_Of_Band_Data
@@ -865,8 +868,7 @@ package body GNAT.Sockets is
 
    begin
       if Safe_Getservbyname (SN, SP, Res'Access, Buf'Address, Buflen) /= 0 then
-         Ada.Exceptions.Raise_Exception
-           (Service_Error'Identity, "Service not found");
+         raise Service_Error with "Service not found";
       end if;
 
       --  Translate from the C format to the API format
@@ -892,8 +894,7 @@ package body GNAT.Sockets is
         (C.int (Short_To_Network (C.unsigned_short (Port))), SP,
          Res'Access, Buf'Address, Buflen) /= 0
       then
-         Ada.Exceptions.Raise_Exception
-           (Service_Error'Identity, "Service not found");
+         raise Service_Error with "Service not found";
       end if;
 
       --  Translate from the C format to the API format
@@ -946,8 +947,9 @@ package body GNAT.Sockets is
 
    begin
       case Name is
-         when Multicast_Loop  |
-              Multicast_TTL   =>
+         when Multicast_Loop      |
+              Multicast_TTL       |
+              Receive_Packet_Info =>
             Len := V1'Size / 8;
             Add := V1'Address;
 
@@ -1015,7 +1017,8 @@ package body GNAT.Sockets is
          when Multicast_TTL   =>
             Opt.Time_To_Live := Integer (V1);
 
-         when Multicast_Loop  =>
+         when Multicast_Loop      |
+              Receive_Packet_Info =>
             Opt.Enabled := (V1 /= 0);
 
          when Send_Timeout    |
@@ -1320,9 +1323,9 @@ package body GNAT.Sockets is
 
    procedure Raise_Host_Error (H_Error : Integer) is
    begin
-      Ada.Exceptions.Raise_Exception (Host_Error'Identity,
+      raise Host_Error with
         Err_Code_Image (H_Error)
-        & C.Strings.Value (Host_Error_Messages.Host_Error_Message (H_Error)));
+        & C.Strings.Value (Host_Error_Messages.Host_Error_Message (H_Error));
    end Raise_Host_Error;
 
    ------------------------
@@ -1332,9 +1335,9 @@ package body GNAT.Sockets is
    procedure Raise_Socket_Error (Error : Integer) is
       use type C.Strings.chars_ptr;
    begin
-      Ada.Exceptions.Raise_Exception (Socket_Error'Identity,
+      raise Socket_Error with
         Err_Code_Image (Error)
-        & C.Strings.Value (Socket_Error_Message (Error)));
+        & C.Strings.Value (Socket_Error_Message (Error));
    end Raise_Socket_Error;
 
    ----------
@@ -1795,7 +1798,8 @@ package body GNAT.Sockets is
             Len := V1'Size / 8;
             Add := V1'Address;
 
-         when Multicast_Loop  =>
+         when Multicast_Loop      |
+              Receive_Packet_Info =>
             V1  := C.unsigned_char (Boolean'Pos (Option.Enabled));
             Len := V1'Size / 8;
             Add := V1'Address;

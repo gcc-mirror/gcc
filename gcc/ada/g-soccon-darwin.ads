@@ -35,7 +35,7 @@
 --  by the GNAT.Sockets package (g-socket.ads). This package should not be
 --  directly with'ed by an applications program.
 
---  This is the version for powerpc-apple-darwin8.8.0
+--  This is the version for powerpc-apple-darwin8.9.0
 --  This file is generated automatically, do not modify it by hand! Instead,
 --  make changes to gen-soccon.c and re-run it on each target.
 
@@ -149,6 +149,7 @@ package GNAT.Sockets.Constants is
 
    TCP_NODELAY        : constant :=           1; --  Do not coalesce packets
    SO_REUSEADDR       : constant :=           4; --  Bind reuse local address
+   SO_REUSEPORT       : constant :=         512; --  Bind reuse port number
    SO_KEEPALIVE       : constant :=           8; --  Enable keep-alive msgs
    SO_LINGER          : constant :=         128; --  Defer close to flush data
    SO_BROADCAST       : constant :=          32; --  Can send broadcast msgs
@@ -182,7 +183,7 @@ package GNAT.Sockets.Constants is
    -- Properties of supported interfaces --
    ----------------------------------------
 
-   Need_Netdb_Buffer  : constant :=           1; --  Need buffer for Netdb ops
+   Need_Netdb_Buffer  : constant :=           0; --  Need buffer for Netdb ops
 
    ----------------------
    -- Additional flags --
