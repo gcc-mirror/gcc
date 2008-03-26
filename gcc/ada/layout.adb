@@ -2794,7 +2794,32 @@ package body Layout is
       Align : Nat;
 
    begin
-      if Unknown_Alignment (E) then
+      --  If alignment is already set, then nothing to do
+
+      if Known_Alignment (E) then
+         return;
+      end if;
+
+      --  Alignment is not known, see if we can set it, taking into account
+      --  the setting of the Optimize_Alignment mode.
+
+      --  If Optimize_Alignment is set to Space, then packed records always
+      --  have an aligmment of 1. But don't do anything for atomic records
+      --  since we may need higher alignment for indivisible access.
+
+      if Optimize_Alignment = 'S'
+        and then Is_Record_Type (E)
+        and then Is_Packed (E)
+        and then not Is_Atomic (E)
+      then
+         Align := 1;
+
+      --  Not a record, or not packed
+
+      else
+         --  The only other cases we worry about here are where the size is
+         --  staticallly known at compile time.
+
          if Known_Static_Esize (E) then
             Siz := Esize (E);
 
@@ -2809,8 +2834,8 @@ package body Layout is
 
          --  Size is known, alignment is not set
 
-         --  Reset alignment to match size if size is exactly 2, 4, or 8
-         --  storage units.
+         --  Reset alignment to match size if the known size is exactly 2, 4,
+         --  or 8 storage units.
 
          if Siz = 2 * System_Storage_Unit then
             Align := 2;
@@ -2819,54 +2844,75 @@ package body Layout is
          elsif Siz = 8 * System_Storage_Unit then
             Align := 8;
 
-         --  On VMS, also reset for odd "in between" sizes, e.g. a 17-bit
-         --  record is given an alignment of 4. This is more consistent with
-         --  what DEC Ada does (-gnatd.a turns this off which can be used to
-         --  examine the value of this special transformation).
+            --  If Optimize_Alignment is set to Space, then make sure the
+            --  alignment matches the size, for example, if the size is 17
+            --  bytes then we want an alignment of 1 for the type.
 
-         elsif OpenVMS_On_Target
-           and then not Debug_Flag_Dot_A
+         elsif Optimize_Alignment = 'S' then
+            if Siz mod (8 * System_Storage_Unit) = 0 then
+               Align := 8;
+            elsif Siz mod (4 * System_Storage_Unit) = 0 then
+               Align := 4;
+            elsif Siz mod (2 * System_Storage_Unit) = 0 then
+               Align := 2;
+            else
+               Align := 1;
+            end if;
+
+            --  If Optimize_Alignment is set to Time, then we reset for odd
+            --  "in between sizes", for example a 17 bit record is given an
+            --  alignment of 4. Note that this matches the old VMS behavior
+            --  in versions of GNAT prior to 6.1.1.
+
+         elsif Optimize_Alignment = 'T'
            and then Siz > System_Storage_Unit
+           and then Siz <= 8 * System_Storage_Unit
          then
             if Siz <= 2 * System_Storage_Unit then
                Align := 2;
             elsif Siz <= 4 * System_Storage_Unit then
                Align := 4;
-            elsif Siz <= 8 * System_Storage_Unit then
+            else -- Siz <= 8 * System_Storage_Unit then
                Align := 8;
-            else
-               return;
             end if;
 
-         --  No special alignment fiddling needed
+            --  No special alignment fiddling needed
 
          else
             return;
          end if;
+      end if;
 
-         --  Here Align is set to the proposed improved alignment
+      --  Here we have Set Align to the proposed improved value. Make sure the
+      --  value set does not exceed Maximum_Alignment for the target.
 
-         if Align > Maximum_Alignment then
-            Align := Maximum_Alignment;
+      if Align > Maximum_Alignment then
+         Align := Maximum_Alignment;
+      end if;
+
+      --  Further processing for record types only to reduce the alignment
+      --  set by the above processing in some specific cases. We do not
+      --  do this for atomic records, since we need max alignment there,
+
+      if Is_Record_Type (E) and then not Is_Atomic (E) then
+
+         --  For records, there is generally no point in setting alignment
+         --  higher than word size since we cannot do better than move by
+         --  words in any case. Omit this if we are optimizing for time,
+         --  since conceivably we may be able to do better.
+
+         if Align > System_Word_Size / System_Storage_Unit
+           and then Optimize_Alignment /= 'T'
+         then
+            Align := System_Word_Size / System_Storage_Unit;
          end if;
 
-         --  Further processing for record types only to reduce the alignment
-         --  set by the above processing in some specific cases. We do not
-         --  do this for atomic records, since we need max alignment there.
+         --  Check components. If any component requires a higher alignment,
+         --  then we set that higher alignment in any case. Don't do this if
+         --  we have Optimize_Alignment set to Space. Note that that covers
+         --  the case of packed records, where we arleady set alignment to 1.
 
-         if Is_Record_Type (E) then
-
-            --  For records, there is generally no point in setting alignment
-            --  higher than word size since we cannot do better than move by
-            --  words in any case
-
-            if Align > System_Word_Size / System_Storage_Unit then
-               Align := System_Word_Size / System_Storage_Unit;
-            end if;
-
-            --  Check components. If any component requires a higher
-            --  alignment, then we set that higher alignment in any case.
-
+         if Optimize_Alignment  /= 'S' then
             declare
                Comp : Entity_Id;
 
@@ -2878,19 +2924,19 @@ package body Layout is
                         Calign : constant Uint := Alignment (Etype (Comp));
 
                      begin
-                        --  The cases to worry about are when the alignment
-                        --  of the component type is larger than the alignment
-                        --  we have so far, and either there is no component
-                        --  clause for the alignment, or the length set by
-                        --  the component clause matches the alignment set.
+                        --  The cases to process are when the alignment of the
+                        --  component type is larger than the alignment we have
+                        --  so far, and either there is no component clause for
+                        --  the component, or the length set by the component
+                        --  clause matches the length of the component type.
 
                         if Calign > Align
                           and then
                             (Unknown_Esize (Comp)
-                               or else (Known_Static_Esize (Comp)
-                                          and then
-                                        Esize (Comp) =
-                                           Calign * System_Storage_Unit))
+                              or else (Known_Static_Esize (Comp)
+                                        and then
+                                         Esize (Comp) =
+                                              Calign * System_Storage_Unit))
                         then
                            Align := UI_To_Int (Calign);
                         end if;
@@ -2901,16 +2947,17 @@ package body Layout is
                end loop;
             end;
          end if;
+      end if;
 
-         --  Set chosen alignment
+      --  Set chosen alignment, and increase Esize if necessary to match
+      --  the chosen alignment.
 
-         Set_Alignment (E, UI_From_Int (Align));
+      Set_Alignment (E, UI_From_Int (Align));
 
-         if Known_Static_Esize (E)
-           and then Esize (E) < Align * System_Storage_Unit
-         then
-            Set_Esize (E, UI_From_Int (Align * System_Storage_Unit));
-         end if;
+      if Known_Static_Esize (E)
+        and then Esize (E) < Align * System_Storage_Unit
+      then
+         Set_Esize (E, UI_From_Int (Align * System_Storage_Unit));
       end if;
    end Set_Composite_Alignment;
 

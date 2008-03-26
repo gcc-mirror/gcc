@@ -818,6 +818,7 @@ package body ALI is
         No_Object                  => False,
         Normalize_Scalars          => False,
         Ofile_Full_Name            => Full_Object_File_Name,
+        Optimize_Alignment_Setting => 'O',
         Queuing_Policy             => ' ',
         Restrictions               => No_Restrictions,
         SAL_Interface              => False,
@@ -1039,6 +1040,11 @@ package body ALI is
                else
                   Fatal_Error_Ignore;
                end if;
+
+            --  Processing for Ox
+
+            elsif C = 'O' then
+               ALIs.Table (Id).Optimize_Alignment_Setting := Getc;
 
             --  Processing for Qx
 

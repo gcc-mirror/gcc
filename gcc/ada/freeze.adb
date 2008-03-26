@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -155,14 +155,8 @@ package body Freeze is
    --  setting of Debug_Info_Needed for the entity. This flag is set if
    --  the entity comes from source, or if we are in Debug_Generated_Code
    --  mode or if the -gnatdV debug flag is set. However, it never sets
-   --  the flag if Debug_Info_Off is set.
-
-   procedure Set_Debug_Info_Needed (T : Entity_Id);
-   --  Sets the Debug_Info_Needed flag on entity T if not already set, and
-   --  also on any entities that are needed by T (for an object, the type
-   --  of the object is needed, and for a type, the subsidiary types are
-   --  needed -- see body for details). Never has any effect on T if the
-   --  Debug_Info_Off flag is set.
+   --  the flag if Debug_Info_Off is set. This procedure also ensures that
+   --  subsidiary entities have the flag set as required.
 
    procedure Undelay_Type (T : Entity_Id);
    --  T is a type of a component that we know to be an Itype.
@@ -956,12 +950,13 @@ package body Freeze is
 
    procedure Check_Debug_Info_Needed (T : Entity_Id) is
    begin
-      if Needs_Debug_Info (T) or else Debug_Info_Off (T) then
+      if Debug_Info_Off (T) then
          return;
 
       elsif Comes_From_Source (T)
         or else Debug_Generated_Code
         or else Debug_Flag_VV
+        or else Needs_Debug_Info (T)
       then
          Set_Debug_Info_Needed (T);
       end if;
@@ -1856,7 +1851,7 @@ package body Freeze is
             then
                declare
                   Will_Be_Frozen : Boolean := False;
-                  S : Entity_Id := Scope (Rec);
+                  S              : Entity_Id;
 
                begin
                   --  We have a pretty bad kludge here. Suppose Rec is subtype
@@ -1874,6 +1869,7 @@ package body Freeze is
                   --  do, then mark that Comp'Base will actually be frozen. If
                   --  so, we merely undelay it.
 
+                  S := Scope (Rec);
                   while Present (S) loop
                      if Is_Subprogram (S) then
                         Will_Be_Frozen := True;
@@ -1994,14 +1990,31 @@ package body Freeze is
             end if;
          end if;
 
+         --  Set OK_To_Reorder_Components depending on debug flags
+
+         if Rec = Base_Type (Rec)
+           and then Convention (Rec) = Convention_Ada
+         then
+            if (Has_Discriminants (Rec) and then Debug_Flag_Dot_V)
+                  or else
+               (not Has_Discriminants (Rec) and then Debug_Flag_Dot_R)
+            then
+               Set_OK_To_Reorder_Components (Rec);
+            end if;
+         end if;
+
          --  Check for useless pragma Pack when all components placed. We only
          --  do this check for record types, not subtypes, since a subtype may
          --  have all its components placed, and it still makes perfectly good
-         --  sense to pack other subtypes or the parent type.
+         --  sense to pack other subtypes or the parent type. We do not give
+         --  this warning if Optimize_Alignment is set to Space, since the
+         --  pragma Pack does have an effect in this case (it always resets
+         --  the alignment to one).
 
          if Ekind (Rec) = E_Record_Type
            and then Is_Packed (Rec)
            and then not Unplaced_Component
+           and then Optimize_Alignment /= 'S'
          then
             --  Reset packed status. Probably not necessary, but we do it so
             --  that there is no chance of the back end doing something strange
@@ -2093,16 +2106,19 @@ package body Freeze is
 
          --  Generate warning for applying C or C++ convention to a record
          --  with discriminants. This is suppressed for the unchecked union
-         --  case, since the whole point in this case is interface C.
+         --  case, since the whole point in this case is interface C. We also
+         --  do not generate this within instantiations, since we will have
+         --  generated a message on the template.
 
          if Has_Discriminants (E)
            and then not Is_Unchecked_Union (E)
-           and then not Warnings_Off (E)
-           and then not Warnings_Off (Base_Type (E))
            and then (Convention (E) = Convention_C
                        or else
                      Convention (E) = Convention_CPP)
            and then Comes_From_Source (E)
+           and then not In_Instance
+           and then not Has_Warnings_Off (E)
+           and then not Has_Warnings_Off (Base_Type (E))
          then
             declare
                Cprag : constant Node_Id := Get_Rep_Pragma (E, Name_Convention);
@@ -2330,16 +2346,18 @@ package body Freeze is
                      end if;
 
                      --  Check suspicious parameter for C function. These tests
-                     --  apply only to exported/imported suboprograms.
+                     --  apply only to exported/imported subprograms.
 
                      if Warn_On_Export_Import
+                       and then Comes_From_Source (E)
                        and then (Convention (E) = Convention_C
                                    or else
                                  Convention (E) = Convention_CPP)
-                       and then not Warnings_Off (E)
-                       and then not Warnings_Off (F_Type)
-                       and then not Warnings_Off (Formal)
                        and then (Is_Imported (E) or else Is_Exported (E))
+                       and then Convention (E) /= Convention (Formal)
+                       and then not Has_Warnings_Off (E)
+                       and then not Has_Warnings_Off (F_Type)
+                       and then not Has_Warnings_Off (Formal)
                      then
                         Error_Msg_Qual_Level := 1;
 
@@ -2482,14 +2500,14 @@ package body Freeze is
                        and then (Convention (E) = Convention_C
                                    or else
                                  Convention (E) = Convention_CPP)
-                       and then not Warnings_Off (E)
-                       and then not Warnings_Off (R_Type)
                        and then (Is_Imported (E) or else Is_Exported (E))
                      then
                         --  Check suspicious return of fat C pointer
 
                         if Is_Access_Type (R_Type)
                           and then Esize (R_Type) > Ttypes.System_Address_Size
+                          and then not Has_Warnings_Off (E)
+                          and then not Has_Warnings_Off (R_Type)
                         then
                            Error_Msg_N
                              ("?return type of& does not "
@@ -2499,6 +2517,8 @@ package body Freeze is
 
                         elsif Root_Type (R_Type) = Standard_Boolean
                           and then Convention (R_Type) = Convention_Ada
+                          and then not Has_Warnings_Off (E)
+                          and then not Has_Warnings_Off (R_Type)
                         then
                            Error_Msg_N
                              ("?return type of & is an 8-bit "
@@ -2512,6 +2532,8 @@ package body Freeze is
                                              Is_Tagged_Type
                                                (Designated_Type (R_Type))))
                           and then Convention (E) = Convention_C
+                          and then not Has_Warnings_Off (E)
+                          and then not Has_Warnings_Off (R_Type)
                         then
                            Error_Msg_N
                              ("?return type of & does not "
@@ -2521,6 +2543,8 @@ package body Freeze is
 
                         elsif Ekind (R_Type) = E_Access_Subprogram_Type
                           and then not Has_Foreign_Convention (R_Type)
+                          and then not Has_Warnings_Off (E)
+                          and then not Has_Warnings_Off (R_Type)
                         then
                            Error_Msg_N
                              ("?& should return a foreign "
@@ -2537,10 +2561,12 @@ package body Freeze is
                        and then not Is_Imported (E)
                        and then Has_Foreign_Convention (E)
                        and then Warn_On_Export_Import
+                       and then not Has_Warnings_Off (E)
+                       and then not Has_Warnings_Off (Etype (E))
                      then
                         Error_Msg_N
                           ("?foreign convention function& should not " &
-                           "return unconstrained array", E);
+                           "return unconstrained array!", E);
 
                      --  Ada 2005 (AI-326): Check wrong use of tagged
                      --  incomplete type
@@ -5233,7 +5259,6 @@ package body Freeze is
 
          Next_Formal (Formal);
       end loop;
-
    end Process_Default_Expressions;
 
    ----------------------------------------
@@ -5265,65 +5290,6 @@ package body Freeze is
                   (Scope_Stack.Last).Component_Alignment_Default);
       end if;
    end Set_Component_Alignment_If_Not_Set;
-
-   ---------------------------
-   -- Set_Debug_Info_Needed --
-   ---------------------------
-
-   procedure Set_Debug_Info_Needed (T : Entity_Id) is
-   begin
-      if No (T)
-        or else Needs_Debug_Info (T)
-        or else Debug_Info_Off (T)
-      then
-         return;
-      else
-         Set_Needs_Debug_Info (T);
-      end if;
-
-      if Is_Object (T) then
-         Set_Debug_Info_Needed (Etype (T));
-
-      elsif Is_Type (T) then
-         Set_Debug_Info_Needed (Etype (T));
-
-         if Is_Record_Type (T) then
-            declare
-               Ent : Entity_Id := First_Entity (T);
-            begin
-               while Present (Ent) loop
-                  Set_Debug_Info_Needed (Ent);
-                  Next_Entity (Ent);
-               end loop;
-            end;
-
-         elsif Is_Array_Type (T) then
-            Set_Debug_Info_Needed (Component_Type (T));
-
-            declare
-               Indx : Node_Id := First_Index (T);
-            begin
-               while Present (Indx) loop
-                  Set_Debug_Info_Needed (Etype (Indx));
-                  Indx := Next_Index (Indx);
-               end loop;
-            end;
-
-            if Is_Packed (T) then
-               Set_Debug_Info_Needed (Packed_Array_Type (T));
-            end if;
-
-         elsif Is_Access_Type (T) then
-            Set_Debug_Info_Needed (Directly_Designated_Type (T));
-
-         elsif Is_Private_Type (T) then
-            Set_Debug_Info_Needed (Full_View (T));
-
-         elsif Is_Protected_Type (T) then
-            Set_Debug_Info_Needed (Corresponding_Record_Type (T));
-         end if;
-      end if;
-   end Set_Debug_Info_Needed;
 
    ------------------
    -- Undelay_Type --
@@ -5439,7 +5405,7 @@ package body Freeze is
 
          if Present (Decl)
            and then Nkind (Decl) = N_Pragma
-           and then Chars (Decl) = Name_Import
+           and then Pragma_Name (Decl) = Name_Import
          then
             return;
          end if;

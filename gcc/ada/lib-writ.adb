@@ -971,6 +971,11 @@ package body Lib.Writ is
          Write_Info_Str (" NS");
       end if;
 
+      if Optimize_Alignment /= 'O' then
+         Write_Info_Str (" O");
+         Write_Info_Char (Optimize_Alignment);
+      end if;
+
       if Sec_Stack_Used then
          Write_Info_Str (" SS");
       end if;

@@ -122,82 +122,83 @@ package ALI is
       --  Id of last Sdep table entry for this file
 
       Main_Program : Main_Program_Type;
-      --  Indicator of whether first unit can be used as main program.
-      --  Not set if 'M' appears in Ignore_Lines.
+      --  Indicator of whether first unit can be used as main program. Not set
+      --  if 'M' appears in Ignore_Lines.
 
       Main_Priority : Int;
-      --  Indicates priority value if Main_Program field indicates that
-      --  this can be a main program. A value of -1 (No_Main_Priority)
-      --  indicates that no parameter was found, or no M line was present.
-      --  Not set if 'M' appears in Ignore_Lines.
+      --  Indicates priority value if Main_Program field indicates that this
+      --  can be a main program. A value of -1 (No_Main_Priority) indicates
+      --  that no parameter was found, or no M line was present. Not set if
+      --  'M' appears in Ignore_Lines.
 
       Time_Slice_Value : Int;
       --  Indicates value of time slice parameter from T=xxx on main program
-      --  line. A value of -1 indicates that no T=xxx parameter was found,
-      --  or no M line was present.
-      --  Not set if 'M' appears in Ignore_Lines.
+      --  line. A value of -1 indicates that no T=xxx parameter was found, or
+      --  no M line was present. Not set if 'M' appears in Ignore_Lines.
 
       WC_Encoding : Character;
       --  Wide character encoding if main procedure. Otherwise not relevant.
       --  Not set if 'M' appears in Ignore_Lines.
 
       Locking_Policy : Character;
-      --  Indicates locking policy for units in this file. Space means
-      --  tasking was not used, or that no Locking_Policy pragma was
-      --  present or that this is a language defined unit. Otherwise set
-      --  to first character (upper case) of policy name.
-      --  Not set if 'P' appears in Ignore_Lines.
+      --  Indicates locking policy for units in this file. Space means tasking
+      --  was not used, or that no Locking_Policy pragma was present or that
+      --  this is a language defined unit. Otherwise set to first character
+      --  (upper case) of policy name. Not set if 'P' appears in Ignore_Lines.
 
       Queuing_Policy : Character;
-      --  Indicates queuing policy for units in this file. Space means
-      --  tasking was not used, or that no Queuing_Policy pragma was
-      --  present or that this is a language defined unit. Otherwise set
-      --  to first character (upper case) of policy name.
-      --  Not set if 'P' appears in Ignore_Lines.
+      --  Indicates queuing policy for units in this file. Space means tasking
+      --  was not used, or that no Queuing_Policy pragma was present or that
+      --  this is a language defined unit. Otherwise set to first character
+      --  (upper case) of policy name. Not set if 'P' appears in Ignore_Lines.
 
       Task_Dispatching_Policy : Character;
-      --  Indicates task dispatching policy for units in this file. Space
-      --  means tasking was not used, or that no Task_Dispatching_Policy
-      --  pragma was present or that this is a language defined unit.
-      --  Otherwise set to first character (upper case) of policy name.
-      --  Not set if 'P' appears in Ignore_Lines.
+      --  Indicates task dispatching policy for units in this file. Space means
+      --  tasking was not used, or that no Task_Dispatching_Policy pragma was
+      --  present or that this is a language defined unit. Otherwise set to
+      --  first character (upper case) of policy name. Not set if 'P' appears
+      --  in Ignore_Lines.
 
       Compile_Errors : Boolean;
-      --  Set to True if compile errors for unit. Note that No_Object
-      --  will always be set as well in this case.
-      --  Not set if 'P' appears in Ignore_Lines.
+      --  Set to True if compile errors for unit. Note that No_Object will
+      --  always be set as well in this case. Not set if 'P' appears in
+      --  Ignore_Lines.
 
       Float_Format : Character;
-      --  Set to float format (set to I if no float-format given).
-      --  Not set if 'P' appears in Ignore_Lines.
+      --  Set to float format (set to I if no float-format given). Not set if
+      --  'P' appears in Ignore_Lines.
 
       No_Object : Boolean;
-      --  Set to True if no object file generated.
-      --  Not set if 'P' appears in Ignore_Lines.
+      --  Set to True if no object file generated. Not set if 'P' appears in
+      --  Ignore_Lines.
 
       Normalize_Scalars : Boolean;
-      --  Set to True if file was compiled with Normalize_Scalars.
-      --  Not set if 'P' appears in Ignore_Lines.
+      --  Set to True if file was compiled with Normalize_Scalars. Not set if
+      --  'P' appears in Ignore_Lines.
+
+      Optimize_Alignment_Setting : Character;
+      --  Optimize_Alignment setting. Set to S/T if OS/OT parameters present,
+      --  otherwise set to 'O' (S/T/O = Space/Time/Off). Not set if 'P' appears
+      --  in Ignore_Lines.
 
       Unit_Exception_Table : Boolean;
-      --  Set to True if unit exception table pointer generated.
-      --  Not set if 'P' appears in Ignore_Lines.
+      --  Set to True if unit exception table pointer generated. Not set if 'P'
+      --  appears in Ignore_Lines.
 
       Zero_Cost_Exceptions : Boolean;
-      --  Set to True if file was compiled with zero cost exceptions.
-      --  Not set if 'P' appears in Ignore_Lines.
+      --  Set to True if file was compiled with zero cost exceptions. Not set
+      --  if 'P' appears in Ignore_Lines.
 
       Restrictions : Restrictions_Info;
       --  Restrictions information reconstructed from R lines
 
       First_Interrupt_State : Interrupt_State_Id;
       Last_Interrupt_State  : Interrupt_State_Id'Base;
-      --  These point to the first and last entries in the interrupt
-      --  state table for this unit. If there are no entries, then
-      --  Last_Interrupt_State = First_Interrupt_State - 1 (that's
-      --  why the 'Base reference is there, it can be one less than
-      --  the lower bound of the subtype).
-      --  Not set if 'I' appears in Ignore_Lines
+      --  These point to the first and last entries in the interrupt state
+      --  table for this unit. If no entries, then Last_Interrupt_State =
+      --  First_Interrupt_State - 1 (that's why the 'Base reference is there,
+      --  it can be one less than the lower bound of the subtype). Not set if
+      --  'I' appears in Ignore_Lines
 
       First_Specific_Dispatching : Priority_Specific_Dispatching_Id;
       Last_Specific_Dispatching  : Priority_Specific_Dispatching_Id'Base;

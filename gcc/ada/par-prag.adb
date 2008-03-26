@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,8 +43,8 @@ with System.WCh_Con; use System.WCh_Con;
 separate (Par)
 
 function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
-   Pragma_Name : constant Name_Id    := Chars (Pragma_Node);
-   Prag_Id     : constant Pragma_Id  := Get_Pragma_Id (Pragma_Name);
+   Prag_Name   : constant Name_Id    := Pragma_Name (Pragma_Node);
+   Prag_Id     : constant Pragma_Id  := Get_Pragma_Id (Prag_Name);
    Pragma_Sloc : constant Source_Ptr := Sloc (Pragma_Node);
    Arg_Count   : Nat;
    Arg_Node    : Node_Id;
@@ -241,10 +241,10 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
       end loop;
    end Process_Restrictions_Or_Restriction_Warnings;
 
---  Start if processing for Prag
+--  Start of processing for Prag
 
 begin
-   Error_Msg_Name_1 := Pragma_Name;
+   Error_Msg_Name_1 := Prag_Name;
 
    --  Ignore unrecognized pragma. We let Sem post the warning for this, since
    --  it is a semantic error, not a syntactic one (we have already checked
@@ -626,7 +626,7 @@ begin
          --  Source_File_Name_Project pragmas.
 
          begin
-            if Get_Pragma_Id (Pragma_Name) = Pragma_Source_File_Name then
+            if Prag_Id = Pragma_Source_File_Name then
                if Project_File_In_Use = In_Use then
                   Error_Msg
                     ("pragma Source_File_Name cannot be used " &
@@ -1135,6 +1135,7 @@ begin
            Pragma_No_Strict_Aliasing            |
            Pragma_Normalize_Scalars             |
            Pragma_Optimize                      |
+           Pragma_Optimize_Alignment            |
            Pragma_Pack                          |
            Pragma_Passive                       |
            Pragma_Preelaborable_Initialization  |
