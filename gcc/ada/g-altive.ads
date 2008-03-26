@@ -345,7 +345,7 @@ package GNAT.Altivec is
    --  support of the target. Note that this means that there may be
    --  minor differences in results between targets when the floating-
    --  point implementations are slightly different, as would happen
-   --  with normal non-altivec floating-point operations. In particular
+   --  with normal non-Altivec floating-point operations. In particular
    --  the Altivec simulations may yield slightly different results
    --  from those obtained on a true hardware Altivec target if the
    --  floating-point implementation is not 100% compatible.

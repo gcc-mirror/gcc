@@ -1402,8 +1402,7 @@ package body Sem_Aggr is
 
                if Is_Character_Type (Component_Typ)
                  and then No (Next_Index (Nxt_Ind))
-                 and then (Nkind (Expr) = N_String_Literal
-                            or else Nkind (Expr) = N_Operator_Symbol)
+                 and then Nkind_In (Expr, N_String_Literal, N_Operator_Symbol)
                then
                   --  A string literal used in a multidimensional array
                   --  aggregate in place of the final one-dimensional
@@ -1513,9 +1512,8 @@ package body Sem_Aggr is
 
                   if Ada_Version = Ada_83
                     and then Assoc /= First (Component_Associations (N))
-                    and then (Nkind (Parent (N)) = N_Assignment_Statement
-                               or else
-                                 Nkind (Parent (N)) = N_Object_Declaration)
+                    and then Nkind_In (Parent (N), N_Assignment_Statement,
+                                                   N_Object_Declaration)
                   then
                      Error_Msg_N
                        ("(Ada 83) illegal context for OTHERS choice", N);
@@ -2484,14 +2482,11 @@ package body Sem_Aggr is
 
          function Has_Expansion_Delayed (Expr : Node_Id) return Boolean is
             Kind : constant Node_Kind := Nkind (Expr);
-
          begin
-            return ((Kind = N_Aggregate
-                       or else Kind = N_Extension_Aggregate)
+            return (Nkind_In (Kind, N_Aggregate, N_Extension_Aggregate)
                      and then Present (Etype (Expr))
                      and then Is_Record_Type (Etype (Expr))
                      and then Expansion_Delayed (Expr))
-
               or else (Kind = N_Qualified_Expression
                         and then Has_Expansion_Delayed (Expression (Expr)));
          end Has_Expansion_Delayed;
@@ -2848,8 +2843,8 @@ package body Sem_Aggr is
             else
                Root_Typ := Root_Type (Typ);
 
-               if Nkind (Parent (Base_Type (Root_Typ)))
-                    = N_Private_Type_Declaration
+               if Nkind (Parent (Base_Type (Root_Typ))) =
+                                               N_Private_Type_Declaration
                then
                   Error_Msg_NE
                     ("type of aggregate has private ancestor&!",

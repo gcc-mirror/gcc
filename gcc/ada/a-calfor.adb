@@ -34,8 +34,6 @@
 with Ada.Calendar;            use Ada.Calendar;
 with Ada.Calendar.Time_Zones; use Ada.Calendar.Time_Zones;
 
-pragma Warnings (Off); -- temp till we fix out param warnings ???
-
 package body Ada.Calendar.Formatting is
 
    --------------------------

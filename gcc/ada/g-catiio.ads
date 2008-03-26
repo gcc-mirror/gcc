@@ -125,10 +125,12 @@ package GNAT.Calendar.Time_IO is
    --  The following formats are also supported. They all accept an optional
    --  time with the format "hh:mm:ss". The time is separated from the date by
    --  exactly one space character.
+   --
    --  When the time is not specified, it is set to 00:00:00. The delimiter '*'
    --  must be either '-' and '/' and both occurrences must use the same
    --  character.
-   --  Trailing characters (in particular spaces) are not allowed.
+   --
+   --  Trailing characters (in particular spaces) are not allowed
    --
    --     yyyy*mm*dd
    --     yy*mm*dd             - Year is assumed to be 20yy
@@ -145,8 +147,7 @@ package GNAT.Calendar.Time_IO is
    procedure Put_Time
      (Date    : Ada.Calendar.Time;
       Picture : Picture_String);
-   --  Put Date with format Picture. Raise Picture_Error if picture string is
-   --  wrong
+   --  Put Date with format Picture. Raise Picture_Error if bad picture string
 
 private
    ISO_Date      : constant Picture_String := "%Y-%m-%d";

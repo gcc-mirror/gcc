@@ -55,9 +55,6 @@ procedure XSinfo is
    Done : exception;
    Err  : exception;
 
-   pragma Warnings (Off);
-   --  Below variables are referenced using * operator
-
    A         : VString := Nul;
    Arg       : VString := Nul;
    Comment   : VString := Nul;
@@ -68,10 +65,8 @@ procedure XSinfo is
    Rtn       : VString := Nul;
    Term      : VString := Nul;
 
-   pragma Warnings (On);
-
-   InS       : File_Type;
-   Ofile     : File_Type;
+   InS   : File_Type;
+   Ofile : File_Type;
 
    wsp     : constant Pattern := Span (' ' & ASCII.HT);
    Wsp_For : constant Pattern := wsp & "for";
