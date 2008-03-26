@@ -212,13 +212,19 @@ package body Exp_Ch13 is
       --  expanded away. The same is true for entities in task types, in
       --  particular the parameter records of entries (Entities in bodies are
       --  all frozen within the body). If we are in the task body, this is a
-      --  proper scope.
+      --  proper scope. If we are within a subprogram body, the proper scope
+      --  is the corresponding spec. This may happen for itypes generated in
+      --  the bodies of protected operations.
 
       if Ekind (E_Scope) = E_Protected_Type
         or else (Ekind (E_Scope) = E_Task_Type
                    and then not Has_Completion (E_Scope))
       then
          E_Scope := Scope (E_Scope);
+
+      elsif Ekind (E_Scope) = E_Subprogram_Body then
+         E_Scope := Corresponding_Spec (Unit_Declaration_Node (E_Scope));
+
       end if;
 
       S := Current_Scope;

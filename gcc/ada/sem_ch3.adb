@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -904,6 +904,23 @@ package body Sem_Ch3 is
 
       if Nkind (Parent (Related_Nod)) = N_Protected_Definition then
          Build_Itype_Reference (Anon_Type, Parent (Parent (Related_Nod)));
+
+      --  Similarly, if the access definition is the return result of a
+      --  protected function, create an itype reference for it because it
+      --  will be used within the function body.
+
+      elsif Nkind (Related_Nod) = N_Function_Specification
+        and then  Ekind (Current_Scope) = E_Protected_Type
+      then
+         Build_Itype_Reference (Anon_Type, Parent (Current_Scope));
+
+      --  Finally, create an itype reference for an object declaration of
+      --  an anonymous access type. This is strictly necessary only for
+      --  deferred constants, but in any case will avoid out-of-scope
+      --  problems in the back-end.
+
+      elsif Nkind (Related_Nod) = N_Object_Declaration then
+         Build_Itype_Reference (Anon_Type, Related_Nod);
       end if;
 
       return Anon_Type;
@@ -2928,8 +2945,8 @@ package body Sem_Ch3 is
          --  Force generation of debugging information for the constant and for
          --  the renamed function call.
 
-         Set_Needs_Debug_Info (Id);
-         Set_Needs_Debug_Info (Entity (Prefix (E)));
+         Set_Debug_Info_Needed (Id);
+         Set_Debug_Info_Needed (Entity (Prefix (E)));
       end if;
 
       if Present (Prev_Entity)
@@ -3213,6 +3230,7 @@ package body Sem_Ch3 is
       Set_Treat_As_Volatile (Id, Treat_As_Volatile (T));
       Set_Is_Atomic         (Id, Is_Atomic         (T));
       Set_Is_Ada_2005_Only  (Id, Is_Ada_2005_Only  (T));
+      Set_Convention        (Id, Convention        (T));
 
       --  In the case where there is no constraint given in the subtype
       --  indication, Process_Subtype just returns the Subtype_Mark, so its
@@ -6633,13 +6651,13 @@ package body Sem_Ch3 is
       --  Fields inherited from the Parent_Type
 
       Set_Discard_Names
-        (Derived_Type, Einfo.Discard_Names  (Parent_Type));
+        (Derived_Type, Einfo.Discard_Names      (Parent_Type));
       Set_Has_Specified_Layout
-        (Derived_Type, Has_Specified_Layout (Parent_Type));
+        (Derived_Type, Has_Specified_Layout     (Parent_Type));
       Set_Is_Limited_Composite
-        (Derived_Type, Is_Limited_Composite (Parent_Type));
+        (Derived_Type, Is_Limited_Composite     (Parent_Type));
       Set_Is_Private_Composite
-        (Derived_Type, Is_Private_Composite (Parent_Type));
+        (Derived_Type, Is_Private_Composite     (Parent_Type));
 
       --  Fields inherited from the Parent_Base
 
@@ -6650,11 +6668,20 @@ package body Sem_Ch3 is
       Set_Has_Primitive_Operations
         (Derived_Type, Has_Primitive_Operations (Parent_Base));
 
-      --  For non-private case, we also inherit Has_Complex_Representation
+      --  Fields inherited from the Parent_Base in the non-private case
 
       if Ekind (Derived_Type) = E_Record_Type then
          Set_Has_Complex_Representation
            (Derived_Type, Has_Complex_Representation (Parent_Base));
+      end if;
+
+      --  Fields inherited from the Parent_Base for record types
+
+      if Is_Record_Type (Derived_Type) then
+         Set_OK_To_Reorder_Components
+           (Derived_Type, OK_To_Reorder_Components   (Parent_Base));
+         Set_Reverse_Bit_Order
+           (Derived_Type, Reverse_Bit_Order          (Parent_Base));
       end if;
 
       --  Direct controlled types do not inherit Finalize_Storage_Only flag
@@ -7731,21 +7758,80 @@ package body Sem_Ch3 is
    -------------------------------
 
    procedure Check_Abstract_Interfaces (N : Node_Id; Def : Node_Id) is
+      Parent_Type : constant Entity_Id := Etype (Defining_Identifier (N));
+
+      Iface       : Node_Id;
+      Iface_Def   : Node_Id;
+      Iface_Typ   : Entity_Id;
+      Parent_Node : Node_Id;
+
+      Is_Task : Boolean := False;
+      --  Set True if parent type or any progenitor is a task interface
+
+      Is_Protected : Boolean := False;
+      --  Set True if parent type or any progenitor is a protected interface
 
       procedure Check_Ifaces (Iface_Def : Node_Id; Error_Node : Node_Id);
-      --  Local subprogram used to avoid code duplication. In case of error
-      --  the message will be associated to Error_Node.
+      --  Check that a progenitor is compatible with declaration.
+      --  Error is posted on Error_Node.
 
       ------------------
       -- Check_Ifaces --
       ------------------
 
       procedure Check_Ifaces (Iface_Def : Node_Id; Error_Node : Node_Id) is
-      begin
-         --  Ada 2005 (AI-345): Protected interfaces can only inherit from
-         --  limited, synchronized or protected interfaces.
+         Iface_Id : constant Entity_Id :=
+                      Defining_Identifier (Parent (Iface_Def));
+         Type_Def : Node_Id;
 
-         if Protected_Present (Def) then
+      begin
+         if Nkind (N) = N_Private_Extension_Declaration then
+            Type_Def := N;
+         else
+            Type_Def := Type_Definition (N);
+         end if;
+
+         if Is_Task_Interface (Iface_Id) then
+            Is_Task := True;
+
+         elsif Is_Protected_Interface (Iface_Id) then
+            Is_Protected := True;
+         end if;
+
+         --  Check that the characteristics of the progenitor are compatible
+         --  with the explicit qualifier in the declaration.
+         --  The check only applies to qualifiers that come from source.
+         --  Limited_Present also appears in the declaration of corresponding
+         --  records, and the check does not apply to them.
+
+         if Limited_Present (Type_Def)
+           and then not
+             Is_Concurrent_Record_Type (Defining_Identifier (N))
+         then
+            if Is_Limited_Interface (Parent_Type)
+              and then not Is_Limited_Interface (Iface_Id)
+            then
+               Error_Msg_NE
+                 ("progenitor& must be limited interface",
+                   Error_Node, Iface_Id);
+
+            elsif
+              (Task_Present (Iface_Def)
+                or else Protected_Present (Iface_Def)
+                or else Synchronized_Present (Iface_Def))
+              and then Nkind (N) /= N_Private_Extension_Declaration
+            then
+               Error_Msg_NE
+                 ("progenitor& must be limited interface",
+                   Error_Node, Iface_Id);
+            end if;
+
+         --  Protected interfaces can only inherit from limited, synchronized
+         --  or protected interfaces.
+
+         elsif Nkind (N) = N_Full_Type_Declaration
+           and then  Protected_Present (Type_Def)
+         then
             if Limited_Present (Iface_Def)
               or else Synchronized_Present (Iface_Def)
               or else Protected_Present (Iface_Def)
@@ -7764,21 +7850,25 @@ package body Sem_Ch3 is
          --  Ada 2005 (AI-345): Synchronized interfaces can only inherit from
          --  limited and synchronized.
 
-         elsif Synchronized_Present (Def) then
+         elsif Synchronized_Present (Type_Def) then
             if Limited_Present (Iface_Def)
               or else Synchronized_Present (Iface_Def)
             then
                null;
 
-            elsif Protected_Present (Iface_Def) then
+            elsif Protected_Present (Iface_Def)
+              and then Nkind (N) /= N_Private_Extension_Declaration
+            then
                Error_Msg_N ("(Ada 2005) synchronized interface cannot inherit"
                             & " from protected interface", Error_Node);
 
-            elsif Task_Present (Iface_Def) then
+            elsif Task_Present (Iface_Def)
+              and then Nkind (N) /= N_Private_Extension_Declaration
+            then
                Error_Msg_N ("(Ada 2005) synchronized interface cannot inherit"
                             & " from task interface", Error_Node);
 
-            else
+            elsif not Is_Limited_Interface (Iface_Id) then
                Error_Msg_N ("(Ada 2005) synchronized interface cannot inherit"
                             & " from non-limited interface", Error_Node);
             end if;
@@ -7786,7 +7876,9 @@ package body Sem_Ch3 is
          --  Ada 2005 (AI-345): Task interfaces can only inherit from limited,
          --  synchronized or task interfaces.
 
-         elsif Task_Present (Def) then
+         elsif Nkind (N) = N_Full_Type_Declaration
+           and then Task_Present (Type_Def)
+         then
             if Limited_Present (Iface_Def)
               or else Synchronized_Present (Iface_Def)
               or else Task_Present (Iface_Def)
@@ -7804,28 +7896,57 @@ package body Sem_Ch3 is
          end if;
       end Check_Ifaces;
 
-      --  Local variables
-
-      Iface       : Node_Id;
-      Iface_Def   : Node_Id;
-      Iface_Typ   : Entity_Id;
-      Parent_Node : Node_Id;
-
    --  Start of processing for Check_Abstract_Interfaces
 
    begin
-      --  Why is this still unsupported???
+      if Is_Interface (Parent_Type) then
+         if Is_Task_Interface (Parent_Type) then
+            Is_Task := True;
+
+         elsif Is_Protected_Interface (Parent_Type) then
+            Is_Protected := True;
+         end if;
+      end if;
 
       if Nkind (N) = N_Private_Extension_Declaration then
+
+         --  Check that progenitors are compatible with declaration
+
+         Iface := First (Interface_List (Def));
+         while Present (Iface) loop
+            Iface_Typ := Find_Type_Of_Subtype_Indic (Iface);
+
+            Parent_Node := Parent (Base_Type (Iface_Typ));
+            Iface_Def   := Type_Definition (Parent_Node);
+
+            if not Is_Interface (Iface_Typ) then
+               Error_Msg_NE ("(Ada 2005) & must be an interface",
+                          Iface, Iface_Typ);
+
+            else
+               Check_Ifaces (Iface_Def, Iface);
+            end if;
+
+            Next (Iface);
+         end loop;
+
+         if Is_Task and Is_Protected then
+            Error_Msg_N
+              ("type cannot derive from task and protected interface", N);
+         end if;
+
          return;
       end if;
 
-      --  Check the parent in case of derivation of interface type
+      --  Full type declaration of derived type.
+      --  Check compatibility with parent if it is interface type
 
       if Nkind (Type_Definition (N)) = N_Derived_Type_Definition
-        and then Is_Interface (Etype (Defining_Identifier (N)))
+        and then Is_Interface (Parent_Type)
       then
-         Parent_Node := Parent (Etype (Defining_Identifier (N)));
+         Parent_Node := Parent (Parent_Type);
+
+         --  More detailed checks for interface varieties
 
          Check_Ifaces
            (Iface_Def  => Type_Definition (Parent_Node),
@@ -7833,6 +7954,7 @@ package body Sem_Ch3 is
       end if;
 
       Iface := First (Interface_List (Def));
+
       while Present (Iface) loop
          Iface_Typ := Find_Type_Of_Subtype_Indic (Iface);
 
@@ -7853,6 +7975,12 @@ package body Sem_Ch3 is
 
          Next (Iface);
       end loop;
+
+      if Is_Task and Is_Protected then
+         Error_Msg_N
+           ("type cannot derive from task and protected interface", N);
+      end if;
+
    end Check_Abstract_Interfaces;
 
    -------------------------------
@@ -14001,6 +14129,13 @@ package body Sem_Ch3 is
 
                T := Standard_Character;
             end if;
+
+         --  The node may be overloaded because some user-defined operators
+         --  are available, but if a universal interpretation exists it is
+         --  also the selected one.
+
+         elsif Universal_Interpretation (I) = Universal_Integer then
+            T := Standard_Integer;
 
          else
             T := Any_Type;
