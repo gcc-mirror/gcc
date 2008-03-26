@@ -2421,6 +2421,8 @@ rs6000_builtin_type_compatible (tree t, int id)
 {
   tree builtin_type;
   builtin_type = rs6000_builtin_type (id);
+  if (t == error_mark_node)
+    return false;
   if (INTEGRAL_TYPE_P (t) && INTEGRAL_TYPE_P (builtin_type))
     return true;
   else

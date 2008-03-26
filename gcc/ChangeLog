@@ -1,3 +1,9 @@
+2008-03-25  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR target/31588
+	* config/rs6000/rs6000-c.c (rs6000_builtin_type_compatible): Handle
+	error_mark_node's.
+
 2008-03-25  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR rtl-optimization/35232
