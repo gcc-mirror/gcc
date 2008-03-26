@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2790,6 +2790,30 @@ package body Exp_Ch5 is
                         Set_No_Initialization (Heap_Allocator);
 
                         SS_Allocator := New_Copy_Tree (Heap_Allocator);
+                     end if;
+
+                     --  If the No_Allocators restriction is active, then only
+                     --  an allocator for secondary stack allocation is needed.
+
+                     if Restriction_Active (No_Allocators) then
+                        SS_Allocator   := Heap_Allocator;
+                        Heap_Allocator := Make_Null (Loc);
+
+                     --  Otherwise the heap allocator may be needed, so we
+                     --  make another allocator for secondary stack allocation.
+
+                     else
+                        SS_Allocator := New_Copy_Tree (Heap_Allocator);
+
+                        --  The heap allocator is marked Comes_From_Source
+                        --  since it corresponds to an explicit user-written
+                        --  allocator (that is, it will only be executed on
+                        --  behalf of callers that call the function as
+                        --  initialization for such an allocator). This
+                        --  prevents errors when No_Implicit_Heap_Allocation
+                        --  is in force.
+
+                        Set_Comes_From_Source (Heap_Allocator, True);
                      end if;
 
                      --  The allocator is returned on the secondary stack. We
