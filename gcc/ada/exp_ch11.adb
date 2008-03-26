@@ -143,12 +143,21 @@ package body Exp_Ch11 is
         Make_Procedure_Call_Statement (Loc,
           Name => New_Occurrence_Of (Clean, Loc)));
 
-      --  Avoid generation of raise stmt if compiling with no exceptions
-      --  propagation
+      --  Generate reraise statement as last statement of AT-END handler,
+      --  unless we are under control of No_Exception_Propagation, in which
+      --  case no exception propagation is possible anyway, so we do not need
+      --  a reraise (the AT END handler in this case is only for normal exits
+      --  not for exceptional exits). Also, we flag the Reraise statement as
+      --  being part of an AT END handler to prevent signalling this reraise
+      --  as a violation of the restriction when it is not set.
 
       if not Restriction_Active (No_Exception_Propagation) then
-         Append_To (Stmnts,
-           Make_Raise_Statement (Loc));
+         declare
+            Rstm : constant Node_Id := Make_Raise_Statement (Loc);
+         begin
+            Set_From_At_End (Rstm);
+            Append_To (Stmnts, Rstm);
+         end;
       end if;
 
       Set_Exception_Handlers (HSS, New_List (
@@ -963,7 +972,7 @@ package body Exp_Ch11 is
       Handler_Loop : while Present (Handler) loop
          Next_Handler := Next_Non_Pragma (Handler);
 
-         --  Remove source handler if gnat debug flag N is set
+         --  Remove source handler if gnat debug flag .x is set
 
          if Debug_Flag_Dot_X and then Comes_From_Source (Handler) then
             Remove (Handler);
@@ -971,8 +980,9 @@ package body Exp_Ch11 is
          --  Remove handler if no exception propagation, generating a warning
          --  if a source generated handler was not the target of a local raise.
 
-         elsif Restriction_Active (No_Exception_Propagation) then
-            if not Has_Local_Raise (Handler)
+         else
+            if Restriction_Active (No_Exception_Propagation)
+              and then not Has_Local_Raise (Handler)
               and then Comes_From_Source (Handler)
               and then Warn_On_Non_Local_Exception
             then
@@ -982,118 +992,124 @@ package body Exp_Ch11 is
                   Handler);
             end if;
 
-            Remove (Handler);
+            if No_Exception_Propagation_Active then
+               Remove (Handler);
 
-         --  Exception handler is active and retained and must be processed
+            --  Exception handler is active and retained and must be processed
 
-         else
-            --  If an exception occurrence is present, then we must declare it
-            --  and initialize it from the value stored in the TSD
+            else
+               --  If an exception occurrence is present, then we must declare
+               --  it and initialize it from the value stored in the TSD
 
-            --     declare
-            --        name : Exception_Occurrence;
-            --     begin
-            --        Save_Occurrence (name, Get_Current_Excep.all)
-            --        ...
-            --     end;
+               --     declare
+               --        name : Exception_Occurrence;
+               --     begin
+               --        Save_Occurrence (name, Get_Current_Excep.all)
+               --        ...
+               --     end;
 
-            if Present (Choice_Parameter (Handler)) then
-               declare
-                  Cparm : constant Entity_Id  := Choice_Parameter (Handler);
-                  Clc   : constant Source_Ptr := Sloc (Cparm);
-                  Save  : Node_Id;
+               if Present (Choice_Parameter (Handler)) then
+                  declare
+                     Cparm : constant Entity_Id  := Choice_Parameter (Handler);
+                     Clc   : constant Source_Ptr := Sloc (Cparm);
+                     Save  : Node_Id;
 
-               begin
-                  Save :=
-                    Make_Procedure_Call_Statement (Loc,
-                      Name =>
-                        New_Occurrence_Of (RTE (RE_Save_Occurrence), Loc),
-                      Parameter_Associations => New_List (
-                        New_Occurrence_Of (Cparm, Clc),
-                        Make_Explicit_Dereference (Loc,
-                          Make_Function_Call (Loc,
-                            Name => Make_Explicit_Dereference (Loc,
-                              New_Occurrence_Of
-                                (RTE (RE_Get_Current_Excep), Loc))))));
+                  begin
+                     Save :=
+                       Make_Procedure_Call_Statement (Loc,
+                         Name =>
+                           New_Occurrence_Of (RTE (RE_Save_Occurrence), Loc),
+                         Parameter_Associations => New_List (
+                           New_Occurrence_Of (Cparm, Clc),
+                           Make_Explicit_Dereference (Loc,
+                             Make_Function_Call (Loc,
+                               Name => Make_Explicit_Dereference (Loc,
+                                 New_Occurrence_Of
+                                   (RTE (RE_Get_Current_Excep), Loc))))));
 
-                  Mark_Rewrite_Insertion (Save);
-                  Prepend (Save, Statements (Handler));
+                     Mark_Rewrite_Insertion (Save);
+                     Prepend (Save, Statements (Handler));
 
-                  Obj_Decl :=
-                    Make_Object_Declaration
-                      (Clc,
-                       Defining_Identifier => Cparm,
-                       Object_Definition   =>
-                         New_Occurrence_Of
-                           (RTE (RE_Exception_Occurrence), Clc));
-                  Set_No_Initialization (Obj_Decl, True);
+                     Obj_Decl :=
+                       Make_Object_Declaration
+                         (Clc,
+                          Defining_Identifier => Cparm,
+                          Object_Definition   =>
+                            New_Occurrence_Of
+                              (RTE (RE_Exception_Occurrence), Clc));
+                     Set_No_Initialization (Obj_Decl, True);
 
-                  Rewrite (Handler,
-                    Make_Implicit_Exception_Handler (Loc,
-                      Exception_Choices => Exception_Choices (Handler),
+                     Rewrite (Handler,
+                       Make_Implicit_Exception_Handler (Loc,
+                         Exception_Choices => Exception_Choices (Handler),
 
-                      Statements => New_List (
-                        Make_Block_Statement (Loc,
-                          Declarations => New_List (Obj_Decl),
-                          Handled_Statement_Sequence =>
-                            Make_Handled_Sequence_Of_Statements (Loc,
-                              Statements => Statements (Handler))))));
+                         Statements => New_List (
+                           Make_Block_Statement (Loc,
+                             Declarations => New_List (Obj_Decl),
+                             Handled_Statement_Sequence =>
+                               Make_Handled_Sequence_Of_Statements (Loc,
+                                 Statements => Statements (Handler))))));
 
-                  Analyze_List (Statements (Handler), Suppress => All_Checks);
-               end;
-            end if;
+                     Analyze_List
+                       (Statements (Handler), Suppress => All_Checks);
+                  end;
+               end if;
 
-            --  The processing at this point is rather different for the JVM
-            --  case, so we completely separate the processing.
+               --  The processing at this point is rather different for the JVM
+               --  case, so we completely separate the processing.
 
-            --  For the JVM case, we unconditionally call Update_Exception,
-            --  passing a call to the intrinsic Current_Target_Exception (see
-            --  JVM version of Ada.Exceptions in 4jexcept.adb for details).
+               --  For the VM case, we unconditionally call Update_Exception,
+               --  passing a call to the intrinsic Current_Target_Exception
+               --  (see JVM/.NET versions of Ada.Exceptions for details).
 
-            if VM_Target /= No_VM then
-               declare
-                  Arg : constant Node_Id :=
-                          Make_Function_Call (Loc,
-                            Name =>
-                              New_Occurrence_Of
-                                (RTE (RE_Current_Target_Exception), Loc));
-               begin
-                  Prepend_Call_To_Handler
-                    (RE_Update_Exception, New_List (Arg));
-               end;
+               if VM_Target /= No_VM then
+                  declare
+                     Arg : constant Node_Id :=
+                             Make_Function_Call (Loc,
+                               Name =>
+                                 New_Occurrence_Of
+                                   (RTE (RE_Current_Target_Exception), Loc));
+                  begin
+                     Prepend_Call_To_Handler
+                       (RE_Update_Exception, New_List (Arg));
+                  end;
 
-               --  For the normal case, we have to worry about the state of
-               --  abort deferral. Generally, we defer abort during runtime
-               --  handling of exceptions. When control is passed to the
-               --  handler, then in the normal case we undefer aborts. In any
-               --  case this entire handling is relevant only if aborts are
-               --  allowed!
+                  --  For the normal case, we have to worry about the state of
+                  --  abort deferral. Generally, we defer abort during runtime
+                  --  handling of exceptions. When control is passed to the
+                  --  handler, then in the normal case we undefer aborts. In
+                  --  any case this entire handling is relevant only if aborts
+                  --  are allowed!
 
-            elsif Abort_Allowed then
+               elsif Abort_Allowed then
 
-               --  There are some special cases in which we do not do the
-               --  undefer. In particular a finalization (AT END) handler
-               --  wants to operate with aborts still deferred.
+                  --  There are some special cases in which we do not do the
+                  --  undefer. In particular a finalization (AT END) handler
+                  --  wants to operate with aborts still deferred.
 
-               --  We also suppress the call if this is the special handler
-               --  for Abort_Signal, since if we are aborting, we want to keep
-               --  aborts deferred (one abort is enough).
+                  --  We also suppress the call if this is the special handler
+                  --  for Abort_Signal, since if we are aborting, we want to
+                  --  keep aborts deferred (one abort is enough).
 
-               --  If abort really needs to be deferred the expander must add
-               --  this call explicitly, see Expand_N_Asynchronous_Select.
+                  --  If abort really needs to be deferred the expander must
+                  --  add this call explicitly, see
+                  --  Expand_N_Asynchronous_Select.
 
-               Others_Choice :=
-                 Nkind (First (Exception_Choices (Handler))) = N_Others_Choice;
+                  Others_Choice :=
+                    Nkind (First (Exception_Choices (Handler))) =
+                                                         N_Others_Choice;
 
-               if (Others_Choice
-                   or else Entity (First (Exception_Choices (Handler))) /=
-                     Stand.Abort_Signal)
-                 and then not
-                   (Others_Choice
-                    and then All_Others (First (Exception_Choices (Handler))))
-                 and then Abort_Allowed
-               then
-                  Prepend_Call_To_Handler (RE_Abort_Undefer);
+                  if (Others_Choice
+                       or else Entity (First (Exception_Choices (Handler))) /=
+                                                         Stand.Abort_Signal)
+                    and then not
+                      (Others_Choice
+                        and then
+                          All_Others (First (Exception_Choices (Handler))))
+                    and then Abort_Allowed
+                  then
+                     Prepend_Call_To_Handler (RE_Abort_Undefer);
+                  end if;
                end if;
             end if;
          end if;
@@ -1248,7 +1264,6 @@ package body Exp_Ch11 is
             Insert_List_After_And_Analyze (N, L);
          end if;
       end if;
-
    end Expand_N_Exception_Declaration;
 
    ---------------------------------------------
@@ -1334,8 +1349,6 @@ package body Exp_Ch11 is
       H     : Node_Id;
 
    begin
-      --  Debug_Flag_Dot_G := True;
-
       --  Processing for locally handled exception (exclude reraise case)
 
       if Present (Name (N)) and then Nkind (Name (N)) = N_Identifier then
