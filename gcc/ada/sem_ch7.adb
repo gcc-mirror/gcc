@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -939,6 +939,7 @@ package body Sem_Ch7 is
          Inst_Par := Inst_Id;
          Gen_Par :=
            Generic_Parent (Specification (Unit_Declaration_Node (Inst_Par)));
+
          while Present (Gen_Par) and then Is_Child_Unit (Gen_Par) loop
             Inst_Node := Get_Package_Instantiation_Node (Inst_Par);
 
@@ -963,11 +964,18 @@ package body Sem_Ch7 is
                --  happens when a generic child is instantiated, and the
                --  instance is a child of the parent instance.
 
-               --  Installing the use clauses of the parent instance twice is
-               --  both unnecessary and wrong, because it would cause the
-               --  clauses to be chained to themselves in the use clauses list
-               --  of the scope stack entry. That in turn would cause
-               --  End_Use_Clauses to get into an endless look upon scope exit.
+               --  Installing the use clauses of the parent instance twice
+               --  is both unnecessary and wrong, because it would cause the
+               --  clauses to be chained to themselves in the use clauses
+               --  list of the scope stack entry. That in turn would cause
+               --  an endless loop from End_Use_Clauses upon sccope exit.
+
+               --  The parent is now fully visible. It may be a hidden open
+               --  scope if we are currently compiling some child instance
+               --  declared within it, but while the current instance is being
+               --  compiled the parent is immediately visible. In particular
+               --  its entities must remain visible if a stack save/restore
+               --  takes place through a call to Rtsfind.
 
                if Present (Gen_Par) then
                   if not In_Private_Part (Inst_Par) then
@@ -975,6 +983,7 @@ package body Sem_Ch7 is
                      Set_Use (Private_Declarations
                                 (Specification
                                    (Unit_Declaration_Node (Inst_Par))));
+                     Set_Is_Hidden_Open_Scope (Inst_Par, False);
                   end if;
 
                --  If we've reached the end of the generic instance parents,

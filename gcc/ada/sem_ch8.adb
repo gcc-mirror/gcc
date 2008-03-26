@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -747,6 +747,19 @@ package body Sem_Ch8 is
 
          Resolve (Nam, T);
 
+         --  Check that a class-wide object is not being renamed as an object
+         --  of a specific type. The test for access types is needed to exclude
+         --  cases where the renamed object is a dynamically tagged access
+         --  result, such as occurs in certain expansions.
+
+         if (Is_Class_Wide_Type (Etype (Nam))
+              or else (Is_Dynamically_Tagged (Nam)
+                        and then not Is_Access_Type (T)))
+           and then not Is_Class_Wide_Type (T)
+         then
+            Error_Msg_N ("dynamically tagged expression not allowed!", Nam);
+         end if;
+
       --  Ada 2005 (AI-230/AI-254): Access renaming
 
       else pragma Assert (Present (Access_Definition (N)));
@@ -1046,7 +1059,7 @@ package body Sem_Ch8 is
          Generate_Reference (Old_P, Name (N));
 
          --  If the renaming is in the visible part of a package, then we set
-         --  In_Package_Spec for the renamed package, to prevent giving
+         --  Renamed_In_Spec for the renamed package, to prevent giving
          --  warnings about no entities referenced. Such a warning would be
          --  overenthusiastic, since clients can see entities in the renamed
          --  package via the visible package renaming.
@@ -6582,6 +6595,13 @@ package body Sem_Ch8 is
                          or else In_Package_Body (S))
             then
                Full_Vis := True;
+
+            --  if S is the scope of some instance (which has already been
+            --  seen on the stack) it does not affect the visibility of
+            --  other scopes.
+
+            elsif Is_Hidden_Open_Scope (S) then
+               null;
 
             elsif (Ekind (S) = E_Procedure
                     or else Ekind (S) = E_Function)
