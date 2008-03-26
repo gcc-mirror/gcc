@@ -2083,6 +2083,14 @@ dump_expr (tree t, int flags)
     case CONJ_EXPR:
     case VECTOR_CST:
     case FIXED_CST:
+    case UNORDERED_EXPR:
+    case ORDERED_EXPR:
+    case UNLT_EXPR:
+    case UNLE_EXPR:
+    case UNGT_EXPR:
+    case UNGE_EXPR:
+    case UNEQ_EXPR:
+    case LTGT_EXPR:
       pp_expression (cxx_pp, t);
       break;
 

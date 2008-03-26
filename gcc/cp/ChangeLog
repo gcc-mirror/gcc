@@ -1,3 +1,9 @@
+2008-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/35332
+	* error.c (dump_expr): Pass {,UN}ORDERED_EXPR, UN{LT,LE,GT,GE,EQ}_EXPR
+	and LTGT_EXPR to pp_expression.
+
 2008-03-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35548
