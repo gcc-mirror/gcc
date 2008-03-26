@@ -374,19 +374,24 @@ extern void real_ldexp (REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *, int);
 
 /* **** End of software floating point emulator interface macros **** */
 
-/* Constant real values 0, 1, 2, 3, 10, -1, -2, 0.5 and 1/3.  */
+/* Constant real values 0, 1, 2, -1 and 0.5.  */
 
 extern REAL_VALUE_TYPE dconst0;
 extern REAL_VALUE_TYPE dconst1;
 extern REAL_VALUE_TYPE dconst2;
-extern REAL_VALUE_TYPE dconst3;
-extern REAL_VALUE_TYPE dconst10;
 extern REAL_VALUE_TYPE dconstm1;
-extern REAL_VALUE_TYPE dconstm2;
 extern REAL_VALUE_TYPE dconsthalf;
-extern REAL_VALUE_TYPE dconstthird;
-extern REAL_VALUE_TYPE dconstsqrt2;
-extern REAL_VALUE_TYPE dconste;
+
+/* Enumerate the special constant values we need. */
+enum real_value_const {
+  rv_e,
+  rv_third,
+  rv_sqrt2,
+  rv_max
+};
+
+/* Function to return a real value special constant.  */
+extern const REAL_VALUE_TYPE * get_real_const (enum real_value_const);
 
 /* Function to return a real value (not a tree node)
    from a given integer constant.  */
