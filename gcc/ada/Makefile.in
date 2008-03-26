@@ -837,6 +837,7 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
   s-osprim.adb<s-osprim-posix.adb \
   s-taspri.ads<s-taspri-posix.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
+  g-sercom.adb<g-sercom-linux.adb \
   system.ads<system-linux-x86.ads
 
   ifeq ($(strip $(filter-out marte,$(THREAD_KIND))),)
@@ -1247,7 +1248,6 @@ endif
   i-cpoint.ads<i-cpoint-vms_64.ads \
   i-cpoint.adb<i-cpoint-vms_64.adb \
   i-cstrea.adb<i-cstrea-vms.adb \
-  i-forbla.ads<i-forbla-unimplemented.ads \
   s-inmaop.adb<s-inmaop-vms.adb \
   s-interr.adb<s-interr-vms.adb \
   s-intman.adb<s-intman-vms.adb \
@@ -1315,7 +1315,8 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
   g-socthi.adb<g-socthi-mingw.adb \
   g-stsifd.adb<g-stsifd-sockets.adb \
   g-soccon.ads<g-soccon-mingw.ads \
-  g-soliop.ads<g-soliop-mingw.ads
+  g-soliop.ads<g-soliop-mingw.ads \
+  g-sercom.adb<g-sercom-mingw.adb
 
   ifeq ($(strip $(filter-out rtx_w32 rtx_rtss,$(THREAD_KIND))),)
     LIBGNAT_TARGET_PAIRS += \
@@ -1376,6 +1377,7 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(arch) $(osys))),)
   s-tasinf.adb<s-tasinf-linux.adb \
   s-taspri.ads<s-taspri-posix.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
+  g-sercom.adb<g-sercom-linux.adb \
   system.ads<system-linux-ppc.ads
 
   TOOLS_TARGET_PAIRS =  \
@@ -1487,6 +1489,7 @@ ifeq ($(strip $(filter-out %ia64 linux%,$(arch) $(osys))),)
   s-tasinf.adb<s-tasinf-linux.adb \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   s-taspri.ads<s-taspri-posix.ads \
+  g-sercom.adb<g-sercom-linux.adb \
   system.ads<system-linux-ia64.ads
 
   TOOLS_TARGET_PAIRS =  \
@@ -1545,6 +1548,7 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(arch) $(osys))),)
   s-tasinf.adb<s-tasinf-linux.adb \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   s-taspri.ads<s-taspri-posix.ads \
+  g-sercom.adb<g-sercom-linux.adb \
   system.ads<system-linux-x86_64.ads
 
   TOOLS_TARGET_PAIRS =  \

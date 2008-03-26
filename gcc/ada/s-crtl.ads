@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2003-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -148,9 +148,6 @@ package System.CRTL is
    function popen (command, mode : System.Address) return System.Address;
    pragma Import (C, popen, "popen");
 
-   function read (fd : int; buffer : chars; nbytes : int) return int;
-   pragma Import (C, read, "read");
-
    function realloc
      (Ptr : System.Address; Size : size_t) return System.Address;
    pragma Import (C, realloc, "realloc");
@@ -180,6 +177,15 @@ package System.CRTL is
 
    function unlink (filename : chars) return int;
    pragma Import (C, unlink, "unlink");
+
+   function open (filename : chars; oflag : int) return int;
+   pragma Import (C, open, "open");
+
+   function close (fd : int) return int;
+   pragma Import (C, close, "close");
+
+   function read (fd : int; buffer : chars; nbytes : int) return int;
+   pragma Import (C, read, "read");
 
    function write (fd : int; buffer : chars; nbytes : int) return int;
    pragma Import (C, write, "write");

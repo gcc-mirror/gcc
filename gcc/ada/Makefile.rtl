@@ -360,6 +360,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-rannum$(objext) \
   g-regexp$(objext) \
   g-regpat$(objext) \
+  g-sercom$(objext) \
   g-sestin$(objext) \
   g-sha1$(objext) \
   g-soccon$(objext) \
