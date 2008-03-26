@@ -437,7 +437,6 @@ package body Sem_Ch11 is
       Exception_Id   : constant Node_Id := Name (N);
       Exception_Name : Entity_Id        := Empty;
       P              : Node_Id;
-      Nkind_P        : Node_Kind;
 
    begin
       Check_Unreachable_Code (N);
@@ -484,16 +483,13 @@ package body Sem_Ch11 is
 
       if No (Exception_Id) then
          P := Parent (N);
-         Nkind_P := Nkind (P);
-
-         while Nkind_P /= N_Exception_Handler
-           and then Nkind_P /= N_Subprogram_Body
-           and then Nkind_P /= N_Package_Body
-           and then Nkind_P /= N_Task_Body
-           and then Nkind_P /= N_Entry_Body
+         while not Nkind_In (P, N_Exception_Handler,
+                                N_Subprogram_Body,
+                                N_Package_Body,
+                                N_Task_Body,
+                                N_Entry_Body)
          loop
             P := Parent (P);
-            Nkind_P := Nkind (P);
          end loop;
 
          if Nkind (P) /= N_Exception_Handler then
@@ -506,7 +502,15 @@ package body Sem_Ch11 is
 
          else
             Set_Local_Raise_Not_OK (P);
-            Check_Restriction (No_Exception_Propagation, N);
+
+            --  Do not check the restriction if the reraise statement is part
+            --  of the code generated for an AT-END handler. That's because
+            --  if the restriction is actually active, we never generate this
+            --  raise anyway, so the apparent violation is bogus.
+
+            if not From_At_End (N) then
+               Check_Restriction (No_Exception_Propagation, N);
+            end if;
          end if;
 
       --  Normal case with exception id present

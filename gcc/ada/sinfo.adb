@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1263,6 +1263,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Assignment_Statement);
       return Flag5 (N);
    end Forwards_OK;
+
+   function From_At_End
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Raise_Statement);
+      return Flag4 (N);
+   end From_At_End;
 
    function From_At_Mod
       (N : Node_Id) return Boolean is
@@ -3995,6 +4003,14 @@ package body Sinfo is
       Set_Flag5 (N, Val);
    end Set_Forwards_OK;
 
+   procedure Set_From_At_End
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Raise_Statement);
+      Set_Flag4 (N, Val);
+   end Set_From_At_End;
+
    procedure Set_From_At_Mod
       (N : Node_Id; Val : Boolean := True) is
    begin
@@ -5574,9 +5590,9 @@ package body Sinfo is
         UI_From_Int (Int (S) - Int (Sloc (N))));
    end Set_End_Location;
 
-   --------------------------------
-   -- Node_Kind Membership Tests --
-   --------------------------------
+   --------------
+   -- Nkind_In --
+   --------------
 
    function Nkind_In
      (T  : Node_Kind;
@@ -5689,5 +5705,14 @@ package body Sinfo is
              T = V7 or else
              T = V8;
    end Nkind_In;
+
+   -----------------
+   -- Pragma_Name --
+   -----------------
+
+   function Pragma_Name (N : Node_Id) return Name_Id is
+   begin
+      return Chars (Pragma_Identifier (N));
+   end Pragma_Name;
 
 end Sinfo;
