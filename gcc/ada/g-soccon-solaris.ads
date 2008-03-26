@@ -149,6 +149,7 @@ package GNAT.Sockets.Constants is
 
    TCP_NODELAY        : constant :=           1; --  Do not coalesce packets
    SO_REUSEADDR       : constant :=           4; --  Bind reuse local address
+   SO_REUSEPORT       : constant :=          -1; --  Bind reuse port number
    SO_KEEPALIVE       : constant :=           8; --  Enable keep-alive msgs
    SO_LINGER          : constant :=         128; --  Defer close to flush data
    SO_BROADCAST       : constant :=          32; --  Can send broadcast msgs
@@ -162,6 +163,7 @@ package GNAT.Sockets.Constants is
    IP_MULTICAST_LOOP  : constant :=          18; --  Set/get mcast loopback
    IP_ADD_MEMBERSHIP  : constant :=          19; --  Join a multicast group
    IP_DROP_MEMBERSHIP : constant :=          20; --  Leave a multicast group
+   IP_PKTINFO         : constant :=          -1; --  Get datagram info
 
    -------------------
    -- System limits --
