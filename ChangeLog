@@ -1,3 +1,7 @@
+2008-03-26  Jakub Staszak  <kuba@et.pl>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2008-03-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* MAINTAINERS:  Update e-mail address.
