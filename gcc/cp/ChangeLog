@@ -1,5 +1,9 @@
 2008-03-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/35546
+	* pt.c (apply_late_template_attributes): Don't call tsubst on
+	first attribute argument if it is IDENTIFIER_NODE.
+
 	PR c++/35332
 	* error.c (dump_expr): Pass {,UN}ORDERED_EXPR, UN{LT,LE,GT,GE,EQ}_EXPR
 	and LTGT_EXPR to pp_expression.
