@@ -119,7 +119,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     };
 
 
-  /// @brief  class __pool_alloc.
+  /// class __pool_alloc.
   template<typename _Tp>
     class __pool_alloc : private __pool_alloc_base
     {

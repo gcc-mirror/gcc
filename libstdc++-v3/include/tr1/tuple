@@ -246,7 +246,7 @@ namespace tr1
   template<typename _Tp>
     struct tuple_size;
 
-  /// @brief class tuple_size
+  /// class tuple_size
   template<typename... _Elements>
     struct tuple_size<tuple<_Elements...> >
     {

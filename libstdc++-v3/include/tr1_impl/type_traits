@@ -67,7 +67,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   _DEFINE_SPEC_##_Order##_HELPER(_Trait<_Type volatile>, _Value)     \
   _DEFINE_SPEC_##_Order##_HELPER(_Trait<_Type const volatile>, _Value)
 
-  /// @brief  helper classes [4.3].
+  /// helper classes [4.3].
   template<typename _Tp, _Tp __v>
     struct integral_constant
     {
@@ -75,18 +75,23 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       typedef _Tp                           value_type;
       typedef integral_constant<_Tp, __v>   type;
     };
+  
+  /// typedef for true_type
   typedef integral_constant<bool, true>     true_type;
+
+  /// typedef for true_type
   typedef integral_constant<bool, false>    false_type;
 
   template<typename _Tp, _Tp __v>
     const _Tp integral_constant<_Tp, __v>::value;
 
-  /// @brief  primary type categories [4.5.1].
+  /// primary type categories [4.5.1].
   template<typename>
     struct is_void
     : public false_type { };
   _DEFINE_SPEC(0, is_void, void, true)
 
+  /// is_integral
   template<typename>
     struct is_integral
     : public false_type { };
@@ -106,6 +111,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   _DEFINE_SPEC(0, is_integral, long long, true)
   _DEFINE_SPEC(0, is_integral, unsigned long long, true)
 
+  /// is_floating_point
   template<typename>
     struct is_floating_point
     : public false_type { };
@@ -113,6 +119,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   _DEFINE_SPEC(0, is_floating_point, double, true)
   _DEFINE_SPEC(0, is_floating_point, long double, true)
 
+  /// is_array
   template<typename>
     struct is_array
     : public false_type { };
@@ -125,39 +132,47 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     struct is_array<_Tp[]>
     : public true_type { };
 
+  /// is_pointer
   template<typename>
     struct is_pointer
     : public false_type { };
   _DEFINE_SPEC(1, is_pointer, _Tp*, true)
 
+  /// is_reference
   template<typename _Tp>
     struct is_reference;
 
+  /// is_function
   template<typename _Tp>
     struct is_function;
 
+  /// is_member_object_pointer
   template<typename>
     struct is_member_object_pointer
     : public false_type { };
   _DEFINE_SPEC(2, is_member_object_pointer, _Tp _Cp::*,
 	       !is_function<_Tp>::value)
 
+  /// is_member_function_pointer
   template<typename>
     struct is_member_function_pointer
     : public false_type { };
   _DEFINE_SPEC(2, is_member_function_pointer, _Tp _Cp::*,
 	       is_function<_Tp>::value)
 
+  /// is_enum
   template<typename _Tp>
     struct is_enum
     : public integral_constant<bool, __is_enum(_Tp)>
     { };
 
+  /// is_union
   template<typename _Tp>
     struct is_union
     : public integral_constant<bool, __is_union(_Tp)>
     { };
 
+  /// is_class
   template<typename _Tp>
     struct is_class
     : public integral_constant<bool, __is_class(_Tp)>
@@ -177,9 +192,11 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       static const bool __value = sizeof(__test<_Tp>(0)) == 1;
     };
 
+  /// is_abstract
   template<typename _Tp>
     struct is_abstract;
 
+  /// is_function
   template<typename _Tp>
     struct is_function
     : public integral_constant<bool, !(__in_array<_Tp>::__value
@@ -188,19 +205,21 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 				       || is_void<_Tp>::value)>
     { };
 
-  /// @brief  composite type traits [4.5.2].
+  /// composite type traits [4.5.2].
   template<typename _Tp>
     struct is_arithmetic
     : public integral_constant<bool, (is_integral<_Tp>::value
 				      || is_floating_point<_Tp>::value)>
     { };
 
+  /// is_fundamental
   template<typename _Tp>
     struct is_fundamental
     : public integral_constant<bool, (is_arithmetic<_Tp>::value
 				      || is_void<_Tp>::value)>
     { };
 
+  /// is_object
   template<typename _Tp>
     struct is_object
     : public integral_constant<bool, !(is_function<_Tp>::value
@@ -208,9 +227,11 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 				       || is_void<_Tp>::value)>
     { };
 
+  /// is_member_pointer
   template<typename _Tp>
     struct is_member_pointer;
 
+  /// is_scalal
   template<typename _Tp>
     struct is_scalar
     : public integral_constant<bool, (is_arithmetic<_Tp>::value
@@ -219,10 +240,12 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 				      || is_member_pointer<_Tp>::value)>
     { };
 
+  /// is_compound
   template<typename _Tp>
     struct is_compound
     : public integral_constant<bool, !is_fundamental<_Tp>::value> { };
 
+  /// is_member_pointer
   template<typename _Tp>
     struct is_member_pointer
     : public integral_constant<bool,
@@ -230,15 +253,17 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 				|| is_member_function_pointer<_Tp>::value)>
     { };
 
-  /// @brief  type properties [4.5.3].
+  /// type properties [4.5.3].
   template<typename>
     struct is_const
     : public false_type { };
 
+  /// is_const
   template<typename _Tp>
     struct is_const<_Tp const>
     : public true_type { };
   
+  /// is_volatile
   template<typename>
     struct is_volatile
     : public false_type { };
@@ -247,30 +272,36 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     struct is_volatile<_Tp volatile>
     : public true_type { };
 
+  /// is_empty
   template<typename _Tp>
     struct is_empty
     : public integral_constant<bool, __is_empty(_Tp)>
     { };
 
+  /// is_polymorphic
   template<typename _Tp>
     struct is_polymorphic
     : public integral_constant<bool, __is_polymorphic(_Tp)>
     { };
 
+  /// is_abstract
   template<typename _Tp>
     struct is_abstract
     : public integral_constant<bool, __is_abstract(_Tp)>
     { };
 
+  /// has_virtual_destructor
   template<typename _Tp>
     struct has_virtual_destructor
     : public integral_constant<bool, __has_virtual_destructor(_Tp)>
     { };
 
+  /// alignment_of
   template<typename _Tp>
     struct alignment_of
     : public integral_constant<std::size_t, __alignof__(_Tp)> { };
   
+  /// rank
   template<typename>
     struct rank
     : public integral_constant<std::size_t, 0> { };
@@ -283,6 +314,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     struct rank<_Tp[]>
     : public integral_constant<std::size_t, 1 + rank<_Tp>::value> { };
 
+  /// extent
   template<typename, unsigned _Uint = 0>
     struct extent
     : public integral_constant<std::size_t, 0> { };
@@ -301,7 +333,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 						       _Uint - 1>::value>
     { };
 
-  /// @brief  relationships between types [4.6].
+  /// relationships between types [4.6].
   template<typename, typename>
     struct is_same
     : public false_type { };
@@ -310,7 +342,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     struct is_same<_Tp, _Tp>
     : public true_type { };
 
-  /// @brief  const-volatile modifications [4.7.1].
+  /// const-volatile modifications [4.7.1].
   template<typename _Tp>
     struct remove_const
     { typedef _Tp     type; };
@@ -319,6 +351,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     struct remove_const<_Tp const>
     { typedef _Tp     type; };
   
+  /// remove_volatile
   template<typename _Tp>
     struct remove_volatile
     { typedef _Tp     type; };
@@ -327,6 +360,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     struct remove_volatile<_Tp volatile>
     { typedef _Tp     type; };
   
+  /// remove_cv
   template<typename _Tp>
     struct remove_cv
     {
@@ -334,14 +368,17 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       remove_const<typename remove_volatile<_Tp>::type>::type     type;
     };
   
+  /// add_const
   template<typename _Tp>
     struct add_const
     { typedef _Tp const     type; };
    
+  /// add_volatile
   template<typename _Tp>
     struct add_volatile
     { typedef _Tp volatile     type; };
   
+  /// add_cv
   template<typename _Tp>
     struct add_cv
     {
@@ -349,7 +386,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       add_const<typename add_volatile<_Tp>::type>::type     type;
     };
 
-  /// @brief  array modifications [4.7.3].
+  /// array modifications [4.7.3].
   template<typename _Tp>
     struct remove_extent
     { typedef _Tp     type; };
@@ -362,6 +399,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     struct remove_extent<_Tp[]>
     { typedef _Tp     type; };
 
+  /// remove_all_extents
   template<typename _Tp>
     struct remove_all_extents
     { typedef _Tp     type; };
@@ -374,19 +412,22 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     struct remove_all_extents<_Tp[]>
     { typedef typename remove_all_extents<_Tp>::type     type; };
 
-  /// @brief  pointer modifications [4.7.4].
+  /// pointer modifications [4.7.4].
 #undef _DEFINE_SPEC_BODY
 #define _DEFINE_SPEC_BODY(_Value)      \
     { typedef _Tp     type; };
 
+  /// remove_pointer
   template<typename _Tp>
     struct remove_pointer
     { typedef _Tp     type; };
   _DEFINE_SPEC(1, remove_pointer, _Tp*, false)
 
+  /// remove_reference
   template<typename _Tp>
     struct remove_reference;
 
+  /// add_pointer
   template<typename _Tp>
     struct add_pointer
     { typedef typename remove_reference<_Tp>::type*     type; };

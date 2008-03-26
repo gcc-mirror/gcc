@@ -51,7 +51,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   template<typename _Tp> std::complex<_Tp> fabs(const std::complex<_Tp>&);
 #endif
 
-  /// @brief acos(__z) [8.1.2].
+  /// acos(__z) [8.1.2].
   //  Effects:  Behaves the same as C99 function cacos, defined
   //            in subclause 7.3.5.1.
   template<typename _Tp>
@@ -87,7 +87,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     { return __complex_acos(__z); }
 #endif
 
-  /// @brief asin(__z) [8.1.3].
+  /// asin(__z) [8.1.3].
   //  Effects:  Behaves the same as C99 function casin, defined
   //            in subclause 7.3.5.2.
   template<typename _Tp>
@@ -123,7 +123,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     { return __complex_asin(__z); }
 #endif
   
-  /// @brief atan(__z) [8.1.4].
+  /// atan(__z) [8.1.4].
   //  Effects:  Behaves the same as C99 function catan, defined
   //            in subclause 7.3.5.3.
   template<typename _Tp>
@@ -167,7 +167,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     { return __complex_atan(__z); }
 #endif
 
-  /// @brief acosh(__z) [8.1.5].
+  /// acosh(__z) [8.1.5].
   //  Effects:  Behaves the same as C99 function cacosh, defined
   //            in subclause 7.3.6.1.
   template<typename _Tp>
@@ -206,7 +206,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     { return __complex_acosh(__z); }
 #endif
 
-  /// @brief asinh(__z) [8.1.6].
+  /// asinh(__z) [8.1.6].
   //  Effects:  Behaves the same as C99 function casin, defined
   //            in subclause 7.3.6.2.
   template<typename _Tp>
@@ -245,7 +245,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     { return __complex_asinh(__z); }
 #endif
 
-  /// @brief atanh(__z) [8.1.7].
+  /// atanh(__z) [8.1.7].
   //  Effects:  Behaves the same as C99 function catanh, defined
   //            in subclause 7.3.6.3.
   template<typename _Tp>
@@ -289,7 +289,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     { return __complex_atanh(__z); }
 #endif
 
-  /// @brief fabs(__z) [8.1.8].
+  /// fabs(__z) [8.1.8].
   //  Effects:  Behaves the same as C99 function cabs, defined
   //            in subclause 7.3.8.1.
   template<typename _Tp>
@@ -306,8 +306,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
      || (defined(_GLIBCXX_INCLUDE_AS_TR1) \
 	 && !defined(__GXX_EXPERIMENTAL_CXX0X__)))
 
-  /// @brief Additional overloads [8.1.9].
-  //
+  /// Additional overloads [8.1.9].
   template<typename _Tp>
     inline typename __gnu_cxx::__promote<_Tp>::__type
     arg(_Tp __x)

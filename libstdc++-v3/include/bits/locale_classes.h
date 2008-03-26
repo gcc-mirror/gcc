@@ -780,7 +780,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     collate<wchar_t>::_M_transform(wchar_t*, const wchar_t*, size_t) const;
 #endif
 
-  /// @brief  class collate_byname [22.2.4.2].
+  /// class collate_byname [22.2.4.2].
   template<typename _CharT>
     class collate_byname : public collate<_CharT>
     {

@@ -150,10 +150,8 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   template<class _Value, class _Hash, class _Pred, class _Alloc,
 	   bool __cache_hash_code>
     inline void
-    swap (__unordered_set<_Value, _Hash, _Pred,
-	  _Alloc, __cache_hash_code>& __x,
-	  __unordered_set<_Value, _Hash, _Pred,
-	  _Alloc, __cache_hash_code>& __y)
+    swap(__unordered_set<_Value, _Hash, _Pred, _Alloc, __cache_hash_code>& __x,
+	 __unordered_set<_Value, _Hash, _Pred, _Alloc, __cache_hash_code>& __y)
     { __x.swap(__y); }
 
   template<class _Value, class _Hash, class _Pred, class _Alloc,
@@ -166,6 +164,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     { __x.swap(__y); }
 
 
+  /// class unordered_set
   template<class _Value,
 	   class _Hash = hash<_Value>,
 	   class _Pred = std::equal_to<_Value>,
@@ -213,6 +212,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 #endif
     };
 
+  /// class unordered_multiset
   template<class _Value,
 	   class _Hash = hash<_Value>,
 	   class _Pred = std::equal_to<_Value>,

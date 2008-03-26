@@ -45,7 +45,8 @@
 namespace std
 {
   // duration types
-  
+
+  /// nanoseconds
   class nanoseconds
   {
   public:
@@ -90,7 +91,7 @@ namespace std
   class minutes;
   class hours;
   
-  // timepoint type
+  /// timepoint type
   class system_time
   {
   public:

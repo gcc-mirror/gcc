@@ -1,6 +1,6 @@
 // TR1 functional -*- C++ -*-
 
-// Copyright (C) 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,7 +36,7 @@ namespace std
 {
 _GLIBCXX_BEGIN_NAMESPACE_TR1
 
-  // Class template hash.
+  /// Class template hash.
   // Declaration of default hash functor std::tr1::hash.  The types for
   // which std::tr1::hash<T> is well-defined is in clause 6.3.3. of the PDTR.
   template<typename _Tp>
@@ -46,7 +46,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       operator()(_Tp __val) const;
     };
 
-  // Partial specializations for pointer types.
+  /// Partial specializations for pointer types.
   template<typename _Tp>
     struct hash<_Tp*> : public std::unary_function<_Tp*, size_t>
     {
@@ -55,7 +55,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       { return reinterpret_cast<size_t>(__p); }
     };
 
-  // Explicit specializations for integer types.
+  /// Explicit specializations for integer types.
 #define _TR1_hashtable_define_trivial_hash(_Tp) 	\
   template<>						\
     inline size_t					\
@@ -81,7 +81,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   // Fowler / Noll / Vo (FNV) Hash (type FNV-1a)
   // (Used by the next specializations of std::tr1::hash.)
 
-  // Dummy generic implementation (for sizeof(size_t) != 4, 8).
+  /// Dummy generic implementation (for sizeof(size_t) != 4, 8).
   template<size_t = sizeof(size_t)>
     struct _Fnv_hash
     {
@@ -128,7 +128,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       }
     };
 
-  // Explicit specializations for floating point types.
+  /// Explicit specializations for float.
   template<>
     inline size_t
     hash<float>::operator()(float __val) const
@@ -142,6 +142,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       return __result;
     };
 
+  /// Explicit specializations for double.
   template<>
     inline size_t
     hash<double>::operator()(double __val) const
@@ -155,11 +156,12 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	return __result;
     };
 
+  /// Explicit specializations for long double.
   template<>
     size_t
     hash<long double>::operator()(long double __val) const;
 
-  // Explicit specialization of member operator for types that are not builtin.
+  /// Explicit specialization of member operator for non-builtin types.
   template<>
     size_t
     hash<string>::operator()(string) const;

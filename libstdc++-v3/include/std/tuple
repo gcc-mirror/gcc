@@ -205,6 +205,7 @@ namespace std
 	}
     };
 
+  /// tuple
   template<typename... _Elements> 
     class tuple : public _Tuple_impl<0, _Elements...>
     {
@@ -275,9 +276,11 @@ namespace std
 	}
     };
 
-  template<> class tuple<> { };
 
-  // 2-element tuple, with construction and assignment from a pair.
+  template<>  
+    class tuple<> { };
+
+  /// tuple (2-element), with construction and assignment from a pair.
   template<typename _T1, typename _T2>
     class tuple<_T1, _T2> : public _Tuple_impl<0, _T1, _T2>
     {
@@ -393,7 +396,7 @@ namespace std
   template<typename _Tp>
     struct tuple_size;
 
-  /// @brief class tuple_size
+  /// class tuple_size
   template<typename... _Elements>
     struct tuple_size<tuple<_Elements...> >
     {

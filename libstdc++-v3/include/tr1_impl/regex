@@ -241,7 +241,7 @@ namespace regex_constants
   static const match_flag_type format_first_only = 1 << _S_first_only;
 
 
-  // [7.5.3] implementation-defined error type
+  /// [7.5.3] implementation-defined error type
   enum error_type
     {
       _S_error_collate,
@@ -308,7 +308,7 @@ namespace regex_constants
 
   // [7.8] Class regex_error
   /**
-   * Defines the type of objects thrown as exceptions to report errors from the
+   * Defines the exception objects thrown report errors from the
    * regular expression library.
    */
   class regex_error

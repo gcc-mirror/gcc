@@ -50,6 +50,9 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
+/** @namespace __gnu_cxx::typelist
+ *  @brief GNU typelist extensions for public compile-time use.
+*/
 namespace typelist
 {
   struct null_type { };
