@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -356,7 +356,12 @@ package body Sem_Ch4 is
       Type_Id  : Entity_Id;
 
    begin
-      Check_Restriction (No_Allocators, N);
+      --  In accordance with H.4(7), the No_Allocators restriction only applies
+      --  to user-written allocators.
+
+      if Comes_From_Source (N) then
+         Check_Restriction (No_Allocators, N);
+      end if;
 
       if Nkind (E) = N_Qualified_Expression then
          Acc_Type := Create_Itype (E_Allocator_Type, N);
@@ -3811,6 +3816,10 @@ package body Sem_Ch4 is
       --  predefined operator. Used to implement Ada 2005 AI-264, to make
       --  such operators more visible and therefore useful.
 
+      --  If the name of the operation is an expanded name with prefix
+      --  Standard, the predefined universal fixed operator is available,
+      --  as specified by AI-420 (RM 4.5.5 (19.1/2)).
+
       function Specific_Type (T1, T2 : Entity_Id) return Entity_Id;
       --  Get specific type (i.e. non-universal type if there is one)
 
@@ -3825,6 +3834,16 @@ package body Sem_Ch4 is
          F2  : Entity_Id;
 
       begin
+         --  If the universal_fixed operation is given explicitly the rule
+         --  concerning primitive operations of the type do not apply.
+
+         if Nkind (N) = N_Function_Call
+           and then Nkind (Name (N)) = N_Expanded_Name
+           and then Entity (Prefix (Name (N))) = Standard_Standard
+         then
+            return False;
+         end if;
+
          --  The operation is treated as primitive if it is declared in the
          --  same scope as the type, and therefore on the same entity chain.
 
