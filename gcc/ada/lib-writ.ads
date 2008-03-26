@@ -209,7 +209,11 @@ package Lib.Writ is
    --              to all units in the file.
    --
    --         NS   Normalize_Scalars pragma in effect for all units in
-   --              this file
+   --              this file.
+   --
+   --         OS   Optimize_Alignment (Space) active for all units in this file
+   --
+   --         OT   Optimize_Alignment (Time) active for all units in this file
    --
    --         Qx   A valid Queueing_Policy pragma applies to all the units
    --              in this file, where x is the first character (upper case)
@@ -498,15 +502,15 @@ package Lib.Writ is
    --    W unit-name [source-name lib-name] [E] [EA] [ED] [AD]
    --
    --      One of these lines is present for each unit that is mentioned in
-   --      an explicit with clause by the current unit. The first parameter
-   --      is the unit name in internal format. The second parameter is the
-   --      file name of the file that must be compiled to compile this unit.
-   --      It is usually the file for the body, except for packages
-   --      which have no body; for units that need a body, if the source file
-   --      for the body cannot be found, the file name of the spec is used
-   --      instead. The third parameter is the file name of the library
-   --      information file that contains the results of compiling this unit.
-   --      The optional modifiers are used as follows:
+   --      an explicit with clause by the current unit. The first parameter is
+   --      the unit name in internal format. The second parameter is the file
+   --      name of the file that must be compiled to compile this unit. It is
+   --      usually the file for the body, except for packages which have no
+   --      body. For units that need a body, if the source file for the body
+   --      cannot be found, the file name of the spec is used instead. The
+   --      third parameter is the file name of the library information file
+   --      that contains the results of compiling this unit. The optional
+   --      modifiers are used as follows:
    --
    --        E   pragma Elaborate applies to this unit
    --
@@ -527,6 +531,8 @@ package Lib.Writ is
    --      The parameter source-name and lib-name are omitted for the case
    --      of a generic unit compiled with earlier versions of GNAT which
    --      did not generate object or ali files for generics.
+
+   --  In fact W lines include implicit withs ???
 
    --  -----------------------
    --  -- L  Linker_Options --

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,6 +75,7 @@ with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;
 with Uintp;    use Uintp;
+with Uname;    use Uname;
 with Urealp;   use Urealp;
 with Validsw;  use Validsw;
 
@@ -235,6 +236,7 @@ package body Sem_Prag is
 
    procedure Analyze_Pragma (N : Node_Id) is
       Loc     : constant Source_Ptr := Sloc (N);
+      Pname   : constant Name_Id    := Pragma_Name (N);
       Prag_Id : Pragma_Id;
 
       Pragma_Exit : exception;
@@ -502,7 +504,7 @@ package body Sem_Prag is
 
       function Is_Configuration_Pragma return Boolean;
       --  Deterermines if the placement of the current pragma is appropriate
-      --  for a configuration pragma (precedes the current compilation unit).
+      --  for a configuration pragma.
 
       function Is_In_Context_Clause return Boolean;
       --  Returns True if pragma appears within the context clause of a unit,
@@ -715,7 +717,7 @@ package body Sem_Prag is
             --  Here we have a real error (non-static expression)
 
             else
-               Error_Msg_Name_1 := Chars (N);
+               Error_Msg_Name_1 := Pname;
                Flag_Non_Static_Expr
                  ("argument for pragma% must be a identifier or " &
                   "static string expression!", Argx);
@@ -909,7 +911,7 @@ package body Sem_Prag is
          --  Finally, we have a real error
 
          else
-            Error_Msg_Name_1 := Chars (N);
+            Error_Msg_Name_1 := Pname;
             Flag_Non_Static_Expr
               ("argument for pragma% must be a static expression!", Argx);
             raise Pragma_Exit;
@@ -962,7 +964,7 @@ package body Sem_Prag is
                for K in Names'Range loop
                   if Chars (Arg) = Names (K) then
                      if K < Highest_So_Far then
-                        Error_Msg_Name_1 := Chars (N);
+                        Error_Msg_Name_1 := Pname;
                         Error_Msg_N
                           ("parameters out of order for pragma%", Arg);
                         Error_Msg_Name_1 := Names (K);
@@ -1112,7 +1114,7 @@ package body Sem_Prag is
          elsif Present (Parameter_Specifications (Specification (P)))
            or else not Is_Compilation_Unit (Defining_Entity (P))
          then
-            Error_Msg_Name_1 := Chars (N);
+            Error_Msg_Name_1 := Pname;
             Error_Msg_N
               ("?pragma% is only effective in main program", N);
          end if;
@@ -1239,7 +1241,7 @@ package body Sem_Prag is
       begin
          if Present (Arg) and then Chars (Arg) /= No_Name then
             if Chars (Arg) /= Id then
-               Error_Msg_Name_1 := Chars (N);
+               Error_Msg_Name_1 := Pname;
                Error_Msg_Name_2 := Id;
                Error_Msg_N ("pragma% argument expects identifier%", Arg);
                raise Pragma_Exit;
@@ -1319,9 +1321,9 @@ package body Sem_Prag is
       -- Check_Valid_Configuration_Pragma --
       --------------------------------------
 
-      --  A configuration pragma must appear in the context clause of
-      --  a compilation unit, at the start of the list (i.e. only other
-      --  pragmas may precede it).
+      --  A configuration pragma must appear in the context clause of a
+      --  compilation unit, and only other pragmas may preceed it. Note that
+      --  the test also allows use in a configuration pragma file.
 
       procedure Check_Valid_Configuration_Pragma is
       begin
@@ -1500,7 +1502,7 @@ package body Sem_Prag is
 
       procedure Error_Pragma (Msg : String) is
       begin
-         Error_Msg_Name_1 := Chars (N);
+         Error_Msg_Name_1 := Pname;
          Error_Msg_N (Msg, N);
          raise Pragma_Exit;
       end Error_Pragma;
@@ -1511,14 +1513,14 @@ package body Sem_Prag is
 
       procedure Error_Pragma_Arg (Msg : String; Arg : Node_Id) is
       begin
-         Error_Msg_Name_1 := Chars (N);
+         Error_Msg_Name_1 := Pname;
          Error_Msg_N (Msg, Get_Pragma_Arg (Arg));
          raise Pragma_Exit;
       end Error_Pragma_Arg;
 
       procedure Error_Pragma_Arg (Msg1, Msg2 : String; Arg : Node_Id) is
       begin
-         Error_Msg_Name_1 := Chars (N);
+         Error_Msg_Name_1 := Pname;
          Error_Msg_N (Msg1, Get_Pragma_Arg (Arg));
          Error_Pragma_Arg (Msg2, Arg);
       end Error_Pragma_Arg;
@@ -1529,7 +1531,7 @@ package body Sem_Prag is
 
       procedure Error_Pragma_Arg_Ident (Msg : String; Arg : Node_Id) is
       begin
-         Error_Msg_Name_1 := Chars (N);
+         Error_Msg_Name_1 := Pname;
          Error_Msg_N (Msg, Arg);
          raise Pragma_Exit;
       end Error_Pragma_Arg_Ident;
@@ -1717,7 +1719,7 @@ package body Sem_Prag is
                   end if;
 
                   if Index = Names'Last then
-                     Error_Msg_Name_1 := Chars (N);
+                     Error_Msg_Name_1 := Pname;
                      Error_Msg_N ("pragma% does not allow & argument", Arg);
 
                      --  Check for possible misspelling
@@ -1792,9 +1794,9 @@ package body Sem_Prag is
       -- Is_Configuration_Pragma --
       -----------------------------
 
-      --  A configuration pragma must appear in the context clause of
-      --  a compilation unit, at the start of the list (i.e. only other
-      --  pragmas may precede it).
+      --  A configuration pragma must appear in the context clause of a
+      --  compilation unit, and only other pragmas may precede it. Note that
+      --  the test below also permits use in a configuration pragma file.
 
       function Is_Configuration_Pragma return Boolean is
          Lis : constant List_Id := List_Containing (N);
@@ -2029,15 +2031,27 @@ package body Sem_Prag is
                   Ptr   : Nat;
                   CC    : Char_Code;
                   C     : Character;
+                  Cent  : constant Entity_Id :=
+                            Cunit_Entity (Current_Sem_Unit);
+
+                  Force : constant Boolean :=
+                            Prag_Id = Pragma_Compile_Time_Warning
+                              and then
+                                Is_Spec_Name (Unit_Name (Current_Sem_Unit))
+                              and then (Ekind (Cent) /= E_Package
+                                          or else not In_Private_Part (Cent));
+                  --  Set True if this is the warning case, and we are in the
+                  --  visible part of a package spec, or in a subprogram spec,
+                  --  in which case we want to force the client to see the
+                  --  warning, even though it is not in the main unit.
 
                begin
-                  Cont := False;
-                  Ptr := 1;
-
                   --  Loop through segments of message separated by line
                   --  feeds. We output these segments as separate messages
                   --  with continuation marks for all but the first.
 
+                  Cont := False;
+                  Ptr := 1;
                   loop
                      Error_Msg_Strlen := 0;
 
@@ -2063,11 +2077,33 @@ package body Sem_Prag is
 
                      Error_Msg_Warn := Prag_Id = Pragma_Compile_Time_Warning;
 
-                     if Cont = False then
-                        Error_Msg_N ("<~", Arg1);
-                        Cont := True;
+                     --  If this is a warning in a spec, then we want clients
+                     --  to see the warning, so mark the message with the
+                     --  special sequence !! to force the warning. In the case
+                     --  of a package spec, we do not force this if we are in
+                     --  the private part of the spec.
+
+                     if Force then
+                        if Cont = False then
+                           Error_Msg_N ("<~!!", Arg1);
+                           Cont := True;
+                        else
+                           Error_Msg_N ("\<~!!", Arg1);
+                        end if;
+
+                     --  Error, rather than warning, or in a body, so we do not
+                     --  need to force visibility for client (error will be
+                     --  output in any case, and this is the situation in which
+                     --  we do not want a client to get a warning, since the
+                     --  warning is in the body or the spec private part.
+
                      else
-                        Error_Msg_N ("\<~", Arg1);
+                        if Cont = False then
+                           Error_Msg_N ("<~", Arg1);
+                           Cont := True;
+                        else
+                           Error_Msg_N ("\<~", Arg1);
+                        end if;
                      end if;
 
                      exit when Ptr > Len;
@@ -2253,7 +2289,7 @@ package body Sem_Prag is
               or else
             Ekind (E) = E_Named_Real
          then
-            Error_Msg_Name_1 := Chars (N);
+            Error_Msg_Name_1 := Pname;
             Error_Msg_N
               ("cannot apply pragma% to named constant!",
                Get_Pragma_Arg (Arg2));
@@ -2713,8 +2749,9 @@ package body Sem_Prag is
 
                elsif Etype (Def_Id) /= Standard_Void_Type
                  and then
-                   (Chars (N) = Name_Export_Procedure
-                      or else Chars (N) = Name_Import_Procedure)
+                   (Pname = Name_Export_Procedure
+                      or else
+                    Pname = Name_Import_Procedure)
                then
                   Match := False;
 
@@ -2792,7 +2829,7 @@ package body Sem_Prag is
                   else
                      if not Ambiguous then
                         Ambiguous := True;
-                        Error_Msg_Name_1 := Chars (N);
+                        Error_Msg_Name_1 := Pname;
                         Error_Msg_N
                           ("pragma% does not uniquely identify subprogram!",
                            N);
@@ -4289,7 +4326,7 @@ package body Sem_Prag is
                Error_Msg_NE ("entity& was previously imported", N, E);
             end if;
 
-            Error_Msg_Name_1 := Chars (N);
+            Error_Msg_Name_1 := Pname;
             Error_Msg_N
               ("\(pragma% applies to all previous entities)", N);
 
@@ -4525,13 +4562,13 @@ package body Sem_Prag is
    begin
       --  Deal with unrecognized pragma
 
-      if not Is_Pragma_Name (Chars (N)) then
+      if not Is_Pragma_Name (Pname) then
          if Warn_On_Unrecognized_Pragma then
-            Error_Msg_Name_1 := Chars (N);
+            Error_Msg_Name_1 := Pname;
             Error_Msg_N ("?unrecognized pragma%!", Pragma_Identifier (N));
 
             for PN in First_Pragma_Name .. Last_Pragma_Name loop
-               if Is_Bad_Spelling_Of (Chars (N), PN) then
+               if Is_Bad_Spelling_Of (Pname, PN) then
                   Error_Msg_Name_1 := PN;
                   Error_Msg_N
                     ("\?possible misspelling of %!", Pragma_Identifier (N));
@@ -4545,7 +4582,7 @@ package body Sem_Prag is
 
       --  Here to start processing for recognized pragma
 
-      Prag_Id := Get_Pragma_Id (Chars (N));
+      Prag_Id := Get_Pragma_Id (Pname);
 
       --  Preset arguments
 
@@ -6647,7 +6684,7 @@ package body Sem_Prag is
             --  If it's an access-to-subprogram type (in particular, not a
             --  subtype), set the flag on that type.
 
-            if Ekind (Named_Entity) in Access_Subprogram_Type_Kind then
+            if Is_Access_Subprogram_Type (Named_Entity) then
                Set_Can_Use_Internal_Rep (Named_Entity, False);
 
             --  Otherwise it's an error (name denotes the wrong sort of entity)
@@ -7419,7 +7456,8 @@ package body Sem_Prag is
                   if Is_Imported (Def_Id)
                     and then Present (First_Rep_Item (Def_Id))
                     and then Nkind (First_Rep_Item (Def_Id)) = N_Pragma
-                    and then Chars (First_Rep_Item (Def_Id)) = Name_Interface
+                    and then
+                      Pragma_Name (First_Rep_Item (Def_Id)) = Name_Interface
                   then
                      null;
                   else
@@ -8251,9 +8289,9 @@ package body Sem_Prag is
             Nod := Next (N);
             while Present (Nod) loop
                if Nkind (Nod) = N_Pragma
-                 and then Chars (Nod) = Name_Main
+                 and then Pragma_Name (Nod) = Name_Main
                then
-                  Error_Msg_Name_1 := Chars (N);
+                  Error_Msg_Name_1 := Pname;
                   Error_Msg_N ("duplicate pragma% not permitted", Nod);
                end if;
 
@@ -8295,9 +8333,9 @@ package body Sem_Prag is
             Nod := Next (N);
             while Present (Nod) loop
                if Nkind (Nod) = N_Pragma
-                 and then Chars (Nod) = Name_Main_Storage
+                 and then Pragma_Name (Nod) = Name_Main_Storage
                then
-                  Error_Msg_Name_1 := Chars (N);
+                  Error_Msg_Name_1 := Pname;
                   Error_Msg_N ("duplicate pragma% not permitted", Nod);
                end if;
 
@@ -8684,7 +8722,7 @@ package body Sem_Prag is
          -- Optimize --
          --------------
 
-         --  pragma Optimize (Time | Space);
+         --  pragma Optimize (Time | Space | Off);
 
          --  The actual check for optimize is done in Gigi. Note that this
          --  pragma does not actually change the optimization setting, it
@@ -8694,6 +8732,33 @@ package body Sem_Prag is
             Check_No_Identifiers;
             Check_Arg_Count (1);
             Check_Arg_Is_One_Of (Arg1, Name_Time, Name_Space, Name_Off);
+
+         ------------------------
+         -- Optimize_Alignment --
+         ------------------------
+
+         --  pragma Optimize_Alignment (Time | Space | Off);
+
+         when Pragma_Optimize_Alignment =>
+            GNAT_Pragma;
+            Check_No_Identifiers;
+            Check_Arg_Count (1);
+            Check_Valid_Configuration_Pragma;
+
+            declare
+               Nam : constant Name_Id := Chars (Get_Pragma_Arg (Arg1));
+            begin
+               case Nam is
+                  when Name_Time =>
+                     Opt.Optimize_Alignment := 'T';
+                  when Name_Space =>
+                     Opt.Optimize_Alignment := 'S';
+                  when Name_Off =>
+                     Opt.Optimize_Alignment := 'O';
+                  when others =>
+                     Error_Pragma_Arg ("invalid argument for pragma%", Arg1);
+               end case;
+            end;
 
          ----------
          -- Pack --
@@ -10508,9 +10573,9 @@ package body Sem_Prag is
                Nod := Next (N);
                while Present (Nod) loop
                   if Nkind (Nod) = N_Pragma
-                    and then Chars (Nod) = Name_Time_Slice
+                    and then Pragma_Name (Nod) = Name_Time_Slice
                   then
-                     Error_Msg_Name_1 := Chars (N);
+                     Error_Msg_Name_1 := Pname;
                      Error_Msg_N ("duplicate pragma% not permitted", Nod);
                   end if;
 
@@ -11165,6 +11230,12 @@ package body Sem_Prag is
                               Set_Warnings_Off
                                 (E, (Chars (Expression (Arg1)) = Name_Off));
 
+                              if Chars (Expression (Arg1)) = Name_Off
+                                and then Warn_On_Warnings_Off
+                              then
+                                 Warnings_Off_Pragmas.Append ((N, E));
+                              end if;
+
                               if Is_Enumeration_Type (E) then
                                  declare
                                     Lit : Entity_Id;
@@ -11296,9 +11367,9 @@ package body Sem_Prag is
 
    function Delay_Config_Pragma_Analyze (N : Node_Id) return Boolean is
    begin
-      return Chars (N) = Name_Interrupt_State
+      return Pragma_Name (N) = Name_Interrupt_State
                or else
-             Chars (N) = Name_Priority_Specific_Dispatching;
+             Pragma_Name (N) = Name_Priority_Specific_Dispatching;
    end Delay_Config_Pragma_Analyze;
 
    -------------------------
@@ -11496,6 +11567,7 @@ package body Sem_Prag is
       Pragma_Normalize_Scalars             => -1,
       Pragma_Obsolescent                   =>  0,
       Pragma_Optimize                      => -1,
+      Pragma_Optimize_Alignment            => -1,
       Pragma_Pack                          =>  0,
       Pragma_Page                          => -1,
       Pragma_Passive                       => -1,
@@ -11575,7 +11647,7 @@ package body Sem_Prag is
          return False;
 
       else
-         C := Sig_Flags (Get_Pragma_Id (Chars (Parent (P))));
+         C := Sig_Flags (Get_Pragma_Id (Parent (P)));
 
          case C is
             when -1 =>
@@ -11612,7 +11684,7 @@ package body Sem_Prag is
    function Is_Pragma_String_Literal (Par : Node_Id) return Boolean is
       Pragn : constant Node_Id := Parent (Par);
       Assoc : constant List_Id := Pragma_Argument_Associations (Pragn);
-      Pname : constant Name_Id := Chars (Pragn);
+      Pname : constant Name_Id := Pragma_Name (Pragn);
       Argn  : Natural;
       N     : Node_Id;
 
@@ -11686,7 +11758,7 @@ package body Sem_Prag is
          if Present (PA) then
             P := First (PA);
             while Present (P) loop
-               if Chars (P) = Name_Suppress_All then
+               if Pragma_Name (P) = Name_Suppress_All then
                   Prepend_To (Context_Items (N),
                     Make_Pragma (Sloc (P),
                       Chars => Name_Suppress,

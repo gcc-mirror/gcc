@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -858,6 +858,10 @@ package Opt is
    --  error is detected then this flag is reset from Generate_Code to
    --  Check_Semantics after generating an error message.
 
+   Optimize_Alignment : Character := 'O';
+   --  Settinng of Optimize_Alignment, set to T/S/O for time/space/off. Can
+   --  be modified by use of pragma Optimize_Alignment.
+
    Original_Operating_Mode : Operating_Mode_Type := Generate_Code;
    --  GNAT
    --  Indicates the original operating mode of the compiler as set by
@@ -1298,6 +1302,12 @@ package Opt is
    --  which have a record representation clause but this component does not
    --  have a component clause. The default is that this warning is disabled.
 
+   Warn_On_Warnings_Off : Boolean := False;
+   --  GNAT
+   --  Set to True to generate warnings for use of Pragma Warnings (Off, ent),
+   --  where either the pragma is never used, or it could be replaced by a
+   --  pragma Unmodified or Unreferenced.
+
    type Warning_Mode_Type is (Suppress, Normal, Treat_As_Error);
    Warning_Mode : Warning_Mode_Type := Normal;
    --  GNAT, GNATBIND
@@ -1338,8 +1348,8 @@ package Opt is
 
    --  These are settings that are used to establish the mode at the start of
    --  each unit. The values defined below can be affected either by command
-   --  line switches, or by the use of appropriate configuration pragmas in the
-   --  gnat.adc file.
+   --  line switches, or by the use of appropriate configuration pragmas in a
+   --  configuration pragma file.
 
    Ada_Version_Config : Ada_Version_Type;
    --  GNAT
@@ -1415,6 +1425,14 @@ package Opt is
    --  mode, as set by a Fast_Math pragma in configuration pragmas. It is
    --  used to set the initial value of Fast_Math at the start of each new
    --  compilation unit.
+
+   Optimize_Alignment_Config : Character;
+   --  GNAT
+   --  This is the value of the configuration switch that controls the
+   --  alignment optimization mode, as set by an Optimize_Alignment pragma.
+   --  It is used to set the initial value of Optimize_Alignment at the start
+   --  of each new compilation unit, except that it is always set to 'O' (off)
+   --  for internal units.
 
    Persistent_BSS_Mode_Config : Boolean;
    --  GNAT
@@ -1553,6 +1571,7 @@ private
       External_Name_Exp_Casing       : External_Casing_Type;
       External_Name_Imp_Casing       : External_Casing_Type;
       Fast_Math                      : Boolean;
+      Optimize_Alignment             : Character;
       Persistent_BSS_Mode            : Boolean;
       Polling_Required               : Boolean;
       Use_VADS_Size                  : Boolean;

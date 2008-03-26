@@ -51,6 +51,7 @@ package body Bcheck is
    procedure Check_Consistent_Interrupt_States;
    procedure Check_Consistent_Locking_Policy;
    procedure Check_Consistent_Normalize_Scalars;
+   procedure Check_Consistent_Optimize_Alignment;
    procedure Check_Consistent_Queuing_Policy;
    procedure Check_Consistent_Restrictions;
    procedure Check_Consistent_Zero_Cost_Exception_Handling;
@@ -86,8 +87,8 @@ package body Bcheck is
       end if;
 
       Check_Consistent_Normalize_Scalars;
+      Check_Consistent_Optimize_Alignment;
       Check_Consistent_Dynamic_Elaboration_Checking;
-
       Check_Consistent_Restrictions;
       Check_Consistent_Interrupt_States;
       Check_Consistent_Dispatching_Policy;
@@ -657,12 +658,11 @@ package body Bcheck is
    --  then all other units in the partition must also be compiled with
    --  Normalized_Scalars in effect.
 
-   --  There is some issue as to whether this consistency check is
-   --  desirable, it is certainly required at the moment by the RM.
-   --  We should keep a watch on the ARG and HRG deliberations here.
-   --  GNAT no longer depends on this consistency (it used to do so,
-   --  but that has been corrected in the latest version, since the
-   --  Initialize_Scalars pragma does not require consistency.
+   --  There is some issue as to whether this consistency check is desirable,
+   --  it is certainly required at the moment by the RM. We should keep a watch
+   --  on the ARG and HRG deliberations here. GNAT no longer depends on this
+   --  consistency (it used to do so, but that is no longer the case, since
+   --  pragma Initialize_Scalars pragma does not require consistency.)
 
    procedure Check_Consistent_Normalize_Scalars is
    begin
@@ -695,6 +695,44 @@ package body Bcheck is
          end loop;
       end if;
    end Check_Consistent_Normalize_Scalars;
+
+   -----------------------------------------
+   -- Check_Consistent_Optimize_Alignment --
+   -----------------------------------------
+
+   --  The rule is that all units other than internal units must be compiled
+   --  with the same setting for Optimize_Alignment. We can exclude internal
+   --  units since they are forced to compile with Optimize_Alignment (Off).
+
+   procedure Check_Consistent_Optimize_Alignment is
+      OA_Setting : Character := ' ';
+      --  Reset when we find a non-internal unit
+
+      OA_Unit : ALI_Id;
+      --  Id of unit from which OA_Setting was set
+
+   begin
+      for A in ALIs.First .. ALIs.Last loop
+         if not Is_Internal_File_Name (ALIs.Table (A).Afile) then
+            if OA_Setting = ' ' then
+               OA_Setting := ALIs.Table (A).Optimize_Alignment_Setting;
+               OA_Unit := A;
+
+            elsif OA_Setting = ALIs.Table (A).Optimize_Alignment_Setting then
+               null;
+
+            else
+               Error_Msg_File_1 := ALIs.Table (OA_Unit).Sfile;
+               Error_Msg_File_2 := ALIs.Table (A).Sfile;
+
+               Consistency_Error_Msg
+                 ("{ and { compiled with different "
+                  & "Optimize_Alignment settings");
+               return;
+            end if;
+         end if;
+      end loop;
+   end Check_Consistent_Optimize_Alignment;
 
    -------------------------------------
    -- Check_Consistent_Queuing_Policy --

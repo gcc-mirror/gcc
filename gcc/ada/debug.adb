@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -93,7 +93,7 @@ package body Debug is
    --  dY   Enable configurable run-time mode
    --  dZ   Generate listing showing the contents of the dispatch tables
 
-   --  d.a  Disable OpenVMS alignment optimization on types
+   --  d.a
    --  d.b
    --  d.c
    --  d.d
@@ -110,11 +110,11 @@ package body Debug is
    --  d.o
    --  d.p
    --  d.q
-   --  d.r
+   --  d.r  Enable OK_To_Reorder_Components in non-variant records
    --  d.s  Disable expansion of slice move, use memmove
    --  d.t  Disable static allocation of library level dispatch tables
    --  d.u
-   --  d.v
+   --  d.v  Enable OK_To_Reorder_Components in variant records
    --  d.w  Do not check for infinite while loops
    --  d.x  No exception handlers
    --  d.y
@@ -138,8 +138,8 @@ package body Debug is
    --  d.P
    --  d.Q
    --  d.R
-   --  d.S
-   --  d.T
+   --  d.S  Force Optimize_Alignment (Space)
+   --  d.T  Force Optimize_Alignment (Time)
    --  d.U
    --  d.V
    --  d.W
@@ -474,32 +474,31 @@ package body Debug is
    --       line has an internally generated number used for references between
    --       tagged types and primitives. For each primitive the output has the
    --       following fields:
+   --
    --         - Letter 'P' or letter 's': The former indicates that this
    --           primitive will be located in a primary dispatch table. The
    --           latter indicates that it will be located in a secondary
    --           dispatch table.
+   --
    --         - Name of the primitive. In case of predefined Ada primitives
    --           the text "(predefined)" is added before the name, and these
    --           acronyms are used: SR (Stream_Read), SW (Stream_Write), SI
    --           (Stream_Input), SO (Stream_Output), DA (Deep_Adjust), DF
    --           (Deep_Finalize). In addition Oeq identifies the equality
    --           operator, and "_assign" the assignment.
+   --
    --         - If the primitive covers interface types, two extra fields
    --           referencing other primitives are generated: "Alias" references
    --           the primitive of the tagged type that covers an interface
    --           primitive, and "AI_Alias" references the covered interface
    --           primitive.
+   --
    --         - The expression "at #xx" indicates the slot of the dispatch
    --           table occupied by such primitive in its corresponding primary
    --           or secondary dispatch table.
+   --
    --         - In case of abstract subprograms the text "is abstract" is
    --           added at the end of the line.
-
-   --  d.a  Disable OpenVMS alignment optimization on types.  On OpenVMS,
-   --       record types whose size is odd "in between" (e.g. 17 bits) are
-   --       over-aligned to the next power of 2 (until 8 bytes).  This over
-   --       alignment improve generated code and is more consistent with
-   --       what Dec Ada does.
 
    --  d.f  Suppress folding of static expressions. This of course results
    --       in seriously non-conforming behavior, but is useful sometimes
@@ -520,6 +519,9 @@ package body Debug is
    --       main source (this corresponds to a previous behavior of -gnatl and
    --       is used for running the ACATS tests).
 
+   --  d.r  Forces the flag OK_To_Reorder_Components to be set in all record
+   --       base types that have no discriminants.
+
    --  d.s  Normally the compiler expands slice moves into loops if overlap
    --       might be possible. This debug flag inhibits that expansion, and
    --       the back end is expected to use an appropriate routine to handle
@@ -530,6 +532,9 @@ package body Debug is
    --       This debug switch disables this modification and reverts to the
    --       previous dynamic construction of tables. It is there as a possible
    --       work around if we run into trouble with the new implementation.
+
+   --  d.v  Forces the flag OK_To_Reorder_Components to be set in all record
+   --       base types that have at least one discriminant (v = variant).
 
    --  d.w  This flag turns off the scanning of while loops to detect possible
    --       infinite loops.
@@ -542,6 +547,10 @@ package body Debug is
    --  d.I  Inspector mode. Relevant for VM_Target /= None. Try to generate
    --       byte code, even in case of unsupported construct, for the sake
    --       of static analysis tools.
+
+   --  d.S  Force Optimize_Alignment (Space) mode as the default
+
+   --  d.T  Force Optimize_Alignment (Time) mode as the default
 
    --  d1   Error messages have node numbers where possible. Normally error
    --       messages have only source locations. This option is useful when
