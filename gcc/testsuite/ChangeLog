@@ -1,5 +1,8 @@
 2008-03-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/35546
+	* g++.dg/ext/attrib33.C: New test.
+
 	PR c++/35332
 	* g++.dg/other/error27.C: New test.
 
