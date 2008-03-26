@@ -397,6 +397,16 @@ package body VMS_Conv is
             Params   => new Parameter_Array'(1 => Unlimited_Files),
             Defext   => "   "),
 
+         Sync =>
+           (Cname    => new S'("SYNC"),
+            Usage    => new S'("GNAT SYNC name /qualifiers"),
+            VMS_Only => False,
+            Unixcmd  => new S'("gnatsync"),
+            Unixsws  => null,
+            Switches => Sync_Switches'Access,
+            Params   => new Parameter_Array'(1 => Unlimited_Files),
+            Defext   => "   "),
+
          Elim =>
            (Cname    => new S'("ELIM"),
             Usage    => new S'("GNAT ELIM name /qualifiers"),
