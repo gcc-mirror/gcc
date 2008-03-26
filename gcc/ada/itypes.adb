@@ -68,7 +68,7 @@ package body Itypes is
          Set_Is_Frozen (Typ);
       end if;
 
-      if Ekind in Access_Subprogram_Type_Kind then
+      if Ekind in Access_Subprogram_Kind then
          Set_Can_Use_Internal_Rep (Typ, not Always_Compatible_Rep_On_Target);
       end if;
 
