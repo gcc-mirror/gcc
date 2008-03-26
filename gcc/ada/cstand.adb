@@ -379,13 +379,26 @@ package body CStand is
       Set_Is_Pure (Standard_Standard);
       Set_Is_Compilation_Unit (Standard_Standard);
 
-      --  Create type declaration nodes for standard types
+      --  Create type/subtype declaration nodes for standard types
 
       for S in S_Types loop
-         Decl := New_Node (N_Full_Type_Declaration, Stloc);
-         Set_Defining_Identifier (Decl, Standard_Entity (S));
+
+         --  Subtype declaration case
+
+         if S = S_Natural or else S = S_Positive then
+            Decl := New_Node (N_Subtype_Declaration, Stloc);
+            Set_Subtype_Indication (Decl,
+              New_Occurrence_Of (Standard_Integer, Stloc));
+
+         --  Full type declaration case
+
+         else
+            Decl := New_Node (N_Full_Type_Declaration, Stloc);
+         end if;
+
          Set_Is_Frozen (Standard_Entity (S));
          Set_Is_Public (Standard_Entity (S));
+         Set_Defining_Identifier (Decl, Standard_Entity (S));
          Append (Decl, Decl_S);
       end loop;
 
@@ -768,13 +781,7 @@ package body CStand is
       Set_Entity (E_Id, Standard_Positive);
       Set_Etype (E_Id, Standard_Positive);
 
-      --  Create subtype declaration for Natural
-
-      Decl := New_Node (N_Subtype_Declaration, Stloc);
-      Set_Defining_Identifier (Decl, Standard_Natural);
-      Set_Subtype_Indication (Decl,
-        New_Occurrence_Of (Standard_Integer, Stloc));
-      Append (Decl, Decl_S);
+      --  Setup entity for Naturalend Create_Standard;
 
       Set_Ekind          (Standard_Natural, E_Signed_Integer_Subtype);
       Set_Etype          (Standard_Natural, Base_Type (Standard_Integer));
@@ -788,16 +795,8 @@ package body CStand is
         Lb  => Uint_0,
         Hb  => Intval (High_Bound (Scalar_Range (Standard_Integer))));
       Set_Is_Constrained (Standard_Natural);
-      Set_Is_Frozen      (Standard_Natural);
-      Set_Is_Public      (Standard_Natural);
 
-      --  Create subtype declaration for Positive
-
-      Decl := New_Node (N_Subtype_Declaration, Stloc);
-      Set_Defining_Identifier (Decl, Standard_Positive);
-      Set_Subtype_Indication (Decl,
-        New_Occurrence_Of (Standard_Integer, Stloc));
-      Append (Decl, Decl_S);
+      --  Setup entity for Positive
 
       Set_Ekind          (Standard_Positive, E_Signed_Integer_Subtype);
       Set_Etype          (Standard_Positive, Base_Type (Standard_Integer));
@@ -812,8 +811,6 @@ package body CStand is
          Lb  => Uint_1,
          Hb  => Intval (High_Bound (Scalar_Range (Standard_Integer))));
       Set_Is_Constrained   (Standard_Positive);
-      Set_Is_Frozen        (Standard_Positive);
-      Set_Is_Public        (Standard_Positive);
 
       --  Create declaration for package ASCII
 

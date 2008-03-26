@@ -54,16 +54,11 @@ package Stand is
       S_Standard,
       S_ASCII,
 
-      --  Types defined in package Standard
+      --  Types and subtypes defined in package Standard (in the order in which
+      --  they appear in the RM, so that the declarations are in the right
+      --  order for the purposes of ASIS traversals
 
       S_Boolean,
-      S_Character,
-      S_Wide_Character,
-      S_Wide_Wide_Character,
-      S_String,
-      S_Wide_String,
-      S_Wide_Wide_String,
-      S_Duration,
 
       S_Short_Short_Integer,
       S_Short_Integer,
@@ -71,20 +66,28 @@ package Stand is
       S_Long_Integer,
       S_Long_Long_Integer,
 
+      S_Natural,
+      S_Positive,
+
       S_Short_Float,
       S_Float,
       S_Long_Float,
       S_Long_Long_Float,
 
+      S_Character,
+      S_Wide_Character,
+      S_Wide_Wide_Character,
+
+      S_String,
+      S_Wide_String,
+      S_Wide_Wide_String,
+
+      S_Duration,
+
       --  Enumeration literals for type Boolean
 
       S_False,
       S_True,
-
-      --  Subtypes declared in package Standard
-
-      S_Natural,
-      S_Positive,
 
       --  Exceptions declared in package Standard
 
@@ -218,7 +221,7 @@ package Stand is
       S_DEL);           -- 16#7F#
 
    subtype S_Types is
-     Standard_Entity_Type range S_Boolean .. S_Long_Long_Float;
+     Standard_Entity_Type range S_Boolean .. S_Duration;
 
    subtype S_Exceptions is
      Standard_Entity_Type range S_Constraint_Error .. S_Tasking_Error;
