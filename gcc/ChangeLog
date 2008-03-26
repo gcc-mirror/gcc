@@ -1,3 +1,11 @@
+2008-03-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/cygming.h (BIGGEST_ALIGNMENT): Removed.
+
+	* config/i386/i386.c (ix86_function_arg_boundary): Check
+	BIGGEST_ALIGNMENT instead of 128.
+	(setup_incoming_varargs_64): Likewise.
+
 2008-03-26  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in (DEPFILES): Add missing '/'.
