@@ -1,5 +1,9 @@
 2008-03-26  Arnaud Charlet  <charlet@adacore.com>
 
+	* adaint.c: Fix warnings.
+
+2008-03-26  Arnaud Charlet  <charlet@adacore.com>
+
 	* g-dirope.ads, g-dirope.adb: (Dir_Type_Value): Moved to spec.
 
 2008-03-26  Arnaud Charlet  <charlet@adacore.com>
