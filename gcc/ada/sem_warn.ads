@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,13 +27,43 @@
 --  about uses of uninitialized variables and unused with's. It also has
 --  some unrelated routines related to the generation of warnings.
 
+with Alloc; use Alloc;
+with Table;
 with Types; use Types;
 
 package Sem_Warn is
 
+   ------------------------
+   -- Warnings Off Table --
+   ------------------------
+
+   type Warnings_Off_Entry is record
+      N : Node_Id;
+      --  A pragma Warnings (Off, ent) node
+
+      E : Entity_Id;
+      --  The entity involved
+   end record;
+
+   --  An entry is made in the following table for any valid Pragma Warnings
+   --  (Off, entity) encountered while Opt.Warn_On_Warnings_Off is True. It
+   --  is used to generate warnings on any of these pragmas that turn out not
+   --  to be needed, or that could be replaced by Unmodified/Unreferenced.
+
+   package Warnings_Off_Pragmas is new Table.Table (
+     Table_Component_Type => Warnings_Off_Entry,
+     Table_Index_Type     => Int,
+     Table_Low_Bound      => 0,
+     Table_Initial        => Alloc.Warnings_Off_Pragmas_Initial,
+     Table_Increment      => Alloc.Warnings_Off_Pragmas_Increment,
+     Table_Name           => "Name_Warnings_Off_Pragmas");
+
    --------------------
    -- Initialization --
    --------------------
+
+   procedure Initialize;
+   --  Initialize this package for new compilation
 
    function Set_Warning_Switch (C : Character) return Boolean;
    --  This function sets the warning switch or switches corresponding to the
@@ -120,6 +150,12 @@ package Sem_Warn is
    --  Warnings about unreferenced entities are collected till the end of
    --  the compilation process (see Check_Unset_Reference for further
    --  details). This procedure outputs waiting warnings, if any.
+
+   procedure Output_Unused_Warnings_Off_Warnings;
+   --  Warnings about pragma Warnings (Off, ent) statements that are unused,
+   --  or could be replaced by Unmodified/Unreferenced pragmas, are collected
+   --  till the end of the compilation process. This procedure outputs waiting
+   --  warnings if any.
 
    ----------------------------
    -- Other Warning Routines --
