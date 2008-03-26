@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -641,7 +641,10 @@ package body Sem_Disp is
          begin
             E := First_Entity (Subp);
             while Present (E) loop
-               if Is_Access_Type (Etype (E)) then
+
+               --  For an access parameter, check designated type.
+
+               if Ekind (Etype (E)) = E_Anonymous_Access_Type then
                   Typ := Designated_Type (Etype (E));
                else
                   Typ := Etype (E);

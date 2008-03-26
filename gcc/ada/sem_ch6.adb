@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1260,6 +1260,13 @@ package body Sem_Ch6 is
       --  when the subprogram has a body that acts as spec. This is done for
       --  some cases of inlining, and for private protected ops.
 
+      procedure Set_Trivial_Subprogram (N : Node_Id);
+      --  Sets the Is_Trivial_Subprogram flag in both spec and body of the
+      --  subprogram whose body is being analyzed. N is the statement node
+      --  causing the flag to be set, if the following statement is a return
+      --  of an entity, we mark the entity as set in source to suppress any
+      --  warning on the stylized use of function stubs with a dummy return.
+
       procedure Verify_Overriding_Indicator;
       --  If there was a previous spec, the entity has been entered in the
       --  current scope previously. If the body itself carries an overriding
@@ -1329,10 +1336,10 @@ package body Sem_Ch6 is
 
             if Nkind (Prag) = N_Pragma
               and then
-                 (Get_Pragma_Id (Chars (Prag)) = Pragma_Inline_Always
-                  or else
+                 (Pragma_Name (Prag) = Name_Inline_Always
+                   or else
                     (Front_End_Inlining
-                     and then Get_Pragma_Id (Chars (Prag)) = Pragma_Inline))
+                      and then Pragma_Name (Prag) = Name_Inline))
               and then
                  Chars
                    (Expression (First (Pragma_Argument_Associations (Prag))))
@@ -1378,7 +1385,7 @@ package body Sem_Ch6 is
                   Analyze (Prag);
                   Set_Has_Pragma_Inline (Subp);
 
-                  if Get_Pragma_Id (Chars (Prag)) = Pragma_Inline_Always then
+                  if Pragma_Name (Prag) = Name_Inline_Always then
                      Set_Is_Inlined (Subp);
                      Set_Next_Rep_Item (Prag, First_Rep_Item (Subp));
                      Set_First_Rep_Item (Subp, Prag);
@@ -1418,6 +1425,30 @@ package body Sem_Ch6 is
          end loop;
       end Copy_Parameter_List;
 
+      ----------------------------
+      -- Set_Trivial_Subprogram --
+      ----------------------------
+
+      procedure Set_Trivial_Subprogram (N : Node_Id) is
+         Nxt : constant Node_Id := Next (N);
+
+      begin
+         Set_Is_Trivial_Subprogram (Body_Id);
+
+         if Present (Spec_Id) then
+            Set_Is_Trivial_Subprogram (Spec_Id);
+         end if;
+
+         if Present (Nxt)
+           and then Nkind (Nxt) = N_Simple_Return_Statement
+           and then No (Next (Nxt))
+           and then Present (Expression (Nxt))
+           and then Is_Entity_Name (Expression (Nxt))
+         then
+            Set_Never_Set_In_Source (Entity (Expression (Nxt)), False);
+         end if;
+      end Set_Trivial_Subprogram;
+
       ---------------------------------
       -- Verify_Overriding_Indicator --
       ---------------------------------
@@ -1434,7 +1465,7 @@ package body Sem_Ch6 is
             if Is_Overriding_Operation (Spec_Id) then
                Error_Msg_NE
                  ("subprogram& overrides inherited operation",
-                    Body_Spec, Spec_Id);
+                  Body_Spec, Spec_Id);
 
             --  If this is not a primitive operation the overriding indicator
             --  is altogether illegal.
@@ -1519,8 +1550,7 @@ package body Sem_Ch6 is
             --  subprogram will get frozen too late (there may be code within
             --  the body that depends on the subprogram having been frozen,
             --  such as uses of extra formals), so we force it to be frozen
-            --  here. Same holds if the body and the spec are compilation
-            --  units.
+            --  here. Same holds if the body and spec are compilation units.
 
             if No (Spec_Id) then
                Freeze_Before (N, Body_Id);
@@ -1710,10 +1740,11 @@ package body Sem_Ch6 is
                                            N_Subprogram_Renaming_Declaration))
             then
                Conformant := True;
+
             else
                Check_Conformance
                  (Body_Id, Spec_Id,
-                   Fully_Conformant, True, Conformant, Body_Id);
+                  Fully_Conformant, True, Conformant, Body_Id);
             end if;
 
             --  If the body is not fully conformant, we have to decide if we
@@ -1777,8 +1808,7 @@ package body Sem_Ch6 is
                end;
             end if;
 
-            --  Now make the formals visible, and place subprogram
-            --  on scope stack.
+            --  Make the formals visible, and place subprogram on scope stack
 
             Install_Formals (Spec_Id);
             Last_Formal := Last_Entity (Spec_Id);
@@ -1820,65 +1850,18 @@ package body Sem_Ch6 is
          end if;
       end if;
 
-      --  Ada 2005 (AI-251): Check wrong placement of abstract interface
-      --  primitives, and update anonymous access returns with limited views.
+      --  If the return type is an anonymous access type whose designated type
+      --  is the limited view of a class-wide type and the non-limited view is
+      --  available, update the return type accordingly.
 
       if Ada_Version >= Ada_05
         and then Comes_From_Source (N)
       then
          declare
-            E    : Entity_Id;
             Etyp : Entity_Id;
             Rtyp : Entity_Id;
 
          begin
-            --  Check the type of the formals
-
-            E := First_Entity (Body_Id);
-            while Present (E) loop
-               Etyp := Etype (E);
-
-               if Is_Access_Type (Etyp) then
-                  Etyp := Directly_Designated_Type (Etyp);
-               end if;
-
-               if not Is_Class_Wide_Type (Etyp)
-                 and then Is_Interface (Etyp)
-               then
-                  Error_Msg_Name_1 := Chars (Defining_Entity (N));
-                  Error_Msg_N
-                    ("(Ada 2005) abstract interface primitives must be" &
-                     " defined in package specs", N);
-                  exit;
-               end if;
-
-               Next_Entity (E);
-            end loop;
-
-            --  In case of functions, check the type of the result
-
-            if Ekind (Body_Id) = E_Function then
-               Etyp := Etype (Body_Id);
-
-               if Is_Access_Type (Etyp) then
-                  Etyp := Directly_Designated_Type (Etyp);
-               end if;
-
-               if not Is_Class_Wide_Type (Etyp)
-                 and then Is_Interface (Etyp)
-               then
-                  Error_Msg_Name_1 := Chars (Defining_Entity (N));
-                  Error_Msg_N
-                    ("(Ada 2005) abstract interface primitives must be" &
-                     " defined in package specs", N);
-               end if;
-            end if;
-
-            --  If the return type is an anonymous access type whose
-            --  designated type is the limited view of a class-wide type
-            --  and the non-limited view is available. update the return
-            --  type accordingly.
-
             Rtyp := Etype (Current_Scope);
 
             if Ekind (Rtyp) = E_Anonymous_Access_Type then
@@ -2069,7 +2052,12 @@ package body Sem_Ch6 is
       end if;
 
       --  Now we are going to check for variables that are never modified in
-      --  the body of the procedure. We omit these checks if the first
+      --  the body of the procedure. But first we deal with a special case
+      --  where we want to modify this check. If the body of the subprogram
+      --  starts with a raise statement or its equivalent, or if the body
+      --  consists entirely of a null statement, then it is pretty obvious
+      --  that it is OK to not reference the parameters. For example, this
+      --  might be the following common idiom for a stubbed function:
       --  statement of the procedure raises an exception. In particular this
       --  deals with the common idiom of a stubbed function, which might
       --  appear as something like
@@ -2081,10 +2069,17 @@ package body Sem_Ch6 is
       --        return X;
       --     end F;
 
-      --  Here the purpose of X is simply to satisfy the (annoying)
-      --  requirement in Ada that there be at least one return, and we
-      --  certainly do not want to go posting warnings on X that it is not
-      --  initialized!
+      --  Here the purpose of X is simply to satisfy the annoying requirement
+      --  in Ada that there be at least one return, and we certainly do not
+      --  want to go posting warnings on X that it is not initialized! On
+      --  the other hand, if X is entirely unreferenced that should still
+      --  get a warning.
+
+      --  What we do is to detect these cases, and if we find them, flag the
+      --  subprogram as being Is_Trivial_Subprogram and then use that flag to
+      --  suppress unwanted warnings. For the case of the function stub above
+      --  we have a special test to set X as apparently assigned to suppress
+      --  the warning.
 
       declare
          Stm : Node_Id;
@@ -2107,10 +2102,18 @@ package body Sem_Ch6 is
             Ostm : constant Node_Id := Original_Node (Stm);
 
          begin
-            --  If explicit raise statement, return with no checks
+            --  If explicit raise statement, turn on flag
 
             if Nkind (Ostm) = N_Raise_Statement then
-               return;
+               Set_Trivial_Subprogram (Stm);
+
+            --  If null statement, and no following statemennts, turn on flag
+
+            elsif Nkind (Stm) = N_Null_Statement
+              and then Comes_From_Source (Stm)
+              and then No (Next (Stm))
+            then
+               Set_Trivial_Subprogram (Stm);
 
             --  Check for explicit call cases which likely raise an exception
 
@@ -2122,22 +2125,23 @@ package body Sem_Ch6 is
                   begin
                      --  If the procedure is marked No_Return, then likely it
                      --  raises an exception, but in any case it is not coming
-                     --  back here, so no need to check beyond the call.
+                     --  back here, so turn on the flag.
 
                      if Ekind (Ent) = E_Procedure
                        and then No_Return (Ent)
                      then
-                        return;
+                        Set_Trivial_Subprogram (Stm);
 
                      --  If the procedure name is Raise_Exception, then also
                      --  assume that it raises an exception. The main target
                      --  here is Ada.Exceptions.Raise_Exception, but this name
                      --  is pretty evocative in any context! Note that the
                      --  procedure in Ada.Exceptions is not marked No_Return
-                     --  because of the annoying case of the null exception Id.
+                     --  because of the annoying case of the null exception Id
+                     --  when operating in Ada 95 mode.
 
                      elsif Chars (Ent) = Name_Raise_Exception then
-                        return;
+                        Set_Trivial_Subprogram (Stm);
                      end if;
                   end;
                end if;
@@ -2453,10 +2457,10 @@ package body Sem_Ch6 is
       --  variable as is done for other inlined calls.
 
       procedure Remove_Pragmas;
-      --  A pragma Unreferenced that mentions a formal parameter has no meaning
-      --  when the body is inlined and the formals are rewritten. Remove it
-      --  from body to inline. The analysis of the non-inlined body will handle
-      --  the pragma properly.
+      --  A pragma Unreferenced or pragma Unmodified that mentions a formal
+      --  parameter has no meaning when the body is inlined and the formals
+      --  are rewritten. Remove it from body to inline. The analysis of the
+      --  non-inlined body will handle the pragma properly.
 
       function Uses_Secondary_Stack (Bod : Node_Id) return Boolean;
       --  If the body of the subprogram includes a call that returns an
@@ -2709,7 +2713,9 @@ package body Sem_Ch6 is
             Nxt := Next (Decl);
 
             if Nkind (Decl) = N_Pragma
-              and then Chars (Decl) = Name_Unreferenced
+              and then (Pragma_Name (Decl) = Name_Unreferenced
+                          or else
+                        Pragma_Name (Decl) = Name_Unmodified)
             then
                Remove (Decl);
             end if;
