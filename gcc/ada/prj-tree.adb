@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1047,18 +1047,18 @@ package body Prj.Tree is
          With_Clause := Next_With_Clause_Of (With_Clause, In_Tree);
       end loop;
 
-      --  If it is not an imported project, it might be the imported project
+      --  If it is not an imported project, it might be an extended project
 
       if With_Clause = Empty_Node then
-         Result :=
-           Extended_Project_Of
-             (Project_Declaration_Of (Project, In_Tree), In_Tree);
+         Result := Project;
+         loop
+            Result :=
+              Extended_Project_Of
+                (Project_Declaration_Of (Result, In_Tree), In_Tree);
 
-         if Result /= Empty_Node
-           and then Name_Of (Result, In_Tree) /= With_Name
-         then
-            Result := Empty_Node;
-         end if;
+            exit when Result = Empty_Node
+              or else Name_Of (Result, In_Tree) = With_Name;
+         end loop;
       end if;
 
       return Result;
