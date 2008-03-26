@@ -3270,7 +3270,7 @@ $(ALL_HOST_OBJS): | $(generated_files)
 # Include the auto-generated dependencies for all host objects.
 DEPFILES = \
   $(foreach obj,$(ALL_HOST_OBJS),\
-    $(dir $(obj))$(DEPDIR)$(patsubst %.o,%.Po,$(notdir $(obj))))
+    $(dir $(obj))$(DEPDIR)/$(patsubst %.o,%.Po,$(notdir $(obj))))
 -include $(DEPFILES)
 
 # Include the auto-generated dependencies for all build objects.
