@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1386,12 +1386,15 @@ package body Sem_Util is
          ADT : Elmt_Id;
 
       begin
-         ADT := Next_Elmt (First_Elmt (Access_Disp_Table (T)));
+         ADT := Next_Elmt (Next_Elmt (First_Elmt (Access_Disp_Table (T))));
          while Present (ADT)
             and then Ekind (Node (ADT)) = E_Constant
             and then Related_Type (Node (ADT)) /= Iface
          loop
-            --  Skip the two secondary dispatch tables of Iface
+            --  Skip the secondary dispatch tables of Iface
+
+            Next_Elmt (ADT);
+            Next_Elmt (ADT);
             Next_Elmt (ADT);
             Next_Elmt (ADT);
          end loop;
@@ -3769,6 +3772,15 @@ package body Sem_Util is
       return Entity_Id (Get_Name_Table_Info (Id));
    end Get_Name_Entity_Id;
 
+   -------------------
+   -- Get_Pragma_Id --
+   -------------------
+
+   function Get_Pragma_Id (N : Node_Id) return Pragma_Id is
+   begin
+      return Get_Pragma_Id (Pragma_Name (N));
+   end Get_Pragma_Id;
+
    ---------------------------
    -- Get_Referenced_Object --
    ---------------------------
@@ -3906,31 +3918,42 @@ package body Sem_Util is
    -----------------------------
 
    function Has_Abstract_Interfaces
-     (Tagged_Type   : Entity_Id;
+     (T             : Entity_Id;
       Use_Full_View : Boolean := True) return Boolean
    is
       Typ : Entity_Id;
 
    begin
-      pragma Assert (Is_Record_Type (Tagged_Type)
-         and then Is_Tagged_Type (Tagged_Type));
+      --  Handle concurrent types
 
-      --  Handle concurrent record types
-
-      if Is_Concurrent_Record_Type (Tagged_Type)
-        and then Is_Non_Empty_List (Abstract_Interface_List (Tagged_Type))
-      then
-         return True;
+      if Is_Concurrent_Type (T) then
+         Typ := Corresponding_Record_Type (T);
+      else
+         Typ := T;
       end if;
 
-      Typ := Tagged_Type;
+      if not Present (Typ)
+        or else not Is_Tagged_Type (Typ)
+      then
+         return False;
+      end if;
+
+      pragma Assert (Is_Record_Type (Typ));
 
       --  Handle private types
 
       if Use_Full_View
-        and then Present (Full_View (Tagged_Type))
+        and then Present (Full_View (Typ))
       then
-         Typ := Full_View (Tagged_Type);
+         Typ := Full_View (Typ);
+      end if;
+
+      --  Handle concurrent record types
+
+      if Is_Concurrent_Record_Type (Typ)
+        and then Is_Non_Empty_List (Abstract_Interface_List (Typ))
+      then
+         return True;
       end if;
 
       loop
@@ -3953,7 +3976,7 @@ package body Sem_Util is
             --  Protect the frontend against wrong source with cyclic
             --  derivations
 
-            or else Etype (Typ) = Tagged_Type;
+            or else Etype (Typ) = T;
 
          --  Climb to the ancestor type handling private types
 
@@ -8910,8 +8933,9 @@ package body Sem_Util is
    procedure Set_Convention (E : Entity_Id; Val : Snames.Convention_Id) is
    begin
       Basic_Set_Convention (E, Val);
+
       if Is_Type (E)
-        and then Ekind (Base_Type (E)) in Access_Subprogram_Type_Kind
+        and then Is_Access_Subprogram_Type (Base_Type (E))
         and then Has_Foreign_Convention (E)
       then
          Set_Can_Use_Internal_Rep (E, False);
@@ -8931,6 +8955,93 @@ package body Sem_Util is
    begin
       Set_Name_Entity_Id (Chars (E), E);
    end Set_Current_Entity;
+
+   ---------------------------
+   -- Set_Debug_Info_Needed --
+   ---------------------------
+
+   procedure Set_Debug_Info_Needed (T : Entity_Id) is
+
+      procedure Set_Debug_Info_Needed_If_Not_Set (E : Entity_Id);
+      pragma Inline (Set_Debug_Info_Needed_If_Not_Set);
+      --  Used to set debug info in a related node if not set already
+
+      --------------------------------------
+      -- Set_Debug_Info_Needed_If_Not_Set --
+      --------------------------------------
+
+      procedure Set_Debug_Info_Needed_If_Not_Set (E : Entity_Id) is
+      begin
+         if Present (E)
+           and then not Needs_Debug_Info (E)
+         then
+            Set_Debug_Info_Needed (E);
+         end if;
+      end Set_Debug_Info_Needed_If_Not_Set;
+
+   --  Start of processing for Set_Debug_Info_Needed
+
+   begin
+      --  Nothing to do if argument is Empty or has Debug_Info_Off set, which
+      --  indicates that Debug_Info_Needed is never required for the entity.
+
+      if No (T)
+        or else Debug_Info_Off (T)
+      then
+         return;
+      end if;
+
+      --  Set flag in entity itself. Note that we will go through the following
+      --  circuitry even if the flag is already set on T. That's intentional,
+      --  it makes sure that the flag will be set in subsidiary entities.
+
+      Set_Needs_Debug_Info (T);
+
+      --  Set flag on subsidiary entities if not set already
+
+      if Is_Object (T) then
+         Set_Debug_Info_Needed_If_Not_Set (Etype (T));
+
+      elsif Is_Type (T) then
+         Set_Debug_Info_Needed_If_Not_Set (Etype (T));
+
+         if Is_Record_Type (T) then
+            declare
+               Ent : Entity_Id := First_Entity (T);
+            begin
+               while Present (Ent) loop
+                  Set_Debug_Info_Needed_If_Not_Set (Ent);
+                  Next_Entity (Ent);
+               end loop;
+            end;
+
+         elsif Is_Array_Type (T) then
+            Set_Debug_Info_Needed_If_Not_Set (Component_Type (T));
+
+            declare
+               Indx : Node_Id := First_Index (T);
+            begin
+               while Present (Indx) loop
+                  Set_Debug_Info_Needed_If_Not_Set (Etype (Indx));
+                  Indx := Next_Index (Indx);
+               end loop;
+            end;
+
+            if Is_Packed (T) then
+               Set_Debug_Info_Needed_If_Not_Set (Packed_Array_Type (T));
+            end if;
+
+         elsif Is_Access_Type (T) then
+            Set_Debug_Info_Needed_If_Not_Set (Directly_Designated_Type (T));
+
+         elsif Is_Private_Type (T) then
+            Set_Debug_Info_Needed_If_Not_Set (Full_View (T));
+
+         elsif Is_Protected_Type (T) then
+            Set_Debug_Info_Needed_If_Not_Set (Corresponding_Record_Type (T));
+         end if;
+      end if;
+   end Set_Debug_Info_Needed;
 
    ---------------------------------
    -- Set_Entity_With_Style_Check --

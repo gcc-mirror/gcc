@@ -90,15 +90,16 @@ package Exp_Atag is
    --  Generates: TSD (Tag).Transportable;
 
    function Build_Inherit_Predefined_Prims
-     (Loc              : Source_Ptr;
-      Old_Tag_Node     : Node_Id;
-      New_Tag_Node     : Node_Id) return Node_Id;
+     (Loc          : Source_Ptr;
+      Old_Tag_Node : Node_Id;
+      New_Tag_Node : Node_Id) return Node_Id;
    --  Build code that inherits the predefined primitives of the parent.
    --
    --  Generates: Predefined_DT (New_T).D (All_Predefined_Prims) :=
    --               Predefined_DT (Old_T).D (All_Predefined_Prims);
    --
-   --  Required to build the dispatch tables with the 3.4 backend.
+   --  Required to build non-library level dispatch tables. Also required
+   --  when compiling without static dispatch tables support.
 
    function Build_Inherit_Prims
      (Loc          : Source_Ptr;

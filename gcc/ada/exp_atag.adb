@@ -369,64 +369,32 @@ package body Exp_Atag is
       New_Tag_Node : Node_Id) return Node_Id
    is
    begin
-      if RTE_Available (RE_DT) then
-         return
-           Make_Assignment_Statement (Loc,
-             Name =>
-               Make_Slice (Loc,
-                 Prefix =>
-                   Make_Explicit_Dereference (Loc,
-                     Unchecked_Convert_To (RTE (RE_Predef_Prims_Table_Ptr),
-                       Make_Selected_Component (Loc,
-                         Prefix =>
-                           Build_DT (Loc, New_Tag_Node),
-                         Selector_Name =>
-                           New_Reference_To
-                             (RTE_Record_Component (RE_Predef_Prims), Loc)))),
-                 Discrete_Range => Make_Range (Loc,
-                   Make_Integer_Literal (Loc, Uint_1),
-                   New_Reference_To (RTE (RE_Max_Predef_Prims), Loc))),
+      return
+        Make_Assignment_Statement (Loc,
+          Name =>
+            Make_Slice (Loc,
+              Prefix =>
+                Make_Explicit_Dereference (Loc,
+                  Unchecked_Convert_To (RTE (RE_Predef_Prims_Table_Ptr),
+                    Make_Explicit_Dereference (Loc,
+                      Unchecked_Convert_To (RTE (RE_Addr_Ptr),
+                        New_Tag_Node)))),
+              Discrete_Range => Make_Range (Loc,
+                Make_Integer_Literal (Loc, Uint_1),
+                New_Reference_To (RTE (RE_Max_Predef_Prims), Loc))),
 
-             Expression =>
-               Make_Slice (Loc,
-                 Prefix =>
-                   Make_Explicit_Dereference (Loc,
-                     Unchecked_Convert_To (RTE (RE_Predef_Prims_Table_Ptr),
-                       Make_Selected_Component (Loc,
-                         Prefix =>
-                           Build_DT (Loc, Old_Tag_Node),
-                         Selector_Name =>
-                           New_Reference_To
-                             (RTE_Record_Component (RE_Predef_Prims), Loc)))),
-
-                 Discrete_Range =>
-                   Make_Range (Loc,
-                     Low_Bound  => Make_Integer_Literal (Loc, 1),
-                     High_Bound =>
-                       New_Reference_To (RTE (RE_Max_Predef_Prims), Loc))));
-      else
-         return
-           Make_Assignment_Statement (Loc,
-             Name =>
-               Make_Slice (Loc,
-                 Prefix =>
-                   Make_Explicit_Dereference (Loc,
-                     Build_Predef_Prims (Loc, New_Tag_Node)),
-                 Discrete_Range => Make_Range (Loc,
-                   Make_Integer_Literal (Loc, Uint_1),
-                   New_Reference_To (RTE (RE_Max_Predef_Prims), Loc))),
-
-             Expression =>
-               Make_Slice (Loc,
-                 Prefix =>
-                   Make_Explicit_Dereference (Loc,
-                     Build_Predef_Prims (Loc, Old_Tag_Node)),
-                 Discrete_Range =>
-                   Make_Range (Loc,
-                     Low_Bound  => Make_Integer_Literal (Loc, 1),
-                     High_Bound =>
-                       New_Reference_To (RTE (RE_Max_Predef_Prims), Loc))));
-      end if;
+          Expression =>
+            Make_Slice (Loc,
+              Prefix =>
+                Make_Explicit_Dereference (Loc,
+                  Unchecked_Convert_To (RTE (RE_Predef_Prims_Table_Ptr),
+                    Make_Explicit_Dereference (Loc,
+                      Unchecked_Convert_To (RTE (RE_Addr_Ptr),
+                        Old_Tag_Node)))),
+              Discrete_Range =>
+                Make_Range (Loc,
+                  Make_Integer_Literal (Loc, 1),
+                  New_Reference_To (RTE (RE_Max_Predef_Prims), Loc))));
    end Build_Inherit_Predefined_Prims;
 
    ------------------------
@@ -472,8 +440,15 @@ package body Exp_Atag is
    begin
       return
          Make_Assignment_Statement (Loc,
-           Name       => Build_Get_Predefined_Prim_Op_Address (Loc,
-                           Tag_Node, Position),
+           Name =>
+             Make_Indexed_Component (Loc,
+               Prefix =>
+                 Unchecked_Convert_To (RTE (RE_Predef_Prims_Table_Ptr),
+                   Make_Explicit_Dereference (Loc,
+                     Unchecked_Convert_To (RTE (RE_Addr_Ptr), Tag_Node))),
+               Expressions =>
+                 New_List (Make_Integer_Literal (Loc, Position))),
+
            Expression => Address_Node);
    end Build_Set_Predefined_Prim_Op_Address;
 

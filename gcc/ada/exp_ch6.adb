@@ -3388,7 +3388,7 @@ package body Exp_Ch6 is
          --  not be posting warnings on the inlined body so it is unneeded.
 
          elsif Nkind (N) = N_Pragma
-           and then Chars (N) = Name_Unreferenced
+           and then Pragma_Name (N) = Name_Unreferenced
          then
             Rewrite (N, Make_Null_Statement (Sloc (N)));
             return OK;
@@ -4756,14 +4756,14 @@ package body Exp_Ch6 is
             return;
          end if;
 
-         --  Skip the first access-to-dispatch-table pointer since it leads
-         --  to the primary dispatch table. We are only concerned with the
-         --  secondary dispatch table pointers. Note that the access-to-
-         --  dispatch-table pointer corresponds to the first implemented
-         --  interface retrieved below.
+         --  Skip the first two access-to-dispatch-table pointers since they
+         --  leads to the primary dispatch table (predefined DT and user
+         --  defined DT). We are only concerned with the secondary dispatch
+         --  table pointers. Note that the access-to- dispatch-table pointer
+         --  corresponds to the first implemented interface retrieved below.
 
          Iface_DT_Ptr :=
-           Next_Elmt (First_Elmt (Access_Disp_Table (Tagged_Typ)));
+           Next_Elmt (Next_Elmt (First_Elmt (Access_Disp_Table (Tagged_Typ))));
 
          while Present (Iface_DT_Ptr)
             and then Ekind (Node (Iface_DT_Ptr)) = E_Constant
@@ -4776,22 +4776,40 @@ package body Exp_Ch6 is
                  Thunk_Code,
 
                  Build_Set_Predefined_Prim_Op_Address (Loc,
-                   Tag_Node => New_Reference_To (Node (Iface_DT_Ptr), Loc),
+                   Tag_Node =>
+                     New_Reference_To (Node (Next_Elmt (Iface_DT_Ptr)), Loc),
                    Position => DT_Position (Prim),
                    Address_Node =>
-                     Make_Attribute_Reference (Loc,
-                       Prefix         => New_Reference_To (Thunk_Id, Loc),
-                       Attribute_Name => Name_Address)),
+                     Unchecked_Convert_To (RTE (RE_Address),
+                       Make_Attribute_Reference (Loc,
+                         Prefix         => New_Reference_To (Thunk_Id, Loc),
+                         Attribute_Name => Name_Unrestricted_Access))),
 
                  Build_Set_Predefined_Prim_Op_Address (Loc,
-                   Tag_Node => New_Reference_To
-                                 (Node (Next_Elmt (Iface_DT_Ptr)), Loc),
+                   Tag_Node =>
+                     New_Reference_To
+                      (Node (Next_Elmt (Next_Elmt (Next_Elmt (Iface_DT_Ptr)))),
+                       Loc),
                    Position => DT_Position (Prim),
                    Address_Node =>
-                     Make_Attribute_Reference (Loc,
-                       Prefix         => New_Reference_To (Prim, Loc),
-                       Attribute_Name => Name_Address))));
+                     Unchecked_Convert_To (RTE (RE_Address),
+                       Make_Attribute_Reference (Loc,
+                         Prefix         => New_Reference_To (Prim, Loc),
+                         Attribute_Name => Name_Unrestricted_Access)))));
             end if;
+
+            --  Skip the tag of the predefined primitives dispatch table
+
+            Next_Elmt (Iface_DT_Ptr);
+            pragma Assert (Has_Thunks (Node (Iface_DT_Ptr)));
+
+            --  Skip the tag of the no-thunks dispatch table
+
+            Next_Elmt (Iface_DT_Ptr);
+            pragma Assert (not Has_Thunks (Node (Iface_DT_Ptr)));
+
+            --  Skip the tag of the predefined primitives no-thunks dispatch
+            --  table
 
             Next_Elmt (Iface_DT_Ptr);
             pragma Assert (not Has_Thunks (Node (Iface_DT_Ptr)));
