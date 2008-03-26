@@ -206,6 +206,7 @@ package body Snames is
      "no_run_time#" &
      "no_strict_aliasing#" &
      "normalize_scalars#" &
+     "optimize_alignment#" &
      "polling#" &
      "persistent_bss#" &
      "priority_specific_dispatching#" &
@@ -495,6 +496,7 @@ package body Snames is
      "modulus#" &
      "null_parameter#" &
      "object_size#" &
+     "old#" &
      "partition_id#" &
      "passed_by_reference#" &
      "pool_address#" &
@@ -778,6 +780,8 @@ package body Snames is
      "stack#" &
      "switches#" &
      "symbolic_link_supported#" &
+     "sync#" &
+     "synchronize#" &
      "toolchain_description#" &
      "toolchain_version#" &
      "runtime_library_dir#" &
