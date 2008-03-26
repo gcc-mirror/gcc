@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -315,14 +315,21 @@ package body Osint.C is
          --  Remove extension preparing to replace it
 
          declare
-            Name  : constant String  := Name_Buffer (1 .. Dot_Index);
+            Name  : String  := Name_Buffer (1 .. Dot_Index);
             First : Positive;
 
          begin
             Name_Buffer (1 .. Output_Object_File_Name'Length) :=
               Output_Object_File_Name.all;
-            Dot_Index := 0;
 
+            --  Put two names in canonical case, to allow object file names
+            --  with upper-case letters on Windows.
+
+            Canonical_Case_File_Name (Name);
+            Canonical_Case_File_Name
+              (Name_Buffer (1 .. Output_Object_File_Name'Length));
+
+            Dot_Index := 0;
             for J in reverse Output_Object_File_Name'Range loop
                if Name_Buffer (J) = '.' then
                   Dot_Index := J;
