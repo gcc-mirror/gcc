@@ -98,8 +98,7 @@
 	* config/v850/t-v850 (v850-c.o): Update.
 	* config/t-vxworks (vxworks.o): Update.
 	* config/t-sol2 (sol2-c.o, sol2.o): Update.
-	* config/t-darwin (darwin.o, darwin-c.o, darwin-driver.o):
-	Update.
+	* config/t-darwin (darwin.o, darwin-c.o, darwin-driver.o): Update.
 	* config/spu/t-spu-elf (spu-c.o): Update.
 	(spu.o): Remove.
 	* config/sh/t-symbian (sh-c.o): Update.
@@ -174,21 +173,17 @@
 	(collect2.o, c-opts.o, gcc.o, gccspec.o, gcc-options.o,
 	cppdefault.o, protoize.o, unprotoize.o, intl.o, version.o,
 	prefix.o, toplev.o): Reduce to variable setting.
-	(libbackend.o): Use COMPILE.  Remove most dependencies.  Move
-	later.
+	(libbackend.o): Use COMPILE.  Remove most dependencies.  Move later.
 	($(out_object_file), gcc-options.o): New targets.
-	($(ALL_HOST_OBJS)): New target.
-	Include dependency files.
+	($(ALL_HOST_OBJS)): New target.  Include dependency files.
 	* configure: Rebuilt.
-	* configure.ac: Call ZW_CREATE_DEPDIR,
-	ZW_PROG_COMPILER_DEPENDENCIES.
-	* doc/sourcebuild.texi (Front End Directory): Document new
-	variable.
+	* configure.ac: Call ZW_CREATE_DEPDIR, ZW_PROG_COMPILER_DEPENDENCIES.
+	* doc/sourcebuild.texi (Front End Directory): Document new variable.
 
 2008-03-25  Douglas Gregor  <doug.gregor@gmail.com>
 
-       * c-common.c (c_sizeof_or_alignof_type): If we're not allowed to
-       complain when we hit an error, return ERROR_MARK_NODE.
+	* c-common.c (c_sizeof_or_alignof_type): If we're not allowed to
+	complain when we hit an error, return ERROR_MARK_NODE.
 
 2008-03-25  Naveen.H.S  <naveen.hs@kpitcummins.com>
 
@@ -198,8 +193,7 @@
 
 2008-03-25  Naveen.H.S  <naveen.hs@kpitcummins.com>
 
-	* config/sh/sh.c (sh_expand_t_scc): Emit movrt for SH2A if
-	possible.
+	* config/sh/sh.c (sh_expand_t_scc): Emit movrt for SH2A if possible.
 	* config/sh/sh.md (xorsi3_movrt, movrt): New insns.
 
 2008-03-25  Naveen.H.S  <naveen.hs@kpitcummins.com>
@@ -212,8 +206,7 @@
 
 	* config/sh/constraints.md (I28): New constraint.
 	* config/sh/sh.c (broken_move): Add support for movi20s.
-	* config/sh/sh.md (movsi_ie): Add the alternative for
-	movi20s.
+	* config/sh/sh.md (movsi_ie): Add the alternative for movi20s.
 
 2008-03-25  Anil Paranjape  <anil.paranjape@kpitcummins.com>
 	    Jayant Sonar  <Jayant.sonar@kpitcummins.com>

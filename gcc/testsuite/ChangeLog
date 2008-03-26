@@ -1,3 +1,9 @@
+2008-03-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse-13.c: Include <mm_malloc.h>
+	before redefinitions of extern and __inline.
+	* gcc.target/i386/sse-13.c: Ditto.
+
 2008-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/35332
@@ -19,15 +25,15 @@
 
 2008-03-26  Douglas Gregor  <doug.gregor@gmail.com>
 
-       * g++.dg/cpp0x/variadic84.C: Update to reflect the change in
-       variadic template template parameter binding semantics.
-       * g++.dg/cpp0x/variadic85.C: Ditto.
-       * g++.dg/cpp0x/variadic88.C: New.
-       * g++.dg/cpp0x/variadic89.C: New.
-       * g++.dg/cpp0x/variadic90.C: New.
-       * g++.dg/cpp0x/variadic-ex14.C: Update to reflect the change in
-       variadic template template parameter binding semantics.
-       * g++.dg/cpp0x/variadic-lambda.C: New.
+	* g++.dg/cpp0x/variadic84.C: Update to reflect the change in
+	variadic template template parameter binding semantics.
+	* g++.dg/cpp0x/variadic85.C: Ditto.
+	* g++.dg/cpp0x/variadic88.C: New.
+	* g++.dg/cpp0x/variadic89.C: New.
+	* g++.dg/cpp0x/variadic90.C: New.
+	* g++.dg/cpp0x/variadic-ex14.C: Update to reflect the change in
+	variadic template template parameter binding semantics.
+	* g++.dg/cpp0x/variadic-lambda.C: New.
 
 2008-03-25  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
@@ -46,18 +52,18 @@
 
 2008-03-25  Douglas Gregor  <doug.gregor@gmail.com>
 
-       * g++.dg/template/sfinae4.C: New.
-       * g++.dg/template/sfinae5.C: New.
-       * g++.dg/template/sfinae6.C: New.
-       * g++.dg/template/sfinae6_neg.C: New.
-       * g++.dg/template/sfinae7.C: New.
-       * g++.dg/template/sfinae8.C: New.
-       * g++.dg/template/sfinae9.C: New.
-       * g++.dg/template/sfinae10.C: New.
-       * g++.dg/template/sfinae11.C: New.
-       * g++.dg/template/sfinae12.C: New.
-       * g++.dg/template/sfinae13.C: New.
-       * g++.dg/template/sfinae14C: New.
+	* g++.dg/template/sfinae4.C: New.
+	* g++.dg/template/sfinae5.C: New.
+	* g++.dg/template/sfinae6.C: New.
+	* g++.dg/template/sfinae6_neg.C: New.
+	* g++.dg/template/sfinae7.C: New.
+	* g++.dg/template/sfinae8.C: New.
+	* g++.dg/template/sfinae9.C: New.
+	* g++.dg/template/sfinae10.C: New.
+	* g++.dg/template/sfinae11.C: New.
+	* g++.dg/template/sfinae12.C: New.
+	* g++.dg/template/sfinae13.C: New.
+	* g++.dg/template/sfinae14C: New.
 
 2008-03-25  Naveen.H.S  <naveen.hs@kpitcummins.com>
 
@@ -140,8 +146,8 @@
 
 	* gcc.dg/tree-ssa/ssa-ccp-17.c: New testcase.
 
-2008-03-20 Victor Kaplansky  <victork@gcc.gnu.org>
-	   Uros Bizjak  <ubizjak@gmail.com>
+2008-03-20  Victor Kaplansky  <victork@gcc.gnu.org>
+	    Uros Bizjak  <ubizjak@gmail.com>
 
 	PR testsuite/34168
 	* lib/target-supports.exp (check_sse2_hw_available): New procedure.

@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow -msse4 -msse5" } */
 
+#include <mm_malloc.h>
+
 /* Test that the intrinsics compile with optimization.  All of them are
    defined as inline functions in {,x,e,p,t,s,a,b}mmintrin.h and mm3dnow.h
    that reference the proper builtin functions.  Defining away "extern" and
