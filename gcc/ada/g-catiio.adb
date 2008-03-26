@@ -536,7 +536,7 @@ package body GNAT.Calendar.Time_IO is
         constant array (Ada.Calendar.Month_Number) of String3 :=
          ("JAN", "FEB", "MAR", "APR", "MAY", "JUN",
           "JUL", "AUG", "SEP", "OCT", "NOV", "DEC");
-      --  Short version of the month names, used when parsing date strings.
+      --  Short version of the month names, used when parsing date strings
 
       S                                                     : String := Str;
 

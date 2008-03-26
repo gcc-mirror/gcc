@@ -46,7 +46,7 @@ package System.Program_Info is
    --  those explicitly created under program control.
 
    function Sproc_Stack_Size return Integer;
-   --  The size, in bytes, of the sproc's initial stack.
+   --  The size, in bytes, of the sproc's initial stack
 
    function Default_Time_Slice  return Duration;
    --  The default time quanta for round-robin scheduling of threads of

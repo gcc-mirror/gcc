@@ -51,7 +51,7 @@ package System.VMS_Exception_Table is
 private
 
    function Base_Code_In (Code : SSL.Exception_Code) return SSL.Exception_Code;
-   --  Value of Code with the severity bits masked off.
+   --  Value of Code with the severity bits masked off
 
    function Coded_Exception (X : SSL.Exception_Code)
      return SSL.Exception_Data_Ptr;

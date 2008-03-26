@@ -23,11 +23,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides a set of target dependent routines to build
---  static, dynamic and shared libraries.  There are several packages
---  providing the actual routines; this package calls them indirectly
---  by means of access-to-subprogram values; each target-dependent
---  package initializes these values in its elaboration block.
+--  This package provides a set of target dependent routines to build static,
+--  dynamic and shared libraries. There are several packages providing
+--  the actual routines. This package calls them indirectly by means of
+--  access-to-subprogram values. Each target-dependent package initializes
+--  these values in its elaboration block.
 
 with Prj; use Prj;
 

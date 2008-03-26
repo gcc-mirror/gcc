@@ -1280,6 +1280,8 @@ package body Uintp is
       Discard_Quotient  : Boolean;
       Discard_Remainder : Boolean)
    is
+      pragma Warnings (Off, Quotient);
+      pragma Warnings (Off, Remainder);
    begin
       pragma Assert (Right /= Uint_0);
 

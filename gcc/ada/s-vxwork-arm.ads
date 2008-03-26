@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   S p e c                                --
 --                                                                          --
---            Copyright (C) 1998-2005 Free Software Foundation, Inc.        --
+--          Copyright (C) 1998-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,14 +31,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the ARM VxWorks version of this package.
+--  This is the ARM VxWorks version of this package
 
 package System.VxWorks is
    pragma Preelaborate (System.VxWorks);
 
    --  Floating point context record. ARM version
 
-   --  The record definition below matches what arch/arm/fppArmLib.h says.
+   --  The record definition below matches what arch/arm/fppArmLib.h says
 
    type FP_CONTEXT is record
       Dummy : Integer;
@@ -48,6 +48,6 @@ package System.VxWorks is
    pragma Convention (C, FP_CONTEXT);
 
    Num_HW_Interrupts : constant := 256;
-   --  Number of entries in hardware interrupt vector table.
+   --  Number of entries in hardware interrupt vector table
 
 end System.VxWorks;

@@ -41,7 +41,7 @@
 --  This unit may be used directly from an application program by providing
 --  an appropriate WITH, and the interface can be expected to remain stable.
 
---  This is the Windows (native) version of this module.
+--  This is the Windows (native) version of this module
 
 with System.OS_Interface;
 
