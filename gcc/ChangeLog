@@ -1,3 +1,11 @@
+2008-03-26  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (widen_bitfield): Remove declaration.
+	* tree-ssa-ccp.c (visit_assignment): Remove unneeded code.
+	(widen_bitfield): Remove function.
+	* tree-ssa-dom.c (record_equivalences_from_stmt): Remove unneeded
+	code.
+
 2008-03-25  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR target/31558

@@ -1595,38 +1595,13 @@ record_equivalences_from_stmt (tree stmt, int may_optimize_p, stmt_ann_t ann)
       tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
       tree new_stmt;
 
-      /* FIXME: If the LHS of the assignment is a bitfield and the RHS
-         is a constant, we need to adjust the constant to fit into the
-         type of the LHS.  If the LHS is a bitfield and the RHS is not
-	 a constant, then we can not record any equivalences for this
-	 statement since we would need to represent the widening or
-	 narrowing of RHS.  This fixes gcc.c-torture/execute/921016-1.c
-	 and should not be necessary if GCC represented bitfields
-	 properly.  */
-      if (lhs_code == COMPONENT_REF
-	  && DECL_BIT_FIELD (TREE_OPERAND (lhs, 1)))
-	{
-	  if (TREE_CONSTANT (rhs))
-	    rhs = widen_bitfield (rhs, TREE_OPERAND (lhs, 1), lhs);
-	  else
-	    rhs = NULL;
+      /* Build a new statement with the RHS and LHS exchanged.  */
+      new_stmt = build_gimple_modify_stmt (rhs, lhs);
+      create_ssa_artificial_load_stmt (new_stmt, stmt, true);
 
-	  /* If the value overflowed, then we can not use this equivalence.  */
-	  if (rhs && ! is_gimple_min_invariant (rhs))
-	    rhs = NULL;
-	}
-
-      if (rhs)
-	{
-	  /* Build a new statement with the RHS and LHS exchanged.  */
-	  new_stmt = build_gimple_modify_stmt (rhs, lhs);
-
-	  create_ssa_artificial_load_stmt (new_stmt, stmt, true);
-
-	  /* Finally enter the statement into the available expression
-	     table.  */
-	  lookup_avail_expr (new_stmt, true);
-	}
+      /* Finally enter the statement into the available expression
+	 table.  */
+      lookup_avail_expr (new_stmt, true);
     }
 }
 

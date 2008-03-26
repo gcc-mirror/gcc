@@ -942,7 +942,6 @@ bool fold_stmt (tree *);
 bool fold_stmt_inplace (tree);
 tree get_symbol_constant_value (tree);
 tree fold_const_aggregate_ref (tree);
-tree widen_bitfield (tree, tree, tree);
 
 /* In tree-vrp.c  */
 tree vrp_evaluate_conditional (tree, tree);
