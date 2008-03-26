@@ -2,12 +2,11 @@
 --                                                                          --
 --                GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                  --
 --                                                                          --
---     S Y S T E M . T A S K I N G . P R O T E C T E D _ O B J E C T S .    --
---                          S I N G L E _ E N T R Y                         --
+--             SYSTEM.TASKING.PROTECTED_OBJECTS.SINGLE_ENTRY                --
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,13 +34,13 @@
 --  This package provides an optimized version of Protected_Objects.Operations
 --  and Protected_Objects.Entries making the following assumptions:
 --
---  PO have only one entry
---  There is only one caller at a time (No_Entry_Queue)
---  There is no dynamic priority support (No_Dynamic_Priorities)
---  No Abort Statements
---    (No_Abort_Statements, Max_Asynchronous_Select_Nesting => 0)
---  PO are at library level
---  None of the tasks will terminate (no need for finalization)
+--    PO have only one entry
+--    There is only one caller at a time (No_Entry_Queue)
+--    There is no dynamic priority support (No_Dynamic_Priorities)
+--    No Abort Statements
+--      (No_Abort_Statements, Max_Asynchronous_Select_Nesting => 0)
+--    PO are at library level
+--    None of the tasks will terminate (no need for finalization)
 --
 --  This interface is intended to be used in the ravenscar profile, the
 --  compiler is responsible for ensuring that the conditions mentioned above
@@ -268,7 +267,7 @@ package System.Tasking.Protected_Objects.Single_Entry is
 
    function Protected_Count_Entry (Object : Protection_Entry)
      return Natural;
-   --  Return the number of entry calls on Object (0 or 1).
+   --  Return the number of entry calls on Object (0 or 1)
 
    function Protected_Single_Entry_Caller (Object : Protection_Entry)
      return Task_Id;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -36,10 +36,8 @@
 ------------------------------------------------------------------------------
 
 with System.Task_Primitives;
---  Used for Suspension_Object
 
 with Ada.Finalization;
---  Used for Limited_Controlled
 
 package Ada.Synchronous_Task_Control is
    pragma Preelaborate_05;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,20 +31,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Tasking;
---  Used for Detect_Blocking
---           Self
-
 with Ada.Exceptions;
---  Used for Raise_Exception
 
+with System.Tasking;
 with System.Task_Primitives.Operations;
---  Used for Initialize
---           Finalize
---           Current_State
---           Set_False
---           Set_True
---           Suspend_Until_True
 
 package body Ada.Synchronous_Task_Control is
 

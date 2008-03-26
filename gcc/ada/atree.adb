@@ -2738,12 +2738,13 @@ package body Atree is
 
       if Field2 (Cur_Node) not in Node_Range then
          return Traverse_Field (Cur_Node, Field2 (Cur_Node), 2);
-      elsif Is_Syntactic_Field (Nkind (Cur_Node), 2) and then
-        Field2 (Cur_Node) /= Empty_List_Or_Node
+
+      elsif Is_Syntactic_Field (Nkind (Cur_Node), 2)
+        and then Field2 (Cur_Node) /= Empty_List_Or_Node
       then
-         --  Here is the tail recursion step, we reset Cur_Node and jump
-         --  back to the start of the procedure, which has the same
-         --  semantic effect as a call.
+         --  Here is the tail recursion step, we reset Cur_Node and jump back
+         --  to the start of the procedure, which has the same semantic effect
+         --  as a call.
 
          Cur_Node := Node_Id (Field2 (Cur_Node));
          goto Tail_Recurse;

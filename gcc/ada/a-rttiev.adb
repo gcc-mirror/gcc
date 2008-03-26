@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2005-2006, Free Software Foundation, Inc.        --
+--           Copyright (C) 2005-2008, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,6 @@
 with System.Task_Primitives.Operations;
 with System.Tasking.Utilities;
 with System.Soft_Links;
---  used for Abort_Defer/Undefer
 
 with Ada.Containers.Doubly_Linked_Lists;
 pragma Elaborate_All (Ada.Containers.Doubly_Linked_Lists);
@@ -46,7 +45,6 @@ pragma Elaborate_All (Ada.Containers.Doubly_Linked_Lists);
 package body Ada.Real_Time.Timing_Events is
 
    use System.Task_Primitives.Operations;
-   --  for Write_Lock and Unlock
 
    package SSL renames System.Soft_Links;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,21 +32,9 @@
 ------------------------------------------------------------------------------
 
 with System.Task_Primitives.Operations;
---  used for Write_Lock
---           Unlock
---           Set_Priority
---           Wakeup
---           Self
-
 with System.Tasking;
---  used for Task_Id
-
 with System.Parameters;
---  used for Single_Lock
-
 with System.Soft_Links;
---  use for Abort_Defer
---          Abort_Undefer
 
 with Ada.Unchecked_Conversion;
 

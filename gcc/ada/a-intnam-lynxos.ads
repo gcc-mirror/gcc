@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1991-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1991-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,7 +43,6 @@
 --  SIGINT: made available for Ada handler
 
 with System.OS_Interface;
---  used for names of interrupts
 
 package Ada.Interrupts.Names is
 

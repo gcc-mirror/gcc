@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,17 +31,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains all the GNULL primitives that interface directly
---  with the underlying OS.
+--  This package contains all the GNULL primitives that interface directly with
+--  the underlying OS.
 
 with System.Parameters;
---  used for Size_Type
-
 with System.Tasking;
---  used for Task_Id
-
 with System.OS_Interface;
---  used for Thread_Id
 
 package System.Task_Primitives.Operations is
    pragma Preelaborate;

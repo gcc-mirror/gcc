@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1991-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1991-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,9 +34,12 @@
 --  This is the FreeBSD THREADS version of this package
 
 with System.OS_Interface;
---  used for names of interrupts
 
 package Ada.Interrupts.Names is
+
+   --  Beware that the mapping of names to signals may be many-to-one. There
+   --  may be aliases. Also, for all signal names that are not supported on
+   --  the current system the value of the corresponding constant will be zero.
 
    SIGHUP : constant Interrupt_ID :=
      System.OS_Interface.SIGHUP;      --  hangup
@@ -127,10 +130,5 @@ package Ada.Interrupts.Names is
 
    SIGUSR2 : constant Interrupt_ID :=
      System.OS_Interface.SIGUSR2;     --  user defined signal 2
-
-   --  Beware that the mapping of names to signals may be
-   --  many-to-one.  There may be aliases.  Also, for all
-   --  signal names that are not supported on the current system
-   --  the value of the corresponding constant will be zero.
 
 end Ada.Interrupts.Names;

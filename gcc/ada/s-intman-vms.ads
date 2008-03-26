@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1991-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1991-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,8 +48,6 @@
 --  implemented as visible arrays rather than functions.)
 
 with System.OS_Interface;
---  used for Signal
---           sigset_t
 
 package System.Interrupt_Management is
    pragma Preelaborate;

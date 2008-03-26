@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2006, AdaCore                     --
+--                     Copyright (C) 1995-2008, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,19 +37,9 @@ pragma Polling (Off);
 --  tasking operations. It causes infinite loops and other problems.
 
 with System.Task_Primitives.Operations;
---  used for Write_Lock
---           Unlock
---           Self
---           Set_Ceiling
-
 with System.Parameters;
---  used for Runtime_Traces
-
 with System.Traces;
---  used for Send_Trace_Info
-
 with System.Soft_Links.Tasking;
---  Used for Init_Tasking_Soft_Links
 
 package body System.Tasking.Protected_Objects is
 

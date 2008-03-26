@@ -2,12 +2,11 @@
 --                                                                          --
 --                GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                  --
 --                                                                          --
---      S Y S T E M . T A S K I N G . P R O T E C T E D _ O B J E C T S .   --
---                               E N T R I E S                              --
+--                SYSTEM.TASKING.PROTECTED_OBJECTS.ENTRIES                  --
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,11 +31,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains all the simple primitives related to
---  Protected_Objects with entries (i.e init, lock, unlock).
+--  This package contains all simple primitives related to Protected_Objects
+--  with entries (i.e init, lock, unlock).
+
 --  The handling of protected objects with no entries is done in
 --  System.Tasking.Protected_Objects, the complex routines for protected
 --  objects with entries in System.Tasking.Protected_Objects.Operations.
+
 --  The split between Entries and Operations is needed to break circular
 --  dependencies inside the run time.
 
@@ -44,8 +45,6 @@
 --  Any changes to this interface may require corresponding compiler changes.
 
 with Ada.Finalization;
---  used for Limited_Controlled
-
 with Ada.Unchecked_Conversion;
 
 package System.Tasking.Protected_Objects.Entries is

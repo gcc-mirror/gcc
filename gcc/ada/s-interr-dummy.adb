@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2005, AdaCore                     --
+--                     Copyright (C) 1995-2007, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,8 +33,6 @@
 ------------------------------------------------------------------------------
 
 --  This version is for systems that do not support interrupts (or signals)
-
-with Ada.Exceptions;
 
 package body System.Interrupts is
 
@@ -293,9 +291,7 @@ package body System.Interrupts is
 
    procedure Unimplemented is
    begin
-      Ada.Exceptions.Raise_Exception
-        (Program_Error'Identity, "interrupts/signals not implemented");
-      raise Program_Error;
+      raise Program_Error with "interrupts/signals not implemented";
    end Unimplemented;
 
 end System.Interrupts;

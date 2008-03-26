@@ -2,12 +2,11 @@
 --                                                                          --
 --                GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                  --
 --                                                                          --
---      S Y S T E M . T A S K I N G . P R O T E C T E D _ O B J E C T S .   --
---                               E N T R I E S                              --
+--                SYSTEM.TASKING.PROTECTED_OBJECTS.ENTRIES                  --
 --                                                                          --
---                                  B o d y                                 --
+--                               B o d y                                    --
 --                                                                          --
---         Copyright (C) 1998-2007, Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,32 +43,13 @@
 
 --  Note: the compiler generates direct calls to this interface, via Rtsfind
 
-with Ada.Exceptions;
---  Used for Exception_Occurrence_Access
---           Raise_Exception
-
 with System.Task_Primitives.Operations;
---  Used for Initialize_Lock
---           Write_Lock
---           Unlock
---           Get_Priority
---           Wakeup
---           Set_Ceiling
+with System.Restrictions;
+with System.Parameters;
 
 with System.Tasking.Initialization;
---  Used for Defer_Abort,
---           Undefer_Abort,
---           Change_Base_Priority
-
 pragma Elaborate_All (System.Tasking.Initialization);
---  This insures that tasking is initialized if any protected objects are
---  created.
-
-with System.Restrictions;
---  Used for Abort_Allowed
-
-with System.Parameters;
---  Used for Single_Lock
+--  To insure that tasking is initialized if any protected objects are created
 
 package body System.Tasking.Protected_Objects.Entries is
 
@@ -77,7 +57,6 @@ package body System.Tasking.Protected_Objects.Entries is
 
    use Parameters;
    use Task_Primitives.Operations;
-   use Ada.Exceptions;
 
    ----------------
    -- Local Data --
@@ -126,7 +105,7 @@ package body System.Tasking.Protected_Objects.Entries is
          STPO.Write_Lock (Object.L'Unrestricted_Access, Ceiling_Violation);
 
          if Ceiling_Violation then
-            Raise_Exception (Program_Error'Identity, "Ceiling Violation");
+            raise Program_Error with "Ceiling Violation";
          end if;
 
          if Single_Lock then
@@ -246,8 +225,7 @@ package body System.Tasking.Protected_Objects.Entries is
    is
    begin
       if Object.Finalized then
-         Raise_Exception
-           (Program_Error'Identity, "Protected Object is finalized");
+         raise Program_Error with "Protected Object is finalized";
       end if;
 
       --  If pragma Detect_Blocking is active then, as described in the ARM
@@ -306,7 +284,7 @@ package body System.Tasking.Protected_Objects.Entries is
       Lock_Entries (Object, Ceiling_Violation);
 
       if Ceiling_Violation then
-         Raise_Exception (Program_Error'Identity, "Ceiling Violation");
+         raise Program_Error with "Ceiling Violation";
       end if;
    end Lock_Entries;
 
@@ -319,8 +297,7 @@ package body System.Tasking.Protected_Objects.Entries is
 
    begin
       if Object.Finalized then
-         Raise_Exception
-           (Program_Error'Identity, "Protected Object is finalized");
+         raise Program_Error with "Protected Object is finalized";
       end if;
 
       --  If pragma Detect_Blocking is active then, as described in the ARM
@@ -345,7 +322,7 @@ package body System.Tasking.Protected_Objects.Entries is
       Read_Lock (Object.L'Access, Ceiling_Violation);
 
       if Ceiling_Violation then
-         Raise_Exception (Program_Error'Identity, "Ceiling Violation");
+         raise Program_Error with "Ceiling Violation";
       end if;
 
       --  We are entering in a protected action, so that we increase the

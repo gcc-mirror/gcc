@@ -31,7 +31,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Exceptions;
 with Ada.IO_Exceptions;
 with Ada.Streams;
 
@@ -483,10 +482,8 @@ package body System.Shared_Storage is
                   --  Error if we cannot create the file
 
                   when others =>
-                     Ada.Exceptions.Raise_Exception
-                       (Program_Error'Identity,
-                        "Cannot create shared variable file for """ &
-                        S & '"'); -- "
+                     raise Program_Error with
+                        "Cannot create shared variable file for """ & S & '"';
                end;
          end;
 

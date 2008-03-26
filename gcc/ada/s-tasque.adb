@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2006, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2008, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,19 +31,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This version of the body implements queueing policy according to the
---  policy specified by the pragma Queuing_Policy. When no such pragma
---  is specified FIFO policy is used as default.
+--  This version of the body implements queueing policy according to the policy
+--  specified by the pragma Queuing_Policy. When no such pragma is specified
+--  FIFO policy is used as default.
 
 with System.Task_Primitives.Operations;
---  used for Write_Lock
---           Unlock
-
 with System.Tasking.Initialization;
---  used for Wakeup_Entry_Caller
-
 with System.Parameters;
---  used for Single_Lock
 
 package body System.Tasking.Queuing is
 

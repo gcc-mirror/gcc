@@ -1037,7 +1037,7 @@ package body Ada.Text_IO is
          Item := ASCII.NUL;
 
       --  If we are before an upper half character just return it (this can
-      --  happen if there are two calls to Look_Ahead in a row.
+      --  happen if there are two calls to Look_Ahead in a row).
 
       elsif File.Before_Upper_Half_Character then
          End_Of_Line := False;
@@ -2253,7 +2253,7 @@ begin
    Standard_In.Is_Text_File       := True;
    Standard_In.Access_Method      := 'T';
    Standard_In.Self               := Standard_In;
-   Standard_In.WC_Method         := Default_WCEM;
+   Standard_In.WC_Method          := Default_WCEM;
 
    Standard_Out.Stream            := stdout;
    Standard_Out.Name              := Out_Name'Access;

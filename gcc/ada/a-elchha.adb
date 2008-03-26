@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,11 +38,7 @@ pragma Compiler_Unit;
 pragma Warnings (On);
 
 with System.Standard_Library; use System.Standard_Library;
---  Used for Adafinal
-
 with System.Soft_Links;
---  Used for Task_Termination_Handler
---           Task_Termination_NT
 
 procedure Ada.Exceptions.Last_Chance_Handler
   (Except : Exception_Occurrence)

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1999-2007, Free Software Foundation, Inc.          --
+--         Copyright (C) 1999-2008, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,31 +46,18 @@ pragma Polling (Off);
 --  tasking operations. It causes infinite loops and other problems.
 
 with Ada.Exceptions;
---  used for Exception_Occurrence
 
 with System.Task_Primitives.Operations;
---  used for Enter_Task
---           Write_Lock
---           Unlock
---           Wakeup
---           Get_Priority
+with System.Soft_Links.Tasking;
+with System.Secondary_Stack;
+with System.Storage_Elements;
 
 with System.Soft_Links;
---  used for the non-tasking routines (*_NT) that refer to global data.
---  They are needed here before the tasking run time has been elaborated.
---  used for Create_TSD
---  This package also provides initialization routines for task specific data.
---  The GNARL must call these to be sure that all non-tasking
+--  Used for the non-tasking routines (*_NT) that refer to global data. They
+--  are needed here before the tasking run time has been elaborated. used for
+--  Create_TSD This package also provides initialization routines for task
+--  specific data. The GNARL must call these to be sure that all non-tasking
 --  Ada constructs will work.
-
-with System.Soft_Links.Tasking;
---  Used for Init_Tasking_Soft_Links
-
-with System.Secondary_Stack;
---  used for SS_Init;
-
-with System.Storage_Elements;
---  used for Storage_Array;
 
 package body System.Tasking.Restricted.Stages is
 

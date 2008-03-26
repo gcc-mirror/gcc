@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,15 +36,13 @@ pragma Compiler_Unit;
 pragma Warnings (On);
 
 pragma Polling (Off);
---  We must turn polling off for this unit, because otherwise we get
---  an infinite loop from the code within the Poll routine itself.
+--  We must turn polling off for this unit, because otherwise we get an
+--  infinite loop from the code within the Poll routine itself.
 
 with System.Parameters;
---  Used for Sec_Stack_Ratio
 
 pragma Warnings (Off);
---  Disable warnings since System.Secondary_Stack is currently not
---  Preelaborate
+--  Disable warnings since System.Secondary_Stack is currently not Preelaborate
 with System.Secondary_Stack;
 pragma Warnings (On);
 

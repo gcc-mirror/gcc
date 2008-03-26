@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1998-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,47 +34,22 @@
 --  This is the IRIX & NT version of this package
 
 with Ada.Task_Identification;
---  used for Task_Id
-
-with Ada.Exceptions;
---  used for Raise_Exception
-
-with System.Storage_Elements;
---  used for To_Address
---           To_Integer
-
-with System.Task_Primitives.Operations;
---  used for Self
---           Sleep
---           Wakeup
---           Write_Lock
---           Unlock
-
-with System.Tasking.Utilities;
---  used for Make_Independent
-
-with System.Tasking.Rendezvous;
---  used for Call_Simple
-
-with System.Tasking.Initialization;
---  used for Defer_Abort
---           Undefer_Abort
-
-with System.Interrupt_Management;
-
-with System.Parameters;
---  used for Single_Lock
+with Ada.Unchecked_Conversion;
 
 with Interfaces.C;
---  used for int
 
-with Ada.Unchecked_Conversion;
+with System.Storage_Elements;
+with System.Task_Primitives.Operations;
+with System.Tasking.Utilities;
+with System.Tasking.Rendezvous;
+with System.Tasking.Initialization;
+with System.Interrupt_Management;
+with System.Parameters;
 
 package body System.Interrupts is
 
    use Parameters;
    use Tasking;
-   use Ada.Exceptions;
    use System.OS_Interface;
    use Interfaces.C;
 
@@ -183,8 +158,8 @@ package body System.Interrupts is
    function Is_Entry_Attached (Interrupt : Interrupt_ID) return Boolean is
    begin
       if Is_Reserved (Interrupt) then
-         Raise_Exception (Program_Error'Identity, "Interrupt" &
-           Interrupt_ID'Image (Interrupt) & " is reserved");
+         raise Program_Error with
+           "Interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
       end if;
 
       return Descriptors (Interrupt).T /= Null_Task;
@@ -197,11 +172,11 @@ package body System.Interrupts is
    function Is_Handler_Attached (Interrupt : Interrupt_ID) return Boolean is
    begin
       if Is_Reserved (Interrupt) then
-         Raise_Exception (Program_Error'Identity, "Interrupt" &
-           Interrupt_ID'Image (Interrupt) & " is reserved");
+         raise Program_Error with
+           "Interrupt" & Interrupt_ID'Image (Interrupt) & " is reserved";
+      else
+         return Descriptors (Interrupt).Kind /= Unknown;
       end if;
-
-      return Descriptors (Interrupt).Kind /= Unknown;
    end Is_Handler_Attached;
 
    ----------------
@@ -370,9 +345,9 @@ package body System.Interrupts is
 
              or else not Is_Registered (New_Handler))
       then
-         Raise_Exception (Program_Error'Identity,
+         raise Program_Error with
            "Trying to overwrite a static Interrupt Handler with a " &
-           "dynamic Handler");
+           "dynamic Handler";
       end if;
 
       if Handlers (Interrupt) = null then
@@ -420,12 +395,12 @@ package body System.Interrupts is
          --  In case we have an Interrupt Entry already installed.
          --  raise a program error. (propagate it to the caller).
 
-         Raise_Exception (Program_Error'Identity,
-           "An interrupt is already installed");
-      end if;
+         raise Program_Error with "An interrupt is already installed";
 
-      Old_Handler := Current_Handler (Interrupt);
-      Attach_Handler (New_Handler, Interrupt, Static);
+      else
+         Old_Handler := Current_Handler (Interrupt);
+         Attach_Handler (New_Handler, Interrupt, Static);
+      end if;
    end Exchange_Handler;
 
    --------------------
@@ -442,13 +417,12 @@ package body System.Interrupts is
       end if;
 
       if Descriptors (Interrupt).Kind = Task_Entry then
-         Raise_Exception (Program_Error'Identity,
-           "Trying to detach an Interrupt Entry");
+         raise Program_Error with "Trying to detach an Interrupt Entry";
       end if;
 
       if not Static and then Descriptors (Interrupt).Static then
-         Raise_Exception (Program_Error'Identity,
-           "Trying to detach a static Interrupt Handler");
+         raise Program_Error with
+           "Trying to detach a static Interrupt Handler";
       end if;
 
       Descriptors (Interrupt) :=
@@ -548,8 +522,8 @@ package body System.Interrupts is
       end if;
 
       if Descriptors (Interrupt).Kind /= Unknown then
-         Raise_Exception (Program_Error'Identity,
-           "A binding for this interrupt is already present");
+         raise Program_Error with
+           "A binding for this interrupt is already present";
       end if;
 
       if Handlers (Interrupt) = null then

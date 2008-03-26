@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2007, AdaCore                     --
+--                     Copyright (C) 1995-2008, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,16 +32,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Task_Primitives.Operations;
---  used for Write_Lock
---           Unlock
---           Lock/Unlock_RTS
-
-with System.Tasking.Initialization;
---  used for Defer_Abort
---           Undefer_Abort
-
 with Ada.Unchecked_Conversion;
+
+with System.Task_Primitives.Operations;
+with System.Tasking.Initialization;
 
 package body System.Tasking.Task_Attributes is
 
