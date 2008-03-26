@@ -643,9 +643,9 @@ __gnat_get_debuggable_suffix_ptr (int *len, const char **value)
 /* Returns the OS filename and corresponding encoding.  */
 
 void
-__gnat_os_filename (char *filename, char *w_filename,
+__gnat_os_filename (char *filename, char *w_filename ATTRIBUTE_UNUSED,
 		    char *os_name, int *o_length,
-		    char *encoding, int *e_length)
+		    char *encoding ATTRIBUTE_UNUSED, int *e_length)
 {
 #if defined (_WIN32) && ! defined (__vxworks) && ! defined (CROSS_DIRECTORY_STRUCTURE)
   WS2SU (os_name, (TCHAR *)w_filename, o_length);
@@ -660,7 +660,7 @@ __gnat_os_filename (char *filename, char *w_filename,
 }
 
 FILE *
-__gnat_fopen (char *path, char *mode, int encoding)
+__gnat_fopen (char *path, char *mode, int encoding ATTRIBUTE_UNUSED)
 {
 #if defined (_WIN32) && ! defined (__vxworks) && ! defined (CROSS_DIRECTORY_STRUCTURE)
   TCHAR wpath[GNAT_MAX_PATH_LEN];
@@ -682,7 +682,7 @@ __gnat_fopen (char *path, char *mode, int encoding)
 }
 
 FILE *
-__gnat_freopen (char *path, char *mode, FILE *stream, int encoding)
+__gnat_freopen (char *path, char *mode, FILE *stream, int encoding ATTRIBUTE_UNUSED)
 {
 #if defined (_WIN32) && ! defined (__vxworks) && ! defined (CROSS_DIRECTORY_STRUCTURE)
   TCHAR wpath[GNAT_MAX_PATH_LEN];
@@ -3033,6 +3033,10 @@ void GetTimeAsFileTime(LPFILETIME pTime)
 #if defined (linux)
 /* pthread affinity support */
 
+int __gnat_pthread_setaffinity_np (pthread_t th,
+			           size_t cpusetsize,
+			           const void *cpuset);
+
 #ifdef CPU_SETSIZE
 #include <pthread.h>
 int
@@ -3044,9 +3048,9 @@ __gnat_pthread_setaffinity_np (pthread_t th,
 }
 #else
 int
-__gnat_pthread_setaffinity_np (pthread_t th,
-			       size_t cpusetsize,
-			       const void *cpuset)
+__gnat_pthread_setaffinity_np (pthread_t th ATTRIBUTE_UNUSED,
+			       size_t cpusetsize ATTRIBUTE_UNUSED,
+			       const void *cpuset ATTRIBUTE_UNUSED)
 {
   return 0;
 }
