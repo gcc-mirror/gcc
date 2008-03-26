@@ -46,10 +46,6 @@ package body GNAT.Directory_Operations is
 
    use Ada;
 
-   type Dir_Type_Value is new System.Address;
-   --  This is the low-level address directory structure as returned by the C
-   --  opendir routine.
-
    Filename_Max : constant Integer := 1024;
    --  1024 is the value of FILENAME_MAX in stdio.h
 
