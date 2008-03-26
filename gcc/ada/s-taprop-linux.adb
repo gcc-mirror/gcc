@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2007, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2008, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,50 +33,30 @@
 
 --  This is a GNU/Linux (GNU/LinuxThreads) version of this package
 
---  This package contains all the GNULL primitives that interface directly
---  with the underlying OS.
+--  This package contains all the GNULL primitives that interface directly with
+--  the underlying OS.
 
 pragma Polling (Off);
---  Turn off polling, we do not want ATC polling to take place during
---  tasking operations. It causes infinite loops and other problems.
+--  Turn off polling, we do not want ATC polling to take place during tasking
+--  operations. It causes infinite loops and other problems.
+
+with Ada.Unchecked_Conversion;
+with Ada.Unchecked_Deallocation;
 
 with Interfaces.C;
---  used for int
---           size_t
 
 with System.Task_Info;
---  used for Unspecified_Task_Info
-
 with System.Tasking.Debug;
---  used for Known_Tasks
-
 with System.Interrupt_Management;
---  used for Keep_Unmasked
---           Abort_Task_Interrupt
---           Interrupt_ID
-
 with System.OS_Primitives;
---  used for Delay_Modes
+with System.Storage_Elements;
+with System.Stack_Checking.Operations;
 
 with System.Soft_Links;
---  used for Abort_Defer/Undefer
-
 --  We use System.Soft_Links instead of System.Tasking.Initialization
 --  because the later is a higher level package that we shouldn't depend on.
 --  For example when using the restricted run time, it is replaced by
 --  System.Tasking.Restricted.Stages.
-
-with System.Storage_Elements;
-with System.Stack_Checking.Operations;
---  Used for Invalidate_Stack_Cache and Notify_Stack_Attributes;
-
-with Ada.Exceptions;
---  used for Raise_Exception
---           Raise_From_Signal_Handler
---           Exception_Id
-
-with Ada.Unchecked_Conversion;
-with Ada.Unchecked_Deallocation;
 
 package body System.Task_Primitives.Operations is
 
@@ -273,12 +253,11 @@ package body System.Task_Primitives.Operations is
    -- Initialize_Lock --
    ---------------------
 
-   --  Note: mutexes and cond_variables needed per-task basis are
-   --  initialized in Initialize_TCB and the Storage_Error is
-   --  handled. Other mutexes (such as RTS_Lock, Memory_Lock...)
-   --  used in RTS is initialized before any status change of RTS.
-   --  Therefore rasing Storage_Error in the following routines
-   --  should be able to be handled safely.
+   --  Note: mutexes and cond_variables needed per-task basis are initialized
+   --  in Initialize_TCB and the Storage_Error is handled. Other mutexes (such
+   --  as RTS_Lock, Memory_Lock...) used in RTS is initialized before any
+   --  status change of RTS. Therefore rasing Storage_Error in the following
+   --  routines should be able to be handled safely.
 
    procedure Initialize_Lock
      (Prio : System.Any_Priority;
@@ -294,8 +273,7 @@ package body System.Task_Primitives.Operations is
       pragma Assert (Result = 0 or else Result = ENOMEM);
 
       if Result = ENOMEM then
-         Ada.Exceptions.Raise_Exception (Storage_Error'Identity,
-           "Failed to allocate a lock");
+         raise Storage_Error with "Failed to allocate a lock";
       end if;
    end Initialize_Lock;
 
@@ -920,7 +898,14 @@ package body System.Task_Primitives.Operations is
          To_Address (T));
       pragma Assert (Result = 0 or else Result = EAGAIN);
 
-      Succeeded := Result = 0;
+      if Result /= 0 then
+         Succeeded := False;
+         Result := pthread_attr_destroy (Attributes'Access);
+         pragma Assert (Result = 0);
+         return;
+      end if;
+
+      Succeeded := True;
 
       --  Handle Task_Info
 
