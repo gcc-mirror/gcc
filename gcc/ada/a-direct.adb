@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1197,10 +1197,15 @@ package body Ada.Directories is
       C_File_Name : constant String := Directory & ASCII.NUL;
 
    begin
-      --  First, the invalid case
+      --  First, the invalid cases
 
       if not Is_Directory (Directory) then
-         raise Name_Error;
+         raise Name_Error
+           with "unknown directory """ & Simple_Name (Directory) & '"';
+
+      elsif not Is_Readable_File (Directory) then
+         raise Use_Error
+           with "unreadable directory """ & Simple_Name (Directory) & '"';
       end if;
 
       --  If needed, finalize Search
@@ -1219,7 +1224,8 @@ package body Ada.Directories is
       exception
          when Error_In_Regexp =>
             Free (Search.Value);
-            raise Name_Error;
+            raise Name_Error
+              with "invalid pattern """ & Pattern & '"';
       end;
 
       --  Initialize some Search components
