@@ -1,5 +1,10 @@
 2008-03-27  Richard Guenther  <rguenther@suse.de>
 
+	PR c/32511
+	* gcc.dg/attr-weak-1.c: New testcase.
+
+2008-03-27  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/32810
 	* gcc.dg/tree-ssa/ssa-ccp-18.c: New testcase.
 

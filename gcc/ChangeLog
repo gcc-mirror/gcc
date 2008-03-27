@@ -1,5 +1,11 @@
 2008-03-27  Richard Guenther  <rguenther@suse.de>
 
+	PR c/32511
+	* c-common.c (handle_weak_attribute): Reject combination of
+	weak and inline.
+
+2008-03-27  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/32810
 	* tree-ssa-ccp.c (get_symbol_constant_value): Strip useless
 	conversions from DECL_INITIAL.

@@ -5518,11 +5518,16 @@ handle_weak_attribute (tree *node, tree name,
 		       bool * ARG_UNUSED (no_add_attrs))
 {
   if (TREE_CODE (*node) == FUNCTION_DECL
-      || TREE_CODE (*node) == VAR_DECL)
+      && DECL_DECLARED_INLINE_P (*node))
+    {
+      error ("inline function %q+D cannot be declared weak", *node);
+      *no_add_attrs = true;
+    }
+  else if (TREE_CODE (*node) == FUNCTION_DECL
+	   || TREE_CODE (*node) == VAR_DECL)
     declare_weak (*node);
   else
     warning (OPT_Wattributes, "%qE attribute ignored", name);
-    	
 
   return NULL_TREE;
 }
