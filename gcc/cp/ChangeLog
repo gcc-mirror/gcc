@@ -1,3 +1,15 @@
+2008-03-27  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* pt.c (tsubst_copy) <case SIZEOF_EXPR>: Cope with
+	tsubst_pack_expansion returning a pack expansion, or a TREE_VEC
+	ending in a pack expansion, both of which can occur when
+	substituting into a nested template.
+	(tsubst_copy_and_build) <case SIZEOF_EXPR>: When we're
+	instantiating the sizeof...(X) form, make tsubst_copy do the work.
+	* parser.c (cp_parser_template_parameter): Deal with unnamed
+	non-type template parameter packs identified by pack expansions in
+	the parameter type.
+
 2008-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/35546
