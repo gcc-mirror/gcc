@@ -1,3 +1,10 @@
+2008-03-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/32810
+	* tree-ssa-ccp.c (get_symbol_constant_value): Strip useless
+	conversions from DECL_INITIAL.
+	(fold_const_aggregate_ref): Likewise from constructor elements.
+
 2008-03-27  Zdenek Dvorak  <ook@ucw.cz>
 
 	* tree-affine.h (aff_combination_expand): Declare.
