@@ -8584,14 +8584,18 @@ fold_comparison (enum tree_code code, tree type, tree op0, tree op1)
 	 of local binding decls or constants.  */
       else if (indirect_base0 && indirect_base1
 	       /* We know that !operand_equal_p (base0, base1, 0)
-		  because the if condition was false.  */
+		  because the if condition was false.  But make
+		  sure two decls are not the same.  */
+	       && base0 != base1
 	       && TREE_CODE (arg0) == ADDR_EXPR
 	       && TREE_CODE (arg1) == ADDR_EXPR
-	       && ((DECL_P (base0)
+	       && (((TREE_CODE (base0) == VAR_DECL
+		     || TREE_CODE (base0) == PARM_DECL)
 		    && (targetm.binds_local_p (base0)
 			|| CONSTANT_CLASS_P (base1)))
 		   || CONSTANT_CLASS_P (base0))
-	       && ((DECL_P (base1)
+	       && (((TREE_CODE (base1) == VAR_DECL
+		     || TREE_CODE (base1) == PARM_DECL)
 		    && (targetm.binds_local_p (base1)
 			|| CONSTANT_CLASS_P (base0)))
 		   || CONSTANT_CLASS_P (base1)))

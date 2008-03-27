@@ -1,5 +1,12 @@
 2008-03-27  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/35716
+	* fold-const.c (fold_comparison): Restrict distinct decl
+	comparison folding to VAR_DECLs and PARM_DECLs.  Do not
+	solely rely on operand_equal_p.
+
+2008-03-27  Richard Guenther  <rguenther@suse.de>
+
 	PR c/32511
 	* c-common.c (handle_weak_attribute): Reject combination of
 	weak and inline.
