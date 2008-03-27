@@ -1,5 +1,9 @@
 2008-03-27  Paolo Bonzini  <bonzini@gnu.org>
 
+	* extensions.m4: New.
+
+2008-03-27  Paolo Bonzini  <bonzini@gnu.org>
+
 	* mh-armpic: Remove.
 	* mh-i370pic: Remove.
 	* mh-m68kpic: Remove.
