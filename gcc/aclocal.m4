@@ -95,6 +95,7 @@ fi
 m4_include([../config/acx.m4])
 m4_include([../config/codeset.m4])
 m4_include([../config/depstand.m4])
+m4_include([../config/extensions.m4])
 m4_include([../config/gettext-sister.m4])
 m4_include([../config/iconv.m4])
 m4_include([../config/lcmessage.m4])

@@ -1369,37 +1369,37 @@
 #endif
 
 
-/* The size of `int', as computed by sizeof. */
+/* The size of a `int', as computed by sizeof. */
 #ifndef USED_FOR_TARGET
 #undef SIZEOF_INT
 #endif
 
 
-/* The size of `long', as computed by sizeof. */
+/* The size of a `long', as computed by sizeof. */
 #ifndef USED_FOR_TARGET
 #undef SIZEOF_LONG
 #endif
 
 
-/* The size of `long long', as computed by sizeof. */
+/* The size of a `long long', as computed by sizeof. */
 #ifndef USED_FOR_TARGET
 #undef SIZEOF_LONG_LONG
 #endif
 
 
-/* The size of `short', as computed by sizeof. */
+/* The size of a `short', as computed by sizeof. */
 #ifndef USED_FOR_TARGET
 #undef SIZEOF_SHORT
 #endif
 
 
-/* The size of `void *', as computed by sizeof. */
+/* The size of a `void *', as computed by sizeof. */
 #ifndef USED_FOR_TARGET
 #undef SIZEOF_VOID_P
 #endif
 
 
-/* The size of `__int64', as computed by sizeof. */
+/* The size of a `__int64', as computed by sizeof. */
 #ifndef USED_FOR_TARGET
 #undef SIZEOF___INT64
 #endif
@@ -1464,9 +1464,44 @@
 #endif
 
 
-/* Always define this when using the GNU C Library */
+/* Define to 1 if on MINIX. */
 #ifndef USED_FOR_TARGET
-#undef _GNU_SOURCE
+#undef _MINIX
+#endif
+
+
+/* Define to 2 if the system does not provide POSIX.1 features except with
+   this defined. */
+#ifndef USED_FOR_TARGET
+#undef _POSIX_1_SOURCE
+#endif
+
+
+/* Define to 1 if you need to in order for `stat' and other things to work. */
+#ifndef USED_FOR_TARGET
+#undef _POSIX_SOURCE
+#endif
+
+
+/* Enable extensions on AIX 3, Interix.  */
+#ifndef _ALL_SOURCE
+# undef _ALL_SOURCE
+#endif
+/* Enable GNU extensions on systems that have them.  */
+#ifndef _GNU_SOURCE
+# undef _GNU_SOURCE
+#endif
+/* Enable threading extensions on Solaris.  */
+#ifndef _POSIX_PTHREAD_SEMANTICS
+# undef _POSIX_PTHREAD_SEMANTICS
+#endif
+/* Enable extensions on HP NonStop.  */
+#ifndef _TANDEM_SOURCE
+# undef _TANDEM_SOURCE
+#endif
+/* Enable general extensions on Solaris.  */
+#ifndef __EXTENSIONS__
+# undef __EXTENSIONS__
 #endif
 
 

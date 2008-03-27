@@ -297,6 +297,7 @@ AC_SUBST(CFLAGS)
 # Check C compiler features
 # -------------------------
 
+AC_USE_SYSTEM_EXTENSIONS
 AC_PROG_CPP
 AC_C_INLINE
 
@@ -895,20 +896,6 @@ fi
 # --------------------
 # Checks for C headers
 # --------------------
-
-AC_MSG_CHECKING(for GNU C library)
-AC_CACHE_VAL(gcc_cv_glibc,
-[AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-  [[#include <features.h>]], [[
-#if ! (defined __GLIBC__ || defined __GNU_LIBRARY__)
-#error Not a GNU C library system
-#endif]])],
-  [gcc_cv_glibc=yes],
-  [gcc_cv_glibc=no])])
-AC_MSG_RESULT($gcc_cv_glibc)
-if test $gcc_cv_glibc = yes; then
-  AC_DEFINE(_GNU_SOURCE, 1, [Always define this when using the GNU C Library])
-fi
 
 # Need to reject headers which give warnings, so that the -Werror bootstrap
 # works later. *sigh*  This needs to come before all header checks.
