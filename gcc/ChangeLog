@@ -1,3 +1,12 @@
+2008-03-27  Richard Guenther  <rguenther@suse.de>
+
+	* fold-const.c (target.h): Include.
+	(fold_comparison): Fold comparison of addresses of decls
+	that bind locally or of constants.  Consolidate address folding code.
+	* tree-vrp.c (operand_less_p): Deal with non-INTEGER_CST
+	results from fold_binary_to_constant.
+	(compare_values_warnv): Likewise.
+
 2008-03-27  Andrew Pinski  <pinskia@gmail.com>
 
 	PR middle-end/35429
