@@ -1,3 +1,15 @@
+2008-03-27  Paolo Bonzini  <bonzini@gnu.org>
+
+	* mh-armpic: Remove.
+	* mh-i370pic: Remove.
+	* mh-m68kpic: Remove.
+	* mh-ppcpic: Remove.
+	* mh-sparcpic: Remove.
+	* mh-ia64pic: Remove.
+	* mh-papic: Remove.
+	* mh-s390pic: Remove.
+	* mh-x86pic: Remove.
+
 2008-03-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* proginstall.m4: New file, with fixed AC_PROG_INSTALL.
