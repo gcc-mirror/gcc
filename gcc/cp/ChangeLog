@@ -1,5 +1,23 @@
 2008-03-27  Douglas Gregor  <doug.gregor@gmail.com>
 
+	PR obj-c++/35704
+	* typeck.c (build_x_compound_expr): Use cp_build_compound_expr.
+	(build_compound_expr): New, for compatibility with C
+	build_compound_expr.
+	(cp_build_compound_expr): Renamed from build_compound_expr.
+	(build_c_cast): New, for compatibility with C build_c_cast.
+	(cp_build_c_cast): Renamed from build_c_cast.
+	* init.c (build_vec_delete_1): Fix calls to build_compound_expr.
+	* decl.c (cxx_maybe_build_cleanup): Ditto.
+	* cp-tree.h (build_compound_expr): Add C-compatibile prototype.
+	(cp_build_compound_expr): Renamed from build_compound_expr.
+	(build_c_cast): Add C-compatible prototype.
+	(cp_build_c_cast): Renamed from build_c_cast.
+	* typeck2.c (build_functional_cast): Use cp_build_c_cast.
+	* parser.c (cp_parser_cast_expression): Fix call to build_c_cast.
+
+2008-03-27  Douglas Gregor  <doug.gregor@gmail.com>
+
 	* pt.c (tsubst_copy) <case SIZEOF_EXPR>: Cope with
 	tsubst_pack_expansion returning a pack expansion, or a TREE_VEC
 	ending in a pack expansion, both of which can occur when

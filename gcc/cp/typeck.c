@@ -5037,7 +5037,7 @@ build_x_compound_expr (tree op1, tree op2, tsubst_flags_t complain)
   result = build_new_op (COMPOUND_EXPR, LOOKUP_NORMAL, op1, op2, NULL_TREE,
 			 /*overloaded_p=*/NULL, complain);
   if (!result)
-    result = build_compound_expr (op1, op2, complain);
+    result = cp_build_compound_expr (op1, op2, complain);
 
   if (processing_template_decl && result != error_mark_node)
     return build_min_non_dep (COMPOUND_EXPR, result, orig_op1, orig_op2);
@@ -5045,10 +5045,18 @@ build_x_compound_expr (tree op1, tree op2, tsubst_flags_t complain)
   return result;
 }
 
+/* Like cp_build_compound_expr, but for the c-common bits.  */
+
+tree
+build_compound_expr (tree lhs, tree rhs)
+{
+  return cp_build_compound_expr (lhs, rhs, tf_warning_or_error);
+}
+
 /* Build a compound expression.  */
 
 tree
-build_compound_expr (tree lhs, tree rhs, tsubst_flags_t complain)
+cp_build_compound_expr (tree lhs, tree rhs, tsubst_flags_t complain)
 {
   lhs = convert_to_void (lhs, "left-hand operand of comma", complain);
 
@@ -5775,11 +5783,19 @@ build_const_cast (tree type, tree expr, tsubst_flags_t complain)
 			     /*valid_p=*/NULL);
 }
 
+/* Like cp_build_c_cast, but for the c-common bits.  */
+
+tree
+build_c_cast (tree type, tree expr)
+{
+  return cp_build_c_cast (type, expr, tf_warning_or_error);
+}
+
 /* Build an expression representing an explicit C-style cast to type
    TYPE of expression EXPR.  */
 
 tree
-build_c_cast (tree type, tree expr, tsubst_flags_t complain)
+cp_build_c_cast (tree type, tree expr, tsubst_flags_t complain)
 {
   tree value = expr;
   tree result;
@@ -6466,7 +6482,7 @@ build_ptrmemfunc (tree type, tree pfn, int force, bool c_cast_p)
   /* Handle null pointer to member function conversions.  */
   if (integer_zerop (pfn))
     {
-      pfn = build_c_cast (type, integer_zero_node, tf_warning_or_error);
+      pfn = build_c_cast (type, integer_zero_node);
       return build_ptrmemfunc1 (to_type,
 				integer_zero_node,
 				pfn);

@@ -12229,7 +12229,7 @@ cxx_maybe_build_cleanup (tree decl)
       call = build_delete (TREE_TYPE (addr), addr,
 			   sfk_complete_destructor, flags, 0);
       if (cleanup)
-	cleanup = build_compound_expr (cleanup, call, tf_warning_or_error);
+	cleanup = build_compound_expr (cleanup, call);
       else
 	cleanup = call;
     }
