@@ -1,3 +1,12 @@
+2008-03-27  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (gen_float_relational): Handle unordered
+	comparisons.
+	* config/xtensa/xtensa.md (any_cond): Add unordered comparisons.
+	(any_scc_sf): Add uneq, unlt, unle and unordered operators.
+	(scc_sf): New.
+	(s<code>_sf): Use new scc_sf attribute for opcode names.
+
 2008-03-27  Tom Tromey  <tromey@redhat.com>
 
 	* doc/sourcebuild.texi, doc/install.texi, configure, aclocal.m4,

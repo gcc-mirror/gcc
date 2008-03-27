@@ -59,13 +59,18 @@
 
 ;; This code iterator allows all branch instructions to be generated from
 ;; a single define_expand template.
-(define_code_iterator any_cond [eq ne gt ge lt le gtu geu ltu leu])
+(define_code_iterator any_cond [eq ne gt ge lt le gtu geu ltu leu
+				uneq ltgt ungt unge unlt unle
+				unordered ordered])
 
 ;; This code iterator is for setting a register from a comparison.
 (define_code_iterator any_scc [eq ne gt ge lt le])
 
 ;; This code iterator is for floating-point comparisons.
-(define_code_iterator any_scc_sf [eq lt le])
+(define_code_iterator any_scc_sf [eq lt le uneq unlt unle unordered])
+(define_code_attr scc_sf [(eq "oeq") (lt "olt") (le "ole") 
+			  (uneq "ueq") (unlt "ult") (unle "ule")
+			  (unordered "un")])
 
 ;; This iterator and attribute allow to combine most atomic operations.
 (define_code_iterator ATOMIC [and ior xor plus minus mult])
@@ -1415,7 +1420,7 @@
 	(any_scc_sf:CC (match_operand:SF 1 "register_operand" "f")
 		       (match_operand:SF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
-  "o<code>.s\t%0, %1, %2"
+  "<scc_sf>.s\t%0, %1, %2"
   [(set_attr "type"	"farith")
    (set_attr "mode"	"BL")
    (set_attr "length"	"3")])
