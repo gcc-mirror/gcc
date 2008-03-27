@@ -1,3 +1,8 @@
+2008-03-26  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* src/sh/sysv.S: Add .note.GNU-stack on Linux.
+	* src/sh64/sysv.S: Likewise.
+
 2008-03-26  Daniel Jacobowitz  <dan@debian.org>
 
 	* src/arm/sysv.S: Fix ARM comment marker.

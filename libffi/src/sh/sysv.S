@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   sysv.S - Copyright (c) 2002, 2003, 2004, 2006 Kaz Kojima
+   sysv.S - Copyright (c) 2002, 2003, 2004, 2006, 2008 Kaz Kojima
    
    SuperH Foreign Function Interface 
 
@@ -700,6 +700,10 @@ L_case_v:
 .LFE2:
 .ffi_closure_SYSV_end:
         .size    CNAME(ffi_closure_SYSV),.ffi_closure_SYSV_end-CNAME(ffi_closure_SYSV)
+
+#if defined __ELF__ && defined __linux__
+	.section	.note.GNU-stack,"",@progbits
+#endif
 
 	.section	".eh_frame","aw",@progbits
 __FRAME_BEGIN__:
