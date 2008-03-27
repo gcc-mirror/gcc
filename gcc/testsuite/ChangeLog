@@ -1,3 +1,8 @@
+2008-03-27  Zdenek Dvorak  <ook@ucw.cz>
+
+	* gcc.dg/tree-ssa/loop-32.c: New testcase.
+	* gcc.dg/tree-ssa/loop-33.c: Likewise.
+
 2008-03-27  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/fold-addr-1.c: New testcase.

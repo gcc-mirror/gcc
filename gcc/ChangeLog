@@ -1,3 +1,50 @@
+2008-03-27  Zdenek Dvorak  <ook@ucw.cz>
+
+	* tree-affine.h (aff_combination_expand): Declare.
+	(get_inner_reference_aff): Likewise.
+	* tree-affine.c	(aff_combination_expand): Split out from
+	tree_to_aff_combination_expand.
+	(get_inner_reference_aff): New function.
+	* tree-parloops.c (loop_parallel_p): Free vectorizer info.
+        * tree-ssa-loop-im.c: Include tree-affine.h and pointer-set.h.
+        (struct lim_aux_data): sm_done field removed.
+        (mem_ref_loc_p, mem_ref_locs_p): New types.
+        (struct mem_ref): Added id, stored, accesses_in_loop,
+        indep_loop, dep_loop, indep_ref, dep_ref fields.
+        Removed is_stored, locs and next fields.
+        (memory_accesses): New variable.
+        (movement_possibility): Do not allow moving statements
+        that store to memory.
+        (outermost_indep_loop, simple_mem_ref_in_stmt, mem_ref_in_stmt):
+        New functions.
+        (determine_max_movement): For statements with memory references,
+        find the outermost loop in that the reference is independent.
+        (move_computations_stmt): Mark the virtual operands for
+        renaming.
+        (memref_free, mem_ref_alloc, mem_ref_locs_alloc, mark_ref_stored,
+        gather_mem_refs_stmt, gather_mem_refs_in_loops, vtoe_hash, vtoe_eq,
+        vtoe_free, record_vop_access, get_vop_accesses, get_vop_stores,
+        add_vop_ref_mapping, create_vop_ref_mapping_loop,
+        create_vop_ref_mapping, analyze_memory_references,
+        cannot_overlap_p, mem_refs_may_alias_p, rewrite_mem_ref_loc,
+        get_all_locs_in_loop, ref_always_accessed_p,
+        refs_independent_p, record_indep_loop, ref_indep_loop_p_1,
+        ref_indep_loop_p, can_sm_ref_p, find_refs_for_sm,
+        store_motion_loop, store_motion): New functions.
+        (struct vop_to_refs_elt): New type.
+        (record_mem_ref_loc, free_mem_ref_locs, rewrite_mem_refs,
+        memref_hash, memref_eq, hoist_memory_references): Rewritten.
+        (schedule_sm): Replaced by...
+        (execute_sm): ... this.
+        (determine_lsm_ref, hoist_memory_references,
+        loop_suitable_for_sm, gather_mem_refs_stmt, gather_mem_refs,
+        find_more_ref_vops, free_mem_ref, free_mem_refs,
+        determine_lsm_loop, determine_lsm): Removed.
+        (tree_ssa_lim_finalize): Free data structures used by store
+        motion.
+        (tree_ssa_lim): Call analyze_memory_references.  Use
+        store_motion instead of determine_lsm.
+
 2008-03-27  Paolo Bonzini  <bonzini@gnu.org>
 
 	* config.cc (m68hc11, m6811, m68hc12, m6812): Add usegas.h,

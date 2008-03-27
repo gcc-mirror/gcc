@@ -71,8 +71,10 @@ void tree_to_aff_combination (tree, tree, aff_tree *);
 tree aff_combination_to_tree (aff_tree *);
 void unshare_aff_combination (aff_tree *);
 bool aff_combination_constant_multiple_p (aff_tree *, aff_tree *, double_int *);
+void aff_combination_expand (aff_tree *, struct pointer_map_t **);
 void tree_to_aff_combination_expand (tree, tree, aff_tree *,
 				     struct pointer_map_t **);
+void get_inner_reference_aff (tree, aff_tree *, double_int *);
 void free_affine_expand_cache (struct pointer_map_t **);
 
 /* Debugging functions.  */

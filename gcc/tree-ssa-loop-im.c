@@ -38,6 +38,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "real.h"
 #include "hashtab.h"
+#include "tree-affine.h"
+#include "pointer-set.h"
 
 /* TODO:  Support for predicated code motion.  I.e.
 
@@ -85,10 +87,6 @@ struct lim_aux_data
 				   the statement is executed if the loop
 				   is entered.  */
 
-  bool sm_done;			/* True iff the store motion for a memory
-				   reference in the statement has already
-				   been executed.  */
-
   unsigned cost;		/* Cost of the computation performed by the
 				   statement.  */
 
@@ -103,34 +101,98 @@ struct lim_aux_data
 			? NULL \
 			: (struct lim_aux_data *) (stmt_ann (STMT)->common.aux))
 
-/* Description of a memory reference location for store motion.  */
+/* Description of a memory reference location.  */
 
-struct mem_ref_loc
+typedef struct mem_ref_loc
 {
   tree *ref;			/* The reference itself.  */
   tree stmt;			/* The statement in that it occurs.  */
-  struct mem_ref_loc *next;	/* Next use in the chain.  */
-};
+} *mem_ref_loc_p;
 
-/* Description of a memory reference for store motion.  */
+DEF_VEC_P(mem_ref_loc_p);
+DEF_VEC_ALLOC_P(mem_ref_loc_p, heap);
 
-struct mem_ref
+/* The list of memory reference locations in a loop.  */
+
+typedef struct mem_ref_locs
+{
+  VEC (mem_ref_loc_p, heap) *locs;
+} *mem_ref_locs_p;
+
+DEF_VEC_P(mem_ref_locs_p);
+DEF_VEC_ALLOC_P(mem_ref_locs_p, heap);
+
+/* Description of a memory reference.  */
+
+typedef struct mem_ref
 {
   tree mem;			/* The memory itself.  */
+  unsigned id;			/* ID assigned to the memory reference
+				   (its index in memory_accesses.refs_list)  */
   hashval_t hash;		/* Its hash value.  */
-  bool is_stored;		/* True if there is a store to the location
-				   in the loop.  */
-  struct mem_ref_loc *locs;	/* The locations where it is found.  */
+  bitmap stored;		/* The set of loops in that this memory locatio
+				   is stored to.  */
+  VEC (mem_ref_locs_p, heap) *accesses_in_loop;
+				/* The locations of the accesses.  Vector
+				   indexed by the loop number.  */
   bitmap vops;			/* Vops corresponding to this memory
 				   location.  */
-  struct mem_ref *next;		/* Next memory reference in the list.
-				   Memory references are stored in a hash
-				   table, but the hash function depends
-				   on values of pointers. Thus we cannot use
-				   htab_traverse, since then we would get
-				   miscompares during bootstrap (although the
-				   produced code would be correct).  */
-};
+
+  /* The following sets are computed on demand.  We keep both set and
+     its complement, so that we know whether the information was
+     already computed or not.  */
+  bitmap indep_loop;		/* The set of loops in that the memory
+				   reference is independent, meaning:
+				   If it is stored in the loop, this store
+				     is independent on all other loads and
+				     stores.
+				   If it is only loaded, then it is independent
+				     on all stores in the loop.  */
+  bitmap dep_loop;		/* The complement of INDEP_LOOP.  */
+
+  bitmap indep_ref;		/* The set of memory references on that
+				   this reference is independent.  */
+  bitmap dep_ref;		/* The complement of DEP_REF.  */
+} *mem_ref_p;
+
+DEF_VEC_P(mem_ref_p);
+DEF_VEC_ALLOC_P(mem_ref_p, heap);
+
+DEF_VEC_P(bitmap);
+DEF_VEC_ALLOC_P(bitmap, heap);
+
+DEF_VEC_P(htab_t);
+DEF_VEC_ALLOC_P(htab_t, heap);
+
+/* Description of memory accesses in loops.  */
+
+static struct
+{
+  /* The hash table of memory references accessed in loops.  */
+  htab_t refs;
+
+  /* The list of memory references.  */
+  VEC (mem_ref_p, heap) *refs_list;
+
+  /* The set of memory references accessed in each loop.  */
+  VEC (bitmap, heap) *refs_in_loop;
+
+  /* The set of memory references accessed in each loop, including
+     subloops.  */
+  VEC (bitmap, heap) *all_refs_in_loop;
+
+  /* The set of virtual operands clobbered in a given loop.  */
+  VEC (bitmap, heap) *clobbered_vops;
+
+  /* Map from the pair (loop, virtual operand) to the set of refs that
+     touch the virtual operand in the loop.  */
+  VEC (htab_t, heap) *vop_ref_map;
+
+  /* Cache for expanding memory addresses.  */
+  struct pointer_map_t *ttae_cache;
+} memory_accesses;
+
+static bool ref_indep_loop_p (struct loop *, mem_ref_p);
 
 /* Minimum cost of an expensive expression.  */
 #define LIM_EXPENSIVE ((unsigned) PARAM_VALUE (PARAM_LIM_EXPENSIVE))
@@ -250,6 +312,9 @@ movement_possibility (tree stmt)
     }
 
   if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
+    return MOVE_IMPOSSIBLE;
+
+  if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_VIRTUAL_DEFS))
     return MOVE_IMPOSSIBLE;
 
   if (stmt_ends_bb_p (stmt))
@@ -478,6 +543,86 @@ stmt_cost (tree stmt)
   return cost;
 }
 
+/* Finds the outermost loop between OUTER and LOOP in that the memory reference
+   REF is independent.  If REF is not independent in LOOP, NULL is returned
+   instead.  */
+
+static struct loop *
+outermost_indep_loop (struct loop *outer, struct loop *loop, mem_ref_p ref)
+{
+  struct loop *aloop;
+
+  if (bitmap_bit_p (ref->stored, loop->num))
+    return NULL;
+
+  for (aloop = outer;
+       aloop != loop;
+       aloop = superloop_at_depth (loop, loop_depth (aloop) + 1))
+    if (!bitmap_bit_p (ref->stored, aloop->num)
+	&& ref_indep_loop_p (aloop, ref))
+      return aloop;
+
+  if (ref_indep_loop_p (loop, ref))
+    return loop;
+  else
+    return NULL;
+}
+
+/* If there is a simple load or store to a memory reference in STMT, returns
+   the location of the memory reference, and sets IS_STORE accoring to whether
+   it is a store or load.  Otherwise, returns NULL.  */
+
+static tree *
+simple_mem_ref_in_stmt (tree stmt, bool *is_store)
+{
+  tree *lhs, *rhs;
+
+  /* Recognize MEM = (SSA_NAME | invariant) and SSA_NAME = MEM patterns.  */
+  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
+    return NULL;
+
+  lhs = &GIMPLE_STMT_OPERAND (stmt, 0);
+  rhs = &GIMPLE_STMT_OPERAND (stmt, 1);
+
+  if (TREE_CODE (*lhs) == SSA_NAME)
+    {
+      if (!is_gimple_addressable (*rhs))
+	return NULL;
+
+      *is_store = false;
+      return rhs;
+    }
+  else if (TREE_CODE (*rhs) == SSA_NAME
+	   || is_gimple_min_invariant (*rhs))
+    {
+      *is_store = true;
+      return lhs;
+    }
+  else
+    return NULL;
+}
+
+/* Returns the memory reference contained in STMT.  */
+
+static mem_ref_p
+mem_ref_in_stmt (tree stmt)
+{
+  bool store;
+  tree *mem = simple_mem_ref_in_stmt (stmt, &store);
+  hashval_t hash;
+  mem_ref_p ref;
+
+  if (!mem)
+    return NULL;
+  gcc_assert (!store);
+
+  hash = iterative_hash_expr (*mem, 0);
+  ref = htab_find_with_hash (memory_accesses.refs, *mem, hash);
+
+  gcc_assert (ref != NULL);
+  return ref;
+}
+
 /* Determine the outermost loop to that it is possible to hoist a statement
    STMT and store it to LIM_DATA (STMT)->max_loop.  To do this we determine
    the outermost loop in that the value computed by STMT is invariant.
@@ -508,9 +653,26 @@ determine_max_movement (tree stmt, bool must_preserve_exec)
     if (!add_dependency (val, lim_data, loop, true))
       return false;
 
-  FOR_EACH_SSA_TREE_OPERAND (val, stmt, iter, SSA_OP_VIRTUAL_USES)
-    if (!add_dependency (val, lim_data, loop, false))
-      return false;
+  if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_VIRTUAL_USES))
+    {
+      mem_ref_p ref = mem_ref_in_stmt (stmt);
+
+      if (ref)
+	{
+	  lim_data->max_loop
+		  = outermost_indep_loop (lim_data->max_loop, loop, ref);
+	  if (!lim_data->max_loop)
+	    return false;
+	}
+      else
+	{
+	  FOR_EACH_SSA_TREE_OPERAND (val, stmt, iter, SSA_OP_VIRTUAL_USES)
+	    {
+	      if (!add_dependency (val, lim_data, loop, false))
+		return false;
+	    }
+	}
+    }
 
   lim_data->cost += stmt_cost (stmt);
 
@@ -862,6 +1024,8 @@ move_computations_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
 	  fprintf (dump_file, "(cost %u) out of loop %d.\n\n",
 		   cost, level->num);
 	}
+
+      mark_virtual_ops_for_renaming (stmt);
       bsi_insert_on_edge (loop_preheader_edge (level), stmt);
       bsi_remove (&bsi, false);
     }
@@ -987,52 +1151,569 @@ force_move_till (tree ref, tree *index, void *data)
   return true;
 }
 
-/* Records memory reference location *REF to the list MEM_REFS.  The reference
-   occurs in statement STMT.  */
+/* A hash function for struct mem_ref object OBJ.  */
+
+static hashval_t
+memref_hash (const void *obj)
+{
+  const struct mem_ref *mem = obj;
+
+  return mem->hash;
+}
+
+/* An equality function for struct mem_ref object OBJ1 with
+   memory reference OBJ2.  */
+
+static int
+memref_eq (const void *obj1, const void *obj2)
+{
+  const struct mem_ref *mem1 = obj1;
+
+  return operand_equal_p (mem1->mem, (tree) obj2, 0);
+}
+
+/* Releases list of memory reference locations ACCS.  */
 
 static void
-record_mem_ref_loc (struct mem_ref_loc **mem_refs, tree stmt, tree *ref)
+free_mem_ref_locs (mem_ref_locs_p accs)
 {
-  struct mem_ref_loc *aref = XNEW (struct mem_ref_loc);
+  unsigned i;
+  mem_ref_loc_p loc;
+
+  if (!accs)
+    return;
+
+  for (i = 0; VEC_iterate (mem_ref_loc_p, accs->locs, i, loc); i++)
+    free (loc);
+  VEC_free (mem_ref_loc_p, heap, accs->locs);
+  free (accs);
+}
+
+/* A function to free the mem_ref object OBJ.  */
+
+static void
+memref_free (void *obj)
+{
+  struct mem_ref *mem = obj;
+  unsigned i;
+  mem_ref_locs_p accs;
+
+  BITMAP_FREE (mem->stored);
+  BITMAP_FREE (mem->indep_loop);
+  BITMAP_FREE (mem->dep_loop);
+  BITMAP_FREE (mem->indep_ref);
+  BITMAP_FREE (mem->dep_ref);
+
+  for (i = 0; VEC_iterate (mem_ref_locs_p, mem->accesses_in_loop, i, accs); i++)
+    free_mem_ref_locs (accs);
+  VEC_free (mem_ref_locs_p, heap, mem->accesses_in_loop);
+
+  BITMAP_FREE (mem->vops);
+  free (mem);
+}
+
+/* Allocates and returns a memory reference description for MEM whose hash
+   value is HASH and id is ID.  */
+
+static mem_ref_p
+mem_ref_alloc (tree mem, unsigned hash, unsigned id)
+{
+  mem_ref_p ref = XNEW (struct mem_ref);
+  ref->mem = mem;
+  ref->id = id;
+  ref->hash = hash;
+  ref->stored = BITMAP_ALLOC (NULL);
+  ref->indep_loop = BITMAP_ALLOC (NULL);
+  ref->dep_loop = BITMAP_ALLOC (NULL);
+  ref->indep_ref = BITMAP_ALLOC (NULL);
+  ref->dep_ref = BITMAP_ALLOC (NULL);
+  ref->accesses_in_loop = NULL;
+  ref->vops = BITMAP_ALLOC (NULL);
+
+  return ref;
+}
+
+/* Allocates and returns the new list of locations.  */
+
+static mem_ref_locs_p
+mem_ref_locs_alloc (void)
+{
+  mem_ref_locs_p accs = XNEW (struct mem_ref_locs);
+  accs->locs = NULL;
+  return accs;
+}
+
+/* Records memory reference location *LOC in LOOP to the memory reference
+   description REF.  The reference occurs in statement STMT.  */
+
+static void
+record_mem_ref_loc (mem_ref_p ref, struct loop *loop, tree stmt, tree *loc)
+{
+  mem_ref_loc_p aref = XNEW (struct mem_ref_loc);
+  mem_ref_locs_p accs;
+  bitmap ril = VEC_index (bitmap, memory_accesses.refs_in_loop, loop->num);
+
+  if (VEC_length (mem_ref_locs_p, ref->accesses_in_loop)
+      <= (unsigned) loop->num)
+    VEC_safe_grow_cleared (mem_ref_locs_p, heap, ref->accesses_in_loop,
+			   loop->num + 1);
+  accs = VEC_index (mem_ref_locs_p, ref->accesses_in_loop, loop->num);
+  if (!accs)
+    {
+      accs = mem_ref_locs_alloc ();
+      VEC_replace (mem_ref_locs_p, ref->accesses_in_loop, loop->num, accs);
+    }
 
   aref->stmt = stmt;
-  aref->ref = ref;
+  aref->ref = loc;
 
-  aref->next = *mem_refs;
-  *mem_refs = aref;
+  VEC_safe_push (mem_ref_loc_p, heap, accs->locs, aref);
+  bitmap_set_bit (ril, ref->id);
 }
 
-/* Releases list of memory reference locations MEM_REFS.  */
+/* Marks reference REF as stored in LOOP.  */
 
 static void
-free_mem_ref_locs (struct mem_ref_loc *mem_refs)
+mark_ref_stored (mem_ref_p ref, struct loop *loop)
 {
-  struct mem_ref_loc *act;
+  for (;
+       loop != current_loops->tree_root
+       && !bitmap_bit_p (ref->stored, loop->num);
+       loop = loop_outer (loop))
+    bitmap_set_bit (ref->stored, loop->num);
+}
 
-  while (mem_refs)
+/* Gathers memory references in statement STMT in LOOP, storing the
+   information about them in the memory_accesses structure.  Marks
+   the vops accessed through unrecognized statements there as
+   well.  */
+
+static void
+gather_mem_refs_stmt (struct loop *loop, tree stmt)
+{
+  tree *mem = NULL;
+  hashval_t hash;
+  PTR *slot;
+  mem_ref_p ref;
+  ssa_op_iter oi;
+  tree vname;
+  bool is_stored;
+  bitmap clvops;
+  unsigned id;
+
+  if (ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
+    return;
+
+  mem = simple_mem_ref_in_stmt (stmt, &is_stored);
+  if (!mem)
+    goto fail;
+
+  hash = iterative_hash_expr (*mem, 0);
+  slot = htab_find_slot_with_hash (memory_accesses.refs, *mem, hash, INSERT);
+
+  if (*slot)
     {
-      act = mem_refs;
-      mem_refs = mem_refs->next;
-      free (act);
+      ref = *slot;
+      id = ref->id;
+    }
+  else
+    {
+      id = VEC_length (mem_ref_p, memory_accesses.refs_list);
+      ref = mem_ref_alloc (*mem, hash, id);
+      VEC_safe_push (mem_ref_p, heap, memory_accesses.refs_list, ref);
+      *slot = ref;
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Memory reference %u: ", id);
+	  print_generic_expr (dump_file, ref->mem, TDF_SLIM);
+	  fprintf (dump_file, "\n");
+	}
+    }
+  if (is_stored)
+    mark_ref_stored (ref, loop);
+
+  FOR_EACH_SSA_TREE_OPERAND (vname, stmt, oi, SSA_OP_VIRTUAL_USES)
+    bitmap_set_bit (ref->vops, DECL_UID (SSA_NAME_VAR (vname)));
+  record_mem_ref_loc (ref, loop, stmt, mem);
+  return;
+
+fail:
+  clvops = VEC_index (bitmap, memory_accesses.clobbered_vops, loop->num);
+  FOR_EACH_SSA_TREE_OPERAND (vname, stmt, oi, SSA_OP_VIRTUAL_USES)
+    bitmap_set_bit (clvops, DECL_UID (SSA_NAME_VAR (vname)));
+}
+
+/* Gathers memory references in loops.  */
+
+static void
+gather_mem_refs_in_loops (void)
+{
+  block_stmt_iterator bsi;
+  basic_block bb;
+  struct loop *loop;
+  loop_iterator li;
+  bitmap clvo, clvi;
+  bitmap lrefs, alrefs, alrefso;
+
+  FOR_EACH_BB (bb)
+    {
+      loop = bb->loop_father;
+      if (loop == current_loops->tree_root)
+	continue;
+
+      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+	gather_mem_refs_stmt (loop, bsi_stmt (bsi));
+    }
+
+  /* Propagate the information about clobbered vops and accessed memory
+     references up the loop hierarchy.  */
+  FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
+    {
+      lrefs = VEC_index (bitmap, memory_accesses.refs_in_loop, loop->num);
+      alrefs = VEC_index (bitmap, memory_accesses.all_refs_in_loop, loop->num);
+      bitmap_ior_into (alrefs, lrefs);
+
+      if (loop_outer (loop) == current_loops->tree_root)
+	continue;
+
+      clvi = VEC_index (bitmap, memory_accesses.clobbered_vops, loop->num);
+      clvo = VEC_index (bitmap, memory_accesses.clobbered_vops,
+			loop_outer (loop)->num);
+      bitmap_ior_into (clvo, clvi);
+
+      alrefso = VEC_index (bitmap, memory_accesses.all_refs_in_loop,
+			   loop_outer (loop)->num);
+      bitmap_ior_into (alrefso, alrefs);
     }
 }
 
-/* Rewrites memory references in list MEM_REFS by variable TMP_VAR.  */
+/* Element of the hash table that maps vops to memory references.  */
+
+struct vop_to_refs_elt
+{
+  /* DECL_UID of the vop.  */
+  unsigned uid;
+
+  /* List of the all references.  */
+  bitmap refs_all;
+
+  /* List of stored references.  */
+  bitmap refs_stored;
+};
+
+/* A hash function for struct vop_to_refs_elt object OBJ.  */
+
+static hashval_t
+vtoe_hash (const void *obj)
+{
+  const struct vop_to_refs_elt *vtoe = obj;
+
+  return vtoe->uid;
+}
+
+/* An equality function for struct vop_to_refs_elt object OBJ1 with
+   uid of a vop OBJ2.  */
+
+static int
+vtoe_eq (const void *obj1, const void *obj2)
+{
+  const struct vop_to_refs_elt *vtoe = obj1;
+  const unsigned *uid = obj2;
+
+  return vtoe->uid == *uid;
+}
+
+/* A function to free the struct vop_to_refs_elt object.  */
 
 static void
-rewrite_mem_refs (tree tmp_var, struct mem_ref_loc *mem_refs)
+vtoe_free (void *obj)
 {
-  tree var;
-  ssa_op_iter iter;
+  struct vop_to_refs_elt *vtoe = obj;
 
-  for (; mem_refs; mem_refs = mem_refs->next)
+  BITMAP_FREE (vtoe->refs_all);
+  BITMAP_FREE (vtoe->refs_stored);
+  free (vtoe);
+}
+
+/* Records REF to hashtable VOP_TO_REFS for the index VOP.  STORED is true
+   if the reference REF is stored.  */
+
+static void
+record_vop_access (htab_t vop_to_refs, unsigned vop, unsigned ref, bool stored)
+{
+  void **slot = htab_find_slot_with_hash (vop_to_refs, &vop, vop, INSERT);
+  struct vop_to_refs_elt *vtoe;
+
+  if (!*slot)
     {
-      FOR_EACH_SSA_TREE_OPERAND (var, mem_refs->stmt, iter, SSA_OP_ALL_VIRTUALS)
-	mark_sym_for_renaming (SSA_NAME_VAR (var));
-
-      *mem_refs->ref = tmp_var;
-      update_stmt (mem_refs->stmt);
+      vtoe = XNEW (struct vop_to_refs_elt);
+      vtoe->uid = vop;
+      vtoe->refs_all = BITMAP_ALLOC (NULL);
+      vtoe->refs_stored = BITMAP_ALLOC (NULL);
+      *slot = vtoe;
     }
+  else
+    vtoe = *slot;
+
+  bitmap_set_bit (vtoe->refs_all, ref);
+  if (stored)
+    bitmap_set_bit (vtoe->refs_stored, ref);
+}
+
+/* Returns the set of references that access VOP according to the table
+   VOP_TO_REFS.  */
+
+static bitmap
+get_vop_accesses (htab_t vop_to_refs, unsigned vop)
+{
+  struct vop_to_refs_elt *vtoe = htab_find_with_hash (vop_to_refs, &vop, vop);
+  return vtoe->refs_all;
+}
+
+/* Returns the set of stores that access VOP according to the table
+   VOP_TO_REFS.  */
+
+static bitmap
+get_vop_stores (htab_t vop_to_refs, unsigned vop)
+{
+  struct vop_to_refs_elt *vtoe = htab_find_with_hash (vop_to_refs, &vop, vop);
+  return vtoe->refs_stored;
+}
+
+/* Adds REF to mapping from virtual operands to references in LOOP.  */
+
+static void
+add_vop_ref_mapping (struct loop *loop, mem_ref_p ref)
+{
+  htab_t map = VEC_index (htab_t, memory_accesses.vop_ref_map, loop->num);
+  bool stored = bitmap_bit_p (ref->stored, loop->num);
+  bitmap clobbers = VEC_index (bitmap, memory_accesses.clobbered_vops,
+			       loop->num);
+  bitmap_iterator bi;
+  unsigned vop;
+
+  EXECUTE_IF_AND_COMPL_IN_BITMAP (ref->vops, clobbers, 0, vop, bi)
+    {
+      record_vop_access (map, vop, ref->id, stored);
+    }
+}
+
+/* Create a mapping from virtual operands to references that touch them
+   in LOOP.  */
+
+static void
+create_vop_ref_mapping_loop (struct loop *loop)
+{
+  bitmap refs = VEC_index (bitmap, memory_accesses.refs_in_loop, loop->num);
+  struct loop *sloop;
+  bitmap_iterator bi;
+  unsigned i;
+  mem_ref_p ref;
+
+  EXECUTE_IF_SET_IN_BITMAP (refs, 0, i, bi)
+    {
+      ref = VEC_index (mem_ref_p, memory_accesses.refs_list, i);
+      for (sloop = loop; sloop != current_loops->tree_root; sloop = loop_outer (sloop))
+	add_vop_ref_mapping (sloop, ref);
+    }
+}
+
+/* For each non-clobbered virtual operand and each loop, record the memory
+   references in this loop that touch the operand.  */
+
+static void
+create_vop_ref_mapping (void)
+{
+  loop_iterator li;
+  struct loop *loop;
+
+  FOR_EACH_LOOP (li, loop, 0)
+    {
+      create_vop_ref_mapping_loop (loop);
+    }
+}
+
+/* Gathers information about memory accesses in the loops.  */
+
+static void
+analyze_memory_references (void)
+{
+  unsigned i;
+  bitmap empty;
+  htab_t hempty;
+
+  memory_accesses.refs
+	  = htab_create (100, memref_hash, memref_eq, memref_free);
+  memory_accesses.refs_list = NULL;
+  memory_accesses.refs_in_loop = VEC_alloc (bitmap, heap,
+					    number_of_loops ());
+  memory_accesses.all_refs_in_loop = VEC_alloc (bitmap, heap,
+						number_of_loops ());
+  memory_accesses.clobbered_vops = VEC_alloc (bitmap, heap,
+					      number_of_loops ());
+  memory_accesses.vop_ref_map = VEC_alloc (htab_t, heap,
+					   number_of_loops ());
+
+  for (i = 0; i < number_of_loops (); i++)
+    {
+      empty = BITMAP_ALLOC (NULL);
+      VEC_quick_push (bitmap, memory_accesses.refs_in_loop, empty);
+      empty = BITMAP_ALLOC (NULL);
+      VEC_quick_push (bitmap, memory_accesses.all_refs_in_loop, empty);
+      empty = BITMAP_ALLOC (NULL);
+      VEC_quick_push (bitmap, memory_accesses.clobbered_vops, empty);
+      hempty = htab_create (10, vtoe_hash, vtoe_eq, vtoe_free);
+      VEC_quick_push (htab_t, memory_accesses.vop_ref_map, hempty);
+    }
+
+  memory_accesses.ttae_cache = NULL;
+
+  gather_mem_refs_in_loops ();
+  create_vop_ref_mapping ();
+}
+
+/* Returns true if a region of size SIZE1 at position 0 and a region of
+   size SIZE2 at position DIFF cannot overlap.  */
+
+static bool
+cannot_overlap_p (aff_tree *diff, double_int size1, double_int size2)
+{
+  double_int d, bound;
+
+  /* Unless the difference is a constant, we fail.  */
+  if (diff->n != 0)
+    return false;
+
+  d = diff->offset;
+  if (double_int_negative_p (d))
+    {
+      /* The second object is before the first one, we succeed if the last
+	 element of the second object is before the start of the first one.  */
+      bound = double_int_add (d, double_int_add (size2, double_int_minus_one));
+      return double_int_negative_p (bound);
+    }
+  else
+    {
+      /* We succeed if the second object starts after the first one ends.  */
+      return double_int_scmp (size1, d) <= 0;
+    }
+}
+
+/* Returns true if MEM1 and MEM2 may alias.  TTAE_CACHE is used as a cache in
+   tree_to_aff_combination_expand.  */
+
+static bool
+mem_refs_may_alias_p (tree mem1, tree mem2, struct pointer_map_t **ttae_cache)
+{
+  /* Perform BASE + OFFSET analysis -- if MEM1 and MEM2 are based on the same
+     object and their offset differ in such a way that the locations cannot
+     overlap, then they cannot alias.  */
+  aff_tree off1, off2;
+  double_int size1, size2;
+  tree base1, base2;
+
+  /* If MEM1 and MEM2 are based on different variables, they cannot alias.  */
+  base1 = get_base_address (mem1);
+  base2 = get_base_address (mem2);
+
+  if (base1
+      && !INDIRECT_REF_P (base1)
+      && base2
+      && !INDIRECT_REF_P (base2)
+      && !operand_equal_p (base1, base2, 0))
+    return false;
+
+  /* With strict aliasing, it is impossible to access a scalar variable through
+     anything but a pointer dereference or through a union (gcc extension).  */
+  if (flag_strict_aliasing)
+    {
+      if (!INDIRECT_REF_P (mem1)
+	  && base1
+	  && TREE_CODE (TREE_TYPE (base1)) != UNION_TYPE
+	  && SSA_VAR_P (mem2)
+	  && !AGGREGATE_TYPE_P (TREE_TYPE (mem2)))
+	return false;
+      if (!INDIRECT_REF_P (mem2)
+	  && base2
+	  && TREE_CODE (TREE_TYPE (base2)) != UNION_TYPE
+	  && SSA_VAR_P (mem1)
+	  && !AGGREGATE_TYPE_P (TREE_TYPE (mem1)))
+	return false;
+    }
+
+  /* The expansion of addresses may be a bit expensive, thus we only do
+     the check at -O2 and higher optimization levels.  */
+  if (optimize < 2)
+    return true;
+
+  get_inner_reference_aff (mem1, &off1, &size1);
+  get_inner_reference_aff (mem2, &off2, &size2);
+  aff_combination_expand (&off1, ttae_cache);
+  aff_combination_expand (&off2, ttae_cache);
+  aff_combination_scale (&off1, double_int_minus_one);
+  aff_combination_add (&off2, &off1);
+
+  if (cannot_overlap_p (&off2, size1, size2))
+    return false;
+
+  return true;
+}
+
+/* Rewrites location LOC by TMP_VAR.  */
+
+static void
+rewrite_mem_ref_loc (mem_ref_loc_p loc, tree tmp_var)
+{
+  mark_virtual_ops_for_renaming (loc->stmt);
+  *loc->ref = tmp_var;
+  update_stmt (loc->stmt);
+}
+
+/* Adds all locations of REF in LOOP and its subloops to LOCS.  */
+
+static void
+get_all_locs_in_loop (struct loop *loop, mem_ref_p ref,
+		      VEC (mem_ref_loc_p, heap) **locs)
+{
+  mem_ref_locs_p accs;
+  unsigned i;
+  mem_ref_loc_p loc;
+  bitmap refs = VEC_index (bitmap, memory_accesses.all_refs_in_loop,
+			   loop->num);
+  struct loop *subloop;
+
+  if (!bitmap_bit_p (refs, ref->id))
+    return;
+
+  if (VEC_length (mem_ref_locs_p, ref->accesses_in_loop)
+      > (unsigned) loop->num)
+    {
+      accs = VEC_index (mem_ref_locs_p, ref->accesses_in_loop, loop->num);
+      if (accs)
+	{
+	  for (i = 0; VEC_iterate (mem_ref_loc_p, accs->locs, i, loc); i++)
+	    VEC_safe_push (mem_ref_loc_p, heap, *locs, loc);
+	}
+    }
+
+  for (subloop = loop->inner; subloop != NULL; subloop = subloop->next)
+    get_all_locs_in_loop (subloop, ref, locs);
+}
+
+/* Rewrites all references to REF in LOOP by variable TMP_VAR.  */
+
+static void
+rewrite_mem_refs (struct loop *loop, mem_ref_p ref, tree tmp_var)
+{
+  unsigned i;
+  mem_ref_loc_p loc;
+  VEC (mem_ref_loc_p, heap) *locs = NULL;
+
+  get_all_locs_in_loop (loop, ref, &locs);
+  for (i = 0; VEC_iterate (mem_ref_loc_p, locs, i, loc); i++)
+    rewrite_mem_ref_loc (loc, tmp_var);
+  VEC_free (mem_ref_loc_p, heap, locs);
 }
 
 /* The name and the length of the currently generated variable
@@ -1147,18 +1828,14 @@ get_lsm_tmp_name (tree ref, unsigned n)
   return lsm_tmp_name;
 }
 
-/* Records request for store motion of memory reference REF from LOOP.
-   MEM_REFS is the list of occurrences of the reference REF inside LOOP;
-   these references are rewritten by a new temporary variable.
+/* Executes store motion of memory reference REF from LOOP.
    Exits from the LOOP are stored in EXITS.  The initialization of the
    temporary variable is put to the preheader of the loop, and assignments
    to the reference from the temporary variable are emitted to exits.  */
 
 static void
-schedule_sm (struct loop *loop, VEC (edge, heap) *exits, tree ref,
-	     struct mem_ref_loc *mem_refs)
+execute_sm (struct loop *loop, VEC (edge, heap) *exits, mem_ref_p ref)
 {
-  struct mem_ref_loc *aref;
   tree tmp_var;
   unsigned i;
   tree load, store;
@@ -1168,24 +1845,21 @@ schedule_sm (struct loop *loop, VEC (edge, heap) *exits, tree ref,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Executing store motion of ");
-      print_generic_expr (dump_file, ref, 0);
+      print_generic_expr (dump_file, ref->mem, 0);
       fprintf (dump_file, " from loop %d\n", loop->num);
     }
 
-  tmp_var = make_rename_temp (TREE_TYPE (ref),
-			      get_lsm_tmp_name (ref, ~0));
+  tmp_var = make_rename_temp (TREE_TYPE (ref->mem),
+			      get_lsm_tmp_name (ref->mem, ~0));
 
   fmt_data.loop = loop;
   fmt_data.orig_loop = loop;
-  for_each_index (&ref, force_move_till, &fmt_data);
+  for_each_index (&ref->mem, force_move_till, &fmt_data);
 
-  rewrite_mem_refs (tmp_var, mem_refs);
-  for (aref = mem_refs; aref; aref = aref->next)
-    if (LIM_DATA (aref->stmt))
-      LIM_DATA (aref->stmt)->sm_done = true;
+  rewrite_mem_refs (loop, ref, tmp_var);
 
   /* Emit the load & stores.  */
-  load = build_gimple_modify_stmt (tmp_var, ref);
+  load = build_gimple_modify_stmt (tmp_var, unshare_expr (ref->mem));
   get_stmt_ann (load)->common.aux = xcalloc (1, sizeof (struct lim_aux_data));
   LIM_DATA (load)->max_loop = loop;
   LIM_DATA (load)->tgt_loop = loop;
@@ -1196,81 +1870,225 @@ schedule_sm (struct loop *loop, VEC (edge, heap) *exits, tree ref,
 
   for (i = 0; VEC_iterate (edge, exits, i, ex); i++)
     {
-      store = build_gimple_modify_stmt (unshare_expr (ref), tmp_var);
+      store = build_gimple_modify_stmt (unshare_expr (ref->mem), tmp_var);
       bsi_insert_on_edge (ex, store);
     }
 }
 
-/* Check whether memory reference REF can be hoisted out of the LOOP.  If this
-   is true, prepare the statements that load the value of the memory reference
-   to a temporary variable in the loop preheader, store it back on the loop
-   exits, and replace all the references inside LOOP by this temporary variable.
-   EXITS is the list of exits of LOOP.  CLOBBERED_VOPS is the bitmap of virtual
-   operands that are clobbered by a call or accessed through multiple references
-   in loop.  */
+/* Hoists memory references MEM_REFS out of LOOP.  EXITS is the list of exit
+   edges of the LOOP.  */
 
 static void
-determine_lsm_ref (struct loop *loop, VEC (edge, heap) *exits,
-		   bitmap clobbered_vops, struct mem_ref *ref)
+hoist_memory_references (struct loop *loop, bitmap mem_refs,
+			 VEC (edge, heap) *exits)
 {
-  struct mem_ref_loc *aref;
-  struct loop *must_exec;
+  mem_ref_p ref;
+  unsigned  i;
+  bitmap_iterator bi;
 
-  /* In case the memory is not stored to, there is nothing for SM to do.  */
-  if (!ref->is_stored)
-    return;
-
-  /* If the reference is aliased with any different ref, or killed by call
-     in function, then fail.  */
-  if (bitmap_intersect_p (ref->vops, clobbered_vops))
-    return;
-
-  if (tree_could_trap_p (ref->mem))
+  EXECUTE_IF_SET_IN_BITMAP (mem_refs, 0, i, bi)
     {
-      /* If the memory access is unsafe (i.e. it might trap), ensure that some
-	 of the statements in that it occurs is always executed when the loop
-	 is entered.  This way we know that by moving the load from the
-	 reference out of the loop we will not cause the error that would not
-	 occur otherwise.
-
-	 TODO -- in fact we would like to check for anticipability of the
-	 reference, i.e. that on each path from loop entry to loop exit at
-	 least one of the statements containing the memory reference is
-	 executed.  */
-
-      for (aref = ref->locs; aref; aref = aref->next)
-	{
-	  if (!LIM_DATA (aref->stmt))
-	    continue;
-
-	  must_exec = LIM_DATA (aref->stmt)->always_executed_in;
-	  if (!must_exec)
-	    continue;
-
-	  if (must_exec == loop
-	      || flow_loop_nested_p (must_exec, loop))
-	    break;
-	}
-
-      if (!aref)
-	return;
+      ref = VEC_index (mem_ref_p, memory_accesses.refs_list, i);
+      execute_sm (loop, exits, ref);
     }
-
-  schedule_sm (loop, exits, ref->mem, ref->locs);
 }
 
-/* Hoists memory references MEM_REFS out of LOOP.  CLOBBERED_VOPS is the list
-   of vops clobbered by call in loop or accessed by multiple memory references.
-   EXITS is the list of exit edges of the LOOP.  */
+/* Returns true if REF is always accessed in LOOP.  */
+
+static bool
+ref_always_accessed_p (struct loop *loop, mem_ref_p ref)
+{
+  VEC (mem_ref_loc_p, heap) *locs = NULL;
+  unsigned i;
+  mem_ref_loc_p loc;
+  bool ret = false;
+  struct loop *must_exec;
+
+  get_all_locs_in_loop (loop, ref, &locs);
+  for (i = 0; VEC_iterate (mem_ref_loc_p, locs, i, loc); i++)
+    {
+      if (!LIM_DATA (loc->stmt))
+	continue;
+
+      must_exec = LIM_DATA (loc->stmt)->always_executed_in;
+      if (!must_exec)
+	continue;
+
+      if (must_exec == loop
+	  || flow_loop_nested_p (must_exec, loop))
+	{
+	  ret = true;
+	  break;
+	}
+    }
+  VEC_free (mem_ref_loc_p, heap, locs);
+
+  return ret;
+}
+
+/* Returns true if REF1 and REF2 are independent.  */
+
+static bool
+refs_independent_p (mem_ref_p ref1, mem_ref_p ref2)
+{
+  if (ref1 == ref2
+      || bitmap_bit_p (ref1->indep_ref, ref2->id))
+    return true;
+  if (bitmap_bit_p (ref1->dep_ref, ref2->id))
+    return false;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Querying dependency of refs %u and %u: ",
+	     ref1->id, ref2->id);
+
+  if (mem_refs_may_alias_p (ref1->mem, ref2->mem,
+			    &memory_accesses.ttae_cache))
+    {
+      bitmap_set_bit (ref1->dep_ref, ref2->id);
+      bitmap_set_bit (ref2->dep_ref, ref1->id);
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "dependent.\n");
+      return false;
+    }
+  else
+    {
+      bitmap_set_bit (ref1->indep_ref, ref2->id);
+      bitmap_set_bit (ref2->indep_ref, ref1->id);
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "independent.\n");
+      return true;
+    }
+}
+
+/* Records the information whether REF is independent in LOOP (according
+   to INDEP).  */
 
 static void
-hoist_memory_references (struct loop *loop, struct mem_ref *mem_refs,
-			 bitmap clobbered_vops, VEC (edge, heap) *exits)
+record_indep_loop (struct loop *loop, mem_ref_p ref, bool indep)
 {
-  struct mem_ref *ref;
+  if (indep)
+    bitmap_set_bit (ref->indep_loop, loop->num);
+  else
+    bitmap_set_bit (ref->dep_loop, loop->num);
+}
 
-  for (ref = mem_refs; ref; ref = ref->next)
-    determine_lsm_ref (loop, exits, clobbered_vops, ref);
+/* Returns true if REF is independent on all other memory references in
+   LOOP.  */
+
+static bool
+ref_indep_loop_p_1 (struct loop *loop, mem_ref_p ref)
+{
+  bitmap clobbers, refs_to_check, refs;
+  unsigned i;
+  bitmap_iterator bi;
+  bool ret = true, stored = bitmap_bit_p (ref->stored, loop->num);
+  htab_t map;
+  mem_ref_p aref;
+
+  /* If the reference is clobbered, it is not independent.  */
+  clobbers = VEC_index (bitmap, memory_accesses.clobbered_vops, loop->num);
+  if (bitmap_intersect_p (ref->vops, clobbers))
+    return false;
+
+  refs_to_check = BITMAP_ALLOC (NULL);
+
+  map = VEC_index (htab_t, memory_accesses.vop_ref_map, loop->num);
+  EXECUTE_IF_AND_COMPL_IN_BITMAP (ref->vops, clobbers, 0, i, bi)
+    {
+      if (stored)
+	refs = get_vop_accesses (map, i);
+      else
+	refs = get_vop_stores (map, i);
+
+      bitmap_ior_into (refs_to_check, refs);
+    }
+
+  EXECUTE_IF_SET_IN_BITMAP (refs_to_check, 0, i, bi)
+    {
+      aref = VEC_index (mem_ref_p, memory_accesses.refs_list, i);
+      if (!refs_independent_p (ref, aref))
+	{
+	  ret = false;
+	  record_indep_loop (loop, aref, false);
+	  break;
+	}
+    }
+
+  BITMAP_FREE (refs_to_check);
+  return ret;
+}
+
+/* Returns true if REF is independent on all other memory references in
+   LOOP.  Wrapper over ref_indep_loop_p_1, caching its results.  */
+
+static bool
+ref_indep_loop_p (struct loop *loop, mem_ref_p ref)
+{
+  bool ret;
+
+  if (bitmap_bit_p (ref->indep_loop, loop->num))
+    return true;
+  if (bitmap_bit_p (ref->dep_loop, loop->num))
+    return false;
+
+  ret = ref_indep_loop_p_1 (loop, ref);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Querying dependencies of ref %u in loop %d: %s\n",
+	     ref->id, loop->num, ret ? "independent" : "dependent");
+
+  record_indep_loop (loop, ref, ret);
+
+  return ret;
+}
+
+/* Returns true if we can perform store motion of REF from LOOP.  */
+
+static bool
+can_sm_ref_p (struct loop *loop, mem_ref_p ref)
+{
+  /* Unless the reference is stored in the loop, there is nothing to do.  */
+  if (!bitmap_bit_p (ref->stored, loop->num))
+    return false;
+
+  /* It should be movable.  */
+  if (!is_gimple_reg_type (TREE_TYPE (ref->mem))
+      || TREE_THIS_VOLATILE (ref->mem)
+      || !for_each_index (&ref->mem, may_move_till, loop))
+    return false;
+
+  /* If it can trap, it must be always executed in LOOP.  */
+  if (tree_could_trap_p (ref->mem)
+      && !ref_always_accessed_p (loop, ref))
+    return false;
+
+  /* And it must be independent on all other memory references
+     in LOOP.  */
+  if (!ref_indep_loop_p (loop, ref))
+    return false;
+
+  return true;
+}
+
+/* Marks the references in LOOP for that store motion should be performed
+   in REFS_TO_SM.  SM_EXECUTED is the set of references for that store
+   motion was performed in one of the outer loops.  */
+
+static void
+find_refs_for_sm (struct loop *loop, bitmap sm_executed, bitmap refs_to_sm)
+{
+  bitmap refs = VEC_index (bitmap, memory_accesses.all_refs_in_loop,
+			   loop->num);
+  unsigned i;
+  bitmap_iterator bi;
+  mem_ref_p ref;
+
+  EXECUTE_IF_AND_COMPL_IN_BITMAP (refs, sm_executed, 0, i, bi)
+    {
+      ref = VEC_index (mem_ref_p, memory_accesses.refs_list, i);
+      if (can_sm_ref_p (loop, ref))
+	bitmap_set_bit (refs_to_sm, i);
+    }
 }
 
 /* Checks whether LOOP (with exits stored in EXITS array) is suitable
@@ -1291,232 +2109,44 @@ loop_suitable_for_sm (struct loop *loop ATTRIBUTE_UNUSED,
   return true;
 }
 
-/* A hash function for struct mem_ref object OBJ.  */
-
-static hashval_t
-memref_hash (const void *obj)
-{
-  return ((const struct mem_ref *) obj)->hash;
-}
-
-/* An equality function for struct mem_ref object OBJ1 with
-   memory reference OBJ2.  */
-
-static int
-memref_eq (const void *obj1, const void *obj2)
-{
-  const struct mem_ref *const mem1 = (const struct mem_ref *) obj1;
-
-  return operand_equal_p (mem1->mem, (const_tree) obj2, 0);
-}
-
-/* Gathers memory references in statement STMT in LOOP, storing the
-   information about them in MEM_REFS hash table.  Note vops accessed through
-   unrecognized statements in CLOBBERED_VOPS.  The newly created references
-   are also stored to MEM_REF_LIST.  */
-
-static void
-gather_mem_refs_stmt (struct loop *loop, htab_t mem_refs,
-		      bitmap clobbered_vops, tree stmt,
-		      struct mem_ref **mem_ref_list)
-{
-  tree *lhs, *rhs, *mem = NULL;
-  hashval_t hash;
-  PTR *slot;
-  struct mem_ref *ref = NULL;
-  ssa_op_iter oi;
-  tree vname;
-  bool is_stored;
-
-  if (ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
-    return;
-
-  /* Recognize MEM = (SSA_NAME | invariant) and SSA_NAME = MEM patterns.  */
-  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
-    goto fail;
-
-  lhs = &GIMPLE_STMT_OPERAND (stmt, 0);
-  rhs = &GIMPLE_STMT_OPERAND (stmt, 1);
-
-  if (TREE_CODE (*lhs) == SSA_NAME)
-    {
-      if (!is_gimple_addressable (*rhs))
-	goto fail;
-
-      mem = rhs;
-      is_stored = false;
-    }
-  else if (TREE_CODE (*rhs) == SSA_NAME
-	   || is_gimple_min_invariant (*rhs))
-    {
-      mem = lhs;
-      is_stored = true;
-    }
-  else
-    goto fail;
-
-  /* If we cannot create an SSA name for the result, give up.  */
-  if (!is_gimple_reg_type (TREE_TYPE (*mem))
-      || TREE_THIS_VOLATILE (*mem))
-    goto fail;
-
-  /* If we cannot move the reference out of the loop, fail.  */
-  if (!for_each_index (mem, may_move_till, loop))
-    goto fail;
-
-  hash = iterative_hash_expr (*mem, 0);
-  slot = htab_find_slot_with_hash (mem_refs, *mem, hash, INSERT);
-
-  if (*slot)
-    ref = (struct mem_ref *) *slot;
-  else
-    {
-      ref = XNEW (struct mem_ref);
-      ref->mem = *mem;
-      ref->hash = hash;
-      ref->locs = NULL;
-      ref->is_stored = false;
-      ref->vops = BITMAP_ALLOC (NULL);
-      ref->next = *mem_ref_list;
-      *mem_ref_list = ref;
-      *slot = ref;
-    }
-  ref->is_stored |= is_stored;
-
-  FOR_EACH_SSA_TREE_OPERAND (vname, stmt, oi, SSA_OP_VIRTUAL_USES)
-    bitmap_set_bit (ref->vops, DECL_UID (SSA_NAME_VAR (vname)));
-  record_mem_ref_loc (&ref->locs, stmt, mem);
-  return;
-
-fail:
-  FOR_EACH_SSA_TREE_OPERAND (vname, stmt, oi, SSA_OP_VIRTUAL_USES)
-    bitmap_set_bit (clobbered_vops, DECL_UID (SSA_NAME_VAR (vname)));
-}
-
-/* Gathers memory references in LOOP.  Notes vops accessed through unrecognized
-   statements in CLOBBERED_VOPS.  The list of the references found by
-   the function is returned.  */
-
-static struct mem_ref *
-gather_mem_refs (struct loop *loop, bitmap clobbered_vops)
-{
-  basic_block *body = get_loop_body (loop);
-  block_stmt_iterator bsi;
-  unsigned i;
-  struct mem_ref *mem_ref_list = NULL;
-  htab_t mem_refs = htab_create (100, memref_hash, memref_eq, NULL);
-
-  for (i = 0; i < loop->num_nodes; i++)
-    {
-      for (bsi = bsi_start (body[i]); !bsi_end_p (bsi); bsi_next (&bsi))
-	gather_mem_refs_stmt (loop, mem_refs, clobbered_vops, bsi_stmt (bsi),
-			      &mem_ref_list);
-    }
-
-  free (body);
-
-  htab_delete (mem_refs);
-  return mem_ref_list;
-}
-
-/* Finds the vops accessed by more than one of the memory references described
-   in MEM_REFS and marks them in CLOBBERED_VOPS.  */
-
-static void
-find_more_ref_vops (struct mem_ref *mem_refs, bitmap clobbered_vops)
-{
-  bitmap_head tmp, all_vops;
-  struct mem_ref *ref;
-
-  bitmap_initialize (&tmp, &bitmap_default_obstack);
-  bitmap_initialize (&all_vops, &bitmap_default_obstack);
-
-  for (ref = mem_refs; ref; ref = ref->next)
-    {
-      /* The vops that are already in all_vops are accessed by more than
-	 one memory reference.  */
-      bitmap_and (&tmp, &all_vops, ref->vops);
-      bitmap_ior_into (clobbered_vops, &tmp);
-      bitmap_clear (&tmp);
-
-      bitmap_ior_into (&all_vops, ref->vops);
-    }
-
-  bitmap_clear (&all_vops);
-}
-
-/* Releases the memory occupied by REF.  */
-
-static void
-free_mem_ref (struct mem_ref *ref)
-{
-  free_mem_ref_locs (ref->locs);
-  BITMAP_FREE (ref->vops);
-  free (ref);
-}
-
-/* Releases the memory occupied by REFS.  */
-
-static void
-free_mem_refs (struct mem_ref *refs)
-{
-  struct mem_ref *ref, *next;
-
-  for (ref = refs; ref; ref = next)
-    {
-      next = ref->next;
-      free_mem_ref (ref);
-    }
-}
-
 /* Try to perform store motion for all memory references modified inside
-   LOOP.  */
+   LOOP.  SM_EXECUTED is the bitmap of the memory references for that
+   store motion was executed in one of the outer loops.  */
 
 static void
-determine_lsm_loop (struct loop *loop)
+store_motion_loop (struct loop *loop, bitmap sm_executed)
 {
   VEC (edge, heap) *exits = get_loop_exit_edges (loop);
-  bitmap clobbered_vops;
-  struct mem_ref *mem_refs;
+  struct loop *subloop;
+  bitmap sm_in_loop = BITMAP_ALLOC (NULL);
 
-  if (!loop_suitable_for_sm (loop, exits))
+  if (loop_suitable_for_sm (loop, exits))
     {
-      VEC_free (edge, heap, exits);
-      return;
+      find_refs_for_sm (loop, sm_executed, sm_in_loop);
+      hoist_memory_references (loop, sm_in_loop, exits);
     }
-
-  /* Find the memory references in LOOP.  */
-  clobbered_vops = BITMAP_ALLOC (NULL);
-  mem_refs = gather_mem_refs (loop, clobbered_vops);
-
-  /* Find the vops that are used for more than one reference.  */
-  find_more_ref_vops (mem_refs, clobbered_vops);
-
-  /* Hoist all suitable memory references.  */
-  hoist_memory_references (loop, mem_refs, clobbered_vops, exits);
-
-  free_mem_refs (mem_refs);
   VEC_free (edge, heap, exits);
-  BITMAP_FREE (clobbered_vops);
+
+  bitmap_ior_into (sm_executed, sm_in_loop);
+  for (subloop = loop->inner; subloop != NULL; subloop = subloop->next)
+    store_motion_loop (subloop, sm_executed);
+  bitmap_and_compl_into (sm_executed, sm_in_loop);
+  BITMAP_FREE (sm_in_loop);
 }
 
 /* Try to perform store motion for all memory references modified inside
    loops.  */
 
 static void
-determine_lsm (void)
+store_motion (void)
 {
   struct loop *loop;
-  loop_iterator li;
+  bitmap sm_executed = BITMAP_ALLOC (NULL);
 
-  /* Pass the loops from the outermost and perform the store motion as
-     suitable.  */
+  for (loop = current_loops->tree_root->inner; loop != NULL; loop = loop->next)
+    store_motion_loop (loop, sm_executed);
 
-  FOR_EACH_LOOP (li, loop, 0)
-    {
-      determine_lsm_loop (loop);
-    }
-
+  BITMAP_FREE (sm_executed);
   bsi_commit_edge_inserts ();
 }
 
@@ -1623,11 +2253,36 @@ static void
 tree_ssa_lim_finalize (void)
 {
   basic_block bb;
+  unsigned i;
+  bitmap b;
+  htab_t h;
 
   FOR_EACH_BB (bb)
     {
       bb->aux = NULL;
     }
+
+  VEC_free (mem_ref_p, heap, memory_accesses.refs_list);
+  htab_delete (memory_accesses.refs);
+
+  for (i = 0; VEC_iterate (bitmap, memory_accesses.refs_in_loop, i, b); i++)
+    BITMAP_FREE (b);
+  VEC_free (bitmap, heap, memory_accesses.refs_in_loop);
+
+  for (i = 0; VEC_iterate (bitmap, memory_accesses.all_refs_in_loop, i, b); i++)
+    BITMAP_FREE (b);
+  VEC_free (bitmap, heap, memory_accesses.all_refs_in_loop);
+
+  for (i = 0; VEC_iterate (bitmap, memory_accesses.clobbered_vops, i, b); i++)
+    BITMAP_FREE (b);
+  VEC_free (bitmap, heap, memory_accesses.clobbered_vops);
+
+  for (i = 0; VEC_iterate (htab_t, memory_accesses.vop_ref_map, i, h); i++)
+    htab_delete (h);
+  VEC_free (htab_t, heap, memory_accesses.vop_ref_map);
+
+  if (memory_accesses.ttae_cache)
+    pointer_map_destroy (memory_accesses.ttae_cache);
 }
 
 /* Moves invariants from loops.  Only "expensive" invariants are moved out --
@@ -1638,14 +2293,16 @@ tree_ssa_lim (void)
 {
   tree_ssa_lim_initialize ();
 
+  /* Gathers information about memory accesses in the loops.  */
+  analyze_memory_references ();
+
   /* For each statement determine the outermost loop in that it is
      invariant and cost for computing the invariant.  */
   determine_invariantness ();
 
-  /* For each memory reference determine whether it is possible to hoist it
-     out of the loop.  Force the necessary invariants to be moved out of the
-     loops as well.  */
-  determine_lsm ();
+  /* Execute store motion.  Force the necessary invariants to be moved
+     out of the loops as well.  */
+  store_motion ();
 
   /* Move the expressions that are expensive enough.  */
   move_computations ();

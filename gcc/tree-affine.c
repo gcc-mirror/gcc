@@ -562,19 +562,11 @@ struct name_expansion
   unsigned in_progress : 1;
 };
 
-/* Similar to tree_to_aff_combination, but follows SSA name definitions
-   and expands them recursively.  CACHE is used to cache the expansions
-   of the ssa names, to avoid exponential time complexity for cases
-   like
- 
-   a1 = a0 + a0;
-   a2 = a1 + a1;
-   a3 = a2 + a2;
-   ...  */
+/* Expands SSA names in COMB recursively.  CACHE is used to cache the
+   results.  */
 
 void
-tree_to_aff_combination_expand (tree expr, tree type, aff_tree *comb,
-				struct pointer_map_t **cache)
+aff_combination_expand (aff_tree *comb, struct pointer_map_t **cache)
 {
   unsigned i;
   aff_tree to_add, current, curre;
@@ -583,8 +575,7 @@ tree_to_aff_combination_expand (tree expr, tree type, aff_tree *comb,
   void **slot;
   struct name_expansion *exp;
 
-  tree_to_aff_combination (expr, type, comb);
-  aff_combination_zero (&to_add, type);
+  aff_combination_zero (&to_add, comb->type);
   for (i = 0; i < comb->n; i++)
     {
       e = comb->elts[i].val;
@@ -616,7 +607,7 @@ tree_to_aff_combination_expand (tree expr, tree type, aff_tree *comb,
 	  exp = XNEW (struct name_expansion);
 	  exp->in_progress = 1;
 	  *slot = exp;
-	  tree_to_aff_combination_expand (rhs, type, &current, cache);
+	  tree_to_aff_combination_expand (rhs, comb->type, &current, cache);
 	  exp->expansion = current;
 	  exp->in_progress = 0;
 	}
@@ -632,13 +623,31 @@ tree_to_aff_combination_expand (tree expr, tree type, aff_tree *comb,
 	 COMB while traversing it; include the term -coef * E, to remove
          it from COMB.  */
       scale = comb->elts[i].coef;
-      aff_combination_zero (&curre, type);
+      aff_combination_zero (&curre, comb->type);
       aff_combination_add_elt (&curre, e, double_int_neg (scale));
       aff_combination_scale (&current, scale);
       aff_combination_add (&to_add, &current);
       aff_combination_add (&to_add, &curre);
     }
   aff_combination_add (comb, &to_add);
+}
+
+/* Similar to tree_to_aff_combination, but follows SSA name definitions
+   and expands them recursively.  CACHE is used to cache the expansions
+   of the ssa names, to avoid exponential time complexity for cases
+   like
+
+   a1 = a0 + a0;
+   a2 = a1 + a1;
+   a3 = a2 + a2;
+   ...  */
+
+void
+tree_to_aff_combination_expand (tree expr, tree type, aff_tree *comb,
+				struct pointer_map_t **cache)
+{
+  tree_to_aff_combination (expr, type, comb);
+  aff_combination_expand (comb, cache);
 }
 
 /* Frees memory occupied by struct name_expansion in *VALUE.  Callback for
@@ -783,3 +792,36 @@ debug_aff (aff_tree *val)
   print_aff (stderr, val);
   fprintf (stderr, "\n");
 }
+
+/* Returns address of the reference REF in ADDR.  The size of the accessed
+   location is stored to SIZE.  */
+
+void
+get_inner_reference_aff (tree ref, aff_tree *addr, double_int *size)
+{
+  HOST_WIDE_INT bitsize, bitpos;
+  tree toff;
+  enum machine_mode mode;
+  int uns, vol;
+  aff_tree tmp;
+  tree base = get_inner_reference (ref, &bitsize, &bitpos, &toff, &mode,
+				   &uns, &vol, false);
+  tree base_addr = build_fold_addr_expr (base);
+
+  /* ADDR = &BASE + TOFF + BITPOS / BITS_PER_UNIT.  */
+
+  tree_to_aff_combination (base_addr, sizetype, addr);
+
+  if (toff)
+    {
+      tree_to_aff_combination (toff, sizetype, &tmp);
+      aff_combination_add (addr, &tmp);
+    }
+
+  aff_combination_const (&tmp, sizetype,
+			 shwi_to_double_int (bitpos / BITS_PER_UNIT));
+  aff_combination_add (addr, &tmp);
+
+  *size = shwi_to_double_int ((bitsize + BITS_PER_UNIT - 1) / BITS_PER_UNIT);
+}
+

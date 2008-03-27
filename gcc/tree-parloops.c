@@ -317,6 +317,9 @@ loop_parallel_p (struct loop *loop, htab_t reduction_list, struct tree_niter_des
 	}
     }
 
+  /* Get rid of the information created by the vectorizer functions.  */
+  destroy_loop_vec_info (simple_loop_info, true);
+
   for (phi = phi_nodes (exit->dest); phi; phi = PHI_CHAIN (phi))
     {
       struct reduction_info *red;
