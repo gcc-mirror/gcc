@@ -1,3 +1,8 @@
+2008-03-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.c-torture/execute/multi-ix.c: Limit CHUNK size between 1 and 500.
+	(main): Exit early for CHUNK less than 40 to avoid stack corruption.
+
 2008-03-27  Richard Guenther  <rguenther@suse.de>
 
 	PR c/32511
@@ -10,7 +15,7 @@
 
 2008-03-27  Douglas Gregor  <doug.gregor@gmail.com>
 
-       * g++.dg/cpp0x/variadic91.C: New.
+	* g++.dg/cpp0x/variadic91.C: New.
 
 2008-03-27  Zdenek Dvorak  <ook@ucw.cz>
 
@@ -37,7 +42,7 @@
 
 2008-03-26  Richard Guenther  <rguenther@suse.de>
 
-	Revert
+	Revert:
 	2008-03-26  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/fold-addr-1.c: New testcase.

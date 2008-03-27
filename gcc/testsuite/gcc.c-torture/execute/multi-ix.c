@@ -21,8 +21,15 @@
 
    Subtract the last two off STACK_SIZE and figure out what the maximum
    chunk size can be.  We make the last bit conservative to account for
-   register saves and other processor-dependent saving.  */
-#define CHUNK ((STACK_SIZE-40*sizeof(int)-256*sizeof(void *))/40/sizeof(int))
+   register saves and other processor-dependent saving.  Limit the
+   chunk size to some sane values.  */
+
+#define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
+#define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
+
+#define CHUNK								\
+  MIN (500, (MAX (1, (signed)(STACK_SIZE-40*sizeof(int)-256*sizeof(void *)) \
+		      / (signed)(40*sizeof(int)))))
 #else
 #define CHUNK 500
 #endif
@@ -146,6 +153,11 @@ f (int n)
 int
 main ()
 {
+  /* CHUNK needs to be at least 40 to avoid stack corruption,
+     since index variable i0 in "a[i0] = i0" equals 39.  */
+  if (CHUNK < 40)
+    exit (0);
+
   f (1);
   exit (0);
 }
