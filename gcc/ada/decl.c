@@ -3550,7 +3550,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	tree gnu_ext_name = create_concat_name (gnat_entity, NULL);
 	Entity_Id gnat_param;
 	bool inline_flag = Is_Inlined (gnat_entity);
-	bool public_flag = Is_Public (gnat_entity);
+	bool public_flag = Is_Public (gnat_entity) || imported_p;
 	bool extern_flag
 	  = (Is_Public (gnat_entity) && !definition) || imported_p;
 	bool pure_flag = Is_Pure (gnat_entity);
