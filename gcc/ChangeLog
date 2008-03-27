@@ -1,3 +1,12 @@
+2008-03-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2008-03-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/35657
+	* config/i386/i386.c (ix86_function_arg_boundary): Align
+	decimal floating point to its natural boundary.
+
 2008-03-25  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
