@@ -1516,19 +1516,19 @@ m32rle-*-linux*)
 	;;
 # m68hc11 and m68hc12 share the same machine description.
 m68hc11-*-*|m6811-*-*)
-	tm_file="dbxelf.h elfos.h m68hc11/m68hc11.h"
+	tm_file="dbxelf.h elfos.h usegas.h m68hc11/m68hc11.h"
 	tm_p_file="m68hc11/m68hc11-protos.h"
 	md_file="m68hc11/m68hc11.md"
 	out_file="m68hc11/m68hc11.c"
-	tmake_file="m68hc11/t-m68hc11-gas"
+	tmake_file="m68hc11/t-m68hc11"
 	use_fixproto=yes
         ;;
 m68hc12-*-*|m6812-*-*)
-	tm_file="m68hc11/m68hc12.h dbxelf.h elfos.h m68hc11/m68hc11.h"
+	tm_file="m68hc11/m68hc12.h dbxelf.h elfos.h usegas.h m68hc11/m68hc11.h"
 	tm_p_file="m68hc11/m68hc11-protos.h"
 	md_file="m68hc11/m68hc11.md"
 	out_file="m68hc11/m68hc11.c"
-	tmake_file="m68hc11/t-m68hc11-gas"
+	tmake_file="m68hc11/t-m68hc11"
 	extra_options="${extra_options} m68hc11/m68hc11.opt"
 	use_fixproto=yes
         ;;
@@ -1641,11 +1641,13 @@ mcore-*-elf)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} mcore/mcore-elf.h"
 	tmake_file=mcore/t-mcore
 	use_fixproto=yes
+	inhibit_libc=true
 	;;
 mcore-*-pe*)
 	tm_file="svr3.h dbxcoff.h ${tm_file} mcore/mcore-pe.h"
 	tmake_file=mcore/t-mcore-pe
 	use_fixproto=yes
+	inhibit_libc=true
 	;;
 mips-sgi-irix[56]*)
 	tm_file="elfos.h ${tm_file} mips/iris.h"

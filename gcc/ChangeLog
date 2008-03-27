@@ -1,5 +1,26 @@
 2008-03-27  Paolo Bonzini  <bonzini@gnu.org>
 
+	* config.cc (m68hc11, m6811, m68hc12, m6812): Add usegas.h,
+	rename tmake_file to m68hc11/t-m68hc11.
+	(mcore): Set inhibit_libc to true.
+	* config.host (alpha*-dec-*vms*): Set extra_programs.
+	(interix3*): Don't use host_xmake_file.
+	* configure.ac: Let config.gcc override inhibit_libc.
+	* configure: Regenerate.
+
+	* config/alpha/x-vms (EXTRA_PROGRAMS): Remove.
+	* config/t-openbsd-thread: Remove commented out lines.
+	
+	* config/x-interix: Remove.
+
+	* config/m68hc11/t-m68hc11-gas: Rename to...
+	* config/m68hc11/t-m68hc11: ... this.  Remove T_CPPFLAGS.
+
+	* config/mcore/t-mcore: Remove T_CFLAGS.
+	* config/mcore/t-mcore-pe: Likewise.
+
+2008-03-27  Paolo Bonzini  <bonzini@gnu.org>
+
 	* configure.ac: Replace custom __GNU_SOURCE test with
 	AC_USE_SYSTEM_EXTENSIONS.  Move it earlier.
 	* aclocal.m4: Regenerate.

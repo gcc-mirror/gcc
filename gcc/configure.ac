@@ -1738,7 +1738,7 @@ fi
 # then define inhibit_libc in LIBGCC2_CFLAGS.
 # This prevents libgcc2 from containing any code which requires libc
 # support.
-inhibit_libc=false
+: ${inhibit_libc=false}
 if { { test x$host != x$target && test "x$with_sysroot" = x ; } ||
        test x$with_newlib = xyes ; } &&
      { test "x$with_headers" = x || test "x$with_headers" = xno ; } ; then
