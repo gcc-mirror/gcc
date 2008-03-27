@@ -5956,11 +5956,6 @@ build_complex_type (tree component_type)
    If FOR_TYPE is nonzero, we return a value which, if converted to
    type FOR_TYPE, would be equivalent to converting OP to type FOR_TYPE.
 
-   If FOR_TYPE is nonzero, unaligned bit-field references may be changed to the
-   narrowest type that can hold the value, even if they don't exactly fit.
-   Otherwise, bit-field references are changed to a narrower type
-   only if they can be fetched directly from memory in that type.
-
    OP must have integer, real or enumeral type.  Pointers are not allowed!
 
    There are some cases where the obvious value we could return
@@ -6032,38 +6027,6 @@ get_unwidened (tree op, tree for_type)
 	      uns = 1;
 	      win = op;
 	    }
-	}
-    }
-
-  if (TREE_CODE (op) == COMPONENT_REF
-      /* Since type_for_size always gives an integer type.  */
-      && TREE_CODE (type) != REAL_TYPE
-      && TREE_CODE (type) != FIXED_POINT_TYPE
-      /* Don't crash if field not laid out yet.  */
-      && DECL_SIZE (TREE_OPERAND (op, 1)) != 0
-      && host_integerp (DECL_SIZE (TREE_OPERAND (op, 1)), 1))
-    {
-      unsigned int innerprec
-	= tree_low_cst (DECL_SIZE (TREE_OPERAND (op, 1)), 1);
-      int unsignedp = (DECL_UNSIGNED (TREE_OPERAND (op, 1))
-		       || TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op, 1))));
-      type = lang_hooks.types.type_for_size (innerprec, unsignedp);
-
-      /* We can get this structure field in the narrowest type it fits in.
-	 If FOR_TYPE is 0, do this only for a field that matches the
-	 narrower type exactly and is aligned for it
-	 The resulting extension to its nominal type (a fullword type)
-	 must fit the same conditions as for other extensions.  */
-
-      if (type != 0
-	  && INT_CST_LT_UNSIGNED (TYPE_SIZE (type), TYPE_SIZE (TREE_TYPE (op)))
-	  && (for_type || ! DECL_BIT_FIELD (TREE_OPERAND (op, 1)))
-	  && (! uns || final_prec <= innerprec || unsignedp))
-	{
-	  win = build3 (COMPONENT_REF, type, TREE_OPERAND (op, 0),
-			TREE_OPERAND (op, 1), NULL_TREE);
-	  TREE_SIDE_EFFECTS (win) = TREE_SIDE_EFFECTS (op);
-	  TREE_THIS_VOLATILE (win) = TREE_THIS_VOLATILE (op);
 	}
     }
 

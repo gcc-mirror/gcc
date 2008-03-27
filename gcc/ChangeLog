@@ -1,3 +1,7 @@
+2008-03-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.c (get_unwidened): Remove code fiddling with COMPONENT_REF.
+
 2008-03-26  Andreas Schwab  <schwab@suse.de>
 
 	* doc/invoke.texi: Fix use of @item vs. @itemx.
