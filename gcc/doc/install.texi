@@ -285,7 +285,7 @@ requirements.
 Necessary to uncompress GCC @command{tar} files when source code is
 obtained via FTP mirror sites.
 
-@item GNU make version 3.80 (or later)
+@item GNU make version 3.79.1 (or later)
 
 You must have GNU make installed to build GCC@.
 

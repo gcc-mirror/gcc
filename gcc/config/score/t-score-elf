@@ -1,9 +1,15 @@
 # Additional Backend Files
-score7.o: $(srcdir)/config/score/score7.c
-	$(COMPILE) $<
+score7.o: $(srcdir)/config/score/score7.c $(CONFIG_H) $(SYSTEM_H) \
+  coretypes.h $(TM_H) $(RTL_H) output.h flags.h $(TREE_H) \
+  expr.h toplev.h $(TM_P_H)
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(srcdir)/config/score/score7.c
 
-score3.o: $(srcdir)/config/score/score3.c
-	$(COMPILE) $<
+score3.o: $(srcdir)/config/score/score3.c $(CONFIG_H) $(SYSTEM_H) \
+  coretypes.h $(TM_H) $(RTL_H) output.h flags.h $(TREE_H) \
+  expr.h toplev.h $(TM_P_H)
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(srcdir)/config/score/score3.c
 
 
 # Assemble startup files.
