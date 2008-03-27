@@ -642,11 +642,6 @@ all generated files in the source directory that are not checked into
 CVS, but should not delete anything checked into CVS@.
 @end table
 
-@file{Make-lang.in} must also define a variable @code{@var{lang}_OBJS}
-to a list of host object files that are used by that language.  This
-variable is used to handle automatic dependency tracking in the master
-@file{Makefile}.
-
 @item lang.opt
 This file registers the set of switches that the front end accepts on
 the command line, and their @option{--help} text.  @xref{Options}.

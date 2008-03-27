@@ -1,3 +1,21 @@
+2008-03-27  Tom Tromey  <tromey@redhat.com>
+
+	* doc/sourcebuild.texi, doc/install.texi, configure, aclocal.m4,
+	configure.ac, Makefile.in, config/t-darwin, config/m32c/t-m32c,
+	config/spu/t-spu-elf, config/i386/t-interix,
+	config/i386/t-cygming, config/i386/x-i386, config/i386/t-cygwin,
+	config/i386/x-darwin, config/i386/x-mingw32,
+	config/i386/t-netware, config/i386/x-cygwin, config/i386/t-nwld,
+	config/sh/t-sh, config/sh/t-symbian, config/x-linux,
+	config/t-sol2, config/x-hpux, config/x-darwin, config/ia64/t-ia64,
+	config/x-solaris, config/t-vxworks, config/m68k/t-uclinux,
+	config/rs6000/x-rs6000, config/rs6000/x-darwin64,
+	config/rs6000/x-darwin, config/rs6000/t-rs6000,
+	config/score/t-score-elf, config/arm/t-strongarm-pe,
+	config/arm/t-pe, config/arm/t-arm, config/arm/t-wince-pe,
+	config/v850/t-v850, config/v850/t-v850e, config/bfin/t-bfin-linux:
+	Revert automatic dependency patch.
+
 2008-03-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/35657

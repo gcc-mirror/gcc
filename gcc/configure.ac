@@ -1463,9 +1463,6 @@ else
 		--target=$target_alias --host=$build_alias --build=$build_alias
 	CFLAGS="${saved_CFLAGS}"
 
-	# Extract this setting from the temporary Makefile.
-	BUILD_DEPMODE=`grep '^CCDEPMODE = ' Makefile | sed -e 's,.* = ,,'`
-
 	# We just finished tests for the build machine, so rename
 	# the file auto-build.h in the gcc directory.
 	mv auto-host.h ../auto-build.h
@@ -3649,27 +3646,6 @@ do
 	done
 	echo "lang.$t: $x" >> Make-hooks
 done
-
-# --------
-# Dependency checking.
-# --------
-
-ZW_CREATE_DEPDIR
-AC_CONFIG_COMMANDS([gccdepdir],[
-  ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/mkinstalldirs build/$DEPDIR
-  for lang in $subdirs
-  do
-      ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/mkinstalldirs $lang/$DEPDIR
-  done], [subdirs="$subdirs" ac_aux_dir=$ac_aux_dir DEPDIR=$DEPDIR])
-
-ZW_PROG_COMPILER_DEPENDENCIES([CC])
-# Note that if build!=host then we extracted the value from the
-# temporary Makefile we created above, when we ran configure.
-if test "${build}" = "${host}" ; then
-  BUILD_DEPMODE='$(CCDEPMODE)'
-fi
-AC_SUBST(BUILD_DEPMODE)
-
 
 # --------
 # UNSORTED

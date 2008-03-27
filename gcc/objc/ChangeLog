@@ -1,3 +1,7 @@
+2008-03-27  Tom Tromey  <tromey@redhat.com>
+
+	* Make-lang.in: Revert automatic dependency patch.
+
 2008-03-27  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR obj-c++/35704
