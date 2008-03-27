@@ -1,3 +1,11 @@
+2008-03-27  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR obj-c++/35704
+	* objc-act.c (objc_build_component_ref): Fix call to
+	finish_class_member_access_expr.
+	(objc_generate_cxx_ctor_or_dtor): Fix call to
+	build_special_member_call.
+
 2008-03-25  Andrew Pinski  <pinskia@gmail.com>
 
 	PR objc/29197

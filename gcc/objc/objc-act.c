@@ -1255,7 +1255,8 @@ objc_build_component_ref (tree datum, tree component)
      front-end, but 'finish_class_member_access_expr' seems to be
      a worthy substitute.  */
 #ifdef OBJCPLUS
-  return finish_class_member_access_expr (datum, component, false);
+  return finish_class_member_access_expr (datum, component, false,
+                                          tf_warning_or_error);
 #else
   return build_component_ref (datum, component);
 #endif
@@ -4493,7 +4494,7 @@ objc_generate_cxx_ctor_or_dtor (bool dtor)
 	     (build_special_member_call
 	      (build_ivar_reference (DECL_NAME (ivar)),
 	       dtor ? complete_dtor_identifier : complete_ctor_identifier,
-	       NULL_TREE, type, LOOKUP_NORMAL));
+	       NULL_TREE, type, LOOKUP_NORMAL, tf_warning_or_error));
 	}
     }
 

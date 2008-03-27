@@ -5880,7 +5880,7 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p)
 	    return error_mark_node;
 
 	  /* Perform the cast.  */
-	  expr = build_c_cast (type, expr, tf_warning_or_error);
+	  expr = build_c_cast (type, expr);
 	  return expr;
 	}
     }
