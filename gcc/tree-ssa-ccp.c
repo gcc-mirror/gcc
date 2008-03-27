@@ -278,9 +278,12 @@ get_symbol_constant_value (tree sym)
       && !MTAG_P (sym))
     {
       tree val = DECL_INITIAL (sym);
-      if (val
-	  && is_gimple_min_invariant (val))
-	return val;
+      if (val)
+	{
+	  STRIP_USELESS_TYPE_CONVERSION (val);
+	  if (is_gimple_min_invariant (val))
+	    return val;
+	}
       /* Variables declared 'const' without an initializer
 	 have zero as the intializer if they may not be
 	 overridden at link or run time.  */
@@ -1104,7 +1107,10 @@ fold_const_aggregate_ref (tree t)
       /* Whoo-hoo!  I'll fold ya baby.  Yeah!  */
       FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), cnt, cfield, cval)
 	if (tree_int_cst_equal (cfield, idx))
-	  return cval;
+	  {
+	    STRIP_USELESS_TYPE_CONVERSION (cval);
+	    return cval;
+	  }
       break;
 
     case COMPONENT_REF:
@@ -1144,7 +1150,10 @@ fold_const_aggregate_ref (tree t)
 	if (cfield == field
 	    /* FIXME: Handle bit-fields.  */
 	    && ! DECL_BIT_FIELD (cfield))
-	  return cval;
+	  {
+	    STRIP_USELESS_TYPE_CONVERSION (cval);
+	    return cval;
+	  }
       break;
 
     case REALPART_EXPR:
