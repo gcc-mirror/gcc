@@ -5,7 +5,6 @@ libsubdir=$(libdir)/gcc-lib
 
 # Rules for linker and compiler wrappers.  These are only useful on
 # a VMS host.
-EXTRA_PROGRAMS=ld.exe decc.exe
 vms-ld.o : $(srcdir)/config/alpha/vms-ld.c
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 ld.exe : vms-ld.o
