@@ -9435,29 +9435,41 @@ cp_parser_template_parameter (cp_parser* parser, bool *is_non_type,
       maybe_warn_variadic_templates ();
       
       *is_parameter_pack = true;
+    }
+  /* We might end up with a pack expansion as the type of the non-type
+     template parameter, in which case this is a non-type template
+     parameter pack.  */
+  else if (parameter_declarator
+	   && parameter_declarator->decl_specifiers.type
+	   && PACK_EXPANSION_P (parameter_declarator->decl_specifiers.type))
+    {
+      *is_parameter_pack = true;
+      parameter_declarator->decl_specifiers.type = 
+	PACK_EXPANSION_PATTERN (parameter_declarator->decl_specifiers.type);
+    }
 
+  if (*is_parameter_pack && cp_lexer_next_token_is (parser->lexer, CPP_EQ))
+    {
       /* Parameter packs cannot have default arguments.  However, a
 	 user may try to do so, so we'll parse them and give an
 	 appropriate diagnostic here.  */
-      if (cp_lexer_next_token_is (parser->lexer, CPP_EQ))
-	{
-	  /* Consume the `='.  */
-	  cp_lexer_consume_token (parser->lexer);
 
-	  /* Find the name of the parameter pack.  */     
-	  id_declarator = parameter_declarator->declarator;
-	  while (id_declarator && id_declarator->kind != cdk_id)
-	    id_declarator = id_declarator->declarator;
-	  
-	  if (id_declarator && id_declarator->kind == cdk_id)
-	    error ("template parameter pack %qD cannot have a default argument",
-		   id_declarator->u.id.unqualified_name);
-	  else
-	    error ("template parameter pack cannot have a default argument");
-
-          /* Parse the default argument, but throw away the result.  */
-          cp_parser_default_argument (parser, /*template_parm_p=*/true);
-	}
+      /* Consume the `='.  */
+      cp_lexer_consume_token (parser->lexer);
+      
+      /* Find the name of the parameter pack.  */     
+      id_declarator = parameter_declarator->declarator;
+      while (id_declarator && id_declarator->kind != cdk_id)
+	id_declarator = id_declarator->declarator;
+      
+      if (id_declarator && id_declarator->kind == cdk_id)
+	error ("template parameter pack %qD cannot have a default argument",
+	       id_declarator->u.id.unqualified_name);
+      else
+	error ("template parameter pack cannot have a default argument");
+      
+      /* Parse the default argument, but throw away the result.  */
+      cp_parser_default_argument (parser, /*template_parm_p=*/true);
     }
 
   parm = grokdeclarator (parameter_declarator->declarator,
