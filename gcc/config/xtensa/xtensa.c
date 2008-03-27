@@ -652,6 +652,16 @@ gen_float_relational (enum rtx_code test_code, /* relational test (EQ, etc) */
     case GT: reverse_regs = 1; invert = 0; gen_fn = gen_slt_sf; break;
     case LT: reverse_regs = 0; invert = 0; gen_fn = gen_slt_sf; break;
     case GE: reverse_regs = 1; invert = 0; gen_fn = gen_sle_sf; break;
+    case UNEQ: reverse_regs = 0; invert = 0; gen_fn = gen_suneq_sf; break;
+    case LTGT: reverse_regs = 0; invert = 1; gen_fn = gen_suneq_sf; break;
+    case UNLE: reverse_regs = 0; invert = 0; gen_fn = gen_sunle_sf; break;
+    case UNGT: reverse_regs = 1; invert = 0; gen_fn = gen_sunlt_sf; break;
+    case UNLT: reverse_regs = 0; invert = 0; gen_fn = gen_sunlt_sf; break;
+    case UNGE: reverse_regs = 1; invert = 0; gen_fn = gen_sunle_sf; break;
+    case UNORDERED:
+      reverse_regs = 0; invert = 0; gen_fn = gen_sunordered_sf; break;
+    case ORDERED:
+      reverse_regs = 0; invert = 1; gen_fn = gen_sunordered_sf; break;
     default:
       fatal_insn ("bad test", gen_rtx_fmt_ee (test_code, VOIDmode, cmp0, cmp1));
       reverse_regs = 0; invert = 0; gen_fn = 0; /* avoid compiler warnings */
