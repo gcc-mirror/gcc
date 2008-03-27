@@ -1,3 +1,8 @@
+2008-03-27  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.tpl (PICFLAG, PICFLAG_FOR_TARGET): Remove.
+	* Makefile.in: Regenerate.
+
 2008-03-26  Jakub Staszak  <kuba@et.pl>
 
 	* MAINTAINERS (Write After Approval): Add myself.
