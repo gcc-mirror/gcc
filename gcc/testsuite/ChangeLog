@@ -1,3 +1,8 @@
+2008-03-27  Andrew Pinski  <pinskia@gmail.com>
+
+	PR middle-end/35429
+	* gcc.c-torture/compile/complex-5.c: New test.
+
 2008-03-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/uninit-16.c (decode_reloc): Mark static.

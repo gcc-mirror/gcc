@@ -1,3 +1,9 @@
+2008-03-27  Andrew Pinski  <pinskia@gmail.com>
+
+	PR middle-end/35429
+	* fold-const.c (fold_truthop): Check for integeral types when folding
+	a == 0 && b == 0 and a != 0 || b != 0 .
+
 2008-03-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.c (get_unwidened): Remove code fiddling with COMPONENT_REF.
