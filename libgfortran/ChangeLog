@@ -1,3 +1,7 @@
+2008-03-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/unix.c (fd_close):  Do not close STDIN.
+
 2007-03-23  Thomas Koenig  <tkoenig@gcc.gnu.org
 
 	PR libfortran/32972
