@@ -187,9 +187,7 @@ case "${host}" in
 esac
 
 if [[ -n "${frag}" ]]; then
-  frags=${libiberty_topdir}/libiberty/config/$frag
-else
-  frags=
+  frag=${libiberty_topdir}/libiberty/config/$frag
 fi
 
 # If they didn't specify --enable-shared, don't generate shared libs.
@@ -200,34 +198,34 @@ case "${enable_shared}" in
   *) shared=yes ;;
 esac
 if [[ "${shared}" = "yes" ]]; then
-  frag=
   case "${host}" in
     *-*-cygwin*)	;;
-    alpha*-*-linux*)	frag=mh-elfalphapic ;;
-    arm*-*-*)		frag=mh-armpic ;;
-    hppa*-*-*)		frag=mh-papic ;;
+    alpha*-*-linux*)	PICFLAG=-fPIC ;;
+    arm*-*-*)		PICFLAG=-fPIC ;;
+    hppa*-*-*)		PICFLAG=-fPIC ;;
+    i370-*-*)		PICFLAG=-fPIC ;;
+    ia64-*-*)		PICFLAG=-fpic ;;
     i[[34567]]86-*-* | x86_64-*-*)
-			frag=mh-x86pic ;;
+			PICFLAG=-fpic ;;
+    m68k-*-*)		PICFLAG=-fpic ;;
     powerpc*-*-aix*)	;;
-    powerpc*-*-*)	frag=mh-ppcpic ;;
-    sparc*-*-*)		frag=mh-sparcpic ;;
-    s390*-*-*)		frag=mh-s390pic ;;
-    *)			frag=mh-${host_cpu}pic ;;
+    powerpc*-*-*)	PICFLAG=-fPIC ;;
+    sparc*-*-*)		case "${CFLAGS}" in
+			  *-fpic* ) PICFLAG=-fpic ;;
+			  * ) PICFLAG=-fPIC ;;
+			esac ;;
+    s390*-*-*)		PICFLAG=-fpic ;;
   esac
-  if [[ -n "${frag}" ]]; then
-    frags="${frags} ${libiberty_topdir}/config/${frag}"
-  fi
 fi
+AC_SUBST(PICFLAG)
 
 echo "# Warning: this fragment is automatically generated" > temp-frag
 
-for frag in ${frags}; do
-  if [[ -f ${frag} ]]; then
-    echo "Appending ${frag} to xhost-mkfrag"
-    echo "# Following fragment copied from ${frag}" >> temp-frag
-    cat ${frag} >> temp-frag
-  fi
-done
+if [[ -n "${frag}" ]] && [[ -f "${frag}" ]]; then
+  echo "Appending ${frag} to xhost-mkfrag"
+  echo "# Following fragment copied from ${frag}" >> temp-frag
+  cat ${frag} >> temp-frag
+fi
 
 # record if we want to build shared libs.
 if [[ "${shared}" = "yes" ]]; then

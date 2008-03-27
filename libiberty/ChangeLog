@@ -1,3 +1,10 @@
+2008-03-27  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.ac (frags): Don't set, use frag instead.
+	(PICFLAG): Set here and substitute.
+	* Makefile.in (PICFLAG): Substitute from autoconf.
+	* configure: Regenerate.
+
 2008-03-24  Ian Lance Taylor  <iant@google.com>
 
 	* sha1.c: New file, from gnulib.

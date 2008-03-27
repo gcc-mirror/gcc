@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS libiberty_topdir MAINT NOTMAINT MAKEINFO BUILD_INFO PERL HAVE_PERL build build_cpu build_vendor build_os host host_cpu host_vendor host_os AR ac_ct_AR RANLIB ac_ct_RANLIB CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP ac_libiberty_warn_cflags NO_MINUS_C_MINUS_O OUTPUT_OPTION INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA EGREP LIBOBJS CHECK target_header_dir pexecute INSTALL_DEST datarootdir docdir htmldir LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS libiberty_topdir MAINT NOTMAINT MAKEINFO BUILD_INFO PERL HAVE_PERL build build_cpu build_vendor build_os host host_cpu host_vendor host_os AR ac_ct_AR RANLIB ac_ct_RANLIB CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP ac_libiberty_warn_cflags NO_MINUS_C_MINUS_O OUTPUT_OPTION INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA PICFLAG EGREP LIBOBJS CHECK target_header_dir pexecute INSTALL_DEST datarootdir docdir htmldir LTLIBOBJS'
 ac_subst_files='host_makefile_frag'
 
 # Initialize some variables set by options.
@@ -3699,9 +3699,7 @@ case "${host}" in
 esac
 
 if [ -n "${frag}" ]; then
-  frags=${libiberty_topdir}/libiberty/config/$frag
-else
-  frags=
+  frag=${libiberty_topdir}/libiberty/config/$frag
 fi
 
 # If they didn't specify --enable-shared, don't generate shared libs.
@@ -3712,34 +3710,34 @@ case "${enable_shared}" in
   *) shared=yes ;;
 esac
 if [ "${shared}" = "yes" ]; then
-  frag=
   case "${host}" in
     *-*-cygwin*)	;;
-    alpha*-*-linux*)	frag=mh-elfalphapic ;;
-    arm*-*-*)		frag=mh-armpic ;;
-    hppa*-*-*)		frag=mh-papic ;;
+    alpha*-*-linux*)	PICFLAG=-fPIC ;;
+    arm*-*-*)		PICFLAG=-fPIC ;;
+    hppa*-*-*)		PICFLAG=-fPIC ;;
+    i370-*-*)		PICFLAG=-fPIC ;;
+    ia64-*-*)		PICFLAG=-fpic ;;
     i[34567]86-*-* | x86_64-*-*)
-			frag=mh-x86pic ;;
+			PICFLAG=-fpic ;;
+    m68k-*-*)		PICFLAG=-fpic ;;
     powerpc*-*-aix*)	;;
-    powerpc*-*-*)	frag=mh-ppcpic ;;
-    sparc*-*-*)		frag=mh-sparcpic ;;
-    s390*-*-*)		frag=mh-s390pic ;;
-    *)			frag=mh-${host_cpu}pic ;;
+    powerpc*-*-*)	PICFLAG=-fPIC ;;
+    sparc*-*-*)		case "${CFLAGS}" in
+			  *-fpic* ) PICFLAG=-fpic ;;
+			  * ) PICFLAG=-fPIC ;;
+			esac ;;
+    s390*-*-*)		PICFLAG=-fpic ;;
   esac
-  if [ -n "${frag}" ]; then
-    frags="${frags} ${libiberty_topdir}/config/${frag}"
-  fi
 fi
+
 
 echo "# Warning: this fragment is automatically generated" > temp-frag
 
-for frag in ${frags}; do
-  if [ -f ${frag} ]; then
-    echo "Appending ${frag} to xhost-mkfrag"
-    echo "# Following fragment copied from ${frag}" >> temp-frag
-    cat ${frag} >> temp-frag
-  fi
-done
+if [ -n "${frag}" ] && [ -f "${frag}" ]; then
+  echo "Appending ${frag} to xhost-mkfrag"
+  echo "# Following fragment copied from ${frag}" >> temp-frag
+  cat ${frag} >> temp-frag
+fi
 
 # record if we want to build shared libs.
 if [ "${shared}" = "yes" ]; then
@@ -9671,6 +9669,7 @@ s,@OUTPUT_OPTION@,$OUTPUT_OPTION,;t t
 s,@INSTALL_PROGRAM@,$INSTALL_PROGRAM,;t t
 s,@INSTALL_SCRIPT@,$INSTALL_SCRIPT,;t t
 s,@INSTALL_DATA@,$INSTALL_DATA,;t t
+s,@PICFLAG@,$PICFLAG,;t t
 s,@EGREP@,$EGREP,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
 s,@CHECK@,$CHECK,;t t
