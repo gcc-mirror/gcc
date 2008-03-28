@@ -212,7 +212,7 @@ gfc_get_default_type (gfc_symbol *sym, gfc_namespace *ns)
   letter = sym->name[0];
 
   if (gfc_option.flag_allow_leading_underscore && letter == '_')
-    gfc_internal_error ("Option -fallow_leading_underscore is for use only by "
+    gfc_internal_error ("Option -fallow-leading-underscore is for use only by "
 			"gfortran developers, and should not be used for "
 			"implicitly typed variables");
 
