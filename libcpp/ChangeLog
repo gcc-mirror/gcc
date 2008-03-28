@@ -1,3 +1,8 @@
+2008-03-28  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in (POSTCOMPILE): New variable.
+	(.c.o): Use it.
+
 2008-03-13  Tom Tromey  <tromey@redhat.com>
 
 	PR libcpp/35322:
