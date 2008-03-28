@@ -1,3 +1,10 @@
+2008-03-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/35699
+	* io/transfer.c (write_buf):  Don't pad the record, just return if the
+	data is NULL.  (next_record_w): If there are bytes left in the record
+	for unformatted direct I/O, pad out the record with zero bytes.
+
 2008-03-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/35627

@@ -1,3 +1,8 @@
+2008-03-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/35699
+	* gfortran.dg/direct_io_10.f: New test.
+
 2008-03-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/35724

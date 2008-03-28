@@ -639,12 +639,7 @@ write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
 	}
 
       if (buf == NULL && nbytes == 0)
-	{
-	   char *p;
-	   p = write_block (dtp, dtp->u.p.current_unit->recl);
-	   memset (p, 0, dtp->u.p.current_unit->recl);
-	   return SUCCESS;
-	}
+        return SUCCESS;
 
       if (swrite (dtp->u.p.current_unit->s, buf, &nbytes) != 0)
 	{
@@ -2486,6 +2481,13 @@ next_record_w (st_parameter_dt *dtp, int done)
       break;
 
     case UNFORMATTED_DIRECT:
+      if (dtp->u.p.current_unit->bytes_left > 0)
+       {
+         length = (int) dtp->u.p.current_unit->bytes_left;
+         p = salloc_w (dtp->u.p.current_unit->s, &length);
+         memset (p, 0, length);
+       }
+
       if (sfree (dtp->u.p.current_unit->s) == FAILURE)
 	goto io_error;
       break;
