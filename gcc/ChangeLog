@@ -1,3 +1,12 @@
+2008-03-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (override_options): Initialize
+	ix86_veclib_handler to ix86_veclibabi_svml when
+	-mveclibabi=svml is used.
+	(ix86_veclibabi_svml): New function for SVML ABI style
+	vectorization support.
+	* doc/invoke.texi (-mveclibabi) [svml]: Document new target option.
+
 2008-03-28  Rafael Espindola  <espindola@google.com>
 
 	* fold-const.c (tree_unary_nonnegative_warnv_p): Make it public.
@@ -34,8 +43,7 @@
 	ASSERT_EXPR <name, expr OP limit>.
 	(register_edge_assert_for_1): Adjust callers.
 	(find_assert_locations): Likewise.
-	(process_assert_insertions_for): Build condition from
-	expression.
+	(process_assert_insertions_for): Build condition from expression.
 	(extract_range_from_assert): Handle ASSERT_EXPRs
 	of the form ASSERT_EXPR <name, expr OP limit>.
 	(register_edge_assert_for_2): New helper registering
@@ -54,7 +62,7 @@
 2008-03-28  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.c (mn10300_secondary_reload_class):
-        Return GENERAL_REGS for stack adjustment reloads.
+	Return GENERAL_REGS for stack adjustment reloads.
 
 2008-03-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
@@ -123,44 +131,42 @@
 	tree_to_aff_combination_expand.
 	(get_inner_reference_aff): New function.
 	* tree-parloops.c (loop_parallel_p): Free vectorizer info.
-        * tree-ssa-loop-im.c: Include tree-affine.h and pointer-set.h.
-        (struct lim_aux_data): sm_done field removed.
-        (mem_ref_loc_p, mem_ref_locs_p): New types.
-        (struct mem_ref): Added id, stored, accesses_in_loop,
-        indep_loop, dep_loop, indep_ref, dep_ref fields.
-        Removed is_stored, locs and next fields.
-        (memory_accesses): New variable.
-        (movement_possibility): Do not allow moving statements
-        that store to memory.
-        (outermost_indep_loop, simple_mem_ref_in_stmt, mem_ref_in_stmt):
-        New functions.
-        (determine_max_movement): For statements with memory references,
-        find the outermost loop in that the reference is independent.
-        (move_computations_stmt): Mark the virtual operands for
-        renaming.
-        (memref_free, mem_ref_alloc, mem_ref_locs_alloc, mark_ref_stored,
-        gather_mem_refs_stmt, gather_mem_refs_in_loops, vtoe_hash, vtoe_eq,
-        vtoe_free, record_vop_access, get_vop_accesses, get_vop_stores,
-        add_vop_ref_mapping, create_vop_ref_mapping_loop,
-        create_vop_ref_mapping, analyze_memory_references,
-        cannot_overlap_p, mem_refs_may_alias_p, rewrite_mem_ref_loc,
-        get_all_locs_in_loop, ref_always_accessed_p,
-        refs_independent_p, record_indep_loop, ref_indep_loop_p_1,
-        ref_indep_loop_p, can_sm_ref_p, find_refs_for_sm,
-        store_motion_loop, store_motion): New functions.
-        (struct vop_to_refs_elt): New type.
-        (record_mem_ref_loc, free_mem_ref_locs, rewrite_mem_refs,
-        memref_hash, memref_eq, hoist_memory_references): Rewritten.
-        (schedule_sm): Replaced by...
-        (execute_sm): ... this.
-        (determine_lsm_ref, hoist_memory_references,
-        loop_suitable_for_sm, gather_mem_refs_stmt, gather_mem_refs,
-        find_more_ref_vops, free_mem_ref, free_mem_refs,
-        determine_lsm_loop, determine_lsm): Removed.
-        (tree_ssa_lim_finalize): Free data structures used by store
-        motion.
-        (tree_ssa_lim): Call analyze_memory_references.  Use
-        store_motion instead of determine_lsm.
+	* tree-ssa-loop-im.c: Include tree-affine.h and pointer-set.h.
+	(struct lim_aux_data): sm_done field removed.
+	(mem_ref_loc_p, mem_ref_locs_p): New types.
+	(struct mem_ref): Added id, stored, accesses_in_loop,
+	indep_loop, dep_loop, indep_ref, dep_ref fields.
+	Removed is_stored, locs and next fields.
+	(memory_accesses): New variable.
+	(movement_possibility): Do not allow moving statements
+	that store to memory.
+	(outermost_indep_loop, simple_mem_ref_in_stmt, mem_ref_in_stmt):
+	New functions.
+	(determine_max_movement): For statements with memory references,
+	find the outermost loop in that the reference is independent.
+	(move_computations_stmt): Mark the virtual operands for renaming.
+	(memref_free, mem_ref_alloc, mem_ref_locs_alloc, mark_ref_stored,
+	gather_mem_refs_stmt, gather_mem_refs_in_loops, vtoe_hash, vtoe_eq,
+	vtoe_free, record_vop_access, get_vop_accesses, get_vop_stores,
+	add_vop_ref_mapping, create_vop_ref_mapping_loop,
+	create_vop_ref_mapping, analyze_memory_references,
+	cannot_overlap_p, mem_refs_may_alias_p, rewrite_mem_ref_loc,
+	get_all_locs_in_loop, ref_always_accessed_p,
+	refs_independent_p, record_indep_loop, ref_indep_loop_p_1,
+	ref_indep_loop_p, can_sm_ref_p, find_refs_for_sm,
+	store_motion_loop, store_motion): New functions.
+	(struct vop_to_refs_elt): New type.
+	(record_mem_ref_loc, free_mem_ref_locs, rewrite_mem_refs,
+	memref_hash, memref_eq, hoist_memory_references): Rewritten.
+	(schedule_sm): Replaced by...
+	(execute_sm): ... this.
+	(determine_lsm_ref, hoist_memory_references,
+	loop_suitable_for_sm, gather_mem_refs_stmt, gather_mem_refs,
+	find_more_ref_vops, free_mem_ref, free_mem_refs,
+	determine_lsm_loop, determine_lsm): Removed.
+	(tree_ssa_lim_finalize): Free data structures used by store motion.
+	(tree_ssa_lim): Call analyze_memory_references.  Use
+	store_motion instead of determine_lsm.
 
 2008-03-27  Paolo Bonzini  <bonzini@gnu.org>
 
@@ -523,8 +529,7 @@
 
 2008-03-23  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* config/i386/i386.h (STATIC_CHAIN_REGNUM): Use R10_REG and
-	CX_REG.
+	* config/i386/i386.h (STATIC_CHAIN_REGNUM): Use R10_REG and CX_REG.
 
 2008-03-23  Zuxy Meng <zuxy.meng@gmail.com>
 

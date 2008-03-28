@@ -1,3 +1,7 @@
+2008-03-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/vectorize6.c: New test.
+
 2008-03-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/35721
@@ -20,7 +24,7 @@
 2008-03-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR target/31334
-	* gcc.target/powerpc/altivec-25.c: Nnew testcase.
+	* gcc.target/powerpc/altivec-25.c: New testcase.
 
 2008-03-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 

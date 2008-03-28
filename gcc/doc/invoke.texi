@@ -10765,15 +10765,26 @@ decreased by up to 2 ulp (i.e. the inverse of 1.0 equals 0.99999994).
 @item -mveclibabi=@var{type}
 @opindex mveclibabi
 Specifies the ABI type to use for vectorizing intrinsics using an
-external library.  Supported types are @code{acml} for the AMD
-math core library style of interfacing.  GCC will currently emit
-calls to @code{__vrd2_sin}, @code{__vrd2_cos}, @code{__vrd2_exp},
-@code{__vrd2_log}, @code{__vrd2_log2}, @code{__vrd2_log10},
-@code{__vrs4_sinf}, @code{__vrs4_cosf}, @code{__vrs4_expf},
-@code{__vrs4_logf}, @code{__vrs4_log2f}, @code{__vrs4_log10f}
-and @code{__vrs4_powf} when using this type and @option{-ftree-vectorize}
-is enabled.  A ACML ABI compatible library will have to be specified
-at link time.
+external library.  Supported types are @code{svml} for the Intel short
+vector math library and @code{acml} for the AMD math core library style
+of interfacing.  GCC will currently emit calls to @code{vmldExp2},
+@code{vmldLn2}, @code{vmldLog102}, @code{vmldLog102}, @code{vmldPow2},
+@code{vmldTanh2}, @code{vmldTan2}, @code{vmldAtan2}, @code{vmldAtanh2},
+@code{vmldCbrt2}, @code{vmldSinh2}, @code{vmldSin2}, @code{vmldAsinh2},
+@code{vmldAsin2}, @code{vmldCosh2}, @code{vmldCos2}, @code{vmldAcosh2},
+@code{vmldAcos2}, @code{vmlsExp4}, @code{vmlsLn4}, @code{vmlsLog104},
+@code{vmlsLog104}, @code{vmlsPow4}, @code{vmlsTanh4}, @code{vmlsTan4},
+@code{vmlsAtan4}, @code{vmlsAtanh4}, @code{vmlsCbrt4}, @code{vmlsSinh4},
+@code{vmlsSin4}, @code{vmlsAsinh4}, @code{vmlsAsin4}, @code{vmlsCosh4},
+@code{vmlsCos4}, @code{vmlsAcosh4} and @code{vmlsAcos4} for corresponding
+function type when @option{-mveclibabi=svml} is used and @code{__vrd2_sin},
+@code{__vrd2_cos}, @code{__vrd2_exp}, @code{__vrd2_log}, @code{__vrd2_log2},
+@code{__vrd2_log10}, @code{__vrs4_sinf}, @code{__vrs4_cosf},
+@code{__vrs4_expf}, @code{__vrs4_logf}, @code{__vrs4_log2f},
+@code{__vrs4_log10f} and @code{__vrs4_powf} for corresponding function type
+when @option{-mveclibabi=acml} is used. Both @option{-ftree-vectorize} and
+@option{-funsafe-math-optimizations} have to be enabled. A SVML or ACML ABI
+compatible library will have to be specified at link time.
 
 @item -mpush-args
 @itemx -mno-push-args
