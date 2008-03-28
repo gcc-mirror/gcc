@@ -1830,6 +1830,7 @@ static int ix86_isa_flags_explicit;
 
 /* Vectorization library interface and handlers.  */
 tree (*ix86_veclib_handler)(enum built_in_function, tree, tree) = NULL;
+static tree ix86_veclibabi_svml (enum built_in_function, tree, tree);
 static tree ix86_veclibabi_acml (enum built_in_function, tree, tree);
 
 /* Implement TARGET_HANDLE_OPTION.  */
@@ -2673,7 +2674,9 @@ override_options (void)
   /* Use external vectorized library in vectorizing intrinsics.  */
   if (ix86_veclibabi_string)
     {
-      if (strcmp (ix86_veclibabi_string, "acml") == 0)
+      if (strcmp (ix86_veclibabi_string, "svml") == 0)
+	ix86_veclib_handler = ix86_veclibabi_svml;
+      else if (strcmp (ix86_veclibabi_string, "acml") == 0)
 	ix86_veclib_handler = ix86_veclibabi_acml;
       else
 	error ("unknown vectorization library ABI type (%s) for "
@@ -21415,8 +21418,120 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
   return NULL_TREE;
 }
 
-/* Handler for an ACML-style interface to a library with vectorized
-   intrinsics.  */
+/* Handler for an SVML-style interface to
+   a library with vectorized intrinsics.  */
+
+static tree
+ix86_veclibabi_svml (enum built_in_function fn, tree type_out, tree type_in)
+{
+  char name[20];
+  tree fntype, new_fndecl, args;
+  unsigned arity;
+  const char *bname;
+  enum machine_mode el_mode, in_mode;
+  int n, in_n;
+
+  /* The SVML is suitable for unsafe math only.  */
+  if (!flag_unsafe_math_optimizations)
+    return NULL_TREE;
+
+  el_mode = TYPE_MODE (TREE_TYPE (type_out));
+  n = TYPE_VECTOR_SUBPARTS (type_out);
+  in_mode = TYPE_MODE (TREE_TYPE (type_in));
+  in_n = TYPE_VECTOR_SUBPARTS (type_in);
+  if (el_mode != in_mode
+      || n != in_n)
+    return NULL_TREE;
+
+  switch (fn)
+    {
+    case BUILT_IN_EXP:
+    case BUILT_IN_LOG:
+    case BUILT_IN_LOG10:
+    case BUILT_IN_POW:
+    case BUILT_IN_TANH:
+    case BUILT_IN_TAN:
+    case BUILT_IN_ATAN:
+    case BUILT_IN_ATAN2:
+    case BUILT_IN_ATANH:
+    case BUILT_IN_CBRT:
+    case BUILT_IN_SINH:
+    case BUILT_IN_SIN:
+    case BUILT_IN_ASINH:
+    case BUILT_IN_ASIN:
+    case BUILT_IN_COSH:
+    case BUILT_IN_COS:
+    case BUILT_IN_ACOSH:
+    case BUILT_IN_ACOS:
+      if (el_mode != DFmode || n != 2)
+	return NULL_TREE;
+      break;
+
+    case BUILT_IN_EXPF:
+    case BUILT_IN_LOGF:
+    case BUILT_IN_LOG10F:
+    case BUILT_IN_POWF:
+    case BUILT_IN_TANHF:
+    case BUILT_IN_TANF:
+    case BUILT_IN_ATANF:
+    case BUILT_IN_ATAN2F:
+    case BUILT_IN_ATANHF:
+    case BUILT_IN_CBRTF:
+    case BUILT_IN_SINHF:
+    case BUILT_IN_SINF:
+    case BUILT_IN_ASINHF:
+    case BUILT_IN_ASINF:
+    case BUILT_IN_COSHF:
+    case BUILT_IN_COSF:
+    case BUILT_IN_ACOSHF:
+    case BUILT_IN_ACOSF:
+      if (el_mode != SFmode || n != 4)
+	return NULL_TREE;
+      break;
+
+    default:
+      return NULL_TREE;
+    }
+
+  bname = IDENTIFIER_POINTER (DECL_NAME (implicit_built_in_decls[fn]));
+
+  if (fn == BUILT_IN_LOGF)
+    strcpy (name, "vmlsLn4");
+  else if (fn == BUILT_IN_LOG)
+    strcpy (name, "vmldLn2");
+  else if (n == 4)
+    {
+      sprintf (name, "vmls%s", bname+10);
+      name[strlen (name)-1] = '4';
+    }
+  else
+    sprintf (name, "vmld%s2", bname+10);
+
+  /* Convert to uppercase. */
+  name[4] &= ~0x20;
+
+  arity = 0;
+  for (args = DECL_ARGUMENTS (implicit_built_in_decls[fn]); args;
+       args = TREE_CHAIN (args))
+    arity++;
+
+  if (arity == 1)
+    fntype = build_function_type_list (type_out, type_in, NULL);
+  else
+    fntype = build_function_type_list (type_out, type_in, type_in, NULL);
+
+  /* Build a function declaration for the vectorized function.  */
+  new_fndecl = build_decl (FUNCTION_DECL, get_identifier (name), fntype);
+  TREE_PUBLIC (new_fndecl) = 1;
+  DECL_EXTERNAL (new_fndecl) = 1;
+  DECL_IS_NOVOPS (new_fndecl) = 1;
+  TREE_READONLY (new_fndecl) = 1;
+
+  return new_fndecl;
+}
+
+/* Handler for an ACML-style interface to
+   a library with vectorized intrinsics.  */
 
 static tree
 ix86_veclibabi_acml (enum built_in_function fn, tree type_out, tree type_in)
