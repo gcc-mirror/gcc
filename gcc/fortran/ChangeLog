@@ -1,3 +1,8 @@
+2008-03-28  Tobias Burnus  <burnus@net-b.de>
+
+	* symbol.c (gfc_get_default_type): Fix error message; option
+	-fallow_leading_underscore should be -fallow-leading-underscore
+
 2008-03-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/35724
