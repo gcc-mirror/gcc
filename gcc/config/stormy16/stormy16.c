@@ -629,7 +629,12 @@ xstormy16_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 
   if (GET_CODE (x) == PLUS
       && LEGITIMATE_ADDRESS_INTEGER_P (XEXP (x, 1), 0))
-    x = XEXP (x, 0);
+   {
+     x = XEXP (x, 0);
+     /* PR 31232: Do not allow INT+INT as an address.  */
+     if (GET_CODE (x) == CONST_INT)
+	return 0;
+   }
   
   if ((GET_CODE (x) == PRE_MODIFY
        && GET_CODE (XEXP (XEXP (x, 1), 1)) == CONST_INT)

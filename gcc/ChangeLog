@@ -1,5 +1,11 @@
 2008-03-28  Nick Clifton  <nickc@redhat.com>
 
+	PR target/31232
+	* config/stormy16/stormy16.c (xstormy16_legitimate_address_p): Do
+	not allow INT+INT as a legitimate addressing mode.
+
+2008-03-28  Nick Clifton  <nickc@redhat.com>
+
 	PR target/31110
 	* config/mn10300/mn10300.c (mn10300_secondary_reload_class):
         Return GENERAL_REGS for stack adjustment reloads.
