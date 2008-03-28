@@ -1,3 +1,9 @@
+2008-03-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/35721
+	* intrinsics/associated.c (associated): Ignore different
+	stride of pointer vs. target if only one element is referred.
+
 2008-03-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* io/unix.c (fd_close):  Do not close STDIN.
