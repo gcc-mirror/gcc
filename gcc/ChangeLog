@@ -1,3 +1,31 @@
+2008-03-28  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/30317
+	PR tree-optimization/30911
+	PR tree-optimization/34793
+	* tree-vrp.c (set_and_canonicalize_value_range): New function.
+	(struct assert_locus_d): New member EXPR.
+	(register_new_assert_for): Add EXPR parameter to support
+	ASSERT_EXPR <name, expr OP limit>.
+	(register_edge_assert_for_1): Adjust callers.
+	(find_assert_locations): Likewise.
+	(process_assert_insertions_for): Build condition from
+	expression.
+	(extract_range_from_assert): Handle ASSERT_EXPRs
+	of the form ASSERT_EXPR <name, expr OP limit>.
+	(register_edge_assert_for_2): New helper registering
+	asserts for comparisons.  Recognize range tests of the form
+	(unsigned)i - CST1 OP CST2.
+	(register_edge_assert_for_1): Use it.
+	(register_edge_assert_for): Likewise.
+	(needs_overflow_infinity): Integer sub-types
+	do not need overflow infinities.
+	(vrp_val_is_max): The extreme values of integer sub-types
+	are those of the base type.
+	(vrp_val_is_min): Likewise.
+	* tree.def (ASSERT_EXPR): Document extra allowed conditional
+	expressions.
+
 2008-03-28  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.c (mn10300_secondary_reload_class):
