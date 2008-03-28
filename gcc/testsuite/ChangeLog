@@ -1,3 +1,8 @@
+2008-03-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR target/31334
+	* gcc.target/powerpc/altivec-25.c: Nnew testcase.
+
 2008-03-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/35724
