@@ -25,8 +25,8 @@ contains
    end interface
    sub = 'a'  ! { dg-error "is not a variable" }
    fun = 4.4  ! { dg-error "is not a variable" }
-   funget = 4 ! { dg-error "is not a VALUE" }
-   bar = 5    ! { dg-error "is not a VALUE" }
+   funget = 4 ! { dg-error "is not a variable" }
+   bar = 5    ! { dg-error "is not a variable" }
   end subroutine a
 end module mod
 

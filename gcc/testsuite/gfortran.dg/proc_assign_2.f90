@@ -14,7 +14,7 @@ CONTAINS
     END FUNCTION
 
     LOGICAL FUNCTION f2()
-      f1 = .FALSE.  ! { dg-error "not a VALUE" }
+      f1 = .FALSE.  ! { dg-error "is not a variable" }
     END FUNCTION
   END FUNCTION
 END MODULE
