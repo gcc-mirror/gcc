@@ -1,3 +1,11 @@
+2008-03-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/32972
+	PR libfortran/32512
+	* intrinsic_spread_1.f90:  New file.
+	* intrinsic_spread_2.f90:  New file.
+	* intrinsic_spread_3.f90:  New file.
+
 2008-03-28  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/34714

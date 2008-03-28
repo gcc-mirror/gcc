@@ -1,3 +1,38 @@
+2008-03-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/32972
+	PR libfortran/32512
+	* Makefile.am:  Add new variable, i_spread_c, containing
+	pack_i1.c, pack_i2.c, pack_i4.c, pack_i8.c, spread_i16.c,
+	spread_r4.c, spread_r8.c, spread_r10.c, spread_r16.c,
+	spread_c4.c, spread_c8.c, spread_c10.c, spread_c16.c.
+	* Makefile.in:  Regenerated.
+	* libgfortran.h:  Add prototypes for spread_i1, spread_i2,
+	spread_i4, spread_i8, spread_i16, spread_r4, spread_r8,
+	spread_c4, spread_c8, spread_c10, spread_c16,
+	spread_scalar_i1, spread_scalar_i2, spread_scalar_i4,
+	spread_scalar_i8, spread_scalar_i16, spread_scalar_r4
+	spread_scalar_r8, spread_scalar_c4, spread_scalar_c8,
+	spread_scalar_c10 and spread_scalar_c16.
+	Add macros to isolate both type and size information
+	from array descriptors with a single mask operation.
+	* intrinsics/spread_generic.c:  Add calls to specific
+	spread functions.
+	* m4/spread.m4:  New file.
+	* generated/spread_i1.c:  New file.
+	* generated/spread_i2.c:  New file.
+	* generated/spread_i4.c:  New file.
+	* generated/spread_i8.c:  New file.
+	* generated/spread_i16.c:  New file.
+	* generated/spread_r4.c:  New file.
+	* generated/spread_r8.c:  New file.
+	* generated/spread_r10.c:  New file.
+	* generated/spread_r16.c:  New file.
+	* generated/spread_c4.c:  New file.
+	* generated/spread_c8.c:  New file.
+	* generated/spread_c10.c:  New file.
+	* generated/spread_c16.c:  New file.
+
 2008-03-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/35699
