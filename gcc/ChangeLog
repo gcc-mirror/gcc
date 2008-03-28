@@ -1,3 +1,28 @@
+2008-03-28  Rafael Espindola  <espindola@google.com>
+
+	* fold-const.c (tree_unary_nonnegative_warnv_p): Make it public.
+	(tree_binary_nonnegative_warnv_p): Make it public.
+	(tree_single_nonnegative_warnv_p): Make it public.
+	(tree_invalid_nonnegative_warnv_p): Make it public.
+	(tree_unary_nonzero_warnv_p): Make it public.
+	(tree_binary_nonzero_warnv_p): Make it public
+	(tree_single_nonzero_warnv_p): Make it public.
+	* tree-vrp.c (vrp_evaluate_conditional_warnv_with_ops): New function.
+	(extract_range_from_binary_expr): Split the expr argument.
+	(extract_range_from_unary_expr): Split the expr argument.
+	(extract_range_from_comparison): Split the expr argument.
+	(extract_range_from_expr): Use the new aux functions.
+	(vrp_evaluate_conditional_warnv): Use
+	vrp_evaluate_conditional_warnv_with_ops.
+	* tree.h (tree_unary_nonzero_warnv_p): Declare.
+	(tree_binary_nonzero_warnv_p): Declare.
+	(tree_single_nonzero_warnv_p): Declare.
+	(tree_expr_nonzero_warnv_p): Declare.
+	(tree_unary_nonnegative_warnv_p): Declare.
+	(tree_binary_nonnegative_warnv_p): Declare.
+	(tree_single_nonnegative_warnv_p): Declare.
+	(tree_invalid_nonnegative_warnv_p): Declare.
+
 2008-03-28  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/30317

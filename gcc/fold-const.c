@@ -13743,7 +13743,7 @@ tree_simple_nonnegative_warnv_p (enum tree_code code, tree type)
    set *STRICT_OVERFLOW_P to true; otherwise, don't change
    *STRICT_OVERFLOW_P.  */
 
-static bool
+bool
 tree_unary_nonnegative_warnv_p (enum tree_code code, tree type, tree op0,
 				bool *strict_overflow_p)
 {
@@ -13813,7 +13813,7 @@ tree_unary_nonnegative_warnv_p (enum tree_code code, tree type, tree op0,
    set *STRICT_OVERFLOW_P to true; otherwise, don't change
    *STRICT_OVERFLOW_P.  */
 
-static bool
+bool
 tree_binary_nonnegative_warnv_p (enum tree_code code, tree type, tree op0,
 				      tree op1, bool *strict_overflow_p)
 {
@@ -13914,7 +13914,7 @@ tree_binary_nonnegative_warnv_p (enum tree_code code, tree type, tree op0,
    set *STRICT_OVERFLOW_P to true; otherwise, don't change
    *STRICT_OVERFLOW_P.  */
 
-static bool
+bool
 tree_single_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
 {
   if (TYPE_UNSIGNED (TREE_TYPE (t)))
@@ -13954,7 +13954,7 @@ tree_single_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
    set *STRICT_OVERFLOW_P to true; otherwise, don't change
    *STRICT_OVERFLOW_P.  */
 
-static bool
+bool
 tree_invalid_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
 {
   enum tree_code code = TREE_CODE (t);
@@ -14243,7 +14243,7 @@ tree_expr_nonnegative_p (tree t)
    is undefined, set *STRICT_OVERFLOW_P to true; otherwise, don't
    change *STRICT_OVERFLOW_P.  */
 
-static bool
+bool
 tree_unary_nonzero_warnv_p (enum tree_code code, tree type, tree op0,
 				 bool *strict_overflow_p)
 {
@@ -14283,7 +14283,7 @@ tree_unary_nonzero_warnv_p (enum tree_code code, tree type, tree op0,
    is undefined, set *STRICT_OVERFLOW_P to true; otherwise, don't
    change *STRICT_OVERFLOW_P.  */
 
-static bool
+bool
 tree_binary_nonzero_warnv_p (enum tree_code code,
 			     tree type,
 			     tree op0,
@@ -14391,7 +14391,7 @@ tree_binary_nonzero_warnv_p (enum tree_code code,
    is undefined, set *STRICT_OVERFLOW_P to true; otherwise, don't
    change *STRICT_OVERFLOW_P.  */
 
-static bool
+bool
 tree_single_nonzero_warnv_p (tree t, bool *strict_overflow_p)
 {
   bool sub_strict_overflow_p;
