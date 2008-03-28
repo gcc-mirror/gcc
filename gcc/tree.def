@@ -937,8 +937,13 @@ DEFTREECODE (VALUE_HANDLE, "value_handle", tcc_exceptional, 0)
    two things:
 
    	1- X is a copy of Y.
-	2- EXPR is a GIMPLE conditional expression (as defined by
-	   is_gimple_condexpr) and is known to be true.
+	2- EXPR is a conditional expression and is known to be true.
+
+   Valid and to be expected forms of conditional expressions are
+   valid GIMPLE condidional expressions (as defined by is_gimple_condexpr)
+   and conditional expressions with the first operand being a
+   PLUS_EXPR with a variable possibly wrapped in a NOP_EXPR first
+   operand and an integer constant second operand.
 
    The type of the expression is the same as Y.  */
 DEFTREECODE (ASSERT_EXPR, "assert_expr", tcc_expression, 2)

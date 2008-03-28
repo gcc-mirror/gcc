@@ -1,3 +1,12 @@
+2008-03-28  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/30317
+	PR tree-optimization/30911
+	PR tree-optimization/34793
+	* gcc.dg/tree-ssa/vrp35.c: New testcase.
+	* gcc.dg/tree-ssa/vrp36.c: Likewise.
+	* gcc.dg/tree-ssa/vrp37.c: Likewise.
+
 2008-03-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR target/31334
