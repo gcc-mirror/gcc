@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for Matsushita MN10300 series
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GCC.
@@ -1361,11 +1361,7 @@ mn10300_secondary_reload_class (enum reg_class class, enum machine_mode mode,
   if (GET_CODE (in) == PLUS
       && (XEXP (in, 0) == stack_pointer_rtx
 	  || XEXP (in, 1) == stack_pointer_rtx))
-    {
-      if (TARGET_AM33)
-	return DATA_OR_EXTENDED_REGS;
-      return DATA_REGS;
-    }
+    return GENERAL_REGS;
 
   if (TARGET_AM33_2 && class == FP_REGS
       && GET_CODE (in) == MEM

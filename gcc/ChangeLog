@@ -1,3 +1,8 @@
+2008-03-28  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.c (mn10300_secondary_reload_class):
+        Return GENERAL_REGS for stack adjustment reloads.
+
 2008-03-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR target/31334
