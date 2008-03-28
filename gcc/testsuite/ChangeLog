@@ -1,5 +1,10 @@
 2008-03-28  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/19580
+	* gcc.dg/tree-ssa/loop-34.c: New testcase.
+
+2008-03-28  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/30317
 	PR tree-optimization/30911
 	PR tree-optimization/34793
