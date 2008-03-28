@@ -1,3 +1,8 @@
+2008-03-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/35724
+	* gfortran.dg/cshift_shift_real_2.f90: New test.
+
 2008-03-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/uninit-16.c (decode_reloc): Mark static.
