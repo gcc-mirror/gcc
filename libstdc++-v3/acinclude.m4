@@ -200,6 +200,7 @@ dnl  OPT_LDFLAGS='-Wl,-O1' and '-z,relro' if possible
 dnl  LD (as a side effect of testing)
 dnl Sets:
 dnl  with_gnu_ld
+dnl  glibcxx_ld_is_gold (set to "no" or "yes")
 dnl  glibcxx_gnu_ld_version (possibly)
 dnl
 dnl The last will be a single integer, e.g., version 1.23.45.0.67.89 will
@@ -231,11 +232,15 @@ AC_DEFUN([GLIBCXX_CHECK_LINKER_FEATURES], [
 
   # Start by getting the version number.  I think the libtool test already
   # does some of this, but throws away the result.
+  glibcxx_ld_is_gold=no
   if test x"$with_gnu_ld" = x"yes"; then
     AC_MSG_CHECKING([for ld version])
     changequote(,)
+    if $LD --version 2>/dev/null | grep 'GNU gold' >/dev/null 2>&1; then
+      glibcxx_ld_is_gold=yes
+    fi
     ldver=`$LD --version 2>/dev/null | head -1 | \
-           sed -e 's/GNU ld \(version \)\{0,1\}\(([^)]*) \)\{0,1\}\([0-9.][0-9.]*\).*/\3/'`
+           sed -e 's/GNU \(go\)\{0,1\}ld \(version \)\{0,1\}\(([^)]*) \)\{0,1\}\([0-9.][0-9.]*\).*/\4/'`
     changequote([,])
     glibcxx_gnu_ld_version=`echo $ldver | \
            $AWK -F. '{ if (NF<3) [$]3=0; print ([$]1*100+[$]2)*100+[$]3 }'`
@@ -243,10 +248,19 @@ AC_DEFUN([GLIBCXX_CHECK_LINKER_FEATURES], [
   fi
 
   # Set --gc-sections.
-  glibcxx_gcsections_min_ld=21602
-  if test x"$with_gnu_ld" = x"yes" && 
+  glibcxx_have_gc_sections=no
+  if test "$glibcxx_ld_is_gold" = "yes"; then
+    if $LD --help 2>/dev/null | grep gc-sections >/dev/null 2>&1; then
+      glibcxx_have_gc_sections=yes
+    fi
+  else
+    glibcxx_gcsections_min_ld=21602
+    if test x"$with_gnu_ld" = x"yes" && 
 	test $glibcxx_gnu_ld_version -gt $glibcxx_gcsections_min_ld ; then
-
+      glibcxx_have_gc_sections=yes
+    fi
+  fi
+  if test "$glibcxx_have_gc_sections" = "yes"; then
     # Sufficiently young GNU ld it is!  Joy and bunny rabbits!
     # NB: This flag only works reliably after 2.16.1. Configure tests
     # for this are difficult, so hard wire a value that should work.
@@ -2453,6 +2467,8 @@ changequote([,])dnl
     AC_MSG_WARN([=== you are not using the GNU linker.])
     AC_MSG_WARN([=== Symbol versioning will be disabled.])
     enable_symvers=no
+  elif test $glibcxx_ld_is_gold = yes ; then
+    : All versions of gold support symbol versioning.
   elif test $glibcxx_gnu_ld_version -lt $glibcxx_min_gnu_ld_version ; then
     # The right tools, the right setup, but too old.  Fallbacks?
     AC_MSG_WARN(=== Linker version $glibcxx_gnu_ld_version is too old for)
