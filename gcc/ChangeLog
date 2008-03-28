@@ -1,3 +1,9 @@
+2008-03-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR target/31334
+	* config/rs6000/rs6000.c (rs6000_expand_vector_init): Create a
+	const_vector when all the vectors are constant.
+
 2008-03-27  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (gen_float_relational): Handle unordered
