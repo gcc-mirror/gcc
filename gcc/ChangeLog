@@ -1,3 +1,8 @@
+2008-03-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/sse.md (*and<mode>3): Pass <MODE>mode instead
+	of V4SFmode to ix86_binary_operator_ok.
+
 2008-03-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (override_options): Initialize

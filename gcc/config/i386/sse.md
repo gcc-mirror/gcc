@@ -972,7 +972,7 @@
 	  (match_operand:SSEMODEF2P 1 "nonimmediate_operand" "%0")
 	  (match_operand:SSEMODEF2P 2 "nonimmediate_operand" "xm")))]
   "SSE_VEC_FLOAT_MODE_P (<MODE>mode)
-   && ix86_binary_operator_ok (AND, V4SFmode, operands)"
+   && ix86_binary_operator_ok (AND, <MODE>mode, operands)"
   "andp<ssemodesuffixf2c>\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
    (set_attr "mode" "<MODE>")])
