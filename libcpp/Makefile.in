@@ -1,7 +1,7 @@
 # @configure_input@
 # Makefile for libcpp.  Run 'configure' to generate Makefile from Makefile.in
 
-# Copyright (C) 2004 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2008 Free Software Foundation, Inc.
 
 #This file is part of libcpp.
 
@@ -197,16 +197,24 @@ update-po: $(CATALOGS:.gmo=.pox)
 # Dependency rule.
 COMPILE.base = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(ALL_CFLAGS) -c
 ifeq ($(DEPMODE),depmode=gcc3)
-COMPILE = $(COMPILE.base) -o $@ -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Po
+# Note that we put the dependencies into a .Tpo file, then move them
+# into place if the compile succeeds.  We need this because gcc does
+# not atomically write the dependency output file.
+COMPILE = $(COMPILE.base) -o $@ -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Tpo
+POSTCOMPILE = @mv $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
 else
 COMPILE = source='$<' object='$@' libtool=no DEPDIR=$(DEPDIR) $(DEPMODE) \
 	  $(depcomp) $(COMPILE.base)
+# depcomp handles atomicity for us, so we don't need a postcompile
+# step.
+POSTCOMPILE =
 endif
 
 # Implicit rules and I18N
 
 .c.o:
 	$(COMPILE) $<
+	$(POSTCOMPILE)
 
 # N.B. We do not attempt to copy these into $(srcdir).
 .po.gmo:
