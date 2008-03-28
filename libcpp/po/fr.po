@@ -1,6 +1,7 @@
-# Messages français pour GNU concernant gcc.
-# Copyright © 2001 Free Software Foundation, Inc.
+# Messages français pour GNU concernant cpplib.
+# Copyright © 2001, 2008 Free Software Foundation, Inc.
 # Michel Robitaille <robitail@IRO.UMontreal.CA>, traducteur depuis/since 1996.
+# François-Xavier Coudert <fxcoudert@gcc.gnu.org>
 #
 # Vocabulaire utilisé
 # 	lvalue	 	= membre gauche
@@ -116,11 +117,11 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: GNU cpplib 4.0.0\n"
+"Project-Id-Version: GNU cpplib 4.3.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2008-02-01 16:21+0000\n"
-"PO-Revision-Date: 2005-06-12 08:00-0500\n"
-"Last-Translator: Michel Robitaille <robitail@IRO.UMontreal.CA>\n"
+"PO-Revision-Date: 2008-03-27 22:46+0000\n"
+"Last-Translator: François-Xavier Coudert <fxcoudert@gmail.com>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-1\n"
@@ -158,7 +159,7 @@ msgstr "caractère 0x%lx n'est pas unibyte dans le jeu de caractères d'exécution"
 #: charset.c:906
 #, c-format
 msgid "Character %x might not be NFKC"
-msgstr ""
+msgstr "Le charactère %x n'est peut-être pas dans la normalisation NFKC"
 
 #: charset.c:966
 msgid "universal character names are only valid in C++ and C99"
@@ -171,7 +172,7 @@ msgstr "la signification de « \\%c » est différente en C traditionel"
 
 #: charset.c:978
 msgid "In _cpp_valid_ucn but not a UCN"
-msgstr ""
+msgstr "Dans _cpp_valid_ucn mais pas un Universal Character Name"
 
 # FIXME
 #: charset.c:1003
@@ -237,9 +238,9 @@ msgid "unknown escape sequence '\\%c'"
 msgstr "séquence d'échappement « \\%c » inconnue"
 
 #: charset.c:1303
-#, fuzzy, c-format
+#, c-format
 msgid "unknown escape sequence: '\\%s'"
-msgstr "séquence d'échappement « \\%c » inconnue"
+msgstr "séquence d'échappement « \\%s » inconnue"
 
 #: charset.c:1310
 msgid "converting escape sequence to execution character set"
@@ -350,14 +351,13 @@ msgid "invalid flag \"%s\" in line directive"
 msgstr "fanion « %s » invalide dans la ligne de directive"
 
 #: directives.c:868
-#, fuzzy
 msgid "unexpected end of file after #line"
-msgstr "Ajuster la latence mémoire attendue"
+msgstr "fin de fichier inattendue après #ligne"
 
 #: directives.c:871
 #, c-format
 msgid "\"%s\" after #line is not a positive integer"
-msgstr "« %s » après #line n'est pas un nombre entier positif"
+msgstr "« %s » après #ligne n'est pas un nombre entier positif"
 
 #: directives.c:877
 msgid "line number out of range"
@@ -374,20 +374,20 @@ msgid "\"%s\" after # is not a positive integer"
 msgstr "« %s » après # n'est pas un nombre entier positif"
 
 #: directives.c:1031
-#, fuzzy, c-format
+#, c-format
 msgid "invalid #%s directive"
-msgstr "directive #ident invalide"
+msgstr "directive #%s invalide"
 
 #: directives.c:1094
 #, c-format
 msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
-msgstr ""
+msgstr "enregistrement des pragmas dans l'espace de nom « %s » avec une expansion de nom ne correspondant pas"
 
 # FIXME
 #: directives.c:1103
-#, fuzzy, c-format
+#, c-format
 msgid "registering pragma \"%s\" with name expansion and no namespace"
-msgstr "enregistrement de \"%s\" à la fois comme une pragma et un espace de nom de pragma"
+msgstr "enregistrement du pragma « %s » avec une expansion de nom mais pas d'espace de nom"
 
 # FIXME
 #: directives.c:1121
@@ -407,7 +407,7 @@ msgstr "la #pragma %s est déjà enregistrée"
 
 #: directives.c:1157
 msgid "registering pragma with NULL handler"
-msgstr ""
+msgstr "enregistrement d'un pragma avec un handler égal à NULL"
 
 # FIXME
 #: directives.c:1367
@@ -528,14 +528,13 @@ msgid "too many decimal points in number"
 msgstr "trop de points décimaux dans le nombre"
 
 #: expr.c:290 expr.c:365
-#, fuzzy
 msgid "fixed-point constants are a GCC extension"
-msgstr "les constantes imaginaires sont une extension GCC"
+msgstr "les constantes à virgule fixe sont une extension GCC"
 
 #: expr.c:303
-#, fuzzy, c-format
+#, c-format
 msgid "invalid digit \"%c\" in binary constant"
-msgstr "chiffre « %c » invalide dans la constante en base 8"
+msgstr "chiffre « %c » invalide dans la constante binaire"
 
 #: expr.c:305
 #, c-format
@@ -543,9 +542,8 @@ msgid "invalid digit \"%c\" in octal constant"
 msgstr "chiffre « %c » invalide dans la constante en base 8"
 
 #: expr.c:313
-#, fuzzy
 msgid "invalid prefix \"0b\" for floating constant"
-msgstr "suffixe « %.*s » invalide pour une constante flottante"
+msgstr "préfixe « 0b » invalide pour une constante flottante"
 
 #: expr.c:319
 msgid "use of C99 hexadecimal floating constant"
@@ -570,14 +568,13 @@ msgid "traditional C rejects the \"%.*s\" suffix"
 msgstr "le C traditionnel interdit le suffixe « %.*s »"
 
 #: expr.c:358
-#, fuzzy, c-format
+#, c-format
 msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
-msgstr "suffixe « %.*s » invalide pour une constante flottante"
+msgstr "suffixe « %.*s » invalide pour une constante flottante hexadécimale"
 
 #: expr.c:369
-#, fuzzy
 msgid "decimal float constants are a GCC extension"
-msgstr "les constantes imaginaires sont une extension GCC"
+msgstr "les constantes flottantes décimales sont une extension GCC"
 
 #: expr.c:379
 #, c-format
@@ -593,9 +590,8 @@ msgid "imaginary constants are a GCC extension"
 msgstr "les constantes imaginaires sont une extension GCC"
 
 #: expr.c:412
-#, fuzzy
 msgid "binary constants are a GCC extension"
-msgstr "les constantes imaginaires sont une extension GCC"
+msgstr "les constantes binaires sont une extension GCC"
 
 #: expr.c:505
 msgid "integer constant is too large for its type"
@@ -819,14 +815,14 @@ msgid "null character(s) ignored"
 msgstr "caractère(s) nul(s) ignoré(s)"
 
 #: lex.c:460
-#, fuzzy, c-format
+#, c-format
 msgid "`%.*s' is not in NFKC"
-msgstr "« %s » n'est pas un canevas"
+msgstr "« %.*s » n'est pas dans la normalisation NFKC"
 
 #: lex.c:463
-#, fuzzy, c-format
+#, c-format
 msgid "`%.*s' is not in NFC"
-msgstr "« %s » n'est pas un canevas"
+msgstr "« %.*s » n'est pas dans la normalisation NFC"
 
 # FIXME
 #: lex.c:551
@@ -889,9 +885,8 @@ msgid "invalid built-in macro \"%s\""
 msgstr "macro interne invalide « %s »"
 
 #: macro.c:160
-#, fuzzy
 msgid "could not determine file timestamp"
-msgstr "ne peut déterminer la date et l'heure"
+msgstr "ne peut déterminer la date de modification du fichier"
 
 #: macro.c:257
 msgid "could not determine date and time"
@@ -899,7 +894,7 @@ msgstr "ne peut déterminer la date et l'heure"
 
 #: macro.c:273
 msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
-msgstr ""
+msgstr "Expansion de __COUNTER__ à l'intérieur d'une directive avec -fdirectives-only"
 
 #: macro.c:426
 msgid "invalid string literal, ignoring final '\\'"
@@ -1020,9 +1015,9 @@ msgid "%s: not used because `%s' is defined"
 msgstr "%s: non utilisé parce que « %s » est défini"
 
 #: pch.c:558
-#, fuzzy, c-format
+#, c-format
 msgid "%s: not used because `__COUNTER__' is invalid"
-msgstr "%s: non utilisé parce que « %s » est défini"
+msgstr "%s: non utilisé parce que « __COUNTER__ » est invalide"
 
 #: pch.c:567 pch.c:737
 msgid "while reading precompiled header"
@@ -12479,10 +12474,10 @@ msgstr "erreur de syntaxe dans la liste de paramètres macro"
 #~ msgstr "directive # non définie ou invalide"
 
 #~ msgid "invalid #line"
-#~ msgstr "#line invalide"
+#~ msgstr "#ligne invalide"
 
 #~ msgid "use `#line ...' instead of `# ...' in first line"
-#~ msgstr "utiliser « #line ... » au lieu de « # ... » dans la première ligne"
+#~ msgstr "utiliser « #ligne ... » au lieu de « # ... » dans la première ligne"
 
 #~ msgid "invalid #-line"
 #~ msgstr "#-line invalide"
@@ -13741,7 +13736,7 @@ msgstr "erreur de syntaxe dans la liste de paramètres macro"
 #~ msgstr "Optimiser l'utilisation de l'espace plutôt que la vitesse"
 
 #~ msgid "Do not generate #line directives"
-#~ msgstr "Ne pas générer de directives #line"
+#~ msgstr "Ne pas générer de directives #ligne"
 
 #~ msgid "-U<macro>\tUndefine <macro>"
 #~ msgstr "-U<macro>\tabandonner la définition <macro>"
@@ -14542,7 +14537,7 @@ msgstr "erreur de syntaxe dans la liste de paramètres macro"
 #~ msgstr "-fwide-exec-charset=<cset>\tconvertir toutes les chaînes et les constantes larges de caractères en jeux de caractères <cset>"
 
 #~ msgid "Generate a #line directive pointing at the current working directory"
-#~ msgstr "Générer une directive #line pointant sur le répertoire courant de travail"
+#~ msgstr "Générer une directive #ligne pointant sur le répertoire courant de travail"
 
 #~ msgid "Assume signed arithmetic overflow wraps around"
 #~ msgstr "Assumer un débordement arithmétique signé enroulé"
@@ -15432,7 +15427,7 @@ msgstr "erreur de syntaxe dans la liste de paramètres macro"
 #~ "  -f[no-]preprocessed       Considérer [ou non] que le fichier d'entrée est \n"
 #~ "                             déjà pré-traité\n"
 #~ "  -ftabstop=<nombre>        Largeur des tabulations pour indiquer la colonne\n"
-#~ "  -P                        Ne pas générer des directives #line\n"
+#~ "  -P                        Ne pas générer des directives #ligne\n"
 #~ "  -remap                    Refaire la table des noms de fichiers lors de\n"
 #~ "                             l'inclusion de fichiers\n"
 #~ "  --help                    Afficher cet l'aide-mémoire\n"
@@ -16043,7 +16038,7 @@ msgstr "erreur de syntaxe dans la liste de paramètres macro"
 #~ msgstr "-mentry n'a de sens qu'avec -mips-16"
 
 #~ msgid "MIPS ECOFF format does not allow changing filenames within functions with #line"
-#~ msgstr "format MIPS ECOFF ne permet pas de changer le nom des fichiers à l'intérieur des fonction avec #line"
+#~ msgstr "format MIPS ECOFF ne permet pas de changer le nom des fichiers à l'intérieur des fonction avec #ligne"
 
 #~ msgid "fp_offset (%ld) or end_offset (%ld) is less than zero"
 #~ msgstr "fp_offset (%ld) ou end_offset (%ld) est plus petit que zéro"
@@ -16969,7 +16964,7 @@ msgstr "erreur de syntaxe dans la liste de paramètres macro"
 #~ msgstr "# opérator derait être suivi par le nom d'un argument macro"
 
 #~ msgid "invalid format #line command"
-#~ msgstr "format invalide dans la commande #line"
+#~ msgstr "format invalide dans la commande #ligne"
 
 #~ msgid "undefining `defined'"
 #~ msgstr "indéfinition « defined »"
