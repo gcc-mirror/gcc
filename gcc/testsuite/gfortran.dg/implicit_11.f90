@@ -31,7 +31,7 @@
      SUBROUTINE AD0001
        REAL RLA1(:)
        ALLOCATABLE RLA1
-       ALLOCATE (RLA1(NF10), STAT = ISTAT2) ! { dg-error "must be a variable" }
+       ALLOCATE (RLA1(NF10), STAT = ISTAT2) ! { dg-error "is not a variable" }
      END SUBROUTINE
      END MODULE tests2
 

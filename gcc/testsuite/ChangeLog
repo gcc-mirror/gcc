@@ -1,3 +1,14 @@
+2008-03-28  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/34714
+	* gfortran.dg/alloc_alloc_expr_3.f90: New test.
+	* gfortran.dg/allocate_stat.f90: Adjusted error-match text.
+	* gfortran.dg/func_assign.f90: Likewise.
+	* gfortran.dg/implicit_11.f90: Likewise.
+	* gfortran.dg/proc_assign_1.f90: Likewise.
+	* gfortran.dg/proc_assign_2.f90: Likewise.
+	* gfortran.dg/procedure_lvalue.f90: Likewise.
+
 2008-03-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/35699

@@ -1,3 +1,12 @@
+2008-03-28  Daniel Franke  <franke.daniel@gmail.com>
+	    Paul Richard Thomas <paul.richard.thomas@gmail.com>
+
+	PR fortran/34714
+	* primary.c (match_variable): Improved matching of function 
+	result variables.
+	* resolve.c (resolve_allocate_deallocate): Removed checks if
+	the actual argument for STAT is a variable.
+
 2008-03-28  Tobias Burnus  <burnus@net-b.de>
 
 	* symbol.c (gfc_get_default_type): Fix error message; option

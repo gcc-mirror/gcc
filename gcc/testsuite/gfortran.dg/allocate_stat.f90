@@ -51,7 +51,7 @@ subroutine sub()
   end interface
   real, pointer :: gain 
   integer, parameter :: res = 2
-  allocate (gain,STAT=func2) ! { dg-error "STAT tag in ALLOCATE statement at .1. must be a variable" }
+  allocate (gain,STAT=func2) ! { dg-error "is not a variable" }
   deallocate(gain)
 end subroutine sub
 
@@ -68,9 +68,9 @@ contains
  end function one
  subroutine sub()
    integer, pointer :: p
-   allocate(p, stat=one) ! { dg-error "STAT tag in ALLOCATE statement at .1. must be a variable" }
+   allocate(p, stat=one) ! { dg-error "is not a variable" }
    if(associated(p)) deallocate(p)
-   allocate(p, stat=two) ! { dg-error "STAT tag in ALLOCATE statement at .1. must be a variable" }
+   allocate(p, stat=two) ! { dg-error "is not a variable" }
    if(associated(p)) deallocate(p)
  end subroutine sub
 end module test
