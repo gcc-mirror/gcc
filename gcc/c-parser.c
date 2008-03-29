@@ -443,12 +443,7 @@ c_parser_next_token_is_not (c_parser *parser, enum cpp_ttype type)
 static inline bool
 c_parser_next_token_is_keyword (c_parser *parser, enum rid keyword)
 {
-  c_token *token;
-
-  /* Peek at the next token.  */
-  token = c_parser_peek_token (parser);
-  /* Check to see if it is the indicated keyword.  */
-  return token->keyword == keyword;
+  return c_parser_peek_token (parser)->keyword == keyword;
 }
 
 /* Return true if TOKEN can start a type name,

@@ -1,3 +1,7 @@
+2008-03-28  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* c-parser.c (c_parser_next_token_is_keyword): Simplify.
+
 2008-03-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/sse.md (*and<mode>3): Pass <MODE>mode instead
