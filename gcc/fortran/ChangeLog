@@ -1,3 +1,13 @@
+2008-03-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/35698
+	* trans-array.c (gfc_array_init_size): Set 'size' zero if
+	negative in one dimension.
+
+	PR fortran/35702
+	* trans-expr.c (gfc_trans_string_copy): Only assign a char
+	directly if the lhs and rhs types are the same.
+
 2008-03-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/35724

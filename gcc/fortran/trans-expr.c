@@ -2844,7 +2844,9 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlength, tree dest,
     dsc = gfc_to_single_character (dlen, dest);
 
 
-  if (dsc != NULL_TREE && ssc != NULL_TREE)
+  /* Assign directly if the types are compatible.  */
+  if (dsc != NULL_TREE && ssc != NULL_TREE
+	&& TREE_TYPE (dsc) == TREE_TYPE (ssc))
     {
       gfc_add_modify_expr (block, dsc, ssc);
       return;

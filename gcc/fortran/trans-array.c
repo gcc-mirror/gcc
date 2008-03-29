@@ -3490,7 +3490,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
         size = 1 - lbound;
         a.ubound[n] = specified_upper_bound;
         a.stride[n] = stride;
-        size = ubound + size; //size = ubound + 1 - lbound
+        size = siz >= 0 ? ubound + size : 0; //size = ubound + 1 - lbound
         stride = stride * size;
       }
     return (stride);
@@ -3589,6 +3589,9 @@ gfc_array_init_size (tree descriptor, int rank, tree * poffset,
 	or_expr = cond;
       else
 	or_expr = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, or_expr, cond);
+
+      size = fold_build3 (COND_EXPR, gfc_array_index_type, cond,
+			  gfc_index_zero_node, size);
 
       /* Multiply the stride by the number of elements in this dimension.  */
       stride = fold_build2 (MULT_EXPR, gfc_array_index_type, stride, size);
