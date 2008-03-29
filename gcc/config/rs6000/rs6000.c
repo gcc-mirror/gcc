@@ -14450,7 +14450,6 @@ rs6000_stack_info (void)
 #endif
       || (info_ptr->first_fp_reg_save != 64
 	  && !FP_SAVE_INLINE (info_ptr->first_fp_reg_save))
-      || info_ptr->first_altivec_reg_save <= LAST_ALTIVEC_REGNO
       || (DEFAULT_ABI == ABI_V4 && current_function_calls_alloca)
       || info_ptr->calls_p
       || rs6000_ra_ever_killed ())
