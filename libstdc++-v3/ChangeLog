@@ -1,3 +1,13 @@
+2008-03-29  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/35725
+	* include/bits/stl_algobase.h (__fill_a(_ForwardIterator,
+	_ForwardIterator, _Tp), __fill_a(_Tp*, _Tp*, _Tp),
+	__fill_n_a(_OutputIterator, _Size, _Tp), __fill_n_a(_Tp*, _Size,
+	_Tp)): Fix signatures.
+	* testsuite/25_algorithms/fill/35725.cc: New.
+	* testsuite/25_algorithms/fill_n/35725.cc: Likewise.
+
 2008-03-29  Matthias Klose  <doko@ubuntu.com>
 
 	* config/abi/post/s390-linux-gnu/baseline_symbols.txt: Update.
