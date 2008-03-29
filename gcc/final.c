@@ -1978,30 +1978,6 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	}
 #ifdef HAVE_cc0
       CC_STATUS_INIT;
-      /* If this label is reached from only one place, set the condition
-	 codes from the instruction just before the branch.  */
-
-      /* Disabled because some insns set cc_status in the C output code
-	 and NOTICE_UPDATE_CC alone can set incorrect status.  */
-      if (0 /* optimize && LABEL_NUSES (insn) == 1*/)
-	{
-	  rtx jump = LABEL_REFS (insn);
-	  rtx barrier = prev_nonnote_insn (insn);
-	  rtx prev;
-	  /* If the LABEL_REFS field of this label has been set to point
-	     at a branch, the predecessor of the branch is a regular
-	     insn, and that branch is the only way to reach this label,
-	     set the condition codes based on the branch and its
-	     predecessor.  */
-	  if (barrier && BARRIER_P (barrier)
-	      && jump && JUMP_P (jump)
-	      && (prev = prev_nonnote_insn (jump))
-	      && NONJUMP_INSN_P (prev))
-	    {
-	      NOTICE_UPDATE_CC (PATTERN (prev), prev);
-	      NOTICE_UPDATE_CC (PATTERN (jump), jump);
-	    }
-	}
 #endif
 
       if (LABEL_NAME (insn))
