@@ -1,3 +1,8 @@
+2008-03-29  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* config/rs6000/rs6000.c (rs6000_stack_info): Don't force saving of
+	the link register if one altivec register is be saved.
+
 2008-03-30  Ben Elliston  <bje@au.ibm.com>
 
 	* final.c (final_scan_insn): Remove if (0) code.
