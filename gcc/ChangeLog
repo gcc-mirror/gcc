@@ -1,3 +1,7 @@
+2008-03-30  Ben Elliston  <bje@au.ibm.com>
+
+	* final.c (final_scan_insn): Remove if (0) code.
+
 2008-03-28  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* c-parser.c (c_parser_next_token_is_keyword): Simplify.
