@@ -1,6 +1,6 @@
 // Core algorithmic facilities -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -689,19 +689,24 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _ForwardIterator, typename _Tp>
     inline typename
     __gnu_cxx::__enable_if<__is_scalar<_Tp>::__value, void>::__type
-    __fill_a(_ForwardIterator __first, _ForwardIterator __last, _Tp __value)
+    __fill_a(_ForwardIterator __first, _ForwardIterator __last,
+	     const _Tp& __value)
     {
+      const _Tp __tmp = __value;
       for (; __first != __last; ++__first)
-	*__first = __value;
+	*__first = __tmp;
     }
 
   // Specialization: for char types we can use memset.
   template<typename _Tp>
     inline typename
     __gnu_cxx::__enable_if<__is_byte<_Tp>::__value, void>::__type
-    __fill_a(_Tp* __first, _Tp* __last, _Tp __c)
-    { __builtin_memset(__first, static_cast<unsigned char>(__c),
-		       __last - __first); }
+    __fill_a(_Tp* __first, _Tp* __last, const _Tp& __c)
+    {
+      const _Tp __tmp = __c;
+      __builtin_memset(__first, static_cast<unsigned char>(__tmp),
+		       __last - __first);
+    }
 
   /**
    *  @brief Fills the range [first,last) with copies of value.
@@ -740,17 +745,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _OutputIterator, typename _Size, typename _Tp>
     inline typename
     __gnu_cxx::__enable_if<__is_scalar<_Tp>::__value, _OutputIterator>::__type
-    __fill_n_a(_OutputIterator __first, _Size __n, _Tp __value)
+    __fill_n_a(_OutputIterator __first, _Size __n, const _Tp& __value)
     {
+      const _Tp __tmp = __value;
       for (; __n > 0; --__n, ++__first)
-	*__first = __value;
+	*__first = __tmp;
       return __first;
     }
 
   template<typename _Size, typename _Tp>
     inline typename
     __gnu_cxx::__enable_if<__is_byte<_Tp>::__value, _Tp*>::__type
-    __fill_n_a(_Tp* __first, _Size __n, _Tp __c)
+    __fill_n_a(_Tp* __first, _Size __n, const _Tp& __c)
     {
       std::__fill_a(__first, __first + __n, __c);
       return __first + __n;
