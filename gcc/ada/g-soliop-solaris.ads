@@ -32,7 +32,7 @@
 ------------------------------------------------------------------------------
 
 --  This package is used to provide target specific linker_options for the
---  support of scokets as required by the package GNAT.Sockets.
+--  support of sockets as required by the package GNAT.Sockets.
 
 --  This is the Solaris version of this package
 

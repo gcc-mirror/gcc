@@ -42,7 +42,7 @@
 --  (special command line arguments starting with '-' by default) and their
 --  parameters, and then the rest of the command line arguments.
 
---  This package is flexible enough to accomodate various needs: optional
+--  This package is flexible enough to accommodate various needs: optional
 --  switch parameters, various characters to separate a switch and its
 --  parameter, whether to stop the parsing at the first non-switch argument
 --  encountered, etc.
@@ -84,7 +84,7 @@
 --  A more complicated example would involve the use of sections for the
 --  switches, as for instance in gnatmake. The same command line is used to
 --  provide switches for several tools. Each tool recognizes its switches by
---  separating them with special switches, chosen by the programer.
+--  separating them with special switches, chosen by the programmer.
 --  Each section acts as a command line of its own.
 
 --  begin
@@ -401,7 +401,7 @@ package GNAT.Command_Line is
    --  matching switch is returned.
    --
    --  Arbitrary characters are allowed for switches, although it is
-   --  strongly recommanded to use only letters and digits for portability
+   --  strongly recommended to use only letters and digits for portability
    --  reasons.
    --
    --  When Concatenate is False, individual switches need to be separated by

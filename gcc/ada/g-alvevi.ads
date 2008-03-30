@@ -38,7 +38,7 @@
 
 --  Accessing vector contents with direct memory overlays should be avoided
 --  because actual vector representations may vary across configurations, for
---  instance to accomodate different target endianness.
+--  instance to accommodate different target endianness.
 
 --  The natural representation of a vector is an array indexed by vector
 --  component number, which is materialized by the Varray type definitions

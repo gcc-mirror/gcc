@@ -46,7 +46,7 @@
 -- Summary of Pattern Matching Packages in GNAT Hierarchy --
 ------------------------------------------------------------
 
---  There are three related packages that perform pattern maching functions.
+--  There are three related packages that perform pattern matching functions.
 --  the following is an outline of these packages, to help you determine
 --  which is best for your needs.
 

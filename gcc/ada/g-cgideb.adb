@@ -41,7 +41,7 @@ package body GNAT.CGI.Debug is
    --  To create a new IO mode you must:
    --     1. create a new package spec
    --     2. create a new type derived from IO.Format
-   --     3. implement all the abstract rountines in IO
+   --     3. implement all the abstract routines in IO
 
    package IO is
 

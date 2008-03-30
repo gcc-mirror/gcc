@@ -253,7 +253,7 @@ package GNAT.Debug_Pools is
    --  the Debug_Pool).
    --
    --  The information includes the stacktrace for the allocation or
-   --  deallocation of that memory chunck, its current status (allocated or
+   --  deallocation of that memory chunk, its current status (allocated or
    --  logically freed), etc.
 
 private
@@ -288,7 +288,7 @@ private
       Storage_Address          : System.Address;
       Size_In_Storage_Elements : Storage_Count;
       Alignment                : Storage_Count);
-   --  Check whether a derefence statement is valid, ie whether the pointer
+   --  Check whether a dereference statement is valid, i.e. whether the pointer
    --  was allocated through Pool. As documented above, errors will be
    --  reported either by a special error message or an exception, depending
    --  on the setup of the storage pool.
@@ -296,7 +296,7 @@ private
 
    type Byte_Count is mod System.Max_Binary_Modulus;
    --  Type used for maintaining byte counts, needs to be large enough
-   --  to accomodate counts allowing for repeated use of the same memory.
+   --  to accommodate counts allowing for repeated use of the same memory.
 
    type Debug_Pool is new System.Checked_Pools.Checked_Pool with record
       Stack_Trace_Depth              : Natural := Default_Stack_Trace_Depth;
@@ -322,7 +322,7 @@ private
 
       Marked_Blocks_Deallocated : Boolean := False;
       --  Set to true if some mark blocks had to be deallocated in the advanced
-      --  scanning scheme. Since this is potentially dangereous, this is
+      --  scanning scheme. Since this is potentially dangerous, this is
       --  reported to the user, who might want to rerun his program with a
       --  lower Minimum_To_Free value.
 

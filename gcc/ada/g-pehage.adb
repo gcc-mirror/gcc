@@ -74,7 +74,7 @@ package body GNAT.Perfect_Hash_Generators is
 
    --  Random graphs are frequently used to solve difficult problems that do
    --  not have polynomial solutions. This algorithm is based on a weighted
-   --  undirected graph. It comprises two steps: mapping and assigment.
+   --  undirected graph. It comprises two steps: mapping and assignment.
 
    --  In the mapping step, a graph G = (V, E) is constructed, where = {0, 1,
    --  ..., n-1} and E = {(for w in W) (f1 (w), f2 (w))}. In order for the
@@ -588,7 +588,7 @@ package body GNAT.Perfect_Hash_Generators is
    --  Start of processing for Assign_Values_To_Vertices
 
    begin
-      --  Value -1 denotes an unitialized value as it is supposed to
+      --  Value -1 denotes an uninitialized value as it is supposed to
       --  be in the range 0 .. NK.
 
       if G = No_Table then
@@ -2144,7 +2144,7 @@ package body GNAT.Perfect_Hash_Generators is
          loop
             --  Preserve maximum number of different keys and check later on
             --  that this value is strictly incrementing. Otherwise, it means
-            --  that two keys are stricly identical.
+            --  that two keys are strictly identical.
 
             Old_Differences := Max_Differences;
 

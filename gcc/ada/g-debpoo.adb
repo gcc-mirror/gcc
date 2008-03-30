@@ -49,7 +49,7 @@ package body GNAT.Debug_Pools is
 
    Default_Alignment : constant := Standard'Maximum_Alignment;
    --  Alignment used for the memory chunks returned by Allocate. Using this
-   --  value garantees that this alignment will be compatible with all types
+   --  value guarantees that this alignment will be compatible with all types
    --  and at the same time makes it easy to find the location of the extra
    --  header allocated for each chunk.
 
@@ -286,10 +286,10 @@ package body GNAT.Debug_Pools is
       Ignored_Frame_Start : System.Address;
       Ignored_Frame_End   : System.Address);
    --  Set Start .. Len to the range of values from Trace that should be output
-   --  to the user. This range of values exludes any address prior to the first
-   --  one in Ignored_Frame_Start .. Ignored_Frame_End (basically addresses
-   --  internal to this package). Depth is the number of levels that the user
-   --  is interested in.
+   --  to the user. This range of values excludes any address prior to the
+   --  first one in Ignored_Frame_Start .. Ignored_Frame_End (basically
+   --  addresses internal to this package). Depth is the number of levels that
+   --  the user is interested in.
 
    ---------------
    -- Header_Of --
@@ -579,7 +579,7 @@ package body GNAT.Debug_Pools is
       begin
          --  The pool only returns addresses aligned on Default_Alignment so
          --  anything off cannot be a valid block address and we can return
-         --  early in this case. We actually have to since our datastructures
+         --  early in this case. We actually have to since our data structures
          --  map validity bits for such aligned addresses only.
 
          if Int_Storage mod Default_Alignment /= 0 then
@@ -692,7 +692,7 @@ package body GNAT.Debug_Pools is
          Free_Physically (Pool);
       end if;
 
-      --  Use standard (ie through malloc) allocations. This automatically
+      --  Use standard (i.e. through malloc) allocations. This automatically
       --  raises Storage_Error if needed. We also try once more to physically
       --  release memory, so that even marked blocks, in the advanced scanning,
       --  are freed.

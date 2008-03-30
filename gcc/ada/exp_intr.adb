@@ -87,7 +87,7 @@ package body Exp_Intr is
    --  K is the kind for the shift node
 
    procedure Expand_Unc_Conversion (N : Node_Id; E : Entity_Id);
-   --  Expand a call to an instantiation of Unchecked_Convertion into a node
+   --  Expand a call to an instantiation of Unchecked_Conversion into a node
    --  N_Unchecked_Type_Conversion.
 
    procedure Expand_Unc_Deallocation (N : Node_Id);
@@ -97,7 +97,7 @@ package body Exp_Intr is
    procedure Expand_To_Address (N : Node_Id);
    procedure Expand_To_Pointer (N : Node_Id);
    --  Expand a call to corresponding function, declared in an instance of
-   --  System.Addess_To_Access_Conversions.
+   --  System.Address_To_Access_Conversions.
 
    procedure Expand_Source_Info (N : Node_Id; Nam : Name_Id);
    --  Rewrite the node by the appropriate string or positive constant.

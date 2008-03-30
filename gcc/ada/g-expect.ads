@@ -176,7 +176,7 @@ package GNAT.Expect is
    --  this buffer is full. Beware that if the buffer is too big, this could
    --  slow down the Expect calls if not output is matched, since Expect has
    --  to match all the regexp against all the characters in the buffer.
-   --  If Buffer_Size is 0, there is no limit (ie all the characters are kept
+   --  If Buffer_Size is 0, there is no limit (i.e. all the characters are kept
    --  till Expect matches), but this is slower.
    --
    --  If Err_To_Out is True, then the standard error of the spawned process is
@@ -221,7 +221,7 @@ package GNAT.Expect is
 
    function Get_Pid
      (Descriptor : Process_Descriptor) return Process_Id;
-   --  Return the process id assocated with a given process descriptor
+   --  Return the process id associated with a given process descriptor
 
    function Get_Command_Output
      (Command    : String;
@@ -410,7 +410,7 @@ package GNAT.Expect is
       return Pattern_Matcher_Access;
    --  Allocate some memory for the pattern matcher.
    --  This is only a convenience function to help create the array of
-   --  compiled regular expressoins.
+   --  compiled regular expressions.
 
    procedure Expect
      (Descriptor  : in out Process_Descriptor;

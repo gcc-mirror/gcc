@@ -258,7 +258,7 @@ package Exp_Util is
    --    System_Tasking_Protected_Objects_Single_Entry
 
    function Current_Sem_Unit_Declarations return List_Id;
-   --  Return the a place where it is fine to insert declarations for the
+   --  Return the place where it is fine to insert declarations for the
    --  current semantic unit. If the unit is a package body, return the
    --  visible declarations of the corresponding spec. For RCI stubs, this
    --  is necessary because the point at which they are generated may not
@@ -429,7 +429,7 @@ package Exp_Util is
    --  homonym number used to disambiguate overloaded subprograms in the same
    --  scope (the number is used as part of constructed names to make sure that
    --  they are unique). The number is the ordinal position on the Homonym
-   --  chain, counting only entries in the curren scope. If an entity is not
+   --  chain, counting only entries in the current scope. If an entity is not
    --  overloaded, the returned number will be one.
 
    function Inside_Init_Proc return Boolean;
@@ -437,7 +437,7 @@ package Exp_Util is
 
    function In_Unconditional_Context (Node : Node_Id) return Boolean;
    --  Node is the node for a statement or a component of a statement. This
-   --  function deteermines if the statement appears in a context that is
+   --  function determines if the statement appears in a context that is
    --  unconditionally executed, i.e. it is not within a loop or a conditional
    --  or a case statement etc.
 

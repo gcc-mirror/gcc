@@ -37,7 +37,7 @@ with System; use System;
 
 package body GNAT.Altivec.Conversions is
 
-   --  All the vector/view conversions operate similarily: bare unchecked
+   --  All the vector/view conversions operate similarly: bare unchecked
    --  conversion on big endian targets, and elements permutation on little
    --  endian targets. We call "Mirroring" the elements permutation process.
 

@@ -59,7 +59,7 @@ package GNAT.Case_Util is
 
    procedure To_Upper (A : in out String)
      renames System.Case_Util.To_Upper;
-   --  Folds all characters of string A to upper csae
+   --  Folds all characters of string A to upper case
 
    function To_Lower (A : Character) return Character
      renames System.Case_Util.To_Lower;

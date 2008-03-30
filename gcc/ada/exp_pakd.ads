@@ -218,7 +218,7 @@ package Exp_Pakd is
    --  Note: although this routine is included in the expander package for
    --  packed types, it is actually called unconditionally from Freeze,
    --  whether or not expansion (and code generation) is enabled. We do this
-   --  since we want gigi to be able to properly compute type charactersitics
+   --  since we want gigi to be able to properly compute type characteristics
    --  (for the Data Decomposition Annex of ASIS, and possible other future
    --  uses) even if code generation is not active. Strictly this means that
    --  this procedure is not part of the expander, but it seems appropriate
@@ -263,7 +263,7 @@ package Exp_Pakd is
    function Involves_Packed_Array_Reference (N : Node_Id) return Boolean;
    --  N is the node for a name. This function returns true if the name
    --  involves a packed array reference. A node involves a packed array
-   --  reference if it is itself an indexed compoment referring to a bit-
+   --  reference if it is itself an indexed component referring to a bit-
    --  packed array, or it is a selected component whose prefix involves
    --  a packed array reference.
 

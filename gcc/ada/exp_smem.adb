@@ -52,7 +52,7 @@ package body Exp_Smem is
 
    procedure Add_Write_After (N : Node_Id);
    --  Insert a Shared_Var_WOpen call for variable after the node
-   --  Insert_Node, as recorded by On_Lhs_Of_Assigment (where it points
+   --  Insert_Node, as recorded by On_Lhs_Of_Assignment (where it points
    --  to the assignment statement) or Is_Out_Actual (where it points to
    --  the procedure call statement).
 

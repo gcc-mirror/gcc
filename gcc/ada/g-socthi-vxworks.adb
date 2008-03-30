@@ -156,7 +156,7 @@ package body GNAT.Sockets.Thin is
       if not Constants.Thread_Blocking_IO
         and then R /= Failure
       then
-         --  A socket inherits the properties ot its server especially
+         --  A socket inherits the properties of its server especially
          --  the FIONBIO flag. Do not use C_Ioctl as this subprogram
          --  tracks sockets set in non-blocking mode by user.
 

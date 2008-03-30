@@ -103,7 +103,7 @@ begin
    end if;
 
    --  Now that the preprocessing situation is established, we are able to
-   --  load the main source (this is no longer done by Lib.Load.Initalize).
+   --  load the main source (this is no longer done by Lib.Load.Initialize).
 
    Lib.Load.Load_Main_Source;
 
@@ -355,7 +355,7 @@ begin
    Sprint.Source_Dump;
 
    --  If a mapping file has been specified by a -gnatem switch, update
-   --  it if there has been some sourcs that were not in the mappings.
+   --  it if there has been some sources that were not in the mappings.
 
    if Mapping_File_Name /= null then
       Fmap.Update_Mapping_File (Mapping_File_Name.all);

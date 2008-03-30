@@ -1220,7 +1220,7 @@ package body Exp_Util is
                     Constraints => New_List
                       (New_Reference_To (Slice_Type, Loc)))));
 
-            --  This subtype indication may be used later for contraint checks
+            --  This subtype indication may be used later for constraint checks
             --  we better make sure that if a variable was used as a bound of
             --  of the original slice, its value is frozen.
 
@@ -1657,7 +1657,7 @@ package body Exp_Util is
       begin
          --  Climb to the root type
 
-         --  Handle sychronized interface derivations
+         --  Handle synchronized interface derivations
 
          if Is_Concurrent_Record_Type (Typ) then
             declare
@@ -2121,7 +2121,7 @@ package body Exp_Util is
                if N = CV then
                   Sens := True;
 
-                  --  Otherwise we must be in susbequent ELSIF or ELSE part
+                  --  Otherwise we must be in subsequent ELSIF or ELSE part
 
                else
                   Sens := False;
@@ -2861,7 +2861,7 @@ package body Exp_Util is
 
             --  This is the proper body corresponding to a stub. Insertion
             --  must be done at the point of the stub, which is in the decla-
-            --  tive part of the parent unit.
+            --  rative part of the parent unit.
 
             P := Corresponding_Stub (Parent (N));
 
@@ -3704,7 +3704,7 @@ package body Exp_Util is
    --  Generate the following code:
 
    --   type Equiv_T is record
-   --     _parent :  T (List of discriminant constaints taken from Exp);
+   --     _parent :  T (List of discriminant constraints taken from Exp);
    --     Ext__50 : Storage_Array (1 .. (Exp'size - Typ'object_size)/8);
    --   end Equiv_T;
    --
@@ -3917,8 +3917,8 @@ package body Exp_Util is
    -- Make_Subtype_From_Expr --
    ----------------------------
 
-   --  1. If Expr is an uncontrained array expression, creates
-   --    Unc_Type(Expr'first(1)..Expr'Last(1),..., Expr'first(n)..Expr'last(n))
+   --  1. If Expr is an unconstrained array expression, creates
+   --    Unc_Type(Expr'first(1)..Expr'last(1),..., Expr'first(n)..Expr'last(n))
 
    --  2. If Expr is a unconstrained discriminated type expression, creates
    --    Unc_Type(Expr.Discr1, ... , Expr.Discr_n)
@@ -4307,7 +4307,7 @@ package body Exp_Util is
       --  this may happen with any array or record type. On the other hand, we
       --  cannot create temporaries for all expressions for which this
       --  condition is true, for various reasons that might require clearing up
-      --  ??? For example, descriminant references that appear out of place, or
+      --  ??? For example, discriminant references that appear out of place, or
       --  spurious type errors with class-wide expressions. As a result, we
       --  limit the transformation to loop bounds, which is so far the only
       --  case that requires it.
@@ -4420,9 +4420,9 @@ package body Exp_Util is
          elsif Compile_Time_Known_Value (N) then
             return True;
 
-         --  A variable renaming is not side-effet free, because the
+         --  A variable renaming is not side-effect free, because the
          --  renaming will function like a macro in the front-end in
-         --  some cases, and an assignment can modify the the component
+         --  some cases, and an assignment can modify the component
          --  designated by N, so we need to create a temporary for it.
 
          elsif Is_Entity_Name (Original_Node (N))
@@ -5247,7 +5247,7 @@ package body Exp_Util is
 
    Long_Integer_Sized_Small : Ureal;
    --  Set to 2.0 ** -(Long_Integer'Size - 1) the first time that this
-   --  functoin is called (we don't want to compute it more than once)
+   --  function is called (we don't want to compute it more than once)
 
    First_Time_For_THFO : Boolean := True;
    --  Set to False after first call (if Fractional_Fixed_Ops_On_Target)

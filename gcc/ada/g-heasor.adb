@@ -74,7 +74,7 @@ package body GNAT.Heap_Sort is
          --  we assume that the current node will be less than the larger
          --  son, and unconditionally sift up. Then when we get to the bottom
          --  of the tree, we check parents to make sure that we did not make
-         --  a mistake. This roughly cuts the number of comparisions in half,
+         --  a mistake. This roughly cuts the number of comparisons in half,
          --  since it is almost always the case that our assumption is correct.
 
          --  Loop to pull up larger sons

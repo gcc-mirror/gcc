@@ -196,7 +196,7 @@ package GNAT.HTable is
    --     function Get_Next return Elmt_Ptr;
    --     --  Returns a non-specified element that has not been returned by
    --     --  the same function since the last call to Get_First or Null_Ptr
-   --     --  if there is no such element or Get_First has bever been called.
+   --     --  if there is no such element or Get_First has never been called.
    --     --  If there is no call to 'Set' in between Get_Next calls, all
    --     --  the elements of the HTable will be traversed.
 

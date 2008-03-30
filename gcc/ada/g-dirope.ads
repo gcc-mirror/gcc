@@ -223,7 +223,7 @@ package GNAT.Directory_Operations is
    --  Dir will be set to Null_Dir.
 
    procedure Close (Dir : in out Dir_Type);
-   --  Closes the directory stream refered to by Dir. After calling Close
+   --  Closes the directory stream referred to by Dir. After calling Close
    --  Is_Open will return False. Dir will be set to Null_Dir.
    --  Raises Directory_Error if Dir has not be opened (Dir = Null_Dir).
 

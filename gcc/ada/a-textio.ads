@@ -317,7 +317,7 @@ private
    --  omitted on output unless an explicit New_Page call is made before
    --  closing the file. No page mark is added when a file is appended to,
    --  so, in accordance with the permission in (RM A.10.2(4)), there may
-   --  or may not be a page mark separating preexising text in the file
+   --  or may not be a page mark separating preexisting text in the file
    --  from the new text to be written.
 
    --  A file mark is marked by the physical end of file. In DOS translation
@@ -354,7 +354,7 @@ private
 
       Self : aliased File_Type;
       --  Set to point to the containing Text_AFCB block. This is used to
-      --  implement the Current_{Error,Input,Ouput} functions which return
+      --  implement the Current_{Error,Input,Output} functions which return
       --  a File_Access, the file access value returned is a pointer to
       --  the Self field of the corresponding file.
 

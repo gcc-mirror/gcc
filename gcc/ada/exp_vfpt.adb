@@ -242,7 +242,7 @@ package body Exp_VFpt is
       Func  : RE_Id;
 
       function Call_Type (T : Entity_Id; Otyp : Entity_Id) return RE_Id;
-      --  Given one of the two types T, determines the coresponding call
+      --  Given one of the two types T, determines the corresponding call
       --  type, i.e. the type to be used for the call (or the result of
       --  the call). The actual operand is converted to (or from) this type.
       --  Otyp is the other type, which is useful in figuring out the result.

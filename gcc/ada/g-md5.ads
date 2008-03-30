@@ -36,7 +36,7 @@
 --
 --          http://www.ietf.org/rfc/rfc1321.txt
 --
---  The implementation is derived from the RSA Data Secutity, Inc. MD5
+--  The implementation is derived from the RSA Data Security, Inc. MD5
 --  Message-Digest Algorithm, as described in RFC 1321.
 
 with Ada.Streams;

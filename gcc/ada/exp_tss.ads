@@ -50,9 +50,9 @@ package Exp_Tss is
    -------------------------
 
    --  In the current version of this package, only the case of generating a
-   --  TSS at the point of declaration of the type is accomodated. A clear
+   --  TSS at the point of declaration of the type is accommodated. A clear
    --  improvement would be to follow through with the full implementation
-   --  as described above, and also accomodate the requirement of generating
+   --  as described above, and also accommodate the requirement of generating
    --  only one copy in a given object file.
 
    --  For now, we deal with the local case by generating duplicate versions

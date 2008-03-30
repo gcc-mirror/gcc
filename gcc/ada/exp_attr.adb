@@ -624,7 +624,7 @@ package body Exp_Attr is
                --  is done only for "Address!(Prim'Unrestricted_Access)" nodes.
                --  At this stage other cases in which the designated type is
                --  still a subprogram (instead of an E_Subprogram_Type) are
-               --  wrong because the semantics must have overriden the type of
+               --  wrong because the semantics must have overridden the type of
                --  the node with the type imposed by the context.
 
                pragma Assert (Nkind (Parent (N)) = N_Unchecked_Type_Conversion

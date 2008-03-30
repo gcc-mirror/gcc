@@ -77,7 +77,7 @@ package GNAT.Sockets.Constants is
    EINVAL             : constant :=          22; --  Invalid argument
    EIO                : constant :=           5; --  Input output error
    EISCONN            : constant :=          75; --  Socket already connected
-   ELOOP              : constant :=          85; --  Too many symbolic lynks
+   ELOOP              : constant :=          85; --  Too many symbolic links
    EMFILE             : constant :=          24; --  Too many open files
    EMSGSIZE           : constant :=          59; --  Message too long
    ENAMETOOLONG       : constant :=          86; --  Name too long

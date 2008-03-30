@@ -303,7 +303,7 @@ package body GNAT.Sockets.Thin is
    begin
       --  Asynchronous connection failures are notified in the
       --  exception fd set instead of the write fd set. To ensure
-      --  POSIX compatitibility, copy write fd set into exception fd
+      --  POSIX compatibility, copy write fd set into exception fd
       --  set. Once select() returns, check any socket present in the
       --  exception fd set and peek at incoming out-of-band data. If
       --  the test is not successful, and the socket is present in
