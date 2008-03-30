@@ -19,6 +19,12 @@ program foo
    real(kind=8), dimension (10) :: r_8
    real(kind=8), dimension (2, 3) :: ar_8
    real(kind=8), dimension (2, 2, 3) :: br_8
+   complex(kind=4), dimension (10) :: c_4
+   complex(kind=4), dimension (2, 3) :: ac_4
+   complex(kind=4), dimension (2, 2, 3) :: bc_4
+   complex(kind=8), dimension (10) :: c_8
+   complex(kind=8), dimension (2, 3) :: ac_8
+   complex(kind=8), dimension (2, 2, 3) :: bc_8
    character (len=200) line1, line2, line3
 
    a_1 = reshape ((/1_1, 2_1, 3_1, 4_1, 5_1, 6_1/), (/2, 3/))
@@ -117,7 +123,44 @@ program foo
    r_8 = spread(1._8,1,10)
    if (any(r_8 /= 1._8)) call abort
 
+   ac_4 = reshape ((/(1._4,-1._4), (2._4,-2._4), (3._4, -3._4), (4._4, -4._4), &
+                   & (5._4,-5._4), (6._4,-6._4)/), (/2, 3/))
+   bc_4 = spread (ac_4, 1, 2)
+   if (any (real(bc_4) .ne. reshape ((/1._4, 1._4, 2._4, 2._4, 3._4, 3._4, &
+   & 4._4, 4._4, 5._4, 5._4, 6._4, 6._4/), (/2, 2, 3/)))) call abort
+   if (any (-aimag(bc_4) .ne. reshape ((/1._4, 1._4, 2._4, 2._4, 3._4, 3._4, &
+   & 4._4, 4._4, 5._4, 5._4, 6._4, 6._4/), (/2, 2, 3/)))) call abort
+   line1 = ' '
+   write(line1, 9020) bc_4
+   line2 = ' '
+   write(line2, 9020) spread (ac_4, 1, 2)
+   if (line1 /= line2) call abort
+   line3 = ' '
+   write(line3, 9020) spread (ac_4, 1, 2) + 0._4
+   if (line1 /= line3) call abort
+   c_4 = spread((1._4,-1._4),1,10)
+   if (any(c_4 /= (1._4,-1._4))) call abort
+
+   ac_8 = reshape ((/(1._8,-1._8), (2._8,-2._8), (3._8, -3._8), (4._8, -4._8), &
+                   & (5._8,-5._8), (6._8,-6._8)/), (/2, 3/))
+   bc_8 = spread (ac_8, 1, 2)
+   if (any (real(bc_8) .ne. reshape ((/1._8, 1._8, 2._8, 2._8, 3._8, 3._8, &
+   & 4._8, 4._8, 5._8, 5._8, 6._8, 6._8/), (/2, 2, 3/)))) call abort
+   if (any (-aimag(bc_8) .ne. reshape ((/1._8, 1._8, 2._8, 2._8, 3._8, 3._8, &
+   & 4._8, 4._8, 5._8, 5._8, 6._8, 6._8/), (/2, 2, 3/)))) call abort
+   line1 = ' '
+   write(line1, 9020) bc_8
+   line2 = ' '
+   write(line2, 9020) spread (ac_8, 1, 2)
+   if (line1 /= line2) call abort
+   line3 = ' '
+   write(line3, 9020) spread (ac_8, 1, 2) + 0._8
+   if (line1 /= line3) call abort
+   c_8 = spread((1._8,-1._8),1,10)
+   if (any(c_8 /= (1._8,-1._8))) call abort
+
 9000 format(12I3)
 9010 format(12F7.3)
+9020 format(25F7.3)
 
 end program

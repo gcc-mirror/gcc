@@ -6,8 +6,10 @@ program intrinsic_unpack
    integer,parameter :: k = selected_real_kind (precision (0.0_8) + 1)
 
    real(kind=k), dimension(3,3) :: ark, brk
+   complex(kind=k), dimension(3,3) :: ack, bck
+
    logical, dimension(3, 3) :: mask
-   character(len=100) line1, line2
+   character(len=500) line1, line2
    integer i
 
    mask = reshape ((/.false.,.true.,.false.,.true.,.false.,.false.,&
@@ -27,5 +29,16 @@ program intrinsic_unpack
    if (any (brk .ne. reshape ((/0._k, 2._k, 0._k, 3._k, 0._k, 0._k, &
       0._k, 0._k, 4._k/), (/3, 3/)))) &
       call abort
+
+   ack = reshape ((/1._k, 0._k, 0._k, 0._k, 1._k, 0._k, 0._k, 0._k, 1._k/), &
+        (/3, 3/));
+   bck = unpack ((/(2._k, 0._k), (3._k, 0._k), (4._k,   0._k)/), mask, ack)
+   if (any (real(bck) .ne. reshape ((/1._k, 2._k, 0._k, 3._k, 1._k, 0._k, &
+        0._k, 0._k, 4._k/), (/3, 3/)))) &
+        call abort
+   write (line1,'(18F9.5)') bck
+   write (line2,'(18F9.5)') unpack((/(2._k, 0._k), (3._k, 0._k), (4._k,0._k)/), &
+        mask, ack)
+   if (line1 .ne. line2) call abort
 
 end program

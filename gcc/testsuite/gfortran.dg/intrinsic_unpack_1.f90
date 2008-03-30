@@ -8,8 +8,10 @@ program intrinsic_unpack
    integer(kind=8), dimension(3, 3) :: a8, b8
    real(kind=4), dimension(3,3) :: ar4, br4
    real(kind=8), dimension(3,3) :: ar8, br8
+   complex(kind=4), dimension(3,3) :: ac4, bc4
+   complex(kind=8), dimension(3,3) :: ac8, bc8
    logical, dimension(3, 3) :: mask
-   character(len=100) line1, line2
+   character(len=500) line1, line2
    integer i
 
    mask = reshape ((/.false.,.true.,.false.,.true.,.false.,.false.,&
@@ -91,5 +93,27 @@ program intrinsic_unpack
    if (any (br8 .ne. reshape ((/0._8, 2._8, 0._8, 3._8, 0._8, 0._8, &
       0._8, 0._8, 4._8/), (/3, 3/)))) &
       call abort
+
+   ac4 = reshape ((/1._4, 0._4, 0._4, 0._4, 1._4, 0._4, 0._4, 0._4, 1._4/), &
+        (/3, 3/));
+   bc4 = unpack ((/(2._4, 0._4), (3._4, 0._4), (4._4,   0._4)/), mask, ac4)
+   if (any (real(bc4) .ne. reshape ((/1._4, 2._4, 0._4, 3._4, 1._4, 0._4, &
+        0._4, 0._4, 4._4/), (/3, 3/)))) &
+        call abort
+   write (line1,'(18F9.5)') bc4
+   write (line2,'(18F9.5)') unpack((/(2._4, 0._4), (3._4, 0._4), (4._4,0._4)/), &
+        mask, ac4)
+   if (line1 .ne. line2) call abort
+
+   ac8 = reshape ((/1._8, 0._8, 0._8, 0._8, 1._8, 0._8, 0._8, 0._8, 1._8/), &
+        (/3, 3/));
+   bc8 = unpack ((/(2._8, 0._8), (3._8, 0._8), (4._8,   0._8)/), mask, ac8)
+   if (any (real(bc8) .ne. reshape ((/1._8, 2._8, 0._8, 3._8, 1._8, 0._8, &
+        0._8, 0._8, 4._8/), (/3, 3/)))) &
+        call abort
+   write (line1,'(18F9.5)') bc8
+   write (line2,'(18F9.5)') unpack((/(2._8, 0._8), (3._8, 0._8), (4._8,0._8)/), &
+        mask, ac8)
+   if (line1 .ne. line2) call abort
 
 end program

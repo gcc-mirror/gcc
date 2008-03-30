@@ -1,3 +1,14 @@
+2008-03-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/internal_pack_1.f90:  Added complex to test case.
+	* gfortran.dg/internal_pack_2.f90:  Likewise.
+	* gfortran.dg/intrinsic_spread_1.f90:  Likewise.
+	* gfortran.dg/intrinsic_spread_2.f90:  Likewise.
+	* gfortran.dg/intrinsic_pack_1.f90:  Likewise.
+	* gfortran.dg/intrinsic_pack_2.f90:  Likewise.
+	* gfortran.dg/intrinsic_unpack_1.f90:  Likewise.
+	* gfortran.dg/intrinsic_unpack_2.f90:  Likewise.
+
 2008-03-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/bit_packed_array2.adb: New test.
@@ -23,9 +34,9 @@
 
 	PR libfortran/32972
 	PR libfortran/32512
-	* intrinsic_spread_1.f90:  New file.
-	* intrinsic_spread_2.f90:  New file.
-	* intrinsic_spread_3.f90:  New file.
+	* gfortran.dg/intrinsic_spread_1.f90:  New file.
+	* gfortran.dg/intrinsic_spread_2.f90:  New file.
+	* gfortran.dg/intrinsic_spread_3.f90:  New file.
 
 2008-03-28  Daniel Franke  <franke.daniel@gmail.com>
 
