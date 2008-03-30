@@ -1,3 +1,9 @@
+2008-03-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/35757
+	* gcc.target/i386/sse4_1-blendps-2.c: New.
+	* gcc.target/i386/sse4_1-pblendw-2.c: Likewise.
+
 2008-03-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.dg/internal_pack_1.f90:  Added complex to test case.
