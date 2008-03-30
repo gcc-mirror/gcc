@@ -19738,7 +19738,12 @@ ix86_expand_sse_4_operands_builtin (enum insn_code icode, tree exp,
 
       case CODE_FOR_sse4_1_roundsd:
       case CODE_FOR_sse4_1_roundss:
+      case CODE_FOR_sse4_1_blendps:
 	error ("the third argument must be a 4-bit immediate");
+	return const0_rtx;
+
+      case CODE_FOR_sse4_1_blendpd:
+	error ("the third argument must be a 2-bit immediate");
 	return const0_rtx;
 
       default:
