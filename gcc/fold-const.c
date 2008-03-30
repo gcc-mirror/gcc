@@ -6807,6 +6807,11 @@ fold_sign_changed_comparison (enum tree_code code, tree type,
   if (TYPE_PRECISION (inner_type) != TYPE_PRECISION (outer_type))
     return NULL_TREE;
 
+  /* If the conversion is from an integral subtype to its basetype
+     leave it alone.  */
+  if (TREE_TYPE (inner_type) == outer_type)
+    return NULL_TREE;
+
   if (TREE_CODE (arg1) != INTEGER_CST
       && !((TREE_CODE (arg1) == NOP_EXPR
 	    || TREE_CODE (arg1) == CONVERT_EXPR)
