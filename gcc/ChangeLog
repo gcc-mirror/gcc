@@ -1,3 +1,9 @@
+2008-03-30  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/31023
+	* fold-const.c (fold_sign_changed_comparison): Do leave
+	conversions to base-types alone.
+
 2008-03-29  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* config/rs6000/rs6000.c (rs6000_stack_info): Don't force saving of
