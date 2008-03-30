@@ -1,3 +1,7 @@
+2008-03-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/bit_packed_array2.adb: New test.
+
 2008-03-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/35740

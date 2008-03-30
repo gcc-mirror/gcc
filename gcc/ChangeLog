@@ -1,3 +1,7 @@
+2008-03-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (fold_binary) <BIT_IOR_EXPR>: Add missing conversions.
+
 2008-03-30  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/31023

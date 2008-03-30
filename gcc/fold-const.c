@@ -10425,8 +10425,10 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	{
 	  return fold_build1 (BIT_NOT_EXPR, type,
 			      build2 (BIT_AND_EXPR, type,
-				      TREE_OPERAND (arg0, 0),
-				      TREE_OPERAND (arg1, 0)));
+				      fold_convert (type,
+						    TREE_OPERAND (arg0, 0)),
+				      fold_convert (type,
+						    TREE_OPERAND (arg1, 0))));
 	}
 
       /* See if this can be simplified into a rotate first.  If that
