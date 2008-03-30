@@ -10,6 +10,12 @@ program main
   real(kind=8), dimension(3,3) :: r8
   real(kind=8), dimension(9) :: vr8
   real(kind=8), dimension(9) :: rr8
+  complex(kind=4), dimension(3,3) :: c4
+  complex(kind=4), dimension(9) :: vc4
+  complex(kind=4), dimension(9) :: rc4
+  complex(kind=8), dimension(3,3) :: c8
+  complex(kind=8), dimension(9) :: vc8
+  complex(kind=8), dimension(9) :: rc8
   integer(kind=1), dimension(3,3) :: i1
   integer(kind=1), dimension(9) :: vi1
   integer(kind=1), dimension(9) :: ri1
@@ -36,6 +42,22 @@ program main
   rr8 = pack(r8,r8>0,vr8)
   if (any(rr8 /= (/ 1.0_8, 2.1_8, 1.2_8, 0.98_8,  15._8, 16._8, 17._8, &
   &                  18._8, 19._8 /))) call abort
+
+  vc4 = (/(i+10,i=1,9)/)
+  c4 = reshape((/1.0_4, -3.0_4, 2.1_4, -4.21_4, 1.2_4, 0.98_4, -1.2_4, &
+  &              -7.1_4, -9.9_4, 0.3_4 /), shape(c4))
+  rc4 = pack(c4,real(c4)>0,vc4)
+  if (any(real(rc4) /= (/ 1.0_4, 2.1_4, 1.2_4, 0.98_4,  15._4, 16._4, 17._4, &
+  &                  18._4, 19._4 /))) call abort
+  if (any(aimag(rc4) /= 0)) call abort
+
+  vc8 = (/(i+10,i=1,9)/)
+  c8 = reshape((/1.0_4, -3.0_4, 2.1_4, -4.21_4, 1.2_4, 0.98_4, -1.2_4, &
+  &              -7.1_4, -9.9_4, 0.3_4 /), shape(c8))
+  rc8 = pack(c8,real(c8)>0,vc8)
+  if (any(real(rc8) /= (/ 1.0_4, 2.1_4, 1.2_4, 0.98_4,  15._4, 16._4, 17._4, &
+  &                  18._4, 19._4 /))) call abort
+  if (any(aimag(rc8) /= 0)) call abort
 
   vi1 = (/(i+10,i=1,9)/)
   i1 = reshape((/1_1, -1_1, 2_1, -2_1, 3_1, -3_1, 4_1, -4_1, 5_1/), shape(i1))
