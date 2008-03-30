@@ -43,7 +43,7 @@
 
 --  There is also GNAT.Bubble_Sort_A, which is now considered obsolete, but
 --  was an older version working with subprogram parameters. This version
---  is retained for baccwards compatibility with old versions of GNAT.
+--  is retained for backwards compatibility with old versions of GNAT.
 
 generic
    --  The data to be sorted is assumed to be indexed by integer values from

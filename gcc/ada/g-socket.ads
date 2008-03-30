@@ -432,7 +432,7 @@ package GNAT.Sockets is
 
    type Inet_Addr_Type (Family : Family_Type := Family_Inet) is private;
    --  An Internet address depends on an address family (IPv4 contains 4
-   --  octets and Ipv6 contains 16 octets). Any_Inet_Addr is a special value
+   --  octets and IPv6 contains 16 octets). Any_Inet_Addr is a special value
    --  treated like a wildcard enabling all addresses. No_Inet_Addr provides a
    --  special value to denote uninitialized inet addresses.
 

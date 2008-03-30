@@ -8097,7 +8097,7 @@ private
    pragma Inline_Always (vec_any_numeric);
    pragma Inline_Always (vec_any_out);
 
-   --  Similarily, vec_step is expected to be turned into a compile time
+   --  Similarly, vec_step is expected to be turned into a compile time
    --  constant, so ...
 
    pragma Inline_Always (vec_step);

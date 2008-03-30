@@ -32,7 +32,7 @@
 ------------------------------------------------------------------------------
 
 --  This package is used to provide target specific linker_options for the
---  support of scokets as required by the package GNAT.Sockets.
+--  support of sockets as required by the package GNAT.Sockets.
 
 --  This is an empty version for default use where no additional libraries
 --  are required. On some targets a target specific version of this unit

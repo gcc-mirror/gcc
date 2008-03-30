@@ -415,7 +415,7 @@ package body GNAT.Directory_Operations is
 
             E := K;
 
-            --  Check that first chartacter is a letter
+            --  Check that first character is a letter
 
             if Characters.Handling.Is_Letter (Path (E)) then
                E := E + 1;

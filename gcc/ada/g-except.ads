@@ -39,7 +39,7 @@
 
 --  However, it is not normally possible to raise an exception with a
 --  message because the routine Ada.Exceptions.Raise_Exception is not in
---  a Pure unit. This is an annoying and unnecessary restrictiona and this
+--  a Pure unit. This is an annoying and unnecessary restriction and this
 --  package allows for raising the standard predefined exceptions at least.
 
 package GNAT.Exceptions is

@@ -35,7 +35,7 @@
 --  Wide_String or Wide_Wide_String to encoded String using a specified
 --  encoding convention, which is supplied as the generic parameter. If
 --  this parameter is a known at compile time constant (e.g. a constant
---  definned in System.WCh_Con), the instantiation is specialized so that
+--  defined in System.WCh_Con), the instantiation is specialized so that
 --  it applies only to this specified coding.
 
 --  Note: this package is only about encoding sequences of 16- or 32-bit
@@ -66,7 +66,7 @@ package GNAT.Encode_String is
    pragma Inline (Encode_Wide_String);
    --  Encode the given Wide_String, returning a String encoded using the
    --  given encoding method. Constraint_Error will be raised if the encoding
-   --  method cannot accomodate the input data.
+   --  method cannot accommodate the input data.
 
    procedure Encode_Wide_String
      (S      : Wide_String;
@@ -78,7 +78,7 @@ package GNAT.Encode_String is
    --  in System.WCh_Con: WC_Longest_Sequence, WC_Longest_Sequences). If the
    --  length of Result is insufficient Constraint_Error will be raised.
    --  Constraint_Error will also be raised if the encoding method cannot
-   --  accomodate the input data.
+   --  accommodate the input data.
 
    function Encode_Wide_Wide_String (S : Wide_Wide_String) return String;
    pragma Inline (Encode_Wide_Wide_String);
@@ -98,8 +98,8 @@ package GNAT.Encode_String is
    --  This is a lower level procedure that encodes the single character Char.
    --  The output is stored in Result starting at Result (Ptr), and Ptr is
    --  updated past the stored value. Constraint_Error is raised if Result
-   --  is not long enough to accomodate the result, or if the encoding method
-   --  specified does not accomodate the input character value, or if Ptr is
+   --  is not long enough to accommodate the result, or if the encoding method
+   --  specified does not accommodate the input character value, or if Ptr is
    --  outside the bounds of the Result string.
 
    procedure Encode_Wide_Wide_Character

@@ -77,7 +77,7 @@ package GNAT.Sockets.Constants is
    EINVAL             : constant :=       10022; --  Invalid argument
    EIO                : constant :=       10101; --  Input output error
    EISCONN            : constant :=       10056; --  Socket already connected
-   ELOOP              : constant :=       10062; --  Too many symbolic lynks
+   ELOOP              : constant :=       10062; --  Too many symbolic links
    EMFILE             : constant :=       10024; --  Too many open files
    EMSGSIZE           : constant :=       10040; --  Message too long
    ENAMETOOLONG       : constant :=       10063; --  Name too long
@@ -195,7 +195,7 @@ package GNAT.Sockets.Constants is
 
    WSASYSNOTREADY     : constant :=       10091; --  System not ready
    WSAVERNOTSUPPORTED : constant :=       10092; --  Version not supported
-   WSANOTINITIALISED  : constant :=       10093; --  Winsock not intialized
+   WSANOTINITIALISED  : constant :=       10093; --  Winsock not initialized
    WSAEDISCON         : constant :=       10101; --  Disconnected
 
    ----------------------

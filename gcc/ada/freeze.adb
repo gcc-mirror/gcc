@@ -331,7 +331,7 @@ package body Freeze is
          begin
 
             --  The controlling formal may be an access parameter, or the
-            --  actual may be an access value, so ajust accordingly.
+            --  actual may be an access value, so adjust accordingly.
 
             if Is_Access_Type (Pref_Type)
               and then not Is_Access_Type (Form_Type)
@@ -791,7 +791,7 @@ package body Freeze is
                   --  discriminant.
 
                   --  This is because gigi computes the size by doing a
-                  --  substituation of the appropriate discriminant value in
+                  --  substitution of the appropriate discriminant value in
                   --  the size expression for the base type, and gigi is not
                   --  clever enough to evaluate the resulting expression (which
                   --  involves a call to rep_to_pos) at compile time.
@@ -2915,7 +2915,7 @@ package body Freeze is
                   --  processing is only done for base types, since all the
                   --  representation aspects involved are type-related. This
                   --  is not just an optimization, if we start processing the
-                  --  subtypes, they intefere with the settings on the base
+                  --  subtypes, they interfere with the settings on the base
                   --  type (this is because Is_Packed has a slightly different
                   --  meaning before and after freezing).
 
@@ -3222,7 +3222,7 @@ package body Freeze is
             Freeze_Record_Type (E);
 
          --  For a concurrent type, freeze corresponding record type. This
-         --  does not correpond to any specific rule in the RM, but the
+         --  does not correspond to any specific rule in the RM, but the
          --  record type is essentially part of the concurrent type.
          --  Freeze as well all local entities. This includes record types
          --  created for entry parameter blocks, and whatever local entities
@@ -3636,7 +3636,7 @@ package body Freeze is
          if Has_Size_Clause (E)
            and then not Size_Known_At_Compile_Time (E)
          then
-            --  Supress this message if errors posted on E, even if we are
+            --  Suppress this message if errors posted on E, even if we are
             --  in all errors mode, since this is often a junk message
 
             if not Error_Posted (E) then
@@ -4047,7 +4047,7 @@ package body Freeze is
                  and then Is_Enumeration_Type (Etype (N))
                then
                   --  If enumeration literal appears directly as the choice,
-                  --  do not freeze (this is the normal non-overloade case)
+                  --  do not freeze (this is the normal non-overloaded case)
 
                   if Nkind (Parent (N)) = N_Component_Association
                     and then First (Choices (Parent (N))) = N
@@ -4410,7 +4410,7 @@ package body Freeze is
             --  case of both bounds negative, because the sign will be dealt
             --  with anyway. Furthermore we can't just go making such a bound
             --  symmetrical, since in a twos-complement system, there is an
-            --  extra negative value which could not be accomodated on the
+            --  extra negative value which could not be accommodated on the
             --  positive side.
 
             if Typ = Btyp

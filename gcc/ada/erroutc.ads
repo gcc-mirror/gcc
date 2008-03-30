@@ -36,7 +36,7 @@ package Erroutc is
    --  type, and is used by Add_Class to insert 'Class at the proper point
 
    Continuation : Boolean := False;
-   --  Indicates if current message is a continuation. Intialized from the
+   --  Indicates if current message is a continuation. Initialized from the
    --  Msg_Cont parameter in Error_Msg_Internal and then set True if a \
    --  insertion character is encountered.
 
@@ -81,9 +81,9 @@ package Erroutc is
 
    Max_Msg_Length : constant := 1024 + 2 * Int (Column_Number'Last);
    --  Maximum length of error message. The addition of 2 * Column_Number'Last
-   --  ensures that two insertion tokens of maximum length can be accomodated.
+   --  ensures that two insertion tokens of maximum length can be accommodated.
    --  The value of 1024 is an arbitrary value that should be more than long
-   --  enough to accomodate any reasonable message (and for that matter, some
+   --  enough to accommodate any reasonable message (and for that matter, some
    --  pretty unreasonable messages!)
 
    Msg_Buffer : String (1 .. Max_Msg_Length);
@@ -115,7 +115,7 @@ package Erroutc is
 
    No_Error_Msg : constant Error_Msg_Id := 0;
    --  A constant which is different from any value returned by Get_Error_Id.
-   --  Typically used by a client to indicate absense of a saved Id value.
+   --  Typically used by a client to indicate absence of a saved Id value.
 
    Cur_Msg : Error_Msg_Id := No_Error_Msg;
    --  Id of most recently posted error message
@@ -235,7 +235,7 @@ package Erroutc is
    --  end of the current source file. A subsequent pragma Warnings (On)
    --  adjusts the end point of this entry appropriately.
 
-   --  If all warnings are suppressed by comamnd switch, then there is a
+   --  If all warnings are suppressed by command switch, then there is a
    --  dummy entry (put there by Errout.Initialize) at the start of the
    --  table which covers all possible Source_Ptr values. Note that the
    --  source pointer values in this table always reference the original

@@ -46,7 +46,7 @@ package body GNAT.MD5 is
    --  Look-up table for each hex digit of the Message-Digest.
    --  Used by function Digest (Context).
 
-   --  The sixten values used to rotate the context words.
+   --  The sixteen values used to rotate the context words.
    --  Four for each rounds. Used in procedure Transform.
 
    --  Round 1

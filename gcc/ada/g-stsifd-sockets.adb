@@ -162,7 +162,7 @@ package body Signalling_Fds is
          R_Sock := Failure;
       end loop;
 
-      --  Since the call to connect(2) has suceeded and the backlog limit on
+      --  Since the call to connect(2) has succeeded and the backlog limit on
       --  the listening socket is 1, we know that there is now exactly one
       --  pending connection on L_Sock, which is the one from R_Sock.
 

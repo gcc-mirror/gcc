@@ -33,7 +33,7 @@
 
 --  This package provides routines for accessing the most recently raised
 --  exception. This may be useful for certain logging activities. It may
---  also be useful for mimicing implementation dependent capabilities in
+--  also be useful for mimicking implementation dependent capabilities in
 --  Ada 83 compilers, but see also GNAT.Current_Exceptions for this usage.
 
 with Ada.Exceptions;

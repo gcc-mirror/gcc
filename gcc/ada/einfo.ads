@@ -2620,7 +2620,7 @@ package Einfo is
 --       which does not also have this flag set to True. For a variable or
 --       or constant, if the flag is set, then the type of the object must
 --       either be declared at the library level, or it must also have the
---       flag set (since to allocate the oject statically, its type must
+--       flag set (since to allocate the object statically, its type must
 --       also be elaborated globally).
 
 --    Is_Static_Dispatch_Table_Entity (Flag234)
@@ -2732,7 +2732,7 @@ package Einfo is
 --       package. Indicates that the entity must be made visible in the body
 --       of the instance, to reproduce the visibility of the generic. This
 --       simplifies visibility settings in instance bodies.
---       ??? confusion in abovecomments between being present and being set
+--       ??? confusion in above comments between being present and being set
 
 --    Is_VMS_Exception (Flag133)
 --       Present in all entities. Set only for exception entities where the
@@ -2766,13 +2766,13 @@ package Einfo is
 --    Kill_Elaboration_Checks (Flag32)
 --       Present in all entities. Set by the expander to kill elaboration
 --       checks which are known not to be needed. Equivalent in effect to
---       the use of pragma Supress (Elaboration_Checks) for that entity
+--       the use of pragma Suppress (Elaboration_Checks) for that entity
 --       except that the effect is permanent and cannot be undone by a
 --       subsequent pragma Unsuppress.
 
 --    Kill_Range_Checks (Flag33)
 --       Present in all entities. Equivalent in effect to the use of pragma
---       Supress (Range_Checks) for that entity except that the result is
+--       Suppress (Range_Checks) for that entity except that the result is
 --       permanent and cannot be undone by a subsequent pragma Unsuppress.
 --       This is currently only used in one odd situation in Sem_Ch3 for
 --       record types, and it would be good to get rid of it???
@@ -2780,7 +2780,7 @@ package Einfo is
 --    Kill_Tag_Checks (Flag34)
 --       Present in all entities. Set by the expander to kill elaboration
 --       checks which are known not to be needed. Equivalent in effect to
---       the use of pragma Supress (Tag_Checks) for that entity except
+--       the use of pragma Suppress (Tag_Checks) for that entity except
 --       that the result is permanent and cannot be undone by a subsequent
 --       pragma Unsuppress.
 
@@ -2805,7 +2805,7 @@ package Einfo is
 --       associated entities is attached (blocks, class subtypes and types,
 --       entries, functions, loops, packages, procedures, protected objects,
 --       record types and subtypes, private types, task types and subtypes).
---       Points to a the last entry in the list of associated entities chained
+--       Points to the last entry in the list of associated entities chained
 --       through the Next_Entity field. Empty if no entities are chained.
 
 --    Limited_View (Node23)
@@ -2819,7 +2819,7 @@ package Einfo is
 --       Present in enumeration types and subtypes. Non-empty only for the
 --       case of an enumeration root type, where it contains the entity for
 --       the generated indexes entity. See unit Exp_Imgv for full details of
---       the nature and use of this entity for implkementing the Image and
+--       the nature and use of this entity for implementing the Image and
 --       Value attributes for the enumeration type in question.
 --
 --    Lit_Strings (Node16)
@@ -3169,7 +3169,7 @@ package Einfo is
 --    Parameter_Mode (synthesized)
 --       Applies to formal parameter entities. This is a synonym for Ekind,
 --       used when obtaining the formal kind of a formal parameter (the result
---       is one of E_[In/Out/In_Out]_Paramter)
+--       is one of E_[In/Out/In_Out]_Parameter)
 
 --    Parent_Subtype (Node19)
 --       Present in E_Record_Type. Points to the subtype to use for a
@@ -3254,9 +3254,9 @@ package Einfo is
 
 --    Referenced (Flag156)
 --       Present in all entities. Set if the entity is referenced, except for
---       the case of an appearence of a simple variable that is not a renaming
+--       the case of an appearance of a simple variable that is not a renaming
 --       as the left side of an assignment in which case Referenced_As_LHS is
---       set instead, or a similar appearence as an out parameter actual, in
+--       set instead, or a similar appearance as an out parameter actual, in
 --       which case As_Out_Parameter_Parameter is set.
 
 --    Referenced_As_LHS (Flag36):
@@ -3307,7 +3307,7 @@ package Einfo is
 --    Renamed_Entity (Node18)
 --       Present in exceptions, packages, subprograms and generic units. Set
 --       for entities that are defined by a renaming declaration. Denotes the
---       renamed entity, or transititively the ultimate renamed entity if
+--       renamed entity, or transitively the ultimate renamed entity if
 --       there is a chain of renaming declarations. Empty if no renaming.
 
 --    Renamed_In_Spec (Flag231)
@@ -3367,11 +3367,11 @@ package Einfo is
 
 --    Reverse_Bit_Order (Flag164) [base type only]
 --       Present in all record type entities. Set if a valid pragma an
---       attribute represention clause for Bit_Order has reversed the order of
---       bits from the default value. When this flag is set, a component clause
---       must specify a set of bits entirely contained in a single storage unit
---       (Ada 95) or a single machine scalar (see Ada 2005 AI-133), or must
---       occupy in integral number of storage units.
+--       attribute representation clause for Bit_Order has reversed the order
+--       of bits from the default value. When this flag is set, a component
+--       clause must specify a set of bits entirely contained in a single
+--       storage unit (Ada 95) or a single machine scalar (see Ada 2005
+--       AI-133), or must occupy in integral number of storage units.
 
 --    RM_Size (Uint13)
 --       Present in all type and subtype entities. Contains the value of
@@ -3387,7 +3387,7 @@ package Einfo is
 --       type of the class covered by the CW type, otherwise returns the
 --       ultimate derivation ancestor of the given type. This function
 --       preserves the view, i.e. the Root_Type of a partial view is the
---       partial view of the ulimate ancestor, the Root_Type of a full view
+--       partial view of the ultimate ancestor, the Root_Type of a full view
 --       is the full view of the ultimate ancestor. Note that this function
 --       does not correspond exactly to the use of root type in the RM, since
 --       in the RM root type applies to a class of types, not to a type.
@@ -4495,7 +4495,7 @@ package Einfo is
    --  For each enumeration value defined in Entity_Kind we list all the
    --  attributes defined in Einfo which can legally be applied to an entity
    --  of that kind. The implementation of the attribute functions (and for
-   --  non-synthetized attributes, of the corresponding set procedures) are
+   --  non-synthesized attributes, of the corresponding set procedures) are
    --  in the Einfo body.
 
    --  The following attributes apply to all entities
@@ -5497,7 +5497,7 @@ package Einfo is
    --  There are four types of alignment possible for array and record
    --  types, and a field in the type entities contains a value of the
    --  following type indicating which alignment choice applies. For full
-   --  details of the meaning of these aligment types, see description
+   --  details of the meaning of these alignment types, see description
    --  of the Component_Alignment pragma
 
    type Component_Alignment_Kind is (

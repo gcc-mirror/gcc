@@ -50,7 +50,7 @@ package GNAT.Current_Exception is
    -- Subprograms --
    -----------------
 
-   --  Note: the lower bound of returnd String values is always one
+   --  Note: the lower bound of returned String values is always one
 
    function Exception_Information return String;
    --  Returns the result of calling Ada.Exceptions.Exception_Information
@@ -95,7 +95,7 @@ package GNAT.Current_Exception is
    --  For greater compatibility with existing legacy software, library
    --  level renaming may be used to create a function with a name matching
    --  one that is in use. For example, some versions of VADS Ada provided
-   --  a functin called Current_Exception whose semantics was identical to
+   --  a function called Current_Exception whose semantics was identical to
    --  that of GNAT. The following library level renaming declaration:
 
    --    with GNAT.Current_Exception;

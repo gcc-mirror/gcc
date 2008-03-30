@@ -330,7 +330,7 @@ package body Exp_Prag is
         and then Is_RTE (Entity (Name (N)), RE_Raise_Assert_Failure)
       then
          --  If original condition was a Standard.False, we assume that this is
-         --  indeed intented to raise assert error and no warning is required.
+         --  indeed intended to raise assert error and no warning is required.
 
          if Is_Entity_Name (Original_Node (Cond))
            and then Entity (Original_Node (Cond)) = Standard_False

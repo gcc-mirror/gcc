@@ -34,6 +34,6 @@
 
 --  This package does not require a body, since it is a package renaming. We
 --  provide a dummy file containing a No_Body pragma so that previous versions
---  of the body (which did exist) will not intefere.
+--  of the body (which did exist) will not interfere.
 
 pragma No_Body;

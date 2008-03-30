@@ -845,12 +845,12 @@ package ALI is
 
       Oref_File_Num : Sdep_Id;
       --  This field is set to No_Sdep_Id if the entity doesn't override any
-      --  other entity, or to the dependency reference for the overriden
+      --  other entity, or to the dependency reference for the overridden
       --  entity.
 
       Oref_Line : Nat;
       Oref_Col  : Nat;
-      --  These two fields are set to the line and column of the overriden
+      --  These two fields are set to the line and column of the overridden
       --  entity.
 
       First_Xref : Nat;

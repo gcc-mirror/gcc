@@ -556,7 +556,7 @@ package body Exp_Imgv is
    --    Enum'Val (Value_Enumeration_NN (typS, typI'Address, Num, X))
 
    --  where typS and typI and the Lit_Strings and Lit_Indexes entities
-   --  from T's root type entitym and Num is Enum'Pos (Enum'Last). The
+   --  from T's root type entity, and Num is Enum'Pos (Enum'Last). The
    --  Value_Enumeration_NN function will search the tables looking for
    --  X and return the position number in the table if found which is
    --  used to provide the result of 'Value (using Enum'Val). If the

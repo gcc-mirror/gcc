@@ -47,8 +47,8 @@ package body GNAT.Array_Split is
    function Count
      (Source  : Element_Sequence;
       Pattern : Element_Set) return Natural;
-   --  Returns the number of occurences of Pattern elements in Source, 0 is
-   --  returned if no occurence is found in Source.
+   --  Returns the number of occurrences of Pattern elements in Source, 0 is
+   --  returned if no occurrence is found in Source.
 
    ------------
    -- Adjust --

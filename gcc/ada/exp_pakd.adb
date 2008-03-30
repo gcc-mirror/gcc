@@ -535,7 +535,7 @@ package body Exp_Pakd is
    --  directly using Insert_Action.
 
    ------------------------------
-   -- Compute_Linear_Subcsript --
+   -- Compute_Linear_Subscript --
    ------------------------------
 
    procedure Compute_Linear_Subscript
@@ -2010,7 +2010,7 @@ package body Exp_Pakd is
              Left_Opnd  => Make_Shift_Right (Obj, Shift),
              Right_Opnd => Lit);
 
-         --  We neded to analyze this before we do the unchecked convert
+         --  We needed to analyze this before we do the unchecked convert
          --  below, but we need it temporarily attached to the tree for
          --  this analysis (hence the temporary Set_Parent call).
 

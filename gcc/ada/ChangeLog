@@ -1,3 +1,40 @@
+2008-03-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* a-textio.ads, a-witeio.ads, a-ztexio.ads, ali.ads,
+	einfo.ads, erroutc.adb, erroutc.ads, exp_attr.adb,
+	exp_imgv.adb, exp_intr.adb, exp_pakd.adb,
+	exp_pakd.ads, exp_prag.adb, exp_smem.adb,
+	exp_tss.ads, exp_util.adb, exp_util.ads,
+	exp_vfpt.adb, freeze.adb, freeze.ads,
+	frontend.adb, g-alleve.adb, g-altcon.adb,
+	g-altive.ads, g-alveop.ads, g-alvevi.ads,
+	g-arrspl.adb, g-busorg.ads, g-calend.adb,
+	g-calend.ads, g-casuti.ads, g-cgideb.adb,
+	g-comlin.adb, g-comlin.ads, g-curexc.ads,
+	g-debpoo.adb, g-debpoo.ads, g-decstr.adb,
+	g-dirope.adb, g-dirope.ads, g-dynhta.ads,
+	g-dyntab.adb, g-encstr.ads, g-excact.ads,
+	g-except.ads, g-expect.ads, g-heasor.adb,
+	g-hesora.adb, g-hesorg.adb, g-htable.ads,
+	g-locfil.ads, g-md5.adb, g-md5.ads,
+	g-memdum.ads, g-moreex.ads, g-os_lib.adb,
+	g-pehage.adb, g-pehage.ads, g-regexp.adb,
+	g-regexp.ads, g-regpat.adb, g-regpat.ads,
+	g-soccon-aix.ads, g-soccon-darwin.ads,
+	g-soccon-freebsd.ads, g-soccon-hpux-ia64.ads,
+	g-soccon-hpux.ads, g-soccon-irix.ads,
+	g-soccon-linux-64.ads, g-soccon-linux-ppc.ads,
+	g-soccon-linux-x86.ads, g-soccon-lynxos.ads,
+	g-soccon-mingw.ads, g-soccon-solaris-64.ads,
+	g-soccon-solaris.ads, g-soccon-tru64.ads,
+	g-soccon-vms.ads, g-soccon-vxworks.ads,
+	g-soccon.ads, g-socket.adb, g-socket.ads,
+	g-socthi-mingw.adb, g-socthi-vms.adb,
+	g-socthi-vxworks.adb, g-soliop-mingw.ads,
+	g-soliop-solaris.ads, g-soliop.ads, g-spipat.adb,
+	g-spipat.ads, g-string.adb, g-stsifd-sockets.adb: Fix comment
+	typos.
+
 2008-03-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl.c (gnat_to_gnu_entity) <E_Procedure>: Also set the public flag

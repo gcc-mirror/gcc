@@ -391,7 +391,7 @@ package body GNAT.Decode_String is
             end if;
          end UTF8;
 
-      --  Non-UTF-8 cass
+      --  Non-UTF-8 case
 
       else
          declare
@@ -502,7 +502,7 @@ package body GNAT.Decode_String is
             end if;
          end UTF8;
 
-      --  Non-UTF-8 cass
+      --  Non-UTF-8 case
 
       else
          declare

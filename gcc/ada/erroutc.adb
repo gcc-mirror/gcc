@@ -176,7 +176,7 @@ package body Erroutc is
             Delete_Msg (M1, M2);
             return;
 
-         --  If M2 continuatins have run out, we delete M2
+         --  If M2 continuations have run out, we delete M2
 
          elsif N2 = No_Error_Msg or else not Errors.Table (N2).Msg_Cont then
             Delete_Msg (M2, M1);
@@ -968,7 +968,7 @@ package body Erroutc is
          Set_Msg_Char (UI_Image_Buffer (J));
       end loop;
 
-      --  The following assignment ensures that a second carret insertion
+      --  The following assignment ensures that a second caret insertion
       --  character will correspond to the Error_Msg_Uint_2 parameter. We
       --  suppress possible validity checks in case operating in -gnatVa mode,
       --  and Error_Msg_Uint_2 is not needed and has not been set.

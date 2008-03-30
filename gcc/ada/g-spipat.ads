@@ -41,7 +41,7 @@
 -- Summary of Pattern Matching Packages in GNAT Hierarchy --
 ------------------------------------------------------------
 
---  There are three related packages that perform pattern maching functions.
+--  There are three related packages that perform pattern matching functions.
 --  the following is an outline of these packages, to help you determine
 --  which is best for your needs.
 
@@ -154,7 +154,7 @@ package GNAT.Spitbol.Patterns is
 
    --      ("ABC" or "AB") & ("DEF" or "CDE") & ("GH" or "IJ")
 
-   --    would succeed, afer two anchor point moves:
+   --    would succeed, after two anchor point moves:
 
    --      "ABABCDEIJKL"
    --         ^^^^^^^
@@ -226,7 +226,7 @@ package GNAT.Spitbol.Patterns is
    --                of the pattern, starting with zero occurrences. It is
    --                thus equivalent to ("" or (P & ("" or (P & ("" ....)))).
    --                The pattern P may contain any number of pattern elements
-   --                including the use of alternatiion and concatenation.
+   --                including the use of alternation and concatenation.
 
    --      Break(S)  Where S is a string, matches a string of zero or more
    --                characters up to but not including a break character
@@ -237,7 +237,7 @@ package GNAT.Spitbol.Patterns is
 
    --      BreakX(S) Where S is a string, behaves exactly like Break(S) when
    --                it first matches, but if a string is successfully matched,
-   --                then a susequent failure causes an attempt to extend the
+   --                then a subsequent failure causes an attempt to extend the
    --                matched string.
 
    --      Fence(P)  Where P is a pattern, attempts to match the pattern P
@@ -247,7 +247,7 @@ package GNAT.Spitbol.Patterns is
    --                match proceeds, but on a subsequent failure, no attempt
    --                is made to search for alternative matches of P. The
    --                pattern P may contain any number of pattern elements
-   --                including the use of alternatiion and concatenation.
+   --                including the use of alternation and concatenation.
 
    --      Len(N)    Where N is a natural number, matches the given number of
    --                characters. For example, Len(10) matches any string that
@@ -255,7 +255,7 @@ package GNAT.Spitbol.Patterns is
 
    --      NotAny(S) Where S is a string, matches a single character that is
    --                not one of the characters of S. Fails if the current
-   --                characer is one of the given set of characters.
+   --                character is one of the given set of characters.
 
    --      NSpan(S)  Where S is a string, matches a string of zero or more
    --                characters that is among the characters given in the
@@ -690,7 +690,7 @@ package GNAT.Spitbol.Patterns is
    --  if the language allowed, we would use in out parameters, but we are
    --  not allowed to have in out parameters for functions. Instead we pass
    --  actuals which must be variables, and with a bit of trickery in the
-   --  body, manage to interprete them properly as though they were indeed
+   --  body, manage to interpret them properly as though they were indeed
    --  in out parameters.
 
    pragma Warnings (Off, VString_Var);
@@ -832,7 +832,7 @@ package GNAT.Spitbol.Patterns is
    --  causes the entire match to be aborted if a subsequent failure occurs.
 
    function Fence  (P : Pattern)                            return Pattern;
-   --  Constructs a pattern that first matches P. if P fails, then the
+   --  Constructs a pattern that first matches P. If P fails, then the
    --  constructed pattern fails. If P succeeds, then the match proceeds,
    --  but if subsequent failure occurs, alternatives in P are not sought.
    --  The idea of Fence is that each time the pattern is matched, just
@@ -1054,7 +1054,7 @@ package GNAT.Spitbol.Patterns is
    --  if the language allowed, we would use an in out parameter, but we are
    --  not allowed to have in out parameters for functions. Instead we pass
    --  actuals which must be variables, and with a bit of trickery in the
-   --  body, manage to interprete them properly as though they were indeed
+   --  body, manage to interpret them properly as though they were indeed
    --  in out parameters.
 
    function Match
@@ -1142,8 +1142,8 @@ package GNAT.Spitbol.Patterns is
 
 private
    type PE;
-   --  Pattern element, a pattern is a plex structure of PE's. This type
-   --  is defined and sdescribed in the body of this package.
+   --  Pattern element, a pattern is a complex structure of PE's. This type
+   --  is defined and described in the body of this package.
 
    type PE_Ptr is access all PE;
    --  Pattern reference. PE's use PE_Ptr values to reference other PE's

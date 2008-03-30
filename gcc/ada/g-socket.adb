@@ -61,7 +61,7 @@ package body GNAT.Sockets is
    --  the operating system, or else return data through a user-provided buffer
    --  to ensure concurrent uses do not interfere.
 
-   --  Correspondance tables
+   --  Correspondence tables
 
    Families : constant array (Family_Type) of C.int :=
                 (Family_Inet  => Constants.AF_INET,
@@ -152,7 +152,7 @@ package body GNAT.Sockets is
    function Network_To_Short
      (S : C.unsigned_short) return C.unsigned_short
    renames Short_To_Network;
-   --  Symetric operation
+   --  Symmetric operation
 
    function Image
      (Val :  Inet_Addr_VN_Type;
@@ -547,7 +547,7 @@ package body GNAT.Sockets is
       Signalling_Fds.Close (C.int (Selector.W_Sig_Socket));
 
       --  Reset R_Sig_Socket and W_Sig_Socket to No_Socket to ensure that any
-      --  (errneous) subsequent attempt to use this selector properly fails.
+      --  (erroneous) subsequent attempt to use this selector properly fails.
 
       Selector.R_Sig_Socket := No_Socket;
       Selector.W_Sig_Socket := No_Socket;

@@ -35,7 +35,7 @@
 
 --  These callbacks are called immediately when either a specific exception,
 --  or any exception, is raised, before any other actions taken by raise, in
---  particular before any unwinding of the stack occcurs.
+--  particular before any unwinding of the stack occurs.
 
 --  Callbacks for specific exceptions are registered through calls to
 --  Register_Id_Action. Here is an example of code that uses this package to

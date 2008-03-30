@@ -43,7 +43,7 @@
 -- Summary of Pattern Matching Packages in GNAT Hierarchy --
 ------------------------------------------------------------
 
---  There are three related packages that perform pattern maching functions.
+--  There are three related packages that perform pattern matching functions.
 --  the following is an outline of these packages, to help you determine
 --  which is best for your needs.
 
@@ -62,7 +62,7 @@
 --       stored in a binary compatible manner.
 
 --     GNAT.Spitbol.Patterns (files g-spipat.ads/g-spipat.adb)
---       This is a completely general patterm matching package based on the
+--       This is a completely general pattern matching package based on the
 --       pattern language of SNOBOL4, as implemented in SPITBOL. The pattern
 --       language is modeled on context free grammars, with context sensitive
 --       extensions that provide full (type 0) computational capabilities.

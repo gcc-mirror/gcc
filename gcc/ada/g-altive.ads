@@ -135,7 +135,7 @@
 --  of driving ideas:
 
 --  o From the clients standpoint, the two versions of the binding should be
---    as easily exchangable as possible,
+--    as easily exchangeable as possible,
 
 --  o From the maintenance standpoint, we want to avoid as much code
 --    duplication as possible.
