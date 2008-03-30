@@ -1,5 +1,8 @@
 2008-03-30  Volker Reichelt  <v.reichelt@netcologne.de>
 
+	PR c++/35578
+	* g++.dg/parse/friend8.C: New test.
+
 	PR c/35748
 	* gcc.dg/union-cast-4.c: New test.
 
