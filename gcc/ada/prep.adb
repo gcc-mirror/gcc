@@ -732,7 +732,7 @@ package body Prep is
    procedure List_Symbols (Foreword : String) is
       Order : array (0 ..  Integer (Symbol_Table.Last (Mapping)))
                  of Symbol_Id;
-      --  After alphabetical sorting, this array stores thehe indices of
+      --  After alphabetical sorting, this array stores the indices of
       --  the symbols in the order they are displayed.
 
       function Lt (Op1, Op2 : Natural) return Boolean;
@@ -1438,7 +1438,7 @@ package body Prep is
          end if;
 
          --  Now, scan the first token of the next line. If the token is EOF,
-         --  the scan ponter will not move, and the token will still be EOF.
+         --  the scan pointer will not move, and the token will still be EOF.
 
          Set_Ignore_Errors (To => True);
          Scan.all;

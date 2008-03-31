@@ -132,7 +132,7 @@ package MLib.Tgt is
    --  "libtoto.so" will be a symbolic link to "libtoto.so.2.1" which
    --  will be the actual library file.
    --
-   --  Symbol_Data is used for some patforms, including VMS, to generate
+   --  Symbol_Data is used for some platforms, including VMS, to generate
    --  the symbols to be exported by the library.
    --
    --  Note: Depending on the OS, some of the parameters may not be taken into
@@ -153,7 +153,7 @@ package MLib.Tgt is
    function Library_Major_Minor_Id_Supported return Boolean;
    --  Indicates if major and minor ids are supported for libraries.
    --  If they are supported, then a Library_Version such as libtoto.so.1.2
-   --  will have a major id of 1 and a minor id of 2. Then litoto.so,
+   --  will have a major id of 1 and a minor id of 2. Then libtoto.so,
    --  libtoto.so.1 and libtoto.so.1.2 will be created, all three designating
    --  the same file.
 

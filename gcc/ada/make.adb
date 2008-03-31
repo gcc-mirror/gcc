@@ -415,7 +415,7 @@ package body Make is
    Do_Link_Step    : Boolean := True;
    --  Flags to indicate what step should be executed. Can be set to False
    --  with the switches -c, -b and -l. These flags are reset to True for
-   --  each invokation of procedure Gnatmake.
+   --  each invocation of procedure Gnatmake.
 
    Shared_String           : aliased String := "-shared";
    Force_Elab_Flags_String : aliased String := "-F";
@@ -739,8 +739,8 @@ package body Make is
       And_Save      : Boolean := True);
    --  Make invokes one of three programs (the compiler, the binder or the
    --  linker). For the sake of convenience, some program specific switches
-   --  can be passed directly on the gnatmake commande line. This procedure
-   --  records these switches so that gnamake can pass them to the right
+   --  can be passed directly on the gnatmake command line. This procedure
+   --  records these switches so that gnatmake can pass them to the right
    --  program.  S is the switch to be added at the end of the command line
    --  for Program if Append_Switch is True. If Append_Switch is False S is
    --  added at the beginning of the command line.
@@ -1473,7 +1473,8 @@ package body Make is
             File_Name : File_Name_Type;
 
          begin
-            --  Test whether Uname is the name of a body unit (ie ends with %b)
+            --  Test whether Uname is the name of a body unit (i.e. ends
+            --  with %b)
 
             Get_Name_String (Uname);
             pragma
@@ -2978,7 +2979,7 @@ package body Make is
 
          --  Set -gnatpg for predefined files (for this purpose the renamings
          --  such as Text_IO do not count as predefined). Note that we strip
-         --  the directory name from the source file name becase the call to
+         --  the directory name from the source file name because the call to
          --  Fname.Is_Predefined_File_Name cannot deal with directory prefixes.
 
          declare
@@ -3225,7 +3226,7 @@ package body Make is
             exit Make_Loop;
          end if;
 
-         --  PHASE 1: Check if there is more work that we can do (ie the Q
+         --  PHASE 1: Check if there is more work that we can do (i.e. the Q
          --  is non empty). If there is, do it only if we have not yet used
          --  up all the available processes.
 
@@ -5051,7 +5052,7 @@ package body Make is
                   --  If there are several mains, we always get the general
                   --  gnatmake switches (if any).
 
-                  --  Warn the user, if necessary, so that he is not surprized
+                  --  Warn the user, if necessary, so that he is not surprised
                   --  that specific switches are not taken into account.
 
                   declare
@@ -5105,7 +5106,7 @@ package body Make is
 
             --  Record the current last switch index for table Binder_Switches
             --  and Linker_Switches, so that these tables may be reset before
-            --  for each main, before adding swiches from the project file
+            --  for each main, before adding switches from the project file
             --  and from the command line.
 
             Last_Binder_Switch := Binder_Switches.Last;
@@ -5486,7 +5487,7 @@ package body Make is
             else
                --  If we are using a project file, we attempt to remove the
                --  body (or spec) termination of the main subprogram. We find
-               --  it the the naming scheme of the project file. This avoids
+               --  it the naming scheme of the project file. This avoids
                --  generating an executable "main.2" for a main subprogram
                --  "main.2.ada", when the body termination is ".2.ada".
 
@@ -7136,7 +7137,7 @@ package body Make is
                begin
                   --  For directories, Normalize_Pathname may or may not put
                   --  a directory separator at the end, depending on its input.
-                  --  Remove any last directory separator before comparaison.
+                  --  Remove any last directory separator before comparison.
                   --  Returns True only if the two directories are the same.
 
                   if Object_Directory (Olast) = Directory_Separator then
@@ -7422,7 +7423,7 @@ package body Make is
       Write_Line ("*** Interrupted ***");
       Delete_All_Temp_Files;
 
-      --  Send SIGINT to all oustanding compilation processes spawned
+      --  Send SIGINT to all outstanding compilation processes spawned
 
       for J in 1 .. Outstanding_Compiles loop
          Kill (Running_Compile (J).Pid, SIGINT, 1);

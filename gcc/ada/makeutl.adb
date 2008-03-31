@@ -191,7 +191,7 @@ package body Makeutl is
       Exec_Name : constant String := Command_Name;
 
       function Get_Install_Dir (S : String) return String;
-      --  S is the executable name preceeded by the absolute or relative
+      --  S is the executable name preceded by the absolute or relative
       --  path, e.g. "c:\usr\bin\gcc.exe". Returns the absolute directory
       --  where "bin" lies (in the example "C:\usr").
       --  If the executable is not in a "bin" directory, return "".
@@ -657,7 +657,7 @@ package body Makeutl is
          Start := Start - 1;
       end loop;
 
-      --  If there is no difits, or if the digits are not preceded by
+      --  If there are no digits, or if the digits are not preceded by
       --  the character that precedes a unit index, this is not the ALI file
       --  of a unit in a multi-unit source.
 

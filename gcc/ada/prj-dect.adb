@@ -75,7 +75,7 @@ package body Prj.Dect is
       Current_Package   : Project_Node_Id;
       Packages_To_Check : String_List_Access);
    --  Parse declarative items. Depending on In_Zone, some declarative
-   --  items may be forbiden.
+   --  items may be forbidden.
 
    procedure Parse_Package_Declaration
      (In_Tree             : Project_Node_Tree_Ref;
@@ -916,7 +916,7 @@ package body Prj.Dect is
             when others =>
                exit;
 
-               --  We are leaving Parse_Declarative_Items positionned
+               --  We are leaving Parse_Declarative_Items positioned
                --  at the first token after the list of declarative items.
                --  It could be "end" (for a project, a package declaration or
                --  a case construction) or "when" (for a case construction)

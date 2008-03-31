@@ -76,7 +76,7 @@ package Osint.B is
 
    procedure Close_Binder_Output;
    --  Closes the file created by Create_Binder_Output, flushing any
-   --  buffers etc from writes by Write_Binder_Info.
+   --  buffers etc. from writes by Write_Binder_Info.
 
    procedure Set_Current_File_Name_Index (To : Int);
    --  Set value of Current_File_Name_Index (in private part of Osint) to To

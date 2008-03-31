@@ -139,7 +139,7 @@ package body Nlists is
       Prev_Node.Set_Last (N);
 
       --  Make sure we have no uninitialized junk in any new entires added.
-      --  This ensures that Tree_Gen will not write out any unitialized junk.
+      --  This ensures that Tree_Gen will not write out any uninitialized junk.
 
       for J in Old_Last + 1 .. N loop
          Next_Node.Table (J) := Empty;
@@ -538,7 +538,7 @@ package body Nlists is
          end if;
       end Insert_List_Before_Debug;
 
-   --  Start of prodcessing for Insert_List_Before
+   --  Start of processing for Insert_List_Before
 
    begin
       pragma Assert (Is_List_Member (Before));

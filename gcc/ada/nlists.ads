@@ -129,7 +129,7 @@ package Nlists is
    --  returned. It is an error to call First_Non_Pragma with a Node_Id value
    --  or No_List (No_List is not considered to be the same as an empty list).
    --  This function also skips N_Null nodes which can result from rewriting
-   --  unrecognized or incorrrect pragmas.
+   --  unrecognized or incorrect pragmas.
 
    function Last (List : List_Id) return Node_Id;
    pragma Inline (Last);

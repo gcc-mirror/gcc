@@ -114,7 +114,7 @@ package body GNAT.Traceback.Symbolic is
       --  be found. If the executable file name resolution fails, we have no
       --  sensible basis to invoke the symbolizer at all.
 
-      --  Protect all this against concurrent accesses explicitely, as the
+      --  Protect all this against concurrent accesses explicitly, as the
       --  underlying services are potentially thread unsafe.
 
       TSL.Lock_Task.all;

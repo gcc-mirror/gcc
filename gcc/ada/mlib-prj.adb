@@ -446,7 +446,7 @@ package body MLib.Prj is
       --  Start of processing for Add_Rpath
 
       begin
-         --  If firt path, allocate initial Rpath
+         --  If first path, allocate initial Rpath
 
          if Rpath = null then
             Rpath := new String (1 .. Initial_Rpath_Length);
@@ -2118,9 +2118,9 @@ package body MLib.Prj is
                      Obj_TS := File_Stamp (File_Name_Type'(Name_Find));
 
                      --  If library file time stamp is earlier, set
-                     --  Need_To_Build_Lib and return. String comparaison is
+                     --  Need_To_Build_Lib and return. String comparison is
                      --  used, otherwise time stamps may be too close and the
-                     --  comparaison would return True, which would trigger
+                     --  comparison would return True, which would trigger
                      --  an unnecessary rebuild of the library.
 
                      if String (Lib_TS) < String (Obj_TS) then

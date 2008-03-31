@@ -79,7 +79,7 @@ __gnat_convert_addresses (void *addrs[], int n_addrs, void *buf, int *len);
    routine.  The latter examines debug info from a provided executable file
    name to perform the translation into symbolic form of an input sequence of
    raw binary addresses.  It attempts to open the file from the provided name
-   "as is", so an an absolute path must be provided to ensure the file is
+   "as is", so an absolute path must be provided to ensure the file is
    always found.  We compute this name once, at initialization time.  */
 
 static const char * exename = 0;

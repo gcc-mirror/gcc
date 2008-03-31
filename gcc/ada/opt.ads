@@ -55,7 +55,7 @@ package Opt is
 
    --  The following mode values represent the current state of processing.
    --  The values set here are the default values. Unless otherwise noted,
-   --  the value may be reset in Switch-? with an appropropiate switch. In
+   --  the value may be reset in Switch-? with an appropriate switch. In
    --  some cases, the values can also be modified by pragmas, and in the
    --  case of some binder variables, Gnatbind.Scan_Bind_Arg may modify
    --  the default values.
@@ -525,7 +525,7 @@ package Opt is
    Generating_Code : Boolean := False;
    --  GNAT
    --  True if the frontend finished its work and has called the backend to
-   --  processs the tree and generate the object file.
+   --  process the tree and generate the object file.
 
    Global_Discard_Names : Boolean := False;
    --  GNAT, GNATBIND
@@ -646,7 +646,7 @@ package Opt is
 
    In_Place_Mode : Boolean := False;
    --  GNATMAKE
-   --  Set True to store ALI and object files in place ie in the object
+   --  Set True to store ALI and object files in place i.e. in the object
    --  directory if these files already exist or in the source directory
    --  if not.
 
@@ -859,7 +859,7 @@ package Opt is
    --  Check_Semantics after generating an error message.
 
    Optimize_Alignment : Character := 'O';
-   --  Settinng of Optimize_Alignment, set to T/S/O for time/space/off. Can
+   --  Setting of Optimize_Alignment, set to T/S/O for time/space/off. Can
    --  be modified by use of pragma Optimize_Alignment.
 
    Original_Operating_Mode : Operating_Mode_Type := Generate_Code;
@@ -908,7 +908,7 @@ package Opt is
 
    Preprocessing_Data_File : String_Ptr := null;
    --  GNAT
-   --  Set by switch -gnatep=. The file name of the prepocessing data file.
+   --  Set by switch -gnatep=. The file name of the preprocessing data file.
 
    Print_Generated_Code : Boolean := False;
    --  GNAT
@@ -1266,7 +1266,7 @@ package Opt is
 
    Warn_On_Questionable_Missing_Parens : Boolean := True;
    --  GNAT
-   --  Set to True to generate warnings for cases where parenthese are missing
+   --  Set to True to generate warnings for cases where parentheses are missing
    --  and the usage is questionable, because the intent is unclear.
 
    Warn_On_Redundant_Constructs : Boolean := False;
@@ -1366,7 +1366,7 @@ package Opt is
    --  This is set in the same manner as Ada_Version_Config. The difference is
    --  that the setting of this flag is not ignored for internal and predefined
    --  units, which for some purposes do indeed access this value, regardless
-   --  of the fact that they are compiled the the most up to date ada version).
+   --  of the fact that they are compiled the most up to date ada version).
 
    Assertions_Enabled_Config : Boolean;
    --  GNAT
@@ -1454,7 +1454,7 @@ package Opt is
    Use_VADS_Size_Config : Boolean;
    --  GNAT
    --  This is the value of the configuration switch that controls the use of
-   --  VADS_Size instead of Size whereever the attribute Size is used. It can
+   --  VADS_Size instead of Size wherever the attribute Size is used. It can
    --  be set True by the use of the pragma Use_VADS_Size in the gnat.adc file.
    --  This flag is used to set the initial value for Use_VADS_Size at the
    --  start of analyzing each unit. Note however that the setting of this flag

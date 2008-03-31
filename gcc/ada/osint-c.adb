@@ -43,7 +43,7 @@ package body Osint.C is
       Suffix : String) return File_Name_Type;
    --  Common processing for Create_List_File, Create_Repinfo_File and
    --  Create_Debug_File. Src is the file name used to create the required
-   --  output file and Suffix is the desired suffic (dg/rep/xxx for debug/
+   --  output file and Suffix is the desired suffix (dg/rep/xxx for debug/
    --  repinfo/list file where xxx is specified extension.
 
    procedure Set_Library_Info_Name;
@@ -439,7 +439,7 @@ package body Osint.C is
 
       pragma Assert (Dot_Index /= 0);
 
-      --  Change exctension to adt
+      --  Change extension to adt
 
       Name_Buffer (Dot_Index) := '.';
       Name_Buffer (Dot_Index + 1) := 'a';

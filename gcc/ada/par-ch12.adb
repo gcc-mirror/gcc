@@ -830,7 +830,7 @@ package body Ch12 is
    --    [abstract] [limited | synchronized]
    --         new SUBTYPE_MARK [[and INTERFACE_LIST] with private]
 
-   --  The caller has checked the initial token(s) is/are NEW, ASTRACT NEW,
+   --  The caller has checked the initial token(s) is/are NEW, ABSTRACT NEW,
    --  or LIMITED NEW, ABSTRACT LIMITED NEW, SYNCHRONIZED NEW or ABSTRACT
    --  SYNCHRONIZED NEW.
 

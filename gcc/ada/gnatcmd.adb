@@ -66,7 +66,7 @@ procedure GNATCmd is
 
    Old_Project_File_Used : Boolean := False;
    --  This flag indicates a switch -p (for gnatxref and gnatfind) for
-   --  an old fashioned project file. -p cannot be used in conjonction
+   --  an old fashioned project file. -p cannot be used in conjunction
    --  with -P.
 
    Max_Files_On_The_Command_Line : constant := 30; --  Arbitrary
@@ -326,7 +326,7 @@ procedure GNATCmd is
          declare
             Current_Last : constant Integer := Last_Switches.Last;
          begin
-            --  Gnatstack needs to add the the .ci file for the binder
+            --  Gnatstack needs to add the .ci file for the binder
             --  generated files corresponding to all of the library projects
             --  and main units belonging to the application.
 
@@ -846,7 +846,7 @@ procedure GNATCmd is
          raise Error_Exit;
 
       else
-         --  Get each file name in the file, find its path and add it the the
+         --  Get each file name in the file, find its path and add it the
          --  list of arguments.
 
          while not End_Of_File (File) loop
@@ -2242,7 +2242,7 @@ begin
 
          --  For gnatmetric, the generated files should be put in the object
          --  directory. This must be the first switch, because it may be
-         --  overriden by a switch in package Metrics in the project file or
+         --  overridden by a switch in package Metrics in the project file or
          --  by a command line option. Note that we don't add the -d= switch
          --  if there is no object directory available.
 

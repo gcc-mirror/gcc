@@ -86,7 +86,7 @@ package body Memroot is
    --  Returns an image for F containing the file name, the Line number,
    --  and if 'Short' is not true, the subprogram name. When possible, spaces
    --  are inserted between the line number and the subprogram name in order
-   --  to align images of the same frame. Alignement is cimputed with Max_Fil
+   --  to align images of the same frame. Alignment is computed with Max_Fil
    --  & Max_Lin representing the max number of character in a filename or
    --  length in a given frame.
 

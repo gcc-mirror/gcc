@@ -317,7 +317,7 @@ procedure Gnatbind is
                then
                   null;
 
-               --  Invalid -S switch, let Switch give error, set defalut of IN
+               --  Invalid -S switch, let Switch give error, set default of IN
 
                else
                   Scan_Binder_Switches (Argv);

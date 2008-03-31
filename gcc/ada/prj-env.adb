@@ -2351,7 +2351,7 @@ package body Prj.Env is
                         --  For a non-library project, add the object
                         --  directory, if it is not a virtual project, and if
                         --  there are Ada sources or if the project is an
-                        --  extending project. if There Are No Ada sources,
+                        --  extending project. If there are no Ada sources,
                         --  adding the object directory could disrupt the order
                         --  of the object dirs in the path.
 

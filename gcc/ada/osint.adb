@@ -63,10 +63,10 @@ package body Osint is
    --  that are used to locate the actual file and for the purpose of message
    --  construction. These names need not be accessible by Name_Find, and can
    --  be therefore created by using routine Name_Enter. The files in question
-   --  are file names with a prefix directory (ie the files not in the current
-   --  directory). File names without a prefix directory are entered with
-   --  Name_Find because special values might be attached to the various Info
-   --  fields of the corresponding name table entry.
+   --  are file names with a prefix directory (i.e., the files not in the
+   --  current directory). File names without a prefix directory are entered
+   --  with Name_Find because special values might be attached to the various
+   --  Info fields of the corresponding name table entry.
 
    -----------------------
    -- Local Subprograms --
@@ -124,7 +124,7 @@ package body Osint is
    Look_In_Primary_Directory_For_Current_Main : Boolean := False;
    --  When this variable is True, Find_File only looks in Primary_Directory
    --  for the Current_Main file. This variable is always set to True for the
-   --  compiler. It is also True for gnatmake, when the soucr name given on
+   --  compiler. It is also True for gnatmake, when the source name given on
    --  the command line has directory information.
 
    Current_Full_Source_Name  : File_Name_Type  := No_File;
@@ -177,7 +177,7 @@ package body Osint is
    --  The file hash table is provided to free the programmer from any
    --  efficiency concern when retrieving full file names or time stamps of
    --  source files. If the programmer calls Source_File_Data (Cache => True)
-   --  he is guaranteed that the price to retrieve the full name (ie with
+   --  he is guaranteed that the price to retrieve the full name (i.e. with
    --  directory info) or time stamp of the file will be payed only once, the
    --  first time the full name is actually searched (or the first time the
    --  time stamp is actually retrieved). This is achieved by employing a hash
@@ -803,7 +803,7 @@ package body Osint is
    function Executable_Prefix return String_Ptr is
 
       function Get_Install_Dir (Exec : String) return String_Ptr;
-      --  S is the executable name preceeded by the absolute or relative
+      --  S is the executable name preceded by the absolute or relative
       --  path, e.g. "c:\usr\bin\gcc.exe" or "..\bin\gcc".
 
       ---------------------
@@ -2556,7 +2556,7 @@ package body Osint is
          Canonical_File_Len  : Integer;
 
       begin
-         --  Retrieve the expanded directoy names and build the list
+         --  Retrieve the expanded directory names and build the list
 
          for J in 1 .. Num_Files loop
             Canonical_File_Addr := To_Canonical_File_List_Next;

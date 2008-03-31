@@ -73,7 +73,7 @@ package Lib.Xref is
    --        in the visible part of a generic package, and space otherwise.
 
    --        entity is the name of the referenced entity, with casing in
-   --        the canical casing for the source file where it is defined.
+   --        the canonical casing for the source file where it is defined.
 
    --        renameref provides information on renaming. If the entity is
    --        a package, object or overloadable entity which is declared by
@@ -276,7 +276,7 @@ package Lib.Xref is
    --           Pq of this type, then an entry in the list of references to
    --           Tx will point to the declaration of Pq. Note that this entry
    --           type is unusual because it an implicit rather than explicit,
-   --           and the name of the refrerence does not match the name of the
+   --           and the name of the reference does not match the name of the
    --           entity for which a reference is generated. These entries are
    --           generated only for entities declared in the extended main
    --           source unit (main unit itself, its separate spec (if any).
@@ -324,7 +324,7 @@ package Lib.Xref is
    --           instantiations, this can be nested [...[...[...]]] etc.
    --           The reference is of the form [file|line] no column is
    --           present since it is assumed that only one instantiation
-   --           appears on a single source line. Note that the appearence
+   --           appears on a single source line. Note that the appearance
    --           of file numbers in such references follows the normal
    --           rules (present only if needed, and resets the current
    --           file for subsequent references).
@@ -358,7 +358,7 @@ package Lib.Xref is
    --              a reference (e.g. a call) at line 8 column 4 of the
    --              of the current file.
 
-   --              the END line of the body has an explict reference to
+   --              the END line of the body has an explicit reference to
    --              the name of the procedure at line 12, column 13.
 
    --              the body ends at line 12, column 15, just past this label

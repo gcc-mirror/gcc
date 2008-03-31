@@ -177,10 +177,10 @@ procedure Labl is
 
       procedure No_Header (N : Elmt_Id);
       --  The label N is known not to be a loop header. Scan forward and
-      --  remove all subsequent goto's that may have this node as a target.
+      --  remove all subsequent gotos that may have this node as a target.
 
       procedure Process_Goto (N : Elmt_Id);
-      --  N is a forward jump. Scan forward and remove all subsequent goto's
+      --  N is a forward jump. Scan forward and remove all subsequent gotos
       --  that may have the same target, to preclude spurious loops.
 
       procedure Rewrite_As_Loop

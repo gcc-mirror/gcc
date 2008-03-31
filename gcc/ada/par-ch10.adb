@@ -47,7 +47,7 @@ package body Ch10 is
      (Cunit      : Node_Id;
       Loc        : Source_Ptr;
       SR_Present : Boolean);
-   --  This procedure is used to generate a line of output for the a unit in
+   --  This procedure is used to generate a line of output for a unit in
    --  the source program. Cunit is the node for the compilation unit, and
    --  Loc is the source location for the start of the unit in the source
    --  file (which is not necessarily the Sloc of the Cunit node). This
@@ -118,7 +118,7 @@ package body Ch10 is
       Cunit_Error_Flag   : Boolean := False;
       --  This flag is set True if we have to scan for a compilation unit
       --  token. It is used to ensure clean termination in such cases by
-      --  not insisting on being at the end of file, and, in the sytax only
+      --  not insisting on being at the end of file, and, in the syntax only
       --  case by not scanning for additional compilation units.
 
       Cunit_Location : Source_Ptr;
@@ -665,7 +665,7 @@ package body Ch10 is
       if Token /= Tok_EOF then
 
          --  If we already had to scan for a compilation unit, then don't
-         --  give any further error message, since it just sems to make
+         --  give any further error message, since it just seems to make
          --  things worse, and we already gave a serious error message.
 
          if Cunit_Error_Flag then
@@ -899,7 +899,7 @@ package body Ch10 is
                First_Flag := True;
 
                --  Loop through names in one with clause, generating a separate
-               --  N_With_Clause node for each nam encountered.
+               --  N_With_Clause node for each name encountered.
 
                loop
                   With_Node := New_Node (N_With_Clause, Token_Ptr);

@@ -202,7 +202,7 @@ package body Ch6 is
 
       --  Note: in the case of OVERRIDING keyword used in Ada 95 mode, the
       --  declaration circuit already gave an error message and changed the
-      --  tokem to Tok_Overriding.
+      --  token to Tok_Overriding.
 
       elsif Token = Tok_Overriding then
          Scan;  --  past OVERRIDING

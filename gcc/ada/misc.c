@@ -301,7 +301,7 @@ gnat_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_feliminate_unused_debug_types:
       /* We arrange for post_option to be able to only set the corresponding
-	 flag to 1 when explicitely requested by the user.  We expect the
+	 flag to 1 when explicitly requested by the user.  We expect the
 	 default flag value to be either 0 or positive, and expose a positive
 	 -f as a negative value to post_option.  */
       flag_eliminate_unused_debug_types = -value;

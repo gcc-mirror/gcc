@@ -40,7 +40,7 @@ package MDLL is
                                  new Argument_List (1 .. 0);
 
    Tools_Error : exception;
-   --  Commment required
+   --  Comment required
 
    Verbose : Boolean := False;
    Quiet   : Boolean := False;

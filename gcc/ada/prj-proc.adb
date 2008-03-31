@@ -2001,7 +2001,7 @@ package body Prj.Proc is
 
                            --  If no such element were found, create a new one
                            --  and insert it in the element list, with the
-                           --  propoer value.
+                           --  proper value.
 
                            if The_Array_Element = No_Array_Element then
                               Array_Element_Table.Increment_Last
@@ -2680,9 +2680,9 @@ package body Prj.Proc is
                                            From_Project_Node_Tree));
 
             --  If it is an extending project, inherit all packages
-            --  from the extended project that are not explicitely defined
+            --  from the extended project that are not explicitly defined
             --  or renamed. Also inherit the languages, if attribute Languages
-            --  is not explicitely defined.
+            --  is not explicitly defined.
 
             Processed_Data := In_Tree.Projects.Table (Project);
 

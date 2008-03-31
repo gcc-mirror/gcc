@@ -371,7 +371,7 @@ package Prj is
       --  unit based.
 
       Naming_Data : Lang_Naming_Data;
-      --  The naming data for the languages (prefixs, etc)
+      --  The naming data for the languages (prefixes, etc.)
 
       Compiler_Driver : File_Name_Type := No_File;
       --  The name of the executable for the compiler of the language
@@ -470,7 +470,7 @@ package Prj is
       --  Hold the value of attribute Binder'Required_Switches for the language
 
       Binder_Prefix              : Name_Id         := No_Name;
-      --  Hold the value of attribute Binder'Prefixthe language
+      --  Hold the value of attribute Binder'Prefix for the language
 
       Toolchain_Version          : Name_Id         := No_Name;
       --  Hold the value of attribute Toolchain_Version for the language

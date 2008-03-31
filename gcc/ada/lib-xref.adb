@@ -864,7 +864,7 @@ package body Lib.Xref is
       --  set to Empty, and Left/Right are set to space.
 
       procedure Output_Import_Export_Info (Ent : Entity_Id);
-      --  Ouput language and external name information for an interfaced
+      --  Output language and external name information for an interfaced
       --  entity, using the format <language, external_name>,
 
       ------------------------

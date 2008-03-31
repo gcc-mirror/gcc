@@ -29,7 +29,7 @@
 --  style switches that are accepted directly.
 
 --    The program is typically called GNAT when it is installed and
---    the two possibile styles of use are:
+--    the two possible styles of use are:
 
 --  To call gcc:
 

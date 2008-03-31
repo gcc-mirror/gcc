@@ -104,7 +104,7 @@ procedure Gnatlink is
    --  important because on the GNU linker command line the -L switch is not
    --  used to look for objects files but -L switch is used to look for
    --  objects listed in the response file. This is not a problem with the
-   --  applications objects as they are specified with a fullname.
+   --  applications objects as they are specified with a full name.
 
    package Response_File_Objects is new Table.Table (
      Table_Component_Type => String_Access,
@@ -1303,7 +1303,7 @@ procedure Gnatlink is
                      else
                         --  If gnatlib library not found, then
                         --  add it anyway in case some other
-                        --  mechanimsm may find it.
+                        --  mechanism may find it.
 
                         Linker_Options.Increment_Last;
                         Linker_Options.Table (Linker_Options.Last) :=
@@ -1475,7 +1475,7 @@ begin
    --  switches:
 
    --    -gnatA   stops reading gnat.adc, since we don't know what
-   --             pagmas would work, and we do not need it anyway.
+   --             pragmas would work, and we do not need it anyway.
 
    --    -gnatWb  allows brackets coding for wide characters
 
@@ -1843,7 +1843,7 @@ begin
          --  one. And any subsequent stack setting option will overwrite the
          --  previous one. This is done especially for GNAT/NT where we set
          --  the stack size for tasking programs by a pragma in the NT
-         --  specific tasking package System.Task_Primitives.Oparations.
+         --  specific tasking package System.Task_Primitives.Operations.
 
          --  Note: This is not a FOR loop that runs from Linker_Options.First
          --  to Linker_Options.Last, since operations within the loop can
@@ -2008,7 +2008,7 @@ begin
 
             System.OS_Lib.Spawn (Linker_Path.all, Args, Success);
 
-            --  Delete the temporary file used in conjuction with linking if
+            --  Delete the temporary file used in conjunction with linking if
             --  one was created. See Process_Bind_File for details.
 
             if Tname_FD /= Invalid_FD then

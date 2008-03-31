@@ -93,7 +93,7 @@ package body Math_Lib is
      (Y    : Real;
       A    : Real := 1.0)
       return Real;
-   --  Common code for arc tangent after cyele reduction
+   --  Common code for arc tangent after cycle reduction
 
    function Log_Inverse_Epsilon return Real;
    --  Function to provide constant: Log (1.0 / Epsilon)

@@ -81,7 +81,7 @@ package body Sync is
       loop
          --  Terminating tokens are those in class Eterm and also RANGE,
          --  DIGITS or DELTA if not preceded by an apostrophe (if they are
-         --  preceded by an apostrophe, then they are attributes). In addiion,
+         --  preceded by an apostrophe, then they are attributes). In addition,
          --  at the outer parentheses level only, we also consider a comma,
          --  right parenthesis or vertical bar to terminate an expression.
 
@@ -132,7 +132,7 @@ package body Sync is
    procedure Resync_Init is
    begin
       --  The following check makes sure we do not get stuck in an infinite
-      --  loop resynchonizing and getting nowhere. If we are called to do a
+      --  loop resynchronizing and getting nowhere. If we are called to do a
       --  resynchronize and we are exactly at the same point that we left off
       --  on the last resynchronize call, then we force at least one token to
       --  be skipped so that we make progress!
@@ -255,7 +255,7 @@ package body Sync is
          end if;
       end loop;
 
-      --  Fall out of loop with resyncrhonization complete
+      --  Fall out of loop with resynchronization complete
 
       Resync_Resume;
    end Resync_Past_Semicolon_Or_To_Loop_Or_Then;
@@ -299,7 +299,7 @@ package body Sync is
          end if;
       end loop;
 
-      --  Fall out of loop with resyncrhonization complete
+      --  Fall out of loop with resynchronization complete
 
       Resync_Resume;
    end Resync_To_When;

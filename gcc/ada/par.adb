@@ -187,7 +187,7 @@ is
    --   4. We encounter a valid pragma INTERFACE or IMPORT that effectively
    --   supplies the missing body. In this case we reset the entry.
 
-   --   5. We encounter the end of the declarative region without encoutering
+   --   5. We encounter the end of the declarative region without encountering
    --   a BEGIN first. In this situation we simply reset the entry. We know
    --   that there is a missing body, but it seems more reasonable to let the
    --   later semantic checking discover this.
@@ -197,7 +197,7 @@ is
    ----------------------------------------------------
 
    --  Note: throughout the parser, the terms reserved word and keyword
-   --  are used interchangably to refer to the same set of reserved
+   --  are used interchangeably to refer to the same set of reserved
    --  keywords (including until, protected, etc).
 
    --  If a reserved word is used in place of an identifier, the parser
@@ -213,14 +213,14 @@ is
    --  further confirmation.
 
    --  In the case of an identifier appearing in the identifier list of a
-   --  declaration, the appearence of a comma or colon right after the
+   --  declaration, the appearance of a comma or colon right after the
    --  keyword on the same line is taken as confirmation. For an enumeration
    --  literal, a comma or right paren right after the identifier is also
    --  treated as adequate confirmation.
 
    --  The following type is used in calls to Is_Reserved_Identifier and
    --  also to P_Defining_Identifier and P_Identifier. The default for all
-   --  these functins is that reserved words in reserved word case are not
+   --  these functions is that reserved words in reserved word case are not
    --  considered to be reserved identifiers. The Id_Check value indicates
    --  tokens, which if they appear immediately after the identifier, are
    --  taken as confirming that the use of an identifier was expected
@@ -282,7 +282,7 @@ is
    --    end;
 
    --  The trouble is that the section of text from PROCEDURE B through END;
-   --  consitutes a valid procedure body, and the danger is that we find out
+   --  constitutes a valid procedure body, and the danger is that we find out
    --  far too late that something is wrong (indeed most compilers will behave
    --  uncomfortably on the above example).
 
@@ -296,7 +296,7 @@ is
    --  reserve the END; for the outer level.) For more details on this aspect
    --  of the handling, see package Par.Endh.
 
-   --  If we can avoid eating up the END; then the result in the absense of
+   --  If we can avoid eating up the END; then the result in the absence of
    --  any additional steps would be to post a missing END referring back to
    --  the subprogram with the bogus IS. Similarly, if the enclosing package
    --  has no BEGIN, then the result is a missing BEGIN message, which again
@@ -637,7 +637,7 @@ is
       --  allowed).
 
       procedure Skip_Declaration (S : List_Id);
-      --  Used when scanning statements to skip past a mispaced declaration
+      --  Used when scanning statements to skip past a misplaced declaration
       --  The declaration is scanned out and appended to the given list.
       --  Token is known to be a declaration token (in Token_Class_Declk)
       --  on entry, so there definition is a declaration to be scanned.
@@ -914,7 +914,7 @@ is
       --  Used if an error occurs while scanning a parenthesized list of items
       --  separated by semicolons. The scan pointer is advanced to the next
       --  semicolon or right parenthesis at the outer parenthesis level, or
-      --  to the next is or RETURN keyword occurence, whichever comes first.
+      --  to the next is or RETURN keyword occurrence, whichever comes first.
 
       procedure Resync_Cunit;
       --  Synchronize to next token which could be the start of a compilation

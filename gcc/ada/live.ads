@@ -31,6 +31,6 @@ package Live is
 
    procedure Collect_Garbage_Entities;
    --  Eliminate unreachable entities using a mark-and-sweep from
-   --  the set of root entities, ie. those having Is_Public set.
+   --  the set of root entities, i.e. those having Is_Public set.
 
 end Live;

@@ -38,7 +38,7 @@ package Prj.Attr is
    function Package_Name_List return Strings.String_List;
    --  Returns the list of valid package names, including those added by
    --  procedures Register_New_Package below. The String_Access components of
-   --  the returned String_List should never be feeed.
+   --  the returned String_List should never be freed.
 
    procedure Initialize;
    --  Initialize the predefined project level attributes and the predefined

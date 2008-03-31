@@ -787,7 +787,7 @@ extern tree build_component_ref (tree record_variable, tree component,
 
 /* Build a GCC tree to call an allocation or deallocation function.
    If GNU_OBJ is nonzero, it is an object to deallocate.  Otherwise,
-   genrate an allocator.
+   generate an allocator.
 
    GNU_SIZE is the size of the object and ALIGN is the alignment.
    GNAT_PROC, if present is a procedure to call and GNAT_POOL is the

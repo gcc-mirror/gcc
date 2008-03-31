@@ -24,7 +24,7 @@
  ****************************************************************************/
 
 /* This is the C header corresponding to the Ada package specification for
-   Nlists. It also contains the implementations of inlined functions from the
+   Nlists. It also contains the implementations of inlined functions from
    the package body for Nlists.  It was generated manually from nlists.ads and
    nlists.adb and must be kept synchronized with changes in these files.
 

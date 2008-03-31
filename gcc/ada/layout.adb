@@ -956,7 +956,7 @@ package body Layout is
 
       Make_Size_Function : Boolean := False;
       --  Indicates whether to request that SO_Ref_From_Expr should
-      --  encapsulate the array size expresion in a function.
+      --  encapsulate the array size expression in a function.
 
       procedure Discrimify (N : in out Node_Id);
       --  If N represents a discriminant, then the Size.Status is set to
@@ -2490,7 +2490,7 @@ package body Layout is
                end;
             end if;
 
-         --  For non-discrete sclar types, if the RM_Size is not set,
+         --  For non-discrete scalar types, if the RM_Size is not set,
          --  then set it now to a copy of the Esize if the Esize is set.
 
          else
@@ -2591,7 +2591,7 @@ package body Layout is
                Set_Composite_Alignment (E);
             end if;
 
-         --  Procressing for array types
+         --  Processing for array types
 
          elsif Is_Array_Type (E) then
 
@@ -2804,7 +2804,7 @@ package body Layout is
       --  the setting of the Optimize_Alignment mode.
 
       --  If Optimize_Alignment is set to Space, then packed records always
-      --  have an aligmment of 1. But don't do anything for atomic records
+      --  have an alignment of 1. But don't do anything for atomic records
       --  since we may need higher alignment for indivisible access.
 
       if Optimize_Alignment = 'S'
@@ -2818,7 +2818,7 @@ package body Layout is
 
       else
          --  The only other cases we worry about here are where the size is
-         --  staticallly known at compile time.
+         --  statically known at compile time.
 
          if Known_Static_Esize (E) then
             Siz := Esize (E);
@@ -2910,7 +2910,7 @@ package body Layout is
          --  Check components. If any component requires a higher alignment,
          --  then we set that higher alignment in any case. Don't do this if
          --  we have Optimize_Alignment set to Space. Note that that covers
-         --  the case of packed records, where we arleady set alignment to 1.
+         --  the case of packed records, where we already set alignment to 1.
 
          if Optimize_Alignment  /= 'S' then
             declare

@@ -40,7 +40,7 @@ package body Prj.PP is
 
    Column : Natural := 0;
    --  Column number of the last character in the line. Used to avoid
-   --  outputing lines longer than Max_Line_Length.
+   --  outputting lines longer than Max_Line_Length.
 
    First_With_In_List : Boolean := True;
    --  Indicate that the next with clause is first in a list such as

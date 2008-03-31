@@ -180,7 +180,7 @@ package body Prj.Ext is
       end if;
 
       --  Scan the directory path to see if "-" is one of the directories.
-      --  Remove each occurence of "-" and set Add_Default_Dir to False.
+      --  Remove each occurrence of "-" and set Add_Default_Dir to False.
       --  Also resolve relative paths and symbolic links.
 
       First := 3;
