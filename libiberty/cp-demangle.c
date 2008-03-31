@@ -2681,21 +2681,24 @@ d_substitution (struct d_info *di, int prefix)
   c = d_next_char (di);
   if (c == '_' || IS_DIGIT (c) || IS_UPPER (c))
     {
-      int id;
+      unsigned int id;
 
       id = 0;
       if (c != '_')
 	{
 	  do
 	    {
+	      unsigned int new_id;
+
 	      if (IS_DIGIT (c))
-		id = id * 36 + c - '0';
+		new_id = id * 36 + c - '0';
 	      else if (IS_UPPER (c))
-		id = id * 36 + c - 'A' + 10;
+		new_id = id * 36 + c - 'A' + 10;
 	      else
 		return NULL;
-	      if (id < 0)
+	      if (new_id < id)
 		return NULL;
+	      id = new_id;
 	      c = d_next_char (di);
 	    }
 	  while (c != '_');
@@ -2703,7 +2706,7 @@ d_substitution (struct d_info *di, int prefix)
 	  ++id;
 	}
 
-      if (id >= di->next_sub)
+      if (id >= (unsigned int) di->next_sub)
 	return NULL;
 
       ++di->did_subs;
