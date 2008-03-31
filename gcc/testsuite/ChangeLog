@@ -1,3 +1,16 @@
+2008-03-31  Seongbae Park <seongbae.park@gmail.com>
+
+	* g++.db/bprob/bprob.exp: Do not check gcno files.
+	Use -fprofile-use for profile use.
+	* gcc.misc-tests/bprob.exp: Ditto.
+	* g++.dg/tree-pro/tree-prof.exp: Do not check gcno files.
+	* gcc.dg/matrix/matrix.exp: Ditto.
+	* gcc.dg/struct/struct-reorg.exp: Ditto.
+	* gcc.dg/tree-prof/tree-prof.exp: Ditto.
+	* gcc.dg/profile-dir-1.c: New test.
+	* gcc.dg/profile-dir-2.c: New test.
+	* gcc.dg/profile-dir-3.c: New test.
+
 2008-03-31  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	PR c/35750

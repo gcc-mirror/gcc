@@ -111,6 +111,7 @@ extern const char *progname;
 extern const char *dump_base_name;
 extern const char *aux_base_name;
 extern const char *aux_info_file_name;
+extern const char *profile_data_prefix;
 extern const char *asm_file_name;
 extern bool exit_after_options;
 

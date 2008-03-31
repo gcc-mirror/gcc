@@ -1716,6 +1716,15 @@ common_handle_option (size_t scode, const char *arg, int value,
       flag_inline_functions_set = true;
       break;
 
+    case OPT_fprofile_dir_:
+      profile_data_prefix = xstrdup (arg);
+      break;
+
+    case OPT_fprofile_use_:
+      profile_data_prefix = xstrdup (arg);
+      flag_profile_use = true;
+      value = true;
+      /* No break here - do -fprofile-use processing. */
     case OPT_fprofile_use:
       if (!flag_branch_probabilities_set)
         flag_branch_probabilities = value;
@@ -1733,6 +1742,10 @@ common_handle_option (size_t scode, const char *arg, int value,
         flag_inline_functions = value;
       break;
 
+    case OPT_fprofile_generate_:
+      profile_data_prefix = xstrdup (arg);
+      value = true;
+      /* No break here - do -fprofile-generate processing. */
     case OPT_fprofile_generate:
       if (!profile_arc_flag_set)
         profile_arc_flag = value;
