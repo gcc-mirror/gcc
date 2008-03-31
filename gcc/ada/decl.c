@@ -636,8 +636,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   clause, as we would lose useful information on the view size
 	   (e.g. for null array slices) and we are not allocating the object
 	   here anyway.  */
-	if (((gnu_size && integer_zerop (gnu_size))
-	     || (TYPE_SIZE (gnu_type) && integer_zerop (TYPE_SIZE (gnu_type))))
+	if (((gnu_size
+	      && integer_zerop (gnu_size)
+	      && !TREE_OVERFLOW (gnu_size))
+	     || (TYPE_SIZE (gnu_type)
+		 && integer_zerop (TYPE_SIZE (gnu_type))
+		 && !TREE_OVERFLOW (TYPE_SIZE (gnu_type))))
 	    && (!Is_Constr_Subt_For_UN_Aliased (Etype (gnat_entity))
 		|| !Is_Array_Type (Etype (gnat_entity)))
 	    && !Present (Renamed_Object (gnat_entity))
