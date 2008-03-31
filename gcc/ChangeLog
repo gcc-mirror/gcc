@@ -1,3 +1,9 @@
+2008-03-31  Zdenek Dvorak  <ook@ucw.cz>
+
+	PR rtl-optimization/35729
+	* loop-invariant.c (check_maybe_invariant): Disallow volatile memory
+	references.
+
 2008-03-31  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/32000
