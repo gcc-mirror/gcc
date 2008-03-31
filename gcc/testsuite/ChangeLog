@@ -1,3 +1,8 @@
+2008-03-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/32000
+	* gcc.target/i386/pr32000-1.c: New.
+
 2008-03-31  Andrew Pinski  <pinskia@gmail.com>
 
 	PR tree-opt/35431

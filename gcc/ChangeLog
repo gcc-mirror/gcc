@@ -1,3 +1,12 @@
+2008-03-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/32000
+	* config/i386/i386.md (*movti_internal): Emit unaligned SSE
+	load/store if memory is unaligned.
+	(*movti_rex64): Likewise.
+
+	* config/i386/predicates.md (misaligned_operand): New.
+
 2008-03-31  Andrew Pinski  <pinskia@gmail.com>
 
 	PR tree-opt/35431

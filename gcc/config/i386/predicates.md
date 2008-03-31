@@ -1043,3 +1043,8 @@
 
 (define_predicate "absneg_operator"
   (match_code "abs,neg"))
+
+;; Return 1 if OP is misaligned memory operand
+(define_predicate "misaligned_operand"
+  (and (match_code "mem")
+       (match_test "MEM_ALIGN (op) < GET_MODE_ALIGNMENT (mode)")))
