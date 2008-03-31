@@ -49,7 +49,7 @@
 ;;    O -- Multiple letter constraint followed by 1 parameter.
 ;;         s:  Signed extended immediate value (-2G .. 2G-1).
 ;;         p:  Positive extended immediate value (0 .. 4G-1).
-;;         n:  Negative extended immediate value (-4G .. -1).
+;;         n:  Negative extended immediate value (-4G+1 .. -1).
 ;;         These constraints do not accept any operand if the machine does
 ;;         not provide the extended-immediate facility.
 ;;    P -- Any integer constant that can be loaded without literal pool.
@@ -337,7 +337,7 @@
 
 (define_constraint "On"
   "@internal
-   Negative extended immediate value (-4G .. -1).
+   Negative extended immediate value (-4G+1 .. -1).
    This constraint will only match if the machine provides
    the extended-immediate facility."
   (and (match_code "const_int")

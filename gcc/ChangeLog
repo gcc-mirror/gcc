@@ -1,3 +1,9 @@
+2008-03-31  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.c (s390_O_constraint_str): Limit the range
+	for 'On' to -4G+1..-1.
+	* config/s390/constraints.md: Adjust comment accordingly.
+
 2008-03-25  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	Backport from mainline:

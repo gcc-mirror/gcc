@@ -2009,8 +2009,7 @@ s390_O_constraint_str (const char c, HOST_WIDE_INT value)
 	|| s390_single_part (GEN_INT (value), DImode, SImode, 0) == 1;
 
     case 'n':
-      return value == -1
-	|| s390_single_part (GEN_INT (value), DImode, SImode, -1) == 1;
+      return s390_single_part (GEN_INT (value - 1), DImode, SImode, -1) == 1;
 
     default:
       gcc_unreachable ();
