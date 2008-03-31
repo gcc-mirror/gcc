@@ -815,13 +815,26 @@ fprofile-arcs
 Common Report Var(profile_arc_flag)
 Insert arc-based program profiling code
 
+fprofile-dir=
+Common Joined RejectNegative
+Set the top-level directory for storing the profile data.
+The default is 'pwd'.
+
 fprofile-generate
 Common
 Enable common options for generating profile info for profile feedback directed optimizations
 
+fprofile-generate=
+Common Joined RejectNegative
+Enable common options for generating profile info for profile feedback directed optimizations, and set -fprofile-dir=
+
 fprofile-use
-Common
+Common Var(flag_profile_use)
 Enable common options for performing profile feedback directed optimizations
+
+fprofile-use=
+Common Joined RejectNegative
+Enable common options for performing profile feedback directed optimizations, and set -fprofile-dir=
 
 fprofile-values
 Common Report Var(flag_profile_values)

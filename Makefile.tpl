@@ -397,6 +397,8 @@ LDFLAGS_FOR_TARGET =
 # This lives here to allow makefile fragments to contain dependencies.
 all:
 
+.NOTPARALLEL: all-stageprofile-libiberty
+
 #### host and target specific makefile fragments come in here.
 @target_makefile_frag@
 @alphaieee_frag@
