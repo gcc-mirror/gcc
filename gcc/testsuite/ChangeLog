@@ -1,3 +1,8 @@
+2008-03-30  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* g++.dg/other/error27.C: Use -fno-finite-math-only on sh*
+	targets.
+
 2008-03-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR c++/35245

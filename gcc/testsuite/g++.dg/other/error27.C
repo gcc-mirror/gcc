@@ -1,5 +1,6 @@
 // PR c++/35332
 // { dg-do compile }
+// { dg-options "-fno-finite-math-only" { target sh*-*-* } }
 
 void foo (double x, double y)
 {
