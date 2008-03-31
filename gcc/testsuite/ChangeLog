@@ -3,6 +3,11 @@
 	PR target/32000
 	* gcc.target/i386/pr32000-1.c: New.
 
+2008-03-31  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/too_many_tasks.adb: Removed, causes resource issues
+	on some environments.
+
 2008-03-31  Andrew Pinski  <pinskia@gmail.com>
 
 	PR tree-opt/35431
