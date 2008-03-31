@@ -14963,6 +14963,34 @@ fold_indirect_ref_1 (tree type, tree op0)
 	}
     }
 
+  /* ((foo*)&vectorfoo)[1] => BIT_FIELD_REF<vectorfoo,...> */
+  if (TREE_CODE (sub) == POINTER_PLUS_EXPR
+      && TREE_CODE (TREE_OPERAND (sub, 1)) == INTEGER_CST)
+    { 
+      tree op00 = TREE_OPERAND (sub, 0);
+      tree op01 = TREE_OPERAND (sub, 1);
+      tree op00type;
+      
+      STRIP_NOPS (op00);
+      op00type = TREE_TYPE (op00);
+      if (TREE_CODE (op00) == ADDR_EXPR
+          && TREE_CODE (TREE_TYPE (op00type)) == VECTOR_TYPE
+          && type == TREE_TYPE (TREE_TYPE (op00type)))
+	{ 
+	  HOST_WIDE_INT offset = tree_low_cst (op01, 0);
+	  tree part_width = TYPE_SIZE (type);
+	  unsigned HOST_WIDE_INT part_widthi = tree_low_cst (part_width, 0)/BITS_PER_UNIT;
+	  unsigned HOST_WIDE_INT indexi = offset * BITS_PER_UNIT;
+	  tree index = bitsize_int (indexi);
+
+	  if (offset/part_widthi <= TYPE_VECTOR_SUBPARTS (TREE_TYPE (op00type)))
+	    return fold_build3 (BIT_FIELD_REF, type, TREE_OPERAND (op00, 0),
+				part_width, index);
+        
+	}
+    }
+
+
   /* ((foo*)&complexfoo)[1] => __imag__ complexfoo */
   if (TREE_CODE (sub) == POINTER_PLUS_EXPR
       && TREE_CODE (TREE_OPERAND (sub, 1)) == INTEGER_CST)
