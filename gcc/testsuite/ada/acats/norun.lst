@@ -1,6 +1,7 @@
 c52103x
 c52104x
 c52104y
+c9a011b
 cb1010a
 cb1010c
 cb1010d
@@ -8,3 +9,4 @@ templat
 # Tests must be sorted in alphabetical order
 # c52103x, c52104x, c52104y: -fstack-check doesn't work, PR middle-end/20548
 # cb1010a, cb1010c, cb1010d: likewise
+# c9a011b: often hangs forever
