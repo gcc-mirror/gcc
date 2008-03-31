@@ -52,6 +52,12 @@
   (and (match_code "const_int")
        (match_test "(unsigned HOST_WIDE_INT)ival + 0x200000 < 0x400000")))
 
+(define_constraint "j"
+  "(2**32-2**13)..(2**32-1) for addp4 instructions"
+  (and (match_code "const_int")
+       (match_test "(unsigned HOST_WIDE_INT)ival >= 0xffffe000
+		    && (unsigned HOST_WIDE_INT)ival <= 0xffffffff")))
+
 (define_constraint "K"
   "8 bit signed immediate for logical instructions"
   (and (match_code "const_int")

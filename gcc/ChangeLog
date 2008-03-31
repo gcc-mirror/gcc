@@ -1,3 +1,9 @@
+2008-03-31  Jan Beulich  <jbeulich@novell.com>
+
+	* config/ia64/constraints.md: Add 'j' constraint.
+	* config/ia64/ia64.md (movsi_internal): Add addp4 case.
+	(movdi_internal): Likewise.
+
 2008-03-30  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	PR c/35748
