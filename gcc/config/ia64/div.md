@@ -199,8 +199,9 @@
 
 (define_insn "recip_approx_rf"
   [(set (match_operand:RF 0 "fr_register_operand" "=f")
-        (div:RF (match_operand:RF 1 "fr_register_operand" "f")
-                (match_operand:RF 2 "fr_register_operand" "f")))
+        (unspec:RF [(match_operand:RF 1 "fr_register_operand" "f")
+		    (match_operand:RF 2 "fr_register_operand" "f")]
+		   UNSPEC_FR_RECIP_APPROX_RES))
    (set (match_operand:BI 3 "register_operand" "=c")
         (unspec:BI [(match_dup 1) (match_dup 2)] UNSPEC_FR_RECIP_APPROX))
    (use (match_operand:SI 4 "const_int_operand" ""))]
