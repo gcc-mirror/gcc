@@ -1,3 +1,8 @@
+2008-03-31  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	PR c/35750
+	* c-decl.c (store_parm_decls_oldstyle): Skip invalid parameters.
+
 2008-03-31  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/30186
