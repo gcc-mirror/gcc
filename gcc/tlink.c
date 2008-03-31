@@ -1,7 +1,7 @@
 /* Scan linker error messages for missing template instantiations and provide
    them.
 
-   Copyright (C) 1995, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2007
+   Copyright (C) 1995, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Jason Merrill (jason@cygnus.com).
 
@@ -683,6 +683,9 @@ scan_linker_output (const char *fname)
 	  /* Then try "double quotes".  */
 	  else if (p = strchr (oldq, '"'), p)
 	    p++, q = strchr (p, '"');
+	  /* Then try 'single quotes'.  */
+	  else if (p = strchr (oldq, '\''), p)
+	    p++, q = strchr (p, '\'');
 	  else {
 	    /* Then try entire line.  */
 	    q = strchr (oldq, 0);
