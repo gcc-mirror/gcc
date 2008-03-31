@@ -1,3 +1,8 @@
+2008-03-31  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/assign_from_packed_pixels.ads: Support for ...
+	* gnat.dg/assign_from_packed.adb: New testcase.
+
 2008-03-31  Zdenek Dvorak  <ook@ucw.cz>
 
 	PR rtl-optimization/35729

@@ -228,37 +228,53 @@ known_alignment (tree exp)
   return MAX (type_alignment, this_alignment);
 }
 
-/* We have a comparison or assignment operation on two types, T1 and T2,
-   which are both either array types or both record types.
-   Return the type that both operands should be converted to, if any.
+/* We have a comparison or assignment operation on two types, T1 and T2, which
+   are either both array types or both record types.  T1 is assumed to be for
+   the left hand side operand, and T2 for the right hand side.  Return the
+   type that both operands should be converted to for the operation, if any.
    Otherwise return zero.  */
 
 static tree
 find_common_type (tree t1, tree t2)
 {
-  /* If either type is non-BLKmode, use it.  Note that we know that we will
-     not have any alignment problems since if we did the non-BLKmode
-     type could not have been used.  */
+  /* ??? As of today, various constructs lead here with types of different
+     sizes even when both constants (e.g. tagged types, packable vs regular
+     component types, padded vs unpadded types, ...).  While some of these
+     would better be handled upstream (types should be made consistent before
+     calling into build_binary_op), some others are really expected and we
+     have to be careful.  */
+     
+  /* We must prevent writing more than what the target may hold if this is for
+     an assignment and the case of tagged types is handled in build_binary_op
+     so use the lhs type if it is known to be smaller, or of constant size and
+     the rhs type is not, whatever the modes.  We also force t1 in case of
+     constant size equality to minimize occurrences of view conversions on the
+     lhs of assignments.  */
+  if (TREE_CONSTANT (TYPE_SIZE (t1))
+      && (!TREE_CONSTANT (TYPE_SIZE (t2))
+          || !tree_int_cst_lt (TYPE_SIZE (t2), TYPE_SIZE (t1))))
+    return t1;
+
+  /* Otherwise, if the lhs type is non-BLKmode, use it.  Note that we know
+     that we will not have any alignment problems since, if we did, the
+     non-BLKmode type could not have been used.  */
   if (TYPE_MODE (t1) != BLKmode)
     return t1;
-  else if (TYPE_MODE (t2) != BLKmode)
+
+  /* If the rhs type is of constant size, use it whatever the modes.  At
+     this point it is known to be smaller, or of constant size and the
+     lhs type is not.  */
+  if (TREE_CONSTANT (TYPE_SIZE (t2)))
     return t2;
 
-  /* If both types have constant size, use the smaller one.  Keep returning
-     T1 if we have a tie, to be consistent with the other cases.  */
-  if (TREE_CONSTANT (TYPE_SIZE (t1)) && TREE_CONSTANT (TYPE_SIZE (t2)))
-    return tree_int_cst_lt (TYPE_SIZE (t2), TYPE_SIZE (t1)) ? t2 : t1;
-
-  /* Otherwise, if either type has a constant size, use it.  */
-  else if (TREE_CONSTANT (TYPE_SIZE (t1)))
-    return t1;
-  else if (TREE_CONSTANT (TYPE_SIZE (t2)))
+  /* Otherwise, if the rhs type is non-BLKmode, use it.  */
+  if (TYPE_MODE (t2) != BLKmode)
     return t2;
 
-  /* In this case, both types have variable size.  It's probably
-     best to leave the "type mismatch" because changing it could
-     case a bad self-referential reference.  */
-  return 0;
+  /* In this case, both types have variable size and BLKmode.  It's
+     probably best to leave the "type mismatch" because changing it
+     could cause a bad self-referential reference.  */
+  return NULL_TREE;
 }
 
 /* See if EXP contains a SAVE_EXPR in a position where we would
