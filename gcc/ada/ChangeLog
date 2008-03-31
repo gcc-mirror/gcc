@@ -1,3 +1,9 @@
+2008-03-31  Olivier Hainque  <hainque@adacore.com>
+            Eric Botcazou  <botcazou@adacore.com>
+
+	* utils2.c (find_common_type): Document assumption on t1/t2 vs
+	lhs/rhs. Force use of lhs type if smaller, whatever the modes.
+
 2008-03-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* a-textio.ads, a-witeio.ads, a-ztexio.ads, ali.ads,
