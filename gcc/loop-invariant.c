@@ -206,7 +206,7 @@ check_maybe_invariant (rtx x)
 
       /* Just handle the most trivial case where we load from an unchanging
 	 location (most importantly, pic tables).  */
-      if (MEM_READONLY_P (x))
+      if (MEM_READONLY_P (x) && !MEM_VOLATILE_P (x))
 	break;
 
       return false;
