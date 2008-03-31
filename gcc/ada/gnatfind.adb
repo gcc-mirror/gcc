@@ -314,8 +314,8 @@ begin
    end if;
 
    --  Special case to speed things up: if the user has a command line of the
-   --  form 'gnatfind entity:file', ie has specified a file and only wants the
-   --  bodies and specs, then we can restrict the search to the .ali file
+   --  form 'gnatfind entity:file', i.e. has specified a file and only wants
+   --  the bodies and specs, then we can restrict the search to the .ali file
    --  associated with 'file'.
 
    if Has_File_In_Entity

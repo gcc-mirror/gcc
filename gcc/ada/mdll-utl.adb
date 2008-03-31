@@ -51,7 +51,7 @@ package body MDLL.Utl is
    procedure Print_Command
      (Tool_Name : String;
       Arguments : OS_Lib.Argument_List);
-   --  display the command runned when in Verbose mode
+   --  display the command run when in Verbose mode
 
    -------------------
    -- Print_Command --

@@ -118,7 +118,7 @@ package body Ch2 is
 
    --  DECIMAL_LITERAL ::= NUMERAL [.NUMERAL] [EXPONENT]
 
-   --  Handled by scanner as part of numeric lIteral handing (see 2.4)
+   --  Handled by scanner as part of numeric literal handing (see 2.4)
 
    --------------------
    -- 2.4.1  Numeral --

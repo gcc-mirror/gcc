@@ -4127,7 +4127,7 @@ package body Prj.Nmsc is
             Suffix2 : Array_Element_Id;
 
          begin
-            --  If some suffixs have been specified, we make sure that
+            --  If some suffixes have been specified, we make sure that
             --  for each language for which a default suffix has been
             --  specified, there is a suffix specified, either the one
             --  in the project file or if there were none, the default.
@@ -4169,7 +4169,7 @@ package body Prj.Nmsc is
                   Suffix := Element.Next;
                end loop;
 
-               --  Put the resulting array as the specification suffixs
+               --  Put the resulting array as the specification suffixes
 
                Data.Naming.Spec_Suffix := Spec_Suffixs;
             end if;
@@ -4251,7 +4251,7 @@ package body Prj.Nmsc is
                   Suffix := Element.Next;
                end loop;
 
-               --  Put the resulting array as the implementation suffixs
+               --  Put the resulting array as the implementation suffixes
 
                Data.Naming.Body_Suffix := Impl_Suffixs;
             end if;
@@ -5179,7 +5179,7 @@ package body Prj.Nmsc is
          end if;
 
          --  If attribute Library_Reference_Symbol_File is not defined,
-         --  symbol policy cannot be Compilant or Controlled.
+         --  symbol policy cannot be Compliant or Controlled.
 
          if Lib_Ref_Symbol_File.Default then
             if Data.Symbol_Data.Symbol_Policy = Compliant

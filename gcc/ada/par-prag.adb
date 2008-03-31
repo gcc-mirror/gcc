@@ -527,7 +527,7 @@ begin
             --  Process Casing argument of pattern form of pragma
 
             procedure Process_Dot_Replacement (Arg : Node_Id);
-            --  Process Dot_Replacement argument of patterm form of pragma
+            --  Process Dot_Replacement argument of pattern form of pragma
 
             ---------------
             -- Get_Fname --

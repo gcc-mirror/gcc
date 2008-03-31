@@ -412,7 +412,7 @@ package body Ch3 is
          Scan; -- past ALIASED
       end if;
 
-      --  The following procesing deals with either a private type declaration
+      --  The following processing deals with either a private type declaration
       --  or a full type declaration. In the private type case, we build the
       --  N_Private_Type_Declaration node, setting its Tagged_Present and
       --  Limited_Present flags, on encountering the Private keyword, and
@@ -2070,7 +2070,7 @@ package body Ch3 is
          return Range_Node;
 
       --  Case of subtype mark (optionally qualified simple name or an
-      --  attribute whose prefix is an optionally qualifed simple name)
+      --  attribute whose prefix is an optionally qualified simple name)
 
       elsif Expr_Form = EF_Simple_Name
         or else Nkind (Expr_Node) = N_Attribute_Reference
@@ -2883,7 +2883,7 @@ package body Ch3 is
    end P_Known_Discriminant_Part_Opt;
 
    -------------------------------------
-   -- 3.7  DIscriminant Specification --
+   -- 3.7  Discriminant Specification --
    -------------------------------------
 
    --  Parsed by P_Known_Discriminant_Part_Opt (3.7)
@@ -3657,7 +3657,7 @@ package body Ch3 is
 
       --  Ada 2005 (AI-251): In case of not-synchronized interfaces that have
       --  a list of interfaces we build a derived_type_definition node. This
-      --  simplifies the semantic analysis (and hence further mainteinance)
+      --  simplifies the semantic analysis (and hence further maintenance)
 
       else
          if Token /= Tok_And then

@@ -124,7 +124,7 @@ package Prep is
    --  Tok_Identifier with the corresponding Token_Name.
 
    procedure List_Symbols (Foreword : String);
-   --  List the symbols used por preprocessing a file, with their values.
+   --  List the symbols used for preprocessing a file, with their values.
    --  If Foreword is not empty, Output Foreword before the list.
 
 end Prep;

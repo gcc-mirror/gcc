@@ -639,7 +639,7 @@ _NL
 
 CND(WSASYSNOTREADY,     "System not ready")
 CND(WSAVERNOTSUPPORTED, "Version not supported")
-CND(WSANOTINITIALISED,  "Winsock not intialized")
+CND(WSANOTINITIALISED,  "Winsock not initialized")
 CND(WSAEDISCON,         "Disconnected")
 
 #endif

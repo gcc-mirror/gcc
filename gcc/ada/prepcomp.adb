@@ -245,7 +245,8 @@ package body Prepcomp is
                """ not found");
       end if;
 
-      --  Initialize the sanner and set its behavior for a processing data file
+      --  Initialize the scanner and set its behavior for a processing data
+      --  file
 
       Scn.Scanner.Initialize_Scanner (Source_Index_Of_Preproc_Data_File);
       Scn.Scanner.Set_End_Of_Line_As_Token (True);

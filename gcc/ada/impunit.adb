@@ -181,7 +181,7 @@ package body Impunit is
    --  attempt to WITH one of these units will be diagnosed as an error later
    --  on, but for now we do not consider these internal implementation units
    --  (if we did, then we would get a junk warning which would be confusing
-   --  and unecessary, given that we generate a clear error message).
+   --  and unnecessary, given that we generate a clear error message).
 
      "a-tideio",    -- Ada.Text_IO.Decimal_IO
      "a-tienio",    -- Ada.Text_IO.Enumeration_IO

@@ -280,7 +280,7 @@ procedure Gnatchop is
 
    function Report_Duplicate_Units return Boolean;
    --  Output messages about duplicate units in the input files in Unit.Table
-   --  Returns True if any duplicates found, Fals if no duplicates found.
+   --  Returns True if any duplicates found, False if no duplicates found.
 
    function Scan_Arguments return Boolean;
    --  Scan command line options and set global variables accordingly.
@@ -761,7 +761,7 @@ procedure Gnatchop is
 
          --  Note that the unit name can be an operator name in quotes.
          --  This is of course illegal, but both GNAT and gnatchop handle
-         --  the case so that this error does not intefere with chopping.
+         --  the case so that this error does not interfere with chopping.
 
          --  The SR ir present indicates that a source reference pragma
          --  was processed as part of this unit (and that therefore no

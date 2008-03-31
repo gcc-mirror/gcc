@@ -881,7 +881,7 @@ package body Prj is
       Name_Buffer (1 .. Name_Len) := To_Lower (Name_Buffer (1 .. Name_Len));
       Lang := Name_Find;
 
-      --  Look for an element of the spec sufix array indexed by the language
+      --  Look for an element of the spec suffix array indexed by the language
       --  name. If one is found, put the default value.
 
       Suffix := In_Tree.Private_Part.Default_Naming.Spec_Suffix;
@@ -921,7 +921,7 @@ package body Prj is
            Array_Element_Table.Last (In_Tree.Array_Elements);
       end if;
 
-      --  Look for an element of the body sufix array indexed by the language
+      --  Look for an element of the body suffix array indexed by the language
       --  name. If one is found, put the default value.
 
       Suffix := In_Tree.Private_Part.Default_Naming.Body_Suffix;

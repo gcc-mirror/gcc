@@ -128,7 +128,7 @@ package Osint.C is
 
    procedure Close_Output_Library_Info;
    --  Closes the file created by Create_Output_Library_Info, flushing any
-   --  buffers etc from writes by Write_Library_Info.
+   --  buffers etc. from writes by Write_Library_Info.
 
    procedure Read_Library_Info
      (Name : out File_Name_Type;

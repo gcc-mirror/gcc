@@ -984,7 +984,7 @@ package body Ch5 is
 
    --  LABEL ::= <<label_STATEMENT_IDENTIFIER>>
 
-   --  STATEMENT_INDENTIFIER ::= DIRECT_NAME
+   --  STATEMENT_IDENTIFIER ::= DIRECT_NAME
 
    --  The IDENTIFIER of a STATEMENT_IDENTIFIER shall be an identifier
    --  (not an OPERATOR_SYMBOL)

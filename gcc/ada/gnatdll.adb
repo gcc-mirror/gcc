@@ -51,14 +51,14 @@ procedure Gnatdll is
    --  Parse the command line arguments passed to gnatdll
 
    procedure Check_Context;
-   --  Check the context before runing any commands to build the library
+   --  Check the context before running any commands to build the library
 
    Syntax_Error : exception;
    --  Raised when a syntax error is detected, in this case a usage info will
    --  be displayed.
 
    Context_Error : exception;
-   --  Raised when some files (specifed on the command line) are missing to
+   --  Raised when some files (specified on the command line) are missing to
    --  build the DLL.
 
    Help : Boolean := False;
@@ -89,7 +89,7 @@ procedure Gnatdll is
    --  List of objects to put inside the library
 
    Ali_Files : Argument_List_Access := MDLL.Null_Argument_List_Access;
-   --  For each Ada file specified, we keep arecord of the corresponding
+   --  For each Ada file specified, we keep a record of the corresponding
    --  ALI file. This list of SLI files is used to build the binder program.
 
    Options : Argument_List_Access := MDLL.Null_Argument_List_Access;
@@ -200,7 +200,7 @@ procedure Gnatdll is
       --  A list of -bargs options (B is next entry to be used)
 
       Build_Import : Boolean := True;
-      --  Set to Fals if option -n if specified (no-import)
+      --  Set to False if option -n if specified (no-import)
 
       --------------
       -- Add_File --

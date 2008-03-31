@@ -28,7 +28,7 @@
 private package Prj.Nmsc is
 
    --  It would be nicer to have a higher level statement of what these
-   --  procedures do (related to their names), rather than just an english
+   --  procedures do (related to their names), rather than just an English
    --  language summary of the implementation ???
 
    procedure Check

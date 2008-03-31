@@ -47,7 +47,7 @@
 
 pragma Warnings (Off, "*foreign convention*");
 pragma Warnings (Off, "*add Convention pragma*");
---  These are temporary pragmas to supress warnings about mismatching
+--  These are temporary pragmas to suppress warnings about mismatching
 --  conventions, which will be a problem when we get rid of trampolines ???
 
 with System.VxWorks;
@@ -175,7 +175,7 @@ package Interfaces.VxWorks is
    --  Binding to the C routine sysBusIntGen. Note that the T2
    --  documentation implies that a vector address is the proper
    --  argument - it's not. The interrupt number in the range
-   --  0 .. 255 (for 68K and PPC) is the correct agument.
+   --  0 .. 255 (for 68K and PPC) is the correct argument.
 
    procedure logMsg
      (fmt : String; arg1, arg2, arg3, arg4, arg5, arg6 : int := 0);

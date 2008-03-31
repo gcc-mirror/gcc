@@ -109,7 +109,7 @@ package body Interfaces.C.Strings is
       Pointer : chars_ptr;
 
    begin
-      --  Get index of position of null. If Index > Chars'last,
+      --  Get index of position of null. If Index > Chars'Last,
       --  nul is absent and must be added explicitly.
 
       Index := Position_Of_Nul (Into => Chars);

@@ -77,7 +77,7 @@ package Lib.Writ is
 
    --    Adding entirely new lines (with a new key letter) to the ali
    --    file is always safe, at any point (other than before the V
-   --    line), since suchy lines will be ignored.
+   --    line), since such lines will be ignored.
 
    --  Following the guidelines in this section should ensure that this
    --  problem is minimized and that old tools will be able to deal
@@ -399,7 +399,7 @@ package Lib.Writ is
    --  each compilation unit that appears in the corresponding object file.
    --  In particular, when a package body or subprogram body is compiled,
    --  there will be two sets of information, one for the spec and one for
-   --  the body. with the entry for the body appearing first. This is the
+   --  the body, with the entry for the body appearing first. This is the
    --  only case in which a single ALI file contains more than one unit (in
    --  particular note that subunits do *not* count as compilation units for
    --  this purpose, and generate no library information, since they are
@@ -540,7 +540,7 @@ package Lib.Writ is
 
    --  Following the W lines (if any, or the U line if not), are an
    --  optional series of lines that indicates the usage of the pragma
-   --  Linker_Options in the associated unit. For each appearence of a
+   --  Linker_Options in the associated unit. For each appearance of a
    --  pragma Linker_Options (or Link_With) in the unit, a line is
    --  present with the form:
 

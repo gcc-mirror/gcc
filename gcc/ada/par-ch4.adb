@@ -1143,9 +1143,9 @@ package body Ch4 is
       end if;
    end P_Aggregate;
 
-   -------------------------------------------------
-   -- 4.3  Aggregate or Parenthesized Expresssion --
-   -------------------------------------------------
+   ------------------------------------------------
+   -- 4.3  Aggregate or Parenthesized Expression --
+   ------------------------------------------------
 
    --  This procedure parses out either an aggregate or a parenthesized
    --  expression (these two constructs are closely related, since a
@@ -1898,7 +1898,7 @@ package body Ch4 is
             Node1 := P_Term;
          end if;
 
-         --  In the following, we special-case a sequence of concatentations of
+         --  In the following, we special-case a sequence of concatenations of
          --  string literals, such as "aaa" & "bbb" & ... & "ccc", with nothing
          --  else mixed in. For such a sequence, we return a tree representing
          --  "" & "aaabbb...ccc" (a single concatenation). This is done only if

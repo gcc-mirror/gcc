@@ -334,7 +334,7 @@ package body Lib is
          end if;
 
          --  At this stage we know that neither is a subunit, so we deal
-         --  with instantiations, since we culd have a common ancestor
+         --  with instantiations, since we could have a common ancestor
 
          Inst1 := Instantiation (Sind1);
          Inst2 := Instantiation (Sind2);

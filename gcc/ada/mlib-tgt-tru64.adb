@@ -3,7 +3,7 @@
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
 --                    M L I B . T G T . S P E C I F I C                     --
---                             (True64 Version)                             --
+--                             (Tru64 Version)                              --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -24,7 +24,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the True64 version of the body
+--  This is the Tru64 version of the body
 
 with MLib.Fil;
 with MLib.Utl;
@@ -74,7 +74,7 @@ package body MLib.Tgt.Specific is
       pragma Unreferenced (Interfaces);
       pragma Unreferenced (Symbol_Data);
       pragma Unreferenced (Auto_Init);
-      --  Initialization is done through the contructor mechanism
+      --  Initialization is done through the constructor mechanism
 
       Lib_File : constant String :=
                    "lib" & Fil.Append_To (Lib_Filename, DLL_Ext);

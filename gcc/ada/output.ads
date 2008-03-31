@@ -139,7 +139,7 @@ package Output is
 
    procedure Restore_Output_Buffer (S : Saved_Output_Buffer);
    --  Restore previously saved output buffer. The value in S is not affected
-   --  so it is legtimate to restore a buffer more than once.
+   --  so it is legitimate to restore a buffer more than once.
 
    --------------------------
    -- Debugging Procedures --

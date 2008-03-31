@@ -174,7 +174,7 @@ __gnat_get_specific_dispatching (int priority)
 /* __gnat_set_globals */
 /**********************/
 
-/* This routine is kept for boostrapping purposes, since the binder generated
+/* This routine is kept for bootstrapping purposes, since the binder generated
    file now sets the __gl_* variables directly. */
 
 void

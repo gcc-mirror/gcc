@@ -692,7 +692,7 @@ package body Tchk is
       else
          --  Deal with pragma. If pragma is not at start of line, it is
          --  considered misplaced otherwise we treat it as a normal
-         --  missing semicolong case.
+         --  missing semicolon case.
 
          if Token = Tok_Pragma
            and then not Token_Is_At_Start_Of_Line

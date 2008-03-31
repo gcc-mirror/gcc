@@ -847,7 +847,8 @@ package body Ch9 is
                Restore_Scan_State (Scan_State); -- to Id
                Set_Parameter_Specifications (Decl_Node, P_Formal_Part);
 
-            --  Else if Id wi no comma or colon, must be discrete subtype defn
+            --  Else if Id without comma or colon, must be discrete subtype
+            --  defn
 
             else
                Restore_Scan_State (Scan_State); -- to Id
@@ -1358,7 +1359,7 @@ package body Ch9 is
             Ecall_Node := P_Name;
 
             --  ??  The following two clauses exactly parallel code in ch5
-            --      and should be commoned sometime
+            --      and should be combined sometime
 
             if Nkind (Ecall_Node) = N_Indexed_Component then
                declare
@@ -1477,7 +1478,7 @@ package body Ch9 is
 
          End_Statements;
 
-      --  Here we have a selective accept or an an asynchronous select (first
+      --  Here we have a selective accept or an asynchronous select (first
       --  token after SELECT is other than a designator token).
 
       else
@@ -1668,7 +1669,7 @@ package body Ch9 is
 
       --  Note: the reason that we accept THEN ABORT as a terminator for
       --  the sequence of statements is for error recovery which allows
-      --  for misuse of an accept statement as a triggering statememt.
+      --  for misuse of an accept statement as a triggering statement.
 
       Set_Statements
         (Accept_Alt_Node, P_Sequence_Of_Statements (SS_Eltm_Ortm_Tatm));
@@ -1696,7 +1697,7 @@ package body Ch9 is
 
       --  Note: the reason that we accept THEN ABORT as a terminator for
       --  the sequence of statements is for error recovery which allows
-      --  for misuse of an accept statement as a triggering statememt.
+      --  for misuse of an accept statement as a triggering statement.
 
       Set_Statements
         (Delay_Alt_Node, P_Sequence_Of_Statements (SS_Eltm_Ortm_Tatm));

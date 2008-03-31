@@ -667,7 +667,7 @@ package body Lib.Writ is
          --  Loop to build the with table. A with on the main unit itself
          --  is ignored (AARM 10.2(14a)). Such a with-clause can occur if
          --  the main unit is a subprogram with no spec, and a subunit of
-         --  it unecessarily withs the parent.
+         --  it unnecessarily withs the parent.
 
          for J in Units.First + 1 .. Last_Unit loop
 
@@ -904,7 +904,7 @@ package body Lib.Writ is
          end if;
       end Output_Main_Program_Line;
 
-      --  Write command argmument ('A') lines
+      --  Write command argument ('A') lines
 
       for A in 1 .. Compilation_Switches.Last loop
          Write_Info_Initiate ('A');

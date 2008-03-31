@@ -63,7 +63,7 @@ package Prj.Tree is
    --  N_Variable_Reference.
 
    subtype Package_Declaration_Id is Project_Node_Id;
-   --  Used to designate a node whose expected kind is N_Proect_Declaration
+   --  Used to designate a node whose expected kind is N_Project_Declaration
 
    type Project_Node_Kind is
      (N_Project,
@@ -941,7 +941,7 @@ package Prj.Tree is
 
          Src_Index : Int := 0;
          --  Index of a unit in a multi-unit source.
-         --  Onli for some N_Attribute_Declaration and N_Literal_String.
+         --  Only for some N_Attribute_Declaration and N_Literal_String.
 
          Path_Name : Path_Name_Type := No_Path;
          --  See below for what Project_Node_Kind it is used
@@ -960,7 +960,7 @@ package Prj.Tree is
 
          Flag1 : Boolean := False;
          --  This flag is significant only for:
-         --    N_Attribute_Declaration and N_Atribute_Reference
+         --    N_Attribute_Declaration and N_Attribute_Reference
          --      It indicates for an associative array attribute, that the
          --      index is case insensitive.
          --    N_Comment - it indicates that the comment is preceded by an

@@ -76,7 +76,7 @@ package body Util is
          Token := T;
          return True;
 
-      --  A special check for an illegal abbrevation
+      --  A special check for an illegal abbreviation
 
       elsif Name_Len < S'Length
         and then Name_Len >= 4

@@ -135,7 +135,7 @@ __gnat_initialize (void *eh)
      dynamic unloader.
 
      Note that since the tables shall be registered against a common
-     datastructure, libgcc should be one of the modules (vs being partially
+     data structure, libgcc should be one of the modules (vs being partially
      linked against all the others at build time) and shall be loaded first.
 
      For applications linked with the kernel, the scheme above would lead to

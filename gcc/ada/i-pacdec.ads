@@ -33,7 +33,7 @@
 ------------------------------------------------------------------------------
 
 --  This unit defines the packed decimal format used by GNAT in response to
---  a specication of Machine_Radix 10 for a decimal fixed-point type. The
+--  a specification of Machine_Radix 10 for a decimal fixed-point type. The
 --  format and operations are completely encapsulated in this unit, so all
 --  that is necessary to compile using different packed decimal formats is
 --  to replace this single unit.

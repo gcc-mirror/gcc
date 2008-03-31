@@ -83,7 +83,7 @@ package body MLib.Tgt.Specific is
       --  Common set of options to the gcc command performing the link.
       --  On HPUX, this command eventually resorts to collect2, which may
       --  generate a C file and compile it on the fly. This compilation shall
-      --  also generate position independant code for the final link to
+      --  also generate position independent code for the final link to
       --  succeed.
    begin
       if Opt.Verbose_Mode then
