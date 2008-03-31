@@ -1,3 +1,8 @@
+2008-03-31  Ian Lance Taylor  <iant@google.com>
+
+	* cp-demangle.c (d_substitution): Correct overflow check to avoid
+	-fstrict-overflow optimizations.
+
 2008-03-27  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.ac (frags): Don't set, use frag instead.
