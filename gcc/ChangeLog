@@ -1,3 +1,9 @@
+2008-03-31  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/30186
+	* fold-const.c (fold_indirect_ref_1): Support accessing non first
+	element of the vector via a pointer.
+
 2008-03-31  Ian Lance Taylor  <iant@google.com>
 
 	* tlink.c (scan_linker_output): Look for symbol name in single
