@@ -741,7 +741,7 @@ expand_builtin_setjmp_receiver (rtx receiver_label ATTRIBUTE_UNUSED)
 	  /* Now restore our arg pointer from the address at which it
 	     was saved in our stack frame.  */
 	  emit_move_insn (virtual_incoming_args_rtx,
-			  copy_to_reg (get_arg_pointer_save_area (cfun)));
+			  copy_to_reg (get_arg_pointer_save_area ()));
 	}
     }
 #endif

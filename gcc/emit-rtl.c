@@ -66,6 +66,16 @@ enum machine_mode word_mode;	/* Mode whose width is BITS_PER_WORD.  */
 enum machine_mode double_mode;	/* Mode whose width is DOUBLE_TYPE_SIZE.  */
 enum machine_mode ptr_mode;	/* Mode whose width is POINTER_SIZE.  */
 
+/* Datastructures maintained for currently processed function in RTL form.  */
+
+struct rtl_data rtl;
+
+/* Indexed by pseudo register number, gives the rtx for that pseudo.
+   Allocated in parallel with regno_pointer_align.  
+   FIXME: We could put it into emit_status struct, but gengtype is not able to deal
+   with length attribute nested in top level structures.  */
+
+rtx * regno_reg_rtx;
 
 /* This is *not* reset after each function.  It gives each CODE_LABEL
    in the entire compilation a unique label number.  */
@@ -162,11 +172,11 @@ static GTY ((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
 static GTY ((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
      htab_t const_fixed_htab;
 
-#define first_insn (cfun->emit->x_first_insn)
-#define last_insn (cfun->emit->x_last_insn)
-#define cur_insn_uid (cfun->emit->x_cur_insn_uid)
-#define last_location (cfun->emit->x_last_location)
-#define first_label_num (cfun->emit->x_first_label_num)
+#define first_insn (rtl.emit.x_first_insn)
+#define last_insn (rtl.emit.x_last_insn)
+#define cur_insn_uid (rtl.emit.x_cur_insn_uid)
+#define last_location (rtl.emit.x_last_location)
+#define first_label_num (rtl.emit.x_first_label_num)
 
 static rtx make_call_insn_raw (rtx);
 static rtx change_address_1 (rtx, enum machine_mode, rtx, int);
@@ -853,7 +863,6 @@ byte_lowpart_offset (enum machine_mode outer_mode,
 rtx
 gen_reg_rtx (enum machine_mode mode)
 {
-  struct function *f = cfun;
   rtx val;
 
   gcc_assert (can_create_pseudo_p ());
@@ -878,22 +887,22 @@ gen_reg_rtx (enum machine_mode mode)
   /* Make sure regno_pointer_align, and regno_reg_rtx are large
      enough to have an element for this pseudo reg number.  */
 
-  if (reg_rtx_no == f->emit->regno_pointer_align_length)
+  if (reg_rtx_no == rtl.emit.regno_pointer_align_length)
     {
-      int old_size = f->emit->regno_pointer_align_length;
+      int old_size = rtl.emit.regno_pointer_align_length;
       char *new;
       rtx *new1;
 
-      new = ggc_realloc (f->emit->regno_pointer_align, old_size * 2);
+      new = xrealloc (rtl.emit.regno_pointer_align, old_size * 2);
       memset (new + old_size, 0, old_size);
-      f->emit->regno_pointer_align = (unsigned char *) new;
+      rtl.emit.regno_pointer_align = (unsigned char *) new;
 
-      new1 = ggc_realloc (f->emit->x_regno_reg_rtx,
+      new1 = ggc_realloc (regno_reg_rtx,
 			  old_size * 2 * sizeof (rtx));
       memset (new1 + old_size, 0, old_size * sizeof (rtx));
       regno_reg_rtx = new1;
 
-      f->emit->regno_pointer_align_length = old_size * 2;
+      rtl.emit.regno_pointer_align_length = old_size * 2;
     }
 
   val = gen_raw_REG (mode, reg_rtx_no);
@@ -4789,14 +4798,13 @@ in_sequence_p (void)
 /* Put the various virtual registers into REGNO_REG_RTX.  */
 
 static void
-init_virtual_regs (struct emit_status *es)
+init_virtual_regs (void)
 {
-  rtx *ptr = es->x_regno_reg_rtx;
-  ptr[VIRTUAL_INCOMING_ARGS_REGNUM] = virtual_incoming_args_rtx;
-  ptr[VIRTUAL_STACK_VARS_REGNUM] = virtual_stack_vars_rtx;
-  ptr[VIRTUAL_STACK_DYNAMIC_REGNUM] = virtual_stack_dynamic_rtx;
-  ptr[VIRTUAL_OUTGOING_ARGS_REGNUM] = virtual_outgoing_args_rtx;
-  ptr[VIRTUAL_CFA_REGNUM] = virtual_cfa_rtx;
+  regno_reg_rtx[VIRTUAL_INCOMING_ARGS_REGNUM] = virtual_incoming_args_rtx;
+  regno_reg_rtx[VIRTUAL_STACK_VARS_REGNUM] = virtual_stack_vars_rtx;
+  regno_reg_rtx[VIRTUAL_STACK_DYNAMIC_REGNUM] = virtual_stack_dynamic_rtx;
+  regno_reg_rtx[VIRTUAL_OUTGOING_ARGS_REGNUM] = virtual_outgoing_args_rtx;
+  regno_reg_rtx[VIRTUAL_CFA_REGNUM] = virtual_cfa_rtx;
 }
 
 
@@ -4970,9 +4978,6 @@ copy_insn (rtx insn)
 void
 init_emit (void)
 {
-  struct function *f = cfun;
-
-  f->emit = ggc_alloc (sizeof (struct emit_status));
   first_insn = NULL;
   last_insn = NULL;
   cur_insn_uid = 1;
@@ -4983,14 +4988,14 @@ init_emit (void)
 
   /* Init the tables that describe all the pseudo regs.  */
 
-  f->emit->regno_pointer_align_length = LAST_VIRTUAL_REGISTER + 101;
+  rtl.emit.regno_pointer_align_length = LAST_VIRTUAL_REGISTER + 101;
 
-  f->emit->regno_pointer_align
-    = ggc_alloc_cleared (f->emit->regno_pointer_align_length
-			 * sizeof (unsigned char));
+  rtl.emit.regno_pointer_align
+    = xmalloc (rtl.emit.regno_pointer_align_length
+	       * sizeof (unsigned char));
 
   regno_reg_rtx
-    = ggc_alloc (f->emit->regno_pointer_align_length * sizeof (rtx));
+    = ggc_alloc (rtl.emit.regno_pointer_align_length * sizeof (rtx));
 
   /* Put copies of all the hard registers into regno_reg_rtx.  */
   memcpy (regno_reg_rtx,
@@ -4998,7 +5003,7 @@ init_emit (void)
 	  FIRST_PSEUDO_REGISTER * sizeof (rtx));
 
   /* Put copies of all the virtual register rtx into regno_reg_rtx.  */
-  init_virtual_regs (f->emit);
+  init_virtual_regs ();
 
   /* Indicate that the virtual registers and stack locations are
      all pointers.  */

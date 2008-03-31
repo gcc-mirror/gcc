@@ -1,3 +1,43 @@
+2008-03-31  Jan Hubicka  <jh@suse.cz>
+
+	* builtins.c (expand_builtin_setjmp_receiver): Update call of
+	get_arg_pointer_save_area.
+	* expr.c (init_expr): Just clear out rtl.expr.
+	* function.c (free_after_compilation): Clear out whole RTL structure.
+	(get_func_frame_size): Merge into ...
+	(get_frame_size): ... this one.
+	(assign_stack_local_1): Merge into ...
+	(assign_stack_local): ... this one.
+	(expand_function_end): Update call of get_arg_pointer_save_area.
+	(get_art_pointer_save_area): Remove cfun argument.
+	* function.h (emit_status): regno_pointer_align does not need length
+	attribute. Move x_regno_reg_rtx to ...
+	(regno_reg_rtx): ... new global array.
+	(reg_rtx_no, seq_stack, REGNO_POINTER_ALIGN): Update accestors.
+	(pending_stack_adjust, inhibit_defer_pop, saveregs_value,
+	apply_args_value, forced_labels, stack_pointer_delta): Update accestors.
+	(struct varasm_status): Move here from varasm.c
+	(struct rtl_data): New. Move here some fields from struct function.
+	(return_label, naked_return_label, stack_slot_list, parm_birth_insn,
+	frame_offset, stack_check_probe_note, arg_pointer_save_area,
+	used_temp_slots avail_temp_slots, temp_slot_level,
+	nonlocal_goto_handler_labels): Update accesstors.
+	(rtl): New global variable.
+	(struct function): Move some fileds to rtl_data.
+	(get_arg_pointer_save_area): Update prototype.
+	* emit-rtl.c (rtl): Declare.
+	(regno_reg_rtx): Declare.
+	(first_insn, last_insn, cur_insn_uid, last_location, first_label_num): Update.
+	(gen_reg_rtx): Update.
+	(init_virtual_regs): Do not tate emit_status argument.
+	(init_emit): Do not allocate emit.
+	* varasm.c (varasm_statuc): Move to function.h.
+	(n_deferred_constatns): Update accestor.
+	(init_varasm_status): Do not allocate varasm_status.
+	(force_const_mem, get_pool_size, output_constant_pool): Update.
+	* stmt.c (force_label_rtx): Do not use x_ prefixes.
+	(expand_nl_goto_receiver): Update get_arg_pointer_save_area.
+
 2008-03-31  Zdenek Dvorak  <ook@ucw.cz>
 
 	PR rtl-optimization/35729

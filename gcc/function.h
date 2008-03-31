@@ -78,20 +78,22 @@ struct emit_status GTY(())
   /* Indexed by pseudo register number, if nonzero gives the known alignment
      for that pseudo (if REG_POINTER is set in x_regno_reg_rtx).
      Allocated in parallel with x_regno_reg_rtx.  */
-  unsigned char * GTY ((length ("%h.x_reg_rtx_no")))
-    regno_pointer_align;
-
-  /* Indexed by pseudo register number, gives the rtx for that pseudo.
-     Allocated in parallel with regno_pointer_align.  */
-  rtx * GTY ((length ("%h.x_reg_rtx_no"))) x_regno_reg_rtx;
+  unsigned char * GTY((skip)) regno_pointer_align;
 };
 
-/* For backward compatibility... eventually these should all go away.  */
-#define reg_rtx_no (cfun->emit->x_reg_rtx_no)
-#define regno_reg_rtx (cfun->emit->x_regno_reg_rtx)
-#define seq_stack (cfun->emit->sequence_stack)
 
-#define REGNO_POINTER_ALIGN(REGNO) (cfun->emit->regno_pointer_align[REGNO])
+/* Indexed by pseudo register number, gives the rtx for that pseudo.
+   Allocated in parallel with regno_pointer_align.  
+   FIXME: We could put it into emit_status struct, but gengtype is not able to deal
+   with length attribute nested in top level structures.  */
+
+extern GTY ((length ("rtl.emit.x_reg_rtx_no"))) rtx * regno_reg_rtx;
+
+/* For backward compatibility... eventually these should all go away.  */
+#define reg_rtx_no (rtl.emit.x_reg_rtx_no)
+#define seq_stack (rtl.emit.sequence_stack)
+
+#define REGNO_POINTER_ALIGN(REGNO) (rtl.emit.regno_pointer_align[REGNO])
 
 struct expr_status GTY(())
 {
@@ -134,12 +136,12 @@ struct expr_status GTY(())
   rtx x_forced_labels;
 };
 
-#define pending_stack_adjust (cfun->expr->x_pending_stack_adjust)
-#define inhibit_defer_pop (cfun->expr->x_inhibit_defer_pop)
-#define saveregs_value (cfun->expr->x_saveregs_value)
-#define apply_args_value (cfun->expr->x_apply_args_value)
-#define forced_labels (cfun->expr->x_forced_labels)
-#define stack_pointer_delta (cfun->expr->x_stack_pointer_delta)
+#define pending_stack_adjust (rtl.expr.x_pending_stack_adjust)
+#define inhibit_defer_pop (rtl.expr.x_inhibit_defer_pop)
+#define saveregs_value (rtl.expr.x_saveregs_value)
+#define apply_args_value (rtl.expr.x_apply_args_value)
+#define forced_labels (rtl.expr.x_forced_labels)
+#define stack_pointer_delta (rtl.expr.x_stack_pointer_delta)
 
 struct gimple_df;
 struct temp_slot;
@@ -159,15 +161,91 @@ enum function_frequency {
   FUNCTION_FREQUENCY_HOT
 };
 
+struct varasm_status GTY(())
+{
+  /* If we're using a per-function constant pool, this is it.  */
+  struct rtx_constant_pool *pool;
+
+  /* Number of tree-constants deferred during the expansion of this
+     function.  */
+  unsigned int deferred_constants;
+};
+
+/* Datastructures maintained for currently processed function in RTL form.  */
+struct rtl_data GTY(())
+{
+  struct expr_status expr;
+  struct emit_status emit;
+  struct varasm_status varasm;
+
+  /* List (chain of EXPR_LIST) of labels heading the current handlers for
+     nonlocal gotos.  */
+  rtx x_nonlocal_goto_handler_labels;
+
+  /* Label that will go on function epilogue.
+     Jumping to this label serves as a "return" instruction
+     on machines which require execution of the epilogue on all returns.  */
+  rtx x_return_label;
+
+  /* Label that will go on the end of function epilogue.
+     Jumping to this label serves as a "naked return" instruction
+     on machines which require execution of the epilogue on all returns.  */
+  rtx x_naked_return_label;
+
+  /* List (chain of EXPR_LISTs) of all stack slots in this function.
+     Made for the sake of unshare_all_rtl.  */
+  rtx x_stack_slot_list;
+
+  /* Place after which to insert the tail_recursion_label if we need one.  */
+  rtx x_stack_check_probe_note;
+
+  /* Location at which to save the argument pointer if it will need to be
+     referenced.  There are two cases where this is done: if nonlocal gotos
+     exist, or if vars stored at an offset from the argument pointer will be
+     needed by inner routines.  */
+  rtx x_arg_pointer_save_area;
+
+  /* Offset to end of allocated area of stack frame.
+     If stack grows down, this is the address of the last stack slot allocated.
+     If stack grows up, this is the address for the next slot.  */
+  HOST_WIDE_INT x_frame_offset;
+
+  /* Insn after which register parms and SAVE_EXPRs are born, if nonopt.  */
+  rtx x_parm_birth_insn;
+
+  /* List of all used temporaries allocated, by level.  */
+  VEC(temp_slot_p,gc) *x_used_temp_slots;
+
+  /* List of available temp slots.  */
+  struct temp_slot *x_avail_temp_slots;
+
+  /* Current nesting level for temporaries.  */
+  int x_temp_slot_level;
+
+  /* Highest label number in current function.  */
+  int inl_max_label_num;
+};
+
+#define return_label (rtl.x_return_label)
+#define naked_return_label (rtl.x_naked_return_label)
+#define stack_slot_list (rtl.x_stack_slot_list)
+#define parm_birth_insn (rtl.x_parm_birth_insn)
+#define frame_offset (rtl.x_frame_offset)
+#define stack_check_probe_note (rtl.x_stack_check_probe_note)
+#define arg_pointer_save_area (rtl.x_arg_pointer_save_area)
+#define used_temp_slots (rtl.x_used_temp_slots)
+#define avail_temp_slots (rtl.x_avail_temp_slots)
+#define temp_slot_level (rtl.x_temp_slot_level)
+#define nonlocal_goto_handler_labels (rtl.x_nonlocal_goto_handler_labels)
+
+extern GTY(()) struct rtl_data rtl;
+
 /* This structure can save all the important global and static variables
    describing the status of the current function.  */
 
 struct function GTY(())
 {
   struct eh_status *eh;
-  struct expr_status *expr;
-  struct emit_status *emit;
-  struct varasm_status *varasm;
 
   /* The control flow graph for this function.  */
   struct control_flow_graph *cfg;
@@ -228,38 +306,6 @@ struct function GTY(())
      has_hard_reg_initial_val (see integrate.[hc]).  */
   struct initial_value_struct *hard_reg_initial_vals;
 
-  /* List (chain of EXPR_LIST) of labels heading the current handlers for
-     nonlocal gotos.  */
-  rtx x_nonlocal_goto_handler_labels;
-
-  /* Label that will go on function epilogue.
-     Jumping to this label serves as a "return" instruction
-     on machines which require execution of the epilogue on all returns.  */
-  rtx x_return_label;
-
-  /* Label that will go on the end of function epilogue.
-     Jumping to this label serves as a "naked return" instruction
-     on machines which require execution of the epilogue on all returns.  */
-  rtx x_naked_return_label;
-
-  /* List (chain of EXPR_LISTs) of all stack slots in this function.
-     Made for the sake of unshare_all_rtl.  */
-  rtx x_stack_slot_list;
-
-  /* Place after which to insert the tail_recursion_label if we need one.  */
-  rtx x_stack_check_probe_note;
-
-  /* Location at which to save the argument pointer if it will need to be
-     referenced.  There are two cases where this is done: if nonlocal gotos
-     exist, or if vars stored at an offset from the argument pointer will be
-     needed by inner routines.  */
-  rtx x_arg_pointer_save_area;
-
-  /* Offset to end of allocated area of stack frame.
-     If stack grows down, this is the address of the last stack slot allocated.
-     If stack grows up, this is the address for the next slot.  */
-  HOST_WIDE_INT x_frame_offset;
-
   /* A PARM_DECL that should contain the static chain for this function.
      It will be initialized at the beginning of the function.  */
   tree static_chain_decl;
@@ -268,21 +314,6 @@ struct function GTY(())
      word is the saved frame pointer and the second is the saved stack 
      pointer.  */
   tree nonlocal_goto_save_area;
-
-  /* Insn after which register parms and SAVE_EXPRs are born, if nonopt.  */
-  rtx x_parm_birth_insn;
-
-  /* List of all used temporaries allocated, by level.  */
-  VEC(temp_slot_p,gc) *x_used_temp_slots;
-
-  /* List of available temp slots.  */
-  struct temp_slot *x_avail_temp_slots;
-
-  /* Current nesting level for temporaries.  */
-  int x_temp_slot_level;
-
-  /* Highest label number in current function.  */
-  int inl_max_label_num;
 
   /* Function sequence number for profiling, debugging, etc.  */
   int funcdef_no;
@@ -521,18 +552,6 @@ extern void instantiate_decl_rtl (rtx x);
 #define current_function_has_nonlocal_goto (cfun->has_nonlocal_goto)
 #define current_function_has_asm_statement (cfun->has_asm_statement)
 
-#define return_label (cfun->x_return_label)
-#define naked_return_label (cfun->x_naked_return_label)
-#define stack_slot_list (cfun->x_stack_slot_list)
-#define parm_birth_insn (cfun->x_parm_birth_insn)
-#define frame_offset (cfun->x_frame_offset)
-#define stack_check_probe_note (cfun->x_stack_check_probe_note)
-#define arg_pointer_save_area (cfun->x_arg_pointer_save_area)
-#define used_temp_slots (cfun->x_used_temp_slots)
-#define avail_temp_slots (cfun->x_avail_temp_slots)
-#define temp_slot_level (cfun->x_temp_slot_level)
-#define nonlocal_goto_handler_labels (cfun->x_nonlocal_goto_handler_labels)
-#define rtl_df (cfun->df)
 #define current_loops (cfun->x_current_loops)
 #define dom_computed (cfun->cfg->x_dom_computed)
 #define n_bbs_in_dom_tree (cfun->cfg->x_n_bbs_in_dom_tree)
@@ -570,14 +589,14 @@ extern struct machine_function * (*init_machine_status) (void);
 extern void free_after_parsing (struct function *);
 extern void free_after_compilation (struct function *);
 
-extern void init_varasm_status (struct function *);
+extern void init_varasm_status (void);
 
 #ifdef RTX_CODE
 extern void diddle_return_value (void (*)(rtx, void*), void*);
 extern void clobber_return_register (void);
 #endif
 
-extern rtx get_arg_pointer_save_area (struct function *);
+extern rtx get_arg_pointer_save_area (void);
 
 /* Returns the name of the current function.  */
 extern const char *current_function_name (void);

@@ -344,7 +344,7 @@ init_expr_target (void)
 void
 init_expr (void)
 {
-  cfun->expr = ggc_alloc_cleared (sizeof (struct expr_status));
+  memset (&rtl.expr, 0, sizeof (rtl.expr));
 }
 
 /* Copy data from FROM to TO, where the machine modes are not the same.

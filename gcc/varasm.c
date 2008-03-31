@@ -70,17 +70,7 @@ struct addr_const;
 struct constant_descriptor_rtx;
 struct rtx_constant_pool;
 
-struct varasm_status GTY(())
-{
-  /* If we're using a per-function constant pool, this is it.  */
-  struct rtx_constant_pool *pool;
-
-  /* Number of tree-constants deferred during the expansion of this
-     function.  */
-  unsigned int deferred_constants;
-};
-
-#define n_deferred_constants (cfun->varasm->deferred_constants)
+#define n_deferred_constants (rtl.varasm.deferred_constants)
 
 /* Number for making the label on the next
    constant that is stored in memory.  */
@@ -3464,15 +3454,10 @@ create_constant_pool (void)
 /* Initialize constant pool hashing for a new function.  */
 
 void
-init_varasm_status (struct function *f)
+init_varasm_status (void)
 {
-  struct varasm_status *p;
-
-  p = ggc_alloc (sizeof (struct varasm_status));
-  f->varasm = p;
-
-  p->pool = create_constant_pool ();
-  p->deferred_constants = 0;
+  rtl.varasm.pool = create_constant_pool ();
+  rtl.varasm.deferred_constants = 0;
 }
 
 /* Given a MINUS expression, simplify it if both sides
@@ -3509,7 +3494,7 @@ force_const_mem (enum machine_mode mode, rtx x)
   /* Decide which pool to use.  */
   pool = (targetm.use_blocks_for_constant_p (mode, x)
 	  ? shared_constant_pool
-	  : cfun->varasm->pool);
+	  : rtl.varasm.pool);
 
   /* Lookup the value in the hashtable.  */
   tmp.constant = x;
@@ -3621,7 +3606,7 @@ get_pool_mode (const_rtx addr)
 int
 get_pool_size (void)
 {
-  return cfun->varasm->pool->offset;
+  return rtl.varasm.pool->offset;
 }
 
 /* Worker function for output_constant_pool_1.  Emit assembly for X
@@ -3863,7 +3848,7 @@ static void
 output_constant_pool (const char *fnname ATTRIBUTE_UNUSED,
 		      tree fndecl ATTRIBUTE_UNUSED)
 {
-  struct rtx_constant_pool *pool = cfun->varasm->pool;
+  struct rtx_constant_pool *pool = rtl.varasm.pool;
 
   /* It is possible for gcc to call force_const_mem and then to later
      discard the instructions which refer to the constant.  In such a
