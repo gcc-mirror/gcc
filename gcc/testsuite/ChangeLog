@@ -1,3 +1,8 @@
+2008-03-31  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	PR c/35750
+	* gcc.dg/old-style-param-1.c: New test.
+
 2008-03-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/object_overflow.adb: New test.
