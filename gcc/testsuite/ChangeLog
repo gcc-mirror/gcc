@@ -1,6 +1,11 @@
+2008-04-01  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	PR c/35436
+	* gcc.dg/format/gcc_gfc-2.c: New test.
+
 2008-03-31  Seongbae Park <seongbae.park@gmail.com>
 
-	* g++.db/bprob/bprob.exp: Do not check gcno files.
+	* g++.dg/bprob/bprob.exp: Do not check gcno files.
 	Use -fprofile-use for profile use.
 	* gcc.misc-tests/bprob.exp: Ditto.
 	* g++.dg/tree-pro/tree-prof.exp: Do not check gcno files.
