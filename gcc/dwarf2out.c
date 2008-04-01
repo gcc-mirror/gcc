@@ -4251,6 +4251,7 @@ static void output_compilation_unit_header (void);
 static void output_comp_unit (dw_die_ref, int);
 static const char *dwarf2_name (tree, int);
 static void add_pubname (tree, dw_die_ref);
+static void add_pubname_string (const char *, dw_die_ref);
 static void add_pubtype (tree, dw_die_ref);
 static void output_pubnames (VEC (pubname_entry,gc) *);
 static void add_arange (tree, dw_die_ref);
@@ -7481,16 +7482,21 @@ dwarf2_name (tree decl, int scope)
 /* Add a new entry to .debug_pubnames if appropriate.  */
 
 static void
-add_pubname (tree decl, dw_die_ref die)
+add_pubname_string (const char *str, dw_die_ref die)
 {
   pubname_entry e;
 
-  if (! TREE_PUBLIC (decl))
-    return;
-
   e.die = die;
-  e.name = xstrdup (dwarf2_name (decl, 1));
+  e.name = xstrdup (str);
   VEC_safe_push (pubname_entry, gc, pubname_table, &e);
+}
+
+static void
+add_pubname (tree decl, dw_die_ref die)
+{
+
+  if (TREE_PUBLIC (decl))
+    add_pubname_string (dwarf2_name (decl, 1), die);
 }
 
 /* Add a new entry to .debug_pubtypes if appropriate.  */
@@ -10504,6 +10510,63 @@ rtl_for_decl_init (tree init, tree type)
   return rtl;
 }
 
+/* This is a specialized subset of expand_expr to evaluate a DECL_VALUE_EXPR.
+   We stop if we find decls that haven't been expanded, or if the expression is
+   getting so complex we won't be able to represent it anyway.  Returns NULL on
+   failure.  */
+
+static rtx
+dw_expand_expr (tree expr)
+{
+  switch (TREE_CODE (expr))
+  {
+  case VAR_DECL:
+  case PARM_DECL:
+    if (DECL_HAS_VALUE_EXPR_P (expr))
+      return dw_expand_expr (DECL_VALUE_EXPR (expr));
+    /* FALLTHRU */
+ 
+  case CONST_DECL:
+  case RESULT_DECL:
+    return DECL_RTL_IF_SET (expr);
+ 
+  case INTEGER_CST:
+    return expand_expr (expr, NULL_RTX, VOIDmode, EXPAND_INITIALIZER);
+
+  case COMPONENT_REF:
+  case ARRAY_REF:
+  case ARRAY_RANGE_REF:
+  case BIT_FIELD_REF:
+  {
+    enum machine_mode mode;
+    HOST_WIDE_INT bitsize, bitpos;
+    tree offset, tem;
+    int volatilep = 0, unsignedp = 0;
+    rtx x;
+
+    tem = get_inner_reference (expr, &bitsize, &bitpos, &offset,
+                               &mode, &unsignedp, &volatilep, true);
+ 
+    x = dw_expand_expr (tem);
+    if (x == NULL || !MEM_P (x))
+       return NULL;
+    if (offset != NULL)
+      {
+        if (!host_integerp (offset, 0))
+          return NULL;
+        x = adjust_address_nv (x, mode, tree_low_cst (offset, 0));
+      }
+    if (bitpos != 0)
+      x = adjust_address_nv (x, mode, bitpos / BITS_PER_UNIT);
+
+    return x;
+  }
+ 
+  default:
+    return NULL;
+  }
+}
+
 /* Generate RTL for the variable DECL to represent its location.  */
 
 static rtx
@@ -10735,6 +10798,93 @@ secname_for_decl (const_tree decl)
 
   return secname;
 }
+
+/* Check whether decl is a Fortran COMMON symbol.  If not, NULL_RTX is returned.
+   If so, the rtx for the SYMBOL_REF for the COMMON block is returned, and the
+   value is the offset into the common block for the symbol.  */
+
+static rtx
+common_check (tree decl, HOST_WIDE_INT *value)
+{
+  rtx home;
+  rtx sym_addr;
+  rtx res = NULL_RTX;
+ 
+  /* If the decl isn't a VAR_DECL, or if it isn't public or static, or if
+     it does not have a value (the offset into the common area), or if it
+     is thread local (as opposed to global) then it isn't common, and shouldn't
+     be handled as such.  */
+  if (TREE_CODE (decl) != VAR_DECL
+      || !TREE_PUBLIC(decl)
+      || !TREE_STATIC(decl)
+      || !DECL_HAS_VALUE_EXPR_P(decl)
+      || DECL_THREAD_LOCAL_P (decl)
+      || !is_fortran())
+    return NULL;
+
+  home = DECL_RTL (decl);
+  if (home == NULL_RTX || GET_CODE (home) != MEM)
+    return NULL;
+
+  sym_addr = dw_expand_expr (DECL_VALUE_EXPR (decl));
+  if (sym_addr == NULL_RTX || GET_CODE (sym_addr) != MEM)
+    return NULL;
+
+  sym_addr = XEXP (sym_addr, 0);
+  if (GET_CODE (sym_addr) == CONST)
+    sym_addr = XEXP (sym_addr, 0);
+  if ((GET_CODE (sym_addr) == SYMBOL_REF || GET_CODE (sym_addr) == PLUS)
+      && DECL_INITIAL (decl) == 0)
+    {
+ 
+      /* We have a sym that will go into a common area, meaning that it
+         will get storage reserved with a .comm/.lcomm assembler pseudo-op.
+
+         Determine name of common area this symbol will be an offset into,
+         and offset into that area.  Also retrieve the decl for the area
+         that the symbol is offset into.  */
+      tree cdecl = NULL;
+
+      switch (GET_CODE (sym_addr))
+        {
+        case PLUS:
+          if (GET_CODE (XEXP (sym_addr, 0)) == CONST_INT)
+            {
+              res = XEXP (sym_addr, 1);
+              *value = INTVAL (XEXP (sym_addr, 0));
+              cdecl = SYMBOL_REF_DECL (XEXP (sym_addr, 1));
+            }
+          else
+            {
+              res = XEXP (sym_addr, 0);
+              *value = INTVAL (XEXP (sym_addr, 1));
+              cdecl = SYMBOL_REF_DECL (XEXP (sym_addr, 0));
+             }
+          break;
+
+        case SYMBOL_REF:
+          res = sym_addr;
+          *value = 0;
+          cdecl = SYMBOL_REF_DECL (sym_addr);
+          break;
+
+        default:
+          error ("common symbol debug info is not structured as "
+                 "symbol+offset");
+        }
+
+      /* Check area common symbol is offset into.  If this is not public, then
+         it is not a symbol in a common block.  It must be a .lcomm symbol, not
+         a .comm symbol.  */
+      if (cdecl == NULL || !TREE_PUBLIC(cdecl))
+        res = NULL_RTX;
+    }
+  else
+    res = NULL_RTX;
+
+  return res;
+}
+
 
 /* Generate *either* a DW_AT_location attribute or else a DW_AT_const_value
    data attribute for a variable or a parameter.  We generate the
@@ -12633,9 +12783,10 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 static void
 gen_variable_die (tree decl, dw_die_ref context_die)
 {
+  HOST_WIDE_INT off;
+  rtx csym;
+  dw_die_ref var_die;
   tree origin = decl_ultimate_origin (decl);
-  dw_die_ref var_die = new_die (DW_TAG_variable, context_die, decl);
-
   dw_die_ref old_die = lookup_decl_die (decl);
   int declaration = (DECL_EXTERNAL (decl)
 		     /* If DECL is COMDAT and has not actually been
@@ -12658,6 +12809,37 @@ gen_variable_die (tree decl, dw_die_ref context_die)
 		     || (TREE_CODE (decl) == VAR_DECL
 			 && DECL_COMDAT (decl) && !TREE_ASM_WRITTEN (decl))
 		     || class_or_namespace_scope_p (context_die));
+
+  csym = common_check (decl, &off);
+
+  /* Symbol in common gets emitted as a child of the common block, in the form
+     of a data member.
+
+     ??? This creates a new common block die for every common block symbol.
+     Better to share same common block die for all symbols in that block.  */
+  if (csym)
+    {
+      tree blok;
+      dw_die_ref com_die;
+      const char *cnam = targetm.strip_name_encoding(XSTR (csym, 0));
+      dw_loc_descr_ref loc = mem_loc_descriptor (csym, dw_val_class_addr,
+                                                 VAR_INIT_STATUS_INITIALIZED);
+
+      blok = (tree) TREE_OPERAND (DECL_VALUE_EXPR (decl), 0);
+      var_die = new_die (DW_TAG_common_block, context_die, decl);
+      add_name_and_src_coords_attributes (var_die, blok);
+      add_AT_flag (var_die, DW_AT_external, 1);
+      add_AT_loc (var_die, DW_AT_location, loc);
+      com_die = new_die (DW_TAG_member, var_die, decl);
+      add_name_and_src_coords_attributes (com_die, decl);
+      add_type_attribute (com_die, TREE_TYPE (decl), TREE_READONLY (decl),
+      TREE_THIS_VOLATILE (decl), context_die);
+      add_AT_loc (com_die, DW_AT_data_member_location, int_loc_descriptor(off));
+      add_pubname_string (cnam, var_die); /* ??? needed? */
+      return;
+    }
+
+  var_die = new_die (DW_TAG_variable, context_die, decl);
 
   if (origin != NULL)
     add_abstract_origin_attribute (var_die, origin);
@@ -13634,8 +13816,13 @@ decls_for_scope (tree stmt, dw_die_ref context_die, int depth)
 	    add_child_die (context_die, die);
 	  /* Do not produce debug information for static variables since
 	     these might be optimized out.  We are called for these later
-	     in varpool_analyze_pending_decls. */
-	  if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
+	     in varpool_analyze_pending_decls.
+
+	     But *do* produce it for Fortran COMMON variables because,
+	     even though they are static, their names can differ depending
+	     on the scope, which we need to preserve.  */
+	  if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)
+	      && !(is_fortran () && TREE_PUBLIC (decl)))
 	    ;
 	  else
 	    gen_decl_die (decl, context_die);
@@ -13963,6 +14150,16 @@ gen_decl_die (tree decl, dw_die_ref context_die)
       if (debug_info_level <= DINFO_LEVEL_TERSE)
 	break;
 
+      /* If this is the global definition of the Fortran COMMON block, we don't
+         need to do anything.  Syntactically, the block itself has no identity,
+         just its constituent identifiers.  */
+      if (TREE_CODE (decl) == VAR_DECL
+          && TREE_PUBLIC (decl)
+          && TREE_STATIC (decl)
+          && is_fortran ()
+          && !DECL_HAS_VALUE_EXPR_P (decl))
+        break;
+
       /* Output any DIEs that are needed to specify the type of this data
 	 object.  */
       if (TREE_CODE (decl) == RESULT_DECL && DECL_BY_REFERENCE (decl))
@@ -14029,7 +14226,15 @@ dwarf2out_global_decl (tree decl)
   /* Output DWARF2 information for file-scope tentative data object
      declarations, file-scope (extern) function declarations (which had no
      corresponding body) and file-scope tagged type declarations and
-     definitions which have not yet been forced out.  */
+     definitions which have not yet been forced out.
+
+     Ignore the global decl of any Fortran COMMON blocks which also wind up here
+     though they have already been described in the local scope for the 
+     procedures using them.  */
+  if (TREE_CODE (decl) == VAR_DECL
+      && TREE_PUBLIC (decl) && TREE_STATIC (decl) && is_fortran ())
+    return;
+
   if (TREE_CODE (decl) != FUNCTION_DECL || !DECL_INITIAL (decl))
     dwarf2out_decl (decl);
 }

@@ -1,6 +1,6 @@
 /* Output dbx-format symbol table information from GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -322,10 +322,13 @@ static void dbxout_type_methods (tree);
 static void dbxout_range_type (tree);
 static void dbxout_type (tree, int);
 static bool print_int_cst_bounds_in_octal_p (tree);
+static bool is_fortran (void);
 static void dbxout_type_name (tree);
 static void dbxout_class_name_qualifiers (tree);
 static int dbxout_symbol_location (tree, tree, const char *, rtx);
 static void dbxout_symbol_name (tree, const char *, int);
+static void dbxout_common_name (tree, const char *, STAB_CODE_TYPE);
+static const char *dbxout_common_check (tree, int *);
 static void dbxout_global_decl (tree);
 static void dbxout_type_decl (tree, int);
 static void dbxout_handle_pch (unsigned);
@@ -971,6 +974,14 @@ get_lang_number (void)
   else
     return 0;
 
+}
+
+static bool
+is_fortran (void)
+{
+   unsigned int lang = get_lang_number ();
+
+   return (lang == N_SO_FORTRAN) || (lang == N_SO_FORTRAN90);
 }
 
 /* At the beginning of compilation, start writing the symbol table.
@@ -2868,8 +2879,15 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
     {
       if (TREE_PUBLIC (decl))
 	{
+	  int offs;
 	  letter = 'G';
 	  code = N_GSYM;
+	  if (NULL != dbxout_common_check (decl, &offs))
+	    {
+	      letter = 'V';
+	      addr = 0;
+	      number = offs;
+	    }
 	}
       else
 	{
@@ -2915,7 +2933,17 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
 	  if (DECL_INITIAL (decl) == 0
 	      || (!strcmp (lang_hooks.name, "GNU C++")
 		  && DECL_INITIAL (decl) == error_mark_node))
-	    code = N_LCSYM;
+	    {
+	      int offs;
+	      code = N_LCSYM;
+	      if (NULL != dbxout_common_check (decl, &offs))
+	        {
+		  addr = 0;
+		  number = offs;
+		  letter = 'V';
+		  code = N_GSYM;
+		}
+	    }
 	  else if (DECL_IN_TEXT_SECTION (decl))
 	    /* This is not quite right, but it's the closest
 	       of all the codes that Unix defines.  */
@@ -3004,9 +3032,17 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
 	 variable, thereby avoiding the need for a register.  In such
 	 cases we're forced to lie to debuggers and tell them that
 	 this variable was itself `static'.  */
+      int offs;
       code = N_LCSYM;
       letter = 'V';
-      addr = XEXP (XEXP (home, 0), 0);
+      if (NULL == dbxout_common_check (decl, &offs))
+        addr = XEXP (XEXP (home, 0), 0);
+      else
+        {
+	  addr = 0;
+	  number = offs;
+	  code = N_GSYM;
+	}
     }
   else if (GET_CODE (home) == CONCAT)
     {
@@ -3091,6 +3127,115 @@ dbxout_symbol_name (tree decl, const char *suffix, int letter)
     stabstr_C (letter);
 }
 
+
+/* Output the common block name for DECL in a stabs.
+
+   Symbols in global common (.comm) get wrapped with an N_BCOMM/N_ECOMM pair
+   around each group of symbols in the same .comm area.  The N_GSYM stabs
+   that are emitted only contain the offset in the common area.  This routine
+   emits the N_BCOMM and N_ECOMM stabs.  */
+
+static void
+dbxout_common_name (tree decl, const char *name, STAB_CODE_TYPE op)
+{
+  dbxout_begin_complex_stabs ();
+  stabstr_S (name);
+  dbxout_finish_complex_stabs (decl, op, NULL_RTX, NULL, 0);
+}
+
+/* Check decl to determine whether it is a VAR_DECL destined for storage in a
+   common area.  If it is, the return value will be a non-null string giving
+   the name of the common storage block it will go into.  If non-null, the
+   value is the offset into the common block for that symbol's storage.  */
+
+static const char *
+dbxout_common_check (tree decl, int *value)
+{
+  rtx home;
+  rtx sym_addr;
+  const char *name = NULL;
+  
+  /* If the decl isn't a VAR_DECL, or if it isn't public or static, or if
+     it does not have a value (the offset into the common area), or if it
+     is thread local (as opposed to global) then it isn't common, and shouldn't
+     be handled as such.
+     
+     ??? DECL_THREAD_LOCAL_P check prevents problems with improper .stabs
+     for thread-local symbols.  Can be handled via same mechanism as used
+     in dwarf2out.c.  */
+  if (TREE_CODE (decl) != VAR_DECL
+      || !TREE_PUBLIC(decl)
+      || !TREE_STATIC(decl)
+      || !DECL_HAS_VALUE_EXPR_P(decl)
+      || DECL_THREAD_LOCAL_P (decl)
+      || !is_fortran ())
+    return NULL;
+
+  home = DECL_RTL (decl); 
+  if (home == NULL_RTX || GET_CODE (home) != MEM)
+    return NULL;
+
+  sym_addr = dbxout_expand_expr (DECL_VALUE_EXPR (decl));
+  if (sym_addr == NULL_RTX || GET_CODE (sym_addr) != MEM)
+    return NULL;
+
+  sym_addr = XEXP (sym_addr, 0);
+  if (GET_CODE (sym_addr) == CONST)
+    sym_addr = XEXP (sym_addr, 0);
+  if ((GET_CODE (sym_addr) == SYMBOL_REF || GET_CODE (sym_addr) == PLUS)
+      && DECL_INITIAL (decl) == 0)
+    {
+
+      /* We have a sym that will go into a common area, meaning that it
+         will get storage reserved with a .comm/.lcomm assembler pseudo-op.
+
+         Determine name of common area this symbol will be an offset into,
+         and offset into that area.  Also retrieve the decl for the area
+         that the symbol is offset into.  */
+      tree cdecl = NULL;
+
+      switch (GET_CODE (sym_addr))
+        {
+        case PLUS:
+          if (GET_CODE (XEXP (sym_addr, 0)) == CONST_INT)
+            {
+              name =
+                targetm.strip_name_encoding(XSTR (XEXP (sym_addr, 1), 0));
+              *value = INTVAL (XEXP (sym_addr, 0));
+              cdecl = SYMBOL_REF_DECL (XEXP (sym_addr, 1));
+            }
+          else
+            {
+              name =
+                targetm.strip_name_encoding(XSTR (XEXP (sym_addr, 0), 0));
+              *value = INTVAL (XEXP (sym_addr, 1));
+              cdecl = SYMBOL_REF_DECL (XEXP (sym_addr, 0));
+            }
+          break;
+
+        case SYMBOL_REF:
+          name = targetm.strip_name_encoding(XSTR (sym_addr, 0));
+          *value = 0;
+          cdecl = SYMBOL_REF_DECL (sym_addr);
+          break;
+
+        default:
+          error ("common symbol debug info is not structured as "
+                 "symbol+offset");
+        }
+
+      /* Check area common symbol is offset into.  If this is not public, then
+         it is not a symbol in a common block.  It must be a .lcomm symbol, not
+         a .comm symbol.  */
+      if (cdecl == NULL || !TREE_PUBLIC(cdecl))
+        name = NULL;
+    }
+  else
+    name = NULL;
+
+  return name;
+}
+
 /* Output definitions of all the decls in a chain. Return nonzero if
    anything was output */
 
@@ -3098,11 +3243,38 @@ int
 dbxout_syms (tree syms)
 {
   int result = 0;
+  const char *comm_prev = NULL;
+  tree syms_prev = NULL;
+
   while (syms)
     {
+      int temp, copen, cclos;
+      const char *comm_new;
+
+      /* Check for common symbol, and then progression into a new/different
+         block of common symbols.  Emit closing/opening common bracket if
+         necessary.  */
+      comm_new = dbxout_common_check (syms, &temp);
+      copen = comm_new != NULL
+              && (comm_prev == NULL || strcmp (comm_new, comm_prev));
+      cclos = comm_prev != NULL
+              && (comm_new == NULL || strcmp (comm_new, comm_prev));
+      if (cclos)
+        dbxout_common_name (syms_prev, comm_prev, N_ECOMM);
+      if (copen)
+        {
+          dbxout_common_name (syms, comm_new, N_BCOMM);
+          syms_prev = syms;
+        }
+      comm_prev = comm_new;
+
       result += dbxout_symbol (syms, 1);
       syms = TREE_CHAIN (syms);
     }
+
+  if (comm_prev != NULL)
+    dbxout_common_name (syms_prev, comm_prev, N_ECOMM);
+
   return result;
 }
 
