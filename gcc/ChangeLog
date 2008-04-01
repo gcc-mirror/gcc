@@ -1,3 +1,9 @@
+2008-04-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/35705
+	* fold-const.c (get_pointer_modulus_and_residue): Return modulus 1 if
+	the expression is a function address.
+
 2008-04-01  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/include/gpl_v3.texi: Update for manpage generation.
