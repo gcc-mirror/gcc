@@ -1,6 +1,6 @@
 /* Part of CPP library.  File handling.
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
@@ -106,9 +106,6 @@ struct _cpp_file
 
   /* If BUFFER above contains the true contents of the file.  */
   bool buffer_valid;
-
-  /* File is a PCH (on return from find_include_file).  */
-  bool pch;
 };
 
 /* A singly-linked list for all searches for a given file name, with
@@ -322,9 +319,7 @@ pch_open_file (cpp_reader *pfile, _cpp_file *file, bool *invalid_pch)
 	    }
 	  closedir (pchdir);
 	}
-      if (valid)
-	file->pch = true;
-      else
+      if (!valid)
 	*invalid_pch = true;
     }
 
@@ -703,11 +698,12 @@ should_stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
     return false;
 
   /* Handle PCH files immediately; don't stack them.  */
-  if (file->pch)
+  if (file->pchname)
     {
       pfile->cb.read_pch (pfile, file->pchname, file->fd, file->path);
-      close (file->fd);
       file->fd = -1;
+      free ((void *) file->pchname);
+      file->pchname = NULL;
       return false;
     }
 
@@ -916,7 +912,7 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
      complicates LAST_SOURCE_LINE_LOCATION.  This does not apply if we
      found a PCH file (in which case linemap_add is not called) or we
      were included from the command-line.  */
-  if (! file->pch && file->err_no == 0 && type != IT_CMDLINE)
+  if (file->pchname == NULL && file->err_no == 0 && type != IT_CMDLINE)
     pfile->line_table->highest_location--;
 
   return _cpp_stack_file (pfile, file, type == IT_IMPORT);

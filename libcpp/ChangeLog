@@ -1,3 +1,13 @@
+2008-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/13675
+	* files.c (struct _cpp_file): Remove pch field.
+	(pch_open_file): Don't set file->pch, just file->pchname.
+	(should_stack_file): After pfile->cb.read_pch call
+	free pchname and clear pchname, don't close file->fd.
+	Test file->pchname instead of file->pch.  Don't close fd after cb.
+	(_cpp_stack_include): Test file->pchname instead of file->pch.
+
 2008-03-28  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in (POSTCOMPILE): New variable.
