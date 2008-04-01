@@ -1508,7 +1508,7 @@ whose @code{TREE_VALUE} represents a type.
 
 @item TYPE_NOTHROW_P
 This predicate holds when the exception-specification of its arguments
-if of the form `@code{()}'.
+is of the form `@code{()}'.
 
 @item DECL_ARRAY_DELETE_OPERATOR_P
 This predicate holds if the function an overloaded
