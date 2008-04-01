@@ -1,3 +1,31 @@
+2008-04-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (rex64suffix): New mode attribute.
+	(floathi<mode>2): Disable expander for SSE math.
+	(*floathi<mode>2_1): New insn insn_and_split pattern.
+	(*floathi<mode>2_i387_with_temp): New macroized instruction pattern and
+	corresponding post-reload splitters.
+	(*floathi<mode>2_i387): New macroized insn pattern.
+	(float<SSEMODEI24:mode><X87MODEF:mode>2): New macroized expander.
+	(*float<SSEMODEI24:mode><X87MODEF:mode>2_1): New macroized
+	insn_and_split pattern.
+	(*floatsi<mode>2_vector_mixed_with_temp, *floatsi<mode>2_vector_mixed):
+	New macroized instruction patterns and corresponding post-reload
+	splitters.
+	(*floatsi<mode>2_mixed_with_temp): New macroized instruction pattern
+	and corresponding post-reload splitters.
+	(*floatsi<mode>2_mixed_interunit, *floatsi<mode>2_mixed_nointerunit):
+	New macroized instruction patterns.
+	(*floatsi<mode>2_vector_sse_with_temp, *floatsi<mode>2_vector_sse): New
+	macroized instruction patterns and corresponding post-reload splitters.
+	(*floatsi<mode>2_sse_with_temp): New macroized instruction pattern and
+	corresponding post-reload splitters.
+	(*floatsi<mode>2_sse_interunit, *floatsi<mode>2_mixed_nointerunit):
+	New macroized instruction patterns.
+	(*floatsi<mode>2_i387_with_temp): New macroized instruction pattern and
+	corresponding post-reload splitters.
+	(*floatsi<mode>2_i387): New macroized instruction patterns.
+
 2008-04-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.md (smaxmin): New.
@@ -115,10 +143,10 @@
 	* common.opt (fprofile-dir=, fprofile-use=, fprofile-generate=):
 	New options
 	(fprofile-use): Add var flag_profile_use
-	* coverage.c (coverage_begin_output): Do not open a gcno file for output
-	only if -ftest-coverage is set.
+	* coverage.c (coverage_begin_output): Do not open a gcno file for
+	output only if -ftest-coverage is set.
 	Do not add getpwd() to gcda file path.
-	(build_gcov_info): Check the new flag 
+	(build_gcov_info): Check the new flag
 	flag_profile_datafile_relative_path.
 	(coverage_init): Use profile_data_prefix.
 	Read profile counter only if flag_profile_use is set.
@@ -131,8 +159,8 @@
 
 2008-03-31  James E. Wilson  <wilson@tuliptree.org>
 
-	* varasm.c (output_constant_pool_1): In LABEL_REF check, use tmp
-	consistently.
+	* varasm.c (output_constant_pool_1): In LABEL_REF check,
+	use tmp consistently.
 
 	PR target/35695
 	* config/ia64/div.md (recip_approx_rf): Use UNSPEC not DIV.
@@ -153,8 +181,7 @@
 
 2008-03-31  Ian Lance Taylor  <iant@google.com>
 
-	* tlink.c (scan_linker_output): Look for symbol name in single
-	quotes.
+	* tlink.c (scan_linker_output): Look for symbol name in single quotes.
 
 2008-03-31  Jan Hubicka  <jh@suse.cz>
 
@@ -173,7 +200,8 @@
 	(regno_reg_rtx): ... new global array.
 	(reg_rtx_no, seq_stack, REGNO_POINTER_ALIGN): Update accestors.
 	(pending_stack_adjust, inhibit_defer_pop, saveregs_value,
-	apply_args_value, forced_labels, stack_pointer_delta): Update accestors.
+	apply_args_value, forced_labels, stack_pointer_delta):
+	Update accestors.
 	(struct varasm_status): Move here from varasm.c
 	(struct rtl_data): New. Move here some fields from struct function.
 	(return_label, naked_return_label, stack_slot_list, parm_birth_insn,
@@ -185,7 +213,8 @@
 	(get_arg_pointer_save_area): Update prototype.
 	* emit-rtl.c (rtl): Declare.
 	(regno_reg_rtx): Declare.
-	(first_insn, last_insn, cur_insn_uid, last_location, first_label_num): Update.
+	(first_insn, last_insn, cur_insn_uid, last_location, first_label_num):
+	Update.
 	(gen_reg_rtx): Update.
 	(init_virtual_regs): Do not tate emit_status argument.
 	(init_emit): Do not allocate emit.
