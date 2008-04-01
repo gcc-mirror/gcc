@@ -1,7 +1,73 @@
+2008-04-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md (smaxmin): New.
+	(umaxmin): Likewise.
+	(maxminiprefix): Likewise.
+	(maxminfprefix): Likewise.
+	(<code><mode>3): Likewise.
+	(smin<mode>3): Removed.
+	(smax<mode>3): Likewise.
+
+	* config/i386/mmx.md (mmx_<code>v2sf3): New.
+	(mmx_<code>v4hi3): Likewise.
+	(mmx_<code>v8qi3): Likewise.
+	(mmx_smaxv2sf3): Removed.
+	(mmx_sminv2sf3): Likewise.
+	(mmx_umaxv8qi3): Likewise.
+	(mmx_smaxv4hi3): Likewise.
+	(mmx_uminv8qi3): Likewise.
+	(mmx_sminv4hi3): Likewise.
+
+	* config/i386/sse.md (<addsub><mode>3): New.
+	(*<addsub><mode>3): Likewise.
+	(<sse>_vm<addsub><mode>3): Likewise.
+	(<maxmin><mode>3): Likewise.
+	(*<maxmin><mode>3_finite): Likewise.
+	(*<maxmin><mode>3): Likewise.
+	(<sse>_vm<maxmin><mode>3): Likewise.
+	(sse3_h<addsub>v4sf3): Likewise.
+	(sse3_h<addsub>v2df3): Likewise.
+	(<maxmin>v16qi3): Likewise.
+	(*<maxmin>v16qi3): Likewise.
+	(<maxmin>v8hi3): Likewise.
+	(*<maxmin>v8hi3): Likewise.
+	(*sse4_1_<maxmin><mode>3): Likewise.
+	(*sse4_1_<maxmin><mode>3): Likewise.
+	(add<mode>3): Removed.
+	(*add<mode>3): Likewise.
+	(<sse>_vmadd<mode>3): Likewise.
+	(sub<mode>3): Likewise.
+	(*sub<mode>3): Likewise.
+	(<sse>_vmsub<mode>3): Likewise.
+	(smin<mode>3): Likewise.
+	(*smin<mode>3_finite): Likewise.
+	(*smin<mode>3): Likewise.
+	(<sse>_vmsmin<mode>3): Likewise.
+	(smax<mode>3): Likewise.
+	(*smax<mode>3_finite): Likewise.
+	(*smax<mode>3): Likewise.
+	(<sse>_vmsmax<mode>3): Likewise.
+	(sse3_haddv4sf3): Likewise.
+	(sse3_haddv2df3): Likewise.
+	(sse3_hsubv4sf3): Likewise.
+	(sse3_hsubv2df3): Likewise.
+	(umaxv16qi3): Likewise.
+	(*umaxv16qi3): Likewise.
+	(smaxv8hi3): Likewise.
+	(*smaxv8hi3): Likewise.
+	(*sse4_1_smax<mode>3): Likewise.
+	(*sse4_1_umax<mode>3): Likewise.
+	(uminv16qi3): Likewise.
+	(*uminv16qi3): Likewise.
+	(sminv8hi3): Likewise.
+	(*sminv8hi3): Likewise.
+	(*sse4_1_smin<mode>3): Likewise.
+	(*sse4_1_umin<mode>3): Likewise.
+
 2008-04-01  Rafael Espindola  <espindola@google.com>
 
 	* tree-cfg.c (verify_expr): remove in_phi.
-        (verify_stmt): Don't call walk_tree with verify_expr. Use
+	(verify_stmt): Don't call walk_tree with verify_expr. Use
 	is_gimple_min_invariant instead of is_gimple_val.
 
 2008-04-01  Joseph Myers  <joseph@codesourcery.com>
