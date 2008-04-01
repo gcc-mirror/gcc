@@ -5464,28 +5464,6 @@ alpha_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt,
   addr = memory_address (mode, plus_constant (tramp, cxtofs));
   emit_move_insn (gen_rtx_MEM (mode, addr), cxt);
 
-  /* This has been disabled since the hint only has a 32k range, and in
-     no existing OS is the stack within 32k of the text segment.  */
-  if (0 && jmpofs >= 0)
-    {
-      /* Compute hint value.  */
-      temp = force_operand (plus_constant (tramp, jmpofs+4), NULL_RTX);
-      temp = expand_binop (DImode, sub_optab, fnaddr, temp, temp, 1,
-			   OPTAB_WIDEN);
-      temp = expand_shift (RSHIFT_EXPR, Pmode, temp,
-		           build_int_cst (NULL_TREE, 2), NULL_RTX, 1);
-      temp = expand_and (SImode, gen_lowpart (SImode, temp),
-			 GEN_INT (0x3fff), 0);
-
-      /* Merge in the hint.  */
-      addr = memory_address (SImode, plus_constant (tramp, jmpofs));
-      temp1 = force_reg (SImode, gen_rtx_MEM (SImode, addr));
-      temp1 = expand_and (SImode, temp1, GEN_INT (0xffffc000), NULL_RTX);
-      temp1 = expand_binop (SImode, ior_optab, temp1, temp, temp1, 1,
-			    OPTAB_WIDEN);
-      emit_move_insn (gen_rtx_MEM (SImode, addr), temp1);
-    }
-
 #ifdef ENABLE_EXECUTE_STACK
   emit_library_call (init_one_libfunc ("__enable_execute_stack"),
 		     0, VOIDmode, 1, tramp, Pmode);
