@@ -19,6 +19,9 @@
 
 2008-03-31  James E. Wilson  <wilson@tuliptree.org>
 
+	* varasm.c (output_constant_pool_1): In LABEL_REF check, use tmp
+	consistently.
+
 	PR target/35695
 	* config/ia64/div.md (recip_approx_rf): Use UNSPEC not DIV.
 	* config/ia64/ia64.c (rtx_needs_barrier): Handle
