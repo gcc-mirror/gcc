@@ -313,7 +313,8 @@ free_after_compilation (struct function *f)
   VEC_free (int, heap, prologue);
   VEC_free (int, heap, epilogue);
   VEC_free (int, heap, sibcall_epilogue);
-  free (rtl.emit.regno_pointer_align);
+  if (rtl.emit.regno_pointer_align)
+    free (rtl.emit.regno_pointer_align);
 
   memset (&rtl, 0, sizeof (rtl));
   f->eh = NULL;
@@ -323,6 +324,7 @@ free_after_compilation (struct function *f)
   f->arg_offset_rtx = NULL;
   f->return_rtx = NULL;
   f->internal_arg_pointer = NULL;
+  f->epilogue_delay_list = NULL;
 }
 
 /* Return size needed for stack frame based on slots so far allocated.
@@ -3935,6 +3937,7 @@ push_struct_function (tree fndecl)
 static void
 prepare_function_start (void)
 {
+  gcc_assert (!rtl.emit.x_last_insn);
   init_emit ();
   init_varasm_status ();
   init_expr ();
