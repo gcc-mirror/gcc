@@ -122,7 +122,7 @@ files and object files, and it can read both Java source code and
 @end menu
 
 
-@include gpl.texi
+@include gpl_v3.texi
 
 @include fdl.texi
 

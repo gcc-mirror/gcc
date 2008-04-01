@@ -170,7 +170,7 @@ Introduction, gccint, GNU Compiler Collection (GCC) Internals}.
 
 @include funding.texi
 @include gnu.texi
-@include gpl.texi
+@include gpl_v3.texi
 
 @c ---------------------------------------------------------------------
 @c GFDL
