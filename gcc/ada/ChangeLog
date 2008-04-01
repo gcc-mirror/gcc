@@ -1,3 +1,9 @@
+2008-04-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR ada/33857
+	* env.c: Always include crt_externs.h if __APPLE__ is defined.
+	(__gnat_setenv): Use setenv instead of putenv if __APPLE__ is defined.
+
 2008-03-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl.c (gnat_to_gnu_entity) <object>: Do not force a non-null

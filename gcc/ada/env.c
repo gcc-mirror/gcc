@@ -41,10 +41,6 @@
 #include <unixio.h>
 #endif
 
-#if defined (__APPLE__)
-#include <crt_externs.h>
-#endif
-
 #if defined (__MINGW32__)
 #include <stdlib.h>
 #endif
@@ -60,6 +56,10 @@ extern char** ppGlobalEnviron;
 #include "config.h"
 #include "system.h"
 #endif /* IN_RTS */
+
+#if defined (__APPLE__)
+#include <crt_externs.h>
+#endif
 
 #include "env.h"
 
@@ -166,7 +166,7 @@ __gnat_setenv (char *name, char *value)
       LIB$SIGNAL (status);
   }
 
-#elif defined (__vxworks) && defined (__RTP__)
+#elif (defined (__vxworks) && defined (__RTP__)) || defined (__APPLE__)
   setenv (name, value, 1);
 
 #else
@@ -178,7 +178,7 @@ __gnat_setenv (char *name, char *value)
   sprintf (expression, "%s=%s", name, value);
   putenv (expression);
 #if (defined (__FreeBSD__) && (__FreeBSD__ < 7)) \
-   || defined (__APPLE__) || defined (__MINGW32__) \
+   || defined (__MINGW32__) \
    ||(defined (__vxworks) && ! defined (__RTP__))
   /* On some systems like FreeBSD 6.x and earlier, MacOS X and Windows,
      putenv is making a copy of the expression string so we can free
