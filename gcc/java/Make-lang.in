@@ -386,7 +386,7 @@ java/gjavah-jni.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(JAVA_TREE_H) \
 		$(srcdir)/java/gjavah.c $(OUTPUT_OPTION)
 
 TEXI_JAVA_FILES = java/gcj.texi $(gcc_docdir)/include/fdl.texi		\
-	 $(gcc_docdir)/include/gpl.texi $(gcc_docdir)/include/gcc-common.texi   \
+	 $(gcc_docdir)/include/gpl_v3.texi $(gcc_docdir)/include/gcc-common.texi   \
 	 gcc-vers.texi
 
 # Documentation

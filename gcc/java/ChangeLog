@@ -1,3 +1,9 @@
+2008-04-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcj.texi: Include gpl_v3.texi instead of gpl.texi
+	* Make-lang.in (TEXI_JAVA_FILES): Include gpl_v3.texi instead of
+	gpl.texi.
+
 2008-02-01  Release Manager
 
 	* GCC 4.2.3 released.

@@ -6,7 +6,7 @@
 
 # GCC is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2, or (at your option)
+# the Free Software Foundation; either version 3, or (at your option)
 # any later version.
 
 # GCC is distributed in the hope that it will be useful,
@@ -218,9 +218,11 @@ while(<$inf>) {
     s/\@\}/&rbrace;/g;
     s/\@\@/&at;/g;
 
-    # Inside a verbatim block, handle @var specially.
+    # Inside a verbatim block, handle @var, @samp and @url specially.
     if ($shift ne "") {
 	s/\@var\{([^\}]*)\}/<$1>/g;
+	s/\@samp\{([^\}]*)\}/"$1"/g;
+	s/\@url\{([^\}]*)\}/<$1>/g;
     }
 
     # POD doesn't interpret E<> inside a verbatim block.
@@ -250,7 +252,7 @@ while(<$inf>) {
 	next;
     };
 
-    /^\@(?:section|unnumbered|unnumberedsec|center)\s+(.+)$/
+    /^\@(?:section|unnumbered|unnumberedsec|center|heading)\s+(.+)$/
 	and $_ = "\n=head2 $1\n";
     /^\@subsection\s+(.+)$/
 	and $_ = "\n=head3 $1\n";
@@ -297,6 +299,7 @@ while(<$inf>) {
 	$ic =~ s/\@(?:code|kbd)/C/;
 	$ic =~ s/\@(?:dfn|var|emph|cite|i)/I/;
 	$ic =~ s/\@(?:file)/F/;
+	$ic =~ s/\@(?:asis)//;
 	$_ = "\n=over 4\n";
     };
 
@@ -319,8 +322,18 @@ while(<$inf>) {
 
     /^\@itemx?\s*(.+)?$/ and do {
 	if (defined $1) {
-	    # Entity escapes prevent munging by the <> processing below.
-	    $_ = "\n=item $ic\&LT;$1\&GT;\n";
+            if ($ic) {
+		if ($endw eq "enumerate") {
+		    $_ = "\n=item $ic $1\n";
+		    $ic =~ s/(\d+)/$1 + 1/eg;
+		} else {
+		    # Entity escapes prevent munging by the <>
+		    # processing below.
+		    $_ = "\n=item $ic\&LT;$1\&GT;\n";
+		}
+            } else {
+                $_ = "\n=item $1\n";
+            }
 	} else {
 	    $_ = "\n=item $ic\n";
 	    $ic =~ y/A-Ya-y/B-Zb-z/;
@@ -376,7 +389,7 @@ sub postprocess
     s/\@r\{([^\}]*)\}/R<$1>/g;
     s/\@(?:dfn|var|emph|cite|i)\{([^\}]*)\}/I<$1>/g;
     s/\@(?:code|kbd)\{([^\}]*)\}/C<$1>/g;
-    s/\@(?:gccoptlist|samp|strong|key|option|env|command|b)\{([^\}]*)\}/B<$1>/g;
+    s/\@(?:samp|strong|key|option|env|command|b)\{([^\}]*)\}/B<$1>/g;
     s/\@sc\{([^\}]*)\}/\U$1/g;
     s/\@file\{([^\}]*)\}/F<$1>/g;
     s/\@w\{([^\}]*)\}/S<$1>/g;
@@ -411,6 +424,10 @@ sub postprocess
     s/\@(?:uref|url|email)\{([^\},]*)\}/&lt;B<$1>&gt;/g;
     s/\@uref\{([^\},]*),([^\},]*)\}/$2 (C<$1>)/g;
     s/\@uref\{([^\},]*),([^\},]*),([^\},]*)\}/$3/g;
+
+    # Handle gccoptlist here, so it can contain the above formatting
+    # commands.
+    s/\@gccoptlist\{([^\}]*)\}/B<$1>/g;
 
     # Un-escape <> at this point.
     s/&LT;/</g;

@@ -3376,7 +3376,7 @@ TEXI_CPP_FILES = cpp.texi fdl.texi cppenv.texi cppopts.texi		\
 TEXI_GCC_FILES = gcc.texi gcc-common.texi gcc-vers.texi frontends.texi	\
 	 standards.texi invoke.texi extend.texi md.texi objc.texi	\
 	 gcov.texi trouble.texi bugreport.texi service.texi		\
-	 contribute.texi compat.texi funding.texi gnu.texi gpl.texi	\
+	 contribute.texi compat.texi funding.texi gnu.texi gpl_v3.texi	\
 	 fdl.texi contrib.texi cppenv.texi cppopts.texi			\
 	 implement-c.texi
 
@@ -3385,7 +3385,7 @@ TEXI_GCCINT_FILES = gccint.texi gcc-common.texi gcc-vers.texi		\
 	 portability.texi interface.texi passes.texi c-tree.texi	\
 	 rtl.texi md.texi tm.texi hostconfig.texi fragments.texi	\
 	 configfiles.texi collect2.texi headerdirs.texi funding.texi	\
-	 gnu.texi gpl.texi fdl.texi contrib.texi languages.texi		\
+	 gnu.texi gpl_v3.texi fdl.texi contrib.texi languages.texi	\
 	 sourcebuild.texi gty.texi libgcc.texi cfg.texi tree-ssa.texi	\
 	 loop.texi
 
@@ -3526,6 +3526,9 @@ gfdl.pod: fdl.texi
 	$(STAMP) $@
 	-$(TEXI2POD) $< > $@
 fsf-funding.pod: funding.texi
+	$(STAMP) $@
+	-$(TEXI2POD) $< > $@
+gpl.pod: gpl_v3.texi
 	$(STAMP) $@
 	-$(TEXI2POD) $< > $@
 

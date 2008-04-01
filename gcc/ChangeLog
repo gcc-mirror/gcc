@@ -1,3 +1,13 @@
+2008-04-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/include/gpl_v3.texi: Copy from trunk.
+	* doc/gcc.texi, doc/gccint.texi: Include gpl_v3.texi instead of
+	gpl.texi.
+	* doc/sourcebuild.texi: Document gpl_v3.texi as well as gpl.texi.
+	* Makefile.in (TEXI_GCC_FILES, TEXI_GCCINT_FILES): Include
+	gpl_v3.texi instead of gpl.texi.
+	(gpl.pod): New.
+
 2008-03-31  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (s390_O_constraint_str): Limit the range

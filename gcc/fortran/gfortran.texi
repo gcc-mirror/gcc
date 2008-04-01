@@ -1497,7 +1497,7 @@ Environment variable forcing standard output to be line buffered (unix).
 @c GNU General Public License
 @c ---------------------------------------------------------------------
 
-@include gpl.texi
+@include gpl_v3.texi
 
 
 

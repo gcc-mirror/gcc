@@ -336,6 +336,7 @@ The section ``Funding Free Software''.
 @item gcc-common.texi
 Common definitions for manuals.
 @item gpl.texi
+@itemx gpl_v3.texi
 The GNU General Public License.
 @item texinfo.tex
 A copy of @file{texinfo.tex} known to work with the GCC manuals.
