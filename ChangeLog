@@ -1,3 +1,7 @@
+2008-04-01  Peter O'Gorman  <pogma@thewrittenword.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2008-03-31  Seongbae Park <seongbae.park@gmail.com>
 
 	* Makefile.tpl (.NOTPARALLEL): Serialize stageprofile libiberty.
