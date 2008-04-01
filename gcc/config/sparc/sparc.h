@@ -953,7 +953,7 @@ extern int sparc_mode_class[];
 /* Given the stack bias, the stack pointer isn't actually aligned.  */
 #define INIT_EXPANDERS							 \
   do {									 \
-    if (cfun && cfun->emit->regno_pointer_align && SPARC_STACK_BIAS)	 \
+    if (rtl.emit.regno_pointer_align && SPARC_STACK_BIAS)	 \
       {									 \
 	REGNO_POINTER_ALIGN (STACK_POINTER_REGNUM) = BITS_PER_UNIT;	 \
 	REGNO_POINTER_ALIGN (HARD_FRAME_POINTER_REGNUM) = BITS_PER_UNIT; \

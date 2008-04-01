@@ -982,7 +982,7 @@ enum reg_class
 #define INIT_EXPANDERS					\
   do {							\
     ia64_init_expanders ();                             \
-    if (cfun && cfun->emit->regno_pointer_align)	\
+    if (rtl.emit.regno_pointer_align)	\
       REGNO_POINTER_ALIGN (ARG_POINTER_REGNUM) = 64;	\
   } while (0)
 
