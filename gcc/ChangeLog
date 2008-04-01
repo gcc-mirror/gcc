@@ -1,3 +1,9 @@
+2008-04-02  Ben Elliston  <bje@au.ibm.com>
+
+	* config/v850/v850.md (casesi): Remove if (0) code.
+	* config/i386/uwin.h (ASM_DECLARE_FUNCTION_NAME): Likewise.
+	* config/alpha/alpha.c (alpha_initialize_trampoline): Likewise.
+
 2008-04-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (rex64suffix): New mode attribute.
