@@ -1,3 +1,18 @@
+2008-04-01  George Helffrich  <george@gcc.gnu.org>
+
+	PRs fortran/PR35154, fortran/PR23057
+	* gcc.dg/debug/pr35154.c:  New test to check that non-Fortran
+	use of common is unchanged.
+
+	* lib/gfortran-dg.exp:  New harness to compile Fortran progs
+	with all combinations of debug options available on target.
+        * gfortran.dg/debug/debug.exp:  Ditto.
+        * gfortran.dg/debug/trivial.f:  Ditto.
+        * gfortran.dg/debug/pr35154-stabs.f:  New test case for
+        .stabs functionality.
+        * gfortran.dg/debug/pr35154-dwarf2.f:  New test case for
+        DWARF functionality.
+
 2008-04-01  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	PR c/35436
