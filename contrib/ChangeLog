@@ -1,3 +1,9 @@
+2008-04-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* texi2pod.pl: Handle @samp and @url inside verbatim blocks.
+	Handle @heading.  Handle enumerated lists with starting numbers
+	and extra headings.
+
 2008-03-10  Janis Johnson  <janis187@us.ibm.com>
 
 	* patch_tester.sh (initialization): Initialize svnpatch and stop.

@@ -1,3 +1,9 @@
+2008-04-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* gfortran.texi: Include gpl_v3.texi instead of gpl.texi
+	* Make-lang.in (GFORTRAN_TEXI): Include gpl_v3.texi instead of
+	gpl.texi.
+
 2008-03-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/35740

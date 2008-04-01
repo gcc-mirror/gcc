@@ -149,7 +149,7 @@ GFORTRAN_TEXI = \
   $(srcdir)/fortran/intrinsic.texi \
   $(srcdir)/fortran/invoke.texi \
   $(srcdir)/doc/include/fdl.texi \
-  $(srcdir)/doc/include/gpl.texi \
+  $(srcdir)/doc/include/gpl_v3.texi \
   $(srcdir)/doc/include/funding.texi \
   $(srcdir)/doc/include/gcc-common.texi \
   gcc-vers.texi
