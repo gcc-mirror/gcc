@@ -1,3 +1,8 @@
+2008-04-01  Andreas Jaeger  <aj@suse.de>
+
+	* g-soccon-linux-ppc.ads: Add new constants SO_REUSEPORT and
+	IP_PKTINFO.
+
 2008-03-31  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* g-table.adb, g-tasloc.adb, g-traceb.ads,
