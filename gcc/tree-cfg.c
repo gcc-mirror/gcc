@@ -3113,7 +3113,6 @@ static tree
 verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 {
   tree t = *tp, x;
-  bool in_phi = (data != NULL);
 
   if (TYPE_P (t))
     *walk_subtrees = 0;
@@ -3163,23 +3162,6 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	bool new_invariant;
 	bool new_constant;
 	bool new_side_effects;
-
-        /* ??? tree-ssa-alias.c may have overlooked dead PHI nodes, missing
-	   dead PHIs that take the address of something.  But if the PHI
-	   result is dead, the fact that it takes the address of anything
-	   is irrelevant.  Because we can not tell from here if a PHI result
-	   is dead, we just skip this check for PHIs altogether.  This means
-	   we may be missing "valid" checks, but what can you do?
-	   This was PR19217.  */
-        if (in_phi)
-	  {
-	    if (!is_gimple_min_invariant (t))
-	      {
-		error ("non-invariant address expression in PHI argument");
-		return t;
-	      }
-	    break;
-	  }
 
 	old_invariant = TREE_INVARIANT (t);
 	old_constant = TREE_CONSTANT (t);
@@ -4338,18 +4320,11 @@ verify_stmts (void)
 		 are not considered gimple values.  */
 	      else if (TREE_CODE (t) != SSA_NAME
 		       && TREE_CODE (t) != FUNCTION_DECL
-		       && !is_gimple_val (t))
+		       && !is_gimple_min_invariant (t))
 		{
 		  error ("PHI def is not a GIMPLE value");
 		  debug_generic_stmt (phi);
 		  debug_generic_stmt (t);
-		  err |= true;
-		}
-
-	      addr = walk_tree (&t, verify_expr, (void *) 1, NULL);
-	      if (addr)
-		{
-		  debug_generic_stmt (addr);
 		  err |= true;
 		}
 
