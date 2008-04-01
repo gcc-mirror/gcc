@@ -3623,6 +3623,67 @@ register_new_assert_for (tree name, tree expr,
   bitmap_set_bit (need_assert_for, SSA_NAME_VERSION (name));
 }
 
+/* Helper function for extract_code_and_val_from_cond */
+
+static bool
+extract_code_and_val_from_cond_with_ops (tree name, enum tree_code cond_code,
+					 tree cond_op0, tree cond_op1,
+					 bool invert, enum tree_code *code_p,
+					 tree *val_p)
+{
+  enum tree_code comp_code;
+  tree val;
+
+  /* Otherwise, we have a comparison of the form NAME COMP VAL
+     or VAL COMP NAME.  */
+  if (name == cond_op1)
+    {
+      /* If the predicate is of the form VAL COMP NAME, flip
+	 COMP around because we need to register NAME as the
+	 first operand in the predicate.  */
+      comp_code = swap_tree_comparison (cond_code);
+      val = cond_op0;
+    }
+  else
+    {
+      /* The comparison is of the form NAME COMP VAL, so the
+	 comparison code remains unchanged.  */
+      comp_code = cond_code;
+      val = cond_op1;
+    }
+
+  /* Invert the comparison code as necessary.  */
+  if (invert)
+    comp_code = invert_tree_comparison (comp_code, 0);
+
+  /* VRP does not handle float types.  */
+  if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (val)))
+    return false;
+
+  /* Do not register always-false predicates.
+     FIXME:  this works around a limitation in fold() when dealing with
+     enumerations.  Given 'enum { N1, N2 } x;', fold will not
+     fold 'if (x > N2)' to 'if (0)'.  */
+  if ((comp_code == GT_EXPR || comp_code == LT_EXPR)
+      && INTEGRAL_TYPE_P (TREE_TYPE (val)))
+    {
+      tree min = TYPE_MIN_VALUE (TREE_TYPE (val));
+      tree max = TYPE_MAX_VALUE (TREE_TYPE (val));
+
+      if (comp_code == GT_EXPR
+	  && (!max
+	      || compare_values (val, max) == 0))
+	return false;
+
+      if (comp_code == LT_EXPR
+	  && (!min
+	      || compare_values (val, min) == 0))
+	return false;
+    }
+  *code_p = comp_code;
+  *val_p = val;
+  return true;
+}
 /* COND is a predicate which uses NAME.  Extract a suitable test code
    and value and store them into *CODE_P and *VAL_P so the predicate
    is normalized to NAME *CODE_P *VAL_P.
@@ -3646,59 +3707,16 @@ extract_code_and_val_from_cond (tree name, tree cond, bool invert,
 	 NAME == false accordingly.  */
       comp_code = EQ_EXPR;
       val = invert ? boolean_false_node : boolean_true_node;
+      *code_p = comp_code;
+      *val_p = val;
+      return true;
     }
   else
-    {
-      /* Otherwise, we have a comparison of the form NAME COMP VAL
-         or VAL COMP NAME.  */
-      if (name == TREE_OPERAND (cond, 1))
-        {
-	  /* If the predicate is of the form VAL COMP NAME, flip
-	     COMP around because we need to register NAME as the
-	     first operand in the predicate.  */
-	  comp_code = swap_tree_comparison (TREE_CODE (cond));
-	  val = TREE_OPERAND (cond, 0);
-	}
-      else
-	{
-	  /* The comparison is of the form NAME COMP VAL, so the
-	     comparison code remains unchanged.  */
-	  comp_code = TREE_CODE (cond);
-	  val = TREE_OPERAND (cond, 1);
-	}
-
-      /* Invert the comparison code as necessary.  */
-      if (invert)
-	comp_code = invert_tree_comparison (comp_code, 0);
-
-      /* VRP does not handle float types.  */
-      if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (val)))
-	return false;
-
-      /* Do not register always-false predicates.
-	 FIXME:  this works around a limitation in fold() when dealing with
-	 enumerations.  Given 'enum { N1, N2 } x;', fold will not
-	 fold 'if (x > N2)' to 'if (0)'.  */
-      if ((comp_code == GT_EXPR || comp_code == LT_EXPR)
-	  && INTEGRAL_TYPE_P (TREE_TYPE (val)))
-	{
-	  tree min = TYPE_MIN_VALUE (TREE_TYPE (val));
-	  tree max = TYPE_MAX_VALUE (TREE_TYPE (val));
-
-	  if (comp_code == GT_EXPR
-	      && (!max
-	          || compare_values (val, max) == 0))
-	    return false;
-
-	  if (comp_code == LT_EXPR
-	      && (!min
-	          || compare_values (val, min) == 0))
-	    return false;
-	}
-    }
-  *code_p = comp_code;
-  *val_p = val;
-  return true;
+    return extract_code_and_val_from_cond_with_ops (name, TREE_CODE (cond),
+						    TREE_OPERAND (cond, 0),
+						    TREE_OPERAND (cond, 1),
+						    invert,
+						    code_p, val_p);
 }
 
 /* Try to register an edge assertion for SSA name NAME on edge E for
