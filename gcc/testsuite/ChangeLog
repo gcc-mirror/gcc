@@ -1,3 +1,8 @@
+2008-04-02  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/vrp38.c: New testcase.
+	* gcc.dg/tree-ssa/vrp39.c: Likewise.
+
 2008-04-01  George Helffrich  <george@gcc.gnu.org>
 
 	PRs fortran/PR35154, fortran/PR23057
