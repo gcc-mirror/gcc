@@ -1,4 +1,9 @@
 2008-04-01  Jan Hubicka  <jh@suse.cz>
+
+	* function.c (free_after_compilation): Free epilogue_delay_list.
+	(prepare_function_start): Assert that previous compilation was freed.
+
+2008-04-01  Jan Hubicka  <jh@suse.cz>
 	    Jim Wilson  <wilson@tuliptree.org>
 	    Andreas Tobler <andreast@gcc.gnu.org>
 
