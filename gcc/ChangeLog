@@ -1,3 +1,29 @@
+2008-04-02  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (extract_range_from_assert): Make sure to not
+	produce range min/max with TREE_OVERFOW set.
+	If merging a anti-range and a range keep the anti-range if
+	the range covers all values of the type.
+	(register_edge_assert_for_2): Only allow sign-changing
+	conversions in detecting canonical range checks.  Also
+	register an assert for the unsigned name if useful.
+
+	PR tree-optimization/35787
+	* tree-vrp.c (vrp_val_max): New function.
+	(vrp_val_min): Likewise.
+	(vrp_val_is_max): Move earlier, use vrp_val_{min,max}.
+	(vrp_val_is_min): Likewise.
+	(supports_overflow_infinity): Use vrp_val_{min,max}.
+	(negative_overflow_infinity): Likewise.
+	(positive_overflow_infinity): Likewise.
+	(is_negative_overflow_infinity): Use vrp_val_is_{min,max}.
+	(is_positive_overflow_infinity): Likewise.
+	(is_overflow_infinity): Likewise.
+	(avoid_overflow_infinity): Use vrp_val_{min,max} and
+	vrp_val_is_{min,max}.
+	(set_and_canonicalize_value_range): Canonicalize anti-ranges
+	to ranges if possible.  Avoid empty ranges.
+
 2008-04-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/35705
