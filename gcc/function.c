@@ -4259,7 +4259,9 @@ expand_function_start (tree subr)
 
       /* ??? We need to do this save early.  Unfortunately here is
 	 before the frame variable gets declared.  Help out...  */
-      expand_var (TREE_OPERAND (cfun->nonlocal_goto_save_area, 0));
+      tree var = TREE_OPERAND (cfun->nonlocal_goto_save_area, 0);
+      if (!DECL_RTL_SET_P (var))
+	expand_decl (var);
 
       t_save = build4 (ARRAY_REF, ptr_type_node,
 		       cfun->nonlocal_goto_save_area,

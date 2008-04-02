@@ -1,3 +1,11 @@
+2008-04-02  Paolo Bonzini  <bonzini@gnu.org>
+
+	* expr.c (expand_var): Delete it.
+	* expr.h (expand_var): Delete prototype.
+	* function.c (expand_function_start): Use expand_decl instead.
+	* cfgexpand.c (expand_one_static_var, expand_one_var): Don't call
+	langhook.
+
 2008-04-02  Andy Hutchinson <hutchinsonamdy@aim.com>
 
 	PR rtl-optimization/35542

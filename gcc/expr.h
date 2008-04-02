@@ -520,8 +520,6 @@ expand_normal (tree exp)
   return expand_expr_real (exp, NULL_RTX, VOIDmode, EXPAND_NORMAL, NULL);
 }
 
-extern void expand_var (tree);
-
 /* At the start of a function, record that we have no previously-pushed
    arguments waiting to be popped.  */
 extern void init_pending_stack_adjust (void);
