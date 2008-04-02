@@ -1,3 +1,9 @@
+2008-04-03  Ben Elliston  <bje@au.ibm.com>
+
+	* expmed.c (extract_split_bit_field): Remove if (0) code.
+	* tree-ssa-structalias.c (do_sd_constraint): Likewise.
+	(do_ds_constraint): Likewise.
+
 2008-04-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/cppopts.texi (-dU): Document.
