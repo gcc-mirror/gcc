@@ -1,6 +1,27 @@
 2008-04-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/14495
+	PR tree-optimization/34793
+	* tree-vrp.c (struct switch_update): New structure.
+	(to_remove_edges, to_update_switch_stmts): New VECs.
+	(simplify_switch_using_ranges): New function.  Remove not taken
+	case labels and edges.
+	(simplify_stmt_using_ranges): Call it.
+	(identify_jump_threads): Mark edges we have queued for removal
+	so we don't thread them.
+	(execute_vrp): Remove edges queued for removal, update SWITCH_STMT
+	case label vector.
+	* tree-cfg.c (group_case_labels): Deal with missing default label.
+	(tree_verify_flow_info): Allow missing default label.
+	* stmt.c (emit_case_bit_tests): Deal with NULL default_label.
+	(emit_case_nodes): Likewise.
+	(expand_case): Do not rely on the default label to be present.
+	* expr.c (try_casesi): Deal with NULL default_label.
+	(do_tablejump): Likewise.
+
+2008-04-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/14495
 	* tree-vrp.c (vrp_visit_cond_stmt): Do not handle
 	SWITCH_EXPR here ...
 	(vrp_visit_switch_stmt): ... but here (new function).
