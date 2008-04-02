@@ -1,3 +1,7 @@
+2008-04-02  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config.gcc: Add for x86_64-*-mingw* the t-crtfm to tbuild.
+
 2008-04-02  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vrp.c (extract_range_from_assert): Make sure to not
