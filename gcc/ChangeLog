@@ -1,5 +1,16 @@
 2008-04-02  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c (bdesc_sse_3arg): Add __builtin_ia32_shufps
+	and __builtin_ia32_shufpd.  Provide __builtin_ia32_roundsd and
+	__builtin_ia32_roundss.
+	(ix86_init_mmx_sse_builtins): Remove __builtin_ia32_shufps,
+	__builtin_ia32_shufpd, __builtin_ia32_roundsd and
+	__builtin_ia32_roundss.
+	(ix86_expand_builtin): Don't handle IX86_BUILTIN_SHUFPS and
+	IX86_BUILTIN_SHUFPD here.
+
+2008-04-02  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/i386.md (plogic): New.
 	(plogicprefix): Likewise.
 
