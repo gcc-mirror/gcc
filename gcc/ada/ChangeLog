@@ -1,5 +1,8 @@
 2008-04-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	PR ada/33688
+	* g-soccon-darwin.ads: Define new constant IP_PKTINFO.
+
 	PR ada/33857
 	* env.c: Always include crt_externs.h if __APPLE__ is defined.
 	(__gnat_setenv): Use setenv instead of putenv if __APPLE__ is defined.

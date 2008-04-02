@@ -163,6 +163,7 @@ package GNAT.Sockets.Constants is
    IP_MULTICAST_LOOP  : constant :=          11; --  Set/get mcast loopback
    IP_ADD_MEMBERSHIP  : constant :=          12; --  Join a multicast group
    IP_DROP_MEMBERSHIP : constant :=          13; --  Leave a multicast group
+   IP_PKTINFO         : constant :=          -1; --  Get datagram info
 
    -------------------
    -- System limits --
