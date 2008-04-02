@@ -1846,7 +1846,7 @@ out_movqi_r_mr (rtx insn, rtx op[], int *l)
 	  *l = 1;
 	  return AS2 (in,%0,__SREG__);
 	}
-      if (avr_io_address_p (x, 1))
+      if (optimize > 0 && io_address_operand (x, QImode))
 	{
 	  *l = 1;
 	  return AS2 (in,%0,%1-0x20);
@@ -2034,7 +2034,7 @@ out_movhi_r_mr (rtx insn, rtx op[], int *l)
     }
   else if (CONSTANT_ADDRESS_P (base))
     {
-      if (avr_io_address_p (base, 2))
+      if (optimize > 0 && io_address_operand (base, HImode))
 	{
 	  *l = 2;
 	  return (AS2 (in,%A0,%A1-0x20) CR_TAB
@@ -2534,7 +2534,7 @@ out_movqi_mr_r (rtx insn, rtx op[], int *l)
 	  *l = 1;
 	  return AS2 (out,__SREG__,%1);
 	}
-      if (avr_io_address_p (x, 1))
+      if (optimize > 0 && io_address_operand (x, QImode))
 	{
 	  *l = 1;
 	  return AS2 (out,%0-0x20,%1);
@@ -2613,7 +2613,7 @@ out_movhi_mr_r (rtx insn, rtx op[], int *l)
     l = &tmp;
   if (CONSTANT_ADDRESS_P (base))
     {
-      if (avr_io_address_p (base, 2))
+      if (optimize > 0 && io_address_operand (base, HImode))
 	{
 	  *l = 2;
 	  return (AS2 (out,%B0-0x20,%B1) CR_TAB
@@ -5465,7 +5465,7 @@ avr_address_cost (rtx x)
     return 18;
   if (CONSTANT_ADDRESS_P (x))
     {
-      if (avr_io_address_p (x, 1))
+      if (optimize > 0 && io_address_operand (x, QImode))
 	return 2;
       return 4;
     }
@@ -5709,17 +5709,6 @@ avr_hard_regno_mode_ok (int regno, enum machine_mode mode)
 
   /* All modes larger than QImode should start in an even register.  */
   return !(regno & 1);
-}
-
-/* Returns 1 if X is a valid address for an I/O register of size SIZE
-   (1 or 2).  Used for lds/sts -> in/out optimization.  Add 0x20 to SIZE
-   to check for the lower half of I/O space (for cbi/sbi/sbic/sbis).  */
-
-int
-avr_io_address_p (rtx x, int size)
-{
-  return (optimize > 0 && GET_CODE (x) == CONST_INT
-	  && INTVAL (x) >= 0x20 && INTVAL (x) <= 0x60 - size);
 }
 
 const char *

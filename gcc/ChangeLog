@@ -1,3 +1,15 @@
+2008-04-02  Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/predicates.md (io_address_operand): New predicate. 
+	* config/avr/avr-protos.h (avr_io_address_p): Remove declaration.
+	* config/avr/avr.c (avr_io_address_p): Remove function.
+	(out_movqi_r_mr): Use 'io_address_operand' predicate instead of 
+	'avr_io_address_p' function.
+	(out_movhi_r_mr): (Ditto.).
+	(out_movqi_mr_r): (Ditto.).
+	(out_movhi_mr_r): (Ditto.).
+	(avr_address_cost): (Ditto.).
+
 2008-04-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*float<SSEMODEI24:mode><X87MODEF:mode>2_1):
