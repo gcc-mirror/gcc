@@ -607,15 +607,34 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   initializing expression, in which case we can get the size from
 	   that.  Note that the resulting size may still be a variable, so
 	   this may end up with an indirect allocation.  */
-
 	if (No (Renamed_Object (gnat_entity))
 	    && CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_type)))
 	  {
 	    if (gnu_expr && kind == E_Constant)
-	      gnu_size
-		= SUBSTITUTE_PLACEHOLDER_IN_EXPR
-		  (TYPE_SIZE (TREE_TYPE (gnu_expr)), gnu_expr);
-
+	      {
+		tree size = TYPE_SIZE (TREE_TYPE (gnu_expr));
+		if (CONTAINS_PLACEHOLDER_P (size))
+		  {
+		    /* If the initializing expression is itself a constant,
+		       despite having a nominal type with self-referential
+		       size, we can get the size directly from it.  */
+		    if (TREE_CODE (gnu_expr) == COMPONENT_REF
+			&& TREE_CODE (TREE_TYPE (TREE_OPERAND (gnu_expr, 0)))
+			   == RECORD_TYPE
+			&& TYPE_IS_PADDING_P
+			   (TREE_TYPE (TREE_OPERAND (gnu_expr, 0)))
+			&& TREE_CODE (TREE_OPERAND (gnu_expr, 0)) == VAR_DECL
+			&& (TREE_READONLY (TREE_OPERAND (gnu_expr, 0))
+			    || DECL_READONLY_ONCE_ELAB
+			       (TREE_OPERAND (gnu_expr, 0))))
+		      gnu_size = DECL_SIZE (TREE_OPERAND (gnu_expr, 0));
+		    else
+		      gnu_size
+			= SUBSTITUTE_PLACEHOLDER_IN_EXPR (size, gnu_expr);
+		  }
+		else
+		  gnu_size = size;
+	      }
 	    /* We may have no GNU_EXPR because No_Initialization is
 	       set even though there's an Expression.  */
 	    else if (kind == E_Constant
