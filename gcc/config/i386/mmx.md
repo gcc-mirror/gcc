@@ -791,16 +791,6 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_insn "mmx_and<mode>3"
-  [(set (match_operand:MMXMODEI 0 "register_operand" "=y")
-	(and:MMXMODEI
-	  (match_operand:MMXMODEI 1 "nonimmediate_operand" "%0")
-	  (match_operand:MMXMODEI 2 "nonimmediate_operand" "ym")))]
-  "TARGET_MMX && ix86_binary_operator_ok (AND, <MODE>mode, operands)"
-  "pand\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxadd")
-   (set_attr "mode" "DI")])
-
 (define_insn "mmx_nand<mode>3"
   [(set (match_operand:MMXMODEI 0 "register_operand" "=y")
 	(and:MMXMODEI
@@ -811,26 +801,15 @@
   [(set_attr "type" "mmxadd")
    (set_attr "mode" "DI")])
 
-(define_insn "mmx_ior<mode>3"
+(define_insn "mmx_<code><mode>3"
   [(set (match_operand:MMXMODEI 0 "register_operand" "=y")
-        (ior:MMXMODEI
+        (plogic:MMXMODEI
 	  (match_operand:MMXMODEI 1 "nonimmediate_operand" "%0")
 	  (match_operand:MMXMODEI 2 "nonimmediate_operand" "ym")))]
-  "TARGET_MMX && ix86_binary_operator_ok (IOR, <MODE>mode, operands)"
-  "por\t{%2, %0|%0, %2}"
+  "TARGET_MMX && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
+  "p<plogicprefix>\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxadd")
    (set_attr "mode" "DI")])
-
-(define_insn "mmx_xor<mode>3"
-  [(set (match_operand:MMXMODEI 0 "register_operand" "=y")
-	(xor:MMXMODEI
-	  (match_operand:MMXMODEI 1 "nonimmediate_operand" "%0")
-	  (match_operand:MMXMODEI 2 "nonimmediate_operand" "ym")))]
-  "TARGET_MMX && ix86_binary_operator_ok (XOR, <MODE>mode, operands)"
-  "pxor\t{%2, %0|%0, %2}"
-  [(set_attr "type" "mmxadd")
-   (set_attr "mode" "DI")
-   (set_attr "memory" "none")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
