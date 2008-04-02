@@ -1,5 +1,12 @@
+2008-04-02  Andy Hutchinson <hutchinsonamdy@aim.com>
+
+	PR rtl-optimization/35542
+	* fwprop.c (forward_propagate_and_simplify): Replace
+	loc_reg_mentioned_in_p with reg_mentioned_p.
+
 2008-04-02  Paolo Bonzini  <bonzini@gnu.org>
 
+	PR rtl-optimization/35281
 	* fwprop.c (PR_CAN_APPEAR, PR_HANDLE_MEM): New.
 	(propagate_rtx_1): Handle PR_HANDLE_MEM.
 	(propagate_rtx): Pass PR_HANDLE_MEM if appropriate.
