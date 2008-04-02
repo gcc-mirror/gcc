@@ -3681,7 +3681,13 @@ register_new_assert_for (tree name, tree expr,
   bitmap_set_bit (need_assert_for, SSA_NAME_VERSION (name));
 }
 
-/* Helper function for extract_code_and_val_from_cond */
+/* (COND_OP0 COND_CODE COND_OP1) is a predicate which uses NAME.
+   Extract a suitable test code and value and store them into *CODE_P and
+   *VAL_P so the predicate is normalized to NAME *CODE_P *VAL_P.
+
+   If no extraction was possible, return FALSE, otherwise return TRUE.
+
+   If INVERT is true, then we invert the result stored into *CODE_P.  */
 
 static bool
 extract_code_and_val_from_cond_with_ops (tree name, enum tree_code cond_code,
@@ -3742,40 +3748,6 @@ extract_code_and_val_from_cond_with_ops (tree name, enum tree_code cond_code,
   *val_p = val;
   return true;
 }
-/* COND is a predicate which uses NAME.  Extract a suitable test code
-   and value and store them into *CODE_P and *VAL_P so the predicate
-   is normalized to NAME *CODE_P *VAL_P.
-
-   If no extraction was possible, return FALSE, otherwise return TRUE.
-
-   If INVERT is true, then we invert the result stored into *CODE_P.  */
-
-static bool
-extract_code_and_val_from_cond (tree name, tree cond, bool invert,
-				enum tree_code *code_p, tree *val_p)
-{
-  enum tree_code comp_code;
-  tree val;
-
-  /* Predicates may be a single SSA name or NAME OP VAL.  */
-  if (cond == name)
-    {
-      /* If the predicate is a name, it must be NAME, in which
-	 case we create the predicate NAME == true or
-	 NAME == false accordingly.  */
-      comp_code = EQ_EXPR;
-      val = invert ? boolean_false_node : boolean_true_node;
-      *code_p = comp_code;
-      *val_p = val;
-      return true;
-    }
-  else
-    return extract_code_and_val_from_cond_with_ops (name, TREE_CODE (cond),
-						    TREE_OPERAND (cond, 0),
-						    TREE_OPERAND (cond, 1),
-						    invert,
-						    code_p, val_p);
-}
 
 /* Try to register an edge assertion for SSA name NAME on edge E for
    the condition COND contributing to the conditional jump pointed to by BSI.
@@ -3784,13 +3756,17 @@ extract_code_and_val_from_cond (tree name, tree cond, bool invert,
 
 static bool
 register_edge_assert_for_2 (tree name, edge e, block_stmt_iterator bsi,
-			    tree cond, bool invert)
+			    enum tree_code cond_code,
+			    tree cond_op0, tree cond_op1, bool invert)
 {
   tree val;
   enum tree_code comp_code;
   bool retval = false;
 
-  if (!extract_code_and_val_from_cond (name, cond, invert, &comp_code, &val))
+  if (!extract_code_and_val_from_cond_with_ops (name, cond_code,
+						cond_op0,
+						cond_op1,
+						invert, &comp_code, &val))
     return false;
 
   /* Only register an ASSERT_EXPR if NAME was found in the sub-graph
@@ -3917,6 +3893,7 @@ register_edge_assert_for_1 (tree op, enum tree_code code,
 {
   bool retval = false;
   tree op_def, rhs, val;
+  enum tree_code rhs_code;
 
   /* We only care about SSA_NAMEs.  */
   if (TREE_CODE (op) != SSA_NAME)
@@ -3943,6 +3920,7 @@ register_edge_assert_for_1 (tree op, enum tree_code code,
     return retval;
 
   rhs = GIMPLE_STMT_OPERAND (op_def, 1);
+  rhs_code = TREE_CODE (rhs);
 
   if (COMPARISON_CLASS_P (rhs))
     {
@@ -3951,9 +3929,11 @@ register_edge_assert_for_1 (tree op, enum tree_code code,
       tree op1 = TREE_OPERAND (rhs, 1);
 
       if (TREE_CODE (op0) == SSA_NAME)
-        retval |= register_edge_assert_for_2 (op0, e, bsi, rhs, invert);
+        retval |= register_edge_assert_for_2 (op0, e, bsi, rhs_code, op0, op1,
+					      invert);
       if (TREE_CODE (op1) == SSA_NAME)
-        retval |= register_edge_assert_for_2 (op1, e, bsi, rhs, invert);
+        retval |= register_edge_assert_for_2 (op1, e, bsi, rhs_code, op0, op1,
+					      invert);
     }
   else if ((code == NE_EXPR
 	    && (TREE_CODE (rhs) == TRUTH_AND_EXPR
@@ -3997,7 +3977,9 @@ register_edge_assert_for_1 (tree op, enum tree_code code,
    Return true if an assertion for NAME could be registered.  */
 
 static bool
-register_edge_assert_for (tree name, edge e, block_stmt_iterator si, tree cond)
+register_edge_assert_for (tree name, edge e, block_stmt_iterator si,
+			  enum tree_code cond_code, tree cond_op0,
+			  tree cond_op1)
 {
   tree val;
   enum tree_code comp_code;
@@ -4009,12 +3991,15 @@ register_edge_assert_for (tree name, edge e, block_stmt_iterator si, tree cond)
   if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
     return false;
 
-  if (!extract_code_and_val_from_cond (name, cond, is_else_edge,
-				       &comp_code, &val))
+  if (!extract_code_and_val_from_cond_with_ops (name, cond_code,
+						cond_op0, cond_op1,
+						is_else_edge,
+						&comp_code, &val))
     return false;
 
   /* Register ASSERT_EXPRs for name.  */
-  retval |= register_edge_assert_for_2 (name, e, si, cond, is_else_edge);
+  retval |= register_edge_assert_for_2 (name, e, si, cond_code, cond_op0,
+					cond_op1, is_else_edge);
 
 
   /* If COND is effectively an equality test of an SSA_NAME against
@@ -4131,8 +4116,17 @@ find_conditional_asserts (basic_block bb, tree last)
       /* Register the necessary assertions for each operand in the
 	 conditional predicate.  */
       FOR_EACH_SSA_TREE_OPERAND (op, last, iter, SSA_OP_USE)
-	need_assert |= register_edge_assert_for (op, e, bsi,
-						 COND_EXPR_COND (last));
+	{
+	  tree cond = COND_EXPR_COND (last);
+	  if (op != cond)
+	    need_assert |= register_edge_assert_for (op, e, bsi,
+						     TREE_CODE (cond),
+						     TREE_OPERAND (cond, 0),
+						     TREE_OPERAND (cond, 1));
+	  else
+	    need_assert |= register_edge_assert_for (op, e, bsi, EQ_EXPR, op,
+						     boolean_true_node);
+	}
     }
 
   /* Finally, indicate that we have found the operands in the
@@ -4183,7 +4177,7 @@ find_switch_asserts (basic_block bb, tree last)
 {
   bool need_assert;
   block_stmt_iterator bsi;
-  tree op, cond;
+  tree op;
   edge e;
   tree vec = SWITCH_LABELS (last), vec2;
   size_t n = TREE_VEC_LENGTH (vec);
@@ -4250,14 +4244,17 @@ find_switch_asserts (basic_block bb, tree last)
 
       /* Register the necessary assertions for the operand in the
 	 SWITCH_EXPR.  */
-      cond = build2 (max ? GE_EXPR : EQ_EXPR, boolean_type_node,
-		     op, fold_convert (TREE_TYPE (op), min));
-      need_assert |= register_edge_assert_for (op, e, bsi, cond);
+      need_assert |= register_edge_assert_for (op, e, bsi,
+					       max ? GE_EXPR : EQ_EXPR,
+					       op,
+					       fold_convert (TREE_TYPE (op),
+							     min));
       if (max)
 	{
-	  cond = build2 (LE_EXPR, boolean_type_node,
-			 op, fold_convert (TREE_TYPE (op), max));
-	  need_assert |= register_edge_assert_for (op, e, bsi, cond);
+	  need_assert |= register_edge_assert_for (op, e, bsi, LE_EXPR,
+						   op,
+						   fold_convert (TREE_TYPE (op),
+								 max));
 	}
     }
 

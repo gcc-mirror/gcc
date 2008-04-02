@@ -1,3 +1,13 @@
+2008-04-02  Rafael Espindola  <espindola@google.com>
+
+	* tree-vrp.c (extract_code_and_val_from_cond): Remove.
+	(register_edge_assert_for_2): Split the cond argument.
+	(register_edge_assert_for_1): Adjust for the change in
+	register_edge_assert_for_2.
+	(register_edge_assert_for): Split the cond argument.
+	(find_switch_asserts): Adjust for the change in
+	register_edge_assert_for.
+
 2008-04-02  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config.gcc: Add for x86_64-*-mingw* the t-crtfm to tbuild.
