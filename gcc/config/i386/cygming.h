@@ -55,7 +55,7 @@ along with GCC; see the file COPYING3.  If not see
    won't allow it.  */
 #define ASM_OUTPUT_DWARF_OFFSET(FILE, SIZE, LABEL, SECTION)	\
   do {								\
-    if (SIZE != 4)						\
+    if (SIZE != 4 && (!TARGET_64BIT || SIZE != 8))		\
       abort ();							\
 								\
     fputs ("\t.secrel32\t", FILE);				\

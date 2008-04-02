@@ -4419,7 +4419,8 @@ function_arg_64 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
 static rtx
 function_arg_ms_64 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-		    enum machine_mode orig_mode, int named)
+		    enum machine_mode orig_mode, int named,
+		    HOST_WIDE_INT bytes)
 {
   unsigned int regno;
 
@@ -4451,6 +4452,14 @@ function_arg_ms_64 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	  return gen_rtx_PARALLEL (mode, gen_rtvec (2, t1, t2));
 	}
     }
+  /* Handle aggregated types passed in register.  */
+  if (orig_mode == BLKmode)
+    {
+      if (bytes > 0 && bytes <= 8)
+        mode = (bytes > 4 ? DImode : SImode);
+      if (mode == BLKmode)
+        mode = DImode;
+    }
 
   return gen_reg_or_parallel (mode, orig_mode, regno);
 }
@@ -4474,7 +4483,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode omode,
     mode = type_natural_mode (type);
 
   if (TARGET_64BIT_MS_ABI)
-    return function_arg_ms_64 (cum, mode, omode, named);
+    return function_arg_ms_64 (cum, mode, omode, named, bytes);
   else if (TARGET_64BIT)
     return function_arg_64 (cum, mode, omode, type);
   else
@@ -4492,8 +4501,10 @@ ix86_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 			enum machine_mode mode ATTRIBUTE_UNUSED,
 			const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  /* See Windows x64 Software Convention.  */
   if (TARGET_64BIT_MS_ABI)
     {
+      int msize = (int) GET_MODE_SIZE (mode);
       if (type)
 	{
 	  /* Arrays are passed by reference.  */
@@ -4504,16 +4515,17 @@ ix86_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 	    {
 	      /* Structs/unions of sizes other than 8, 16, 32, or 64 bits
 	         are passed by reference.  */
-	      int el2 = exact_log2 (int_size_in_bytes (type));
-	      return !(el2 >= 0 && el2 <= 3);
+	      msize = int_size_in_bytes (type);
 	    }
 	}
 
       /* __m128 is passed by reference.  */
-      /* ??? How to handle complex?  For now treat them as structs,
-	 and pass them by reference if they're too large.  */
-      if (GET_MODE_SIZE (mode) > 8)
-	return true;
+      switch (msize) {
+      case 1: case 2: case 4: case 8:
+        break;
+      default:
+        return true;
+      }
     }
   else if (TARGET_64BIT && type && int_size_in_bytes (type) == -1)
     return 1;
@@ -4728,12 +4740,22 @@ function_value_ms_64 (enum machine_mode orig_mode, enum machine_mode mode)
 
   if (TARGET_SSE)
     {
-      if (mode == SFmode || mode == DFmode)
-	regno = FIRST_SSE_REG;
-      else if (VECTOR_MODE_P (mode) || GET_MODE_SIZE (mode) == 16)
-	regno = FIRST_SSE_REG;
+      switch (GET_MODE_SIZE (mode))
+        {
+        case 16:
+          if((SCALAR_INT_MODE_P (mode) || VECTOR_MODE_P (mode))
+	     && !COMPLEX_MODE_P (mode))
+	    regno = FIRST_SSE_REG;
+	  break;
+	case 8:
+	case 4:
+	  if (mode == SFmode || mode == DFmode)
+	    regno = FIRST_SSE_REG;
+	  break;
+	default:
+	  break;
+        }
     }
-
   return gen_rtx_REG (orig_mode, regno);
 }
 
@@ -4827,13 +4849,13 @@ return_in_memory_ms_64 (const_tree type, enum machine_mode mode)
 {
   HOST_WIDE_INT size = int_size_in_bytes (type);
 
-  /* __m128 and friends are returned in xmm0.  */
-  if (!COMPLEX_MODE_P (mode) && size == 16 && VECTOR_MODE_P (mode))
+  /* __m128 is returned in xmm0.  */
+  if ((SCALAR_INT_MODE_P (mode) || VECTOR_MODE_P (mode))
+      && !COMPLEX_MODE_P (mode) && (GET_MODE_SIZE (mode) == 16 || size == 16))
     return 0;
 
-  /* Otherwise, the size must be exactly in [1248]. But not for complex. */
-  return (size != 1 && size != 2 && size != 4 && size != 8)
-         || COMPLEX_MODE_P (mode);
+  /* Otherwise, the size must be exactly in [1248]. */
+  return (size != 1 && size != 2 && size != 4 && size != 8);
 }
 
 int
@@ -5817,11 +5839,20 @@ ix86_file_end (void)
 	  switch_to_section (text_section);
 	  ASM_OUTPUT_LABEL (asm_out_file, name);
 	}
-
-      xops[0] = gen_rtx_REG (SImode, regno);
-      xops[1] = gen_rtx_MEM (SImode, stack_pointer_rtx);
-      output_asm_insn ("mov{l}\t{%1, %0|%0, %1}", xops);
-      output_asm_insn ("ret", xops);
+      if (TARGET_64BIT_MS_ABI)
+        {
+	  xops[0] = gen_rtx_REG (Pmode, regno);
+	  xops[1] = gen_rtx_MEM (Pmode, stack_pointer_rtx);
+	  output_asm_insn ("mov{q}\t{%1, %0|%0, %1}", xops);
+	  output_asm_insn ("ret", xops);
+        }
+      else
+        {
+	  xops[0] = gen_rtx_REG (SImode, regno);
+	  xops[1] = gen_rtx_MEM (SImode, stack_pointer_rtx);
+	  output_asm_insn ("mov{l}\t{%1, %0|%0, %1}", xops);
+	  output_asm_insn ("ret", xops);
+	}
     }
 
   if (NEED_INDICATE_EXEC_STACK)
