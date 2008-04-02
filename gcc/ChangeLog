@@ -1,6 +1,10 @@
 2008-04-02  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config.gcc: Add for x86_64-*-mingw* the t-crtfm to tbuild.
+	* gcc/config/i386/cygming.h (ASM_OUTPUT_DWARF_OFFSET): Add 8 byte
+	offsets for 64-bit mingw.
+	* gcc/config/i386/i386.c (ix86_pass_by_reference): Correct calling
+	abi for x86_64-pc-mingw.
 
 2008-04-02  Richard Guenther  <rguenther@suse.de>
 
