@@ -1,5 +1,9 @@
 2008-04-02  Paolo Bonzini  <bonzini@gnu.org>
 
+	* fwprop.c: Fix ISO-C99ism.
+
+2008-04-02  Paolo Bonzini  <bonzini@gnu.org>
+
 	PR bootstrap/35752
 	* Makefile.in (objdir): Set it here.
 	* configure.ac: Not here.  Find dynamic linker characteristics.
