@@ -1,5 +1,5 @@
 ;; Predicate definitions for ATMEL AVR micro controllers.
-;; Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+;; Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -51,6 +51,11 @@
 (define_predicate "high_io_address_operand"
   (and (match_code "const_int")
        (match_test "IN_RANGE((INTVAL (op)), 0x40, 0x5F)")))
+
+;; Return true if OP is a valid address of I/O space.
+(define_predicate "io_address_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE((INTVAL (op)), 0x20, (0x60 - GET_MODE_SIZE(mode)))")))
 
 ;; Return 1 if OP is the zero constant for MODE.
 (define_predicate "const0_operand"

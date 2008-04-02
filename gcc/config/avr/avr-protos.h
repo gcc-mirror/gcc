@@ -1,6 +1,6 @@
 /* Prototypes for exported functions defined in avr.c
    
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2006, 2007
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Denis Chertykov (denisc@overta.ru)
 
@@ -122,7 +122,6 @@ extern RTX_CODE avr_normalize_condition (RTX_CODE condition);
 extern int compare_eq_p (rtx insn);
 extern void out_shift_with_cnt (const char *template, rtx insn,
 				rtx operands[], int *len, int t_len);
-extern int avr_io_address_p (rtx x, int size);
 extern int avr_peep2_scratch_safe (rtx reg_rtx);
 #endif /* RTX_CODE */
 
