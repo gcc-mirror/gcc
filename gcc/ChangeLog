@@ -1,3 +1,11 @@
+2008-04-02  Paolo Bonzini  <bonzini@gnu.org>
+
+	* fwprop.c (PR_CAN_APPEAR, PR_HANDLE_MEM): New.
+	(propagate_rtx_1): Handle PR_HANDLE_MEM.
+	(propagate_rtx): Pass PR_HANDLE_MEM if appropriate.
+	(varying_mem_p): Move above propagate_rtx.
+	(all_uses_available_at): Do not check MEMs.
+
 2008-04-02  Rafael Espindola  <espindola@google.com>
 
 	* tree-vrp.c (extract_code_and_val_from_cond): Remove.
