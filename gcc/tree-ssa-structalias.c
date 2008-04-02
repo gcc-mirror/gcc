@@ -1428,9 +1428,6 @@ do_sd_constraint (constraint_graph_t graph, constraint_t c,
 	  else if (add_graph_edge (graph, lhs, t))
 	    flag |= bitmap_ior_into (sol, get_varinfo (t)->solution);
 	}
-      else if (0 && dump_file && !(get_varinfo (j)->is_special_var))
-	fprintf (dump_file, "Untypesafe usage in do_sd_constraint\n");
-
     }
 
 done:
@@ -1514,8 +1511,6 @@ do_ds_constraint (constraint_t c, bitmap delta)
 		}
 	    }
 	}
-      else if (0 && dump_file && !(get_varinfo (j)->is_special_var))
-	fprintf (dump_file, "Untypesafe usage in do_ds_constraint\n");
     }
 }
 

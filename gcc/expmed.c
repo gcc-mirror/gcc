@@ -2002,16 +2002,7 @@ extract_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
   if (REG_P (op0) || GET_CODE (op0) == SUBREG)
     unit = BITS_PER_WORD;
   else
-    {
-      unit = MIN (MEM_ALIGN (op0), BITS_PER_WORD);
-      if (0 && bitsize / unit > 2)
-	{
-	  rtx tmp = extract_force_align_mem_bit_field (op0, bitsize, bitpos,
-						       unsignedp);
-	  if (tmp)
-	    return tmp;
-	}
-    }
+    unit = MIN (MEM_ALIGN (op0), BITS_PER_WORD);
 
   while (bitsdone < bitsize)
     {
