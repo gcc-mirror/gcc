@@ -1,3 +1,46 @@
+2008-04-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md (plogic): New.
+	(plogicprefix): Likewise.
+
+	* config/i386/mmx.md (mmx_<code><mode>3): New.
+	(mmx_and<mode>3): Removed.
+	(mmx_ior<mode>3): Likewise.
+	(mmx_xor<mode>3): Likewise.
+
+	* config/i386/sse.md (<code><mode>3): New.
+	(*<code><mode>3): Likewise.
+	(*<code><mode>3): Likewise.
+	(<code><mode>3): Likewise.
+	(*sse_<code><mode>3): Likewise.
+	(*sse2_<code><mode>3): Likewise.
+	(<code>tf3): Likewise.
+	(*<code>tf3): Likewise.
+	(and<mode>3): Likewise.
+	(*and<mode>3): Likewise.
+	(ior<mode>3): Removed.
+	(*ior<mode>3): Likewise.
+	(xor<mode>3): Likewise.
+	(*xor<mode>3): Likewise.
+	(*and<mode>3): Likewise.
+	(*ior<mode>3): Likewise.
+	(*xor<mode>3): Likewise.
+	(and<mode>3): Likewise.
+	(*sse_and<mode>3): Likewise.
+	(*sse2_and<mode>3): Likewise.
+	(andtf3): Likewise.
+	(*andtf3): Likewise.
+	(ior<mode>3): Likewise.
+	(*sse_ior<mode>3): Likewise.
+	(*sse2_ior<mode>3): Likewise.
+	(iortf3): Likewise.
+	(*iortf3): Likewise.
+	(xor<mode>3): Likewise.
+	(*sse_xor<mode>3): Likewise.
+	(*sse2_xor<mode>3): Likewise.
+	(xortf3): Likewise.
+	(*xortf3): Likewise.
+
 2008-04-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/14495
