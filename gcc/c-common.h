@@ -358,8 +358,8 @@ extern char flag_no_line_commands;
 
 extern char flag_no_output;
 
-/* Nonzero means dump macros in some fashion; contains the 'D', 'M' or
-   'N' of the command line switch.  */
+/* Nonzero means dump macros in some fashion; contains the 'D', 'M',
+   'N' or 'U' of the command line switch.  */
 
 extern char flag_dump_macros;
 

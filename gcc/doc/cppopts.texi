@@ -682,6 +682,14 @@ Like @samp{D}, but emit only the macro names, not their expansions.
 @opindex dI
 Output @samp{#include} directives in addition to the result of
 preprocessing.
+
+@item U
+@opindex dU
+Like @samp{D} except that only macros that are expanded, or whose
+definedness is tested in preprocessor directives, are output; the
+output is delayed until the use or test of the macro; and
+@samp{#undef} directives are also output for macros tested but
+undefined at the time.
 @end table
 
 @item -P

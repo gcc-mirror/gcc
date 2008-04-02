@@ -1668,6 +1668,7 @@ handle_OPT_d (const char *arg)
       case 'M':			/* Dump macros only.  */
       case 'N':			/* Dump names.  */
       case 'D':			/* Dump definitions.  */
+      case 'U':			/* Dump used macros.  */
 	flag_dump_macros = c;
 	break;
 

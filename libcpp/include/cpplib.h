@@ -480,6 +480,14 @@ struct cpp_callbacks
      This callback receives the translated message.  */
   void (*error) (cpp_reader *, int, const char *, va_list *)
        ATTRIBUTE_FPTR_PRINTF(3,0);
+
+  /* Callbacks for when a macro is expanded, or tested (whether
+     defined or not at the time) in #ifdef, #ifndef or "defined".  */
+  void (*used_define) (cpp_reader *, unsigned int, cpp_hashnode *);
+  void (*used_undef) (cpp_reader *, unsigned int, cpp_hashnode *);
+  /* Called before #define and #undef or other macro definition
+     changes are processed.  */
+  void (*before_define) (cpp_reader *);
 };
 
 /* Chain of directories to look for include files in.  */
@@ -537,6 +545,7 @@ extern const char *progname;
 #define NODE_WARN	(1 << 4)	/* Warn if redefined or undefined.  */
 #define NODE_DISABLED	(1 << 5)	/* A disabled macro.  */
 #define NODE_MACRO_ARG	(1 << 6)	/* Used during #define processing.  */
+#define NODE_USED	(1 << 7)	/* Dumped with -dU.  */
 
 /* Different flavors of hash node.  */
 enum node_type
