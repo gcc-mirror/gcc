@@ -1,3 +1,12 @@
+2008-04-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*float<SSEMODEI24:mode><X87MODEF:mode>2_1):
+	Emit gen_floatdi<X87MODEF:mode>2_i387_with_xmm for DImode values
+	in 32bit mode when XMM registers are available to avoid store
+	forwarding stalls.
+	(floatdi<X87MODEF:mode>2_i387_with_xmm): New insn pattern and
+	corresponding post-reload splitters.
+
 2008-04-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (bdesc_sse_3arg): Add __builtin_ia32_shufps
