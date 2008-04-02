@@ -1,3 +1,11 @@
+2008-04-02  Peter O'Gorman  <pogma@thewrittenword.com>
+
+	PR bootstrap/35216
+	* scripts/makemake.tcl: Replace org/omg build with build of all
+	its subpackages.
+	* sources.am: Regenerate.
+	* Makefile.in: Regenerate.
+
 2008-03-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.am (install-data-local): Rewrite to be more efficient,

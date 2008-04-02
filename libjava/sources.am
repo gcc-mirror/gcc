@@ -7585,7 +7585,7 @@ org/ietf/jgss.list: $(org_ietf_jgss_source_files)
 -include org/ietf/jgss.deps
 
 
-org_omg_source_files = \
+org_omg_CORBA_source_files = \
 classpath/org/omg/CORBA/ACTIVITY_COMPLETED.java \
 classpath/org/omg/CORBA/ACTIVITY_REQUIRED.java \
 classpath/org/omg/CORBA/ARG_IN.java \
@@ -7803,12 +7803,26 @@ classpath/org/omg/CORBA/portable/Streamable.java \
 classpath/org/omg/CORBA/portable/StreamableValue.java \
 classpath/org/omg/CORBA/portable/UnknownException.java \
 classpath/org/omg/CORBA/portable/ValueBase.java \
-classpath/org/omg/CORBA/portable/ValueFactory.java \
+classpath/org/omg/CORBA/portable/ValueFactory.java
+
+org-omg-CORBA.lo: $(org_omg_CORBA_source_files)
+	@find $(srcdir)/classpath/lib/org/omg/CORBA -name '*.class' > org-omg-CORBA.list
+	$(LTGCJCOMPILE) -fsource-filename=$(here)/classpath/lib/classes -fjni $(LIBGCJ_BC_FLAGS) -c -o org-omg-CORBA.lo @org-omg-CORBA.list
+	@rm -f org-omg-CORBA.list
+
+org_omg_CORBA_2_3_source_files = \
 classpath/org/omg/CORBA_2_3/ORB.java \
 classpath/org/omg/CORBA_2_3/portable/Delegate.java \
 classpath/org/omg/CORBA_2_3/portable/InputStream.java \
 classpath/org/omg/CORBA_2_3/portable/ObjectImpl.java \
-classpath/org/omg/CORBA_2_3/portable/OutputStream.java \
+classpath/org/omg/CORBA_2_3/portable/OutputStream.java
+
+org-omg-CORBA_2_3.lo: $(org_omg_CORBA_2_3_source_files)
+	@find $(srcdir)/classpath/lib/org/omg/CORBA_2_3 -name '*.class' > org-omg-CORBA_2_3.list
+	$(LTGCJCOMPILE) -fsource-filename=$(here)/classpath/lib/classes -fjni $(LIBGCJ_BC_FLAGS) -c -o org-omg-CORBA_2_3.lo @org-omg-CORBA_2_3.list
+	@rm -f org-omg-CORBA_2_3.list
+
+org_omg_CosNaming_source_files = \
 classpath/org/omg/CosNaming/Binding.java \
 classpath/org/omg/CosNaming/BindingHelper.java \
 classpath/org/omg/CosNaming/BindingHolder.java \
@@ -7867,8 +7881,22 @@ classpath/org/omg/CosNaming/_BindingIteratorStub.java \
 classpath/org/omg/CosNaming/_NamingContextExtImplBase.java \
 classpath/org/omg/CosNaming/_NamingContextExtStub.java \
 classpath/org/omg/CosNaming/_NamingContextImplBase.java \
-classpath/org/omg/CosNaming/_NamingContextStub.java \
-classpath/org/omg/Dynamic/Parameter.java \
+classpath/org/omg/CosNaming/_NamingContextStub.java
+
+org-omg-CosNaming.lo: $(org_omg_CosNaming_source_files)
+	@find $(srcdir)/classpath/lib/org/omg/CosNaming -name '*.class' > org-omg-CosNaming.list
+	$(LTGCJCOMPILE) -fsource-filename=$(here)/classpath/lib/classes -fjni $(LIBGCJ_BC_FLAGS) -c -o org-omg-CosNaming.lo @org-omg-CosNaming.list
+	@rm -f org-omg-CosNaming.list
+
+org_omg_Dynamic_source_files = \
+classpath/org/omg/Dynamic/Parameter.java
+
+org-omg-Dynamic.lo: $(org_omg_Dynamic_source_files)
+	@find $(srcdir)/classpath/lib/org/omg/Dynamic -name '*.class' > org-omg-Dynamic.list
+	$(LTGCJCOMPILE) -fsource-filename=$(here)/classpath/lib/classes -fjni $(LIBGCJ_BC_FLAGS) -c -o org-omg-Dynamic.lo @org-omg-Dynamic.list
+	@rm -f org-omg-Dynamic.list
+
+org_omg_DynamicAny_source_files = \
 classpath/org/omg/DynamicAny/AnySeqHelper.java \
 classpath/org/omg/DynamicAny/DynAny.java \
 classpath/org/omg/DynamicAny/DynAnyFactory.java \
@@ -7923,7 +7951,14 @@ classpath/org/omg/DynamicAny/_DynFixedStub.java \
 classpath/org/omg/DynamicAny/_DynSequenceStub.java \
 classpath/org/omg/DynamicAny/_DynStructStub.java \
 classpath/org/omg/DynamicAny/_DynUnionStub.java \
-classpath/org/omg/DynamicAny/_DynValueStub.java \
+classpath/org/omg/DynamicAny/_DynValueStub.java
+
+org-omg-DynamicAny.lo: $(org_omg_DynamicAny_source_files)
+	@find $(srcdir)/classpath/lib/org/omg/DynamicAny -name '*.class' > org-omg-DynamicAny.list
+	$(LTGCJCOMPILE) -fsource-filename=$(here)/classpath/lib/classes -fjni $(LIBGCJ_BC_FLAGS) -c -o org-omg-DynamicAny.lo @org-omg-DynamicAny.list
+	@rm -f org-omg-DynamicAny.list
+
+org_omg_IOP_source_files = \
 classpath/org/omg/IOP/CodeSets.java \
 classpath/org/omg/IOP/Codec.java \
 classpath/org/omg/IOP/CodecFactory.java \
@@ -7969,9 +8004,23 @@ classpath/org/omg/IOP/TaggedComponentHolder.java \
 classpath/org/omg/IOP/TaggedProfile.java \
 classpath/org/omg/IOP/TaggedProfileHelper.java \
 classpath/org/omg/IOP/TaggedProfileHolder.java \
-classpath/org/omg/IOP/TransactionService.java \
+classpath/org/omg/IOP/TransactionService.java
+
+org-omg-IOP.lo: $(org_omg_IOP_source_files)
+	@find $(srcdir)/classpath/lib/org/omg/IOP -name '*.class' > org-omg-IOP.list
+	$(LTGCJCOMPILE) -fsource-filename=$(here)/classpath/lib/classes -fjni $(LIBGCJ_BC_FLAGS) -c -o org-omg-IOP.lo @org-omg-IOP.list
+	@rm -f org-omg-IOP.list
+
+org_omg_Messaging_source_files = \
 classpath/org/omg/Messaging/SYNC_WITH_TRANSPORT.java \
-classpath/org/omg/Messaging/SyncScopeHelper.java \
+classpath/org/omg/Messaging/SyncScopeHelper.java
+
+org-omg-Messaging.lo: $(org_omg_Messaging_source_files)
+	@find $(srcdir)/classpath/lib/org/omg/Messaging -name '*.class' > org-omg-Messaging.list
+	$(LTGCJCOMPILE) -fsource-filename=$(here)/classpath/lib/classes -fjni $(LIBGCJ_BC_FLAGS) -c -o org-omg-Messaging.lo @org-omg-Messaging.list
+	@rm -f org-omg-Messaging.list
+
+org_omg_PortableInterceptor_source_files = \
 classpath/org/omg/PortableInterceptor/ACTIVE.java \
 classpath/org/omg/PortableInterceptor/AdapterManagerIdHelper.java \
 classpath/org/omg/PortableInterceptor/AdapterNameHelper.java \
@@ -8034,7 +8083,14 @@ classpath/org/omg/PortableInterceptor/ServerRequestInterceptor.java \
 classpath/org/omg/PortableInterceptor/ServerRequestInterceptorOperations.java \
 classpath/org/omg/PortableInterceptor/TRANSPORT_RETRY.java \
 classpath/org/omg/PortableInterceptor/USER_EXCEPTION.java \
-classpath/org/omg/PortableInterceptor/_IORInterceptor_3_0Stub.java \
+classpath/org/omg/PortableInterceptor/_IORInterceptor_3_0Stub.java
+
+org-omg-PortableInterceptor.lo: $(org_omg_PortableInterceptor_source_files)
+	@find $(srcdir)/classpath/lib/org/omg/PortableInterceptor -name '*.class' > org-omg-PortableInterceptor.list
+	$(LTGCJCOMPILE) -fsource-filename=$(here)/classpath/lib/classes -fjni $(LIBGCJ_BC_FLAGS) -c -o org-omg-PortableInterceptor.lo @org-omg-PortableInterceptor.list
+	@rm -f org-omg-PortableInterceptor.list
+
+org_omg_PortableServer_source_files = \
 classpath/org/omg/PortableServer/AdapterActivator.java \
 classpath/org/omg/PortableServer/AdapterActivatorOperations.java \
 classpath/org/omg/PortableServer/Current.java \
@@ -8115,15 +8171,29 @@ classpath/org/omg/PortableServer/ThreadPolicyOperations.java \
 classpath/org/omg/PortableServer/ThreadPolicyValue.java \
 classpath/org/omg/PortableServer/_ServantActivatorStub.java \
 classpath/org/omg/PortableServer/_ServantLocatorStub.java \
-classpath/org/omg/PortableServer/portable/Delegate.java \
+classpath/org/omg/PortableServer/portable/Delegate.java
+
+org-omg-PortableServer.lo: $(org_omg_PortableServer_source_files)
+	@find $(srcdir)/classpath/lib/org/omg/PortableServer -name '*.class' > org-omg-PortableServer.list
+	$(LTGCJCOMPILE) -fsource-filename=$(here)/classpath/lib/classes -fjni $(LIBGCJ_BC_FLAGS) -c -o org-omg-PortableServer.lo @org-omg-PortableServer.list
+	@rm -f org-omg-PortableServer.list
+
+org_omg_SendingContext_source_files = \
 classpath/org/omg/SendingContext/RunTime.java \
-classpath/org/omg/SendingContext/RunTimeOperations.java \
+classpath/org/omg/SendingContext/RunTimeOperations.java
+
+org-omg-SendingContext.lo: $(org_omg_SendingContext_source_files)
+	@find $(srcdir)/classpath/lib/org/omg/SendingContext -name '*.class' > org-omg-SendingContext.list
+	$(LTGCJCOMPILE) -fsource-filename=$(here)/classpath/lib/classes -fjni $(LIBGCJ_BC_FLAGS) -c -o org-omg-SendingContext.lo @org-omg-SendingContext.list
+	@rm -f org-omg-SendingContext.list
+
+org_omg_stub_source_files = \
 classpath/org/omg/stub/java/rmi/_Remote_Stub.java
 
-org-omg.lo: $(org_omg_source_files)
-	@find $(srcdir)/classpath/lib/org/omg -name '*.class' > org-omg.list
-	$(LTGCJCOMPILE) -fsource-filename=$(here)/classpath/lib/classes -fjni $(LIBGCJ_BC_FLAGS) -c -o org-omg.lo @org-omg.list
-	@rm -f org-omg.list
+org-omg-stub.lo: $(org_omg_stub_source_files)
+	@find $(srcdir)/classpath/lib/org/omg/stub -name '*.class' > org-omg-stub.list
+	$(LTGCJCOMPILE) -fsource-filename=$(here)/classpath/lib/classes -fjni $(LIBGCJ_BC_FLAGS) -c -o org-omg-stub.lo @org-omg-stub.list
+	@rm -f org-omg-stub.list
 
 org_relaxng_source_files = \
 classpath/external/relaxngDatatype/org/relaxng/datatype/Datatype.java \
@@ -8972,7 +9042,17 @@ bc_objects = \
   javax-imageio.lo \
   javax-rmi.lo \
   javax-xml.lo \
-  org-omg.lo \
+  org-omg-CORBA.lo \
+  org-omg-CORBA_2_3.lo \
+  org-omg-CosNaming.lo \
+  org-omg-Dynamic.lo \
+  org-omg-DynamicAny.lo \
+  org-omg-IOP.lo \
+  org-omg-Messaging.lo \
+  org-omg-PortableInterceptor.lo \
+  org-omg-PortableServer.lo \
+  org-omg-SendingContext.lo \
+  org-omg-stub.lo \
   org-relaxng.lo \
   org-w3c.lo \
   org-xml.lo
