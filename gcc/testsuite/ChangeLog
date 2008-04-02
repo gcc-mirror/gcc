@@ -1,4 +1,9 @@
-2008-03-31  Andrew Pinski  <pinskia@gmail.com>
+2008-04-02  Andrew Pinski  <pinskia@gmail.com>
+
+	PR middle-end/35429
+	* gcc.c-torture/compile/complex-5.c: New test.
+
+2008-04-02  Andrew Pinski  <pinskia@gmail.com>
 
 	PR tree-opt/35431
 	* gcc.c-torture/compile/pr35431.c: New testcase.

@@ -1,4 +1,10 @@
-2008-03-31  Andrew Pinski  <pinskia@gmail.com>
+2008-04-02  Andrew Pinski  <pinskia@gmail.com>
+
+	PR middle-end/35429
+	* fold-const.c (fold_truthop): Check for integeral types when folding
+	a == 0 && b == 0 and a != 0 || b != 0 .
+
+2008-04-02  Andrew Pinski  <pinskia@gmail.com>
 
 	PR tree-opt/35431
 	* tree-ssa-phiopt.c (conditional_replacement): Return early for

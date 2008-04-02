@@ -5571,7 +5571,8 @@ fold_truthop (enum tree_code code, tree truth_type, tree lhs, tree rhs)
       if (code == TRUTH_OR_EXPR
 	  && lcode == NE_EXPR && integer_zerop (lr_arg)
 	  && rcode == NE_EXPR && integer_zerop (rr_arg)
-	  && TREE_TYPE (ll_arg) == TREE_TYPE (rl_arg))
+	  && TREE_TYPE (ll_arg) == TREE_TYPE (rl_arg)
+	  && INTEGRAL_TYPE_P (TREE_TYPE (ll_arg)))
 	return build2 (NE_EXPR, truth_type,
 		       build2 (BIT_IOR_EXPR, TREE_TYPE (ll_arg),
 			       ll_arg, rl_arg),
@@ -5581,7 +5582,8 @@ fold_truthop (enum tree_code code, tree truth_type, tree lhs, tree rhs)
       if (code == TRUTH_AND_EXPR
 	  && lcode == EQ_EXPR && integer_zerop (lr_arg)
 	  && rcode == EQ_EXPR && integer_zerop (rr_arg)
-	  && TREE_TYPE (ll_arg) == TREE_TYPE (rl_arg))
+	  && TREE_TYPE (ll_arg) == TREE_TYPE (rl_arg)
+	  && INTEGRAL_TYPE_P (TREE_TYPE (ll_arg)))
 	return build2 (EQ_EXPR, truth_type,
 		       build2 (BIT_IOR_EXPR, TREE_TYPE (ll_arg),
 			       ll_arg, rl_arg),
