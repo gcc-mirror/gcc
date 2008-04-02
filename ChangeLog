@@ -1,3 +1,8 @@
+2008-04-01  Seongbae Park <seongbae.park@gmail.com>
+
+	* Makefile.tpl (.NOTPARALLEL): Revert previous change.
+	* Makefile.in (.NOTPARALLEL): Ditto.
+
 2008-04-01  Peter O'Gorman  <pogma@thewrittenword.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
