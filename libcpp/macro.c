@@ -815,6 +815,13 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
 
   pfile->state.angled_headers = false;
 
+  if ((node->flags & NODE_BUILTIN) && !(node->flags & NODE_USED))
+    {
+      node->flags |= NODE_USED;
+      if (pfile->cb.used_define)
+	pfile->cb.used_define (pfile, pfile->directive_line, node);
+    }
+
   /* Handle standard macros.  */
   if (! (node->flags & NODE_BUILTIN))
     {
@@ -853,6 +860,13 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
 
       /* Disable the macro within its expansion.  */
       node->flags |= NODE_DISABLED;
+
+      if (!(node->flags & NODE_USED))
+	{
+	  node->flags |= NODE_USED;
+	  if (pfile->cb.used_define)
+	    pfile->cb.used_define (pfile, pfile->directive_line, node);
+	}
 
       macro->used = 1;
 
@@ -1393,7 +1407,7 @@ _cpp_free_definition (cpp_hashnode *h)
   /* Macros and assertions no longer have anything to free.  */
   h->type = NT_VOID;
   /* Clear builtin flag in case of redefinition.  */
-  h->flags &= ~(NODE_BUILTIN | NODE_DISABLED);
+  h->flags &= ~(NODE_BUILTIN | NODE_DISABLED | NODE_USED);
 }
 
 /* Save parameter NODE to the parameter list of macro MACRO.  Returns

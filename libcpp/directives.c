@@ -559,9 +559,14 @@ do_define (cpp_reader *pfile)
       pfile->state.save_comments =
 	! CPP_OPTION (pfile, discard_comments_in_macro_exp);
 
+      if (pfile->cb.before_define)
+	pfile->cb.before_define (pfile);
+
       if (_cpp_create_definition (pfile, node))
 	if (pfile->cb.define)
 	  pfile->cb.define (pfile, pfile->directive_line, node);
+
+      node->flags &= ~NODE_USED;
     }
 }
 
@@ -573,6 +578,9 @@ do_undef (cpp_reader *pfile)
 
   if (node)
     {
+      if (pfile->cb.before_define)
+	pfile->cb.before_define (pfile);
+
       if (pfile->cb.undef)
 	pfile->cb.undef (pfile, pfile->directive_line, node);
 
@@ -603,7 +611,7 @@ undefine_macros (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *h,
   /* Body of _cpp_free_definition inlined here for speed.
      Macros and assertions no longer have anything to free.  */
   h->type = NT_VOID;
-  h->flags &= ~(NODE_POISONED|NODE_BUILTIN|NODE_DISABLED);
+  h->flags &= ~(NODE_POISONED|NODE_BUILTIN|NODE_DISABLED|NODE_USED);
   return 1;
 }
 
@@ -1638,12 +1646,26 @@ do_ifdef (cpp_reader *pfile)
 
   if (! pfile->state.skipping)
     {
-      const cpp_hashnode *node = lex_macro_node (pfile, false);
+      cpp_hashnode *node = lex_macro_node (pfile, false);
 
       if (node)
 	{
 	  skip = node->type != NT_MACRO;
 	  _cpp_mark_macro_used (node);
+	  if (!(node->flags & NODE_USED))
+	    {
+	      node->flags |= NODE_USED;
+	      if (node->type == NT_MACRO)
+		{
+		  if (pfile->cb.used_define)
+		    pfile->cb.used_define (pfile, pfile->directive_line, node);
+		}
+	      else
+		{
+		  if (pfile->cb.used_undef)
+		    pfile->cb.used_undef (pfile, pfile->directive_line, node);
+		}
+	    }
 	  check_eol (pfile);
 	}
     }
@@ -1656,7 +1678,7 @@ static void
 do_ifndef (cpp_reader *pfile)
 {
   int skip = 1;
-  const cpp_hashnode *node = 0;
+  cpp_hashnode *node = 0;
 
   if (! pfile->state.skipping)
     {
@@ -1666,6 +1688,20 @@ do_ifndef (cpp_reader *pfile)
 	{
 	  skip = node->type == NT_MACRO;
 	  _cpp_mark_macro_used (node);
+	  if (!(node->flags & NODE_USED))
+	    {
+	      node->flags |= NODE_USED;
+	      if (node->type == NT_MACRO)
+		{
+		  if (pfile->cb.used_define)
+		    pfile->cb.used_define (pfile, pfile->directive_line, node);
+		}
+	      else
+		{
+		  if (pfile->cb.used_undef)
+		    pfile->cb.used_undef (pfile, pfile->directive_line, node);
+		}
+	    }
 	  check_eol (pfile);
 	}
     }
@@ -2144,6 +2180,9 @@ cpp_pop_definition (cpp_reader *pfile, const char *str, cpp_macro *dfn)
   cpp_hashnode *node = lex_macro_node_from_str (pfile, str);
   if (node == NULL)
     return;
+
+  if (pfile->cb.before_define)
+    pfile->cb.before_define (pfile);
 
   if (node->type == NT_MACRO)
     {

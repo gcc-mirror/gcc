@@ -1,3 +1,15 @@
+2008-04-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (struct cpp_callbacks): Add used_define,
+	used_undef and before_define.
+	(NODE_USED): Define.
+	* directives.c (do_define, do_undef, undefine_macros, do_ifdef,
+	do_ifndef, cpp_pop_definition): Handle new flag and use new
+	callbacks.
+	* expr.c (parse_defined): Handle new flag and use new callbacks.
+	* macro.c (enter_macro_context, _cpp_free_definition): Handle new
+	flag and use new callbacks.
+
 2008-04-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR pch/13675

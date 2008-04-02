@@ -39,6 +39,17 @@ static struct
   bool first_time;		/* pp_file_change hasn't been called yet.  */
 } print;
 
+/* Defined and undefined macros being queued for output with -dU at
+   the next newline.  */
+typedef struct macro_queue
+{
+  struct macro_queue *next;	/* Next macro in the list.  */
+  char *macro;			/* The name of the macro if not
+				   defined, the full definition if
+				   defined.  */
+} macro_queue;
+static macro_queue *define_queue, *undef_queue;
+
 /* General output routines.  */
 static void scan_translation_unit (cpp_reader *);
 static void print_lines_directives_only (int, const void *, size_t);
@@ -46,6 +57,7 @@ static void scan_translation_unit_directives_only (cpp_reader *);
 static void scan_translation_unit_trad (cpp_reader *);
 static void account_for_newlines (const unsigned char *, size_t);
 static int dump_macro (cpp_reader *, cpp_hashnode *, void *);
+static void dump_queued_macros (cpp_reader *);
 
 static void print_line (source_location, const char *);
 static void maybe_print_line (source_location);
@@ -55,6 +67,8 @@ static void maybe_print_line (source_location);
 static void cb_line_change (cpp_reader *, const cpp_token *, int);
 static void cb_define (cpp_reader *, source_location, cpp_hashnode *);
 static void cb_undef (cpp_reader *, source_location, cpp_hashnode *);
+static void cb_used_define (cpp_reader *, source_location, cpp_hashnode *);
+static void cb_used_undef (cpp_reader *, source_location, cpp_hashnode *);
 static void cb_include (cpp_reader *, source_location, const unsigned char *,
 			const char *, int, const cpp_token **);
 static void cb_ident (cpp_reader *, source_location, const cpp_string *);
@@ -123,6 +137,13 @@ init_pp_output (FILE *out_stream)
     {
       cb->define = cb_define;
       cb->undef  = cb_undef;
+    }
+
+  if (flag_dump_macros == 'U')
+    {
+      cb->before_define = dump_queued_macros;
+      cb->used_define = cb_used_define;
+      cb->used_undef = cb_used_undef;
     }
 
   /* Initialize the print structure.  Setting print.src_line to -1 here is
@@ -320,6 +341,9 @@ cb_line_change (cpp_reader *pfile, const cpp_token *token,
 {
   source_location src_loc = token->src_loc;
 
+  if (define_queue || undef_queue)
+    dump_queued_macros (pfile);
+
   if (token->type == CPP_EOF || parsing_args)
     return;
 
@@ -377,6 +401,68 @@ cb_undef (cpp_reader *pfile ATTRIBUTE_UNUSED, source_location line,
   maybe_print_line (line);
   fprintf (print.outf, "#undef %s\n", NODE_NAME (node));
   print.src_line++;
+}
+
+static void
+cb_used_define (cpp_reader *pfile, source_location line ATTRIBUTE_UNUSED,
+		cpp_hashnode *node)
+{
+  macro_queue *q;
+  q = XNEW (macro_queue);
+  q->macro = xstrdup ((const char *) cpp_macro_definition (pfile, node));
+  q->next = define_queue;
+  define_queue = q;
+}
+
+static void
+cb_used_undef (cpp_reader *pfile ATTRIBUTE_UNUSED,
+	       source_location line ATTRIBUTE_UNUSED,
+	       cpp_hashnode *node)
+{
+  macro_queue *q;
+  q = XNEW (macro_queue);
+  q->macro = xstrdup ((const char *) NODE_NAME (node));
+  q->next = undef_queue;
+  undef_queue = q;
+}
+
+static void
+dump_queued_macros (cpp_reader *pfile ATTRIBUTE_UNUSED)
+{
+  macro_queue *q;
+
+  /* End the previous line of text.  */
+  if (print.printed)
+    {
+      putc ('\n', print.outf);
+      print.src_line++;
+      print.printed = 0;
+    }
+
+  for (q = define_queue; q;)
+    {
+      macro_queue *oq;
+      fputs ("#define ", print.outf);
+      fputs (q->macro, print.outf);
+      putc ('\n', print.outf);
+      print.src_line++;
+      oq = q;
+      q = q->next;
+      free (oq->macro);
+      free (oq);
+    }
+  define_queue = NULL;
+  for (q = undef_queue; q;)
+    {
+      macro_queue *oq;
+      fprintf (print.outf, "#undef %s\n", q->macro);
+      print.src_line++;
+      oq = q;
+      q = q->next;
+      free (oq->macro);
+      free (oq);
+    }
+  undef_queue = NULL;
 }
 
 static void

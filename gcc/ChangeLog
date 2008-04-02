@@ -1,3 +1,14 @@
+2008-04-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/cppopts.texi (-dU): Document.
+	* c-common.h (flag_dump_macros): Update comment.
+	* c-opts.c (handle_OPT_d): Handle -dU.
+	* c-ppoutput.c (macro_queue, define_queue, undef_queue,
+	dump_queued_macros, cb_used_define, cb_used_undef): New.
+	(init_pp_output): Handle -dU.
+	(cb_line_change): Call dump_queued_macros.
+	* toplev.c (decode_d_option): Accept -dU as preprocessor option.
+
 2008-04-02  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/predicates.md (io_address_operand): New predicate. 
