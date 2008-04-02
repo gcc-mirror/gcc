@@ -1,3 +1,12 @@
+2008-04-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/14495
+	* tree-vrp.c (vrp_visit_cond_stmt): Do not handle
+	SWITCH_EXPR here ...
+	(vrp_visit_switch_stmt): ... but here (new function).
+	(find_case_label_index): New helper function.
+	(vrp_visit_stmt): Dispatch to vrp_visit_switch_stmt.
+
 2008-04-02  Paolo Bonzini  <bonzini@gnu.org>
 
 	* fwprop.c: Fix ISO-C99ism.

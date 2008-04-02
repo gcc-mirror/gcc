@@ -5439,11 +5439,6 @@ vrp_visit_cond_stmt (tree stmt, edge *taken_edge_p)
   bool sop;
 
   *taken_edge_p = NULL;
-
-  /* FIXME.  Handle SWITCH_EXPRs.  */
-  if (TREE_CODE (stmt) == SWITCH_EXPR)
-    return SSA_PROP_VARYING;
-
   cond = COND_EXPR_COND (stmt);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -5537,6 +5532,147 @@ vrp_visit_cond_stmt (tree stmt, edge *taken_edge_p)
 }
 
 
+/* Searches the case label vector VEC for the index *IDX the CASE_LABEL
+   includes the value VAL.  The search starts at index START_IDX and
+   true is returned if *IDX corresponds to such an index.  False is
+   returned in case VAL hits the default case label and *IDX in this
+   case is the next higher or the next lower case label index.  */
+
+static bool
+find_case_label_index (tree vec, size_t start_idx, tree val, size_t *idx)
+{
+  size_t n = TREE_VEC_LENGTH (vec);
+  size_t low, high, i = start_idx;
+
+  /* Find case label for minimum of the value range or the next one.  */
+  for (low = start_idx - 1, high = n - 1; high - low > 1; )
+    {
+      tree t;
+      int cmp;
+      i = (high + low) / 2;
+      t = TREE_VEC_ELT (vec, i);
+
+      /* Cache the result of comparing CASE_LOW and val.  */
+      cmp = tree_int_cst_compare (CASE_LOW (t), val);
+
+      if (cmp > 0)
+        high = i;
+      else
+        low = i;
+
+      if (CASE_HIGH (t) == NULL)
+        {
+          /* A singe-valued case label.  */
+          if (cmp == 0)
+	    {
+	      *idx = i;
+	      return true;
+	    }
+        }
+      else
+        {
+          /* A case range.  We can only handle integer ranges.  */
+          if (cmp <= 0 && tree_int_cst_compare (CASE_HIGH (t), val) >= 0)
+	    {
+	      *idx = i;
+	      return true;
+	    }
+        }
+    }
+
+  *idx = i;
+  return false;
+}
+
+/* Visit switch statement STMT.  If we can determine which edge
+   will be taken out of STMT's basic block, record it in
+   *TAKEN_EDGE_P and return SSA_PROP_INTERESTING.  Otherwise, return
+   SSA_PROP_VARYING.  */
+
+static enum ssa_prop_result
+vrp_visit_switch_stmt (tree stmt, edge *taken_edge_p)
+{
+  tree op, val;
+  value_range_t *vr;
+  size_t i = 0, j = 0, n;
+  tree vec;
+  bool min_take_default, max_take_default;
+
+  *taken_edge_p = NULL;
+  op = TREE_OPERAND (stmt, 0);
+  if (TREE_CODE (op) != SSA_NAME)
+    return SSA_PROP_VARYING;
+
+  vr = get_value_range (op);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "\nVisiting switch expression with operand ");
+      print_generic_expr (dump_file, op, 0);
+      fprintf (dump_file, " with known range ");
+      dump_value_range (dump_file, vr);
+      fprintf (dump_file, "\n");
+    }
+
+  if (vr->type != VR_RANGE
+      || symbolic_range_p (vr))
+    return SSA_PROP_VARYING;
+
+  /* Find the single edge that is taken from the switch expression.  */
+  vec = SWITCH_LABELS (stmt);
+  n = TREE_VEC_LENGTH (vec);
+
+  /* Find case label for minimum of the value range or the next one.  */
+  min_take_default = !find_case_label_index (vec, 0, vr->min, &i);
+
+  /* Find case label for maximum of the value range or the previous one.  */
+  max_take_default = !find_case_label_index (vec, i, vr->max, &j);
+
+  /* Check if we reach the default label only.  */
+  if (j < i)
+    val = TREE_VEC_ELT (vec, n - 1);
+  /* Check if we reach exactly one label and not the default label.  */
+  else if (i == j
+	   && !min_take_default
+	   && !max_take_default)
+    val = TREE_VEC_ELT (vec, i);
+  else
+    {
+      /* Check if labels with index i to j are all reaching the same label.
+         If we don't hit a single case label only, the default case also has
+         to branch to the same label.  */
+      val = TREE_VEC_ELT (vec, i);
+      if (CASE_LABEL (TREE_VEC_ELT (vec, n - 1)) != CASE_LABEL (val))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "  not a single destination for this "
+		     "range\n");
+          return SSA_PROP_VARYING;
+	}
+      for (++i; i <= j; ++i)
+        {
+          if (CASE_LABEL (TREE_VEC_ELT (vec, i)) != CASE_LABEL (val))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "  not a single destination for this "
+			 "range\n");
+	      return SSA_PROP_VARYING;
+	    }
+        }
+    }
+
+  *taken_edge_p = find_edge (bb_for_stmt (stmt),
+			     label_to_block (CASE_LABEL (val)));
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "  will take edge to ");
+      print_generic_stmt (dump_file, CASE_LABEL (val), 0);
+    }
+
+  return SSA_PROP_INTERESTING;
+}
+
+
 /* Evaluate statement STMT.  If the statement produces a useful range,
    return SSA_PROP_INTERESTING and record the SSA name with the
    interesting range into *OUTPUT_P.
@@ -5575,8 +5711,10 @@ vrp_visit_stmt (tree stmt, edge *taken_edge_p, tree *output_p)
 	  || ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
 	return vrp_visit_assignment (stmt, output_p);
     }
-  else if (TREE_CODE (stmt) == COND_EXPR || TREE_CODE (stmt) == SWITCH_EXPR)
+  else if (TREE_CODE (stmt) == COND_EXPR)
     return vrp_visit_cond_stmt (stmt, taken_edge_p);
+  else if (TREE_CODE (stmt) == SWITCH_EXPR)
+    return vrp_visit_switch_stmt (stmt, taken_edge_p);
 
   /* All other statements produce nothing of interest for VRP, so mark
      their outputs varying and prevent further simulation.  */
