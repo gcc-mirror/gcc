@@ -1,3 +1,9 @@
+2008-03-31  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-opt/35431
+	* tree-ssa-phiopt.c (conditional_replacement): Return early for
+	complex types.
+
 2008-04-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/35705

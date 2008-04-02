@@ -1,3 +1,8 @@
+2008-03-31  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-opt/35431
+	* gcc.c-torture/compile/pr35431.c: New testcase.
+
 2008-03-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/object_overflow.adb: New test.
