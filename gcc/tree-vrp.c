@@ -104,6 +104,16 @@ static value_range_t **vr_value;
    node.  */
 static int *vr_phi_edge_counts;
 
+typedef struct {
+  tree stmt;
+  tree vec;
+} switch_update;
+
+static VEC (edge, heap) *to_remove_edges;
+DEF_VEC_O(switch_update);
+DEF_VEC_ALLOC_O(switch_update, heap);
+static VEC (switch_update, heap) *to_update_switch_stmts;
+
 
 /* Return the maximum value for TYPEs base type.  */
 
@@ -6298,6 +6308,106 @@ simplify_cond_using_ranges (tree stmt)
     }
 }
 
+/* Simplify a switch statement using the value range of the switch
+   argument.  */
+
+static void
+simplify_switch_using_ranges (tree stmt)
+{
+  tree op = TREE_OPERAND (stmt, 0);
+  value_range_t *vr;
+  bool take_default;
+  edge e;
+  edge_iterator ei;
+  size_t i = 0, j = 0, n, n2;
+  tree vec, vec2;
+  switch_update su;
+
+  if (TREE_CODE (op) != SSA_NAME)
+    return;
+
+  vr = get_value_range (op);
+
+  /* We can only handle integer ranges.  */
+  if (vr->type != VR_RANGE
+      || symbolic_range_p (vr))
+    return;
+
+  /* Find case label for min/max of the value range.  */
+  vec = SWITCH_LABELS (stmt);
+  n = TREE_VEC_LENGTH (vec);
+  take_default = !find_case_label_index (vec, 0, vr->min, &i);
+  take_default |= !find_case_label_index (vec, i, vr->max, &j);
+
+  /* If the case label range is continuous, we do not need to
+     preserve the default case label.  Verify that.  */
+  if (!take_default && j > i)
+    {
+      tree low, high;
+      size_t k;
+
+      high = CASE_LOW (TREE_VEC_ELT (vec, i));
+      if (CASE_HIGH (TREE_VEC_ELT (vec, i)))
+	high = CASE_HIGH (TREE_VEC_ELT (vec, i));
+      for (k = i + 1; k <= j; ++k)
+	{
+	  low = CASE_LOW (TREE_VEC_ELT (vec, k));
+	  if (!integer_onep (int_const_binop (MINUS_EXPR, low, high, 0)))
+	    {
+	      take_default = true;
+	      break;
+	    }
+	  high = low;
+	  if (CASE_HIGH (TREE_VEC_ELT (vec, k)))
+	    high = CASE_HIGH (TREE_VEC_ELT (vec, k));
+	}
+    }
+
+  /* Bail out if this is just all edges taken.  */
+  if (i == 0
+      && j == n - 2
+      && take_default)
+    return;
+
+  /* Build a new vector of taken case labels.  */
+  vec2 = make_tree_vec (j - i + 1 + (int)take_default);
+  for (n2 = 0; i <= j; ++i, ++n2)
+    TREE_VEC_ELT (vec2, n2) = TREE_VEC_ELT (vec, i);
+
+  /* Add the default edge, if necessary.  */
+  if (take_default)
+    TREE_VEC_ELT (vec2, n2++) = TREE_VEC_ELT (vec, n - 1);
+
+  /* Mark needed edges.  */
+  for (i = 0; i < n2; ++i)
+    {
+      e = find_edge (bb_for_stmt (stmt),
+		     label_to_block (CASE_LABEL (TREE_VEC_ELT (vec2, i))));
+      e->aux = (void *)-1;
+    }
+
+  /* Queue not needed edges for later removal.  */
+  FOR_EACH_EDGE (e, ei, bb_for_stmt (stmt)->succs)
+    {
+      if (e->aux == (void *)-1)
+	{
+	  e->aux = NULL;
+	  continue;
+	}
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "removing unreachable case label\n");
+	}
+      VEC_safe_push (edge, heap, to_remove_edges, e);
+    }
+
+  /* And queue an update for the stmt.  */
+  su.stmt = stmt;
+  su.vec = vec2;
+  VEC_safe_push (switch_update, heap, to_update_switch_stmts, &su);
+}
+
 /* Simplify STMT using ranges if possible.  */
 
 void
@@ -6324,9 +6434,9 @@ simplify_stmt_using_ranges (tree stmt)
     }
   else if (TREE_CODE (stmt) == COND_EXPR
 	   && COMPARISON_CLASS_P (COND_EXPR_COND (stmt)))
-    {
-      simplify_cond_using_ranges (stmt);
-    }
+    simplify_cond_using_ranges (stmt);
+  else if (TREE_CODE (stmt) == SWITCH_EXPR)
+    simplify_switch_using_ranges (stmt);
 }
 
 /* Stack of dest,src equivalency pairs that need to be restored after
@@ -6378,6 +6488,8 @@ identify_jump_threads (void)
 {
   basic_block bb;
   tree dummy;
+  int i;
+  edge e;
 
   /* Ugh.  When substituting values earlier in this pass we can
      wipe the dominance information.  So rebuild the dominator
@@ -6390,6 +6502,11 @@ identify_jump_threads (void)
      EDGE_DFS_BACK is not accurate at this time so we have to
      recompute it.  */
   mark_dfs_back_edges ();
+
+  /* Do not thread across edges we are about to remove.  Just marking
+     them as EDGE_DFS_BACK will do.  */
+  for (i = 0; VEC_iterate (edge, to_remove_edges, i, e); ++i)
+    e->flags |= EDGE_DFS_BACK;
 
   /* Allocate our unwinder stack to unwind any temporary equivalences
      that might be recorded.  */
@@ -6436,7 +6553,6 @@ identify_jump_threads (void)
 	      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (cond, 1)))))
 	{
 	  edge_iterator ei;
-	  edge e;
 
 	  /* We've got a block with multiple predecessors and multiple
 	     successors which also ends in a suitable conditional.  For
@@ -6603,6 +6719,10 @@ record_numbers_of_iterations (void)
 static unsigned int
 execute_vrp (void)
 {
+  int i;
+  edge e;
+  switch_update *su;
+
   loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
   rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
   scev_initialize ();
@@ -6620,9 +6740,26 @@ execute_vrp (void)
      ranges are corrected.  */
   record_numbers_of_iterations ();
 
+  to_remove_edges = VEC_alloc (edge, heap, 10);
+  to_update_switch_stmts = VEC_alloc (switch_update, heap, 5);
+
   vrp_initialize ();
   ssa_propagate (vrp_visit_stmt, vrp_visit_phi_node);
   vrp_finalize ();
+
+  /* Remove dead edges from SWITCH_EXPR optimization.  This leaves the
+     CFG in a broken state and requires a cfg_cleanup run.  */
+  for (i = 0; VEC_iterate (edge, to_remove_edges, i, e); ++i)
+    remove_edge (e);
+  /* Update SWITCH_EXPR case label vector.  */
+  for (i = 0; VEC_iterate (switch_update, to_update_switch_stmts, i, su); ++i)
+    SWITCH_LABELS (su->stmt) = su->vec;
+
+  if (VEC_length (edge, to_remove_edges) > 0)
+    free_dominance_info (CDI_DOMINATORS);
+
+  VEC_free (edge, heap, to_remove_edges);
+  VEC_free (switch_update, heap, to_update_switch_stmts);
 
   /* ASSERT_EXPRs must be removed before finalizing jump threads
      as finalizing jump threads calls the CFG cleanup code which

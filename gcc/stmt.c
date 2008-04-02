@@ -2258,8 +2258,9 @@ emit_case_bit_tests (tree index_type, tree index_expr, tree minval,
 
   mode = TYPE_MODE (index_type);
   expr = expand_normal (range);
-  emit_cmp_and_jump_insns (index, expr, GTU, NULL_RTX, mode, 1,
-			   default_label);
+  if (default_label)
+    emit_cmp_and_jump_insns (index, expr, GTU, NULL_RTX, mode, 1,
+			     default_label);
 
   index = convert_to_mode (word_mode, index, 0);
   index = expand_binop (word_mode, ashl_optab, const1_rtx,
@@ -2274,7 +2275,8 @@ emit_case_bit_tests (tree index_type, tree index_expr, tree minval,
 			       word_mode, 1, test[i].label);
     }
 
-  emit_jump (default_label);
+  if (default_label)
+    emit_jump (default_label);
 }
 
 #ifndef HAVE_casesi
@@ -2320,7 +2322,7 @@ expand_case (tree exp)
   struct case_node *case_list = 0;
 
   /* Label to jump to if no case matches.  */
-  tree default_label_decl;
+  tree default_label_decl = NULL_TREE;
 
   alloc_pool case_node_pool = create_alloc_pool ("struct case_node pool",
                                                  sizeof (struct case_node),
@@ -2338,18 +2340,21 @@ expand_case (tree exp)
     {
       tree elt;
       bitmap label_bitmap;
+      int vl = TREE_VEC_LENGTH (vec);
 
       /* cleanup_tree_cfg removes all SWITCH_EXPR with their index
 	 expressions being INTEGER_CST.  */
       gcc_assert (TREE_CODE (index_expr) != INTEGER_CST);
 
-      /* The default case is at the end of TREE_VEC.  */
-      elt = TREE_VEC_ELT (vec, TREE_VEC_LENGTH (vec) - 1);
-      gcc_assert (!CASE_HIGH (elt));
-      gcc_assert (!CASE_LOW (elt));
-      default_label_decl = CASE_LABEL (elt);
+      /* The default case, if ever taken, is at the end of TREE_VEC.  */
+      elt = TREE_VEC_ELT (vec, vl - 1);
+      if (!CASE_LOW (elt) && !CASE_HIGH (elt))
+	{
+	  default_label_decl = CASE_LABEL (elt);
+	  --vl;
+	}
 
-      for (i = TREE_VEC_LENGTH (vec) - 1; --i >= 0; )
+      for (i = vl - 1; i >= 0; --i)
 	{
 	  tree low, high;
 	  elt = TREE_VEC_ELT (vec, i);
@@ -2368,7 +2373,8 @@ expand_case (tree exp)
 
 
       before_case = start = get_last_insn ();
-      default_label = label_rtx (default_label_decl);
+      if (default_label_decl)
+	default_label = label_rtx (default_label_decl);
 
       /* Get upper and lower bounds of case values.  */
 
@@ -2413,7 +2419,8 @@ expand_case (tree exp)
 	 type, so we may still get a zero here.  */
       if (count == 0)
 	{
-	  emit_jump (default_label);
+	  if (default_label)
+	    emit_jump (default_label);
           free_alloc_pool (case_node_pool);
 	  return;
 	}
@@ -2509,7 +2516,8 @@ expand_case (tree exp)
 	       && estimate_case_costs (case_list));
 	  balance_case_nodes (&case_list, NULL);
 	  emit_case_nodes (index, case_list, default_label, index_type);
-	  emit_jump (default_label);
+	  if (default_label)
+	    emit_jump (default_label);
 	}
       else
 	{
@@ -2559,9 +2567,10 @@ expand_case (tree exp)
 	    }
 
 	  /* Fill in the gaps with the default.  */
-	  for (i = 0; i < ncases; i++)
-	    if (labelvec[i] == 0)
-	      labelvec[i] = gen_rtx_LABEL_REF (Pmode, default_label);
+	  if (default_label)
+	    for (i = 0; i < ncases; i++)
+	      if (labelvec[i] == 0)
+	        labelvec[i] = gen_rtx_LABEL_REF (Pmode, default_label);
 
 	  /* Output the table.  */
 	  emit_label (table_label);
@@ -3043,7 +3052,8 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 	      emit_case_nodes (index, node->left, default_label, index_type);
 	      /* If left-hand subtree does nothing,
 		 go to default.  */
-	      emit_jump (default_label);
+	      if (default_label)
+	        emit_jump (default_label);
 
 	      /* Code branches here for the right-hand subtree.  */
 	      expand_label (test_label);
@@ -3178,7 +3188,8 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 	    {
 	      /* If the left-hand subtree fell through,
 		 don't let it fall into the right-hand subtree.  */
-	      emit_jump (default_label);
+	      if (default_label)
+		emit_jump (default_label);
 
 	      expand_label (test_label);
 	      emit_case_nodes (index, node->right, default_label, index_type);

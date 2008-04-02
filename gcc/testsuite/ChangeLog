@@ -1,6 +1,13 @@
 2008-04-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/14495
+	PR tree-optimization/34793
+	* gcc.dg/tree-ssa/vrp41.c: New testcase.
+	* gcc.dg/tree-ssa/vrp42.c: Likewise.
+
+2008-04-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/14495
 	* gcc.dg/tree-ssa/vrp40.c: New testcase.
 
 2008-04-02  Eric Botcazou  <ebotcazou@adacore.com>

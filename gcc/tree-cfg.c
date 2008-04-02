@@ -1060,18 +1060,23 @@ group_case_labels (void)
 	  tree labels = SWITCH_LABELS (stmt);
 	  int old_size = TREE_VEC_LENGTH (labels);
 	  int i, j, new_size = old_size;
-	  tree default_case = TREE_VEC_ELT (labels, old_size - 1);
-	  tree default_label;
+	  tree default_case = NULL_TREE;
+	  tree default_label = NULL_TREE;
 
 	  /* The default label is always the last case in a switch
-	     statement after gimplification.  */
-	  default_label = CASE_LABEL (default_case);
+	     statement after gimplification if it was not optimized
+	     away.  */
+	  if (!CASE_LOW (TREE_VEC_ELT (labels, old_size - 1))
+	      && !CASE_HIGH (TREE_VEC_ELT (labels, old_size - 1)))
+	    {
+	      default_case = TREE_VEC_ELT (labels, old_size - 1);
+	      default_label = CASE_LABEL (default_case);
+	      old_size--;
+	    }
 
-	  /* Look for possible opportunities to merge cases.
-	     Ignore the last element of the label vector because it
-	     must be the default case.  */
+	  /* Look for possible opportunities to merge cases.  */
           i = 0;
-	  while (i < old_size - 1)
+	  while (i < old_size)
 	    {
 	      tree base_case, base_label, base_high;
 	      base_case = TREE_VEC_ELT (labels, i);
@@ -1095,7 +1100,7 @@ group_case_labels (void)
 	      /* Try to merge case labels.  Break out when we reach the end
 		 of the label vector or when we cannot merge the next case
 		 label with the current one.  */
-	      while (i < old_size - 1)
+	      while (i < old_size)
 		{
 		  tree merge_case = TREE_VEC_ELT (labels, i);
 	          tree merge_label = CASE_LABEL (merge_case);
@@ -4604,13 +4609,16 @@ tree_verify_flow_info (void)
 
 	    /* Verify that the case labels are sorted.  */
 	    prev = TREE_VEC_ELT (vec, 0);
-	    for (i = 1; i < n - 1; ++i)
+	    for (i = 1; i < n; ++i)
 	      {
 		tree c = TREE_VEC_ELT (vec, i);
 		if (! CASE_LOW (c))
 		  {
-		    error ("found default case not at end of case vector");
-		    err = 1;
+		    if (i != n - 1)
+		      {
+			error ("found default case not at end of case vector");
+			err = 1;
+		      }
 		    continue;
 		  }
 		if (! tree_int_cst_lt (CASE_LOW (prev), CASE_LOW (c)))
@@ -4624,11 +4632,9 @@ tree_verify_flow_info (void)
 		  }
 		prev = c;
 	      }
-	    if (CASE_LOW (TREE_VEC_ELT (vec, n - 1)))
-	      {
-		error ("no default case found at end of case vector");
-		err = 1;
-	      }
+	    /* VRP will remove the default case if it can prove it will
+	       never be executed.  So do not verify there always exists
+	       a default case here.  */
 
 	    FOR_EACH_EDGE (e, ei, bb->succs)
 	      {
