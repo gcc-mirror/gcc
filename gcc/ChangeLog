@@ -1,5 +1,14 @@
 2008-04-02  Paolo Bonzini  <bonzini@gnu.org>
 
+	PR bootstrap/35752
+	* Makefile.in (objdir): Set it here.
+	* configure.ac: Not here.  Find dynamic linker characteristics.
+	* exec-tool.in: Use them.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
+2008-04-02  Paolo Bonzini  <bonzini@gnu.org>
+
 	* expr.c (expand_var): Delete it.
 	* expr.h (expand_var): Delete prototype.
 	* function.c (expand_function_start): Use expand_decl instead.

@@ -79,9 +79,8 @@ abs_docdir = @abs_srcdir@/doc
 # Top build directory for this package, relative to here.
 top_builddir = .
 
-# objdir is set by configure.
-# It's normally the absolute path to the current directory.
-objdir = @objdir@
+# The absolute path to the current directory.
+objdir := $(shell pwd)
 
 host_subdir=@host_subdir@
 build_subdir=@build_subdir@
@@ -122,9 +121,6 @@ vpath %.texi $(gcc_docdir)/include
 
 # For ada/Make-lang.in; overridden in, for example, config/pa/x-ada.
 X_ADA_CFLAGS =
-T_ADA_CFLAGS =
-X_ADAFLAGS =
-T_ADAFLAGS =
 
 # --------
 # UNSORTED
@@ -142,9 +138,7 @@ LANGUAGES = c gcov$(exeext) gcov-dump$(exeext) $(CONFIG_LANGUAGES)
 
 # Various ways of specifying flags for compilations:
 # CFLAGS is for the user to override to, e.g., do a cross build with -O2.
-# XCFLAGS is used for most compilations but not when using the GCC just built.
 # TCFLAGS is used for compilations with the GCC just built.
-XCFLAGS =
 TCFLAGS =
 CFLAGS = @CFLAGS@
 LDFLAGS = @LDFLAGS@
@@ -202,11 +196,7 @@ WARN_CFLAGS = @warn_cflags@
 CPPFLAGS = @CPPFLAGS@
 
 # These exists to be overridden by the x-* and t-* files, respectively.
-X_CFLAGS =
 T_CFLAGS =
-
-X_CPPFLAGS =
-T_CPPFLAGS =
 
 AWK = @AWK@
 CC = @CC@
@@ -318,9 +308,9 @@ UNWIND_H = $(srcdir)/unwind-generic.h
 GCC_FOR_TARGET = $(STAGE_CC_WRAPPER) ./xgcc -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include -isystem $(build_tooldir)/sys-include -L$(objdir)/../ld
 
 # This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
-# It omits XCFLAGS, and specifies -B./.
+# It specifies -B./.
 # It also specifies -isystem ./include to find, e.g., stddef.h.
-GCC_CFLAGS=$(CFLAGS_FOR_TARGET) $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(LOOSE_WARN) -Wold-style-definition $($@-warn) -isystem ./include $(TCFLAGS)
+GCC_CFLAGS=$(CFLAGS_FOR_TARGET) $(INTERNAL_CFLAGS) $(T_CFLAGS) $(LOOSE_WARN) -Wold-style-definition $($@-warn) -isystem ./include $(TCFLAGS)
 
 # ---------------------------------------------------
 # Programs which produce files for the target machine
@@ -856,13 +846,13 @@ INTERNAL_CFLAGS = -DIN_GCC @CROSS@
 
 # This is the variable actually used when we compile. If you change this,
 # you probably want to update BUILD_CFLAGS in configure.ac
-ALL_CFLAGS = $(X_CFLAGS) $(T_CFLAGS) \
-  $(CFLAGS) $(INTERNAL_CFLAGS) $(COVERAGE_FLAGS) $(WARN_CFLAGS) $(XCFLAGS) @DEFS@
+ALL_CFLAGS = $(T_CFLAGS) \
+  $(CFLAGS) $(INTERNAL_CFLAGS) $(COVERAGE_FLAGS) $(WARN_CFLAGS) @DEFS@
 
 # Likewise.  Put INCLUDES at the beginning: this way, if some autoconf macro
 # puts -I options in CPPFLAGS, our include files in the srcdir will always
 # win against random include files in /usr/include.
-ALL_CPPFLAGS = $(INCLUDES) $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
+ALL_CPPFLAGS = $(INCLUDES) $(CPPFLAGS)
 
 # Build and host support libraries.
 LIBIBERTY = ../libiberty/libiberty.a
@@ -938,6 +928,7 @@ export libsubdir
 export slibdir
 
 FLAGS_TO_PASS = \
+	"ADA_CFLAGS=$(ADA_CFLAGS)" \
 	"BISON=$(BISON)" \
 	"BISONFLAGS=$(BISONFLAGS)" \
 	"CFLAGS=$(CFLAGS) $(WARN_CFLAGS)" \
