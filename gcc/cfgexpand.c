@@ -643,11 +643,6 @@ expand_one_static_var (tree var)
   if (TREE_ASM_WRITTEN (var))
     return;
 
-  /* Give the front end a chance to do whatever.  In practice, this is
-     resolving duplicate names for IMA in C.  */
-  if (lang_hooks.expand_decl (var))
-    return;
-
   /* Otherwise, just emit the variable.  */
   rest_of_decl_compilation (var, 0, 0);
 }
@@ -749,10 +744,7 @@ static HOST_WIDE_INT
 expand_one_var (tree var, bool toplevel, bool really_expand)
 {
   if (TREE_CODE (var) != VAR_DECL)
-    {
-      if (really_expand)
-        lang_hooks.expand_decl (var);
-    }
+    ;
   else if (DECL_EXTERNAL (var))
     ;
   else if (DECL_HAS_VALUE_EXPR_P (var))
