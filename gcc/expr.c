@@ -9830,7 +9830,8 @@ case_values_threshold (void)
    0 otherwise (i.e. if there is no casesi instruction).  */
 int
 try_casesi (tree index_type, tree index_expr, tree minval, tree range,
-	    rtx table_label ATTRIBUTE_UNUSED, rtx default_label)
+	    rtx table_label ATTRIBUTE_UNUSED, rtx default_label,
+	    rtx fallback_label ATTRIBUTE_UNUSED)
 {
   enum machine_mode index_mode = SImode;
   int index_bits = GET_MODE_BITSIZE (index_mode);
@@ -9894,7 +9895,8 @@ try_casesi (tree index_type, tree index_expr, tree minval, tree range,
     op2 = copy_to_mode_reg (op_mode, op2);
 
   emit_jump_insn (gen_casesi (index, op1, op2,
-			      table_label, default_label));
+			      table_label, !default_label
+					   ? fallback_label : default_label));
   return 1;
 }
 

@@ -1,3 +1,13 @@
+2008-04-03  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/35800
+	* expr.h (try_casesi): Adjust prototype.
+	* expr.c (try_casesi): Take fallback label as extra parameter.
+	Use that for gen_casesi if default_label is NULL.
+	* stmt.c (expand_case): Pass fallback label to try_casesi,
+	make sure to fill gaps with a fallback label if default_label
+	is not present.
+
 2008-04-03  Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	PR target/35801
