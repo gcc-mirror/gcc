@@ -1,3 +1,39 @@
+2008-04-03  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips.md (any_gt, any_ge, any_lt, any_le): New code
+	iterators.
+	(u): Add attribute values for gt, gtu, ge, geu, lt, ltu, le and
+	leu.
+	(sgt<u>): Merge sgt and sgtu into new expander.
+	(sgt, sgtu): Remove expanders.
+	(*sgt<u>_<mode>): Merge *sgt_<mode> and *sgtu_<mode> into new
+	pattern.
+	(*sgt_<mode>, *sgtu_<mode>): Remove patterns.
+	(*sgt<u>_<mode>_mips16): Merge *sgt_<mode>_mips16 and
+	*sgtu_<mode>_mips16 into new pattern.
+	(*sgt_<mode>_mips16, *sgtu_<mode>_mips16): Remove patterns.
+	(sge<u>): Merge sge and sgeu into new expander.
+	(sge, sgeu): Remove expanders.
+	(*sge<u>_<mode>): Merge *sge_<mode> and second *sge_<mode> into
+	new pattern.
+	(*sge_<mode>, second *sge_<mode>): Remove patterns.
+	(slt<u>): Merge slt and sltu into new expander.
+	(slt, sltu): Remove expanders.
+	(*slt<u>_<mode>): Merge *slt_<mode> and *sltu_<mode> into new
+	pattern.
+	(*slt_<mode>, *sltu_<mode>): Remove patterns.
+	(*slt<u>_<mode>_mips16): Merge *slt_<mode>_mips16 and
+	*sltu_<mode>_mips16 into new pattern.
+	(*slt_<mode>_mips16, *sltu_<mode>_mips16): Remove patterns.
+	(sle<u>): Merge sle and sleu into new expander.
+	(sle, sleu): Remove expanders.
+	(*sle<u>_<mode>): Merge *sle_<mode> and *sleu_<mode> into new
+	pattern.
+	(*sle_<mode>, *sleu_<mode>): Remove patterns.
+	(*sle<u>_<mode>_mips16): Merge *sle_<mode>_mips16 and
+	*sleu_<mode>_mips16 into new pattern.
+	(*sle_<mode>_mips16, *sleu_<mode>_mips16): Remove patterns.
+
 2008-04-03  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/35795
