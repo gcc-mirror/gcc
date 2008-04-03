@@ -1,3 +1,9 @@
+2008-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/35741
+	* semantics.c (finish_offsetof): Undo effect of convert_from_reference
+	before calling fold_offsetof.
+
 2008-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/35546
