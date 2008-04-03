@@ -993,7 +993,8 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_SHARED:
 	  gcc_assert (is_parallel_ctx (ctx));
 	  decl = OMP_CLAUSE_DECL (c);
-	  gcc_assert (!is_variable_sized (decl));
+	  gcc_assert (!COMPLETE_TYPE_P (TREE_TYPE (decl))
+		      || !is_variable_sized (decl));
 	  by_ref = use_pointer_for_field (decl, ctx);
 	  /* Global variables don't need to be copied,
 	     the receiver side will use them directly.  */

@@ -1,3 +1,9 @@
+2008-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/35818
+	* omp-low.c (scan_sharing_clauses) <case OMP_CLAUSE_SHARED>: Don't
+	call is_variable_sized if decl has incomplete type.
+
 2008-04-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386-protos.h (ix86_aligned_p): Removed.
