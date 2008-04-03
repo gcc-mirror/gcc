@@ -1,5 +1,23 @@
 2008-04-03  Paolo Bonzini  <bonzini@gnu.org>
 
+        * tree-inline.c (copy_generic_body, copy_decl_no_change): Export.
+        (remap_block): Call id->transform_lang_insert_block instead
+        of langhook.
+        (optimize_inline_calls, unsave_expr_now, tree_function_versioning):
+        Set id.transform_lang_insert_block to NULL.
+        (clone_body): Move to cp/optimize.c
+        * tree-inline.h (struct copy_body_data): Change
+        transform_lang_insert_block to function pointer.
+        (copy_generic_body, copy_decl_no_change): Export.
+        * langhooks.h (struct lang_hooks_for_decls): Kill insert_block.
+        * langhooks-def.h (LANG_HOOKS_INSERT_BLOCK): Kill.
+        (LANG_HOOKS_DECLS): Remove LANG_HOOKS_INSERT_BLOCK.
+
+        * c-tree.h (insert_block): Kill.
+        * c-decl.c (insert_block): Kill.
+
+2008-04-03  Paolo Bonzini  <bonzini@gnu.org>
+
         * c-objc-common.h (LANG_HOOKS_FUNCTION_ENTER_NESTED,
         LANG_HOOKS_FUNCTION_LEAVE_NESTED): Delete.
         * c-tree.h (c_push_function_context, c_pop_function_context): Remove

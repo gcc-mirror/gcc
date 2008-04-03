@@ -95,7 +95,6 @@ static void gfc_print_identifier (FILE *, tree, int);
 static bool gfc_mark_addressable (tree);
 void do_function_end (void);
 int global_bindings_p (void);
-void insert_block (tree);
 static void clear_binding_stack (void);
 static void gfc_be_parse_file (int);
 static alias_set_type gfc_get_alias_set (tree);
@@ -470,19 +469,6 @@ poplevel (int keep, int reverse, int functionbody)
     TREE_USED (block_node) = 1;
 
   return block_node;
-}
-
-
-/* Insert BLOCK at the end of the list of subblocks of the
-   current binding level.  This is used when a BIND_EXPR is expanded,
-   to handle the BLOCK node inside the BIND_EXPR.  */
-
-void
-insert_block (tree block)
-{
-  TREE_USED (block) = 1;
-  current_binding_level->blocks
-    = chainon (current_binding_level->blocks, block);
 }
 
 

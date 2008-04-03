@@ -72,6 +72,37 @@ update_cloned_parm (tree parm, tree cloned_parm, bool first)
   DECL_GIMPLE_REG_P (cloned_parm) = DECL_GIMPLE_REG_P (parm);
 }
 
+/* FN is a function that has a complete body, and CLONE is a function whose
+   body is to be set to a copy of FN, mapping argument declarations according
+   to the ARG_MAP splay_tree.  */
+
+static void
+clone_body (tree clone, tree fn, void *arg_map)
+{
+  copy_body_data id;
+
+  /* Clone the body, as if we were making an inline call.  But, remap the
+     parameters in the callee to the parameters of caller.  */
+  memset (&id, 0, sizeof (id));
+  id.src_fn = fn;
+  id.dst_fn = clone;
+  id.src_cfun = DECL_STRUCT_FUNCTION (fn);
+  id.decl_map = (struct pointer_map_t *)arg_map;
+
+  id.copy_decl = copy_decl_no_change;
+  id.transform_call_graph_edges = CB_CGE_DUPLICATE;
+  id.transform_new_cfg = true;
+  id.transform_return_to_modify = false;
+  id.transform_lang_insert_block = insert_block;
+
+  /* We're not inside any EH region.  */
+  id.eh_region = -1;
+
+  /* Actually copy the body.  */
+  append_to_statement_list_force (copy_generic_body (&id),
+				  &DECL_SAVED_TREE (clone));
+}
+
 /* FN is a function that has a complete body.  Clone the body as
    necessary.  Returns nonzero if there's no longer any need to
    process the main body.  */

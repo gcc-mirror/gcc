@@ -1,3 +1,7 @@
+2008-04-03  Paolo Bonzini  <bonzini@gnu.org>
+
+        * f95-lang.c (insert_block): Kill.
+
 2008-04-01  George Helffrich <george@gcc.gnu.org>
 
 	* trans-common.c (create_common):  Add decl to function

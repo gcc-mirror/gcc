@@ -931,16 +931,6 @@ pop_file_scope (void)
   cgraph_finalize_compilation_unit ();
 }
 
-/* Insert BLOCK at the end of the list of subblocks of the current
-   scope.  This is used when a BIND_EXPR is expanded, to handle the
-   BLOCK node inside the BIND_EXPR.  */
-
-void
-insert_block (tree block)
-{
-  TREE_USED (block) = 1;
-  SCOPE_LIST_APPEND (current_scope, blocks, block);
-}
 
 /* Push a definition or a declaration of struct, union or enum tag "name".
    "type" should be the type node.

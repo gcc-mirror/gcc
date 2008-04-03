@@ -1,4 +1,8 @@
 2008-04-03  Paolo Bonzini  <bonzini@gnu.org>
+    
+	* optimize.c (clone_body): New, from tree-inline.c.
+
+2008-04-03  Paolo Bonzini  <bonzini@gnu.org>
 
         * method.c (synthesize_method): Use {push,pop}_function_context.
         * name-lookup.c (push_to_top_level): Likewise.
