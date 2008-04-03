@@ -1,3 +1,7 @@
+2008-04-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386-protos.h (ix86_aligned_p): Removed.
+
 2008-04-03  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.md (any_gt, any_ge, any_lt, any_le): New code

@@ -36,8 +36,6 @@ extern void ix86_output_addr_vec_elt (FILE *, int);
 extern void ix86_output_addr_diff_elt (FILE *, int, int);
 
 #ifdef RTX_CODE
-extern int ix86_aligned_p (rtx);
-
 extern int standard_80387_constant_p (rtx);
 extern const char *standard_80387_constant_opcode (rtx);
 extern rtx standard_80387_constant_rtx (int);
