@@ -1,3 +1,14 @@
+2008-04-03  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/35795
+	* alpha/alpha.c (alpha_output_mi_thunk_osf): Free after compilation.
+	* sparc/sparc.c (sparc_output_mi_thunk): Likewise.
+	* ia64/ia64.c (ia64_output_mi_thunk): Likewise.
+	* m68k/m68k.c (m68k_output_mi_thunk): Likewise.
+	* score/score3.c (score3_output_mi_thunk): Likewise.
+	* score/score7.c (score7_output_mi_thunk): Likewise.
+	* mips/mips.c (mips_output_mi_thunk): Likewise.
+
 2008-04-03  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vrp.c (extract_range_from_unary_expr): Handle all
@@ -22,42 +33,42 @@
 
 2008-04-03  Paolo Bonzini  <bonzini@gnu.org>
 
-        * tree-inline.c (copy_generic_body, copy_decl_no_change): Export.
-        (remap_block): Call id->transform_lang_insert_block instead
-        of langhook.
-        (optimize_inline_calls, unsave_expr_now, tree_function_versioning):
-        Set id.transform_lang_insert_block to NULL.
-        (clone_body): Move to cp/optimize.c
-        * tree-inline.h (struct copy_body_data): Change
-        transform_lang_insert_block to function pointer.
-        (copy_generic_body, copy_decl_no_change): Export.
-        * langhooks.h (struct lang_hooks_for_decls): Kill insert_block.
-        * langhooks-def.h (LANG_HOOKS_INSERT_BLOCK): Kill.
-        (LANG_HOOKS_DECLS): Remove LANG_HOOKS_INSERT_BLOCK.
+	* tree-inline.c (copy_generic_body, copy_decl_no_change): Export.
+	(remap_block): Call id->transform_lang_insert_block instead
+	of langhook.
+	(optimize_inline_calls, unsave_expr_now, tree_function_versioning):
+	Set id.transform_lang_insert_block to NULL.
+	(clone_body): Move to cp/optimize.c
+	* tree-inline.h (struct copy_body_data): Change
+	transform_lang_insert_block to function pointer.
+	(copy_generic_body, copy_decl_no_change): Export.
+	* langhooks.h (struct lang_hooks_for_decls): Kill insert_block.
+	* langhooks-def.h (LANG_HOOKS_INSERT_BLOCK): Kill.
+	(LANG_HOOKS_DECLS): Remove LANG_HOOKS_INSERT_BLOCK.
 
-        * c-tree.h (insert_block): Kill.
-        * c-decl.c (insert_block): Kill.
+	* c-tree.h (insert_block): Kill.
+	* c-decl.c (insert_block): Kill.
 
 2008-04-03  Paolo Bonzini  <bonzini@gnu.org>
 
-        * c-objc-common.h (LANG_HOOKS_FUNCTION_ENTER_NESTED,
-        LANG_HOOKS_FUNCTION_LEAVE_NESTED): Delete.
-        * c-tree.h (c_push_function_context, c_pop_function_context): Remove
-        argument.
-        * c-decl.c (c_push_function_context, c_pop_function_context): Remove
-        argument, call {push,pop}_function_context from here.
-        * c-parser.c: Use c_{push,pop}_function_context.
+	* c-objc-common.h (LANG_HOOKS_FUNCTION_ENTER_NESTED,
+	LANG_HOOKS_FUNCTION_LEAVE_NESTED): Delete.
+	* c-tree.h (c_push_function_context, c_pop_function_context): Remove
+	argument.
+	* c-decl.c (c_push_function_context, c_pop_function_context): Remove
+	argument, call {push,pop}_function_context from here.
+	* c-parser.c: Use c_{push,pop}_function_context.
 
-        * function.c (push_function_context_to): Move meat ...
-        (push_function_context): ... here.  Simplify.
-        * function.c (pop_function_context_from): Move meat ...
-        (pop_function_context): ... here.  Simplify.
-        * langhooks.h (struct lang_hooks_for_functions): Remove enter_nested,
-        leave_nested).
-        * langhooks-def.h (LANG_HOOKS_FUNCTION_ENTER_NESTED,
-        LANG_HOOKS_FUNCTION_LEAVE_NESTED): Delete.
-        (LANG_HOOKS_FUNCTION_INITIALIZER): Delete them from here.
-        * tree.h (push_function_context_to, pop_function_context_from): Remove.
+	* function.c (push_function_context_to): Move meat ...
+	(push_function_context): ... here.  Simplify.
+	* function.c (pop_function_context_from): Move meat ...
+	(pop_function_context): ... here.  Simplify.
+	* langhooks.h (struct lang_hooks_for_functions): Remove enter_nested,
+	leave_nested).
+	* langhooks-def.h (LANG_HOOKS_FUNCTION_ENTER_NESTED,
+	LANG_HOOKS_FUNCTION_LEAVE_NESTED): Delete.
+	(LANG_HOOKS_FUNCTION_INITIALIZER): Delete them from here.
+	* tree.h (push_function_context_to, pop_function_context_from): Remove.
 
 2008-04-03  Ben Elliston  <bje@au.ibm.com>
 

@@ -8339,6 +8339,7 @@ alpha_output_mi_thunk_osf (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   final_start_function (insn, file, 1);
   final (insn, file, 1);
   final_end_function ();
+  free_after_compilation (cfun);
 }
 #endif /* TARGET_ABI_OSF */
 
