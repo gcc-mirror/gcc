@@ -717,7 +717,41 @@ resolve_omp_clauses (gfc_code *code)
      a symbol can appear on both firstprivate and lastprivate.  */
   for (list = 0; list < OMP_LIST_NUM; list++)
     for (n = omp_clauses->lists[list]; n; n = n->next)
-      n->sym->mark = 0;
+      {
+	n->sym->mark = 0;
+	if (n->sym->attr.flavor == FL_VARIABLE)
+	  continue;
+	if (n->sym->attr.flavor == FL_PROCEDURE
+	    && n->sym->result == n->sym
+	    && n->sym->attr.function)
+	  {
+	    if (gfc_current_ns->proc_name == n->sym
+		|| (gfc_current_ns->parent
+		    && gfc_current_ns->parent->proc_name == n->sym))
+	      continue;
+	    if (gfc_current_ns->proc_name->attr.entry_master)
+	      {
+		gfc_entry_list *el = gfc_current_ns->entries;
+		for (; el; el = el->next)
+		  if (el->sym == n->sym)
+		    break;
+		if (el)
+		  continue;
+	      }
+	    if (gfc_current_ns->parent
+		&& gfc_current_ns->parent->proc_name->attr.entry_master)
+	      {
+		gfc_entry_list *el = gfc_current_ns->parent->entries;
+		for (; el; el = el->next)
+		  if (el->sym == n->sym)
+		    break;
+		if (el)
+		  continue;
+	      }
+	  }
+	gfc_error ("Object '%s' is not a variable at %L", n->sym->name,
+		   &code->loc);
+      }
 
   for (list = 0; list < OMP_LIST_NUM; list++)
     if (list != OMP_LIST_FIRSTPRIVATE && list != OMP_LIST_LASTPRIVATE)

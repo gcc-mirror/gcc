@@ -1,3 +1,9 @@
+2008-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/35786
+	* openmp.c (resolve_omp_clauses): Diagnose if a clause symbol
+	isn't a variable.
+
 2008-04-01  Joseph Myers  <joseph@codesourcery.com>
 
 	* gfortran.texi: Include gpl_v3.texi instead of gpl.texi
