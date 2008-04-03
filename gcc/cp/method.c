@@ -772,7 +772,7 @@ synthesize_method (tree fndecl)
   if (! context)
     push_to_top_level ();
   else if (nested)
-    push_function_context_to (context);
+    push_function_context ();
 
   input_location = DECL_SOURCE_LOCATION (fndecl);
 
@@ -810,7 +810,7 @@ synthesize_method (tree fndecl)
   if (! context)
     pop_from_top_level ();
   else if (nested)
-    pop_function_context_from (context);
+    pop_function_context ();
 
   pop_deferring_access_checks ();
 

@@ -483,8 +483,8 @@ extern tree grokparm (const struct c_parm *);
 extern tree implicitly_declare (tree);
 extern void keep_next_level (void);
 extern void pending_xref_error (void);
-extern void c_push_function_context (struct function *);
-extern void c_pop_function_context (struct function *);
+extern void c_push_function_context (void);
+extern void c_pop_function_context (void);
 extern void push_parm_decl (const struct c_parm *);
 extern struct c_declarator *set_array_declarator_inner (struct c_declarator *,
 							struct c_declarator *);

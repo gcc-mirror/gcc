@@ -4958,8 +4958,6 @@ extern void preserve_temp_slots (rtx);
 extern int aggregate_value_p (const_tree, const_tree);
 extern void push_function_context (void);
 extern void pop_function_context (void);
-extern void push_function_context_to (tree);
-extern void pop_function_context_from (tree);
 extern tree gimplify_parameters (void);
 
 /* In print-rtl.c */

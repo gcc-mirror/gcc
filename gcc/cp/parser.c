@@ -17426,8 +17426,7 @@ cp_parser_late_parsing_for_member (cp_parser* parser, tree member_function)
 	 function.  */
       function_scope = current_function_decl;
       if (function_scope)
-	push_function_context_to (function_scope);
-
+	push_function_context ();
 
       /* Push the body of the function onto the lexer stack.  */
       cp_parser_push_lexer_for_tokens (parser, tokens);
@@ -17450,7 +17449,7 @@ cp_parser_late_parsing_for_member (cp_parser* parser, tree member_function)
 
       /* Leave the scope of the containing function.  */
       if (function_scope)
-	pop_function_context_from (function_scope);
+	pop_function_context ();
       cp_parser_pop_lexer (parser);
     }
 

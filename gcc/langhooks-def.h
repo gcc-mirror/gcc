@@ -117,8 +117,6 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
 
 #define LANG_HOOKS_FUNCTION_INIT	lhd_do_nothing_f
 #define LANG_HOOKS_FUNCTION_FINAL	lhd_do_nothing_f
-#define LANG_HOOKS_FUNCTION_ENTER_NESTED lhd_do_nothing_f
-#define LANG_HOOKS_FUNCTION_LEAVE_NESTED lhd_do_nothing_f
 #define LANG_HOOKS_FUNCTION_MISSING_NORETURN_OK_P hook_bool_tree_true
 
 /* Attribute hooks.  */
@@ -145,8 +143,6 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
 #define LANG_HOOKS_FUNCTION_INITIALIZER {	\
   LANG_HOOKS_FUNCTION_INIT,			\
   LANG_HOOKS_FUNCTION_FINAL,			\
-  LANG_HOOKS_FUNCTION_ENTER_NESTED,		\
-  LANG_HOOKS_FUNCTION_LEAVE_NESTED,		\
   LANG_HOOKS_FUNCTION_MISSING_NORETURN_OK_P	\
 }
 
