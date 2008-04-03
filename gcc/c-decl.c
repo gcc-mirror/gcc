@@ -6886,11 +6886,11 @@ check_for_loop_decls (void)
    used during compilation of a C function.  */
 
 void
-c_push_function_context (struct function *f)
+c_push_function_context (void)
 {
   struct language_function *p;
   p = GGC_NEW (struct language_function);
-  f->language = p;
+  cfun->language = p;
 
   p->base.x_stmt_tree = c_stmt_tree;
   p->x_break_label = c_break_label;
@@ -6901,14 +6901,20 @@ c_push_function_context (struct function *f)
   p->returns_null = current_function_returns_null;
   p->returns_abnormally = current_function_returns_abnormally;
   p->warn_about_return_type = warn_about_return_type;
+
+  push_function_context ();
 }
 
 /* Restore the variables used during compilation of a C function.  */
 
 void
-c_pop_function_context (struct function *f)
+c_pop_function_context (void)
 {
-  struct language_function *p = f->language;
+  struct language_function *p;
+
+  pop_function_context ();
+  p = cfun->language;
+  cfun->language = NULL;
 
   if (DECL_STRUCT_FUNCTION (current_function_decl) == 0
       && DECL_SAVED_TREE (current_function_decl) == NULL_TREE)
@@ -6929,8 +6935,6 @@ c_pop_function_context (struct function *f)
   current_function_returns_null = p->returns_null;
   current_function_returns_abnormally = p->returns_abnormally;
   warn_about_return_type = p->warn_about_return_type;
-
-  f->language = NULL;
 }
 
 /* Copy the DECL_LANG_SPECIFIC data associated with DECL.  */

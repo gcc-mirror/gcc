@@ -5101,7 +5101,7 @@ push_to_top_level (void)
   if (cfun)
     {
       need_pop = true;
-      push_function_context_to (NULL_TREE);
+      push_function_context ();
     }
   else
     need_pop = false;
@@ -5180,7 +5180,7 @@ pop_from_top_level (void)
   /* If we were in the middle of compiling a function, restore our
      state.  */
   if (s->need_pop_function_context)
-    pop_function_context_from (NULL_TREE);
+    pop_function_context ();
   current_function_decl = s->function_decl;
   skip_evaluation = s->skip_evaluation;
   timevar_pop (TV_NAME_LOOKUP);

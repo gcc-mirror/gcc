@@ -64,12 +64,6 @@ struct lang_hooks_for_functions
   /* Called when leaving a function.  */
   void (*final) (struct function *);
 
-  /* Called when entering a nested function.  */
-  void (*enter_nested) (struct function *);
-
-  /* Called when leaving a nested function.  */
-  void (*leave_nested) (struct function *);
-
   /* Determines if it's ok for a function to have no noreturn attribute.  */
   bool (*missing_noreturn_ok_p) (tree);
 };
