@@ -1,3 +1,8 @@
+2008-04-03  Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	PR target/35801
+	* config/rs6000/rs6000.c (rs6000_output_mi_thunk): Free cfun.
+
 2008-04-03  Ben Elliston  <bje@au.ibm.com>
 
 	* expmed.c (extract_split_bit_field): Remove if (0) code.
