@@ -1,3 +1,16 @@
+2008-04-03  Tom Tromey  <tromey@redhat.com>
+	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* config/m68k/t-uclinux (generated_files): Add sysroot-suffix.h.
+	* config/bfin/t-bfin-linux (generated_files): Add
+	linux-sysroot-suffix.h.
+	* doc/install.texi (Prerequisites): Require make 3.80.
+	* doc/sourcebuild.texi (Front End Directory): Document new
+	variable.
+	* Makefile.in (generated_files): New variable.
+	(ALL_HOST_OBJS): New variable.
+	($(ALL_HOST_OBJS)): New target.
+
 2008-04-03  Paolo Bonzini  <bonzini@gnu.org>
 
         * tree-inline.c (copy_generic_body, copy_decl_no_change): Export.

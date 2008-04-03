@@ -1,6 +1,6 @@
 # Top level -*- makefile -*- fragment for GNU Objective-C
-#   Copyright (C) 1997, 1998, 2000, 2001, 2002, 2003, 2004, 2005, 2007
-#   Free Software Foundation, Inc.
+#   Copyright (C) 1997, 1998, 2000, 2001, 2002, 2003, 2004, 2005, 2007,
+#   2008 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -48,6 +48,8 @@ objc-warn = $(STRICT_WARN)
 
 # Language-specific object files for Objective C.
 OBJC_OBJS = objc/objc-lang.o objc/objc-act.o
+
+objc_OBJS = $(OBJC_OBJS) cc1obj-checksum.o
 
 cc1obj-dummy$(exeext): $(OBJC_OBJS) $(C_AND_OBJC_OBJS) dummy-checksum.o $(BACKEND) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \

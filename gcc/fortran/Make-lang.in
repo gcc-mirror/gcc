@@ -1,6 +1,7 @@
 # -*- makefile -*-
 # Top level makefile fragment for GNU gfortran, the GNU Fortran 95 compiler.
-# Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+# Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software
+# Foundation, Inc.
 # Contributed by Paul Brook <paul@nowt.org
 # and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -66,6 +67,8 @@ F95_OBJS = $(F95_PARSER_OBJS) \
     fortran/trans-const.o fortran/trans-decl.o fortran/trans-expr.o \
     fortran/trans-intrinsic.o fortran/trans-io.o fortran/trans-openmp.o \
     fortran/trans-stmt.o fortran/trans-types.o
+
+fortran_OBJS = $(F95_OBJS) gfortranspec.o
 
 #
 # Define the names for selecting gfortran in LANGUAGES.

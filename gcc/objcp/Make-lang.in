@@ -1,5 +1,5 @@
 # Top level -*- makefile -*- fragment for GNU Objective-C++
-#   Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+#   Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
 #   Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 #This file is part of GCC.
@@ -50,6 +50,8 @@ objcp-warn = $(STRICT_WARN) -DOBJCPLUS -I$(srcdir)/objc -I$(srcdir)/cp
 # Language-specific object files for Objective C++.
 OBJCXX_OBJS = objcp/objcp-act.o objcp/objcp-lang.o objcp/objcp-decl.o \
    $(CXX_AND_OBJCXX_OBJS)
+
+obj-c++_OBJS = $(OBJCXX_OBJS) cc1objplus-checksum.o
 
 cc1objplus-dummy$(exeext): $(OBJCXX_OBJS) dummy-checksum.o $(BACKEND) \
 		$(LIBDEPS)

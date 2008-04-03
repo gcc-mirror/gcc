@@ -1246,6 +1246,15 @@ OBJS = $(OBJS-common) $(OBJS-md) $(OBJS-archive)
 
 OBJS-onestep = libbackend.o $(OBJS-archive)
 
+# This lists all host object files, whether they are included in this
+# compilation or not.
+ALL_HOST_OBJS = $(GCC_OBJS) $(C_OBJS) $(OBJS) libbackend.o \
+  @TREEBROWSER@ main.o gccspec.o version.o intl.o prefix.o cppspec.o \
+  $(foreach v,$(CONFIG_LANGUAGES),$($(v)_OBJS)) \
+  $(COLLECT2_OBJS) $(EXTRA_GCC_OBJS) \
+  mips-tfile.o mips-tdump.o \
+  $(PROTO_OBJS) $(GCOV_OBJS) $(GCOV_DUMP_OBJS)
+
 BACKEND = main.o @TREEBROWSER@ libbackend.a $(CPPLIB) $(LIBDECNUMBER)
 
 MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
@@ -2998,6 +3007,16 @@ $(simple_generated_c:insn-%.c=s-%): s-%: build/gen%$(build_exeext) \
 	  insn-conditions.md > tmp-$*.c
 	$(SHELL) $(srcdir)/../move-if-change tmp-$*.c insn-$*.c
 	$(STAMP) s-$*
+
+generated_files = config.h tm.h $(TM_P_H) $(TM_H) multilib.h \
+       $(simple_generated_h) $(simple_generated_c) specs.h \
+       tree-check.h genrtl.h insn-modes.h tm-preds.h tm-constrs.h \
+       $(ALL_GTFILES_H) gtype-desc.c gtype-desc.h gcov-iov.h
+
+# In order for parallel make to really start compiling the expensive
+# objects from $(OBJS-common) as early as possible, build all their
+# prerequisites strictly before all objects.
+$(ALL_HOST_OBJS) : | $(generated_files)
 
 # genconstants needs to run before insn-conditions.md is available
 # (because the constants may be used in the conditions).

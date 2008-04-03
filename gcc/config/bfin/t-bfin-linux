@@ -33,3 +33,5 @@ linux-sysroot-suffix.h: $(srcdir)/config/bfin/print-sysroot-suffix.sh
 	$(SHELL) $(srcdir)/config/bfin/print-sysroot-suffix.sh \
 	  "$(SYSTEM_HEADER_DIR)/../.." "$(MULTILIB_MATCHES)" \
 	  "$(MULTILIB_OPTIONS)" > $@
+
+generated_files += linux-sysroot-suffix.h
