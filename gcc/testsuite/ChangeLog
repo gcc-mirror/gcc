@@ -1,3 +1,8 @@
+2008-04-03  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/35800
+	* gcc.c-torture/execute/pr35800.c: New test.
+
 2008-04-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/cpp/cmdlne-dU-1.c, gcc.dg/cpp/cmdlne-dU-2.c,
