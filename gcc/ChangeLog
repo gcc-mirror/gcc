@@ -1,5 +1,9 @@
 2008-04-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/35738
+	* c-parser.c (c_parser_omp_atomic): Call
+	default_function_array_conversion on the RHS.
+
 	PR middle-end/35818
 	* omp-low.c (scan_sharing_clauses) <case OMP_CLAUSE_SHARED>: Don't
 	call is_variable_sized if decl has incomplete type.

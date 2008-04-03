@@ -7386,6 +7386,7 @@ c_parser_omp_atomic (c_parser *parser)
   tree lhs, rhs;
   tree stmt;
   enum tree_code code;
+  struct c_expr rhs_expr;
 
   c_parser_skip_to_pragma_eol (parser);
 
@@ -7448,7 +7449,9 @@ c_parser_omp_atomic (c_parser *parser)
 	}
 
       c_parser_consume_token (parser);
-      rhs = c_parser_expression (parser).value;
+      rhs_expr = c_parser_expression (parser);
+      rhs_expr = default_function_array_conversion (rhs_expr);
+      rhs = rhs_expr.value;
       break;
     }
   stmt = c_finish_omp_atomic (code, lhs, rhs);
