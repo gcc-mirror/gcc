@@ -1,3 +1,7 @@
+2008-04-03  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_output_mi_thunk): Free cfun.
+
 2008-04-03  Tom Tromey  <tromey@redhat.com>
 	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
