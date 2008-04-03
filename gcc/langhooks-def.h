@@ -196,7 +196,6 @@ extern tree lhd_make_node (enum tree_code);
 
 /* Declaration hooks.  */
 #define LANG_HOOKS_GLOBAL_BINDINGS_P global_bindings_p
-#define LANG_HOOKS_INSERT_BLOCK	insert_block
 #define LANG_HOOKS_PUSHDECL	pushdecl
 #define LANG_HOOKS_GETDECLS	getdecls
 #define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL lhd_warn_unused_global_decl
@@ -214,7 +213,6 @@ extern tree lhd_make_node (enum tree_code);
 
 #define LANG_HOOKS_DECLS { \
   LANG_HOOKS_GLOBAL_BINDINGS_P, \
-  LANG_HOOKS_INSERT_BLOCK, \
   LANG_HOOKS_PUSHDECL, \
   LANG_HOOKS_GETDECLS, \
   LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL, \

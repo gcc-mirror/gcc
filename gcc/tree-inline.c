@@ -127,7 +127,6 @@ eni_weights eni_time_weights;
 /* Prototypes.  */
 
 static tree declare_return_variable (copy_body_data *, tree, tree, tree *);
-static tree copy_generic_body (copy_body_data *);
 static bool inlinable_function_p (tree);
 static void remap_block (tree *, copy_body_data *);
 static tree remap_decls (tree, copy_body_data *);
@@ -140,7 +139,6 @@ static void remap_save_expr (tree *, void *, int *);
 static void add_lexical_block (tree current_block, tree new_block);
 static tree copy_decl_to_var (tree, copy_body_data *);
 static tree copy_result_decl_to_var (tree, copy_body_data *);
-static tree copy_decl_no_change (tree, copy_body_data *);
 static tree copy_decl_maybe_to_var (tree, copy_body_data *);
 
 /* Insert a tree->tree mapping for ID.  Despite the name suggests
@@ -498,7 +496,7 @@ remap_block (tree *block, copy_body_data *id)
   fn = id->dst_fn;
 
   if (id->transform_lang_insert_block)
-    lang_hooks.decls.insert_block (new_block);
+    id->transform_lang_insert_block (new_block);
 
   /* Remember the remapped block.  */
   insert_decl_map (id, old_block, new_block);
@@ -1394,7 +1392,7 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency,
 /* Make a copy of the body of FN so that it can be inserted inline in
    another function.  */
 
-static tree
+tree
 copy_generic_body (copy_body_data *id)
 {
   tree body;
@@ -3024,7 +3022,7 @@ optimize_inline_calls (tree fn)
   id.transform_call_graph_edges = CB_CGE_DUPLICATE;
   id.transform_new_cfg = false;
   id.transform_return_to_modify = true;
-  id.transform_lang_insert_block = false;
+  id.transform_lang_insert_block = NULL;
   id.statements_to_fold = pointer_set_create ();
 
   push_gimplify_context ();
@@ -3077,36 +3075,6 @@ optimize_inline_calls (tree fn)
   return (TODO_update_ssa | TODO_cleanup_cfg
 	  | (gimple_in_ssa_p (cfun) ? TODO_remove_unused_locals : 0)
 	  | (profile_status != PROFILE_ABSENT ? TODO_rebuild_frequencies : 0));
-}
-
-/* FN is a function that has a complete body, and CLONE is a function whose
-   body is to be set to a copy of FN, mapping argument declarations according
-   to the ARG_MAP splay_tree.  */
-
-void
-clone_body (tree clone, tree fn, void *arg_map)
-{
-  copy_body_data id;
-
-  /* Clone the body, as if we were making an inline call.  But, remap the
-     parameters in the callee to the parameters of caller.  */
-  memset (&id, 0, sizeof (id));
-  id.src_fn = fn;
-  id.dst_fn = clone;
-  id.src_cfun = DECL_STRUCT_FUNCTION (fn);
-  id.decl_map = (struct pointer_map_t *)arg_map;
-
-  id.copy_decl = copy_decl_no_change;
-  id.transform_call_graph_edges = CB_CGE_DUPLICATE;
-  id.transform_new_cfg = true;
-  id.transform_return_to_modify = false;
-  id.transform_lang_insert_block = true;
-
-  /* We're not inside any EH region.  */
-  id.eh_region = -1;
-
-  /* Actually copy the body.  */
-  append_to_statement_list_force (copy_generic_body (&id), &DECL_SAVED_TREE (clone));
 }
 
 /* Passed to walk_tree.  Copies the node pointed to, if appropriate.  */
@@ -3329,7 +3297,7 @@ unsave_expr_now (tree expr)
   id.transform_call_graph_edges = CB_CGE_DUPLICATE;
   id.transform_new_cfg = false;
   id.transform_return_to_modify = false;
-  id.transform_lang_insert_block = false;
+  id.transform_lang_insert_block = NULL;
 
   /* Walk the tree once to find local labels.  */
   walk_tree_without_duplicates (&expr, mark_local_for_remap_r, &id);
@@ -3475,7 +3443,7 @@ copy_result_decl_to_var (tree decl, copy_body_data *id)
 }
 
 
-static tree
+tree
 copy_decl_no_change (tree decl, copy_body_data *id)
 {
   tree copy;
@@ -3611,7 +3579,7 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
     = update_clones ? CB_CGE_MOVE_CLONES : CB_CGE_MOVE;
   id.transform_new_cfg = true;
   id.transform_return_to_modify = false;
-  id.transform_lang_insert_block = false;
+  id.transform_lang_insert_block = NULL;
 
   current_function_decl = new_decl;
   old_entry_block = ENTRY_BLOCK_PTR_FOR_FUNCTION

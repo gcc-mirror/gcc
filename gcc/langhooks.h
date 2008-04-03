@@ -158,11 +158,6 @@ struct lang_hooks_for_decls
      returns -1 for an undocumented reason used in stor-layout.c.  */
   int (*global_bindings_p) (void);
 
-  /* Insert BLOCK at the end of the list of subblocks of the
-     current binding level.  This is used when a BIND_EXPR is expanded,
-     to handle the BLOCK node inside the BIND_EXPR.  */
-  void (*insert_block) (tree);
-
   /* Function to add a decl to the current scope level.  Takes one
      argument, a decl to add.  Returns that decl, or, if the same
      symbol is already declared, may return a different decl for that

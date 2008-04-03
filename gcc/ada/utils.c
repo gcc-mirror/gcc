@@ -382,17 +382,6 @@ gnat_poplevel ()
   free_binding_level = level;
 }
 
-/* Insert BLOCK at the end of the list of subblocks of the
-   current binding level.  This is used when a BIND_EXPR is expanded,
-   to handle the BLOCK node inside the BIND_EXPR.  */
-
-void
-insert_block (tree block)
-{
-  TREE_USED (block) = 1;
-  TREE_CHAIN (block) = BLOCK_SUBBLOCKS (current_binding_level->block);
-  BLOCK_SUBBLOCKS (current_binding_level->block) = block;
-}
 
 /* Records a ..._DECL node DECL as belonging to the current lexical scope
    and uses GNAT_NODE for location information and propagating flags.  */
