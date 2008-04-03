@@ -86,6 +86,8 @@ CXX_AND_OBJCXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
 # Language-specific object files for C++.
 CXX_OBJS = cp/cp-lang.o stub-objc.o $(CXX_AND_OBJCXX_OBJS)
 
+c++_OBJS = $(CXX_OBJS) dummy-checksum.o cc1plus-checksum.o cp/g++spec.o
+
 # Use strict warnings for this front end.
 cp-warn = $(STRICT_WARN) $(CXX_COMPAT_WARN)
 
