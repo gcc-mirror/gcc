@@ -555,7 +555,7 @@ extern void do_compare_rtx_and_jump (rtx, rtx, enum rtx_code, int,
 				     enum machine_mode, rtx, rtx, rtx);
 
 /* Two different ways of generating switch statements.  */
-extern int try_casesi (tree, tree, tree, tree, rtx, rtx);
+extern int try_casesi (tree, tree, tree, tree, rtx, rtx, rtx);
 extern int try_tablejump (tree, tree, tree, tree, rtx, rtx);
 
 /* Smallest number of adjacent cases before we use a jump table.

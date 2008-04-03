@@ -2521,9 +2521,10 @@ expand_case (tree exp)
 	}
       else
 	{
+	  rtx fallback_label = label_rtx (case_list->code_label);
 	  table_label = gen_label_rtx ();
 	  if (! try_casesi (index_type, index_expr, minval, range,
-			    table_label, default_label))
+			    table_label, default_label, fallback_label))
 	    {
 	      bool ok;
 
@@ -2566,11 +2567,15 @@ expand_case (tree exp)
 		  = gen_rtx_LABEL_REF (Pmode, label_rtx (n->code_label));
 	    }
 
-	  /* Fill in the gaps with the default.  */
-	  if (default_label)
-	    for (i = 0; i < ncases; i++)
-	      if (labelvec[i] == 0)
-	        labelvec[i] = gen_rtx_LABEL_REF (Pmode, default_label);
+	  /* Fill in the gaps with the default.  We may have gaps at
+	     the beginning if we tried to avoid the minval subtraction,
+	     so substitute some label even if the default label was
+	     deemed unreachable.  */
+	  if (!default_label)
+	    default_label = fallback_label;
+	  for (i = 0; i < ncases; i++)
+	    if (labelvec[i] == 0)
+	      labelvec[i] = gen_rtx_LABEL_REF (Pmode, default_label);
 
 	  /* Output the table.  */
 	  emit_label (table_label);
