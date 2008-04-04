@@ -1,3 +1,9 @@
+2008-04-04  Nick Clifton  <nickc@redhat.com>
+
+	PR binutils/4334
+	* acx.m4 (ACX_CHECK_CYGWIN_CAT_WORKS): New macro to check that
+	cygwin builds are not running in textmode.
+
 2008-03-27  Paolo Bonzini  <bonzini@gnu.org>
 
 	* extensions.m4: New.

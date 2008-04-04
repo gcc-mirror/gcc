@@ -2780,6 +2780,33 @@ case "${host}" in
     host_makefile_frag="config/mh-djgpp"
     ;;
   *-cygwin*)
+
+echo "$as_me:$LINENO: checking to see if cat works as expected" >&5
+echo $ECHO_N "checking to see if cat works as expected... $ECHO_C" >&6
+echo a >cygwin-cat-check
+if test `cat cygwin-cat-check` == a ; then
+  rm cygwin-cat-check
+  echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+else
+  rm cygwin-cat-check
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+  { { echo "$as_me:$LINENO: error: The cat command does not ignore carriage return characters.
+  Please either mount the build directory in binary mode or run the following
+  commands before running any configure script:
+set -o igncr
+export SHELLOPTS
+  " >&5
+echo "$as_me: error: The cat command does not ignore carriage return characters.
+  Please either mount the build directory in binary mode or run the following
+  commands before running any configure script:
+set -o igncr
+export SHELLOPTS
+  " >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
     host_makefile_frag="config/mh-cygwin"
     ;;
   *-mingw*)
