@@ -1,5 +1,7 @@
 2008-04-04  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/pr34856.c: Use -maltivec on powerpc linux.
+
 	PR target/35620
 	* gcc.dg/dfp/pr35620.c: New test.
 	* gcc.dg/dfp/func-pointer.c: New test.
