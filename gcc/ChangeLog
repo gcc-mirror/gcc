@@ -1,3 +1,9 @@
+2008-04-04  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/35823
+	* fold-const.c (optimize_minmax_comparison): Use the correct
+	type for the constant in the simplified comparison.
+
 2008-04-04  Zuxy Meng <zuxy.meng@gmail.com>
 
 	* config/i386/driver-i386.c (describe_cache): Add l2_sizekb argument.
