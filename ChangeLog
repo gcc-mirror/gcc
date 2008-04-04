@@ -1,3 +1,9 @@
+2008-04-04  NightStrike  <NightStrike@gmail.com>
+
+	PR other/35151
+        * configure.ac: Combine rules for mingw32 and mingw64.
+        * configure: Regenerate.
+
 2008-04-02  Kai Tietz  <kai.tietz@onvision.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
