@@ -33,17 +33,39 @@ const char *host_detect_local_cpu (int argc, const char **argv);
 
 static char *
 describe_cache (unsigned l1_sizekb, unsigned l1_line,
-		unsigned l1_assoc ATTRIBUTE_UNUSED)
+		unsigned l1_assoc ATTRIBUTE_UNUSED, unsigned l2_sizekb)
 {
-  char size[100], line[100];
+  char size[100], line[100], size2[100];
 
   /* At the moment, gcc middle-end does not use the information about the
      associativity of the cache.  */
 
   sprintf (size, "--param l1-cache-size=%u", l1_sizekb);
   sprintf (line, "--param l1-cache-line-size=%u", l1_line);
+  sprintf (size2, "--param l2-cache-size=%u", l2_sizekb);
 
-  return concat (size, " ", line, " ", NULL);
+  return concat (size, " ", line, " ", size2, " ", NULL);
+}
+
+static void
+decode_l2_cache (unsigned *l2_size, unsigned *l2_line, unsigned *l2_assoc)
+{
+  unsigned eax, ebx, ecx, edx, assoc;
+
+  __cpuid (0x80000006, eax, ebx, ecx, edx);
+
+  *l2_size = (ecx >> 16) & 0xffff;
+  *l2_line = ecx & 0xff;
+  assoc = (ecx >> 12) & 0xf;
+  if (assoc == 6)
+    assoc = 8;
+  else if (assoc == 8)
+    assoc = 16;
+  else if (assoc >= 0xa && assoc <= 0xc)
+    assoc = 32 + (assoc - 0xa) * 16;
+  else if (assoc >= 0xd && assoc <= 0xe)
+    assoc = 96 + (assoc - 0xd) * 32;
+  *l2_assoc = assoc;
 }
 
 /* Returns the description of caches for an AMD processor.  */
@@ -53,6 +75,7 @@ detect_caches_amd (unsigned max_ext_level)
 {
   unsigned eax, ebx, ecx, edx;
   unsigned l1_sizekb, l1_line, l1_assoc;
+  unsigned l2_sizekb, l2_line, l2_assoc;
 
   if (max_ext_level < 0x80000005)
     return (char *) "";
@@ -63,15 +86,20 @@ detect_caches_amd (unsigned max_ext_level)
   l1_sizekb = (ecx >> 24) & 0xff;
   l1_assoc = (ecx >> 16) & 0xff;
 
-  return describe_cache (l1_sizekb, l1_line, l1_assoc);
+  if (max_ext_level >= 0x80000006)
+    decode_l2_cache (&l2_sizekb, &l2_line, &l2_assoc);
+
+  return describe_cache (l1_sizekb, l1_line, l1_assoc, l2_sizekb);
 }
 
-/* Stores the size of the L1 cache and cache line, and the associativity
-   of the cache according to REG to L1_SIZEKB, L1_LINE and L1_ASSOC.  */
+/* Stores the size of the L1/2 cache and cache line, and the associativity
+   of the cache according to REG to L1_SIZEKB, L1_LINE, L1_ASSOC and
+   L2_SIZEKB. */
 
 static void
 decode_caches_intel (unsigned reg, unsigned *l1_sizekb, unsigned *l1_line,
-		     unsigned *l1_assoc)
+		     unsigned *l1_assoc, unsigned *l2_sizekb,
+		     unsigned *l2_line, unsigned *l2_assoc)
 {
   unsigned i, val;
 
@@ -100,6 +128,66 @@ decode_caches_intel (unsigned reg, unsigned *l1_sizekb, unsigned *l1_line,
 	  *l1_line = 64;
 	  *l1_assoc = 8;
 	  break;
+	case 0x39:
+	  *l2_sizekb = 128;
+	  *l2_line = 64;
+	  *l2_assoc = 4;
+	  break;
+	case 0x3a:
+	  *l2_sizekb = 192;
+	  *l2_line = 64;
+	  *l2_assoc = 6;
+	  break;
+	case 0x3b:
+	  *l2_sizekb = 128;
+	  *l2_line = 64;
+	  *l2_assoc = 2;
+	  break;
+	case 0x3c:
+	  *l2_sizekb = 256;
+	  *l2_line = 64;
+	  *l2_assoc = 4;
+	  break;
+	case 0x3d:
+	  *l2_sizekb = 384;
+	  *l2_line = 64;
+	  *l2_assoc = 6;
+	  break;
+	case 0x3e:
+	  *l2_sizekb = 512;
+	  *l2_line = 64;
+	  *l2_assoc = 4;
+	  break;
+	case 0x41:
+	  *l2_sizekb = 128;
+	  *l2_line = 32;
+	  *l2_assoc = 4;
+	  break;
+	case 0x42:
+	  *l2_sizekb = 256;
+	  *l2_line = 32;
+	  *l2_assoc = 4;
+	  break;
+	case 0x43:
+	  *l2_sizekb = 512;
+	  *l2_line = 32;
+	  *l2_assoc = 4;
+	  break;
+	case 0x44:
+	  *l2_sizekb = 1024;
+	  *l2_line = 32;
+	  *l2_assoc = 4;
+	  break;
+	case 0x45:
+	  *l2_sizekb = 2048;
+	  *l2_line = 32;
+	  *l2_assoc = 4;
+	  break;
+	case 0x49:
+	  *l2_sizekb = 4096;
+	  *l2_line = 64;
+	  *l2_assoc = 16;
+	  break;
 	case 0x60:
 	  *l1_sizekb = 16;
 	  *l1_line = 64;
@@ -120,6 +208,71 @@ decode_caches_intel (unsigned reg, unsigned *l1_sizekb, unsigned *l1_line,
 	  *l1_line = 64;
 	  *l1_assoc = 4;
 	  break;
+	case 0x78:
+	  *l2_sizekb = 1024;
+	  *l2_line = 64;
+	  *l2_assoc = 4;
+	  break;
+	case 0x79:
+	  *l2_sizekb = 128;
+	  *l2_line = 64;
+	  *l2_assoc = 8;
+	  break;
+	case 0x7a:
+	  *l2_sizekb = 256;
+	  *l2_line = 64;
+	  *l2_assoc = 8;
+	  break;
+	case 0x7b:
+	  *l2_sizekb = 512;
+	  *l2_line = 64;
+	  *l2_assoc = 8;
+	  break;
+	case 0x7c:
+	  *l2_sizekb = 1024;
+	  *l2_line = 64;
+	  *l2_assoc = 8;
+	  break;
+	case 0x7d:
+	  *l2_sizekb = 2048;
+	  *l2_line = 64;
+	  *l2_assoc = 8;
+	  break;
+	case 0x7f:
+	  *l2_sizekb = 512;
+	  *l2_line = 64;
+	  *l2_assoc = 2;
+	  break;
+	case 0x82:
+	  *l2_sizekb = 256;
+	  *l2_line = 32;
+	  *l2_assoc = 8;
+	  break;
+	case 0x83:
+	  *l2_sizekb = 512;
+	  *l2_line = 32;
+	  *l2_assoc = 8;
+	  break;
+	case 0x84:
+	  *l2_sizekb = 1024;
+	  *l2_line = 32;
+	  *l2_assoc = 8;
+	  break;
+	case 0x85:
+	  *l2_sizekb = 2048;
+	  *l2_line = 32;
+	  *l2_assoc = 8;
+	  break;
+	case 0x86:
+	  *l2_sizekb = 512;
+	  *l2_line = 64;
+	  *l2_assoc = 4;
+	  break;
+	case 0x87:
+	  *l2_sizekb = 1024;
+	  *l2_line = 64;
+	  *l2_assoc = 8;
+	  break;
 
 	default:
 	  break;
@@ -130,25 +283,34 @@ decode_caches_intel (unsigned reg, unsigned *l1_sizekb, unsigned *l1_line,
 /* Returns the description of caches for an intel processor.  */
 
 static char *
-detect_caches_intel (unsigned max_level)
+detect_caches_intel (unsigned max_level, unsigned max_ext_level)
 {
   unsigned eax, ebx, ecx, edx;
   unsigned l1_sizekb = 0, l1_line = 0, assoc = 0;
+  unsigned l2_sizekb = 0, l2_line = 0, l2_assoc = 0;
 
   if (max_level < 2)
     return (char *) "";
 
   __cpuid (2, eax, ebx, ecx, edx);
 
-  decode_caches_intel (eax, &l1_sizekb, &l1_line, &assoc);
-  decode_caches_intel (ebx, &l1_sizekb, &l1_line, &assoc);
-  decode_caches_intel (ecx, &l1_sizekb, &l1_line, &assoc);
-  decode_caches_intel (edx, &l1_sizekb, &l1_line, &assoc);
+  decode_caches_intel (eax, &l1_sizekb, &l1_line, &assoc,
+      &l2_sizekb, &l2_line, &l2_assoc);
+  decode_caches_intel (ebx, &l1_sizekb, &l1_line, &assoc,
+      &l2_sizekb, &l2_line, &l2_assoc);
+  decode_caches_intel (ecx, &l1_sizekb, &l1_line, &assoc,
+      &l2_sizekb, &l2_line, &l2_assoc);
+  decode_caches_intel (edx, &l1_sizekb, &l1_line, &assoc,
+      &l2_sizekb, &l2_line, &l2_assoc);
 
   if (!l1_sizekb)
     return (char *) "";
 
-  return describe_cache (l1_sizekb, l1_line, assoc);
+  /* Newer Intel CPUs are equipped with AMD style L2 cache info */
+  if (max_ext_level >= 0x80000006)
+    decode_l2_cache (&l2_sizekb, &l2_line, &l2_assoc);
+
+  return describe_cache (l1_sizekb, l1_line, assoc, l2_sizekb);
 }
 
 /* This will be called by the spec parser in gcc.c when it sees
@@ -234,7 +396,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       if (vendor == *(unsigned int*) "Auth")
 	cache = detect_caches_amd (ext_level);
       else if (vendor == *(unsigned int*) "Genu")
-	cache = detect_caches_intel (max_level);
+	cache = detect_caches_intel (max_level, ext_level);
     }
 
   if (vendor == *(unsigned int*) "Auth")
