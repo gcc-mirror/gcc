@@ -1,5 +1,8 @@
 2008-04-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/35364
+	* tree-cfg.c (remove_useless_stmts_1): Handle OMP_* containers.
+
 	PR c/35440
 	* c-pretty-print.c (pp_c_initializer_list): Handle CONSTRUCTOR
 	for all types.
