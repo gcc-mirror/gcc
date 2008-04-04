@@ -1173,6 +1173,12 @@ pp_c_initializer_list (c_pretty_printer *pp, tree e)
   tree type = TREE_TYPE (e);
   const enum tree_code code = TREE_CODE (type);
 
+  if (TREE_CODE (e) == CONSTRUCTOR)
+    {
+      pp_c_constructor_elts (pp, CONSTRUCTOR_ELTS (e));
+      return;
+    }
+
   switch (code)
     {
     case RECORD_TYPE:
@@ -1207,16 +1213,12 @@ pp_c_initializer_list (c_pretty_printer *pp, tree e)
     case VECTOR_TYPE:
       if (TREE_CODE (e) == VECTOR_CST)
 	pp_c_expression_list (pp, TREE_VECTOR_CST_ELTS (e));
-      else if (TREE_CODE (e) == CONSTRUCTOR)
-	pp_c_constructor_elts (pp, CONSTRUCTOR_ELTS (e));
       else
 	break;
       return;
 
     case COMPLEX_TYPE:
-      if (TREE_CODE (e) == CONSTRUCTOR)
-	pp_c_constructor_elts (pp, CONSTRUCTOR_ELTS (e));
-      else if (TREE_CODE (e) == COMPLEX_CST || TREE_CODE (e) == COMPLEX_EXPR)
+      if (TREE_CODE (e) == COMPLEX_CST || TREE_CODE (e) == COMPLEX_EXPR)
 	{
 	  const bool cst = TREE_CODE (e) == COMPLEX_CST;
 	  pp_expression (pp, cst ? TREE_REALPART (e) : TREE_OPERAND (e, 0));
