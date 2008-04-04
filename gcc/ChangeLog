@@ -1,3 +1,60 @@
+2008-04-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.gcc (extra_headers): Add wmmintrin.h for x86 and x86-64.
+
+	* config/i386/cpuid.h (bit_AES): New.
+	(bit_PCLMUL): Likewise.
+
+	* config/i386/i386.c (pta_flags): Add PTA_AES and PTA_PCLMUL.
+	(override_options): Handle PTA_AES and PTA_PCLMUL.  Enable
+	SSE2 if AES or PCLMUL is enabled.
+	(ix86_builtins): Add IX86_BUILTIN_AESENC128,
+	IX86_BUILTIN_AESENCLAST128, IX86_BUILTIN_AESDEC128,
+	IX86_BUILTIN_AESDECLAST128, IX86_BUILTIN_AESIMC128,
+	IX86_BUILTIN_AESKEYGENASSIST128 and IX86_BUILTIN_PCLMULQDQ128.
+	(bdesc_sse_3arg): Add IX86_BUILTIN_PCLMULQDQ128.
+	(bdesc_2arg): Add IX86_BUILTIN_AESENC128,
+	IX86_BUILTIN_AESENCLAST128, IX86_BUILTIN_AESDEC128,
+	IX86_BUILTIN_AESDECLAST128 and IX86_BUILTIN_AESKEYGENASSIST128.
+	(bdesc_1arg): Add IX86_BUILTIN_AESIMC128.
+	(ix86_init_mmx_sse_builtins): Define __builtin_ia32_aesenc128,
+	__builtin_ia32_aesenclast128, __builtin_ia32_aesdec128,
+	__builtin_ia32_aesdeclast128,__builtin_ia32_aesimc128,
+	__builtin_ia32_aeskeygenassist128 and
+	__builtin_ia32_pclmulqdq128.
+	* config/i386/i386.c (ix86_expand_binop_imm_builtin): New.
+	(ix86_expand_builtin): Use it for IX86_BUILTIN_PSLLDQI128 and
+	IX86_BUILTIN_PSRLDQI128.  Handle IX86_BUILTIN_AESKEYGENASSIST128.
+
+	* config/i386/i386.h (TARGET_AES): New.
+	(TARGET_PCLMUL): Likewise.
+	(TARGET_CPU_CPP_BUILTINS): Handle TARGET_AES and TARGET_PCLMUL.
+
+	* config/i386/i386.md (UNSPEC_AESENC): New.
+	(UNSPEC_AESENCLAST): Likewise.
+	(UNSPEC_AESDEC): Likewise.
+	(UNSPEC_AESDECLAST): Likewise.
+	(UNSPEC_AESIMC): Likewise.
+	(UNSPEC_AESKEYGENASSIST): Likewise.
+	(UNSPEC_PCLMULQDQ): Likewise.
+
+	* config/i386/i386.opt (maes): New.
+	(mpclmul): Likewise.
+
+	* config/i386/sse.md (aesenc): New pattern.
+	(aesenclast): Likewise.
+	(aesdec): Likewise.
+	(aesdeclast): Likewise.
+	(aesimc): Likewise.
+	(aeskeygenassist): Likewise.
+	(pclmulqdq): Likewise.
+
+	* config/i386/wmmintrin.h: New.
+
+	* doc/extend.texi: Document AES and PCLMUL built-in function.
+
+	* doc/invoke.texi: Document -maes and -mpclmul.
+
 2008-04-04  Paolo Bonzini  <bonzini@gnu.org>
 
 	* function.c (free_after_parsing): Replace with

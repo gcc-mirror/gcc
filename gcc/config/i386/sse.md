@@ -7897,3 +7897,80 @@
 }
   [(set_attr "type" "ssecmp")
    (set_attr "mode" "TI")])
+
+(define_insn "aesenc"
+  [(set (match_operand:V2DI 0 "register_operand" "=x")
+	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "0")
+		       (match_operand:V2DI 2 "nonimmediate_operand" "xm")]
+		      UNSPEC_AESENC))]
+  "TARGET_AES"
+  "aesenc\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "mode" "TI")])
+
+(define_insn "aesenclast"
+  [(set (match_operand:V2DI 0 "register_operand" "=x")
+	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "0")
+		       (match_operand:V2DI 2 "nonimmediate_operand" "xm")]
+		      UNSPEC_AESENCLAST))]
+  "TARGET_AES"
+  "aesenclast\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "mode" "TI")])
+
+(define_insn "aesdec"
+  [(set (match_operand:V2DI 0 "register_operand" "=x")
+	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "0")
+		       (match_operand:V2DI 2 "nonimmediate_operand" "xm")]
+		      UNSPEC_AESDEC))]
+  "TARGET_AES"
+  "aesdec\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "mode" "TI")])
+
+(define_insn "aesdeclast"
+  [(set (match_operand:V2DI 0 "register_operand" "=x")
+	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "0")
+		       (match_operand:V2DI 2 "nonimmediate_operand" "xm")]
+		      UNSPEC_AESDECLAST))]
+  "TARGET_AES"
+  "aesdeclast\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "mode" "TI")])
+
+(define_insn "aesimc"
+  [(set (match_operand:V2DI 0 "register_operand" "=x")
+	(unspec:V2DI [(match_operand:V2DI 1 "nonimmediate_operand" "xm")]
+		      UNSPEC_AESIMC))]
+  "TARGET_AES"
+  "aesimc\t{%1, %0|%0, %1}"
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "mode" "TI")])
+
+(define_insn "aeskeygenassist"
+  [(set (match_operand:V2DI 0 "register_operand" "=x")
+	(unspec:V2DI [(match_operand:V2DI 1 "nonimmediate_operand" "xm")
+		      (match_operand:SI 2 "const_0_to_255_operand" "n")]
+		     UNSPEC_AESKEYGENASSIST))]
+  "TARGET_AES"
+  "aeskeygenassist\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "mode" "TI")])
+
+(define_insn "pclmulqdq"
+  [(set (match_operand:V2DI 0 "register_operand" "=x")
+	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "0")
+		      (match_operand:V2DI 2 "nonimmediate_operand" "xm")
+		      (match_operand:SI 3 "const_0_to_255_operand" "n")]
+		     UNSPEC_PCLMUL))]
+  "TARGET_PCLMUL"
+  "pclmulqdq\t{%3, %2, %0|%0, %2, %3}"
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "mode" "TI")])

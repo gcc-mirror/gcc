@@ -275,3 +275,11 @@ Target Report Var(x86_fused_muladd) Init(1)
 Enable automatic generation of fused floating point multiply-add instructions
 if the ISA supports such instructions.  The -mfused-madd option is on by
 default.
+
+maes
+Target Report RejectNegative Var(x86_aes)
+Support AES built-in functions and code generation
+
+mpclmul
+Target Report RejectNegative Var(x86_pclmul)
+Support PCLMUL built-in functions and code generation

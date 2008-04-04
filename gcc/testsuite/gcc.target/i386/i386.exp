@@ -51,6 +51,34 @@ proc check_effective_target_sse4 { } {
     } "-O2 -msse4.1" ]
 }
 
+# Return 1 if aes instructions can be compiled.
+proc check_effective_target_aes { } {
+    return [check_no_compiler_messages aes object {
+	typedef long long __m128i __attribute__ ((__vector_size__ (16)));
+	typedef long long __v2di __attribute__ ((__vector_size__ (16)));
+
+	__m128i _mm_aesimc_si128 (__m128i __X)
+	{
+	    return (__m128i) __builtin_ia32_aesimc128 ((__v2di)__X);
+	}
+    } "-O2 -maes" ]
+}
+
+# Return 1 if pclmul instructions can be compiled.
+proc check_effective_target_pclmul { } {
+    return [check_no_compiler_messages pclmul object {
+	typedef long long __m128i __attribute__ ((__vector_size__ (16)));
+	typedef long long __v2di __attribute__ ((__vector_size__ (16)));
+
+	__m128i pclmulqdq_test (__m128i __X, __m128i __Y)
+	{
+	    return (__m128i) __builtin_ia32_pclmulqdq128 ((__v2di)__X,
+							  (__v2di)__Y,
+							  1);
+	}
+    } "-O2 -mpclmul" ]
+}
+
 # Return 1 if sse4a instructions can be compiled.
 proc check_effective_target_sse4a { } {
     return [check_no_compiler_messages sse4a object {

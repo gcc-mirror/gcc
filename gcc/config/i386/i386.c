@@ -2078,7 +2078,9 @@ override_options (void)
       PTA_NO_SAHF = 1 << 13,
       PTA_SSE4_1 = 1 << 14,
       PTA_SSE4_2 = 1 << 15,
-      PTA_SSE5 = 1 << 16
+      PTA_SSE5 = 1 << 16,
+      PTA_AES = 1 << 17,
+      PTA_PCLMUL = 1 << 18
     };
 
   static struct pta
@@ -2385,6 +2387,10 @@ override_options (void)
 	  x86_prefetch_sse = true;
 	if (!(TARGET_64BIT && (processor_alias_table[i].flags & PTA_NO_SAHF)))
 	  x86_sahf = true;
+	if (processor_alias_table[i].flags & PTA_AES)
+	  x86_aes = true;
+	if (processor_alias_table[i].flags & PTA_PCLMUL)
+	  x86_pclmul = true;
 
 	break;
       }
@@ -2427,6 +2433,14 @@ override_options (void)
       }
   if (i == pta_size)
     error ("bad value (%s) for -mtune= switch", ix86_tune_string);
+
+  /* Enable SSE2 if AES or PCLMUL is enabled.  */
+  if ((x86_aes || x86_pclmul)
+      && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_SSE2))
+    {
+      ix86_isa_flags |= OPTION_MASK_ISA_SSE2_SET;
+      ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE2_SET;
+    }
 
   ix86_tune_mask = 1u << ix86_tune;
   for (i = 0; i < X86_TUNE_LAST; ++i)
@@ -17590,6 +17604,17 @@ enum ix86_builtins
 
   IX86_BUILTIN_PCMPGTQ,
 
+  /* AES instructions */
+  IX86_BUILTIN_AESENC128,
+  IX86_BUILTIN_AESENCLAST128,
+  IX86_BUILTIN_AESDEC128,
+  IX86_BUILTIN_AESDECLAST128,
+  IX86_BUILTIN_AESIMC128,
+  IX86_BUILTIN_AESKEYGENASSIST128,
+
+  /* PCLMUL instruction */
+  IX86_BUILTIN_PCLMULQDQ128,
+
   /* TFmode support builtins.  */
   IX86_BUILTIN_INFQ,
   IX86_BUILTIN_FABSQ,
@@ -17951,6 +17976,9 @@ static const struct builtin_description bdesc_sse_3arg[] =
   { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_pblendw, "__builtin_ia32_pblendw128", IX86_BUILTIN_PBLENDW128, UNKNOWN, 0 },
   { OPTION_MASK_ISA_ROUND, CODE_FOR_sse4_1_roundsd, "__builtin_ia32_roundsd", IX86_BUILTIN_ROUNDSD, UNKNOWN, 0 },
   { OPTION_MASK_ISA_ROUND, CODE_FOR_sse4_1_roundss, "__builtin_ia32_roundss", IX86_BUILTIN_ROUNDSS, UNKNOWN, 0 },
+
+  /* PCLMUL */
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_pclmulqdq, 0, IX86_BUILTIN_PCLMULQDQ128, UNKNOWN, 0 },
 };
 
 static const struct builtin_description bdesc_2arg[] =
@@ -18231,6 +18259,13 @@ static const struct builtin_description bdesc_2arg[] =
 
   /* SSE4.2 */
   { OPTION_MASK_ISA_SSE4_2, CODE_FOR_sse4_2_gtv2di3, "__builtin_ia32_pcmpgtq", IX86_BUILTIN_PCMPGTQ, UNKNOWN, 0 },
+
+  /* AES */
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_aesenc, 0, IX86_BUILTIN_AESENC128, UNKNOWN, 0 },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_aesenclast, 0, IX86_BUILTIN_AESENCLAST128, UNKNOWN, 0 },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_aesdec, 0, IX86_BUILTIN_AESDEC128, UNKNOWN, 0 },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_aesdeclast, 0, IX86_BUILTIN_AESDECLAST128, UNKNOWN, 0 },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_aeskeygenassist, 0, IX86_BUILTIN_AESKEYGENASSIST128, UNKNOWN, 0 },
 };
 
 static const struct builtin_description bdesc_1arg[] =
@@ -18308,6 +18343,9 @@ static const struct builtin_description bdesc_1arg[] =
   /* Fake 1 arg builtins with a constant smaller than 8 bits as the 2nd arg.  */
   { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_roundpd, 0, IX86_BUILTIN_ROUNDPD, UNKNOWN, 0 },
   { OPTION_MASK_ISA_SSE4_1, CODE_FOR_sse4_1_roundps, 0, IX86_BUILTIN_ROUNDPS, UNKNOWN, 0 },
+
+  /* AES */
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_aesimc, 0, IX86_BUILTIN_AESIMC128, UNKNOWN, 0 },
 };
 
 /* SSE5 */
@@ -19544,6 +19582,25 @@ ix86_init_mmx_sse_builtins (void)
 				    NULL_TREE);
   def_builtin_const (OPTION_MASK_ISA_SSE4_2, "__builtin_ia32_crc32di", ftype, IX86_BUILTIN_CRC32DI);
 
+  /* AES */
+  if (TARGET_AES)
+    {
+      /* Define AES built-in functions only if AES is enabled.  */
+      def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_ia32_aesenc128", v2di_ftype_v2di_v2di, IX86_BUILTIN_AESENC128);
+      def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_ia32_aesenclast128", v2di_ftype_v2di_v2di, IX86_BUILTIN_AESENCLAST128);
+      def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_ia32_aesdec128", v2di_ftype_v2di_v2di, IX86_BUILTIN_AESDEC128);
+      def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_ia32_aesdeclast128", v2di_ftype_v2di_v2di, IX86_BUILTIN_AESDECLAST128);
+      def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_ia32_aesimc128", v2di_ftype_v2di, IX86_BUILTIN_AESIMC128);
+      def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_ia32_aeskeygenassist128", v2di_ftype_v2di_int, IX86_BUILTIN_AESKEYGENASSIST128);
+    }
+
+  /* PCLMUL */
+  if (TARGET_PCLMUL)
+    {
+      /* Define PCLMUL built-in function only if PCLMUL is enabled.  */
+      def_builtin_const (OPTION_MASK_ISA_SSE2, "__builtin_ia32_pclmulqdq128", v2di_ftype_v2di_v2di_int, IX86_BUILTIN_PCLMULQDQ128);
+    }
+
   /* AMDFAM10 SSE4A New built-ins  */
   def_builtin (OPTION_MASK_ISA_SSE4A, "__builtin_ia32_movntsd", void_ftype_pdouble_v2df, IX86_BUILTIN_MOVNTSD);
   def_builtin (OPTION_MASK_ISA_SSE4A, "__builtin_ia32_movntss", void_ftype_pfloat_v4sf, IX86_BUILTIN_MOVNTSS);
@@ -19818,6 +19875,44 @@ ix86_expand_crc32 (enum insn_code icode, tree exp, rtx target)
     }
 
   pat = GEN_FCN (icode) (target, op0, op1);
+  if (! pat)
+    return 0;
+  emit_insn (pat);
+  return target;
+}
+
+/* Subroutine of ix86_expand_builtin to take care of binop insns
+   with an immediate.  */
+
+static rtx
+ix86_expand_binop_imm_builtin (enum insn_code icode, tree exp,
+				rtx target)
+{
+  rtx pat;
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+  tree arg1 = CALL_EXPR_ARG (exp, 1);
+  rtx op0 = expand_normal (arg0);
+  rtx op1 = expand_normal (arg1);
+  enum machine_mode tmode = insn_data[icode].operand[0].mode;
+  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
+  enum machine_mode mode1 = insn_data[icode].operand[2].mode;
+
+  if (! (*insn_data[icode].operand[1].predicate) (op0, mode1))
+    {
+      op0 = copy_to_reg (op0);
+      op0 = simplify_gen_subreg (mode0, op0, GET_MODE (op0), 0);
+    }
+
+  if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
+    {
+      error ("the last operand must be an immediate");
+      return const0_rtx;
+    }
+
+  target = gen_reg_rtx (V2DImode);
+  pat = GEN_FCN (icode) (simplify_gen_subreg (tmode, target,
+					      V2DImode, 0),
+			 op0, op1);
   if (! pat)
     return 0;
   emit_insn (pat);
@@ -20916,34 +21011,18 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       return target;
 
     case IX86_BUILTIN_PSLLDQI128:
-    case IX86_BUILTIN_PSRLDQI128:
-      icode = (fcode == IX86_BUILTIN_PSLLDQI128 ? CODE_FOR_sse2_ashlti3
-	       : CODE_FOR_sse2_lshrti3);
-      arg0 = CALL_EXPR_ARG (exp, 0);
-      arg1 = CALL_EXPR_ARG (exp, 1);
-      op0 = expand_normal (arg0);
-      op1 = expand_normal (arg1);
-      tmode = insn_data[icode].operand[0].mode;
-      mode1 = insn_data[icode].operand[1].mode;
-      mode2 = insn_data[icode].operand[2].mode;
+      return ix86_expand_binop_imm_builtin (CODE_FOR_sse2_ashlti3,
+					     exp, target);
+      break;
 
-      if (! (*insn_data[icode].operand[1].predicate) (op0, mode1))
-	{
-	  op0 = copy_to_reg (op0);
-	  op0 = simplify_gen_subreg (mode1, op0, GET_MODE (op0), 0);
-	}
-      if (! (*insn_data[icode].operand[2].predicate) (op1, mode2))
-	{
-	  error ("shift must be an immediate");
-	  return const0_rtx;
-	}
-      target = gen_reg_rtx (V2DImode);
-      pat = GEN_FCN (icode) (simplify_gen_subreg (tmode, target, V2DImode, 0),
-			     op0, op1);
-      if (! pat)
-	return 0;
-      emit_insn (pat);
-      return target;
+    case IX86_BUILTIN_PSRLDQI128:
+      return ix86_expand_binop_imm_builtin (CODE_FOR_sse2_lshrti3,
+					     exp, target);
+      break;
+
+    case IX86_BUILTIN_AESKEYGENASSIST128:
+      return ix86_expand_binop_imm_builtin (CODE_FOR_aeskeygenassist,
+					     exp, target);
 
     case IX86_BUILTIN_FEMMS:
       emit_insn (gen_mmx_femms ());
