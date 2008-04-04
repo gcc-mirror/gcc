@@ -683,6 +683,7 @@ print_operand_address (FILE *stream, rtx x)
    'U'  Likewise for {LD,ST}{HI,LO}.
    'V'  print the position of a single bit set.
    'W'  print the position of a single bit cleared.
+   't'  print a memory address which is a register.
    'u'  prints the lowest 16 bits of CONST_INT, as an unsigned value.
    'o'  output an operator.  */
 
@@ -822,6 +823,21 @@ print_operand (FILE *stream, rtx x, int code)
 	  break;
 	}
       break;
+
+    case 't':
+      gcc_assert (GET_CODE (x) == MEM);
+      x = XEXP (x, 0);
+      switch (GET_CODE (x))
+	{
+	case REG:
+	case SUBREG:
+	  print_operand (stream, x, 0);
+	  break;
+	default:
+	  break;
+	}
+      break;
+
     case 'o':
       switch (GET_CODE (x))
 	{

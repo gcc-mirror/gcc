@@ -3246,7 +3246,8 @@ label:
   [(set (match_operand:SI 0 "arith_reg_dest" "=r,z")
 	(ior:SI (match_operand:SI 1 "arith_reg_operand" "%0,0")
 		(match_operand:SI 2 "logical_operand" "r,K08")))]
-  "TARGET_SH1"
+  "TARGET_SH1
+   && !(TARGET_SH2A && satisfies_constraint_Pso (operands[2]))"
   "or	%2,%0"
   [(set_attr "type" "arith")])
 
@@ -4723,7 +4724,12 @@ label:
   "@
 	exts.b	%1,%0
 	mov.b	%1,%0"
-  [(set_attr "type" "arith,load")])
+  [(set_attr "type" "arith,load")
+   (set_attr_alternative "length"
+     [(const_int 2)
+       (if_then_else
+	(ne (symbol_ref "TARGET_SH2A") (const_int 0))
+	(const_int 4) (const_int 2))])])
 
 (define_insn "*extendqisi2_media"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -4761,7 +4767,12 @@ label:
   "@
 	exts.b	%1,%0
 	mov.b	%1,%0"
-  [(set_attr "type" "arith,load")])
+  [(set_attr "type" "arith,load")
+   (set_attr_alternative "length"
+     [(const_int 2)
+       (if_then_else
+	(ne (symbol_ref "TARGET_SH2A") (const_int 0))
+	(const_int 4) (const_int 2))])])
 
 /* It would seem useful to combine the truncXi patterns into the movXi
    patterns, but unary operators are ignored when matching constraints,
@@ -5309,7 +5320,19 @@ label:
 	movt	%0
 	sts	%1,%0
 	lds	%1,%0"
- [(set_attr "type" "move,movi8,load,store,arith,prget,prset")])
+ [(set_attr "type" "move,movi8,load,store,arith,prget,prset")
+  (set_attr_alternative "length"
+     [(const_int 2)
+      (const_int 2)
+      (if_then_else
+	(ne (symbol_ref "TARGET_SH2A") (const_int 0))
+	(const_int 4) (const_int 2))
+      (if_then_else
+	(ne (symbol_ref "TARGET_SH2A") (const_int 0))
+	(const_int 4) (const_int 2))
+      (const_int 2)
+      (const_int 2)
+      (const_int 2)])])
 
 (define_insn "*movqi_media"
   [(set (match_operand:QI 0 "general_movdst_operand" "=r,r,r,m")
@@ -11655,6 +11678,36 @@ mov.l\\t1f,r0\\n\\
   HOST_WIDE_INT bitsize, size, v = 0;
   rtx x = operands[3];
 
+  if (TARGET_SH2A && TARGET_BITOPS
+      && (satisfies_constraint_Sbw (operands[0])
+	  || satisfies_constraint_Sbv (operands[0]))
+      && satisfies_constraint_M (operands[1])
+      && satisfies_constraint_K03 (operands[2]))
+    {
+      if (satisfies_constraint_N (operands[3]))
+	{
+	  emit_insn (gen_bclr_m2a (operands[0], operands[2]));
+	  DONE;
+	}
+      else if (satisfies_constraint_M (operands[3]))
+	{
+	  emit_insn (gen_bset_m2a (operands[0], operands[2]));
+	  DONE;
+	}
+      else if ((REG_P (operands[3]) && REGNO (operands[3]) == T_REG)
+		&& satisfies_constraint_M (operands[1]))
+	{
+	  emit_insn (gen_bst_m2a (operands[0], operands[2]));
+	  DONE;
+	}
+      else if (REG_P (operands[3])
+	       && satisfies_constraint_M (operands[1]))
+	{
+	  emit_insn (gen_bld_reg (operands[3], const0_rtx));
+	  emit_insn (gen_bst_m2a (operands[0], operands[2]));
+	  DONE;
+	}
+    }
   /* ??? expmed doesn't care for non-register predicates.  */
   if (! memory_operand (operands[0], VOIDmode)
       || ! immediate_operand (operands[1], VOIDmode)
@@ -11732,8 +11785,19 @@ mov.l\\t1f,r0\\n\\
 	(sign_extract:SI (match_operand:QI 1 "unaligned_load_operand" "")
 			 (match_operand 2 "const_int_operand" "")
 			 (match_operand 3 "const_int_operand" "")))]
-  "TARGET_SH4A_ARCH"
+  "TARGET_SH4A_ARCH || TARGET_SH2A"
 {
+  if (TARGET_SH2A && TARGET_BITOPS
+      && (satisfies_constraint_Sbw (operands[1])
+	  || satisfies_constraint_Sbv (operands[1]))
+      && satisfies_constraint_M (operands[2])
+      && satisfies_constraint_K03 (operands[3]))
+   {
+      emit_insn (gen_bldsign_m2a (operands[1], operands[3]));
+      if (REGNO (operands[0]) != T_REG)
+	emit_insn (gen_movsi (operands[0], gen_rtx_REG (SImode, T_REG)));
+      DONE;
+   }
   if (TARGET_SH4A_ARCH
       && INTVAL (operands[2]) == 32
       && INTVAL (operands[3]) == -24 * (BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
@@ -11753,8 +11817,19 @@ mov.l\\t1f,r0\\n\\
 	(zero_extract:SI (match_operand:QI 1 "unaligned_load_operand" "")
 			 (match_operand 2 "const_int_operand" "")
 			 (match_operand 3 "const_int_operand" "")))]
-  "TARGET_SH4A_ARCH"
+  "TARGET_SH4A_ARCH || TARGET_SH2A"
 {
+  if (TARGET_SH2A && TARGET_BITOPS
+      && (satisfies_constraint_Sbw (operands[1])
+	  || satisfies_constraint_Sbv (operands[1]))
+      && satisfies_constraint_M (operands[2])
+      && satisfies_constraint_K03 (operands[3]))
+    {
+      emit_insn (gen_bld_m2a (operands[1], operands[3]));
+      if (REGNO (operands[0]) != T_REG)
+	emit_insn (gen_movsi (operands[0], gen_rtx_REG (SImode, T_REG)));
+      DONE;
+    }
   if (TARGET_SH4A_ARCH
       && INTVAL (operands[2]) == 32
       && INTVAL (operands[3]) == -24 * (BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
@@ -11769,10 +11844,235 @@ mov.l\\t1f,r0\\n\\
   FAIL;
 })
 
+;; SH2A instructions for bitwise operations.
+
+;; Clear a bit in a memory location.
+(define_insn "bclr_m2a"
+  [(set (match_operand:QI 0 "bitwise_memory_operand" "+Sbw,Sbv")
+	(and:QI
+	    (not:QI (ashift:QI (const_int 1)
+			(match_operand:QI 1 "const_int_operand" "K03,K03")))
+	    (match_dup 0)))]
+  "TARGET_SH2A && TARGET_BITOPS"
+  "@
+	bclr.b\\t%1,%0
+	bclr.b\\t%1,@(0,%t0)"
+[(set_attr "length" "4,4")])
+
+(define_insn "bclrmem_m2a"
+  [(set (match_operand:QI 0 "bitwise_memory_operand" "+Sbw,Sbv")
+        (and:QI (match_dup 0)
+                (match_operand:QI 1 "const_int_operand" "Psz,Psz")))]
+  "TARGET_SH2A && satisfies_constraint_Psz (operands[1]) && TARGET_BITOPS"
+  "@
+        bclr.b\\t%W1,%0
+        bclr.b\\t%W1,@(0,%t0)"
+  [(set_attr "length" "4,4")])
+
+;; Set a bit in a memory location.
+(define_insn "bset_m2a"
+  [(set (match_operand:QI 0 "bitwise_memory_operand" "+Sbw,Sbv")
+	(ior:QI
+	    (ashift:QI (const_int 1)
+		       (match_operand:QI 1 "const_int_operand" "K03,K03"))
+	    (match_dup 0)))]
+  "TARGET_SH2A && TARGET_BITOPS"
+  "@
+	bset.b\\t%1,%0
+	bset.b\\t%1,@(0,%t0)"
+  [(set_attr "length" "4,4")])
+
+(define_insn "bsetmem_m2a"
+  [(set (match_operand:QI 0 "bitwise_memory_operand" "+Sbw,Sbv")
+	(ior:QI (match_dup 0)
+		(match_operand:QI 1 "const_int_operand" "Pso,Pso")))]
+  "TARGET_SH2A && satisfies_constraint_Pso (operands[1]) && TARGET_BITOPS"
+  "@
+        bset.b\\t%V1,%0
+        bset.b\\t%V1,@(0,%t0)"
+  [(set_attr "length" "4,4")])
+
+;;; Transfer the contents of the T bit to a specified bit of memory.
+(define_insn "bst_m2a"
+  [(set (match_operand:QI 0 "bitwise_memory_operand" "+Sbw,m")
+	(if_then_else (eq (reg:SI T_REG) (const_int 0))
+	    (and:QI
+		(not:QI (ashift:QI (const_int 1)
+			(match_operand:QI 1 "const_int_operand" "K03,K03")))
+		(match_dup 0))
+	    (ior:QI
+		(ashift:QI (const_int 1) (match_dup 1))
+		(match_dup 0))))]
+  "TARGET_SH2A && TARGET_BITOPS"
+  "@
+	bst.b\\t%1,%0
+	bst.b\\t%1,@(0,%t0)"
+  [(set_attr "length" "4")])
+
+;; Store a specified bit of memory in the T bit.
+(define_insn "bld_m2a"
+  [(set (reg:SI T_REG)
+	(zero_extract:SI
+	    (match_operand:QI 0 "bitwise_memory_operand" "Sbw,Sbv")
+	    (const_int 1)
+	    (match_operand 1 "const_int_operand" "K03,K03")))]
+  "TARGET_SH2A && TARGET_BITOPS"
+  "@
+	bld.b\\t%1,%0
+	bld.b\\t%1,@(0,%t0)"
+  [(set_attr "length" "4,4")])
+
+;; Store a specified bit of memory in the T bit.
+(define_insn "bldsign_m2a"
+  [(set (reg:SI T_REG)
+	(sign_extract:SI
+	    (match_operand:QI 0 "bitwise_memory_operand" "Sbw,m")
+	    (const_int 1)
+	    (match_operand 1 "const_int_operand" "K03,K03")))]
+  "TARGET_SH2A && TARGET_BITOPS"
+  "@
+	bld.b\\t%1,%0
+	bld.b\\t%1,@(0,%t0)"
+  [(set_attr "length" "4,4")])
+
+;; Store a specified bit of the LSB 8 bits of a register in the T bit.
+(define_insn "bld_reg"
+  [(set (reg:SI T_REG)
+	(zero_extract:SI (match_operand:SI 0 "arith_reg_operand" "r")
+			 (const_int 1)
+			 (match_operand 1 "const_int_operand" "K03")))]
+  "TARGET_SH2A"
+  "bld\\t%1,%0")
+
+(define_insn "*bld_regqi"
+  [(set (reg:SI T_REG)
+	(zero_extract:SI (match_operand:QI 0 "arith_reg_operand" "r")
+			 (const_int 1)
+			 (match_operand 1 "const_int_operand" "K03")))]
+  "TARGET_SH2A"
+  "bld\\t%1,%0")
+
+;; Take logical and of a specified bit of memory with the T bit and
+;; store its result in the T bit.
+(define_insn "band_m2a"
+  [(set (reg:SI T_REG)
+	(and:SI (reg:SI T_REG)
+		(zero_extract:SI
+		    (match_operand:QI 0 "bitwise_memory_operand" "Sbw,m")
+		    (const_int 1)
+		    (match_operand 1 "const_int_operand" "K03,K03"))))]
+  "TARGET_SH2A && TARGET_BITOPS"
+  "@
+	band.b\\t%1,%0
+	band.b\\t%1,@(0,%t0)"
+  [(set_attr "length" "4,4")])
+
+(define_insn "bandreg_m2a"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(and:SI (zero_extract:SI
+		    (match_operand:QI 1 "bitwise_memory_operand" "Sbw,Sbv")
+		    (const_int 1)
+		    (match_operand 2 "const_int_operand" "K03,K03"))
+        	(match_operand:SI 3 "register_operand" "r,r")))]
+  "TARGET_SH2A && TARGET_BITOPS"
+  "@
+	band.b\\t%2,%1\;movt\\t%0
+	band.b\\t%2,@(0,%t1)\;movt\\t%0"
+  [(set_attr "length" "6,6")])
+
+;; Take logical or of a specified bit of memory with the T bit and
+;; store its result in the T bit.
+(define_insn "bor_m2a"
+  [(set (reg:SI T_REG)
+	(ior:SI (reg:SI T_REG)
+		(zero_extract:SI
+		    (match_operand:QI 0 "bitwise_memory_operand" "Sbw,m")
+		    (const_int 1)
+		    (match_operand 1 "const_int_operand" "K03,K03"))))]
+  "TARGET_SH2A && TARGET_BITOPS"
+  "@
+	bor.b\\t%1,%0
+	bor.b\\t%1,@(0,%t0)"
+  [(set_attr "length" "4,4")])
+
+(define_insn "borreg_m2a"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(ior:SI (zero_extract:SI
+		    (match_operand:QI 1 "bitwise_memory_operand" "Sbw,Sbv")
+		    (const_int 1)
+		    (match_operand 2 "const_int_operand" "K03,K03"))
+		(match_operand:SI 3 "register_operand" "=r,r")))]
+  "TARGET_SH2A && TARGET_BITOPS"
+  "@
+	bor.b\\t%2,%1\;movt\\t%0
+	bor.b\\t%2,@(0,%t1)\;movt\\t%0"
+  [(set_attr "length" "6,6")])
+
+;; Take exclusive or of a specified bit of memory with the T bit and
+;; store its result in the T bit.
+(define_insn "bxor_m2a"
+  [(set (reg:SI T_REG)
+	(xor:SI (reg:SI T_REG)
+		(zero_extract:SI
+		    (match_operand:QI 0 "bitwise_memory_operand" "Sbw,m")
+		    (const_int 1)
+		    (match_operand 1 "const_int_operand" "K03,K03"))))]
+  "TARGET_SH2A && TARGET_BITOPS"
+  "@
+	bxor.b\\t%1,%0
+	bxor.b\\t%1,@(0,%t0)"
+  [(set_attr "length" "4,4")])
+
+(define_insn "bxorreg_m2a"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(xor:SI (zero_extract:SI
+		    (match_operand:QI 1 "bitwise_memory_operand" "Sbw,Sbv")
+		    (const_int 1)
+		    (match_operand 2 "const_int_operand" "K03,K03"))
+		(match_operand:SI 3 "register_operand" "=r,r")))]
+  "TARGET_SH2A && TARGET_BITOPS"
+  "@
+	bxor.b\\t%2,%1\;movt\\t%0
+	bxor.b\\t%2,@(0,%t1)\;movt\\t%0"
+  [(set_attr "length" "6,6")])
+
 
 ;; -------------------------------------------------------------------------
 ;; Peepholes
 ;; -------------------------------------------------------------------------
+;; This matches cases where the bit in a memory location is set.
+(define_peephole2
+  [(set (match_operand:SI 0 "arith_reg_operand" "r,r")
+	(sign_extend:SI (match_operand:QI 1 "bitwise_memory_operand" "Sbw,Sbv")))
+   (set (match_dup 0)
+	(ior:SI (match_dup 0)
+	(match_operand:SI 2 "const_int_operand" "Pso,Pso")))
+   (set (match_dup 1)
+	(match_operand 3 "arith_reg_operand" "r,r"))]
+  "TARGET_SH2A && TARGET_BITOPS
+   && satisfies_constraint_Pso (operands[2])
+   && REGNO (operands[0]) == REGNO (operands[3])"
+  [(set (match_dup 1)
+        (ior:QI (match_dup 1)
+                (match_dup 2)))]
+  "")
+
+;; This matches cases where the bit in a memory location is cleared.
+(define_peephole2
+  [(set (match_operand:SI 0 "arith_reg_operand" "r,r")
+	(sign_extend:SI (match_operand:QI 1 "bitwise_memory_operand" "Sbw,Sbv")))
+   (set (match_dup 0)
+	(and:SI (match_dup 0)
+	(match_operand:SI 2 "const_int_operand" "Psz,Psz")))
+   (set (match_dup 1)
+	(match_operand 3 "arith_reg_operand" "r,r"))]
+  "TARGET_SH2A && TARGET_BITOPS
+   && satisfies_constraint_Psz (operands[2])
+   && REGNO (operands[0]) == REGNO (operands[3])"
+  [(set (match_dup 1)
+        (and:QI (match_dup 1)
+                (match_dup 2)))]
+  "")
 
 ;; This matches cases where a stack pointer increment at the start of the
 ;; epilogue combines with a stack slot read loading the return value.
