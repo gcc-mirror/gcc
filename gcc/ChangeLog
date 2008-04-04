@@ -1,3 +1,15 @@
+2008-04-04  Zuxy Meng <zuxy.meng@gmail.com>
+
+	* config/i386/driver-i386.c (describe_cache): Add l2_sizekb argument.
+	Pass L2 size as "--param l2-cache-size" to the compiler.
+	(decode_l2_cache): New function to decode L2 cache parameters using
+	0x8000006 extended cpuid function.
+	(detect_caches_amd): Determine parameters of L2 cache using
+	decode_l2_caches function.
+	(decode_caches_intel): Decode L2 cache parameters.
+	(detect_caches_intel): Determine L2 cache parameters using
+	decode_caches_intel and decode_l2_caches functions.
+
 2008-04-03  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (xtensa_secondary_reload_class): Use a
