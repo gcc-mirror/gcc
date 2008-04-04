@@ -1,5 +1,7 @@
 2008-04-04  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/var-expand3.c: Skip for powerpc-linux if not on AltiVec HW.
+
 	* gcc.dg/pr34856.c: Use -maltivec on powerpc linux.
 
 	PR target/35620
