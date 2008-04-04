@@ -271,12 +271,7 @@ pop_function_context (void)
 void
 free_after_parsing (struct function *f)
 {
-  /* f->expr->forced_labels is used by code generation.  */
-  /* f->emit->regno_reg_rtx is used by code generation.  */
-  /* f->varasm is used by code generation.  */
-  /* f->eh->eh_return_stub_label is used by code generation.  */
-
-  lang_hooks.function.final (f);
+  f->language = 0;
 }
 
 /* Clear out all parts of the state in F that can safely be discarded
@@ -3861,7 +3856,6 @@ allocate_struct_function (tree fndecl, bool abstract_p)
 
   init_eh_for_function ();
 
-  lang_hooks.function.init (cfun);
   if (init_machine_status)
     cfun->machine = (*init_machine_status) ();
 

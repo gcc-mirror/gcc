@@ -7085,7 +7085,7 @@ execute_warn_function_noreturn (void)
   if (warn_missing_noreturn
       && !TREE_THIS_VOLATILE (cfun->decl)
       && EDGE_COUNT (EXIT_BLOCK_PTR->preds) == 0
-      && !lang_hooks.function.missing_noreturn_ok_p (cfun->decl))
+      && !lang_hooks.missing_noreturn_ok_p (cfun->decl))
     warning (OPT_Wmissing_noreturn, "%Jfunction might be possible candidate "
 	     "for attribute %<noreturn%>",
 	     cfun->decl);

@@ -63,8 +63,8 @@ extern void c_initialize_diagnostics (diagnostic_context *);
 #define LANG_HOOKS_PRINT_IDENTIFIER c_print_identifier
 #undef LANG_HOOKS_TYPES_COMPATIBLE_P
 #define LANG_HOOKS_TYPES_COMPATIBLE_P c_types_compatible_p
-#undef LANG_HOOKS_FUNCTION_MISSING_NORETURN_OK_P
-#define LANG_HOOKS_FUNCTION_MISSING_NORETURN_OK_P c_missing_noreturn_ok_p
+#undef LANG_HOOKS_MISSING_NORETURN_OK_P
+#define LANG_HOOKS_MISSING_NORETURN_OK_P c_missing_noreturn_ok_p
 #undef LANG_HOOKS_DUP_LANG_SPECIFIC_DECL
 #define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL c_dup_lang_specific_decl
 #undef  LANG_HOOKS_BUILTIN_FUNCTION

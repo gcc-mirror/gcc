@@ -1,3 +1,17 @@
+2008-04-04  Paolo Bonzini  <bonzini@gnu.org>
+
+	* decl.c (cxx_push_function_context): Delete.
+	(cxx_pop_function_context): Delete.
+	(start_preparsed_function): Merge cxx_push_function_context (!f->decl
+	code only).
+	* cp-objcp-common.h (LANG_HOOKS_FUNCTION_INIT,
+	LANG_HOOKS_FUNCTION_FINAL): Delete.
+	(LANG_HOOKS_FUNCTION_MISSING_NORETURN_OK_P): Rename to
+	LANG_HOOKS_MISSING_NORETURN_OK_P.
+	* cp-tree.h (cxx_push_function_context, cxx_pop_function_context):
+	Delete prototype.
+	* semantics.c (current_stmt_tree): Fix comment.
+
 2008-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/35741

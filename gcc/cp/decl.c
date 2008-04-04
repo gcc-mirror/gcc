@@ -11258,6 +11258,11 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
      FIXME factor out the non-RTL stuff.  */
   bl = current_binding_level;
   allocate_struct_function (decl1, processing_template_decl);
+
+  /* Initialize the language data structures.  Whenever we start
+     a new function, we destroy temporaries in the usual way.  */
+  cfun->language = GGC_CNEW (struct language_function);
+  current_stmt_tree ()->stmts_are_full_exprs_p = 1;
   current_binding_level = bl;
 
   /* Even though we're inside a function body, we still don't want to
@@ -12267,47 +12272,6 @@ revert_static_member_fn (tree decl)
   if (DECL_ARGUMENTS (decl))
     DECL_ARGUMENTS (decl) = TREE_CHAIN (DECL_ARGUMENTS (decl));
   DECL_STATIC_FUNCTION_P (decl) = 1;
-}
-
-/* Initialize the variables used during compilation of a C++
-   function.  */
-
-void
-cxx_push_function_context (struct function * f)
-{
-  struct language_function *p = GGC_CNEW (struct language_function);
-  f->language = p;
-
-  /* Whenever we start a new function, we destroy temporaries in the
-     usual way.  */
-  current_stmt_tree ()->stmts_are_full_exprs_p = 1;
-
-  if (f->decl)
-    {
-      tree fn = f->decl;
-
-      if (DECL_SAVED_FUNCTION_DATA (fn))
-	{
-	  /* If we already parsed this function, and we're just expanding it
-	     now, restore saved state.  */
-	  *cp_function_chain = *DECL_SAVED_FUNCTION_DATA (fn);
-
-	  /* We don't need the saved data anymore.  Unless this is an inline
-	     function; we need the named return value info for
-	     declare_return_variable.  */
-	  if (! DECL_INLINE (fn))
-	    DECL_SAVED_FUNCTION_DATA (fn) = NULL;
-	}
-    }
-}
-
-/* Free the language-specific parts of F, now that we've finished
-   compiling the function.  */
-
-void
-cxx_pop_function_context (struct function * f)
-{
-  f->language = 0;
 }
 
 /* Return which tree structure is used by T, or TS_CP_GENERIC if T is

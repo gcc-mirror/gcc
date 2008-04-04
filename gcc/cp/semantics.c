@@ -381,9 +381,7 @@ add_stmt (tree t)
   return t;
 }
 
-/* Returns the stmt_tree (if any) to which statements are currently
-   being added.  If there is no active statement-tree, NULL is
-   returned.  */
+/* Returns the stmt_tree to which statements are currently being added.  */
 
 stmt_tree
 current_stmt_tree (void)
