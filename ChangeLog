@@ -1,7 +1,7 @@
 2008-04-04  Nick Clifton  <nickc@redhat.com>
 
 	PR binutils/4334
-	* configure.ac: Run ACX_XHEXK_CYGWIN_CAT_WORKS for cygwin hosted
+	* configure.ac: Run ACX_CHECK_CYGWIN_CAT_WORKS for cygwin hosted
 	builds.
 	* configure: Regenerate.
 
