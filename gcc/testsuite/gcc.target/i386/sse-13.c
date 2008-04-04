@@ -1,10 +1,10 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow -msse4 -msse5" } */
+/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow -msse4 -msse5 -maes -mpclmul" } */
 
 #include <mm_malloc.h>
 
 /* Test that the intrinsics compile with optimization.  All of them are
-   defined as inline functions in {,x,e,p,t,s,a,b}mmintrin.h and mm3dnow.h
+   defined as inline functions in {,x,e,p,t,s,w,a,b}mmintrin.h and mm3dnow.h
    that reference the proper builtin functions.  Defining away "extern" and
    "__inline" results in all of them being compiled as proper functions.  */
 
@@ -16,6 +16,10 @@
 /* ammintrin.h */
 #define __builtin_ia32_extrqi(X, I, L)  __builtin_ia32_extrqi(X, 1, 1)
 #define __builtin_ia32_insertqi(X, Y, I, L) __builtin_ia32_insertqi(X, Y, 1, 1)
+
+/* wmmintrin.h */
+#define __builtin_ia32_aeskeygenassist128(X, C) __builtin_ia32_aeskeygenassist128(X, 1)
+#define __builtin_ia32_pclmulqdq128(X, Y, I) __builtin_ia32_pclmulqdq128(X, Y, 1)
 
 /* smmintrin.h */
 #define __builtin_ia32_pblendw128(X, Y, M) __builtin_ia32_pblendw128 (X, Y, 1)
@@ -94,6 +98,7 @@
 #define __builtin_ia32_protdi(A, B) __builtin_ia32_protdi(A,1)
 #define __builtin_ia32_protqi(A, B) __builtin_ia32_protqi(A,1)
 
+#include <wmmintrin.h>
 #include <bmmintrin.h>
 #include <smmintrin.h>
 #include <mm3dnow.h>

@@ -8013,6 +8013,27 @@ depending on the size of @code{unsigned long}.
 Generates the @code{popcntq} machine instruction.
 @end table
 
+The following built-in functions are available when @option{-maes} is
+used.  All of them generate the machine instruction that is part of the
+name.
+
+@smallexample
+v2di __builtin_ia32_aesenc128 (v2di, v2di)
+v2di __builtin_ia32_aesenclast128 (v2di, v2di)
+v2di __builtin_ia32_aesdec128 (v2di, v2di)
+v2di __builtin_ia32_aesdeclast128 (v2di, v2di)
+v2di __builtin_ia32_aeskeygenassist128 (v2di, const int)
+v2di __builtin_ia32_aesimc128 (v2di)
+@end smallexample
+
+The following built-in function is available when @option{-mpclmul} is
+used.
+
+@table @code
+@item v2di __builtin_ia32_pclmulqdq128 (v2di, v2di, const int)
+Generates the @code{pclmulqdq} machine instruction.
+@end table
+
 The following built-in functions are available when @option{-msse4a} is used.
 All of them generate the machine instruction that is part of the name.
 
