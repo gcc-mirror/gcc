@@ -4183,8 +4183,6 @@ extern void cxx_init_decl_processing		(void);
 enum cp_tree_node_structure_enum cp_tree_node_structure
 						(union lang_tree_node *);
 extern bool cxx_mark_addressable		(tree);
-extern void cxx_push_function_context		(struct function *);
-extern void cxx_pop_function_context		(struct function *);
 extern void maybe_push_cleanup_level		(tree);
 extern void finish_scope			(void);
 extern void push_switch				(tree);

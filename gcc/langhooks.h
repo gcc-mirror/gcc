@@ -54,20 +54,6 @@ struct lang_hooks_for_callgraph
   void (*emit_associated_thunks) (tree);
 };
 
-/* Lang hooks for management of language-specific data or status
-   when entering / leaving functions etc.  */
-struct lang_hooks_for_functions
-{
-  /* Called when entering a function.  */
-  void (*init) (struct function *);
-
-  /* Called when leaving a function.  */
-  void (*final) (struct function *);
-
-  /* Determines if it's ok for a function to have no noreturn attribute.  */
-  bool (*missing_noreturn_ok_p) (tree);
-};
-
 /* The following hooks are used by tree-dump.c.  */
 
 struct lang_hooks_for_tree_dump
@@ -283,6 +269,9 @@ struct lang_hooks
      parsers to dump debugging information during parsing.  */
   void (*parse_file) (int);
 
+  /* Determines if it's ok for a function to have no noreturn attribute.  */
+  bool (*missing_noreturn_ok_p) (tree);
+
   /* Called to obtain the alias set to be used for an expression or type.
      Returns -1 if the language does nothing special for it.  */
   alias_set_type (*get_alias_set) (tree);
@@ -385,9 +374,6 @@ struct lang_hooks
   const struct attribute_spec *attribute_table;
   const struct attribute_spec *common_attribute_table;
   const struct attribute_spec *format_attribute_table;
-
-  /* Function-related language hooks.  */
-  struct lang_hooks_for_functions function;
 
   struct lang_hooks_for_tree_inlining tree_inlining;
 

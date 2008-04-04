@@ -1,3 +1,22 @@
+2008-04-04  Paolo Bonzini  <bonzini@gnu.org>
+
+	* function.c (free_after_parsing): Replace with
+	cxx_push_function_context from C++ front-end.
+	(allocate_struct_function): Don't call langhook.
+	* langhooks.h (struct lang_hooks_for_functions): Delete.
+	(struct lang_hooks): Add back missing_noreturn_ok_p here, delete
+	member "function".
+	* langhooks-def.h (LANG_HOOKS_MISSING_NORETURN_OK_P): Add.
+	(LANG_HOOKS_FUNCTION_INIT, LANG_HOOKS_FUNCTION_FINAL,
+	LANG_HOOKS_FUNCTION_MISSING_NORETURN_OK_P,
+	LANG_HOOKS_FUNCTION_INITIALIZER): Delete.
+	(LANG_HOOKS_INITIALIZER): Add LANG_HOOKS_MISSING_NORETURN_OK_P,
+	remove LANG_HOOKS_FUNCTION_INITIALIZER.
+	* tree-cfg.c: Adjust call to missing_noreturn_ok_p langhook.
+
+	* c-objc-common.h (LANG_HOOKS_FUNCTION_MISSING_NORETURN_OK_P):
+	Rename to LANG_HOOKS_MISSING_NORETURN_OK_P.
+	
 2008-04-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/35440
