@@ -789,3 +789,19 @@
     return 0;
   return arith_reg_operand (op, mode);
 })
+
+(define_predicate "bitwise_memory_operand"
+  (match_code "mem")
+{
+  if (GET_CODE (op) == MEM)
+    {
+      if (REG_P (XEXP (op, 0)))
+	return 1;
+
+      if (GET_CODE (XEXP (op, 0)) == PLUS
+	  && GET_CODE (XEXP (XEXP (op, 0), 0)) == REG
+	  && satisfies_constraint_K12 (XEXP (XEXP (op, 0), 1)))
+        return 1;
+    }
+  return 0;
+})

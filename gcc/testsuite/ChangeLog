@@ -1,3 +1,12 @@
+2008-04-04  Naveen.H.S  <naveen.hs@kpitcummins.com>
+
+	* gcc.target/sh/sh2a-band.c: New test.
+	* gcc.target/sh/sh2a-bclrmem.c: New test.
+	* gcc.target/sh/sh2a-bld.c: New test.
+	* gcc.target/sh/sh2a-bor.c: New test.
+	* gcc.target/sh/sh2a-bsetmem.c: New test.
+	* gcc.target/sh/sh2a-bxor.c: New test.
+
 2008-04-04  Janis Johnson  <janis187@us.ibm.com>
 
 	* g++.dg/other/anon5.C: Don't depend on line number for error message.

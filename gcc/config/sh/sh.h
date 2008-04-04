@@ -2449,6 +2449,12 @@ struct sh_args {
 	    else							\
 	      break;							\
 	  }								\
+	if (TARGET_SH2A)						\
+	  {								\
+	    if (GET_MODE_SIZE (MODE) == 1				\
+		&& (unsigned) INTVAL (OP) < 4096)			\
+	    goto LABEL;							\
+	  }								\
 	if (MODE_DISP_OK_4 ((OP), (MODE)))  goto LABEL;		      	\
 	if (MODE_DISP_OK_8 ((OP), (MODE)))  goto LABEL;		      	\
       }									\

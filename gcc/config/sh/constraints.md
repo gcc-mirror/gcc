@@ -125,11 +125,21 @@
   (and (match_code "const_int")
        (match_test "CONST_OK_FOR_J16 (ival)")))
 
+(define_constraint "K03"
+  "An unsigned 3-bit constant, as used in SH2A bclr, bset, etc."
+  (and (match_code "const_int")
+       (match_test "ival >= 0 && ival <= 7")))
+
 (define_constraint "K08"
   "An unsigned 8-bit constant, as used in and, or, etc."
   (and (match_code "const_int")
        (match_test "ival >= 0 && ival <= 255")))
  
+(define_constraint "K12"
+  "An unsigned 8-bit constant, as used in SH2A 12-bit display."
+  (and (match_code "const_int")
+       (match_test "ival >= 0 && ival <= 4095")))
+
 (define_constraint "K16"
   "An unsigned 16-bit constant, as used in SHmedia shori."
   (and (match_code "const_int")
@@ -239,3 +249,15 @@
   "@internal"
   (and (match_test "memory_operand (op, GET_MODE (op))")
        (match_test "GET_CODE (XEXP (op, 0)) != PLUS")))
+
+(define_memory_constraint "Sbv"
+  "A memory reference, as used in SH2A bclr.b, bset.b, etc."
+  (and (match_test "MEM_P (op) && GET_MODE (op) == QImode")
+       (match_test "REG_P (XEXP (op, 0))")))
+
+(define_memory_constraint "Sbw"
+  "A memory reference, as used in SH2A bclr.b, bset.b, etc."
+  (and (match_test "MEM_P (op) && GET_MODE (op) == QImode")
+       (match_test "GET_CODE (XEXP (op, 0)) == PLUS")
+       (match_test "REG_P (XEXP (XEXP (op, 0), 0))")
+       (match_test "satisfies_constraint_K12 (XEXP (XEXP (op, 0), 1))")))

@@ -1,3 +1,23 @@
+2008-04-04  Naveen.H.S  <naveen.hs@kpitcummins.com>
+
+	* doc/invoke.texi: Document -mbitops for SH.
+	* config/sh/constraints.md (K03, K12, Sbv, Sbw): New constraints.
+	* config/sh/predicates.md (bitwise_memory_operand): New	predicate.
+	* config/sh/sh.c (print_operand): Add %t operand code.
+	* config/sh/sh.h (GO_IF_LEGITIMATE_INDEX): Add condition for SH2A.
+	* config/sh/sh.md (*iorsi3_compact): Fix condition for SH2A.
+	(extendqisi2_compact): Add the alternative for SH2A 4-byte mov.b.
+	(extendqihi2): Likewise.
+	(movqi_i): Likewise.
+	(insv): Use bset, bclr and bst instructions for SH2A if	possible.
+	(extv): Use bld instruction for SH2A if possible.
+	(extzv): Likewise.
+	(bclr_m2a, bclrmem_m2a, bset_m2a, bsetmem_m2a, bst_m2a, bld_m2a,
+	bldsign_m2a, bld_reg, *bld_regqi, band_m2a, bandreg_m2a,
+	bor_m2a, borreg_m2a, bxor_m2a, bxorreg_m2a): New insns.
+	(bset.b, bclr.b): Define peepholes.
+	* config/sh/sh.opt (mbitops): New option.
+
 2008-04-04  Janis Johnson  <janis187@us.ibm.com>
 
 	PR target/35620
