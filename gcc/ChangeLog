@@ -1,3 +1,8 @@
+2008-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/35364
+	* tree-cfg.c (remove_useless_stmts_1): Handle OMP_* containers.
+
 2008-04-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config.gcc (extra_headers): Add wmmintrin.h for x86 and x86-64.
