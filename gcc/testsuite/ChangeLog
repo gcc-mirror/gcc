@@ -1,5 +1,7 @@
 2008-04-04  Janis Johnson  <janis187@us.ibm.com>
 
+	* g++.dg/other/anon5.C: Don't depend on line number for error message.
+
 	* gcc.dg/torture/builtin-modf-1.c: Use special options for
 	powerpc*-*-linux*.
 
