@@ -36,7 +36,7 @@
 	(UNSPEC_AESDECLAST): Likewise.
 	(UNSPEC_AESIMC): Likewise.
 	(UNSPEC_AESKEYGENASSIST): Likewise.
-	(UNSPEC_PCLMULQDQ): Likewise.
+	(UNSPEC_PCLMUL): Likewise.
 
 	* config/i386/i386.opt (maes): New.
 	(mpclmul): Likewise.
