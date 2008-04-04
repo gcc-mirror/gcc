@@ -1,3 +1,8 @@
+2008-04-03  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (xtensa_secondary_reload_class): Use a
+	secondary input reload for subword loads from the constant pool.
+
 2008-04-01  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/include/gpl_v3.texi: Copy from trunk.

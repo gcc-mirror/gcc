@@ -2386,7 +2386,8 @@ xtensa_secondary_reload_class (enum reg_class class,
 
   if (!isoutput)
     {
-      if (class == FP_REGS && constantpool_mem_p (x))
+      if ((class == FP_REGS || GET_MODE_SIZE (mode) < UNITS_PER_WORD)
+	  && constantpool_mem_p (x))
 	return RL_REGS;
     }
 
