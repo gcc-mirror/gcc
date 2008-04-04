@@ -595,3 +595,26 @@ AC_DEFUN([ACX_BUGURL],[
   AC_SUBST(REPORT_BUGS_TO)
   AC_SUBST(REPORT_BUGS_TEXI)
 ])
+
+dnl ####
+dnl # ACX_CHECK_CYGWIN_CAT_WORKS
+dnl # On Cygwin hosts, check that the cat command ignores 
+dnl # carriage returns as otherwise builds will not work.
+dnl # See binutils PR 4334 for more details.
+AC_DEFUN([ACX_CHECK_CYGWIN_CAT_WORKS],[
+AC_MSG_CHECKING([to see if cat works as expected])
+echo a >cygwin-cat-check
+if test `cat cygwin-cat-check` == a ; then
+  rm cygwin-cat-check
+  AC_MSG_RESULT(yes)
+else
+  rm cygwin-cat-check
+  AC_MSG_RESULT(no)
+  AC_MSG_ERROR([The cat command does not ignore carriage return characters.
+  Please either mount the build directory in binary mode or run the following
+  commands before running any configure script:
+set -o igncr
+export SHELLOPTS 
+  ])
+fi
+])

@@ -1,3 +1,10 @@
+2008-04-04  Nick Clifton  <nickc@redhat.com>
+
+	PR binutils/4334
+	* configure.ac: Run ACX_XHEXK_CYGWIN_CAT_WORKS for cygwin hosted
+	builds.
+	* configure: Regenerate.
+
 2008-04-04  NightStrike  <NightStrike@gmail.com>
 
 	PR other/35151
