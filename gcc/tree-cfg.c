@@ -6420,7 +6420,8 @@ tree_block_ends_with_condjump_p (const_basic_block bb)
 static bool
 need_fake_edge_p (tree t)
 {
-  tree call;
+  tree call, fndecl = NULL_TREE;
+  int call_flags;
 
   /* NORETURN and LONGJMP calls already have an edge to exit.
      CONST and PURE calls do not need one.
@@ -6430,8 +6431,19 @@ need_fake_edge_p (tree t)
      the counter incrementation code from -fprofile-arcs
      leads to different results from -fbranch-probabilities.  */
   call = get_call_expr_in (t);
-  if (call
-      && !(call_expr_flags (call) & ECF_NORETURN))
+  if (call)
+    {
+      fndecl = get_callee_fndecl (call);
+      call_flags = call_expr_flags (call);
+    }
+
+  if (call && fndecl && DECL_BUILT_IN (fndecl)
+      && (call_flags & ECF_NOTHROW)
+      && !(call_flags & ECF_NORETURN)
+      && !(call_flags & ECF_RETURNS_TWICE))
+   return false;
+
+  if (call && !(call_flags & ECF_NORETURN))
     return true;
 
   if (TREE_CODE (t) == ASM_EXPR

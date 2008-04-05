@@ -1,3 +1,9 @@
+2008-04-05  Ben Elliston  <bje@au.ibm.com>
+
+	* tree-cfg.c (need_fake_edge_p): Return false for calls to
+	builtins that return exactly once and do not throw. Cache call to
+	call_expr_flags.
+
 2008-04-04 Andy Hutchinson <hutchinsonandy@aim.com>
 
 	PR rtl-optimization/34916
