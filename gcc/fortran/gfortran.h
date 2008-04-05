@@ -211,8 +211,8 @@ typedef enum
   ST_IF_BLOCK, ST_IMPLICIT, ST_IMPLICIT_NONE, ST_IMPORT, ST_INQUIRE, ST_INTERFACE,
   ST_PARAMETER, ST_MODULE, ST_MODULE_PROC, ST_NAMELIST, ST_NULLIFY, ST_OPEN,
   ST_PAUSE, ST_PRIVATE, ST_PROGRAM, ST_PUBLIC, ST_READ, ST_RETURN, ST_REWIND,
-  ST_STOP, ST_SUBROUTINE, ST_TYPE, ST_USE, ST_WHERE_BLOCK, ST_WHERE, ST_WRITE,
-  ST_ASSIGNMENT, ST_POINTER_ASSIGNMENT, ST_SELECT_CASE, ST_SEQUENCE,
+  ST_STOP, ST_SUBROUTINE, ST_TYPE, ST_USE, ST_WHERE_BLOCK, ST_WHERE, ST_WAIT, 
+  ST_WRITE, ST_ASSIGNMENT, ST_POINTER_ASSIGNMENT, ST_SELECT_CASE, ST_SEQUENCE,
   ST_SIMPLE_IF, ST_STATEMENT_FUNCTION, ST_DERIVED_DECL, ST_LABEL_ASSIGNMENT,
   ST_ENUM, ST_ENUMERATOR, ST_END_ENUM,
   ST_OMP_ATOMIC, ST_OMP_BARRIER, ST_OMP_CRITICAL, ST_OMP_END_CRITICAL,
@@ -1635,7 +1635,8 @@ gfc_alloc;
 typedef struct
 {
   gfc_expr *unit, *file, *status, *access, *form, *recl,
-    *blank, *position, *action, *delim, *pad, *iostat, *iomsg, *convert;
+    *blank, *position, *action, *delim, *pad, *iostat, *iomsg, *convert,
+    *decimal, *encoding, *round, *sign, *asynchronous, *id;
   gfc_st_label *err;
 }
 gfc_open;
@@ -1662,7 +1663,8 @@ typedef struct
   gfc_expr *unit, *file, *iostat, *exist, *opened, *number, *named,
     *name, *access, *sequential, *direct, *form, *formatted,
     *unformatted, *recl, *nextrec, *blank, *position, *action, *read,
-    *write, *readwrite, *delim, *pad, *iolength, *iomsg, *convert, *strm_pos;
+    *write, *readwrite, *delim, *pad, *iolength, *iomsg, *convert, *strm_pos,
+    *asynchronous, *decimal, *encoding, *pending, *round, *sign, *size, *id;
 
   gfc_st_label *err;
 
@@ -1672,7 +1674,17 @@ gfc_inquire;
 
 typedef struct
 {
-  gfc_expr *io_unit, *format_expr, *rec, *advance, *iostat, *size, *iomsg;
+  gfc_expr *unit, *iostat, *iomsg, *id;
+  gfc_st_label *err, *end, *eor;
+}
+gfc_wait;
+
+
+typedef struct
+{
+  gfc_expr *io_unit, *format_expr, *rec, *advance, *iostat, *size, *iomsg,
+	   *id, *pos, *asynchronous, *blank, *decimal, *delim, *pad, *round,
+	   *sign;
 
   gfc_symbol *namelist;
   /* A format_label of `format_asterisk' indicates the "*" format */
@@ -1701,7 +1713,7 @@ typedef enum
   EXEC_IF, EXEC_ARITHMETIC_IF, EXEC_DO, EXEC_DO_WHILE, EXEC_SELECT,
   EXEC_FORALL, EXEC_WHERE, EXEC_CYCLE, EXEC_EXIT,
   EXEC_ALLOCATE, EXEC_DEALLOCATE,
-  EXEC_OPEN, EXEC_CLOSE,
+  EXEC_OPEN, EXEC_CLOSE, EXEC_WAIT,
   EXEC_READ, EXEC_WRITE, EXEC_IOLENGTH, EXEC_TRANSFER, EXEC_DT_END,
   EXEC_BACKSPACE, EXEC_ENDFILE, EXEC_INQUIRE, EXEC_REWIND, EXEC_FLUSH,
   EXEC_OMP_CRITICAL, EXEC_OMP_DO, EXEC_OMP_FLUSH, EXEC_OMP_MASTER,
@@ -1738,6 +1750,7 @@ typedef struct gfc_code
     gfc_close *close;
     gfc_filepos *filepos;
     gfc_inquire *inquire;
+    gfc_wait *wait;
     gfc_dt *dt;
     gfc_forall_iterator *forall_iterator;
     struct gfc_code *whichloop;
@@ -2323,6 +2336,8 @@ void gfc_free_inquire (gfc_inquire *);
 try gfc_resolve_inquire (gfc_inquire *);
 void gfc_free_dt (gfc_dt *);
 try gfc_resolve_dt (gfc_dt *);
+void gfc_free_wait (gfc_wait *);
+try gfc_resolve_wait (gfc_wait *);
 
 /* module.c */
 void gfc_module_init_2 (void);

@@ -1533,6 +1533,7 @@ gfc_match_if (gfc_statement *if_type)
   match ("return", gfc_match_return, ST_RETURN)
   match ("rewind", gfc_match_rewind, ST_REWIND)
   match ("stop", gfc_match_stop, ST_STOP)
+  match ("wait", gfc_match_wait, ST_WAIT)
   match ("where", match_simple_where, ST_WHERE)
   match ("write", gfc_match_write, ST_WRITE)
 

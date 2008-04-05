@@ -45,6 +45,7 @@ enum ioparam_type
   IOPARM_ptype_filepos,
   IOPARM_ptype_inquire,
   IOPARM_ptype_dt,
+  IOPARM_ptype_wait,
   IOPARM_ptype_num
 };
 
@@ -96,7 +97,8 @@ static GTY(()) gfc_st_parameter st_parameter[] =
   { "close", NULL },
   { "filepos", NULL },
   { "inquire", NULL },
-  { "dt", NULL }
+  { "dt", NULL },
+  { "wait", NULL }
 };
 
 static GTY(()) gfc_st_parameter_field st_parameter_field[] =
@@ -133,6 +135,7 @@ enum iocall
   IOCALL_FLUSH,
   IOCALL_SET_NML_VAL,
   IOCALL_SET_NML_VAL_DIM,
+  IOCALL_WAIT,
   IOCALL_NUM
 };
 
@@ -371,6 +374,11 @@ gfc_build_io_library_fndecls (void)
   iocall[IOCALL_IOLENGTH] =
     gfc_build_library_function_decl(get_identifier (PREFIX("st_iolength")),
 				    void_type_node, 1, dt_parm_type);
+
+  parm_type = build_pointer_type (st_parameter[IOPARM_ptype_wait].type);
+  iocall[IOCALL_WAIT] =
+    gfc_build_library_function_decl (get_identifier (PREFIX("st_wait")),
+				     gfc_int4_type_node, 1, parm_type);
 
   parm_type = build_pointer_type (st_parameter[IOPARM_ptype_filepos].type);
   iocall[IOCALL_REWIND] =
@@ -921,6 +929,24 @@ gfc_trans_open (gfc_code * code)
   if (p->pad)
     mask |= set_string (&block, &post_block, var, IOPARM_open_pad, p->pad);
 
+  if (p->decimal)
+    mask |= set_string (&block, &post_block, var, IOPARM_open_decimal,
+			p->decimal);
+
+  if (p->encoding)
+    mask |= set_string (&block, &post_block, var, IOPARM_open_encoding,
+			p->encoding);
+
+  if (p->round)
+    mask |= set_string (&block, &post_block, var, IOPARM_open_round, p->round);
+
+  if (p->sign)
+    mask |= set_string (&block, &post_block, var, IOPARM_open_sign, p->sign);
+
+  if (p->asynchronous)
+    mask |= set_string (&block, &post_block, var, IOPARM_open_asynchronous,
+			p->asynchronous);
+
   if (p->convert)
     mask |= set_string (&block, &post_block, var, IOPARM_open_convert,
 			p->convert);
@@ -1117,7 +1143,7 @@ gfc_trans_inquire (gfc_code * code)
   stmtblock_t block, post_block;
   gfc_inquire *p;
   tree tmp, var;
-  unsigned int mask = 0;
+  unsigned int mask = 0, mask2 = 0;
 
   gfc_start_block (&block);
   gfc_init_block (&post_block);
@@ -1248,6 +1274,43 @@ gfc_trans_inquire (gfc_code * code)
     mask |= set_parameter_ref (&block, &post_block, var,
 			       IOPARM_inquire_strm_pos_out, p->strm_pos);
 
+  /* The second series of flags.  */
+  if (p->asynchronous)
+    mask2 |= set_string (&block, &post_block, var, IOPARM_inquire_asynchronous,
+			 p->asynchronous);
+
+  if (p->decimal)
+    mask2 |= set_string (&block, &post_block, var, IOPARM_inquire_decimal,
+			 p->decimal);
+
+  if (p->encoding)
+    mask2 |= set_string (&block, &post_block, var, IOPARM_inquire_encoding,
+			 p->encoding);
+
+  if (p->round)
+    mask2 |= set_string (&block, &post_block, var, IOPARM_inquire_round,
+			 p->round);
+
+  if (p->sign)
+    mask2 |= set_string (&block, &post_block, var, IOPARM_inquire_sign,
+			 p->sign);
+
+  if (p->pending)
+    mask2 |= set_parameter_ref (&block, &post_block, var,
+				IOPARM_inquire_pending, p->pending);
+
+  if (p->size)
+    mask2 |= set_parameter_ref (&block, &post_block, var, IOPARM_inquire_size,
+				p->size);
+
+  if (p->id)
+    mask2 |= set_parameter_value (&block, var, IOPARM_inquire_id, p->id);
+
+  set_parameter_const (&block, var, IOPARM_inquire_flags2, mask2);
+
+  if (mask2)
+    mask |= IOPARM_inquire_flags2;
+
   set_parameter_const (&block, var, IOPARM_common_flags, mask);
 
   if (p->unit)
@@ -1264,6 +1327,56 @@ gfc_trans_inquire (gfc_code * code)
   io_result (&block, var, p->err, NULL, NULL);
 
   return gfc_finish_block (&block);
+}
+
+
+tree
+gfc_trans_wait (gfc_code * code)
+{
+  stmtblock_t block, post_block;
+  gfc_wait *p;
+  tree tmp, var;
+  unsigned int mask = 0;
+
+  gfc_start_block (&block);
+  gfc_init_block (&post_block);
+
+  var = gfc_create_var (st_parameter[IOPARM_ptype_wait].type,
+			"wait_parm");
+
+  set_error_locus (&block, var, &code->loc);
+  p = code->ext.wait;
+
+  /* Set parameters here.  */
+  if (p->iomsg)
+    mask |= set_string (&block, &post_block, var, IOPARM_common_iomsg,
+			p->iomsg);
+
+  if (p->iostat)
+    mask |= set_parameter_ref (&block, &post_block, var, IOPARM_common_iostat,
+			       p->iostat);
+
+  if (p->err)
+    mask |= IOPARM_common_err;
+
+  if (p->id)
+    mask |= set_parameter_value (&block, var, IOPARM_wait_id, p->id);
+
+  set_parameter_const (&block, var, IOPARM_common_flags, mask);
+
+  if (p->unit)
+    set_parameter_value (&block, var, IOPARM_common_unit, p->unit);
+
+  tmp = build_fold_addr_expr (var);
+  tmp = build_call_expr (iocall[IOCALL_WAIT], 1, tmp);
+  gfc_add_expr_to_block (&block, tmp);
+
+  gfc_add_block_to_block (&block, &post_block);
+
+  io_result (&block, var, p->err, NULL, NULL);
+
+  return gfc_finish_block (&block);
+
 }
 
 static gfc_expr *
@@ -1582,6 +1695,41 @@ build_dt (tree function, gfc_code * code)
 
       if (dt->end)
 	mask |= IOPARM_common_end;
+
+      if (dt->id)
+	mask |= set_parameter_ref (&block, &post_end_block, var,
+				   IOPARM_dt_id, dt->id);
+
+      if (dt->pos)
+	mask |= set_parameter_value (&block, var, IOPARM_dt_pos, dt->pos);
+
+      if (dt->asynchronous)
+	mask |= set_string (&block, &post_block, var, IOPARM_dt_asynchronous,
+			    dt->asynchronous);
+
+      if (dt->blank)
+	mask |= set_string (&block, &post_block, var, IOPARM_dt_blank,
+			    dt->blank);
+
+      if (dt->decimal)
+	mask |= set_string (&block, &post_block, var, IOPARM_dt_decimal,
+			    dt->decimal);
+
+      if (dt->delim)
+	mask |= set_string (&block, &post_block, var, IOPARM_dt_delim,
+			    dt->delim);
+
+      if (dt->pad)
+	mask |= set_string (&block, &post_block, var, IOPARM_dt_pad,
+			    dt->pad);
+
+      if (dt->round)
+	mask |= set_string (&block, &post_block, var, IOPARM_dt_round,
+			    dt->round);
+
+      if (dt->sign)
+	mask |= set_string (&block, &post_block, var, IOPARM_dt_sign,
+			    dt->sign);
 
       if (dt->rec)
 	mask |= set_parameter_value (&block, var, IOPARM_dt_rec, dt->rec);

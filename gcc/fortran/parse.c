@@ -440,6 +440,7 @@ decode_statement (void)
       break;
 
     case 'w':
+      match ("wait", gfc_match_wait, ST_WAIT);
       match ("write", gfc_match_write, ST_WRITE);
       break;
     }
@@ -861,9 +862,9 @@ next_statement (void)
   case ST_CLOSE: case ST_CONTINUE: case ST_DEALLOCATE: case ST_END_FILE: \
   case ST_GOTO: case ST_INQUIRE: case ST_NULLIFY: case ST_OPEN: \
   case ST_READ: case ST_RETURN: case ST_REWIND: case ST_SIMPLE_IF: \
-  case ST_PAUSE: case ST_STOP: case ST_WRITE: case ST_ASSIGNMENT: \
+  case ST_PAUSE: case ST_STOP: case ST_WAIT: case ST_WRITE: \
   case ST_POINTER_ASSIGNMENT: case ST_EXIT: case ST_CYCLE: \
-  case ST_ARITHMETIC_IF: case ST_WHERE: case ST_FORALL: \
+  case ST_ASSIGNMENT: case ST_ARITHMETIC_IF: case ST_WHERE: case ST_FORALL: \
   case ST_LABEL_ASSIGNMENT: case ST_FLUSH: case ST_OMP_FLUSH: \
   case ST_OMP_BARRIER
 
@@ -1267,6 +1268,9 @@ gfc_ascii_statement (gfc_statement st)
     case ST_WHERE_BLOCK:	/* Fall through */
     case ST_WHERE:
       p = "WHERE";
+      break;
+    case ST_WAIT:
+      p = "WAIT";
       break;
     case ST_WRITE:
       p = "WRITE";

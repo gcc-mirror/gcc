@@ -5964,6 +5964,7 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 	case EXEC_READ:
 	case EXEC_WRITE:
 	case EXEC_IOLENGTH:
+	case EXEC_WAIT:
 	  break;
 
 	case EXEC_OMP_ATOMIC:
@@ -6371,6 +6372,15 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	    break;
 
 	  resolve_branch (code->ext.inquire->err, code);
+	  break;
+
+	case EXEC_WAIT:
+	  if (gfc_resolve_wait (code->ext.wait) == FAILURE)
+	    break;
+
+	  resolve_branch (code->ext.wait->err, code);
+	  resolve_branch (code->ext.wait->end, code);
+	  resolve_branch (code->ext.wait->eor, code);
 	  break;
 
 	case EXEC_READ:
