@@ -1,3 +1,14 @@
+2008-04-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/25829 28655
+	* gfortran.dg/f2003_io_1.f03: New test.
+	* gfortran.dg/f2003_io_2.f03: New test.
+	* gfortran.dg/f2003_io_3.f03: New test.
+	* gfortran.dg/f2003_io_4.f03: New test.
+	* gfortran.dg/f2003_io_5.f03: New test.
+	* gfortran.dg/f2003_io_6.f03: New test.
+	* gfortran.dg/f2003_io_7.f03: New test.
+
 2008-04-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/35833
