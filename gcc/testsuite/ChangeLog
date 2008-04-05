@@ -1,3 +1,8 @@
+2008-04-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/35833
+	* gcc.dg/torture/pr35833.c: New testcase.
+
 2008-04-04  Naveen.H.S  <naveen.hs@kpitcummins.com>
 
 	* gcc.target/sh/sh2a-band.c: New test.
