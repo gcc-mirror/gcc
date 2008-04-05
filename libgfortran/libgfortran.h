@@ -1,5 +1,6 @@
 /* Common declarations for all of libgfortran.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>, and
    Andy Vaught <andy@xena.eas.asu.edu>
 
@@ -507,6 +508,11 @@ st_parameter_common;
 #define IOPARM_OPEN_HAS_DELIM           (1 << 15)
 #define IOPARM_OPEN_HAS_PAD             (1 << 16)
 #define IOPARM_OPEN_HAS_CONVERT         (1 << 17)
+#define IOPARM_OPEN_HAS_DECIMAL		(1 << 18)
+#define IOPARM_OPEN_HAS_ENCODING	(1 << 19)
+#define IOPARM_OPEN_HAS_ROUND		(1 << 20)
+#define IOPARM_OPEN_HAS_SIGN		(1 << 21)
+#define IOPARM_OPEN_HAS_ASYNCHRONOUS	(1 << 22)
 
 /* library start function and end macro.  These can be expanded if needed
    in the future.  cmp is st_parameter_common *cmp  */

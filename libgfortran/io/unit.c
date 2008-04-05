@@ -1,5 +1,6 @@
-/* Copyright (C) 2002, 2003, 2005, 2007 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2005, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Andy Vaught
+   F2003 I/O support contributed by Jerry DeLisle
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
 
@@ -430,6 +431,7 @@ get_internal_unit (st_parameter_dt *dtp)
   iunit->maxrec=0;
   iunit->current_record=0;
   iunit->read_bad = 0;
+  iunit->endfile = NO_ENDFILE;
 
   /* Set flags for the internal unit.  */
 
@@ -438,7 +440,9 @@ get_internal_unit (st_parameter_dt *dtp)
   iunit->flags.form = FORM_FORMATTED;
   iunit->flags.pad = PAD_YES;
   iunit->flags.status = STATUS_UNSPECIFIED;
-  iunit->endfile = NO_ENDFILE;
+  iunit->flags.sign = SIGN_SUPPRESS;
+  iunit->flags.decimal = DECIMAL_POINT;
+  iunit->flags.encoding = ENCODING_DEFAULT;
 
   /* Initialize the data transfer parameters.  */
 
@@ -524,6 +528,9 @@ init_units (void)
       u->flags.blank = BLANK_NULL;
       u->flags.pad = PAD_YES;
       u->flags.position = POSITION_ASIS;
+      u->flags.sign = SIGN_SUPPRESS;
+      u->flags.decimal = DECIMAL_POINT;
+      u->flags.encoding = ENCODING_DEFAULT;
 
       u->recl = options.default_recl;
       u->endfile = NO_ENDFILE;
@@ -547,6 +554,9 @@ init_units (void)
       u->flags.status = STATUS_OLD;
       u->flags.blank = BLANK_NULL;
       u->flags.position = POSITION_ASIS;
+      u->flags.sign = SIGN_SUPPRESS;
+      u->flags.decimal = DECIMAL_POINT;
+      u->flags.encoding = ENCODING_DEFAULT;
 
       u->recl = options.default_recl;
       u->endfile = AT_ENDFILE;
@@ -570,6 +580,9 @@ init_units (void)
       u->flags.status = STATUS_OLD;
       u->flags.blank = BLANK_NULL;
       u->flags.position = POSITION_ASIS;
+      u->flags.sign = SIGN_SUPPRESS;
+      u->flags.decimal = DECIMAL_POINT;
+      u->flags.encoding = ENCODING_DEFAULT;
 
       u->recl = options.default_recl;
       u->endfile = AT_ENDFILE;

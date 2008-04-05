@@ -1,6 +1,8 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008
+   Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist input contributed by Paul Thomas
+   F2003 I/O support contributed by Jerry DeLisle
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
 
@@ -52,12 +54,12 @@ Boston, MA 02110-1301, USA.  */
                       case '5': case '6': case '7': case '8': case '9'
 
 #define CASE_SEPARATORS  case ' ': case ',': case '/': case '\n': case '\t': \
-                         case '\r'
+                         case '\r': case ';'
 
 /* This macro assumes that we're operating on a variable.  */
 
 #define is_separator(c) (c == '/' ||  c == ',' || c == '\n' || c == ' ' \
-                         || c == '\t' || c == '\r')
+                         || c == '\t' || c == '\r' || c == ';')
 
 /* Maximum repeat count.  Less than ten times the maximum signed int32.  */
 
@@ -323,6 +325,13 @@ eat_separator (st_parameter_dt *dtp)
   switch (c)
     {
     case ',':
+      if (dtp->u.p.decimal_status == DECIMAL_COMMA)
+	{
+	  unget_char (dtp, c);
+	  break;
+	}
+      /* Fall through.  */
+    case ';':
       dtp->u.p.comma_flag = 1;
       eat_spaces (dtp);
       break;
@@ -666,6 +675,7 @@ read_logical (st_parameter_dt *dtp, int length)
 
       unget_char (dtp, c);
       break;
+
     case '.':
       c = tolower (next_char (dtp));
       switch (c)
@@ -1115,6 +1125,9 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
       c = next_char (dtp);
     }
 
+  if (c == ',' && dtp->u.p.decimal_status == DECIMAL_COMMA)
+    c = '.';
+  
   if (!isdigit (c) && c != '.')
     {
       if (c == 'i' || c == 'I' || c == 'n' || c == 'N')
@@ -1130,6 +1143,8 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
   for (;;)
     {
       c = next_char (dtp);
+      if (c == ',' && dtp->u.p.decimal_status == DECIMAL_COMMA)
+	c = '.';
       switch (c)
 	{
 	CASE_DIGITS:
@@ -1299,7 +1314,8 @@ eol_1:
   else
     unget_char (dtp, c);
 
-  if (next_char (dtp) != ',')
+  if (next_char (dtp)
+      !=  (dtp->u.p.decimal_status == DECIMAL_POINT ? ',' : ';'))
     goto bad_complex;
 
 eol_2:
@@ -1353,6 +1369,8 @@ read_real (st_parameter_dt *dtp, int length)
   seen_dp = 0;
 
   c = next_char (dtp);
+  if (c == ',' && dtp->u.p.decimal_status == DECIMAL_COMMA)
+    c = '.';
   switch (c)
     {
     CASE_DIGITS:
@@ -1388,6 +1406,8 @@ read_real (st_parameter_dt *dtp, int length)
   for (;;)
     {
       c = next_char (dtp);
+      if (c == ',' && dtp->u.p.decimal_status == DECIMAL_COMMA)
+	c = '.';
       switch (c)
 	{
 	CASE_DIGITS:
@@ -1395,8 +1415,8 @@ read_real (st_parameter_dt *dtp, int length)
 	  break;
 
 	case '.':
-          if (seen_dp)
-            goto bad_real;
+	  if (seen_dp)
+	    goto bad_real;
 
 	  seen_dp = 1;
 	  push_char (dtp, c);
@@ -1420,7 +1440,7 @@ read_real (st_parameter_dt *dtp, int length)
 	  goto got_repeat;
 
 	CASE_SEPARATORS:
-          if (c != '\n' &&  c != ',' && c != '\r')
+          if (c != '\n' && c != ',' && c != '\r' && c != ';')
 	    unget_char (dtp, c);
 	  goto done;
 
@@ -1452,6 +1472,9 @@ read_real (st_parameter_dt *dtp, int length)
       c = next_char (dtp);
     }
 
+  if (c == ',' && dtp->u.p.decimal_status == DECIMAL_COMMA)
+    c = '.';
+
   if (!isdigit (c) && c != '.')
     {
       if (c == 'i' || c == 'I' || c == 'n' || c == 'N')
@@ -1474,6 +1497,8 @@ read_real (st_parameter_dt *dtp, int length)
   for (;;)
     {
       c = next_char (dtp);
+      if (c == ',' && dtp->u.p.decimal_status == DECIMAL_COMMA)
+	c = '.';
       switch (c)
 	{
 	CASE_DIGITS:

@@ -1,6 +1,7 @@
-/* Copyright (C) 2007 Free Software Foundation, Inc.
+/* Copyright (C) 2007, 2008 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Write float code factoring to this file by Jerry DeLisle   
+   F2003 I/O support contributed by Jerry DeLisle
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
 
@@ -31,7 +32,7 @@ Boston, MA 02110-1301, USA.  */
 #include "config.h"
 
 typedef enum
-{ SIGN_NONE, SIGN_MINUS, SIGN_PLUS }
+{ S_NONE, S_MINUS, S_PLUS }
 sign_t;
 
 /* Given a flag that indicates if a value is negative or not, return a
@@ -40,21 +41,21 @@ sign_t;
 static sign_t
 calculate_sign (st_parameter_dt *dtp, int negative_flag)
 {
-  sign_t s = SIGN_NONE;
+  sign_t s = S_NONE;
 
   if (negative_flag)
-    s = SIGN_MINUS;
+    s = S_MINUS;
   else
     switch (dtp->u.p.sign_status)
       {
-      case SIGN_SP:
-	s = SIGN_PLUS;
+      case SIGN_SP:	/* Show sign. */
+	s = S_PLUS;
 	break;
-      case SIGN_SS:
-	s = SIGN_NONE;
+      case SIGN_SS:	/* Suppress sign. */
+	s = S_NONE;
 	break;
-      case SIGN_S:
-	s = options.optional_plus ? SIGN_PLUS : SIGN_NONE;
+      case SIGN_S:	/* Processor defined. */
+	s = options.optional_plus ? S_PLUS : S_NONE;
 	break;
       }
 
@@ -336,7 +337,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 
   /* Pick a field size if none was specified.  */
   if (w <= 0)
-    w = nbefore + nzero + nafter + (sign != SIGN_NONE ? 2 : 1);
+    w = nbefore + nzero + nafter + (sign != S_NONE ? 2 : 1);
 
   /* Create the ouput buffer.  */
   out = write_block (dtp, w);
@@ -362,7 +363,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 
   /* Work out how much padding is needed.  */
   nblanks = w - (nbefore + nzero + nafter + edigits + 1);
-  if (sign != SIGN_NONE)
+  if (sign != S_NONE)
     nblanks--;
 
   /* Check the value fits in the specified field width.  */
@@ -390,9 +391,9 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
     }
 
   /* Output the initial sign (if any).  */
-  if (sign == SIGN_PLUS)
+  if (sign == S_PLUS)
     *(out++) = '+';
-  else if (sign == SIGN_MINUS)
+  else if (sign == S_MINUS)
     *(out++) = '-';
 
   /* Output an optional leading zero.  */
@@ -421,7 +422,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
       out += nbefore;
     }
   /* Output the decimal point.  */
-  *(out++) = '.';
+  *(out++) = dtp->u.p.decimal_status == DECIMAL_POINT ? '.' : ',';
 
   /* Output leading zeros after the decimal point.  */
   if (nzero > 0)
