@@ -4991,8 +4991,8 @@ init_emit (void)
   rtl.emit.regno_pointer_align_length = LAST_VIRTUAL_REGISTER + 101;
 
   rtl.emit.regno_pointer_align
-    = xmalloc (rtl.emit.regno_pointer_align_length
-	       * sizeof (unsigned char));
+    = xcalloc (rtl.emit.regno_pointer_align_length
+	       * sizeof (unsigned char), 1);
 
   regno_reg_rtx
     = ggc_alloc (rtl.emit.regno_pointer_align_length * sizeof (rtx));

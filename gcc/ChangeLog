@@ -1,5 +1,7 @@
 2008-04-05  Jan Hubicka  <jh@suse.cz>
 
+	* emit-rtl.c (init_emit): xcalloc regno_pointer_align.
+
 	* tree-dump.c (dump_enable_all): Remove prototype; do not accept
 	letter argument.
 	(dump_files): Update.
