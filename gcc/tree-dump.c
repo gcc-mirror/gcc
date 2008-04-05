@@ -39,7 +39,6 @@ static void dump_index (dump_info_p, unsigned int);
 static void dequeue_and_dump (dump_info_p);
 static void dump_new_line (dump_info_p);
 static void dump_maybe_newline (dump_info_p);
-static int dump_enable_all (int, int);
 
 /* Add T to the end of the queue of nodes to dump.  Returns the index
    assigned to T.  */
@@ -782,19 +781,19 @@ dump_node (const_tree t, int flags, FILE *stream)
    tree_dump_index enumeration in tree-pass.h.  */
 static struct dump_file_info dump_files[TDI_end] =
 {
-  {NULL, NULL, NULL, 0, 0, 0, 0},
-  {".cgraph", "ipa-cgraph", NULL, TDF_IPA, 0,  0, 0},
-  {".tu", "translation-unit", NULL, TDF_TREE, 0, 1, 0},
-  {".class", "class-hierarchy", NULL, TDF_TREE, 0, 2, 0},
-  {".original", "tree-original", NULL, TDF_TREE, 0, 3, 0},
-  {".gimple", "tree-gimple", NULL, TDF_TREE, 0, 4, 0},
-  {".nested", "tree-nested", NULL, TDF_TREE, 0, 5, 0},
-  {".vcg", "tree-vcg", NULL, TDF_TREE, 0, 6, 0},
+  {NULL, NULL, NULL, 0, 0, 0},
+  {".cgraph", "ipa-cgraph", NULL, TDF_IPA, 0,  0},
+  {".tu", "translation-unit", NULL, TDF_TREE, 0, 1},
+  {".class", "class-hierarchy", NULL, TDF_TREE, 0, 2},
+  {".original", "tree-original", NULL, TDF_TREE, 0, 3},
+  {".gimple", "tree-gimple", NULL, TDF_TREE, 0, 4},
+  {".nested", "tree-nested", NULL, TDF_TREE, 0, 5},
+  {".vcg", "tree-vcg", NULL, TDF_TREE, 0, 6},
 #define FIRST_AUTO_NUMBERED_DUMP 7
 
-  {NULL, "tree-all", NULL, TDF_TREE, 0, 0, 0},
-  {NULL, "rtl-all", NULL, TDF_RTL, 0, 0, 0},
-  {NULL, "ipa-all", NULL, TDF_IPA, 0, 0, 0},
+  {NULL, "tree-all", NULL, TDF_TREE, 0, 0},
+  {NULL, "rtl-all", NULL, TDF_RTL, 0, 0},
+  {NULL, "ipa-all", NULL, TDF_IPA, 0, 0},
 };
 
 /* Dynamically registered tree dump files and switches.  */
@@ -993,15 +992,14 @@ dump_end (enum tree_dump_index phase ATTRIBUTE_UNUSED, FILE *stream)
 /* Enable all tree dumps.  Return number of enabled tree dumps.  */
 
 static int
-dump_enable_all (int flags, int letter)
+dump_enable_all (int flags)
 {
   int ir_dump_type = (flags & (TDF_TREE | TDF_RTL | TDF_IPA));
   int n = 0;
   size_t i;
 
   for (i = TDI_none + 1; i < (size_t) TDI_end; i++)
-    if ((dump_files[i].flags & ir_dump_type)
-	&& (letter == 0 || letter == dump_files[i].letter))
+    if ((dump_files[i].flags & ir_dump_type))
       {
         dump_files[i].state = -1;
         dump_files[i].flags |= flags;
@@ -1009,8 +1007,7 @@ dump_enable_all (int flags, int letter)
       }
 
   for (i = 0; i < extra_dump_files_in_use; i++)
-    if ((extra_dump_files[i].flags & ir_dump_type)
-	&& (letter == 0 || letter == extra_dump_files[i].letter))
+    if ((extra_dump_files[i].flags & ir_dump_type))
       {
         extra_dump_files[i].state = -1;
         extra_dump_files[i].flags |= flags;
@@ -1075,7 +1072,7 @@ dump_switch_p_1 (const char *arg, struct dump_file_info *dfi, bool doglob)
   /* Process -fdump-tree-all and -fdump-rtl-all, by enabling all the
      known dumps.  */
   if (dfi->suffix == NULL)
-    dump_enable_all (dfi->flags, 0);
+    dump_enable_all (dfi->flags);
 
   return 1;
 }
@@ -1122,12 +1119,9 @@ dump_function (enum tree_dump_index phase, tree fn)
 }
 
 bool
-enable_rtl_dump_file (int letter)
+enable_rtl_dump_file (void)
 {
-  if (letter == 'a')
-    letter = 0;
-
-  return dump_enable_all (TDF_RTL | TDF_DETAILS | TDF_BLOCKS, letter) > 0;
+  return dump_enable_all (TDF_RTL | TDF_DETAILS | TDF_BLOCKS) > 0;
 }
 
 

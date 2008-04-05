@@ -161,7 +161,6 @@ struct dump_file_info
   int flags;                    /* user flags */
   int state;                    /* state of play */
   int num;                      /* dump file number */
-  int letter;                   /* enabling letter for RTL dumps */
 };
 
 /* Pass properties.  */

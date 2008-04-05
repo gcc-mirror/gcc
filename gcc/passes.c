@@ -338,7 +338,7 @@ struct opt_pass *all_passes, *all_ipa_passes, *all_lowering_passes;
    enabled or not.  */
 
 static void
-register_one_dump_file (struct opt_pass *pass, bool ipa, int properties)
+register_one_dump_file (struct opt_pass *pass)
 {
   char *dot_name, *flag_name, *glob_name;
   const char *prefix;
@@ -352,9 +352,9 @@ register_one_dump_file (struct opt_pass *pass, bool ipa, int properties)
 			 ? 1 : pass->static_pass_number));
 
   dot_name = concat (".", pass->name, num, NULL);
-  if (ipa)
+  if (pass->type == SIMPLE_IPA_PASS)
     prefix = "ipa-", flags = TDF_IPA;
-  else if (properties & PROP_trees)
+  else if (pass->type == GIMPLE_PASS)
     prefix = "tree-", flags = TDF_TREE;
   else
     prefix = "rtl-", flags = TDF_RTL;
@@ -368,7 +368,7 @@ register_one_dump_file (struct opt_pass *pass, bool ipa, int properties)
 /* Recursive worker function for register_dump_files.  */
 
 static int 
-register_dump_files_1 (struct opt_pass *pass, bool ipa, int properties)
+register_dump_files_1 (struct opt_pass *pass, int properties)
 {
   do
     {
@@ -376,11 +376,10 @@ register_dump_files_1 (struct opt_pass *pass, bool ipa, int properties)
 			   & ~pass->properties_destroyed;
 
       if (pass->name)
-        register_one_dump_file (pass, ipa, new_properties);
+        register_one_dump_file (pass);
 
       if (pass->sub)
-        new_properties = register_dump_files_1 (pass->sub, false,
-						new_properties);
+        new_properties = register_dump_files_1 (pass->sub, new_properties);
 
       /* If we have a gate, combine the properties that we could have with
          and without the pass being examined.  */
@@ -396,16 +395,15 @@ register_dump_files_1 (struct opt_pass *pass, bool ipa, int properties)
   return properties;
 }
 
-/* Register the dump files for the pipeline starting at PASS.  IPA is
-   true if the pass is inter-procedural, and PROPERTIES reflects the
-   properties that are guaranteed to be available at the beginning of
-   the pipeline.  */
+/* Register the dump files for the pipeline starting at PASS. 
+   PROPERTIES reflects the properties that are guaranteed to be available at
+   the beginning of the pipeline.  */
 
 static void 
-register_dump_files (struct opt_pass *pass, bool ipa, int properties)
+register_dump_files (struct opt_pass *pass,int properties)
 {
   pass->properties_required |= properties;
-  register_dump_files_1 (pass, ipa, properties);
+  register_dump_files_1 (pass, properties);
 }
 
 /* Add a pass to the pass list. Duplicate the pass if it's already
@@ -793,12 +791,12 @@ init_optimization_passes (void)
 #undef NEXT_PASS
 
   /* Register the passes with the tree dump code.  */
-  register_dump_files (all_lowering_passes, false, PROP_gimple_any);
+  register_dump_files (all_lowering_passes, PROP_gimple_any);
   all_lowering_passes->todo_flags_start |= TODO_set_props;
-  register_dump_files (all_ipa_passes, true,
+  register_dump_files (all_ipa_passes, 
 		       PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh
 		       | PROP_cfg);
-  register_dump_files (all_passes, false,
+  register_dump_files (all_passes, 
 		       PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh
 		       | PROP_cfg);
 }
@@ -1071,6 +1069,17 @@ execute_one_pass (struct opt_pass *pass)
   bool initializing_dump;
   unsigned int todo_after = 0;
 
+  /* IPA passes are executed on whole program, so cfun should be NULL.
+     Ohter passes needs function context set.  */
+  if (pass->type == SIMPLE_IPA_PASS)
+    gcc_assert (!cfun && !current_function_decl);
+  else
+    {
+      gcc_assert (cfun && current_function_decl);
+      gcc_assert (!(cfun->curr_properties & PROP_trees)
+		  || pass->type != RTL_PASS);
+    }
+
   current_pass = pass;
   /* See if we're supposed to run this pass.  */
   if (pass->gate && !pass->gate ())
@@ -1177,6 +1186,8 @@ execute_pass_list (struct opt_pass *pass)
 {
   do
     {
+      gcc_assert (pass->type == GIMPLE_PASS
+		  || pass->type == RTL_PASS);
       if (execute_one_pass (pass) && pass->sub)
         execute_pass_list (pass->sub);
       pass = pass->next;
@@ -1193,9 +1204,17 @@ execute_ipa_pass_list (struct opt_pass *pass)
     {
       gcc_assert (!current_function_decl);
       gcc_assert (!cfun);
+      gcc_assert (pass->type == SIMPLE_IPA_PASS);
       if (execute_one_pass (pass) && pass->sub)
-	do_per_function_toporder ((void (*)(void *))execute_pass_list,
-				  pass->sub);
+	{
+	  if (pass->sub->type == GIMPLE_PASS)
+	    do_per_function_toporder ((void (*)(void *))execute_pass_list,
+				      pass->sub);
+	  else if (pass->sub->type == SIMPLE_IPA_PASS)
+	    execute_ipa_pass_list (pass->sub);
+	  else
+	    gcc_unreachable ();
+	}
       if (!current_function_decl)
 	cgraph_process_new_functions ();
       pass = pass->next;
