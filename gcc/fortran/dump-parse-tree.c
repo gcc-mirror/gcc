@@ -1405,10 +1405,35 @@ gfc_show_code_node (int level, gfc_code *c)
 	  gfc_status (" PAD=");
 	  gfc_show_expr (open->pad);
 	}
+      if (open->decimal)
+	{
+	  gfc_status (" DECIMAL=");
+	  gfc_show_expr (open->decimal);
+	}
+      if (open->encoding)
+	{
+	  gfc_status (" ENCODING=");
+	  gfc_show_expr (open->encoding);
+	}
+      if (open->round)
+	{
+	  gfc_status (" ROUND=");
+	  gfc_show_expr (open->round);
+	}
+      if (open->sign)
+	{
+	  gfc_status (" SIGN=");
+	  gfc_show_expr (open->sign);
+	}
       if (open->convert)
 	{
 	  gfc_status (" CONVERT=");
 	  gfc_show_expr (open->convert);
+	}
+      if (open->asynchronous)
+	{
+	  gfc_status (" ASYNCHRONOUS=");
+	  gfc_show_expr (open->asynchronous);
 	}
       if (open->err != NULL)
 	gfc_status (" ERR=%d", open->err->value);
@@ -1616,6 +1641,46 @@ gfc_show_code_node (int level, gfc_code *c)
 	  gfc_status (" CONVERT=");
 	  gfc_show_expr (i->convert);
 	}
+      if (i->asynchronous)
+	{
+	  gfc_status (" ASYNCHRONOUS=");
+	  gfc_show_expr (i->asynchronous);
+	}
+      if (i->decimal)
+	{
+	  gfc_status (" DECIMAL=");
+	  gfc_show_expr (i->decimal);
+	}
+      if (i->encoding)
+	{
+	  gfc_status (" ENCODING=");
+	  gfc_show_expr (i->encoding);
+	}
+      if (i->pending)
+	{
+	  gfc_status (" PENDING=");
+	  gfc_show_expr (i->pending);
+	}
+      if (i->round)
+	{
+	  gfc_status (" ROUND=");
+	  gfc_show_expr (i->round);
+	}
+      if (i->sign)
+	{
+	  gfc_status (" SIGN=");
+	  gfc_show_expr (i->sign);
+	}
+      if (i->size)
+	{
+	  gfc_status (" SIZE=");
+	  gfc_show_expr (i->size);
+	}
+      if (i->id)
+	{
+	  gfc_status (" ID=");
+	  gfc_show_expr (i->id);
+	}
 
       if (i->err != NULL)
 	gfc_status (" ERR=%d", i->err->value);
@@ -1677,6 +1742,51 @@ gfc_show_code_node (int level, gfc_code *c)
 	{
 	  gfc_status (" ADVANCE=");
 	  gfc_show_expr (dt->advance);
+	}
+      if (dt->id)
+	{
+	  gfc_status (" ID=");
+	  gfc_show_expr (dt->id);
+	}
+      if (dt->pos)
+	{
+	  gfc_status (" POS=");
+	  gfc_show_expr (dt->pos);
+	}
+      if (dt->asynchronous)
+	{
+	  gfc_status (" ASYNCHRONOUS=");
+	  gfc_show_expr (dt->asynchronous);
+	}
+      if (dt->blank)
+	{
+	  gfc_status (" BLANK=");
+	  gfc_show_expr (dt->blank);
+	}
+      if (dt->decimal)
+	{
+	  gfc_status (" DECIMAL=");
+	  gfc_show_expr (dt->decimal);
+	}
+      if (dt->delim)
+	{
+	  gfc_status (" DELIM=");
+	  gfc_show_expr (dt->delim);
+	}
+      if (dt->pad)
+	{
+	  gfc_status (" PAD=");
+	  gfc_show_expr (dt->pad);
+	}
+      if (dt->round)
+	{
+	  gfc_status (" ROUND=");
+	  gfc_show_expr (dt->round);
+	}
+      if (dt->sign)
+	{
+	  gfc_status (" SIGN=");
+	  gfc_show_expr (dt->sign);
 	}
 
     show_dt_code:

@@ -1,3 +1,42 @@
+2008-04-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/25829 28655
+	* dump-parse-tree.c (gfc_show_code_node): Show new I/O parameters.
+	* gfortran.h (gfc_statement): Add ST_WAIT enumerator.
+	(gfc_open): Add pointers for decimal, encoding, round, sign,
+	asynchronous. (gfc_inquire): Add pointers for asynchronous, decimal,
+	encoding, pending, round, sign, size, id.
+	(gfc_wait): New typedef struct. (gfc_dt): Add pointers for id, pos,
+	asynchronous, blank, decimal, delim, pad, round, sign.
+	(gfc_exec_op): Add EXEC_WAIT enumerator. (gfc_code): Add pointer for
+	wait. (gfc_free_wait), (gfc_resolve_wait): New function prototypes.
+	* trans-stmt.h (gfc_trans_wait): New function prototype.
+	* trans.c (gfc_trans_code): Add case for EXEC_WAIT.
+	* io.c (io_tag): Add new tags for DECIMAL, ENCODING, ROUND, SIGN,
+	ASYCHRONOUS, ID. (match_open_element): Add matchers for new tags.
+	(gfc_free_open): Free new pointers. (gfc_resolve_open): Resolve new
+	tags. (gfc_resolve_open): Remove comment around check for allowed
+	values and ASYNCHRONOUS, update it.  Likewise for DECIMAL, ENCODING,
+	ROUND, and SIGN. (match_dt_element): Add matching for new tags.
+	(gfc_free_wait): New function. (gfc_resolve_wait): New function.
+	(match_wait_element): New function. (gfc_match_wait): New function.
+	* resolve.c (gfc_resolve_blocks): Add case for EXEC_WAIT.
+	(resolve_code): Add case for EXEC_WAIT. 
+	* st.c (gfc_free_statement): Add case for EXEC_WAIT.
+	* trans-io.c (ioparam_type): Add IOPARM_ptype_wait. (gfc_st_parameter):
+	Add "wait" entry. (iocall): Add IOCALL_WAIT enumerator.
+	(gfc_build_io_library_fndecls): Add function declaration for st_wait.
+	(gfc_trans_open): Add mask bits for new I/O tags.
+	(gfc_trans_inquire): Add mask bits for new I/O tags.
+	(gfc_trans_wait): New translation function.
+	(build_dt): Add mask bits for new I/O tags.
+	* match.c (gfc_match_if) Add matcher for "wait".
+	* match.h (gfc_match_wait): Prototype for new function.
+	* ioparm.def: Add new I/O parameter definitions.
+	* parse.c (decode_statement): Add match for "wait" statement.
+	(next_statement): Add case for ST_WAIT. (gfc_ascii_statement): Same.
+
 2008-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/35786

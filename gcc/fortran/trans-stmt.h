@@ -69,3 +69,4 @@ tree gfc_trans_flush (gfc_code *);
 
 tree gfc_trans_transfer (gfc_code *);
 tree gfc_trans_dt_end (gfc_code *);
+tree gfc_trans_wait (gfc_code *);

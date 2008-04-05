@@ -1108,6 +1108,10 @@ gfc_trans_code (gfc_code * code)
 	  res = gfc_trans_inquire (code);
 	  break;
 
+	case EXEC_WAIT:
+	  res = gfc_trans_wait (code);
+	  break;
+
 	case EXEC_REWIND:
 	  res = gfc_trans_rewind (code);
 	  break;

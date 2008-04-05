@@ -146,6 +146,10 @@ gfc_free_statement (gfc_code *p)
       gfc_free_inquire (p->ext.inquire);
       break;
 
+    case EXEC_WAIT:
+      gfc_free_wait (p->ext.wait);
+      break;
+
     case EXEC_READ:
     case EXEC_WRITE:
       gfc_free_dt (p->ext.dt);
