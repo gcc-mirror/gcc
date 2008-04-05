@@ -1,6 +1,7 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
+   F2003 I/O support contributed by Jerry DeLisle
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
 
@@ -93,8 +94,6 @@ id_from_fd (const int fd)
 
 #endif
 
-
-
 #ifndef SSIZE_MAX
 #define SSIZE_MAX SHRT_MAX
 #endif
@@ -153,7 +152,7 @@ typedef struct
 
   int special_file;		/* =1 if the fd refers to a special file */
 
-  int unbuffered;               /* =1 if the stream is not buffered */
+  io_mode method;		/* Method of stream I/O being used */
 
   char *buffer;
   char small_buffer[BUFFER_SIZE];
@@ -184,7 +183,7 @@ typedef struct
 
   int special_file;		/* =1 if the fd refers to a special file */
 
-  int unbuffered;               /* =1 if the stream is not buffered */
+  io_mode method;		/* Method of stream I/O being used */
 
   char *buffer;
 }
@@ -238,15 +237,15 @@ move_pos_offset (stream* st, int pos_off)
       str->logical_offset += pos_off;
 
       if (str->dirty_offset + str->ndirty > str->logical_offset)
-        {
-          if (str->ndirty + pos_off > 0)
-            str->ndirty += pos_off;
-          else
-            {
-              str->dirty_offset +=  pos_off + pos_off;
-              str->ndirty = 0;
-            }
-        }
+	{
+	  if (str->ndirty + pos_off > 0)
+	    str->ndirty += pos_off;
+	  else
+	    {
+	      str->dirty_offset +=  pos_off + pos_off;
+	      str->ndirty = 0;
+	    }
+	}
 
     return pos_off;
   }
@@ -615,23 +614,23 @@ fd_alloc_w_at (unix_stream * s, int *len, gfc_offset where)
       || where > s->dirty_offset + s->ndirty    
       || s->dirty_offset > where + *len)
     {  /* Discontiguous blocks, start with a clean buffer.  */  
-        /* Flush the buffer.  */  
-       if (s->ndirty != 0)    
-         fd_flush (s);  
-       s->dirty_offset = where;  
-       s->ndirty = *len;
+	/* Flush the buffer.  */  
+      if (s->ndirty != 0)    
+	fd_flush (s);  
+      s->dirty_offset = where;  
+      s->ndirty = *len;
     }
   else
     {  
       gfc_offset start;  /* Merge with the existing data.  */  
       if (where < s->dirty_offset)    
-        start = where;  
+	start = where;  
       else    
-        start = s->dirty_offset;  
+	start = s->dirty_offset;  
       if (where + *len > s->dirty_offset + s->ndirty)    
-        s->ndirty = where + *len - start;  
+	s->ndirty = where + *len - start;  
       else    
-        s->ndirty = s->dirty_offset + s->ndirty - start;  
+	s->ndirty = s->dirty_offset + s->ndirty - start;  
       s->dirty_offset = start;
     }
 
@@ -655,7 +654,7 @@ fd_sfree (unix_stream * s)
 {
   if (s->ndirty != 0 &&
       (s->buffer != s->small_buffer || options.all_unbuffered ||
-       s->unbuffered))
+       s->method == SYNC_UNBUFFERED))
     return fd_flush (s);
 
   return SUCCESS;
@@ -777,7 +776,7 @@ fd_read (unix_stream * s, void * buf, size_t * nbytes)
   void *p;
   int tmp, status;
 
-  if (*nbytes < BUFFER_SIZE && !s->unbuffered)
+  if (*nbytes < BUFFER_SIZE && s->method == SYNC_BUFFERED)
     {
       tmp = *nbytes;
       p = fd_alloc_r_at (s, &tmp, -1);
@@ -825,7 +824,7 @@ fd_write (unix_stream * s, const void * buf, size_t * nbytes)
   void *p;
   int tmp, status;
 
-  if (*nbytes < BUFFER_SIZE && !s->unbuffered)
+  if (*nbytes < BUFFER_SIZE && s->method == SYNC_BUFFERED)
     {
       tmp = *nbytes;
       p = fd_alloc_w_at (s, &tmp, -1);
@@ -874,7 +873,7 @@ fd_close (unix_stream * s)
   if (s->fd != STDOUT_FILENO && s->fd != STDERR_FILENO && s->fd != STDIN_FILENO)
     {
       if (close (s->fd) < 0)
-        return FAILURE;
+	return FAILURE;
     }
 
   free_mem (s);
@@ -887,7 +886,9 @@ static void
 fd_open (unix_stream * s)
 {
   if (isatty (s->fd))
-    s->unbuffered = 1;
+    s->method = SYNC_UNBUFFERED;
+  else
+    s->method = SYNC_BUFFERED;
 
   s->st.alloc_r_at = (void *) fd_alloc_r_at;
   s->st.alloc_w_at = (void *) fd_alloc_w_at;
@@ -1224,7 +1225,7 @@ tempfile (st_parameter_open *opp)
     do
 #if defined(HAVE_CRLF) && defined(O_BINARY)
       fd = open (template, O_RDWR | O_CREAT | O_EXCL | O_BINARY,
-                 S_IREAD | S_IWRITE);
+		 S_IREAD | S_IWRITE);
 #else
       fd = open (template, O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE);
 #endif
@@ -1335,11 +1336,11 @@ regular_file (st_parameter_open *opp, unit_flags *flags)
   if (fd >=0)
     {
       flags->action = ACTION_READ;
-      return fd;               /* success */
+      return fd;		/* success */
     }
   
   if (errno != EACCES)
-    return fd;                 /* failure */
+    return fd;			/* failure */
 
   /* retry for write-only access */
   rwflag = O_WRONLY;
@@ -1347,9 +1348,9 @@ regular_file (st_parameter_open *opp, unit_flags *flags)
   if (fd >=0)
     {
       flags->action = ACTION_WRITE;
-      return fd;               /* success */
+      return fd;		/* success */
     }
-  return fd;                   /* failure */
+  return fd;			/* failure */
 }
 
 
@@ -1366,7 +1367,7 @@ open_external (st_parameter_open *opp, unit_flags *flags)
     {
       fd = tempfile (opp);
       if (flags->action == ACTION_UNSPECIFIED)
-        flags->action = ACTION_READWRITE;
+	flags->action = ACTION_READWRITE;
 
 #if HAVE_UNLINK_OPEN_FILE
       /* We can unlink scratch files now and it will go away when closed. */
@@ -1431,7 +1432,7 @@ output_stream (void)
 
   s = fd_to_stream (STDOUT_FILENO, PROT_WRITE);
   if (options.unbuffered_preconnected)
-    ((unix_stream *) s)->unbuffered = 1;
+    ((unix_stream *) s)->method = SYNC_UNBUFFERED;
   return s;
 }
 
@@ -1450,7 +1451,7 @@ error_stream (void)
 
   s = fd_to_stream (STDERR_FILENO, PROT_WRITE);
   if (options.unbuffered_preconnected)
-    ((unix_stream *) s)->unbuffered = 1;
+    ((unix_stream *) s)->method = SYNC_UNBUFFERED;
   return s;
 }
 
@@ -2050,13 +2051,13 @@ stream_offset (stream *s)
       the solution used by f2c.  Each record contains a pair of length
       markers:
 
-        Length of record n in bytes
-        Data of record n
-        Length of record n in bytes
+	Length of record n in bytes
+	Data of record n
+	Length of record n in bytes
 
-        Length of record n+1 in bytes
-        Data of record n+1
-        Length of record n+1 in bytes
+	Length of record n+1 in bytes
+	Data of record n+1
+	Length of record n+1 in bytes
 
      The length is stored at the end of a record to allow backspacing to the
      previous record.  Between data transfer statements, the file pointer

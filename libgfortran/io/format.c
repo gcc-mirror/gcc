@@ -1,6 +1,7 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
+   F2003 I/O support contributed by Jerry DeLisle
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
 
@@ -395,7 +396,6 @@ format_lex (format_data *fmt)
 	  unget_char (fmt);
 	  break;
 	}
-
       break;
 
     case 'G':
@@ -415,7 +415,19 @@ format_lex (format_data *fmt)
       break;
 
     case 'D':
-      token = FMT_D;
+      switch (next_char (fmt, 0))
+	{
+	case 'P':
+	  token = FMT_DP;
+	  break;
+	case 'C':
+	  token = FMT_DC;
+	  break;
+	default:
+	  token = FMT_D;
+	  unget_char (fmt);
+	  break;
+	}
       break;
 
     case -1:
@@ -550,6 +562,11 @@ parse_format_list (st_parameter_dt *dtp)
       tail->repeat = 1;
       goto optional_comma;
 
+    case FMT_DC:
+    case FMT_DP:
+      notify_std (&dtp->common, GFC_STD_F2003, "Fortran 2003: DC or DP "
+		  "descriptor not allowed");
+    /* Fall through.  */
     case FMT_S:
     case FMT_SS:
     case FMT_SP:
@@ -575,6 +592,7 @@ parse_format_list (st_parameter_dt *dtp)
       tail->repeat = 1;
       notify_std (&dtp->common, GFC_STD_GNU, "Extension: $ descriptor");
       goto between_desc;
+
 
     case FMT_T:
     case FMT_TL:

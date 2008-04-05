@@ -1,6 +1,8 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist output contributed by Paul Thomas
+   F2003 I/O support contributed by Jerry DeLisle
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
 
@@ -361,7 +363,7 @@ write_decimal (st_parameter_dt *dtp, const fnode *f, const char *source,
   if (n < 0)
     n = -n;
 
-  nsign = sign == SIGN_NONE ? 0 : 1;
+  nsign = sign == S_NONE ? 0 : 1;
   q = conv (n, itoa_buf, sizeof (itoa_buf));
 
   digits = strlen (q);
@@ -395,13 +397,13 @@ write_decimal (st_parameter_dt *dtp, const fnode *f, const char *source,
 
   switch (sign)
     {
-    case SIGN_PLUS:
+    case S_PLUS:
       *p++ = '+';
       break;
-    case SIGN_MINUS:
+    case S_MINUS:
       *p++ = '-';
       break;
-    case SIGN_NONE:
+    case S_NONE:
       break;
     }
 
@@ -729,11 +731,13 @@ write_real (st_parameter_dt *dtp, const char *source, int length)
 static void
 write_complex (st_parameter_dt *dtp, const char *source, int kind, size_t size)
 {
+  char semi_comma = dtp->u.p.decimal_status == DECIMAL_POINT ? ',' : ';';
+
   if (write_char (dtp, '('))
     return;
   write_real (dtp, source, kind);
 
-  if (write_char (dtp, ','))
+  if (write_char (dtp, semi_comma))
     return;
   write_real (dtp, source + size / 2, kind);
 
@@ -869,6 +873,11 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
   size_t base_var_name_len;
   size_t tot_len;
   unit_delim tmp_delim;
+  
+  /* Set the character to be used to separate values
+     to a comma or semi-colon.  */
+
+  char semi_comma = dtp->u.p.decimal_status == DECIMAL_POINT ? ',' : ';';
 
   /* Write namelist variable names in upper case. If a derived type,
      nothing is output.  If a component, base and base_name are set.  */
@@ -1075,12 +1084,12 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 	      internal_error (&dtp->common, "Bad type for namelist write");
             }
 
-	  /* Reset the leading blank suppression, write a comma and, if 5
-	     values have been output, write a newline and advance to column
-	     2. Reset the repeat counter.  */
+	  /* Reset the leading blank suppression, write a comma (or semi-colon)
+	     and, if 5 values have been output, write a newline and advance
+	     to column 2. Reset the repeat counter.  */
 
 	  dtp->u.p.no_leading_blank = 0;
-	  write_character (dtp, ",", 1);
+	  write_character (dtp, &semi_comma, 1);
 	  if (num > 5)
 	    {
 	      num = 0;

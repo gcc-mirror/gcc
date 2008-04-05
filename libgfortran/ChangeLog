@@ -1,3 +1,42 @@
+2008-04-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/25829 28655
+	* gfortran.map: Add new symbol, _gfortran_st_wait.
+	* libgfortran.h (st_paramter_common): Add new I/O parameters.
+	* open.c (st_option decimal_opt[], st_option encoding_opt[],
+	st_option round_opt[], st_option sign_opt[], st_option async_opt[]): New
+	parameter option arrays. (edit_modes): Add checks for new parameters.
+	(new_unit): Likewise. (st_open): Likewise.
+	* list_read.c (CASE_SEPERATORS): Add ';' as a valid separator.
+	(eat_separator): Handle deimal comma. (read_logical): Fix whitespace.
+	(parse_real): Handle decimal comma. (read_real): Handle decimal comma.
+	* read.c (read_a): Use decimal status flag to allow comma in place of a
+	decimal point. (read_f): Allow comma as acceptable character in float.
+	According to decimal flag, substitute a period for a comma.
+	(read_x): If decimal status flag is comma, disable the read_comma flag,
+	not allowing comma as a delimiter, an extension otherwise.
+	* io.h: (unit_decimal, unit_encoding, unit_round, unit_sign,
+	unit_async): New enumerators. Add all new I/O parameters.
+	* unix.c (unix_stream, int_stream): Add io_mode	asychronous I/O	control.
+	(move_pos_offset, fd_alloc_w_at): Fix some whitespace.
+	(fd_sfree): Use new enumerator. (fd_read): Likewise.
+	(fd_write): Likewise. (fd_close): Fix whitespace.
+	(fd_open): Use new enumertors. (tempfile, regular_file,
+	open_external): Fix whitespace. (output_stream, error_stream): Set
+	method. (stream_offset): Fix whitespace.
+	* transfer.c: (st_option decimal_opt[], sign_opt[], blank_opt[]): New
+	option arrays. 	(formatted_transfer_scalar): Set sf_read_comma flag
+	based on new decimal_status flag. (data_transfer_init): Initialize new
+	parameters. Add checks for decimal, sign, and blank. (st_wait): New stub.
+	* format.c: (format_lex): Add format specifiers DP, DC, and D.
+	(parse_format_list): Parse the new specifiers.
+	* write.c (write_decimal): Use new sign enumerators to set the sign.
+	(write_complex): Handle decimal comma and semi-colon separator.
+	(nml_write_obj): Likewise.
+	* write_float.def: Revise sign enumerators. (calculate_sign): Use new
+	sign enumerators. (output_float): Likewise. Use new decimal_status flag
+	to set the decimal character to a point or a comma.
+	
 2008-03-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/32972

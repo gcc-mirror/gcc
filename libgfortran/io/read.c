@@ -1,5 +1,6 @@
-/* Copyright (C) 2002, 2003, 2005, 2007 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2005, 2007, 2008 Free Software Foundation, Inc.
    Contributed by Andy Vaught
+   F2003 I/O support contributed by Jerry DeLisle
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
 
@@ -246,7 +247,8 @@ read_a (st_parameter_dt *dtp, const fnode *f, char *p, int length)
 
   dtp->u.p.sf_read_comma = 0;
   source = read_block (dtp, &w);
-  dtp->u.p.sf_read_comma = 1;
+  dtp->u.p.sf_read_comma =
+    dtp->u.p.decimal_status == DECIMAL_COMMA ? 0 : 1;
   if (source == NULL)
     return;
   if (w > length)
@@ -601,7 +603,7 @@ read_f (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
   /* A digit, a '.' or a exponent character ('e', 'E', 'd' or 'D')
      is required at this point */
 
-  if (!isdigit (*p) && *p != '.' && *p != 'd' && *p != 'D'
+  if (!isdigit (*p) && *p != '.' && *p != ',' && *p != 'd' && *p != 'D'
       && *p != 'e' && *p != 'E')
     goto bad_float;
 
@@ -614,6 +616,10 @@ read_f (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
     {
       switch (*p)
 	{
+	case ',':
+	  if (dtp->u.p.decimal_status == DECIMAL_COMMA && *p == ',')
+	    *p = '.';
+	  /* Fall through */
 	case '.':
 	  if (seen_dp)
 	    goto bad_float;
