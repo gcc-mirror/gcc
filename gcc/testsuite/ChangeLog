@@ -1,3 +1,8 @@
+2008-04-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/35833
+	* gcc.dg/torture/pr35833.c: New testcase.
+
 2008-04-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/35364

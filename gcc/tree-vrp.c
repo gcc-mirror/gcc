@@ -724,7 +724,8 @@ operand_less_p (tree val, tree val2)
 
       fold_undefer_and_ignore_overflow_warnings ();
 
-      if (!tcmp)
+      if (!tcmp
+	  || TREE_CODE (tcmp) != INTEGER_CST)
 	return -2;
 
       if (!integer_zerop (tcmp))
@@ -932,7 +933,7 @@ compare_values_warnv (tree val1, tree val2, bool *strict_overflow_p)
 	  || TREE_CODE (val2) != INTEGER_CST)
 	{
           t = fold_binary_to_constant (NE_EXPR, boolean_type_node, val1, val2);
-	  if (t && tree_expr_nonzero_p (t))
+	  if (t && integer_onep (t))
 	    return 2;
 	}
 
