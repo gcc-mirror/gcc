@@ -72,7 +72,7 @@ extern void rest_of_type_compilation (tree, int);
 extern void tree_rest_of_compilation (tree);
 extern void init_optimization_passes (void);
 extern void finish_optimization_passes (void);
-extern bool enable_rtl_dump_file (int);
+extern bool enable_rtl_dump_file (void);
 
 extern void announce_function (tree);
 
