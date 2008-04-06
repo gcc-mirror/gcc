@@ -1,3 +1,11 @@
+2008-04-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/35780
+	* expr.c (scalarize_intrinsic_call): Identify which argument is
+	an array and use that as the template.
+	(check_init_expr): Remove tests that first argument is an array
+	in the call to scalarize_intrinsic_call.
+
 2008-04-06  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/35832
