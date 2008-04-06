@@ -345,7 +345,8 @@ fixed_address_object_p (tree obj)
 {
   return (TREE_CODE (obj) == VAR_DECL
 	  && (TREE_STATIC (obj)
-	      || DECL_EXTERNAL (obj)));
+	      || DECL_EXTERNAL (obj))
+	  && ! DECL_DLLIMPORT_P (obj));
 }
 
 /* If ADDR contains an address of object that is a link time constant,

@@ -1,3 +1,9 @@
+2008-04-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/35842
+	* tree-ssa-address.c (fixed_address_object_p): Adjust to match
+	is_gimple_invariant_address.
+
 2008-04-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* gcc.c (default_compilers): Sync Fortran extensions list with
