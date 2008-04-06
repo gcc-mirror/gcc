@@ -1,7 +1,16 @@
+2008-04-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (rest_of_type_decl_compilation_no_defer): New local function
+	used to process all the variants of the specified type.
+	(gnat_to_gnu_entity): Invoke rest_of_type_decl_compilation for enumeral
+	types too.  Call rest_of_type_decl_compilation_no_defer if undeferring.
+	(rest_of_type_decl_compilation): Likewise.
+	* utils.c (gnat_pushdecl): Propagate the name to all variants of type.
+
 2008-04-03  Paolo Bonzini  <bonzini@gnu.org>
 
-        * gigi.h (insert_block): Kill.
-        * utils.c (insert_block): Kill.
+	* gigi.h (insert_block): Kill.
+	* utils.c (insert_block): Kill.
 
 2008-04-02  Eric Botcazou  <ebotcazou@adacore.com>
 
