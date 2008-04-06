@@ -96,7 +96,6 @@ extern const struct base_arch_s *avr_current_arch;
 
 extern const char *avr_base_arch_macro;
 extern const char *avr_extra_arch_macro;
-extern int avr_mega_p;
 extern int avr_have_mul_p;
 extern int avr_asm_only_p;
 extern int avr_have_movw_lpmx_p;
@@ -104,7 +103,6 @@ extern int avr_have_movw_lpmx_p;
 extern GTY(()) section *progmem_section;
 #endif
 
-#define AVR_MEGA (avr_mega_p && !TARGET_SHORT_CALLS)
 #define AVR_HAVE_JMP_CALL (avr_current_arch->have_jmp_call && !TARGET_SHORT_CALLS)
 #define AVR_HAVE_MUL (avr_have_mul_p)
 #define AVR_HAVE_MOVW (avr_have_movw_lpmx_p)

@@ -31,7 +31,7 @@
 ;;  o  Displacement for (mem (plus (reg) (const_int))) operands.
 ;;  p  POST_INC or PRE_DEC address as a pointer (X, Y, Z)
 ;;  r  POST_INC or PRE_DEC address as a register (r26, r28, r30)
-;;  ~  Output 'r' if not AVR_MEGA.
+;;  ~  Output 'r' if not AVR_HAVE_JMP_CALL.
 ;;  !  Output 'e' if AVR_HAVE_EIJMP_EICALL.
 
 ;; UNSPEC usage:
@@ -74,7 +74,7 @@
 		       (const_string "no"))))
 
 (define_attr "mcu_mega" "yes,no"
-  (const (if_then_else (symbol_ref "AVR_MEGA")
+  (const (if_then_else (symbol_ref "AVR_HAVE_JMP_CALL")
 		       (const_string "yes")
 		       (const_string "no"))))
   
@@ -2260,7 +2260,7 @@
         (label_ref (match_operand 0 "" "")))]
   ""
   "*{
-  if (AVR_MEGA && get_attr_length (insn) != 1)
+  if (AVR_HAVE_JMP_CALL && get_attr_length (insn) != 1)
     return AS1 (jmp,%0);
   return AS1 (rjmp,%0);
 }"
@@ -2412,7 +2412,7 @@
 			UNSPEC_INDEX_JMP))
    (use (label_ref (match_operand 1 "" "")))
    (clobber (match_dup 0))]
-  "AVR_MEGA && TARGET_CALL_PROLOGUES"
+  "AVR_HAVE_JMP_CALL && TARGET_CALL_PROLOGUES"
   "jmp __tablejump2__"
   [(set_attr "length" "2")
    (set_attr "cc" "clobber")])
@@ -2422,7 +2422,7 @@
 			UNSPEC_INDEX_JMP))
    (use (label_ref (match_operand 1 "" "")))
    (clobber (match_dup 0))]
-  "AVR_MEGA && AVR_HAVE_LPMX"
+  "AVR_HAVE_JMP_CALL && AVR_HAVE_LPMX"
   "lsl r30
 	rol r31
 	lpm __tmp_reg__,Z+
