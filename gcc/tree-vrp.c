@@ -5385,7 +5385,8 @@ vrp_evaluate_conditional (tree cond, tree stmt)
 
   if (warn_type_limits
       && ret
-      && TREE_CODE_CLASS (TREE_CODE (cond)) == tcc_comparison)
+      && TREE_CODE_CLASS (TREE_CODE (cond)) == tcc_comparison
+      && TREE_CODE (TREE_OPERAND (cond, 0)) == SSA_NAME)
     {
       /* If the comparison is being folded and the operand on the LHS
 	 is being compared against a constant value that is outside of

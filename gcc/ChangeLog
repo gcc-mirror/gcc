@@ -1,3 +1,9 @@
+2008-04-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/35400
+	* tree-vrp.c (vrp_evaluate_conditional): Only query value-range
+	information from SSA_NAMEs.
+
 2008-04-06  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.h (avr_mega_p): Remove declaration.
