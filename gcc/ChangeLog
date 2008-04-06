@@ -1,3 +1,9 @@
+2008-04-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/12329
+	* config/i386/i386.c (ix86_function_regparm): Error if regparm(3)
+	attribute is used for nested functions.
+
 2008-04-05  Jan Hubicka  <jh@suse.cz>
 
 	* emit-rtl.c (init_emit): xcalloc regno_pointer_align.
@@ -13,8 +19,8 @@
 	it out based on pass type.
 	(register_dump_files_1): Likewise.
 	(init_optimization_passes): Update register_one_dump_file calls.
-	(execute_one_pass): Sanity check that IPA passes are called at IPA level
-	and RTL passes at RTL level.
+	(execute_one_pass): Sanity check that IPA passes are called at IPA
+	level and RTL passes at RTL level.
 	(execute_pass_list): IPA pass can not be after or subpass of
 	GIMPLE/RTL pass.
 	(execute_ipa_pass_list): Handle IPA subpasses of IPA subpasses and
