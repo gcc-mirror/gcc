@@ -3566,8 +3566,8 @@ loop:
   gfc_resolve (gfc_current_ns);
 
   /* Dump the parse tree if requested.  */
-  if (gfc_option.verbose)
-    gfc_show_namespace (gfc_current_ns);
+  if (gfc_option.dump_parse_tree)
+    gfc_dump_parse_tree (gfc_current_ns, stdout);
 
   gfc_get_errors (NULL, &errors);
   if (s.state == COMP_MODULE)

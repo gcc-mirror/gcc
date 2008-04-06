@@ -12,6 +12,7 @@
 	(gfc_handle_module_path_options): Use gfc_fatal_error instead of
 	gfc_status and exit.
 	(gfc_handle_option): Rename verbose into dump_parse_tree.
+	* parse.c (gfc_parse_file): Use gfc_dump_parse_tree.
 
 2008-04-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
