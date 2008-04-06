@@ -121,7 +121,7 @@ static alias_set_type gfc_get_alias_set (tree);
 #undef LANG_HOOKS_GET_ARRAY_DESCR_INFO
 
 /* Define lang hooks.  */
-#define LANG_HOOKS_NAME                 "GNU F95"
+#define LANG_HOOKS_NAME                 "GNU Fortran"
 #define LANG_HOOKS_INIT                 gfc_init
 #define LANG_HOOKS_FINISH               gfc_finish
 #define LANG_HOOKS_INIT_OPTIONS         gfc_init_options

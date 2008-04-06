@@ -963,7 +963,7 @@ get_lang_number (void)
     return N_SO_CC;
   else if (strcmp (language_string, "GNU F77") == 0)
     return N_SO_FORTRAN;
-  else if (strcmp (language_string, "GNU F95") == 0)
+  else if (strcmp (language_string, "GNU Fortran") == 0)
     return N_SO_FORTRAN90; /* CHECKME */
   else if (strcmp (language_string, "GNU Pascal") == 0)
     return N_SO_PASCAL;
