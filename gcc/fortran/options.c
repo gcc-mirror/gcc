@@ -64,7 +64,7 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.max_subrecord_length = 0;
   gfc_option.convert = GFC_CONVERT_NATIVE;
   gfc_option.record_marker = 0;
-  gfc_option.verbose = 0;
+  gfc_option.dump_parse_tree = 0;
 
   gfc_option.warn_aliasing = 0;
   gfc_option.warn_ampersand = 0;
@@ -391,16 +391,10 @@ gfc_handle_module_path_options (const char *arg)
 {
 
   if (gfc_option.module_dir != NULL)
-    {
-      gfc_status ("gfortran: Only one -M option allowed\n");
-      exit (3);
-    }
+    gfc_fatal_error ("gfortran: Only one -M option allowed");
 
   if (arg == NULL)
-    {
-      gfc_status ("gfortran: Directory required after -M\n");
-      exit (3);
-    }
+    gfc_fatal_error ("gfortran: Directory required after -M");
 
   gfc_option.module_dir = (char *) gfc_getmem (strlen (arg) + 2);
   strcpy (gfc_option.module_dir, arg);
@@ -564,7 +558,7 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_fdump_parse_tree:
-      gfc_option.verbose = value;
+      gfc_option.dump_parse_tree = value;
       break;
 
     case OPT_ffixed_form:

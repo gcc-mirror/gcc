@@ -1818,7 +1818,7 @@ typedef struct
   int max_continue_fixed;
   int max_continue_free;
   int max_identifier_length;
-  int verbose;
+  int dump_parse_tree;
 
   int warn_aliasing;
   int warn_ampersand;
@@ -2011,9 +2011,6 @@ try gfc_notify_std (int, const char *, ...) ATTRIBUTE_GCC_GFC(2,3);
 void gfc_push_error (gfc_error_buf *);
 void gfc_pop_error (gfc_error_buf *);
 void gfc_free_error (gfc_error_buf *);
-
-void gfc_status (const char *, ...) ATTRIBUTE_PRINTF_1;
-void gfc_status_char (char);
 
 void gfc_get_errors (int *, int *);
 
@@ -2360,22 +2357,7 @@ void gfc_insert_bbt (void *, void *, compare_fn);
 void gfc_delete_bbt (void *, void *, compare_fn);
 
 /* dump-parse-tree.c */
-void gfc_show_actual_arglist (gfc_actual_arglist *);
-void gfc_show_array_ref (gfc_array_ref *);
-void gfc_show_array_spec (gfc_array_spec *);
-void gfc_show_attr (symbol_attribute *);
-void gfc_show_code (int, gfc_code *);
-void gfc_show_components (gfc_symbol *);
-void gfc_show_constructor (gfc_constructor *);
-void gfc_show_equiv (gfc_equiv *);
-void gfc_show_expr (gfc_expr *);
-void gfc_show_expr_n (const char *, gfc_expr *);
-void gfc_show_namelist (gfc_namelist *);
-void gfc_show_namespace (gfc_namespace *);
-void gfc_show_ref (gfc_ref *);
-void gfc_show_symbol (gfc_symbol *);
-void gfc_show_symbol_n (const char *, gfc_symbol *);
-void gfc_show_typespec (gfc_typespec *);
+void gfc_dump_parse_tree (gfc_namespace *, FILE *);
 
 /* parse.c */
 try gfc_parse_file (void);

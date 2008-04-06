@@ -1,3 +1,18 @@
+2008-04-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* dump-parse-tree.c: Use fprintf, fputs and fputc instead of
+	gfc_status and gfc_status_char. Remove gfc_ prefix of the gfc_show_*
+	functions and make them static. Add new gfc_dump_parse_tree
+	function.
+	* gfortran.h (gfc_option_t): Rename verbose into dump_parse_tree.
+	(gfc_status, gfc_status_char): Delete prototypes.
+	* error.c (gfc_status, gfc_status_char): Remove functions.
+	* scanner.c (gfc_new_file): Use printf instead of gfc_status.
+	* options.c (gfc_init_options): Rename verbose into dump_parse_tree.
+	(gfc_handle_module_path_options): Use gfc_fatal_error instead of
+	gfc_status and exit.
+	(gfc_handle_option): Rename verbose into dump_parse_tree.
+
 2008-04-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
@@ -49,7 +64,7 @@
 
 2008-04-03  Paolo Bonzini  <bonzini@gnu.org>
 
-        * f95-lang.c (insert_block): Kill.
+	* f95-lang.c (insert_block): Kill.
 
 2008-04-01  George Helffrich <george@gcc.gnu.org>
 

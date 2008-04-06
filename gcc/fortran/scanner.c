@@ -1684,10 +1684,8 @@ gfc_new_file (void)
 
 #if 0 /* Debugging aid.  */
   for (; line_head; line_head = line_head->next)
-    gfc_status ("%s:%3d %s\n",
-		LOCATION_FILE (line_head->location),
-		LOCATION_LINE (line_head->location),
-		line_head->line);
+    printf ("%s:%3d %s\n", LOCATION_FILE (line_head->location),
+	    LOCATION_LINE (line_head->location), line_head->line);
 
   exit (0);
 #endif
