@@ -963,31 +963,6 @@ gfc_free_error (gfc_error_buf *err)
 }
 
 
-/* Debug wrapper for printf.  */
-
-void
-gfc_status (const char *cmsgid, ...)
-{
-  va_list argp;
-
-  va_start (argp, cmsgid);
-
-  vprintf (_(cmsgid), argp);
-
-  va_end (argp);
-}
-
-
-/* Subroutine for outputting a single char so that we don't have to go
-   around creating a lot of 1-character strings.  */
-
-void
-gfc_status_char (char c)
-{
-  putchar (c);
-}
-
-
 /* Report the number of warnings and errors that occurred to the caller.  */
 
 void
