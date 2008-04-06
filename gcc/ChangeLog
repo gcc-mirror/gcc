@@ -1,3 +1,7 @@
+2008-04-06  Tom G. Christensen  <tgc@jupiterrise.com>
+
+	* gthr-posix95.h (__gthread_cond_wait_recursive): Add missing &.
+
 2008-04-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/35833

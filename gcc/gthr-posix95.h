@@ -741,7 +741,7 @@ static inline int
 __gthread_cond_wait_recursive (__gthread_cond_t *cond,
 			       __gthread_recursive_mutex_t *mutex)
 {
-  return __gthrw_(pthread_cond_wait) (cond, mutex->actual);
+  return __gthrw_(pthread_cond_wait) (cond, &mutex->actual);
 }
 
 #endif /* _LIBOBJC */
