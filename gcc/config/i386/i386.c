@@ -3250,12 +3250,33 @@ ix86_function_regparm (const_tree type, const_tree decl)
   tree attr;
   int regparm = ix86_regparm;
 
+  static bool error_issued;
+
   if (TARGET_64BIT)
     return regparm;
 
   attr = lookup_attribute ("regparm", TYPE_ATTRIBUTES (type));
   if (attr)
-    return TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr)));
+    {
+      regparm
+	= TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr)));
+
+      if (decl && TREE_CODE (decl) == FUNCTION_DECL)
+	{
+	  /* We can't use regparm(3) for nested functions because
+	     these pass static chain pointer in %ecx register.  */
+	  if (!error_issued && regparm == 3
+	      && decl_function_context (decl)
+	      && !DECL_NO_STATIC_CHAIN (decl))
+	    {
+	      error ("nested functions are limited to 2 register parameters");
+	      error_issued = true;
+	      return 0;
+	    }
+	}
+
+      return regparm;
+    }
 
   if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (type)))
     return 2;

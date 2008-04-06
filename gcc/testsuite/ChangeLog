@@ -1,3 +1,8 @@
+2008-04-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/12329
+	* gcc.target/i386/pr12329.c: New test.
+
 2008-04-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/pr35823.adb: Rename to size_attribute.adb.
@@ -163,12 +168,12 @@
 
 	* lib/gfortran-dg.exp:  New harness to compile Fortran progs
 	with all combinations of debug options available on target.
-        * gfortran.dg/debug/debug.exp:  Ditto.
-        * gfortran.dg/debug/trivial.f:  Ditto.
-        * gfortran.dg/debug/pr35154-stabs.f:  New test case for
-        .stabs functionality.
-        * gfortran.dg/debug/pr35154-dwarf2.f:  New test case for
-        DWARF functionality.
+	* gfortran.dg/debug/debug.exp:  Ditto.
+	* gfortran.dg/debug/trivial.f:  Ditto.
+	* gfortran.dg/debug/pr35154-stabs.f:  New test case for
+	.stabs functionality.
+	* gfortran.dg/debug/pr35154-dwarf2.f:  New test case for
+	DWARF functionality.
 
 2008-04-01  Volker Reichelt  <v.reichelt@netcologne.de>
 
