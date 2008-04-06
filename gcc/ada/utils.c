@@ -447,7 +447,7 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
       tree t = TREE_TYPE (decl);
 
       if (!TYPE_NAME (t) || TREE_CODE (TYPE_NAME (t)) == IDENTIFIER_NODE)
-	TYPE_NAME (t) = decl;
+	;
       else if (TYPE_FAT_POINTER_P (t))
 	{
 	  tree tt = build_variant_type_copy (t);
@@ -455,9 +455,18 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	  TREE_USED (tt) = TREE_USED (t);
 	  TREE_TYPE (decl) = tt;
 	  DECL_ORIGINAL_TYPE (decl) = t;
+	  t = NULL_TREE;
 	}
       else if (DECL_ARTIFICIAL (TYPE_NAME (t)) && !DECL_ARTIFICIAL (decl))
-	TYPE_NAME (t) = decl;
+	;
+      else
+	t = NULL_TREE;
+
+      /* Propagate the name to all the variants.  This is needed for
+	 the type qualifiers machinery to work properly.  */
+      if (t)
+	for (t = TYPE_MAIN_VARIANT (t); t; t = TYPE_NEXT_VARIANT (t))
+	  TYPE_NAME (t) = decl;
     }
 }
 
