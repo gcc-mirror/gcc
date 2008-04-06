@@ -10,7 +10,7 @@ a = 23.45
 b = 0.0
 open(10, file='mydata', asynchronous="yes", blank="null")
 
-write(10,'(10f8.3)',  decimal="comma", id=j) a
+write(10,'(10f8.3)', asynchronous="yes", decimal="comma", id=j) a
 rewind(10)
 read(10,'(10f8.3)', asynchronous="yes", decimal="comma", blank="zero") b
 if (any(b.ne.23.45)) call abort

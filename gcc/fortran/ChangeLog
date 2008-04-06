@@ -1,3 +1,8 @@
+2008-04-06  Tobias Burnus  <burnus@net-b.de>
+
+	* io.c (check_io_constraints): Add constrains. ID= requires
+	asynchronous= and asynchronous= must be init expression.
+
 2008-04-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* f95-lang.c: Set LANG_HOOKS_NAME to "GNU Fortran".

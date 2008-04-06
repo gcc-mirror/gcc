@@ -2866,9 +2866,16 @@ if (condition) \
 		     &dt->eor_where);
     }
 
-  if (dt->asynchronous && dt->asynchronous->expr_type == EXPR_CONSTANT)
+  if (dt->asynchronous) 
     {
       static const char * asynchronous[] = { "YES", "NO", NULL };
+
+      if (dt->asynchronous->expr_type != EXPR_CONSTANT)
+	{
+	  gfc_error ("ASYNCHRONOUS= specifier at %L must be an initialization "
+		     "expression", &dt->asynchronous->where);
+	  return MATCH_ERROR;
+	}
 
       if (!compare_to_allowed_values
 		("ASYNCHRONOUS", asynchronous, NULL, NULL,
@@ -2879,8 +2886,8 @@ if (condition) \
 
   if (dt->id)
     {
-      io_constraint (dt->asynchronous
-		     && strcmp (dt->asynchronous->value.character.string,
+      io_constraint (!dt->asynchronous
+		     || strcmp (dt->asynchronous->value.character.string,
 				 "yes"),
 		     "ID=specifier at %L must be with ASYNCHRONOUS='yes' "
 		     "specifier", &dt->id->where);
