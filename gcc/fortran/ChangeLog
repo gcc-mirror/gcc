@@ -1,3 +1,11 @@
+2008-04-06  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	PR fortran/35832
+	* io.c (io_tag): Add field 'value'.  Split 'spec' field in
+	existing io_tags.
+	(match_etag, match_vtag, match_ltag): Split parsing in two steps
+	to give better error messages.
+
 2008-04-06  Tobias Burnus  <burnus@net-b.de>
 
 	* io.c (check_io_constraints): Add constrains. ID= requires
