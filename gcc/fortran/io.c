@@ -32,63 +32,63 @@ format_asterisk = {0, NULL, NULL, -1, ST_LABEL_FORMAT, ST_LABEL_FORMAT, NULL,
 
 typedef struct
 {
-  const char *name, *spec;
+  const char *name, *spec, *value;
   bt type;
 }
 io_tag;
 
 static const io_tag
-	tag_file	= { "FILE", " file = %e", BT_CHARACTER },
-	tag_status	= { "STATUS", " status = %e", BT_CHARACTER},
-	tag_e_access	= {"ACCESS", " access = %e", BT_CHARACTER},
-	tag_e_form	= {"FORM", " form = %e", BT_CHARACTER},
-	tag_e_recl	= {"RECL", " recl = %e", BT_INTEGER},
-	tag_e_blank	= {"BLANK", " blank = %e", BT_CHARACTER},
-	tag_e_position	= {"POSITION", " position = %e", BT_CHARACTER},
-	tag_e_action	= {"ACTION", " action = %e", BT_CHARACTER},
-	tag_e_delim	= {"DELIM", " delim = %e", BT_CHARACTER},
-	tag_e_pad	= {"PAD", " pad = %e", BT_CHARACTER},
-	tag_e_decimal	= {"DECIMAL", " decimal = %e", BT_CHARACTER},
-	tag_e_encoding	= {"ENCODING", " encoding = %e", BT_CHARACTER},
-	tag_e_round	= {"ROUND", " round = %e", BT_CHARACTER},
-	tag_e_sign	= {"SIGN", " sign = %e", BT_CHARACTER},
-	tag_unit	= {"UNIT", " unit = %e", BT_INTEGER},
-	tag_advance	= {"ADVANCE", " advance = %e", BT_CHARACTER},
-	tag_rec		= {"REC", " rec = %e", BT_INTEGER},
-	tag_spos	= {"POSITION", " pos = %e", BT_INTEGER},
-	tag_format	= {"FORMAT", NULL, BT_CHARACTER},
-	tag_iomsg	= {"IOMSG", " iomsg = %e", BT_CHARACTER},
-	tag_iostat	= {"IOSTAT", " iostat = %v", BT_INTEGER},
-	tag_size	= {"SIZE", " size = %v", BT_INTEGER},
-	tag_exist	= {"EXIST", " exist = %v", BT_LOGICAL},
-	tag_opened	= {"OPENED", " opened = %v", BT_LOGICAL},
-	tag_named	= {"NAMED", " named = %v", BT_LOGICAL},
-	tag_name	= {"NAME", " name = %v", BT_CHARACTER},
-	tag_number	= {"NUMBER", " number = %v", BT_INTEGER},
-	tag_s_access	= {"ACCESS", " access = %v", BT_CHARACTER},
-	tag_sequential	= {"SEQUENTIAL", " sequential = %v", BT_CHARACTER},
-	tag_direct	= {"DIRECT", " direct = %v", BT_CHARACTER},
-	tag_s_form	= {"FORM", " form = %v", BT_CHARACTER},
-	tag_formatted	= {"FORMATTED", " formatted = %v", BT_CHARACTER},
-	tag_unformatted	= {"UNFORMATTED", " unformatted = %v", BT_CHARACTER},
-	tag_s_recl	= {"RECL", " recl = %v", BT_INTEGER},
-	tag_nextrec	= {"NEXTREC", " nextrec = %v", BT_INTEGER},
-	tag_s_blank	= {"BLANK", " blank = %v", BT_CHARACTER},
-	tag_s_position	= {"POSITION", " position = %v", BT_CHARACTER},
-	tag_s_action	= {"ACTION", " action = %v", BT_CHARACTER},
-	tag_read	= {"READ", " read = %v", BT_CHARACTER},
-	tag_write	= {"WRITE", " write = %v", BT_CHARACTER},
-	tag_readwrite	= {"READWRITE", " readwrite = %v", BT_CHARACTER},
-	tag_s_delim	= {"DELIM", " delim = %v", BT_CHARACTER},
-	tag_s_pad	= {"PAD", " pad = %v", BT_CHARACTER},
-	tag_iolength	= {"IOLENGTH", " iolength = %v", BT_INTEGER},
-	tag_convert     = {"CONVERT", " convert = %e", BT_CHARACTER},
-	tag_strm_out    = {"POS", " pos = %v", BT_INTEGER},
-	tag_err		= {"ERR", " err = %l", BT_UNKNOWN},
-	tag_end		= {"END", " end = %l", BT_UNKNOWN},
-	tag_eor		= {"EOR", " eor = %l", BT_UNKNOWN},
-	tag_async	= {"ASYNCHRONOUS", " asynchronous = %e", BT_CHARACTER},
-	tag_id		= {"ID", " id = %v", BT_INTEGER};
+	tag_file	= { "FILE", " file =", " %e", BT_CHARACTER },
+	tag_status	= { "STATUS", " status =", " %e", BT_CHARACTER},
+	tag_e_access	= {"ACCESS", " access =", " %e", BT_CHARACTER},
+	tag_e_form	= {"FORM", " form =", " %e", BT_CHARACTER},
+	tag_e_recl	= {"RECL", " recl =", " %e", BT_INTEGER},
+	tag_e_blank	= {"BLANK", " blank =", " %e", BT_CHARACTER},
+	tag_e_position	= {"POSITION", " position =", " %e", BT_CHARACTER},
+	tag_e_action	= {"ACTION", " action =", " %e", BT_CHARACTER},
+	tag_e_delim	= {"DELIM", " delim =", " %e", BT_CHARACTER},
+	tag_e_pad	= {"PAD", " pad =", " %e", BT_CHARACTER},
+	tag_e_decimal	= {"DECIMAL", " decimal =", " %e", BT_CHARACTER},
+	tag_e_encoding	= {"ENCODING", " encoding =", " %e", BT_CHARACTER},
+	tag_e_round	= {"ROUND", " round =", " %e", BT_CHARACTER},
+	tag_e_sign	= {"SIGN", " sign =", " %e", BT_CHARACTER},
+	tag_unit	= {"UNIT", " unit =", " %e", BT_INTEGER},
+	tag_advance	= {"ADVANCE", " advance =", " %e", BT_CHARACTER},
+	tag_rec		= {"REC", " rec =", " %e", BT_INTEGER},
+	tag_spos	= {"POSITION", " pos =", " %e", BT_INTEGER},
+	tag_format	= {"FORMAT", NULL, NULL, BT_CHARACTER},
+	tag_iomsg	= {"IOMSG", " iomsg =", " %e", BT_CHARACTER},
+	tag_iostat	= {"IOSTAT", " iostat =", " %v", BT_INTEGER},
+	tag_size	= {"SIZE", " size =", " %v", BT_INTEGER},
+	tag_exist	= {"EXIST", " exist =", " %v", BT_LOGICAL},
+	tag_opened	= {"OPENED", " opened =", " %v", BT_LOGICAL},
+	tag_named	= {"NAMED", " named =", " %v", BT_LOGICAL},
+	tag_name	= {"NAME", " name =", " %v", BT_CHARACTER},
+	tag_number	= {"NUMBER", " number =", " %v", BT_INTEGER},
+	tag_s_access	= {"ACCESS", " access =", " %v", BT_CHARACTER},
+	tag_sequential	= {"SEQUENTIAL", " sequential =", " %v", BT_CHARACTER},
+	tag_direct	= {"DIRECT", " direct =", " %v", BT_CHARACTER},
+	tag_s_form	= {"FORM", " form =", " %v", BT_CHARACTER},
+	tag_formatted	= {"FORMATTED", " formatted =", " %v", BT_CHARACTER},
+	tag_unformatted	= {"UNFORMATTED", " unformatted =", " %v", BT_CHARACTER},
+	tag_s_recl	= {"RECL", " recl =", " %v", BT_INTEGER},
+	tag_nextrec	= {"NEXTREC", " nextrec =", " %v", BT_INTEGER},
+	tag_s_blank	= {"BLANK", " blank =", " %v", BT_CHARACTER},
+	tag_s_position	= {"POSITION", " position =", " %v", BT_CHARACTER},
+	tag_s_action	= {"ACTION", " action =", " %v", BT_CHARACTER},
+	tag_read	= {"READ", " read =", " %v", BT_CHARACTER},
+	tag_write	= {"WRITE", " write =", " %v", BT_CHARACTER},
+	tag_readwrite	= {"READWRITE", " readwrite =", " %v", BT_CHARACTER},
+	tag_s_delim	= {"DELIM", " delim =", " %v", BT_CHARACTER},
+	tag_s_pad	= {"PAD", " pad =", " %v", BT_CHARACTER},
+	tag_iolength	= {"IOLENGTH", " iolength =", " %v", BT_INTEGER},
+	tag_convert     = {"CONVERT", " convert =", " %e", BT_CHARACTER},
+	tag_strm_out    = {"POS", " pos =", " %v", BT_INTEGER},
+	tag_err		= {"ERR", " err =", " %l", BT_UNKNOWN},
+	tag_end		= {"END", " end =", " %l", BT_UNKNOWN},
+	tag_eor		= {"EOR", " eor =", " %l", BT_UNKNOWN},
+	tag_async	= {"ASYNCHRONOUS", " asynchronous =", " %e", BT_CHARACTER},
+	tag_id		= {"ID", " id =", " %v", BT_INTEGER};
 
 static gfc_dt *current_dt;
 
@@ -1031,9 +1031,16 @@ match_etag (const io_tag *tag, gfc_expr **v)
   gfc_expr *result;
   match m;
 
-  m = gfc_match (tag->spec, &result);
+  m = gfc_match (tag->spec);
   if (m != MATCH_YES)
     return m;
+
+  m = gfc_match (tag->value, &result);
+  if (m != MATCH_YES)
+    {
+      gfc_error ("Invalid value for %s specification at %C", tag->name);
+      return MATCH_ERROR;
+    }
 
   if (*v != NULL)
     {
@@ -1055,9 +1062,16 @@ match_vtag (const io_tag *tag, gfc_expr **v)
   gfc_expr *result;
   match m;
 
-  m = gfc_match (tag->spec, &result);
+  m = gfc_match (tag->spec);
   if (m != MATCH_YES)
     return m;
+
+  m = gfc_match (tag->value, &result);
+  if (m != MATCH_YES)
+    {
+      gfc_error ("Invalid value for %s specification at %C", tag->name);
+      return MATCH_ERROR;
+    }
 
   if (*v != NULL)
     {
@@ -1109,15 +1123,24 @@ match_ltag (const io_tag *tag, gfc_st_label ** label)
   gfc_st_label *old;
 
   old = *label;
-  m = gfc_match (tag->spec, label);
-  if (m == MATCH_YES && old != 0)
+  m = gfc_match (tag->spec);
+  if (m != MATCH_YES)
+    return m;
+
+  m = gfc_match (tag->value, label);
+  if (m != MATCH_YES)
+    {
+      gfc_error ("Invalid value for %s specification at %C", tag->name);
+      return MATCH_ERROR;
+    }
+
+  if (old)
     {
       gfc_error ("Duplicate %s label specification at %C", tag->name);
       return MATCH_ERROR;
     }
 
-  if (m == MATCH_YES 
-      && gfc_reference_st_label (*label, ST_LABEL_TARGET) == FAILURE)
+  if (gfc_reference_st_label (*label, ST_LABEL_TARGET) == FAILURE)
     return MATCH_ERROR;
 
   return m;
