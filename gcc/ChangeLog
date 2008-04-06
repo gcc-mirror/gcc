@@ -1,3 +1,11 @@
+2008-04-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.c (default_compilers): Sync Fortran extensions list with
+	that in fortran/lang-specs.h.
+	* doc/invoke.texi: Likewise.
+	* dbxout.c (get_lang_number): Use "GNU Fortran" in "GNU F95".
+	* dwarf2out.c (gen_compile_unit_die): Likewise.
+
 2008-04-06  Tom G. Christensen  <tgc@jupiterrise.com>
 
 	* gthr-posix95.h (__gthread_cond_wait_recursive): Add missing &.

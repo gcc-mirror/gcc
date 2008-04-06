@@ -1,5 +1,9 @@
 2008-04-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* f95-lang.c: Set LANG_HOOKS_NAME to "GNU Fortran".
+
+2008-04-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* dump-parse-tree.c: Use fprintf, fputs and fputc instead of
 	gfc_status and gfc_status_char. Remove gfc_ prefix of the gfc_show_*
 	functions and make them static. Add new gfc_dump_parse_tree

@@ -932,21 +932,27 @@ C++ header file to be turned into a precompiled header.
 
 @item @var{file}.f
 @itemx @var{file}.for
-@itemx @var{file}.FOR
+@itemx @var{file}.ftn
 Fixed form Fortran source code which should not be preprocessed.
 
 @item @var{file}.F
+@itemx @var{file}.FOR
 @itemx @var{file}.fpp
 @itemx @var{file}.FPP
+@itemx @var{file}.FTN
 Fixed form Fortran source code which must be preprocessed (with the traditional
 preprocessor).
 
 @item @var{file}.f90
 @itemx @var{file}.f95
+@itemx @var{file}.f03
+@itemx @var{file}.f08
 Free form Fortran source code which should not be preprocessed.
 
 @item @var{file}.F90
 @itemx @var{file}.F95
+@itemx @var{file}.F03
+@itemx @var{file}.F08
 Free form Fortran source code which must be preprocessed (with the
 traditional preprocessor).
 
