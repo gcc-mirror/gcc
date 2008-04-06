@@ -784,7 +784,7 @@ __do_clear_bss:
 /* __do_global_ctors and __do_global_dtors are only necessary
    if there are any constructors/destructors.  */
 
-#if defined (__AVR_MEGA__)
+#if defined (__AVR_HAVE_JMP_CALL__)
 #define XCALL call
 #else
 #define XCALL rcall

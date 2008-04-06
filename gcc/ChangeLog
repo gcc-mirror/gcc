@@ -1,3 +1,20 @@
+2008-04-06  Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/avr.h (avr_mega_p): Remove declaration.
+	(AVR_MEGA): Remove macro.
+	* config/avr/avr.c (avr_mega_p): Remove variable.
+	(avr_override_options): Remove inicializion of avr_mega_p.
+	Use AVR_HAVE_JMP_CALL instead of AVR_MEGA.
+	(print_operand): Use AVR_HAVE_JMP_CALL instead of AVR_MEGA.
+	(avr_jump_mode): (Ditto.).
+	(avr_output_progmem_section_asm_op): (Ditto.).
+	(avr_asm_init_sections): (Ditto.).
+	(avr_asm_init_sections): (Ditto.).
+	(avr_rtx_costs): (Ditto.).
+	* config/avr/avr.md: (Ditto.).
+	* config/avr/avr.h: Use '__AVR_HAVE_JMP_CALL__' instead of 
+	'__AVR_MEGA__'.
+
 2008-04-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/35842
