@@ -454,6 +454,8 @@ push_secondary_reload (int in_p, rtx x, int opnum, int optional,
 	if (MERGE_TO_OTHER (secondary_type, rld[s_reload].when_needed,
 			    opnum, rld[s_reload].opnum))
 	  rld[s_reload].when_needed = RELOAD_OTHER;
+
+	break;
       }
 
   if (s_reload == n_reloads)
