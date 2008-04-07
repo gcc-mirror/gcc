@@ -13086,6 +13086,45 @@ fold (tree expr)
 
   switch (code)
     {
+    case ARRAY_REF:
+      {
+	tree op0 = TREE_OPERAND (t, 0);
+	tree op1 = TREE_OPERAND (t, 1);
+
+	if (TREE_CODE (op1) == INTEGER_CST
+	    && TREE_CODE (op0) == CONSTRUCTOR
+	    && ! type_contains_placeholder_p (TREE_TYPE (op0)))
+	  {
+	    VEC(constructor_elt,gc) *elts = CONSTRUCTOR_ELTS (op0);
+	    unsigned HOST_WIDE_INT end = VEC_length (constructor_elt, elts);
+	    unsigned HOST_WIDE_INT begin = 0;
+
+	    /* Find a matching index by means of a binary search.  */
+	    while (begin != end)
+	      {
+		unsigned HOST_WIDE_INT middle = (begin + end) / 2;
+		tree index = VEC_index (constructor_elt, elts, middle)->index;
+
+		if (TREE_CODE (index) == INTEGER_CST
+		    && tree_int_cst_lt (index, op1))
+		  begin = middle + 1;
+		else if (TREE_CODE (index) == INTEGER_CST
+			 && tree_int_cst_lt (op1, index))
+		  end = middle;
+		else if (TREE_CODE (index) == RANGE_EXPR
+			 && tree_int_cst_lt (TREE_OPERAND (index, 1), op1))
+		  begin = middle + 1;
+		else if (TREE_CODE (index) == RANGE_EXPR
+			 && tree_int_cst_lt (op1, TREE_OPERAND (index, 0)))
+		  end = middle;
+		else
+		  return VEC_index (constructor_elt, elts, middle)->value;
+	      }
+	  }
+
+	return t;
+      }
+
     case CONST_DECL:
       return fold (DECL_INITIAL (t));
 

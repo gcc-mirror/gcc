@@ -1,5 +1,9 @@
 2008-04-07  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* utils2.c (build_binary_op): Fold ARRAY_REF and ARRAY_RANGE_REF too.
+
+2008-04-07  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gigi.h (create_subprog_type): Remove returns_with_dsp parameter.
 	* decl.c (gnat_to_gnu_entity): Adjust for above new prototype.
 	* utils.c (create_subprog_type): Remove returns_with_dsp parameter.

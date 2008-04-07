@@ -1017,8 +1017,8 @@ build_binary_op (enum tree_code op_code, tree result_type,
   else if (TREE_CODE (right_operand) == NULL_EXPR)
     return build1 (NULL_EXPR, operation_type, TREE_OPERAND (right_operand, 0));
   else if (op_code == ARRAY_REF || op_code == ARRAY_RANGE_REF)
-    result = build4 (op_code, operation_type, left_operand,
-		     right_operand, NULL_TREE, NULL_TREE);
+    result = fold (build4 (op_code, operation_type, left_operand,
+			   right_operand, NULL_TREE, NULL_TREE));
   else
     result
       = fold_build2 (op_code, operation_type, left_operand, right_operand);
