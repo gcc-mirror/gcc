@@ -53351,6 +53351,16 @@ all-stageb3g2-gold: maybe-all-build-byacc
 all-stage4-gold: maybe-all-build-byacc
 all-stageprofile-gold: maybe-all-build-byacc
 all-stagefeedback-gold: maybe-all-build-byacc
+check-gold: maybe-all-binutils
+
+check-stage1-gold: maybe-all-stage1-binutils
+check-stage2-gold: maybe-all-stage2-binutils
+check-stageb2g0-gold: maybe-all-stageb2g0-binutils
+check-stage3-gold: maybe-all-stage3-binutils
+check-stageb3g2-gold: maybe-all-stageb3g2-binutils
+check-stage4-gold: maybe-all-stage4-binutils
+check-stageprofile-gold: maybe-all-stageprofile-binutils
+check-stagefeedback-gold: maybe-all-stagefeedback-binutils
 configure-opcodes: maybe-configure-intl
 
 configure-stage1-opcodes: maybe-configure-stage1-intl
