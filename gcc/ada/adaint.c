@@ -888,7 +888,7 @@ __gnat_open_new_temp (char *path, int fmode)
   strcpy (path, "GNAT-XXXXXX");
 
 #if (defined (__FreeBSD__) || defined (__NetBSD__) || defined (__OpenBSD__) \
-  || defined (linux)) && !defined (__vxworks)
+  || defined (linux) || defined(__GLIBC__)) && !defined (__vxworks)
   return mkstemp (path);
 #elif defined (__Lynx__)
   mktemp (path);
@@ -981,7 +981,7 @@ __gnat_tmp_name (char *tmp_filename)
   }
 
 #elif defined (linux) || defined (__FreeBSD__) || defined (__NetBSD__) \
-  || defined (__OpenBSD__)
+  || defined (__OpenBSD__) || defined(__GLIBC__)
 #define MAX_SAFE_PATH 1000
   char *tmpdir = getenv ("TMPDIR");
 
@@ -3030,7 +3030,7 @@ void GetTimeAsFileTime(LPFILETIME pTime)
 }
 #endif
 
-#if defined (linux)
+#if defined (linux) || defined(__GLIBC__)
 /* pthread affinity support */
 
 int __gnat_pthread_setaffinity_np (pthread_t th,
