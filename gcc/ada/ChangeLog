@@ -1,5 +1,14 @@
 2008-04-07  Aurelien Jarno  <aurelien@aurel32.net>
 
+        * sysdep.c: add __GLIBC__ to the #ifdef preprocessor macros to
+	detect systems using GNU libc.
+	* gsocket.h: ditto.
+	* socket.c: ditto.
+	* adaint.c: ditto.
+	* link.c: ditto.
+
+2008-04-07  Aurelien Jarno  <aurelien@aurel32.net>
+
 	* s-osinte-linux-kfreebsd.ads (SC_NPROCESSORS_ONLN): New 
 	constant constant for sysconf call.
 	(bit_field): New packed boolean type used by cpu_set_t.
