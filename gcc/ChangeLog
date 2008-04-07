@@ -1,5 +1,10 @@
 2008-04-07  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* fold-const.c (fold) <ARRAY_REF>: New case.  Try to fold constant
+	reference in constructor with non self-referential type.
+
+2008-04-07  Eric Botcazou  <ebotcazou@adacore.com>
+
 	Removal of Return with Depressed Stack Pointer support
 	* tree.h (TYPE_RETURNS_STACK_DEPRESSED): Delete.
 	(ECF_SP_DEPRESSED): Likewise.
