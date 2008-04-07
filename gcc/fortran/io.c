@@ -50,6 +50,7 @@ static const io_tag
 	tag_e_pad	= {"PAD", " pad =", " %e", BT_CHARACTER},
 	tag_e_decimal	= {"DECIMAL", " decimal =", " %e", BT_CHARACTER},
 	tag_e_encoding	= {"ENCODING", " encoding =", " %e", BT_CHARACTER},
+	tag_e_async	= {"ASYNCHRONOUS", " asynchronous =", " %e", BT_CHARACTER},
 	tag_e_round	= {"ROUND", " round =", " %e", BT_CHARACTER},
 	tag_e_sign	= {"SIGN", " sign =", " %e", BT_CHARACTER},
 	tag_unit	= {"UNIT", " unit =", " %e", BT_INTEGER},
@@ -81,14 +82,19 @@ static const io_tag
 	tag_readwrite	= {"READWRITE", " readwrite =", " %v", BT_CHARACTER},
 	tag_s_delim	= {"DELIM", " delim =", " %v", BT_CHARACTER},
 	tag_s_pad	= {"PAD", " pad =", " %v", BT_CHARACTER},
+	tag_s_decimal	= {"DECIMAL", " decimal =", " %v", BT_CHARACTER},
+	tag_s_encoding	= {"ENCODING", " encoding =", " %v", BT_CHARACTER},
+	tag_s_async	= {"ASYNCHRONOUS", " asynchronous =", " %v", BT_CHARACTER},
+	tag_s_round	= {"ROUND", " round =", " %v", BT_CHARACTER},
+	tag_s_sign	= {"SIGN", " sign =", " %v", BT_CHARACTER},
 	tag_iolength	= {"IOLENGTH", " iolength =", " %v", BT_INTEGER},
 	tag_convert     = {"CONVERT", " convert =", " %e", BT_CHARACTER},
 	tag_strm_out    = {"POS", " pos =", " %v", BT_INTEGER},
 	tag_err		= {"ERR", " err =", " %l", BT_UNKNOWN},
 	tag_end		= {"END", " end =", " %l", BT_UNKNOWN},
 	tag_eor		= {"EOR", " eor =", " %l", BT_UNKNOWN},
-	tag_async	= {"ASYNCHRONOUS", " asynchronous =", " %e", BT_CHARACTER},
-	tag_id		= {"ID", " id =", " %v", BT_INTEGER};
+	tag_id		= {"ID", " id =", " %v", BT_INTEGER},
+	tag_pending	= {"PENDING", " pending =", " %v", BT_LOGICAL};
 
 static gfc_dt *current_dt;
 
@@ -1277,7 +1283,7 @@ match_open_element (gfc_open *open)
 {
   match m;
 
-  m = match_etag (&tag_async, &open->asynchronous);
+  m = match_etag (&tag_e_async, &open->asynchronous);
   if (m != MATCH_NO)
     return m;
   m = match_etag (&tag_unit, &open->unit);
@@ -1394,6 +1400,7 @@ gfc_resolve_open (gfc_open *open)
   RESOLVE_TAG (&tag_e_pad, open->pad);
   RESOLVE_TAG (&tag_e_decimal, open->decimal);
   RESOLVE_TAG (&tag_e_encoding, open->encoding);
+  RESOLVE_TAG (&tag_e_async, open->asynchronous);
   RESOLVE_TAG (&tag_e_round, open->round);
   RESOLVE_TAG (&tag_e_sign, open->sign);
   RESOLVE_TAG (&tag_convert, open->convert);
@@ -1652,16 +1659,14 @@ gfc_match_open (void)
   /* Checks on the ENCODING specifier.  */
   if (open->encoding)
     {
-      /* When implemented, change the following to use gfc_notify_std F2003.
       if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: ENCODING= at %C "
 	  "not allowed in Fortran 95") == FAILURE)
-	goto cleanup; */
-      gfc_error ("F2003 Feature: ENCODING=specifier at %C not implemented");
-      goto cleanup;
+	goto cleanup;
     
       if (open->encoding->expr_type == EXPR_CONSTANT)
 	{
-	  static const char * encoding[] = { "UTF-8", "DEFAULT", NULL };
+	  /* TODO: Implement UTF-8 here.  */
+	  static const char * encoding[] = { "DEFAULT", NULL };
 
 	  if (!compare_to_allowed_values ("ENCODING", encoding, NULL, NULL,
 					  open->encoding->value.character.string,
@@ -1707,7 +1712,7 @@ gfc_match_open (void)
   if (open->round)
     {
       /* When implemented, change the following to use gfc_notify_std F2003.  */
-      gfc_error ("F2003 Feature: ROUND=specifier at %C not implemented");
+      gfc_error ("F2003 Feature: ROUND= specifier at %C not implemented");
       goto cleanup;
 
       if (open->round->expr_type == EXPR_CONSTANT)
@@ -1772,8 +1777,8 @@ gfc_match_open (void)
 				      "OPEN", warn))
 	goto cleanup;
 
-      /* F2003, 9.4.5: If the STATUS=specifier has the value NEW or REPLACE,
-	 the FILE=specifier shall appear.  */
+      /* F2003, 9.4.5: If the STATUS= specifier has the value NEW or REPLACE,
+	 the FILE= specifier shall appear.  */
       if (open->file == NULL
 	  && (strncasecmp (open->status->value.character.string, "replace", 7)
 	      == 0
@@ -1785,8 +1790,8 @@ gfc_match_open (void)
 			 open->status->value.character.string);
 	}
 
-      /* F2003, 9.4.5: If the STATUS=specifier has the value SCRATCH,
-	 the FILE=specifier shall not appear.  */
+      /* F2003, 9.4.5: If the STATUS= specifier has the value SCRATCH,
+	 the FILE= specifier shall not appear.  */
       if (strncasecmp (open->status->value.character.string, "scratch", 7)
 	  == 0 && open->file)
 	{
@@ -2324,7 +2329,7 @@ match_dt_element (io_kind k, gfc_dt *dt)
       return MATCH_YES;
     }
 
-  m = match_etag (&tag_async, &dt->asynchronous);
+  m = match_etag (&tag_e_async, &dt->asynchronous);
   if (m != MATCH_NO)
     return m;
   m = match_etag (&tag_e_blank, &dt->blank);
@@ -2869,13 +2874,13 @@ if (condition) \
       io_constraint (dt->eor, "EOR tag not allowed with output at %L",
 		     &dt->eor_where);
 
-      io_constraint (dt->blank, "BLANK=specifier not allowed with output at %L",
+      io_constraint (dt->blank, "BLANK= specifier not allowed with output at %L",
 		     &dt->blank->where);
 
-      io_constraint (dt->pad, "PAD=specifier not allowed with output at %L",
+      io_constraint (dt->pad, "PAD= specifier not allowed with output at %L",
 		     &dt->pad->where);
 
-      io_constraint (dt->size, "SIZE=specifier not allowed with output at %L",
+      io_constraint (dt->size, "SIZE= specifier not allowed with output at %L",
 		     &dt->size->where);
     }
   else
@@ -2912,7 +2917,7 @@ if (condition) \
       io_constraint (!dt->asynchronous
 		     || strcmp (dt->asynchronous->value.character.string,
 				 "yes"),
-		     "ID=specifier at %L must be with ASYNCHRONOUS='yes' "
+		     "ID= specifier at %L must be with ASYNCHRONOUS='yes' "
 		     "specifier", &dt->id->where);
     }
 
@@ -2932,7 +2937,7 @@ if (condition) \
 	    return MATCH_ERROR;
 
 	  io_constraint (unformatted,
-			 "the DECIMAL=specifier at %L must be with an "
+			 "the DECIMAL= specifier at %L must be with an "
 			 "explicit format expression", &dt->decimal->where);
 	}
     }
@@ -2953,7 +2958,7 @@ if (condition) \
 	    return MATCH_ERROR;
 
 	  io_constraint (unformatted,
-			 "the BLANK=specifier at %L must be with an "
+			 "the BLANK= specifier at %L must be with an "
 			 "explicit format expression", &dt->blank->where);
 	}
     }
@@ -2974,7 +2979,7 @@ if (condition) \
 	    return MATCH_ERROR;
 
 	  io_constraint (unformatted,
-			 "the PAD=specifier at %L must be with an "
+			 "the PAD= specifier at %L must be with an "
 			 "explicit format expression", &dt->pad->where);
 	}
     }
@@ -2985,7 +2990,7 @@ if (condition) \
       if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: ROUND= at %C "
 	  "not allowed in Fortran 95") == FAILURE)
 	return MATCH_ERROR;  */
-      gfc_error ("F2003 Feature: ROUND=specifier at %C not implemented");
+      gfc_error ("F2003 Feature: ROUND= specifier at %C not implemented");
       return MATCH_ERROR;
 
       if (dt->round->expr_type == EXPR_CONSTANT)
@@ -3018,11 +3023,11 @@ if (condition) \
 	    return MATCH_ERROR;
 
 	  io_constraint (unformatted,
-			 "SIGN=specifier at %L must be with an "
+			 "SIGN= specifier at %L must be with an "
 			 "explicit format expression", &dt->sign->where);
 
 	  io_constraint (k == M_READ,
-			 "SIGN=specifier at %L not allowed in a "
+			 "SIGN= specifier at %L not allowed in a "
 			 "READ statement", &dt->sign->where);
 	}
     }
@@ -3043,17 +3048,17 @@ if (condition) \
 	    return MATCH_ERROR;
 
 	  io_constraint (k == M_READ,
-			 "DELIM=specifier at %L not allowed in a "
+			 "DELIM= specifier at %L not allowed in a "
 			 "READ statement", &dt->delim->where);
       
 	  io_constraint (dt->format_label != &format_asterisk
 			 && dt->namelist == NULL,
-			 "DELIM=specifier at %L must have FMT=*",
+			 "DELIM= specifier at %L must have FMT=*",
 			 &dt->delim->where);
 
 	  io_constraint (unformatted && dt->namelist == NULL,
-			 "DELIM=specifier at %L must be with FMT=* or "
-			 "NML=specifier ", &dt->delim->where);
+			 "DELIM= specifier at %L must be with FMT=* or "
+			 "NML= specifier ", &dt->delim->where);
 	}
     }
   
@@ -3073,11 +3078,11 @@ if (condition) \
 		     "and format label at %L", spec_end);
 
       io_constraint (dt->rec,
-		     "NAMELIST IO is not allowed with a REC=specifier "
+		     "NAMELIST IO is not allowed with a REC= specifier "
 		     "at %L.", &dt->rec->where);
 
       io_constraint (dt->advance,
-		     "NAMELIST IO is not allowed with a ADVANCE=specifier "
+		     "NAMELIST IO is not allowed with a ADVANCE= specifier "
 		     "at %L.", &dt->advance->where);
     }
 
@@ -3085,10 +3090,10 @@ if (condition) \
     {
       io_constraint (dt->end,
 		     "An END tag is not allowed with a "
-		     "REC=specifier at %L.", &dt->end_where);
+		     "REC= specifier at %L.", &dt->end_where);
 
       io_constraint (dt->format_label == &format_asterisk,
-		     "FMT=* is not allowed with a REC=specifier "
+		     "FMT=* is not allowed with a REC= specifier "
 		     "at %L.", spec_end);
     }
 
@@ -3099,10 +3104,10 @@ if (condition) \
 
       io_constraint (dt->format_label == &format_asterisk,
 		     "List directed format(*) is not allowed with a "
-		     "ADVANCE=specifier at %L.", &expr->where);
+		     "ADVANCE= specifier at %L.", &expr->where);
 
       io_constraint (unformatted,
-		     "the ADVANCE=specifier at %L must appear with an "
+		     "the ADVANCE= specifier at %L must appear with an "
 		     "explicit format expression", &expr->where);
 
       if (expr->expr_type == EXPR_CONSTANT && expr->ts.type == BT_CHARACTER)
@@ -3118,7 +3123,7 @@ if (condition) \
 	}
 
       io_constraint (not_no && not_yes,
-		     "ADVANCE=specifier at %L must have value = "
+		     "ADVANCE= specifier at %L must have value = "
 		     "YES or NO.", &expr->where);
 
       io_constraint (dt->size && not_no && k == M_READ,
@@ -3418,10 +3423,16 @@ gfc_free_inquire (gfc_inquire *inquire)
   gfc_free_expr (inquire->write);
   gfc_free_expr (inquire->readwrite);
   gfc_free_expr (inquire->delim);
+  gfc_free_expr (inquire->encoding);
   gfc_free_expr (inquire->pad);
   gfc_free_expr (inquire->iolength);
   gfc_free_expr (inquire->convert);
   gfc_free_expr (inquire->strm_pos);
+  gfc_free_expr (inquire->asynchronous);
+  gfc_free_expr (inquire->pending);
+  gfc_free_expr (inquire->id);
+  gfc_free_expr (inquire->sign);
+  gfc_free_expr (inquire->round);
   gfc_free (inquire);
 }
 
@@ -3459,11 +3470,19 @@ match_inquire_element (gfc_inquire *inquire)
   RETM m = match_vtag (&tag_read, &inquire->read);
   RETM m = match_vtag (&tag_write, &inquire->write);
   RETM m = match_vtag (&tag_readwrite, &inquire->readwrite);
+  RETM m = match_vtag (&tag_s_async, &inquire->asynchronous);
   RETM m = match_vtag (&tag_s_delim, &inquire->delim);
+  RETM m = match_vtag (&tag_s_decimal, &inquire->decimal);
+  RETM m = match_vtag (&tag_s_blank, &inquire->blank);
+  RETM m = match_vtag (&tag_s_encoding, &inquire->encoding);
+  RETM m = match_vtag (&tag_s_round, &inquire->round);
+  RETM m = match_vtag (&tag_s_sign, &inquire->sign);
   RETM m = match_vtag (&tag_s_pad, &inquire->pad);
   RETM m = match_vtag (&tag_iolength, &inquire->iolength);
   RETM m = match_vtag (&tag_convert, &inquire->convert);
   RETM m = match_out_tag (&tag_strm_out, &inquire->strm_pos);
+  RETM m = match_vtag (&tag_pending, &inquire->pending);
+  RETM m = match_vtag (&tag_id, &inquire->id);
   RETM return MATCH_NO;
 }
 
@@ -3571,6 +3590,13 @@ gfc_match_inquire (void)
       gfc_error ("INQUIRE statement not allowed in PURE procedure at %C");
       goto cleanup;
     }
+  
+  if (inquire->id != NULL && inquire->pending == NULL)
+    {
+      gfc_error ("INQUIRE statement at %L requires a PENDING= specifier with "
+		 "the ID= specifier", &loc);
+      goto cleanup;
+    }
 
   new_st.op = EXEC_INQUIRE;
   new_st.ext.inquire = inquire;
@@ -3615,9 +3641,16 @@ gfc_resolve_inquire (gfc_inquire *inquire)
   RESOLVE_TAG (&tag_readwrite, inquire->readwrite);
   RESOLVE_TAG (&tag_s_delim, inquire->delim);
   RESOLVE_TAG (&tag_s_pad, inquire->pad);
+  RESOLVE_TAG (&tag_s_encoding, inquire->encoding);
+  RESOLVE_TAG (&tag_s_round, inquire->round);
   RESOLVE_TAG (&tag_iolength, inquire->iolength);
   RESOLVE_TAG (&tag_convert, inquire->convert);
   RESOLVE_TAG (&tag_strm_out, inquire->strm_pos);
+  RESOLVE_TAG (&tag_s_async, inquire->asynchronous);
+  RESOLVE_TAG (&tag_s_sign, inquire->sign);
+  RESOLVE_TAG (&tag_s_round, inquire->round);
+  RESOLVE_TAG (&tag_pending, inquire->pending);
+  RESOLVE_TAG (&tag_id, inquire->id);
 
   if (gfc_reference_st_label (inquire->err, ST_LABEL_TARGET) == FAILURE)
     return FAILURE;
