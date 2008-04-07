@@ -1,3 +1,24 @@
+2008-04-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/25829 28655
+	* io/open.c (edit_modes): Set flags.async. (new_unit) Set flags.async
+	and flags.status. (st_open): Initialize flags.async.
+	* io/list_read.c (read_charactor): Use delim_status instead of
+	flags.delim.
+	* io/read.c (read_x): Use pad_status instead of flags.pad.
+	* io/inquire.c (inquire_via_unit): Add new checks.
+	(inquire_via_filename): Likewise.
+	* io/io.h (st_parameter_inquire): Add new flags.
+	(st_parameter_dt): Likewise.
+	* io/unit.c (get_internal_unit): Set flags.async. (init_units): Set
+	flags.async.
+	* io/transfer.c: Add delim and pad option arrays. (read_sf): Use
+	pad_status instead of flags.pad. (read_block): Likewise.
+	(data_transfer_init): Set flags.async and add checks.
+	* io/write.c (write_character): Use delim_status.
+	(list_formatted_write_scalar): Likewise. (nml_write_obj): Likewise.
+	(namelist_write): Likewise.
+
 2008-04-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/25829 28655

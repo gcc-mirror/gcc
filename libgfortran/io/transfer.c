@@ -114,6 +114,19 @@ static const st_option blank_opt[] = {
   {NULL, 0}
 };
 
+static const st_option delim_opt[] = {
+  {"apostrophe", DELIM_APOSTROPHE},
+  {"quote", DELIM_QUOTE},
+  {"none", DELIM_NONE},
+  {NULL, 0}
+};
+
+static const st_option pad_opt[] = {
+  {"yes", PAD_YES},
+  {"no", PAD_NO},
+  {NULL, 0}
+};
+
 typedef enum
 { FORMATTED_SEQUENTIAL, UNFORMATTED_SEQUENTIAL,
   FORMATTED_DIRECT, UNFORMATTED_DIRECT, FORMATTED_STREAM, UNFORMATTED_STREAM
@@ -242,7 +255,7 @@ read_sf (st_parameter_dt *dtp, int *length, int no_error)
 	  /* Without padding, terminate the I/O statement without assigning
 	     the value.  With padding, the value still needs to be assigned,
 	     so we can just continue with a short read.  */
-	  if (dtp->u.p.current_unit->flags.pad == PAD_NO)
+	  if (dtp->u.p.pad_status == PAD_NO)
 	    {
 	      if (no_error)
 		break;
@@ -320,7 +333,7 @@ read_block (st_parameter_dt *dtp, int *length)
           dtp->u.p.current_unit->bytes_left = dtp->u.p.current_unit->recl;
 	  else
 	    {
-	      if (dtp->u.p.current_unit->flags.pad == PAD_NO)
+	      if (dtp->u.p.pad_status == PAD_NO)
 		{
 		  /* Not enough data left.  */
 		  generate_error (&dtp->common, LIBERROR_EOR, NULL);
@@ -358,7 +371,7 @@ read_block (st_parameter_dt *dtp, int *length)
 
   if (nread != *length)
     {				/* Short read, this shouldn't happen.  */
-      if (dtp->u.p.current_unit->flags.pad == PAD_YES)
+      if (dtp->u.p.pad_status == PAD_YES)
 	*length = nread;
       else
 	{
@@ -1802,6 +1815,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
      u_flags.pad = PAD_UNSPECIFIED;
      u_flags.decimal = DECIMAL_UNSPECIFIED;
      u_flags.encoding = ENCODING_UNSPECIFIED;
+     u_flags.async = ASYNC_UNSPECIFIED;
      u_flags.round = ROUND_UNSPECIFIED;
      u_flags.sign = SIGN_UNSPECIFIED;
      u_flags.status = STATUS_UNKNOWN;
@@ -2020,8 +2034,25 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
   
   if (dtp->u.p.blank_status == BLANK_UNSPECIFIED)
     dtp->u.p.blank_status = dtp->u.p.current_unit->flags.blank;
- 
+  
+  /* Check the delim mode.  */
+  dtp->u.p.delim_status
+    = !(cf & IOPARM_DT_HAS_DELIM) ? DELIM_UNSPECIFIED :
+      find_option (&dtp->common, dtp->delim, dtp->delim_len, delim_opt,
+		   "Bad DELIM parameter in data transfer statement");
+  
+  if (dtp->u.p.delim_status == DELIM_UNSPECIFIED)
+    dtp->u.p.delim_status = dtp->u.p.current_unit->flags.delim;
 
+  /* Check the pad mode.  */
+  dtp->u.p.pad_status
+    = !(cf & IOPARM_DT_HAS_PAD) ? PAD_UNSPECIFIED :
+      find_option (&dtp->common, dtp->pad, dtp->pad_len, pad_opt,
+		   "Bad PAD parameter in data transfer statement");
+  
+  if (dtp->u.p.pad_status == PAD_UNSPECIFIED)
+    dtp->u.p.pad_status = dtp->u.p.current_unit->flags.pad;
+ 
   /* Sanity checks on the record number.  */
   if ((cf & IOPARM_DT_HAS_REC) != 0)
     {

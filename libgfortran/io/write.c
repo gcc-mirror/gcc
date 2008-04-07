@@ -640,7 +640,7 @@ write_character (st_parameter_dt *dtp, const char *source, int length)
   int i, extra;
   char *p, d;
 
-  switch (dtp->u.p.current_unit->flags.delim)
+  switch (dtp->u.p.delim_status)
     {
     case DELIM_APOSTROPHE:
       d = '\'';
@@ -779,7 +779,7 @@ list_formatted_write_scalar (st_parameter_dt *dtp, bt type, void *p, int kind,
   else
     {
       if (type != BT_CHARACTER || !dtp->u.p.char_flag ||
-	  dtp->u.p.current_unit->flags.delim != DELIM_NONE)
+	  dtp->u.p.delim_status != DELIM_NONE)
 	write_separator (dtp);
     }
 
@@ -994,13 +994,13 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
               break;
 
 	    case GFC_DTYPE_CHARACTER:
-	      tmp_delim = dtp->u.p.current_unit->flags.delim;
+	      tmp_delim = dtp->u.p.delim_status;
 	      if (dtp->u.p.nml_delim == '"')
-		dtp->u.p.current_unit->flags.delim = DELIM_QUOTE;
+		dtp->u.p.delim_status = DELIM_QUOTE;
 	      if (dtp->u.p.nml_delim == '\'')
-		dtp->u.p.current_unit->flags.delim = DELIM_APOSTROPHE;
+		dtp->u.p.delim_status = DELIM_APOSTROPHE;
 	      write_character (dtp, p, obj->string_length);
-	      dtp->u.p.current_unit->flags.delim = tmp_delim;
+	      dtp->u.p.delim_status = tmp_delim;
               break;
 
 	    case GFC_DTYPE_REAL:
@@ -1141,7 +1141,7 @@ namelist_write (st_parameter_dt *dtp)
 
   /* Set the delimiter for namelist output.  */
 
-  tmp_delim = dtp->u.p.current_unit->flags.delim;
+  tmp_delim = dtp->u.p.delim_status;
   switch (tmp_delim)
     {
     case (DELIM_QUOTE):
@@ -1158,7 +1158,7 @@ namelist_write (st_parameter_dt *dtp)
     }
 
   /* Temporarily disable namelist delimters.  */
-  dtp->u.p.current_unit->flags.delim = DELIM_NONE;
+  dtp->u.p.delim_status = DELIM_NONE;
 
   write_character (dtp, "&", 1);
 
@@ -1186,7 +1186,7 @@ namelist_write (st_parameter_dt *dtp)
 #endif
 
   /* Restore the original delimiter.  */
-  dtp->u.p.current_unit->flags.delim = tmp_delim;
+  dtp->u.p.delim_status = tmp_delim;
 }
 
 #undef NML_DIGITS

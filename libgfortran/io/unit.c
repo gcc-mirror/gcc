@@ -443,6 +443,7 @@ get_internal_unit (st_parameter_dt *dtp)
   iunit->flags.sign = SIGN_SUPPRESS;
   iunit->flags.decimal = DECIMAL_POINT;
   iunit->flags.encoding = ENCODING_DEFAULT;
+  iunit->flags.async = ASYNC_NO;
 
   /* Initialize the data transfer parameters.  */
 
@@ -531,7 +532,8 @@ init_units (void)
       u->flags.sign = SIGN_SUPPRESS;
       u->flags.decimal = DECIMAL_POINT;
       u->flags.encoding = ENCODING_DEFAULT;
-
+      u->flags.async = ASYNC_NO;
+     
       u->recl = options.default_recl;
       u->endfile = NO_ENDFILE;
 
@@ -557,6 +559,7 @@ init_units (void)
       u->flags.sign = SIGN_SUPPRESS;
       u->flags.decimal = DECIMAL_POINT;
       u->flags.encoding = ENCODING_DEFAULT;
+      u->flags.async = ASYNC_NO;
 
       u->recl = options.default_recl;
       u->endfile = AT_ENDFILE;
@@ -583,6 +586,7 @@ init_units (void)
       u->flags.sign = SIGN_SUPPRESS;
       u->flags.decimal = DECIMAL_POINT;
       u->flags.encoding = ENCODING_DEFAULT;
+      u->flags.async = ASYNC_NO;
 
       u->recl = options.default_recl;
       u->endfile = AT_ENDFILE;

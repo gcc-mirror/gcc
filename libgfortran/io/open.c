@@ -254,6 +254,8 @@ edit_modes (st_parameter_open *opp, gfc_unit * u, unit_flags * flags)
 	u->flags.decimal = flags->decimal;
       if (flags->encoding != ENCODING_UNSPECIFIED)
 	u->flags.encoding = flags->encoding;
+      if (flags->async != ASYNC_UNSPECIFIED)
+	u->flags.async = flags->async;
       if (flags->round != ROUND_UNSPECIFIED)
 	u->flags.round = flags->round;
       if (flags->sign != SIGN_UNSPECIFIED)
@@ -317,6 +319,13 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
     flags->form = (flags->access == ACCESS_SEQUENTIAL)
       ? FORM_FORMATTED : FORM_UNFORMATTED;
 
+  if (flags->async == ASYNC_UNSPECIFIED)
+    flags->async = ASYNC_NO;
+
+  if (flags->status == STATUS_UNSPECIFIED)
+    flags->status = STATUS_UNKNOWN;
+
+  /* Checks.  */
 
   if (flags->delim == DELIM_UNSPECIFIED)
     flags->delim = DELIM_NONE;
@@ -423,12 +432,6 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
   else
    if (flags->position == POSITION_UNSPECIFIED)
      flags->position = POSITION_ASIS;
-
-
-  if (flags->status == STATUS_UNSPECIFIED)
-    flags->status = STATUS_UNKNOWN;
-
-  /* Checks.  */
 
   if (flags->access == ACCESS_DIRECT
       && (opp->common.flags & IOPARM_OPEN_HAS_RECL_IN) == 0)
@@ -738,6 +741,10 @@ st_open (st_parameter_open *opp)
   flags.encoding = !(cf & IOPARM_OPEN_HAS_ENCODING) ? ENCODING_UNSPECIFIED :
     find_option (&opp->common, opp->encoding, opp->encoding_len,
 		 encoding_opt, "Bad ENCODING parameter in OPEN statement");
+
+  flags.async = !(cf & IOPARM_OPEN_HAS_ASYNCHRONOUS) ? ASYNC_UNSPECIFIED :
+    find_option (&opp->common, opp->asynchronous, opp->asynchronous_len,
+		 async_opt, "Bad ASYNCHRONOUS parameter in OPEN statement");
 
   flags.round = !(cf & IOPARM_OPEN_HAS_ROUND) ? ROUND_UNSPECIFIED :
     find_option (&opp->common, opp->round, opp->round_len,
