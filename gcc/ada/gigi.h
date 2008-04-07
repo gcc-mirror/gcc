@@ -522,13 +522,11 @@ extern void rest_of_record_type_compilation (tree record_type);
    copy-in/copy-out list to be stored into TYPE_CI_CO_LIST.
    RETURNS_UNCONSTRAINED is true if the function returns an unconstrained
    object.  RETURNS_BY_REF is true if the function returns by reference.
-   RETURNS_WITH_DSP is true if the function is to return with a
-   depressed stack pointer.  RETURNS_BY_TARGET_PTR is true if the function
-   is to be passed (as its first parameter) the address of the place to copy
-   its result.  */
+   RETURNS_BY_TARGET_PTR is true if the function is to be passed (as its
+   first parameter) the address of the place to copy its result.  */
 extern tree create_subprog_type (tree return_type, tree param_decl_list,
                                  tree cico_list, bool returns_unconstrained,
-                                 bool returns_by_ref, bool returns_with_dsp,
+                                 bool returns_by_ref,
                                  bool returns_by_target_ptr);
 
 /* Return a copy of TYPE, but safe to modify in any way.  */

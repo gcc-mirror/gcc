@@ -3863,17 +3863,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	gnu_type
 	  = create_subprog_type (gnu_return_type, gnu_param_list,
 				 gnu_return_list, returns_unconstrained,
-				 returns_by_ref,
-				 Function_Returns_With_DSP (gnat_entity),
-				 returns_by_target_ptr);
+				 returns_by_ref, returns_by_target_ptr);
 
 	if (has_stub)
 	  gnu_stub_type
 	    = create_subprog_type (gnu_return_type, gnu_stub_param_list,
 				   gnu_return_list, returns_unconstrained,
-				   returns_by_ref,
-				   Function_Returns_With_DSP (gnat_entity),
-				   returns_by_target_ptr);
+				   returns_by_ref, returns_by_target_ptr);
 
 	/* A subprogram (something that doesn't return anything) shouldn't
 	   be considered Pure since there would be no reason for such a

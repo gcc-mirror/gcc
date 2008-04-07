@@ -565,9 +565,6 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
       else if (TREE_CODE (node) == INTEGER_TYPE
 	       && TYPE_IS_SIZETYPE (node))
 	fputs (" sizetype", file);
-      else if (TREE_CODE (node) == FUNCTION_TYPE
-	       && TYPE_RETURNS_STACK_DEPRESSED (node))
-	fputs (" returns-stack-depressed", file);
 
       if (TYPE_STRING_FLAG (node))
 	fputs (" string-flag", file);

@@ -1,3 +1,21 @@
+2008-04-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Removal of Return with Depressed Stack Pointer support
+	* tree.h (TYPE_RETURNS_STACK_DEPRESSED): Delete.
+	(ECF_SP_DEPRESSED): Likewise.
+	(ECF_LIBCALL_BLOCK, ECF_NOVOPS): Adjust.
+	* calls.c (emit_call_1): Do not test ECF_SP_DEPRESSED.
+	(flags_from_decl_or_type): Do not test TYPE_RETURNS_STACK_DEPRESSED.
+	(expand_call): Do not test ECF_SP_DEPRESSED.
+	* dse.c (dse_step0): Do not test TYPE_RETURNS_STACK_DEPRESSED.
+	* function.c (keep_stack_depressed): Delete.
+	(handle_epilogue_set): Likewise.
+	(update_epilogue_consts): Likewise.
+	(emit_equiv_load): Likewise.
+	(thread_prologue_and_epilogue_insns): Remove support for Return with
+	Depressed Stack Pointer.
+	* print-tree.c (print_node): Do not test TYPE_RETURNS_STACK_DEPRESSED.
+
 2008-04-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/35400

@@ -4182,26 +4182,13 @@ gnat_to_gnu (Node_Id gnat_node)
 		else if (TYPE_RETURNS_UNCONSTRAINED_P (gnu_subprog_type))
 		  {
 		    gnu_ret_val = maybe_unconstrained_array (gnu_ret_val);
-
-		    /* We have two cases: either the function returns with
-		       depressed stack or not.  If not, we allocate on the
-		       secondary stack.  If so, we allocate in the stack frame.
-		       if no copy is needed, the front end will set By_Ref,
-		       which we handle in the case above.  */
-		    if (TYPE_RETURNS_STACK_DEPRESSED (gnu_subprog_type))
-		      gnu_ret_val
-			= build_allocator (TREE_TYPE (gnu_ret_val),
-					   gnu_ret_val,
-					   TREE_TYPE (gnu_subprog_type),
-					   0, -1, gnat_node, false);
-		    else
-		      gnu_ret_val
-			= build_allocator (TREE_TYPE (gnu_ret_val),
-					   gnu_ret_val,
-					   TREE_TYPE (gnu_subprog_type),
-					   Procedure_To_Call (gnat_node),
-					   Storage_Pool (gnat_node),
-					   gnat_node, false);
+		    gnu_ret_val
+		      = build_allocator (TREE_TYPE (gnu_ret_val),
+					 gnu_ret_val,
+					 TREE_TYPE (gnu_subprog_type),
+					 Procedure_To_Call (gnat_node),
+					 Storage_Pool (gnat_node),
+					 gnat_node, false);
 		  }
 	      }
 	  }
