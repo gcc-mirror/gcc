@@ -1,3 +1,7 @@
+2008-04-07  James E. Wilson  <wilson@tuliptree.org>
+
+	* reload.c (push_secondary_reload): Add missing break to for loop.
+
 2008-04-07  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR middle-end/PR28690
