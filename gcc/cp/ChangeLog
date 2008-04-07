@@ -1,3 +1,9 @@
+2008-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35734
+	* class.c (type_has_user_nondefault_constructor): A template 
+	counts as a nondefault constructor.
+
 2008-04-04  Paolo Bonzini  <bonzini@gnu.org>
 
 	* decl.c (cxx_push_function_context): Delete.
