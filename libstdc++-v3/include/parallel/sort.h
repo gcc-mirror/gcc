@@ -71,7 +71,7 @@ namespace __gnu_parallel
   template<typename RandomAccessIterator, typename Comparator>
     inline void
     parallel_sort(RandomAccessIterator begin, RandomAccessIterator end,
-		  Comparator comp, bool stable)
+                  Comparator comp, bool stable)
     {
       _GLIBCXX_CALL(end - begin)
       typedef std::iterator_traits<RandomAccessIterator> traits_type;
@@ -79,25 +79,43 @@ namespace __gnu_parallel
       typedef typename traits_type::difference_type difference_type;
 
       if (begin != end)
-	{
-	  difference_type n = end - begin;
+      {
+        difference_type n = end - begin;
 
-	  if (false) ;
+        if (false) ;
 #if _GLIBCXX_MERGESORT
-	  else if (stable || _Settings::get().sort_algorithm == MWMS)
-	    parallel_sort_mwms(begin, end, comp, n, get_max_threads(), stable);
+        else if (stable)
+          {
+            if(_Settings::get().sort_splitting == EXACT)
+              parallel_sort_mwms<true, true>
+                (begin, end, comp, get_max_threads());
+            else
+              parallel_sort_mwms<true, false>
+                (begin, end, comp, get_max_threads());
+          }
+        else if (_Settings::get().sort_algorithm == MWMS)
+          {
+            if(_Settings::get().sort_splitting == EXACT)
+              parallel_sort_mwms<false, true>
+                (begin, end, comp, get_max_threads());
+            else
+              parallel_sort_mwms<false, false>
+                (begin, end, comp, get_max_threads());
+          }
 #endif
 #if _GLIBCXX_QUICKSORT
-	  else if (!stable && _Settings::get().sort_algorithm == QS)
-	    parallel_sort_qs(begin, end, comp, n, get_max_threads());
+        else if (!stable && _Settings::get().sort_algorithm == QS)
+          parallel_sort_qs(begin, end, comp, n, get_max_threads());
 #endif
 #if _GLIBCXX_BAL_QUICKSORT
-	  else if (!stable && _Settings::get().sort_algorithm == QS_BALANCED)
-	    parallel_sort_qsb(begin, end, comp, n, get_max_threads());
+        else if (!stable && _Settings::get().sort_algorithm == QS_BALANCED)
+          parallel_sort_qsb(begin, end, comp, n, get_max_threads());
 #endif
-	  else
-	    __gnu_sequential::sort(begin, end, comp);
-	}
+        else if(stable)
+          __gnu_sequential::stable_sort(begin, end, comp);
+        else
+          __gnu_sequential::sort(begin, end, comp);
+      }
     }
 } // end namespace __gnu_parallel
 

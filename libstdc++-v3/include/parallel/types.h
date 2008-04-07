@@ -87,15 +87,10 @@ namespace __gnu_parallel
   /// Merging algorithms: 
   // bubblesort-alike, loser-tree variants, enum sentinel.
   enum _MultiwayMergeAlgorithm
-    { 
-      BUBBLE, 
-      LOSER_TREE_EXPLICIT, 
-      LOSER_TREE, 
-      LOSER_TREE_COMBINED, 
-      LOSER_TREE_SENTINEL, 
-      ENUM_SENTINEL 
+    {
+      LOSER_TREE
     };
-  
+
   /// Partial sum algorithms: recursive, linear.
   enum _PartialSumAlgorithm 
     { 

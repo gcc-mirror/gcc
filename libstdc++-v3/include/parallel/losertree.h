@@ -47,878 +47,725 @@
 namespace __gnu_parallel
 {
 
-#if _GLIBCXX_LOSER_TREE_EXPLICIT
-
-/** @brief Guarded loser tree, copying the whole element into the
-* tree structure.
-*
-*  Guarding is done explicitly through two flags per element, inf
-*  and sup This is a quite slow variant.
-*/
-template<typename T, typename Comparator = std::less<T> >
-  class LoserTreeExplicit
+/**
+ * @brief Guarded loser/tournament tree.
+ *
+ * The smallest element is at the top.
+ *
+ * Guarding is done explicitly through one flag sup per element,
+ * inf is not needed due to a better initialization routine.  This
+ * is a well-performing variant.
+ *
+ * @param T the element type
+ * @param Comparator the comparator to use, defaults to std::less<T>
+ */
+template<typename T, typename Comparator>
+class LoserTreeBase
+{
+protected:
+  /** @brief Internal representation of a LoserTree element. */
+  struct Loser
   {
-  private:
-    struct Loser
-    {
-      // The relevant element.
-      T key;
-
-      // Is this an infimum or supremum element?
-      bool inf, sup;
-
-      // Number of the sequence the element comes from.
-      int source;
-    };
-
-    unsigned int size, offset;
-    Loser* losers;
-    Comparator comp;
-
-  public:
-    LoserTreeExplicit(unsigned int _size, Comparator _comp = std::less<T>())
-    : comp(_comp)
-    {
-      size = _size;
-      offset = size;
-      losers = new Loser[size];
-      for (unsigned int l = 0; l < size; ++l)
-        {
-          //losers[l].key = ... 	stays unset
-          losers[l].inf = true;
-          losers[l].sup = false;
-          //losers[l].source = -1;	//sentinel
-        }
-    }
-
-    ~LoserTreeExplicit()
-    { delete[] losers; }
-
-    int
-    get_min_source()
-    { return losers[0].source; }
-
-    void
-    insert_start(T key, int source, bool sup)
-    {
-      bool inf = false;
-      for (unsigned int pos = (offset + source) / 2; pos > 0; pos /= 2)
-        {
-          if ((!inf && !losers[pos].inf && !sup && !losers[pos].sup
-               && comp(losers[pos].key, key)) || losers[pos].inf || sup)
-            {
-              // The other one is smaller.
-              std::swap(losers[pos].key, key);
-              std::swap(losers[pos].inf, inf);
-              std::swap(losers[pos].sup, sup);
-              std::swap(losers[pos].source, source);
-            }
-        }
-
-      losers[0].key = key;
-      losers[0].inf = inf;
-      losers[0].sup = sup;
-      losers[0].source = source;
-    }
-
-    void
-    init() { }
-
-    void
-    delete_min_insert(T key, bool sup)
-    {
-      bool inf = false;
-      int source = losers[0].source;
-      for (unsigned int pos = (offset + source) / 2; pos > 0; pos /= 2)
-        {
-          // The smaller one gets promoted.
-          if ((!inf && !losers[pos].inf && !sup && !losers[pos].sup
-              && comp(losers[pos].key, key))
-              || losers[pos].inf || sup)
-            {
-              // The other one is smaller.
-              std::swap(losers[pos].key, key);
-              std::swap(losers[pos].inf, inf);
-              std::swap(losers[pos].sup, sup);
-              std::swap(losers[pos].source, source);
-            }
-        }
-
-      losers[0].key = key;
-      losers[0].inf = inf;
-      losers[0].sup = sup;
-      losers[0].source = source;
-    }
-
-    void
-    insert_start_stable(T key, int source, bool sup)
-    {
-      bool inf = false;
-      for (unsigned int pos = (offset + source) / 2; pos > 0; pos /= 2)
-        {
-          if ((!inf && !losers[pos].inf && !sup && !losers[pos].sup
-	       && ((comp(losers[pos].key, key))
-		   || (!comp(key, losers[pos].key)
-		       && losers[pos].source < source)))
-              || losers[pos].inf || sup)
-            {
-              // Take next key.
-              std::swap(losers[pos].key, key);
-              std::swap(losers[pos].inf, inf);
-              std::swap(losers[pos].sup, sup);
-              std::swap(losers[pos].source, source);
-            }
-        }
-
-      losers[0].key = key;
-      losers[0].inf = inf;
-      losers[0].sup = sup;
-      losers[0].source = source;
-    }
-
-    void
-    init_stable() { }
-
-    void
-    delete_min_insert_stable(T key, bool sup)
-    {
-      bool inf = false;
-      int source = losers[0].source;
-      for (unsigned int pos = (offset + source) / 2; pos > 0; pos /= 2)
-        {
-          if ((!inf && !losers[pos].inf && !sup && !losers[pos].sup
-              && ((comp(losers[pos].key, key))
-		  || (!comp(key, losers[pos].key)
-		      && losers[pos].source < source)))
-              || losers[pos].inf || sup)
-            {
-              std::swap(losers[pos].key, key);
-              std::swap(losers[pos].inf, inf);
-              std::swap(losers[pos].sup, sup);
-              std::swap(losers[pos].source, source);
-            }
-        }
-
-      losers[0].key = key;
-      losers[0].inf = inf;
-      losers[0].sup = sup;
-      losers[0].source = source;
-    }
+    /** @brief flag, true iff this is a "maximum" sentinel. */
+    bool sup;
+    /** @brief index of the source sequence. */
+    int source;
+    /** @brief key of the element in the LoserTree. */
+    T key;
   };
 
+  unsigned int ik, k, offset;
+
+  /** log_2{k} */
+  unsigned int _M_log_k;
+
+  /** @brief LoserTree elements. */
+  Loser* losers;
+
+  /** @brief Comparator to use. */
+  Comparator comp;
+
+  /**
+   * @brief State flag that determines whether the LoserTree is empty.
+   *
+   * Only used for building the LoserTree.
+   */
+  bool first_insert;
+
+public:
+  /**
+   * @brief The constructor.
+   *
+   * @param _k The number of sequences to merge.
+   * @param _comp The comparator to use.
+   */
+  LoserTreeBase(unsigned int _k, Comparator _comp)
+  : comp(_comp)
+  {
+    ik = _k;
+
+    // Compute log_2{k} for the Loser Tree
+    _M_log_k = log2(ik - 1) + 1;
+
+    // Next greater power of 2.
+    k = 1 << _M_log_k;
+    offset = k;
+
+    // Avoid default-constructing losers[].key
+    losers = static_cast<Loser*>(::operator new(2 * k * sizeof(Loser)));
+    for (unsigned int i = ik - 1; i < k; ++i)
+      losers[i + k].sup = true;
+
+    first_insert = true;
+  }
+
+  /**
+   * @brief The destructor.
+   */
+  ~LoserTreeBase()
+  { ::operator delete(losers); }
+
+  /**
+   * @brief Initializes the sequence "source" with the element "key".
+   *
+   * @param key the element to insert
+   * @param source index of the source sequence
+   * @param sup flag that determines whether the value to insert is an
+   *   explicit supremum.
+   */
+  inline void
+  insert_start(const T& key, int source, bool sup)
+  {
+    unsigned int pos = k + source;
+
+    if(first_insert)
+      {
+        // Construct all keys, so we can easily deconstruct them.
+        for (unsigned int i = 0; i < (2 * k); ++i)
+          new(&(losers[i].key)) T(key);
+        first_insert = false;
+      }
+    else
+      new(&(losers[pos].key)) T(key);
+
+    losers[pos].sup = sup;
+    losers[pos].source = source;
+  }
+
+  /**
+   * @return the index of the sequence with the smallest element.
+   */
+  int get_min_source()
+  { return losers[0].source; }
+};
+
+/**
+ * @brief Stable LoserTree variant.
+ *
+ * Provides the stable implementations of insert_start, init_winner,
+ * init and delete_min_insert.
+ *
+ * Unstable variant is done using partial specialisation below.
+ */
+template<bool stable/* default == true */, typename T, typename Comparator>
+class LoserTree : public LoserTreeBase<T, Comparator>
+{
+  typedef LoserTreeBase<T, Comparator> Base;
+  using Base::k;
+  using Base::losers;
+  using Base::first_insert;
+
+public:
+  LoserTree(unsigned int _k, Comparator _comp)
+  : Base::LoserTreeBase(_k, _comp)
+  {}
+
+  unsigned int
+  init_winner(unsigned int root)
+  {
+    if (root >= k)
+      {
+        return root;
+      }
+    else
+      {
+        unsigned int left = init_winner (2 * root);
+        unsigned int right = init_winner (2 * root + 1);
+        if (losers[right].sup
+            || (!losers[left].sup
+              && !comp(losers[right].key, losers[left].key)))
+          {
+            // Left one is less or equal.
+            losers[root] = losers[right];
+            return left;
+          }
+        else
+          {
+            // Right one is less.
+            losers[root] = losers[left];
+            return right;
+          }
+      }
+  }
+
+  void init()
+  { losers[0] = losers[init_winner(1)]; }
+
+  /**
+   * @brief Delete the smallest element and insert a new element from
+   *   the previously smallest element's sequence.
+   *
+   * This implementation is stable.
+   */
+  // Do not pass a const reference since key will be used as local variable.
+  void delete_min_insert(T key, bool sup)
+  {
+    int source = losers[0].source;
+    for (unsigned int pos = (k + source) / 2; pos > 0; pos /= 2)
+      {
+        // The smaller one gets promoted, ties are broken by source.
+        if ((sup && (!losers[pos].sup || losers[pos].source < source))
+              || (!sup && !losers[pos].sup
+                && ((comp(losers[pos].key, key))
+                  || (!comp(key, losers[pos].key)
+                    && losers[pos].source < source))))
+          {
+            // The other one is smaller.
+            std::swap(losers[pos].sup, sup);
+            std::swap(losers[pos].source, source);
+            std::swap(losers[pos].key, key);
+          }
+      }
+
+    losers[0].sup = sup;
+    losers[0].source = source;
+    losers[0].key = key;
+  }
+};
+
+/**
+ * @brief Unstable LoserTree variant.
+ *
+ * Stability (non-stable here) is selected with partial specialization.
+ */
+template<typename T, typename Comparator>
+class LoserTree</* stable == */false, T, Comparator> :
+    public LoserTreeBase<T, Comparator>
+{
+  typedef LoserTreeBase<T, Comparator> Base;
+  using Base::_M_log_k;
+  using Base::k;
+  using Base::losers;
+  using Base::first_insert;
+
+public:
+  LoserTree(unsigned int _k, Comparator _comp)
+  : Base::LoserTreeBase(_k, _comp)
+  {}
+
+  /**
+   * Computes the winner of the competition at position "root".
+   *
+   * Called recursively (starting at 0) to build the initial tree.
+   *
+   * @param root index of the "game" to start.
+   */
+  unsigned int
+  init_winner (unsigned int root)
+  {
+    if (root >= k)
+      {
+        return root;
+      }
+    else
+      {
+        unsigned int left = init_winner (2 * root);
+        unsigned int right = init_winner (2 * root + 1);
+        if (losers[right].sup ||
+            (!losers[left].sup
+              && !comp(losers[right].key, losers[left].key)))
+          {
+            // Left one is less or equal.
+            losers[root] = losers[right];
+            return left;
+          }
+        else
+          {
+            // Right one is less.
+            losers[root] = losers[left];
+            return right;
+          }
+      }
+  }
+
+  inline void
+  init()
+  { losers[0] = losers[init_winner(1)]; }
+
+  /**
+   * Delete the key smallest element and insert the element key instead.
+   *
+   * @param key the key to insert
+   * @param sup true iff key is an explicitly marked supremum
+   */
+  // Do not pass a const reference since key will be used as local variable.
+  inline void
+  delete_min_insert(T key, bool sup)
+  {
+#if _GLIBCXX_ASSERTIONS
+    // loser trees are only used for at least 2 sequences
+    _GLIBCXX_PARALLEL_ASSERT(_M_log_k > 1);
 #endif
 
-#if _GLIBCXX_LOSER_TREE
+    int source = losers[0].source;
+    for (unsigned int pos = (k + source) / 2; pos > 0; pos /= 2)
+    {
+        // The smaller one gets promoted.
+      if (sup || (!losers[pos].sup && comp(losers[pos].key, key)))
+      {
+            // The other one is smaller.
+        std::swap(losers[pos].sup, sup);
+        std::swap(losers[pos].source, source);
+        std::swap(losers[pos].key, key);
+      }
+    }
 
-/** @brief Guarded loser tree, either copying the whole element into
-* the tree structure, or looking up the element via the index.
-*
-*  Guarding is done explicitly through one flag sup per element,
-*  inf is not needed due to a better initialization routine.  This
-*  is a well-performing variant.
-*/
-template<typename T, typename Comparator = std::less<T> >
-  class LoserTree
+    losers[0].sup = sup;
+    losers[0].source = source;
+    losers[0].key = key;
+  }
+};
+
+
+/**
+ * @brief Base class of Loser Tree implementation using pointers.
+ */
+template<typename T, typename Comparator>
+class LoserTreePointerBase
+{
+protected:
+  /** @brief Internal representation of LoserTree elements. */
+  struct Loser
   {
-  private:
-    struct Loser
-    {
-      bool sup;
-      int source;
-      T key;
-    };
+    bool sup;
+    int source;
+    const T* keyp;
+  };
 
-    unsigned int ik, k, offset;
-    Loser* losers;
-    Comparator comp;
-    bool first_insert;
+  unsigned int ik, k, offset;
+  Loser* losers;
+  Comparator comp;
 
-  public:
-    LoserTree(unsigned int _k, Comparator _comp = std::less<T>())
+public:
+  LoserTreePointerBase(unsigned int _k, Comparator _comp = std::less<T>())
     : comp(_comp)
-    {
-      ik = _k;
+  {
+    ik = _k;
 
-      // Next greater power of 2.
-      k = 1 << (log2(ik - 1) + 1);
-      offset = k;
-      // Avoid default-constructing losers[].key
-      losers = static_cast<Loser*>(::operator new(2 * k * sizeof(Loser)));
-      for (unsigned int i = ik - 1; i < k; ++i)
-        losers[i + k].sup = true;
+    // Next greater power of 2.
+    k = 1 << (log2(ik - 1) + 1);
+    offset = k;
+    losers = new Loser[k * 2];
+    for (unsigned int i = ik - 1; i < k; i++)
+      losers[i + k].sup = true;
+  }
 
-      first_insert = true;
-    }
+  ~LoserTreePointerBase()
+  { ::operator delete(losers); }
 
-    ~LoserTree()
-    { ::operator delete(losers); }
+  int get_min_source()
+  { return losers[0].source; }
 
-    int
-    get_min_source()
-    { return losers[0].source; }
+  void insert_start(const T& key, int source, bool sup)
+  {
+    unsigned int pos = k + source;
 
-    void
-    insert_start(const T& key, int source, bool sup)
-    {
-      unsigned int pos = k + source;
+    losers[pos].sup = sup;
+    losers[pos].source = source;
+    losers[pos].keyp = &key;
+  }
+};
 
-      if(first_insert)
-        {
-          // Construct all keys, so we can easily deconstruct them.
-          for (unsigned int i = 0; i < (2 * k); ++i)
-            ::new(&(losers[i].key)) T(key);
-          first_insert = false;
-        }
-      else
-        ::new(&(losers[pos].key)) T(key);
+/**
+ * @brief Stable LoserTree implementation.
+ *
+ * The unstable variant is implemented using partial instantiation below.
+ */
+template<bool stable/* default == true */, typename T, typename Comparator>
+class LoserTreePointer : public LoserTreePointerBase<T, Comparator>
+{
+  typedef LoserTreePointerBase<T, Comparator> Base;
+  using Base::k;
+  using Base::losers;
 
-      losers[pos].sup = sup;
-      losers[pos].source = source;
-    }
+public:
+  LoserTreePointer(unsigned int _k, Comparator _comp = std::less<T>())
+    : Base::LoserTreePointerBase(_k, _comp)
+  {}
 
-    unsigned int
-    init_winner (unsigned int root)
-    {
-      if (root >= k)
-        {
-          return root;
-        }
-      else
-        {
-          unsigned int left = init_winner (2 * root);
-          unsigned int right = init_winner (2 * root + 1);
-          if (losers[right].sup
-	      || (!losers[left].sup
-		  && !comp(losers[right].key, losers[left].key)))
-            {
-              // Left one is less or equal.
-              losers[root] = losers[right];
-              return left;
-            }
-          else
-            {
-              // Right one is less.
-              losers[root] = losers[left];
-              return right;
-            }
-        }
-    }
+  unsigned int
+  init_winner(unsigned int root)
+  {
+    if (root >= k)
+      {
+        return root;
+      }
+    else
+      {
+        unsigned int left = init_winner (2 * root);
+        unsigned int right = init_winner (2 * root + 1);
+        if (losers[right].sup
+            || (!losers[left].sup && !comp(*losers[right].keyp,
+                                          *losers[left].keyp)))
+          {
+            // Left one is less or equal.
+            losers[root] = losers[right];
+            return left;
+          }
+        else
+          {
+            // Right one is less.
+            losers[root] = losers[left];
+            return right;
+          }
+      }
+  }
 
-    void
-    init()
-    { losers[0] = losers[init_winner(1)]; }
+  void init()
+  { losers[0] = losers[init_winner(1)]; }
 
-    // Do not pass const reference since key will be used as local variable.
-    void
-    delete_min_insert(T key, bool sup)
-    {
-      int source = losers[0].source;
-      for (unsigned int pos = (k + source) / 2; pos > 0; pos /= 2)
-        {
-          // The smaller one gets promoted.
-          if (sup || (!losers[pos].sup && comp(losers[pos].key, key)))
-            {
-              // The other one is smaller.
-              std::swap(losers[pos].sup, sup);
-              std::swap(losers[pos].source, source);
-              std::swap(losers[pos].key, key);
-            }
-        }
+  void delete_min_insert(const T& key, bool sup)
+  {
+    const T* keyp = &key;
+    int source = losers[0].source;
+    for (unsigned int pos = (k + source) / 2; pos > 0; pos /= 2)
+      {
+        // The smaller one gets promoted, ties are broken by source.
+        if ((sup && (!losers[pos].sup || losers[pos].source < source)) ||
+              (!sup && !losers[pos].sup &&
+              ((comp(*losers[pos].keyp, *keyp)) ||
+                (!comp(*keyp, *losers[pos].keyp)
+                && losers[pos].source < source))))
+          {
+            // The other one is smaller.
+            std::swap(losers[pos].sup, sup);
+            std::swap(losers[pos].source, source);
+            std::swap(losers[pos].keyp, keyp);
+          }
+      }
 
-      losers[0].sup = sup;
-      losers[0].source = source;
-      losers[0].key = key;
-    }
+    losers[0].sup = sup;
+    losers[0].source = source;
+    losers[0].keyp = keyp;
+  }
+};
 
-    void
-    insert_start_stable(const T& key, int source, bool sup)
-    { return insert_start(key, source, sup); }
+/**
+ * @brief Unstable LoserTree implementation.
+ *
+ * The stable variant is above.
+ */
+template<typename T, typename Comparator>
+class LoserTreePointer</* stable == */false, T, Comparator> :
+    public LoserTreePointerBase<T, Comparator>
+{
+  typedef LoserTreePointerBase<T, Comparator> Base;
+  using Base::k;
+  using Base::losers;
 
-    unsigned int
-    init_winner_stable (unsigned int root)
-    {
-      if (root >= k)
-        {
-          return root;
-        }
-      else
-        {
-          unsigned int left = init_winner (2 * root);
-          unsigned int right = init_winner (2 * root + 1);
-          if (losers[right].sup
+public:
+  LoserTreePointer(unsigned int _k, Comparator _comp = std::less<T>())
+    : Base::LoserTreePointerBase(_k, _comp)
+  {}
+
+  unsigned int
+  init_winner(unsigned int root)
+  {
+    if (root >= k)
+      {
+        return root;
+      }
+    else
+      {
+        unsigned int left = init_winner (2 * root);
+        unsigned int right = init_winner (2 * root + 1);
+        if (losers[right].sup
               || (!losers[left].sup
-		  && !comp(losers[right].key, losers[left].key)))
-            {
-              // Left one is less or equal.
-              losers[root] = losers[right];
-              return left;
-            }
-          else
-            {
-              // Right one is less.
-              losers[root] = losers[left];
-              return right;
-            }
-        }
-    }
+                && !comp(*losers[right].keyp, *losers[left].keyp)))
+          {
+            // Left one is less or equal.
+            losers[root] = losers[right];
+            return left;
+          }
+        else
+          {
+            // Right one is less.
+            losers[root] = losers[left];
+            return right;
+          }
+      }
+  }
 
-    void
-    init_stable()
-    { losers[0] = losers[init_winner_stable(1)]; }
+  void init()
+  { losers[0] = losers[init_winner(1)]; }
 
-    // Do not pass const reference since key will be used as local variable.
-    void
-    delete_min_insert_stable(T key, bool sup)
-    {
-      int source = losers[0].source;
-      for (unsigned int pos = (k + source) / 2; pos > 0; pos /= 2)
-        {
-          // The smaller one gets promoted, ties are broken by source.
-          if (	(sup && (!losers[pos].sup || losers[pos].source < source))
-                || (!sup && !losers[pos].sup
-                  && ((comp(losers[pos].key, key))
-                    || (!comp(key, losers[pos].key)
-                      && losers[pos].source < source))))
-            {
-              // The other one is smaller.
-              std::swap(losers[pos].sup, sup);
-              std::swap(losers[pos].source, source);
-              std::swap(losers[pos].key, key);
-            }
-        }
+  void delete_min_insert(const T& key, bool sup)
+  {
+    const T* keyp = &key;
+    int source = losers[0].source;
+    for (unsigned int pos = (k + source) / 2; pos > 0; pos /= 2)
+      {
+        // The smaller one gets promoted.
+        if (sup || (!losers[pos].sup && comp(*losers[pos].keyp, *keyp)))
+          {
+            // The other one is smaller.
+            std::swap(losers[pos].sup, sup);
+            std::swap(losers[pos].source, source);
+            std::swap(losers[pos].keyp, keyp);
+          }
+      }
 
-      losers[0].sup = sup;
-      losers[0].source = source;
-      losers[0].key = key;
-    }
+    losers[0].sup = sup;
+    losers[0].source = source;
+    losers[0].keyp = keyp;
+  }
+};
+
+/** @brief Base class for unguarded LoserTree implementation.
+ * 
+ * The whole element is copied into the tree structure.
+ *
+ * No guarding is done, therefore not a single input sequence must
+ * run empty.  Unused sequence heads are marked with a sentinel which
+ * is &gt; all elements that are to be merged.
+ *
+ * This is a very fast variant.
+ */
+template<typename T, typename Comparator>
+class LoserTreeUnguardedBase
+{
+protected:
+  struct Loser
+  {
+    int source;
+    T key;
   };
 
-#endif
+  unsigned int ik, k, offset;
+  Loser* losers;
+  Comparator comp;
 
-#if _GLIBCXX_LOSER_TREE_REFERENCE
-
-/** @brief Guarded loser tree, either copying the whole element into
-* the tree structure, or looking up the element via the index.
-*
-*  Guarding is done explicitly through one flag sup per element,
-*  inf is not needed due to a better initialization routine.  This
-*  is a well-performing variant.
-*/
-template<typename T, typename Comparator = std::less<T> >
-  class LoserTreeReference
-  {
-#undef COPY
-#ifdef COPY
-#define KEY(i) losers[i].key
-#define KEY_SOURCE(i) key
-#else
-#define KEY(i) keys[losers[i].source]
-#define KEY_SOURCE(i) keys[i]
-#endif
-  private:
-    struct Loser
-    {
-      bool sup;
-      int source;
-#ifdef COPY
-      T key;
-#endif
-    };
-
-    unsigned int ik, k, offset;
-    Loser* losers;
-#ifndef COPY
-    T* keys;
-#endif
-    Comparator comp;
-
-  public:
-    LoserTreeReference(unsigned int _k, Comparator _comp = std::less<T>())
+public:
+  inline
+  LoserTreeUnguardedBase(unsigned int _k, const T _sentinel,
+                         Comparator _comp = std::less<T>())
     : comp(_comp)
-    {
-      ik = _k;
-
-      // Next greater power of 2.
-      k = 1 << (log2(ik - 1) + 1);
-      offset = k;
-      losers = new Loser[k * 2];
-#ifndef COPY
-      keys = new T[ik];
-#endif
-      for (unsigned int i = ik - 1; i < k; ++i)
-        losers[i + k].sup = true;
-    }
-
-    ~LoserTreeReference()
-    {
-      delete[] losers;
-#ifndef COPY
-      delete[] keys;
-#endif
-    }
-
-    int
-    get_min_source()
-    { return losers[0].source; }
-
-    void
-    insert_start(T key, int source, bool sup)
-    {
-      unsigned int pos = k + source;
-
-      losers[pos].sup = sup;
-      losers[pos].source = source;
-      KEY(pos) = key;
-    }
-
-    unsigned int
-    init_winner(unsigned int root)
-    {
-      if (root >= k)
-        {
-          return root;
-        }
-      else
-        {
-          unsigned int left = init_winner (2 * root);
-          unsigned int right = init_winner (2 * root + 1);
-          if (	losers[right].sup ||
-                (!losers[left].sup && !comp(KEY(right), KEY(left))))
-            {
-              // Left one is less or equal.
-              losers[root] = losers[right];
-              return left;
-            }
-          else
-            {
-              // Right one is less.
-              losers[root] = losers[left];
-              return right;
-            }
-        }
-    }
-
-    void
-    init()
-    {
-      losers[0] = losers[init_winner(1)];
-    }
-
-    void
-    delete_min_insert(T key, bool sup)
-    {
-      int source = losers[0].source;
-      for (unsigned int pos = (k + source) / 2; pos > 0; pos /= 2)
-        {
-          // The smaller one gets promoted.
-          if (sup || (!losers[pos].sup && comp(KEY(pos), KEY_SOURCE(source))))
-            {
-              // The other one is smaller.
-              std::swap(losers[pos].sup, sup);
-              std::swap(losers[pos].source, source);
-#ifdef COPY
-              std::swap(KEY(pos), KEY_SOURCE(source));
-#endif
-            }
-        }
-
-      losers[0].sup = sup;
-      losers[0].source = source;
-#ifdef COPY
-      KEY(0) = KEY_SOURCE(source);
-#endif
-    }
-
-    void
-    insert_start_stable(T key, int source, bool sup)
-    { return insert_start(key, source, sup); }
-
-    unsigned int
-    init_winner_stable(unsigned int root)
-    {
-      if (root >= k)
-        {
-          return root;
-        }
-      else
-        {
-          unsigned int left = init_winner (2 * root);
-          unsigned int right = init_winner (2 * root + 1);
-          if (losers[right].sup
-              || (!losers[left].sup && !comp(KEY(right), KEY(left))))
-            {
-              // Left one is less or equal.
-              losers[root] = losers[right];
-              return left;
-            }
-          else
-            {
-              // Right one is less.
-              losers[root] = losers[left];
-              return right;
-            }
-        }
-    }
-
-    void
-    init_stable()
-    { losers[0] = losers[init_winner_stable(1)]; }
-
-    void
-    delete_min_insert_stable(T key, bool sup)
-    {
-      int source = losers[0].source;
-      for (unsigned int pos = (k + source) / 2; pos > 0; pos /= 2)
-        {
-          // The smaller one gets promoted, ties are broken by source.
-          if ((sup && (!losers[pos].sup || losers[pos].source < source))
-	      || (!sup && !losers[pos].sup
-		  && ((comp(KEY(pos), KEY_SOURCE(source)))
-		      || (!comp(KEY_SOURCE(source), KEY(pos))
-			  && losers[pos].source < source))))
-            {
-              // The other one is smaller.
-              std::swap(losers[pos].sup, sup);
-              std::swap(losers[pos].source, source);
-#ifdef COPY
-              std::swap(KEY(pos), KEY_SOURCE(source));
-#endif
-            }
-        }
-
-      losers[0].sup = sup;
-      losers[0].source = source;
-#ifdef COPY
-      KEY(0) = KEY_SOURCE(source);
-#endif
-    }
-  };
-#undef KEY
-#undef KEY_SOURCE
-
-#endif
-
-#if _GLIBCXX_LOSER_TREE_POINTER
-
-/** @brief Guarded loser tree, either copying the whole element into
-    the tree structure, or looking up the element via the index.
-*  Guarding is done explicitly through one flag sup per element,
-*  inf is not needed due to a better initialization routine.
-*  This is a well-performing variant.
-*/
-template<typename T, typename Comparator = std::less<T> >
-  class LoserTreePointer
   {
-  private:
-    struct Loser
-    {
-      bool sup;
-      int source;
-      const T* keyp;
-    };
+    ik = _k;
 
-    unsigned int ik, k, offset;
-    Loser* losers;
-    Comparator comp;
+    // Next greater power of 2.
+    k = 1 << (log2(ik - 1) + 1);
+    offset = k;
+    // Avoid default-constructing losers[].key
+    losers = static_cast<Loser*>(::operator new(2 * k * sizeof(Loser)));
 
-  public:
-    LoserTreePointer(unsigned int _k, Comparator _comp = std::less<T>())
-      : comp(_comp)
-    {
-      ik = _k;
+    for (unsigned int i = /*k + ik - 1*/0; i < (2 * k); ++i)
+      {
+        losers[i].key = _sentinel;
+        losers[i].source = -1;
+      }
+  }
 
-      // Next greater power of 2.
-      k = 1 << (log2(ik - 1) + 1);
-      offset = k;
-      losers = new Loser[k * 2];
-      for (unsigned int i = ik - 1; i < k; ++i)
-        losers[i + k].sup = true;
-    }
+  inline ~LoserTreeUnguardedBase()
+  { ::operator delete(losers); }
 
-    ~LoserTreePointer()
-    { delete[] losers; }
-
-    int
-    get_min_source()
-    { return losers[0].source; }
-
-    void
-    insert_start(const T& key, int source, bool sup)
-    {
-      unsigned int pos = k + source;
-
-      losers[pos].sup = sup;
-      losers[pos].source = source;
-      losers[pos].keyp = &key;
-    }
-
-    unsigned int
-    init_winner(unsigned int root)
-    {
-      if (root >= k)
-	return root;
-      else
-        {
-          unsigned int left = init_winner (2 * root);
-          unsigned int right = init_winner (2 * root + 1);
-          if (losers[right].sup
-                || (!losers[left].sup
-                  && !comp(*losers[right].keyp, *losers[left].keyp)))
-            {
-              // Left one is less or equal.
-              losers[root] = losers[right];
-              return left;
-            }
-          else
-            {
-              // Right one is less.
-              losers[root] = losers[left];
-              return right;
-            }
-        }
-    }
-
-    void
-    init()
-    { losers[0] = losers[init_winner(1)]; }
-
-    void
-    delete_min_insert(const T& key, bool sup)
-    {
-      const T* keyp = &key;
-      int source = losers[0].source;
-      for (unsigned int pos = (k + source) / 2; pos > 0; pos /= 2)
-        {
-          // The smaller one gets promoted.
-          if (sup || (!losers[pos].sup && comp(*losers[pos].keyp, *keyp)))
-            {
-              // The other one is smaller.
-              std::swap(losers[pos].sup, sup);
-              std::swap(losers[pos].source, source);
-              std::swap(losers[pos].keyp, keyp);
-            }
-        }
-
-      losers[0].sup = sup;
-      losers[0].source = source;
-      losers[0].keyp = keyp;
-    }
-
-    void
-    insert_start_stable(const T& key, int source, bool sup)
-    { return insert_start(key, source, sup); }
-
-    unsigned int
-    init_winner_stable(unsigned int root)
-    {
-      if (root >= k)
-        {
-          return root;
-        }
-      else
-        {
-          unsigned int left = init_winner (2 * root);
-          unsigned int right = init_winner (2 * root + 1);
-          if (losers[right].sup
-              || (!losers[left].sup && !comp(*losers[right].keyp,
-                                            *losers[left].keyp)))
-            {
-              // Left one is less or equal.
-              losers[root] = losers[right];
-              return left;
-            }
-          else
-            {
-              // Right one is less.
-              losers[root] = losers[left];
-              return right;
-            }
-        }
-    }
-
-    void
-    init_stable()
-    { losers[0] = losers[init_winner_stable(1)]; }
-
-    void
-    delete_min_insert_stable(const T& key, bool sup)
-    {
-      const T* keyp = &key;
-      int source = losers[0].source;
-      for (unsigned int pos = (k + source) / 2; pos > 0; pos /= 2)
-        {
-          // The smaller one gets promoted, ties are broken by source.
-          if (	(sup && (!losers[pos].sup || losers[pos].source < source))
-		|| (!sup && !losers[pos].sup &&
-		    ((comp(*losers[pos].keyp, *keyp))
-		     || (!comp(*keyp, *losers[pos].keyp)
-			 && losers[pos].source < source))))
-            {
-              // The other one is smaller.
-              std::swap(losers[pos].sup, sup);
-              std::swap(losers[pos].source, source);
-              std::swap(losers[pos].keyp, keyp);
-            }
-        }
-
-      losers[0].sup = sup;
-      losers[0].source = source;
-      losers[0].keyp = keyp;
-    }
-  };
-
-#endif
-
-#if _GLIBCXX_LOSER_TREE_UNGUARDED
-
-/** @brief Unguarded loser tree, copying the whole element into the
-* tree structure.
-*
-*  No guarding is done, therefore not a single input sequence must
-*  run empty.  This is a very fast variant.
-*/
-template<typename T, typename Comparator = std::less<T> >
-  class LoserTreeUnguarded
+  inline int
+  get_min_source()
   {
-  private:
-    struct Loser
-    {
-      int source;
-      T key;
-    };
+    // no dummy sequence can ever be at the top!
+#if _GLIBCXX_ASSERTIONS
+    _GLIBCXX_PARALLEL_ASSERT(losers[0].source != -1);
+#endif
+    return losers[0].source;
+  }
 
-    unsigned int ik, k, offset;
-    unsigned int* mapping;
-    Loser* losers;
-    Comparator comp;
+  inline void
+  insert_start(const T& key, int source, bool)
+  {
+    unsigned int pos = k + source;
 
-    void
-    map(unsigned int root, unsigned int begin, unsigned int end)
-    {
-      if (begin + 1 == end)
-        mapping[begin] = root;
-      else
-        {
-          // Next greater or equal power of 2.
-          unsigned int left = 1 << (log2(end - begin - 1));
-          map(root * 2, begin, begin + left);
-          map(root * 2 + 1, begin + left, end);
-        }
-    }
+    new(&(losers[pos].key)) T(key);
+    losers[pos].source = source;
+  }
+};
 
-  public:
-    LoserTreeUnguarded(unsigned int _k, Comparator _comp = std::less<T>())
-    : comp(_comp)
-    {
-      ik = _k;
-      // Next greater or equal power of 2.
-      k = 1 << (log2(ik - 1) + 1);
-      offset = k;
-      losers = new Loser[k + ik];
-      mapping = new unsigned int[ik];
-      map(1, 0, ik);
-    }
+/**
+ * @brief Stable implementation of unguarded LoserTree.
+ *
+ * Unstable variant is selected below with partial specialization.
+ */
+template<bool stable/* default == true */, typename T, typename Comparator>
+class LoserTreeUnguarded : public LoserTreeUnguardedBase<T, Comparator>
+{
+  typedef LoserTreeUnguardedBase<T, Comparator> Base;
+  using Base::k;
+  using Base::losers;
 
-    ~LoserTreeUnguarded()
-    {
-      delete[] losers;
-      delete[] mapping;
-    }
+public:
+  LoserTreeUnguarded(unsigned int _k, const T _sentinel,
+                     Comparator _comp = std::less<T>())
+    : Base::LoserTreeUnguardedBase(_k, _sentinel, _comp)
+  {}
 
-    int
-    get_min_source()
-    { return losers[0].source; }
+  unsigned int
+  init_winner(unsigned int root)
+  {
+    if (root >= k)
+      {
+        return root;
+      }
+    else
+      {
+        unsigned int left = init_winner (2 * root);
+        unsigned int right = init_winner (2 * root + 1);
+        if (!comp(losers[right].key, losers[left].key))
+          {
+            // Left one is less or equal.
+            losers[root] = losers[right];
+            return left;
+          }
+        else
+          {
+            // Right one is less.
+            losers[root] = losers[left];
+            return right;
+          }
+      }
+  }
 
-    void
-    insert_start(const T& key, int source, bool)
-    {
-      unsigned int pos = mapping[source];
-      losers[pos].source = source;
-      losers[pos].key = key;
-    }
+  inline void
+  init()
+  {
+    losers[0] = losers[init_winner(1)];
 
-    unsigned int
-    init_winner(unsigned int root, unsigned int begin, unsigned int end)
-    {
-      if (begin + 1 == end)
-        return mapping[begin];
-      else
-        {
-          // Next greater or equal power of 2.
-          unsigned int division = 1 << (log2(end - begin - 1));
-          unsigned int left = init_winner(2 * root, begin, begin + division);
-          unsigned int right =
-                          init_winner(2 * root + 1, begin + division, end);
-          if (!comp(losers[right].key, losers[left].key))
-            {
-              // Left one is less or equal.
-              losers[root] = losers[right];
-              return left;
-            }
-          else
-            {
-              // Right one is less.
-              losers[root] = losers[left];
-              return right;
-            }
-        }
-    }
+    // no dummy sequence can ever be at the top at the beginning (0 sequences!)
+#if _GLIBCXX_ASSERTIONS
+    _GLIBCXX_PARALLEL_ASSERT(losers[0].source != -1);
+#endif
+  }
 
-    void
-    init()
-    { losers[0] = losers[init_winner(1, 0, ik)]; }
-
-    // Do not pass const reference since key will be used as local variable.
-    void
-    delete_min_insert(const T& key, bool)
-    {
-      losers[0].key = key;
-      T& keyr = losers[0].key;
-      int& source = losers[0].source;
-      for (int pos = mapping[source] / 2; pos > 0; pos /= 2)
-        {
-          // The smaller one gets promoted.
-          if (comp(losers[pos].key, keyr))
-            {
-              // The other one is smaller.
-              std::swap(losers[pos].source, source);
-              std::swap(losers[pos].key, keyr);
-            }
-        }
-    }
-
-    void
-    insert_start_stable(const T& key, int source, bool)
-    { return insert_start(key, source, false); }
-
-    void
-    init_stable()
-    { init(); }
-
-    void
-    delete_min_insert_stable(const T& key, bool)
-    {
-      losers[0].key = key;
-      T& keyr = losers[0].key;
-      int& source = losers[0].source;
-      for (int pos = mapping[source] / 2; pos > 0; pos /= 2)
-        {
-          // The smaller one gets promoted, ties are broken by source.
-          if (comp(losers[pos].key, keyr)
-              || (!comp(keyr, losers[pos].key)
-                && losers[pos].source < source))
-            {
-              // The other one is smaller.
-              std::swap(losers[pos].source, source);
-              std::swap(losers[pos].key, keyr);
-            }
-        }
-    }
-  };
-
+  // Do not pass a const reference since key will be used as local variable.
+  inline void
+  delete_min_insert(T key, bool)
+  {
+    // No dummy sequence can ever be at the top and be retrieved!
+#if _GLIBCXX_ASSERTIONS
+    _GLIBCXX_PARALLEL_ASSERT(losers[0].source != -1);
 #endif
 
-#if _GLIBCXX_LOSER_TREE_POINTER_UNGUARDED
+    int source = losers[0].source;
+    printf("%d\n", source);
+    for (unsigned int pos = (k + source) / 2; pos > 0; pos /= 2)
+      {
+        // The smaller one gets promoted, ties are broken by source.
+        if (comp(losers[pos].key, key)
+              || (!comp(key, losers[pos].key) && losers[pos].source < source))
+          {
+            // The other one is smaller.
+            std::swap(losers[pos].source, source);
+            std::swap(losers[pos].key, key);
+          }
+      }
+
+    losers[0].source = source;
+    losers[0].key = key;
+  }
+};
+
+/**
+ * @brief Non-Stable implementation of unguarded LoserTree.
+ *
+ * Stable implementation is above.
+ */
+template<typename T, typename Comparator>
+class LoserTreeUnguarded</* stable == */false, T, Comparator> :
+    public LoserTreeUnguardedBase<T, Comparator>
+{
+  typedef LoserTreeUnguardedBase<T, Comparator> Base;
+  using Base::k;
+  using Base::losers;
+
+public:
+  LoserTreeUnguarded(unsigned int _k, const T _sentinel,
+                     Comparator _comp = std::less<T>())
+    : Base::LoserTreeUnguardedBase(_k, _sentinel, _comp)
+  {}
+
+  unsigned int
+  init_winner (unsigned int root)
+  {
+    if (root >= k)
+      {
+        return root;
+      }
+    else
+      {
+        unsigned int left = init_winner (2 * root);
+        unsigned int right = init_winner (2 * root + 1);
+
+#if _GLIBCXX_ASSERTIONS
+        // If left one is sentinel then right one must be, too.
+        if (losers[left].source == -1)
+          _GLIBCXX_PARALLEL_ASSERT(losers[right].source == -1);
+#endif
+
+        if (!comp(losers[right].key, losers[left].key))
+          {
+            // Left one is less or equal.
+            losers[root] = losers[right];
+            return left;
+          }
+        else
+          {
+            // Right one is less.
+            losers[root] = losers[left];
+            return right;
+          }
+      }
+  }
+
+  inline void
+  init()
+  {
+    losers[0] = losers[init_winner(1)];
+
+    // no dummy sequence can ever be at the top at the beginning (0 sequences!)
+#if _GLIBCXX_ASSERTIONS
+    _GLIBCXX_PARALLEL_ASSERT(losers[0].source != -1);
+#endif
+  }
+
+  // Do not pass a const reference since key will be used as local variable.
+  inline void
+  delete_min_insert(T key, bool)
+  {
+    printf("wrong\n");
+    int source = losers[0].source;
+    for (unsigned int pos = (k + source) / 2; pos > 0; pos /= 2)
+      {
+        // The smaller one gets promoted.
+        if (comp(losers[pos].key, key))
+          {
+            // The other one is smaller.
+            std::swap(losers[pos].source, source);
+            std::swap(losers[pos].key, key);
+          }
+      }
+
+    losers[0].source = source;
+    losers[0].key = key;
+  }
+};
 
 /** @brief Unguarded loser tree, keeping only pointers to the
 * elements in the tree structure.
@@ -926,175 +773,233 @@ template<typename T, typename Comparator = std::less<T> >
 *  No guarding is done, therefore not a single input sequence must
 *  run empty.  This is a very fast variant.
 */
-template<typename T, typename Comparator = std::less<T> >
-  class LoserTreePointerUnguarded
+template<typename T, typename Comparator>
+class LoserTreePointerUnguardedBase
+{
+protected:
+  struct Loser
   {
-  private:
-    struct Loser
-    {
-      int source;
-      const T* keyp;
-    };
-
-    unsigned int ik, k, offset;
-    unsigned int* mapping;
-    Loser* losers;
-    Comparator comp;
-
-    void map(unsigned int root, unsigned int begin, unsigned int end)
-    {
-      if (begin + 1 == end)
-        mapping[begin] = root;
-      else
-        {
-          // Next greater or equal power of 2.
-          unsigned int left = 1 << (log2(end - begin - 1));
-          map(root * 2, begin, begin + left);
-          map(root * 2 + 1, begin + left, end);
-        }
-    }
-
-  public:
-    LoserTreePointerUnguarded(unsigned int _k,
-                              Comparator _comp = std::less<T>())
-    : comp(_comp)
-    {
-      ik = _k;
-
-      // Next greater power of 2.
-      k = 1 << (log2(ik - 1) + 1);
-      offset = k;
-      losers = new Loser[k + ik];
-      mapping = new unsigned int[ik];
-      map(1, 0, ik);
-    }
-
-    ~LoserTreePointerUnguarded()
-    {
-      delete[] losers;
-      delete[] mapping;
-    }
-
-    int
-    get_min_source()
-    { return losers[0].source; }
-
-    void
-    insert_start(const T& key, int source, bool)
-    {
-      unsigned int pos = mapping[source];
-      losers[pos].source = source;
-      losers[pos].keyp = &key;
-    }
-
-    unsigned int
-    init_winner(unsigned int root, unsigned int begin, unsigned int end)
-    {
-      if (begin + 1 == end)
-        return mapping[begin];
-      else
-        {
-          // Next greater or equal power of 2.
-          unsigned int division = 1 << (log2(end - begin - 1));
-          unsigned int left = init_winner(2 * root, begin, begin + division);
-          unsigned int right = init_winner(2 * root + 1,
-					   begin + division, end);
-          if (!comp(*losers[right].keyp, *losers[left].keyp))
-            {
-              // Left one is less or equal.
-              losers[root] = losers[right];
-              return left;
-            }
-          else
-            {
-              // Right one is less.
-              losers[root] = losers[left];
-              return right;
-            }
-        }
-    }
-
-    void
-    init()
-    { losers[0] = losers[init_winner(1, 0, ik)]; }
-
-    void
-    delete_min_insert(const T& key, bool)
-    {
-      const T* keyp = &key;
-      int& source = losers[0].source;
-      for (int pos = mapping[source] / 2; pos > 0; pos /= 2)
-        {
-          // The smaller one gets promoted.
-          if (comp(*losers[pos].keyp, *keyp))
-            {
-              // The other one is smaller.
-              std::swap(losers[pos].source, source);
-              std::swap(losers[pos].keyp, keyp);
-            }
-        }
-
-      losers[0].keyp = keyp;
-    }
-
-    void
-    insert_start_stable(const T& key, int source, bool)
-    { return insert_start(key, source, false); }
-
-    void
-    init_stable()
-    { init(); }
-
-    void
-    delete_min_insert_stable(const T& key, bool)
-    {
-      int& source = losers[0].source;
-      const T* keyp = &key;
-      for (int pos = mapping[source] / 2; pos > 0; pos /= 2)
-        {
-          // The smaller one gets promoted, ties are broken by source.
-          if (comp(*losers[pos].keyp, *keyp)
-              || (!comp(*keyp, *losers[pos].keyp)
-                  && losers[pos].source < source))
-            {
-              // The other one is smaller.
-              std::swap(losers[pos].source, source);
-              std::swap(losers[pos].keyp, keyp);
-            }
-        }
-      losers[0].keyp = keyp;
-    }
-  };
-#endif
-
-template<typename _ValueTp, class Comparator>
-  struct loser_tree_traits
-  {
-#if _GLIBCXX_LOSER_TREE
-    typedef LoserTree<_ValueTp, Comparator> LT;
-#else
-#  if _GLIBCXX_LOSER_TREE_POINTER
-    typedef LoserTreePointer<_ValueTp, Comparator> LT;
-#  else
-#    error Must define some type in losertree.h.
-#  endif
-#endif
+    int source;
+    const T* keyp;
   };
 
-template<typename _ValueTp, class Comparator>
-  struct loser_tree_unguarded_traits
-  {
-#if _GLIBCXX_LOSER_TREE_UNGUARDED
-    typedef LoserTreeUnguarded<_ValueTp, Comparator> LT;
-#else
-#  if _GLIBCXX_LOSER_TREE_POINTER_UNGUARDED
-    typedef LoserTreePointerUnguarded<_ValueTp, Comparator> LT;
-#  else
-#    error Must define some unguarded type in losertree.h.
-#  endif
-#endif
-  };
+  unsigned int ik, k, offset;
+  Loser* losers;
+  const T sentinel;
+  Comparator comp;
 
-}
+public:
+
+  inline
+  LoserTreePointerUnguardedBase(unsigned int _k, const T _sentinel,
+      Comparator _comp = std::less<T>())
+    : sentinel(_sentinel), comp(_comp)
+  {
+    ik = _k;
+
+    // Next greater power of 2.
+    k = 1 << (log2(ik - 1) + 1);
+    offset = k;
+    // Avoid default-constructing losers[].key
+    losers = new Loser[2 * k];
+
+    for (unsigned int i = /*k + ik - 1*/0; i < (2 * k); ++i)
+      {
+        losers[i].keyp = &sentinel;
+        losers[i].source = -1;
+      }
+  }
+
+  inline ~LoserTreePointerUnguardedBase()
+  { delete[] losers; }
+
+  inline int
+  get_min_source()
+  {
+    // no dummy sequence can ever be at the top!
+#if _GLIBCXX_ASSERTIONS
+    _GLIBCXX_PARALLEL_ASSERT(losers[0].source != -1);
+#endif
+    return losers[0].source;
+  }
+
+  inline void
+  insert_start(const T& key, int source, bool)
+  {
+    unsigned int pos = k + source;
+
+    losers[pos].keyp = &key;
+    losers[pos].source = source;
+  }
+};
+
+/**
+ * @brief Stable unguarded LoserTree variant storing pointers.
+ *
+ * Unstable variant is implemented below using partial specialization.
+ */
+template<bool stable/* default == true */, typename T, typename Comparator>
+class LoserTreePointerUnguarded :
+    public LoserTreePointerUnguardedBase<T, Comparator>
+{
+  typedef LoserTreePointerUnguardedBase<T, Comparator> Base;
+  using Base::k;
+  using Base::losers;
+
+public:
+  LoserTreePointerUnguarded(unsigned int _k, const T _sentinel,
+      Comparator _comp = std::less<T>())
+    : Base::LoserTreePointerUnguardedBase(_k, _sentinel, _comp)
+  {}
+
+  unsigned int
+  init_winner(unsigned int root)
+  {
+    if (root >= k)
+      {
+        return root;
+      }
+    else
+      {
+        unsigned int left = init_winner (2 * root);
+        unsigned int right = init_winner (2 * root + 1);
+        if (!comp(*losers[right].keyp, *losers[left].keyp))
+          {
+            // Left one is less or equal.
+            losers[root] = losers[right];
+            return left;
+          }
+        else
+          {
+            // Right one is less.
+            losers[root] = losers[left];
+            return right;
+          }
+      }
+  }
+
+  inline void
+  init()
+  {
+    losers[0] = losers[init_winner(1)];
+
+    // no dummy sequence can ever be at the top at the beginning (0 sequences!)
+#if _GLIBCXX_ASSERTIONS
+    _GLIBCXX_PARALLEL_ASSERT(losers[0].source != -1);
+#endif
+  }
+
+  inline void
+  delete_min_insert(const T& key, bool sup)
+  {
+    const T* keyp = &key;
+    int source = losers[0].source;
+    for (unsigned int pos = (k + source) / 2; pos > 0; pos /= 2)
+      {
+        // The smaller one gets promoted, ties are broken by source.
+        if (comp(*losers[pos].keyp, *keyp)
+          || (!comp(*keyp, *losers[pos].keyp) && losers[pos].source < source))
+          {
+            // The other one is smaller.
+            std::swap(losers[pos].source, source);
+            std::swap(losers[pos].keyp, keyp);
+          }
+      }
+
+    losers[0].source = source;
+    losers[0].keyp = keyp;
+
+    // no dummy sequence can ever be at the top!
+#if _GLIBCXX_ASSERTIONS
+    _GLIBCXX_PARALLEL_ASSERT(losers[0].source != -1);
+#endif
+  }
+};
+
+/**
+ * @brief Unstable unguarded LoserTree variant storing pointers.
+ *
+ * Stable variant is above.
+ */
+template<typename T, typename Comparator>
+class LoserTreePointerUnguarded</* stable == */false, T, Comparator> :
+    public LoserTreePointerUnguardedBase<T, Comparator>
+{
+  typedef LoserTreePointerUnguardedBase<T, Comparator> Base;
+  using Base::k;
+  using Base::losers;
+
+public:
+  LoserTreePointerUnguarded(unsigned int _k, const T _sentinel,
+      Comparator _comp = std::less<T>())
+    : Base::LoserTreePointerUnguardedBase(_k, _sentinel, _comp)
+  {}
+
+  unsigned int
+  init_winner(unsigned int root)
+  {
+    if (root >= k)
+      {
+        return root;
+      }
+    else
+      {
+        unsigned int left = init_winner (2 * root);
+        unsigned int right = init_winner (2 * root + 1);
+
+#if _GLIBCXX_ASSERTIONS
+        // If left one is sentinel then right one must be, too.
+        if (losers[left].source == -1)
+          _GLIBCXX_PARALLEL_ASSERT(losers[right].source == -1);
+#endif
+
+        if (!comp(*losers[right].keyp, *losers[left].keyp))
+          {
+            // Left one is less or equal.
+            losers[root] = losers[right];
+            return left;
+          }
+        else
+          {
+            // Right one is less.
+            losers[root] = losers[left];
+            return right;
+          }
+      }
+  }
+
+  inline void
+  init()
+  {
+    losers[0] = losers[init_winner(1)];
+
+    // no dummy sequence can ever be at the top at the beginning (0 sequences!)
+#if _GLIBCXX_ASSERTIONS
+    _GLIBCXX_PARALLEL_ASSERT(losers[0].source != -1);
+#endif
+  }
+
+  inline void
+  delete_min_insert(const T& key, bool sup)
+  {
+    const T* keyp = &key;
+    int source = losers[0].source;
+    for (unsigned int pos = (k + source) / 2; pos > 0; pos /= 2)
+      {
+        // The smaller one gets promoted.
+        if (comp(*(losers[pos].keyp), *keyp))
+          {
+            // The other one is smaller.
+            std::swap(losers[pos].source, source);
+            std::swap(losers[pos].keyp, keyp);
+          }
+      }
+
+    losers[0].source = source;
+    losers[0].keyp = keyp;
+  }
+};
+
+} // namespace __gnu_parallel
 
 #endif

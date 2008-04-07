@@ -61,66 +61,6 @@
 #define _GLIBCXX_BAL_QUICKSORT 1
 #endif
 
-#ifndef _GLIBCXX_LOSER_TREE
-/** @def _GLIBCXX_LOSER_TREE
- *  @brief Include guarded (sequences may run empty) loser tree,
- *  moving objects.
- *  @see __gnu_parallel::_Settings multiway_merge_algorithm */
-#define _GLIBCXX_LOSER_TREE 1
-#endif
-
-#ifndef _GLIBCXX_LOSER_TREE_EXPLICIT
-/** @def _GLIBCXX_LOSER_TREE_EXPLICIT
- *  @brief Include standard loser tree, storing two flags for infimum
- *  and supremum.
- *  @see __gnu_parallel::_Settings multiway_merge_algorithm */
-#define _GLIBCXX_LOSER_TREE_EXPLICIT 0
-#endif
-
-#ifndef _GLIBCXX_LOSER_TREE_REFERENCE
-/** @def _GLIBCXX_LOSER_TREE_REFERENCE
- *  @brief Include some loser tree variant.
- *  @see __gnu_parallel::_Settings multiway_merge_algorithm */
-#define _GLIBCXX_LOSER_TREE_REFERENCE 0
-#endif
-
-#ifndef _GLIBCXX_LOSER_TREE_POINTER
-/** @def _GLIBCXX_LOSER_TREE_POINTER
- *  @brief Include some loser tree variant.
- *  @see __gnu_parallel::_Settings multiway_merge_algorithm */
-#define _GLIBCXX_LOSER_TREE_POINTER 1
-#endif
-
-#ifndef _GLIBCXX_LOSER_TREE_UNGUARDED
-/** @def _GLIBCXX_LOSER_TREE_UNGUARDED
- *  @brief Include unguarded (sequences must not run empty) loser
- *  tree, moving objects.
- *  @see __gnu_parallel::_Settings multiway_merge_algorithm */
-#define _GLIBCXX_LOSER_TREE_UNGUARDED 0
-#endif
-
-#ifndef _GLIBCXX_LOSER_TREE_POINTER_UNGUARDED
-/** @def _GLIBCXX_LOSER_TREE_POINTER_UNGUARDED
- *  @brief Include some loser tree variant.
- *  @see __gnu_parallel::_Settings multiway_merge_algorithm */
-#define _GLIBCXX_LOSER_TREE_POINTER_UNGUARDED 1
-#endif
-
-#ifndef _GLIBCXX_LOSER_TREE_COMBINED
-/** @def _GLIBCXX_LOSER_TREE_COMBINED
- *  @brief Include some loser tree variant.
- *  @see __gnu_parallel::_Settings multiway_merge_algorithm */
-#define _GLIBCXX_LOSER_TREE_COMBINED 0
-#endif
-
-#ifndef _GLIBCXX_LOSER_TREE_SENTINEL
-/** @def _GLIBCXX_LOSER_TREE_SENTINEL
- *  @brief Include some loser tree variant.
- *  @see __gnu_parallel::_Settings multiway_merge_algorithm */
-#define _GLIBCXX_LOSER_TREE_SENTINEL 0
-#endif
-
-
 #ifndef _GLIBCXX_FIND_GROWING_BLOCKS
 /** @brief Include the growing blocks variant for std::find.
  *  @see __gnu_parallel::_Settings::find_algorithm */
