@@ -943,8 +943,8 @@ read_character (st_parameter_dt *dtp, int length __attribute__ ((unused)))
     default:
       if (dtp->u.p.namelist_mode)
 	{
-	  if (dtp->u.p.current_unit->flags.delim == DELIM_APOSTROPHE
-	      || dtp->u.p.current_unit->flags.delim == DELIM_QUOTE
+	  if (dtp->u.p.delim_status == DELIM_APOSTROPHE
+	      || dtp->u.p.delim_status == DELIM_QUOTE
 	      || c == '&' || c == '$' || c == '/')
 	    {
 	      unget_char (dtp, c);

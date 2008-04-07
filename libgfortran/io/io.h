@@ -235,7 +235,7 @@ typedef enum
 unit_mode;
 
 typedef enum
-{ ASYNC_YES, ASYNC_NO, AYSYNC_UNSPECIFIED }
+{ ASYNC_YES, ASYNC_NO, ASYNC_UNSPECIFIED }
 unit_async;
 
 #define CHARACTER1(name) \
@@ -342,13 +342,13 @@ typedef struct
   CHARACTER1 (convert);
   GFC_INTEGER_4 flags2;
   CHARACTER1 (asynchronous);
-  CHARACTER1 (decimal);
+  CHARACTER2 (decimal);
   CHARACTER1 (encoding);
-  CHARACTER1 (pending);
+  CHARACTER2 (pending);
   CHARACTER1 (round);
-  CHARACTER1 (sign);
+  CHARACTER2 (sign);
   GFC_INTEGER_4 *size;
-  GFC_IO_INT id;
+  GFC_INTEGER_4 *id;
 }
 st_parameter_inquire;
 
@@ -409,6 +409,7 @@ typedef struct st_parameter_dt
 	  int item_count;
 	  unit_mode mode;
 	  unit_blank blank_status;
+          unit_pad pad_status;
 	  enum { SIGN_S, SIGN_SS, SIGN_SP } sign_status;
 	  int scale_factor;
 	  int max_pos; /* Maximum righthand column written to.  */
@@ -423,6 +424,7 @@ typedef struct st_parameter_dt
 	  int sf_seen_eor;
 	  unit_advance advance_status;
 	  unit_decimal decimal_status;
+          unit_delim delim_status;
 
 	  unsigned reversion_flag : 1; /* Format reversion has occurred.  */
 	  unsigned first_item : 1;

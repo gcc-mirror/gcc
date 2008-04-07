@@ -854,7 +854,7 @@ read_x (st_parameter_dt *dtp, int n)
 {
   if (!is_stream_io (dtp))
     {
-      if ((dtp->u.p.current_unit->flags.pad == PAD_NO || is_internal_unit (dtp))
+      if ((dtp->u.p.pad_status == PAD_NO || is_internal_unit (dtp))
 	  && dtp->u.p.current_unit->bytes_left < n)
 	n = dtp->u.p.current_unit->bytes_left;
 

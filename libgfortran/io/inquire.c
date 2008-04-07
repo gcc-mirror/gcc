@@ -43,6 +43,7 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 {
   const char *p;
   GFC_INTEGER_4 cf = iqp->common.flags;
+  GFC_INTEGER_4 cf2 = iqp->flags2;
 
   if ((cf & IOPARM_INQUIRE_HAS_EXIST) != 0)
     {
@@ -213,7 +214,7 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 
   if ((cf & IOPARM_INQUIRE_HAS_BLANK) != 0)
     {
-      if (u == NULL)
+      if (u == NULL || u->flags.form != FORM_FORMATTED)
 	p = undefined;
       else
 	switch (u->flags.blank)
@@ -229,6 +230,148 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 	  }
 
       cf_strcpy (iqp->blank, iqp->blank_len, p);
+    }
+
+  if ((cf & IOPARM_INQUIRE_HAS_PAD) != 0)
+    {
+      if (u == NULL || u->flags.form != FORM_FORMATTED)
+	p = undefined;
+      else
+	switch (u->flags.pad)
+	  {
+	  case PAD_YES:
+	    p = "YES";
+	    break;
+	  case PAD_NO:
+	    p = "NO";
+	    break;
+	  default:
+	    internal_error (&iqp->common, "inquire_via_unit(): Bad pad");
+	  }
+
+      cf_strcpy (iqp->pad, iqp->pad_len, p);
+    }
+
+  if ((cf2 & IOPARM_INQUIRE_HAS_PENDING) != 0)
+    *iqp->pending = 0;
+  
+  if ((cf2 & IOPARM_INQUIRE_HAS_ID) != 0)
+    *iqp->id = 0;
+
+  if ((cf2 & IOPARM_INQUIRE_HAS_ENCODING) != 0)
+    {
+      if (u == NULL || u->flags.form != FORM_FORMATTED)
+	p = undefined;
+      else
+	switch (u->flags.encoding)
+	  {
+	  case ENCODING_DEFAULT:
+	    p = "UNKNOWN";
+	    break;
+	  /* TODO: Enable UTF-8 case here when implemented.
+	  case ENCODING_UTF8:
+	    p = "UTF-8";
+	    break; */
+	  default:
+	    internal_error (&iqp->common, "inquire_via_unit(): Bad encoding");
+	  }
+
+      cf_strcpy (iqp->encoding, iqp->encoding_len, p);
+    }
+
+  if ((cf2 & IOPARM_INQUIRE_HAS_DECIMAL) != 0)
+    {
+      if (u == NULL || u->flags.form != FORM_FORMATTED)
+	p = undefined;
+      else
+	switch (u->flags.decimal)
+	  {
+	  case DECIMAL_POINT:
+	    p = "POINT";
+	    break;
+	  case DECIMAL_COMMA:
+	    p = "COMMA";
+	    break;
+	  default:
+	    internal_error (&iqp->common, "inquire_via_unit(): Bad comma");
+	  }
+
+      cf_strcpy (iqp->decimal, iqp->decimal_len, p);
+    }
+
+  if ((cf2 & IOPARM_INQUIRE_HAS_ASYNCHRONOUS) != 0)
+    {
+      if (u == NULL)
+	p = undefined;
+      else
+	switch (u->flags.async)
+	  {
+	  case ASYNC_YES:
+	    p = "YES";
+	    break;
+	  case ASYNC_NO:
+	    p = "NO";
+	    break;
+	  default:
+	    internal_error (&iqp->common, "inquire_via_unit(): Bad async");
+	  }
+
+      cf_strcpy (iqp->asynchronous, iqp->asynchronous_len, p);
+    }
+
+  if ((cf2 & IOPARM_INQUIRE_HAS_SIGN) != 0)
+    {
+      if (u == NULL)
+	p = undefined;
+      else
+	switch (u->flags.sign)
+	  {
+	  case SIGN_PROCDEFINED:
+	    p = "PROCESSOR_DEFINED";
+	    break;
+	  case SIGN_SUPPRESS:
+	    p = "SUPPRESS";
+	    break;
+	  case SIGN_PLUS:
+	    p = "PLUS";
+	    break;
+	  default:
+	    internal_error (&iqp->common, "inquire_via_unit(): Bad sign");
+	  }
+
+      cf_strcpy (iqp->sign, iqp->sign_len, p);
+    }
+
+  if ((cf2 & IOPARM_INQUIRE_HAS_ROUND) != 0)
+    {
+      if (u == NULL)
+	p = undefined;
+      else
+	switch (u->flags.round)
+	  {
+	  case ROUND_UP:
+	    p = "UP";
+	    break;
+	  case ROUND_DOWN:
+	    p = "DOWN";
+	    break;
+	  case ROUND_ZERO:
+	    p = "ZERO";
+	    break;
+	  case ROUND_NEAREST:
+	    p = "NEAREST";
+	    break;
+	  case ROUND_COMPATIBLE:
+	    p = "COMPATIBLE";
+	    break;
+	  case ROUND_PROCDEFINED:
+	    p = "PROCESSOR_DEFINED";
+	    break;
+	  default:
+	    internal_error (&iqp->common, "inquire_via_unit(): Bad round");
+	  }
+
+      cf_strcpy (iqp->round, iqp->round_len, p);
     }
 
   if ((cf & IOPARM_INQUIRE_HAS_POSITION) != 0)
@@ -380,6 +523,7 @@ inquire_via_filename (st_parameter_inquire *iqp)
 {
   const char *p;
   GFC_INTEGER_4 cf = iqp->common.flags;
+  GFC_INTEGER_4 cf2 = iqp->flags2;
 
   if ((cf & IOPARM_INQUIRE_HAS_EXIST) != 0)
     *iqp->exist = file_exists (iqp->file, iqp->file_len);
@@ -435,6 +579,18 @@ inquire_via_filename (st_parameter_inquire *iqp)
   if ((cf & IOPARM_INQUIRE_HAS_BLANK) != 0)
     cf_strcpy (iqp->blank, iqp->blank_len, undefined);
 
+  if ((cf & IOPARM_INQUIRE_HAS_PAD) != 0)
+    cf_strcpy (iqp->pad, iqp->pad_len, undefined);
+
+  if ((cf2 & IOPARM_INQUIRE_HAS_ENCODING) != 0)
+    cf_strcpy (iqp->encoding, iqp->encoding_len, undefined);
+  
+  if ((cf2 & IOPARM_INQUIRE_HAS_DELIM) != 0)
+    cf_strcpy (iqp->delim, iqp->delim_len, undefined);
+
+  if ((cf2 & IOPARM_INQUIRE_HAS_DECIMAL) != 0)
+    cf_strcpy (iqp->decimal, iqp->decimal_len, undefined);
+
   if ((cf & IOPARM_INQUIRE_HAS_POSITION) != 0)
     cf_strcpy (iqp->position, iqp->position_len, undefined);
 
@@ -459,11 +615,14 @@ inquire_via_filename (st_parameter_inquire *iqp)
       cf_strcpy (iqp->readwrite, iqp->readwrite_len, p);
     }
 
-  if ((cf & IOPARM_INQUIRE_HAS_DELIM) != 0)
+  if ((cf2 & IOPARM_INQUIRE_HAS_DELIM) != 0)
     cf_strcpy (iqp->delim, iqp->delim_len, undefined);
 
-  if ((cf & IOPARM_INQUIRE_HAS_PAD) != 0)
+  if ((cf2 & IOPARM_INQUIRE_HAS_PAD) != 0)
     cf_strcpy (iqp->pad, iqp->pad_len, undefined);
+  
+  if ((cf2 & IOPARM_INQUIRE_HAS_ENCODING) != 0)
+    cf_strcpy (iqp->encoding, iqp->encoding_len, undefined);
 }
 
 
