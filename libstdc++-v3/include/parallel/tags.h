@@ -44,6 +44,9 @@ namespace __gnu_parallel
   /** @brief Forces sequential execution at compile time. */
   struct sequential_tag { };
 
+  /** @brief Forces exact splitting in multiway merge at compile time. */
+  struct exact_tag { };
+
   /** @brief Recommends parallel execution at compile time. */
   struct parallel_tag { };
 
