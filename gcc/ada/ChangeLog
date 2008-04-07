@@ -1,4 +1,11 @@
 2008-04-07  Aurelien Jarno  <aurelien@aurel32.net>
+            Xavier Grave  <grave@ipno.in2p3.fr>
+
+	* Makefile.in: Add make ifeq define for mips/mipsel support.
+	* g-soccon-linux-mips.ads, system-linux-mipsel.ads, 
+	system-linux-mips.ads: New files.
+
+2008-04-07  Aurelien Jarno  <aurelien@aurel32.net>
 
         * sysdep.c: add __GLIBC__ to the #ifdef preprocessor macros to
 	detect systems using GNU libc.
