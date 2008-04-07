@@ -1,3 +1,10 @@
+2008-04-07  Kai Tietz  <kai.tietz@onevision.com>
+
+        PR/35842
+        * config/i386/i386.c (legitimize_pic_address): Add treating
+        of dllimport SYM_REF's.
+        (legitimize_dllimport_symbol): Add prototype.
+
 2008-04-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const.c (fold) <ARRAY_REF>: New case.  Try to fold constant

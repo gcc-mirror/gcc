@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 
 static int x86_builtin_vectorization_cost (bool);
+static rtx legitimize_dllimport_symbol (rtx, bool);
 
 #ifndef CHECK_STACK_LIMIT
 #define CHECK_STACK_LIMIT (-1)
@@ -7660,10 +7661,18 @@ legitimize_pic_address (rtx orig, rtx reg)
 	      see gotoff_operand.  */
 	   || (TARGET_VXWORKS_RTP && GET_CODE (addr) == LABEL_REF))
     {
-      /* Given that we've already handled dllimport variables separately
-	 in legitimize_address, and all other variables should satisfy
-	 legitimate_pic_address_disp_p, we should never arrive here.  */
-      gcc_assert (!TARGET_64BIT_MS_ABI);
+      if (TARGET_DLLIMPORT_DECL_ATTRIBUTES)
+        {
+          if (GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_DLLIMPORT_P (addr))
+            return legitimize_dllimport_symbol (addr, true);
+          if (GET_CODE (addr) == CONST && GET_CODE (XEXP (addr, 0)) == PLUS
+              && GET_CODE (XEXP (XEXP (addr, 0), 0)) == SYMBOL_REF
+              && SYMBOL_REF_DLLIMPORT_P (XEXP (XEXP (addr, 0), 0)))
+            {
+              rtx t = legitimize_dllimport_symbol (XEXP (XEXP (addr, 0), 0), true);
+              return gen_rtx_PLUS (Pmode, t, XEXP (XEXP (addr, 0), 1));
+            }
+        }
 
       if (TARGET_64BIT && ix86_cmodel != CM_LARGE_PIC)
 	{
