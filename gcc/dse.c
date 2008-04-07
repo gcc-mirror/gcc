@@ -522,11 +522,8 @@ struct clear_alias_mode_holder
 
 static alloc_pool clear_alias_mode_pool;
 
-/* This is true except for two cases:
-   (1) current_function_stdarg -- i.e. we cannot do this 
-       for vararg functions because they play games with the frame.  
-   (2) In ada, it is sometimes not safe to do assume that any stores
-       based off the stack frame go dead at the exit to a function.  */
+/* This is true except if current_function_stdarg -- i.e. we cannot do
+   this for vararg functions because they play games with the frame.  */
 static bool stores_off_frame_dead_at_return;
 
 /* Counter for stats.  */
@@ -712,10 +709,7 @@ dse_step0 (void)
   bb_table = XCNEWVEC (bb_info_t, last_basic_block);
   rtx_group_next_id = 0;
 
-  stores_off_frame_dead_at_return = 
-    (!(TREE_CODE (TREE_TYPE (current_function_decl)) == FUNCTION_TYPE
-       && (TYPE_RETURNS_STACK_DEPRESSED (TREE_TYPE (current_function_decl)))))
-    && (!current_function_stdarg);
+  stores_off_frame_dead_at_return = !current_function_stdarg;
 
   init_alias_analysis ();
   

@@ -1,3 +1,11 @@
+2008-04-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gigi.h (create_subprog_type): Remove returns_with_dsp parameter.
+	* decl.c (gnat_to_gnu_entity): Adjust for above new prototype.
+	* utils.c (create_subprog_type): Remove returns_with_dsp parameter.
+	* trans.c (gnat_to_gnu) <N_Return_Statement>: Remove code dealing with
+	Return by Depressed Stack Pointer.
+
 2008-04-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl.c (is_variable_size): Do not unconditionally return false
