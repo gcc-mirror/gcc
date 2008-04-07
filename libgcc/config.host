@@ -77,6 +77,9 @@ strongarm*-*-*)
 arm*-*-*)
 	cpu_type=arm
 	;;
+avr-*-*)
+	cpu_type=avr
+	;;    
 bfin*-*)
 	cpu_type=bfin
 	;;
@@ -243,6 +246,8 @@ arm*-*-kaos*)
 avr-*-rtems*)
 	;;
 avr-*-*)
+    # Make HImode functions for AVR
+    tmake_file=${cpu_type}/t-avr
 	;;
 bfin*-elf*)
         ;;

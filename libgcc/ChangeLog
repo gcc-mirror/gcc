@@ -1,3 +1,10 @@
+2008-04-07  Andy Hutchinson  <hutchinsonandy@aim.com>
+
+	PR target/34210
+	PR target/35508
+	* config.host (avr-*-*): Add avr cpu_type and avr tmake_file.
+	* config/t-avr: New file. Build 16bit libgcc functions.
+
 2008-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/35401
