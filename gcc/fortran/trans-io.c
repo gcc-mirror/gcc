@@ -1238,6 +1238,10 @@ gfc_trans_inquire (gfc_code * code)
     mask |= set_string (&block, &post_block, var, IOPARM_inquire_blank,
 			p->blank);
 
+  if (p->delim)
+    mask |= set_string (&block, &post_block, var, IOPARM_inquire_delim,
+			p->delim);
+
   if (p->position)
     mask |= set_string (&block, &post_block, var, IOPARM_inquire_position,
 			p->position);
@@ -1258,14 +1262,10 @@ gfc_trans_inquire (gfc_code * code)
     mask |= set_string (&block, &post_block, var, IOPARM_inquire_readwrite,
 			p->readwrite);
 
-  if (p->delim)
-    mask |= set_string (&block, &post_block, var, IOPARM_inquire_delim,
-			p->delim);
-
   if (p->pad)
     mask |= set_string (&block, &post_block, var, IOPARM_inquire_pad,
 			p->pad);
-
+  
   if (p->convert)
     mask |= set_string (&block, &post_block, var, IOPARM_inquire_convert,
 			p->convert);
@@ -1304,7 +1304,8 @@ gfc_trans_inquire (gfc_code * code)
 				p->size);
 
   if (p->id)
-    mask2 |= set_parameter_value (&block, var, IOPARM_inquire_id, p->id);
+    mask2 |= set_parameter_ref (&block, &post_block,var, IOPARM_inquire_id,
+				p->id);
 
   set_parameter_const (&block, var, IOPARM_inquire_flags2, mask2);
 

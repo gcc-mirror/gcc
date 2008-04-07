@@ -1,3 +1,20 @@
+2008-04-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/25829 28655
+	* io.c (io_tag): Add new tags for decimal, encoding, asynchronous,
+	round, sign, and id. (match_open_element): Match new tags.
+	(gfc_resolve_open): Resolve new tags. (gfc_match_open): Enable encoding
+	for DEFAULT only. Update error messages. (match_dt_element): Fix match
+	tag for asynchronous. Update error messages. (gfc_free_inquire): Free
+	new expressions. (match_inquire_element): Match new tags.
+	(gfc_match_inquire): Add constraint for ID and PENDING.
+	(gfc_resolve_inquire): Resolve new tags.
+	* trans-io.c (gfc_trans_inquire): Clean up whitespace and fix setting of
+	mask for ID parameter.
+	* ioparm.def: Fix order of parameters for pending, round, and sign.
+	NOTE: These must line up with the definitions in libgfortran/io/io.h. or
+	things don't work.
+
 2008-04-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/35780
