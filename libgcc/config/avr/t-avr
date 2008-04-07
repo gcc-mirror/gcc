@@ -1,0 +1,19 @@
+# Extra 16-bit integer functions.
+intfuncs16 = _absvXX2 _addvXX3 _subvXX3 _mulvXX3 _negvXX2 _ffsXX2 _clzXX2 \
+             _ctzXX2 _popcountXX2 _parityXX2
+hiintfuncs16 = $(subst XX,hi,$(intfuncs16))
+siintfuncs16 = $(subst XX,si,$(intfuncs16))
+
+iter-items := $(hiintfuncs16)
+iter-labels := $(siintfuncs16)
+iter-sizes := $(patsubst %,2,$(siintfuncs16)) $(patsubst %,2,$(hiintfuncs16))
+
+
+include $(srcdir)/empty.mk $(patsubst %,$(srcdir)/siditi-object.mk,$(iter-items))
+libgcc-objects += $(patsubst %,%$(objext),$(hiintfuncs16))
+
+ifeq ($(enable_shared),yes)
+libgcc-s-objects += $(patsubst %,%_s$(objext),$(hiintfuncs16))
+endif
+
+
