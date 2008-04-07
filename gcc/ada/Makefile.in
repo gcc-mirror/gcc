@@ -892,6 +892,8 @@ ifeq ($(strip $(filter-out %86 kfreebsd%,$(arch) $(osys))),)
   s-osinte.ads<s-osinte-kfreebsd-gnu.ads \
   s-osprim.adb<s-osprim-posix.adb \
   s-taprop.adb<s-taprop-linux.adb \
+  s-tasinf.ads<s-tasinf-linux.ads \
+  s-tasinf.adb<s-tasinf-linux.adb \
   s-taspri.ads<s-taspri-posix.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   system.ads<system-freebsd-x86.ads

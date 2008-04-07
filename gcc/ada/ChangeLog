@@ -1,3 +1,16 @@
+2008-04-07  Aurelien Jarno  <aurelien@aurel32.net>
+
+	* s-osinte-linux-kfreebsd.ads (SC_NPROCESSORS_ONLN): New 
+	constant constant for sysconf call.
+	(bit_field): New packed boolean type used by cpu_set_t.
+	(cpu_set_t): New type corresponding to the C type with
+	the same name. Note that on the Ada side we use a bit
+	field array for the affinity mask. There is not need
+	for the C macro for setting individual bit.
+	(pthread_setaffinity_np): New imported routine.
+	* Makefile.in: Use s-tasinf-linux.ads and s-tasinf-linux.adb
+	on GNU/kFreeBSD.
+
 2008-04-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* utils2.c (build_binary_op): Fold ARRAY_REF and ARRAY_RANGE_REF too.
