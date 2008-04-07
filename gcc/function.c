@@ -281,10 +281,10 @@ free_after_compilation (struct function *f)
   VEC_free (int, heap, prologue);
   VEC_free (int, heap, epilogue);
   VEC_free (int, heap, sibcall_epilogue);
-  if (rtl.emit.regno_pointer_align)
-    free (rtl.emit.regno_pointer_align);
+  if (crtl->emit.regno_pointer_align)
+    free (crtl->emit.regno_pointer_align);
 
-  memset (&rtl, 0, sizeof (rtl));
+  memset (crtl, 0, sizeof (struct rtl_data));
   f->eh = NULL;
   f->machine = NULL;
   f->cfg = NULL;
@@ -3904,7 +3904,7 @@ push_struct_function (tree fndecl)
 static void
 prepare_function_start (void)
 {
-  gcc_assert (!rtl.emit.x_last_insn);
+  gcc_assert (!crtl->emit.x_last_insn);
   init_emit ();
   init_varasm_status ();
   init_expr ();

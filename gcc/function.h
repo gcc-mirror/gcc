@@ -87,13 +87,13 @@ struct emit_status GTY(())
    FIXME: We could put it into emit_status struct, but gengtype is not able to deal
    with length attribute nested in top level structures.  */
 
-extern GTY ((length ("rtl.emit.x_reg_rtx_no"))) rtx * regno_reg_rtx;
+extern GTY ((length ("crtl->emit.x_reg_rtx_no"))) rtx * regno_reg_rtx;
 
 /* For backward compatibility... eventually these should all go away.  */
-#define reg_rtx_no (rtl.emit.x_reg_rtx_no)
-#define seq_stack (rtl.emit.sequence_stack)
+#define reg_rtx_no (crtl->emit.x_reg_rtx_no)
+#define seq_stack (crtl->emit.sequence_stack)
 
-#define REGNO_POINTER_ALIGN(REGNO) (rtl.emit.regno_pointer_align[REGNO])
+#define REGNO_POINTER_ALIGN(REGNO) (crtl->emit.regno_pointer_align[REGNO])
 
 struct expr_status GTY(())
 {
@@ -136,12 +136,12 @@ struct expr_status GTY(())
   rtx x_forced_labels;
 };
 
-#define pending_stack_adjust (rtl.expr.x_pending_stack_adjust)
-#define inhibit_defer_pop (rtl.expr.x_inhibit_defer_pop)
-#define saveregs_value (rtl.expr.x_saveregs_value)
-#define apply_args_value (rtl.expr.x_apply_args_value)
-#define forced_labels (rtl.expr.x_forced_labels)
-#define stack_pointer_delta (rtl.expr.x_stack_pointer_delta)
+#define pending_stack_adjust (crtl->expr.x_pending_stack_adjust)
+#define inhibit_defer_pop (crtl->expr.x_inhibit_defer_pop)
+#define saveregs_value (crtl->expr.x_saveregs_value)
+#define apply_args_value (crtl->expr.x_apply_args_value)
+#define forced_labels (crtl->expr.x_forced_labels)
+#define stack_pointer_delta (crtl->expr.x_stack_pointer_delta)
 
 struct gimple_df;
 struct temp_slot;
@@ -193,7 +193,7 @@ struct rtl_data GTY(())
   rtx x_naked_return_label;
 
   /* List (chain of EXPR_LISTs) of all stack slots in this function.
-     Made for the sake of unshare_all_rtl.  */
+     Made for the sake of unshare_all_crtl->  */
   rtx x_stack_slot_list;
 
   /* Place after which to insert the tail_recursion_label if we need one.  */
@@ -226,19 +226,24 @@ struct rtl_data GTY(())
   int inl_max_label_num;
 };
 
-#define return_label (rtl.x_return_label)
-#define naked_return_label (rtl.x_naked_return_label)
-#define stack_slot_list (rtl.x_stack_slot_list)
-#define parm_birth_insn (rtl.x_parm_birth_insn)
-#define frame_offset (rtl.x_frame_offset)
-#define stack_check_probe_note (rtl.x_stack_check_probe_note)
-#define arg_pointer_save_area (rtl.x_arg_pointer_save_area)
-#define used_temp_slots (rtl.x_used_temp_slots)
-#define avail_temp_slots (rtl.x_avail_temp_slots)
-#define temp_slot_level (rtl.x_temp_slot_level)
-#define nonlocal_goto_handler_labels (rtl.x_nonlocal_goto_handler_labels)
+#define return_label (crtl->x_return_label)
+#define naked_return_label (crtl->x_naked_return_label)
+#define stack_slot_list (crtl->x_stack_slot_list)
+#define parm_birth_insn (crtl->x_parm_birth_insn)
+#define frame_offset (crtl->x_frame_offset)
+#define stack_check_probe_note (crtl->x_stack_check_probe_note)
+#define arg_pointer_save_area (crtl->x_arg_pointer_save_area)
+#define used_temp_slots (crtl->x_used_temp_slots)
+#define avail_temp_slots (crtl->x_avail_temp_slots)
+#define temp_slot_level (crtl->x_temp_slot_level)
+#define nonlocal_goto_handler_labels (crtl->x_nonlocal_goto_handler_labels)
 
-extern GTY(()) struct rtl_data rtl;
+extern GTY(()) struct rtl_data x_rtl;
+
+/* Accestor to RTL datastructures.  We keep them statically allocated now since
+   we never keep multiple functions.  For threaded compiler we might however
+   want to do differntly.  */
+#define crtl (&x_rtl)
 
 /* This structure can save all the important global and static variables
    describing the status of the current function.  */

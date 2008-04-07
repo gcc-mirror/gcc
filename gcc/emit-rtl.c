@@ -68,7 +68,7 @@ enum machine_mode ptr_mode;	/* Mode whose width is POINTER_SIZE.  */
 
 /* Datastructures maintained for currently processed function in RTL form.  */
 
-struct rtl_data rtl;
+struct rtl_data x_rtl;
 
 /* Indexed by pseudo register number, gives the rtx for that pseudo.
    Allocated in parallel with regno_pointer_align.  
@@ -172,11 +172,11 @@ static GTY ((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
 static GTY ((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
      htab_t const_fixed_htab;
 
-#define first_insn (rtl.emit.x_first_insn)
-#define last_insn (rtl.emit.x_last_insn)
-#define cur_insn_uid (rtl.emit.x_cur_insn_uid)
-#define last_location (rtl.emit.x_last_location)
-#define first_label_num (rtl.emit.x_first_label_num)
+#define first_insn (crtl->emit.x_first_insn)
+#define last_insn (crtl->emit.x_last_insn)
+#define cur_insn_uid (crtl->emit.x_cur_insn_uid)
+#define last_location (crtl->emit.x_last_location)
+#define first_label_num (crtl->emit.x_first_label_num)
 
 static rtx make_call_insn_raw (rtx);
 static rtx change_address_1 (rtx, enum machine_mode, rtx, int);
@@ -887,22 +887,22 @@ gen_reg_rtx (enum machine_mode mode)
   /* Make sure regno_pointer_align, and regno_reg_rtx are large
      enough to have an element for this pseudo reg number.  */
 
-  if (reg_rtx_no == rtl.emit.regno_pointer_align_length)
+  if (reg_rtx_no == crtl->emit.regno_pointer_align_length)
     {
-      int old_size = rtl.emit.regno_pointer_align_length;
+      int old_size = crtl->emit.regno_pointer_align_length;
       char *new;
       rtx *new1;
 
-      new = xrealloc (rtl.emit.regno_pointer_align, old_size * 2);
+      new = xrealloc (crtl->emit.regno_pointer_align, old_size * 2);
       memset (new + old_size, 0, old_size);
-      rtl.emit.regno_pointer_align = (unsigned char *) new;
+      crtl->emit.regno_pointer_align = (unsigned char *) new;
 
       new1 = ggc_realloc (regno_reg_rtx,
 			  old_size * 2 * sizeof (rtx));
       memset (new1 + old_size, 0, old_size * sizeof (rtx));
       regno_reg_rtx = new1;
 
-      rtl.emit.regno_pointer_align_length = old_size * 2;
+      crtl->emit.regno_pointer_align_length = old_size * 2;
     }
 
   val = gen_raw_REG (mode, reg_rtx_no);
@@ -5009,14 +5009,14 @@ init_emit (void)
 
   /* Init the tables that describe all the pseudo regs.  */
 
-  rtl.emit.regno_pointer_align_length = LAST_VIRTUAL_REGISTER + 101;
+  crtl->emit.regno_pointer_align_length = LAST_VIRTUAL_REGISTER + 101;
 
-  rtl.emit.regno_pointer_align
-    = xcalloc (rtl.emit.regno_pointer_align_length
+  crtl->emit.regno_pointer_align
+    = xcalloc (crtl->emit.regno_pointer_align_length
 	       * sizeof (unsigned char), 1);
 
   regno_reg_rtx
-    = ggc_alloc (rtl.emit.regno_pointer_align_length * sizeof (rtx));
+    = ggc_alloc (crtl->emit.regno_pointer_align_length * sizeof (rtx));
 
   /* Put copies of all the hard registers into regno_reg_rtx.  */
   memcpy (regno_reg_rtx,
