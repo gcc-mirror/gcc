@@ -1712,88 +1712,190 @@ This virtual register is replaced by the sum of the register given by
 @end table
 
 @findex subreg
-@item (subreg:@var{m} @var{reg} @var{bytenum})
+@item (subreg:@var{m1} @var{reg:m2} @var{bytenum})
+
 @code{subreg} expressions are used to refer to a register in a machine
 mode other than its natural one, or to refer to one register of
 a multi-part @code{reg} that actually refers to several registers.
 
-Each pseudo-register has a natural mode.  If it is necessary to
-operate on it in a different mode---for example, to perform a fullword
-move instruction on a pseudo-register that contains a single
-byte---the pseudo-register must be enclosed in a @code{subreg}.  In
-such a case, @var{bytenum} is zero.
+Each pseudo register has a natural mode.  If it is necessary to
+operate on it in a different mode, the pseudo register must be
+enclosed in a @code{subreg}.  
 
-Usually @var{m} is at least as narrow as the mode of @var{reg}, in which
-case it is restricting consideration to only the bits of @var{reg} that
-are in @var{m}.
+It is seldom necessary to wrap hard registers in @code{subreg}s; such
+registers would normally reduce to a single @code{reg} rtx.  This use of
+@code{subregs} is discouraged and may not be supported in the future.
 
-Sometimes @var{m} is wider than the mode of @var{reg}.  These
-@code{subreg} expressions are often called @dfn{paradoxical}.  They are
-used in cases where we want to refer to an object in a wider mode but do
-not care what value the additional bits have.  The reload pass ensures
-that paradoxical references are only made to hard registers.
+@code{subreg}s come in two distinct flavors, each having its own
+usage and rules:
 
-The other use of @code{subreg} is to extract the individual registers of
-a multi-register value.  Machine modes such as @code{DImode} and
-@code{TImode} can indicate values longer than a word, values which
-usually require two or more consecutive registers.  To access one of the
-registers, use a @code{subreg} with mode @code{SImode} and a
-@var{bytenum} offset that says which register.
+@table @asis
+@item Paradoxical subregs
+When @var{m1} is strictly wider than @var{m2}, the @code{subreg}
+expression is called @dfn{paradoxical}.  The canonical test for this
+class of @code{subreg} is:
 
-Storing in a non-paradoxical @code{subreg} has undefined results for
-bits belonging to the same word as the @code{subreg}.  This laxity makes
-it easier to generate efficient code for such instructions.  To
-represent an instruction that preserves all the bits outside of those in
-the @code{subreg}, use @code{strict_low_part} around the @code{subreg}.
+@smallexample
+GET_MODE_SIZE (@var{m1}) > GET_MODE_SIZE (@var{m2})
+@end smallexample
 
+Paradoxical @code{subreg}s can be used as both lvalues and rvalues.
+When used as an rvalue, the low-order bits of the @code{subreg} are
+taken from @var{reg} while the high-order bits are left undefined.
+When used as an lvalue, the low-order bits of the source value are
+stored in @var{reg} and the high-order bits are discarded.
+
+@var{bytenum} is always zero for a paradoxical @code{subreg}, even on
+big-endian targets.
+
+For example, the paradoxical @code{subreg}:
+
+@smallexample
+(set (subreg:SI (reg:HI @var{x}) 0) @var{y})
+@end smallexample
+
+stores the lower 2 bytes of @var{y} in @var{x} and discards the upper
+2 bytes.  A subsequent:
+
+@smallexample
+(set @var{z} (subreg:SI (reg:HI @var{x}) 0))
+@end smallexample
+
+would set the lower two bytes of @var{z} to @var{y} and set the upper two
+bytes to an unknown value.
+
+@item Normal subregs 
+When @var{m1} is at least as narrow as @var{m2} the @code{subreg}
+expression is called @dfn{normal}.
+
+Normal @code{subreg}s restrict consideration to certain bits of @var{reg}.
+There are two cases.  If @var{m1} is smaller than a word, the
+@code{subreg} refers to the least-significant part (or @dfn{lowpart})
+of one word of @var{reg}.  If @var{m1} is word-sized or greater, the
+@code{subreg} refers to one or more complete words.
+
+When used as an lvalue, @code{subreg} is a word-based accessor.
+Storing to a @code{subreg} modifies all the words of @var{reg} that
+overlap the @code{subreg}, but it leaves the other words of @var{reg}
+alone.
+
+When storing to a normal @code{subreg} that is smaller than a word,
+the other bits of the referenced word are usually left in an undefined
+state.  This laxity makes it easier to generate efficient code for
+such instructions.  To represent an instruction that preserves all the
+bits outside of those in the @code{subreg}, use @code{strict_low_part}
+or @code{zero_extract} around the @code{subreg}.
+
+@var{bytenum} must identify the offset of the first byte of the
+@code{subreg} from the start of @var{reg}, assuming that @var{reg} is
+laid out in memory order.  The memory order of bytes is defined by
+two target macros, @code{WORDS_BIG_ENDIAN} and @code{BYTES_BIG_ENDIAN}:
+
+@itemize
+@item
 @cindex @code{WORDS_BIG_ENDIAN}, effect on @code{subreg}
-The compilation parameter @code{WORDS_BIG_ENDIAN}, if set to 1, says
-that byte number zero is part of the most significant word; otherwise,
-it is part of the least significant word.
+@code{WORDS_BIG_ENDIAN}, if set to 1, says that byte number zero is
+part of the most significant word; otherwise, it is part of the least
+significant word.
 
+@item
 @cindex @code{BYTES_BIG_ENDIAN}, effect on @code{subreg}
-The compilation parameter @code{BYTES_BIG_ENDIAN}, if set to 1, says
-that byte number zero is the most significant byte within a word;
-otherwise, it is the least significant byte within a word.
+@code{BYTES_BIG_ENDIAN}, if set to 1, says that byte number zero is
+the most significant byte within a word; otherwise, it is the least
+significant byte within a word.
+@end itemize
 
 @cindex @code{FLOAT_WORDS_BIG_ENDIAN}, (lack of) effect on @code{subreg}
 On a few targets, @code{FLOAT_WORDS_BIG_ENDIAN} disagrees with
-@code{WORDS_BIG_ENDIAN}.
-However, most parts of the compiler treat floating point values as if
-they had the same endianness as integer values.  This works because
-they handle them solely as a collection of integer values, with no
-particular numerical value.  Only real.c and the runtime libraries
-care about @code{FLOAT_WORDS_BIG_ENDIAN}.
+@code{WORDS_BIG_ENDIAN}.  However, most parts of the compiler treat
+floating point values as if they had the same endianness as integer
+values.  This works because they handle them solely as a collection of
+integer values, with no particular numerical value.  Only real.c and
+the runtime libraries care about @code{FLOAT_WORDS_BIG_ENDIAN}.
 
-@cindex combiner pass
-@cindex reload pass
-@cindex @code{subreg}, special reload handling
-Between the combiner pass and the reload pass, it is possible to have a
-paradoxical @code{subreg} which contains a @code{mem} instead of a
-@code{reg} as its first operand.  After the reload pass, it is also
-possible to have a non-paradoxical @code{subreg} which contains a
-@code{mem}; this usually occurs when the @code{mem} is a stack slot
-which replaced a pseudo register.
+Thus, 
 
-Note that it is not valid to access a @code{DFmode} value in @code{SFmode}
-using a @code{subreg}.  On some machines the most significant part of a
-@code{DFmode} value does not have the same format as a single-precision
-floating value.
+@smallexample
+(subreg:HI (reg:SI @var{x}) 2)
+@end smallexample
 
-It is also not valid to access a single word of a multi-word value in a
-hard register when less registers can hold the value than would be
-expected from its size.  For example, some 32-bit machines have
-floating-point registers that can hold an entire @code{DFmode} value.
-If register 10 were such a register @code{(subreg:SI (reg:DF 10) 4)}
-would be invalid because there is no way to convert that reference to
-a single machine register.  The reload pass prevents @code{subreg}
-expressions such as these from being formed.
+on a @code{BYTES_BIG_ENDIAN}, @samp{UNITS_PER_WORD == 4} target is the same as
+
+@smallexample
+(subreg:HI (reg:SI @var{x}) 0)
+@end smallexample
+
+on a little-endian, @samp{UNITS_PER_WORD == 4} target.  Both
+@code{subreg}s access the lower two bytes of register @var{x}.
+
+@end table
+
+A @code{MODE_PARTIAL_INT} mode behaves as if it were as wide as the
+corresponding @code{MODE_INT} mode, except that it has an unknown
+number of undefined bits.  For example:
+
+@smallexample
+(subreg:PSI (reg:SI 0) 0)
+@end smallexample
+
+accesses the whole of @samp{(reg:SI 0)}, but the exact relationship
+between the @code{PSImode} value and the @code{SImode} value is not
+defined.  If we assume @samp{UNITS_PER_WORD <= 4}, then the following
+two @code{subreg}s:
+
+@smallexample
+(subreg:PSI (reg:DI 0) 0)
+(subreg:PSI (reg:DI 0) 4)
+@end smallexample
+
+represent independent 4-byte accesses to the two halves of
+@samp{(reg:DI 0)}.  Both @code{subreg}s have an unknown number
+of undefined bits.
+
+If @samp{UNITS_PER_WORD <= 2} then these two @code{subreg}s:
+
+@smallexample
+(subreg:HI (reg:PSI 0) 0)
+(subreg:HI (reg:PSI 0) 2)
+@end smallexample
+
+represent independent 2-byte accesses that together span the whole
+of @samp{(reg:PSI 0)}.  Storing to the first @code{subreg} does not
+affect the value of the second, and vice versa.  @samp{(reg:PSI 0)}
+has an unknown number of undefined bits, so the assignment:
+
+@smallexample
+(set (subreg:HI (reg:PSI 0) 0) (reg:HI 4))
+@end smallexample
+
+does not guarantee that @samp{(subreg:HI (reg:PSI 0) 0)} has the
+value @samp{(reg:HI 4)}.
+
+@cindex @code{CANNOT_CHANGE_MODE_CLASS} and subreg semantics
+The rules above apply to both pseudo @var{reg}s and hard @var{reg}s.
+If the semantics are not correct for particular combinations of
+@var{m1}, @var{m2} and hard @var{reg}, the target-specific code
+must ensure that those combinations are never used.  For example:
+
+@smallexample
+CANNOT_CHANGE_MODE_CLASS (@var{m2}, @var{m1}, @var{class})
+@end smallexample
+
+must be true for every class @var{class} that includes @var{reg}.
 
 @findex SUBREG_REG
 @findex SUBREG_BYTE
 The first operand of a @code{subreg} expression is customarily accessed
 with the @code{SUBREG_REG} macro and the second operand is customarily
 accessed with the @code{SUBREG_BYTE} macro.
+
+@code{subreg}s of @code{subreg}s are not supported.  Using
+@code{simplify_gen_subreg} is the recommended way to avoid this problem.
+
+It has been several years since a platform in which
+@code{BYTES_BIG_ENDIAN} was not equal to @code{WORDS_BIG_ENDIAN} has
+been tested.  Anyone wishing to support such a platform in the future
+may be confronted with code rot.
 
 @findex scratch
 @cindex scratch operands
