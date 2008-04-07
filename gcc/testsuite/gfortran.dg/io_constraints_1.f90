@@ -62,7 +62,7 @@ end module global
 !Was correctly picked up before patch.
  write(1, fmt='(i6)', eor = 100) a              ! { dg-error "EOR tag" }
 !Was correctly picked up before patch.
- write(1, fmt='(i6)', size = b) a               ! { dg-error "SIZE=specifier not allowed" }
+ write(1, fmt='(i6)', size = b) a               ! { dg-error "SIZE= specifier not allowed" }
 
 
  READ(1, fmt='(i6)', end = 900) a               ! { dg-error "not defined" }
