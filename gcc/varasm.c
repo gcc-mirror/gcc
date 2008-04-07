@@ -70,7 +70,7 @@ struct addr_const;
 struct constant_descriptor_rtx;
 struct rtx_constant_pool;
 
-#define n_deferred_constants (rtl.varasm.deferred_constants)
+#define n_deferred_constants (crtl->varasm.deferred_constants)
 
 /* Number for making the label on the next
    constant that is stored in memory.  */
@@ -3456,8 +3456,8 @@ create_constant_pool (void)
 void
 init_varasm_status (void)
 {
-  rtl.varasm.pool = create_constant_pool ();
-  rtl.varasm.deferred_constants = 0;
+  crtl->varasm.pool = create_constant_pool ();
+  crtl->varasm.deferred_constants = 0;
 }
 
 /* Given a MINUS expression, simplify it if both sides
@@ -3494,7 +3494,7 @@ force_const_mem (enum machine_mode mode, rtx x)
   /* Decide which pool to use.  */
   pool = (targetm.use_blocks_for_constant_p (mode, x)
 	  ? shared_constant_pool
-	  : rtl.varasm.pool);
+	  : crtl->varasm.pool);
 
   /* Lookup the value in the hashtable.  */
   tmp.constant = x;
@@ -3606,7 +3606,7 @@ get_pool_mode (const_rtx addr)
 int
 get_pool_size (void)
 {
-  return rtl.varasm.pool->offset;
+  return crtl->varasm.pool->offset;
 }
 
 /* Worker function for output_constant_pool_1.  Emit assembly for X
@@ -3848,7 +3848,7 @@ static void
 output_constant_pool (const char *fnname ATTRIBUTE_UNUSED,
 		      tree fndecl ATTRIBUTE_UNUSED)
 {
-  struct rtx_constant_pool *pool = rtl.varasm.pool;
+  struct rtx_constant_pool *pool = crtl->varasm.pool;
 
   /* It is possible for gcc to call force_const_mem and then to later
      discard the instructions which refer to the constant.  In such a

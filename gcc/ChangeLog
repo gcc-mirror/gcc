@@ -1,3 +1,36 @@
+2008-04-07  Jan Hubicka  <jh@suse.cz>
+
+	* function.h (rtl): Rename to x_rtl.
+	(crtl): New define.
+	(return_label, naked_return_label, stack_slot_list, parm_birth_insn,
+	frame_offset, stack_check_probe_note, arg_pointer_save_area,
+	used_temp_slots avail_temp_slots, temp_slot_level,
+	nonlocal_goto_handler_labels): Update accesstors.
+	(rtl): New global variable.
+	(struct function): Move some fileds to rtl_data.
+	(get_arg_pointer_save_area): Update prototype.
+	* builtins.c (expand_builtin_setjmp_receiver): Update call of
+	get_arg_pointer_save_area.
+	* expr.c (init_expr): Update
+	* function.c (get_frame_size): Update
+	(assign_stack_local): Update
+	(expand_function_end): Update.
+	(get_art_pointer_save_area): Update
+	* function.h 
+	* emit-rtl.c (rtl): Declare.
+	(regno_reg_rtx): Declare.
+	(first_insn, last_insn, cur_insn_uid, last_location, first_label_num):
+	Update.
+	(gen_reg_rtx): Update.
+	* varasm.c (n_deferred_constatns): Update accestor.
+	(init_varasm_status): Do not allocate varasm_status.
+	(force_const_mem, get_pool_size, output_constant_pool): Update.
+	* stmt.c (force_label_rtx): Do not use x_ prefixes.
+	(expand_nl_goto_receiver): Update get_arg_pointer_save_area.
+	* m32c/m32.c (m32c_leaf_function_p, m32c_function_needs_enter): Update.
+	* sparc/sparc.h (INIT_EXPANDERS): Update.
+	* ia64/ia64.h (INIT_EXPANDERS): Update.
+
 2008-04-07  James E. Wilson  <wilson@tuliptree.org>
 
 	* reload.c (push_secondary_reload): Add missing break to for loop.

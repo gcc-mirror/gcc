@@ -344,7 +344,7 @@ init_expr_target (void)
 void
 init_expr (void)
 {
-  memset (&rtl.expr, 0, sizeof (rtl.expr));
+  memset (&crtl->expr, 0, sizeof (crtl->expr));
 }
 
 /* Copy data from FROM to TO, where the machine modes are not the same.
