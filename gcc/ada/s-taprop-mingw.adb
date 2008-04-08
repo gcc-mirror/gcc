@@ -49,6 +49,7 @@ with System.Tasking.Debug;
 with System.OS_Primitives;
 with System.Task_Info;
 with System.Interrupt_Management;
+with System.Win32.Ext;
 
 with System.Soft_Links;
 --  We use System.Soft_Links instead of System.Tasking.Initialization because
@@ -68,6 +69,8 @@ package body System.Task_Primitives.Operations is
    use System.Parameters;
    use System.OS_Primitives;
    use System.Task_Info;
+   use System.Win32;
+   use System.Win32.Ext;
 
    pragma Link_With ("-Xlinker --stack=0x200000,0x1000");
    --  Change the default stack size (2 MB) for tasking programs on Windows.
@@ -75,6 +78,30 @@ package body System.Task_Primitives.Operations is
    --  we set the stack size for non tasking programs on System unit.
    --  Also note that under Windows XP, we use a Windows XP extension to
    --  specify the stack size on a per task basis, as done under other OSes.
+
+   ---------------------
+   -- Local Functions --
+   ---------------------
+
+   procedure InitializeCriticalSection (pCriticalSection : access RTS_Lock);
+   procedure InitializeCriticalSection
+     (pCriticalSection : access CRITICAL_SECTION);
+   pragma Import
+     (Stdcall, InitializeCriticalSection, "InitializeCriticalSection");
+
+   procedure EnterCriticalSection (pCriticalSection : access RTS_Lock);
+   procedure EnterCriticalSection
+     (pCriticalSection : access CRITICAL_SECTION);
+   pragma Import (Stdcall, EnterCriticalSection, "EnterCriticalSection");
+
+   procedure LeaveCriticalSection (pCriticalSection : access RTS_Lock);
+   procedure LeaveCriticalSection (pCriticalSection : access CRITICAL_SECTION);
+   pragma Import (Stdcall, LeaveCriticalSection, "LeaveCriticalSection");
+
+   procedure DeleteCriticalSection (pCriticalSection : access RTS_Lock);
+   procedure DeleteCriticalSection
+     (pCriticalSection : access CRITICAL_SECTION);
+   pragma Import (Stdcall, DeleteCriticalSection, "DeleteCriticalSection");
 
    ----------------
    -- Local Data --
@@ -140,7 +167,7 @@ package body System.Task_Primitives.Operations is
          Succeeded : BOOL;
       begin
          Succeeded := TlsSetValue (TlsIndex, To_Address (Self_Id));
-         pragma Assert (Succeeded = True);
+         pragma Assert (Succeeded = Win32.TRUE);
       end Set;
 
    end Specific;
@@ -192,7 +219,7 @@ package body System.Task_Primitives.Operations is
    procedure Initialize_Cond (Cond : not null access Condition_Variable) is
       hEvent : HANDLE;
    begin
-      hEvent := CreateEvent (null, True, False, Null_Ptr);
+      hEvent := CreateEvent (null, Win32.TRUE, Win32.FALSE, Null_Ptr);
       pragma Assert (hEvent /= 0);
       Cond.all := Condition_Variable (hEvent);
    end Initialize_Cond;
@@ -208,7 +235,7 @@ package body System.Task_Primitives.Operations is
       Result : BOOL;
    begin
       Result := CloseHandle (HANDLE (Cond.all));
-      pragma Assert (Result = True);
+      pragma Assert (Result = Win32.TRUE);
    end Finalize_Cond;
 
    -----------------
@@ -219,7 +246,7 @@ package body System.Task_Primitives.Operations is
       Result : BOOL;
    begin
       Result := SetEvent (HANDLE (Cond.all));
-      pragma Assert (Result = True);
+      pragma Assert (Result = Win32.TRUE);
    end Cond_Signal;
 
    ---------------
@@ -243,7 +270,7 @@ package body System.Task_Primitives.Operations is
       --  Must reset Cond BEFORE L is unlocked
 
       Result_Bool := ResetEvent (HANDLE (Cond.all));
-      pragma Assert (Result_Bool = True);
+      pragma Assert (Result_Bool = Win32.TRUE);
       Unlock (L, Global_Lock => True);
 
       --  No problem if we are interrupted here: if the condition is signaled,
@@ -283,7 +310,7 @@ package body System.Task_Primitives.Operations is
       --  Must reset Cond BEFORE L is unlocked
 
       Result := ResetEvent (HANDLE (Cond.all));
-      pragma Assert (Result = True);
+      pragma Assert (Result = Win32.TRUE);
       Unlock (L, Global_Lock => True);
 
       --  No problem if we are interrupted here: if the condition is signaled,
@@ -316,7 +343,7 @@ package body System.Task_Primitives.Operations is
 
       if Timed_Out then
          Result := SetEvent (HANDLE (Cond.all));
-         pragma Assert (Result = True);
+         pragma Assert (Result = Win32.TRUE);
       end if;
 
       Status := Integer (Wait_Result);
@@ -384,7 +411,7 @@ package body System.Task_Primitives.Operations is
    is
       pragma Unreferenced (Level);
    begin
-      InitializeCriticalSection (CRITICAL_SECTION (L.all)'Unrestricted_Access);
+      InitializeCriticalSection (L);
    end Initialize_Lock;
 
    -------------------
@@ -398,7 +425,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Finalize_Lock (L : not null access RTS_Lock) is
    begin
-      DeleteCriticalSection (CRITICAL_SECTION (L.all)'Unrestricted_Access);
+      DeleteCriticalSection (L);
    end Finalize_Lock;
 
    ----------------
@@ -426,15 +453,14 @@ package body System.Task_Primitives.Operations is
    is
    begin
       if not Single_Lock or else Global_Lock then
-         EnterCriticalSection (CRITICAL_SECTION (L.all)'Unrestricted_Access);
+         EnterCriticalSection (L);
       end if;
    end Write_Lock;
 
    procedure Write_Lock (T : Task_Id) is
    begin
       if not Single_Lock then
-         EnterCriticalSection
-           (CRITICAL_SECTION (T.Common.LL.L)'Unrestricted_Access);
+         EnterCriticalSection (T.Common.LL.L'Access);
       end if;
    end Write_Lock;
 
@@ -461,15 +487,14 @@ package body System.Task_Primitives.Operations is
      (L : not null access RTS_Lock; Global_Lock : Boolean := False) is
    begin
       if not Single_Lock or else Global_Lock then
-         LeaveCriticalSection (CRITICAL_SECTION (L.all)'Unrestricted_Access);
+         LeaveCriticalSection (L);
       end if;
    end Unlock;
 
    procedure Unlock (T : Task_Id) is
    begin
       if not Single_Lock then
-         LeaveCriticalSection
-           (CRITICAL_SECTION (T.Common.LL.L)'Unrestricted_Access);
+         LeaveCriticalSection (T.Common.LL.L'Access);
       end if;
    end Unlock;
 
@@ -708,7 +733,7 @@ package body System.Task_Primitives.Operations is
    begin
       Res := SetThreadPriority
         (T.Common.LL.Thread, Interfaces.C.int (Underlying_Priorities (Prio)));
-      pragma Assert (Res = True);
+      pragma Assert (Res = Win32.TRUE);
 
       if Dispatching_Policy = 'F' or else Get_Policy (Prio) = 'F' then
 
@@ -869,7 +894,7 @@ package body System.Task_Primitives.Operations is
 
       hTask          : HANDLE;
       TaskId         : aliased DWORD;
-      pTaskParameter : System.OS_Interface.PVOID;
+      pTaskParameter : Win32.PVOID;
       Result         : DWORD;
       Entry_Point    : PTHREAD_START_ROUTINE;
 
@@ -920,7 +945,7 @@ package body System.Task_Primitives.Operations is
          --  boost. A priority boost is temporarily given by the system to a
          --  thread when it is taken out of a wait state.
 
-         SetThreadPriorityBoost (hTask, DisablePriorityBoost => True);
+         SetThreadPriorityBoost (hTask, DisablePriorityBoost => Win32.TRUE);
       end if;
 
       --  Step 4: Handle Task_Info
@@ -972,7 +997,7 @@ package body System.Task_Primitives.Operations is
          Result := WaitForSingleObject (T.Common.LL.Thread, Wait_Infinite);
          pragma Assert (Result /= WAIT_FAILED);
          Succeeded := CloseHandle (T.Common.LL.Thread);
-         pragma Assert (Succeeded = True);
+         pragma Assert (Succeeded = Win32.TRUE);
       end if;
 
       Free (Self_ID);
@@ -1095,7 +1120,7 @@ package body System.Task_Primitives.Operations is
 
       --  Initialize internal condition variable
 
-      S.CV := CreateEvent (null, True, False, Null_Ptr);
+      S.CV := CreateEvent (null, Win32.TRUE, Win32.FALSE, Null_Ptr);
       pragma Assert (S.CV /= 0);
    end Initialize;
 
@@ -1113,7 +1138,7 @@ package body System.Task_Primitives.Operations is
       --  Destroy internal condition variable
 
       Result := CloseHandle (S.CV);
-      pragma Assert (Result = True);
+      pragma Assert (Result = Win32.TRUE);
    end Finalize;
 
    -------------------
@@ -1166,7 +1191,7 @@ package body System.Task_Primitives.Operations is
          S.State := False;
 
          Result := SetEvent (S.CV);
-         pragma Assert (Result = True);
+         pragma Assert (Result = Win32.TRUE);
       else
          S.State := True;
       end if;
@@ -1215,7 +1240,7 @@ package body System.Task_Primitives.Operations is
             --  Must reset CV BEFORE L is unlocked
 
             Result_Bool := ResetEvent (S.CV);
-            pragma Assert (Result_Bool = True);
+            pragma Assert (Result_Bool = Win32.TRUE);
 
             LeaveCriticalSection (S.L'Access);
 

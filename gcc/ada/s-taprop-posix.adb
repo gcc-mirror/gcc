@@ -73,6 +73,9 @@ package body System.Task_Primitives.Operations is
    use System.Parameters;
    use System.OS_Primitives;
 
+   Use_Alternate_Stack : constant Boolean := Alternate_Stack_Size /= 0;
+   --  Whether to use an alternate signal stack for stack overflows
+
    ----------------
    -- Local Data --
    ----------------
@@ -798,6 +801,19 @@ package body System.Task_Primitives.Operations is
       end loop;
 
       Unlock_RTS;
+
+      if Use_Alternate_Stack then
+         declare
+            Stack  : aliased stack_t;
+            Result : Interfaces.C.int;
+         begin
+            Stack.ss_sp    := Self_ID.Common.Task_Alternate_Stack;
+            Stack.ss_size  := Alternate_Stack_Size;
+            Stack.ss_flags := 0;
+            Result := sigaltstack (Stack'Access, null);
+            pragma Assert (Result = 0);
+         end;
+      end if;
    end Enter_Task;
 
    --------------
@@ -932,7 +948,8 @@ package body System.Task_Primitives.Operations is
       use System.Task_Info;
 
    begin
-      Adjusted_Stack_Size := Interfaces.C.size_t (Stack_Size);
+      Adjusted_Stack_Size :=
+         Interfaces.C.size_t (Stack_Size + Alternate_Stack_Size);
 
       if Stack_Base_Available then
 
@@ -1414,6 +1431,11 @@ package body System.Task_Primitives.Operations is
       Initialize_Lock (Single_RTS_Lock'Access, RTS_Lock_Level);
 
       Specific.Initialize (Environment_Task);
+
+      if Use_Alternate_Stack then
+         Environment_Task.Common.Task_Alternate_Stack :=
+           Alternate_Stack'Address;
+      end if;
 
       Enter_Task (Environment_Task);
 

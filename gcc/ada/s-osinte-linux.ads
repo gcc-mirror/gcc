@@ -41,8 +41,8 @@
 --  Preelaborate. This package is designed to be a bottom-level (leaf) package.
 
 with Ada.Unchecked_Conversion;
-
 with Interfaces.C;
+with System.Linux;
 
 package System.OS_Interface is
    pragma Preelaborate;
@@ -67,12 +67,12 @@ package System.OS_Interface is
    function errno return int;
    pragma Import (C, errno, "__get_errno");
 
-   EAGAIN    : constant := 11;
-   EINTR     : constant := 4;
-   EINVAL    : constant := 22;
-   ENOMEM    : constant := 12;
-   EPERM     : constant := 1;
-   ETIMEDOUT : constant := 110;
+   EAGAIN    : constant := System.Linux.EAGAIN;
+   EINTR     : constant := System.Linux.EINTR;
+   EINVAL    : constant := System.Linux.EINVAL;
+   ENOMEM    : constant := System.Linux.ENOMEM;
+   EPERM     : constant := System.Linux.EPERM;
+   ETIMEDOUT : constant := System.Linux.ETIMEDOUT;
 
    -------------
    -- Signals --
@@ -82,44 +82,44 @@ package System.OS_Interface is
    type Signal is new int range 0 .. Max_Interrupt;
    for Signal'Size use int'Size;
 
-   SIGHUP     : constant := 1; --  hangup
-   SIGINT     : constant := 2; --  interrupt (rubout)
-   SIGQUIT    : constant := 3; --  quit (ASCD FS)
-   SIGILL     : constant := 4; --  illegal instruction (not reset)
-   SIGTRAP    : constant := 5; --  trace trap (not reset)
-   SIGIOT     : constant := 6; --  IOT instruction
-   SIGABRT    : constant := 6; --  used by abort, replace SIGIOT in the  future
-   SIGFPE     : constant := 8; --  floating point exception
-   SIGKILL    : constant := 9; --  kill (cannot be caught or ignored)
-   SIGBUS     : constant := 7; --  bus error
-   SIGSEGV    : constant := 11; --  segmentation violation
-   SIGPIPE    : constant := 13; --  write on a pipe with no one to read it
-   SIGALRM    : constant := 14; --  alarm clock
-   SIGTERM    : constant := 15; --  software termination signal from kill
-   SIGUSR1    : constant := 10; --  user defined signal 1
-   SIGUSR2    : constant := 12; --  user defined signal 2
-   SIGCLD     : constant := 17; --  alias for SIGCHLD
-   SIGCHLD    : constant := 17; --  child status change
-   SIGPWR     : constant := 30; --  power-fail restart
-   SIGWINCH   : constant := 28; --  window size change
-   SIGURG     : constant := 23; --  urgent condition on IO channel
-   SIGPOLL    : constant := 29; --  pollable event occurred
-   SIGIO      : constant := 29; --  I/O now possible (4.2 BSD)
-   SIGLOST    : constant := 29; --  File lock lost
-   SIGSTOP    : constant := 19; --  stop (cannot be caught or ignored)
-   SIGTSTP    : constant := 20; --  user stop requested from tty
-   SIGCONT    : constant := 18; --  stopped process has been continued
-   SIGTTIN    : constant := 21; --  background tty read attempted
-   SIGTTOU    : constant := 22; --  background tty write attempted
-   SIGVTALRM  : constant := 26; --  virtual timer expired
-   SIGPROF    : constant := 27; --  profiling timer expired
-   SIGXCPU    : constant := 24; --  CPU time limit exceeded
-   SIGXFSZ    : constant := 25; --  filesize limit exceeded
-   SIGUNUSED  : constant := 31; --  unused signal (GNU/Linux)
-   SIGSTKFLT  : constant := 16; --  coprocessor stack fault (Linux)
-   SIGLTHRRES : constant := 32; --  GNU/LinuxThreads restart signal
-   SIGLTHRCAN : constant := 33; --  GNU/LinuxThreads cancel signal
-   SIGLTHRDBG : constant := 34; --  GNU/LinuxThreads debugger signal
+   SIGHUP     : constant := System.Linux.SIGHUP;
+   SIGINT     : constant := System.Linux.SIGINT;
+   SIGQUIT    : constant := System.Linux.SIGQUIT;
+   SIGILL     : constant := System.Linux.SIGILL;
+   SIGTRAP    : constant := System.Linux.SIGTRAP;
+   SIGIOT     : constant := System.Linux.SIGIOT;
+   SIGABRT    : constant := System.Linux.SIGABRT;
+   SIGFPE     : constant := System.Linux.SIGFPE;
+   SIGKILL    : constant := System.Linux.SIGKILL;
+   SIGBUS     : constant := System.Linux.SIGBUS;
+   SIGSEGV    : constant := System.Linux.SIGSEGV;
+   SIGPIPE    : constant := System.Linux.SIGPIPE;
+   SIGALRM    : constant := System.Linux.SIGALRM;
+   SIGTERM    : constant := System.Linux.SIGTERM;
+   SIGUSR1    : constant := System.Linux.SIGUSR1;
+   SIGUSR2    : constant := System.Linux.SIGUSR2;
+   SIGCLD     : constant := System.Linux.SIGCLD;
+   SIGCHLD    : constant := System.Linux.SIGCHLD;
+   SIGPWR     : constant := System.Linux.SIGPWR;
+   SIGWINCH   : constant := System.Linux.SIGWINCH;
+   SIGURG     : constant := System.Linux.SIGURG;
+   SIGPOLL    : constant := System.Linux.SIGPOLL;
+   SIGIO      : constant := System.Linux.SIGIO;
+   SIGLOST    : constant := System.Linux.SIGLOST;
+   SIGSTOP    : constant := System.Linux.SIGSTOP;
+   SIGTSTP    : constant := System.Linux.SIGTSTP;
+   SIGCONT    : constant := System.Linux.SIGCONT;
+   SIGTTIN    : constant := System.Linux.SIGTTIN;
+   SIGTTOU    : constant := System.Linux.SIGTTOU;
+   SIGVTALRM  : constant := System.Linux.SIGVTALRM;
+   SIGPROF    : constant := System.Linux.SIGPROF;
+   SIGXCPU    : constant := System.Linux.SIGXCPU;
+   SIGXFSZ    : constant := System.Linux.SIGXFSZ;
+   SIGUNUSED  : constant := System.Linux.SIGUNUSED;
+   SIGSTKFLT  : constant := System.Linux.SIGSTKFLT;
+   SIGLTHRRES : constant := System.Linux.SIGLTHRRES;
+   SIGLTHRCAN : constant := System.Linux.SIGLTHRCAN;
+   SIGLTHRDBG : constant := System.Linux.SIGLTHRDBG;
 
    SIGADAABORT : constant := SIGABRT;
    --  Change this if you want to use another signal for task abort.
@@ -181,12 +181,13 @@ package System.OS_Interface is
    pragma Convention (C, siginfo_t);
 
    type struct_sigaction is record
-      sa_handler   : System.Address;
-      sa_mask      : sigset_t;
-      sa_flags     : unsigned_long;
-      sa_restorer  : System.Address;
+      sa_handler  : System.Address;
+      sa_mask     : sigset_t;
+      sa_flags    : Interfaces.C.unsigned_long;
+      sa_restorer : System.Address;
    end record;
    pragma Convention (C, struct_sigaction);
+
    type struct_sigaction_ptr is access all struct_sigaction;
 
    type Machine_State is record
@@ -199,7 +200,8 @@ package System.OS_Interface is
    end record;
    type Machine_State_Ptr is access all Machine_State;
 
-   SA_SIGINFO  : constant := 16#04#;
+   SA_SIGINFO : constant := System.Linux.SA_SIGINFO;
+   SA_ONSTACK : constant := System.Linux.SA_ONSTACK;
 
    SIG_BLOCK   : constant := 0;
    SIG_UNBLOCK : constant := 1;
@@ -298,6 +300,25 @@ package System.OS_Interface is
    -----------
    -- Stack --
    -----------
+
+   type stack_t is record
+      ss_sp    : System.Address;
+      ss_flags : int;
+      ss_size  : size_t;
+   end record;
+   pragma Convention (C, stack_t);
+
+   function sigaltstack
+     (ss  : not null access stack_t;
+      oss : access stack_t) return int;
+   pragma Import (C, sigaltstack, "sigaltstack");
+
+   Alternate_Stack : aliased System.Address;
+   pragma Import (C, Alternate_Stack, "__gnat_alternate_stack");
+   --  The alternate signal stack for stack overflows
+
+   Alternate_Stack_Size : constant := 16 * 1024;
+   --  This must be in keeping with init.c:__gnat_alternate_stack
 
    function Get_Stack_Base (thread : pthread_t) return Address;
    pragma Inline (Get_Stack_Base);
@@ -483,9 +504,19 @@ package System.OS_Interface is
 
 private
 
-   type sigset_t is array (0 .. 127) of unsigned_char;
+   type sigset_t is array (0 .. 127) of Interfaces.C.unsigned_char;
    pragma Convention (C, sigset_t);
-   for sigset_t'Alignment use unsigned_long'Alignment;
+   for sigset_t'Alignment use Interfaces.C.unsigned_long'Alignment;
+
+   pragma Warnings (Off);
+   for struct_sigaction use record
+      sa_handler at                  0 range 0 .. Standard'Address_Size - 1;
+      sa_mask    at Linux.sa_mask_pos  range 0 .. 1023;
+      sa_flags   at Linux.sa_flags_pos range 0 .. Standard'Address_Size - 1;
+   end record;
+   --  We intentionally leave sa_restorer unspecified and let the compiler
+   --  append it after the last field, so disable corresponding warning.
+   pragma Warnings (On);
 
    type pid_t is new int;
 
@@ -526,20 +557,7 @@ private
    end record;
    pragma Convention (C, pthread_mutexattr_t);
 
-   type struct_pthread_fast_lock is record
-      status   : long;
-      spinlock : int;
-   end record;
-   pragma Convention (C, struct_pthread_fast_lock);
-
-   type pthread_mutex_t is record
-      m_reserved : int;
-      m_count    : int;
-      m_owner    : System.Address;
-      m_kind     : int;
-      m_lock     : struct_pthread_fast_lock;
-   end record;
-   pragma Convention (C, pthread_mutex_t);
+   type pthread_mutex_t is new System.Linux.pthread_mutex_t;
 
    type pthread_cond_t is array (0 .. 47) of unsigned_char;
    pragma Convention (C, pthread_cond_t);

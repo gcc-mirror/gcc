@@ -6,7 +6,8 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--             Copyright (C) 1991-1994, Florida State University            --
+--                     Copyright (C) 1995-2008, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,15 +32,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a Solaris version of this package
+--  This is a POSIX-like version of this package where no alternate stack
+--  is needed for stack checking.
 
---  This package provides low-level support for most tasking features
+--  Note: this file can only be used for POSIX compliant systems
 
 pragma Polling (Off);
 --  Turn off polling, we do not want ATC polling to take place during tasking
 --  operations. It causes infinite loops and other problems.
-
-with Ada.Unchecked_Conversion;
 
 with System.OS_Interface;
 
@@ -47,24 +47,19 @@ package System.Task_Primitives is
    pragma Preelaborate;
 
    type Lock is limited private;
-   type Lock_Ptr is access all Lock;
    --  Should be used for implementation of protected objects
 
    type RTS_Lock is limited private;
-   type RTS_Lock_Ptr is access all RTS_Lock;
    --  Should be used inside the runtime system. The difference between Lock
    --  and the RTS_Lock is that the later one serves only as a semaphore so
    --  that do not check for ceiling violations.
-
-   function To_Lock_Ptr is
-     new Ada.Unchecked_Conversion (RTS_Lock_Ptr, Lock_Ptr);
 
    type Suspension_Object is limited private;
    --  Should be used for the implementation of Ada.Synchronous_Task_Control
 
    type Task_Body_Access is access procedure;
-   --  Pointer to the task body's entry point (or possibly a wrapper
-   --  declared local to the GNARL).
+   --  Pointer to the task body's entry point (or possibly a wrapper declared
+   --  local to the GNARL).
 
    type Private_Data is limited private;
    --  Any information that the GNULLI needs maintained on a per-task basis.
@@ -85,31 +80,8 @@ package System.Task_Primitives is
 
 private
 
-   type Private_Task_Serial_Number is mod 2 ** 64;
-   --  Used to give each task a unique serial number
-
-   type Base_Lock is new System.OS_Interface.mutex_t;
-
-   type Owner_Int is new Integer;
-   for Owner_Int'Alignment use Standard'Maximum_Alignment;
-
-   type Owner_ID is access all Owner_Int;
-
-   function To_Owner_ID is
-     new Ada.Unchecked_Conversion (System.Address, Owner_ID);
-
-   type Lock is record
-      L              : aliased Base_Lock;
-      Ceiling        : System.Any_Priority := System.Any_Priority'First;
-      Saved_Priority : System.Any_Priority :=  System.Any_Priority'First;
-      Owner          : Owner_ID;
-      Next           : Lock_Ptr;
-      Level          : Private_Task_Serial_Number := 0;
-      Buddy          : Owner_ID;
-      Frozen         : Boolean := False;
-   end record;
-
-   type RTS_Lock is new Lock;
+   type Lock is new System.OS_Interface.pthread_mutex_t;
+   type RTS_Lock is new System.OS_Interface.pthread_mutex_t;
 
    type Suspension_Object is record
       State : Boolean;
@@ -121,18 +93,15 @@ private
       Waiting : Boolean;
       --  Flag showing if there is a task already suspended on this object
 
-      L : aliased System.OS_Interface.mutex_t;
+      L : aliased System.OS_Interface.pthread_mutex_t;
       --  Protection for ensuring mutual exclusion on the Suspension_Object
 
-      CV : aliased System.OS_Interface.cond_t;
+      CV : aliased System.OS_Interface.pthread_cond_t;
       --  Condition variable used to queue threads until condition is signaled
    end record;
 
-   --  Note that task support on gdb relies on the fact that the first two
-   --  fields of Private_Data are Thread and LWP.
-
    type Private_Data is record
-      Thread : aliased System.OS_Interface.thread_t;
+      Thread : aliased System.OS_Interface.pthread_t;
       pragma Atomic (Thread);
       --  Thread field may be updated by two different threads of control.
       --  (See, Enter_Task and Create_Task in s-taprop.adb). They put the same
@@ -140,19 +109,16 @@ private
       --  operations and the only thing we have to make sure is that they are
       --  updated in atomic fashion.
 
-      LWP : System.OS_Interface.lwpid_t;
-      --  The LWP id of the thread. Set by self in Enter_Task
+      LWP : aliased System.Address;
+      --  The purpose of this field is to provide a better tasking support on
+      --  gdb. The order of the two first fields (Thread and LWP) is important.
+      --  On targets where lwp is not relevant, this is equivalent to Thread.
 
-      CV : aliased System.OS_Interface.cond_t;
-      L  : aliased RTS_Lock;
+      CV : aliased System.OS_Interface.pthread_cond_t;
+      --  Should be commented ??? (in all versions of taspri)
+
+      L : aliased RTS_Lock;
       --  Protection for all components is lock L
-
-      Active_Priority : System.Any_Priority := System.Any_Priority'First;
-      --  Simulated active priority, used iff Priority_Ceiling_Support is True
-
-      Locking : Lock_Ptr;
-      Locks   : Lock_Ptr;
-      Wakeups : Natural := 0;
    end record;
 
 end System.Task_Primitives;

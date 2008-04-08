@@ -40,6 +40,7 @@ with Ada.Unchecked_Deallocation;
 
 with System.Tasking.Debug;
 with System.Address_Image;
+with System.Task_Primitives;
 with System.Task_Primitives.Operations;
 with System.Tasking.Utilities;
 with System.Tasking.Queuing;
@@ -134,9 +135,6 @@ package body System.Tasking.Stages is
    --
    --  For tasks created by an allocator that fails, due to an exception, it is
    --  called from Expunge_Unactivated_Tasks.
-   --
-   --  It is also called from Ada.Unchecked_Deallocation, for objects that are
-   --  or contain tasks.
    --
    --  Different code is used at master completion, in Terminate_Dependents,
    --  due to a need for tighter synchronization with the master.
@@ -408,8 +406,7 @@ package body System.Tasking.Stages is
 
       Initialization.Undefer_Abort_Nestable (Self_ID);
 
-      --  ???
-      --  Why do we need to allow for nested deferral here?
+      --  ??? Why do we need to allow for nested deferral here?
 
       if Runtime_Traces then
          Send_Trace_Info (T_Activate);
@@ -457,23 +454,28 @@ package body System.Tasking.Stages is
    --  called to create a new task.
 
    procedure Create_Task
-     (Priority      : Integer;
-      Size          : System.Parameters.Size_Type;
-      Task_Info     : System.Task_Info.Task_Info_Type;
-      Num_Entries   : Task_Entry_Index;
-      Master        : Master_Level;
-      State         : Task_Procedure_Access;
-      Discriminants : System.Address;
-      Elaborated    : Access_Boolean;
-      Chain         : in out Activation_Chain;
-      Task_Image    : String;
-      Created_Task  : out Task_Id)
+     (Priority          : Integer;
+      Size              : System.Parameters.Size_Type;
+      Task_Info         : System.Task_Info.Task_Info_Type;
+      Relative_Deadline : Ada.Real_Time.Time_Span;
+      Num_Entries       : Task_Entry_Index;
+      Master            : Master_Level;
+      State             : Task_Procedure_Access;
+      Discriminants     : System.Address;
+      Elaborated        : Access_Boolean;
+      Chain             : in out Activation_Chain;
+      Task_Image        : String;
+      Created_Task      : out Task_Id)
    is
       T, P          : Task_Id;
       Self_ID       : constant Task_Id := STPO.Self;
       Success       : Boolean;
       Base_Priority : System.Any_Priority;
       Len           : Natural;
+
+      pragma Unreferenced (Relative_Deadline);
+      --  EDF scheduling is not supported by any of the target platforms so
+      --  this parameter is not passed any further.
 
    begin
       --  If Master is greater than the current master, it means that Master
@@ -749,7 +751,7 @@ package body System.Tasking.Stages is
          Unlock_RTS;
       end if;
 
-      --  We need to explicitely wait for the task to be terminated here
+      --  We need to explicitly wait for the task to be terminated here
       --  because on true concurrent system, we may end this procedure before
       --  the tasks are really terminated.
 
@@ -829,6 +831,7 @@ package body System.Tasking.Stages is
          Initialization.Task_Lock (Self_Id);
 
          Lock_RTS;
+         Initialization.Finalize_Attributes_Link.all (T);
          Initialization.Remove_From_All_Tasks_List (T);
          Unlock_RTS;
 
@@ -896,12 +899,12 @@ package body System.Tasking.Stages is
    -- Task_Wrapper --
    ------------------
 
-   --  The task wrapper is a procedure that is called first for each task
-   --  task body, and which in turn calls the compiler-generated task body
-   --  procedure. The wrapper's main job is to do initialization for the task.
-   --  It also has some locally declared objects that server as per-task local
-   --  data. Task finalization is done by Complete_Task, which is called from
-   --  an at-end handler that the compiler generates.
+   --  The task wrapper is a procedure that is called first for each task body
+   --  and which in turn calls the compiler-generated task body procedure.
+   --  The wrapper's main job is to do initialization for the task. It also
+   --  has some locally declared objects that serve as per-task local data.
+   --  Task finalization is done by Complete_Task, which is called from an
+   --  at-end handler that the compiler generates.
 
    procedure Task_Wrapper (Self_ID : Task_Id) is
       use type SSE.Storage_Offset;
@@ -909,6 +912,13 @@ package body System.Tasking.Stages is
       use System.Stack_Usage;
 
       Bottom_Of_Stack : aliased Integer;
+
+      Task_Alternate_Stack :
+        aliased SSE.Storage_Array (1 .. Alternate_Stack_Size);
+      --  The alternate signal stack for this task, if any
+
+      Use_Alternate_Stack : constant Boolean := Alternate_Stack_Size /= 0;
+      --  Whether to use above alternate signal stack for stack overflows
 
       Secondary_Stack_Size :
         constant SSE.Storage_Offset :=
@@ -921,6 +931,9 @@ package body System.Tasking.Stages is
       --  Why are warnings being turned off here???
 
       Secondary_Stack_Address : System.Address := Secondary_Stack'Address;
+      --  Address of secondary stack. In the fixed secondary stack case, this
+      --  value is not modified, causing a warning, hence the bracketing with
+      --  Warnings (Off/On). But why is so much *more* bracketed???
 
       Small_Overflow_Guard : constant := 12 * 1024;
       --  Note: this used to be 4K, but was changed to 12K, since smaller
@@ -939,9 +952,6 @@ package body System.Tasking.Stages is
       --  Size of the overflow guard, used by dynamic stack usage analysis
 
       pragma Warnings (On);
-      --  Address of secondary stack. In the fixed secondary stack case, this
-      --  value is not modified, causing a warning, hence the bracketing with
-      --  Warnings (Off/On). But why is so much *more* bracketed ???
 
       SEH_Table : aliased SSE.Storage_Array (1 .. 8);
       --  Structured Exception Registration table (2 words)
@@ -1015,6 +1025,10 @@ package body System.Tasking.Stages is
            Secondary_Stack'Address;
          SST.SS_Init (Secondary_Stack_Address, Integer (Secondary_Stack'Last));
          Size := Size - Natural (Secondary_Stack_Size);
+      end if;
+
+      if Use_Alternate_Stack then
+         Self_ID.Common.Task_Alternate_Stack := Task_Alternate_Stack'Address;
       end if;
 
       if System.Stack_Usage.Is_Enabled then
@@ -1309,7 +1323,8 @@ package body System.Tasking.Stages is
       use System.Standard_Library;
 
       function To_Address is new
-        Ada.Unchecked_Conversion (Task_Id, System.Address);
+        Ada.Unchecked_Conversion
+         (Task_Id, System.Task_Primitives.Task_Address);
 
       function Tailored_Exception_Information
         (E : Exception_Occurrence) return String;

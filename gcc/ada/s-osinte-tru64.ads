@@ -176,6 +176,7 @@ package System.OS_Interface is
 
    SA_NODEFER : constant := 8;
    SA_SIGINFO : constant := 16#40#;
+   SA_ONSTACK : constant := 16#01#;
 
    function sigaction
      (sig  : Signal;

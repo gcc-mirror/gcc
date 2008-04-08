@@ -156,7 +156,8 @@ package System.OS_Interface is
    pragma Convention (C, struct_sigaction);
    type struct_sigaction_ptr is access all struct_sigaction;
 
-   SA_SIGINFO  : constant := 16#10#;
+   SA_SIGINFO : constant := 16#10#;
+   SA_ONSTACK : constant := 16#01#;
 
    SIG_BLOCK   : constant := 0;
    SIG_UNBLOCK : constant := 1;
@@ -278,26 +279,43 @@ package System.OS_Interface is
    -- Stack --
    -----------
 
+   type stack_t is record
+      ss_sp    : System.Address;
+      ss_flags : int;
+      ss_size  : size_t;
+   end record;
+   pragma Convention (C, stack_t);
+
+   function sigaltstack
+     (ss  : not null access stack_t;
+      oss : access stack_t) return int;
+   pragma Import (C, sigaltstack, "sigaltstack");
+
+   Alternate_Stack : aliased System.Address;
+   pragma Import (C, Alternate_Stack, "__gnat_alternate_stack");
+   --  The alternate signal stack for stack overflows
+
+   Alternate_Stack_Size : constant := 16 * 1024;
+   --  This must be in keeping with init.c:__gnat_alternate_stack
+
    Stack_Base_Available : constant Boolean := False;
    --  Indicates wether the stack base is available on this target
 
    function Get_Stack_Base (thread : pthread_t) return Address;
    pragma Inline (Get_Stack_Base);
-   --  returns the stack base of the specified thread.
-   --  Only call this function when Stack_Base_Available is True.
+   --  Returns the stack base of the specified thread. Only call this function
+   --  when Stack_Base_Available is True.
 
    function Get_Page_Size return size_t;
    function Get_Page_Size return Address;
    pragma Import (C, Get_Page_Size, "getpagesize");
-   --  returns the size of a page, or 0 if this is not relevant on this
-   --  target
+   --  Returns the size of a page, or 0 if this is not relevant on this target
 
    PROT_NONE  : constant := 0;
    PROT_READ  : constant := 1;
    PROT_WRITE : constant := 2;
    PROT_EXEC  : constant := 4;
    PROT_ALL   : constant := PROT_READ + PROT_WRITE + PROT_EXEC;
-
    PROT_ON    : constant := PROT_READ;
    PROT_OFF   : constant := PROT_ALL;
 

@@ -174,7 +174,8 @@ package System.OS_Interface is
    pragma Convention (C, struct_sigaction);
    type struct_sigaction_ptr is access all struct_sigaction;
 
-   SA_SIGINFO  : constant := 16#0100#;
+   SA_SIGINFO : constant := 16#0100#;
+   SA_ONSTACK : constant := 16#0001#;
 
    SIG_BLOCK   : constant := 0;
    SIG_UNBLOCK : constant := 1;
@@ -291,6 +292,24 @@ package System.OS_Interface is
    -- Stack --
    -----------
 
+   type stack_t is record
+      ss_sp    : System.Address;
+      ss_size  : size_t;
+      ss_flags : int;
+   end record;
+   pragma Convention (C, stack_t);
+
+   function sigaltstack
+     (ss  : not null access stack_t;
+      oss : access stack_t) return int;
+   pragma Import (C, sigaltstack, "sigaltstack");
+
+   Alternate_Stack : aliased System.Address;
+   --  This is a dummy definition, never used (Alternate_Stack_Size is null)
+
+   Alternate_Stack_Size : constant := 0;
+   --  No alternate signal stack is used on this platform
+
    Stack_Base_Available : constant Boolean := False;
    --  Indicates wether the stack base is available on this target
 
@@ -309,7 +328,6 @@ package System.OS_Interface is
    PROT_WRITE : constant := 2;
    PROT_EXEC  : constant := 4;
    PROT_ALL   : constant := PROT_READ + PROT_WRITE + PROT_EXEC;
-
    PROT_ON    : constant := PROT_READ;
    PROT_OFF   : constant := PROT_ALL;
 

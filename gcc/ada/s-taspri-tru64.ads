@@ -65,6 +65,18 @@ package System.Task_Primitives is
    --  Any information that the GNULLI needs maintained on a per-task basis.
    --  A component of this type is guaranteed to be included
 
+   subtype Task_Address is System.Address;
+   --  In some versions of Task_Primitives, notably for VMS, Task_Address is
+   --  the short version of address defined in System.Aux_DEC. To avoid
+   --  dragging Aux_DEC into tasking packages a tasking specific subtype is
+   --  defined here.
+
+   Task_Address_Size : constant := Standard'Address_Size;
+   --  The size of Task_Address
+
+   Alternate_Stack_Size : constant := 0;
+   --  No alternate signal stack is used on this platform
+
 private
 
    type Lock is record
