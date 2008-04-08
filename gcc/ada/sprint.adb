@@ -35,6 +35,7 @@ with Nlists;   use Nlists;
 with Opt;      use Opt;
 with Output;   use Output;
 with Rtsfind;  use Rtsfind;
+with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Sinput.D; use Sinput.D;
@@ -1331,6 +1332,7 @@ package body Sprint is
             Sprint_Node (Subtype_Indication (Node));
 
             if Present (Interface_List (Node)) then
+               Write_Str_With_Col_Check (" and ");
                Sprint_And_List (Interface_List (Node));
                Write_Str_With_Col_Check (" with ");
             end if;
@@ -3664,10 +3666,12 @@ package body Sprint is
                Write_Char (' ');
             end loop;
 
-            --  If we have a constructed declaration, print it
+            --  If we have a constructed declaration for the itype, print it
 
-            if Present (P) and then Nkind (P) in N_Declaration then
-
+            if Present (P)
+              and then Nkind (P) in N_Declaration
+              and then Defining_Entity (P) = Typ
+            then
                --  We must set Itype_Printed true before the recursive call to
                --  print the node, otherwise we get an infinite recursion!
 
