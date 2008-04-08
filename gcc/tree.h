@@ -4846,6 +4846,9 @@ extern bool tree_binary_nonnegative_warnv_p (enum tree_code, tree, tree, tree,
                                              bool *);
 extern bool tree_single_nonnegative_warnv_p (tree t, bool *strict_overflow_p);
 extern bool tree_invalid_nonnegative_warnv_p (tree t, bool *strict_overflow_p);
+extern bool tree_call_nonnegative_warnv_p (enum tree_code code, tree, tree,
+                                           tree, tree, bool *);
+
 extern bool tree_expr_nonzero_warnv_p (tree, bool *);
 
 extern bool fold_real_zero_addition_p (const_tree, const_tree, int);
