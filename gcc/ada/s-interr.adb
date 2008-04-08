@@ -451,6 +451,17 @@ package body System.Interrupts is
       end loop;
    end Install_Handlers;
 
+   ---------------------------------
+   -- Install_Restricted_Handlers --
+   ---------------------------------
+
+   procedure Install_Restricted_Handlers (Handlers : New_Handler_Array) is
+   begin
+      for N in Handlers'Range loop
+         Attach_Handler (Handlers (N).Handler, Handlers (N).Interrupt, True);
+      end loop;
+   end Install_Restricted_Handlers;
+
    ----------------
    -- Is_Blocked --
    ----------------
@@ -942,7 +953,7 @@ package body System.Interrupts is
 
       --  Abort_Task_Interrupt is one of the Interrupt unmasked
       --  in all tasks. We mask the Interrupt in this particular task
-      --  so that "sigwait" is possible to catch an explicitely sent
+      --  so that "sigwait" is possible to catch an explicitly sent
       --  Abort_Task_Interrupt from the Server_Tasks.
 
       --  This sigwaiting is needed so that we make sure a Server_Task is
@@ -1228,7 +1239,7 @@ package body System.Interrupts is
 
       --  Abort_Task_Interrupt is one of the Interrupt unmasked in all tasks.
       --  We mask the Interrupt in this particular task so that "sigwait" is
-      --  possible to catch an explicitely sent Abort_Task_Interrupt from the
+      --  possible to catch an explicitly sent Abort_Task_Interrupt from the
       --  Interrupt_Manager.
 
       --  There are two Interrupt interrupts that this task catch through
@@ -1412,7 +1423,7 @@ package body System.Interrupts is
          end if;
 
          --  Undefer abort here to allow a window for this task to be aborted
-         --  at the time of system shutdown. We also explicitely test for
+         --  at the time of system shutdown. We also explicitly test for
          --  Pending_Action in case System.Parameters.No_Abort is True.
 
       end loop;

@@ -290,6 +290,17 @@ package body System.Interrupts is
       end loop;
    end Install_Handlers;
 
+   ---------------------------------
+   -- Install_Restricted_Handlers --
+   ---------------------------------
+
+   procedure Install_Restricted_Handlers (Handlers : New_Handler_Array) is
+   begin
+      for N in Handlers'Range loop
+         Attach_Handler (Handlers (N).Handler, Handlers (N).Interrupt, True);
+      end loop;
+   end Install_Restricted_Handlers;
+
    ---------------------
    -- Current_Handler --
    ---------------------
