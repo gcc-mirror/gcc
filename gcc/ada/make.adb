@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -589,11 +589,6 @@ package body Make is
    -- Gnatmake Routines --
    -----------------------
 
-   Gnatmake_Called : Boolean := False;
-   --  Set to True when procedure Gnatmake is called.
-   --  Attempt to delete temporary files is made only when Gnatmake_Called
-   --  is True.
-
    subtype Lib_Mark_Type is Byte;
    --  Used in Mark_Directory
 
@@ -698,7 +693,7 @@ package body Make is
 
    Display_Executed_Programs : Boolean := True;
    --  Set to True if name of commands should be output on stderr (or on stdout
-   --  if the Commands_To_Stdout flag was set by use of the -S switch).
+   --  if the Commands_To_Stdout flag was set by use of the -eS switch).
 
    Output_File_Name_Seen : Boolean := False;
    --  Set to True after having scanned the file_name for
@@ -824,7 +819,8 @@ package body Make is
    --  The path name of a mapping file specified by switch -C=
 
    procedure Delete_Mapping_Files;
-   --  Delete all temporary mapping files
+   --  Delete all temporary mapping files. Called only in Delete_All_Temp_Files
+   --  which ensures that Debug_Flag_N is False.
 
    procedure Init_Mapping_File
      (Project : Project_Id;
@@ -834,10 +830,13 @@ package body Make is
    --  the index to the name of the file in the array The_Mapping_File_Names.
 
    procedure Delete_Temp_Config_Files;
-   --  Delete all temporary config files
+   --  Delete all temporary config files. Must not be called if Debug_Flag_N
+   --  is False.
 
    procedure Delete_All_Temp_Files;
-   --  Delete all temp files (config files, mapping files, path files)
+   --  Delete all temp files (config files, mapping files, path files), unless
+   --  Debug_Flag_N is True (in which case all temp files are left for user
+   --  examination).
 
    -------------------------------------------------
    -- Subprogram declarations moved from the spec --
@@ -1414,7 +1413,7 @@ package body Make is
 
       when Directory_Error =>
          Make_Failed ("unable to change to object directory """ &
-                      Get_Name_String
+                      Path_Or_File_Name
                         (Project_Tree.Projects.Table
                            (Actual_Project).Object_Directory) &
                       """ of project " &
@@ -2838,6 +2837,7 @@ package body Make is
                      end loop;
 
                      if The_Data.Library
+                       and then not The_Data.Externally_Built
                        and then not The_Data.Need_To_Build_Lib
                      then
                         --  Add to the Q all sources of the project that
@@ -3487,11 +3487,10 @@ package body Make is
 
                --  If we could not read the ALI file that was just generated
                --  then there could be a problem reading either the ALI or the
-               --  corresponding object file (if Check_Object_Consistency
-               --  is set Read_Library_Info checks that the time stamp of the
-               --  object file is more recent than that of the ALI). For an
-               --  example of problems caught by this test see [6625-009].
-               --  However, we record a failure only if not already done.
+               --  corresponding object file (if Check_Object_Consistency is
+               --  set Read_Library_Info checks that the time stamp of the
+               --  object file is more recent than that of the ALI). However,
+               --  we record a failure only if not already done.
 
                else
                   if Compilation_OK and not Syntax_Only then
@@ -3655,8 +3654,9 @@ package body Make is
 
       --  Delete any temporary configuration pragma file
 
-      Delete_Temp_Config_Files;
-
+      if not Debug.Debug_Flag_N then
+         Delete_Temp_Config_Files;
+      end if;
    end Compile_Sources;
 
    -----------------------------------
@@ -3863,8 +3863,15 @@ package body Make is
                            Global_Attribute.Project);
             begin
                if not Is_Regular_File (Path) then
-                  Make_Failed
-                    ("cannot find configuration pragmas file ", Path);
+                  if Debug.Debug_Flag_F then
+                     Make_Failed
+                       ("cannot find configuration pragmas file ",
+                        File_Name (Path));
+                  else
+                     Make_Failed
+                       ("cannot find configuration pragmas file ",
+                        Path);
+                  end if;
                end if;
 
                Last := Last + 1;
@@ -3901,8 +3908,15 @@ package body Make is
                            Local_Attribute.Project);
             begin
                if not Is_Regular_File (Path) then
-                  Make_Failed
-                    ("cannot find configuration pragmas file ", Path);
+                  if Debug.Debug_Flag_F then
+                     Make_Failed
+                       ("cannot find configuration pragmas file ",
+                        File_Name (Path));
+
+                  else
+                     Make_Failed
+                       ("cannot find configuration pragmas file ", Path);
+                  end if;
                end if;
 
                Last := Last + 1;
@@ -3945,7 +3959,7 @@ package body Make is
 
    procedure Delete_All_Temp_Files is
    begin
-      if Gnatmake_Called and not Debug.Debug_Flag_N then
+      if not Debug.Debug_Flag_N then
          Delete_Mapping_Files;
          Delete_Temp_Config_Files;
          Prj.Env.Delete_All_Path_Files (Project_Tree);
@@ -3959,18 +3973,21 @@ package body Make is
    procedure Delete_Mapping_Files is
       Success : Boolean;
       pragma Warnings (Off, Success);
+
    begin
-      if not Debug.Debug_Flag_N then
-         if The_Mapping_File_Names /= null then
-            for Project in The_Mapping_File_Names'Range (1) loop
-               for Index in 1 .. Last_Mapping_File_Names (Project) loop
-                  Delete_File
-                    (Name => Get_Name_String
-                               (The_Mapping_File_Names (Project, Index)),
-                     Success => Success);
-               end loop;
+      --  The caller is responsible for ensuring that Debug_Flag_N is False
+
+      pragma Assert (not Debug.Debug_Flag_N);
+
+      if The_Mapping_File_Names /= null then
+         for Project in The_Mapping_File_Names'Range (1) loop
+            for Index in 1 .. Last_Mapping_File_Names (Project) loop
+               Delete_File
+                 (Name => Get_Name_String
+                            (The_Mapping_File_Names (Project, Index)),
+                  Success => Success);
             end loop;
-         end if;
+         end loop;
       end if;
    end Delete_Mapping_Files;
 
@@ -3983,7 +4000,11 @@ package body Make is
       pragma Warnings (Off, Success);
 
    begin
-      if (not Debug.Debug_Flag_N) and Main_Project /= No_Project then
+      --  The caller is responsible for ensuring that Debug_Flag_N is False
+
+      pragma Assert (not Debug.Debug_Flag_N);
+
+      if Main_Project /= No_Project then
          for Project in Project_Table.First ..
                         Project_Table.Last (Project_Tree.Projects)
          loop
@@ -4004,10 +4025,10 @@ package body Make is
                                   (Project).Config_File_Name),
                   Success => Success);
 
-               --  Make sure that we don't have a config file for this
-               --  project, in case when there are several mains.
-               --  In this case, we will recreate another config file:
-               --  we cannot reuse the one that we just deleted!
+               --  Make sure that we don't have a config file for this project,
+               --  in case there are several mains. In this case, we will
+               --  recreate another config file: we cannot reuse the one that
+               --  we just deleted!
 
                Project_Tree.Projects.Table (Project).
                  Config_Checked := False;
@@ -4069,7 +4090,40 @@ package body Make is
                       Args (J) (Args (J)'First .. Args (J)'First + 2) /= "-F="
                   then
                      Write_Str (" ");
-                     Write_Str (Args (J).all);
+
+                     --  If -df is used, only display file names, not path
+                     --  names.
+
+                     if Debug.Debug_Flag_F then
+                        declare
+                           Equal_Pos : Natural;
+                        begin
+                           Equal_Pos := Args (J)'First - 1;
+                           for K in Args (J)'Range loop
+                              if Args (J) (K) = '=' then
+                                 Equal_Pos := K;
+                                 exit;
+                              end if;
+                           end loop;
+
+                           if Is_Absolute_Path
+                             (Args (J) (Equal_Pos + 1 .. Args (J)'Last))
+                           then
+                              Write_Str
+                                (Args (J) (Args (J)'First .. Equal_Pos));
+                              Write_Str
+                                (File_Name
+                                   (Args (J)
+                                    (Equal_Pos + 1 .. Args (J)'Last)));
+
+                           else
+                              Write_Str (Args (J).all);
+                           end if;
+                        end;
+
+                     else
+                        Write_Str (Args (J).all);
+                     end if;
                   end if;
                end if;
             end if;
@@ -4583,8 +4637,6 @@ package body Make is
    --  This body is very long, should be broken down ???
 
    begin
-      Gnatmake_Called := True;
-
       Install_Int_Handler (Sigint_Intercepted'Access);
 
       Do_Compile_Step := True;
@@ -4716,16 +4768,12 @@ package body Make is
                      --  If no sources to compile, then there is nothing to do
 
                      if Osint.Number_Of_Files = 0 then
-                        if not Debug.Debug_Flag_N then
-                           Delete_Mapping_Files;
-                           Prj.Env.Delete_All_Path_Files (Project_Tree);
-                        end if;
-
                         if not Quiet_Output then
                            Osint.Write_Program_Name;
                            Write_Line (": no sources to compile");
                         end if;
 
+                        Delete_All_Temp_Files;
                         Exit_Program (E_Success);
                      end if;
                   end if;
@@ -4875,6 +4923,8 @@ package body Make is
                Gcc_Path      => Gcc_Path,
                Bind          => Bind_Only,
                Link          => Link_Only);
+
+            Delete_All_Temp_Files;
             Exit_Program (E_Success);
 
          else
@@ -6490,10 +6540,7 @@ package body Make is
       --  Delete the temporary mapping file that was created if we are
       --  using project files.
 
-      if not Debug.Debug_Flag_N then
-         Delete_Mapping_Files;
-         Prj.Env.Delete_All_Path_Files (Project_Tree);
-      end if;
+      Delete_All_Temp_Files;
 
    exception
       when X : others =>
@@ -6770,6 +6817,14 @@ package body Make is
             Project_File_Name => Project_File_Name.all,
             Packages_To_Check => Packages_To_Check_By_Gnatmake);
 
+         --  The parsing of project files may have changed the current output
+
+         if Commands_To_Stdout then
+            Set_Standard_Output;
+         else
+            Set_Standard_Error;
+         end if;
+
          if Main_Project = No_Project then
             Make_Failed ("""", Project_File_Name.all, """ processing failed");
          end if;
@@ -6852,6 +6907,7 @@ package body Make is
       Put_In_Q : Boolean := Into_Q;
       Unit     : Unit_Data;
       Sfile    : File_Name_Type;
+      Index    : Int;
 
       Extending : constant Boolean :=
                     Project_Tree.Projects.Table
@@ -6899,6 +6955,7 @@ package body Make is
       loop
          Unit  := Project_Tree.Units.Table (Id);
          Sfile := No_File;
+         Index := 0;
 
          --  If there is a source for the body, and the body has not been
          --  locally removed,
@@ -6937,13 +6994,16 @@ package body Make is
 
                      if Sinput.P.Source_File_Is_Subunit (Src_Ind) then
                         Sfile := No_File;
+                        Index := 0;
                      else
                         Sfile := Unit.File_Names (Body_Part).Display_Name;
+                        Index := Unit.File_Names (Body_Part).Index;
                      end if;
                   end;
 
                else
                   Sfile := Unit.File_Names (Body_Part).Display_Name;
+                  Index := Unit.File_Names (Body_Part).Index;
                end if;
             end if;
 
@@ -6956,6 +7016,7 @@ package body Make is
             --  this one.
 
             Sfile := Unit.File_Names (Specification).Display_Name;
+            Index := Unit.File_Names (Specification).Index;
          end if;
 
          --  If Put_In_Q is True, we insert into the Q
@@ -6972,15 +7033,15 @@ package body Make is
             --  And of course, we only insert in the Q if the source is not
             --  marked.
 
-            if Sfile /= No_File and then not Is_Marked (Sfile) then
+            if Sfile /= No_File and then not Is_Marked (Sfile, Index) then
                if Verbose_Mode then
                   Write_Str ("Adding """);
                   Write_Str (Get_Name_String (Sfile));
                   Write_Line (""" to the queue");
                end if;
 
-               Insert_Q (Sfile);
-               Mark (Sfile);
+               Insert_Q (Sfile, Index => Index);
+               Mark (Sfile, Index);
             end if;
 
          elsif Sfile /= No_File then
@@ -6996,7 +7057,7 @@ package body Make is
                Write_Line (""" as if on the command line");
             end if;
 
-            Osint.Add_File (Get_Name_String (Sfile));
+            Osint.Add_File (Get_Name_String (Sfile), Index);
             Put_In_Q := True;
 
             --  As we may look into the Q later, ensure the Q has been
@@ -7404,11 +7465,7 @@ package body Make is
 
    procedure Report_Compilation_Failed is
    begin
-      if not Debug.Debug_Flag_N then
-         Delete_Mapping_Files;
-         Prj.Env.Delete_All_Path_Files (Project_Tree);
-      end if;
-
+      Delete_All_Temp_Files;
       Exit_Program (E_Fatal);
    end Report_Compilation_Failed;
 
@@ -7421,7 +7478,6 @@ package body Make is
    begin
       Set_Standard_Error;
       Write_Line ("*** Interrupted ***");
-      Delete_All_Temp_Files;
 
       --  Send SIGINT to all outstanding compilation processes spawned
 
@@ -7429,7 +7485,10 @@ package body Make is
          Kill (Running_Compile (J).Pid, SIGINT, 1);
       end loop;
 
+      Delete_All_Temp_Files;
       OS_Exit (1);
+      --  ??? OS_Exit (1) is equivalent to Exit_Program (E_No_Compile),
+      --  shouldn't that be Exit_Program (E_Abort) instead?
    end Sigint_Intercepted;
 
    -------------------

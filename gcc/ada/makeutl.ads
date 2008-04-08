@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -129,6 +129,9 @@ package Makeutl is
    --  Parent. This subprogram is only called when using project files.
    --  For gnatbind switches, Including_L_Switch is False, because the
    --  argument of the -L switch is not a path.
+
+   function Path_Or_File_Name (Path : Path_Name_Type) return String;
+   --  Returns a file name if -df is used, otherwise return a path name
 
    ----------------------
    -- Marking Routines --
