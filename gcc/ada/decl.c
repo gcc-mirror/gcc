@@ -5807,7 +5807,9 @@ static int
 adjust_packed (tree field_type, tree record_type, int packed)
 {
   /* If the field contains an item of variable size, we cannot pack it
-     because we cannot create temporaries of non-fixed size.  */
+     because we cannot create temporaries of non-fixed size in case
+     we need to take the address of the field.  See addressable_p and
+     the notes on the addressability issues for further details.  */
   if (is_variable_size (field_type))
     return 0;
 
