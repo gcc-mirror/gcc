@@ -1,3 +1,11 @@
+2008-04-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/parent_ltd_with-child_full_view.adb: New test.
+	* gnat.dg/rt1.adb: New test.
+	* gnat.dg/test_time_stamp.adb: New test.
+	* gnat.dg/specs/warn_star.ads: New test.
+	* gnat.dg/specs/aggr1.ads: New test.
+
 2008-04-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/25829 28655
