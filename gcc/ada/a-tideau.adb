@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -201,15 +201,23 @@ package body Ada.Text_IO.Decimal_Aux is
       Ptr  : Natural := 0;
 
    begin
-      if Exp = 0 then
-         Fore := To'Length - 1 - Aft;
-      else
-         Fore := To'Length - 2 - Aft - Exp;
+      --  Compute Fore, allowing for Aft digits and the decimal dot
+
+      Fore := To'Length - Field'Max (1, Aft) - 1;
+
+      --  Allow for Exp and two more for E+ or E- if exponent present
+
+      if Exp /= 0 then
+         Fore := Fore - 2 - Exp;
       end if;
+
+      --  Make sure we have enough room
 
       if Fore < 1 then
          raise Layout_Error;
       end if;
+
+      --  Do the conversion and check length of result
 
       Set_Image_Decimal (Item, Buf, Ptr, Scale, Fore, Aft, Exp);
 
