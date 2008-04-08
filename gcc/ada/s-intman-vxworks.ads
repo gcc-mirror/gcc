@@ -103,9 +103,9 @@ package System.Interrupt_Management is
    --  each task.
 
    procedure Initialize;
-   --  Initialize the various variables defined in this package.
-   --  This procedure must be called before accessing any object from this
-   --  package and can be called multiple times.
+   --  Initialize the various variables defined in this package. This procedure
+   --  must be called before accessing any object from this package and can be
+   --  called multiple times (only the first call has any effect).
 
 private
    type Interrupt_Mask is new System.OS_Interface.sigset_t;

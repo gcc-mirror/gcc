@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,8 +49,11 @@ package body System.Interrupt_Management is
    Exception_Action : aliased struct_sigaction;
    --  Keep this variable global so that it is initialized only once
 
-   procedure Map_And_Raise_Exception (signo : Signal);
-   pragma Import (C, Map_And_Raise_Exception, "__gnat_map_signal");
+   procedure Notify_Exception
+     (signo      : Signal;
+      siginfo    : System.Address;
+      sigcontext : System.Address);
+   pragma Import (C, Notify_Exception, "__gnat_error_handler");
    --  Map signal to Ada exception and raise it.  Different versions
    --  of VxWorks need different mappings.
 
@@ -70,28 +73,6 @@ package body System.Interrupt_Management is
    --    'r'   Interrupt_State pragma set state to Runtime
    --    's'   Interrupt_State pragma set state to System (use "default"
    --           system handler)
-
-   procedure Notify_Exception (signo : Signal);
-   --  Identify the Ada exception to be raised using
-   --  the information when the system received a synchronous signal.
-
-   ----------------------
-   -- Notify_Exception --
-   ----------------------
-
-   procedure Notify_Exception (signo : Signal) is
-      Mask   : aliased sigset_t;
-
-      Result : int;
-      pragma Unreferenced (Result);
-
-   begin
-      Result := pthread_sigmask (SIG_SETMASK, null, Mask'Access);
-      Result := sigdelset (Mask'Access, signo);
-      Result := pthread_sigmask (SIG_SETMASK, Mask'Access, null);
-
-      Map_And_Raise_Exception (signo);
-   end Notify_Exception;
 
    ---------------------------
    -- Initialize_Interrupts --
@@ -118,10 +99,12 @@ package body System.Interrupt_Management is
    ----------------
 
    Initialized : Boolean := False;
+   --  Set to True once Initialize is called, further calls have no effect
 
    procedure Initialize is
       mask   : aliased sigset_t;
       Result : int;
+
    begin
       if Initialized then
          return;
@@ -135,7 +118,7 @@ package body System.Interrupt_Management is
       Abort_Task_Interrupt := SIGABRT;
 
       Exception_Action.sa_handler := Notify_Exception'Address;
-      Exception_Action.sa_flags := SA_ONSTACK;
+      Exception_Action.sa_flags := SA_ONSTACK + SA_SIGINFO;
       Result := sigemptyset (mask'Access);
       pragma Assert (Result = 0);
 
