@@ -82,7 +82,7 @@ extern const struct base_arch_s *avr_current_arch;
 	builtin_define ("__AVR_HAVE_JMP_CALL__"); \
       if (avr_current_arch->have_eijmp_eicall)	\
         {					\
-	  builtin_define ("__AVR_HAVE_JMP_CALL__");	\
+	  builtin_define ("__AVR_HAVE_EIJMP_EICALL__");	\
 	  builtin_define ("__AVR_3_BYTE_PC__");	\
 	}					\
       else					\
