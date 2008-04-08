@@ -4,7 +4,7 @@
  *                                                                          *
  *                           G E N - S O C C O N                            *
  *                                                                          *
- *          Copyright (C) 2004-2007, Free Software Foundation, Inc.         *
+ *          Copyright (C) 2004-2008, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -104,7 +104,7 @@ TXT("--               G N A T . S O C K E T S . C O N S T A N T S               
 TXT("--                                                                          --")
 TXT("--                                 S p e c                                  --")
 TXT("--                                                                          --")
-TXT("--          Copyright (C) 2000-2007, Free Software Foundation, Inc.         --")
+TXT("--          Copyright (C) 2000-2008, Free Software Foundation, Inc.         --")
 TXT("--                                                                          --")
 TXT("-- GNAT is free software;  you can  redistribute it  and/or modify it under --")
 TXT("-- terms of the  GNU General Public License as published  by the Free Soft- --")
