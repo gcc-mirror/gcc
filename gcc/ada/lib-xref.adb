@@ -309,10 +309,6 @@ package body Lib.Xref is
                return False;
             end if;
          end loop;
-
-         --  Parent (N) is assignment statement, check whether N is its name
-
-         return Name (Parent (N)) = N;
       end Is_On_LHS;
 
       ---------------------------
@@ -1579,14 +1575,34 @@ package body Lib.Xref is
                --------------------------
 
                procedure Output_Overridden_Op (Old_E : Entity_Id) is
+                  Op : Entity_Id;
+
                begin
-                  if Present (Old_E)
-                    and then Sloc (Old_E) /= Standard_Location
+                  --  The overridden operation has an implicit declaration
+                  --  at the point of derivation. What we want to display
+                  --  is the original operation, which has the actual body
+                  --  (or abstract declaration) that is being overridden.
+                  --  The overridden operation is not always set, e.g. when
+                  --  it is a predefined operator.
+
+                  if No (Old_E) then
+                     return;
+
+                  elsif Present (Alias (Old_E)) then
+                     Op := Alias (Old_E);
+
+                  else
+                     Op := Old_E;
+                  end if;
+
+                  if Present (Op)
+                    and then Sloc (Op) /= Standard_Location
                   then
                      declare
-                        Loc      : constant Source_Ptr := Sloc (Old_E);
+                        Loc      : constant Source_Ptr := Sloc (Op);
                         Par_Unit : constant Unit_Number_Type :=
                                      Get_Source_Unit (Loc);
+
                      begin
                         Write_Info_Char ('<');
 

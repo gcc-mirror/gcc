@@ -31,6 +31,7 @@ with Exp_Disp; use Exp_Disp;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Tss;  use Exp_Tss;
 with Errout;   use Errout;
+with Lib.Xref; use Lib.Xref;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -790,6 +791,9 @@ package body Sem_Disp is
                      --  if the subprogram is already frozen, we must update
                      --  its dispatching information explicitly here. The
                      --  information is taken from the overridden subprogram.
+                     --  We must also generate a cross-reference entry because
+                     --  references to other primitives were already created
+                     --  when type was frozen.
 
                      Body_Is_Last_Primitive := True;
 
@@ -819,6 +823,8 @@ package body Sem_Disp is
                                 Prim    => Subp,
                                 Ins_Nod => Subp_Body);
                            end if;
+
+                           Generate_Reference (Tagged_Type, Subp, 'p', False);
                         end if;
                      end if;
                   end if;
@@ -1543,6 +1549,14 @@ package body Sem_Disp is
 
       if VM_Target = No_VM then
          Expand_Dispatching_Call (Call_Node);
+
+      --  Expansion of a dispatching call results in an indirect call, which in
+      --  turn causes current values to be killed (see Resolve_Call), so on VM
+      --  targets we do the call here to ensure consistent warnings between VM
+      --  and non-VM targets.
+
+      else
+         Kill_Current_Values;
       end if;
    end Propagate_Tag;
 
