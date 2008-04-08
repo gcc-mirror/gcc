@@ -14002,6 +14002,140 @@ tree_single_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
    *STRICT_OVERFLOW_P.  */
 
 bool
+tree_call_nonnegative_warnv_p (enum tree_code code,  tree type, tree fndecl,
+			       tree arg0, tree arg1, bool *strict_overflow_p)
+{
+  if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+    switch (DECL_FUNCTION_CODE (fndecl))
+      {
+	CASE_FLT_FN (BUILT_IN_ACOS):
+	CASE_FLT_FN (BUILT_IN_ACOSH):
+	CASE_FLT_FN (BUILT_IN_CABS):
+	CASE_FLT_FN (BUILT_IN_COSH):
+	CASE_FLT_FN (BUILT_IN_ERFC):
+	CASE_FLT_FN (BUILT_IN_EXP):
+	CASE_FLT_FN (BUILT_IN_EXP10):
+	CASE_FLT_FN (BUILT_IN_EXP2):
+	CASE_FLT_FN (BUILT_IN_FABS):
+	CASE_FLT_FN (BUILT_IN_FDIM):
+	CASE_FLT_FN (BUILT_IN_HYPOT):
+	CASE_FLT_FN (BUILT_IN_POW10):
+	CASE_INT_FN (BUILT_IN_FFS):
+	CASE_INT_FN (BUILT_IN_PARITY):
+	CASE_INT_FN (BUILT_IN_POPCOUNT):
+      case BUILT_IN_BSWAP32:
+      case BUILT_IN_BSWAP64:
+	/* Always true.  */
+	return true;
+
+	CASE_FLT_FN (BUILT_IN_SQRT):
+	/* sqrt(-0.0) is -0.0.  */
+	if (!HONOR_SIGNED_ZEROS (TYPE_MODE (type)))
+	  return true;
+	return tree_expr_nonnegative_warnv_p (arg0,
+					      strict_overflow_p);
+
+	CASE_FLT_FN (BUILT_IN_ASINH):
+	CASE_FLT_FN (BUILT_IN_ATAN):
+	CASE_FLT_FN (BUILT_IN_ATANH):
+	CASE_FLT_FN (BUILT_IN_CBRT):
+	CASE_FLT_FN (BUILT_IN_CEIL):
+	CASE_FLT_FN (BUILT_IN_ERF):
+	CASE_FLT_FN (BUILT_IN_EXPM1):
+	CASE_FLT_FN (BUILT_IN_FLOOR):
+	CASE_FLT_FN (BUILT_IN_FMOD):
+	CASE_FLT_FN (BUILT_IN_FREXP):
+	CASE_FLT_FN (BUILT_IN_LCEIL):
+	CASE_FLT_FN (BUILT_IN_LDEXP):
+	CASE_FLT_FN (BUILT_IN_LFLOOR):
+	CASE_FLT_FN (BUILT_IN_LLCEIL):
+	CASE_FLT_FN (BUILT_IN_LLFLOOR):
+	CASE_FLT_FN (BUILT_IN_LLRINT):
+	CASE_FLT_FN (BUILT_IN_LLROUND):
+	CASE_FLT_FN (BUILT_IN_LRINT):
+	CASE_FLT_FN (BUILT_IN_LROUND):
+	CASE_FLT_FN (BUILT_IN_MODF):
+	CASE_FLT_FN (BUILT_IN_NEARBYINT):
+	CASE_FLT_FN (BUILT_IN_RINT):
+	CASE_FLT_FN (BUILT_IN_ROUND):
+	CASE_FLT_FN (BUILT_IN_SCALB):
+	CASE_FLT_FN (BUILT_IN_SCALBLN):
+	CASE_FLT_FN (BUILT_IN_SCALBN):
+	CASE_FLT_FN (BUILT_IN_SIGNBIT):
+	CASE_FLT_FN (BUILT_IN_SIGNIFICAND):
+	CASE_FLT_FN (BUILT_IN_SINH):
+	CASE_FLT_FN (BUILT_IN_TANH):
+	CASE_FLT_FN (BUILT_IN_TRUNC):
+	/* True if the 1st argument is nonnegative.  */
+	return tree_expr_nonnegative_warnv_p (arg0,
+					      strict_overflow_p);
+
+	CASE_FLT_FN (BUILT_IN_FMAX):
+	/* True if the 1st OR 2nd arguments are nonnegative.  */
+	return (tree_expr_nonnegative_warnv_p (arg0,
+					       strict_overflow_p)
+		|| (tree_expr_nonnegative_warnv_p (arg1,
+						   strict_overflow_p)));
+
+	CASE_FLT_FN (BUILT_IN_FMIN):
+	/* True if the 1st AND 2nd arguments are nonnegative.  */
+	return (tree_expr_nonnegative_warnv_p (arg0,
+					       strict_overflow_p)
+		&& (tree_expr_nonnegative_warnv_p (arg1,
+						   strict_overflow_p)));
+
+	CASE_FLT_FN (BUILT_IN_COPYSIGN):
+	/* True if the 2nd argument is nonnegative.  */
+	return tree_expr_nonnegative_warnv_p (arg1,
+					      strict_overflow_p);
+
+	CASE_FLT_FN (BUILT_IN_POWI):
+	/* True if the 1st argument is nonnegative or the second
+	   argument is an even integer.  */
+	if (TREE_CODE (arg1) == INTEGER_CST)
+	  {
+	    tree arg1 = arg1;
+	    if ((TREE_INT_CST_LOW (arg1) & 1) == 0)
+	      return true;
+	  }
+	return tree_expr_nonnegative_warnv_p (arg0,
+					      strict_overflow_p);
+
+	CASE_FLT_FN (BUILT_IN_POW):
+	/* True if the 1st argument is nonnegative or the second
+	   argument is an even integer valued real.  */
+	if (TREE_CODE (arg1) == REAL_CST)
+	  {
+	    REAL_VALUE_TYPE c;
+	    HOST_WIDE_INT n;
+
+	    c = TREE_REAL_CST (arg1);
+	    n = real_to_integer (&c);
+	    if ((n & 1) == 0)
+	      {
+		REAL_VALUE_TYPE cint;
+		real_from_integer (&cint, VOIDmode, n,
+				   n < 0 ? -1 : 0, 0);
+		if (real_identical (&c, &cint))
+		  return true;
+	      }
+	  }
+	return tree_expr_nonnegative_warnv_p (arg0,
+					      strict_overflow_p);
+
+      default:
+	break;
+      }
+  return tree_simple_nonnegative_warnv_p (code,
+					  type);
+}
+
+/* Return true if T is known to be non-negative.  If the return
+   value is based on the assumption that signed overflow is undefined,
+   set *STRICT_OVERFLOW_P to true; otherwise, don't change
+   *STRICT_OVERFLOW_P.  */
+
+bool
 tree_invalid_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
 {
   enum tree_code code = TREE_CODE (t);
@@ -14045,133 +14179,16 @@ tree_invalid_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
 
     case CALL_EXPR:
       {
-	tree fndecl = get_callee_fndecl (t);
-	if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
-	  switch (DECL_FUNCTION_CODE (fndecl))
-	    {
-	    CASE_FLT_FN (BUILT_IN_ACOS):
-	    CASE_FLT_FN (BUILT_IN_ACOSH):
-	    CASE_FLT_FN (BUILT_IN_CABS):
-	    CASE_FLT_FN (BUILT_IN_COSH):
-	    CASE_FLT_FN (BUILT_IN_ERFC):
-	    CASE_FLT_FN (BUILT_IN_EXP):
-	    CASE_FLT_FN (BUILT_IN_EXP10):
-	    CASE_FLT_FN (BUILT_IN_EXP2):
-	    CASE_FLT_FN (BUILT_IN_FABS):
-	    CASE_FLT_FN (BUILT_IN_FDIM):
-	    CASE_FLT_FN (BUILT_IN_HYPOT):
-	    CASE_FLT_FN (BUILT_IN_POW10):
-	    CASE_INT_FN (BUILT_IN_FFS):
-	    CASE_INT_FN (BUILT_IN_PARITY):
-	    CASE_INT_FN (BUILT_IN_POPCOUNT):
-	    case BUILT_IN_BSWAP32:
-	    case BUILT_IN_BSWAP64:
-	      /* Always true.  */
-	      return true;
+	tree arg0 = call_expr_nargs (t) > 0 ?  CALL_EXPR_ARG (t, 0) : NULL_TREE;
+	tree arg1 = call_expr_nargs (t) > 1 ?  CALL_EXPR_ARG (t, 1) : NULL_TREE;
 
-	    CASE_FLT_FN (BUILT_IN_SQRT):
-	      /* sqrt(-0.0) is -0.0.  */
-	      if (!HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (t))))
-		return true;
-	      return tree_expr_nonnegative_warnv_p (CALL_EXPR_ARG (t, 0),
-						    strict_overflow_p);
-
-	    CASE_FLT_FN (BUILT_IN_ASINH):
-	    CASE_FLT_FN (BUILT_IN_ATAN):
-	    CASE_FLT_FN (BUILT_IN_ATANH):
-	    CASE_FLT_FN (BUILT_IN_CBRT):
-	    CASE_FLT_FN (BUILT_IN_CEIL):
-	    CASE_FLT_FN (BUILT_IN_ERF):
-	    CASE_FLT_FN (BUILT_IN_EXPM1):
-	    CASE_FLT_FN (BUILT_IN_FLOOR):
-	    CASE_FLT_FN (BUILT_IN_FMOD):
-	    CASE_FLT_FN (BUILT_IN_FREXP):
-	    CASE_FLT_FN (BUILT_IN_LCEIL):
-	    CASE_FLT_FN (BUILT_IN_LDEXP):
-	    CASE_FLT_FN (BUILT_IN_LFLOOR):
-	    CASE_FLT_FN (BUILT_IN_LLCEIL):
-	    CASE_FLT_FN (BUILT_IN_LLFLOOR):
-	    CASE_FLT_FN (BUILT_IN_LLRINT):
-	    CASE_FLT_FN (BUILT_IN_LLROUND):
-	    CASE_FLT_FN (BUILT_IN_LRINT):
-	    CASE_FLT_FN (BUILT_IN_LROUND):
-	    CASE_FLT_FN (BUILT_IN_MODF):
-	    CASE_FLT_FN (BUILT_IN_NEARBYINT):
-	    CASE_FLT_FN (BUILT_IN_RINT):
-	    CASE_FLT_FN (BUILT_IN_ROUND):
-	    CASE_FLT_FN (BUILT_IN_SCALB):
-	    CASE_FLT_FN (BUILT_IN_SCALBLN):
-	    CASE_FLT_FN (BUILT_IN_SCALBN):
-	    CASE_FLT_FN (BUILT_IN_SIGNBIT):
-	    CASE_FLT_FN (BUILT_IN_SIGNIFICAND):
-	    CASE_FLT_FN (BUILT_IN_SINH):
-	    CASE_FLT_FN (BUILT_IN_TANH):
-	    CASE_FLT_FN (BUILT_IN_TRUNC):
-	      /* True if the 1st argument is nonnegative.  */
-	      return tree_expr_nonnegative_warnv_p (CALL_EXPR_ARG (t, 0),
-						    strict_overflow_p);
-
-	    CASE_FLT_FN (BUILT_IN_FMAX):
-	      /* True if the 1st OR 2nd arguments are nonnegative.  */
-	      return (tree_expr_nonnegative_warnv_p (CALL_EXPR_ARG (t, 0),
-						     strict_overflow_p)
-		      || (tree_expr_nonnegative_warnv_p (CALL_EXPR_ARG (t, 1),
-							 strict_overflow_p)));
-
-	    CASE_FLT_FN (BUILT_IN_FMIN):
-	      /* True if the 1st AND 2nd arguments are nonnegative.  */
-	      return (tree_expr_nonnegative_warnv_p (CALL_EXPR_ARG (t, 0),
-						     strict_overflow_p)
-		      && (tree_expr_nonnegative_warnv_p (CALL_EXPR_ARG (t, 1),
-							 strict_overflow_p)));
-
-	    CASE_FLT_FN (BUILT_IN_COPYSIGN):
-	      /* True if the 2nd argument is nonnegative.  */
-	      return tree_expr_nonnegative_warnv_p (CALL_EXPR_ARG (t, 1),
-						    strict_overflow_p);
-
-	    CASE_FLT_FN (BUILT_IN_POWI):
-	      /* True if the 1st argument is nonnegative or the second
-		 argument is an even integer.  */
-	      if (TREE_CODE (CALL_EXPR_ARG (t, 1)) == INTEGER_CST)
-		{
-		  tree arg1 = CALL_EXPR_ARG (t, 1);
-		  if ((TREE_INT_CST_LOW (arg1) & 1) == 0)
-		    return true;
-		}
-	      return tree_expr_nonnegative_warnv_p (CALL_EXPR_ARG (t, 0),
-						    strict_overflow_p);
-
-	    CASE_FLT_FN (BUILT_IN_POW):
-	      /* True if the 1st argument is nonnegative or the second
-		 argument is an even integer valued real.  */
-	      if (TREE_CODE (CALL_EXPR_ARG (t, 1)) == REAL_CST)
-		{
-		  REAL_VALUE_TYPE c;
-		  HOST_WIDE_INT n;
-
-		  c = TREE_REAL_CST (CALL_EXPR_ARG (t, 1));
-		  n = real_to_integer (&c);
-		  if ((n & 1) == 0)
-		    {
-		      REAL_VALUE_TYPE cint;
-		      real_from_integer (&cint, VOIDmode, n,
-					 n < 0 ? -1 : 0, 0);
-		      if (real_identical (&c, &cint))
-			return true;
-		    }
-		}
-	      return tree_expr_nonnegative_warnv_p (CALL_EXPR_ARG (t, 0),
-						    strict_overflow_p);
-
-	    default:
-	      break;
-	    }
-	return tree_simple_nonnegative_warnv_p (TREE_CODE (t),
-						     TREE_TYPE (t));
+	return tree_call_nonnegative_warnv_p (TREE_CODE (t),
+					      TREE_TYPE (t),
+					      get_callee_fndecl (t),
+					      arg0,
+					      arg1,
+					      strict_overflow_p);
       }
-      break;
-
     case COMPOUND_EXPR:
     case MODIFY_EXPR:
     case GIMPLE_MODIFY_STMT:

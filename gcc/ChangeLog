@@ -1,3 +1,9 @@
+2008-04-08  Rafael Espindola  <espindola@google.com>
+
+	* fold-canst.c (tree_call_nonnegative_warnv_p): New.
+	(tree_invalid_nonnegative_warnv_p): Use tree_call_nonnegative_warnv_p.
+	* tree.h (tree_call_nonnegative_warnv_p): New.
+
 2008-04-08  Jan Hubicka  <jh@suse.cz>
 
 	* function.c (free_after_compilation): Clear out regno_reg_rtx
