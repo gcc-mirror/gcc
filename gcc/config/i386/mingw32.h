@@ -164,6 +164,27 @@ do {						         \
 #undef TARGET_USE_JCR_SECTION
 #define TARGET_USE_JCR_SECTION 1
 
+#undef MINGW_ENABLE_EXECUTE_STACK
+#define MINGW_ENABLE_EXECUTE_STACK     \
+extern void __enable_execute_stack (void *);    \
+void         \
+__enable_execute_stack (void *addr)					\
+{									\
+  MEMORY_BASIC_INFORMATION b;						\
+  if (!VirtualQuery (addr, &b, sizeof(b)))				\
+    abort ();								\
+  VirtualProtect (b.BaseAddress, b.RegionSize, PAGE_EXECUTE_READWRITE,	\
+		  &b.Protect);						\
+}
+
+#undef ENABLE_EXECUTE_STACK
+#define ENABLE_EXECUTE_STACK MINGW_ENABLE_EXECUTE_STACK
+
+
+#ifdef IN_LIBGCC2
+#include <windows.h>
+#endif
+
 #if !TARGET_64BIT
 #define MD_UNWIND_SUPPORT "config/i386/w32-unwind.h"
 #endif
