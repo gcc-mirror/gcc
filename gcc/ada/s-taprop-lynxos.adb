@@ -668,7 +668,7 @@ package body System.Task_Primitives.Operations is
    begin
       Result :=
         clock_getres
-          (clock_id => CLOCK_REALTIME, Res => Res'Unchecked_Access);
+          (clock_id => CLOCK_REALTIME, res => Res'Unchecked_Access);
       pragma Assert (Result = 0);
       return To_Duration (Res);
    end RT_Resolution;
