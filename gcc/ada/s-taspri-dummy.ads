@@ -54,4 +54,16 @@ package System.Task_Primitives is
       L      : aliased RTS_Lock;
    end record;
 
+   subtype Task_Address is System.Address;
+   --  In some versions of Task_Primitives, notably for VMS, Task_Address is
+   --  the short version of address defined in System.Aux_DEC. To avoid
+   --  dragging Aux_DEC into tasking packages a tasking specific subtype is
+   --  defined here.
+
+   Task_Address_Size : constant := Standard'Address_Size;
+   --  The size of Task_Address
+
+   Alternate_Stack_Size : constant := 0;
+   --  No alternate signal stack is used on this platform
+
 end System.Task_Primitives;
