@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -133,16 +133,18 @@ package Exp_Ch3 is
 
    function Get_Simple_Init_Val
      (T    : Entity_Id;
-      Loc  : Source_Ptr;
+      N    : Node_Id;
       Size : Uint := No_Uint) return Node_Id;
    --  For a type which Needs_Simple_Initialization (see above), prepares the
-   --  tree for an expression representing the required initial value. Loc is
-   --  the source location used in constructing this tree which is returned as
-   --  the result of the call. The Size parameter indicates the target size of
-   --  the object if it is known (indicated by a value that is not No_Uint and
-   --  is greater than zero). If Size is not given (Size set to No_Uint, or
-   --  non-positive), then the Esize of T is used as an estimate of the Size.
-   --  The object size is needed to prepare a known invalid value for use by
-   --  Normalize_Scalars.
+   --  tree for an expression representing the required initial value. N is a
+   --  node whose source location used in constructing this tree which is
+   --  returned as the result of the call. The Size parameter indicates the
+   --  target size of the object if it is known (indicated by a value that is
+   --  not No_Uint and is greater than zero). If Size is not given (Size set to
+   --  No_Uint, or non-positive), then the Esize of T is used as an estimate of
+   --  the Size. The object size is needed to prepare a known invalid value for
+   --  use by Normalize_Scalars. A call to this routine where T is a scalar
+   --  type is only valid if we are in Normalize_Scalars or Initialize_Scalars
+   --  mode, or if N is the node for a 'Invalid_Value attribute node.
 
 end Exp_Ch3;

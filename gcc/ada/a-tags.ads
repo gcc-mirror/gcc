@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -222,7 +222,8 @@ private
    --  type. This construct is used in the handling of dispatching triggers
    --  in select statements.
 
-   type Address_Array is array (Positive range <>) of System.Address;
+   type Prim_Ptr is access procedure;
+   type Address_Array is array (Positive range <>) of Prim_Ptr;
 
    subtype Dispatch_Table is Address_Array (1 .. 1);
    --  Used by GDB to identify the _tags and traverse the run-time structure
@@ -242,7 +243,13 @@ private
    type Tag_Ptr is access all Tag;
    pragma No_Strict_Aliasing (Tag_Ptr);
 
+   type Offset_To_Top_Ptr is access all SSE.Storage_Offset;
+   pragma No_Strict_Aliasing (Offset_To_Top_Ptr);
+
    type Tag_Table is array (Natural range <>) of Tag;
+
+   type Size_Ptr is
+     access function (A : System.Address) return Long_Long_Integer;
 
    type Type_Specific_Data (Idepth : Natural) is record
    --  The discriminant Idepth is the Inheritance Depth Level: Used to
@@ -278,6 +285,12 @@ private
       RC_Offset : SSE.Storage_Offset;
       --  Controller Offset: Used to give support to tagged controlled objects
       --  (see Get_Deep_Controller at s-finimp)
+
+      Size_Func : Size_Ptr;
+      --  Pointer to the subprogram computing the _size of the object. Used by
+      --  the run-time whenever a call to the 'size primitive is required. We
+      --  cannot assume that the contents of dispatch tables are addresses
+      --  because in some architectures the ABI allows descriptors.
 
       Interfaces_Table : Interface_Data_Ptr;
       --  Pointer to the table of interface tags. It is used to implement the
@@ -369,6 +382,10 @@ private
    --  Size of the Typeinfo_Ptr field of the Dispatch Table
 
    use type System.Storage_Elements.Storage_Offset;
+
+   DT_Offset_To_Top_Offset : constant SSE.Storage_Count :=
+                               DT_Typeinfo_Ptr_Size
+                                 + DT_Offset_To_Top_Size;
 
    DT_Predef_Prims_Offset : constant SSE.Storage_Count :=
                               DT_Typeinfo_Ptr_Size
@@ -474,28 +491,44 @@ private
    pragma Export (Ada, Parent_Size, "ada__tags__parent_size");
    --  This procedure is used in s-finimp and is thus exported manually
 
-   procedure Register_Tag (T : Tag);
-   --  Insert the Tag and its associated external_tag in a table for the
-   --  sake of Internal_Tag
-
-   procedure Set_Entry_Index (T : Tag; Position : Positive; Value : Positive);
-   --  Ada 2005 (AI-345): Set the entry index of a primitive operation in T's
-   --  TSD table indexed by Position.
-
-   procedure Set_Offset_To_Top
+   procedure Register_Interface_Offset
      (This         : System.Address;
       Interface_T  : Tag;
       Is_Static    : Boolean;
       Offset_Value : SSE.Storage_Offset;
       Offset_Func  : Offset_To_Top_Function_Ptr);
-   --  Ada 2005 (AI-251): Initialize the Offset_To_Top field in the prologue of
-   --  the dispatch table. In primary dispatch tables the value of "This" is
-   --  not required (and the compiler passes always the Null_Address value) and
-   --  the Offset_Value is always cero; in secondary dispatch tables "This"
-   --  points to the object, Interface_T is the interface for which the
-   --  secondary dispatch table is being initialized, and Offset_Value is the
-   --  distance from "This" to the object component containing the tag of the
-   --  secondary dispatch table.
+   --  Register in the table of interfaces of the tagged type associated with
+   --  "This" object the offset of the record component associated with the
+   --  progenitor Interface_T (that is, the distance from "This" to the object
+   --  component containing the tag of the secondary dispatch table). In case
+   --  of constant offset, Is_Static is true and Offset_Value has such value.
+   --  In case of variable offset, Is_Static is false and Offset_Func is an
+   --  access to function that must be called to evaluate the offset.
+
+   procedure Register_Tag (T : Tag);
+   --  Insert the Tag and its associated external_tag in a table for the
+   --  sake of Internal_Tag
+
+   procedure Set_Dynamic_Offset_To_Top
+     (This         : System.Address;
+      Interface_T  : Tag;
+      Offset_Value : SSE.Storage_Offset;
+      Offset_Func  : Offset_To_Top_Function_Ptr);
+   --  Ada 2005 (AI-251): The compiler generates calls to this routine only
+   --  when initializing the Offset_To_Top field of dispatch tables associated
+   --  with tagged type whose parent has variable size components. "This" is
+   --  the object whose dispatch table is being initialized. Interface_T is the
+   --  interface for which the secondary dispatch table is being initialized,
+   --  and Offset_Value is the distance from "This" to the object component
+   --  containing the tag of the secondary dispatch table (a zero value means
+   --  that this interface shares the primary dispatch table). Offset_Func
+   --  references a function that must be called to evaluate the offset at
+   --  runtime. This routine also takes care of registering these values in
+   --  the table of interfaces of the type.
+
+   procedure Set_Entry_Index (T : Tag; Position : Positive; Value : Positive);
+   --  Ada 2005 (AI-345): Set the entry index of a primitive operation in T's
+   --  TSD table indexed by Position.
 
    procedure Set_Prim_Op_Kind
      (T        : Tag;
@@ -532,5 +565,7 @@ private
 
    type Addr_Ptr is access System.Address;
    pragma No_Strict_Aliasing (Addr_Ptr);
-   --  Why is this needed ???
+   --  This type is used by the frontend to generate the code that handles
+   --  dispatch table slots of types declared at the local level.
+
 end Ada.Tags;

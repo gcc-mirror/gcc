@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -283,6 +283,9 @@ package body Rtsfind is
          if U_Id in Ada_Calendar_Child then
             Name_Buffer (13) := '.';
 
+         elsif U_Id in Ada_Dispatching_Child then
+            Name_Buffer (16) := '.';
+
          elsif U_Id in Ada_Finalization_Child then
             Name_Buffer (17) := '.';
 
@@ -310,6 +313,10 @@ package body Rtsfind is
 
       elsif U_Id in System_Child then
          Name_Buffer (7) := '.';
+
+         if U_Id in System_Strings_Child then
+            Name_Buffer (15) := '.';
+         end if;
 
          if U_Id in System_Tasking_Child then
             Name_Buffer (15) := '.';

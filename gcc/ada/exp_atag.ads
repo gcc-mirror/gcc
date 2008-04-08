@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2006-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -117,6 +117,19 @@ package Exp_Atag is
    --    New_Tag.Prims_Ptr (1 .. Num_Prims) :=
    --      Old_Tag.Prims_Ptr (1 .. Num_Prims);
 
+   function Build_Offset_To_Top
+     (Loc       : Source_Ptr;
+      This_Node : Node_Id) return Node_Id;
+   --  Build code that references the Offset_To_Top component of the primary
+   --  or secondary dispatch table associated with This_Node. This subprogram
+   --  provides a subset of the functionality provided by the function
+   --  Offset_To_Top of package Ada.Tags, and is only called by the frontend
+   --  when such routine is not available in a configurable runtime.
+   --
+   --  Generates:
+   --    Offset_To_Top_Ptr
+   --      (Address!(Tag_Ptr!(This).all) - Offset_To_Top_Offset)
+
    function Build_Set_Predefined_Prim_Op_Address
      (Loc          : Source_Ptr;
       Tag_Node     : Node_Id;
@@ -144,5 +157,24 @@ package Exp_Atag is
    --   2) Late overriding (see Check_Dispatching_Operation).
    --
    --  Generates: Tag.D (Position) := Value
+
+   function Build_Set_Size_Function
+     (Loc       : Source_Ptr;
+      Tag_Node  : Node_Id;
+      Size_Func : Entity_Id) return Node_Id;
+   --  Build code that saves in the TSD the address of the function
+   --  calculating _size of the object.
+
+   function Build_Set_Static_Offset_To_Top
+     (Loc          : Source_Ptr;
+      Iface_Tag    : Node_Id;
+      Offset_Value : Node_Id) return Node_Id;
+   --  Build code that initialize the Offset_To_Top component of the
+   --  secondary dispatch table referenced by Iface_Tag.
+   --
+   --  Generates:
+   --    Offset_To_Top_Ptr
+   --      (Address!(Tag_Ptr!(This).all) - Offset_To_Top_Offset).all
+   --     := Offset_Value
 
 end Exp_Atag;
