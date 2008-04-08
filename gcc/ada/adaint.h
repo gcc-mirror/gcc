@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2007, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2008, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -47,6 +47,7 @@ typedef long OS_Time; /* Type corresponding to GNAT.OS_Lib.OS_Time */
 
 extern int    __gnat_max_path_len;
 extern OS_Time __gnat_current_time		   (void);
+extern void   __gnat_current_time_string           (char *);
 extern void   __gnat_to_gm_time			   (OS_Time *, int *, int *,
 				                    int *, int *,
 				                    int *, int *);
