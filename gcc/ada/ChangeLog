@@ -1,5 +1,19 @@
 2008-04-08  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* decl.c (gnat_to_gnu_entity) <object>: If -gnatd.a and not optimizing
+	alignment for space, promote the alignment of non-scalar variables with
+	no size and alignment.
+	* gigi.h (gnat_types_compatible_p): Declare.
+	* misc.c (LANG_HOOKS_TYPES_COMPATIBLE_P): Set to above predicate.
+	* trans.c (gnat_to_gnu): Revert revision 129339 change.  Minor cleanup.
+	* utils.c (gnat_types_compatible_p) : New predicate.
+	(convert): Use it throughout to test for cases where a mere view
+	conversion is sufficient.
+	* utils2.c (build_binary_op): Minor tweaks.
+	(build_unary_op): Likewise.
+
+2008-04-08  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* decl.c (adjust_packed): Expand comment.
 
 2008-04-08  Arnaud Charlet  <charlet@adacore.com>

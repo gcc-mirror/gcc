@@ -672,19 +672,42 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    && !Present (Address_Clause (gnat_entity)))
 	  gnu_size = bitsize_unit_node;
 
-	/* If this is an atomic object with no specified size and alignment,
-	   but where the size of the type is a constant, set the alignment to
-	   the smallest not less than the size, or to the biggest meaningful
-	   alignment, whichever is smaller.  */
-	if (Is_Atomic (gnat_entity) && !gnu_size && align == 0
+	/* If this is an object with no specified size and alignment, and if
+	   either it is atomic or we are not optimizing alignment for space
+	   and it is a non-scalar variable, and the size of its type is a
+	   constant, set the alignment to the smallest not less than the
+	   size, or to the biggest meaningful one, whichever is smaller.  */
+	if (!gnu_size && align == 0
+	    && (Is_Atomic (gnat_entity)
+		|| (Debug_Flag_Dot_A
+		    && !Optimize_Alignment_Space (gnat_entity)
+		    && kind == E_Variable
+		    && AGGREGATE_TYPE_P (gnu_type)
+		    && !const_flag && No (Renamed_Object (gnat_entity))
+		    && !imported_p && No (Address_Clause (gnat_entity))))
 	    && TREE_CODE (TYPE_SIZE (gnu_type)) == INTEGER_CST)
 	  {
+	    /* No point in jumping through all the hoops needed in order
+	       to support BIGGEST_ALIGNMENT if we don't really have to.  */
+	    unsigned int align_cap = Is_Atomic (gnat_entity)
+				     ? BIGGEST_ALIGNMENT
+				     : MAX_FIXED_MODE_SIZE;
+
 	    if (!host_integerp (TYPE_SIZE (gnu_type), 1)
-		|| 0 <= compare_tree_int (TYPE_SIZE (gnu_type),
-					  BIGGEST_ALIGNMENT))
-	      align = BIGGEST_ALIGNMENT;
+		|| compare_tree_int (TYPE_SIZE (gnu_type), align_cap) >= 0)
+	      align = align_cap;
 	    else
 	      align = ceil_alignment (tree_low_cst (TYPE_SIZE (gnu_type), 1));
+
+	    /* But make sure not to under-align the object.  */
+	    if (align < TYPE_ALIGN (gnu_type))
+	      align = TYPE_ALIGN (gnu_type);
+
+	    /* And honor the minimum valid atomic alignment, if any.  */
+#ifdef MINIMUM_ATOMIC_ALIGNMENT
+	    if (align < MINIMUM_ATOMIC_ALIGNMENT)
+	      align = MINIMUM_ATOMIC_ALIGNMENT;
+#endif
 	  }
 
 	/* If the object is set to have atomic components, find the component

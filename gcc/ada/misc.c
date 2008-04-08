@@ -151,6 +151,8 @@ static tree gnat_type_max_size		(const_tree);
 #define LANG_HOOKS_TYPE_FOR_MODE	gnat_type_for_mode
 #undef  LANG_HOOKS_TYPE_FOR_SIZE
 #define LANG_HOOKS_TYPE_FOR_SIZE	gnat_type_for_size
+#undef  LANG_HOOKS_TYPES_COMPATIBLE_P
+#define LANG_HOOKS_TYPES_COMPATIBLE_P	gnat_types_compatible_p
 #undef  LANG_HOOKS_ATTRIBUTE_TABLE
 #define LANG_HOOKS_ATTRIBUTE_TABLE	gnat_internal_attribute_table
 #undef  LANG_HOOKS_BUILTIN_FUNCTION

@@ -2378,6 +2378,42 @@ gnat_signed_type (tree type_node)
   return type;
 }
 
+/* Return 1 if the types T1 and T2 are compatible, i.e. if they can be
+   transparently converted to each other.  */
+
+int
+gnat_types_compatible_p (tree t1, tree t2)
+{
+  enum tree_code code;
+
+  /* This is the default criterion.  */
+  if (TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
+    return 1;
+
+  /* We only check structural equivalence here.  */
+  if ((code = TREE_CODE (t1)) != TREE_CODE (t2))
+    return 0;
+
+  /* Array types are also compatible if they are constrained and have
+     the same component type and the same domain.  */
+  if (code == ARRAY_TYPE
+      && TREE_TYPE (t1) == TREE_TYPE (t2)
+      && tree_int_cst_equal (TYPE_MIN_VALUE (TYPE_DOMAIN (t1)),
+			     TYPE_MIN_VALUE (TYPE_DOMAIN (t2)))
+      && tree_int_cst_equal (TYPE_MAX_VALUE (TYPE_DOMAIN (t1)),
+			     TYPE_MAX_VALUE (TYPE_DOMAIN (t2))))
+    return 1;
+
+  /* Padding record types are also compatible if they pad the same
+     type and have the same constant size.  */
+  if (code == RECORD_TYPE
+      && TYPE_IS_PADDING_P (t1) && TYPE_IS_PADDING_P (t2)
+      && TREE_TYPE (TYPE_FIELDS (t1)) == TREE_TYPE (TYPE_FIELDS (t2))
+      && tree_int_cst_equal (TYPE_SIZE (t1), TYPE_SIZE (t2)))
+    return 1;
+
+  return 0;
+}
 
 /* EXP is an expression for the size of an object.  If this size contains
    discriminant references, replace them with the maximum (if MAX_P) or
@@ -3368,15 +3404,15 @@ convert (tree type, tree expr)
   /* If both input and output have padding and are of variable size, do this
      as an unchecked conversion.  Likewise if one is a mere variant of the
      other, so we avoid a pointless unpad/repad sequence.  */
-  else if (ecode == RECORD_TYPE && code == RECORD_TYPE
+  else if (code == RECORD_TYPE && ecode == RECORD_TYPE
 	   && TYPE_IS_PADDING_P (type) && TYPE_IS_PADDING_P (etype)
 	   && (!TREE_CONSTANT (TYPE_SIZE (type))
 	       || !TREE_CONSTANT (TYPE_SIZE (etype))
-	       || TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (etype)))
+	       || gnat_types_compatible_p (type, etype)))
     ;
 
-  /* If the output type has padding, make a constructor to build the
-     record.  */
+  /* If the output type has padding, convert to the inner type and
+     make a constructor to build the record.  */
   else if (code == RECORD_TYPE && TYPE_IS_PADDING_P (type))
     {
       /* If we previously converted from another type and our type is
@@ -3387,12 +3423,15 @@ convert (tree type, tree expr)
 	expr = TREE_OPERAND (expr, 0);
 
       /* If we are just removing the padding from expr, convert the original
-	 object if we have variable size.  That will avoid the need
-	 for some variable-size temporaries.  */
+	 object if we have variable size in order to avoid the need for some
+	 variable-size temporaries.  Likewise if the padding is a mere variant
+	 of the other, so we avoid a pointless unpad/repad sequence.  */
       if (TREE_CODE (expr) == COMPONENT_REF
 	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == RECORD_TYPE
 	  && TYPE_IS_PADDING_P (TREE_TYPE (TREE_OPERAND (expr, 0)))
-	  && !TREE_CONSTANT (TYPE_SIZE (type)))
+	  && (!TREE_CONSTANT (TYPE_SIZE (type))
+	      || gnat_types_compatible_p (type,
+					  TREE_TYPE (TREE_OPERAND (expr, 0)))))
 	return convert (type, TREE_OPERAND (expr, 0));
 
       /* If the result type is a padded type with a self-referentially-sized
@@ -3506,14 +3545,9 @@ convert (tree type, tree expr)
       break;
 
     case CONSTRUCTOR:
-      /* If we are converting a CONSTRUCTOR to another constrained array type
-	 with the same domain, just make a new one in the proper type.  */
-      if (code == ecode && code == ARRAY_TYPE
-	  && TREE_TYPE (type) == TREE_TYPE (etype)
-	  && tree_int_cst_equal (TYPE_MIN_VALUE (TYPE_DOMAIN (type)),
-				 TYPE_MIN_VALUE (TYPE_DOMAIN (etype)))
-	  && tree_int_cst_equal (TYPE_MAX_VALUE (TYPE_DOMAIN (type)),
-				 TYPE_MAX_VALUE (TYPE_DOMAIN (etype))))
+      /* If we are converting a CONSTRUCTOR to a mere variant type, just make
+	 a new one in the proper type.  */
+      if (gnat_types_compatible_p (type, etype))
 	{
 	  expr = copy_node (expr);
 	  TREE_TYPE (expr) = type;
@@ -3539,7 +3573,6 @@ convert (tree type, tree expr)
 	   the inner operand to the output type is fine in most cases, it
 	   might expose unexpected input/output type mismatches in special
 	   circumstances so we avoid such recursive calls when we can.  */
-
 	tree op0 = TREE_OPERAND (expr, 0);
 
 	/* If we are converting back to the original type, we can just
@@ -3549,13 +3582,13 @@ convert (tree type, tree expr)
 	  return op0;
 
 	/* Otherwise, if we're converting between two aggregate types, we
-	   might be allowed to substitute the VIEW_CONVERT target type in
-	   place or to just convert the inner expression.  */
+	   might be allowed to substitute the VIEW_CONVERT_EXPR target type
+	   in place or to just convert the inner expression.  */
 	if (AGGREGATE_TYPE_P (type) && AGGREGATE_TYPE_P (etype))
 	  {
-	    /* If we are converting between type variants, we can just
-	       substitute the VIEW_CONVERT in place.  */
-	    if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (etype))
+	    /* If we are converting between mere variants, we can just
+	       substitute the VIEW_CONVERT_EXPR in place.  */
+	    if (gnat_types_compatible_p (type, etype))
 	      return build1 (VIEW_CONVERT_EXPR, type, op0);
 
 	    /* Otherwise, we may just bypass the input view conversion unless
@@ -3594,10 +3627,10 @@ convert (tree type, tree expr)
   if (TYPE_FAT_POINTER_P (type) && !TYPE_FAT_POINTER_P (etype))
     return convert_to_fat_pointer (type, expr);
 
-  /* If we're converting between two aggregate types that have the same main
-     variant, just make a VIEW_CONVER_EXPR.  */
+  /* If we're converting between two aggregate types that are mere
+     variants, just make a VIEW_CONVERT_EXPR.  */
   else if (AGGREGATE_TYPE_P (type)
-	   && TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (etype))
+	   && gnat_types_compatible_p (type, etype))
     return build1 (VIEW_CONVERT_EXPR, type, expr);
 
   /* In all other cases of related types, make a NOP_EXPR.  */
