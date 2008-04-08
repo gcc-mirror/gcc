@@ -9916,7 +9916,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
           /* We only want to compute the number of arguments.  */
           tree expanded = tsubst_pack_expansion (TREE_OPERAND (t, 0), args,
                                                 complain, in_decl);
-	  int len;
+	  int len = 0;
 
 	  if (TREE_CODE (expanded) == TREE_VEC)
 	    len = TREE_VEC_LENGTH (expanded);
