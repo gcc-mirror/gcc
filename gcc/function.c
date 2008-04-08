@@ -290,6 +290,7 @@ free_after_compilation (struct function *f)
   f->cfg = NULL;
 
   f->epilogue_delay_list = NULL;
+  regno_reg_rtx = NULL;
 }
 
 /* Return size needed for stack frame based on slots so far allocated.
