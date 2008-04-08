@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -94,6 +94,11 @@ package body Ch11 is
    begin
       Handler_Node := New_Node (N_Exception_Handler, Token_Ptr);
       Set_Local_Raise_Statements (Handler_Node, No_Elist);
+
+      if Style_Check then
+         Style.Check_Indentation;
+      end if;
+
       T_When;
 
       --  Test for possible choice parameter present
