@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -241,11 +241,13 @@ procedure Gnat1drv is
       if List_Representation_Info /= 0
         or else List_Representation_Info_Mechanisms
       then
+         Set_Standard_Error;
          Write_Eol;
          Write_Str
            ("cannot generate representation information, no code generated");
          Write_Eol;
          Write_Eol;
+         Set_Standard_Output;
       end if;
    end Check_Rep_Info;
 
@@ -584,6 +586,7 @@ begin
       --  generate code).
 
       if Back_End_Mode = Skip then
+         Set_Standard_Error;
          Write_Str ("cannot generate code for ");
          Write_Str ("file ");
          Write_Name (Unit_File_Name (Main_Unit));
@@ -627,6 +630,7 @@ begin
          end if;
 
          Write_Eol;
+         Set_Standard_Output;
 
          Sem_Ch13.Validate_Unchecked_Conversions;
          Sem_Ch13.Validate_Address_Clauses;
