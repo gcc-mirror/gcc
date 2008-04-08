@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -145,21 +145,29 @@ package body Exp_Ch13 is
 
             --  For Storage_Size for an access type, create a variable to hold
             --  the value of the specified size with name typeV and expand an
-            --  assignment statement to initialze this value.
+            --  assignment statement to initialize this value.
 
             elsif Is_Access_Type (Ent) then
-               V := Make_Defining_Identifier (Loc,
-                      New_External_Name (Chars (Ent), 'V'));
 
-               Insert_Action (N,
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => V,
-                   Object_Definition  =>
-                     New_Reference_To (RTE (RE_Storage_Offset), Loc),
-                   Expression =>
-                     Convert_To (RTE (RE_Storage_Offset), Expression (N))));
+               --  We don't need the variable for a storage size of zero
 
-               Set_Storage_Size_Variable (Ent, Entity_Id (V));
+               if not No_Pool_Assigned (Ent) then
+                  V :=
+                    Make_Defining_Identifier (Loc,
+                      Chars => New_External_Name (Chars (Ent), 'V'));
+
+                  --  Insert the declaration of the object
+
+                  Insert_Action (N,
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => V,
+                      Object_Definition  =>
+                        New_Reference_To (RTE (RE_Storage_Offset), Loc),
+                      Expression =>
+                        Convert_To (RTE (RE_Storage_Offset), Expression (N))));
+
+                  Set_Storage_Size_Variable (Ent, Entity_Id (V));
+               end if;
             end if;
 
          --  Other attributes require no expansion
@@ -207,6 +215,15 @@ package body Exp_Ch13 is
          return;
       end if;
 
+      --  Remember that we are processing a freezing entity and its freezing
+      --  nodes. This flag (non-zero = set) is used to avoid the need of
+      --  climbing through the tree while processing the freezing actions (ie.
+      --  to avoid generating spurious warnings or to avoid killing constant
+      --  indications while processing the code associated with freezing
+      --  actions). We use a counter to deal with nesting.
+
+      Inside_Freezing_Actions := Inside_Freezing_Actions + 1;
+
       --  If we are freezing entities defined in protected types, they belong
       --  in the enclosing scope, given that the original type has been
       --  expanded away. The same is true for entities in task types, in
@@ -224,7 +241,6 @@ package body Exp_Ch13 is
 
       elsif Ekind (E_Scope) = E_Subprogram_Body then
          E_Scope := Corresponding_Spec (Unit_Declaration_Node (E_Scope));
-
       end if;
 
       S := Current_Scope;
@@ -339,6 +355,11 @@ package body Exp_Ch13 is
       elsif In_Outer_Scope then
          Pop_Scope;
       end if;
+
+      --  Restore previous value of the nesting-level counter that records
+      --  whether we are inside a (possibly nested) call to this procedure.
+
+      Inside_Freezing_Actions := Inside_Freezing_Actions - 1;
    end Expand_N_Freeze_Entity;
 
    -------------------------------------------

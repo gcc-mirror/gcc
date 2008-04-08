@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2006-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,9 +26,11 @@
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Exp_Util; use Exp_Util;
+with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Rtsfind;  use Rtsfind;
+with Sinfo;    use Sinfo;
 with Sem_Util; use Sem_Util;
 with Stand;    use Stand;
 with Snames;   use Snames;
@@ -56,15 +58,6 @@ package body Exp_Atag is
    --
    --  Generate: To_Type_Specific_Data_Ptr
    --              (To_Addr_Ptr (To_Address (Tag) - Typeinfo_Offset).all);
-
-   function Build_Predef_Prims
-     (Loc      : Source_Ptr;
-      Tag_Node : Node_Id) return Node_Id;
-   --  Build code that retrieves the address of the dispatch table containing
-   --  the predefined Ada primitives:
-   --
-   --  Generate: To_Predef_Prims_Table_Ptr
-   --              (To_Addr_Ptr (To_Address (Tag) - Predef_Prims_Offset).all);
 
    ------------------------------------------------
    -- Build_Common_Dispatching_Select_Statements --
@@ -239,10 +232,33 @@ package body Exp_Atag is
       Position : Uint) return Node_Id
    is
    begin
+      --  Build code that retrieves the address of the dispatch table
+      --  containing the predefined Ada primitives:
+      --
+      --  Generate:
+      --    To_Predef_Prims_Table_Ptr
+      --     (To_Addr_Ptr (To_Address (Tag) - Predef_Prims_Offset).all);
+
       return
         Make_Indexed_Component (Loc,
           Prefix =>
-            Build_Predef_Prims (Loc, Tag_Node),
+            Unchecked_Convert_To (RTE (RE_Predef_Prims_Table_Ptr),
+              Make_Explicit_Dereference (Loc,
+                Unchecked_Convert_To (RTE (RE_Addr_Ptr),
+                  Make_Function_Call (Loc,
+                    Name =>
+                      Make_Expanded_Name (Loc,
+                        Chars => Name_Op_Subtract,
+                        Prefix =>
+                          New_Reference_To
+                            (RTU_Entity (System_Storage_Elements), Loc),
+                        Selector_Name =>
+                          Make_Identifier (Loc,
+                            Chars => Name_Op_Subtract)),
+                    Parameter_Associations => New_List (
+                      Unchecked_Convert_To (RTE (RE_Address), Tag_Node),
+                      New_Reference_To (RTE (RE_DT_Predef_Prims_Offset),
+                                        Loc)))))),
           Expressions =>
             New_List (Make_Integer_Literal (Loc, Position)));
    end Build_Get_Predefined_Prim_Op_Address;
@@ -397,35 +413,37 @@ package body Exp_Atag is
                   New_Reference_To (RTE (RE_Max_Predef_Prims), Loc))));
    end Build_Inherit_Predefined_Prims;
 
-   ------------------------
-   -- Build_Predef_Prims --
-   ------------------------
+   -------------------------
+   -- Build_Offset_To_Top --
+   -------------------------
 
-   function Build_Predef_Prims
-     (Loc      : Source_Ptr;
-      Tag_Node : Node_Id) return Node_Id
+   function Build_Offset_To_Top
+     (Loc       : Source_Ptr;
+      This_Node : Node_Id) return Node_Id
    is
-   begin
-      return
-        Unchecked_Convert_To (RTE (RE_Predef_Prims_Table_Ptr),
-          Make_Explicit_Dereference (Loc,
-            Unchecked_Convert_To (RTE (RE_Addr_Ptr),
-              Make_Function_Call (Loc,
-                Name =>
-                  Make_Expanded_Name (Loc,
-                    Chars => Name_Op_Subtract,
-                    Prefix =>
-                      New_Reference_To
-                        (RTU_Entity (System_Storage_Elements), Loc),
-                    Selector_Name =>
-                      Make_Identifier (Loc,
-                        Chars => Name_Op_Subtract)),
+      Tag_Node : Node_Id;
 
-                Parameter_Associations => New_List (
-                  Unchecked_Convert_To (RTE (RE_Address), Tag_Node),
-                  New_Reference_To (RTE (RE_DT_Predef_Prims_Offset),
-                                    Loc))))));
-   end Build_Predef_Prims;
+   begin
+      Tag_Node :=
+        Make_Explicit_Dereference (Loc,
+          Unchecked_Convert_To (RTE (RE_Tag_Ptr), This_Node));
+
+      return
+        Make_Explicit_Dereference (Loc,
+          Unchecked_Convert_To (RTE (RE_Offset_To_Top_Ptr),
+            Make_Function_Call (Loc,
+              Name =>
+                Make_Expanded_Name (Loc,
+                  Chars => Name_Op_Subtract,
+                  Prefix => New_Reference_To
+                             (RTU_Entity (System_Storage_Elements), Loc),
+                  Selector_Name => Make_Identifier (Loc,
+                                     Chars => Name_Op_Subtract)),
+              Parameter_Associations => New_List (
+                Unchecked_Convert_To (RTE (RE_Address), Tag_Node),
+                New_Reference_To (RTE (RE_DT_Offset_To_Top_Offset),
+                                  Loc)))));
+   end Build_Offset_To_Top;
 
    ------------------------------------------
    -- Build_Set_Predefined_Prim_Op_Address --
@@ -470,6 +488,60 @@ package body Exp_Atag is
                           (Loc, Typ, Tag_Node, Position),
           Expression => Address_Node);
    end Build_Set_Prim_Op_Address;
+
+   -----------------------------
+   -- Build_Set_Size_Function --
+   -----------------------------
+
+   function Build_Set_Size_Function
+     (Loc       : Source_Ptr;
+      Tag_Node  : Node_Id;
+      Size_Func : Entity_Id) return Node_Id is
+   begin
+      pragma Assert (Chars (Size_Func) = Name_uSize
+        and then RTE_Record_Component_Available (RE_Size_Func));
+      return
+        Make_Assignment_Statement (Loc,
+          Name =>
+            Make_Selected_Component (Loc,
+              Prefix => Build_TSD (Loc, Tag_Node),
+              Selector_Name =>
+                New_Reference_To
+                  (RTE_Record_Component (RE_Size_Func), Loc)),
+          Expression =>
+            Unchecked_Convert_To (RTE (RE_Size_Ptr),
+              Make_Attribute_Reference (Loc,
+                Prefix => New_Reference_To (Size_Func, Loc),
+                Attribute_Name => Name_Unrestricted_Access)));
+   end Build_Set_Size_Function;
+
+   ------------------------------------
+   -- Build_Set_Static_Offset_To_Top --
+   ------------------------------------
+
+   function Build_Set_Static_Offset_To_Top
+     (Loc          : Source_Ptr;
+      Iface_Tag    : Node_Id;
+      Offset_Value : Node_Id) return Node_Id is
+   begin
+      return
+        Make_Assignment_Statement (Loc,
+          Make_Explicit_Dereference (Loc,
+            Unchecked_Convert_To (RTE (RE_Offset_To_Top_Ptr),
+              Make_Function_Call (Loc,
+                Name =>
+                  Make_Expanded_Name (Loc,
+                    Chars => Name_Op_Subtract,
+                    Prefix => New_Reference_To
+                               (RTU_Entity (System_Storage_Elements), Loc),
+                    Selector_Name => Make_Identifier (Loc,
+                                       Chars => Name_Op_Subtract)),
+                Parameter_Associations => New_List (
+                  Unchecked_Convert_To (RTE (RE_Address), Iface_Tag),
+                  New_Reference_To (RTE (RE_DT_Offset_To_Top_Offset),
+                                    Loc))))),
+          Offset_Value);
+   end Build_Set_Static_Offset_To_Top;
 
    ---------------
    -- Build_TSD --
