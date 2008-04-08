@@ -68,7 +68,7 @@ package body MLib.Tgt.Specific is
       pragma Unreferenced (Interfaces);
       pragma Unreferenced (Symbol_Data);
       pragma Unreferenced (Auto_Init);
-      --  Initialization is done through the constructor mechanism
+      --  Initialization is done through the contructor mechanism
 
       Lib_File : constant String :=
                    "lib" & Fil.Append_To (Lib_Filename, DLL_Ext);

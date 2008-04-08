@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2003-2007, AdaCore                     --
+--                     Copyright (C) 2003-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,7 +37,11 @@ with Prj.Util; use Prj.Util;
 
 package body MLib.Tgt.Specific is
 
-   --  Non default subprograms
+   --  Local subprograms
+   --  These *ALL* require comments ???
+
+   function Archive_Indexer return String;
+   --  What is this???
 
    procedure Build_Dynamic_Library
      (Ofiles       : Argument_List;
@@ -81,6 +85,15 @@ package body MLib.Tgt.Specific is
    --  Designate the thread switches to used when linking a library against
    --  libgnarl. Depends on the thread library (Native or FSU). Resolved for
    --  the first library linked against libgnarl.
+
+   ---------------------
+   -- Archive_Indexer --
+   ---------------------
+
+   function Archive_Indexer return String is
+   begin
+      return "";
+   end Archive_Indexer;
 
    ---------------------------
    -- Build_Dynamic_Library --
@@ -202,6 +215,7 @@ package body MLib.Tgt.Specific is
    end Support_For_Libraries;
 
 begin
+   Archive_Indexer_Ptr := Archive_Indexer'Access;
    Build_Dynamic_Library_Ptr := Build_Dynamic_Library'Access;
    DLL_Ext_Ptr := DLL_Ext'Access;
    Library_Major_Minor_Id_Supported_Ptr :=
