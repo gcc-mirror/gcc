@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -149,6 +149,7 @@ package GNAT.Sockets.Constants is
 
    TCP_NODELAY        : constant :=          1; --  Do not coalesce packets
    SO_REUSEADDR       : constant :=          4; --  Bind reuse local address
+   SO_REUSEPORT       : constant :=        512; --  Bind reuse port number
    SO_KEEPALIVE       : constant :=          8; --  Enable keep-alive msgs
    SO_LINGER          : constant :=        128; --  Defer close to flush data
    SO_BROADCAST       : constant :=         32; --  Can send broadcast msgs
@@ -162,6 +163,7 @@ package GNAT.Sockets.Constants is
    IP_MULTICAST_LOOP  : constant :=         11; --  Set/get mcast loopback
    IP_ADD_MEMBERSHIP  : constant :=         12; --  Join a multicast group
    IP_DROP_MEMBERSHIP : constant :=         13; --  Leave a multicast group
+   IP_PKTINFO         : constant :=         -1; --  Get datagram info
 
    -------------------
    -- System limits --
@@ -184,13 +186,6 @@ package GNAT.Sockets.Constants is
 
    Need_Netdb_Buffer  : constant :=          1; --  Need buffer for Netdb ops
 
-   ----------------------
-   -- Additional flags --
-   ----------------------
-
-   Thread_Blocking_IO : constant Boolean := True;
-   --  Set False for contexts where socket i/o are process blocking
-
    --------------------------------
    -- VxWorks-specific constants --
    --------------------------------
@@ -200,5 +195,12 @@ package GNAT.Sockets.Constants is
 
    OK                 : constant :=          0; --  VxWorks generic success
    ERROR              : constant :=         -1; --  VxWorks generic error
+
+   ----------------------
+   -- Additional flags --
+   ----------------------
+
+   Thread_Blocking_IO : constant Boolean := True;
+   --  Set False for contexts where socket i/o are process blocking
 
 end GNAT.Sockets.Constants;
