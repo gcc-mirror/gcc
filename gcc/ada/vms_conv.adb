@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -814,7 +814,12 @@ package body VMS_Conv is
 
    procedure Output_Version is
    begin
-      Put ("GNAT ");
+      if AAMP_On_Target then
+         Put ("GNAAMP ");
+      else
+         Put ("GNAT ");
+      end if;
+
       Put_Line (Gnatvsn.Gnat_Version_String);
       Put_Line ("Copyright 1996-" &
                 Current_Year &
