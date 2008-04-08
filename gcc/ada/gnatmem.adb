@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1997-2007, AdaCore                     --
+--                     Copyright (C) 1997-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -307,7 +307,7 @@ procedure Gnatmem is
 
       loop
          case Getopt ("b: dd m: i: q s:") is
-            when ASCII.Nul => exit;
+            when ASCII.NUL => exit;
 
             when 'b' =>
                begin

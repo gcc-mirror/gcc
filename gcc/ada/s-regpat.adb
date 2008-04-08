@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --               Copyright (C) 1986 by University of Toronto.               --
---                      Copyright (C) 1999-2007, AdaCore                    --
+--                      Copyright (C) 1999-2008, AdaCore                    --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1195,7 +1195,7 @@ package body System.Regpat is
          In_Range    : Boolean := False;
          Named_Class : Std_Class := ANYOF_NONE;
          Value       : Character;
-         Last_Value  : Character := ASCII.Nul;
+         Last_Value  : Character := ASCII.NUL;
 
       begin
          Reset_Class (Bitmap);
@@ -2192,7 +2192,7 @@ package body System.Regpat is
                when ANYOF =>  null;
                   declare
                      Bitmap  : Character_Class;
-                     Last    : Character := ASCII.Nul;
+                     Last    : Character := ASCII.NUL;
                      Current : Natural := 0;
 
                      Current_Char : Character;
@@ -2858,7 +2858,7 @@ package body System.Regpat is
          Next   : Pointer;
          Greedy : Boolean) return Boolean
       is
-         Next_Char       : Character := ASCII.Nul;
+         Next_Char       : Character := ASCII.NUL;
          Next_Char_Known : Boolean := False;
          No              : Integer;  --  Can be negative
          Min             : Natural;

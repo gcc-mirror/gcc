@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -535,7 +535,7 @@ package body Exp_Dbug is
       --  For all these cases, just return the name unchanged
 
       then
-         Name_Buffer (Name_Len + 1) := ASCII.Nul;
+         Name_Buffer (Name_Len + 1) := ASCII.NUL;
          return;
       end if;
 
@@ -751,7 +751,7 @@ package body Exp_Dbug is
          Get_Qualified_Name_And_Append (E);
       end if;
 
-      Name_Buffer (Name_Len + 1) := ASCII.Nul;
+      Name_Buffer (Name_Len + 1) := ASCII.NUL;
    end Get_External_Name;
 
    -----------------------------------
@@ -784,7 +784,7 @@ package body Exp_Dbug is
       if Has_Suffix then
          Add_Str_To_Name_Buffer ("___");
          Add_Str_To_Name_Buffer (Suffix);
-         Name_Buffer (Name_Len + 1) := ASCII.Nul;
+         Name_Buffer (Name_Len + 1) := ASCII.NUL;
       end if;
    end Get_External_Name_With_Suffix;
 

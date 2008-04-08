@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -156,8 +156,8 @@ begin
          Create_Block : declare
             Success        : Boolean;
             Make_Args      : Argument_List (1 .. 9);
-            C_Lib_Dir      : String := Lib_Dir.all & ASCII.Nul;
-            C_ADC_File     : String := ADC_File.all & ASCII.Nul;
+            C_Lib_Dir      : String := Lib_Dir.all & ASCII.NUL;
+            C_ADC_File     : String := ADC_File.all & ASCII.NUL;
             F_ADC_File     : String (1 .. max_path_len);
             F_ADC_File_Len : Integer := max_path_len;
             Include_Dirs   : Integer;
@@ -177,7 +177,7 @@ begin
             full_name (C_ADC_File'Address, F_ADC_File'Address);
 
             for I in 1 .. max_path_len loop
-               if F_ADC_File (I) = ASCII.Nul then
+               if F_ADC_File (I) = ASCII.NUL then
                   F_ADC_File_Len := I - 1;
                   exit;
                end if;

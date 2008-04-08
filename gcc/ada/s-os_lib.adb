@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1995-2007, AdaCore                     --
+--                     Copyright (C) 1995-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -458,10 +458,10 @@ package body System.OS_Lib is
          --  Copy attributes
 
          C_From (1 .. Name'Length) := Name;
-         C_From (C_From'Last) := ASCII.Nul;
+         C_From (C_From'Last) := ASCII.NUL;
 
          C_To (1 .. To_Name'Length) := To_Name;
-         C_To (C_To'Last) := ASCII.Nul;
+         C_To (C_To'Last) := ASCII.NUL;
 
          case Preserve is
 
@@ -1622,10 +1622,10 @@ package body System.OS_Lib is
 
                --  If null terminated string, put the quote before
 
-               if Res (J) = ASCII.Nul then
+               if Res (J) = ASCII.NUL then
                   Res (J) := '"';
                   J := J + 1;
-                  Res (J) := ASCII.Nul;
+                  Res (J) := ASCII.NUL;
 
                --  If argument is terminated by '\', then double it. Otherwise
                --  the ending quote will be taken as-is. This is quite strange
