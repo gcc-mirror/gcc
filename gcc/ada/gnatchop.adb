@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -425,7 +425,7 @@ procedure Gnatchop is
       Info    : Unit_Info renames Unit.Table (U);
       FD      : File_Descriptor;
       Name    : aliased constant String :=
-                  File.Table (Input).Name.all & ASCII.Nul;
+                  File.Table (Input).Name.all & ASCII.NUL;
       Length  : File_Offset;
       Buffer  : String_Access;
       Result  : String_Access;
@@ -1413,7 +1413,7 @@ procedure Gnatchop is
 
    function Write_Chopped_Files (Input : File_Num) return Boolean is
       Name    : aliased constant String :=
-                  File.Table (Input).Name.all & ASCII.Nul;
+                  File.Table (Input).Name.all & ASCII.NUL;
       FD      : File_Descriptor;
       Buffer  : String_Access;
       Success : Boolean;
@@ -1660,7 +1660,7 @@ procedure Gnatchop is
 
       declare
          E_Name      : constant String := OS_Name (1 .. O_Length);
-         C_Name      : aliased constant String := E_Name & ASCII.Nul;
+         C_Name      : aliased constant String := E_Name & ASCII.NUL;
          OS_Encoding : constant String := Encoding (1 .. E_Length);
          File        : Stream_IO.File_Type;
       begin

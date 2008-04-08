@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2007, AdaCore                     --
+--                     Copyright (C) 2002-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -299,7 +299,7 @@ package body MLib.Utl is
    -----------------
 
    procedure Delete_File (Filename : String) is
-      File    : constant String := Filename & ASCII.Nul;
+      File    : constant String := Filename & ASCII.NUL;
       Success : Boolean;
 
    begin

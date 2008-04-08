@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,7 +61,7 @@ package body GNAT.Lock_Files is
       if Directory (Directory'Last) = Dir_Separator
         or else Directory (Directory'Last) = '/'
       then
-         Dir (Dir'Last - 1) := ASCII.Nul;
+         Dir (Dir'Last - 1) := ASCII.NUL;
       end if;
 
       --  Try to lock the file Retries times

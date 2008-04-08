@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                                                                          --
 --               Copyright (C) 1986 by University of Toronto.               --
---                     Copyright (C) 1996-2007, AdaCore                     --
+--                     Copyright (C) 1996-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -604,7 +604,7 @@ private
    --  compile to execute that permits the execute phase to run lots faster on
    --  simple cases. They are:
 
-   --     First              character that must begin a match or ASCII.Nul
+   --     First              character that must begin a match or ASCII.NUL
    --     Anchored           true iff match must start at beginning of line
    --     Must_Have          pointer to string that match must include or null
    --     Must_Have_Length   length of Must_Have string
@@ -621,7 +621,7 @@ private
 
    --  The initialization is meant to fail-safe in case the user of this
    --  package tries to use an uninitialized matcher. This takes advantage
-   --  of the knowledge that ASCII.Nul translates to the end-of-program (EOP)
+   --  of the knowledge that ASCII.NUL translates to the end-of-program (EOP)
    --  instruction code of the state machine.
 
    No_Flags         : constant Regexp_Flags := 0;

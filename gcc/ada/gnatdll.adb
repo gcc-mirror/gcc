@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -270,7 +270,7 @@ procedure Gnatdll is
       loop
          case Getopt ("g h v q k a? b: d: e: l: n m I:") is
 
-            when ASCII.Nul =>
+            when ASCII.NUL =>
                exit;
 
             when 'h' =>
@@ -381,7 +381,7 @@ procedure Gnatdll is
 
       loop
          case Getopt ("*") is
-            when ASCII.Nul =>
+            when ASCII.NUL =>
                exit;
 
             when others =>
@@ -397,7 +397,7 @@ procedure Gnatdll is
       loop
          case Getopt ("*") is
 
-            when ASCII.Nul =>
+            when ASCII.NUL =>
                exit;
 
             when others =>
