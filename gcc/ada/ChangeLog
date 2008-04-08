@@ -1,4 +1,15 @@
 2008-04-08  Eric Botcazou  <ebotcazou@adacore.com>
+            Richard Kenner  <kenner@adacore.com>
+
+	* ada-tree.h (TYPE_PACKED_ARRAY_TYPE_P): Only set it when bit-packed.
+	* decl.c (gnat_to_gnu_entity): Adjust for above change.
+	<E_Record_Type>: Try to get a better form of the component for
+	packing, even if it has an integral mode.
+	<E_Record_Subtype>: Likewise.
+	* trans.c (gnat_to_gnu): Do not require BLKmode for the special
+	exception suppressing the final conversion between record types.
+
+2008-04-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl.c (gnat_to_gnu_entity) <object>: If -gnatd.a and not optimizing
 	alignment for space, promote the alignment of non-scalar variables with

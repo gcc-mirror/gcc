@@ -4848,10 +4848,10 @@ gnat_to_gnu (Node_Id gnat_node)
 	  its size since those are the cases where the front end may have the
 	  type wrong due to "instantiating" the unconstrained record with
 	  discriminant values.  Similarly, if the two types are record types
-	  with the same name and the result type has BLKmode, don't convert.
-	  This will be the case when we are converting from a packed version
-	  of a type to its original type and we need those conversions to be
-	  NOPs in order for assignments into these types to work properly.
+	  with the same name don't convert.  This will be the case when we are
+	  converting from a packed version of a type to its original type and
+	  we need those conversions to be NOPs in order for assignments into
+	  these types to work properly.
 
        3. If the type is void or if we have no result, return error_mark_node
 	  to show we have no result.
@@ -4903,8 +4903,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	   || ((TYPE_NAME (gnu_result_type)
 		== TYPE_NAME (TREE_TYPE (gnu_result)))
 	       && TREE_CODE (gnu_result_type) == RECORD_TYPE
-	       && TREE_CODE (TREE_TYPE (gnu_result)) == RECORD_TYPE
-	       && TYPE_MODE (gnu_result_type) == BLKmode))
+	       && TREE_CODE (TREE_TYPE (gnu_result)) == RECORD_TYPE))
     {
       /* Remove any padding.  */
       if (TREE_CODE (TREE_TYPE (gnu_result)) == RECORD_TYPE

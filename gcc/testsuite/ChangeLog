@@ -1,3 +1,9 @@
+2008-04-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/pack6.adb: New test.
+	* gnat.dg/pack7.adb: Likewise.
+	* gnat.dg/pack8.adb: Likewise.
+
 2008-04-08  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat.dg/parent_ltd_with-child_full_view.adb: New test.
