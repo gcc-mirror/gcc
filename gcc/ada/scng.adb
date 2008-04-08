@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2189,8 +2189,10 @@ package body Scng is
          --  is active, so if we find an ESC character we know that we have a
          --  wide character.
 
-         if Identifier_Char (Source (Scan_Ptr)) then
-
+         if Identifier_Char (Source (Scan_Ptr))
+           or else (Source (Scan_Ptr) in Upper_Half_Character
+                     and then Upper_Half_Encoding)
+         then
             --  Case of underline
 
             if Source (Scan_Ptr) = '_' then
