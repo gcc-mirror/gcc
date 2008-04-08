@@ -488,11 +488,11 @@ package body Sem_Ch12 is
    --  and has already been flipped during this phase of instantiation.
 
    procedure Hide_Current_Scope;
-   --  When compiling a generic child unit, the parent context must be
+   --  When instantiating a generic child unit, the parent context must be
    --  present, but the instance and all entities that may be generated
    --  must be inserted in the current scope. We leave the current scope
    --  on the stack, but make its entities invisible to avoid visibility
-   --  problems. This is reversed at the end of instantiations. This is
+   --  problems. This is reversed at the end of the instantiation. This is
    --  not done for the instantiation of the bodies, which only require the
    --  instances of the generic parents to be in scope.
 
@@ -685,7 +685,7 @@ package body Sem_Ch12 is
    --  at the end of the enclosing generic package, which is semantically
    --  neutral.
 
-   procedure Pre_Analyze_Actuals (N : Node_Id);
+   procedure Preanalyze_Actuals (N : Node_Id);
    --  Analyze actuals to perform name resolution. Full resolution is done
    --  later, when the expected types are known, but names have to be captured
    --  before installing parents of generics, that are not visible for the
@@ -1027,6 +1027,8 @@ package body Sem_Ch12 is
 
       procedure Process_Default (F : Entity_Id)  is
          Loc     : constant Source_Ptr := Sloc (I_Node);
+         F_Id    : constant Entity_Id  := Defining_Entity (F);
+
          Decl    : Node_Id;
          Default : Node_Id;
          Id      : Entity_Id;
@@ -1036,17 +1038,12 @@ package body Sem_Ch12 is
          --  new defining identifier for it.
 
          Decl := New_Copy_Tree (F);
+         Id := Make_Defining_Identifier (Sloc (F_Id), Chars => Chars (F_Id));
 
-         if Nkind (F) = N_Formal_Concrete_Subprogram_Declaration then
-            Id :=
-               Make_Defining_Identifier (Sloc (Defining_Entity (F)),
-                 Chars => Chars (Defining_Entity (F)));
+         if Nkind (F) in N_Formal_Subprogram_Declaration then
             Set_Defining_Unit_Name (Specification (Decl), Id);
 
          else
-            Id :=
-              Make_Defining_Identifier (Sloc (Defining_Entity (F)),
-                Chars => Chars (Defining_Identifier (F)));
             Set_Defining_Identifier (Decl, Id);
          end if;
 
@@ -1652,7 +1649,6 @@ package body Sem_Ch12 is
 
       Set_Size_Known_At_Compile_Time
         (T, Size_Known_At_Compile_Time (Entity (Subtype_Mark (Def))));
-
    end Analyze_Formal_Derived_Type;
 
    ----------------------------------
@@ -1855,7 +1851,7 @@ package body Sem_Ch12 is
          end if;
 
          if Present (E) then
-            Analyze_Per_Use_Expression (E, T);
+            Preanalyze_Spec_Expression (E, T);
 
             if Is_Limited_Type (T) and then not OK_For_Limited_Init (E) then
                Error_Msg_N
@@ -2910,7 +2906,7 @@ package body Sem_Ch12 is
       end if;
 
       Generate_Definition (Act_Decl_Id);
-      Pre_Analyze_Actuals (N);
+      Preanalyze_Actuals (N);
 
       Init_Env;
       Env_Installed := True;
@@ -3888,9 +3884,7 @@ package body Sem_Ch12 is
          --  subprogram will be frozen at the point the wrapper package is
          --  frozen, so it does not need its own freeze node. In fact, if one
          --  is created, it might conflict with the freezing actions from the
-         --  wrapper package (see 7206-013).
-
-         --  Should not really reference non-public TN's in comments ???
+         --  wrapper package.
 
          Set_Has_Delayed_Freeze (Anon_Id, False);
 
@@ -3946,7 +3940,7 @@ package body Sem_Ch12 is
       --  Make node global for error reporting
 
       Instantiation_Node := N;
-      Pre_Analyze_Actuals (N);
+      Preanalyze_Actuals (N);
 
       Init_Env;
       Env_Installed := True;
@@ -4038,12 +4032,16 @@ package body Sem_Ch12 is
          Create_Instantiation_Source (N, Gen_Unit, False, S_Adjustment);
 
          --  Copy original generic tree, to produce text for instantiation
+         --  Inherit overriding indicator from instance node.
 
          Act_Tree :=
            Copy_Generic_Node
              (Original_Node (Gen_Decl), Empty, Instantiating => True);
 
          Act_Spec := Specification (Act_Tree);
+         Set_Must_Override (Act_Spec, Must_Override (N));
+         Set_Must_Not_Override (Act_Spec, Must_Not_Override (N));
+
          Renaming_List :=
            Analyze_Associations
              (N,
@@ -4625,11 +4623,22 @@ package body Sem_Ch12 is
 
          elsif Is_Overloadable (E1) then
 
-            --  Verify that the names of the entities match. Note that actuals
-            --  that are attributes are rewritten as subprograms.
+            --  Verify that the actual subprograms match. Note that actuals
+            --  that are attributes are rewritten as subprograms. If the
+            --  subprogram in the formal package is defaulted, no check is
+            --  needed. Note that this can only happen in Ada2005 when the
+            --  formal package can be partially parametrized.
 
-            Check_Mismatch
-              (Ekind (E2) /= Ekind (E1) or else (Alias (E1)) /= Alias (E2));
+            if Nkind (Unit_Declaration_Node (E1)) =
+                                           N_Subprogram_Renaming_Declaration
+              and then From_Default (Unit_Declaration_Node (E1))
+            then
+               null;
+
+            else
+               Check_Mismatch
+                 (Ekind (E2) /= Ekind (E1) or else (Alias (E1)) /= Alias (E2));
+            end if;
 
          else
             raise Program_Error;
@@ -8226,7 +8235,7 @@ package body Sem_Ch12 is
             end if;
          end if;
 
-         Note_Possible_Modification (Actual);
+         Note_Possible_Modification (Actual, Sure => True);
 
          --  Check for instantiation of atomic/volatile actual for
          --  non-atomic/volatile formal (RM C.6 (12)).
@@ -8280,7 +8289,7 @@ package body Sem_Ch12 is
             Append (Decl_Node, List);
 
             --  No need to repeat (pre-)analysis of some expression nodes
-            --  already handled in Pre_Analyze_Actuals.
+            --  already handled in Preanalyze_Actuals.
 
             if Nkind (Actual) /= N_Allocator then
                Analyze (Actual);
@@ -8306,7 +8315,7 @@ package body Sem_Ch12 is
                --  a child unit.
 
                if Nkind (Actual) = N_Aggregate then
-                  Pre_Analyze_And_Resolve (Actual, Typ);
+                  Preanalyze_And_Resolve (Actual, Typ);
                end if;
 
                if Is_Limited_Type (Typ)
@@ -8397,13 +8406,12 @@ package body Sem_Ch12 is
           Nkind_In (Actual_Decl, N_Formal_Object_Declaration,
                                  N_Object_Declaration)
         and then Nkind (Analyzed_Formal) = N_Formal_Object_Declaration
-        and then Has_Null_Exclusion (Actual_Decl)
-        and then not Has_Null_Exclusion (Analyzed_Formal)
+        and then not Has_Null_Exclusion (Actual_Decl)
+        and then Has_Null_Exclusion (Analyzed_Formal)
       then
-         Error_Msg_Sloc := Sloc (Actual_Decl);
+         Error_Msg_Sloc := Sloc (Analyzed_Formal);
          Error_Msg_N
-           ("`NOT NULL` required in formal, to match actual #",
-            Analyzed_Formal);
+           ("actual must exclude null to match generic formal#", Actual);
       end if;
 
       return List;
@@ -8656,7 +8664,8 @@ package body Sem_Ch12 is
    ---------------------------------
 
    procedure Instantiate_Subprogram_Body
-     (Body_Info : Pending_Body_Info)
+     (Body_Info     : Pending_Body_Info;
+      Body_Optional : Boolean := False)
    is
       Act_Decl      : constant Node_Id    := Body_Info.Act_Decl;
       Inst_Node     : constant Node_Id    := Body_Info.Inst_Node;
@@ -8709,7 +8718,8 @@ package body Sem_Ch12 is
          --  For other cases, commpile the body
 
          else
-            Load_Parent_Of_Generic (Inst_Node, Specification (Gen_Decl));
+            Load_Parent_Of_Generic
+              (Inst_Node, Specification (Gen_Decl), Body_Optional);
             Gen_Body_Id := Corresponding_Body (Gen_Decl);
          end if;
       end if;
@@ -8875,7 +8885,10 @@ package body Sem_Ch12 is
       elsif Serious_Errors_Detected = 0
         and then Nkind (Parent (Inst_Node)) /= N_Compilation_Unit
       then
-         if Ekind (Anon_Id) = E_Procedure then
+         if Body_Optional then
+            return;
+
+         elsif Ekind (Anon_Id) = E_Procedure then
             Act_Body :=
               Make_Subprogram_Body (Loc,
                  Specification              =>
@@ -9074,11 +9087,10 @@ package body Sem_Ch12 is
          Desig_Act := Designated_Type (Base_Type (Act_T));
 
          --  The designated type may have been introduced through a limited_
-         --  with clause, in which case retrieve the non-limited view.
+         --  with clause, in which case retrieve the non-limited view. This
+         --  applies to incomplete types as well as to class-wide types.
 
-         if Ekind (Desig_Act) = E_Incomplete_Type
-           and then From_With_Type (Desig_Act)
-         then
+         if From_With_Type (Desig_Act) then
             Desig_Act := Available_View (Desig_Act);
          end if;
 
@@ -9760,6 +9772,22 @@ package body Sem_Ch12 is
                end loop;
             end Check_Abstract_Primitives;
          end if;
+
+         --  Verify that limitedness matches. If parent is a limited
+         --  interface then  the generic formal is not unless declared
+         --  explicitly so. If not declared limited, the actual cannot be
+         --  limited (see AI05-0087).
+
+         if Is_Limited_Type (Act_T)
+           and then not Is_Limited_Type (A_Gen_T)
+           and then False
+         then
+            Error_Msg_NE
+              ("actual for non-limited & cannot be a limited type", Actual,
+               Gen_T);
+            Explain_Limited_Type (Act_T, Actual);
+            Abandon_Instantiation (Actual);
+         end if;
       end Validate_Derived_Type_Instance;
 
       --------------------------------------
@@ -10256,7 +10284,8 @@ package body Sem_Ch12 is
       --  instantiations are available, we must analyze them, to ensure that
       --  the public symbols generated are the same when the unit is compiled
       --  to generate code, and when it is compiled in the context of a unit
-      --  that needs a particular nested instance.
+      --  that needs a particular nested instance. This process is applied
+      --  to both package and subprogram instances.
 
       --------------------------------
       -- Collect_Previous_Instances --
@@ -10281,6 +10310,16 @@ package body Sem_Ch12 is
 
             elsif Nkind (Decl) = N_Package_Instantiation
               and then not Is_Internal (Defining_Entity (Decl))
+            then
+               Append_Elmt (Decl, Previous_Instances);
+
+            --  For a subprogram instantiation, omit instantiations of
+            --  intrinsic operations (Unchecked_Conversions, etc.) that
+            --  have no bodies.
+
+            elsif Nkind_In (Decl, N_Function_Instantiation,
+                                  N_Procedure_Instantiation)
+              and then not Is_Intrinsic_Subprogram (Entity (Name (Decl)))
             then
                Append_Elmt (Decl, Previous_Instances);
 
@@ -10416,6 +10455,7 @@ package body Sem_Ch12 is
                   then
                      declare
                         Decl : Elmt_Id;
+                        Info : Pending_Body_Info;
                         Par  : Node_Id;
 
                      begin
@@ -10446,18 +10486,40 @@ package body Sem_Ch12 is
 
                         Decl := First_Elmt (Previous_Instances);
                         while Present (Decl) loop
-                           Instantiate_Package_Body
-                             (Body_Info =>
-                                ((Inst_Node                => Node (Decl),
-                                  Act_Decl                 =>
-                                    Instance_Spec (Node (Decl)),
-                                  Expander_Status          => Exp_Status,
-                                  Current_Sem_Unit         =>
-                                    Get_Code_Unit (Sloc (Node (Decl))),
-                                  Scope_Suppress           => Scope_Suppress,
-                                  Local_Suppress_Stack_Top =>
-                                    Local_Suppress_Stack_Top)),
-                              Body_Optional => True);
+                           Info :=
+                             (Inst_Node                => Node (Decl),
+                              Act_Decl                 =>
+                                Instance_Spec (Node (Decl)),
+                              Expander_Status          => Exp_Status,
+                              Current_Sem_Unit         =>
+                                Get_Code_Unit (Sloc (Node (Decl))),
+                              Scope_Suppress           => Scope_Suppress,
+                              Local_Suppress_Stack_Top =>
+                                Local_Suppress_Stack_Top);
+
+                           --  Package instance
+
+                           if
+                             Nkind (Node (Decl)) = N_Package_Instantiation
+                           then
+                              Instantiate_Package_Body
+                                (Info, Body_Optional => True);
+
+                           --  Subprogram instance
+
+                           else
+                              --  The instance_spec is the wrapper package,
+                              --  and the subprogram declaration is the last
+                              --  declaration in the wrapper.
+
+                              Info.Act_Decl :=
+                                Last
+                                  (Visible_Declarations
+                                    (Specification (Info.Act_Decl)));
+
+                              Instantiate_Subprogram_Body
+                                (Info, Body_Optional => True);
+                           end if;
 
                            Next_Elmt (Decl);
                         end loop;
@@ -10474,7 +10536,7 @@ package body Sem_Ch12 is
                          Scope_Suppress           => Scope_Suppress,
                          Local_Suppress_Stack_Top =>
                            Local_Suppress_Stack_Top)),
-                                 Body_Optional => Body_Optional);
+                     Body_Optional => Body_Optional);
                end;
             end if;
 
@@ -10634,7 +10696,7 @@ package body Sem_Ch12 is
    -- Preanalyze_Actuals --
    ------------------------
 
-   procedure Pre_Analyze_Actuals (N : Node_Id) is
+   procedure Preanalyze_Actuals (N : Node_Id) is
       Assoc : Node_Id;
       Act   : Node_Id;
       Errs  : constant Int := Serious_Errors_Detected;
@@ -10724,7 +10786,7 @@ package body Sem_Ch12 is
 
          Next (Assoc);
       end loop;
-   end Pre_Analyze_Actuals;
+   end Preanalyze_Actuals;
 
    -------------------
    -- Remove_Parent --

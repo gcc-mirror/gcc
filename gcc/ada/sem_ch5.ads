@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,9 +47,9 @@ package Sem_Ch5 is
    --  be assumed to be reachable.
 
    procedure Check_Unreachable_Code (N : Node_Id);
-   --  This procedure is called with N being the node for a statement that
-   --  is an unconditional transfer of control. It checks to see if the
-   --  statement is followed by some other statement, and if so generates
-   --  an appropriate warning for unreachable code.
+   --  This procedure is called with N being the node for a statement that is
+   --  an unconditional transfer of control or an apparent infinite loop. It
+   --  checks to see if the statement is followed by some other statement, and
+   --  if so generates an appropriate warning for unreachable code.
 
 end Sem_Ch5;
