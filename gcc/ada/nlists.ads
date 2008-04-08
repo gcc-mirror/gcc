@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -201,7 +201,7 @@ package Nlists is
    function Is_Empty_List (List : List_Id) return Boolean;
    pragma Inline (Is_Empty_List);
    --  This function determines if a given list id references a node list that
-   --  contains no items. No_List is a not a legitimate argument.
+   --  contains no items. No_List as an argument returns True.
 
    function Is_Non_Empty_List (List : List_Id) return Boolean;
    pragma Inline (Is_Non_Empty_List);
