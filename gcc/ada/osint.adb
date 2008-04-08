@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -250,7 +250,11 @@ package body Osint is
       --
       --  HKEY_LOCAL_MACHINE\SOFTWARE\Ada Core Technologies\
       --                             GNAT\Standard Libraries
-      --  Return an empty string on other systems
+      --  Return an empty string on other systems.
+      --
+      --  Note that this is an undocumented legacy feature, and that it
+      --  works only when using the default runtime library (i.e. no --RTS=
+      --  command line switch).
 
       --------------------
       -- Add_Search_Dir --
@@ -1874,6 +1878,31 @@ package body Osint is
       Res : String_Access;
 
    begin
+      --  GNAAMP tool names require special treatment
+
+      if AAMP_On_Target then
+
+         --  The name "gcc" is mapped to "gnaamp" (the compiler driver)
+
+         if Nam = "gcc" then
+            return new String'("gnaamp");
+
+         --  Tool names starting with "gnat" are mapped by substituting the
+         --  string "gnaamp" for "gnat" (for example, "gnatpp" => "gnaamppp").
+
+         elsif Nam'Length >= 4
+           and then Nam (Nam'First .. Nam'First + 3) = "gnat"
+         then
+            return new String'("gnaamp" & Nam (Nam'First + 4 .. Nam'Last));
+
+         --  No other mapping rules, so we continue and handle any other forms
+         --  of tool names the same as on other targets.
+
+         else
+            null;
+         end if;
+      end if;
+
       --  Get the name of the current program being executed
 
       Find_Program_Name;
@@ -1976,18 +2005,29 @@ package body Osint is
          Curr := Curr + Actual_Len;
       end loop;
 
-      --  Process the file, translating line and file ending
-      --  control characters to a path separator character.
+      --  Process the file, dealing with path separators
 
       Prev_Was_Separator := True;
       Nb_Relative_Dir := 0;
       for J in 1 .. Len loop
-         if S (J) in ASCII.NUL .. ASCII.US or else S (J) = ' ' then
+
+         --  Treat any control character as a path separator. Note that we do
+         --  not treat space as a path separator (we used to treat space as a
+         --  path separator in an earlier version). That way space can appear
+         --  as a legitimate character in a path name.
+
+         --  Why do we treat all control characters as path separators???
+
+         if S (J) in ASCII.NUL .. ASCII.US then
             S (J) := Path_Separator;
          end if;
 
+         --  Test for explicit path separator (or control char as above)
+
          if S (J) = Path_Separator then
             Prev_Was_Separator := True;
+
+         --  If not path separator, register use of relative directory
 
          else
             if Prev_Was_Separator and then Is_Relative (S.all, J) then
