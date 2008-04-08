@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -117,6 +117,7 @@ package Table is
       --  safety is not compromised by this approach.
 
       type Table_Ptr is access all Big_Table_Type;
+      for Table_Ptr'Storage_Size use 0;
       --  The table is actually represented as a pointer to allow reallocation
 
       Table : aliased Table_Ptr := null;

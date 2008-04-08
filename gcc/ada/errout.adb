@@ -50,8 +50,6 @@ with Stand;    use Stand;
 with Style;
 with Uname;    use Uname;
 
-with Unchecked_Conversion;
-
 package body Errout is
 
    Errors_Must_Be_Ignored : Boolean := False;
@@ -797,7 +795,8 @@ package body Errout is
 
       --  If error message line length set, and this is a continuation message
       --  then all we do is to append the text to the text of the last message
-      --  with a comma space separator.
+      --  with a comma space separator (eliminating a possible (style) or
+      --  info prefix).
 
       if Error_Msg_Line_Length /= 0
         and then Continuation
@@ -808,6 +807,7 @@ package body Errout is
             Oldm : String_Ptr := Errors.Table (Cur_Msg).Text;
             Newm : String (1 .. Oldm'Last + 2 + Msglen);
             Newl : Natural;
+            M    : Natural;
 
          begin
             --  First copy old message to new one and free it
@@ -815,6 +815,16 @@ package body Errout is
             Newm (Oldm'Range) := Oldm.all;
             Newl := Oldm'Length;
             Free (Oldm);
+
+            --  Remove (style) or info: at start of message
+
+            if Msglen > 8 and then Msg_Buffer (1 .. 8) = "(style) " then
+               M := 9;
+            elsif Msglen > 6 and then Msg_Buffer (1 .. 6) = "info: " then
+               M := 7;
+            else
+               M := 1;
+            end if;
 
             --  Now deal with separation between messages. Normally this
             --  is simply comma space, but there are some special cases.
@@ -830,16 +840,16 @@ package body Errout is
             --  successive parenthetical remarks into a single one with
             --  separating commas).
 
-            elsif Msg_Buffer (1) = '(' and then Msg_Buffer (Msglen) = ')' then
+            elsif Msg_Buffer (M) = '(' and then Msg_Buffer (Msglen) = ')' then
 
                --  Case where existing message ends in right paren, remove
                --  and separate parenthetical remarks with a comma.
 
                if Newm (Newl) = ')' then
                   Newm (Newl) := ',';
-                  Msg_Buffer (1) := ' ';
+                  Msg_Buffer (M) := ' ';
 
-                  --  Case where we are adding new parenthetical comment
+               --  Case where we are adding new parenthetical comment
 
                else
                   Newl := Newl + 1;
@@ -855,8 +865,9 @@ package body Errout is
 
             --  Append new message
 
-            Newm (Newl + 1 .. Newl + Msglen) := Msg_Buffer (1 .. Msglen);
-            Newl := Newl + Msglen;
+            Newm (Newl + 1 .. Newl + Msglen - M + 1) :=
+              Msg_Buffer (M .. Msglen);
+            Newl := Newl + Msglen - M + 1;
             Errors.Table (Cur_Msg).Text := new String'(Newm (1 .. Newl));
          end;
 
@@ -956,9 +967,9 @@ package body Errout is
            and then Compiler_State = Parsing
            and then not All_Errors_Mode
          then
-            --  Don't delete unconditional messages and at this stage,
-            --  don't delete continuation lines (we attempted to delete
-            --  those earlier if the parent message was deleted.
+            --  Don't delete unconditional messages and at this stage, don't
+            --  delete continuation lines (we attempted to delete those earlier
+            --  if the parent message was deleted.
 
             if not Errors.Table (Cur_Msg).Uncond
               and then not Continuation
@@ -1011,10 +1022,9 @@ package body Errout is
 
       --  Bump appropriate statistics count
 
-      if Errors.Table (Cur_Msg).Warn
-        or else Errors.Table (Cur_Msg).Style
-      then
+      if Errors.Table (Cur_Msg).Warn or Errors.Table (Cur_Msg).Style then
          Warnings_Detected := Warnings_Detected + 1;
+
       else
          Total_Errors_Detected := Total_Errors_Detected + 1;
 
@@ -1113,7 +1123,7 @@ package body Errout is
          Last_Killed := True;
       end if;
 
-      if not Is_Warning_Msg and then not Is_Style_Msg then
+      if not (Is_Warning_Msg or Is_Style_Msg) then
          Set_Posted (N);
       end if;
    end Error_Msg_NEL;
@@ -1927,9 +1937,9 @@ package body Errout is
 
                and then Errors.Table (E).Optr = Loc
 
-               --  Don't remove if not warning message. Note that we do not
-               --  remove style messages here. They are warning messages but
-               --  not ones we want removed in this context.
+               --  Don't remove if not warning/info message. Note that we do
+               --  not remove style messages here. They are warning messages
+               --  but not ones we want removed in this context.
 
                and then Errors.Table (E).Warn
 
@@ -1976,12 +1986,11 @@ package body Errout is
            and then Original_Node (N) /= N
            and then No (Condition (N))
          then
-            --  Warnings may have been posted on subexpressions of
-            --  the original tree. We place the original node back
-            --  on the tree to remove those warnings, whose sloc
-            --  do not match those of any node in the current tree.
-            --  Given that we are in unreachable code, this modification
-            --  to the tree is harmless.
+            --  Warnings may have been posted on subexpressions of the original
+            --  tree. We place the original node back on the tree to remove
+            --  those warnings, whose sloc do not match those of any node in
+            --  the current tree. Given that we are in unreachable code, this
+            --  modification to the tree is harmless.
 
             declare
                Status : Traverse_Final_Result;
@@ -2022,7 +2031,6 @@ package body Errout is
    begin
       if Is_Non_Empty_List (L) then
          Stat := First (L);
-
          while Present (Stat) loop
             Remove_Warning_Messages (Stat);
             Next (Stat);
@@ -2038,12 +2046,6 @@ package body Errout is
      (Identifier_Name : System.Address;
       File_Name       : System.Address)
    is
-      type Big_String is array (Positive) of Character;
-      type Big_String_Ptr is access all Big_String;
-
-      function To_Big_String_Ptr is new Unchecked_Conversion
-        (System.Address, Big_String_Ptr);
-
       Ident : constant Big_String_Ptr := To_Big_String_Ptr (Identifier_Name);
       File  : constant Big_String_Ptr := To_Big_String_Ptr (File_Name);
       Flen  : Natural;
@@ -2083,7 +2085,7 @@ package body Errout is
       for J in Name_Buffer'Range loop
          Name_Buffer (J) := Ident (J);
 
-         if Name_Buffer (J) = ASCII.Nul then
+         if Name_Buffer (J) = ASCII.NUL then
             Name_Len := J - 1;
             exit;
          end if;

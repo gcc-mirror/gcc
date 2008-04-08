@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -125,10 +125,7 @@ package body Back_End is
    procedure Scan_Compiler_Arguments is
       Next_Arg : Pos := 1;
 
-      subtype Big_String is String (Positive);
-      type BSP is access Big_String;
-
-      type Arg_Array is array (Nat) of BSP;
+      type Arg_Array is array (Nat) of Big_String_Ptr;
       type Arg_Array_Ptr is access Arg_Array;
 
       flag_stack_check : Int;
@@ -235,9 +232,10 @@ package body Back_End is
 
       while Next_Arg < save_argc loop
          Look_At_Arg : declare
-            Argv_Ptr : constant BSP    := save_argv (Next_Arg);
-            Argv_Len : constant Nat    := Len_Arg (Next_Arg);
-            Argv     : constant String := Argv_Ptr (1 .. Natural (Argv_Len));
+            Argv_Ptr : constant Big_String_Ptr := save_argv (Next_Arg);
+            Argv_Len : constant Nat            := Len_Arg (Next_Arg);
+            Argv     : constant String         :=
+                         Argv_Ptr (1 .. Natural (Argv_Len));
 
          begin
             --  If the previous switch has set the Output_File_Name_Present

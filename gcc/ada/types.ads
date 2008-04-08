@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,6 +47,8 @@
 --  2s-complement. If there are any machines for which this is not a correct
 --  assumption, a significant number of changes will be required!
 
+with System;
+with Unchecked_Conversion;
 with Unchecked_Deallocation;
 
 package Types is
@@ -123,6 +125,15 @@ package Types is
    procedure Free is new Unchecked_Deallocation (String, String_Ptr);
    --  Procedure for freeing dynamically allocated String values
 
+   subtype Big_String is String (Positive);
+   type Big_String_Ptr is access all Big_String;
+   for Big_String_Ptr'Storage_Size use 0;
+   --  Virtual type for handling imported big strings
+
+   function To_Big_String_Ptr is
+     new Unchecked_Conversion (System.Address, Big_String_Ptr);
+   --  Used to obtain Big_String_Ptr values from external addresses
+
    subtype Word_Hex_String is String (1 .. 8);
    --  Type used to represent Word value as 8 hex digits, with lower case
    --  letters for the alphabetic cases.
@@ -191,6 +202,7 @@ package Types is
    --  type Source_Buffer_Ptr, see Osint.Read_Source_File for details.
 
    type Source_Buffer_Ptr is access all Big_Source_Buffer;
+   for Source_Buffer_Ptr'Storage_Size use 0;
    --  Pointer to source buffer. We use virtual origin addressing for source
    --  buffers, with thin pointers. The pointer points to a virtual instance
    --  of type Big_Source_Buffer, where the actual type is in fact of type
