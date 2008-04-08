@@ -1,3 +1,8 @@
+2008-04-09  Richard Guenther  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_stmt): Print complete bogus stmt.
+	(dump_function_to_file): Dump function arguments with types.
+
 2008-04-08  Richard Guenther  <rguenther@suse.de>
 
 	* fold-const.c (fold_widened_comparison): Do not allow

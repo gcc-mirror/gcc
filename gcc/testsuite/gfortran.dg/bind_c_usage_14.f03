@@ -81,24 +81,24 @@ end subroutine sub6NoIso
 ! The subroutines (including entry) should have
 ! only a char-length parameter if they are not bind(C).
 !
-! { dg-final { scan-tree-dump "sub1noiso .a, b, _a, _b\\)" "original" } }
-! { dg-final { scan-tree-dump "sub2 .a, b\\)" "original" } }
-! { dg-final { scan-tree-dump "sub3noiso .a, b, _a, _b\\)" "original" } }
-! { dg-final { scan-tree-dump "sub3noisoentry .x, y, z, _x, _z\\)" "original" } }
-! { dg-final { scan-tree-dump "sub4iso .a, b\\)" "original" } }
-! { dg-final { scan-tree-dump "sub4isoentry .x, y, z, _x, _z\\)" "original" } }
-! { dg-final { scan-tree-dump "sub5iso .a, b\\)" "original" } }
-! { dg-final { scan-tree-dump "sub5noisoentry .x, y, z, _x, _z\\)" "original" } }
-! { dg-final { scan-tree-dump "sub6noiso .a, b, _a, _b\\)" "original" } }
-! { dg-final { scan-tree-dump "sub6isoentry .x, y, z, _x, _z\\)" "original" } }
+! { dg-final { scan-tree-dump "sub1noiso \\(\[^.\]*a, \[^.\]*b, \[^.\]*_a, \[^.\]*_b\\)" "original" } }
+! { dg-final { scan-tree-dump "sub2 \\(\[^.\]*a, \[^.\]*b\\)" "original" } }
+! { dg-final { scan-tree-dump "sub3noiso \\(\[^.\]*a, \[^.\]*b, \[^.\]*_a, \[^.\]*_b\\)" "original" } }
+! { dg-final { scan-tree-dump "sub3noisoentry \\(\[^.\]*x, \[^.\]*y, \[^.\]*z, \[^.\]*_x, \[^.\]*_z\\)" "original" } }
+! { dg-final { scan-tree-dump "sub4iso \\(\[^.\]*a, \[^.\]*b\\)" "original" } }
+! { dg-final { scan-tree-dump "sub4isoentry \\(\[^.\]*x, \[^.\]*y, \[^.\]*z, \[^.\]*_x, \[^.\]*_z\\)" "original" } }
+! { dg-final { scan-tree-dump "sub5iso \\(\[^.\]*a, \[^.\]*b\\)" "original" } }
+! { dg-final { scan-tree-dump "sub5noisoentry \\(\[^.\]*x, \[^.\]*y, \[^.\]*z, \[^.\]*_x, \[^.\]*_z\\)" "original" } }
+! { dg-final { scan-tree-dump "sub6noiso \\(\[^.\]*a, \[^.\]*b, \[^.\]*_a, \[^.\]*_b\\)" "original" } }
+! { dg-final { scan-tree-dump "sub6isoentry \\(\[^.\]*x, \[^.\]*y, \[^.\]*z, \[^.\]*_x, \[^.\]*_z\\)" "original" } }
 
 ! The master functions should have always a length parameter
 ! to ensure sharing a parameter between bind(C) and non-bind(C) works
 !
-! { dg-final { scan-tree-dump "master.0.sub3noiso .__entry, z, y, x, b, a, _z, _x, _b, _a\\)" "original" } }
-! { dg-final { scan-tree-dump "master.1.sub4iso .__entry, z, y, x, b, a, _z, _x, _b, _a\\)" "original" } }
-! { dg-final { scan-tree-dump "master.2.sub5iso .__entry, z, y, x, b, a, _z, _x, _b, _a\\)" "original" } }
-! { dg-final { scan-tree-dump "master.3.sub6noiso .__entry, z, y, x, b, a, _z, _x, _b, _a\\)" "original" } }
+! { dg-final { scan-tree-dump "master.0.sub3noiso \\(\[^.\]*__entry, \[^.\]*z, \[^.\]*y, \[^.\]*x, \[^.\]*b, \[^.\]*a, \[^.\]*_z, \[^.\]*_x, \[^.\]*_b, \[^.\]*_a\\)" "original" } }
+! { dg-final { scan-tree-dump "master.1.sub4iso \\(\[^.\]*__entry, \[^.\]*z, \[^.\]*y, \[^.\]*x, \[^.\]*b, \[^.\]*a, \[^.\]*_z, \[^.\]*_x, \[^.\]*_b, \[^.\]*_a\\)" "original" } }
+! { dg-final { scan-tree-dump "master.2.sub5iso \\(\[^.\]*__entry, \[^.\]*z, \[^.\]*y, \[^.\]*x, \[^.\]*b, \[^.\]*a, \[^.\]*_z, \[^.\]*_x, \[^.\]*_b, \[^.\]*_a\\)" "original" } }
+! { dg-final { scan-tree-dump "master.3.sub6noiso \\(\[^.\]*__entry, \[^.\]*z, \[^.\]*y, \[^.\]*x, \[^.\]*b, \[^.\]*a, \[^.\]*_z, \[^.\]*_x, \[^.\]*_b, \[^.\]*_a\\)" "original" } }
 
 ! Thus, the master functions need to be called with length arguments
 ! present
