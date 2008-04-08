@@ -199,7 +199,7 @@ gnattools-native: $(GCC_DIR)/stamp-tools $(GCC_DIR)/stamp-gnatlib
 	# gnattools1
 	$(MAKE) -C $(GCC_DIR)/ada/tools -f ../Makefile \
 	  $(TOOLS_FLAGS_TO_PASS_1) \
-	  ../../gnatmake$(exeext) ../../gnatlink$(exeext) ../../gnatbl$(exeext)
+	  ../../gnatmake$(exeext) ../../gnatlink$(exeext)
 	# gnattools2
 	$(MAKE) -C $(GCC_DIR)/ada/tools -f ../Makefile \
 	  $(TOOLS_FLAGS_TO_PASS_NATIVE) \
@@ -241,9 +241,6 @@ gnattools-cross: $(GCC_DIR)/stamp-tools
 	# installing.  FIXME: installation should be done elsewhere.
 	if [ -f $(GCC_DIR)/gnatbind$(exeext) ] ; then \
 	  mv $(GCC_DIR)/gnatbind$(exeext) $(GCC_DIR)/gnatbind-cross$(exeext); \
-	fi
-	if [ -f $(GCC_DIR)/gnatbl$(exeext) ] ; then \
-	  mv $(GCC_DIR)/gnatbl$(exeext) $(GCC_DIR)/gnatbl-cross$(exeext); \
 	fi
 	if [ -f $(GCC_DIR)/gnatchop$(exeext) ] ; then \
 	  mv $(GCC_DIR)/gnatchop$(exeext) $(GCC_DIR)/gnatchop-cross$(exeext); \
