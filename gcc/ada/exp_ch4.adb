@@ -1852,6 +1852,10 @@ package body Exp_Ch4 is
          Ensure_Defined (Etype (R), N);
          Apply_Length_Check (R, Etype (L));
 
+         if Nkind (N) = N_Op_Xor then
+            Silly_Boolean_Array_Xor_Test (N, Etype (L));
+         end if;
+
          if Nkind (Parent (N)) = N_Assignment_Statement
            and then Safe_In_Place_Array_Op (Name (Parent (N)), L, R)
          then
@@ -1860,7 +1864,7 @@ package body Exp_Ch4 is
          elsif Nkind (Parent (N)) = N_Op_Not
            and then Nkind (N) = N_Op_And
            and then
-         Safe_In_Place_Array_Op (Name (Parent (Parent (N))), L, R)
+             Safe_In_Place_Array_Op (Name (Parent (Parent (N))), L, R)
          then
             return;
          else
@@ -2812,7 +2816,7 @@ package body Exp_Ch4 is
 
          function Needs_Initialization_Call (N : Node_Id) return Boolean;
          --  Determine whether node N is a subtype indicator allocator which
-         --  asts a coextension. Such coextensions need initialization.
+         --  acts a coextension. Such coextensions need initialization.
 
          -------------------------------
          -- Inside_A_Return_Statement --
@@ -2943,27 +2947,34 @@ package body Exp_Ch4 is
                Ref := New_Copy_Tree (Coext);
             end if;
 
-            --  Generate:
-            --    initialize (Ref)
-            --    attach_to_final_list (Ref, Flist, 2)
+            --  No initialization call if not allowed
 
-            if Needs_Initialization_Call (Coext) then
-               Insert_Actions (N,
-                 Make_Init_Call (
-                   Ref         => Ref,
-                   Typ         => Etype (Coext),
-                   Flist_Ref   => Flist,
-                   With_Attach => Make_Integer_Literal (Loc, Uint_2)));
+            Check_Restriction (No_Default_Initialization, N);
 
-            --  Generate:
-            --    attach_to_final_list (Ref, Flist, 2)
+            if not Restriction_Active (No_Default_Initialization) then
 
-            else
-               Insert_Action (N,
-                 Make_Attach_Call (
-                   Obj_Ref     => Ref,
-                   Flist_Ref   => New_Copy_Tree (Flist),
-                   With_Attach => Make_Integer_Literal (Loc, Uint_2)));
+               --  Generate:
+               --    initialize (Ref)
+               --    attach_to_final_list (Ref, Flist, 2)
+
+               if Needs_Initialization_Call (Coext) then
+                  Insert_Actions (N,
+                    Make_Init_Call (
+                      Ref         => Ref,
+                      Typ         => Etype (Coext),
+                      Flist_Ref   => Flist,
+                      With_Attach => Make_Integer_Literal (Loc, Uint_2)));
+
+               --  Generate:
+               --    attach_to_final_list (Ref, Flist, 2)
+
+               else
+                  Insert_Action (N,
+                    Make_Attach_Call (
+                      Obj_Ref     => Ref,
+                      Flist_Ref   => New_Copy_Tree (Flist),
+                      With_Attach => Make_Integer_Literal (Loc, Uint_2)));
+               end if;
             end if;
 
             Next_Elmt (Coext_Elmt);
@@ -3174,10 +3185,11 @@ package body Exp_Ch4 is
             --  Case of simple initialization required
 
             if Needs_Simple_Initialization (T) then
+               Check_Restriction (No_Default_Initialization, N);
                Rewrite (Expression (N),
                  Make_Qualified_Expression (Loc,
                    Subtype_Mark => New_Occurrence_Of (T, Loc),
-                   Expression   => Get_Simple_Init_Val (T, Loc)));
+                   Expression   => Get_Simple_Init_Val (T, N)));
 
                Analyze_And_Resolve (Expression (Expression (N)), T);
                Analyze_And_Resolve (Expression (N), T);
@@ -3193,292 +3205,299 @@ package body Exp_Ch4 is
          --  Case of initialization procedure present, must be called
 
          else
-            Init := Base_Init_Proc (T);
-            Nod  := N;
-            Temp := Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
+            Check_Restriction (No_Default_Initialization, N);
 
-            --  Construct argument list for the initialization routine call
+            if not Restriction_Active (No_Default_Initialization) then
+               Init := Base_Init_Proc (T);
+               Nod  := N;
+               Temp := Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
 
-            Arg1 :=
-              Make_Explicit_Dereference (Loc,
-                Prefix => New_Reference_To (Temp, Loc));
-            Set_Assignment_OK (Arg1);
-            Temp_Type := PtrT;
+               --  Construct argument list for the initialization routine call
 
-            --  The initialization procedure expects a specific type. if the
-            --  context is access to class wide, indicate that the object being
-            --  allocated has the right specific type.
-
-            if Is_Class_Wide_Type (Dtyp) then
-               Arg1 := Unchecked_Convert_To (T, Arg1);
-            end if;
-
-            --  If designated type is a concurrent type or if it is private
-            --  type whose definition is a concurrent type, the first argument
-            --  in the Init routine has to be unchecked conversion to the
-            --  corresponding record type. If the designated type is a derived
-            --  type, we also convert the argument to its root type.
-
-            if Is_Concurrent_Type (T) then
                Arg1 :=
-                 Unchecked_Convert_To (Corresponding_Record_Type (T), Arg1);
+                 Make_Explicit_Dereference (Loc,
+                   Prefix => New_Reference_To (Temp, Loc));
+               Set_Assignment_OK (Arg1);
+               Temp_Type := PtrT;
 
-            elsif Is_Private_Type (T)
-              and then Present (Full_View (T))
-              and then Is_Concurrent_Type (Full_View (T))
-            then
-               Arg1 :=
-                 Unchecked_Convert_To
-                   (Corresponding_Record_Type (Full_View (T)), Arg1);
+               --  The initialization procedure expects a specific type. if the
+               --  context is access to class wide, indicate that the object
+               --  being allocated has the right specific type.
 
-            elsif Etype (First_Formal (Init)) /= Base_Type (T) then
-               declare
-                  Ftyp : constant Entity_Id := Etype (First_Formal (Init));
-
-               begin
-                  Arg1 := OK_Convert_To (Etype (Ftyp), Arg1);
-                  Set_Etype (Arg1, Ftyp);
-               end;
-            end if;
-
-            Args := New_List (Arg1);
-
-            --  For the task case, pass the Master_Id of the access type as
-            --  the value of the _Master parameter, and _Chain as the value
-            --  of the _Chain parameter (_Chain will be defined as part of
-            --  the generated code for the allocator).
-
-            --  In Ada 2005, the context may be a function that returns an
-            --  anonymous access type. In that case the Master_Id has been
-            --  created when expanding the function declaration.
-
-            if Has_Task (T) then
-               if No (Master_Id (Base_Type (PtrT))) then
-
-                  --  If we have a non-library level task with the restriction
-                  --  No_Task_Hierarchy set, then no point in expanding.
-
-                  if not Is_Library_Level_Entity (T)
-                    and then Restriction_Active (No_Task_Hierarchy)
-                  then
-                     return;
-                  end if;
-
-                  --  The designated type was an incomplete type, and the
-                  --  access type did not get expanded. Salvage it now.
-
-                  pragma Assert (Present (Parent (Base_Type (PtrT))));
-                  Expand_N_Full_Type_Declaration (Parent (Base_Type (PtrT)));
+               if Is_Class_Wide_Type (Dtyp) then
+                  Arg1 := Unchecked_Convert_To (T, Arg1);
                end if;
 
-               --  If the context of the allocator is a declaration or an
-               --  assignment, we can generate a meaningful image for it,
-               --  even though subsequent assignments might remove the
-               --  connection between task and entity. We build this image
-               --  when the left-hand side is a simple variable, a simple
-               --  indexed assignment or a simple selected component.
+               --  If designated type is a concurrent type or if it is private
+               --  type whose definition is a concurrent type, the first
+               --  argument in the Init routine has to be unchecked conversion
+               --  to the corresponding record type. If the designated type is
+               --  a derived type, we also convert the argument to its root
+               --  type.
 
-               if Nkind (Parent (N)) = N_Assignment_Statement then
-                  declare
-                     Nam : constant Node_Id := Name (Parent (N));
-
-                  begin
-                     if Is_Entity_Name (Nam) then
-                        Decls :=
-                          Build_Task_Image_Decls (
-                            Loc,
-                              New_Occurrence_Of
-                                (Entity (Nam), Sloc (Nam)), T);
-
-                     elsif Nkind_In
-                             (Nam, N_Indexed_Component, N_Selected_Component)
-                       and then Is_Entity_Name (Prefix (Nam))
-                     then
-                        Decls :=
-                          Build_Task_Image_Decls
-                            (Loc, Nam, Etype (Prefix (Nam)));
-                     else
-                        Decls := Build_Task_Image_Decls (Loc, T, T);
-                     end if;
-                  end;
-
-               elsif Nkind (Parent (N)) = N_Object_Declaration then
-                  Decls :=
-                    Build_Task_Image_Decls (
-                       Loc, Defining_Identifier (Parent (N)), T);
-
-               else
-                  Decls := Build_Task_Image_Decls (Loc, T, T);
-               end if;
-
-               Append_To (Args,
-                 New_Reference_To
-                   (Master_Id (Base_Type (Root_Type (PtrT))), Loc));
-               Append_To (Args, Make_Identifier (Loc, Name_uChain));
-
-               Decl := Last (Decls);
-               Append_To (Args,
-                 New_Occurrence_Of (Defining_Identifier (Decl), Loc));
-
-            --  Has_Task is false, Decls not used
-
-            else
-               Decls := No_List;
-            end if;
-
-            --  Add discriminants if discriminated type
-
-            declare
-               Dis : Boolean := False;
-               Typ : Entity_Id;
-
-            begin
-               if Has_Discriminants (T) then
-                  Dis := True;
-                  Typ := T;
+               if Is_Concurrent_Type (T) then
+                  Arg1 :=
+                    Unchecked_Convert_To (Corresponding_Record_Type (T), Arg1);
 
                elsif Is_Private_Type (T)
                  and then Present (Full_View (T))
-                 and then Has_Discriminants (Full_View (T))
+                 and then Is_Concurrent_Type (Full_View (T))
                then
-                  Dis := True;
-                  Typ := Full_View (T);
+                  Arg1 :=
+                    Unchecked_Convert_To
+                      (Corresponding_Record_Type (Full_View (T)), Arg1);
+
+               elsif Etype (First_Formal (Init)) /= Base_Type (T) then
+                  declare
+                     Ftyp : constant Entity_Id := Etype (First_Formal (Init));
+                  begin
+                     Arg1 := OK_Convert_To (Etype (Ftyp), Arg1);
+                     Set_Etype (Arg1, Ftyp);
+                  end;
                end if;
 
-               if Dis then
-                  --  If the allocated object will be constrained by the
-                  --  default values for discriminants, then build a
-                  --  subtype with those defaults, and change the allocated
-                  --  subtype to that. Note that this happens in fewer
-                  --  cases in Ada 2005 (AI-363).
+               Args := New_List (Arg1);
 
-                  if not Is_Constrained (Typ)
-                    and then Present (Discriminant_Default_Value
-                                       (First_Discriminant (Typ)))
-                    and then (Ada_Version < Ada_05
-                               or else not Has_Constrained_Partial_View (Typ))
-                  then
-                     Typ := Build_Default_Subtype (Typ, N);
-                     Set_Expression (N, New_Reference_To (Typ, Loc));
-                  end if;
+               --  For the task case, pass the Master_Id of the access type as
+               --  the value of the _Master parameter, and _Chain as the value
+               --  of the _Chain parameter (_Chain will be defined as part of
+               --  the generated code for the allocator).
 
-                  Discr := First_Elmt (Discriminant_Constraint (Typ));
-                  while Present (Discr) loop
-                     Nod := Node (Discr);
-                     Append (New_Copy_Tree (Node (Discr)), Args);
+               --  In Ada 2005, the context may be a function that returns an
+               --  anonymous access type. In that case the Master_Id has been
+               --  created when expanding the function declaration.
 
-                     --  AI-416: when the discriminant constraint is an
-                     --  anonymous access type make sure an accessibility
-                     --  check is inserted if necessary (3.10.2(22.q/2))
+               if Has_Task (T) then
+                  if No (Master_Id (Base_Type (PtrT))) then
 
-                     if Ada_Version >= Ada_05
-                       and then Ekind (Etype (Nod)) = E_Anonymous_Access_Type
+                     --  If we have a non-library level task with restriction
+                     --  No_Task_Hierarchy set, then no point in expanding.
+
+                     if not Is_Library_Level_Entity (T)
+                       and then Restriction_Active (No_Task_Hierarchy)
                      then
-                        Apply_Accessibility_Check (Nod, Typ);
+                        return;
                      end if;
 
-                     Next_Elmt (Discr);
-                  end loop;
-               end if;
-            end;
+                     --  The designated type was an incomplete type, and the
+                     --  access type did not get expanded. Salvage it now.
 
-            --  We set the allocator as analyzed so that when we analyze the
-            --  expression actions node, we do not get an unwanted recursive
-            --  expansion of the allocator expression.
-
-            Set_Analyzed (N, True);
-            Nod := Relocate_Node (N);
-
-            --  Here is the transformation:
-            --    input:  new T
-            --    output: Temp : constant ptr_T := new T;
-            --            Init (Temp.all, ...);
-            --    <CTRL>  Attach_To_Final_List (Finalizable (Temp.all));
-            --    <CTRL>  Initialize (Finalizable (Temp.all));
-
-            --  Here ptr_T is the pointer type for the allocator, and is the
-            --  subtype of the allocator.
-
-            Temp_Decl :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Temp,
-                Constant_Present    => True,
-                Object_Definition   => New_Reference_To (Temp_Type, Loc),
-                Expression          => Nod);
-
-            Set_Assignment_OK (Temp_Decl);
-            Insert_Action (N, Temp_Decl, Suppress => All_Checks);
-
-            --  If the designated type is a task type or contains tasks,
-            --  create block to activate created tasks, and insert
-            --  declaration for Task_Image variable ahead of call.
-
-            if Has_Task (T) then
-               declare
-                  L   : constant List_Id := New_List;
-                  Blk : Node_Id;
-
-               begin
-                  Build_Task_Allocate_Block (L, Nod, Args);
-                  Blk := Last (L);
-
-                  Insert_List_Before (First (Declarations (Blk)), Decls);
-                  Insert_Actions (N, L);
-               end;
-
-            else
-               Insert_Action (N,
-                 Make_Procedure_Call_Statement (Loc,
-                   Name => New_Reference_To (Init, Loc),
-                   Parameter_Associations => Args));
-            end if;
-
-            if Controlled_Type (T) then
-
-               --  Postpone the generation of a finalization call for the
-               --  current allocator if it acts as a coextension.
-
-               if Is_Dynamic_Coextension (N) then
-                  if No (Coextensions (N)) then
-                     Set_Coextensions (N, New_Elmt_List);
+                     pragma Assert (Present (Parent (Base_Type (PtrT))));
+                     Expand_N_Full_Type_Declaration
+                       (Parent (Base_Type (PtrT)));
                   end if;
 
-                  Append_Elmt (New_Copy_Tree (Arg1), Coextensions (N));
+                  --  If the context of the allocator is a declaration or an
+                  --  assignment, we can generate a meaningful image for it,
+                  --  even though subsequent assignments might remove the
+                  --  connection between task and entity. We build this image
+                  --  when the left-hand side is a simple variable, a simple
+                  --  indexed assignment or a simple selected component.
+
+                  if Nkind (Parent (N)) = N_Assignment_Statement then
+                     declare
+                        Nam : constant Node_Id := Name (Parent (N));
+
+                     begin
+                        if Is_Entity_Name (Nam) then
+                           Decls :=
+                             Build_Task_Image_Decls
+                               (Loc,
+                                New_Occurrence_Of
+                                  (Entity (Nam), Sloc (Nam)), T);
+
+                        elsif Nkind_In
+                          (Nam, N_Indexed_Component, N_Selected_Component)
+                          and then Is_Entity_Name (Prefix (Nam))
+                        then
+                           Decls :=
+                             Build_Task_Image_Decls
+                               (Loc, Nam, Etype (Prefix (Nam)));
+                        else
+                           Decls := Build_Task_Image_Decls (Loc, T, T);
+                        end if;
+                     end;
+
+                  elsif Nkind (Parent (N)) = N_Object_Declaration then
+                     Decls :=
+                       Build_Task_Image_Decls
+                         (Loc, Defining_Identifier (Parent (N)), T);
+
+                  else
+                     Decls := Build_Task_Image_Decls (Loc, T, T);
+                  end if;
+
+                  Append_To (Args,
+                    New_Reference_To
+                      (Master_Id (Base_Type (Root_Type (PtrT))), Loc));
+                  Append_To (Args, Make_Identifier (Loc, Name_uChain));
+
+                  Decl := Last (Decls);
+                  Append_To (Args,
+                    New_Occurrence_Of (Defining_Identifier (Decl), Loc));
+
+                  --  Has_Task is false, Decls not used
 
                else
-                  Flist := Get_Allocator_Final_List (N, Base_Type (T), PtrT);
+                  Decls := No_List;
+               end if;
 
-                  --  Anonymous access types created for access parameters
-                  --  are attached to an explicitly constructed controller,
-                  --  which ensures that they can be finalized properly, even
-                  --  if their deallocation might not happen. The list
-                  --  associated with the controller is doubly-linked. For
-                  --  other anonymous access types, the object may end up
-                  --  on the global final list which is singly-linked.
-                  --  Work needed for access discriminants in Ada 2005 ???
+               --  Add discriminants if discriminated type
 
-                  if Ekind (PtrT) = E_Anonymous_Access_Type
-                       and then
-                         Nkind (Associated_Node_For_Itype (PtrT))
-                           not in N_Subprogram_Specification
+               declare
+                  Dis : Boolean := False;
+                  Typ : Entity_Id;
+
+               begin
+                  if Has_Discriminants (T) then
+                     Dis := True;
+                     Typ := T;
+
+                  elsif Is_Private_Type (T)
+                    and then Present (Full_View (T))
+                    and then Has_Discriminants (Full_View (T))
                   then
-                     Attach_Level := Uint_1;
-                  else
-                     Attach_Level := Uint_2;
+                     Dis := True;
+                     Typ := Full_View (T);
                   end if;
 
-                  Insert_Actions (N,
-                    Make_Init_Call (
-                      Ref          => New_Copy_Tree (Arg1),
-                      Typ          => T,
-                      Flist_Ref    => Flist,
-                      With_Attach  => Make_Integer_Literal
-                                        (Loc, Attach_Level)));
-               end if;
-            end if;
+                  if Dis then
 
-            Rewrite (N, New_Reference_To (Temp, Loc));
-            Analyze_And_Resolve (N, PtrT);
+                     --  If the allocated object will be constrained by the
+                     --  default values for discriminants, then build a
+                     --  subtype with those defaults, and change the allocated
+                     --  subtype to that. Note that this happens in fewer
+                     --  cases in Ada 2005 (AI-363).
+
+                     if not Is_Constrained (Typ)
+                       and then Present (Discriminant_Default_Value
+                                         (First_Discriminant (Typ)))
+                       and then (Ada_Version < Ada_05
+                                  or else
+                                    not Has_Constrained_Partial_View (Typ))
+                     then
+                        Typ := Build_Default_Subtype (Typ, N);
+                        Set_Expression (N, New_Reference_To (Typ, Loc));
+                     end if;
+
+                     Discr := First_Elmt (Discriminant_Constraint (Typ));
+                     while Present (Discr) loop
+                        Nod := Node (Discr);
+                        Append (New_Copy_Tree (Node (Discr)), Args);
+
+                        --  AI-416: when the discriminant constraint is an
+                        --  anonymous access type make sure an accessibility
+                        --  check is inserted if necessary (3.10.2(22.q/2))
+
+                        if Ada_Version >= Ada_05
+                          and then
+                            Ekind (Etype (Nod)) = E_Anonymous_Access_Type
+                        then
+                           Apply_Accessibility_Check (Nod, Typ);
+                        end if;
+
+                        Next_Elmt (Discr);
+                     end loop;
+                  end if;
+               end;
+
+               --  We set the allocator as analyzed so that when we analyze the
+               --  expression actions node, we do not get an unwanted recursive
+               --  expansion of the allocator expression.
+
+               Set_Analyzed (N, True);
+               Nod := Relocate_Node (N);
+
+               --  Here is the transformation:
+               --    input:  new T
+               --    output: Temp : constant ptr_T := new T;
+               --            Init (Temp.all, ...);
+               --    <CTRL>  Attach_To_Final_List (Finalizable (Temp.all));
+               --    <CTRL>  Initialize (Finalizable (Temp.all));
+
+               --  Here ptr_T is the pointer type for the allocator, and is the
+               --  subtype of the allocator.
+
+               Temp_Decl :=
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Temp,
+                   Constant_Present    => True,
+                   Object_Definition   => New_Reference_To (Temp_Type, Loc),
+                   Expression          => Nod);
+
+               Set_Assignment_OK (Temp_Decl);
+               Insert_Action (N, Temp_Decl, Suppress => All_Checks);
+
+               --  If the designated type is a task type or contains tasks,
+               --  create block to activate created tasks, and insert
+               --  declaration for Task_Image variable ahead of call.
+
+               if Has_Task (T) then
+                  declare
+                     L   : constant List_Id := New_List;
+                     Blk : Node_Id;
+                  begin
+                     Build_Task_Allocate_Block (L, Nod, Args);
+                     Blk := Last (L);
+                     Insert_List_Before (First (Declarations (Blk)), Decls);
+                     Insert_Actions (N, L);
+                  end;
+
+               else
+                  Insert_Action (N,
+                    Make_Procedure_Call_Statement (Loc,
+                      Name                   => New_Reference_To (Init, Loc),
+                      Parameter_Associations => Args));
+               end if;
+
+               if Controlled_Type (T) then
+
+                  --  Postpone the generation of a finalization call for the
+                  --  current allocator if it acts as a coextension.
+
+                  if Is_Dynamic_Coextension (N) then
+                     if No (Coextensions (N)) then
+                        Set_Coextensions (N, New_Elmt_List);
+                     end if;
+
+                     Append_Elmt (New_Copy_Tree (Arg1), Coextensions (N));
+
+                  else
+                     Flist :=
+                       Get_Allocator_Final_List (N, Base_Type (T), PtrT);
+
+                     --  Anonymous access types created for access parameters
+                     --  are attached to an explicitly constructed controller,
+                     --  which ensures that they can be finalized properly,
+                     --  even if their deallocation might not happen. The list
+                     --  associated with the controller is doubly-linked. For
+                     --  other anonymous access types, the object may end up
+                     --  on the global final list which is singly-linked.
+                     --  Work needed for access discriminants in Ada 2005 ???
+
+                     if Ekind (PtrT) = E_Anonymous_Access_Type
+                       and then
+                         Nkind (Associated_Node_For_Itype (PtrT))
+                     not in N_Subprogram_Specification
+                     then
+                        Attach_Level := Uint_1;
+                     else
+                        Attach_Level := Uint_2;
+                     end if;
+
+                     Insert_Actions (N,
+                       Make_Init_Call (
+                         Ref          => New_Copy_Tree (Arg1),
+                         Typ          => T,
+                         Flist_Ref    => Flist,
+                         With_Attach  => Make_Integer_Literal (Loc,
+                                           Intval => Attach_Level)));
+                  end if;
+               end if;
+
+               Rewrite (N, New_Reference_To (Temp, Loc));
+               Analyze_And_Resolve (N, PtrT);
+            end if;
          end if;
       end;
 
@@ -4108,6 +4127,15 @@ package body Exp_Ch4 is
                   First (Expressions (N))))));
          Analyze_And_Resolve (N, Typ);
          return;
+      end if;
+
+      --  Ada 2005 (AI-318-02): If the prefix is a call to a build-in-place
+      --  function, then additional actuals must be passed.
+
+      if Ada_Version >= Ada_05
+        and then Is_Build_In_Place_Function_Call (P)
+      then
+         Make_Build_In_Place_Call_In_Anonymous_Context (P);
       end if;
 
       --  If the prefix is an access type, then we unconditionally rewrite
@@ -6236,6 +6264,7 @@ package body Exp_Ch4 is
       Convert_To_Actual_Subtype (Opnd);
       Arr := Etype (Opnd);
       Ensure_Defined (Arr, N);
+      Silly_Boolean_Array_Not_Test (N, Arr);
 
       if Nkind (Parent (N)) = N_Assignment_Statement then
          if Safe_In_Place_Array_Op (Name (Parent (N)), N, Empty) then
@@ -6758,6 +6787,15 @@ package body Exp_Ch4 is
          Generate_Discriminant_Check (N);
       end if;
 
+      --  Ada 2005 (AI-318-02): If the prefix is a call to a build-in-place
+      --  function, then additional actuals must be passed.
+
+      if Ada_Version >= Ada_05
+        and then Is_Build_In_Place_Function_Call (P)
+      then
+         Make_Build_In_Place_Call_In_Anonymous_Context (P);
+      end if;
+
       --  Gigi cannot handle unchecked conversions that are the prefix of a
       --  selected component with discriminants. This must be checked during
       --  expansion, because during analysis the type of the selector is not
@@ -7023,6 +7061,15 @@ package body Exp_Ch4 is
             Prefix => Relocate_Node (Pfx)));
 
          Analyze_And_Resolve (Pfx, Ptp);
+      end if;
+
+      --  Ada 2005 (AI-318-02): If the prefix is a call to a build-in-place
+      --  function, then additional actuals must be passed.
+
+      if Ada_Version >= Ada_05
+        and then Is_Build_In_Place_Function_Call (Pfx)
+      then
+         Make_Build_In_Place_Call_In_Anonymous_Context (Pfx);
       end if;
 
       --  Range checks are potentially also needed for cases involving
@@ -9072,7 +9119,8 @@ package body Exp_Ch4 is
             --  configurable run time setting.
 
             if not RTE_Available (RE_IW_Membership) then
-               Error_Msg_CRT ("abstract interface types", N);
+               Error_Msg_CRT
+                 ("dynamic membership test on interface types", N);
                return Empty;
             end if;
 

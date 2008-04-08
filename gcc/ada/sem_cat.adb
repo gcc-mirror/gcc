@@ -219,7 +219,7 @@ package body Sem_Cat is
             --  unit generating the message is an internal unit. This is the
             --  situation in which such messages would be ignored in any case,
             --  so it is convenient not to generate them (since it causes
-            --  annoying inteference with debugging)
+            --  annoying interference with debugging).
 
             if Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit))
               and then not Is_Internal_File_Name (Unit_File_Name (Main_Unit))
@@ -332,8 +332,21 @@ package body Sem_Cat is
       Nam          : TSS_Name_Type;
       At_Any_Place : Boolean := False) return Boolean
    is
-      Rep_Item : Node_Id;
+      Rep_Item  : Node_Id;
+      Full_Type : Entity_Id := Typ;
+
    begin
+      --  In the case of a type derived from a private view, any specified
+      --  stream attributes will be attached to the derived type's underlying
+      --  type rather the derived type entity itself (which is itself private).
+
+      if Is_Private_Type (Typ)
+        and then Is_Derived_Type (Typ)
+        and then Present (Full_View (Typ))
+      then
+         Full_Type := Underlying_Type (Typ);
+      end if;
+
       --  We start from the declaration node and then loop until the end of
       --  the list until we find the requested attribute definition clause.
       --  In Ada 2005 mode, clauses are ignored if they are not currently
@@ -341,7 +354,7 @@ package body Sem_Cat is
       --  inserted by the expander at the point where the clause occurs),
       --  unless At_Any_Place is true.
 
-      Rep_Item := First_Rep_Item (Typ);
+      Rep_Item := First_Rep_Item (Full_Type);
       while Present (Rep_Item) loop
          if Nkind (Rep_Item) = N_Attribute_Definition_Clause then
             case Chars (Rep_Item) is
@@ -1251,7 +1264,9 @@ package body Sem_Cat is
             end;
          end if;
 
-         --  Non-static discriminant not allowed in preelaborayted unit
+         --  Non-static discriminant not allowed in preelaborated unit
+         --  Controlled object of a type with a user-defined Initialize
+         --  is forbidden as well.
 
          if Is_Record_Type (Etype (Id)) then
             declare
@@ -1274,7 +1289,14 @@ package body Sem_Cat is
                         PEE);
                   end if;
                end if;
+
+               if Has_Overriding_Initialize (ET) then
+                  Error_Msg_NE
+                    ("controlled type& does not have"
+                      & " preelaborable initialization", N, ET);
+               end if;
             end;
+
          end if;
       end if;
 
@@ -1552,9 +1574,9 @@ package body Sem_Cat is
                       Error_Node);
                end if;
 
-            --  For limited private type parameter, we check only the private
+            --  For a limited private type parameter, we check only the private
             --  declaration and ignore full type declaration, unless this is
-            --  the only declaration for the type, eg. as a limited record.
+            --  the only declaration for the type, e.g., as a limited record.
 
             elsif Is_Limited_Type (Param_Type)
               and then (Nkind (Type_Decl) = N_Private_Type_Declaration
@@ -1569,7 +1591,7 @@ package body Sem_Cat is
                if No (Full_View (Param_Type))
                  and then Ekind (Param_Type) /= E_Record_Type
                then
-                  --  Type does not have completion yet, so if declared in in
+                  --  Type does not have completion yet, so if declared in
                   --  the current RCI scope it is illegal, and will be flagged
                   --  subsequently.
 
@@ -1585,7 +1607,11 @@ package body Sem_Cat is
                --  contract model for privacy, but we support both semantics
                --  for now for compatibility (note that ACATS test BXE2009
                --  checks a case that conforms to the Ada 95 rules but is
-               --  illegal in Ada 2005).
+               --  illegal in Ada 2005). In the Ada 2005 case we check for the
+               --  possibilities of visible TSS stream subprograms or explicit
+               --  stream attribute definitions because the TSS subprograms
+               --  can be hidden in the private part while the attribute
+               --  definitions are still be available from the visible part.
 
                Base_Param_Type := Base_Type (Param_Type);
                Base_Under_Type := Base_Type (Underlying_Type
@@ -1609,7 +1635,13 @@ package body Sem_Cat is
                            or else
                          Is_Hidden (TSS (Base_Param_Type, TSS_Stream_Read))
                            or else
-                         Is_Hidden (TSS (Base_Param_Type, TSS_Stream_Write))))
+                         Is_Hidden (TSS (Base_Param_Type, TSS_Stream_Write)))
+                      and then
+                        (not Has_Stream_Attribute_Definition
+                               (Base_Param_Type, TSS_Stream_Read)
+                           or else
+                         not Has_Stream_Attribute_Definition
+                               (Base_Param_Type, TSS_Stream_Write)))
                then
                   if K = N_Subprogram_Declaration then
                      Error_Node := Param_Spec;
@@ -1761,12 +1793,15 @@ package body Sem_Cat is
 
       --  This subprogram also enforces the checks in E.2.2(13). A value of
       --  such type must not be dereferenced unless as controlling operand of
-      --  a dispatching call.
+      --  a dispatching call. Explicit dereferences not coming from source are
+      --  exempted from this checking because the expander produces them in
+      --  some cases (such as for tag checks on dispatching calls with multiple
+      --  controlling operands). However we do check in the case of an implicit
+      --  dereference that is expanded to an explicit dereference (hence the
+      --  test of whether Original_Node (N) comes from source).
 
       elsif K = N_Explicit_Dereference
-        and then (Comes_From_Source (N)
-                    or else (Nkind (Original_Node (N)) = N_Selected_Component
-                               and then Comes_From_Source (Original_Node (N))))
+        and then Comes_From_Source (Original_Node (N))
       then
          E := Etype (Prefix (N));
 
@@ -1788,9 +1823,12 @@ package body Sem_Cat is
 
          --  If we are just within a procedure or function call and the
          --  dereference has not been analyzed, return because this procedure
-         --  will be called again from sem_res Resolve_Actuals.
+         --  will be called again from sem_res Resolve_Actuals. The same can
+         --  apply in the case of dereference that is the prefix of a selected
+         --  component, which can be a call given in prefixed form.
 
-         if Is_Actual_Parameter (N)
+         if (Is_Actual_Parameter (N)
+              or else PK = N_Selected_Component)
            and then not Analyzed (N)
          then
             return;
@@ -1806,25 +1844,8 @@ package body Sem_Cat is
             return;
          end if;
 
-         --  The following code is needed for expansion of RACW Write
-         --  attribute, since such expressions can appear in the expanded
-         --  code.
-
-         if not Comes_From_Source (N)
-           and then
-           (PK = N_In
-            or else PK = N_Attribute_Reference
-            or else
-              (PK = N_Type_Conversion
-               and then Present (Parent (N))
-               and then Present (Parent (Parent (N)))
-               and then
-                 Nkind (Parent (Parent (N))) = N_Selected_Component))
-         then
-            return;
-         end if;
-
-         Error_Msg_N ("incorrect dereference of remote type", N);
+         Error_Msg_N
+           ("invalid dereference of a remote access-to-class-wide value", N);
       end if;
    end Validate_Remote_Access_To_Class_Wide_Type;
 
