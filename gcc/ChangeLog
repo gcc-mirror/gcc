@@ -1,3 +1,12 @@
+2008-04-08  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Revert
+	2008-04-07  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR middle-end/PR28690
+	* rtlanal.c: (commutative_operand_precedence): Give SYMBOL_REF's the
+	same precedence as REG_POINTER and MEM_POINTER operands.
+
 2008-04-08  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/35834

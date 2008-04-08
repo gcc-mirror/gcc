@@ -2898,8 +2898,6 @@ commutative_operand_precedence (rtx op)
   switch (GET_RTX_CLASS (code))
     {
     case RTX_CONST_OBJ:
-      if (code == SYMBOL_REF)
-	return -1;
       if (code == CONST_INT)
         return -6;
       if (code == CONST_DOUBLE)
