@@ -1,3 +1,22 @@
+2008-04-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-tasuti.ads: Use Task_Address instead of System.Address.
+
+	* makeutl.adb (Path_Or_File_Name): New function
+
+	* nlists.ads, itypes.ads: Update comments.
+
+	* s-crtl.ads (malloc32, realloc32): New functions.
+
+	* s-auxdec.ads (Short_Address_Size): New constant.
+
+	* a-taside.adb, s-tasdeb.adb: Use Task_Address.
+
+	* s-ststop.ads, s-ststop.adb: New file.
+
+	* exp_tss.ads, s-taprop-lynxos.adb: Update comments.
+	Minor reformatting.
+
 2008-04-08  Pascal Obry  <obry@adacore.com>
 
 	* g-sercom.ads, g-sercom.adb (Data_Rate): Add B115200.
@@ -48,7 +67,8 @@
 	* system-linux-x86_64.ads: (Stack_Check_Probes): Set to True.
 
 	* s-taspri-lynxos.ads, s-taspri-solaris.ads, s-taspri-tru64.ads,
-	s-taspri-hpux-dce.ads (Task_Address): New subtype of System.Address
+	s-taspri-hpux-dce.ads, s-taspri-dummy.ads, s-taspri-posix.ads,
+	s-taspri-vms.ads (Task_Address): New subtype of System.Address
 	(Task_Address_Size): New constant size of System.Address
 	(Alternate_Stack_Size): New constant.
 
@@ -61,7 +81,7 @@
 	the environment task.
 	(Create_Task): Fix assertions for NPTL library (vs old LinuxThreads).
 
-	* s-parame.adb (Minimum_Stack_Size): Increase value to 16K to
+	* s-parame.adb (Minimum_Stack_Size): Increase value to 16K
 
 	* system-linux-x86.ads: (Stack_Check_Probes): Set to True.
 
@@ -148,6 +168,8 @@
 	(EXTRA_GNATRTL_NONTASKING_OBJS): Add s-win32.o
 	Files mlib-tgt-*.adb have been renamed mlib-tgt-specific-*.adb
 	Minor updates for VMS
+
+	* gnatbl.c: Removed.
 
 2008-04-08  Thomas Quinot  <quinot@adacore.com>
 
@@ -916,8 +938,8 @@ PR ada/10768
 	(Analyze_Assignment_Statement): The assignment is illegal if the
 	left-hand is an interface.
 
-	* sem_res.adb (Resolve_Arithmetic_Op): For mod/rem check violation of
-	restriction No_Implicit_Conditionals
+	* sem_res.ads, sem_res.adb (Resolve_Arithmetic_Op): For mod/rem check
+	violation of restriction No_Implicit_Conditionals
 	Add Sure parameter to Note_Possible_Modication calls
 	Use new Is_Standard_Character_Type predicate
 	(Make_Call_Into_Operator): Preserve Comes_From_Source when rewriting
