@@ -2183,7 +2183,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      gnu_type = gnat_to_gnu_type (Original_Array_Type (gnat_entity));
 	      for (index = array_dim - 1; index >= 0; index--)
 		gnu_type = TREE_TYPE (gnu_type);
-	
+
 	      /* One of the above calls might have caused us to be elaborated,
 		 so don't blow up if so.  */
 	      if (present_gnu_tree (gnat_entity))
@@ -5107,7 +5107,7 @@ prepend_attributes (Entity_Id gnat_entity, struct attrib ** attr_list)
 						  (First (gnat_assoc)))))));
 	  }
 
-	switch (Get_Pragma_Id (Pragma_Identifier (Chars (gnat_temp))))
+	switch (Get_Pragma_Id (Chars (Pragma_Identifier (gnat_temp))))
 	  {
 	  case Pragma_Machine_Attribute:
 	    etype = ATTR_MACHINE_ATTRIBUTE;

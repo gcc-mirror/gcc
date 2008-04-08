@@ -1,4 +1,10 @@
 2008-04-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (prepend_attributes): Fix typo.
+	* trans.c (Pragma_to_gnu): Likewise.
+	* utils.c (gnat_genericize): Likewise.
+
+2008-04-08  Eric Botcazou  <ebotcazou@adacore.com>
             Richard Kenner  <kenner@adacore.com>
 
 	* ada-tree.h (TYPE_PACKED_ARRAY_TYPE_P): Only set it when bit-packed.
@@ -2380,8 +2386,8 @@ PR ada/10768
 
 2008-03-18  Paolo Bonzini  <bonzini@gnu.org>
 
-        * misc.c (LANG_HOOKS_REDUCE_BIT_FIELD_OPERATIONS): Delete.
-	
+	* misc.c (LANG_HOOKS_REDUCE_BIT_FIELD_OPERATIONS): Delete.
+
 2008-03-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* gnat_rm.texi (Implementation Defined Characteristics)

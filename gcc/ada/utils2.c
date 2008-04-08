@@ -243,7 +243,7 @@ find_common_type (tree t1, tree t2)
      would better be handled upstream (types should be made consistent before
      calling into build_binary_op), some others are really expected and we
      have to be careful.  */
-     
+
   /* We must prevent writing more than what the target may hold if this is for
      an assignment and the case of tagged types is handled in build_binary_op
      so use the lhs type if it is known to be smaller, or of constant size and
