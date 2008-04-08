@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,6 +52,7 @@ package Erroutc is
 
    Is_Style_Msg : Boolean := False;
    --  Set True to indicate if the current message is a style message
+   --  (i.e. a message whose text starts with the cahracters "(style)").
 
    Is_Serious_Error : Boolean := False;
    --  Set by Set_Msg_Text to indicate if current message is serious error
@@ -267,24 +268,11 @@ package Erroutc is
       Msg : String_Ptr;
       --  Message from pragma Warnings (Off, string)
 
-      Pattern : String_Ptr;
-      --  Same as Msg, excluding initial and final asterisks if present. The
-      --  lower bound of this string is always one.
-
-      Patlen : Natural;
-      --  Length of pattern string (excluding initial/final asterisks)
-
       Open : Boolean;
       --  Set to True if OFF has been encountered with no matching ON
 
       Used : Boolean;
       --  Set to True if entry has been used to suppress a warning
-
-      Star_Start : Boolean;
-      --  True if given pattern had * at start
-
-      Star_End : Boolean;
-      --  True if given pattern had * at end
 
       Config : Boolean;
       --  True if pragma is configuration pragma (in which case no matching
@@ -482,12 +470,12 @@ package Erroutc is
 
    procedure Test_Style_Warning_Serious_Msg (Msg : String);
    --  Sets Is_Warning_Msg true if Msg is a warning message (contains a
-   --  question mark character), and False otherwise. Sets Is_Style_Msg
-   --  true if Msg is a style message (starts with "(style)"). Sets
-   --  Is_Serious_Error True unless the message is a warning or style
-   --  message or contains the character | indicating a non-serious
-   --  error message. Note that the call has no effect for continuation
-   --  messages (those whose first character is \).
+   --  question mark character), and False otherwise. Is_Style_Msg is set true
+   --  if Msg is a style message (starts with "(style)". Sets Is_Serious_Error
+   --  True unless the message is a warning or style/info message or contains
+   --  the character | indicating a non-serious error message. Note that the
+   --  call has no effect for continuation messages (those whose first
+   --  character is '\').
 
    function Warnings_Suppressed (Loc : Source_Ptr) return Boolean;
    --  Determines if given location is covered by a warnings off suppression

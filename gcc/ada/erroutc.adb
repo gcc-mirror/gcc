@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -117,6 +117,7 @@ package body Erroutc is
 
             if Errors.Table (D).Warn or Errors.Table (D).Style then
                Warnings_Detected := Warnings_Detected - 1;
+
             else
                Total_Errors_Detected := Total_Errors_Detected - 1;
 
@@ -441,6 +442,12 @@ package body Erroutc is
       Length : Nat;
       --  Maximum total length of lines
 
+      Txt   : constant String_Ptr := Errors.Table (E).Text;
+      Len   : constant Natural    := Txt'Length;
+      Ptr   : Natural;
+      Split : Natural;
+      Start : Natural;
+
    begin
       if Error_Msg_Line_Length = 0 then
          Length := Nat'Last;
@@ -450,12 +457,20 @@ package body Erroutc is
 
       Max := Integer (Length - Column + 1);
 
+      --  For warning message, add "warning: " unless msg starts with "info: "
+
       if Errors.Table (E).Warn then
-         Write_Str ("warning: ");
-         Max := Max - 9;
+         if Len < 6 or else Txt (Txt'First .. Txt'First + 5) /= "info: " then
+            Write_Str ("warning: ");
+            Max := Max - 9;
+         end if;
+
+      --  No prefix needed for style message, since "(style)" is there already
 
       elsif Errors.Table (E).Style then
          null;
+
+      --  All other cases, add "error: "
 
       elsif Opt.Unique_Error_Tag then
          Write_Str ("error: ");
@@ -464,74 +479,65 @@ package body Erroutc is
 
       --  Here we have to split the message up into multiple lines
 
-      declare
-         Txt   : constant String_Ptr := Errors.Table (E).Text;
-         Len   : constant Natural    := Txt'Length;
-         Ptr   : Natural;
-         Split : Natural;
-         Start : Natural;
+      Ptr := 1;
+      loop
+         --  Make sure we do not have ludicrously small line
 
-      begin
-         Ptr := 1;
-         loop
-            --  Make sure we do not have ludicrously small line
+         Max := Integer'Max (Max, 20);
 
-            Max := Integer'Max (Max, 20);
+         --  If remaining text fits, output it respecting LF and we are done
 
-            --  If remaining text fits, output it respecting LF and we are done
+         if Len - Ptr < Max then
+            for J in Ptr .. Len loop
+               if Txt (J) = ASCII.LF then
+                  Write_Eol;
+                  Write_Spaces (Offs);
+               else
+                  Write_Char (Txt (J));
+               end if;
+            end loop;
 
-            if Len - Ptr < Max then
-               for J in Ptr .. Len loop
-                  if Txt (J) = ASCII.LF then
-                     Write_Eol;
-                     Write_Spaces (Offs);
-                  else
-                     Write_Char (Txt (J));
-                  end if;
-               end loop;
-
-               return;
+            return;
 
             --  Line does not fit
 
-            else
-               Start := Ptr;
+         else
+            Start := Ptr;
 
-               --  First scan forward looing for a hard end of line
+            --  First scan forward looing for a hard end of line
 
-               for Scan in Ptr .. Ptr + Max - 1 loop
-                  if Txt (Scan) = ASCII.LF then
-                     Split := Scan - 1;
-                     Ptr := Scan + 1;
-                     goto Continue;
-                  end if;
-               end loop;
+            for Scan in Ptr .. Ptr + Max - 1 loop
+               if Txt (Scan) = ASCII.LF then
+                  Split := Scan - 1;
+                  Ptr := Scan + 1;
+                  goto Continue;
+               end if;
+            end loop;
 
-               --  Otherwise scan backwards looking for a space
+            --  Otherwise scan backwards looking for a space
 
-               for Scan in reverse Ptr .. Ptr + Max - 1 loop
-                  if Txt (Scan) = ' ' then
-                     Split := Scan - 1;
-                     Ptr := Scan + 1;
-                     goto Continue;
-                  end if;
-               end loop;
+            for Scan in reverse Ptr .. Ptr + Max - 1 loop
+               if Txt (Scan) = ' ' then
+                  Split := Scan - 1;
+                  Ptr := Scan + 1;
+                  goto Continue;
+               end if;
+            end loop;
 
-               --  If we fall through, no space, so split line arbitrarily
+            --  If we fall through, no space, so split line arbitrarily
 
-               Split := Ptr + Max - 1;
-               Ptr := Split + 1;
-            end if;
+            Split := Ptr + Max - 1;
+            Ptr := Split + 1;
+         end if;
 
          <<Continue>>
-            if Start <= Split then
-               Write_Line (Txt (Start .. Split));
-               Write_Spaces (Offs);
-            end if;
+         if Start <= Split then
+            Write_Line (Txt (Start .. Split));
+            Write_Spaces (Offs);
+         end if;
 
-            Max := Integer (Length - Column + 1);
-         end loop;
-      end;
+         Max := Integer (Length - Column + 1);
+      end loop;
    end Output_Msg_Text;
 
    --------------------
@@ -557,6 +563,7 @@ package body Erroutc is
          then
             if Errors.Table (E).Warn or Errors.Table (E).Style then
                Warnings_Detected := Warnings_Detected - 1;
+
             else
                Total_Errors_Detected := Total_Errors_Detected - 1;
 
@@ -1052,40 +1059,13 @@ package body Erroutc is
       Msg    : String;
       Config : Boolean)
    is
-      pragma Assert (Msg'First = 1);
-
-      Pattern : String  := Msg;
-      Patlen  : Natural := Msg'Length;
-
-      Star_Start : Boolean;
-      Star_End   : Boolean;
-
    begin
-      if Pattern (1) = '*' then
-         Star_Start := True;
-         Pattern (1 .. Patlen - 1) := Pattern (2 .. Patlen);
-         Patlen := Patlen - 1;
-      else
-         Star_Start := False;
-      end if;
-
-      if Pattern (Patlen) = '*' then
-         Star_End := True;
-         Patlen := Patlen - 1;
-      else
-         Star_End := False;
-      end if;
-
       Specific_Warnings.Append
         ((Start      => Loc,
           Msg        => new String'(Msg),
-          Pattern    => new String'(Pattern (1 .. Patlen)),
-          Patlen     => Patlen,
           Stop       => Source_Last (Current_Source_File),
           Open       => True,
           Used       => False,
-          Star_Start => Star_Start,
-          Star_End   => Star_End,
           Config     => Config));
    end Set_Specific_Warning_Off;
 
@@ -1200,8 +1180,7 @@ package body Erroutc is
       Is_Warning_Msg   := False;
 
       Is_Style_Msg :=
-        (Msg'Length > 7
-         and then Msg (Msg'First .. Msg'First + 6) = "(style)");
+        (Msg'Length > 7 and then Msg (Msg'First .. Msg'First + 6) = "(style)");
 
       if Is_Style_Msg then
          Is_Serious_Error := False;
@@ -1225,7 +1204,7 @@ package body Erroutc is
          end if;
       end loop;
 
-      if Is_Warning_Msg or else Is_Style_Msg then
+      if Is_Warning_Msg or Is_Style_Msg then
          Is_Serious_Error := False;
       end if;
    end Test_Style_Warning_Serious_Msg;
@@ -1262,22 +1241,73 @@ package body Erroutc is
      (Loc : Source_Ptr;
       Msg : String_Ptr) return Boolean
    is
-      pragma Assert (Msg'First = 1);
+      function Matches (S : String; P : String) return Boolean;
+      --  Returns true if the String S patches the pattern P, which can contain
+      --  wild card chars (*). The entire pattern must match the entire string.
 
-      Msglen : constant Natural := Msg'Length;
-      Patlen : Natural;
-      --  Length of message
+      -------------
+      -- Matches --
+      -------------
 
-      Pattern : String_Ptr;
-      --  Pattern itself, excluding initial and final *
+      function Matches (S : String; P : String) return Boolean is
+         Slast : constant Natural := S'Last;
+         PLast : constant Natural := P'Last;
 
-      Star_Start : Boolean;
-      Star_End   : Boolean;
-      --  Indications of * at start and end of original pattern
+         SPtr : Natural := S'First;
+         PPtr : Natural := P'First;
 
-      Msgp : Natural;
-      Patp : Natural;
-      --  Scan pointers for message and pattern
+      begin
+         --  Loop advancing through characters of string and pattern
+
+         SPtr := S'First;
+         PPtr := P'First;
+         loop
+            --  Return True if pattern is a single asterisk
+
+            if PPtr = PLast and then P (PPtr) = '*' then
+               return True;
+
+            --  Return True if both pattern and string exhausted
+
+            elsif PPtr > PLast and then SPtr > Slast then
+               return True;
+
+            --  Return False, if one exhausted and not the other
+
+            elsif PPtr > PLast or else SPtr > Slast then
+               return False;
+
+            --  Case where pattern starts with asterisk
+
+            elsif P (PPtr) = '*' then
+
+               --  Try all possible starting positions in S for match with
+               --  the remaining characters of the pattern. This is the
+               --  recursive call that implements the scanner backup.
+
+               for J in SPtr .. Slast loop
+                  if Matches (S (J .. Slast), P (PPtr + 1 .. PLast)) then
+                     return True;
+                  end if;
+               end loop;
+
+               return False;
+
+            --  Dealt with end of string and *, advance if we have a match
+
+            elsif S (SPtr) = P (PPtr) then
+               SPtr := SPtr + 1;
+               PPtr := PPtr + 1;
+
+            --  If first characters do not match, that's decisive
+
+            else
+               return False;
+            end if;
+         end loop;
+      end Matches;
+
+   --  Start of processing for Warning_Specifically_Suppressed
 
    begin
       --  Loop through specific warning suppression entries
@@ -1293,79 +1323,10 @@ package body Erroutc is
             if SWE.Config
               or else (SWE.Start <= Loc and then Loc <= SWE.Stop)
             then
-               --  Check if message matches, dealing with * patterns
-
-               Patlen     := SWE.Patlen;
-               Pattern    := SWE.Pattern;
-               Star_Start := SWE.Star_Start;
-               Star_End   := SWE.Star_End;
-
-               --  Loop through possible starting positions in Msg
-
-               Outer : for M in 1 .. 1 + (Msglen - Patlen) loop
-
-                  --  See if pattern matches string starting at Msg (J)
-
-                  Msgp := M;
-                  Patp := 1;
-                  Inner : loop
-
-                     --  If pattern exhausted, then match if we are at end
-                     --  of message, or if pattern ended with an asterisk,
-                     --  otherwise match failure at this position.
-
-                     if Patp > Patlen then
-                        if Msgp > Msglen or else Star_End then
-                           SWE.Used := True;
-                           return True;
-                        else
-                           exit Inner;
-                        end if;
-
-                        --  Otherwise if message exhausted (and we still have
-                        --  pattern characters left), then match failure here.
-
-                     elsif Msgp > Msglen then
-                        exit Inner;
-                     end if;
-
-                     --  Here we have pattern and message characters left
-
-                     --  Handle "*" pattern match
-
-                     if Patp < Patlen - 1 and then
-                       Pattern (Patp .. Patp + 2) = """*"""
-                     then
-                        Patp := Patp + 3;
-
-                        --  Must have " and at least three chars in msg or we
-                        --  have no match at this position.
-
-                        exit Inner when Msg (Msgp) /= '"';
-                        Msgp := Msgp + 1;
-
-                        --  Scan out " string " in message
-
-                        Scan : loop
-                           exit Inner when Msgp = Msglen;
-                           Msgp := Msgp + 1;
-                           exit Scan when Msg (Msgp - 1) = '"';
-                        end loop Scan;
-
-                     --  If not "*" case, just compare character
-
-                     else
-                        exit Inner when Pattern (Patp) /= Msg (Msgp);
-                        Patp := Patp + 1;
-                        Msgp := Msgp + 1;
-                     end if;
-                  end loop Inner;
-
-                  --  Advance to next position if star at end of original
-                  --  pattern, otherwise no more match attempts are possible
-
-                  exit Outer when not Star_Start;
-               end loop Outer;
+               if Matches (Msg.all, SWE.Msg.all) then
+                  SWE.Used := True;
+                  return True;
+               end if;
             end if;
          end;
       end loop;
