@@ -268,4 +268,11 @@ package System.Interrupts is
    --  Store the old handlers in Object.Previous_Handlers and install
    --  the new static handlers.
 
+   procedure Install_Restricted_Handlers (Handlers : New_Handler_Array);
+   --  Install the static Handlers for the given interrupts and do not store
+   --  previously installed handlers. This procedure is used when the Ravenscar
+   --  restrictions are in place since in that case there are only
+   --  library-level protected handlers that will be installed at
+   --  initialization and never be replaced.
+
 end System.Interrupts;

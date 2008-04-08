@@ -736,7 +736,7 @@ package body System.Interrupts is
 
       --  Abort_Task_Interrupt is one of the Interrupt unmasked
       --  in all tasks. We mask the Interrupt in this particular task
-      --  so that "sigwait" is possible to catch an explicitely sent
+      --  so that "sigwait" is possible to catch an explicitly sent
       --  Abort_Task_Interrupt from the Server_Tasks.
 
       --  This sigwaiting is needed so that we make sure a Server_Task is
@@ -1095,6 +1095,17 @@ package body System.Interrupts is
             Static      => True);
       end loop;
    end Install_Handlers;
+
+   ---------------------------------
+   -- Install_Restricted_Handlers --
+   ---------------------------------
+
+   procedure Install_Restricted_Handlers (Handlers : New_Handler_Array) is
+   begin
+      for N in Handlers'Range loop
+         Attach_Handler (Handlers (N).Handler, Handlers (N).Interrupt, True);
+      end loop;
+   end Install_Restricted_Handlers;
 
 --  Elaboration code for package System.Interrupts
 
