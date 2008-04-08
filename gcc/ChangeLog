@@ -1,3 +1,9 @@
+2008-04-08  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/35834
+	* tree-ssa-address.c (create_mem_ref): Use POINTER_PLUS_EXPR
+	for adding index to base.
+
 2008-04-08  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/mingw32.h (ENABLE_EXECUTE_STACK): New.
