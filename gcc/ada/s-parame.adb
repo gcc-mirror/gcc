@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1995-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,8 +73,10 @@ package body System.Parameters is
    begin
       --  12K is required for stack-checking to work reliably on most platforms
       --  when using the GCC scheme to propagate an exception in the ZCX case.
+      --  16K is the value of PTHREAD_STACK_MIN under Linux, so is a reasonable
+      --  default.
 
-      return 12 * 1024;
+      return 16 * 1024;
    end Minimum_Stack_Size;
 
 end System.Parameters;
