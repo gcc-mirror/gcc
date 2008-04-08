@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -215,7 +215,7 @@ package Exp_Tss is
    function Has_Non_Null_Base_Init_Proc (Typ : Entity_Id) return Boolean;
    --  Returns true if the given type has a defined Base_Init_Proc and
    --  this init proc is not a null init proc (null init procs occur as
-   --  a result of the processing for Initialize_Scalars. This function
+   --  a result of the processing for Initialize_Scalars). This function
    --  is used to test for the presence of an init proc in cases where
    --  a null init proc is considered equivalent to no init proc.
 
