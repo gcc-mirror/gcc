@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *        Copyright (C) 2002-2003, Free Software Foundation, Inc.           *
+ *        Copyright (C) 2002-2008, Free Software Foundation, Inc.           *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -50,7 +50,8 @@ void __gnat_uninstall_int_handler (void);
 
 /* POSIX implementation */
 
-#if (defined (_AIX) || defined (unix)) && !defined (__vxworks)
+#if (defined (__unix__) || defined (_AIX) || defined (__APPLE__)) \
+ && !defined (__vxworks)
 
 #include <signal.h>
 
@@ -75,7 +76,12 @@ __gnat_install_int_handler (void (*proc) (void))
   if (sigint_intercepted == 0)
     {
       act.sa_handler = __gnat_int_handler;
+#if defined (__Lynx__)
+      /* LynxOS does not support SA_RESTART. */
+      act.sa_flags = 0;
+#else
       act.sa_flags = SA_RESTART;
+#endif
       sigemptyset (&act.sa_mask);
       sigaction (SIGINT, &act, &original_act);
     }
@@ -112,7 +118,10 @@ __gnat_int_handler  (DWORD dwCtrlType)
     case CTRL_C_EVENT:
     case CTRL_BREAK_EVENT:
       if (sigint_intercepted != 0)
-        sigint_intercepted ();
+        {
+          sigint_intercepted ();
+          return TRUE;
+        }
       break;
 
     case CTRL_CLOSE_EVENT:
@@ -120,6 +129,8 @@ __gnat_int_handler  (DWORD dwCtrlType)
     case CTRL_SHUTDOWN_EVENT:
       break;
     }
+
+  return FALSE;
 }
 
 void
