@@ -1,3 +1,8 @@
+2008-04-08  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.c (cris_address_cost): For a PLUS, swap tem1
+	and tem2 if tem1 is not a REG or MULT.
+
 2008-04-08  Jan Hubicka  <jh@suse.cz>
 
 	* function.h (incomming_args): Break out of struct function.
