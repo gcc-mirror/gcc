@@ -373,8 +373,12 @@ enum standard_datatypes
   /* Type declaration node  <==> typedef void *T() */
   ADT_ptr_void_ftype,
 
-  /* A function declaration node for a run-time function for allocating memory.
-     Ada allocators cause calls to this function to be generated.   */
+  /* Type declaration node  <==> typedef virtual void *T() */
+  ADT_fdesc_type,
+
+  /* Null pointer for above type */
+  ADT_null_fdesc,
+
   ADT_malloc_decl,
 
   /* Likewise for freeing memory.  */
@@ -406,6 +410,8 @@ extern GTY(()) tree gnat_raise_decls[(int) LAST_REASON_CODE + 1];
 #define ptr_void_type_node gnat_std_decls[(int) ADT_ptr_void_type]
 #define void_ftype gnat_std_decls[(int) ADT_void_ftype]
 #define ptr_void_ftype gnat_std_decls[(int) ADT_ptr_void_ftype]
+#define fdesc_type_node gnat_std_decls[(int) ADT_fdesc_type]
+#define null_fdesc_node gnat_std_decls[(int) ADT_null_fdesc]
 #define malloc_decl gnat_std_decls[(int) ADT_malloc_decl]
 #define free_decl gnat_std_decls[(int) ADT_free_decl]
 #define jmpbuf_type gnat_std_decls[(int) ADT_jmpbuf_type]

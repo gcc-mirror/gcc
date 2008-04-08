@@ -1,5 +1,26 @@
 2008-04-08  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gigi.h (standard_datatypes): Add ADT_fdesc_type and ADT_null_fdesc.
+	(fdesc_type_node): Define.
+	(null_fdesc_node): Likewise.
+	* decl.c (gnat_to_gnu_entity) <E_Access_Subprogram_Type>: If the target
+	uses descriptors for vtables and the type comes from a dispatch table,
+	return the descriptor type.
+	* trans.c (Attribute_to_gnu) <Attr_Unrestricted_Access>: If the target
+	uses descriptors for vtables and the type comes from a dispatch table,
+	build a descriptor in the static case and copy the existing one in the
+	non-static case.
+	(gnat_to_gnu) <N_Null>: If the target uses descriptors for vtables and
+	the type is a pointer-to-subprogram coming from a dispatch table,
+	return the null descriptor.
+	<N_Unchecked_Type_Conversion>: If the target uses descriptors for
+	vtables, the source type is the descriptor type and the target type
+	is a pointer type, first build the pointer.
+	* utils.c (init_gigi_decls): If the target uses descriptors for vtables
+	build the descriptor type and the null descriptor.
+
+2008-04-08  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* decl.c (prepend_attributes): Fix typo.
 	* trans.c (Pragma_to_gnu): Likewise.
 	* utils.c (gnat_genericize): Likewise.
