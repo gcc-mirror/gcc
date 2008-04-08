@@ -848,10 +848,8 @@ package body Sem_Ch8 is
         and then Nkind (Nam) in N_Has_Entity
       then
          declare
-            Error_Node  : Node_Id;
             Nam_Decl    : Node_Id;
             Nam_Ent     : Entity_Id;
-            Subtyp_Decl : Node_Id;
 
          begin
             if Nkind (Nam) = N_Attribute_Reference then
@@ -861,7 +859,6 @@ package body Sem_Ch8 is
             end if;
 
             Nam_Decl    := Parent (Nam_Ent);
-            Subtyp_Decl := Parent (Etype (Nam_Ent));
 
             if Has_Null_Exclusion (N)
               and then not Has_Null_Exclusion (Nam_Decl)
@@ -876,32 +873,17 @@ package body Sem_Ch8 is
                if Is_Formal_Object (Nam_Ent)
                  and then In_Generic_Scope (Id)
                then
-                  if Present (Subtype_Mark (Nam_Decl)) then
-                     Error_Node := Subtype_Mark (Nam_Decl);
-                  else
-                     pragma Assert
-                       (Ada_Version >= Ada_05
-                          and then Present (Access_Definition (Nam_Decl)));
-
-                     Error_Node := Access_Definition (Nam_Decl);
-                  end if;
-
                   Error_Msg_N
-                    ("`NOT NULL` required in formal object declaration",
-                     Error_Node);
-                  Error_Msg_Sloc := Sloc (N);
-                  Error_Msg_N
-                    ("\because of renaming # (RM 8.5.4(4))", Error_Node);
+                    ("renamed formal does not exclude `NULL` "
+                     & "(RM 8.5.1(4.6/2))", N);
 
                --  Ada 2005 (AI-423): Otherwise, the subtype of the object name
                --  shall exclude null.
 
-               elsif Nkind (Subtyp_Decl) = N_Subtype_Declaration
-                 and then not Has_Null_Exclusion (Subtyp_Decl)
-               then
+               elsif not Can_Never_Be_Null (Etype (Nam_Ent)) then
                   Error_Msg_N
-                    ("`NOT NULL` required for subtype & (RM 8.5.1(4.6/2))",
-                     Defining_Identifier (Subtyp_Decl));
+                    ("renamed object does not exclude `NULL` "
+                     & "(RM 8.5.1(4.6/2))", N);
                end if;
             end if;
          end;
@@ -962,6 +944,11 @@ package body Sem_Ch8 is
         and then Nkind (Nam) = N_Attribute_Reference
         and then Attribute_Name (Nam) = Name_Priority
       then
+         null;
+
+      --  Allow internally generated x'Reference expression
+
+      elsif Nkind (Nam) = N_Reference then
          null;
 
       else
@@ -3205,6 +3192,8 @@ package body Sem_Ch8 is
          elsif not Redundant_Use (Id) then
             Set_In_Use (T, False);
             Set_In_Use (Base_Type (T), False);
+            Set_Current_Use_Clause (T, Empty);
+            Set_Current_Use_Clause (Base_Type (T), Empty);
             Op_List := Collect_Primitive_Operations (T);
 
             Elmt := First_Elmt (Op_List);
@@ -3582,15 +3571,12 @@ package body Sem_Ch8 is
             declare
                Case_Stm : constant Node_Id   := Parent (Parent (N));
                Case_Typ : constant Entity_Id := Etype (Expression (Case_Stm));
-               Case_Rtp : constant Entity_Id := Root_Type (Case_Typ);
 
                Lit : Node_Id;
 
             begin
                if Is_Enumeration_Type (Case_Typ)
-                 and then Case_Rtp /= Standard_Character
-                 and then Case_Rtp /= Standard_Wide_Character
-                 and then Case_Rtp /= Standard_Wide_Wide_Character
+                 and then not Is_Standard_Character_Type (Case_Typ)
                then
                   Lit := First_Literal (Case_Typ);
                   Get_Name_String (Chars (Lit));
@@ -4121,6 +4107,17 @@ package body Sem_Ch8 is
             if Is_Object (E) and then Present (Renamed_Object (E)) then
                Generate_Reference (E, N);
 
+               --  If the renamed entity is a private protected component,
+               --  reference the original component as well. This needs to be
+               --  done because the private renamings are installed before any
+               --  analysis has occured. Reference to a private component will
+               --  resolve to the renaming and the original component will be
+               --  left unreferenced, hence the following.
+
+               if Is_Prival (E) then
+                  Generate_Reference (Prival_Link (E), N);
+               end if;
+
             --  One odd case is that we do not want to set the Referenced flag
             --  if the entity is a label, and the identifier is the label in
             --  the source, since this is not a reference from the point of
@@ -4149,8 +4146,8 @@ package body Sem_Ch8 is
             --    (because implicit derefences cannot be identified prior to
             --    full type resolution).
             --
-            --  ??? The Is_Actual_Parameter routine takes care of one of these
-            --    cases but there are others probably
+            --    The Is_Actual_Parameter routine takes care of one of these
+            --    cases but there are others probably ???
 
             else
                if not Is_Actual_Parameter then
@@ -4170,7 +4167,10 @@ package body Sem_Ch8 is
             --  processing a generic spec or body, because the discriminal
             --  has not been not generated in this case.
 
-            if not In_Default_Expression
+            --  The replacement is also skipped if we are in special
+            --  spec-expression mode. Why is this skipped in this case ???
+
+            if not In_Spec_Expression
               or else Ekind (E) /= E_Discriminant
               or else Inside_A_Generic
             then
@@ -4531,7 +4531,7 @@ package body Sem_Ch8 is
          else
             Error_Msg_N
               ("limited withed package can only be used to access "
-               & " incomplete types",
+               & "incomplete types",
                 N);
          end if;
       end if;
@@ -5535,14 +5535,10 @@ package body Sem_Ch8 is
       end if;
 
       Id := First_Entity (P);
-
       while Present (Id)
         and then Id /= Priv_Id
       loop
-         if Is_Character_Type (Id)
-           and then (Root_Type (Id) = Standard_Character
-                       or else Root_Type (Id) = Standard_Wide_Character
-                       or else Root_Type (Id) = Standard_Wide_Wide_Character)
+         if Is_Standard_Character_Type (Id)
            and then Id = Base_Type (Id)
          then
             --  We replace the node with the literal itself, resolve as a
@@ -6163,8 +6159,9 @@ package body Sem_Ch8 is
          Write_Info;
       end if;
 
-      Scope_Suppress := SST.Save_Scope_Suppress;
+      Scope_Suppress           := SST.Save_Scope_Suppress;
       Local_Suppress_Stack_Top := SST.Save_Local_Suppress_Stack_Top;
+      Check_Policy_List        := SST.Save_Check_Policy_List;
 
       if Debug_Flag_W then
          Write_Str ("--> exiting scope: ");
@@ -6236,6 +6233,7 @@ package body Sem_Ch8 is
          SST.Entity                        := S;
          SST.Save_Scope_Suppress           := Scope_Suppress;
          SST.Save_Local_Suppress_Stack_Top := Local_Suppress_Stack_Top;
+         SST.Save_Check_Policy_List        := Check_Policy_List;
 
          if Scope_Stack.Last > Scope_Stack.First then
             SST.Component_Alignment_Default := Scope_Stack.Table
@@ -6965,6 +6963,7 @@ package body Sem_Ch8 is
 
       elsif not Redundant_Use (Id) then
          Set_In_Use (T);
+         Set_Current_Use_Clause (T, Parent (Id));
          Op_List := Collect_Primitive_Operations (T);
 
          Elmt := First_Elmt (Op_List);
@@ -7000,9 +6999,72 @@ package body Sem_Ch8 is
          --  The type already has a use clause
 
          if In_Use (T) then
-            Error_Msg_NE
-              ("& is already use-visible through previous use type clause?",
-               Id, Id);
+            if Present (Current_Use_Clause (T)) then
+               declare
+                  Clause1 : constant Node_Id := Parent (Id);
+                  Clause2 : constant Node_Id := Current_Use_Clause (T);
+                  Err_No  : Node_Id;
+                  Unit1   : Node_Id;
+                  Unit2   : Node_Id;
+
+               begin
+                  if Nkind (Parent (Clause1)) = N_Compilation_Unit
+                    and then Nkind (Parent (Clause2)) = N_Compilation_Unit
+                  then
+                     --  There is a redundant use type clause in a child unit.
+                     --  Determine which of the units is more deeply nested.
+
+                     Unit1 := Defining_Entity (Unit (Parent (Clause1)));
+                     Unit2 := Defining_Entity (Unit (Parent (Clause2)));
+
+                     if Scope (Unit2) = Standard_Standard  then
+                        Error_Msg_Sloc := Sloc (Current_Use_Clause (T));
+                        Err_No := Clause1;
+
+                     elsif Scope (Unit1) = Standard_Standard then
+                        Error_Msg_Sloc := Sloc (Id);
+                        Err_No := Clause2;
+
+                     else
+                        --  Determine which is the descendant unit
+
+                        declare
+                           S1, S2 : Entity_Id;
+
+                        begin
+                           S1 := Scope (Unit1);
+                           S2 := Scope (Unit2);
+                           while S1 /= Standard_Standard
+                             and then S2 /= Standard_Standard
+                           loop
+                              S1 := Scope (S1);
+                              S2 := Scope (S2);
+                           end loop;
+
+                           if S1 = Standard_Standard then
+                              Error_Msg_Sloc := Sloc (Id);
+                              Err_No := Clause2;
+                           else
+                              Error_Msg_Sloc := Sloc (Current_Use_Clause (T));
+                              Err_No := Clause1;
+                           end if;
+                        end;
+                     end if;
+
+                     Error_Msg_NE
+                       ("& is already use-visible through previous "
+                        & "use_type_clause #?", Err_No, Id);
+                  else
+                     Error_Msg_NE
+                       ("& is already use-visible through previous use type "
+                        & "clause?", Id, Id);
+                  end if;
+               end;
+            else
+               Error_Msg_NE
+                 ("& is already use-visible through previous use type "
+                  & "clause?", Id, Id);
+            end if;
 
          --  The package where T is declared is already used
 

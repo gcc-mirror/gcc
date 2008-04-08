@@ -109,9 +109,8 @@ package body Exp_Ch5 is
    --  statements.
 
    procedure Expand_Simple_Function_Return (N : Node_Id);
-   --  Expand simple return from function. Called by
-   --  Expand_N_Simple_Return_Statement in case we're returning from a function
-   --  body.
+   --  Expand simple return from function. In the case where we are returning
+   --  from a function body this is called by Expand_N_Simple_Return_Statement.
 
    function Make_Tag_Ctrl_Assignment (N : Node_Id) return List_Id;
    --  Generate the necessary code for controlled and tagged assignment,
@@ -3207,54 +3206,59 @@ package body Exp_Ch5 is
 
       --     return not (expression);
 
-      if Nkind (N) = N_If_Statement
-         and then No (Elsif_Parts (N))
-         and then Present (Else_Statements (N))
-         and then List_Length (Then_Statements (N)) = 1
-         and then List_Length (Else_Statements (N)) = 1
-      then
-         declare
-            Then_Stm : constant Node_Id := First (Then_Statements (N));
-            Else_Stm : constant Node_Id := First (Else_Statements (N));
+      --  Only do these optimizations if we are at least at -O1 level
 
-         begin
-            if Nkind (Then_Stm) = N_Simple_Return_Statement
-                 and then
-               Nkind (Else_Stm) = N_Simple_Return_Statement
-            then
-               declare
-                  Then_Expr : constant Node_Id := Expression (Then_Stm);
-                  Else_Expr : constant Node_Id := Expression (Else_Stm);
+      if Optimization_Level > 0 then
+         if Nkind (N) = N_If_Statement
+           and then No (Elsif_Parts (N))
+           and then Present (Else_Statements (N))
+           and then List_Length (Then_Statements (N)) = 1
+           and then List_Length (Else_Statements (N)) = 1
+         then
+            declare
+               Then_Stm : constant Node_Id := First (Then_Statements (N));
+               Else_Stm : constant Node_Id := First (Else_Statements (N));
 
-               begin
-                  if Nkind (Then_Expr) = N_Identifier
-                       and then
-                     Nkind (Else_Expr) = N_Identifier
-                  then
-                     if Entity (Then_Expr) = Standard_True
-                       and then Entity (Else_Expr) = Standard_False
+            begin
+               if Nkind (Then_Stm) = N_Simple_Return_Statement
+                    and then
+                  Nkind (Else_Stm) = N_Simple_Return_Statement
+               then
+                  declare
+                     Then_Expr : constant Node_Id := Expression (Then_Stm);
+                     Else_Expr : constant Node_Id := Expression (Else_Stm);
+
+                  begin
+                     if Nkind (Then_Expr) = N_Identifier
+                          and then
+                        Nkind (Else_Expr) = N_Identifier
                      then
-                        Rewrite (N,
-                          Make_Simple_Return_Statement (Loc,
-                            Expression => Relocate_Node (Condition (N))));
-                        Analyze (N);
-                        return;
+                        if Entity (Then_Expr) = Standard_True
+                          and then Entity (Else_Expr) = Standard_False
+                        then
+                           Rewrite (N,
+                             Make_Simple_Return_Statement (Loc,
+                               Expression => Relocate_Node (Condition (N))));
+                           Analyze (N);
+                           return;
 
-                     elsif Entity (Then_Expr) = Standard_False
-                       and then Entity (Else_Expr) = Standard_True
-                     then
-                        Rewrite (N,
-                          Make_Simple_Return_Statement (Loc,
-                            Expression =>
-                              Make_Op_Not (Loc,
-                                Right_Opnd => Relocate_Node (Condition (N)))));
-                        Analyze (N);
-                        return;
+                        elsif Entity (Then_Expr) = Standard_False
+                          and then Entity (Else_Expr) = Standard_True
+                        then
+                           Rewrite (N,
+                             Make_Simple_Return_Statement (Loc,
+                               Expression =>
+                                 Make_Op_Not (Loc,
+                                   Right_Opnd =>
+                                     Relocate_Node (Condition (N)))));
+                           Analyze (N);
+                           return;
+                        end if;
                      end if;
-                  end if;
-               end;
-            end if;
-         end;
+                  end;
+               end if;
+            end;
+         end if;
       end if;
    end Expand_N_If_Statement;
 
@@ -3463,6 +3467,15 @@ package body Exp_Ch5 is
 
    procedure Expand_N_Simple_Return_Statement (N : Node_Id) is
    begin
+      --  Defend agains previous errors (ie. the return statement calls a
+      --  function that is not available in configurable runtime).
+
+      if Present (Expression (N))
+        and then Nkind (Expression (N)) = N_Empty
+      then
+         return;
+      end if;
+
       --  Distinguish the function and non-function cases:
 
       case Ekind (Return_Applies_To (Return_Statement_Entity (N))) is
@@ -3504,6 +3517,16 @@ package body Exp_Ch5 is
       Lab_Node    : Node_Id;
 
    begin
+      --  Call postconditions procedure if procedure with active postconditions
+
+      if Ekind (Scope_Id) = E_Procedure
+        and then Has_Postconditions (Scope_Id)
+      then
+         Insert_Action (N,
+           Make_Procedure_Call_Statement (Loc,
+             Name => Make_Identifier (Loc, Name_uPostconditions)));
+      end if;
+
       --  If it is a return from a procedure do no extra steps
 
       if Kind = E_Procedure or else Kind = E_Generic_Procedure then
@@ -3572,16 +3595,15 @@ package body Exp_Ch5 is
       elsif Is_Protected_Type (Scope_Id) then
          Call :=
            Make_Procedure_Call_Statement (Loc,
-             Name => New_Reference_To
-               (RTE (RE_Complete_Entry_Body), Loc),
-             Parameter_Associations => New_List
-               (Make_Attribute_Reference (Loc,
+             Name =>
+               New_Reference_To (RTE (RE_Complete_Entry_Body), Loc),
+             Parameter_Associations => New_List (
+               Make_Attribute_Reference (Loc,
                  Prefix =>
                    New_Reference_To
-                     (Object_Ref
-                        (Corresponding_Body (Parent (Scope_Id))),
-                     Loc),
-                 Attribute_Name => Name_Unchecked_Access)));
+                     (Find_Protection_Object (Current_Scope), Loc),
+                 Attribute_Name =>
+                   Name_Unchecked_Access)));
 
          Insert_Before (N, Call);
          Analyze (Call);
@@ -3614,28 +3636,30 @@ package body Exp_Ch5 is
       --  The type of the expression (not necessarily the same as R_Type)
 
    begin
-      --  We rewrite "return <expression>;" to be:
+      --  For the case of a simple return that does not come from an extended
+      --  return, in the case of Ada 2005 where we are returning a limited
+      --  type, we rewrite "return <expression>;" to be:
 
       --    return _anon_ : <return_subtype> := <expression>
 
       --  The expansion produced by Expand_N_Extended_Return_Statement will
       --  contain simple return statements (for example, a block containing
       --  simple return of the return object), which brings us back here with
-      --  Comes_From_Extended_Return_Statement set. To avoid infinite
-      --  recursion, we do not transform into an extended return if
-      --  Comes_From_Extended_Return_Statement is True.
+      --  Comes_From_Extended_Return_Statement set. The reason for the barrier
+      --  checking for a simple return that does not come from an extended
+      --  return is to avoid this infinite recursion.
 
       --  The reason for this design is that for Ada 2005 limited returns, we
       --  need to reify the return object, so we can build it "in place", and
       --  we need a block statement to hang finalization and tasking stuff.
 
       --  ??? In order to avoid disruption, we avoid translating to extended
-      --  return except in the cases where we really need to (Ada 2005
-      --  inherently limited). We would prefer eventually to do this
-      --  translation in all cases except perhaps for the case of Ada 95
-      --  inherently limited, in order to fully exercise the code in
-      --  Expand_N_Extended_Return_Statement, and in order to do
-      --  build-in-place for efficiency when it is not required.
+      --  return except in the cases where we really need to (Ada 2005 for
+      --  inherently limited). We might prefer to do this translation in all
+      --  cases (except perhaps for the case of Ada 95 inherently limited),
+      --  in order to fully exercise the Expand_N_Extended_Return_Statement
+      --  code. This would also allow us to to the build-in-place optimization
+      --  for efficiency even in cases where it is semantically not required.
 
       --  As before, we check the type of the return expression rather than the
       --  return type of the function, because the latter may be a limited
@@ -3644,7 +3668,7 @@ package body Exp_Ch5 is
 
       if not Comes_From_Extended_Return_Statement (N)
         and then Is_Inherently_Limited_Type (Etype (Expression (N)))
-        and then Ada_Version >= Ada_05 --  ???
+        and then Ada_Version >= Ada_05
         and then not Debug_Flag_Dot_L
       then
          declare
@@ -3845,7 +3869,7 @@ package body Exp_Ch5 is
          --  secondary stack.
 
          else
-            Set_Storage_Pool      (N, RTE (RE_SS_Pool));
+            Set_Storage_Pool (N, RTE (RE_SS_Pool));
 
             --  If we are generating code for the VM do not use
             --  SS_Allocate since everything is heap-allocated anyway.
@@ -3986,6 +4010,113 @@ package body Exp_Ch5 is
                         Scope_Depth (Enclosing_Dynamic_Scope (Scope_Id)))),
                 Reason => PE_Accessibility_Check_Failed));
          end;
+      end if;
+
+      --  Generate call to postcondition checks if they are present
+
+      if Ekind (Scope_Id) = E_Function
+        and then Has_Postconditions (Scope_Id)
+      then
+         --  We are going to reference the returned value twice in this case,
+         --  once in the call to _Postconditions, and once in the actual return
+         --  statement, but we can't have side effects happening twice, and in
+         --  any case for efficiency we don't want to do the computation twice.
+
+         --  If the returned expression is an entity name, we don't need to
+         --  worry since it is efficient and safe to reference it twice, that's
+         --  also true for literals other than string literals, and for the
+         --  case of X.all where X is an entity name.
+
+         if Is_Entity_Name (Exp)
+           or else Nkind_In (Exp, N_Character_Literal,
+                                  N_Integer_Literal,
+                                  N_Real_Literal)
+           or else (Nkind (Exp) = N_Explicit_Dereference
+                      and then Is_Entity_Name (Prefix (Exp)))
+         then
+            null;
+
+         --  Otherwise we are going to need a temporary to capture the value
+
+         else
+            declare
+               Tnn : constant Entity_Id :=
+                       Make_Defining_Identifier (Loc,
+                         New_Internal_Name ('T'));
+
+            begin
+               --  For a complex expression of an elementary type, capture
+               --  value in the temporary and use it as the reference.
+
+               if Is_Elementary_Type (R_Type) then
+                  Insert_Action (Exp,
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Tnn,
+                      Constant_Present    => True,
+                      Object_Definition   => New_Occurrence_Of (R_Type, Loc),
+                      Expression          => Relocate_Node (Exp)),
+                    Suppress => All_Checks);
+
+                  Rewrite (Exp, New_Occurrence_Of (Tnn, Loc));
+
+               --  If we have something we can rename, generate a renaming of
+               --  the object and replace the expression with a reference
+
+               elsif Is_Object_Reference (Exp) then
+                  Insert_Action (Exp,
+                    Make_Object_Renaming_Declaration (Loc,
+                      Defining_Identifier => Tnn,
+                      Subtype_Mark        => New_Occurrence_Of (R_Type, Loc),
+                      Name                => Relocate_Node (Exp)),
+                    Suppress => All_Checks);
+
+                  Rewrite (Exp, New_Occurrence_Of (Tnn, Loc));
+
+               --  Otherwise we have something like a string literal or an
+               --  aggregate. We could copy the value, but that would be
+               --  inefficient. Instead we make a reference to the value and
+               --  capture this reference with a renaming, the expression is
+               --  then replaced by a dereference of this renaming.
+
+               else
+                  --  For now, copy the value, since the code below does not
+                  --  seem to work correctly ???
+
+                  Insert_Action (Exp,
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Tnn,
+                      Constant_Present    => True,
+                      Object_Definition   => New_Occurrence_Of (R_Type, Loc),
+                      Expression          => Relocate_Node (Exp)),
+                    Suppress => All_Checks);
+
+                  Rewrite (Exp, New_Occurrence_Of (Tnn, Loc));
+
+                  --  Insert_Action (Exp,
+                  --    Make_Object_Renaming_Declaration (Loc,
+                  --      Defining_Identifier => Tnn,
+                  --      Access_Definition =>
+                  --        Make_Access_Definition (Loc,
+                  --          All_Present  => True,
+                  --          Subtype_Mark => New_Occurrence_Of (R_Type, Loc)),
+                  --      Name =>
+                  --        Make_Reference (Loc,
+                  --          Prefix => Relocate_Node (Exp))),
+                  --    Suppress => All_Checks);
+
+                  --  Rewrite (Exp,
+                  --    Make_Explicit_Dereference (Loc,
+                  --      Prefix => New_Occurrence_Of (Tnn, Loc)));
+               end if;
+            end;
+         end if;
+
+         --  Generate call to _postconditions
+
+         Insert_Action (Exp,
+           Make_Procedure_Call_Statement (Loc,
+             Name => Make_Identifier (Loc, Name_uPostconditions),
+             Parameter_Associations => New_List (Duplicate_Subexpr (Exp))));
       end if;
    end Expand_Simple_Function_Return;
 

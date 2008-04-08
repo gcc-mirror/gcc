@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -100,6 +100,16 @@ package Sem_Ch6 is
    --  formal access-to-subprogram type, indicating that mapping of types
    --  is needed.
 
+   procedure Check_Overriding_Indicator
+     (Subp            : Entity_Id;
+      Overridden_Subp : Entity_Id;
+      Is_Primitive    : Boolean);
+   --  Verify the consistency of an overriding_indicator given for subprogram
+   --  declaration, body, renaming, or instantiation.  Overridden_Subp is set
+   --  if the scope where we are introducing the subprogram contains a
+   --  type-conformant subprogram that becomes hidden by the new subprogram.
+   --  Is_Primitive indicates whether the subprogram is primitive.
+
    procedure Check_Subtype_Conformant
      (New_Id  : Entity_Id;
       Old_Id  : Entity_Id;
@@ -146,17 +156,22 @@ package Sem_Ch6 is
 
    function Fully_Conformant_Expressions
      (Given_E1 : Node_Id;
-      Given_E2 : Node_Id)
-      return     Boolean;
+      Given_E2 : Node_Id) return Boolean;
    --  Determines if two (non-empty) expressions are fully conformant
    --  as defined by (RM 6.3.1(18-21))
 
    function Fully_Conformant_Discrete_Subtypes
       (Given_S1 : Node_Id;
-       Given_S2 : Node_Id)
-       return Boolean;
+       Given_S2 : Node_Id) return Boolean;
    --  Determines if two subtype definitions are fully conformant. Used
    --  for entry family conformance checks (RM 6.3.1 (24)).
+
+   procedure Install_Formals (Id : Entity_Id);
+   --  On entry to a subprogram body, make the formals visible. Note that
+   --  simply placing the subprogram on the scope stack is not sufficient:
+   --  the formals must become the current entities for their names. This
+   --  procedure is also used to get visibility to the formals when analyzing
+   --  preconditions and postconditions appearing in the spec.
 
    function Mode_Conformant (New_Id, Old_Id : Entity_Id) return Boolean;
    --  Determine whether two callable entities (subprograms, entries,
