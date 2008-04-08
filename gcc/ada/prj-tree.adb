@@ -108,6 +108,7 @@ package body Prj.Tree is
          In_Tree.Project_Nodes.Table
            (Project_Node_Table.Last (In_Tree.Project_Nodes)) :=
            (Kind             => N_Comment_Zones,
+            Qualifier        => Unspecified,
             Expr_Kind        => Undefined,
             Location         => No_Location,
             Directory        => No_Path,
@@ -153,6 +154,7 @@ package body Prj.Tree is
             In_Tree.Project_Nodes.Table
               (Project_Node_Table.Last (In_Tree.Project_Nodes)) :=
               (Kind             => N_Comment,
+               Qualifier        => Unspecified,
                Expr_Kind        => Undefined,
                Flag1            => Comments.Table (J).Follows_Empty_Line,
                Flag2            =>
@@ -321,6 +323,7 @@ package body Prj.Tree is
          Zone := Project_Node_Table.Last (In_Tree.Project_Nodes);
          In_Tree.Project_Nodes.Table (Zone) :=
         (Kind             => N_Comment_Zones,
+         Qualifier        => Unspecified,
          Location         => No_Location,
          Directory        => No_Path,
          Expr_Kind        => Undefined,
@@ -395,6 +398,7 @@ package body Prj.Tree is
       In_Tree.Project_Nodes.Table
         (Project_Node_Table.Last (In_Tree.Project_Nodes)) :=
         (Kind             => Of_Kind,
+         Qualifier        => Unspecified,
          Location         => No_Location,
          Directory        => No_Path,
          Expr_Kind        => And_Expr_Kind,
@@ -429,6 +433,7 @@ package body Prj.Tree is
             In_Tree.Project_Nodes.Table
               (Project_Node_Table.Last (In_Tree.Project_Nodes)) :=
               (Kind             => N_Comment_Zones,
+               Qualifier        => Unspecified,
                Expr_Kind        => Undefined,
                Location         => No_Location,
                Directory        => No_Path,
@@ -458,6 +463,7 @@ package body Prj.Tree is
                In_Tree.Project_Nodes.Table
                  (Project_Node_Table.Last (In_Tree.Project_Nodes)) :=
                  (Kind             => N_Comment,
+                  Qualifier        => Unspecified,
                   Expr_Kind        => Undefined,
                   Flag1            => Comments.Table (J).Follows_Empty_Line,
                   Flag2            =>
@@ -1351,6 +1357,22 @@ package body Prj.Tree is
             In_Tree.Project_Nodes.Table (Node).Kind = N_Project);
       return In_Tree.Project_Nodes.Table (Node).Field2;
    end Project_Declaration_Of;
+
+   --------------------------
+   -- Project_Qualifier_Of --
+   --------------------------
+
+   function Project_Qualifier_Of
+     (Node    : Project_Node_Id;
+      In_Tree : Project_Node_Tree_Ref) return Project_Qualifier
+   is
+   begin
+      pragma Assert
+        (Node /= Empty_Node
+          and then
+            In_Tree.Project_Nodes.Table (Node).Kind = N_Project);
+      return In_Tree.Project_Nodes.Table (Node).Qualifier;
+   end Project_Qualifier_Of;
 
    -------------------------------------------
    -- Project_File_Includes_Unkept_Comments --
@@ -2466,6 +2488,22 @@ package body Prj.Tree is
            In_Tree.Project_Nodes.Table (Node).Kind = N_Project);
       In_Tree.Project_Nodes.Table (Node).Field2 := To;
    end Set_Project_Declaration_Of;
+
+   ------------------------------
+   -- Set_Project_Qualifier_Of --
+   ------------------------------
+
+   procedure Set_Project_Qualifier_Of
+     (Node    : Project_Node_Id;
+      In_Tree : Project_Node_Tree_Ref;
+      To      : Project_Qualifier)
+   is
+   begin
+      pragma Assert
+        (Node /= Empty_Node
+          and then In_Tree.Project_Nodes.Table (Node).Kind = N_Project);
+      In_Tree.Project_Nodes.Table (Node).Qualifier := To;
+   end Set_Project_Qualifier_Of;
 
    -----------------------------------------------
    -- Set_Project_File_Includes_Unkept_Comments --

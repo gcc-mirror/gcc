@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,14 +28,13 @@
 
 --  It is also possible to define new packages with their attributes
 
-with System.Strings;
 with Table;
+
+with GNAT.Strings;
 
 package Prj.Attr is
 
-   use System;
-
-   function Package_Name_List return Strings.String_List;
+   function Package_Name_List return GNAT.Strings.String_List;
    --  Returns the list of valid package names, including those added by
    --  procedures Register_New_Package below. The String_Access components of
    --  the returned String_List should never be freed.
@@ -55,6 +54,7 @@ package Prj.Attr is
    --  Characteristics of an attribute. Optional_Index indicates that there
    --  may be an optional index in the index of the associative array, as in
    --     for Switches ("files.ada" at 2) use ...
+   --  Above character literals should be documented ???
 
    subtype Defined_Attribute_Kind is Attribute_Kind
      range Single .. Optional_Index_Case_Insensitive_Associative_Array;

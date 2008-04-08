@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -945,6 +945,9 @@ package body Prj.Part is
 
       Project_Comment_State : Tree.Comment_State;
 
+      Proj_Qualifier     : Project_Qualifier := Unspecified;
+      Qualifier_Location : Source_Ptr;
+
    begin
       Extends_All := False;
 
@@ -1119,8 +1122,63 @@ package body Prj.Part is
       Project_Stack.Table (Project_Stack.Last).Id := Project;
       Set_Directory_Of (Project, In_Tree, Project_Directory);
       Set_Path_Name_Of (Project, In_Tree,  Normed_Path_Name);
-      Set_Location_Of (Project, In_Tree, Token_Ptr);
       Set_First_With_Clause_Of (Project, In_Tree, Imported_Projects);
+
+      --  Check if there is a qualifier before the reserved word "project"
+
+      Qualifier_Location := Token_Ptr;
+
+      if Token = Tok_Abstract then
+         Proj_Qualifier := Dry;
+         Scan (In_Tree);
+
+      elsif Token = Tok_Identifier then
+         case Token_Name is
+            when Snames.Name_Standard =>
+               Proj_Qualifier := Standard;
+               Scan (In_Tree);
+
+            when Snames.Name_Aggregate =>
+               Proj_Qualifier := Aggregate;
+               Scan (In_Tree);
+
+               if Token = Tok_Identifier and then
+                 Token_Name = Snames.Name_Library
+               then
+                  Proj_Qualifier := Aggregate_Library;
+                  Scan (In_Tree);
+               end if;
+
+            when Snames.Name_Library =>
+               Proj_Qualifier := Library;
+               Scan (In_Tree);
+
+            when Snames.Name_Configuration =>
+               if not In_Configuration then
+                  Error_Msg ("configuration projects cannot belong to a user" &
+                             " project tree",
+                             Token_Ptr);
+               end if;
+
+               Scan (In_Tree);
+
+            when others =>
+               null;
+         end case;
+      end if;
+
+      if Proj_Qualifier /= Unspecified then
+         if In_Configuration then
+            Error_Msg ("a configuration project cannot be qualified except " &
+                       "as configuration project",
+                       Qualifier_Location);
+         end if;
+
+         Set_Project_Qualifier_Of (Project, In_Tree, Proj_Qualifier);
+      end if;
+
+      Set_Location_Of (Project, In_Tree, Token_Ptr);
+
       Expect (Tok_Project, "PROJECT");
 
       --  Mark location of PROJECT token if present
@@ -1780,7 +1838,7 @@ package body Prj.Part is
       begin
          if Current_Verbosity = High then
             Write_Str  ("   Trying ");
-            Write_Str  (Path);
+            Write_Line (Path);
          end if;
 
          return Locate_Regular_File
