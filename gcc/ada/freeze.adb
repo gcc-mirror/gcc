@@ -617,16 +617,28 @@ package body Freeze is
          if Size_Known_At_Compile_Time (T) then
             return True;
 
+         --  Always True for scalar types. This is true even for generic formal
+         --  scalar types. We used to return False in the latter case, but the
+         --  size is known at compile time, even in the template, we just do
+         --  not know the exact size but that's not the point of this routine.
+
          elsif Is_Scalar_Type (T)
            or else Is_Task_Type (T)
          then
-            return not Is_Generic_Type (T);
+            return True;
+
+         --  Array types
 
          elsif Is_Array_Type (T) then
+
+            --  String literals always have known size, and we can set it
+
             if Ekind (T) = E_String_Literal_Subtype then
                Set_Small_Size (T, Component_Size (T)
                                * String_Literal_Length (T));
                return True;
+
+            --  Unconstrained types never have known at compile time size
 
             elsif not Is_Constrained (T) then
                return False;
@@ -636,6 +648,8 @@ package body Freeze is
 
             elsif Error_Posted (T) then
                return False;
+
+            --  Otherwise if component size unknown, then array size unknown
 
             elsif not Size_Known (Component_Type (T)) then
                return False;
@@ -685,8 +699,12 @@ package body Freeze is
                return True;
             end;
 
+         --  Access types always have known at compile time sizes
+
          elsif Is_Access_Type (T) then
             return True;
+
+         --  For non-generic private types, go to underlying type if present
 
          elsif Is_Private_Type (T)
            and then not Is_Generic_Type (T)
@@ -700,6 +718,8 @@ package body Freeze is
             else
                return Size_Known (Underlying_Type (T));
             end if;
+
+         --  Record types
 
          elsif Is_Record_Type (T) then
 
@@ -906,6 +926,8 @@ package body Freeze is
                return True;
             end;
 
+         --  All other cases, size not known at compile time
+
          else
             return False;
          end if;
@@ -1100,8 +1122,8 @@ package body Freeze is
          New_N :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Temp,
-             Object_definition => New_Occurrence_Of (Typ, Loc),
-             Expression => Relocate_Node (E));
+             Object_Definition   => New_Occurrence_Of (Typ, Loc),
+             Expression          => Relocate_Node (E));
          Insert_Before (Parent (E), New_N);
          Analyze (New_N);
 
@@ -1298,7 +1320,7 @@ package body Freeze is
       --  We also add finalization chains to access types whose designated
       --  types are controlled. This is normally done when freezing the type,
       --  but this misses recursive type definitions where the later members
-      --  of the recursion introduce controlled components (e.g. 5624-001).
+      --  of the recursion introduce controlled components.
 
       --  Loop through entities
 
@@ -3516,9 +3538,23 @@ package body Freeze is
 
             if Is_Pure_Unit_Access_Type (E)
               and then (Ada_Version < Ada_05
-                        or else not No_Pool_Assigned (E))
+                         or else not No_Pool_Assigned (E))
             then
                Error_Msg_N ("named access type not allowed in pure unit", E);
+
+               if Ada_Version >= Ada_05 then
+                  Error_Msg_N
+                    ("\would be legal if Storage_Size of 0 given?", E);
+
+               elsif No_Pool_Assigned (E) then
+                  Error_Msg_N
+                    ("\would be legal in Ada 2005?", E);
+
+               else
+                  Error_Msg_N
+                    ("\would be legal in Ada 2005 if "
+                     & "Storage_Size of 0 given?", E);
+               end if;
             end if;
          end if;
 
@@ -3807,12 +3843,12 @@ package body Freeze is
    -----------------------
 
    procedure Freeze_Expression (N : Node_Id) is
-      In_Def_Exp : constant Boolean := In_Default_Expression;
-      Typ        : Entity_Id;
-      Nam        : Entity_Id;
-      Desig_Typ  : Entity_Id;
-      P          : Node_Id;
-      Parent_P   : Node_Id;
+      In_Spec_Exp : constant Boolean := In_Spec_Expression;
+      Typ         : Entity_Id;
+      Nam         : Entity_Id;
+      Desig_Typ   : Entity_Id;
+      P           : Node_Id;
+      Parent_P    : Node_Id;
 
       Freeze_Outside : Boolean := False;
       --  This flag is set true if the entity must be frozen outside the
@@ -3883,7 +3919,7 @@ package body Freeze is
       --  make sure that we actually have a real expression (if we have
       --  a subtype indication, we can't test Is_Static_Expression!)
 
-      if In_Def_Exp
+      if In_Spec_Exp
         and then Nkind (N) in N_Subexpr
         and then not Is_Static_Expression (N)
       then
@@ -4015,7 +4051,7 @@ package body Freeze is
 
                --  For either of these cases, we skip the freezing
 
-               if not In_Default_Expression
+               if not In_Spec_Expression
                  and then Nkind (N) = N_Identifier
                  and then (Present (Entity (N)))
                then
@@ -4202,11 +4238,11 @@ package body Freeze is
       --  static type, and the freeze scope needs to be the outer scope, not
       --  the scope of the subprogram with the default parameter.
 
-      --  For default expressions in generic units, the Move_Freeze_Nodes
-      --  mechanism (see sem_ch12.adb) takes care of placing them at the proper
-      --  place, after the generic unit.
+      --  For default expressions and other spec expressions in generic units,
+      --  the Move_Freeze_Nodes mechanism (see sem_ch12.adb) takes care of
+      --  placing them at the proper place, after the generic unit.
 
-      if (In_Def_Exp and not Inside_A_Generic)
+      if (In_Spec_Exp and not Inside_A_Generic)
         or else Freeze_Outside
         or else (Is_Type (Current_Scope)
                   and then (not Is_Concurrent_Type (Current_Scope)
@@ -4254,15 +4290,15 @@ package body Freeze is
       end if;
 
       --  Now we have the right place to do the freezing. First, a special
-      --  adjustment, if we are in default expression analysis mode, these
-      --  freeze actions must not be thrown away (normally all inserted actions
-      --  are thrown away in this mode. However, the freeze actions are from
-      --  static expressions and one of the important reasons we are doing this
+      --  adjustment, if we are in spec-expression analysis mode, these freeze
+      --  actions must not be thrown away (normally all inserted actions are
+      --  thrown away in this mode. However, the freeze actions are from static
+      --  expressions and one of the important reasons we are doing this
       --  special analysis is to get these freeze actions. Therefore we turn
-      --  off the In_Default_Expression mode to propagate these freeze actions.
+      --  off the In_Spec_Expression mode to propagate these freeze actions.
       --  This also means they get properly analyzed and expanded.
 
-      In_Default_Expression := False;
+      In_Spec_Expression := False;
 
       --  Freeze the designated type of an allocator (RM 13.14(13))
 
@@ -4283,7 +4319,9 @@ package body Freeze is
          Freeze_Before (P, Nam);
       end if;
 
-      In_Default_Expression := In_Def_Exp;
+      --  Restore In_Spec_Expression flag
+
+      In_Spec_Expression := In_Spec_Exp;
    end Freeze_Expression;
 
    -----------------------------
@@ -5079,6 +5117,19 @@ package body Freeze is
       then
          Error_Msg_N
            ("pragma Inline_Always not allowed for dispatching subprograms", E);
+      end if;
+
+      --  Because of the implicit representation of inherited predefined
+      --  operators in the front-end, the overriding status of the operation
+      --  may be affected when a full view of a type is analyzed, and this is
+      --  not captured by the analysis of the corresponding type declaration.
+      --  Therefore the correctness of a not-overriding indicator must be
+      --  rechecked when the subprogram is frozen.
+
+      if Nkind (E) = N_Defining_Operator_Symbol
+        and then not Error_Posted (Parent (E))
+      then
+         Check_Overriding_Indicator (E, Empty, Is_Primitive (E));
       end if;
    end Freeze_Subprogram;
 
