@@ -2,12 +2,12 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                     M L I B . T G T . S P E C I F I C                    --
---                             (HP-UX Version)                              --
+--                    M L I B . T G T . S P E C I F I C                     --
+--                             (Tru64 Version)                              --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2003-2007, AdaCore                     --
+--          Copyright (C) 2002-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,7 +24,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the HP-UX version of the body
+--  This is the True64 version of the body
 
 with MLib.Fil;
 with MLib.Utl;
@@ -33,7 +33,9 @@ with Output; use Output;
 
 package body MLib.Tgt.Specific is
 
-   --  Non default subprograms
+   use MLib;
+
+   --  Non default subprogram
 
    procedure Build_Dynamic_Library
      (Ofiles       : Argument_List;
@@ -46,9 +48,13 @@ package body MLib.Tgt.Specific is
       Lib_Version  : String  := "";
       Auto_Init    : Boolean := False);
 
-   function DLL_Ext return String;
-
    function Is_Archive_Ext (Ext : String) return Boolean;
+
+   function PIC_Option return String;
+
+   --  Local variables
+
+   Expect_Unresolved : aliased String := "-Wl,-expect_unresolved,*";
 
    ---------------------------
    -- Build_Dynamic_Library --
@@ -68,6 +74,7 @@ package body MLib.Tgt.Specific is
       pragma Unreferenced (Interfaces);
       pragma Unreferenced (Symbol_Data);
       pragma Unreferenced (Auto_Init);
+      --  Initialization is done through the constructor mechanism
 
       Lib_File : constant String :=
                    "lib" & Fil.Append_To (Lib_Filename, DLL_Ext);
@@ -78,24 +85,19 @@ package body MLib.Tgt.Specific is
       Version_Arg          : String_Access;
       Symbolic_Link_Needed : Boolean := False;
 
-      Common_Options : constant Argument_List :=
-                         Options & new String'(PIC_Option);
-      --  Common set of options to the gcc command performing the link.
-      --  On HPUX, this command eventually resorts to collect2, which may
-      --  generate a C file and compile it on the fly. This compilation shall
-      --  also generate position independent code for the final link to
-      --  succeed.
    begin
       if Opt.Verbose_Mode then
          Write_Str ("building relocatable shared library ");
          Write_Line (Lib_Path);
       end if;
 
+      --  If specified, add automatic elaboration/finalization
+
       if Lib_Version = "" then
-         MLib.Utl.Gcc
+         Utl.Gcc
            (Output_File => Lib_Path,
             Objects     => Ofiles,
-            Options     => Common_Options,
+            Options     => Options & Expect_Unresolved'Access,
             Options_2   => No_Argument_List,
             Driver_Name => Driver_Name);
 
@@ -105,26 +107,28 @@ package body MLib.Tgt.Specific is
                             Major_Id_Name (Lib_File, Lib_Version);
          begin
             if Maj_Version'Length /= 0 then
-               Version_Arg := new String'("-Wl,+h," & Maj_Version);
+               Version_Arg := new String'("-Wl,-soname," & Maj_Version);
 
             else
-               Version_Arg := new String'("-Wl,+h," & Lib_Version);
+               Version_Arg := new String'("-Wl,-soname," & Lib_Version);
             end if;
 
             if Is_Absolute_Path (Lib_Version) then
-               MLib.Utl.Gcc
+               Utl.Gcc
                  (Output_File => Lib_Version,
                   Objects     => Ofiles,
-                  Options     => Common_Options & Version_Arg,
+                  Options     =>
+                    Options & Version_Arg & Expect_Unresolved'Access,
                   Options_2   => No_Argument_List,
                   Driver_Name => Driver_Name);
                Symbolic_Link_Needed := Lib_Version /= Lib_Path;
 
             else
-               MLib.Utl.Gcc
+               Utl.Gcc
                  (Output_File => Lib_Dir & Directory_Separator & Lib_Version,
                   Objects     => Ofiles,
-                  Options     => Common_Options & Version_Arg,
+                  Options     =>
+                    Options & Version_Arg & Expect_Unresolved'Access,
                   Options_2   => No_Argument_List,
                   Driver_Name => Driver_Name);
                Symbolic_Link_Needed :=
@@ -139,15 +143,6 @@ package body MLib.Tgt.Specific is
       end if;
    end Build_Dynamic_Library;
 
-   -------------
-   -- DLL_Ext --
-   -------------
-
-   function DLL_Ext return String is
-   begin
-      return "sl";
-   end DLL_Ext;
-
    --------------------
    -- Is_Archive_Ext --
    --------------------
@@ -157,8 +152,17 @@ package body MLib.Tgt.Specific is
       return Ext = ".a" or else Ext = ".so";
    end Is_Archive_Ext;
 
+   ----------------
+   -- PIC_Option --
+   ----------------
+
+   function PIC_Option return String is
+   begin
+      return "";
+   end PIC_Option;
+
 begin
    Build_Dynamic_Library_Ptr := Build_Dynamic_Library'Access;
-   DLL_Ext_Ptr := DLL_Ext'Access;
    Is_Archive_Ext_Ptr := Is_Archive_Ext'Access;
+   PIC_Option_Ptr := PIC_Option'Access;
 end MLib.Tgt.Specific;

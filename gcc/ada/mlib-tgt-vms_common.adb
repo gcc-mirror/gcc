@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                         M L I B . T G T . V M S                          --
+--                  M L I B . T G T . V M S _ C O M M O N                   --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,7 +25,7 @@
 
 --  This is the part of MLib.Tgt.Specific common to both VMS versions
 
-package body MLib.Tgt.VMS is
+package body MLib.Tgt.VMS_Common is
 
    --  Non default subprograms. See comments in mlib-tgt.ads
 
@@ -152,4 +152,4 @@ begin
    Library_Major_Minor_Id_Supported_Ptr :=
                                    Library_Major_Minor_Id_Supported'Access;
 
-end MLib.Tgt.VMS;
+end MLib.Tgt.VMS_Common;

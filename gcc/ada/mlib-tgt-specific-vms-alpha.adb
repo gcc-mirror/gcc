@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,9 +31,9 @@ with Ada.Characters.Handling; use Ada.Characters.Handling;
 with MLib.Fil;
 with MLib.Utl;
 
-with MLib.Tgt.VMS;
-pragma Warnings (Off, MLib.Tgt.VMS);
---  MLib.Tgt.VMS is with'ed only for elaboration purposes
+with MLib.Tgt.VMS_Common;
+pragma Warnings (Off, MLib.Tgt.VMS_Common);
+--  MLib.Tgt.VMS_Common is with'ed only for elaboration purposes
 
 with Opt;      use Opt;
 with Output;   use Output;

@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                         M L I B . T G T . V M S                          --
+--                  M L I B . T G T . V M S _ C O M M O N                   --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2007, Free Software Foundation, Inc.           --
+--        Copyright (C) 2007-2008, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,6 +25,6 @@
 
 --  This is the part of MLib.Tgt.Specific common to both VMS versions
 
-package MLib.Tgt.VMS is
+package MLib.Tgt.VMS_Common is
    pragma Elaborate_Body;
-end MLib.Tgt.VMS;
+end MLib.Tgt.VMS_Common;
