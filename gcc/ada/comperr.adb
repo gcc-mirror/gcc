@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,6 +39,7 @@ with Output;   use Output;
 with Sinput;   use Sinput;
 with Sprint;   use Sprint;
 with Sdefault; use Sdefault;
+with Targparm; use Targparm;
 with Treepr;   use Treepr;
 with Types;    use Types;
 
@@ -111,6 +112,31 @@ package body Comperr is
       end if;
 
       Abort_In_Progress := True;
+
+      --  Generate a "standard" error message instead of a bug box in case of
+      --  .NET compiler, since we do not support all constructs of the
+      --  language. Of course ideally, we should detect this before bombing
+      --  on e.g. an assertion error, but in practice most of these bombs
+      --  are due to a legitimate case of a construct not being supported (in
+      --  a sense they all are, since for sure we are not supporting something
+      --  if we bomb!) By giving this message, we provide a more reasonable
+      --  practical interface, since giving scary bug boxes on unsupported
+      --  features is definitely not helpful.
+
+      --  Note that the call to Error_Msg_N below sets Serious_Errors_Detected
+      --  to 1, so we use the regular mechanism below in order to display a
+      --  "compilation abandoned" message and exit, so we still know we have
+      --  this case (and -gnatdk can still be used to get the bug box).
+
+      if VM_Target = CLI_Target
+        and then Serious_Errors_Detected = 0
+        and then not Debug_Flag_K
+        and then Sloc (Current_Error_Node) > No_Location
+      then
+         Error_Msg_N
+           ("unsupported construct in this context",
+            Current_Error_Node);
+      end if;
 
       --  If any errors have already occurred, then we guess that the abort
       --  may well be caused by previous errors, and we don't make too much

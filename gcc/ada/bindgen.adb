@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -618,16 +618,26 @@ package body Bindgen is
                  """__gnat_initialize_stack_limit"");");
          end if;
 
+         --  Special processing when main program is CIL function/procedure
+
          if VM_Target = CLI_Target
            and then Bind_Main_Program
            and then not No_Main_Subprogram
          then
             WBI ("");
 
+            --  Function case, use Set_Exit_Status to report the returned
+            --  status code, since that is the only mechanism available.
+
             if ALIs.Table (ALIs.First).Main_Program = Func then
                WBI ("      Result : Integer;");
+               WBI ("      procedure Set_Exit_Status (Code : Integer);");
+               WBI ("      pragma Import (C, Set_Exit_Status, " &
+                    """__gnat_set_exit_status"");");
                WBI ("");
                WBI ("      function Ada_Main_Program return Integer;");
+
+            --  Procedure case
 
             else
                WBI ("      procedure Ada_Main_Program;");
@@ -797,12 +807,20 @@ package body Bindgen is
       WBI ("");
       Gen_Elab_Calls_Ada;
 
+      --  Case of main program is CIL function or procedure
+
       if VM_Target = CLI_Target
         and then Bind_Main_Program
         and then not No_Main_Subprogram
       then
+         --  For function case, use Set_Exit_Status to set result
+
          if ALIs.Table (ALIs.First).Main_Program = Func then
             WBI ("      Result := Ada_Main_Program;");
+            WBI ("      Set_Exit_Status (Result);");
+
+         --  Procedure case
+
          else
             WBI ("      Ada_Main_Program;");
          end if;
@@ -2270,7 +2288,7 @@ package body Bindgen is
 
          if VM_Target = No_VM then
             Set_Main_Program_Name;
-            Set_String (""" & Ascii.NUL;");
+            Set_String (""" & ASCII.NUL;");
          else
             Set_String (Name_Buffer (1 .. Name_Len - 2) & """;");
          end if;

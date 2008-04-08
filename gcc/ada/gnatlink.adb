@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -139,7 +139,7 @@ procedure Gnatlink is
 
    Gcc : String_Access := Program_Name ("gcc");
 
-   Read_Mode  : constant String := "r" & ASCII.Nul;
+   Read_Mode : constant String := "r" & ASCII.NUL;
 
    Begin_Info : String := "--  BEGIN Object file/option list";
    End_Info   : String := "--  END Object file/option list   ";
@@ -147,7 +147,6 @@ procedure Gnatlink is
 
    Gcc_Path             : String_Access;
    Linker_Path          : String_Access;
-
    Output_File_Name     : String_Access;
    Ali_File_Name        : String_Access;
    Binder_Spec_Src_File : String_Access;
@@ -160,6 +159,10 @@ procedure Gnatlink is
    --  Temporary file used by linker to pass list of object files on
    --  certain systems with limitations on size of arguments.
 
+   Lname : String_Access := null;
+   --  File used by linker for CLI target, used to concatenate all .il files
+   --  when the command line passed to ilasm is too long
+
    Debug_Flag_Present : Boolean := False;
    Verbose_Mode       : Boolean := False;
    Very_Verbose_Mode  : Boolean := False;
@@ -167,7 +170,7 @@ procedure Gnatlink is
    Ada_Bind_File : Boolean := True;
    --  Set to True if bind file is generated in Ada
 
-   Standard_Gcc  : Boolean := True;
+   Standard_Gcc : Boolean := True;
 
    Compile_Bind_File : Boolean := True;
    --  Set to False if bind file is not to be compiled
@@ -953,7 +956,42 @@ procedure Gnatlink is
       --  to read from a file instead of the command line is only triggered if
       --  a conservative threshold is passed.
 
-      if Object_List_File_Required
+      if VM_Target = CLI_Target
+        and then Link_Bytes > Link_Max
+      then
+         Lname := new String'("l~" & Base_Name (Ali_File_Name.all) & ".il");
+
+         for J in Objs_Begin .. Objs_End loop
+            Copy_File (Linker_Objects.Table (J).all, Lname.all,
+                       Success => Closing_Status,
+                       Mode    => Append);
+         end loop;
+
+         --  Add the special objects list file option together with the name
+         --  of the temporary file to the objects file table.
+
+         Linker_Objects.Table (Objs_Begin) :=
+           new String'(Value (Object_File_Option_Ptr) & Lname.all);
+
+         --  The slots containing these object file names are then removed
+         --  from the objects table so they do not appear in the link. They
+         --  are removed by moving up the linker options and non-Ada object
+         --  files appearing after the Ada object list in the table.
+
+         declare
+            N : Integer;
+
+         begin
+            N := Objs_End - Objs_Begin + 1;
+
+            for J in Objs_End + 1 .. Linker_Objects.Last loop
+               Linker_Objects.Table (J - N + 1) := Linker_Objects.Table (J);
+            end loop;
+
+            Linker_Objects.Set_Last (Linker_Objects.Last - N + 1);
+         end;
+
+      elsif Object_List_File_Required
         or else (Object_List_File_Supported
                    and then Link_Bytes > Link_Max)
       then
@@ -2013,6 +2051,10 @@ begin
 
             if Tname_FD /= Invalid_FD then
                Delete (Tname);
+            end if;
+
+            if Lname /= null then
+               Delete (Lname.all & ASCII.NUL);
             end if;
 
             if not Success then
