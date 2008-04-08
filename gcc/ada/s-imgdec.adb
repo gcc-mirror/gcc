@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -129,6 +129,10 @@ package body System.Img_Dec is
       pragma Inline (Set_Zeroes);
       --  Set N zeroes, no effect if N is negative
 
+      -----------
+      -- Round --
+      -----------
+
       procedure Round (N : Natural) is
          D : Character;
 
@@ -250,7 +254,7 @@ package body System.Img_Dec is
 
       if Exp > 0 then
          Set_Blanks_And_Sign (Fore - 1);
-         Round (Aft + 2);
+         Round (Digits_After_Point + 2);
          Set (Digs (FD));
          FD := FD + 1;
          ND := ND - 1;
@@ -258,7 +262,6 @@ package body System.Img_Dec is
 
          if ND >= Digits_After_Point then
             Set_Digits (FD, FD + Digits_After_Point - 1);
-
          else
             Set_Digits (FD, LD);
             Set_Zeroes (Digits_After_Point - ND);
@@ -317,27 +320,42 @@ package body System.Img_Dec is
             Set_Blanks_And_Sign (Fore - 1);
             Set ('0');
             Set ('.');
-
-            Set_Zeroes (Digits_After_Point - ND);
+            Set_Zeroes (-Digits_Before_Point);
             Set_Digits (FD, LD);
+            Set_Zeroes (Digits_After_Point - Scale);
 
          --  At least one digit before point in input
 
          else
-            Set_Blanks_And_Sign (Fore - Digits_Before_Point);
-
             --  Less digits in input than are needed before point
             --    Input: 1PP  Output: 100.000
 
             if ND < Digits_Before_Point then
-               Set_Digits (FD, LD);
-               Set_Zeroes (Digits_Before_Point - ND);
+
+               --  Special case, if the input is the single digit 0, then we
+               --  do not want 000.000, but instead 0.000.
+
+               if ND = 1 and then Digs (FD) = '0' then
+                  Set_Blanks_And_Sign (Fore - 1);
+                  Set ('0');
+
+               --  Normal case where we need to output scaling zeroes
+
+               else
+                  Set_Blanks_And_Sign (Fore - Digits_Before_Point);
+                  Set_Digits (FD, LD);
+                  Set_Zeroes (Digits_Before_Point - ND);
+               end if;
+
+               --  Set period and zeroes after the period
+
                Set ('.');
                Set_Zeroes (Digits_After_Point);
 
             --  Input has full amount of digits before decimal point
 
             else
+               Set_Blanks_And_Sign (Fore - Digits_Before_Point);
                Set_Digits (FD, FD + Digits_Before_Point - 1);
                Set ('.');
                Set_Digits (FD + Digits_Before_Point, LD);
