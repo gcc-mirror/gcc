@@ -581,11 +581,11 @@ package Sinfo is
    --    elements.
 
    --  All_Others (Flag11-Sem)
-   --    Present in an N_Others_Choice node. This flag is set in the case of an
-   --    others exception where all exceptions are to be caught, even those
-   --    that are not normally handled (in particular the tasking abort
-   --    signal). This is used for translation of the at end handler into a
-   --    normal exception handler.
+   --    Present in an N_Others_Choice node. This flag is set for an others
+   --    exception where all exceptions are to be caught, even those that are
+   --    not normally handled (in particular the tasking abort signal). This
+   --    is used for translation of the at end handler into a normal exception
+   --    handler.
 
    --  Assignment_OK (Flag15-Sem)
    --    This flag is set in a subexpression node for an object, indicating
@@ -596,32 +596,32 @@ package Sinfo is
    --    limited type objects (such as tasks), setting discriminant fields,
    --    setting tag values, etc. N_Object_Declaration nodes also have this
    --    flag defined. Here it is used to indicate that an initialization
-   --    expression is valid, even where it would normally not be allowed (e.g.
-   --    where the type involved is limited).
+   --    expression is valid, even where it would normally not be allowed
+   --    (e.g. where the type involved is limited).
 
    --  Associated_Node (Node4-Sem)
    --    Present in nodes that can denote an entity: identifiers, character
    --    literals, operator symbols, expanded names, operator nodes, and
-   --    attribute reference nodes (all these nodes have an Entity field). This
-   --    field is also present in N_Aggregate, N_Selected_Component, and
+   --    attribute reference nodes (all these nodes have an Entity field).
+   --    This field is also present in N_Aggregate, N_Selected_Component, and
    --    N_Extension_Aggregate nodes. This field is used in generic processing
-   --    to create links between the generic template and the generic copy. See
-   --    Sem_Ch12.Get_Associated_Node for full details. Note that this field
-   --    overlaps Entity, which is fine, since, as explained in Sem_Ch12, the
-   --    normal function of Entity is not required at the point where the
+   --    to create links between the generic template and the generic copy.
+   --    See Sem_Ch12.Get_Associated_Node for full details. Note that this
+   --    field overlaps Entity, which is fine, since, as explained in Sem_Ch12,
+   --    the normal function of Entity is not required at the point where the
    --    Associated_Node is set. Note also, that in generic templates, this
    --    means that the Entity field does not necessarily point to an Entity.
    --    Since the back end is expected to ignore generic templates, this is
    --    harmless.
 
    --  At_End_Proc (Node1)
-   --    This field is present in an N_Handled_Sequence_Of_Statements node. It
-   --    contains an identifier reference for the cleanup procedure to be
+   --    This field is present in an N_Handled_Sequence_Of_Statements node.
+   --    It contains an identifier reference for the cleanup procedure to be
    --    called. See description of this node for further details.
 
    --  Backwards_OK (Flag6-Sem)
-   --    A flag present in the N_Assignment_Statement node. It is used only if
-   --    the type being assigned is an array type, and is set if analysis
+   --    A flag present in the N_Assignment_Statement node. It is used only
+   --    if the type being assigned is an array type, and is set if analysis
    --    determines that it is definitely safe to do the copy backwards, i.e.
    --    starting at the highest addressed element. Note that if neither of the
    --    flags Forwards_OK or Backwards_OK is set, it means that the front end
@@ -637,8 +637,8 @@ package Sinfo is
    --    which is used directly in later calls to the original subprogram.
 
    --  Body_Required (Flag13-Sem)
-   --    A flag that appears in the N_Compilation_Unit node indicating that the
-   --    corresponding unit requires a body. For the package case, this
+   --    A flag that appears in the N_Compilation_Unit node indicating that
+   --    the corresponding unit requires a body. For the package case, this
    --    indicates that a completion is required. In Ada 95, if the flag is not
    --    set for the package case, then a body may not be present. In Ada 83,
    --    if the flag is not set for the package case, then body is optional.
@@ -647,10 +647,9 @@ package Sinfo is
    --    permitted (in Ada 83 or Ada 95).
 
    --  By_Ref (Flag5-Sem)
-   --    A flag present in N_Simple_Return_Statement and
-   --    N_Extended_Return_Statement.
-   --    It is set when the returned expression is already allocated on the
-   --    secondary stack and thus the result is passed by reference rather
+   --    Present in N_Simple_Return_Statement and N_Extended_Return_Statement,
+   --    this flag is set when the returned expression is already allocated on
+   --    the secondary stack and thus the result is passed by reference rather
    --    than copied another time.
 
    --  Check_Address_Alignment (Flag11-Sem)
@@ -668,8 +667,8 @@ package Sinfo is
 
    --  Comes_From_Extended_Return_Statement (Flag18-Sem)
    --    Present in N_Simple_Return_Statement nodes. True if this node was
-   --    constructed as part of the expansion of an
-   --    N_Extended_Return_Statement.
+   --    constructed as part of the N_Extended_Return_Statement expansion.
+   --    .
 
    --  Compile_Time_Known_Aggregate (Flag18-Sem)
    --    Present in N_Aggregate nodes. Set for aggregates which can be fully
@@ -681,28 +680,28 @@ package Sinfo is
    --  Condition_Actions (List3-Sem)
    --    This field appears in else-if nodes and in the iteration scheme node
    --    for while loops. This field is only used during semantic processing to
-   --    temporarily hold actions inserted into the tree. In the tree passed to
-   --    gigi, the condition actions field is always set to No_List. For
+   --    temporarily hold actions inserted into the tree. In the tree passed
+   --    to gigi, the condition actions field is always set to No_List. For
    --    details on how this field is used, see the routine Insert_Actions in
    --    package Exp_Util, and also the expansion routines for the relevant
    --    nodes.
 
    --  Controlling_Argument (Node1-Sem)
-   --    This field is set in procedure and function call nodes if the call is
-   --    a dispatching call (it is Empty for a non-dispatching call). It
+   --    This field is set in procedure and function call nodes if the call
+   --    is a dispatching call (it is Empty for a non-dispatching call). It
    --    indicates the source of the call's controlling tag. For procedure
    --    calls, the Controlling_Argument is one of the actuals. For function
    --    that has a dispatching result, it is an entity in the context of the
-   --    call that can provide a tag, or else it is the tag of the root type of
-   --    the class. It can also specify a tag directly rather than being a
+   --    call that can provide a tag, or else it is the tag of the root type
+   --    of the class. It can also specify a tag directly rather than being a
    --    tagged object. The latter is needed by the implementations of AI-239
    --    and AI-260.
 
    --  Conversion_OK (Flag14-Sem)
-   --    A flag set on type conversion nodes to indicate that the conversion is
-   --    to be considered as being valid, even though it is the case that the
-   --    conversion is not valid Ada. This is used for Enum_Rep, Fixed_Value
-   --    and Integer_Value attributes, for internal conversions done for
+   --    A flag set on type conversion nodes to indicate that the conversion
+   --    is to be considered as being valid, even though it is the case that
+   --    the conversion is not valid Ada. This is used for attributes Enum_Rep,
+   --    Fixed_Value and Integer_Value, for internal conversions done for
    --    fixed-point operations, and for certain conversions for calls to
    --    initialization procedures. If Conversion_OK is set, then Etype must be
    --    set (the analyzer assumes that Etype has been set). For the case of
@@ -740,11 +739,11 @@ package Sinfo is
    --  Corresponding_Spec (Node5-Sem)
    --    This field is set in subprogram, package, task, and protected body
    --    nodes, where it points to the defining entity in the corresponding
-   --    spec. The attribute is also set in N_With_Clause nodes, where it
-   --    points to the defining entity for the with'ed spec, and in a
-   --    subprogram renaming declaration when it is a Renaming_As_Body. The
-   --    field is Empty if there is no corresponding spec, as in the case of a
-   --    subprogram body that serves as its own spec.
+   --    spec. The attribute is also set in N_With_Clause nodes where it points
+   --    to the defining entity for the with'ed spec, and in a subprogram
+   --    renaming declaration when it is a Renaming_As_Body. The field is Empty
+   --    if there is no corresponding spec, as in the case of a subprogram body
+   --    that serves as its own spec.
 
    --  Corresponding_Stub (Node3-Sem)
    --    This field is present in an N_Subunit node. It holds the node in
@@ -812,10 +811,9 @@ package Sinfo is
    --    range.
 
    --  Do_Range_Check (Flag9-Sem)
-   --    This flag is set on an expression which appears in a context where
-   --    a range check is required. The target type is clear from the
-   --    context. The contexts in which this flag can appear are limited to
-   --    the following.
+   --    This flag is set on an expression which appears in a context where a
+   --    range check is required. The target type is clear from the context.
+   --    The contexts in which this flag can appear are the following:
 
    --      Right side of an assignment. In this case the target type is
    --      taken from the left side of the assignment, which is referenced
@@ -885,11 +883,11 @@ package Sinfo is
    --    desirable for correct elaboration for this unit.
 
    --  Elaboration_Boolean (Node2-Sem)
-   --    This field is present in function and procedure specification
-   --    nodes. If set, it points to the entity for a Boolean flag that
-   --    must be tested for certain calls to check for access before
-   --    elaboration. See body of Sem_Elab for further details. This
-   --    field is Empty if no elaboration boolean is required.
+   --    This field is present in function and procedure specification nodes.
+   --    If set, it points to the entity for a Boolean flag that must be tested
+   --    for certain calls to check for access before elaboration. See body of
+   --    Sem_Elab for further details. This field is Empty if no elaboration
+   --    boolean is required.
 
    --  Else_Actions (List3-Sem)
    --    This field is present in conditional expression nodes. During code
@@ -903,10 +901,10 @@ package Sinfo is
    --    always set to No_List.
 
    --  Enclosing_Variant (Node2-Sem)
-   --    This field is present in the N_Variant node and identifies the
-   --    Node_Id corresponding to the immediately enclosing variant when
-   --    the variant is nested, and N_Empty otherwise. Set during semantic
-   --    processing of the variant part of a record type.
+   --    This field is present in the N_Variant node and identifies the Node_Id
+   --    corresponding to the immediately enclosing variant when the variant is
+   --    nested, and N_Empty otherwise. Set during semantic processing of the
+   --    variant part of a record type.
 
    --  Entity (Node4-Sem)
    --    Appears in all direct names (identifiers, character literals, and
@@ -989,11 +987,11 @@ package Sinfo is
    --    left-hand side of individual assignment to each sub-component.
 
    --  First_Inlined_Subprogram (Node3-Sem)
-   --    Present in the N_Compilation_Unit node for the main program. Points to
-   --    a chain of entities for subprograms that are to be inlined. The
+   --    Present in the N_Compilation_Unit node for the main program. Points
+   --    to a chain of entities for subprograms that are to be inlined. The
    --    Next_Inlined_Subprogram field of these entities is used as a link
-   --    pointer with Empty marking the end of the list. This field is Empty if
-   --    there are no inlined subprograms or inlining is not active.
+   --    pointer with Empty marking the end of the list. This field is Empty
+   --    if there are no inlined subprograms or inlining is not active.
 
    --  First_Named_Actual (Node4-Sem)
    --    Present in procedure call statement and function call nodes, and also
@@ -1014,8 +1012,8 @@ package Sinfo is
 
    --  First_Subtype_Link (Node5-Sem)
    --    Present in N_Freeze_Entity node for an anonymous base type that is
-   --    implicitly created by the declaration of a first subtype. It points to
-   --    the entity for the first subtype.
+   --    implicitly created by the declaration of a first subtype. It points
+   --    to the entity for the first subtype.
 
    --  Float_Truncate (Flag11-Sem)
    --    A flag present in type conversion nodes. This is used for float to
@@ -1024,8 +1022,8 @@ package Sinfo is
    --    with rounding (see Expand_N_Type_Conversion).
 
    --  Forwards_OK (Flag5-Sem)
-   --    A flag present in the N_Assignment_Statement node. It is used only if
-   --    the type being assigned is an array type, and is set if analysis
+   --    A flag present in the N_Assignment_Statement node. It is used only
+   --    if the type being assigned is an array type, and is set if analysis
    --    determines that it is definitely safe to do the copy forwards, i.e.
    --    starting at the lowest addressed element. Note that if neither of the
    --    flags Forwards_OK or Backwards_OK is set, it means that the front end
@@ -1102,6 +1100,10 @@ package Sinfo is
    --    the node has a private type. Used to exchange private and full
    --    declarations if the visibility at instantiation is different from the
    --    visibility at generic definition.
+
+   --  Has_Relative_Deadline_Pragma (Flag9-Sem)
+   --    A flag present in N_Subprogram_Body and N_Task_Definition nodes to
+   --    flag the presence of a pragma Relative_Deadline.
 
    --  Has_Self_Reference (Flag13-Sem)
    --    Present in N_Aggregate and N_Extension_Aggregate. Indicates that one
@@ -1365,6 +1367,17 @@ package Sinfo is
    --    points to the explicit actual parameter itself, not to the
    --    N_Parameter_Association node (its parent).
 
+   --  Next_Pragma (Node1-Sem)
+   --    Present in N_Pragma nodes. Used to create a linked list of pragma
+   --    nodes. Curently used for two purposes:
+   --
+   --      Create a list of linked Check_Policy pragmas. The head of this list
+   --      is stored in Opt.Check_Policy_List (which has further details).
+   --
+   --      Used by processing for Pre/Postcondition pragmas to store a list of
+   --      pragmas associated with the spec of a subprogram (see Sem_Prag for
+   --      details).
+
    --  Next_Rep_Item (Node5-Sem)
    --    Present in pragma nodes and attribute definition nodes. Used to link
    --    representation items that apply to an entity. See description of
@@ -1466,6 +1479,11 @@ package Sinfo is
    --    rename, this field points to the compilation unit node for the parent
    --    package specification. This field is Empty for library bodies (the
    --    parent spec in this case can be found from the corresponding spec).
+
+   --  PPC_Enabled (Flag5-Sem)
+   --    Present in N_Pragma nodes. This flag is relevant only for precondition
+   --    and postcondition nodes. It is true if the check corresponding to the
+   --    pragma type is enabled at the point where the pragma appears.
 
    --  Present_Expr (Uint3-Sem)
    --    Present in an N_Variant node. This has a meaningful value only after
@@ -1883,10 +1901,12 @@ package Sinfo is
 
       --  N_Pragma
       --  Sloc points to pragma identifier
+      --  Next_Pragma (Node1-Sem)
       --  Pragma_Argument_Associations (List2) (set to No_List if none)
       --  Debug_Statement (Node3) (set to Empty if not Debug, Assert)
       --  Pragma_Identifier (Node4)
       --  Next_Rep_Item (Node5-Sem)
+      --  PPC_Enabled (Flag5-Sem)
 
       --  Note: we should have a section on what pragmas are passed on to
       --  the back end to be processed. This section should note that pragma
@@ -4274,6 +4294,7 @@ package Sinfo is
       --  Is_Entry_Barrier_Function (Flag8-Sem)
       --  Is_Task_Master (Flag5-Sem)
       --  Was_Originally_Stub (Flag13-Sem)
+      --  Has_Relative_Deadline_Pragma (Flag9-Sem)
 
       -----------------------------------
       -- 6.4  Procedure Call Statement --
@@ -4730,6 +4751,7 @@ package Sinfo is
       --  Has_Storage_Size_Pragma (Flag5-Sem)
       --  Has_Task_Info_Pragma (Flag7-Sem)
       --  Has_Task_Name_Pragma (Flag8-Sem)
+      --  Has_Relative_Deadline_Pragma (Flag9-Sem)
 
       --------------------
       -- 9.1  Task Item --
@@ -7130,7 +7152,7 @@ package Sinfo is
       N_Null_Statement,
       N_Raise_Statement,
       N_Requeue_Statement,
-      N_Return_Statement, -- renamed as N_Simple_Return_Statement in Sem_Util
+      N_Return_Statement, -- renamed as N_Simple_Return_Statement below
       N_Extended_Return_Statement,
       N_Selective_Accept,
       N_Timed_Entry_Call,
@@ -7848,6 +7870,9 @@ package Sinfo is
    function Has_Private_View
      (N : Node_Id) return Boolean;    -- Flag11
 
+   function Has_Relative_Deadline_Pragma
+     (N : Node_Id) return Boolean;    -- Flag9
+
    function Has_Self_Reference
      (N : Node_Id) return Boolean;    -- Flag13
 
@@ -8028,6 +8053,9 @@ package Sinfo is
    function Next_Named_Actual
      (N : Node_Id) return Node_Id;    -- Node4
 
+   function Next_Pragma
+     (N : Node_Id) return Node_Id;    -- Node1
+
    function Next_Rep_Item
      (N : Node_Id) return Node_Id;    -- Node5
 
@@ -8087,6 +8115,9 @@ package Sinfo is
 
    function Parent_Spec
      (N : Node_Id) return Node_Id;    -- Node4
+
+   function PPC_Enabled
+     (N : Node_Id) return Boolean;    -- Flag5
 
    function Position
      (N : Node_Id) return Node_Id;    -- Node2
@@ -8718,6 +8749,9 @@ package Sinfo is
    procedure Set_Has_Private_View
      (N : Node_Id; Val : Boolean := True);    -- Flag11
 
+   procedure Set_Has_Relative_Deadline_Pragma
+     (N : Node_Id; Val : Boolean := True);    -- Flag9
+
    procedure Set_Has_Self_Reference
      (N : Node_Id; Val : Boolean := True);    -- Flag13
 
@@ -8898,6 +8932,9 @@ package Sinfo is
    procedure Set_Next_Named_Actual
      (N : Node_Id; Val : Node_Id);            -- Node4
 
+   procedure Set_Next_Pragma
+     (N : Node_Id; Val : Node_Id);            -- Node1
+
    procedure Set_Next_Rep_Item
      (N : Node_Id; Val : Node_Id);            -- Node5
 
@@ -8957,6 +8994,9 @@ package Sinfo is
 
    procedure Set_Parent_Spec
      (N : Node_Id; Val : Node_Id);            -- Node4
+
+   procedure Set_PPC_Enabled
+     (N : Node_Id; Val : Boolean := True);    -- Flag5
 
    procedure Set_Position
      (N : Node_Id; Val : Node_Id);            -- Node2
@@ -9304,7 +9344,7 @@ package Sinfo is
         5 => False),  --  Etype (Node5-Sem)
 
      N_Pragma =>
-       (1 => True,    --  Chars (Name1)
+       (1 => False,   --  Next_Pragma (Node1-Sem)
         2 => True,    --  Pragma_Argument_Associations (List2)
         3 => True,    --  Debug_Statement (Node3)
         4 => True,    --  Pragma_Identifier (Node4)
@@ -10941,6 +10981,7 @@ package Sinfo is
    pragma Inline (Has_No_Elaboration_Code);
    pragma Inline (Has_Priority_Pragma);
    pragma Inline (Has_Private_View);
+   pragma Inline (Has_Relative_Deadline_Pragma);
    pragma Inline (Has_Storage_Size_Pragma);
    pragma Inline (Has_Task_Info_Pragma);
    pragma Inline (Has_Task_Name_Pragma);
@@ -11000,6 +11041,7 @@ package Sinfo is
    pragma Inline (Names);
    pragma Inline (Next_Entity);
    pragma Inline (Next_Named_Actual);
+   pragma Inline (Next_Pragma);
    pragma Inline (Next_Rep_Item);
    pragma Inline (Next_Use_Clause);
    pragma Inline (No_Ctrl_Actions);
@@ -11020,6 +11062,7 @@ package Sinfo is
    pragma Inline (Parameter_List_Truncated);
    pragma Inline (Parameter_Type);
    pragma Inline (Parent_Spec);
+   pragma Inline (PPC_Enabled);
    pragma Inline (Position);
    pragma Inline (Pragma_Argument_Associations);
    pragma Inline (Pragma_Identifier);
@@ -11227,6 +11270,7 @@ package Sinfo is
    pragma Inline (Set_Has_No_Elaboration_Code);
    pragma Inline (Set_Has_Priority_Pragma);
    pragma Inline (Set_Has_Private_View);
+   pragma Inline (Set_Has_Relative_Deadline_Pragma);
    pragma Inline (Set_Has_Storage_Size_Pragma);
    pragma Inline (Set_Has_Task_Info_Pragma);
    pragma Inline (Set_Has_Task_Name_Pragma);
@@ -11287,6 +11331,8 @@ package Sinfo is
    pragma Inline (Set_Names);
    pragma Inline (Set_Next_Entity);
    pragma Inline (Set_Next_Named_Actual);
+   pragma Inline (Set_Next_Pragma);
+   pragma Inline (Set_Next_Rep_Item);
    pragma Inline (Set_Next_Use_Clause);
    pragma Inline (Set_No_Ctrl_Actions);
    pragma Inline (Set_No_Elaboration_Check);
@@ -11306,6 +11352,7 @@ package Sinfo is
    pragma Inline (Set_Parameter_List_Truncated);
    pragma Inline (Set_Parameter_Type);
    pragma Inline (Set_Parent_Spec);
+   pragma Inline (Set_PPC_Enabled);
    pragma Inline (Set_Position);
    pragma Inline (Set_Pragma_Argument_Associations);
    pragma Inline (Set_Pragma_Identifier);

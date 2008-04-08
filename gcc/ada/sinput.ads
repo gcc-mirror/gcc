@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -465,13 +465,13 @@ package Sinput is
    --  that there definitely is a previous line in the source buffer.
 
    procedure Build_Location_String (Loc : Source_Ptr);
-   --  This function builds a string literal of the form "name:line",
-   --  where name is the file name corresponding to Loc, and line is
-   --  the line number. In the event that instantiations are involved,
-   --  additional suffixes of the same form are appended after the
-   --  separating string " instantiated at ". The returned string is
-   --  stored in Name_Buffer, terminated by ASCII.Nul, with Name_Length
-   --  indicating the length not including the terminating Nul.
+   --  This function builds a string literal of the form "name:line", where
+   --  name is the file name corresponding to Loc, and line is the line number.
+   --  In the event that instantiations are involved, additional suffixes of
+   --  the same form are appended after the separating string " instantiated at
+   --  ". The returned string is appended to the Name_Buffer, terminated by
+   --  ASCII.NUL, with Name_Length indicating the length not including the
+   --  terminating Nul.
 
    function Get_Column_Number (P : Source_Ptr) return Column_Number;
    --  The ones-origin column number of the specified Source_Ptr value is

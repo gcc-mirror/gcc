@@ -1053,7 +1053,9 @@ begin
            Pragma_Atomic                        |
            Pragma_Atomic_Components             |
            Pragma_Attach_Handler                |
+           Pragma_Check                         |
            Pragma_Check_Name                    |
+           Pragma_Check_Policy                  |
            Pragma_CIL_Constructor               |
            Pragma_Compile_Time_Error            |
            Pragma_Compile_Time_Warning          |
@@ -1141,6 +1143,8 @@ begin
            Pragma_Preelaborable_Initialization  |
            Pragma_Polling                       |
            Pragma_Persistent_BSS                |
+           Pragma_Postcondition                 |
+           Pragma_Precondition                  |
            Pragma_Preelaborate                  |
            Pragma_Preelaborate_05               |
            Pragma_Priority                      |
@@ -1153,6 +1157,7 @@ begin
            Pragma_Pure_05                       |
            Pragma_Pure_Function                 |
            Pragma_Queuing_Policy                |
+           Pragma_Relative_Deadline             |
            Pragma_Remote_Call_Interface         |
            Pragma_Remote_Types                  |
            Pragma_Restricted_Run_Time           |

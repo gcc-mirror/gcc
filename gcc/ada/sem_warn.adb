@@ -36,6 +36,7 @@ with Opt;      use Opt;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Aux;  use Sem_Aux;
 with Sem_Eval; use Sem_Eval;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
@@ -2680,31 +2681,15 @@ package body Sem_Warn is
 
       --  Output additional warning if present
 
-      declare
-         W : constant Node_Id := Obsolescent_Warning (E);
-
-      begin
-         if Present (W) then
-
-            --  This is a warning continuation to start on a new line
-            Name_Buffer (1) := '\';
-            Name_Buffer (2) := '\';
-            Name_Buffer (3) := '?';
-            Name_Len := 3;
-
-            --  Add characters to message, and output message. Note that
-            --  we quote every character of the message since we don't
-            --  want to process any insertions.
-
-            for J in 1 .. String_Length (Strval (W)) loop
-               Add_Char_To_Name_Buffer (''');
-               Add_Char_To_Name_Buffer
-                 (Get_Character (Get_String_Char (Strval (W), J)));
-            end loop;
-
-            Error_Msg_N (Name_Buffer (1 .. Name_Len), N);
+      for J in Obsolescent_Warnings.First .. Obsolescent_Warnings.Last loop
+         if Obsolescent_Warnings.Table (J).Ent = E then
+            String_To_Name_Buffer (Obsolescent_Warnings.Table (J).Msg);
+            Error_Msg_Strlen := Name_Len;
+            Error_Msg_String (1 .. Name_Len) := Name_Buffer (1 .. Name_Len);
+            Error_Msg_N ("\\?~", N);
+            exit;
          end if;
-      end;
+      end loop;
    end Output_Obsolescent_Entity_Warnings;
 
    ----------------------------------
@@ -2838,11 +2823,49 @@ package body Sem_Warn is
          when 'C' =>
             Warn_On_Unrepped_Components         := False;
 
+         when 'e' =>
+            Address_Clause_Overlay_Warnings     := True;
+            Check_Unreferenced                  := True;
+            Check_Unreferenced_Formals          := True;
+            Check_Withs                         := True;
+            Constant_Condition_Warnings         := True;
+            Elab_Warnings                       := True;
+            Implementation_Unit_Warnings        := True;
+            Ineffective_Inline_Warnings         := True;
+            Warn_On_Ada_2005_Compatibility      := True;
+            Warn_On_All_Unread_Out_Parameters   := True;
+            Warn_On_Assertion_Failure           := True;
+            Warn_On_Assumed_Low_Bound           := True;
+            Warn_On_Bad_Fixed_Value             := True;
+            Warn_On_Constant                    := True;
+            Warn_On_Deleted_Code                := True;
+            Warn_On_Dereference                 := True;
+            Warn_On_Export_Import               := True;
+            Warn_On_Hiding                      := True;
+            Ineffective_Inline_Warnings         := True;
+            Warn_On_Modified_Unread             := True;
+            Warn_On_No_Value_Assigned           := True;
+            Warn_On_Non_Local_Exception         := True;
+            Warn_On_Object_Renames_Function     := True;
+            Warn_On_Obsolescent_Feature         := True;
+            Warn_On_Questionable_Missing_Parens := True;
+            Warn_On_Redundant_Constructs        := True;
+            Warn_On_Unchecked_Conversion        := True;
+            Warn_On_Unrecognized_Pragma         := True;
+            Warn_On_Unrepped_Components         := True;
+            Warn_On_Warnings_Off                := True;
+
          when 'o' =>
             Warn_On_All_Unread_Out_Parameters   := True;
 
          when 'O' =>
             Warn_On_All_Unread_Out_Parameters   := False;
+
+         when 'p' =>
+            Warn_On_Parameter_Order             := True;
+
+         when 'P' =>
+            Warn_On_Parameter_Order             := False;
 
          when 'r' =>
             Warn_On_Object_Renames_Function     := True;
@@ -2892,10 +2915,11 @@ package body Sem_Warn is
             Warn_On_Modified_Unread             := True;
             Warn_On_No_Value_Assigned           := True;
             Warn_On_Non_Local_Exception         := True;
+            Warn_On_Object_Renames_Function     := True;
             Warn_On_Obsolescent_Feature         := True;
+            Warn_On_Parameter_Order             := True;
             Warn_On_Questionable_Missing_Parens := True;
             Warn_On_Redundant_Constructs        := True;
-            Warn_On_Object_Renames_Function     := True;
             Warn_On_Unchecked_Conversion        := True;
             Warn_On_Unrecognized_Pragma         := True;
             Warn_On_Unrepped_Components         := True;
@@ -2922,6 +2946,7 @@ package body Sem_Warn is
             Warn_On_Non_Local_Exception         := False;
             Warn_On_Obsolescent_Feature         := False;
             Warn_On_All_Unread_Out_Parameters   := False;
+            Warn_On_Parameter_Order             := False;
             Warn_On_Questionable_Missing_Parens := False;
             Warn_On_Redundant_Constructs        := False;
             Warn_On_Object_Renames_Function     := False;
@@ -3174,13 +3199,15 @@ package body Sem_Warn is
             then
                return;
 
-            --  Don't warn in assert pragma, since presumably tests in such
-            --  a context are very definitely intended, and might well be
+            --  Don't warn in assert or check pragma, since presumably tests in
+            --  such a context are very definitely intended, and might well be
             --  known at compile time. Note that we have to test the original
             --  node, since assert pragmas get rewritten at analysis time.
 
             elsif Nkind (Original_Node (P)) = N_Pragma
-              and then Pragma_Name (Original_Node (P)) = Name_Assert
+              and then (Pragma_Name (Original_Node (P)) = Name_Assert
+                          or else
+                        Pragma_Name (Original_Node (P)) = Name_Check)
             then
                return;
             end if;

@@ -47,6 +47,7 @@ with Rtsfind;
 with Sprint;
 with Scn;      use Scn;
 with Sem;      use Sem;
+with Sem_Aux;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Elab; use Sem_Elab;
 with Sem_Prag; use Sem_Prag;
@@ -75,7 +76,9 @@ begin
    Nlists.Initialize;
    Elists.Initialize;
    Lib.Load.Initialize;
+   Sem_Aux.Initialize;
    Sem_Ch8.Initialize;
+   Sem_Prag.Initialize;
    Fname.UF.Initialize;
    Checks.Initialize;
    Sem_Warn.Initialize;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,11 +32,18 @@ with Nlists;
 with Opt;
 with Osint.C;
 with Repinfo;
+with Sem_Aux;
 with Sinput;
 with Stand;
 with Stringt;
 with Uintp;
 with Urealp;
+
+with Tree_In;
+pragma Warnings (Off, Tree_In);
+--  We do not use Tree_In in the compiler, but it is small, and worth including
+--  so that we get the proper license check for Tree_In when the compiler is
+--  built. This will avoid adding bad dependencies to Tree_In and blowing ASIS.
 
 procedure Tree_Gen is
 begin
@@ -49,6 +56,7 @@ begin
       Lib.Tree_Write;
       Namet.Tree_Write;
       Nlists.Tree_Write;
+      Sem_Aux.Tree_Write;
       Sinput.Tree_Write;
       Stand.Tree_Write;
       Stringt.Tree_Write;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -210,6 +210,21 @@ package Sem_Attr is
       --  absence of an enumeration representation clause. This is a static
       --  attribute (i.e. the result is static if the argument is static).
 
+      --------------
+      -- Enum_Val --
+      --------------
+
+      Attribute_Enum_Val => True,
+      --  For every enumeration subtype S, S'Enum_Val denotes a function
+      --  with the following specification:
+      --
+      --    function S'Enum_Val (Arg : universal_integer) return S'Base;
+      --
+      --  This function performs the inverse transformation to Enum_Rep. Given
+      --  a representation value for the type, it returns the corresponding
+      --  enumeration value. Constraint_Error is raised if no value of the
+      --  enumeration type corresponds to the given integer value.
+
       -----------------
       -- Fixed_Value --
       -----------------
@@ -275,6 +290,16 @@ package Sem_Attr is
       --  and then converting the result to the target integer type. This
       --  attribute is primarily intended for use in implementation of the
       --  standard input-output functions for fixed-point values.
+
+      Attribute_Invalid_Value => True,
+      --  For every scalar type, S'Invalid_Value designates an undefined value
+      --  of the type. If possible this value is an invalid value, and in fact
+      --  is identical to the value that would be set if Initialize_Scalars
+      --  mode were in effect (including the behavior of its value on
+      --  environment variables or binder switches). The intended use is
+      --  to set a value where intialization is required (e.g. as a result of
+      --  the coding standards in use), but logically no initialization is
+      --  needed, and the value should never be accessed.
 
       ------------------
       -- Machine_Size --

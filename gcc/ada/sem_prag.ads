@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,12 +26,35 @@
 --  Pragma handling is isolated in a separate package
 --  (logically this processing belongs in chapter 4)
 
+with Namet; use Namet;
 with Types; use Types;
 
 package Sem_Prag is
 
+   -----------------
+   -- Subprograms --
+   -----------------
+
+   procedure Analyze_PPC_In_Decl_Part (N : Node_Id; S : Entity_Id);
+   --  Special analyze routine for precondition/postcondition pragma that
+   --  appears within a declarative part where the pragma is associated
+   --  with a subprogram specification. N is the pragma node, and S is the
+   --  entity for the related subprogram. This procedure does a preanalysis
+   --  of the expressions in the pragma as "spec expressions" (see section
+   --  in Sem "Handling of Default and Per-Object Expressions...").
+
    procedure Analyze_Pragma (N : Node_Id);
    --  Analyze procedure for pragma reference node N
+
+   function Check_Enabled (Nam : Name_Id) return Boolean;
+   --  This function is used in connection with pragmas Assertion, Check,
+   --  Precondition, and Postcondition to determine if Check pragmas (or
+   --  corresponding Assert, Precondition, or Postcondition pragmas) are
+   --  currently active, as determined by the presence of -gnata on the
+   --  command line (which sets the default), and the appearence of pragmas
+   --  Check_Policy and Assertion_Policy as configuration pragmas either in
+   --  a configuration pragma file, or at the start of the current unit.
+   --  True is returned if the specified check is enabled.
 
    function Delay_Config_Pragma_Analyze (N : Node_Id) return Boolean;
    --  N is a pragma appearing in a configuration pragma file. Most such
@@ -42,6 +65,10 @@ package Sem_Prag is
    --  function and in Frontend pragmas where Delay_Config_Pragma_Analyze is
    --  True have their analysis delayed until after the main program is parsed
    --  and analyzed.
+
+   procedure Initialize;
+   --  Initializes data structures used for pragma processing. Must be called
+   --  before analyzing each new main source program.
 
    function Is_Non_Significant_Pragma_Reference (N : Node_Id) return Boolean;
    --  The node N is a node for an entity and the issue is whether the
