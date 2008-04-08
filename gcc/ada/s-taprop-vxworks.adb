@@ -54,6 +54,8 @@ with System.Soft_Links;
 --  on. For example when using the restricted run time, it is replaced by
 --  System.Tasking.Restricted.Stages.
 
+with System.VxWorks.Ext;
+
 package body System.Task_Primitives.Operations is
 
    package SSL renames System.Soft_Links;
@@ -62,6 +64,7 @@ package body System.Task_Primitives.Operations is
    use System.Tasking;
    use System.OS_Interface;
    use System.Parameters;
+   use type System.VxWorks.Ext.t_id;
    use type Interfaces.C.int;
 
    subtype int is System.OS_Interface.int;
