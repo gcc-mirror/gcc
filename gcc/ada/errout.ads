@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -275,14 +275,21 @@ package Errout is
    --    Insertion character ? (Question: warning message)
    --      The character ? appearing anywhere in a message makes the message
    --      warning instead of a normal error message, and the text of the
-   --      message will be preceded by "Warning:" instead of "Error:" in the
-   --      normal case. The handling of warnings if further controlled by the
-   --      Warning_Mode option (-w switch), see package Opt for further
-   --      details, and also by the current setting from pragma Warnings. This
-   --      pragma applies only to warnings issued from the semantic phase (not
-   --      the parser), but currently all relevant warnings are posted by the
-   --      semantic phase anyway. Messages starting with (style) are also
-   --      treated as warning messages.
+   --      message will be preceded by "warning:" in the normal case. The
+   --      handling of warnings if further controlled by the Warning_Mode
+   --      option (-w switch), see package Opt for further details, and also by
+   --      the current setting from pragma Warnings. This pragma applies only
+   --      to warnings issued from the semantic phase (not the parser), but
+   --      currently all relevant warnings are posted by the semantic phase
+   --      anyway. Messages starting with (style) are also treated as warning
+   --      messages.
+   --
+   --      Note: when a warning message is output, the text of the message is
+   --      preceded by "warning: " in the normal case. An exception to this
+   --      rule occurs when the text of the message starts with "info: " in
+   --      which case this string is not prepended. This allows callers to
+   --      label certain warnings as informational messages, rather than as
+   --      warning messages requiring some action.
    --
    --      Note: the presence of ? is ignored in continuation messages (i.e.
    --      messages starting with the \ insertion character). The warning
