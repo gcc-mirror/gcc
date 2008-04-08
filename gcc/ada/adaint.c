@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2007, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2008, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -359,6 +359,30 @@ __gnat_current_time
   return (OS_Time) res;
 }
 
+/* Return the current local time as a string in the ISO 8601 format of
+   "YYYY-MM-DD HH:MM:SS.SS". The returned string is 22 + 1 (NULL) characters
+   long. */
+
+void
+__gnat_current_time_string
+  (char *result)
+{
+  const char *format = "%Y-%m-%d %H:%M:%S";
+  /* Format string necessary to describe the ISO 8601 format */
+
+  const time_t t_val = time (NULL);
+
+  strftime (result, 22, format, localtime (&t_val));
+  /* Convert the local time into a string following the ISO format, copying
+     at most 22 characters into the result string. */
+
+  result [19] = '.';
+  result [20] = '0';
+  result [21] = '0';
+  /* The sub-seconds are manually set to zero since type time_t lacks the
+     precision necessary for nanoseconds. */
+}
+
 void
 __gnat_to_gm_time
   (OS_Time *p_time,
@@ -434,7 +458,8 @@ __gnat_symlink (char *oldpath ATTRIBUTE_UNUSED,
 
 /* Try to lock a file, return 1 if success.  */
 
-#if defined (__vxworks) || defined (__nucleus__) || defined (MSDOS) || defined (_WIN32)
+#if defined (__vxworks) || defined (__nucleus__) || defined (MSDOS) \
+  || defined (_WIN32)
 
 /* Version that does not use link. */
 
