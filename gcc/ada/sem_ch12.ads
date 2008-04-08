@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -100,9 +100,11 @@ package Sem_Ch12 is
    --  between the current procedure and Load_Parent_Of_Generic.
 
    procedure Instantiate_Subprogram_Body
-     (Body_Info : Pending_Body_Info);
+     (Body_Info     : Pending_Body_Info;
+      Body_Optional : Boolean := False);
    --  Called after semantic analysis, to complete the instantiation of
-   --  function and procedure instances.
+   --  function and procedure instances. The flag Body_Optional has the
+   --  same purpose as described for Instantiate_Package_Body.
 
    procedure Save_Global_References (N : Node_Id);
    --  Traverse the original generic unit, and capture all references to

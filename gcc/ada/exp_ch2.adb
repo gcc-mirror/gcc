@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -80,12 +80,12 @@ package body Exp_Ch2 is
    --  Dispatches to specific expansion procedures.
 
    procedure Expand_Entry_Index_Parameter (N : Node_Id);
-   --  A reference to the identifier in the entry index specification of
-   --  protected entry body is modified to a reference to a constant definition
-   --  equal to the index of the entry family member being called. This
-   --  constant is calculated as part of the elaboration of the expanded code
-   --  for the body, and is calculated from the object-wide entry index
-   --  returned by Next_Entry_Call.
+   --  A reference to the identifier in the entry index specification of an
+   --  entry body is modified to a reference to a constant definition equal to
+   --  the index of the entry family member being called. This constant is
+   --  calculated as part of the elaboration of the expanded code for the body,
+   --  and is calculated from the object-wide entry index returned by Next_
+   --  Entry_Call.
 
    procedure Expand_Entry_Parameter (N : Node_Id);
    --  A reference to an entry parameter is modified to be a reference to the
@@ -98,12 +98,10 @@ package body Exp_Ch2 is
    --  represent the operation within the protected object. In other cases
    --  Expand_Formal is a no-op.
 
-   procedure Expand_Protected_Private (N : Node_Id);
-   --  A reference to a private component of a protected type is expanded to a
-   --  component selected from the record used to implement the protected
-   --  object. Such a record is passed to all operations on a protected object
-   --  in a parameter named _object. This object is a constant in the body of a
-   --  function, and a variable within a procedure or entry body.
+   procedure Expand_Protected_Component (N : Node_Id);
+   --  A reference to a private component of a protected type is expanded into
+   --  a reference to the corresponding prival in the current protected entry
+   --  or subprogram.
 
    procedure Expand_Renaming (N : Node_Id);
    --  For renamings, just replace the identifier by the corresponding
@@ -332,16 +330,12 @@ package body Exp_Ch2 is
       elsif Is_Entry_Formal (E) then
          Expand_Entry_Parameter (N);
 
-      elsif Ekind (E) = E_Component
-        and then Is_Protected_Private (E)
-      then
-         --  Protect against junk use of tasking in no run time mode
-
+      elsif Is_Protected_Component (E) then
          if No_Run_Time_Mode then
             return;
          end if;
 
-         Expand_Protected_Private (N);
+         Expand_Protected_Component (N);
 
       elsif Ekind (E) = E_Entry_Index_Parameter then
          Expand_Entry_Index_Parameter (N);
@@ -385,11 +379,7 @@ package body Exp_Ch2 is
 
       --  Interpret possible Current_Value for constant case
 
-      elsif (Ekind (E) = E_Constant
-               or else
-             Ekind (E) = E_In_Parameter
-               or else
-             Ekind (E) = E_Loop_Parameter)
+      elsif Is_Constant_Object (E)
         and then Present (Current_Value (E))
       then
          Expand_Current_Value (N);
@@ -401,8 +391,10 @@ package body Exp_Ch2 is
    ----------------------------------
 
    procedure Expand_Entry_Index_Parameter (N : Node_Id) is
+      Index_Con : constant Entity_Id := Entry_Index_Constant (Entity (N));
    begin
-      Set_Entity (N, Entry_Index_Constant (Entity (N)));
+      Set_Entity (N, Index_Con);
+      Set_Etype  (N, Etype (Index_Con));
    end Expand_Entry_Index_Parameter;
 
    ----------------------------
@@ -477,10 +469,14 @@ package body Exp_Ch2 is
          --  we also generate an extra parameter to hold the Constrained
          --  attribute of the actual. No renaming is generated for this flag.
 
+         --  Calling Node_Posssible_Modifications in the expander is dubious,
+         --  because this generates a cross-reference entry, and should be
+         --  done during semantic processing so it is called in -gnatc mode???
+
          if Ekind (Entity (N)) /= E_In_Parameter
            and then In_Assignment_Context (N)
          then
-            Note_Possible_Modification (N);
+            Note_Possible_Modification (N, Sure => True);
          end if;
 
          Rewrite (N, New_Occurrence_Of (Renamed_Object (Entity (N)), Loc));
@@ -564,93 +560,54 @@ package body Exp_Ch2 is
       end if;
    end Expand_N_Real_Literal;
 
-   ------------------------------
-   -- Expand_Protected_Private --
-   ------------------------------
+   --------------------------------
+   -- Expand_Protected_Component --
+   --------------------------------
 
-   procedure Expand_Protected_Private (N : Node_Id) is
-      Loc      : constant Source_Ptr := Sloc (N);
-      E        : constant Entity_Id  := Entity (N);
-      Op       : constant Node_Id    := Protected_Operation (E);
-      Scop     : Entity_Id;
-      Lo       : Node_Id;
-      Hi       : Node_Id;
-      D_Range  : Node_Id;
+   procedure Expand_Protected_Component (N : Node_Id) is
+
+      function Inside_Eliminated_Body return Boolean;
+      --  Determine whether the current entity is inside a subprogram or an
+      --  entry which has been marked as eliminated.
+
+      ----------------------------
+      -- Inside_Eliminated_Body --
+      ----------------------------
+
+      function Inside_Eliminated_Body return Boolean is
+         S : Entity_Id := Current_Scope;
+
+      begin
+         while Present (S) loop
+            if (Ekind (S) = E_Entry
+                  or else Ekind (S) = E_Entry_Family
+                  or else Ekind (S) = E_Function
+                  or else Ekind (S) = E_Procedure)
+              and then Is_Eliminated (S)
+            then
+               return True;
+            end if;
+
+            S := Scope (S);
+         end loop;
+
+         return False;
+      end Inside_Eliminated_Body;
+
+   --  Start of processing for Expand_Protected_Component
 
    begin
-      if Nkind (Op) /= N_Subprogram_Body
-        or else Nkind (Specification (Op)) /= N_Function_Specification
-      then
-         Set_Ekind (Prival (E), E_Variable);
-      else
-         Set_Ekind (Prival (E), E_Constant);
+      --  Eliminated bodies are not expanded and thus do not need privals
+
+      if not Inside_Eliminated_Body then
+         declare
+            Priv : constant Entity_Id := Prival (Entity (N));
+         begin
+            Set_Entity (N, Priv);
+            Set_Etype  (N, Etype (Priv));
+         end;
       end if;
-
-      --  If the private component appears in an assignment (either lhs or
-      --  rhs) and is a one-dimensional array constrained by a discriminant,
-      --  rewrite as  P (Lo .. Hi) with an explicit range, so that discriminal
-      --  is directly visible. This solves delicate visibility problems.
-
-      if Comes_From_Source (N)
-        and then Is_Array_Type (Etype (E))
-        and then Number_Dimensions (Etype (E)) = 1
-        and then not Within_Init_Proc
-      then
-         Lo := Type_Low_Bound  (Etype (First_Index (Etype (E))));
-         Hi := Type_High_Bound (Etype (First_Index (Etype (E))));
-
-         if Nkind (Parent (N)) = N_Assignment_Statement
-           and then ((Is_Entity_Name (Lo)
-                          and then Ekind (Entity (Lo)) = E_In_Parameter)
-                       or else (Is_Entity_Name (Hi)
-                                  and then
-                                    Ekind (Entity (Hi)) = E_In_Parameter))
-         then
-            D_Range := New_Node (N_Range, Loc);
-
-            if Is_Entity_Name (Lo)
-              and then Ekind (Entity (Lo)) = E_In_Parameter
-            then
-               Set_Low_Bound (D_Range,
-                 Make_Identifier (Loc, Chars (Entity (Lo))));
-            else
-               Set_Low_Bound (D_Range, Duplicate_Subexpr (Lo));
-            end if;
-
-            if Is_Entity_Name (Hi)
-              and then Ekind (Entity (Hi)) = E_In_Parameter
-            then
-               Set_High_Bound (D_Range,
-                 Make_Identifier (Loc, Chars (Entity (Hi))));
-            else
-               Set_High_Bound (D_Range, Duplicate_Subexpr (Hi));
-            end if;
-
-            Rewrite (N,
-              Make_Slice (Loc,
-                Prefix => New_Occurrence_Of (E, Loc),
-                Discrete_Range => D_Range));
-
-            Analyze_And_Resolve (N, Etype (E));
-            return;
-         end if;
-      end if;
-
-      --  The type of the reference is the type of the prival, which may differ
-      --  from that of the original component if it is an itype.
-
-      Set_Entity (N, Prival (E));
-      Set_Etype  (N, Etype (Prival (E)));
-      Scop := Current_Scope;
-
-      --  Find entity for protected operation, which must be on scope stack
-
-      while not Is_Protected_Type (Scope (Scop)) loop
-         Scop := Scope (Scop);
-      end loop;
-
-      Append_Elmt (N, Privals_Chain (Scop));
-   end Expand_Protected_Private;
+   end Expand_Protected_Component;
 
    ---------------------
    -- Expand_Renaming --

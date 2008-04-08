@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -578,9 +578,7 @@ package body Sem_Eval is
          if Nkind (Lf) = N_Identifier and then Nkind (Rf) = N_Identifier
            and then Entity (Lf) = Entity (Rf)
            and then not Is_Floating_Point_Type (Etype (L))
-           and then (Ekind (Entity (Lf)) = E_Constant     or else
-                     Ekind (Entity (Lf)) = E_In_Parameter or else
-                     Ekind (Entity (Lf)) = E_Loop_Parameter)
+           and then Is_Constant_Object (Entity (Lf))
          then
             return True;
 
@@ -1432,9 +1430,7 @@ package body Sem_Eval is
 
       Test_Expression_Is_Foldable (N, Left, Right, Stat, Fold);
 
-      if (C_Typ = Standard_Character
-            or else C_Typ = Standard_Wide_Character
-            or else C_Typ = Standard_Wide_Wide_Character)
+      if Is_Standard_Character_Type (C_Typ)
         and then Fold
       then
          null;
@@ -2269,14 +2265,13 @@ package body Sem_Eval is
       Fold   : Boolean;
 
    begin
-      --  One special case to deal with first. If we can tell that
-      --  the result will be false because the lengths of one or
-      --  more index subtypes are compile time known and different,
-      --  then we can replace the entire result by False. We only
-      --  do this for one dimensional arrays, because the case of
-      --  multi-dimensional arrays is rare and too much trouble!
-      --  If one of the operands is an illegal aggregate, its type
-      --  might still be an arbitrary composite type, so nothing to do.
+      --  One special case to deal with first. If we can tell that the result
+      --  will be false because the lengths of one or more index subtypes are
+      --  compile time known and different, then we can replace the entire
+      --  result by False. We only do this for one dimensional arrays, because
+      --  the case of multi-dimensional arrays is rare and too much trouble! If
+      --  one of the operands is an illegal aggregate, its type might still be
+      --  an arbitrary composite type, so nothing to do.
 
       if Is_Array_Type (Typ)
         and then Typ /= Any_Composite
@@ -2289,7 +2284,9 @@ package body Sem_Eval is
             return;
          end if;
 
-         declare
+         --  OK, we have the case where we may be able to do this fold
+
+         Length_Mismatch : declare
             procedure Get_Static_Length (Op : Node_Id; Len : out Uint);
             --  If Op is an expression for a constrained array with a known
             --  at compile time length, then Len is set to this (non-negative
@@ -2303,32 +2300,144 @@ package body Sem_Eval is
                T : Entity_Id;
 
             begin
+               --  First easy case string literal
+
                if Nkind (Op) = N_String_Literal then
                   Len := UI_From_Int (String_Length (Strval (Op)));
+                  return;
+               end if;
 
-               elsif not Is_Constrained (Etype (Op)) then
+               --  Second easy case, not constrained subtype, so no length
+
+               if not Is_Constrained (Etype (Op)) then
                   Len := Uint_Minus_1;
+                  return;
+               end if;
 
-               else
-                  T := Etype (First_Index (Etype (Op)));
+               --  General case
 
-                  if Is_Discrete_Type (T)
-                    and then
-                      Compile_Time_Known_Value (Type_Low_Bound (T))
-                    and then
-                      Compile_Time_Known_Value (Type_High_Bound (T))
+               T := Etype (First_Index (Etype (Op)));
+
+               --  The simple case, both bounds are known at compile time
+
+               if Is_Discrete_Type (T)
+                 and then
+                   Compile_Time_Known_Value (Type_Low_Bound (T))
+                 and then
+                   Compile_Time_Known_Value (Type_High_Bound (T))
+               then
+                  Len := UI_Max (Uint_0,
+                                 Expr_Value (Type_High_Bound (T)) -
+                                   Expr_Value (Type_Low_Bound  (T)) + 1);
+                  return;
+               end if;
+
+               --  A more complex case, where the bounds are of the form
+               --  X [+/- K1] .. X [+/- K2]), where X is an expression that is
+               --  either A'First or A'Last (with A an entity name), or X is an
+               --  entity name, and the two X's are the same and K1 and K2 are
+               --  known at compile time, in this case, the length can also be
+               --  computed at compile time, even though the bounds are not
+               --  known. A common case of this is e.g. (X'First..X'First+5).
+
+               Extract_Length : declare
+                  procedure Decompose_Expr
+                    (Expr : Node_Id;
+                     Ent  : out Entity_Id;
+                     Kind : out Character;
+                     Cons : out Uint);
+                  --  Given an expression, see if is of the form above,
+                  --  X [+/- K]. If so Ent is set to the entity in X,
+                  --  Kind is 'F','L','E' for 'First/'Last/simple entity,
+                  --  and Cons is the value of K. If the expression is
+                  --  not of the required form, Ent is set to Empty.
+
+                  --------------------
+                  -- Decompose_Expr --
+                  --------------------
+
+                  procedure Decompose_Expr
+                    (Expr : Node_Id;
+                     Ent  : out Entity_Id;
+                     Kind : out Character;
+                     Cons : out Uint)
+                  is
+                     Exp : Node_Id;
+
+                  begin
+                     if Nkind (Expr) = N_Op_Add
+                       and then Compile_Time_Known_Value (Right_Opnd (Expr))
+                     then
+                        Exp := Left_Opnd (Expr);
+                        Cons := Expr_Value (Right_Opnd (Expr));
+
+                     elsif Nkind (Expr) = N_Op_Subtract
+                       and then Compile_Time_Known_Value (Right_Opnd (Expr))
+                     then
+                        Exp := Left_Opnd (Expr);
+                        Cons := -Expr_Value (Right_Opnd (Expr));
+
+                     else
+                        Exp := Expr;
+                        Cons := Uint_0;
+                     end if;
+
+                     --  At this stage Exp is set to the potential X
+
+                     if Nkind (Exp) = N_Attribute_Reference then
+                        if Attribute_Name (Exp) = Name_First then
+                           Kind := 'F';
+                        elsif Attribute_Name (Exp) = Name_Last then
+                           Kind := 'L';
+                        else
+                           Ent := Empty;
+                           return;
+                        end if;
+
+                        Exp := Prefix (Exp);
+
+                     else
+                        Kind := 'E';
+                     end if;
+
+                     if Is_Entity_Name (Exp)
+                       and then Present (Entity (Exp))
+                     then
+                        Ent := Entity (Exp);
+                     else
+                        Ent := Empty;
+                     end if;
+                  end Decompose_Expr;
+
+                  --  Local Variables
+
+                  Ent1,  Ent2  : Entity_Id;
+                  Kind1, Kind2 : Character;
+                  Cons1, Cons2 : Uint;
+
+               --  Start of processing for Extract_Length
+
+               begin
+                  Decompose_Expr (Type_Low_Bound  (T), Ent1, Kind1, Cons1);
+                  Decompose_Expr (Type_High_Bound (T), Ent2, Kind2, Cons2);
+
+                  if Present (Ent1)
+                    and then Kind1 = Kind2
+                    and then Ent1 = Ent2
                   then
-                     Len := UI_Max (Uint_0,
-                                     Expr_Value (Type_High_Bound (T)) -
-                                     Expr_Value (Type_Low_Bound  (T)) + 1);
+                     Len := Cons2 - Cons1 + 1;
                   else
                      Len := Uint_Minus_1;
                   end if;
-               end if;
+               end Extract_Length;
             end Get_Static_Length;
+
+            --  Local Variables
 
             Len_L : Uint;
             Len_R : Uint;
+
+         --  Start of processing for Length_Mismatch
 
          begin
             Get_Static_Length (Left,  Len_L);
@@ -2342,12 +2451,13 @@ package body Sem_Eval is
                Warn_On_Known_Condition (N);
                return;
             end if;
-         end;
+         end Length_Mismatch;
+      end if;
 
       --  Another special case: comparisons of access types, where one or both
       --  operands are known to be null, so the result can be determined.
 
-      elsif Is_Access_Type (Typ) then
+      if Is_Access_Type (Typ) then
          if Known_Null (Left) then
             if Known_Null (Right) then
                Fold_Uint (N, Test (Nkind (N) = N_Op_Eq), False);
