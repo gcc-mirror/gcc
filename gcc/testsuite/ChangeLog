@@ -1,3 +1,7 @@
+2008-04-08  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.c-torture/execute/20080408-1.c: New testcase.
+
 2008-04-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35734

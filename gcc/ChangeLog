@@ -1,3 +1,8 @@
+2008-04-08  Richard Guenther  <rguenther@suse.de>
+
+	* fold-const.c (fold_widened_comparison): Do not allow
+	sign-changes that change the result.
+
 2008-04-06  Tom G. Christensen  <tgc@jupiterrise.com>
 
 	* gthr-posix95.h (__gthread_cond_wait_recursive): Add missing &.
