@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2007, AdaCore                     --
+--                     Copyright (C) 2002-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,17 +62,20 @@
 --  (in a format <host>_<target>), and then an appropriate value to Config_List
 --  array
 
-with Text_IO;             use Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
-with Ada.Command_Line;    use Ada.Command_Line;
-with Ada.Strings.Fixed;   use Ada.Strings.Fixed;
+with Ada.Text_IO;       use Ada.Text_IO;
+with Ada.Command_Line;  use Ada.Command_Line;
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+with Interfaces;        use Interfaces;
 
-with GNAT.OS_Lib; use GNAT.OS_Lib;
+with GNAT.OS_Lib;               use GNAT.OS_Lib;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
-with GNAT.Expect; use GNAT.Expect;
-with GNAT.Regpat; use GNAT.Regpat;
+with GNAT.Expect;               use GNAT.Expect;
+with GNAT.Regpat;               use GNAT.Regpat;
 
 procedure VxAddr2Line is
+
+   package Unsigned_32_IO is new Modular_IO (Unsigned_32);
+   --  Instantiate Modular_IO to have Put.
 
    Ref_Symbol : constant String := "adainit";
    --  This is the name of the reference symbol which runtime address shall
@@ -102,7 +105,7 @@ procedure VxAddr2Line is
       --  which will avoid computational overflows. Typically only useful when
       --  64bit addresses are provided.
 
-      Bt_Offset_From_Call : Integer;
+      Bt_Offset_From_Call : Unsigned_32;
       --  Offset from a backtrace address to the address of the corresponding
       --  call instruction. This should always be 0, except on platforms where
       --  the backtrace addresses actually correspond to return and not call
@@ -160,14 +163,14 @@ procedure VxAddr2Line is
    procedure Usage;
    --  Displays the short help message and then terminates the program
 
-   function Get_Reference_Offset return Integer;
+   function Get_Reference_Offset return Unsigned_32;
    --  Computes the static offset of the reference symbol by calling nm
 
-   function Get_Value_From_Hex_Arg (Arg : Natural) return Integer;
+   function Get_Value_From_Hex_Arg (Arg : Natural) return Unsigned_32;
    --  Threats the argument number Arg as a C-style hexadecimal literal
    --  and returns its integer value
 
-   function Hex_Image (Value : Integer) return String_Access;
+   function Hex_Image (Value : Unsigned_32) return String_Access;
    --  Returns access to a string that contains hexadecimal image of Value
 
    --  Separate functions that provide build-time customization:
@@ -238,7 +241,7 @@ procedure VxAddr2Line is
    -- Get_Reference_Offset --
    --------------------------
 
-   function Get_Reference_Offset return Integer is
+   function Get_Reference_Offset return Unsigned_32 is
       Nm_Cmd  : constant String_Access :=
                   Locate_Exec_On_Path (Arch_List (Cur_Arch).Nm_Binary.all);
 
@@ -273,11 +276,11 @@ procedure VxAddr2Line is
       declare
          Match_String : constant String := Expect_Out_Match (Pd);
          Matches      : Match_Array (0 .. 1);
-         Value        : Integer;
+         Value        : Unsigned_32;
 
       begin
          Match (Reference, Match_String, Matches);
-         Value := Integer'Value
+         Value := Unsigned_32'Value
            ("16#"
             & Match_String (Matches (1).First .. Matches (1).Last) & "#");
 
@@ -313,7 +316,7 @@ procedure VxAddr2Line is
    -- Get_Value_From_Hex_Arg --
    ----------------------------
 
-   function Get_Value_From_Hex_Arg (Arg : Natural) return Integer is
+   function Get_Value_From_Hex_Arg (Arg : Natural) return Unsigned_32 is
       Cur_Arg : constant String := Argument (Arg);
       Offset  : Natural;
 
@@ -332,19 +335,26 @@ procedure VxAddr2Line is
 
       --  Convert to value
 
-      return Integer'Value ("16#" & Cur_Arg (Offset .. Cur_Arg'Last) & "#");
+      return Unsigned_32'Value
+        ("16#" & Cur_Arg (Offset .. Cur_Arg'Last) & "#");
+
+   exception
+      when Constraint_Error =>
+
+         Error ("Can't parse backtrace address '" & Cur_Arg & "'");
+         raise;
    end Get_Value_From_Hex_Arg;
 
    ---------------
    -- Hex_Image --
    ---------------
 
-   function Hex_Image (Value : Integer) return String_Access is
+   function Hex_Image (Value : Unsigned_32) return String_Access is
       Result    : String (1 .. 20);
       Start_Pos : Natural;
 
    begin
-      Put (Result, Value, 16);
+      Unsigned_32_IO.Put (Result, Value, 16);
       Start_Pos := Index (Result, "16#") + 3;
       return new String'(Result (Start_Pos .. Result'Last - 1));
    end Hex_Image;
@@ -362,7 +372,7 @@ procedure VxAddr2Line is
       OS_Exit (1);
    end Usage;
 
-   Ref_Static_Offset, Ref_Runtime_Address, Bt_Address : Integer;
+   Ref_Static_Offset, Ref_Runtime_Address, Bt_Address : Unsigned_32;
 
    Addr2line_Cmd : String_Access;
 
