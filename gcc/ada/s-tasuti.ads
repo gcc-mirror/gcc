@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---         Copyright (C) 1992-2007, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2008, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,11 +35,12 @@
 --  These declarations are not part of the GNARLI
 
 with Ada.Unchecked_Conversion;
+with System.Task_Primitives;
 
 package System.Tasking.Utilities is
 
    function ATCB_To_Address is new
-     Ada.Unchecked_Conversion (Task_Id, System.Address);
+     Ada.Unchecked_Conversion (Task_Id, System.Task_Primitives.Task_Address);
 
    ---------------------------------
    -- Task_Stage Related routines --
