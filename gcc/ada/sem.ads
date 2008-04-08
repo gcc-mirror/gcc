@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -84,31 +84,37 @@
 --  Analysis-Resolution-Expansion model for expressions. The most prominent
 --  examples are the handling of default expressions and aggregates.
 
-----------------------------------------------------
--- Handling of Default and Per-Object Expressions --
-----------------------------------------------------
+-----------------------------------------------------------------------
+-- Handling of Default and Per-Object Expressions (Spec-Expressions) --
+-----------------------------------------------------------------------
 
 --  The default expressions in component declarations and in procedure
---  specifications (but not the ones in object declarations) are quite
---  tricky to handle. The problem is that some processing is required
---  at the point where the expression appears:
+--  specifications (but not the ones in object declarations) are quite tricky
+--  to handle. The problem is that some processing is required at the point
+--  where the expression appears:
 
 --    visibility analysis (including user defined operators)
 --    freezing of static expressions
 
---  but other processing must be deferred until the enclosing entity
---  (record or procedure specification) is frozen:
+--  but other processing must be deferred until the enclosing entity (record or
+--  procedure specification) is frozen:
 
---    freezing of any other types in the expression
---    expansion
+--    freezing of any other types in the expression expansion
+--    generation of code
 
 --  A similar situation occurs with the argument of priority and interrupt
 --  priority pragmas that appear in task and protected definition specs and
 --  other cases of per-object expressions (see RM 3.8(18)).
 
---  Expansion has to be deferred since you can't generate code for
---  expressions that refernce types that have not been frozen yet. As an
---  example, consider the following:
+--  Another similar case is the conditions in precondition and postcondition
+--  pragmas that appear with subprogram specifications rather than in the body.
+
+--  Collectively we call these Spec_Expressions. The routine that performs the
+--  special analysis is called Analyze_Spec_Expression.
+
+--  Expansion has to be deferred since you can't generate code for expressions
+--  that reference types that have not been frozen yet. As an example, consider
+--  the following:
 
 --      type x is delta 0.5 range -10.0 .. +10.0;
 --      ...
@@ -118,9 +124,9 @@
 
 --      for x'small use 0.25
 
---  The expander is in charge of dealing with fixed-point, and of course
---  the small declaration, which is not too late, since the declaration of
---  type q does *not* freeze type x, definitely affects the expanded code.
+--  The expander is in charge of dealing with fixed-point, and of course the
+--  small declaration, which is not too late, since the declaration of type q
+--  does *not* freeze type x, definitely affects the expanded code.
 
 --  Another reason that we cannot expand early is that expansion can generate
 --  range checks. These range checks need to be inserted not at the point of
@@ -132,26 +138,27 @@
 --  this is the one case where this model falls down. Here is how we patch
 --  it up without causing too much distortion to our basic model.
 
---  A switch (sede below) is set to indicate that we are in the initial
+--  A switch (In_Spec_Expression) is set to show that we are in the initial
 --  occurence of a default expression. The analyzer is then called on this
---  expression with the switch set true. Analysis and resolution proceed
---  almost as usual, except that Freeze_Expression will not freeze
---  non-static expressions if this switch is set, and the call to Expand at
---  the end of resolution is skipped. This also skips the code that normally
---  sets the Analyzed flag to True). The result is that when we are done the
---  tree is still marked as unanalyzed, but all types for static expressions
---  are frozen as required, and all entities of variables have been
---  recorded.  We then turn off the switch, and later on reanalyze the
---  expression with the switch off. The effect is that this second analysis
---  freezes the rest of the types as required, and generates code but
---  visibility analysis is not repeated since all the entities are marked.
+--  expression with the switch set true. Analysis and resolution proceed almost
+--  as usual, except that Freeze_Expression will not freeze non-static
+--  expressions if this switch is set, and the call to Expand at the end of
+--  resolution is skipped. This also skips the code that normally sets the
+--  Analyzed flag to True. The result is that when we are done the tree is
+--  still marked as unanalyzed, but all types for static expressions are frozen
+--  as required, and all entities of variables have been recorded. We then turn
+--  off the switch, and later on reanalyze the expression with the switch off.
+--  The effect is that this second analysis freezes the rest of the types as
+--  required, and generates code but visibility analysis is not repeated since
+--  all the entities are marked.
 
 --  The second analysis (the one that generates code) is in the context
---  where the code is required. For a record field default, this is in
---  the initialization procedure for the record and for a subprogram
---  default parameter, it is at the point the subprogram is frozen.
---  For a priority or storage size pragma it is in the context of the
---  Init_Proc for the task or protected object.
+--  where the code is required. For a record field default, this is in the
+--  initialization procedure for the record and for a subprogram default
+--  parameter, it is at the point the subprogram is frozen. For a priority or
+--  storage size pragma it is in the context of the Init_Proc for the task or
+--  protected object. For a pre/postcondition pragma it is in the body when
+--  code for the pragma is generated.
 
 ------------------
 -- Pre-Analysis --
@@ -164,34 +171,35 @@
 --
 --     (1 .. 100 => new Thing (Function_Call))
 --
---  The normal Analysis-Resolution-Expansion mechanism where expansion
---  of the children is performed before expansion of the parent does not
---  work if the code generated for the children by the expander needs
---  to be evaluated repeatdly (for instance in the above aggregate
---  "new Thing (Function_Call)" needs to be called 100 times.)
---  The reason why this mecanism does not work is that, the expanded code
---  for the children is typically inserted above the parent and thus
---  when the father gets expanded no re-evaluation takes place. For instance
---  in the case of aggregates if "new Thing (Function_Call)" is expanded
---  before of the aggregate the expanded code will be placed outside
---  of the aggregate and when expanding the aggregate the loop from 1 to 100
---  will not surround the expanded code for "new Thing (Function_Call)".
---
---  To remedy this situation we introduce a new flag which signals whether
---  we want a full analysis (ie expansion is enabled) or a pre-analysis
---  which performs Analysis and Resolution but no expansion.
---
---  After the complete pre-analysis of an expression has been carried out
---  we can transform the expression and then carry out the full
---  Analyze-Resolve-Expand cycle on the transformed expression top-down
---  so that the expansion of inner expressions happens inside the newly
---  generated node for the parent expression.
---
+--  The normal Analysis-Resolution-Expansion mechanism where expansion of the
+--  children is performed before expansion of the parent does not work if the
+--  code generated for the children by the expander needs to be evaluated
+--  repeatdly (for instance in the above aggregate "new Thing (Function_Call)"
+--  needs to be called 100 times.)
+
+--  The reason why this mecanism does not work is that, the expanded code for
+--  the children is typically inserted above the parent and thus when the
+--  father gets expanded no re-evaluation takes place. For instance in the case
+--  of aggregates if "new Thing (Function_Call)" is expanded before of the
+--  aggregate the expanded code will be placed outside of the aggregate and
+--  when expanding the aggregate the loop from 1 to 100 will not surround the
+--  expanded code for "new Thing (Function_Call)".
+
+--  To remedy this situation we introduce a new flag which signals whether we
+--  want a full analysis (ie expansion is enabled) or a pre-analysis which
+--  performs Analysis and Resolution but no expansion.
+
+--  After the complete pre-analysis of an expression has been carried out we
+--  can transform the expression and then carry out the full three stage
+--  (Analyze-Resolve-Expand) cycle on the transformed expression top-down so
+--  that the expansion of inner expressions happens inside the newly generated
+--  node for the parent expression.
+
 --  Note that the difference between processing of default expressions and
 --  pre-analysis of other expressions is that we do carry out freezing in
 --  the latter but not in the former (except for static scalar expressions).
---  The routine that performs pre-analysis is called Pre_Analyze_And_Resolve
---  and is in Sem_Res.
+--  The routine that performs preanalysis and corresponding resolution is
+--  called Preanalyze_And_Resolve and is in Sem_Res.
 
 with Alloc;
 with Einfo;  use Einfo;
@@ -223,8 +231,8 @@ package Sem is
    --  whether expansion is currently enabled). You should really regard this
    --  as a read only flag.
 
-   In_Default_Expression : Boolean := False;
-   --  Switch to indicate that we are in a default expression, as described
+   In_Spec_Expression : Boolean := False;
+   --  Switch to indicate that we are in a spec-expression, as described
    --  above. Note that this must be recursively saved on a Semantics call
    --  since it is possible for the analysis of an expression to result in a
    --  recursive call (e.g. to get the entity for System.Address as part of the
@@ -252,14 +260,22 @@ package Sem is
    --  package Expander). Only the generic processing can modify the
    --  status of this flag, any other client should regard it as read-only.
 
+   Inside_Freezing_Actions : Nat := 0;
+   --  Flag indicating whether we are within a call to Expand_N_Freeze_Actions.
+   --  Non-zero means we are inside (it is actually a level counter to deal
+   --  with nested calls). Used to avoid traversing the tree each time a
+   --  subprogram call is processed to know if we must not clear all constant
+   --  indications from entities in the current scope. Only the expansion of
+   --  freezing nodes can modify the status of this flag, any other client
+   --  should regard it as read-only.
+
    Unloaded_Subunits : Boolean := False;
    --  This flag is set True if we have subunits that are not loaded. This
    --  occurs when the main unit is a subunit, and contains lower level
    --  subunits that are not loaded. We use this flag to suppress warnings
    --  about unused variables, since these warnings are unreliable in this
    --  case. We could perhaps do a more accurate job and retain some of the
-   --  warnings, but it is quite a tricky job. See test 4323-002.
-   --  Should not reference TN's in the source comments ???
+   --  warnings, but it is quite a tricky job.
 
    -----------------------------------
    -- Handling of Check Suppression --
@@ -441,6 +457,9 @@ package Sem is
 
       Save_Local_Suppress_Stack_Top : Suppress_Stack_Entry_Ptr;
       --  Save contents of Local_Suppress_Stack on entry to restore on exit
+
+      Save_Check_Policy_List : Node_Id;
+      --  Save contents of Check_Policy_List on entry to restore on exit
 
       Is_Transient : Boolean;
       --  Marks Transient Scopes (See Exp_Ch7 body for details)
