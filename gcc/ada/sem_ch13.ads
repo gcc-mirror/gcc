@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -121,7 +121,8 @@ package Sem_Ch13 is
    --  stream attributes, which, although certainly not subtype related
    --  attributes, clearly should not be subject to the para 10 restrictions
    --  (see AI95-00137). Similarly, we also skip the para 10 restrictions for
-   --  the Storage_Size case where they also clearly do not apply.
+   --  the Storage_Size case where they also clearly do not apply, and for
+   --  Stream_Convert which is in the same category as the strem attributes.
    --
    --  If the rep item is too late, an appropriate message is output and
    --  True is returned, which is a signal that the caller should abandon
