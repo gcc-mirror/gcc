@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   S p e c                                --
 --                                                                          --
---             Copyright (C) 1991-1994, Florida State University            --
+--            Copyright (C) 1991-1994, Florida State University             --
 --          Copyright (C) 1995-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
@@ -32,7 +32,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the VxWorks version of this package
+--  This is the VxWorks 5.x and 6.x version of this package
 
 --  This package encapsulates all direct interfaces to OS services
 --  that are needed by the tasking run-time (libgnarl).
@@ -41,18 +41,20 @@
 --  Preelaborate. This package is designed to be a bottom-level (leaf) package.
 
 with Interfaces.C;
-
 with System.VxWorks;
+with System.VxWorks.Ext;
 
 package System.OS_Interface is
    pragma Preelaborate;
 
-   subtype int        is Interfaces.C.int;
-   subtype short      is Short_Integer;
-   type unsigned_int  is mod 2 ** int'Size;
-   type long          is new Long_Integer;
-   type unsigned_long is mod 2 ** long'Size;
-   type size_t        is mod 2 ** Standard'Address_Size;
+   subtype int             is Interfaces.C.int;
+   subtype short           is Short_Integer;
+   type unsigned_int       is mod 2 ** int'Size;
+   type long               is new Long_Integer;
+   type unsigned_long      is mod 2 ** long'Size;
+   type long_long          is new Long_Long_Integer;
+   type unsigned_long_long is mod 2 ** long_long'Size;
+   type size_t             is mod 2 ** Standard'Address_Size;
 
    -----------
    -- Errno --
@@ -73,7 +75,7 @@ package System.OS_Interface is
    -- Signals and Interrupts --
    ----------------------------
 
-   NSIG : constant := 32;
+   NSIG : constant := 64;
    --  Number of signals on the target OS
    type Signal is new int range 0 .. Interfaces.C."-" (NSIG, 1);
 
@@ -82,11 +84,58 @@ package System.OS_Interface is
 
    Max_Interrupt : constant := Max_HW_Interrupt;
 
-   SIGILL  : constant :=  4; --  illegal instruction (not reset)
-   SIGABRT : constant :=  6; --  used by abort, replace SIGIOT in the future
-   SIGFPE  : constant :=  8; --  floating point exception
-   SIGBUS  : constant := 10; --  bus error
-   SIGSEGV : constant := 11; --  segmentation violation
+   --  Signals common to Vxworks 5.x and 6.x
+
+   SIGILL    : constant :=  4; --  illegal instruction (not reset when caught)
+   SIGABRT   : constant :=  6; --  used by abort, replace SIGIOT in the future
+   SIGFPE    : constant :=  8; --  floating point exception
+   SIGBUS    : constant := 10; --  bus error
+   SIGSEGV   : constant := 11; --  segmentation violation
+
+   --  Signals specific to VxWorks 6.x
+
+   SIGHUP    : constant :=  1; --  hangup
+   SIGINT    : constant :=  2; --  interrupt
+   SIGQUIT   : constant :=  3; --  quit
+   SIGTRAP   : constant :=  5; --  trace trap (not reset when caught)
+   SIGEMT    : constant :=  7; --  EMT instruction
+   SIGKILL   : constant :=  9; --  kill
+   SIGFMT    : constant := 12; --  STACK FORMAT ERROR (not posix)
+   SIGPIPE   : constant := 13; --  write on a pipe with no one to read it
+   SIGALRM   : constant := 14; --  alarm clock
+   SIGTERM   : constant := 15; --  software termination signal from kill
+   SIGCNCL   : constant := 16; --  pthreads cancellation signal
+   SIGSTOP   : constant := 17; --  sendable stop signal not from tty
+   SIGTSTP   : constant := 18; --  stop signal from tty
+   SIGCONT   : constant := 19; --  continue a stopped process
+   SIGCHLD   : constant := 20; --  to parent on child stop or exit
+   SIGTTIN   : constant := 21; --  to readers pgrp upon background tty read
+   SIGTTOU   : constant := 22; --  like TTIN for output
+
+   SIGRES1   : constant := 23; --  reserved signal number (Not POSIX)
+   SIGRES2   : constant := 24; --  reserved signal number (Not POSIX)
+   SIGRES3   : constant := 25; --  reserved signal number (Not POSIX)
+   SIGRES4   : constant := 26; --  reserved signal number (Not POSIX)
+   SIGRES5   : constant := 27; --  reserved signal number (Not POSIX)
+   SIGRES6   : constant := 28; --  reserved signal number (Not POSIX)
+   SIGRES7   : constant := 29; --  reserved signal number (Not POSIX)
+
+   SIGUSR1   : constant := 30; --  user defined signal 1
+   SIGUSR2   : constant := 31; --  user defined signal 2
+
+   SIGPOLL   : constant := 32; --  pollable event
+   SIGPROF   : constant := 33; --  profiling timer expired
+   SIGSYS    : constant := 34; --  bad system call
+   SIGURG    : constant := 35; --  high bandwidth data is available at socket
+   SIGVTALRM : constant := 36; --  virtual timer expired
+   SIGXCPU   : constant := 37; --  CPU time limit exceeded
+   SIGXFSZ   : constant := 38; --  file size time limit exceeded
+
+   SIGEVTS   : constant := 39; --  signal event thread send
+   SIGEVTD   : constant := 40; --  signal event thread delete
+
+   SIGRTMIN  : constant := 48; --  Realtime signal min
+   SIGRTMAX  : constant := 63; --  Realtime signal max
 
    -----------------------------------
    -- Signal processing definitions --
@@ -100,8 +149,8 @@ package System.OS_Interface is
 
    --  The sa_flags in struct sigaction
 
-   SA_SIGINFO   : constant := 16#0002#;
-   SA_ONSTACK   : constant := 16#0004#;
+   SA_SIGINFO : constant := 16#0002#;
+   SA_ONSTACK : constant := 16#0004#;
 
    SIG_DFL : constant := 0;
    SIG_IGN : constant := 1;
@@ -152,36 +201,33 @@ package System.OS_Interface is
       oset : access sigset_t) return int;
    pragma Import (C, pthread_sigmask, "sigprocmask");
 
-   type t_id is new long;
+   subtype t_id is System.VxWorks.Ext.t_id;
    subtype Thread_Id is t_id;
 
    function kill (pid : t_id; sig : Signal) return int;
    pragma Inline (kill);
 
-   function getpid return t_id;
-   pragma Inline (getpid);
+   function getpid return t_id renames System.VxWorks.Ext.getpid;
 
-   function Task_Stop (tid : t_id) return int;
-   pragma Inline (Task_Stop);
+   function Task_Stop (tid : t_id) return int
+     renames System.VxWorks.Ext.Task_Stop;
    --  If we are in the kernel space, stop the task whose t_id is
    --  given in parameter in such a way that it can be examined by the
    --  debugger. This typically maps to taskSuspend on VxWorks 5 and
    --  to taskStop on VxWorks 6.
 
-   function Task_Cont (tid : t_id) return int;
-   pragma Inline (Task_Cont);
+   function Task_Cont (tid : t_id) return int
+     renames System.VxWorks.Ext.Task_Cont;
    --  If we are in the kernel space, continue the task whose t_id is
    --  given in parameter if it has been stopped previously to be examined
    --  by the debugger (e.g. by taskStop). It typically maps to taskResume
    --  on VxWorks 5 and to taskCont on VxWorks 6.
 
-   function Int_Lock return int;
-   pragma Inline (Int_Lock);
+   function Int_Lock return int renames System.VxWorks.Ext.Int_Lock;
    --  If we are in the kernel space, lock interrupts. It typically maps to
    --  intLock.
 
-   function Int_Unlock return int;
-   pragma Inline (Int_Unlock);
+   function Int_Unlock return int renames System.VxWorks.Ext.Int_Unlock;
    --  If we are in the kernel space, unlock interrupts. It typically maps to
    --  intUnlock.
 
@@ -213,14 +259,6 @@ package System.OS_Interface is
    function clock_gettime
      (clock_id : clockid_t; tp : access timespec) return int;
    pragma Import (C, clock_gettime, "clock_gettime");
-
-   type ULONG is new unsigned_long;
-
-   procedure tickSet (ticks : ULONG);
-   pragma Import (C, tickSet, "tickSet");
-
-   function tickGet return ULONG;
-   pragma Import (C, tickGet, "tickGet");
 
    ----------------------
    -- Utility Routines --
@@ -324,8 +362,8 @@ package System.OS_Interface is
    procedure taskDelete (tid : t_id);
    pragma Import (C, taskDelete, "taskDelete");
 
-   function Set_Time_Slice (ticks : int) return int;
-   pragma Inline (Set_Time_Slice);
+   function Set_Time_Slice (ticks : int) return int
+     renames System.VxWorks.Ext.Set_Time_Slice;
    --  Calls kernelTimeSlice under VxWorks 5.x
    --  Do nothing under VxWorks 6.x
 
@@ -395,7 +433,7 @@ package System.OS_Interface is
    --  Release all threads blocked on the semaphore
 
 private
-   type sigset_t is new long;
+   type sigset_t is new unsigned_long_long;
 
    type pid_t is new int;
 

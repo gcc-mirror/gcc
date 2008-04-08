@@ -47,61 +47,14 @@ package body System.OS_Interface is
    Low_Priority : constant := 255;
    --  VxWorks native (default) lowest scheduling priority
 
-   ------------
-   -- getpid --
-   ------------
-
-   function getpid return t_id is
-   begin
-      --  VxWorks 5 (and VxWorks 6 in kernel mode) does not have a getpid
-      --  function. taskIdSelf is the equivalent routine.
-
-      return taskIdSelf;
-   end getpid;
-
-   --------------
-   -- Int_Lock --
-   --------------
-
-   function Int_Lock return int is
-      function intLock return int;
-      pragma Import (C, intLock, "intLock");
-   begin
-      return intLock;
-   end Int_Lock;
-
-   ----------------
-   -- Int_Unlock --
-   ----------------
-
-   function Int_Unlock return int is
-      function intUnlock return int;
-      pragma Import (C, intUnlock, "intUnlock");
-   begin
-      return intUnlock;
-   end Int_Unlock;
-
    ----------
    -- kill --
    ----------
 
    function kill (pid : t_id; sig : Signal) return int is
-      function c_kill (pid : t_id; sig : Signal) return int;
-      pragma Import (C, c_kill, "kill");
    begin
-      return c_kill (pid, sig);
+      return System.VxWorks.Ext.kill (pid, int (sig));
    end kill;
-
-   --------------------
-   -- Set_Time_Slice --
-   --------------------
-
-   function Set_Time_Slice (ticks : int) return int is
-      function kernelTimeSlice (ticks : int) return int;
-      pragma Import (C, kernelTimeSlice, "kernelTimeSlice");
-   begin
-      return kernelTimeSlice (ticks);
-   end Set_Time_Slice;
 
    -------------
    -- sigwait --
@@ -128,28 +81,6 @@ package body System.OS_Interface is
          return errno;
       end if;
    end sigwait;
-
-   ---------------
-   -- Task_Cont --
-   ---------------
-
-   function Task_Cont (tid : t_id) return int is
-      function taskResume (tid : t_id) return int;
-      pragma Import (C, taskResume, "taskResume");
-   begin
-      return taskResume (tid);
-   end Task_Cont;
-
-   ---------------
-   -- Task_Stop --
-   ---------------
-
-   function Task_Stop (tid : t_id) return int is
-      function taskSuspend (tid : t_id) return int;
-      pragma Import (C, taskSuspend, "taskSuspend");
-   begin
-      return taskSuspend (tid);
-   end Task_Stop;
 
    -----------------
    -- To_Duration --
