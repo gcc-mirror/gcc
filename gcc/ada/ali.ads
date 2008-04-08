@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -175,11 +175,6 @@ package ALI is
       Normalize_Scalars : Boolean;
       --  Set to True if file was compiled with Normalize_Scalars. Not set if
       --  'P' appears in Ignore_Lines.
-
-      Optimize_Alignment_Setting : Character;
-      --  Optimize_Alignment setting. Set to S/T if OS/OT parameters present,
-      --  otherwise set to 'O' (S/T/O = Space/Time/Off). Not set if 'P' appears
-      --  in Ignore_Lines.
 
       Unit_Exception_Table : Boolean;
       --  Set to True if unit exception table pointer generated. Not set if 'P'
@@ -357,6 +352,9 @@ package ALI is
       --  will attempt, but does not promise, to place the elaboration call
       --  for the body right after the call for the spec, or at least as close
       --  together as possible.
+
+      Optimize_Alignment : Character;
+      --  Optimize_Alignment setting. Set to L/S/T/O for OL/OS/OT/OO present
 
    end record;
 
@@ -539,6 +537,8 @@ package ALI is
       SAL_Interface : Boolean := False;
       --  True if the Unit is an Interface of a Stand-Alone Library
 
+      Limited_With : Boolean := False;
+      --  True if unit is named in a limited_with_clause
    end record;
 
    package Withs is new Table.Table (
@@ -669,8 +669,8 @@ package ALI is
    -- Sdep (Source Dependency) Table --
    ------------------------------------
 
-   --  Each source dependency (D line) in an ALI file generates an
-   --  entry in the Sdep table.
+   --  Each source dependency (D line) in an ALI file generates an entry in the
+   --  Sdep table.
 
    --  Note: there will be no entries in this table if 'D' lines are ignored
 
@@ -678,9 +678,9 @@ package ALI is
    --  Special value indicating no Sdep table entry
 
    First_Sdep_Entry : Sdep_Id := No_Sdep_Id + 1;
-   --  Id of first Sdep entry for current ali file. This is initialized to
-   --  the first Sdep entry in the table, and then incremented appropriately
-   --  as successive ALI files are scanned.
+   --  Id of first Sdep entry for current ali file. This is initialized to the
+   --  first Sdep entry in the table, and then incremented appropriately as
+   --  successive ALI files are scanned.
 
    type Sdep_Record is record
 
@@ -688,24 +688,23 @@ package ALI is
       --  Name of source file
 
       Stamp : Time_Stamp_Type;
-      --  Time stamp value. Note that this will be all zero characters
-      --  for the dummy entries for missing or non-dependent files.
+      --  Time stamp value. Note that this will be all zero characters for the
+      --  dummy entries for missing or non-dependent files.
 
       Checksum : Word;
-      --  Checksum value. Note that this will be all zero characters
-      --  for the dummy entries for missing or non-dependent files
+      --  Checksum value. Note that this will be all zero characters for the
+      --  dummy entries for missing or non-dependent files
 
       Dummy_Entry : Boolean;
-      --  Set True for dummy entries that correspond to missing files
-      --  or files where no dependency relationship exists.
+      --  Set True for dummy entries that correspond to missing files or files
+      --  where no dependency relationship exists.
 
       Subunit_Name : Name_Id;
       --  Name_Id for subunit name if present, else No_Name
 
       Rfile : File_Name_Type;
-      --  Reference file name. Same as Sfile unless a Source_Reference
-      --  pragma was used, in which case it reflects the name used in
-      --  the pragma.
+      --  Reference file name. Same as Sfile unless a Source_Reference pragma
+      --  was used, in which case it reflects the name used in the pragma.
 
       Start_Line : Nat;
       --  Starting line number in file. Always 1, unless a Source_Reference
@@ -726,8 +725,8 @@ package ALI is
    -- Use of Name Table Info --
    ----------------------------
 
-   --  All unit names and file names are entered into the Names table. The
-   --  Info fields of these entries are used as follows:
+   --  All unit names and file names are entered into the Names table. The Info
+   --  fields of these entries are used as follows:
 
    --    Unit name           Info field has Unit_Id of unit table entry
    --    ALI file name       Info field has ALI_Id of ALI table entry
@@ -737,8 +736,8 @@ package ALI is
    -- Cross-Reference Data --
    --------------------------
 
-   --  The following table records cross-reference sections, there is one
-   --  entry for each X header line in the ALI file for an xref section.
+   --  The following table records cross-reference sections, there is one entry
+   --  for each X header line in the ALI file for an xref section.
 
    --  Note: there will be no entries in this table if 'X' lines are ignored
 

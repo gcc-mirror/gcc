@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,6 +53,7 @@ package body ALI is
       'D'    => True,   -- dependency
       'X'    => True,   -- xref
       'S'    => True,   -- specific dispatching
+      'Y'    => True,   -- limited_with
       others => False);
 
    --------------------
@@ -772,7 +773,7 @@ package body ALI is
       --  Acquire lines to be ignored
 
       if Read_Xref then
-         Ignore := ('U' | 'W' | 'D' | 'X' => False, others => True);
+         Ignore := ('U' | 'W' | 'Y' | 'D' | 'X' => False, others => True);
 
       --  Read_Lines parameter given
 
@@ -818,7 +819,6 @@ package body ALI is
         No_Object                  => False,
         Normalize_Scalars          => False,
         Ofile_Full_Name            => Full_Object_File_Name,
-        Optimize_Alignment_Setting => 'O',
         Queuing_Policy             => ' ',
         Restrictions               => No_Restrictions,
         SAL_Interface              => False,
@@ -1040,11 +1040,6 @@ package body ALI is
                else
                   Fatal_Error_Ignore;
                end if;
-
-            --  Processing for Ox
-
-            elsif C = 'O' then
-               ALIs.Table (Id).Optimize_Alignment_Setting := Getc;
 
             --  Processing for Qx
 
@@ -1424,6 +1419,7 @@ package body ALI is
             UL.SAL_Interface            := ALIs.Table (Id).SAL_Interface;
             UL.Body_Needed_For_SAL      := False;
             UL.Elaborate_Body_Desirable := False;
+            UL.Optimize_Alignment       := 'O';
 
             if Debug_Flag_U then
                Write_Str (" ----> reading unit ");
@@ -1626,6 +1622,19 @@ package body ALI is
 
                Check_At_End_Of_Field;
 
+            --  OL/OO/OS/OT parameters
+
+            elsif C = 'O' then
+               C := Getc;
+
+               if C = 'L' or else C = 'O' or else C = 'S' or else C = 'T' then
+                  Units.Table (Units.Last).Optimize_Alignment := C;
+               else
+                  Fatal_Error_Ignore;
+               end if;
+
+               Check_At_End_Of_Field;
+
             --  RC/RT parameters
 
             elsif C = 'R' then
@@ -1678,7 +1687,7 @@ package body ALI is
 
          With_Loop : loop
             Check_Unknown_Line;
-            exit With_Loop when C /= 'W';
+            exit With_Loop when C /= 'W' and then C /= 'Y';
 
             if Ignore ('W') then
                Skip_Line;
@@ -1693,6 +1702,7 @@ package body ALI is
                Withs.Table (Withs.Last).Elab_Desirable     := False;
                Withs.Table (Withs.Last).Elab_All_Desirable := False;
                Withs.Table (Withs.Last).SAL_Interface      := False;
+               Withs.Table (Withs.Last).Limited_With       := (C = 'Y');
 
                --  Generic case with no object file available
 

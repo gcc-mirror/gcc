@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,7 +43,7 @@ package body Bcheck is
    -----------------------
 
    --  The following checking subprograms make up the parts of the
-   --  configuration consistency check.
+   --  configuration consistency check. See bodies for details of checks.
 
    procedure Check_Consistent_Dispatching_Policy;
    procedure Check_Consistent_Dynamic_Elaboration_Checking;
@@ -54,6 +54,7 @@ package body Bcheck is
    procedure Check_Consistent_Optimize_Alignment;
    procedure Check_Consistent_Queuing_Policy;
    procedure Check_Consistent_Restrictions;
+   procedure Check_Consistent_Restriction_No_Default_Initialization;
    procedure Check_Consistent_Zero_Cost_Exception_Handling;
 
    procedure Consistency_Error_Msg (Msg : String);
@@ -90,6 +91,7 @@ package body Bcheck is
       Check_Consistent_Optimize_Alignment;
       Check_Consistent_Dynamic_Elaboration_Checking;
       Check_Consistent_Restrictions;
+      Check_Consistent_Restriction_No_Default_Initialization;
       Check_Consistent_Interrupt_States;
       Check_Consistent_Dispatching_Policy;
    end Check_Configuration_Consistency;
@@ -700,34 +702,40 @@ package body Bcheck is
    -- Check_Consistent_Optimize_Alignment --
    -----------------------------------------
 
-   --  The rule is that all units other than internal units must be compiled
-   --  with the same setting for Optimize_Alignment. We can exclude internal
-   --  units since they are forced to compile with Optimize_Alignment (Off).
+   --  The rule is that all units which depend on the global default setting
+   --  of Optimize_Alignment must be compiled with the same settinng for this
+   --  default. Units which specify an explicit local value for this setting
+   --  are exempt from the consistency rule (this includes all internal units).
 
    procedure Check_Consistent_Optimize_Alignment is
       OA_Setting : Character := ' ';
-      --  Reset when we find a non-internal unit
+      --  Reset when we find a unit that depends on the default and does
+      --  not have a local specification of the Optimize_Alignment setting.
 
-      OA_Unit : ALI_Id;
+      OA_Unit : Unit_Id;
       --  Id of unit from which OA_Setting was set
 
-   begin
-      for A in ALIs.First .. ALIs.Last loop
-         if not Is_Internal_File_Name (ALIs.Table (A).Afile) then
-            if OA_Setting = ' ' then
-               OA_Setting := ALIs.Table (A).Optimize_Alignment_Setting;
-               OA_Unit := A;
+      C : Character;
 
-            elsif OA_Setting = ALIs.Table (A).Optimize_Alignment_Setting then
+   begin
+      for U in First_Unit_Entry .. Units.Last loop
+         C := Units.Table (U).Optimize_Alignment;
+
+         if C /= 'L' then
+            if OA_Setting = ' ' then
+               OA_Setting := C;
+               OA_Unit := U;
+
+            elsif OA_Setting = C then
                null;
 
             else
-               Error_Msg_File_1 := ALIs.Table (OA_Unit).Sfile;
-               Error_Msg_File_2 := ALIs.Table (A).Sfile;
+               Error_Msg_Unit_1 := Units.Table (OA_Unit).Uname;
+               Error_Msg_Unit_2 := Units.Table (U).Uname;
 
                Consistency_Error_Msg
-                 ("{ and { compiled with different "
-                  & "Optimize_Alignment settings");
+                 ("$ and $ compiled with different "
+                  & "default Optimize_Alignment settings");
                return;
             end if;
          end if;
@@ -775,10 +783,9 @@ package body Bcheck is
    -- Check_Consistent_Restrictions --
    -----------------------------------
 
-   --  The rule is that if a restriction is specified in any unit,
-   --  then all units must obey the restriction. The check applies
-   --  only to restrictions which require partition wide consistency,
-   --  and not to internal units.
+   --  The rule is that if a restriction is specified in any unit, then all
+   --  units must obey the restriction. The check applies only to restrictions
+   --  which require partition wide consistency, and not to internal units.
 
    procedure Check_Consistent_Restrictions is
       Restriction_File_Output : Boolean;
@@ -811,7 +818,7 @@ package body Bcheck is
                   declare
                      M1 : constant String := "{ has restriction ";
                      S  : constant String := Restriction_Id'Image (R);
-                     M2 : String (1 .. 200); -- big enough!
+                     M2 : String (1 .. 2000); -- big enough!
                      P  : Integer;
 
                   begin
@@ -902,7 +909,7 @@ package body Bcheck is
                                 ("  { (count = at least #)");
                            else
                               Consistency_Error_Msg
-                                ("  % (count = #)");
+                                ("  { (count = #)");
                            end if;
                         end if;
                      end if;
@@ -949,6 +956,75 @@ package body Bcheck is
          end;
       end loop;
    end Check_Consistent_Restrictions;
+
+   ------------------------------------------------------------
+   -- Check_Consistent_Restriction_No_Default_Initialization --
+   ------------------------------------------------------------
+
+   --  The Restriction (No_Default_Initialization) has special consistency
+   --  rules. The rule is that no unit compiled without this restriction
+   --  that violates the restriction can WITH a unit that is compiled with
+   --  the restriction.
+
+   procedure Check_Consistent_Restriction_No_Default_Initialization is
+   begin
+      --  Nothing to do if no one set this restriction
+
+      if not Cumulative_Restrictions.Set (No_Default_Initialization) then
+         return;
+      end if;
+
+      --  Nothing to do if no one violates the restriction
+
+      if not Cumulative_Restrictions.Violated (No_Default_Initialization) then
+         return;
+      end if;
+
+      --  Otherwise we go into a full scan to find possible problems
+
+      for U in Units.First .. Units.Last loop
+         declare
+            UTE : Unit_Record renames Units.Table (U);
+            ATE : ALIs_Record renames ALIs.Table (UTE.My_ALI);
+
+         begin
+            if ATE.Restrictions.Violated (No_Default_Initialization) then
+               for W in UTE.First_With .. UTE.Last_With loop
+                  declare
+                     AFN : constant File_Name_Type := Withs.Table (W).Afile;
+
+                  begin
+                     --  The file name may not be present for withs of certain
+                     --  generic run-time files. The test can be safely left
+                     --  out in such cases anyway.
+
+                     if AFN /= No_File then
+                        declare
+                           WAI : constant ALI_Id :=
+                                   ALI_Id (Get_Name_Table_Info (AFN));
+                           WTE : ALIs_Record renames ALIs.Table (WAI);
+
+                        begin
+                           if WTE.Restrictions.Set
+                               (No_Default_Initialization)
+                           then
+                              Error_Msg_Unit_1 := UTE.Uname;
+                              Consistency_Error_Msg
+                                ("unit $ compiled without restriction "
+                                 & "No_Default_Initialization");
+                              Error_Msg_Unit_1 := Withs.Table (W).Uname;
+                              Consistency_Error_Msg
+                                ("withs unit $, compiled with restriction "
+                                 & "No_Default_Initialization");
+                           end if;
+                        end;
+                     end if;
+                  end;
+               end loop;
+            end if;
+         end;
+      end loop;
+   end Check_Consistent_Restriction_No_Default_Initialization;
 
    ---------------------------------------------------
    -- Check_Consistent_Zero_Cost_Exception_Handling --
@@ -1056,15 +1132,7 @@ package body Bcheck is
          --  If consistency errors are tolerated,
          --  output the message as a warning.
 
-         declare
-            Warning_Msg : String (1 .. Msg'Length + 1);
-
-         begin
-            Warning_Msg (1) := '?';
-            Warning_Msg (2 .. Warning_Msg'Last) := Msg;
-
-            Error_Msg (Warning_Msg);
-         end;
+         Error_Msg ('?' & Msg);
 
       --  Otherwise the consistency error is a true error
 
