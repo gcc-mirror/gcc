@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,7 +53,7 @@ package Exp_Dist is
       Insertion_Node  : Node_Id;
       Body_Decls      : List_Id);
    --  Add primitive for the stub type, and the RPC receiver. The declarations
-   --  are inserted after insertion_Node, while the bodies are appended at the
+   --  are inserted after Insertion_Node, while the bodies are appended at the
    --  end of Decls.
 
    procedure Remote_Types_Tagged_Full_View_Encountered
