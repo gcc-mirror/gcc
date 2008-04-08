@@ -1,3 +1,10 @@
+2008-04-08  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/mingw32.h (ENABLE_EXECUTE_STACK): New.
+	(MINGW_ENABLE_EXECUTE_STACK): New.
+	(IN_LIBGCC2): For libgcc include windows.h file for
+	function declarations.
+
 2008-04-08  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.c (cris_address_cost): For a PLUS, swap tem1
