@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2003-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -133,6 +133,11 @@ package System.CRTL is
    function malloc (Size : size_t) return System.Address;
    pragma Import (C, malloc, "malloc");
 
+   function malloc32 (Size : size_t) return System.Address;
+   pragma Import (C, malloc32, "malloc");
+   --  An uncalled alias for malloc except on 64bit systems needing to
+   --  allocate 32bit memory.
+
    procedure memcpy (S1 : System.Address; S2 : System.Address; N : size_t);
    pragma Import (C, memcpy, "memcpy");
 
@@ -151,6 +156,12 @@ package System.CRTL is
    function realloc
      (Ptr : System.Address; Size : size_t) return System.Address;
    pragma Import (C, realloc, "realloc");
+
+   function realloc32
+     (Ptr : System.Address; Size : size_t) return System.Address;
+   pragma Import (C, realloc32, "realloc");
+   --  An uncalled alias for realloc except on 64bit systems needing to
+   --  allocate 32bit memory.
 
    procedure rewind (stream : FILEs);
    pragma Import (C, rewind, "rewind");
