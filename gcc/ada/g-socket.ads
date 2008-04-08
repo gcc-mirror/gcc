@@ -39,8 +39,7 @@
 
 --       Multicast is available only on systems which provide support for this
 --       feature, so it is not available if Multicast is not supported, or not
---       installed. In particular Multicast is not available with the Windows
---       version.
+--       installed.
 
 --       The VMS implementation was implemented using the DECC RTL Socket API,
 --       and is thus subject to limitations in the implementation of this API.
@@ -58,8 +57,13 @@ with System;
 package GNAT.Sockets is
 
    --  Sockets are designed to provide a consistent communication facility
-   --  between applications. This package provides an Ada-like interface
-   --  similar to that proposed as part of the BSD socket layer.
+   --  between applications. This package provides an Ada binding to the
+   --  the de-facto standard BSD sockets API. The documentation below covers
+   --  only the specific binding provided by this package. It assumes that
+   --  the reader is already familiar with general network programming and
+   --  sockets usage. A useful reference on this matter is W. Richard Stevens'
+   --  "UNIX Network Programming: The Sockets Networking API"
+   --  (ISBN: 0131411551).
 
    --  GNAT.Sockets has been designed with several ideas in mind
 
@@ -78,7 +82,7 @@ package GNAT.Sockets is
    --  notification of an asynchronous connect failure is delivered in the
    --  write socket set (POSIX) instead of the exception socket set (NT).
 
-   --  Here is a typical example of what you can do:
+   --  The example below demonstrates various features of GNAT.Sockets:
 
    --  with GNAT.Sockets; use GNAT.Sockets;
 
@@ -773,9 +777,9 @@ package GNAT.Sockets is
 
    procedure Connect_Socket
      (Socket : Socket_Type;
-      Server : in out Sock_Addr_Type);
-   --  Make a connection to another socket which has the address of
-   --  Server. Raises Socket_Error on error.
+      Server : Sock_Addr_Type);
+   --  Make a connection to another socket which has the address of Server.
+   --  Raises Socket_Error on error.
 
    procedure Control_Socket
      (Socket  : Socket_Type;
