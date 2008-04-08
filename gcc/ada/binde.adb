@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -867,10 +867,12 @@ package body Binde is
          --  Skip if this with is an interface to a stand-alone library.
          --  Skip also if no ALI file for this WITH, happens for language
          --  defined generics while bootstrapping the compiler (see body of
-         --  Lib.Writ.Write_With_Lines).
+         --  Lib.Writ.Write_With_Lines). Finally, skip if it is a limited
+         --  with clause, which does not impose an elaboration link.
 
          if not Withs.Table (W).SAL_Interface
            and then Withs.Table (W).Afile /= No_File
+           and then not Withs.Table (W).Limited_With
          then
             declare
                Info : constant Int :=
@@ -1237,8 +1239,8 @@ package body Binde is
                         Make_Elab_Entry
                           (Withs.Table (W).Uname, No_Elab_All_Link));
 
-                     --  Elaborate_All_Desirable case, for this we establish
-                     --  the same links as above, but with a different reason.
+                  --  Elaborate_All_Desirable case, for this we establish the
+                  --  same links as above, but with a different reason.
 
                   elsif Withs.Table (W).Elab_All_Desirable then
 
@@ -1256,15 +1258,15 @@ package body Binde is
                         Make_Elab_Entry
                           (Withs.Table (W).Uname, No_Elab_All_Link));
 
-                     --  Pragma Elaborate case. We must build a link for the
-                     --  withed unit itself, and also the corresponding body
-                     --  if there is one.
+                  --  Pragma Elaborate case. We must build a link for the
+                  --  withed unit itself, and also the corresponding body if
+                  --  there is one.
 
-                     --  However, skip this processing if there is no ALI file
-                     --  for the WITH entry, because this means it is a
-                     --  generic (even when we fix the generics so that an ALI
-                     --  file is present, we probably still will have no ALI
-                     --  file for unchecked and other special cases).
+                  --  However, skip this processing if there is no ALI file for
+                  --  the WITH entry, because this means it is a generic (even
+                  --  when we fix the generics so that an ALI file is present,
+                  --  we probably still will have no ALI file for unchecked and
+                  --  other special cases).
 
                   elsif Withs.Table (W).Elaborate
                     and then Withs.Table (W).Afile /= No_File
@@ -1276,8 +1278,8 @@ package body Binde is
                           (Corresponding_Body (Withed_Unit), U, Elab);
                      end if;
 
-                     --  Elaborate_Desirable case, for this we establish
-                     --  the same links as above, but with a different reason.
+                  --  Elaborate_Desirable case, for this we establish
+                  --  the same links as above, but with a different reason.
 
                   elsif Withs.Table (W).Elab_Desirable then
                      Build_Link (Withed_Unit, U, Withed);
@@ -1288,8 +1290,14 @@ package body Binde is
                            U, Elab_Desirable);
                      end if;
 
-                     --  Case of normal WITH with no elaboration pragmas, just
-                     --  build the single link to the directly referenced unit
+                  --  A limited_with does not establish an elaboration
+                  --  dependence (that's the whole point!).
+
+                  elsif Withs.Table (W).Limited_With then
+                     null;
+
+                  --  Case of normal WITH with no elaboration pragmas, just
+                  --  build the single link to the directly referenced unit
 
                   else
                      Build_Link (Withed_Unit, U, Withed);
