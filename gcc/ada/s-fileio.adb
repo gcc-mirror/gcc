@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -823,7 +823,7 @@ package body System.File_IO is
       if Stream /= NULL_Stream then
          Full_Name_Len := Name'Length + 1;
          Fullname (1 .. Full_Name_Len - 1) := Name;
-         Fullname (Full_Name_Len) := ASCII.Nul;
+         Fullname (Full_Name_Len) := ASCII.NUL;
 
       --  Normal case of Open or Create
 
@@ -982,7 +982,7 @@ package body System.File_IO is
             Stream := fopen (Namestr'Address, Fopstr'Address, Encoding);
 
             if Stream = NULL_Stream then
-               if file_exists (Namestr'Address) = 0 then
+               if not Tempfile and then file_exists (Namestr'Address) = 0 then
                   raise Name_Error;
                else
                   raise Use_Error;
