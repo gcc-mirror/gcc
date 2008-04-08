@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -428,9 +428,8 @@ package body Stringt is
          for J in 1 .. String_Length (Id) loop
             C := Get_String_Char (Id, J);
 
-            if Character'Val (C) = '"' then
+            if C = Character'Pos ('"') then
                Write_Str ("""""");
-
             else
                Write_Char_Code (C);
             end if;
