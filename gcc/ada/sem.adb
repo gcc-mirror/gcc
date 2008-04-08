@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -547,8 +547,12 @@ package body Sem is
          --  been any other errors, we just ignore it, otherwise it is
          --  a real internal error which we complain about.
 
+         --  We must also consider the case of call to a runtime function
+         --  that is not available in the configurable runtime.
+
          when N_Empty =>
-            pragma Assert (Serious_Errors_Detected /= 0);
+            pragma Assert (Serious_Errors_Detected /= 0
+              or else Configurable_Run_Time_Violations /= 0);
             null;
 
          --  A call to analyze the error node is simply ignored, to avoid
@@ -1275,14 +1279,14 @@ package body Sem is
       --  values for these variables, and also that such calls do not
       --  disturb the settings for units being analyzed at a higher level.
 
+      S_Current_Sem_Unit : constant Unit_Number_Type := Current_Sem_Unit;
       S_Full_Analysis    : constant Boolean          := Full_Analysis;
-      S_In_Default_Expr  : constant Boolean          := In_Default_Expression;
+      S_GNAT_Mode        : constant Boolean          := GNAT_Mode;
+      S_Global_Dis_Names : constant Boolean          := Global_Discard_Names;
+      S_In_Spec_Expr     : constant Boolean          := In_Spec_Expression;
       S_Inside_A_Generic : constant Boolean          := Inside_A_Generic;
       S_New_Nodes_OK     : constant Int              := New_Nodes_OK;
       S_Outer_Gen_Scope  : constant Entity_Id        := Outer_Generic_Scope;
-      S_Sem_Unit         : constant Unit_Number_Type := Current_Sem_Unit;
-      S_GNAT_Mode        : constant Boolean          := GNAT_Mode;
-      S_Discard_Names    : constant Boolean          := Global_Discard_Names;
 
       Generic_Main : constant Boolean :=
                        Nkind (Unit (Cunit (Main_Unit)))
@@ -1356,9 +1360,9 @@ package body Sem is
            (Operating_Mode = Generate_Code or Debug_Flag_X);
       end if;
 
-      Full_Analysis         := True;
-      Inside_A_Generic      := False;
-      In_Default_Expression := False;
+      Full_Analysis      := True;
+      Inside_A_Generic   := False;
+      In_Spec_Expression := False;
 
       Set_Comes_From_Source_Default (False);
       Save_Opt_Config_Switches (Save_Config_Switches);
@@ -1389,17 +1393,16 @@ package body Sem is
 
       --  Restore settings of saved switches to entry values
 
-      Current_Sem_Unit       := S_Sem_Unit;
-      Full_Analysis          := S_Full_Analysis;
-      In_Default_Expression  := S_In_Default_Expr;
-      Inside_A_Generic       := S_Inside_A_Generic;
-      New_Nodes_OK           := S_New_Nodes_OK;
-      Outer_Generic_Scope    := S_Outer_Gen_Scope;
-      GNAT_Mode              := S_GNAT_Mode;
-      Global_Discard_Names   := S_Discard_Names;
+      Current_Sem_Unit     := S_Current_Sem_Unit;
+      Full_Analysis        := S_Full_Analysis;
+      Global_Discard_Names := S_Global_Dis_Names;
+      GNAT_Mode            := S_GNAT_Mode;
+      In_Spec_Expression   := S_In_Spec_Expr;
+      Inside_A_Generic     := S_Inside_A_Generic;
+      New_Nodes_OK         := S_New_Nodes_OK;
+      Outer_Generic_Scope  := S_Outer_Gen_Scope;
 
       Restore_Opt_Config_Switches (Save_Config_Switches);
       Expander_Mode_Restore;
-
    end Semantics;
 end Sem;
