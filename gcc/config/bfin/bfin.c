@@ -779,9 +779,9 @@ bfin_initial_elimination_offset (int from, int to)
 
   if (to == STACK_POINTER_REGNUM)
     {
-      if (current_function_outgoing_args_size >= FIXED_STACK_AREA)
-	offset += current_function_outgoing_args_size;
-      else if (current_function_outgoing_args_size)
+      if (crtl->outgoing_args_size >= FIXED_STACK_AREA)
+	offset += crtl->outgoing_args_size;
+      else if (crtl->outgoing_args_size)
 	offset += FIXED_STACK_AREA;
 
       offset += get_frame_size ();
@@ -945,10 +945,10 @@ emit_link_insn (rtx spreg, HOST_WIDE_INT frame_size)
 static HOST_WIDE_INT
 arg_area_size (void)
 {
-  if (current_function_outgoing_args_size)
+  if (crtl->outgoing_args_size)
     {
-      if (current_function_outgoing_args_size >= FIXED_STACK_AREA)
-	return current_function_outgoing_args_size;
+      if (crtl->outgoing_args_size >= FIXED_STACK_AREA)
+	return crtl->outgoing_args_size;
       else
 	return FIXED_STACK_AREA;
     }

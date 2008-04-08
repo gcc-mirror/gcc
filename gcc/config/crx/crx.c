@@ -318,7 +318,7 @@ crx_compute_frame (void)
   local_vars_size += padding_locals;
 
   size_for_adjusting_sp = local_vars_size + (ACCUMULATE_OUTGOING_ARGS ?
-				     current_function_outgoing_args_size : 0);
+				     crtl->outgoing_args_size : 0);
 }
 
 /* Implements the macro INITIAL_ELIMINATION_OFFSET, return the OFFSET. */
@@ -334,13 +334,13 @@ crx_initial_elimination_offset (int from, int to)
 
   if ((from) == FRAME_POINTER_REGNUM && (to) == STACK_POINTER_REGNUM)
     return (ACCUMULATE_OUTGOING_ARGS ?
-	    current_function_outgoing_args_size : 0);
+	    crtl->outgoing_args_size : 0);
   else if ((from) == ARG_POINTER_REGNUM && (to) == FRAME_POINTER_REGNUM)
     return (sum_regs + local_vars_size);
   else if ((from) == ARG_POINTER_REGNUM && (to) == STACK_POINTER_REGNUM)
     return (sum_regs + local_vars_size +
 	    (ACCUMULATE_OUTGOING_ARGS ?
-	     current_function_outgoing_args_size : 0));
+	     crtl->outgoing_args_size : 0));
   else
     abort ();
 }

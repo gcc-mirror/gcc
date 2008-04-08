@@ -1206,7 +1206,7 @@ cris_initial_frame_pointer_offset (void)
   offs += get_frame_size ();
 
   /* And more; the accumulated args size.  */
-  offs += current_function_outgoing_args_size;
+  offs += crtl->outgoing_args_size;
 
   /* Then round it off, in case we use aligned stack.  */
   if (TARGET_STACK_ALIGN)
@@ -1700,9 +1700,9 @@ cris_simple_epilogue (void)
   if (! reload_completed
       || frame_pointer_needed
       || get_frame_size () != 0
-      || current_function_pretend_args_size
-      || current_function_args_size
-      || current_function_outgoing_args_size
+      || crtl->args.pretend_args_size
+      || crtl->args.size
+      || crtl->outgoing_args_size
       || current_function_calls_eh_return
 
       /* If we're not supposed to emit prologue and epilogue, we must
@@ -2731,14 +2731,14 @@ cris_expand_prologue (void)
   int regno;
   int size = get_frame_size ();
   /* Shorten the used name for readability.  */
-  int cfoa_size = current_function_outgoing_args_size;
+  int cfoa_size = crtl->outgoing_args_size;
   int last_movem_reg = -1;
   int framesize = 0;
   rtx mem, insn;
   int return_address_on_stack = cris_return_address_on_stack ();
   int got_really_used = false;
   int n_movem_regs = 0;
-  int pretend = current_function_pretend_args_size;
+  int pretend = crtl->args.pretend_args_size;
 
   /* Don't do anything if no prologues or epilogues are wanted.  */
   if (!TARGET_PROLOGUE_EPILOGUE)
@@ -2765,7 +2765,7 @@ cris_expand_prologue (void)
     {
       /* See also cris_setup_incoming_varargs where
 	 cfun->machine->stdarg_regs is set.  There are other setters of
-	 current_function_pretend_args_size than stdarg handling, like
+	 crtl->args.pretend_args_size than stdarg handling, like
 	 for an argument passed with parts in R13 and stack.  We must
 	 not store R13 into the pretend-area for that case, as GCC does
 	 that itself.  "Our" store would be marked as redundant and GCC
@@ -2799,7 +2799,7 @@ cris_expand_prologue (void)
 	     get confused.  */
 	}
 
-      /* For other setters of current_function_pretend_args_size, we
+      /* For other setters of crtl->args.pretend_args_size, we
 	 just adjust the stack by leaving the remaining size in
 	 "pretend", handled below.  */
     }
@@ -3012,8 +3012,8 @@ cris_expand_epilogue (void)
   int regno;
   int size = get_frame_size ();
   int last_movem_reg = -1;
-  int argspace_offset = current_function_outgoing_args_size;
-  int pretend =	 current_function_pretend_args_size;
+  int argspace_offset = crtl->outgoing_args_size;
+  int pretend =	 crtl->args.pretend_args_size;
   rtx mem;
   bool return_address_on_stack = cris_return_address_on_stack ();
   /* A reference may have been optimized out

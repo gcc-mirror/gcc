@@ -3769,7 +3769,7 @@ sparc_init_modes (void)
 HOST_WIDE_INT
 sparc_compute_frame_size (HOST_WIDE_INT size, int leaf_function_p)
 {
-  int outgoing_args_size = (current_function_outgoing_args_size
+  int outgoing_args_size = (crtl->outgoing_args_size
 			    + REG_PARM_STACK_SPACE (current_function_decl));
   int n_regs = 0;  /* N_REGS is the number of 4-byte regs saved thus far.  */
   int i;
@@ -3799,7 +3799,7 @@ sparc_compute_frame_size (HOST_WIDE_INT size, int leaf_function_p)
   if (leaf_function_p
       && n_regs == 0
       && size == 0
-      && current_function_outgoing_args_size == 0)
+      && crtl->outgoing_args_size == 0)
     actual_fsize = apparent_fsize = 0;
   else
     {
@@ -5675,7 +5675,7 @@ function_value (const_tree type, enum machine_mode mode, int incoming_p)
 static rtx
 sparc_builtin_saveregs (void)
 {
-  int first_reg = current_function_args_info.words;
+  int first_reg = crtl->args.info.words;
   rtx address;
   int regno;
 

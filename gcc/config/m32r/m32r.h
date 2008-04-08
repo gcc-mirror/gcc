@@ -717,7 +717,7 @@ extern enum reg_class m32r_regno_reg_class[FIRST_PSEUDO_REGISTER];
 /* The frame pointer points at the same place as the stack pointer, except if
    alloca has been called.  */
 #define STARTING_FRAME_OFFSET \
-  M32R_STACK_ALIGN (current_function_outgoing_args_size)
+  M32R_STACK_ALIGN (crtl->outgoing_args_size)
 
 /* Offset from the stack pointer register to the first location at which
    outgoing arguments are placed.  */
@@ -818,9 +818,9 @@ extern enum reg_class m32r_regno_reg_class[FIRST_PSEUDO_REGISTER];
       if ((FROM) == FRAME_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM)	\
 	(OFFSET) = 0;								\
       else if ((FROM) == ARG_POINTER_REGNUM && (TO) == FRAME_POINTER_REGNUM)	\
-	(OFFSET) = size - current_function_pretend_args_size;			\
+	(OFFSET) = size - crtl->args.pretend_args_size;			\
       else if ((FROM) == ARG_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM)	\
-	(OFFSET) = size - current_function_pretend_args_size;			\
+	(OFFSET) = size - crtl->args.pretend_args_size;			\
       else									\
 	gcc_unreachable ();								\
     }										\
@@ -830,7 +830,7 @@ extern enum reg_class m32r_regno_reg_class[FIRST_PSEUDO_REGISTER];
 
 /* If defined, the maximum amount of space required for outgoing
    arguments will be computed and placed into the variable
-   `current_function_outgoing_args_size'.  No space will be pushed
+   `crtl->outgoing_args_size'.  No space will be pushed
    onto the stack for each call; instead, the function prologue should
    increase the stack frame size by this amount.  */
 #define ACCUMULATE_OUTGOING_ARGS 1

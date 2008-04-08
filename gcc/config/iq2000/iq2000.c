@@ -1368,7 +1368,7 @@ iq2000_va_start (tree valist, rtx nextarg)
   /* Find out how many non-float named formals.  */
   int gpr_save_area_size;
   /* Note UNITS_PER_WORD is 4 bytes.  */
-  int_arg_words = current_function_args_info.arg_words;
+  int_arg_words = crtl->args.info.arg_words;
 
   if (int_arg_words < 8 )
     /* Adjust for the prologue's economy measure.  */
@@ -1615,7 +1615,7 @@ compute_frame_size (HOST_WIDE_INT size)
   mask = 0;
   extra_size = IQ2000_STACK_ALIGN ((0));
   var_size = IQ2000_STACK_ALIGN (size);
-  args_size = IQ2000_STACK_ALIGN (current_function_outgoing_args_size);
+  args_size = IQ2000_STACK_ALIGN (crtl->outgoing_args_size);
 
   /* If a function dynamically allocates the stack and
      has 0 for STACK_DYNAMIC_OFFSET then allocate some stack space.  */
@@ -1660,7 +1660,7 @@ compute_frame_size (HOST_WIDE_INT size)
       && ! profile_flag)
     total_size = extra_size = 0;
 
-  total_size += IQ2000_STACK_ALIGN (current_function_pretend_args_size);
+  total_size += IQ2000_STACK_ALIGN (crtl->args.pretend_args_size);
 
   /* Save other computed information.  */
   cfun->machine->total_size = total_size;

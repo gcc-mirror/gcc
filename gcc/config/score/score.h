@@ -508,7 +508,7 @@ extern enum reg_class score_char_to_class[256];
 
 /* The offset of the first local variable from the beginning of the frame.
    See compute_frame_size for details about the frame layout.  */
-#define STARTING_FRAME_OFFSET           current_function_outgoing_args_size
+#define STARTING_FRAME_OFFSET           crtl->outgoing_args_size
 
 /* The argument pointer always points to the first argument.  */
 #define FIRST_PARM_OFFSET(FUNDECL)      0
@@ -578,7 +578,7 @@ extern enum reg_class score_char_to_class[256];
    allocate the area reserved for arguments passed in registers.
    If `ACCUMULATE_OUTGOING_ARGS' is also defined, the only effect
    of this macro is to determine whether the space is included in
-   `current_function_outgoing_args_size'.  */
+   `crtl->outgoing_args_size'.  */
 #define OUTGOING_REG_PARM_STACK_SPACE   1
 
 #define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, STACK_SIZE) 0

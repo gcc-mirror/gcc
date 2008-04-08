@@ -1150,8 +1150,8 @@ init_resource_info (rtx epilogue_insn)
   else
     SET_HARD_REG_BIT (end_of_function_needs.regs, STACK_POINTER_REGNUM);
 
-  if (current_function_return_rtx != 0)
-    mark_referenced_resources (current_function_return_rtx,
+  if (crtl->return_rtx != 0)
+    mark_referenced_resources (crtl->return_rtx,
 			       &end_of_function_needs, 1);
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)

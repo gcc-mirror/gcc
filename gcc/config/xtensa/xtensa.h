@@ -525,7 +525,7 @@ extern const enum reg_class xtensa_regno_to_class[FIRST_PSEUDO_REGISTER];
 
 /* Offset within stack frame to start allocating local variables at.  */
 #define STARTING_FRAME_OFFSET						\
-  current_function_outgoing_args_size
+  crtl->outgoing_args_size
 
 /* The ARG_POINTER and FRAME_POINTER are not real Xtensa registers, so
    they are eliminated to either the stack pointer or hard frame pointer.  */
@@ -556,7 +556,7 @@ extern const enum reg_class xtensa_regno_to_class[FIRST_PSEUDO_REGISTER];
 
 /* If defined, the maximum amount of space required for outgoing
    arguments will be computed and placed into the variable
-   'current_function_outgoing_args_size'.  No space will be pushed
+   'crtl->outgoing_args_size'.  No space will be pushed
    onto the stack for each call; instead, the function prologue
    should increase the stack frame size by this amount.  */
 #define ACCUMULATE_OUTGOING_ARGS 1

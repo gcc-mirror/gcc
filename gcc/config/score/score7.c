@@ -183,7 +183,7 @@ score7_compute_frame_size (HOST_WIDE_INT size)
   f->gp_reg_size = 0;
   f->mask = 0;
   f->var_size = SCORE7_STACK_ALIGN (size);
-  f->args_size = current_function_outgoing_args_size;
+  f->args_size = crtl->outgoing_args_size;
   f->cprestore_size = flag_pic ? UNITS_PER_WORD : 0;
   if (f->var_size == 0 && current_function_is_leaf)
     f->args_size = f->cprestore_size = 0;

@@ -1686,8 +1686,8 @@ direct_return (void)
       if (cfun->static_chain_decl == 0
 	  && (spu_saved_regs_size ()
 	      + get_frame_size ()
-	      + current_function_outgoing_args_size
-	      + current_function_pretend_args_size == 0)
+	      + crtl->outgoing_args_size
+	      + crtl->args.pretend_args_size == 0)
 	  && current_function_is_leaf)
 	return 1;
     }
@@ -1705,7 +1705,7 @@ direct_return (void)
  prev SP | back chain  | 
          +-------------+
          |  var args   | 
-         |  reg save   | current_function_pretend_args_size bytes
+         |  reg save   | crtl->args.pretend_args_size bytes
          +-------------+
          |    ...      | 
          | saved regs  | spu_saved_regs_size() bytes
@@ -1715,7 +1715,7 @@ direct_return (void)
          +-------------+
          |    ...      | 
          |  outgoing   | 
-         |    args     | current_function_outgoing_args_size bytes
+         |    args     | crtl->outgoing_args_size bytes
          +-------------+
          | $lr of next |
          |   frame     | 
@@ -1749,8 +1749,8 @@ spu_expand_prologue (void)
 
   saved_regs_size = spu_saved_regs_size ();
   total_size = size + saved_regs_size
-    + current_function_outgoing_args_size
-    + current_function_pretend_args_size;
+    + crtl->outgoing_args_size
+    + crtl->args.pretend_args_size;
 
   if (!current_function_is_leaf
       || current_function_calls_alloca || total_size > 0)
@@ -1766,7 +1766,7 @@ spu_expand_prologue (void)
 
   if (total_size > 0)
     {
-      offset = -current_function_pretend_args_size;
+      offset = -crtl->args.pretend_args_size;
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
 	if (need_to_save_reg (regno, 1))
 	  {
@@ -1840,7 +1840,7 @@ spu_expand_prologue (void)
 	{
 	  rtx fp_reg = gen_rtx_REG (Pmode, HARD_FRAME_POINTER_REGNUM);
 	  HOST_WIDE_INT fp_offset = STACK_POINTER_OFFSET
-	    + current_function_outgoing_args_size;
+	    + crtl->outgoing_args_size;
 	  /* Set the new frame_pointer */
 	  insn = frame_emit_add_imm (fp_reg, sp_reg, fp_offset, scratch_reg_0);
 	  RTX_FRAME_RELATED_P (insn) = 1;
@@ -1874,8 +1874,8 @@ spu_expand_epilogue (bool sibcall_p)
 
   saved_regs_size = spu_saved_regs_size ();
   total_size = size + saved_regs_size
-    + current_function_outgoing_args_size
-    + current_function_pretend_args_size;
+    + crtl->outgoing_args_size
+    + crtl->args.pretend_args_size;
 
   if (!current_function_is_leaf
       || current_function_calls_alloca || total_size > 0)
@@ -1891,7 +1891,7 @@ spu_expand_epilogue (bool sibcall_p)
 
       if (saved_regs_size > 0)
 	{
-	  offset = -current_function_pretend_args_size;
+	  offset = -crtl->args.pretend_args_size;
 	  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
 	    if (need_to_save_reg (regno, 1))
 	      {
@@ -3045,15 +3045,15 @@ spu_initial_elimination_offset (int from, int to)
 {
   int saved_regs_size = spu_saved_regs_size ();
   int sp_offset = 0;
-  if (!current_function_is_leaf || current_function_outgoing_args_size
+  if (!current_function_is_leaf || crtl->outgoing_args_size
       || get_frame_size () || saved_regs_size)
     sp_offset = STACK_POINTER_OFFSET;
   if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
-    return (sp_offset + current_function_outgoing_args_size);
+    return (sp_offset + crtl->outgoing_args_size);
   else if (from == FRAME_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
     return 0;
   else if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
-    return sp_offset + current_function_outgoing_args_size
+    return sp_offset + crtl->outgoing_args_size
       + get_frame_size () + saved_regs_size + STACK_POINTER_OFFSET;
   else if (from == ARG_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
     return get_frame_size () + saved_regs_size + sp_offset;
@@ -3211,10 +3211,10 @@ spu_build_builtin_va_list (void)
    The following global variables are used to initialize
    the va_list structure:
 
-     current_function_args_info;
+     crtl->args.info;
        the CUMULATIVE_ARGS for this function
 
-     current_function_arg_offset_rtx:
+     crtl->args.arg_offset_rtx:
        holds the offset of the first anonymous stack argument
        (relative to the virtual arg pointer).  */
 
@@ -3235,7 +3235,7 @@ spu_va_start (tree valist, rtx nextarg)
 
   /* Find the __args area.  */
   t = make_tree (TREE_TYPE (args), nextarg);
-  if (current_function_pretend_args_size > 0)
+  if (crtl->args.pretend_args_size > 0)
     t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (args), t,
 		size_int (-STACK_POINTER_OFFSET));
   t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (args), args, t);
@@ -3245,7 +3245,7 @@ spu_va_start (tree valist, rtx nextarg)
   /* Find the __skip area.  */
   t = make_tree (TREE_TYPE (skip), virtual_incoming_args_rtx);
   t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (skip), t,
-	      size_int (current_function_pretend_args_size
+	      size_int (crtl->args.pretend_args_size
 			 - STACK_POINTER_OFFSET));
   t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (skip), skip, t);
   TREE_SIDE_EFFECTS (t) = 1;

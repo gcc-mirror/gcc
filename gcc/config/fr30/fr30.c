@@ -181,8 +181,8 @@ fr30_compute_frame_size (int from_reg, int to_reg)
   unsigned int 	gmask;
 
   var_size	= WORD_ALIGN (get_frame_size ());
-  args_size	= WORD_ALIGN (current_function_outgoing_args_size);
-  pretend_size	= current_function_pretend_args_size;
+  args_size	= WORD_ALIGN (crtl->outgoing_args_size);
+  pretend_size	= crtl->args.pretend_args_size;
 
   reg_size	= 0;
   gmask		= 0;

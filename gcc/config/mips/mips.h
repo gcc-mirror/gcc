@@ -1883,7 +1883,7 @@ enum reg_class
    See mips_compute_frame_info for details about the frame layout.  */
 
 #define STARTING_FRAME_OFFSET						\
-  (current_function_outgoing_args_size					\
+  (crtl->outgoing_args_size					\
    + (TARGET_CALL_CLOBBERED_GP ? MIPS_STACK_ALIGN (UNITS_PER_WORD) : 0))
 
 #define RETURN_ADDR_RTX mips_return_addr
@@ -1935,7 +1935,7 @@ enum reg_class
    allocate the area reserved for arguments passed in registers.
    If `ACCUMULATE_OUTGOING_ARGS' is also defined, the only effect
    of this macro is to determine whether the space is included in
-   `current_function_outgoing_args_size'.  */
+   `crtl->outgoing_args_size'.  */
 #define OUTGOING_REG_PARM_STACK_SPACE 1
 
 #define STACK_BOUNDARY (TARGET_NEWABI ? 128 : 64)

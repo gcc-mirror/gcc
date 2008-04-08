@@ -95,10 +95,10 @@ along with GCC; see the file COPYING3.  If not see
 /* The %d in "POP %d,0".  */
 #define MMIX_POP_ARGUMENT()						\
  ((! TARGET_ABI_GNU							\
-   && current_function_return_rtx != NULL				\
+   && crtl->return_rtx != NULL				\
    && ! current_function_returns_struct)				\
-  ? (GET_CODE (current_function_return_rtx) == PARALLEL			\
-     ? GET_NUM_ELEM (XVEC (current_function_return_rtx, 0)) : 1)	\
+  ? (GET_CODE (crtl->return_rtx) == PARALLEL			\
+     ? GET_NUM_ELEM (XVEC (crtl->return_rtx, 0)) : 1)	\
   : 0)
 
 /* The canonical saved comparison operands for non-cc0 machines, set in
@@ -531,7 +531,7 @@ mmix_initial_elimination_offset (int fromreg, int toreg)
 {
   int regno;
   int fp_sp_offset
-    = (get_frame_size () + current_function_outgoing_args_size + 7) & ~7;
+    = (get_frame_size () + crtl->outgoing_args_size + 7) & ~7;
 
   /* There is no actual offset between these two virtual values, but for
      the frame-pointer, we have the old one in the stack position below
@@ -795,9 +795,9 @@ mmix_reorg (void)
      wasteful to optimize for unused parameter registers.  As of
      2002-04-30, df_regs_ever_live_p (n) seems to be set for only-reads too, but
      that might change.  */
-  if (!TARGET_ABI_GNU && regno < current_function_args_info.regs - 1)
+  if (!TARGET_ABI_GNU && regno < crtl->args.info.regs - 1)
     {
-      regno = current_function_args_info.regs - 1;
+      regno = crtl->args.info.regs - 1;
 
       /* We don't want to let this cause us to go over the limit and make
 	 incoming parameter registers be misnumbered and treating the last
@@ -1838,8 +1838,8 @@ mmix_use_simple_return (void)
   int regno;
 
   int stack_space_to_allocate
-    = (current_function_outgoing_args_size
-       + current_function_pretend_args_size
+    = (crtl->outgoing_args_size
+       + crtl->args.pretend_args_size
        + get_frame_size () + 7) & ~7;
 
   if (!TARGET_USE_RETURN_INSN || !reload_completed)
@@ -1875,8 +1875,8 @@ mmix_expand_prologue (void)
   HOST_WIDE_INT locals_size = get_frame_size ();
   int regno;
   HOST_WIDE_INT stack_space_to_allocate
-    = (current_function_outgoing_args_size
-       + current_function_pretend_args_size
+    = (crtl->outgoing_args_size
+       + crtl->args.pretend_args_size
        + locals_size + 7) & ~7;
   HOST_WIDE_INT offset = -8;
 
@@ -1909,12 +1909,12 @@ mmix_expand_prologue (void)
     internal_error ("stack frame not a multiple of 8 bytes: %wd",
 		    stack_space_to_allocate);
 
-  if (current_function_pretend_args_size)
+  if (crtl->args.pretend_args_size)
     {
       int mmix_first_vararg_reg
 	= (MMIX_FIRST_INCOMING_ARG_REGNUM
 	   + (MMIX_MAX_ARGS_IN_REGS
-	      - current_function_pretend_args_size / 8));
+	      - crtl->args.pretend_args_size / 8));
 
       for (regno
 	     = MMIX_FIRST_INCOMING_ARG_REGNUM + MMIX_MAX_ARGS_IN_REGS - 1;
@@ -2110,12 +2110,12 @@ mmix_expand_epilogue (void)
   HOST_WIDE_INT locals_size = get_frame_size ();
   int regno;
   HOST_WIDE_INT stack_space_to_deallocate
-    = (current_function_outgoing_args_size
-       + current_function_pretend_args_size
+    = (crtl->outgoing_args_size
+       + crtl->args.pretend_args_size
        + locals_size + 7) & ~7;
 
   /* The first address to access is beyond the outgoing_args area.  */
-  HOST_WIDE_INT offset = current_function_outgoing_args_size;
+  HOST_WIDE_INT offset = crtl->outgoing_args_size;
 
   /* Add the space for global non-register-stack registers.
      It is assumed that the frame-pointer register can be one of these

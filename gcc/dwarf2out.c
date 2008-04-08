@@ -2744,10 +2744,10 @@ dwarf2out_switch_text_section (void)
 
   fde = &fde_table[fde_table_in_use - 1];
   fde->dw_fde_switched_sections = true;
-  fde->dw_fde_hot_section_label = cfun->hot_section_label;
-  fde->dw_fde_hot_section_end_label = cfun->hot_section_end_label;
-  fde->dw_fde_unlikely_section_label = cfun->cold_section_label;
-  fde->dw_fde_unlikely_section_end_label = cfun->cold_section_end_label;
+  fde->dw_fde_hot_section_label = crtl->subsections.hot_section_label;
+  fde->dw_fde_hot_section_end_label = crtl->subsections.hot_section_end_label;
+  fde->dw_fde_unlikely_section_label = crtl->subsections.cold_section_label;
+  fde->dw_fde_unlikely_section_end_label = crtl->subsections.cold_section_end_label;
   have_multiple_function_sections = true;
 
   /* Reset the current label on switching text sections, so that we
@@ -8222,7 +8222,7 @@ output_line_info (void)
   current_line = 1;
 
   if (cfun && in_cold_section_p)
-    strcpy (prev_line_label, cfun->cold_section_label);
+    strcpy (prev_line_label, crtl->subsections.cold_section_label);
   else
     strcpy (prev_line_label, text_section_label);
   for (lt_index = 1; lt_index < line_info_table_in_use; ++lt_index)
@@ -10792,7 +10792,7 @@ secname_for_decl (const_tree decl)
       secname = TREE_STRING_POINTER (sectree);
     }
   else if (cfun && in_cold_section_p)
-    secname = cfun->cold_section_label;
+    secname = crtl->subsections.cold_section_label;
   else
     secname = text_section_label;
 
@@ -14611,7 +14611,7 @@ dwarf2out_var_location (rtx loc_note)
   newloc->next = NULL;
 
   if (cfun && in_cold_section_p)
-    newloc->section_label = cfun->cold_section_label;
+    newloc->section_label = crtl->subsections.cold_section_label;
   else
     newloc->section_label = text_section_label;
 

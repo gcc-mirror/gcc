@@ -303,7 +303,7 @@ enum reg_class
 #define FRAME_GROWS_DOWNWARD 0
 
 #define STARTING_FRAME_OFFSET						\
-  (current_function_outgoing_args_size)
+  (crtl->outgoing_args_size)
 
 /* Use the default value zero.  */
 /* #define STACK_POINTER_OFFSET 0 */

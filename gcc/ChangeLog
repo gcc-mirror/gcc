@@ -1,3 +1,152 @@
+2008-04-08  Jan Hubicka  <jh@suse.cz>
+
+	* function.h (incomming_args): Break out of struct function.
+	(function_subsections): Break out of struct function.
+	(rtl_data): Add args, subsections fields. Break out outgoing_args_size,
+	return_rtx and hard_reg_initial_vals from struct function.
+	Kill inl_max_label_num.
+	(current_function_pops_args, current_function_args_info,
+	current_function_args_size, current_function_args_size,
+	current_function_pretend_args_size,
+	current_function_outgoing_args_size,
+	current_function_internal_arg_pointer, current_function_return_rtx):
+	Kill compatibility accestor macros.
+	* builtins.c (expand_builtin_apply_args_1): Update.
+	(expand_builtin_next_arg): Update.
+	* df-scan.c (df_get_call_refs): Update.
+	* dbxout.c (dbxout_function_end): Update.
+	* dwarf2out.c (dwarf2out_switch_text_section): Update.
+	(output_line_info): Update.
+	(secname_for_decl): Update.
+	(dwarf2out_var_location): Update.
+	* function.c (free_after_compilation): Update.
+	(assign_parm_find_stack_rtl): Update.
+	(assign_parms): Update.
+	(expand_dummy_function_end): Update.
+	(expand_function_end): Update.
+	* calls.c (mem_overlaps_already_clobbered_arg_p): Update.
+	(expand_call): Update.
+	(emit_library_call_value_1): Update.
+	(store_one_arg): Update.
+	* varasm.c (initialize_cold_section_name): Update.
+	(unlikely_text_section): Update.
+	(unlikely_text_section_p): Update.
+	(assemble_start_function): Update.
+	(assemble_end_function): Update.
+	(default_section_type_flags): Update.
+	(switch_to_section): Update.
+	* integrate.c (set_decl_abstract_flags): Update.
+	(get_hard_reg_initial_val): Update.
+	(has_hard_reg_initial_val): Update.
+	(allocate_initial_values): Update.
+	* resource.c (init_resource_info): Update.
+	* config/alpha/alpha.c (NUM_ARGS): Update.
+	(direct_return): Update.
+	(alpha_va_start): Update.
+	(alpha_sa_size): Update.
+	(alpha_initial_elimination_offset): Update.
+	(alpha_expand_prologue): Update.
+	(alpha_start_function): Update.
+	(alpha_expand_epilogue): Update.
+	(unicosmk_initial_elimination_offset):
+	* config/alpha/alpha.md (call expander): Update.
+	* config/s390/s390.c (s390_register_info): Update.
+	(s390_register_info): Update.
+	(s390_frame_info): Update.
+	(s390_initial_elimination_offset): Update.
+	(s390_build_builtin_va_list): Update.
+	(s390_va_start): Update.
+	* config/spu/spu.c (direct_return): Update.
+	(spu_expand_prologue): Update.
+	(spu_initial_elimination_offset): Update.
+	(spu_build_builtin_va_list): Update.
+	(spu_va_start): Update.
+	* config/sparc/sparc.c (sparc_init_modes): Update.
+	(sparc_compute_frame_size): Update.
+	(function_value): Update.
+	* config/m32r/m32r.c (m32r_compute_frame_size): Update.
+	* config/i386/i386.md (return expander): Update.
+	* config/i386/i386.c (ix86_va_start): Update.
+	(ix86_can_use_return_insn_p): Update.
+	(ix86_compute_frame_layout): Update.
+	(ix86_expand_epilogue): Update.
+	* config/sh/sh.c (output_stack_adjust): Update.
+	(calc_live_regs): Update.
+	(sh_expand_prologue): Update.
+	(sh_builtin_saveregs): Update.
+	(sh_va_start): Update.
+	(initial_elimination_offset): Update.
+	(sh_allocate_initial_value): Update.
+	(sh_function_ok_for_sibcall): Update.
+	(sh_get_pr_initial_val): Update.
+	* config/sh/sh.md (return expander): Update.
+	* config/avr/avr.c (frame_pointer_required_p): UPdate.
+	* config/crx/crx.c (crx_compute_frame): UPdate.
+	(crx_initial_elimination_offset): UPdate.
+	* config/xtensa/xtensa.c (compute_frame_size): Update
+	(xtensa_builtin_saveregs): Update.
+	(xtensa_va_start): Update.
+	(order_regs_for_local_alloc): Update.
+	* config/stormy16/stormy16.c (xstormy16_compute_stack_layout): Update.
+	(xstormy16_expand_builtin_va_start): Update.
+	* config/fr30/fr30.c (fr30_compute_frame_size): Update.
+	* config/m68hc11/m68hc11.md (return expanders): Update.
+	* config/m68hc11/m68hc11.c (expand_prologue): Update.
+	(expand_epilogue): Update.
+	* config/cris/cris.c (cris_initial_frame_pointer_offset): Update.
+	(cris_simple_epilogue): Update.
+	(cris_expand_prologue): Update.
+	(cris_expand_epilogue): Update.
+	* config/iq2000/iq2000.c (iq2000_va_start): Update.
+	(compute_frame_size): Update.
+	* config/mt/mt.c (mt_compute_frame_size): Update.
+	* config/mn10300/mn10300.c (expand_prologue): Update.
+	(expand_epilogue): Update.
+	(initial_offset): Update.
+	(mn10300_builtin_saveregs):
+	* config/mn10300/mn10300.md (return expander): Update.
+	* config/ia64/ia64.c (ia64_compute_frame_size): Update.
+	(ia64_initial_elimination_offset): Update.
+	(ia64_initial_elimination_offset): Update.
+	(ia64_expand_prologue): Update.
+	* config/m68k/m68k.md (return expander): Update.
+	* config/rs6000/rs6000.c (rs6000_va_start): Update.
+	(rs6000_stack_info): Update.
+	* config/mcore/mcore.c (layout_mcore_frame): Update.
+	(mcore_expand_prolog): Update.
+	* config/arc/arc.c (arc_compute_frame_size): Update.
+	* config/score/score3.c (score3_compute_frame_size): Update.
+	* config/score/score7.c (score7_compute_frame_size): Update.
+	* config/arm/arm.c (use_return_insn): Update.
+	(thumb_find_work_register): Update.
+	(arm_compute_save_reg_mask): Update.
+	(arm_output_function_prologue): Update.
+	(arm_output_epilogue): Update.
+	(arm_size_return_regs): Update.
+	(arm_get_frame_offsets): Update.
+	(arm_expand_prologue): Update.
+	(thumb_exit): Update.
+	(thumb_unexpanded_epilogue): Update.
+	(thumb1_output_function_prologue): Update.
+	* config/pa/pa.md (return expander): Update.
+	* config/pa/pa.c (compute_frame_size): Update.
+	(hppa_builtin_saveregs): Update.
+	* config/mips/mips.c (mips_va_start): Update.
+	(mips16_build_function_stub): Update.
+	(mips_compute_frame_info): Update.
+	(mips_restore_gp): Update.
+	(mips_output_function_prologue): Update.
+	(mips_expand_prologue): Update.
+	* config/v850/v850.c (compute_frame_size): Update.
+	(expand_prologue): * config/mmix/mmix.c (along): update.
+	(mmix_initial_elimination_offset): update.
+	(mmix_reorg): update.
+	(mmix_use_simple_return): update.
+	(mmix_expand_prologue): update.
+	(mmix_expand_epilogue): Update.
+	* config/bfin/bfin.c (bfin_initial_elimination_offset): Update.
+	(emit_link_insn): Update.
+
 2008-04-08  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.h (TARGET_CPU_CPP_BUILTINS): Define 

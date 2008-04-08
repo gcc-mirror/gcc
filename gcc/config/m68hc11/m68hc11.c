@@ -1597,7 +1597,7 @@ expand_prologue (void)
      If the first argument is a 32-bit quantity, the D+X registers
      are used.  Use Y to compute the frame.  Otherwise, X is cheaper.
      For 68HC12, this scratch register is not used.  */
-  if (current_function_args_info.nregs == 2)
+  if (crtl->args.info.nregs == 2)
     scratch = iy_reg;
   else
     scratch = ix_reg;
@@ -1685,12 +1685,12 @@ expand_epilogue (void)
   /* If we are returning a value in two registers, we have to preserve the
      X register and use the Y register to restore the stack and the saved
      registers.  Otherwise, use X because it's faster (and smaller).  */
-  if (current_function_return_rtx == 0)
+  if (crtl->return_rtx == 0)
     return_size = 0;
-  else if (GET_CODE (current_function_return_rtx) == MEM)
+  else if (GET_CODE (crtl->return_rtx) == MEM)
     return_size = HARD_REG_SIZE;
   else
-    return_size = GET_MODE_SIZE (GET_MODE (current_function_return_rtx));
+    return_size = GET_MODE_SIZE (GET_MODE (crtl->return_rtx));
 
   if (return_size > HARD_REG_SIZE && return_size <= 2 * HARD_REG_SIZE)
     scratch = iy_reg;
