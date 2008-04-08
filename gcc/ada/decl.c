@@ -1400,7 +1400,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	gnu_type = make_unsigned_type (GET_MODE_BITSIZE (mode));
 	TYPE_PACKED_ARRAY_TYPE_P (gnu_type)
-	  = Is_Packed_Array_Type (gnat_entity);
+	  = (Is_Packed_Array_Type (gnat_entity)
+	     && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)));
 
 	/* Get the modulus in this type.  If it overflows, assume it is because
 	   it is equal to 2**Esize.  Note that there is no overflow checking
@@ -1435,7 +1436,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    TYPE_UNSIGNED (gnu_subtype) = 1;
 	    TYPE_EXTRA_SUBTYPE_P (gnu_subtype) = 1;
 	    TYPE_PACKED_ARRAY_TYPE_P (gnu_subtype)
-	      = Is_Packed_Array_Type (gnat_entity);
+	      = (Is_Packed_Array_Type (gnat_entity)
+		 && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)));
 	    layout_type (gnu_subtype);
 
 	    gnu_type = gnu_subtype;
@@ -1473,7 +1475,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			    gnu_expr, 0);
 
       gnu_type = make_node (INTEGER_TYPE);
-      if (Is_Packed_Array_Type (gnat_entity))
+      if (Is_Packed_Array_Type (gnat_entity)
+	  && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)))
 	{
 	  esize = UI_To_Int (RM_Size (gnat_entity));
 	  TYPE_PACKED_ARRAY_TYPE_P (gnu_type) = 1;
@@ -1531,7 +1534,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	 such values), we only get the good bits, since the unused bits
 	 are uninitialized.  Both goals are accomplished by wrapping the
 	 modular value in an enclosing struct.  */
-      if (Is_Packed_Array_Type (gnat_entity))
+      if (Is_Packed_Array_Type (gnat_entity)
+	    && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)))
 	{
 	  tree gnu_field_type = gnu_type;
 	  tree gnu_field;
@@ -1839,7 +1843,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    && !Has_Aliased_Components (gnat_entity)
 	    && !Strict_Alignment (Component_Type (gnat_entity))
 	    && TREE_CODE (tem) == RECORD_TYPE
-	    && TYPE_MODE (tem) == BLKmode
 	    && host_integerp (TYPE_SIZE (tem), 1))
 	  tem = make_packable_type (tem, false);
 
@@ -2208,7 +2211,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  && !Has_Aliased_Components (gnat_entity)
 		  && !Strict_Alignment (Component_Type (gnat_entity))
 		  && TREE_CODE (gnu_type) == RECORD_TYPE
-		  && TYPE_MODE (gnu_type) == BLKmode
 		  && host_integerp (TYPE_SIZE (gnu_type), 1))
 		gnu_type = make_packable_type (gnu_type, false);
 
@@ -2341,7 +2343,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  TYPE_CONVENTION_FORTRAN_P (gnu_type)
 	    = (Convention (gnat_entity) == Convention_Fortran);
 	  TYPE_PACKED_ARRAY_TYPE_P (gnu_type)
-	    = Is_Packed_Array_Type (gnat_entity);
+	    = (Is_Packed_Array_Type (gnat_entity)
+	       && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)));
 
 	  /* If our size depends on a placeholder and the maximum size doesn't
 	     overflow, use it.  */
@@ -5400,12 +5403,12 @@ round_up_to_align (unsigned HOST_WIDE_INT t, unsigned int align)
   return t;
 }
 
-/* TYPE is a RECORD_TYPE, UNION_TYPE, or QUAL_UNION_TYPE, with BLKmode that
-   is being used as the field type of a packed record if IN_RECORD is true,
-   or as the component type of a packed array if IN_RECORD is false.  See
-   if we can rewrite it either as a type that has a non-BLKmode, which we
-   can pack tighter, or as a smaller type with BLKmode.  If so, return the
-   new type.  If not, return the original type.  */
+/* TYPE is a RECORD_TYPE, UNION_TYPE or QUAL_UNION_TYPE that is being used
+   as the field type of a packed record if IN_RECORD is true, or as the
+   component type of a packed array if IN_RECORD is false.  See if we can
+   rewrite it either as a type that has a non-BLKmode, which we can pack
+   tighter in the packed record case, or as a smaller type with BLKmode.
+   If so, return the new type.  If not, return the original type.  */
 
 static tree
 make_packable_type (tree type, bool in_record)
