@@ -182,6 +182,7 @@ package System.OS_Interface is
    SIG_IGN : constant := 1;
 
    SA_SIGINFO : constant := 16#0040#;
+   SA_ONSTACK : constant := 16#0001#;
 
    function sigaction
      (sig  : Signal;
@@ -293,42 +294,57 @@ package System.OS_Interface is
    -- Stack --
    -----------
 
+   type stack_t is record
+      ss_sp    : System.Address;
+      ss_size  : size_t;
+      ss_flags : int;
+   end record;
+   pragma Convention (C, stack_t);
+
+   function sigaltstack
+     (ss  : not null access stack_t;
+      oss : access stack_t) return int;
+   pragma Import (C, sigaltstack, "sigaltstack");
+
+   Alternate_Stack : aliased System.Address;
+   --  This is a dummy definition, never used (Alternate_Stack_Size is null)
+
+   Alternate_Stack_Size : constant := 0;
+   --  No alternate signal stack is used on this platform
+
    Stack_Base_Available : constant Boolean := False;
-   --  Indicates wether the stack base is available on this target.
-   --  This allows us to share s-osinte.adb between all the FSU run time.
-   --  Note that this value can only be true if pthread_t has a complete
-   --  definition that corresponds exactly to the C header files.
+   --  Indicates wether the stack base is available on this target. This allows
+   --  us to share s-osinte.adb between all the FSU run time. Note that this
+   --  value can only be true if pthread_t has a complete definition that
+   --  corresponds exactly to the C header files.
 
    function Get_Stack_Base (thread : pthread_t) return Address;
    pragma Inline (Get_Stack_Base);
-   --  returns the stack base of the specified thread.
-   --  Only call this function when Stack_Base_Available is True.
+   --  returns the stack base of the specified thread. Only call this function
+   --  when Stack_Base_Available is True.
 
    function Get_Page_Size return size_t;
    function Get_Page_Size return Address;
    pragma Import (C, Get_Page_Size, "getpagesize");
-   --  returns the size of a page, or 0 if this is not relevant on this
-   --  target
+   --  returns the size of a page, or 0 if this is not relevant on this target
 
    PROT_NONE  : constant := 0;
    PROT_READ  : constant := 1;
    PROT_WRITE : constant := 2;
    PROT_EXEC  : constant := 4;
    PROT_ALL   : constant := PROT_READ + PROT_WRITE + PROT_EXEC;
-
    PROT_ON    : constant := PROT_NONE;
    PROT_OFF   : constant := PROT_ALL;
 
-   function mprotect
-     (addr : Address; len : size_t; prot : int) return int;
+   function mprotect (addr : Address; len : size_t; prot : int) return int;
    pragma Import (C, mprotect);
 
    ---------------------------------------
    -- Nonstandard Thread Initialization --
    ---------------------------------------
 
-   --  FSU_THREADS requires pthread_init, which is nonstandard and
-   --  this should be invoked during the elaboration of s-taprop.adb
+   --  FSU_THREADS requires pthread_init, which is nonstandard and this should
+   --  be invoked during the elaboration of s-taprop.adb.
 
    --  FreeBSD does not require this so we provide an empty Ada body
 

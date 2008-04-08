@@ -267,6 +267,9 @@ package System.OS_Interface is
    -- Stack --
    -----------
 
+   Alternate_Stack_Size : constant := 0;
+   --  No alternate signal stack is used on this platform
+
    Stack_Base_Available : constant Boolean := False;
    --  Indicates wether the stack base is available on this target
 

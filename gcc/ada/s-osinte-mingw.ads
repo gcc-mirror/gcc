@@ -35,16 +35,17 @@
 --  This is a NT (native) version of this package
 
 --  This package encapsulates all direct interfaces to OS services
---  that are needed by the tasking run-time (libgnarl).
+--  that are needed by the tasking run-time (libgnarl). For non tasking
+--  oriented services consider declaring them into system-win32.
 
 --  PLEASE DO NOT add any with-clauses to this package or remove the pragma
 --  Preelaborate. This package is designed to be a bottom-level (leaf) package.
 
-with Interfaces.C;
-
-with Interfaces.C.Strings;
-
 with Ada.Unchecked_Conversion;
+
+with Interfaces.C;
+with Interfaces.C.Strings;
+with System.Win32;
 
 package System.OS_Interface is
    pragma Preelaborate;
@@ -58,39 +59,15 @@ package System.OS_Interface is
    -- General Types --
    -------------------
 
-   type DWORD is new Interfaces.C.unsigned_long;
-   type WORD  is new Interfaces.C.unsigned_short;
-
-   --  The LARGE_INTEGER type is actually a fixed point type
-   --  that only can represent integers. The reason for this is
-   --  easier conversion to Duration or other fixed point types.
-   --  (See Operations.Clock)
-
-   type LARGE_INTEGER is delta 1.0 range -2.0**63 .. 2.0**63 - 1.0;
-
    subtype PSZ   is Interfaces.C.Strings.chars_ptr;
-   subtype PCHAR is Interfaces.C.Strings.chars_ptr;
 
-   subtype PVOID is System.Address;
-
-   Null_Void : constant PVOID := System.Null_Address;
-
-   type PLONG  is access all Interfaces.C.long;
-   type PDWORD is access all DWORD;
-   type BYTE is new Interfaces.C.unsigned_char;
-   subtype CHAR is Interfaces.C.char;
-
-   type BOOL is new Boolean;
-   for BOOL'Size use Interfaces.C.unsigned_long'Size;
+   Null_Void : constant Win32.PVOID := System.Null_Address;
 
    -------------------------
    -- Handles for objects --
    -------------------------
 
-   type HANDLE is new Interfaces.C.long;
-   type PHANDLE is access all HANDLE;
-
-   subtype Thread_Id is HANDLE;
+   subtype Thread_Id is Win32.HANDLE;
 
    -----------
    -- Errno --
@@ -98,38 +75,6 @@ package System.OS_Interface is
 
    NO_ERROR : constant := 0;
    FUNC_ERR : constant := -1;
-
-   -----------
-   -- Files --
-   -----------
-
-   type SECURITY_ATTRIBUTES is record
-      nLength             : DWORD;
-      pSecurityDescriptor : PVOID;
-      bInheritHandle      : BOOL;
-   end record;
-
-   function CloseHandle (hObject : HANDLE) return BOOL;
-   pragma Import (Stdcall, CloseHandle, "CloseHandle");
-
-   ------------------------
-   -- System Information --
-   ------------------------
-
-   type SYSTEM_INFO is record
-      dwOemId                     : DWORD;
-      dwPageSize                  : DWORD;
-      lpMinimumApplicationAddress : PVOID;
-      lpMaximumApplicationAddress : PVOID;
-      dwActiveProcessorMask       : DWORD;
-      dwNumberOfProcessors        : DWORD;
-      dwProcessorType             : DWORD;
-      dwAllocationGranularity     : DWORD;
-      dwReserved                  : DWORD;
-   end record;
-
-   procedure GetSystemInfo (SI : access SYSTEM_INFO);
-   pragma Import (Stdcall, GetSystemInfo, "GetSystemInfo");
 
    -------------
    -- Signals --
@@ -161,63 +106,6 @@ package System.OS_Interface is
    procedure kill (sig : Signal);
    pragma Import (C, kill, "raise");
 
-   ---------------------
-   -- Time Management --
-   ---------------------
-
-   procedure Sleep (dwMilliseconds : DWORD);
-   pragma Import (Stdcall, Sleep, External_Name => "Sleep");
-
-   type SYSTEMTIME is record
-      wYear         : WORD;
-      wMonth        : WORD;
-      wDayOfWeek    : WORD;
-      wDay          : WORD;
-      wHour         : WORD;
-      wMinute       : WORD;
-      wSecond       : WORD;
-      wMilliseconds : WORD;
-   end record;
-
-   procedure GetSystemTime (pSystemTime : access SYSTEMTIME);
-   pragma Import (Stdcall, GetSystemTime, "GetSystemTime");
-
-   procedure GetSystemTimeAsFileTime (lpFileTime : access Long_Long_Integer);
-   pragma Import (Stdcall, GetSystemTimeAsFileTime, "GetSystemTimeAsFileTime");
-
-   function SetSystemTime (pSystemTime : access SYSTEMTIME) return BOOL;
-   pragma Import (Stdcall, SetSystemTime, "SetSystemTime");
-
-   function FileTimeToSystemTime
-     (lpFileTime   : access Long_Long_Integer;
-      lpSystemTime : access SYSTEMTIME) return BOOL;
-   pragma Import (Stdcall, FileTimeToSystemTime, "FileTimeToSystemTime");
-
-   function SystemTimeToFileTime
-     (lpSystemTime : access SYSTEMTIME;
-      lpFileTime   : access Long_Long_Integer) return BOOL;
-   pragma Import (Stdcall, SystemTimeToFileTime, "SystemTimeToFileTime");
-
-   function FileTimeToLocalFileTime
-     (lpFileTime      : access Long_Long_Integer;
-      lpLocalFileTime : access Long_Long_Integer) return BOOL;
-   pragma Import (Stdcall, FileTimeToLocalFileTime, "FileTimeToLocalFileTime");
-
-   function LocalFileTimeToFileTime
-     (lpFileTime      : access Long_Long_Integer;
-      lpLocalFileTime : access Long_Long_Integer) return BOOL;
-   pragma Import (Stdcall, LocalFileTimeToFileTime, "LocalFileTimeToFileTime");
-
-   function QueryPerformanceCounter
-     (lpPerformanceCount : access LARGE_INTEGER) return BOOL;
-   pragma Import
-     (Stdcall, QueryPerformanceCounter, "QueryPerformanceCounter");
-
-   function QueryPerformanceFrequency
-     (lpFrequency : access LARGE_INTEGER) return BOOL;
-   pragma Import
-     (Stdcall, QueryPerformanceFrequency, "QueryPerformanceFrequency");
-
    -------------
    -- Threads --
    -------------
@@ -233,11 +121,11 @@ package System.OS_Interface is
    pragma Import (Stdcall, SwitchToThread, "SwitchToThread");
 
    function GetThreadTimes
-     (hThread        : HANDLE;
+     (hThread        : Win32.HANDLE;
       lpCreationTime : access Long_Long_Integer;
       lpExitTime     : access Long_Long_Integer;
       lpKernelTime   : access Long_Long_Integer;
-      lpUserTime     : access Long_Long_Integer) return BOOL;
+      lpUserTime     : access Long_Long_Integer) return Win32.BOOL;
    pragma Import (Stdcall, GetThreadTimes, "GetThreadTimes");
 
    -----------------------
@@ -246,52 +134,33 @@ package System.OS_Interface is
 
    type CRITICAL_SECTION is private;
 
-   procedure InitializeCriticalSection
-     (pCriticalSection : access CRITICAL_SECTION);
-   pragma Import
-     (Stdcall, InitializeCriticalSection, "InitializeCriticalSection");
-
-   procedure EnterCriticalSection
-     (pCriticalSection : access CRITICAL_SECTION);
-   pragma Import (Stdcall, EnterCriticalSection, "EnterCriticalSection");
-
-   procedure LeaveCriticalSection
-     (pCriticalSection : access CRITICAL_SECTION);
-   pragma Import (Stdcall, LeaveCriticalSection, "LeaveCriticalSection");
-
-   procedure DeleteCriticalSection
-     (pCriticalSection : access CRITICAL_SECTION);
-   pragma Import (Stdcall, DeleteCriticalSection, "DeleteCriticalSection");
-
    -------------------------------------------------------------
    -- Thread Creation, Activation, Suspension And Termination --
    -------------------------------------------------------------
 
-   subtype ProcessorId is DWORD;
-
    type PTHREAD_START_ROUTINE is access function
-     (pThreadParameter : PVOID) return DWORD;
+     (pThreadParameter : Win32.PVOID) return Win32.DWORD;
    pragma Convention (Stdcall, PTHREAD_START_ROUTINE);
 
    function To_PTHREAD_START_ROUTINE is new
      Ada.Unchecked_Conversion (System.Address, PTHREAD_START_ROUTINE);
 
    function CreateThread
-     (pThreadAttributes : access SECURITY_ATTRIBUTES;
-      dwStackSize       : DWORD;
+     (pThreadAttributes : access Win32.SECURITY_ATTRIBUTES;
+      dwStackSize       : Win32.DWORD;
       pStartAddress     : PTHREAD_START_ROUTINE;
-      pParameter        : PVOID;
-      dwCreationFlags   : DWORD;
-      pThreadId         : PDWORD) return HANDLE;
+      pParameter        : Win32.PVOID;
+      dwCreationFlags   : Win32.DWORD;
+      pThreadId         : access Win32.DWORD) return Win32.HANDLE;
    pragma Import (Stdcall, CreateThread, "CreateThread");
 
    function BeginThreadEx
-     (pThreadAttributes : access SECURITY_ATTRIBUTES;
-      dwStackSize       : DWORD;
+     (pThreadAttributes : access Win32.SECURITY_ATTRIBUTES;
+      dwStackSize       : Win32.DWORD;
       pStartAddress     : PTHREAD_START_ROUTINE;
-      pParameter        : PVOID;
-      dwCreationFlags   : DWORD;
-      pThreadId         : PDWORD) return HANDLE;
+      pParameter        : Win32.PVOID;
+      dwCreationFlags   : Win32.DWORD;
+      pThreadId         : not null access Win32.DWORD) return Win32.HANDLE;
    pragma Import (C, BeginThreadEx, "_beginthreadex");
 
    Debug_Process                     : constant := 16#00000001#;
@@ -311,70 +180,66 @@ package System.OS_Interface is
    Stack_Size_Param_Is_A_Reservation : constant := 16#00010000#;
 
    function GetExitCodeThread
-     (hThread   : HANDLE;
-      pExitCode : PDWORD) return BOOL;
+     (hThread   : Win32.HANDLE;
+      pExitCode : not null access Win32.DWORD) return Win32.BOOL;
    pragma Import (Stdcall, GetExitCodeThread, "GetExitCodeThread");
 
-   function ResumeThread (hThread : HANDLE) return DWORD;
+   function ResumeThread (hThread : Win32.HANDLE) return Win32.DWORD;
    pragma Import (Stdcall, ResumeThread, "ResumeThread");
 
-   function SuspendThread (hThread : HANDLE) return DWORD;
+   function SuspendThread (hThread : Win32.HANDLE) return Win32.DWORD;
    pragma Import (Stdcall, SuspendThread, "SuspendThread");
 
-   procedure ExitThread (dwExitCode : DWORD);
+   procedure ExitThread (dwExitCode : Win32.DWORD);
    pragma Import (Stdcall, ExitThread, "ExitThread");
 
-   procedure EndThreadEx (dwExitCode : DWORD);
+   procedure EndThreadEx (dwExitCode : Win32.DWORD);
    pragma Import (C, EndThreadEx, "_endthreadex");
 
    function TerminateThread
-     (hThread    : HANDLE;
-      dwExitCode : DWORD) return BOOL;
+     (hThread    : Win32.HANDLE;
+      dwExitCode : Win32.DWORD) return Win32.BOOL;
    pragma Import (Stdcall, TerminateThread, "TerminateThread");
 
-   function GetCurrentThread return HANDLE;
+   function GetCurrentThread return Win32.HANDLE;
    pragma Import (Stdcall, GetCurrentThread, "GetCurrentThread");
 
-   function GetCurrentProcess return HANDLE;
+   function GetCurrentProcess return Win32.HANDLE;
    pragma Import (Stdcall, GetCurrentProcess, "GetCurrentProcess");
 
-   function GetCurrentThreadId return DWORD;
+   function GetCurrentThreadId return Win32.DWORD;
    pragma Import (Stdcall, GetCurrentThreadId, "GetCurrentThreadId");
 
-   function TlsAlloc return DWORD;
+   function TlsAlloc return Win32.DWORD;
    pragma Import (Stdcall, TlsAlloc, "TlsAlloc");
 
-   function TlsGetValue (dwTlsIndex : DWORD) return PVOID;
+   function TlsGetValue (dwTlsIndex : Win32.DWORD) return Win32.PVOID;
    pragma Import (Stdcall, TlsGetValue, "TlsGetValue");
 
-   function TlsSetValue (dwTlsIndex : DWORD; pTlsValue : PVOID) return BOOL;
+   function TlsSetValue
+     (dwTlsIndex : Win32.DWORD; pTlsValue : Win32.PVOID) return Win32.BOOL;
    pragma Import (Stdcall, TlsSetValue, "TlsSetValue");
 
-   function TlsFree (dwTlsIndex : DWORD) return BOOL;
+   function TlsFree (dwTlsIndex : Win32.DWORD) return Win32.BOOL;
    pragma Import (Stdcall, TlsFree, "TlsFree");
 
-   TLS_Nothing : constant := DWORD'Last;
+   TLS_Nothing : constant := Win32.DWORD'Last;
 
    procedure ExitProcess (uExitCode : Interfaces.C.unsigned);
    pragma Import (Stdcall, ExitProcess, "ExitProcess");
 
    function WaitForSingleObject
-     (hHandle        : HANDLE;
-      dwMilliseconds : DWORD) return DWORD;
+     (hHandle        : Win32.HANDLE;
+      dwMilliseconds : Win32.DWORD) return Win32.DWORD;
    pragma Import (Stdcall, WaitForSingleObject, "WaitForSingleObject");
 
    function WaitForSingleObjectEx
-     (hHandle        : HANDLE;
-      dwMilliseconds : DWORD;
-      fAlertable     : BOOL) return DWORD;
+     (hHandle        : Win32.HANDLE;
+      dwMilliseconds : Win32.DWORD;
+      fAlertable     : Win32.BOOL) return Win32.DWORD;
    pragma Import (Stdcall, WaitForSingleObjectEx, "WaitForSingleObjectEx");
 
-   function SetThreadIdealProcessor
-     (hThread          : HANDLE;
-      dwIdealProcessor : ProcessorId) return DWORD;
-   pragma Import (Stdcall, SetThreadIdealProcessor, "SetThreadIdealProcessor");
-
-   Wait_Infinite : constant := DWORD'Last;
+   Wait_Infinite : constant := Win32.DWORD'Last;
    WAIT_TIMEOUT  : constant := 16#0000_0102#;
    WAIT_FAILED   : constant := 16#FFFF_FFFF#;
 
@@ -383,59 +248,59 @@ package System.OS_Interface is
    ------------------------------------
 
    function CreateSemaphore
-     (pSemaphoreAttributes : access SECURITY_ATTRIBUTES;
+     (pSemaphoreAttributes : access Win32.SECURITY_ATTRIBUTES;
       lInitialCount        : Interfaces.C.long;
       lMaximumCount        : Interfaces.C.long;
-      pName                : PSZ) return HANDLE;
+      pName                : PSZ) return Win32.HANDLE;
    pragma Import (Stdcall, CreateSemaphore, "CreateSemaphoreA");
 
    function OpenSemaphore
-     (dwDesiredAccess : DWORD;
-      bInheritHandle  : BOOL;
-      pName           : PSZ) return HANDLE;
+     (dwDesiredAccess : Win32.DWORD;
+      bInheritHandle  : Win32.BOOL;
+      pName           : PSZ) return Win32.HANDLE;
    pragma Import (Stdcall, OpenSemaphore, "OpenSemaphoreA");
 
    function ReleaseSemaphore
-     (hSemaphore     : HANDLE;
+     (hSemaphore     : Win32.HANDLE;
       lReleaseCount  : Interfaces.C.long;
-      pPreviousCount : PLONG) return BOOL;
+      pPreviousCount : access Win32.LONG) return Win32.BOOL;
    pragma Import (Stdcall, ReleaseSemaphore, "ReleaseSemaphore");
 
    function CreateEvent
-     (pEventAttributes : access SECURITY_ATTRIBUTES;
-      bManualReset     : BOOL;
-      bInitialState    : BOOL;
-      pName            : PSZ) return HANDLE;
+     (pEventAttributes : access Win32.SECURITY_ATTRIBUTES;
+      bManualReset     : Win32.BOOL;
+      bInitialState    : Win32.BOOL;
+      pName            : PSZ) return Win32.HANDLE;
    pragma Import (Stdcall, CreateEvent, "CreateEventA");
 
    function OpenEvent
-     (dwDesiredAccess : DWORD;
-      bInheritHandle  : BOOL;
-      pName           : PSZ) return HANDLE;
+     (dwDesiredAccess : Win32.DWORD;
+      bInheritHandle  : Win32.BOOL;
+      pName           : PSZ) return Win32.HANDLE;
    pragma Import (Stdcall, OpenEvent, "OpenEventA");
 
-   function SetEvent (hEvent : HANDLE) return BOOL;
+   function SetEvent (hEvent : Win32.HANDLE) return Win32.BOOL;
    pragma Import (Stdcall, SetEvent, "SetEvent");
 
-   function ResetEvent (hEvent : HANDLE) return BOOL;
+   function ResetEvent (hEvent : Win32.HANDLE) return Win32.BOOL;
    pragma Import (Stdcall, ResetEvent, "ResetEvent");
 
-   function PulseEvent (hEvent : HANDLE) return BOOL;
+   function PulseEvent (hEvent : Win32.HANDLE) return Win32.BOOL;
    pragma Import (Stdcall, PulseEvent, "PulseEvent");
 
    function CreateMutex
-     (pMutexAttributes : access SECURITY_ATTRIBUTES;
-      bInitialOwner    : BOOL;
-      pName            : PSZ) return HANDLE;
+     (pMutexAttributes : access Win32.SECURITY_ATTRIBUTES;
+      bInitialOwner    : Win32.BOOL;
+      pName            : PSZ) return Win32.HANDLE;
    pragma Import (Stdcall, CreateMutex, "CreateMutexA");
 
    function OpenMutex
-     (dwDesiredAccess : DWORD;
-      bInheritHandle  : BOOL;
-      pName           : PSZ) return HANDLE;
+     (dwDesiredAccess : Win32.DWORD;
+      bInheritHandle  : Win32.BOOL;
+      pName           : PSZ) return Win32.HANDLE;
    pragma Import (Stdcall, OpenMutex, "OpenMutexA");
 
-   function ReleaseMutex (hMutex : HANDLE) return BOOL;
+   function ReleaseMutex (hMutex : Win32.HANDLE) return Win32.BOOL;
    pragma Import (Stdcall, ReleaseMutex, "ReleaseMutex");
 
    ---------------------------------------------------
@@ -447,21 +312,21 @@ package System.OS_Interface is
    -----------------
 
    function SetThreadPriority
-     (hThread   : HANDLE;
-      nPriority : Interfaces.C.int) return BOOL;
+     (hThread   : Win32.HANDLE;
+      nPriority : Interfaces.C.int) return Win32.BOOL;
    pragma Import (Stdcall, SetThreadPriority, "SetThreadPriority");
 
-   function GetThreadPriority (hThread : HANDLE) return Interfaces.C.int;
+   function GetThreadPriority (hThread : Win32.HANDLE) return Interfaces.C.int;
    pragma Import (Stdcall, GetThreadPriority, "GetThreadPriority");
 
    function SetPriorityClass
-     (hProcess        : HANDLE;
-      dwPriorityClass : DWORD) return BOOL;
+     (hProcess        : Win32.HANDLE;
+      dwPriorityClass : Win32.DWORD) return Win32.BOOL;
    pragma Import (Stdcall, SetPriorityClass, "SetPriorityClass");
 
    procedure SetThreadPriorityBoost
-     (hThread              : HANDLE;
-      DisablePriorityBoost : BOOL);
+     (hThread              : Win32.HANDLE;
+      DisablePriorityBoost : Win32.BOOL);
    pragma Import (Stdcall, SetThreadPriorityBoost, "SetThreadPriorityBoost");
 
    Normal_Priority_Class   : constant := 16#00000020#;
@@ -478,22 +343,21 @@ package System.OS_Interface is
    Thread_Priority_Time_Critical : constant := 15;
    Thread_Priority_Error_Return  : constant := Interfaces.C.long'Last;
 
-   function GetLastError return DWORD;
-   pragma Import (Stdcall, GetLastError, "GetLastError");
-
 private
 
    type sigset_t is new Interfaces.C.unsigned_long;
 
    type CRITICAL_SECTION is record
-      DebugInfo      : System.Address;
-      --  The following three fields control entering and
-      --  exiting the critical section for the resource
+      DebugInfo : System.Address;
+
       LockCount      : Long_Integer;
       RecursionCount : Long_Integer;
-      OwningThread   : HANDLE;
-      LockSemaphore  : HANDLE;
-      Reserved       : DWORD;
+      OwningThread   : Win32.HANDLE;
+      --  The above three fields control entering and exiting the critical
+      --  section for the resource.
+
+      LockSemaphore : Win32.HANDLE;
+      Reserved      : Win32.DWORD;
    end record;
 
 end System.OS_Interface;

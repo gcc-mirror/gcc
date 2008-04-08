@@ -170,7 +170,12 @@ package System.OS_Interface is
    pragma Convention (C, struct_sigaction);
    type struct_sigaction_ptr is access all struct_sigaction;
 
-   SA_SIGINFO  : constant := 16#80#;
+   SA_SIGINFO : constant := 16#80#;
+
+   SA_ONSTACK : constant := 16#00#;
+   --  SA_ONSTACK is not defined on LynxOS, but it is refered to in the POSIX
+   --  implementation of System.Interrupt_Management. Therefore we define a
+   --  dummy value of zero here so that setting this flag is a nop.
 
    SIG_BLOCK   : constant := 0;
    SIG_UNBLOCK : constant := 1;
@@ -275,6 +280,9 @@ package System.OS_Interface is
    -----------
    -- Stack --
    -----------
+
+   Alternate_Stack_Size : constant := 0;
+   --  No alternate signal stack is used on this platform
 
    Stack_Base_Available : constant Boolean := False;
    --  Indicates whether the stack base is available on this target
