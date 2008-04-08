@@ -633,8 +633,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
   tree right_base_type = get_base_type (right_type);
   tree operation_type = result_type;
   tree best_type = NULL_TREE;
-  tree modulus;
-  tree result;
+  tree modulus, result;
   bool has_side_effects = false;
 
   if (operation_type
@@ -647,18 +646,19 @@ build_binary_op (enum tree_code op_code, tree result_type,
       && TYPE_EXTRA_SUBTYPE_P (operation_type))
     operation_type = get_base_type (operation_type);
 
-  modulus = (operation_type && TREE_CODE (operation_type) == INTEGER_TYPE
+  modulus = (operation_type
+	     && TREE_CODE (operation_type) == INTEGER_TYPE
 	     && TYPE_MODULAR_P (operation_type)
-	     ? TYPE_MODULUS (operation_type) : 0);
+	     ? TYPE_MODULUS (operation_type) : NULL_TREE);
 
   switch (op_code)
     {
     case MODIFY_EXPR:
-      /* If there were any integral or pointer conversions on LHS, remove
+      /* If there were integral or pointer conversions on the LHS, remove
 	 them; we'll be putting them back below if needed.  Likewise for
-	 conversions between array and record types.  But don't do this if
-	 the right operand is not BLKmode (for packed arrays)
-	 unless we are not changing the mode.  */
+	 conversions between array and record types, except for justified
+	 modular types.  But don't do this if the right operand is not
+	 BLKmode (for packed arrays) unless we are not changing the mode.  */
       while ((TREE_CODE (left_operand) == CONVERT_EXPR
 	      || TREE_CODE (left_operand) == NOP_EXPR
 	      || TREE_CODE (left_operand) == VIEW_CONVERT_EXPR)
@@ -669,8 +669,6 @@ build_binary_op (enum tree_code op_code, tree result_type,
 		      || POINTER_TYPE_P (TREE_TYPE
 					 (TREE_OPERAND (left_operand, 0)))))
 		 || (((TREE_CODE (left_type) == RECORD_TYPE
-		       /* Don't remove conversions to justified modular
-			  types. */
 		       && !TYPE_JUSTIFIED_MODULAR_P (left_type))
 		      || TREE_CODE (left_type) == ARRAY_TYPE)
 		     && ((TREE_CODE (TREE_TYPE
@@ -692,8 +690,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
       if (!operation_type)
 	operation_type = left_type;
 
-      /* If we are copying one array or record to another, find the best type
-	 to use.  */
+      /* Find the best type to use for copying between aggregate types.  */
       if (((TREE_CODE (left_type) == ARRAY_TYPE
 	    && TREE_CODE (right_type) == ARRAY_TYPE)
 	   || (TREE_CODE (left_type) == RECORD_TYPE
@@ -709,11 +706,11 @@ build_binary_op (enum tree_code op_code, tree result_type,
 
       /* Ensure everything on the LHS is valid.  If we have a field reference,
 	 strip anything that get_inner_reference can handle.  Then remove any
-	 conversions with type types having the same code and mode.  Mark
+	 conversions between types having the same code and mode.  And mark
 	 VIEW_CONVERT_EXPRs with TREE_ADDRESSABLE.  When done, we must have
-	 either an INDIRECT_REF or a decl.  */
+	 either an INDIRECT_REF, a NULL_EXPR or a DECL node.  */
       result = left_operand;
-      while (1)
+      while (true)
 	{
 	  tree restype = TREE_TYPE (result);
 
@@ -744,21 +741,21 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	}
 
       gcc_assert (TREE_CODE (result) == INDIRECT_REF
-		  || TREE_CODE (result) == NULL_EXPR || DECL_P (result));
+		  || TREE_CODE (result) == NULL_EXPR
+		  || DECL_P (result));
 
-      /* Convert the right operand to the operation type unless
-	 it is either already of the correct type or if the type
-	 involves a placeholder, since the RHS may not have the same
-	 record type.  */
+      /* Convert the right operand to the operation type unless it is
+	 either already of the correct type or if the type involves a
+	 placeholder, since the RHS may not have the same record type.  */
       if (operation_type != right_type
-	  && (!CONTAINS_PLACEHOLDER_P (TYPE_SIZE (operation_type))))
+	  && !CONTAINS_PLACEHOLDER_P (TYPE_SIZE (operation_type)))
 	{
 	  right_operand = convert (operation_type, right_operand);
 	  right_type = operation_type;
 	}
 
-      /* If the left operand is not the same type as the operation type,
-	 surround it in a VIEW_CONVERT_EXPR.  */
+      /* If the left operand is not of the same type as the operation
+	 type, wrap it up in a VIEW_CONVERT_EXPR.  */
       if (left_type != operation_type)
 	left_operand = unchecked_convert (operation_type, left_operand, false);
 
@@ -1286,7 +1283,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	tree modulus = ((operation_type
 			 && TREE_CODE (operation_type) == INTEGER_TYPE
 			 && TYPE_MODULAR_P (operation_type))
-			? TYPE_MODULUS (operation_type) : 0);
+			? TYPE_MODULUS (operation_type) : NULL_TREE);
 	int mod_pow2 = modulus && integer_pow2p (modulus);
 
 	/* If this is a modular type, there are various possibilities

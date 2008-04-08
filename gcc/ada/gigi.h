@@ -468,6 +468,10 @@ extern tree gnat_unsigned_type (tree type_node);
 /* Return the signed version of a TYPE_NODE, a scalar type.  */
 extern tree gnat_signed_type (tree type_node);
 
+/* Return 1 if the types T1 and T2 are compatible, i.e. if they can be
+   transparently converted to each other.  */
+extern int gnat_types_compatible_p (tree t1, tree t2);
+
 /* Create an expression whose value is that of EXPR,
    converted to type TYPE.  The TREE_TYPE of the value
    is always TYPE.  This function implements all reasonable
