@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -264,8 +264,6 @@ package body GNAT.Command_Line is
             end;
          end if;
       end loop;
-
-      return String'(1 .. 0 => ' ');
    end Expansion;
 
    -----------------
@@ -1110,12 +1108,22 @@ package body GNAT.Command_Line is
    -----------------------
 
    procedure Set_Configuration
-     (Cmd      : in out Command_Line;
-      Config   : Command_Line_Configuration)
+     (Cmd    : in out Command_Line;
+      Config : Command_Line_Configuration)
    is
    begin
       Cmd.Config := Config;
    end Set_Configuration;
+
+   -----------------------
+   -- Get_Configuration --
+   -----------------------
+
+   function Get_Configuration
+     (Cmd : Command_Line) return Command_Line_Configuration is
+   begin
+      return Cmd.Config;
+   end Get_Configuration;
 
    ----------------------
    -- Set_Command_Line --
