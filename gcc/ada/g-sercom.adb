@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                       Copyright (C) 2007, AdaCore                        --
+--                     Copyright (C) 2007-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -77,11 +77,13 @@ package body GNAT.Serial_Communications is
    ---------
 
    procedure Set
-     (Port    : Serial_Port;
-      Rate    : Data_Rate := B9600;
-      Bits    : Data_Bits := B8;
-      Block   : Boolean   := True;
-      Timeout : Integer   := 10) is
+     (Port      : Serial_Port;
+      Rate      : Data_Rate        := B9600;
+      Bits      : Data_Bits        := B8;
+      Stop_Bits : Stop_Bits_Number := One;
+      Parity    : Parity_Check     := None;
+      Block     : Boolean          := True;
+      Timeout   : Duration         := 10.0) is
    begin
       Unimplemented;
    end Set;
@@ -124,8 +126,7 @@ package body GNAT.Serial_Communications is
 
    procedure Unimplemented is
    begin
-      raise Program_Error
-        with "Serial_Communications not implemented";
+      raise Program_Error with "Serial_Communications not implemented";
    end Unimplemented;
 
 end GNAT.Serial_Communications;
