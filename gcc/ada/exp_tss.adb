@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,8 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Exp_Util; use Exp_Util;
 with Lib;      use Lib;
+with Restrict; use Restrict;
+with Rident;   use Rident;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 
@@ -159,11 +161,16 @@ package body Exp_Tss is
    -- Has_Non_Null_Base_Init_Proc --
    ---------------------------------
 
+   --  Note: if a base Init_Proc is present, and No_Default_Initialization is
+   --  present, then we must avoid testing for a null init proc, since there
+   --  is no init proc present in this case.
+
    function Has_Non_Null_Base_Init_Proc (Typ : Entity_Id) return Boolean is
       BIP : constant Entity_Id := Base_Init_Proc (Typ);
-
    begin
-      return Present (BIP) and then not Is_Null_Init_Proc (BIP);
+      return Present (BIP)
+        and then (Restriction_Active (No_Default_Initialization)
+                    or else not Is_Null_Init_Proc (BIP));
    end Has_Non_Null_Base_Init_Proc;
 
    ---------------
@@ -306,19 +313,30 @@ package body Exp_Tss is
    -------------
 
    procedure Set_TSS (Typ : Entity_Id; TSS : Entity_Id) is
-      Subprog_Body : constant Node_Id := Unit_Declaration_Node (TSS);
-
    begin
-      --  Case of insertion location is in unit defining the type
+      --  Make sure body of subprogram is frozen
 
-      if In_Same_Code_Unit (Typ, TSS) then
-         Append_Freeze_Action (Typ, Subprog_Body);
+      --  Skip this for Init_Proc with No_Default_Initialization, since the
+      --  Init proc is a dummy void entity in this case to be ignored.
 
-      --  Otherwise, we are using an already existing TSS in another unit
+      if Is_Init_Proc (TSS)
+        and then Restriction_Active (No_Default_Initialization)
+      then
+         null;
+
+      --  Skip this if not in the same code unit (since it means we are using
+      --  an already existing TSS in another unit)
+
+      elsif not In_Same_Code_Unit (Typ, TSS) then
+         null;
+
+      --  Otherwise make sure body is frozen
 
       else
-         null;
+         Append_Freeze_Action (Typ, Unit_Declaration_Node (TSS));
       end if;
+
+      --  Set TSS entry
 
       Copy_TSS (TSS, Typ);
    end Set_TSS;
