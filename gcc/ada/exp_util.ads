@@ -372,6 +372,13 @@ package Exp_Util is
    --  operation which is not directly visible. If T is a class wide type,
    --  then the reference is to an operation of the corresponding root type.
 
+   function Find_Protection_Object (Scop : Entity_Id) return Entity_Id;
+   --  Traverse the scope stack starting from Scop and look for an entry,
+   --  entry family, or a subprogram that has a Protection_Object and return
+   --  it. Raises Program_Error if no such entity is found since the context
+   --  in which this routine is invoked should always have a protection
+   --  object.
+
    procedure Force_Evaluation
      (Exp      : Node_Id;
       Name_Req : Boolean := False);
@@ -490,6 +497,13 @@ package Exp_Util is
    function Is_Untagged_Derivation (T : Entity_Id) return Boolean;
    --  Returns true if type T is not tagged and is a derived type,
    --  or is a private type whose completion is such a type.
+
+   function Is_Volatile_Reference (N : Node_Id) return Boolean;
+   --  Checks if the node N represents a volatile reference, which can be
+   --  either a direct reference to a variable treated as volatile, or an
+   --  indexed/selected component where the prefix is treated as volatile,
+   --  or has Volatile_Components set. A slice of a volatile variable is
+   --  also volatile.
 
    procedure Kill_Dead_Code (N : Node_Id; Warn : Boolean := False);
    --  N represents a node for a section of code that is known to be dead. Any
@@ -612,6 +626,18 @@ package Exp_Util is
    --  N is an node which is an entity name that represents the name of a
    --  renamed subprogram. The node is rewritten to be an identifier that
    --  refers directly to the renamed subprogram, given by entity E.
+
+   procedure Silly_Boolean_Array_Not_Test (N : Node_Id; T : Entity_Id);
+   --  N is the node for a boolean array NOT operation, and T is the type of
+   --  the array. This routine deals with the silly case where the subtype of
+   --  the boolean array is False..False or True..True, where it is required
+   --  that a Constraint_Error exception be raised (RM 4.5.6(6)).
+
+   procedure Silly_Boolean_Array_Xor_Test (N : Node_Id; T : Entity_Id);
+   --  N is the node for a boolean array XOR operation, and T is the type of
+   --  the array. This routine deals with the silly case where the subtype of
+   --  the boolean array is True..True, where a raise of a Constraint_Error
+   --  exception is required (RM 4.5.6(6)).
 
    function Target_Has_Fixed_Ops
      (Left_Typ   : Entity_Id;
