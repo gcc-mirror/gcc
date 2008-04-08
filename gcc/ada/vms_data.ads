@@ -40,7 +40,7 @@
 --  NOTE: the format of this package must follow the following rules, so that
 --        the VMS GNAT help tool works properly:
 
---    - Each command zone (where the eventual qualifiers are declared must
+--    - Each command zone (where the eventual qualifiers are declared) must
 --      begin with a boxed comment of the form:
 
 --      ---------------------------------
@@ -192,7 +192,7 @@ package VMS_Data is
 
    S_Bind_Add     : aliased constant S := "/ADD_PROJECT_SEARCH_DIR=*"      &
                                             "-aP*";
-   --        /ADD_PROJECT_SEARCH_PATH==(directory[,...])
+   --        /ADD_PROJECT_SEARCH_PATH=(directory[,...])
    --
    --   Add directories to the project search path.
 
@@ -274,6 +274,13 @@ package VMS_Data is
    --
    --   Example:
    --      /EXTERNAL_REFERENCE="DEBUG=TRUE"
+
+   S_Bind_Follow  : aliased constant S := "/FOLLOW_LINKS_FOR_FILES "       &
+                                            "-eL";
+   --        /NOFOLLOW_LINKS_FOR_FILES (D)
+   --        /FOLLOW_LINKS_FOR_FILES
+   --
+   --    Follow links when parsing project files
 
    S_Bind_Force   : aliased constant S := "/FORCE_ELAB_FLAGS "             &
                                             "-F";
@@ -579,6 +586,14 @@ package VMS_Data is
    --   This qualifier has no impact, except when using the setjmp/longjmp
    --   exception mechanism, with the GNAT COMPILE qualifier /LONGJMP_SETJMP.
 
+   S_Bind_Subdirs : aliased constant S := "/SUBDIRS=<"                     &
+                                            "--subdirs=>";
+   --        /SUBDIRS=dir
+   --
+   --   The actual directories (object, exec, library, ...) are subdirectories
+   --   of the directory specified in the project file. If the subdirectory
+   --   does not exist, it is created automatically.
+
    S_Bind_Time    : aliased constant S := "/TIME_STAMP_CHECK "             &
                                             "!-t";
    --      /TIME_STAMP_CHECK (D)
@@ -662,6 +677,7 @@ package VMS_Data is
                       S_Bind_Elab    'Access,
                       S_Bind_Error   'Access,
                       S_Bind_Ext     'Access,
+                      S_Bind_Follow  'Access,
                       S_Bind_Force   'Access,
                       S_Bind_Help    'Access,
                       S_Bind_Init    'Access,
@@ -693,6 +709,7 @@ package VMS_Data is
                       S_Bind_Source  'Access,
                       S_Bind_Static  'Access,
                       S_Bind_Store   'Access,
+                      S_Bind_Subdirs 'Access,
                       S_Bind_Time    'Access,
                       S_Bind_Verbose 'Access,
                       S_Bind_Warn    'Access,
@@ -706,7 +723,7 @@ package VMS_Data is
 
    S_Check_Add    : aliased constant S := "/ADD_PROJECT_SEARCH_DIR=*"      &
                                             "-aP*";
-   --        /ADD_PROJECT_SEARCH_PATH==(directory[,...])
+   --        /ADD_PROJECT_SEARCH_PATH=(directory[,...])
    --
    --   Add directories to the project search path.
 
@@ -735,6 +752,13 @@ package VMS_Data is
    --
    --   Take as arguments the files that are listed in the specified
    --   text file.
+
+   S_Check_Follow : aliased constant S := "/FOLLOW_LINKS_FOR_FILES "       &
+                                            "-eL";
+   --        /NOFOLLOW_LINKS_FOR_FILES (D)
+   --        /FOLLOW_LINKS_FOR_FILES
+   --
+   --    Follow links when parsing project files
 
    S_Check_Help   : aliased constant S := "/HELP "                         &
                                             "-h";
@@ -804,13 +828,13 @@ package VMS_Data is
    --
    --   section-option may be one of the following:
    --
-   --      COMPILER_STYLE      Include diagnoses in compile-style format
+   --      COMPILER_STYLE      Include diagnostics in compile-style format
    --                          (diagoses are grouped by files, for each file
    --                          they are ordered according to the references
    --                          into the source)
-   --      BY_RULES            Include diagnoses grouped first by rules and
+   --      BY_RULES            Include diagnostics grouped first by rules and
    --                          then by files
-   --      BY_FILES_BY_RULES   Include diagnoses grouped first by files and
+   --      BY_FILES_BY_RULES   Include diagnostics grouped first by files and
    --                          then by rules
    --
    --   If one of these options is specified, then the report file contains
@@ -822,6 +846,14 @@ package VMS_Data is
    --        /SHORT
    --
    --   Generate a short form of the report file.
+
+   S_Check_Subdirs : aliased constant S := "/SUBDIRS=<"                    &
+                                             "--subdirs=>";
+   --        /SUBDIRS=dir
+   --
+   --   The actual directories (object, exec, library, ...) are subdirectories
+   --   of the directory specified in the project file. If the subdirectory
+   --   does not exist, it is created automatically.
 
    S_Check_Verb   : aliased constant S := "/VERBOSE "                      &
                                             "-v";
@@ -837,6 +869,7 @@ package VMS_Data is
                        S_Check_All      'Access,
                        S_Check_Ext      'Access,
                        S_Check_Files    'Access,
+                       S_Check_Follow   'Access,
                        S_Check_Help     'Access,
                        S_Check_Locs     'Access,
                        S_Check_Mess     'Access,
@@ -844,6 +877,7 @@ package VMS_Data is
                        S_Check_Quiet    'Access,
                        S_Check_Sections 'Access,
                        S_Check_Short    'Access,
+                       S_Check_Subdirs  'Access,
                        S_Check_Verb     'Access);
 
    ----------------------------
@@ -852,7 +886,7 @@ package VMS_Data is
 
    S_Sync_Add    : aliased constant S := "/ADD_PROJECT_SEARCH_DIR=*"       &
                                             "-aP*";
-   --        /ADD_PROJECT_SEARCH_PATH==(directory[,...])
+   --        /ADD_PROJECT_SEARCH_PATH=(directory[,...])
    --
    --   Add directories to the project search path.
 
@@ -881,6 +915,13 @@ package VMS_Data is
    --
    --   Take as arguments the files that are listed in the specified
    --   text file.
+
+   S_Sync_Follow  : aliased constant S := "/FOLLOW_LINKS_FOR_FILES "       &
+                                            "-eL";
+   --        /NOFOLLOW_LINKS_FOR_FILES (D)
+   --        /FOLLOW_LINKS_FOR_FILES
+   --
+   --    Follow links when parsing project files
 
    S_Sync_Mess    : aliased constant S := "/MESSAGES_PROJECT_FILE="        &
                                              "DEFAULT "                    &
@@ -916,6 +957,14 @@ package VMS_Data is
    --        /QUIET
    --
    --   Work quietly, only output warnings and errors.
+
+   S_Sync_Subdirs : aliased constant S := "/SUBDIRS=<"                     &
+                                             "--subdirs=>";
+   --        /SUBDIRS=dir
+   --
+   --   The actual directories (object, exec, library, ...) are subdirectories
+   --   of the directory specified in the project file. If the subdirectory
+   --   does not exist, it is created automatically.
 
    S_Sync_Verb   : aliased constant S := "/VERBOSE "                       &
                                             "-v";
@@ -967,10 +1016,12 @@ package VMS_Data is
                       (S_Sync_Add      'Access,
                        S_Sync_All      'Access,
                        S_Sync_Ext      'Access,
+                       S_Sync_Follow   'Access,
                        S_Sync_Files    'Access,
                        S_Sync_Mess     'Access,
                        S_Sync_Project  'Access,
                        S_Sync_Quiet    'Access,
+                       S_Sync_Subdirs  'Access,
                        S_Sync_Verb     'Access,
                        S_Sync_Exec     'Access,
                        S_Sync_Details  'Access,
@@ -1075,7 +1126,7 @@ package VMS_Data is
 
    S_Clean_Add    : aliased constant S := "/ADD_PROJECT_SEARCH_DIR=*"      &
                                             "-aP*";
-   --        /ADD_PROJECT_SEARCH_PATH==(directory[,...])
+   --        /ADD_PROJECT_SEARCH_PATH=(directory[,...])
    --
    --   Add directories to the project search path.
 
@@ -1128,6 +1179,13 @@ package VMS_Data is
    --
    --   Example:
    --      /EXTERNAL_REFERENCE="DEBUG=TRUE"
+
+   S_Clean_Follow : aliased constant S := "/FOLLOW_LINKS_FOR_FILES "       &
+                                            "-eL";
+   --        /NOFOLLOW_LINKS_FOR_FILES (D)
+   --        /FOLLOW_LINKS_FOR_FILES
+   --
+   --    Follow links when parsing project files
 
    S_Clean_Full    : aliased constant S := "/FULL_PATH_IN_BRIEF_MESSAGES " &
                                             "-F";
@@ -1215,6 +1273,14 @@ package VMS_Data is
    --
    --   Equivalent to /OBJECT_SEARCH=(directory,...).
 
+   S_Clean_Subdirs : aliased constant S := "/SUBDIRS=<"                    &
+                                              "--subdirs=>";
+   --        /SUBDIRS=dir
+   --
+   --   The actual directories (object, exec, library, ...) are subdirectories
+   --   of the directory specified in the project file. If the subdirectory
+   --   does not exist, it is created automatically.
+
    S_Clean_Verbose : aliased constant S := "/VERBOSE "                     &
                                             "-v";
    --        /NOVERBOSE (D)
@@ -1229,6 +1295,7 @@ package VMS_Data is
                        S_Clean_Delete 'Access,
                        S_Clean_Dirobj 'Access,
                        S_Clean_Ext    'Access,
+                       S_Clean_Follow 'Access,
                        S_Clean_Full   'Access,
                        S_Clean_Help   'Access,
                        S_Clean_Index  'Access,
@@ -1238,6 +1305,7 @@ package VMS_Data is
                        S_Clean_Quiet  'Access,
                        S_Clean_Recurs 'Access,
                        S_Clean_Search 'Access,
+                       S_Clean_Subdirs'Access,
                        S_Clean_Verbose'Access);
 
    -------------------------------
@@ -1283,7 +1351,7 @@ package VMS_Data is
 
    S_GCC_Add     : aliased constant S := "/ADD_PROJECT_SEARCH_DIR=*"       &
                                             "-aP*";
-   --        /ADD_PROJECT_SEARCH_PATH==(directory[,...])
+   --        /ADD_PROJECT_SEARCH_PATH=(directory[,...])
    --
    --   Add directories to the project search path.
 
@@ -1351,7 +1419,8 @@ package VMS_Data is
    --
    --     ASSERTIONS    The pragmas "Assert" and "Debug" normally have no
    --                   effect and are ignored. This keyword causes "Assert"
-   --                   and "Debug" pragmas to be activated.
+   --                   and "Debug" pragmas to be activated, as well as
+   --                   "Check", "Precondition" and "Postcondition" pragmas.
    --
    --     SUPPRESS_ALL  Suppress all runtime checks as though you have "pragma
    --                   Suppress (all_checks)" in your source. Use this switch
@@ -1574,6 +1643,13 @@ package VMS_Data is
    --   1-999, indicates the maximum allowable length of a file name (not
    --   including the ADS or ADB filetype. The default is not to enable file
    --   name krunching.
+
+   S_GCC_Follow : aliased constant S := "/FOLLOW_LINKS_FOR_FILES "       &
+                                            "-eL";
+   --        /NOFOLLOW_LINKS_FOR_FILES (D)
+   --        /FOLLOW_LINKS_FOR_FILES
+   --
+   --    Follow links when parsing project files
 
    S_GCC_Force   : aliased constant S := "/FORCE_ALI "                     &
                                             "-gnatQ";
@@ -2151,7 +2227,9 @@ package VMS_Data is
 
    S_GCC_Style   : aliased constant S := "/STYLE_CHECKS="                  &
                                             "ALL_BUILTIN "                 &
-                                               "-gnaty "                   &
+                                               "-gnatyy "                  &
+                                            "0 "                           &
+                                               "-gnaty0 "                  &
                                             "1 "                           &
                                                "-gnaty1 "                  &
                                             "2 "                           &
@@ -2172,52 +2250,96 @@ package VMS_Data is
                                                "-gnaty9 "                  &
                                             "ATTRIBUTE "                   &
                                                "-gnatya "                  &
+                                            "NOATTRIBUTE "                 &
+                                               "-gnaty-a "                 &
                                             "ARRAY_INDEXES "               &
                                                "-gnatyA "                  &
+                                            "NOARRAY_INDEXES "             &
+                                               "-gnaty-A "                 &
                                             "BLANKS "                      &
                                                "-gnatyb "                  &
+                                            "NOBLANKS "                    &
+                                               "-gnaty-b "                 &
                                             "COMMENTS "                    &
                                                "-gnatyc "                  &
+                                            "NOCOMMENTS "                  &
+                                               "-gnaty-c "                 &
                                             "DOS_LINE_ENDINGS "            &
                                                "-gnatyd "                  &
+                                            "NODOS_LINE_ENDINGS "          &
+                                               "-gnaty-d "                 &
                                             "END "                         &
                                                "-gnatye "                  &
+                                            "NOEND "                       &
+                                               "-gnaty-e "                 &
                                             "VTABS "                       &
                                                "-gnatyf "                  &
+                                            "NOVTABS "                     &
+                                               "-gnaty-f "                 &
                                             "GNAT "                        &
                                                "-gnatyg "                  &
                                             "HTABS "                       &
                                                "-gnatyh "                  &
+                                            "NOHTABS "                     &
+                                               "-gnaty-h "                 &
                                             "IF_THEN "                     &
                                                "-gnatyi "                  &
+                                            "NOIF_THEN "                   &
+                                               "-gnaty-i "                 &
                                             "KEYWORD "                     &
                                                "-gnatyk "                  &
+                                            "NOKEYWORD "                   &
+                                               "-gnaty-k "                 &
                                             "LAYOUT "                      &
                                                "-gnatyl "                  &
+                                            "NOLAYOUT "                    &
+                                               "-gnaty-l "                 &
                                             "LINE_LENGTH "                 &
                                                "-gnatym "                  &
+                                            "NOLINE_LENGTH "               &
+                                               "-gnaty-m "                 &
                                             "MODE_IN "                     &
                                                "-gnatyI "                  &
+                                            "NOMODE_IN "                   &
+                                               "-gnaty-I "                 &
                                             "NONE "                        &
                                                "-gnatyN "                  &
                                             "STANDARD_CASING "             &
                                                "-gnatyn "                  &
+                                            "NOSTANDARD_CASING "           &
+                                               "-gnaty-n "                 &
                                             "ORDERED_SUBPROGRAMS "         &
                                                "-gnatyo "                  &
+                                            "NOORDERED_SUBPROGRAMS "       &
+                                               "-gnaty-o "                 &
                                             "PRAGMA "                      &
                                                "-gnatyp "                  &
+                                            "NOPRAGMA "                    &
+                                               "-gnaty-p "                 &
                                             "REFERENCES "                  &
                                                "-gnatyr "                  &
+                                            "NOREFERENCES "                &
+                                               "-gnaty-r "                 &
                                             "SPECS "                       &
                                                "-gnatys "                  &
+                                            "NOSPECS "                     &
+                                               "-gnaty-s "                 &
                                             "STATEMENTS_AFTER_THEN_ELSE "  &
                                                "-gnatyS "                  &
+                                            "NOSTATEMENTS_AFTER_THEN_ELSE " &
+                                               "-gnaty-S "                 &
                                             "TOKEN "                       &
                                                "-gnatyt "                  &
+                                            "NOTOKEN "                     &
+                                               "-gnaty-t "                 &
                                             "UNNECESSARY_BLANK_LINES "     &
                                                "-gnatyu "                  &
+                                            "NOUNNECESSARY_BLANK_LINES "   &
+                                               "-gnaty-u "                 &
                                             "XTRA_PARENS "                 &
-                                               "-gnatyx ";
+                                               "-gnaty-x "                 &
+                                            "NOXTRA_PARENS "               &
+                                               "-gnaty-x ";
    --        /NOSTYLE_CHECKS (D)
    --        /STYLE_CHECKS[=(keyword,[...])]
    --
@@ -2531,6 +2653,14 @@ package VMS_Data is
                                             "!-gnatg,!-gnaty*";
    --  NODOC (see /STYLE_CHECKS)
 
+   S_GCC_Subdirs : aliased constant S := "/SUBDIRS=<"                      &
+                                            "--subdirs=>";
+   --        /SUBDIRS=dir
+   --
+   --   The actual directories (object, exec, library, ...) are subdirectories
+   --   of the directory specified in the project file. If the subdirectory
+   --   does not exist, it is created automatically.
+
    S_GCC_Symbol  : aliased constant S := "/SYMBOL_PREPROCESSING=" & '"'    &
                                             "-gnateD" & '"';
    --        /SYMBOL_PREPROCESSING="symbol=value"
@@ -2648,6 +2778,10 @@ package VMS_Data is
                                                "-gnatVc "                  &
                                             "NOCOPIES "                    &
                                                "-gnatVC "                  &
+                                            "COMPONENTS "                  &
+                                               "-gnatVe "                  &
+                                            "NOCOMPONENTS "                &
+                                               "-gnatVE "                  &
                                             "FLOATS "                      &
                                                "-gnatVf "                  &
                                             "NOFLOATS "                    &
@@ -2738,6 +2872,8 @@ package VMS_Data is
                                                "!-gnatws,!-gnatwe "        &
                                             "ALL "                         &
                                                "-gnatwa "                  &
+                                            "EVERY "                       &
+                                               "-gnatw.e "                 &
                                             "OPTIONAL "                    &
                                                "-gnatwa "                  &
                                             "NOOPTIONAL "                  &
@@ -2816,6 +2952,10 @@ package VMS_Data is
                                                "-gnatwP "                  &
                                             "MISSING_PARENS "              &
                                                "-gnatwq "                  &
+                                            "PARAMETER_ORDER "             &
+                                               "-gnatw.p "                 &
+                                            "NOPARAMETER_ORDER "           &
+                                               "-gnatw.P "                 &
                                             "NOMISSING_PARENS "            &
                                                "-gnatwQ "                  &
                                             "REDUNDANT "                   &
@@ -2894,6 +3034,10 @@ package VMS_Data is
    --                           IMPLICIT_DEREFERENCE, HIDING and
    --                           ELABORATION. All other optional Ada
    --                           warnings are turned on.
+   --
+   --   EVERY                   Activate every optional warning.
+   --                           Activates all optional warnings, including
+   --                           those listed above as exceptions for ALL.
    --
    --   NOALL                   Suppress all optional errors.
    --                           Suppresses all optional warning messages
@@ -3140,6 +3284,12 @@ package VMS_Data is
    --
    --   Inhibit all warning messages of the GCC back-end.
 
+   S_GCC_All_Back : aliased constant S := "/ALL_BACK_END_WARNINGS "        &
+                                            "-Wall";
+   --        /ALL_BACK_END_WARNINGS
+   --
+   --   Activate all warning messages of the GCC back-end.
+
    S_GCC_Wide    : aliased constant S := "/WIDE_CHARACTER_ENCODING="       &
                                              "BRACKETS "                   &
                                                 "-gnatWb "                 &
@@ -3287,6 +3437,7 @@ package VMS_Data is
                      S_GCC_Extend  'Access,
                      S_GCC_Ext     'Access,
                      S_GCC_File    'Access,
+                     S_GCC_Follow  'Access,
                      S_GCC_Force   'Access,
                      S_GCC_Full    'Access,
                      S_GCC_GNAT    'Access,
@@ -3323,6 +3474,7 @@ package VMS_Data is
                      S_GCC_Search  'Access,
                      S_GCC_Style   'Access,
                      S_GCC_StyleX  'Access,
+                     S_GCC_Subdirs 'Access,
                      S_GCC_Symbol  'Access,
                      S_GCC_Syntax  'Access,
                      S_GCC_Table   'Access,
@@ -3340,6 +3492,7 @@ package VMS_Data is
                      S_GCC_Wide    'Access,
                      S_GCC_WideX   'Access,
                      S_GCC_No_Back 'Access,
+                     S_GCC_All_Back'Access,
                      S_GCC_Xdebug  'Access,
                      S_GCC_Xref    'Access);
 
@@ -3349,7 +3502,7 @@ package VMS_Data is
 
    S_Elim_Add    : aliased constant S := "/ADD_PROJECT_SEARCH_DIR=*"       &
                                            "-aP*";
-   --        /ADD_PROJECT_SEARCH_PATH==(directory[,...])
+   --        /ADD_PROJECT_SEARCH_PATH=(directory[,...])
    --
    --   Add directories to the project search path.
 
@@ -3402,6 +3555,13 @@ package VMS_Data is
    --   Example:
    --      /EXTERNAL_REFERENCE="DEBUG=TRUE"
 
+   S_Elim_Follow  : aliased constant S := "/FOLLOW_LINKS_FOR_FILES "       &
+                                            "-eL";
+   --        /NOFOLLOW_LINKS_FOR_FILES (D)
+   --        /FOLLOW_LINKS_FOR_FILES
+   --
+   --    Follow links when parsing project files
+
    S_Elim_GNATMAKE : aliased constant S := "/GNATMAKE=@"                   &
                                             "--GNATMAKE=@";
    --        /GNATMAKE=path_name
@@ -3452,6 +3612,14 @@ package VMS_Data is
    --
    --   When looking for source files also look in the specified directories.
 
+   S_Elim_Subdirs : aliased constant S := "/SUBDIRS=<"                     &
+                                             "--subdirs=>";
+   --        /SUBDIRS=dir
+   --
+   --   The actual directories (object, exec, library, ...) are subdirectories
+   --   of the directory specified in the project file. If the subdirectory
+   --   does not exist, it is created automatically.
+
    S_Elim_Verb   : aliased constant S := "/VERBOSE "                       &
                                             "-v";
    --        /NOVERBOSE (D)
@@ -3470,11 +3638,13 @@ package VMS_Data is
                       S_Elim_Config  'Access,
                       S_Elim_Current 'Access,
                       S_Elim_Ext     'Access,
+                      S_Elim_Follow  'Access,
                       S_Elim_GNATMAKE'Access,
                       S_Elim_Mess    'Access,
                       S_Elim_Project 'Access,
                       S_Elim_Quiet   'Access,
                       S_Elim_Search  'Access,
+                      S_Elim_Subdirs 'Access,
                       S_Elim_Verb    'Access);
 
    ----------------------------
@@ -3483,7 +3653,7 @@ package VMS_Data is
 
    S_Find_Add     : aliased constant S := "/ADD_PROJECT_SEARCH_DIR=*"      &
                                             "-aP*";
-   --        /ADD_PROJECT_SEARCH_PATH==(directory[,...])
+   --        /ADD_PROJECT_SEARCH_PATH=(directory[,...])
    --
    --   Add directories to the project search path.
 
@@ -3523,6 +3693,13 @@ package VMS_Data is
    --
    --   Example:
    --      /EXTERNAL_REFERENCE="DEBUG=TRUE"
+
+   S_Find_Follow  : aliased constant S := "/FOLLOW_LINKS_FOR_FILES "       &
+                                            "-eL";
+   --        /NOFOLLOW_LINKS_FOR_FILES (D)
+   --        /FOLLOW_LINKS_FOR_FILES
+   --
+   --    Follow links when parsing project files
 
    S_Find_Full    : aliased constant S := "/FULL_PATHNAME "                &
                                             "-f";
@@ -3639,6 +3816,14 @@ package VMS_Data is
    --   The order in which source file search is undertaken is the same as for
    --   MAKE.
 
+   S_Find_Subdirs : aliased constant S := "/SUBDIRS=<"                     &
+                                             "--subdirs=>";
+   --        /SUBDIRS=dir
+   --
+   --   The actual directories (object, exec, library, ...) are subdirectories
+   --   of the directory specified in the project file. If the subdirectory
+   --   does not exist, it is created automatically.
+
    S_Find_Types   : aliased constant S := "/TYPE_HIERARCHY "               &
                                             "-t";
    --        /NOTYPE_HIERARCHY (D)
@@ -3655,6 +3840,7 @@ package VMS_Data is
                       S_Find_Deriv   'Access,
                       S_Find_Expr    'Access,
                       S_Find_Ext     'Access,
+                      S_Find_Follow  'Access,
                       S_Find_Full    'Access,
                       S_Find_Ignore  'Access,
                       S_Find_Mess    'Access,
@@ -3667,6 +3853,7 @@ package VMS_Data is
                       S_Find_Ref     'Access,
                       S_Find_Search  'Access,
                       S_Find_Source  'Access,
+                      S_Find_Subdirs 'Access,
                       S_Find_Types   'Access);
 
    ------------------------------
@@ -3693,7 +3880,7 @@ package VMS_Data is
 
    S_Link_Add     : aliased constant S := "/ADD_PROJECT_SEARCH_DIR=*"      &
                                             "-aP*";
-   --        /ADD_PROJECT_SEARCH_PATH==(directory[,...])
+   --        /ADD_PROJECT_SEARCH_PATH=(directory[,...])
    --
    --   Add directories to the project search path.
 
@@ -3755,6 +3942,13 @@ package VMS_Data is
    --
    --   Example:
    --      /EXTERNAL_REFERENCE="DEBUG=TRUE"
+
+   S_Link_Follow  : aliased constant S := "/FOLLOW_LINKS_FOR_FILES "       &
+                                            "-eL";
+   --        /NOFOLLOW_LINKS_FOR_FILES (D)
+   --        /FOLLOW_LINKS_FOR_FILES
+   --
+   --    Follow links when parsing project files
 
    S_Link_Forlink : aliased constant S := "/FOR_LINKER=" & '"'             &
                                             "--for-linker=" & '"';
@@ -3866,6 +4060,14 @@ package VMS_Data is
    --
    --   Indicate to the linker that the link is static.
 
+   S_Link_Subdirs : aliased constant S := "/SUBDIRS=<"                     &
+                                             "--subdirs=>";
+   --        /SUBDIRS=dir
+   --
+   --   The actual directories (object, exec, library, ...) are subdirectories
+   --   of the directory specified in the project file. If the subdirectory
+   --   does not exist, it is created automatically.
+
    S_Link_Verb    : aliased constant S := "/VERBOSE "                      &
                                             "-v";
    --        /NOVERBOSE (D)
@@ -3888,6 +4090,7 @@ package VMS_Data is
                       S_Link_Nodebug 'Access,
                       S_Link_Execut  'Access,
                       S_Link_Ext     'Access,
+                      S_Link_Follow  'Access,
                       S_Link_Forlink 'Access,
                       S_Link_Force   'Access,
                       S_Link_Ident   'Access,
@@ -3900,6 +4103,7 @@ package VMS_Data is
                       S_Link_Project 'Access,
                       S_Link_Return  'Access,
                       S_Link_Static  'Access,
+                      S_Link_Subdirs 'Access,
                       S_Link_Verb    'Access,
                       S_Link_ZZZZZ   'Access);
 
@@ -3909,7 +4113,7 @@ package VMS_Data is
 
    S_List_Add     : aliased constant S := "/ADD_PROJECT_SEARCH_DIR=*"      &
                                             "-aP*";
-   --        /ADD_PROJECT_SEARCH_PATH==(directory[,...])
+   --        /ADD_PROJECT_SEARCH_PATH=(directory[,...])
    --
    --   Add directories to the project search path.
 
@@ -3958,6 +4162,13 @@ package VMS_Data is
    --
    --   Take as arguments the files that are listed in the specified
    --   text file.
+
+   S_List_Follow  : aliased constant S := "/FOLLOW_LINKS_FOR_FILES "       &
+                                            "-eL";
+   --        /NOFOLLOW_LINKS_FOR_FILES (D)
+   --        /FOLLOW_LINKS_FOR_FILES
+   --
+   --    Follow links when parsing project files
 
    S_List_Mess    : aliased constant S := "/MESSAGES_PROJECT_FILE="        &
                                             "DEFAULT "                     &
@@ -4044,6 +4255,14 @@ package VMS_Data is
    --
    --   When looking for source files also look in the specified directories.
 
+   S_List_Subdirs : aliased constant S := "/SUBDIRS=<"                     &
+                                             "--subdirs=>";
+   --        /SUBDIRS=dir
+   --
+   --   The actual directories (object, exec, library, ...) are subdirectories
+   --   of the directory specified in the project file. If the subdirectory
+   --   does not exist, it is created automatically.
+
    List_Switches : aliased constant Switches :=
                      (S_List_Add     'Access,
                       S_List_All     'Access,
@@ -4052,13 +4271,15 @@ package VMS_Data is
                       S_List_Depend  'Access,
                       S_List_Ext     'Access,
                       S_List_Files   'Access,
+                      S_List_Follow  'Access,
                       S_List_Mess    'Access,
                       S_List_Nostinc 'Access,
                       S_List_Object  'Access,
                       S_List_Output  'Access,
                       S_List_Project 'Access,
                       S_List_Search  'Access,
-                      S_List_Source  'Access);
+                      S_List_Source  'Access,
+                      S_List_Subdirs 'Access);
 
    ----------------------------
    -- Switches for GNAT MAKE --
@@ -4110,7 +4331,7 @@ package VMS_Data is
 
    S_Make_Add     : aliased constant S := "/ADD_PROJECT_SEARCH_DIR=*"      &
                                             "-aP*";
-   --        /ADD_PROJECT_SEARCH_PATH==(directory[,...])
+   --        /ADD_PROJECT_SEARCH_PATH=(directory[,...])
    --
    --   Add directories to the project search path.
 
@@ -4250,6 +4471,13 @@ package VMS_Data is
    --
    --   Example:
    --      /EXTERNAL_REFERENCE="DEBUG=TRUE"
+
+   S_Make_Follow  : aliased constant S := "/FOLLOW_LINKS_FOR_FILES "       &
+                                            "-eL";
+   --        /NOFOLLOW_LINKS_FOR_FILES (D)
+   --        /FOLLOW_LINKS_FOR_FILES
+   --
+   --    Follow links when parsing project files
 
    S_Make_Force   : aliased constant S := "/FORCE_COMPILE "                &
                                             "-f";
@@ -4513,6 +4741,14 @@ package VMS_Data is
    --   Output the commands for the compiler, the binder and the linker
    --   on SYS$OUTPUT, instead of SYS$ERROR.
 
+   S_Make_Subdirs : aliased constant S := "/SUBDIRS=<"                     &
+                                             "--subdirs=>";
+   --        /SUBDIRS=dir
+   --
+   --   The actual directories (object, exec, library, ...) are subdirectories
+   --   of the directory specified in the project file. If the subdirectory
+   --   does not exist, it is created automatically.
+
    S_Make_Switch  : aliased constant S := "/SWITCH_CHECK "                 &
                                             "-s";
    --        /NOSWITCH_CHECK (D)
@@ -4568,6 +4804,7 @@ package VMS_Data is
                       S_Make_Doobj   'Access,
                       S_Make_Execut  'Access,
                       S_Make_Ext     'Access,
+                      S_Make_Follow  'Access,
                       S_Make_Force   'Access,
                       S_Make_Full    'Access,
                       S_Make_Hi_Verb 'Access,
@@ -4598,6 +4835,7 @@ package VMS_Data is
                       S_Make_Skip    'Access,
                       S_Make_Source  'Access,
                       S_Make_Stand   'Access,
+                      S_Make_Subdirs 'Access,
                       S_Make_Switch  'Access,
                       S_Make_Unique  'Access,
                       S_Make_Use_Map 'Access,
@@ -4609,7 +4847,7 @@ package VMS_Data is
 
    S_Metric_Add     : aliased constant S := "/ADD_PROJECT_SEARCH_DIR=*"    &
                                               "-aP*";
-   --        /ADD_PROJECT_SEARCH_PATH==(directory[,...])
+   --        /ADD_PROJECT_SEARCH_PATH=(directory[,...])
    --
    --   Add directories to the project search path.
 
@@ -4699,9 +4937,9 @@ package VMS_Data is
    --       /SYNTAX_METRICS(option, option ...)
    --
    --   Specifies the syntax element metrics to be computed (if at least one
-   --   positive syntax element metric, line metric or complexity metric is
-   --   specified then only explicitly specified specified syntax element
-   --   metrics are computed and reported)
+   --   positive syntax element metric, line metric, complexity or coupling
+   --   metric is specified then only explicitly specified specified syntax
+   --   element metrics are computed and reported)
    --
    --   option may be one of the following:
    --
@@ -4833,9 +5071,9 @@ package VMS_Data is
    --      /LINE_COUNT_METRICS=(option, option ...)
 
    --   Specifies the line metrics to be computed (if at least one positive
-   --   syntax element metric, line metric or complexity metric is specified
-   --   then only explicitly specified specified line metrics are computed and
-   --   reported)
+   --   syntax element metric, line metric, complexity or coupling metric is
+   --   specified then only explicitly specified specified line metrics are
+   --   computed and reported)
    --
    --   option may be one of the following:
    --
@@ -4888,9 +5126,9 @@ package VMS_Data is
    --      /COMPLEXITY_METRICS=(option, option ...)
 
    --   Specifies the complexity metrics to be computed (if at least one
-   --   positive syntax element metric, line metric or complexity metric is
-   --   specified then only explicitly specified specified line metrics are
-   --   computed and reported)
+   --   positive syntax element metric, line metric, complexity or coupling
+   --   metric is specified then only explicitly specified specified complexity
+   --   metrics are computed and reported)
    --
    --   option may be one of the following:
    --
@@ -4909,6 +5147,54 @@ package VMS_Data is
    --                              executable bodies
    --
    --   All combinations of line metrics options are allowed.
+
+   S_Metric_Coupling : aliased constant S := "/COUPLING_METRICS="             &
+                                           "ALL_ON "                          &
+                                           "--coupling-all "                  &
+                                           "ALL_OFF "                         &
+                                           "--no-counling-all "               &
+                                           "PACKAGE_EFFERENT_ON "             &
+                                           "--package-efferent-coupling "     &
+                                           "PACKAGE_EFFERENT_OFF "            &
+                                           "--no-package-efferent-coupling "  &
+                                           "PACKAGE_AFFERENT_ON "             &
+                                           "--package-afferent-coupling "     &
+                                           "PACKAGE_AFFERENT_OFF "            &
+                                           "--no-package-afferent-coupling "  &
+                                           "CATEGORY_EFFERENT_ON "            &
+                                           "--category-efferent-coupling "    &
+                                           "CATEGORY_EFFERENT_OFF "           &
+                                           "--no-category-efferent-coupling " &
+                                           "CATEGORY_AFFERENT_ON "            &
+                                           "--category-afferent-coupling "    &
+                                           "CATEGORY_AFFERENT_OFF "           &
+                                           "--no-category-afferent-coupling";
+
+   --      /COUPLING_METRICS=(option, option ...)
+
+   --   Specifies the coupling metrics to be computed.
+   --
+   --   option may be one of the following:
+   --
+   --     ALL_ON                   All the coupling metrics are computed
+   --     ALL_OFF (D)              None of coupling metrics is computed
+   --     PACKAGE_EFFERENT_ON      Compute package efferent coupling
+   --     PACKAGE_EFFERENT_OFF     Do not compute package efferent coupling
+   --     PACKAGE_AFFERENT_ON      Compute package afferent coupling
+   --     PACKAGE_AFFERENT_OFF     Do not compute package afferent coupling
+   --     CATEGORY_EFFERENT_ON     Compute category efferent coupling
+   --     CATEGORY_EFFERENT_OFF    Do not compute category efferent coupling
+   --     CATEGORY_AFFERENT_ON     Compute category afferent coupling
+   --     CATEGORY_AFFERENT_OFF    Do not compute category afferent coupling
+   --
+   --   All combinations of coupling metrics options are allowed.
+
+   S_Metric_Follow : aliased constant S := "/FOLLOW_LINKS_FOR_FILES "      &
+                                             "-eL";
+   --        /NOFOLLOW_LINKS_FOR_FILES (D)
+   --        /FOLLOW_LINKS_FOR_FILES
+   --
+   --    Follow links when parsing project files
 
    S_Metric_No_Local : aliased constant S := "/NO_LOCAL_DETAILS "          &
                                              "-nolocal";
@@ -4961,6 +5247,14 @@ package VMS_Data is
    --   the number of program units left to be processed. This option turns
    --   this trace off.
 
+   S_Metric_Subdirs : aliased constant S := "/SUBDIRS=<"                   &
+                                               "--subdirs=>";
+   --        /SUBDIRS=dir
+   --
+   --   The actual directories (object, exec, library, ...) are subdirectories
+   --   of the directory specified in the project file. If the subdirectory
+   --   does not exist, it is created automatically.
+
    S_Metric_Suffix  : aliased constant S := "/SUFFIX_DETAILS=" & '"'       &
                                              "-o" & '"';
    --        /SUFFIX_DETAILS=suffix
@@ -5001,11 +5295,13 @@ package VMS_Data is
                        (S_Metric_Add              'Access,
                         S_Metric_All_Prjs         'Access,
                         S_Metric_Complexity       'Access,
+                        S_Metric_Coupling         'Access,
                         S_Metric_Debug            'Access,
                         S_Metric_Direct           'Access,
                         S_Metric_Element          'Access,
                         S_Metric_Ext              'Access,
                         S_Metric_Files            'Access,
+                        S_Metric_Follow           'Access,
                         S_Metric_Format           'Access,
                         S_Metric_Globout          'Access,
                         S_Metric_Line             'Access,
@@ -5016,6 +5312,7 @@ package VMS_Data is
                         S_Metric_Project          'Access,
                         S_Metric_Quiet            'Access,
                         S_Metric_Suffix           'Access,
+                        S_Metric_Subdirs          'Access,
                         S_Metric_Syntax           'Access,
                         S_Metric_Suppress         'Access,
                         S_Metric_Verbose          'Access,
@@ -5061,6 +5358,13 @@ package VMS_Data is
    --   qualifiers /SOURCE_DIRS as there are non empty lines in the specified
    --   text file.
 
+   S_Name_Follow  : aliased constant S := "/FOLLOW_LINKS_FOR_FILES "       &
+                                            "-eL";
+   --        /NOFOLLOW_LINKS_FOR_FILES (D)
+   --        /FOLLOW_LINKS_FOR_FILES
+   --
+   --    Follow links when parsing project files
+
    S_Name_Frng    : aliased constant S := "/FOREIGN_PATTERN=" & '"'        &
                                             "-f" & '"';
    --        /FOREIGN_PATTERN=<string>
@@ -5092,6 +5396,14 @@ package VMS_Data is
    --   one qualifier /PROJECT_FILE. When a qualifier /PROJECT_DILE is
    --   specified, no qualifier /CONFIG_FILE may be specified.
 
+   S_Name_Subdirs : aliased constant S := "/SUBDIRS=<"                     &
+                                             "--subdirs=>";
+   --        /SUBDIRS=dir
+   --
+   --   The actual directories (object, exec, library, ...) are subdirectories
+   --   of the directory specified in the project file. If the subdirectory
+   --   does not exist, it is created automatically.
+
    S_Name_Verbose : aliased constant S := "/VERBOSE "                      &
                                             "-v";
    --        /NOVERBOSE (D)
@@ -5117,14 +5429,16 @@ package VMS_Data is
    --   those whose names end with '_NT.ADA'.
 
    Name_Switches : aliased constant Switches :=
-                     (S_Name_Conf         'Access,
-                      S_Name_Dirs         'Access,
-                      S_Name_Dfile        'Access,
-                      S_Name_Frng         'Access,
-                      S_Name_Help         'Access,
-                      S_Name_Proj         'Access,
-                      S_Name_Verbose      'Access,
-                      S_Name_Excl         'Access);
+                     (S_Name_Conf    'Access,
+                      S_Name_Dirs    'Access,
+                      S_Name_Dfile   'Access,
+                      S_Name_Follow  'Access,
+                      S_Name_Frng    'Access,
+                      S_Name_Help    'Access,
+                      S_Name_Proj    'Access,
+                      S_Name_Subdirs 'Access,
+                      S_Name_Verbose 'Access,
+                      S_Name_Excl    'Access);
 
    ----------------------------------
    -- Switches for GNAT PREPROCESS --
@@ -5216,7 +5530,7 @@ package VMS_Data is
 
    S_Pretty_Add    : aliased constant S := "/ADD_PROJECT_SEARCH_DIR=*"     &
                                              "-aP*";
-   --        /ADD_PROJECT_SEARCH_PATH==(directory[,...])
+   --        /ADD_PROJECT_SEARCH_PATH=(directory[,...])
    --
    --   Add directories to the project search path.
 
@@ -5300,7 +5614,7 @@ package VMS_Data is
    --
    --   layout-option may be one of the following:
    --
-   --     UNTOUCHED           All the comments remain unchanged
+   --     UNTOUCHED           All the comments remain unchanged
    --     DEFAULT (D)         GNAT style comment line indentation
    --     STANDARD_INDENT     Standard comment line indentation
    --     GNAT_BEGINNING      GNAT style comment beginning
@@ -5537,6 +5851,13 @@ package VMS_Data is
    --   Take as arguments the files that are listed in the specified
    --   text file.
 
+   S_Pretty_Follow : aliased constant S := "/FOLLOW_LINKS_FOR_FILES "      &
+                                             "-eL";
+   --        /NOFOLLOW_LINKS_FOR_FILES (D)
+   --        /FOLLOW_LINKS_FOR_FILES
+   --
+   --    Follow links when parsing project files
+
    S_Pretty_Forced    : aliased constant S := "/FORCED_OUTPUT=@"           &
                                                  "-of@";
    --        /FORCED_OUTPUT=file
@@ -5630,7 +5951,7 @@ package VMS_Data is
    --
    --      MIXED_CASE        Names are in mixed case.
 
-   S_Pretty_No_Backup : aliased constant S := "/NO_BACKUP "                &
+   S_Pretty_Replace_No_Backup : aliased constant S := "/REPLACE_NO_BACKUP " &
                                                  "-rnb";
    --        /REPLACE_NO_BACKUP
    --
@@ -5732,6 +6053,14 @@ package VMS_Data is
    --
    --   Redirect the output to the standard output.
 
+   S_Pretty_Subdirs : aliased constant S := "/SUBDIRS=<"                   &
+                                               "--subdirs=>";
+   --        /SUBDIRS=dir
+   --
+   --   The actual directories (object, exec, library, ...) are subdirectories
+   --   of the directory specified in the project file. If the subdirectory
+   --   does not exist, it is created automatically.
+
    S_Pretty_Verbose   : aliased constant S := "/VERBOSE "                  &
                                               "-v";
    --        /NOVERBOSE (D)
@@ -5750,47 +6079,49 @@ package VMS_Data is
    --   By default such warnings are not activated.
 
    Pretty_Switches : aliased constant Switches :=
-                       (S_Pretty_Add            'Access,
-                        S_Pretty_Align          'Access,
-                        S_Pretty_All_Prjs       'Access,
-                        S_Pretty_Attrib         'Access,
-                        S_Pretty_Comments       'Access,
-                        S_Pretty_Compact_Is     'Access,
-                        S_Pretty_Config         'Access,
-                        S_Pretty_Constr         'Access,
-                        S_Pretty_Comind         'Access,
-                        S_Pretty_Current        'Access,
-                        S_Pretty_Dico           'Access,
-                        S_Pretty_Eol            'Access,
-                        S_Pretty_Ext            'Access,
-                        S_Pretty_Encoding       'Access,
-                        S_Pretty_Files          'Access,
-                        S_Pretty_Forced         'Access,
-                        S_Pretty_Formfeed       'Access,
-                        S_Pretty_Indent         'Access,
-                        S_Pretty_Keyword        'Access,
-                        S_Pretty_Maxlen         'Access,
-                        S_Pretty_Maxind         'Access,
-                        S_Pretty_Mess           'Access,
-                        S_Pretty_Names          'Access,
-                        S_Pretty_No_Backup      'Access,
-                        S_Pretty_No_Labels      'Access,
-                        S_Pretty_Notabs         'Access,
-                        S_Pretty_Output         'Access,
-                        S_Pretty_Override       'Access,
-                        S_Pretty_Pragma         'Access,
-                        S_Pretty_Replace        'Access,
-                        S_Pretty_Project        'Access,
-                        S_Pretty_RTS            'Access,
-                        S_Pretty_Search         'Access,
-                        S_Pretty_Sep_Loop_Then  'Access,
-                        S_Pretty_N_Sep_Loop_Then'Access,
-                        S_Pretty_Use_On_New_Line'Access,
-                        S_Pretty_Stnm_On_Nw_Line'Access,
-                        S_Pretty_Specific       'Access,
-                        S_Pretty_Standard       'Access,
-                        S_Pretty_Verbose        'Access,
-                        S_Pretty_Warnings       'Access);
+                       (S_Pretty_Add              'Access,
+                        S_Pretty_Align            'Access,
+                        S_Pretty_All_Prjs         'Access,
+                        S_Pretty_Attrib           'Access,
+                        S_Pretty_Comments         'Access,
+                        S_Pretty_Compact_Is       'Access,
+                        S_Pretty_Config           'Access,
+                        S_Pretty_Constr           'Access,
+                        S_Pretty_Comind           'Access,
+                        S_Pretty_Current          'Access,
+                        S_Pretty_Dico             'Access,
+                        S_Pretty_Eol              'Access,
+                        S_Pretty_Ext              'Access,
+                        S_Pretty_Encoding         'Access,
+                        S_Pretty_Files            'Access,
+                        S_Pretty_Follow           'Access,
+                        S_Pretty_Forced           'Access,
+                        S_Pretty_Formfeed         'Access,
+                        S_Pretty_Indent           'Access,
+                        S_Pretty_Keyword          'Access,
+                        S_Pretty_Maxlen           'Access,
+                        S_Pretty_Maxind           'Access,
+                        S_Pretty_Mess             'Access,
+                        S_Pretty_Names            'Access,
+                        S_Pretty_No_Labels        'Access,
+                        S_Pretty_Notabs           'Access,
+                        S_Pretty_Output           'Access,
+                        S_Pretty_Override         'Access,
+                        S_Pretty_Pragma           'Access,
+                        S_Pretty_Replace          'Access,
+                        S_Pretty_Replace_No_Backup'Access,
+                        S_Pretty_Project          'Access,
+                        S_Pretty_RTS              'Access,
+                        S_Pretty_Search           'Access,
+                        S_Pretty_Sep_Loop_Then    'Access,
+                        S_Pretty_N_Sep_Loop_Then  'Access,
+                        S_Pretty_Subdirs          'Access,
+                        S_Pretty_Use_On_New_Line  'Access,
+                        S_Pretty_Stnm_On_Nw_Line  'Access,
+                        S_Pretty_Specific         'Access,
+                        S_Pretty_Standard         'Access,
+                        S_Pretty_Verbose          'Access,
+                        S_Pretty_Warnings         'Access);
 
    ------------------------------
    -- Switches for GNAT SHARED --
@@ -5876,7 +6207,7 @@ package VMS_Data is
 
    S_Stack_Add        : aliased constant S := "/ADD_PROJECT_SEARCH_DIR=*"  &
                                                 "-aP*";
-   --        /ADD_PROJECT_SEARCH_PATH==(directory[,...])
+   --        /ADD_PROJECT_SEARCH_PATH=(directory[,...])
    --
    --   Add directories to the project search path.
 
@@ -5929,6 +6260,13 @@ package VMS_Data is
    --
    --   Take as arguments the files that are listed in the specified
    --   text file.
+
+   S_Stack_Follow : aliased constant S := "/FOLLOW_LINKS_FOR_FILES "       &
+                                            "-eL";
+   --        /NOFOLLOW_LINKS_FOR_FILES (D)
+   --        /FOLLOW_LINKS_FOR_FILES
+   --
+   --    Follow links when parsing project files
 
    S_Stack_Help       : aliased constant S := "/HELP "                     &
                                                 "-h";
@@ -5988,6 +6326,14 @@ package VMS_Data is
    --   Any symbol matching the regular expression will be considered as a
    --   potential entry point for the analysis.
 
+   S_Stack_Subdirs : aliased constant S := "/SUBDIRS=<"                    &
+                                              "--subdirs=>";
+   --        /SUBDIRS=dir
+   --
+   --   The actual directories (object, exec, library, ...) are subdirectories
+   --   of the directory specified in the project file. If the subdirectory
+   --   does not exist, it is created automatically.
+
    S_Stack_Unbounded  : aliased constant S := "/UNBOUNDED=#"               &
                                                 "-d#";
    --        /UNBOUNDED=nnn
@@ -6044,6 +6390,7 @@ package VMS_Data is
                        S_Stack_Directory  'Access,
                        S_Stack_Entries    'Access,
                        S_Stack_Files      'Access,
+                       S_Stack_Follow     'Access,
                        S_Stack_Help       'Access,
                        S_Stack_List       'Access,
                        S_Stack_Order      'Access,
@@ -6051,6 +6398,7 @@ package VMS_Data is
                        S_Stack_Project    'Access,
                        S_Stack_Output     'Access,
                        S_Stack_Regexp     'Access,
+                       S_Stack_Subdirs    'Access,
                        S_Stack_Unbounded  'Access,
                        S_Stack_Unknown    'Access,
                        S_Stack_Verbose    'Access,
@@ -6062,7 +6410,7 @@ package VMS_Data is
 
    S_Stub_Add     : aliased constant S := "/ADD_PROJECT_SEARCH_DIR=*"      &
                                             "-aP*";
-   --        /ADD_PROJECT_SEARCH_PATH==(directory[,...])
+   --        /ADD_PROJECT_SEARCH_PATH=(directory[,...])
    --
    --   Add directories to the project search path.
 
@@ -6089,6 +6437,13 @@ package VMS_Data is
    --
    --   Example:
    --      /EXTERNAL_REFERENCE="DEBUG=TRUE"
+
+   S_Stub_Follow  : aliased constant S := "/FOLLOW_LINKS_FOR_FILES "       &
+                                            "-eL";
+   --        /NOFOLLOW_LINKS_FOR_FILES (D)
+   --        /FOLLOW_LINKS_FOR_FILES
+   --
+   --    Follow links when parsing project files
 
    S_Stub_Full    : aliased constant S := "/FULL "                         &
                                             "-f";
@@ -6202,6 +6557,14 @@ package VMS_Data is
    --
    --    When looking for source files also look in directories specified.
 
+   S_Stub_Subdirs : aliased constant S := "/SUBDIRS=<"                     &
+                                             "--subdirs=>";
+   --        /SUBDIRS=dir
+   --
+   --   The actual directories (object, exec, library, ...) are subdirectories
+   --   of the directory specified in the project file. If the subdirectory
+   --   does not exist, it is created automatically.
+
    S_Stub_Tree    : aliased constant S := "/TREE_FILE="                    &
                                             "OVERWRITE "                   &
                                                "-t "                       &
@@ -6246,6 +6609,7 @@ package VMS_Data is
                       S_Stub_Config     'Access,
                       S_Stub_Current    'Access,
                       S_Stub_Ext        'Access,
+                      S_Stub_Follow     'Access,
                       S_Stub_Full       'Access,
                       S_Stub_Header     'Access,
                       S_Stub_Header_File'Access,
@@ -6257,6 +6621,7 @@ package VMS_Data is
                       S_Stub_Project    'Access,
                       S_Stub_Quiet      'Access,
                       S_Stub_Search     'Access,
+                      S_Stub_Subdirs    'Access,
                       S_Stub_Tree       'Access,
                       S_Stub_Verbose    'Access);
 
@@ -6266,7 +6631,7 @@ package VMS_Data is
 
    S_Xref_Add     : aliased constant S := "/ADD_PROJECT_SEARCH_DIR=*"      &
                                             "-aP*";
-   --        /ADD_PROJECT_SEARCH_PATH==(directory[,...])
+   --        /ADD_PROJECT_SEARCH_PATH=(directory[,...])
    --
    --   Add directories to the project search path.
 
@@ -6297,6 +6662,13 @@ package VMS_Data is
    --
    --   Example:
    --      /EXTERNAL_REFERENCE="DEBUG=TRUE"
+
+   S_Xref_Follow  : aliased constant S := "/FOLLOW_LINKS_FOR_FILES "       &
+                                            "-eL";
+   --        /NOFOLLOW_LINKS_FOR_FILES (D)
+   --        /FOLLOW_LINKS_FOR_FILES
+   --
+   --    Follow links when parsing project files
 
    S_Xref_Full    : aliased constant S := "/FULL_PATHNAME "                &
                                             "-f";
@@ -6392,6 +6764,14 @@ package VMS_Data is
    --   The order in which source file search is undertaken is the same as for
    --   MAKE.
 
+   S_Xref_Subdirs : aliased constant S := "/SUBDIRS=<"                     &
+                                             "--subdirs=>";
+   --        /SUBDIRS=dir
+   --
+   --   The actual directories (object, exec, library, ...) are subdirectories
+   --   of the directory specified in the project file. If the subdirectory
+   --   does not exist, it is created automatically.
+
    S_Xref_Output  : aliased constant S := "/UNUSED "                       &
                                             "-u";
    --        /SOURCE_SEARCH=(directory,...)
@@ -6412,6 +6792,7 @@ package VMS_Data is
                       S_Xref_All     'Access,
                       S_Xref_Deriv   'Access,
                       S_Xref_Ext     'Access,
+                      S_Xref_Follow  'Access,
                       S_Xref_Full    'Access,
                       S_Xref_Global  'Access,
                       S_Xref_Mess    'Access,
@@ -6422,6 +6803,7 @@ package VMS_Data is
                       S_Xref_Prj     'Access,
                       S_Xref_Search  'Access,
                       S_Xref_Source  'Access,
+                      S_Xref_Subdirs 'Access,
                       S_Xref_Output  'Access,
                       S_Xref_Tags    'Access);
 

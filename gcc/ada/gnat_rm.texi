@@ -8,7 +8,7 @@
 @c                                                                            o
 @c                              G N A T _ RM                                  o
 @c                                                                            o
-@c              Copyright (C) 1995-2007, Free Software Foundation             o
+@c              Copyright (C) 1995-2008, Free Software Foundation             o
 @c                                                                            o
 @c                                                                            o
 @c  GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).    o
@@ -34,7 +34,7 @@
 @end direntry
 
 @copying
-Copyright @copyright{} 1995-2007, 2008 Free Software Foundation, Inc.
+Copyright @copyright{} 1995-2008, Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2
@@ -108,7 +108,9 @@ Implementation Defined Pragmas
 * Pragma Assert::
 * Pragma Ast_Entry::
 * Pragma C_Pass_By_Copy::
+* Pragma Check::
 * Pragma Check_Name::
+* Pragma Check_Policy::
 * Pragma Comment::
 * Pragma Common_Object::
 * Pragma Compile_Time_Error::
@@ -174,6 +176,8 @@ Implementation Defined Pragmas
 * Pragma Passive::
 * Pragma Persistent_BSS::
 * Pragma Polling::
+* Pragma Postcondition::
+* Pragma Precondition::
 * Pragma Profile (Ravenscar)::
 * Pragma Profile (Restricted)::
 * Pragma Psect_Object::
@@ -228,12 +232,14 @@ Implementation Defined Attributes
 * Emax::
 * Enabled::
 * Enum_Rep::
+* Enum_Val::
 * Epsilon::
 * Fixed_Value::
 * Has_Access_Values::
 * Has_Discriminants::
 * Img::
 * Integer_Value::
+* Invalid_Value::
 * Large::
 * Machine_Size::
 * Mantissa::
@@ -380,6 +386,7 @@ The GNAT Library
 * GNAT.Table (g-table.ads)::
 * GNAT.Task_Lock (g-tasloc.ads)::
 * GNAT.Threads (g-thread.ads)::
+* GNAT.Time_Stamp (g-timsta.ads)::
 * GNAT.Traceback (g-traceb.ads)::
 * GNAT.Traceback.Symbolic (g-trasym.ads)::
 * GNAT.UTF_32 (g-utf_32.ads)::
@@ -702,7 +709,9 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Assert::
 * Pragma Ast_Entry::
 * Pragma C_Pass_By_Copy::
+* Pragma Check::
 * Pragma Check_Name::
+* Pragma Check_Policy::
 * Pragma Comment::
 * Pragma Common_Object::
 * Pragma Compile_Time_Error::
@@ -768,6 +777,8 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Passive::
 * Pragma Persistent_BSS::
 * Pragma Polling::
+* Pragma Postcondition::
+* Pragma Precondition::
 * Pragma Profile (Ravenscar)::
 * Pragma Profile (Restricted)::
 * Pragma Psect_Object::
@@ -933,7 +944,7 @@ Syntax:
 @smallexample @c ada
 pragma Assert (
   boolean_EXPRESSION
-  [, static_string_EXPRESSION]);
+  [, string_EXPRESSION]);
 @end smallexample
 
 @noindent
@@ -1050,6 +1061,34 @@ You can also pass records by copy by specifying the convention
 @code{Import} and @code{Export} pragmas, which allow specification of
 passing mechanisms on a parameter by parameter basis.
 
+@node Pragma Check
+@unnumberedsec Pragma Check
+@cindex Assertions
+@cindex Named assertions
+@findex Check
+@noindent
+Syntax:
+@smallexample @c ada
+pragma Check (
+     [Name    =>] Identifier,
+     [Check   =>] Boolean_EXPRESSION
+  [, [Message =>] string_EXPRESSION] );
+@end smallexample
+
+@noindent
+This pragma is similar to the predefined pragma @code{Assert} except that an
+extra identifier argument is present. In conjunction with pragma
+@code{Check_Policy}, this can be used to define groups of assertions that can
+be independently controlled. The identifier @code{Assertion} is special, it
+refers to the normal set of pragma @code{Assert} statements. The identifiers
+@code{Precondition} and @code{Postcondition} correspond to the pragmas of these
+names, so these three names would normally not be used directly in a pragma
+@code{Check}.
+
+Checks introduced by this pragma are normally deactivated by default. They can
+be activated either by the command line option @option{-gnata}, which turns on
+all checks, or individually controlled using pragma @code{Check_Policy}.
+
 @node Pragma Check_Name
 @unnumberedsec Pragma Check_Name
 @cindex Defining check names
@@ -1065,7 +1104,7 @@ pragma Check_Name (check_name_IDENTIFIER);
 This is a configuration pragma that defines a new implementation
 defined check name (unless IDENTIFIER matches one of the predefined
 check names, in which case the pragma has no effect). Check names
-are global to a partition, so if two more more configuration pragmas
+are global to a partition, so if two or more configuration pragmas
 are present in a partition mentioning the same name, only one new
 check name is introduced.
 
@@ -1078,6 +1117,60 @@ name is visible if it is in the configuration pragmas applying to
 the current unit, or if it appears at the start of any unit that
 is part of the dependency set of the current unit (e.g., units that
 are mentioned in @code{with} clauses).
+
+@node Pragma Check_Policy
+@unnumberedsec Pragma Check_Policy
+@cindex Controlling assertions
+@cindex Assertions, control
+@cindex Check pragma control
+@cindex Named assertions
+@findex Check
+@noindent
+Syntax:
+@smallexample @c ada
+pragma Check_Policy ([Name =>] Identifier, POLICY_IDENTIFIER);
+
+POLICY_IDENTIFIER ::= On | Off | Check | Ignore
+@end smallexample
+
+@noindent
+This pragma is similar to the predefined pragma @code{Assertion_Policy},
+except that it controls sets of named assertions introduced using the
+@code{Check} pragmas. It can be used as a configuration pragma or (unlike
+@code{Assertion_Policy}) can be used within a declarative part, in which case
+it controls the status to the end of the corresponding construct (in a manner
+identical to pragma @code{Suppress)}.
+
+The identifier given as the first argument corresponds to a name used in
+associated @code{Check} pragmas. For example, if the pragma:
+
+@smallexample @c ada
+pragma Check_Policy (Critical_Error, Off);
+@end smallexample
+
+@noindent
+is given, then subsequent @code{Check} pragmas whose first argument is also
+@code{Critical_Error} will be disabled. The special identifier @code{Assertion}
+controls the behavior of normal @code{Assert} pragmas (thus a pragma
+@code{Check_Policy} with this identifier is similar to the normal
+@code{Assertion_Policy} pragma except that it can appear within a
+declarative part).
+
+The special identifiers @code{Precondition} and @code{Postcondition} control
+the status of preconditions and postconditions. If a @code{Precondition} pragma
+is encountered, it is ignored if turned off by a @code{Check_Policy} specifying
+that @code{Precondition} checks are @code{Off} or @code{Ignored}. Similarly use
+of the name @code{Postcondition} controls whether @code{Postcondition} pragmas
+are recognized.
+
+The check policy is @code{Off} to turn off corresponding checks, and @code{On}
+to turn on corresponding checks. The default for a set of checks for which no
+@code{Check_Policy} is given is @code{Off} unless the compiler switch
+@option{-gnata} is given, which turns on all checks by default.
+
+The check policy settings @code{Check} and @code{Ignore} are also recognized
+as synonyms for @code{On} and @code{Off}. These synonyms are provided for
+compatibility with the standard @code{Assertion_Policy} pragma.
 
 @node Pragma Comment
 @unnumberedsec Pragma Comment
@@ -2767,7 +2860,7 @@ a handler.
 Note that certain signals on many operating systems cannot be caught and
 handled by applications.  In such cases, the pragma is ignored.  See the
 operating system documentation, or the value of the array @code{Reserved}
-declared in the specification of package @code{System.OS_Interface}.
+declared in the spec of package @code{System.OS_Interface}.
 
 Overriding the default state of signals used by the Ada runtime may interfere
 with an application's runtime behavior in the cases of the synchronous signals,
@@ -3456,9 +3549,10 @@ As noted above, this is a configuration pragma, and there is a requirement
 that all units in a partition be compiled with a consistent setting of the
 optimization setting. This would normally be achieved by use of a configuration
 pragma file containing the appropriate setting. The exception to this rule is
-that predefined units in the GNAT library (that is, members of the Ada, System,
-Interfaces, GNAT hierarchies) ignore the setting of this pragma, and thus the
-consistency requirement does not apply to them.
+that units with an explicit configuration pragma in the same file as the source
+unit are excluded from the consistency check, as are all predefined units. The
+latter are commpiled by default in pragma Optimize_Alignment (Off) mode if no
+pragma appears at the start of the file.
 
 @node Pragma Passive
 @unnumberedsec Pragma Passive
@@ -3554,6 +3648,194 @@ to test for an abort condition.
 Note that polling can also be enabled by use of the @option{-gnatP} switch.
 @xref{Switches for gcc,,, gnat_ugn, @value{EDITION} User's Guide}, for
 details.
+
+@node Pragma Postcondition
+@unnumberedsec Pragma Postcondition
+@cindex Postconditions
+@cindex Checks, postconditions
+@findex Postconditions
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Postcondition (
+   [Check   =>] Boolean_Expression
+ [,[Message =>] String_Expression]);
+@end smallexample
+
+@noindent
+The @code{Postcondition} pragma allows specification of automatic
+postcondition checks for subprograms. These checks are similar to
+assertions, but are automatically inserted just prior to the return
+statements of the subprogram with which they are associated.
+Furthermore, the boolean expression which is the condition which
+must be true may contain references to function'Result in the case
+of a function to refer to the returned value.
+
+@code{Postcondition} pragmas may appear either immediate following the
+(separate) declaration of a subprogram, or at the start of the
+declarations of a subprogram body. Only other pragmas may intervene
+(that is appear between the subprogram declaration and its
+postconditions, or appear before the postcondition in the
+declaration sequence in a subprogram body). In the case of a
+postcondition appearing after a subprogram declaration, the
+formal arguments of the subprogram are visible, and can be
+referenced in the postcondition expressions.
+
+The postconditions are collected and automatically tested just
+before any return (implicit or explicit) in the subprogram body.
+A postcondition is only recognized if postconditions are active
+at the time the pragma is encountered. The compiler switch @option{gnata}
+turns on all postconditions by default, and pragma @code{Check_Policy}
+with an identifier of @code{Postcondition} can also be used to
+control whether postconditions are active.
+
+The general approach is that postconditions are placed in the spec
+if they represent functional aspects which make sense to the client.
+For example we might have:
+
+@smallexample @c ada
+   function Direction return Integer;
+   pragma Postcondition
+    (Direction'Result = +1
+       or else
+     Direction'Result = -1);
+@end smallexample
+
+@noindent
+which serves to document that the result must be +1 or -1, and
+will test that this is the case at run time if postcondition
+checking is active.
+
+Postconditions within the subprogram body can be used to
+check that some internal aspect of the implementation,
+not visible to the client, is operating as expected.
+For instance if a square root routine keeps an internal
+counter of the number of times it is called, then we
+might have the following postcondition:
+
+@smallexample @c ada
+   Sqrt_Calls : Natural := 0;
+
+   function Sqrt (Arg : Float) return Float is
+     pragma Postcondition
+       (Sqrt_Calls = Sqrt_Calls'Old + 1);
+     ...
+   end Sqrt
+@end smallexample
+
+@noindent
+As this example, shows, the use of the @code{Old} attribute
+is often useful in postconditions to refer to the state on
+entry to the subprogram.
+
+Note that postconditions are only checked on normal returns
+from the subprogram. If an abnormal return results from
+raising an exception, then the postconditions are not checked.
+
+If a postcondition fails, then the exception
+@code{System.Assertions.Assert_Failure} is raised. If
+a message argument was supplied, then the given string
+will be used as the exception message. If no message
+argument was supplied, then the default message has
+the form "Postcondition failed at file:line". The
+exception is raised in the context of the subprogram
+body, so it is posssible to catch postcondition failures
+within the subprogram body itself.
+
+Within a package spec, normal visibility rules
+in Ada would prevent forward references within a
+postcondition pragma to functions defined later in
+the same package. This would introduce undesirable
+ordering constraints. To avoid this problem, all
+postcondition pragmas are analyzed at the end of
+the package spec, allowing forward references.
+
+The following example shows that this even allows
+mutually recursive postconditions as in:
+
+@smallexample @c ada
+package Parity_Functions is
+   function Odd  (X : Natural) return Boolean;
+   pragma Postcondition
+     (Odd'Result =
+        (x = 1
+          or else
+        (x /= 0 and then Even (X - 1))));
+
+   function Even (X : Natural) return Boolean;
+   pragma Postcondition
+     (Even'Result =
+        (x = 0
+          or else
+        (x /= 1 and then Odd (X - 1))));
+
+end Parity_Functions;
+@end smallexample
+
+@noindent
+There are no restrictions on the complexity or form of
+conditions used within @code{Postcondition} pragmas.
+The following example shows that it is even possible
+to verify performance behavior.
+
+@smallexample @c ada
+package Sort is
+
+   Performance : constant Float;
+   --  Performance constant set by implementation
+   --  to match target architecture behavior.
+
+   procedure Treesort (Arg : String);
+   --  Sorts characters of argument using N*logN sort
+   pragma Postcondition
+     (Float (Clock - Clock'Old) <=
+        Float (Arg'Length) *
+        log (Float (Arg'Length)) *
+        Performance);
+end Sort;
+@end smallexample
+
+@node Pragma Precondition
+@unnumberedsec Pragma Precondition
+@cindex Preconditions
+@cindex Checks, preconditions
+@findex Preconditions
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Precondition (
+   [Check   =>] Boolean_Expression
+ [,[Message =>] String_Expression]);
+@end smallexample
+
+@noindent
+The @code{Precondition} pragma is similar to @code{Postcondition}
+except that the corresponding checks take place immediately upon
+entry to the subprogram, and if a precondition fails, the exception
+is raised in the context of the caller, and the attribute 'Result
+cannot be used within the precondition expression.
+
+Otherwise, the placement and visibility rules are identical to those
+described for postconditions. The following is an example of use
+within a package spec:
+
+@smallexample @c ada
+package Math_Functions is
+   ...
+   function Sqrt (Arg : Float) return Float;
+   pragma Precondition (Arg >= 0.0)
+   ...
+end Math_Functions;
+@end smallexample
+
+@code{Postcondition} pragmas may appear either immediate following the
+(separate) declaration of a subprogram, or at the start of the
+declarations of a subprogram body. Only other pragmas may intervene
+(that is appear between the subprogram declaration and its
+postconditions, or appear before the postcondition in the
+declaration sequence in a subprogram body).
 
 @node Pragma Profile (Ravenscar)
 @unnumberedsec Pragma Profile (Ravenscar)
@@ -4196,7 +4478,7 @@ The @code{Task_Info} pragma provides system dependent control over
 aspects of tasking implementation, for example, the ability to map
 tasks to specific processors.  For details on the facilities available
 for the version of GNAT that you are using, see the documentation
-in the specification of package System.Task_Info in the runtime
+in the spec of package System.Task_Info in the runtime
 library.
 
 @node Pragma Task_Name
@@ -4524,7 +4806,7 @@ functions.  For example, if this pragma is used, then pressing
 a program can then handle the @code{SIGINT} interrupt as it chooses.
 
 For a full list of the interrupts handled in a specific implementation,
-see the source code for the specification of @code{Ada.Interrupts.Names} in
+see the source code for the spec of @code{Ada.Interrupts.Names} in
 file @file{a-intnam.ads}.  This is a target dependent file that contains the
 list of interrupts recognized for a given target.  The documentation in
 this file also specifies what interrupts are affected by the use of
@@ -4765,12 +5047,10 @@ control individual messages, based on their text. The string argument
 is a pattern that is used to match against the text of individual
 warning messages (not including the initial "warnings: " tag).
 
-The pattern may start with an asterisk, which matches otherwise unmatched
-characters at the start of the message, and it may also end with an asterisk
-which matches otherwise unmatched characters at the end of the message. For
-example, the string "*alignment*" could be used to match any warnings about
-alignment problems. Within the string, the sequence "*" can be used to match
-any sequence of characters enclosed in quotation marks. No other regular
+The pattern may contain asterisks which match zero or more characters in
+the message. For example, you can use
+@code{pragma Warnings (Off, "*bits of*unused")} to suppress the warning
+message @code{warning: 960 bits of "a" unused}. No other regular
 expression notations are permitted. All characters other than asterisk in
 these three specific cases are treated as literal characters in the match.
 
@@ -4904,12 +5184,14 @@ consideration, you should minimize the use of these attributes.
 * Emax::
 * Enabled::
 * Enum_Rep::
+* Enum_Val::
 * Epsilon::
 * Fixed_Value::
 * Has_Access_Values::
 * Has_Discriminants::
 * Img::
 * Integer_Value::
+* Invalid_Value::
 * Large::
 * Machine_Size::
 * Mantissa::
@@ -5128,7 +5410,7 @@ error.
 @noindent
 This attribute can only be applied to a program unit name.  It returns
 the entity for the corresponding elaboration procedure for elaborating
-the specification of the referenced unit.  This is used in the main
+the spec of the referenced unit.  This is used in the main
 generated elaboration procedure by the binder and is not normally used
 in any other context.  However, there may be specialized situations in
 which it is useful to be able to call this elaboration procedure from
@@ -5199,6 +5481,27 @@ type whose upper bound exceeds the upper bound of the largest signed
 integer type, and the argument is a variable, so that the universal
 integer calculation is done at run time, then the call to @code{Enum_Rep}
 may raise @code{Constraint_Error}.
+
+@node Enum_Val
+@unnumberedsec Enum_Val
+@cindex Representation of enums
+@findex Enum_Val
+@noindent
+For every enumeration subtype @var{S}, @code{@var{S}'Enum_Rep} denotes a
+function with the following spec:
+
+@smallexample @c ada
+function @var{S}'Enum_Rep (Arg : @i{Universal_Integer)
+  return @var{S}'Base};
+@end smallexample
+
+@noindent
+The function returns the enumeration value whose representation matches the
+argument, or raises Constraint_Error if no enumeration literal of the type
+has the matching value.
+This will be equal to value of the @code{Val} attribute in the
+absence of an enumeration representation clause.  This is a static
+attribute (i.e.@: the result is static if the argument is static).
 
 @node Epsilon
 @unnumberedsec Epsilon
@@ -5310,6 +5613,17 @@ converting the result to the target integer type.  The difference is
 that there are full range checks, to ensure that the result is in range.
 This attribute is primarily intended for use in implementation of the
 standard input-output functions for fixed-point values.
+
+@node Invalid_Value
+@unnumberedsec Invalid_Value
+@findex Invalid_Value
+@noindent
+For every scalar type S, S'Invalid_Value returns an undefined value of the
+type. If possible this value is an invalid representation for the type. The
+value returned is identical to the value used to initialize an otherwise
+uninitialized value of the type if pragma Initialize_Scalars is used,
+including the ability to modify the value with the binder -Sxx flag and
+relevant environment variables at run time.
 
 @node Large
 @unnumberedsec Large
@@ -7910,6 +8224,18 @@ is made to queue more than the specified number of tasks on such an entry.
 This restriction ensures at compile time that there is no implicit or
 explicit dependence on the package @code{Ada.Calendar}.
 
+@item No_Default_Initialization
+@findex No_Default_Initialization
+
+This restriction prohibits any instance of default initialization of variables.
+The binder implements a consistency rule which prevents any unit compiled
+without the restriction from with'ing a unit with the restriction (this allows
+the generation of initialization procedures to be skipped, since you can be
+sure that no call is ever generated to an initialization procedure in a unit
+with the restriction active). If used in conjunction with Initialize_Scalars or
+Normalize_Scalars, the effect is to prohibit all cases of variables declared
+without a specific initializer (including the case of OUT scalar parameters).
+
 @item No_Direct_Boolean_Operators
 @findex No_Direct_Boolean_Operators
 This restriction ensures that no logical (and/or/xor) or comparison
@@ -8485,11 +8811,11 @@ letters.
 @end cartouche
 @noindent
 The string passed to @code{Linker_Options} is presented uninterpreted as
-an argument to the link command, unless it contains Ascii.NUL characters.
+an argument to the link command, unless it contains ASCII.NUL characters.
 NUL characters if they appear act as argument separators, so for example
 
 @smallexample @c ada
-pragma Linker_Options ("-labc" & ASCII.Nul & "-ldef");
+pragma Linker_Options ("-labc" & ASCII.NUL & "-ldef");
 @end smallexample
 
 @noindent
@@ -9435,9 +9761,10 @@ will be as described for primitive types, e.g.@: a packed array of length
 @item @emph{Records}.
 For the normal non-packed case, the alignment of a record is equal to
 the maximum alignment of any of its components.  For tagged records, this
-includes the implicit access type used for the tag.  If a pragma @code{Pack} is
-used and all fields are packable (see separate section on pragma @code{Pack}),
-then the resulting alignment is 1.
+includes the implicit access type used for the tag.  If a pragma @code{Pack}
+is used and all components are packable (see separate section on pragma
+@code{Pack}), then the resulting alignment is 1, unless the layout of the
+record makes it profitable to increase it.
 
 A special case is when:
 @itemize @bullet
@@ -9470,7 +9797,8 @@ strict alignment.
 An alignment clause may specify a larger alignment than the default value
 up to some maximum value dependent on the target (obtainable by using the
 attribute reference @code{Standard'Maximum_Alignment}). It may also specify
-a smaller alignment than the default value, for example
+a smaller alignment than the default value for enumeration, integer and
+fixed point types, as well as for record types, for example
 
 @smallexample @c ada
   type V is record
@@ -9993,11 +10321,10 @@ In other words, the value specified must be at least equal to the size
 of this subtype, and must be a multiple of the alignment value.
 
 In addition, component size clauses are allowed which cause the array
-to be packed, by specifying a smaller value.  The cases in which this
-is allowed are for component size values in the range 1 through 63.  The value
-specified must not be smaller than the Size of the subtype.  GNAT will
-accurately honor all packing requests in this range.  For example, if
-we have:
+to be packed, by specifying a smaller value.  A first case is for
+component size values in the range 1 through 63.  The value specified
+must not be smaller than the Size of the subtype.  GNAT will accurately
+honor all packing requests in this range.  For example, if we have:
 
 @smallexample @c ada
 type r is array (1 .. 8) of Natural;
@@ -10008,6 +10335,23 @@ for r'Component_Size use 31;
 then the resulting array has a length of 31 bytes (248 bits = 8 * 31).
 Of course access to the components of such an array is considerably
 less efficient than if the natural component size of 32 is used.
+A second case is when the subtype of the component is a record type
+padded because of its default alignment.  For example, if we have:
+
+@smallexample @c ada
+type r is record
+  i : Integer;
+  j : Integer;
+  b : Boolean;
+end record;
+
+type a is array (1 .. 8) of r;
+for a'Component_Size use 72;
+@end smallexample
+
+@noindent
+then the resulting array has a length of 72 bytes, instead of 96 bytes
+if the alignment of the record (4) was obeyed.
 
 Note that there is no point in giving both a component size clause
 and a pragma Pack for the same array type. if such duplicate
@@ -10389,6 +10733,8 @@ Any scalar type
 Any type whose size is specified with a size clause
 @item
 Any packed array type with a static size
+@item
+Any record type padded because of its default alignment
 @end itemize
 
 @noindent
@@ -12973,6 +13319,7 @@ of GNAT, and will generate a warning message.
 * GNAT.Table (g-table.ads)::
 * GNAT.Task_Lock (g-tasloc.ads)::
 * GNAT.Threads (g-thread.ads)::
+* GNAT.Time_Stamp (g-timsta.ads)::
 * GNAT.Traceback (g-traceb.ads)::
 * GNAT.Traceback.Symbolic (g-trasym.ads)::
 * GNAT.UTF_32 (g-utf_32.ads)::
@@ -14071,6 +14418,17 @@ used to define dynamic instances of the table.
 A very simple facility for locking and unlocking sections of code using a
 single global task lock.  Appropriate for use in situations where contention
 between tasks is very rarely expected.
+
+@node GNAT.Time_Stamp (g-timsta.ads)
+@section @code{GNAT.Time_Stamp} (@file{g-timsta.ads})
+@cindex @code{GNAT.Time_Stamp} (@file{g-timsta.ads})
+@cindex Time stamp
+@cindex Current time
+
+@noindent
+Provides a simple function that returns a string YYYY-MM-DD HH:MM:SS.SS that
+represents the current date and time in ISO 8601 format. This is a very simple
+routine with minimal code and there are no dependencies on any other unit.
 
 @node GNAT.Threads (g-thread.ads)
 @section @code{GNAT.Threads} (@file{g-thread.ads})
@@ -15727,9 +16085,9 @@ Syntax:
 
 @smallexample
 package_declaration ::=
-  package_specification | package_renaming
+  package_spec | package_renaming
 
-package_specification ::=
+package_spec ::=
   @b{package} package_identifier @b{is}
     @{simple_declarative_item@}
   @b{end} package_identifier ;

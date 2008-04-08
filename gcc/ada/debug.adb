@@ -93,7 +93,7 @@ package body Debug is
    --  dY   Enable configurable run-time mode
    --  dZ   Generate listing showing the contents of the dispatch tables
 
-   --  d.a
+   --  d.a  Enable alignment promotion for non-scalar stand-alone objects
    --  d.b
    --  d.c
    --  d.d
@@ -500,6 +500,12 @@ package body Debug is
    --         - In case of abstract subprograms the text "is abstract" is
    --           added at the end of the line.
 
+   --  d.a  Enable alignment promotion for non-VMS targets. On VMS, by default
+   --       (in Optimize_Alignment (Off) mode), the alignment of stand-alone
+   --       objects is increased in some cases to enable the generation of
+   --       better code. Use of this debug flag enables this transformation
+   --       on non-VMS targets.
+
    --  d.f  Suppress folding of static expressions. This of course results
    --       in seriously non-conforming behavior, but is useful sometimes
    --       when tracking down handling of complex expressions.
@@ -635,6 +641,8 @@ package body Debug is
    --------------------------------------------
    -- Documentation for gnatmake Debug Flags --
    --------------------------------------------
+
+   --  df  Only output file names, not path names, in log
 
    --  dn  Do not delete temporary files created by gnatmake at the end
    --      of execution, such as temporary config pragma files, mapping

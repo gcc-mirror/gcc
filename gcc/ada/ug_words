@@ -1,5 +1,5 @@
 b_              ^ B_
-b~              ^ B$
+b~              ^ B__
 cc1             ^ CC1
 Cc1             ^ CC1
 emacs           ^ EMACS
@@ -99,6 +99,8 @@ gcc -c          ^ GNAT COMPILE
 -gnatVa         ^ /VALIDITY_CHECKING=ALL
 -gnatVc         ^ /VALIDITY_CHECKING=COPIES
 -gnatVd         ^ /VALIDITY_CHECKING=DEFAULT
+-gnatVE         ^ /VALIDITY_CHECKING=NOCOMPONENTS
+-gnatVe         ^ /VALIDITY_CHECKING=COMPONENTS
 -gnatVD         ^ /VALIDITY_CHECKING=NODEFAULT
 -gnatVf         ^ /VALIDITY_CHECKING=FLOATS
 -gnatVi         ^ /VALIDITY_CHECKING=IN_PARAMS
@@ -123,6 +125,7 @@ gcc -c          ^ GNAT COMPILE
 -gnatwd         ^ /WARNINGS=IMPLICIT_DEREFERENCE
 -gnatwD         ^ /WARNINGS=NOIMPLICIT_DEREFERENCE
 -gnatwe         ^ /WARNINGS=ERRORS
+-gnatw.e        ^ /WARNINGS=EVERY
 -gnatwf         ^ /WARNINGS=UNREFERENCED_FORMALS
 -gnatwF         ^ /WARNINGS=NOUNREFERENCED_FORMALS
 -gnatwg         ^ /WARNINGS=UNRECOGNIZED_PRAGMAS
@@ -146,6 +149,8 @@ gcc -c          ^ GNAT COMPILE
 -gnatw.O        ^ /WARNINGS=NOOUT_PARAM_UNREF
 -gnatwp         ^ /WARNINGS=INEFFECTIVE_INLINE
 -gnatwP         ^ /WARNINGS=NOINEFFECTIVE_INLINE
+-gnatw.p        ^ /WARNINGS=PARAMETER_ORDER
+-gnatw.P        ^ /WARNINGS=NO_PARAMETER_ORDER
 -gnatwq         ^ /WARNINGS=MISSING_PARENS
 -gnatwQ         ^ /WARNINGS=NOMISSING_PARENS
 -gnatwr         ^ /WARNINGS=REDUNDANT
