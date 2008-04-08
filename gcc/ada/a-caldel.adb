@@ -116,15 +116,13 @@ package body Ada.Calendar.Delays is
       --  target independent operation in Ada.Calendar is used to perform
       --  this conversion.
 
-      return Delays_Operations.To_Duration (T);
+      return Delay_Operations.To_Duration (T);
    end To_Duration;
 
 begin
    --  Set up the Timed_Delay soft link to the non tasking version if it has
-   --  not been already set.
-
-   --  If tasking is present, Timed_Delay has already set this soft link, or
-   --  this will be overridden during the elaboration of
+   --  not been already set. If tasking is present, Timed_Delay has already set
+   --  this soft link, or this will be overridden during the elaboration of
    --  System.Tasking.Initialization
 
    if SSL.Timed_Delay = null then

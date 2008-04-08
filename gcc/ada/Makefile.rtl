@@ -79,6 +79,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-calari$(objext) \
   a-caldel$(objext) \
   a-calend$(objext) \
+  a-calcon$(objext) \
   a-calfor$(objext) \
   a-catizo$(objext) \
   a-cdlili$(objext) \
@@ -380,6 +381,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-sttsne$(objext) \
   g-table$(objext) \
   g-tasloc$(objext) \
+  g-timsta$(objext) \
   g-traceb$(objext) \
   g-utf_32$(objext) \
   g-u3spch$(objext) \
@@ -558,6 +560,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-stopoo$(objext) \
   s-stratt$(objext) \
   s-strops$(objext) \
+  s-ststop$(objext) \
   s-soflin$(objext) \
   s-memory$(objext) \
   s-memcop$(objext) \
