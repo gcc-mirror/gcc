@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -121,6 +121,7 @@ package System.Stream_Attributes is
    function I_SU  (Stream : not null access RST) return UST.Short_Unsigned;
    function I_U   (Stream : not null access RST) return UST.Unsigned;
    function I_WC  (Stream : not null access RST) return Wide_Character;
+   function I_WWC (Stream : not null access RST) return Wide_Wide_Character;
 
    -----------------------
    -- Output Procedures --
@@ -154,6 +155,14 @@ package System.Stream_Attributes is
                     Item   : UST.Short_Unsigned);
    procedure W_U   (Stream : not null access RST; Item : UST.Unsigned);
    procedure W_WC  (Stream : not null access RST; Item : Wide_Character);
+   procedure W_WWC (Stream : not null access RST; Item : Wide_Wide_Character);
+
+   function Block_IO_OK return Boolean;
+   --  Package System.Stream_Attributes has several bodies - the default one
+   --  distributed with GNAT, s-strxdr.adb which is based on the XDR standard
+   --  and s-stratt.adb for Garlic. All three bodies share the same spec. The
+   --  role of this function is to determine whether the current version of
+   --  System.Stream_Attributes is able to support block IO.
 
 private
    pragma Inline (I_AD);
@@ -175,6 +184,7 @@ private
    pragma Inline (I_SU);
    pragma Inline (I_U);
    pragma Inline (I_WC);
+   pragma Inline (I_WWC);
 
    pragma Inline (W_AD);
    pragma Inline (W_AS);
@@ -195,5 +205,8 @@ private
    pragma Inline (W_SU);
    pragma Inline (W_U);
    pragma Inline (W_WC);
+   pragma Inline (W_WWC);
+
+   pragma Inline (Block_IO_OK);
 
 end System.Stream_Attributes;
