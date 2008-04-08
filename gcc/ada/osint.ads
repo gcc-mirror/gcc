@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -110,7 +110,9 @@ package Osint is
    --  cross compilation case, looks at the prefix of the current program being
    --  run and prepend it to Nam. For instance if the program being run is
    --  <target>-gnatmake and Nam is "gcc", the returned value will be a pointer
-   --  to "<target>-gcc". This function clobbers Name_Buffer and Name_Len.
+   --  to "<target>-gcc". In the specific case where AAMP_On_Target is set, the
+   --  name "gcc" is mapped to "gnaamp", and names of the form "gnat*" are
+   --  mapped to "gnaamp*". This function clobbers Name_Buffer and Name_Len.
 
    procedure Write_Program_Name;
    --  Writes name of program as invoked to the current output
