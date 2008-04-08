@@ -1,3 +1,9 @@
+2008-04-08  Janis Johnson  <janis187@us.ibm.com>
+
+	PR target/35839
+	* config/rs6000/rs6000.c (rs6000_check_sdmode): Handle additional
+	kinds of indirect references.
+
 2008-04-08  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_output_function_epilogue): Update
