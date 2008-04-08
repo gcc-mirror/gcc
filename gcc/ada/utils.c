@@ -548,6 +548,27 @@ init_gigi_decls (tree long_long_float_type, tree exception_type)
   void_ftype = build_function_type (void_type_node, NULL_TREE);
   ptr_void_ftype = build_pointer_type (void_ftype);
 
+  /* Build the special descriptor type and its null node if needed.  */
+  if (TARGET_VTABLE_USES_DESCRIPTORS)
+    {
+      tree field_list = NULL_TREE, null_list = NULL_TREE;
+      int j;
+
+      fdesc_type_node = make_node (RECORD_TYPE);
+
+      for (j = 0; j < TARGET_VTABLE_USES_DESCRIPTORS; j++)
+	{
+	  tree field = create_field_decl (NULL_TREE, ptr_void_ftype,
+					  fdesc_type_node, 0, 0, 0, 1);
+	  TREE_CHAIN (field) = field_list;
+	  field_list = field;
+	  null_list = tree_cons (field, null_pointer_node, null_list);
+	}
+
+      finish_record_type (fdesc_type_node, nreverse (field_list), 0, false);
+      null_fdesc_node = gnat_build_constructor (fdesc_type_node, null_list);
+    }
+
   /* Now declare runtime functions. */
   endlink = tree_cons (NULL_TREE, void_type_node, NULL_TREE);
 

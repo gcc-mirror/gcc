@@ -3089,6 +3089,22 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       break;
 
     case E_Access_Subprogram_Type:
+      /* Use the special descriptor type for dispatch tables if needed,
+	 that is to say for the Prim_Ptr of a-tags.ads and its clones.
+	 Note that we are only required to do so for static tables in
+	 order to be compatible with the C++ ABI, but Ada 2005 allows
+	 to extend library level tagged types at the local level so
+	 we do it in the non-static case as well.  */
+      if (TARGET_VTABLE_USES_DESCRIPTORS
+	  && Is_Dispatch_Table_Entity (gnat_entity))
+	{
+	    gnu_type = fdesc_type_node;
+	    gnu_size = TYPE_SIZE (gnu_type);
+	    break;
+	}
+
+      /* ... fall through ... */
+
     case E_Anonymous_Access_Subprogram_Type:
       /* If we are not defining this entity, and we have incomplete
 	 entities being processed above us, make a dummy type and

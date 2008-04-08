@@ -852,6 +852,53 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       if (attribute == Attr_Address)
 	gnu_prefix = maybe_unconstrained_array (gnu_prefix);
 
+      /* If we are building a static dispatch table, we have to honor
+	 TARGET_VTABLE_USES_DESCRIPTORS if we want to be compatible
+	 with the C++ ABI.  We do it in the non-static case as well,
+	 see gnat_to_gnu_entity, case E_Access_Subprogram_Type.  */
+      else if (TARGET_VTABLE_USES_DESCRIPTORS
+	       && Is_Dispatch_Table_Entity (Etype (gnat_node)))
+	{
+	  tree gnu_field, gnu_list = NULL_TREE, t;
+	  /* Descriptors can only be built here for top-level functions.  */
+	  bool build_descriptor = (global_bindings_p () != 0);
+	  int i;
+
+	  gnu_result_type = get_unpadded_type (Etype (gnat_node));
+
+	  /* If we're not going to build the descriptor, we have to retrieve
+	     the one which will be built by the linker (or by the compiler
+	     later if a static chain is requested).  */
+	  if (!build_descriptor)
+	    {
+	      gnu_result = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_prefix);
+	      gnu_result = fold_convert (build_pointer_type (gnu_result_type),
+					 gnu_result);
+	      gnu_result = build1 (INDIRECT_REF, gnu_result_type, gnu_result);
+	    }
+
+	  for (gnu_field = TYPE_FIELDS (gnu_result_type), i = 0;
+	       i < TARGET_VTABLE_USES_DESCRIPTORS;
+	       gnu_field = TREE_CHAIN (gnu_field), i++)
+	    {
+	      if (build_descriptor)
+		{
+		  t = build2 (FDESC_EXPR, TREE_TYPE (gnu_field), gnu_prefix,
+			      build_int_cst (NULL_TREE, i));
+		  TREE_CONSTANT (t) = 1;
+		  TREE_INVARIANT (t) = 1;
+		}
+	      else
+		t = build3 (COMPONENT_REF, ptr_void_ftype, gnu_result,
+			    gnu_field, NULL_TREE);
+
+	      gnu_list = tree_cons (gnu_field, t, gnu_list);
+	    }
+
+	  gnu_result = gnat_build_constructor (gnu_result_type, gnu_list);
+	  break;
+	}
+
       /* ... fall through ... */
 
     case Attr_Access:
@@ -3649,7 +3696,12 @@ gnat_to_gnu (Node_Id gnat_node)
       break;
 
     case N_Null:
-      gnu_result = null_pointer_node;
+      if (TARGET_VTABLE_USES_DESCRIPTORS
+	  && Ekind (Etype (gnat_node)) == E_Access_Subprogram_Type
+	  && Is_Dispatch_Table_Entity (Etype (gnat_node)))
+	gnu_result = null_fdesc_node;
+      else
+	gnu_result = null_pointer_node;
       gnu_result_type = get_unpadded_type (Etype (gnat_node));
       break;
 
@@ -3686,6 +3738,13 @@ gnat_to_gnu (Node_Id gnat_node)
 	       gnat_node, Designated_Type (Etype (gnat_node)),
 	       size_int (align / BITS_PER_UNIT), oalign / BITS_PER_UNIT);
 	}
+
+      /* If we are converting a descriptor to a function pointer, first
+	 build the pointer.  */
+      if (TARGET_VTABLE_USES_DESCRIPTORS
+	  && TREE_TYPE (gnu_result) == fdesc_type_node
+	  && POINTER_TYPE_P (gnu_result_type))
+	gnu_result = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_result);
 
       gnu_result = unchecked_convert (gnu_result_type, gnu_result,
 				      No_Truncation (gnat_node));
