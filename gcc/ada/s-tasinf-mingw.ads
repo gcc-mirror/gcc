@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2007, Free Software Foundation, Inc.            --
+--         Copyright (C) 2007-2008, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,14 +43,14 @@
 
 --  This is the Windows (native) version of this module
 
-with System.OS_Interface;
+with System.Win32;
 
 package System.Task_Info is
    pragma Preelaborate;
    pragma Elaborate_Body;
    --  To ensure that a body is allowed
 
-   use type System.OS_Interface.ProcessorId;
+   use type System.Win32.ProcessorId;
 
    --  Windows provides a way to define the ideal processor to use for a given
    --  thread. The ideal processor is not necessarily the one that will be used
@@ -80,7 +80,7 @@ package System.Task_Info is
    -- Thread Attributes --
    -----------------------
 
-   subtype CPU_Number is System.OS_Interface.ProcessorId;
+   subtype CPU_Number is System.Win32.ProcessorId;
 
    Any_CPU : constant CPU_Number := -1;
 

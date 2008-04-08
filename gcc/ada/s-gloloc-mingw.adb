@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2007, AdaCore                     --
+--                     Copyright (C) 1999-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,10 +33,11 @@
 
 --  This implementation is specific to NT
 
+with System.OS_Interface;
 with System.Task_Lock;
+with System.Win32;
 
 with Interfaces.C.Strings;
-with System.OS_Interface;
 
 package body System.Global_Locks is
 
@@ -44,7 +45,7 @@ package body System.Global_Locks is
    package OSI renames System.OS_Interface;
    package ICS renames Interfaces.C.Strings;
 
-   subtype Lock_File_Entry is OSI.HANDLE;
+   subtype Lock_File_Entry is Win32.HANDLE;
 
    Last_Lock  : Lock_Type := Null_Lock;
    Lock_Table : array (Lock_Type range 1 .. 15) of Lock_File_Entry;
@@ -53,10 +54,7 @@ package body System.Global_Locks is
    -- Create_Lock --
    -----------------
 
-   procedure Create_Lock
-     (Lock : out Lock_Type;
-      Name : String)
-   is
+   procedure Create_Lock (Lock : out Lock_Type; Name : String) is
       L : Lock_Type;
 
    begin
@@ -70,7 +68,7 @@ package body System.Global_Locks is
       end if;
 
       Lock_Table (L) :=
-        OSI.CreateMutex (null, OSI.BOOL (False), ICS.New_String (Name));
+        OSI.CreateMutex (null, Win32.FALSE, ICS.New_String (Name));
       Lock := L;
    end Create_Lock;
 
@@ -78,12 +76,11 @@ package body System.Global_Locks is
    -- Acquire_Lock --
    ------------------
 
-   procedure Acquire_Lock
-     (Lock : in out Lock_Type)
-   is
-      use type OSI.DWORD;
+   procedure Acquire_Lock (Lock : in out Lock_Type) is
+      use type Win32.DWORD;
 
-      Res : OSI.DWORD;
+      Res : Win32.DWORD;
+
    begin
       Res := OSI.WaitForSingleObject (Lock_Table (Lock), OSI.Wait_Infinite);
 
@@ -96,16 +93,15 @@ package body System.Global_Locks is
    -- Release_Lock --
    ------------------
 
-   procedure Release_Lock
-     (Lock : in out Lock_Type)
-   is
-      use type OSI.BOOL;
+   procedure Release_Lock (Lock : in out Lock_Type) is
+      use type Win32.BOOL;
 
-      Res : OSI.BOOL;
+      Res : Win32.BOOL;
+
    begin
       Res := OSI.ReleaseMutex (Lock_Table (Lock));
 
-      if Res = OSI.False then
+      if Res = Win32.FALSE then
          raise Lock_Error;
       end if;
    end Release_Lock;
