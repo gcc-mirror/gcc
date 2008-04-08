@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2077,14 +2077,10 @@ package body Ada.Containers.Vectors is
       end if;
 
       declare
-         EI : Element_Type renames Container.Elements.EA (I);
-         EJ : Element_Type renames Container.Elements.EA (J);
-
-         EI_Copy : constant Element_Type := EI;
-
+         EI_Copy : constant Element_Type := Container.Elements.EA (I);
       begin
-         EI := EJ;
-         EJ := EI_Copy;
+         Container.Elements.EA (I) := Container.Elements.EA (J);
+         Container.Elements.EA (J) := EI_Copy;
       end;
    end Swap;
 

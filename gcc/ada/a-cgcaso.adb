@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,14 +91,11 @@ is
 
       while C /= S loop
          declare
-            Father      : constant T := C / 2;
-            Father_Elem : Element_Type renames A (To_Index (Father));
-
+            Father : constant T := C / 2;
          begin
-            if Father_Elem < Temp then           -- Lt (Father, 0)
-               A (To_Index (C)) := Father_Elem;  -- Move (Father, C)
+            if A (To_Index (Father)) < Temp then           -- Lt (Father, 0)
+               A (To_Index (C)) := A (To_Index (Father));  -- Move (Father, C)
                C := Father;
-
             else
                exit;
             end if;
@@ -117,12 +114,8 @@ begin
    end loop;
 
    while Max > 1 loop
-      declare
-         Max_Elem : Element_Type renames A (To_Index (Max));
-      begin
-         Temp := Max_Elem;         --  Move (Max, 0);
-         Max_Elem := A (A'First);  --  Move (1, Max);
-      end;
+      Temp := A (To_Index (Max));         --  Move (Max, 0);
+      A (To_Index (Max)) := A (A'First);  --  Move (1, Max);
 
       Max := Max - 1;
       Sift (1);

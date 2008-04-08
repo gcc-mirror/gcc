@@ -6,11 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
---                                                                          --
--- This specification is derived from the Ada Reference Manual for use with --
--- GNAT. The copyright notice above, and the license provisions that follow --
--- apply solely to the  contents of the part following the private keyword. --
+--          Copyright (C) 2004-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,7 +29,9 @@
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
---  Documentation of this unit is needed ???
+--  Allows an anonymous array (or array-like container) to be sorted. Generic
+--  formal Less returns the result of comparing the elements designated by the
+--  indices, and generic formal Swap exchanges the designated elements.
 
 generic
    type Index_Type is (<>);
@@ -42,5 +40,4 @@ generic
 
 procedure Ada.Containers.Generic_Anonymous_Array_Sort
   (First, Last : Index_Type'Base);
-
 pragma Pure (Ada.Containers.Generic_Anonymous_Array_Sort);
