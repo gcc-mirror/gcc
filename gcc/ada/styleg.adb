@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -238,7 +238,8 @@ package body Styleg is
 
    --    1. Any comment that is not at the start of a line, i.e. where the
    --       initial minuses are not the first non-blank characters on the
-   --       line must have at least one blank after the second minus.
+   --       line must have at least one blank after the second minus or a
+   --       special character as defined in rule 5.
 
    --    2. A row of all minuses of any length is permitted (see procedure
    --       box above in the source of this routine).
@@ -274,6 +275,9 @@ package body Styleg is
       --  Returns True if the last two characters on the line are -- which
       --  characterizes a box comment (as for example follows this spec).
 
+      function Is_Special_Character (C : Character) return Boolean;
+      --  Determines if C is a special character (see rule 5 above)
+
       function Same_Column_As_Next_Non_Blank_Line return Boolean;
       --  Called for a full line comment. If the indentation of this commment
       --  matches that of the next non-blank line in the source, then True is
@@ -296,6 +300,22 @@ package body Styleg is
 
          return Source (S - 1) = '-' and then Source (S - 2) = '-';
       end Is_Box_Comment;
+
+      --------------------------
+      -- Is_Special_Character --
+      --------------------------
+
+      function Is_Special_Character (C : Character) return Boolean is
+      begin
+         if GNAT_Mode then
+            return C = '!';
+         else
+            return
+              Character'Pos (C) in 16#21# .. 16#2F#
+                or else
+              Character'Pos (C) in 16#3A# .. 16#3F#;
+         end if;
+      end Is_Special_Character;
 
       ----------------------------------------
       -- Same_Column_As_Next_Non_Blank_Line --
@@ -338,11 +358,13 @@ package body Styleg is
 
       --  For a comment that is not at the start of the line, the only
       --  requirement is that we cannot have a non-blank character after
-      --  the second minus sign.
+      --  the second minus sign or a special character.
 
       if Scan_Ptr /= First_Non_Blank_Location then
          if Style_Check_Comments then
-            if Source (Scan_Ptr + 2) > ' ' then
+            if Source (Scan_Ptr + 2) > ' '
+              and then not Is_Special_Character (Source (Scan_Ptr + 2))
+            then
                Error_Msg ("(style) space required", Scan_Ptr + 2);
             end if;
          end if;
@@ -386,18 +408,8 @@ package body Styleg is
             --  This is not permitted in internal GNAT implementation units
             --  except for the case of --! as used by gnatprep output.
 
-            if GNAT_Mode then
-               if C = '!' then
-                  return;
-               end if;
-
-            else
-               if Character'Pos (C) in 16#21# .. 16#2F#
-                    or else
-                  Character'Pos (C) in 16#3A# .. 16#3F#
-               then
-                  return;
-               end if;
+            if Is_Special_Character (C) then
+               return;
             end if;
 
             --  The only other case in which we allow a character after
