@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -269,7 +269,7 @@ package Stylesw is
 
    procedure Set_Default_Style_Check_Options;
    --  This procedure is called to set the default style checking options in
-   --  response to a -gnaty switch with no suboptions.
+   --  response to a -gnaty switch with no suboptions or from -gnatyy.
 
    procedure Set_GNAT_Style_Check_Options;
    --  This procedure is called to set the default style checking options for
@@ -286,7 +286,8 @@ package Stylesw is
    --  This procedure is called to set the style check options that correspond
    --  to the characters in the given Options string. If all options are valid,
    --  they are set in an additive manner: any previous options are retained
-   --  unless overridden.
+   --  unless overridden, unless a minus is encountered, and then subsequent
+   --  style switches are subtracted from the current set.
    --
    --  If all options given are valid, then OK is True, Err_Col is set to
    --  Options'Last + 1, and Style_Msg_Buf/Style_Msg_Len are unchanged.
