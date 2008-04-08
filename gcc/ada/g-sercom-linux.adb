@@ -43,6 +43,8 @@ with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 package body GNAT.Serial_Communications is
 
+   use type Interfaces.C.unsigned;
+
    type Port_Data is new int;
 
    subtype unsigned is Interfaces.C.unsigned;
@@ -63,6 +65,8 @@ package body GNAT.Serial_Communications is
    CREAD    : constant := 8#0200#;
    CSTOPB   : constant := 8#0100#;
    CRTSCTS  : constant := 8#020000000000#;
+   PARENB   : constant := 8#00400#;
+   PARODD   : constant := 8#01000#;
 
    --  c_cc indexes
 
@@ -70,16 +74,23 @@ package body GNAT.Serial_Communications is
    VMIN  : constant := 6;
 
    C_Data_Rate : constant array (Data_Rate) of unsigned :=
-                   (B1200  => 8#000011#,
-                    B2400  => 8#000013#,
-                    B4800  => 8#000014#,
-                    B9600  => 8#000015#,
-                    B19200 => 8#000016#,
-                    B38400 => 8#000017#,
-                    B57600 => 8#010001#);
+                   (B1200   => 8#000011#,
+                    B2400   => 8#000013#,
+                    B4800   => 8#000014#,
+                    B9600   => 8#000015#,
+                    B19200  => 8#000016#,
+                    B38400  => 8#000017#,
+                    B57600  => 8#010001#,
+                    B115200 => 8#010002#);
 
-   C_Bits : constant array (Data_Bits) of unsigned :=
-              (B7 => 8#040#, B8 => 8#060#);
+   C_Bits      : constant array (Data_Bits) of unsigned :=
+                   (B7 => 8#040#, B8 => 8#060#);
+
+   C_Stop_Bits : constant array (Stop_Bits_Number) of unsigned :=
+                   (One => 0, Two => CSTOPB);
+
+   C_Parity    : constant array (Parity_Check) of unsigned :=
+                   (None => 0, Odd => PARENB or PARODD, Even => PARENB);
 
    procedure Raise_Error (Message : String; Error : Integer := Errno);
    pragma No_Return (Raise_Error);
@@ -168,14 +179,14 @@ package body GNAT.Serial_Communications is
    ---------
 
    procedure Set
-     (Port    : Serial_Port;
-      Rate    : Data_Rate := B9600;
-      Bits    : Data_Bits := B8;
-      Block   : Boolean   := True;
-      Timeout : Integer   := 10)
+     (Port      : Serial_Port;
+      Rate      : Data_Rate        := B9600;
+      Bits      : Data_Bits        := B8;
+      Stop_Bits : Stop_Bits_Number := One;
+      Parity    : Parity_Check     := None;
+      Block     : Boolean          := True;
+      Timeout   : Duration         := 10.0)
    is
-      use type unsigned;
-
       type termios is record
          c_iflag  : unsigned;
          c_oflag  : unsigned;
@@ -214,9 +225,10 @@ package body GNAT.Serial_Communications is
 
       Current.c_cflag      := C_Data_Rate (Rate)
                                 or C_Bits (Bits)
+                                or C_Stop_Bits (Stop_Bits)
+                                or C_Parity (Parity)
                                 or CLOCAL
                                 or CREAD
-                                or CSTOPB
                                 or CRTSCTS;
       Current.c_lflag      := 0;
       Current.c_iflag      := 0;
@@ -224,7 +236,7 @@ package body GNAT.Serial_Communications is
       Current.c_ispeed     := Data_Rate_Value (Rate);
       Current.c_ospeed     := Data_Rate_Value (Rate);
       Current.c_cc (VMIN)  := char'Val (0);
-      Current.c_cc (VTIME) := char'Val (Timeout);
+      Current.c_cc (VTIME) := char'Val (Natural (Timeout * 10));
 
       --  Set port settings
 
