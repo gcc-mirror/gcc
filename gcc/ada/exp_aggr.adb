@@ -300,7 +300,7 @@ package body Exp_Aggr is
       Hiv  : Uint;
 
       --  The following constant determines the maximum size of an
-      --  aggregate produced by converting named to positional
+      --  array aggregate produced by converting named to positional
       --  notation (e.g. from others clauses). This avoids running
       --  away with attempts to convert huge aggregates, which hit
       --  memory limits in the backend.
@@ -1170,9 +1170,9 @@ package body Exp_Aggr is
             --  If the component is itself an array of controlled types, whose
             --  value is given by a sub-aggregate, then the attach calls have
             --  been generated when individual subcomponent are assigned, and
-            --  and must not be done again to prevent malformed finalization
-            --  chains (see comments above, concerning the creation of a block
-            --  to hold inner finalization actions).
+            --  must not be done again to prevent malformed finalization chains
+            --  (see comments above, concerning the creation of a block to hold
+            --  inner finalization actions).
 
             if Present (Comp_Type)
               and then Controlled_Type (Comp_Type)
@@ -1672,10 +1672,6 @@ package body Exp_Aggr is
 
       return New_Code;
    end Build_Array_Aggr_Code;
-
-   ----------------------------
-   -- Build_Record_Aggr_Code --
-   ----------------------------
 
    ----------------------------
    -- Build_Record_Aggr_Code --
@@ -6350,7 +6346,8 @@ package body Exp_Aggr is
             else
                --  The aggregate is static if all components are literals, or
                --  else all its components are static aggregates for the
-               --  component type.
+               --  component type. We also limit the size of a static aggregate
+               --  to prevent runaway static expressions.
 
                if Is_Array_Type (Comp_Type)
                  or else Is_Record_Type (Comp_Type)
@@ -6363,6 +6360,9 @@ package body Exp_Aggr is
                   end if;
 
                elsif Nkind (Expression (Expr)) /= N_Integer_Literal then
+                  return False;
+
+               elsif not Aggr_Size_OK (Typ) then
                   return False;
                end if;
 
