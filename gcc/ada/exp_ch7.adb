@@ -137,18 +137,20 @@ package body Exp_Ch7 is
       Is_Master                  : Boolean;
       Is_Protected_Subprogram    : Boolean;
       Is_Task_Allocation_Block   : Boolean;
-      Is_Asynchronous_Call_Block : Boolean) return Node_Id;
-   --  Expand the clean-up procedure for controlled and/or transient
-   --  block, and/or task master or task body, or blocks used to
-   --  implement task allocation or asynchronous entry calls, or
-   --  procedures used to implement protected procedures. Clean is the
-   --  entity for such a procedure. Mark is the entity for the secondary
-   --  stack mark, if empty only controlled block clean-up will be
-   --  performed. Flist is the entity for the local final list, if empty
-   --  only transient scope clean-up will be performed. The flags
-   --  Is_Task and Is_Master control the calls to the corresponding
-   --  finalization actions for a task body or for an entity that is a
-   --  task master.
+      Is_Asynchronous_Call_Block : Boolean;
+      Chained_Cleanup_Action     : Node_Id) return Node_Id;
+   --  Expand the clean-up procedure for a controlled and/or transient block,
+   --  and/or task master or task body, or a block used to  implement task
+   --  allocation or asynchronous entry calls, or a procedure used to implement
+   --  protected procedures. Clean is the entity for such a procedure. Mark
+   --  is the entity for the secondary stack mark, if empty only controlled
+   --  block clean-up will be performed. Flist is the entity for the local
+   --  final list, if empty only transient scope clean-up will be performed.
+   --  The flags Is_Task and Is_Master control the calls to the corresponding
+   --  finalization actions for a task body or for an entity that is a task
+   --  master. Finally if Chained_Cleanup_Action is present, it is a reference
+   --  to a previous cleanup procedure, a call to which is appended at the
+   --  end of the generated one.
 
    procedure Set_Node_To_Be_Wrapped (N : Node_Id);
    --  Set the field Node_To_Be_Wrapped of the current scope
@@ -1120,6 +1122,9 @@ package body Exp_Ch7 is
                                Nkind (N) = N_Block_Statement
                                  and then Is_Asynchronous_Call_Block (N);
 
+      Previous_At_End_Proc : constant Node_Id :=
+                               At_End_Proc (Handled_Statement_Sequence (N));
+
       Clean     : Entity_Id;
       Loc       : Source_Ptr;
       Mark      : Entity_Id := Empty;
@@ -1244,11 +1249,18 @@ package body Exp_Ch7 is
           Is_Master,
           Is_Protected,
           Is_Task_Allocation,
-          Is_Asynchronous_Call));
+          Is_Asynchronous_Call,
+          Previous_At_End_Proc));
 
-      --  If exception handlers are present, wrap the Sequence of
-      --  statements in a block because it is not possible to get
-      --  exception handlers and an AT END call in the same scope.
+      --  The previous AT END procedure, if any, has been captured in Clean:
+      --  reset it to Empty now because we check further on that we never
+      --  overwrite an existing AT END call.
+
+      Set_At_End_Proc (Handled_Statement_Sequence (N), Empty);
+
+      --  If exception handlers are present, wrap the Sequence of statements in
+      --  a block because it is not possible to get exception handlers and an
+      --  AT END call in the same scope.
 
       if Present (Exception_Handlers (Handled_Statement_Sequence (N))) then
 
@@ -1330,7 +1342,7 @@ package body Exp_Ch7 is
         (Handled_Statement_Sequence (N), Sloc (First (Declarations (N))));
 
       --  The declarations of the _Clean procedure and finalization chain
-      --  replace the old declarations that have been moved inward
+      --  replace the old declarations that have been moved inward.
 
       Set_Declarations (N, New_Decls);
       Analyze_Declarations (New_Decls);
@@ -1342,9 +1354,9 @@ package body Exp_Ch7 is
 
       begin
          --  If the construct is a protected subprogram, then the call to
-         --  the corresponding unprotected program appears in a block which
-         --  is the last statement in the body, and it is this block that
-         --  must be covered by the At_End handler.
+         --  the corresponding unprotected subprogram appears in a block which
+         --  is the last statement in the body, and it is this block that must
+         --  be covered by the At_End handler.
 
          if Is_Protected then
             HSS := Handled_Statement_Sequence
@@ -1352,6 +1364,10 @@ package body Exp_Ch7 is
          else
             HSS := Handled_Statement_Sequence (N);
          end if;
+
+         --  Never overwrite an existing AT END call
+
+         pragma Assert (No (At_End_Proc (HSS)));
 
          Set_At_End_Proc (HSS, New_Occurrence_Of (Clean, Loc));
          Expand_At_End_Handler (HSS, Empty);
@@ -1708,10 +1724,16 @@ package body Exp_Ch7 is
       R   : Node_Id;
 
    begin
+      --  If the restriction No_Finalization applies, then there's not any
+      --  finalization list available to return, so return Empty.
+
+      if Restriction_Active (No_Finalization) then
+         return Empty;
+
       --  Case of an internal component. The Final list is the record
       --  controller of the enclosing record.
 
-      if Present (Ref) then
+      elsif Present (Ref) then
          R := Ref;
          loop
             case Nkind (R) is
@@ -1741,10 +1763,13 @@ package body Exp_Ch7 is
                  Selector_Name => Make_Identifier (Loc, Name_uController)),
              Selector_Name => Make_Identifier (Loc, Name_F));
 
-      --  Case of a dynamically allocated object. The final list is the
-      --  corresponding list controller (the next entity in the scope of the
-      --  access type with the right type). If the type comes from a With_Type
-      --  clause, no controller was created, we use the global chain instead.
+      --  Case of a dynamically allocated object whose access type has an
+      --  Associated_Final_Chain. The final list is the corresponding list
+      --  controller (the next entity in the scope of the access type with
+      --  the right type). If the type comes from a With_Type clause, no
+      --  controller was created, we use the global chain instead. (The code
+      --  related to with_type clauses should presumably be removed at some
+      --  point since that feature is obsolete???)
 
       --  An anonymous access type either has a list created for it when the
       --  allocator is a for an access parameter or an access discriminant,
@@ -1752,19 +1777,21 @@ package body Exp_Ch7 is
       --  context is a declaration or an assignment.
 
       elsif Is_Access_Type (E)
-        and then (Ekind (E) /= E_Anonymous_Access_Type
-                    or else
-                  Present (Associated_Final_Chain (E)))
+        and then (Present (Associated_Final_Chain (E))
+                   or else From_With_Type (E))
       then
-         if not From_With_Type (E) then
+         if From_With_Type (E) then
+            return New_Reference_To (RTE (RE_Global_Final_List), Sloc (E));
+
+         --  Use the access type's associated finalization chain
+
+         else
             return
               Make_Selected_Component (Loc,
                 Prefix        =>
                   New_Reference_To
                     (Associated_Final_Chain (Base_Type (E)), Loc),
                 Selector_Name => Make_Identifier (Loc, Name_F));
-         else
-            return New_Reference_To (RTE (RE_Global_Final_List), Sloc (E));
          end if;
 
       else
@@ -2233,7 +2260,8 @@ package body Exp_Ch7 is
       Is_Master                  : Boolean;
       Is_Protected_Subprogram    : Boolean;
       Is_Task_Allocation_Block   : Boolean;
-      Is_Asynchronous_Call_Block : Boolean) return Node_Id
+      Is_Asynchronous_Call_Block : Boolean;
+      Chained_Cleanup_Action     : Node_Id) return Node_Id
    is
       Loc  : constant Source_Ptr := Sloc (Clean);
       Stmt : constant List_Id    := New_List;
@@ -2474,6 +2502,12 @@ package body Exp_Ch7 is
              Name => New_Reference_To (RTE (RE_SS_Release), Loc),
              Parameter_Associations => New_List (
                     New_Reference_To (Mark, Loc))));
+      end if;
+
+      if Present (Chained_Cleanup_Action) then
+         Append_To (Stmt,
+           Make_Procedure_Call_Statement (Loc,
+             Name => Chained_Cleanup_Action));
       end if;
 
       Sbody :=
@@ -3372,13 +3406,14 @@ package body Exp_Ch7 is
 
          Insert_List_Before_And_Analyze (First (List_Containing (N)), Nodes);
 
-         --  Generate the Finalization calls by finalizing the list
-         --  controller right away. It will be re-finalized on scope
-         --  exit but it doesn't matter. It cannot be done when the
-         --  call initializes a renaming object though because in this
-         --  case, the object becomes a pointer to the temporary and thus
-         --  increases its life span. Ditto if this is a renaming of a
-         --  component of an expression (such as a function call). .
+         --  Generate the Finalization calls by finalizing the list controller
+         --  right away. It will be re-finalized on scope exit but it doesn't
+         --  matter. It cannot be done when the call initializes a renaming
+         --  object though because in this case, the object becomes a pointer
+         --  to the temporary and thus increases its life span. Ditto if this
+         --  is a renaming of a component of an expression (such as a function
+         --  call).
+
          --  Note that there is a problem if an actual in the call needs
          --  finalization, because in that case the call itself is the master,
          --  and the actual should be finalized on return from the call ???
