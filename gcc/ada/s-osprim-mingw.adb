@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,40 +33,12 @@
 
 --  This is the NT version of this package
 
-with Interfaces.C;
+with System.Win32.Ext;
 
 package body System.OS_Primitives is
 
-   ---------------------------
-   -- Win32 API Definitions --
-   ---------------------------
-
-   --  These definitions are copied from System.OS_Interface because we do not
-   --  want to depend on gnarl here.
-
-   type DWORD is new Interfaces.C.unsigned_long;
-
-   type LARGE_INTEGER is delta 1.0 range -2.0**63 .. 2.0**63 - 1.0;
-
-   type BOOL is new Boolean;
-   for BOOL'Size use Interfaces.C.unsigned_long'Size;
-
-   procedure GetSystemTimeAsFileTime
-     (lpFileTime : not null access Long_Long_Integer);
-   pragma Import (Stdcall, GetSystemTimeAsFileTime, "GetSystemTimeAsFileTime");
-
-   function QueryPerformanceCounter
-     (lpPerformanceCount : not null access LARGE_INTEGER) return BOOL;
-   pragma Import
-     (Stdcall, QueryPerformanceCounter, "QueryPerformanceCounter");
-
-   function QueryPerformanceFrequency
-     (lpFrequency : not null access LARGE_INTEGER) return BOOL;
-   pragma Import
-     (Stdcall, QueryPerformanceFrequency, "QueryPerformanceFrequency");
-
-   procedure Sleep (dwMilliseconds : DWORD);
-   pragma Import (Stdcall, Sleep, External_Name => "Sleep");
+   use System.Win32;
+   use System.Win32.Ext;
 
    ----------------------------------------
    -- Data for the high resolution clock --
@@ -144,7 +116,7 @@ package body System.OS_Primitives is
       Now                  : aliased Long_Long_Integer;
 
    begin
-      if not QueryPerformanceCounter (Current_Ticks'Access) then
+      if QueryPerformanceCounter (Current_Ticks'Access) = Win32.FALSE then
          return 0.0;
       end if;
 
@@ -202,7 +174,7 @@ package body System.OS_Primitives is
       loop
          GetSystemTimeAsFileTime (Base_Time'Access);
 
-         if not QueryPerformanceCounter (Base_Ticks'Access) then
+         if QueryPerformanceCounter (Base_Ticks'Access) = Win32.FALSE then
             pragma Assert
               (Standard.False,
                "Could not query high performance counter in Clock");
@@ -228,7 +200,7 @@ package body System.OS_Primitives is
       Elap_Secs_Tick : Duration;
 
    begin
-      if not QueryPerformanceCounter (Current_Ticks'Access) then
+      if QueryPerformanceCounter (Current_Ticks'Access) = Win32.FALSE then
          return 0.0;
       end if;
 
@@ -313,9 +285,9 @@ package body System.OS_Primitives is
 
       --  Get starting time as base
 
-      if not QueryPerformanceFrequency (Tick_Frequency'Access) then
-         raise Program_Error
-           with "cannot get high performance counter frequency";
+      if QueryPerformanceFrequency (Tick_Frequency'Access) = Win32.FALSE then
+         raise Program_Error with
+           "cannot get high performance counter frequency";
       end if;
 
       Get_Base_Time;

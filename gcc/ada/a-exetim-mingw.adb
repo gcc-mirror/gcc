@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2007, Free Software Foundation, Inc.            --
+--         Copyright (C) 2007-2008, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,6 +39,7 @@ with Ada.Unchecked_Conversion;
 with System.OS_Interface;               use System.OS_Interface;
 with System.Task_Primitives.Operations; use System.Task_Primitives.Operations;
 with System.Tasking;                    use System.Tasking;
+with System.Win32;                      use System.Win32;
 
 package body Ada.Execution_Time is
 
@@ -118,7 +119,7 @@ package body Ada.Execution_Time is
           (HANDLE (Get_Thread_Id (To_Task_Id (T))),
            C_Time'Access, E_Time'Access, K_Time'Access, U_Time'Access);
 
-      if Res = False then
+      if Res = System.Win32.FALSE then
          raise Program_Error;
       end if;
 
