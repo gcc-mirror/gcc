@@ -198,6 +198,15 @@ private
    end record;
    pragma Volatile (Communication_Block);
 
+   --  When a program contains limited interfaces, the compiler generates the
+   --  predefined primitives associated with dispatching selects. One of the
+   --  parameters of these routines is of type Communication_Block. Even if
+   --  the program lacks implementing concurrent types, the tasking runtime is
+   --  dragged in unconditionally because of Communication_Block. To avoid this
+   --  case, the compiler uses type Dummy_Communication_Block which defined in
+   --  System.Soft_Links. If the structure of Communication_Block is changed,
+   --  the corresponding dummy type must be changed as well.
+
    --  The Communication_Block seems to be a relic. At the moment, the
    --  compiler seems to be generating unnecessary conditional code based on
    --  this block. See the code generated for async. select with task entry
