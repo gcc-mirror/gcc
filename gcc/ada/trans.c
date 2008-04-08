@@ -691,7 +691,7 @@ Pragma_to_gnu (Node_Id gnat_node)
       || !Is_Pragma_Name (Chars (Pragma_Identifier (gnat_node))))
     return gnu_result;
 
-  switch (Get_Pragma_Id (Pragma_Identifier (Chars (gnat_node))))
+  switch (Get_Pragma_Id (Chars (Pragma_Identifier (gnat_node))))
     {
     case Pragma_Inspection_Point:
       /* Do nothing at top level: all such variables are already viewable.  */
@@ -3673,7 +3673,6 @@ gnat_to_gnu (Node_Id gnat_node)
 
       /* If the result is a pointer type, see if we are improperly
 	 converting to a stricter alignment.  */
-
       if (STRICT_ALIGNMENT && POINTER_TYPE_P (gnu_result_type)
 	  && IN (Ekind (Etype (gnat_node)), Access_Kind))
 	{

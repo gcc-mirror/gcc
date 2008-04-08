@@ -2098,7 +2098,7 @@ gnat_genericize (tree fndecl)
      type, and the gimplifier ICEs on such attempts.  Second, the middle-end
      now relies on a different attribute for such cases (DECL_BY_REFERENCE on
      RESULT/PARM_DECLs), and expects the user invisible by-reference-ness to
-     be explicitely accounted for by the front-end in the function body.
+     be explicitly accounted for by the front-end in the function body.
 
      We achieve the complete transformation in two steps:
 
@@ -2116,7 +2116,7 @@ gnat_genericize (tree fndecl)
      strategy, which escapes the gimplifier temporary creation issues by
      creating it's own temporaries using TARGET_EXPR nodes.  Our way relies
      on simple specific support code in aggregate_value_p to look at the
-     target function result decl explicitely.  */
+     target function result decl explicitly.  */
 
   struct pointer_set_t *p_set;
   tree decl_result = DECL_RESULT (fndecl);
@@ -2124,7 +2124,7 @@ gnat_genericize (tree fndecl)
   if (!DECL_BY_REFERENCE (decl_result))
     return;
 
-  /* Make the DECL_RESULT explicitely by-reference and adjust all the
+  /* Make the DECL_RESULT explicitly by-reference and adjust all the
      occurrences in the function body using the common tree-walking facility.
      We want to see every occurrence of the result decl to adjust the
      referencing tree, so need to use our own pointer set to control which
