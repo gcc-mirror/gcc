@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,7 +73,9 @@ package body Prj.PP is
       W_Char                             : Write_Char_Ap := null;
       W_Eol                              : Write_Eol_Ap  := null;
       W_Str                              : Write_Str_Ap  := null;
-      Backward_Compatibility             : Boolean)
+      Backward_Compatibility             : Boolean;
+      Id                                 : Prj.Project_Id := Prj.No_Project;
+      Id_Tree                            : Prj.Project_Tree_Ref := null)
    is
       procedure Print (Node : Project_Node_Id; Indent : Natural);
       --  A recursive procedure that traverses a project file tree and outputs
@@ -335,7 +337,12 @@ package body Prj.PP is
                   Print (First_Comment_Before (Node, In_Tree), Indent);
                   Start_Line (Indent);
                   Write_String ("project ");
-                  Output_Name (Name_Of (Node, In_Tree));
+
+                  if Id /= Prj.No_Project then
+                     Output_Name (Id_Tree.Projects.Table (Id).Display_Name);
+                  else
+                     Output_Name (Name_Of (Node, In_Tree));
+                  end if;
 
                   --  Check if this project extends another project
 
@@ -363,7 +370,13 @@ package body Prj.PP is
                      Indent + Increment);
                   Start_Line (Indent);
                   Write_String ("end ");
-                  Output_Name (Name_Of (Node, In_Tree));
+
+                  if Id /= Prj.No_Project then
+                     Output_Name (Id_Tree.Projects.Table (Id).Display_Name);
+                  else
+                     Output_Name (Name_Of (Node, In_Tree));
+                  end if;
+
                   Write_Line (";");
                   Print (First_Comment_After_End (Node, In_Tree), Indent);
 

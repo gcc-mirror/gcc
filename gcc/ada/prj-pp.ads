@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,7 +52,9 @@ package Prj.PP is
       W_Char                             : Write_Char_Ap := null;
       W_Eol                              : Write_Eol_Ap  := null;
       W_Str                              : Write_Str_Ap  := null;
-      Backward_Compatibility             : Boolean);
+      Backward_Compatibility             : Boolean;
+      Id                                 : Prj.Project_Id := Prj.No_Project;
+      Id_Tree                            : Prj.Project_Tree_Ref := null);
    --  Output a project file, using either the default output routines, or the
    --  ones specified by W_Char, W_Eol and W_Str.
    --
@@ -73,6 +75,9 @@ package Prj.PP is
    --  Spec_Suffix, Body, Body_Suffix) will be replaced by obsolete ones
    --  (Specification, Specification_Suffix, Implementation,
    --  Implementation_Suffix).
+   --
+   --  Id is used to compute the display name of the project including its
+   --  proper casing.
 
 private
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2007, AdaCore                     --
+--                     Copyright (C) 1999-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -523,9 +523,13 @@ package GNAT.Command_Line is
    type Command_Line is private;
 
    procedure Set_Configuration
-     (Cmd      : in out Command_Line;
-      Config   : Command_Line_Configuration);
+     (Cmd    : in out Command_Line;
+      Config : Command_Line_Configuration);
    --  Set the configuration for this command line
+
+   function Get_Configuration
+     (Cmd : Command_Line) return Command_Line_Configuration;
+   --  Return the configuration used for that command line
 
    procedure Set_Command_Line
      (Cmd                : in out Command_Line;
