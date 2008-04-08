@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -342,6 +342,12 @@ package Prj.Tree is
      (Node    : Project_Node_Id;
       In_Tree : Project_Node_Tree_Ref) return Project_Node_Id;
    pragma Inline (Project_Declaration_Of);
+   --  Only valid for N_Project nodes
+
+   function Project_Qualifier_Of
+     (Node    : Project_Node_Id;
+      In_Tree : Project_Node_Tree_Ref) return Project_Qualifier;
+   pragma Inline (Project_Qualifier_Of);
    --  Only valid for N_Project nodes
 
    function Extending_Project_Of
@@ -694,6 +700,12 @@ package Prj.Tree is
       To      : Project_Node_Id);
    pragma Inline (Set_Project_Declaration_Of);
 
+   procedure Set_Project_Qualifier_Of
+     (Node    : Project_Node_Id;
+      In_Tree : Project_Node_Tree_Ref;
+      To      : Project_Qualifier);
+   pragma Inline (Set_Project_Qualifier_Of);
+
    procedure Set_Extending_Project_Of
      (Node    : Project_Node_Id;
       In_Tree : Project_Node_Tree_Ref;
@@ -911,6 +923,8 @@ package Prj.Tree is
       type Project_Node_Record is record
 
          Kind : Project_Node_Kind;
+
+         Qualifier : Project_Qualifier := Unspecified;
 
          Location : Source_Ptr := No_Location;
 

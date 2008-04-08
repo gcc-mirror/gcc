@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,6 +43,15 @@ with System.HTable;
 
 package Prj is
 
+   Subdirs_Option : constant String := "--subdirs=";
+   --  Switch used to indicate that the real directories (object, exec,
+   --  library, ...) are subdirectories of what is indicated in the project
+   --  file.
+
+   Subdirs : String_Ptr := null;
+   --  The value after the equal sign in switch --subdirs=...
+   --  Contains the relative subdirectory.
+
    type Library_Support is (None, Static_Only, Full);
    --  Support for Library Project File.
    --  - None: Library Project Files are not supported at all
@@ -55,6 +64,23 @@ package Prj is
    --  Tri-state to decide if -lgnarl is needed when linking
 
    type Mode is (Multi_Language, Ada_Only);
+   --  Ada_Only: mode for gnatmake, gnatname, the GNAT driver
+   --  Multi_Language: mode for gprbuild, gprclean
+
+   type Project_Qualifier is
+     (Unspecified,
+      Standard,
+      Library,
+      Dry,
+      Aggregate,
+      Aggregate_Library);
+   --  Qualifiers that can prefix the reserved word "project" in a project
+   --  file:
+   --    Standard:             standard project ...
+   --    Library:              library project is ...
+   --    Dry:                  abstract project is
+   --    Aggregate:            aggregate project is
+   --    Aggregate_Library:    aggregate library project is ...
 
    function Get_Mode return Mode;
    pragma Inline (Get_Mode);
@@ -373,6 +399,12 @@ package Prj is
       Naming_Data : Lang_Naming_Data;
       --  The naming data for the languages (prefixes, etc.)
 
+      Include_Compatible_Languages : Name_List_Index := No_Name_List;
+      --  The list of languages that are "include compatible" with this
+      --  language. A language B (for example "C") is "include compatible" with
+      --  a language A (for example "C++") if it is expected that sources of
+      --  language A may "include" header files from language B.
+
       Compiler_Driver : File_Name_Type := No_File;
       --  The name of the executable for the compiler of the language
 
@@ -488,38 +520,39 @@ package Prj is
    --  Record describing the configuration of a language
 
    No_Language_Config : constant Language_Config :=
-                          (Kind                       => File_Based,
-                           Naming_Data                => No_Lang_Naming_Data,
-                           Compiler_Driver            => No_File,
-                           Compiler_Driver_Path       => null,
-                           Compiler_Required_Switches => No_Name_List,
-                           Compilation_PIC_Option     => No_Name_List,
-                           Runtime_Library_Dir        => No_Name,
-                           Mapping_File_Switches      => No_Name_List,
-                           Mapping_Spec_Suffix        => No_File,
-                           Mapping_Body_Suffix        => No_File,
-                           Config_File_Switches       => No_Name_List,
-                           Dependency_Kind            => Makefile,
-                           Dependency_Option          => No_Name_List,
-                           Compute_Dependency         => No_Name_List,
-                           Include_Option             => No_Name_List,
-                           Include_Path               => No_Name,
-                           Include_Path_File          => No_Name,
-                           Objects_Path               => No_Name,
-                           Objects_Path_File          => No_Name,
-                           Config_Body                => No_Name,
-                           Config_Spec                => No_Name,
-                           Config_Body_Pattern        => No_Name,
-                           Config_Spec_Pattern        => No_Name,
-                           Config_File_Unique         => False,
-                           Binder_Driver              => No_File,
-                           Binder_Driver_Path         => No_Path,
-                           Binder_Required_Switches   => No_Name_List,
-                           Binder_Prefix              => No_Name,
-                           Toolchain_Version          => No_Name,
-                           Toolchain_Description      => No_Name,
-                           PIC_Option                 => No_Name,
-                           Objects_Generated          => True);
+                          (Kind                         => File_Based,
+                           Naming_Data                  => No_Lang_Naming_Data,
+                           Include_Compatible_Languages => No_Name_List,
+                           Compiler_Driver              => No_File,
+                           Compiler_Driver_Path         => null,
+                           Compiler_Required_Switches   => No_Name_List,
+                           Compilation_PIC_Option       => No_Name_List,
+                           Runtime_Library_Dir          => No_Name,
+                           Mapping_File_Switches        => No_Name_List,
+                           Mapping_Spec_Suffix          => No_File,
+                           Mapping_Body_Suffix          => No_File,
+                           Config_File_Switches         => No_Name_List,
+                           Dependency_Kind              => Makefile,
+                           Dependency_Option            => No_Name_List,
+                           Compute_Dependency           => No_Name_List,
+                           Include_Option               => No_Name_List,
+                           Include_Path                 => No_Name,
+                           Include_Path_File            => No_Name,
+                           Objects_Path                 => No_Name,
+                           Objects_Path_File            => No_Name,
+                           Config_Body                  => No_Name,
+                           Config_Spec                  => No_Name,
+                           Config_Body_Pattern          => No_Name,
+                           Config_Spec_Pattern          => No_Name,
+                           Config_File_Unique           => False,
+                           Binder_Driver                => No_File,
+                           Binder_Driver_Path           => No_Path,
+                           Binder_Required_Switches     => No_Name_List,
+                           Binder_Prefix                => No_Name,
+                           Toolchain_Version            => No_Name,
+                           Toolchain_Description        => No_Name,
+                           PIC_Option                   => No_Name,
+                           Objects_Generated            => True);
 
    type Language_Data is record
       Name          : Name_Id         := No_Name;
@@ -579,6 +612,9 @@ package Prj is
 
       Lang_Kind           : Language_Kind         := File_Based;
       --  Kind of the language
+
+      Compiled            : Boolean               := True;
+      --  False when there is no compiler for the language
 
       Alternate_Languages : Alternate_Language_Id := No_Alternate_Language;
       --  List of languages a header file may also be, in addition of
@@ -640,40 +676,40 @@ package Prj is
       Object_Path         : Path_Name_Type        := No_Path;
       --  Object path of the real object file
 
-      Object_TS : Time_Stamp_Type := Empty_Time_Stamp;
+      Object_TS           : Time_Stamp_Type       := Empty_Time_Stamp;
       --  Object file time stamp
 
-      Dep_Name : File_Name_Type := No_File;
+      Dep_Name            : File_Name_Type        := No_File;
       --  Dependency file simple name
 
-      Current_Dep_Path : Path_Name_Type := No_Path;
+      Current_Dep_Path    : Path_Name_Type        := No_Path;
       --  Path name of an existing dependency file
 
-      Dep_Path : Path_Name_Type := No_Path;
+      Dep_Path            : Path_Name_Type        := No_Path;
       --  Path name of the real dependency file
 
-      Dep_TS : Time_Stamp_Type := Empty_Time_Stamp;
+      Dep_TS              : Time_Stamp_Type       := Empty_Time_Stamp;
       --  Dependency file time stamp
 
-      Switches            : File_Name_Type  := No_File;
+      Switches            : File_Name_Type        := No_File;
       --  File name of the switches file
 
-      Switches_Path       : Path_Name_Type  := No_Path;
+      Switches_Path       : Path_Name_Type        := No_Path;
       --  Path name of the switches file
 
-      Switches_TS         : Time_Stamp_Type := Empty_Time_Stamp;
+      Switches_TS         : Time_Stamp_Type       := Empty_Time_Stamp;
       --  Switches file time stamp
 
-      Naming_Exception    : Boolean         := False;
+      Naming_Exception    : Boolean               := False;
       --  True if the source has an exceptional name
 
-      Next_In_Sources     : Source_Id       := No_Source;
+      Next_In_Sources     : Source_Id             := No_Source;
       --  Link to another source in the project tree
 
-      Next_In_Project     : Source_Id       := No_Source;
+      Next_In_Project     : Source_Id             := No_Source;
       --  Link to another source in the project
 
-      Next_In_Lang        : Source_Id       := No_Source;
+      Next_In_Lang        : Source_Id             := No_Source;
       --  Link to another source of the same language
    end record;
 
@@ -682,6 +718,7 @@ package Prj is
                        Language_Name       => No_Name,
                        Language            => No_Language_Index,
                        Lang_Kind           => File_Based,
+                       Compiled            => True,
                        Alternate_Languages => No_Alternate_Language,
                        Kind                => Spec,
                        Dependency          => None,
@@ -1110,6 +1147,9 @@ package Prj is
          --  The name of the executable to build archives, with the minimum
          --  switches. Specified in the configuration.
 
+         Archive_Builder_Append_Option : Name_List_Index := No_Name_List;
+         --  The options to append object files to an archive
+
          Archive_Indexer          : Name_List_Index := No_Name_List;
          --  The name of the executable to index archives, with the minimum
          --  switches. Specified in the configuration.
@@ -1149,26 +1189,27 @@ package Prj is
    end record;
 
    Default_Project_Config : constant Project_Configuration :=
-       (Run_Path_Option          => No_Name_List,
-        Executable_Suffix        => No_Name,
-        Linker                   => No_Path,
-        Minimum_Linker_Options   => No_Name_List,
-        Linker_Executable_Option => No_Name_List,
-        Linker_Lib_Dir_Option    => No_Name,
-        Linker_Lib_Name_Option   => No_Name,
-        Library_Builder          => No_Path,
-        Lib_Support              => None,
-        Archive_Builder          => No_Name_List,
-        Archive_Indexer          => No_Name_List,
-        Archive_Suffix           => No_File,
-        Lib_Partial_Linker       => No_Name_List,
-        Shared_Lib_Prefix        => No_File,
-        Shared_Lib_Suffix        => No_File,
-        Shared_Lib_Min_Options   => No_Name_List,
-        Lib_Version_Options      => No_Name_List,
-        Symbolic_Link_Supported  => False,
-        Lib_Maj_Min_Id_Supported => False,
-        Auto_Init_Supported      => False);
+                              (Run_Path_Option               => No_Name_List,
+                               Executable_Suffix             => No_Name,
+                               Linker                        => No_Path,
+                               Minimum_Linker_Options        => No_Name_List,
+                               Linker_Executable_Option      => No_Name_List,
+                               Linker_Lib_Dir_Option         => No_Name,
+                               Linker_Lib_Name_Option        => No_Name,
+                               Library_Builder               => No_Path,
+                               Lib_Support                   => None,
+                               Archive_Builder               => No_Name_List,
+                               Archive_Builder_Append_Option => No_Name_List,
+                               Archive_Indexer               => No_Name_List,
+                               Archive_Suffix                => No_File,
+                               Lib_Partial_Linker            => No_Name_List,
+                               Shared_Lib_Prefix             => No_File,
+                               Shared_Lib_Suffix             => No_File,
+                               Shared_Lib_Min_Options        => No_Name_List,
+                               Lib_Version_Options           => No_Name_List,
+                               Symbolic_Link_Supported       => False,
+                               Lib_Maj_Min_Id_Supported      => False,
+                               Auto_Init_Supported           => False);
 
    --  The following record describes a project file representation
 
@@ -1177,6 +1218,9 @@ package Prj is
    --  separator.
 
    type Project_Data is record
+      Qualifier : Project_Qualifier := Unspecified;
+      --  The eventual qualifier for this project
+
       Externally_Built : Boolean := False;
       --  True if the project is externally built. In such case, the Project
       --  Manager will not modify anything in this project.
@@ -1436,21 +1480,21 @@ package Prj is
       Supp_Languages : Supp_Language_Index  := No_Supp_Language_Index;
       --  Indicate the different languages of the source of this project
 
-      Ada_Sources_Present            : Boolean := True;
+      Ada_Sources_Present : Boolean := True;
       --  True if there are Ada sources in the project
 
-      Other_Sources_Present          : Boolean := True;
+      Other_Sources_Present : Boolean := True;
       --  True if there are sources from languages other than Ada in the
       --  project.
 
-      First_Other_Source             : Other_Source_Id := No_Other_Source;
+      First_Other_Source : Other_Source_Id := No_Other_Source;
       --  First source of a language other than Ada
 
-      Last_Other_Source              : Other_Source_Id := No_Other_Source;
+      Last_Other_Source : Other_Source_Id := No_Other_Source;
       --  Last source of a language other than Ada
 
-      First_Lang_Processing : First_Language_Processing_Data :=
-                                Default_First_Language_Processing_Data;
+      First_Lang_Processing    : First_Language_Processing_Data :=
+                                   Default_First_Language_Processing_Data;
       Supp_Language_Processing : Supp_Language_Index :=
                                    No_Supp_Language_Index;
       --  Language configurations
@@ -1740,8 +1784,12 @@ private
    --  normally forbidden for project names, there cannot be any name clash.
 
    Empty_Name : Name_Id;
-   --  Name_Id for an empty name (no characters). Initialized by the call
-   --  to procedure Initialize.
+   --  Name_Id for an empty name (no characters). Initialized in procedure
+   --  Initialize.
+
+   Empty_File_Name : File_Name_Type;
+   --  Empty File_Name_Type (no characters). Initialized in procedure
+   --  Initialize.
 
    procedure Add_To_Buffer
      (S    : String;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,6 +41,7 @@ with Prj.Util; use Prj.Util;
 with Sinput.P;
 with Snames;   use Snames;
 with Table;
+with Targparm;
 with Tempdir;
 with Types;    use Types;
 with Hostparm; use Hostparm;
@@ -233,7 +234,8 @@ procedure GNATCmd is
    --  METRIC).
 
    procedure Delete_Temp_Config_Files;
-   --  Delete all temporary config files
+   --  Delete all temporary config files. The caller is responsible for
+   --  ensuring that Keep_Temporary_Files is False.
 
    procedure Get_Closure;
    --  Get the sources in the closure of the ASIS_Main and add them to the
@@ -721,38 +723,40 @@ procedure GNATCmd is
       pragma Warnings (Off, Success);
 
    begin
-      if not Keep_Temporary_Files then
-         if Project /= No_Project then
-            for Prj in Project_Table.First ..
-                       Project_Table.Last (Project_Tree.Projects)
-            loop
-               if
-                 Project_Tree.Projects.Table (Prj).Config_File_Temp
-               then
-                  if Verbose_Mode then
-                     Output.Write_Str ("Deleting temp configuration file """);
-                     Output.Write_Str
-                       (Get_Name_String
-                          (Project_Tree.Projects.Table
-                             (Prj).Config_File_Name));
-                     Output.Write_Line ("""");
-                  end if;
+      --  This should only be called if Keep_Temporary_Files is False
 
-                  Delete_File
-                    (Name    => Get_Name_String
+      pragma Assert (not Keep_Temporary_Files);
+
+      if Project /= No_Project then
+         for Prj in Project_Table.First ..
+                    Project_Table.Last (Project_Tree.Projects)
+         loop
+            if
+              Project_Tree.Projects.Table (Prj).Config_File_Temp
+            then
+               if Verbose_Mode then
+                  Output.Write_Str ("Deleting temp configuration file """);
+                  Output.Write_Str
+                    (Get_Name_String
                        (Project_Tree.Projects.Table
-                          (Prj).Config_File_Name),
-                     Success => Success);
+                          (Prj).Config_File_Name));
+                  Output.Write_Line ("""");
                end if;
-            end loop;
-         end if;
 
-         --  If a temporary text file that contains a list of files for a tool
-         --  has been created, delete this temporary file.
+               Delete_File
+                 (Name =>
+                    Get_Name_String
+                      (Project_Tree.Projects.Table (Prj).Config_File_Name),
+                  Success => Success);
+            end if;
+         end loop;
+      end if;
 
-         if Temp_File_Name /= null then
-            Delete_File (Temp_File_Name.all, Success);
-         end if;
+      --  If a temporary text file that contains a list of files for a tool
+      --  has been created, delete this temporary file.
+
+      if Temp_File_Name /= null then
+         Delete_File (Temp_File_Name.all, Success);
       end if;
    end Delete_Temp_Config_Files;
 
@@ -770,7 +774,8 @@ procedure GNATCmd is
                 6 => new String'("-bargs"),
                 7 => new String'("-R"),
                 8 => new String'("-Z"));
-      --  Arguments of the invocation of gnatmake to get the list of
+      --  Arguments for the invocation of gnatmake which are added to the
+      --  Last_Arguments list by this procedure.
 
       FD : File_Descriptor;
       --  File descriptor for the temp file that will get the output of the
@@ -793,6 +798,8 @@ procedure GNATCmd is
       File : Ada.Text_IO.File_Type;
       Line : String (1 .. 250);
       Last : Natural;
+      --  Used to read file if there is an error, it is good enough to display
+      --  just 250 characters if the first line of the file is very long.
 
       Udata : Unit_Data;
       Path  : Path_Name_Type;
@@ -890,7 +897,6 @@ procedure GNATCmd is
 
          if not Keep_Temporary_Files then
             Delete (File);
-
          else
             Close (File);
          end if;
@@ -1322,9 +1328,15 @@ procedure GNATCmd is
 
       for C in Command_List'Range loop
          if not Command_List (C).VMS_Only then
-            Put ("gnat " & To_Lower (Command_List (C).Cname.all));
+            if Targparm.AAMP_On_Target then
+               Put ("gnaampcmd ");
+            else
+               Put ("gnat ");
+            end if;
+
+            Put (To_Lower (Command_List (C).Cname.all));
             Set_Col (25);
-            Put (Command_List (C).Unixcmd.all);
+            Put (Program_Name (Command_List (C).Unixcmd.all).all);
 
             declare
                Sws : Argument_List_Access renames Command_List (C).Unixsws;
@@ -1374,6 +1386,16 @@ begin
    VMS_Conv.Initialize;
 
    Set_Mode (Ada_Only);
+
+   --  Add the default search directories, to be able to find system.ads in the
+   --  subsequent call to Targparm.Get_Target_Parameters.
+
+   Add_Default_Search_Dirs;
+
+   --  Get target parameters so that AAMP_On_Target will be set, for testing in
+   --  Osint.Program_Name to handle the mapping of GNAAMP tool names.
+
+   Targparm.Get_Target_Parameters;
 
    --  Add the directory where the GNAT driver is invoked in front of the path,
    --  if the GNAT driver is invoked with directory information. Do not do this
@@ -1666,13 +1688,34 @@ begin
                      end if;
                   end if;
 
+                  --  --subdirs=... Specify Subdirs
+
+                  if Argv'Length > Subdirs_Option'Length and then
+                    Argv
+                      (Argv'First .. Argv'First + Subdirs_Option'Length - 1) =
+                      Subdirs_Option
+                  then
+                     Subdirs :=
+                       new String'
+                         (Argv
+                            (Argv'First + Subdirs_Option'Length .. Argv'Last));
+
+                     Remove_Switch (Arg_Num);
+
                   --  -aPdir  Add dir to the project search path
 
-                  if Argv'Length > 3
+                  elsif Argv'Length > 3
                     and then Argv (Argv'First + 1 .. Argv'First + 2) = "aP"
                   then
                      Add_Search_Project_Directory
                        (Argv (Argv'First + 3 .. Argv'Last));
+
+                     Remove_Switch (Arg_Num);
+
+                  --  -eL  Follow links for files
+
+                  elsif Argv.all = "-eL" then
+                     Follow_Links_For_Files := True;
 
                      Remove_Switch (Arg_Num);
 

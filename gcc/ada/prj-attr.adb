@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,9 +25,12 @@
 
 with Osint;
 with Prj.Com; use Prj.Com;
-with System.Case_Util; use System.Case_Util;
+
+with GNAT.Case_Util; use GNAT.Case_Util;
 
 package body Prj.Attr is
+
+   use GNAT;
 
    --  Data for predefined attributes and packages
 
@@ -74,6 +77,7 @@ package body Prj.Attr is
    "SVobject_dir#" &
    "SVexec_dir#" &
    "LVsource_dirs#" &
+   "Lainherit_source_path#" &
    "LVexcluded_source_dirs#" &
 
    --  Source files
@@ -114,6 +118,7 @@ package body Prj.Attr is
    --  Configuration - Archives
 
    "LVarchive_builder#" &
+   "LVarchive_builder_append_option#" &
    "LVarchive_indexer#" &
    "SVarchive_suffix#" &
    "LVlibrary_partial_linker#" &

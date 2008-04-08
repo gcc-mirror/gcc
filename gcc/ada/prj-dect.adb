@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,11 +37,11 @@ with Prj.Tree;    use Prj.Tree;
 with Snames;
 with Uintp;       use Uintp;
 
-with System.Strings;
+with GNAT.Strings;
 
 package body Prj.Dect is
 
-   use System;
+   use GNAT;
 
    type Zone is (In_Project, In_Package, In_Case_Construction);
    --  Used to indicate if we are parsing a package (In_Package),

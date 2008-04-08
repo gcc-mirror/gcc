@@ -1621,8 +1621,11 @@ package body Prj.Proc is
                               if Next_Element = No_Array_Element then
                                  Array_Element_Table.Increment_Last
                                    (In_Tree.Array_Elements);
-                                 New_Element := Array_Element_Table.Last
-                                   (In_Tree.Array_Elements);
+                                 New_Element :=
+                                   Array_Element_Table.Last
+                                    (In_Tree.Array_Elements);
+                                 In_Tree.Array_Elements.Table
+                                   (Prev_Element).Next := New_Element;
 
                               else
                                  New_Element := Next_Element;
@@ -1636,8 +1639,7 @@ package body Prj.Proc is
 
                            In_Tree.Array_Elements.Table
                              (New_Element) :=
-                               In_Tree.Array_Elements.Table
-                                 (Orig_Element);
+                               In_Tree.Array_Elements.Table (Orig_Element);
                            In_Tree.Array_Elements.Table
                              (New_Element).Value.Project := Project;
 
@@ -1872,9 +1874,7 @@ package body Prj.Proc is
 
                         else
                            In_Tree.Variable_Elements.Table
-                             (The_Variable).Value :=
-                                New_Value;
-
+                             (The_Variable).Value := New_Value;
                         end if;
 
                      --  Associative array attribute
@@ -2524,7 +2524,11 @@ package body Prj.Proc is
             Processed_Projects.Set (Name, Project);
 
             Processed_Data.Name := Name;
+            Processed_Data.Qualifier :=
+              Project_Qualifier_Of (From_Project_Node, From_Project_Node_Tree);
             In_Tree.Projects.Table (Project).Name := Name;
+            In_Tree.Projects.Table (Project).Qualifier :=
+              Processed_Data.Qualifier;
 
             Get_Name_String (Name);
 
@@ -2786,6 +2790,8 @@ package body Prj.Proc is
                      end if;
                   end if;
                end;
+
+               In_Tree.Projects.Table (Project) := Processed_Data;
             end if;
 
             --  Process limited withed projects

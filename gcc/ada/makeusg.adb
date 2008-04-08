@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -305,6 +305,11 @@ begin
 
    Write_Str ("  --RTS=dir specify the default source and object search"
               & " path");
+   Write_Eol;
+
+   --  Line for --subdirs=
+
+   Write_Str ("  --subdirs=dir real obj/lib/exec dirs are subdirs");
    Write_Eol;
    Write_Eol;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,6 +26,7 @@
 with Debug;    use Debug;
 with Osint;    use Osint;
 with Opt;      use Opt;
+with Prj;      use Prj;
 with Prj.Ext;  use Prj.Ext;
 with Table;
 
@@ -150,20 +151,59 @@ package body Switch.M is
             when False =>
 
                --  All switches that don't start with -gnat stay as is,
-               --  except -v, -E and -pg
+               --  except -pg, -Wall, -k8, -w
 
-               if Switch_Chars = "-pg" then
+               if Switch_Chars = "-pg" or else Switch_Chars = "-p" then
 
                   --  The gcc driver converts -pg to -p, so that is what
                   --  is stored in the ALI file.
 
                   Add_Switch_Component ("-p");
 
-               --  Do not take into account switches that are not transmitted
-               --  to gnat1 by the gcc driver.
+               elsif Switch_Chars = "-Wall" then
 
-               elsif C /= 'v' and then C /= 'E' then
+                  --  The gcc driver adds -gnatwa when -Wall is used
+
+                  Add_Switch_Component ("-gnatwa");
+                  Add_Switch_Component ("-Wall");
+
+               elsif Switch_Chars = "-k8" then
+
+                  --  The gcc driver transforms -k8 into -gnatk8
+
+                  Add_Switch_Component ("-gnatk8");
+
+               elsif Switch_Chars = "-w" then
+
+                  --  The gcc driver adds -gnatws when -w is used
+
+                  Add_Switch_Component ("-gnatws");
+                  Add_Switch_Component ("-w");
+
+               elsif Switch_Chars'Length > 6
+                 and then
+                   Switch_Chars (Switch_Chars'First .. Switch_Chars'First + 5)
+                                                             = "--RTS="
+               then
                   Add_Switch_Component (Switch_Chars);
+
+                  --  When --RTS=mtp is used, the gcc driver adds -mrtp
+
+                  if Switch_Chars = "--RTS=mtp" then
+                     Add_Switch_Component ("-mrtp");
+                  end if;
+
+               --  Take only into account switches that are transmitted to
+               --  gnat1 by the gcc driver and stored by gnat1 in the ALI file.
+
+               else
+                  case C is
+                     when 'O' | 'W' | 'w' | 'f' | 'd' | 'g' | 'm' =>
+                        Add_Switch_Component (Switch_Chars);
+
+                     when others =>
+                        null;
+                  end case;
                end if;
 
                return;
@@ -332,7 +372,8 @@ package body Switch.M is
                            Ptr := Ptr + 1;
 
                            if Ptr <= Max
-                             and then Switch_Chars (Ptr) = 's' then
+                             and then Switch_Chars (Ptr) = 's'
+                           then
                               Last_Stored := Last_Stored + 1;
                               Storing (Last_Stored) := 's';
                               Ptr := Ptr + 1;
@@ -366,12 +407,9 @@ package body Switch.M is
 
                         --  -gnatyMxxx
 
-                        if C = 'M' and then
-                          Storing (First_Stored) = 'y'
-                        then
+                        if C = 'M' and then Storing (First_Stored) = 'y' then
                            Last_Stored := First_Stored + 1;
                            Storing (Last_Stored) := 'M';
-
                            while Ptr <= Max loop
                               C := Switch_Chars (Ptr);
                               exit when C not in '0' .. '9';
@@ -517,8 +555,24 @@ package body Switch.M is
          if Switch_Chars = "--create-missing-dirs" then
             Setup_Projects := True;
 
-         elsif Switch_Chars'Length > 3 and then
-               Switch_Chars (Ptr .. Ptr + 1) = "aP"
+         elsif Switch_Chars'Length > Subdirs_Option'Length
+           and then
+             Switch_Chars
+               (Switch_Chars'First ..
+                Switch_Chars'First + Subdirs_Option'Length - 1) =
+                                                            Subdirs_Option
+         then
+            Subdirs :=
+              new String'
+                (Switch_Chars
+                  (Switch_Chars'First + Subdirs_Option'Length ..
+                   Switch_Chars'Last));
+
+         elsif Switch_Chars (Ptr) = '-' then
+            Bad_Switch (Switch_Chars);
+
+         elsif Switch_Chars'Length > 3
+           and then Switch_Chars (Ptr .. Ptr + 1) = "aP"
          then
             Add_Search_Project_Directory
               (Switch_Chars (Ptr + 2 .. Switch_Chars'Last));

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,6 +27,7 @@ with Hostparm;
 with Opt;
 with Osint;    use Osint;
 with Output;   use Output;
+with Prj;      use Prj;
 with Prj.Makr;
 with Switch;   use Switch;
 with Table;
@@ -194,9 +195,14 @@ procedure Gnatname is
       --  Scan options first
 
       loop
-         case Getopt ("c: d: gnatep=! gnatep! gnateD! D: h P: v x: f:") is
+         case Getopt
+           ("-subdirs=! c: d: gnatep=! gnatep! gnateD! eL D: h P: v x: f:")
+         is
             when ASCII.NUL =>
                exit;
+
+            when '-' =>
+               Subdirs := new String'(Parameter);
 
             when 'c' =>
                if File_Set then
@@ -212,6 +218,9 @@ procedure Gnatname is
 
             when 'D' =>
                Get_Directories (Parameter);
+
+            when 'e' =>
+               Opt.Follow_Links_For_Files := True;
 
             when 'f' =>
                Foreign_Patterns.Increment_Last;
@@ -286,10 +295,15 @@ procedure Gnatname is
          Write_Eol;
          Write_Line ("switches:");
 
+         Write_Line ("  --subdirs=dir real obj/lib/exec dirs are subdirs");
+         Write_Eol;
+
          Write_Line ("  -cfile       create configuration pragmas file");
          Write_Line ("  -ddir        use dir as one of the source " &
                      "directories");
          Write_Line ("  -Dfile       get source directories from file");
+         Write_Line ("  -eL          follow symbolic links when processing " &
+                     "project files");
          Write_Line ("  -fpat        foreign pattern");
          Write_Line ("  -gnateDsym=v preprocess with symbol definition");
          Write_Line ("  -gnatep=data preprocess files with data file");

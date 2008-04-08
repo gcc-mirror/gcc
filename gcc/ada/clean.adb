@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1669,6 +1669,18 @@ package body Clean is
                   end if;
 
                   case Arg (2) is
+                     when '-' =>
+                        if Arg'Length > Subdirs_Option'Length and then
+                          Arg (1 .. Subdirs_Option'Length) = Subdirs_Option
+                        then
+                           Subdirs :=
+                             new String'
+                               (Arg (Subdirs_Option'Length + 1 .. Arg'Last));
+
+                        else
+                           Bad_Argument;
+                        end if;
+
                      when 'a' =>
                         if Arg'Length < 4 then
                            Bad_Argument;
@@ -1723,6 +1735,14 @@ package body Clean is
                                  Add_Lib_Search_Dir (Dir);
                               end if;
                            end;
+                        end if;
+
+                     when 'e' =>
+                        if Arg = "-eL" then
+                           Follow_Links_For_Files := True;
+
+                        else
+                           Bad_Argument;
                         end if;
 
                      when 'f' =>
@@ -1954,8 +1974,13 @@ package body Clean is
          Put_Line ("  names may be omitted if -P<project> is specified");
          New_Line;
 
+         Put_Line ("  --subdirs=dir real obj/lib/exec dirs are subdirs");
+         New_Line;
+
          Put_Line ("  -c       Only delete compiler generated files");
          Put_Line ("  -D dir   Specify dir as the object library");
+         Put_Line ("  -eL      Follow symbolic links when processing " &
+                   "project files");
          Put_Line ("  -f       Force deletions of unwritable files");
          Put_Line ("  -F       Full project path name " &
                    "in brief error messages");
