@@ -4054,7 +4054,9 @@ type_has_user_nondefault_constructor (tree t)
     {
       tree fn = OVL_CURRENT (fns);
       if (!DECL_ARTIFICIAL (fn)
-	  && skip_artificial_parms_for (fn, DECL_ARGUMENTS (fn)) != NULL_TREE)
+	  && (TREE_CODE (fn) == TEMPLATE_DECL
+	      || (skip_artificial_parms_for (fn, DECL_ARGUMENTS (fn))
+		  != NULL_TREE)))
 	return true;
     }
 
