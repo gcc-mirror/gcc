@@ -34,6 +34,7 @@
 with System.Address_Image;
 with System.Parameters;
 with System.Soft_Links;
+with System.Task_Primitives;
 with System.Task_Primitives.Operations;
 with Ada.Unchecked_Conversion;
 
@@ -113,7 +114,8 @@ package body Ada.Task_Identification is
 
    function Image (T : Task_Id) return String is
       function To_Address is new
-        Ada.Unchecked_Conversion (Task_Id, System.Address);
+        Ada.Unchecked_Conversion
+          (Task_Id, System.Task_Primitives.Task_Address);
 
    begin
       if T = Null_Task_Id then
