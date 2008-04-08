@@ -1351,7 +1351,7 @@ expand_builtin_apply_args_1 (void)
      as we might have pretended they were passed.  Make sure it's a valid
      operand, as emit_move_insn isn't expected to handle a PLUS.  */
   tem
-    = force_operand (plus_constant (tem, current_function_pretend_args_size),
+    = force_operand (plus_constant (tem, crtl->args.pretend_args_size),
 		     NULL_RTX);
 #endif
   emit_move_insn (adjust_address (registers, Pmode, 0), tem);
@@ -4600,7 +4600,7 @@ static rtx
 expand_builtin_args_info (tree exp)
 {
   int nwords = sizeof (CUMULATIVE_ARGS) / sizeof (int);
-  int *word_ptr = (int *) &current_function_args_info;
+  int *word_ptr = (int *) &crtl->args.info;
 
   gcc_assert (sizeof (CUMULATIVE_ARGS) % sizeof (int) == 0);
 
@@ -4632,8 +4632,8 @@ expand_builtin_next_arg (void)
   /* Checking arguments is already done in fold_builtin_next_arg
      that must be called before this function.  */
   return expand_binop (ptr_mode, add_optab,
-		       current_function_internal_arg_pointer,
-		       current_function_arg_offset_rtx,
+		       crtl->args.internal_arg_pointer,
+		       crtl->args.arg_offset_rtx,
 		       NULL_RTX, 0, OPTAB_LIB_WIDEN);
 }
 

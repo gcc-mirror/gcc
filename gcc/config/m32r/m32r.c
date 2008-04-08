@@ -1276,8 +1276,8 @@ m32r_compute_frame_size (int size)	/* # of var. bytes allocated.  */
                                   | current_function_profile);
 
   var_size	= M32R_STACK_ALIGN (size);
-  args_size	= M32R_STACK_ALIGN (current_function_outgoing_args_size);
-  pretend_size	= current_function_pretend_args_size;
+  args_size	= M32R_STACK_ALIGN (crtl->outgoing_args_size);
+  pretend_size	= crtl->args.pretend_args_size;
   extra_size	= FIRST_PARM_OFFSET (0);
   total_size	= extra_size + pretend_size + args_size + var_size;
   reg_size	= 0;

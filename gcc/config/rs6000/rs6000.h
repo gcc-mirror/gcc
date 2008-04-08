@@ -1288,7 +1288,7 @@ extern enum rs6000_abi rs6000_current_abi;	/* available for use by subtarget */
 #define STARTING_FRAME_OFFSET						\
   (FRAME_GROWS_DOWNWARD							\
    ? 0									\
-   : (RS6000_ALIGN (current_function_outgoing_args_size,		\
+   : (RS6000_ALIGN (crtl->outgoing_args_size,		\
 		    TARGET_ALTIVEC ? 16 : 8)				\
       + RS6000_SAVE_AREA))
 
@@ -1299,7 +1299,7 @@ extern enum rs6000_abi rs6000_current_abi;	/* available for use by subtarget */
    length of the outgoing arguments.  The default is correct for most
    machines.  See `function.c' for details.  */
 #define STACK_DYNAMIC_OFFSET(FUNDECL)					\
-  (RS6000_ALIGN (current_function_outgoing_args_size,			\
+  (RS6000_ALIGN (crtl->outgoing_args_size,			\
 		 TARGET_ALTIVEC ? 16 : 8)				\
    + (STACK_POINTER_OFFSET))
 
@@ -1334,7 +1334,7 @@ extern enum rs6000_abi rs6000_current_abi;	/* available for use by subtarget */
 
 /* Define this if the maximum size of all the outgoing args is to be
    accumulated and pushed during the prologue.  The amount can be
-   found in the variable current_function_outgoing_args_size.  */
+   found in the variable crtl->outgoing_args_size.  */
 #define ACCUMULATE_OUTGOING_ARGS 1
 
 /* Value is the number of bytes of arguments automatically

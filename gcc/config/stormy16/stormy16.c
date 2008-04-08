@@ -1005,13 +1005,13 @@ xstormy16_compute_stack_layout (void)
 		       + layout.register_save_size 
 		       + layout.stdarg_save_size);
   
-  if (current_function_args_size <= 2048 && current_function_args_size != -1)
+  if (crtl->args.size <= 2048 && crtl->args.size != -1)
     {
       if (layout.frame_size + INCOMING_FRAME_SP_OFFSET 
-	  + current_function_args_size <= 2048)
+	  + crtl->args.size <= 2048)
 	layout.fp_minus_ap = layout.frame_size + INCOMING_FRAME_SP_OFFSET;
       else
-	layout.fp_minus_ap = 2048 - current_function_args_size;
+	layout.fp_minus_ap = 2048 - crtl->args.size;
     }
   else
     layout.fp_minus_ap = (layout.stdarg_save_size 
@@ -1356,7 +1356,7 @@ xstormy16_expand_builtin_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 
   t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (count), count, 
 	      build_int_cst (NULL_TREE,
-			     current_function_args_info * UNITS_PER_WORD));
+			     crtl->args.info * UNITS_PER_WORD));
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 }

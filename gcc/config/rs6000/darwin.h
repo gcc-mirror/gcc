@@ -173,12 +173,12 @@
 #define STARTING_FRAME_OFFSET						\
   (FRAME_GROWS_DOWNWARD							\
    ? 0									\
-   : (RS6000_ALIGN (current_function_outgoing_args_size, 16)		\
+   : (RS6000_ALIGN (crtl->outgoing_args_size, 16)		\
       + RS6000_SAVE_AREA))
 
 #undef STACK_DYNAMIC_OFFSET
 #define STACK_DYNAMIC_OFFSET(FUNDECL)					\
-  (RS6000_ALIGN (current_function_outgoing_args_size, 16)		\
+  (RS6000_ALIGN (crtl->outgoing_args_size, 16)		\
    + (STACK_POINTER_OFFSET))
 
 /* These are used by -fbranch-probabilities */

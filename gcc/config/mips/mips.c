@@ -4784,7 +4784,7 @@ mips_va_start (tree valist, rtx nextarg)
       int fpr_save_area_size;
       int fpr_offset;
 
-      cum = &current_function_args_info;
+      cum = &crtl->args.info;
       gpr_save_area_size
 	= (MAX_ARGS_IN_REGISTERS - cum->num_gprs) * UNITS_PER_WORD;
       fpr_save_area_size
@@ -5160,7 +5160,7 @@ mips16_build_function_stub (void)
   fprintf (asm_out_file, "\t# Stub function for %s (",
 	   current_function_name ());
   separator = "";
-  for (f = (unsigned int) current_function_args_info.fp_code; f != 0; f >>= 2)
+  for (f = (unsigned int) crtl->args.info.fp_code; f != 0; f >>= 2)
     {
       fprintf (asm_out_file, "%s%s", separator,
 	       (f & 3) == 1 ? "float" : "double");
@@ -5196,7 +5196,7 @@ mips16_build_function_stub (void)
   fprintf (asm_out_file, "\n");
 
   /* Move the arguments from floating-point registers to general registers.  */
-  mips_output_args_xfer (current_function_args_info.fp_code, 'f');
+  mips_output_args_xfer (crtl->args.info.fp_code, 'f');
 
   /* Jump to the MIPS16 function.  */
   fprintf (asm_out_file, "\tjr\t%s\n", reg_names[GP_REG_FIRST + 1]);
@@ -7846,7 +7846,7 @@ mips_compute_frame_info (void)
     }
   else
     {
-      frame->args_size = current_function_outgoing_args_size;
+      frame->args_size = crtl->outgoing_args_size;
       frame->cprestore_size = STARTING_FRAME_OFFSET - frame->args_size;
     }
   offset = frame->args_size + frame->cprestore_size;
@@ -7912,7 +7912,7 @@ mips_compute_frame_info (void)
   frame->arg_pointer_offset = offset;
 
   /* Move above the callee-allocated area for pretend stack arguments.  */
-  offset += current_function_pretend_args_size;
+  offset += crtl->args.pretend_args_size;
   frame->total_size = offset;
 
   /* Work out the offsets of the save areas from the top of the frame.  */
@@ -8059,7 +8059,7 @@ mips_restore_gp (void)
 
   base = frame_pointer_needed ? hard_frame_pointer_rtx : stack_pointer_rtx;
   address = mips_add_offset (pic_offset_table_rtx, base,
-			     current_function_outgoing_args_size);
+			     crtl->outgoing_args_size);
   mips_emit_move (pic_offset_table_rtx, gen_frame_mem (Pmode, address));
   if (!TARGET_EXPLICIT_RELOCS)
     emit_insn (gen_blockage ());
@@ -8149,7 +8149,7 @@ mips_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
      floating-point arguments.  */
   if (TARGET_MIPS16
       && TARGET_HARD_FLOAT_ABI
-      && current_function_args_info.fp_code != 0)
+      && crtl->args.info.fp_code != 0)
     mips16_build_function_stub ();
 
   /* Select the MIPS16 mode for this function.  */
@@ -8486,7 +8486,7 @@ mips_expand_prologue (void)
 
   /* Initialize the $gp save slot.  */
   if (frame->cprestore_size > 0)
-    emit_insn (gen_cprestore (GEN_INT (current_function_outgoing_args_size)));
+    emit_insn (gen_cprestore (GEN_INT (crtl->outgoing_args_size)));
 
   /* If we are profiling, make sure no instructions are scheduled before
      the call to mcount.  */

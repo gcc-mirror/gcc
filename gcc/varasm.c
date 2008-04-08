@@ -611,7 +611,7 @@ initialize_cold_section_name (void)
   tree dsn;
 
   gcc_assert (cfun && current_function_decl);
-  if (cfun->unlikely_text_section_name)
+  if (crtl->subsections.unlikely_text_section_name)
     return;
 
   dsn = DECL_SECTION_NAME (current_function_decl);
@@ -623,10 +623,10 @@ initialize_cold_section_name (void)
       stripped_name = targetm.strip_name_encoding (name);
 
       buffer = ACONCAT ((stripped_name, "_unlikely", NULL));
-      cfun->unlikely_text_section_name = ggc_strdup (buffer);
+      crtl->subsections.unlikely_text_section_name = ggc_strdup (buffer);
     }
   else
-    cfun->unlikely_text_section_name =  UNLIKELY_EXECUTED_TEXT_SECTION_NAME;
+    crtl->subsections.unlikely_text_section_name =  UNLIKELY_EXECUTED_TEXT_SECTION_NAME;
 }
 
 /* Tell assembler to switch to unlikely-to-be-executed text section.  */
@@ -636,10 +636,10 @@ unlikely_text_section (void)
 {
   if (cfun)
     {
-      if (!cfun->unlikely_text_section_name)
+      if (!crtl->subsections.unlikely_text_section_name)
 	initialize_cold_section_name ();
 
-      return get_named_section (NULL, cfun->unlikely_text_section_name, 0);
+      return get_named_section (NULL, crtl->subsections.unlikely_text_section_name, 0);
     }
   else
     return get_named_section (NULL, UNLIKELY_EXECUTED_TEXT_SECTION_NAME, 0);
@@ -656,7 +656,7 @@ unlikely_text_section_p (section *sect)
   const char *name;
 
   if (cfun)
-    name = cfun->unlikely_text_section_name;
+    name = crtl->subsections.unlikely_text_section_name;
   else
     name = UNLIKELY_EXECUTED_TEXT_SECTION_NAME;
 
@@ -1587,27 +1587,27 @@ assemble_start_function (tree decl, const char *fnname)
   char tmp_label[100];
   bool hot_label_written = false;
 
-  cfun->unlikely_text_section_name = NULL;
+  crtl->subsections.unlikely_text_section_name = NULL;
 
   first_function_block_is_cold = false;
   if (flag_reorder_blocks_and_partition)
     {
       ASM_GENERATE_INTERNAL_LABEL (tmp_label, "LHOTB", const_labelno);
-      cfun->hot_section_label = ggc_strdup (tmp_label);
+      crtl->subsections.hot_section_label = ggc_strdup (tmp_label);
       ASM_GENERATE_INTERNAL_LABEL (tmp_label, "LCOLDB", const_labelno);
-      cfun->cold_section_label = ggc_strdup (tmp_label);
+      crtl->subsections.cold_section_label = ggc_strdup (tmp_label);
       ASM_GENERATE_INTERNAL_LABEL (tmp_label, "LHOTE", const_labelno);
-      cfun->hot_section_end_label = ggc_strdup (tmp_label);
+      crtl->subsections.hot_section_end_label = ggc_strdup (tmp_label);
       ASM_GENERATE_INTERNAL_LABEL (tmp_label, "LCOLDE", const_labelno);
-      cfun->cold_section_end_label = ggc_strdup (tmp_label);
+      crtl->subsections.cold_section_end_label = ggc_strdup (tmp_label);
       const_labelno++;
     }
   else
     {
-      cfun->hot_section_label = NULL;
-      cfun->cold_section_label = NULL;
-      cfun->hot_section_end_label = NULL;
-      cfun->cold_section_end_label = NULL;
+      crtl->subsections.hot_section_label = NULL;
+      crtl->subsections.cold_section_label = NULL;
+      crtl->subsections.hot_section_end_label = NULL;
+      crtl->subsections.cold_section_end_label = NULL;
     }
 
   /* The following code does not need preprocessing in the assembler.  */
@@ -1628,7 +1628,7 @@ assemble_start_function (tree decl, const char *fnname)
     {
       switch_to_section (unlikely_text_section ());
       assemble_align (DECL_ALIGN (decl));
-      ASM_OUTPUT_LABEL (asm_out_file, cfun->cold_section_label);
+      ASM_OUTPUT_LABEL (asm_out_file, crtl->subsections.cold_section_label);
 
       /* When the function starts with a cold section, we need to explicitly
 	 align the hot section and write out the hot section label.
@@ -1638,7 +1638,7 @@ assemble_start_function (tree decl, const char *fnname)
 	{
 	  switch_to_section (text_section);
 	  assemble_align (DECL_ALIGN (decl));
-	  ASM_OUTPUT_LABEL (asm_out_file, cfun->hot_section_label);
+	  ASM_OUTPUT_LABEL (asm_out_file, crtl->subsections.hot_section_label);
 	  hot_label_written = true;
 	  first_function_block_is_cold = true;
 	}
@@ -1652,9 +1652,9 @@ assemble_start_function (tree decl, const char *fnname)
 
       initialize_cold_section_name ();
 
-      if (cfun->unlikely_text_section_name
+      if (crtl->subsections.unlikely_text_section_name
 	  && strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
-		     cfun->unlikely_text_section_name) == 0)
+		     crtl->subsections.unlikely_text_section_name) == 0)
 	first_function_block_is_cold = true;
     }
 
@@ -1665,7 +1665,7 @@ assemble_start_function (tree decl, const char *fnname)
   switch_to_section (function_section (decl));
   if (flag_reorder_blocks_and_partition
       && !hot_label_written)
-    ASM_OUTPUT_LABEL (asm_out_file, cfun->hot_section_label);
+    ASM_OUTPUT_LABEL (asm_out_file, crtl->subsections.hot_section_label);
 
   /* Tell assembler to move to target machine's alignment for functions.  */
   align = floor_log2 (DECL_ALIGN (decl) / BITS_PER_UNIT);
@@ -1743,12 +1743,12 @@ assemble_end_function (tree decl, const char *fnname ATTRIBUTE_UNUSED)
 
       save_text_section = in_section;
       switch_to_section (unlikely_text_section ());
-      ASM_OUTPUT_LABEL (asm_out_file, cfun->cold_section_end_label);
+      ASM_OUTPUT_LABEL (asm_out_file, crtl->subsections.cold_section_end_label);
       if (first_function_block_is_cold)
 	switch_to_section (text_section);
       else
 	switch_to_section (function_section (decl));
-      ASM_OUTPUT_LABEL (asm_out_file, cfun->hot_section_end_label);
+      ASM_OUTPUT_LABEL (asm_out_file, crtl->subsections.hot_section_end_label);
       switch_to_section (save_text_section);
     }
 }
@@ -5540,8 +5540,8 @@ default_section_type_flags (tree decl, const char *name, int reloc)
     flags = 0;
   else if (current_function_decl
 	   && cfun
-	   && cfun->unlikely_text_section_name
-	   && strcmp (name, cfun->unlikely_text_section_name) == 0)
+	   && crtl->subsections.unlikely_text_section_name
+	   && strcmp (name, crtl->subsections.unlikely_text_section_name) == 0)
     flags = SECTION_CODE;
   else if (!decl
 	   && (!current_function_decl || !cfun)
@@ -6316,10 +6316,10 @@ switch_to_section (section *new_section)
     {
     case SECTION_NAMED:
       if (cfun
-	  && !cfun->unlikely_text_section_name
+	  && !crtl->subsections.unlikely_text_section_name
 	  && strcmp (new_section->named.name,
 		     UNLIKELY_EXECUTED_TEXT_SECTION_NAME) == 0)
-	cfun->unlikely_text_section_name = UNLIKELY_EXECUTED_TEXT_SECTION_NAME;
+	crtl->subsections.unlikely_text_section_name = UNLIKELY_EXECUTED_TEXT_SECTION_NAME;
 
       targetm.asm_out.named_section (new_section->named.name,
 				     new_section->named.common.flags,

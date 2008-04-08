@@ -557,7 +557,7 @@ enum reg_class
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
 {									\
   if ((FROM) == FRAME_POINTER_REGNUM)					\
-    (OFFSET) = get_frame_size () + current_function_outgoing_args_size;	\
+    (OFFSET) = get_frame_size () + crtl->outgoing_args_size;	\
   else if ((FROM) == ARG_POINTER_REGNUM)				\
    (OFFSET) = compute_frame_size (get_frame_size (), (long *)0);	\
   else									\

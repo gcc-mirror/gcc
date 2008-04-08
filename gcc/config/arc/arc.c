@@ -1079,11 +1079,11 @@ arc_compute_frame_size (int size /* # of var. bytes allocated.  */)
   int interrupt_p;
 
   var_size	= size;
-  args_size	= current_function_outgoing_args_size;
-  pretend_size	= current_function_pretend_args_size;
+  args_size	= crtl->outgoing_args_size;
+  pretend_size	= crtl->args.pretend_args_size;
   extra_size	= FIRST_PARM_OFFSET (0);
   total_size	= extra_size + pretend_size + args_size + var_size;
-  reg_offset	= FIRST_PARM_OFFSET(0) + current_function_outgoing_args_size;
+  reg_offset	= FIRST_PARM_OFFSET(0) + crtl->outgoing_args_size;
   reg_size	= 0;
   gmask		= 0;
 
@@ -2282,8 +2282,8 @@ static void
 arc_va_start (tree valist, rtx nextarg)
 {
   /* See arc_setup_incoming_varargs for reasons for this oddity.  */
-  if (current_function_args_info < 8
-      && (current_function_args_info & 1))
+  if (crtl->args.info < 8
+      && (crtl->args.info & 1))
     nextarg = plus_constant (nextarg, UNITS_PER_WORD);
 
   std_expand_builtin_va_start (valist, nextarg);

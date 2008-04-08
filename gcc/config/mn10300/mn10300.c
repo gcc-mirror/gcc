@@ -585,10 +585,10 @@ int
 can_use_return_insn (void)
 {
   /* size includes the fixed stack space needed for function calls.  */
-  int size = get_frame_size () + current_function_outgoing_args_size;
+  int size = get_frame_size () + crtl->outgoing_args_size;
 
   /* And space for the return pointer.  */
-  size += current_function_outgoing_args_size ? 4 : 0;
+  size += crtl->outgoing_args_size ? 4 : 0;
 
   return (reload_completed
 	  && size == 0
@@ -697,8 +697,8 @@ expand_prologue (void)
   HOST_WIDE_INT size;
 
   /* SIZE includes the fixed stack space needed for function calls.  */
-  size = get_frame_size () + current_function_outgoing_args_size;
-  size += (current_function_outgoing_args_size ? 4 : 0);
+  size = get_frame_size () + crtl->outgoing_args_size;
+  size += (crtl->outgoing_args_size ? 4 : 0);
 
   /* If we use any of the callee-saved registers, save them now.  */
   mn10300_gen_multiple_store (mn10300_get_live_callee_saved_regs ());
@@ -956,8 +956,8 @@ expand_epilogue (void)
   HOST_WIDE_INT size;
 
   /* SIZE includes the fixed stack space needed for function calls.  */
-  size = get_frame_size () + current_function_outgoing_args_size;
-  size += (current_function_outgoing_args_size ? 4 : 0);
+  size = get_frame_size () + crtl->outgoing_args_size;
+  size += (crtl->outgoing_args_size ? 4 : 0);
 
   if (TARGET_AM33_2 && fp_regs_to_save ())
     {
@@ -1408,12 +1408,12 @@ initial_offset (int from, int to)
 	  || frame_pointer_needed)
 	return (get_frame_size () + REG_SAVE_BYTES
 		+ 4 * fp_regs_to_save ()
-		+ (current_function_outgoing_args_size
-		   ? current_function_outgoing_args_size + 4 : 0));
+		+ (crtl->outgoing_args_size
+		   ? crtl->outgoing_args_size + 4 : 0));
       else
 	return (get_frame_size ()
-		+ (current_function_outgoing_args_size
-		   ? current_function_outgoing_args_size + 4 : 0));
+		+ (crtl->outgoing_args_size
+		   ? crtl->outgoing_args_size + 4 : 0));
     }
 
   /* The difference between the frame pointer and stack pointer is the sum
@@ -1421,8 +1421,8 @@ initial_offset (int from, int to)
      for function calls (if any).  */
   if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
     return (get_frame_size ()
-	    + (current_function_outgoing_args_size
-	       ? current_function_outgoing_args_size + 4 : 0));
+	    + (crtl->outgoing_args_size
+	       ? crtl->outgoing_args_size + 4 : 0));
 
   gcc_unreachable ();
 }
@@ -1452,21 +1452,21 @@ mn10300_builtin_saveregs (void)
   alias_set_type set = get_varargs_alias_set ();
 
   if (argadj)
-    offset = plus_constant (current_function_arg_offset_rtx, argadj);
+    offset = plus_constant (crtl->args.arg_offset_rtx, argadj);
   else
-    offset = current_function_arg_offset_rtx;
+    offset = crtl->args.arg_offset_rtx;
 
-  mem = gen_rtx_MEM (SImode, current_function_internal_arg_pointer);
+  mem = gen_rtx_MEM (SImode, crtl->args.internal_arg_pointer);
   set_mem_alias_set (mem, set);
   emit_move_insn (mem, gen_rtx_REG (SImode, 0));
 
   mem = gen_rtx_MEM (SImode,
-		     plus_constant (current_function_internal_arg_pointer, 4));
+		     plus_constant (crtl->args.internal_arg_pointer, 4));
   set_mem_alias_set (mem, set);
   emit_move_insn (mem, gen_rtx_REG (SImode, 1));
 
   return copy_to_reg (expand_binop (Pmode, add_optab,
-				    current_function_internal_arg_pointer,
+				    crtl->args.internal_arg_pointer,
 				    offset, 0, 0, OPTAB_LIB_WIDEN));
 }
 

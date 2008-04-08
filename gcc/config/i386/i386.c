@@ -5204,9 +5204,9 @@ ix86_va_start (tree valist, rtx nextarg)
   sav = build3 (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav, NULL_TREE);
 
   /* Count number of gp and fp argument registers used.  */
-  words = current_function_args_info.words;
-  n_gpr = current_function_args_info.regno;
-  n_fpr = current_function_args_info.sse_regno;
+  words = crtl->args.info.words;
+  n_gpr = crtl->args.info.regno;
+  n_fpr = crtl->args.info.sse_regno;
 
   if (cfun->va_list_gpr_size)
     {
@@ -5750,8 +5750,8 @@ ix86_can_use_return_insn_p (void)
 
   /* Don't allow more than 32 pop, since that's all we can do
      with one instruction.  */
-  if (current_function_pops_args
-      && current_function_args_size >= 32768)
+  if (crtl->args.pops_args
+      && crtl->args.size >= 32768)
     return 0;
 
   ix86_compute_frame_layout (&frame);
@@ -6182,14 +6182,14 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
   /* Add outgoing arguments area.  Can be skipped if we eliminated
      all the function calls as dead code.
      Skipping is however impossible when function calls alloca.  Alloca
-     expander assumes that last current_function_outgoing_args_size
+     expander assumes that last crtl->outgoing_args_size
      of stack frame are unused.  */
   if (ACCUMULATE_OUTGOING_ARGS
       && (!current_function_is_leaf || current_function_calls_alloca
 	  || ix86_current_function_calls_tls_descriptor))
     {
-      offset += current_function_outgoing_args_size;
-      frame->outgoing_arguments_size = current_function_outgoing_args_size;
+      offset += crtl->outgoing_args_size;
+      frame->outgoing_arguments_size = crtl->outgoing_args_size;
     }
   else
     frame->outgoing_arguments_size = 0;
@@ -6750,15 +6750,15 @@ ix86_expand_epilogue (int style)
   if (style == 0)
     return;
 
-  if (current_function_pops_args && current_function_args_size)
+  if (crtl->args.pops_args && crtl->args.size)
     {
-      rtx popc = GEN_INT (current_function_pops_args);
+      rtx popc = GEN_INT (crtl->args.pops_args);
 
       /* i386 can only pop 64K bytes.  If asked to pop more, pop
 	 return address, do explicit add, and jump indirectly to the
 	 caller.  */
 
-      if (current_function_pops_args >= 65536)
+      if (crtl->args.pops_args >= 65536)
 	{
 	  rtx ecx = gen_rtx_REG (SImode, CX_REG);
 

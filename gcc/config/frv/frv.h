@@ -1620,7 +1620,7 @@ typedef struct frv_stack {
 
 /* If defined, the maximum amount of space required for outgoing arguments will
    be computed and placed into the variable
-   `current_function_outgoing_args_size'.  No space will be pushed onto the
+   `crtl->outgoing_args_size'.  No space will be pushed onto the
    stack for each call; instead, the function prologue should increase the
    stack frame size by this amount.
 

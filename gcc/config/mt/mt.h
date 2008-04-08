@@ -436,7 +436,7 @@ enum save_direction
    subtracting the first slot's length from `STARTING_FRAME_OFFSET'.
    Otherwise, it is found by adding the length of the first slot to
    the value `STARTING_FRAME_OFFSET'.  */
-#define STARTING_FRAME_OFFSET current_function_outgoing_args_size
+#define STARTING_FRAME_OFFSET crtl->outgoing_args_size
 
 /* Offset from the argument pointer register to the first argument's address.
    On some machines it may depend on the data type of the function.
@@ -527,7 +527,7 @@ extern struct mt_frame_info current_frame_info;
 
 /* If defined, the maximum amount of space required for outgoing
    arguments will be computed and placed into the variable
-   `current_function_outgoing_args_size'.  */
+   `crtl->outgoing_args_size'.  */
 #define ACCUMULATE_OUTGOING_ARGS 1
 
 /* Define this if it is the responsibility of the caller to

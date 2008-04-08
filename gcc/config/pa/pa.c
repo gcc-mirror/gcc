@@ -3570,7 +3570,7 @@ compute_frame_size (HOST_WIDE_INT size, int *fregs_live)
      size of the current function's stack frame.  We don't need to align
      for the outgoing arguments as their alignment is set by the final
      rounding for the frame as a whole.  */
-  size += current_function_outgoing_args_size;
+  size += crtl->outgoing_args_size;
 
   /* Allocate space for the fixed frame marker.  This space must be
      allocated for any function that makes calls or allocates
@@ -5935,9 +5935,9 @@ hppa_builtin_saveregs (void)
 		? UNITS_PER_WORD : 0);
 
   if (argadj)
-    offset = plus_constant (current_function_arg_offset_rtx, argadj);
+    offset = plus_constant (crtl->args.arg_offset_rtx, argadj);
   else
-    offset = current_function_arg_offset_rtx;
+    offset = crtl->args.arg_offset_rtx;
 
   if (TARGET_64BIT)
     {
@@ -5945,9 +5945,9 @@ hppa_builtin_saveregs (void)
 
       /* Adjust for varargs/stdarg differences.  */
       if (argadj)
-	offset = plus_constant (current_function_arg_offset_rtx, -argadj);
+	offset = plus_constant (crtl->args.arg_offset_rtx, -argadj);
       else
-	offset = current_function_arg_offset_rtx;
+	offset = crtl->args.arg_offset_rtx;
 
       /* We need to save %r26 .. %r19 inclusive starting at offset -64
 	 from the incoming arg pointer and growing to larger addresses.  */
@@ -5971,7 +5971,7 @@ hppa_builtin_saveregs (void)
 
   /* Store general registers on the stack.  */
   dest = gen_rtx_MEM (BLKmode,
-		      plus_constant (current_function_internal_arg_pointer,
+		      plus_constant (crtl->args.internal_arg_pointer,
 				     -16));
   set_mem_alias_set (dest, get_varargs_alias_set ());
   set_mem_align (dest, BITS_PER_WORD);
@@ -5989,7 +5989,7 @@ hppa_builtin_saveregs (void)
   emit_insn (gen_blockage ());
 
   return copy_to_reg (expand_binop (Pmode, add_optab,
-				    current_function_internal_arg_pointer,
+				    crtl->args.internal_arg_pointer,
 				    offset, 0, 0, OPTAB_LIB_WIDEN));
 }
 

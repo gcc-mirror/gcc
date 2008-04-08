@@ -474,11 +474,11 @@
    && INTVAL (operands[2])
 	< (0x7fff8000
 	   - FIRST_PSEUDO_REGISTER * UNITS_PER_WORD
-	   - ALPHA_ROUND(current_function_outgoing_args_size)
+	   - ALPHA_ROUND(crtl->outgoing_args_size)
 	   - (ALPHA_ROUND (get_frame_size ()
 			   + max_reg_num () * UNITS_PER_WORD
-			   + current_function_pretend_args_size)
-	      - current_function_pretend_args_size))"
+			   + crtl->args.pretend_args_size)
+	      - crtl->args.pretend_args_size))"
   "@
    lda %0,%2(%1)
    ldah %0,%h2(%1)

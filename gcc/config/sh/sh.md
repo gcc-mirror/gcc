@@ -9383,7 +9383,7 @@ mov.l\\t1f,r0\\n\\
     }
 
   if (TARGET_SHCOMPACT
-      && (current_function_args_info.call_cookie & CALL_COOKIE_RET_TRAMP (1)))
+      && (crtl->args.info.call_cookie & CALL_COOKIE_RET_TRAMP (1)))
     {
       emit_jump_insn (gen_shcompact_return_tramp ());
       DONE;
@@ -9393,7 +9393,7 @@ mov.l\\t1f,r0\\n\\
 (define_insn "*return_i"
   [(return)]
   "TARGET_SH1 && ! (TARGET_SHCOMPACT
-		    && (current_function_args_info.call_cookie
+		    && (crtl->args.info.call_cookie
 			& CALL_COOKIE_RET_TRAMP (1)))
    && reload_completed
    && lookup_attribute (\"trap_exit\",
@@ -9420,7 +9420,7 @@ mov.l\\t1f,r0\\n\\
 (define_expand "shcompact_return_tramp"
   [(return)]
   "TARGET_SHCOMPACT
-   && (current_function_args_info.call_cookie & CALL_COOKIE_RET_TRAMP (1))"
+   && (crtl->args.info.call_cookie & CALL_COOKIE_RET_TRAMP (1))"
   "
 {
   rtx reg = gen_rtx_REG (Pmode, R0_REG);
@@ -9433,7 +9433,7 @@ mov.l\\t1f,r0\\n\\
 (define_insn "shcompact_return_tramp_i"
   [(parallel [(return) (use (reg:SI R0_REG))])]
   "TARGET_SHCOMPACT
-   && (current_function_args_info.call_cookie & CALL_COOKIE_RET_TRAMP (1))"
+   && (crtl->args.info.call_cookie & CALL_COOKIE_RET_TRAMP (1))"
   "jmp	@r0%#"
   [(set_attr "type" "jump_ind")
    (set_attr "needs_delay_slot" "yes")])

@@ -2736,7 +2736,7 @@ int
 frame_pointer_required_p (void)
 {
   return (current_function_calls_alloca
-	  || current_function_args_info.nregs == 0
+	  || crtl->args.info.nregs == 0
   	  || get_frame_size () > 0);
 }
 

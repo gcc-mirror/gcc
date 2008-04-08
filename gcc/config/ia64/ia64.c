@@ -2575,12 +2575,12 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
      the stack, then the FR save area will be unaligned.  We round the
      size of this area up to keep things 16 byte aligned.  */
   if (spilled_fr_p)
-    pretend_args_size = IA64_STACK_ALIGN (current_function_pretend_args_size);
+    pretend_args_size = IA64_STACK_ALIGN (crtl->args.pretend_args_size);
   else
-    pretend_args_size = current_function_pretend_args_size;
+    pretend_args_size = crtl->args.pretend_args_size;
 
   total_size = (spill_size + extra_spill_size + size + pretend_args_size
-		+ current_function_outgoing_args_size);
+		+ crtl->outgoing_args_size);
   total_size = IA64_STACK_ALIGN (total_size);
 
   /* We always use the 16-byte scratch area provided by the caller, but
@@ -2616,14 +2616,14 @@ ia64_initial_elimination_offset (int from, int to)
 	    offset = -current_frame_info.total_size;
 	  else
 	    offset = -(current_frame_info.total_size
-		       - current_function_outgoing_args_size - 16);
+		       - crtl->outgoing_args_size - 16);
 	  break;
 
 	case STACK_POINTER_REGNUM:
 	  if (current_function_is_leaf)
 	    offset = 0;
 	  else
-	    offset = 16 + current_function_outgoing_args_size;
+	    offset = 16 + crtl->outgoing_args_size;
 	  break;
 
 	default:
@@ -2637,12 +2637,12 @@ ia64_initial_elimination_offset (int from, int to)
       switch (to)
 	{
 	case HARD_FRAME_POINTER_REGNUM:
-	  offset = 16 - current_function_pretend_args_size;
+	  offset = 16 - crtl->args.pretend_args_size;
 	  break;
 
 	case STACK_POINTER_REGNUM:
 	  offset = (current_frame_info.total_size
-		    + 16 - current_function_pretend_args_size);
+		    + 16 - crtl->args.pretend_args_size);
 	  break;
 
 	default:
@@ -2994,7 +2994,7 @@ ia64_expand_prologue (void)
   /* We don't need an alloc instruction if we've used no outputs or locals.  */
   if (current_frame_info.n_local_regs == 0
       && current_frame_info.n_output_regs == 0
-      && current_frame_info.n_input_regs <= current_function_args_info.int_regs
+      && current_frame_info.n_input_regs <= crtl->args.info.int_regs
       && !TEST_HARD_REG_BIT (current_frame_info.mask, AR_PFS_REGNUM))
     {
       /* If there is no alloc, but there are input registers used, then we

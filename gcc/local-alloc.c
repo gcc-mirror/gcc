@@ -1415,7 +1415,7 @@ block_alloc (int b)
 
 		  /* Avoid making a call-saved register unnecessarily
                      clobbered.  */
-		  hard_reg = get_hard_reg_initial_reg (cfun, r1);
+		  hard_reg = get_hard_reg_initial_reg (r1);
 		  if (hard_reg != NULL_RTX)
 		    {
 		      if (REG_P (hard_reg)

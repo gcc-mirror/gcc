@@ -1513,16 +1513,16 @@ mem_overlaps_already_clobbered_arg_p (rtx addr, unsigned HOST_WIDE_INT size)
 {
   HOST_WIDE_INT i;
 
-  if (addr == current_function_internal_arg_pointer)
+  if (addr == crtl->args.internal_arg_pointer)
     i = 0;
   else if (GET_CODE (addr) == PLUS
-	   && XEXP (addr, 0) == current_function_internal_arg_pointer
+	   && XEXP (addr, 0) == crtl->args.internal_arg_pointer
 	   && GET_CODE (XEXP (addr, 1)) == CONST_INT)
     i = INTVAL (XEXP (addr, 1));
   /* Return true for arg pointer based indexed addressing.  */
   else if (GET_CODE (addr) == PLUS
-	   && (XEXP (addr, 0) == current_function_internal_arg_pointer
-	       || XEXP (addr, 1) == current_function_internal_arg_pointer))
+	   && (XEXP (addr, 0) == crtl->args.internal_arg_pointer
+	       || XEXP (addr, 1) == crtl->args.internal_arg_pointer))
     return true;
   else
     return false;
@@ -2281,16 +2281,16 @@ expand_call (tree exp, rtx target, int ignore)
       || (fndecl && decl_function_context (fndecl) == current_function_decl)
       /* If this function requires more stack slots than the current
 	 function, we cannot change it into a sibling call.
-	 current_function_pretend_args_size is not part of the
+	 crtl->args.pretend_args_size is not part of the
 	 stack allocated by our caller.  */
-      || args_size.constant > (current_function_args_size
-			       - current_function_pretend_args_size)
+      || args_size.constant > (crtl->args.size
+			       - crtl->args.pretend_args_size)
       /* If the callee pops its own arguments, then it must pop exactly
 	 the same number of arguments as the current function.  */
       || (RETURN_POPS_ARGS (fndecl, funtype, args_size.constant)
 	  != RETURN_POPS_ARGS (current_function_decl,
 			       TREE_TYPE (current_function_decl),
-			       current_function_args_size))
+			       crtl->args.size))
       || !lang_hooks.decls.ok_for_sibcall (fndecl))
     try_tail_call = 0;
 
@@ -2395,9 +2395,9 @@ expand_call (tree exp, rtx target, int ignore)
 	  argblock = virtual_incoming_args_rtx;
 	  argblock
 #ifdef STACK_GROWS_DOWNWARD
-	    = plus_constant (argblock, current_function_pretend_args_size);
+	    = plus_constant (argblock, crtl->args.pretend_args_size);
 #else
-	    = plus_constant (argblock, -current_function_pretend_args_size);
+	    = plus_constant (argblock, -crtl->args.pretend_args_size);
 #endif
 	  stored_args_map = sbitmap_alloc (args_size.constant);
 	  sbitmap_zero (stored_args_map);
@@ -2434,8 +2434,8 @@ expand_call (tree exp, rtx target, int ignore)
 	     the prologue (if ACCUMULATE_OUTGOING_ARGS, or stack overflow
 	     checking).  */
 
-	  if (needed > current_function_outgoing_args_size)
-	    current_function_outgoing_args_size = needed;
+	  if (needed > crtl->outgoing_args_size)
+	    crtl->outgoing_args_size = needed;
 
 	  if (must_preallocate)
 	    {
@@ -3551,8 +3551,8 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
   if (!OUTGOING_REG_PARM_STACK_SPACE)
     args_size.constant -= reg_parm_stack_space;
 
-  if (args_size.constant > current_function_outgoing_args_size)
-    current_function_outgoing_args_size = args_size.constant;
+  if (args_size.constant > crtl->outgoing_args_size)
+    crtl->outgoing_args_size = args_size.constant;
 
   if (ACCUMULATE_OUTGOING_ARGS)
     {
@@ -4325,13 +4325,13 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 	  rtx x = arg->value;
 	  int i = 0;
 
-	  if (XEXP (x, 0) == current_function_internal_arg_pointer
+	  if (XEXP (x, 0) == crtl->args.internal_arg_pointer
 	      || (GET_CODE (XEXP (x, 0)) == PLUS
 		  && XEXP (XEXP (x, 0), 0) ==
-		     current_function_internal_arg_pointer
+		     crtl->args.internal_arg_pointer
 		  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT))
 	    {
-	      if (XEXP (x, 0) != current_function_internal_arg_pointer)
+	      if (XEXP (x, 0) != crtl->args.internal_arg_pointer)
 		i = INTVAL (XEXP (XEXP (x, 0), 1));
 
 	      /* expand_call should ensure this.  */

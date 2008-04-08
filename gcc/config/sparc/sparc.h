@@ -1678,7 +1678,7 @@ do {									\
 
 #define EXIT_IGNORE_STACK	\
  (get_frame_size () != 0	\
-  || current_function_calls_alloca || current_function_outgoing_args_size)
+  || current_function_calls_alloca || crtl->outgoing_args_size)
 
 /* Define registers used by the epilogue and return instruction.  */
 #define EPILOGUE_USES(REGNO) ((REGNO) == 31 \

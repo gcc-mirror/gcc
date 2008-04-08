@@ -189,9 +189,9 @@ static struct alpha_rtx_cost_data const alpha_rtx_cost_size =
 
 /* Get the number of args of a function in one of two ways.  */
 #if TARGET_ABI_OPEN_VMS || TARGET_ABI_UNICOSMK
-#define NUM_ARGS current_function_args_info.num_args
+#define NUM_ARGS crtl->args.info.num_args
 #else
-#define NUM_ARGS current_function_args_info
+#define NUM_ARGS crtl->args.info
 #endif
 
 #define REG_PV 27
@@ -643,8 +643,8 @@ direct_return (void)
 	  && reload_completed
 	  && alpha_sa_size () == 0
 	  && get_frame_size () == 0
-	  && current_function_outgoing_args_size == 0
-	  && current_function_pretend_args_size == 0);
+	  && crtl->outgoing_args_size == 0
+	  && crtl->args.pretend_args_size == 0);
 }
 
 /* Return the ADDR_VEC associated with a tablejump insn.  */
@@ -6082,7 +6082,7 @@ alpha_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
   if (NUM_ARGS < 6)
     offset = TARGET_ABI_OPEN_VMS ? UNITS_PER_WORD : 6 * UNITS_PER_WORD;
   else
-    offset = -6 * UNITS_PER_WORD + current_function_pretend_args_size;
+    offset = -6 * UNITS_PER_WORD + crtl->args.pretend_args_size;
 
   if (TARGET_ABI_OPEN_VMS)
     {
@@ -7148,7 +7148,7 @@ alpha_sa_size (void)
 
       alpha_procedure_type
 	= (sa_size || get_frame_size() != 0
-	   || current_function_outgoing_args_size
+	   || crtl->outgoing_args_size
 	   || current_function_stdarg || current_function_calls_alloca
 	   || frame_pointer_needed)
 	  ? PT_STACK : PT_REGISTER;
@@ -7184,7 +7184,7 @@ alpha_sa_size (void)
 	= (frame_pointer_needed
 	   || current_function_has_nonlocal_label
 	   || alpha_procedure_type == PT_STACK
-	   || current_function_outgoing_args_size)
+	   || crtl->outgoing_args_size)
 	  ? REG_PV : HARD_FRAME_POINTER_REGNUM;
 
       /* If we want to copy PV into FP, we need to find some register
@@ -7229,7 +7229,7 @@ alpha_initial_elimination_offset (unsigned int from,
   HOST_WIDE_INT ret;
 
   ret = alpha_sa_size ();
-  ret += ALPHA_ROUND (current_function_outgoing_args_size);
+  ret += ALPHA_ROUND (crtl->outgoing_args_size);
 
   switch (from)
     {
@@ -7238,8 +7238,8 @@ alpha_initial_elimination_offset (unsigned int from,
 
     case ARG_POINTER_REGNUM:
       ret += (ALPHA_ROUND (get_frame_size ()
-			   + current_function_pretend_args_size)
-	      - current_function_pretend_args_size);
+			   + crtl->args.pretend_args_size)
+	      - crtl->args.pretend_args_size);
       break;
 
     default:
@@ -7447,23 +7447,23 @@ alpha_expand_prologue (void)
     frame_size = ALPHA_ROUND (sa_size
 			      + (alpha_procedure_type == PT_STACK ? 8 : 0)
 			      + frame_size
-			      + current_function_pretend_args_size);
+			      + crtl->args.pretend_args_size);
   else if (TARGET_ABI_UNICOSMK)
     /* We have to allocate space for the DSIB if we generate a frame.  */
     frame_size = ALPHA_ROUND (sa_size
 			      + (alpha_procedure_type == PT_STACK ? 48 : 0))
 		 + ALPHA_ROUND (frame_size
-				+ current_function_outgoing_args_size);
+				+ crtl->outgoing_args_size);
   else
-    frame_size = (ALPHA_ROUND (current_function_outgoing_args_size)
+    frame_size = (ALPHA_ROUND (crtl->outgoing_args_size)
 		  + sa_size
 		  + ALPHA_ROUND (frame_size
-				 + current_function_pretend_args_size));
+				 + crtl->args.pretend_args_size));
 
   if (TARGET_ABI_OPEN_VMS)
     reg_offset = 8;
   else
-    reg_offset = ALPHA_ROUND (current_function_outgoing_args_size);
+    reg_offset = ALPHA_ROUND (crtl->outgoing_args_size);
 
   alpha_sa_mask (&imask, &fmask);
 
@@ -7677,14 +7677,14 @@ alpha_expand_prologue (void)
 	FRP (emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx));
 
       /* If we have to allocate space for outgoing args, do it now.  */
-      if (current_function_outgoing_args_size != 0)
+      if (crtl->outgoing_args_size != 0)
 	{
 	  rtx seq
 	    = emit_move_insn (stack_pointer_rtx,
 			      plus_constant
 			      (hard_frame_pointer_rtx,
 			       - (ALPHA_ROUND
-				  (current_function_outgoing_args_size))));
+				  (crtl->outgoing_args_size))));
 
 	  /* Only set FRAME_RELATED_P on the stack adjustment we just emitted
 	     if ! frame_pointer_needed. Setting the bit will change the CFA
@@ -7696,7 +7696,7 @@ alpha_expand_prologue (void)
 	       frame_pointer_needed
 	       => vms_unwind_regno == HARD_FRAME_POINTER_REGNUM
 	     and
-	       current_function_outgoing_args_size != 0
+	       crtl->outgoing_args_size != 0
 	       => alpha_procedure_type != PT_NULL,
 
 	     so when we are not setting the bit here, we are guaranteed to
@@ -7773,22 +7773,22 @@ alpha_start_function (FILE *file, const char *fnname,
     frame_size = ALPHA_ROUND (sa_size
 			      + (alpha_procedure_type == PT_STACK ? 8 : 0)
 			      + frame_size
-			      + current_function_pretend_args_size);
+			      + crtl->args.pretend_args_size);
   else if (TARGET_ABI_UNICOSMK)
     frame_size = ALPHA_ROUND (sa_size
 			      + (alpha_procedure_type == PT_STACK ? 48 : 0))
 		 + ALPHA_ROUND (frame_size
-			      + current_function_outgoing_args_size);
+			      + crtl->outgoing_args_size);
   else
-    frame_size = (ALPHA_ROUND (current_function_outgoing_args_size)
+    frame_size = (ALPHA_ROUND (crtl->outgoing_args_size)
 		  + sa_size
 		  + ALPHA_ROUND (frame_size
-				 + current_function_pretend_args_size));
+				 + crtl->args.pretend_args_size));
 
   if (TARGET_ABI_OPEN_VMS)
     reg_offset = 8;
   else
-    reg_offset = ALPHA_ROUND (current_function_outgoing_args_size);
+    reg_offset = ALPHA_ROUND (crtl->outgoing_args_size);
 
   alpha_sa_mask (&imask, &fmask);
 
@@ -7858,7 +7858,7 @@ alpha_start_function (FILE *file, const char *fnname,
     }
 
   /* Set up offsets to alpha virtual arg/local debugging pointer.  */
-  alpha_auto_offset = -frame_size + current_function_pretend_args_size;
+  alpha_auto_offset = -frame_size + crtl->args.pretend_args_size;
   alpha_arg_offset = -frame_size + 48;
 
   /* Describe our frame.  If the frame size is larger than an integer,
@@ -7877,7 +7877,7 @@ alpha_start_function (FILE *file, const char *fnname,
 	     (frame_pointer_needed
 	      ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM),
 	     frame_size >= max_frame_size ? 0 : frame_size,
-	     current_function_pretend_args_size);
+	     crtl->args.pretend_args_size);
 
   /* Describe which registers were spilled.  */
   if (TARGET_ABI_UNICOSMK)
@@ -7972,17 +7972,17 @@ alpha_expand_epilogue (void)
     frame_size = ALPHA_ROUND (sa_size
 			      + (alpha_procedure_type == PT_STACK ? 8 : 0)
 			      + frame_size
-			      + current_function_pretend_args_size);
+			      + crtl->args.pretend_args_size);
   else if (TARGET_ABI_UNICOSMK)
     frame_size = ALPHA_ROUND (sa_size
 			      + (alpha_procedure_type == PT_STACK ? 48 : 0))
 		 + ALPHA_ROUND (frame_size
-			      + current_function_outgoing_args_size);
+			      + crtl->outgoing_args_size);
   else
-    frame_size = (ALPHA_ROUND (current_function_outgoing_args_size)
+    frame_size = (ALPHA_ROUND (crtl->outgoing_args_size)
 		  + sa_size
 		  + ALPHA_ROUND (frame_size
-				 + current_function_pretend_args_size));
+				 + crtl->args.pretend_args_size));
 
   if (TARGET_ABI_OPEN_VMS)
     {
@@ -7992,7 +7992,7 @@ alpha_expand_epilogue (void)
           reg_offset = 0;
     }
   else
-    reg_offset = ALPHA_ROUND (current_function_outgoing_args_size);
+    reg_offset = ALPHA_ROUND (crtl->outgoing_args_size);
 
   alpha_sa_mask (&imask, &fmask);
 
@@ -9775,12 +9775,12 @@ unicosmk_initial_elimination_offset (int from, int to)
   else if (from == ARG_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
     return 0;
   else if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
-    return (ALPHA_ROUND (current_function_outgoing_args_size)
+    return (ALPHA_ROUND (crtl->outgoing_args_size)
 	    + ALPHA_ROUND (get_frame_size()));
   else if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
     return (ALPHA_ROUND (fixed_size)
 	    + ALPHA_ROUND (get_frame_size()
-			   + current_function_outgoing_args_size));
+			   + crtl->outgoing_args_size));
   else
     gcc_unreachable ();
 }

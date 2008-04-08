@@ -287,7 +287,7 @@ extern const char *bfin_library_id_string;
 	  
 /* Define this if the maximum size of all the outgoing args is to be
    accumulated and pushed during the prologue.  The amount can be
-   found in the variable current_function_outgoing_args_size. */ 
+   found in the variable crtl->outgoing_args_size. */ 
 #define ACCUMULATE_OUTGOING_ARGS 1
 
 /* Value should be nonzero if functions must have frame pointers.

@@ -1653,7 +1653,7 @@ use_return_insn (int iscond, rtx sibling)
   stack_adjust = offsets->outgoing_args - offsets->saved_regs;
 
   /* As do variadic functions.  */
-  if (current_function_pretend_args_size
+  if (crtl->args.pretend_args_size
       || cfun->machine->uses_anonymous_args
       /* Or if the function calls __builtin_eh_return () */
       || current_function_calls_eh_return
@@ -3544,15 +3544,15 @@ thumb_find_work_register (unsigned long pushed_regs_mask)
      the variable argument list and so we can be sure that it will be
      pushed right at the start of the function.  Hence it will be available
      for the rest of the prologue.
-     (*): ie current_function_pretend_args_size is greater than 0.  */
+     (*): ie crtl->args.pretend_args_size is greater than 0.  */
   if (cfun->machine->uses_anonymous_args
-      && current_function_pretend_args_size > 0)
+      && crtl->args.pretend_args_size > 0)
     return LAST_ARG_REGNUM;
 
   /* The other case is when we have fixed arguments but less than 4 registers
      worth.  In this case r3 might be used in the body of the function, but
      it is not being used to convey an argument into the function.  In theory
-     we could just check current_function_args_size to see how many bytes are
+     we could just check crtl->args.size to see how many bytes are
      being passed in argument registers, but it seems that it is unreliable.
      Sometimes it will have the value 0 when in fact arguments are being
      passed.  (See testcase execute/20021111-1.c for an example).  So we also
@@ -3562,8 +3562,8 @@ thumb_find_work_register (unsigned long pushed_regs_mask)
      when a function has an unused argument in r3.  But it is better to be
      safe than to be sorry.  */
   if (! cfun->machine->uses_anonymous_args
-      && current_function_args_size >= 0
-      && current_function_args_size <= (LAST_ARG_REGNUM * UNITS_PER_WORD)
+      && crtl->args.size >= 0
+      && crtl->args.size <= (LAST_ARG_REGNUM * UNITS_PER_WORD)
       && cfun->args_info.nregs < 4)
     return LAST_ARG_REGNUM;
 
@@ -10833,7 +10833,7 @@ arm_compute_save_reg_mask (void)
 
   if (TARGET_REALLY_IWMMXT
       && ((bit_count (save_reg_mask)
-	   + ARM_NUM_INTS (current_function_pretend_args_size)) % 2) != 0)
+	   + ARM_NUM_INTS (crtl->args.pretend_args_size)) % 2) != 0)
     {
       /* The total number of registers that are going to be pushed
 	 onto the stack is odd.  We need to ensure that the stack
@@ -11258,8 +11258,8 @@ arm_output_function_prologue (FILE *f, HOST_WIDE_INT frame_size)
     asm_fprintf (f, "\t%@ Stack Align: May be called with mis-aligned SP.\n");
 
   asm_fprintf (f, "\t%@ args = %d, pretend = %d, frame = %wd\n",
-	       current_function_args_size,
-	       current_function_pretend_args_size, frame_size);
+	       crtl->args.size,
+	       crtl->args.pretend_args_size, frame_size);
 
   asm_fprintf (f, "\t%@ frame_needed = %d, uses_anonymous_args = %d\n",
 	       frame_pointer_needed,
@@ -11626,7 +11626,7 @@ arm_output_epilogue (rtx sibling)
 	  && (TARGET_ARM || ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL)
 	  && !IS_STACKALIGN (func_type)
 	  && really_return
-	  && current_function_pretend_args_size == 0
+	  && crtl->args.pretend_args_size == 0
 	  && saved_regs_mask & (1 << LR_REGNUM)
 	  && !current_function_calls_eh_return)
 	{
@@ -11661,11 +11661,11 @@ arm_output_epilogue (rtx sibling)
 	    print_multi_reg (f, "pop\t", SP_REGNUM, saved_regs_mask, 0);
 	}
 
-      if (current_function_pretend_args_size)
+      if (crtl->args.pretend_args_size)
 	{
 	  /* Unwind the pre-pushed regs.  */
 	  operands[0] = operands[1] = stack_pointer_rtx;
-	  operands[2] = GEN_INT (current_function_pretend_args_size);
+	  operands[2] = GEN_INT (crtl->args.pretend_args_size);
 	  output_add_immediate (operands);
 	}
     }
@@ -11890,8 +11890,8 @@ arm_size_return_regs (void)
 {
   enum machine_mode mode;
 
-  if (current_function_return_rtx != 0)
-    mode = GET_MODE (current_function_return_rtx);
+  if (crtl->return_rtx != 0)
+    mode = GET_MODE (crtl->return_rtx);
   else
     mode = DECL_MODE (DECL_RESULT (current_function_decl));
 
@@ -12050,7 +12050,7 @@ arm_get_frame_offsets (void)
   leaf = leaf_function_p ();
 
   /* Space for variadic functions.  */
-  offsets->saved_args = current_function_pretend_args_size;
+  offsets->saved_args = crtl->args.pretend_args_size;
 
   /* In Thumb mode this is incorrect, but never used.  */
   offsets->frame = offsets->saved_args + (frame_pointer_needed ? 4 : 0);
@@ -12119,7 +12119,7 @@ arm_get_frame_offsets (void)
       /* Try to align stack by pushing an extra reg.  Don't bother doing this
          when there is a stack frame as the alignment will be rolled into
 	 the normal stack adjustment.  */
-      if (frame_size + current_function_outgoing_args_size == 0)
+      if (frame_size + crtl->outgoing_args_size == 0)
 	{
 	  int reg = -1;
 
@@ -12150,7 +12150,7 @@ arm_get_frame_offsets (void)
 
   offsets->locals_base = offsets->soft_frame + frame_size;
   offsets->outgoing_args = (offsets->locals_base
-			    + current_function_outgoing_args_size);
+			    + crtl->outgoing_args_size);
 
   if (ARM_DOUBLEWORD_ALIGN)
     {
@@ -12399,7 +12399,7 @@ arm_expand_prologue (void)
     return;
 
   /* Make a copy of c_f_p_a_s as we may need to modify it locally.  */
-  args_to_push = current_function_pretend_args_size;
+  args_to_push = crtl->args.pretend_args_size;
 
   /* Compute which register we will have to save onto the stack.  */
   offsets = arm_get_frame_offsets ();
@@ -12599,7 +12599,7 @@ arm_expand_prologue (void)
 	      if (!df_regs_ever_live_p (3)
 		  || saved_pretend_args)
 		insn = gen_rtx_REG (SImode, 3);
-	      else /* if (current_function_pretend_args_size == 0) */
+	      else /* if (crtl->args.pretend_args_size == 0) */
 		{
 		  insn = plus_constant (hard_frame_pointer_rtx, 4);
 		  insn = gen_frame_mem (SImode, insn);
@@ -16288,8 +16288,8 @@ thumb_exit (FILE *f, int reg_containing_return_addr)
 	 ever used in the function, not just if the register is used
 	 to hold a return value.  */
 
-      if (current_function_return_rtx != 0)
-	mode = GET_MODE (current_function_return_rtx);
+      if (crtl->return_rtx != 0)
+	mode = GET_MODE (crtl->return_rtx);
       else
 	mode = DECL_MODE (DECL_RESULT (current_function_decl));
 
@@ -16705,7 +16705,7 @@ thumb_unexpanded_epilogue (void)
   had_to_push_lr = (live_regs_mask & (1 << LR_REGNUM)) != 0;
   live_regs_mask &= 0xff;
 
-  if (current_function_pretend_args_size == 0 || TARGET_BACKTRACE)
+  if (crtl->args.pretend_args_size == 0 || TARGET_BACKTRACE)
     {
       /* Pop the return address into the PC.  */
       if (had_to_push_lr)
@@ -16762,7 +16762,7 @@ thumb_unexpanded_epilogue (void)
       /* Remove the argument registers that were pushed onto the stack.  */
       asm_fprintf (asm_out_file, "\tadd\t%r, %r, #%d\n",
 		   SP_REGNUM, SP_REGNUM,
-		   current_function_pretend_args_size);
+		   crtl->args.pretend_args_size);
 
       thumb_exit (asm_out_file, regno);
     }
@@ -17105,12 +17105,12 @@ thumb1_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
       asm_fprintf (f, "%s%U%s:\n", STUB_NAME, name);
     }
 
-  if (current_function_pretend_args_size)
+  if (crtl->args.pretend_args_size)
     {
       /* Output unwind directive for the stack adjustment.  */
       if (ARM_EABI_UNWIND_TABLES)
 	fprintf (f, "\t.pad #%d\n",
-		 current_function_pretend_args_size);
+		 crtl->args.pretend_args_size);
 
       if (cfun->machine->uses_anonymous_args)
 	{
@@ -17118,7 +17118,7 @@ thumb1_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 
 	  fprintf (f, "\tpush\t{");
 
-	  num_pushes = ARM_NUM_INTS (current_function_pretend_args_size);
+	  num_pushes = ARM_NUM_INTS (crtl->args.pretend_args_size);
 
 	  for (regno = LAST_ARG_REGNUM + 1 - num_pushes;
 	       regno <= LAST_ARG_REGNUM;
@@ -17131,7 +17131,7 @@ thumb1_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
       else
 	asm_fprintf (f, "\tsub\t%r, %r, #%d\n",
 		     SP_REGNUM, SP_REGNUM,
-		     current_function_pretend_args_size);
+		     crtl->args.pretend_args_size);
 
       /* We don't need to record the stores for unwinding (would it
 	 help the debugger any if we did?), but record the change in
@@ -17140,7 +17140,7 @@ thumb1_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 	{
 	  char *l = dwarf2out_cfi_label ();
 
-	  cfa_offset = cfa_offset + current_function_pretend_args_size;
+	  cfa_offset = cfa_offset + crtl->args.pretend_args_size;
 	  dwarf2out_def_cfa (l, SP_REGNUM, cfa_offset);
 	}
     }
@@ -17202,7 +17202,7 @@ thumb1_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 	offset = 0;
 
       asm_fprintf (f, "\tadd\t%r, %r, #%d\n", work_register, SP_REGNUM,
-		   offset + 16 + current_function_pretend_args_size);
+		   offset + 16 + crtl->args.pretend_args_size);
 
       asm_fprintf (f, "\tstr\t%r, [%r, #%d]\n", work_register, SP_REGNUM,
 		   offset + 4);
