@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2000-2006, AdaCore                     --
+--                     Copyright (C) 2000-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,17 +91,19 @@ package GNAT.Dynamic_Tables is
 
    type Table_Type is
      array (Table_Index_Type range <>) of Table_Component_Type;
-
    subtype Big_Table_Type is
      Table_Type (Table_Low_Bound .. Table_Index_Type'Last);
-   --  We work with pointers to a bogus array type that is constrained
-   --  with the maximum possible range bound. This means that the pointer
-   --  is a thin pointer, which is more efficient. Since subscript checks
-   --  in any case must be on the logical, rather than physical bounds,
-   --  safety is not compromised by this approach.
+   --  We work with pointers to a bogus array type that is constrained with
+   --  the maximum possible range bound. This means that the pointer is a thin
+   --  pointer, which is more efficient. Since subscript checks in any case
+   --  must be on the logical, rather than physical bounds, safety is not
+   --  compromised by this approach. These types should not be used by the
+   --  client.
 
    type Table_Ptr is access all Big_Table_Type;
-   --  The table is actually represented as a pointer to allow reallocation
+   for Table_Ptr'Storage_Size use 0;
+   --  The table is actually represented as a pointer to allow reallocation.
+   --  This type should not be used by the client.
 
    type Table_Private is private;
    --  Table private data that is not exported in Instance

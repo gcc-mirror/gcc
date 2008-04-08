@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,9 +33,6 @@ with Types;    use Types;
 with Unchecked_Conversion;
 
 package body Fname.SF is
-
-   subtype Big_String is String (Positive);
-   type Big_String_Ptr is access all Big_String;
 
    function To_Big_String_Ptr is new Unchecked_Conversion
      (Source_Buffer_Ptr, Big_String_Ptr);

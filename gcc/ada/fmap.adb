@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,8 +37,10 @@ with GNAT.HTable;
 
 package body Fmap is
 
-   subtype Big_String is String (Positive);
-   type Big_String_Ptr is access all Big_String;
+   No_Mapping_File : Boolean := False;
+   --  Set to True when the specified mapping file cannot be read in
+   --  procedure Initialize, so that no attempt is made to oopen the mapping
+   --  file in procedure Update_Mapping_File.
 
    function To_Big_String_Ptr is new Unchecked_Conversion
      (Source_Buffer_Ptr, Big_String_Ptr);
@@ -301,6 +303,7 @@ package body Fmap is
          Write_Str ("warning: could not read mapping file """);
          Write_Str (File_Name);
          Write_Line ("""");
+         No_Mapping_File := True;
 
       else
          BS := To_Big_String_Ptr (Src);
@@ -479,27 +482,17 @@ package body Fmap is
    --  Start of Update_Mapping_File
 
    begin
+      --  If the mapping file could not be read, then it will not be possible
+      --  to update it.
 
+      if No_Mapping_File then
+         return;
+      end if;
       --  Only Update if there are new entries in the mappings
 
       if Last_In_Table < File_Mapping.Last then
 
-         --  If the tables have been emptied, recreate the file.
-         --  Otherwise, append to it.
-
-         if Last_In_Table = 0 then
-            declare
-               Discard : Boolean;
-               pragma Warnings (Off, Discard);
-            begin
-               Delete_File (File_Name, Discard);
-            end;
-
-            File := Create_File (File_Name, Binary);
-
-         else
-            File := Open_Read_Write (Name => File_Name, Fmode => Binary);
-         end if;
+         File := Open_Read_Write (Name => File_Name, Fmode => Binary);
 
          if File /= Invalid_FD then
             if Last_In_Table > 0 then
